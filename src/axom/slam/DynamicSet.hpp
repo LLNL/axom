@@ -296,7 +296,10 @@ public:
     const int sz = size();
     for(int i = 0; i < sz; ++i)
     {
-      if(m_data[i] == e) return i;
+      if(m_data[i] == e)
+      {
+        return i;
+      }
     }
     return INVALID_ENTRY;
   };
@@ -312,7 +315,10 @@ public:
     const int sz = size();
     for(int i = 0; i < sz; ++i)
     {
-      if(m_data[i] == e) return true;
+      if(m_data[i] == e)
+      {
+        return true;
+      }
     }
     return false;
   };
@@ -459,7 +465,10 @@ private:
   /** Fill each entry of the set such that its value is equal to its index. */
   void fill_array_default(PositionType sz)
   {
-    if(sz < 0) return;
+    if(sz < 0)
+    {
+      return;
+    }
 
     m_data.resize(sz);
     for(int i = 0; i < sz; ++i)

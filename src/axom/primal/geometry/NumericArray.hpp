@@ -11,8 +11,8 @@
 #include "axom/slic/interface/slic.hpp"
 
 // C/C++ includes
-#include <algorithm>  // For std:: copy and fill
-#include <ostream>    // For print() and operator <<
+#include <algorithm>
+#include <ostream>
 #include <initializer_list>
 
 namespace axom
@@ -176,11 +176,9 @@ struct NonChar<unsigned char>
  * \tparam SIZE the size of the array
  */
 template <typename T, int SIZE>
-class NumericArray
+class NumericArray  // NOLINT
 {
 public:
-  // -- TODO: Add static_assert that T has numeric type --
-
   /*!
    * \brief Fill the first sz coordinates with val and zeros the rest
    * \param [in] val The value to set the coordinates to. Defaults to zero.
@@ -241,7 +239,6 @@ public:
   T* data();
 
   /*!
-   *
    * \brief Copy the coordinate data to the provided array
    * \param [in] arr The array to which we are copying.
    * \pre The user needs to make sure that the provided array has been allocated
@@ -264,7 +261,7 @@ public:
    * \return A reference to the NumericArray instance after addition.
    */
   AXOM_HOST_DEVICE
-  NumericArray<T, SIZE>& operator+=(const NumericArray<T, SIZE>& arr);
+  NumericArray& operator+=(const NumericArray& arr);
 
   /*!
    * \brief Component-wise subtraction assignment operator.
@@ -273,7 +270,7 @@ public:
    * \return A reference to the NumericArray instance after subtraction.
    */
   AXOM_HOST_DEVICE
-  NumericArray<T, SIZE>& operator-=(const NumericArray<T, SIZE>& arr);
+  NumericArray& operator-=(const NumericArray& arr);
 
   /*!
    * \brief Scalar multiplication on the NumericArray instance.
@@ -283,7 +280,7 @@ public:
    * multiplication.
    */
   AXOM_HOST_DEVICE
-  NumericArray<T, SIZE>& operator*=(double scalar);
+  NumericArray& operator*=(double scalar);
 
   /*!
    * \brief Scalar division on the NumericArray instance.
@@ -293,7 +290,7 @@ public:
    * \return A reference to the NumericArray instance after scalar division.
    */
   AXOM_HOST_DEVICE
-  NumericArray<T, SIZE>& operator/=(double scalar);
+  NumericArray& operator/=(double scalar);
 
   /*!
    * \brief Component-wise multiplication assignment operator.
@@ -303,7 +300,7 @@ public:
    * multiplication.
    */
   AXOM_HOST_DEVICE
-  NumericArray<T, SIZE>& operator*=(const NumericArray<T, SIZE>& arr);
+  NumericArray& operator*=(const NumericArray& arr);
 
   /*!
    * \brief Component-wise division assignment operator.
@@ -312,7 +309,7 @@ public:
    * \pre forall i, arr[i] != 0
    * \return A reference to the NumericArray instance after cwise division.
    */
-  NumericArray<T, SIZE>& operator/=(const NumericArray<T, SIZE>& arr);
+  NumericArray& operator/=(const NumericArray& arr);
 
   /*!
    * \brief Ensures that the highest value of the coordinates is at most
@@ -322,7 +319,7 @@ public:
    * \post forall i, arr[i] <= upperVal
    * \return A reference to the NumericArray instance after clamping upper
    */
-  NumericArray<T, SIZE>& clampUpper(const T& upperVal);
+  NumericArray& clampUpper(const T& upperVal);
 
   /*!
    * \brief Ensures that the lowest value of the coordinates is at least
@@ -334,7 +331,7 @@ public:
    *
    * \return A reference to the NumericArray instance after clamping lower
    */
-  NumericArray<T, SIZE>& clampLower(const T& lowerVal);
+  NumericArray& clampLower(const T& lowerVal);
 
   /*!
    * \brief Ensures that each coordinate's value is in range
@@ -348,7 +345,7 @@ public:
    *
    * \return A reference to the NumericArray instance after clamping
    */
-  NumericArray<T, SIZE>& clamp(const T& lowerVal, const T& upperVal);
+  NumericArray& clamp(const T& lowerVal, const T& upperVal);
 
   /*!
    * \brief Find the max component.
@@ -385,12 +382,11 @@ private:
   }
 
 protected:
-  T m_components[SIZE]; /*! The encapsulated array */
+  T m_components[SIZE];  /// The encapsulated array
 };
 
-} /* namespace primal */
-
-} /* namespace axom */
+}  // namespace primal
+}  // namespace axom
 
 //------------------------------------------------------------------------------
 //  NumericArray implementation

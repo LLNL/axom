@@ -104,7 +104,10 @@ public:
   SetPosition totalSize() const
   {
     SetPosition sz = 0;
-    for(auto& vec : m_relationsVec) sz += vec.size();
+    for(auto& vec : m_relationsVec)
+    {
+      sz += vec.size();
+    }
     return sz;
   }
 
@@ -228,7 +231,10 @@ bool DynamicVariableRelation<FirstSetType, SecondSetType>::isValid(
   }
   else
   {
-    if(verboseOutput) sstr << "\n\t* Neither set was null";
+    if(verboseOutput)
+    {
+      sstr << "\n\t* Neither set was null";
+    }
 
     // Check that the the relations vector has the right size
     // (should be same as fromSet's size() )
@@ -281,8 +287,13 @@ bool DynamicVariableRelation<FirstSetType, SecondSetType>::isValid(
     }
 
     if(m_fromSet)
+    {
       sstr2 << "\n** fromSet has size " << m_fromSet->size() << ": ";
-    if(m_toSet) sstr2 << "\n** toSet has size " << m_toSet->size() << ": ";
+    }
+    if(m_toSet)
+    {
+      sstr2 << "\n** toSet has size " << m_toSet->size() << ": ";
+    }
 
     if(m_relationsVec.empty())
     {

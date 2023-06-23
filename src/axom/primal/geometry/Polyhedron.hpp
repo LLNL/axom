@@ -193,7 +193,10 @@ public:
       int curr_idx = 0;
       for(int inbr = 0; inbr < num_nbrs[iv]; inbr++)
       {
-        if(nbrs[iv][inbr] == -1) continue;
+        if(nbrs[iv][inbr] == -1)
+        {
+          continue;
+        }
         nbrs[iv][curr_idx] = nbrs[iv][inbr];
         curr_idx++;
       }

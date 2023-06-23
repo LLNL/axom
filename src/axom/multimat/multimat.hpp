@@ -1027,15 +1027,25 @@ int MultiMat::addFieldArray_impl(const std::string& field_name,
   m_fieldStrideVec.push_back(stride);
 
   if(std::is_same<T, int>::value)
+  {
     m_dataTypeVec.push_back(DataTypeSupported::TypeInt);
+  }
   else if(std::is_same<T, double>::value)
+  {
     m_dataTypeVec.push_back(DataTypeSupported::TypeDouble);
+  }
   else if(std::is_same<T, float>::value)
+  {
     m_dataTypeVec.push_back(DataTypeSupported::TypeFloat);
+  }
   else if(std::is_same<T, unsigned char>::value)
+  {
     m_dataTypeVec.push_back(DataTypeSupported::TypeUnsignChar);
+  }
   else
+  {
     m_dataTypeVec.push_back(DataTypeSupported::TypeUnknown);
+  }
 
   SLIC_ASSERT(m_fieldNameVec.size() == m_dataTypeVec.size());
   SLIC_ASSERT(m_fieldNameVec.size() == m_fieldMappingVec.size());
@@ -1071,8 +1081,10 @@ MultiMat::Field1D<T> MultiMat::get1dField(const std::string& field_name)
   int fieldIdx = getFieldIdx(field_name);
 
   if(fieldIdx < 0)
+  {
     SLIC_ERROR("Multimat: No field with the name \"" + field_name +
                "\" was found.");
+  }
 
   return get1dFieldImpl<T>(fieldIdx);
 }
@@ -1083,8 +1095,10 @@ MultiMat::Field1D<const T> MultiMat::get1dField(const std::string& field_name) c
   int fieldIdx = getFieldIdx(field_name);
 
   if(fieldIdx < 0)
+  {
     SLIC_ERROR("Multimat: No field with the name \"" + field_name +
                "\" was found.");
+  }
 
   return get1dFieldImpl<const T>(fieldIdx);
 }
@@ -1095,8 +1109,10 @@ MultiMat::Field2D<T> MultiMat::get2dField(const std::string& field_name)
   int fieldIdx = getFieldIdx(field_name);
 
   if(fieldIdx < 0)
+  {
     SLIC_ERROR("Multimat: No field with the name \"" + field_name +
                "\" was found.");
+  }
 
   return get2dFieldImpl<T>(fieldIdx);
 }
@@ -1107,7 +1123,9 @@ MultiMat::Field2D<const T> MultiMat::get2dField(const std::string& field_name) c
   int fieldIdx = getFieldIdx(field_name);
 
   if(fieldIdx < 0)
+  {
     throw std::invalid_argument("No field with this name is found");
+  }
 
   return get2dFieldImpl<const T>(fieldIdx);
 }
@@ -1160,7 +1178,10 @@ MultiMat::Field2D<T, BSetType> MultiMat::get2dField(const std::string& field_nam
   //create instance of that map
   int fi = getFieldIdx(field_name);
 
-  if(fi < 0) throw std::invalid_argument("No field with this name is found");
+  if(fi < 0)
+  {
+    throw std::invalid_argument("No field with this name is found");
+  }
 
   BSetType bsetValue = getCompatibleBivarSet<BSetType>(fi);
 
@@ -1183,7 +1204,9 @@ MultiMat::DenseField2D<T> MultiMat::getDense2dField(const std::string& field_nam
   int fieldIdx = getFieldIdx(field_name);
 
   if(fieldIdx < 0)
+  {
     throw std::invalid_argument("No field with this name is found");
+  }
 
   SLIC_CHECK_MSG(
     bmap.isDense(),
@@ -1213,7 +1236,9 @@ MultiMat::SparseField2D<T> MultiMat::getSparse2dField(const std::string& field_n
   int fieldIdx = getFieldIdx(field_name);
 
   if(fieldIdx < 0)
+  {
     throw std::invalid_argument("No field with this name is found");
+  }
 
   SLIC_CHECK_MSG(
     bmap.isSparse(),
