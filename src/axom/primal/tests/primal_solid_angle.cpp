@@ -65,15 +65,19 @@ TEST(primal_solid_angle, triangle)
 
     // Get sign from orientation.
     if(primal::orientation(queries[n], tri) == primal::ON_NEGATIVE_SIDE)
+    {
       // Means query point is interior
       EXPECT_NEAR(0.25 * M_1_PI * solid_angle,
                   winding_number(queries[n], tri),
                   1e-10);
+    }
     else
+    {
       // Means query point is exterior
       EXPECT_NEAR(-0.25 * M_1_PI * solid_angle,
                   winding_number(queries[n], tri),
                   1e-10);
+    }
   }
 
   // Test with simple degenerate triangle
@@ -81,7 +85,9 @@ TEST(primal_solid_angle, triangle)
                Point3D {2.0, 3.0, 4.0},
                Point3D {1.0, 2.0, 3.0});
   for(int n = 0; n < 5; ++n)
+  {
     EXPECT_DOUBLE_EQ(0.0, winding_number(queries[n], deg));
+  }
 
   // Test with nondegenerate triangle, zero winding number
   Point3D coplanar {-1.0, 1.0, 1.0};
@@ -137,10 +143,12 @@ TEST(primal_solid_angle, simple_polygon)
   };
 
   for(int n = 0; n < 5; ++n)
+  {
     EXPECT_NEAR(winding_number(queries[n], square),
                 winding_number(queries[n], square_tri1) +
                   winding_number(queries[n], square_tri2),
                 1e-10);
+  }
 
   // Test on coplanar points
   Point3D troubled_queries[5] = {
@@ -152,7 +160,9 @@ TEST(primal_solid_angle, simple_polygon)
   };
 
   for(int n = 0; n < 5; ++n)
+  {
     EXPECT_NEAR(winding_number(troubled_queries[n], square), 0, 1e-10);
+  }
 }
 
 //------------------------------------------------------------------------------
@@ -183,10 +193,12 @@ TEST(primal_solid_angle, nonconvex_polygon)
   };
 
   for(int n = 0; n < 5; ++n)
+  {
     EXPECT_NEAR(winding_number(queries[n], pentagon),
                 winding_number(queries[n], pentagon_tri1) +
                   winding_number(queries[n], pentagon_tri2),
                 1e-10);
+  }
 
   // Test on coplanar points
   Point3D troubled_queries[5] = {
@@ -198,7 +210,9 @@ TEST(primal_solid_angle, nonconvex_polygon)
   };
 
   for(int n = 0; n < 5; ++n)
+  {
     EXPECT_NEAR(winding_number(troubled_queries[n], pentagon), 0, 1e-10);
+  }
 }
 
 //------------------------------------------------------------------------------
@@ -219,10 +233,12 @@ TEST(primal_solid_angle, degenerate_polygon)
 
   // Add vertices to good polygon
   for(int i = 0; i < 5; ++i)
+  {
     good_pentagon.addVertex(
       Point3D {cos(good_angles[i]) * v1[0] + sin(good_angles[i]) * v2[0],
                cos(good_angles[i]) * v1[1] + sin(good_angles[i]) * v2[1],
                cos(good_angles[i]) * v1[2] + sin(good_angles[i]) * v2[2]});
+  }
 
   // Create bad polygon with degeneracies
   // Add point at angle 0
@@ -238,10 +254,12 @@ TEST(primal_solid_angle, degenerate_polygon)
              cos(bad_angles[1]) * v1[2] + sin(bad_angles[1]) * v2[2]}));
   // Add the rest of the vertices
   for(int i = 1; i < 9; ++i)
+  {
     bad_pentagon.addVertex(
       Point3D {cos(bad_angles[i]) * v1[0] + sin(bad_angles[i]) * v2[0],
                cos(bad_angles[i]) * v1[1] + sin(bad_angles[i]) * v2[1],
                cos(bad_angles[i]) * v1[2] + sin(bad_angles[i]) * v2[2]});
+  }
 
   Point3D queries[5] = {
     Point3D {0.0, 4.0, 1.0},
@@ -253,9 +271,11 @@ TEST(primal_solid_angle, degenerate_polygon)
 
   EXPECT_NEAR(good_pentagon.area(), bad_pentagon.area(), 1e-10);
   for(int n = 0; n < 5; ++n)
+  {
     EXPECT_NEAR(winding_number(queries[n], good_pentagon),
                 winding_number(queries[n], bad_pentagon),
                 1e-10);
+  }
 
   // Test with duplicate point at endpoint
   axom::Array<Point3D> good_square_vertices({Point3D {1.0, 0.0, 0.0},
@@ -270,9 +290,11 @@ TEST(primal_solid_angle, degenerate_polygon)
                                             Point3D {0.0, 0.0, 0.0}});
 
   for(int n = 0; n < 5; ++n)
+  {
     EXPECT_NEAR(winding_number(queries[n], Polygon(good_square_vertices)),
                 winding_number(queries[n], Polygon(bad_square_vertices)),
                 1e-10);
+  }
 }
 
 //------------------------------------------------------------------------------
@@ -305,17 +327,21 @@ TEST(primal_solid_angle, selfintersecting_star)
 
   // Add vertices to pentagram
   for(int i = 0; i < 5; ++i)
+  {
     pentagram.addVertex(
       Point3D {cos(outer_angles[i]) * v1[0] + sin(outer_angles[i]) * v2[0],
                cos(outer_angles[i]) * v1[1] + sin(outer_angles[i]) * v2[1],
                cos(outer_angles[i]) * v1[2] + sin(outer_angles[i]) * v2[2]});
+  }
 
   // Construct the inner pentagon
   for(int i = 0; i < 5; ++i)
+  {
     pentagon.addVertex(Point3D {
       r0 * cos(inner_angles[i]) * v1[0] + r0 * sin(inner_angles[i]) * v2[0],
       r0 * cos(inner_angles[i]) * v1[1] + r0 * sin(inner_angles[i]) * v2[1],
       r0 * cos(inner_angles[i]) * v1[2] + r0 * sin(inner_angles[i]) * v2[2]});
+  }
 
   // Construct the stars of the pentagram
   Polygon star_tips[5];
@@ -345,18 +371,24 @@ TEST(primal_solid_angle, selfintersecting_star)
   double star_components = 0;
   star_components += winding_number(single_query, pentagon);
   for(int i = 0; i < 5; ++i)
+  {
     star_components += winding_number(single_query, star_tips[i]);
+  }
 
   // Triangulate the pentagram directly
   Polygon pentagram_tris[5 - 2];
   for(int i = 0; i < 5 - 2; ++i)
+  {
     pentagram_tris[i] = Polygon(
       axom::Array<Point3D>({pentagram[0], pentagram[i + 1], pentagram[i + 2]}));
+  }
 
   // Add up components of the pentagram triangulation
   double pentagram_triangulation = 0;
   for(int i = 0; i < 5 - 2; ++i)
+  {
     pentagram_triangulation += winding_number(single_query, pentagram_tris[i]);
+  }
 
   for(int n = 0; n < 5; ++n)
   {
@@ -414,9 +446,11 @@ TEST(primal_solid_angle, selfintersecting_quadrilateral)
 
   // Area of overlapping square should be twice that of nonoverlapping
   for(int n = 0; n < 5; ++n)
+  {
     EXPECT_NEAR(2 * winding_number(queries[n], square),
                 winding_number(queries[n], squareish),
                 1e-10);
+  }
 
   // Test on non-uniformly oriented hourglass shape
   axom::Array<Point3D> hourglass_vertices({
@@ -436,10 +470,12 @@ TEST(primal_solid_angle, selfintersecting_quadrilateral)
 
   // Area of overlapping square should be twice that of nonoverlapping
   for(int n = 0; n < 5; ++n)
+  {
     EXPECT_NEAR(winding_number(queries[n], top_bulb) +
                   winding_number(queries[n], bot_bulb),
                 winding_number(queries[n], hourglass),
                 1e-10);
+  }
 }
 
 int main(int argc, char** argv)

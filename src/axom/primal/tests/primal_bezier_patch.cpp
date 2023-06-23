@@ -86,12 +86,16 @@ TEST(primal_bezierpatch, set_order)
   bPatch(1, 1) = controlPoints[3];
 
   for(int p = 0; p <= bPatch.getOrder_u(); ++p)
+  {
     for(int q = 0; q <= bPatch.getOrder_v(); ++q)
     {
       auto& pt = bPatch(p, q);
       for(int i = 0; i < DIM; ++i)
+      {
         EXPECT_DOUBLE_EQ(controlPoints[p * (order_u + 1) + q][i], pt[i]);
+      }
     }
+  }
 }
 
 //------------------------------------------------------------------------------
@@ -120,12 +124,16 @@ TEST(primal_bezierpatch, array_constructors)
   EXPECT_FALSE(nonrational_patch.isRational());
 
   for(int p = 0; p <= nonrational_patch.getOrder_u(); ++p)
+  {
     for(int q = 0; q <= nonrational_patch.getOrder_v(); ++q)
     {
       auto& pt = nonrational_patch(p, q);
       for(int i = 0; i < DIM; ++i)
+      {
         EXPECT_DOUBLE_EQ(controlPoints[p * (order_u + 1) + q][i], pt[i]);
+      }
     }
+  }
 
   BezierPatchType nonrational_patch_again(controlPoints, nullptr, order_u, order_v);
   EXPECT_EQ(nonrational_patch_again.getOrder_u(), order_u);
@@ -133,12 +141,16 @@ TEST(primal_bezierpatch, array_constructors)
   EXPECT_FALSE(nonrational_patch_again.isRational());
 
   for(int p = 0; p <= nonrational_patch_again.getOrder_u(); ++p)
+  {
     for(int q = 0; q <= nonrational_patch_again.getOrder_v(); ++q)
     {
       auto& pt = nonrational_patch_again(p, q);
       for(int i = 0; i < DIM; ++i)
+      {
         EXPECT_DOUBLE_EQ(controlPoints[p * (order_u + 1) + q][i], pt[i]);
+      }
     }
+  }
 
   BezierPatchType rational_patch(controlPoints, weights, order_u, order_v);
   EXPECT_EQ(rational_patch.getOrder_u(), order_u);
@@ -146,14 +158,18 @@ TEST(primal_bezierpatch, array_constructors)
   EXPECT_TRUE(rational_patch.isRational());
 
   for(int p = 0; p <= rational_patch.getOrder_u(); ++p)
+  {
     for(int q = 0; q <= rational_patch.getOrder_v(); ++q)
     {
       auto& pt = rational_patch(p, q);
       for(int i = 0; i < DIM; ++i)
+      {
         EXPECT_DOUBLE_EQ(controlPoints[p * (order_u + 1) + q][i], pt[i]);
+      }
       EXPECT_DOUBLE_EQ(weights[p * (order_u + 1) + q],
                        rational_patch.getWeight(p, q));
     }
+  }
 }
 
 //------------------------------------------------------------------------------
@@ -183,12 +199,16 @@ TEST(primal_bezierpatch, axom_array_constructors)
   EXPECT_FALSE(nonrational_patch.isRational());
 
   for(int p = 0; p <= nonrational_patch.getOrder_u(); ++p)
+  {
     for(int q = 0; q <= nonrational_patch.getOrder_v(); ++q)
     {
       auto& pt = nonrational_patch(p, q);
       for(int i = 0; i < DIM; ++i)
+      {
         EXPECT_DOUBLE_EQ(controlPoints[p * (order_u + 1) + q][i], pt[i]);
+      }
     }
+  }
 
   BezierPatchType rational_patch(controlPoints, weights, order_u, order_v);
   EXPECT_EQ(rational_patch.getOrder_u(), order_u);
@@ -196,14 +216,18 @@ TEST(primal_bezierpatch, axom_array_constructors)
   EXPECT_TRUE(rational_patch.isRational());
 
   for(int p = 0; p <= rational_patch.getOrder_u(); ++p)
+  {
     for(int q = 0; q <= rational_patch.getOrder_v(); ++q)
     {
       auto& pt = rational_patch(p, q);
       for(int i = 0; i < DIM; ++i)
+      {
         EXPECT_DOUBLE_EQ(controlPoints[p * (order_u + 1) + q][i], pt[i]);
+      }
       EXPECT_DOUBLE_EQ(weights[p * (order_u + 1) + q],
                        rational_patch.getWeight(p, q));
     }
+  }
 
   // Construct with 2D axom arrays
   axom::Array<PointType, 2> controlPoints_2D(2, 2);
@@ -224,10 +248,16 @@ TEST(primal_bezierpatch, axom_array_constructors)
   EXPECT_FALSE(nonrational_patch_2D.isRational());
 
   for(int p = 0; p <= nonrational_patch_2D.getOrder_u(); ++p)
+  {
     for(int q = 0; q <= nonrational_patch_2D.getOrder_v(); ++q)
+    {
       for(int i = 0; i < DIM; ++i)
+      {
         EXPECT_DOUBLE_EQ(controlPoints_2D(p, q)[i],
                          nonrational_patch_2D(p, q)[i]);
+      }
+    }
+  }
 
   BezierPatchType rational_patch_2D(controlPoints_2D, weights_2D, order_u, order_v);
   EXPECT_EQ(rational_patch_2D.getOrder_u(), order_u);
@@ -235,12 +265,16 @@ TEST(primal_bezierpatch, axom_array_constructors)
   EXPECT_TRUE(rational_patch_2D.isRational());
 
   for(int p = 0; p <= rational_patch_2D.getOrder_u(); ++p)
+  {
     for(int q = 0; q <= rational_patch_2D.getOrder_v(); ++q)
     {
       for(int i = 0; i < DIM; ++i)
+      {
         EXPECT_DOUBLE_EQ(controlPoints_2D(p, q)[i], rational_patch_2D(p, q)[i]);
+      }
       EXPECT_DOUBLE_EQ(weights_2D(p, q), rational_patch_2D.getWeight(p, q));
     }
+  }
 }
 
 //------------------------------------------------------------------------------
@@ -271,18 +305,27 @@ TEST(primal_bezierpatch, make_rational)
 
   // makeRational should set all weights to 1
   for(int p = 0; p <= order_u; ++p)
+  {
     for(int q = 0; q <= order_v; ++q)
+    {
       EXPECT_DOUBLE_EQ(rPatch.getWeight(p, q), 1.0);
+    }
+  }
 
   // With all weights 1, the surface should be the same as if unweighted
   BezierPatchType bPatch(controlPoints, order_u, order_v);
   for(double u = 0; u <= 1.0; u += 0.1)
+  {
     for(double v = 0; v <= 1.0; v += 0.1)
     {
       auto pt1 = rPatch.evaluate(u, v);
       auto pt2 = bPatch.evaluate(u, v);
-      for(int i = 0; i < DIM; ++i) EXPECT_NEAR(pt1[i], pt2[i], 1e-10);
+      for(int i = 0; i < DIM; ++i)
+      {
+        EXPECT_NEAR(pt1[i], pt2[i], 1e-10);
+      }
     }
+  }
 
   rPatch.makeNonrational();
   EXPECT_FALSE(rPatch.isRational());
@@ -420,12 +463,14 @@ TEST(primal_bezierpatch, evaluation_degenerate)
   BezierPatchType bPatch(data, order, 0);
 
   for(double t = 0; t <= 1; t += 0.01)
+  {
     for(int i = 0; i < DIM; ++i)
     {
       EXPECT_NEAR(bCurve.evaluate(t)[i], bPatch.evaluate(t, 0)[i], 1e-10);
       EXPECT_NEAR(bCurve.evaluate(t)[i], bPatch.evaluate(t, 0.5)[i], 1e-10);
       EXPECT_NEAR(bCurve.evaluate(t)[i], bPatch.evaluate(t, 1.0)[i], 1e-10);
     }
+  }
 }
 
 //------------------------------------------------------------------------------
@@ -579,7 +624,9 @@ TEST(primal_bezierpatch, split_curve)
   // Components split along the u-axis p1/p3 vs p2/p4 should equal curves
   // Components split along the v-axis p1/p2 vs p3/p4 should equal each other
   for(double u = 0; u <= 1; u += 0.1)
+  {
     for(double v = 0; v <= 1; v += 0.1)
+    {
       for(int i = 0; i < DIM; ++i)
       {
         EXPECT_NEAR(c1.evaluate(u)[i], p1.evaluate(u, v)[i], 1e-10);
@@ -588,6 +635,8 @@ TEST(primal_bezierpatch, split_curve)
         EXPECT_NEAR(c2.evaluate(u)[i], p2.evaluate(u, v)[i], 1e-10);
         EXPECT_NEAR(c2.evaluate(u)[i], p4.evaluate(u, v)[i], 1e-10);
       }
+    }
+  }
 }
 
 //------------------------------------------------------------------------------
@@ -616,12 +665,16 @@ TEST(primal_bezierpatch, split_plane)
 
   // Ensure that after splitting, each point remains on the same hyperplane
   for(double u = 0.0; u <= 1.0; u += 0.1)
+  {
     for(double v = 0.0; v <= 1.0; v += 0.1)
+    {
       for(int n = 0; n < 4; ++n)
       {
         auto pt = p_arr[n].evaluate(u, v);
         EXPECT_NEAR(pt[0] + pt[1] + pt[2], 1.0, 1e-10);
       }
+    }
+  }
 }
 
 //------------------------------------------------------------------------------
@@ -773,46 +826,66 @@ TEST(primal_bezierpatch, reverse_orientation)
   // Reverse along the u-axis
   reversed.reverseOrientation(0);
   for(double u = 0; u <= 1.0; u += 0.1)
+  {
     for(double v = 0; v <= 1.0; v += 0.1)
     {
       PointType o_pt = original.evaluate(u, v);
       PointType r_pt = reversed.evaluate(1 - u, v);
 
-      for(int i = 0; i < DIM; ++i) EXPECT_NEAR(o_pt[i], r_pt[i], 1e-10);
+      for(int i = 0; i < DIM; ++i)
+      {
+        EXPECT_NEAR(o_pt[i], r_pt[i], 1e-10);
+      }
     }
+  }
 
   // Reverse along the u-axis again, should return to original
   reversed.reverseOrientation(0);
   for(double u = 0; u <= 1.0; u += 0.1)
+  {
     for(double v = 0; v <= 1.0; v += 0.1)
     {
       PointType o_pt = original.evaluate(u, v);
       PointType r_pt = reversed.evaluate(u, v);
 
-      for(int i = 0; i < DIM; ++i) EXPECT_NEAR(o_pt[i], r_pt[i], 1e-10);
+      for(int i = 0; i < DIM; ++i)
+      {
+        EXPECT_NEAR(o_pt[i], r_pt[i], 1e-10);
+      }
     }
+  }
 
   // Reverse along the v-axis
   reversed.reverseOrientation(1);
   for(double u = 0; u <= 1.0; u += 0.1)
+  {
     for(double v = 0; v <= 1.0; v += 0.1)
     {
       PointType o_pt = original.evaluate(u, v);
       PointType r_pt = reversed.evaluate(u, 1 - v);
 
-      for(int i = 0; i < DIM; ++i) EXPECT_NEAR(o_pt[i], r_pt[i], 1e-10);
+      for(int i = 0; i < DIM; ++i)
+      {
+        EXPECT_NEAR(o_pt[i], r_pt[i], 1e-10);
+      }
     }
+  }
 
   // Reverse along the u-axis again
   reversed.reverseOrientation(0);
   for(double u = 0; u <= 1.0; u += 0.1)
+  {
     for(double v = 0; v <= 1.0; v += 0.1)
     {
       PointType o_pt = original.evaluate(u, v);
       PointType r_pt = reversed.evaluate(1 - u, 1 - v);
 
-      for(int i = 0; i < DIM; ++i) EXPECT_NEAR(o_pt[i], r_pt[i], 1e-10);
+      for(int i = 0; i < DIM; ++i)
+      {
+        EXPECT_NEAR(o_pt[i], r_pt[i], 1e-10);
+      }
     }
+  }
 }
 
 //------------------------------------------------------------------------------
@@ -846,23 +919,29 @@ TEST(primal_bezierpatch, rational_evaluation_split)
 
   // Verify that evaluation points are on the sphere
   for(double u = 0; u <= 1.0; u += 0.1)
+  {
     for(double v = 0; v <= 1.0; v += 0.1)
     {
       PointType pt = hemisphere.evaluate(u, v);
       EXPECT_NEAR(pt[0] * pt[0] + pt[1] * pt[1] + pt[2] * pt[2], 1.0, 1e-10);
     }
+  }
 
   BezierPatchType patches[4];
   hemisphere.split(0.5, 0.5, patches[0], patches[1], patches[2], patches[3]);
 
   // Verify that evaluation points are on still on the sphere for each subpatch
   for(double u = 0; u <= 1.0; u += 0.1)
+  {
     for(double v = 0; v <= 1.0; v += 0.1)
+    {
       for(int n = 0; n < 4; ++n)
       {
         PointType pt = patches[n].evaluate(u, v);
         EXPECT_NEAR(pt[0] * pt[0] + pt[1] * pt[1] + pt[2] * pt[2], 1.0, 1e-10);
       }
+    }
+  }
 
   // Do it again
   BezierPatchType sub_patches[4];
@@ -874,12 +953,16 @@ TEST(primal_bezierpatch, rational_evaluation_split)
                    sub_patches[3]);
 
   for(double u = 0; u <= 1.0; u += 0.1)
+  {
     for(double v = 0; v <= 1.0; v += 0.1)
+    {
       for(int n = 0; n < 4; ++n)
       {
         PointType pt = sub_patches[n].evaluate(u, v);
         EXPECT_NEAR(pt[0] * pt[0] + pt[1] * pt[1] + pt[2] * pt[2], 1.0, 1e-10);
       }
+    }
+  }
 }
 
 int main(int argc, char* argv[])

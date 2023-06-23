@@ -32,10 +32,19 @@ int countMismatch(unsigned int elts,
 
   for(unsigned int i = 0; i < elts; ++i)
   {
-    if(standard[i] != undertest[i]) ++retval;
-    if(printTest) std::cout << "  " << undertest[i];
+    if(standard[i] != undertest[i])
+    {
+      ++retval;
+    }
+    if(printTest)
+    {
+      std::cout << "  " << undertest[i];
+    }
   }
-  if(printTest) std::cout << std::endl;
+  if(printTest)
+  {
+    std::cout << std::endl;
+  }
 
   return retval;
 }

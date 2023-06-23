@@ -413,8 +413,14 @@ struct NURBSInterpolator
 
     std::vector<BasisVector> ndu(p + 1), a(2);
     BasisVector left(p + 1), right(p + 1);
-    for(int j = 0; j <= p; j++) ndu[j].resize(p + 1);
-    for(int j = 0; j <= n; j++) ders[j].resize(p + 1);
+    for(int j = 0; j <= p; j++)
+    {
+      ndu[j].resize(p + 1);
+    }
+    for(int j = 0; j <= n; j++)
+    {
+      ders[j].resize(p + 1);
+    }
     a[0].resize(p + 1);
     a[1].resize(p + 1);
 
@@ -436,7 +442,10 @@ struct NURBSInterpolator
       ndu[j][j] = saved;
     }
     // Load basis functions
-    for(int j = 0; j <= p; j++) ders[0][j] = ndu[j][p];
+    for(int j = 0; j <= p; j++)
+    {
+      ders[0][j] = ndu[j][p];
+    }
 
     // This section computes the derivatives (Eq. [2.9])
 
@@ -477,7 +486,10 @@ struct NURBSInterpolator
     double r = static_cast<double>(p);
     for(int k = 1; k <= n; k++)
     {
-      for(int j = 0; j <= p; j++) ders[k][j] *= r;
+      for(int j = 0; j <= p; j++)
+      {
+        ders[k][j] *= r;
+      }
       r *= static_cast<double>(p - k);
     }
   }
