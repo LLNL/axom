@@ -1053,6 +1053,7 @@ public:
       plane_normal = VectorType::cross_product(v1, v3);
     if(axom::utilities::isNearlyEqual(plane_normal.norm(), 0.0, tol))
       plane_normal = VectorType::cross_product(v2, v3);
+    plane_normal = plane_normal.unitVector();
 
     double sqDist = 0.0;
 
