@@ -121,7 +121,8 @@ double evaluate_scalar_line_integral(const primal::BezierCurve<T, NDIMS>& c,
 template <typename Lambda, typename T, int NDIMS>
 double evaluate_vector_line_integral(const primal::CurvedPolygon<T, NDIMS> cpoly,
                                      Lambda&& vector_integrand,
-                                     int npts)
+                                     int npts,
+                                     int& tot_npts)
 {
   // Generate quadrature library, defaulting to GaussLegendre quadrature.
   //  Use the same one for every curve in the polygon
@@ -137,7 +138,8 @@ double evaluate_vector_line_integral(const primal::CurvedPolygon<T, NDIMS> cpoly
     total_integral +=
       detail::evaluate_vector_line_integral_component(cpoly[i],
                                                       vector_integrand,
-                                                      quad);
+                                                      quad,
+                                                      tot_npts);
   }
 
   return total_integral;
@@ -164,7 +166,11 @@ double evaluate_vector_line_integral(const primal::BezierCurve<T, NDIMS>& c,
   const mfem::IntegrationRule& quad =
     my_IntRules.Get(mfem::Geometry::SEGMENT, 2 * npts - 1);
 
-  return detail::evaluate_vector_line_integral_component(c, vector_integrand, quad);
+  int tot_npts = 0;
+  return detail::evaluate_vector_line_integral_component(c,
+                                                         vector_integrand,
+                                                         quad,
+                                                         tot_npts);
 }
 
 /*!
@@ -216,6 +222,74 @@ double evaluate_area_integral(const primal::CurvedPolygon<T, 2> cpoly,
   }
 
   return total_integral;
+}
+
+template <class Lambda, typename T>
+double evaluate_scalar_area_integral(const primal::BezierPatch<T> patch,
+                                     Lambda&& integrand,
+                                     int order)
+{
+  static mfem::IntegrationRules my_IntRules(0, mfem::Quadrature1D::GaussLegendre);
+
+  // Get the quadrature for the unit square.
+  const mfem::IntegrationRule& quad =
+    my_IntRules.Get(mfem::Geometry::SQUARE, order);
+
+  double quadrature_sum = 0;
+  for(int i = 0; i < quad.GetNPoints(); ++i)
+  {
+    double u = quad.IntPoint(i).x;
+    double v = quad.IntPoint(i).y;
+
+    auto node = patch.evaluate(u, v);
+    auto jacobian = patch.normal(u, v).norm();
+
+    quadrature_sum += integrand(node) * jacobian * quad.IntPoint(i).weight;
+  }
+
+  return quadrature_sum;
+}
+
+template <class Lambda>
+double evaluate_parameter_integral_square(Lambda&& integrand, int order, int& npts)
+{
+  static mfem::IntegrationRules my_IntRules(0, mfem::Quadrature1D::GaussLegendre);
+
+  // Get the quadrature for the unit square.
+  const mfem::IntegrationRule& quad =
+    my_IntRules.Get(mfem::Geometry::SQUARE, order);
+
+  double quadrature_sum = 0;
+  for(int i = 0; i < quad.GetNPoints(); ++i)
+  {
+    double u = quad.IntPoint(i).x;
+    double v = quad.IntPoint(i).y;
+    quadrature_sum += integrand(u, v) * quad.IntPoint(i).weight;
+  }
+
+  npts += quad.GetNPoints();
+  return quadrature_sum;
+}
+
+template <class Lambda>
+double evaluate_parameter_integral_triangle(Lambda&& integrand, int order, int& npts)
+{
+  static mfem::IntegrationRules my_IntRules(0, mfem::Quadrature1D::GaussLegendre);
+
+  // Get the quadrature for the unit square.
+  const mfem::IntegrationRule& quad =
+    my_IntRules.Get(mfem::Geometry::TRIANGLE, order);
+
+  double quadrature_sum = 0;
+  for(int i = 0; i < quad.GetNPoints(); ++i)
+  {
+    double u = quad.IntPoint(i).x;
+    double v = quad.IntPoint(i).y;
+    quadrature_sum += integrand(u, v) * quad.IntPoint(i).weight;
+  }
+
+  npts += quad.GetNPoints();
+  return quadrature_sum;
 }
 
 }  // namespace primal

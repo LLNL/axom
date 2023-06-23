@@ -22,11 +22,15 @@
 #include "axom/primal/geometry/Polygon.hpp"
 #include "axom/primal/geometry/Polyhedron.hpp"
 #include "axom/primal/geometry/BezierCurve.hpp"
+#include "axom/primal/geometry/BezierPatch.hpp"
 #include "axom/primal/geometry/CurvedPolygon.hpp"
+#include "axom/primal/operators/evaluate_integral.hpp"
 #include "axom/primal/operators/detail/winding_number_impl.hpp"
 
 // C++ includes
 #include <cmath>
+#include <stdio.h>
+#include <iostream>
 
 namespace axom
 {
@@ -439,6 +443,364 @@ int winding_number(const Point<T, 3>& query,
   }
 
   return std::lround(wn);
+}
+
+template <typename T>
+double winding_number_adapt_stokes(Point<T, 3> query,
+                                   const BezierPatch<T>& bPatch,
+                                   int& npts,
+                                   bool includeBoundary = false,
+                                   double quad_tol = 1e-8,
+                                   double edge_tol = 1e-8,
+                                   double EPS = 1e-8)
+{
+  const int quad_order = 20;
+  const int ord_u = bPatch.getOrder_u();
+  const int ord_v = bPatch.getOrder_v();
+  const bool patchIsRational = bPatch.isRational();
+
+  // Define three "axis-aligned" vector fields that
+  //  integrate to the winding number
+  auto x_field = [&query](Point<T, 3> x) -> Vector<T, 3> {
+    Vector<T, 3> xmq = Vector<T, 3>(query, x);
+    double denom1 = xmq[1] * xmq[1] + xmq[2] * xmq[2];
+    double denom2 = xmq.norm();
+    return Vector<T, 3>({0.0,
+                         xmq[2] * xmq[0] / denom1 / denom2,
+                         -xmq[1] * xmq[0] / denom1 / denom2});
+  };
+
+  auto y_field = [&query](Point<T, 3> x) -> Vector<T, 3> {
+    Vector<T, 3> xmq = Vector<T, 3>(query, x);
+    double denom1 = xmq[0] * xmq[0] + xmq[2] * xmq[2];
+    double denom2 = xmq.norm();
+    return Vector<T, 3>({-xmq[2] * xmq[1] / denom1 / denom2,
+                         0.0,
+                         xmq[0] * xmq[1] / denom1 / denom2});
+  };
+
+  auto z_field = [&query](Point<T, 3> x) -> Vector<T, 3> {
+    Vector<T, 3> xmq = Vector<T, 3>(query, x);
+    double denom1 = xmq[0] * xmq[0] + xmq[1] * xmq[1];
+    double denom2 = xmq.norm();
+    return Vector<T, 3>({xmq[1] * xmq[2] / denom1 / denom2,
+                         -xmq[0] * xmq[2] / denom1 / denom2,
+                         0.0});
+  };
+
+  // Define a bounding box that surrounds the patch
+  BoundingBox<T, 3> bBox(bPatch.boundingBox());
+  Point<T, 3> bBox_min = bBox.getMin();
+  Point<T, 3> bBox_max = bBox.getMax();
+
+  // Define a CurvedPolygon for the edges of the patch
+  CurvedPolygon<T, 3> boundingPoly;
+  boundingPoly.addEdge(bPatch.isocurve_u(0));
+  boundingPoly.addEdge(bPatch.isocurve_v(1));
+  boundingPoly.addEdge(bPatch.isocurve_u(1));
+  boundingPoly.addEdge(bPatch.isocurve_v(0));
+  boundingPoly[0].reverseOrientation();
+  boundingPoly[1].reverseOrientation();
+
+  // Check if the (z-q)-axis is inside the bounding box
+  if(!(bBox_min[0] < query[0] && query[0] < bBox_max[0] &&
+       bBox_min[1] < query[1] && query[1] < bBox_max[1]))
+  {
+    return 0.25 * M_1_PI *
+      evaluate_vector_line_integral(boundingPoly, z_field, quad_order, npts);
+  }
+
+  // Check if the (y-q)-axis is inside the bounding box
+  if(!(bBox_min[0] < query[0] && query[0] < bBox_max[0] &&
+       bBox_min[2] < query[2] && query[2] < bBox_max[2]))
+  {
+    return 0.25 * M_1_PI *
+      evaluate_vector_line_integral(boundingPoly, y_field, quad_order, npts);
+  }
+
+  // Check if the (x-q)-axis is inside the bounding box
+  if(!(bBox_min[1] < query[1] && query[1] < bBox_max[1] &&
+       bBox_min[2] < query[2] && query[2] < bBox_max[2]))
+  {
+    return 0.25 * M_1_PI *
+      evaluate_vector_line_integral(boundingPoly, x_field, quad_order, npts);
+  }
+
+  // If all of these tests fall through, then we are inside the bounding box
+  //  and need to split
+  BezierPatch<T> p1, p2, p3, p4;
+  bPatch.split(0.5, 0.5, p1, p2, p3, p4);
+  // clang-format off
+  return winding_number_adapt_stokes(query, p1, npts, includeBoundary, quad_tol, edge_tol, EPS) +
+    winding_number_adapt_stokes(query, p2, npts, includeBoundary, quad_tol, edge_tol, EPS) +
+    winding_number_adapt_stokes(query, p3, npts, includeBoundary, quad_tol, edge_tol, EPS) +
+    winding_number_adapt_stokes(query, p4, npts, includeBoundary, quad_tol, edge_tol, EPS);
+  // clang-format on
+
+  //if(axom::utilities::isNearlyEqual(wn + closure_wn, 0.0, quad_tol))
+  //{
+  //  // bPatch.python_print(std::cout, npts, true);
+  //  //std::cout << wn << std::endl;
+  //  return wn;
+  //}
+  //else  // If not, split recursively until it is
+  //{
+  //  BezierPatch<T> p1, p2, p3, p4;
+  //  bPatch.split(0.5, 0.5, p1, p2, p3, p4);
+  //  return winding_number(query, p1, npts, includeBoundary, quad_tol, edge_tol, EPS) +
+  //    winding_number(query, p2, npts, includeBoundary, quad_tol, edge_tol, EPS) +
+  //    winding_number(query, p3, npts, includeBoundary, quad_tol, edge_tol, EPS) +
+  //    winding_number(query, p4, npts, includeBoundary, quad_tol, edge_tol, EPS);
+  //}
+}
+
+template <typename T>
+double winding_number_mfem_triangle(Point<T, 3> query,
+                                    const BezierPatch<T>& bPatch,
+                                    int& npts,
+                                    bool includeBoundary = false,
+                                    double quad_tol = 1e-8,
+                                    double edge_tol = 1e-8,
+                                    double EPS = 1e-8)
+{
+  const int quad_order = 20;
+  const int ord_u = bPatch.getOrder_u();
+  const int ord_v = bPatch.getOrder_v();
+  const bool patchIsRational = bPatch.isRational();
+
+  BoundingBox<T, 3> bBox(bPatch.boundingBox());
+  if(bBox.contains(query))
+  {
+    BezierPatch<T> p1, p2, p3, p4;
+    bPatch.split(0.5, 0.5, p1, p2, p3, p4);
+    // clang-format off
+    return winding_number_mfem_triangle(query, p1, npts, includeBoundary, quad_tol, edge_tol, EPS) +
+      winding_number_mfem_triangle(query, p2, npts, includeBoundary, quad_tol, edge_tol, EPS) +
+      winding_number_mfem_triangle(query, p3, npts, includeBoundary, quad_tol, edge_tol, EPS) +
+      winding_number_mfem_triangle(query, p4, npts, includeBoundary, quad_tol, edge_tol, EPS);
+    // clang-format on
+  }
+
+  // Define an integrand for computing winding numbers of square patches
+  BezierPatch<T> surface_patch;
+  auto wn_integrand = [&query, &surface_patch](double u, double v) -> double {
+    Vector<T, 3> xmq(query, surface_patch.evaluate(u, v));
+    return 0.25 * M_1_PI *
+      Vector<T, 3>::dot_product(xmq, surface_patch.normal(u, v)) /
+      std::pow(xmq.norm(), 3);
+  };
+
+  // Apply the integrand to the main patch
+  surface_patch = bPatch;
+  double wn =
+    evaluate_parameter_integral_square(wn_integrand, 2 * quad_order, npts);
+
+  // Define a pyramid-like object whose top faces are a ruled surface
+  //  to the edges of the patch
+  Point<T, 3> cone_vertex = bBox.getCentroid();
+
+  BezierCurve<T, 3> edge_curves[4];
+  BezierCurve<T, 3> edge_curve;
+  auto wn_integrand_tri =
+    [&query, &edge_curve, &cone_vertex](double u, double v) -> double {
+    double t = u / (u + v);
+    Point<T, 3> c = edge_curve.evaluate(t);
+    Point<T, 3> node = cone_vertex + (u + v) * (c - cone_vertex);
+
+    Vector<T, 3> c_prime = edge_curve.dt(t);
+    Vector<T, 3> tangent_u = v * c_prime / (u + v) + c - cone_vertex;
+    Vector<T, 3> tangent_v = -u * c_prime / (u + v) + c - cone_vertex;
+    Vector<T, 3> normal = Vector<T, 3>::cross_product(tangent_u, tangent_v);
+
+    Vector<T, 3> xmq(query, node);
+    return 0.25 * M_1_PI * Vector<T, 3>::dot_product(xmq, normal) /
+      std::pow(xmq.norm(), 3);
+  };
+
+  // Create ruled surfaces for the (0, v) and (1, v) isocurves
+  edge_curves[0].setOrder(ord_v);
+  edge_curves[2].setOrder(ord_v);
+  if(patchIsRational)
+  {
+    edge_curves[0].makeRational();
+    edge_curves[2].makeRational();
+  }
+  for(int i = 0; i <= ord_v; ++i)
+  {
+    edge_curves[0][i] = bPatch(ord_v, i);
+    edge_curves[2][i] = bPatch(0, ord_v - i);
+    if(patchIsRational)
+    {
+      edge_curves[0].setWeight(i, bPatch.getWeight(ord_v, i));
+      edge_curves[2].setWeight(i, bPatch.getWeight(0, ord_v - i));
+    }
+  }
+
+  // Create ruled surfaces for the (u, 0) and (u, 1) isocurves
+  edge_curves[1].setOrder(ord_u);
+  edge_curves[3].setOrder(ord_u);
+  if(patchIsRational)
+  {
+    edge_curves[1].makeRational();
+    edge_curves[3].makeRational();
+  }
+  for(int i = 0; i <= ord_u; ++i)
+  {
+    edge_curves[1][i] = bPatch(ord_u - i, ord_u);
+    edge_curves[3][i] = bPatch(i, 0);
+    if(patchIsRational)
+    {
+      edge_curves[1].setWeight(i, bPatch.getWeight(ord_u - i, ord_u));
+      edge_curves[3].setWeight(i, bPatch.getWeight(i, 0));
+    }
+  }
+
+  // Apply the special triangular quadrature to each face
+  double closure_wn = 0;
+  for(int i = 0; i < 4; ++i)
+  {
+    edge_curve = edge_curves[i];
+    closure_wn +=
+      evaluate_parameter_integral_triangle(wn_integrand_tri, quad_order, npts);
+  }
+
+  if(axom::utilities::isNearlyEqual(wn + closure_wn, 0.0, quad_tol))
+  {
+    return wn;
+  }
+  else  // If not, split recursively until it is
+  {
+    BezierPatch<T> p1, p2, p3, p4;
+    bPatch.split(0.5, 0.5, p1, p2, p3, p4);
+    // clang-format off
+    return winding_number_mfem_triangle(query, p1, npts, includeBoundary, quad_tol, edge_tol, EPS) +
+      winding_number_mfem_triangle(query, p2, npts, includeBoundary, quad_tol, edge_tol, EPS) +
+      winding_number_mfem_triangle(query, p3, npts, includeBoundary, quad_tol, edge_tol, EPS) +
+      winding_number_mfem_triangle(query, p4, npts, includeBoundary, quad_tol, edge_tol, EPS);
+    // clang-format on
+  }
+}
+
+template <typename T>
+double winding_number_gauss_tensor(Point<T, 3> query,
+                                   const BezierPatch<T>& bPatch,
+                                   int& npts,
+                                   bool includeBoundary = false,
+                                   double quad_tol = 1e-8,
+                                   double edge_tol = 1e-8,
+                                   double EPS = 1e-8)
+{
+  const int quad_order = 9;
+  const int ord_u = bPatch.getOrder_u();
+  const int ord_v = bPatch.getOrder_v();
+  const bool patchIsRational = bPatch.isRational();
+
+  BoundingBox<T, 3> bBox(bPatch.boundingBox());
+  if(bBox.contains(query))
+  {
+    BezierPatch<T> p1, p2, p3, p4;
+    bPatch.split(0.5, 0.5, p1, p2, p3, p4);
+    // clang-format off
+    return winding_number_gauss_tensor(query, p1, npts, includeBoundary, quad_tol, edge_tol, EPS) +
+      winding_number_gauss_tensor(query, p2, npts, includeBoundary, quad_tol, edge_tol, EPS) +
+      winding_number_gauss_tensor(query, p3, npts, includeBoundary, quad_tol, edge_tol, EPS) +
+      winding_number_gauss_tensor(query, p4, npts, includeBoundary, quad_tol, edge_tol, EPS);
+    // clang-format on
+  }
+
+  // Define an integrand for computing winding numbers of square patches
+  BezierPatch<T> surface_patch;
+  auto wn_integrand = [&query, &surface_patch](double u, double v) -> double {
+    Vector<T, 3> xmq(query, surface_patch.evaluate(u, v));
+    return 0.25 * M_1_PI *
+      Vector<T, 3>::dot_product(xmq, surface_patch.normal(u, v)) /
+      std::pow(xmq.norm(), 3);
+  };
+
+  // Apply the integrand to the main patch
+  surface_patch = bPatch;
+  double wn =
+    evaluate_parameter_integral_square(wn_integrand, 2 * quad_order, npts);
+
+  return wn;
+
+  // Define a pyramid-like object whose top faces are a ruled surface
+  //  to the edges of the patch
+  Point<T, 3> cone_vertex = bBox.getCentroid();
+
+  /* ==================== Use Patch algorithm for the cone ==================== */
+  BezierPatch<T> cone_faces[4];
+
+  // Create degenerate patch for the (0, v) and (1, v) isocurves
+  cone_faces[0].setOrder(ord_v, 1);
+  cone_faces[2].setOrder(ord_v, 1);
+  if(patchIsRational)
+  {
+    cone_faces[0].makeRational();
+    cone_faces[2].makeRational();
+  }
+  for(int i = 0; i <= ord_v; ++i)
+  {
+    cone_faces[0](i, 0) = cone_vertex;
+    cone_faces[0](i, 1) = bPatch(ord_v, i);
+
+    cone_faces[2](i, 0) = cone_vertex;
+    cone_faces[2](i, 1) = bPatch(0, ord_v - i);
+
+    if(patchIsRational)
+    {
+      cone_faces[0].setWeight(i, 1, bPatch.getWeight(ord_v, i));
+      cone_faces[2].setWeight(i, 1, bPatch.getWeight(0, ord_v - i));
+    }
+  }
+
+  // Create degenerate patch for the (u, 0) and (u, 1) isocurves
+  cone_faces[1].setOrder(ord_u, 1);
+  cone_faces[3].setOrder(ord_u, 1);
+  if(patchIsRational)
+  {
+    cone_faces[1].makeRational();
+    cone_faces[3].makeRational();
+  }
+  for(int i = 0; i <= ord_u; ++i)
+  {
+    cone_faces[1](i, 0) = cone_vertex;
+    cone_faces[1](i, 1) = bPatch(ord_u - i, ord_u);
+
+    cone_faces[3](i, 0) = cone_vertex;
+    cone_faces[3](i, 1) = bPatch(i, 0);
+
+    if(patchIsRational)
+    {
+      cone_faces[1].setWeight(i, 1, bPatch.getWeight(ord_u - i, ord_u));
+      cone_faces[3].setWeight(i, 1, bPatch.getWeight(i, 0));
+    }
+  }
+
+  // Apply the integrand to the four cone faces
+  double closure_wn = 0;
+  for(int n = 0; n < 4; ++n)
+  {
+    surface_patch = cone_faces[n];
+    closure_wn +=
+      evaluate_parameter_integral_square(wn_integrand, quad_order, npts);
+  }
+
+  if(axom::utilities::isNearlyEqual(wn + closure_wn, 0.0, quad_tol))
+  {
+    return wn;
+  }
+  else  // If not, split recursively until it is
+  {
+    BezierPatch<T> p1, p2, p3, p4;
+    bPatch.split(0.5, 0.5, p1, p2, p3, p4);
+    // clang-format off
+    return winding_number_gauss_tensor(query, p1, npts, includeBoundary, quad_tol, edge_tol, EPS) +
+      winding_number_gauss_tensor(query, p2, npts, includeBoundary, quad_tol, edge_tol, EPS) +
+      winding_number_gauss_tensor(query, p3, npts, includeBoundary, quad_tol, edge_tol, EPS) +
+      winding_number_gauss_tensor(query, p4, npts, includeBoundary, quad_tol, edge_tol, EPS);
+    // clang-format on
+  }
 }
 
 //@}

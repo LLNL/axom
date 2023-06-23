@@ -74,7 +74,8 @@ template <class Lambda, typename T, int NDIMS>
 inline double evaluate_vector_line_integral_component(
   const primal::BezierCurve<T, NDIMS>& c,
   Lambda&& vec_field,
-  const mfem::IntegrationRule& quad)
+  const mfem::IntegrationRule& quad,
+  int& tot_npts)
 {
   // Store/compute quadrature result
   double full_quadrature = 0.0;
@@ -89,7 +90,7 @@ inline double evaluate_vector_line_integral_component(
     full_quadrature +=
       quad.IntPoint(q).weight * Vector<T, NDIMS>::dot_product(func_val, dx_q);
   }
-
+  tot_npts += quad.GetNPoints();
   return full_quadrature;
 }
 
@@ -144,6 +145,40 @@ double evaluate_area_integral_component(const primal::BezierCurve<T, 2>& c,
   }
 
   return full_quadrature;
+}
+
+template <class Lambda, typename T>
+double evaluate_bezier_sector_integral(const primal::BezierCurve<T, 3>& curve,
+                                       primal::Point<T, 3> vertex,
+                                       Lambda&& integrand,
+                                       int order)
+{
+  static mfem::IntegrationRules my_IntRules(0, mfem::Quadrature1D::GaussLegendre);
+
+  // Get the quadrature for the unit square.
+  const mfem::IntegrationRule& quad =
+    my_IntRules.Get(mfem::Geometry::TRIANGLE, order);
+
+  double quadrature_sum = 0;
+  for(int i = 0; i < quad.GetNPoints(); ++i)
+  {
+    double u = quad.IntPoint(i).x;
+    double v = quad.IntPoint(i).y;
+    double t = u / (u + v);
+
+    primal::Point<T, 3> c = curve.evaluate(t);
+    primal::Vector<T, 3> c_prime = curve.dt(t);
+
+    primal::Point<T, 3> node = vertex + (u + v) * (c - vertex);
+    primal::Vector<T, 3> tangent_u = v * c_prime / (u + v) + c - vertex;
+    primal::Vector<T, 3> tangent_v = -u * c_prime / (u + v) + c - vertex;
+    double jacobian =
+      primal::Vector<T, 3>::cross_product(tangent_u, tangent_v).norm();
+
+    quadrature_sum += integrand(node) * jacobian * quad.IntPoint(i).weight;
+  }
+
+  return quadrature_sum;
 }
 
 }  // end namespace detail
