@@ -282,7 +282,6 @@ mfem::Mesh* createBoxMesh(const Input& params)
 
   mfem::Mesh* mesh = nullptr;
 
-  // TODO: Convert to MakeCartesian2D and MakeCartesian3D when upgrading to mfem@4.3
   switch(dim)
   {
   case 2:
