@@ -11,6 +11,7 @@ set(quest_example_depends quest fmt cli11)
 blt_list_append(TO quest_example_depends ELEMENTS RAJA IF RAJA_FOUND)
 
 set(quest_data_dir  ${AXOM_DATA_DIR}/quest)
+set(shaping_data_dir  ${AXOM_DATA_DIR}/shaping)
 
 # In/out octree containment example -------------------------------------------
 axom_add_executable(
@@ -32,6 +33,79 @@ if(AXOM_ENABLE_MPI AND MFEM_FOUND AND MFEM_USE_MPI
         DEPENDS_ON  ${quest_example_depends} mfem
         FOLDER      axom/quest/examples
         )
+
+    if(AXOM_ENABLE_TESTS AND AXOM_DATA_DIR)
+        # 2D shaping tests
+        if(C2C_FOUND)
+            set(_testname quest_shaping_driver_ex_sampling_circles)
+            axom_add_test(
+                NAME ${_testname}
+                COMMAND  quest_shaping_driver_ex 
+                            -i ${shaping_data_dir}/circles.yaml
+                            --method sampling
+                            inline_mesh --min -6 -6 --max 6 6 --res 25 25 -d 2)
+            set_tests_properties(${_testname} PROPERTIES 
+                PASS_REGULAR_EXPRESSION  "Volume of material 'steel' is 58.92563")
+
+            set(_testname quest_shaping_driver_ex_sampling_circles_opposite)
+                axom_add_test(
+                    NAME ${_testname}
+                    COMMAND  quest_shaping_driver_ex 
+                            -i ${shaping_data_dir}/circles_opposite.yaml
+                            --method sampling
+                            inline_mesh --min -6 -6 --max 6 6 --res 25 25 -d 2 )
+            set_tests_properties(${_testname} PROPERTIES 
+                PASS_REGULAR_EXPRESSION  "Volume of material 'steel' is 65.82287")
+
+            set(_testname quest_shaping_driver_ex_sampling_ball_and_jack)
+                axom_add_test(
+                    NAME ${_testname}
+                    COMMAND  quest_shaping_driver_ex 
+                            -i ${shaping_data_dir}/balls_and_jacks.yaml
+                            --method sampling
+                            --background-material air
+                            inline_mesh --min -10 0 --max 60 50 --res 25 25 -d 2 )
+            set_tests_properties(${_testname} PROPERTIES 
+                PASS_REGULAR_EXPRESSION  "Volume of material 'air' is 2895.47176")
+        endif()
+
+        # 3D shaping tests
+        set(_nranks 0)
+        set(_testname quest_shaping_driver_ex_sampling_sphere)
+            axom_add_test(
+                NAME ${_testname}
+                COMMAND  quest_shaping_driver_ex 
+                        -i ${shaping_data_dir}/sphere.yaml
+                        --method sampling
+                        inline_mesh --min -6 -6 -6 --max 6 6 6 --res 16 16 16 -d 3
+                NUM_MPI_TASKS ${_nranks})
+        set_tests_properties(${_testname} PROPERTIES 
+            PASS_REGULAR_EXPRESSION  "Volume of material 'steel' is 519.76691")
+
+            set(_testname quest_shaping_driver_ex_sampling_spheres)
+            axom_add_test(
+                NAME ${_testname}
+                COMMAND  quest_shaping_driver_ex 
+                        -i ${shaping_data_dir}/spheres.yaml
+                        --method sampling
+                        --background-material void
+                        inline_mesh --min -6 -6 -6 --max 6 6 6 --res 16 16 16 -d 3
+                NUM_MPI_TASKS ${_nranks})
+        set_tests_properties(${_testname} PROPERTIES 
+            PASS_REGULAR_EXPRESSION  "Volume of material 'void' is 1239.08784")
+
+        set(_testname quest_shaping_driver_ex_sampling_plane)
+            axom_add_test(
+                NAME ${_testname}
+                COMMAND  quest_shaping_driver_ex 
+                        -i ${shaping_data_dir}/plane.yaml
+                        --method sampling
+                        --background-material air
+                        inline_mesh --min -430 -45 -35 --max 430 855 210 --res 16 16 16 -d 3
+                NUM_MPI_TASKS ${_nranks})
+        set_tests_properties(${_testname} PROPERTIES 
+            PASS_REGULAR_EXPRESSION  "Volume of material 'air' is 182227963")            
+    endif()
 endif()
 
 # Distributed closest point example -------------------------------------------
