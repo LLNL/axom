@@ -67,6 +67,17 @@ if(AXOM_ENABLE_MPI AND MFEM_FOUND AND MFEM_USE_MPI
                             inline_mesh --min -10 0 --max 60 50 --res 25 25 -d 2 )
             set_tests_properties(${_testname} PROPERTIES 
                 PASS_REGULAR_EXPRESSION  "Volume of material 'air' is 2895.47176")
+
+            set(_testname quest_shaping_driver_ex_sampling_ball_impact)
+                axom_add_test(
+                    NAME ${_testname}
+                    COMMAND  quest_shaping_driver_ex 
+                            -i ${shaping_data_dir}/ball_impact.yaml
+                            --method sampling
+                            --background-material air
+                            inline_mesh --min -10 0 --max 40 30 --res 25 25 -d 2 )
+            set_tests_properties(${_testname} PROPERTIES 
+                PASS_REGULAR_EXPRESSION  "Volume of material 'steel' is 47.63701")
         endif()
 
         # 3D shaping tests
