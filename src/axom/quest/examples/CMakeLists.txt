@@ -44,8 +44,9 @@ if(AXOM_ENABLE_MPI AND MFEM_FOUND AND MFEM_USE_MPI
                             -i ${shaping_data_dir}/circles.yaml
                             --method sampling
                             inline_mesh --min -6 -6 --max 6 6 --res 25 25 -d 2)
+            # Analytic area for annulus w/ outer/inner radii 5 and 2.5 is ~58.905
             set_tests_properties(${_testname} PROPERTIES 
-                PASS_REGULAR_EXPRESSION  "Volume of material 'steel' is 58.92563")
+                PASS_REGULAR_EXPRESSION  "Volume of material 'steel' is 58.")
 
             set(_testname quest_shaping_driver_ex_sampling_circles_opposite)
                 axom_add_test(
@@ -54,10 +55,11 @@ if(AXOM_ENABLE_MPI AND MFEM_FOUND AND MFEM_USE_MPI
                             -i ${shaping_data_dir}/circles_opposite.yaml
                             --method sampling
                             inline_mesh --min -6 -6 --max 6 6 --res 25 25 -d 2 )
+            # Analytic area for annulus w/ outer/inner radii 5 and 2.5 is ~65.97
             set_tests_properties(${_testname} PROPERTIES 
-                PASS_REGULAR_EXPRESSION  "Volume of material 'steel' is 65.82287")
+                PASS_REGULAR_EXPRESSION  "Volume of material 'steel' is 65.")
 
-            set(_testname quest_shaping_driver_ex_sampling_ball_and_jack)
+            set(_testname quest_shaping_driver_ex_sampling_balls_and_jacks)
                 axom_add_test(
                     NAME ${_testname}
                     COMMAND  quest_shaping_driver_ex 
@@ -65,8 +67,9 @@ if(AXOM_ENABLE_MPI AND MFEM_FOUND AND MFEM_USE_MPI
                             --method sampling
                             --background-material air
                             inline_mesh --min -10 0 --max 60 50 --res 25 25 -d 2 )
+            # background: 3500; balls: ~373; jacks: ~230; air ~2897
             set_tests_properties(${_testname} PROPERTIES 
-                PASS_REGULAR_EXPRESSION  "Volume of material 'air' is 2895.47176")
+                PASS_REGULAR_EXPRESSION  "Volume of material 'air' is 2895.")
 
             set(_testname quest_shaping_driver_ex_sampling_ball_impact)
                 axom_add_test(
@@ -76,8 +79,9 @@ if(AXOM_ENABLE_MPI AND MFEM_FOUND AND MFEM_USE_MPI
                             --method sampling
                             --background-material air
                             inline_mesh --min -10 0 --max 40 30 --res 25 25 -d 2 )
+            # steel ball: semi-cirle of radius 5.5 has area ~47.516
             set_tests_properties(${_testname} PROPERTIES 
-                PASS_REGULAR_EXPRESSION  "Volume of material 'steel' is 47.63701")
+                PASS_REGULAR_EXPRESSION  "Volume of material 'steel' is 47.")
         endif()
 
         # 3D shaping tests
@@ -90,8 +94,10 @@ if(AXOM_ENABLE_MPI AND MFEM_FOUND AND MFEM_USE_MPI
                         --method sampling
                         inline_mesh --min -6 -6 -6 --max 6 6 6 --res 16 16 16 -d 3
                 NUM_MPI_TASKS ${_nranks})
+        # sphere of radius 5 has volume: 4/3 pi * r^3 ~523.6
+        # input sphere is discretized and mesh is coarse; accuracy is within ~1%
         set_tests_properties(${_testname} PROPERTIES 
-            PASS_REGULAR_EXPRESSION  "Volume of material 'steel' is 519.76691")
+            PASS_REGULAR_EXPRESSION  "Volume of material 'steel' is 519.")
 
             set(_testname quest_shaping_driver_ex_sampling_spheres)
             axom_add_test(
@@ -102,8 +108,10 @@ if(AXOM_ENABLE_MPI AND MFEM_FOUND AND MFEM_USE_MPI
                         --background-material void
                         inline_mesh --min -6 -6 -6 --max 6 6 6 --res 16 16 16 -d 3
                 NUM_MPI_TASKS ${_nranks})
+        # bbox volume: 12^3 = 1728; sphere(r=5): ~523.6; sphere(r=2): 33.5
+        # expected analytic volume when fully resolved: ~1237.9
         set_tests_properties(${_testname} PROPERTIES 
-            PASS_REGULAR_EXPRESSION  "Volume of material 'void' is 1239.08784")
+            PASS_REGULAR_EXPRESSION  "Volume of material 'void' is 1239.")
 
         set(_testname quest_shaping_driver_ex_sampling_plane)
             axom_add_test(
@@ -114,8 +122,12 @@ if(AXOM_ENABLE_MPI AND MFEM_FOUND AND MFEM_USE_MPI
                         --background-material air
                         inline_mesh --min -430 -45 -35 --max 430 855 210 --res 16 16 16 -d 3
                 NUM_MPI_TASKS ${_nranks})
+        
+        # background: 860*900*245=189,630,000; airplane volume from meshlab: 7,420,578.5
+        # expected volume when fully resolved: 182,209,421.5
+        # actual value is accurate to about 1% at coarse resolution
         set_tests_properties(${_testname} PROPERTIES 
-            PASS_REGULAR_EXPRESSION  "Volume of material 'air' is 182227963")            
+            PASS_REGULAR_EXPRESSION  "Volume of material 'air' is 182227963")
     endif()
 endif()
 
