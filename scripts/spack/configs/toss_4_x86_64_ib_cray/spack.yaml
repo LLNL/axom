@@ -23,7 +23,7 @@ spack:
       extra_rpaths: []
       flags:
         # -Wno-int-conversion flag needed for building HDF5
-        cflags: -Wno-int-conversion
+        # cflags: -Wno-int-conversion
         fflags: -Mfreeform
       modules: []
       operating_system: rhel8
@@ -40,8 +40,9 @@ spack:
       # -Wno-int-conversion flag needed for building HDF5
       # -O1 flag necessary for bypassing HIP out of memory error
       flags:
-        cflags: -Wno-int-conversion -O1
-        cxxflags: -O1
+        # cflags: -Wno-int-conversion -O1
+        # cflags: -O1
+        # cxxflags: -O1
         fflags: -Mfreeform
       modules: []
       operating_system: rhel8
@@ -52,6 +53,26 @@ spack:
         fc: /opt/rocm-5.5.1/llvm/bin/amdflang
       spec: clang@16.0.0
       target: x86_64
+  - compiler:
+      # spec: cce@15.0.1
+      spec: clang@15.0.1
+      paths:
+        cc: /usr/tce/packages/cce-tce/cce-15.0.1/bin/craycc
+        cxx: /usr/tce/packages/cce-tce/cce-15.0.1/bin/crayCC
+        f77: /usr/tce/packages/cce-tce/cce-15.0.1/bin/crayftn
+        fc: /usr/tce/packages/cce-tce/cce-15.0.1/bin/crayftn
+      # -O1 flag necessary for bypassing HIP compiler errors
+      # flags: {}
+      flags: {}
+      #   # -Wno-int-conversion flag needed for building HDF5
+      #   # cflags: -Wno-int-conversion
+        # cflags: -O1
+        # cxxflags: -O1
+      operating_system: rhel8
+      target: x86_64
+      modules: []
+      environment: {}
+      extra_rpaths: []
 
   packages:
     all:
@@ -127,6 +148,10 @@ spack:
         prefix: /usr/tce/packages/cray-mpich-tce/cray-mpich-8.1.25-rocmcc-5.4.3/
       - spec: cray-mpich@8.1.25%clang@16.0.0+slurm
         prefix: /usr/tce/packages/cray-mpich-tce/cray-mpich-8.1.25-rocmcc-5.5.1/
+      - spec: cray-mpich@8.1.25%clang@15.0.1+slurm
+      # - spec: cray-mpich@8.1.25%cce@15.0.1+slurm
+        prefix: /usr/tce/packages/cray-mpich-tce/cray-mpich-8.1.25-rocmcc-5.4.3-cce-15.0.1/
+        # prefix: /usr/tce/packages/cray-mpich/cray-mpich-8.1.25-cce-15.0.1-magic/
 
     # blas is a bit more complicated because its a virtual package so fake it with
     # the following per spack docs
@@ -296,6 +321,7 @@ spack:
       variants: ~shared~mpi
     hypre:
       version: [2.24.0]
+      variants: ~fortran
     mfem:
       require: "@4.5.2"
     raja:
