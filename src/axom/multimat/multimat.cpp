@@ -1354,19 +1354,19 @@ void MultiMat::convertFieldToDense(int field_idx)
 
   if(m_dataTypeVec[field_idx] == DataTypeSupported::TypeDouble)
   {
-    convertToDense_helper<double>(field_idx);
+    convertToDense_helper<double>(field_idx, field_idx);
   }
   else if(m_dataTypeVec[field_idx] == DataTypeSupported::TypeFloat)
   {
-    convertToDense_helper<float>(field_idx);
+    convertToDense_helper<float>(field_idx, field_idx);
   }
   else if(m_dataTypeVec[field_idx] == DataTypeSupported::TypeInt)
   {
-    convertToDense_helper<int>(field_idx);
+    convertToDense_helper<int>(field_idx, field_idx);
   }
   else if(m_dataTypeVec[field_idx] == DataTypeSupported::TypeUnsignChar)
   {
-    convertToDense_helper<unsigned char>(field_idx);
+    convertToDense_helper<unsigned char>(field_idx, field_idx);
   }
   else
     SLIC_ASSERT(false);  //TODO
@@ -1434,6 +1434,68 @@ void MultiMat::generateSparseField(const std::string& src_field,
     SLIC_ASSERT(false);  //TODO
 
   m_fieldSparsityLayoutVec[dstFieldID] = SparsityLayout::SPARSE;
+}
+
+void MultiMat::generateDenseField(const std::string& src_field,
+                                  const std::string& dst_field)
+{
+  int srcFieldID = getFieldIdx(src_field);
+  int dstFieldID = getFieldIdx(dst_field);
+
+  SLIC_ERROR_IF(srcFieldID == -1,
+                "Multimat::generateDenseField(): source field \"" + src_field +
+                  "\" does not exist.");
+  SLIC_ERROR_IF(m_fieldMappingVec[srcFieldID] != FieldMapping::PER_CELL_MAT,
+                "MultiMat::generateDenseField(): source field doesn't have a "
+                "cell-material mapping.");
+
+  if(dstFieldID == -1)
+  {
+    dstFieldID = addEmptyField(dst_field,
+                               m_fieldMappingVec[srcFieldID],
+                               m_fieldDataLayoutVec[srcFieldID],
+                               m_fieldSparsityLayoutVec[srcFieldID],
+                               m_dataTypeVec[srcFieldID],
+                               m_fieldStrideVec[srcFieldID]);
+  }
+  else
+  {
+    // Ensure that the target field has compatible attributes.
+    SLIC_ERROR_IF(m_fieldMappingVec[dstFieldID] != FieldMapping::PER_CELL_MAT,
+                  "MultiMat::generateDenseField(): destination field doesn't "
+                  "have a cell-material mapping.");
+    SLIC_ERROR_IF(
+      m_fieldDataLayoutVec[dstFieldID] == m_fieldDataLayoutVec[srcFieldID],
+      "MultiMat::generateDenseField(): destination field has different data "
+      "layout from source field.");
+    SLIC_ERROR_IF(m_dataTypeVec[dstFieldID] == m_dataTypeVec[srcFieldID],
+                  "MultiMat::generateDenseField(): destination field has "
+                  "different data type from source field.");
+    SLIC_ERROR_IF(m_fieldStrideVec[dstFieldID] == m_fieldStrideVec[srcFieldID],
+                  "MultiMat::generateDenseField(): destination field has "
+                  "different stride from source field.");
+  }
+
+  if(m_dataTypeVec[srcFieldID] == DataTypeSupported::TypeDouble)
+  {
+    convertToDense_helper<double>(srcFieldID, dstFieldID);
+  }
+  else if(m_dataTypeVec[srcFieldID] == DataTypeSupported::TypeFloat)
+  {
+    convertToDense_helper<float>(srcFieldID, dstFieldID);
+  }
+  else if(m_dataTypeVec[srcFieldID] == DataTypeSupported::TypeInt)
+  {
+    convertToDense_helper<int>(srcFieldID, dstFieldID);
+  }
+  else if(m_dataTypeVec[srcFieldID] == DataTypeSupported::TypeUnsignChar)
+  {
+    convertToDense_helper<unsigned char>(srcFieldID, dstFieldID);
+  }
+  else
+    SLIC_ASSERT(false);  //TODO
+
+  m_fieldSparsityLayoutVec[dstFieldID] = SparsityLayout::DENSE;
 }
 
 /*!
@@ -1548,23 +1610,38 @@ axom::Array<DataType> ConvertToDenseImpl(
 }
 
 template <typename DataType>
-void MultiMat::convertToDense_helper(int map_i)
+void MultiMat::convertToDense_helper(int src_idx, int dst_idx)
 {
-  SLIC_ASSERT(m_fieldSparsityLayoutVec[map_i] != SparsityLayout::DENSE);
-  SLIC_ASSERT(m_fieldBackingVec[map_i]->isOwned());
+  if(m_fieldSparsityLayoutVec[src_idx] == SparsityLayout::DENSE)
+  {
+    if(src_idx != dst_idx)
+    {
+      // Just copy the data directly.
+      *(m_fieldBackingVec[dst_idx]) =
+        FieldBacking(m_fieldBackingVec[src_idx]->getArrayView<DataType>(),
+                     true,
+                     m_fieldAllocatorId);
+    }
+    return;
+  }
+  SLIC_ASSERT(m_fieldBackingVec[dst_idx]->isOwned());
+  // We're changing sparsity layout here, so everything else should be the same.
+  SLIC_ASSERT(m_dataTypeVec[src_idx] == m_dataTypeVec[dst_idx]);
+  SLIC_ASSERT(m_fieldDataLayoutVec[src_idx] == m_fieldDataLayoutVec[dst_idx]);
+  SLIC_ASSERT(m_fieldStrideVec[src_idx] == m_fieldStrideVec[dst_idx]);
 
   //Skip if no volume fraction array is set-up
-  if(map_i == 0 && m_fieldBackingVec[0] == nullptr) return;
+  if(src_idx == 0 && m_fieldBackingVec[0] == nullptr) return;
 
-  ProductSetType* prod_set = &relDenseSet(m_fieldDataLayoutVec[map_i]);
+  ProductSetType* prod_set = &relDenseSet(m_fieldDataLayoutVec[src_idx]);
 
   SparseField2D<DataType> oldField =
-    getSparse2dField<DataType>(m_fieldNameVec[map_i]);
+    getSparse2dField<DataType>(m_fieldNameVec[src_idx]);
 
   axom::Array<DataType> denseFieldData =
     ConvertToDenseImpl(oldField, prod_set, m_fieldAllocatorId);
 
-  m_fieldBackingVec[map_i]->getArray<DataType>() = std::move(denseFieldData);
+  m_fieldBackingVec[dst_idx]->getArray<DataType>() = std::move(denseFieldData);
 }
 
 DataLayout MultiMat::getFieldDataLayout(int field_idx) const
