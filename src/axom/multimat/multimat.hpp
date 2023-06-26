@@ -398,6 +398,13 @@ public:
   void removeField(const std::string& name);
 
 private:
+  int addEmptyField(const std::string& field_name,
+                    FieldMapping field_mapping,
+                    DataLayout data_layout,
+                    SparsityLayout sparsity_layout,
+                    DataTypeSupported data_type,
+                    int stride);
+
   template <typename T>
   int addFieldArray_impl(const std::string&,
                          FieldMapping,
@@ -851,7 +858,7 @@ private:
   struct FieldBacking
   {
   private:
-    bool m_isOwned {false};
+    bool m_isOwned {true};
 
     axom::Array<std::uint8_t> m_ucharData;
     axom::Array<std::int32_t> m_intData;
@@ -956,7 +963,10 @@ int MultiMat::addField(const std::string& arr_name,
                        axom::ArrayView<T> data_arr,
                        int stride)
 {
-  SLIC_ASSERT(stride > 0);
+  SLIC_ERROR_IF(stride <= 0,
+                "MultiMat::addField(): stride must be greater than 0.");
+  SLIC_ERROR_IF(data_arr.empty(),
+                "MultiMat::addField(): cannot add an empty data array.");
 
   //make sure the name does not conflict
   int fieldIdx = getFieldIdx(arr_name);
@@ -997,7 +1007,10 @@ int MultiMat::addExternalField(const std::string& arr_name,
                                axom::ArrayView<T> data_arr,
                                int stride)
 {
-  SLIC_ASSERT(stride > 0);
+  SLIC_ERROR_IF(stride <= 0,
+                "MultiMat::addField(): stride must be greater than 0.");
+  SLIC_ERROR_IF(data_arr.empty(),
+                "MultiMat::addField(): cannot add an empty data array.");
 
   //make sure the name does not conflict
   int fieldIdx = getFieldIdx(arr_name);
@@ -1056,31 +1069,22 @@ int MultiMat::addFieldArray_impl(const std::string& field_name,
                                  bool owned,
                                  int stride)
 {
-  unsigned int new_arr_idx = m_fieldNameVec.size();
-
-  m_fieldNameVec.push_back(field_name);
-  m_fieldMappingVec.push_back(field_mapping);
-  m_fieldBackingVec.emplace_back(new FieldBacking());
-  m_fieldDataLayoutVec.push_back(data_layout);
-  m_fieldSparsityLayoutVec.push_back(sparsity_layout);
-  m_fieldStrideVec.push_back(stride);
-
+  DataTypeSupported fieldDataType = DataTypeSupported::TypeUnknown;
   if(std::is_same<T, int>::value)
-    m_dataTypeVec.push_back(DataTypeSupported::TypeInt);
+    fieldDataType = DataTypeSupported::TypeInt;
   else if(std::is_same<T, double>::value)
-    m_dataTypeVec.push_back(DataTypeSupported::TypeDouble);
+    fieldDataType = DataTypeSupported::TypeDouble;
   else if(std::is_same<T, float>::value)
-    m_dataTypeVec.push_back(DataTypeSupported::TypeFloat);
+    fieldDataType = DataTypeSupported::TypeFloat;
   else if(std::is_same<T, unsigned char>::value)
-    m_dataTypeVec.push_back(DataTypeSupported::TypeUnsignChar);
-  else
-    m_dataTypeVec.push_back(DataTypeSupported::TypeUnknown);
+    fieldDataType = DataTypeSupported::TypeUnsignChar;
 
-  SLIC_ASSERT(m_fieldNameVec.size() == m_dataTypeVec.size());
-  SLIC_ASSERT(m_fieldNameVec.size() == m_fieldMappingVec.size());
-  SLIC_ASSERT(m_fieldNameVec.size() == m_fieldDataLayoutVec.size());
-  SLIC_ASSERT(m_fieldNameVec.size() == m_fieldSparsityLayoutVec.size());
-  SLIC_ASSERT(m_fieldNameVec.size() == m_fieldStrideVec.size());
+  int new_arr_idx = addEmptyField(field_name,
+                                  field_mapping,
+                                  data_layout,
+                                  sparsity_layout,
+                                  fieldDataType,
+                                  stride);
 
   axom::IndexType set_size = 0;
   if(field_mapping == FieldMapping::PER_CELL_MAT)

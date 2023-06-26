@@ -625,6 +625,32 @@ void MultiMat::removeField(const std::string& field_name)
   SLIC_ASSERT(m_fieldNameVec.size() == m_fieldStrideVec.size());
 }
 
+int MultiMat::addEmptyField(const std::string& field_name,
+                            FieldMapping field_mapping,
+                            DataLayout data_layout,
+                            SparsityLayout sparsity_layout,
+                            DataTypeSupported data_type,
+                            int stride)
+{
+  unsigned int new_arr_idx = m_fieldNameVec.size();
+
+  m_fieldNameVec.push_back(field_name);
+  m_fieldMappingVec.push_back(field_mapping);
+  m_fieldBackingVec.emplace_back(new FieldBacking());
+  m_fieldDataLayoutVec.push_back(data_layout);
+  m_fieldSparsityLayoutVec.push_back(sparsity_layout);
+  m_fieldStrideVec.push_back(stride);
+  m_dataTypeVec.push_back(data_type);
+
+  SLIC_ASSERT(m_fieldNameVec.size() == m_dataTypeVec.size());
+  SLIC_ASSERT(m_fieldNameVec.size() == m_fieldMappingVec.size());
+  SLIC_ASSERT(m_fieldNameVec.size() == m_fieldDataLayoutVec.size());
+  SLIC_ASSERT(m_fieldNameVec.size() == m_fieldSparsityLayoutVec.size());
+  SLIC_ASSERT(m_fieldNameVec.size() == m_fieldStrideVec.size());
+
+  return new_arr_idx;
+}
+
 int MultiMat::setVolfracField(axom::ArrayView<const double> arr,
                               DataLayout layout,
                               SparsityLayout sparsity)
