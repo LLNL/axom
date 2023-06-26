@@ -3249,41 +3249,25 @@ int main(int argc, char** argv)
   mm.setCellMatRel(data.Volfrac_bool, DataLayout::CELL_DOM);
 
   //Setting field data in terms of slam
-  mm.addField<>("Densityfrac",
-                FieldMapping::PER_CELL_MAT,
-                DataLayout::CELL_DOM,
-                SparsityLayout::DENSE,
-                data.Densityfrac.view());
   mm.addField<>("Vol",
                 FieldMapping::PER_CELL,
                 DataLayout::CELL_DOM,
                 SparsityLayout::DENSE,
                 data.Vol.view());
-  mm.addField<>("Volfrac",
-                FieldMapping::PER_CELL_MAT,
-                DataLayout::CELL_DOM,
-                SparsityLayout::DENSE,
-                data.Volfrac.view());
-  mm.addField<>("Tempfrac",
-                FieldMapping::PER_CELL_MAT,
-                DataLayout::CELL_DOM,
-                SparsityLayout::DENSE,
-                data.Temperaturefrac.view());
-  mm.addField<>("Pressurefrac",
-                FieldMapping::PER_CELL_MAT,
-                DataLayout::CELL_DOM,
-                SparsityLayout::DENSE,
-                data.Pressurefrac.view());
   mm.addField<>("nmatconsts",
                 FieldMapping::PER_MAT,
-                DataLayout::CELL_DOM,
+                DataLayout::MAT_DOM,
                 SparsityLayout::DENSE,
                 data.nmatconsts.view());
-  mm.addField<>("MatDensityAverage",
-                FieldMapping::PER_CELL_MAT,
-                DataLayout::CELL_DOM,
-                SparsityLayout::DENSE,
-                data.Pressurefrac.view());
+
+  axom::multimat::Field2DLayout cell_dense_layout {DataLayout::CELL_DOM,
+                                                   SparsityLayout::DENSE,
+                                                   1};
+  mm.addField<>("Densityfrac", cell_dense_layout, data.Densityfrac.view());
+  mm.addField<>("Volfrac", cell_dense_layout, data.Volfrac.view());
+  mm.addField<>("Tempfrac", cell_dense_layout, data.Temperaturefrac.view());
+  mm.addField<>("Pressurefrac", cell_dense_layout, data.Pressurefrac.view());
+  mm.addField<>("MatDensityAverage", cell_dense_layout, data.Pressurefrac.view());
 
   //printself and check
   mm.isValid(true);
