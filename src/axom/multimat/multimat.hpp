@@ -609,6 +609,24 @@ public:
   /** Convert the data to be stored in material-dominant layout. **/
   void convertLayoutToMaterialDominant();
 
+  /*!
+   * \brief Generate a sparse field from an existing field.
+   *
+   *  If a field with the destination name does not exist, a new field will be
+   *  created with the contents of src_field in sparse layout.
+   *  Otherwise, the sparse data will be copied into the existing storage of the
+   *  destination field.
+   *
+   * \param src_field the name of the field to convert
+   * \param dst_field the name of the destination field
+   *
+   * \pre getFieldMapping(src_field) == FieldMapping::PER_CELL_MAT
+   * \post getFieldDataLayout(dst_field) == getFieldDataLayout(src_field)
+   * \post getFieldSparsityLayout(dst_field) == SparsityLayout::SPARSE
+   */
+  void generateSparseField(const std::string& src_field,
+                           const std::string& dst_field);
+
   /**
    * \brief Get the FieldMapping for a field.
    *
@@ -693,7 +711,7 @@ private:  //private functions
 
   //helper functions
   template <typename DataType>
-  void convertToSparse_helper(int map_i);
+  void convertToSparse_helper(int src_idx, int dst_idx);
   template <typename DataType>
   void convertToDense_helper(int map_i);
 
