@@ -707,6 +707,24 @@ void test_multimat_conversion(std::pair<DataLayout, SparsityLayout> from,
 
   check_values<DataType>(mm, "OwnedField", data);
   check_values<DataType>(mm, "UnownedField", data);
+
+  // Out-of-place conversion of an unowned field should generate an owned field
+  // with the correct sparsity.
+  if(to_sparsity == SparsityLayout::SPARSE)
+  {
+    mm.generateSparseField("UnownedField", "GeneratedField");
+  }
+  else
+  {
+    mm.generateDenseField("UnownedField", "GeneratedField");
+  }
+
+  int generated_field_idx = mm.getFieldIdx("GeneratedField");
+  EXPECT_NE(generated_field_idx, -1);
+  EXPECT_EQ(mm.getFieldDataLayout(generated_field_idx), to_layout);
+  EXPECT_EQ(mm.getFieldSparsityLayout(generated_field_idx), to_sparsity);
+
+  check_values<DataType>(mm, "GeneratedField", data);
 }
 
 const std::vector<std::pair<DataLayout, SparsityLayout>> g_test_layouts {
