@@ -48,6 +48,17 @@ enum class DataTypeSupported
   TypeUnsignChar
 };
 
+/*!
+ * \brief Helper struct for specifying a set of layout parameters for a 2D
+ *  cell-material field.
+ */
+struct Field2DLayout
+{
+  DataLayout dom_layout;
+  SparsityLayout sparsity_layout;
+  int stride;
+};
+
 //forward class declarations
 template <typename T, typename BiSet>
 class MMField2D;
@@ -322,6 +333,20 @@ public:
                axom::ArrayView<T> data_array,
                int ncomp = 1);
 
+  /// \overload
+  template <typename T>
+  int addField(const std::string& field_name,
+               Field2DLayout field_layout,
+               axom::ArrayView<T> data_array)
+  {
+    return addField(field_name,
+                    FieldMapping::PER_CELL_MAT,
+                    field_layout.dom_layout,
+                    field_layout.sparsity_layout,
+                    data_array,
+                    field_layout.stride);
+  }
+
   /**
    * \brief Add an externally-managed field to the MultiMat object
    *
@@ -350,6 +375,20 @@ public:
                        SparsityLayout sparsity_layout,
                        axom::ArrayView<T> data_array,
                        int ncomp = 1);
+
+  /// \overload
+  template <typename T>
+  int addExternalField(const std::string& field_name,
+                       Field2DLayout field_layout,
+                       axom::ArrayView<T> data_array)
+  {
+    return addExternalField(field_name,
+                            FieldMapping::PER_CELL_MAT,
+                            field_layout.dom_layout,
+                            field_layout.sparsity_layout,
+                            data_array,
+                            field_layout.stride);
+  }
 
   /**
    * \brief Delete a field from the MultiMat object.
