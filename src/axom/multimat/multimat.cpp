@@ -576,20 +576,14 @@ void MultiMat::setCellMatRel(axom::ArrayView<const SetPosType> cardinality,
   relDenseSet(layout) = ProductSetType(&set1, &set2);
 
   //Create a field for VolFrac as the 0th field
-  m_fieldNameVec.push_back("Volfrac");
-  m_fieldBackingVec.emplace_back(new FieldBacking);
-  m_fieldMappingVec.push_back(FieldMapping::PER_CELL_MAT);
-  m_dataTypeVec.push_back(DataTypeSupported::TypeDouble);
-  m_fieldDataLayoutVec.push_back(DataLayout::CELL_DOM);
-  m_fieldSparsityLayoutVec.push_back(SparsityLayout::SPARSE);
-  m_fieldStrideVec.push_back(1);
+  int vf_field = addEmptyField("Volfrac",
+                               FieldMapping::PER_CELL_MAT,
+                               DataLayout::CELL_DOM,
+                               SparsityLayout::SPARSE,
+                               DataTypeSupported::TypeDouble,
+                               1);
 
-  SLIC_ASSERT(m_fieldNameVec.size() == 1);
-  SLIC_ASSERT(m_fieldMappingVec.size() == 1);
-  SLIC_ASSERT(m_dataTypeVec.size() == 1);
-  SLIC_ASSERT(m_fieldDataLayoutVec.size() == 1);
-  SLIC_ASSERT(m_fieldSparsityLayoutVec.size() == 1);
-  SLIC_ASSERT(m_fieldStrideVec.size() == 1);
+  SLIC_ASSERT(vf_field == 0);
 }
 
 void MultiMat::removeField(const std::string& field_name)
