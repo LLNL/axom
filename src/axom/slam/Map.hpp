@@ -506,7 +506,7 @@ private:
   // enough to correspond to the size of the set.
   void checkBackingSize(std::true_type)
   {
-    IndexType neededSize = size() * numComp();
+    const IndexType neededSize = size() * numComp();
     if(m_data.size() < neededSize)
     {
       m_data.resize(neededSize);
@@ -515,8 +515,7 @@ private:
 
   void checkBackingSize(std::false_type)
   {
-    IndexType neededSize = size() * numComp();
-    SLIC_ASSERT_MSG(m_data.size() == neededSize,
+    SLIC_ASSERT_MSG(m_data.size() == size() * numComp(),
                     "Not enough elements in buffer passed to Map constructor.");
   }
 

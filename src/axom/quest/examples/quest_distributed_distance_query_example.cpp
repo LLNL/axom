@@ -336,13 +336,15 @@ public:
     if(domCount > 0)
     {
       // Put mdMesh into sidre Group.
-      bool goodImport = m_group->importConduitTree(mdMesh, false);
+      const bool goodImport = m_group->importConduitTree(mdMesh, false);
       SLIC_ASSERT(goodImport);
       SLIC_ASSERT(m_group->getNumGroups() == domCount);
+      AXOM_UNUSED_VAR(goodImport);
     }
 
     bool valid = isValid();
     SLIC_ASSERT(valid);
+    AXOM_UNUSED_VAR(valid);
 
     reset_group_pointers();
   }
@@ -937,6 +939,7 @@ public:
         bool goodImport = dst->importConduitTree(src);
         ;
         SLIC_ASSERT(goodImport);
+        AXOM_UNUSED_VAR(goodImport);
       }
       {
         auto dst = dstFieldsGroup.getGroup("cp_index");
@@ -944,6 +947,7 @@ public:
         bool goodImport = dst->importConduitTree(src);
         ;
         SLIC_ASSERT(goodImport);
+        AXOM_UNUSED_VAR(goodImport);
       }
       {
         auto dst = dstFieldsGroup.getGroup("cp_domain_index");
@@ -951,6 +955,7 @@ public:
         bool goodImport = dst->importConduitTree(src);
         ;
         SLIC_ASSERT(goodImport);
+        AXOM_UNUSED_VAR(goodImport);
       }
       {
         auto dstGroup = dstFieldsGroup.getGroup("cp_coords");

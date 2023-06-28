@@ -855,6 +855,8 @@ private:
     FieldBacking(axom::ArrayView<const T> input_array, bool owned, int allocatorID)
     {
       SLIC_ASSERT(owned == true);
+      AXOM_UNUSED_VAR(owned);
+
       m_isOwned = true;
       getArray<T>() = axom::Array<T>(input_array, allocatorID);
     }
