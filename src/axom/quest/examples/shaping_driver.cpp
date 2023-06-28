@@ -632,6 +632,17 @@ int main(int argc, char** argv)
     samplingShaper->setSamplingType(params.vfSampling);
     samplingShaper->setQuadratureOrder(params.quadratureOrder);
     samplingShaper->setVolumeFractionOrder(params.outputOrder);
+
+    // register a point projector
+    if(shapingDC.GetMesh()->Dimension() == 3 && shapeDim == klee::Dimensions::Two)
+    {
+      samplingShaper->setPointProjector<3, 2>([](primal::Point<double, 3> pt) {
+        const double& x = pt[0];
+        const double& y = pt[1];
+        const double& z = pt[2];
+        return primal::Point<double, 2> {z, sqrt(x * x + y * y)};
+      });
+    }
   }
 
   // Set specific parameters here for IntersectionShaper

@@ -82,6 +82,19 @@ if(AXOM_ENABLE_MPI AND MFEM_FOUND AND MFEM_USE_MPI
             # steel ball: semi-cirle of radius 5.5 has area ~47.516
             set_tests_properties(${_testname} PROPERTIES 
                 PASS_REGULAR_EXPRESSION  "Volume of material 'steel' is 47.")
+
+            # Tests 3D mesh against 2D contours
+            set(_testname quest_shaping_driver_ex_sampling_ball_impact_3d)
+                axom_add_test(
+                    NAME ${_testname}
+                    COMMAND  quest_shaping_driver_ex 
+                            -i ${shaping_data_dir}/ball_impact.yaml
+                            --method sampling
+                            --background-material air
+                            inline_mesh --min -30 -30 -10 --max 30 30 40 --res 16 16 16 -d3 )
+            # steel ball: cirle of radius 5.5 has analytic volume ~696.91
+            set_tests_properties(${_testname} PROPERTIES 
+                PASS_REGULAR_EXPRESSION  "Volume of material 'steel' is 6[89][0-9].")          
         endif()
 
         # 3D shaping tests
