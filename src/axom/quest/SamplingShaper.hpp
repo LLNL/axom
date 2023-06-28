@@ -116,19 +116,24 @@ public:
     m_octree->generateIndex();
   }
 
-  template <int FromDim, int ToDim>
-  std::enable_if_t<ToDim != DIM, void> sampleInOutField(
-    mfem::DataCollection*,
-    shaping::QFunctionCollection&,
-    int,
-    PointProjector<FromDim, ToDim>)
-  {
-    static_assert(
-      ToDim != DIM,
-      "Do not call this function -- it only exists to appease the compiler!"
-      "Projector's return dimension (ToDim), must match class dimension (DIM)");
-  }
-
+  /**
+   * \brief Samples the in out field over the indexed geometry, possibly using a
+   * callback function to project the input points (from the computational mesh)
+   * to query points on the spatial index
+   * 
+   * \tparam FromDim The dimension of points from the input mesh
+   * \tparam ToDim The dimension of points on the indexed shape
+   * \param [in] dc The data collection containing the mesh and associated query points
+   * \param [inout] inoutQFuncs A collection of quadrature functions for the shape and material
+   * inout samples
+   * \param [in] sampleRes The quadrature order at which to sample the inout field
+   * \param [in] projector A callback function to apply to points from the input mesh
+   * before querying them on the spatial index
+   * 
+   * \note A projector callback must be supplied when \a FromDim is not equal 
+   * to \a ToDim, the projector
+   * \note \a ToDim must be equal to \a DIM, the dimension of the spatial index
+   */
   template <int FromDim, int ToDim = DIM>
   std::enable_if_t<ToDim == DIM, void> sampleInOutField(
     mfem::DataCollection* dc,
@@ -138,6 +143,10 @@ public:
   {
     using FromPoint = primal::Point<double, FromDim>;
     using ToPoint = primal::Point<double, ToDim>;
+
+    SLIC_ERROR_IF(
+      FromDim != ToDim && !projector,
+      "A projector callback function is required when FromDim != ToDim");
 
     auto* mesh = dc->GetMesh();
     SLIC_ASSERT(mesh != nullptr);
@@ -203,6 +212,23 @@ public:
                         inoutName,
                         timer.elapsed(),
                         static_cast<int>((NE * nq) / timer.elapsed())));
+  }
+
+  /** 
+   * \warning Do not call this overload with \a ToDim != \a DIM. The compiler needs it to be
+   * defined to support various callback specializations for the \a PointProjector.
+   */
+  template <int FromDim, int ToDim>
+  std::enable_if_t<ToDim != DIM, void> sampleInOutField(
+    mfem::DataCollection*,
+    shaping::QFunctionCollection&,
+    int,
+    PointProjector<FromDim, ToDim>)
+  {
+    static_assert(
+      ToDim != DIM,
+      "Do not call this function -- it only exists to appease the compiler!"
+      "Projector's return dimension (ToDim), must match class dimension (DIM)");
   }
 
   /**
@@ -317,33 +343,25 @@ public:
   }
 
   /// Registers a function to project from 2D input points to 2D query points
-  template <int FromDim, int ToDim>
-  std::enable_if_t<FromDim == 2 && ToDim == 2, void> setPointProjector(
-    shaping::PointProjector<2, 2> projector)
+  void setPointProjector(shaping::PointProjector<2, 2> projector)
   {
     m_projector22 = projector;
   }
 
   /// Registers a function to project from 3D input points to 2D query points
-  template <int FromDim, int ToDim>
-  std::enable_if_t<FromDim == 3 && ToDim == 2, void> setPointProjector(
-    shaping::PointProjector<3, 2> projector)
+  void setPointProjector(shaping::PointProjector<3, 2> projector)
   {
     m_projector32 = projector;
   }
 
   /// Registers a function to project from 2D input points to 3D query points
-  template <int FromDim, int ToDim>
-  std::enable_if_t<FromDim == 2 && ToDim == 3, void> setPointProjector(
-    shaping::PointProjector<2, 3> projector)
+  void setPointProjector(shaping::PointProjector<2, 3> projector)
   {
     m_projector23 = projector;
   }
 
   /// Registers a function to project from 3D input points to 3D query points
-  template <int FromDim, int ToDim>
-  std::enable_if_t<FromDim == 3 && ToDim == 3, void> setPointProjector(
-    shaping::PointProjector<3, 3> projector)
+  void setPointProjector(shaping::PointProjector<3, 3> projector)
   {
     m_projector33 = projector;
   }
