@@ -514,6 +514,129 @@ void ScanRelationOffsetsRAJA(const axom::ArrayView<const IndexType> counts,
 #endif
 }
 
+void MultiMat::setCellMatRel(axom::ArrayView<const int> vecarr, DataLayout layout)
+{
+  SLIC_ASSERT(vecarr.size() == m_ncells * m_nmats);  //Check it's dense
+  SLIC_ASSERT(!hasValidStaticRelation(layout));
+
+  RangeSetType& firstSet = relDominantSet(layout);
+  RangeSetType& secondSet = relSecondarySet(layout);
+
+  IndBufferType& beginsVec = relBeginVec(layout);
+  IndBufferType& firstIndicesVec = relFirstIndVec(layout);
+  IndBufferType& secondIndicesVec = relIndVec(layout);
+
+  if(AllocatorOnDevice(vecarr.getAllocatorID()))
+  {
+#if defined(AXOM_USE_RAJA) && defined(AXOM_USE_UMPIRE)
+    using LoopPolicy = typename axom::execution_space<GPU_Exec>::loop_policy;
+
+    IndexType denseSize = m_ncells * m_nmats;
+    axom::Array<IndexType> offsets(denseSize + 1, denseSize + 1, m_slamAllocatorId);
+
+    RAJA::inclusive_scan<LoopPolicy>(
+      RAJA::make_span(vecarr.data(), vecarr.size()),
+      RAJA::make_span(offsets.data() + 1, offsets.size()));
+
+    // Copy number of sparse elements.
+    IndexType sparseSize = -1;
+    axom::copy(&sparseSize, &(offsets[denseSize]), sizeof(IndexType));
+
+    // Allocate data for sparse relation.
+    beginsVec.resize(firstSet.size() + 1);
+    firstIndicesVec.resize(sparseSize);
+    secondIndicesVec.resize(sparseSize);
+
+    const RangeSetType firstSetValue = firstSet;
+    const RangeSetType secondSetValue = secondSet;
+
+    const auto flagView = vecarr;
+    const auto sparseIndView = offsets.view();
+    const auto beginIndView = beginsVec.view();
+    const auto firstIndView = firstIndicesVec.view();
+    const auto secondIndView = secondIndicesVec.view();
+
+    axom::for_all<GPU_Exec>(
+      denseSize,
+      AXOM_LAMBDA(IndexType denseIdx) {
+        if(denseIdx < firstSetValue.size())
+        {
+          // Get the first sparse index that will be used by the first-set
+          // index.
+          IndexType firstIdx = denseIdx;
+          IndexType firstDenseIdx = firstIdx * secondSetValue.size();
+          IndexType firstSparseIdx = sparseIndView[firstDenseIdx];
+          beginIndView[firstIdx] = firstSparseIdx;
+        }
+        else if(denseIdx == firstSetValue.size())
+        {
+          // Last element of begin indices is always the size.
+          beginIndView[firstSetValue.size()] = sparseSize;
+        }
+
+        // Fill in the flat-to-first and flat-to-second arrays.
+        IndexType firstIdx = denseIdx / secondSetValue.size();
+        IndexType secondIdx = denseIdx % secondSetValue.size();
+        if(flagView[denseIdx] == 1)
+        {
+          IndexType sparseIdx = sparseIndView[denseIdx];
+          firstIndView[sparseIdx] = firstIdx;
+          secondIndView[sparseIdx] = secondIdx;
+        }
+      });
+#endif
+  }
+  else
+  {
+    IndexType sparseIdx = 0;
+    beginsVec.resize(firstSet.size() + 1);
+    for(IndexType firstIdx = 0; firstIdx < firstSet.size(); firstIdx++)
+    {
+      beginsVec[firstIdx] = sparseIdx;
+      for(IndexType secondIdx = 0; secondIdx < secondSet.size(); secondIdx++)
+      {
+        IndexType denseIdx = firstIdx * secondSet.size() + secondIdx;
+        if(vecarr[denseIdx])
+        {
+          firstIndicesVec.push_back(firstIdx);
+          secondIndicesVec.push_back(secondIdx);
+          sparseIdx++;
+        }
+      }
+    }
+    beginsVec[firstSet.size()] = sparseIdx;
+  }
+
+  StaticVariableRelationType& newRelation = relStatic(layout);
+  newRelation = StaticVariableRelationType(&firstSet, &secondSet);
+  newRelation.bindBeginOffsets(firstSet.size(), beginsVec.view());
+  newRelation.bindIndices(secondIndicesVec.size(), secondIndicesVec.view());
+
+  newRelation.bindFirstIndices(firstIndicesVec.size(),
+                               firstIndicesVec.view(),
+                               false);
+
+  SLIC_ASSERT(relBeginVec(layout).getAllocatorID() == m_slamAllocatorId);
+  SLIC_ASSERT(relIndVec(layout).getAllocatorID() == m_slamAllocatorId);
+  SLIC_ASSERT(relFirstIndVec(layout).getAllocatorID() == m_slamAllocatorId);
+
+  SLIC_ASSERT(newRelation.isValid());
+
+  //Set-up both dense and sparse BivariateSets.
+  relSparseSet(layout) = RelationSetType(&newRelation);
+  relDenseSet(layout) = ProductSetType(&firstSet, &secondSet);
+
+  //Create a field for VolFrac as the 0th field
+  int vf_field = addEmptyField("Volfrac",
+                               FieldMapping::PER_CELL_MAT,
+                               DataLayout::CELL_DOM,
+                               SparsityLayout::SPARSE,
+                               DataTypeSupported::TypeDouble,
+                               1);
+
+  SLIC_ASSERT(vf_field == 0);
+}
+
 void MultiMat::setCellMatRel(axom::ArrayView<const SetPosType> cardinality,
                              axom::ArrayView<const SetPosType> indices,
                              DataLayout layout)

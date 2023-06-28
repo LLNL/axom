@@ -276,6 +276,9 @@ public:
    */
   void setCellMatRel(const std::vector<bool>& relation_info, DataLayout layout);
 
+  /// \overload
+  void setCellMatRel(axom::ArrayView<const int> relation_info, DataLayout layout);
+
   /*!
    * \brief Set the cell-material relation.
    *
