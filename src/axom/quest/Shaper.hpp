@@ -44,7 +44,7 @@ public:
   // Some default values.
   static constexpr int DEFAULT_SAMPLES_PER_KNOT_SPAN {25};
   static constexpr double MINIMUM_PERCENT_ERROR {0.};
-  static constexpr double MAXIMUM_PERCENT_ERROR {100};
+  static constexpr double MAXIMUM_PERCENT_ERROR {100.};
   static constexpr double DEFAULT_VERTEX_WELD_THRESHOLD {1e-9};
 
   /// Refinement type.
