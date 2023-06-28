@@ -103,6 +103,13 @@ public:
 
   //@}
 
+  /*!
+   * \brief Helper to apply a parallel sum reduction to a quantity
+   *
+   * \note This is the identify function when running without MPI 
+   */
+  double allReduceSum(double val) const;
+
 protected:
   /*!
    * \brief Loads the shape from file into m_surfaceMesh and computes a revolvedVolume
@@ -146,13 +153,6 @@ protected:
    * \note This function can be called even in non-mpi configurations
    */
   int getRank() const;
-
-  /*!
-   * \brief Helper to apply a parallel sum reduction to a quantity
-   *
-   * \note This is a no-op when running without MPI 
-   */
-  double allReduceSum(double val) const;
 
 protected:
   const klee::ShapeSet& m_shapeSet;

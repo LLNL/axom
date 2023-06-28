@@ -98,7 +98,7 @@ if(AXOM_ENABLE_MPI AND MFEM_FOUND AND MFEM_USE_MPI
         endif()
 
         # 3D shaping tests
-        set(_nranks 0)
+        set(_nranks 3)
         set(_testname quest_shaping_driver_ex_sampling_sphere)
             axom_add_test(
                 NAME ${_testname}

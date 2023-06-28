@@ -750,7 +750,7 @@ int main(int argc, char** argv)
       vol_form.AddDomainIntegrator(new mfem::DomainLFIntegrator(one));
       vol_form.Assemble();
 
-      const double volume = *gf * vol_form;
+      const double volume = shaper->allReduceSum(*gf * vol_form);
 
       SLIC_INFO(
         axom::fmt::format("Volume of material '{}' is {}", mat_name, volume));
