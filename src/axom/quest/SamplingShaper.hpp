@@ -117,7 +117,7 @@ public:
   }
 
   /**
-   * \brief Samples the in out field over the indexed geometry, possibly using a
+   * \brief Samples the inout field over the indexed geometry, possibly using a
    * callback function to project the input points (from the computational mesh)
    * to query points on the spatial index
    * 
