@@ -7,6 +7,7 @@
 #define CORE_SYSTEM_UTILITIES_H_
 
 #include <string>
+#include <locale>
 
 namespace axom
 {
@@ -25,6 +26,13 @@ std::string getHostName();
  * @return The name of the current user, empty string on failure
  */
 std::string getUserName();
+
+/**
+ * @brief Returns a valid locale for the current system
+ * 
+ * @param name The name of the desired locale
+ */
+std::locale locale(const std::string& name = "en_US.UTF-8");
 
 }  // end namespace utilities
 }  // end namespace axom

@@ -11,6 +11,7 @@
 //-----------------------------------------------------------------------------
 
 #include "axom/core/utilities/StringUtilities.hpp"
+#include "axom/core/utilities/System.hpp"
 
 #include "axom/fmt.hpp"
 
@@ -34,12 +35,12 @@ namespace
  * \brief Utility function to capture output of system call
  * \note Adapted from https://stackoverflow.com/a/478960
 */
-std::string exec(const char* cmd)
+std::string execute_command(const std::string& cmd)
 {
   std::array<char, 128> buffer;
   std::string result;
 
-  std::unique_ptr<FILE, decltype(&pclose)> pipe(popen(cmd, "r"), pclose);
+  std::unique_ptr<FILE, decltype(&pclose)> pipe(popen(cmd.c_str(), "r"), pclose);
   if(!pipe)
   {
     throw std::runtime_error(
@@ -59,6 +60,7 @@ std::string exec(const char* cmd)
 //-----------------------------------------------------------------------------
 TEST(utils_locale, default_locale)
 {
+  // This test is informative -- it will print the default and user locales
   std::locale loc(std::locale(), new std::ctype<char>);
   std::cout << "The default locale is " << std::locale().name() << '\n'
             << "The user's locale is " << std::locale("").name() << '\n'
@@ -66,8 +68,9 @@ TEST(utils_locale, default_locale)
 }
 
 //-----------------------------------------------------------------------------
-TEST(utils_locale, has_en_US_locale)
+TEST(utils_locale, check_en_US_locale)
 {
+  // This test is informative; not having en_US should not fail the test
   try
   {
     std::locale loc("en_US.UTF-8");
@@ -83,10 +86,9 @@ TEST(utils_locale, has_en_US_locale)
 TEST(utils_locale, try_catch)
 {
   std::locale loc;  // initialized to locale::classic()
-
   try
   {
-    loc = std::locale("en_US.UTF8");
+    loc = std::locale("en_US.UTF-8");
   }
   catch(std::runtime_error&)
   {
@@ -98,6 +100,69 @@ TEST(utils_locale, try_catch)
             << loc.name() << std::endl;
 }
 
+TEST(utils_locale, axom_locale_default)
+{
+  try
+  {
+    const auto loc = axom::utilities::locale();
+    std::cout << axom::fmt::format("Axom's default locale is: '{}'\n",
+                                   loc.name());
+  }
+  catch(std::runtime_error&)
+  {
+    FAIL() << "Could not initialize a valid default locale\n";
+  }
+}
+
+TEST(utils_locale, axom_locale_variations)
+{
+  const std::int32_t ii = 10000000;
+  const std::int64_t ll = 9999999999999ll;
+  const double dd = 12345.6789;
+
+  // check several different variations, including some invalid ones
+  for(auto& loc_str : {"<DEFAULT>",
+                       "",
+                       "C",
+                       "C.utf8",
+                       "en_US",
+                       "en_US.utf8",
+                       "en_US.UTF8",
+                       "en_US.UTF-8",
+                       "NON-EXISTENT"})
+  {
+    try
+    {
+      const auto loc = (loc_str == std::string("<DEFAULT>"))
+        ? axom::utilities::locale()
+        : axom::utilities::locale(loc_str);
+
+      std::cout << axom::fmt::format("Locale for '{}' is '{}'\n",
+                                     loc_str,
+                                     loc.name());
+
+      std::cout << axom::fmt::format(
+        loc,
+        "Formatting an int32 using the locale {:L}\n",
+        ii);
+      std::cout << axom::fmt::format(
+        loc,
+        "Formatting an int64 using the locale {:L}\n",
+        ll);
+      std::cout << axom::fmt::format(
+        loc,
+        "Formatting a double using the locale {:L}\n",
+        dd);
+    }
+    catch(std::runtime_error&)
+    {
+      FAIL() << axom::fmt::format(
+        "Could not initialize a valid locale for '{}'\n",
+        loc_str);
+    }
+  }
+}
+
 #ifdef __linux__
 TEST(utils_locale, enumerate_locales_linux)
 {
@@ -107,7 +172,7 @@ TEST(utils_locale, enumerate_locales_linux)
   // get list of locales by running "locale -a" system call
   try
   {
-    std::string output = ::exec("locale -a");
+    std::string output = ::execute_command("locale -a");
     locale_list = axom::utilities::string::split(output, '\n');
   }
   catch(const std::runtime_error& e)
@@ -134,8 +199,7 @@ TEST(utils_locale, enumerate_locales_linux)
     }
   }
 
-  std::cout << axom::fmt::format("Available locales on this system: {}",
-                                 axom::fmt::join(available_locales, ", "))
-            << std::endl;
+  std::cout << axom::fmt::format("Available locales on this system: '{}'\n",
+                                 axom::fmt::join(available_locales, "', '"));
 }
 #endif  // __linux__

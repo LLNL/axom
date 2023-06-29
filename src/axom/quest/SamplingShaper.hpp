@@ -206,7 +206,7 @@ public:
     timer.stop();
 
     SLIC_INFO(
-      axom::fmt::format(std::locale("en_US.UTF-8"),
+      axom::fmt::format(axom::utilities::locale(),
                         "\t Sampling inout field '{}' took {} seconds (@ "
                         "{:L} queries per second)",
                         inoutName,
