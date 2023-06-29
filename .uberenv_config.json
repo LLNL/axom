@@ -6,7 +6,7 @@
 "spack_url": "https://github.com/spack/spack.git",
 "spack_commit": "72235674bd81b89ebae583619858e1552fe715fd",
 "spack_configs_path": "scripts/spack/configs",
-"spack_packages_path": "scripts/spack/packages",
+"spack_packages_path": ["scripts/spack/radiuss-spack-configs/packages", "scripts/spack/packages"],
 "spack_concretizer": "clingo",
 "vcpkg_url": "https://github.com/microsoft/vcpkg",
 "vcpkg_commit": "6f7ffeb18f99796233b958aaaf14ec7bd4fb64b2",
