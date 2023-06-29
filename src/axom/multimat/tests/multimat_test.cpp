@@ -29,8 +29,8 @@ TEST(multimat, construct_empty_multimat_obj)
 template <typename DataType>
 struct MM_test_data
 {
-  std::vector<bool> fillBool_cellcen;
-  std::vector<bool> fillBool_matcen;
+  axom::Array<int> fillBool_cellcen;
+  axom::Array<int> fillBool_matcen;
 
   std::vector<int> matcount;
 
@@ -481,7 +481,7 @@ void test_multimat_add_remove(std::pair<DataLayout, SparsityLayout> layout)
             << "--------------------------------------------------");
   MM_test_data<DataType> data(num_cells, num_mats, stride_val);
 
-  const std::map<DataLayout, std::vector<bool>> relationMap {
+  const std::map<DataLayout, axom::Array<int>> relationMap {
     {DataLayout::CELL_DOM, data.fillBool_cellcen},
     {DataLayout::MAT_DOM, data.fillBool_matcen}};
 
@@ -625,7 +625,7 @@ void test_multimat_conversion(std::pair<DataLayout, SparsityLayout> from,
     << "--------------------------------------------------\n");
   MM_test_data<DataType> data(num_cells, num_mats, stride_val);
 
-  const std::map<DataLayout, std::vector<bool>> relationMap {
+  const std::map<DataLayout, axom::Array<int>> relationMap {
     {DataLayout::CELL_DOM, data.fillBool_cellcen},
     {DataLayout::MAT_DOM, data.fillBool_matcen}};
 
@@ -649,13 +649,13 @@ void test_multimat_conversion(std::pair<DataLayout, SparsityLayout> from,
 
   // Construct a Multimat object with a given layout
   MultiMat mm(from.first, from.second);
+  mm.setAllocatorID(allocatorID);
   mm.setNumberOfCells(data.num_cells);
   mm.setNumberOfMaterials(data.num_mats);
   mm.setCellMatRel(relationMap.find(layout_used)->second, layout_used);
   mm.setVolfracField(volFracMap.find(from)->second.view(),
                      layout_used,
                      sparsity_used);
-  mm.setAllocatorID(allocatorID);
 
   SLIC_INFO(axom::fmt::format("Constructing Multimat object with layout {}/{}",
                               mm.getFieldDataLayoutAsString(0),
