@@ -286,8 +286,8 @@ class Axom(CachedCMakePackage, CudaPackage, ROCmPackage):
             rocm_root = hip_root + "/.."
 
             # Fix blt_hip getting HIP_CLANG_INCLUDE_PATH-NOTFOUND bad include directory
-            if self.spec.satisfies('%clang') and 'toss_4' in self._get_sys_type(spec):
-                # Set the patch version to 0
+            if (self.spec.satisfies('%cce') or self.spec.satisfies('%clang')) and 'toss_4' in self._get_sys_type(spec):
+                # Set the patch version to 0 if not already
                 clang_version= str(self.compiler.version)[:-1] + "0"
                 hip_clang_include_path = rocm_root + "/llvm/lib/clang/" + clang_version + "/include"
                 if os.path.isdir(hip_clang_include_path):

@@ -54,8 +54,8 @@ spack:
       spec: clang@16.0.0
       target: x86_64
   - compiler:
-      # spec: cce@15.0.1
-      spec: clang@15.0.1
+      spec: cce@15.0.1
+      # spec: clang@15.0.1
       paths:
         cc: /usr/tce/packages/cce-tce/cce-15.0.1/bin/craycc
         cxx: /usr/tce/packages/cce-tce/cce-15.0.1/bin/crayCC
@@ -149,8 +149,8 @@ spack:
         prefix: /usr/tce/packages/cray-mpich-tce/cray-mpich-8.1.25-rocmcc-5.4.3/
       - spec: cray-mpich@8.1.25%clang@16.0.0+slurm
         prefix: /usr/tce/packages/cray-mpich-tce/cray-mpich-8.1.25-rocmcc-5.5.1/
-      - spec: cray-mpich@8.1.25%clang@15.0.1+slurm
-      # - spec: cray-mpich@8.1.25%cce@15.0.1+slurm
+      # - spec: cray-mpich@8.1.25%clang@15.0.1+slurm
+      - spec: cray-mpich@8.1.25%cce@15.0.1+slurm
         prefix: /usr/tce/packages/cray-mpich-tce/cray-mpich-8.1.25-rocmcc-5.4.3-cce-15.0.1/
         # prefix: /usr/tce/packages/cray-mpich/cray-mpich-8.1.25-cce-15.0.1-magic/
 

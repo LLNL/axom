@@ -27,7 +27,7 @@
     "__comment__":"# Use amdgpu_target=gfx90a for tioga/rzvernal; and gfx908 for rznevada",
     "toss_4_x86_64_ib_cray":
     [ "clang@15.0.0~openmp+rocm+mfem+c2c amdgpu_target=gfx90a ^hip@5.4.3 ^hsa-rocr-dev@5.4.3 ^llvm-amdgpu@5.4.3 ^raja~openmp+rocm ^umpire~openmp+rocm ^hdf5 cflags=-Wno-int-conversion",
-      "clang@15.0.1~openmp+rocm+mfem+c2c amdgpu_target=gfx90a ^hip@5.4.3 ^hsa-rocr-dev@5.4.3 ^llvm-amdgpu@5.4.3 ^raja~openmp+rocm ^umpire~openmp+rocm ^hdf5 cflags=-Wno-int-conversion",
+      "cce@15.0.1~openmp+rocm+mfem+c2c amdgpu_target=gfx90a ^hip@5.4.3 ^hsa-rocr-dev@5.4.3 ^llvm-amdgpu@5.4.3 ^raja~openmp+rocm ^umpire~openmp+rocm ^hdf5 cflags=-Wno-int-conversion",
       "clang@16.0.0~openmp+rocm+mfem+c2c amdgpu_target=gfx90a ^hip@5.5.1 ^hsa-rocr-dev@5.5.1 ^llvm-amdgpu@5.5.1 ^raja~openmp+rocm ^umpire~openmp+rocm ^hdf5 cflags=-Wno-int-conversion" ],
 
     "__comment__":"# Note: clang-ibm + raja+openmp causes runtime failures, turning it off until there is an alternative",
