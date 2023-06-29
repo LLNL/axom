@@ -36,6 +36,7 @@
 
 #include "utils_endianness.hpp"
 #include "utils_fileUtilities.hpp"
+#include "utils_locale.hpp"
 #include "utils_nvtx_settings.hpp"
 #include "utils_stringUtilities.hpp"
 #include "utils_system.hpp"
