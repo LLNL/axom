@@ -526,10 +526,17 @@ void MultiMat::setCellMatRel(axom::ArrayView<const int> vecarr, DataLayout layou
   IndBufferType& firstIndicesVec = relFirstIndVec(layout);
   IndBufferType& secondIndicesVec = relIndVec(layout);
 
-  if(AllocatorOnDevice(vecarr.getAllocatorID()))
+  if(AllocatorOnDevice(m_slamAllocatorId))
   {
 #if defined(AXOM_USE_RAJA) && defined(AXOM_USE_UMPIRE)
     using LoopPolicy = typename axom::execution_space<GPU_Exec>::loop_policy;
+
+    axom::Array<int> deviceRelCopy;
+    if(!AllocatorOnDevice(vecarr.getAllocatorID()))
+    {
+      deviceRelCopy = axom::Array<int>(vecarr, m_slamAllocatorId);
+      vecarr = deviceRelCopy.view();
+    }
 
     IndexType denseSize = m_ncells * m_nmats;
     axom::Array<IndexType> offsets(denseSize + 1, denseSize + 1, m_slamAllocatorId);
