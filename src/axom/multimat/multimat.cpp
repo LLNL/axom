@@ -1563,6 +1563,18 @@ void MultiMat::convertToSparse_helper(int src_idx, int dst_idx)
   DenseField2D<DataType> dense_field =
     getDense2dField<DataType>(m_fieldNameVec[src_idx]);
 
+  // An externally-managed array might have a memory space different from the
+  // current allocator for internally-managed fields. We should create a
+  // temporary copy of the field in order to correctly access the data on the
+  // host or device.
+  axom::Array<DataType> copiedOldData;
+  if(copiedOldData.getAllocatorID() != m_fieldAllocatorId)
+  {
+    copiedOldData =
+      axom::Array<DataType>(dense_field.getMap()->data(), m_fieldAllocatorId);
+    dense_field.getMap()->data() = copiedOldData.view();
+  }
+
   axom::Array<DataType> sparseFieldData =
     ConvertToSparseImpl(dense_field, rel_set, m_fieldAllocatorId);
 
@@ -1637,6 +1649,18 @@ void MultiMat::convertToDense_helper(int src_idx, int dst_idx)
 
   SparseField2D<DataType> oldField =
     getSparse2dField<DataType>(m_fieldNameVec[src_idx]);
+
+  // An externally-managed array might have a memory space different from the
+  // current allocator for internally-managed fields. We should create a
+  // temporary copy of the field in order to correctly access the data on the
+  // host or device.
+  axom::Array<DataType> copiedOldData;
+  if(copiedOldData.getAllocatorID() != m_fieldAllocatorId)
+  {
+    copiedOldData =
+      axom::Array<DataType>(oldField.getMap()->data(), m_fieldAllocatorId);
+    oldField.getMap()->data() = copiedOldData.view();
+  }
 
   axom::Array<DataType> denseFieldData =
     ConvertToDenseImpl(oldField, prod_set, m_fieldAllocatorId);
