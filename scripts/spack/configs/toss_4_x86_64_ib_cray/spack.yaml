@@ -63,11 +63,12 @@ spack:
         fc: /usr/tce/packages/cce-tce/cce-15.0.1/bin/crayftn
       # -O1 flag necessary for bypassing HIP compiler errors
       # flags: {}
-      flags: {}
+      flags:
       #   # -Wno-int-conversion flag needed for building HDF5
       #   # cflags: -Wno-int-conversion
         # cflags: -O1
         # cxxflags: -O1
+        fflags: -ef
       operating_system: rhel8
       target: x86_64
       modules: []
