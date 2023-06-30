@@ -636,8 +636,7 @@ double winding_number(const Point<T, 3>& query,
                                         boundingPoly[n],
                                         field_direction,
                                         npts,
-                                        quad_tol,
-                                        edge_tol);
+                                        quad_tol);
   }
 
   return wn;

@@ -19,6 +19,13 @@
 // C++ includes
 #include <cmath>
 
+// MFEM includes
+#ifdef AXOM_USE_MFEM
+  #include "mfem.hpp"
+#else
+  #error "Primal's integral evaluation functions require mfem library."
+#endif
+
 namespace axom
 {
 namespace primal
@@ -278,11 +285,11 @@ double stokes_winding_number(const Point<T, 3>& query,
   if(curve.boundingBox().expand(2.0).contains(query))
   {
     return stokes_winding_number_adaptive(query,
-                                           curve,
-                                           ax,
-                                           quad_rule,
-                                           quadrature,
-                                           quad_tol);
+                                          curve,
+                                          ax,
+                                          quad_rule,
+                                          quadrature,
+                                          quad_tol);
   }
 
   return 0.25 * M_1_PI * quadrature;
@@ -290,11 +297,11 @@ double stokes_winding_number(const Point<T, 3>& query,
 
 template <typename T>
 double stokes_winding_number_adaptive(const Point<T, 3>& query,
-                                       const BezierCurve<T, 3>& curve,
-                                       const SingularityAxis ax,
-                                       const mfem::IntegrationRule& quad_rule,
-                                       double quad_coarse,
-                                       double quad_tol)
+                                      const BezierCurve<T, 3>& curve,
+                                      const SingularityAxis ax,
+                                      const mfem::IntegrationRule& quad_rule,
+                                      double quad_coarse,
+                                      double quad_tol)
 {
   // Split the curve, do the quadrature over both components
   BezierCurve<T, 3> subcurves[2];
@@ -343,17 +350,17 @@ double stokes_winding_number_adaptive(const Point<T, 3>& query,
   else
   {
     return stokes_winding_number_adaptive(query,
-                                           subcurves[0],
-                                           ax,
-                                           quad_rule,
-                                           quad_fine[0],
-                                           quad_tol) +
+                                          subcurves[0],
+                                          ax,
+                                          quad_rule,
+                                          quad_fine[0],
+                                          quad_tol) +
       stokes_winding_number_adaptive(query,
-                                      subcurves[1],
-                                      ax,
-                                      quad_rule,
-                                      quad_fine[1],
-                                      quad_tol);
+                                     subcurves[1],
+                                     ax,
+                                     quad_rule,
+                                     quad_fine[1],
+                                     quad_tol);
   }
 }
 

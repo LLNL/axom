@@ -250,48 +250,6 @@ double evaluate_scalar_area_integral(const primal::BezierPatch<T> patch,
   return quadrature_sum;
 }
 
-template <class Lambda>
-double evaluate_parameter_integral_square(Lambda&& integrand, int order, int& npts)
-{
-  static mfem::IntegrationRules my_IntRules(0, mfem::Quadrature1D::GaussLegendre);
-
-  // Get the quadrature for the unit square.
-  const mfem::IntegrationRule& quad =
-    my_IntRules.Get(mfem::Geometry::SQUARE, order);
-
-  double quadrature_sum = 0;
-  for(int i = 0; i < quad.GetNPoints(); ++i)
-  {
-    double u = quad.IntPoint(i).x;
-    double v = quad.IntPoint(i).y;
-    quadrature_sum += integrand(u, v) * quad.IntPoint(i).weight;
-  }
-
-  npts += quad.GetNPoints();
-  return quadrature_sum;
-}
-
-template <class Lambda>
-double evaluate_parameter_integral_triangle(Lambda&& integrand, int order, int& npts)
-{
-  static mfem::IntegrationRules my_IntRules(0, mfem::Quadrature1D::GaussLegendre);
-
-  // Get the quadrature for the unit square.
-  const mfem::IntegrationRule& quad =
-    my_IntRules.Get(mfem::Geometry::TRIANGLE, order);
-
-  double quadrature_sum = 0;
-  for(int i = 0; i < quad.GetNPoints(); ++i)
-  {
-    double u = quad.IntPoint(i).x;
-    double v = quad.IntPoint(i).y;
-    quadrature_sum += integrand(u, v) * quad.IntPoint(i).weight;
-  }
-
-  npts += quad.GetNPoints();
-  return quadrature_sum;
-}
-
 }  // namespace primal
 }  // end namespace axom
 

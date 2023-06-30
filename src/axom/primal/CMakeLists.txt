@@ -77,6 +77,8 @@ blt_list_append(
     TO       primal_headers 
     ELEMENTS operators/evaluate_integral.hpp
              operators/detail/evaluate_integral_impl.hpp
+             operators/winding_number.hpp
+             operators/detail/winding_number_impl.hpp
     IF       MFEM_FOUND 
                )
 
