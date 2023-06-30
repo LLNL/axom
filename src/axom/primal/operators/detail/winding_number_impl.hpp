@@ -223,6 +223,140 @@ double curve_winding_number_recursive(const Point<T, 2>& q,
     curve_winding_number_recursive(q, c2, isConvexControlPolygon, edge_tol, EPS);
 }
 
+// Quick enum to indicate which direction the field is pointing
+enum class SingularityAxis
+{
+  x,
+  y,
+  z,
+  rotated
+};
+
+// Return the winding number from one component of the stokes integral
+template <typename T>
+double stokes_winding_number(const Point<T, 3>& query,
+                             const BezierCurve<T, 3>& curve,
+                             const SingularityAxis ax,
+                             int npts,
+                             double quad_tol)
+{
+  // Generate the quadrature rules in parameter space
+  static mfem::IntegrationRules my_IntRules(0, mfem::Quadrature1D::GaussLegendre);
+  const mfem::IntegrationRule& quad_rule =
+    my_IntRules.Get(mfem::Geometry::SEGMENT, 2 * npts - 1);
+
+  double quadrature = 0.0;
+  for(int q = 0; q < quad_rule.GetNPoints(); ++q)
+  {
+    // Get quadrature points in space (shifted by the query)
+    Vector<T, 3> node(query, curve.evaluate(quad_rule.IntPoint(q).x));
+    Vector<T, 3> node_dt(curve.dt(quad_rule.IntPoint(q).x));
+
+    double node_norm = node.norm();
+    if(ax == SingularityAxis::x)
+    {
+      quadrature += quad_rule.IntPoint(q).weight *
+        (node[2] * node[0] * node_dt[1] - node[1] * node[0] * node_dt[2]) /
+        (node[1] * node[1] + node[2] * node[2]) / node_norm;
+    }
+    else if(ax == SingularityAxis::y)
+    {
+      quadrature += quad_rule.IntPoint(q).weight *
+        (node[0] * node[1] * node_dt[2] - node[2] * node[1] * node_dt[0]) /
+        (node[0] * node[0] + node[2] * node[2]) / node_norm;
+    }
+    else  // ax == SingularityAxis::z || ax == SingularityAxis::rotated
+    {
+      quadrature += quad_rule.IntPoint(q).weight *
+        (node[1] * node[2] * node_dt[0] - node[0] * node[2] * node_dt[1]) /
+        (node[0] * node[0] + node[1] * node[1]) / node_norm;
+    }
+  }
+
+  /// Under certain conditions, want to adaptively refine quadrature over curves.
+  /// As a general rule, refinement should be done over curves, not surfaces.
+  if(curve.boundingBox().expand(2.0).contains(query))
+  {
+    return stokes_winding_number_adaptive(query,
+                                           curve,
+                                           ax,
+                                           quad_rule,
+                                           quadrature,
+                                           quad_tol);
+  }
+
+  return 0.25 * M_1_PI * quadrature;
+}
+
+template <typename T>
+double stokes_winding_number_adaptive(const Point<T, 3>& query,
+                                       const BezierCurve<T, 3>& curve,
+                                       const SingularityAxis ax,
+                                       const mfem::IntegrationRule& quad_rule,
+                                       double quad_coarse,
+                                       double quad_tol)
+{
+  // Split the curve, do the quadrature over both components
+  BezierCurve<T, 3> subcurves[2];
+  curve.split(0.5, subcurves[0], subcurves[1]);
+
+  double quad_fine[2] = {0.0, 0.0};
+  for(int i = 0; i < 2; ++i)
+  {
+    for(int q = 0; q < quad_rule.GetNPoints(); ++q)
+    {
+      // Get quad_rulerature points in space (shifted by the query)
+      Vector<T, 3> node(query, subcurves[i].evaluate(quad_rule.IntPoint(q).x));
+      Vector<T, 3> node_dt(subcurves[i].dt(quad_rule.IntPoint(q).x));
+
+      double node_norm = node.norm();
+
+      // Compute integrand from the z-aligned vector field
+      if(ax == SingularityAxis::x)
+      {
+        quad_fine[i] += quad_rule.IntPoint(q).weight *
+          (node[2] * node[0] * node_dt[1] - node[1] * node[0] * node_dt[2]) /
+          (node[1] * node[1] + node[2] * node[2]) / node_norm;
+      }
+      else if(ax == SingularityAxis::y)
+      {
+        quad_fine[i] += quad_rule.IntPoint(q).weight *
+          (node[0] * node[1] * node_dt[2] - node[2] * node[1] * node_dt[0]) /
+          (node[0] * node[0] + node[2] * node[2]) / node_norm;
+      }
+      else  // ax == SingularityAxis::z || ax == SingularityAxis::rotated
+      {
+        quad_fine[i] += quad_rule.IntPoint(q).weight *
+          (node[1] * node[2] * node_dt[0] - node[0] * node[2] * node_dt[1]) /
+          (node[0] * node[0] + node[1] * node[1]) / node_norm;
+      }
+    }
+  }
+
+  // These two values should be equal to one another
+  if(axom::utilities::isNearlyEqual(quad_fine[0] + quad_fine[1],
+                                    quad_coarse,
+                                    quad_tol))
+  {
+    return 0.25 * M_1_PI * (quad_fine[0] + quad_fine[1]);
+  }
+  else
+  {
+    return stokes_winding_number_adaptive(query,
+                                           subcurves[0],
+                                           ax,
+                                           quad_rule,
+                                           quad_fine[0],
+                                           quad_tol) +
+      stokes_winding_number_adaptive(query,
+                                      subcurves[1],
+                                      ax,
+                                      quad_rule,
+                                      quad_fine[1],
+                                      quad_tol);
+  }
+}
+
 }  // end namespace detail
 }  // end namespace primal
 }  // end namespace axom

@@ -452,7 +452,6 @@ template <typename T>
 double winding_number(const Point<T, 3>& query,
                       const BezierPatch<T>& bPatch,
                       int npts,
-                      int& tot_npts,
                       double quad_tol = 1e-8,
                       double edge_tol = 1e-8,
                       double EPS = 1e-8)
@@ -462,55 +461,65 @@ double winding_number(const Point<T, 3>& query,
   const bool patchIsRational = bPatch.isRational();
 
   // Early return if the patch is approximately polygonal
-  if(bPatch.isPolygonal(edge_tol))
+  if(bPatch.isPolygonal(EPS))
   {
-    bPatch.python_print(std::cout, tot_npts, false, "cm.Blues");
     return winding_number(
       query,
       Polygon<T, 3>(axom::Array<Point<T, 3>>(
-        {bPatch(0, 0), bPatch(0, ord_v), bPatch(ord_u, ord_v), bPatch(ord_u, 0)})),
+        {bPatch(0, 0), bPatch(ord_u, 0), bPatch(ord_u, ord_v), bPatch(0, ord_v)})),
       edge_tol,
       EPS);
   }
 
   /* 
-   * We need to ensure that our surface does NOT intersect with the yz plane.
-   * If it does, need to do Geometric refinement: Splitting and rotating the curve
+   * To use Stokes theorem, we need to identify a line through `query` that
+   * does NOT intersect the surface. 
+   * If it does, need to do geometric refinement: Splitting and rotating the curve
    * until we can guarantee this.
    */
   CurvedPolygon<T, 3> boundingPoly(4);
 
+  // Define vector fields whose curl gives us the winding number
+  detail::SingularityAxis field_direction;
+
   // Check an axis-aligned bounding box (most surfaces satisfy this condition)
   BoundingBox<T, 3> bBox(bPatch.boundingBox());
-  if((bBox.getMin()[0] - query[0]) * (bBox.getMax()[0] - query[0]) > 0)
+  const bool exterior_x =
+    bBox.getMin()[0] > query[0] || query[0] > bBox.getMax()[0];
+  const bool exterior_y =
+    bBox.getMin()[1] > query[1] || query[1] > bBox.getMax()[1];
+  const bool exterior_z =
+    bBox.getMin()[2] > query[2] || query[2] > bBox.getMax()[2];
+
+  if(exterior_y || exterior_z)
   {
-    // Don't need to do any rotation or splitting.
-    //  Add the relevant bounding curves to the patch.
-    boundingPoly[0] = bPatch.isocurve_u(0);
-    boundingPoly[0].reverseOrientation();
-
-    boundingPoly[1] = bPatch.isocurve_v(1);
-    boundingPoly[1].reverseOrientation();
-
-    boundingPoly[2] = bPatch.isocurve_u(1);
-    boundingPoly[3] = bPatch.isocurve_v(0);
+    field_direction = detail::SingularityAxis::x;
+  }
+  else if(exterior_x || exterior_z)
+  {
+    field_direction = detail::SingularityAxis::y;
+  }
+  else if(exterior_x || exterior_y)
+  {
+    field_direction = detail::SingularityAxis::z;
   }
   else
   {
     // Next, check an oriented bounding box.
     // If we are interior to the oriented bounding box, then we
     //  cannot guarantee a separating plane, and need geometric refinement.
-    // Otherwise, we can apply a rotation and proceed.
     OrientedBoundingBox<T, 3> oBox(bPatch.orientedBoundingBox());
     if(oBox.contains(query))
     {
       BezierPatch<T> p1, p2, p3, p4;
       bPatch.split(0.5, 0.5, p1, p2, p3, p4);
-      return winding_number(query, p1, npts, tot_npts, quad_tol, edge_tol, EPS) +
-        winding_number(query, p2, npts, tot_npts, quad_tol, edge_tol, EPS) +
-        winding_number(query, p3, npts, tot_npts, quad_tol, edge_tol, EPS) +
-        winding_number(query, p4, npts, tot_npts, quad_tol, edge_tol, EPS);
+      return winding_number(query, p1, npts, quad_tol, edge_tol, EPS) +
+        winding_number(query, p2, npts, quad_tol, edge_tol, EPS) +
+        winding_number(query, p3, npts, quad_tol, edge_tol, EPS) +
+        winding_number(query, p4, npts, quad_tol, edge_tol, EPS);
     }
+    // Otherwise, we can apply a rotation to a z-aligned field.
+    field_direction = detail::SingularityAxis::rotated;
 
     // Lambda to generate a 3D rotation matrix from an angle and axis
     // Formulation from https://en.wikipedia.org/wiki/Rotation_matrix#Axis_and_angle
@@ -561,18 +570,7 @@ double winding_number(const Point<T, 3>& query,
     // Rotate v0 around v1 until it is perpendicular to the plane spanned by k and v1
     double ang = (v0[2] < 0 ? 1.0 : -1.0) *
       acos(-(v0[0] * v1[1] - v0[1] * v1[0]) / sqrt(v1[0] * v1[0] + v1[1] * v1[1]));
-    auto rotator_v1 = angleAxisRotMatrix(ang, v1);
-
-    // Rotate v0 to v0'
-    v0 = Vector<T, 3>(query, rotate_point(rotator_v1, closest)).unitVector();
-
-    // Rotate v0' around k until it is perpendicular to the plane spanned by k and j
-    ang = (v0[2] > 0 ? 1.0 : -1.0) * acos(v0[0]);
-    auto rotator_k = angleAxisRotMatrix(ang, Vector<T, 3>({0.0, 0.0, 1.0}));
-
-    // Get composed rotation matrix
-    numerics::Matrix<T> rotator_comp(3, 3);
-    auto val = numerics::matrix_multiply(rotator_k, rotator_v1, rotator_comp);
+    auto rotator = angleAxisRotMatrix(ang, v1);
 
     // Collect rotated curves into the curved Polygon
     // Set up the (0, v) and (1, v) isocurves, rotated
@@ -585,8 +583,8 @@ double winding_number(const Point<T, 3>& query,
     }
     for(int q = 0; q <= ord_v; ++q)
     {
-      boundingPoly[0][q] = rotate_point(rotator_comp, bPatch(ord_v, q));
-      boundingPoly[2][q] = rotate_point(rotator_comp, bPatch(0, ord_v - q));
+      boundingPoly[0][q] = rotate_point(rotator, bPatch(ord_v, q));
+      boundingPoly[2][q] = rotate_point(rotator, bPatch(0, ord_v - q));
 
       if(patchIsRational)
       {
@@ -605,8 +603,8 @@ double winding_number(const Point<T, 3>& query,
     }
     for(int p = 0; p <= ord_u; ++p)
     {
-      boundingPoly[1][p] = rotate_point(rotator_comp, bPatch(ord_u - p, ord_u));
-      boundingPoly[3][p] = rotate_point(rotator_comp, bPatch(p, 0));
+      boundingPoly[1][p] = rotate_point(rotator, bPatch(ord_u - p, ord_u));
+      boundingPoly[3][p] = rotate_point(rotator, bPatch(p, 0));
 
       if(patchIsRational)
       {
@@ -616,16 +614,30 @@ double winding_number(const Point<T, 3>& query,
     }
   }
 
+  // Set up the polygon if we don't need to do any rotation or splitting.
+  if(field_direction != detail::SingularityAxis::rotated)
+  {
+    //  Add the relevant bounding curves to the patch.
+    boundingPoly[0] = bPatch.isocurve_u(0);
+    boundingPoly[0].reverseOrientation();
+
+    boundingPoly[1] = bPatch.isocurve_v(1);
+    boundingPoly[1].reverseOrientation();
+
+    boundingPoly[2] = bPatch.isocurve_u(1);
+    boundingPoly[3] = bPatch.isocurve_v(0);
+  }
+
   // Iterate over the edges of the bounding curved polygon, add up the results
   double wn = 0;
   for(int n = 0; n < 4; ++n)
   {
-    wn += detail::stokes_winding_number_recursive(query,
-                                                  boundingPoly[n],
-                                                  npts,
-                                                  tot_npts,
-                                                  quad_tol,
-                                                  edge_tol);
+    wn += detail::stokes_winding_number(query,
+                                        boundingPoly[n],
+                                        field_direction,
+                                        npts,
+                                        quad_tol,
+                                        edge_tol);
   }
 
   return wn;
