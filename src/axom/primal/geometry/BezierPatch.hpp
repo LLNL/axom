@@ -1138,44 +1138,6 @@ public:
     return os;
   }
 
-  std::ostream& python_print(std::ostream& os,
-                             int name = 0,
-                             bool plot_normal = false,
-                             const char* cmap = "cm.Reds") const
-  {
-    const int ord_u = getOrder_u();
-    const int ord_v = getOrder_v();
-
-    printf("my_surf_%d = my_BezierPatch(%d, %d, [", name, ord_u, ord_v);
-    printf("(%f,%f,%f)",
-           m_controlPoints(0, 0)[0],
-           m_controlPoints(0, 0)[1],
-           m_controlPoints(0, 0)[2]);
-    for(int i = 0; i <= ord_u; ++i)
-      for(int j = (i == 0 ? 1 : 0); j <= ord_v; ++j)
-        printf(",(%f,%f,%f)",
-               m_controlPoints(i, j)[0],
-               m_controlPoints(i, j)[1],
-               m_controlPoints(i, j)[2]);
-    if(isRational())
-    {
-      printf(" ], [%f", m_weights(0, 0));
-      if(isRational())
-        for(int i = 0; i <= ord_u; ++i)
-          for(int j = (i == 0 ? 1 : 0); j <= ord_v; ++j)
-            printf(",%f", m_weights(i, j));
-    }
-    printf("] )\n");
-    if(plot_normal)
-      printf("my_surf_%d.plot( fig, ax, None, %s, plot_normal=True )\n\n",
-             name,
-             cmap);
-    else
-      printf("my_surf_%d.plot( fig, ax, None, %s )\n\n", name, cmap);
-
-    return os;
-  }
-
 private:
   /// Check that the weights used are positive, and
   ///  that there is one for each control node

@@ -587,35 +587,6 @@ public:
     return os;
   }
 
-  std::ostream& python_print(std::ostream& os, int name = 0, bool plot_tangent = false) const
-  {
-    const int ord = getOrder();
-
-    printf("my_curve_%d = my_BezierCurve( [", name);
-    printf("(%f,%f,%f)",
-           m_controlPoints[0][0],
-           m_controlPoints[0][1],
-           m_controlPoints[0][2]);
-    for(int i = 1; i <= ord; ++i)
-      printf(",(%f,%f,%f)",
-             m_controlPoints[i][0],
-             m_controlPoints[i][1],
-             m_controlPoints[i][2]);
-    if(isRational())
-    {
-      printf(" ], [%f", m_weights[0]);
-      if(isRational())
-        for(int i = 1; i <= ord; ++i) printf(",%f", m_weights[i]);
-    }
-    printf("] )\n");
-    if( plot_tangent )
-      printf("my_curve_%d.plot( fig, ax, 'k', plot_tangent=True )\n\n", name);
-    else
-      printf("my_curve_%d.plot( fig, ax, 'k' )\n\n", name);
-
-    return os;
-  }
-
 private:
   /// Check that the weights used are positive, and
   ///  that there is one for each control node
