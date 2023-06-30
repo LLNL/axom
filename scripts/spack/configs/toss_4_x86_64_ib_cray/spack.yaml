@@ -22,6 +22,20 @@ spack:
       environment: {}
       extra_rpaths: []
       flags:
+        fflags: -Mfreeform
+      modules: []
+      operating_system: rhel8
+      paths:
+        cc: /opt/rocm-5.2.3/llvm/bin/amdclang
+        cxx: /opt/rocm-5.2.3/llvm/bin/amdclang++
+        f77: /opt/rocm-5.2.3/llvm/bin/amdflang
+        fc: /opt/rocm-5.2.3/llvm/bin/amdflang
+      spec: clang@14.0.0
+      target: x86_64
+  - compiler:
+      environment: {}
+      extra_rpaths: []
+      flags:
         # -Wno-int-conversion flag needed for building HDF5
         # cflags: -Wno-int-conversion
         fflags: -Mfreeform
@@ -86,6 +100,8 @@ spack:
     hip:
       buildable: false
       externals:
+      - spec: hip@5.2.3
+        prefix: /opt/rocm-5.2.3/hip
       - spec: hip@5.4.3
         prefix: /opt/rocm-5.4.3/hip
       - spec: hip@5.5.1
@@ -94,6 +110,8 @@ spack:
     llvm-amdgpu:
       buildable: false
       externals:
+      - spec: llvm-amdgpu@5.2.3
+        prefix: /opt/rocm-5.2.3/llvm
       - spec: llvm-amdgpu@5.4.3
         prefix: /opt/rocm-5.4.3/llvm
       - spec: llvm-amdgpu@5.5.1
@@ -102,6 +120,8 @@ spack:
     hsa-rocr-dev:
       buildable: false
       externals:
+      - spec: hsa-rocr-dev@5.2.3
+        prefix: /opt/rocm-5.2.3/
       - spec: hsa-rocr-dev@5.4.3
         prefix: /opt/rocm-5.4.3/
       - spec: hsa-rocr-dev@5.5.1
@@ -110,6 +130,8 @@ spack:
     rocblas:
       buildable: false
       externals:
+      - spec: rocblas@5.2.3
+        prefix: /opt/rocm-5.2.3/
       - spec: rocblas@5.4.3
         prefix: /opt/rocm-5.4.3/
       - spec: rocblas@5.5.1
@@ -118,6 +140,8 @@ spack:
     rocminfo:
       buildable: false
       externals:
+      - spec: rocminfo@5.2.3
+        prefix: /opt/rocm-5.2.3/
       - spec: rocminfo@5.4.3
         prefix: /opt/rocm-5.4.3/
       - spec: rocminfo@5.5.1
@@ -126,6 +150,8 @@ spack:
     rocprim:
       buildable: false
       externals:
+      - spec: rocprim@5.2.3
+        prefix: /opt/rocm-5.2.3/
       - spec: rocprim@5.4.3
         prefix: /opt/rocm-5.4.3/
       - spec: rocprim@5.5.1
@@ -134,6 +160,8 @@ spack:
     rocm-device-libs:
       buildable: false
       externals:
+      - spec: rocm-device-libs@5.2.3
+        prefix: /opt/rocm-5.2.3/
       - spec: rocm-device-libs@5.4.3
         prefix: /opt/rocm-5.4.3/
       - spec: rocm-device-libs@5.5.1
@@ -145,6 +173,8 @@ spack:
     cray-mpich:
       buildable: false
       externals:
+      - spec: cray-mpich@8.1.16%clang@14.0.0+slurm
+        prefix: /usr/tce/packages/cray-mpich-tce/cray-mpich-8.1.16-rocmcc-5.2.3/
       - spec: cray-mpich@8.1.25%clang@15.0.0+slurm
         prefix: /usr/tce/packages/cray-mpich-tce/cray-mpich-8.1.25-rocmcc-5.4.3/
       - spec: cray-mpich@8.1.25%clang@16.0.0+slurm
