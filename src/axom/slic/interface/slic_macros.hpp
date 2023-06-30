@@ -527,7 +527,7 @@ AXOM_HOST_DEVICE inline blackhole &operator<<(blackhole &bh, T)
     #if(HIP_VERSION_MAJOR > 5) || \
       (HIP_VERSION_MAJOR == 5 && HIP_VERSION_MINOR >= 4)
       #define SLIC_ASSERT(EXP) ((void)(EXP))
-// Bug: Intersection shaper unit tests hang with HIP 5.2.3 for void exp
+      // Bug: Intersection shaper unit tests hang with HIP 5.2.3 for void exp
     #else
       #define SLIC_ASSERT(EXP) ((void)(0))
     #endif
