@@ -1267,12 +1267,10 @@ struct RoundContourTest : public ContourTestBase<DIM, ExecSpace>
 {
   RoundContourTest(const axom::primal::Point<double, DIM>& pt)
     : ContourTestBase<DIM, ExecSpace>()
-    , _center(pt)
-    , _sphere(_center, 0.0)
+    , _sphere(pt, 0.0)
     , _errTol(1e-3)
   { }
   virtual ~RoundContourTest() { }
-  const axom::primal::Point<double, DIM> _center;
   const axom::primal::Sphere<double, DIM> _sphere;
   double _errTol;
 
@@ -1336,13 +1334,9 @@ struct PlanarContourTest : public ContourTestBase<DIM, ExecSpace>
   PlanarContourTest(const axom::primal::Point<double, DIM>& inPlane,
                     const axom::primal::Vector<double, DIM>& perpDir)
     : ContourTestBase<DIM, ExecSpace>()
-    , _inPlane(inPlane)
-    , _normal(perpDir.unitVector())
-    , _plane(_normal, _inPlane)
+    , _plane(perpDir.unitVector(), inPlane)
   { }
   virtual ~PlanarContourTest() { }
-  const axom::primal::Point<double, DIM> _inPlane;
-  const axom::primal::Vector<double, DIM> _normal;
   const axom::primal::Plane<double, DIM> _plane;
 
   virtual std::string name() const override { return std::string("planar"); }

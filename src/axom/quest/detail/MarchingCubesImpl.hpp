@@ -402,7 +402,7 @@ public:
     }
 #endif
 
-    // Cata from the last crossing tells us how many contour cells there are.
+    // Data from the last crossing tells us how many contour cells there are.
     if(m_crossings.empty())
     {
       m_contourCellCount = 0;
@@ -417,22 +417,6 @@ public:
         back.firstSurfaceCellId + num_contour_cells(back.caseNum);
     }
   }
-
-  /*!
-    @brief Info for a parent cell intersecting the contour surface.
-  */
-  struct CrossingInfo
-  {
-    CrossingInfo() { }
-    CrossingInfo(axom::IndexType parentCellNum_, std::uint16_t caseNum_)
-      : parentCellNum(parentCellNum_)
-      , caseNum(caseNum_)
-      , firstSurfaceCellId(std::numeric_limits<axom::IndexType>::max())
-    { }
-    axom::IndexType parentCellNum;       //!< @brief Flat index of parent cell.
-    std::uint16_t caseNum;               //!< @brief Index in cases2D or cases3D
-    axom::IndexType firstSurfaceCellId;  //!< @brief First index for generated cells.
-  };
 
   /*!
     @brief Implementation used by MarchingCubesImpl::computeContour().
@@ -881,6 +865,22 @@ public:
     , m_contourCellCorners(0, 0)
     , m_contourCellParents(0, 0)
   { }
+
+  /*!
+    @brief Info for a parent cell intersecting the contour surface.
+  */
+  struct CrossingInfo
+  {
+    CrossingInfo() { }
+    CrossingInfo(axom::IndexType parentCellNum_, std::uint16_t caseNum_)
+      : parentCellNum(parentCellNum_)
+      , caseNum(caseNum_)
+      , firstSurfaceCellId(std::numeric_limits<axom::IndexType>::max())
+    { }
+    axom::IndexType parentCellNum;       //!< @brief Flat index of parent cell.
+    std::uint16_t caseNum;               //!< @brief Index in cases2D or cases3D
+    axom::IndexType firstSurfaceCellId;  //!< @brief First index for generated cells.
+  };
 
 private:
   const int m_allocatorID;  //!< @brief ExecSpace-based allocator ID for all internal data
