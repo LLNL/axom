@@ -44,11 +44,11 @@ static void reverse(axom::StackArray<T, DIM>& a)
   classes MarchCubes and MarchingCubesSingleDomain.
 
   ExecSpace is the general execution space, like axom::SEQ_EXEC and
-  axom::CUDA_EXEC<256>.  SequentialLoopPolicy is used for loops that
-  cannot be parallelized.  Use something like RAJA::seq_exec or
-  RAJA::cuda_exec<1>.
+  axom::CUDA_EXEC<256>.  SequentialExecSpace is used for loops that
+  cannot be parallelized but must access data allocated for ExecSpace.
+  Use something like axom::SEQ_EXEC or axom::CUDA_EXEC<1>.
 */
-template <int DIM, typename ExecSpace, typename SequentialLoopPolicy>
+template <int DIM, typename ExecSpace, typename SequentialExecSpace>
 class MarchingCubesImpl : public MarchingCubesSingleDomain::ImplBase
 {
 public:
@@ -56,6 +56,7 @@ public:
   using MIdx = axom::StackArray<axom::IndexType, DIM>;
   using LoopPolicy = typename execution_space<ExecSpace>::loop_policy;
   using ReducePolicy = typename execution_space<ExecSpace>::reduce_policy;
+  using SequentialLoopPolicy = typename execution_space<SequentialExecSpace>::loop_policy;
   static constexpr auto MemorySpace = execution_space<ExecSpace>::memory_space;
   /*!
     @brief Initialize data to a blueprint domain.
