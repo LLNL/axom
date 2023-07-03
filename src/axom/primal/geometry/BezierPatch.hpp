@@ -108,10 +108,10 @@ public:
    * \pre order in both directions is greater than or equal to zero
    *
    * Elements of pts[k] are mapped to control nodes (p, q) lexicographically, i.e.
-   * pts[0]               -> nodes[0, 0],     ..., pts[ord_u]           -> nodes[ord_u, 0]
-   * pts[ord_u+1]         -> nodes[0, 1],     ..., pts[2*ord_u]         -> nodes[ord_u, 1]
+   * pts[0]               -> nodes[0, 0],     ..., pts[ord_v]           -> nodes[0, ord_v]
+   * pts[ord_v+1]         -> nodes[1, 0],     ..., pts[2*ord_v]         -> nodes[1, ord_v]
    *                                          ...
-   * pts[ord_v*(ord_u-1)] -> nodes[0, ord_v], ..., pts[ord_v,ord_u] -> nodes[ord_u, ord_v]
+   * pts[ord_u*(ord_v-1)] -> nodes[ord_u, 0], ..., pts[ord_u*ord_v] -> nodes[ord_u, ord_v]
    * 
    */
   BezierPatch(PointType* pts, int ord_u, int ord_v)
