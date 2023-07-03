@@ -56,7 +56,8 @@ public:
   using MIdx = axom::StackArray<axom::IndexType, DIM>;
   using LoopPolicy = typename execution_space<ExecSpace>::loop_policy;
   using ReducePolicy = typename execution_space<ExecSpace>::reduce_policy;
-  using SequentialLoopPolicy = typename execution_space<SequentialExecSpace>::loop_policy;
+  using SequentialLoopPolicy =
+    typename execution_space<SequentialExecSpace>::loop_policy;
   static constexpr auto MemorySpace = execution_space<ExecSpace>::memory_space;
   /*!
     @brief Initialize data to a blueprint domain.

@@ -207,13 +207,9 @@ void MarchingCubesSingleDomain::allocateImpl()
   {
     m_impl = m_ndim == 2
       ? std::unique_ptr<ImplBase>(
-          new MarchingCubesImpl<2,
-                                axom::SEQ_EXEC,
-                                axom::SEQ_EXEC>)
+          new MarchingCubesImpl<2, axom::SEQ_EXEC, axom::SEQ_EXEC>)
       : std::unique_ptr<ImplBase>(
-          new MarchingCubesImpl<3,
-                                axom::SEQ_EXEC,
-                                axom::SEQ_EXEC>);
+          new MarchingCubesImpl<3, axom::SEQ_EXEC, axom::SEQ_EXEC>);
   }
 #ifdef _AXOM_MC_USE_OPENMP
   else if(m_runtimePolicy == RuntimePolicy::omp)
