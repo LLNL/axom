@@ -341,9 +341,10 @@ double stokes_winding_number_adaptive(const Point<T, 3>& query,
   }
 
   // These two values should be equal to one another
-  if(axom::utilities::isNearlyEqual(quad_fine[0] + quad_fine[1],
-                                    quad_coarse,
-                                    quad_tol))
+  if(axom::utilities::isNearlyEqualRelative(quad_fine[0] + quad_fine[1],
+                                            quad_coarse,
+                                            quad_tol,
+                                            0.0))
   {
     return 0.25 * M_1_PI * (quad_fine[0] + quad_fine[1]);
   }

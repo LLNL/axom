@@ -451,11 +451,11 @@ int winding_number(const Point<T, 3>& query,
 template <typename T>
 double winding_number(const Point<T, 3>& query,
                       const BezierPatch<T>& bPatch,
-                      int npts,
-                      double quad_tol = 1e-8,
                       double edge_tol = 1e-8,
+                      double quad_tol = 1e-8,
                       double EPS = 1e-8)
 {
+  const int quad_npts = 20;
   const int ord_u = bPatch.getOrder_u();
   const int ord_v = bPatch.getOrder_v();
   const bool patchIsRational = bPatch.isRational();
@@ -483,7 +483,7 @@ double winding_number(const Point<T, 3>& query,
   detail::SingularityAxis field_direction;
 
   // Check an axis-aligned bounding box (most surfaces satisfy this condition)
-  BoundingBox<T, 3> bBox(bPatch.boundingBox());
+  BoundingBox<T, 3> bBox(bPatch.boundingBox().expand(edge_tol));
   const bool exterior_x =
     bBox.getMin()[0] > query[0] || query[0] > bBox.getMax()[0];
   const bool exterior_y =
@@ -508,15 +508,15 @@ double winding_number(const Point<T, 3>& query,
     // Next, check an oriented bounding box.
     // If we are interior to the oriented bounding box, then we
     //  cannot guarantee a separating plane, and need geometric refinement.
-    OrientedBoundingBox<T, 3> oBox(bPatch.orientedBoundingBox());
+    OrientedBoundingBox<T, 3> oBox(bPatch.orientedBoundingBox().expand(edge_tol));
     if(oBox.contains(query))
     {
       BezierPatch<T> p1, p2, p3, p4;
       bPatch.split(0.5, 0.5, p1, p2, p3, p4);
-      return winding_number(query, p1, npts, quad_tol, edge_tol, EPS) +
-        winding_number(query, p2, npts, quad_tol, edge_tol, EPS) +
-        winding_number(query, p3, npts, quad_tol, edge_tol, EPS) +
-        winding_number(query, p4, npts, quad_tol, edge_tol, EPS);
+      return winding_number(query, p1, edge_tol, quad_tol, EPS) +
+        winding_number(query, p2, edge_tol, quad_tol, EPS) +
+        winding_number(query, p3, edge_tol, quad_tol, EPS) +
+        winding_number(query, p4, edge_tol, quad_tol, EPS);
     }
     // Otherwise, we can apply a rotation to a z-aligned field.
     field_direction = detail::SingularityAxis::rotated;
@@ -635,7 +635,7 @@ double winding_number(const Point<T, 3>& query,
     wn += detail::stokes_winding_number(query,
                                         boundingPoly[n],
                                         field_direction,
-                                        npts,
+                                        quad_npts,
                                         quad_tol);
   }
 
