@@ -39,13 +39,13 @@ set( primal_tests
     primal_octahedron.cpp
     primal_triangle.cpp
     primal_vector.cpp
-    primal_winding_number.cpp
     primal_zip.cpp
    )
 
 blt_list_append(
     TO       primal_tests 
     ELEMENTS primal_integral.cpp 
+             primal_winding_number.cpp
     IF       MFEM_FOUND 
                )
 

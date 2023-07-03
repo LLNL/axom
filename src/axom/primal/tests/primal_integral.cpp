@@ -449,10 +449,10 @@ TEST(primal_integral, evaluate_integral_bezierpatch)
     Point3D {2, 0, -1}, Point3D {2, 4, -1}, Point3D {-2, 4, -1}, Point3D {-2, 0, -1},
     Point3D {0, 0, -1}, Point3D {0, 0, -1}, Point3D { 0, 0, -1}, Point3D { 0, 0, -1}};
 
-  double hemisphere_weights[16] = {1.0,     1.0/3.0, 1.0/3.0, 1.0,
+  double hemisphere_weights[16] = {1.0,     1.0/3.0, 1.0/3.0,     1.0,
                                    1.0/3.0, 1.0/9.0, 1.0/9.0, 1.0/3.0,
                                    1.0/3.0, 1.0/9.0, 1.0/9.0, 1.0/3.0,
-                                   1.0,     1.0/3.0, 1.0/3.0, 1.0};
+                                   1.0,     1.0/3.0, 1.0/3.0,     1.0};
   // clang-format on
 
   // Needs an absurd (?) number of quadrature nodes to evaluate properly
@@ -460,145 +460,6 @@ TEST(primal_integral, evaluate_integral_bezierpatch)
   EXPECT_NEAR(evaluate_scalar_area_integral(hemisphere, const_integrand, 20),
               2 * M_PI,
               1e-5);
-}
-
-TEST(primal_integral, evaluate_sphere_winding_number)
-{
-  using Point3D = primal::Point<double, 3>;
-  using Vector3D = primal::Vector<double, 3>;
-  using Bezier = primal::BezierCurve<double, 3>;
-  using CPolygon = primal::CurvedPolygon<double, 3>;
-  using BPatch = primal::BezierPatch<double>;
-  double abs_tol = 1e-10;
-
-  double rt2 = sqrt(2), rt3 = sqrt(3), rt6 = sqrt(6);
-
-  // clang-format off
-  Point3D node_data[25] = {
-    Point3D {4*(1-rt3),     4*(1-rt3),     4*(1-rt3)}, Point3D {rt2*(rt3-4),            -rt2, rt2*(rt3-4)}, Point3D {4*(1-2*rt3)/3,   0, 4*(1-2*rt3)/3}, Point3D {rt2*(rt3-4),           rt2,   rt2*(rt3-4)}, Point3D {4*(1-rt3),     4*(rt3-1),     4*(1-rt3)},
-    Point3D {     -rt2, rt2*(rt3 - 4), rt2*(rt3 - 4)}, Point3D {(2-3*rt3)/2,     (2-3*rt3)/2,  -(rt3+6)/2}, Point3D {rt2*(2*rt3-7)/3, 0,      -5*rt6/3}, Point3D {(2-3*rt3)/2,   (3*rt3-2)/2,    -(rt3+6)/2}, Point3D {     -rt2,   rt2*(4-rt3),   rt2*(rt3-4)},
-    Point3D {        0, 4*(1-2*rt3)/3, 4*(1-2*rt3)/3}, Point3D {          0, rt2*(2*rt3-7)/3,    -5*rt6/3}, Point3D {0,               0,   4*(rt3-5)/3}, Point3D {          0, rt2*(7-2*rt3)/3,    -5*rt6/3}, Point3D {        0, 4*(2*rt3-1)/3, 4*(1-2*rt3)/3},
-    Point3D {      rt2, rt2*(rt3 - 4), rt2*(rt3 - 4)}, Point3D {(3*rt3-2)/2,     (2-3*rt3)/2,  -(rt3+6)/2}, Point3D {rt2*(7-2*rt3)/3, 0,      -5*rt6/3}, Point3D {(3*rt3-2)/2,   (3*rt3-2)/2,    -(rt3+6)/2}, Point3D {      rt2,   rt2*(4-rt3),   rt2*(rt3-4)},
-    Point3D {4*(rt3-1),     4*(1-rt3),     4*(1-rt3)}, Point3D {rt2*(4-rt3),            -rt2, rt2*(rt3-4)}, Point3D {4*(2*rt3-1)/3,   0, 4*(1-2*rt3)/3}, Point3D {rt2*(4-rt3),           rt2,   rt2*(rt3-4)}, Point3D {4*(rt3-1),     4*(rt3-1),     4*(1-rt3)}};
-
-  double weight_data[25] = {
-         4*(3-rt3), rt2*(3*rt3-2),   4*(5-rt3)/3, rt2*(3*rt3-2),     4*(3-rt3),
-     rt2*(3*rt3-2),     (rt3+6)/2, rt2*(rt3+6)/3,     (rt3+6)/2, rt2*(3*rt3-2),
-       4*(5-rt3)/3, rt2*(rt3+6)/3, 4*(5*rt3-1)/9, rt2*(rt3+6)/3,   4*(5-rt3)/3,
-     rt2*(3*rt3-2),     (rt3+6)/2, rt2*(rt3+6)/3,     (rt3+6)/2, rt2*(3*rt3-2),
-         4*(3-rt3), rt2*(3*rt3-2),   4*(5-rt3)/3, rt2*(3*rt3-2),     4*(3-rt3)
-  };
-  // clang-format on
-
-  BPatch sphere_faces[6];
-  for(int n = 0; n < 6; ++n)
-  {
-    sphere_faces[n].setOrder(4, 4);
-    sphere_faces[n].makeRational();
-  }
-
-  sphere_faces[0].setOrder(4, 4);
-  for(int i = 0; i < 5; ++i)
-  {
-    for(int j = 0; j < 5; ++j)
-    {
-      int idx = 5 * i + j;
-      for(int n = 0; n < 6; ++n)
-        sphere_faces[n].setWeight(i, j, weight_data[idx]);
-
-      // Set up each face
-      sphere_faces[0](i, j)[0] = node_data[idx][1] / weight_data[idx];
-      sphere_faces[0](i, j)[1] = node_data[idx][0] / weight_data[idx];
-      sphere_faces[0](i, j)[2] = node_data[idx][2] / weight_data[idx];
-
-      sphere_faces[1](i, j)[0] = -node_data[idx][0] / weight_data[idx];
-      sphere_faces[1](i, j)[1] = -node_data[idx][1] / weight_data[idx];
-      sphere_faces[1](i, j)[2] = -node_data[idx][2] / weight_data[idx];
-
-      sphere_faces[2](i, j)[0] = node_data[idx][2] / weight_data[idx];
-      sphere_faces[2](i, j)[1] = node_data[idx][1] / weight_data[idx];
-      sphere_faces[2](i, j)[2] = node_data[idx][0] / weight_data[idx];
-
-      sphere_faces[3](i, j)[0] = -node_data[idx][1] / weight_data[idx];
-      sphere_faces[3](i, j)[1] = -node_data[idx][2] / weight_data[idx];
-      sphere_faces[3](i, j)[2] = -node_data[idx][0] / weight_data[idx];
-
-      sphere_faces[4](i, j)[0] = node_data[idx][0] / weight_data[idx];
-      sphere_faces[4](i, j)[1] = node_data[idx][2] / weight_data[idx];
-      sphere_faces[4](i, j)[2] = node_data[idx][1] / weight_data[idx];
-
-      sphere_faces[5](i, j)[0] = -node_data[idx][2] / weight_data[idx];
-      sphere_faces[5](i, j)[1] = -node_data[idx][0] / weight_data[idx];
-      sphere_faces[5](i, j)[2] = -node_data[idx][1] / weight_data[idx];
-    }
-  }
-
-  Vector3D query_direction = Vector3D({1.0, -2.0, 0.5}).unitVector();
-
-  /* ===== Do convergence test with npts vs accuracy ===== */
-  FILE *stokes_file, *quad_file, *tri_file;
-  stokes_file =
-    fopen("../../../../../axom_aux/convergence_tests/stokes_convergence.csv",
-          "w");
-  quad_file =
-    fopen("../../../../../axom_aux/convergence_tests/quad_convergence.csv", "w");
-  tri_file =
-    fopen("../../../../../axom_aux/convergence_tests/tri_convergence.csv", "w");
-
-  Point3D fixed_query({})
-  // Iterate over points close to the surface
-  double dt = 0.1;
-  for(double t = 1.0 - 10 * dt; t < 1.0 + 10 * dt; t += dt)
-  {
-    Point3D query(t * query_direction.array());
-    if(axom::utilities::isNearlyEqual(Vector3D(query).norm(), 1.0, 1e-10))
-      continue;
-
-    double wn_stokes = 0, wn_quad = 0, wn_tri = 0;
-    int npts_stokes = 0, npts_quad = 0, npts_tri = 0;
-
-    printf("(%g, %g, %g) -> %g\n",
-           query[0],
-           query[1],
-           query[2],
-           Vector3D(query).norm());
-
-    for(int n = 0; n < 6; ++n)
-    {
-      wn_stokes +=
-        winding_number_adapt_stokes(query, sphere_faces[n], npts_stokes);
-      //wn_tri += winding_number_mfem_triangle(query, sphere_faces[n], npts_tri);
-      wn_quad += winding_number_gauss_tensor(query, sphere_faces[n], npts_quad);
-    }
-    printf("Stokes\tQuad\tTri\n");
-    printf("%g\t%g\t%g\n", wn_stokes, wn_quad, wn_tri);
-    printf("%d\t%d\t%d\n", npts_stokes, npts_quad, npts_tri);
-
-    fprintf(stokes_file,
-            "%.16f,%.16f,%e,%d\n",
-            Vector3D(query).norm(),
-            wn_stokes,
-            std::abs(((Vector3D(query).norm() < 1 ? 1 : 0)) - wn_stokes),
-            npts_stokes);
-
-    fprintf(quad_file,
-            "%.16f,%.16f,%e,%d\n",
-            Vector3D(query).norm(),
-            wn_quad,
-            std::abs(((Vector3D(query).norm() < 1 ? 1 : 0)) - wn_quad),
-            npts_quad);
-
-    //fprintf(tri_file,
-    //        "%.16f,%.16f,%e,%d\n",
-    //        Vector3D(query).norm(),
-    //        wn_tri,
-    //        std::abs(((Vector3D(query).norm() < 1 ? 1 : 0)) - wn_tri),
-    //        npts_tri);
-  }
-
-  fclose(stokes_file);
-  fclose(quad_file);
-  fclose(tri_file);
 }
 
 int main(int argc, char* argv[])
