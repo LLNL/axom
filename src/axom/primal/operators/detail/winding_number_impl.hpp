@@ -56,7 +56,9 @@ double linear_winding_number(const Point<T, 2>& q,
 
   // Compute distance from line connecting endpoints to query
   if(tri_area * tri_area <= edge_tol * edge_tol * (V1 - V2).squared_norm())
+  {
     return 0;
+  }
 
   // Compute signed angle between vectors
   double dotprod = axom::utilities::clampVal(
@@ -95,7 +97,10 @@ double convex_endpoint_winding_number(const Point<T, 2>& q,
                                       double EPS)
 {
   const int ord = c.getOrder();
-  if(ord == 1) return 0;
+  if(ord == 1)
+  {
+    return 0;
+  }
 
   double edge_tol_sq = edge_tol * edge_tol;
 
@@ -109,11 +114,21 @@ double convex_endpoint_winding_number(const Point<T, 2>& q,
   // Need to find vectors that subtend the entire curve.
   //   We must ignore duplicate nodes
   for(idx = 0; idx <= ord; ++idx)
-    if(squared_distance(q, c[idx]) > edge_tol_sq) break;
+  {
+    if(squared_distance(q, c[idx]) > edge_tol_sq)
+    {
+      break;
+    }
+  }
   Vector<T, 2> V1(q, c[idx]);
 
   for(idx = ord; idx >= 0; --idx)
-    if(squared_distance(q, c[idx]) > edge_tol_sq) break;
+  {
+    if(squared_distance(q, c[idx]) > edge_tol_sq)
+    {
+      break;
+    }
+  }
   Vector<T, 2> V2(q, c[idx]);
 
   // clang-format off
@@ -138,7 +153,9 @@ double convex_endpoint_winding_number(const Point<T, 2>& q,
 
       // Because we are convex, a single non-collinear vertex tells us the orientation
       if(!axom::utilities::isNearlyEqual(tri_area, 0.0, EPS))
+      {
         return (tri_area > 0) ? 0.5 : -0.5;
+      }
     }
 
     // If all vectors are parallel, the curve is linear and return 0
@@ -182,7 +199,10 @@ double curve_winding_number_recursive(const Point<T, 2>& q,
                                       double EPS = 1e-8)
 {
   const int ord = c.getOrder();
-  if(ord <= 0) return 0.0;  // Catch degenerate cases
+  if(ord <= 0)
+  {
+    return 0.0;  // Catch degenerate cases
+  }
 
   // If q is outside a convex shape that contains the entire curve, the winding
   //   number for the shape connected at the endpoints with straight lines is zero.

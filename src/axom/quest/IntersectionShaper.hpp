@@ -474,7 +474,9 @@ public:
     // The mesh points are filtered like we want. We need only copy
     // them into the polyline array.
     for(int i = 0; i < pointcount; ++i)
+    {
       m_surfaceMesh->getNode(i, polyline[i].data());
+    }
     int polyline_size = pointcount;
 
     // Generate the Octahedra
@@ -1002,7 +1004,9 @@ private:
     const std::string vol_frac_("vol_frac_");
     std::string name;
     if(fieldName.find(vol_frac_) == 0)
+    {
       name = fieldName.substr(vol_frac_.size());
+    }
     return name;
   }
 
@@ -1062,7 +1066,10 @@ private:
     for(auto it : this->getDC()->GetFieldMap())
     {
       std::string materialName = fieldNameToMaterialName(it.first);
-      if(!materialName.empty()) materialNames.emplace_back(materialName);
+      if(!materialName.empty())
+      {
+        materialNames.emplace_back(materialName);
+      }
     }
     // Add any of these existing fields to this class' bookkeeping.
     for(const auto& materialName : materialNames)
@@ -1095,7 +1102,9 @@ public:
     const std::string fieldName(materialNameToFieldName(m_free_mat_name));
     mfem::GridFunction* cfgf = nullptr;
     if(this->getDC()->HasField(fieldName))
+    {
       cfgf = this->getDC()->GetField(fieldName);
+    }
     else
     {
       // Make the new grid function.
@@ -1235,7 +1244,9 @@ public:
             // Do not add the current shape material since it should
             // not end up in updateVFs.
             if(name != shape.getMaterial())
+            {
               gf_order_by_matnumber.emplace_back(getMaterial(name));
+            }
           }
           else
           {

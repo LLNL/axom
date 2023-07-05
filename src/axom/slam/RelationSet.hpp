@@ -114,7 +114,10 @@ public:
     RelationSubset ls = (*m_relation)[pos1];
     for(PositionType i = 0; i < ls.size(); i++)
     {
-      if(ls[i] == pos2) return i;
+      if(ls[i] == pos2)
+      {
+        return i;
+      }
     }
     return BaseType::INVALID_POS;
   }
@@ -136,7 +139,10 @@ public:
     RelationSubset ls = (*m_relation)[s1];
     for(PositionType i = 0; i < ls.size(); i++)
     {
-      if(ls[i] == s2) return ls.offset() + i;
+      if(ls[i] == s2)
+      {
+        return ls.offset() + i;
+      }
     }
     return BaseType::INVALID_POS;
   }
@@ -155,7 +161,10 @@ public:
   {
     RelationSubset ls = (*m_relation)[pos1];
 
-    if(ls.size() > 0) return ls.offset();
+    if(ls.size() > 0)
+    {
+      return ls.offset();
+    }
 
     return BaseType::INVALID_POS;
   }

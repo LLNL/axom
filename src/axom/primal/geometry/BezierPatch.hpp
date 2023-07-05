@@ -161,7 +161,9 @@ public:
     }
 
     if(weights == nullptr)
+    {
       makeNonrational();
+    }
     else
     {
       m_weights.resize(sz_u, sz_v);
@@ -961,9 +963,18 @@ public:
     const int ord_u = getOrder_u();
     const int ord_v = getOrder_v();
 
-    if(ord_u <= 0 && ord_v <= 0) return true;
-    if(ord_u == 1 && ord_v == 0) return true;
-    if(ord_u == 0 && ord_v == 1) return true;
+    if(ord_u <= 0 && ord_v <= 0)
+    {
+      return true;
+    }
+    if(ord_u == 1 && ord_v == 0)
+    {
+      return true;
+    }
+    if(ord_u == 0 && ord_v == 1)
+    {
+      return true;
+    }
 
     PlaneType the_plane = make_plane(m_controlPoints(0, 0),
                                      m_controlPoints(0, ord_v),
@@ -1026,7 +1037,10 @@ private:
   ///  that there is one for each control node
   bool isValidRational() const
   {
-    if(!isRational()) return true;
+    if(!isRational())
+    {
+      return true;
+    }
 
     const int ord_u = getOrder_u();
     const int ord_v = getOrder_v();

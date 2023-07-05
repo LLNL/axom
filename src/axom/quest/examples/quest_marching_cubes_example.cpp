@@ -463,7 +463,10 @@ public:
   axom::Array<axom::ArrayView<double, DIM>> get_coords_view(int domainNum)
   {
     axom::StackArray<axom::IndexType, DIM> shape = getNodesShape<DIM>(domainNum);
-    for(int d = 0; d < DIM / 2; ++d) std::swap(shape[d], shape[DIM - 1 - d]);
+    for(int d = 0; d < DIM / 2; ++d)
+    {
+      std::swap(shape[d], shape[DIM - 1 - d]);
+    }
 
     conduit::Node& dom = _mdMesh[domainNum];
     conduit::Node& coordsValues = dom.fetch_existing("coordsets/coords/values");
@@ -655,14 +658,20 @@ template <typename T, int DIM>
 T product(const axom::StackArray<T, DIM>& a)
 {
   T rval = a[0];
-  for(int d = 1; d < DIM; ++d) rval *= a[d];
+  for(int d = 1; d < DIM; ++d)
+  {
+    rval *= a[d];
+  }
   return rval;
 }
 
 template <typename T, int DIM, typename U>
 static void addToStackArray(axom::StackArray<T, DIM>& a, U b)
 {
-  for(int d = 0; d < DIM; ++d) a[d] += b;
+  for(int d = 0; d < DIM; ++d)
+  {
+    a[d] += b;
+  }
 }
 
 /*!
@@ -678,7 +687,10 @@ axom::StackArray<axom::IndexType, DIM> flatToMultidimIndex(
   const axom::StackArray<axom::IndexType, DIM>& sizes)
 {
   axom::IndexType strides[DIM] = {1};
-  for(int d = 1; d < DIM; ++d) strides[d] = strides[d - 1] * sizes[d - 1];
+  for(int d = 1; d < DIM; ++d)
+  {
+    strides[d] = strides[d - 1] * sizes[d - 1];
+  }
   if(flatId >= strides[DIM - 1] * sizes[DIM - 1])
   {
     SLIC_ERROR("flatId is too big.");
@@ -1072,7 +1084,12 @@ struct ContourTestBase
         {
           axom::StackArray<axom::IndexType, DIM> cornerIdx = cellIdx;
           for(int d = 0; d < DIM; ++d)
-            if(cornerId & (1 << d)) ++cornerIdx[d];
+          {
+            if(cornerId & (1 << d))
+            {
+              ++cornerIdx[d];
+            }
+          }
 
           reverse(cornerIdx);
           double fcnValue = fcnView[cornerIdx];
@@ -1112,7 +1129,9 @@ struct ContourTestBase
       domain.fetch_existing("topologies/mesh/elements/dims");
     axom::StackArray<axom::IndexType, DIM> coordsViewShape;
     for(int d = 0; d < DIM; ++d)
+    {
       coordsViewShape[d] = 1 + dimsNode[DIM - 1 - d].as_int();
+    }
 
     const conduit::Node& coordValues =
       domain.fetch_existing(coordsetPath + "/values");

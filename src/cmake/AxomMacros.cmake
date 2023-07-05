@@ -59,7 +59,7 @@ macro(axom_add_code_checks)
                             CLANGFORMAT_CFG_FILE ${PROJECT_SOURCE_DIR}/.clang-format)
 
         # Set FOLDER property for code check targets
-        foreach(_suffix clangformat_check clangformat_style)
+        foreach(_suffix clangformat_check clangformat_style clang_tidy_check clang_tidy_style)
             set(_tgt ${arg_PREFIX}_${_suffix})
             if(TARGET ${_tgt}) 
                 set_target_properties(${_tgt} PROPERTIES FOLDER "axom/code_checks")

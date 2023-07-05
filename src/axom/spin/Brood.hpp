@@ -116,7 +116,9 @@ struct Brood<GridPt, GridPt>
     // shift and add offset to each coordinate
     GridPt retPt;
     for(int i = 0; i < GridPt::DIMENSION; ++i)
+    {
       retPt[i] = (pt[i] << 1) + (offset & (1 << i) ? 1 : 0);
+    }
 
     return retPt;
   }

@@ -427,7 +427,9 @@ TEST(primal_ray_intersect, ray_segment_edge_cases)
     SegmentType(PointType({1, 3.1}), PointType({-2, -2.9}))};
 
   for(auto& seg : not_intersecting_segs)
+  {
     EXPECT_FALSE(intersect_ray(the_ray, seg, ray_param, seg_param, EPS));
+  }
 }
 
 //------------------------------------------------------------------------------

@@ -189,7 +189,10 @@ double evaluate_area_integral(const primal::CurvedPolygon<T, 2> cpoly,
   //  Use the same one for every curve in the polygon
   static mfem::IntegrationRules my_IntRules(0, mfem::Quadrature1D::GaussLegendre);
 
-  if(npts_P <= 0) npts_P = npts_Q;
+  if(npts_P <= 0)
+  {
+    npts_P = npts_Q;
+  }
 
   // Get the quadrature for the line integral.
   //  Quadrature order is equal to 2*N - 1
@@ -201,8 +204,12 @@ double evaluate_area_integral(const primal::CurvedPolygon<T, 2> cpoly,
   // Use minimum y-coord of control nodes as lower bound for integration
   double int_lb = cpoly[0][0][1];
   for(int i = 0; i < cpoly.numEdges(); i++)
+  {
     for(int j = 1; j < cpoly[i].getOrder() + 1; j++)
+    {
       int_lb = std::min(int_lb, cpoly[i][j][1]);
+    }
+  }
 
   // Evaluate the antiderivative line integral along each component
   double total_integral = 0.0;

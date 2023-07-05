@@ -101,9 +101,13 @@ std::string yamlRoot(const std::string &filepath)
   psplit(filepath, path, filename);
   auto idx = filename.rfind(".");
   if(idx != std::string::npos)
+  {
     retval = filename.substr(0, idx);
+  }
   else
+  {
     retval = filename;
+  }
   return retval;
 }
 
@@ -171,7 +175,10 @@ void saveVisIt(const std::string &path,
 {
   // Wrap mesh and grid functions in a VisItDataCollection and save it.
   mfem::VisItDataCollection vdc(filename, dc.GetMesh());
-  if(!path.empty()) vdc.SetPrefixPath(path);
+  if(!path.empty())
+  {
+    vdc.SetPrefixPath(path);
+  }
   vdc.SetOwnData(false);
   vdc.SetFormat(mfem::DataCollection::SERIAL_FORMAT);
   for(auto it : dc.GetFieldMap())
@@ -195,7 +202,9 @@ void loadVisIt(mfem::VisItDataCollection &vdc, sidre::MFEMSidreDataCollection &d
   for(auto it : vdc.GetFieldMap())
   {
     if(it.first.find("vol_frac_") != std::string::npos)
+    {
       dc.RegisterField(it.first, it.second);
+    }
   }
 }
 
@@ -284,7 +293,10 @@ void replacementRuleTest(const std::string &shapeFile,
   // baseline that we can check first. If it is not present, the next baseline
   // is tried.
   std::string baselineName(yamlRoot(shapeFile));
-  if(initialMats) baselineName += "_initial_mats";
+  if(initialMats)
+  {
+    baselineName += "_initial_mats";
+  }
   std::vector<std::string> baselinePaths;
   // Example /path/to/axom/src/quest/tests/baseline/quest_intersection_shaper/cuda
   baselinePaths.push_back(pjoin(baselineDirectory(), policyName));
@@ -488,7 +500,9 @@ void IntersectionWithErrorTolerances(const std::string &filebase,
 
   // Clean up files.
   for(const auto &filename : filenames)
+  {
     axom::utilities::filesystem::removeFile(filename);
+  }
 }
 
 //---------------------------------------------------------------------------
