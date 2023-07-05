@@ -11,11 +11,11 @@
 #------------------------------------------------------------------------------
 if(DEFINED ENV{SPACK_CC})
 
-  set(CMAKE_C_COMPILER "/usr/WS1/axom/libs/toss_4_x86_64_ib_cray/2023_06_30_10_47_32/spack/lib/spack/env/cce/craycc" CACHE PATH "")
+  set(CMAKE_C_COMPILER "/usr/WS1/axom/libs/toss_4_x86_64_ib_cray/2023_07_05_10_49_31/spack/lib/spack/env/cce/craycc" CACHE PATH "")
 
-  set(CMAKE_CXX_COMPILER "/usr/WS1/axom/libs/toss_4_x86_64_ib_cray/2023_06_30_10_47_32/spack/lib/spack/env/cce/case-insensitive/crayCC" CACHE PATH "")
+  set(CMAKE_CXX_COMPILER "/usr/WS1/axom/libs/toss_4_x86_64_ib_cray/2023_07_05_10_49_31/spack/lib/spack/env/cce/case-insensitive/crayCC" CACHE PATH "")
 
-  set(CMAKE_Fortran_COMPILER "/usr/WS1/axom/libs/toss_4_x86_64_ib_cray/2023_06_30_10_47_32/spack/lib/spack/env/cce/crayftn" CACHE PATH "")
+  set(CMAKE_Fortran_COMPILER "/usr/WS1/axom/libs/toss_4_x86_64_ib_cray/2023_07_05_10_49_31/spack/lib/spack/env/cce/crayftn" CACHE PATH "")
 
 else()
 
@@ -84,13 +84,13 @@ set(ENABLE_GTEST_DEATH_TESTS ON CACHE BOOL "")
 # TPLs
 #------------------------------------------------------------------------------
 
-set(TPL_ROOT "/usr/WS1/axom/libs/toss_4_x86_64_ib_cray/2023_06_30_10_47_32/cce-15.0.1" CACHE PATH "")
+set(TPL_ROOT "/usr/WS1/axom/libs/toss_4_x86_64_ib_cray/2023_07_05_10_49_31/cce-15.0.1" CACHE PATH "")
 
 set(CONDUIT_DIR "${TPL_ROOT}/conduit-0.8.6-zc52yjrihba7ttun4xwj4srnncmfxjqw" CACHE PATH "")
 
 set(C2C_DIR "${TPL_ROOT}/c2c-1.8.0-wk54ms543nc2nssjqaqfknyrqynvglcd" CACHE PATH "")
 
-set(MFEM_DIR "${TPL_ROOT}/mfem-4.5.0-v6blj6vtfsp6mdzqa2vfaf6hjt4blamf" CACHE PATH "")
+set(MFEM_DIR "${TPL_ROOT}/mfem-4.5.0-k6p6caax3xuwzdhguqntnmy66bns4psk" CACHE PATH "")
 
 set(HDF5_DIR "${TPL_ROOT}/hdf5-1.8.22-64op72mdvtzrsnsfn5zuseiuunk7gyxx" CACHE PATH "")
 
