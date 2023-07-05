@@ -29,7 +29,6 @@
 
 namespace
 {
-
 #ifdef __linux__
 /**
  * \brief Utility function to capture output of system call
