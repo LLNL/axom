@@ -235,7 +235,7 @@ class Axom(CachedCMakePackage, CudaPackage, ROCmPackage):
 
         # Add optimization flag to workaround HIP compiler errors
         if "+rocm" in spec:
-            if "crayCC" in self.compiler.cxx or spec.satisfies("%clang@16.0.0"):
+            if "crayCC" in self.compiler.cxx or spec.satisfies("%clang@16"):
                 entries.append(cmake_cache_string("CMAKE_CXX_FLAGS","-O1"))
 
 

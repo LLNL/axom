@@ -76,6 +76,38 @@ spack:
       spec: cce@15.0.1
       target: x86_64
 
+  # One compiler to test
+  - compiler:
+      environment: {}
+      extra_rpaths: []
+      flags:
+        fflags: -Mfreeform
+      modules: []
+      operating_system: rhel8
+      paths:
+        cc: /usr/tce/packages/rocm/rocm-5.6.0beta1/bin/amdclang
+        cxx: /usr/tce/packages/rocm/rocm-5.6.0beta1/bin/amdclang++
+        f77: /usr/tce/packages/rocm/rocm-5.6.0beta1/bin/amdflang
+        fc: /usr/tce/packages/rocm/rocm-5.6.0beta1/bin/amdflang
+      spec: clang@16.0.1
+      target: x86_64
+
+  # Another one (with wrapper)
+  - compiler:
+      environment: {}
+      extra_rpaths: []
+      flags:
+        fflags: -Mfreeform
+      modules: []
+      operating_system: rhel8
+      paths:
+        cc: /usr/tce/packages/rocmcc/rocmcc-5.6.0beta1-magic/bin/amdclang
+        cxx: /usr/tce/packages/rocmcc/rocmcc-5.6.0beta1-magic/bin/amdclang++
+        f77: /usr/tce/packages/rocmcc/rocmcc-5.6.0beta1-magic/bin/amdflang
+        fc: /usr/tce/packages/rocmcc/rocmcc-5.6.0beta1-magic/bin/amdflang
+      spec: clang@16.0.2
+      target: x86_64
+
   packages:
     all:
       compiler: [gcc, intel, pgi, clang, xl, nag]
@@ -85,7 +117,7 @@ spack:
         mpi: [cray-mpich]
 
     hip:
-      version: [5.2.3, 5.4.3, 5.5.1]
+      version: [5.2.3, 5.4.3, 5.5.1, 5.6.0]
       buildable: false
       externals:
       - spec: hip@5.2.3
@@ -94,9 +126,11 @@ spack:
         prefix: /opt/rocm-5.4.3/hip
       - spec: hip@5.5.1
         prefix: /opt/rocm-5.5.1/hip
+      - spec: hip@5.6.0
+        prefix: /usr/tce/packages/rocm/rocm-5.6.0beta1/hip
 
     llvm-amdgpu:
-      version: [5.2.3, 5.4.3, 5.5.1]
+      version: [5.2.3, 5.4.3, 5.5.1, 5.6.0]
       buildable: false
       externals:
       - spec: llvm-amdgpu@5.2.3
@@ -105,9 +139,11 @@ spack:
         prefix: /opt/rocm-5.4.3/llvm
       - spec: llvm-amdgpu@5.5.1
         prefix: /opt/rocm-5.5.1/llvm
+      - spec: llvm-amdgpu@5.6.0
+        prefix: /usr/tce/packages/rocm/rocm-5.6.0beta1/llvm
 
     hsa-rocr-dev:
-      version: [5.2.3, 5.4.3, 5.5.1]
+      version: [5.2.3, 5.4.3, 5.5.1, 5.6.0]
       buildable: false
       externals:
       - spec: hsa-rocr-dev@5.2.3
@@ -116,9 +152,11 @@ spack:
         prefix: /opt/rocm-5.4.3/
       - spec: hsa-rocr-dev@5.5.1
         prefix: /opt/rocm-5.5.1/
+      - spec: hsa-rocr-dev@5.6.0
+        prefix: /usr/tce/packages/rocm/rocm-5.6.0beta1/
 
     rocblas:
-      version: [5.2.3, 5.4.3, 5.5.1]
+      version: [5.2.3, 5.4.3, 5.5.1, 5.6.0]
       buildable: false
       externals:
       - spec: rocblas@5.2.3
@@ -127,9 +165,11 @@ spack:
         prefix: /opt/rocm-5.4.3/
       - spec: rocblas@5.5.1
         prefix: /opt/rocm-5.5.1/
+      - spec: rocblas@5.6.0
+        prefix: /usr/tce/packages/rocm/rocm-5.6.0beta1/
 
     rocminfo:
-      version: [5.2.3, 5.4.3, 5.5.1]
+      version: [5.2.3, 5.4.3, 5.5.1, 5.6.0]
       buildable: false
       externals:
       - spec: rocminfo@5.2.3
@@ -138,9 +178,11 @@ spack:
         prefix: /opt/rocm-5.4.3/
       - spec: rocminfo@5.5.1
         prefix: /opt/rocm-5.5.1/
+      - spec: rocminfo@5.6.0
+        prefix: /usr/tce/packages/rocm/rocm-5.6.0beta1/
 
     rocprim:
-      version: [5.2.3, 5.4.3, 5.5.1]
+      version: [5.2.3, 5.4.3, 5.5.1, 5.6.0]
       buildable: false
       externals:
       - spec: rocprim@5.2.3
@@ -149,9 +191,11 @@ spack:
         prefix: /opt/rocm-5.4.3/
       - spec: rocprim@5.5.1
         prefix: /opt/rocm-5.5.1/
+      - spec: rocprim@5.6.0
+        prefix: /usr/tce/packages/rocm/rocm-5.6.0beta1/
 
     rocm-device-libs:
-      version: [5.2.3, 5.4.3, 5.5.1]
+      version: [5.2.3, 5.4.3, 5.5.1, 5.6.0]
       buildable: false
       externals:
       - spec: rocm-device-libs@5.2.3
@@ -160,6 +204,8 @@ spack:
         prefix: /opt/rocm-5.4.3/
       - spec: rocm-device-libs@5.5.1
         prefix: /opt/rocm-5.5.1/
+      - spec: rocm-device-libs@5.6.0
+        prefix: /usr/tce/packages/rocm/rocm-5.6.0beta1/
 
     # Lock down which MPI we are using
     mpi:
@@ -175,6 +221,11 @@ spack:
         prefix: /usr/tce/packages/cray-mpich-tce/cray-mpich-8.1.25-rocmcc-5.5.1/
       - spec: cray-mpich@8.1.25%cce@15.0.1+slurm
         prefix: /usr/tce/packages/cray-mpich-tce/cray-mpich-8.1.25-rocmcc-5.4.3-cce-15.0.1/
+
+      - spec: cray-mpich@8.1.25%clang@16.0.1+slurm
+        prefix: /usr/tce/packages/cray-mpich/cray-mpich-8.1.25-rocmcc-5.6.0beta1-magic/
+      - spec: cray-mpich@8.1.25%clang@16.0.2+slurm
+        prefix: /usr/tce/packages/cray-mpich/cray-mpich-8.1.25-rocmcc-5.6.0beta1-magic/
 
     # blas is a bit more complicated because its a virtual package so fake it with
     # the following per spack docs
