@@ -61,20 +61,20 @@ spack:
       spec: clang@16.0.0
       target: x86_64
   - compiler:
-      spec: cce@15.0.1
+      environment: {}
+      extra_rpaths: []
+      # Flag for lowercase Fortran module names
+      flags:
+        fflags: -ef
+      modules: []
+      operating_system: rhel8
       paths:
         cc: /usr/tce/packages/cce-tce/cce-15.0.1/bin/craycc
         cxx: /usr/tce/packages/cce-tce/cce-15.0.1/bin/crayCC
         f77: /usr/tce/packages/cce-tce/cce-15.0.1/bin/crayftn
         fc: /usr/tce/packages/cce-tce/cce-15.0.1/bin/crayftn
-      # Flag for lowercase Fortran module names
-      flags:
-        fflags: -ef
-      operating_system: rhel8
+      spec: cce@15.0.1
       target: x86_64
-      modules: []
-      environment: {}
-      extra_rpaths: []
 
   packages:
     all:
