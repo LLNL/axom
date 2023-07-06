@@ -1049,30 +1049,40 @@ private:
                            bool atLeastOne) const
   {
     std::vector<MPI_Request> reqs;
-    for(auto& isr : isendRequests) reqs.push_back(isr.m_request);
+    for(auto& isr : isendRequests)
+    {
+      reqs.push_back(isr.m_request);
+    }
 
     int inCount = static_cast<int>(reqs.size());
     int outCount = 0;
     std::vector<int> indices(reqs.size(), -1);
     if(atLeastOne)
+    {
       MPI_Waitsome(inCount,
                    reqs.data(),
                    &outCount,
                    indices.data(),
                    MPI_STATUSES_IGNORE);
+    }
     else
+    {
       MPI_Testsome(inCount,
                    reqs.data(),
                    &outCount,
                    indices.data(),
                    MPI_STATUSES_IGNORE);
+    }
     indices.resize(outCount);
 
     auto reqIter = isendRequests.begin();
     int prevIdx = 0;
     for(const int idx : indices)
     {
-      for(; prevIdx < idx; ++prevIdx) ++reqIter;
+      for(; prevIdx < idx; ++prevIdx)
+      {
+        ++reqIter;
+      }
       reqIter = isendRequests.erase(reqIter);
       ++prevIdx;
     }

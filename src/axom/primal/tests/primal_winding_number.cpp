@@ -102,9 +102,13 @@ TEST(primal_winding_number, simple_cases)
   {
     auto q = Point2D {0.0, y};
     if(tri.checkInTriangle(q))
+    {
       EXPECT_EQ(winding_number(q, tri, includeBoundary), 1);
+    }
     else
+    {
       EXPECT_EQ(winding_number(q, tri, includeBoundary), 0);
+    }
   }
 
   // Reverse the orientation, which flips the winding number
@@ -113,9 +117,13 @@ TEST(primal_winding_number, simple_cases)
   {
     auto q = Point2D {0.0, y};
     if(tri.checkInTriangle(q))
+    {
       EXPECT_EQ(winding_number(q, tri, includeBoundary), -1);
+    }
     else
+    {
       EXPECT_EQ(winding_number(q, tri, includeBoundary), 0);
+    }
   }
 }
 
@@ -313,9 +321,11 @@ TEST(primal_winding_number, edge_cases)
 
   // At any point on a line, returns 0
   for(double t = 0.1; t < 1; t += 0.1)
+  {
     EXPECT_NEAR(winding_number(Point2D({t, t}), linear, edge_tol, EPS),
                 0.0,
                 abs_tol);
+  }
 
   // Cubic curve, where query is not on an endpoint after any number of bisections
   Point2D cubic_nodes[] = {Point2D {0.0, 0.0},
@@ -400,16 +410,22 @@ TEST(primal_winding_number, degenerate_cases)
                                       Point2D {0.0, 1.0}};
 
   for(auto pt : test_points)
+  {
     EXPECT_NEAR(winding_number(pt, empty_curve, edge_tol, EPS), 0, abs_tol);
+  }
 
   // Check default empty Bezier curves
   Bezier very_empty_curve(-1);
   for(auto pt : test_points)
+  {
     EXPECT_NEAR(winding_number(pt, very_empty_curve, edge_tol, EPS), 0, abs_tol);
+  }
 
   very_empty_curve.setOrder(0);
   for(auto pt : test_points)
+  {
     EXPECT_NEAR(winding_number(pt, very_empty_curve, edge_tol, EPS), 0, abs_tol);
+  }
 
   // Cubic curve with many duplicated endpoints
   Point2D cubic_nodes[] = {Point2D {0.0, 0.0},

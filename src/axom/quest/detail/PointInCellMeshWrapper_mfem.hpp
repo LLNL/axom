@@ -433,7 +433,9 @@ private:
 
         SpacePoint pt;
         for(int j = 0; j < NDIMS; ++j)
+        {
           pt[j] = (*positiveNodes)(fes->DofToVDof(nIdx, j));
+        }
 
         bbox.addPoint(pt);
       }

@@ -23,7 +23,10 @@ namespace marching_cubes
 template <typename T, int DIM, typename U>
 static void add_to_StackArray(axom::StackArray<T, DIM>& a, U b)
 {
-  for(int d = 0; d < DIM; ++d) a[d] += b;
+  for(int d = 0; d < DIM; ++d)
+  {
+    a[d] += b;
+  }
 }
 
 //!@brief Reverse the order of a StackArray.
@@ -95,7 +98,9 @@ public:
 
     m_bStrides[0] = 1;
     for(int d = 1; d < DIM; ++d)
+    {
       m_bStrides[d] = m_bStrides[d - 1] * m_bShape[d - 1];
+    }
 
     // Domain's node coordinates
     {

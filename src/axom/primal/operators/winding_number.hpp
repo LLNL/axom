@@ -270,7 +270,10 @@ double winding_number(const Point<T, 3>& q,
 {
   using Vec3 = Vector<T, 3>;
 
-  if(tri.area() == 0) return 0;
+  if(tri.area() == 0)
+  {
+    return 0;
+  }
 
   const Vec3 a = tri[0] - q;
   const Vec3 b = tri[1] - q;
@@ -281,7 +284,10 @@ double winding_number(const Point<T, 3>& q,
   const double b_norm = b.norm();
   const double c_norm = c.norm();
 
-  if(a_norm < edge_tol || b_norm < edge_tol || c_norm < edge_tol) return 0;
+  if(a_norm < edge_tol || b_norm < edge_tol || c_norm < edge_tol)
+  {
+    return 0;
+  }
 
   const double num = Vec3::scalar_triple_product(a, b, c);
   if(axom::utilities::isNearlyEqual(num, 0.0, EPS))

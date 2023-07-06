@@ -497,7 +497,9 @@ void DumpUltra(Group* const prob)
 
   /* Skip past the junk */
   for(tail = fname; isalpha(*tail); ++tail)
+  {
     ;
+  }
 
   sprintf(tail, "_%04d.ult", prob->getView("cycle")->getData<int>());
 

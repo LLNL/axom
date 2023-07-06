@@ -99,7 +99,10 @@ TEST(slam_map, out_of_bounds)
   IntMap m(&s, defaultElt);
 
   SLIC_INFO("Testing Map element access -- in bounds");
-  for(auto idx = 0; idx < m.size(); ++idx) EXPECT_EQ(defaultElt, m[idx]);
+  for(auto idx = 0; idx < m.size(); ++idx)
+  {
+    EXPECT_EQ(defaultElt, m[idx]);
+  }
 
   // Test out of bounds
   SLIC_INFO("Testing Map element access "
@@ -132,13 +135,18 @@ TEST(slam_map, map_builder)
   SetType s(MAX_SET_SIZE);
   std::vector<DataType> data_arr(s.size());
   for(auto i = 0u; i < data_arr.size(); ++i)
+  {
     data_arr[i] = static_cast<DataType>(i * 1.01);
+  }
 
   MapType m2(MapBuilder().set(&s).data(data_arr.data()));
   EXPECT_TRUE(m2.isValid());
   EXPECT_EQ(m2.size(), s.size());
   EXPECT_EQ(m2.stride(), 1);
-  for(auto i = 0u; i < data_arr.size(); ++i) EXPECT_EQ(m2[i], data_arr[i]);
+  for(auto i = 0u; i < data_arr.size(); ++i)
+  {
+    EXPECT_EQ(m2[i], data_arr[i]);
+  }
 }
 
 template <typename T, typename StrideType>

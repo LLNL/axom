@@ -156,7 +156,10 @@ inline bool operator==(const Set<P1, E1>& set1, const Set<P2, E2>& set2)
   PosType const numElts = set1.size();
 
   // Sets are different if they have a different size
-  if(set2.size() != numElts) return false;
+  if(set2.size() != numElts)
+  {
+    return false;
+  }
 
   // Otherwise, compare the indices element wise
   for(PosType pos = PosType(); pos < numElts; ++pos)

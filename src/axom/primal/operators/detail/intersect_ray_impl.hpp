@@ -76,8 +76,10 @@ inline bool intersect_ray(const primal::Ray<T, 2>& R,
 
       return ((ray_param >= tlow) && (seg_param >= tlow) && (seg_param <= thigh));
     }
-    else  // Not collinear, no intersection
+    else
+    {  // Not collinear, no intersection
       return false;
+    }
   }
 
   // Solve for the ray_param and seg_param directly using Cramer's rule

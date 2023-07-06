@@ -121,7 +121,10 @@ struct multirun_timer
   double get_median()
   {
     auto sz = time_record.size();
-    if(sz == 0) return 0.;
+    if(sz == 0)
+    {
+      return 0.;
+    }
 
     std::vector<double> sorted(time_record);
     std::sort(sorted.begin(), sorted.end());
@@ -402,12 +405,30 @@ void read_vol_frac_matrix_file(std::string filename,
     {
       pure_frac_count++;
     }
-    if(mat_count == 1) pure_cell_count++;
-    if(mat_count == 1) onematcell++;
-    if(mat_count == 2) twomatcell++;
-    if(mat_count == 3) threematcell++;
-    if(mat_count == 4) fourmatcell++;
-    if(mat_count >= 5) fiveplusmatcell++;
+    if(mat_count == 1)
+    {
+      pure_cell_count++;
+    }
+    if(mat_count == 1)
+    {
+      onematcell++;
+    }
+    if(mat_count == 2)
+    {
+      twomatcell++;
+    }
+    if(mat_count == 3)
+    {
+      threematcell++;
+    }
+    if(mat_count == 4)
+    {
+      fourmatcell++;
+    }
+    if(mat_count >= 5)
+    {
+      fiveplusmatcell++;
+    }
   }
   fclose(fp);
 
@@ -499,7 +520,10 @@ void get_vol_frac_matrix_rand(int& ncells,
   {
     int m1 =
       (int)((float)rand() * (float)nmats / (float)((long long)RAND_MAX + 1));
-    if(m1 > nmats - 1) m1 = nmats - 1;
+    if(m1 > nmats - 1)
+    {
+      m1 = nmats - 1;
+    }
     Volfrac[ic * nmats + m1] = 1.0;
     int mf = mf_rand[ic];
     if(mf < 25)
@@ -525,9 +549,18 @@ void get_vol_frac_matrix_rand(int& ncells,
         m4 =
           (int)((float)rand() * (float)nmats / (float)((long long)RAND_MAX + 1));
       }
-      if(m2 > nmats - 1) m2 = nmats - 1;
-      if(m3 > nmats - 1) m3 = nmats - 1;
-      if(m4 > nmats - 1) m4 = nmats - 1;
+      if(m2 > nmats - 1)
+      {
+        m2 = nmats - 1;
+      }
+      if(m3 > nmats - 1)
+      {
+        m3 = nmats - 1;
+      }
+      if(m4 > nmats - 1)
+      {
+        m4 = nmats - 1;
+      }
       Volfrac[ic * nmats + m1] = 0.4;
       Volfrac[ic * nmats + m2] = 0.3;
       Volfrac[ic * nmats + m3] = 0.2;
@@ -545,8 +578,14 @@ void get_vol_frac_matrix_rand(int& ncells,
       {
         m3 = (float)rand() * (float)nmats / (float)((long long)RAND_MAX + 1);
       }
-      if(m2 > nmats - 1) m2 = nmats - 1;
-      if(m3 > nmats - 1) m3 = nmats - 1;
+      if(m2 > nmats - 1)
+      {
+        m2 = nmats - 1;
+      }
+      if(m3 > nmats - 1)
+      {
+        m3 = nmats - 1;
+      }
       Volfrac[ic * nmats + m1] = 0.5;
       Volfrac[ic * nmats + m2] = 0.3;
       Volfrac[ic * nmats + m3] = 0.2;
@@ -558,7 +597,10 @@ void get_vol_frac_matrix_rand(int& ncells,
       {
         m2 = (float)rand() * (float)nmats / (float)((long long)RAND_MAX + 1);
       }
-      if(m2 > nmats - 1) m2 = nmats - 1;
+      if(m2 > nmats - 1)
+      {
+        m2 = nmats - 1;
+      }
       Volfrac[ic * nmats + m1] = 0.5;
       Volfrac[ic * nmats + m2] = 0.5;
     }
@@ -581,12 +623,30 @@ void get_vol_frac_matrix_rand(int& ncells,
     {
       pure_frac_count++;
     }
-    if(mat_count == 1) pure_cell_count++;
-    if(mat_count == 1) onematcell++;
-    if(mat_count == 2) twomatcell++;
-    if(mat_count == 3) threematcell++;
-    if(mat_count == 4) fourmatcell++;
-    if(mat_count >= 5) fiveplusmatcell++;
+    if(mat_count == 1)
+    {
+      pure_cell_count++;
+    }
+    if(mat_count == 1)
+    {
+      onematcell++;
+    }
+    if(mat_count == 2)
+    {
+      twomatcell++;
+    }
+    if(mat_count == 3)
+    {
+      threematcell++;
+    }
+    if(mat_count == 4)
+    {
+      fourmatcell++;
+    }
+    if(mat_count >= 5)
+    {
+      fiveplusmatcell++;
+    }
   }
 
   printf("Ratios to Full Data Structure\n");
@@ -669,6 +729,7 @@ void get_neighbors(int ncells,
       int jhi = j == ncells1 - 1 ? j : j + 1;
       int n = 0;
       for(int i1 = ilo; i1 <= ihi; i1++)
+      {
         for(int j1 = jlo; j1 <= jhi; j1++)
         {
           int c2 = i1 * ncells1 + j1;
@@ -678,6 +739,7 @@ void get_neighbors(int ncells,
             n++;
           }
         }
+      }
       num_nbrs[c] = n;
     }
   }
@@ -1032,7 +1094,10 @@ struct Result_Store
                << " NRuns: " << ITERMAX << "\n\n";
 
     outputFile << "Methods";
-    for(int i = 0; i < nMethod; i++) outputFile << "," << method_names[i];
+    for(int i = 0; i < nMethod; i++)
+    {
+      outputFile << "," << method_names[i];
+    }
     outputFile << "\n";
 
     for(int i = 0; i < (int)result_vec.size() / nMethod; i++)
@@ -1043,9 +1108,15 @@ struct Result_Store
       bool all_zero = true;
       for(int j = 0; j < nMethod; j++)
       {
-        if(result_vec[idx + j] != 0.0) all_zero = false;
+        if(result_vec[idx + j] != 0.0)
+        {
+          all_zero = false;
+        }
       }
-      if(all_zero) continue;
+      if(all_zero)
+      {
+        continue;
+      }
 
       outputFile << get_algo_name(idx) << ",";
       for(int j = 0; j < nMethod; j++)

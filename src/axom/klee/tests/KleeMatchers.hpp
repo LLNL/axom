@@ -34,8 +34,7 @@ public:
     : m_mat(mat)
   { }
 
-  bool MatchAndExplain(const axom::numerics::Matrix<T>& other,
-                       std::ostream* /* listener */) const
+  bool MatchAndExplain(const axom::numerics::Matrix<T>& other, std::ostream*) const
   {
     if(other.getNumRows() != m_mat.getNumRows() ||
        other.getNumColumns() != m_mat.getNumColumns())
@@ -59,8 +58,8 @@ public:
     return true;
   }
 
-  void DescribeTo(std::ostream* os) const { }
-  void DescribeNegationTo(std::ostream* os) const { }
+  void DescribeTo(std::ostream*) const { }
+  void DescribeNegationTo(std::ostream*) const { }
 
 private:
   const axom::numerics::Matrix<T> m_mat;
@@ -85,7 +84,7 @@ public:
 
   explicit AlmostEqArrMatcher(const T& arr) : m_arr(arr) { }
 
-  bool MatchAndExplain(const T& other, std::ostream* /* listener */) const
+  bool MatchAndExplain(const T& other, std::ostream*) const
   {
     for(int i = 0; i < m_arr.dimension(); ++i)
     {
@@ -97,8 +96,8 @@ public:
     return true;
   }
 
-  void DescribeTo(std::ostream* os) const { }
-  void DescribeNegationTo(std::ostream* os) const { }
+  void DescribeTo(std::ostream*) const { }
+  void DescribeNegationTo(std::ostream*) const { }
 
 private:
   const T m_arr;
@@ -130,8 +129,7 @@ public:
     : m_slice(slice)
   { }
 
-  bool MatchAndExplain(const klee::SliceOperator& other,
-                       std::ostream* /* listener */) const
+  bool MatchAndExplain(const klee::SliceOperator& other, std::ostream*) const
   {
     return ::testing::Matches(AlmostEqPoint(m_slice.getOrigin()))(
              other.getOrigin()) &&
@@ -141,8 +139,8 @@ public:
              other.getStartProperties());
   }
 
-  void DescribeTo(std::ostream* os) const { }
-  void DescribeNegationTo(std::ostream* os) const { }
+  void DescribeTo(std::ostream*) const { }
+  void DescribeNegationTo(std::ostream*) const { }
 
 private:
   const klee::SliceOperator m_slice;
