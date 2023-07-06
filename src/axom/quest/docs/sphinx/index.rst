@@ -34,6 +34,8 @@ on a ``mint::Mesh``.
     - :ref:`All nearest neighbors<all-nearest>`: given a list of point
       locations and regions, find all neighbors of each point in a different
       region
+    - :ref:`Isosurface detection<isosurface-detection>`: generate an
+      isosurface mesh from a nodal scalar field and an isovalue.
 
 
 API Documentation
@@ -52,4 +54,5 @@ Doxygen generated API documentation can be found here: `API documentation <../..
    point_mesh_query_cpp
    point_in_cell
    all_nearest_neighbors
+   isosurface_detection
 
