@@ -206,31 +206,39 @@ void MarchingCubesSingleDomain::allocateImpl()
   if(m_runtimePolicy == RuntimePolicy::seq)
   {
     m_impl = m_ndim == 2
-      ? std::unique_ptr<ImplBase>(new MarchingCubesImpl<2, axom::SEQ_EXEC>)
-      : std::unique_ptr<ImplBase>(new MarchingCubesImpl<3, axom::SEQ_EXEC>);
+      ? std::unique_ptr<ImplBase>(
+          new MarchingCubesImpl<2, axom::SEQ_EXEC, axom::SEQ_EXEC>)
+      : std::unique_ptr<ImplBase>(
+          new MarchingCubesImpl<3, axom::SEQ_EXEC, axom::SEQ_EXEC>);
   }
 #ifdef _AXOM_MC_USE_OPENMP
   else if(m_runtimePolicy == RuntimePolicy::omp)
   {
     m_impl = m_ndim == 2
-      ? std::unique_ptr<ImplBase>(new MarchingCubesImpl<2, axom::OMP_EXEC>)
-      : std::unique_ptr<ImplBase>(new MarchingCubesImpl<3, axom::OMP_EXEC>);
+      ? std::unique_ptr<ImplBase>(
+          new MarchingCubesImpl<2, axom::OMP_EXEC, axom::SEQ_EXEC>)
+      : std::unique_ptr<ImplBase>(
+          new MarchingCubesImpl<3, axom::OMP_EXEC, axom::SEQ_EXEC>);
   }
 #endif
 #ifdef _AXOM_MC_USE_CUDA
   else if(m_runtimePolicy == RuntimePolicy::cuda)
   {
     m_impl = m_ndim == 2
-      ? std::unique_ptr<ImplBase>(new MarchingCubesImpl<2, axom::CUDA_EXEC<256>>)
-      : std::unique_ptr<ImplBase>(new MarchingCubesImpl<3, axom::CUDA_EXEC<256>>);
+      ? std::unique_ptr<ImplBase>(
+          new MarchingCubesImpl<2, axom::CUDA_EXEC<256>, axom::CUDA_EXEC<1>>)
+      : std::unique_ptr<ImplBase>(
+          new MarchingCubesImpl<3, axom::CUDA_EXEC<256>, axom::CUDA_EXEC<1>>);
   }
 #endif
 #ifdef _AXOM_MC_USE_HIP
   else if(m_runtimePolicy == RuntimePolicy::hip)
   {
     m_impl = m_ndim == 2
-      ? std::unique_ptr<ImplBase>(new MarchingCubesImpl<2, axom::HIP_EXEC<256>>)
-      : std::unique_ptr<ImplBase>(new MarchingCubesImpl<3, axom::HIP_EXEC<256>>);
+      ? std::unique_ptr<ImplBase>(
+          new MarchingCubesImpl<2, axom::HIP_EXEC<256>, axom::HIP_EXEC<1>>)
+      : std::unique_ptr<ImplBase>(
+          new MarchingCubesImpl<3, axom::HIP_EXEC<256>, axom::HIP_EXEC<1>>);
   }
 #endif
   else

@@ -106,12 +106,13 @@ if(CONDUIT_FOUND)
             set(_nranks 3)
         endif()
 
-        # Run the distributed closest point example on N ranks for each enabled policy
+        # Run the marching cubes example on N ranks for each enabled policy
         set(_policies "seq")
-        blt_list_append(TO _policies ELEMENTS "omp" IF ENABLE_OPENMP)
-        # Temporarily disable all execution policies the example doesn't yet support.
-        blt_list_append(TO _policies ELEMENTS "cuda" IF ENABLE_CUDA)
-        blt_list_append(TO _policies ELEMENTS "hip" IF ENABLE_HIP)
+        if(RAJA_FOUND)
+            blt_list_append(TO _policies ELEMENTS "omp" IF AXOM_ENABLE_OPENMP)
+            blt_list_append(TO _policies ELEMENTS "cuda" IF AXOM_ENABLE_CUDA)
+            blt_list_append(TO _policies ELEMENTS "hip" IF AXOM_ENABLE_HIP)
+        endif()
 
         # Non-zero empty-rank probability tests domain underloading case
         set(_meshes "mdmesh.2x1" "mdmesh.2x3" "mdmesh.2x2x1")
@@ -138,6 +139,7 @@ if(CONDUIT_FOUND)
                 axom_add_test(
                     NAME    ${_test}
                     COMMAND quest_marching_cubes_ex
+                                --policy ${_pol}
                                 --mesh-file ${quest_data_dir}/${_mesh}.root
                                 --fields-file ${_test}.field
                                 --dir ${_dir}

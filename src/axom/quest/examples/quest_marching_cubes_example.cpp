@@ -214,6 +214,68 @@ public:
   }
 };
 
+//!@brief Our allocatorId, based on execution policy.
+static int allocatorId = axom::INVALID_ALLOCATOR_ID;  // Set in main.
+static int allocatorIdForPolicy(quest::MarchingCubesRuntimePolicy policy)
+{
+  //---------------------------------------------------------------------------
+  // Set default allocator for possibly testing on devices
+  //---------------------------------------------------------------------------
+  int aid = axom::INVALID_ALLOCATOR_ID;
+
+  // clang-format off
+  if(policy == axom::quest::MarchingCubesRuntimePolicy::seq)
+  {
+    aid = axom::execution_space<axom::SEQ_EXEC>::allocatorID();
+  }
+#if defined(AXOM_USE_RAJA)
+#ifdef _AXOM_MC_USE_OPENMP
+  else if(policy == axom::quest::MarchingCubesRuntimePolicy::omp)
+  {
+    aid = axom::execution_space<axom::OMP_EXEC>::allocatorID();
+  }
+#endif
+#ifdef _AXOM_MC_USE_CUDA
+  else if(policy == axom::quest::MarchingCubesRuntimePolicy::cuda)
+  {
+    aid = axom::execution_space<axom::CUDA_EXEC<256>>::allocatorID();
+  }
+#endif
+#ifdef _AXOM_MC_USE_HIP
+  else if(policy == axom::quest::MarchingCubesRuntimePolicy::hip)
+  {
+    aid = axom::execution_space<axom::HIP_EXEC<256>>::allocatorID();
+  }
+#endif
+#endif
+  // clang-format on
+
+  SLIC_ERROR_IF(
+    aid == axom::INVALID_ALLOCATOR_ID,
+    axom::fmt::format("Cannot find allocator id for policy '{}'", policy));
+  return aid;
+}
+
+//!@brief Put a conduit::Node array data into the specified memory space.
+template <typename T>
+void putConduitDataInNewMemorySpace(conduit::Node& node,
+                                    const std::string& path,
+                                    int allocId)
+{
+  SLIC_ASSERT(node.has_path(path));
+  conduit::Node& dataNode = node[path];
+  SLIC_ASSERT(!dataNode.dtype().is_empty() && !dataNode.dtype().is_object() &&
+              !dataNode.dtype().is_list());
+
+  std::size_t count = dataNode.dtype().number_of_elements();
+  // dataNode.print();
+  T* oldPtr = static_cast<T*>(dataNode.data_ptr());
+  T* newPtr = axom::allocate<T>(count, allocId);
+  axom::copy(newPtr, oldPtr, count * sizeof(T));
+  dataNode.set_external(newPtr, count);
+  dataNode.print();
+}
+
 Input params;
 
 int myRank = -1, numRanks = -1;  // MPI stuff, set in main().
@@ -243,6 +305,16 @@ public:
     if(_ndims == 3)
     {
       checkMeshStorage<3>();
+    }
+
+    _maxSpacing = maxSpacing();
+
+    putMeshDataInNewMemorySpace<double>(_coordsetPath + "/values/x", allocatorId);
+    putMeshDataInNewMemorySpace<double>(_coordsetPath + "/values/y", allocatorId);
+    if(_ndims == 3)
+    {
+      putMeshDataInNewMemorySpace<double>(_coordsetPath + "/values/z",
+                                          allocatorId);
     }
   }
 
@@ -347,9 +419,18 @@ public:
 
   /*!
     @return largest mesh spacing.
+
+    Compute only once, because after that, coordinates data may be
+    moved to devices.
   */
   double maxSpacing() const
   {
+    if(_maxSpacing >= 0)
+    {
+      // Max spacing has been computed and cached.
+      return _maxSpacing;
+    }
+
     double localRval = 0.0;
     for(axom::IndexType domId = 0; domId < domainCount(); ++domId)
     {
@@ -533,12 +614,29 @@ public:
     }
   }
 
+  /*!
+    @param[in] path Path to existing data in the blueprint mesh,
+    relative to each domain in the mesh.
+    @param[in] allocId Allocator id for the new memory space.
+    @tparam Type of data being moved.  Should be something Conduit
+    supports, i.e., not custom user data.
+  */
+  template <typename T>
+  void putMeshDataInNewMemorySpace(const std::string& path, int allocId)
+  {
+    for(auto& dom : _mdMesh.children())
+    {
+      putConduitDataInNewMemorySpace<T>(dom, path, allocId);
+    }
+  }
+
 private:
   int _ndims {-1};
   conduit::Node _mdMesh;
   axom::IndexType _domCount;
   const std::string _coordsetPath;
   const std::string _topologyPath;
+  double _maxSpacing = -1.0;
 
   /*!
     @brief Read a blueprint mesh.
@@ -568,8 +666,7 @@ private:
 #endif
     SLIC_ASSERT(_ndims > 0);
 
-    bool valid = isValid();
-    SLIC_ASSERT(valid);
+    SLIC_ASSERT(isValid());
   }
 };  // BlueprintStructuredMesh
 
@@ -705,7 +802,7 @@ axom::StackArray<axom::IndexType, DIM> flatToMultidimIndex(
   return rval;
 }
 
-template <int DIM>
+template <int DIM, typename ExecSpace>
 struct ContourTestBase
 {
   ContourTestBase()
@@ -721,10 +818,16 @@ struct ContourTestBase
   virtual std::string functionName() const = 0;
 
   //!@brief Return function value at a point.
-  virtual double value(const axom::primal::Point<double, DIM>& pt) const = 0;
+  virtual AXOM_HOST_DEVICE double value(
+    const axom::primal::Point<double, DIM>& pt) const = 0;
 
   //!@brief Return error tolerance for contour mesh accuracy check.
   virtual double errorTolerance() const = 0;
+
+  //!@brief Set nodal distances given nodal coordinates.
+  virtual void fillNodalValuesFromCoords(
+    axom::ArrayView<double, DIM> coordsViews[DIM],
+    axom::ArrayView<double, DIM>& fieldView) const = 0;
 
   const std::string m_parentCellIdField;
   const std::string m_domainIdField;
@@ -807,9 +910,6 @@ struct ContourTestBase
         coordsPtrs[d] = coordsValues[d].as_double_ptr();
         coordsViews[d] = axom::ArrayView<double, DIM>(coordsPtrs[d], shape);
       }
-      axom::ArrayView<axom::primal::Point<double, DIM>, DIM> coordsView(
-        (axom::primal::Point<double, DIM>*)coordsValues.data_ptr(),
-        shape);
 
       // Create the nodal function data.
       conduit::Node& fieldNode = dom["fields"][functionName()];
@@ -817,21 +917,11 @@ struct ContourTestBase
       fieldNode["topology"] = "mesh";
       fieldNode["volume_dependent"] = "false";
       fieldNode["values"].set(conduit::DataType::float64(pointCount));
+      putConduitDataInNewMemorySpace<double>(fieldNode, "values", allocatorId);
       double* d = fieldNode["values"].value();
       axom::ArrayView<double, DIM> fieldView(d, shape);
 
-      // Set the function value at the nodes.
-      // value(pt) is the virtual function defining the
-      // distance in a derived class.
-      for(int n = 0; n < pointCount; ++n)
-      {
-        axom::primal::Point<double, DIM> pt;
-        for(int d = 0; d < DIM; ++d)
-        {
-          pt[d] = coordsViews[d].flatIndex(n);
-        }
-        fieldView.flatIndex(n) = value(pt);
-      }
+      fillNodalValuesFromCoords(coordsViews, fieldView);
     }
   }
 
@@ -1191,16 +1281,16 @@ struct ContourTestBase
 /*!
   @brief Function providing distance from a point.
 */
-template <int DIM>
-struct RoundContourTest : public ContourTestBase<DIM>
+template <int DIM, typename ExecSpace>
+struct RoundContourTest : public ContourTestBase<DIM, ExecSpace>
 {
   RoundContourTest(const axom::primal::Point<double, DIM>& pt)
-    : ContourTestBase<DIM>()
-    , _center(pt)
+    : ContourTestBase<DIM, ExecSpace>()
+    , _sphere(pt, 0.0)
     , _errTol(1e-3)
   { }
   virtual ~RoundContourTest() { }
-  const axom::primal::Point<double, DIM> _center;
+  const axom::primal::Sphere<double, DIM> _sphere;
   double _errTol;
 
   virtual std::string name() const override { return std::string("round"); }
@@ -1210,11 +1300,9 @@ struct RoundContourTest : public ContourTestBase<DIM>
     return std::string("dist_to_center");
   }
 
-  double value(const axom::primal::Point<double, DIM>& pt) const override
+  AXOM_HOST_DEVICE double value(const axom::primal::Point<double, DIM>& pt) const override
   {
-    double dist = primal::squared_distance(_center, pt);
-    dist = sqrt(dist);
-    return dist;
+    return _sphere.computeSignedDistance(pt);
   }
 
   double errorTolerance() const override { return _errTol; }
@@ -1224,13 +1312,37 @@ struct RoundContourTest : public ContourTestBase<DIM>
     double maxSpacing = bsm.maxSpacing();
     _errTol = 0.1 * maxSpacing;
   }
+
+  void fillNodalValuesFromCoords(axom::ArrayView<double, DIM> coordsViews_[DIM],
+                                 axom::ArrayView<double, DIM>& fieldView) const override
+  {
+    const axom::IndexType pointCount = fieldView.size();
+
+    axom::ArrayView<double, DIM> coordsViews[DIM];
+    for(int d = 0; d < DIM; ++d) coordsViews[d] = coordsViews_[d];
+
+    // Duplicate member data so devices don't have to use the this pointer.
+    const auto sphere = _sphere;
+
+    auto loopBody = AXOM_LAMBDA(int n)
+    {
+      axom::primal::Point<double, DIM> pt;
+      for(int d = 0; d < DIM; ++d)
+      {
+        pt[d] = coordsViews[d].flatIndex(n);
+      }
+      fieldView.flatIndex(n) = sphere.computeSignedDistance(pt);
+    };
+
+    axom::for_all<ExecSpace>(0, pointCount, loopBody);
+  }
 };
 
 /*!
   @brief Function providing signed distance from a plane.
 */
-template <int DIM>
-struct PlanarContourTest : public ContourTestBase<DIM>
+template <int DIM, typename ExecSpace>
+struct PlanarContourTest : public ContourTestBase<DIM, ExecSpace>
 {
   /*!
     @brief Constructor.
@@ -1240,13 +1352,11 @@ struct PlanarContourTest : public ContourTestBase<DIM>
   */
   PlanarContourTest(const axom::primal::Point<double, DIM>& inPlane,
                     const axom::primal::Vector<double, DIM>& perpDir)
-    : ContourTestBase<DIM>()
-    , _inPlane(inPlane)
-    , _normal(perpDir.unitVector())
+    : ContourTestBase<DIM, ExecSpace>()
+    , _plane(perpDir.unitVector(), inPlane)
   { }
   virtual ~PlanarContourTest() { }
-  const axom::primal::Point<double, DIM> _inPlane;
-  const axom::primal::Vector<double, DIM> _normal;
+  const axom::primal::Plane<double, DIM> _plane;
 
   virtual std::string name() const override { return std::string("planar"); }
 
@@ -1255,14 +1365,36 @@ struct PlanarContourTest : public ContourTestBase<DIM>
     return std::string("dist_to_plane");
   }
 
-  double value(const axom::primal::Point<double, DIM>& pt) const override
+  AXOM_HOST_DEVICE double value(const axom::primal::Point<double, DIM>& pt) const override
   {
-    axom::primal::Vector<double, DIM> r(_inPlane, pt);
-    double dist = r.dot(_normal);
-    return dist;
+    return _plane.signedDistance(pt);
   }
 
   double errorTolerance() const override { return 1e-15; }
+
+  void fillNodalValuesFromCoords(axom::ArrayView<double, DIM> coordsViews_[DIM],
+                                 axom::ArrayView<double, DIM>& fieldView) const override
+  {
+    const axom::IndexType pointCount = fieldView.size();
+
+    axom::ArrayView<double, DIM> coordsViews[DIM];
+    for(int d = 0; d < DIM; ++d) coordsViews[d] = coordsViews_[d];
+
+    // Duplicate member data so devices don't have to use the this pointer.
+    const auto plane = _plane;
+
+    auto loopBody = AXOM_LAMBDA(int n)
+    {
+      axom::primal::Point<double, DIM> pt;
+      for(int d = 0; d < DIM; ++d)
+      {
+        pt[d] = coordsViews[d].flatIndex(n);
+      }
+      fieldView.flatIndex(n) = plane.signedDistance(pt);
+    };
+
+    axom::for_all<ExecSpace>(0, pointCount, loopBody);
+  }
 };
 
 /// Utility function to transform blueprint node storage.
@@ -1325,7 +1457,7 @@ void finalizeLogger()
 /*!
   All the test code that depends on DIM to instantiate.
 */
-template <int DIM>
+template <int DIM, typename ExecSpace>
 int testNdimInstance(BlueprintStructuredMesh& computationalMesh)
 {
   // Create marching cubes algorithm object and set some parameters
@@ -1337,23 +1469,24 @@ int testNdimInstance(BlueprintStructuredMesh& computationalMesh)
   // params specify which tests to run.
   //---------------------------------------------------------------------------
 
-  std::shared_ptr<RoundContourTest<DIM>> roundTest;
-  std::shared_ptr<PlanarContourTest<DIM>> planarTest;
+  std::shared_ptr<RoundContourTest<DIM, ExecSpace>> roundTest;
+  std::shared_ptr<PlanarContourTest<DIM, ExecSpace>> planarTest;
 
   if(params.usingRound)
   {
-    roundTest =
-      std::make_shared<RoundContourTest<DIM>>(params.roundContourCenter<DIM>());
+    roundTest = std::make_shared<RoundContourTest<DIM, ExecSpace>>(
+      params.roundContourCenter<DIM>());
     roundTest->setToleranceByLongestEdge(computationalMesh);
     roundTest->computeNodalDistance(computationalMesh);
   }
   if(params.usingPlanar)
   {
-    planarTest =
-      std::make_shared<PlanarContourTest<DIM>>(params.inplanePoint<DIM>(),
-                                               params.planeNormal<DIM>());
+    planarTest = std::make_shared<PlanarContourTest<DIM, ExecSpace>>(
+      params.inplanePoint<DIM>(),
+      params.planeNormal<DIM>());
     planarTest->computeNodalDistance(computationalMesh);
   }
+  computationalMesh.printMeshInfo();
 
   // Write computational mesh with contour functions.
   saveMesh(computationalMesh.asConduitNode(), params.fieldsFile);
@@ -1440,11 +1573,12 @@ int main(int argc, char** argv)
     exit(retval);
   }
 
+  allocatorId = allocatorIdForPolicy(params.policy);
+
   //---------------------------------------------------------------------------
   // Load computational mesh.
   //---------------------------------------------------------------------------
   BlueprintStructuredMesh computationalMesh(params.meshFile);
-  // computationalMesh.printMeshInfo();
 
   SLIC_INFO_IF(
     params.isVerbose(),
@@ -1489,15 +1623,62 @@ int main(int argc, char** argv)
 
   slic::flushStreams();
 
+  //---------------------------------------------------------------------------
+  // Run test in the execution space set by command line.
+  //---------------------------------------------------------------------------
   int errCount = 0;
-  if(params.ndim == 2)
+  if(params.policy == quest::MarchingCubesRuntimePolicy::seq)
   {
-    errCount = testNdimInstance<2>(computationalMesh);
+    if(params.ndim == 2)
+    {
+      errCount = testNdimInstance<2, axom::SEQ_EXEC>(computationalMesh);
+    }
+    else if(params.ndim == 3)
+    {
+      errCount = testNdimInstance<3, axom::SEQ_EXEC>(computationalMesh);
+    }
   }
-  else if(params.ndim == 3)
+#if defined(AXOM_USE_RAJA)
+  #ifdef AXOM_USE_OPENMP
+  else if(params.policy == quest::MarchingCubesRuntimePolicy::omp)
   {
-    errCount = testNdimInstance<3>(computationalMesh);
+    if(params.ndim == 2)
+    {
+      errCount = testNdimInstance<2, axom::OMP_EXEC>(computationalMesh);
+    }
+    else if(params.ndim == 3)
+    {
+      errCount = testNdimInstance<3, axom::OMP_EXEC>(computationalMesh);
+    }
   }
+  #endif
+  #if defined(AXOM_USE_CUDA) && defined(AXOM_USE_UMPIRE)
+  else if(params.policy == quest::MarchingCubesRuntimePolicy::cuda)
+  {
+    if(params.ndim == 2)
+    {
+      errCount = testNdimInstance<2, axom::CUDA_EXEC<256>>(computationalMesh);
+    }
+    else if(params.ndim == 3)
+    {
+      errCount = testNdimInstance<3, axom::CUDA_EXEC<256>>(computationalMesh);
+    }
+  }
+  #endif
+  #if defined(AXOM_USE_HIP) && defined(AXOM_USE_UMPIRE)
+  else if(params.policy == quest::MarchingCubesRuntimePolicy::hip)
+  {
+    if(params.ndim == 2)
+    {
+      errCount = testNdimInstance<2, axom::HIP_EXEC<256>>(computationalMesh);
+    }
+    else if(params.ndim == 3)
+    {
+      errCount = testNdimInstance<3, axom::HIP_EXEC<256>>(computationalMesh);
+    }
+  }
+  #endif
+#endif
 
   finalizeLogger();
 #ifdef AXOM_USE_MPI

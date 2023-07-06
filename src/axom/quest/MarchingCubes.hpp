@@ -64,7 +64,7 @@ namespace detail
 {
 namespace marching_cubes
 {
-template <int DIM, typename ExecSpace>
+template <int DIM, typename ExecSpace, typename SequentialLoopPolicy>
 class MarchingCubesImpl;
 }
 }  // namespace detail
@@ -184,7 +184,7 @@ private:
  */
 class MarchingCubesSingleDomain
 {
-  template <int DIM, typename ExecSpace>
+  template <int DIM, typename ExecSpace, typename SequentialLoopPolicy>
   friend class detail::marching_cubes::MarchingCubesImpl;
 
 public:
