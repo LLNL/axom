@@ -279,13 +279,13 @@ spack:
     # TODO: Several of these are preferences not hard requirements.
     #       We should move away from them here.
     conduit:
-      require: "@0.8.6~shared~test~examples~utilities"
+      require: "~shared~test~examples~utilities"
     hdf5:
       variants: ~shared~mpi
     hypre:
       version: [2.24.0]
     mfem:
-      require: "@4.5"
+      require: "@4.5.2"
     raja:
       variants: ~shared~examples~exercises
     umpire:

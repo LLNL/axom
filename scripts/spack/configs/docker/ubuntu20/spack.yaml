@@ -132,14 +132,14 @@ spack:
 
     # Globally lock version of third party libraries
     conduit:
-      require: "@0.8.6~shared~test~examples~utilities"
+      require: "~shared~test~examples~utilities"
     hdf5:
       variants: ~shared~mpi
     hypre:
       version: [2.24.0]
     # do shared mfem to allow PIC flag in mfem
     mfem:
-      require: "@4.5+shared~static"
+      require: "@4.5.2+shared~static"
     raja:
       variants: ~shared~examples~exercises
     scr:
