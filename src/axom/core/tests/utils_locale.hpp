@@ -22,10 +22,15 @@
 #include <memory>
 #include <stdexcept>
 #include <array>
+#include <vector>
 #include <set>
 #include <algorithm>
 
 #include "gtest/gtest.h"
+
+#ifdef _WIN32
+  #include <Windows.h>
+#endif
 
 namespace
 {
@@ -53,6 +58,16 @@ std::string execute_command(const std::string& cmd)
   return result;
 }
 #endif  // __linux__
+
+#ifdef _WIN32
+/// call back function for EnumSystemLocaleEx call in enumerate_locales_windows test
+BOOL CALLBACK MyFuncLocaleEx(LPWSTR pStr, DWORD dwFlags, LPARAM strvec_ptr)
+{
+  using StrVec = std::vector<std::wstring>;
+  reinterpret_cast<StrVec*>(strvec_ptr)->push_back(pStr);
+  return TRUE;
+}
+#endif
 
 }  // end anonymous namespace
 
@@ -198,7 +213,43 @@ TEST(utils_locale, enumerate_locales_linux)
     }
   }
 
-  std::cout << axom::fmt::format("Available locales on this system: '{}'\n",
+  std::cout << axom::fmt::format("{} available locales on this system: '{}'\n",
+                                 available_locales.size(),
                                  axom::fmt::join(available_locales, "', '"));
 }
 #endif  // __linux__
+
+#ifdef _WIN32
+TEST(utils_locale, enumerate_locales_windows)
+{
+  std::vector<std::wstring> locale_list;
+  std::vector<std::string> available_locales;
+
+  // get vector of locales
+  LPARAM lparam = reinterpret_cast<LPARAM>(&locale_list);
+  EnumSystemLocalesEx(MyFuncLocaleEx, LOCALE_ALL, lparam, nullptr);
+
+  // sort and unique-ify the list
+  std::sort(locale_list.begin(), locale_list.end());
+  locale_list.erase(std::unique(locale_list.begin(), locale_list.end()),
+                    locale_list.end());
+
+  // check if each item can successfully be used to create a locale
+  for(const auto& loc_str : locale_list)
+  {
+    try
+    {
+      auto loc = std::locale(std::string(loc_str.begin(), loc_str.end()));
+      available_locales.push_back(loc.name());
+    }
+    catch(std::runtime_error&)
+    {
+      // could not instantiate this locale
+    }
+  }
+
+  std::cout << axom::fmt::format("{} available locales on this system: '{}'\n",
+                                 available_locales.size(),
+                                 axom::fmt::join(available_locales, "', '"));
+}
+#endif  // _WIN32
