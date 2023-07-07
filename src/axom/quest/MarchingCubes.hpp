@@ -75,8 +75,10 @@ class MarchingCubesSingleDomain;
  * \@brief Class implementing marching cubes to compute a contour
  * mesh from a scalar function on an input mesh.
  *
- * This implementation is for the original algorithm of Lorensen and
- * Cline, 1987.
+ * This implementation is for the original 1987 algorithm:
+ * Lorensen, William E.; Cline, Harvey E. (1 August 1987).
+ * "Marching cubes: A high resolution 3D surface construction algorithm".
+ * ACM SIGGRAPH Computer Graphics. 21 (4): 163-169
  *
  * Implementation is for 2D (marching squares) and 3D (marching
  * cubes).
@@ -113,10 +115,17 @@ public:
    * \brief Constructor sets up computational mesh and data for running the
    * marching cubes algorithm.
    *
+   * \param [in] runtimePolicy A value from MarchingCubesRuntimePolicy.
+   *             The simplest policy is RuntimePolicy::seq, which specifies
+   *             running sequentially on the CPU.
    * \param [in] bpMesh Blueprint multi-domain mesh containing scalar field.
    * \param [in] coordsetName Name of blueprint point coordinate set.
    * \param [in] maskField Cell-based std::int32_t mask field.  If provided,
    *             cells where this field evaluates to false are skipped.
+   *
+   * Array data in \a dom must be accessible in the \a runtimePolicy
+   * environment.  It's an error if not, e.g., using CPU memory with
+   * a GPU policy.
    *
    * Some data from \a bpMesh may be cached by the constructor.
    * Any change to it after the constructor leads to undefined behavior.
@@ -194,13 +203,16 @@ public:
    * See MarchingCubes for the multi-domain implementation.
    *
    * \param [in] runtimePolicy A value from MarchingCubesRuntimePolicy.
+   *             The simplest policy is RuntimePolicy::seq, which specifies
+   *             running sequentially on the CPU.
    * \param [in] dom Blueprint single-domain mesh containing scalar field.
    * \param [in] coordsetName Name of blueprint point coordinate set.
    * \param [in] maskField Cell-based std::int32_t mask field.  If provided,
    *             cells where this field evaluates to false are skipped.
    *
-   * Data in \a dom should be accessible in the \a runtimePolicy
-   * environment.  It's an error if not.
+   * Array data in \a dom must be accessible in the \a runtimePolicy
+   * environment.  It's an error if not, e.g., using CPU memory with
+   * a GPU policy.
    *
    * Some data from \a dom may be cached by the constructor.
    * Any change to it after the constructor leads to undefined behavior.

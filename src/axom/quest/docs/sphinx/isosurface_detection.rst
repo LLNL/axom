@@ -11,25 +11,36 @@ Isosurface Detection
 
 Quest can generate isosurface meshes for node-centered scalar fields.
 This feature takes a structured mesh with some scalar nodal field and
-generates an ``UnstructureMesh`` at a user-specified isovalue.  The
+generates an ``UnstructuredMesh`` at a user-specified isovalue.  The
 isosurface mesh contains information on which elements of the field
 mesh it crosses.  The output may be useful for material surface
 reconstruction and visualization, among other things.
 
-We support 2D and 3D configurations.  The isosurface mesh is a line
-or a surface, respectively.
+We support 2D and 3D configurations.  The isosurface mesh is a
+composed of line segments in 2D and triangles in 3D.
 
 .. Note::
 
-   Currently, only the 1987 Lorensen and Cline marching cubes
-   algorithm is implemented.  Other similar or improved algorithms
-   could be added in the future.
+   The current implementation is for the original algorithm:
+
+   Lorensen, William E.; Cline, Harvey E. (1 August 1987).
+   "Marching cubes: A high resolution 3D surface construction algorithm".
+   *ACM SIGGRAPH Computer Graphics*. 21 (**4**): 163-169
+
+   Other similar or improved algorithms could be added in the future.
 
 .. Note::
 
    If an input mesh cell contains an isosurface saddle point, the
    isocontour topology is ambiguous.  This implementation will choose
    the topology arbitrarily but consistently.
+
+.. figure:: figs/planar_and_spherical_isosurfaces.png
+   :width: 400px
+
+   Isocontours generated for a planar field :math:`f(\mathbf{r}) = f_0 + \mathbf{r} \cdot \mathbf{n}`
+   and a spherical field :math:`g(\mathbf{r}) = |\textbf{r} - \textbf{r}_0|`.  Colors
+   denote the domain index in the multi-domain cubic mesh.
 
 This feature is implemented in the class ``quest::MarchingCubes``.
 
@@ -38,7 +49,8 @@ The inputs are:
 #. The input mesh containing the scalar field.  This mesh should be in
    Conduit's blueprint format.
    See https://llnl-conduit.readthedocs.io/en/latest/blueprint_mesh.html
-#. The name of the blueprint coordinates data and scalar field data.
+#. The name of the blueprint coordinates for the input mesh.
+#. The name of the scalar field data within the input mesh.
 #. The contour value.
 
 ``MarchingCubes`` generates the isocontour mesh in an internal format.
@@ -49,7 +61,7 @@ The following example shows usage of the ``MarchingCubes`` class.
 (A complete example is provided in
 ``src/axom/quest/examples/quest_marching_cubes_example.cpp``.)
 
-Relevant header files
+Relevant header files:
 
 .. sourcecode:: C++
 
@@ -57,41 +69,64 @@ Relevant header files
    #include "axom/quest/MarchingCubes.hpp"
    #include "axom/mint/mesh/UnstructuredMesh.hpp"
 
-Set up the user's blueprint mesh and the ``MarchingCubes`` object.
+Set up the user's blueprint mesh and the ``MarchingCubes`` object:
+
+The blueprint mesh must be a structured mesh in multi-domain format.
+A domain is part of a global mesh that has been subdivided for reasons
+including parallel partitioning and geometric constraints.  Any number
+of domain is allowed, including zero.  (For single-domain format, see
+the similar ``MarchingCubesSingleDomain`` class in the ``axom::quest``
+namespace.)
+
+Blueprint convention allows for named coordinate sets and scalar
+fields.  Here, we tell the ``MarchingCubes`` constructor that the
+coordinate set name is "coordset", and the name of the nodal scalar
+field is "scalarFieldName".
+
+The constructor argument ``quest::MarchingCubesRuntimePolicy::`` tells
+``mc`` to run on the host.  ``MarchingCubes`` currently also supports
+OpenMP and GPU device executions using CUDA and HIP.
 
 .. sourcecode:: C++
 
-   // Set up a blueprint mesh with coordset name "coordset"
-   // and node-centered scalar field "scalarFieldName".
-   // The blueprint mesh must be a structured mesh in
-   // multi-domain format.  For single-domain format,
-   // see the similar ``MarchingCubesSingleDomain`` class
-   // in the same namespace.
    conduit::Node blueprintMesh = blueprint_mesh_from_user();
-
    quest::MarchingCubes mc(quest::MarchingCubesRuntimePolicy::seq,
                            blueprintMesh,
                            "coordset",
                            "scalarFieldName");
 
-Run the algorithm.
+Run the algorithm:
 
 .. sourcecode:: C++
 
    double contourValue = 0.5;
    mc.computeIsocontour(contourValue);
 
-Place the isocontour in an output mesh.
+Place the isocontour in an output ``mint::UnstructuredMesh`` object:
+
+Use ``populateContourMesh`` for this.  The isosurface extraction
+provides two scalar fields for the generate mesh:
+
+#. the Id of the cell from the input mesh that generated the
+   isocontour cell.
+#. the ID of the domain from the input mesh that generated the
+   isocontour cell.
+
+The names of these fields are user-specified.  Use empty strings if
+you don't need these fields.
 
 .. sourcecode:: C++
 
-   // Place output contour in a mint::UnstructuredMesh object.  For each
-   // cell in the contourMesh, put the coresponding cell id from
-   // blueprintMesh in field "cellIds" and the coreesponding domain
-   // ids in field "domainIds".
    mint::UnstructuredMesh<axom::mint::SINGLE_SHAPE> contourMesh;
    mc.populateContourMesh(contourMesh, "cellIds", "domainIds");
 
 After putting the isosurface in the ``UnstructuredMesh`` object,
-the ``MarchingCubes`` object may be deleted.
+the ``MarchingCubes`` object is no longer needed.
 
+MPI-parallel runs:
+
+For MPI-parallel runs, the input mesh may have local and remote
+domains.  The algorithm is local in that no data communication is
+required to run.  The output isosurface mesh uses node and cell
+numbers that are locally unique.  Users requiring these numbers to be
+globally unique should renumber them.
