@@ -627,11 +627,10 @@ int main(int argc, char** argv)
 #endif
 
   // TODO: Optionally convert to low order mesh ?
-
-  SLIC_INFO(axom::fmt::format("Saving mesh file '{}'", dc.GetCollectionName()));
-#ifdef MFEM_USE_MPI
+  SLIC_INFO(axom::fmt::format("Saving mesh file '{}' in directory '{}'",
+                              dc.GetCollectionName(),
+                              axom::utilities::filesystem::getCWD()));
   dc.Save();
-#endif
 
   // Cleanup and exit
   finalizeLogger();
