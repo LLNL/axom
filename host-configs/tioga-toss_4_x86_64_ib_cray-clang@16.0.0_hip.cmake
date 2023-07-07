@@ -11,11 +11,11 @@
 #------------------------------------------------------------------------------
 if(DEFINED ENV{SPACK_CC})
 
-  set(CMAKE_C_COMPILER "/usr/WS1/axom/libs/toss_4_x86_64_ib_cray/2023_06_30_13_06_22/spack/lib/spack/env/clang/clang" CACHE PATH "")
+  set(CMAKE_C_COMPILER "/usr/WS1/axom/libs/toss_4_x86_64_ib_cray/2023_07_06_15_33_21/spack/lib/spack/env/clang/clang" CACHE PATH "")
 
-  set(CMAKE_CXX_COMPILER "/usr/WS1/axom/libs/toss_4_x86_64_ib_cray/2023_06_30_13_06_22/spack/lib/spack/env/clang/clang++" CACHE PATH "")
+  set(CMAKE_CXX_COMPILER "/usr/WS1/axom/libs/toss_4_x86_64_ib_cray/2023_07_06_15_33_21/spack/lib/spack/env/clang/clang++" CACHE PATH "")
 
-  set(CMAKE_Fortran_COMPILER "/usr/WS1/axom/libs/toss_4_x86_64_ib_cray/2023_06_30_13_06_22/spack/lib/spack/env/clang/flang" CACHE PATH "")
+  set(CMAKE_Fortran_COMPILER "/usr/WS1/axom/libs/toss_4_x86_64_ib_cray/2023_07_06_15_33_21/spack/lib/spack/env/clang/flang" CACHE PATH "")
 
 else()
 
@@ -68,7 +68,7 @@ set(HIP_CLANG_INCLUDE_PATH "/opt/rocm-5.5.1/hip/../llvm/lib/clang/16.0.0/include
 
 set(CMAKE_HIP_ARCHITECTURES "gfx90a" CACHE STRING "")
 
-set(CMAKE_EXE_LINKER_FLAGS "-Wl,--disable-new-dtags -L/opt/rocm-5.5.1/hip/../llvm/lib -L/opt/rocm-5.5.1/hip/lib -Wl,-rpath,/opt/rocm-5.5.1/hip/../llvm/lib:/opt/rocm-5.5.1/hip/lib -lpgmath -lflang -lflangrti -lompstub -lamdhip64  -L/opt/rocm-5.5.1/hip/../lib64 -Wl,-rpath,/opt/rocm-5.5.1/hip/../lib64 " CACHE STRING "")
+set(CMAKE_EXE_LINKER_FLAGS "-Wl,--disable-new-dtags -L/opt/rocm-5.5.1/hip/../llvm/lib -L/opt/rocm-5.5.1/hip/lib -Wl,-rpath,/opt/rocm-5.5.1/hip/../llvm/lib:/opt/rocm-5.5.1/hip/lib -lpgmath -lflang -lflangrti -lompstub -lamdhip64  -L/opt/rocm-5.5.1/hip/../lib64 -Wl,-rpath,/opt/rocm-5.5.1/hip/../lib64  -L/opt/rocm-5.5.1/hip/../lib -Wl,-rpath,/opt/rocm-5.5.1/hip/../lib -lamd_comgr -lhsa-runtime64 " CACHE STRING "")
 
 #------------------------------------------------
 # Hardware Specifics
@@ -82,17 +82,17 @@ set(ENABLE_GTEST_DEATH_TESTS ON CACHE BOOL "")
 # TPLs
 #------------------------------------------------------------------------------
 
-set(TPL_ROOT "/usr/WS1/axom/libs/toss_4_x86_64_ib_cray/2023_06_30_13_06_22/clang-16.0.0" CACHE PATH "")
+set(TPL_ROOT "/usr/WS1/axom/libs/toss_4_x86_64_ib_cray/2023_07_06_15_33_21/clang-16.0.0" CACHE PATH "")
 
-set(CONDUIT_DIR "${TPL_ROOT}/conduit-0.8.6-fd2qm5rhkenpgh44clmockfbquwmkvs6" CACHE PATH "")
+set(CONDUIT_DIR "${TPL_ROOT}/conduit-0.8.6-fxfp4wpxxhlcnligbme6xz5hhgg5ym5i" CACHE PATH "")
 
 set(C2C_DIR "${TPL_ROOT}/c2c-1.8.0-hdansjhun2h7wr3lijprejssokwnqytk" CACHE PATH "")
 
-set(MFEM_DIR "${TPL_ROOT}/mfem-4.5.0-wfsaqsrwfemn5mfpne6cqxqzga36d3pl" CACHE PATH "")
+set(MFEM_DIR "${TPL_ROOT}/mfem-4.5.0-xu3c66ir5s4ytestw6jkytmk2rnk5e7i" CACHE PATH "")
 
-set(HDF5_DIR "${TPL_ROOT}/hdf5-1.8.22-zavad7jbrcd24kklctlne4k2mkwnnlfg" CACHE PATH "")
+set(HDF5_DIR "${TPL_ROOT}/hdf5-1.8.22-yqiu7xq5waof2e4pu37gjjotmvbhtfkw" CACHE PATH "")
 
-set(LUA_DIR "${TPL_ROOT}/lua-5.4.4-54girx7dqymiaxbxgo5s4xuvx7fc6ugq" CACHE PATH "")
+set(LUA_DIR "${TPL_ROOT}/lua-5.4.4-pyv3cj7dq74vvbdvznurff5sdiq25qlt" CACHE PATH "")
 
 set(RAJA_DIR "${TPL_ROOT}/raja-2022.03.0-aehonyb2o4iughgbtds7ga24xelhsqhu" CACHE PATH "")
 

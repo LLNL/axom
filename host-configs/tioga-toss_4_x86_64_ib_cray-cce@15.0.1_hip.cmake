@@ -11,11 +11,11 @@
 #------------------------------------------------------------------------------
 if(DEFINED ENV{SPACK_CC})
 
-  set(CMAKE_C_COMPILER "/usr/WS1/axom/libs/toss_4_x86_64_ib_cray/2023_06_30_13_06_22/spack/lib/spack/env/cce/craycc" CACHE PATH "")
+  set(CMAKE_C_COMPILER "/usr/WS1/axom/libs/toss_4_x86_64_ib_cray/2023_07_06_15_33_21/spack/lib/spack/env/cce/craycc" CACHE PATH "")
 
-  set(CMAKE_CXX_COMPILER "/usr/WS1/axom/libs/toss_4_x86_64_ib_cray/2023_06_30_13_06_22/spack/lib/spack/env/cce/case-insensitive/crayCC" CACHE PATH "")
+  set(CMAKE_CXX_COMPILER "/usr/WS1/axom/libs/toss_4_x86_64_ib_cray/2023_07_06_15_33_21/spack/lib/spack/env/cce/case-insensitive/crayCC" CACHE PATH "")
 
-  set(CMAKE_Fortran_COMPILER "/usr/WS1/axom/libs/toss_4_x86_64_ib_cray/2023_06_30_13_06_22/spack/lib/spack/env/cce/crayftn" CACHE PATH "")
+  set(CMAKE_Fortran_COMPILER "/usr/WS1/axom/libs/toss_4_x86_64_ib_cray/2023_07_06_15_33_21/spack/lib/spack/env/cce/crayftn" CACHE PATH "")
 
 else()
 
@@ -70,7 +70,7 @@ set(CMAKE_HIP_ARCHITECTURES "gfx90a" CACHE STRING "")
 
 set(BLT_CMAKE_IMPLICIT_LINK_LIBRARIES_EXCLUDE "unwind" CACHE STRING "")
 
-set(CMAKE_EXE_LINKER_FLAGS " -L/opt/rocm-5.4.3/hip/../lib64 -Wl,-rpath,/opt/rocm-5.4.3/hip/../lib64 " CACHE STRING "")
+set(CMAKE_EXE_LINKER_FLAGS " -L/opt/rocm-5.4.3/hip/../lib64 -Wl,-rpath,/opt/rocm-5.4.3/hip/../lib64  -L/opt/rocm-5.4.3/hip/../lib -Wl,-rpath,/opt/rocm-5.4.3/hip/../lib -lamd_comgr -lhsa-runtime64 " CACHE STRING "")
 
 #------------------------------------------------
 # Hardware Specifics
@@ -84,17 +84,17 @@ set(ENABLE_GTEST_DEATH_TESTS ON CACHE BOOL "")
 # TPLs
 #------------------------------------------------------------------------------
 
-set(TPL_ROOT "/usr/WS1/axom/libs/toss_4_x86_64_ib_cray/2023_06_30_13_06_22/cce-15.0.1" CACHE PATH "")
+set(TPL_ROOT "/usr/WS1/axom/libs/toss_4_x86_64_ib_cray/2023_07_06_15_33_21/cce-15.0.1" CACHE PATH "")
 
-set(CONDUIT_DIR "${TPL_ROOT}/conduit-0.8.6-3vqsbwogrjipvqva7asa4eoth4xhsem7" CACHE PATH "")
+set(CONDUIT_DIR "${TPL_ROOT}/conduit-0.8.6-zc52yjrihba7ttun4xwj4srnncmfxjqw" CACHE PATH "")
 
 set(C2C_DIR "${TPL_ROOT}/c2c-1.8.0-wk54ms543nc2nssjqaqfknyrqynvglcd" CACHE PATH "")
 
-set(MFEM_DIR "${TPL_ROOT}/mfem-4.5.0-v6blj6vtfsp6mdzqa2vfaf6hjt4blamf" CACHE PATH "")
+set(MFEM_DIR "${TPL_ROOT}/mfem-4.5.0-k6p6caax3xuwzdhguqntnmy66bns4psk" CACHE PATH "")
 
-set(HDF5_DIR "${TPL_ROOT}/hdf5-1.8.22-kyuaayh7js6xvo4ylxtj2toquq5ixzve" CACHE PATH "")
+set(HDF5_DIR "${TPL_ROOT}/hdf5-1.8.22-64op72mdvtzrsnsfn5zuseiuunk7gyxx" CACHE PATH "")
 
-set(LUA_DIR "${TPL_ROOT}/lua-5.4.4-hfobxinovtz5o2a23ibcmifuwyjc52ha" CACHE PATH "")
+set(LUA_DIR "${TPL_ROOT}/lua-5.4.4-cval2g7u32pqgp4lczpavwkz753okwwc" CACHE PATH "")
 
 set(RAJA_DIR "${TPL_ROOT}/raja-2022.03.0-r72afubbarpoq6dxaibcpkxmgra4awpo" CACHE PATH "")
 
