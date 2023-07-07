@@ -1319,7 +1319,10 @@ struct RoundContourTest : public ContourTestBase<DIM, ExecSpace>
     const axom::IndexType pointCount = fieldView.size();
 
     axom::ArrayView<double, DIM> coordsViews[DIM];
-    for(int d = 0; d < DIM; ++d) coordsViews[d] = coordsViews_[d];
+    for(int d = 0; d < DIM; ++d)
+    {
+      coordsViews[d] = coordsViews_[d];
+    }
 
     // Duplicate member data so devices don't have to use the this pointer.
     const auto sphere = _sphere;
@@ -1378,7 +1381,10 @@ struct PlanarContourTest : public ContourTestBase<DIM, ExecSpace>
     const axom::IndexType pointCount = fieldView.size();
 
     axom::ArrayView<double, DIM> coordsViews[DIM];
-    for(int d = 0; d < DIM; ++d) coordsViews[d] = coordsViews_[d];
+    for(int d = 0; d < DIM; ++d)
+    {
+      coordsViews[d] = coordsViews_[d];
+    }
 
     // Duplicate member data so devices don't have to use the this pointer.
     const auto plane = _plane;
