@@ -32,30 +32,28 @@ composed of line segments in 2D and triangles in 3D.
 .. Note::
 
    If an input mesh cell contains an isosurface saddle point, the
-   isocontour topology is ambiguous.  This implementation will choose
+   isocontour topology is ambiguous.  The algorithm will choose
    the topology arbitrarily but consistently.
 
 .. figure:: figs/planar_and_spherical_isosurfaces.png
    :width: 400px
 
-   Isocontours generated for a planar field :math:`f(\mathbf{r}) = f_0 + \mathbf{r} \cdot \mathbf{n}`
-   and a spherical field :math:`g(\mathbf{r}) = |\textbf{r} - \textbf{r}_0|`.  Colors
-   denote the domain index in the multi-domain cubic mesh.
+   Planar isocontour generated using the field :math:`f(\mathbf{r}) =
+   f_0 + \mathbf{r} \cdot \mathbf{n}` and spherical contour generated
+   using the field field :math:`g(\mathbf{r}) = |\textbf{r} -
+   \textbf{r}_0|`.  Colors denote the domain index in the multi-domain
+   cubic mesh.
 
-This feature is implemented in the class ``quest::MarchingCubes``.
+The algorithm is implemented in the class ``quest::MarchingCubes``.
 
 The inputs are:
 
-#. The input mesh containing the scalar field.  This mesh should be in
-   Conduit's blueprint format.
-   See https://llnl-conduit.readthedocs.io/en/latest/blueprint_mesh.html
-#. The name of the blueprint coordinates for the input mesh.
+#. The mesh containing the scalar field.  This mesh should be in
+   Conduit's blueprint format.  See
+   https://llnl-conduit.readthedocs.io/en/latest/blueprint_mesh.html
+#. The name of the blueprint coordinates data for the input mesh.
 #. The name of the scalar field data within the input mesh.
 #. The contour value.
-
-``MarchingCubes`` generates the isocontour mesh in an internal format.
-Use ``populateContourMesh`` to put it in a ``mint::UnstructuredMesh``
-object.  In the future, we will support outputs in blueprint format.
 
 The following example shows usage of the ``MarchingCubes`` class.
 (A complete example is provided in
@@ -72,20 +70,21 @@ Relevant header files:
 Set up the user's blueprint mesh and the ``MarchingCubes`` object:
 
 The blueprint mesh must be a structured mesh in multi-domain format.
-A domain is part of a global mesh that has been subdivided for reasons
-including parallel partitioning and geometric constraints.  Any number
-of domain is allowed, including zero.  (For single-domain format, see
-the similar ``MarchingCubesSingleDomain`` class in the ``axom::quest``
-namespace.)
+A domain is a part of a global mesh that has been subdivided for
+reasons including parallel partitioning, geometric constraints and
+size constraints.  Any number of domains is allowed, including zero.
+(For single-domain format, see the similar
+``MarchingCubesSingleDomain`` class in the ``axom::quest`` namespace.)
 
 Blueprint convention allows for named coordinate sets and scalar
 fields.  Here, we tell the ``MarchingCubes`` constructor that the
 coordinate set name is "coordset", and the name of the nodal scalar
 field is "scalarFieldName".
 
-The constructor argument ``quest::MarchingCubesRuntimePolicy::`` tells
-``mc`` to run on the host.  ``MarchingCubes`` currently also supports
-OpenMP and GPU device executions using CUDA and HIP.
+The constructor's ``quest::MarchingCubesRuntimePolicy::seq`` argument
+tells ``mc`` to run sequentially on the host.  ``MarchingCubes``
+currently also supports OpenMP and GPU device executions using CUDA
+and HIP.
 
 .. sourcecode:: C++
 
@@ -104,16 +103,21 @@ Run the algorithm:
 
 Place the isocontour in an output ``mint::UnstructuredMesh`` object:
 
-Use ``populateContourMesh`` for this.  The isosurface extraction
-provides two scalar fields for the generate mesh:
+``MarchingCubes`` generates the isocontour mesh in an internal format.
+Use ``populateContourMesh`` to put it in a ``mint::UnstructuredMesh``
+object.  In the future, we will support outputs in blueprint format.
 
-#. the Id of the cell from the input mesh that generated the
+``populateContourMesh`` provides two scalar fields for the generated
+mesh:
+
+#. the ID of the cell from the input mesh that generated the
    isocontour cell.
 #. the ID of the domain from the input mesh that generated the
    isocontour cell.
 
 The names of these fields are user-specified.  Use empty strings if
-you don't need these fields.
+you don't need these fields.  This example puts cell IDs in
+"cellIds" and domain IDs in "domainIds".
 
 .. sourcecode:: C++
 
