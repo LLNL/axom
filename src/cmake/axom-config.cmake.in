@@ -96,6 +96,12 @@ if(NOT AXOM_FOUND)
     if(NOT CONDUIT_DIR) 
       set(CONDUIT_DIR ${AXOM_CONDUIT_DIR}) 
     endif()
+
+    # Load mpi targets because we require the optional Conduit mpi targets
+    if(AXOM_USE_MPI)
+      find_package(mpi REQUIRED)
+    endif()
+
     find_dependency(Conduit REQUIRED NO_DEFAULT_PATH
                     PATHS "${CONDUIT_DIR}/@AXOM_CONDUIT_CONFIG_SUBDIR@")
   endif()
