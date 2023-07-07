@@ -211,7 +211,8 @@ if(CONDUIT_FOUND)
             FOLDER      axom/quest/examples
             )
 
-    if(AXOM_ENABLE_TESTS AND AXOM_DATA_DIR)
+    # These examples currently segfault on windows without MPI when loading the test data into conduit
+    if(AXOM_ENABLE_TESTS AND AXOM_DATA_DIR AND NOT WIN32)
         if (ENABLE_MPI)
             set(_nranks 3)
         endif()
