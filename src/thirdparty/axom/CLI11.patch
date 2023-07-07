@@ -1,5 +1,5 @@
 diff --git a/src/thirdparty/axom/CLI11.hpp b/src/thirdparty/axom/CLI11.hpp
-index 68244d386..bd8900e86 100644
+index 68244d386..1dc6eb9ae 100644
 --- a/src/thirdparty/axom/CLI11.hpp
 +++ b/src/thirdparty/axom/CLI11.hpp
 @@ -159,6 +159,8 @@
@@ -212,6 +212,24 @@ index 68244d386..bd8900e86 100644
          return (app).exit(e);                                                                                          \
      }
  #endif
+@@ -4704,7 +4746,7 @@ class App {
+     Option *help_all_ptr_{nullptr};
+ 
+     /// This is the formatter for help printing. Default provided. INHERITABLE (same pointer)
+-    std::shared_ptr<FormatterBase> formatter_{new Formatter()};
++    std::shared_ptr<FormatterBase> formatter_{std::make_shared<Formatter>()};
+ 
+     /// The error message printing function INHERITABLE
+     std::function<std::string(const App *, const Error &e)> failure_message_{FailureMessage::simple};
+@@ -4811,7 +4853,7 @@ class App {
+     Option *config_ptr_{nullptr};
+ 
+     /// This is the formatter for help printing. Default provided. INHERITABLE (same pointer)
+-    std::shared_ptr<Config> config_formatter_{new ConfigINI()};
++    std::shared_ptr<Config> config_formatter_{std::make_shared<ConfigINI>()};
+ 
+     ///@}
+ 
 @@ -5162,12 +5204,12 @@ class App {
                         std::string option_description = "",
                         bool defaulted = false) {
