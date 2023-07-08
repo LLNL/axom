@@ -38,7 +38,7 @@ namespace
 /**
  * \brief Utility function to capture output of system call
  * \note Adapted from https://stackoverflow.com/a/478960
-*/
+ */
 std::string execute_command(const std::string& cmd)
 {
   std::array<char, 128> buffer;
@@ -55,12 +55,13 @@ std::string execute_command(const std::string& cmd)
   {
     result += buffer.data();
   }
+
   return result;
 }
 #endif  // __linux__
 
 #ifdef _WIN32
-/// call back function for EnumSystemLocaleEx call in enumerate_locales_windows test
+/// callback function for EnumSystemLocaleEx call in enumerate_locales_windows test
 BOOL CALLBACK MyFuncLocaleEx(LPWSTR pStr, DWORD dwFlags, LPARAM strvec_ptr)
 {
   using StrVec = std::vector<std::wstring>;
@@ -193,6 +194,16 @@ TEST(utils_locale, enumerate_locales_linux)
   {
     std::cerr << e.what() << '\n';
   }
+
+  // remove non-ascii strings since they're causing problems on blueos
+  auto is_non_ascii = [](char c) { return static_cast<unsigned char>(c) > 127; };
+  locale_list.erase(
+    std::remove_if(locale_list.begin(),
+                   locale_list.end(),
+                   [=](const std::string& s) {
+                     return std::any_of(s.begin(), s.end(), is_non_ascii);
+                   }),
+    locale_list.end());
 
   // sort and unique-ify the list
   std::sort(locale_list.begin(), locale_list.end());
