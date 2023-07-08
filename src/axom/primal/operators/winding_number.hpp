@@ -302,6 +302,7 @@ double winding_number(const Point<T, 3>& q,
     return 0;
   }
 
+  const double num = Vec3::scalar_triple_product(a, b, c);
   const double denom = a_norm * b_norm * c_norm  //
     + a_norm * b.dot(c) + b_norm * a.dot(c) + c_norm * a.dot(b);
 
