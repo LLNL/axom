@@ -225,32 +225,6 @@ double evaluate_area_integral(const primal::CurvedPolygon<T, 2> cpoly,
   return total_integral;
 }
 
-template <class Lambda, typename T>
-double evaluate_scalar_area_integral(const primal::BezierPatch<T> patch,
-                                     Lambda&& integrand,
-                                     int order)
-{
-  static mfem::IntegrationRules my_IntRules(0, mfem::Quadrature1D::GaussLegendre);
-
-  // Get the quadrature for the unit square.
-  const mfem::IntegrationRule& quad =
-    my_IntRules.Get(mfem::Geometry::SQUARE, order);
-
-  double quadrature_sum = 0;
-  for(int i = 0; i < quad.GetNPoints(); ++i)
-  {
-    double u = quad.IntPoint(i).x;
-    double v = quad.IntPoint(i).y;
-
-    auto node = patch.evaluate(u, v);
-    auto jacobian = patch.normal(u, v).norm();
-
-    quadrature_sum += integrand(node) * jacobian * quad.IntPoint(i).weight;
-  }
-
-  return quadrature_sum;
-}
-
 }  // namespace primal
 }  // end namespace axom
 
