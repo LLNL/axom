@@ -230,7 +230,7 @@ double curve_winding_number_recursive(const Point<T, 2>& q,
     curve_winding_number_recursive(q, c2, isConvexControlPolygon, edge_tol, EPS);
 }
 
-// Quick enum to indicate which direction the field is pointing
+/// Type to indicate orientation of singularities relative to surface
 enum class SingularityAxis
 {
   x,
@@ -239,7 +239,22 @@ enum class SingularityAxis
   rotated
 };
 
-// Return the winding number from one component of the stokes integral
+/*!
+ * \brief Evaluates an "anti-curl" of the winding number along a curve
+ *
+ * \param [in] query The query point to test
+ * \param [in] curve The BezierCurve object
+ * \param [in] ax The axis (relative to query) denoting which anti-curl we use
+ * \param [in] npts The number of points used in each Gaussian quadrature
+ * \param [in] quad_tol The maximum relative error allowed in each quadrature
+ * 
+ * Applies a non-adaptive quadrature to a BezierCurve using one of three possible
+ * "anti-curl" vector fields, the curl of each of which is equal to <x, y, z>/||x||^3.
+ * With the proper "anti-curl" selected, integrating this along a closed curve is equal
+ * to evaluating the winding number of a surface with that curve as the boundary.
+ *
+ * \return double One component of the winding number
+ */
 template <typename T>
 double stokes_winding_number(const Point<T, 3>& query,
                              const BezierCurve<T, 3>& curve,
@@ -258,8 +273,10 @@ double stokes_winding_number(const Point<T, 3>& query,
     // Get quadrature points in space (shifted by the query)
     Vector<T, 3> node(query, curve.evaluate(quad_rule.IntPoint(q).x));
     Vector<T, 3> node_dt(curve.dt(quad_rule.IntPoint(q).x));
-
     double node_norm = node.norm();
+
+    // Compute one of three vector field line integrals depending on
+    //  the orientation of the original surface, indicated through ax.
     if(ax == SingularityAxis::x)
     {
       quadrature += quad_rule.IntPoint(q).weight *
@@ -282,7 +299,9 @@ double stokes_winding_number(const Point<T, 3>& query,
 
   /// Under certain conditions, want to adaptively refine quadrature over curves.
   /// As a general rule, refinement should be done over curves, not surfaces.
-  if(curve.boundingBox().expand(2.0).contains(query))
+  BoundingBox<T, 3> cBox(curve.boundingBox());
+  //if(squared_distance(query, cBox.getCentroid()) <= cBox.range().squared_norm())
+  if(true)  // Need to look at further heuristics for when we are "far enough" away
   {
     return stokes_winding_number_adaptive(query,
                                           curve,
@@ -295,6 +314,22 @@ double stokes_winding_number(const Point<T, 3>& query,
   return 0.25 * M_1_PI * quadrature;
 }
 
+/*!
+ * \brief Recursively evaluates an "anti-curl" of the winding number on subcurves
+ *
+ * \param [in] query The query point to test
+ * \param [in] curve The BezierCurve object
+ * \param [in] ax The axis (relative to query) denoting which anti-curl we use
+ * \param [in] quad_rule The mfem quadrature rule object
+ * \param [in] quad_coarse The integral evaluated on the original curve
+ * \param [in] quad_tol The maximum relative error allowed in each quadrature
+ * 
+ * Recursively apply quadrature for one of three possible integrals along two halfs 
+ * of a curve. The sum of this integral along the subcurves should be equal to to
+ * quad_coarse. Otherwise, apply this algorithm to each half recursively.
+ *
+ * \return double One component of the winding number
+ */
 template <typename T>
 double stokes_winding_number_adaptive(const Point<T, 3>& query,
                                       const BezierCurve<T, 3>& curve,
@@ -315,10 +350,10 @@ double stokes_winding_number_adaptive(const Point<T, 3>& query,
       // Get quad_rulerature points in space (shifted by the query)
       Vector<T, 3> node(query, subcurves[i].evaluate(quad_rule.IntPoint(q).x));
       Vector<T, 3> node_dt(subcurves[i].dt(quad_rule.IntPoint(q).x));
-
       double node_norm = node.norm();
 
-      // Compute integrand from the z-aligned vector field
+      // Compute one of three vector field line integrals depending on
+      //  the orientation of the original surface, indicated through ax.
       if(ax == SingularityAxis::x)
       {
         quad_fine[i] += quad_rule.IntPoint(q).weight *
@@ -340,7 +375,6 @@ double stokes_winding_number_adaptive(const Point<T, 3>& query,
     }
   }
 
-  // These two values should be equal to one another
   if(axom::utilities::isNearlyEqualRelative(quad_fine[0] + quad_fine[1],
                                             quad_coarse,
                                             quad_tol,

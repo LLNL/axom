@@ -287,13 +287,13 @@ double winding_number(const Point<T, 3>& q,
 
   if(a_norm < edge_tol || b_norm < edge_tol || c_norm < edge_tol) return 0;
 
-  double num = Vector<T, 3>::scalar_triple_product(a, b, c);
-  if(axom::utilities::isNearlyEqual(num, 0.0, EPS))
+  if(squared_distance(q, tri) < edge_tol * edge_tol)
   {
     isOnFace = true;
     return 0;
   }
 
+  double num = Vector<T, 3>::scalar_triple_product(a, b, c);
   double denom = a_norm * b_norm * c_norm +
     a_norm * Vector<T, 3>::dot_product(b, c) +
     b_norm * Vector<T, 3>::dot_product(a, c) +
@@ -332,7 +332,7 @@ double winding_number(const Point<T, 3>& q,
                       const double edge_tol = 1e-8,
                       const double EPS = 1e-8)
 {
-  bool isOnFace;
+  bool isOnFace = false;
   return winding_number(q, tri, isOnFace, edge_tol, EPS);
 }
 
@@ -389,7 +389,7 @@ double winding_number(const Point<T, 3>& q,
                       const double edge_tol = 1e-8,
                       const double EPS = 1e-8)
 {
-  bool isOnFace;
+  bool isOnFace = false;
   return winding_number(q, poly, isOnFace, edge_tol, EPS);
 }
 
@@ -448,19 +448,38 @@ int winding_number(const Point<T, 3>& query,
   return std::lround(wn);
 }
 
+/*!
+ * \brief Computes the solid angle winding number for a Bezier patch
+ *
+ * \param [in] query The query point to test
+ * \param [in] bPatch The Bezier patch object
+ * \param [in] edge_tol The physical distance level at which objects are 
+ *                      considered indistinguishable
+ * \param [in] quad_tol The maximum relative error allowed in the quadrature
+ * \param [in] EPS Miscellaneous numerical tolerance level for nonphysical distances
+ * 
+ * Computes the generalized winding number for a Bezier patch using Stokes theorem.
+ *
+ * \return double The generalized winding number.
+ */
 template <typename T>
 double winding_number(const Point<T, 3>& query,
                       const BezierPatch<T>& bPatch,
-                      double edge_tol = 1e-8,
-                      double quad_tol = 1e-8,
-                      double EPS = 1e-8)
+                      const double edge_tol = 1e-8,
+                      const double quad_tol = 1e-8,
+                      const double EPS = 1e-8)
 {
-  const int quad_npts = 20;
   const int ord_u = bPatch.getOrder_u();
   const int ord_v = bPatch.getOrder_v();
   const bool patchIsRational = bPatch.isRational();
+  const double edge_tol_sq = edge_tol * edge_tol;
 
-  // Early return if the patch is approximately polygonal
+  // Fix the number of quadrature nodes arbitrarily, but high enough
+  //  to `catch` near singularities for refinement
+  const int quad_npts = 50;
+
+  // Early return if the patch is approximately polygonal.
+  //  Very slight variations in curvature requires small EPS tolerance
   if(bPatch.isPolygonal(EPS))
   {
     return winding_number(
@@ -468,12 +487,68 @@ double winding_number(const Point<T, 3>& query,
       Polygon<T, 3>(axom::Array<Point<T, 3>>(
         {bPatch(0, 0), bPatch(ord_u, 0), bPatch(ord_u, ord_v), bPatch(0, ord_v)})),
       edge_tol,
-      EPS);
+      PRIMAL_TINY);
+  }
+
+  // Use a specific kind of recursion if we are within tol of an endpoint.
+  //  Split the surface closer to the corner, assume smallest patch is polygonal,
+  //  and set a new edge_tol so corners of the new patch aren't marked as coincident
+  if(squared_distance(query, bPatch(0, 0)) <= edge_tol_sq)
+  {
+    BezierPatch<T> p1, p2, p3, p4;
+    bPatch.split(0.01, 0.01, p1, p2, p3, p4);
+    double new_edge_tol = 0.5 *
+      sqrt(axom::utilities::min(squared_distance(query, bPatch(0, 0.01)),
+                                squared_distance(query, bPatch(0.01, 0))));
+    new_edge_tol = axom::utilities::min(new_edge_tol, edge_tol);
+
+    return winding_number(query, p2, new_edge_tol, quad_tol, EPS) +
+      winding_number(query, p3, new_edge_tol, quad_tol, EPS) +
+      winding_number(query, p4, new_edge_tol, quad_tol, EPS);
+  }
+  if(squared_distance(query, bPatch(ord_u, 0)) <= edge_tol_sq)
+  {
+    BezierPatch<T> p1, p2, p3, p4;
+    bPatch.split(0.99, 0.01, p1, p2, p3, p4);
+    double new_edge_tol = 0.5 *
+      sqrt(axom::utilities::min(squared_distance(query, bPatch(1, 0.01)),
+                                squared_distance(query, bPatch(0.99, 0))));
+    new_edge_tol = axom::utilities::min(new_edge_tol, edge_tol);
+
+    return winding_number(query, p1, new_edge_tol, quad_tol, EPS) +
+      winding_number(query, p3, new_edge_tol, quad_tol, EPS) +
+      winding_number(query, p4, new_edge_tol, quad_tol, EPS);
+  }
+  if(squared_distance(query, bPatch(0, ord_v)) <= edge_tol_sq)
+  {
+    BezierPatch<T> p1, p2, p3, p4;
+    bPatch.split(0.01, 0.99, p1, p2, p3, p4);
+    double new_edge_tol = 0.5 *
+      sqrt(axom::utilities::min(squared_distance(query, bPatch(0, 1)),
+                                squared_distance(query, bPatch(0, 0.99))));
+    new_edge_tol = axom::utilities::min(new_edge_tol, edge_tol);
+
+    return winding_number(query, p1, new_edge_tol, quad_tol, EPS) +
+      winding_number(query, p2, new_edge_tol, quad_tol, EPS) +
+      winding_number(query, p4, new_edge_tol, quad_tol, EPS);
+  }
+  if(squared_distance(query, bPatch(ord_u, ord_v)) <= edge_tol_sq)
+  {
+    BezierPatch<T> p1, p2, p3, p4;
+    bPatch.split(0.99, 0.99, p1, p2, p3, p4);
+    double new_edge_tol = 0.5 *
+      sqrt(axom::utilities::min(squared_distance(query, bPatch(1, 0.99)),
+                                squared_distance(query, bPatch(0.99, 1))));
+    new_edge_tol = axom::utilities::min(new_edge_tol, edge_tol);
+
+    return winding_number(query, p1, new_edge_tol, quad_tol, EPS) +
+      winding_number(query, p2, new_edge_tol, quad_tol, EPS) +
+      winding_number(query, p3, new_edge_tol, quad_tol, EPS);
   }
 
   /* 
-   * To use Stokes theorem, we need to identify a line through `query` that
-   * does NOT intersect the surface. 
+   * To use Stokes theorem, we need to identify a separating plane between
+   * `query` and the surface, guaranteed through a bounding box.
    * If it does, need to do geometric refinement: Splitting and rotating the curve
    * until we can guarantee this.
    */
@@ -518,6 +593,7 @@ double winding_number(const Point<T, 3>& query,
         winding_number(query, p3, edge_tol, quad_tol, EPS) +
         winding_number(query, p4, edge_tol, quad_tol, EPS);
     }
+
     // Otherwise, we can apply a rotation to a z-aligned field.
     field_direction = detail::SingularityAxis::rotated;
 

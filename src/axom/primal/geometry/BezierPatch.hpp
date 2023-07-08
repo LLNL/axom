@@ -1092,7 +1092,7 @@ public:
     // Check if the patch is planar
     if(!isPlanar(tol)) return false;
 
-    // Check if each bounding curve is planar
+    // Check if each bounding curve is linear
     if(!isocurve_u(0).isLinear(tol)) return false;
     if(!isocurve_v(0).isLinear(tol)) return false;
     if(!isocurve_u(1).isLinear(tol)) return false;
