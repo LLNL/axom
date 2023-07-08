@@ -57,7 +57,9 @@ public:
       m_deltaLevelMap[lev] = bbRange / static_cast<double>(CoordType(1) << lev);
 
       for(int dim = 0; dim < DIM; ++dim)
+      {
         m_invDeltaLevelMap[lev][dim] = 1. / m_deltaLevelMap[lev][dim];
+      }
     }
   }
 

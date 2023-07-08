@@ -54,11 +54,11 @@ void split(const Octahedron<Tp, NDIMS>& oct,
 
   // Step 1: Find the centroid
   NumArray c;  // ctor fills with 0
-  for(int i = 0; i < Oct::NUM_OCT_VERTS; ++i)
+  for(int i = 0; i < Oct::NUM_VERTS; ++i)
   {
     c += oct[i].array();
   }
-  c = c / (double)Oct::NUM_OCT_VERTS;
+  c = c / static_cast<double>(Oct::NUM_VERTS);
   typename Oct::PointType C(c);
 
   // Step 2: Now store the new tets.  The documentation for the Octahedron class

@@ -143,7 +143,8 @@ void Shaper::setRefinementType(Shaper::RefinementType t)
 
 bool Shaper::isValidFormat(const std::string& format) const
 {
-  return (format == "stl" || format == "c2c");
+  return (format == "stl" || format == "proe" || format == "c2c" ||
+          format == "none");
 }
 
 void Shaper::loadShape(const klee::Shape& shape)
@@ -166,9 +167,19 @@ void Shaper::loadShapeInternal(const klee::Shape& shape,
     "{:-^80}",
     axom::fmt::format(" Loading shape '{}' ", shape.getName())));
 
-  SLIC_ASSERT_MSG(this->isValidFormat(shape.getGeometry().getFormat()),
-                  axom::fmt::format("Shape has unsupported format: '{}",
-                                    shape.getGeometry().getFormat()));
+  const std::string& file_format = shape.getGeometry().getFormat();
+  SLIC_ASSERT_MSG(
+    this->isValidFormat(file_format),
+    axom::fmt::format("Shape has unsupported format: '{}", file_format));
+
+  if(!shape.getGeometry().hasGeometry())
+  {
+    SLIC_DEBUG(
+      fmt::format("Current shape '{}' of material '{}' has no geometry",
+                  shape.getName(),
+                  shape.getMaterial()));
+    return;
+  }
 
   std::string shapePath = m_shapeSet.resolvePath(shape.getGeometry().getPath());
   SLIC_INFO("Reading file: " << shapePath << "...");
@@ -178,13 +189,29 @@ void Shaper::loadShapeInternal(const klee::Shape& shape,
 
   if(endsWith(shapePath, ".stl"))
   {
+    SLIC_ASSERT_MSG(
+      file_format == "stl",
+      axom::fmt::format(" '{}' format requires .stl file type", file_format));
+
     quest::internal::read_stl_mesh(shapePath, m_surfaceMesh, m_comm);
     // Transform the coordinates of the linearized mesh.
     applyTransforms(shape);
   }
+  else if(endsWith(shapePath, ".proe"))
+  {
+    SLIC_ASSERT_MSG(
+      file_format == "proe",
+      axom::fmt::format(" '{}' format requires .proe file type", file_format));
+
+    quest::internal::read_pro_e_mesh(shapePath, m_surfaceMesh, m_comm);
+  }
 #ifdef AXOM_USE_C2C
   else if(endsWith(shapePath, ".contour"))
   {
+    SLIC_ASSERT_MSG(
+      file_format == "c2c",
+      axom::fmt::format(" '{}' format requires .contour file type", file_format));
+
     // Get the transforms that are being applied to the mesh. Get them
     // as a single concatenated matrix.
     auto transform = getTransforms(shape);
@@ -221,8 +248,9 @@ void Shaper::loadShapeInternal(const klee::Shape& shape,
   {
     SLIC_ERROR(
       axom::fmt::format("Unsupported filetype for this Axom configuration. "
-                        "Provided file was '{}'",
-                        shapePath));
+                        "Provided file was '{}', with format '{}'",
+                        shapePath,
+                        file_format));
   }
 }
 

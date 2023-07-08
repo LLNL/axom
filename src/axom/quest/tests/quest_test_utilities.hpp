@@ -159,7 +159,10 @@ template <int DIM>
 primal::Point<double, DIM> randomSpacePt(double beg, double end)
 {
   primal::Point<double, DIM> pt;
-  for(int i = 0; i < DIM; ++i) pt[i] = axom::utilities::random_real(beg, end);
+  for(int i = 0; i < DIM; ++i)
+  {
+    pt[i] = axom::utilities::random_real(beg, end);
+  }
 
   return pt;
 }

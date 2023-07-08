@@ -233,7 +233,9 @@ void loadBaselineData(sidre::Group* grp, Input& args)
   {
     sidre::View* view = grp->getView("mesh_bounding_box");
     if(view->getNumElements() != 6)
+    {
       SLIC_ERROR("Bounding box must contain six doubles");
+    }
 
     double* data = view->getData();
     args.meshBoundingBox =
@@ -249,7 +251,9 @@ void loadBaselineData(sidre::Group* grp, Input& args)
   {
     sidre::View* view = grp->getView("query_resolution");
     if(view->getNumElements() != 3)
+    {
       SLIC_ERROR("Query resolution must contain three ints");
+    }
 
     int* data = view->getData();
     args.queryResolution = GridPt(data, 3);
@@ -259,8 +263,10 @@ void loadBaselineData(sidre::Group* grp, Input& args)
   if(args.testContainment)
   {
     if(!grp->hasView("octree_containment"))
+    {
       SLIC_ERROR("Requested containment, but baseline "
                  << "does not have a 'octree_containment' view");
+    }
     else
     {
       SLIC_ASSERT_MSG(

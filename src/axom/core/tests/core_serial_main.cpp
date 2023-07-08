@@ -10,6 +10,7 @@
 #include "core_about.hpp"
 #include "core_array.hpp"
 #include "core_array_for_all.hpp"
+#include "core_utilities.hpp"
 #include "core_bit_utilities.hpp"
 #include "core_execution_for_all.hpp"
 #include "core_execution_space.hpp"

@@ -1382,7 +1382,10 @@ void bvh_compute_point_distances_2d(BVHType& bvh,
   BoxType* bboxes =
     axom::allocate<BoxType>(npts ? npts : 1,  // do not allocate 0 elements
                             axom::execution_space<ExecSpace>::allocatorID());
-  for(axom::IndexType i = 0; i < npts; i++) bboxes[i] = BoxType(points[i]);
+  for(axom::IndexType i = 0; i < npts; i++)
+  {
+    bboxes[i] = BoxType(points[i]);
+  }
   bvh.initialize(bboxes, npts);
 
   // Call the BVH like the DistributedClosestPoint does.

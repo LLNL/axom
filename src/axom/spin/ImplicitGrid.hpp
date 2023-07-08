@@ -339,7 +339,10 @@ public:
    */
   BitsetType getCandidates(const SpacePoint& pt) const
   {
-    if(!m_initialized || !m_bb.contains(pt)) return BitsetType(0);
+    if(!m_initialized || !m_bb.contains(pt))
+    {
+      return BitsetType(0);
+    }
 
     const GridCell gridCell = m_lattice.gridCell(pt);
 
@@ -368,7 +371,10 @@ public:
   BitsetType getCandidates(const GridCell& gridCell) const
   {
     // Perform some validity checks
-    if(!m_initialized) return BitsetType(0);
+    if(!m_initialized)
+    {
+      return BitsetType(0);
+    }
     for(int i = 0; i < NDIMS; ++i)
     {
       if(gridCell[i] < 0 || gridCell[i] > highestBin(i))
@@ -398,7 +404,10 @@ public:
    */
   BitsetType getCandidates(const SpatialBoundingBox& box) const
   {
-    if(!m_initialized || !m_bb.intersectsWith(box)) return BitsetType(0);
+    if(!m_initialized || !m_bb.intersectsWith(box))
+    {
+      return BitsetType(0);
+    }
 
     const GridCell lowerCell = m_lattice.gridCell(box.getMin());
     const GridCell upperCell = m_lattice.gridCell(box.getMax());
@@ -515,7 +524,10 @@ public:
   {
     bool ret = true;
 
-    if(!m_elementSet.isValidIndex(idx)) ret = false;
+    if(!m_elementSet.isValidIndex(idx))
+    {
+      ret = false;
+    }
 
     for(int i = 0; i < NDIMS; ++i)
     {
@@ -900,7 +912,10 @@ AXOM_HOST_DEVICE IndexType
 ImplicitGrid<NDIMS, ExecSpace, IndexType>::QueryObject::countCandidates(
   const SpacePoint& pt) const
 {
-  if(!m_bb.contains(pt)) return 0;
+  if(!m_bb.contains(pt))
+  {
+    return 0;
+  }
 
   GridCell gridCell = m_lattice.gridCell(pt);
 
@@ -945,7 +960,10 @@ AXOM_HOST_DEVICE IndexType
 ImplicitGrid<NDIMS, ExecSpace, IndexType>::QueryObject::countCandidates(
   const SpatialBoundingBox& bbox) const
 {
-  if(!m_bb.intersectsWith(bbox)) return 0;
+  if(!m_bb.intersectsWith(bbox))
+  {
+    return 0;
+  }
 
   GridCell lowerCell = m_lattice.gridCell(bbox.getMin());
   GridCell upperCell = m_lattice.gridCell(bbox.getMax());
@@ -1000,7 +1018,10 @@ ImplicitGrid<NDIMS, ExecSpace, IndexType>::QueryObject::visitCandidates(
   const SpacePoint& pt,
   FuncType&& candidatePredicate) const
 {
-  if(!m_bb.contains(pt)) return;
+  if(!m_bb.contains(pt))
+  {
+    return;
+  }
 
   GridCell gridCell = m_lattice.gridCell(pt);
 
@@ -1059,7 +1080,10 @@ ImplicitGrid<NDIMS, ExecSpace, IndexType>::QueryObject::visitCandidates(
   const SpatialBoundingBox& bbox,
   FuncType&& candidatePredicate) const
 {
-  if(!m_bb.intersectsWith(bbox)) return;
+  if(!m_bb.intersectsWith(bbox))
+  {
+    return;
+  }
 
   GridCell lowerCell = m_lattice.gridCell(bbox.getMin());
   GridCell upperCell = m_lattice.gridCell(bbox.getMax());

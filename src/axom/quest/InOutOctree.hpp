@@ -320,7 +320,10 @@ private:
     for(int i = 0; i < tVerts.size(); ++i)
     {
       // Using the vertex-to-block cache to avoid numerical degeneracies
-      if(blockIndexesVertex(tVerts[i], blk)) return true;
+      if(blockIndexesVertex(tVerts[i], blk))
+      {
+        return true;
+      }
     }
     return false;
   }
@@ -553,7 +556,9 @@ void InOutOctree<DIM>::insertVertex(VertexIndex idx, int startingLevel)
 
     // Update the vertex-to-block map for this vertex
     if(m_generationState >= INOUTOCTREE_MESH_REORDERED)
+    {
       m_vertexToBlockMap[idx] = block;
+    }
   }
   else
   {
@@ -600,7 +605,10 @@ void InOutOctree<DIM>::insertMeshCells()
 
   currentLevelData.push_back(DynamicGrayBlockData());
   DynamicGrayBlockData& dynamicRootData = currentLevelData[0];
-  if(rootData.hasData()) dynamicRootData.setVertex(rootData.dataIndex());
+  if(rootData.hasData())
+  {
+    dynamicRootData.setVertex(rootData.dataIndex());
+  }
   dynamicRootData.setLeafFlag(rootData.isLeaf());
   rootData.setData(0);
 
@@ -633,7 +641,10 @@ void InOutOctree<DIM>::insertMeshCells()
     {
       InOutBlockData& blkData = *it;
 
-      if(!blkData.hasData()) continue;
+      if(!blkData.hasData())
+      {
+        continue;
+      }
 
       BlockIndex blk(it.pt(), lev);
       DynamicGrayBlockData& dynamicLeafData =
@@ -696,7 +707,9 @@ void InOutOctree<DIM>::insertMeshCells()
 
           // Reinsert the vertex into the tree, if vIdx was indexed by blk
           if(blockIndexesVertex(vIdx, blk))
+          {
             insertVertex(vIdx, blk.childLevel());
+          }
         }
         else if(isInternal)
         {
@@ -747,7 +760,9 @@ void InOutOctree<DIM>::insertMeshCells()
         // This ensures that our child data pointers will not be invalidated
         if(nextLevelData.capacity() <
            (nextLevelData.size() + BlockIndex::NUM_CHILDREN))
+        {
           nextLevelData.reserve(nextLevelData.size() * 4);
+        }
 
         // Add all cells to intersecting children blocks
         DynamicGrayBlockData::CellList& parentCells = dynamicLeafData.cells();
@@ -838,8 +853,10 @@ void InOutOctree<DIM>::insertMeshCells()
     nextLevelData.swap(currentLevelData);
 
     if(!levelLeafMap.empty())
+    {
       SLIC_DEBUG("\tInserting cells into level "
                  << lev << " took " << levelTimer.elapsed() << " seconds.");
+    }
   }
 }
 
@@ -865,12 +882,17 @@ void InOutOctree<DIM>::colorOctreeLeaves()
     auto itEnd = levelLeafMap.end();
     for(auto it = levelLeafMap.begin(); it != itEnd; ++it)
     {
-      if(!it->isLeaf()) continue;
+      if(!it->isLeaf())
+      {
+        continue;
+      }
 
       BlockIndex leafBlk(it.pt(), lev);
       InOutBlockData& blockData = *it;
       if(!colorLeafAndNeighbors(leafBlk, blockData))
+      {
         uncoloredBlocks.push_back(leafBlk.pt());
+      }
     }
 
     // Iterate through the uncolored blocks until all have a color
@@ -888,7 +910,9 @@ void InOutOctree<DIM>::colorOctreeLeaves()
       {
         BlockIndex leafBlk(*it, lev);
         if(!colorLeafAndNeighbors(leafBlk, (*this)[leafBlk]))
+        {
           uncoloredBlocks.push_back(*it);
+        }
       }
 
       SLIC_ASSERT_MSG(
@@ -961,9 +985,13 @@ bool InOutOctree<DIM>::colorLeafAndNeighbors(const BlockIndex& leafBlk,
             SpacePt::midpoint(this->blockBoundingBox(leafBlk).getCentroid(),
                               this->blockBoundingBox(neighborBlk).getCentroid());
           if(withinGrayBlock<DIM>(faceCenter, neighborBlk, neighborData))
+          {
             leafData.setBlack();
+          }
           else
+          {
             leafData.setWhite();
+          }
         }
         break;
         case InOutBlockData::Undetermined:
@@ -1025,9 +1053,13 @@ bool InOutOctree<DIM>::colorLeafAndNeighbors(const BlockIndex& leafBlk,
               this->blockBoundingBox(leafBlk.faceNeighbor(i)).getCentroid());
 
             if(withinGrayBlock<DIM>(faceCenter, leafBlk, leafData))
+            {
               neighborData.setBlack();
+            }
             else
+            {
               neighborData.setWhite();
+            }
           }
           break;
           case InOutBlockData::Undetermined:
@@ -1161,7 +1193,10 @@ typename std::enable_if<TDIM == 3, bool>::type InOutOctree<DIM>::withinGrayBlock
     for(int j = 0; j < numTris; ++j)
     {
       CellIndex localIdx = triSet[j];
-      if(localIdx == idx) continue;
+      if(localIdx == idx)
+      {
+        continue;
+      }
 
       if(primal::intersect(m_meshWrapper.cellPositions(localIdx), ray, rayParam))
       {
@@ -1278,7 +1313,10 @@ typename std::enable_if<TDIM == 2, bool>::type InOutOctree<DIM>::withinGrayBlock
     for(int j = 0; j < numSegments; ++j)
     {
       CellIndex localIdx = segmentSet[j];
-      if(localIdx == idx) continue;
+      if(localIdx == idx)
+      {
+        continue;
+      }
 
       if(primal::intersect(ray,
                            m_meshWrapper.cellPositions(localIdx),
@@ -1348,10 +1386,15 @@ void InOutOctree<DIM>::updateSurfaceMeshVertices()
 
     // If the indexed vertex doesn't have a new id, give it one
     if(vertexIndexMap[vInd] == MeshWrapper<DIM>::NO_VERTEX)
+    {
       vertexIndexMap[vInd] = uniqueVertexCounter++;
+    }
 
     // If this is not the indexed vertex of the block, set the new index
-    if(vInd != i) vertexIndexMap[i] = vertexIndexMap[vInd];
+    if(vInd != i)
+    {
+      vertexIndexMap[i] = vertexIndexMap[vInd];
+    }
   }
 
   // Use the index map to reindex the mesh verts and elements
@@ -1426,13 +1469,18 @@ bool InOutOctree<DIM>::allCellsIncidentInCommonVertex(
           if(!m_meshWrapper.incidentInVertex(
                m_meshWrapper.cellVertexIndices(cells[i]),
                commonVert))
+          {
             shareCommonVert = false;
+          }
         }
       }
       break;
     }
 
-    if(shareCommonVert) leafData.setVertex(commonVert);
+    if(shareCommonVert)
+    {
+      leafData.setVertex(commonVert);
+    }
   }
 
   return shareCommonVert;

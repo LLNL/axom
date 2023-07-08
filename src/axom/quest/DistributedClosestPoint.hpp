@@ -682,10 +682,10 @@ public:
       copy_components_to_interleaved(queryCoordsValues, xferDom["coords"]);
 
       xferDom["cp_index"].set_external(fields.fetch_existing("cp_index/values"));
-      xferDom["cp_domain_index"].set_external(fields.fetch_existing("cp_domain_index/values"));
       xferDom["cp_rank"].set_external(fields.fetch_existing("cp_rank/values"));
       copy_components_to_interleaved(fields.fetch_existing("cp_coords/values"),
                                      xferDom["cp_coords"]);
+      xferDom["cp_domain_index"].set_external(fields.fetch_existing("cp_domain_index/values"));
 
       if(fields.has_path("cp_distance"))
       {
@@ -1049,30 +1049,40 @@ private:
                            bool atLeastOne) const
   {
     std::vector<MPI_Request> reqs;
-    for(auto& isr : isendRequests) reqs.push_back(isr.m_request);
+    for(auto& isr : isendRequests)
+    {
+      reqs.push_back(isr.m_request);
+    }
 
     int inCount = static_cast<int>(reqs.size());
     int outCount = 0;
     std::vector<int> indices(reqs.size(), -1);
     if(atLeastOne)
+    {
       MPI_Waitsome(inCount,
                    reqs.data(),
                    &outCount,
                    indices.data(),
                    MPI_STATUSES_IGNORE);
+    }
     else
+    {
       MPI_Testsome(inCount,
                    reqs.data(),
                    &outCount,
                    indices.data(),
                    MPI_STATUSES_IGNORE);
+    }
     indices.resize(outCount);
 
     auto reqIter = isendRequests.begin();
     int prevIdx = 0;
     for(const int idx : indices)
     {
-      for(; prevIdx < idx; ++prevIdx) ++reqIter;
+      for(; prevIdx < idx; ++prevIdx)
+      {
+        ++reqIter;
+      }
       reqIter = isendRequests.erase(reqIter);
       ++prevIdx;
     }

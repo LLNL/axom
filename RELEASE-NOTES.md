@@ -20,6 +20,7 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 ## [Unreleased] - Release date yyyy-mm-dd
 
 ### Added
+- Adds MarchingCubes class implementing the marching cubes algorithm for surface detection.
 - Adds the following methods to `axom::Array` to conform more closely with the `std::vector` interface:
   - `Array::front()`: returns a reference to the first element
   - `Array::back()`: returns a reference to the last element
@@ -57,12 +58,17 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 - Quest: Adds ability to import volume fractions into `SamplingShaper` before processing `Klee` input
 - Slam: adds a `slam::MappedVariableCardinality` policy to accelerate mapping flat indices
   back to first-set indices when used in a `StaticRelation`
+- Adds an `ArrayView(data, shape, strides)` constructor to support column-major and custom
+  striding layouts.
+- Adds an `ArrayView::subspan()` overload for multi-dimensional subspans
+- Adds an `axom::utilities::insertionSort()` method.
+- Quest: Adds Pro/E tetrahedral meshes as input to the `IntersectionShaper`
 
 ### Changed
 - Fixed bug in `mint::mesh::UnstructuredMesh` constructors, affecting capacity.
   A missing factor was added.  If you worked around this by adding the factor yourself,
   you may want to undo that work-around.
-- Updates blt submodule to HEAD of develop on 24Jan2023
+- Updates blt submodule to blt@0.5.3
 - Updates uberenv submodule to HEAD of main on 12May2023
 - Updates to [conduit version 0.8.6](https://github.com/LLNL/conduit/compare/v0.8.3...v0.8.6)
 - Updates to [mfem version 4.5](https://github.com/mfem/mfem/releases/tag/v4.5)
@@ -102,6 +108,10 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 - Multimat: Ported field data/sparsity layout conversion methods to GPU.
 - Multimat: `MultiMat::makeOtherRelation()` now runs on the GPU with an appropriately-set allocator ID.
 - Multimat: `MultiMat::setCellMatRel(counts, indices)` now runs on the GPU, and accepts GPU-side data.
+- Renames `ArrayView::spacing()` to `ArrayView::minStride()`.
+- Klee: A shape's geometry no longer needs a `path` field when its `format` is "none"
+- Quest: Shapes without geometry can participate in replacement rules for sample-based shaping. Volume
+fractions for the associated materials must be supplied before shaping.
 
 ###  Fixed
 - Fixed issues with CUDA build in CMake versions 3.14.5 and above. Now require CMake 3.18+

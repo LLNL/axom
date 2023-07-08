@@ -102,12 +102,17 @@ void various_traversal_methods(int nmats,
     int matcount = 0;
     for(auto m = 0; m < nmats; ++m)
     {
-      if(cellMatRel[i * nmats + m]) matcount += 1;
+      if(cellMatRel[i * nmats + m])
+      {
+        matcount += 1;
+      }
     }
     for(auto m = 0; m < nmats; ++m)
     {
       if(cellMatRel[i * nmats + m])
+      {
         volfrac_arr[i * nmats + m] = 1.0 / (double)matcount;
+      }
     }
   }
 
@@ -215,7 +220,10 @@ void various_traversal_methods(int nmats,
         {
           double* valptr = map.findValue(i, m, c);
           // ^ contains a hidden for-loop for sparse layouts, O(row_size) time
-          if(valptr) sum += *valptr;
+          if(valptr)
+          {
+            sum += *valptr;
+          }
         }
       }
     }
@@ -277,7 +285,9 @@ void various_traversal_methods(int nmats,
         iter++)
     {
       for(int comp = 0; comp < iter.numComp(); ++comp)
+      {
         sum += iter(comp);  //<----
+      }
     }
   }
   timer.stop();
@@ -418,9 +428,13 @@ int main(int argc, char** argv)
     ncomp = std::stoi(argv[3]);
     int sparse = std::stoi(argv[4]);
     if(sparse == 0)
+    {
       use_sparse = false;
+    }
     else if(sparse == 1)
+    {
       use_sparse = true;
+    }
     else
     {
       usage();

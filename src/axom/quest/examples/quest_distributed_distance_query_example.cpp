@@ -270,7 +270,10 @@ public:
     // return m_coordsGroup != nullptr && m_coordsGroup->hasView("values/x");
     for(auto* cg : m_coordsGroups)
     {
-      if(cg != nullptr && cg->hasView("values/x")) return true;
+      if(cg != nullptr && cg->hasView("values/x"))
+      {
+        return true;
+      }
     }
     return false;
   }

@@ -29,10 +29,16 @@ static void ShroudStrCopy(char *dest, int ndest, const char *src, int nsrc)
   }
   else
   {
-    if(nsrc < 0) nsrc = std::strlen(src);
+    if(nsrc < 0)
+    {
+      nsrc = std::strlen(src);
+    }
     int nm = nsrc < ndest ? nsrc : ndest;
     std::memcpy(dest, src, nm);
-    if(ndest > nm) std::memset(dest + nm, ' ', ndest - nm);  // blank fill
+    if(ndest > nm)
+    {
+      std::memset(dest + nm, ' ', ndest - nm);  // blank fill
+    }
   }
 }
 // splicer begin class.View.C_definitions

@@ -159,7 +159,9 @@ TEST(spin_octree, octree_coveringLeafBlocks)
       SLIC_INFO(" Face neighbor " << j << " is " << neighborBlk);
 
       if(octree.coveringLeafBlock(neighborBlk) != BlockIndex::invalid_index())
+      {
         validNeighborCount++;
+      }
     }
     EXPECT_EQ(2, validNeighborCount);
   }

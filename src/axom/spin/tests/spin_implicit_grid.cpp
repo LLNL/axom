@@ -138,7 +138,10 @@ TYPED_TEST(ImplicitGridTest, resolution)
   // Set the number of elements so that the DIM^th root is an integer
   const int dimRes = 8;
   int numElts = 1;
-  for(int i = 0; i < DIM; ++i) numElts *= dimRes;
+  for(int i = 0; i < DIM; ++i)
+  {
+    numElts *= dimRes;
+  }
 
   // Tests explicitly set grid resolution
   {

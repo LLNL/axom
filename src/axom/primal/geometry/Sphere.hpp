@@ -125,7 +125,7 @@ public:
    *   <li> zero on the boundary </li>
    *  </ul>
    */
-  inline T computeSignedDistance(const PointType& q) const
+  AXOM_HOST_DEVICE inline T computeSignedDistance(const PointType& q) const
   {
     return VectorType(m_center, q).norm() - m_radius;
   }

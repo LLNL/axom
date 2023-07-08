@@ -3,10 +3,12 @@
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
-#include "gtest/gtest.h"
-
+#include "axom/config.hpp"
 #include "axom/primal.hpp"
 #include "axom/slic.hpp"
+
+#include <math.h>
+#include "gtest/gtest.h"
 
 //------------------------------------------------------------------------------
 TEST(primal_polygon, empty)

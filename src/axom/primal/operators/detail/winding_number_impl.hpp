@@ -7,7 +7,7 @@
 #define PRIMAL_WINDING_NUMBER_IMPL_HPP_
 
 // Axom includes
-#include "axom/config.hpp"  // for compile-time configuration options
+#include "axom/config.hpp"
 #include "axom/primal/geometry/Point.hpp"
 #include "axom/primal/geometry/Vector.hpp"
 #include "axom/primal/geometry/Polygon.hpp"
@@ -17,7 +17,7 @@
 #include "axom/primal/operators/squared_distance.hpp"
 
 // C++ includes
-#include <cmath>
+#include <math.h>
 
 // MFEM includes
 #ifdef AXOM_USE_MFEM
@@ -63,7 +63,9 @@ double linear_winding_number(const Point<T, 2>& q,
 
   // Compute distance from line connecting endpoints to query
   if(tri_area * tri_area <= edge_tol * edge_tol * (V1 - V2).squared_norm())
+  {
     return 0;
+  }
 
   // Compute signed angle between vectors
   double dotprod = axom::utilities::clampVal(
@@ -102,7 +104,10 @@ double convex_endpoint_winding_number(const Point<T, 2>& q,
                                       double EPS)
 {
   const int ord = c.getOrder();
-  if(ord == 1) return 0;
+  if(ord == 1)
+  {
+    return 0;
+  }
 
   double edge_tol_sq = edge_tol * edge_tol;
 
@@ -116,11 +121,21 @@ double convex_endpoint_winding_number(const Point<T, 2>& q,
   // Need to find vectors that subtend the entire curve.
   //   We must ignore duplicate nodes
   for(idx = 0; idx <= ord; ++idx)
-    if(squared_distance(q, c[idx]) > edge_tol_sq) break;
+  {
+    if(squared_distance(q, c[idx]) > edge_tol_sq)
+    {
+      break;
+    }
+  }
   Vector<T, 2> V1(q, c[idx]);
 
   for(idx = ord; idx >= 0; --idx)
-    if(squared_distance(q, c[idx]) > edge_tol_sq) break;
+  {
+    if(squared_distance(q, c[idx]) > edge_tol_sq)
+    {
+      break;
+    }
+  }
   Vector<T, 2> V2(q, c[idx]);
 
   // clang-format off
@@ -145,7 +160,9 @@ double convex_endpoint_winding_number(const Point<T, 2>& q,
 
       // Because we are convex, a single non-collinear vertex tells us the orientation
       if(!axom::utilities::isNearlyEqual(tri_area, 0.0, EPS))
+      {
         return (tri_area > 0) ? 0.5 : -0.5;
+      }
     }
 
     // If all vectors are parallel, the curve is linear and return 0
@@ -189,7 +206,10 @@ double curve_winding_number_recursive(const Point<T, 2>& q,
                                       double EPS = 1e-8)
 {
   const int ord = c.getOrder();
-  if(ord <= 0) return 0.0;  // Catch degenerate cases
+  if(ord <= 0)
+  {
+    return 0.0;  // Catch degenerate cases
+  }
 
   // If q is outside a convex shape that contains the entire curve, the winding
   //   number for the shape connected at the endpoints with straight lines is zero.
@@ -198,14 +218,22 @@ double curve_winding_number_recursive(const Point<T, 2>& q,
   // Simplest convex shape containing c is its bounding box
   BoundingBox<T, 2> bBox(c.boundingBox());
   if(!bBox.contains(q))
+  {
     return 0.0 - linear_winding_number(q, c[ord], c[0], edge_tol);
+  }
 
   // Use linearity as base case for recursion.
-  if(c.isLinear(EPS)) return linear_winding_number(q, c[0], c[ord], edge_tol);
+  if(c.isLinear(EPS))
+  {
+    return linear_winding_number(q, c[0], c[ord], edge_tol);
+  }
 
   // Check if our control polygon is convex.
   //  If so, all subsequent control polygons will be convex as well
   Polygon<T, 2> controlPolygon(c.getControlPoints());
+  const bool includeBoundary = true;
+  const bool useNonzeroRule = true;
+
   if(!isConvexControlPolygon)
   {
     isConvexControlPolygon = is_convex(controlPolygon, EPS);
@@ -213,13 +241,17 @@ double curve_winding_number_recursive(const Point<T, 2>& q,
   else  // Formulas for winding number only work if shape is convex
   {
     // Bezier curves are always contained in their convex control polygon
-    if(!in_polygon(q, controlPolygon, true, false, EPS))
+    if(!in_polygon(q, controlPolygon, includeBoundary, useNonzeroRule, EPS))
+    {
       return 0.0 - linear_winding_number(q, c[ord], c[0], edge_tol);
+    }
 
     // If the query point is at either endpoint, use direct formula
     if((squared_distance(q, c[0]) <= edge_tol * edge_tol) ||
        (squared_distance(q, c[ord]) <= edge_tol * edge_tol))
+    {
       return convex_endpoint_winding_number(q, c, edge_tol, EPS);
+    }
   }
 
   // Recursively split curve until query is outside some known convex region
