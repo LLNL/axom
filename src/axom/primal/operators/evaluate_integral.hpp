@@ -121,8 +121,7 @@ double evaluate_scalar_line_integral(const primal::BezierCurve<T, NDIMS>& c,
 template <typename Lambda, typename T, int NDIMS>
 double evaluate_vector_line_integral(const primal::CurvedPolygon<T, NDIMS> cpoly,
                                      Lambda&& vector_integrand,
-                                     int npts,
-                                     int& tot_npts)
+                                     int npts)
 {
   // Generate quadrature library, defaulting to GaussLegendre quadrature.
   //  Use the same one for every curve in the polygon
@@ -138,8 +137,7 @@ double evaluate_vector_line_integral(const primal::CurvedPolygon<T, NDIMS> cpoly
     total_integral +=
       detail::evaluate_vector_line_integral_component(cpoly[i],
                                                       vector_integrand,
-                                                      quad,
-                                                      tot_npts);
+                                                      quad);
   }
 
   return total_integral;
@@ -166,11 +164,7 @@ double evaluate_vector_line_integral(const primal::BezierCurve<T, NDIMS>& c,
   const mfem::IntegrationRule& quad =
     my_IntRules.Get(mfem::Geometry::SEGMENT, 2 * npts - 1);
 
-  int tot_npts = 0;
-  return detail::evaluate_vector_line_integral_component(c,
-                                                         vector_integrand,
-                                                         quad,
-                                                         tot_npts);
+  return detail::evaluate_vector_line_integral_component(c, vector_integrand, quad);
 }
 
 /*!

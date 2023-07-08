@@ -74,8 +74,7 @@ template <class Lambda, typename T, int NDIMS>
 inline double evaluate_vector_line_integral_component(
   const primal::BezierCurve<T, NDIMS>& c,
   Lambda&& vec_field,
-  const mfem::IntegrationRule& quad,
-  int& tot_npts)
+  const mfem::IntegrationRule& quad)
 {
   // Store/compute quadrature result
   double full_quadrature = 0.0;
@@ -90,7 +89,6 @@ inline double evaluate_vector_line_integral_component(
     full_quadrature +=
       quad.IntPoint(q).weight * Vector<T, NDIMS>::dot_product(func_val, dx_q);
   }
-  tot_npts += quad.GetNPoints();
   return full_quadrature;
 }
 
