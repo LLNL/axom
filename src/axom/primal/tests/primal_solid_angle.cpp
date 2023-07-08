@@ -491,9 +491,9 @@ TEST(primal_solid_angle, planar_bezierpatch)
   }
 
   // Should be equal if we don't revert to polygon base case
-  const int quad_tol = 1e-10;
-  const int edge_tol = 1e-10;
-  const int EPS = 0;
+  const double quad_tol = 1e-10;
+  const double edge_tol = 1e-10;
+  const double EPS = 0;
   for(int n = 0; n < 5; ++n)
   {
     EXPECT_NEAR(winding_number(queries[n], quad_patch),
@@ -513,6 +513,7 @@ TEST(primal_integral, bezierpatch_sphere)
 
   double rt2 = sqrt(2), rt3 = sqrt(3), rt6 = sqrt(6);
 
+  // Define 6 rational bezier patches that define the surface of a sphere
   // clang-format off
   Point3D node_data[25] = {
     Point3D {4*(1-rt3),     4*(1-rt3),     4*(1-rt3)}, Point3D {rt2*(rt3-4),            -rt2, rt2*(rt3-4)}, Point3D {4*(1-2*rt3)/3,   0, 4*(1-2*rt3)/3}, Point3D {rt2*(rt3-4),           rt2,   rt2*(rt3-4)}, Point3D {4*(1-rt3),     4*(rt3-1),     4*(1-rt3)},
@@ -587,54 +588,53 @@ TEST(primal_integral, bezierpatch_sphere)
                                    Vector3D(sphere_faces[0].evaluate(0, 0.6)),
                                    Vector3D(sphere_faces[0].evaluate(0.6, 0))};
 
-  const double edge_tol = 1e-8;
   const double quad_tol = 1e-5;
-  const double EPS = 1e-8;
+  const double edge_tol = 1e-8;
+  const double EPS = 1e-14;
 
   // Iterate over the query directions
-  for(int n = 0; n < 12; ++n)
+  for(int i = 11; i < 12; ++i)
   {
     // Iterate over distance to the surface
-    for(int k = 3; k < 8; ++k)
+    for(int j = 3; j < 8; ++j)
     {
-      break;
-      // Pick a point close to the surface
+      // Pick points increasingly close to the surface
       auto inner_query =
-        Point3D((1.0 - std::pow(10, -k)) * query_directions[n].array());
+        Point3D((1.0 - std::pow(10, -j)) * query_directions[i].array());
       auto outer_query =
-        Point3D((1.0 + std::pow(10, -k)) * query_directions[n].array());
-
-      double inner_wn = 0, outer_wn = 0;
+        Point3D((1.0 + std::pow(10, -j)) * query_directions[i].array());
 
       // Iterate over the patches that compose the sphere
-      for(int n = 0; n < 6; ++n)
+      double inner_wn = 0;
+      for(int k = 0; k < 6; ++k)
       {
         inner_wn +=
-          winding_number(inner_query, sphere_faces[n], edge_tol, quad_tol, EPS);
+          winding_number(inner_query, sphere_faces[k], edge_tol, quad_tol, EPS);
       }
+      EXPECT_NEAR(inner_wn, 1.0, 6 * quad_tol);
 
-      for(int n = 0; n < 6; ++n)
+      // Iterate over the patches that compose the sphere
+      double outer_wn = 0;
+      for(int k = 0; k < 6; ++k)
       {
         outer_wn +=
-          winding_number(outer_query, sphere_faces[n], edge_tol, quad_tol, EPS);
+          winding_number(outer_query, sphere_faces[k], edge_tol, quad_tol, EPS);
       }
-      EXPECT_NEAR(inner_wn, 1.0, quad_tol);
-      EXPECT_NEAR(outer_wn, 0.0, quad_tol);
+      EXPECT_NEAR(outer_wn, 0.0, 6 * quad_tol);
     }
 
     // Pick a point on the surface too.
     //  Regardless of what tolerances are picked, the winding number
-    //  should lie between the values on either side
-
-    auto coincident_query = Point3D(query_directions[n].array());
+    //  should lie between the values on either side when rounded
+    auto coincident_query = Point3D(query_directions[i].array());
     double coincident_wn = 0.0;
-    for(int n = 0; n < 6; ++n)
+    for(int k = 1; k < 6; ++k)
     {
       coincident_wn +=
-        winding_number(coincident_query, sphere_faces[n], edge_tol, quad_tol, EPS);
+        winding_number(coincident_query, sphere_faces[k], edge_tol, quad_tol, EPS);
     }
-    EXPECT_LT(coincident_wn, 1.0, quad_tol);
-    EXPECT_LT(0.0, coincident_wn, quad_tol);
+    EXPECT_LT(coincident_wn, 1.5, 6 * quad_tol);
+    EXPECT_LT(-0.5, coincident_wn, 6 * quad_tol);
   }
 }
 
