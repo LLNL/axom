@@ -31,6 +31,7 @@
 #include <cmath>
 #include <string>
 #include <iostream>
+#include <fstream>
 
 namespace klee = axom::klee;
 namespace primal = axom::primal;
@@ -66,9 +67,13 @@ public:
 
   std::string getFileContents() const
   {
-    std::ifstream ifs(m_filename.c_str(), std::ios::in);
     std::stringstream buffer;
-    buffer << ifs.rdbuf();
+
+    std::ifstream ifs(m_filename.c_str(), std::ios::in);
+    if(ifs.is_open())
+    {
+      buffer << ifs.rdbuf();
+    }
 
     return buffer.str();
   }

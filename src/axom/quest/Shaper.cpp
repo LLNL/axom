@@ -327,21 +327,21 @@ int Shaper::getRank() const
   {
     return pmesh->GetMyRank();
   }
-  return 0;
-#else
-  return 0;
 #endif
+  return 0;
 }
 
 double Shaper::allReduceSum(double val) const
 {
+  if(m_dc != nullptr && m_dc->GetNumProcs() > 1)
+  {
 #if defined(AXOM_USE_MPI) && defined(MFEM_USE_MPI)
-  double global;
-  MPI_Allreduce(&val, &global, 1, MPI_DOUBLE, MPI_SUM, m_comm);
-  return global;
-#else
-  return val;
+    double global;
+    MPI_Allreduce(&val, &global, 1, MPI_DOUBLE, MPI_SUM, m_comm);
+    return global;
 #endif
+  }
+  return val;
 }
 
 }  // end namespace quest
