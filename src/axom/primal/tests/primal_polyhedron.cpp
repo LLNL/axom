@@ -102,7 +102,7 @@ TEST(primal_polyhedron, polyhedron_unit_cube)
   }
 
   // Test containment using winding numbers
-  bool useStrictInclusion = false;
+  bool includeBoundary = true;
   bool useNonzeroRule = true;
 
   // Use zero numerical tolerances
@@ -120,7 +120,7 @@ TEST(primal_polyhedron, polyhedron_unit_cube)
         {
           EXPECT_TRUE(in_polyhedron(PointType({x, y, z}),
                                     poly,
-                                    useStrictInclusion,
+                                    includeBoundary,
                                     useNonzeroRule,
                                     edge_tol,
                                     EPS));
@@ -129,7 +129,7 @@ TEST(primal_polyhedron, polyhedron_unit_cube)
         {
           EXPECT_FALSE(in_polyhedron(PointType({x, y, z}),
                                      poly,
-                                     useStrictInclusion,
+                                     includeBoundary,
                                      useNonzeroRule,
                                      edge_tol,
                                      EPS));
@@ -139,7 +139,6 @@ TEST(primal_polyhedron, polyhedron_unit_cube)
   }
 
   // Verify includeBoundary behavior
-  const bool includeBoundary = true;
   EXPECT_TRUE(
     in_polyhedron(poly[0], poly, includeBoundary, useNonzeroRule, edge_tol, EPS));
   EXPECT_FALSE(

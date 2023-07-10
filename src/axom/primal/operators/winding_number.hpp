@@ -303,7 +303,7 @@ double winding_number(const Point<T, 3>& q,
     return 0;
   }
 
-  if(squared_distance(q, tri) < edge_tol * edge_tol)
+  if(squared_distance(q, tri) <= edge_tol * edge_tol)
   {
     isOnFace = true;
     return 0;
