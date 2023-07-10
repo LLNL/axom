@@ -236,6 +236,12 @@ public:
   void SetNumFiles(int num_files);
   #endif
 
+  /// Returns the number of MPI ranks in this data collection
+  /** The number of ranks is 1 when using serial MFEM mesh; otherwise the MPI
+  * communicator for the associated parallel mesh instance determines the number of ranks.
+  */
+  int GetNumProcs() const { return this->num_procs; }
+
   /// Register a GridFunction in the Sidre DataStore.
   /** This method is a shortcut for the call
       `RegisterField(field_name, gf, field_name, 0)`.
