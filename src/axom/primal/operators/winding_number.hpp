@@ -501,8 +501,8 @@ double winding_number(const Point<T, 3>& query,
     BezierPatch<T> p1, p2, p3, p4;
     bPatch.split(0.01, 0.01, p1, p2, p3, p4);
     double new_edge_tol = 0.5 *
-      sqrt(axom::utilities::min(squared_distance(query, bPatch(0, 0.01)),
-                                squared_distance(query, bPatch(0.01, 0))));
+      sqrt(axom::utilities::min(squared_distance(query, bPatch.evaluate(0, 0.01)),
+                                squared_distance(query, bPatch.evaluate(0.01, 0))));
     new_edge_tol = axom::utilities::min(new_edge_tol, edge_tol);
 
     return winding_number(query, p2, new_edge_tol, quad_tol, EPS) +
@@ -514,8 +514,8 @@ double winding_number(const Point<T, 3>& query,
     BezierPatch<T> p1, p2, p3, p4;
     bPatch.split(0.99, 0.01, p1, p2, p3, p4);
     double new_edge_tol = 0.5 *
-      sqrt(axom::utilities::min(squared_distance(query, bPatch(1, 0.01)),
-                                squared_distance(query, bPatch(0.99, 0))));
+      sqrt(axom::utilities::min(squared_distance(query, bPatch.evaluate(1, 0.01)),
+                                squared_distance(query, bPatch.evaluate(0.99, 0))));
     new_edge_tol = axom::utilities::min(new_edge_tol, edge_tol);
 
     return winding_number(query, p1, new_edge_tol, quad_tol, EPS) +
@@ -527,8 +527,8 @@ double winding_number(const Point<T, 3>& query,
     BezierPatch<T> p1, p2, p3, p4;
     bPatch.split(0.01, 0.99, p1, p2, p3, p4);
     double new_edge_tol = 0.5 *
-      sqrt(axom::utilities::min(squared_distance(query, bPatch(0, 1)),
-                                squared_distance(query, bPatch(0, 0.99))));
+      sqrt(axom::utilities::min(squared_distance(query, bPatch.evaluate(0, 1)),
+                                squared_distance(query, bPatch.evaluate(0, 0.99))));
     new_edge_tol = axom::utilities::min(new_edge_tol, edge_tol);
 
     return winding_number(query, p1, new_edge_tol, quad_tol, EPS) +
@@ -540,8 +540,8 @@ double winding_number(const Point<T, 3>& query,
     BezierPatch<T> p1, p2, p3, p4;
     bPatch.split(0.99, 0.99, p1, p2, p3, p4);
     double new_edge_tol = 0.5 *
-      sqrt(axom::utilities::min(squared_distance(query, bPatch(1, 0.99)),
-                                squared_distance(query, bPatch(0.99, 1))));
+      sqrt(axom::utilities::min(squared_distance(query, bPatch.evaluate(1, 0.99)),
+                                squared_distance(query, bPatch.evaluate(0.99, 1))));
     new_edge_tol = axom::utilities::min(new_edge_tol, edge_tol);
 
     return winding_number(query, p1, new_edge_tol, quad_tol, EPS) +
