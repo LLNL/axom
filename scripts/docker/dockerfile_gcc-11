@@ -1,7 +1,7 @@
 # This script can be run with the following command:
 # docker build --build-arg branch=<your branch here, defaults to develop> -t "axom/tpls:gcc-11" - < dockerfile_gcc-11
 
-FROM axom/compilers:ubuntu-20-gcc-11_01-27-22_00h-07m
+FROM axom/compilers:ubuntu-20-gcc-11_07-10-23_21h-57m
 ARG branch=develop
 
 SHELL ["/bin/bash", "-c"]
