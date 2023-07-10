@@ -625,7 +625,7 @@ TEST(primal_integral, bezierpatch_sphere)
   const double EPS = 1e-14;
 
   // Iterate over the query directions
-  for(int i = 11; i < 12; ++i)
+  for(int i = 0; i < 1; ++i)
   {
     // Iterate over distance to the surface
     for(int j = 3; j < 8; ++j)
