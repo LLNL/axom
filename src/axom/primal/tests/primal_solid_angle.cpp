@@ -665,8 +665,8 @@ TEST(primal_integral, bezierpatch_sphere)
       coincident_wn +=
         winding_number(coincident_query, sphere_faces[k], edge_tol, quad_tol, EPS);
     }
-    EXPECT_LT(coincident_wn, 1.5, 6 * quad_tol);
-    EXPECT_LT(-0.5, coincident_wn, 6 * quad_tol);
+    EXPECT_LT(coincident_wn, 1.5);
+    EXPECT_LT(-0.5, coincident_wn);
   }
 }
 
