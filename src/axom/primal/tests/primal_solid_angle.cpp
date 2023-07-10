@@ -483,7 +483,6 @@ TEST(primal_solid_angle, planar_bezierpatch)
 {
   using Point3D = primal::Point<double, 3>;
   using Vector3D = primal::Vector<double, 3>;
-  using Triangle = primal::Triangle<double, 3>;
   using Polygon = primal::Polygon<double, 3>;
   using BezierPatch = primal::BezierPatch<double>;
 
@@ -539,8 +538,6 @@ TEST(primal_integral, bezierpatch_sphere)
 {
   using Point3D = primal::Point<double, 3>;
   using Vector3D = primal::Vector<double, 3>;
-  using Bezier = primal::BezierCurve<double, 3>;
-  using CPolygon = primal::CurvedPolygon<double, 3>;
   using BPatch = primal::BezierPatch<double>;
 
   double rt2 = sqrt(2), rt3 = sqrt(3), rt6 = sqrt(6);
@@ -665,8 +662,8 @@ TEST(primal_integral, bezierpatch_sphere)
       coincident_wn +=
         winding_number(coincident_query, sphere_faces[k], edge_tol, quad_tol, EPS);
     }
-    EXPECT_LT(coincident_wn, 1.5, 6 * quad_tol);
-    EXPECT_LT(-0.5, coincident_wn, 6 * quad_tol);
+    EXPECT_LT(coincident_wn, 1.5);
+    EXPECT_LT(-0.5, coincident_wn);
   }
 }
 
