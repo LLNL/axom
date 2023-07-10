@@ -4,6 +4,10 @@
 # CMake executable path: /usr/tce/packages/cmake/cmake-3.21.1/bin/cmake
 #------------------------------------------------------------------------------
 
+set(CMAKE_PREFIX_PATH "/usr/WS1/axom/libs/blueos_3_ppc64le_ib_p9/2023_07_09_16_57_46/gcc-8.3.1.1/umpire-2022.10.0-5ete5y2lum7lxz7e7zo7yhlz2mvknruk;/usr/WS1/axom/libs/blueos_3_ppc64le_ib_p9/2023_07_09_16_57_46/gcc-8.3.1.1/raja-2022.10.5-rtwfcoocugn56t23fkgaj5gz34r2scja;/usr/WS1/axom/libs/blueos_3_ppc64le_ib_p9/2023_07_09_16_57_46/gcc-8.3.1.1/camp-2022.10.1-l7l3b5la3mds3ppnacjbbmodzf5vlmaz;/usr/WS1/axom/libs/blueos_3_ppc64le_ib_p9/2023_07_09_16_57_46/gcc-8.3.1.1/lua-5.4.4-e7cdhkbaxuyqljoyozzxrt2n57erhszx;/usr/WS1/axom/libs/blueos_3_ppc64le_ib_p9/2023_07_09_16_57_46/gcc-8.3.1.1/conduit-0.8.8-3li2jcc2mecqbanoew5tznr4uzl2k2jg;/usr/WS1/axom/libs/blueos_3_ppc64le_ib_p9/2023_07_09_16_57_46/gcc-8.3.1.1/parmetis-4.0.3-c2ub4mddqt7faykccls5eae7xogpi32w;/usr/WS1/axom/libs/blueos_3_ppc64le_ib_p9/2023_07_09_16_57_46/gcc-8.3.1.1/metis-5.1.0-t6qk2khpceidsormndy6gj56qbnehxai;/usr/WS1/axom/libs/blueos_3_ppc64le_ib_p9/2023_07_09_16_57_46/gcc-8.3.1.1/hdf5-1.8.22-nydokvym7klek6hqoyijbwf3tbmd32ux;/usr/WS1/axom/libs/blueos_3_ppc64le_ib_p9/2023_07_09_16_57_46/gcc-8.3.1.1/zlib-1.2.13-zd2x25bmmjwxhw7siucfywjgk7oc262j;/usr/WS1/axom/libs/blueos_3_ppc64le_ib_p9/2023_07_09_16_57_46/gcc-8.3.1.1/c2c-1.8.0-zgwmbota3vhdxcdjlwxbhomlwllwhvnc;/usr/WS1/axom/libs/blueos_3_ppc64le_ib_p9/2023_07_09_16_57_46/gcc-8.3.1.1/blt-0.5.3-zghdcshuqlqnbrezcylwnefie7pkvsab;/collab/usr/gapps/axom/devtools/blueos_3_ppc64le_ib_p9/latest/python-3.10.10;/collab/usr/gapps/axom/devtools/blueos_3_ppc64le_ib_p9/latest/python-3.10.10;/collab/usr/gapps/axom/devtools/blueos_3_ppc64le_ib_p9/latest/python-3.10.10;/usr/tce/packages/clang/clang-10.0.0;/collab/usr/gapps/axom/devtools/blueos_3_ppc64le_ib_p9/latest/graphviz-7.1.0;/collab/usr/gapps/axom/devtools/blueos_3_ppc64le_ib_p9/latest/doxygen-1.8.14;/collab/usr/gapps/axom/devtools/blueos_3_ppc64le_ib_p9/latest/cppcheck-2.9;/usr/tce/packages/spectrum-mpi/spectrum-mpi-rolling-release-gcc-8.3.1;/usr/tcetmp;/usr/tce/packages/cmake/cmake-3.21.1" CACHE PATH "")
+
+set(CMAKE_BUILD_TYPE "Release" CACHE STRING "")
+
 #------------------------------------------------------------------------------
 # Compilers
 #------------------------------------------------------------------------------
@@ -11,11 +15,11 @@
 #------------------------------------------------------------------------------
 if(DEFINED ENV{SPACK_CC})
 
-  set(CMAKE_C_COMPILER "/usr/WS1/axom/libs/blueos_3_ppc64le_ib_p9/2023_05_19_09_25_23/spack/lib/spack/env/gcc/gcc" CACHE PATH "")
+  set(CMAKE_C_COMPILER "/usr/WS1/axom/libs/blueos_3_ppc64le_ib_p9/2023_07_09_16_57_46/spack/lib/spack/env/gcc/gcc" CACHE PATH "")
 
-  set(CMAKE_CXX_COMPILER "/usr/WS1/axom/libs/blueos_3_ppc64le_ib_p9/2023_05_19_09_25_23/spack/lib/spack/env/gcc/g++" CACHE PATH "")
+  set(CMAKE_CXX_COMPILER "/usr/WS1/axom/libs/blueos_3_ppc64le_ib_p9/2023_07_09_16_57_46/spack/lib/spack/env/gcc/g++" CACHE PATH "")
 
-  set(CMAKE_Fortran_COMPILER "/usr/WS1/axom/libs/blueos_3_ppc64le_ib_p9/2023_05_19_09_25_23/spack/lib/spack/env/gcc/gfortran" CACHE PATH "")
+  set(CMAKE_Fortran_COMPILER "/usr/WS1/axom/libs/blueos_3_ppc64le_ib_p9/2023_07_09_16_57_46/spack/lib/spack/env/gcc/gfortran" CACHE PATH "")
 
 else()
 
@@ -26,6 +30,8 @@ else()
   set(CMAKE_Fortran_COMPILER "/usr/tce/packages/gcc/gcc-8.3.1/bin/gfortran" CACHE PATH "")
 
 endif()
+
+set(CMAKE_GENERATOR "Unix Makefiles" CACHE STRING "")
 
 set(ENABLE_FORTRAN ON CACHE BOOL "")
 
@@ -65,23 +71,23 @@ set(BLT_CMAKE_IMPLICIT_LINK_DIRECTORIES_EXCLUDE "/usr/tce/packages/gcc/gcc-4.9.3
 # TPLs
 #------------------------------------------------------------------------------
 
-set(TPL_ROOT "/usr/WS1/axom/libs/blueos_3_ppc64le_ib_p9/2023_05_19_09_25_23/gcc-8.3.1.1" CACHE PATH "")
+set(TPL_ROOT "/usr/WS1/axom/libs/blueos_3_ppc64le_ib_p9/2023_07_09_16_57_46/gcc-8.3.1.1" CACHE PATH "")
 
-set(CONDUIT_DIR "${TPL_ROOT}/conduit-0.8.6-ispeoxcz4q5bqsfiygltflmevlrd2xbn" CACHE PATH "")
+set(CONDUIT_DIR "${TPL_ROOT}/conduit-0.8.8-3li2jcc2mecqbanoew5tznr4uzl2k2jg" CACHE PATH "")
 
-set(C2C_DIR "${TPL_ROOT}/c2c-1.8.0-fnlglmvmwuxqd67yp4wpcgyfzo3osc4u" CACHE PATH "")
+set(C2C_DIR "${TPL_ROOT}/c2c-1.8.0-zgwmbota3vhdxcdjlwxbhomlwllwhvnc" CACHE PATH "")
 
 # MFEM not built
 
-set(HDF5_DIR "${TPL_ROOT}/hdf5-1.8.22-6h3oyudjh76olx4krvq3f27a4k6v4nsk" CACHE PATH "")
+set(HDF5_DIR "${TPL_ROOT}/hdf5-1.8.22-nydokvym7klek6hqoyijbwf3tbmd32ux" CACHE PATH "")
 
-set(LUA_DIR "${TPL_ROOT}/lua-5.4.4-3pbiudalqpbdu5cx65q2mmyi6swfwnr2" CACHE PATH "")
+set(LUA_DIR "${TPL_ROOT}/lua-5.4.4-e7cdhkbaxuyqljoyozzxrt2n57erhszx" CACHE PATH "")
 
-set(RAJA_DIR "${TPL_ROOT}/raja-2022.03.0-jxperynylarp3fo4dx2zie4cymxt64nt" CACHE PATH "")
+set(RAJA_DIR "${TPL_ROOT}/raja-2022.10.5-rtwfcoocugn56t23fkgaj5gz34r2scja" CACHE PATH "")
 
-set(UMPIRE_DIR "${TPL_ROOT}/umpire-2022.03.1-ifxthxal5nzwlmw2be4nafiljw3phvc3" CACHE PATH "")
+set(UMPIRE_DIR "${TPL_ROOT}/umpire-2022.10.0-5ete5y2lum7lxz7e7zo7yhlz2mvknruk" CACHE PATH "")
 
-set(CAMP_DIR "${TPL_ROOT}/camp-2022.10.1-sgtwl7anfljlhetjklpqjkku3ixbzzrb" CACHE PATH "")
+set(CAMP_DIR "${TPL_ROOT}/camp-2022.10.1-l7l3b5la3mds3ppnacjbbmodzf5vlmaz" CACHE PATH "")
 
 # scr not built
 

@@ -4,6 +4,10 @@
 # CMake executable path: /usr/tce/packages/cmake/cmake-3.19.2/bin/cmake
 #------------------------------------------------------------------------------
 
+set(CMAKE_PREFIX_PATH "/usr/WS1/axom/libs/toss_4_x86_64_ib/2023_07_09_19_16_24/clang-14.0.6/umpire-2022.03.1-iut74u3azw6skamlcn2vhiyldxaoc3ud;/usr/WS1/axom/libs/toss_4_x86_64_ib/2023_07_09_19_16_24/clang-14.0.6/raja-2022.03.1-skzhrbaucvynsb52vj4cavlyrgurcgu4;/usr/WS1/axom/libs/toss_4_x86_64_ib/2023_07_09_19_16_24/clang-14.0.6/camp-2022.10.1-bbgab7ltyl3ss2pxx4rur6yd3q4hipuf;/usr/WS1/axom/libs/toss_4_x86_64_ib/2023_07_09_19_16_24/clang-14.0.6/mfem-4.5.2-do5ocbeuy2moa5cytcsucxnhhy6ree5m;/usr/WS1/axom/libs/toss_4_x86_64_ib/2023_07_09_19_16_24/clang-14.0.6/hypre-2.24.0-bwh42bebp4hiuwzlwcthpgkawape6dp3;/usr/WS1/axom/libs/toss_4_x86_64_ib/2023_07_09_19_16_24/clang-14.0.6/conduit-0.8.8-o2daxjhl4oygijft7yjsgsx4f2kq3ogj;/usr/WS1/axom/libs/toss_4_x86_64_ib/2023_07_09_19_16_24/clang-14.0.6/parmetis-4.0.3-ucmsjhvhd2okxlbbgovbpoq7vigmycbt;/usr/WS1/axom/libs/toss_4_x86_64_ib/2023_07_09_19_16_24/clang-14.0.6/metis-5.1.0-ctoim5b4oc5mghlvvjwnhc2hsyzq6dca;/usr/WS1/axom/libs/toss_4_x86_64_ib/2023_07_09_19_16_24/clang-14.0.6/hdf5-1.8.22-ducec2x4ah3xwjs2nk4eilysbup65mic;/usr/WS1/axom/libs/toss_4_x86_64_ib/2023_07_09_19_16_24/clang-14.0.6/c2c-1.8.0-ns3fs5uxezevm2b7rp6y4bxvltrlwzaa;/usr/WS1/axom/libs/toss_4_x86_64_ib/2023_07_09_19_16_24/clang-14.0.6/gmake-4.4.1-6lgy76r7dbvqm6mbwb2jkpcuycf7tb27;/usr/WS1/axom/libs/toss_4_x86_64_ib/2023_07_09_19_16_24/clang-14.0.6/blt-0.5.3-a47mj62hqv66gff55zxsxwissyyy5zwm;/collab/usr/gapps/axom/devtools/toss_4_x86_64_ib/latest/python-3.10.10;/collab/usr/gapps/axom/devtools/toss_4_x86_64_ib/latest/python-3.10.10;/collab/usr/gapps/axom/devtools/toss_4_x86_64_ib/latest/python-3.10.10;/collab/usr/gapps/axom/devtools/toss_4_x86_64_ib/latest/llvm-10.0.0;/collab/usr/gapps/axom/devtools/toss_4_x86_64_ib/latest/doxygen-1.8.14;/collab/usr/gapps/axom/devtools/toss_4_x86_64_ib/latest/cppcheck-2.9;/usr/tce/packages/mvapich2/mvapich2-2.3.6-clang-14.0.6;/usr/tce/packages/cmake/cmake-3.19.2;/usr/tce/packages/mvapich2/mvapich2-2.3.7-clang-14.0.6;/usr/tce/packages/clang/clang-14.0.6" CACHE PATH "")
+
+set(CMAKE_BUILD_TYPE "Release" CACHE STRING "")
+
 #------------------------------------------------------------------------------
 # Compilers
 #------------------------------------------------------------------------------
@@ -11,11 +15,11 @@
 #------------------------------------------------------------------------------
 if(DEFINED ENV{SPACK_CC})
 
-  set(CMAKE_C_COMPILER "/usr/WS1/axom/libs/toss_4_x86_64_ib/2023_05_19_09_20_38/spack/lib/spack/env/clang/clang" CACHE PATH "")
+  set(CMAKE_C_COMPILER "/usr/WS1/axom/libs/toss_4_x86_64_ib/2023_07_09_19_16_24/spack/lib/spack/env/clang/clang" CACHE PATH "")
 
-  set(CMAKE_CXX_COMPILER "/usr/WS1/axom/libs/toss_4_x86_64_ib/2023_05_19_09_20_38/spack/lib/spack/env/clang/clang++" CACHE PATH "")
+  set(CMAKE_CXX_COMPILER "/usr/WS1/axom/libs/toss_4_x86_64_ib/2023_07_09_19_16_24/spack/lib/spack/env/clang/clang++" CACHE PATH "")
 
-  set(CMAKE_Fortran_COMPILER "/usr/WS1/axom/libs/toss_4_x86_64_ib/2023_05_19_09_20_38/spack/lib/spack/env/clang/gfortran" CACHE PATH "")
+  set(CMAKE_Fortran_COMPILER "/usr/WS1/axom/libs/toss_4_x86_64_ib/2023_07_09_19_16_24/spack/lib/spack/env/clang/gfortran" CACHE PATH "")
 
 else()
 
@@ -26,6 +30,8 @@ else()
   set(CMAKE_Fortran_COMPILER "/usr/tce/packages/gcc/gcc-10.3.1/bin/gfortran" CACHE PATH "")
 
 endif()
+
+set(CMAKE_GENERATOR "Unix Makefiles" CACHE STRING "")
 
 set(ENABLE_FORTRAN ON CACHE BOOL "")
 
@@ -63,23 +69,23 @@ set(ENABLE_GTEST_DEATH_TESTS ON CACHE BOOL "")
 # TPLs
 #------------------------------------------------------------------------------
 
-set(TPL_ROOT "/usr/WS1/axom/libs/toss_4_x86_64_ib/2023_05_19_09_20_38/clang-14.0.6" CACHE PATH "")
+set(TPL_ROOT "/usr/WS1/axom/libs/toss_4_x86_64_ib/2023_07_09_19_16_24/clang-14.0.6" CACHE PATH "")
 
-set(CONDUIT_DIR "${TPL_ROOT}/conduit-0.8.6-sthcqefj6i6hfx6jxqsqat6kydip4bh5" CACHE PATH "")
+set(CONDUIT_DIR "${TPL_ROOT}/conduit-0.8.8-o2daxjhl4oygijft7yjsgsx4f2kq3ogj" CACHE PATH "")
 
-set(C2C_DIR "${TPL_ROOT}/c2c-1.8.0-wjvaftyubuclmwjoz7furlwlhfpvpwss" CACHE PATH "")
+set(C2C_DIR "${TPL_ROOT}/c2c-1.8.0-ns3fs5uxezevm2b7rp6y4bxvltrlwzaa" CACHE PATH "")
 
-set(MFEM_DIR "${TPL_ROOT}/mfem-4.5.0-znv6samadahgjaimxs7qzx67oejhjtfy" CACHE PATH "")
+set(MFEM_DIR "${TPL_ROOT}/mfem-4.5.2-do5ocbeuy2moa5cytcsucxnhhy6ree5m" CACHE PATH "")
 
-set(HDF5_DIR "${TPL_ROOT}/hdf5-1.8.22-xsjkllrmkjvoxo6bdj4kca76ogweoopr" CACHE PATH "")
+set(HDF5_DIR "${TPL_ROOT}/hdf5-1.8.22-ducec2x4ah3xwjs2nk4eilysbup65mic" CACHE PATH "")
 
 set(LUA_DIR "/usr" CACHE PATH "")
 
-set(RAJA_DIR "${TPL_ROOT}/raja-2022.03.0-jjcsjmscrhxcksd7m26q462vhhgicylf" CACHE PATH "")
+set(RAJA_DIR "${TPL_ROOT}/raja-2022.03.1-skzhrbaucvynsb52vj4cavlyrgurcgu4" CACHE PATH "")
 
-set(UMPIRE_DIR "${TPL_ROOT}/umpire-2022.03.1-eri46kk5td3v23xgppxxwxovlusgm4zn" CACHE PATH "")
+set(UMPIRE_DIR "${TPL_ROOT}/umpire-2022.03.1-iut74u3azw6skamlcn2vhiyldxaoc3ud" CACHE PATH "")
 
-set(CAMP_DIR "${TPL_ROOT}/camp-2022.10.1-ug3vynwpuw3zbkvpscygelocijatm3fu" CACHE PATH "")
+set(CAMP_DIR "${TPL_ROOT}/camp-2022.10.1-bbgab7ltyl3ss2pxx4rur6yd3q4hipuf" CACHE PATH "")
 
 # scr not built
 
