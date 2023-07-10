@@ -23,7 +23,7 @@
 #ifdef AXOM_USE_MFEM
   #include "mfem.hpp"
 #else
-  #error "Primal's integral evaluation functions require mfem library."
+  #error "Primal's 3D winding number functions require mfem library."
 #endif
 
 namespace axom

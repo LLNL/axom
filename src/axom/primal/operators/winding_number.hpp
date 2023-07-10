@@ -35,6 +35,13 @@
 #include <stdio.h>
 #include <iostream>
 
+// MFEM includes
+#ifdef AXOM_USE_MFEM
+  #include "mfem.hpp"
+#else
+  #error "Primal's 3D winding number functions require mfem library."
+#endif
+
 namespace axom
 {
 namespace primal
