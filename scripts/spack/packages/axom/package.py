@@ -271,7 +271,7 @@ class Axom(CachedCMakePackage, CudaPackage, ROCmPackage):
 
         if "+rocm" in spec:
             entries.append("#------------------{0}\n".format("-" * 60))
-            entries.append("# HIP\n")
+            entries.append("# Axom ROCm specifics\n")
             entries.append("#------------------{0}\n\n".format("-" * 60))
 
             entries.append(cmake_cache_option("ENABLE_HIP", True))
@@ -279,22 +279,12 @@ class Axom(CachedCMakePackage, CudaPackage, ROCmPackage):
             hip_root = spec["hip"].prefix
             rocm_root = hip_root + "/.."
 
-            entries.append(cmake_cache_string("HIP_ROOT_DIR", hip_root))
-
             # Fix blt_hip getting HIP_CLANG_INCLUDE_PATH-NOTFOUND bad include directory
             if self.spec.satisfies('%clang') and 'toss_4' in self._get_sys_type(spec):
                 clang_version= str(self.compiler.version)
                 hip_clang_include_path = rocm_root + "/llvm/lib/clang/" + clang_version + "/include"
                 if os.path.isdir(hip_clang_include_path):
                     entries.append(cmake_cache_path("HIP_CLANG_INCLUDE_PATH", hip_clang_include_path))
-
-                # C++ 14 error fix in camp
-                entries.append(cmake_cache_string("CMAKE_CXX_FLAGS","--std=c++14"))
-
-            archs = self.spec.variants["amdgpu_target"].value
-            if archs != "none":
-                arch_str = ",".join(archs)
-                entries.append(cmake_cache_string("CMAKE_HIP_ARCHITECTURES", arch_str))
 
             # Fixes for mpi for rocm until wrapper paths are fixed
             # These flags are already part of the wrapped compilers on TOSS4 systems
