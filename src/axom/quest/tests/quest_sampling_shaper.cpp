@@ -17,6 +17,7 @@
 #include "axom/sidre.hpp"
 #include "axom/slic.hpp"
 #include "axom/quest/SamplingShaper.hpp"
+#include "axom/quest/util/mesh_helpers.hpp"
 
 #ifndef AXOM_USE_MFEM
   #error "Quest's SamplingShaper tests on mfem meshes require mfem library."
@@ -97,47 +98,28 @@ public:
 
   virtual void SetUp()
   {
-    const int dim = 2;
     const int polynomialOrder = 2;
-    const double lo[] = {-2., -2.};
-    const double hi[] = {2., 2.};
-    const int celldims[] = {64, 64};
+    const BBox2D bbox({-2, -2}, {2, 2});
+    const primal::NumericArray<int, 2> celldims {64, 64};
 
     // memory for mesh will be managed by data collection
-    auto mesh =
-      new mfem::Mesh(mfem::Mesh::MakeCartesian2D(celldims[0],
-                                                 celldims[1],
-                                                 mfem::Element::QUADRILATERAL,
-                                                 true,
-                                                 hi[0] - lo[0],
-                                                 hi[1] - lo[1]));
-
-    const int NE = mesh->GetNE();
-    const int NV = mesh->GetNV();
-
-    // Offset the mesh to lie w/in the bounding box
-    for(int i = 0; i < NV; ++i)
-    {
-      double* v = mesh->GetVertex(i);
-      for(int d = 0; d < dim; ++d)
-      {
-        v[d] += lo[d];
-      }
-    }
+    auto* mesh =
+      quest::util::make_cartesian_mfem_mesh_2D(bbox, celldims, polynomialOrder);
 
     // Set element attributes based on quadrant where centroid is located
     // These will be used later in some cases when setting volume fractions
     mfem::Array<int> v;
+    const int NE = mesh->GetNE();
     for(int i = 0; i < NE; ++i)
     {
       mesh->GetElementVertices(i, v);
-      BBox2D bbox;
+      BBox2D elem_bbox;
       for(int j = 0; j < v.Size(); ++j)
       {
-        bbox.addPoint(Point2D(mesh->GetVertex(v[j]), 2));
+        elem_bbox.addPoint(Point2D(mesh->GetVertex(v[j]), 2));
       }
 
-      auto centroid = bbox.getCentroid();
+      const auto centroid = elem_bbox.getCentroid();
       if(centroid[0] >= 0 && centroid[1] >= 0)
       {
         mesh->SetAttribute(i, 1);
@@ -155,8 +137,6 @@ public:
         mesh->SetAttribute(i, 4);
       }
     }
-
-    mesh->SetCurvature(polynomialOrder);
 
     m_dc.SetOwnData(true);
     m_dc.SetMeshNodesName("positions");
