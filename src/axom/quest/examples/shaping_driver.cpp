@@ -124,77 +124,42 @@ public:
   {
     mfem::Mesh* mesh = nullptr;
 
-    const int dim = boxDim;
-    axom::Array<double> lo(dim);
-
-    switch(dim)
+    switch(boxDim)
     {
     case 2:
     {
-      auto res = primal::Point<int, 2>(boxResolution.data());
-      auto bbox =
-        primal::BoundingBox<double, 2>(primal::Point<double, 2>(boxMins.data()),
-                                       primal::Point<double, 2>(boxMaxs.data()));
+      using BBox2D = primal::BoundingBox<double, 2>;
+      using Pt2D = primal::Point<double, 2>;
+      auto res = primal::NumericArray<int, 2>(boxResolution.data());
+      auto bbox = BBox2D(Pt2D(boxMins.data()), Pt2D(boxMaxs.data()));
 
       SLIC_INFO(axom::fmt::format(
         "Creating inline box mesh of resolution {} and bounding box {}",
         res,
         bbox));
 
-      mesh =
-        new mfem::Mesh(mfem::Mesh::MakeCartesian2D(res[0],
-                                                   res[1],
-                                                   mfem::Element::QUADRILATERAL,
-                                                   false,
-                                                   bbox.range()[0],
-                                                   bbox.range()[1],
-                                                   false));
-      lo[0] = bbox.getMin()[0];  // update lower bound in case
-      lo[1] = bbox.getMin()[1];  // it differs from provided data
+      mesh = quest::util::make_cartesian_mfem_mesh_2D(bbox, res, outputOrder);
     }
     break;
     case 3:
     {
-      auto res = primal::Point<int, 3>(boxResolution.data());
-      auto bbox =
-        primal::BoundingBox<double, 3>(primal::Point<double, 3>(boxMins.data()),
-                                       primal::Point<double, 3>(boxMaxs.data()));
+      using BBox3D = primal::BoundingBox<double, 3>;
+      using Pt3D = primal::Point<double, 3>;
+      auto res = primal::NumericArray<int, 3>(boxResolution.data());
+      auto bbox = BBox3D(Pt3D(boxMins.data()), Pt3D(boxMaxs.data()));
 
       SLIC_INFO(axom::fmt::format(
         "Creating inline box mesh of resolution {} and bounding box {}",
         res,
         bbox));
 
-      mesh = new mfem::Mesh(mfem::Mesh::MakeCartesian3D(res[0],
-                                                        res[1],
-                                                        res[2],
-                                                        mfem::Element::HEXAHEDRON,
-                                                        bbox.range()[0],
-                                                        bbox.range()[1],
-                                                        bbox.range()[2],
-                                                        false));
-      lo[0] = bbox.getMin()[0];  // update lower bound in case
-      lo[1] = bbox.getMin()[1];  // it differs from provided data
-      lo[2] = bbox.getMin()[2];
+      mesh = quest::util::make_cartesian_mfem_mesh_3D(bbox, res, outputOrder);
     }
     break;
     default:
       SLIC_ERROR("Only 2D and 3D meshes are currently supported.");
       break;
     }
-
-    // Offset to the mesh to lie w/in the bounding box
-    for(int i = 0; i < mesh->GetNV(); ++i)
-    {
-      double* v = mesh->GetVertex(i);
-      for(int d = 0; d < dim; ++d)
-      {
-        v[d] += lo[d];
-      }
-    }
-
-    // Ensure that mesh has high order nodes
-    mesh->SetCurvature(outputOrder);
 
     // Handle conversion to parallel mfem mesh
 #if defined(AXOM_USE_MPI) && defined(MFEM_USE_MPI)

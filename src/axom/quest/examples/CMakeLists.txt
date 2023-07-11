@@ -44,7 +44,6 @@ if(AXOM_ENABLE_MPI AND MFEM_FOUND AND MFEM_USE_MPI
                 COMMAND  quest_shaping_driver_ex 
                             -i ${shaping_data_dir}/circles.yaml
                             --method sampling
-                            --verbose
                             inline_mesh --min -6 -6 --max 6 6 --res 25 25 -d 2
                 NUM_MPI_TASKS ${_nranks})
             # Analytic area for annulus w/ outer/inner radii 5 and 2.5 is ~58.905
@@ -57,7 +56,6 @@ if(AXOM_ENABLE_MPI AND MFEM_FOUND AND MFEM_USE_MPI
                 COMMAND  quest_shaping_driver_ex 
                         -i ${shaping_data_dir}/circles_opposite.yaml
                         --method sampling
-                        --verbose
                         inline_mesh --min -6 -6 --max 6 6 --res 25 25 -d 2
                 NUM_MPI_TASKS ${_nranks})
             # Analytic area for annulus w/ outer/inner radii 5 and 2.5 is ~65.97
@@ -71,7 +69,6 @@ if(AXOM_ENABLE_MPI AND MFEM_FOUND AND MFEM_USE_MPI
                         -i ${shaping_data_dir}/balls_and_jacks.yaml
                         --method sampling
                         --background-material air
-                        --verbose
                         inline_mesh --min -10 0 --max 60 50 --res 25 25 -d 2
                 NUM_MPI_TASKS ${_nranks})
             # background: 3500; balls: ~373; jacks: ~230; air ~2897
@@ -85,7 +82,6 @@ if(AXOM_ENABLE_MPI AND MFEM_FOUND AND MFEM_USE_MPI
                         -i ${shaping_data_dir}/ball_impact.yaml
                         --method sampling
                         --background-material air
-                        --verbose
                         inline_mesh --min -10 0 --max 40 30 --res 25 25 -d 2
                 NUM_MPI_TASKS ${_nranks})
             # steel ball: semi-cirle of radius 5.5 has area ~47.516
@@ -100,7 +96,6 @@ if(AXOM_ENABLE_MPI AND MFEM_FOUND AND MFEM_USE_MPI
                         -i ${shaping_data_dir}/ball_impact.yaml
                         --method sampling
                         --background-material air
-                        --verbose
                         inline_mesh --min -30 -30 -10 --max 30 30 40 --res 16 16 16 -d3
                 NUM_MPI_TASKS ${_nranks})
             # steel ball: cirle of radius 5.5 has analytic volume ~696.91
@@ -116,7 +111,6 @@ if(AXOM_ENABLE_MPI AND MFEM_FOUND AND MFEM_USE_MPI
             COMMAND  quest_shaping_driver_ex 
                     -i ${shaping_data_dir}/sphere.yaml
                     --method sampling
-                    --verbose
                     inline_mesh --min -6 -6 -6 --max 6 6 6 --res 16 16 16 -d 3
             NUM_MPI_TASKS ${_nranks})
         # sphere of radius 5 has volume: 4/3 pi * r^3 ~523.6
@@ -131,7 +125,6 @@ if(AXOM_ENABLE_MPI AND MFEM_FOUND AND MFEM_USE_MPI
                     -i ${shaping_data_dir}/spheres.yaml
                     --method sampling
                     --background-material void
-                    --verbose
                     inline_mesh --min -6 -6 -6 --max 6 6 6 --res 16 16 16 -d 3
             NUM_MPI_TASKS ${_nranks})
         # bbox volume: 12^3 = 1728; sphere(r=5): ~523.6; sphere(r=2): 33.5
@@ -146,7 +139,6 @@ if(AXOM_ENABLE_MPI AND MFEM_FOUND AND MFEM_USE_MPI
                     -i ${shaping_data_dir}/plane.yaml
                     --method sampling
                     --background-material air
-                    --verbose
                     inline_mesh --min -430 -45 -35 --max 430 855 210 --res 16 16 16 -d 3
             NUM_MPI_TASKS ${_nranks})
         # background: 860*900*245=189,630,000; airplane volume from meshlab: 7,420,578.5
