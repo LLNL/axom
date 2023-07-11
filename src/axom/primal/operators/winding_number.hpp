@@ -303,7 +303,8 @@ double winding_number(const Point<T, 3>& q,
     return 0;
   }
 
-  if(squared_distance(q, tri) <= edge_tol * edge_tol)
+  const double num = Vec3::scalar_triple_product(a, b, c);
+  if(axom::utilities::isNearlyEqual(num, 0.0, EPS))
   {
     isOnFace = true;
     return 0;
@@ -537,7 +538,7 @@ double winding_number(const Point<T, 3>& query,
     bPatch.split(0.01, 0.99, p1, p2, p3, p4);
     double new_edge_tol = 0.5 *
       sqrt(axom::utilities::min(
-        squared_distance(query, bPatch.evaluate(0, 1)),
+        squared_distance(query, bPatch.evaluate(0.01, 1)),
         squared_distance(query, bPatch.evaluate(0, 0.99))));
     new_edge_tol = axom::utilities::min(new_edge_tol, edge_tol);
 

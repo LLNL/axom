@@ -284,6 +284,9 @@ enum class SingularityAxis
  * "anti-curl" vector fields, the curl of each of which is equal to <x, y, z>/||x||^3.
  * With the proper "anti-curl" selected, integrating this along a closed curve is equal
  * to evaluating the winding number of a surface with that curve as the boundary.
+ * 
+ * \note This is only meant to be used for `winding_number<BezierPatch>()`,
+ *  and the result does not make sense outside of that context.
  *
  * \return double One component of the winding number
  */
@@ -303,9 +306,9 @@ double stokes_winding_number(const Point<T, 3>& query,
   for(int q = 0; q < quad_rule.GetNPoints(); ++q)
   {
     // Get quadrature points in space (shifted by the query)
-    Vector<T, 3> node(query, curve.evaluate(quad_rule.IntPoint(q).x));
-    Vector<T, 3> node_dt(curve.dt(quad_rule.IntPoint(q).x));
-    double node_norm = node.norm();
+    const Vector<T, 3> node(query, curve.evaluate(quad_rule.IntPoint(q).x));
+    const Vector<T, 3> node_dt(curve.dt(quad_rule.IntPoint(q).x));
+    const double node_norm = node.norm();
 
     // Compute one of three vector field line integrals depending on
     //  the orientation of the original surface, indicated through ax.
@@ -360,6 +363,9 @@ double stokes_winding_number(const Point<T, 3>& query,
  * of a curve. The sum of this integral along the subcurves should be equal to to
  * quad_coarse. Otherwise, apply this algorithm to each half recursively.
  *
+ * \note This is only meant to be used for `winding_number<BezierPatch>()`,
+ *  and the result does not make sense outside of that context.
+ * 
  * \return double One component of the winding number
  */
 template <typename T>
@@ -380,9 +386,9 @@ double stokes_winding_number_adaptive(const Point<T, 3>& query,
     for(int q = 0; q < quad_rule.GetNPoints(); ++q)
     {
       // Get quad_rulerature points in space (shifted by the query)
-      Vector<T, 3> node(query, subcurves[i].evaluate(quad_rule.IntPoint(q).x));
-      Vector<T, 3> node_dt(subcurves[i].dt(quad_rule.IntPoint(q).x));
-      double node_norm = node.norm();
+      const Vector<T, 3> node(query, subcurves[i].evaluate(quad_rule.IntPoint(q).x));
+      const Vector<T, 3> node_dt(subcurves[i].dt(quad_rule.IntPoint(q).x));
+      const double node_norm = node.norm();
 
       // Compute one of three vector field line integrals depending on
       //  the orientation of the original surface, indicated through ax.

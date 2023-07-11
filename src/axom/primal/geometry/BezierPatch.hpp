@@ -108,8 +108,8 @@ public:
    * \pre order in both directions is greater than or equal to zero
    *
    * Elements of pts[k] are mapped to control nodes (p, q) lexicographically, i.e.
-   * pts[0]               -> nodes[0, 0],     ..., pts[ord_v]           -> nodes[0, ord_v]
-   * pts[ord_v+1]         -> nodes[1, 0],     ..., pts[2*ord_v]         -> nodes[1, ord_v]
+   * pts[0]               -> nodes[0, 0],     ..., pts[ord_v]       -> nodes[0, ord_v]
+   * pts[ord_v+1]         -> nodes[1, 0],     ..., pts[2*ord_v]     -> nodes[1, ord_v]
    *                                          ...
    * pts[ord_u*(ord_v-1)] -> nodes[ord_u, 0], ..., pts[ord_u*ord_v] -> nodes[ord_u, ord_v]
    * 
@@ -1073,9 +1073,8 @@ public:
     {
       for(int q = ((p == 0) ? 1 : 0); q <= ord_v && sqDist <= tol; ++q)
       {
-        double signedDist = VectorType::dot_product(
-          plane_normal,
-          Vector3D(m_controlPoints(0, 0), m_controlPoints(p, q)));
+        const double signedDist =
+          plane_normal.dot(m_controlPoints(p, q) - m_controlPoints(0, 0));
         sqDist += signedDist * signedDist;
       }
     }
@@ -1084,9 +1083,10 @@ public:
   }
 
   /*!
-   * \brief Predicate to check if the Bezier patch is approximately planar-polygonal
+   * \brief Predicate to check if the patch can be approximated by a polygon
    *
-   * This function checks if the edges of a BezierPatch are approximately linear
+   * This function checks if a BezierPatch lies in a plane
+   *  and that the edged are linear up to tolerance `tol`
    *
    * \param [in] tol Threshold for sum of squared distances
    * \return True if c1 is near-planar-polygonal

@@ -521,7 +521,9 @@ TEST(primal_solid_angle, planar_bezierpatch)
                 1e-10);
   }
 
-  // Should be equal if we don't revert to polygon base case
+  // The winding numbers computed should be the same even if
+  //  we use quadrature instead of resorting to the direct formula.
+  // Ensure this by shrinking our tolerances.
   const double quad_tol = 1e-10;
   const double edge_tol = 1e-10;
   const double EPS = 0;
@@ -542,7 +544,12 @@ TEST(primal_integral, bezierpatch_sphere)
 
   double rt2 = sqrt(2), rt3 = sqrt(3), rt6 = sqrt(6);
 
-  // Define 6 rational bezier patches that define the surface of a sphere
+  // Define the nodes and weights for one of six rational, biquartic Bezier patches
+  //  that compose the unit sphere. These will be rotated to form the other 5.
+  // Nodes and weights obtained from the technical report
+  // "Tiling the Sphere with Rational Bezier Patches", 
+  //  James E. Cobb, University of Utah, 1988
+  
   // clang-format off
   Point3D node_data[25] = {
     Point3D {4*(1-rt3),     4*(1-rt3),     4*(1-rt3)}, Point3D {rt2*(rt3-4),            -rt2, rt2*(rt3-4)}, Point3D {4*(1-2*rt3)/3,   0, 4*(1-2*rt3)/3}, Point3D {rt2*(rt3-4),           rt2,   rt2*(rt3-4)}, Point3D {4*(1-rt3),     4*(rt3-1),     4*(1-rt3)},
@@ -572,34 +579,40 @@ TEST(primal_integral, bezierpatch_sphere)
   {
     for(int j = 0; j < 5; ++j)
     {
-      int idx = 5 * i + j;
+      const int idx = 5 * i + j;
       for(int n = 0; n < 6; ++n)
         sphere_faces[n].setWeight(i, j, weight_data[idx]);
 
-      // Set up each face
-      sphere_faces[0](i, j)[0] = node_data[idx][1] / weight_data[idx];
-      sphere_faces[0](i, j)[1] = node_data[idx][0] / weight_data[idx];
-      sphere_faces[0](i, j)[2] = node_data[idx][2] / weight_data[idx];
+      // Set up each face by rotating one of the patch faces
+      sphere_faces[0](i, j)[0] = node_data[idx][1];
+      sphere_faces[0](i, j)[1] = node_data[idx][0];
+      sphere_faces[0](i, j)[2] = node_data[idx][2];
+      sphere_faces[0](i, j).array() /= weight_data[idx];
 
-      sphere_faces[1](i, j)[0] = -node_data[idx][0] / weight_data[idx];
-      sphere_faces[1](i, j)[1] = -node_data[idx][1] / weight_data[idx];
-      sphere_faces[1](i, j)[2] = -node_data[idx][2] / weight_data[idx];
+      sphere_faces[1](i, j)[0] = -node_data[idx][0];
+      sphere_faces[1](i, j)[1] = -node_data[idx][1];
+      sphere_faces[1](i, j)[2] = -node_data[idx][2];
+      sphere_faces[1](i, j).array() /= weight_data[idx];
 
-      sphere_faces[2](i, j)[0] = node_data[idx][2] / weight_data[idx];
-      sphere_faces[2](i, j)[1] = node_data[idx][1] / weight_data[idx];
-      sphere_faces[2](i, j)[2] = node_data[idx][0] / weight_data[idx];
+      sphere_faces[2](i, j)[0] = node_data[idx][2];
+      sphere_faces[2](i, j)[1] = node_data[idx][1];
+      sphere_faces[2](i, j)[2] = node_data[idx][0];
+      sphere_faces[2](i, j).array() /= weight_data[idx];
 
-      sphere_faces[3](i, j)[0] = -node_data[idx][1] / weight_data[idx];
-      sphere_faces[3](i, j)[1] = -node_data[idx][2] / weight_data[idx];
-      sphere_faces[3](i, j)[2] = -node_data[idx][0] / weight_data[idx];
+      sphere_faces[3](i, j)[0] = -node_data[idx][1];
+      sphere_faces[3](i, j)[1] = -node_data[idx][2];
+      sphere_faces[3](i, j)[2] = -node_data[idx][0];
+      sphere_faces[3](i, j).array() /= weight_data[idx];
 
-      sphere_faces[4](i, j)[0] = node_data[idx][0] / weight_data[idx];
-      sphere_faces[4](i, j)[1] = node_data[idx][2] / weight_data[idx];
-      sphere_faces[4](i, j)[2] = node_data[idx][1] / weight_data[idx];
+      sphere_faces[4](i, j)[0] = node_data[idx][0];
+      sphere_faces[4](i, j)[1] = node_data[idx][2];
+      sphere_faces[4](i, j)[2] = node_data[idx][1];
+      sphere_faces[4](i, j).array() /= weight_data[idx];
 
-      sphere_faces[5](i, j)[0] = -node_data[idx][2] / weight_data[idx];
-      sphere_faces[5](i, j)[1] = -node_data[idx][0] / weight_data[idx];
-      sphere_faces[5](i, j)[2] = -node_data[idx][1] / weight_data[idx];
+      sphere_faces[5](i, j)[0] = -node_data[idx][2];
+      sphere_faces[5](i, j)[1] = -node_data[idx][0];
+      sphere_faces[5](i, j)[2] = -node_data[idx][1];
+      sphere_faces[5](i, j).array() /= weight_data[idx];
     }
   }
 
