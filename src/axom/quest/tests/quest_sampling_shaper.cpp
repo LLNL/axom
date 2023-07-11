@@ -33,6 +33,7 @@
 #include <string>
 #include <iostream>
 #include <fstream>
+#include <memory>
 
 namespace klee = axom::klee;
 namespace primal = axom::primal;
@@ -129,48 +130,57 @@ public:
     }
   }
 
-  /// Runs the shaping query over a shapefile using the supplie initial volume fractions
-  void runShaping(const std::string& shapefile,
-                  const std::map<std::string, mfem::GridFunction*>& init_vf_map = {})
+  /// Initializes the Shaper instance over a shapefile and optionally sets up initial "preshaped" volume fractions
+  void initializeShaping(
+    const std::string& shapefile,
+    const std::map<std::string, mfem::GridFunction*>& init_vf_map = {})
   {
     SLIC_INFO_IF(very_verbose_output,
                  axom::fmt::format("Reading shape set from {}", shapefile));
-    klee::ShapeSet shapeSet(klee::readShapeSet(shapefile));
+    m_shapeSet = std::make_unique<klee::ShapeSet>(klee::readShapeSet(shapefile));
 
     SLIC_INFO_IF(very_verbose_output, axom::fmt::format("Shaping materials..."));
-    quest::SamplingShaper shaper(shapeSet, &m_dc);
-    shaper.setVerbosity(very_verbose_output);
+    m_shaper = std::make_unique<quest::SamplingShaper>(*m_shapeSet, &m_dc);
+    m_shaper->setVerbosity(very_verbose_output);
 
     if(!init_vf_map.empty())
     {
-      shaper.importInitialVolumeFractions(init_vf_map);
+      m_shaper->importInitialVolumeFractions(init_vf_map);
     }
 
     if(very_verbose_output)
     {
-      shaper.printRegisteredFieldNames("*** After importing volume fractions");
+      m_shaper->printRegisteredFieldNames(
+        "*** After importing volume fractions");
     }
+  }
 
-    const auto shapeDim = shapeSet.getDimensions();
-    for(const auto& shape : shapeSet.getShapes())
+  /// Runs the shaping query over a shapefile; must be called after initializeShaping()
+  void runShaping()
+  {
+    EXPECT_NE(nullptr, m_shaper)
+      << "Shaper needs to be initialized via initializeShaping()";
+
+    const auto shapeDim = m_shapeSet->getDimensions();
+    for(const auto& shape : m_shapeSet->getShapes())
     {
       SLIC_INFO_IF(very_verbose_output,
                    axom::fmt::format("\tshape {} -> material {}",
                                      shape.getName(),
                                      shape.getMaterial()));
 
-      shaper.loadShape(shape);
-      shaper.prepareShapeQuery(shapeDim, shape);
-      shaper.runShapeQuery(shape);
-      shaper.applyReplacementRules(shape);
-      shaper.finalizeShapeQuery();
+      m_shaper->loadShape(shape);
+      m_shaper->prepareShapeQuery(shapeDim, shape);
+      m_shaper->runShapeQuery(shape);
+      m_shaper->applyReplacementRules(shape);
+      m_shaper->finalizeShapeQuery();
     }
 
-    shaper.adjustVolumeFractions();
+    m_shaper->adjustVolumeFractions();
 
     if(very_verbose_output)
     {
-      shaper.printRegisteredFieldNames("*** After shaping volume fractions");
+      m_shaper->printRegisteredFieldNames("*** After shaping volume fractions");
     }
   }
 
@@ -295,6 +305,8 @@ public:
 
 protected:
   sidre::MFEMSidreDataCollection m_dc;
+  std::unique_ptr<klee::ShapeSet> m_shapeSet;
+  std::unique_ptr<quest::SamplingShaper> m_shaper;
 };
 
 /// Test fixture for SamplingShaper tests on 2D MFEM meshes
@@ -410,6 +422,7 @@ TEST_F(SamplingShaperTest2D, check_mesh)
 
   const auto bbox = this->meshBoundingBox();
   SLIC_INFO(axom::fmt::format("The mesh bounding box is: {}", bbox));
+  EXPECT_TRUE(bbox.isValid());
 }
 
 //-----------------------------------------------------------------------------
@@ -447,7 +460,8 @@ shapes:
   }
 
   this->validateShapeFile(shape_file.getFileName());
-  this->runShaping(shape_file.getFileName());
+  this->initializeShaping(shape_file.getFileName());
+  this->runShaping();
 
   // check that the result has a volume fraction field associated with the circle material
   constexpr double expected_volume = M_PI;
@@ -504,7 +518,8 @@ shapes:
 
   this->validateShapeFile(shape_file.getFileName());
 
-  this->runShaping(shape_file.getFileName());
+  this->initializeShaping(shape_file.getFileName());
+  this->runShaping();
 
   // check that the result has a volume fraction field associated with the circle material
   constexpr double expected_inner_area = .5 * .5 * M_PI;
@@ -573,7 +588,8 @@ shapes:
     }
 
     this->validateShapeFile(shape_file.getFileName());
-    this->runShaping(shape_file.getFileName(), initialGridFunctions);
+    this->initializeShaping(shape_file.getFileName(), initialGridFunctions);
+    this->runShaping();
 
     // check that the result has a volume fraction field associated with the circle material
     constexpr double expected_hole_area = .5 * .5 * M_PI;
@@ -613,7 +629,8 @@ shapes:
     }
 
     this->validateShapeFile(shape_file.getFileName());
-    this->runShaping(shape_file.getFileName(), initialGridFunctions);
+    this->initializeShaping(shape_file.getFileName(), initialGridFunctions);
+    this->runShaping();
 
     // check that the result has a volume fraction field associated with the circle material
     constexpr double expected_disk_area = M_PI - .5 * .5 * M_PI;
@@ -696,7 +713,8 @@ shapes:
   }
 
   this->validateShapeFile(shape_file.getFileName());
-  this->runShaping(shape_file.getFileName(), initialGridFunctions);
+  this->initializeShaping(shape_file.getFileName(), initialGridFunctions);
+  this->runShaping();
 
   // check that the result has a volume fraction field associated with the circle material
   const auto range = this->meshBoundingBox().range();
@@ -812,7 +830,8 @@ shapes:
   // The odds material is all cells w/ odd index, but not covering 'left' or 'disk'
   // The end result for the void background is everything that's left
   this->validateShapeFile(shape_file.getFileName());
-  this->runShaping(shape_file.getFileName(), initialGridFunctions);
+  this->initializeShaping(shape_file.getFileName(), initialGridFunctions);
+  this->runShaping();
 
   // check that the result has the correct volume fractions
   const auto range = this->meshBoundingBox().range();
