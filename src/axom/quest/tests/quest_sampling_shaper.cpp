@@ -88,64 +88,11 @@ private:
 class SamplingShaperTest : public ::testing::Test
 {
 public:
-  using Point2D = primal::Point<double, 2>;
-  using BBox2D = primal::BoundingBox<double, 2>;
-
-public:
   SamplingShaperTest() : m_dc("test", nullptr, true) { }
 
   virtual ~SamplingShaperTest() { }
 
-  virtual void SetUp()
-  {
-    const int polynomialOrder = 2;
-    const BBox2D bbox({-2, -2}, {2, 2});
-    const primal::NumericArray<int, 2> celldims {64, 64};
-
-    // memory for mesh will be managed by data collection
-    auto* mesh =
-      quest::util::make_cartesian_mfem_mesh_2D(bbox, celldims, polynomialOrder);
-
-    // Set element attributes based on quadrant where centroid is located
-    // These will be used later in some cases when setting volume fractions
-    mfem::Array<int> v;
-    const int NE = mesh->GetNE();
-    for(int i = 0; i < NE; ++i)
-    {
-      mesh->GetElementVertices(i, v);
-      BBox2D elem_bbox;
-      for(int j = 0; j < v.Size(); ++j)
-      {
-        elem_bbox.addPoint(Point2D(mesh->GetVertex(v[j]), 2));
-      }
-
-      const auto centroid = elem_bbox.getCentroid();
-      if(centroid[0] >= 0 && centroid[1] >= 0)
-      {
-        mesh->SetAttribute(i, 1);
-      }
-      else if(centroid[0] >= 0 && centroid[1] < 0)
-      {
-        mesh->SetAttribute(i, 2);
-      }
-      else if(centroid[0] < 0 && centroid[1] >= 0)
-      {
-        mesh->SetAttribute(i, 3);
-      }
-      else
-      {
-        mesh->SetAttribute(i, 4);
-      }
-    }
-
-    m_dc.SetOwnData(true);
-    m_dc.SetMeshNodesName("positions");
-    m_dc.SetMesh(mesh);
-
-#ifdef AXOM_USE_MPI
-    m_dc.SetComm(MPI_COMM_WORLD);
-#endif
-  }
+  void SetUp() override { }
 
   sidre::MFEMSidreDataCollection& getDC() { return m_dc; }
   mfem::Mesh& getMesh() { return *m_dc.GetMesh(); }
@@ -227,14 +174,6 @@ public:
     }
   }
 
-  BBox2D meshBoundingBox()
-  {
-    mfem::Vector bbmin, bbmax;
-    getMesh().GetBoundingBox(bbmin, bbmax);
-
-    return BBox2D(Point2D(bbmin.GetData()), Point2D(bbmax.GetData()));
-  }
-
   // Computes the total volume of the associated volume fraction grid function
   double gridFunctionVolume(const std::string& name)
   {
@@ -278,9 +217,9 @@ public:
   /** 
    * \brief Initializes the values of the DOFs of a volume fraction grid function
    * using a provided lambda w/ parameters for the cell index, DOF position and cell attribute
-   * The signature of DOFInitializer is [](int idx, Point2D& pt, int attribute) -> double
+   * The signature of DOFInitializer is [](int idx, Point<double,DIM>>& pt, int attribute) -> double
    */
-  template <typename DOFInitializer>
+  template <int DIM, typename DOFInitializer>
   void initializeVolFracGridFunction(mfem::GridFunction* vf,
                                      DOFInitializer&& dof_initializer)
   {
@@ -323,7 +262,7 @@ public:
       mfem::DenseMatrix& m = pos_coef(idx);
       for(int p = 0; p < nq; ++p)
       {
-        const Point2D pt(m.GetColumn(p), dim);
+        const primal::Point<double, DIM> pt(m.GetColumn(p), dim);
         res(p) = dof_initializer(idx, pt, attr);
       }
 
@@ -358,6 +297,76 @@ protected:
   sidre::MFEMSidreDataCollection m_dc;
 };
 
+/// Test fixture for SamplingShaper tests on 2D MFEM meshes
+class SamplingShaperTest2D : public SamplingShaperTest
+{
+public:
+  using Point2D = primal::Point<double, 2>;
+  using BBox2D = primal::BoundingBox<double, 2>;
+
+public:
+  virtual ~SamplingShaperTest2D() { }
+
+  void SetUp() override
+  {
+    const int polynomialOrder = 2;
+    const BBox2D bbox({-2, -2}, {2, 2});
+    const primal::NumericArray<int, 2> celldims {64, 64};
+
+    // memory for mesh will be managed by data collection
+    auto* mesh =
+      quest::util::make_cartesian_mfem_mesh_2D(bbox, celldims, polynomialOrder);
+
+    // Set element attributes based on quadrant where centroid is located
+    // These will be used later in some cases when setting volume fractions
+    mfem::Array<int> v;
+    const int NE = mesh->GetNE();
+    for(int i = 0; i < NE; ++i)
+    {
+      mesh->GetElementVertices(i, v);
+      BBox2D elem_bbox;
+      for(int j = 0; j < v.Size(); ++j)
+      {
+        elem_bbox.addPoint(Point2D(mesh->GetVertex(v[j]), 2));
+      }
+
+      const auto centroid = elem_bbox.getCentroid();
+      if(centroid[0] >= 0 && centroid[1] >= 0)
+      {
+        mesh->SetAttribute(i, 1);
+      }
+      else if(centroid[0] >= 0 && centroid[1] < 0)
+      {
+        mesh->SetAttribute(i, 2);
+      }
+      else if(centroid[0] < 0 && centroid[1] >= 0)
+      {
+        mesh->SetAttribute(i, 3);
+      }
+      else
+      {
+        mesh->SetAttribute(i, 4);
+      }
+    }
+
+    m_dc.SetOwnData(true);
+    m_dc.SetMeshNodesName("positions");
+    m_dc.SetMesh(mesh);
+
+#ifdef AXOM_USE_MPI
+    m_dc.SetComm(MPI_COMM_WORLD);
+#endif
+  }
+
+  BBox2D meshBoundingBox()
+  {
+    mfem::Vector bbmin, bbmax;
+    getMesh().GetBoundingBox(bbmin, bbmax);
+
+    return BBox2D(Point2D(bbmin.GetData()), Point2D(bbmax.GetData()));
+  }
+};
+
 //-----------------------------------------------------------------------------
 
 TEST(ScopedTemporaryFile, basic)
@@ -387,7 +396,7 @@ TEST(ScopedTemporaryFile, basic)
 
 //-----------------------------------------------------------------------------
 
-TEST_F(SamplingShaperTest, check_mesh)
+TEST_F(SamplingShaperTest2D, check_mesh)
 {
   auto& mesh = this->getMesh();
 
@@ -405,7 +414,7 @@ TEST_F(SamplingShaperTest, check_mesh)
 
 //-----------------------------------------------------------------------------
 
-TEST_F(SamplingShaperTest, basic_circle)
+TEST_F(SamplingShaperTest2D, basic_circle)
 {
   const auto& testname =
     ::testing::UnitTest::GetInstance()->current_test_info()->name();
@@ -451,7 +460,7 @@ shapes:
   }
 }
 
-TEST_F(SamplingShaperTest, disk_via_replacement)
+TEST_F(SamplingShaperTest2D, disk_via_replacement)
 {
   const auto& testname =
     ::testing::UnitTest::GetInstance()->current_test_info()->name();
@@ -509,9 +518,9 @@ shapes:
   }
 }
 
-TEST_F(SamplingShaperTest, disk_via_replacement_with_background)
+TEST_F(SamplingShaperTest2D, disk_via_replacement_with_background)
 {
-  using Point2D = typename SamplingShaperTest::Point2D;
+  using Point2D = typename SamplingShaperTest2D::Point2D;
 
   const auto& testname =
     ::testing::UnitTest::GetInstance()->current_test_info()->name();
@@ -557,7 +566,7 @@ shapes:
     std::map<std::string, mfem::GridFunction*> initialGridFunctions;
     {
       auto* vf = this->registerVolFracGridFunction("init_vf_bg");
-      this->initializeVolFracGridFunction(
+      this->initializeVolFracGridFunction<2>(
         vf,
         [](int, const Point2D&, int) -> double { return 1.; });
       initialGridFunctions["void"] = vf;
@@ -597,7 +606,7 @@ shapes:
     std::map<std::string, mfem::GridFunction*> initialGridFunctions;
     {
       auto* vf = this->registerVolFracGridFunction("init_vf_bg");
-      this->initializeVolFracGridFunction(
+      this->initializeVolFracGridFunction<2>(
         vf,
         [](int, const Point2D&, int) -> double { return 1.; });
       initialGridFunctions["void"] = vf;
@@ -621,9 +630,9 @@ shapes:
   }
 }
 
-TEST_F(SamplingShaperTest, preshaped_materials)
+TEST_F(SamplingShaperTest2D, preshaped_materials)
 {
-  using Point2D = typename SamplingShaperTest::Point2D;
+  using Point2D = typename SamplingShaperTest2D::Point2D;
 
   const std::string& testname =
     ::testing::UnitTest::GetInstance()->current_test_info()->name();
@@ -663,14 +672,14 @@ shapes:
   std::map<std::string, mfem::GridFunction*> initialGridFunctions;
   {
     auto* vf = this->registerVolFracGridFunction("init_vf_bg");
-    this->initializeVolFracGridFunction(
+    this->initializeVolFracGridFunction<2>(
       vf,
       [](int, const Point2D&, int) -> double { return 1.; });
     initialGridFunctions["void"] = vf;
 
     // Note: element attributes were set earlier based on quadrant of cell's centroid (1, 2, 3 and 4)
     vf = this->registerVolFracGridFunction("init_vf_left");
-    this->initializeVolFracGridFunction(
+    this->initializeVolFracGridFunction<2>(
       vf,
       [](int, const Point2D&, int attr) -> double {
         return (attr == 3 || attr == 4) ? 1. : 0;
@@ -678,7 +687,7 @@ shapes:
     initialGridFunctions["left"] = vf;
 
     vf = this->registerVolFracGridFunction("init_vf_odds");
-    this->initializeVolFracGridFunction(
+    this->initializeVolFracGridFunction<2>(
       vf,
       [](int idx, const Point2D&, int) -> double {
         return idx % 2 == 1 ? 1. : 0;
@@ -710,9 +719,9 @@ shapes:
   }
 }
 
-TEST_F(SamplingShaperTest, disk_with_multiple_preshaped_materials)
+TEST_F(SamplingShaperTest2D, disk_with_multiple_preshaped_materials)
 {
-  using Point2D = typename SamplingShaperTest::Point2D;
+  using Point2D = typename SamplingShaperTest2D::Point2D;
 
   const std::string& testname =
     ::testing::UnitTest::GetInstance()->current_test_info()->name();
@@ -771,7 +780,7 @@ shapes:
   {
     // initial background void material is set everywhere
     auto* vf = this->registerVolFracGridFunction("init_vf_bg");
-    this->initializeVolFracGridFunction(
+    this->initializeVolFracGridFunction<2>(
       vf,
       [](int, const Point2D&, int) -> double { return 1.; });
     initialGridFunctions["void"] = vf;
@@ -779,7 +788,7 @@ shapes:
     // initial left material is set based on mesh attributes
     // Note: element attributes were set earlier based on quadrant of cell's centroid (1, 2, 3 and 4)
     vf = this->registerVolFracGridFunction("init_vf_left");
-    this->initializeVolFracGridFunction(
+    this->initializeVolFracGridFunction<2>(
       vf,
       [](int, const Point2D&, int attr) -> double {
         return (attr == 3 || attr == 4) ? 1. : 0;
@@ -788,7 +797,7 @@ shapes:
 
     // initial "odds" material is based on the parity of the element indices
     vf = this->registerVolFracGridFunction("init_vf_odds");
-    this->initializeVolFracGridFunction(
+    this->initializeVolFracGridFunction<2>(
       vf,
       [](int idx, const Point2D&, int) -> double {
         return idx % 2 == 1 ? 1. : 0;
