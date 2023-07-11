@@ -53,10 +53,6 @@ if (CAMP_DIR)
 
     # Note: camp sets a compile feature that is not available on XL
     set_target_properties(camp PROPERTIES INTERFACE_COMPILE_FEATURES "")
-
-    # Clear Camp's openmp target until BLT handles this fully
-    set_target_properties(blt::openmp PROPERTIES INTERFACE_COMPILE_OPTIONS "")
-    set_target_properties(blt::openmp PROPERTIES INTERFACE_LINK_OPTIONS "")
 else()
     message(STATUS "Camp support is OFF")
     set(CAMP_FOUND FALSE CACHE BOOL "")
@@ -340,6 +336,11 @@ if(TARGET RAJA)
     endif()
 endif()
 
+# Clear Camp's openmp target until BLT handles this fully
+if (TARGET blt::openmp)
+    set_target_properties(blt::openmp PROPERTIES INTERFACE_COMPILE_OPTIONS "")
+    set_target_properties(blt::openmp PROPERTIES INTERFACE_LINK_OPTIONS "")
+endif()
 
 #------------------------------------------------------------------------------
 # Targets that need to be exported but don't have a CMake config file
