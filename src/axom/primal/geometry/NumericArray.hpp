@@ -14,6 +14,7 @@
 #include <algorithm>
 #include <ostream>
 #include <initializer_list>
+#include "axom/fmt.hpp"
 
 namespace axom
 {
@@ -825,5 +826,11 @@ inline NumericArray<T, SIZE> abs(const NumericArray<T, SIZE>& arr)
 
 }  // namespace primal
 }  // namespace axom
+
+/// Overload to format a primal::NumericArray using fmt
+template <typename T, int NDIMS>
+struct axom::fmt::formatter<axom::primal::NumericArray<T, NDIMS>>
+  : ostream_formatter
+{ };
 
 #endif  // AXOM_PRIMAL_NUMERIC_ARRAY_HPP_
