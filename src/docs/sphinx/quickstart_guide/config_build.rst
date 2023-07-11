@@ -267,7 +267,7 @@ in the install directory, go into the build directory and run ``make`` and
 The Python helper script accepts other arguments that allow you to specify
 explicitly the build and install paths and build type. Following CMake
 conventions, we support three build types: ``Release``, ``RelWithDebInfo``, and
-``Debug``. To see the script options, run the script without any arguments::
+``Debug`` (default). To see the script options, run the script without any arguments::
 
    $ ./config-build.py
 
@@ -297,6 +297,11 @@ build with the gcc compiler, you could pass a host-config file to CMake::
            ../src/
    $ make
    $ make install
+
+.. note::
+   Spack generates a host-config for us with many defaults that can be overridden
+   on the command line. For example, ``CMAKE_BUILD_TYPE`` is set to ``Release``.
+   This can be overriden like the above command after the ``-C`` option.
 
 Alternatively, you could forego the host-config file entirely and pass all the
 arguments you need, including paths to third-party libraries,
