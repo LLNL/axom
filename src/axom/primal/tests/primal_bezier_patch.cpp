@@ -422,11 +422,11 @@ TEST(primal_bezierpatch, isocurve)
 
   // isocurve_u should *fix* a value of u, returning a curve parameterized by v
   EXPECT_EQ(bPatch.isocurve_u(0.5).getOrder(), order_v);
-  EXPECT_EQ(bPatch.isocurve(0, 0.5).getOrder(), order_v);
+  EXPECT_EQ(bPatch.isocurve(0.5, 0).getOrder(), order_v);
 
   // isocurve_v should *fix* a value of v, returning a curve parameterized by u
   EXPECT_EQ(bPatch.isocurve_v(0.5).getOrder(), order_u);
-  EXPECT_EQ(bPatch.isocurve(1, 0.5).getOrder(), order_v);
+  EXPECT_EQ(bPatch.isocurve(0.5, 1).getOrder(), order_u);
 }
 
 //------------------------------------------------------------------------------
