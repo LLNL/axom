@@ -379,6 +379,65 @@ public:
   }
 };
 
+/// Test fixture for SamplingShaper tests on 3D MFEM meshes
+class SamplingShaperTest3D : public SamplingShaperTest
+{
+public:
+  using Point3D = primal::Point<double, 3>;
+  using BBox3D = primal::BoundingBox<double, 3>;
+
+public:
+  virtual ~SamplingShaperTest3D() { }
+
+  void SetUp() override
+  {
+    const int polynomialOrder = 2;
+    const BBox3D bbox({-2, -2, -2}, {2, 2, 2});
+    const primal::NumericArray<int, 3> celldims {8, 8, 8};
+
+    // memory for mesh will be managed by data collection
+    auto* mesh =
+      quest::util::make_cartesian_mfem_mesh_3D(bbox, celldims, polynomialOrder);
+
+    // Set element attributes based on octant where centroid is located
+    // These will be used later in some cases when setting volume fractions
+    mfem::Array<int> v;
+    const int NE = mesh->GetNE();
+    for(int i = 0; i < NE; ++i)
+    {
+      mesh->GetElementVertices(i, v);
+      BBox3D elem_bbox;
+      for(int j = 0; j < v.Size(); ++j)
+      {
+        elem_bbox.addPoint(Point3D(mesh->GetVertex(v[j]), 3));
+      }
+      const auto centroid = elem_bbox.getCentroid();
+
+      int attr = 0;
+      attr |= (centroid[0] < 0) ? 1 << 0 : 0;
+      attr |= (centroid[1] < 0) ? 1 << 1 : 0;
+      attr |= (centroid[2] < 0) ? 1 << 2 : 0;
+      mesh->SetAttribute(i, attr);
+    }
+
+    m_dc.SetOwnData(true);
+    m_dc.SetMeshNodesName("positions");
+    m_dc.SetMesh(mesh);
+
+#ifdef AXOM_USE_MPI
+    m_dc.SetComm(MPI_COMM_WORLD);
+#endif
+  }
+
+  BBox3D meshBoundingBox()
+  {
+    mfem::Vector bbmin, bbmax;
+    getMesh().GetBoundingBox(bbmin, bbmax);
+
+    return BBox3D(Point3D(bbmin.GetData()), Point3D(bbmax.GetData()));
+  }
+};
+
 //-----------------------------------------------------------------------------
 
 TEST(ScopedTemporaryFile, basic)
@@ -851,6 +910,168 @@ shapes:
   this->checkExpectedVolumeFractions("hole", expected_hole_area);
   this->checkExpectedVolumeFractions("void", expected_void_area);
 
+  if(very_verbose_output)
+  {
+    this->getDC().Save(testname, axom::sidre::Group::getDefaultIOProtocol());
+  }
+}
+
+//-----------------------------------------------------------------------------
+
+TEST_F(SamplingShaperTest3D, basic_tet)
+{
+  const auto& testname =
+    ::testing::UnitTest::GetInstance()->current_test_info()->name();
+
+  const std::string shape_template = R"(
+dimensions: 3
+
+shapes:
+- name: tet_shape
+  material: {}
+  geometry:
+    format: stl
+    path: {}
+)";
+
+  const std::string tet_material = "steel";
+  const std::string tet_path =
+    axom::fmt::format("{}/quest/tetrahedron.stl", AXOM_DATA_DIR);
+
+  ScopedTemporaryFile shape_file(
+    axom::fmt::format("{}.yaml", testname),
+    axom::fmt::format(shape_template, tet_material, tet_path));
+
+  if(very_verbose_output)
+  {
+    SLIC_INFO("Bounding box: \n" << this->meshBoundingBox());
+    SLIC_INFO("Shape file: \n" << shape_file.getFileContents());
+  }
+
+  this->validateShapeFile(shape_file.getFileName());
+  this->initializeShaping(shape_file.getFileName());
+  this->runShaping();
+
+  // Check that the result has a volume fraction field associated with the tetrahedron material
+  // The tet lives in cube of edge length 2 (and volume 8) and is defined by opposite corners.
+  // It occupies 1/3 of the cube's volume
+  constexpr double expected_volume = 8. / 3.;
+  this->checkExpectedVolumeFractions(tet_material, expected_volume);
+
+  // Save meshes and fields
+  if(very_verbose_output)
+  {
+    this->getDC().Save(testname, axom::sidre::Group::getDefaultIOProtocol());
+  }
+}
+
+TEST_F(SamplingShaperTest3D, tet_preshaped)
+{
+  const auto& testname =
+    ::testing::UnitTest::GetInstance()->current_test_info()->name();
+
+  const std::string shape_template = R"(
+dimensions: 3
+
+shapes:
+- name: octant_0
+  material: octant0
+  geometry:
+    format: none
+- name: octant_1
+  material: octant1
+  geometry:
+    format: none
+- name: octant_2
+  material: octant2
+  geometry:
+    format: none
+- name: octant_3
+  material: octant3
+  geometry:
+    format: none
+- name: octant_4
+  material: octant4
+  geometry:
+    format: none
+- name: octant_5
+  material: octant5
+  geometry:
+    format: none
+- name: octant_6
+  material: octant6
+  geometry:
+    format: none
+- name: octant_7
+  material: octant7
+  geometry:
+    format: none
+- name: tet_shape
+  material: {}
+  geometry:
+    format: stl
+    path: {}
+)";
+
+  const std::string tet_material = "steel";
+  const std::string tet_path =
+    axom::fmt::format("{}/quest/tetrahedron.stl", AXOM_DATA_DIR);
+
+  ScopedTemporaryFile shape_file(
+    axom::fmt::format("{}.yaml", testname),
+    axom::fmt::format(shape_template, tet_material, tet_path));
+
+  if(very_verbose_output)
+  {
+    SLIC_INFO("Bounding box: \n" << this->meshBoundingBox());
+    SLIC_INFO("Shape file: \n" << shape_file.getFileContents());
+  }
+
+  this->validateShapeFile(shape_file.getFileName());
+
+  // Create initial background materials based on octant attributes
+  // Octants were offset by one since mfem doesn't allow setting attribute to zero
+  std::map<std::string, mfem::GridFunction*> initialGridFunctions;
+  {
+    for(int attr_i = 0; attr_i < 8; ++attr_i)
+    {
+      auto* vf = this->registerVolFracGridFunction(
+        axom::fmt::format("init_vf_octant_{}", attr_i));
+      this->initializeVolFracGridFunction<3>(
+        vf,
+        [attr_i](int, const Point3D&, int attr) -> double {
+          return attr == attr_i ? 1 : 0;
+        });
+      initialGridFunctions[axom::fmt::format("octant{}", attr_i)] = vf;
+    }
+  }
+
+  this->initializeShaping(shape_file.getFileName(), initialGridFunctions);
+  this->runShaping();
+
+  // Check that the result has a volume fraction field associated with the tetrahedron material
+  // The tet lives in cube of edge length 2 (and volume 8) and is defined by opposite corners.
+  // It occupies 1/3 of the cube's volume
+  constexpr double tet_volume = 8. / 3.;
+  this->checkExpectedVolumeFractions(tet_material, tet_volume);
+
+  // The background mesh is a cube of edge length 4 centered around the origin
+  // Each octant's volume is 8 and its vf gets overlaid by a piece of the tet
+  constexpr double missing_half = 8. - 1. / 2.;
+  constexpr double missing_sixth = 8. - 1. / 6.;
+  this->checkExpectedVolumeFractions("octant0", missing_half);
+  this->checkExpectedVolumeFractions("octant1", missing_sixth);
+  this->checkExpectedVolumeFractions("octant2", missing_sixth);
+  this->checkExpectedVolumeFractions("octant3", missing_half);
+  this->checkExpectedVolumeFractions("octant4", missing_sixth);
+  this->checkExpectedVolumeFractions("octant5", missing_half);
+  this->checkExpectedVolumeFractions("octant6", missing_half);
+  this->checkExpectedVolumeFractions("octant7", missing_sixth);
+
+  constexpr double total_volume = 4 * 4 * 4;
+  EXPECT_EQ(total_volume, tet_volume + 4 * missing_sixth + 4 * missing_half);
+
+  // Save meshes and fields
   if(very_verbose_output)
   {
     this->getDC().Save(testname, axom::sidre::Group::getDefaultIOProtocol());
