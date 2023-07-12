@@ -138,6 +138,8 @@ class Axom(CachedCMakePackage, CudaPackage, ROCmPackage):
         depends_on("raja amdgpu_target={0}".format(val), when="amdgpu_target={0}".format(val))
         depends_on("umpire amdgpu_target={0}".format(val), when="amdgpu_target={0}".format(val))
 
+    depends_on("rocprim", when="+rocm")
+
     depends_on("c2c", when="+c2c")
 
     with when("+mfem"):
