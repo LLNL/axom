@@ -487,7 +487,7 @@ double winding_number(const Point<T, 3>& query,
 
   // Fix the number of quadrature nodes arbitrarily, but high enough
   //  to `catch` near singularities for refinement
-  const int quad_npts = 50;
+  constexpr int quad_npts = 50;
 
   // Early return if the patch is approximately polygonal.
   //  Very slight variations in curvature requires small EPS tolerance
@@ -504,14 +504,15 @@ double winding_number(const Point<T, 3>& query,
   // Use a specific kind of recursion if we are within tol of an endpoint.
   //  Split the surface closer to the corner, assume smallest patch is polygonal,
   //  and set a new edge_tol so corners of the new patch aren't marked as coincident
+  constexpr double edge_offset = 0.01;
   if(squared_distance(query, bPatch(0, 0)) <= edge_tol_sq)
   {
     BezierPatch<T> p1, p2, p3, p4;
-    bPatch.split(0.01, 0.01, p1, p2, p3, p4);
+    bPatch.split(0.0 + edge_offset, 0.0 + edge_offset, p1, p2, p3, p4);
     double new_edge_tol = 0.5 *
       sqrt(axom::utilities::min(
-        squared_distance(query, bPatch.evaluate(0, 0.01)),
-        squared_distance(query, bPatch.evaluate(0.01, 0))));
+        squared_distance(query, bPatch.evaluate(0.0, 0.0 + edge_offset)),
+        squared_distance(query, bPatch.evaluate(0.0 + edge_offset, 0.0))));
     new_edge_tol = axom::utilities::min(new_edge_tol, edge_tol);
 
     return winding_number(query, p2, new_edge_tol, quad_tol, EPS) +
@@ -521,11 +522,11 @@ double winding_number(const Point<T, 3>& query,
   if(squared_distance(query, bPatch(ord_u, 0)) <= edge_tol_sq)
   {
     BezierPatch<T> p1, p2, p3, p4;
-    bPatch.split(0.99, 0.01, p1, p2, p3, p4);
+    bPatch.split(1.0 - edge_offset, 0.0 + edge_offset, p1, p2, p3, p4);
     double new_edge_tol = 0.5 *
       sqrt(axom::utilities::min(
-        squared_distance(query, bPatch.evaluate(1, 0.01)),
-        squared_distance(query, bPatch.evaluate(0.99, 0))));
+        squared_distance(query, bPatch.evaluate(1.0, 0.0 + edge_offset)),
+        squared_distance(query, bPatch.evaluate(1.0 - edge_offset, 0.0))));
     new_edge_tol = axom::utilities::min(new_edge_tol, edge_tol);
 
     return winding_number(query, p1, new_edge_tol, quad_tol, EPS) +
@@ -535,11 +536,11 @@ double winding_number(const Point<T, 3>& query,
   if(squared_distance(query, bPatch(0, ord_v)) <= edge_tol_sq)
   {
     BezierPatch<T> p1, p2, p3, p4;
-    bPatch.split(0.01, 0.99, p1, p2, p3, p4);
+    bPatch.split(0.0 + edge_offset, 1.0 - edge_offset, p1, p2, p3, p4);
     double new_edge_tol = 0.5 *
       sqrt(axom::utilities::min(
-        squared_distance(query, bPatch.evaluate(0.01, 1)),
-        squared_distance(query, bPatch.evaluate(0, 0.99))));
+        squared_distance(query, bPatch.evaluate(0.0 + edge_offset, 1.0)),
+        squared_distance(query, bPatch.evaluate(0.0, 1.0 - edge_offset))));
     new_edge_tol = axom::utilities::min(new_edge_tol, edge_tol);
 
     return winding_number(query, p1, new_edge_tol, quad_tol, EPS) +
@@ -549,11 +550,11 @@ double winding_number(const Point<T, 3>& query,
   if(squared_distance(query, bPatch(ord_u, ord_v)) <= edge_tol_sq)
   {
     BezierPatch<T> p1, p2, p3, p4;
-    bPatch.split(0.99, 0.99, p1, p2, p3, p4);
+    bPatch.split(1.0 - edge_offset, 1.0 - edge_offset, p1, p2, p3, p4);
     double new_edge_tol = 0.5 *
       sqrt(axom::utilities::min(
-        squared_distance(query, bPatch.evaluate(1, 0.99)),
-        squared_distance(query, bPatch.evaluate(0.99, 1))));
+        squared_distance(query, bPatch.evaluate(1.0, 1.0 - edge_offset)),
+        squared_distance(query, bPatch.evaluate(1.0 - edge_offset, 1.0))));
     new_edge_tol = axom::utilities::min(new_edge_tol, edge_tol);
 
     return winding_number(query, p1, new_edge_tol, quad_tol, EPS) +
