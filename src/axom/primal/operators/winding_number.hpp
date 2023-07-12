@@ -27,8 +27,6 @@
 #include "axom/primal/geometry/CurvedPolygon.hpp"
 #include "axom/primal/geometry/BoundingBox.hpp"
 #include "axom/primal/geometry/OrientedBoundingBox.hpp"
-#include "axom/primal/operators/evaluate_integral.hpp"
-#include "axom/primal/operators/detail/winding_number_impl.hpp"
 
 // C++ includes
 #include <cmath>
