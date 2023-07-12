@@ -644,7 +644,7 @@ TEST(primal_integral, bezierpatch_sphere)
   {
     origin_wn += winding_number(origin, sphere_faces[k], edge_tol, quad_tol, EPS);
     near_origin_wn +=
-      winding_number(origin, sphere_faces[k], edge_tol, quad_tol, EPS);
+      winding_number(near_origin, sphere_faces[k], edge_tol, quad_tol, EPS);
   }
   EXPECT_NEAR(origin_wn, 1.0, 6 * quad_tol);
   EXPECT_NEAR(near_origin_wn, 1.0, 6 * quad_tol);
