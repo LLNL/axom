@@ -637,8 +637,34 @@ TEST(primal_integral, bezierpatch_sphere)
   const double edge_offset = 1e-5;
 
   // Test some easy cases
+  auto origin = Point3D({0.0, 0.0, 0.0});
+  auto near_origin = Point3D({0.1, -0.2, 0.15});
 
-  // Iterate over difficult query directions
+  double origin_wn = 0.0, near_origin_wn = 0.0;
+  for(int k = 0; k < 6; ++k)
+  {
+    origin_wn += winding_number(origin, sphere_faces[k], edge_tol, quad_tol, EPS);
+    near_origin_wn +=
+      winding_number(origin, sphere_faces[k], edge_tol, quad_tol, EPS);
+  }
+  EXPECT_NEAR(origin_wn, 1.0, 6 * quad_tol);
+  EXPECT_NEAR(near_origin_wn, 1.0, 6 * quad_tol);
+
+  for(int i = 0; i < 12; ++i)
+  {
+    // Pick point close to the surface
+    auto far_query = Point3D(10 * query_directions[i].array());
+
+    double far_wn = 0.0;
+    for(int k = 0; k < 6; ++k)
+    {
+      far_wn +=
+        winding_number(far_query, sphere_faces[k], edge_tol, quad_tol, EPS);
+    }
+    EXPECT_NEAR(far_wn, 0.0, 6 * quad_tol);
+  }
+
+  // Iterate over difficult query directions for very close points
   for(int i = 0; i < 12; ++i)
   {
     // Pick point close to the surface
