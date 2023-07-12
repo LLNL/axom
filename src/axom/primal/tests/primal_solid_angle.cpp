@@ -547,9 +547,9 @@ TEST(primal_integral, bezierpatch_sphere)
   // Define the nodes and weights for one of six rational, biquartic Bezier patches
   //  that compose the unit sphere. These will be rotated to form the other 5.
   // Nodes and weights obtained from the technical report
-  // "Tiling the Sphere with Rational Bezier Patches", 
+  // "Tiling the Sphere with Rational Bezier Patches",
   //  James E. Cobb, University of Utah, 1988
-  
+
   // clang-format off
   Point3D node_data[25] = {
     Point3D {4*(1-rt3),     4*(1-rt3),     4*(1-rt3)}, Point3D {rt2*(rt3-4),            -rt2, rt2*(rt3-4)}, Point3D {4*(1-2*rt3)/3,   0, 4*(1-2*rt3)/3}, Point3D {rt2*(rt3-4),           rt2,   rt2*(rt3-4)}, Point3D {4*(1-rt3),     4*(rt3-1),     4*(1-rt3)},
@@ -563,8 +563,7 @@ TEST(primal_integral, bezierpatch_sphere)
      rt2*(3*rt3-2),     (rt3+6)/2, rt2*(rt3+6)/3,     (rt3+6)/2, rt2*(3*rt3-2),
        4*(5-rt3)/3, rt2*(rt3+6)/3, 4*(5*rt3-1)/9, rt2*(rt3+6)/3,   4*(5-rt3)/3,
      rt2*(3*rt3-2),     (rt3+6)/2, rt2*(rt3+6)/3,     (rt3+6)/2, rt2*(3*rt3-2),
-         4*(3-rt3), rt2*(3*rt3-2),   4*(5-rt3)/3, rt2*(3*rt3-2),     4*(3-rt3)
-  };
+         4*(3-rt3), rt2*(3*rt3-2),   4*(5-rt3)/3, rt2*(3*rt3-2),     4*(3-rt3)};
   // clang-format on
 
   BPatch sphere_faces[6];
@@ -671,24 +670,23 @@ TEST(primal_integral, bezierpatch_sphere)
     auto inner_query = Point3D((1.0 - edge_offset) * query_directions[i].array());
     auto outer_query = Point3D((1.0 + edge_offset) * query_directions[i].array());
 
-      // Iterate over the patches that compose the sphere
-      double inner_wn = 0;
-      for(int k = 0; k < 6; ++k)
-      {
-        inner_wn +=
-          winding_number(inner_query, sphere_faces[k], edge_tol, quad_tol, EPS);
-      }
-      EXPECT_NEAR(inner_wn, 1.0, 6 * quad_tol);
-
-      // Iterate over the patches that compose the sphere
-      double outer_wn = 0;
-      for(int k = 0; k < 6; ++k)
-      {
-        outer_wn +=
-          winding_number(outer_query, sphere_faces[k], edge_tol, quad_tol, EPS);
-      }
-      EXPECT_NEAR(outer_wn, 0.0, 6 * quad_tol);
+    // Iterate over the patches that compose the sphere
+    double inner_wn = 0;
+    for(int k = 0; k < 6; ++k)
+    {
+      inner_wn +=
+        winding_number(inner_query, sphere_faces[k], edge_tol, quad_tol, EPS);
     }
+    EXPECT_NEAR(inner_wn, 1.0, 6 * quad_tol);
+
+    // Iterate over the patches that compose the sphere
+    double outer_wn = 0;
+    for(int k = 0; k < 6; ++k)
+    {
+      outer_wn +=
+        winding_number(outer_query, sphere_faces[k], edge_tol, quad_tol, EPS);
+    }
+    EXPECT_NEAR(outer_wn, 0.0, 6 * quad_tol);
 
     // Pick a point on the surface too.
     //  Regardless of what tolerances are picked, the winding number

@@ -306,7 +306,6 @@ double winding_number(const Point<T, 3>& q,
     return 0;
   }
 
-  const double num = Vec3::scalar_triple_product(a, b, c);
   const double denom = a_norm * b_norm * c_norm  //
     + a_norm * b.dot(c) + b_norm * a.dot(c) + c_norm * a.dot(b);
 
@@ -468,6 +467,9 @@ int winding_number(const Point<T, 3>& query,
  * 
  * Computes the generalized winding number for a Bezier patch using Stokes theorem.
  *
+ * \note Warning: This algorithm is only tested to high accuracy for queries within
+ *  1e-5 of the surface. Otherwise, it will return less accurate results.
+ * 
  * \return double The generalized winding number.
  */
 template <typename T>
