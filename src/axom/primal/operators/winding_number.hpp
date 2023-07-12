@@ -475,7 +475,8 @@ double winding_number(const Point<T, 3>& query,
                       const BezierPatch<T>& bPatch,
                       const double edge_tol = 1e-8,
                       const double quad_tol = 1e-8,
-                      const double EPS = 1e-8)
+                      const double EPS = 1e-8,
+                      const int depth = 0)
 {
   const int ord_u = bPatch.getOrder_u();
   const int ord_v = bPatch.getOrder_v();
@@ -484,11 +485,12 @@ double winding_number(const Point<T, 3>& query,
 
   // Fix the number of quadrature nodes arbitrarily, but high enough
   //  to `catch` near singularities for refinement
-  constexpr int quad_npts = 50;
+  constexpr int quad_npts = 30;
 
   // Early return if the patch is approximately polygonal.
   //  Very slight variations in curvature requires small EPS tolerance
-  if(bPatch.isPolygonal(EPS))
+  constexpr int MAX_DEPTH = 10;
+  if(depth >= MAX_DEPTH || bPatch.isPolygonal(EPS))
   {
     return winding_number(
       query,
@@ -512,9 +514,9 @@ double winding_number(const Point<T, 3>& query,
         squared_distance(query, bPatch.evaluate(0.0 + edge_offset, 0.0))));
     new_edge_tol = axom::utilities::min(new_edge_tol, edge_tol);
 
-    return winding_number(query, p2, new_edge_tol, quad_tol, EPS) +
-      winding_number(query, p3, new_edge_tol, quad_tol, EPS) +
-      winding_number(query, p4, new_edge_tol, quad_tol, EPS);
+    return winding_number(query, p2, new_edge_tol, quad_tol, EPS, depth + 1) +
+      winding_number(query, p3, new_edge_tol, quad_tol, EPS, depth + 1) +
+      winding_number(query, p4, new_edge_tol, quad_tol, EPS, depth + 1);
   }
   if(squared_distance(query, bPatch(ord_u, 0)) <= edge_tol_sq)
   {
@@ -526,9 +528,9 @@ double winding_number(const Point<T, 3>& query,
         squared_distance(query, bPatch.evaluate(1.0 - edge_offset, 0.0))));
     new_edge_tol = axom::utilities::min(new_edge_tol, edge_tol);
 
-    return winding_number(query, p1, new_edge_tol, quad_tol, EPS) +
-      winding_number(query, p3, new_edge_tol, quad_tol, EPS) +
-      winding_number(query, p4, new_edge_tol, quad_tol, EPS);
+    return winding_number(query, p1, new_edge_tol, quad_tol, EPS, depth + 1) +
+      winding_number(query, p3, new_edge_tol, quad_tol, EPS, depth + 1) +
+      winding_number(query, p4, new_edge_tol, quad_tol, EPS, depth + 1);
   }
   if(squared_distance(query, bPatch(0, ord_v)) <= edge_tol_sq)
   {
@@ -540,9 +542,9 @@ double winding_number(const Point<T, 3>& query,
         squared_distance(query, bPatch.evaluate(0.0, 1.0 - edge_offset))));
     new_edge_tol = axom::utilities::min(new_edge_tol, edge_tol);
 
-    return winding_number(query, p1, new_edge_tol, quad_tol, EPS) +
-      winding_number(query, p2, new_edge_tol, quad_tol, EPS) +
-      winding_number(query, p4, new_edge_tol, quad_tol, EPS);
+    return winding_number(query, p1, new_edge_tol, quad_tol, EPS, depth + 1) +
+      winding_number(query, p2, new_edge_tol, quad_tol, EPS, depth + 1) +
+      winding_number(query, p4, new_edge_tol, quad_tol, EPS, depth + 1);
   }
   if(squared_distance(query, bPatch(ord_u, ord_v)) <= edge_tol_sq)
   {
@@ -554,9 +556,9 @@ double winding_number(const Point<T, 3>& query,
         squared_distance(query, bPatch.evaluate(1.0 - edge_offset, 1.0))));
     new_edge_tol = axom::utilities::min(new_edge_tol, edge_tol);
 
-    return winding_number(query, p1, new_edge_tol, quad_tol, EPS) +
-      winding_number(query, p2, new_edge_tol, quad_tol, EPS) +
-      winding_number(query, p3, new_edge_tol, quad_tol, EPS);
+    return winding_number(query, p1, new_edge_tol, quad_tol, EPS, depth + 1) +
+      winding_number(query, p2, new_edge_tol, quad_tol, EPS, depth + 1) +
+      winding_number(query, p3, new_edge_tol, quad_tol, EPS, depth + 1);
   }
 
   /* 
@@ -601,10 +603,10 @@ double winding_number(const Point<T, 3>& query,
     {
       BezierPatch<T> p1, p2, p3, p4;
       bPatch.split(0.5, 0.5, p1, p2, p3, p4);
-      return winding_number(query, p1, edge_tol, quad_tol, EPS) +
-        winding_number(query, p2, edge_tol, quad_tol, EPS) +
-        winding_number(query, p3, edge_tol, quad_tol, EPS) +
-        winding_number(query, p4, edge_tol, quad_tol, EPS);
+      return winding_number(query, p1, edge_tol, quad_tol, EPS, depth + 1) +
+        winding_number(query, p2, edge_tol, quad_tol, EPS, depth + 1) +
+        winding_number(query, p3, edge_tol, quad_tol, EPS, depth + 1) +
+        winding_number(query, p4, edge_tol, quad_tol, EPS, depth + 1);
     }
 
     // Otherwise, we can apply a rotation to a z-aligned field.
@@ -658,7 +660,10 @@ double winding_number(const Point<T, 3>& query,
 
     // Rotate v0 around v1 until it is perpendicular to the plane spanned by k and v1
     double ang = (v0[2] < 0 ? 1.0 : -1.0) *
-      acos(-(v0[0] * v1[1] - v0[1] * v1[0]) / sqrt(v1[0] * v1[0] + v1[1] * v1[1]));
+      acos(axom::utilities::clampVal(
+        -(v0[0] * v1[1] - v0[1] * v1[0]) / sqrt(v1[0] * v1[0] + v1[1] * v1[1]),
+        -1.0,
+        1.0));
     auto rotator = angleAxisRotMatrix(ang, v1);
 
     // Collect rotated curves into the curved Polygon

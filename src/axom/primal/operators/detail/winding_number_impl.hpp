@@ -331,11 +331,10 @@ double stokes_winding_number(const Point<T, 3>& query,
     }
   }
 
-  /// Under certain conditions, want to adaptively refine quadrature over curves.
-  /// As a general rule, refinement should be done over curves, not surfaces.
+  // Adaptively refine quadrature over curves if query is not far enough away.
   BoundingBox<T, 3> cBox(curve.boundingBox());
-  //if(squared_distance(query, cBox.getCentroid()) <= cBox.range().squared_norm())
-  if(true)  // Need to look at further heuristics for when we are "far enough" away
+  if(squared_distance(query, cBox.getCentroid()) <=
+     2 * cBox.range().squared_norm())
   {
     return stokes_winding_number_adaptive(query,
                                           curve,
@@ -374,8 +373,9 @@ double stokes_winding_number_adaptive(const Point<T, 3>& query,
                                       const BezierCurve<T, 3>& curve,
                                       const SingularityAxis ax,
                                       const mfem::IntegrationRule& quad_rule,
-                                      double quad_coarse,
-                                      double quad_tol)
+                                      const double quad_coarse,
+                                      const double quad_tol,
+                                      const int depth = 1)
 {
   // Split the curve, do the quadrature over both components
   BezierCurve<T, 3> subcurves[2];
@@ -387,7 +387,8 @@ double stokes_winding_number_adaptive(const Point<T, 3>& query,
     for(int q = 0; q < quad_rule.GetNPoints(); ++q)
     {
       // Get quad_rulerature points in space (shifted by the query)
-      const Vector<T, 3> node(query, subcurves[i].evaluate(quad_rule.IntPoint(q).x));
+      const Vector<T, 3> node(query,
+                              subcurves[i].evaluate(quad_rule.IntPoint(q).x));
       const Vector<T, 3> node_dt(subcurves[i].dt(quad_rule.IntPoint(q).x));
       const double node_norm = node.norm();
 
@@ -414,7 +415,9 @@ double stokes_winding_number_adaptive(const Point<T, 3>& query,
     }
   }
 
-  if(axom::utilities::isNearlyEqualRelative(quad_fine[0] + quad_fine[1],
+  constexpr int MAX_DEPTH = 12;
+  if(depth >= MAX_DEPTH ||
+     axom::utilities::isNearlyEqualRelative(quad_fine[0] + quad_fine[1],
                                             quad_coarse,
                                             quad_tol,
                                             0.0))
@@ -428,13 +431,15 @@ double stokes_winding_number_adaptive(const Point<T, 3>& query,
                                           ax,
                                           quad_rule,
                                           quad_fine[0],
-                                          quad_tol) +
+                                          quad_tol,
+                                          depth + 1) +
       stokes_winding_number_adaptive(query,
                                      subcurves[1],
                                      ax,
                                      quad_rule,
                                      quad_fine[1],
-                                     quad_tol);
+                                     quad_tol,
+                                     depth + 1);
   }
 }
 #endif

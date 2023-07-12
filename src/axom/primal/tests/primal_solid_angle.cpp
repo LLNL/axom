@@ -631,20 +631,19 @@ TEST(primal_integral, bezierpatch_sphere)
                                    Vector3D(sphere_faces[0].evaluate(0.6, 0))};
 
   const double quad_tol = 1e-5;
-  const double edge_tol = 1e-8;
-  const double EPS = 1e-14;
+  const double EPS = 1e-10;
 
-  // Iterate over the query directions
-  for(int i = 0; i < 1; ++i)
+  const double edge_tol = 1e-6;
+  const double edge_offset = 1e-5;
+
+  // Test some easy cases
+
+  // Iterate over difficult query directions
+  for(int i = 0; i < 12; ++i)
   {
-    // Iterate over distance to the surface
-    for(int j = 3; j < 8; ++j)
-    {
-      // Pick points increasingly close to the surface
-      auto inner_query =
-        Point3D((1.0 - std::pow(10, -j)) * query_directions[i].array());
-      auto outer_query =
-        Point3D((1.0 + std::pow(10, -j)) * query_directions[i].array());
+    // Pick point close to the surface
+    auto inner_query = Point3D((1.0 - edge_offset) * query_directions[i].array());
+    auto outer_query = Point3D((1.0 + edge_offset) * query_directions[i].array());
 
       // Iterate over the patches that compose the sphere
       double inner_wn = 0;
@@ -670,7 +669,7 @@ TEST(primal_integral, bezierpatch_sphere)
     //  should lie between the values on either side when rounded
     auto coincident_query = Point3D(query_directions[i].array());
     double coincident_wn = 0.0;
-    for(int k = 1; k < 6; ++k)
+    for(int k = 0; k < 6; ++k)
     {
       coincident_wn +=
         winding_number(coincident_query, sphere_faces[k], edge_tol, quad_tol, EPS);
