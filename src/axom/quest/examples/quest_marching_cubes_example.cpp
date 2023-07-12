@@ -19,8 +19,8 @@
 #include "axom/core.hpp"
 #include "axom/slic.hpp"
 #include "axom/primal.hpp"
-#include "axom/mint.hpp"
-#include "axom/quest.hpp"
+#include "axom/mint/mesh/UnstructuredMesh.hpp"
+#include "axom/quest/MarchingCubes.hpp"
 #include "axom/sidre.hpp"
 #include "axom/core/Types.hpp"
 

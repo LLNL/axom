@@ -131,29 +131,30 @@ spack:
         prefix: /usr
 
     # Globally lock version of third party libraries
+    camp:
+      require: "@2022.10.1"
     conduit:
-      require: "@0.8.6~shared~test~examples~utilities"
+      require: "@0.8.8~shared~test~examples~utilities"
     hdf5:
       variants: ~shared~mpi
     hypre:
       version: [2.24.0]
     # do shared mfem to allow PIC flag in mfem
     mfem:
-      require: "@4.5+shared~static"
+      require: "@4.5.2+shared~static"
     raja:
-      variants: ~shared~examples~exercises
+      require: "@2022.10.5~shared~examples~exercises"
     scr:
-      version: [develop]
-      variants: ~shared
+      require: "@develop~shared"
     umpire:
-      variants: ~shared~examples
+      require: "@2022.10.0~shared~examples"
 
     # Globally lock in version of devtools
     cmake:
-      version: [3.18.5]
+      version: [3.21.7]
       buildable: false
       externals:
-      - spec: cmake@3.18.5
+      - spec: cmake@3.21.7
         prefix: /usr
     doxygen:
       version: [1.8.17]

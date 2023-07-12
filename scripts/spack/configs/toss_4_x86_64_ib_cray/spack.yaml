@@ -134,11 +134,11 @@ spack:
       - spec: curl@7.61.1
         prefix: /usr
     cmake:
-      version: [3.21.1]
+      version: [3.24.2]
       buildable: false
       externals:
-      - spec: cmake@3.21.1
-        prefix: /usr/tce/packages/cmake/cmake-3.21.1
+      - spec: cmake@3.24.2
+        prefix: /usr/tce
     diffutils:
       buildable: false
       externals:
@@ -168,6 +168,11 @@ spack:
       buildable: false
       externals:
       - spec: ghostscript@9.25
+        prefix: /usr
+    gmake:
+      buildable: false
+      externals:
+      - spec: gmake@4.2.1
         prefix: /usr
     groff:
       buildable: false
@@ -254,15 +259,19 @@ spack:
         prefix: /usr
 
     # Globally lock version of third party libraries
+    camp:
+      require: "@2022.10.1"
     conduit:
-      require: "@0.8.6~shared~test~examples~utilities"
+      require: "@0.8.8~shared~test~examples~utilities"
     hdf5:
       variants: ~shared~mpi
     hypre:
       version: [2.24.0]
     mfem:
-      require: "@4.5"
+      require: "@4.5.2"
     raja:
-      variants: ~shared~examples~exercises
+      require: "@2022.10.5~shared~examples~exercises"
+    scr:
+      require: "@3.0.1~shared~tests~examples"
     umpire:
-      variants: ~shared~examples
+      require: "@2022.10.0~shared~examples"

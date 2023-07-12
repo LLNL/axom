@@ -276,20 +276,22 @@ spack:
         prefix: /usr
 
     # Globally lock version of third party libraries
-    # TODO: Several of these are preferences not hard requirements.
-    #       We should move away from them here.
+    camp:
+      require: "@2022.10.1"
     conduit:
-      require: "@0.8.6~shared~test~examples~utilities"
+      require: "@0.8.8~shared~test~examples~utilities"
     hdf5:
       variants: ~shared~mpi
     hypre:
       version: [2.24.0]
     mfem:
-      require: "@4.5"
+      require: "@4.5.2"
     raja:
-      variants: ~shared~examples~exercises
+      require: "@2022.10.5~shared~examples~exercises"
+    scr:
+      require: "@3.0.1~shared~tests~examples"
     umpire:
-      variants: ~shared~examples
+      require: "@2022.10.0~shared~examples"
 
     # Globally lock in versions of Devtools
     cmake:

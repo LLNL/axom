@@ -112,6 +112,7 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 - Klee: A shape's geometry no longer needs a `path` field when its `format` is "none"
 - Quest: Shapes without geometry can participate in replacement rules for sample-based shaping. Volume
 fractions for the associated materials must be supplied before shaping.
+- Removed custom Spack package recipes in favor of using the radiuss-spack-configs repository as a submodule.
 
 ###  Fixed
 - Fixed issues with CUDA build in CMake versions 3.14.5 and above. Now require CMake 3.18+
