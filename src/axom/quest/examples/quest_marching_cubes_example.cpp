@@ -552,7 +552,7 @@ private:
 #else
     conduit::relay::io::blueprint::load_mesh(meshFilename, _mdMesh);
 #endif
-    assert(conduit::blueprint::mesh::is_multi_domain(_mdMesh));
+    SLIC_ASSERT(conduit::blueprint::mesh::is_multi_domain(_mdMesh));
     _domCount = conduit::blueprint::mesh::number_of_domains(_mdMesh);
 
     if(_domCount > 0)
