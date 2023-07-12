@@ -468,6 +468,9 @@ int winding_number(const Point<T, 3>& query,
  * 
  * Computes the generalized winding number for a Bezier patch using Stokes theorem.
  *
+ * \note Warning: This algorithm is only tested to high accuracy for queries within
+ *  1e-5 of the surface. Otherwise, it will return less accurate results.
+ * 
  * \return double The generalized winding number.
  */
 template <typename T>
