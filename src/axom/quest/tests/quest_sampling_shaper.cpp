@@ -46,6 +46,11 @@ namespace
 const std::string unit_circle_contour =
   "piece = circle(origin=(0cm, 0cm), radius=1cm, start=0deg, end=360deg)";
 
+const std::string unit_semicircle_contour = R"(
+  piece = circle(origin=(0cm, 0cm), radius=1cm, start=0deg, end=180deg)
+  piece = line(end=(0cm, 1cm)))";
+
+// Set the following to true for verbose output and for saving vis files
 constexpr bool very_verbose_output = false;
 
 /// RAII utility class to write a file at construction time and remove it
@@ -524,6 +529,123 @@ shapes:
 
   // check that the result has a volume fraction field associated with the circle material
   constexpr double expected_volume = M_PI;
+  this->checkExpectedVolumeFractions(circle_material, expected_volume);
+
+  // Save meshes and fields
+  if(very_verbose_output)
+  {
+    this->getDC().Save(testname, axom::sidre::Group::getDefaultIOProtocol());
+  }
+}
+
+TEST_F(SamplingShaperTest2D, basic_circle_projector)
+{
+  using Point2D = primal::Point<double, 2>;
+  using Point3D = primal::Point<double, 3>;
+
+  const auto& testname =
+    ::testing::UnitTest::GetInstance()->current_test_info()->name();
+
+  const std::string shape_template = R"(
+dimensions: 2
+
+shapes:
+- name: circle_shape
+  material: {}
+  geometry:
+    format: c2c
+    path: {}
+)";
+
+  const std::string circle_material = "circleMat";
+
+  ScopedTemporaryFile contour_file(axom::fmt::format("{}.contour", testname),
+                                   unit_circle_contour);
+
+  ScopedTemporaryFile shape_file(axom::fmt::format("{}.yaml", testname),
+                                 axom::fmt::format(shape_template,
+                                                   circle_material,
+                                                   contour_file.getFileName()));
+
+  this->validateShapeFile(shape_file.getFileName());
+  this->initializeShaping(shape_file.getFileName());
+
+  // check that we can set several projectors in 2D and 3D
+  // uses simplest projectors, e.g. identity in 2D and 3D
+  this->m_shaper->setPointProjector([](const Point3D& pt) {
+    return Point3D {pt[0], pt[1], pt[2]};
+  });
+  this->m_shaper->setPointProjector([](const Point2D& pt) {
+    return Point2D {pt[0], pt[1]};
+  });
+  this->m_shaper->setPointProjector([](const Point3D& pt) {
+    return Point2D {pt[0], pt[1]};
+  });
+  this->m_shaper->setPointProjector([](const Point2D& pt) {
+    return Point3D {pt[0], pt[1], 0};
+  });
+
+  this->runShaping();
+
+  // check that the result has a volume fraction field associated with the circle material
+  constexpr double expected_volume = M_PI;
+  this->checkExpectedVolumeFractions(circle_material, expected_volume);
+
+  // Save meshes and fields
+  if(very_verbose_output)
+  {
+    this->getDC().Save(testname, axom::sidre::Group::getDefaultIOProtocol());
+  }
+}
+
+TEST_F(SamplingShaperTest2D, circle_projector_anisotropic)
+{
+  using Point2D = primal::Point<double, 2>;
+  using Point3D = primal::Point<double, 3>;
+
+  const auto& testname =
+    ::testing::UnitTest::GetInstance()->current_test_info()->name();
+
+  const std::string shape_template = R"(
+dimensions: 2
+
+shapes:
+- name: circle_shape
+  material: {}
+  geometry:
+    format: c2c
+    path: {}
+)";
+
+  const std::string circle_material = "circleMat";
+
+  ScopedTemporaryFile contour_file(axom::fmt::format("{}.contour", testname),
+                                   unit_circle_contour);
+
+  ScopedTemporaryFile shape_file(axom::fmt::format("{}.yaml", testname),
+                                 axom::fmt::format(shape_template,
+                                                   circle_material,
+                                                   contour_file.getFileName()));
+
+  this->validateShapeFile(shape_file.getFileName());
+  this->initializeShaping(shape_file.getFileName());
+
+  // check that we can set several projectors in 2D and 3D
+  // creating an ellipse by scaling input x and y by scale_a and scale_b
+  constexpr double scale_a = 3. / 2.;
+  constexpr double scale_b = 3. / 4.;
+  this->m_shaper->setPointProjector([](const Point2D& pt) {
+    return Point2D {pt[0] / scale_a, pt[1] / scale_b};
+  });
+  // check that we can register another projector that's not used
+  this->m_shaper->setPointProjector([](const Point3D&) {
+    return Point3D {0., 0.};
+  });
+
+  this->runShaping();
+
+  // check that the result has a volume fraction field associated with the circle material
+  constexpr double expected_volume = M_PI * scale_a * scale_b;
   this->checkExpectedVolumeFractions(circle_material, expected_volume);
 
   // Save meshes and fields
@@ -1310,6 +1432,75 @@ shapes:
   // Scaling by a factor of 1/2 in each dimension should multiply the total volume by a factor of 8
   constexpr double orig_tet_volume = 8. / 3.;
   this->checkExpectedVolumeFractions(tet_material, 8 * orig_tet_volume);
+
+  // Save meshes and fields
+  if(very_verbose_output)
+  {
+    this->getDC().Save(testname, axom::sidre::Group::getDefaultIOProtocol());
+  }
+}
+
+TEST_F(SamplingShaperTest3D, circle_2D_projector)
+{
+  using Point2D = primal::Point<double, 2>;
+  using Point3D = primal::Point<double, 3>;
+
+  const auto& testname =
+    ::testing::UnitTest::GetInstance()->current_test_info()->name();
+
+  constexpr double radius = 1.5;
+
+  const std::string shape_template = R"(
+dimensions: 2
+
+shapes:
+- name: circle_shape
+  material: {}
+  geometry:
+    format: c2c
+    path: {}
+    units: cm
+    operators:
+      - scale: {}
+)";
+
+  const std::string circle_material = "steel";
+
+  ScopedTemporaryFile contour_file(axom::fmt::format("{}.contour", testname),
+                                   unit_semicircle_contour);
+
+  ScopedTemporaryFile shape_file(axom::fmt::format("{}.yaml", testname),
+                                 axom::fmt::format(shape_template,
+                                                   circle_material,
+                                                   contour_file.getFileName(),
+                                                   radius));
+
+  if(very_verbose_output)
+  {
+    SLIC_INFO("Contour file: \n" << contour_file.getFileContents());
+    SLIC_INFO("Shape file: \n" << shape_file.getFileContents());
+  }
+
+  this->validateShapeFile(shape_file.getFileName());
+  this->initializeShaping(shape_file.getFileName());
+
+  // set projector from 3D points to axisymmetric plane
+  this->m_shaper->setPointProjector([](Point3D pt) {
+    const double& x = pt[0];
+    const double& y = pt[1];
+    const double& z = pt[2];
+    return Point2D {z, sqrt(x * x + y * y)};
+  });
+
+  // we need a higher quadrature order to resolve this shape at the (low) testing resolution
+  this->m_shaper->setQuadratureOrder(8);
+
+  this->runShaping();
+
+  // Check that the result has a volume fraction field associated with the tetrahedron material
+  // Scaling by a factor of 1/2 in each dimension should multiply the total volume by a factor of 8
+  constexpr double exp_volume = 4. / 3. * M_PI * radius * radius * radius;
+  this->checkExpectedVolumeFractions(circle_material, exp_volume, 3e-2);
 
   // Save meshes and fields
   if(very_verbose_output)
