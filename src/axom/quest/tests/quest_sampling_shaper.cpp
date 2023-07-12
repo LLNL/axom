@@ -944,7 +944,7 @@ shapes:
 
   if(very_verbose_output)
   {
-    SLIC_INFO("Bounding box: \n" << this->meshBoundingBox());
+    SLIC_INFO("Bounding box of 3D input mesh: \n" << this->meshBoundingBox());
     SLIC_INFO("Shape file: \n" << shape_file.getFileContents());
   }
 
@@ -1023,7 +1023,6 @@ shapes:
 
   if(very_verbose_output)
   {
-    SLIC_INFO("Bounding box: \n" << this->meshBoundingBox());
     SLIC_INFO("Shape file: \n" << shape_file.getFileContents());
   }
 
@@ -1070,6 +1069,247 @@ shapes:
 
   constexpr double total_volume = 4 * 4 * 4;
   EXPECT_EQ(total_volume, tet_volume + 4 * missing_sixth + 4 * missing_half);
+
+  // Save meshes and fields
+  if(very_verbose_output)
+  {
+    this->getDC().Save(testname, axom::sidre::Group::getDefaultIOProtocol());
+  }
+}
+
+TEST_F(SamplingShaperTest3D, tet_preshaped_with_replacements)
+{
+  const auto& testname =
+    ::testing::UnitTest::GetInstance()->current_test_info()->name();
+
+  // Use somewhat complex rules: tet's material will replace octants 0-3, but not 4-7
+  const std::string shape_template = R"(
+dimensions: 3
+
+shapes:
+- name: octant_0
+  material: octant0
+  geometry:
+    format: none
+- name: octant_1
+  material: octant1
+  geometry:
+    format: none
+
+- name: octant_4
+  material: octant4
+  geometry:
+    format: none
+- name: octant_5
+  material: octant5
+  geometry:
+    format: none
+
+- name: tet_shape
+  material: steel
+  geometry:
+    format: stl
+    path: {}
+  replaces: [octant0,octant1]
+
+- name: octant_6
+  material: octant6
+  geometry:
+    format: none
+- name: octant_7
+  material: octant7
+  geometry:
+    format: none
+
+- name: octant_2
+  material: octant2
+  geometry:
+    format: none
+  does_not_replace: [steel]
+- name: octant_3
+  material: octant3
+  geometry:
+    format: none
+  does_not_replace: [steel]
+)";
+
+  const std::string tet_path =
+    axom::fmt::format("{}/quest/tetrahedron.stl", AXOM_DATA_DIR);
+
+  ScopedTemporaryFile shape_file(axom::fmt::format("{}.yaml", testname),
+                                 axom::fmt::format(shape_template, tet_path));
+
+  if(very_verbose_output)
+  {
+    SLIC_INFO("Shape file: \n" << shape_file.getFileContents());
+  }
+
+  this->validateShapeFile(shape_file.getFileName());
+
+  // Create initial background materials based on octant attributes
+  std::map<std::string, mfem::GridFunction*> initialGridFunctions;
+  {
+    for(int attr_i = 0; attr_i < 8; ++attr_i)
+    {
+      auto* vf = this->registerVolFracGridFunction(
+        axom::fmt::format("init_vf_octant_{}", attr_i));
+      this->initializeVolFracGridFunction<3>(
+        vf,
+        [attr_i](int, const Point3D&, int attr) -> double {
+          return attr == attr_i ? 1 : 0;
+        });
+      initialGridFunctions[axom::fmt::format("octant{}", attr_i)] = vf;
+    }
+  }
+
+  this->initializeShaping(shape_file.getFileName(), initialGridFunctions);
+  this->runShaping();
+
+  // Check that the result has a volume fraction field associated with the tetrahedron material
+  // The tet has volume 8/3, but only half of it is replaced
+  constexpr double tet_volume = 8. / 3.;
+  this->checkExpectedVolumeFractions("steel", tet_volume / 2.);
+
+  // The background mesh is a cube of edge length 4 centered around the origin
+  // octants 0-3 are replaced by the tet, but 4-7 are not
+  constexpr double missing_half = 8. - 1. / 2.;
+  constexpr double missing_sixth = 8. - 1. / 6.;
+  this->checkExpectedVolumeFractions("octant0", missing_half);
+  this->checkExpectedVolumeFractions("octant1", missing_sixth);
+  this->checkExpectedVolumeFractions("octant2", missing_sixth);
+  this->checkExpectedVolumeFractions("octant3", missing_half);
+  this->checkExpectedVolumeFractions("octant4", 8.);
+  this->checkExpectedVolumeFractions("octant5", 8.);
+  this->checkExpectedVolumeFractions("octant6", 8.);
+  this->checkExpectedVolumeFractions("octant7", 8.);
+
+  constexpr double total_volume = 4 * 4 * 4;
+  EXPECT_EQ(total_volume,
+            tet_volume / 2 + 2 * (missing_sixth + missing_half) + 8 * 4);
+
+  // Save meshes and fields
+  if(very_verbose_output)
+  {
+    this->getDC().Save(testname, axom::sidre::Group::getDefaultIOProtocol());
+  }
+}
+
+TEST_F(SamplingShaperTest3D, tet_identity_projector)
+{
+  using Point2D = primal::Point<double, 2>;
+  using Point3D = primal::Point<double, 3>;
+
+  const auto& testname =
+    ::testing::UnitTest::GetInstance()->current_test_info()->name();
+
+  const std::string shape_template = R"(
+dimensions: 3
+
+shapes:
+- name: tet_shape
+  material: {}
+  geometry:
+    format: stl
+    path: {}
+)";
+
+  const std::string tet_material = "steel";
+  const std::string tet_path =
+    axom::fmt::format("{}/quest/tetrahedron.stl", AXOM_DATA_DIR);
+
+  ScopedTemporaryFile shape_file(
+    axom::fmt::format("{}.yaml", testname),
+    axom::fmt::format(shape_template, tet_material, tet_path));
+
+  if(very_verbose_output)
+  {
+    SLIC_INFO("Shape file: \n" << shape_file.getFileContents());
+  }
+
+  this->validateShapeFile(shape_file.getFileName());
+  this->initializeShaping(shape_file.getFileName());
+
+  // check that we can set several projectors in 2D and 3D
+  // uses simplest projectors, e.g. identity in 2D and 3D
+  this->m_shaper->setPointProjector([](const Point3D& pt) {
+    return Point3D {pt[0], pt[1], pt[2]};
+  });
+  this->m_shaper->setPointProjector([](const Point2D& pt) {
+    return Point2D {pt[0], pt[1]};
+  });
+  this->m_shaper->setPointProjector([](const Point3D& pt) {
+    return Point2D {pt[0], pt[1]};
+  });
+  this->m_shaper->setPointProjector([](const Point2D& pt) {
+    return Point3D {pt[0], pt[1], 0};
+  });
+
+  this->runShaping();
+
+  // Check that the result has a volume fraction field associated with the tetrahedron material
+  // The tet lives in cube of edge length 2 (and volume 8) and is defined by opposite corners.
+  // It occupies 1/3 of the cube's volume
+  constexpr double expected_volume = 8. / 3.;
+  this->checkExpectedVolumeFractions(tet_material, expected_volume);
+
+  // Save meshes and fields
+  if(very_verbose_output)
+  {
+    this->getDC().Save(testname, axom::sidre::Group::getDefaultIOProtocol());
+  }
+}
+
+TEST_F(SamplingShaperTest3D, tet_doubling_projector)
+{
+  using Point2D = primal::Point<double, 2>;
+  using Point3D = primal::Point<double, 3>;
+
+  const auto& testname =
+    ::testing::UnitTest::GetInstance()->current_test_info()->name();
+
+  const std::string shape_template = R"(
+dimensions: 3
+
+shapes:
+- name: tet_shape
+  material: {}
+  geometry:
+    format: stl
+    path: {}
+)";
+
+  const std::string tet_material = "steel";
+  const std::string tet_path =
+    axom::fmt::format("{}/quest/tetrahedron.stl", AXOM_DATA_DIR);
+
+  ScopedTemporaryFile shape_file(
+    axom::fmt::format("{}.yaml", testname),
+    axom::fmt::format(shape_template, tet_material, tet_path));
+
+  if(very_verbose_output)
+  {
+    SLIC_INFO("Shape file: \n" << shape_file.getFileContents());
+  }
+
+  this->validateShapeFile(shape_file.getFileName());
+  this->initializeShaping(shape_file.getFileName());
+
+  // scale input points by a factor of 1/2 in each dimension
+  this->m_shaper->setPointProjector([](const Point3D& pt) {
+    return Point3D {pt[0] / 2, pt[1] / 2, pt[2] / 2};
+  });
+
+  // for good measure, add a 3D->2D projector that will not be used
+  this->m_shaper->setPointProjector([](const Point3D&) {
+    return Point2D {0, 0};
+  });
+
+  this->runShaping();
+
+  // Check that the result has a volume fraction field associated with the tetrahedron material
+  // Scaling by a factor of 1/2 in each dimension should multiply the total volume by a factor of 8
+  constexpr double orig_tet_volume = 8. / 3.;
+  this->checkExpectedVolumeFractions(tet_material, 8 * orig_tet_volume);
 
   // Save meshes and fields
   if(very_verbose_output)
