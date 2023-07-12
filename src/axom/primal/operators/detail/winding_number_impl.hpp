@@ -22,8 +22,6 @@
 // MFEM includes
 #ifdef AXOM_USE_MFEM
   #include "mfem.hpp"
-#else
-  #error "Primal's 3D winding number functions require mfem library."
 #endif
 
 namespace axom
@@ -271,6 +269,7 @@ enum class SingularityAxis
   rotated
 };
 
+#ifdef AXOM_USE_MFEM
 /*!
  * \brief Evaluates an "anti-curl" of the winding number along a curve
  *
@@ -348,7 +347,9 @@ double stokes_winding_number(const Point<T, 3>& query,
 
   return 0.25 * M_1_PI * quadrature;
 }
+#endif
 
+#ifdef AXOM_USE_MFEM
 /*!
  * \brief Recursively evaluates an "anti-curl" of the winding number on subcurves
  *
@@ -436,6 +437,7 @@ double stokes_winding_number_adaptive(const Point<T, 3>& query,
                                      quad_tol);
   }
 }
+#endif
 
 }  // end namespace detail
 }  // end namespace primal

@@ -55,6 +55,7 @@ set( primal_headers
     operators/in_sphere.hpp
     operators/is_convex.hpp
     operators/split.hpp
+    operators/winding_number.hpp
 
     operators/detail/clip_impl.hpp
     operators/detail/compute_moments_impl.hpp
@@ -62,6 +63,7 @@ set( primal_headers
     operators/detail/intersect_bounding_box_impl.hpp
     operators/detail/intersect_impl.hpp
     operators/detail/intersect_ray_impl.hpp
+    operators/detail/winding_number_impl.hpp
      
     ## utils
     utils/ZipIndexable.hpp
@@ -74,9 +76,7 @@ set( primal_headers
 blt_list_append(
     TO       primal_headers 
     ELEMENTS operators/evaluate_integral.hpp
-             operators/winding_number.hpp
              operators/detail/evaluate_integral_impl.hpp
-             operators/detail/winding_number_impl.hpp
     IF       MFEM_FOUND 
                )
 

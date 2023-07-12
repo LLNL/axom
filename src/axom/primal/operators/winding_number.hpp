@@ -32,14 +32,10 @@
 
 // C++ includes
 #include <cmath>
-#include <stdio.h>
-#include <iostream>
 
 // MFEM includes
 #ifdef AXOM_USE_MFEM
   #include "mfem.hpp"
-#else
-  #error "Primal's 3D winding number functions require mfem library."
 #endif
 
 namespace axom
@@ -459,6 +455,7 @@ int winding_number(const Point<T, 3>& query,
   return std::lround(wn);
 }
 
+#ifdef AXOM_USE_MFEM
 /*!
  * \brief Computes the solid angle winding number for a Bezier patch
  *
@@ -733,6 +730,8 @@ double winding_number(const Point<T, 3>& query,
 
   return wn;
 }
+#endif
+
 //@}
 
 }  // namespace primal
