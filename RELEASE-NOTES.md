@@ -67,7 +67,7 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
   before querying the spatial index. This allows, e.g. querying 3D points against 2D surfaces
   of revolution provided as c2c contour files.
 - Adds an ``axom::utilities::locale`` utility function to guard against platforms that do not have the requested 
-  locales via the `std::locale` function. If the system does not have the request locale (e.g. `en_US.UTF8`),
+  locales via the `std::locale` function. If the system does not have the requested locale (e.g. `en_US.UTF8`),
   it returns the user's default locale.
 
 ### Changed

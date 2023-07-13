@@ -28,7 +28,7 @@ namespace util
  * /brief Creates a 2D Cartesian mfem mesh lying within a given bounding box
  *
  * \param bbox The bounding box for the mesh
- * \param res The resolution of the the mesh
+ * \param res The resolution of the mesh
  * \param polynomial_order The polynomial order for the mesh curvature
  * \param reorder_space_filling Reorder the mesh elements according to a space filling curve
  *
@@ -44,7 +44,7 @@ mfem::Mesh* make_cartesian_mfem_mesh_2D(const primal::BoundingBox<double, 2>& bb
  * /brief Creates a 3D Cartesian mfem mesh lying within a given bounding box
  *
  * \param bbox The bounding box for the mesh
- * \param res The resolution of the the mesh
+ * \param res The resolution of the mesh
  * \param polynomial_order The polynomial order for the mesh curvature
  * \param reorder_space_filling Reorder the mesh elements according to a space filling curve
  *

@@ -106,7 +106,7 @@ public:
   /*!
    * \brief Helper to apply a parallel sum reduction to a quantity
    *
-   * \note This is the identify function when running without MPI 
+   * \note This is the identity function when running without MPI 
    */
   double allReduceSum(double val) const;
 
