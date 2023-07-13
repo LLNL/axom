@@ -489,6 +489,7 @@ TEST(primal_solid_angle, planar_bezierpatch)
   // Define normal vector for the quadrilateral
   Vector3D v1 = Vector3D({0.0, 1.0, 2.0}).unitVector();
   Vector3D v2 = Vector3D({2.0, -1.0, 0.5}).unitVector();
+  Vector3D v3 = Vector3D::cross_product(v1, v2);
 
   Polygon quad(4);
 
@@ -505,16 +506,17 @@ TEST(primal_solid_angle, planar_bezierpatch)
   Point3D controlPoints[4] = {quad[1], quad[0], quad[2], quad[3]};
   BezierPatch quad_patch(controlPoints, 1, 1);
 
-  Point3D queries[5] = {
-    Point3D {0.0, 4.0, 1.0},
+  Point3D queries[8] = {Point3D {0.0, 4.0, 1.0},
     Point3D {-1.0, 2.0, 2.0},
     Point3D {0.0, -5.0, 3.0},
     Point3D {0.0, 0.0, 4.0},
     Point3D {3.0, 2.0, 5.0},
-  };
+                        Point3D((v3 + 0.1 * v1 + 0.1 * v2).array()),
+                        Point3D((-v3 + 0.1 * v1 + 0.1 * v2).array()),
+                        Point3D((10.0 * v1 + 10.0 * v2).array())};
 
   // Should be equal with both kinds of primitive
-  for(int n = 0; n < 5; ++n)
+  for(int n = 0; n < 8; ++n)
   {
     EXPECT_NEAR(winding_number(queries[n], quad),
                 winding_number(queries[n], quad_patch),
@@ -527,7 +529,7 @@ TEST(primal_solid_angle, planar_bezierpatch)
   const double quad_tol = 1e-10;
   const double edge_tol = 1e-10;
   const double EPS = 0;
-  for(int n = 0; n < 5; ++n)
+  for(int n = 0; n < 8; ++n)
   {
     EXPECT_NEAR(winding_number(queries[n], quad_patch),
                 winding_number(queries[n], quad_patch, quad_tol, edge_tol, EPS),
@@ -551,14 +553,14 @@ TEST(primal_integral, bezierpatch_sphere)
   //  James E. Cobb, University of Utah, 1988
 
   // clang-format off
-  Point3D node_data[25] = {
+  axom::Array<Point3D> node_data = {
     Point3D {4*(1-rt3),     4*(1-rt3),     4*(1-rt3)}, Point3D {rt2*(rt3-4),            -rt2, rt2*(rt3-4)}, Point3D {4*(1-2*rt3)/3,   0, 4*(1-2*rt3)/3}, Point3D {rt2*(rt3-4),           rt2,   rt2*(rt3-4)}, Point3D {4*(1-rt3),     4*(rt3-1),     4*(1-rt3)},
     Point3D {     -rt2, rt2*(rt3 - 4), rt2*(rt3 - 4)}, Point3D {(2-3*rt3)/2,     (2-3*rt3)/2,  -(rt3+6)/2}, Point3D {rt2*(2*rt3-7)/3, 0,      -5*rt6/3}, Point3D {(2-3*rt3)/2,   (3*rt3-2)/2,    -(rt3+6)/2}, Point3D {     -rt2,   rt2*(4-rt3),   rt2*(rt3-4)},
     Point3D {        0, 4*(1-2*rt3)/3, 4*(1-2*rt3)/3}, Point3D {          0, rt2*(2*rt3-7)/3,    -5*rt6/3}, Point3D {0,               0,   4*(rt3-5)/3}, Point3D {          0, rt2*(7-2*rt3)/3,    -5*rt6/3}, Point3D {        0, 4*(2*rt3-1)/3, 4*(1-2*rt3)/3},
     Point3D {      rt2, rt2*(rt3 - 4), rt2*(rt3 - 4)}, Point3D {(3*rt3-2)/2,     (2-3*rt3)/2,  -(rt3+6)/2}, Point3D {rt2*(7-2*rt3)/3, 0,      -5*rt6/3}, Point3D {(3*rt3-2)/2,   (3*rt3-2)/2,    -(rt3+6)/2}, Point3D {      rt2,   rt2*(4-rt3),   rt2*(rt3-4)},
     Point3D {4*(rt3-1),     4*(1-rt3),     4*(1-rt3)}, Point3D {rt2*(4-rt3),            -rt2, rt2*(rt3-4)}, Point3D {4*(2*rt3-1)/3,   0, 4*(1-2*rt3)/3}, Point3D {rt2*(4-rt3),           rt2,   rt2*(rt3-4)}, Point3D {4*(rt3-1),     4*(rt3-1),     4*(1-rt3)}};
 
-  double weight_data[25] = {
+  axom::Array<double> weight_data = {
          4*(3-rt3), rt2*(3*rt3-2),   4*(5-rt3)/3, rt2*(3*rt3-2),     4*(3-rt3),
      rt2*(3*rt3-2),     (rt3+6)/2, rt2*(rt3+6)/3,     (rt3+6)/2, rt2*(3*rt3-2),
        4*(5-rt3)/3, rt2*(rt3+6)/3, 4*(5*rt3-1)/9, rt2*(rt3+6)/3,   4*(5-rt3)/3,
