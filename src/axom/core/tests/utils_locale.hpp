@@ -65,7 +65,7 @@ std::string execute_command(const std::string& cmd)
 BOOL CALLBACK MyFuncLocaleEx(LPWSTR pStr, DWORD dwFlags, LPARAM strvec_ptr)
 {
   using StrVec = std::vector<std::wstring>;
-  reinterpret_cast<StrVec*>(strvec_ptr)->push_back(pStr);
+  static_cast<StrVec*>(strvec_ptr)->push_back(pStr);
   return TRUE;
 }
 #endif
@@ -237,7 +237,7 @@ TEST(utils_locale, enumerate_locales_windows)
   std::vector<std::string> available_locales;
 
   // get vector of locales
-  LPARAM lparam = reinterpret_cast<LPARAM>(&locale_list);
+  LPARAM lparam = static_cast<LPARAM>(&locale_list);
   EnumSystemLocalesEx(MyFuncLocaleEx, LOCALE_ALL, lparam, nullptr);
 
   // sort and unique-ify the list

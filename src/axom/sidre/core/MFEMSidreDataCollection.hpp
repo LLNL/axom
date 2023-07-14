@@ -236,7 +236,7 @@ public:
   void SetNumFiles(int num_files);
   #endif
 
-  /// Returns the number of MPI ranks in this data collection
+  /// Returns the number of MPI ranks in the communicator associated with this data collection
   /** The number of ranks is 1 when using serial MFEM mesh; otherwise the MPI
   * communicator for the associated parallel mesh instance determines the number of ranks.
   */

@@ -187,8 +187,6 @@ public:
           const ToPoint pt = projector(FromPoint(m.GetColumn(p), dim));
           const bool in = m_octree->within(pt);
           res(p) = in ? 1. : 0.;
-
-          // SLIC_INFO(axom::fmt::format("[{},{}] Pt: {}, In: {}", i,p,pt, (in? "yes" : "no") ));
         }
       }
       else
@@ -198,8 +196,6 @@ public:
           const ToPoint pt(m.GetColumn(p), dim);
           const bool in = m_octree->within(pt);
           res(p) = in ? 1. : 0.;
-
-          // SLIC_INFO(axom::fmt::format("[{},{}] Pt: {}, In: {}", i,p,pt, (in? "yes" : "no") ));
         }
       }
     }
