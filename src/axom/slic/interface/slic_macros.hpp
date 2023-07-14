@@ -523,15 +523,7 @@ AXOM_HOST_DEVICE inline blackhole &operator<<(blackhole &bh, T)
 }  // namespace slic
 }  // namespace axom
 
-    // Removed unused variable warnings for HIP version >=5.4
-    // Bug: Intersection shaper unit tests hang with HIP 5.2.3 for void exp
-    #if(HIP_VERSION_MAJOR > 5) || \
-      (HIP_VERSION_MAJOR == 5 && HIP_VERSION_MINOR >= 4)
-      #define SLIC_ASSERT(EXP) ((void)(EXP))
-    #else
-      #define SLIC_ASSERT(EXP) ((void)(0))
-    #endif
-
+    #define SLIC_ASSERT(EXP) ((void)(EXP))
     #define SLIC_ASSERT_MSG(EXP, msg)            \
       {                                          \
         if(false)                                \
