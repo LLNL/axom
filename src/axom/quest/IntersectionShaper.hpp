@@ -58,7 +58,7 @@
   #endif
 
   #if defined(AXOM_USE_HIP)
-    constexpr int HIP_BLOCK_SIZE = 256;
+    constexpr int HIP_BLOCK_SIZE = 64;
     using hip_exec = axom::HIP_EXEC<HIP_BLOCK_SIZE>;
   #else
     using hip_exec = seq_exec;

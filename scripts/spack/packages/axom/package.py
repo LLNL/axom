@@ -8,7 +8,7 @@ import socket
 from os.path import join as pjoin
 
 from spack.package import *
-
+from spack.util.executable import which_string
 
 def get_spec_path(spec, package_name, path_replacements={}, use_bin=False):
     """Extracts the prefix path for the given spack package
@@ -138,6 +138,8 @@ class Axom(CachedCMakePackage, CudaPackage, ROCmPackage):
         depends_on("raja amdgpu_target={0}".format(val), when="amdgpu_target={0}".format(val))
         depends_on("umpire amdgpu_target={0}".format(val), when="amdgpu_target={0}".format(val))
 
+    depends_on("rocprim", when="+rocm")
+
     depends_on("c2c", when="+c2c")
 
     with when("+mfem"):
@@ -233,6 +235,12 @@ class Axom(CachedCMakePackage, CudaPackage, ROCmPackage):
         if "+cpp14" in spec and spec.satisfies("@:0.6.1"):
             entries.append(cmake_cache_string("BLT_CXX_STD", "c++14", ""))
 
+        # Add optimization flag to workaround HIP compiler errors
+        if "+rocm" in spec:
+            if "crayCC" in self.compiler.cxx or spec.satisfies("%clang@16"):
+                entries.append(cmake_cache_string("CMAKE_CXX_FLAGS","-O1"))
+
+
         return entries
 
     def initconfig_hardware_entries(self):
@@ -280,8 +288,9 @@ class Axom(CachedCMakePackage, CudaPackage, ROCmPackage):
             rocm_root = hip_root + "/.."
 
             # Fix blt_hip getting HIP_CLANG_INCLUDE_PATH-NOTFOUND bad include directory
-            if self.spec.satisfies('%clang') and 'toss_4' in self._get_sys_type(spec):
-                clang_version= str(self.compiler.version)
+            if (self.spec.satisfies('%cce') or self.spec.satisfies('%clang')) and 'toss_4' in self._get_sys_type(spec):
+                # Set the patch version to 0 if not already
+                clang_version= str(self.compiler.version)[:-1] + "0"
                 hip_clang_include_path = rocm_root + "/llvm/lib/clang/" + clang_version + "/include"
                 if os.path.isdir(hip_clang_include_path):
                     entries.append(cmake_cache_path("HIP_CLANG_INCLUDE_PATH", hip_clang_include_path))
@@ -295,9 +304,15 @@ class Axom(CachedCMakePackage, CudaPackage, ROCmPackage):
                 hip_link_flags += "-Wl,-rpath,{0}/../llvm/lib:{0}/lib ".format(hip_root)
                 hip_link_flags += "-lpgmath -lflang -lflangrti -lompstub -lamdhip64 "
 
+            # Remove extra link library for crayftn
+            if "+fortran" in spec and self.is_fortran_compiler("crayftn"):
+                entries.append(cmake_cache_string("BLT_CMAKE_IMPLICIT_LINK_LIBRARIES_EXCLUDE",
+                                                  "unwind"))
+
             # Additional libraries for TOSS4
             hip_link_flags += " -L{0}/../lib64 -Wl,-rpath,{0}/../lib64 ".format(hip_root)
-            hip_link_flags += "-lhsakmt "
+            hip_link_flags += " -L{0}/../lib -Wl,-rpath,{0}/../lib ".format(hip_root)
+            hip_link_flags += "-lamd_comgr -lhsa-runtime64 "
 
             entries.append(cmake_cache_string("CMAKE_EXE_LINKER_FLAGS", hip_link_flags))
 
@@ -384,6 +399,14 @@ class Axom(CachedCMakePackage, CudaPackage, ROCmPackage):
                 entries.append(cmake_cache_string("BLT_MPI_COMMAND_APPEND", "mpibind"))
         else:
             entries.append(cmake_cache_option("ENABLE_MPI", False))
+
+        # Replace /usr/bin/srun path with srun flux wrapper path on TOSS 4
+        if 'toss_4' in self._get_sys_type(spec):
+            srun_wrapper = which_string("srun")
+            mpi_exec_index = [index for index,entry in enumerate(entries)
+                                                  if "MPIEXEC_EXECUTABLE" in entry]
+            del entries[mpi_exec_index[0]]
+            entries.append(cmake_cache_path("MPIEXEC_EXECUTABLE", srun_wrapper))
 
         return entries
 

@@ -523,10 +523,7 @@ AXOM_HOST_DEVICE inline blackhole &operator<<(blackhole &bh, T)
 }  // namespace slic
 }  // namespace axom
 
-    // Bug: Causes intersection shaper unit tests to hang with HIP
-    // #define SLIC_ASSERT(EXP) ((void)(EXP))
-
-    #define SLIC_ASSERT(EXP) ((void)(0))
+    #define SLIC_ASSERT(EXP) ((void)(EXP))
     #define SLIC_ASSERT_MSG(EXP, msg)            \
       {                                          \
         if(false)                                \
