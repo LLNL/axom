@@ -63,6 +63,12 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 - Adds an `ArrayView::subspan()` overload for multi-dimensional subspans
 - Adds an `axom::utilities::insertionSort()` method.
 - Quest: Adds Pro/E tetrahedral meshes as input to the `IntersectionShaper`
+- Quest: For sample-based shaping, users can register callback functions to modify the input points
+  before querying the spatial index. This allows, e.g. querying 3D points against 2D surfaces
+  of revolution provided as c2c contour files.
+- Adds an ``axom::utilities::locale`` utility function to guard against platforms that do not have the requested 
+  locales via the `std::locale` function. If the system does not have the requested locale (e.g. `en_US.UTF8`),
+  it returns the user's default locale.
 
 ### Changed
 - Fixed bug in `mint::mesh::UnstructuredMesh` constructors, affecting capacity.

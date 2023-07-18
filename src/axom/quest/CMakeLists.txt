@@ -57,6 +57,7 @@ set( quest_headers
     interface/inout.hpp
     interface/signed_distance.hpp
 
+    util/mesh_helpers.hpp
     )
 
 set( quest_sources
@@ -82,6 +83,7 @@ set( quest_sources
     interface/inout.cpp
     interface/signed_distance.cpp
 
+    util/mesh_helpers.cpp
    )
 
 

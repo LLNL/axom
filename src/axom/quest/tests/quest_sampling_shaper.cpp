@@ -17,6 +17,7 @@
 #include "axom/sidre.hpp"
 #include "axom/slic.hpp"
 #include "axom/quest/SamplingShaper.hpp"
+#include "axom/quest/util/mesh_helpers.hpp"
 
 #ifndef AXOM_USE_MFEM
   #error "Quest's SamplingShaper tests on mfem meshes require mfem library."
@@ -31,6 +32,8 @@
 #include <cmath>
 #include <string>
 #include <iostream>
+#include <fstream>
+#include <memory>
 
 namespace klee = axom::klee;
 namespace primal = axom::primal;
@@ -43,6 +46,11 @@ namespace
 const std::string unit_circle_contour =
   "piece = circle(origin=(0cm, 0cm), radius=1cm, start=0deg, end=360deg)";
 
+const std::string unit_semicircle_contour = R"(
+  piece = circle(origin=(0cm, 0cm), radius=1cm, start=0deg, end=180deg)
+  piece = line(end=(0cm, 1cm)))";
+
+// Set the following to true for verbose output and for saving vis files
 constexpr bool very_verbose_output = false;
 
 /// RAII utility class to write a file at construction time and remove it
@@ -66,9 +74,13 @@ public:
 
   std::string getFileContents() const
   {
-    std::ifstream ifs(m_filename.c_str(), std::ios::in);
     std::stringstream buffer;
-    buffer << ifs.rdbuf();
+
+    std::ifstream ifs(m_filename.c_str(), std::ios::in);
+    if(ifs.is_open())
+    {
+      buffer << ifs.rdbuf();
+    }
 
     return buffer.str();
   }
@@ -82,85 +94,11 @@ private:
 class SamplingShaperTest : public ::testing::Test
 {
 public:
-  using Point2D = primal::Point<double, 2>;
-  using BBox2D = primal::BoundingBox<double, 2>;
-
-public:
   SamplingShaperTest() : m_dc("test", nullptr, true) { }
 
   virtual ~SamplingShaperTest() { }
 
-  virtual void SetUp()
-  {
-    const int dim = 2;
-    const int polynomialOrder = 2;
-    const double lo[] = {-2., -2.};
-    const double hi[] = {2., 2.};
-    const int celldims[] = {64, 64};
-
-    // memory for mesh will be managed by data collection
-    auto mesh =
-      new mfem::Mesh(mfem::Mesh::MakeCartesian2D(celldims[0],
-                                                 celldims[1],
-                                                 mfem::Element::QUADRILATERAL,
-                                                 true,
-                                                 hi[0] - lo[0],
-                                                 hi[1] - lo[1]));
-
-    const int NE = mesh->GetNE();
-    const int NV = mesh->GetNV();
-
-    // Offset the mesh to lie w/in the bounding box
-    for(int i = 0; i < NV; ++i)
-    {
-      double* v = mesh->GetVertex(i);
-      for(int d = 0; d < dim; ++d)
-      {
-        v[d] += lo[d];
-      }
-    }
-
-    // Set element attributes based on quadrant where centroid is located
-    // These will be used later in some cases when setting volume fractions
-    mfem::Array<int> v;
-    for(int i = 0; i < NE; ++i)
-    {
-      mesh->GetElementVertices(i, v);
-      BBox2D bbox;
-      for(int j = 0; j < v.Size(); ++j)
-      {
-        bbox.addPoint(Point2D(mesh->GetVertex(v[j]), 2));
-      }
-
-      auto centroid = bbox.getCentroid();
-      if(centroid[0] >= 0 && centroid[1] >= 0)
-      {
-        mesh->SetAttribute(i, 1);
-      }
-      else if(centroid[0] >= 0 && centroid[1] < 0)
-      {
-        mesh->SetAttribute(i, 2);
-      }
-      else if(centroid[0] < 0 && centroid[1] >= 0)
-      {
-        mesh->SetAttribute(i, 3);
-      }
-      else
-      {
-        mesh->SetAttribute(i, 4);
-      }
-    }
-
-    mesh->SetCurvature(polynomialOrder);
-
-    m_dc.SetOwnData(true);
-    m_dc.SetMeshNodesName("positions");
-    m_dc.SetMesh(mesh);
-
-#ifdef AXOM_USE_MPI
-    m_dc.SetComm(MPI_COMM_WORLD);
-#endif
-  }
+  void SetUp() override { }
 
   sidre::MFEMSidreDataCollection& getDC() { return m_dc; }
   mfem::Mesh& getMesh() { return *m_dc.GetMesh(); }
@@ -197,57 +135,58 @@ public:
     }
   }
 
-  /// Runs the shaping query over a shapefile using the supplie initial volume fractions
-  void runShaping(const std::string& shapefile,
-                  const std::map<std::string, mfem::GridFunction*>& init_vf_map = {})
+  /// Initializes the Shaper instance over a shapefile and optionally sets up initial "preshaped" volume fractions
+  void initializeShaping(
+    const std::string& shapefile,
+    const std::map<std::string, mfem::GridFunction*>& init_vf_map = {})
   {
     SLIC_INFO_IF(very_verbose_output,
                  axom::fmt::format("Reading shape set from {}", shapefile));
-    klee::ShapeSet shapeSet(klee::readShapeSet(shapefile));
+    m_shapeSet = std::make_unique<klee::ShapeSet>(klee::readShapeSet(shapefile));
 
     SLIC_INFO_IF(very_verbose_output, axom::fmt::format("Shaping materials..."));
-    quest::SamplingShaper shaper(shapeSet, &m_dc);
-    shaper.setVerbosity(very_verbose_output);
+    m_shaper = std::make_unique<quest::SamplingShaper>(*m_shapeSet, &m_dc);
+    m_shaper->setVerbosity(very_verbose_output);
 
     if(!init_vf_map.empty())
     {
-      shaper.importInitialVolumeFractions(init_vf_map);
+      m_shaper->importInitialVolumeFractions(init_vf_map);
     }
 
     if(very_verbose_output)
     {
-      shaper.printRegisteredFieldNames("*** After importing volume fractions");
+      m_shaper->printRegisteredFieldNames(
+        "*** After importing volume fractions");
     }
+  }
 
-    const auto shapeDim = shapeSet.getDimensions();
-    for(const auto& shape : shapeSet.getShapes())
+  /// Runs the shaping query over a shapefile; must be called after initializeShaping()
+  void runShaping()
+  {
+    EXPECT_NE(nullptr, m_shaper)
+      << "Shaper needs to be initialized via initializeShaping()";
+
+    const auto shapeDim = m_shapeSet->getDimensions();
+    for(const auto& shape : m_shapeSet->getShapes())
     {
       SLIC_INFO_IF(very_verbose_output,
                    axom::fmt::format("\tshape {} -> material {}",
                                      shape.getName(),
                                      shape.getMaterial()));
 
-      shaper.loadShape(shape);
-      shaper.prepareShapeQuery(shapeDim, shape);
-      shaper.runShapeQuery(shape);
-      shaper.applyReplacementRules(shape);
-      shaper.finalizeShapeQuery();
+      m_shaper->loadShape(shape);
+      m_shaper->prepareShapeQuery(shapeDim, shape);
+      m_shaper->runShapeQuery(shape);
+      m_shaper->applyReplacementRules(shape);
+      m_shaper->finalizeShapeQuery();
     }
 
-    shaper.adjustVolumeFractions();
+    m_shaper->adjustVolumeFractions();
 
     if(very_verbose_output)
     {
-      shaper.printRegisteredFieldNames("*** After shaping volume fractions");
+      m_shaper->printRegisteredFieldNames("*** After shaping volume fractions");
     }
-  }
-
-  BBox2D meshBoundingBox()
-  {
-    mfem::Vector bbmin, bbmax;
-    getMesh().GetBoundingBox(bbmin, bbmax);
-
-    return BBox2D(Point2D(bbmin.GetData()), Point2D(bbmax.GetData()));
   }
 
   // Computes the total volume of the associated volume fraction grid function
@@ -293,9 +232,9 @@ public:
   /** 
    * \brief Initializes the values of the DOFs of a volume fraction grid function
    * using a provided lambda w/ parameters for the cell index, DOF position and cell attribute
-   * The signature of DOFInitializer is [](int idx, Point2D& pt, int attribute) -> double
+   * The signature of DOFInitializer is [](int idx, Point<double,DIM>>& pt, int attribute) -> double
    */
-  template <typename DOFInitializer>
+  template <int DIM, typename DOFInitializer>
   void initializeVolFracGridFunction(mfem::GridFunction* vf,
                                      DOFInitializer&& dof_initializer)
   {
@@ -338,7 +277,7 @@ public:
       mfem::DenseMatrix& m = pos_coef(idx);
       for(int p = 0; p < nq; ++p)
       {
-        const Point2D pt(m.GetColumn(p), dim);
+        const primal::Point<double, DIM> pt(m.GetColumn(p), dim);
         res(p) = dof_initializer(idx, pt, attr);
       }
 
@@ -371,6 +310,137 @@ public:
 
 protected:
   sidre::MFEMSidreDataCollection m_dc;
+  std::unique_ptr<klee::ShapeSet> m_shapeSet;
+  std::unique_ptr<quest::SamplingShaper> m_shaper;
+};
+
+/// Test fixture for SamplingShaper tests on 2D MFEM meshes
+class SamplingShaperTest2D : public SamplingShaperTest
+{
+public:
+  using Point2D = primal::Point<double, 2>;
+  using BBox2D = primal::BoundingBox<double, 2>;
+
+public:
+  virtual ~SamplingShaperTest2D() { }
+
+  void SetUp() override
+  {
+    const int polynomialOrder = 2;
+    const BBox2D bbox({-2, -2}, {2, 2});
+    const primal::NumericArray<int, 2> celldims {64, 64};
+
+    // memory for mesh will be managed by data collection
+    auto* mesh =
+      quest::util::make_cartesian_mfem_mesh_2D(bbox, celldims, polynomialOrder);
+
+    // Set element attributes based on quadrant where centroid is located
+    // These will be used later in some cases when setting volume fractions
+    mfem::Array<int> v;
+    const int NE = mesh->GetNE();
+    for(int i = 0; i < NE; ++i)
+    {
+      mesh->GetElementVertices(i, v);
+      BBox2D elem_bbox;
+      for(int j = 0; j < v.Size(); ++j)
+      {
+        elem_bbox.addPoint(Point2D(mesh->GetVertex(v[j]), 2));
+      }
+
+      const auto centroid = elem_bbox.getCentroid();
+      if(centroid[0] >= 0 && centroid[1] >= 0)
+      {
+        mesh->SetAttribute(i, 1);
+      }
+      else if(centroid[0] >= 0 && centroid[1] < 0)
+      {
+        mesh->SetAttribute(i, 2);
+      }
+      else if(centroid[0] < 0 && centroid[1] >= 0)
+      {
+        mesh->SetAttribute(i, 3);
+      }
+      else
+      {
+        mesh->SetAttribute(i, 4);
+      }
+    }
+
+    m_dc.SetOwnData(true);
+    m_dc.SetMeshNodesName("positions");
+    m_dc.SetMesh(mesh);
+
+#ifdef AXOM_USE_MPI
+    m_dc.SetComm(MPI_COMM_WORLD);
+#endif
+  }
+
+  BBox2D meshBoundingBox()
+  {
+    mfem::Vector bbmin, bbmax;
+    getMesh().GetBoundingBox(bbmin, bbmax);
+
+    return BBox2D(Point2D(bbmin.GetData()), Point2D(bbmax.GetData()));
+  }
+};
+
+/// Test fixture for SamplingShaper tests on 3D MFEM meshes
+class SamplingShaperTest3D : public SamplingShaperTest
+{
+public:
+  using Point3D = primal::Point<double, 3>;
+  using BBox3D = primal::BoundingBox<double, 3>;
+
+public:
+  virtual ~SamplingShaperTest3D() { }
+
+  void SetUp() override
+  {
+    const int polynomialOrder = 2;
+    const BBox3D bbox({-2, -2, -2}, {2, 2, 2});
+    const primal::NumericArray<int, 3> celldims {8, 8, 8};
+
+    // memory for mesh will be managed by data collection
+    auto* mesh =
+      quest::util::make_cartesian_mfem_mesh_3D(bbox, celldims, polynomialOrder);
+
+    // Set element attributes based on octant where centroid is located
+    // These will be used later in some cases when setting volume fractions
+    mfem::Array<int> v;
+    const int NE = mesh->GetNE();
+    for(int i = 0; i < NE; ++i)
+    {
+      mesh->GetElementVertices(i, v);
+      BBox3D elem_bbox;
+      for(int j = 0; j < v.Size(); ++j)
+      {
+        elem_bbox.addPoint(Point3D(mesh->GetVertex(v[j]), 3));
+      }
+      const auto centroid = elem_bbox.getCentroid();
+
+      int attr = 0;
+      attr |= (centroid[0] < 0) ? 1 << 0 : 0;
+      attr |= (centroid[1] < 0) ? 1 << 1 : 0;
+      attr |= (centroid[2] < 0) ? 1 << 2 : 0;
+      mesh->SetAttribute(i, attr);
+    }
+
+    m_dc.SetOwnData(true);
+    m_dc.SetMeshNodesName("positions");
+    m_dc.SetMesh(mesh);
+
+#ifdef AXOM_USE_MPI
+    m_dc.SetComm(MPI_COMM_WORLD);
+#endif
+  }
+
+  BBox3D meshBoundingBox()
+  {
+    mfem::Vector bbmin, bbmax;
+    getMesh().GetBoundingBox(bbmin, bbmax);
+
+    return BBox3D(Point3D(bbmin.GetData()), Point3D(bbmax.GetData()));
+  }
 };
 
 //-----------------------------------------------------------------------------
@@ -402,7 +472,7 @@ TEST(ScopedTemporaryFile, basic)
 
 //-----------------------------------------------------------------------------
 
-TEST_F(SamplingShaperTest, check_mesh)
+TEST_F(SamplingShaperTest2D, check_mesh)
 {
   auto& mesh = this->getMesh();
 
@@ -416,11 +486,12 @@ TEST_F(SamplingShaperTest, check_mesh)
 
   const auto bbox = this->meshBoundingBox();
   SLIC_INFO(axom::fmt::format("The mesh bounding box is: {}", bbox));
+  EXPECT_TRUE(bbox.isValid());
 }
 
 //-----------------------------------------------------------------------------
 
-TEST_F(SamplingShaperTest, basic_circle)
+TEST_F(SamplingShaperTest2D, basic_circle)
 {
   const auto& testname =
     ::testing::UnitTest::GetInstance()->current_test_info()->name();
@@ -453,7 +524,8 @@ shapes:
   }
 
   this->validateShapeFile(shape_file.getFileName());
-  this->runShaping(shape_file.getFileName());
+  this->initializeShaping(shape_file.getFileName());
+  this->runShaping();
 
   // check that the result has a volume fraction field associated with the circle material
   constexpr double expected_volume = M_PI;
@@ -466,7 +538,124 @@ shapes:
   }
 }
 
-TEST_F(SamplingShaperTest, disk_via_replacement)
+TEST_F(SamplingShaperTest2D, basic_circle_projector)
+{
+  using Point2D = primal::Point<double, 2>;
+  using Point3D = primal::Point<double, 3>;
+
+  const auto& testname =
+    ::testing::UnitTest::GetInstance()->current_test_info()->name();
+
+  const std::string shape_template = R"(
+dimensions: 2
+
+shapes:
+- name: circle_shape
+  material: {}
+  geometry:
+    format: c2c
+    path: {}
+)";
+
+  const std::string circle_material = "circleMat";
+
+  ScopedTemporaryFile contour_file(axom::fmt::format("{}.contour", testname),
+                                   unit_circle_contour);
+
+  ScopedTemporaryFile shape_file(axom::fmt::format("{}.yaml", testname),
+                                 axom::fmt::format(shape_template,
+                                                   circle_material,
+                                                   contour_file.getFileName()));
+
+  this->validateShapeFile(shape_file.getFileName());
+  this->initializeShaping(shape_file.getFileName());
+
+  // check that we can set several projectors in 2D and 3D
+  // uses simplest projectors, e.g. identity in 2D and 3D
+  this->m_shaper->setPointProjector([](const Point3D& pt) {
+    return Point3D {pt[0], pt[1], pt[2]};
+  });
+  this->m_shaper->setPointProjector([](const Point2D& pt) {
+    return Point2D {pt[0], pt[1]};
+  });
+  this->m_shaper->setPointProjector([](const Point3D& pt) {
+    return Point2D {pt[0], pt[1]};
+  });
+  this->m_shaper->setPointProjector([](const Point2D& pt) {
+    return Point3D {pt[0], pt[1], 0};
+  });
+
+  this->runShaping();
+
+  // check that the result has a volume fraction field associated with the circle material
+  constexpr double expected_volume = M_PI;
+  this->checkExpectedVolumeFractions(circle_material, expected_volume);
+
+  // Save meshes and fields
+  if(very_verbose_output)
+  {
+    this->getDC().Save(testname, axom::sidre::Group::getDefaultIOProtocol());
+  }
+}
+
+TEST_F(SamplingShaperTest2D, circle_projector_anisotropic)
+{
+  using Point2D = primal::Point<double, 2>;
+  using Point3D = primal::Point<double, 3>;
+
+  const auto& testname =
+    ::testing::UnitTest::GetInstance()->current_test_info()->name();
+
+  const std::string shape_template = R"(
+dimensions: 2
+
+shapes:
+- name: circle_shape
+  material: {}
+  geometry:
+    format: c2c
+    path: {}
+)";
+
+  const std::string circle_material = "circleMat";
+
+  ScopedTemporaryFile contour_file(axom::fmt::format("{}.contour", testname),
+                                   unit_circle_contour);
+
+  ScopedTemporaryFile shape_file(axom::fmt::format("{}.yaml", testname),
+                                 axom::fmt::format(shape_template,
+                                                   circle_material,
+                                                   contour_file.getFileName()));
+
+  this->validateShapeFile(shape_file.getFileName());
+  this->initializeShaping(shape_file.getFileName());
+
+  // check that we can set several projectors in 2D and 3D
+  // creating an ellipse by scaling input x and y by scale_a and scale_b
+  constexpr double scale_a = 3. / 2.;
+  constexpr double scale_b = 3. / 4.;
+  this->m_shaper->setPointProjector([](const Point2D& pt) {
+    return Point2D {pt[0] / scale_a, pt[1] / scale_b};
+  });
+  // check that we can register another projector that's not used
+  this->m_shaper->setPointProjector([](const Point3D&) {
+    return Point3D {0., 0.};
+  });
+
+  this->runShaping();
+
+  // check that the result has a volume fraction field associated with the circle material
+  constexpr double expected_volume = M_PI * scale_a * scale_b;
+  this->checkExpectedVolumeFractions(circle_material, expected_volume);
+
+  // Save meshes and fields
+  if(very_verbose_output)
+  {
+    this->getDC().Save(testname, axom::sidre::Group::getDefaultIOProtocol());
+  }
+}
+
+TEST_F(SamplingShaperTest2D, disk_via_replacement)
 {
   const auto& testname =
     ::testing::UnitTest::GetInstance()->current_test_info()->name();
@@ -510,7 +699,8 @@ shapes:
 
   this->validateShapeFile(shape_file.getFileName());
 
-  this->runShaping(shape_file.getFileName());
+  this->initializeShaping(shape_file.getFileName());
+  this->runShaping();
 
   // check that the result has a volume fraction field associated with the circle material
   constexpr double expected_inner_area = .5 * .5 * M_PI;
@@ -524,9 +714,9 @@ shapes:
   }
 }
 
-TEST_F(SamplingShaperTest, disk_via_replacement_with_background)
+TEST_F(SamplingShaperTest2D, disk_via_replacement_with_background)
 {
-  using Point2D = typename SamplingShaperTest::Point2D;
+  using Point2D = typename SamplingShaperTest2D::Point2D;
 
   const auto& testname =
     ::testing::UnitTest::GetInstance()->current_test_info()->name();
@@ -572,14 +762,15 @@ shapes:
     std::map<std::string, mfem::GridFunction*> initialGridFunctions;
     {
       auto* vf = this->registerVolFracGridFunction("init_vf_bg");
-      this->initializeVolFracGridFunction(
+      this->initializeVolFracGridFunction<2>(
         vf,
         [](int, const Point2D&, int) -> double { return 1.; });
       initialGridFunctions["void"] = vf;
     }
 
     this->validateShapeFile(shape_file.getFileName());
-    this->runShaping(shape_file.getFileName(), initialGridFunctions);
+    this->initializeShaping(shape_file.getFileName(), initialGridFunctions);
+    this->runShaping();
 
     // check that the result has a volume fraction field associated with the circle material
     constexpr double expected_hole_area = .5 * .5 * M_PI;
@@ -612,14 +803,15 @@ shapes:
     std::map<std::string, mfem::GridFunction*> initialGridFunctions;
     {
       auto* vf = this->registerVolFracGridFunction("init_vf_bg");
-      this->initializeVolFracGridFunction(
+      this->initializeVolFracGridFunction<2>(
         vf,
         [](int, const Point2D&, int) -> double { return 1.; });
       initialGridFunctions["void"] = vf;
     }
 
     this->validateShapeFile(shape_file.getFileName());
-    this->runShaping(shape_file.getFileName(), initialGridFunctions);
+    this->initializeShaping(shape_file.getFileName(), initialGridFunctions);
+    this->runShaping();
 
     // check that the result has a volume fraction field associated with the circle material
     constexpr double expected_disk_area = M_PI - .5 * .5 * M_PI;
@@ -636,9 +828,9 @@ shapes:
   }
 }
 
-TEST_F(SamplingShaperTest, preshaped_materials)
+TEST_F(SamplingShaperTest2D, preshaped_materials)
 {
-  using Point2D = typename SamplingShaperTest::Point2D;
+  using Point2D = typename SamplingShaperTest2D::Point2D;
 
   const std::string& testname =
     ::testing::UnitTest::GetInstance()->current_test_info()->name();
@@ -678,14 +870,14 @@ shapes:
   std::map<std::string, mfem::GridFunction*> initialGridFunctions;
   {
     auto* vf = this->registerVolFracGridFunction("init_vf_bg");
-    this->initializeVolFracGridFunction(
+    this->initializeVolFracGridFunction<2>(
       vf,
       [](int, const Point2D&, int) -> double { return 1.; });
     initialGridFunctions["void"] = vf;
 
     // Note: element attributes were set earlier based on quadrant of cell's centroid (1, 2, 3 and 4)
     vf = this->registerVolFracGridFunction("init_vf_left");
-    this->initializeVolFracGridFunction(
+    this->initializeVolFracGridFunction<2>(
       vf,
       [](int, const Point2D&, int attr) -> double {
         return (attr == 3 || attr == 4) ? 1. : 0;
@@ -693,7 +885,7 @@ shapes:
     initialGridFunctions["left"] = vf;
 
     vf = this->registerVolFracGridFunction("init_vf_odds");
-    this->initializeVolFracGridFunction(
+    this->initializeVolFracGridFunction<2>(
       vf,
       [](int idx, const Point2D&, int) -> double {
         return idx % 2 == 1 ? 1. : 0;
@@ -702,7 +894,8 @@ shapes:
   }
 
   this->validateShapeFile(shape_file.getFileName());
-  this->runShaping(shape_file.getFileName(), initialGridFunctions);
+  this->initializeShaping(shape_file.getFileName(), initialGridFunctions);
+  this->runShaping();
 
   // check that the result has a volume fraction field associated with the circle material
   const auto range = this->meshBoundingBox().range();
@@ -725,9 +918,9 @@ shapes:
   }
 }
 
-TEST_F(SamplingShaperTest, disk_with_multiple_preshaped_materials)
+TEST_F(SamplingShaperTest2D, disk_with_multiple_preshaped_materials)
 {
-  using Point2D = typename SamplingShaperTest::Point2D;
+  using Point2D = typename SamplingShaperTest2D::Point2D;
 
   const std::string& testname =
     ::testing::UnitTest::GetInstance()->current_test_info()->name();
@@ -786,7 +979,7 @@ shapes:
   {
     // initial background void material is set everywhere
     auto* vf = this->registerVolFracGridFunction("init_vf_bg");
-    this->initializeVolFracGridFunction(
+    this->initializeVolFracGridFunction<2>(
       vf,
       [](int, const Point2D&, int) -> double { return 1.; });
     initialGridFunctions["void"] = vf;
@@ -794,7 +987,7 @@ shapes:
     // initial left material is set based on mesh attributes
     // Note: element attributes were set earlier based on quadrant of cell's centroid (1, 2, 3 and 4)
     vf = this->registerVolFracGridFunction("init_vf_left");
-    this->initializeVolFracGridFunction(
+    this->initializeVolFracGridFunction<2>(
       vf,
       [](int, const Point2D&, int attr) -> double {
         return (attr == 3 || attr == 4) ? 1. : 0;
@@ -803,7 +996,7 @@ shapes:
 
     // initial "odds" material is based on the parity of the element indices
     vf = this->registerVolFracGridFunction("init_vf_odds");
-    this->initializeVolFracGridFunction(
+    this->initializeVolFracGridFunction<2>(
       vf,
       [](int idx, const Point2D&, int) -> double {
         return idx % 2 == 1 ? 1. : 0;
@@ -818,7 +1011,8 @@ shapes:
   // The odds material is all cells w/ odd index, but not covering 'left' or 'disk'
   // The end result for the void background is everything that's left
   this->validateShapeFile(shape_file.getFileName());
-  this->runShaping(shape_file.getFileName(), initialGridFunctions);
+  this->initializeShaping(shape_file.getFileName(), initialGridFunctions);
+  this->runShaping();
 
   // check that the result has the correct volume fractions
   const auto range = this->meshBoundingBox().range();
@@ -838,6 +1032,477 @@ shapes:
   this->checkExpectedVolumeFractions("hole", expected_hole_area);
   this->checkExpectedVolumeFractions("void", expected_void_area);
 
+  if(very_verbose_output)
+  {
+    this->getDC().Save(testname, axom::sidre::Group::getDefaultIOProtocol());
+  }
+}
+
+//-----------------------------------------------------------------------------
+
+TEST_F(SamplingShaperTest3D, basic_tet)
+{
+  const auto& testname =
+    ::testing::UnitTest::GetInstance()->current_test_info()->name();
+
+  const std::string shape_template = R"(
+dimensions: 3
+
+shapes:
+- name: tet_shape
+  material: {}
+  geometry:
+    format: stl
+    path: {}
+)";
+
+  const std::string tet_material = "steel";
+  const std::string tet_path =
+    axom::fmt::format("{}/quest/tetrahedron.stl", AXOM_DATA_DIR);
+
+  ScopedTemporaryFile shape_file(
+    axom::fmt::format("{}.yaml", testname),
+    axom::fmt::format(shape_template, tet_material, tet_path));
+
+  if(very_verbose_output)
+  {
+    SLIC_INFO("Bounding box of 3D input mesh: \n" << this->meshBoundingBox());
+    SLIC_INFO("Shape file: \n" << shape_file.getFileContents());
+  }
+
+  this->validateShapeFile(shape_file.getFileName());
+  this->initializeShaping(shape_file.getFileName());
+  this->runShaping();
+
+  // Check that the result has a volume fraction field associated with the tetrahedron material
+  // The tet lives in cube of edge length 2 (and volume 8) and is defined by opposite corners.
+  // It occupies 1/3 of the cube's volume
+  constexpr double expected_volume = 8. / 3.;
+  this->checkExpectedVolumeFractions(tet_material, expected_volume);
+
+  // Save meshes and fields
+  if(very_verbose_output)
+  {
+    this->getDC().Save(testname, axom::sidre::Group::getDefaultIOProtocol());
+  }
+}
+
+TEST_F(SamplingShaperTest3D, tet_preshaped)
+{
+  const auto& testname =
+    ::testing::UnitTest::GetInstance()->current_test_info()->name();
+
+  const std::string shape_template = R"(
+dimensions: 3
+
+shapes:
+- name: octant_0
+  material: octant0
+  geometry:
+    format: none
+- name: octant_1
+  material: octant1
+  geometry:
+    format: none
+- name: octant_2
+  material: octant2
+  geometry:
+    format: none
+- name: octant_3
+  material: octant3
+  geometry:
+    format: none
+- name: octant_4
+  material: octant4
+  geometry:
+    format: none
+- name: octant_5
+  material: octant5
+  geometry:
+    format: none
+- name: octant_6
+  material: octant6
+  geometry:
+    format: none
+- name: octant_7
+  material: octant7
+  geometry:
+    format: none
+- name: tet_shape
+  material: {}
+  geometry:
+    format: stl
+    path: {}
+)";
+
+  const std::string tet_material = "steel";
+  const std::string tet_path =
+    axom::fmt::format("{}/quest/tetrahedron.stl", AXOM_DATA_DIR);
+
+  ScopedTemporaryFile shape_file(
+    axom::fmt::format("{}.yaml", testname),
+    axom::fmt::format(shape_template, tet_material, tet_path));
+
+  if(very_verbose_output)
+  {
+    SLIC_INFO("Shape file: \n" << shape_file.getFileContents());
+  }
+
+  this->validateShapeFile(shape_file.getFileName());
+
+  // Create initial background materials based on octant attributes
+  // Octants were offset by one since mfem doesn't allow setting attribute to zero
+  std::map<std::string, mfem::GridFunction*> initialGridFunctions;
+  {
+    for(int attr_i = 0; attr_i < 8; ++attr_i)
+    {
+      auto* vf = this->registerVolFracGridFunction(
+        axom::fmt::format("init_vf_octant_{}", attr_i));
+      this->initializeVolFracGridFunction<3>(
+        vf,
+        [attr_i](int, const Point3D&, int attr) -> double {
+          return attr == attr_i ? 1 : 0;
+        });
+      initialGridFunctions[axom::fmt::format("octant{}", attr_i)] = vf;
+    }
+  }
+
+  this->initializeShaping(shape_file.getFileName(), initialGridFunctions);
+  this->runShaping();
+
+  // Check that the result has a volume fraction field associated with the tetrahedron material
+  // The tet lives in cube of edge length 2 (and volume 8) and is defined by opposite corners.
+  // It occupies 1/3 of the cube's volume
+  constexpr double tet_volume = 8. / 3.;
+  this->checkExpectedVolumeFractions(tet_material, tet_volume);
+
+  // The background mesh is a cube of edge length 4 centered around the origin
+  // Each octant's volume is 8 and its vf gets overlaid by a piece of the tet
+  constexpr double missing_half = 8. - 1. / 2.;
+  constexpr double missing_sixth = 8. - 1. / 6.;
+  this->checkExpectedVolumeFractions("octant0", missing_half);
+  this->checkExpectedVolumeFractions("octant1", missing_sixth);
+  this->checkExpectedVolumeFractions("octant2", missing_sixth);
+  this->checkExpectedVolumeFractions("octant3", missing_half);
+  this->checkExpectedVolumeFractions("octant4", missing_sixth);
+  this->checkExpectedVolumeFractions("octant5", missing_half);
+  this->checkExpectedVolumeFractions("octant6", missing_half);
+  this->checkExpectedVolumeFractions("octant7", missing_sixth);
+
+  constexpr double total_volume = 4 * 4 * 4;
+  EXPECT_EQ(total_volume, tet_volume + 4 * missing_sixth + 4 * missing_half);
+
+  // Save meshes and fields
+  if(very_verbose_output)
+  {
+    this->getDC().Save(testname, axom::sidre::Group::getDefaultIOProtocol());
+  }
+}
+
+TEST_F(SamplingShaperTest3D, tet_preshaped_with_replacements)
+{
+  const auto& testname =
+    ::testing::UnitTest::GetInstance()->current_test_info()->name();
+
+  // Use somewhat complex rules: tet's material will replace octants 0-3, but not 4-7
+  const std::string shape_template = R"(
+dimensions: 3
+
+shapes:
+- name: octant_0
+  material: octant0
+  geometry:
+    format: none
+- name: octant_1
+  material: octant1
+  geometry:
+    format: none
+
+- name: octant_4
+  material: octant4
+  geometry:
+    format: none
+- name: octant_5
+  material: octant5
+  geometry:
+    format: none
+
+- name: tet_shape
+  material: steel
+  geometry:
+    format: stl
+    path: {}
+  replaces: [octant0,octant1]
+
+- name: octant_6
+  material: octant6
+  geometry:
+    format: none
+- name: octant_7
+  material: octant7
+  geometry:
+    format: none
+
+- name: octant_2
+  material: octant2
+  geometry:
+    format: none
+  does_not_replace: [steel]
+- name: octant_3
+  material: octant3
+  geometry:
+    format: none
+  does_not_replace: [steel]
+)";
+
+  const std::string tet_path =
+    axom::fmt::format("{}/quest/tetrahedron.stl", AXOM_DATA_DIR);
+
+  ScopedTemporaryFile shape_file(axom::fmt::format("{}.yaml", testname),
+                                 axom::fmt::format(shape_template, tet_path));
+
+  if(very_verbose_output)
+  {
+    SLIC_INFO("Shape file: \n" << shape_file.getFileContents());
+  }
+
+  this->validateShapeFile(shape_file.getFileName());
+
+  // Create initial background materials based on octant attributes
+  std::map<std::string, mfem::GridFunction*> initialGridFunctions;
+  {
+    for(int attr_i = 0; attr_i < 8; ++attr_i)
+    {
+      auto* vf = this->registerVolFracGridFunction(
+        axom::fmt::format("init_vf_octant_{}", attr_i));
+      this->initializeVolFracGridFunction<3>(
+        vf,
+        [attr_i](int, const Point3D&, int attr) -> double {
+          return attr == attr_i ? 1 : 0;
+        });
+      initialGridFunctions[axom::fmt::format("octant{}", attr_i)] = vf;
+    }
+  }
+
+  this->initializeShaping(shape_file.getFileName(), initialGridFunctions);
+  this->runShaping();
+
+  // Check that the result has a volume fraction field associated with the tetrahedron material
+  // The tet has volume 8/3, but only half of it is replaced
+  constexpr double tet_volume = 8. / 3.;
+  this->checkExpectedVolumeFractions("steel", tet_volume / 2.);
+
+  // The background mesh is a cube of edge length 4 centered around the origin
+  // octants 0-3 are replaced by the tet, but 4-7 are not
+  constexpr double missing_half = 8. - 1. / 2.;
+  constexpr double missing_sixth = 8. - 1. / 6.;
+  this->checkExpectedVolumeFractions("octant0", missing_half);
+  this->checkExpectedVolumeFractions("octant1", missing_sixth);
+  this->checkExpectedVolumeFractions("octant2", missing_sixth);
+  this->checkExpectedVolumeFractions("octant3", missing_half);
+  this->checkExpectedVolumeFractions("octant4", 8.);
+  this->checkExpectedVolumeFractions("octant5", 8.);
+  this->checkExpectedVolumeFractions("octant6", 8.);
+  this->checkExpectedVolumeFractions("octant7", 8.);
+
+  constexpr double total_volume = 4 * 4 * 4;
+  EXPECT_EQ(total_volume,
+            tet_volume / 2 + 2 * (missing_sixth + missing_half) + 8 * 4);
+
+  // Save meshes and fields
+  if(very_verbose_output)
+  {
+    this->getDC().Save(testname, axom::sidre::Group::getDefaultIOProtocol());
+  }
+}
+
+TEST_F(SamplingShaperTest3D, tet_identity_projector)
+{
+  using Point2D = primal::Point<double, 2>;
+  using Point3D = primal::Point<double, 3>;
+
+  const auto& testname =
+    ::testing::UnitTest::GetInstance()->current_test_info()->name();
+
+  const std::string shape_template = R"(
+dimensions: 3
+
+shapes:
+- name: tet_shape
+  material: {}
+  geometry:
+    format: stl
+    path: {}
+)";
+
+  const std::string tet_material = "steel";
+  const std::string tet_path =
+    axom::fmt::format("{}/quest/tetrahedron.stl", AXOM_DATA_DIR);
+
+  ScopedTemporaryFile shape_file(
+    axom::fmt::format("{}.yaml", testname),
+    axom::fmt::format(shape_template, tet_material, tet_path));
+
+  if(very_verbose_output)
+  {
+    SLIC_INFO("Shape file: \n" << shape_file.getFileContents());
+  }
+
+  this->validateShapeFile(shape_file.getFileName());
+  this->initializeShaping(shape_file.getFileName());
+
+  // check that we can set several projectors in 2D and 3D
+  // uses simplest projectors, e.g. identity in 2D and 3D
+  this->m_shaper->setPointProjector([](const Point3D& pt) {
+    return Point3D {pt[0], pt[1], pt[2]};
+  });
+  this->m_shaper->setPointProjector([](const Point2D& pt) {
+    return Point2D {pt[0], pt[1]};
+  });
+  this->m_shaper->setPointProjector([](const Point3D& pt) {
+    return Point2D {pt[0], pt[1]};
+  });
+  this->m_shaper->setPointProjector([](const Point2D& pt) {
+    return Point3D {pt[0], pt[1], 0};
+  });
+
+  this->runShaping();
+
+  // Check that the result has a volume fraction field associated with the tetrahedron material
+  // The tet lives in cube of edge length 2 (and volume 8) and is defined by opposite corners.
+  // It occupies 1/3 of the cube's volume
+  constexpr double expected_volume = 8. / 3.;
+  this->checkExpectedVolumeFractions(tet_material, expected_volume);
+
+  // Save meshes and fields
+  if(very_verbose_output)
+  {
+    this->getDC().Save(testname, axom::sidre::Group::getDefaultIOProtocol());
+  }
+}
+
+TEST_F(SamplingShaperTest3D, tet_doubling_projector)
+{
+  using Point2D = primal::Point<double, 2>;
+  using Point3D = primal::Point<double, 3>;
+
+  const auto& testname =
+    ::testing::UnitTest::GetInstance()->current_test_info()->name();
+
+  const std::string shape_template = R"(
+dimensions: 3
+
+shapes:
+- name: tet_shape
+  material: {}
+  geometry:
+    format: stl
+    path: {}
+)";
+
+  const std::string tet_material = "steel";
+  const std::string tet_path =
+    axom::fmt::format("{}/quest/tetrahedron.stl", AXOM_DATA_DIR);
+
+  ScopedTemporaryFile shape_file(
+    axom::fmt::format("{}.yaml", testname),
+    axom::fmt::format(shape_template, tet_material, tet_path));
+
+  if(very_verbose_output)
+  {
+    SLIC_INFO("Shape file: \n" << shape_file.getFileContents());
+  }
+
+  this->validateShapeFile(shape_file.getFileName());
+  this->initializeShaping(shape_file.getFileName());
+
+  // scale input points by a factor of 1/2 in each dimension
+  this->m_shaper->setPointProjector([](const Point3D& pt) {
+    return Point3D {pt[0] / 2, pt[1] / 2, pt[2] / 2};
+  });
+
+  // for good measure, add a 3D->2D projector that will not be used
+  this->m_shaper->setPointProjector([](const Point3D&) {
+    return Point2D {0, 0};
+  });
+
+  this->runShaping();
+
+  // Check that the result has a volume fraction field associated with the tetrahedron material
+  // Scaling by a factor of 1/2 in each dimension should multiply the total volume by a factor of 8
+  constexpr double orig_tet_volume = 8. / 3.;
+  this->checkExpectedVolumeFractions(tet_material, 8 * orig_tet_volume);
+
+  // Save meshes and fields
+  if(very_verbose_output)
+  {
+    this->getDC().Save(testname, axom::sidre::Group::getDefaultIOProtocol());
+  }
+}
+
+TEST_F(SamplingShaperTest3D, circle_2D_projector)
+{
+  using Point2D = primal::Point<double, 2>;
+  using Point3D = primal::Point<double, 3>;
+
+  const auto& testname =
+    ::testing::UnitTest::GetInstance()->current_test_info()->name();
+
+  constexpr double radius = 1.5;
+
+  const std::string shape_template = R"(
+dimensions: 2
+
+shapes:
+- name: circle_shape
+  material: {}
+  geometry:
+    format: c2c
+    path: {}
+    units: cm
+    operators:
+      - scale: {}
+)";
+
+  const std::string circle_material = "steel";
+
+  ScopedTemporaryFile contour_file(axom::fmt::format("{}.contour", testname),
+                                   unit_semicircle_contour);
+
+  ScopedTemporaryFile shape_file(axom::fmt::format("{}.yaml", testname),
+                                 axom::fmt::format(shape_template,
+                                                   circle_material,
+                                                   contour_file.getFileName(),
+                                                   radius));
+
+  if(very_verbose_output)
+  {
+    SLIC_INFO("Contour file: \n" << contour_file.getFileContents());
+    SLIC_INFO("Shape file: \n" << shape_file.getFileContents());
+  }
+
+  this->validateShapeFile(shape_file.getFileName());
+  this->initializeShaping(shape_file.getFileName());
+
+  // set projector from 3D points to axisymmetric plane
+  this->m_shaper->setPointProjector([](Point3D pt) {
+    const double& x = pt[0];
+    const double& y = pt[1];
+    const double& z = pt[2];
+    return Point2D {z, sqrt(x * x + y * y)};
+  });
+
+  // we need a higher quadrature order to resolve this shape at the (low) testing resolution
+  this->m_shaper->setQuadratureOrder(8);
+
+  this->runShaping();
+
+  // Check that the result has a volume fraction field associated with the tetrahedron material
+  // Scaling by a factor of 1/2 in each dimension should multiply the total volume by a factor of 8
+  constexpr double exp_volume = 4. / 3. * M_PI * radius * radius * radius;
+  this->checkExpectedVolumeFractions(circle_material, exp_volume, 3e-2);
+
+  // Save meshes and fields
   if(very_verbose_output)
   {
     this->getDC().Save(testname, axom::sidre::Group::getDefaultIOProtocol());

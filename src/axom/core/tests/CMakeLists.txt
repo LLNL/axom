@@ -40,6 +40,7 @@ set(core_serial_tests
 
     utils_endianness.hpp
     utils_fileUtilities.hpp
+    utils_locale.hpp
     utils_nvtx_settings.hpp
     utils_stringUtilities.hpp
     utils_system.hpp

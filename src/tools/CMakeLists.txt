@@ -84,6 +84,7 @@ if( AXOM_ENABLE_SIDRE AND AXOM_ENABLE_PRIMAL AND
     set(data_collection_util_depends
         sidre
         primal
+        quest
         cli11
         fmt
         )

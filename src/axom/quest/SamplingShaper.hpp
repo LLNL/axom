@@ -35,6 +35,8 @@
 
 #include "axom/fmt.hpp"
 
+#include <functional>
+
 namespace axom
 {
 namespace quest
@@ -49,6 +51,12 @@ enum class VolFracSampling : int
   SAMPLE_AT_DOFS,
   SAMPLE_AT_QPTS
 };
+
+/// Alias to function pointer that projects a \a FromDim dimensional input point to
+/// a \a ToDim dimensional query point when sampling the InOut field
+template <int FromDim, int ToDim>
+using PointProjector =
+  std::function<primal::Point<double, ToDim>(primal::Point<double, FromDim>)>;
 
 template <int NDIMS>
 class InOutSampler
@@ -108,10 +116,38 @@ public:
     m_octree->generateIndex();
   }
 
-  void sampleInOutField(mfem::DataCollection* dc,
-                        shaping::QFunctionCollection& inoutQFuncs,
-                        int sampleRes)
+  /**
+   * \brief Samples the inout field over the indexed geometry, possibly using a
+   * callback function to project the input points (from the computational mesh)
+   * to query points on the spatial index
+   * 
+   * \tparam FromDim The dimension of points from the input mesh
+   * \tparam ToDim The dimension of points on the indexed shape
+   * \param [in] dc The data collection containing the mesh and associated query points
+   * \param [inout] inoutQFuncs A collection of quadrature functions for the shape and material
+   * inout samples
+   * \param [in] sampleRes The quadrature order at which to sample the inout field
+   * \param [in] projector A callback function to apply to points from the input mesh
+   * before querying them on the spatial index
+   * 
+   * \note A projector callback must be supplied when \a FromDim is not equal 
+   * to \a ToDim, the projector
+   * \note \a ToDim must be equal to \a DIM, the dimension of the spatial index
+   */
+  template <int FromDim, int ToDim = DIM>
+  std::enable_if_t<ToDim == DIM, void> sampleInOutField(
+    mfem::DataCollection* dc,
+    shaping::QFunctionCollection& inoutQFuncs,
+    int sampleRes,
+    PointProjector<FromDim, ToDim> projector = {})
   {
+    using FromPoint = primal::Point<double, FromDim>;
+    using ToPoint = primal::Point<double, ToDim>;
+
+    SLIC_ERROR_IF(
+      FromDim != ToDim && !projector,
+      "A projector callback function is required when FromDim != ToDim");
+
     auto* mesh = dc->GetMesh();
     SLIC_ASSERT(mesh != nullptr);
     const int NE = mesh->GetNE();
@@ -144,24 +180,51 @@ public:
       pos_coef->GetValues(i, m);
       inout->GetValues(i, res);
 
-      for(int p = 0; p < nq; ++p)
+      if(projector)
       {
-        const SpacePt pt(m.GetColumn(p), dim);
-        const bool in = m_octree->within(pt);
-        res(p) = in ? 1. : 0.;
-
-        // SLIC_INFO(axom::fmt::format("[{},{}] Pt: {}, In: {}", i,p,pt, (in? "yes" : "no") ));
+        for(int p = 0; p < nq; ++p)
+        {
+          const ToPoint pt = projector(FromPoint(m.GetColumn(p), dim));
+          const bool in = m_octree->within(pt);
+          res(p) = in ? 1. : 0.;
+        }
+      }
+      else
+      {
+        for(int p = 0; p < nq; ++p)
+        {
+          const ToPoint pt(m.GetColumn(p), dim);
+          const bool in = m_octree->within(pt);
+          res(p) = in ? 1. : 0.;
+        }
       }
     }
     timer.stop();
 
     SLIC_INFO(
-      axom::fmt::format(std::locale("en_US.UTF-8"),
+      axom::fmt::format(axom::utilities::locale(),
                         "\t Sampling inout field '{}' took {} seconds (@ "
                         "{:L} queries per second)",
                         inoutName,
                         timer.elapsed(),
                         static_cast<int>((NE * nq) / timer.elapsed())));
+  }
+
+  /** 
+   * \warning Do not call this overload with \a ToDim != \a DIM. The compiler needs it to be
+   * defined to support various callback specializations for the \a PointProjector.
+   */
+  template <int FromDim, int ToDim>
+  std::enable_if_t<ToDim != DIM, void> sampleInOutField(
+    mfem::DataCollection*,
+    shaping::QFunctionCollection&,
+    int,
+    PointProjector<FromDim, ToDim>)
+  {
+    static_assert(
+      ToDim != DIM,
+      "Do not call this function -- it only exists to appease the compiler!"
+      "Projector's return dimension (ToDim), must match class dimension (DIM)");
   }
 
   /**
@@ -273,6 +336,30 @@ public:
   void setVolumeFractionOrder(int volfracOrder)
   {
     m_volfracOrder = volfracOrder;
+  }
+
+  /// Registers a function to project from 2D input points to 2D query points
+  void setPointProjector(shaping::PointProjector<2, 2> projector)
+  {
+    m_projector22 = projector;
+  }
+
+  /// Registers a function to project from 3D input points to 2D query points
+  void setPointProjector(shaping::PointProjector<3, 2> projector)
+  {
+    m_projector32 = projector;
+  }
+
+  /// Registers a function to project from 2D input points to 3D query points
+  void setPointProjector(shaping::PointProjector<2, 3> projector)
+  {
+    m_projector23 = projector;
+  }
+
+  /// Registers a function to project from 3D input points to 3D query points
+  void setPointProjector(shaping::PointProjector<3, 3> projector)
+  {
+    m_projector33 = projector;
   }
 
   //@}
@@ -647,10 +734,61 @@ private:
   void runShapeQueryImpl(InOutSamplerType* shaper)
   {
     // Sample the InOut field at the mesh quadrature points
+    const int meshDim = m_dc->GetMesh()->Dimension();
     switch(m_vfSampling)
     {
     case shaping::VolFracSampling::SAMPLE_AT_QPTS:
-      shaper->sampleInOutField(m_dc, m_inoutShapeQFuncs, m_quadratureOrder);
+      switch(InOutSamplerType::DIM)
+      {
+      case 2:
+        if(meshDim == 2)
+        {
+          m_projector22
+            ? shaper->template sampleInOutField<2>(m_dc,
+                                                   m_inoutShapeQFuncs,
+                                                   m_quadratureOrder,
+                                                   m_projector22)
+            : shaper->template sampleInOutField<2>(m_dc,
+                                                   m_inoutShapeQFuncs,
+                                                   m_quadratureOrder);
+        }
+        else if(meshDim == 3)
+        {
+          m_projector32
+            ? shaper->template sampleInOutField<3>(m_dc,
+                                                   m_inoutShapeQFuncs,
+                                                   m_quadratureOrder,
+                                                   m_projector32)
+            : shaper->template sampleInOutField<3>(m_dc,
+                                                   m_inoutShapeQFuncs,
+                                                   m_quadratureOrder);
+        }
+        break;
+      case 3:
+        if(meshDim == 2)
+        {
+          m_projector23
+            ? shaper->template sampleInOutField<2>(m_dc,
+                                                   m_inoutShapeQFuncs,
+                                                   m_quadratureOrder,
+                                                   m_projector23)
+            : shaper->template sampleInOutField<2>(m_dc,
+                                                   m_inoutShapeQFuncs,
+                                                   m_quadratureOrder);
+        }
+        else if(meshDim == 3)
+        {
+          m_projector33
+            ? shaper->template sampleInOutField<3>(m_dc,
+                                                   m_inoutShapeQFuncs,
+                                                   m_quadratureOrder,
+                                                   m_projector33)
+            : shaper->template sampleInOutField<3>(m_dc,
+                                                   m_inoutShapeQFuncs,
+                                                   m_quadratureOrder);
+        }
+        break;
+      }
       break;
     case shaping::VolFracSampling::SAMPLE_AT_DOFS:
       shaper->computeVolumeFractionsBaseline(m_dc,
@@ -670,12 +808,17 @@ private:
 
   std::set<std::string> m_knownMaterials;
 
+  shaping::PointProjector<2, 2> m_projector22 {};
+  shaping::PointProjector<3, 2> m_projector32 {};
+  shaping::PointProjector<2, 3> m_projector23 {};
+  shaping::PointProjector<3, 3> m_projector33 {};
+
   shaping::VolFracSampling m_vfSampling {shaping::VolFracSampling::SAMPLE_AT_QPTS};
   int m_quadratureOrder {5};
   int m_volfracOrder {2};
 };
 
-}  // end namespace quest
-}  // end namespace axom
+}  // namespace quest
+}  // namespace axom
 
 #endif  // AXOM_QUEST_SAMPLING_SHAPER__HPP_

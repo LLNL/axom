@@ -203,7 +203,7 @@ void benchmark_point_in_cell(mfem::Mesh& mesh, const Arguments& args)
   {
     pts[i] = get_rand_pt(meshBb);
   }
-  SLIC_INFO(axom::fmt::format(std::locale("en_US.UTF-8"),
+  SLIC_INFO(axom::fmt::format(axom::utilities::locale(),
                               "Constructed {:L} random points in {} s.",
                               npts,
                               timer.elapsed()));
@@ -228,7 +228,7 @@ void benchmark_point_in_cell(mfem::Mesh& mesh, const Arguments& args)
   query.locatePoints(pts.view(), outCellIds.data(), outIsoParams.data());
   double time = timer.elapsed();
   SLIC_INFO(
-    axom::fmt::format(std::locale("en_US.UTF-8"),
+    axom::fmt::format(axom::utilities::locale(),
                       "Ran query on {:L} points in {} s -- rate: {:L} q/s",
                       npts,
                       time,
@@ -276,7 +276,7 @@ void benchmark_point_in_cell(mfem::Mesh& mesh, const Arguments& args)
     }
 
     SLIC_INFO(axom::fmt::format(
-      std::locale("en_US.UTF-8"),
+      axom::utilities::locale(),
       "Correctly reconstructed {:L} of {:L} points ({:.3f}%).\n"
       "\t{:L} points were not reconstructed; "
       "{:L} points were incorrectly reconstructed",

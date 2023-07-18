@@ -707,7 +707,7 @@ void saveMesh(const conduit::Node& mesh, const std::string& filename)
                                                 "hdf5",
                                                 MPI_COMM_WORLD);
 #else
-  conduit::relay::io::blueprint::saveMesh(mesh, filename, "hdf5");
+  conduit::relay::io::blueprint::save_mesh(mesh, filename, "hdf5");
 #endif
 }
 
@@ -1319,7 +1319,10 @@ struct RoundContourTest : public ContourTestBase<DIM, ExecSpace>
     const axom::IndexType pointCount = fieldView.size();
 
     axom::ArrayView<double, DIM> coordsViews[DIM];
-    for(int d = 0; d < DIM; ++d) coordsViews[d] = coordsViews_[d];
+    for(int d = 0; d < DIM; ++d)
+    {
+      coordsViews[d] = coordsViews_[d];
+    }
 
     // Duplicate member data so devices don't have to use the this pointer.
     const auto sphere = _sphere;
@@ -1378,7 +1381,10 @@ struct PlanarContourTest : public ContourTestBase<DIM, ExecSpace>
     const axom::IndexType pointCount = fieldView.size();
 
     axom::ArrayView<double, DIM> coordsViews[DIM];
-    for(int d = 0; d < DIM; ++d) coordsViews[d] = coordsViews_[d];
+    for(int d = 0; d < DIM; ++d)
+    {
+      coordsViews[d] = coordsViews_[d];
+    }
 
     // Duplicate member data so devices don't have to use the this pointer.
     const auto plane = _plane;
@@ -1442,6 +1448,16 @@ void initializeLogger()
 #endif  // AXOM_USE_MPI
 
   slic::addStreamToAllMsgLevels(logStream);
+
+  conduit::utils::set_error_handler([](auto& msg, auto& file, int line) {
+    slic::logErrorMessage(msg, file, line);
+  });
+  conduit::utils::set_warning_handler([](auto& msg, auto& file, int line) {
+    slic::logWarningMessage(msg, file, line);
+  });
+  conduit::utils::set_info_handler([](auto& msg, auto& file, int line) {
+    slic::logMessage(slic::message::Info, msg, file, line);
+  });
 }
 
 /// Utility function to finalize the logger
