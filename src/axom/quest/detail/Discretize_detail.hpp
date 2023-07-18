@@ -220,14 +220,15 @@ int discrSeg(const Point2D &a,
     axom::for_all<ExecSpace>(
       curr_lvl_count,
       AXOM_LAMBDA(axom::IndexType i) {
-        out[next_lvl + i * lvl_factor + 0] =
-          new_inscribed_prism(out[curr_lvl + i], Q, T, S, R, pa, pb);
-        out[next_lvl + i * lvl_factor + 1] =
-          new_inscribed_prism(out[curr_lvl + i], U, R, Q, P, pa, pb);
+        OctType *out_ptr = out.data();
+        out_ptr[next_lvl + i * lvl_factor + 0] =
+          new_inscribed_prism(out_ptr[curr_lvl + i], Q, T, S, R, pa, pb);
+        out_ptr[next_lvl + i * lvl_factor + 1] =
+          new_inscribed_prism(out_ptr[curr_lvl + i], U, R, Q, P, pa, pb);
         if(level == 0)
         {
-          out[next_lvl + i * lvl_factor + 2] =
-            new_inscribed_prism(out[curr_lvl + i], S, P, U, T, pa, pb);
+          out_ptr[next_lvl + i * lvl_factor + 2] =
+            new_inscribed_prism(out_ptr[curr_lvl + i], S, P, U, T, pa, pb);
         }
       });
 
