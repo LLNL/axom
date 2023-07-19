@@ -38,6 +38,7 @@ struct SynchronizedStream::MessageCache
       (*stream) << messages[i];
     }  // END for all messages
 
+    stream->flush();
     messages.clear();
   }
 };

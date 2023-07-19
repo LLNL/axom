@@ -155,6 +155,7 @@ void LumberjackStream::write(bool local)
         messages[i]->lineNumber());
     }
 
+    m_stream->flush();
     m_lj->clearMessages();
   }
 }
