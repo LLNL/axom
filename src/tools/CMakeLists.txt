@@ -71,7 +71,7 @@ if(AXOM_ENABLE_QUEST)
     endif()
 
     # Add unit tests
-    if(AXOM_ENABLE_TESTS AND AXOM_DATA_DIR AND RAJA_FOUND)
+    if(AXOM_ENABLE_TESTS AND AXOM_DATA_DIR AND RAJA_FOUND AND UMPIRE_FOUND)
 
         # Run the mesh_tester with the plane_simp_problems.stl example and
         # different spatial indexes, raja policies
