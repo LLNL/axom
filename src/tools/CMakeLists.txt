@@ -69,6 +69,39 @@ if(AXOM_ENABLE_QUEST)
         blt_add_target_compile_flags(TO mesh_tester FLAGS "-fgpu-rdc")
         blt_add_target_link_flags(TO mesh_tester FLAGS "-fgpu-rdc")
     endif()
+
+    # Add unit tests
+    if(AXOM_ENABLE_TESTS AND AXOM_DATA_DIR AND RAJA_FOUND)
+
+        # Run the mesh_tester with the plane_simp_problems.stl example and
+        # different spatial indexes, raja policies
+
+        set(plane_data_dir ${AXOM_DATA_DIR}/quest/plane_simp_problems.stl)
+
+        set(_methods "bvh" "implicit" "uniform")
+
+        set (_policies "raja_seq")
+        blt_list_append(TO _policies ELEMENTS "raja_omp" IF AXOM_ENABLE_OPENMP)
+        blt_list_append(TO _policies ELEMENTS "raja_cuda" IF AXOM_ENABLE_CUDA)
+
+        foreach(_method ${_methods})
+            foreach(_policy ${_policies})
+
+                set(_testname "mesh_tester_${_method}_${_policy}")
+                axom_add_test(
+                  NAME ${_testname}
+                  COMMAND mesh_tester
+                          --infile ${plane_data_dir}
+                          --method ${_method}
+                          --policy ${_policy}
+                )
+
+                set_tests_properties(${_testname} PROPERTIES
+                    PASS_REGULAR_EXPRESSION  "5 intersecting tri pairs")
+            endforeach()
+        endforeach()
+    endif()
+
 endif()
 
 #------------------------------------------------------------------------------
