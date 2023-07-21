@@ -2636,7 +2636,7 @@ void MFEMSidreDataCollection::reconstructField(Group* field_grp)
     }
 
     // We cache the FESpaces to avoid reconstructing them when not needed
-    // An FESpace is uniquely identified by the basis of its FEColl, its ordering, and its vdim number
+    // An FESpace is uniquely identified by the basis of its FEColl, ordering, and vdim number
     const std::string fespace_id =
       axom::fmt::format("{0}_{1}_{2}",
                         basis_name,
