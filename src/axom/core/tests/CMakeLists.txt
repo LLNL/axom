@@ -101,7 +101,7 @@ endif()
 #------------------------------------------------------------------------------
 # OpenMP GTests
 #------------------------------------------------------------------------------
-if (AXOM_ENABLE_OPENMP AND AXOM_USE_RAJA)
+if (AXOM_ENABLE_OPENMP AND RAJA_FOUND)
   set( core_openmp_tests
        core_openmp_map.hpp
        )

@@ -151,7 +151,7 @@ template <typename ExecSpace>
 int discrSeg(const Point2D &a,
              const Point2D &b,
              int levels,
-             const axom::ArrayView<OctType> &out,
+             axom::ArrayView<OctType> &out,
              int idx)
 {
   // Assert input assumptions
@@ -219,7 +219,7 @@ int discrSeg(const Point2D &a,
     // with comment "the ends switch each level."
     axom::for_all<ExecSpace>(
       curr_lvl_count,
-      AXOM_LAMBDA(axom::IndexType i) {
+      AXOM_LAMBDA(axom::IndexType i) mutable {
         out[next_lvl + i * lvl_factor + 0] =
           new_inscribed_prism(out[curr_lvl + i], Q, T, S, R, pa, pb);
         out[next_lvl + i * lvl_factor + 1] =
