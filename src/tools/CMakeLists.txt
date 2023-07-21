@@ -76,7 +76,7 @@ if(AXOM_ENABLE_QUEST)
         # Run the mesh_tester with the plane_simp_problems.stl example and
         # different spatial indexes, raja policies
 
-        set(plane_data_dir ${AXOM_DATA_DIR}/quest/plane_simp_problems.stl)
+        set(plane_data_dir "${AXOM_DATA_DIR}/quest/plane_simp_problems.stl")
 
         set(_methods "bvh" "implicit" "uniform")
 
