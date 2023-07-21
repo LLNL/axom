@@ -2640,7 +2640,8 @@ void MFEMSidreDataCollection::reconstructField(Group* field_grp)
     const std::string fespace_id =
       axom::fmt::format("{0}_{1}_{2}",
                         basis_name,
-                        (ordering == mfem::Ordering::byVDIM) ? "vdim" : "nodes", vdim);
+                        (ordering == mfem::Ordering::byVDIM) ? "vdim" : "nodes", 
+                        vdim);
 
     // Only need to create a new FESpace if one doesn't already exist
     if(is_gridfunc && (m_fespaces.count(fespace_id) == 0))
