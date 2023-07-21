@@ -2636,11 +2636,11 @@ void MFEMSidreDataCollection::reconstructField(Group* field_grp)
     }
 
     // We cache the FESpaces to avoid reconstructing them when not needed
-    // An FESpace is uniquely identified by the basis of its FEColl and its ordering
+    // An FESpace is uniquely identified by the basis of its FEColl, its ordering, and its vdim number
     const std::string fespace_id =
-      axom::fmt::format("{0}_{1}",
+      axom::fmt::format("{0}_{1}_{2}",
                         basis_name,
-                        (ordering == mfem::Ordering::byVDIM) ? "nodes" : "vdim");
+                        (ordering == mfem::Ordering::byVDIM) ? "vdim" : "nodes", vdim);
 
     // Only need to create a new FESpace if one doesn't already exist
     if(is_gridfunc && (m_fespaces.count(fespace_id) == 0))
