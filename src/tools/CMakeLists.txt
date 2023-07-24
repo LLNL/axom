@@ -84,6 +84,9 @@ if(AXOM_ENABLE_QUEST)
         blt_list_append(TO _policies ELEMENTS "raja_omp" IF AXOM_ENABLE_OPENMP)
         blt_list_append(TO _policies ELEMENTS "raja_cuda" IF AXOM_ENABLE_CUDA)
 
+        #This needs to be guarded...
+        blt_list_append(TO _policies ELEMENTS "raja_hip" IF AXOM_ENABLE_HIP)
+
         foreach(_method ${_methods})
             foreach(_policy ${_policies})
 
