@@ -19,6 +19,8 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 
 ## [Unreleased] - Release date yyyy-mm-dd
 
+## [v0.8.0] - Release date 2023-07-dd
+
 ### Added
 - Adds MarchingCubes class implementing the marching cubes algorithm for surface detection.
 - Adds the following methods to `axom::Array` to conform more closely with the `std::vector` interface:
