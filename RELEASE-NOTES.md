@@ -38,7 +38,7 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
   intersection between a primitive and a `Tetrahedron`
 - Primal: Adds a `primal::Polyhedron::from_primitive()` operator that returns a
   `Polyhedron` object from a given primitive.
-- Adds `DataStore::getBufferInfo()` and `Group::getDataInfo` methods that insert information into a Conduit `Node` about buffers in a `DataStore` object or data in a `Group` subtree. The information can be accessed from the `Node` by the caller from specifically named fields in the `Node`.
+- Adds `DataStore::getBufferInfo()` and `Group::getDataInfo()` methods that insert information into a Conduit `Node` about buffers in a `DataStore` object or data in a `Group` subtree. The information can be accessed from the `Node` by the caller from specifically named fields in the `Node`.
 - Quest: Adds a `quest::ProEReader` for reading in Pro/E tetrahedral meshes
 - Quest: The `quest::IntersectionShaper` class can now use a percent error to determine
   whether the revolved volume for a shape is sufficiently accurate or whether the shape
@@ -69,6 +69,10 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 - Adds an ``axom::utilities::locale`` utility function to guard against platforms that do not have the requested 
   locales via the `std::locale` function. If the system does not have the requested locale (e.g. `en_US.UTF8`),
   it returns the user's default locale.
+- Sidre: Add new protocols `sidre_layout_json` and `conduit_layout_json` to provide output of DataStore layout in a user-readable format that excludes the numerical arrays held by Views and Buffers.
+- Sidre: Add methods to methods for destroying Groups that will also destroy Buffers if the destruction of a Group and the Views in its subtree cause the Buffer to become detached from all Views.
+- Sidre: Add two Group methods -- one to return a vector of the valid I/O protocols (based on compilation options), and one that returns a default protocol. 
+- Klee: Add support in shaping driver and MFEMSidreDataCollection to write Blueprint datasets that contain matset metadata needed for VisIt to treat volume fraction arrays as a material. This enables VisIt plots such as FilledBoundary.
 
 ### Changed
 - Fixed bug in `mint::mesh::UnstructuredMesh` constructors, affecting capacity.
@@ -118,16 +122,22 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 - Klee: A shape's geometry no longer needs a `path` field when its `format` is "none"
 - Quest: Shapes without geometry can participate in replacement rules for sample-based shaping. Volume
 fractions for the associated materials must be supplied before shaping.
+- Primal: Expose Polyhedron::getFaces() as public method.
 - Removed custom Spack package recipes in favor of using the radiuss-spack-configs repository as a submodule.
 
 ###  Fixed
 - Fixed issues with CUDA build in CMake versions 3.14.5 and above. Now require CMake 3.18+
   for CUDA/non-gpu builds.
+- Fix to allow Axom to build when using RAJA, but not Umpire.
 - Checks validity of bounding boxes in `primal`'s intersection operators against planes
   and triangles before using the geometry.
 - Improves import logic for `lua` dependency
 - Improves import logic for `mfem` dependency in device builds when `mfem` is configured with `caliper`
 - Fixes ambiguity when calling `Array::resize(size, value)` for `Array<bool>`
+- Sidre: Group methods `hasChildView()` and `hasChildGroup()` changed to return false when Group holds items in list format. This fixes an IOManager issue causing failures for multi-domain meshes when writing Blueprint index file.
+- Sidre: Changed Group::copyToConduitNode() method to properly handle Groups using the list format. Previously, it was assumed that all child items in a Group have a name, which is not the case for list format.
+- Sidre: Fixed Group method `importConduitTreeExternal()` to handle lists with unnamed members the same as `importConduitTree()`.
+- Slic and Lumberjack: Add missing calls to `flush()` for parallel output log streams.
 
 ### Deprecated
 - Integer types in `src/axom/core/Types.hpp` are deprecated because `c++11` supports their equivalents.
