@@ -51,7 +51,7 @@ using seq_exec = axom::SEQ_EXEC;
     using cuda_exec = seq_exec;
   #endif
 
-  #if defined(AXOM_USE_HIP) && defined(AXOM_USE_UMPIRE)
+  #if defined(AXOM_USE_HIP) && defined(AXOM_USE_UMPIRE) && defined(NDEBUG)
     constexpr int HIP_BLOCK_SIZE = 256;
     using hip_exec = axom::HIP_EXEC<HIP_BLOCK_SIZE>;
   #else
@@ -139,7 +139,7 @@ const std::map<std::string, RuntimePolicy> Input::s_validPolicies({
     #ifdef AXOM_USE_CUDA
   , {"raja_cuda", raja_cuda}
     #endif
-    #ifdef AXOM_USE_HIP
+    #if defined(AXOM_USE_HIP) && defined(NDEBUG)
   , {"raja_hip", raja_hip}
     #endif
   #endif
@@ -181,8 +181,8 @@ void Input::parse(int argc, char** argv, axom::CLI::App& app)
   #ifdef AXOM_USE_CUDA
   pol_sstr << "\nSet to \'raja_cuda\' or 3 to use the RAJA CUDA policy.";
   #endif
-  #ifdef AXOM_USE_HIP
-  pol_sstr << "\nSet to \'raja_hip\' or 3 to use the RAJA HIP policy.";
+  #if defined(AXOM_USE_HIP) && defined(NDEBUG)
+  pol_sstr << "\nSet to \'raja_hip\' or 4 to use the RAJA HIP policy.";
   #endif
 #endif
 
@@ -626,7 +626,7 @@ int main(int argc, char** argv)
   }
 #endif
 
-#ifdef AXOM_USE_HIP
+#if defined(AXOM_USE_HIP) && defined(NDEBUG)
   if(params.policy == raja_hip)
   {
     using GPUExec = axom::HIP_EXEC<256>;
@@ -709,12 +709,12 @@ int main(int argc, char** argv)
                                                 params.intersectionThreshold);
         break;
   #endif
-  #ifdef AXOM_USE_HIP
+  #if defined(AXOM_USE_HIP) && defined(NDEBUG)
       case raja_hip:
         collisions =
           naiveIntersectionAlgorithm<hip_exec>(surface_mesh,
-                                                degenerate,
-                                                params.intersectionThreshold);
+                                               degenerate,
+                                               params.intersectionThreshold);
         break;
   #endif
 #endif  // AXOM_USE_RAJA && AXOM_USE_UMPIRE
@@ -766,7 +766,7 @@ int main(int argc, char** argv)
           params.intersectionThreshold);
         break;
   #endif
-  #ifdef AXOM_USE_HIP
+  #if defined(AXOM_USE_HIP) && defined(NDEBUG)
       case raja_hip:
         quest::findTriMeshIntersectionsBVH<hip_exec, double>(
           surface_mesh,
@@ -827,7 +827,7 @@ int main(int argc, char** argv)
           params.intersectionThreshold);
         break;
   #endif
-  #if defined(AXOM_USE_HIP) && defined(AXOM_USE_UMPIRE)
+  #if defined(AXOM_USE_HIP) && defined(AXOM_USE_UMPIRE) && defined(NDEBUG)
       case raja_hip:
         quest::findTriMeshIntersectionsImplicitGrid<hip_exec, double>(
           surface_mesh,
@@ -886,7 +886,7 @@ int main(int argc, char** argv)
           params.intersectionThreshold);
         break;
   #endif
-  #if defined(AXOM_USE_HIP) && defined(AXOM_USE_UMPIRE)
+  #if defined(AXOM_USE_HIP) && defined(AXOM_USE_UMPIRE) && defined(NDEBUG)
       case raja_hip:
         quest::findTriMeshIntersectionsUniformGrid<hip_exec, double>(
           surface_mesh,
