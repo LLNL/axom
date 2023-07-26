@@ -32,7 +32,8 @@ if ((RAJA_DIR OR UMPIRE_DIR) AND NOT CAMP_DIR)
     message(FATAL_ERROR "CAMP_DIR is required if RAJA_DIR or UMPIRE_DIR is provided.")
 endif()
 
-# Note: Let Umpire find Camp, don't find it ourselves
+# Note: Let Umpire find Camp via camp_DIR, don't find it ourselves
+set(camp_DIR ${CAMP_DIR})
 
 #------------------------------------------------------------------------------
 # UMPIRE
