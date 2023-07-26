@@ -1,5 +1,5 @@
 [comment]: # (#################################################################)
-[comment]: # (Copyright 2017-2022, Lawrence Livermore National Security, LLC)
+[comment]: # (Copyright 2017-2023, Lawrence Livermore National Security, LLC)
 [comment]: # (and Axom Project Developers. See the top-level LICENSE file)
 [comment]: # (for details.)
 [comment]: #
@@ -56,7 +56,7 @@ Thanks to all of Axom's
 License
 -------
 
-Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC. 
+Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC. 
 Produced at the Lawrence Livermore National Laboratory.
 
 Copyrights and patents in the Axom project are retained by contributors.
@@ -99,6 +99,10 @@ PackageLicenseDeclared: BSD-3-Clause
 
 PackageName: fmt  
 PackageHomePage: https://github.com/fmtlib/fmt  
+PackageLicenseDeclared: MIT License  
+
+PackageName: radiuss-spack-configs  
+PackageHomePage: https://github.com/LLNL/radiuss-spack-configs  
 PackageLicenseDeclared: MIT License  
 
 PackageName: sol  

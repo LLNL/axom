@@ -1,4 +1,4 @@
-# Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
+# Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
 # other Axom Project Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
@@ -21,7 +21,7 @@ foreach(dep ${TPL_DEPS})
 endforeach()
 
 # Handle MPI Fortran headers
-if(ENABLE_MPI AND ENABLE_FORTRAN)
+if(AXOM_ENABLE_MPI AND ENABLE_FORTRAN)
   if(MPI_Fortran_USE_MPIF)
     set(AXOM_USE_MPIF_HEADER TRUE)
   endif()
@@ -48,8 +48,6 @@ endforeach()
 convert_to_native_escaped_file_path(${PROJECT_SOURCE_DIR} AXOM_SRC_DIR)
 convert_to_native_escaped_file_path(${PROJECT_BINARY_DIR} AXOM_BIN_DIR)
 
-# Read axom_exports_symbols into a variable that will be inlined in the config file
-file(READ ${PROJECT_BINARY_DIR}/axom_export_symbols INLINED_AXOM_EXPORTS)
 
 #------------------------------------------------------------------------------
 # Compiler and language related configuration variables
@@ -156,10 +154,10 @@ install(
 #------------------------------------------------------------------------------
 
 # Add it to a temporary list before creating the cache variable to use list(APPEND)
-set(_axom_exported_targets axom)
+set(_axom_exported_targets ${AXOM_COMPONENTS_ENABLED})
 
-blt_list_append(TO _axom_exported_targets ELEMENTS cuda cuda_runtime IF ENABLE_CUDA)
-blt_list_append(TO _axom_exported_targets ELEMENTS hip hip_runtime IF ENABLE_HIP)
+blt_list_append(TO _axom_exported_targets ELEMENTS cuda cuda_runtime IF AXOM_ENABLE_CUDA)
+blt_list_append(TO _axom_exported_targets ELEMENTS hip hip_runtime IF AXOM_ENABLE_HIP)
 
 set(_optional_targets cli11 fmt hdf5 lua openmp sol sparsehash)
 foreach(_tar ${_optional_targets})

@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -91,11 +91,15 @@ void checkIntersections(const primal::BezierCurve<CoordType, 2>& curve1,
 
     sstr << "\ns (" << s.size() << "): ";
     for(auto i = 0u; i < s.size(); ++i)
+    {
       sstr << std::setprecision(16) << s[i] << ",";
+    }
 
     sstr << "\nt (" << t.size() << "): ";
     for(auto i = 0u; i < t.size(); ++i)
+    {
       sstr << std::setprecision(16) << t[i] << ",";
+    }
 
     SLIC_INFO(sstr.str());
   }

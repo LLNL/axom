@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -54,11 +54,11 @@ void split(const Octahedron<Tp, NDIMS>& oct,
 
   // Step 1: Find the centroid
   NumArray c;  // ctor fills with 0
-  for(int i = 0; i < Oct::NUM_OCT_VERTS; ++i)
+  for(int i = 0; i < Oct::NUM_VERTS; ++i)
   {
     c += oct[i].array();
   }
-  c = c / (double)Oct::NUM_OCT_VERTS;
+  c = c / static_cast<double>(Oct::NUM_VERTS);
   typename Oct::PointType C(c);
 
   // Step 2: Now store the new tets.  The documentation for the Octahedron class

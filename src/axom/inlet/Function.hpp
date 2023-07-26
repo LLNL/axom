@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -128,7 +128,7 @@ struct FunctionBuffer
   static constexpr size_t Alignment = alignof(std::function<void()>);
   static constexpr size_t Size = sizeof(std::function<void()>);
 
-  alignas(Alignment) axom::uint8 m_bytes[Size];
+  alignas(Alignment) std::uint8_t m_bytes[Size];
 };
 
 template <typename Func>

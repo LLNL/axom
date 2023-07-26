@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -182,7 +182,12 @@ public:
   {
     const CoordType maxVal = maxCoord();
     for(int i = 0; i < DIM; ++i)
-      if(pt[i] < 0 || pt[i] > maxVal) return false;
+    {
+      if(pt[i] < 0 || pt[i] > maxVal)
+      {
+        return false;
+      }
+    }
     return true;
   }
 

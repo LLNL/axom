@@ -1,4 +1,4 @@
-# Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
+# Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
 # other Axom Project Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
@@ -20,9 +20,11 @@
 #
 #------------------------------------------------------------------------------
 
-cmake_minimum_required(VERSION 3.8)
+cmake_minimum_required(VERSION 3.14)
 
 project(using_with_cmake)
+
+message(STATUS "CMake Version: ${CMAKE_VERSION}")
 
 #------------------------------------------------------------------------------
 # Check for AXOM_DIR and use CMake's find_package to import axom's targets
@@ -51,22 +53,30 @@ if (ENABLE_HIP)
     find_package(hip REQUIRED CONFIG PATHS ${ROCM_PATH})
 endif()
 
-# Required to create Conduit's MPI dependencies
-if (ENABLE_MPI)
-    find_package(MPI REQUIRED)
+include(CMakeFindDependencyMacro)
+
+find_dependency(axom REQUIRED
+                NO_DEFAULT_PATH 
+                PATHS ${AXOM_DIR}/lib/cmake)
+
+# Remove implicitly added link directories added by CMake that are problematic when
+# the default system libraries are older than the ones used by the compiler
+if(BLT_CMAKE_IMPLICIT_LINK_DIRECTORIES_EXCLUDE)
+    list(REMOVE_ITEM CMAKE_C_IMPLICIT_LINK_DIRECTORIES
+                     ${BLT_CMAKE_IMPLICIT_LINK_DIRECTORIES_EXCLUDE})
+    list(REMOVE_ITEM CMAKE_CXX_IMPLICIT_LINK_DIRECTORIES
+                     ${BLT_CMAKE_IMPLICIT_LINK_DIRECTORIES_EXCLUDE})
+    list(REMOVE_ITEM CMAKE_CUDA_IMPLICIT_LINK_DIRECTORIES
+                     ${BLT_CMAKE_IMPLICIT_LINK_DIRECTORIES_EXCLUDE})
 endif()
 
-find_package(axom REQUIRED
-             NO_DEFAULT_PATH 
-             PATHS ${AXOM_DIR}/lib/cmake)
-
-# BEGIN FIXME:
-# Create fake empty target, this stops CMake from adding -lcuda_runtime to the link line
-add_library(cuda_runtime INTERFACE)
-
-# Create fake empty target, this stops CMake from adding -lblt_hip_runtime to the link line
-add_library(blt_hip_runtime INTERFACE)
-# END FIXME
+# HACK: Define the `mpi` target as an alias to `axom::mpi` if/when necessary
+# Details: An axom dependency has a link dependency to `mpi`, but it might
+# not be a target. Need to mark axom::mpi as global to use it for an alias.
+if(NOT TARGET mpi AND TARGET axom::mpi)
+    set_target_properties(axom::mpi PROPERTIES IMPORTED_GLOBAL TRUE)
+    add_library(mpi ALIAS axom::mpi)
+endif()
 
 #------------------------------------------------------------------------------
 # Set up example target that depends on axom
@@ -78,5 +88,4 @@ target_include_directories(example PRIVATE ${AXOM_INCLUDE_DIRS})
 
 # link to axom targets
 target_link_libraries(example axom)
-target_link_libraries(example fmt)
-
+target_link_libraries(example axom::fmt)

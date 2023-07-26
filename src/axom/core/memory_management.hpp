@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -26,6 +26,7 @@ namespace axom
 {
 constexpr int INVALID_ALLOCATOR_ID = -1;
 
+// _memory_space_start
 /*! 
  * \brief Memory spaces supported by Array-like types
  *
@@ -44,7 +45,9 @@ enum class MemorySpace
   Constant
 #endif
 };
+// _memory_space_end
 
+// _memory_management_routines_start
 /// \name Memory Management Routines
 /// @{
 
@@ -172,6 +175,7 @@ inline T* reallocate(T* p,
 inline void copy(void* dst, const void* src, std::size_t numbytes) noexcept;
 
 /// @}
+// _memory_management_routines_end
 
 //------------------------------------------------------------------------------
 //                        IMPLEMENTATION
@@ -197,7 +201,10 @@ inline T* allocate(std::size_t n, int allocID) noexcept
 template <typename T>
 inline void deallocate(T*& pointer) noexcept
 {
-  if(pointer == nullptr) return;
+  if(pointer == nullptr)
+  {
+    return;
+  }
 
 #ifdef AXOM_USE_UMPIRE
 

@@ -1,4 +1,4 @@
-# Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
+# Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
 # other Axom Project Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
@@ -10,7 +10,7 @@
     - shell
     - rzgenie
   before_script:
-    - module load cmake/3.14.5
+    - module load cmake/3.18.0
 
 
 ####

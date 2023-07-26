@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -8,11 +8,11 @@
 
 #include "axom/primal/operators/detail/intersect_impl.hpp"
 
-using namespace axom;
+namespace primal = axom::primal;
 
 TEST(primal_intersection_impl, fuzzy_comparisons)
 {
-  const double eps = 0.1;
+  constexpr double eps = 0.1;
 
   SLIC_INFO("This test demonstrates the fuzzy comparison"
             << " operators used in quest's intersection tests"
@@ -87,7 +87,7 @@ TEST(primal_intersection_impl, fuzzy_comparisons)
 
 TEST(primal_intersection_impl, zero_count)
 {
-  const double eps = 0.1;
+  constexpr double eps = 0.1;
 
   int expectedCount = 0;
 
@@ -139,7 +139,6 @@ int main(int argc, char* argv[])
 
   ::testing::InitGoogleTest(&argc, argv);
 
-  // create & initialize test logger, finalized when exiting main scope
   axom::slic::SimpleLogger logger;
 
   result = RUN_ALL_TESTS();

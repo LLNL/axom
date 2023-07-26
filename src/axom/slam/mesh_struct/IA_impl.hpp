@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -37,7 +37,10 @@ bool is_subset(T v, const IterableT& iterable)
 {
   for(auto item : iterable)
   {
-    if(item == v) return true;
+    if(item == v)
+    {
+      return true;
+    }
   }
   return false;
 }
@@ -51,8 +54,9 @@ std::vector<std::string> entries_as_vec(const RelOrMap& outer, const SetType& s)
   std::vector<std::string> strs(sz);
   for(auto pos : s.positions())
   {
-    strs[pos] = s.isValidEntry(pos) ? fmt::format("{}: {}", pos, outer[pos])
-                                    : fmt::format("{}: {{}}", pos);
+    strs[pos] = s.isValidEntry(pos)
+      ? fmt::format("{}: {}", axom::fmt::streamed(pos), outer[pos])
+      : fmt::format("{}: {{}}", axom::fmt::streamed(pos));
   }
 
   return strs;
@@ -91,7 +95,7 @@ template <int TDIM, int SDIM, typename P>
 void IAMesh<TDIM, SDIM, P>::print_all() const
 {
   fmt::memory_buffer out;
-  fmt::format_to(out,
+  fmt::format_to(std::back_inserter(out),
                  "IA mesh: {} mesh in {}d with {} valid vertices (of {}) "
                  "and {} valid elements (of {})\n",
                  (TDIM == 2 ? "triangle" : "tetrahedral"),
@@ -102,39 +106,39 @@ void IAMesh<TDIM, SDIM, P>::print_all() const
                  element_set.size());
 
   //print out the element and vertex sets
-  fmt::format_to(out,
+  fmt::format_to(std::back_inserter(out),
                  "  element_set ({}/{}): [{}]\n",
                  element_set.numberOfValidEntries(),
                  element_set.size(),
                  fmt::join(element_set, ", "));
 
-  fmt::format_to(out,
+  fmt::format_to(std::back_inserter(out),
                  "  vertex_set ({}/{}): [{}]\n",
                  vertex_set.numberOfValidEntries(),
                  vertex_set.size(),
                  fmt::join(vertex_set, ", "));
 
   //print out the relations on the sets (ev, ve and ee)
-  fmt::format_to(out,
+  fmt::format_to(std::back_inserter(out),
                  "  ev_rel ({}/{}): [{}]\n",
                  ev_rel.numberOfValidEntries(),
                  ev_rel.size(),
                  fmt::join(entries_as_vec(ev_rel, element_set), "; "));
 
-  fmt::format_to(out,
+  fmt::format_to(std::back_inserter(out),
                  "  ve_rel ({}/{}): [{}]\n",
                  ve_rel.numberOfValidEntries(),
                  ve_rel.size(),
                  fmt::join(entries_as_vec(ve_rel, vertex_set), "; "));
 
-  fmt::format_to(out,
+  fmt::format_to(std::back_inserter(out),
                  "  ee_rel ({}/{}): [{}]\n",
                  ee_rel.numberOfValidEntries(),
                  ee_rel.size(),
                  fmt::join(entries_as_vec(ee_rel, element_set), "; "));
 
   //print out the coordinate map (i.e the positions)
-  fmt::format_to(out,
+  fmt::format_to(std::back_inserter(out),
                  "  vertex coord ({}/{}): [{}]\n",
                  vcoord_map.numberOfValidEntries(),
                  vcoord_map.size(),
@@ -505,7 +509,10 @@ typename IAMesh<TDIM, SDIM, P>::IndexType IAMesh<TDIM, SDIM, P>::addElement(
   // If so, modify ee_rel to reflect that.
   for(auto otherElementIdx : elem_list)
   {
-    if(otherElementIdx < 0 || otherElementIdx == element_idx) continue;
+    if(otherElementIdx < 0 || otherElementIdx == element_idx)
+    {
+      continue;
+    }
     for(IndexType s = 0; s < VERTS_PER_ELEM; s++)
     {
       IndexType otherSideIdx = s;
@@ -824,7 +831,7 @@ bool IAMesh<TDIM, SDIM, P>::isValid(bool verboseOutput) const
   {
     if(verboseOutput)
     {
-      fmt::format_to(out,
+      fmt::format_to(std::back_inserter(out),
                      "\n\t vertex set and relation size(s) don't match.\n\t"
                      "vertex size: {}, ve_rel size: {}, vcoord size: {}",
                      vertex_set.size(),
@@ -839,7 +846,7 @@ bool IAMesh<TDIM, SDIM, P>::isValid(bool verboseOutput) const
   {
     if(verboseOutput)
     {
-      fmt::format_to(out,
+      fmt::format_to(std::back_inserter(out),
                      "\n\t element set and relation size(s) don't match.\n\t"
                      "element_set size: {}, ev_rel size: {}, ee_rel size: {}",
                      element_set.size(),
@@ -852,32 +859,51 @@ bool IAMesh<TDIM, SDIM, P>::isValid(bool verboseOutput) const
   // Check sets, relations and maps for validity
   if(!vertex_set.isValid(verboseOutput))
   {
-    if(verboseOutput) fmt::format_to(out, "\n\t Vertex set invalid");
+    if(verboseOutput)
+    {
+      fmt::format_to(std::back_inserter(out), "\n\t Vertex set invalid");
+    }
     bValid = false;
   }
   if(!element_set.isValid(verboseOutput))
   {
-    if(verboseOutput) fmt::format_to(out, "\n\t Element set invalid");
+    if(verboseOutput)
+    {
+      fmt::format_to(std::back_inserter(out), "\n\t Element set invalid");
+    }
     bValid = false;
   }
   if(!ev_rel.isValid(verboseOutput))
   {
-    if(verboseOutput) fmt::format_to(out, "\n\t Boundary relation invalid");
+    if(verboseOutput)
+    {
+      fmt::format_to(std::back_inserter(out), "\n\t Boundary relation invalid");
+    }
     bValid = false;
   }
   if(!ve_rel.isValid(verboseOutput))
   {
-    if(verboseOutput) fmt::format_to(out, "\n\t Coboundary relation invalid");
+    if(verboseOutput)
+    {
+      fmt::format_to(std::back_inserter(out),
+                     "\n\t Coboundary relation invalid");
+    }
     bValid = false;
   }
   if(!ee_rel.isValid(verboseOutput))
   {
-    if(verboseOutput) fmt::format_to(out, "\n\t Adjacency relation invalid");
+    if(verboseOutput)
+    {
+      fmt::format_to(std::back_inserter(out), "\n\t Adjacency relation invalid");
+    }
     bValid = false;
   }
   if(!vcoord_map.isValid(verboseOutput))
   {
-    if(verboseOutput) fmt::format_to(out, "\n\t Coordinate map is invalid");
+    if(verboseOutput)
+    {
+      fmt::format_to(std::back_inserter(out), "\n\t Coordinate map is invalid");
+    }
     bValid = false;
   }
 

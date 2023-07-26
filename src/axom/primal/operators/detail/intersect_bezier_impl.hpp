@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -204,14 +204,20 @@ bool intersect_2d_linear(const Point<T, 2> &a,
   const auto area2 = twoDcross(a, b, d);
 
   // early return if both have same orientation, or if d is collinear w/ (a,b)
-  if(area2 == 0. || (area1 * area2) > 0.) return false;
+  if(area2 == 0. || (area1 * area2) > 0.)
+  {
+    return false;
+  }
 
   // compute signed areas of endpoints of segment (a,b) w.r.t. segment (c,d)
   const auto area3 = twoDcross(c, d, a);
   const auto area4 = area3 + area1 - area2;  // equivalent to twoDcross(c,d,b)
 
   // early return if both have same orientation, or if b is collinear w/ (c,d)
-  if(area4 == 0. || (area3 * area4) > 0.) return false;
+  if(area4 == 0. || (area3 * area4) > 0.)
+  {
+    return false;
+  }
 
   // Compute intersection parameters using linear interpolation
   // Divisions are safe due to early return conditions

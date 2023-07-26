@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -16,6 +16,7 @@
 #define INLET_INLETVECTOR_HPP
 
 #include "axom/primal/geometry/Vector.hpp"
+#include "axom/fmt.hpp"
 
 namespace axom
 {
@@ -142,5 +143,10 @@ inline std::ostream& operator<<(std::ostream& os, const InletVector& v)
 
 }  // end namespace inlet
 }  // end namespace axom
+
+/// Overload to format an inlet::InletVector using fmt
+template <>
+struct axom::fmt::formatter<axom::inlet::InletVector> : ostream_formatter
+{ };
 
 #endif  // INLET_INLETVECTOR_HPP

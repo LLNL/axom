@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -72,14 +72,11 @@ public:
   using PointType = Point<T, NDIMS>;
   using VectorType = Vector<T, NDIMS>;
 
-  enum
-  {
-    NUM_OCT_VERTS = 6
-  };
+  static constexpr int NUM_VERTS = 6;
 
 public:
   /*!
-   * \brief Default constructor. Creates a degenerate octahedron.
+   * \brief Default Octahedron constructor. Creates a degenerate octahedron.
    */
   AXOM_HOST_DEVICE Octahedron() { }
 
@@ -111,13 +108,64 @@ public:
   }
 
   /*!
+   * \brief Octahedron constructor from an array of Points
+   *
+   * \param [in] pts An array containing at least 6 Points.
+   *
+   * \note It is the responsiblity of the caller to pass
+   *       an array with at least 6 Points
+   */
+  AXOM_HOST_DEVICE
+  explicit Octahedron(const PointType* pts)
+  {
+    for(int i = 0; i < NUM_VERTS; i++)
+    {
+      m_points[i] = pts[i];
+    }
+  }
+
+  /*!
+   * \brief Octahedron constructor from an Array of Points
+   *
+   * \param [in] pts An ArrayView containing at 6 Points.
+   */
+  AXOM_HOST_DEVICE
+  explicit Octahedron(const axom::ArrayView<PointType> pts)
+  {
+    SLIC_ASSERT(pts.size() == NUM_VERTS);
+
+    for(int i = 0; i < NUM_VERTS; i++)
+    {
+      m_points[i] = pts[i];
+    }
+  }
+
+  /*!
+   * \brief Octahedron constructor from an initializer list of Points
+   *
+   * \param [in] pts an initializer list containing 6 Points
+   */
+  AXOM_HOST_DEVICE
+  explicit Octahedron(std::initializer_list<PointType> pts)
+  {
+    SLIC_ASSERT(pts.size() == NUM_VERTS);
+
+    int i = 0;
+    for(const auto& pt : pts)
+    {
+      m_points[i] = pt;
+      i++;
+    }
+  }
+
+  /*!
    * \brief Index operator to get the i^th vertex
    * \param idx The index of the desired vertex
    * \pre idx is 0, 1, 2, 3, 4, or 5
    */
   AXOM_HOST_DEVICE PointType& operator[](int idx)
   {
-    SLIC_ASSERT(idx >= 0 && idx < NUM_OCT_VERTS);
+    SLIC_ASSERT(idx >= 0 && idx < NUM_VERTS);
     return m_points[idx];
   }
 
@@ -128,25 +176,27 @@ public:
    */
   AXOM_HOST_DEVICE const PointType& operator[](int idx) const
   {
-    SLIC_ASSERT(idx >= 0 && idx < NUM_OCT_VERTS);
+    SLIC_ASSERT(idx >= 0 && idx < NUM_VERTS);
     return m_points[idx];
   }
 
   /*!
     * \brief Test if this Octahedron is equal to another, within a tolerance
+    *
+    * \note This function can be an expensive operation
     */
   AXOM_HOST_DEVICE
   bool equals(const Octahedron& other, double eps = 1.e-24) const
   {
     // Two octs are equal if each vertex is closer than eps to a vertex of the other.
-    int matched[NUM_OCT_VERTS];
-    for(int i = 0; i < NUM_OCT_VERTS; ++i)
+    int matched[NUM_VERTS];
+    for(int i = 0; i < NUM_VERTS; ++i)
     {
       matched[i] = 0;
     }
-    for(int ourvert = 0; ourvert < NUM_OCT_VERTS; ++ourvert)
+    for(int ourvert = 0; ourvert < NUM_VERTS; ++ourvert)
     {
-      for(int theirvert = 0; theirvert < NUM_OCT_VERTS; ++theirvert)
+      for(int theirvert = 0; theirvert < NUM_VERTS; ++theirvert)
       {
         if(!matched[theirvert] &&
            squared_distance(m_points[ourvert], other[theirvert]) < eps)
@@ -156,12 +206,12 @@ public:
       }
     }
     int matchedcount = 0;
-    for(int i = 0; i < NUM_OCT_VERTS; ++i)
+    for(int i = 0; i < NUM_VERTS; ++i)
     {
       matchedcount += matched[i];
     }
 
-    return (matchedcount == NUM_OCT_VERTS);
+    return (matchedcount == NUM_VERTS);
   }
 
   /*!
@@ -178,7 +228,7 @@ public:
   }
 
 private:
-  PointType m_points[NUM_OCT_VERTS];
+  PointType m_points[NUM_VERTS];
 };
 
 //------------------------------------------------------------------------------

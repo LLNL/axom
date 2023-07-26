@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -69,7 +69,7 @@ void various_traversal_methods(int nmats,
   mm.setCellMatRel(cellMatRel, layout);
 
   //create the std::vector data for the field arrays
-  std::vector<double> cell_arr(ncells * ncomp);
+  axom::Array<double> cell_arr(ncells * ncomp);
   double c_sum = 0;
   for(int i = 0; i < ncells; ++i)
   {
@@ -80,10 +80,10 @@ void various_traversal_methods(int nmats,
     }
   }
 
-  std::vector<double> cellmat_arr;
+  axom::Array<double> cellmat_arr;
   cellmat_arr.resize((use_sparse ? nfilled : nmats * ncells) * ncomp);
   double x_sum = 0;
-  for(unsigned int i = 0; i < cellmat_arr.size() / ncomp; i++)
+  for(axom::IndexType i = 0; i < cellmat_arr.size() / ncomp; i++)
   {
     if(use_sparse || cellMatRel[i])
     {
@@ -96,33 +96,42 @@ void various_traversal_methods(int nmats,
   }
 
   //create volfrac array
-  std::vector<double> volfrac_arr(ncells * nmats, 0);
+  axom::Array<double> volfrac_arr(ncells * nmats, 0);
   for(auto i = 0; i < ncells; ++i)
   {
     int matcount = 0;
     for(auto m = 0; m < nmats; ++m)
     {
-      if(cellMatRel[i * nmats + m]) matcount += 1;
+      if(cellMatRel[i * nmats + m])
+      {
+        matcount += 1;
+      }
     }
     for(auto m = 0; m < nmats; ++m)
     {
       if(cellMatRel[i * nmats + m])
+      {
         volfrac_arr[i * nmats + m] = 1.0 / (double)matcount;
+      }
     }
   }
 
-  mm.setVolfracField(volfrac_arr.data(), layout, sparsity);
+  mm.setVolfracField(volfrac_arr, layout, SparsityLayout::DENSE);
+  if(sparsity == SparsityLayout::SPARSE)
+  {
+    mm.convertFieldToSparse(0);
+  }
   mm.addField("Cell Array",
               FieldMapping::PER_CELL,
               layout,
               sparsity,
-              &cell_arr[0],
+              cell_arr.view(),
               ncomp);
   mm.addField("CellMat Array",
               FieldMapping::PER_CELL_MAT,
               layout,
               sparsity,
-              &cellmat_arr[0],
+              cellmat_arr.view(),
               ncomp);
 
   double sum = 0;
@@ -130,9 +139,9 @@ void various_traversal_methods(int nmats,
   //Different accessing methods ...
 
   //get the volfrac field
-  MultiMat::Field2D<double>& volfrac_map = mm.getVolfracField();
-  MultiMat::Field2D<double>& volfrac_map2 = mm.get2dField<double>("Volfrac");
-  SLIC_ASSERT(&volfrac_map == &volfrac_map2);
+  auto volfrac_map = mm.getVolfracField();
+  auto volfrac_map2 = mm.get2dField<double>("Volfrac");
+  SLIC_ASSERT(volfrac_map == volfrac_map2);
   //volfrac field is access the same way as a regular Field2d
   AXOM_UNUSED_VAR(volfrac_map);
   AXOM_UNUSED_VAR(volfrac_map2);
@@ -143,7 +152,7 @@ void various_traversal_methods(int nmats,
   timer.reset();
   timer.start();
   {
-    MultiMat::Field1D<double>& map = mm.get1dField<double>("Cell Array");
+    MultiMat::Field1D<double> map = mm.get1dField<double>("Cell Array");
     SLIC_ASSERT(ncomp == map.stride());
     SLIC_ASSERT(ncomp == map.numComp());
     for(int i = 0; i < mm.getNumberOfCells(); i++)
@@ -164,12 +173,13 @@ void various_traversal_methods(int nmats,
   timer.reset();
   timer.start();
   {
-    MultiMat::Field2D<double>& map2d = mm.get2dField<double>("CellMat Array");
+    auto map2d = mm.get2dField<double>("CellMat Array");
     SLIC_ASSERT(ncomp == map2d.stride());
     SLIC_ASSERT(ncomp == map2d.numComp());
     for(int i = 0; i < map2d.firstSetSize(); i++)
     {
-      MultiMat::IdSet rel_set = map2d.indexSet(i);
+      const MultiMat::IdSet& rel_set =
+        static_cast<const MultiMat::IdSet&>(map2d.indexSet(i));
       auto submap = map2d(i);
       SLIC_ASSERT(rel_set.size() == submap.size());
       for(int k = 0; k < submap.size(); k++)
@@ -200,7 +210,7 @@ void various_traversal_methods(int nmats,
   timer.reset();
   timer.start();
   {
-    MultiMat::Field2D<double>& map = mm.get2dField<double>("CellMat Array");
+    auto map = mm.get2dField<double>("CellMat Array");
 
     for(int i = 0; i < mm.getNumberOfCells(); i++)
     {
@@ -210,7 +220,10 @@ void various_traversal_methods(int nmats,
         {
           double* valptr = map.findValue(i, m, c);
           // ^ contains a hidden for-loop for sparse layouts, O(row_size) time
-          if(valptr) sum += *valptr;
+          if(valptr)
+          {
+            sum += *valptr;
+          }
         }
       }
     }
@@ -231,7 +244,7 @@ void various_traversal_methods(int nmats,
       // a Map pointer to point to a bivariateMap object
       //MultiMat::Field1D<double>& map = mm.get1dField<double>("CellMat Array");
 
-      MultiMat::Field2D<double>& map = mm.get2dField<double>("CellMat Array");
+      auto map = mm.get2dField<double>("CellMat Array");
 
       for(int i = 0; i < mm.getNumberOfCells(); i++)
       {
@@ -267,12 +280,14 @@ void various_traversal_methods(int nmats,
   timer.reset();
   timer.start();
   {
-    MultiMat::Field1D<double>& map = mm.get1dField<double>("Cell Array");
+    auto map = mm.get1dField<double>("Cell Array");
     for(MultiMat::Field1D<double>::iterator iter = map.begin(); iter != map.end();
         iter++)
     {
       for(int comp = 0; comp < iter.numComp(); ++comp)
+      {
         sum += iter(comp);  //<----
+      }
     }
   }
   timer.stop();
@@ -283,7 +298,7 @@ void various_traversal_methods(int nmats,
   timer.reset();
   timer.start();
   {
-    MultiMat::Field2D<double>& map2d = mm.get2dField<double>("CellMat Array");
+    auto map2d = mm.get2dField<double>("CellMat Array");
     for(int i = 0; i < map2d.firstSetSize(); i++)
     {
       auto submap = map2d(i);
@@ -310,7 +325,7 @@ void various_traversal_methods(int nmats,
   timer.reset();
   timer.start();
   {
-    MultiMat::Field2D<double>& map2d = mm.get2dField<double>("CellMat Array");
+    auto map2d = mm.get2dField<double>("CellMat Array");
     for(int i = 0; i < mm.getNumberOfCells() /*map2d.firstSetSize()*/; i++)
     {
       for(auto iter = map2d.begin(i); iter != map2d.end(i); iter++)
@@ -338,7 +353,7 @@ void various_traversal_methods(int nmats,
     timer.reset();
     timer.start();
 
-    MultiMat::Field2D<double>& map2d = mm.get2dField<double>("CellMat Array");
+    auto map2d = mm.get2dField<double>("CellMat Array");
     for(int i = 0; i < mm.getNumberOfCells(); i++)
     {
       for(double val : map2d(i))
@@ -358,7 +373,7 @@ void various_traversal_methods(int nmats,
   timer.reset();
   timer.start();
   {
-    MultiMat::Field2D<double>& map2d = mm.get2dField<double>("CellMat Array");
+    auto map2d = mm.get2dField<double>("CellMat Array");
     for(auto iter = map2d.begin(); iter != map2d.end(); ++iter)
     {
       //get the indices
@@ -413,9 +428,13 @@ int main(int argc, char** argv)
     ncomp = std::stoi(argv[3]);
     int sparse = std::stoi(argv[4]);
     if(sparse == 0)
+    {
       use_sparse = false;
+    }
     else if(sparse == 1)
+    {
       use_sparse = true;
+    }
     else
     {
       usage();

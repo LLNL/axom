@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -82,6 +82,14 @@ int makeDirsForPath(const std::string& path);
  * output dir string will be "" (the empty string).
  */
 void getDirName(std::string& dir, const std::string& path);
+
+/*!
+ * \brief Remove the specified file.
+ * \param filename The name of the file.
+ * \return 0 on success, -1 on failure. errno can obtain more information
+ *         about the failure.
+ */
+int removeFile(const std::string& filename);
 
 }  // end namespace filesystem
 }  // end namespace utilities

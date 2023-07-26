@@ -1,4 +1,4 @@
-# Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
+# Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
 # other Axom Project Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
@@ -16,20 +16,16 @@ set(spin_tests
    )
 
 set(spin_tests_depends
-    axom
+    spin
     gtest
     fmt
     )
-
-blt_list_append( TO spin_tests_depends ELEMENTS cuda IF ${ENABLE_CUDA} )
-blt_list_append( TO spin_tests_depends ELEMENTS blt::hip IF ${ENABLE_HIP} )
-
 
 foreach ( test ${spin_tests} )
 
     get_filename_component( test_name ${test} NAME_WE )
 
-    blt_add_executable(
+    axom_add_executable(
       NAME       ${test_name}_test
       SOURCES    ${test}
       OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
@@ -46,11 +42,11 @@ endforeach()
 
 if (AXOM_ENABLE_MINT)
 
-    blt_add_executable(
+    axom_add_executable(
       NAME       spin_bvh_test
       SOURCES    spin_bvh.cpp
       OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
-      DEPENDS_ON ${spin_tests_depends}
+      DEPENDS_ON ${spin_tests_depends} mint
       FOLDER     axom/spin/tests
       )
 

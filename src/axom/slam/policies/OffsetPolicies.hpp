@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -48,10 +48,10 @@ struct RuntimeOffset
 public:
   static const IntType DEFAULT_VALUE;
 
-  RuntimeOffset(IntType off = DEFAULT_VALUE) : m_off(off) { }
+  AXOM_HOST_DEVICE RuntimeOffset(IntType off = DEFAULT_VALUE) : m_off(off) { }
 
-  inline IntType offset() const { return m_off; }
-  inline IntType& offset() { return m_off; }
+  AXOM_HOST_DEVICE inline IntType offset() const { return m_off; }
+  AXOM_HOST_DEVICE inline IntType& offset() { return m_off; }
 
   inline IntType operator()() const { return offset(); }
   inline IntType& operator()() { return offset(); }
@@ -71,9 +71,9 @@ const IntType RuntimeOffset<IntType>::DEFAULT_VALUE = IntType {};
 template <typename IntType, IntType INT_VAL>
 struct CompileTimeOffset
 {
-  static const IntType DEFAULT_VALUE = INT_VAL;
+  static constexpr IntType DEFAULT_VALUE = INT_VAL;
 
-  CompileTimeOffset(IntType val = DEFAULT_VALUE)
+  AXOM_HOST_DEVICE CompileTimeOffset(IntType val = DEFAULT_VALUE)
   {
     AXOM_UNUSED_VAR(val);
     SLIC_ASSERT_MSG(
@@ -83,7 +83,7 @@ struct CompileTimeOffset
         << "the template parameter of " << INT_VAL << ".");
   }
 
-  inline IntType offset() const { return INT_VAL; }
+  AXOM_HOST_DEVICE inline IntType offset() const { return INT_VAL; }
 
   inline IntType operator()() const { return offset(); }
 
@@ -94,28 +94,7 @@ struct CompileTimeOffset
  * \brief A policy class for when we have no offset
  */
 template <typename IntType>
-struct ZeroOffset
-{
-  static const IntType DEFAULT_VALUE;
-
-  ZeroOffset(IntType val = DEFAULT_VALUE)
-  {
-    AXOM_UNUSED_VAR(val);
-    SLIC_ASSERT_MSG(
-      val == DEFAULT_VALUE,
-      "slam::ZeroOffset policy -- tried to initialize a NoOffset policy"
-        << " with offset value " << val << ", but should always be 0");
-  }
-
-  inline IntType offset() const { return DEFAULT_VALUE; }
-
-  inline IntType operator()() const { return offset(); }
-
-  inline bool isValid(bool) const { return true; }
-};
-
-template <typename IntType>
-const IntType ZeroOffset<IntType>::DEFAULT_VALUE = IntType {};
+using ZeroOffset = CompileTimeOffset<IntType, 0>;
 
 /// \}
 

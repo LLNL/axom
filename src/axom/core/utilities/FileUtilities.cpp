@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -19,6 +19,7 @@
   #define GetCurrentDir _getcwd
   #define ChangeCurrentDir _chdir
   #define Stat _stat
+  #define Unlink _unlink
 #else
   #include <unistd.h>    // for getcwd
   #include <sys/stat.h>  // for stat
@@ -26,6 +27,7 @@
   #define GetCurrentDir getcwd
   #define ChangeCurrentDir chdir
   #define Stat stat
+  #define Unlink unlink
 #endif
 
 namespace axom
@@ -119,6 +121,9 @@ void getDirName(std::string& dir, const std::string& path)
     dir = "";
   }
 }
+
+//-----------------------------------------------------------------------------
+int removeFile(const std::string& filename) { return Unlink(filename.c_str()); }
 
 }  // end namespace filesystem
 }  // end namespace utilities

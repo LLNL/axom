@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -26,7 +26,6 @@ using inlet::Container;
 using primal::Point3D;
 using primal::Vector3D;
 
-using test::AlmostEqArray;
 using test::AlmostEqPoint;
 using test::AlmostEqVector;
 using ::testing::ElementsAre;

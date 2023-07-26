@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -221,7 +221,10 @@ private:
     // Straightforward solution -- possibly adds sz to ensure
     // that m_val is non-negative -- which involves a branch
     m_val %= sz;
-    if(m_val < 0) m_val += sz;
+    if(m_val < 0)
+    {
+      m_val += sz;
+    }
 #else  // MODINT_MODLESS
 
     // this version assumes that we are usually only adding

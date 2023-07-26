@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -74,14 +74,17 @@ public:
     auto itEnd = levelLeafMap.end();
     for(auto it = levelLeafMap.begin(); it != itEnd; ++it)
     {
-      if(!it->isLeaf()) continue;
+      if(!it->isLeaf())
+      {
+        continue;
+      }
 
       SLIC_ASSERT_MSG(
         it->isColored(),
         fmt::format(
           "Error after coloring level {} leaf block {} was not colored.",
           level,
-          BlockIndex(it.pt(), level)));
+          fmt::streamed(BlockIndex(it.pt(), level))));
     }
   }
 
@@ -109,7 +112,7 @@ public:
           " \n\n *** \n Leaf data: {} \n ***",
           i,
           pos,
-          vertBlock,
+          fmt::streamed(vertBlock),
           m_octree.blockBoundingBox(vertBlock),
           (m_octree.blockBoundingBox(vertBlock).contains(pos) ? "is" : "is NOT"),
           leafData));
@@ -123,9 +126,9 @@ public:
           "\n\t -- actual block {} -- is leaf? {}"
           "\n\t -- vertex set size: {}",
           i,
-          m_octree.m_vertexToBlockMap[i],
+          fmt::streamed(m_octree.m_vertexToBlockMap[i]),
           (m_octree[m_octree.m_vertexToBlockMap[i]].isLeaf() ? "yes" : "no"),
-          vertBlock,
+          fmt::streamed(vertBlock),
           (m_octree[vertBlock].isLeaf() ? "yes" : "no"),
           numVertices));
     }
@@ -153,7 +156,10 @@ public:
         CellIndexSet leafCells = m_octree.leafCells(vertBlock, leafData);
         for(int k = 0; !foundCell && k < leafCells.size(); ++k)
         {
-          if(leafCells[k] == cIdx) foundCell = true;
+          if(leafCells[k] == cIdx)
+          {
+            foundCell = true;
+          }
         }
 
         SLIC_ASSERT_MSG(
@@ -166,7 +172,7 @@ public:
                       "\n ***",
                       cIdx,
                       fmt::join(cvRel, ", "),
-                      vertBlock,
+                      fmt::streamed(vertBlock),
                       vIdx,
                       leafData,
                       fmt::join(leafCells.begin(), leafCells.end(), ", ")));
@@ -218,7 +224,7 @@ public:
                             " is not incident in vertex {}",
                             cIdx,
                             fmt::join(cvRel, ", "),
-                            block,
+                            fmt::streamed(block),
                             vIdx));
 
               // Check that this cell intersects the bounding box of the block
@@ -235,7 +241,7 @@ public:
                             "\n\tLeaf vertex is: {}"
                             "\n\tLeaf cells: {} ({})",
                             cIdx,
-                            block,
+                            fmt::streamed(block),
                             blockBB,
                             m_octree.m_meshWrapper.cellPositions(cIdx),
                             fmt::join(cvRel, ", "),
@@ -281,9 +287,9 @@ public:
                                            "--- neighbor {} with data {}."
                                            " Neighboring leaves that are not "
                                            "gray must have the same color.",
-                                           block,
+                                           fmt::streamed(block),
                                            data,
-                                           neighborBlk,
+                                           fmt::streamed(neighborBlk),
                                            neighborData));
                 break;
               case InOutBlockData::Gray:  // intentional fallthrough
@@ -301,7 +307,9 @@ public:
   {
     // We are assumed to be valid before we insert the vertices
     if(m_generationState < InOutOctreeType::INOUTOCTREE_VERTICES_INSERTED)
+    {
       return;
+    }
 
     // Iterate through the tree
     // Internal blocks should not have associated vertex data

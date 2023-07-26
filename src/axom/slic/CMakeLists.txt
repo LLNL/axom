@@ -1,4 +1,4 @@
-# Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
+# Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
 # other Axom Project Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
@@ -34,7 +34,7 @@ set(slic_sources
     streams/GenericOutputStream.cpp
     )
 
-if (ENABLE_MPI)
+if (AXOM_ENABLE_MPI)
     list(APPEND slic_headers streams/SynchronizedStream.hpp)
     list(APPEND slic_sources streams/SynchronizedStream.cpp)
     if (AXOM_ENABLE_LUMBERJACK)
@@ -66,16 +66,17 @@ endif()
 set(slic_depends core)
 
 blt_list_append( TO slic_depends ELEMENTS lumberjack IF ${AXOM_ENABLE_LUMBERJACK} )
-blt_list_append( TO slic_depends ELEMENTS mpi IF ${ENABLE_MPI} )
 blt_list_append( TO slic_depends ELEMENTS dbghelp IF ${WIN32} )
+if (CMAKE_SYSTEM_NAME STREQUAL "FreeBSD")
+  list( APPEND slic_depends execinfo )
+endif()
 
-blt_add_library(NAME        slic
-                SOURCES     ${slic_sources}
-                HEADERS     ${slic_headers}
-                DEPENDS_ON  ${slic_depends}
-                FOLDER      axom/slic
-                OBJECT      TRUE
-                )
+axom_add_library(NAME        slic
+                 SOURCES     ${slic_sources}
+                 HEADERS     ${slic_headers}
+                 DEPENDS_ON  ${slic_depends}
+                 FOLDER      axom/slic
+                 )
 
 axom_write_unified_header( NAME slic
                            HEADERS ${slic_headers}

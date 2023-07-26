@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -18,6 +18,7 @@
 #include "axom/primal/geometry/OrientationResult.hpp"
 #include "axom/primal/operators/intersect.hpp"
 #include "axom/primal/operators/compute_moments.hpp"
+#include "axom/primal/operators/in_curved_polygon.hpp"
 #include "axom/primal/operators/orientation.hpp"
 
 #include <numeric>
@@ -75,7 +76,10 @@ primal::CurvedPolygon<CoordType, DIM> createPolygon(
   for(int j = 0; j < num_edges; ++j)
   {
     axom::Array<PointType> subCP(orders[j] + 1);
-    for(int i = 0; i < orders[j] + 1; i++) subCP[i] = ControlPoints[i + iter];
+    for(int i = 0; i < orders[j] + 1; i++)
+    {
+      subCP[i] = ControlPoints[i + iter];
+    }
 
     BezierCurveType addCurve(subCP, orders[j]);
     bPolygon.addEdge(addCurve);
@@ -377,7 +381,7 @@ TEST(primal_curvedpolygon, moments_triangle_mixed_order)
   CoordType trueA = -.0906666666666666666666;
   PointType trueC {.2970147058823527, 1.55764705882353};
 
-  checkMoments(bPolygon, trueA, trueC, 1e-14, 1e-15);
+  checkMoments(bPolygon, trueA, trueC, 1e-14, 1e-14);
 }
 
 //----------------------------------------------------------------------------------
@@ -512,6 +516,37 @@ TEST(primal_curvedpolygon, reverseOrientation)
     reversedAgain.reverseOrientation();
     EXPECT_EQ(poly, reversedAgain);
   }
+}
+
+TEST(primal_curved_polygon, containment)
+{
+  // Test that containment procedures are consistent
+  using Point2D = primal::Point<double, 2>;
+  using Bezier = primal::BezierCurve<double, 2>;
+  using CPolygon = primal::CurvedPolygon<double, 2>;
+
+  // 8th order, closed curve with internal loop
+  Point2D loop_nodes[] = {Point2D {0.0, 0.0},
+                          Point2D {1.0, 0.0},
+                          Point2D {1.0, 1.0},
+                          Point2D {0.0, 1.0},
+                          Point2D {0.0, 0.0},
+                          Point2D {1.0, 0.0},
+                          Point2D {1.0, 1.0},
+                          Point2D {0.0, 1.0},
+                          Point2D {0.0, 0.0}};
+  Bezier loop_curve(loop_nodes, 8);
+  CPolygon loop_poly;
+  loop_poly.addEdge(loop_curve);
+
+  // Inner loop is considered "interior" with nonzero protocol. Default behavior.
+  bool nonzero = true;
+  EXPECT_TRUE(in_curved_polygon(Point2D({0.5, 0.5}), loop_poly));
+  EXPECT_TRUE(in_curved_polygon(Point2D({0.5, 0.5}), loop_poly, nonzero));
+
+  // Inner loop is considered "exterior" with even/odd protocol
+  nonzero = false;
+  EXPECT_FALSE(in_curved_polygon(Point2D({0.5, 0.5}), loop_poly, nonzero));
 }
 
 //----------------------------------------------------------------------------------

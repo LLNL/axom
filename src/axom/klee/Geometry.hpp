@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -81,6 +81,9 @@ public:
    * \return the path to the geometry file
    */
   const std::string &getPath() const { return m_path; }
+
+  /// Predicate that returns true when the shape has an associated geometry
+  bool hasGeometry() const { return !m_path.empty(); }
 
   /**
    * Get a GeometryOperator to apply to this geometry. Can be null.

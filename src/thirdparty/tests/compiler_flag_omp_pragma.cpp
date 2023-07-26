@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -19,7 +19,10 @@ int main()
   int arr[SZ];
 
 #pragma omp parallel for
-  for(int i = 0; i < SZ; ++i) arr[i] = i;
+  for(int i = 0; i < SZ; ++i)
+  {
+    arr[i] = i;
+  }
 
   std::cout << "Value of array element 0 is " << arr[0] << std::endl;
 

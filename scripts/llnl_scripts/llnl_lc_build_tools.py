@@ -1,4 +1,4 @@
-# Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
+# Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
 # other Axom Project Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
@@ -71,6 +71,7 @@ def build_info():
     res["built_from_branch"] = "unknown"
     res["built_from_sha1"]   = "unknown"
     res["platform"] = get_platform()
+    res["hostname"] = "unknown"
     rc, out = sexe('git branch -a | grep \"*\"',ret_output=True,error_prefix="WARNING:")
     out = out.strip()
     if rc == 0 and out != "":
@@ -79,6 +80,10 @@ def build_info():
     out = out.strip()
     if rc == 0 and out != "":
         res["built_from_sha1"] = out
+    rc, out = sexe('hostname',ret_output=True,error_prefix="WARNING:")
+    out = out.strip()
+    if rc == 0 and out != "":
+        res["hostname"] = out
     return res
 
 
@@ -492,6 +497,8 @@ def full_build_and_test_of_tpls(builds_dir, timestamp, spec, report_to_stdout = 
     if not os.path.exists(prefix):
         os.mkdir(prefix)
     prefix = pjoin(prefix, timestamp)
+    if not os.path.exists(prefix):
+        os.mkdir(prefix)
 
     # create a mirror
     uberenv_create_mirror(prefix, spec, "", mirror_dir)
@@ -554,10 +561,10 @@ def build_devtools(builds_dir, timestamp):
 
     if "toss_3" in sys_type:
         compiler_spec = "%gcc@8.1.0"
-        compiler_dir  = "gcc-8.1.0"
+    elif "toss_4" in sys_type:
+        compiler_spec = "%gcc@10.3.1"
     elif "blueos" in sys_type:
         compiler_spec = "%gcc@8.3.1"
-        compiler_dir  = "gcc-8.3.1"
 
     print("[Building devtools using compiler spec: {0}]".format(compiler_spec))
 
@@ -587,16 +594,15 @@ def build_devtools(builds_dir, timestamp):
         print("[ERROR: Failed build of devtools for spec %s]\n" % compiler_spec)
     else:
         # Only update the latest symlink if successful
-        link_path = pjoin(builds_dir, sys_type)
-        link_path = pjoin(link_path, "latest")
-        install_dir = pjoin(prefix, compiler_dir)
-        print("[Creating symlink to latest devtools build:\n{0}\n->\n{1}]".format(link_path, install_dir))
+        link_path = pjoin(builds_dir, sys_type, "latest")
+        view_dir = pjoin(prefix, "view")
+        print("[Creating symlink to latest devtools view:\n{0}\n->\n{1}]".format(link_path, view_dir))
         if os.path.exists(link_path) or os.path.islink(link_path):
             if not os.path.islink(link_path):
                 print("[ERROR: Latest devtools link path exists and is not a link: {0}".format(link_path))
                 return 1
             os.unlink(link_path)
-        os.symlink(install_dir, link_path)
+        os.symlink(view_dir, link_path)
 
         print("[SUCCESS: Finished build devtools for spec %s]\n" % compiler_spec)
 
@@ -675,6 +681,9 @@ def get_system_type():
 def get_platform():
     return get_system_type() if "SYS_TYPE" in os.environ else get_machine_name()
 
+
+def get_supported_sys_types():
+    return ["blueos_3_ppc64le_ib_p9", "darwin-x86_64", "toss_3_x86_64_ib", "toss_4_x86_64_ib", "toss_4_x86_64_ib_cray"]
 
 def get_username():
     return getpass.getuser()

@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -558,4 +558,24 @@ TEST(numerics_matrix, output_stream)
   actual_stream << A;
 
   EXPECT_EQ(expected_stream.str(), actual_stream.str());
+}
+
+//------------------------------------------------------------------------------
+TEST(numerics_matrix, is_identity)
+{
+  const int N = 3;
+  axom::numerics::Matrix<int> M = axom::numerics::Matrix<int>::zeros(N, N);
+  axom::numerics::Matrix<int> I = axom::numerics::Matrix<int>::identity(N);
+
+  EXPECT_FALSE(M.isIdentity());
+  EXPECT_TRUE(I.isIdentity());
+
+  axom::numerics::Matrix<int> A(2, 3);
+  A(0, 0) = 1;
+  A(0, 1) = 2;
+  A(0, 2) = 3;
+  A(1, 0) = 4;
+  A(1, 1) = 5;
+  A(1, 2) = 6;
+  EXPECT_FALSE(A.isIdentity());
 }

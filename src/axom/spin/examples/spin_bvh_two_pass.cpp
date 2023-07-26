@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -27,7 +27,6 @@ namespace mint = axom::mint;
 namespace primal = axom::primal;
 namespace spin = axom::spin;
 namespace slic = axom::slic;
-namespace quest = axom::quest;
 
 using IndexType = axom::IndexType;
 using UMesh = mint::UnstructuredMesh<mint::SINGLE_SHAPE>;
@@ -178,8 +177,8 @@ void find_collisions_broadphase(const mint::Mesh* mesh,
       // Define a function that is called on every leaf node reached during
       // traversal. The function below simply counts the number of candidate
       // collisions with the given query object.
-      auto countCollisions = [&](axom::int32 currentNode,
-                                 const axom::int32* leafNodes) {
+      auto countCollisions = [&](std::int32_t currentNode,
+                                 const std::int32_t* leafNodes) {
         AXOM_UNUSED_VAR(leafNodes);
         if(currentNode > icell)
         {
@@ -220,8 +219,8 @@ void find_collisions_broadphase(const mint::Mesh* mesh,
       IndexType offset = v_offsets[icell];
 
       // Define a leaf node function that stores the intersection candidate.
-      auto fillCollisions = [&](axom::int32 currentNode,
-                                const axom::int32* leafs) {
+      auto fillCollisions = [&](std::int32_t currentNode,
+                                const std::int32_t* leafs) {
         if(currentNode > icell)
         {
           v_first_pair[offset] = icell;
@@ -406,7 +405,7 @@ int main(int argc, char** argv)
   // Read file
   SLIC_INFO("Reading file: '" << args.file_name << "'...\n");
   {
-    quest::STLReader reader;
+    axom::quest::STLReader reader;
     reader.setFileName(args.file_name);
     reader.read();
 

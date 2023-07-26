@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -12,7 +12,6 @@
   #error C2CReader should only be included when Axom is configured with C2C
 #endif
 
-#include "axom/fmt.hpp"
 #include "axom/mint.hpp"
 #include "c2c/C2C.hpp"
 
@@ -38,7 +37,7 @@ public:
   virtual ~C2CReader() = default;
 
   /// Sets the name of the contour file to load. Must be called before \a read()
-  void setFileName(const std::string& fileName) { m_fileName = fileName; }
+  void setFileName(const std::string &fileName) { m_fileName = fileName; }
 
   /// Sets the length unit. All lengths will be converted to this unit when reading the mesh
   void setLengthUnit(c2c::LengthUnit lengthUnit) { m_lengthUnit = lengthUnit; }
@@ -68,8 +67,34 @@ public:
    * 
    * Knot spans are the sub-intervals within a spline
    */
-  void getLinearMesh(mint::UnstructuredMesh<mint::SINGLE_SHAPE>* mesh,
-                     int segmentsPerKnotSpan);
+  void getLinearMeshUniform(mint::UnstructuredMesh<mint::SINGLE_SHAPE> *mesh,
+                            int segmentsPerKnotSpan);
+
+  /*!
+   * \brief Projects high-order NURBS contours onto a linear mesh using \a percentError 
+   *        to decide when to stop refinement.
+   * 
+   * \param[in] mesh The mesh object that will contain the linearized line segments.
+   * \param[in] percentError A percent of error that is acceptable to stop refinement.
+   */
+  void getLinearMeshNonUniform(mint::UnstructuredMesh<mint::SINGLE_SHAPE> *mesh,
+                               double percentError);
+
+  /*!
+   * \brief Compute the revolved volume of the shape using quadrature.
+   *
+   * \param transform A 4x4 matrix transform to apply to the shape before computing
+   *                  the revolved volume.
+   *
+   * \note We compute revolved volume on the actual shapes so we can get a
+   *       real revolved volume computed using the curve functions rather than
+   *       relying on a linearized curve. The revolved volume is the volume
+   *       enclosed by the surface of revolution when the shape is revolved
+   *       about axis of revolution.
+   *
+   * \return The revolved volume.
+   */
+  double getRevolvedVolume(const numerics::Matrix<double> &transform) const;
 
 protected:
   int readContour();

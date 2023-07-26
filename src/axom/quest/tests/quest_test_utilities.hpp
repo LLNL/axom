@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -159,7 +159,10 @@ template <int DIM>
 primal::Point<double, DIM> randomSpacePt(double beg, double end)
 {
   primal::Point<double, DIM> pt;
-  for(int i = 0; i < DIM; ++i) pt[i] = axom::utilities::random_real(beg, end);
+  for(int i = 0; i < DIM; ++i)
+  {
+    pt[i] = axom::utilities::random_real(beg, end);
+  }
 
   return pt;
 }

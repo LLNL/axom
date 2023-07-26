@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -407,7 +407,9 @@ TEST(primal_beziercurve, isRational)
 
   // Verify that makeRational makes curve trivially rational
   for(int i = 1; i <= order; i++)
+  {
     EXPECT_DOUBLE_EQ(rCurve.getWeight(0), rCurve.getWeight(i));
+  }
 
   // Verify that trivially rational Bezier curve is identical
   //  to polynomial Bezier curve
@@ -450,6 +452,7 @@ TEST(primal_rationalbezier, winding_number)
   quarter_circle.addEdge(leg2);
 
   for(double theta = 0.01; theta < 1.5; theta += 0.05)
+  {
     for(int i = 1; i < 9; i++)
     {
       const double offset = std::pow(10, -i);
@@ -472,6 +475,7 @@ TEST(primal_rationalbezier, winding_number)
         0.0,
         abs_tol);
     }
+  }
 }
 
 TEST(primal_rationalbezier, rational_intersection)

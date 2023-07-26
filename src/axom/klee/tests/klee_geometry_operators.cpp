@@ -1,21 +1,22 @@
-// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
-#include "axom/klee/GeometryOperators.hpp"
-
+#include "axom/primal/geometry/Point.hpp"
 #include "axom/primal/geometry/Vector.hpp"
 
-#include <cmath>
+#include "axom/klee/GeometryOperators.hpp"
+
+#include "axom/klee/tests/KleeMatchers.hpp"
+#include "axom/klee/tests/KleeTestUtils.hpp"
+
+#include <math.h>
 #include <stdexcept>
 #include <utility>
 
 #include "gtest/gtest.h"
 #include "gmock/gmock.h"
-
-#include "axom/klee/tests/KleeMatchers.hpp"
-#include "axom/klee/tests/KleeTestUtils.hpp"
 
 namespace axom
 {
@@ -99,14 +100,14 @@ TEST(GeometryOperator, getProperties)
   EXPECT_EQ(constructorProps.units, endProperties.units);
 }
 
-TEST(Tanslation, basics)
+TEST(Translation, basics)
 {
   Vector3D offset {10, 20, 30};
   Translation translation {offset, {Dimensions::Two, LengthUnit::cm}};
   EXPECT_THAT(translation.getOffset(), AlmostEqVector(offset));
 }
 
-TEST(Tanslation, toMatrix)
+TEST(Translation, toMatrix)
 {
   for(Dimensions dims : ALL_DIMS)
   {
@@ -118,7 +119,7 @@ TEST(Tanslation, toMatrix)
   }
 }
 
-TEST(Tanslation, accept)
+TEST(Translation, accept)
 {
   Translation translation {{10, 20, 30}, {Dimensions::Two, LengthUnit::cm}};
   MockVisitor visitor;

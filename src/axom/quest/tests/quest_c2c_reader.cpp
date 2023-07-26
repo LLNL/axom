@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -127,7 +127,7 @@ TEST(quest_c2c_reader, interpolate_circle)
   MeshType* mesh = new MeshType(DIM, mint::SEGMENT);
 
   const int segmentsPerKnotSpan = 25;
-  reader.getLinearMesh(mesh, segmentsPerKnotSpan);
+  reader.getLinearMeshUniform(mesh, segmentsPerKnotSpan);
 
   // The circle is defined by a single NURBS curve with four spans
   SLIC_INFO(axom::fmt::format("Mesh has {} nodes and {} cells",
@@ -172,7 +172,7 @@ TEST(quest_c2c_reader, interpolate_square)
   MeshType* mesh = new MeshType(DIM, mint::SEGMENT);
 
   int segmentsPerKnotSpan = 10;
-  reader.getLinearMesh(mesh, segmentsPerKnotSpan);
+  reader.getLinearMeshUniform(mesh, segmentsPerKnotSpan);
 
   SLIC_INFO(axom::fmt::format("Mesh has {} nodes and {} cells",
                               mesh->getNumberOfNodes(),
@@ -206,7 +206,7 @@ TEST(quest_c2c_reader, interpolate_spline)
   MeshType* mesh = new MeshType(DIM, mint::SEGMENT);
 
   int segmentsPerKnotSpan = 20;
-  reader.getLinearMesh(mesh, segmentsPerKnotSpan);
+  reader.getLinearMeshUniform(mesh, segmentsPerKnotSpan);
 
   SLIC_INFO(axom::fmt::format("Mesh has {} nodes and {} cells",
                               mesh->getNumberOfNodes(),

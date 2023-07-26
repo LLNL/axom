@@ -1,4 +1,4 @@
-.. ## Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
+.. ## Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
 .. ## other Axom Project Developers. See the top-level LICENSE file for details.
 .. ##
 .. ## SPDX-License-Identifier: (BSD-3-Clause)
@@ -205,13 +205,13 @@ This file also adds source subdirectories as needed (using the CMake
 adds target definitions for dependencies. For example, the command to 
 add *sidre* as a library is::
 
-  blt_add_library( NAME
+  axom_add_library( NAME
                        sidre
                    SOURCES
-                       "${sidre_sources}"
-                       "${sidre_fortran_sources}"
+                       ${sidre_sources}
+                       ${sidre_fortran_sources}
                    HEADERS
-                       "${sidre_headers}"
+                       ${sidre_headers}
                    DEPENDS_ON
                        ${sidre_depends}
                    )

@@ -1,4 +1,4 @@
-.. ## Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
+.. ## Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
 .. ## other Axom Project Developers. See the top-level LICENSE file for details.
 .. ##
 .. ## SPDX-License-Identifier: (BSD-3-Clause)
@@ -34,6 +34,8 @@ on a ``mint::Mesh``.
     - :ref:`All nearest neighbors<all-nearest>`: given a list of point
       locations and regions, find all neighbors of each point in a different
       region
+    - :ref:`Isosurface detection<isosurface-detection>`: generate an
+      isosurface mesh from a nodal scalar field and an isovalue.
 
 
 API Documentation
@@ -52,4 +54,5 @@ Doxygen generated API documentation can be found here: `API documentation <../..
    point_mesh_query_cpp
    point_in_cell
    all_nearest_neighbors
+   isosurface_detection
 

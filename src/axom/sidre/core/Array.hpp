@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -97,7 +97,7 @@ inline IndexType getViewShapeImpl<2>(int dim, const View* view)
  *
  *  Objects of the sidre::Array class may be constructed from a View.
  *  All array operations can be performed as with the base
- *  axom::utilities::Array class.  The size of the Array can grow as needed,
+ *  axom::Array class.  The size of the Array can grow as needed,
  *  and all memory management is delegated to Sidre.
  *
  *  \note When the Array object is deleted, it does not delete the associated
@@ -335,8 +335,7 @@ protected:
   /*!
    * \brief Allocates space within the Array's View.
    *
-   * \param [in] new_num_tuples the number of tuples which exceeds the current
-   *  capacity.
+   * \param [in] new_capacity the number of elements to allocate.
    */
   void reallocViewData(IndexType new_capacity);
 
@@ -379,7 +378,9 @@ Array<T, DIM>::Array(View* view) : axom::Array<T, 1>()
   SLIC_ERROR_IF(m_view == nullptr, "Provided View cannot be null.");
   SLIC_ERROR_IF(m_view->isEmpty(), "Provided View cannot be empty.");
 
-  this->m_num_elements = getViewShape(0);
+  axom::StackArray<axom::IndexType, 1> newShape {getViewShape(0)};
+  this->setShape(newShape);
+  this->m_num_elements = newShape[0];
 
   axom::IndexType buffer_size = m_view->getBuffer()->getNumElements();
   this->m_capacity = buffer_size;
@@ -415,30 +416,30 @@ Array<T, DIM>::Array(View* view) : axom::Array<T, 2>()
   SLIC_ERROR_IF(m_view == nullptr, "Provided View cannot be null.");
   SLIC_ERROR_IF(m_view->isEmpty(), "Provided View cannot be empty.");
 
-  this->m_dims[0] = getViewShape(0);
-  this->m_dims[1] = getViewShape(1);
-  this->updateStrides();
+  axom::StackArray<axom::IndexType, 2> newShape {getViewShape(0),
+                                                 getViewShape(1)};
+  this->setShape(newShape);
 
   axom::IndexType buffer_size = m_view->getBuffer()->getNumElements();
-  SLIC_ERROR_IF(buffer_size % this->m_dims[1] != 0,
+  SLIC_ERROR_IF(buffer_size % this->m_shape[1] != 0,
                 "The buffer size ("
                   << buffer_size << ") "
                   << "is not a multiple of the number of components "
-                  << "(" << this->m_dims[1] << ").");
+                  << "(" << this->m_shape[1] << ").");
   this->m_capacity = buffer_size;
-  this->m_num_elements = this->m_dims[0] * this->m_dims[1];
+  this->m_num_elements = this->m_shape[0] * this->m_shape[1];
 
-  SLIC_ERROR_IF(this->m_dims[0] < 0,
-                "Number of tuples (" << this->m_dims[0] << ") "
+  SLIC_ERROR_IF(this->m_shape[0] < 0,
+                "Number of tuples (" << this->m_shape[0] << ") "
                                      << "cannot be negative.");
 
-  SLIC_ERROR_IF(this->m_dims[1] <= 0,
-                "Number of components (" << this->m_dims[1] << ") "
+  SLIC_ERROR_IF(this->m_shape[1] <= 0,
+                "Number of components (" << this->m_shape[1] << ") "
                                          << "must be greater than 0.");
 
-  SLIC_ERROR_IF((this->m_dims[0] * this->m_dims[1]) > this->m_capacity,
+  SLIC_ERROR_IF((this->m_shape[0] * this->m_shape[1]) > this->m_capacity,
                 "Number of elements ("
-                  << this->m_dims[0] * this->m_dims[1] << ") "
+                  << this->m_shape[0] * this->m_shape[1] << ") "
                   << "cannot be greater than the element capacity "
                   << "(" << this->m_capacity << ").");
 
@@ -507,8 +508,8 @@ Array<T, DIM>::Array(View* view,
   // Would something like that even be possible?
   // FIXME: This isn't quite ideal because we do a "regular" host allocation, delete it, then
   // do an allocation within Sidre
-  this->m_dims[0] = num_tuples;
-  this->m_dims[1] = num_components;
+  this->m_shape[0] = num_tuples;
+  this->m_shape[1] = num_components;
   this->updateStrides();
   this->m_num_elements = num_tuples * num_components;
   IndexType real_capacity = capacity;
@@ -526,8 +527,8 @@ Array<T, DIM>::Array(View* view,
 
   // sanity checks
   SLIC_ASSERT(this->m_data != nullptr);
-  SLIC_ASSERT(this->m_dims[0] >= 0);
-  SLIC_ASSERT(this->m_dims[1] >= 1);
+  SLIC_ASSERT(this->m_shape[0] >= 0);
+  SLIC_ASSERT(this->m_shape[1] >= 1);
 }
 
 //------------------------------------------------------------------------------

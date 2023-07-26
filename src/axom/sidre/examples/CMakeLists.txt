@@ -1,4 +1,4 @@
-# Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
+# Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
 # other Axom Project Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
@@ -15,7 +15,7 @@ set(example_sources
     sidre_shocktube.cpp
 )
 
-if(ENABLE_MPI)
+if(AXOM_ENABLE_MPI)
     set (example_parallel_sources
          sidre_array.cpp
          sidre_createdatastore.cpp
@@ -35,19 +35,17 @@ elseif(UNIX)
     set(EXTRA_LIBS rt)
 endif()
 
-blt_list_append( TO EXTRA_LIBS ELEMENTS blt::hip IF ENABLE_HIP )
-
 #------------------------------------------------------------------------------
 # Add targets and tests for serial examples
 #------------------------------------------------------------------------------
 foreach(example_source ${example_sources})
     get_filename_component(exe_name ${example_source} NAME_WE)
-    blt_add_executable(
-        NAME ${exe_name}_ex
-        SOURCES ${example_source}
+    axom_add_executable(
+        NAME       ${exe_name}_ex
+        SOURCES    ${example_source}
         OUTPUT_DIR ${EXAMPLE_OUTPUT_DIRECTORY}
-        DEPENDS_ON  axom ${EXTRA_LIBS}
-        FOLDER axom/sidre/examples )
+        DEPENDS_ON  sidre ${EXTRA_LIBS}
+        FOLDER      axom/sidre/examples )
 
     if(AXOM_ENABLE_TESTS)
         axom_add_test(
@@ -59,14 +57,14 @@ endforeach()
 #------------------------------------------------------------------------------
 # Add targets and tests for parallel examples
 #------------------------------------------------------------------------------
-if(ENABLE_MPI)
+if(AXOM_ENABLE_MPI)
     foreach(example_source ${example_parallel_sources})
         get_filename_component(exe_name ${example_source} NAME_WE)
-        blt_add_executable(
-            NAME ${exe_name}_ex
-            SOURCES ${example_source}
+        axom_add_executable(
+            NAME       ${exe_name}_ex
+            SOURCES    ${example_source}
             OUTPUT_DIR ${EXAMPLE_OUTPUT_DIRECTORY}
-            DEPENDS_ON  axom ${EXTRA_LIBS} mpi
+            DEPENDS_ON sidre ${EXTRA_LIBS}
             FOLDER axom/sidre/examples)
 
         if(AXOM_ENABLE_TESTS)
@@ -98,20 +96,17 @@ if(MFEM_FOUND AND AXOM_ENABLE_MFEM_SIDRE_DATACOLLECTION)
         sidre_mfem_datacollection_restart.cpp
         sidre_mfem_datacollection_vis.cpp)
 
-    set(_mfem_dc_test_depends axom mfem ${EXTRA_LIBS})
-    blt_list_append(TO _mfem_dc_test_depends ELEMENTS mpi IF ENABLE_MPI)
-
     foreach(example_source ${_mfem_dc_tests})
         get_filename_component(exe_name ${example_source} NAME_WE)
-        blt_add_executable(
-            NAME ${exe_name}_ex
-            SOURCES ${example_source}
-            OUTPUT_DIR ${EXAMPLE_OUTPUT_DIRECTORY}
-            DEPENDS_ON  ${_mfem_dc_test_depends}
-            FOLDER axom/sidre/examples)
+        axom_add_executable(
+            NAME        ${exe_name}_ex
+            SOURCES     ${example_source}
+            OUTPUT_DIR  ${EXAMPLE_OUTPUT_DIRECTORY}
+            DEPENDS_ON  sidre ${EXTRA_LIBS}
+            FOLDER      axom/sidre/examples)
 
         if(AXOM_ENABLE_TESTS)
-            if(ENABLE_MPI)
+            if(AXOM_ENABLE_MPI)
                 if(MFEM_USE_MPI)
                     set(_nranks 2)
                 else()
@@ -136,7 +131,7 @@ endif()
 if(ENABLE_FORTRAN)
     foreach(example_source ${F_example_sources})
         get_filename_component(exe_name ${example_source} NAME_WE)
-        blt_add_executable(
+        axom_add_executable(
             NAME ${exe_name}_ex
             SOURCES ${example_source}
             OUTPUT_DIR ${EXAMPLE_OUTPUT_DIRECTORY}
@@ -154,7 +149,7 @@ endif()
 #------------------------------------------------------------------------------
 # Add Spio examples
 #------------------------------------------------------------------------------
-if(ENABLE_MPI)
+if(AXOM_ENABLE_MPI)
     add_subdirectory(spio)
 endif()
 

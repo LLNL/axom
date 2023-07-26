@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -317,6 +317,7 @@ TEST(slam_generic_range_set, virtual_parent_set)
   using GenericRangeSet =
     axom::slam::GenericRangeSet<SetPosition,
                                 SetElement,
+                                policies::RuntimeOffset<SetPosition>,
                                 policies::StrideOne<SetPosition>,
                                 policies::NoIndirection<SetPosition, SetElement>,
                                 policies::VirtualParentSubset>;
@@ -366,6 +367,7 @@ TEST(slam_generic_range_set, concrete_parent_set)
   using GenericRangeSet =
     axom::slam::GenericRangeSet<SetPosition,
                                 SetElement,
+                                policies::RuntimeOffset<SetPosition>,
                                 policies::StrideOne<SetPosition>,
                                 policies::NoIndirection<SetPosition, SetElement>,
                                 policies::ConcreteParentSubset<ParentType>>;
@@ -416,6 +418,7 @@ TEST(slam_generic_range_set, strided_range_set)
   using GenericRangeSet =
     axom::slam::GenericRangeSet<SetPosition,
                                 SetElement,
+                                policies::RuntimeOffset<SetPosition>,
                                 policies::RuntimeStride<SetPosition>>;
   using SetBuilder = GenericRangeSet::SetBuilder;
 

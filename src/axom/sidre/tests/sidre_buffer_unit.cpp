@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -32,10 +32,19 @@ int countMismatch(unsigned int elts,
 
   for(unsigned int i = 0; i < elts; ++i)
   {
-    if(standard[i] != undertest[i]) ++retval;
-    if(printTest) std::cout << "  " << undertest[i];
+    if(standard[i] != undertest[i])
+    {
+      ++retval;
+    }
+    if(printTest)
+    {
+      std::cout << "  " << undertest[i];
+    }
   }
-  if(printTest) std::cout << std::endl;
+  if(printTest)
+  {
+    std::cout << std::endl;
+  }
 
   return retval;
 }

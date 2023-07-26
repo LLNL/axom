@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -342,7 +342,7 @@ TEST(primal_boundingBox, bb_add_box)
   EXPECT_TRUE(bbox2.contains(QPoint(6)));
   EXPECT_FALSE(bbox2.contains(QPoint(4)));
 
-  bbox1.addBox(bbox2);  // adding the boxes
+  bbox1.addBox(bbox2);  // adding the boxes (valid+valid)
   EXPECT_TRUE(bbox1.isValid());
   EXPECT_TRUE(bbox1.contains(QPoint(6)))
     << "After addBox() we should now contain points in the other box";
@@ -375,9 +375,21 @@ TEST(primal_boundingBox, bb_add_box)
   QBBox bbox5;
   EXPECT_FALSE(bbox5.isValid());
   EXPECT_NE(bbox5, bbox1);
-  bbox5.addBox(bbox1);
+  bbox5.addBox(bbox1);  // invalid + valid
   EXPECT_EQ(bbox5, bbox1);
   EXPECT_TRUE(bbox5.contains(bbox1));
+
+  QBBox bbox6, bbox7;
+  EXPECT_FALSE(bbox6.isValid());
+  EXPECT_FALSE(bbox7.isValid());
+  bbox6.addBox(bbox7);
+  EXPECT_FALSE(bbox6.isValid());  // invalid + invalid
+
+  QBBox bbox8(bbox1);
+  EXPECT_EQ(bbox8, bbox1);
+  EXPECT_TRUE(bbox8.isValid());
+  bbox8.addBox(bbox7);  // valid + invalid
+  EXPECT_EQ(bbox8, bbox1);
 }
 
 //------------------------------------------------------------------------------
@@ -491,6 +503,13 @@ TEST(primal_boundingBox, bb_scale)
   QBBox bbox4(bbox);
   bbox4.scale(-1.);
   EXPECT_EQ(bbox, bbox4);
+
+  // Show that scaling an invalid bounding box has no effect.
+  QBBox bbox5, bbox6;
+  EXPECT_FALSE(bbox5.isValid());
+  EXPECT_FALSE(bbox6.isValid());
+  bbox5.scale(1.5);
+  EXPECT_EQ(bbox5, bbox6);
 }
 
 //------------------------------------------------------------------------------

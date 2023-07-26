@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -19,6 +19,7 @@
 #include "axom/slam/OrderedSet.hpp"
 #include "axom/slam/NullSet.hpp"
 #include "axom/slam/RangeSet.hpp"
+#include "axom/slam/policies/PolicyTraits.hpp"
 
 #include <cassert>
 #include <type_traits>
@@ -85,13 +86,13 @@ public:
   using ElementType = typename FirstSetType::ElementType;
   using NullSetType = NullSet<PositionType, ElementType>;
 
-  using OrderedSetType =
+  using SubsetType =
     OrderedSet<PositionType,
                ElementType,
                policies::RuntimeSize<PositionType>,
                policies::RuntimeOffset<PositionType>,
                policies::StrideOne<PositionType>,
-               policies::STLVectorIndirection<PositionType, ElementType>>;
+               policies::ArrayViewIndirection<PositionType, ElementType>>;
 
   using RangeSetType = RangeSet<PositionType, ElementType>;
 
@@ -145,8 +146,9 @@ public:
    * \return  The element's FlatIndex
    * \pre   0 <= pos1 <= set1.size() && 0 <= pos2 <= size2.size()
    */
-  virtual PositionType findElementFlatIndex(PositionType pos1,
-                                            PositionType pos2) const = 0;
+  AXOM_HOST_DEVICE virtual PositionType findElementFlatIndex(
+    PositionType pos1,
+    PositionType pos2) const = 0;
 
   /**
    * \brief Searches for the first existing element given the row index (first
@@ -160,18 +162,40 @@ public:
   virtual PositionType findElementFlatIndex(PositionType pos1) const = 0;
 
   /**
+   * \brief Given the flat index, return the associated from-set index in the
+   *        relation pair.
+   *
+   * \param flatIndex The FlatIndex of the from-set/to-set pair.
+   *
+   * \return pos1  The from-set index.
+   */
+  AXOM_HOST_DEVICE virtual PositionType flatToFirstIndex(
+    PositionType flatIndex) const = 0;
+
+  /**
+   * \brief Given the flat index, return the associated to-set index in the
+   *        relation pair.
+   *
+   * \param flatIndex The FlatIndex of the from-set/to-set pair.
+   *
+   * \return pos2  The to-set index.
+   */
+  AXOM_HOST_DEVICE virtual PositionType flatToSecondIndex(
+    PositionType flatIndex) const = 0;
+
+  /**
    * \brief Finds the range of indices of valid elements in the second set,
    *        given the index of an element in the first set.
    * \param Position of the element in the first set
    *
    * \return A range set of the positions in the second set
    */
-  virtual RangeSetType elementRangeSet(PositionType pos1) const = 0;
+  AXOM_HOST_DEVICE virtual RangeSetType elementRangeSet(PositionType pos1) const = 0;
   /**
    * \brief Size of the BivariateSet, which is the number of non-zero entries
    *        in the BivariateSet.
    */
-  virtual PositionType size() const = 0;
+  AXOM_HOST_DEVICE virtual PositionType size() const = 0;
 
   /**
    * \brief Number of elements of the BivariateSet whose first index is \a pos
@@ -181,12 +205,12 @@ public:
   virtual PositionType size(PositionType pos1) const = 0;  //size of a row
 
   /** \brief Size of the first set.   */
-  inline PositionType firstSetSize() const
+  AXOM_HOST_DEVICE inline PositionType firstSetSize() const
   {
     return getSize<FirstSetType>(m_set1);
   }
   /** \brief Size of the second set.   */
-  inline PositionType secondSetSize() const
+  AXOM_HOST_DEVICE inline PositionType secondSetSize() const
   {
     return getSize<SecondSetType>(m_set2);
   }
@@ -206,24 +230,26 @@ public:
    * \return  An OrderedSet containing the elements
    * \pre  0 <= pos1 <= set1.size()
    */
-  virtual const OrderedSetType getElements(PositionType s1) const = 0;
+  virtual SubsetType getElements(PositionType s1) const = 0;
 
   virtual bool isValid(bool verboseOutput = false) const;
 
+private:
   virtual void verifyPosition(PositionType s1, PositionType s2) const = 0;
 
-private:
   template <typename SetType>
-  typename std::enable_if<std::is_abstract<SetType>::value, PositionType>::type
-  getSize(const SetType* s) const
+  AXOM_HOST_DEVICE
+    typename std::enable_if<std::is_abstract<SetType>::value, PositionType>::type
+    getSize(const SetType* s) const
   {
     SLIC_ASSERT_MSG(s != nullptr, "nullptr in BivariateSet::getSize()");
     return s->size();
   }
 
   template <typename SetType>
-  typename std::enable_if<!std::is_abstract<SetType>::value, PositionType>::type
-  getSize(const SetType* s) const
+  AXOM_HOST_DEVICE
+    typename std::enable_if<!std::is_abstract<SetType>::value, PositionType>::type
+    getSize(const SetType* s) const
   {
     SLIC_ASSERT_MSG(s != nullptr, "nullptr in BivariateSet::getSize()");
     return static_cast<SetType>(*s).size();
@@ -266,7 +292,7 @@ public:
   using BSet = BivariateSet<FirstSetType, SecondSetType>;
   using PositionType = typename BSet::PositionType;
   using ElementType = typename BSet::ElementType;
-  using OrderedSetType = typename BSet::OrderedSetType;
+  using SubsetType = typename BSet::SubsetType;
   using RangeSetType = typename BSet::RangeSetType;
 
 public:
@@ -279,7 +305,8 @@ public:
     return PositionType();
   }
 
-  PositionType findElementFlatIndex(PositionType s1, PositionType s2) const override
+  AXOM_HOST_DEVICE PositionType findElementFlatIndex(PositionType s1,
+                                                     PositionType s2) const override
   {
     verifyPosition(s1, s2);
     return PositionType();
@@ -290,20 +317,30 @@ public:
     return findElementFlatIndex(s1, 0);
   }
 
-  RangeSetType elementRangeSet(PositionType) const override
+  AXOM_HOST_DEVICE PositionType flatToFirstIndex(PositionType) const override
+  {
+    return PositionType();
+  }
+
+  AXOM_HOST_DEVICE PositionType flatToSecondIndex(PositionType) const override
+  {
+    return PositionType();
+  }
+
+  AXOM_HOST_DEVICE RangeSetType elementRangeSet(PositionType) const override
   {
     return RangeSetType();
   }
 
   ElementType at(PositionType) const override { return PositionType(); }
 
-  PositionType size() const override { return PositionType(); }
+  AXOM_HOST_DEVICE PositionType size() const override { return PositionType(); }
 
   PositionType size(PositionType) const override { return PositionType(); }
 
-  const OrderedSetType getElements(PositionType) const override
+  SubsetType getElements(PositionType) const override
   {
-    using OrderedSetBuilder = typename OrderedSetType::SetBuilder;
+    using OrderedSetBuilder = typename SubsetType::SetBuilder;
     return OrderedSetBuilder();
   }
 

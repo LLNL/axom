@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -60,6 +60,39 @@ struct Value_Checker
       }
     }
   }
+  void check(axom::ArrayView<double> vec, double EPS = 1e-8)
+  {
+    if(values.empty())
+    {
+      values = std::vector<double>(vec.begin(), vec.end());
+    }
+    else
+    {
+      if(static_cast<axom::IndexType>(values.size()) != vec.size())
+      {
+        SLIC_ERROR(
+          axom::fmt::format("Sizes of arrays are different. 'values' has {} "
+                            "elements; 'vec' has {} elements",
+                            values.size(),
+                            vec.size()));
+      }
+      else
+      {
+        using axom::utilities::isNearlyEqual;
+        bool equivalent = true;
+        const int SZ = values.size();
+        for(int i = 0; i < SZ; ++i)
+        {
+          if(!isNearlyEqual(values[i], vec[i], EPS))
+          {
+            equivalent = false;
+          }
+        }
+
+        SLIC_ERROR_IF(!equivalent, "Calculated values are not the same!");
+      }
+    }
+  }
 };
 
 struct multirun_timer
@@ -88,7 +121,10 @@ struct multirun_timer
   double get_median()
   {
     auto sz = time_record.size();
-    if(sz == 0) return 0.;
+    if(sz == 0)
+    {
+      return 0.;
+    }
 
     std::vector<double> sorted(time_record);
     std::sort(sorted.begin(), sorted.end());
@@ -103,11 +139,11 @@ struct multirun_timer
 void make_other_field_data_celldom(int ncells,
                                    int nmats,
                                    std::vector<double>& i_Volfrac_CD,
-                                   std::vector<double>& o_Volfrac,
-                                   std::vector<double>& o_Vol,
-                                   std::vector<double>& o_Densityfrac,
-                                   std::vector<double>& o_Temperaturefrac,
-                                   std::vector<double>& o_Pressurefrac,
+                                   axom::Array<double>& o_Volfrac,
+                                   axom::Array<double>& o_Vol,
+                                   axom::Array<double>& o_Densityfrac,
+                                   axom::Array<double>& o_Temperaturefrac,
+                                   axom::Array<double>& o_Pressurefrac,
                                    std::vector<double>& o_Volfrac_sparse,
                                    std::vector<double>& o_Densityfrac_sparse,
                                    std::vector<double>& o_Temperaturefrac_sparse,
@@ -190,11 +226,11 @@ void make_other_field_data_celldom(int ncells,
 void make_other_field_data_matdom(int ncells,
                                   int nmats,
                                   std::vector<double>& i_Volfrac_CD,
-                                  std::vector<double>& o_Volfrac,
-                                  std::vector<double>& o_Vol,
-                                  std::vector<double>& o_Densityfrac,
-                                  std::vector<double>& o_Temperaturefrac,
-                                  std::vector<double>& o_Pressurefrac,
+                                  axom::Array<double>& o_Volfrac,
+                                  axom::Array<double>& o_Vol,
+                                  axom::Array<double>& o_Densityfrac,
+                                  axom::Array<double>& o_Temperaturefrac,
+                                  axom::Array<double>& o_Pressurefrac,
                                   std::vector<double>& o_Volfrac_sparse,
                                   std::vector<double>& o_Densityfrac_sparse,
                                   std::vector<double>& o_Temperaturefrac_sparse,
@@ -369,12 +405,30 @@ void read_vol_frac_matrix_file(std::string filename,
     {
       pure_frac_count++;
     }
-    if(mat_count == 1) pure_cell_count++;
-    if(mat_count == 1) onematcell++;
-    if(mat_count == 2) twomatcell++;
-    if(mat_count == 3) threematcell++;
-    if(mat_count == 4) fourmatcell++;
-    if(mat_count >= 5) fiveplusmatcell++;
+    if(mat_count == 1)
+    {
+      pure_cell_count++;
+    }
+    if(mat_count == 1)
+    {
+      onematcell++;
+    }
+    if(mat_count == 2)
+    {
+      twomatcell++;
+    }
+    if(mat_count == 3)
+    {
+      threematcell++;
+    }
+    if(mat_count == 4)
+    {
+      fourmatcell++;
+    }
+    if(mat_count >= 5)
+    {
+      fiveplusmatcell++;
+    }
   }
   fclose(fp);
 
@@ -466,7 +520,10 @@ void get_vol_frac_matrix_rand(int& ncells,
   {
     int m1 =
       (int)((float)rand() * (float)nmats / (float)((long long)RAND_MAX + 1));
-    if(m1 > nmats - 1) m1 = nmats - 1;
+    if(m1 > nmats - 1)
+    {
+      m1 = nmats - 1;
+    }
     Volfrac[ic * nmats + m1] = 1.0;
     int mf = mf_rand[ic];
     if(mf < 25)
@@ -492,9 +549,18 @@ void get_vol_frac_matrix_rand(int& ncells,
         m4 =
           (int)((float)rand() * (float)nmats / (float)((long long)RAND_MAX + 1));
       }
-      if(m2 > nmats - 1) m2 = nmats - 1;
-      if(m3 > nmats - 1) m3 = nmats - 1;
-      if(m4 > nmats - 1) m4 = nmats - 1;
+      if(m2 > nmats - 1)
+      {
+        m2 = nmats - 1;
+      }
+      if(m3 > nmats - 1)
+      {
+        m3 = nmats - 1;
+      }
+      if(m4 > nmats - 1)
+      {
+        m4 = nmats - 1;
+      }
       Volfrac[ic * nmats + m1] = 0.4;
       Volfrac[ic * nmats + m2] = 0.3;
       Volfrac[ic * nmats + m3] = 0.2;
@@ -512,8 +578,14 @@ void get_vol_frac_matrix_rand(int& ncells,
       {
         m3 = (float)rand() * (float)nmats / (float)((long long)RAND_MAX + 1);
       }
-      if(m2 > nmats - 1) m2 = nmats - 1;
-      if(m3 > nmats - 1) m3 = nmats - 1;
+      if(m2 > nmats - 1)
+      {
+        m2 = nmats - 1;
+      }
+      if(m3 > nmats - 1)
+      {
+        m3 = nmats - 1;
+      }
       Volfrac[ic * nmats + m1] = 0.5;
       Volfrac[ic * nmats + m2] = 0.3;
       Volfrac[ic * nmats + m3] = 0.2;
@@ -525,7 +597,10 @@ void get_vol_frac_matrix_rand(int& ncells,
       {
         m2 = (float)rand() * (float)nmats / (float)((long long)RAND_MAX + 1);
       }
-      if(m2 > nmats - 1) m2 = nmats - 1;
+      if(m2 > nmats - 1)
+      {
+        m2 = nmats - 1;
+      }
       Volfrac[ic * nmats + m1] = 0.5;
       Volfrac[ic * nmats + m2] = 0.5;
     }
@@ -548,12 +623,30 @@ void get_vol_frac_matrix_rand(int& ncells,
     {
       pure_frac_count++;
     }
-    if(mat_count == 1) pure_cell_count++;
-    if(mat_count == 1) onematcell++;
-    if(mat_count == 2) twomatcell++;
-    if(mat_count == 3) threematcell++;
-    if(mat_count == 4) fourmatcell++;
-    if(mat_count >= 5) fiveplusmatcell++;
+    if(mat_count == 1)
+    {
+      pure_cell_count++;
+    }
+    if(mat_count == 1)
+    {
+      onematcell++;
+    }
+    if(mat_count == 2)
+    {
+      twomatcell++;
+    }
+    if(mat_count == 3)
+    {
+      threematcell++;
+    }
+    if(mat_count == 4)
+    {
+      fourmatcell++;
+    }
+    if(mat_count >= 5)
+    {
+      fiveplusmatcell++;
+    }
   }
 
   printf("Ratios to Full Data Structure\n");
@@ -636,6 +729,7 @@ void get_neighbors(int ncells,
       int jhi = j == ncells1 - 1 ? j : j + 1;
       int n = 0;
       for(int i1 = ilo; i1 <= ihi; i1++)
+      {
         for(int j1 = jlo; j1 <= jhi; j1++)
         {
           int c2 = i1 * ncells1 + j1;
@@ -645,6 +739,7 @@ void get_neighbors(int ncells,
             n++;
           }
         }
+      }
       num_nbrs[c] = n;
     }
   }
@@ -693,17 +788,17 @@ struct Robey_data
   std::vector<bool> Volfrac_bool;
   std::vector<double> Volfrac_CD;  //cell-dominant full volfrac array
 
-  std::vector<double> Vol;  //per cell, for all layouts
+  axom::Array<double> Vol;  //per cell, for all layouts
 
   //Per cellmat
-  std::vector<double> Volfrac;
-  std::vector<double> Densityfrac;
-  std::vector<double> Temperaturefrac;
-  std::vector<double> Pressurefrac;
+  axom::Array<double> Volfrac;
+  axom::Array<double> Densityfrac;
+  axom::Array<double> Temperaturefrac;
+  axom::Array<double> Pressurefrac;
 
   int cellmatcount;
 
-  std::vector<double> nmatconsts;
+  axom::Array<double> nmatconsts;
 
   int nnbrs_max;           //max number of neighbor = 8 for a 2d structured mesh
   std::vector<int> nnbrs;  //number of neighbors
@@ -898,24 +993,40 @@ struct Result_Store
                                "Neighbor material density",
                                "Pressure from ideal gas law"};
 
-  const int nMethod = 7;
+  static constexpr int nMethod = 15;
   enum Method
   {
     method_csr,
     mm_direct,
+    mm_direct_templated_bset,
+    mm_direct_templated_full,
+    mm_direct_slam,
+    mm_direct_slam_tmpl,
+    mm_direct_slam_tmpl_stride,
     mm_idxarray,
     mm_submap,
-    mm_submap_templated,
+    mm_submap_slam,
+    mm_submap_slam_tmpl,
+    mm_submap_templated_bset,
+    mm_submap_templated_full,
     mm_iter,
     mm_flatiter
   };
-  const char* method_names[7] = {"CSR",
-                                 "MM-Direct",
-                                 "MM-Index Array",
-                                 "MM-Submap",
-                                 "MM-Submap-Templated",
-                                 "MM-Iterator",
-                                 "MM-Flat Iterator"};
+  const char* method_names[nMethod] = {"CSR",
+                                       "MM-Direct",
+                                       "MM-Direct-BSet-Templated",
+                                       "MM-Direct-Fully-Templated",
+                                       "MM-Direct-Slam-BMap",
+                                       "MM-Direct-Slam-BMap-Tmpl",
+                                       "MM-Direct-Slam-BMap-Tmpl-StrideOne",
+                                       "MM-Index Array",
+                                       "MM-Submap",
+                                       "MM-Submap-Slam",
+                                       "MM-Submap-Slam-Tmpl",
+                                       "MM-Submap-BSet-Templated",
+                                       "MM-Submap-Fully-Templated",
+                                       "MM-Iterator",
+                                       "MM-Flat Iterator"};
 
   const int nLayout = 4;
   const char* const data_layout_str[2] = {"Cell Dominant", "Material Dominant"};
@@ -983,7 +1094,10 @@ struct Result_Store
                << " NRuns: " << ITERMAX << "\n\n";
 
     outputFile << "Methods";
-    for(int i = 0; i < nMethod; i++) outputFile << "," << method_names[i];
+    for(int i = 0; i < nMethod; i++)
+    {
+      outputFile << "," << method_names[i];
+    }
     outputFile << "\n";
 
     for(int i = 0; i < (int)result_vec.size() / nMethod; i++)
@@ -994,9 +1108,15 @@ struct Result_Store
       bool all_zero = true;
       for(int j = 0; j < nMethod; j++)
       {
-        if(result_vec[idx + j] != 0.0) all_zero = false;
+        if(result_vec[idx + j] != 0.0)
+        {
+          all_zero = false;
+        }
       }
-      if(all_zero) continue;
+      if(all_zero)
+      {
+        continue;
+      }
 
       outputFile << get_algo_name(idx) << ",";
       for(int j = 0; j < nMethod; j++)

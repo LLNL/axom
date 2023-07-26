@@ -1,4 +1,4 @@
-# Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
+# Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
 # other Axom Project Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
@@ -13,39 +13,55 @@
     - if: '$CI_COMMIT_BRANCH =~ /_qnone/ || $ON_TIOGA == "OFF"' #run except if ...
       when: never
     - when: on_success
+  before_script:
+    - module load cmake/3.21.1
 
 ####
 # Template
 .src_build_on_tioga:
   stage: build
   variables:
-    ALLOC_COMMAND: "srun -p pdebug -t 25 -N 1 "
-    EXTRA_OPTIONS: "--test-serial"
+    ALLOC_COMMAND: "flux mini run --exclusive --time-limit=30m --nodes=1"
   extends: [.src_build_script, .on_tioga, .src_workflow]
   needs: []
 
 .full_build_on_tioga:
   stage: build
   variables:
-    ALLOC_COMMAND: "srun -p pbatch -t 60 -N 1 "
+    ALLOC_COMMAND: "flux mini run --exclusive --time-limit=60m --nodes=1"
   extends: [.full_build_script, .on_tioga, .full_workflow]
   needs: []
 
 ####
 # PR Build jobs
-tioga-clang_14_0_0_hip-src:
+tioga-clang_16_0_0_hip_5_6_0-src:
   variables:
-    COMPILER: "clang@14.0.0_hip"
+    COMPILER: "clang@16.0.0_hip"
+    HOST_CONFIG: "tioga-toss_4_x86_64_ib_cray-${COMPILER}.cmake"
+  extends: .src_build_on_tioga
+  allow_failure: true
+
+tioga-cce_15_0_1_hip_5_4_3-src:
+  variables:
+    COMPILER: "cce@15.0.1_hip"
     HOST_CONFIG: "tioga-toss_4_x86_64_ib_cray-${COMPILER}.cmake"
   extends: .src_build_on_tioga
   allow_failure: true
 
 ####
 # Full Build jobs
-tioga-clang_14_0_0_hip-full:
+tioga-clang_16_0_0_hip_5_6_0-full:
   variables:
-    COMPILER: "clang@14.0.0_hip"
+    COMPILER: "clang@16.0.0_hip"
     SPEC: "%${COMPILER}~openmp+rocm+mfem+c2c"
-    EXTRASPEC: "amdgpu_target=gfx90a ^raja~openmp+rocm ^umpire~openmp+rocm"
+    EXTRASPEC: "amdgpu_target=gfx90a ^hip@5.6.0 ^hsa-rocr-dev@5.6.0 ^llvm-amdgpu@5.6.0 ^raja~openmp+rocm ^umpire~openmp+rocm ^hdf5 cflags=-Wno-int-conversion"
+  extends: .full_build_on_tioga
+  allow_failure: true
+
+tioga-cce_15_0_1_hip_5_4_3-full:
+  variables:
+    COMPILER: "cce@15.0.1_hip"
+    SPEC: "%${COMPILER}~openmp+rocm+mfem+c2c"
+    EXTRASPEC: "amdgpu_target=gfx90a ^hip@5.4.3 ^hsa-rocr-dev@5.4.3 ^llvm-amdgpu@5.4.3 ^raja~openmp+rocm ^umpire~openmp+rocm ^hdf5 cflags=-Wno-int-conversion"
   extends: .full_build_on_tioga
   allow_failure: true

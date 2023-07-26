@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
+ * Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
  * other Axom Project Developers. See the top-level LICENSE file for details.
  *
  * SPDX-License-Identifier: (BSD-3-Clause)
@@ -107,22 +107,20 @@
 #cmakedefine AXOM_USE_SLIC
 #cmakedefine AXOM_USE_SPIN
 
-
 /*
- * Inline axom's macros related to export symbols, e.g. AXOM_EXPORT
+ * For gradual removal of types that have been deprecated in favor of
+ * c++-11 types.  Value can be 1 to allow with compiler warnings, 2 to
+ * allow silently, and -1 to disallow.  Corresponds to cmake variable
+ * AXOM_DEPRECATED_TYPES values of WARN, ALLOW and ERROR.
  */
-@INLINED_AXOM_EXPORTS@
+#cmakedefine AXOM_DEPRECATED_TYPES_N @AXOM_DEPRECATED_TYPES_N@
 
 
 /*
  * Compiler defines to configure the built-in fmt library
- * Redefines AXOM_FMT_DEPRECATED to workaround nvcc compiler error
  */
 #cmakedefine01 AXOM_FMT_EXCEPTIONS
 #cmakedefine01 AXOM_FMT_HEADER_ONLY
-#ifndef WIN32
-#define AXOM_FMT_DEPRECATED AXOM_DEPRECATED
-#endif
 
 /*
  * Compiler defines to configure the built-in sparsehash library

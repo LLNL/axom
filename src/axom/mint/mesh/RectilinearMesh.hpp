@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -7,8 +7,9 @@
 #define MINT_RECTILINEARMESH_HPP_
 
 #include "axom/config.hpp"
-#include "axom/mint/mesh/StructuredMesh.hpp"  // base class
-#include "axom/mint/config.hpp"               // for compile-time definitions
+#include "axom/mint/mesh/StructuredMesh.hpp"
+#include "axom/mint/config.hpp"
+#include "axom/export/mint.h"
 
 namespace axom
 {
@@ -197,10 +198,10 @@ public:
                   IndexType Nj = -1,
                   IndexType Nk = -1);
 
-  AXOM_EXPORT RectilinearMesh(sidre::Group* group,
-                              IndexType Ni,
-                              IndexType Nj = -1,
-                              IndexType Nk = -1)
+  AXOM_MINT_EXPORT RectilinearMesh(sidre::Group* group,
+                                   IndexType Ni,
+                                   IndexType Nj = -1,
+                                   IndexType Nk = -1)
     : RectilinearMesh(group, "", "", Ni, Nj, Nk)
   { }
 

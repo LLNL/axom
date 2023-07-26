@@ -1,4 +1,4 @@
-# Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
+# Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
 # other Axom Project Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
@@ -40,33 +40,25 @@ set( spin_headers
      policy/UniformGridStorage.hpp
    )
 
-set( spin_sources
-     ../Axom.cpp
-   )
-
 #------------------------------------------------------------------------------
 # Specify spin dependencies
 #------------------------------------------------------------------------------
 set( spin_depends_on
-     core slic primal slam )
+     primal 
+     slam)
 
-blt_list_append( TO spin_depends_on ELEMENTS sparsehash IF ${SPARSEHASH_FOUND} )
-blt_list_append( TO spin_depends_on ELEMENTS RAJA IF ${RAJA_FOUND} )
-blt_list_append( TO spin_depends_on ELEMENTS umpire IF ${UMPIRE_FOUND} )
-blt_list_append( TO spin_depends_on ELEMENTS openmp  IF ${ENABLE_OPENMP} )
-blt_list_append( TO spin_depends_on ELEMENTS cuda IF ${ENABLE_CUDA} )
-blt_list_append( TO spin_depends_on ELEMENTS blt::hip_runtime IF ${ENABLE_HIP} )
+blt_list_append( TO spin_depends_on ELEMENTS sparsehash IF SPARSEHASH_FOUND )
+blt_list_append( TO spin_depends_on ELEMENTS RAJA IF RAJA_FOUND )
+blt_list_append( TO spin_depends_on ELEMENTS umpire IF UMPIRE_FOUND )
 
 #------------------------------------------------------------------------------
 # Make/Install the library
 #------------------------------------------------------------------------------
-blt_add_library(
+axom_add_library(
     NAME                  spin
-    SOURCES               ${spin_sources}
     HEADERS               ${spin_headers}
     FOLDER                axom/spin
-    DEPENDS_ON            ${spin_depends_on}
-    OBJECT                TRUE )
+    DEPENDS_ON            ${spin_depends_on})
 
 axom_write_unified_header(NAME    spin
                           HEADERS ${spin_headers})

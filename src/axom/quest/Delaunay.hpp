@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -311,7 +311,9 @@ public:
       const int kUpper = (DIM == 2) ? 0 : res;
       const IndexType stride[3] = {1, res, (DIM == 2) ? 0 : res * res};
       for(IndexType k = 0; k < kUpper; ++k)
+      {
         for(IndexType j = 0; j < res; ++j)
+        {
           for(IndexType i = 0; i < res; ++i)
           {
             const IndexType vals[3] = {i, j, k};
@@ -320,6 +322,8 @@ public:
             const auto binValues = implicitGrid.getCandidatesAsArray(cell);
             grid.getBinContents(idx).insert(0, binValues.size(), binValues.data());
           }
+        }
+      }
     }
 
     // for each vertex -- check in_sphere condition for candidate element
@@ -372,7 +376,7 @@ public:
           const auto& pos = m_mesh.getVertexPosition(vertex_idx);
           const auto element = this->getElement(element_idx);
           const auto circumsphere = element.circumsphere();
-          fmt::format_to(out,
+          fmt::format_to(std::back_inserter(out),
                          "\n\tVertex {} @ {}"
                          "\n\tElement {}: {} w/ circumsphere: {}"
                          "\n\tDistance to circumcenter: {}",

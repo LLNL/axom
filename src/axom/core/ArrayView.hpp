@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -60,17 +60,47 @@ public:
   /*!
    * \brief Generic constructor for an ArrayView of arbitrary dimension with external data
    *
+   *  This constructor assumes that the data is laid out in a dense row-major
+   *  layout; that is, elements are laid out contiguously with respect to the
+   *  last (DIM-1) dimension.
+   *
    * \param [in] data the external data this ArrayView will wrap.
    * \param [in] args The parameter pack containing the "shape" of the ArrayView
    *
    * \pre sizeof...(Args) == DIM
-   *
-   * \post size() == num_elements
    */
-  template <typename... Args>
+  template <
+    typename... Args,
+    typename Enable = typename std::enable_if<
+      sizeof...(Args) == DIM && detail::all_types_are_integral<Args...>::value>::type>
   ArrayView(T* data, Args... args);
 
-  AXOM_HOST_DEVICE ArrayView(T* data, const StackArray<IndexType, DIM>& shape);
+  /*!
+   * \brief Generic constructor for an ArrayView of arbitrary dimension with external data
+   *
+   *  This constructor assumes that the data is laid out in a row-major layout,
+   *  but accepts a min_stride parameter for the stride between consecutive
+   *  elements in the last dimension.
+   *
+   * \param [in] data the external data this ArrayView will wrap.
+   * \param [in] shape Array size in each dimension.
+   * \param [in] min_stride Minimum stride between consecutive items in the
+   *  last dimension
+   */
+  AXOM_HOST_DEVICE ArrayView(T* data,
+                             const StackArray<IndexType, DIM>& shape,
+                             IndexType min_stride = 1);
+
+  /*!
+   * \brief Generic constructor for an ArrayView of arbitrary dimension with external data
+   *
+   * \param [in] data the external data this ArrayView will wrap.
+   * \param [in] shape Array size in each dimension.
+   * \param [in] strides Array strides for each dimension.
+   */
+  AXOM_HOST_DEVICE ArrayView(T* data,
+                             const StackArray<IndexType, DIM>& shape,
+                             const StackArray<IndexType, DIM>& stride);
 
   /*! 
    * \brief Constructor for transferring between memory spaces
@@ -94,6 +124,12 @@ public:
    * \brief Return the number of elements stored in the data array.
    */
   inline AXOM_HOST_DEVICE IndexType size() const { return m_num_elements; }
+
+  /*!
+   * \brief Returns true iff the ArrayView stores no elements.
+   */
+  AXOM_HOST_DEVICE
+  inline bool empty() const { return m_num_elements == 0; }
 
   /*!
    * \brief Returns an ArrayViewIterator to the first element of the Array
@@ -130,23 +166,51 @@ public:
    * \param [in] count The number of elements to include in the subspan, or -1
    *  to take all elements after offset (default).
    *
-   * \return A subspan ArrayView that spans the indices [offsets, offsets + count),
-   *  or [offsets, num_elements) if count == -1.
+   * \return An ArrayView that spans the indices [offset, offset + count),
+   *  or [offset, num_elements) if count < 0.
    *
-   * \pre offset + count <= m_num_elements if count != -1
+   * \pre offset + count <= m_num_elements if count < 0
    */
   template <int UDIM = DIM, typename Enable = typename std::enable_if<UDIM == 1>::type>
   AXOM_HOST_DEVICE ArrayView subspan(IndexType offset, IndexType count = -1) const
   {
-    assert(offset + count <= m_num_elements);
+    assert(offset >= 0 && offset < m_num_elements);
+    if(count >= 0)
+    {
+      assert(offset + count <= m_num_elements);
+    }
+
     ArrayView slice = *this;
     slice.m_data += offset;
-    if(count != -1)
+    if(count < 0)
+    {
+      slice.m_num_elements -= offset;
+    }
+    else
     {
       slice.m_num_elements = count;
     }
     return slice;
   }
+
+  /*!
+   * \brief Returns an ArrayView that is a subspan of the original range of
+   *  elements.
+   *
+   * \param [in] offset The index in each dimension where the subspan should
+   *  begin.
+   * \param [in] count The number of elements in each dimension to include in
+   *  the subspan. -1 in any dimension indicates to take all elements after
+   *  the offset for that domain.
+   *
+   * \return An ArrayView that spans in each dimension the indices:
+   *   * [offsets[i], offsets[i] + counts[i])
+   *   * or [offsets[i], shape[i]) if count < 0.
+   *
+   * \pre offsets[i] + counts[i] < shape[i] for 0 <= i < DIM
+   */
+  AXOM_HOST_DEVICE ArrayView subspan(const StackArray<IndexType, DIM>& offsets,
+                                     const StackArray<IndexType, DIM>& counts);
 
 private:
   T* m_data = nullptr;
@@ -167,7 +231,7 @@ using MCArrayView = ArrayView<T, 2>;
 
 //------------------------------------------------------------------------------
 template <typename T, int DIM, MemorySpace SPACE>
-template <typename... Args>
+template <typename... Args, typename Enable>
 ArrayView<T, DIM, SPACE>::ArrayView(T* data, Args... args)
   : ArrayView(data, StackArray<IndexType, DIM> {static_cast<IndexType>(args)...})
 {
@@ -179,8 +243,9 @@ ArrayView<T, DIM, SPACE>::ArrayView(T* data, Args... args)
 template <typename T, int DIM, MemorySpace SPACE>
 AXOM_HOST_DEVICE ArrayView<T, DIM, SPACE>::ArrayView(
   T* data,
-  const StackArray<IndexType, DIM>& shape)
-  : ArrayBase<T, DIM, ArrayView<T, DIM, SPACE>>(shape)
+  const StackArray<IndexType, DIM>& shape,
+  IndexType min_stride)
+  : ArrayBase<T, DIM, ArrayView<T, DIM, SPACE>>(shape, min_stride)
   , m_data(data)
 #ifndef AXOM_DEVICE_CODE
   , m_allocator_id(axom::detail::getAllocatorID<SPACE>())
@@ -191,7 +256,63 @@ AXOM_HOST_DEVICE ArrayView<T, DIM, SPACE>::ArrayView(
                 "T must be const if memory space is Constant memory");
 #endif
   // Intel hits internal compiler error when casting as part of function call
-  m_num_elements = detail::packProduct(shape.m_data);
+  if(data != nullptr)
+  {
+    m_num_elements = detail::packProduct(shape.m_data);
+  }
+  else
+  {
+    m_num_elements = 0;
+  }
+
+#if !defined(AXOM_DEVICE_CODE) && defined(AXOM_USE_UMPIRE)
+  // If we have Umpire, we can try and see what space the pointer is allocated in
+  // Probably not worth checking this if SPACE != Dynamic, we *could* error out
+  // if e.g., the user gives a host pointer to ArrayView<T, DIM, Device>, but even
+  // Thrust doesn't guard against this.
+
+  // FIXME: Is it worth trying to get rid of this at compile time?
+  // (using a workaround since we don't have "if constexpr")
+  if(SPACE == MemorySpace::Dynamic)
+  {
+    auto& rm = umpire::ResourceManager::getInstance();
+
+    using NonConstT = typename std::remove_const<T>::type;
+    // TODO: There's no reason these Umpire methods should take a non-const pointer.
+    if(rm.hasAllocator(const_cast<NonConstT*>(data)))
+    {
+      auto alloc = rm.getAllocator(const_cast<NonConstT*>(data));
+      m_allocator_id = alloc.getId();
+    }
+  }
+#endif
+}
+
+//------------------------------------------------------------------------------
+template <typename T, int DIM, MemorySpace SPACE>
+AXOM_HOST_DEVICE ArrayView<T, DIM, SPACE>::ArrayView(
+  T* data,
+  const StackArray<IndexType, DIM>& shape,
+  const StackArray<IndexType, DIM>& stride)
+  : ArrayBase<T, DIM, ArrayView<T, DIM, SPACE>>(shape, stride)
+  , m_data(data)
+#ifndef AXOM_DEVICE_CODE
+  , m_allocator_id(axom::detail::getAllocatorID<SPACE>())
+#endif
+{
+#if defined(AXOM_DEVICE_CODE) && defined(AXOM_USE_UMPIRE)
+  static_assert((SPACE != MemorySpace::Constant) || std::is_const<T>::value,
+                "T must be const if memory space is Constant memory");
+#endif
+  // Intel hits internal compiler error when casting as part of function call
+  if(data != nullptr)
+  {
+    m_num_elements = detail::packProduct(shape.m_data);
+  }
+  else
+  {
+    m_num_elements = 0;
+  }
 
 #if !defined(AXOM_DEVICE_CODE) && defined(AXOM_USE_UMPIRE)
   // If we have Umpire, we can try and see what space the pointer is allocated in
@@ -262,6 +383,47 @@ ArrayView<T, DIM, SPACE>::ArrayView(
     utilities::processAbort();
   }
 #endif
+}
+
+//------------------------------------------------------------------------------
+template <typename T, int DIM, MemorySpace SPACE>
+AXOM_HOST_DEVICE ArrayView<T, DIM, SPACE> ArrayView<T, DIM, SPACE>::subspan(
+  const StackArray<IndexType, DIM>& offsets,
+  const StackArray<IndexType, DIM>& counts)
+{
+#ifdef AXOM_DEBUG
+  for(int dim = 0; dim < DIM; dim++)
+  {
+    assert(offsets[dim] >= 0 && offsets[dim] < this->shape()[dim]);
+    if(counts[dim] >= 0)
+    {
+      assert(offsets[dim] + counts[dim] <= this->shape()[dim]);
+    }
+  }
+#endif
+  // Compute flat offset into existing data.
+  IndexType offset =
+    numerics::dot_product(offsets.m_data, this->strides().m_data, DIM);
+
+  // Setup new shape array.
+  StackArray<IndexType, DIM> newShape;
+  for(int dim = 0; dim < DIM; dim++)
+  {
+    if(counts[dim] < 0)
+    {
+      newShape[dim] = this->shape()[dim] - offsets[dim];
+    }
+    else
+    {
+      newShape[dim] = counts[dim];
+    }
+  }
+
+  ArrayView slice = *this;
+  slice.m_data += offset;
+  slice.m_num_elements = detail::packProduct(newShape.m_data);
+  slice.setShapeAndStride(newShape, this->strides());
+  return slice;
 }
 
 } /* namespace axom */

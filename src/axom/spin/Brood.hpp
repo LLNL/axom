@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -116,7 +116,9 @@ struct Brood<GridPt, GridPt>
     // shift and add offset to each coordinate
     GridPt retPt;
     for(int i = 0; i < GridPt::DIMENSION; ++i)
+    {
       retPt[i] = (pt[i] << 1) + (offset & (1 << i) ? 1 : 0);
+    }
 
     return retPt;
   }

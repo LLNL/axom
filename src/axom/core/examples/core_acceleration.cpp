@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -163,7 +163,38 @@ void demoAxomExecution()
   axom::deallocate(A);
   axom::deallocate(B);
   axom::deallocate(C);
-// _deviceexebasic_end
+  // _deviceexebasic_end
+
+  //_gpu_reduce_start
+  using reduce_pol = typename axom::execution_space<ExecSpace>::reduce_policy;
+  RAJA::ReduceSum<reduce_pol, axom::IndexType> totalSum(0);
+
+  // Sum integers [0,99]
+  axom::for_all<ExecSpace>(
+    100,
+    AXOM_LAMBDA(axom::IndexType i) { totalSum += i; });
+
+  std::cout << "\nTotal Reduction Sum ("
+            << axom::execution_space<ExecSpace>::name()
+            << ") :" << totalSum.get() << std::endl;
+  //_gpu_reduce_end
+
+  //_gpu_atomic_start
+  using atomic_pol = typename axom::execution_space<ExecSpace>::atomic_policy;
+
+  int *sum =
+    axom::allocate<int>(1, axom::execution_space<ExecSpace>::allocatorID());
+  *sum = 0;
+
+  // Increment sum 100 times
+  axom::for_all<ExecSpace>(
+    100,
+    AXOM_LAMBDA(axom::IndexType) { RAJA::atomicAdd<atomic_pol>(sum, 1); });
+
+  std::cout << "\nTotal Atomic Sum (" << axom::execution_space<ExecSpace>::name()
+            << ") :" << sum[0] << std::endl;
+  //_gpu_atomic_end
+
 #endif
 }
 

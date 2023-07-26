@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -82,7 +82,7 @@ AXOM_HOST_DEVICE inline double squared_distance(const Point<T, NDIMS>& P,
 
   if(!B.isValid())
   {
-    return std::numeric_limits<double>::max();
+    return std::numeric_limits<T>::max();
   }
 
   if(B.contains(P))

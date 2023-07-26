@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -235,6 +235,12 @@ public:
   */
   void SetNumFiles(int num_files);
   #endif
+
+  /// Returns the number of MPI ranks in the communicator associated with this data collection
+  /** The number of ranks is 1 when using serial MFEM mesh; otherwise the MPI
+  * communicator for the associated parallel mesh instance determines the number of ranks.
+  */
+  int GetNumProcs() const { return this->num_procs; }
 
   /// Register a GridFunction in the Sidre DataStore.
   /** This method is a shortcut for the call
@@ -708,6 +714,10 @@ private:
   /// After a Field has been registered, check if it's a material-dependent
   /// field - if it is, add it to the matset_values
   void checkForMaterialDependentField(const std::string& field_name);
+
+  /// Before saving the file, add any fields that look like materials to the
+  /// blueprint index.
+  void addMaterialSetToIndex();
 
   // /// Verifies that the contents of the mesh blueprint data is valid.
   // void verifyMeshBlueprint();

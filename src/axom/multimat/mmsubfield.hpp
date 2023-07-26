@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -17,12 +17,15 @@ namespace multimat
  */
 
 template <typename Field2DType>
-class MMSubField2D
-  : public slam::SubMap<typename Field2DType::BiVarMapType, slam::RangeSet<>>
+class MMSubField2D : public slam::SubMap<typename Field2DType::BiVarMapType,
+                                         MultiMat::RangeSetType,
+                                         slam::policies::ConcreteInterface>
 {
 public:
   using SubSetType = MultiMat::RangeSetType;
-  using SubMapType = slam::SubMap<typename Field2DType::BiVarMapType, SubSetType>;
+  using SubMapType = slam::SubMap<typename Field2DType::BiVarMapType,
+                                  SubSetType,
+                                  slam::policies::ConcreteInterface>;
   using SuperMapType = typename Field2DType::BiVarMapType;
   using BiVarSetType = typename Field2DType::BiVarSetType;
 
@@ -30,9 +33,9 @@ public:
   MMSubField2D() : SubMapType(), m_superfield(nullptr), firstSetIndex(-1) {};
 
   // Constructor
-  MMSubField2D(Field2DType* superfield,
-               int firstIndex,
-               bool indicesHaveIndirection = true)
+  AXOM_HOST_DEVICE MMSubField2D(Field2DType* superfield,
+                                int firstIndex,
+                                bool indicesHaveIndirection = true)
     //why is without pointer type casting cause a compilation error?
     : SubMapType((SuperMapType*)superfield,
                  superfield->set()->elementRangeSet(firstIndex),

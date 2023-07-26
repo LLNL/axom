@@ -1,4 +1,4 @@
-# Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
+# Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
 # other Axom Project Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
@@ -14,92 +14,101 @@
     - if: '$CI_COMMIT_BRANCH =~ /_lnone/ || $ON_LASSEN == "OFF"' #run except if ...
       when: never
     - when: on_success
-
-####
-# Load required CUDA module
-.with_cuda:
   before_script:
-    - module load cuda/11.0.2
+    - module load cuda/11.2.0
+    - module load cmake/3.18.0
 
 ####
 # Template
 .src_build_on_lassen:
   stage: build
   variables:
-    ALLOC_COMMAND: "lalloc 1 -W 25 -q pdebug"
+    ALLOC_COMMAND: "lalloc 1 -W 25 -q pdebug -alloc_flags atsdisable"
   extends: [.src_build_script, .on_lassen, .src_workflow]
   needs: []
 
 .full_build_on_lassen:
   stage: build
   variables:
-    ALLOC_COMMAND: "lalloc 1 -W 45 -q pdebug"
+    ALLOC_COMMAND: "lalloc 1 -W 45 -q pdebug -alloc_flags atsdisable"
   extends: [.full_build_script, .on_lassen, .full_workflow]
   needs: []
 
 ####
 # PR Build jobs
-lassen-clang_8_0_1_cuda-src:
+lassen-clang_10_0_1-src:
   variables:
-    COMPILER: "clang@8.0.1_cuda"
-    HOST_CONFIG: "lassen-blueos_3_ppc64le_ib_p9-${COMPILER}.cmake"
-  extends: [.src_build_on_lassen, .with_cuda]
-
-lassen-clang_9_0_0-src:
-  variables:
-    COMPILER: "clang@9.0.0"
+    COMPILER: "clang@10.0.1.1"
     HOST_CONFIG: "lassen-blueos_3_ppc64le_ib_p9-${COMPILER}.cmake"
   extends: [.src_build_on_lassen]
 
-lassen-gcc_7_3_1-src:
+lassen-clang_10_0_1_cuda-src:
   variables:
-    COMPILER: "gcc@7.3.1"
+    COMPILER: "clang@10.0.1.2_cuda"
     HOST_CONFIG: "lassen-blueos_3_ppc64le_ib_p9-${COMPILER}.cmake"
   extends: [.src_build_on_lassen]
 
-lassen-xl_16_1_1_11_cuda-src:
+lassen-gcc_8_3_1-src:
   variables:
-    COMPILER: "xl@16.1.1.11_cuda"
+    COMPILER: "gcc@8.3.1.1"
     HOST_CONFIG: "lassen-blueos_3_ppc64le_ib_p9-${COMPILER}.cmake"
   extends: [.src_build_on_lassen]
 
-lassen-xl_16_1_1_12-src:
+lassen-gcc_8_3_1_cuda-src:
   variables:
-    COMPILER: "xl@16.1.1.12"
+    COMPILER: "gcc@8.3.1.2_cuda"
     HOST_CONFIG: "lassen-blueos_3_ppc64le_ib_p9-${COMPILER}.cmake"
-  extends: [.src_build_on_lassen, .with_cuda]
+  extends: [.src_build_on_lassen]
 
+lassen-xl_16_1_1-src:
+  variables:
+    COMPILER: "xl@16.1.1.1"
+    HOST_CONFIG: "lassen-blueos_3_ppc64le_ib_p9-${COMPILER}.cmake"
+  extends: [.src_build_on_lassen]
+
+lassen-xl_16_1_1_cuda-src:
+  variables:
+    COMPILER: "xl@16.1.1.2_cuda"
+    HOST_CONFIG: "lassen-blueos_3_ppc64le_ib_p9-${COMPILER}.cmake"
+  extends: [.src_build_on_lassen]
 
 ####
 # Full Build jobs
-lassen-clang_8_0_1_cuda-full:
+lassen-clang_10_0_1-full:
   variables:
-    COMPILER: "clang@8.0.1"
-    SPEC: "%${COMPILER}+mfem+cuda~openmp"
-    EXTRA_SPEC: "cuda_arch=70"
-  extends: [.full_build_on_lassen, .with_cuda]
-
-lassen-clang_9_0_0-full:
-  variables:
-    COMPILER: "clang@9.0.0"
+    COMPILER: "clang@10.0.1.1"
     SPEC: "%${COMPILER}+mfem~openmp"
   extends: [.full_build_on_lassen]
 
-lassen-gcc_7_3_1-full:
+lassen-clang_10_0_1_cuda-full:
   variables:
-    COMPILER: "gcc@7.3.1"
+    COMPILER: "clang@10.0.1.2"
+    SPEC: "%${COMPILER}+mfem+cuda~openmp"
+    EXTRA_SPEC: "cuda_arch=70"
+  extends: [.full_build_on_lassen]
+
+lassen-gcc_8_3_1-full:
+  variables:
+    COMPILER: "gcc@8.3.1.1"
     SPEC: "%${COMPILER}+mfem"
   extends: [.full_build_on_lassen]
 
-lassen-xl_16_1_1_11_cuda-full:
+lassen-gcc_8_3_1_cuda-full:
   variables:
-    COMPILER: "xl@16.1.1.11"
+    COMPILER: "gcc@8.3.1.2"
+    SPEC: "%${COMPILER}~mfem+cuda"
+    EXTRA_SPEC: "cuda_arch=70"
+  extends: [.full_build_on_lassen]
+
+lassen-xl_16_1_1-full:
+  variables:
+    COMPILER: "xl@16.1.1.1"
+    SPEC: "%${COMPILER}+mfem~openmp~cpp14"
+  extends: [.full_build_on_lassen]
+
+lassen-xl_16_1_1_cuda-full:
+  variables:
+    COMPILER: "xl@16.1.1.2"
     SPEC: "%${COMPILER}+mfem+cuda~openmp~cpp14"
     EXTRA_SPEC: "cuda_arch=70"
-  extends: [.full_build_on_lassen, .with_cuda]
-
-lassen-xl_16_1_1_12-full:
-  variables:
-    COMPILER: "xl@16.1.1.12"
-    SPEC: "%${COMPILER}+mfem~openmp~cpp14"
   extends: [.full_build_on_lassen]

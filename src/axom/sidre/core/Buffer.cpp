@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -140,7 +140,7 @@ Buffer* Buffer::reallocate(IndexType num_elems)
   dtype.set_number_of_elements(num_elems);
   IndexType new_size = dtype.strided_bytes();
   void* new_data_ptr =
-    axom::reallocate(static_cast<axom::uint8*>(old_data_ptr), new_size);
+    axom::reallocate(static_cast<std::uint8_t*>(old_data_ptr), new_size);
 
   if(num_elems == 0 || new_data_ptr != nullptr)
   {
@@ -257,12 +257,7 @@ void Buffer::print(std::ostream& os) const
  */
 void Buffer::exportTo(conduit::Node& data_holder)
 {
-  data_holder["id"] = m_index;
-
-  if(isDescribed())
-  {
-    data_holder["schema"] = m_node.schema().to_json();
-  }
+  exportMetadata(data_holder);
 
   // If Buffer is allocated, export it's node's data
   if(isAllocated())
@@ -276,6 +271,23 @@ void Buffer::exportTo(conduit::Node& data_holder)
     // type and length.
     // DataType& dtype = conduit::DataType::default_dtype(ds_buff->getTypeID());
     // dtype.set_number_of_elements(ds_buff->getNumElements());
+  }
+}
+
+/*
+ *************************************************************************
+ *
+ * Export metadata of the buffer into a conduit node
+ *
+ *************************************************************************
+ */
+void Buffer::exportMetadata(conduit::Node& data_holder)
+{
+  data_holder["id"] = m_index;
+
+  if(isDescribed())
+  {
+    data_holder["schema"] = m_node.schema().to_json();
   }
 }
 
@@ -409,7 +421,7 @@ void Buffer::detachFromAllViews()
 void* Buffer::allocateBytes(IndexType num_bytes, int allocID)
 {
   allocID = getValidAllocatorID(allocID);
-  return axom::allocate<axom::int8>(num_bytes, allocID);
+  return axom::allocate<std::int8_t>(num_bytes, allocID);
 }
 
 /*
@@ -422,7 +434,7 @@ void* Buffer::allocateBytes(IndexType num_bytes, int allocID)
 void Buffer::releaseBytes(void* ptr)
 {
   // Pointer type here should always match new call in allocateBytes.
-  axom::int8* ptr_copy = static_cast<axom::int8*>(ptr);
+  std::int8_t* ptr_copy = static_cast<std::int8_t*>(ptr);
   axom::deallocate(ptr_copy);
 }
 

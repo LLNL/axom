@@ -1,4 +1,4 @@
-# Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
+# Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
 # other Axom Project Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
@@ -49,6 +49,7 @@ set( quest_headers
 
     ## File readers
     readers/STLReader.hpp
+    readers/ProEReader.hpp
 
     ## quest interface
     interface/internal/mpicomm_wrapper.hpp
@@ -56,6 +57,7 @@ set( quest_headers
     interface/inout.hpp
     interface/signed_distance.hpp
 
+    util/mesh_helpers.hpp
     )
 
 set( quest_sources
@@ -74,29 +76,24 @@ set( quest_sources
 
     ## File readers
     readers/STLReader.cpp
+    readers/ProEReader.cpp
 
     ## quest interface
     interface/internal/QuestHelpers.cpp
     interface/inout.cpp
     interface/signed_distance.cpp
 
+    util/mesh_helpers.cpp
    )
 
 
 set( quest_depends_on
-    core
-    slic
-    mint
-    slam
     spin
-    primal
+    mint
     fmt
     )
 
 blt_list_append(TO quest_depends_on IF AXOM_ENABLE_SIDRE ELEMENTS sidre)
-blt_list_append(TO quest_depends_on IF ENABLE_CUDA ELEMENTS cuda)
-blt_list_append(TO quest_depends_on IF ENABLE_HIP ELEMENTS blt::hip)
-blt_list_append(TO quest_depends_on IF ENABLE_OPENMP ELEMENTS openmp)
 blt_list_append(TO quest_depends_on IF SPARSEHASH_FOUND ELEMENTS sparsehash)
 blt_list_append(TO quest_depends_on IF MFEM_FOUND ELEMENTS mfem)
 
@@ -104,11 +101,25 @@ if(AXOM_ENABLE_SIDRE)
     list(APPEND quest_headers    ScatteredInterpolation.hpp )
 endif()
 
-if(CONDUIT_FOUND AND ENABLE_MPI)
+if(CONDUIT_FOUND AND AXOM_ENABLE_MPI)
     list(APPEND quest_headers    DistributedClosestPoint.hpp )
     list(APPEND quest_depends_on conduit::conduit
                                  conduit::conduit_mpi)
 endif()
+
+blt_list_append(
+    TO       quest_headers
+    ELEMENTS MarchingCubes.hpp detail/MarchingCubesImpl.hpp
+    IF       CONDUIT_FOUND
+               )
+
+blt_list_append(
+    TO       quest_sources
+    ELEMENTS MarchingCubes.cpp
+    IF       CONDUIT_FOUND
+               )
+
+blt_list_append( TO quest_depends_on ELEMENTS conduit::conduit IF CONDUIT_FOUND )
 
 if(MFEM_FOUND AND AXOM_ENABLE_KLEE AND AXOM_ENABLE_SIDRE AND AXOM_ENABLE_MFEM_SIDRE_DATACOLLECTION)
     list(APPEND quest_headers Shaper.hpp
@@ -117,6 +128,7 @@ if(MFEM_FOUND AND AXOM_ENABLE_KLEE AND AXOM_ENABLE_SIDRE AND AXOM_ENABLE_MFEM_SI
                               detail/shaping/shaping_helpers.hpp)
     list(APPEND quest_sources Shaper.cpp
                               detail/shaping/shaping_helpers.cpp)
+    list(APPEND quest_depends_on klee)
 endif()
 
 if(C2C_FOUND)
@@ -125,14 +137,14 @@ if(C2C_FOUND)
     list(APPEND quest_depends_on c2c)
 endif()
 
-if (ENABLE_MPI)
-    list(APPEND quest_headers readers/PSTLReader.hpp)
+if (AXOM_ENABLE_MPI)
+    list(APPEND quest_headers readers/PSTLReader.hpp
+                              readers/PProEReader.hpp)
     blt_list_append(TO quest_headers IF C2C_FOUND ELEMENTS readers/PC2CReader.hpp)
 
-    list(APPEND quest_sources readers/PSTLReader.cpp)
+    list(APPEND quest_sources readers/PSTLReader.cpp
+                              readers/PProEReader.cpp)
     blt_list_append(TO quest_sources IF C2C_FOUND ELEMENTS readers/PC2CReader.cpp)
-    
-    list(APPEND quest_depends_on mpi)
 endif()
 
 if (SHROUD_FOUND)
@@ -158,13 +170,12 @@ endif()
 #------------------------------------------------------------------------------
 # Make and install the library
 #------------------------------------------------------------------------------
-blt_add_library(
+axom_add_library(
     NAME        quest
     SOURCES     ${quest_sources}
     HEADERS     ${quest_headers}
     DEPENDS_ON  ${quest_depends_on}
     FOLDER      axom/quest
-    OBJECT      TRUE
     )
 
 axom_write_unified_header(NAME    quest
