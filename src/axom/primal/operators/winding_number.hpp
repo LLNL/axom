@@ -474,8 +474,8 @@ int winding_number(const Point<T, 3>& query,
 template <typename T>
 double winding_number(const Point<T, 3>& query,
                       const BezierPatch<T>& bPatch,
-                      const double edge_tol = 1e-8,
-                      const double quad_tol = 1e-8,
+                      const double edge_tol = 1e-5,
+                      const double quad_tol = 1e-6,
                       const double EPS = 1e-8,
                       const int depth = 0)
 {
@@ -596,7 +596,7 @@ double winding_number(const Point<T, 3>& query,
   }
   else
   {
-    // Next, check an oriented bounding box.
+    // Next, create an oriented box with axes defined by the patch
     // If we are interior to the oriented bounding box, then we
     //  cannot guarantee a separating plane, and need geometric refinement.
     OrientedBoundingBox<T, 3> oBox(bPatch.orientedBoundingBox().expand(edge_tol));
@@ -678,12 +678,12 @@ double winding_number(const Point<T, 3>& query,
     }
     for(int q = 0; q <= ord_v; ++q)
     {
-      boundingPoly[0][q] = rotate_point(rotator, bPatch(ord_v, q));
+      boundingPoly[0][q] = rotate_point(rotator, bPatch(ord_u, q));
       boundingPoly[2][q] = rotate_point(rotator, bPatch(0, ord_v - q));
 
       if(patchIsRational)
       {
-        boundingPoly[0].setWeight(q, bPatch.getWeight(ord_v, q));
+        boundingPoly[0].setWeight(q, bPatch.getWeight(ord_u, q));
         boundingPoly[2].setWeight(q, bPatch.getWeight(0, ord_v - q));
       }
     }
@@ -698,12 +698,12 @@ double winding_number(const Point<T, 3>& query,
     }
     for(int p = 0; p <= ord_u; ++p)
     {
-      boundingPoly[1][p] = rotate_point(rotator, bPatch(ord_u - p, ord_u));
+      boundingPoly[1][p] = rotate_point(rotator, bPatch(ord_u - p, ord_v));
       boundingPoly[3][p] = rotate_point(rotator, bPatch(p, 0));
 
       if(patchIsRational)
       {
-        boundingPoly[1].setWeight(p, bPatch.getWeight(ord_u - p, ord_u));
+        boundingPoly[1].setWeight(p, bPatch.getWeight(ord_u - p, ord_v));
         boundingPoly[3].setWeight(p, bPatch.getWeight(p, 0));
       }
     }
@@ -712,7 +712,6 @@ double winding_number(const Point<T, 3>& query,
   // Set up the polygon if we don't need to do any rotation or splitting.
   if(field_direction != detail::SingularityAxis::rotated)
   {
-    //  Add the relevant bounding curves to the patch.
     boundingPoly[0] = bPatch.isocurve_u(0);
     boundingPoly[0].reverseOrientation();
 
