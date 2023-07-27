@@ -120,6 +120,14 @@ public:
                       const VectorType& e);
 
   /*!
+   * \brief Constructor. Creates an oriented bounding box from a collection of
+   * points with the given axes, which are assumed to be orthonormal.
+   * \param [in] pts C-style array of points
+   * \param [in] u axes of OBB
+   */
+  OrientedBoundingBox(const PointType* pts, int n, const VectorType (&u)[NDIMS]);
+
+  /*!
    * \brief Copy Constructor.
    * \param [in] other The oriented bounding box to copy
    */
@@ -460,6 +468,57 @@ OrientedBoundingBox<T, NDIMS>::OrientedBoundingBox(const PointType* pts, int n)
 
 //------------------------------------------------------------------------------
 template <typename T, int NDIMS>
+OrientedBoundingBox<T, NDIMS>::OrientedBoundingBox(const PointType* pts,
+                                                   int n,
+                                                   const VectorType (&u)[NDIMS])
+{
+  if(n <= 0)
+  {
+    this->clear();
+    return;
+  }
+
+  // Compute the centroid of the box from the centroid of the points
+  NumericArray<T, NDIMS> c;  // centroid
+  for(int i = 0; i < n; i++)
+  {
+    c += pts[i].array();
+  }
+  c /= static_cast<T>(n);
+  this->m_c = Point<T, NDIMS>(c);
+  
+  // save space for pts minus the centroid
+  NumericArray<T, NDIMS> diff;
+
+  // Copy the axes from the vector
+  for(int i = 0; i < NDIMS; i++)
+  {
+    this->m_u[i] = Vector<T, NDIMS>(u[i]);
+  }
+
+  // Calculate the extents
+  Vector<T, NDIMS> maxima;
+  T dot;
+  for(int i = 0; i < n; ++i)
+  {
+    for(int j = 0; j < NDIMS; ++j)
+    {
+      diff = pts[i].array() - c;
+      dot = utilities::abs<T>(
+        numerics::dot_product<T>(&(m_u[j][0]), &diff[0], NDIMS));
+      if(maxima[j] < dot)
+      {
+        maxima[j] = dot;
+      }
+    }
+  }
+
+  // save the extents
+  this->m_e = maxima;
+}
+
+//------------------------------------------------------------------------------
+template <typename T, int NDIMS>
 OrientedBoundingBox<T, NDIMS>::OrientedBoundingBox(const Point<T, NDIMS>& c,
                                                    const Vector<T, NDIMS> (&u)[NDIMS],
                                                    const Vector<T, NDIMS>& e)
@@ -557,6 +616,18 @@ OrientedBoundingBox<T, NDIMS>& OrientedBoundingBox<T, NDIMS>::expand(T expansion
   this->checkAndFix();
 
   return *this;
+}
+
+//------------------------------------------------------------------------------
+template <typename T, int NDIMS>
+T OrientedBoundingBox<T, NDIMS>::volume() const
+{
+  double vol = 1.0;
+  for (int i = 0; i < NDIMS; ++i)
+  {
+    vol*= this->m_e[i];
+  }
+  return vol;
 }
 
 //------------------------------------------------------------------------------
