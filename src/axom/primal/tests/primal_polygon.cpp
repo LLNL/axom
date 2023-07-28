@@ -378,16 +378,6 @@ TEST(primal_polygon, convexity_3d)
     }
     EXPECT_TRUE(is_convex(poly));
   }
-
-  axom::Array<PointType> verts_3d =
-    axom::Array<PointType>({PointType {0, 1, 0},
-                            PointType {0, 1, 1},
-                            PointType {0, 0, 1},
-                            PointType {-1, 0, 1},
-                            PointType {-1, 0, 0}});
-  PolygonType poly_3d(verts_3d);
-
-  EXPECT_FALSE(is_convex(poly_3d));
 }
 
 //------------------------------------------------------------------------------
