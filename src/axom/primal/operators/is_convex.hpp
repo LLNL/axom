@@ -9,6 +9,7 @@
 #include "axom/primal/geometry/Segment.hpp"
 #include "axom/primal/geometry/Polygon.hpp"
 #include "axom/primal/operators/orientation.hpp"
+#include "axom/primal/operators/squared_distance.hpp"
 
 namespace axom
 {
@@ -94,12 +95,12 @@ bool is_convex(const Polygon<T, 3>& poly, double EPS = 1e-8)
   {
     // For each non-endpoint, check if that point and one of the endpoints
     //  are on the same side as the segment connecting the adjacent nodes
-    Vector<T, 3> v0(poly[i - 1], poly[i]);
-    Vector<T, 3> v1(poly[i - 1], poly[i + 1]);
-    Vector<T, 3> v2(poly[i - 1], poly[(i <= n / 2) ? n : 0]);
+    const Vector<T, 3> v0(poly[i - 1], poly[i]);
+    const Vector<T, 3> v1(poly[i - 1], poly[i + 1]);
+    const Vector<T, 3> v2(poly[i - 1], poly[(i <= n / 2) ? n : 0]);
 
-    // Equivalent to (v0 x v1) dot (v0 x v2) > 0
-    if(v0.squared_norm() * v1.dot(v2) > v0.dot(v2) * v0.dot(v1))
+    // Equivalent to (v1 x v0) dot (v1 x v2) > 0
+    if(v1.squared_norm() * v0.dot(v2) - v1.dot(v2) * v1.dot(v0) > EPS)
     {
       return false;
     }
@@ -109,7 +110,7 @@ bool is_convex(const Polygon<T, 3>& poly, double EPS = 1e-8)
 }
 
 /* 
- * Check if a polygon is "shallow," which we define as every line
+ * Check if a convex polygon is "shallow," which we define as every line
  * that is normal to an edge of the polygon intersects only that edge
  * and the edge P[n]P[0].
  * 
@@ -119,12 +120,36 @@ bool is_convex(const Polygon<T, 3>& poly, double EPS = 1e-8)
 template <typename T, int NDIMS>
 bool is_shallow(const Polygon<T, NDIMS>& poly, double EPS = 1e-8)
 {
-  // Get max index of polygon vertices
-  const int n = poly.numVertices() - 1;
+  // max index for vertices in the full polygon
+  const int n_full = poly.numVertices() - 1;
+  if(n_full + 1 < 2)
+  {
+    return true;  // lines and points are shallow
+  }
+
+  int n = 0;  // max index for vertices in the nondegenerate polygon
+  Polygon<T, NDIMS> simple_poly;
+  simple_poly.addVertex(poly[0]);
+
+  for(int i = 1; i < n_full; ++i)
+  {
+    if(squared_distance(simple_poly[n], poly[i]) > 1e-8)
+    {
+      simple_poly.addVertex(poly[i]);
+      n++;
+    }
+  }
+
+  if((n > 0) && (squared_distance(simple_poly[0], poly[n_full]) > 1e-8) &&
+     (squared_distance(simple_poly[n - 1], poly[n_full]) > 1e-8))
+  {
+    simple_poly.addVertex(poly[poly.numVertices() - 1]);
+    n++;
+  }
 
   if(n + 1 < 2)
   {
-    return true;  // Triangles and points are shallow
+    return true;  // lines and points are shallow
   }
 
   // Check two edges connected to P[n]P[0].
@@ -139,8 +164,8 @@ bool is_shallow(const Polygon<T, NDIMS>& poly, double EPS = 1e-8)
   };
 
   // Check endpoints
-  if(compute_angle(poly[n], poly[0], poly[1]) +
-       compute_angle(poly[n - 1], poly[n], poly[0]) >=
+  if(compute_angle(simple_poly[n], simple_poly[0], simple_poly[1]) +
+       compute_angle(simple_poly[n - 1], simple_poly[n], simple_poly[0]) >=
      0.5 * M_PI)
   {
     return false;
@@ -149,7 +174,8 @@ bool is_shallow(const Polygon<T, NDIMS>& poly, double EPS = 1e-8)
   // Iterate over the middle vertices
   for(int i = 1; i < n; ++i)
   {
-    if(compute_angle(poly[i - 1], poly[i], poly[i + 1]) < 0.5 * M_PI)
+    if(compute_angle(simple_poly[i - 1], simple_poly[i], simple_poly[i + 1]) <
+       0.5 * M_PI)
     {
       return false;
     }
