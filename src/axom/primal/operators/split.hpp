@@ -18,6 +18,8 @@
 #include "axom/primal/geometry/Tetrahedron.hpp"
 #include "axom/primal/geometry/BezierPatch.hpp"
 
+#include "axom/primal/operators/is_convex.hpp"
+
 #include "axom/slic.hpp"
 
 // perhaps #include split_impl.hpp here
@@ -95,50 +97,76 @@ template <typename Tp>
 void split_to_valid(const BezierPatch<Tp>& bPatch,
                     axom::Array<BezierPatch<Tp>>& out)
 {
-  using Poly = Polygon<Tp, NDIMS>;
+  using Poly = Polygon<Tp, 3>;
   using Patch = BezierPatch<Tp>;
 
   const int ord_u = bPatch.getOrder_u();
   const int ord_v = bPatch.getOrder_v();
-  Poly control_slice();
+  Poly control_slice;
 
   bool is_valid = true;
 
-  // Check the slices that are fixed in u
-  for(int p = 0; is_valid && p <= ord_u; ++p)
+  // If ord_u > ord_v, then check order u slices (block 1) first
+  //                  else, check order v slices (block 2) first
+  for(int i = 0; i < 2; ++i)
   {
-    control_slice.clear();
-    for(int q = 0; q <= ord_v; ++q)
+    switch((ord_v > ord_u) != (i == 0))
     {
-      control_slice.addVertex(bPatch(p, q));
-    }
+    // Check slices that are fixed in v,
+    //  which are of order u
+    case(true):
+    {
+      for(int q = 0; is_valid && q <= ord_v; ++q)
+      {
+        control_slice.clear();
+        for(int p = 0; p <= ord_u; ++p)
+        {
+          control_slice.addVertex(bPatch(p, q));
+        }
 
-    is_valid = is_convex(control_slice) && is_shallow(control_slice);
+        if(!is_convex(control_slice) || !is_shallow(control_slice))
+        {
+          is_valid = false;
+          Patch p1, p2;
+          bPatch.split_u(0.5, p1, p2);
+          split_to_valid(p1, out);
+          split_to_valid(p2, out);
+        }
+      }
+
+      break;
+    }
+    // Check slices that are fixed in u,
+    //  which are of order v
+    case(false):
+    {
+      for(int p = 0; is_valid && p <= ord_u; ++p)
+      {
+        control_slice.clear();
+        for(int q = 0; q <= ord_v; ++q)
+        {
+          control_slice.addVertex(bPatch(p, q));
+        }
+
+        if(!is_convex(control_slice) || !is_shallow(control_slice))
+        {
+          is_valid = false;
+          Patch p1, p2;
+          bPatch.split_v(0.5, p1, p2);
+          split_to_valid(p1, out);
+          split_to_valid(p2, out);
+        }
+      }
+
+      break;
+    }
+    }
   }
 
-  // Check the slices that are fixed in v
-  for(int q = 0; is_valid && q <= ord_v; ++q)
-  {
-    control_slice.clear();
-    for(int p = 0; p <= ord_u; ++p)
-    {
-      control_slice.addVertex(bPatch(p, q));
-    }
-    is_valid = is_convex(control_slice) && is_shallow(control_slice);
-  }
-
+  // If we fall out of the loop, then add it to the list
   if(is_valid)
   {
     out.push_back(Patch(bPatch));
-  }
-  else
-  {
-    Patch p1, p2, p3, p4;
-    bPatch.split(0.5, p1, p2, p3, p4);
-    split_to_valid(p1, out);
-    split_to_valid(p2, out);
-    split_to_valid(p3, out);
-    split_to_valid(p4, out);
   }
 }
 
