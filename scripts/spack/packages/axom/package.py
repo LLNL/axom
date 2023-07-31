@@ -40,6 +40,7 @@ class Axom(CachedCMakePackage, CudaPackage, ROCmPackage):
 
     version("main", branch="main")
     version("develop", branch="develop")
+    version("0.8.0", tag="v0.8.0")
     version("0.7.0", tag="v0.7.0")
     version("0.6.1", tag="v0.6.1")
     version("0.6.0", tag="v0.6.0")
@@ -55,6 +56,7 @@ class Axom(CachedCMakePackage, CudaPackage, ROCmPackage):
     patch("examples-oneapi.patch", when="@0.6.1 +examples %oneapi")
 
     patch("scr_examples_gtest.patch", when="@0.6.0:0.6.1")
+    patch("umpire_camp_blt_targets.patch", when="@=0.8.0 ^umpire@2023.06.0")
 
     root_cmakelists_dir = "src"
 
