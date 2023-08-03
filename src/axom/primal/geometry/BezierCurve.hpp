@@ -68,8 +68,6 @@ public:
   using BoundingBoxType = BoundingBox<T, NDIMS>;
   using OrientedBoundingBoxType = OrientedBoundingBox<T, NDIMS>;
 
-  AXOM_STATIC_ASSERT_MSG((NDIMS == 2) || (NDIMS == 3),
-                         "A Bezier Curve object may be defined in 2-D or 3-D");
   AXOM_STATIC_ASSERT_MSG(
     std::is_arithmetic<T>::value,
     "A Bezier Curve must be defined using an arithmetic type");
@@ -457,6 +455,90 @@ public:
           }
         }
         val[i] = ord * (dCarray[1] - dCarray[0]);
+      }
+
+      return val;
+    }
+  }
+
+  /*!
+   * \brief Computes the second derivative of a Bezier curve at a particular parameter value \a t
+   *
+   * \param [in] t parameter value at which to compute tangent 
+   * \return p the 2nd derivative vector of the Bezier curve at t
+   *
+   * \note We typically find the second derivative of the curve at \a t between 0 and 1
+   */
+  VectorType dtdt(T t) const
+  {
+    using axom::utilities::lerp;
+    VectorType val;
+
+    const int ord = getOrder();
+    std::vector<T> dCarray(ord + 1);
+
+    if(isRational())
+    {
+      axom::Array<T> dWarray(ord + 1);
+
+      // Run algorithm from Farin '83 on each dimension
+      for(int i = 0; i < NDIMS; ++i)
+      {
+        for(int p = 0; p <= ord; ++p)
+        {
+          dCarray[p] = m_controlPoints[p][i] * m_weights[p];
+          dWarray[p] = m_weights[p];
+        }
+
+        // Stop two steps early and take finite differences of the last three values
+        for(int p = 1; p <= ord - 2; ++p)
+        {
+          const int end = ord - p;
+          for(int k = 0; k <= end; ++k)
+          {
+            dCarray[k] = lerp(dCarray[k], dCarray[k + 1], t);
+            dWarray[k] = lerp(dWarray[k], dWarray[k + 1], t);
+          }
+        }
+
+        // Need the rest of the de casteljau weights for the formula
+        double w1[2] = {lerp(dWarray[0], dWarray[1], t),
+                        lerp(dWarray[1], dWarray[2], t)};
+        double w0[1] = {lerp(w1[0], w1[1], t)};
+
+        val[i] = ord * dWarray[2] *
+          (2 * ord * w1[0] * w1[0] - (ord - 1) * dWarray[0] * w0[0] -
+           2 * w1[0] * w0[0]) *
+          (dCarray[2] / dWarray[2] - dCarray[1] / dWarray[1]);
+        val[i] -= ord * dWarray[0] *
+          (2 * ord * w1[1] * w1[1] - (ord - 1) * dWarray[2] * w0[0] -
+           2 * w1[1] * w0[0]) *
+          (dCarray[1] / dWarray[1] - dCarray[0] / dWarray[0]);
+        val[i] /= w0[0] * w0[0] * w0[0];
+      }
+
+      return val;
+    }
+    else
+    {
+      // Run de Casteljau algorithm on each dimension
+      for(int i = 0; i < NDIMS; ++i)
+      {
+        for(int p = 0; p <= ord; ++p)
+        {
+          dCarray[p] = m_controlPoints[p][i];
+        }
+
+        // stop two steps early and take finite difference of last three values
+        for(int p = 1; p <= ord - 2; ++p)
+        {
+          const int end = ord - p;
+          for(int k = 0; k <= end; ++k)
+          {
+            dCarray[k] = lerp(dCarray[k], dCarray[k + 1], t);
+          }
+        }
+        val[i] = ord * (ord - 1) * (dCarray[2] - 2 * dCarray[1] + dCarray[0]);
       }
 
       return val;
