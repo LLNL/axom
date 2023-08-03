@@ -597,6 +597,93 @@ TEST(primal_bezierpatch, normal)
 }
 
 //------------------------------------------------------------------------------
+TEST(primal_bezierpatch, second_derivative)
+{
+  SLIC_INFO("Testing bezier Patch normal calculation");
+
+  const int DIM = 3;
+  using CoordType = double;
+  using PointType = primal::Point<CoordType, DIM>;
+  using VectorType = primal::Vector<CoordType, DIM>;
+  using BezierPatchType = primal::BezierPatch<CoordType, DIM>;
+
+  const int order_u = 3;
+  const int order_v = 4;
+
+  // clang-format off
+  PointType controlPoints[(order_u + 1) * (order_v + 1)] = {
+                  PointType {0, 0, 0}, PointType{0, 4,  0}, PointType{0, 8, -3}, PointType{0, 12, 1}, PointType{0, 16, 3},
+                  PointType {2, 0, 6}, PointType{2, 4,  5}, PointType{2, 8,  0}, PointType{4, 12, 2}, PointType{2, 16, 2},
+                  PointType {4, 0, 0}, PointType{4, 4,  5}, PointType{4, 8,  3}, PointType{2, 12, 3}, PointType{4, 16, 1},
+                  PointType {6, 0, 0}, PointType{6, 4, -3}, PointType{6, 8,  0}, PointType{6, 12, 2}, PointType{6, 16, 0}};
+  
+  double weights[(order_u + 1) * (order_v + 1)] = {
+                 1.0, 1.0, 1.0, 1.0, 1.0,
+                 1.0, 2.0, 3.0, 2.0, 1.0,
+                 1.0, 2.0, 3.0, 2.0, 1.0,
+                 1.0, 1.0, 1.0, 1.0, 1.0};
+  // clang-format on
+
+  BezierPatchType bPatch(controlPoints, weights, order_u, order_v);
+
+  auto evaluate_test = bPatch.evaluate(0.5, 0.4);
+  PointType evaluate_exp = {3.0, 6.85038038884, 2.35777683855};
+  for(int i = 0; i < 3; ++i)
+  {
+    EXPECT_NEAR(evaluate_test[i], evaluate_exp[i], 1e-6);
+  }
+
+  auto partial_u_test = bPatch.du(0.6, 0.4);
+  VectorType partial_u_exp = {3.78171724599, -0.19774668801, -0.370827644202};
+  for(int i = 0; i < 3; ++i)
+  {
+    EXPECT_NEAR(partial_u_test[i], partial_u_exp[i], 1e-6);
+  }
+
+  auto partial_v_test = bPatch.dv(0.6, 0.4);
+  VectorType partial_v_exp = {-0.354910197356, 11.8772494643, -1.594127454970};
+  for(int i = 0; i < 3; ++i)
+  {
+    EXPECT_NEAR(partial_v_test[i], partial_v_exp[i], 1e-6);
+  }
+
+  auto partial_uu_test = bPatch.dudu(0.6, 0.4);
+  VectorType partial_uu_exp = {3.20670028604, -2.12957447484, -16.1167567473};
+  for(int i = 0; i < 3; ++i)
+  {
+    EXPECT_NEAR(partial_uu_test[i], partial_uu_exp[i], 1e-6);
+  }
+
+  auto partial_vv_test = bPatch.dvdv(0.6, 0.4);
+  VectorType partial_vv_exp = {0.479553359805, -8.63831027883, 1.13497887975};
+  for(int i = 0; i < 3; ++i)
+  {
+    EXPECT_NEAR(partial_vv_test[i], partial_vv_exp[i], 1e-6);
+  }
+
+  BezierPatchType bPatch_nonrational(bPatch);
+  bPatch_nonrational.makeNonrational();
+  bPatch_nonrational.makeRational();
+  std::cout << bPatch_nonrational.getWeight(2, 3) << std::endl;
+
+  auto partial_uv_test = bPatch.dudv(0.6, 0.4);
+  VectorType partial_uv_exp = {-3.43768298544, 1.94078069698, 8.48995274462};
+  for(int i = 0; i < 3; ++i)
+  {
+    EXPECT_NEAR(partial_uv_test[i], partial_uv_exp[i], 1e-6);
+  }
+
+  auto partial_uv_test_nonrational = bPatch_nonrational.dudv(0.6, 0.4);
+  VectorType partial_uv_exp_nonrational = {-2.36544, 0, 11.80416};
+  for(int i = 0; i < 3; ++i)
+  {
+    EXPECT_NEAR(partial_uv_test_nonrational[i],
+                partial_uv_exp_nonrational[i],
+                1e-6);
+  }
+}
+
+//------------------------------------------------------------------------------
 TEST(primal_bezierpatch, split_degenerate)
 {
   SLIC_INFO("Testing bezier Patch splitting for order 0 surface");
