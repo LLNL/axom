@@ -788,6 +788,8 @@ public:
    */
   VectorType du(T u, T v) const { return isocurve_v(v).dt(u); }
 
+  VectorType dudu(T u, T v) const { return isocurve_v(v).dtdt(u); }
+
   /*!
    * \brief Computes a tangent of a Bezier patch at a particular parameter value (\a u, \a v) along the v axis
    *
@@ -798,6 +800,60 @@ public:
    * \note We typically find the tangent of the patch at \a u and \a v between 0 and 1
    */
   VectorType dv(T u, T v) const { return isocurve_u(u).dt(v); }
+
+  VectorType dvdv(T u, T v) const { return isocurve_u(u).dtdt(v); }
+
+  VectorType dudv(T u, T v) const
+  {
+    using axom::utilities::lerp;
+
+    const int ord_u = getOrder_u();
+    const int ord_v = getOrder_v();
+
+    // Construct the hodograph in the two directions, then evaluate it
+
+    if(!isRational())
+    {
+      BezierPatch<T, NDIMS> hodograph(ord_u - 1, ord_v - 1);
+      // Iterate over each isocurve along v
+      for(int q = 0; q <= ord_v - 1; ++q)
+      {
+        for(int p = 0; p <= ord_u - 1; ++p)
+        {
+          for(int i = 0; i < NDIMS; ++i)
+          {
+            hodograph(p, q)[i] = ord_u * ord_v *
+              (m_controlPoints(p + 1, q + 1)[i] - m_controlPoints(p + 1, q)[i] -
+               m_controlPoints(p, q + 1)[i] + m_controlPoints(p, q)[i]);
+          }
+        }
+      }
+
+      return Vector<T, NDIMS>(hodograph.evaluate(u, v));
+    }
+    else
+    {
+      BezierPatch<T, NDIMS> nonrational(ord_u, ord_v);
+      BezierPatch<T, 1> weights(ord_u, ord_v);
+      for(int p = 0; p <= ord_u; ++p)
+      {
+        for(int q = 0; q <= ord_v; ++q)
+        {
+          nonrational(p, q) = m_controlPoints(p, q);
+          nonrational(p, q).array() *= m_weights(p, q);
+          weights(p, q)[0] = m_weights(p, q);
+        }
+      }
+
+      // Return a wildly inefficient calculation of the rational derivative
+      return (nonrational.dudv(u, v) - weights.dv(u, v)[0] * du(u, v) -
+              weights.du(u, v)[0] * dv(u, v) -
+              weights.dudv(u, v)[0] * Vector<T, NDIMS>(evaluate(u, v))) /
+        weights.evaluate(u, v)[0];
+    }
+  }
+
+  VectorType dvdu(T u, T v) const { return dudv(u, v); }
 
   /*!
    * \brief Computes the normal vector of a Bezier patch at a particular parameter value (\a u, \a v)

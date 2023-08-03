@@ -180,6 +180,43 @@ TEST(primal_beziercurve_, tangent)
 }
 
 //------------------------------------------------------------------------------
+TEST(primal_beziercurve_, second_derivative)
+{
+  SLIC_INFO("Testing Bezier second derivative calculation");
+
+  const int DIM = 3;
+  using CoordType = double;
+  using PointType = primal::Point<CoordType, DIM>;
+  using VectorType = primal::Vector<CoordType, DIM>;
+  using BezierCurveType = primal::BezierCurve<CoordType, DIM>;
+
+  const int order = 3;
+  PointType data[order + 1] = {PointType {0.6, 1.2, 1.0},
+                               PointType {1.3, 1.6, 1.8},
+                               PointType {2.9, 2.4, 2.3},
+                               PointType {3.2, 3.5, 3.0}};
+
+  BezierCurveType b2Curve(data, order);
+
+  VectorType midtval = VectorType {-1.2, 2.1, -0.3};
+  VectorType starttval = VectorType {5.4, 2.4, -1.8};
+  VectorType endtval = VectorType {-7.8, 1.8, 1.2};
+
+  // Evaluate the curve at several parameter values
+  // Curve should be tangent to control net at endpoints
+  VectorType eval0 = b2Curve.dtdt(0.0);
+  VectorType eval1 = b2Curve.dtdt(1.0);
+  VectorType evalMid = b2Curve.dtdt(0.5);
+
+  for(int i = 0; i < DIM; ++i)
+  {
+    EXPECT_NEAR(starttval[i], eval0[i], 1e-14);
+    EXPECT_NEAR(endtval[i], eval1[i], 1e-14);
+    EXPECT_NEAR(midtval[i], evalMid[i], 1e-14);
+  }
+}
+
+//------------------------------------------------------------------------------
 TEST(primal_beziercurve, split_cubic)
 {
   SLIC_INFO("Testing Bezier splitting of a cubic");
