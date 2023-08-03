@@ -491,6 +491,64 @@ double stokes_winding_number_adaptive(const Point<T, 3>& query,
 }
 #endif
 
+/*!
+ * \brief Find the point on a BezierPatch closest to a point close to the surface
+ *
+ * \param [in] p The query point to test
+ * \param [in] bPatch The BezierPatch object
+ * \param [out] min_u The u-coordinate of the closest point
+ * \param [out] min_v The v-coordinate of the closest point
+ * 
+ * Apply the Newton-Raphson method to minimize the distance function.
+ *
+ * \note This is only meant to be used for `winding_number<BezierPatch>()`,
+ *  as Newton's method is unstable for far away points.
+ * 
+ * \return The closest point on the surface
+ */
+template <typename T>
+Point<T, 3> near_field_projection(const Point<T, 3>& p,
+                                  const BezierPatch<T, 3>& bPatch,
+                                  double& min_u,
+                                  double& min_v)
+{
+  double u = 5, v = 0.5;
+  Vector<T, 3> Sp, Su, Sv, Suu, Svv, Suv;
+  double A00, A01, A10, A11, det;
+  double b0, b1;
+  double delu, delv;
+
+  for(int i = 0; i < 15; ++i)
+  {
+    auto surf_normal = Vector<T, 3>(p, bPatch.evaluate(u, v));
+
+    Sp = Vector<T, 3>(p, bPatch.evaluate(u, v));
+    Su = bPatch.du(u, v);
+    Sv = bPatch.dv(u, v);
+    Suu = bPatch.dudu(u, v);
+    Svv = bPatch.dvdv(u, v);
+    Suv = bPatch.dudv(u, v);
+
+    A00 = Sp.dot(Suu) + Su.dot(Su);
+    A10 = A01 = Sp.dot(Suv) + Su.dot(Sv);
+    A11 = Sp.dot(Svv) + Sv.dot(Sv);
+    det = (A00 * A11 - A01 * A10);
+
+    b0 = -Sp.dot(Su);
+    b1 = -Sp.dot(Sv);
+
+    delu = (A11 * b0 - A01 * b1) / det;
+    delv = (-A10 * b0 + A00 * b1) / det;
+
+    u = axom::utilities::clampVal(u + delu, 0.0, 1.0);
+    v = axom::utilities::clampVal(v + delv, 0.0, 1.0);
+  }
+
+  min_u = u;
+  min_v = v;
+
+  return evaluate(u, v);
+}
 }  // end namespace detail
 }  // end namespace primal
 }  // end namespace axom
