@@ -1078,6 +1078,94 @@ public:
   }
 
   /*!
+   * \brief Finds two unit tangent vectors at a corner geometrically
+   *
+   * \param [in] u parameter value of the corner (should be 0 or 1)
+   * \param [in] v parameter value of the corner (should be 0 or 1)
+   * \param [out] V1 First unit tangent vector
+   * \param [out] V2 Second unit tangent vector
+   * \param [in] edge_tol Physical distance at which nodes are indistinguishable
+   * \param [in] EPS Numerical tolerance to identify S(u, v) as a corner
+   */
+  template <typename T, int NDIMS>
+  void corner_tangent_vectors(double u,
+                              double v,
+                              Vector<T, NDIMS>& V1,
+                              Vector<T, NDIMS>& V2,
+                              double edge_tol = 1e-8,
+                              double EPS = 0) const
+  {
+    const int ord_u = getOrder_u();
+    const int ord_v = getOrder_v();
+
+    double edge_tol_sq = edge_tol * edge_tol;
+
+    V1 = Vector<T, 3>();
+    V2 = Vector<T, 3>();
+
+    // Just kidding. We're doing the clever thing now.
+    // Add the bounding vertices to this list counterclockwise
+    axom::Array<Point<T, NDIMS>> point_list;
+    for(int p = 0; p < ord_u; ++p)
+    {
+      point_list.push_back(m_controlPoints(p, 0));
+    }
+    for(int q = 0; q < ord_v; ++q)
+    {
+      point_list.push_back(m_controlPoints(ord_u, q));
+    }
+    for(int p = ord_u; p > 0; --p)
+    {
+      point_list.push_back(m_controlPoints(p, ord_v));
+    }
+    for(int q = ord_v; q > 0; --q)
+    {
+      point_list.push_back(m_controlPoints(0, q));
+    }
+
+    const int num_points = point_list.size();
+    int start_idx;
+    if(u < EPS && v < EPS)
+      start_idx = 0;
+    else if(u > 1 - EPS && v < EPS)
+      start_idx = ord_u;
+    else if(u > 1 - EPS && v > 1 - EPS)
+      start_idx = ord_u + ord_v;
+    else if(u < EPS && v > 1 - EPS)
+      start_idx = 2 * ord_u + ord_v;
+    else
+      return;  // Point is not a corner
+
+    // Loop over points counterclockwise
+    for(int i = 0; i < num_points; ++i)
+    {
+      if(squared_distance(point_list[start_idx],
+                          point_list[(start_idx + i) % num_points]) > edge_tol_sq)
+      {
+        V1 = Vector<T, NDIMS>(point_list[start_idx],
+                              point_list[(start_idx + i) % num_points])
+               .unitVector();
+        break;
+      }
+    }
+
+    // Loop over points clockwise
+    for(int i = 0; i < num_points; ++i)
+    {
+      if(squared_distance(
+           point_list[start_idx],
+           point_list[(start_idx - i + num_points) % num_points]) > edge_tol_sq)
+      {
+        V2 =
+          Vector<T, NDIMS>(point_list[start_idx],
+                           point_list[(start_idx - i + num_points) % num_points])
+            .unitVector();
+        break;
+      }
+    }
+  }
+
+  /*!
    * \brief Predicate to check if the Bezier patch is approximately planar
    *
    * This function checks if all control points of the BezierPatch
