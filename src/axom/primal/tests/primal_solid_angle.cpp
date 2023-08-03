@@ -617,85 +617,106 @@ TEST(primal_solid_angle, bezierpatch_sphere)
     }
   }
 
-  // Iterate over points of interest, i.e. axis/edge/vertex aligned
-  Vector3D query_directions[12] = {Vector3D({0.0, 0.0, 1.0}).unitVector(),
-                                   Vector3D({0.0, 1.0, 0.0}).unitVector(),
-                                   Vector3D({1.0, 0.0, 0.0}).unitVector(),
-                                   Vector3D({0.0, 1.0, 1.0}).unitVector(),
-                                   Vector3D({1.0, 0.0, 1.0}).unitVector(),
-                                   Vector3D({1.0, 1.0, 0.0}).unitVector(),
-                                   Vector3D({1.0, 1.0, 1.0}).unitVector(),
-                                   Vector3D({0.0, 0.1, 1.0}).unitVector(),
-                                   Vector3D({0.1, 1.0, 0.0}).unitVector(),
-                                   Vector3D({1.0, 0.0, 0.1}).unitVector(),
-                                   Vector3D(sphere_faces[0].evaluate(0, 0.6)),
-                                   Vector3D(sphere_faces[0].evaluate(0.6, 0))};
+  // Split each surface into valid subsurfaces
+  axom::Array<BPatch> valid_subsurfaces;
+  for(int n = 0; n < 6; ++n)
+  {
+    split_to_valid(sphere_faces[n], valid_subsurfaces);
+  }
+  const int num_subsurfaces = valid_subsurfaces.size();
 
-  const double quad_tol = 1e-5;
-  const double EPS = 1e-10;
+  // Iterate over points of interest, i.e. close to a boundary.
+  //  Specifically need to exercise the projection steps
+  Vector3D query_directions[11] = {
+    Vector3D(valid_subsurfaces[3].evaluate(0.50, 0.50)),        // 0
+    Vector3D(valid_subsurfaces[3].evaluate(0.99, 0.95)),        // 1
+    Vector3D(valid_subsurfaces[3].evaluate(0.999, 0.995)),      // 2
+    Vector3D(valid_subsurfaces[3].evaluate(0.9999, 0.9995)),    // 3
+    Vector3D(valid_subsurfaces[3].evaluate(0.99999, 0.99995)),  // 4
+    Vector3D(valid_subsurfaces[3].evaluate(1.0, 0.9999)),       // 5
+    Vector3D(valid_subsurfaces[3].evaluate(0.9999, 1.0)),       // 6
+    Vector3D(valid_subsurfaces[3].evaluate(1.0, 1.0)),          // 7
+    Vector3D(valid_subsurfaces[3].evaluate(-.99, 0.95)),        // 8
+    Vector3D(valid_subsurfaces[3].evaluate(0.99, -.95)),        // 9
+    Vector3D(valid_subsurfaces[3].evaluate(-.99, -.95))};       // 10
 
   const double edge_tol = 1e-6;
   const double edge_offset = 1e-5;
+
+  const double quad_tol = 1e-5;
+  const double EPS = 1e-10;
 
   // Test some easy cases
   auto origin = Point3D({0.0, 0.0, 0.0});
   auto near_origin = Point3D({0.1, -0.2, 0.15});
 
   double origin_wn = 0.0, near_origin_wn = 0.0;
-  for(int k = 0; k < 6; ++k)
+  for(int k = 0; k < num_subsurfaces; ++k)
   {
-    origin_wn += winding_number(origin, sphere_faces[k], edge_tol, quad_tol, EPS);
+    origin_wn +=
+      winding_number(origin, valid_subsurfaces[k], edge_tol, quad_tol, EPS);
     near_origin_wn +=
-      winding_number(near_origin, sphere_faces[k], edge_tol, quad_tol, EPS);
+      winding_number(near_origin, valid_subsurfaces[k], edge_tol, quad_tol, EPS);
   }
-  EXPECT_NEAR(origin_wn, 1.0, 6 * quad_tol);
-  EXPECT_NEAR(near_origin_wn, 1.0, 6 * quad_tol);
+  EXPECT_NEAR(origin_wn, 1.0, num_subsurfaces * quad_tol);
+  EXPECT_NEAR(near_origin_wn, 1.0, num_subsurfaces * quad_tol);
 
-  for(int i = 0; i < 12; ++i)
+  for(int i = 0; i < 11; ++i)
   {
     // Pick point close to the surface
     auto far_query = Point3D(10 * query_directions[i].array());
 
     double far_wn = 0.0;
-    for(int k = 0; k < 6; ++k)
+    for(int k = 0; k < num_subsurfaces; ++k)
     {
       far_wn +=
-        winding_number(far_query, sphere_faces[k], edge_tol, quad_tol, EPS);
+        winding_number(far_query, valid_subsurfaces[k], edge_tol, quad_tol, EPS);
     }
-    EXPECT_NEAR(far_wn, 0.0, 6 * quad_tol);
+    EXPECT_NEAR(far_wn, 0.0, num_subsurfaces * quad_tol);
   }
 
   // Iterate over difficult query directions for very close points
-  for(int i = 0; i < 12; ++i)
+  for(int i = 0; i < 11; ++i)
   {
+    std::cout << i << std::endl;
     // Pick point close to the surface
     auto inner_query = Point3D((1.0 - edge_offset) * query_directions[i].array());
     auto outer_query = Point3D((1.0 + edge_offset) * query_directions[i].array());
 
     // Iterate over the patches that compose the sphere
     double inner_wn = 0;
-    for(int k = 0; k < 6; ++k)
+    for(int k = 0; k < num_subsurfaces; ++k)
     {
       inner_wn +=
-        winding_number(inner_query, sphere_faces[k], edge_tol, quad_tol, EPS);
+        winding_number(inner_query, valid_subsurfaces[k], edge_tol, quad_tol, EPS);
     }
-    EXPECT_NEAR(inner_wn, 1.0, 6 * quad_tol);
+    EXPECT_NEAR(inner_wn, 1.0, num_subsurfaces * quad_tol);
 
     // Iterate over the patches that compose the sphere
     double outer_wn = 0;
-    for(int k = 0; k < 6; ++k)
+    for(int k = 0; k < num_subsurfaces; ++k)
     {
       outer_wn +=
-        winding_number(outer_query, sphere_faces[k], edge_tol, quad_tol, EPS);
+        winding_number(outer_query, valid_subsurfaces[k], edge_tol, quad_tol, EPS);
     }
-    EXPECT_NEAR(outer_wn, 0.0, 6 * quad_tol);
+    EXPECT_NEAR(outer_wn, 0.0, num_subsurfaces * quad_tol);
 
     // Pick a point on the surface too.
     //  Regardless of what tolerances are picked, the winding number
     //  should lie between the values on either side when rounded
     auto coincident_query = Point3D(query_directions[i].array());
     double coincident_wn = 0.0;
-    for(int k = 0; k < 6; ++k)
+    for(int k = 0; k < valid_subsurfaces.size(); ++k)
+    {
+      coincident_wn += winding_number(coincident_query,
+                                      valid_subsurfaces[k],
+                                      edge_tol,
+                                      quad_tol,
+                                      EPS);
+    }
+    EXPECT_NEAR(coincident_wn, 0.5, num_subsurfaces * quad_tol);
+  }
+}
     {
       coincident_wn +=
         winding_number(coincident_query, sphere_faces[k], edge_tol, quad_tol, EPS);
