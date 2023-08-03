@@ -455,7 +455,7 @@ int winding_number(const Point<T, 3>& query,
 
 #ifdef AXOM_USE_MFEM
 /*!
- * \brief Computes the solid angle winding number for a Bezier patch
+ * \brief Computes the solid angle winding number for a 3D Bezier patch
  *
  * \param [in] query The query point to test
  * \param [in] bPatch The Bezier patch object
@@ -468,6 +468,7 @@ int winding_number(const Point<T, 3>& query,
  *
  * \note Warning: This algorithm is only tested to high accuracy for queries within
  *  1e-5 of the surface. Otherwise, it will return less accurate results.
+ * \note CURRENTLY ASSUMES THE SURFACE IS VALID! PROJECTION MAY NOT WORK OTHERWISE!
  * 
  * \return double The generalized winding number.
  */
@@ -500,79 +501,17 @@ double winding_number(const Point<T, 3>& query,
       PRIMAL_TINY);
   }
 
-  // Use a specific kind of recursion if we are within tol of an endpoint.
-  //  Split the surface closer to the corner, assume smallest patch is polygonal,
-  //  and set a new edge_tol so corners of the new patch aren't marked as coincident
-  constexpr double edge_offset = 0.01;
-  if(squared_distance(query, bPatch(0, 0)) <= edge_tol_sq)
-  {
-    BezierPatch<T> p1, p2, p3, p4;
-    bPatch.split(0.0 + edge_offset, 0.0 + edge_offset, p1, p2, p3, p4);
-    double new_edge_tol = 0.5 *
-      sqrt(axom::utilities::min(
-        squared_distance(query, bPatch.evaluate(0.0, 0.0 + edge_offset)),
-        squared_distance(query, bPatch.evaluate(0.0 + edge_offset, 0.0))));
-    new_edge_tol = axom::utilities::min(new_edge_tol, edge_tol);
-
-    return winding_number(query, p2, new_edge_tol, quad_tol, EPS, depth + 1) +
-      winding_number(query, p3, new_edge_tol, quad_tol, EPS, depth + 1) +
-      winding_number(query, p4, new_edge_tol, quad_tol, EPS, depth + 1);
-  }
-  if(squared_distance(query, bPatch(ord_u, 0)) <= edge_tol_sq)
-  {
-    BezierPatch<T> p1, p2, p3, p4;
-    bPatch.split(1.0 - edge_offset, 0.0 + edge_offset, p1, p2, p3, p4);
-    double new_edge_tol = 0.5 *
-      sqrt(axom::utilities::min(
-        squared_distance(query, bPatch.evaluate(1.0, 0.0 + edge_offset)),
-        squared_distance(query, bPatch.evaluate(1.0 - edge_offset, 0.0))));
-    new_edge_tol = axom::utilities::min(new_edge_tol, edge_tol);
-
-    return winding_number(query, p1, new_edge_tol, quad_tol, EPS, depth + 1) +
-      winding_number(query, p3, new_edge_tol, quad_tol, EPS, depth + 1) +
-      winding_number(query, p4, new_edge_tol, quad_tol, EPS, depth + 1);
-  }
-  if(squared_distance(query, bPatch(0, ord_v)) <= edge_tol_sq)
-  {
-    BezierPatch<T> p1, p2, p3, p4;
-    bPatch.split(0.0 + edge_offset, 1.0 - edge_offset, p1, p2, p3, p4);
-    double new_edge_tol = 0.5 *
-      sqrt(axom::utilities::min(
-        squared_distance(query, bPatch.evaluate(0.0 + edge_offset, 1.0)),
-        squared_distance(query, bPatch.evaluate(0.0, 1.0 - edge_offset))));
-    new_edge_tol = axom::utilities::min(new_edge_tol, edge_tol);
-
-    return winding_number(query, p1, new_edge_tol, quad_tol, EPS, depth + 1) +
-      winding_number(query, p2, new_edge_tol, quad_tol, EPS, depth + 1) +
-      winding_number(query, p4, new_edge_tol, quad_tol, EPS, depth + 1);
-  }
-  if(squared_distance(query, bPatch(ord_u, ord_v)) <= edge_tol_sq)
-  {
-    BezierPatch<T> p1, p2, p3, p4;
-    bPatch.split(1.0 - edge_offset, 1.0 - edge_offset, p1, p2, p3, p4);
-    double new_edge_tol = 0.5 *
-      sqrt(axom::utilities::min(
-        squared_distance(query, bPatch.evaluate(1.0, 1.0 - edge_offset)),
-        squared_distance(query, bPatch.evaluate(1.0 - edge_offset, 1.0))));
-    new_edge_tol = axom::utilities::min(new_edge_tol, edge_tol);
-
-    return winding_number(query, p1, new_edge_tol, quad_tol, EPS, depth + 1) +
-      winding_number(query, p2, new_edge_tol, quad_tol, EPS, depth + 1) +
-      winding_number(query, p3, new_edge_tol, quad_tol, EPS, depth + 1);
-  }
-
   /* 
-   * To use Stokes theorem, we need to identify a separating plane between
-   * `query` and the surface, guaranteed through a bounding box.
-   * If it does, need to do geometric refinement: Splitting and rotating the curve
-   * until we can guarantee this.
+   * To use Stokes theorem, we need to either identify a separating plane between
+   * the query and the surface (dodge), or a ray that intersects the 
+   * surface at only a single point (pierce).
    */
   CurvedPolygon<T, 3> boundingPoly(4);
-
-  // Define vector fields whose curl gives us the winding number
+  double wn = 0;
   detail::SingularityAxis field_direction;
 
-  // Check an axis-aligned bounding box (most surfaces satisfy this condition)
+  // Check if we dodge an axis-aligned bounding box,
+  //  since most surfaces satisfy this condition.
   BoundingBox<T, 3> bBox(bPatch.boundingBox().expand(edge_tol));
   const bool exterior_x =
     bBox.getMin()[0] > query[0] || query[0] > bBox.getMax()[0];
@@ -595,22 +534,9 @@ double winding_number(const Point<T, 3>& query,
   }
   else
   {
-    // Next, create an oriented box with axes defined by the patch
-    // If we are interior to the oriented bounding box, then we
-    //  cannot guarantee a separating plane, and need geometric refinement.
-    OrientedBoundingBox<T, 3> oBox(bPatch.orientedBoundingBox().expand(edge_tol));
-    if(oBox.contains(query))
-    {
-      BezierPatch<T> p1, p2, p3, p4;
-      bPatch.split(0.5, 0.5, p1, p2, p3, p4);
-      return winding_number(query, p1, edge_tol, quad_tol, EPS, depth + 1) +
-        winding_number(query, p2, edge_tol, quad_tol, EPS, depth + 1) +
-        winding_number(query, p3, edge_tol, quad_tol, EPS, depth + 1) +
-        winding_number(query, p4, edge_tol, quad_tol, EPS, depth + 1);
-    }
-
-    // Otherwise, we can apply a rotation to a z-aligned field.
+    // Otherwise, we can apply a rotation until we fit a z-aligned field.
     field_direction = detail::SingularityAxis::rotated;
+    numerics::Matrix<T> rotator;
 
     // Lambda to generate a 3D rotation matrix from an angle and axis
     // Formulation from https://en.wikipedia.org/wiki/Rotation_matrix#Axis_and_angle
@@ -647,24 +573,119 @@ double winding_number(const Point<T, 3>& query,
         {rotated[0] + query[0], rotated[1] + query[1], rotated[2] + query[2]});
     };
 
-    // Find vector from query to the bounding box
-    Point<T, 3> closest = closest_point(query, oBox);
-    Vector<T, 3> v0 = Vector<T, 3>(query, closest).unitVector();
+    // Next, check the oriented bounding box defined by the patch's control points
+    //  If we are exterior to it, then we can guarantee a separating plane.
+    // Note: The ideal check would be against the convex hull of the control points
+    OrientedBoundingBox<T, 3> oBox(bPatch.orientedBoundingBox().expand(edge_tol));
+    if(oBox.contains(query))
+    {
+      Vector<T, 3> cast_ray, closest_vector;
 
-    // Find the direction of a ray perpendicular to that
-    Vector<T, 3> v1;
-    if(axom::utilities::isNearlyEqual(v0[0], v0[1], EPS))
-      v1 = Vector<T, 3>({v0[2], v0[2], -v0[0] - v0[1]}).unitVector();
+      // Need to do projection to find an axis that pierces the surface ONLY once
+      double min_u, min_v;
+      Point<T, 3> closest_point =
+        detail::near_field_projection(query, bPatch, min_u, min_v);
+
+      int on_boundary =
+        (min_u < EPS) + (min_u > 1 - EPS) + (min_v < EPS) + (min_v > 1 - EPS);
+
+      // Cast a ray that is normal to the surface at the closest point
+      cast_ray = bPatch.normal(min_u, min_v).unitVector();
+
+      closest_vector = Vector<T, 3>(query, closest_point);
+      double min_dist = closest_vector.squared_norm();
+      closest_vector = closest_vector.unitVector();
+
+      // If the query is on the surface, then we don't need to do any adjustment,
+      //  as the induced discontinuity in the integrand is removable
+      if(min_dist < edge_tol * edge_tol)
+      {
+        wn = 0.0;
+      }
+      // Otherwise, we need to adjust for the contribution of a small removed
+      //  disk around the ray we cast.
+      else
+      {
+        // If the closest point isn't on a boundary, the disk is totally interior
+        if(!on_boundary)
+        {
+          wn = 0.5;
+        }
+        // If the closest point is on a boundary, then the cast ray may
+        //  or may not intersect the surface
+        else
+        {
+          // If the ray does not intersect, do nothing.
+          if(!axom::utilities::isNearlyEqual(
+               Vector<T, 3>::cross_product(closest_vector, cast_ray).squared_norm(),
+               0.0,
+               EPS))
+          {
+            wn = 0.0;
+          }
+          // If it does, then the contribution of the disk depends on
+          //  the angle subtended by the tangent vectors
+          else
+          {
+            // Angle subtended by the line is exactly pi
+            if(on_boundary == 1)
+            {
+              wn = 0.25;
+            }
+            // Need to compute the angle subtended at corners
+            else
+            {
+              Vector<T, 3> V1, V2;
+              bPatch.corner_tangent_vectors(min_u, min_v, V1, V2, edge_tol, EPS);
+
+              wn = 0.25 *
+                acos(axom::utilities::clampVal(V1.dot(V2), -1.0, 1.0)) / M_PI;
+            }
+          }
+        }
+
+        // Need to change the sign of the disk's contribution
+        //  depending on the orientation.
+        wn *= (closest_vector.dot(cast_ray) > 0) ? 1.0 : -1.0;
+      }
+
+      // Rotate the surface so that the cast ray is oriented with k_hat
+      Vector<T, 3> axis = {cast_ray[1], -cast_ray[0], 0.0};
+      double ang = acos(axom::utilities::clampVal(cast_ray[2], -1.0, 1.0));
+
+      rotator = angleAxisRotMatrix(ang, axis);
+    }
     else
-      v1 = Vector<T, 3>({-v0[1] - v0[2], v0[0], v0[0]}).unitVector();
+    {
+      // Get a vector perpendicular to the normal of the separating plane
+      Vector<T, 3> axis, sn(query, closest_point(query, oBox));
+      sn = sn.unitVector();
 
-    // Rotate v0 around v1 until it is perpendicular to the plane spanned by k and v1
-    double ang = (v0[2] < 0 ? 1.0 : -1.0) *
-      acos(axom::utilities::clampVal(
-        -(v0[0] * v1[1] - v0[1] * v1[0]) / sqrt(v1[0] * v1[0] + v1[1] * v1[1]),
-        -1.0,
-        1.0));
-    auto rotator = angleAxisRotMatrix(ang, v1);
+      if(axom::utilities::isNearlyEqual(sn[0], sn[1], EPS))
+        axis = Vector<T, 3>({sn[2], sn[2], -sn[0] - sn[1]}).unitVector();
+      else
+        axis = Vector<T, 3>({-sn[1] - sn[2], sn[0], sn[0]}).unitVector();
+
+      // We will rotate sn around axis until it is
+      //  perpendicular to the plane spanned by k_hat and the axis
+      double ang, xy_norm = axis[0] * axis[0] + axis[1] * axis[1];
+
+      // Only need to avoid an exact divide by zero
+      if(axom::utilities::isNearlyEqual(xy_norm, 0.0, PRIMAL_TINY))
+      {
+        ang = 0.0;
+      }
+      else
+      {
+        ang = (sn[2] < 0 ? 1.0 : -1.0) *
+          acos(axom::utilities::clampVal(
+            -(sn[0] * axis[1] - sn[1] * axis[0]) / sqrt(xy_norm),
+            -1.0,
+            1.0));
+      }
+
+      rotator = angleAxisRotMatrix(ang, axis);
+    }
 
     // Collect rotated curves into the curved Polygon
     // Set up the (0, v) and (1, v) isocurves, rotated
@@ -722,7 +743,6 @@ double winding_number(const Point<T, 3>& query,
   }
 
   // Iterate over the edges of the bounding curved polygon, add up the results
-  double wn = 0;
   for(int n = 0; n < 4; ++n)
   {
     wn += detail::stokes_winding_number(query,
