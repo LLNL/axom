@@ -473,7 +473,7 @@ int winding_number(const Point<T, 3>& query,
  */
 template <typename T>
 double winding_number(const Point<T, 3>& query,
-                      const BezierPatch<T>& bPatch,
+                      const BezierPatch<T, 3>& bPatch,
                       const double edge_tol = 1e-5,
                       const double quad_tol = 1e-6,
                       const double EPS = 1e-8,
@@ -490,8 +490,7 @@ double winding_number(const Point<T, 3>& query,
 
   // Early return if the patch is approximately polygonal.
   //  Very slight variations in curvature requires small EPS tolerance
-  constexpr int MAX_DEPTH = 10;
-  if(depth >= MAX_DEPTH || bPatch.isPolygonal(EPS))
+  if(bPatch.isPolygonal(EPS))
   {
     return winding_number(
       query,

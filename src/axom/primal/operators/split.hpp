@@ -94,11 +94,11 @@ void split(const Octahedron<Tp, NDIMS>& oct,
  * 
  */
 template <typename Tp>
-void split_to_valid(const BezierPatch<Tp>& bPatch,
-                    axom::Array<BezierPatch<Tp>>& out)
+void split_to_valid(const BezierPatch<Tp, 3>& bPatch,
+                    axom::Array<BezierPatch<Tp, 3>>& out)
 {
   using Poly = Polygon<Tp, 3>;
-  using Patch = BezierPatch<Tp>;
+  using Patch = BezierPatch<Tp, 3>;
 
   const int ord_u = bPatch.getOrder_u();
   const int ord_v = bPatch.getOrder_v();
