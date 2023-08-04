@@ -626,19 +626,20 @@ TEST(primal_solid_angle, bezierpatch_sphere)
   const int num_subsurfaces = valid_subsurfaces.size();
 
   // Iterate over points of interest, i.e. close to a boundary.
-  //  Specifically need to exercise the projection steps
+  //  Specifically need to exercise the ray casting steps
+  const int idx = 3;  // Select a difficult face
   Vector3D query_directions[11] = {
-    Vector3D(valid_subsurfaces[3].evaluate(0.50, 0.50)),        // 0
-    Vector3D(valid_subsurfaces[3].evaluate(0.99, 0.95)),        // 1
-    Vector3D(valid_subsurfaces[3].evaluate(0.999, 0.995)),      // 2
-    Vector3D(valid_subsurfaces[3].evaluate(0.9999, 0.9995)),    // 3
-    Vector3D(valid_subsurfaces[3].evaluate(0.99999, 0.99995)),  // 4
-    Vector3D(valid_subsurfaces[3].evaluate(1.0, 0.9999)),       // 5
-    Vector3D(valid_subsurfaces[3].evaluate(0.9999, 1.0)),       // 6
-    Vector3D(valid_subsurfaces[3].evaluate(1.0, 1.0)),          // 7
-    Vector3D(valid_subsurfaces[3].evaluate(-.99, 0.95)),        // 8
-    Vector3D(valid_subsurfaces[3].evaluate(0.99, -.95)),        // 9
-    Vector3D(valid_subsurfaces[3].evaluate(-.99, -.95))};       // 10
+    Vector3D(valid_subsurfaces[idx].evaluate(0.50, 0.50)),        // 0
+    Vector3D(valid_subsurfaces[idx].evaluate(0.99, 0.95)),        // 1
+    Vector3D(valid_subsurfaces[idx].evaluate(0.999, 0.995)),      // 2
+    Vector3D(valid_subsurfaces[idx].evaluate(0.9999, 0.9995)),    // 3
+    Vector3D(valid_subsurfaces[idx].evaluate(0.99999, 0.99995)),  // 4
+    Vector3D(valid_subsurfaces[idx].evaluate(1.0, 0.9999)),       // 5
+    Vector3D(valid_subsurfaces[idx].evaluate(0.9999, 1.0)),       // 6
+    Vector3D(valid_subsurfaces[idx].evaluate(1.0, 1.0)),          // 7
+    Vector3D(valid_subsurfaces[idx].evaluate(0.01, 0.95)),        // 8
+    Vector3D(valid_subsurfaces[idx].evaluate(0.99, 0.05)),        // 9
+    Vector3D(valid_subsurfaces[idx].evaluate(0.01, 0.05))};       // 10
 
   const double edge_tol = 1e-6;
   const double edge_offset = 1e-5;
@@ -717,12 +718,165 @@ TEST(primal_solid_angle, bezierpatch_sphere)
     EXPECT_NEAR(coincident_wn, 0.5, num_subsurfaces * quad_tol);
   }
 }
+
+TEST(primal_solid_angle, bezierpatch_degenerate_sphere)
+{
+  using Point2D = primal::Point<double, 2>;
+  using Point3D = primal::Point<double, 3>;
+  using Vector3D = primal::Vector<double, 3>;
+  using BCurve = primal::BezierCurve<double, 2>;
+  using BPatch = primal::BezierPatch<double, 3>;
+
+  auto rotate_curve_to_patches = [](BCurve curve, BPatch patches[]) -> void {
+    const int ord = curve.getOrder();
+    curve.makeRational();
+
+    for(int n = 0; n < 4; ++n)
     {
-      coincident_wn +=
-        winding_number(coincident_query, sphere_faces[k], edge_tol, quad_tol, EPS);
+      patches[n].setOrder(ord, 2);
+      patches[n].makeRational();
     }
-    EXPECT_LT(coincident_wn, 1.5);
-    EXPECT_LT(-0.5, coincident_wn);
+
+    for(int p = 0; p <= ord; ++p)
+    {
+      auto node = curve[p];
+      patches[0](p, 0) = Point3D {node[0], 0.0, node[1]};
+      patches[0](p, 1) = Point3D {node[0], node[0], node[1]};
+      patches[0](p, 2) = Point3D {0.0, node[0], node[1]};
+
+      patches[1](p, 0) = Point3D {0.0, node[0], node[1]};
+      patches[1](p, 1) = Point3D {-node[0], node[0], node[1]};
+      patches[1](p, 2) = Point3D {-node[0], 0.0, node[1]};
+
+      patches[2](p, 0) = Point3D {-node[0], 0.0, node[1]};
+      patches[2](p, 1) = Point3D {-node[0], -node[0], node[1]};
+      patches[2](p, 2) = Point3D {0.0, -node[0], node[1]};
+
+      patches[3](p, 0) = Point3D {0.0, -node[0], node[1]};
+      patches[3](p, 1) = Point3D {node[0], -node[0], node[1]};
+      patches[3](p, 2) = Point3D {node[0], 0.0, node[1]};
+
+      for(int n = 0; n < 4; ++n)
+      {
+        patches[n].setWeight(p, 0, curve.getWeight(p));
+        patches[n].setWeight(p, 1, curve.getWeight(p) / std::sqrt(2));
+        patches[n].setWeight(p, 2, curve.getWeight(p));
+      }
+    }
+  };
+
+  // Make a sphere out of 8 degenerate Bezier Patches
+
+  // Define rational Beziers curve along the x-z axis and rotate them
+  Point2D curve1_nodes[] = {Point2D {0, 1}, Point2D {1, 1}, Point2D {1, 0}};
+  double curve1_weights[] = {1, 1 / std::sqrt(2), 1};
+  BCurve curve1(curve1_nodes, curve1_weights, 2);
+  BPatch patches1[4];
+  rotate_curve_to_patches(curve1, patches1);
+
+  Point2D curve2_nodes[] = {Point2D {1, 0}, Point2D {1, -1}, Point2D {0, -1}};
+  double curve2_weights[] = {1, 1 / std::sqrt(2), 1};
+  BCurve curve2(curve2_nodes, curve2_weights, 2);
+  BPatch patches2[4];
+  rotate_curve_to_patches(curve2, patches2);
+
+  // Split each surface into valid subsurfaces
+  axom::Array<BPatch> valid_subsurfaces;
+  for(int n = 0; n < 4; ++n)
+  {
+    split_to_valid(patches1[n], valid_subsurfaces);
+    split_to_valid(patches2[n], valid_subsurfaces);
+  }
+
+  const int num_subsurfaces = valid_subsurfaces.size();
+
+  // Iterate over points of interest, i.e. close to a boundary.
+  //  Specifically need to exercise the ray casting steps
+  int idx = 6;  // Select a difficult face
+  Vector3D query_directions[11] = {
+    Vector3D(valid_subsurfaces[idx].evaluate(0.50, 0.50)),        // 0
+    Vector3D(valid_subsurfaces[idx].evaluate(0.99, 0.95)),        // 1
+    Vector3D(valid_subsurfaces[idx].evaluate(0.999, 0.995)),      // 2
+    Vector3D(valid_subsurfaces[idx].evaluate(0.9999, 0.9995)),    // 3
+    Vector3D(valid_subsurfaces[idx].evaluate(0.99999, 0.99995)),  // 4
+    Vector3D(valid_subsurfaces[idx].evaluate(1.0, 0.9999)),       // 5
+    Vector3D(valid_subsurfaces[idx].evaluate(0.9999, 1.0)),       // 6
+    Vector3D(valid_subsurfaces[idx].evaluate(1.0, 1.0)),          // 7
+    Vector3D(valid_subsurfaces[idx].evaluate(-.99, 0.95)),        // 8
+    Vector3D(valid_subsurfaces[idx].evaluate(0.99, -.95)),        // 9
+    Vector3D(valid_subsurfaces[idx].evaluate(-.99, -.95))};       // 10
+
+  const double edge_tol = 1e-6;
+  const double edge_offset = 1e-5;
+
+  const double quad_tol = 1e-5;
+  const double EPS = 1e-10;
+
+  // Test some easy cases
+  auto origin = Point3D({0.0, 0.0, 0.0});
+  auto near_origin = Point3D({0.1, -0.2, 0.15});
+
+  double origin_wn = 0.0, near_origin_wn = 0.0;
+  for(int k = 0; k < num_subsurfaces; ++k)
+  {
+    origin_wn +=
+      winding_number(origin, valid_subsurfaces[k], edge_tol, quad_tol, EPS);
+    near_origin_wn +=
+      winding_number(near_origin, valid_subsurfaces[k], edge_tol, quad_tol, EPS);
+  }
+  EXPECT_NEAR(origin_wn, 1.0, num_subsurfaces * quad_tol);
+  EXPECT_NEAR(near_origin_wn, 1.0, num_subsurfaces * quad_tol);
+
+  for(int i = 0; i < 11; ++i)
+  {
+    auto far_query = Point3D(10 * query_directions[i].array());
+
+    double far_wn = 0.0;
+    for(int k = 0; k < num_subsurfaces; ++k)
+    {
+      far_wn +=
+        winding_number(far_query, valid_subsurfaces[k], edge_tol, quad_tol, EPS);
+}
+    EXPECT_NEAR(far_wn, 0.0, num_subsurfaces * quad_tol);
+  }
+
+  // Iterate over difficult query directions for very close points
+  for(int i = 0; i < 11; ++i)
+  {
+    // Pick point close to the surface
+    auto inner_query = Point3D((1.0 - edge_offset) * query_directions[i].array());
+    auto outer_query = Point3D((1.0 + edge_offset) * query_directions[i].array());
+
+    // Iterate over the patches that compose the sphere
+    double inner_wn = 0;
+    for(int k = 0; k < num_subsurfaces; ++k)
+    {
+      inner_wn +=
+        winding_number(inner_query, valid_subsurfaces[k], edge_tol, quad_tol, EPS);
+    }
+    EXPECT_NEAR(inner_wn, 1.0, num_subsurfaces * quad_tol);
+
+    // Iterate over the patches that compose the sphere
+    double outer_wn = 0;
+    for(int k = 0; k < num_subsurfaces; ++k)
+    {
+      outer_wn +=
+        winding_number(outer_query, valid_subsurfaces[k], edge_tol, quad_tol, EPS);
+    }
+    EXPECT_NEAR(outer_wn, 0.0, num_subsurfaces * quad_tol);
+
+    // Pick a point on the surface too.
+    auto coincident_query = Point3D(query_directions[i].array());
+    double coincident_wn = 0.0;
+    for(int k = 0; k < valid_subsurfaces.size(); ++k)
+    {
+      coincident_wn += winding_number(coincident_query,
+                                      valid_subsurfaces[k],
+                                      edge_tol,
+                                      quad_tol,
+                                      EPS);
+    }
+    EXPECT_NEAR(coincident_wn, 0.5, num_subsurfaces * quad_tol);
   }
 }
 
