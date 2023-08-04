@@ -487,7 +487,7 @@ double winding_number(const Point<T, 3>& query,
 
   // Fix the number of quadrature nodes arbitrarily, but high enough
   //  to `catch` near singularities for refinement
-  constexpr int quad_npts = 30;
+  constexpr int quad_npts = 50;
 
   // Early return if the patch is approximately polygonal.
   //  Very slight variations in curvature requires small EPS tolerance
@@ -579,12 +579,13 @@ double winding_number(const Point<T, 3>& query,
     OrientedBoundingBox<T, 3> oBox(bPatch.orientedBoundingBox().expand(edge_tol));
     if(oBox.contains(query))
     {
-      Vector<T, 3> cast_ray, closest_vector;
+      Vector<T, 3> cast_ray, closest_normal, closest_vector;
 
       // Need to do projection to find an axis that pierces the surface ONLY once
+      //  and does so at an interior point
       double min_u, min_v;
-      Point<T, 3> closest_point =
-        detail::near_field_projection(query, bPatch, min_u, min_v);
+      detail::near_field_projection(query, bPatch, min_u, min_v, edge_tol, EPS);
+      Point<T, 3> closest_point = bPatch.evaluate(min_u, min_v);
 
       int on_boundary =
         (min_u < EPS) + (min_u > 1 - EPS) + (min_v < EPS) + (min_v > 1 - EPS);
@@ -593,55 +594,71 @@ double winding_number(const Point<T, 3>& query,
       cast_ray = bPatch.normal(min_u, min_v).unitVector();
 
       closest_vector = Vector<T, 3>(query, closest_point);
-      double min_dist = closest_vector.squared_norm();
-      closest_vector = closest_vector.unitVector();
+      int on_boundary = (min_u < EPS) || (min_u > 1 - EPS) || (min_v < EPS) ||
+        (min_v > 1 - EPS);
+
+      // Compute the normal to the surface at the closest point
+      closest_normal = bPatch.normal(min_u, min_v);
+
+      // Need to do extra adjustments if we don't have a defined normal
+      if(axom::utilities::isNearlyEqual(closest_normal.squared_norm(),
+                                        0.0,
+                                        PRIMAL_TINY))
+      {
+        Vector<T, 3> T1, T2;
+        bPatch.corner_tangent_vectors(closest_point, T1, T2, edge_tol, EPS);
+        if(T1.squared_norm() == 0)
+          printf("Could not find a normal vector at this corner!\n");
+        closest_normal = Vector<T, 3>::cross_product(T1, T2);
+      }
+      closest_normal = closest_normal.unitVector();
 
       // If the query is on the surface, then we don't need to do any adjustment,
       //  as the induced discontinuity in the integrand is removable
-      if(min_dist < edge_tol * edge_tol)
+      if(closest_vector.squared_norm() < edge_tol * edge_tol)
       {
+        cast_ray = closest_normal;
         wn = 0.0;
       }
       // Otherwise, we need to adjust for the contribution of a small removed
       //  disk around the ray we cast.
       else
       {
-        // If the closest point isn't on a boundary, the disk is totally interior
-        if(!on_boundary)
+        // Check orientation relative to the surface
+        bool exterior = closest_vector.dot(closest_normal) < 0;
+
+        // If we're exterior, then we can definitely define a separating
+        //  plane defined by closest_normal
+        if(exterior)
         {
-          wn = 0.5;
-        }
-        // If the closest point is on a boundary, then the cast ray may
-        //  or may not intersect the surface
-        else
-        {
-          // If the ray does not intersect, do nothing.
-          if(!axom::utilities::isNearlyEqual(
-               Vector<T, 3>::cross_product(closest_vector, cast_ray).squared_norm(),
-               0.0,
+          // Get a perpendicular vector to closest_normal.
+          //  Can possibly pick this one more cleverly.
+          if(axom::utilities::isNearlyEqual(closest_normal[0],
+                                            closest_normal[1],
                EPS))
-          {
-            wn = 0.0;
-          }
-          // If it does, then the contribution of the disk depends on
-          //  the angle subtended by the tangent vectors
+            cast_ray = Vector<T, 3>({closest_normal[2],
+                                     closest_normal[2],
+                                     -closest_normal[0] - closest_normal[1]})
+                         .unitVector();
           else
-          {
-            // Angle subtended by the line is exactly pi
-            if(on_boundary == 1)
-            {
-              wn = 0.25;
+            cast_ray = Vector<T, 3>({-closest_normal[1] - closest_normal[2],
+                                     closest_normal[0],
+                                     closest_normal[0]})
+                         .unitVector();
             }
-            // Need to compute the angle subtended at corners
+        // If we're interior, we can safely pierce the surface, making
+        //  sure not to hit a boundary.
             else
             {
-              Vector<T, 3> V1, V2;
-              bPatch.corner_tangent_vectors(min_u, min_v, V1, V2, edge_tol, EPS);
-
-              wn = 0.25 *
-                acos(axom::utilities::clampVal(V1.dot(V2), -1.0, 1.0)) / M_PI;
-            }
-          }
+          // This tolerance is arbitrary. A smaller value might be needed
+          double edge_offset = 0.01;
+          cast_ray = Vector<T, 3>(
+            query,
+            bPatch.evaluate(
+              axom::utilities::clampVal(min_u, edge_offset, 1 - edge_offset),
+              axom::utilities::clampVal(min_v, edge_offset, 1 - edge_offset)));
+          cast_ray = cast_ray.unitVector();
+          wn = 0.5;
         }
 
         // Need to change the sign of the disk's contribution
@@ -745,6 +762,13 @@ double winding_number(const Point<T, 3>& query,
   // Iterate over the edges of the bounding curved polygon, add up the results
   for(int n = 0; n < 4; ++n)
   {
+    // If the bounding polygon has zero length, skip it
+    if(squared_distance(boundingPoly[n].evaluate(0),
+                        boundingPoly[n].evaluate(1)) < edge_tol_sq)
+    {
+      continue;
+    }
+
     wn += detail::stokes_winding_number(query,
                                         boundingPoly[n],
                                         field_direction,
