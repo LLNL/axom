@@ -74,3 +74,29 @@ if(ENABLE_FORTRAN)
         endif()
     endforeach()
 endif()
+
+if((AXOM_ENABLE_HIP OR AXOM_ENABLE_CUDA) AND AXOM_ENABLE_TESTS AND RAJA_FOUND
+    AND UMPIRE_FOUND)
+
+    axom_add_executable(NAME       slic_device_smoke_ex
+                        SOURCES    basic/slic_device_smoke.cpp
+                        DEPENDS_ON slic
+                        OUTPUT_DIR ${EXAMPLE_OUTPUT_DIRECTORY}
+                        FOLDER     axom/slic/examples )
+
+    if(AXOM_ENABLE_HIP)
+      set (_policy "HIP")
+    else()
+      set (_policy "CUDA")
+    endif()
+
+    set(_testname "slic_device_smoke_${_policy}")
+
+    axom_add_test(
+      NAME ${_testname}
+      COMMAND slic_device_smoke_ex
+    )
+
+    set_tests_properties(${_testname} PROPERTIES
+        PASS_REGULAR_EXPRESSION  "Test print on ${_policy} device")
+endif()
