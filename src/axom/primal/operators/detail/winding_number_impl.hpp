@@ -507,32 +507,56 @@ double stokes_winding_number_adaptive(const Point<T, 3>& query,
  * \return The closest point on the surface
  */
 template <typename T>
-Point<T, 3> near_field_projection(const Point<T, 3>& p,
+bool near_field_projection(const Point<T, 3>& p,
                                   const BezierPatch<T, 3>& bPatch,
                                   double& min_u,
-                                  double& min_v)
+                           double& min_v,
+                           double edge_tol = 1e-8,
+                           double EPS = 1e-8)
 {
-  double u = 5, v = 0.5;
+  min_u = 0.5;
+  min_v = 0.5;
   Vector<T, 3> Sp, Su, Sv, Suu, Svv, Suv;
   double A00, A01, A10, A11, det;
   double b0, b1;
   double delu, delv;
 
+  // TODO: Compute Sp, Su, Sv, Suu, Svv, Suv MUCH more efficiently
+  //  by using the same intermediates from de Casteljau
   for(int i = 0; i < 15; ++i)
   {
-    auto surf_normal = Vector<T, 3>(p, bPatch.evaluate(u, v));
+    Sp = Vector<T, 3>(p, bPatch.evaluate(min_u, min_v));
+    if(Sp.squared_norm() < edge_tol * edge_tol)
+    {
+      return true;
+    }
 
-    Sp = Vector<T, 3>(p, bPatch.evaluate(u, v));
-    Su = bPatch.du(u, v);
-    Sv = bPatch.dv(u, v);
-    Suu = bPatch.dudu(u, v);
-    Svv = bPatch.dvdv(u, v);
-    Suv = bPatch.dudv(u, v);
+    Su = bPatch.du(min_u, min_v);
+    Sv = bPatch.dv(min_u, min_v);
+
+    if(axom::utilities::isNearlyEqual(Su.squared_norm(), 0.0, EPS) &&
+       axom::utilities::isNearlyEqual(Sv.squared_norm(), 0.0, EPS))
+    {
+      return true;
+    }
+
+    Suu = bPatch.dudu(min_u, min_v);
+    Svv = bPatch.dvdv(min_u, min_v);
+    Suv = bPatch.dudv(min_u, min_v);
 
     A00 = Sp.dot(Suu) + Su.dot(Su);
     A10 = A01 = Sp.dot(Suv) + Su.dot(Sv);
     A11 = Sp.dot(Svv) + Sv.dot(Sv);
     det = (A00 * A11 - A01 * A10);
+
+    // If the iteration fails, try to fix it with
+    //  a different initial condition
+    if(axom::utilities::isNearlyEqual(det, 0.0, PRIMAL_TINY))
+    {
+      min_u = 1.0 / i;
+      min_v = 1.0 / (i + 1);
+      continue;
+    }
 
     b0 = -Sp.dot(Su);
     b1 = -Sp.dot(Sv);
@@ -540,8 +564,23 @@ Point<T, 3> near_field_projection(const Point<T, 3>& p,
     delu = (A11 * b0 - A01 * b1) / det;
     delv = (-A10 * b0 + A00 * b1) / det;
 
-    u = axom::utilities::clampVal(u + delu, 0.0, 1.0);
-    v = axom::utilities::clampVal(v + delv, 0.0, 1.0);
+    min_u = axom::utilities::clampVal(min_u + delu, 0.0, 1.0);
+    min_v = axom::utilities::clampVal(min_v + delv, 0.0, 1.0);
+  }
+
+  if((axom::utilities::isNearlyEqual(bPatch.du(min_u, min_v).squared_norm(),
+                                     0.0,
+                                     EPS) &&
+      axom::utilities::isNearlyEqual(bPatch.dv(min_u, min_v).squared_norm(),
+                                     0.0,
+                                     EPS)) ||
+     Vector<T, 3>(p, bPatch.evaluate(min_u, min_v)).squared_norm() <
+       edge_tol * edge_tol)
+  {
+    return true;
+  }
+
+  return false;
   }
 
   min_u = u;
