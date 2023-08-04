@@ -1088,8 +1088,7 @@ public:
    * \param [in] EPS Numerical tolerance to identify S(u, v) as a corner
    */
   template <typename T, int NDIMS>
-  void corner_tangent_vectors(double u,
-                              double v,
+  void corner_tangent_vectors(Point<T, NDIMS>& p,
                               Vector<T, NDIMS>& V1,
                               Vector<T, NDIMS>& V2,
                               double edge_tol = 1e-8,
@@ -1125,13 +1124,13 @@ public:
 
     const int num_points = point_list.size();
     int start_idx;
-    if(u < EPS && v < EPS)
+    if(squared_distance(p, m_controlPoints(0, 0)) < edge_tol_sq)
       start_idx = 0;
-    else if(u > 1 - EPS && v < EPS)
+    else if(squared_distance(p, m_controlPoints(ord_u, 0)) < edge_tol_sq)
       start_idx = ord_u;
-    else if(u > 1 - EPS && v > 1 - EPS)
+    else if(squared_distance(p, m_controlPoints(ord_u, ord_v)) < edge_tol_sq)
       start_idx = ord_u + ord_v;
-    else if(u < EPS && v > 1 - EPS)
+    else if(squared_distance(p, m_controlPoints(0, ord_v)) < edge_tol_sq)
       start_idx = 2 * ord_u + ord_v;
     else
       return;  // Point is not a corner
