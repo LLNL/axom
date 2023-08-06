@@ -47,6 +47,8 @@ struct GroupBucket
   constexpr static std::uint8_t Sentinel = 1;
   constexpr static int InvalidSlot = -1;
 
+  constexpr static int Size = 15;
+
   GroupBucket() : data {0ULL, 0ULL} { }
 
   int getEmptyBucket() const
