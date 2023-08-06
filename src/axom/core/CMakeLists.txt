@@ -59,6 +59,7 @@ set(core_headers
     IteratorBase.hpp
     Macros.hpp
     Map.hpp
+    FlatMap.hpp
     Path.hpp
     StackArray.hpp
     Types.hpp
