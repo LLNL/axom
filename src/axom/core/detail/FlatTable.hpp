@@ -62,14 +62,15 @@ struct GroupBucket
     return InvalidSlot;
   }
 
-  int getHashBucket(std::uint8_t hash) const
+  template <typename Func>
+  int visitHashBucket(std::uint8_t hash, Func&& visitor) const
   {
     std::uint8_t reducedHash = reduceHash(hash);
     for(int i = 0; i < 15; i++)
     {
       if(metadata.buckets[i] == reducedHash)
       {
-        return i;
+        visitor(i);
       }
     }
     return InvalidSlot;
@@ -124,31 +125,26 @@ static_assert(std::alignment_of<GroupBucket>::value == 16,
 static_assert(std::is_standard_layout<GroupBucket>::value,
               "FlatMap::SwissTable::Bucket: not standard layout");
 
-struct FlatMapIndex
-{
-  int group_index;
-  int bucket_index;
-};
-
 template <typename HashType, typename ProbePolicy = QuadraticProbing>
 struct SequentialLookupPolicy
 {
   constexpr static int NO_MATCH = -1;
 
   /*!
-     * \brief Inserts a hash into the first empty bucket in an array of groups
-     *  for an open-addressing hash map.
-     *
-     * \param [in] ngroups_pow_2 the number of groups, expressed as a power of 2
-     * \param [in] groups the array of metadata for the groups in the hash map
-     * \param [in] hash the hash to insert
-     *
-     * \return a FlatMapIndex with group and bucket ID, or NO_MATCH if no empty
-     *  buckets were found.
-     */
-  FlatMapIndex insert(int ngroups_pow_2,
+   * \brief Inserts a hash into the first empty bucket in an array of groups
+   *  for an open-addressing hash map.
+   *
+   * \param [in] ngroups_pow_2 the number of groups, expressed as a power of 2
+   * \param [in] groups the array of metadata for the groups in the hash map
+   * \param [in] hash the hash to insert
+   *
+   * \return a integer with bucket ID for an empty insertion point.
+   */
+  template <typename FoundIndex>
+  int probeEmptyIndex(int ngroups_pow_2,
                       ArrayView<GroupBucket> groups,
-                      HashType hash) const
+                      HashType hash,
+                      FoundIndex&& on_hash_found) const
   {
     // We use the k MSBs of the hash as the initial group probe point,
     // where ngroups = 2^k.
@@ -157,13 +153,17 @@ struct SequentialLookupPolicy
 
     std::uint8_t hash_8 {hash};
     int iteration = 0;
-    while(curr_group != NO_MATCH)
+    bool keep_going = true;
+    while(keep_going)
     {
+      groups[curr_group].visitHashBucket(hash_8, [&](IndexType bucket_index) {
+        keep_going = on_hash_found(curr_group * GroupBucket::Size + bucket_index);
+      });
       int empty_bucket = groups[curr_group].getEmptyBucket();
       if(empty_bucket != GroupBucket::InvalidSlot)
       {
         groups[curr_group].setBucket(empty_bucket, hash_8);
-        return FlatMapIndex {curr_group, empty_bucket};
+        return curr_group;
       }
       else if(!groups[curr_group].hasSentinel())
       {
@@ -179,58 +179,55 @@ struct SequentialLookupPolicy
         curr_group = NO_MATCH;
       }
     }
-    return FlatMapIndex {NO_MATCH, NO_MATCH};
+    return curr_group;
   }
 
   /*!
-     * \brief Finds the next potential bucket index for a given hash in a group
-     *  array for an open-addressing hash map.
-     *
-     * \param [in] ngroups_pow_2 the number of groups, expressed as a power of 2
-     * \param [in] groups the array of metadata for the groups in the hash map
-     * \param [in] hash the hash to insert
-     *
-     * \return a FlatMapIndex with group and bucket ID, or NO_MATCH if no empty
-     *  buckets were found.
-     */
-  FlatMapIndex find(int ngroups_pow_2,
-                    ArrayView<const GroupBucket> groups,
-                    HashType hash,
-                    int last = NO_MATCH) const
+   * \brief Finds the next potential bucket index for a given hash in a group
+   *  array for an open-addressing hash map.
+   *
+   * \param [in] ngroups_pow_2 the number of groups, expressed as a power of 2
+   * \param [in] groups the array of metadata for the groups in the hash map
+   * \param [in] hash the hash to insert
+   *
+   * \return the first bucket with an empty space, if probing for insertion.
+   */
+  template <typename FoundIndex>
+  void probeIndex(int ngroups_pow_2,
+                  ArrayView<const GroupBucket> groups,
+                  HashType hash,
+                  FoundIndex&& on_hash_found) const
   {
-    int curr_group = last;
-    int iteration = 0;
-    if(curr_group == NO_MATCH)
-    {
-      // We use the k MSBs of the hash as the initial group probe point,
-      // where ngroups = 2^k.
-      int group_divisor = 1 << ((CHAR_BIT * sizeof(HashType)) - ngroups_pow_2);
-      curr_group = hash / group_divisor;
-    }
+    // We use the k MSBs of the hash as the initial group probe point,
+    // where ngroups = 2^k.
+    int group_divisor = 1 << ((CHAR_BIT * sizeof(HashType)) - ngroups_pow_2);
+    int curr_group = hash / group_divisor;
+
     std::uint8_t hash_8 {hash};
-    while(curr_group != NO_MATCH)
+    int iteration = 0;
+    bool keep_going = true;
+    while(keep_going)
     {
-      int bucket = groups[curr_group].getHashBucket(hash_8);
-      if(bucket != GroupBucket::InvalidSlot)
-      {
-        return FlatMapIndex {curr_group, bucket};
-      }
+      groups[curr_group].visitHashBucket(hash_8, [&](IndexType bucket_index) {
+        keep_going = on_hash_found(curr_group * GroupBucket::Size + bucket_index);
+      });
+
       if(!groups[curr_group].getMaybeOverflowed(hash_8) ||
          groups[curr_group].hasSentinel())
       {
         // Stop probing if the "overflow" bit is not set or if the sentinel
         // is set for a bucket.
+        keep_going = false;
         curr_group = NO_MATCH;
       }
       else
       {
+        // Probe the next bucket.
         curr_group =
           (curr_group + ProbePolicy {}.getNext(iteration)) % groups.size();
         iteration++;
       }
     }
-    // Unable to find a matching entry for a hash.
-    return FlatMapIndex {NO_MATCH, NO_MATCH};
   }
 };
 
