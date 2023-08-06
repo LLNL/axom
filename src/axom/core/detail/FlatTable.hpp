@@ -139,19 +139,20 @@ struct SequentialLookupPolicy
    * \param [in] ngroups_pow_2 the number of groups, expressed as a power of 2
    * \param [in] groups the array of metadata for the groups in the hash map
    * \param [in] hash the hash to insert
-   *
-   * \return a integer with bucket ID for an empty insertion point.
    */
-  template <typename FoundIndex>
-  int probeEmptyIndex(int ngroups_pow_2,
-                      ArrayView<GroupBucket> groups,
-                      HashType hash,
-                      FoundIndex&& on_hash_found) const
+  template <typename FoundIndex, typename InsertIndex>
+  bool probeEmptyIndex(int ngroups_pow_2,
+                       ArrayView<GroupBucket> groups,
+                       HashType hash,
+                       FoundIndex&& on_hash_found,
+                       InsertIndex&& on_empty_insert) const
   {
     // We use the k MSBs of the hash as the initial group probe point,
     // where ngroups = 2^k.
     int group_divisor = 1 << ((CHAR_BIT * sizeof(HashType)) - ngroups_pow_2);
     int curr_group = hash / group_divisor;
+    int empty_group = NO_MATCH;
+    int empty_bucket = NO_MATCH;
 
     std::uint8_t hash_8 {hash};
     int iteration = 0;
@@ -161,13 +162,23 @@ struct SequentialLookupPolicy
       groups[curr_group].visitHashBucket(hash_8, [&](IndexType bucket_index) {
         keep_going = on_hash_found(curr_group * GroupBucket::Size + bucket_index);
       });
-      int empty_bucket = groups[curr_group].getEmptyBucket();
-      if(empty_bucket != GroupBucket::InvalidSlot)
+      int tentative_empty_bucket = groups[curr_group].getEmptyBucket();
+      if(tentative_empty_bucket != GroupBucket::InvalidSlot &&
+         empty_group == NO_MATCH)
       {
-        groups[curr_group].setBucket(empty_bucket, hash_8);
-        return curr_group;
+        empty_group = curr_group;
+        empty_bucket = tentative_empty_bucket;
       }
-      else if(!groups[curr_group].hasSentinel())
+
+      if(groups[curr_group].hasSentinel() ||
+         (!groups[curr_group].getMaybeOverflowed(hash_8) &&
+          empty_group != NO_MATCH))
+      {
+        // We've reached a sentinel group, or the last group that might
+        // contain the hash. Stop probing.
+        keep_going = false;
+      }
+      else
       {
         // Set the overflow bit and continue probing.
         groups[curr_group].setOverflow(hash_8);
@@ -175,13 +186,13 @@ struct SequentialLookupPolicy
           (curr_group + ProbePolicy {}.getNext(iteration)) % groups.size();
         iteration++;
       }
-      else
-      {
-        // Stop probing.
-        curr_group = NO_MATCH;
-      }
     }
-    return curr_group;
+    // Call the function for the empty bucket index.
+    if(empty_group != NO_MATCH)
+    {
+      on_empty_insert(empty_group * GroupBucket::Size + empty_bucket);
+    }
+    return empty_group != NO_MATCH;
   }
 
   /*!
