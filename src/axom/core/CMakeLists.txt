@@ -48,6 +48,9 @@ set(core_headers
     numerics/matvecops.hpp
     numerics/polynomial_solvers.hpp
 
+    ## detail
+    detail/FlatTable.hpp
+
     ## core
     Array.hpp
     ArrayBase.hpp
