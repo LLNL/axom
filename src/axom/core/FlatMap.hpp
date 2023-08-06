@@ -97,20 +97,36 @@ public:
     return emplace(std::forward<InputPair>(pair));
   }
   template <typename... InputArgs>
-  std::pair<iterator, bool> emplace(InputArgs&&... pair);
+  std::pair<iterator, bool> emplace(InputArgs&&... pair)
+  {
+    KeyValuePair kv {pair...};
+    emplaceImpl(std::move(kv.first), std::move(kv.second));
+  }
 
   template <typename InputIt>
   void insert(InputIt first, InputIt last);
 
   template <typename... Args>
-  std::pair<iterator, bool> insert_or_assign(const KeyType& key, Args&&... args);
+  std::pair<iterator, bool> insert_or_assign(const KeyType& key, Args&&... args)
+  {
+    return emplaceImpl(true, KeyType {key}, std::forward<Args>(args)...);
+  }
   template <typename... Args>
-  std::pair<iterator, bool> insert_or_assign(KeyType&& key, Args&&... args);
+  std::pair<iterator, bool> insert_or_assign(KeyType&& key, Args&&... args)
+  {
+    return emplaceImpl(true, std::move(key), std::forward<Args>(args)...);
+  }
 
   template <typename... Args>
-  std::pair<iterator, bool> try_emplace(const KeyType& key, Args&&... args);
+  std::pair<iterator, bool> try_emplace(const KeyType& key, Args&&... args)
+  {
+    return emplaceImpl(false, KeyType {key}, std::forward<Args>(args)...);
+  }
   template <typename... Args>
-  std::pair<iterator, bool> try_emplace(KeyType&& key, Args&&... args);
+  std::pair<iterator, bool> try_emplace(KeyType&& key, Args&&... args)
+  {
+    return emplaceImpl(false, std::move(key), std::forward<Args>(args)...);
+  }
 
   // Hashing
   IndexType bucket_count() const;
@@ -120,6 +136,11 @@ public:
   void reserve(IndexType count);
 
 private:
+  template <typename... Args>
+  std::pair<iterator, bool> emplaceImpl(bool assign_on_existence,
+                                        KeyType&& key,
+                                        Args&&... args);
+
   IndexType m_numGroups2;  // Number of groups of 15 buckets, expressed as a power of 2
   IndexType m_size;
   axom::Array<detail::flat_map::GroupBucket> m_metadata;
@@ -221,20 +242,21 @@ auto FlatMap<KeyType, ValueType, Hash>::find(const KeyType& key) const
 
 template <typename KeyType, typename ValueType, typename Hash>
 template <typename... InputArgs>
-auto FlatMap<KeyType, ValueType, Hash>::emplace(InputArgs&&... args)
+auto FlatMap<KeyType, ValueType, Hash>::emplaceImpl(bool assign_on_existence,
+                                                    KeyType&& key,
+                                                    InputArgs&&... args)
   -> std::pair<iterator, bool>
 {
-  KeyValuePair pair {std::forward<InputArgs>(args)...};
-  auto hash = Hash {}(pair.first);
+  auto hash = Hash {}(key);
   // TODO: ensure that we have enough space to insert with given load factor
 
   bool keyExistsAlready = false;
-  iterator keyIterator = end();
+  IndexType foundBucketIndex = NO_MATCH;
   auto FindExistingElem = [&, this](IndexType bucket_index) -> bool {
-    if(this->m_buckets[bucket_index].first == pair.first)
+    if(this->m_buckets[bucket_index].first == key)
     {
       keyExistsAlready = true;
-      keyIterator = iterator(this, bucket_index);
+      foundBucketIndex = bucket_index;
       // Exit out of probing, we can't insert if the key already exists.
       return false;
     }
@@ -244,9 +266,7 @@ auto FlatMap<KeyType, ValueType, Hash>::emplace(InputArgs&&... args)
   auto InsertEmptyBucket = [&, this](IndexType bucket_index) {
     if(!keyExistsAlready)
     {
-      keyIterator = iterator(this, bucket_index);
-      this->m_size++;
-      new(&(this->m_buckets[bucket_index])) KeyValuePair(std::move(pair));
+      foundBucketIndex = bucket_index;
     }
   };
 
@@ -255,6 +275,17 @@ auto FlatMap<KeyType, ValueType, Hash>::emplace(InputArgs&&... args)
                         hash,
                         FindExistingElem,
                         InsertEmptyBucket);
+  iterator keyIterator = iterator(this, foundBucketIndex);
+  if(!keyExistsAlready)
+  {
+    new(&m_buckets[foundBucketIndex])
+      KeyValuePair(std::move(key), std::forward<InputArgs>(args)...);
+  }
+  else if(keyExistsAlready && assign_on_existence)
+  {
+    m_buckets[foundBucketIndex] =
+      KeyValuePair(std::move(key), std::forward<InputArgs>(args)...);
+  }
   return {keyIterator, !keyExistsAlready};
 }
 
