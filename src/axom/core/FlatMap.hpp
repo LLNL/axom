@@ -83,12 +83,22 @@ public:
 
   // Modifiers
   void clear();
-  std::pair<iterator, bool> insert(const value_type& value);
-  std::pair<iterator, bool> insert(value_type&& value);
+  std::pair<iterator, bool> insert(const value_type& value)
+  {
+    return emplace(value);
+  }
+  std::pair<iterator, bool> insert(value_type&& value)
+  {
+    return emplace(std::move(value));
+  }
   template <typename InputPair>
-  std::pair<iterator, bool> insert(InputPair&& pair);
-  template <typename InputPair>
-  std::pair<iterator, bool> emplace(InputPair&& pair);
+  std::pair<iterator, bool> insert(InputPair&& pair)
+  {
+    return emplace(std::forward<InputPair>(pair));
+  }
+  template <typename... InputArgs>
+  std::pair<iterator, bool> emplace(InputArgs&&... pair);
+
   template <typename InputIt>
   void insert(InputIt first, InputIt last);
 
@@ -207,6 +217,45 @@ auto FlatMap<KeyType, ValueType, Hash>::find(const KeyType& key) const
                      return true;
                    });
   return found_iter;
+}
+
+template <typename KeyType, typename ValueType, typename Hash>
+template <typename... InputArgs>
+auto FlatMap<KeyType, ValueType, Hash>::emplace(InputArgs&&... args)
+  -> std::pair<iterator, bool>
+{
+  KeyValuePair pair {std::forward<InputArgs>(args)...};
+  auto hash = Hash {}(pair.first);
+  // TODO: ensure that we have enough space to insert with given load factor
+
+  bool keyExistsAlready = false;
+  iterator keyIterator = end();
+  auto FindExistingElem = [&, this](IndexType bucket_index) -> bool {
+    if(this->m_buckets[bucket_index].first == pair.first)
+    {
+      keyExistsAlready = true;
+      keyIterator = iterator(this, bucket_index);
+      // Exit out of probing, we can't insert if the key already exists.
+      return false;
+    }
+    return true;
+  };
+
+  auto InsertEmptyBucket = [&, this](IndexType bucket_index) {
+    if(!keyExistsAlready)
+    {
+      keyIterator = iterator(this, bucket_index);
+      this->m_size++;
+      new(&(this->m_buckets[bucket_index])) KeyValuePair(std::move(pair));
+    }
+  };
+
+  this->probeEmptyIndex(m_numGroups2,
+                        m_metadata,
+                        hash,
+                        FindExistingElem,
+                        InsertEmptyBucket);
+  return {keyIterator, !keyExistsAlready};
 }
 
 }  // namespace axom
