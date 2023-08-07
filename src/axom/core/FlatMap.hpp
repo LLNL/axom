@@ -52,6 +52,14 @@ public:
   explicit FlatMap(std::initializer_list<value_type> init,
                    IndexType bucket_count = -1);
 
+  void swap(FlatMap& other)
+  {
+    axom::utilities::swap(m_numGroups2, other.m_numGroups2);
+    axom::utilities::swap(m_size, other.m_size);
+    axom::utilities::swap(m_metadata, other.m_metadata);
+    axom::utilities::swap(m_buckets, other.m_buckets);
+  }
+
   // Iterators
   iterator begin()
   {
