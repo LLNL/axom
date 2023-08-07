@@ -192,7 +192,7 @@ struct SequentialLookupPolicy
         // contain the hash. Stop probing.
         keep_going = false;
       }
-      else
+      else if(empty_group == NO_MATCH)
       {
         // Set the overflow bit and continue probing.
         groups[curr_group].setOverflow(hash_8);
