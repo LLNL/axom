@@ -312,6 +312,17 @@ auto FlatMap<KeyType, ValueType, Hash>::find(const KeyType& key) const
 }
 
 template <typename KeyType, typename ValueType, typename Hash>
+template <typename InputIt>
+void FlatMap<KeyType, ValueType, Hash>::insert(InputIt first, InputIt last)
+{
+  while(first != last)
+  {
+    insert(*first);
+    first++;
+  }
+}
+
+template <typename KeyType, typename ValueType, typename Hash>
 template <typename... InputArgs>
 auto FlatMap<KeyType, ValueType, Hash>::emplaceImpl(bool assign_on_existence,
                                                     KeyType&& key,
