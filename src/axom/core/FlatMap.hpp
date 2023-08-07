@@ -53,13 +53,25 @@ public:
                    IndexType bucket_count = -1);
 
   // Iterators
-  iterator begin();
-  const_iterator begin() const;
-  const_iterator cbegin() const;
+  iterator begin()
+  {
+    IndexType firstBucketIndex = this->nextValidIndex(m_metadata, 0);
+    return iterator(this, firstBucketIndex);
+  }
+  const_iterator begin() const
+  {
+    IndexType firstBucketIndex = this->nextValidIndex(m_metadata, 0);
+    return const_iterator(this, firstBucketIndex);
+  }
+  const_iterator cbegin() const
+  {
+    IndexType firstBucketIndex = this->nextValidIndex(m_metadata, 0);
+    return const_iterator(this, firstBucketIndex);
+  }
 
-  iterator end();
-  const_iterator end() const;
-  const_iterator cend() const;
+  iterator end() { return iterator(this, m_buckets.size()); }
+  const_iterator end() const { return const_iterator(this, m_buckets.size()); }
+  const_iterator cend() const { return const_iterator(this, m_buckets.size()); }
 
   // Capacity
   bool empty() const { return m_size == 0; }
@@ -182,12 +194,15 @@ public:
 
   IteratorImpl& operator++()
   {
-    // TODO
+    m_internalIdx = m_map->nextValidIndex(m_map->m_buckets, m_internalIdx);
+    return *this;
   }
 
   IteratorImpl operator++(int)
   {
-    // TODO
+    IteratorImpl next = *this;
+    next++;
+    return next;
   }
 
   reference operator*() const { return m_map->m_buckets[m_internalIdx]; }

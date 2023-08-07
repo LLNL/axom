@@ -64,6 +64,21 @@ struct GroupBucket
     return InvalidSlot;
   }
 
+  int nextFilledBucket(int start_index) const
+  {
+    for(int i = start_index; i < 15; i++)
+    {
+      // We intentionally don't check for the sentinel here. This gives us the
+      // index of the sentinel bucket at the end, which is needed as a "stop"
+      // for forward iteration.
+      if(metadata.buckets[i] != GroupBucket::Empty)
+      {
+        return i;
+      }
+    }
+    return InvalidSlot;
+  }
+
   template <typename Func>
   int visitHashBucket(std::uint8_t hash, Func&& visitor) const
   {
@@ -247,6 +262,27 @@ struct SequentialLookupPolicy
     int slot_index = bucket % GroupBucket::Size;
 
     groups[group_index].setBucket(slot_index, hash);
+  }
+
+  IndexType nextValidIndex(ArrayView<const GroupBucket> groups, int last_bucket)
+  {
+    if(last_bucket >= groups.size() * GroupBucket::Size - 1)
+    {
+      return last_bucket;
+    }
+    int group_index = last_bucket / GroupBucket::Size;
+    int slot_index = last_bucket % GroupBucket::Size;
+
+    while(slot_index != GroupBucket::InvalidSlot && group_index < groups.size())
+    {
+      slot_index = groups[group_index].nextFilledBucket(slot_index + 1);
+      if(slot_index == GroupBucket::InvalidSlot)
+      {
+        group_index++;
+        slot_index = 0;
+      }
+    }
+    return group_index * GroupBucket::Size + slot_index;
   }
 };
 
