@@ -42,7 +42,7 @@ public:
   using const_iterator = IteratorImpl<true>;
 
   // Constructors
-  FlatMap();
+  FlatMap() : FlatMap(MIN_NUM_BUCKETS) { }
 
   explicit FlatMap(IndexType bucket_count);
 
@@ -174,6 +174,8 @@ private:
                                         KeyType&& key,
                                         Args&&... args);
 
+  constexpr static IndexType MIN_NUM_BUCKETS = 16;
+
   IndexType m_numGroups2;  // Number of groups of 15 buckets, expressed as a power of 2
   IndexType m_size;
   axom::Array<detail::flat_map::GroupBucket> m_metadata;
@@ -244,6 +246,7 @@ FlatMap<KeyType, ValueType, Hash>::FlatMap(IndexType bucket_count)
   : m_size(0)
   , m_loadCount(0)
 {
+  bucket_count = std::min(MIN_NUM_BUCKETS, bucket_count);
   // Get the smallest power-of-two number of groups satisfying:
   // N * GroupSize - 1 >= minBuckets
   // TODO: we should add a leadingZeros overload for 64-bit integers
