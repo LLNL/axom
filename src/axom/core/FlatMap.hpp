@@ -47,10 +47,14 @@ public:
   explicit FlatMap(IndexType bucket_count);
 
   template <typename InputIt>
-  FlatMap(InputIt first, InputIt last, IndexType bucket_count = -1);
+  FlatMap(InputIt first, InputIt last, IndexType bucket_count = -1)
+    : FlatMap(std::distance(first, last), first, last, bucket_count)
+  { }
 
   explicit FlatMap(std::initializer_list<value_type> init,
-                   IndexType bucket_count = -1);
+                   IndexType bucket_count = -1)
+    : FlatMap(init.begin(), init.end(), bucket_count)
+  { }
 
   void swap(FlatMap& other)
   {
@@ -149,13 +153,22 @@ public:
   }
 
   // Hashing
-  IndexType bucket_count() const;
-  double load_factor() const;
-  double max_load_factor() const;
-  void rehash(IndexType count);
-  void reserve(IndexType count);
+  double load_factor() const
+  {
+    return ((double)m_loadCount) / m_buckets.size();
+  }
+  double max_load_factor() const { return MAX_LOAD_FACTOR; }
+  void rehash(IndexType count)
+  {
+    FlatMap rehashed(m_size, begin(), end(), count);
+    swap(*this, rehashed);
+  }
+  void reserve(IndexType count) { rehash(std::ceil(count / MAX_LOAD_FACTOR)); }
 
 private:
+  template <typename InputIt>
+  FlatMap(IndexType num_elems, InputIt first, InputIt last, IndexType bucket_count);
+
   template <typename... Args>
   std::pair<iterator, bool> emplaceImpl(bool assign_on_existence,
                                         KeyType&& key,
@@ -165,6 +178,10 @@ private:
   IndexType m_size;
   axom::Array<detail::flat_map::GroupBucket> m_metadata;
   axom::Array<KeyValuePair> m_buckets;
+
+  // Boost flat_unordered_map uses a fixed load factor.
+  constexpr static double MAX_LOAD_FACTOR = 0.875;
+  std::uint64_t m_loadCount;
 };
 
 template <typename KeyType, typename ValueType, typename Hash>
@@ -223,6 +240,37 @@ private:
 };
 
 template <typename KeyType, typename ValueType, typename Hash>
+FlatMap<KeyType, ValueType, Hash>::FlatMap(IndexType bucket_count)
+  : m_size(0)
+  , m_loadCount(0)
+{
+  // Get the smallest power-of-two number of groups satisfying:
+  // N * GroupSize - 1 >= minBuckets
+  // TODO: we should add a leadingZeros overload for 64-bit integers
+  {
+    std::int32_t numGroups =
+      std::ceil((bucket_count + 1) / (double)BucketsPerGroup);
+    m_numGroups2 = 32 - axom::utilities::leadingZeros(numGroups);
+  }
+
+  IndexType numGroupsRounded = 1 << m_numGroups2;
+  IndexType numBuckets = numGroupsRounded * BucketsPerGroup - 1;
+  m_metadata.resize(numGroupsRounded);
+  m_buckets.resize(numBuckets);
+}
+
+template <typename KeyType, typename ValueType, typename Hash>
+template <typename InputIt>
+FlatMap<KeyType, ValueType, Hash>::FlatMap(IndexType num_elems,
+                                           InputIt first,
+                                           InputIt last,
+                                           IndexType bucket_count)
+  : FlatMap(std::max(num_elems, bucket_count))
+{
+  insert(first, last);
+}
+
+template <typename KeyType, typename ValueType, typename Hash>
 auto FlatMap<KeyType, ValueType, Hash>::find(const KeyType& key) -> iterator
 {
   auto hash = Hash {}(key);
@@ -271,7 +319,13 @@ auto FlatMap<KeyType, ValueType, Hash>::emplaceImpl(bool assign_on_existence,
   -> std::pair<iterator, bool>
 {
   auto hash = Hash {}(key);
-  // TODO: ensure that we have enough space to insert with given load factor
+  // Resize to double the number of bucket groups if insertion would put us
+  // above the maximum load factor.
+  if(((m_loadCount + 1) / (double)m_buckets.size()) >= MAX_LOAD_FACTOR)
+  {
+    IndexType newNumGroups = m_metadata.size() * 2;
+    rehash(newNumGroups * BucketsPerGroup - 1);
+  }
 
   bool keyExistsAlready = false;
   IndexType foundBucketIndex = NO_MATCH;
@@ -293,6 +347,7 @@ auto FlatMap<KeyType, ValueType, Hash>::emplaceImpl(bool assign_on_existence,
     foundBucketIndex = newBucket;
     // Add a hash to the corresponding bucket slot.
     this->setBucketHash(m_metadata, newBucket, hash);
+    m_loadCount++;
   }
   iterator keyIterator = iterator(this, foundBucketIndex);
   if(!keyExistsAlready)
