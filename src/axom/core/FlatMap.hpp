@@ -220,7 +220,9 @@ public:
   IteratorImpl(MapConstType* map, IndexType internalIdx)
     : m_map(map)
     , m_internalIdx(internalIdx)
-  { }
+  {
+    assert(m_internalIdx >= 0 && m_internalIdx < m_map->size());
+  }
 
   friend bool operator==(const IteratorImpl& lhs, const IteratorImpl& rhs)
   {
@@ -374,6 +376,7 @@ auto FlatMap<KeyType, ValueType, Hash>::emplaceImpl(bool assign_on_existence,
     foundBucketIndex = newBucket;
     // Add a hash to the corresponding bucket slot.
     this->setBucketHash(m_metadata, newBucket, hash);
+    m_size++;
     m_loadCount++;
   }
   iterator keyIterator = iterator(this, foundBucketIndex);
