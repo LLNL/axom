@@ -140,12 +140,11 @@ struct SequentialLookupPolicy
    * \param [in] groups the array of metadata for the groups in the hash map
    * \param [in] hash the hash to insert
    */
-  template <typename FoundIndex, typename InsertIndex>
-  bool probeEmptyIndex(int ngroups_pow_2,
-                       ArrayView<GroupBucket> groups,
-                       HashType hash,
-                       FoundIndex&& on_hash_found,
-                       InsertIndex&& on_empty_insert) const
+  template <typename FoundIndex>
+  IndexType probeEmptyIndex(int ngroups_pow_2,
+                            ArrayView<GroupBucket> groups,
+                            HashType hash,
+                            FoundIndex&& on_hash_found) const
   {
     // We use the k MSBs of the hash as the initial group probe point,
     // where ngroups = 2^k.
@@ -187,12 +186,11 @@ struct SequentialLookupPolicy
         iteration++;
       }
     }
-    // Call the function for the empty bucket index.
     if(empty_group != NO_MATCH)
     {
-      on_empty_insert(empty_group * GroupBucket::Size + empty_bucket);
+      return empty_group * GroupBucket::Size + empty_bucket;
     }
-    return empty_group != NO_MATCH;
+    return NO_MATCH;
   }
 
   /*!
@@ -241,6 +239,14 @@ struct SequentialLookupPolicy
         iteration++;
       }
     }
+  }
+
+  void setBucketHash(ArrayView<GroupBucket> groups, IndexType bucket, HashType hash)
+  {
+    int group_index = bucket / GroupBucket::Size;
+    int slot_index = bucket % GroupBucket::Size;
+
+    groups[group_index].setBucket(slot_index, hash);
   }
 };
 

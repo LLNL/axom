@@ -263,18 +263,14 @@ auto FlatMap<KeyType, ValueType, Hash>::emplaceImpl(bool assign_on_existence,
     return true;
   };
 
-  auto InsertEmptyBucket = [&, this](IndexType bucket_index) {
-    if(!keyExistsAlready)
-    {
-      foundBucketIndex = bucket_index;
-    }
-  };
-
-  this->probeEmptyIndex(m_numGroups2,
-                        m_metadata,
-                        hash,
-                        FindExistingElem,
-                        InsertEmptyBucket);
+  IndexType newBucket =
+    this->probeEmptyIndex(m_numGroups2, m_metadata, hash, FindExistingElem);
+  if(!keyExistsAlready)
+  {
+    foundBucketIndex = newBucket;
+    // Add a hash to the corresponding bucket slot.
+    this->setBucketHash(m_metadata, newBucket, hash);
+  }
   iterator keyIterator = iterator(this, foundBucketIndex);
   if(!keyExistsAlready)
   {
