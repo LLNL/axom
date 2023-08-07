@@ -152,6 +152,19 @@ public:
     return emplaceImpl(false, std::move(key), std::forward<Args>(args)...);
   }
 
+  iterator erase(iterator pos) { erase(const_iterator {pos}); }
+  iterator erase(const_iterator pos);
+  IndexType erase(const KeyType& key)
+  {
+    const_iterator it = find(key);
+    if(it != end())
+    {
+      erase(it);
+      return 1;
+    }
+    return 0;
+  }
+
   // Hashing
   double load_factor() const
   {
@@ -375,6 +388,21 @@ auto FlatMap<KeyType, ValueType, Hash>::emplaceImpl(bool assign_on_existence,
       KeyValuePair(std::move(key), std::forward<InputArgs>(args)...);
   }
   return {keyIterator, !keyExistsAlready};
+}
+
+template <typename KeyType, typename ValueType, typename Hash>
+auto FlatMap<KeyType, ValueType, Hash>::erase(const_iterator pos) -> iterator
+{
+  assert(pos < end());
+  auto hash = Hash {}(pos->first);
+
+  bool midSequence = this->clearBucket(m_metadata, pos.m_internalIdx, hash);
+  pos->~KeyValuePair();
+  if(!midSequence)
+  {
+    m_loadCount--;
+  }
+  return ++pos;
 }
 
 }  // namespace axom

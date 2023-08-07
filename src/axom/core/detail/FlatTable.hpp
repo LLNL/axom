@@ -264,6 +264,18 @@ struct SequentialLookupPolicy
     groups[group_index].setBucket(slot_index, hash);
   }
 
+  bool clearBucket(ArrayView<GroupBucket> groups, IndexType bucket, HashType hash)
+  {
+    int group_index = bucket / GroupBucket::Size;
+    int slot_index = bucket % GroupBucket::Size;
+
+    groups[group_index].setBucket(slot_index, GroupBucket::Empty);
+
+    // Return if the overflow bit is set on the bucket. That indicates whether
+    // we are deleting an element in the middle of a probing sequence.
+    return groups[group_index].getMaybeOverflowed(hash);
+  }
+
   IndexType nextValidIndex(ArrayView<const GroupBucket> groups, int last_bucket)
   {
     if(last_bucket >= groups.size() * GroupBucket::Size - 1)
