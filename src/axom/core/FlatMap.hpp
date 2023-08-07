@@ -26,11 +26,7 @@ private:
   template <bool Const>
   class IteratorImpl;
 
-  struct KeyValuePair
-  {
-    const KeyType first;
-    ValueType second;
-  };
+  using KeyValuePair = std::pair<const KeyType, ValueType>;
 
   template <bool Const>
   friend class IteratorImpl;
@@ -109,11 +105,11 @@ public:
   void clear();
   std::pair<iterator, bool> insert(const value_type& value)
   {
-    return emplace(value);
+    return emplaceImpl(false, value.first, value.second);
   }
   std::pair<iterator, bool> insert(value_type&& value)
   {
-    return emplace(std::move(value));
+    return emplaceImpl(false, std::move(value.first), std::move(value.second));
   }
   template <typename InputPair>
   std::pair<iterator, bool> insert(InputPair&& pair)
@@ -123,8 +119,7 @@ public:
   template <typename... InputArgs>
   std::pair<iterator, bool> emplace(InputArgs&&... pair)
   {
-    KeyValuePair kv {pair...};
-    emplaceImpl(std::move(kv.first), std::move(kv.second));
+    return emplaceImpl(false, std::forward<InputArgs>(pair)...);
   }
 
   template <typename InputIt>
@@ -173,8 +168,8 @@ public:
   double max_load_factor() const { return MAX_LOAD_FACTOR; }
   void rehash(IndexType count)
   {
-    FlatMap rehashed(m_size, begin(), end(), count);
-    swap(*this, rehashed);
+    FlatMap rehashed(m_size, cbegin(), cend(), count);
+    this->swap(rehashed);
   }
   void reserve(IndexType count) { rehash(std::ceil(count / MAX_LOAD_FACTOR)); }
 
@@ -182,12 +177,12 @@ private:
   template <typename InputIt>
   FlatMap(IndexType num_elems, InputIt first, InputIt last, IndexType bucket_count);
 
-  template <typename... Args>
+  template <typename UKeyType, typename... Args>
   std::pair<iterator, bool> emplaceImpl(bool assign_on_existence,
-                                        KeyType&& key,
+                                        UKeyType&& key,
                                         Args&&... args);
 
-  constexpr static IndexType MIN_NUM_BUCKETS = 16;
+  constexpr static IndexType MIN_NUM_BUCKETS {16};
 
   IndexType m_numGroups2;  // Number of groups of 15 buckets, expressed as a power of 2
   IndexType m_size;
@@ -221,7 +216,7 @@ public:
     : m_map(map)
     , m_internalIdx(internalIdx)
   {
-    assert(m_internalIdx >= 0 && m_internalIdx < m_map->size());
+    assert(m_internalIdx >= 0 && m_internalIdx <= m_map->m_buckets.size());
   }
 
   friend bool operator==(const IteratorImpl& lhs, const IteratorImpl& rhs)
@@ -236,14 +231,14 @@ public:
 
   IteratorImpl& operator++()
   {
-    m_internalIdx = m_map->nextValidIndex(m_map->m_buckets, m_internalIdx);
+    m_internalIdx = m_map->nextValidIndex(m_map->m_metadata, m_internalIdx);
     return *this;
   }
 
   IteratorImpl operator++(int)
   {
     IteratorImpl next = *this;
-    next++;
+    ++next;
     return next;
   }
 
@@ -261,7 +256,8 @@ FlatMap<KeyType, ValueType, Hash>::FlatMap(IndexType bucket_count)
   : m_size(0)
   , m_loadCount(0)
 {
-  bucket_count = std::min(MIN_NUM_BUCKETS, bucket_count);
+  int minBuckets = MIN_NUM_BUCKETS;
+  bucket_count = std::min(minBuckets, bucket_count);
   // Get the smallest power-of-two number of groups satisfying:
   // N * GroupSize - 1 >= minBuckets
   // TODO: we should add a leadingZeros overload for 64-bit integers
@@ -341,12 +337,14 @@ void FlatMap<KeyType, ValueType, Hash>::insert(InputIt first, InputIt last)
 }
 
 template <typename KeyType, typename ValueType, typename Hash>
-template <typename... InputArgs>
+template <typename UKeyType, typename... InputArgs>
 auto FlatMap<KeyType, ValueType, Hash>::emplaceImpl(bool assign_on_existence,
-                                                    KeyType&& key,
+                                                    UKeyType&& key,
                                                     InputArgs&&... args)
   -> std::pair<iterator, bool>
 {
+  static_assert(std::is_convertible<UKeyType, KeyType>::value,
+                "UKeyType -> KeyType not convertible");
   auto hash = Hash {}(key);
   // Resize to double the number of bucket groups if insertion would put us
   // above the maximum load factor.
@@ -387,8 +385,8 @@ auto FlatMap<KeyType, ValueType, Hash>::emplaceImpl(bool assign_on_existence,
   }
   else if(keyExistsAlready && assign_on_existence)
   {
-    m_buckets[foundBucketIndex] =
-      KeyValuePair(std::move(key), std::forward<InputArgs>(args)...);
+    m_buckets[foundBucketIndex].second =
+      ValueType(std::forward<InputArgs>(args)...);
   }
   return {keyIterator, !keyExistsAlready};
 }

@@ -168,7 +168,7 @@ struct SequentialLookupPolicy
     int empty_group = NO_MATCH;
     int empty_bucket = NO_MATCH;
 
-    std::uint8_t hash_8 {hash};
+    std::uint8_t hash_8 = static_cast<std::uint8_t>(hash);
     int iteration = 0;
     bool keep_going = true;
     while(keep_going)
@@ -229,7 +229,7 @@ struct SequentialLookupPolicy
     int group_divisor = 1 << ((CHAR_BIT * sizeof(HashType)) - ngroups_pow_2);
     int curr_group = hash / group_divisor;
 
-    std::uint8_t hash_8 {hash};
+    std::uint8_t hash_8 = static_cast<std::uint8_t>(hash);
     int iteration = 0;
     bool keep_going = true;
     while(keep_going)
@@ -276,7 +276,8 @@ struct SequentialLookupPolicy
     return groups[group_index].getMaybeOverflowed(hash);
   }
 
-  IndexType nextValidIndex(ArrayView<const GroupBucket> groups, int last_bucket)
+  IndexType nextValidIndex(ArrayView<const GroupBucket> groups,
+                           int last_bucket) const
   {
     if(last_bucket >= groups.size() * GroupBucket::Size - 1)
     {
