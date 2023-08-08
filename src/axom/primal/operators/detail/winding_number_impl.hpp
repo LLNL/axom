@@ -469,6 +469,10 @@ double stokes_winding_number_adaptive(const Point<T, 3>& query,
                                             quad_tol,
                                             1e-10))
   {
+    if(depth >= MAX_DEPTH)
+    {
+      printf("");
+    }
     return 0.25 * M_1_PI * (quad_fine[0] + quad_fine[1]);
   }
   else
@@ -508,14 +512,15 @@ double stokes_winding_number_adaptive(const Point<T, 3>& query,
  */
 template <typename T>
 bool near_field_projection(const Point<T, 3>& p,
-                                  const BezierPatch<T, 3>& bPatch,
-                                  double& min_u,
+                           const BezierPatch<T, 3>& bPatch,
+                           double& min_u,
                            double& min_v,
                            double edge_tol = 1e-8,
                            double EPS = 1e-8)
 {
   min_u = 0.5;
   min_v = 0.5;
+  Point<T, 3> S;
   Vector<T, 3> Sp, Su, Sv, Suu, Svv, Suv;
   double A00, A01, A10, A11, det;
   double b0, b1;
@@ -523,26 +528,23 @@ bool near_field_projection(const Point<T, 3>& p,
 
   // TODO: Compute Sp, Su, Sv, Suu, Svv, Suv MUCH more efficiently
   //  by using the same intermediates from de Casteljau
-  for(int i = 0; i < 15; ++i)
+  constexpr int max_iter = 15;
+  for(int i = 0; i < max_iter; ++i)
   {
-    Sp = Vector<T, 3>(p, bPatch.evaluate(min_u, min_v));
+    // Get all derivatives necessary for Newton step
+    bPatch.evaluate_second_derivatives(min_u, min_v, S, Su, Sv, Suu, Svv, Suv);
+    Sp = Vector<T, 3>(p, S);
+
     if(Sp.squared_norm() < edge_tol * edge_tol)
     {
       return true;
     }
 
-    Su = bPatch.du(min_u, min_v);
-    Sv = bPatch.dv(min_u, min_v);
-
-    if(axom::utilities::isNearlyEqual(Su.squared_norm(), 0.0, EPS) &&
-       axom::utilities::isNearlyEqual(Sv.squared_norm(), 0.0, EPS))
+    if(axom::utilities::isNearlyEqual(Su.dot(Sp), 0.0, EPS) &&
+       axom::utilities::isNearlyEqual(Sv.dot(Sp), 0.0, EPS))
     {
       return true;
     }
-
-    Suu = bPatch.dudu(min_u, min_v);
-    Svv = bPatch.dvdv(min_u, min_v);
-    Suv = bPatch.dudv(min_u, min_v);
 
     A00 = Sp.dot(Suu) + Su.dot(Su);
     A10 = A01 = Sp.dot(Suv) + Su.dot(Sv);
@@ -553,8 +555,13 @@ bool near_field_projection(const Point<T, 3>& p,
     //  a different initial condition
     if(axom::utilities::isNearlyEqual(det, 0.0, PRIMAL_TINY))
     {
-      min_u = 1.0 / i;
-      min_v = 1.0 / (i + 1);
+      if(i == max_iter)
+      {
+        min_u = min_v = 0.5;
+        return false;
+      }
+      min_u = 1.0 / (i + 1);
+      min_v = 1.0 / (i + 2);
       continue;
     }
 
@@ -581,13 +588,8 @@ bool near_field_projection(const Point<T, 3>& p,
   }
 
   return false;
-  }
-
-  min_u = u;
-  min_v = v;
-
-  return evaluate(u, v);
 }
+
 }  // end namespace detail
 }  // end namespace primal
 }  // end namespace axom
