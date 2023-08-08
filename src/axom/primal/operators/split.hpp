@@ -82,7 +82,7 @@ void split(const Octahedron<Tp, NDIMS>& oct,
 };
 
 /*!
- * \brief Splits a BezierPatch object into SuperConvex subpatches
+ * \brief Splits a BezierPatch object into valid subpatches for winding number computation
  *
  * \param [in] bPatch BezierPatch to split
  * \param [out] out The \a axom::Array of BezierPatch objects; a set of SuperConvex
@@ -90,11 +90,11 @@ void split(const Octahedron<Tp, NDIMS>& oct,
  *
  *
  * Uses a bisection method, splitting the patch recursively until each section
- * is SuperConvex (convex + shallow).
+ * is convex + shallow.
  * 
  */
 template <typename Tp>
-void split_to_valid(const BezierPatch<Tp, 3>& bPatch,
+void split_to_convex_shallow(const BezierPatch<Tp, 3>& bPatch,
                     axom::Array<BezierPatch<Tp, 3>>& out)
 {
   using Poly = Polygon<Tp, 3>;
@@ -129,8 +129,8 @@ void split_to_valid(const BezierPatch<Tp, 3>& bPatch,
           is_valid = false;
           Patch p1, p2;
           bPatch.split_u(0.5, p1, p2);
-          split_to_valid(p1, out);
-          split_to_valid(p2, out);
+          split_to_convex_shallow(p1, out);
+          split_to_convex_shallow(p2, out);
         }
       }
 
@@ -153,8 +153,8 @@ void split_to_valid(const BezierPatch<Tp, 3>& bPatch,
           is_valid = false;
           Patch p1, p2;
           bPatch.split_v(0.5, p1, p2);
-          split_to_valid(p1, out);
-          split_to_valid(p2, out);
+          split_to_convex_shallow(p1, out);
+          split_to_convex_shallow(p2, out);
         }
       }
 

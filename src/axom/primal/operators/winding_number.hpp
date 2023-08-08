@@ -468,26 +468,47 @@ int winding_number(const Point<T, 3>& query,
  *
  * \note Warning: This algorithm is only tested to high accuracy for queries within
  *  1e-5 of the surface. Otherwise, it will return less accurate results.
- * \note CURRENTLY ASSUMES THE SURFACE IS VALID! PROJECTION MAY NOT WORK OTHERWISE!
  * 
  * \return double The generalized winding number.
  */
 template <typename T>
 double winding_number(const Point<T, 3>& query,
                       const BezierPatch<T, 3>& bPatch,
+                      const bool isValidSurface = false,
                       const double edge_tol = 1e-5,
                       const double quad_tol = 1e-6,
-                      const double EPS = 1e-8,
-                      const int depth = 0)
+                      const double EPS = 1e-8)
 {
   const int ord_u = bPatch.getOrder_u();
   const int ord_v = bPatch.getOrder_v();
   const bool patchIsRational = bPatch.isRational();
   const double edge_tol_sq = edge_tol * edge_tol;
 
+  if(ord_u <= 0 || ord_v <= 0)
+  {
+    return 0.0;
+  }
+
+  // If the patch isn't valid, then we need to split it and
+  //  apply the algorithm to each component.
+  double wn = 0.0;
+  if(!isValidSurface)
+  {
+    axom::Array<BezierPatch<T, 3>> valid_subsurfaces;
+    split_to_convex_shallow(bPatch, valid_subsurfaces);
+
+    for(auto& surf : valid_subsurfaces)
+    {
+      wn += winding_number(query, surf, true, edge_tol, quad_tol, EPS);
+    }
+
+    return wn;
+  }
+
   // Fix the number of quadrature nodes arbitrarily, but high enough
   //  to `catch` near singularities for refinement
   constexpr int quad_npts = 50;
+  constexpr double edge_offset = 0.01;
 
   // Early return if the patch is approximately polygonal.
   //  Very slight variations in curvature requires small EPS tolerance
@@ -507,7 +528,6 @@ double winding_number(const Point<T, 3>& query,
    * surface at only a single point (pierce).
    */
   CurvedPolygon<T, 3> boundingPoly(4);
-  double wn = 0;
   detail::SingularityAxis field_direction;
 
   // Check if we dodge an axis-aligned bounding box,
@@ -587,9 +607,6 @@ double winding_number(const Point<T, 3>& query,
       detail::near_field_projection(query, bPatch, min_u, min_v, edge_tol, EPS);
       Point<T, 3> closest_point = bPatch.evaluate(min_u, min_v);
 
-      int on_boundary =
-        (min_u < EPS) + (min_u > 1 - EPS) + (min_v < EPS) + (min_v > 1 - EPS);
-
       // Cast a ray that is normal to the surface at the closest point
       cast_ray = bPatch.normal(min_u, min_v).unitVector();
 
@@ -605,17 +622,23 @@ double winding_number(const Point<T, 3>& query,
                                         0.0,
                                         PRIMAL_TINY))
       {
-        Vector<T, 3> T1, T2;
-        bPatch.corner_tangent_vectors(closest_point, T1, T2, edge_tol, EPS);
-        if(T1.squared_norm() == 0)
-          printf("Could not find a normal vector at this corner!\n");
-        closest_normal = Vector<T, 3>::cross_product(T1, T2);
+        closest_normal = bPatch.normal(
+          axom::utilities::clampVal(min_u, edge_offset, 1 - edge_offset),
+          axom::utilities::clampVal(min_v, edge_offset, 1 - edge_offset));
+
+        // If that doesn't work, assume that the projection provides one.
+        if(axom::utilities::isNearlyEqual(closest_normal.squared_norm(),
+                                          0.0,
+                                          PRIMAL_TINY))
+        {
+          closest_normal = Vector<T, 3>(closest_point, query);
+        }
       }
       closest_normal = closest_normal.unitVector();
 
       // If the query is on the surface, then we don't need to do any adjustment,
       //  as the induced discontinuity in the integrand is removable
-      if(closest_vector.squared_norm() < edge_tol * edge_tol)
+      if(closest_vector.squared_norm() < edge_tol_sq)
       {
         cast_ray = closest_normal;
         wn = 0.0;
@@ -635,7 +658,7 @@ double winding_number(const Point<T, 3>& query,
           //  Can possibly pick this one more cleverly.
           if(axom::utilities::isNearlyEqual(closest_normal[0],
                                             closest_normal[1],
-               EPS))
+                                            EPS))
             cast_ray = Vector<T, 3>({closest_normal[2],
                                      closest_normal[2],
                                      -closest_normal[0] - closest_normal[1]})
@@ -645,13 +668,13 @@ double winding_number(const Point<T, 3>& query,
                                      closest_normal[0],
                                      closest_normal[0]})
                          .unitVector();
-            }
+        }
         // If we're interior, we can safely pierce the surface, making
         //  sure not to hit a boundary.
-            else
-            {
+        else
+        {
           // This tolerance is arbitrary. A smaller value might be needed
-          double edge_offset = 0.01;
+
           cast_ray = Vector<T, 3>(
             query,
             bPatch.evaluate(
@@ -660,10 +683,6 @@ double winding_number(const Point<T, 3>& query,
           cast_ray = cast_ray.unitVector();
           wn = 0.5;
         }
-
-        // Need to change the sign of the disk's contribution
-        //  depending on the orientation.
-        wn *= (closest_vector.dot(cast_ray) > 0) ? 1.0 : -1.0;
       }
 
       // Rotate the surface so that the cast ray is oriented with k_hat
