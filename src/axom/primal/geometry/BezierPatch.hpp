@@ -777,6 +777,162 @@ public:
     }
   }
 
+  void evaluate_second_derivatives(T u,
+                                   T v,
+                                   Point<T, NDIMS>& evaluation,
+                                   Vector<T, NDIMS>& Du,
+                                   Vector<T, NDIMS>& Dv,
+                                   Vector<T, NDIMS>& DuDu,
+                                   Vector<T, NDIMS>& DvDv,
+                                   Vector<T, NDIMS>& DuDv) const
+  {
+    using axom::utilities::lerp;
+    const int ord_u = getOrder_u();
+    const int ord_v = getOrder_v();
+
+    axom::Array<T, 2> dCmat(ord_u + 1, ord_v + 1);
+    axom::Array<T, 2> dCmat2(2, 2);
+
+    if(!isRational())
+    {
+      // Do de Casteljau until we get a 3x3
+      for(int i = 0; i < NDIMS; ++i)
+      {
+        for(int p = 0; p <= ord_u; ++p)
+        {
+          for(int q = 0; q <= ord_v; ++q)
+          {
+            dCmat(p, q) = m_controlPoints(p, q)[i];
+          }
+        }
+
+        // Do de Casteljau over the longer direction first
+        if(ord_u >= ord_v)
+        {
+          // Stop 2 steps early in u
+          for(int p = 1; p <= ord_u - 2; ++p)
+          {
+            const int end = ord_u - p;
+            for(int k = 0; k <= end; ++k)
+            {
+              for(int q = 0; q <= ord_v; ++q)
+              {
+                dCmat(k, q) = lerp(dCmat(k, q), dCmat(k + 1, q), u);
+              }
+            }
+          }
+
+          // Stop 2 steps early in v over the three columns
+          for(int q = 1; q <= ord_v - 2; ++q)
+          {
+            const int end = ord_v - q;
+            for(int k = 0; k <= end; ++k)
+            {
+              for(int p = 0; p <= 2; ++p)
+              {
+                dCmat(p, k) = lerp(dCmat(p, k), dCmat(p, k + 1), v);
+              }
+            }
+          }
+        }
+        else
+        {
+          // Stop 2 steps early in v
+          for(int q = 1; q <= ord_v - 2; ++q)
+          {
+            const int end = ord_v - q;
+            for(int k = 0; k <= end; ++k)
+            {
+              for(int p = 0; p <= ord_u; ++p)
+              {
+                dCmat(p, k) = lerp(dCmat(p, k), dCmat(p, k + 1), v);
+              }
+            }
+          }
+
+          // Stop 2 steps early in v over the three columns
+          for(int p = 1; p <= ord_u - 2; ++p)
+          {
+            const int end = ord_u - p;
+            for(int k = 0; k <= end; ++k)
+            {
+              for(int q = 0; q <= 2; ++q)
+              {
+                dCmat(k, q) = lerp(dCmat(k, q), dCmat(k + 1, q), u);
+              }
+            }
+          }
+        }
+
+        // By now, the first 3x3 submatrix of dCmat should have
+        //  all the intermediate values needed
+
+        // clang-format off
+        // Get second order derivatives
+        DuDu[i] = (ord_u - 1) * ord_u * ( (1 - v) * (1 - v) * (dCmat(2, 0) - 2 * dCmat(1, 0) + dCmat(0, 0)) + 
+                                            2 * v * (1 - v) * (dCmat(2, 1) - 2 * dCmat(1, 1) + dCmat(0, 1)) + 
+                                                      v * v * (dCmat(2, 2) - 2 * dCmat(1, 2) + dCmat(0, 2)) ); 
+        
+        DvDv[i] = (ord_v - 1) * ord_v * ( (1 - u) * (1 - u) * (dCmat(0, 2) - 2 * dCmat(0, 1) + dCmat(0, 0)) + 
+                                            2 * u * (1 - u) * (dCmat(1, 2) - 2 * dCmat(1, 1) + dCmat(1, 0)) + 
+                                                      u * u * (dCmat(2, 2) - 2 * dCmat(2, 1) + dCmat(2, 0)) ); 
+
+        // Compute intermediate values for first order derivatives
+        dCmat2(0, 0) = (1 - u) * (1 - v) * dCmat(0, 0) + u * (1 - v) * dCmat(1, 0) + (1 - u) * v * dCmat(0, 1) + u * v * dCmat(1, 1);
+        dCmat2(1, 0) = (1 - u) * (1 - v) * dCmat(1, 0) + u * (1 - v) * dCmat(2, 0) + (1 - u) * v * dCmat(1, 1) + u * v * dCmat(2, 1);
+        dCmat2(0, 1) = (1 - u) * (1 - v) * dCmat(0, 1) + u * (1 - v) * dCmat(1, 1) + (1 - u) * v * dCmat(0, 2) + u * v * dCmat(1, 2);
+        dCmat2(1, 1) = (1 - u) * (1 - v) * dCmat(1, 1) + u * (1 - v) * dCmat(2, 1) + (1 - u) * v * dCmat(1, 2) + u * v * dCmat(2, 2);
+
+        // Compute first order derivatives
+        Du[i] = ord_u * ( (1 - v) * (dCmat2(1, 0) - dCmat2(0, 0)) + 
+                                v * (dCmat2(1, 1) - dCmat2(0, 1)) );
+      
+        Dv[i] = ord_v * ( (1 - u) * (dCmat2(0, 1) - dCmat2(0, 0)) + 
+                                u * (dCmat2(1, 1) - dCmat2(1, 0)) );
+
+        DuDv[i] = ord_u * ord_v * (dCmat2(1, 1) - dCmat2(1, 0) - dCmat2(0, 1) + dCmat2(0, 0));
+
+        // Get the evaluation point
+        evaluation[i] = (1 - u) * (1 - v) * dCmat2(0, 0) + u * (1 - v) * dCmat2(1, 0) + (1 - u) * v * dCmat2(0, 1) + u * v * dCmat2(1, 1);
+        // clang-format on
+      }
+    }
+    else
+    {
+      BezierPatch<T, NDIMS> projective(ord_u, ord_v);
+      BezierPatch<T, 1> weights(ord_u, ord_v);
+
+      for(int p = 0; p <= ord_u; ++p)
+      {
+        for(int q = 0; q <= ord_v; ++q)
+        {
+          projective(p, q) = m_controlPoints(p, q);
+          projective(p, q).array() *= m_weights(p, q);
+          weights(p, q)[0] = m_weights(p, q);
+        }
+      }
+
+      Point<T, NDIMS> P;
+      Vector<T, NDIMS> P_u, P_v, P_uu, P_vv, P_uv;
+
+      Point<T, 1> W;
+      Vector<T, 1> W_u, W_v, W_uu, W_vv, W_uv;
+
+      Vector<T, NDIMS> eval_vec;
+
+      projective.evaluate_second_derivatives(u, v, P, P_u, P_v, P_uu, P_vv, P_uv);
+      weights.evaluate_second_derivatives(u, v, W, W_u, W_v, W_uu, W_vv, W_uv);
+
+      eval_vec = Vector<T, NDIMS>(P) / W[0];
+      Du = (P_u - eval_vec * W_u[0]) / W[0];
+      Dv = (P_v - eval_vec * W_v[0]) / W[0];
+      DuDu = (P_uu - 2 * W_u[0] * Du - eval_vec * W_uu[0]) / W[0];
+      DvDv = (P_vv - 2 * W_v[0] * Dv - eval_vec * W_vv[0]) / W[0];
+      DuDv = (P_uv - Du * W_v[0] - Dv * W_u[0] - eval_vec * W_uv[0]) / W[0];
+      evaluation = Point<T, NDIMS>(eval_vec.data());
+    }
+  }
+
   /*!
    * \brief Computes a tangent of a Bezier patch at a particular parameter value (\a u, \a v) along the u axis
    *
@@ -833,23 +989,110 @@ public:
     }
     else
     {
-      BezierPatch<T, NDIMS> nonrational(ord_u, ord_v);
-      BezierPatch<T, 1> weights(ord_u, ord_v);
+      Vector<T, NDIMS> val;
+
+      axom::Array<T, 2> dCmat(ord_u + 1, ord_v + 1);
+      axom::Array<T, 2> dWmat(ord_u + 1, ord_v + 1);
+
+      for(int i = 0; i < NDIMS; ++i)
+      {
+        // Do de Casteljau until we get a 3x3
       for(int p = 0; p <= ord_u; ++p)
       {
         for(int q = 0; q <= ord_v; ++q)
         {
-          nonrational(p, q) = m_controlPoints(p, q);
-          nonrational(p, q).array() *= m_weights(p, q);
-          weights(p, q)[0] = m_weights(p, q);
+            dCmat(p, q) = m_controlPoints(p, q)[i] * m_weights(p, q);
+            dWmat(p, q) = m_weights(p, q);
+          }
         }
+
+        // Do de Casteljau over the longer direction first
+        if(false)
+        {
+          // Stop 1 steps early in u
+          for(int p = 1; p <= ord_u - 1; ++p)
+          {
+            const int end = ord_u - p;
+            for(int k = 0; k <= end; ++k)
+            {
+              for(int q = 0; q <= ord_v; ++q)
+              {
+                dCmat(k, q) = lerp(dCmat(k, q), dCmat(k + 1, q), u);
+                dWmat(k, q) = lerp(dWmat(k, q), dWmat(k + 1, q), u);
+              }
+            }
+          }
+
+          // Stop 1 step early in v over the two columns
+          for(int q = 1; q <= ord_v - 1; ++q)
+          {
+            const int end = ord_v - q;
+            for(int k = 0; k <= end; ++k)
+            {
+              for(int p = 0; p <= 1; ++p)
+              {
+                dCmat(p, k) = lerp(dCmat(p, k), dCmat(p, k + 1), v);
+                dWmat(p, k) = lerp(dWmat(p, k), dWmat(p, k + 1), v);
+              }
+            }
+          }
+        }
+        else
+        {
+          // Stop 1 step early in v
+          for(int q = 1; q <= ord_v - 1; ++q)
+          {
+            const int end = ord_v - q;
+            for(int k = 0; k <= end; ++k)
+            {
+              for(int p = 0; p <= ord_u; ++p)
+              {
+                dCmat(p, k) = lerp(dCmat(p, k), dCmat(p, k + 1), v);
+                dWmat(p, k) = lerp(dWmat(p, k), dWmat(p, k + 1), v);
+              }
+            }
+          }
+
+          // Stop 1 step early in v over the two columns
+          for(int p = 1; p <= ord_u - 1; ++p)
+          {
+            const int end = ord_u - p;
+            for(int k = 0; k <= end; ++k)
+            {
+              for(int q = 0; q <= 1; ++q)
+              {
+                dCmat(k, q) = lerp(dCmat(k, q), dCmat(k + 1, q), u);
+                dWmat(k, q) = lerp(dWmat(k, q), dWmat(k + 1, q), u);
+              }
+            }
+          }
+        }
+
+        // Store intermediate values
+        // clang-format off
+        double W = (1 - u) * (1 - v) * dWmat(0, 0) + u * (1 - v) * dWmat(1, 0) +
+                         (1 - u) * v * dWmat(0, 1) +       u * v * dWmat(1, 1);
+        double W_u = ord_u * ( (1 - v) * (dWmat(1, 0) - dWmat(0, 0)) + 
+                                     v * (dWmat(1, 1) - dWmat(0, 1)) );
+        double W_v = ord_v * ( (1 - u) * (dWmat(0, 1) - dWmat(0, 0)) + 
+                                     u * (dWmat(1, 1) - dWmat(1, 0)) );
+        double W_uv = ord_u * ord_v * (dWmat(1, 1) - dWmat(1, 0) - dWmat(0, 1) + dWmat(0, 0));
+
+        double C = (1 - u) * (1 - v) * dCmat(0, 0) + u * (1 - v) * dCmat(1, 0) +
+                         (1 - u) * v * dCmat(0, 1) +       u * v * dCmat(1, 1);
+        double C_u = ord_u * ( (1 - v) * (dCmat(1, 0) - dCmat(0, 0)) + 
+                                     v * (dCmat(1, 1) - dCmat(0, 1)) );
+        double C_v = ord_v * ( (1 - u) * (dCmat(0, 1) - dCmat(0, 0)) + 
+                                     u * (dCmat(1, 1) - dCmat(1, 0)) );
+        double C_uv = ord_u * ord_v * (dCmat(1, 1) - dCmat(1, 0) - dCmat(0, 1) + dCmat(0, 0));
+
+        val[i] = W * W * C_uv - W * (C_u * W_v + C_v * W_u) +
+                                C * (2 * W_u * W_v - W * W_uv);
+        val[i] /= (W * W * W);
+        // clang-format on
       }
 
-      // Return a wildly inefficient calculation of the rational derivative
-      return (nonrational.dudv(u, v) - weights.dv(u, v)[0] * du(u, v) -
-              weights.du(u, v)[0] * dv(u, v) -
-              weights.dudv(u, v)[0] * Vector<T, NDIMS>(evaluate(u, v))) /
-        weights.evaluate(u, v)[0];
+      return val;
     }
   }
 

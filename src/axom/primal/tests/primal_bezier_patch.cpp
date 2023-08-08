@@ -625,61 +625,58 @@ TEST(primal_bezierpatch, second_derivative)
   // clang-format on
 
   BezierPatchType bPatch(controlPoints, weights, order_u, order_v);
+  const double u = 0.6, v = 0.4;
 
-  auto evaluate_test = bPatch.evaluate(0.5, 0.4);
-  PointType evaluate_exp = {3.0, 6.85038038884, 2.35777683855};
+  PointType evaluation;
+  VectorType Du, Dv, DuDu, DvDv, DuDv;
+  bPatch.evaluate_second_derivatives(u, v, evaluation, Du, Dv, DuDu, DvDv, DuDv);
+
+  auto evaluate_test = bPatch.evaluate(u, v);
+  PointType evaluate_exp = {3.3677499397, 6.8406796016, 2.3949546817};
   for(int i = 0; i < 3; ++i)
   {
-    EXPECT_NEAR(evaluate_test[i], evaluate_exp[i], 1e-6);
+    EXPECT_NEAR(evaluate_exp[i], evaluation[i], 1e-6);
+    EXPECT_NEAR(evaluate_exp[i], evaluate_test[i], 1e-6);
   }
 
-  auto partial_u_test = bPatch.du(0.6, 0.4);
+  auto partial_u_test = bPatch.du(u, v);
   VectorType partial_u_exp = {3.78171724599, -0.19774668801, -0.370827644202};
   for(int i = 0; i < 3; ++i)
   {
-    EXPECT_NEAR(partial_u_test[i], partial_u_exp[i], 1e-6);
+    EXPECT_NEAR(partial_u_exp[i], Du[i], 1e-6);
+    EXPECT_NEAR(partial_u_exp[i], partial_u_test[i], 1e-6);
   }
 
-  auto partial_v_test = bPatch.dv(0.6, 0.4);
+  auto partial_v_test = bPatch.dv(u, v);
   VectorType partial_v_exp = {-0.354910197356, 11.8772494643, -1.594127454970};
   for(int i = 0; i < 3; ++i)
   {
-    EXPECT_NEAR(partial_v_test[i], partial_v_exp[i], 1e-6);
+    EXPECT_NEAR(partial_v_exp[i], Dv[i], 1e-6);
+    EXPECT_NEAR(partial_v_exp[i], partial_v_test[i], 1e-6);
   }
 
-  auto partial_uu_test = bPatch.dudu(0.6, 0.4);
+  auto partial_uu_test = bPatch.dudu(u, v);
   VectorType partial_uu_exp = {3.20670028604, -2.12957447484, -16.1167567473};
   for(int i = 0; i < 3; ++i)
   {
-    EXPECT_NEAR(partial_uu_test[i], partial_uu_exp[i], 1e-6);
+    EXPECT_NEAR(partial_uu_exp[i], DuDu[i], 1e-6);
+    EXPECT_NEAR(partial_uu_exp[i], partial_uu_test[i], 1e-6);
   }
 
-  auto partial_vv_test = bPatch.dvdv(0.6, 0.4);
+  auto partial_vv_test = bPatch.dvdv(u, v);
   VectorType partial_vv_exp = {0.479553359805, -8.63831027883, 1.13497887975};
   for(int i = 0; i < 3; ++i)
   {
-    EXPECT_NEAR(partial_vv_test[i], partial_vv_exp[i], 1e-6);
+    EXPECT_NEAR(partial_vv_exp[i], DvDv[i], 1e-6);
+    EXPECT_NEAR(partial_vv_exp[i], partial_vv_test[i], 1e-6);
   }
 
-  BezierPatchType bPatch_nonrational(bPatch);
-  bPatch_nonrational.makeNonrational();
-  bPatch_nonrational.makeRational();
-  std::cout << bPatch_nonrational.getWeight(2, 3) << std::endl;
-
-  auto partial_uv_test = bPatch.dudv(0.6, 0.4);
+  auto partial_uv_test = bPatch.dudv(u, v);
   VectorType partial_uv_exp = {-3.43768298544, 1.94078069698, 8.48995274462};
   for(int i = 0; i < 3; ++i)
   {
-    EXPECT_NEAR(partial_uv_test[i], partial_uv_exp[i], 1e-6);
-  }
-
-  auto partial_uv_test_nonrational = bPatch_nonrational.dudv(0.6, 0.4);
-  VectorType partial_uv_exp_nonrational = {-2.36544, 0, 11.80416};
-  for(int i = 0; i < 3; ++i)
-  {
-    EXPECT_NEAR(partial_uv_test_nonrational[i],
-                partial_uv_exp_nonrational[i],
-                1e-6);
+    EXPECT_NEAR(partial_uv_exp[i], partial_uv_test[i], 1e-6);
+    EXPECT_NEAR(partial_uv_exp[i], DuDv[i], 1e-6);
   }
 }
 
