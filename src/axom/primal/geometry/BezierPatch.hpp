@@ -997,10 +997,10 @@ public:
       for(int i = 0; i < NDIMS; ++i)
       {
         // Do de Casteljau until we get a 3x3
-      for(int p = 0; p <= ord_u; ++p)
-      {
-        for(int q = 0; q <= ord_v; ++q)
+        for(int p = 0; p <= ord_u; ++p)
         {
+          for(int q = 0; q <= ord_v; ++q)
+          {
             dCmat(p, q) = m_controlPoints(p, q)[i] * m_weights(p, q);
             dWmat(p, q) = m_weights(p, q);
           }

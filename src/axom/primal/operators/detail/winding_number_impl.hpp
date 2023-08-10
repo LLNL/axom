@@ -495,6 +495,88 @@ double stokes_winding_number_adaptive(const Point<T, 3>& query,
 }
 #endif
 
+/// Return FALSE if the nearest point is an endpoint.
+///  Given by Algorithm 3 in [Maa 2003]
+template <typename T, int NDIMS>
+bool point_nearest_bezier_curve(const Point<T, NDIMS>& p,
+                                const Polygon<T, NDIMS>& poly)
+{
+  const int N = poly.numVertices() - 1;
+  if(N <= 1) return true;
+
+  // Store the vectors used multiple times
+  Vector<T, NDIMS> P0P(poly[0], p);
+  Vector<T, NDIMS> PPN(p, poly[N]);
+  Vector<T, NDIMS> PNP0(poly[N], poly[0]);
+
+  // Check the more likely condition first
+  double R3 = -PNP0.dot(PPN);
+  double R4 = PNP0.dot(P0P);
+  if(R3 * R4 <= 0) return true;
+
+  double R1 = P0P.dot(Vector<T, NDIMS>(poly[0], poly[1]));
+  double R2 = PPN.dot(Vector<T, NDIMS>(poly[N - 1], poly[N]));
+  if(R1 >= 0 && R2 >= 0) return true;
+
+  return false;
+}
+
+/// Return FALSE if nearest point is on the boundary
+///  Given by Algorithm 4 in [Maa 2003]
+template <typename T>
+bool point_nearest_bezier_patch(const Point<T, 3>& point,
+                                const BezierPatch<T, 3>& bPatch,
+                                double EPS = 1e-8)
+{
+  const int ord_u = bPatch.getOrder_u();
+  const int ord_v = bPatch.getOrder_v();
+  bool flag = false;
+
+  Polygon<T, 3> controlPoly;
+  for(int q = 0; q <= ord_v; ++q)
+  {
+    controlPoly.clear();
+    for(int p = 0; p <= ord_u; ++p)
+    {
+      controlPoly.addVertex(bPatch(p, q));
+    }
+
+    if(point_nearest_bezier_curve(point, controlPoly))
+    {
+      flag = true;
+      break;
+    }
+  }
+
+  if(flag == false)
+  {
+    return false;
+  }
+
+  flag = false;
+  for(int p = 0; p <= ord_u; ++p)
+  {
+    controlPoly.clear();
+    for(int q = 0; q <= ord_v; ++q)
+    {
+      controlPoly.addVertex(bPatch(p, q));
+    }
+
+    if(point_nearest_bezier_curve(point, controlPoly))
+    {
+      flag = true;
+      break;
+    }
+  }
+
+  if(flag == false)
+  {
+    return false;
+  }
+
+  return true;
+}
+
 /*!
  * \brief Find the point on a BezierPatch closest to a point close to the surface
  *
@@ -525,10 +607,11 @@ bool near_field_projection(const Point<T, 3>& p,
   double A00, A01, A10, A11, det;
   double b0, b1;
   double delu, delv;
+  double damp = 1.0;
 
   // TODO: Compute Sp, Su, Sv, Suu, Svv, Suv MUCH more efficiently
   //  by using the same intermediates from de Casteljau
-  constexpr int max_iter = 15;
+  constexpr int max_iter = 10;
   for(int i = 0; i < max_iter; ++i)
   {
     // Get all derivatives necessary for Newton step
@@ -568,8 +651,9 @@ bool near_field_projection(const Point<T, 3>& p,
     b0 = -Sp.dot(Su);
     b1 = -Sp.dot(Sv);
 
-    delu = (A11 * b0 - A01 * b1) / det;
-    delv = (-A10 * b0 + A00 * b1) / det;
+    delu = damp * (A11 * b0 - A01 * b1) / det;
+    delv = damp * (-A10 * b0 + A00 * b1) / det;
+    damp *= 1;
 
     min_u = axom::utilities::clampVal(min_u + delu, 0.0, 1.0);
     min_v = axom::utilities::clampVal(min_v + delv, 0.0, 1.0);
