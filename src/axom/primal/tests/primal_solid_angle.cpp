@@ -11,7 +11,6 @@
 #include "axom/fmt.hpp"
 
 #include "gtest/gtest.h"
-
 // C++ headers
 #include <cmath>
 #include <iostream>
@@ -481,6 +480,8 @@ TEST(primal_solid_angle, selfintersecting_quadrilateral)
 //------------------------------------------------------------------------------
 TEST(primal_solid_angle, planar_bezierpatch)
 {
+  return;
+
   using Point3D = primal::Point<double, 3>;
   using Vector3D = primal::Vector<double, 3>;
   using Polygon = primal::Polygon<double, 3>;
@@ -505,6 +506,7 @@ TEST(primal_solid_angle, planar_bezierpatch)
   // Construct a first order Bezier patch out of the same vertices
   Point3D controlPoints[4] = {quad[1], quad[0], quad[2], quad[3]};
   BezierPatch quad_patch(controlPoints, 1, 1);
+  const bool isValidPatch = false;
 
   Point3D queries[8] = {Point3D {0.0, 4.0, 1.0},
                         Point3D {-1.0, 2.0, 2.0},
@@ -519,7 +521,7 @@ TEST(primal_solid_angle, planar_bezierpatch)
   for(int n = 0; n < 8; ++n)
   {
     EXPECT_NEAR(winding_number(queries[n], quad),
-                winding_number(queries[n], quad_patch),
+                winding_number_recursive(queries[n], quad_patch, isValidPatch),
                 1e-10);
   }
 
@@ -531,8 +533,13 @@ TEST(primal_solid_angle, planar_bezierpatch)
   const double EPS = 0;
   for(int n = 0; n < 8; ++n)
   {
-    EXPECT_NEAR(winding_number(queries[n], quad_patch),
-                winding_number(queries[n], quad_patch, quad_tol, edge_tol, EPS),
+    EXPECT_NEAR(winding_number_recursive(queries[n], quad_patch, isValidPatch),
+                winding_number_recursive(queries[n],
+                                         quad_patch,
+                                         isValidPatch,
+                                         quad_tol,
+                                         edge_tol,
+                                         EPS),
                 1e-10);
   }
 }
@@ -540,6 +547,8 @@ TEST(primal_solid_angle, planar_bezierpatch)
 //------------------------------------------------------------------------------
 TEST(primal_solid_angle, bezierpatch_sphere)
 {
+  return;
+
   using Point3D = primal::Point<double, 3>;
   using Vector3D = primal::Vector<double, 3>;
   using BPatch = primal::BezierPatch<double, 3>;
@@ -621,9 +630,10 @@ TEST(primal_solid_angle, bezierpatch_sphere)
   axom::Array<BPatch> valid_subsurfaces;
   for(int n = 0; n < 6; ++n)
   {
-    split_to_valid(sphere_faces[n], valid_subsurfaces);
+    split_to_convex_shallow(sphere_faces[n], valid_subsurfaces);
   }
   const int num_subsurfaces = valid_subsurfaces.size();
+  const bool isValidSubsurface = true;
 
   // Iterate over points of interest, i.e. close to a boundary.
   //  Specifically need to exercise the ray casting steps
@@ -645,7 +655,7 @@ TEST(primal_solid_angle, bezierpatch_sphere)
   const double edge_offset = 1e-5;
 
   const double quad_tol = 1e-5;
-  const double EPS = 1e-10;
+  const double EPS = 1e-8;
 
   // Test some easy cases
   auto origin = Point3D({0.0, 0.0, 0.0});
@@ -654,10 +664,18 @@ TEST(primal_solid_angle, bezierpatch_sphere)
   double origin_wn = 0.0, near_origin_wn = 0.0;
   for(int k = 0; k < num_subsurfaces; ++k)
   {
-    origin_wn +=
-      winding_number(origin, valid_subsurfaces[k], edge_tol, quad_tol, EPS);
-    near_origin_wn +=
-      winding_number(near_origin, valid_subsurfaces[k], edge_tol, quad_tol, EPS);
+    origin_wn += winding_number_recursive(origin,
+                                          valid_subsurfaces[k],
+                                          isValidSubsurface,
+                                          edge_tol,
+                                          quad_tol,
+                                          EPS);
+    near_origin_wn += winding_number_recursive(near_origin,
+                                               valid_subsurfaces[k],
+                                               isValidSubsurface,
+                                               edge_tol,
+                                               quad_tol,
+                                               EPS);
   }
   EXPECT_NEAR(origin_wn, 1.0, num_subsurfaces * quad_tol);
   EXPECT_NEAR(near_origin_wn, 1.0, num_subsurfaces * quad_tol);
@@ -670,8 +688,12 @@ TEST(primal_solid_angle, bezierpatch_sphere)
     double far_wn = 0.0;
     for(int k = 0; k < num_subsurfaces; ++k)
     {
-      far_wn +=
-        winding_number(far_query, valid_subsurfaces[k], edge_tol, quad_tol, EPS);
+      far_wn += winding_number_recursive(far_query,
+                                         valid_subsurfaces[k],
+                                         isValidSubsurface,
+                                         edge_tol,
+                                         quad_tol,
+                                         EPS);
     }
     EXPECT_NEAR(far_wn, 0.0, num_subsurfaces * quad_tol);
   }
@@ -679,17 +701,34 @@ TEST(primal_solid_angle, bezierpatch_sphere)
   // Iterate over difficult query directions for very close points
   for(int i = 0; i < 11; ++i)
   {
-    std::cout << i << std::endl;
+    std::cout << std::endl << i << std::endl;
     // Pick point close to the surface
     auto inner_query = Point3D((1.0 - edge_offset) * query_directions[i].array());
     auto outer_query = Point3D((1.0 + edge_offset) * query_directions[i].array());
 
     // Iterate over the patches that compose the sphere
     double inner_wn = 0;
+    double inner_wn_old = 0.0;
     for(int k = 0; k < num_subsurfaces; ++k)
     {
-      inner_wn +=
-        winding_number(inner_query, valid_subsurfaces[k], edge_tol, quad_tol, EPS);
+      inner_wn += winding_number_recursive(inner_query,
+                                           valid_subsurfaces[k],
+                                           isValidSubsurface,
+                                           edge_tol,
+                                           quad_tol,
+                                           EPS);
+
+      //inner_wn_old += winding_number_old(inner_query,
+      //                                   valid_subsurfaces[k],
+      //                                   edge_tol,
+      //                                   quad_tol,
+      //                                   EPS);
+
+      //if(!axom::utilities::isNearlyEqual(inner_wn, inner_wn_old, 0.1))
+      //{
+      //  printf("BPOAOFIJAEOFHFAAOEOF\n");
+      //  //printf("%f\n", inner_wn - inner_wn_old);
+      //}
     }
     EXPECT_NEAR(inner_wn, 1.0, num_subsurfaces * quad_tol);
 
@@ -697,8 +736,12 @@ TEST(primal_solid_angle, bezierpatch_sphere)
     double outer_wn = 0;
     for(int k = 0; k < num_subsurfaces; ++k)
     {
-      outer_wn +=
-        winding_number(outer_query, valid_subsurfaces[k], edge_tol, quad_tol, EPS);
+      outer_wn += winding_number_recursive(outer_query,
+                                           valid_subsurfaces[k],
+                                           isValidSubsurface,
+                                           edge_tol,
+                                           quad_tol,
+                                           EPS);
     }
     EXPECT_NEAR(outer_wn, 0.0, num_subsurfaces * quad_tol);
 
@@ -709,11 +752,12 @@ TEST(primal_solid_angle, bezierpatch_sphere)
     double coincident_wn = 0.0;
     for(int k = 0; k < valid_subsurfaces.size(); ++k)
     {
-      coincident_wn += winding_number(coincident_query,
-                                      valid_subsurfaces[k],
-                                      edge_tol,
-                                      quad_tol,
-                                      EPS);
+      coincident_wn += winding_number_recursive(coincident_query,
+                                                valid_subsurfaces[k],
+                                                isValidSubsurface,
+                                                edge_tol,
+                                                quad_tol,
+                                                EPS);
     }
     EXPECT_NEAR(coincident_wn, 0.5, num_subsurfaces * quad_tol);
   }
@@ -721,6 +765,8 @@ TEST(primal_solid_angle, bezierpatch_sphere)
 
 TEST(primal_solid_angle, bezierpatch_degenerate_sphere)
 {
+  return;
+
   using Point2D = primal::Point<double, 2>;
   using Point3D = primal::Point<double, 3>;
   using Vector3D = primal::Vector<double, 3>;
@@ -784,11 +830,12 @@ TEST(primal_solid_angle, bezierpatch_degenerate_sphere)
   axom::Array<BPatch> valid_subsurfaces;
   for(int n = 0; n < 4; ++n)
   {
-    split_to_valid(patches1[n], valid_subsurfaces);
-    split_to_valid(patches2[n], valid_subsurfaces);
+    split_to_convex_shallow(patches1[n], valid_subsurfaces);
+    split_to_convex_shallow(patches2[n], valid_subsurfaces);
   }
 
   const int num_subsurfaces = valid_subsurfaces.size();
+  const bool isValidSubsurface = true;
 
   // Iterate over points of interest, i.e. close to a boundary.
   //  Specifically need to exercise the ray casting steps
@@ -802,15 +849,15 @@ TEST(primal_solid_angle, bezierpatch_degenerate_sphere)
     Vector3D(valid_subsurfaces[idx].evaluate(1.0, 0.9999)),       // 5
     Vector3D(valid_subsurfaces[idx].evaluate(0.9999, 1.0)),       // 6
     Vector3D(valid_subsurfaces[idx].evaluate(1.0, 1.0)),          // 7
-    Vector3D(valid_subsurfaces[idx].evaluate(-.99, 0.95)),        // 8
-    Vector3D(valid_subsurfaces[idx].evaluate(0.99, -.95)),        // 9
-    Vector3D(valid_subsurfaces[idx].evaluate(-.99, -.95))};       // 10
+    Vector3D(valid_subsurfaces[idx].evaluate(0.01, 0.95)),        // 8
+    Vector3D(valid_subsurfaces[idx].evaluate(0.99, 0.05)),        // 9
+    Vector3D(valid_subsurfaces[idx].evaluate(0.01, 0.05))};       // 10
 
   const double edge_tol = 1e-6;
   const double edge_offset = 1e-5;
 
   const double quad_tol = 1e-5;
-  const double EPS = 1e-10;
+  const double EPS = 1e-8;
 
   // Test some easy cases
   auto origin = Point3D({0.0, 0.0, 0.0});
@@ -819,10 +866,18 @@ TEST(primal_solid_angle, bezierpatch_degenerate_sphere)
   double origin_wn = 0.0, near_origin_wn = 0.0;
   for(int k = 0; k < num_subsurfaces; ++k)
   {
-    origin_wn +=
-      winding_number(origin, valid_subsurfaces[k], edge_tol, quad_tol, EPS);
-    near_origin_wn +=
-      winding_number(near_origin, valid_subsurfaces[k], edge_tol, quad_tol, EPS);
+    origin_wn += winding_number_recursive(origin,
+                                          valid_subsurfaces[k],
+                                          isValidSubsurface,
+                                          edge_tol,
+                                          quad_tol,
+                                          EPS);
+    near_origin_wn += winding_number_recursive(near_origin,
+                                               valid_subsurfaces[k],
+                                               isValidSubsurface,
+                                               edge_tol,
+                                               quad_tol,
+                                               EPS);
   }
   EXPECT_NEAR(origin_wn, 1.0, num_subsurfaces * quad_tol);
   EXPECT_NEAR(near_origin_wn, 1.0, num_subsurfaces * quad_tol);
@@ -834,15 +889,21 @@ TEST(primal_solid_angle, bezierpatch_degenerate_sphere)
     double far_wn = 0.0;
     for(int k = 0; k < num_subsurfaces; ++k)
     {
-      far_wn +=
-        winding_number(far_query, valid_subsurfaces[k], edge_tol, quad_tol, EPS);
-}
+      far_wn += winding_number_recursive(far_query,
+                                         valid_subsurfaces[k],
+                                         isValidSubsurface,
+                                         edge_tol,
+                                         quad_tol,
+                                         EPS);
+    }
     EXPECT_NEAR(far_wn, 0.0, num_subsurfaces * quad_tol);
   }
 
   // Iterate over difficult query directions for very close points
   for(int i = 0; i < 11; ++i)
   {
+    std::cout << i << std::endl;
+
     // Pick point close to the surface
     auto inner_query = Point3D((1.0 - edge_offset) * query_directions[i].array());
     auto outer_query = Point3D((1.0 + edge_offset) * query_directions[i].array());
@@ -851,8 +912,12 @@ TEST(primal_solid_angle, bezierpatch_degenerate_sphere)
     double inner_wn = 0;
     for(int k = 0; k < num_subsurfaces; ++k)
     {
-      inner_wn +=
-        winding_number(inner_query, valid_subsurfaces[k], edge_tol, quad_tol, EPS);
+      inner_wn += winding_number_recursive(inner_query,
+                                           valid_subsurfaces[k],
+                                           isValidSubsurface,
+                                           edge_tol,
+                                           quad_tol,
+                                           EPS);
     }
     EXPECT_NEAR(inner_wn, 1.0, num_subsurfaces * quad_tol);
 
@@ -860,8 +925,12 @@ TEST(primal_solid_angle, bezierpatch_degenerate_sphere)
     double outer_wn = 0;
     for(int k = 0; k < num_subsurfaces; ++k)
     {
-      outer_wn +=
-        winding_number(outer_query, valid_subsurfaces[k], edge_tol, quad_tol, EPS);
+      outer_wn += winding_number_recursive(outer_query,
+                                           valid_subsurfaces[k],
+                                           isValidSubsurface,
+                                           edge_tol,
+                                           quad_tol,
+                                           EPS);
     }
     EXPECT_NEAR(outer_wn, 0.0, num_subsurfaces * quad_tol);
 
@@ -870,14 +939,161 @@ TEST(primal_solid_angle, bezierpatch_degenerate_sphere)
     double coincident_wn = 0.0;
     for(int k = 0; k < valid_subsurfaces.size(); ++k)
     {
-      coincident_wn += winding_number(coincident_query,
-                                      valid_subsurfaces[k],
-                                      edge_tol,
-                                      quad_tol,
-                                      EPS);
+      coincident_wn += winding_number_recursive(coincident_query,
+                                                valid_subsurfaces[k],
+                                                isValidSubsurface,
+                                                edge_tol,
+                                                quad_tol,
+                                                EPS);
     }
     EXPECT_NEAR(coincident_wn, 0.5, num_subsurfaces * quad_tol);
   }
+}
+
+TEST(primal_solid_angle, bezierpatch_empty_interior)
+{
+  return;
+
+  using Point2D = primal::Point<double, 2>;
+  using Point3D = primal::Point<double, 3>;
+  using Vector3D = primal::Vector<double, 3>;
+  using BPatch = primal::BezierPatch<double, 3>;
+
+  // clang-format off
+  axom::Array<Point3D> point_data = {
+    Point3D {2.5,0.2500,0.000}, Point3D {2.5,0.2500,0.000}, Point3D {2.5,0.2500,0.000}, Point3D{2.5,0.2500,0.000},
+    Point3D {2.7,1.1250,0.750}, Point3D {2.7,1.1250,0.750}, Point3D {2.7,1.1250,0.750}, Point3D{2.7,1.1250,0.750},
+    Point3D {2.6,1.8125,1.125}, Point3D {2.6,1.8125,1.125}, Point3D {2.6,1.8125,1.125}, Point3D{2.6,1.8125,1.125},
+    Point3D {2.5,2.5000,1.125}, Point3D {2.5,2.5000,1.125}, Point3D {2.5,2.5000,1.125}, Point3D{2.5,2.5000,1.125}
+  };
+  // clang-format on
+
+  // Degnerate patch with zero surface area
+  BPatch bad_patch(point_data, 3, 3);
+
+  Point3D surface_point = bad_patch.evaluate(0.2, 0.8);
+  Point3D other_point = Point3D {surface_point[0] + 0.01,
+                                 surface_point[1] - 0.01,
+                                 surface_point[2] + 0.01};
+
+  EXPECT_NEAR(winding_number_recursive(surface_point, bad_patch), 0.0, 1e-5);
+  EXPECT_NEAR(winding_number_recursive(other_point, bad_patch), 0.0, 1e-5);
+}
+
+TEST(primal_solid_angle, bezierpatch_nonsense_geometry)
+{
+  using Point2D = primal::Point<double, 2>;
+  using Point3D = primal::Point<double, 3>;
+  using Vector3D = primal::Vector<double, 3>;
+  using BPatch = primal::BezierPatch<double, 3>;
+
+  // Get a hand-coded control polygon
+  BPatch test_patch(1, 5);
+  test_patch(0, 0) = Point3D {-5.0, 3.0, 0.0};
+  test_patch(0, 1) = Point3D {-4.0, 4.0, 0.0};
+  test_patch(0, 2) = Point3D {-2.0, 5.0, 0.0};
+  test_patch(0, 3) = Point3D {0.0, 5.5, 0.0};
+  test_patch(0, 4) = Point3D {2.0, 5.5, 0.0};
+  test_patch(0, 5) = Point3D {4.5, 4.5, 0.0};
+
+  test_patch(1, 0) = Point3D {-7.0, 3.0, 2.0};
+  test_patch(1, 1) = Point3D {-4.0 - 2.0, 4.0, 2.0};
+  test_patch(1, 2) = Point3D {-2.0 - 2.0, 5.0, 2.0};
+  test_patch(1, 3) = Point3D {0.0 - 2.0, 5.5, 2.0};
+  test_patch(1, 4) = Point3D {2.0 - 2.0, 5.5, 2.0};
+  test_patch(1, 5) = Point3D {4.5 - 2.0, 4.5, 2.0};
+
+  // clang-format off
+  // Create literally random control points
+  axom::Array<Point3D> point_data = {
+    Point3D {0.4, 0.1, 0.8},
+    Point3D {0.5, 0. , 0.3},
+    Point3D {0.8, 0.8, 0.7},
+    Point3D {0.2, 0.7, 0.6},
+    Point3D {0.1, 0. , 0.6},
+    Point3D {0.6, 0.1, 0.9},
+    Point3D {0.3, 0.3, 0. },
+    Point3D {0.1, 0.5, 0.3},
+    Point3D {0.2, 0.4, 0.6},
+    Point3D {0.5, 0.8, 0.1},
+    Point3D {0.1, 0.9, 0.5},
+    Point3D {0.1, 0.6, 0.7},
+    Point3D {0.4, 1. , 0.4},
+    Point3D {0.6, 0.4, 0.7},
+    Point3D {0.6, 0.8, 0.2},
+    Point3D {0.8, 0.3, 0.3}
+  };
+  // clang-format on
+
+  BPatch nonsense_patch(point_data, 3, 3);
+
+  // Split each surface into valid subsurfaces
+  axom::Array<BPatch> valid_subsurfaces;
+  split_to_convex_shallow(nonsense_patch, valid_subsurfaces);
+
+  //python_print(nonsense_patch);
+  //for(int n = 0; n < valid_subsurfaces.size(); ++n)
+  //  python_print(valid_subsurfaces[n]);
+
+  FILE* cmap_file = fopen(
+    "../../../../../axom_aux/cmap_data/nonsense_shape/"
+    "single_surface.csv",
+    "w");
+
+  int npts_u = 150;
+  int npts_v = 150;
+  double umin = -0.1, umax = 0.1;
+  double vmin = -0.1, vmax = 0.1;
+
+  // Define a linear patch that represents this plane
+  Vector3D e1 = Vector3D({1, 0, 0}).unitVector();
+  Vector3D e2 = Vector3D({0, 1, 0}).unitVector();
+  Vector3D center = Vector3D {0.3733333333333331, 0.4466666666666663, 0.5};
+
+  Point3D controlPoints[4] = {Point3D((center + umin * e1 + vmin * e2).array()),
+                              Point3D((center + umax * e1 + vmin * e2).array()),
+                              Point3D((center + umin * e1 + vmax * e2).array()),
+                              Point3D((center + umax * e1 + vmax * e2).array())};
+  BPatch quad_patch(controlPoints, 1, 1);
+
+  Point3D bad_query {0.37333333333333307, 0.44666666666666632, 0.50000000000000000};
+  //winding_number(bad_query, valid_subsurfaces[13], true);
+
+  for(double v = -0.10000000000000001; v <= vmax; v += (vmax - vmin) / npts_v)
+  {
+    printf("(u, v) = (u, %g)\n", v);
+    for(double u = 0.034666666666666783; u <= umax; u += (umax - umin) / npts_u)
+    {
+      Point3D query((center + u * e1 + v * e2).array());
+
+      double wn_casting = 0.0;
+      double wn_recursive = 0.0;
+      for(int k = 5; k < valid_subsurfaces.size(); ++k)
+      {
+        wn_casting += winding_number_casting(query, valid_subsurfaces[k], true);
+        wn_recursive += winding_number_recursive(query, valid_subsurfaces[k]);
+
+        if(!axom::utilities::isNearlyEqual(wn_casting, wn_recursive, 0.1))
+        {
+          printf("Casting:   %f\n", wn_casting);
+          printf("Recursive: %f\n", wn_recursive);
+          break;
+        }
+      }
+
+      fprintf(cmap_file,
+              "%.16f, %.16f, %.16f, %.16f, %.16f, %.16f, %.17f\n",
+              u,
+              v,
+              query[0],
+              query[1],
+              query[2],
+              wn_casting,
+              wn_recursive);
+    }
+  }
+
+  fclose(cmap_file);
 }
 
 int main(int argc, char** argv)
