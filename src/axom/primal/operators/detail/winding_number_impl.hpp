@@ -462,17 +462,13 @@ double stokes_winding_number_adaptive(const Point<T, 3>& query,
     }
   }
 
-  constexpr int MAX_DEPTH = 25;
+  constexpr int MAX_DEPTH = 15;
   if(depth >= MAX_DEPTH ||
      axom::utilities::isNearlyEqualRelative(quad_fine[0] + quad_fine[1],
                                             quad_coarse,
                                             quad_tol,
                                             1e-10))
   {
-    if(depth >= MAX_DEPTH)
-    {
-      printf("");
-    }
     return 0.25 * M_1_PI * (quad_fine[0] + quad_fine[1]);
   }
   else
@@ -494,185 +490,6 @@ double stokes_winding_number_adaptive(const Point<T, 3>& query,
   }
 }
 #endif
-
-/// Return FALSE if the nearest point is an endpoint.
-///  Given by Algorithm 3 in [Maa 2003]
-template <typename T, int NDIMS>
-bool point_nearest_bezier_curve(const Point<T, NDIMS>& p,
-                                const Polygon<T, NDIMS>& poly)
-{
-  const int N = poly.numVertices() - 1;
-  if(N <= 1) return true;
-
-  // Store the vectors used multiple times
-  Vector<T, NDIMS> P0P(poly[0], p);
-  Vector<T, NDIMS> PPN(p, poly[N]);
-  Vector<T, NDIMS> PNP0(poly[N], poly[0]);
-
-  // Check the more likely condition first
-  double R3 = -PNP0.dot(PPN);
-  double R4 = PNP0.dot(P0P);
-  if(R3 * R4 <= 0) return true;
-
-  double R1 = P0P.dot(Vector<T, NDIMS>(poly[0], poly[1]));
-  double R2 = PPN.dot(Vector<T, NDIMS>(poly[N - 1], poly[N]));
-  if(R1 >= 0 && R2 >= 0) return true;
-
-  return false;
-}
-
-/// Return FALSE if nearest point is on the boundary
-///  Given by Algorithm 4 in [Maa 2003]
-template <typename T>
-bool point_nearest_bezier_patch(const Point<T, 3>& point,
-                                const BezierPatch<T, 3>& bPatch,
-                                double EPS = 1e-8)
-{
-  const int ord_u = bPatch.getOrder_u();
-  const int ord_v = bPatch.getOrder_v();
-  bool flag = false;
-
-  Polygon<T, 3> controlPoly;
-  for(int q = 0; q <= ord_v; ++q)
-  {
-    controlPoly.clear();
-    for(int p = 0; p <= ord_u; ++p)
-    {
-      controlPoly.addVertex(bPatch(p, q));
-    }
-
-    if(point_nearest_bezier_curve(point, controlPoly))
-    {
-      flag = true;
-      break;
-    }
-  }
-
-  if(flag == false)
-  {
-    return false;
-  }
-
-  flag = false;
-  for(int p = 0; p <= ord_u; ++p)
-  {
-    controlPoly.clear();
-    for(int q = 0; q <= ord_v; ++q)
-    {
-      controlPoly.addVertex(bPatch(p, q));
-    }
-
-    if(point_nearest_bezier_curve(point, controlPoly))
-    {
-      flag = true;
-      break;
-    }
-  }
-
-  if(flag == false)
-  {
-    return false;
-  }
-
-  return true;
-}
-
-/*!
- * \brief Find the point on a BezierPatch closest to a point close to the surface
- *
- * \param [in] p The query point to test
- * \param [in] bPatch The BezierPatch object
- * \param [out] min_u The u-coordinate of the closest point
- * \param [out] min_v The v-coordinate of the closest point
- * 
- * Apply the Newton-Raphson method to minimize the distance function.
- *
- * \note This is only meant to be used for `winding_number<BezierPatch>()`,
- *  as Newton's method is unstable for far away points.
- * 
- * \return The closest point on the surface
- */
-template <typename T>
-bool near_field_projection(const Point<T, 3>& p,
-                           const BezierPatch<T, 3>& bPatch,
-                           double& min_u,
-                           double& min_v,
-                           double edge_tol = 1e-8,
-                           double EPS = 1e-8)
-{
-  min_u = 0.5;
-  min_v = 0.5;
-  Point<T, 3> S;
-  Vector<T, 3> Sp, Su, Sv, Suu, Svv, Suv;
-  double A00, A01, A10, A11, det;
-  double b0, b1;
-  double delu, delv;
-  double damp = 1.0;
-
-  // TODO: Compute Sp, Su, Sv, Suu, Svv, Suv MUCH more efficiently
-  //  by using the same intermediates from de Casteljau
-  constexpr int max_iter = 10;
-  for(int i = 0; i < max_iter; ++i)
-  {
-    // Get all derivatives necessary for Newton step
-    bPatch.evaluate_second_derivatives(min_u, min_v, S, Su, Sv, Suu, Svv, Suv);
-    Sp = Vector<T, 3>(p, S);
-
-    if(Sp.squared_norm() < edge_tol * edge_tol)
-    {
-      return true;
-    }
-
-    if(axom::utilities::isNearlyEqual(Su.dot(Sp), 0.0, EPS) &&
-       axom::utilities::isNearlyEqual(Sv.dot(Sp), 0.0, EPS))
-    {
-      return true;
-    }
-
-    A00 = Sp.dot(Suu) + Su.dot(Su);
-    A10 = A01 = Sp.dot(Suv) + Su.dot(Sv);
-    A11 = Sp.dot(Svv) + Sv.dot(Sv);
-    det = (A00 * A11 - A01 * A10);
-
-    // If the iteration fails, try to fix it with
-    //  a different initial condition
-    if(axom::utilities::isNearlyEqual(det, 0.0, PRIMAL_TINY))
-    {
-      if(i == max_iter)
-      {
-        min_u = min_v = 0.5;
-        return false;
-      }
-      min_u = 1.0 / (i + 1);
-      min_v = 1.0 / (i + 2);
-      continue;
-    }
-
-    b0 = -Sp.dot(Su);
-    b1 = -Sp.dot(Sv);
-
-    delu = damp * (A11 * b0 - A01 * b1) / det;
-    delv = damp * (-A10 * b0 + A00 * b1) / det;
-    damp *= 1;
-
-    min_u = axom::utilities::clampVal(min_u + delu, 0.0, 1.0);
-    min_v = axom::utilities::clampVal(min_v + delv, 0.0, 1.0);
-  }
-
-  if((axom::utilities::isNearlyEqual(bPatch.du(min_u, min_v).squared_norm(),
-                                     0.0,
-                                     EPS) &&
-      axom::utilities::isNearlyEqual(bPatch.dv(min_u, min_v).squared_norm(),
-                                     0.0,
-                                     EPS)) ||
-     Vector<T, 3>(p, bPatch.evaluate(min_u, min_v)).squared_norm() <
-       edge_tol * edge_tol)
-  {
-    return true;
-  }
-
-  return false;
-}
 
 }  // end namespace detail
 }  // end namespace primal

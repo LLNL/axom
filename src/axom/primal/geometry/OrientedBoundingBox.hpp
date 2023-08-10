@@ -107,19 +107,6 @@ public:
   OrientedBoundingBox(const PointType* pts, int n);
 
   /*!
-   * \brief Constructor. Creates an oriented bounding box with given center,
-   * axes, and extents. Normalizes axes and sets any negative extent to 0.
-   * \param [in] c center of OBB
-   * \param [in] u axes of OBB
-   * \param [in] e extents of OBB
-   * \note Axes are made orthonormal, but if they don't span, some will be
-   * set to 0.
-   */
-  OrientedBoundingBox(const PointType& c,
-                      const VectorType (&u)[NDIMS],
-                      const VectorType& e);
-
-  /*!
    * \brief Constructor. Creates an oriented bounding box from a collection of
    * points with the given axes, which are assumed to be orthonormal.
    * \param [in] pts C-style array of points
@@ -486,7 +473,7 @@ OrientedBoundingBox<T, NDIMS>::OrientedBoundingBox(const PointType* pts,
   }
   c /= static_cast<T>(n);
   this->m_c = Point<T, NDIMS>(c);
-  
+
   // save space for pts minus the centroid
   NumericArray<T, NDIMS> diff;
 
@@ -515,21 +502,6 @@ OrientedBoundingBox<T, NDIMS>::OrientedBoundingBox(const PointType* pts,
 
   // save the extents
   this->m_e = maxima;
-}
-
-//------------------------------------------------------------------------------
-template <typename T, int NDIMS>
-OrientedBoundingBox<T, NDIMS>::OrientedBoundingBox(const Point<T, NDIMS>& c,
-                                                   const Vector<T, NDIMS> (&u)[NDIMS],
-                                                   const Vector<T, NDIMS>& e)
-{
-  this->m_c = Point<T, NDIMS>(c);
-  for(int i = 0; i < NDIMS; i++)
-  {
-    this->m_u[i] = Vector<T, NDIMS>(u[i]);
-  }
-  this->m_e = Vector<T, NDIMS>(e);
-  this->checkAndFix();
 }
 
 //------------------------------------------------------------------------------
@@ -623,9 +595,9 @@ template <typename T, int NDIMS>
 T OrientedBoundingBox<T, NDIMS>::volume() const
 {
   double vol = 1.0;
-  for (int i = 0; i < NDIMS; ++i)
+  for(int i = 0; i < NDIMS; ++i)
   {
-    vol*= this->m_e[i];
+    vol *= this->m_e[i];
   }
   return vol;
 }
