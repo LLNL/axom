@@ -16,9 +16,6 @@
 #include "axom/core/Array.hpp"
 #include "axom/primal/geometry/Octahedron.hpp"
 #include "axom/primal/geometry/Tetrahedron.hpp"
-#include "axom/primal/geometry/BezierPatch.hpp"
-
-#include "axom/primal/operators/is_convex.hpp"
 
 #include "axom/slic.hpp"
 
