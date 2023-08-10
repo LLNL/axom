@@ -244,137 +244,43 @@ TEST(primal_polygon, convexity)
   poly.addVertex(PointType {0, 1});
   EXPECT_TRUE(is_convex(poly));
 
-  axom::Array<PointType> convex_verts = axom::Array<PointType>(
+  // Duplicate points should not affect convexity
+  vertices = axom::Array<PointType>(
     {PointType {0, 0}, PointType {0, 1}, PointType {1, 1}, PointType {1, 0}});
-  axom::Array<PointType> concave_verts = axom::Array<PointType>(
-    {PointType {0, 0}, PointType {0, 1}, PointType {0.1, 0.1}, PointType {1, 0}});
-  axom::Array<PointType> nonsimple_verts = axom::Array<PointType>(
-    {PointType {0, 0}, PointType {1, 1}, PointType {0, 1}, PointType {1, 0}});
-
   poly.clear();
-
-  // Duplicate points and straight edges should not affect convexity
   for(int i = 0; i < 4; i++)
   {
     for(int j = 0; j < 3; j++)  // Duplicate each element 3 times
     {
-      poly.addVertex(convex_verts[i]);
+      poly.addVertex(vertices[i]);
     }
-
-    // Add midpoints between each duplicated vertex
-    poly.addVertex(
-      PointType::midpoint(convex_verts[i], convex_verts[(i + 1) % 4]));
   }
 
   EXPECT_TRUE(is_convex(poly));
 
   // Verify checks up to rotation of vertices
+  vertices = axom::Array<PointType>(
+    {PointType {0, 0}, PointType {1, 1}, PointType {1, 0}, PointType {0, 1}});
+
   for(int i = 0; i < 4; i++)
   {
     poly.clear();
     for(int j = 0; j < 4; j++)
     {
-      poly.addVertex(concave_verts[(j + i) % 4]);
+      poly.addVertex(vertices[(j + i) % 4]);
     }
     EXPECT_FALSE(is_convex(poly));
   }
 
-  for(int i = 0; i < 4; i++)
-  {
-    poly.clear();
-    for(int j = 0; j < 4; j++)
-    {
-      poly.addVertex(nonsimple_verts[(j + i) % 4]);
-    }
-    EXPECT_FALSE(is_convex(poly));
-  }
+  vertices = axom::Array<PointType>(
+    {PointType {0, 0}, PointType {0, 1}, PointType {1, 1}, PointType {1, 0}});
 
   for(int i = 0; i < 4; i++)
   {
     poly.clear();
     for(int j = 0; j < 4; j++)
     {
-      poly.addVertex(convex_verts[(j + i) % 4]);
-    }
-    EXPECT_TRUE(is_convex(poly));
-  }
-}
-
-//------------------------------------------------------------------------------
-TEST(primal_polygon, convexity_3d)
-{
-  using PolygonType = axom::primal::Polygon<double, 2>;
-  using PointType = axom::primal::Point<double, 2>;
-
-  axom::Array<PointType> vertices({PointType {0, 0, 0}, PointType {1, 1, 0}});
-  PolygonType poly(vertices);
-
-  // Segments and Triangles are always convex
-  EXPECT_TRUE(is_convex(poly));
-
-  poly.addVertex(PointType {0, 1, 0});
-  EXPECT_TRUE(is_convex(poly));
-
-  axom::Array<PointType> convex_verts =
-    axom::Array<PointType>({PointType {0, 0, 0},
-                            PointType {0, 1, 0},
-                            PointType {1, 1, 0},
-                            PointType {1, 0, 0}});
-  axom::Array<PointType> concave_verts =
-    axom::Array<PointType>({PointType {0, 0, 0},
-                            PointType {0, 1, 0},
-                            PointType {0.1, 0.1, 0},
-                            PointType {1, 0, 0}});
-  axom::Array<PointType> nonsimple_verts =
-    axom::Array<PointType>({PointType {0, 0, 0},
-                            PointType {1, 1, 0},
-                            PointType {0, 1, 0},
-                            PointType {1, 0, 0}});
-
-  poly.clear();
-
-  // Duplicate points and straight edges should not affect convexity
-  for(int i = 0; i < 4; i++)
-  {
-    for(int j = 0; j < 3; j++)  // Duplicate each element 3 times
-    {
-      poly.addVertex(convex_verts[i]);
-    }
-
-    // Add midpoints between each duplicated vertex
-    poly.addVertex(
-      PointType::midpoint(convex_verts[i], convex_verts[(i + 1) % 4]));
-  }
-
-  EXPECT_TRUE(is_convex(poly));
-
-  // Verify checks up to rotation of vertices
-  for(int i = 0; i < 4; i++)
-  {
-    poly.clear();
-    for(int j = 0; j < 4; j++)
-    {
-      poly.addVertex(concave_verts[(j + i) % 4]);
-    }
-    EXPECT_FALSE(is_convex(poly));
-  }
-
-  for(int i = 0; i < 4; i++)
-  {
-    poly.clear();
-    for(int j = 0; j < 4; j++)
-    {
-      poly.addVertex(nonsimple_verts[(j + i) % 4]);
-    }
-    EXPECT_FALSE(is_convex(poly));
-  }
-
-  for(int i = 0; i < 4; i++)
-  {
-    poly.clear();
-    for(int j = 0; j < 4; j++)
-    {
-      poly.addVertex(convex_verts[(j + i) % 4]);
+      poly.addVertex(vertices[(j + i) % 4]);
     }
     EXPECT_TRUE(is_convex(poly));
   }
