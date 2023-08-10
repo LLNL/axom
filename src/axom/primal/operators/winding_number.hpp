@@ -452,32 +452,15 @@ int winding_number(const Point<T, 3>& query,
 
   return std::lround(wn);
 }
-
 #ifdef AXOM_USE_MFEM
-/*!
- * \brief Computes the solid angle winding number for a 3D Bezier patch
- *
- * \param [in] query The query point to test
- * \param [in] bPatch The Bezier patch object
- * \param [in] edge_tol The physical distance level at which objects are 
- *                      considered indistinguishable
- * \param [in] quad_tol The maximum relative error allowed in the quadrature
- * \param [in] EPS Miscellaneous numerical tolerance level for nonphysical distances
- * 
- * Computes the generalized winding number for a Bezier patch using Stokes theorem.
- *
- * \note Warning: This algorithm is only tested to high accuracy for queries within
- *  1e-5 of the surface. Otherwise, it will return less accurate results.
- * 
- * \return double The generalized winding number.
- */
+
 template <typename T>
-double winding_number(const Point<T, 3>& query,
-                      const BezierPatch<T, 3>& bPatch,
-                      const bool isValidSurface = false,
-                      const double edge_tol = 1e-5,
-                      const double quad_tol = 1e-6,
-                      const double EPS = 1e-8)
+double winding_number_casting(const Point<T, 3>& query,
+                              const BezierPatch<T, 3>& bPatch,
+                              const bool isValidSurface = false,
+                              const double edge_tol = 1e-5,
+                              const double quad_tol = 1e-6,
+                              const double EPS = 1e-8)
 {
   const int ord_u = bPatch.getOrder_u();
   const int ord_v = bPatch.getOrder_v();
@@ -499,7 +482,7 @@ double winding_number(const Point<T, 3>& query,
 
     for(auto& surf : valid_subsurfaces)
     {
-      wn += winding_number(query, surf, true, edge_tol, quad_tol, EPS);
+      wn += winding_number_casting(query, surf, true, edge_tol, quad_tol, EPS);
     }
 
     return wn;
@@ -507,8 +490,7 @@ double winding_number(const Point<T, 3>& query,
 
   // Fix the number of quadrature nodes arbitrarily, but high enough
   //  to `catch` near singularities for refinement
-  constexpr int quad_npts = 50;
-  constexpr double edge_offset = 0.01;
+  constexpr int quad_npts = 100;
 
   // Early return if the patch is approximately polygonal.
   //  Very slight variations in curvature requires small EPS tolerance
@@ -605,12 +587,12 @@ double winding_number(const Point<T, 3>& query,
       //  and does so at an interior point
       double min_u, min_v;
       detail::near_field_projection(query, bPatch, min_u, min_v, edge_tol, EPS);
+      bool supposedToBeOnBoundary =
+        !detail::point_nearest_bezier_patch(query, bPatch);
+
       Point<T, 3> closest_point = bPatch.evaluate(min_u, min_v);
 
-      // Cast a ray that is normal to the surface at the closest point
-      cast_ray = bPatch.normal(min_u, min_v).unitVector();
-
-      closest_vector = Vector<T, 3>(query, closest_point);
+      closest_vector = Vector<T, 3>(closest_point, query);
       int on_boundary = (min_u < EPS) || (min_u > 1 - EPS) || (min_v < EPS) ||
         (min_v > 1 - EPS);
 
@@ -622,19 +604,22 @@ double winding_number(const Point<T, 3>& query,
                                         0.0,
                                         PRIMAL_TINY))
       {
-        closest_normal = bPatch.normal(
-          axom::utilities::clampVal(min_u, edge_offset, 1 - edge_offset),
-          axom::utilities::clampVal(min_v, edge_offset, 1 - edge_offset));
+        closest_normal =
+          bPatch.normal(axom::utilities::clampVal(min_u, EPS, 1 - EPS),
+                        axom::utilities::clampVal(min_v, EPS, 1 - EPS));
 
-        // If that doesn't work, assume that the projection provides one.
+        // If that doesn't work, then it is likely (heuristic) that the interior
+        //  is empty everywhere, and the winding number is zero.
         if(axom::utilities::isNearlyEqual(closest_normal.squared_norm(),
                                           0.0,
                                           PRIMAL_TINY))
         {
-          closest_normal = Vector<T, 3>(closest_point, query);
+          return 0.0;
         }
       }
       closest_normal = closest_normal.unitVector();
+
+      //return closest_vector.dot(closest_normal);
 
       // If the query is on the surface, then we don't need to do any adjustment,
       //  as the induced discontinuity in the integrand is removable
@@ -647,41 +632,61 @@ double winding_number(const Point<T, 3>& query,
       //  disk around the ray we cast.
       else
       {
-        // Check orientation relative to the surface
-        bool exterior = closest_vector.dot(closest_normal) < 0;
+        closest_vector = closest_vector.unitVector();
 
-        // If we're exterior, then we can definitely define a separating
-        //  plane defined by closest_normal
-        if(exterior)
+        // Check orientation relative to the surface
+        double dot_prod = closest_vector.dot(closest_normal);
+
+        if(on_boundary)
         {
-          // Get a perpendicular vector to closest_normal.
-          //  Can possibly pick this one more cleverly.
-          if(axom::utilities::isNearlyEqual(closest_normal[0],
-                                            closest_normal[1],
+          Vector<T, 3> closest_orthog;
+          if(axom::utilities::isNearlyEqual(closest_vector[0],
+                                            closest_vector[1],
                                             EPS))
-            cast_ray = Vector<T, 3>({closest_normal[2],
-                                     closest_normal[2],
-                                     -closest_normal[0] - closest_normal[1]})
-                         .unitVector();
+            closest_orthog =
+              Vector<T, 3>({closest_vector[2],
+                            closest_vector[2],
+                            -closest_vector[0] - closest_vector[1]})
+                .unitVector();
           else
-            cast_ray = Vector<T, 3>({-closest_normal[1] - closest_normal[2],
-                                     closest_normal[0],
-                                     closest_normal[0]})
-                         .unitVector();
+            closest_orthog = Vector<T, 3>({-closest_vector[1] - closest_vector[2],
+                                           closest_vector[0],
+                                           closest_vector[0]})
+                               .unitVector();
+          //cast_ray = closest_orthog;
+          cast_ray = closest_normal;
+
+          printf("==========Closest point is on a boundary!==========\n");
+          printf("Are we supposed to be on the boundary? %s\n",
+                 (supposedToBeOnBoundary ? "Yes!" : "No!"));
+          //python_print(closest_vector, query);
+          python_print(closest_orthog, query, "green");
+          python_print(closest_normal, query, "red");
+          python_print(closest_vector, closest_point, "blue");
+          //python_print(closest_normal, closest_point);
+          python_print(bPatch);
+          python_print(query);
+          python_print(closest_point);
+          std::cout << closest_vector.dot(closest_normal) << std::endl;
+          printf("===================================================\n");
         }
-        // If we're interior, we can safely pierce the surface, making
-        //  sure not to hit a boundary.
+        // If the closest point isinterior, we can safely pierce the surface,
+        //  since the ray cast won't hit a boundary
         else
         {
-          // This tolerance is arbitrary. A smaller value might be needed
-
-          cast_ray = Vector<T, 3>(
-            query,
-            bPatch.evaluate(
-              axom::utilities::clampVal(min_u, edge_offset, 1 - edge_offset),
-              axom::utilities::clampVal(min_v, edge_offset, 1 - edge_offset)));
-          cast_ray = cast_ray.unitVector();
-          wn = 0.5;
+          cast_ray = closest_vector;
+          wn = (dot_prod > 0 ? -1.0 : 1.0) * 0.5;
+          printf("-----------Closest point is on the interor!-----------\n");
+          printf("Are we supposed to be on the boundary? %s\n",
+                 (supposedToBeOnBoundary ? "Yes!" : "No!"));
+          //python_print(closest_vector, query);
+          python_print(cast_ray, query, "green");
+          python_print(closest_vector, closest_point, "blue");
+          python_print(bPatch);
+          python_print(query);
+          python_print(closest_point);
+          std::cout << closest_vector.dot(closest_normal) << std::endl;
+          printf("------------------------------------------------------\n");
         }
       }
 
@@ -799,6 +804,291 @@ double winding_number(const Point<T, 3>& query,
 }
 #endif
 
+template <typename T>
+double winding_number_recursive(const Point<T, 3>& query,
+                                const BezierPatch<T, 3>& bPatch,
+                                const double edge_tol = 1e-8,
+                                const double quad_tol = 1e-8,
+                                const double EPS = 1e-8,
+                                const int depth = 0)
+{
+  const int ord_u = bPatch.getOrder_u();
+  const int ord_v = bPatch.getOrder_v();
+  const bool patchIsRational = bPatch.isRational();
+  const double edge_tol_sq = edge_tol * edge_tol;
+
+  // Fix the number of quadrature nodes arbitrarily, but high enough
+  //  to `catch` near singularities for refinement
+  constexpr int quad_npts = 30;
+
+  // Early return if the patch is approximately polygonal.
+  //  Very slight variations in curvature requires small EPS tolerance
+  constexpr int MAX_DEPTH = 10;
+  if(depth >= MAX_DEPTH || bPatch.isPolygonal(EPS))
+  {
+    return winding_number(
+      query,
+      Polygon<T, 3>(axom::Array<Point<T, 3>>(
+        {bPatch(0, 0), bPatch(ord_u, 0), bPatch(ord_u, ord_v), bPatch(0, ord_v)})),
+      edge_tol,
+      PRIMAL_TINY);
+  }
+
+  // Use a specific kind of recursion if we are within tol of an endpoint.
+  //  Split the surface closer to the corner, assume smallest patch is polygonal,
+  //  and set a new edge_tol so corners of the new patch aren't marked as coincident
+  constexpr double edge_offset = 0.01;
+  if(squared_distance(query, bPatch(0, 0)) <= edge_tol_sq)
+  {
+    BezierPatch<T, 3> p1, p2, p3, p4;
+    bPatch.split(0.0 + edge_offset, 0.0 + edge_offset, p1, p2, p3, p4);
+    double new_edge_tol = 0.5 *
+      sqrt(axom::utilities::min(
+        squared_distance(query, bPatch.evaluate(0.0, 0.0 + edge_offset)),
+        squared_distance(query, bPatch.evaluate(0.0 + edge_offset, 0.0))));
+    new_edge_tol = axom::utilities::min(new_edge_tol, edge_tol);
+
+    return winding_number_recursive(query,
+                                    p2,
+                                    new_edge_tol,
+                                    quad_tol,
+                                    EPS,
+                                    depth + 1) +
+      winding_number_recursive(query, p3, new_edge_tol, quad_tol, EPS, depth + 1) +
+      winding_number_recursive(query, p4, new_edge_tol, quad_tol, EPS, depth + 1);
+  }
+  if(squared_distance(query, bPatch(ord_u, 0)) <= edge_tol_sq)
+  {
+    BezierPatch<T, 3> p1, p2, p3, p4;
+    bPatch.split(1.0 - edge_offset, 0.0 + edge_offset, p1, p2, p3, p4);
+    double new_edge_tol = 0.5 *
+      sqrt(axom::utilities::min(
+        squared_distance(query, bPatch.evaluate(1.0, 0.0 + edge_offset)),
+        squared_distance(query, bPatch.evaluate(1.0 - edge_offset, 0.0))));
+    new_edge_tol = axom::utilities::min(new_edge_tol, edge_tol);
+
+    return winding_number_recursive(query,
+                                    p1,
+                                    new_edge_tol,
+                                    quad_tol,
+                                    EPS,
+                                    depth + 1) +
+      winding_number_recursive(query, p3, new_edge_tol, quad_tol, EPS, depth + 1) +
+      winding_number_recursive(query, p4, new_edge_tol, quad_tol, EPS, depth + 1);
+  }
+  if(squared_distance(query, bPatch(0, ord_v)) <= edge_tol_sq)
+  {
+    BezierPatch<T, 3> p1, p2, p3, p4;
+    bPatch.split(0.0 + edge_offset, 1.0 - edge_offset, p1, p2, p3, p4);
+    double new_edge_tol = 0.5 *
+      sqrt(axom::utilities::min(
+        squared_distance(query, bPatch.evaluate(0.0 + edge_offset, 1.0)),
+        squared_distance(query, bPatch.evaluate(0.0, 1.0 - edge_offset))));
+    new_edge_tol = axom::utilities::min(new_edge_tol, edge_tol);
+
+    return winding_number_recursive(query,
+                                    p1,
+                                    new_edge_tol,
+                                    quad_tol,
+                                    EPS,
+                                    depth + 1) +
+      winding_number_recursive(query, p2, new_edge_tol, quad_tol, EPS, depth + 1) +
+      winding_number_recursive(query, p4, new_edge_tol, quad_tol, EPS, depth + 1);
+  }
+  if(squared_distance(query, bPatch(ord_u, ord_v)) <= edge_tol_sq)
+  {
+    BezierPatch<T, 3> p1, p2, p3, p4;
+    bPatch.split(1.0 - edge_offset, 1.0 - edge_offset, p1, p2, p3, p4);
+    double new_edge_tol = 0.5 *
+      sqrt(axom::utilities::min(
+        squared_distance(query, bPatch.evaluate(1.0, 1.0 - edge_offset)),
+        squared_distance(query, bPatch.evaluate(1.0 - edge_offset, 1.0))));
+    new_edge_tol = axom::utilities::min(new_edge_tol, edge_tol);
+
+    return winding_number_recursive(query,
+                                    p1,
+                                    new_edge_tol,
+                                    quad_tol,
+                                    EPS,
+                                    depth + 1) +
+      winding_number_recursive(query, p2, new_edge_tol, quad_tol, EPS, depth + 1) +
+      winding_number_recursive(query, p3, new_edge_tol, quad_tol, EPS, depth + 1);
+  }
+
+  /* 
+   * To use Stokes theorem, we need to identify a separating plane between
+   * `query` and the surface, guaranteed through a bounding box.
+   * If it does, need to do geometric refinement: Splitting and rotating the curve
+   * until we can guarantee this.
+   */
+  CurvedPolygon<T, 3> boundingPoly(4);
+
+  // Define vector fields whose curl gives us the winding number
+  detail::SingularityAxis field_direction;
+
+  // Check an axis-aligned bounding box (most surfaces satisfy this condition)
+  BoundingBox<T, 3> bBox(bPatch.boundingBox().expand(edge_tol));
+  const bool exterior_x =
+    bBox.getMin()[0] > query[0] || query[0] > bBox.getMax()[0];
+  const bool exterior_y =
+    bBox.getMin()[1] > query[1] || query[1] > bBox.getMax()[1];
+  const bool exterior_z =
+    bBox.getMin()[2] > query[2] || query[2] > bBox.getMax()[2];
+
+  if(exterior_y || exterior_z)
+  {
+    field_direction = detail::SingularityAxis::x;
+  }
+  else if(exterior_x || exterior_z)
+  {
+    field_direction = detail::SingularityAxis::y;
+  }
+  else if(exterior_x || exterior_y)
+  {
+    field_direction = detail::SingularityAxis::z;
+  }
+  else
+  {
+    // Next, check an oriented bounding box.
+    // If we are interior to the oriented bounding box, then we
+    //  cannot guarantee a separating plane, and need geometric refinement.
+    OrientedBoundingBox<T, 3> oBox(bPatch.orientedBoundingBox().expand(edge_tol));
+    if(oBox.contains(query))
+    {
+      BezierPatch<T, 3> p1, p2, p3, p4;
+      bPatch.split(0.5, 0.5, p1, p2, p3, p4);
+      return winding_number_recursive(query, p1, edge_tol, quad_tol, EPS, depth + 1) +
+        winding_number_recursive(query, p2, edge_tol, quad_tol, EPS, depth + 1) +
+        winding_number_recursive(query, p3, edge_tol, quad_tol, EPS, depth + 1) +
+        winding_number_recursive(query, p4, edge_tol, quad_tol, EPS, depth + 1);
+    }
+
+    // Otherwise, we can apply a rotation to a z-aligned field.
+    field_direction = detail::SingularityAxis::rotated;
+
+    // Lambda to generate a 3D rotation matrix from an angle and axis
+    // Formulation from https://en.wikipedia.org/wiki/Rotation_matrix#Axis_and_angle
+    auto angleAxisRotMatrix =
+      [](double theta, const Vector<T, 3>& axis) -> numerics::Matrix<T> {
+      const auto unitized = axis.unitVector();
+      const double x = unitized[0], y = unitized[1], z = unitized[2];
+      const double c = cos(theta), s = sin(theta), C = 1 - c;
+
+      auto matx = numerics::Matrix<T>::zeros(3, 3);
+
+      matx(0, 0) = x * x * C + c;
+      matx(0, 1) = x * y * C - z * s;
+      matx(0, 2) = x * z * C + y * s;
+
+      matx(1, 0) = y * x * C + z * s;
+      matx(1, 1) = y * y * C + c;
+      matx(1, 2) = y * z * C - x * s;
+
+      matx(2, 0) = z * x * C - y * s;
+      matx(2, 1) = z * y * C + x * s;
+      matx(2, 2) = z * z * C + c;
+
+      return matx;
+    };
+
+    // Lambda to rotate the input point using the provided rotation matrix
+    auto rotate_point = [&query](const numerics::Matrix<T>& matx,
+                                 const Point<T, 3> input) -> Point<T, 3> {
+      Vector<T, 3> shifted(query, input);
+      Vector<T, 3> rotated;
+      numerics::matrix_vector_multiply(matx, shifted.data(), rotated.data());
+      return Point<T, 3>(
+        {rotated[0] + query[0], rotated[1] + query[1], rotated[2] + query[2]});
+    };
+
+    // Find vector from query to the bounding box
+    Point<T, 3> closest = closest_point(query, oBox);
+    Vector<T, 3> v0 = Vector<T, 3>(query, closest).unitVector();
+
+    // Find the direction of a ray perpendicular to that
+    Vector<T, 3> v1;
+    if(axom::utilities::isNearlyEqual(v0[0], v0[1], EPS))
+      v1 = Vector<T, 3>({v0[2], v0[2], -v0[0] - v0[1]}).unitVector();
+    else
+      v1 = Vector<T, 3>({-v0[1] - v0[2], v0[0], v0[0]}).unitVector();
+
+    // Rotate v0 around v1 until it is perpendicular to the plane spanned by k and v1
+    double ang = (v0[2] < 0 ? 1.0 : -1.0) *
+      acos(axom::utilities::clampVal(
+        -(v0[0] * v1[1] - v0[1] * v1[0]) / sqrt(v1[0] * v1[0] + v1[1] * v1[1]),
+        -1.0,
+        1.0));
+    auto rotator = angleAxisRotMatrix(ang, v1);
+
+    // Collect rotated curves into the curved Polygon
+    // Set up the (0, v) and (1, v) isocurves, rotated
+    boundingPoly[0].setOrder(ord_v);
+    boundingPoly[2].setOrder(ord_v);
+    if(patchIsRational)
+    {
+      boundingPoly[0].makeRational();
+      boundingPoly[2].makeRational();
+    }
+    for(int q = 0; q <= ord_v; ++q)
+    {
+      boundingPoly[0][q] = rotate_point(rotator, bPatch(ord_v, q));
+      boundingPoly[2][q] = rotate_point(rotator, bPatch(0, ord_v - q));
+
+      if(patchIsRational)
+      {
+        boundingPoly[0].setWeight(q, bPatch.getWeight(ord_v, q));
+        boundingPoly[2].setWeight(q, bPatch.getWeight(0, ord_v - q));
+      }
+    }
+
+    // Set up the (u, 0) and (u, 1) isocurves
+    boundingPoly[1].setOrder(ord_u);
+    boundingPoly[3].setOrder(ord_u);
+    if(patchIsRational)
+    {
+      boundingPoly[1].makeRational();
+      boundingPoly[3].makeRational();
+    }
+    for(int p = 0; p <= ord_u; ++p)
+    {
+      boundingPoly[1][p] = rotate_point(rotator, bPatch(ord_u - p, ord_u));
+      boundingPoly[3][p] = rotate_point(rotator, bPatch(p, 0));
+
+      if(patchIsRational)
+      {
+        boundingPoly[1].setWeight(p, bPatch.getWeight(ord_u - p, ord_u));
+        boundingPoly[3].setWeight(p, bPatch.getWeight(p, 0));
+      }
+    }
+  }
+
+  // Set up the polygon if we don't need to do any rotation or splitting.
+  if(field_direction != detail::SingularityAxis::rotated)
+  {
+    //  Add the relevant bounding curves to the patch.
+    boundingPoly[0] = bPatch.isocurve_u(0);
+    boundingPoly[0].reverseOrientation();
+
+    boundingPoly[1] = bPatch.isocurve_v(1);
+    boundingPoly[1].reverseOrientation();
+
+    boundingPoly[2] = bPatch.isocurve_u(1);
+    boundingPoly[3] = bPatch.isocurve_v(0);
+  }
+
+  // Iterate over the edges of the bounding curved polygon, add up the results
+  double wn = 0;
+  for(int n = 0; n < 4; ++n)
+  {
+    wn += detail::stokes_winding_number(query,
+                                        boundingPoly[n],
+                                        field_direction,
+                                        quad_npts,
+                                        quad_tol);
+  }
+
+  return wn;
+}
 //@}
 
 }  // namespace primal

@@ -95,7 +95,7 @@ void split(const Octahedron<Tp, NDIMS>& oct,
  */
 template <typename Tp>
 void split_to_convex_shallow(const BezierPatch<Tp, 3>& bPatch,
-                    axom::Array<BezierPatch<Tp, 3>>& out)
+                             axom::Array<BezierPatch<Tp, 3>>& out)
 {
   using Poly = Polygon<Tp, 3>;
   using Patch = BezierPatch<Tp, 3>;
