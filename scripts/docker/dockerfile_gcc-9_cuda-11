@@ -1,0 +1,9 @@
+# This script can be run with the following command:
+# docker build --build-arg branch=<your branch here, defaults to develop> -t "axom/tpls:gcc-11" - < dockerfile_gcc-9_cuda-11
+
+FROM ghcr.io/rse-ops/cuda-ubuntu-20.04:cuda-11.1.1
+ARG branch=develop
+
+SHELL ["/bin/bash", "-c"]
+RUN sudo apt-get update -y
+RUN sudo apt-get install doxygen gfortran graphviz libopenblas-dev libomp-dev mpich python3-sphinx ssh texlive-full -fy
