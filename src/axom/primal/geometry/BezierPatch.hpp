@@ -73,6 +73,10 @@ public:
   using BezierCurveType = primal::BezierCurve<T, NDIMS>;
 
   AXOM_STATIC_ASSERT_MSG(
+    (NDIMS == 1) || (NDIMS == 2) || (NDIMS == 3),
+    "A Bezier Patch object may be defined in 1-, 2-, or 3-D");
+
+  AXOM_STATIC_ASSERT_MSG(
     std::is_arithmetic<T>::value,
     "A Bezier Patch must be defined using an arithmetic type");
 
@@ -779,7 +783,7 @@ public:
 
   void evaluate_second_derivatives(T u,
                                    T v,
-                                   Point<T, NDIMS>& evaluation,
+                                   Point<T, NDIMS>& eval,
                                    Vector<T, NDIMS>& Du,
                                    Vector<T, NDIMS>& Dv,
                                    Vector<T, NDIMS>& DuDu,
@@ -791,7 +795,6 @@ public:
     const int ord_v = getOrder_v();
 
     axom::Array<T, 2> dCmat(ord_u + 1, ord_v + 1);
-    axom::Array<T, 2> dCmat2(2, 2);
 
     if(!isRational())
     {
@@ -869,37 +872,91 @@ public:
 
         // clang-format off
         // Get second order derivatives
-        DuDu[i] = (ord_u - 1) * ord_u * ( (1 - v) * (1 - v) * (dCmat(2, 0) - 2 * dCmat(1, 0) + dCmat(0, 0)) + 
-                                            2 * v * (1 - v) * (dCmat(2, 1) - 2 * dCmat(1, 1) + dCmat(0, 1)) + 
-                                                      v * v * (dCmat(2, 2) - 2 * dCmat(1, 2) + dCmat(0, 2)) ); 
-        
-        DvDv[i] = (ord_v - 1) * ord_v * ( (1 - u) * (1 - u) * (dCmat(0, 2) - 2 * dCmat(0, 1) + dCmat(0, 0)) + 
-                                            2 * u * (1 - u) * (dCmat(1, 2) - 2 * dCmat(1, 1) + dCmat(1, 0)) + 
-                                                      u * u * (dCmat(2, 2) - 2 * dCmat(2, 1) + dCmat(2, 0)) ); 
+        if( ord_u > 1 )
+        {
+          if (ord_v == 0)
+          {
+            DuDu[i] = (ord_u - 1) * ord_u * 
+                                    (dCmat(2, 0) - 2 * dCmat(1, 0) + dCmat(0, 0));
+          }
+          else if (ord_v == 1)
+          {
+            DuDu[i] = (ord_u - 1) * ord_u * 
+                        ( (1 - v) * (dCmat(2, 0) - 2 * dCmat(1, 0) + dCmat(0, 0)) + 
+                                v * (dCmat(2, 1) - 2 * dCmat(1, 1) + dCmat(0, 1)) ); 
+          }
+          else
+          {
+            DuDu[i] = (ord_u - 1) * ord_u * 
+              ( (1 - v) * (1 - v) * (dCmat(2, 0) - 2 * dCmat(1, 0) + dCmat(0, 0)) + 
+                  2 * v * (1 - v) * (dCmat(2, 1) - 2 * dCmat(1, 1) + dCmat(0, 1)) + 
+                            v * v * (dCmat(2, 2) - 2 * dCmat(1, 2) + dCmat(0, 2)) );
+          }
+        }
+
+        if( ord_v > 1 )
+        {
+          if( ord_u == 0 )
+          {
+            DvDv[i] = (ord_v - 1) * ord_v * 
+                                    (dCmat(0, 2) - 2 * dCmat(0, 1) + dCmat(0, 0)); 
+          }
+          else if (ord_u == 1)
+          {
+            DvDv[i] = (ord_v - 1) * ord_v * 
+                        ( (1 - u) * (dCmat(0, 2) - 2 * dCmat(0, 1) + dCmat(0, 0)) + 
+                                u * (dCmat(1, 2) - 2 * dCmat(1, 1) + dCmat(1, 0)) );
+          }
+          else
+          {
+            DvDv[i] = (ord_v - 1) * ord_v * 
+              ( (1 - u) * (1 - u) * (dCmat(0, 2) - 2 * dCmat(0, 1) + dCmat(0, 0)) + 
+                  2 * u * (1 - u) * (dCmat(1, 2) - 2 * dCmat(1, 1) + dCmat(1, 0)) + 
+                            u * u * (dCmat(2, 2) - 2 * dCmat(2, 1) + dCmat(2, 0)) ); 
+          }
+        }
 
         // Compute intermediate values for first order derivatives
-        dCmat2(0, 0) = (1 - u) * (1 - v) * dCmat(0, 0) + u * (1 - v) * dCmat(1, 0) + (1 - u) * v * dCmat(0, 1) + u * v * dCmat(1, 1);
-        dCmat2(1, 0) = (1 - u) * (1 - v) * dCmat(1, 0) + u * (1 - v) * dCmat(2, 0) + (1 - u) * v * dCmat(1, 1) + u * v * dCmat(2, 1);
-        dCmat2(0, 1) = (1 - u) * (1 - v) * dCmat(0, 1) + u * (1 - v) * dCmat(1, 1) + (1 - u) * v * dCmat(0, 2) + u * v * dCmat(1, 2);
-        dCmat2(1, 1) = (1 - u) * (1 - v) * dCmat(1, 1) + u * (1 - v) * dCmat(2, 1) + (1 - u) * v * dCmat(1, 2) + u * v * dCmat(2, 2);
+        dCmat(0, 0) = (1 - u) * (1 - v) * dCmat(0, 0) + u * (1 - v) * dCmat(1, 0) + (1 - u) * v * dCmat(0, 1) + u * v * dCmat(1, 1);
+        if( ord_u > 1 )
+        {
+          dCmat(1, 0) = (1 - u) * (1 - v) * dCmat(1, 0) + u * (1 - v) * dCmat(2, 0) + (1 - u) * v * dCmat(1, 1) + u * v * dCmat(2, 1);
+        }
+        if( ord_v > 1 )
+        {
+          dCmat(0, 1) = (1 - u) * (1 - v) * dCmat(0, 1) + u * (1 - v) * dCmat(1, 1) + (1 - u) * v * dCmat(0, 2) + u * v * dCmat(1, 2);
+        }
+        if( ord_u > 1 && ord_v > 1 )
+        {
+          dCmat(1, 1) = (1 - u) * (1 - v) * dCmat(1, 1) + u * (1 - v) * dCmat(2, 1) + (1 - u) * v * dCmat(1, 2) + u * v * dCmat(2, 2);
+        }
 
         // Compute first order derivatives
-        Du[i] = ord_u * ( (1 - v) * (dCmat2(1, 0) - dCmat2(0, 0)) + 
-                                v * (dCmat2(1, 1) - dCmat2(0, 1)) );
+        if( ord_u > 1 )
+        {
+          Du[i] = ord_u * ( (1 - v) * (dCmat(1, 0) - dCmat(0, 0)) + 
+                                  v * (dCmat(1, 1) - dCmat(0, 1)) );
+        }
       
-        Dv[i] = ord_v * ( (1 - u) * (dCmat2(0, 1) - dCmat2(0, 0)) + 
-                                u * (dCmat2(1, 1) - dCmat2(1, 0)) );
+        if( ord_v > 1 )
+        {
+          Dv[i] = ord_v * ( (1 - u) * (dCmat(0, 1) - dCmat(0, 0)) + 
+                                  u * (dCmat(1, 1) - dCmat(1, 0)) );
+        }
 
-        DuDv[i] = ord_u * ord_v * (dCmat2(1, 1) - dCmat2(1, 0) - dCmat2(0, 1) + dCmat2(0, 0));
+        DuDv[i] = ord_u * ord_v * (dCmat(1, 1) - dCmat(1, 0) - dCmat(0, 1) + dCmat(0, 0));
 
         // Get the evaluation point
-        evaluation[i] = (1 - u) * (1 - v) * dCmat2(0, 0) + u * (1 - v) * dCmat2(1, 0) + (1 - u) * v * dCmat2(0, 1) + u * v * dCmat2(1, 1);
+        eval[i] = (1 - u) * (1 - v) * dCmat(0, 0) + u * (1 - v) * dCmat(1, 0) + (1 - u) * v * dCmat(0, 1) + u * v * dCmat(1, 1);
         // clang-format on
       }
     }
     else
     {
+      // Store BezierPatch of projective weights, (wx, wy, wz)
       BezierPatch<T, NDIMS> projective(ord_u, ord_v);
+
+      // Store BezierPatch of weights (w)
       BezierPatch<T, 1> weights(ord_u, ord_v);
 
       for(int p = 0; p <= ord_u; ++p)
@@ -923,13 +980,16 @@ public:
       projective.evaluate_second_derivatives(u, v, P, P_u, P_v, P_uu, P_vv, P_uv);
       weights.evaluate_second_derivatives(u, v, W, W_u, W_v, W_uu, W_vv, W_uv);
 
-      eval_vec = Vector<T, NDIMS>(P) / W[0];
-      Du = (P_u - eval_vec * W_u[0]) / W[0];
-      Dv = (P_v - eval_vec * W_v[0]) / W[0];
-      DuDu = (P_uu - 2 * W_u[0] * Du - eval_vec * W_uu[0]) / W[0];
-      DvDv = (P_vv - 2 * W_v[0] * Dv - eval_vec * W_vv[0]) / W[0];
-      DuDv = (P_uv - Du * W_v[0] - Dv * W_u[0] - eval_vec * W_uv[0]) / W[0];
-      evaluation = Point<T, NDIMS>(eval_vec.data());
+      for(int i = 0; i < NDIMS; ++i)
+      {
+        eval[i] = P[i] / W[0];
+        Du[i] = (P_u[i] - eval[i] * W_u[0]) / W[0];
+        Dv[i] = (P_v[i] - eval[i] * W_v[0]) / W[0];
+        DuDu[i] = (P_uu[i] - 2 * W_u[0] * Du[i] - eval[i] * W_uu[0]) / W[0];
+        DvDv[i] = (P_vv[i] - 2 * W_v[0] * Dv[i] - eval[i] * W_vv[0]) / W[0];
+        DuDv[i] =
+          (P_uv[i] - Du[i] * W_v[0] - Dv[i] * W_u[0] - eval[i] * W_uv[0]) / W[0];
+      }
     }
   }
 
@@ -967,7 +1027,6 @@ public:
     const int ord_v = getOrder_v();
 
     // Construct the hodograph in the two directions, then evaluate it
-
     if(!isRational())
     {
       BezierPatch<T, NDIMS> hodograph(ord_u - 1, ord_v - 1);
@@ -1070,21 +1129,52 @@ public:
 
         // Store intermediate values
         // clang-format off
-        double W = (1 - u) * (1 - v) * dWmat(0, 0) + u * (1 - v) * dWmat(1, 0) +
-                         (1 - u) * v * dWmat(0, 1) +       u * v * dWmat(1, 1);
-        double W_u = ord_u * ( (1 - v) * (dWmat(1, 0) - dWmat(0, 0)) + 
-                                     v * (dWmat(1, 1) - dWmat(0, 1)) );
-        double W_v = ord_v * ( (1 - u) * (dWmat(0, 1) - dWmat(0, 0)) + 
-                                     u * (dWmat(1, 1) - dWmat(1, 0)) );
-        double W_uv = ord_u * ord_v * (dWmat(1, 1) - dWmat(1, 0) - dWmat(0, 1) + dWmat(0, 0));
+        double W, W_u, W_v, W_uv;
+        double C, C_u, C_v, C_uv;
+        if (ord_u == 0 && ord_v == 0)
+        {
+          W = dWmat(0, 0);
+          C = dWmat(0, 0);
 
-        double C = (1 - u) * (1 - v) * dCmat(0, 0) + u * (1 - v) * dCmat(1, 0) +
-                         (1 - u) * v * dCmat(0, 1) +       u * v * dCmat(1, 1);
-        double C_u = ord_u * ( (1 - v) * (dCmat(1, 0) - dCmat(0, 0)) + 
-                                     v * (dCmat(1, 1) - dCmat(0, 1)) );
-        double C_v = ord_v * ( (1 - u) * (dCmat(0, 1) - dCmat(0, 0)) + 
-                                     u * (dCmat(1, 1) - dCmat(1, 0)) );
-        double C_uv = ord_u * ord_v * (dCmat(1, 1) - dCmat(1, 0) - dCmat(0, 1) + dCmat(0, 0));
+          W_u = W_v = W_uv = 0.0;
+          C_u = C_v = C_uv = 0.0;
+        }
+        else if (ord_u == 0 && ord_v == 1)
+        {
+          W = (1 - v) * dWmat(0, 0) + v * dWmat(0, 1);
+          C = (1 - v) * dCmat(0, 0) + v * dCmat(0, 1);
+          W_u = C_u = W_uv = C_uv = 0.0;
+
+          W_v = dWmat(0, 1) - dWmat(0, 0);
+          C_v = dCmat(0, 1) - dCmat(0, 0);
+        }
+        else if (ord_u == 1 && ord_v == 0)
+        {
+          W = (1 - u) * dWmat(0, 0) + u * dWmat(1, 0);
+          C = (1 - u) * dCmat(0, 0) + u * dCmat(1, 0);
+          W_u = C_u = W_uv = C_uv = 0.0;
+
+          W_v = dWmat(1, 0) - dWmat(0, 0);
+          C_v = dCmat(1, 0) - dCmat(0, 0);
+        }
+        else
+        {
+          W = (1 - u) * (1 - v) * dWmat(0, 0) + u * (1 - v) * dWmat(1, 0) +
+                    (1 - u) * v * dWmat(0, 1) +       u * v * dWmat(1, 1);
+          W_u = ord_u * ( (1 - v) * (dWmat(1, 0) - dWmat(0, 0)) + 
+                                v * (dWmat(1, 1) - dWmat(0, 1)) );
+          W_v = ord_v * ( (1 - u) * (dWmat(0, 1) - dWmat(0, 0)) + 
+                                u * (dWmat(1, 1) - dWmat(1, 0)) );
+          W_uv = ord_u * ord_v * (dWmat(1, 1) - dWmat(1, 0) - dWmat(0, 1) + dWmat(0, 0));
+
+          C = (1 - u) * (1 - v) * dCmat(0, 0) + u * (1 - v) * dCmat(1, 0) +
+                    (1 - u) * v * dCmat(0, 1) +       u * v * dCmat(1, 1);
+          C_u = ord_u * ( (1 - v) * (dCmat(1, 0) - dCmat(0, 0)) + 
+                                v * (dCmat(1, 1) - dCmat(0, 1)) );
+          C_v = ord_v * ( (1 - u) * (dCmat(0, 1) - dCmat(0, 0)) + 
+                                u * (dCmat(1, 1) - dCmat(1, 0)) );
+          C_uv = ord_u * ord_v * (dCmat(1, 1) - dCmat(1, 0) - dCmat(0, 1) + dCmat(0, 0));
+        }
 
         val[i] = W * W * C_uv - W * (C_u * W_v + C_v * W_u) +
                                 C * (2 * W_u * W_v - W * W_uv);

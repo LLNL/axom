@@ -404,6 +404,11 @@ public:
     const int ord = getOrder();
     axom::Array<T> dCarray(ord + 1);
 
+    if(ord <= 0)
+    {
+      return val;
+    }
+
     if(isRational())
     {
       axom::Array<T> dWarray(ord + 1);
@@ -476,6 +481,16 @@ public:
 
     const int ord = getOrder();
     std::vector<T> dCarray(ord + 1);
+
+    if(ord <= 1)
+    {
+      return val;
+    }
+
+    if(ord <= 1)
+    {
+      val;
+    }
 
     if(isRational())
     {
