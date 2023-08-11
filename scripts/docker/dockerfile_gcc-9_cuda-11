@@ -24,14 +24,14 @@ COPY --chown=axomdev:axomdev . $HOME
 RUN cd ${HOME} && git clone --recursive --branch $branch --single-branch --depth 1 https://github.com/LLNL/axom.git axom_repo
 
 # Build/install TPLs via spack and then remove the temporary build directory on success
-RUN cd axom_repo && python3 ./scripts/uberenv/uberenv.py --spack-env-file=./scripts/spack/configs/docker/ubuntu20/spack.yaml \
+RUN cd ${HOME}/axom_repo && python3 ./scripts/uberenv/uberenv.py --spack-env-file=./scripts/spack/configs/docker/ubuntu20/spack.yaml \
                                                          --project-json=.uberenv_config.json \
-                                                         --spec=%gcc@9.3.0+mfem+raja+umpire --prefix=/home/axom/axom_tpls -k \
-                 && rm -rf /home/axom/axom_tpls/builds
+                                                         --spec=%gcc@9.3.0+mfem+raja+umpire --prefix=${HOME}/axom_tpls -k \
+                 && rm -rf ${HOME}/axom_tpls/builds
 
-RUN mkdir -p /home/axom/export_hostconfig
-RUN cp ./axom_repo/*.cmake /home/axom/export_hostconfig
+RUN mkdir -p ${HOME}/export_hostconfig
+RUN cp ${HOME}/axom_repo/*.cmake ${HOME}/export_hostconfig
 
 # Make sure the new hostconfig worked
 # Note: having high job slots causes build log to disappear and job to fail
-RUN cd axom_repo && python3 config-build.py -hc *.cmake -bp build && cd build && make -j4 && make -j4 test && cd /home/axom && rm -rf axom_repo
+RUN cd ${HOME}/axom_repo && python3 config-build.py -hc *.cmake -bp build && cd build && make -j4 && make -j4 test
