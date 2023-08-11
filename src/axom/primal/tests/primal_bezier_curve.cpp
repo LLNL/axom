@@ -143,6 +143,37 @@ TEST(primal_beziercurve, evaluate)
 }
 
 //------------------------------------------------------------------------------
+TEST(primal_beziercurve_, point_derivatives)
+{
+  SLIC_INFO("Testing Bezier derivative calculations on a low-order curve");
+
+  const int DIM = 3;
+  using CoordType = double;
+  using PointType = primal::Point<CoordType, DIM>;
+  using VectorType = primal::Vector<CoordType, DIM>;
+  using BezierCurveType = primal::BezierCurve<CoordType, DIM>;
+
+  PointType data1[1] = {PointType {0.6, 1.2, 1.0}};
+  PointType data2[2] = {PointType {0.6, 1.2, 1.0}, PointType {1.3, 1.6, 1.8}};
+
+  BezierCurveType pointCurve(data1, 0);
+  BezierCurveType lineCurve(data2, 1);
+
+  // Evaluate the curve at several parameter values
+  // Curve should be tangent to control net at endpoints
+  VectorType eval_point_first = pointCurve.dt(0.5);
+  VectorType eval_point_second = pointCurve.dtdt(0.5);
+  VectorType eval_line_second = lineCurve.dtdt(0.5);
+
+  for(int i = 0; i < DIM; ++i)
+  {
+    EXPECT_NEAR(0.0, eval_point_first[i], 1e-15);
+    EXPECT_NEAR(0.0, eval_point_second[i], 1e-15);
+    EXPECT_NEAR(0.0, eval_line_second[i], 1e-15);
+  }
+}
+
+//------------------------------------------------------------------------------
 TEST(primal_beziercurve_, tangent)
 {
   SLIC_INFO("Testing Bezier tangent calculation");
