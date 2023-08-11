@@ -15,6 +15,7 @@ RUN sudo apt-get install doxygen gfortran graphviz libopenblas-dev libomp-dev mp
 WORKDIR "/home/axom"
 USER ${USER}
 
+RUN sudo chown -R $USER .
 RUN git clone --recursive --branch $branch --single-branch --depth 1 https://github.com/LLNL/axom.git axom_repo
 
 # Build/install TPLs via spack and then remove the temporary build directory on success
