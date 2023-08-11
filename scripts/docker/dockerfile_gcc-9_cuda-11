@@ -3,13 +3,17 @@
 
 FROM ghcr.io/rse-ops/cuda-ubuntu-20.04:cuda-11.1.1
 ARG branch=feature/han12/docker_tutorial
+ARG USER=axomdev
+ENV HOME /home/${USER}
 
 SHELL ["/bin/bash", "-c"]
 RUN sudo apt-get update -y
+RUN sudo apt-get install -y supervisor
+RUN sudo useradd --create-home --shell /bin/bash ${USER}
 RUN sudo apt-get install doxygen gfortran graphviz libopenblas-dev libomp-dev mpich python3-sphinx ssh texlive-full -fy
 
 WORKDIR "/home/axom"
-USER axom
+USER ${USER}
 
 RUN git clone --recursive --branch $branch --single-branch --depth 1 https://github.com/LLNL/axom.git axom_repo
 
