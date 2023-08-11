@@ -11,11 +11,11 @@ RUN sudo apt-get update -y
 RUN sudo apt-get install -y supervisor
 RUN sudo useradd --create-home --shell /bin/bash ${USER}
 RUN sudo apt-get install doxygen gfortran graphviz libopenblas-dev libomp-dev mpich python3-sphinx ssh texlive-full -fy
+RUN sudo chown -R $USER /home/axom
 
 WORKDIR "/home/axom"
 USER ${USER}
 
-RUN sudo chown -R $USER .
 RUN git clone --recursive --branch $branch --single-branch --depth 1 https://github.com/LLNL/axom.git axom_repo
 
 # Build/install TPLs via spack and then remove the temporary build directory on success
