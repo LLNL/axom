@@ -74,7 +74,7 @@ inline void dump_node(const conduit::Node& n,
                       const std::string& protocol = "json")
 {
   conduit::relay::io::save(n, fname, protocol);
-};
+}
 
 /**
  * \brief Utility function to get a typed pointer to the beginning of an array
@@ -815,7 +815,7 @@ public:
 
   /**
    * \brief Computes the closest point within the objects for each query point
-   * in the provided particle mesh, provided in the mesh blueprint rooted at \a queryMesh
+   * in the mesh \a queryMesh.
    *
    * \param queryMesh The root node of a mesh blueprint for the query points
    * Can be empty if there are no query points for the calling rank
