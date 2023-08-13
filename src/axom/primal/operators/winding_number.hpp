@@ -216,7 +216,7 @@ double winding_number(const Point<T, 2>& q,
                       double edge_tol = 1e-8,
                       double EPS = 1e-8)
 {
-  return detail::curve_winding_number(q, c, false, edge_tol, EPS);
+  return detail::curve_winding_number_recursive(q, c, false, edge_tol, EPS);
 }
 
 /*!
@@ -241,7 +241,8 @@ double winding_number(const Point<T, 2>& q,
   double ret_val = 0.0;
   for(int i = 0; i < cpoly.numEdges(); i++)
   {
-    ret_val += detail::curve_winding_number(q, cpoly[i], false, edge_tol, EPS);
+    ret_val +=
+      detail::curve_winding_number_recursive(q, cpoly[i], false, edge_tol, EPS);
   }
 
   return ret_val;

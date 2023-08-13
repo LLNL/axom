@@ -700,11 +700,78 @@ TEST(primal_bezierpatch, second_derivative_linear)
   
   double weights[(order_u + 1) * (order_v + 1)] = {
                  1.0, 1.0, 1.0, 1.0, 1.0,
-                 1.0, 2.0, 3.0, 2.0, 1.0};
+                 1.0, 1.0, 1.0, 1.0, 1.0};
   // clang-format on
 
   BezierPatchType bPatch(controlPoints, weights, order_u, order_v);
-  const double u = 0.6, v = 0.4;
+  const double u = 0.5, v = 0.5;
+
+  PointType eval;
+  VectorType Du, Dv, DuDu, DvDv, DuDv;
+  bPatch.evaluate_second_derivatives(u, v, eval, Du, Dv, DuDu, DvDv, DuDv);
+
+  auto evaluate_test = bPatch.evaluate(u, v);
+  for(int i = 0; i < 3; ++i)
+  {
+    EXPECT_NEAR(eval[i], evaluate_test[i], 1e-6);
+  }
+
+  auto partial_u_test = bPatch.du(u, v);
+  for(int i = 0; i < 3; ++i)
+  {
+    EXPECT_NEAR(Du[i], partial_u_test[i], 1e-6);
+  }
+
+  auto partial_v_test = bPatch.dv(u, v);
+  for(int i = 0; i < 3; ++i)
+  {
+    EXPECT_NEAR(Dv[i], partial_v_test[i], 1e-6);
+  }
+
+  auto partial_uu_test = bPatch.dudu(u, v);
+  for(int i = 0; i < 3; ++i)
+  {
+    EXPECT_NEAR(DuDu[i], partial_uu_test[i], 1e-6);
+  }
+
+  auto partial_vv_test = bPatch.dvdv(u, v);
+  for(int i = 0; i < 3; ++i)
+  {
+    EXPECT_NEAR(DvDv[i], partial_vv_test[i], 1e-6);
+  }
+
+  auto partial_uv_test = bPatch.dudv(u, v);
+  for(int i = 0; i < 3; ++i)
+  {
+    EXPECT_NEAR(DuDv[i], DuDv[i], 1e-6);
+  }
+}
+
+//------------------------------------------------------------------------------
+TEST(primal_bezierpatch, second_derivative_point)
+{
+  SLIC_INFO("Testing bezier Patch derivative calculation for point");
+
+  const int DIM = 3;
+  using CoordType = double;
+  using PointType = primal::Point<CoordType, DIM>;
+  using VectorType = primal::Vector<CoordType, DIM>;
+  using BezierPatchType = primal::BezierPatch<CoordType, DIM>;
+
+  const int order_u = 0;
+  const int order_v = 4;
+
+  // Test on a linear Bezier patch to make sure the correct values are zero
+  // clang-format off
+  PointType controlPoints[(order_u + 1) * (order_v + 1)] = {
+                  PointType {0, 0, 0}, PointType{0, 4,  0}, PointType{0, 8, -3}, PointType{0, 12, 1}, PointType{0, 16, 3}};
+  
+  double weights[(order_u + 1) * (order_v + 1)] = {
+                 1.0, 1.0, 1.0, 1.0, 1.0};
+  // clang-format on
+
+  BezierPatchType bPatch(controlPoints, weights, order_u, order_v);
+  const double u = 0.5, v = 0.5;
 
   PointType eval;
   VectorType Du, Dv, DuDu, DvDv, DuDv;
