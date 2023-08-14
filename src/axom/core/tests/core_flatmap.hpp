@@ -47,3 +47,33 @@ TEST(core_flatmap, insert_only)
     EXPECT_EQ(int_to_dbl.size(), 3);
   }
 }
+
+TEST(core_flatmap, insert_until_rehash)
+{
+  axom::FlatMap<int, double> int_to_dbl;
+
+  const int INIT_CAPACITY = int_to_dbl.bucket_count();
+  const double LOAD_FACTOR = int_to_dbl.max_load_factor();
+  const int SIZE_NO_REHASH = LOAD_FACTOR * INIT_CAPACITY;
+
+  for(int i = 0; i < SIZE_NO_REHASH; i++)
+  {
+    int_to_dbl.insert({i, 2. * i + 1});
+  }
+  EXPECT_EQ(int_to_dbl.bucket_count(), INIT_CAPACITY);
+  EXPECT_EQ(int_to_dbl.size(), SIZE_NO_REHASH);
+
+  // Next insert should trigger a rehash.
+  int_to_dbl.insert({SIZE_NO_REHASH, 2. * SIZE_NO_REHASH + 1});
+  EXPECT_GT(int_to_dbl.bucket_count(), INIT_CAPACITY);
+  EXPECT_EQ(int_to_dbl.size(), SIZE_NO_REHASH + 1);
+
+  // Check consistency of values.
+  for(int i = 0; i < SIZE_NO_REHASH + 1; i++)
+  {
+    auto iterator = int_to_dbl.find(i);
+    EXPECT_NE(iterator, int_to_dbl.end());
+    EXPECT_EQ(iterator->first, i);
+    EXPECT_EQ(iterator->second, 2. * i + 1);
+  }
+}
