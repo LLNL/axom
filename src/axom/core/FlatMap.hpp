@@ -63,17 +63,17 @@ public:
   // Iterators
   iterator begin()
   {
-    IndexType firstBucketIndex = this->nextValidIndex(m_metadata, 0);
+    IndexType firstBucketIndex = this->nextValidIndex(m_metadata, NO_MATCH);
     return iterator(this, firstBucketIndex);
   }
   const_iterator begin() const
   {
-    IndexType firstBucketIndex = this->nextValidIndex(m_metadata, 0);
+    IndexType firstBucketIndex = this->nextValidIndex(m_metadata, NO_MATCH);
     return const_iterator(this, firstBucketIndex);
   }
   const_iterator cbegin() const
   {
-    IndexType firstBucketIndex = this->nextValidIndex(m_metadata, 0);
+    IndexType firstBucketIndex = this->nextValidIndex(m_metadata, NO_MATCH);
     return const_iterator(this, firstBucketIndex);
   }
 
@@ -238,7 +238,7 @@ public:
   IteratorImpl operator++(int)
   {
     IteratorImpl next = *this;
-    ++next;
+    ++(*this);
     return next;
   }
 

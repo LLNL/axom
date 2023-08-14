@@ -66,7 +66,7 @@ struct GroupBucket
 
   int nextFilledBucket(int start_index) const
   {
-    for(int i = start_index; i < 15; i++)
+    for(int i = start_index + 1; i < 15; i++)
     {
       // We intentionally don't check for the sentinel here. This gives us the
       // index of the sentinel bucket at the end, which is needed as a "stop"
@@ -286,15 +286,16 @@ struct SequentialLookupPolicy
     int group_index = last_bucket / GroupBucket::Size;
     int slot_index = last_bucket % GroupBucket::Size;
 
-    while(slot_index != GroupBucket::InvalidSlot && group_index < groups.size())
+    do
     {
-      slot_index = groups[group_index].nextFilledBucket(slot_index + 1);
+      slot_index = groups[group_index].nextFilledBucket(slot_index);
       if(slot_index == GroupBucket::InvalidSlot)
       {
         group_index++;
-        slot_index = 0;
+        slot_index = -1;
       }
-    }
+    } while(slot_index == GroupBucket::InvalidSlot && group_index < groups.size());
+
     return group_index * GroupBucket::Size + slot_index;
   }
 };
