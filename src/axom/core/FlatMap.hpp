@@ -203,6 +203,11 @@ class FlatMap<KeyType, ValueType, Hash>::IteratorImpl
 private:
   using MapType = FlatMap<KeyType, ValueType, Hash>;
 
+  template <bool OtherConst>
+  friend class IteratorImpl;
+
+  friend class FlatMap<KeyType, ValueType, Hash>;
+
 public:
   using iterator_category = std::forward_iterator_tag;
   using value_type = MapType::value_type;
@@ -220,6 +225,12 @@ public:
   {
     assert(m_internalIdx >= 0 && m_internalIdx <= m_map->m_buckets.size());
   }
+
+  template <bool UConst = Const, typename Enable = std::enable_if_t<UConst>>
+  IteratorImpl(IteratorImpl<!Const> non_const_iter)
+    : m_map(non_const_iter.m_map)
+    , m_internalIdx(non_const_iter.m_internalIdx)
+  { }
 
   friend bool operator==(const IteratorImpl& lhs, const IteratorImpl& rhs)
   {
@@ -311,14 +322,14 @@ auto FlatMap<KeyType, ValueType, Hash>::find(const KeyType& key) const
   -> const_iterator
 {
   auto hash = Hash {}(key);
-  iterator found_iter = end();
+  const_iterator found_iter = end();
   this->probeIndex(m_numGroups2,
                    m_metadata,
                    hash,
                    [&](IndexType bucket_index) -> bool {
                      if(this->m_buckets[bucket_index].first == key)
                      {
-                       found_iter = iterator(this, bucket_index);
+                       found_iter = const_iterator(this, bucket_index);
                        // Stop tracking.
                        return false;
                      }
@@ -396,7 +407,7 @@ auto FlatMap<KeyType, ValueType, Hash>::emplaceImpl(bool assign_on_existence,
 template <typename KeyType, typename ValueType, typename Hash>
 auto FlatMap<KeyType, ValueType, Hash>::erase(const_iterator pos) -> iterator
 {
-  assert(pos < end());
+  assert(pos != end());
   auto hash = Hash {}(pos->first);
 
   bool midSequence = this->clearBucket(m_metadata, pos.m_internalIdx, hash);
@@ -405,7 +416,7 @@ auto FlatMap<KeyType, ValueType, Hash>::erase(const_iterator pos) -> iterator
   {
     m_loadCount--;
   }
-  return ++pos;
+  return ++iterator(this, pos.m_internalIdx);
 }
 
 }  // namespace axom
