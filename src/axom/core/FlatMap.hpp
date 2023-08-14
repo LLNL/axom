@@ -58,6 +58,7 @@ public:
     axom::utilities::swap(m_size, other.m_size);
     axom::utilities::swap(m_metadata, other.m_metadata);
     axom::utilities::swap(m_buckets, other.m_buckets);
+    axom::utilities::swap(m_loadCount, other.m_loadCount);
   }
 
   // Iterators
@@ -161,6 +162,7 @@ public:
   }
 
   // Hashing
+  IndexType bucket_count() const { return m_buckets.size(); }
   double load_factor() const
   {
     return ((double)m_loadCount) / m_buckets.size();
@@ -182,7 +184,7 @@ private:
                                         UKeyType&& key,
                                         Args&&... args);
 
-  constexpr static IndexType MIN_NUM_BUCKETS {16};
+  constexpr static IndexType MIN_NUM_BUCKETS {29};
 
   IndexType m_numGroups2;  // Number of groups of 15 buckets, expressed as a power of 2
   IndexType m_size;
@@ -257,14 +259,14 @@ FlatMap<KeyType, ValueType, Hash>::FlatMap(IndexType bucket_count)
   , m_loadCount(0)
 {
   int minBuckets = MIN_NUM_BUCKETS;
-  bucket_count = std::min(minBuckets, bucket_count);
+  bucket_count = std::max(minBuckets, bucket_count);
   // Get the smallest power-of-two number of groups satisfying:
   // N * GroupSize - 1 >= minBuckets
   // TODO: we should add a leadingZeros overload for 64-bit integers
   {
     std::int32_t numGroups =
       std::ceil((bucket_count + 1) / (double)BucketsPerGroup);
-    m_numGroups2 = 32 - axom::utilities::leadingZeros(numGroups);
+    m_numGroups2 = 31 - (axom::utilities::leadingZeros(numGroups));
   }
 
   IndexType numGroupsRounded = 1 << m_numGroups2;
