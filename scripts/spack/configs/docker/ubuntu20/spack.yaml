@@ -48,21 +48,6 @@ spack:
         fc: /usr/bin/gfortran
       spec: gcc@11.1.0
       target: x86_64
-  - compiler:
-      environment: {}
-      extra_rpaths: []
-      flags:
-        cflags: -pthread
-        cxxflags: -pthread
-      modules: []
-      operating_system: ubuntu20.04
-      paths:
-        cc: /usr/bin/gcc
-        cxx: /usr/bin/g++
-        f77: /usr/bin/gfortran
-        fc: /usr/bin/gfortran
-      spec: gcc@9.3.0
-      target: x86_64
 
   packages:
     all:
@@ -109,11 +94,6 @@ spack:
       externals:
       - spec: bzip2@1.0.6
         prefix: /usr
-    cuda:
-      buildable: false
-      externals:
-      - spec: cuda@11.1.1
-        prefix: /usr/local/cuda
     gettext:
       buildable: false
       externals:
