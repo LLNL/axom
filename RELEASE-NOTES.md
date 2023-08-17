@@ -19,6 +19,17 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 
 ## [Unreleased] - Release date yyyy-mm-dd
 
+## [v0.8.1] - Release date 2023-08-16
+
+### Changed
+- Updates to [RAJA version 2023.06.0][https://github.com/LLNL/RAJA/releases/tag/v2023.06.0]
+- Updates to [camp version 2023.06.0][https://github.com/LLNL/camp/releases/tag/v2023.06.0]
+- Updates to [Umpire version 2023.06.0][https://github.com/LLNL/Umpire/releases/tag/v2023.06.0]
+
+### Fixed
+- Fixed MFEMSidreDataCollection finite element space bug
+- Various fixes to CMake machinery
+
 ## [v0.8.0] - Release date 2023-07-26
 
 ### Added
@@ -958,7 +969,9 @@ fractions for the associated materials must be supplied before shaping.
 - Use this section in case of vulnerabilities
 
 
-[Unreleased]:    https://github.com/LLNL/axom/compare/v0.7.0...develop
+[Unreleased]:    https://github.com/LLNL/axom/compare/v0.8.1...develop
+[Version 0.8.1]: https://github.com/LLNL/axom/compare/v0.8.0...v0.8.1
+[Version 0.8.0]: https://github.com/LLNL/axom/compare/v0.7.0...v0.8.0
 [Version 0.7.0]: https://github.com/LLNL/axom/compare/v0.6.1...v0.7.0
 [Version 0.6.1]: https://github.com/LLNL/axom/compare/v0.6.0...v0.6.1
 [Version 0.6.0]: https://github.com/LLNL/axom/compare/v0.5.0...v0.6.0
