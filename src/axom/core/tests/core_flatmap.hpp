@@ -77,3 +77,46 @@ TEST(core_flatmap, insert_until_rehash)
     EXPECT_EQ(iterator->second, 2. * i + 1);
   }
 }
+
+TEST(core_flatmap, insert_then_delete)
+{
+  axom::FlatMap<int, double> int_to_dbl;
+
+  const int INIT_CAPACITY = int_to_dbl.bucket_count();
+  const double LOAD_FACTOR = int_to_dbl.max_load_factor();
+  const int NUM_INSERTS = LOAD_FACTOR * INIT_CAPACITY * 4;
+
+  for(int i = 0; i < NUM_INSERTS; i++)
+  {
+    int_to_dbl.insert({i, 2. * i + 1});
+  }
+  EXPECT_EQ(int_to_dbl.size(), NUM_INSERTS);
+  EXPECT_GE(int_to_dbl.bucket_count(), NUM_INSERTS);
+
+  for(int i = 0; i < NUM_INSERTS; i += 3)
+  {
+    // Delete every third entry starting from 0, inclusive.
+    // (i.e. keys 0, 3, 6, ...)
+    int_to_dbl.erase(i);
+  }
+
+  // Check consistency of values.
+  for(int i = 0; i < NUM_INSERTS; i++)
+  {
+    auto iterator = int_to_dbl.find(i);
+    if(i % 3 == 0)
+    {
+      EXPECT_EQ(iterator, int_to_dbl.end());
+      EXPECT_EQ(0, int_to_dbl.count(i));
+      EXPECT_EQ(false, int_to_dbl.contains(i));
+    }
+    else
+    {
+      EXPECT_NE(iterator, int_to_dbl.end());
+      EXPECT_EQ(iterator->first, i);
+      EXPECT_EQ(iterator->second, 2. * i + 1);
+      EXPECT_EQ(1, int_to_dbl.count(i));
+      EXPECT_EQ(true, int_to_dbl.contains(i));
+    }
+  }
+}
