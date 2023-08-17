@@ -375,9 +375,9 @@ auto FlatMap<KeyType, ValueType, Hash>::emplaceImpl(bool assign_on_existence,
       keyExistsAlready = true;
       foundBucketIndex = bucket_index;
       // Exit out of probing, we can't insert if the key already exists.
-      return false;
+      return true;
     }
-    return true;
+    return false;
   };
 
   IndexType newBucket =

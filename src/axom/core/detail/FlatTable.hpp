@@ -19,14 +19,15 @@ namespace flat_map
 struct QuadraticProbing
 {
   /*!
-     * \brief Returns the next offset to jump given an iteration count.
-     *
-     *  Suppose we start with some probe point H + i^2, then the next probe
-     *  point is H + (i*1)^2 = H + i^2 + 2*i + 1.
-     *
-     *  We return the offset from H(i) to H(i+1), which is 2*i+1.
-     */
-  int getNext(int iter) const { return 2 * iter + 1; }
+   * \brief Returns the next offset to jump given an iteration count.
+   *
+   *  Each probe point for a given iteration is given by the formula
+   *  H(i) = H_0 + i/2 + i^2/2 mod m. For m = 2^n, the sequence H(i) for
+   *  i in [0, m-1) is a permutation on [0, m-1).
+   *
+   *  We return the offset from H(i) to H(i+1), which is i+1.
+   */
+  int getNext(int iter) const { return iter + 1; }
 };
 
 // Boost::unordered_flat_map uses a 128-bit chunk of metadata for each
@@ -169,12 +170,12 @@ struct SequentialLookupPolicy
     int empty_bucket = NO_MATCH;
 
     std::uint8_t hash_8 = static_cast<std::uint8_t>(hash);
-    int iteration = 0;
-    bool keep_going = true;
-    while(keep_going)
+    bool key_already_exists = false;
+    for(int iteration = 0; iteration < groups.size(); iteration++)
     {
       groups[curr_group].visitHashBucket(hash_8, [&](IndexType bucket_index) {
-        keep_going = on_hash_found(curr_group * GroupBucket::Size + bucket_index);
+        key_already_exists =
+          on_hash_found(curr_group * GroupBucket::Size + bucket_index);
       });
       int tentative_empty_bucket = groups[curr_group].getEmptyBucket();
       if(tentative_empty_bucket != GroupBucket::InvalidSlot &&
@@ -184,22 +185,21 @@ struct SequentialLookupPolicy
         empty_bucket = tentative_empty_bucket;
       }
 
-      if(groups[curr_group].hasSentinel() ||
+      if(key_already_exists ||
          (!groups[curr_group].getMaybeOverflowed(hash_8) &&
           empty_group != NO_MATCH))
       {
-        // We've reached a sentinel group, or the last group that might
-        // contain the hash. Stop probing.
-        keep_going = false;
+        // We've reached the last group that might contain the hash.
+        // Stop probing.
+        break;
       }
       else if(empty_group == NO_MATCH)
       {
         // Set the overflow bit and continue probing.
         groups[curr_group].setOverflow(hash_8);
-        curr_group =
-          (curr_group + ProbePolicy {}.getNext(iteration)) % groups.size();
-        iteration++;
       }
+      curr_group =
+        (curr_group + ProbePolicy {}.getNext(iteration)) % groups.size();
     }
     if(empty_group != NO_MATCH)
     {
@@ -230,29 +230,27 @@ struct SequentialLookupPolicy
     int curr_group = hash / group_divisor;
 
     std::uint8_t hash_8 = static_cast<std::uint8_t>(hash);
-    int iteration = 0;
     bool keep_going = true;
-    while(keep_going)
+    for(int iteration = 0; iteration < groups.size(); iteration++)
     {
       groups[curr_group].visitHashBucket(hash_8, [&](IndexType bucket_index) {
         keep_going = on_hash_found(curr_group * GroupBucket::Size + bucket_index);
       });
 
-      if(!groups[curr_group].getMaybeOverflowed(hash_8) ||
-         groups[curr_group].hasSentinel())
+      if(!groups[curr_group].getMaybeOverflowed(hash_8))
       {
-        // Stop probing if the "overflow" bit is not set or if the sentinel
-        // is set for a bucket.
+        // Stop probing if the "overflow" bit is not set.
         keep_going = false;
         curr_group = NO_MATCH;
       }
-      else
+
+      if(!keep_going)
       {
-        // Probe the next bucket.
-        curr_group =
-          (curr_group + ProbePolicy {}.getNext(iteration)) % groups.size();
-        iteration++;
+        break;
       }
+      // Probe the next bucket.
+      curr_group =
+        (curr_group + ProbePolicy {}.getNext(iteration)) % groups.size();
     }
   }
 
