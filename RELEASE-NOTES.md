@@ -19,7 +19,7 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 
 ## [Unreleased] - Release date yyyy-mm-dd
 
-## [v0.8.1] - Release date 2023-08-16
+## [Version 0.8.1] - Release date 2023-08-16
 
 ### Changed
 - Updates to [RAJA version 2023.06.0][https://github.com/LLNL/RAJA/releases/tag/v2023.06.0]
@@ -30,7 +30,7 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 - Fixed MFEMSidreDataCollection finite element space bug
 - Various fixes to CMake machinery
 
-## [v0.8.0] - Release date 2023-07-26
+## [Version 0.8.0] - Release date 2023-07-26
 
 ### Added
 - Adds MarchingCubes class implementing the marching cubes algorithm for surface detection.
