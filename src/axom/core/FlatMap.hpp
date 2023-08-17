@@ -283,6 +283,7 @@ FlatMap<KeyType, ValueType, Hash>::FlatMap(IndexType bucket_count)
   IndexType numGroupsRounded = 1 << m_numGroups2;
   IndexType numBuckets = numGroupsRounded * BucketsPerGroup - 1;
   m_metadata.resize(numGroupsRounded);
+  m_metadata[numGroupsRounded - 1].setSentinel();
   m_buckets.resize(numBuckets);
 }
 

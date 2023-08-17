@@ -99,6 +99,8 @@ struct GroupBucket
     metadata.buckets[index] = reduceHash(hash);
   }
 
+  void clearBucket(int index) { metadata.buckets[index] = Empty; }
+
   void setOverflow(std::uint8_t hash)
   {
     std::uint8_t hashOfwBit = 1 << (hash % 8);
@@ -267,7 +269,7 @@ struct SequentialLookupPolicy
     int group_index = bucket / GroupBucket::Size;
     int slot_index = bucket % GroupBucket::Size;
 
-    groups[group_index].setBucket(slot_index, GroupBucket::Empty);
+    groups[group_index].clearBucket(slot_index);
 
     // Return if the overflow bit is set on the bucket. That indicates whether
     // we are deleting an element in the middle of a probing sequence.
