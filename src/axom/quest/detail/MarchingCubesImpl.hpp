@@ -6,6 +6,7 @@
 #include "axom/core/execution/execution_space.hpp"
 #include "axom/quest/MarchingCubes.hpp"
 #include "axom/quest/detail/marching_cubes_lookup.hpp"
+// #include "axom/quest/MeshViewUtil.hpp"
 #include "axom/primal/geometry/Point.hpp"
 #include "axom/primal/constants.hpp"
 #include "axom/mint/execution/internal/structured_exec.hpp"
@@ -88,25 +89,62 @@ public:
       m_bStrides[d] = m_bStrides[d - 1] * m_bShape[d - 1];
 
     // Domain's node coordinates
+#if 0
+    axom::quest::MeshViewUtil<DIM> mvu(dom);
+    m_coordsViews = mvu.getCoordsViews();
+#else
     {
       const conduit::Node& coordValues =
         dom.fetch_existing(coordsetPath + "/values");
-      const bool isInterleaved =
-        conduit::blueprint::mcarray::is_interleaved(coordValues);
-      const int coordSp = isInterleaved ? DIM : 1;
-      for(int d = 0; d < DIM; ++d)
+      if(dimsNode.has_child("strides"))
       {
-        const double* coordsPtr = coordValues[d].as_double_ptr();
-        m_coordsViews[d] =
-          axom::ArrayView<const double, DIM>(coordsPtr, m_pShape, coordSp);
+        const auto* stridesPtr = dimsNode.fetch_existing("strides").as_int32_ptr();
+        StackArray<IndexType, DIM> strides;
+        for(IndexType d=0; d<DIM; ++d)
+        {
+          strides[d] = stridesPtr[d];
+        }
+        for(int d = 0; d < DIM; ++d)
+        {
+          const double* coordsPtr = coordValues[d].as_double_ptr();
+          m_coordsViews[d] =
+            axom::ArrayView<const double, DIM>(coordsPtr, m_pShape, strides);
+        }
+      }
+      else
+      {
+        assert(false); // Temporarily not supported, since supporting ghosts.
+        const bool isInterleaved =
+          conduit::blueprint::mcarray::is_interleaved(coordValues);
+        const int coordSp = isInterleaved ? DIM : 1;
+        for(int d = 0; d < DIM; ++d)
+        {
+          const double* coordsPtr = coordValues[d].as_double_ptr();
+          m_coordsViews[d] =
+            axom::ArrayView<const double, DIM>(coordsPtr, m_pShape, coordSp);
+        }
       }
     }
+#endif
 
     // Nodal function
     {
       auto& fcnValues = dom.fetch_existing(fcnPath + "/values");
       const double* fcnPtr = fcnValues.as_double_ptr();
-      m_fcnView = axom::ArrayView<const double, DIM>(fcnPtr, m_pShape);
+      if(dom.fetch_existing(fcnPath).has_child("strides"))
+      {
+        const auto* stridesPtr = dom.fetch_existing(fcnPath + "/strides").as_int32_ptr();
+        StackArray<IndexType, DIM> strides;
+        for(IndexType d=0; d<DIM; ++d)
+        {
+          strides[d] = stridesPtr[d];
+        }
+        m_fcnView = axom::ArrayView<const double, DIM>(fcnPtr, m_pShape, strides);
+      }
+      else
+      {
+        m_fcnView = axom::ArrayView<const double, DIM>(fcnPtr, m_pShape);
+      }
     }
 
     // Mask
@@ -506,6 +544,7 @@ public:
   }
 
   //!@brief Output contour mesh to a mint::UnstructuredMesh object.
+  // TODO: If cellIdField was allocated by user, we should look at its strides/offsets.
   void populateContourMesh(
     axom::mint::UnstructuredMesh<axom::mint::SINGLE_SHAPE>& mesh,
     const std::string& cellIdField) const override

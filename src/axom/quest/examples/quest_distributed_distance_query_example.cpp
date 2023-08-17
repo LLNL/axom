@@ -17,6 +17,7 @@
 #include "axom/quest.hpp"
 #include "axom/slam.hpp"
 #include "axom/core/Types.hpp"
+#include "axom/core/WhereMacro.hpp"
 
 #include "conduit_blueprint.hpp"
 #include "conduit_blueprint_mpi.hpp"
@@ -275,16 +276,16 @@ public:
     return false;
   }
 
-  /// Returns the number of points in a particle mesh domain
+  /*!
+    @brief Returns the number of points in a particle mesh domain
+    including ghost points.
+  */
   int numPoints(axom::IndexType dIdx) const
   {
     int rval = 0;
     auto* cg = m_coordsGroups[dIdx];
-    //BTNG: The following if-check is probably not a use-case
-    if(cg != nullptr && cg->hasView("values/x"))
-    {
-      rval = cg->getView("values/x")->getNumElements();
-    }
+    SLIC_ASSERT(cg != nullptr && cg->hasView("values/x"));
+    rval = cg->getView("values/x")->getNumElements();
     return rval;
   }
   /// Returns the number of points in the particle mesh
@@ -302,7 +303,7 @@ public:
   int dimension() const { return m_dimension; }
 
   /*!
-    @brief Read a blueprint mesh.
+    @brief Read a blueprint mesh and store it internally in m_group.
   */
   void read_blueprint_mesh(const std::string& meshFilename)
   {
@@ -320,6 +321,14 @@ public:
     assert(conduit::blueprint::mesh::is_multi_domain(mdMesh));
     conduit::index_t domCount =
       conduit::blueprint::mesh::number_of_domains(mdMesh);
+    if(domCount > 0)
+    {
+      m_coordsAreStrided = mdMesh[0].fetch_existing("topologies/mesh/elements/dims").has_child("strides");
+      if(m_coordsAreStrided)
+      {
+        SLIC_WARNING(axom::fmt::format("Mesh '{}' is strided.  Stride support is under development.", meshFilename));
+      }
+    }
 
     if(domCount > 0)
     {
@@ -426,7 +435,7 @@ public:
     }
 
     // set the default connectivity
-    // Maybe be required by an old version of visit.  May not be needed by newer versions of visit.
+    // May be required by an old version of visit.  May not be needed by newer versions of visit.
     sidre::Array<int> arr(
       m_topoGroups[domainIdx]->createView("elements/connectivity"),
       SZ,
@@ -481,6 +490,13 @@ public:
       auto* fld = m_fieldsGroups[dIdx]->createGroup(fieldName);
       fld->createViewString("association", "vertex");
       fld->createViewString("topology", m_topoGroups[dIdx]->getName());
+      if(m_coordsAreStrided)
+      {
+        auto* offsets = m_topoGroups[dIdx]->getView("elements/dims/offsets");
+        auto* strides = m_topoGroups[dIdx]->getView("elements/dims/strides");
+        fld->copyView(offsets);
+        fld->copyView(strides);
+      }
       fld->createViewAndAllocate("values",
                                  sidre::detail::SidreTT<T>::id,
                                  numPoints(dIdx));
@@ -498,6 +514,13 @@ public:
       auto* fld = m_fieldsGroups[dIdx]->createGroup(fieldName);
       fld->createViewString("association", "vertex");
       fld->createViewString("topology", m_topoGroups[dIdx]->getName());
+      if(m_coordsAreStrided)
+      {
+        auto* offsets = m_topoGroups[dIdx]->getView("elements/dims/offsets");
+        auto* strides = m_topoGroups[dIdx]->getView("elements/dims/strides");
+        fld->copyView(offsets);
+        fld->copyView(strides);
+      }
 
       // create views into a shared buffer for the coordinates, with stride DIM
       auto* buf = m_domainGroups[dIdx]
@@ -584,7 +607,6 @@ public:
         slic::flushStreams();
         return false;
       }
-      // info.print();
     }
     return true;
   }
@@ -642,6 +664,8 @@ private:
   }
 
 private:
+  //!@brief Whether stride/offsets are given for blueprint mesh coordinates data.
+  bool m_coordsAreStrided = false;
   const std::string m_coordsetName;
   const std::string m_topologyName;
   /// Parent group for the entire mesh
@@ -1268,9 +1292,10 @@ int main(int argc, char** argv)
     PointType(params.circleCenter.data(), params.circleCenter.size()),
     params.circleRadius);
 
-  sidre::DataStore objectDS;
+  sidre::DataStore dataStore;
+
   ObjectMeshWrapper objectMeshWrapper(
-    objectDS.getRoot()->createGroup("object_mesh", true));
+    dataStore.getRoot()->createGroup("object_mesh", true));
   objectMeshWrapper.setVerbosity(params.isVerbose());
 
   {
@@ -1298,9 +1323,8 @@ int main(int argc, char** argv)
   // Load computational mesh and generate a particle mesh over its nodes
   // These will be used to query the closest points on the object mesh(es)
   //---------------------------------------------------------------------------
-  sidre::DataStore queryDS;  // TODO: Need separate stores for object and query?
   QueryMeshWrapper queryMeshWrapper(
-    queryDS.getRoot()->createGroup("queryMesh", true),
+    dataStore.getRoot()->createGroup("queryMesh", true),
     params.meshFile);
   // queryMeshWrapper.print_mesh_info();
 

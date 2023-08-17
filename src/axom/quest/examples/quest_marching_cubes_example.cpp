@@ -21,8 +21,10 @@
 #include "axom/primal.hpp"
 #include "axom/mint.hpp"
 #include "axom/quest.hpp"
+#include "axom/quest/MeshViewUtil.hpp"
 #include "axom/sidre.hpp"
 #include "axom/core/Types.hpp"
+#include "axom/core/WhereMacro.hpp"
 
 #include "conduit_blueprint.hpp"
 #include "conduit_relay_io_blueprint.hpp"
@@ -435,6 +437,7 @@ public:
 
   void printMeshInfo() const { _mdMesh.print(); }
 
+  //!@brief Get the shape of cell-based arrays for a domain.
   template <int DIM>
   axom::StackArray<axom::IndexType, DIM> getCellsShape(int domainNum)
   {
@@ -447,6 +450,7 @@ public:
     return shape;
   }
 
+  //!@brief Get the shape of node-based arrays for a domain.
   template <int DIM>
   axom::StackArray<axom::IndexType, DIM> getNodesShape(int domainNum)
   {
@@ -459,6 +463,7 @@ public:
     return shape;
   }
 
+  //!@brief Get an ArrayView of coordinates data for a domain.
   template <int DIM>
   axom::Array<axom::ArrayView<double, DIM>> get_coords_view(int domainNum)
   {
@@ -534,11 +539,12 @@ private:
   int _ndims {-1};
   conduit::Node _mdMesh;
   axom::IndexType _domCount;
+  bool _coordsAreStrided = false;
   const std::string _coordsetPath;
   const std::string _topologyPath;
 
   /*!
-    @brief Read a blueprint mesh.
+    @brief Read a blueprint mesh into conduit::Node _mdMesh.
   */
   void readBlueprintMesh(const std::string& meshFilename)
   {
@@ -555,8 +561,15 @@ private:
     SLIC_ASSERT(conduit::blueprint::mesh::is_multi_domain(_mdMesh));
     _domCount = conduit::blueprint::mesh::number_of_domains(_mdMesh);
 
+std::cout<<__WHERE<<"mdMesh:"<<std::endl;
+_mdMesh.print();
     if(_domCount > 0)
     {
+      _coordsAreStrided = _mdMesh[0].fetch_existing("topologies/mesh/elements/dims").has_child("strides");
+      if(_coordsAreStrided)
+      {
+        SLIC_WARNING(axom::fmt::format("Mesh '{}' is strided.  Stride support is under development.", meshFilename));
+      }
       const conduit::Node coordsetNode = _mdMesh[0].fetch_existing(_coordsetPath);
       _ndims = conduit::blueprint::mesh::coordset::dims(coordsetNode);
     }
@@ -630,14 +643,7 @@ void saveMesh(const sidre::Group& mesh, const std::string& filename)
     }
     // info.print();
   }
-#ifdef AXOM_USE_MPI
-  conduit::relay::mpi::io::blueprint::save_mesh(tmpMesh,
-                                                filename,
-                                                "hdf5",
-                                                MPI_COMM_WORLD);
-#else
-  conduit::relay::io::blueprint::save_mesh(tmpMesh, filename, "hdf5");
-#endif
+  saveMesh(tmpMesh, filename);
 }
 
 //!@brief Reverse the order of a StackArray.
@@ -778,48 +784,47 @@ struct ContourTestBase
     for(int domId = 0; domId < bpMesh.domainCount(); ++domId)
     {
       conduit::Node& dom = bpMesh.domain(domId);
-      // Access the coordinates
-      auto cellCounts = bpMesh.domainLengths(domId);
-      axom::StackArray<axom::IndexType, DIM> shape;
-      for(int i = 0; i < DIM; ++i)
-      {
-        shape[i] = 1 + cellCounts[i];
-      }
-      conduit::index_t pointCount = bpMesh.nodeCount(domId);
-      conduit::Node& coordsValues =
-        dom.fetch_existing("coordsets/coords/values");
-      double* coordsPtrs[DIM];
-      axom::ArrayView<double, DIM> coordsViews[DIM];
-      for(int d = 0; d < DIM; ++d)
-      {
-        coordsPtrs[d] = coordsValues[d].as_double_ptr();
-        coordsViews[d] = axom::ArrayView<double, DIM>(coordsPtrs[d], shape);
-      }
-      axom::ArrayView<axom::primal::Point<double, DIM>, DIM> coordsView(
-        (axom::primal::Point<double, DIM>*)coordsValues.data_ptr(),
-        shape);
+      axom::quest::MeshViewUtil<DIM> mvu(dom, "mesh");
 
-      // Create the nodal function data.
+#if 1
+      // Create nodal function data with ghosts like node coords.
+      mvu.createNodalField( functionName(), "vertex",
+                            conduit::DataType::float64(mvu.getCoordsCountWithGhosts()),
+                            mvu.getCoordsStrides(),
+                            mvu.getCoordsOffsets());
+#else
+      // Create nodal function data.
       conduit::Node& fieldNode = dom["fields"][functionName()];
       fieldNode["association"] = "vertex";
       fieldNode["topology"] = "mesh";
       fieldNode["volume_dependent"] = "false";
-      fieldNode["values"].set(conduit::DataType::float64(pointCount));
-      double* d = fieldNode["values"].value();
-      axom::ArrayView<double, DIM> fieldView(d, shape);
+      fieldNode["values"].set(conduit::DataType::float64(mvu.getCoordsCountWithGhosts()));
+#endif
 
+      // TODO: Not correctly setting up fieldNode with stride.  See Conduit example.
       // Set the function value at the nodes.
       // value(pt) is the virtual function defining the
       // distance in a derived class.
-      for(int n = 0; n < pointCount; ++n)
+      const axom::Array<axom::ArrayView<double, DIM>> coordsViews = mvu.getCoordsViews();
+      axom::ArrayView<double, DIM> fieldView = mvu.getFieldView(functionName());
+      populateNodalDistance(coordsViews, fieldView);
+    }
+  }
+  void populateNodalDistance(
+    const axom::Array<axom::ArrayView<double, DIM>>& coordsViews,
+    axom::ArrayView<double, DIM>& fieldView)
+  {
+    SLIC_ASSERT(coordsViews[0].size() == fieldView.size());
+    SLIC_ASSERT(coordsViews[0].shape() == fieldView.shape());
+    auto pointCount = fieldView.size();
+    for(axom::IndexType n=0; n<pointCount; ++n)
+    {
+      axom::primal::Point<double, DIM> pt;
+      for(int d = 0; d < DIM; ++d)
       {
-        axom::primal::Point<double, DIM> pt;
-        for(int d = 0; d < DIM; ++d)
-        {
-          pt[d] = coordsViews[d].flatIndex(n);
-        }
-        fieldView.flatIndex(n) = value(pt);
+        pt[d] = coordsViews[d].flatIndex(n);
       }
+      fieldView.flatIndex(n) = value(pt);
     }
   }
 
