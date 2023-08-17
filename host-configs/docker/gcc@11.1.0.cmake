@@ -4,7 +4,7 @@
 # CMake executable path: /usr/bin/cmake
 #------------------------------------------------------------------------------
 
-set(CMAKE_PREFIX_PATH "/home/axom/axom_tpls/gcc-11.1.0/umpire-2022.10.0-62zo7bl3xiwqng7xc5z5bphrui2jmjt2;/home/axom/axom_tpls/gcc-11.1.0/raja-2022.10.5-td5iuxpfmti5maiqhqcueiivkcxl42nq;/home/axom/axom_tpls/gcc-11.1.0/camp-2022.10.1-p7zy67rtxpg7p2jbjs5n4l5mnmnbnve4;/home/axom/axom_tpls/gcc-11.1.0/mfem-4.5.2-dhj56qfyq3zkqiyjapqitz3iaeyjiu3r;/home/axom/axom_tpls/gcc-11.1.0/hypre-2.24.0-xsefh67wzc7yga4wotgcn4nktzsr3dko;/home/axom/axom_tpls/gcc-11.1.0/lua-5.4.4-3iwzuwuvnrymxte2nik7uqwfksk7ui5p;/home/axom/axom_tpls/gcc-11.1.0/readline-8.2-3ghsag74tthrw7kycdjwbstrhxwhiics;/home/axom/axom_tpls/gcc-11.1.0/ncurses-6.4-bqojhx5e5yk7qwezjqzchqtufyegrff7;/home/axom/axom_tpls/gcc-11.1.0/conduit-0.8.8-yohx25l7etfwzetmtcu6erdh3qnbglrn;/home/axom/axom_tpls/gcc-11.1.0/parmetis-4.0.3-wqjpma4axfmudec4ncgxkhgeyquzzneh;/home/axom/axom_tpls/gcc-11.1.0/metis-5.1.0-a6gendzgkorlnu2x6ogz4tywd4yp4c7t;/home/axom/axom_tpls/gcc-11.1.0/hdf5-1.8.22-tdsth6jhlgwhvfscnkpb24lbvvdtgobe;/home/axom/axom_tpls/gcc-11.1.0/zlib-1.2.13-k4fzfbz45b6qs3ysphaxrdowxyvjrg5p;/home/axom/axom_tpls/gcc-11.1.0/gmake-4.4.1-xoqy3bpcm7lirebrxjt4qvp3p72t3dmu;/home/axom/axom_tpls/gcc-11.1.0/blt-0.5.3-zthngkscrkhniwcjsfur5rglm6bkmge3" CACHE PATH "")
+set(CMAKE_PREFIX_PATH "/home/axom/axom_tpls/gcc-11.1.0/umpire-2023.06.0-pdygmf4s7ggj4zqbrzy436omasf6eaee;/home/axom/axom_tpls/gcc-11.1.0/raja-2023.06.0-cyz2uqefpnhonaipzcnh4oiidyrfmnsx;/home/axom/axom_tpls/gcc-11.1.0/camp-2023.06.0-csawyq2dbktfyy7srozbr7lefkz2bjmc;/home/axom/axom_tpls/gcc-11.1.0/mfem-4.5.2-dhj56qfyq3zkqiyjapqitz3iaeyjiu3r;/home/axom/axom_tpls/gcc-11.1.0/hypre-2.24.0-xsefh67wzc7yga4wotgcn4nktzsr3dko;/home/axom/axom_tpls/gcc-11.1.0/lua-5.4.4-3iwzuwuvnrymxte2nik7uqwfksk7ui5p;/home/axom/axom_tpls/gcc-11.1.0/readline-8.2-3ghsag74tthrw7kycdjwbstrhxwhiics;/home/axom/axom_tpls/gcc-11.1.0/ncurses-6.4-bqojhx5e5yk7qwezjqzchqtufyegrff7;/home/axom/axom_tpls/gcc-11.1.0/conduit-0.8.8-yohx25l7etfwzetmtcu6erdh3qnbglrn;/home/axom/axom_tpls/gcc-11.1.0/parmetis-4.0.3-wqjpma4axfmudec4ncgxkhgeyquzzneh;/home/axom/axom_tpls/gcc-11.1.0/metis-5.1.0-a6gendzgkorlnu2x6ogz4tywd4yp4c7t;/home/axom/axom_tpls/gcc-11.1.0/hdf5-1.8.22-tdsth6jhlgwhvfscnkpb24lbvvdtgobe;/home/axom/axom_tpls/gcc-11.1.0/zlib-1.2.13-k4fzfbz45b6qs3ysphaxrdowxyvjrg5p;/home/axom/axom_tpls/gcc-11.1.0/gmake-4.4.1-xoqy3bpcm7lirebrxjt4qvp3p72t3dmu;/home/axom/axom_tpls/gcc-11.1.0/blt-0.5.3-zthngkscrkhniwcjsfur5rglm6bkmge3" CACHE PATH "")
 
 set(CMAKE_BUILD_TYPE "Release" CACHE STRING "")
 
@@ -83,11 +83,11 @@ set(HDF5_DIR "${TPL_ROOT}/hdf5-1.8.22-tdsth6jhlgwhvfscnkpb24lbvvdtgobe" CACHE PA
 
 set(LUA_DIR "${TPL_ROOT}/lua-5.4.4-3iwzuwuvnrymxte2nik7uqwfksk7ui5p" CACHE PATH "")
 
-set(RAJA_DIR "${TPL_ROOT}/raja-2022.10.5-td5iuxpfmti5maiqhqcueiivkcxl42nq" CACHE PATH "")
+set(RAJA_DIR "${TPL_ROOT}/raja-2023.06.0-cyz2uqefpnhonaipzcnh4oiidyrfmnsx" CACHE PATH "")
 
-set(UMPIRE_DIR "${TPL_ROOT}/umpire-2022.10.0-62zo7bl3xiwqng7xc5z5bphrui2jmjt2" CACHE PATH "")
+set(UMPIRE_DIR "${TPL_ROOT}/umpire-2023.06.0-pdygmf4s7ggj4zqbrzy436omasf6eaee" CACHE PATH "")
 
-set(CAMP_DIR "${TPL_ROOT}/camp-2022.10.1-p7zy67rtxpg7p2jbjs5n4l5mnmnbnve4" CACHE PATH "")
+set(CAMP_DIR "${TPL_ROOT}/camp-2023.06.0-csawyq2dbktfyy7srozbr7lefkz2bjmc" CACHE PATH "")
 
 # scr not built
 

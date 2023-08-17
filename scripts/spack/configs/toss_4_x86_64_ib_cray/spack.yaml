@@ -337,7 +337,7 @@ spack:
 
     # Globally lock version of third party libraries
     camp:
-      require: "@2022.10.1"
+      require: "@2023.06.0"
     conduit:
       require: "@0.8.8~shared~test~examples~utilities"
     hdf5:
@@ -347,8 +347,8 @@ spack:
     mfem:
       require: "@4.5.2"
     raja:
-      require: "@2022.10.5~shared~examples~exercises"
+      require: "@2023.06.0~shared~examples~exercises"
     scr:
       require: "@3.0.1~shared~tests~examples"
     umpire:
-      require: "@2022.10.0~shared~examples"
+      require: "@2023.06.0~shared~examples"
