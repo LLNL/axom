@@ -2,10 +2,10 @@
 # docker build --build-arg branch=<your branch here, defaults to develop> -t "axom/tpls:gcc-9-cuda-11" -f ./scripts/docker/dockerfile_gcc-9_cuda-11 .
 
 # Command to launch openvscode server with the resulting docker image:
-# docker run -it --init -p 3000:3000 -v "$(pwd):/home/workspace:cached" <image id>
+# docker run --init --gpus all --restart=always -p 3000:3000 <image id>
 
 FROM ghcr.io/rse-ops/cuda-ubuntu-20.04:cuda-11.1.1
-ARG branch=feature/han12/docker_tutorial
+ARG branch=develop
 ARG USER=axomdev
 ENV HOME /home/${USER}
 
@@ -38,7 +38,7 @@ RUN cd ${HOME}/axom && python3 ./scripts/uberenv/uberenv.py --spack-env-file=./s
 # Make sure the new hostconfig worked
 # Note: having high job slots causes build log to disappear and job to fail
 # Omit testing step, hangs at slam_lulesh unit test (same behavior for azure pipeline images, as well)
-RUN cd ${HOME}/axom && python3 config-build.py -hc *cuda.cmake -bp ${HOME}/build && cd ${HOME}/build && make -j4
+RUN cd ${HOME}/axom && python3 config-build.py -hc *cuda.cmake -bp ${HOME}/build -bt Release && cd ${HOME}/build && make -j4
 
 
 USER root
@@ -48,3 +48,4 @@ RUN sed -i "s/XXX/${USER}/g" /etc/supervisord.conf
 RUN touch /var/log/openvscode-server.log && chown -R ${USER}:${USER} /var/log/openvscode-server.log
 
 CMD ["/usr/bin/supervisord"]
+
