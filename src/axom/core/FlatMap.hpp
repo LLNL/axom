@@ -31,6 +31,8 @@ private:
   template <bool Const>
   friend class IteratorImpl;
 
+  using MixedHash = detail::flat_map::HashMixer64<KeyType, Hash>;
+
 public:
   using size_type = IndexType;
   using value_type = KeyValuePair;
@@ -301,7 +303,7 @@ FlatMap<KeyType, ValueType, Hash>::FlatMap(IndexType num_elems,
 template <typename KeyType, typename ValueType, typename Hash>
 auto FlatMap<KeyType, ValueType, Hash>::find(const KeyType& key) -> iterator
 {
-  auto hash = Hash {}(key);
+  auto hash = MixedHash {}(key);
   iterator found_iter = end();
   this->probeIndex(m_numGroups2,
                    m_metadata,
@@ -322,7 +324,7 @@ template <typename KeyType, typename ValueType, typename Hash>
 auto FlatMap<KeyType, ValueType, Hash>::find(const KeyType& key) const
   -> const_iterator
 {
-  auto hash = Hash {}(key);
+  auto hash = MixedHash {}(key);
   const_iterator found_iter = end();
   this->probeIndex(m_numGroups2,
                    m_metadata,
@@ -359,7 +361,7 @@ auto FlatMap<KeyType, ValueType, Hash>::emplaceImpl(bool assign_on_existence,
 {
   static_assert(std::is_convertible<UKeyType, KeyType>::value,
                 "UKeyType -> KeyType not convertible");
-  auto hash = Hash {}(key);
+  auto hash = MixedHash {}(key);
   // Resize to double the number of bucket groups if insertion would put us
   // above the maximum load factor.
   if(((m_loadCount + 1) / (double)m_buckets.size()) >= MAX_LOAD_FACTOR)
@@ -409,7 +411,7 @@ template <typename KeyType, typename ValueType, typename Hash>
 auto FlatMap<KeyType, ValueType, Hash>::erase(const_iterator pos) -> iterator
 {
   assert(pos != end());
-  auto hash = Hash {}(pos->first);
+  auto hash = MixedHash {}(pos->first);
 
   bool midSequence = this->clearBucket(m_metadata, pos.m_internalIdx, hash);
   pos->~KeyValuePair();

@@ -30,6 +30,27 @@ struct QuadraticProbing
   int getNext(int iter) const { return iter + 1; }
 };
 
+/*!
+ * \brief A bit mixer used to ensure avalanching of a hash function.
+ *
+ *  Uses the "mxmxm" function described here:
+ *  https://jonkagstrom.com/bit-mixer-construction/index.html
+ */
+template <typename KeyType, typename HashFunc>
+struct HashMixer64
+{
+  uint64_t operator()(const KeyType& key) const
+  {
+    uint64_t hash = HashFunc {}(key);
+	hash *= 0xbf58476d1ce4e5b9ULL;
+    hash ^= hash >> 32;
+    hash *= 0x94d049bb133111ebULL;
+    hash ^= hash >> 32;
+    hash *= 0x94d049bb133111ebULL;
+    return hash;
+  }
+};
+
 // Boost::unordered_flat_map uses a 128-bit chunk of metadata for each
 // group of 15 buckets.
 // This is split up into an "overflow bit", and 15 bytes representing the
@@ -166,8 +187,9 @@ struct SequentialLookupPolicy
   {
     // We use the k MSBs of the hash as the initial group probe point,
     // where ngroups = 2^k.
-    int group_divisor = 1 << ((CHAR_BIT * sizeof(HashType)) - ngroups_pow_2);
-    int curr_group = hash / group_divisor;
+    int bitshift_right = ((CHAR_BIT * sizeof(HashType)) - ngroups_pow_2);
+    HashType curr_group = hash >> bitshift_right;
+    curr_group &= ((1 << ngroups_pow_2) - 1);
     int empty_group = NO_MATCH;
     int empty_bucket = NO_MATCH;
 
@@ -228,8 +250,9 @@ struct SequentialLookupPolicy
   {
     // We use the k MSBs of the hash as the initial group probe point,
     // where ngroups = 2^k.
-    int group_divisor = 1 << ((CHAR_BIT * sizeof(HashType)) - ngroups_pow_2);
-    int curr_group = hash / group_divisor;
+    int bitshift_right = ((CHAR_BIT * sizeof(HashType)) - ngroups_pow_2);
+    HashType curr_group = hash >> bitshift_right;
+    curr_group &= ((1 << ngroups_pow_2) - 1);
 
     std::uint8_t hash_8 = static_cast<std::uint8_t>(hash);
     bool keep_going = true;
