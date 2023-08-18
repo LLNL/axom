@@ -66,3 +66,19 @@ install(
         examples/axom/using-with-blt
 )
 
+
+#------------------------------------------------------------------------------
+# configure and install 'radiuss_tutorial' example
+#------------------------------------------------------------------------------
+configure_file(
+    radiuss_tutorial/host-config.cmake.in
+    ${PROJECT_BINARY_DIR}/examples/radiuss_tutorial/host-config.cmake)
+
+install(
+    FILES
+        radiuss_tutorial/CMakeLists.txt
+        radiuss_tutorial/example.cpp
+        ${PROJECT_BINARY_DIR}/examples/radiuss_tutorial/host-config.cmake
+    DESTINATION
+        examples/axom/radiuss_tutorial
+)
