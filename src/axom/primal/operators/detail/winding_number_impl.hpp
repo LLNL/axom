@@ -442,7 +442,7 @@ double stokes_winding_number_adaptive(const Point<T, 3>& query,
     }
   }
 
-  constexpr int MAX_DEPTH = 15;
+  constexpr int MAX_DEPTH = 12;
   if(depth >= MAX_DEPTH ||
      axom::utilities::isNearlyEqualRelative(quad_fine[0] + quad_fine[1],
                                             quad_coarse,
