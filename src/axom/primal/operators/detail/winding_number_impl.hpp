@@ -314,27 +314,21 @@ double stokes_winding_number(const Point<T, 3>& query,
     switch(ax)
     {
     case(SingularityAxis::x):
-    {
       quadrature += quad_rule.IntPoint(q).weight *
         (node[2] * node[0] * node_dt[1] - node[1] * node[0] * node_dt[2]) /
         (node[1] * node[1] + node[2] * node[2]) / node_norm;
       break;
-    }
     case(SingularityAxis::y):
-    {
       quadrature += quad_rule.IntPoint(q).weight *
         (node[0] * node[1] * node_dt[2] - node[2] * node[1] * node_dt[0]) /
         (node[0] * node[0] + node[2] * node[2]) / node_norm;
       break;
-    }
     case(SingularityAxis::z):
     case(SingularityAxis::rotated):
-    {
       quadrature += quad_rule.IntPoint(q).weight *
         (node[1] * node[2] * node_dt[0] - node[0] * node[2] * node_dt[1]) /
         (node[0] * node[0] + node[1] * node[1]) / node_norm;
       break;
-    }
     }
   }
 
@@ -347,31 +341,23 @@ double stokes_winding_number(const Point<T, 3>& query,
   switch(ax)
   {
   case(SingularityAxis::x):
-  {
     needs_adapt = (query[1] - centroid[1]) * (query[1] - centroid[1]) +
         (query[2] - centroid[2]) * (query[2] - centroid[2]) <=
       cBox.range().squared_norm();
     break;
-  }
   case(SingularityAxis::y):
-  {
     needs_adapt = (query[0] - centroid[0]) * (query[0] - centroid[0]) +
         (query[2] - centroid[2]) * (query[2] - centroid[2]) <=
       cBox.range().squared_norm();
     break;
-  }
   case(SingularityAxis::z):
-  {
     needs_adapt = (query[0] - centroid[0]) * (query[0] - centroid[0]) *
         (query[1] - centroid[1]) * (query[1] - centroid[1]) <=
       cBox.range().squared_norm();
     break;
-  }
   case(SingularityAxis::rotated):
-  {
     needs_adapt = true;
     break;
-  }
   }
 
   if(needs_adapt)
@@ -437,27 +423,21 @@ double stokes_winding_number_adaptive(const Point<T, 3>& query,
       switch(ax)
       {
       case(SingularityAxis::x):
-      {
         quad_fine[i] += quad_rule.IntPoint(q).weight *
           (node[2] * node[0] * node_dt[1] - node[1] * node[0] * node_dt[2]) /
           (node[1] * node[1] + node[2] * node[2]) / node_norm;
         break;
-      }
       case(SingularityAxis::y):
-      {
         quad_fine[i] += quad_rule.IntPoint(q).weight *
           (node[0] * node[1] * node_dt[2] - node[2] * node[1] * node_dt[0]) /
           (node[0] * node[0] + node[2] * node[2]) / node_norm;
         break;
-      }
       case(SingularityAxis::z):
       case(SingularityAxis::rotated):
-      {
         quad_fine[i] += quad_rule.IntPoint(q).weight *
           (node[1] * node[2] * node_dt[0] - node[0] * node[2] * node_dt[1]) /
           (node[0] * node[0] + node[1] * node[1]) / node_norm;
         break;
-      }
       }
     }
   }
