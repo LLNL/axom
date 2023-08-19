@@ -6,10 +6,12 @@
 
 //-----------------------------------------------------------------------------
 ///
-/// file: example.cpp
+/// file: check_axom_configuration.cpp
 ///
 //-----------------------------------------------------------------------------
 
+
+#include "axom/config.hpp"
 #include "axom/core.hpp"
 #include "axom/fmt.hpp"
 
@@ -17,12 +19,12 @@
 
 int main()
 {
-   // Using fmt library exported by axom
-   std::cout << axom::fmt::format(
-        "Example of using an installed version of Axom {}",
-        axom::getVersion()) << std::endl << std::endl;
+   std::cout <<  "Checking properties of installed Axom library. \n";
 
-   // Uses installed axom library
+   // Check Axom version
+   std::cout << axom::fmt::format("Version: {}", axom::getVersion()) << "\n\n";
+
+   // Print axom about
    axom::about();
 
    return 0;

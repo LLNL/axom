@@ -77,8 +77,12 @@ configure_file(
 install(
     FILES
         radiuss_tutorial/CMakeLists.txt
-        radiuss_tutorial/example.cpp
         ${PROJECT_BINARY_DIR}/examples/radiuss_tutorial/host-config.cmake
     DESTINATION
         examples/axom/radiuss_tutorial
 )
+
+foreach(_lesson lesson_00)
+    install(DIRECTORY radiuss_tutorial/${_lesson}
+            DESTINATION examples/axom/radiuss_tutorial/)
+endforeach()

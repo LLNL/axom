@@ -53,8 +53,8 @@ find_dependency(axom REQUIRED
 # Set up example target that depends on axom
 #------------------------------------------------------------------------------
 
-blt_add_executable(NAME       example 
-                   SOURCES    example.cpp
+blt_add_executable(NAME       lesson_00_check_axom_configuration 
+                   SOURCES    lesson_00/check_axom_configuration.cpp
                    DEPENDS_ON axom axom::fmt)
 
 
