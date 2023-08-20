@@ -3,13 +3,11 @@
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
-
 //-----------------------------------------------------------------------------
 ///
 /// file: check_axom_configuration.cpp
 ///
 //-----------------------------------------------------------------------------
-
 
 #include "axom/config.hpp"
 #include "axom/core.hpp"
@@ -19,14 +17,13 @@
 
 int main()
 {
-   std::cout <<  "Checking properties of installed Axom library. \n";
+  std::cout << "Checking properties of installed Axom library. \n";
 
-   // Check Axom version
-   std::cout << axom::fmt::format("Version: {}", axom::getVersion()) << "\n\n";
+  // Check Axom version
+  std::cout << axom::fmt::format("Version: {}", axom::getVersion()) << "\n\n";
 
-   // Print axom about
-   axom::about();
+  // Print axom about
+  axom::about();
 
-   return 0;
+  return 0;
 }
-

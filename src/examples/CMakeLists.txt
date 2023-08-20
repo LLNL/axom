@@ -82,7 +82,12 @@ install(
         examples/axom/radiuss_tutorial
 )
 
-foreach(_lesson lesson_00)
+foreach(_lesson lesson_00 lesson_01)
     install(DIRECTORY radiuss_tutorial/${_lesson}
-            DESTINATION examples/axom/radiuss_tutorial/)
+            DESTINATION examples/axom/radiuss_tutorial)
 endforeach()
+
+#------------------------------------------------------------------------------
+# Add code checks for example files
+#------------------------------------------------------------------------------
+axom_add_code_checks(PREFIX examples)

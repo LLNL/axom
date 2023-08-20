@@ -59,6 +59,15 @@ blt_add_executable(NAME       lesson_00_check_axom_configuration
 
 
 #------------------------------------------------------------------------------
+# Set up example target that depends on axom
+#------------------------------------------------------------------------------
+
+blt_add_executable(NAME       lesson_01_load_stl_mesh 
+                   SOURCES    lesson_01/load_stl_mesh.cpp
+                   DEPENDS_ON axom axom::fmt axom::cli11)
+
+
+#------------------------------------------------------------------------------
 # Optionally, print out information about imported targets
 #------------------------------------------------------------------------------
 if(EXAMPLE_VERBOSE_OUTPUT)

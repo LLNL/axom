@@ -1,6 +1,6 @@
 # Lesson 00: Details about our Axom configuration
 
-In this lesson, we will develop a simple application that uses a pre-installed copy of Axom. 
+In this lesson, we will develop a simple application that uses an installed version of Axom. 
 Specifically, we will be print the version of Axom and some of its configuration properties.
 
 !!! tip  Our examples will be using the ``C++14`` standard since that's Axom's current version. 
@@ -47,7 +47,7 @@ blt_add_executable(NAME       lesson_00_check_axom_configuration
                    DEPENDS_ON axom axom::fmt)
 ```
 
-!!! action  Action: Look at ``CMakeLists.txt`` at root of tutorial directory.
+!!! action  Action: Look at ``CMakeLists.txt`` at the root of the tutorial directory.
 
 
 ## Including Axom components
@@ -133,3 +133,6 @@ Active Dependencies:
 ```
 
 !!! action  Action: Run the example for this lesson
+
+
+!!! next_time In the next lesson, we will add a logger and command line parser and load in a triangle mesh 
