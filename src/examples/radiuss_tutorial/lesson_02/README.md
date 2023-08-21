@@ -227,7 +227,7 @@ We also took the opportunity to add some additional output when the user request
 ## Optimization: Use the triangle bounding boxes to accelerate the query
 We observe that the above "naive" algorithm can be quite inefficient since it must check every pair of triangles. We will address this in subsequent lessons using a spatial index to limit which triangles must be compared against each other. 
 
-For now, we'll attempt to accelerate the local intersection tests by using a less expensive proxy for intersection -- checking whether the triangle bounding boxes intersect before running the more expensive triangle-based intersection tests. This will not improve the algorithmic complexity, but will (hopefully) reduce the runtime of the algorithm in practice.
+For now, we'll attempt to accelerate the local intersection tests by using a less expensive proxy for intersection -- checking whether the triangle bounding boxes intersect -- before running the more expensive triangle-based intersection tests. This will not improve the algorithmic complexity, but will (hopefully) reduce the runtime of the algorithm in practice.
 
 We add a command line option ``--use-bounding-boxes`` and define a new lambda based on ``primal::intersect(BoundingBoxType, BoundingBoxType)`` to use it:
 ```cpp

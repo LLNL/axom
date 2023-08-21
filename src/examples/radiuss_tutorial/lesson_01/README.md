@@ -50,7 +50,7 @@ struct BasicLogger
 
 The constructor calls ``slic::initialize()``, sets the logging level to ``slic::message::Debug`` and then creates log streams for the different message levels. The destructor finalizes the slic component with `slic::finalize()`.
 
-!!! tip Axom provides a similar basic wrapper in the ``SimpleLogger`` class.
+!!! tip Axom provides a similar basic wrapper in the ``slic::SimpleLogger`` class.
 
 !!! tip If your application requires MPI-based logging, consider using the ``LumberjackStream`` log streams from Axom's [lumberjack component](https://axom.readthedocs.io/en/develop/axom/lumberjack/docs/sphinx/index.html) when setting up your logger.
 
@@ -63,10 +63,10 @@ We now add a `BasicLogger` instance to the application with
 ```
 
 `slic`'s logging levels are:
-* ``slic::message::Error``: Used for logging error messages. By default prints a stacktrace and exits the application
-* ``slic::message::Warning``: Used for logging warning messages. By default prints a warning
-* ``slic::message::Info``: Used for logging error messages
-* ``slic::message::Debug``: Used for logging error messages
+* ``slic::message::Error``: Used for logging error messages. By default prints a stacktrace and exits the application.
+* ``slic::message::Warning``: Used for logging warning messages. By default, this prints a warning messsage and continues executing the application.
+* ``slic::message::Info``: Used for logging informational messages.
+* ``slic::message::Debug``: Used for logging debug messages. By default, these are compiled out in ``Release`` configurations.
  
 We are now free to use `slic`-based logging macros throughout our application, for example:
 ```cpp

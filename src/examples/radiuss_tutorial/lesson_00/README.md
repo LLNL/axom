@@ -1,7 +1,7 @@
 # Lesson 00: Details about our Axom configuration
 
 In this lesson, we will develop a simple application that uses an installed version of Axom. 
-Specifically, we will be print the version of Axom and some of its configuration properties.
+Specifically, we will print the version of Axom and some of its configuration properties.
 
 !!! tip  Our examples will be using the ``C++14`` standard since that's Axom's current version. 
 
@@ -18,7 +18,7 @@ We will be using CMake to configure our examples against a pre-installed copy of
 
 Axom's build system is based on [BLT](https://github.com/LLNL/blt) -- a streamlined CMake-based foundation for <b>B</b>uilding, <b>L</b>inking and <b>T</b>esting large-scale high performance computing (HPC) applications.
 
-Since Axom users typically develop HPC applications that need to on several different platforms ("hosts") with several different compilers, we will be using a CMake cache file containing several configuration variables, including the compiler and MPI information and compilation flags. We refer to this file as a "host-config".
+Since Axom users typically develop HPC applications that need to run on several different platforms ("hosts") with several different compilers, we will be using a CMake cache file containing several configuration variables, including the compiler and MPI information as well as compilation flags and paths to third-party libraries. We refer to this file as a "host-config".
 
 Our application can be configured and built using the following commands:
 ```shell
@@ -38,9 +38,9 @@ find_dependency(axom REQUIRED
                 NO_DEFAULT_PATH 
                 PATHS ${AXOM_DIR}/lib/cmake)
 ```
-It assumes that the user has provided the path to our Axom installation via the CMake variable ``AXOM_DIR``.
+It assumes that the user has provided the path to our Axom installation via the CMake variable ``AXOM_DIR`` and provides the top-level ``axom`` CMake target as well as several other targets in the ``axom::`` namespace.
 
-And this snippet generates an executable for our application using blt's [blt_add_executable](https://llnl-blt.readthedocs.io/en/develop/api/target.html#blt-add-executable) macro:
+This snippet generates an executable for our application using blt's [blt_add_executable](https://llnl-blt.readthedocs.io/en/develop/api/target.html#blt-add-executable) macro:
 ```cmake
 blt_add_executable(NAME       lesson_00_check_axom_configuration 
                    SOURCES    lesson_00/check_axom_configuration.cpp
@@ -52,7 +52,7 @@ blt_add_executable(NAME       lesson_00_check_axom_configuration
 
 ## Including Axom components
 
-To simplify usage of Axom components in applications, Axom generates per-component header files listing the available header files for a given component.
+To simplify usage of Axom components in applications, Axom generates per-component include files listing the available header files for a given component.
 For example, to include Axom's ``core`` component, an application would include the following line
 ```cpp
 #include "axom/core.hpp"
@@ -69,9 +69,9 @@ Axom also generates a config header file containing most of the compiler defines
 ...
 ```
 
-!!! action  Action: Look at <config.hpp> in the installation directory
+!!! action  Action: Look at ``<axom/config.hpp>`` and ``<axom/core.hpp>`` in the installation directory
 
-## Checking the axom version
+## Checking the Axom version
 
 We will use ``axom::getVersion()`` to print the version of Axom that we're using. 
 This function is provided in Axom's core component.
@@ -81,7 +81,7 @@ This function is provided in Axom's core component.
 std::cout << axom::fmt::format("Version: {}", axom::getVersion()) << "\n\n";
 ```
 
-This include the major, minor and patch version of Axom as well as the git SHA, when available.
+This includes the major, minor and patch version of Axom as well as the git SHA (when available).
 The above command might produce something like:
 ```
 Version: v0.8.1-749340203
