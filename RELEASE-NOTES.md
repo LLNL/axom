@@ -19,6 +19,14 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 
 ## [Unreleased] - Release date yyyy-mm-dd
 
+### Changed
+- `MarchingCubes` and `DistributedClosestPoint` classes changed from requiring the Blueprint
+  coordset name to requiring the Blueprint topology name.  The changed interface methods are:
+  - `DistributedClosestPoint::setObjectMesh`
+  - `DistributedClosestPoint::computeClosestPoints`
+  - `MarchingCubes::MarchingCubes`
+  - `MarchingCubesSingleDomain::MarchingCubesSingleDomain`
+
 ## [Version 0.8.1] - Release date 2023-08-16
 
 ### Changed
