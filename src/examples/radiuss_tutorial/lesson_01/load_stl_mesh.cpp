@@ -14,6 +14,7 @@
 #include "axom/core.hpp"
 #include "axom/slic.hpp"
 #include "axom/mint.hpp"
+#include "axom/primal.hpp"
 #include "axom/quest.hpp"
 
 #include "axom/fmt.hpp"
@@ -73,7 +74,7 @@ void Input::parse(int argc, char** argv, axom::CLI::App& app)
     ->check(axom::CLI::ExistingFile);
 
   app.add_flag("-v,--verbose", verboseOutput)
-    ->description("Increase logging verbosity")
+    ->description("Increase logging verbosity?")
     ->capture_default_str();
 
   app.get_formatter()->column_width(40);

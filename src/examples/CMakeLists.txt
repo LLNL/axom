@@ -82,7 +82,7 @@ install(
         examples/axom/radiuss_tutorial
 )
 
-foreach(_lesson lesson_00 lesson_01)
+foreach(_lesson lesson_00 lesson_01 lesson_02)
     install(DIRECTORY radiuss_tutorial/${_lesson}
             DESTINATION examples/axom/radiuss_tutorial)
 endforeach()

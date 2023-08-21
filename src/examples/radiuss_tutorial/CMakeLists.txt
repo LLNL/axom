@@ -50,22 +50,20 @@ find_dependency(axom REQUIRED
                 PATHS ${AXOM_DIR}/lib/cmake)
 
 #------------------------------------------------------------------------------
-# Set up example target that depends on axom
+# Set up target executables for the tutorial
 #------------------------------------------------------------------------------
 
 blt_add_executable(NAME       lesson_00_check_axom_configuration 
                    SOURCES    lesson_00/check_axom_configuration.cpp
                    DEPENDS_ON axom axom::fmt)
 
-
-#------------------------------------------------------------------------------
-# Set up example target that depends on axom
-#------------------------------------------------------------------------------
-
 blt_add_executable(NAME       lesson_01_load_stl_mesh 
                    SOURCES    lesson_01/load_stl_mesh.cpp
                    DEPENDS_ON axom axom::fmt axom::cli11)
 
+blt_add_executable(NAME       lesson_02_naive_self_intersections
+                   SOURCES    lesson_02/naive_self_intersections.cpp
+                   DEPENDS_ON axom axom::fmt axom::cli11)
 
 #------------------------------------------------------------------------------
 # Optionally, print out information about imported targets

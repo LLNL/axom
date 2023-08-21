@@ -173,7 +173,7 @@ This class uses three internal types:
 * ``axom::primal::Point``: A geometric primitive representing a point in space
 * ``axom::primal::Triangle``: A geometric primitive representing a triangle defined by three ``axom::primal::Point`` instances
 
-We will discuss these in more depth in the next lesson.
+We will discuss these in more depth in subsequent lessons.
 
 We use a helper function to load the triangle mesh:
 ```cpp
