@@ -230,8 +230,8 @@ TEST(primal_beziercurve_, second_derivative)
     for(int i = 0; i < DIM; ++i)
     {
       EXPECT_NEAR(calc_start[i], exp_vals[ord][0][i], 1e-14);
-      EXPECT_NEAR(calc_mid[i], exp_vals[ord][1][i],   1e-14);
-      EXPECT_NEAR(calc_end[i], exp_vals[ord][2][i],   1e-14);
+      EXPECT_NEAR(calc_mid[i], exp_vals[ord][1][i], 1e-14);
+      EXPECT_NEAR(calc_end[i], exp_vals[ord][2][i], 1e-14);
     }
   }
 }
