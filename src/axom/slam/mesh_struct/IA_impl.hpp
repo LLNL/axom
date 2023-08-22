@@ -37,7 +37,10 @@ bool is_subset(T v, const IterableT& iterable)
 {
   for(auto item : iterable)
   {
-    if(item == v) return true;
+    if(item == v)
+    {
+      return true;
+    }
   }
   return false;
 }
@@ -506,7 +509,10 @@ typename IAMesh<TDIM, SDIM, P>::IndexType IAMesh<TDIM, SDIM, P>::addElement(
   // If so, modify ee_rel to reflect that.
   for(auto otherElementIdx : elem_list)
   {
-    if(otherElementIdx < 0 || otherElementIdx == element_idx) continue;
+    if(otherElementIdx < 0 || otherElementIdx == element_idx)
+    {
+      continue;
+    }
     for(IndexType s = 0; s < VERTS_PER_ELEM; s++)
     {
       IndexType otherSideIdx = s;

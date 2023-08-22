@@ -488,7 +488,6 @@ void ScanRelationOffsetsRAJA(const axom::ArrayView<const IndexType> counts,
                              const axom::ArrayView<IndexType> firstIndices)
 {
 #if defined(AXOM_USE_RAJA) && defined(AXOM_USE_UMPIRE)
-  using AtomicPolicy = typename axom::execution_space<ExecSpace>::atomic_policy;
   using LoopPolicy = typename axom::execution_space<ExecSpace>::loop_policy;
 
   // The begins array has one more element than the counts array. The last
@@ -657,7 +656,10 @@ int MultiMat::getFieldIdx(const std::string& field_name) const
 {
   for(unsigned int i = 0; i < m_fieldNameVec.size(); i++)
   {
-    if(m_fieldNameVec[i] == field_name) return i;
+    if(m_fieldNameVec[i] == field_name)
+    {
+      return i;
+    }
   }
 
   return -1;
@@ -691,9 +693,13 @@ MultiMat::IndexSet MultiMat::getSubfieldIndexingSet(int idx,
                                                     SparsityLayout sparsity) const
 {
   if(layout == DataLayout::CELL_DOM)
+  {
     return getIndexingSetOfCell(idx, sparsity);
+  }
   else
+  {
     return getIndexingSetOfMat(idx, sparsity);
+  }
 }
 
 MultiMat::IndexSet MultiMat::getIndexingSetOfCell(int c,
@@ -782,7 +788,10 @@ void MultiMat::convertToDynamic()
 
 void MultiMat::convertToStatic()
 {
-  if(!m_dynamic_mode) return;
+  if(!m_dynamic_mode)
+  {
+    return;
+  }
 
   // Change dynamicRelation back to staticRelation
   // change the layout to previously stored static layout
@@ -1240,7 +1249,9 @@ void MultiMat::convertFieldLayout(int field_idx,
   SparsityLayout field_sparsity_layout = m_fieldSparsityLayoutVec[field_idx];
 
   if(new_layout == field_data_layout && new_sparsity == field_sparsity_layout)
+  {
     return;
+  }
 
   //sparse/dense conversion
   if(field_sparsity_layout == SparsityLayout::DENSE &&
@@ -1307,7 +1318,9 @@ void MultiMat::convertFieldToSparse(int field_idx)
     convertToSparse_helper<unsigned char>(field_idx);
   }
   else
+  {
     SLIC_ASSERT(false);  //TODO
+  }
 
   m_fieldSparsityLayoutVec[field_idx] = SparsityLayout::SPARSE;
 }
@@ -1350,7 +1363,9 @@ void MultiMat::convertFieldToDense(int field_idx)
     convertToDense_helper<unsigned char>(field_idx);
   }
   else
+  {
     SLIC_ASSERT(false);  //TODO
+  }
 
   m_fieldSparsityLayoutVec[field_idx] = SparsityLayout::DENSE;
 }
@@ -1398,7 +1413,10 @@ void MultiMat::convertToSparse_helper(int map_i)
   SLIC_ASSERT(m_fieldBackingVec[map_i]->isOwned());
 
   //Skip if no volume fraction array is set-up
-  if(map_i == 0 && m_fieldBackingVec[0] == nullptr) return;
+  if(map_i == 0 && m_fieldBackingVec[0] == nullptr)
+  {
+    return;
+  }
 
   const RelationSetType* rel_set = &relSparseSet(m_fieldDataLayoutVec[map_i]);
 
@@ -1458,7 +1476,10 @@ void MultiMat::convertToDense_helper(int map_i)
   SLIC_ASSERT(m_fieldBackingVec[map_i]->isOwned());
 
   //Skip if no volume fraction array is set-up
-  if(map_i == 0 && m_fieldBackingVec[0] == nullptr) return;
+  if(map_i == 0 && m_fieldBackingVec[0] == nullptr)
+  {
+    return;
+  }
 
   ProductSetType* prod_set = &relDenseSet(m_fieldDataLayoutVec[map_i]);
 
@@ -1579,7 +1600,10 @@ void MultiMat::transposeField_helper(int field_idx)
   SLIC_ASSERT(m_fieldMappingVec[field_idx] == FieldMapping::PER_CELL_MAT);
 
   //Skip if no volume fraction array is set-up
-  if(field_idx == 0 && m_fieldBackingVec[0] == nullptr) return;
+  if(field_idx == 0 && m_fieldBackingVec[0] == nullptr)
+  {
+    return;
+  }
 
   DataLayout oldDataLayout = getFieldDataLayout(field_idx);
   DataLayout new_layout;
@@ -1672,7 +1696,10 @@ void MultiMat::transposeField_helper(int field_idx)
 
 void MultiMat::transposeField(int field_idx)
 {
-  if(m_fieldMappingVec[field_idx] != FieldMapping::PER_CELL_MAT) return;
+  if(m_fieldMappingVec[field_idx] != FieldMapping::PER_CELL_MAT)
+  {
+    return;
+  }
 
   switch(m_dataTypeVec[field_idx])
   {
@@ -1714,22 +1741,34 @@ void MultiMat::convertFieldToCellDom(int field_idx)
 std::string MultiMat::getFieldDataLayoutAsString(int field_i) const
 {
   if(m_fieldDataLayoutVec[field_i] == DataLayout::CELL_DOM)
+  {
     return "Cell-Centric";
+  }
   else if(m_fieldDataLayoutVec[field_i] == DataLayout::MAT_DOM)
+  {
     return "Material-Centric";
+  }
   else
+  {
     SLIC_ASSERT(false);
+  }
   return "";
 }
 
 std::string MultiMat::getFieldSparsityLayoutAsString(int field_i) const
 {
   if(m_fieldSparsityLayoutVec[field_i] == SparsityLayout::SPARSE)
+  {
     return "Sparse";
+  }
   else if(m_fieldSparsityLayoutVec[field_i] == SparsityLayout::DENSE)
+  {
     return "Dense";
+  }
   else
+  {
     SLIC_ASSERT(false);
+  }
   return "";
 }
 
@@ -1831,9 +1870,13 @@ bool MultiMat::isValid(bool verboseOutput) const
         for(int j = 0; j < submap.size(); ++j)
         {
           if(volfrac_layout == DataLayout::CELL_DOM)
+          {
             volfrac_sum[i] += submap.value(j);
+          }
           else
+          {
             volfrac_sum[submap.index(j)] += submap.value(j);
+          }
         }
       }
       for(unsigned int i = 0; i < volfrac_sum.size(); ++i)

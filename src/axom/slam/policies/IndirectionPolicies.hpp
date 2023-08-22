@@ -178,7 +178,10 @@ bool IndexedIndirection<BasePolicy>::isValid(PositionType size,
   AXOM_UNUSED_VAR(verboseOutput);
 
   // always valid if set has zero size, even if indirection buffer is null
-  if(size == 0) return true;
+  if(size == 0)
+  {
+    return true;
+  }
 
   bool bValid = true;
 

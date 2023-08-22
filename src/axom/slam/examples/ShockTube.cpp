@@ -585,10 +585,14 @@ void dumpData(ShockTubeMesh const& mesh)
   {
     ShockTubeMesh::IndexType ind = begSet[i];
     if(i == 0)
+    {
       elemStream << "IN"
                  << "\t";
+    }
     else
+    {
       elemStream << ind << "\t";
+    }
 
     mStream << mass[ind] << "\t";
     pStream << momentum[ind] << "\t";
@@ -606,10 +610,14 @@ void dumpData(ShockTubeMesh const& mesh)
   {
     ShockTubeMesh::IndexType ind = endSet[i];
     if(ind == endSet.parentSet()->size() - 1)
+    {
       elemStream << "OUT"
                  << "\t";
+    }
     else
+    {
       elemStream << ind << "\t";
+    }
 
     mStream << mass[ind] << "\t";
     pStream << momentum[ind] << "\t";

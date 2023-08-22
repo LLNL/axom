@@ -14,10 +14,12 @@
 #include "axom/config.hpp"
 #include "axom/core.hpp"
 #include "axom/klee.hpp"
+#include "axom/primal.hpp"
 #include "axom/quest.hpp"
 #include "axom/sidre.hpp"
 #include "axom/slic.hpp"
 #include "axom/quest/IntersectionShaper.hpp"
+#include "axom/quest/util/mesh_helpers.hpp"
 
 #ifndef AXOM_USE_MFEM
   #error "Quest's IntersectionShaper tests on mfem meshes require mfem library."
@@ -62,10 +64,14 @@ std::vector<std::string> case3 {"shaping/case3/case3_012.yaml",
 std::vector<std::string> case4 {"shaping/case4/case4.yaml",
                                 "shaping/case4/case4_overwrite.yaml"};
 
-namespace quest = axom::quest;
-namespace slic = axom::slic;
-namespace sidre = axom::sidre;
+std::vector<std::string> proeCase {"shaping/proeCase/proeCase1.yaml",
+                                   "shaping/proeCase/proeCase2.yaml"};
+
 namespace klee = axom::klee;
+namespace primal = axom::primal;
+namespace quest = axom::quest;
+namespace sidre = axom::sidre;
+namespace slic = axom::slic;
 
 std::string pjoin(const std::string &path, const std::string &filename)
 {
@@ -98,9 +104,13 @@ std::string yamlRoot(const std::string &filepath)
   psplit(filepath, path, filename);
   auto idx = filename.rfind(".");
   if(idx != std::string::npos)
+  {
     retval = filename.substr(0, idx);
+  }
   else
+  {
     retval = filename;
+  }
   return retval;
 }
 
@@ -121,20 +131,15 @@ mfem::GridFunction *newGridFunction(mfem::Mesh *mesh)
 
 void makeTestMesh(sidre::MFEMSidreDataCollection &dc, bool initialMats)
 {
-  int polynomialOrder = 1;
-  double lo[] = {0., 0., -0.25};
-  double hi[] = {1., 1., 0.};
-  int celldims[] = {20, 20, 1};
-  auto mesh =
-    new mfem::Mesh(mfem::Mesh::MakeCartesian3D(celldims[0],
-                                               celldims[1],
-                                               celldims[2],
-                                               mfem::Element::HEXAHEDRON,
-                                               hi[0] - lo[0],
-                                               hi[1] - lo[1],
-                                               hi[2] - lo[2],
-                                               false));
-  mesh->SetCurvature(polynomialOrder);
+  const int polynomialOrder = 1;
+  const auto celldims = primal::NumericArray<int, 3> {20, 20, 1};
+  const auto bbox = primal::BoundingBox<double, 3> {{0., 0., 0.}, {1., 1., .25}};
+
+  auto mesh = quest::util::make_cartesian_mfem_mesh_3D(bbox,
+                                                       celldims,
+                                                       polynomialOrder,
+                                                       false);
+
   dc.SetMeshNodesName("positions");
   dc.SetMesh(mesh);
 
@@ -168,7 +173,10 @@ void saveVisIt(const std::string &path,
 {
   // Wrap mesh and grid functions in a VisItDataCollection and save it.
   mfem::VisItDataCollection vdc(filename, dc.GetMesh());
-  if(!path.empty()) vdc.SetPrefixPath(path);
+  if(!path.empty())
+  {
+    vdc.SetPrefixPath(path);
+  }
   vdc.SetOwnData(false);
   vdc.SetFormat(mfem::DataCollection::SERIAL_FORMAT);
   for(auto it : dc.GetFieldMap())
@@ -192,7 +200,9 @@ void loadVisIt(mfem::VisItDataCollection &vdc, sidre::MFEMSidreDataCollection &d
   for(auto it : vdc.GetFieldMap())
   {
     if(it.first.find("vol_frac_") != std::string::npos)
+    {
       dc.RegisterField(it.first, it.second);
+    }
   }
 }
 
@@ -281,7 +291,10 @@ void replacementRuleTest(const std::string &shapeFile,
   // baseline that we can check first. If it is not present, the next baseline
   // is tried.
   std::string baselineName(yamlRoot(shapeFile));
-  if(initialMats) baselineName += "_initial_mats";
+  if(initialMats)
+  {
+    baselineName += "_initial_mats";
+  }
   std::vector<std::string> baselinePaths;
   // Example /path/to/axom/src/quest/tests/baseline/quest_intersection_shaper/cuda
   baselinePaths.push_back(pjoin(baselineDirectory(), policyName));
@@ -485,7 +498,9 @@ void IntersectionWithErrorTolerances(const std::string &filebase,
 
   // Clean up files.
   for(const auto &filename : filenames)
+  {
     axom::utilities::filesystem::removeFile(filename);
+  }
 }
 
 //---------------------------------------------------------------------------
@@ -879,6 +894,41 @@ TEST(IntersectionShaperTest, case4_hip)
 {
   constexpr double tolerance = 1.e-10;
   replacementRuleTestSet(case4, "hip", quest::IntersectionShaper::hip, tolerance);
+}
+  #endif
+#endif
+
+// proeCase
+#if defined(AXOM_USE_RAJA) && defined(AXOM_USE_UMPIRE)
+  #if defined(RUN_AXOM_SEQ_TESTS)
+TEST(IntersectionShaperTest, proeCase_seq)
+{
+  constexpr double tolerance = 1.e-10;
+  replacementRuleTestSet(proeCase, "seq", quest::IntersectionShaper::seq, tolerance);
+}
+  #endif
+  #if defined(AXOM_USE_OPENMP)
+TEST(IntersectionShaperTest, proeCase_omp)
+{
+  constexpr double tolerance = 1.e-10;
+  replacementRuleTestSet(proeCase, "omp", quest::IntersectionShaper::omp, tolerance);
+}
+  #endif
+  #if defined(AXOM_USE_CUDA)
+TEST(IntersectionShaperTest, proeCase_cuda)
+{
+  constexpr double tolerance = 1.e-10;
+  replacementRuleTestSet(proeCase,
+                         "cuda",
+                         quest::IntersectionShaper::cuda,
+                         tolerance);
+}
+  #endif
+  #if defined(AXOM_USE_HIP)
+TEST(IntersectionShaperTest, proeCase_hip)
+{
+  constexpr double tolerance = 1.e-10;
+  replacementRuleTestSet(proeCase, "hip", quest::IntersectionShaper::hip, tolerance);
 }
   #endif
 #endif

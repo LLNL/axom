@@ -530,7 +530,10 @@ void average_density_cell_dom_mm_flatiter(MultiMat& mm)
 
   for(int iter = 0; iter < ITERMAX; ++iter)
   {
-    for(auto& v : Density_average) v = 0.0;
+    for(auto& v : Density_average)
+    {
+      v = 0.0;
+    }
 
     timer.start();
 
@@ -584,7 +587,10 @@ void average_density_cell_dom_mm_iter(MultiMat& mm)
 
   for(int iter = 0; iter < ITERMAX; ++iter)
   {
-    for(auto& v : Density_average) v = 0.0;
+    for(auto& v : Density_average)
+    {
+      v = 0.0;
+    }
 
     timer.start();
 
@@ -637,7 +643,10 @@ double average_density_mat_dom_full(Robey_data& data)
 
   for(int iter = 0; iter < ITERMAX; ++iter)
   {
-    for(auto& v : Density_average) v = 0.0;
+    for(auto& v : Density_average)
+    {
+      v = 0.0;
+    }
 
     timer.start();
 
@@ -689,7 +698,10 @@ double average_density_mat_dom_compact(Robey_data& data)
 
   for(int iter = 0; iter < ITERMAX; ++iter)
   {
-    for(auto& v : Density_average) v = 0.0;
+    for(auto& v : Density_average)
+    {
+      v = 0.0;
+    }
 
     timer.start();
 
@@ -750,7 +762,10 @@ void average_density_mat_dom_mm_direct(MultiMat& mm)
 
   for(int iter = 0; iter < ITERMAX; ++iter)
   {
-    for(auto& v : Density_average) v = 0.0;
+    for(auto& v : Density_average)
+    {
+      v = 0.0;
+    }
 
     timer.start();
 
@@ -814,7 +829,10 @@ void average_density_mat_dom_mm_submap(MultiMat& mm)
 
   for(int iter = 0; iter < ITERMAX; ++iter)
   {
-    for(auto& v : Density_average) v = 0.0;
+    for(auto& v : Density_average)
+    {
+      v = 0.0;
+    }
 
     timer.start();
 
@@ -871,7 +889,10 @@ void average_density_mat_dom_mm_idxarray(MultiMat& mm)
 
   for(int iter = 0; iter < ITERMAX; ++iter)
   {
-    for(auto& v : Density_average) v = 0.0;
+    for(auto& v : Density_average)
+    {
+      v = 0.0;
+    }
 
     timer.start();
 
@@ -926,7 +947,10 @@ void average_density_mat_dom_mm_iter(MultiMat& mm)
 
   for(int iter = 0; iter < ITERMAX; ++iter)
   {
-    for(auto& v : Density_average) v = 0.0;
+    for(auto& v : Density_average)
+    {
+      v = 0.0;
+    }
 
     timer.start();
 
@@ -981,7 +1005,10 @@ void average_density_mat_dom_mm_flatiter(MultiMat& mm)
 
   for(int iter = 0; iter < ITERMAX; ++iter)
   {
-    for(auto& v : Density_average) v = 0.0;
+    for(auto& v : Density_average)
+    {
+      v = 0.0;
+    }
 
     timer.start();
 
@@ -1799,7 +1826,10 @@ void average_density_over_nbr_cell_dom_full(Robey_data& data)
 
   for(int iter = 0; iter < ITERMAX; ++iter)
   {
-    for(auto& v : MatDensity_average) v = 0.0;
+    for(auto& v : MatDensity_average)
+    {
+      v = 0.0;
+    }
 
     timer.start();
 
@@ -1829,9 +1859,13 @@ void average_density_over_nbr_cell_dom_full(Robey_data& data)
             }
           }
           if(nnm > 0)
+          {
             MatDensity_average[ic * nmats + m] = den / nnm;
+          }
           else
+          {
             SLIC_ASSERT(MatDensity_average[ic * nmats + m] == 0.0);
+          }
         }
         else
         {
@@ -1876,7 +1910,10 @@ void average_density_over_nbr_cell_dom_compact(Robey_data& data)
 
   for(int iter = 0; iter < ITERMAX; ++iter)
   {
-    for(auto& v : MatDensity_average) v = 0.0;
+    for(auto& v : MatDensity_average)
+    {
+      v = 0.0;
+    }
 
     timer.start();
 
@@ -1911,9 +1948,13 @@ void average_density_over_nbr_cell_dom_compact(Robey_data& data)
         }
 
         if(nnm > 0)
+        {
           MatDensity_average[ii] = den / nnm;
+        }
         else
+        {
           SLIC_ASSERT(MatDensity_average[ii] == 0.0);
+        }
       }
     }
 
@@ -2155,7 +2196,10 @@ void average_density_over_nbr_cell_dom_full_mm_iter(MultiMat& mm, Robey_data& da
 
   for(int iter = 0; iter < ITERMAX; ++iter)
   {
-    for(auto& v : MatDensity_average) v = 0.0;
+    for(auto& v : MatDensity_average)
+    {
+      v = 0.0;
+    }
 
     timer.start();
 
@@ -2168,7 +2212,10 @@ void average_density_over_nbr_cell_dom_full_mm_iter(MultiMat& mm, Robey_data& da
       int cnbrs[8];
       double dsqr[8];
 
-      for(int n = 0; n < nn; ++n) cnbrs[n] = nbrs[ic * 8 + n];
+      for(int n = 0; n < nn; ++n)
+      {
+        cnbrs[n] = nbrs[ic * 8 + n];
+      }
 
       for(int n = 0; n < nn; ++n)
       {
@@ -2200,9 +2247,13 @@ void average_density_over_nbr_cell_dom_full_mm_iter(MultiMat& mm, Robey_data& da
             }
           }
           if(nnm > 0)
+          {
             MatDensity_average[ic * nmats + m] /= nnm;
+          }
           else
+          {
             SLIC_ASSERT(MatDensity_average[ic * nmats + m] == 0.0);
+          }
         }
         else
         {
@@ -2337,7 +2388,10 @@ void average_density_over_nbr_cell_dom_compact_mm_idxarray(MultiMat& mm,
 
   for(int iter = 0; iter < ITERMAX; ++iter)
   {
-    for(auto& v : MatDensity_average) v = 0.0;
+    for(auto& v : MatDensity_average)
+    {
+      v = 0.0;
+    }
 
     timer.start();
 
@@ -2350,7 +2404,10 @@ void average_density_over_nbr_cell_dom_compact_mm_idxarray(MultiMat& mm,
       int cnbrs[8];
       double dsqr[8];
 
-      for(int n = 0; n < nn; ++n) cnbrs[n] = nbrs[ic * 8 + n];
+      for(int n = 0; n < nn; ++n)
+      {
+        cnbrs[n] = nbrs[ic * 8 + n];
+      }
 
       for(int n = 0; n < nn; ++n)
       {
@@ -2387,9 +2444,13 @@ void average_density_over_nbr_cell_dom_compact_mm_idxarray(MultiMat& mm,
           }
         }
         if(nnm > 0)
+        {
           MatDensity_average[ic * nmats + m] /= nnm;
+        }
         else
+        {
           SLIC_ASSERT(MatDensity_average[ic * nmats + m] == 0.0);
+        }
       }
     }
 
@@ -2434,7 +2495,10 @@ void average_density_over_nbr_cell_dom_compact_mm_iter(MultiMat& mm,
 
   for(int iter = 0; iter < ITERMAX; ++iter)
   {
-    for(auto& v : MatDensity_average) v = 0.0;
+    for(auto& v : MatDensity_average)
+    {
+      v = 0.0;
+    }
 
     timer.start();
 
@@ -2447,7 +2511,10 @@ void average_density_over_nbr_cell_dom_compact_mm_iter(MultiMat& mm,
       int cnbrs[8];
       double dsqr[8];
 
-      for(int n = 0; n < nn; ++n) cnbrs[n] = nbrs[ic * 8 + n];
+      for(int n = 0; n < nn; ++n)
+      {
+        cnbrs[n] = nbrs[ic * 8 + n];
+      }
 
       for(int n = 0; n < nn; ++n)
       {
@@ -2482,9 +2549,13 @@ void average_density_over_nbr_cell_dom_compact_mm_iter(MultiMat& mm,
           }
         }
         if(nnm > 0)
+        {
           MatDensity_average[ic * nmats + m] /= nnm;
+        }
         else
+        {
           SLIC_ASSERT(MatDensity_average[ic * nmats + m] == 0.0);
+        }
       }
     }
 
@@ -2526,7 +2597,10 @@ void average_density_over_nbr_mat_dom_full(Robey_data& data)
 
   for(int iter = 0; iter < ITERMAX; ++iter)
   {
-    for(auto& v : MatDensity_average) v = 0.0;
+    for(auto& v : MatDensity_average)
+    {
+      v = 0.0;
+    }
 
     timer.start();
 
@@ -2556,9 +2630,13 @@ void average_density_over_nbr_mat_dom_full(Robey_data& data)
             }
           }
           if(nnm > 0)
+          {
             MatDensity_average[m * ncells + ic] = den / nnm;
+          }
           else
+          {
             SLIC_ASSERT(MatDensity_average[m * ncells + ic] == 0.0);
+          }
         }
         else
         {
@@ -2604,7 +2682,10 @@ void average_density_over_nbr_mat_dom_compact(Robey_data& data)
 
   for(int iter = 0; iter < ITERMAX; ++iter)
   {
-    for(auto& v : MatDensity_average) v = 0.0;
+    for(auto& v : MatDensity_average)
+    {
+      v = 0.0;
+    }
 
     timer.start();
 
@@ -2637,9 +2718,13 @@ void average_density_over_nbr_mat_dom_compact(Robey_data& data)
           }
         }
         if(nnm > 0)
+        {
           MatDensity_average[ii] = den / nnm;
+        }
         else
+        {
           SLIC_ASSERT(MatDensity_average[ii] == 0.0);
+        }
       }
     }
 
@@ -2690,7 +2775,10 @@ void average_density_over_nbr_mat_dom_full_mm_direct(MultiMat& mm,
 
   for(int iter = 0; iter < ITERMAX; ++iter)
   {
-    for(auto& v : MatDensity_average) v = 0.0;
+    for(auto& v : MatDensity_average)
+    {
+      v = 0.0;
+    }
 
     timer.start();
 
@@ -2706,7 +2794,10 @@ void average_density_over_nbr_mat_dom_full_mm_direct(MultiMat& mm,
           int nn = nnbrs[ic];
           int cnbrs[8];
           double dsqr[8];
-          for(int n = 0; n < nn; ++n) cnbrs[n] = nbrs[ic * 8 + n];
+          for(int n = 0; n < nn; ++n)
+          {
+            cnbrs[n] = nbrs[ic * 8 + n];
+          }
           for(int n = 0; n < nn; ++n)
           {
             dsqr[n] = 0.0;
@@ -2728,9 +2819,13 @@ void average_density_over_nbr_mat_dom_full_mm_direct(MultiMat& mm,
             }
           }
           if(nnm > 0)
+          {
             MatDensity_average[m * ncells + ic] /= nnm;
+          }
           else
+          {
             SLIC_ASSERT(MatDensity_average[m * ncells + ic] == 0.0);
+          }
         }
         else
         {
@@ -2870,7 +2965,10 @@ void average_density_over_nbr_mat_dom_full_mm_iter(MultiMat& mm, Robey_data& dat
 
   for(int iter = 0; iter < ITERMAX; ++iter)
   {
-    for(auto& v : MatDensity_average) v = 0.0;
+    for(auto& v : MatDensity_average)
+    {
+      v = 0.0;
+    }
 
     timer.start();
 
@@ -2891,7 +2989,10 @@ void average_density_over_nbr_mat_dom_full_mm_iter(MultiMat& mm, Robey_data& dat
           int nn = nnbrs[ic];
           int cnbrs[8];
           double dsqr[8];
-          for(int n = 0; n < nn; ++n) cnbrs[n] = nbrs[ic * 8 + n];
+          for(int n = 0; n < nn; ++n)
+          {
+            cnbrs[n] = nbrs[ic * 8 + n];
+          }
           for(int n = 0; n < nn; ++n)
           {
             dsqr[n] = 0.0;
@@ -2916,9 +3017,13 @@ void average_density_over_nbr_mat_dom_full_mm_iter(MultiMat& mm, Robey_data& dat
             }
           }
           if(nnm > 0)
+          {
             MatDensity_average[m * ncells + ic] /= nnm;
+          }
           else
+          {
             SLIC_ASSERT(MatDensity_average[m * ncells + ic] == 0.0);
+          }
         }
         else
         {
@@ -3056,7 +3161,10 @@ void average_density_over_nbr_mat_dom_compact_mm_indexarray(MultiMat& mm,
 
   for(int iter = 0; iter < ITERMAX; ++iter)
   {
-    for(auto& v : MatDensity_average) v = 0.0;
+    for(auto& v : MatDensity_average)
+    {
+      v = 0.0;
+    }
 
     timer.start();
 
@@ -3075,7 +3183,10 @@ void average_density_over_nbr_mat_dom_compact_mm_indexarray(MultiMat& mm,
         int nn = nnbrs[ci];
         int cnbrs[9];
         double dsqr[8];
-        for(int n = 0; n < nn; ++n) cnbrs[n] = nbrs[ci * 8 + n];
+        for(int n = 0; n < nn; ++n)
+        {
+          cnbrs[n] = nbrs[ci * 8 + n];
+        }
         for(int n = 0; n < nn; ++n)
         {
           dsqr[n] = 0.0;
@@ -3099,9 +3210,13 @@ void average_density_over_nbr_mat_dom_compact_mm_indexarray(MultiMat& mm,
           }
         }
         if(nnm > 0)
+        {
           MatDensity_average[m * ncells + ci] /= nnm;
+        }
         else
+        {
           SLIC_ASSERT(MatDensity_average[m * ncells + ci] == 0.0);
+        }
       }
     }
 
@@ -3147,7 +3262,10 @@ void average_density_over_nbr_mat_dom_compact_mm_iter(MultiMat& mm,
 
   for(int iter = 0; iter < ITERMAX; ++iter)
   {
-    for(auto& v : MatDensity_average) v = 0.0;
+    for(auto& v : MatDensity_average)
+    {
+      v = 0.0;
+    }
 
     timer.start();
 
@@ -3166,7 +3284,10 @@ void average_density_over_nbr_mat_dom_compact_mm_iter(MultiMat& mm,
         int nn = nnbrs[ci];
         int cnbrs[9];
         double dsqr[8];
-        for(int n = 0; n < nn; ++n) cnbrs[n] = nbrs[ci * 8 + n];
+        for(int n = 0; n < nn; ++n)
+        {
+          cnbrs[n] = nbrs[ci * 8 + n];
+        }
         for(int n = 0; n < nn; ++n)
         {
           dsqr[n] = 0.0;
@@ -3190,9 +3311,13 @@ void average_density_over_nbr_mat_dom_compact_mm_iter(MultiMat& mm,
           }
         }
         if(nnm > 0)
+        {
           MatDensity_average[m * ncells + ci] /= nnm;
+        }
         else
+        {
           SLIC_ASSERT(MatDensity_average[m * ncells + ci] == 0.0);
+        }
       }
     }
 

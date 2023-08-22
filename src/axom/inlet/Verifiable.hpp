@@ -142,9 +142,6 @@ public:
     : m_verifiables(std::move(verifiables))
   { }
 
-  // Should not be reassignable
-  AggregateVerifiable& operator=(const AggregateVerifiable&) = delete;
-
   AggregateVerifiable& required(bool isRequired = true) override
   {
     for(auto& verifiable : m_verifiables)

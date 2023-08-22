@@ -22,7 +22,6 @@ namespace primal = axom::primal;
 TEST(primal_solid_angle, triangle)
 {
   using Point3D = primal::Point<double, 3>;
-  using Vector3D = primal::Vector<double, 3>;
   using Triangle = primal::Triangle<double, 3>;
 
   Point3D origin {0.0, 0.0, 0.0};
@@ -66,15 +65,19 @@ TEST(primal_solid_angle, triangle)
 
     // Get sign from orientation.
     if(primal::orientation(queries[n], tri) == primal::ON_NEGATIVE_SIDE)
+    {
       // Means query point is interior
       EXPECT_NEAR(0.25 * M_1_PI * solid_angle,
                   winding_number(queries[n], tri),
                   1e-10);
+    }
     else
+    {
       // Means query point is exterior
       EXPECT_NEAR(-0.25 * M_1_PI * solid_angle,
                   winding_number(queries[n], tri),
                   1e-10);
+    }
   }
 
   // Test with simple degenerate triangle
@@ -82,7 +85,9 @@ TEST(primal_solid_angle, triangle)
                Point3D {2.0, 3.0, 4.0},
                Point3D {1.0, 2.0, 3.0});
   for(int n = 0; n < 5; ++n)
+  {
     EXPECT_DOUBLE_EQ(0.0, winding_number(queries[n], deg));
+  }
 
   // Test with nondegenerate triangle, zero winding number
   Point3D coplanar {-1.0, 1.0, 1.0};
@@ -138,10 +143,12 @@ TEST(primal_solid_angle, simple_polygon)
   };
 
   for(int n = 0; n < 5; ++n)
+  {
     EXPECT_NEAR(winding_number(queries[n], square),
                 winding_number(queries[n], square_tri1) +
                   winding_number(queries[n], square_tri2),
                 1e-10);
+  }
 
   // Test on coplanar points
   Point3D troubled_queries[5] = {
@@ -153,7 +160,9 @@ TEST(primal_solid_angle, simple_polygon)
   };
 
   for(int n = 0; n < 5; ++n)
+  {
     EXPECT_NEAR(winding_number(troubled_queries[n], square), 0, 1e-10);
+  }
 }
 
 //------------------------------------------------------------------------------
@@ -184,10 +193,12 @@ TEST(primal_solid_angle, nonconvex_polygon)
   };
 
   for(int n = 0; n < 5; ++n)
+  {
     EXPECT_NEAR(winding_number(queries[n], pentagon),
                 winding_number(queries[n], pentagon_tri1) +
                   winding_number(queries[n], pentagon_tri2),
                 1e-10);
+  }
 
   // Test on coplanar points
   Point3D troubled_queries[5] = {
@@ -199,7 +210,9 @@ TEST(primal_solid_angle, nonconvex_polygon)
   };
 
   for(int n = 0; n < 5; ++n)
+  {
     EXPECT_NEAR(winding_number(troubled_queries[n], pentagon), 0, 1e-10);
+  }
 }
 
 //------------------------------------------------------------------------------
@@ -207,7 +220,6 @@ TEST(primal_solid_angle, degenerate_polygon)
 {
   using Point3D = primal::Point<double, 3>;
   using Vector3D = primal::Vector<double, 3>;
-  using Triangle = primal::Triangle<double, 3>;
   using Polygon = primal::Polygon<double, 3>;
 
   Vector3D v1 = Vector3D({0.0, 1.0, 2.0}).unitVector();
@@ -221,10 +233,12 @@ TEST(primal_solid_angle, degenerate_polygon)
 
   // Add vertices to good polygon
   for(int i = 0; i < 5; ++i)
+  {
     good_pentagon.addVertex(
       Point3D {cos(good_angles[i]) * v1[0] + sin(good_angles[i]) * v2[0],
                cos(good_angles[i]) * v1[1] + sin(good_angles[i]) * v2[1],
                cos(good_angles[i]) * v1[2] + sin(good_angles[i]) * v2[2]});
+  }
 
   // Create bad polygon with degeneracies
   // Add point at angle 0
@@ -240,10 +254,12 @@ TEST(primal_solid_angle, degenerate_polygon)
              cos(bad_angles[1]) * v1[2] + sin(bad_angles[1]) * v2[2]}));
   // Add the rest of the vertices
   for(int i = 1; i < 9; ++i)
+  {
     bad_pentagon.addVertex(
       Point3D {cos(bad_angles[i]) * v1[0] + sin(bad_angles[i]) * v2[0],
                cos(bad_angles[i]) * v1[1] + sin(bad_angles[i]) * v2[1],
                cos(bad_angles[i]) * v1[2] + sin(bad_angles[i]) * v2[2]});
+  }
 
   Point3D queries[5] = {
     Point3D {0.0, 4.0, 1.0},
@@ -255,9 +271,11 @@ TEST(primal_solid_angle, degenerate_polygon)
 
   EXPECT_NEAR(good_pentagon.area(), bad_pentagon.area(), 1e-10);
   for(int n = 0; n < 5; ++n)
+  {
     EXPECT_NEAR(winding_number(queries[n], good_pentagon),
                 winding_number(queries[n], bad_pentagon),
                 1e-10);
+  }
 
   // Test with duplicate point at endpoint
   axom::Array<Point3D> good_square_vertices({Point3D {1.0, 0.0, 0.0},
@@ -272,9 +290,11 @@ TEST(primal_solid_angle, degenerate_polygon)
                                             Point3D {0.0, 0.0, 0.0}});
 
   for(int n = 0; n < 5; ++n)
+  {
     EXPECT_NEAR(winding_number(queries[n], Polygon(good_square_vertices)),
                 winding_number(queries[n], Polygon(bad_square_vertices)),
                 1e-10);
+  }
 }
 
 //------------------------------------------------------------------------------
@@ -282,7 +302,6 @@ TEST(primal_solid_angle, selfintersecting_star)
 {
   using Point3D = primal::Point<double, 3>;
   using Vector3D = primal::Vector<double, 3>;
-  using Triangle = primal::Triangle<double, 3>;
   using Polygon = primal::Polygon<double, 3>;
 
   Point3D single_query {1, 2, 3};
@@ -308,17 +327,21 @@ TEST(primal_solid_angle, selfintersecting_star)
 
   // Add vertices to pentagram
   for(int i = 0; i < 5; ++i)
+  {
     pentagram.addVertex(
       Point3D {cos(outer_angles[i]) * v1[0] + sin(outer_angles[i]) * v2[0],
                cos(outer_angles[i]) * v1[1] + sin(outer_angles[i]) * v2[1],
                cos(outer_angles[i]) * v1[2] + sin(outer_angles[i]) * v2[2]});
+  }
 
   // Construct the inner pentagon
   for(int i = 0; i < 5; ++i)
+  {
     pentagon.addVertex(Point3D {
       r0 * cos(inner_angles[i]) * v1[0] + r0 * sin(inner_angles[i]) * v2[0],
       r0 * cos(inner_angles[i]) * v1[1] + r0 * sin(inner_angles[i]) * v2[1],
       r0 * cos(inner_angles[i]) * v1[2] + r0 * sin(inner_angles[i]) * v2[2]});
+  }
 
   // Construct the stars of the pentagram
   Polygon star_tips[5];
@@ -348,18 +371,24 @@ TEST(primal_solid_angle, selfintersecting_star)
   double star_components = 0;
   star_components += winding_number(single_query, pentagon);
   for(int i = 0; i < 5; ++i)
+  {
     star_components += winding_number(single_query, star_tips[i]);
+  }
 
   // Triangulate the pentagram directly
   Polygon pentagram_tris[5 - 2];
   for(int i = 0; i < 5 - 2; ++i)
+  {
     pentagram_tris[i] = Polygon(
       axom::Array<Point3D>({pentagram[0], pentagram[i + 1], pentagram[i + 2]}));
+  }
 
   // Add up components of the pentagram triangulation
   double pentagram_triangulation = 0;
   for(int i = 0; i < 5 - 2; ++i)
+  {
     pentagram_triangulation += winding_number(single_query, pentagram_tris[i]);
+  }
 
   for(int n = 0; n < 5; ++n)
   {
@@ -383,7 +412,6 @@ TEST(primal_solid_angle, selfintersecting_star)
 TEST(primal_solid_angle, selfintersecting_quadrilateral)
 {
   using Point3D = primal::Point<double, 3>;
-  using Vector3D = primal::Vector<double, 3>;
   using Triangle = primal::Triangle<double, 3>;
   using Polygon = primal::Polygon<double, 3>;
 
@@ -418,9 +446,11 @@ TEST(primal_solid_angle, selfintersecting_quadrilateral)
 
   // Area of overlapping square should be twice that of nonoverlapping
   for(int n = 0; n < 5; ++n)
+  {
     EXPECT_NEAR(2 * winding_number(queries[n], square),
                 winding_number(queries[n], squareish),
                 1e-10);
+  }
 
   // Test on non-uniformly oriented hourglass shape
   axom::Array<Point3D> hourglass_vertices({
@@ -440,10 +470,239 @@ TEST(primal_solid_angle, selfintersecting_quadrilateral)
 
   // Area of overlapping square should be twice that of nonoverlapping
   for(int n = 0; n < 5; ++n)
+  {
     EXPECT_NEAR(winding_number(queries[n], top_bulb) +
                   winding_number(queries[n], bot_bulb),
                 winding_number(queries[n], hourglass),
                 1e-10);
+  }
+}
+
+//------------------------------------------------------------------------------
+TEST(primal_solid_angle, planar_bezierpatch)
+{
+  using Point3D = primal::Point<double, 3>;
+  using Vector3D = primal::Vector<double, 3>;
+  using Polygon = primal::Polygon<double, 3>;
+  using BezierPatch = primal::BezierPatch<double>;
+
+  // Define normal vector for the quadrilateral
+  Vector3D v1 = Vector3D({0.0, 1.0, 2.0}).unitVector();
+  Vector3D v2 = Vector3D({2.0, -1.0, 0.5}).unitVector();
+  Vector3D v3 = Vector3D::cross_product(v1, v2);
+
+  Polygon quad(4);
+
+  double angles[5] = {1.0, 1.5, 2.5, 3.0};
+  // Add vertices to quadrilateral
+  for(int i = 0; i < 4; ++i)
+  {
+    quad.addVertex(Point3D {cos(angles[i]) * v1[0] + sin(angles[i]) * v2[0],
+                            cos(angles[i]) * v1[1] + sin(angles[i]) * v2[1],
+                            cos(angles[i]) * v1[2] + sin(angles[i]) * v2[2]});
+  }
+
+  // Construct a first order Bezier patch out of the same vertices
+  Point3D controlPoints[4] = {quad[1], quad[0], quad[2], quad[3]};
+  BezierPatch quad_patch(controlPoints, 1, 1);
+
+  Point3D queries[8] = {Point3D {0.0, 4.0, 1.0},
+                        Point3D {-1.0, 2.0, 2.0},
+                        Point3D {0.0, -5.0, 3.0},
+                        Point3D {0.0, 0.0, 4.0},
+                        Point3D {3.0, 2.0, 5.0},
+                        Point3D((v3 + 0.1 * v1 + 0.1 * v2).array()),
+                        Point3D((-v3 + 0.1 * v1 + 0.1 * v2).array()),
+                        Point3D((10.0 * v1 + 10.0 * v2).array())};
+
+  // Should be equal with both kinds of primitive
+  for(int n = 0; n < 8; ++n)
+  {
+    EXPECT_NEAR(winding_number(queries[n], quad),
+                winding_number(queries[n], quad_patch),
+                1e-10);
+  }
+
+  // The winding numbers computed should be the same even if
+  //  we use quadrature instead of resorting to the direct formula.
+  // Ensure this by shrinking our tolerances.
+  const double quad_tol = 1e-10;
+  const double edge_tol = 1e-10;
+  const double EPS = 0;
+  for(int n = 0; n < 8; ++n)
+  {
+    EXPECT_NEAR(winding_number(queries[n], quad_patch),
+                winding_number(queries[n], quad_patch, quad_tol, edge_tol, EPS),
+                1e-10);
+  }
+}
+
+//------------------------------------------------------------------------------
+TEST(primal_integral, bezierpatch_sphere)
+{
+  using Point3D = primal::Point<double, 3>;
+  using Vector3D = primal::Vector<double, 3>;
+  using BPatch = primal::BezierPatch<double>;
+
+  double rt2 = sqrt(2), rt3 = sqrt(3), rt6 = sqrt(6);
+
+  // Define the nodes and weights for one of six rational, biquartic Bezier patches
+  //  that compose the unit sphere. These will be rotated to form the other 5.
+  // Nodes and weights obtained from the technical report
+  // "Tiling the Sphere with Rational Bezier Patches",
+  //  James E. Cobb, University of Utah, 1988
+
+  // clang-format off
+  axom::Array<Point3D> node_data = {
+    Point3D {4*(1-rt3),     4*(1-rt3),     4*(1-rt3)}, Point3D {rt2*(rt3-4),            -rt2, rt2*(rt3-4)}, Point3D {4*(1-2*rt3)/3,   0, 4*(1-2*rt3)/3}, Point3D {rt2*(rt3-4),           rt2,   rt2*(rt3-4)}, Point3D {4*(1-rt3),     4*(rt3-1),     4*(1-rt3)},
+    Point3D {     -rt2, rt2*(rt3 - 4), rt2*(rt3 - 4)}, Point3D {(2-3*rt3)/2,     (2-3*rt3)/2,  -(rt3+6)/2}, Point3D {rt2*(2*rt3-7)/3, 0,      -5*rt6/3}, Point3D {(2-3*rt3)/2,   (3*rt3-2)/2,    -(rt3+6)/2}, Point3D {     -rt2,   rt2*(4-rt3),   rt2*(rt3-4)},
+    Point3D {        0, 4*(1-2*rt3)/3, 4*(1-2*rt3)/3}, Point3D {          0, rt2*(2*rt3-7)/3,    -5*rt6/3}, Point3D {0,               0,   4*(rt3-5)/3}, Point3D {          0, rt2*(7-2*rt3)/3,    -5*rt6/3}, Point3D {        0, 4*(2*rt3-1)/3, 4*(1-2*rt3)/3},
+    Point3D {      rt2, rt2*(rt3 - 4), rt2*(rt3 - 4)}, Point3D {(3*rt3-2)/2,     (2-3*rt3)/2,  -(rt3+6)/2}, Point3D {rt2*(7-2*rt3)/3, 0,      -5*rt6/3}, Point3D {(3*rt3-2)/2,   (3*rt3-2)/2,    -(rt3+6)/2}, Point3D {      rt2,   rt2*(4-rt3),   rt2*(rt3-4)},
+    Point3D {4*(rt3-1),     4*(1-rt3),     4*(1-rt3)}, Point3D {rt2*(4-rt3),            -rt2, rt2*(rt3-4)}, Point3D {4*(2*rt3-1)/3,   0, 4*(1-2*rt3)/3}, Point3D {rt2*(4-rt3),           rt2,   rt2*(rt3-4)}, Point3D {4*(rt3-1),     4*(rt3-1),     4*(1-rt3)}};
+
+  axom::Array<double> weight_data = {
+         4*(3-rt3), rt2*(3*rt3-2),   4*(5-rt3)/3, rt2*(3*rt3-2),     4*(3-rt3),
+     rt2*(3*rt3-2),     (rt3+6)/2, rt2*(rt3+6)/3,     (rt3+6)/2, rt2*(3*rt3-2),
+       4*(5-rt3)/3, rt2*(rt3+6)/3, 4*(5*rt3-1)/9, rt2*(rt3+6)/3,   4*(5-rt3)/3,
+     rt2*(3*rt3-2),     (rt3+6)/2, rt2*(rt3+6)/3,     (rt3+6)/2, rt2*(3*rt3-2),
+         4*(3-rt3), rt2*(3*rt3-2),   4*(5-rt3)/3, rt2*(3*rt3-2),     4*(3-rt3)};
+  // clang-format on
+
+  BPatch sphere_faces[6];
+  for(int n = 0; n < 6; ++n)
+  {
+    sphere_faces[n].setOrder(4, 4);
+    sphere_faces[n].makeRational();
+  }
+
+  sphere_faces[0].setOrder(4, 4);
+  for(int i = 0; i < 5; ++i)
+  {
+    for(int j = 0; j < 5; ++j)
+    {
+      const int idx = 5 * i + j;
+      for(int n = 0; n < 6; ++n)
+        sphere_faces[n].setWeight(i, j, weight_data[idx]);
+
+      // Set up each face by rotating one of the patch faces
+      sphere_faces[0](i, j)[0] = node_data[idx][1];
+      sphere_faces[0](i, j)[1] = node_data[idx][0];
+      sphere_faces[0](i, j)[2] = node_data[idx][2];
+      sphere_faces[0](i, j).array() /= weight_data[idx];
+
+      sphere_faces[1](i, j)[0] = -node_data[idx][0];
+      sphere_faces[1](i, j)[1] = -node_data[idx][1];
+      sphere_faces[1](i, j)[2] = -node_data[idx][2];
+      sphere_faces[1](i, j).array() /= weight_data[idx];
+
+      sphere_faces[2](i, j)[0] = node_data[idx][2];
+      sphere_faces[2](i, j)[1] = node_data[idx][1];
+      sphere_faces[2](i, j)[2] = node_data[idx][0];
+      sphere_faces[2](i, j).array() /= weight_data[idx];
+
+      sphere_faces[3](i, j)[0] = -node_data[idx][1];
+      sphere_faces[3](i, j)[1] = -node_data[idx][2];
+      sphere_faces[3](i, j)[2] = -node_data[idx][0];
+      sphere_faces[3](i, j).array() /= weight_data[idx];
+
+      sphere_faces[4](i, j)[0] = node_data[idx][0];
+      sphere_faces[4](i, j)[1] = node_data[idx][2];
+      sphere_faces[4](i, j)[2] = node_data[idx][1];
+      sphere_faces[4](i, j).array() /= weight_data[idx];
+
+      sphere_faces[5](i, j)[0] = -node_data[idx][2];
+      sphere_faces[5](i, j)[1] = -node_data[idx][0];
+      sphere_faces[5](i, j)[2] = -node_data[idx][1];
+      sphere_faces[5](i, j).array() /= weight_data[idx];
+    }
+  }
+
+  // Iterate over points of interest, i.e. axis/edge/vertex aligned
+  Vector3D query_directions[12] = {Vector3D({0.0, 0.0, 1.0}).unitVector(),
+                                   Vector3D({0.0, 1.0, 0.0}).unitVector(),
+                                   Vector3D({1.0, 0.0, 0.0}).unitVector(),
+                                   Vector3D({0.0, 1.0, 1.0}).unitVector(),
+                                   Vector3D({1.0, 0.0, 1.0}).unitVector(),
+                                   Vector3D({1.0, 1.0, 0.0}).unitVector(),
+                                   Vector3D({1.0, 1.0, 1.0}).unitVector(),
+                                   Vector3D({0.0, 0.1, 1.0}).unitVector(),
+                                   Vector3D({0.1, 1.0, 0.0}).unitVector(),
+                                   Vector3D({1.0, 0.0, 0.1}).unitVector(),
+                                   Vector3D(sphere_faces[0].evaluate(0, 0.6)),
+                                   Vector3D(sphere_faces[0].evaluate(0.6, 0))};
+
+  const double quad_tol = 1e-5;
+  const double EPS = 1e-10;
+
+  const double edge_tol = 1e-6;
+  const double edge_offset = 1e-5;
+
+  // Test some easy cases
+  auto origin = Point3D({0.0, 0.0, 0.0});
+  auto near_origin = Point3D({0.1, -0.2, 0.15});
+
+  double origin_wn = 0.0, near_origin_wn = 0.0;
+  for(int k = 0; k < 6; ++k)
+  {
+    origin_wn += winding_number(origin, sphere_faces[k], edge_tol, quad_tol, EPS);
+    near_origin_wn +=
+      winding_number(near_origin, sphere_faces[k], edge_tol, quad_tol, EPS);
+  }
+  EXPECT_NEAR(origin_wn, 1.0, 6 * quad_tol);
+  EXPECT_NEAR(near_origin_wn, 1.0, 6 * quad_tol);
+
+  for(int i = 0; i < 12; ++i)
+  {
+    // Pick point close to the surface
+    auto far_query = Point3D(10 * query_directions[i].array());
+
+    double far_wn = 0.0;
+    for(int k = 0; k < 6; ++k)
+    {
+      far_wn +=
+        winding_number(far_query, sphere_faces[k], edge_tol, quad_tol, EPS);
+    }
+    EXPECT_NEAR(far_wn, 0.0, 6 * quad_tol);
+  }
+
+  // Iterate over difficult query directions for very close points
+  for(int i = 0; i < 12; ++i)
+  {
+    // Pick point close to the surface
+    auto inner_query = Point3D((1.0 - edge_offset) * query_directions[i].array());
+    auto outer_query = Point3D((1.0 + edge_offset) * query_directions[i].array());
+
+    // Iterate over the patches that compose the sphere
+    double inner_wn = 0;
+    for(int k = 0; k < 6; ++k)
+    {
+      inner_wn +=
+        winding_number(inner_query, sphere_faces[k], edge_tol, quad_tol, EPS);
+    }
+    EXPECT_NEAR(inner_wn, 1.0, 6 * quad_tol);
+
+    // Iterate over the patches that compose the sphere
+    double outer_wn = 0;
+    for(int k = 0; k < 6; ++k)
+    {
+      outer_wn +=
+        winding_number(outer_query, sphere_faces[k], edge_tol, quad_tol, EPS);
+    }
+    EXPECT_NEAR(outer_wn, 0.0, 6 * quad_tol);
+
+    // Pick a point on the surface too.
+    //  Regardless of what tolerances are picked, the winding number
+    //  should lie between the values on either side when rounded
+    auto coincident_query = Point3D(query_directions[i].array());
+    double coincident_wn = 0.0;
+    for(int k = 0; k < 6; ++k)
+    {
+      coincident_wn +=
+        winding_number(coincident_query, sphere_faces[k], edge_tol, quad_tol, EPS);
+    }
+    EXPECT_LT(coincident_wn, 1.5);
+    EXPECT_LT(-0.5, coincident_wn);
+  }
 }
 
 int main(int argc, char** argv)

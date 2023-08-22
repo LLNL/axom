@@ -89,7 +89,6 @@ inline double evaluate_vector_line_integral_component(
     full_quadrature +=
       quad.IntPoint(q).weight * Vector<T, NDIMS>::dot_product(func_val, dx_q);
   }
-
   return full_quadrature;
 }
 

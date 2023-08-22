@@ -6,6 +6,9 @@
 #include "axom/primal.hpp"
 #include "axom/slic.hpp"
 #include "axom/fmt.hpp"
+#include "axom/primal/operators/evaluate_integral.hpp"
+#include "axom/primal/operators/winding_number.hpp"
+#include <iostream>
 
 #include "gtest/gtest.h"
 
@@ -14,7 +17,7 @@ namespace primal = axom::primal;
 TEST(primal_integral, evaluate_area_integral)
 {
   using Point2D = primal::Point<double, 2>;
-  using Bezier = primal::BezierCurve<double, 2>;
+  using BCurve = primal::BezierCurve<double, 2>;
   using CPolygon = primal::CurvedPolygon<double, 2>;
   double abs_tol = 1e-10;
 
@@ -30,15 +33,15 @@ TEST(primal_integral, evaluate_area_integral)
 
   // Test on triangular domain
   Point2D trinodes1[] = {Point2D {0.0, 0.0}, Point2D {1.0, 0.0}};
-  Bezier tri1(trinodes1, 1);
+  BCurve tri1(trinodes1, 1);
 
   Point2D trinodes2[] = {Point2D {1.0, 0.0}, Point2D {0.0, 1.0}};
-  Bezier tri2(trinodes2, 1);
+  BCurve tri2(trinodes2, 1);
 
   Point2D trinodes3[] = {Point2D {0.0, 1.0}, Point2D {0.0, 0.0}};
-  Bezier tri3(trinodes3, 1);
+  BCurve tri3(trinodes3, 1);
 
-  Bezier triangle_edges[] = {tri1, tri2, tri3};
+  BCurve triangle_edges[] = {tri1, tri2, tri3};
   CPolygon triangle(triangle_edges, 3);
 
   // Compare against hand computed/high-precision calculated values
@@ -56,14 +59,14 @@ TEST(primal_integral, evaluate_area_integral)
   Point2D paranodes1[] = {Point2D {2.0, 0.0},
                           Point2D {1.0, 2.0},
                           Point2D {0.0, 0.0}};
-  Bezier para1(paranodes1, 2);
+  BCurve para1(paranodes1, 2);
 
   Point2D paranodes2[] = {Point2D {0.0, 0.0},
                           Point2D {1.0, -2.0},
                           Point2D {2.0, 0.0}};
-  Bezier para2(paranodes2, 2);
+  BCurve para2(paranodes2, 2);
 
-  Bezier parabola_edges[] = {para1, para2};
+  BCurve parabola_edges[] = {para1, para2};
   CPolygon parabola_shape(parabola_edges, 2);
 
   // Compare against hand computed/high-precision calculated values
@@ -78,8 +81,8 @@ TEST(primal_integral, evaluate_area_integral)
               abs_tol);
 
   // Ensure compatibility with curved polygons
-  Bezier pedges[2] = {para1, para2};
-  primal::CurvedPolygon<double, 2> parabola_polygon(pedges, 2);
+  BCurve pedges[2] = {para1, para2};
+  CPolygon parabola_polygon(pedges, 2);
   EXPECT_NEAR(evaluate_area_integral(parabola_polygon, const_integrand, npts),
               8.0 / 3.0,
               abs_tol);
@@ -89,12 +92,30 @@ TEST(primal_integral, evaluate_area_integral)
   EXPECT_NEAR(evaluate_area_integral(parabola_polygon, transc_integrand, npts),
               0.0,
               abs_tol);
+
+  // Test on a unit square
+  Point2D squarenodes1[] = {Point2D {0.0, 0.0}, Point2D {1.0, 0.0}};
+  BCurve square1(squarenodes1, 1);
+
+  Point2D squarenodes2[] = {Point2D {1.0, 0.0}, Point2D {1.0, 1.0}};
+  BCurve square2(squarenodes2, 1);
+
+  Point2D squarenodes3[] = {Point2D {1.0, 1.0}, Point2D {0.0, 1.0}};
+  BCurve square3(squarenodes3, 1);
+
+  Point2D squarenodes4[] = {Point2D {0.0, 1.0}, Point2D {0.0, 0.0}};
+  BCurve square4(squarenodes4, 1);
+
+  BCurve square_edges[] = {square1, square2, square3, square4};
+  CPolygon square(square_edges, 4);
+
+  EXPECT_NEAR(evaluate_area_integral(square, const_integrand, npts), 1.0, abs_tol);
 }
 
 TEST(primal_integral, evaluate_line_integral_scalar)
 {
   using Point2D = primal::Point<double, 2>;
-  using Bezier = primal::BezierCurve<double, 2>;
+  using BCurve = primal::BezierCurve<double, 2>;
   using CPolygon = primal::CurvedPolygon<double, 2>;
   double abs_tol = 1e-10;
 
@@ -112,7 +133,7 @@ TEST(primal_integral, evaluate_line_integral_scalar)
   Point2D paranodes[] = {Point2D {-1.0, 1.0},
                          Point2D {0.5, -2.0},
                          Point2D {2.0, 4.0}};
-  Bezier parabola_segment(paranodes, 2);
+  BCurve parabola_segment(paranodes, 2);
 
   // Compare against hand computed/high-precision calculated values.
 
@@ -136,17 +157,17 @@ TEST(primal_integral, evaluate_line_integral_scalar)
                          Point2D {-1.0 / 3.0, 1.0},
                          Point2D {1.0 / 3.0, -1.0},
                          Point2D {1.0, 1.0}};
-  Bezier cubic_segment(segnodes1, 3);
+  BCurve cubic_segment(segnodes1, 3);
 
   Point2D segnodes2[] = {Point2D {1.0, 1.0}, Point2D {-1.0, 0.0}};
-  Bezier linear_segment(segnodes2, 1);
+  BCurve linear_segment(segnodes2, 1);
 
   Point2D segnodes3[] = {Point2D {-1.0, 0.0},
                          Point2D {-3.0, 1.0},
                          Point2D {-1.0, 2.0}};
-  Bezier quadratic_segment(segnodes3, 2);
+  BCurve quadratic_segment(segnodes3, 2);
 
-  Bezier connected_curve_edges[] = {cubic_segment,
+  BCurve connected_curve_edges[] = {cubic_segment,
                                     linear_segment,
                                     quadratic_segment};
   CPolygon connected_curve(connected_curve_edges, 3);
@@ -165,7 +186,7 @@ TEST(primal_integral, evaluate_line_integral_scalar)
     abs_tol);
 
   // Test algorithm on disconnected curves
-  Bezier disconnected_curve_edges[] = {cubic_segment, quadratic_segment};
+  BCurve disconnected_curve_edges[] = {cubic_segment, quadratic_segment};
   CPolygon disconnected_curve(disconnected_curve_edges, 2);
 
   EXPECT_NEAR(
@@ -186,7 +207,7 @@ TEST(primal_integral, evaluate_line_integral_vector)
 {
   using Point2D = primal::Point<double, 2>;
   using Vector2D = primal::Vector<double, 2>;
-  using Bezier = primal::BezierCurve<double, 2>;
+  using BCurve = primal::BezierCurve<double, 2>;
   using CPolygon = primal::CurvedPolygon<double, 2>;
   double abs_tol = 1e-10;
 
@@ -199,7 +220,7 @@ TEST(primal_integral, evaluate_line_integral_vector)
   };
 
   Point2D segnodes[] = {Point2D {3.0, 7.0}, Point2D {0.0, 12.0}};
-  Bezier linear_segment(segnodes, 1);
+  BCurve linear_segment(segnodes, 1);
 
   // Compare against hand computed values
   EXPECT_NEAR(evaluate_vector_line_integral(linear_segment, vec_field, npts),
@@ -221,14 +242,14 @@ TEST(primal_integral, evaluate_line_integral_vector)
   Point2D paranodes1[] = {Point2D {1.0, 0.0},
                           Point2D {0.0, 2.0},
                           Point2D {-1.0, 0.0}};
-  Bezier para1(paranodes1, 2);
+  BCurve para1(paranodes1, 2);
 
   Point2D paranodes2[] = {Point2D {-1.0, 0.0},
                           Point2D {0.0, -2.0},
                           Point2D {1.0, 0.0}};
-  Bezier para2(paranodes2, 2);
+  BCurve para2(paranodes2, 2);
 
-  Bezier parabola_shape_edges[] = {para1, para2};
+  BCurve parabola_shape_edges[] = {para1, para2};
   CPolygon parabola_shape(parabola_shape_edges, 2);
 
   // This vector field calculates the area of the region
@@ -251,9 +272,9 @@ TEST(primal_integral, evaluate_line_integral_vector)
   Point2D paranodes2_shifted[] = {Point2D {-1.0, -1.0},
                                   Point2D {0.0, -3.0},
                                   Point2D {1.0, -1.0}};
-  Bezier para2_shift(paranodes2_shifted, 2);
+  BCurve para2_shift(paranodes2_shifted, 2);
 
-  Bezier disconnected_parabola_edges[] = {para1, para2_shift};
+  BCurve disconnected_parabola_edges[] = {para1, para2_shift};
   CPolygon disconnected_parabola_shape(disconnected_parabola_edges, 2);
 
   EXPECT_NEAR(
@@ -272,11 +293,11 @@ TEST(primal_integral, evaluate_line_integral_vector)
               abs_tol);
 }
 
-TEST(primal_rationalbezier, evaluate_integral_3D)
+TEST(primal_integral, evaluate_integral_3D)
 {
   using Point3D = primal::Point<double, 3>;
   using Vector3D = primal::Vector<double, 3>;
-  using Bezier = primal::BezierCurve<double, 3>;
+  using BCurve = primal::BezierCurve<double, 3>;
   double abs_tol = 1e-10;
 
   // Quadrature nodes. Should be sufficiently high to pass tests
@@ -287,7 +308,7 @@ TEST(primal_rationalbezier, evaluate_integral_3D)
                              Point3D {1.3, 1.6, 1.8},
                              Point3D {2.9, 2.4, 2.3},
                              Point3D {3.2, 3.5, 3.0}};
-  Bezier spatial_arc(data, 3);
+  BCurve spatial_arc(data, 3);
 
   auto const_integrand = [](Point3D /*x*/) -> double { return 1.0; };
   auto transc_integrand = [](Point3D x) -> double {
@@ -312,11 +333,11 @@ TEST(primal_rationalbezier, evaluate_integral_3D)
               abs_tol);
 }
 
-TEST(primal_rationalbezier, evaluate_integral_rational)
+TEST(primal_integral, evaluate_integral_rational)
 {
   using Point2D = primal::Point<double, 2>;
   using Vector2D = primal::Vector<double, 2>;
-  using Bezier = primal::BezierCurve<double, 2>;
+  using BCurve = primal::BezierCurve<double, 2>;
   using CPolygon = primal::CurvedPolygon<double, 2>;
   double abs_tol = 1e-10;
 
@@ -328,13 +349,13 @@ TEST(primal_rationalbezier, evaluate_integral_rational)
                              Point2D {2.0, 1.0},
                              Point2D {0.0, 1.0}};
   double weights[] = {2.0, 1.0, 1.0};
-  Bezier ellipse_arc(ellipse_nodes, weights, 2);
+  BCurve ellipse_arc(ellipse_nodes, weights, 2);
 
   Point2D leg1_nodes[] = {Point2D {0.0, 1.0}, {0.0, 0.0}};
-  Bezier leg1(leg1_nodes, 1);
+  BCurve leg1(leg1_nodes, 1);
 
   Point2D leg2_nodes[] = {Point2D {0.0, 0.0}, {2.0, 0.0}};
-  Bezier leg2(leg2_nodes, 1);
+  BCurve leg2(leg2_nodes, 1);
 
   CPolygon quarter_ellipse;
   quarter_ellipse.addEdge(ellipse_arc);

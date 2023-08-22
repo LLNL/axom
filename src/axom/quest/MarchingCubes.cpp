@@ -15,11 +15,11 @@ namespace quest
 {
 MarchingCubes::MarchingCubes(RuntimePolicy runtimePolicy,
                              const conduit::Node& bpMesh,
-                             const std::string& coordsetName,
+                             const std::string& topologyName,
                              const std::string& maskField)
   : m_runtimePolicy(runtimePolicy)
   , m_singles()
-  , m_coordsetPath("coordsets/" + coordsetName)
+  , m_topologyName(topologyName)
   , m_fcnPath()
   , m_maskPath(maskField.empty() ? std::string() : "fields/" + maskField)
 {
@@ -31,8 +31,10 @@ MarchingCubes::MarchingCubes(RuntimePolicy runtimePolicy,
   m_singles.reserve(conduit::blueprint::mesh::number_of_domains(bpMesh));
   for(auto& dom : bpMesh.children())
   {
-    m_singles.emplace_back(
-      new MarchingCubesSingleDomain(m_runtimePolicy, dom, coordsetName, maskField));
+    m_singles.emplace_back(new MarchingCubesSingleDomain(m_runtimePolicy,
+                                                         dom,
+                                                         m_topologyName,
+                                                         maskField));
   }
 }
 
@@ -131,12 +133,12 @@ void MarchingCubes::populateContourMesh(
 
 MarchingCubesSingleDomain::MarchingCubesSingleDomain(RuntimePolicy runtimePolicy,
                                                      const conduit::Node& dom,
-                                                     const std::string& coordsetName,
+                                                     const std::string& topologyName,
                                                      const std::string& maskField)
   : m_runtimePolicy(runtimePolicy)
   , m_dom(nullptr)
   , m_ndim(0)
-  , m_coordsetPath("coordsets/" + coordsetName)
+  , m_topologyName(topologyName)
   , m_fcnPath()
   , m_maskPath(maskField.empty() ? std::string() : "fields/" + maskField)
 {
@@ -153,9 +155,13 @@ void MarchingCubesSingleDomain::setDomain(const conduit::Node& dom)
   SLIC_ASSERT_MSG(
     !conduit::blueprint::mesh::is_multi_domain(dom),
     "MarchingCubesSingleDomain is single-domain only.  Try MarchingCubes.");
+  SLIC_ASSERT(
+    dom.fetch_existing("topologies/" + m_topologyName + "/type").as_string() ==
+    "structured");
 
-  SLIC_ASSERT(dom.has_path(m_coordsetPath));
-  SLIC_ASSERT(dom["topologies/mesh/type"].as_string() == "structured");
+  const std::string coordsetPath = "coordsets/" +
+    dom.fetch_existing("topologies/" + m_topologyName + "/coordset").as_string();
+  SLIC_ASSERT(dom.has_path(coordsetPath));
 
   if(!m_maskPath.empty())
   {
@@ -164,10 +170,12 @@ void MarchingCubesSingleDomain::setDomain(const conduit::Node& dom)
 
   m_dom = &dom;
 
-  m_ndim = conduit::blueprint::mesh::coordset::dims(dom.fetch_existing("coordsets/coords"));
+  m_ndim = conduit::blueprint::mesh::coordset::dims(
+    dom.fetch_existing("coordsets/coords"));
   SLIC_ASSERT(m_ndim >= 2 && m_ndim <= 3);
 
-  const conduit::Node& coordsValues = dom[m_coordsetPath + "/values"];
+  const conduit::Node& coordsValues =
+    dom.fetch_existing(coordsetPath + "/values");
   bool isInterleaved = conduit::blueprint::mcarray::is_interleaved(coordsValues);
   SLIC_ASSERT_MSG(
     !isInterleaved,
@@ -189,7 +197,9 @@ void MarchingCubesSingleDomain::computeIsocontour(double contourVal)
                   "You must call setFunctionField before computeIsocontour.");
 
   allocateImpl();
-  m_impl->initialize(*m_dom, m_coordsetPath, m_fcnPath, m_maskPath);
+  const std::string coordsetPath = "coordsets/" +
+    m_dom->fetch_existing("topologies/" + m_topologyName + "/coordset").as_string();
+  m_impl->initialize(*m_dom, coordsetPath, m_fcnPath, m_maskPath);
   m_impl->setContourValue(contourVal);
   m_impl->markCrossings();
   m_impl->scanCrossings();
@@ -202,31 +212,39 @@ void MarchingCubesSingleDomain::allocateImpl()
   if(m_runtimePolicy == RuntimePolicy::seq)
   {
     m_impl = m_ndim == 2
-      ? std::unique_ptr<ImplBase>(new MarchingCubesImpl<2, axom::SEQ_EXEC>)
-      : std::unique_ptr<ImplBase>(new MarchingCubesImpl<3, axom::SEQ_EXEC>);
+      ? std::unique_ptr<ImplBase>(
+          new MarchingCubesImpl<2, axom::SEQ_EXEC, axom::SEQ_EXEC>)
+      : std::unique_ptr<ImplBase>(
+          new MarchingCubesImpl<3, axom::SEQ_EXEC, axom::SEQ_EXEC>);
   }
 #ifdef _AXOM_MC_USE_OPENMP
   else if(m_runtimePolicy == RuntimePolicy::omp)
   {
     m_impl = m_ndim == 2
-      ? std::unique_ptr<ImplBase>(new MarchingCubesImpl<2, axom::OMP_EXEC>)
-      : std::unique_ptr<ImplBase>(new MarchingCubesImpl<3, axom::OMP_EXEC>);
+      ? std::unique_ptr<ImplBase>(
+          new MarchingCubesImpl<2, axom::OMP_EXEC, axom::SEQ_EXEC>)
+      : std::unique_ptr<ImplBase>(
+          new MarchingCubesImpl<3, axom::OMP_EXEC, axom::SEQ_EXEC>);
   }
 #endif
 #ifdef _AXOM_MC_USE_CUDA
   else if(m_runtimePolicy == RuntimePolicy::cuda)
   {
     m_impl = m_ndim == 2
-      ? std::unique_ptr<ImplBase>(new MarchingCubesImpl<2, axom::CUDA_EXEC<256>>)
-      : std::unique_ptr<ImplBase>(new MarchingCubesImpl<3, axom::CUDA_EXEC<256>>);
+      ? std::unique_ptr<ImplBase>(
+          new MarchingCubesImpl<2, axom::CUDA_EXEC<256>, axom::CUDA_EXEC<1>>)
+      : std::unique_ptr<ImplBase>(
+          new MarchingCubesImpl<3, axom::CUDA_EXEC<256>, axom::CUDA_EXEC<1>>);
   }
 #endif
 #ifdef _AXOM_MC_USE_HIP
   else if(m_runtimePolicy == RuntimePolicy::hip)
   {
     m_impl = m_ndim == 2
-      ? std::unique_ptr<ImplBase>(new MarchingCubesImpl<2, axom::HIP_EXEC<256>>)
-      : std::unique_ptr<ImplBase>(new MarchingCubesImpl<3, axom::HIP_EXEC<256>>);
+      ? std::unique_ptr<ImplBase>(
+          new MarchingCubesImpl<2, axom::HIP_EXEC<256>, axom::HIP_EXEC<1>>)
+      : std::unique_ptr<ImplBase>(
+          new MarchingCubesImpl<3, axom::HIP_EXEC<256>, axom::HIP_EXEC<1>>);
   }
 #endif
   else

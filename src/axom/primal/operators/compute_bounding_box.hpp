@@ -172,6 +172,23 @@ AXOM_HOST_DEVICE BoundingBox<T, NDIMS> compute_bounding_box(
   return res;
 }
 
+/*!
+ * \brief Creates a bounding box around a Tetrahedron
+ *
+ * \param [in] tet The Tetrahedron
+ */
+template <typename T, int NDIMS>
+AXOM_HOST_DEVICE BoundingBox<T, NDIMS> compute_bounding_box(
+  const Tetrahedron<T, NDIMS> &tet)
+{
+  BoundingBox<T, NDIMS> res(tet[0]);
+  for(int i = 1; i < 4; i++)
+  {
+    res.addPoint(tet[i]);
+  }
+  return res;
+}
+
 }  // namespace primal
 }  // namespace axom
 

@@ -75,7 +75,10 @@ public:
       m_currentIdx = begin ? 0 : m_endIdx;
 
       // Advance the iterator to point to a valid Block
-      if(begin && !data()->isBlock()) increment();
+      if(begin && !data()->isBlock())
+      {
+        increment();
+      }
     }
 
     /** Increment to next block of the level */
@@ -144,7 +147,10 @@ public:
     {
       const int rowsize = (level > 0) ? 1 << (level - 1) : 1;
       m_broodCapacity = 1;
-      for(int i = 0; i < DIM; ++i) m_broodCapacity *= rowsize;
+      for(int i = 0; i < DIM; ++i)
+      {
+        m_broodCapacity *= rowsize;
+      }
 
       m_data = new BroodData[m_broodCapacity];
     }
@@ -153,7 +159,10 @@ public:
     for(int i = 0; i < m_broodCapacity; ++i)
     {
       BroodData& bd = m_data[i];
-      for(int j = 0; j < Base::BROOD_SIZE; ++j) bd[j].setNonBlock();
+      for(int j = 0; j < Base::BROOD_SIZE; ++j)
+      {
+        bd[j].setNonBlock();
+      }
     }
   }
 
@@ -223,7 +232,10 @@ public:
     // Handle level 0 -- only add the root, mark its 'siblings' as non-blocks
     if(this->level() == 0)
     {
-      for(int j = 1; j < Base::BROOD_SIZE; ++j) m_data[0][j].setNonBlock();
+      for(int j = 1; j < Base::BROOD_SIZE; ++j)
+      {
+        m_data[0][j].setNonBlock();
+      }
       ++m_blockCount;
     }
     else
@@ -274,7 +286,10 @@ public:
   /** \brief Returns the number of leaf blocks in the level */
   int numLeafBlocks() const
   {
-    if(empty()) return 0;
+    if(empty())
+    {
+      return 0;
+    }
 
     int count = 0;
     for(int i = 0; i < m_broodCapacity; ++i)
@@ -282,7 +297,10 @@ public:
       const BroodData& bd = m_data[i];
       for(int j = 0; j < Base::BROOD_SIZE; ++j)
       {
-        if(bd[j].isLeaf()) ++count;
+        if(bd[j].isLeaf())
+        {
+          ++count;
+        }
       }
     }
     return count;
@@ -298,7 +316,10 @@ public:
    */
   TreeBlockStatus blockStatus(const GridPt& pt) const
   {
-    if(!this->inBounds(pt)) return BlockNotInTree;
+    if(!this->inBounds(pt))
+    {
+      return BlockNotInTree;
+    }
 
     const BroodType brood(pt);
     const BlockDataType& blockData = m_data[brood.base()][brood.offset()];

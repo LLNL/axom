@@ -91,11 +91,15 @@ void checkIntersections(const primal::BezierCurve<CoordType, 2>& curve1,
 
     sstr << "\ns (" << s.size() << "): ";
     for(auto i = 0u; i < s.size(); ++i)
+    {
       sstr << std::setprecision(16) << s[i] << ",";
+    }
 
     sstr << "\nt (" << t.size() << "): ";
     for(auto i = 0u; i < t.size(); ++i)
+    {
       sstr << std::setprecision(16) << t[i] << ",";
+    }
 
     SLIC_INFO(sstr.str());
   }

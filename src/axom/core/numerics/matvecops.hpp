@@ -585,13 +585,19 @@ void make_orthogonal(T* u, T* v, int dim, double tol)
 
   double norm = static_cast<double>(dot_product(v, v, dim));
 
-  if(norm < tol) return;
+  if(norm < tol)
+  {
+    return;
+  }
 
   T tnorm = static_cast<T>(norm);
 
   T dot = dot_product(u, v, dim);
 
-  for(int l = 0; l < dim; ++l) u[l] -= ((dot * v[l]) / tnorm);
+  for(int l = 0; l < dim; ++l)
+  {
+    u[l] -= ((dot * v[l]) / tnorm);
+  }
 }
 
 //------------------------------------------------------------------------------

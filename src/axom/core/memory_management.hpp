@@ -201,7 +201,10 @@ inline T* allocate(std::size_t n, int allocID) noexcept
 template <typename T>
 inline void deallocate(T*& pointer) noexcept
 {
-  if(pointer == nullptr) return;
+  if(pointer == nullptr)
+  {
+    return;
+  }
 
 #ifdef AXOM_USE_UMPIRE
 

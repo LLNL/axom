@@ -257,7 +257,7 @@ public:
     return m_fieldsGroups[groupIdx];
   }
 
-  const std::string& get_topology_name() const { return m_topologyName; }
+  const std::string& getTopologyName() const { return m_topologyName; }
   const std::string& getCoordsetName() const { return m_coordsetName; }
 
   /// Gets the MPI rank for this mesh
@@ -271,7 +271,10 @@ public:
     // return m_coordsGroup != nullptr && m_coordsGroup->hasView("values/x");
     for(auto* cg : m_coordsGroups)
     {
-      if(cg != nullptr && cg->hasView("values/x")) return true;
+      if(cg != nullptr && cg->hasView("values/x"))
+      {
+        return true;
+      }
     }
     return false;
   }
@@ -342,13 +345,15 @@ public:
     if(domCount > 0)
     {
       // Put mdMesh into sidre Group.
-      bool goodImport = m_group->importConduitTree(mdMesh, false);
+      const bool goodImport = m_group->importConduitTree(mdMesh, false);
       SLIC_ASSERT(goodImport);
       SLIC_ASSERT(m_group->getNumGroups() == domCount);
+      AXOM_UNUSED_VAR(goodImport);
     }
 
     bool valid = isValid();
     SLIC_ASSERT(valid);
+    AXOM_UNUSED_VAR(valid);
 
     reset_group_pointers();
   }
@@ -701,6 +706,7 @@ public:
   /// Get a pointer to the root group for this mesh
   sidre::Group* getBlueprintGroup() const { return m_objectMesh.root_group(); }
 
+  std::string getTopologyName() const { return m_objectMesh.getTopologyName(); }
   std::string getCoordsetName() const { return m_objectMesh.getCoordsetName(); }
 
   void setVerbosity(bool verbose) { m_verbose = verbose; }
@@ -875,6 +881,7 @@ public:
 
   sidre::Group* getBlueprintGroup() const { return m_queryMesh.root_group(); }
 
+  std::string getTopologyName() const { return m_queryMesh.getTopologyName(); }
   std::string getCoordsetName() const { return m_queryMesh.getCoordsetName(); }
 
   /// Returns an array containing the positions of the mesh vertices
@@ -958,6 +965,7 @@ public:
         bool goodImport = dst->importConduitTree(src);
         ;
         SLIC_ASSERT(goodImport);
+        AXOM_UNUSED_VAR(goodImport);
       }
       {
         auto dst = dstFieldsGroup.getGroup("cp_index");
@@ -965,6 +973,7 @@ public:
         bool goodImport = dst->importConduitTree(src);
         ;
         SLIC_ASSERT(goodImport);
+        AXOM_UNUSED_VAR(goodImport);
       }
       {
         auto dst = dstFieldsGroup.getGroup("cp_domain_index");
@@ -972,6 +981,7 @@ public:
         bool goodImport = dst->importConduitTree(src);
         ;
         SLIC_ASSERT(goodImport);
+        AXOM_UNUSED_VAR(goodImport);
       }
       {
         auto dstGroup = dstFieldsGroup.getGroup("cp_coords");
@@ -1005,7 +1015,7 @@ public:
       assert(m_queryMesh.topo_group(di) ==
              m_queryMesh.domain_group(di)
                ->getGroup("topologies")
-               ->getGroup(m_queryMesh.get_topology_name()));
+               ->getGroup(m_queryMesh.getTopologyName()));
       assert(m_queryMesh.fields_group(di) ==
              m_queryMesh.domain_group(di)->getGroup("fields"));
     }
@@ -1439,7 +1449,7 @@ int main(int argc, char** argv)
   // To test support for single-domain format, use single-domain when possible.
   query.setObjectMesh(
     objectMeshNode.number_of_children() == 1 ? objectMeshNode[0] : objectMeshNode,
-    objectMeshWrapper.getCoordsetName());
+    objectMeshWrapper.getTopologyName());
 
   // Build the spatial index over the object on each rank
   SLIC_INFO(init_str);
@@ -1454,7 +1464,7 @@ int main(int argc, char** argv)
   queryTimer.start();
   query.computeClosestPoints(
     queryMeshNode.number_of_children() == 1 ? queryMeshNode[0] : queryMeshNode,
-    queryMeshWrapper.getCoordsetName());
+    queryMeshWrapper.getTopologyName());
   queryTimer.stop();
 
   auto getDoubleMinMax =

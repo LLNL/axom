@@ -53,7 +53,8 @@ void replaceMaterial(mfem::QuadratureFunction* shapeQFunc,
 
 /// Utility function to copy in_out quadrature samples from one QFunc to another
 void copyShapeIntoMaterial(const mfem::QuadratureFunction* shapeQFunc,
-                           mfem::QuadratureFunction* materialQFunc)
+                           mfem::QuadratureFunction* materialQFunc,
+                           bool reuseExisting)
 {
   SLIC_ASSERT(shapeQFunc != nullptr);
   SLIC_ASSERT(materialQFunc != nullptr);
@@ -63,9 +64,20 @@ void copyShapeIntoMaterial(const mfem::QuadratureFunction* shapeQFunc,
   double* mData = materialQFunc->GetData();
   const double* sData = shapeQFunc->GetData();
 
-  for(int j = 0; j < SZ; ++j)
+  // When reuseExisting, don't reset material values; otherwise, just copy values over
+  if(reuseExisting)
   {
-    mData[j] = sData[j] > 0 ? 1 : mData[j];
+    for(int j = 0; j < SZ; ++j)
+    {
+      mData[j] = sData[j] > 0 ? 1 : mData[j];
+    }
+  }
+  else
+  {
+    for(int j = 0; j < SZ; ++j)
+    {
+      mData[j] = sData[j];
+    }
   }
 }
 
@@ -144,7 +156,7 @@ void computeVolumeFractions(const std::string& matField,
   const int sampleOrder = inout->GetSpace()->GetIntRule(0).GetOrder();
   const int sampleNQ = inout->GetSpace()->GetIntRule(0).GetNPoints();
   const int sampleSZ = inout->GetSpace()->GetSize();
-  SLIC_INFO(axom::fmt::format(std::locale("en_US.UTF-8"),
+  SLIC_INFO(axom::fmt::format(axom::utilities::locale(),
                               "In computeVolumeFractions(): sample order {} | "
                               "sample num qpts {} |  total samples {:L}",
                               sampleOrder,
@@ -155,7 +167,7 @@ void computeVolumeFractions(const std::string& matField,
   const int dim = mesh->Dimension();
   const int NE = mesh->GetNE();
 
-  SLIC_INFO(axom::fmt::format(std::locale("en_US.UTF-8"),
+  SLIC_INFO(axom::fmt::format(axom::utilities::locale(),
                               "Mesh has dim {} and {:L} elements",
                               dim,
                               NE));
@@ -221,7 +233,7 @@ void computeVolumeFractions(const std::string& matField,
   }
   timer.stop();
   SLIC_INFO(axom::fmt::format(
-    std::locale("en_US.UTF-8"),
+    axom::utilities::locale(),
     "\t Generating volume fractions '{}' took {:.3f} seconds (@ "
     "{:L} dofs processed per second)",
     volFracName,

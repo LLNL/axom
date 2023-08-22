@@ -76,7 +76,10 @@ primal::CurvedPolygon<CoordType, DIM> createPolygon(
   for(int j = 0; j < num_edges; ++j)
   {
     axom::Array<PointType> subCP(orders[j] + 1);
-    for(int i = 0; i < orders[j] + 1; i++) subCP[i] = ControlPoints[i + iter];
+    for(int i = 0; i < orders[j] + 1; i++)
+    {
+      subCP[i] = ControlPoints[i + iter];
+    }
 
     BezierCurveType addCurve(subCP, orders[j]);
     bPolygon.addEdge(addCurve);

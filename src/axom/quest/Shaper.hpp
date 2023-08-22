@@ -44,7 +44,7 @@ public:
   // Some default values.
   static constexpr int DEFAULT_SAMPLES_PER_KNOT_SPAN {25};
   static constexpr double MINIMUM_PERCENT_ERROR {0.};
-  static constexpr double MAXIMUM_PERCENT_ERROR {100};
+  static constexpr double MAXIMUM_PERCENT_ERROR {100.};
   static constexpr double DEFAULT_VERTEX_WELD_THRESHOLD {1e-9};
 
   /// Refinement type.
@@ -103,6 +103,13 @@ public:
 
   //@}
 
+  /*!
+   * \brief Helper to apply a parallel sum reduction to a quantity
+   *
+   * \note This is the identity function when running without MPI 
+   */
+  double allReduceSum(double val) const;
+
 protected:
   /*!
    * \brief Loads the shape from file into m_surfaceMesh and computes a revolvedVolume
@@ -146,13 +153,6 @@ protected:
    * \note This function can be called even in non-mpi configurations
    */
   int getRank() const;
-
-  /*!
-   * \brief Helper to apply a parallel sum reduction to a quantity
-   *
-   * \note This is a no-op when running without MPI 
-   */
-  double allReduceSum(double val) const;
 
 protected:
   const klee::ShapeSet& m_shapeSet;

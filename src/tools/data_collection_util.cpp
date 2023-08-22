@@ -9,6 +9,7 @@
 #include "axom/slic.hpp"
 #include "axom/sidre.hpp"
 #include "axom/primal.hpp"
+#include "axom/quest.hpp"
 
 #include "axom/fmt.hpp"
 #include "axom/CLI11.hpp"
@@ -27,6 +28,7 @@
 namespace slic = axom::slic;
 namespace sidre = axom::sidre;
 namespace primal = axom::primal;
+namespace quest = axom::quest;
 
 //------------------------------------------------------------------------------
 
@@ -278,61 +280,45 @@ mfem::Mesh* createBoxMesh(const Input& params)
   const int dim = params.boxDim;
   auto& lo = params.boxMins;
   auto& hi = params.boxMaxs;
-  auto& res = params.boxResolution;
 
   mfem::Mesh* mesh = nullptr;
 
-  // TODO: Convert to MakeCartesian2D and MakeCartesian3D when upgrading to mfem@4.3
   switch(dim)
   {
   case 2:
+  {
+    using Pt2D = primal::Point<double, 2>;
+    auto res = primal::NumericArray<int, 2>(params.boxResolution.data());
+    auto bbox = primal::BoundingBox<double, 2>(Pt2D(lo.data()), Pt2D(hi.data()));
+
     SLIC_INFO(axom::fmt::format(
       "Creating a box mesh of resolution {} and bounding box {}",
-      primal::Point<int, 2>(res.data()),
-      primal::BoundingBox<double, 2>(primal::Point<double, 2>(lo.data()),
-                                     primal::Point<double, 2>(hi.data()))));
+      res,
+      bbox));
 
     mesh =
-      new mfem::Mesh(mfem::Mesh::MakeCartesian2D(res[0],
-                                                 res[1],
-                                                 mfem::Element::QUADRILATERAL,
-                                                 false,
-                                                 hi[0] - lo[0],
-                                                 hi[1] - lo[1]));
-    break;
+      quest::util::make_cartesian_mfem_mesh_2D(bbox, res, params.polynomialOrder);
+  }
+  break;
   case 3:
+  {
+    using Pt3D = primal::Point<double, 3>;
+    auto res = primal::NumericArray<int, 3>(params.boxResolution.data());
+    auto bbox = primal::BoundingBox<double, 3>(Pt3D(lo.data()), Pt3D(hi.data()));
+
     SLIC_INFO(axom::fmt::format(
       "Creating a box mesh of resolution {} and bounding box {}",
-      primal::Point<int, 3>(res.data()),
-      primal::BoundingBox<double, 3>(primal::Point<double, 3>(lo.data()),
-                                     primal::Point<double, 3>(hi.data()))));
+      res,
+      bbox));
 
-    mesh = new mfem::Mesh(mfem::Mesh::MakeCartesian3D(res[0],
-                                                      res[1],
-                                                      res[2],
-                                                      mfem::Element::HEXAHEDRON,
-                                                      hi[0] - lo[0],
-                                                      hi[1] - lo[1],
-                                                      hi[2] - lo[2],
-                                                      false));
-    break;
+    mesh =
+      quest::util::make_cartesian_mfem_mesh_3D(bbox, res, params.polynomialOrder);
+  }
+  break;
   default:
     SLIC_ERROR("Only 2D and 3D meshes are currently supported.");
     break;
   }
-
-  // Offset to the mesh to lie w/in the bounding box
-  for(int i = 0; i < mesh->GetNV(); ++i)
-  {
-    double* v = mesh->GetVertex(i);
-    for(int d = 0; d < dim; ++d)
-    {
-      v[d] += lo[d];
-    }
-  }
-
-  // Ensure that mesh has high order nodes
-  mesh->SetCurvature(params.polynomialOrder);
 
   return mesh;
 }
@@ -628,11 +614,10 @@ int main(int argc, char** argv)
 #endif
 
   // TODO: Optionally convert to low order mesh ?
-
-  SLIC_INFO(axom::fmt::format("Saving mesh file '{}'", dc.GetCollectionName()));
-#ifdef MFEM_USE_MPI
+  SLIC_INFO(axom::fmt::format("Saving mesh file '{}' in directory '{}'",
+                              dc.GetCollectionName(),
+                              axom::utilities::filesystem::getCWD()));
   dc.Save();
-#endif
 
   // Cleanup and exit
   finalizeLogger();

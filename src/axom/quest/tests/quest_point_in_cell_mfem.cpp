@@ -162,7 +162,10 @@ public:
     if(outputMeshMFEM)
     {
       mfem::VisItDataCollection dataCol(filename, m_mesh);
-      if(m_mesh->GetNodes()) dataCol.RegisterField("nodes", m_mesh->GetNodes());
+      if(m_mesh->GetNodes())
+      {
+        dataCol.RegisterField("nodes", m_mesh->GetNodes());
+      }
       dataCol.Save();
     }
     if(outputMeshVTK)
@@ -284,7 +287,9 @@ public:
     pts.reserve(sz);
 
     for(int i = 0; i <= res; ++i)
+    {
       for(int j = 0; j <= res; ++j)
+      {
         for(int k = 0; k <= k_max; ++k)
         {
           // Get the corresponding isoparametric value
@@ -293,6 +298,8 @@ public:
                                  static_cast<double>(j) / res,
                                  static_cast<double>(k) / res});
         }
+      }
+    }
 
     return pts;
   }
@@ -700,9 +707,13 @@ public:
     // compose the mesh descriptor string
     {
       if(numRefine > 0)
+      {
         meshDescSstr << "_refined_" << numRefine;
+      }
       else
+      {
         meshDescSstr << "_single";
+      }
 
       if(jitterFactor > 0)
       {
@@ -912,9 +923,13 @@ public:
       meshDescSstr << "_" << DIM << "d";
 
       if(numRefine > 0)
+      {
         meshDescSstr << "_refined_" << numRefine;
+      }
       else
+      {
         meshDescSstr << "_single";
+      }
 
       if(jitterFactor > 0)
       {

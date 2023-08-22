@@ -73,8 +73,8 @@ struct FromInlet<axom::klee::GeometryData>
   axom::klee::GeometryData operator()(const axom::inlet::Container &base)
   {
     axom::klee::GeometryData data;
-    data.format = base["format"];
-    data.path = base["path"];
+    data.format = base.contains("format") ? base.get<std::string>("format") : "";
+    data.path = base.contains("path") ? base.get<std::string>("path") : "";
     data.operatorData =
       base["operators"].get<axom::klee::internal::GeometryOperatorData>();
 
@@ -116,9 +116,9 @@ using inlet::Inlet;
 void defineGeometry(Container &geometry)
 {
   geometry.addString("format", "The format of the input file").required();
-  geometry
-    .addString("path", "The path of the input file, relative to the yaml file")
-    .required();
+  geometry.addString("path",
+                     "The path of the input file, relative to the yaml file."
+                     "Required unless 'format' is 'none'");
   internal::defineDimensionsField(
     geometry,
     "start_dimensions",
@@ -150,6 +150,11 @@ void defineShapeList(Inlet &document)
                            "The list of materials this shape replaces");
   shapeList.addStringArray("does_not_replace",
                            "The list of materials this shape does not replace");
+  auto &geometry =
+    shapeList.addStruct("geometry",
+                        "Contains information about the shape's geometry");
+  defineGeometry(geometry);
+
   // Verify syntax here, semantics later!!!
   shapeList.registerVerifier(
     [](const Container &shape,
@@ -162,12 +167,25 @@ void defineShapeList(Inlet &document)
           errors);
         return false;
       }
+
+      if(shape.contains("geometry"))
+      {
+        const auto geom = shape.get<GeometryData>("geometry");
+        if(geom.path.empty() && geom.format != "none")
+        {
+          INLET_VERIFICATION_WARNING(
+            shape.name(),
+            fmt::format("'geometry/path' field required unless "
+                        "'geometry/format' is 'none'. "
+                        "Provided format was '{}'",
+                        geom.format),
+            errors);
+          return false;
+        }
+      }
+
       return true;
     });
-  auto &geometry =
-    shapeList.addStruct("geometry",
-                        "Contains information about the shape's geometry");
-  defineGeometry(geometry);
 }
 
 /**

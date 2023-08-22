@@ -40,6 +40,7 @@ set(core_serial_tests
 
     utils_endianness.hpp
     utils_fileUtilities.hpp
+    utils_locale.hpp
     utils_nvtx_settings.hpp
     utils_stringUtilities.hpp
     utils_system.hpp
@@ -100,7 +101,7 @@ endif()
 #------------------------------------------------------------------------------
 # OpenMP GTests
 #------------------------------------------------------------------------------
-if (AXOM_ENABLE_OPENMP AND AXOM_USE_RAJA)
+if (AXOM_ENABLE_OPENMP AND RAJA_FOUND)
   set( core_openmp_tests
        core_openmp_map.hpp
        )

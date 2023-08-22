@@ -304,7 +304,10 @@ public:
                                        // (default constructed)
     if(this->level() == 0)
     {
-      for(int j = 1; j < Base::BROOD_SIZE; ++j) bd[j].setNonBlock();
+      for(int j = 1; j < Base::BROOD_SIZE; ++j)
+      {
+        bd[j].setNonBlock();
+      }
     }
   }
 
@@ -352,7 +355,10 @@ public:
   /** \brief Returns the number of blocks (internal and leaf) in the level */
   int numBlocks() const
   {
-    if(empty()) return 0;
+    if(empty())
+    {
+      return 0;
+    }
 
     return ((this->m_level == 0)
               ? 1
@@ -365,7 +371,10 @@ public:
   /** \brief Returns the number of leaf blocks in the level */
   int numLeafBlocks() const
   {
-    if(empty()) return 0;
+    if(empty())
+    {
+      return 0;
+    }
 
     int count = 0;
     for(ConstMapIter it = m_map.begin(), itEnd = m_map.end(); it != itEnd; ++it)
@@ -373,7 +382,10 @@ public:
       const BroodData& bd = it->second;
       for(int i = 0; i < Base::BROOD_SIZE; ++i)
       {
-        if(bd[i].isLeaf()) ++count;
+        if(bd[i].isLeaf())
+        {
+          ++count;
+        }
       }
     }
     return count;

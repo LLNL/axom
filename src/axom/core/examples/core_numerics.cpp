@@ -112,7 +112,10 @@ void display_eigs(double* eigvec, double* eigval, int nrows, int i)
             << " = [";
   for(int j = 0; j < nrows; ++j)
   {
-    if(j > 0) std::cout << ", ";
+    if(j > 0)
+    {
+      std::cout << ", ";
+    }
     std::cout << eigvec[i * nrows + j];
   }
   std::cout << "]" << std::endl;

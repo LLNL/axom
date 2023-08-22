@@ -15,19 +15,19 @@
 #include "quest_test_utilities.hpp"
 
 // gtest
+#include "gtest/gtest.h"
+
+// Note: Disable death tests when MPI is enabled since they're not being properly handled
 #ifdef AXOM_USE_MPI
-
-  #ifdef GTEST_HAS_DEATH_TEST
-    #undef GTEST_HAS_DEATH_TEST
-  #endif /* GTEST_HAS_DEATH_TEST */
-
-  #define GTEST_HAS_DEATH_TEST 0
-#endif                    /* AXOM_USE_MPI */
-#include "gtest/gtest.h"  // for gtest macros
+  #define _DEATH_TESTS_LOCALLY_DISABLED 1
+#else
+  #define _DEATH_TESTS_LOCALLY_DISABLED 0
+const char IGNORE_OUTPUT[] = ".*";
+#endif
 
 // C/C++ includes
-#include <fstream>  // for std::ofstream
-#include <sstream>  // for std::ostringstream
+#include <fstream>
+#include <sstream>
 
 // Aliases
 namespace quest = axom::quest;
@@ -36,8 +36,6 @@ namespace primal = axom::primal;
 namespace utilities = axom::utilities;
 
 using UnstructuredMesh = mint::UnstructuredMesh<mint::SINGLE_SHAPE>;
-
-const char IGNORE_OUTPUT[] = ".*";
 
 //#define WRITE_VTK_OUTPUT 1
 #define REMOVE_FILES 1
@@ -247,10 +245,12 @@ TEST(quest_signed_distance_interface_DeathTest, get_mesh_bounds_invalid_calls)
 {
   EXPECT_FALSE(quest::signed_distance_initialized());
 
+#if !_DEATH_TESTS_LOCALLY_DISABLED
   double lo[3];
   double hi[3];
   EXPECT_DEATH_IF_SUPPORTED(quest::signed_distance_get_mesh_bounds(lo, hi),
                             IGNORE_OUTPUT);
+#endif
 
   constexpr int NDIMS = 3;
   constexpr double SPHERE_RADIUS = 0.5;
@@ -267,11 +267,13 @@ TEST(quest_signed_distance_interface_DeathTest, get_mesh_bounds_invalid_calls)
 
   quest::signed_distance_init(surface_mesh);
 
+#if !_DEATH_TESTS_LOCALLY_DISABLED
   EXPECT_DEATH_IF_SUPPORTED(quest::signed_distance_get_mesh_bounds(nullptr, hi),
                             IGNORE_OUTPUT);
 
   EXPECT_DEATH_IF_SUPPORTED(quest::signed_distance_get_mesh_bounds(lo, nullptr),
                             IGNORE_OUTPUT);
+#endif
 
   quest::signed_distance_finalize();
   delete surface_mesh;
@@ -282,9 +284,10 @@ TEST(quest_signed_distance_interface_DeathTest, get_mesh_bounds_invalid_calls)
 TEST(quest_signed_distance_interface_DeathTest, call_evaluate_before_init)
 {
   EXPECT_FALSE(quest::signed_distance_initialized());
+
+#if !_DEATH_TESTS_LOCALLY_DISABLED
   EXPECT_DEATH_IF_SUPPORTED(quest::signed_distance_evaluate(0.0, 0.0),
                             IGNORE_OUTPUT);
-
   double x[2];
   double y[2];
   double z[2];
@@ -292,6 +295,7 @@ TEST(quest_signed_distance_interface_DeathTest, call_evaluate_before_init)
 
   EXPECT_DEATH_IF_SUPPORTED(quest::signed_distance_evaluate(x, y, z, 2, phi),
                             IGNORE_OUTPUT);
+#endif
 }
 
 //------------------------------------------------------------------------------
@@ -316,6 +320,8 @@ TEST(quest_signed_distance_interface_DeathTest, set_params_after_init)
   quest::signed_distance_init(surface_mesh);
 
   // STEP 1: setting parameters after init() should fail
+#if !_DEATH_TESTS_LOCALLY_DISABLED
+
   EXPECT_DEATH_IF_SUPPORTED(quest::signed_distance_set_dimension(3),
                             IGNORE_OUTPUT);
   EXPECT_DEATH_IF_SUPPORTED(quest::signed_distance_set_closed_surface(true),
@@ -327,6 +333,7 @@ TEST(quest_signed_distance_interface_DeathTest, set_params_after_init)
   EXPECT_DEATH_IF_SUPPORTED(
     quest::signed_distance_set_execution_space(quest::SignedDistExec::CPU),
     IGNORE_OUTPUT);
+#endif
 
   // STEP 2: finalize
   quest::signed_distance_finalize();

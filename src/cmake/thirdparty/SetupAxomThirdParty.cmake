@@ -32,31 +32,8 @@ if ((RAJA_DIR OR UMPIRE_DIR) AND NOT CAMP_DIR)
     message(FATAL_ERROR "CAMP_DIR is required if RAJA_DIR or UMPIRE_DIR is provided.")
 endif()
 
-if (CAMP_DIR)
-    if (NOT EXISTS "${CAMP_DIR}")
-        message(FATAL_ERROR "Given CAMP_DIR does not exist: ${CAMP_DIR}")
-    endif()
-
-    if (NOT IS_DIRECTORY "${CAMP_DIR}")
-        message(FATAL_ERROR "Given CAMP_DIR is not a directory: ${CAMP_DIR}")
-    endif()
-
-    find_package(camp REQUIRED PATHS ${CAMP_DIR})
-
-    message(STATUS "Checking for expected Camp target 'camp'")
-    if (NOT TARGET camp)
-        message(FATAL_ERROR "Camp failed to load: ${CAMP_DIR}")
-    else()
-        message(STATUS "Camp loaded: ${CAMP_DIR}")
-        set(CAMP_FOUND TRUE CACHE BOOL "")
-    endif()
-
-    # Note: camp sets a compile feature that is not available on XL
-    set_target_properties(camp PROPERTIES INTERFACE_COMPILE_FEATURES "")
-else()
-    message(STATUS "Camp support is OFF")
-    set(CAMP_FOUND FALSE CACHE BOOL "")
-endif()
+# Note: Let Umpire find Camp via camp_DIR, don't find it ourselves
+set(camp_DIR ${CAMP_DIR})
 
 #------------------------------------------------------------------------------
 # UMPIRE
@@ -336,6 +313,11 @@ if(TARGET RAJA)
     endif()
 endif()
 
+# Clear Camp's openmp target until BLT handles this fully
+if (TARGET blt::openmp)
+    set_target_properties(blt::openmp PROPERTIES INTERFACE_COMPILE_OPTIONS "")
+    set_target_properties(blt::openmp PROPERTIES INTERFACE_LINK_OPTIONS "")
+endif()
 
 #------------------------------------------------------------------------------
 # Targets that need to be exported but don't have a CMake config file

@@ -116,18 +116,26 @@ public:
   int numMeshVertices() const
   {
     if(m_meshWasReindexed)
+    {
       return m_vertexSet.size();
+    }
     else
+    {
       return m_surfaceMesh->getNumberOfNodes();
+    }
   }
 
   /** Accessor for the number of elements in the wrapped surface mesh */
   int numMeshCells() const
   {
     if(m_meshWasReindexed)
+    {
       return m_elementSet.size();
+    }
     else
+    {
       return m_surfaceMesh->getNumberOfCells();
+    }
   }
 
   /**
@@ -195,7 +203,12 @@ public:
     CellVertIndices cvRel1 = cellVertexIndices(c1);
 
     for(int i = 0; i < NUM_CELL_VERTS; ++i)
-      if(!incidentInVertex(cvRel0, cvRel1[i])) return cvRel1[i];
+    {
+      if(!incidentInVertex(cvRel0, cvRel1[i]))
+      {
+        return cvRel1[i];
+      }
+    }
 
     SLIC_ASSERT_MSG(
       false,
@@ -410,7 +423,9 @@ public:
 
       // Remap the vertex IDs
       for(int j = 0; j < NUM_EDGE_VERTS; ++j)
+      {
         vertIds[j] = vertexIndexMap[vertIds[j]];
+      }
 
       // Add to relation if not degenerate edge
       // (namely, we need 2 unique vertex IDs)
@@ -559,7 +574,9 @@ public:
 
       // Remap the vertex IDs
       for(int j = 0; j < NUM_TRI_VERTS; ++j)
+      {
         vertIds[j] = vertexIndexMap[vertIds[j]];
+      }
 
       // Add to relation if not degenerate triangles
       // (namely, we need 3 unique vertex IDs)

@@ -370,7 +370,10 @@ private:
   AXOM_HOST_DEVICE
   Word& getWord(Index idx, bool checkIndexValid = true)
   {
-    if(checkIndexValid) checkValidIndex(idx);
+    if(checkIndexValid)
+    {
+      checkValidIndex(idx);
+    }
 
     const Index wIdx = idx / BitsPerWord;
     return m_data[wIdx];
@@ -383,7 +386,10 @@ private:
   AXOM_HOST_DEVICE
   const Word& getWord(Index idx, bool checkIndexValid = true) const
   {
-    if(checkIndexValid) checkValidIndex(idx);
+    if(checkIndexValid)
+    {
+      checkValidIndex(idx);
+    }
 
     const Index wIdx = idx / BitsPerWord;
     return m_data[wIdx];

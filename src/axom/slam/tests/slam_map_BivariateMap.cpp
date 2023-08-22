@@ -106,35 +106,45 @@ void constructAndTestCartesianMap(int stride)
   SLIC_INFO("Setting the elements in the map.");
 
   for(auto idx1 = 0; idx1 < m.firstSetSize(); ++idx1)
+  {
     for(auto idx2 = 0; idx2 < m.secondSetSize(); ++idx2)
+    {
       for(auto i = 0; i < stride; i++)
       {
         T* valPtr = m.findValue(idx1, idx2, i);
         EXPECT_NE(valPtr, nullptr);
         *valPtr = getVal<T>(idx1, idx2, i);
       }
+    }
+  }
 
   SLIC_INFO("Checking the elements with findValue().");
   for(auto idx1 = 0; idx1 < m.firstSetSize(); ++idx1)
+  {
     for(auto idx2 = 0; idx2 < m.secondSetSize(); ++idx2)
+    {
       for(auto i = 0; i < stride; i++)
       {
         T* ptr = m.findValue(idx1, idx2, i);
         EXPECT_NE(ptr, nullptr);
         EXPECT_EQ(*ptr, getVal<T>(idx1, idx2, i));
       }
+    }
+  }
 
   SLIC_INFO("Checking the elements with SubMap.");
   for(auto idx1 = 0; idx1 < m.firstSetSize(); ++idx1)
   {
     SubMapType sm = m(idx1);
     for(auto idx2 = 0; idx2 < sm.size(); ++idx2)
+    {
       for(auto i = 0; i < stride; i++)
       {
         T v = sm.value(idx2, i);
         EXPECT_EQ(v, getVal<T>(idx1, idx2, i));
         EXPECT_EQ(sm.index(idx2), idx2);
       }
+    }
   }
 
   EXPECT_TRUE(m.isValid());
@@ -262,7 +272,10 @@ void constructAndTestRelationSetMap(int stride)
           EXPECT_EQ(ptr, nullptr);
         }
       }
-      if(isInRel) rel_idx++;
+      if(isInRel)
+      {
+        rel_idx++;
+      }
     }
   }
 
@@ -345,13 +358,17 @@ void constructAndTestBivariateMapIterator(int stride)
   SLIC_INFO("Setting the elements in the map.");
   //currently can't set value using iterator
   for(auto idx1 = 0; idx1 < m.firstSetSize(); ++idx1)
+  {
     for(auto idx2 = 0; idx2 < m.secondSetSize(); ++idx2)
+    {
       for(auto i = 0; i < stride; i++)
       {
         DataType* valPtr = m.findValue(idx1, idx2, i);
         EXPECT_NE(valPtr, nullptr);
         *valPtr = getVal<DataType>(idx1, idx2, i);
       }
+    }
+  }
 
   SLIC_INFO("Checking the elements with SubMap iterator.");
   for(auto idx1 = 0; idx1 < m.firstSetSize(); ++idx1)
@@ -442,13 +459,17 @@ void testScopedCopyBehavior(int stride)
     SLIC_INFO("Setting the elements in the map.");
 
     for(auto idx1 = 0; idx1 < m_inner.firstSetSize(); ++idx1)
+    {
       for(auto idx2 = 0; idx2 < m_inner.secondSetSize(); ++idx2)
+      {
         for(auto i = 0; i < stride; i++)
         {
           T* valPtr = m_inner.findValue(idx1, idx2, i);
           EXPECT_NE(valPtr, nullptr);
           *valPtr = getVal<T>(idx1, idx2, i);
         }
+      }
+    }
 
     m = m_inner;
   }
@@ -459,13 +480,17 @@ void testScopedCopyBehavior(int stride)
 
   SLIC_INFO("Checking the elements with findValue().");
   for(auto idx1 = 0; idx1 < m.firstSetSize(); ++idx1)
+  {
     for(auto idx2 = 0; idx2 < m.secondSetSize(); ++idx2)
+    {
       for(auto i = 0; i < stride; i++)
       {
         T* ptr = m.findValue(idx1, idx2, i);
         EXPECT_NE(ptr, nullptr);
         EXPECT_EQ(*ptr, getVal<T>(idx1, idx2, i));
       }
+    }
+  }
 }
 
 TEST(slam_bivariate_map, testScopedMapBehavior)
@@ -832,7 +857,10 @@ void slam_bivariate_map_templated<ExecutionSpace>::initializeAndTestRelationMap(
               numIncorrect += (ptr != nullptr);
             }
           }
-          if(inRelation) relIndex++;
+          if(inRelation)
+          {
+            relIndex++;
+          }
         }
       });
 

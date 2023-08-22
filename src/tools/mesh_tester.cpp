@@ -308,7 +308,10 @@ inline bool pointIsNearlyEqual(Point3& p1, Point3& p2, double EPS = 1.0e-9)
 AXOM_HOST_DEVICE
 bool checkTT(Triangle3& t1, Triangle3& t2, double EPS)
 {
-  if(t2.degenerate()) return false;
+  if(t2.degenerate())
+  {
+    return false;
+  }
 
   const bool includeBoundaries = false;  // only check internal intersections
   if(primal::intersect(t1, t2, includeBoundaries, EPS))

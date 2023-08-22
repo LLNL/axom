@@ -3,7 +3,8 @@
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
-#include "gtest/gtest.h"
+#include "axom/core.hpp"
+#include "axom/slic.hpp"
 
 #include "axom/primal/geometry/Hexahedron.hpp"
 #include "axom/primal/geometry/Octahedron.hpp"
@@ -15,10 +16,8 @@
 #include "axom/primal/operators/in_polyhedron.hpp"
 #include "axom/primal/operators/winding_number.hpp"
 
-#include "axom/core.hpp"
-#include "axom/slic.hpp"
-
-#include <cmath>
+#include <math.h>
+#include "gtest/gtest.h"
 
 namespace primal = axom::primal;
 
@@ -103,7 +102,7 @@ TEST(primal_polyhedron, polyhedron_unit_cube)
   }
 
   // Test containment using winding numbers
-  bool useStrictInclusion = false;
+  bool includeBoundary = true;
   bool useNonzeroRule = true;
 
   // Use zero numerical tolerances
@@ -121,7 +120,7 @@ TEST(primal_polyhedron, polyhedron_unit_cube)
         {
           EXPECT_TRUE(in_polyhedron(PointType({x, y, z}),
                                     poly,
-                                    useStrictInclusion,
+                                    includeBoundary,
                                     useNonzeroRule,
                                     edge_tol,
                                     EPS));
@@ -130,7 +129,7 @@ TEST(primal_polyhedron, polyhedron_unit_cube)
         {
           EXPECT_FALSE(in_polyhedron(PointType({x, y, z}),
                                      poly,
-                                     useStrictInclusion,
+                                     includeBoundary,
                                      useNonzeroRule,
                                      edge_tol,
                                      EPS));
@@ -140,7 +139,6 @@ TEST(primal_polyhedron, polyhedron_unit_cube)
   }
 
   // Verify includeBoundary behavior
-  const bool includeBoundary = true;
   EXPECT_TRUE(
     in_polyhedron(poly[0], poly, includeBoundary, useNonzeroRule, edge_tol, EPS));
   EXPECT_FALSE(

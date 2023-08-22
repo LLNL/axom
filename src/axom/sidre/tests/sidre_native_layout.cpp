@@ -47,7 +47,9 @@ template <typename T>
 void setData(T* data, int size, T initVal = T(0), int intDiv = 1, T scaleFac = T(1))
 {
   for(int i = 0; i < size; ++i)
+  {
     data[i] = initVal + ((i + 1) / intDiv) * scaleFac;
+  }
 }
 
 /**

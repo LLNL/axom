@@ -68,7 +68,10 @@ TEST(core_bit_utilities, trailingZeroes)
     int bit = 0;
     for(; bit < BITS; ++bit)
     {
-      if(rand_val & shifted(bit)) break;
+      if(rand_val & shifted(bit))
+      {
+        break;
+      }
     }
     EXPECT_EQ(bit, axom::utilities::trailingZeros(rand_val));
   }
@@ -127,7 +130,10 @@ TEST(core_bit_utilities, popCount)
     int bits = 0;
     for(int i = 0; i < BITS; ++i)
     {
-      if(val & shifted(i)) ++bits;
+      if(val & shifted(i))
+      {
+        ++bits;
+      }
     }
 
     EXPECT_EQ(bits, axom::utilities::popCount(val));
@@ -166,7 +172,10 @@ TEST(core_bit_utilities, leadingZeros)
     int bit = 0;
     for(; bit < BITS; ++bit)
     {
-      if(rand_val & shifted(BITS - bit - 1)) break;
+      if(rand_val & shifted(BITS - bit - 1))
+      {
+        break;
+      }
     }
     EXPECT_EQ(bit, axom::utilities::leadingZeros(rand_val));
   }

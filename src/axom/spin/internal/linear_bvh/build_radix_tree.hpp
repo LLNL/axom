@@ -301,7 +301,10 @@ AXOM_HOST_DEVICE IntType delta(const IntType& a,
   //break the tie, a and b must always differ
   exor = tie ? std::uint32_t(a) ^ std::uint32_t(bb) : exor;
   std::int32_t count = axom::utilities::leadingZeros(exor);
-  if(tie) count += 32;
+  if(tie)
+  {
+    count += 32;
+  }
   count = (out_of_range) ? -1 : count;
   return count;
 }
@@ -337,7 +340,9 @@ void build_tree(RadixTree<FloatType, NDIMS>& data)
       std::int32_t min_delta = delta(i, i - d, inner_size, mcodes_ptr);
       std::int32_t lmax = 2;
       while(delta(i, i + lmax * d, inner_size, mcodes_ptr) > min_delta)
+      {
         lmax *= 2;
+      }
 
       //binary search to find the lower bound
       std::int32_t l = 0;
@@ -361,7 +366,10 @@ void build_tree(RadixTree<FloatType, NDIMS>& data)
         {
           s += t;
         }
-        if(t == 1) break;
+        if(t == 1)
+        {
+          break;
+        }
       }
 
       std::int32_t split = i + s * d + utilities::min(d, 0);

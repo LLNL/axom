@@ -145,6 +145,7 @@ if(ENABLE_MPI AND MFEM_FOUND AND MFEM_USE_MPI
               AND C2C_FOUND)
     set(quest_mpi_mfem_c2c_data_tests
         quest_intersection_shaper.cpp
+        quest_sampling_shaper.cpp
        )
     foreach(test ${quest_mpi_mfem_c2c_data_tests})
         get_filename_component( test_name ${test} NAME_WE )
@@ -155,14 +156,21 @@ if(ENABLE_MPI AND MFEM_FOUND AND MFEM_USE_MPI
             DEPENDS_ON ${quest_tests_depends} mfem
             FOLDER axom/quest/tests
         )
-
-        set(_numMPITasks 1)
-        axom_add_test(
-            NAME ${test_name}
-            COMMAND ${test_name}_test
-            NUM_MPI_TASKS ${_numMPITasks}
-        )
     endforeach()
+
+    set(_numOMPThreads 8) # limit omp parallelism
+    axom_add_test(NAME quest_intersection_shaper
+        COMMAND quest_intersection_shaper_test
+        NUM_MPI_TASKS 1
+        NUM_OMP_THREADS ${_numOMPThreads}
+    )
+    set_tests_properties(quest_intersection_shaper PROPERTIES PROCESSORS ${_numOMPThreads})
+
+    axom_add_test(NAME quest_sampling_shaper
+        COMMAND quest_sampling_shaper_test
+        NUM_MPI_TASKS 1
+    )
+
 endif()
 
 #------------------------------------------------------------------------------

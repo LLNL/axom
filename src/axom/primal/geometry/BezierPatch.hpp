@@ -108,10 +108,10 @@ public:
    * \pre order in both directions is greater than or equal to zero
    *
    * Elements of pts[k] are mapped to control nodes (p, q) lexicographically, i.e.
-   * pts[0]               -> nodes[0, 0],     ..., pts[ord_u]           -> nodes[ord_u, 0]
-   * pts[ord_u+1]         -> nodes[0, 1],     ..., pts[2*ord_u]         -> nodes[ord_u, 1]
+   * pts[0]               -> nodes[0, 0],     ..., pts[ord_v]       -> nodes[0, ord_v]
+   * pts[ord_v+1]         -> nodes[1, 0],     ..., pts[2*ord_v]     -> nodes[1, ord_v]
    *                                          ...
-   * pts[ord_v*(ord_u-1)] -> nodes[0, ord_v], ..., pts[ord_v,ord_u] -> nodes[ord_u, ord_v]
+   * pts[ord_u*(ord_v-1)] -> nodes[ord_u, 0], ..., pts[ord_u*ord_v] -> nodes[ord_u, ord_v]
    * 
    */
   BezierPatch(PointType* pts, int ord_u, int ord_v)
@@ -161,7 +161,9 @@ public:
     }
 
     if(weights == nullptr)
+    {
       makeNonrational();
+    }
     else
     {
       m_weights.resize(sz_u, sz_v);
@@ -541,7 +543,7 @@ public:
   }
 
   /// Return an isocurve for a fixed value of u
-  BezierCurveType isocurve_u(T v) const
+  BezierCurveType isocurve_u(T u) const
   {
     using axom::utilities::lerp;
 
@@ -554,8 +556,28 @@ public:
     if(isRational())
     {
       c.makeRational();
-      axom::Array<T> dWarray(ord_u + 1);
+      // If looking for an edge, don't need to use De Casteljau
+      if(u == 0.0)
+      {
+        for(int q = 0; q <= ord_v; ++q)
+        {
+          c[q] = m_controlPoints(0, q);
+          c.setWeight(q, m_weights(0, q));
+        }
+        return c;
+      }
+      if(u == 1.0)
+      {
+        for(int q = 0; q <= ord_v; ++q)
+        {
+          c[q] = m_controlPoints(ord_u, q);
+          c.setWeight(q, m_weights(ord_u, q));
+        }
+        return c;
+      }
 
+      // Otherwise, do De Casteljau along the v-axis
+      axom::Array<T> dWarray(ord_u + 1);
       for(int q = 0; q <= ord_v; ++q)
       {
         for(int i = 0; i < 3; ++i)
@@ -571,8 +593,8 @@ public:
             const int end = ord_u - p;
             for(int k = 0; k <= end; ++k)
             {
-              dCarray[k] = lerp(dCarray[k], dCarray[k + 1], v);
-              dWarray[k] = lerp(dWarray[k], dWarray[k + 1], v);
+              dCarray[k] = lerp(dCarray[k], dCarray[k + 1], u);
+              dWarray[k] = lerp(dWarray[k], dWarray[k + 1], u);
             }
           }
 
@@ -583,6 +605,25 @@ public:
     }
     else
     {
+      // If looking for an edge, don't need to use De Casteljau
+      if(u == 0.0)
+      {
+        for(int q = 0; q <= ord_v; ++q)
+        {
+          c[q] = m_controlPoints(0, q);
+        }
+        return c;
+      }
+      if(u == 1.0)
+      {
+        for(int q = 0; q <= ord_v; ++q)
+        {
+          c[q] = m_controlPoints(ord_u, q);
+        }
+        return c;
+      }
+
+      // Otherwise, do De Casteljau along the v-axis
       for(int q = 0; q <= ord_v; ++q)
       {
         for(int i = 0; i < 3; ++i)
@@ -597,7 +638,7 @@ public:
             const int end = ord_u - p;
             for(int k = 0; k <= end; ++k)
             {
-              dCarray[k] = lerp(dCarray[k], dCarray[k + 1], v);
+              dCarray[k] = lerp(dCarray[k], dCarray[k + 1], u);
             }
           }
           c[q][i] = dCarray[0];
@@ -609,7 +650,7 @@ public:
   }
 
   /// Return an isocurve for a fixed value of v
-  BezierCurveType isocurve_v(T u) const
+  BezierCurveType isocurve_v(T v) const
   {
     using axom::utilities::lerp;
 
@@ -622,8 +663,29 @@ public:
     if(isRational())
     {
       c.makeRational();
-      axom::Array<T> dWarray(ord_v + 1);
 
+      // If looking for an edge, don't need to use De Casteljau
+      if(v == 0.0)
+      {
+        for(int p = 0; p <= ord_u; ++p)
+        {
+          c[p] = m_controlPoints(p, 0);
+          c.setWeight(p, m_weights(p, 0));
+        }
+        return c;
+      }
+      if(v == 1.0)
+      {
+        for(int p = 0; p <= ord_u; ++p)
+        {
+          c[p] = m_controlPoints(p, ord_v);
+          c.setWeight(p, m_weights(p, ord_v));
+        }
+        return c;
+      }
+
+      // Otherwise, do De Casteljau along the u-axis
+      axom::Array<T> dWarray(ord_v + 1);
       for(int p = 0; p <= ord_u; ++p)
       {
         for(int i = 0; i < 3; ++i)
@@ -639,8 +701,8 @@ public:
             const int end = ord_v - q;
             for(int k = 0; k <= end; ++k)
             {
-              dCarray[k] = lerp(dCarray[k], dCarray[k + 1], u);
-              dWarray[k] = lerp(dWarray[k], dWarray[k + 1], u);
+              dCarray[k] = lerp(dCarray[k], dCarray[k + 1], v);
+              dWarray[k] = lerp(dWarray[k], dWarray[k + 1], v);
             }
           }
           c[p][i] = dCarray[0] / dWarray[0];
@@ -650,6 +712,25 @@ public:
     }
     else
     {
+      // If looking for an edge, don't need to use De Casteljau
+      if(v == 0.0)
+      {
+        for(int p = 0; p <= ord_u; ++p)
+        {
+          c[p] = m_controlPoints(p, 0);
+        }
+        return c;
+      }
+      if(v == 1.0)
+      {
+        for(int p = 0; p <= ord_u; ++p)
+        {
+          c[p] = m_controlPoints(p, ord_v);
+        }
+        return c;
+      }
+
+      // Otherwise, do De Casteljau along the u-axis
       for(int p = 0; p <= ord_u; ++p)
       {
         for(int i = 0; i < 3; ++i)
@@ -664,7 +745,7 @@ public:
             const int end = ord_v - q;
             for(int k = 0; k <= end; ++k)
             {
-              dCarray[k] = lerp(dCarray[k], dCarray[k + 1], u);
+              dCarray[k] = lerp(dCarray[k], dCarray[k + 1], v);
             }
           }
           c[p][i] = dCarray[0];
@@ -697,33 +778,26 @@ public:
   }
 
   /*!
-   * \brief Computes a tangent of a Bezier patch at a particular parameter value (\a u, \a v) along \a axis
+   * \brief Computes a tangent of a Bezier patch at a particular parameter value (\a u, \a v) along the u axis
    *
    * \param [in] u parameter value at which to evaluate on the first axis
    * \param [in] v parameter value at which to evaluate on the second axis
-   * \param [in] axis orientation of vector. 0 for fixed u, 1 for fixed v
-   * \return v a tangent vector of the Bezier patch at (u, v)
+   * \return vec a tangent vector of the Bezier patch at (u, v)
    *
    * \note We typically find the tangent of the patch at \a u and \a v between 0 and 1
    */
-  VectorType dt(T u, T v, int axis) const
-  {
-    SLIC_ASSERT((axis == 0) || (axis == 1));
-    if(axis == 0)
-    {
-      return dt_u(u, v);
-    }
-    else
-    {
-      return dt_v(u, v);
-    }
-  }
+  VectorType du(T u, T v) const { return isocurve_v(v).dt(u); }
 
-  /// Compute the directional derivative in u with an isocurve fixed in v
-  VectorType dt_u(T u, T v) const { return isocurve_v(v).dt(u); }
-
-  /// Compute the directional derivative in v with an isocurve fixed in u
-  VectorType dt_v(T u, T v) const { return isocurve_u(u).dt(v); }
+  /*!
+   * \brief Computes a tangent of a Bezier patch at a particular parameter value (\a u, \a v) along the v axis
+   *
+   * \param [in] u parameter value at which to evaluate on the first axis
+   * \param [in] v parameter value at which to evaluate on the second axis
+   * \return vec a tangent vector of the Bezier patch at (u, v)
+   *
+   * \note We typically find the tangent of the patch at \a u and \a v between 0 and 1
+   */
+  VectorType dv(T u, T v) const { return isocurve_u(u).dt(v); }
 
   /*!
    * \brief Computes the normal vector of a Bezier patch at a particular parameter value (\a u, \a v)
@@ -736,7 +810,7 @@ public:
    */
   VectorType normal(T u, T v) const
   {
-    return VectorType::cross_product(dt(u, v, 0), dt(u, v, 1));
+    return VectorType::cross_product(du(u, v), dv(u, v));
   }
 
   /*!
@@ -961,27 +1035,81 @@ public:
     const int ord_u = getOrder_u();
     const int ord_v = getOrder_v();
 
-    if(ord_u <= 0 && ord_v <= 0) return true;
-    if(ord_u == 1 && ord_v == 0) return true;
-    if(ord_u == 0 && ord_v == 1) return true;
+    if(ord_u <= 0 && ord_v <= 0)
+    {
+      return true;
+    }
+    if(ord_u == 1 && ord_v == 0)
+    {
+      return true;
+    }
+    if(ord_u == 0 && ord_v == 1)
+    {
+      return true;
+    }
 
-    PlaneType the_plane = make_plane(m_controlPoints(0, 0),
-                                     m_controlPoints(0, ord_v),
-                                     m_controlPoints(ord_u, 0));
+    // Check that the four corners aren't coplanar
+    VectorType v1(m_controlPoints(0, 0), m_controlPoints(0, ord_v));
+    VectorType v2(m_controlPoints(0, 0), m_controlPoints(ord_u, 0));
+    VectorType v3(m_controlPoints(0, 0), m_controlPoints(ord_u, ord_v));
+    if(!axom::utilities::isNearlyEqual(
+         VectorType::scalar_triple_product(v1, v2, v3),
+         0.0,
+         tol))
+      return false;
+
+    // Find three points that produce a nonzero normal
+    Vector3D plane_normal = VectorType::cross_product(v1, v2);
+    if(axom::utilities::isNearlyEqual(plane_normal.norm(), 0.0, tol))
+      plane_normal = VectorType::cross_product(v1, v3);
+    if(axom::utilities::isNearlyEqual(plane_normal.norm(), 0.0, tol))
+      plane_normal = VectorType::cross_product(v2, v3);
+    plane_normal = plane_normal.unitVector();
 
     double sqDist = 0.0;
 
     // Check all control points for simplicity
     for(int p = 0; p <= ord_u && sqDist <= tol; ++p)
     {
-      for(int q = 0; q <= ord_v && sqDist <= tol; ++q)
+      for(int q = ((p == 0) ? 1 : 0); q <= ord_v && sqDist <= tol; ++q)
       {
-        double signedDist = the_plane.signedDistance(m_controlPoints(p, q));
+        const double signedDist =
+          plane_normal.dot(m_controlPoints(p, q) - m_controlPoints(0, 0));
         sqDist += signedDist * signedDist;
       }
     }
 
     return (sqDist <= tol);
+  }
+
+  /*!
+   * \brief Predicate to check if the patch can be approximated by a polygon
+   *
+   * This function checks if a BezierPatch lies in a plane
+   *  and that the edged are linear up to tolerance `tol`
+   *
+   * \param [in] tol Threshold for sum of squared distances
+   * \return True if c1 is near-planar-polygonal
+   */
+  bool isPolygonal(double tol = 1E-8) const
+  {
+    const int ord_u = getOrder_u();
+    const int ord_v = getOrder_v();
+
+    if(ord_u <= 0 && ord_v <= 0) return true;
+    if(ord_u == 1 && ord_v == 0) return true;
+    if(ord_u == 0 && ord_v == 1) return true;
+
+    // Check if the patch is planar
+    if(!isPlanar(tol)) return false;
+
+    // Check if each bounding curve is linear
+    if(!isocurve_u(0).isLinear(tol)) return false;
+    if(!isocurve_v(0).isLinear(tol)) return false;
+    if(!isocurve_u(1).isLinear(tol)) return false;
+    if(!isocurve_v(1).isLinear(tol)) return false;
+
+    return true;
   }
 
   /*!
@@ -1026,7 +1154,10 @@ private:
   ///  that there is one for each control node
   bool isValidRational() const
   {
-    if(!isRational()) return true;
+    if(!isRational())
+    {
+      return true;
+    }
 
     const int ord_u = getOrder_u();
     const int ord_v = getOrder_v();
@@ -1057,7 +1188,7 @@ private:
 //------------------------------------------------------------------------------
 /// Free functions related to BezierPatch
 //------------------------------------------------------------------------------
-template <typename T, int NDIMS>
+template <typename T>
 std::ostream& operator<<(std::ostream& os, const BezierPatch<T>& bPatch)
 {
   bPatch.print(os);

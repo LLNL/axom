@@ -591,9 +591,13 @@ public:
     {
       const BivariateSetType* set = m_map->set();
       if(idx2 + n < 0)
+      {
         advance_helper(n + (idx2 + 1), idx1 - 1, set->size(idx1 - 1) - 1);
+      }
       else if(idx2 + n >= set->size(idx1))
+      {
         advance_helper(n - (set->size(idx1) - idx2), idx1 + 1, 0);
+      }
       else
       {
         firstIdx = idx1;
@@ -705,7 +709,9 @@ public:
   void copy(const DataType* data_arr)
   {
     for(int i = 0; i < m_map.size() * StrPol::stride(); i++)
+    {
       m_map[i] = data_arr[i];
+    }
   }
 
   /** \brief replace all elements in the Map with the default DataType */

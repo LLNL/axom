@@ -7,7 +7,7 @@
 #define PRIMAL_WINDING_NUMBER_IMPL_HPP_
 
 // Axom includes
-#include "axom/config.hpp"  // for compile-time configuration options
+#include "axom/config.hpp"
 #include "axom/primal/geometry/Point.hpp"
 #include "axom/primal/geometry/Vector.hpp"
 #include "axom/primal/geometry/Polygon.hpp"
@@ -17,7 +17,12 @@
 #include "axom/primal/operators/squared_distance.hpp"
 
 // C++ includes
-#include <cmath>
+#include <math.h>
+
+// MFEM includes
+#ifdef AXOM_USE_MFEM
+  #include "mfem.hpp"
+#endif
 
 namespace axom
 {
@@ -56,7 +61,9 @@ double linear_winding_number(const Point<T, 2>& q,
 
   // Compute distance from line connecting endpoints to query
   if(tri_area * tri_area <= edge_tol * edge_tol * (V1 - V2).squared_norm())
+  {
     return 0;
+  }
 
   // Compute signed angle between vectors
   double dotprod = axom::utilities::clampVal(
@@ -95,7 +102,10 @@ double convex_endpoint_winding_number(const Point<T, 2>& q,
                                       double EPS)
 {
   const int ord = c.getOrder();
-  if(ord == 1) return 0;
+  if(ord == 1)
+  {
+    return 0;
+  }
 
   double edge_tol_sq = edge_tol * edge_tol;
 
@@ -109,11 +119,21 @@ double convex_endpoint_winding_number(const Point<T, 2>& q,
   // Need to find vectors that subtend the entire curve.
   //   We must ignore duplicate nodes
   for(idx = 0; idx <= ord; ++idx)
-    if(squared_distance(q, c[idx]) > edge_tol_sq) break;
+  {
+    if(squared_distance(q, c[idx]) > edge_tol_sq)
+    {
+      break;
+    }
+  }
   Vector<T, 2> V1(q, c[idx]);
 
   for(idx = ord; idx >= 0; --idx)
-    if(squared_distance(q, c[idx]) > edge_tol_sq) break;
+  {
+    if(squared_distance(q, c[idx]) > edge_tol_sq)
+    {
+      break;
+    }
+  }
   Vector<T, 2> V2(q, c[idx]);
 
   // clang-format off
@@ -138,7 +158,9 @@ double convex_endpoint_winding_number(const Point<T, 2>& q,
 
       // Because we are convex, a single non-collinear vertex tells us the orientation
       if(!axom::utilities::isNearlyEqual(tri_area, 0.0, EPS))
+      {
         return (tri_area > 0) ? 0.5 : -0.5;
+      }
     }
 
     // If all vectors are parallel, the curve is linear and return 0
@@ -182,7 +204,10 @@ double curve_winding_number_recursive(const Point<T, 2>& q,
                                       double EPS = 1e-8)
 {
   const int ord = c.getOrder();
-  if(ord <= 0) return 0.0;  // Catch degenerate cases
+  if(ord <= 0)
+  {
+    return 0.0;  // Catch degenerate cases
+  }
 
   // If q is outside a convex shape that contains the entire curve, the winding
   //   number for the shape connected at the endpoints with straight lines is zero.
@@ -234,6 +259,190 @@ double curve_winding_number_recursive(const Point<T, 2>& q,
   return curve_winding_number_recursive(q, c1, isConvexControlPolygon, edge_tol, EPS) +
     curve_winding_number_recursive(q, c2, isConvexControlPolygon, edge_tol, EPS);
 }
+
+/// Type to indicate orientation of singularities relative to surface
+enum class SingularityAxis
+{
+  x,
+  y,
+  z,
+  rotated
+};
+
+#ifdef AXOM_USE_MFEM
+/*!
+ * \brief Evaluates an "anti-curl" of the winding number along a curve
+ *
+ * \param [in] query The query point to test
+ * \param [in] curve The BezierCurve object
+ * \param [in] ax The axis (relative to query) denoting which anti-curl we use
+ * \param [in] npts The number of points used in each Gaussian quadrature
+ * \param [in] quad_tol The maximum relative error allowed in each quadrature
+ * 
+ * Applies a non-adaptive quadrature to a BezierCurve using one of three possible
+ * "anti-curl" vector fields, the curl of each of which is equal to <x, y, z>/||x||^3.
+ * With the proper "anti-curl" selected, integrating this along a closed curve is equal
+ * to evaluating the winding number of a surface with that curve as the boundary.
+ * 
+ * \note This is only meant to be used for `winding_number<BezierPatch>()`,
+ *  and the result does not make sense outside of that context.
+ *
+ * \return double One component of the winding number
+ */
+template <typename T>
+double stokes_winding_number(const Point<T, 3>& query,
+                             const BezierCurve<T, 3>& curve,
+                             const SingularityAxis ax,
+                             int npts,
+                             double quad_tol)
+{
+  // Generate the quadrature rules in parameter space
+  static mfem::IntegrationRules my_IntRules(0, mfem::Quadrature1D::GaussLegendre);
+  const mfem::IntegrationRule& quad_rule =
+    my_IntRules.Get(mfem::Geometry::SEGMENT, 2 * npts - 1);
+
+  double quadrature = 0.0;
+  for(int q = 0; q < quad_rule.GetNPoints(); ++q)
+  {
+    // Get quadrature points in space (shifted by the query)
+    const Vector<T, 3> node(query, curve.evaluate(quad_rule.IntPoint(q).x));
+    const Vector<T, 3> node_dt(curve.dt(quad_rule.IntPoint(q).x));
+    const double node_norm = node.norm();
+
+    // Compute one of three vector field line integrals depending on
+    //  the orientation of the original surface, indicated through ax.
+    if(ax == SingularityAxis::x)
+    {
+      quadrature += quad_rule.IntPoint(q).weight *
+        (node[2] * node[0] * node_dt[1] - node[1] * node[0] * node_dt[2]) /
+        (node[1] * node[1] + node[2] * node[2]) / node_norm;
+    }
+    else if(ax == SingularityAxis::y)
+    {
+      quadrature += quad_rule.IntPoint(q).weight *
+        (node[0] * node[1] * node_dt[2] - node[2] * node[1] * node_dt[0]) /
+        (node[0] * node[0] + node[2] * node[2]) / node_norm;
+    }
+    else  // ax == SingularityAxis::z || ax == SingularityAxis::rotated
+    {
+      quadrature += quad_rule.IntPoint(q).weight *
+        (node[1] * node[2] * node_dt[0] - node[0] * node[2] * node_dt[1]) /
+        (node[0] * node[0] + node[1] * node[1]) / node_norm;
+    }
+  }
+
+  // Adaptively refine quadrature over curves if query is not far enough away.
+  BoundingBox<T, 3> cBox(curve.boundingBox());
+  if(squared_distance(query, cBox.getCentroid()) <=
+     2 * cBox.range().squared_norm())
+  {
+    return stokes_winding_number_adaptive(query,
+                                          curve,
+                                          ax,
+                                          quad_rule,
+                                          quadrature,
+                                          quad_tol);
+  }
+
+  return 0.25 * M_1_PI * quadrature;
+}
+#endif
+
+#ifdef AXOM_USE_MFEM
+/*!
+ * \brief Recursively evaluates an "anti-curl" of the winding number on subcurves
+ *
+ * \param [in] query The query point to test
+ * \param [in] curve The BezierCurve object
+ * \param [in] ax The axis (relative to query) denoting which anti-curl we use
+ * \param [in] quad_rule The mfem quadrature rule object
+ * \param [in] quad_coarse The integral evaluated on the original curve
+ * \param [in] quad_tol The maximum relative error allowed in each quadrature
+ * 
+ * Recursively apply quadrature for one of three possible integrals along two halfs 
+ * of a curve. The sum of this integral along the subcurves should be equal to to
+ * quad_coarse. Otherwise, apply this algorithm to each half recursively.
+ *
+ * \note This is only meant to be used for `winding_number<BezierPatch>()`,
+ *  and the result does not make sense outside of that context.
+ * 
+ * \return double One component of the winding number
+ */
+template <typename T>
+double stokes_winding_number_adaptive(const Point<T, 3>& query,
+                                      const BezierCurve<T, 3>& curve,
+                                      const SingularityAxis ax,
+                                      const mfem::IntegrationRule& quad_rule,
+                                      const double quad_coarse,
+                                      const double quad_tol,
+                                      const int depth = 1)
+{
+  // Split the curve, do the quadrature over both components
+  BezierCurve<T, 3> subcurves[2];
+  curve.split(0.5, subcurves[0], subcurves[1]);
+
+  double quad_fine[2] = {0.0, 0.0};
+  for(int i = 0; i < 2; ++i)
+  {
+    for(int q = 0; q < quad_rule.GetNPoints(); ++q)
+    {
+      // Get quad_rulerature points in space (shifted by the query)
+      const Vector<T, 3> node(query,
+                              subcurves[i].evaluate(quad_rule.IntPoint(q).x));
+      const Vector<T, 3> node_dt(subcurves[i].dt(quad_rule.IntPoint(q).x));
+      const double node_norm = node.norm();
+
+      // Compute one of three vector field line integrals depending on
+      //  the orientation of the original surface, indicated through ax.
+      if(ax == SingularityAxis::x)
+      {
+        quad_fine[i] += quad_rule.IntPoint(q).weight *
+          (node[2] * node[0] * node_dt[1] - node[1] * node[0] * node_dt[2]) /
+          (node[1] * node[1] + node[2] * node[2]) / node_norm;
+      }
+      else if(ax == SingularityAxis::y)
+      {
+        quad_fine[i] += quad_rule.IntPoint(q).weight *
+          (node[0] * node[1] * node_dt[2] - node[2] * node[1] * node_dt[0]) /
+          (node[0] * node[0] + node[2] * node[2]) / node_norm;
+      }
+      else  // ax == SingularityAxis::z || ax == SingularityAxis::rotated
+      {
+        quad_fine[i] += quad_rule.IntPoint(q).weight *
+          (node[1] * node[2] * node_dt[0] - node[0] * node[2] * node_dt[1]) /
+          (node[0] * node[0] + node[1] * node[1]) / node_norm;
+      }
+    }
+  }
+
+  constexpr int MAX_DEPTH = 12;
+  if(depth >= MAX_DEPTH ||
+     axom::utilities::isNearlyEqualRelative(quad_fine[0] + quad_fine[1],
+                                            quad_coarse,
+                                            quad_tol,
+                                            0.0))
+  {
+    return 0.25 * M_1_PI * (quad_fine[0] + quad_fine[1]);
+  }
+  else
+  {
+    return stokes_winding_number_adaptive(query,
+                                          subcurves[0],
+                                          ax,
+                                          quad_rule,
+                                          quad_fine[0],
+                                          quad_tol,
+                                          depth + 1) +
+      stokes_winding_number_adaptive(query,
+                                     subcurves[1],
+                                     ax,
+                                     quad_rule,
+                                     quad_fine[1],
+                                     quad_tol,
+                                     depth + 1);
+  }
+}
+#endif
 
 }  // end namespace detail
 }  // end namespace primal

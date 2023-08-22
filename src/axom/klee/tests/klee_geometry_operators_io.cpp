@@ -3,18 +3,17 @@
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
-#include "gtest/gtest.h"
-#include "gmock/gmock.h"
+#include "axom/slic/core/SimpleLogger.hpp"
+#include "axom/inlet.hpp"
 
 #include "axom/klee/GeometryOperators.hpp"
 #include "axom/klee/GeometryOperatorsIO.hpp"
 #include "axom/klee/KleeError.hpp"
 
-#include "axom/inlet.hpp"
-
-#include "axom/slic/core/SimpleLogger.hpp"
-
 #include "KleeMatchers.hpp"
+
+#include "gtest/gtest.h"
+#include "gmock/gmock.h"
 
 #include <memory>
 #include <unordered_map>
@@ -31,8 +30,8 @@ using primal::Point3D;
 using primal::Vector3D;
 using test::AlmostEqMatrix;
 using test::AlmostEqPoint;
+using test::AlmostEqSlice;
 using test::AlmostEqVector;
-using test::MatchesSlice;
 
 using ::testing::HasSubstr;
 
@@ -195,22 +194,13 @@ T getSingleNamedOperator(const NamedOperatorMap &operators,
   return getSingleOperatorFromComposite<T>(iter->second);
 }
 
-/**
- * Create a matcher to verify an object is a slice with the expected values
- * \param origin the expected origin
- * \param normal the expected normal vector
- * \param up the expected up vector
- * \param startProperties the expected start properties
- * \return a matcher that verifies a SliceOperator is as specified
- */
-test::MatchesSliceMatcherP<SliceOperator> isSlice(
-  Point3D origin,
-  Vector3D normal,
-  Vector3D up,
-  TransformableGeometryProperties startProperties)
+/// Helper function to create a klee::SliceOperator from its constituent parts
+SliceOperator make_slice(Point3D origin,
+                         Vector3D normal,
+                         Vector3D up,
+                         TransformableGeometryProperties startProperties)
 {
-  SliceOperator op {origin, normal, up, startProperties};
-  return MatchesSlice(op);
+  return SliceOperator {origin, normal, up, startProperties};
 }
 
 TEST(GeometryOperatorsIO, readMultipleOperatorsIncluded)
@@ -438,9 +428,11 @@ TEST(GeometryOperatorsIO, readSlice_specifyAll)
         normal: [4, 5, 6]
         up: [-5, 4, 0]
     )");
-  EXPECT_THAT(
-    slice,
-    isSlice({1, 2, 3}, {4, 5, 6}, {-5, 4, 0}, {Dimensions::Three, LengthUnit::cm}));
+  EXPECT_THAT(slice,
+              AlmostEqSlice(make_slice({1, 2, 3},
+                                       {4, 5, 6},
+                                       {-5, 4, 0},
+                                       {Dimensions::Three, LengthUnit::cm})));
 }
 
 TEST(GeometryOperatorsIO, readSlice_x_defaults)
@@ -450,9 +442,11 @@ TEST(GeometryOperatorsIO, readSlice_x_defaults)
       slice:
         x: 10
     )");
-  EXPECT_THAT(
-    slice,
-    isSlice({10, 0, 0}, {1, 0, 0}, {0, 0, 1}, {Dimensions::Three, LengthUnit::cm}));
+  EXPECT_THAT(slice,
+              AlmostEqSlice(make_slice({10, 0, 0},
+                                       {1, 0, 0},
+                                       {0, 0, 1},
+                                       {Dimensions::Three, LengthUnit::cm})));
 }
 
 TEST(GeometryOperatorsIO, readSlice_x_optionals)
@@ -466,10 +460,10 @@ TEST(GeometryOperatorsIO, readSlice_x_optionals)
         up: [0, -50, 60]
     )");
   EXPECT_THAT(slice,
-              isSlice({10, 20, 30},
-                      {40, 0, 0},
-                      {0, -50, 60},
-                      {Dimensions::Three, LengthUnit::cm}));
+              AlmostEqSlice(make_slice({10, 20, 30},
+                                       {40, 0, 0},
+                                       {0, -50, 60},
+                                       {Dimensions::Three, LengthUnit::cm})));
 }
 
 TEST(GeometryOperatorsIO, readSlice_y_defaults)
@@ -479,9 +473,11 @@ TEST(GeometryOperatorsIO, readSlice_y_defaults)
       slice:
         y: 20
     )");
-  EXPECT_THAT(
-    slice,
-    isSlice({0, 20, 0}, {0, 1, 0}, {1, 0, 0}, {Dimensions::Three, LengthUnit::cm}));
+  EXPECT_THAT(slice,
+              AlmostEqSlice(make_slice({0, 20, 0},
+                                       {0, 1, 0},
+                                       {1, 0, 0},
+                                       {Dimensions::Three, LengthUnit::cm})));
 }
 
 TEST(GeometryOperatorsIO, readSlice_y_optionals)
@@ -495,10 +491,10 @@ TEST(GeometryOperatorsIO, readSlice_y_optionals)
         up: [-50, 0, 60]
     )");
   EXPECT_THAT(slice,
-              isSlice({10, 20, 30},
-                      {0, 40, 0},
-                      {-50, 0, 60},
-                      {Dimensions::Three, LengthUnit::cm}));
+              AlmostEqSlice(make_slice({10, 20, 30},
+                                       {0, 40, 0},
+                                       {-50, 0, 60},
+                                       {Dimensions::Three, LengthUnit::cm})));
 }
 
 TEST(GeometryOperatorsIO, readSlice_z_defaults)
@@ -508,9 +504,11 @@ TEST(GeometryOperatorsIO, readSlice_z_defaults)
       slice:
         z: 30
     )");
-  EXPECT_THAT(
-    slice,
-    isSlice({0, 0, 30}, {0, 0, 1}, {0, 1, 0}, {Dimensions::Three, LengthUnit::cm}));
+  EXPECT_THAT(slice,
+              AlmostEqSlice(make_slice({0, 0, 30},
+                                       {0, 0, 1},
+                                       {0, 1, 0},
+                                       {Dimensions::Three, LengthUnit::cm})));
 }
 
 TEST(GeometryOperatorsIO, readSlice_z_optionals)
@@ -524,10 +522,10 @@ TEST(GeometryOperatorsIO, readSlice_z_optionals)
         up: [-50, 60, 0]
     )");
   EXPECT_THAT(slice,
-              isSlice({10, 20, 30},
-                      {0, 0, 40},
-                      {-50, 60, 0},
-                      {Dimensions::Three, LengthUnit::cm}));
+              AlmostEqSlice(make_slice({10, 20, 30},
+                                       {0, 0, 40},
+                                       {-50, 60, 0},
+                                       {Dimensions::Three, LengthUnit::cm})));
 }
 
 TEST(GeometryOperatorsIO, readSlice_zeroNormal)

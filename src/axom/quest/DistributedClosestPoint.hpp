@@ -74,7 +74,7 @@ inline void dump_node(const conduit::Node& n,
                       const std::string& protocol = "json")
 {
   conduit::relay::io::save(n, fname, protocol);
-};
+}
 
 /**
  * \brief Utility function to get a typed pointer to the beginning of an array
@@ -193,8 +193,8 @@ namespace mpi
  * \param [in] tag tag for MPI message
  * \param [in] comm MPI communicator to use
  * \param [in] request object holding state for the sent data
- * \note Adapted from conduit's relay::mpi's \a send_using_schema and \a isend to use
- * non-blocking \a MPI_Isend instead of blocking \a MPI_Send
+ * \note Adapted from conduit's relay::mpi's \a send_using_schema and \a isend
+ * to use non-blocking \a MPI_Isend instead of blocking \a MPI_Send
  */
 inline int isend_using_schema(conduit::Node& node,
                               int dest,
@@ -424,11 +424,11 @@ public:
    * Import object mesh points from the object blueprint mesh into internal memory.
    *
    * \param [in] mdMeshNode The blueprint mesh containing the object points.
-   * \param [in] valuesPath The path to the mesh points.
+   * \param [in] topologyName Name of the blueprint topology in \a mdMeshNode.
    * \note This function currently supports mesh blueprints with the "point" topology
    */
   void importObjectPoints(const conduit::Node& mdMeshNode,
-                          const std::string& valuesPath)
+                          const std::string& topologyName)
   {
     // TODO: See if some of the copies in this method can be optimized out.
 
@@ -438,6 +438,13 @@ public:
     int ptCount = 0;
     for(const conduit::Node& domain : mdMeshNode.children())
     {
+      const std::string coordsetName =
+        domain
+          .fetch_existing(
+            axom::fmt::format("topologies/{}/coordset", topologyName))
+          .as_string();
+      const std::string valuesPath =
+        axom::fmt::format("coordsets/{}/values", coordsetName);
       auto& values = domain.fetch_existing(valuesPath);
       const int N = internal::extractSize(values);
       ptCount += N;
@@ -451,6 +458,13 @@ public:
     for(conduit::index_t d = 0; d < mdMeshNode.number_of_children(); ++d)
     {
       const conduit::Node& domain = mdMeshNode.child(d);
+      const std::string coordsetName =
+        domain
+          .fetch_existing(
+            axom::fmt::format("topologies/{}/coordset", topologyName))
+          .as_string();
+      const std::string valuesPath =
+        axom::fmt::format("coordsets/{}/values", coordsetName);
 
       auto& values = domain.fetch_existing(valuesPath);
 
@@ -663,7 +677,7 @@ public:
    */
   void node_copy_query_to_xfer(conduit::Node& queryNode,
                                conduit::Node& xferNode,
-                               const std::string& coordset) const
+                               const std::string& topologyName) const
   {
     xferNode["homeRank"] = m_rank;
     xferNode["is_first"] = 1;
@@ -671,11 +685,16 @@ public:
     conduit::Node& xferDoms = xferNode["xferDoms"];
     for(auto& queryDom : queryNode.children())
     {
+      const std::string coordsetName =
+        queryDom
+          .fetch_existing(
+            axom::fmt::format("topologies/{}/coordset", topologyName))
+          .as_string();
       const std::string& domName = queryDom.name();
       conduit::Node& xferDom = xferDoms[domName];
       conduit::Node& fields = queryDom.fetch_existing("fields");
       conduit::Node& queryCoords =
-        queryDom.fetch_existing(fmt::format("coordsets/{}", coordset));
+        queryDom.fetch_existing(fmt::format("coordsets/{}", coordsetName));
       conduit::Node& queryCoordsValues = queryCoords.fetch_existing("values");
 
       // clang-format off
@@ -815,14 +834,14 @@ public:
 
   /**
    * \brief Computes the closest point within the objects for each query point
-   * in the provided particle mesh, provided in the mesh blueprint rooted at \a queryMesh
+   * in the mesh \a queryMesh.
    *
    * \param queryMesh The root node of a mesh blueprint for the query points
    * Can be empty if there are no query points for the calling rank
-   * \param coordset The coordinate set for the query points
+   * \param topologyName The topology name identifying the query points
    *
-   * When the query mesh contains query points, it uses the \a coordset coordinate set
-   * of the provided blueprint mesh and  contains the following fields:
+   * The named topology is used to identify the points in the query mesh.
+   * On completion, the query mesh contains the following fields:
    *   - cp_rank: Will hold the rank of the object point containing the closest point
    *   - cp_domain_index: will hold the index of the object domain containing
    *     the closest points.
@@ -844,7 +863,7 @@ public:
    * using check_send_requests().
    */
   void computeClosestPoints(conduit::Node& queryMesh_,
-                            const std::string& coordset) const
+                            const std::string& topologyName) const
   {
     SLIC_ASSERT_MSG(
       isBVHTreeInitialized(),
@@ -868,7 +887,7 @@ public:
     {
       xferNodes[m_rank] = std::make_shared<conduit::Node>();
       conduit::Node& xferNode = *xferNodes[m_rank];
-      node_copy_query_to_xfer(queryMesh, xferNode, coordset);
+      node_copy_query_to_xfer(queryMesh, xferNode, topologyName);
       xferNode["homeRank"] = m_rank;
     }
 
@@ -1049,30 +1068,40 @@ private:
                            bool atLeastOne) const
   {
     std::vector<MPI_Request> reqs;
-    for(auto& isr : isendRequests) reqs.push_back(isr.m_request);
+    for(auto& isr : isendRequests)
+    {
+      reqs.push_back(isr.m_request);
+    }
 
     int inCount = static_cast<int>(reqs.size());
     int outCount = 0;
     std::vector<int> indices(reqs.size(), -1);
     if(atLeastOne)
+    {
       MPI_Waitsome(inCount,
                    reqs.data(),
                    &outCount,
                    indices.data(),
                    MPI_STATUSES_IGNORE);
+    }
     else
+    {
       MPI_Testsome(inCount,
                    reqs.data(),
                    &outCount,
                    indices.data(),
                    MPI_STATUSES_IGNORE);
+    }
     indices.resize(outCount);
 
     auto reqIter = isendRequests.begin();
     int prevIdx = 0;
     for(const int idx : indices)
     {
-      for(; prevIdx < idx; ++prevIdx) ++reqIter;
+      for(; prevIdx < idx; ++prevIdx)
+      {
+        ++reqIter;
+      }
       reqIter = isendRequests.erase(reqIter);
       ++prevIdx;
     }
@@ -1588,12 +1617,13 @@ public:
    * \brief Sets the object mesh for the query
    *
    * \param [in] meshNode Conduit node for the object mesh
-   * \param [in] coordset The name of the coordset for the object mesh's coordinates
+   * \param [in] topologyName The name of the topology for the object mesh
    *
    * \pre \a meshNode must follow the mesh blueprint convention.
    * \pre Dimension of the mesh must be 2D or 3D
    */
-  void setObjectMesh(const conduit::Node& meshNode, const std::string& coordset)
+  void setObjectMesh(const conduit::Node& meshNode,
+                     const std::string& topologyName)
   {
     SLIC_ASSERT(this->isValidBlueprint(meshNode));
 
@@ -1610,7 +1640,6 @@ public:
     const conduit::Node& mdMeshNode(isMultidomain ? meshNode : *tmpNode);
 
     auto domainCount = conduit::blueprint::mesh::number_of_domains(mdMeshNode);
-    const std::string valuesPath = fmt::format("coordsets/{}/values", coordset);
 
     // Extract the dimension from the coordinate values group
     // use allreduce since some ranks might be empty
@@ -1618,10 +1647,15 @@ public:
       int localDim = -1;
       if(domainCount > 0)
       {
-        const conduit::Node& domain0(mdMeshNode[0]);
-        SLIC_ASSERT(domain0.has_path(valuesPath));
-        auto& values = domain0.fetch_existing(valuesPath);
-        localDim = internal::extractDimension(values);
+        const conduit::Node& domain0 = mdMeshNode.child(0);
+        const conduit::Node& topology =
+          domain0.fetch_existing("topologies/" + topologyName);
+        const std::string coordsetName =
+          topology.fetch_existing("coordset").as_string();
+        const conduit::Node& coordset =
+          domain0.fetch_existing("coordsets/" + coordsetName);
+        const conduit::Node& coordsetValues = coordset.fetch_existing("values");
+        localDim = internal::extractDimension(coordsetValues);
       }
       int dim = -1;
       MPI_Allreduce(&localDim, &dim, 1, MPI_INT, MPI_MAX, m_mpiComm);
@@ -1633,10 +1667,10 @@ public:
     switch(m_dimension)
     {
     case 2:
-      m_dcp_2->importObjectPoints(mdMeshNode, valuesPath);
+      m_dcp_2->importObjectPoints(mdMeshNode, topologyName);
       break;
     case 3:
-      m_dcp_3->importObjectPoints(mdMeshNode, valuesPath);
+      m_dcp_3->importObjectPoints(mdMeshNode, topologyName);
       break;
     }
 

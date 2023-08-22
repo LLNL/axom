@@ -35,7 +35,10 @@ template <typename T>
 bool is_convex(const Polygon<T, 2>& poly, double EPS = 1e-8)
 {
   int n = poly.numVertices() - 1;
-  if(n + 1 < 3) return true;  // Triangles and lines are convex
+  if(n + 1 < 3)
+  {
+    return true;  // Triangles and lines are convex
+  }
 
   for(int i = 1; i < n; i++)
   {
@@ -45,10 +48,16 @@ bool is_convex(const Polygon<T, 2>& poly, double EPS = 1e-8)
     int res1 = orientation(poly[i], seg, EPS);
 
     // Edge case
-    if(res1 == primal::ON_BOUNDARY) continue;
+    if(res1 == primal::ON_BOUNDARY)
+    {
+      continue;
+    }
 
     // Ensure other point to check against isn't adjacent
-    if(res1 == orientation(poly[(i < n / 2) ? n : 0], seg, EPS)) return false;
+    if(res1 == orientation(poly[(i < n / 2) ? n : 0], seg, EPS))
+    {
+      return false;
+    }
   }
 
   return true;

@@ -182,7 +182,12 @@ public:
   {
     const CoordType maxVal = maxCoord();
     for(int i = 0; i < DIM; ++i)
-      if(pt[i] < 0 || pt[i] > maxVal) return false;
+    {
+      if(pt[i] < 0 || pt[i] > maxVal)
+      {
+        return false;
+      }
+    }
     return true;
   }
 

@@ -26,7 +26,6 @@ using inlet::Container;
 using primal::Point3D;
 using primal::Vector3D;
 
-using test::AlmostEqArray;
 using test::AlmostEqPoint;
 using test::AlmostEqVector;
 using ::testing::ElementsAre;

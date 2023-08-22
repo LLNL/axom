@@ -96,6 +96,12 @@ if(NOT AXOM_FOUND)
     if(NOT CONDUIT_DIR) 
       set(CONDUIT_DIR ${AXOM_CONDUIT_DIR}) 
     endif()
+
+    # Load mpi targets because we require the optional Conduit mpi targets
+    if(AXOM_USE_MPI)
+      find_package(MPI REQUIRED)
+    endif()
+
     find_dependency(Conduit REQUIRED NO_DEFAULT_PATH
                     PATHS "${CONDUIT_DIR}/@AXOM_CONDUIT_CONFIG_SUBDIR@")
   endif()
@@ -150,6 +156,15 @@ if(NOT AXOM_FOUND)
   # Include targets exported by cmake
   #----------------------------------------------------------------------------
   get_filename_component(AXOM_CMAKE_CONFIG_DIR "${CMAKE_CURRENT_LIST_FILE}" PATH)
+  get_filename_component(_IMPORT_PREFIX "${AXOM_CMAKE_CONFIG_DIR}" PATH)
+
+  if(_IMPORT_PREFIX STREQUAL "/")
+    set(_IMPORT_PREFIX "")
+  endif()
+
+  # we want the import root, which is right above the "lib" prefix
+  get_filename_component(_IMPORT_ROOT "${_IMPORT_PREFIX}" PATH)
+
   include(${AXOM_CMAKE_CONFIG_DIR}/axom-targets.cmake)
 
   # Create convenience target that bundles all Axom targets (axom)

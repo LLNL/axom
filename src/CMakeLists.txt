@@ -51,7 +51,6 @@ if (“${PROJECT_SOURCE_DIR}” STREQUAL “${CMAKE_SOURCE_DIR}”)
     # These are not used in Axom, turn them off
     set(_unused_blt_tools
         CLANGQUERY
-        CLANGTIDY
         VALGRIND
         ASTYLE
         CMAKEFORMAT
@@ -65,6 +64,8 @@ if (“${PROJECT_SOURCE_DIR}” STREQUAL “${CMAKE_SOURCE_DIR}”)
     # unless an explicit executable path is given
     set(_used_blt_tools
         CLANGFORMAT
+        CLANGTIDY
+        CLANGAPPLYREPLACEMENTS
         CPPCHECK
         DOXYGEN
         SPHINX)
@@ -77,6 +78,9 @@ if (“${PROJECT_SOURCE_DIR}” STREQUAL “${CMAKE_SOURCE_DIR}”)
     endforeach()
 
     set(BLT_REQUIRED_CLANGFORMAT_VERSION  "10" CACHE STRING "")
+    configure_file(${CMAKE_CURRENT_SOURCE_DIR}/.clang-tidy 
+                   ${CMAKE_CURRENT_BINARY_DIR}/.clang-tidy
+                   COPYONLY)
 
     # If Axom is the top project and AXOM_ENABLE_TESTS is off, force ENABLE_TESTS to off so
     # gtest doesn't build when it's not needed

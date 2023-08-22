@@ -107,7 +107,10 @@ public:
       auto itEnd = levelLeafMap.end();
       for(auto it = levelLeafMap.begin(); it != itEnd; ++it)
       {
-        if(it->isLeaf()) blocks.push_back(BlockIndex(it.pt(), lev));
+        if(it->isLeaf())
+        {
+          blocks.push_back(BlockIndex(it.pt(), lev));
+        }
       }
     }
     SLIC_INFO("Dump vtk:: Octree has " << blocks.size() << " leaves.");
@@ -202,7 +205,10 @@ public:
                             const std::vector<BlockIndex>& blocks,
                             bool shouldLogBlocks = false) const
   {
-    if(blocks.empty()) return;
+    if(blocks.empty())
+    {
+      return;
+    }
 
     // Dump an octree mesh containing all blocks
     std::string fName = fmt::format("{}.vtk", name);
@@ -349,7 +355,10 @@ protected:
       CellVertIndices cv = m_octree.m_meshWrapper.cellVertexIndices(cIdx);
       for(int j = 0; j < cv.size(); ++j)
       {
-        if(cv[j] == vIdx) cells.push_back(cIdx);
+        if(cv[j] == vIdx)
+        {
+          cells.push_back(cIdx);
+        }
       }
     }
 
@@ -828,7 +837,10 @@ public:
     mesh->appendNode(bMin[0], bMax[1], bMax[2]);
 
     axom::IndexType data[8];
-    for(int i = 0; i < 8; ++i) data[i] = vStart + i;
+    for(int i = 0; i < 8; ++i)
+    {
+      data[i] = vStart + i;
+    }
 
     mesh->appendCell(data, mint::HEX);
 

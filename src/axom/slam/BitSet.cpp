@@ -84,7 +84,10 @@ bool BitSet::isValid() const
   {
     // check num words vs. num bits
     int expWords = (m_numBits - 1) / BitsPerWord + 1;
-    if(expWords != m_data.size()) valid = false;
+    if(expWords != m_data.size())
+    {
+      valid = false;
+    }
 
     // check that highest bits are not set
     if(!isLastWordFull())

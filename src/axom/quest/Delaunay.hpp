@@ -311,7 +311,9 @@ public:
       const int kUpper = (DIM == 2) ? 0 : res;
       const IndexType stride[3] = {1, res, (DIM == 2) ? 0 : res * res};
       for(IndexType k = 0; k < kUpper; ++k)
+      {
         for(IndexType j = 0; j < res; ++j)
+        {
           for(IndexType i = 0; i < res; ++i)
           {
             const IndexType vals[3] = {i, j, k};
@@ -320,6 +322,8 @@ public:
             const auto binValues = implicitGrid.getCandidatesAsArray(cell);
             grid.getBinContents(idx).insert(0, binValues.size(), binValues.data());
           }
+        }
+      }
     }
 
     // for each vertex -- check in_sphere condition for candidate element

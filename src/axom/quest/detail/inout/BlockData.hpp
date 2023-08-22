@@ -168,7 +168,10 @@ public:  // Other functions
    */
   LeafColor color() const
   {
-    if(hasData()) return Gray;
+    if(hasData())
+    {
+      return Gray;
+    }
 
     switch(m_idx)
     {
@@ -238,9 +241,13 @@ inline std::ostream& operator<<(std::ostream& os, const InOutBlockData& iob)
   {
     os << ", dataIndex: ";
     if(!iob.hasData())
+    {
       os << "<no data>";
+    }
     else
+    {
       os << iob.dataIndex();
+    }
   }
 
   os << "}";
@@ -399,9 +406,13 @@ inline std::ostream& operator<<(std::ostream& os,
 
   os << ", vertex: ";
   if(bData.hasVertex())
+  {
     os << bData.vertexIndex();
+  }
   else
+  {
     os << "<none>";
+  }
 
   os << ", cells: ";
   if(bData.hasCells())
@@ -409,7 +420,9 @@ inline std::ostream& operator<<(std::ostream& os,
     int numCell = bData.numCells();
     os << "(" << numCell << ") {";
     for(int i = 0; i < numCell; ++i)
+    {
       os << bData.cells()[i] << ((i == numCell - 1) ? "} " : ",");
+    }
   }
 
   os << "}";

@@ -15,9 +15,9 @@
 
     "toss_3_x86_64_ib":
     [ "clang@9.0.0+devtools+mfem+c2c",
-      "clang@10.0.0+devtools+mfem+c2c+scr ^scr@3.0.1~shared~tests~examples",
-      "gcc@8.3.1+devtools+mfem+c2c+scr ^scr@3.0.1~shared~tests~examples",
-      "gcc@8.1.0~fortran+devtools~mfem+c2c+scr ^scr@3.0.1~shared~tests~examples",
+      "clang@10.0.0+devtools+mfem+c2c+scr",
+      "gcc@8.3.1+devtools+mfem+c2c+scr",
+      "gcc@8.1.0~fortran+devtools~mfem+c2c+scr",
       "intel@19.0.4~openmp+devtools+mfem+c2c" ],
 
     "toss_4_x86_64_ib":
@@ -25,8 +25,12 @@
       "clang@14.0.6+devtools+hdf5+mfem+c2c" ],
 
     "__comment__":"# Use amdgpu_target=gfx90a for tioga/rzvernal; and gfx908 for rznevada",
+    "__comment__":"# -Wno-int-conversion flag needed for building HDF5",
     "toss_4_x86_64_ib_cray":
-    [ "clang@14.0.0~openmp+rocm+mfem+c2c amdgpu_target=gfx90a ^raja~openmp+rocm ^umpire~openmp+rocm" ],
+    [ "clang@14.0.0~openmp+rocm+mfem+c2c amdgpu_target=gfx90a ^hip@5.2.3 ^rocprim@5.2.3 ^hsa-rocr-dev@5.2.3 ^llvm-amdgpu@5.2.3  ^raja~openmp+rocm ^umpire~openmp+rocm",
+      "clang@15.0.0~openmp+rocm+mfem+c2c amdgpu_target=gfx90a ^hip@5.4.3 ^hsa-rocr-dev@5.4.3 ^llvm-amdgpu@5.4.3 ^rocprim@5.4.3 ^raja~openmp+rocm ^umpire~openmp+rocm ^hdf5 cflags=-Wno-int-conversion",
+      "cce@15.0.1~openmp+rocm+mfem+c2c amdgpu_target=gfx90a ^hip@5.4.3 ^hsa-rocr-dev@5.4.3 ^llvm-amdgpu@5.4.3 ^rocprim@5.4.3 ^raja~openmp+rocm ^umpire~openmp+rocm ^hdf5 cflags=-Wno-int-conversion",
+      "clang@16.0.0~openmp+rocm+mfem+c2c amdgpu_target=gfx90a ^hip@5.6.0 ^hsa-rocr-dev@5.6.0 ^llvm-amdgpu@5.6.0 ^rocprim@5.6.0 ^raja~openmp+rocm ^umpire~openmp+rocm ^hdf5 cflags=-Wno-int-conversion" ],
 
     "__comment__":"# Note: clang-ibm + raja+openmp causes runtime failures, turning it off until there is an alternative",
     "blueos_3_ppc64le_ib_p9":

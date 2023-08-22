@@ -388,7 +388,7 @@ TEST_F(TetrahedronTest, tetrahedron_roundtrip_bary_to_physical)
   using CoordType = TetrahedronTest::CoordType;
   using QPoint = TetrahedronTest::QPoint;
   using QTet = TetrahedronTest::QTet;
-  using RPoint = primal::Point<CoordType, QTet::NUM_TET_VERTS>;
+  using RPoint = primal::Point<CoordType, QTet::NUM_VERTS>;
 
   // Test tets
   std::vector<QTet> tets = {this->getTet(0),

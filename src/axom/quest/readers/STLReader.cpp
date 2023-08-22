@@ -62,7 +62,10 @@ bool STLReader::isAsciiFormat() const
   std::int32_t fileSize = static_cast<std::int32_t>(ifs.tellg());
 
   const int totalHeaderSize = (BINARY_HEADER_SIZE + sizeof(std::int32_t));
-  if(fileSize < totalHeaderSize) return true;
+  if(fileSize < totalHeaderSize)
+  {
+    return true;
+  }
 
   // Find the number of triangles (if the file were binary)
   int numTris = 0;
@@ -105,7 +108,10 @@ int STLReader::readAsciiSTL()
       ifs >> junk;
     } while(ifs.good() && junk != "vertex");
 
-    if(ifs.fail()) break;
+    if(ifs.fail())
+    {
+      break;
+    }
 
     ifs >> x >> y >> z;
     m_nodes.push_back(x);

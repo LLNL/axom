@@ -101,6 +101,10 @@ PackageName: fmt
 PackageHomePage: https://github.com/fmtlib/fmt  
 PackageLicenseDeclared: MIT License  
 
+PackageName: radiuss-spack-configs  
+PackageHomePage: https://github.com/LLNL/radiuss-spack-configs  
+PackageLicenseDeclared: MIT License  
+
 PackageName: sol  
 PackageHomePage: https://github.com/ThePhD/sol2  
 PackageLicenseDeclared: MIT License  

@@ -592,7 +592,10 @@ private:
   ///  that there is one for each control node
   bool isValidRational() const
   {
-    if(!isRational()) return true;
+    if(!isRational())
+    {
+      return true;
+    }
 
     const int ord = getOrder();
 
