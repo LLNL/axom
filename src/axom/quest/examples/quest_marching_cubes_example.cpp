@@ -653,7 +653,7 @@ private:
 #else
     conduit::relay::io::blueprint::load_mesh(meshFilename, _mdMesh);
 #endif
-    assert(conduit::blueprint::mesh::is_multi_domain(_mdMesh));
+    SLIC_ASSERT(conduit::blueprint::mesh::is_multi_domain(_mdMesh));
     _domCount = conduit::blueprint::mesh::number_of_domains(_mdMesh);
 
     if(_domCount > 0)
@@ -1479,7 +1479,7 @@ int testNdimInstance(BlueprintStructuredMesh& computationalMesh)
   // Create marching cubes algorithm object and set some parameters
   quest::MarchingCubes mc(params.policy,
                           computationalMesh.asConduitNode(),
-                          "coords");
+                          "mesh");
 
   //---------------------------------------------------------------------------
   // params specify which tests to run.

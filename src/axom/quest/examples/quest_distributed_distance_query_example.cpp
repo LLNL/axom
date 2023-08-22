@@ -256,7 +256,7 @@ public:
     return m_fieldsGroups[groupIdx];
   }
 
-  const std::string& get_topology_name() const { return m_topologyName; }
+  const std::string& getTopologyName() const { return m_topologyName; }
   const std::string& getCoordsetName() const { return m_coordsetName; }
 
   /// Gets the MPI rank for this mesh
@@ -305,7 +305,7 @@ public:
   int dimension() const { return m_dimension; }
 
   /*!
-    @brief Read a blueprint mesh.
+    @brief Read a blueprint mesh and store it internally in m_group.
   */
   void read_blueprint_mesh(const std::string& meshFilename)
   {
@@ -589,7 +589,6 @@ public:
         slic::flushStreams();
         return false;
       }
-      // info.print();
     }
     return true;
   }
@@ -682,6 +681,7 @@ public:
   /// Get a pointer to the root group for this mesh
   sidre::Group* getBlueprintGroup() const { return m_objectMesh.root_group(); }
 
+  std::string getTopologyName() const { return m_objectMesh.getTopologyName(); }
   std::string getCoordsetName() const { return m_objectMesh.getCoordsetName(); }
 
   void setVerbosity(bool verbose) { m_verbose = verbose; }
@@ -856,6 +856,7 @@ public:
 
   sidre::Group* getBlueprintGroup() const { return m_queryMesh.root_group(); }
 
+  std::string getTopologyName() const { return m_queryMesh.getTopologyName(); }
   std::string getCoordsetName() const { return m_queryMesh.getCoordsetName(); }
 
   /// Returns an array containing the positions of the mesh vertices
@@ -989,7 +990,7 @@ public:
       assert(m_queryMesh.topo_group(di) ==
              m_queryMesh.domain_group(di)
                ->getGroup("topologies")
-               ->getGroup(m_queryMesh.get_topology_name()));
+               ->getGroup(m_queryMesh.getTopologyName()));
       assert(m_queryMesh.fields_group(di) ==
              m_queryMesh.domain_group(di)->getGroup("fields"));
     }
@@ -1423,7 +1424,7 @@ int main(int argc, char** argv)
   // To test support for single-domain format, use single-domain when possible.
   query.setObjectMesh(
     objectMeshNode.number_of_children() == 1 ? objectMeshNode[0] : objectMeshNode,
-    objectMeshWrapper.getCoordsetName());
+    objectMeshWrapper.getTopologyName());
 
   // Build the spatial index over the object on each rank
   SLIC_INFO(init_str);
@@ -1438,7 +1439,7 @@ int main(int argc, char** argv)
   queryTimer.start();
   query.computeClosestPoints(
     queryMeshNode.number_of_children() == 1 ? queryMeshNode[0] : queryMeshNode,
-    queryMeshWrapper.getCoordsetName());
+    queryMeshWrapper.getTopologyName());
   queryTimer.stop();
 
   auto getDoubleMinMax =
