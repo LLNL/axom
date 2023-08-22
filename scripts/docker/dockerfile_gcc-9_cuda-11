@@ -35,10 +35,11 @@ RUN cd ${HOME}/axom && python3 ./scripts/uberenv/uberenv.py --spack-env-file=./s
                                                          --prefix=${HOME}/axom/axom_tpls -k \
                     && rm -rf ${HOME}/axom_tpls/builds
 
-# Make sure the new hostconfig worked
+# Make sure the new hostconfig worked with a release and debug build
 # Note: having high job slots causes build log to disappear and job to fail
 # Omit testing step, hangs at slam_lulesh unit test (same behavior for azure pipeline images, as well)
-RUN cd ${HOME}/axom && python3 config-build.py -hc *cuda.cmake -bp ${HOME}/build -bt Release && cd ${HOME}/build && make -j4
+RUN cd ${HOME}/axom && python3 config-build.py -hc *cuda.cmake -bp ${HOME}/build-release -bt Release && cd ${HOME}/build-release && make -j4
+RUN cd ${HOME}/axom && python3 config-build.py -hc *cuda.cmake -bp ${HOME}/build-debug -bt Debug && cd ${HOME}/build-debug && make -j4
 
 
 USER root
