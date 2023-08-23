@@ -75,6 +75,9 @@ if(umpire_FOUND AND RAJA_FOUND)
                        SOURCES    lesson_03/device_self_intersections.cpp
                        DEPENDS_ON ${tutorial_deps})
 
+    blt_add_executable(NAME       lesson_04_device_spatial_indexes
+                       SOURCES    lesson_04/device_spatial_indexes.cpp
+                       DEPENDS_ON ${tutorial_deps})
 endif()
 
 #------------------------------------------------------------------------------

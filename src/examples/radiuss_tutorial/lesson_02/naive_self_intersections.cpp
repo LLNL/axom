@@ -348,11 +348,9 @@ int main(int argc, char** argv)
   SLIC_INFO(axom::fmt::format("Mesh had {} intersection pairs",
                               intersectionPairs.size()));
 
-  if(intersectionPairs.size() > 0)
-  {
-    SLIC_INFO(axom::fmt::format("Intersecting pairs:\n\t{}\n",
-                                axom::fmt::join(intersectionPairs, "\n\t")));
-  }
+  SLIC_INFO_IF(intersectionPairs.size() > 0 && params.isVerbose(),
+               axom::fmt::format("Intersecting pairs: {}\n",
+                                 axom::fmt::join(intersectionPairs, ", ")));
 
   return 0;
 }
