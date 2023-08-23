@@ -37,8 +37,7 @@ AXOM_HOST_DEVICE inline bool intersect_bbox_bbox(const T& min1,
                                                  const T& min2,
                                                  const T& max2)
 {
-  bool status = ((max1 < min2 || min1 > max2) ? false : true);
-  return status;
+  return max1 >= min2 && min1 <= max2;
 }
 
 /*!
