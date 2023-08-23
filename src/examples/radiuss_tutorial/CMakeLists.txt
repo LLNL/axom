@@ -32,7 +32,6 @@ project(radiuss_tutorial)
 if(NOT DEFINED BLT_SOURCE_DIR OR NOT EXISTS ${BLT_SOURCE_DIR}/SetupBLT.cmake)
     message(FATAL_ERROR "Missing required 'BLT_SOURCE_DIR' variable pointing to a valid blt")
 endif()
-
 include(${BLT_SOURCE_DIR}/SetupBLT.cmake)
 
 
@@ -53,23 +52,36 @@ find_dependency(axom REQUIRED
 # Set up target executables for the tutorial
 #------------------------------------------------------------------------------
 
+set(tutorial_deps axom axom::fmt axom::cli11)
+blt_list_append(TO tutorial_deps ELEMENTS cuda IF CUDA_FOUND)
+
 blt_add_executable(NAME       lesson_00_check_axom_configuration 
                    SOURCES    lesson_00/check_axom_configuration.cpp
-                   DEPENDS_ON axom axom::fmt)
+                   DEPENDS_ON ${tutorial_deps})
 
 blt_add_executable(NAME       lesson_01_load_stl_mesh 
                    SOURCES    lesson_01/load_stl_mesh.cpp
-                   DEPENDS_ON axom axom::fmt axom::cli11)
+                   DEPENDS_ON ${tutorial_deps})
 
 blt_add_executable(NAME       lesson_02_naive_self_intersections
                    SOURCES    lesson_02/naive_self_intersections.cpp
-                   DEPENDS_ON axom axom::fmt axom::cli11)
+                   DEPENDS_ON ${tutorial_deps})
+
+if(umpire_FOUND AND RAJA_FOUND)
+    blt_list_append(TO tutorial_deps ELEMENTS RAJA IF RAJA_FOUND)
+    blt_list_append(TO tutorial_deps ELEMENTS umpire IF umpire_FOUND)
+
+    blt_add_executable(NAME       lesson_03_device_self_intersections
+                       SOURCES    lesson_03/device_self_intersections.cpp
+                       DEPENDS_ON ${tutorial_deps})
+
+endif()
 
 #------------------------------------------------------------------------------
 # Optionally, print out information about imported targets
 #------------------------------------------------------------------------------
 if(EXAMPLE_VERBOSE_OUTPUT)
-    foreach(_target axom axom::cli11 axom::fmt axom::sparsehash conduit::conduit example)
+    foreach(_target axom axom::cli11 axom::fmt axom::sparsehash conduit::conduit umpire RAJA)
         blt_print_target_properties(TARGET ${_target})  
     endforeach()
 endif()

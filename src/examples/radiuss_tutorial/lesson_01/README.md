@@ -30,7 +30,7 @@ struct BasicLogger
     slic::setLoggingMsgLevel(slic::message::Debug);
 
     // Customize logging levels and formatting
-    const std::string slicFormatStr = "[Tutorial: <LEVEL>] <MESSAGE> \n";
+    const std::string slicFormatStr = "[lesson_01: <LEVEL>] <MESSAGE> \n";
 
     slic::addStreamToMsgLevel(new slic::GenericOutputStream(&std::cerr),
                               slic::message::Error);
@@ -77,9 +77,9 @@ We are now free to use `slic`-based logging macros throughout our application, f
 ```
 These produce the following output:
 ```shell
-[Tutorial: INFO] A first message! 
-[Tutorial: WARNING] A warning message! 
-[Tutorial: DEBUG] A debug message! 
+[lesson_01: INFO] A first message! 
+[lesson_01: WARNING] A warning message! 
+[lesson_01: DEBUG] A debug message! 
 ```
 
 ## Parsing command line input with CLI11
@@ -246,9 +246,9 @@ ln -s ../../../../data/quest/ ../stl_meshes
 # Missing path to STL mesh
 >./bin/lesson_01_load_stl_mesh
 
-[Tutorial: INFO] A first message! 
-[Tutorial: WARNING] A warning message! 
-[Tutorial: DEBUG] A debug message! 
+[lesson_01: INFO] A first message! 
+[lesson_01: WARNING] A warning message! 
+[lesson_01: DEBUG] A debug message! 
 
 --infile is required
 Run with --help for more information.
@@ -259,9 +259,9 @@ Run with --help for more information.
 # Print usage info
 >./bin/lesson_01_load_stl_mesh -h
 
-[Tutorial: INFO] A first message! 
-[Tutorial: WARNING] A warning message! 
-[Tutorial: DEBUG] A debug message! 
+[lesson_01: INFO] A first message! 
+[lesson_01: WARNING] A warning message! 
+[lesson_01: DEBUG] A debug message! 
 STL mesh loader
 Usage: ./bin/lesson_01_load_stl_mesh [OPTIONS]
 
@@ -276,18 +276,18 @@ Options:
 # Run with valid path to STL mesh
 >./bin/lesson_01_load_stl_mesh -i ../stl_meshes/sphere.stl 
 
-[Tutorial: INFO] A first message! 
-[Tutorial: WARNING] A warning message! 
-[Tutorial: DEBUG] A debug message! 
+[lesson_01: INFO] A first message! 
+[lesson_01: WARNING] A warning message! 
+[lesson_01: DEBUG] A debug message! 
 
-[Tutorial: INFO] 
+[lesson_01: INFO] 
      Parsed parameters:
       * STL mesh: '../stl_meshes/sphere.stl'
       * verbose logging: false
        
-[Tutorial: INFO] Reading file: '../stl_meshes/sphere.stl'...
+[lesson_01: INFO] Reading file: '../stl_meshes/sphere.stl'...
  
-[Tutorial: INFO] Parsed STL mesh has 1,280 triangles. 
+[lesson_01: INFO] Parsed STL mesh has 1,280 triangles. 
 ```
 
 !!! next_time In the next lesson, we will check the mesh triangles for self-intersections.

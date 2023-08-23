@@ -37,7 +37,7 @@ struct BasicLogger
     slic::setLoggingMsgLevel(slic::message::Debug);
 
     // Customize logging levels and formatting
-    const std::string slicFormatStr = "[Tutorial: <LEVEL>] <MESSAGE> \n";
+    const std::string slicFormatStr = "[lesson_01: <LEVEL>] <MESSAGE> \n";
 
     slic::addStreamToMsgLevel(new slic::GenericOutputStream(&std::cerr),
                               slic::message::Error);

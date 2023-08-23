@@ -262,7 +262,7 @@ Let's run the code (configured in "Release" mode) on a mesh with a few known sel
 ```shell
 >./bin/lesson_02_naive_self_intersections -i ../stl_meshes/plane_simp_problems.stl 
 
-[Tutorial: INFO] 
+[lesson_02: INFO] 
      Parsed parameters:
       * STL mesh: '../stl_meshes/plane_simp_problems.stl'
       * Threshold for welding: 1e-06
@@ -271,21 +271,21 @@ Let's run the code (configured in "Release" mode) on a mesh with a few known sel
       * verbose logging: false
       * use bounding boxes to accelerate query: false
        
-[Tutorial: INFO] Reading file: '../stl_meshes/plane_simp_problems.stl'...
+[lesson_02: INFO] Reading file: '../stl_meshes/plane_simp_problems.stl'...
  
-[Tutorial: INFO] Loading the mesh took 0.0704 seconds. 
-[Tutorial: INFO] Vertex welding took 0.0131 seconds. 
-[Tutorial: INFO] After welding, mesh has 15,006 vertices and 29,998 triangles. 
-[Tutorial: INFO] Mesh has 0 degenerate triangles. 
-[Tutorial: INFO] Mesh bounding box is { min:(-419.473,-519.348,-33.8787); max:(419.575,845.692,198.809); range:<839.047,1365.04,232.687> }. 
-[Tutorial: INFO] Computing intersections without bounding boxes took 8.43 seconds. 
-[Tutorial: INFO] Mesh had 5 intersection pairs 
+[lesson_02: INFO] Loading the mesh took 0.0704 seconds. 
+[lesson_02: INFO] Vertex welding took 0.0131 seconds. 
+[lesson_02: INFO] After welding, mesh has 15,006 vertices and 29,998 triangles. 
+[lesson_02: INFO] Mesh has 0 degenerate triangles. 
+[lesson_02: INFO] Mesh bounding box is { min:(-419.473,-519.348,-33.8787); max:(419.575,845.692,198.809); range:<839.047,1365.04,232.687> }. 
+[lesson_02: INFO] Computing intersections without bounding boxes took 8.43 seconds. 
+[lesson_02: INFO] Mesh had 5 intersection pairs 
 ```
 
 ```shell
 >./bin/lesson_02_naive_self_intersections -i ../stl_meshes/plane_simp_problems.stl --use-bounding-boxes
 
-[Tutorial: INFO] 
+[lesson_02: INFO] 
      Parsed parameters:
       * STL mesh: '../stl_meshes/plane_simp_problems.stl'
       * Threshold for welding: 1e-06
@@ -294,15 +294,15 @@ Let's run the code (configured in "Release" mode) on a mesh with a few known sel
       * verbose logging: false
       * use bounding boxes to accelerate query: true
        
-[Tutorial: INFO] Reading file: '../stl_meshes/plane_simp_problems.stl'...
+[lesson_02: INFO] Reading file: '../stl_meshes/plane_simp_problems.stl'...
  
-[Tutorial: INFO] Loading the mesh took 0.0699 seconds. 
-[Tutorial: INFO] Vertex welding took 0.0131 seconds. 
-[Tutorial: INFO] After welding, mesh has 15,006 vertices and 29,998 triangles. 
-[Tutorial: INFO] Mesh has 0 degenerate triangles. 
-[Tutorial: INFO] Mesh bounding box is { min:(-419.473,-519.348,-33.8787); max:(419.575,845.692,198.809); range:<839.047,1365.04,232.687> }. 
-[Tutorial: INFO] Computing intersections with bounding boxes took 0.69 seconds. 
-[Tutorial: INFO] Mesh had 5 intersection pairs 
+[lesson_02: INFO] Loading the mesh took 0.0699 seconds. 
+[lesson_02: INFO] Vertex welding took 0.0131 seconds. 
+[lesson_02: INFO] After welding, mesh has 15,006 vertices and 29,998 triangles. 
+[lesson_02: INFO] Mesh has 0 degenerate triangles. 
+[lesson_02: INFO] Mesh bounding box is { min:(-419.473,-519.348,-33.8787); max:(419.575,845.692,198.809); range:<839.047,1365.04,232.687> }. 
+[lesson_02: INFO] Computing intersections with bounding boxes took 0.69 seconds. 
+[lesson_02: INFO] Mesh had 5 intersection pairs 
 ```
 
 So, for a mesh with around 30,000 triangles, the default intersection query took ``8.43`` seconds when not using bounding boxes. This was reduced to around ``.69`` seconds when using bounding boxes.
@@ -311,13 +311,13 @@ When we try this with a mesh with an order of magnitude more triangles (~250K tr
 ```shell
 >./bin/lesson_02_naive_self_intersections -i ../stl_meshes/golfBall.stl  --use-bounding-boxes
 ...
-[Tutorial: INFO] Loading the mesh took 0.759 seconds. 
-[Tutorial: INFO] Vertex welding took 0.121 seconds. 
-[Tutorial: INFO] After welding, mesh has 122,882 vertices and 245,760 triangles. 
-[Tutorial: INFO] Mesh has 0 degenerate triangles. 
-[Tutorial: INFO] Mesh bounding box is { min:(-0.499487,-0.499529,-0.499867); max:(0.499495,0.499529,0.499867); range:<0.998982,0.999059,0.999735> }. 
-[Tutorial: INFO] Computing intersections with bounding boxes took 46.5 seconds. 
-[Tutorial: INFO] Mesh had 0 intersection pairs 
+[lesson_02: INFO] Loading the mesh took 0.759 seconds. 
+[lesson_02: INFO] Vertex welding took 0.121 seconds. 
+[lesson_02: INFO] After welding, mesh has 122,882 vertices and 245,760 triangles. 
+[lesson_02: INFO] Mesh has 0 degenerate triangles. 
+[lesson_02: INFO] Mesh bounding box is { min:(-0.499487,-0.499529,-0.499867); max:(0.499495,0.499529,0.499867); range:<0.998982,0.999059,0.999735> }. 
+[lesson_02: INFO] Computing intersections with bounding boxes took 46.5 seconds. 
+[lesson_02: INFO] Mesh had 0 intersection pairs 
 ```
 
 !!! next_time In the next lesson, we will port our naive algorithm to other execution and memory spaces with the help of the [RAJA](https://github.com/LLNL/raja) and [Umpire](https://github.com/LLNL/umpire) libraries.

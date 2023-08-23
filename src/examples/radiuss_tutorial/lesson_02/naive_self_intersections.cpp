@@ -36,7 +36,7 @@ struct BasicLogger
     slic::setLoggingMsgLevel(slic::message::Debug);
 
     // Customize logging levels and formatting
-    const std::string slicFormatStr = "[Tutorial: <LEVEL>] <MESSAGE> \n";
+    const std::string slicFormatStr = "[lesson_02: <LEVEL>] <MESSAGE> \n";
 
     slic::addStreamToMsgLevel(new slic::GenericOutputStream(&std::cerr),
                               slic::message::Error);
@@ -347,6 +347,12 @@ int main(int argc, char** argv)
     timer.elapsedTimeInSec()));
   SLIC_INFO(axom::fmt::format("Mesh had {} intersection pairs",
                               intersectionPairs.size()));
+
+  if(intersectionPairs.size() > 0)
+  {
+    SLIC_INFO(axom::fmt::format("Intersecting pairs:\n\t{}\n",
+                                axom::fmt::join(intersectionPairs, "\n\t")));
+  }
 
   return 0;
 }
