@@ -3,7 +3,7 @@
 In this lesson, we will develop a simple application that uses an installed version of Axom. 
 Specifically, we will print the version of Axom and some of its configuration properties.
 
-!!! tip  Our examples will be using the ``C++14`` standard since that's Axom's current version. 
+> :bulb: Our examples will be using the ``C++14`` standard since that's Axom's current version. 
 
 We will also be using the [fmt](https://fmt.dev/latest/index.html) library for string formatting, which Axom uses internally and vendors for its users.
 The vast majority of ``fmt`` has been included in recent C++ standards, starting with ``C++20``. See also the [fmt cheat sheet](https://hackingcpp.com/cpp/libs/fmt.html).
@@ -29,7 +29,7 @@ Our application can be configured and built using the following commands:
 > make -j16
 ```
 
-!!! tip BLT provides a few lightweight "smoke" tests to help diagnose configuration issues. If we configure our application with the ``ENABLE_TESTS`` CMake option, the above command will build these tests and we can run them using ``ctest``.
+> :hint:  BLT provides a few lightweight "smoke" tests to help diagnose configuration issues. If we configure our application with the ``ENABLE_TESTS`` CMake option, the above command will build these tests and we can run them using ``ctest``.
 
 The following CMake snippet imports the provided Axom installation into our project's build system:
 ```cmake
@@ -47,7 +47,7 @@ blt_add_executable(NAME       lesson_00_check_axom_configuration
                    DEPENDS_ON axom axom::fmt)
 ```
 
-!!! action  Action: Look at ``CMakeLists.txt`` at the root of the tutorial directory.
+> :clapper: Look at ``CMakeLists.txt`` at the root of the tutorial directory.
 
 
 ## Including Axom components
@@ -69,7 +69,7 @@ Axom also generates a config header file containing most of the compiler defines
 ...
 ```
 
-!!! action  Action: Look at ``<axom/config.hpp>`` and ``<axom/core.hpp>`` in the installation directory
+> :clapper: Look at ``<axom/config.hpp>`` and ``<axom/core.hpp>`` in the installation directory
 
 ## Checking the Axom version
 
@@ -132,7 +132,8 @@ Active Dependencies:
  { CLI11; conduit; fmt; hdf5; lua; mfem; mpi; sol; sparsehash; raja; umpire; }
 ```
 
-!!! action  Action: Run the example for this lesson
+> :clapper: Run the example for this lesson
 
 
-!!! next_time In the next lesson, we will add a logger and command line parser and load in a triangle mesh 
+### Next time:
+In the next lesson, we will add a logger and command line parser and load in a triangle mesh 

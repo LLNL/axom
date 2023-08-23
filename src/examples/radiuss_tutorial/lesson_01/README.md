@@ -50,11 +50,11 @@ struct BasicLogger
 
 The constructor calls ``slic::initialize()``, sets the logging level to ``slic::message::Debug`` and then creates log streams for the different message levels. The destructor finalizes the slic component with `slic::finalize()`.
 
-!!! tip Axom provides a similar basic wrapper in the ``slic::SimpleLogger`` class.
+> :memo: Axom provides a similar basic wrapper in the ``slic::SimpleLogger`` class.
 
-!!! tip If your application requires MPI-based logging, consider using the ``LumberjackStream`` log streams from Axom's [lumberjack component](https://axom.readthedocs.io/en/develop/axom/lumberjack/docs/sphinx/index.html) when setting up your logger.
+> :bulb: If your application requires MPI-based logging, consider using the ``LumberjackStream`` log streams from Axom's [lumberjack component](https://axom.readthedocs.io/en/develop/axom/lumberjack/docs/sphinx/index.html) when setting up your logger.
 
-!!! note `slic` has an internal formatter that understands the following keywords: `<TIMESTAMP>`, `<LEVEL>`, `<MESSAGE>`, `<FILE>`, `<LINE>`, `<RANK>`. Our `BasicLogger` only uses `<LEVEL>` and `<MESSAGE>`
+> :memo:  `slic` has an internal formatter that understands the following keywords: `<TIMESTAMP>`, `<LEVEL>`, `<MESSAGE>`, `<FILE>`, `<LINE>`, `<RANK>`. Our `BasicLogger` only uses `<LEVEL>` and `<MESSAGE>`
 
 We now add a `BasicLogger` instance to the application with
 ```cpp
@@ -133,7 +133,7 @@ void Input::parse(int argc, char** argv, axom::CLI::App& app)
 ```
 We will add parameters to the `Input` struct and logic for parsing to `Input::parse()` as necessary throughout that tutorial.
 
-!!! note For the input file, `CLI11`'s `check(axom::CLI::ExistingFile)` ensures that the provided file exists, and its `required()` function for options ensures that the user provides a value.
+> :memo:  For the input file, `CLI11`'s `check(axom::CLI::ExistingFile)` ensures that the provided file exists, and its `required()` function for options ensures that the user provides a value.
 
 We next add the `CLI::App` to our application's main function:
 ```cpp
@@ -225,8 +225,7 @@ Finally, we can output some properties of the parsed mesh using:
                               "Parsed STL mesh has {:L} triangles.",
                               mesh.numTriangles()));
 ```
-
-!!! tip The `locale` helps with the formatting of the output for improved readability. Axom's default locale is `"en_US.UTF-8"`.
+> :memo: The `locale` helps with the formatting of the output for improved readability. Axom's default locale is `"en_US.UTF-8"`.
 
 ## Running the application
 The [axom_data](https://github.com/LLNL/axom_data) repository provides several STL meshes that we will use in this tutorial.
@@ -290,4 +289,5 @@ Options:
 [lesson_01: INFO] Parsed STL mesh has 1,280 triangles. 
 ```
 
-!!! next_time In the next lesson, we will check the mesh triangles for self-intersections.
+### Next time:
+In the next lesson, we will check the mesh triangles for self-intersections.

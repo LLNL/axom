@@ -2,9 +2,9 @@
 
 In this lesson, we will port our naive self-intersection algorithm from the previous lesson to different execution spaces, including serial (sequential), threaded (OpenMP) and/or GPU-based (cuda) backends with the help of the RAJA and Umpire libraries. These libraries allow a single implementation to run on different execution spaces.
 
-!!! warning We are still using (an adaptation of) our naive algorithm in this lesson, so the performance will improve but will still scale quadratically in the number of triangles in the mesh.
+> :memo:  We are still using (an adaptation of) our naive algorithm in this lesson, so the performance will improve but will still scale quadratically in the number of triangles in the mesh.
 
-!!! warning This lesson requires Axom to be configured with RAJA and Umpire support. It will also strongly benefit from OpenMP and/or GPU support.
+> :warning:  This lesson requires Axom to be configured with RAJA and Umpire support. It will also strongly benefit from OpenMP and/or GPU support.
 
 ## A note about our thread-safe implementation
 
@@ -62,7 +62,7 @@ and use ``CLI11``'s ``CheckedTransformer`` to ensure that the user can only inpu
 
 We expose this as a new  command-line argument ``--policy`` (with shortcut ``-p``).
 
-!!! action Show this in the code if the audience is interested in the details
+> :clapper: Show this in the code if the audience is interested in the details
 
 ## Calling our find intersections algorithm
 
@@ -101,16 +101,16 @@ Since the execution space is templated, and we would to expose a runtime choice 
     break;
   }
 ```
-!!! note For simplicity, we moved our ``checkIntersection`` lambda inside the ``naiveFindIntersections()`` algorithm.
+> :memo:  For simplicity, we moved our ``checkIntersection`` lambda inside the ``naiveFindIntersections()`` algorithm.
 
-!!! tip This interplay between compile-time templated code used in our internal implementations and runtime-selected parameters that we expose to users is a common theme in Axom development and usage.
+> :bulb:  This interplay between compile-time templated code used in our internal implementations and runtime-selected parameters that we expose to users is a common theme in Axom development and usage.
 
 ## Algorithm setup: memory spaces
 
 Our algorithm requires memory to be allocated in the correct space for each kernel. As such, we distinguish between "host" memory allocators and "kernel" memory allocators.
 The latter might be a "host" memory allocator, e.g. for sequential and OpenMP execution spaces. It might also be "unified" or "device" memory if run on GPUs.
 
-!!! warning Axom's default memory allocator on devices is currently set to "unified" memory. In this example, we will use "device" memory for GPU-based execution spaces.
+> :warning:  Axom's default memory allocator on devices is currently set to "unified" memory. In this example, we will use "device" memory for GPU-based execution spaces.
 
 We get the integer ID for the ``host_allocator`` and ``kernel_allocator`` as follows:
 ```cpp
@@ -146,7 +146,7 @@ We begin our algorithm with a slightly different approach to handling degenerate
   auto valid_v = on_device ? valid_d.view() : valid_h.view();
 ```
 
-!!! tip We assume that this is a relatively inexpensive operation, so we perform this serially on the CPU for now and copy the data over to the device, as necessary. If/When this assumption changes, we can revisit that decision.
+> :warning: We assume that this is a relatively inexpensive operation, so we perform this serially on the CPU for now and copy the data over to the device, as necessary. If/When this assumption changes, we can revisit that decision.
 
 
 ## Aside: ``axom::Array`` and ``axom::ArrayView``
@@ -224,15 +224,6 @@ We first allocate an array (in the proper space), without initializing its membe
                                numIndices,
                                kernel_allocator);
 ```
-We also allocate an integer in the proper (default) space using ``axom::allocate``, and use a kernel to initialize its member:
-```cpp
-    auto* counter = axom::allocate<axom::IndexType>(1, kernel_allocator);
-
-    RAJA::forall<LOOP_POL>(
-      RAJA::RangeSegment(0, 1),
-      AXOM_LAMBDA(int i) { counter[i] = 0; });
-```
-!!! note We deallocate this at the end of the function using ``axom::deallocate(counter);``
 
 We use the counter, along with a ``RAJA::atomicAdd`` to keep track of the insertion location in the following algorithm:
 ```cpp
@@ -361,5 +352,5 @@ Finally, here's a run on a single NVidia V100 GPU
 [lesson_03: INFO] Mesh had 0 intersection pairs 
 ```
 
-### Wrapup
+### Next time:
 In this lesson, we ported out naive self-intersection algorithm to different execution space with the help of RAJA and Umpire. This accelerated our compute time, but did not help with the algorithmic complexity of the algorithm. In the next lesson, we will introduce a better algorithm based on a spatial index that, for reasonable meshes, should considerably reduces the expected work per triangle.

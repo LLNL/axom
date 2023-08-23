@@ -44,6 +44,43 @@ endsolid
 
 Since the STL format has no means of ensuring that the coordinates of vertices in vertex-adjacent or edge-adjacent triangles actually match, we typically need to perform some preprocessing to "weld" or "unify" nearby vertices of an STL mesh. Otherwise, our intersection queries are likely to have false positives. However, one must also be careful when choosing the welding threshold, since in the extreme, we could end up welding all vertices together, yielding a mesh with degenerate triangles.
 
+<details>
+If your markdown renderer supports the ``stl`` tag, this might might look like:
+
+```stl
+solid STL 
+  facet normal -1 1 1
+    outer loop
+      vertex   1  1  1
+      vertex  -1  1 -1
+      vertex  -1 -1  1
+    endloop
+  endfacet
+  facet normal  1 -1  1
+    outer loop
+      vertex   1  1  1
+      vertex  -1 -1  1
+      vertex   1 -1 -1
+    endloop
+  endfacet
+  facet normal  1 1 -1
+    outer loop
+      vertex   1  1  1
+      vertex   1 -1 -1
+      vertex  -1  1 -1
+    endloop
+  endfacet
+  facet normal -1 -1 -1
+    outer loop
+      vertex   1 -1 -1
+      vertex  -1 -1  1
+      vertex  -1  1 -1
+    endloop
+  endfacet
+endsolid
+```
+</details>
+
 ## Welding the triangles in our mesh and timing the operation
 
 Axom provides an internal "welding" capability that treats triangles within a given threshold distance as identical. For this tutorial, we will expose the welding threshold as a command line argument ``--weld-threshold`` with a default value of `1e-6` and treat the following function from Axom's ``quest`` component as a black box:
@@ -115,7 +152,7 @@ Similarly, our algorithms will not apply to <i>degenerate</i> triangles, i.e. tr
   bool isTriangleDegenerate(axom::IndexType idx) const;
 ```
 
-!!! action Show updated ``TriangleMesh`` class and ``makeTriangleMesh()`` helper function
+> :clapper: Show updated ``TriangleMesh`` class and ``makeTriangleMesh()`` helper function
 
 ## A first self-intersection algorithm
 We are now ready to present our first self-intersection algorithm!
@@ -164,11 +201,11 @@ and the function is called as:
 auto intersectionPairs = naiveFindIntersections(mesh, checkIntersect, params.isVerbose());
 ```
 
-!!! note Our ``intersect(Triangle, Triangle)`` operation is modeled after the state-of-the-art ["Faster Triangle-Triangle Intersection"](https://hal.inria.fr/inria-00072100/) algorithm of Olivier Devillers and Phillipe Guigue. It uses a decision-tree based on orientation primitives for its intersection predicates.
+> :information_source: Our ``intersect(Triangle, Triangle)`` operation is modeled after the state-of-the-art ["Faster Triangle-Triangle Intersection"](https://hal.inria.fr/inria-00072100/) algorithm of Olivier Devillers and Phillipe Guigue. It uses a decision-tree based on orientation primitives for its intersection predicates.
 
-!!! note Since triangle intersection is a symmetric operation, the inner loop of our algorithm over ``idx2`` is initialized to begin at ``idx1 + 1`` to avoid redundant tests.
+> :memo:  Since triangle intersection is a symmetric operation, the inner loop of our algorithm over ``idx2`` is initialized to begin at ``idx1 + 1`` (rather than ``0``) to avoid redundant tests.
 
-!!! note The above algorithm has complexity ``O(n^2)`` since every triangle must be tested against every other triangle.
+> :information_source:  The above algorithm has complexity ``O(n^2)`` since every triangle must be tested against every other triangle.
 
 ### Wrinkle: ``primal::intersect`` only works for non-degenerate triangles
 We need to modify our algorithm to skip degenerate triangles. Since we already precomputed this, we can modify our ``naiveFindIntersections`` algorithm as follows:
@@ -189,12 +226,9 @@ axom::Array<IndexPair> naiveFindIntersections(const TriangleMesh& triMesh,
       continue;
     }
 
-    if(verboseOutput)
-    {
-      SLIC_INFO_IF(
-        idx1 % 100 == 0,
-        axom::fmt::format(axom::utilities::locale(), "Outer index {:L}", idx1));
-    }
+    SLIC_INFO_IF(
+      verboseOutput && idx1 % 100 == 0,
+      axom::fmt::format(axom::utilities::locale(), "Outer index {:L}", idx1));
 
     for(axom::IndexType idx2 = idx1 + 1; idx2 < numTriangles; ++idx2)
     {
@@ -216,12 +250,9 @@ axom::Array<IndexPair> naiveFindIntersections(const TriangleMesh& triMesh,
 
 We also took the opportunity to add some additional output when the user requests verbose output. The following snippet outputs a message in the outer loop every 100 iterations using the ``SLIC_INFO_IF`` macro:
 ```cpp
-    if(verboseOutput)
-    {
-      SLIC_INFO_IF(
-        idx1 % 100 == 0,
-        axom::fmt::format(axom::utilities::locale(), "Outer index {:L}", idx1));
-    }
+    SLIC_INFO_IF(
+      verboseOutput && idx1 % 100 == 0,
+      axom::fmt::format(axom::utilities::locale(), "Outer index {:L}", idx1));
 ```
 
 ## Optimization: Use the triangle bounding boxes to accelerate the query
@@ -252,7 +283,7 @@ We can call our ``naiveFindIntersections()`` algorithm with this new lambda with
     : naiveFindIntersections(mesh, checkIntersect, params.isVerbose());
 ```
 
-!!! action Look at code for completed example
+> :clapper: Look at code for completed example
 
 ## Running the code
 So, how did our algorithms do?
@@ -320,4 +351,5 @@ When we try this with a mesh with an order of magnitude more triangles (~250K tr
 [lesson_02: INFO] Mesh had 0 intersection pairs 
 ```
 
-!!! next_time In the next lesson, we will port our naive algorithm to other execution and memory spaces with the help of the [RAJA](https://github.com/LLNL/raja) and [Umpire](https://github.com/LLNL/umpire) libraries.
+### Next time:
+In the next lesson, we will port our naive algorithm to other execution and memory spaces with the help of the [RAJA](https://github.com/LLNL/raja) and [Umpire](https://github.com/LLNL/umpire) libraries.

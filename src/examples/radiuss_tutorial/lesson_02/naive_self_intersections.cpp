@@ -260,12 +260,9 @@ axom::Array<IndexPair> naiveFindIntersections(const TriangleMesh& triMesh,
       continue;
     }
 
-    if(verboseOutput)
-    {
-      SLIC_INFO_IF(
-        idx1 % 100 == 0,
-        axom::fmt::format(axom::utilities::locale(), "Outer index {:L}", idx1));
-    }
+    SLIC_INFO_IF(
+      verboseOutput && idx1 % 100 == 0,
+      axom::fmt::format(axom::utilities::locale(), "Outer index {:L}", idx1));
 
     for(axom::IndexType idx2 = idx1 + 1; idx2 < numTriangles; ++idx2)
     {
