@@ -107,10 +107,9 @@ Since the execution space is templated, and we would to expose a runtime choice 
 
 ## Algorithm setup: memory spaces
 
-Our algorithm requires memory to be allocated in the correct space for each kernel. As such, we distinguish between "host" memory allocators and "kernel" memory allocators.
-The latter might be a "host" memory allocator, e.g. for sequential and OpenMP execution spaces. It might also be "unified" or "device" memory if run on GPUs.
+Our algorithm requires memory to be allocated in the correct space for each kernel. As such, we distinguish between "host" and "kernel" memory allocators. The latter might be a ``host`` memory allocator, e.g. for sequential and OpenMP execution spaces. It might also be ``unified`` or ``device`` memory if run on GPUs.
 
-> :warning:  Axom's default memory allocator on devices is currently set to "unified" memory. In this example, we will use "device" memory for GPU-based execution spaces.
+> :warning:  Axom's default memory allocator on devices is currently set to "unified" memory. In this example, we will use ``device`` memory for GPU-based execution spaces and explicitly move data to/from the device.
 
 We get the integer ID for the ``host_allocator`` and ``kernel_allocator`` as follows:
 ```cpp
@@ -156,7 +155,7 @@ We are now ready to discuss the ``axom::Array`` class, and its counterpart, ``ax
 ``axom::Array`` is a drop-in replacement for ``std::vector`` which can be used with device code. In contrast to ``std::vector``, it:
 * supports Umpire-allocators for its memory allocations
 * has functions that are host/device decorated for execution within GPU kernels
-* does not require its members to be initialized on copy
+* does not require its members to be initialized on copy. This can be useful, e.g. when allocating memory that will be initialized immediately in a kernel.
 * supports compile-time (non-ragged) multidimensional indexing <i>*[Not demonstrated in this tutorial]</i>
 * has a `view()` function that returns an ``axom::ArrayView`` over the same memory
 
@@ -164,10 +163,12 @@ We are now ready to discuss the ``axom::Array`` class, and its counterpart, ``ax
 
 Rather, we pass in a lightweight view class ``axom::ArrayView`` -- similar to a ``std::span`` -- that contains a pointer to the underlying data and the number of elements within an ``axom::Array``. ArrayView supports a subset of the operations of ``axom::Array``; it allows users to modify the data in the array, but does not allow modifications that might change the size of the array.
 
+##### Naming conventions
 Our implementation will use the following variable naming convention for arrays:
 * We use the suffix ``_h`` for variables that live in the host space, e.g. ``foo_h``
 * We use the suffix ``_d`` for variables that live in the device space, e.g. ``foo_d``
 * We use the suffice ``_v`` for views of an array, e.g. ``foo_v``.
+* We use the suffice ``_p`` for raw pointers, e.g. ``foo_p``.
 ## First pass: count the number of intersections
 
 Now that we know the number of valid triangles and their indices, we are ready to apply the first pass of our algorithm, which counts the number of pairs of intersecting triangles.
@@ -180,9 +181,7 @@ We perform this test in parallel and use a reduction variable to atomically incr
   RAJA::RangeSegment row_range(0, validCount);
   RAJA::RangeSegment col_range(0, validCount);
 
-  using KERNEL_POL =
-    typename axom::mint::internal::structured_exec<ExecSpace>::loop2d_policy;
-  using LOOP_POL = typename axom::execution_space<ExecSpace>::loop_policy;
+  using KERNEL_POL = typename axom::mint::internal::structured_exec<ExecSpace>::loop2d_policy;
   using REDUCE_POL = typename axom::execution_space<ExecSpace>::reduce_policy;
   using ATOMIC_POL = typename axom::execution_space<ExecSpace>::atomic_policy;
 
@@ -197,7 +196,7 @@ We perform this test in parallel and use a reduction variable to atomically incr
       }
     });
 ```
-Note that ``numIntersect`` is a RAJA reduction variable that sums the results over each kernel iteration.
+> :memo: ``numIntersect`` is a RAJA reduction variable that sums the results over each kernel iteration. We access its value outside the kenel via the ``.get()`` member function.
 
 The ``trianglesIntersect`` lambda is similar to the one in our previous lesson, although it now uses views into the triangle array and the bounding box array, and its caller is expected to only pass in valid (i.e. non-degenerate) triangle indices:
 ```cpp
@@ -233,7 +232,7 @@ We use the counter, along with a ``RAJA::atomicAdd`` to keep track of the insert
       AXOM_LAMBDA(int col, int row) {
         if(row < col && trianglesIntersect(valid_v[row], valid_v[col]))
         {
-          const auto idx = RAJA::atomicAdd<ATOMIC_POL>(counter, 2);
+          const auto idx = RAJA::atomicAdd<ATOMIC_POL>(counter_p, 2);
           intersections_v[idx + 0] = valid_v[row];
           intersections_v[idx + 1] = valid_v[col];
         }
@@ -258,7 +257,7 @@ Our algorithm concludes by copying the intersection indices into an array of pai
 ```
 
 ## Comparing the performance
-How'd we do this time?
+Let's see how our RAJA port performs.
 
 #### Comparing the sequential RAJA-fied algorithm against our previous one
 We first compare the performance of the sequential algorithm to our previous algorithm on a mesh with 30K triangles of which 5 pairs of triangles intersect:
@@ -305,7 +304,7 @@ We first compare the performance of the sequential algorithm to our previous alg
 	(10975, 11000)
 	(10975, 11001)
 ```
-So, as expected, the sequential execution takes approximately twice as long to run on meshes that have self-intersections. However, we can now run the algorithm in parallel.
+So, as expected, the sequential execution takes approximately twice as long to run on meshes that have self-intersections with this new formulation. However, we can now run the algorithm in parallel.
 
 #### Comparing our algorithm in different execution spaces
 
@@ -351,6 +350,8 @@ Finally, here's a run on a single NVidia V100 GPU
 [lesson_03: INFO] Computing intersections with bounding boxes took 11.4 seconds. 
 [lesson_03: INFO] Mesh had 0 intersection pairs 
 ```
+
+> :clapper:  Let's run a few examples on different meshes
 
 ### Next time:
 In this lesson, we ported out naive self-intersection algorithm to different execution space with the help of RAJA and Umpire. This accelerated our compute time, but did not help with the algorithmic complexity of the algorithm. In the next lesson, we will introduce a better algorithm based on a spatial index that, for reasonable meshes, should considerably reduces the expected work per triangle.
