@@ -25,7 +25,7 @@ WORKDIR ${HOME}
 USER ${USER}
 
 # Clone axom at axom_repo directory
-RUN git clone --recursive --branch $branch --single-branch --depth 1 https://github.com/LLNL/axom.git axom_repo
+RUN git clone --recursive --branch $branch https://github.com/LLNL/axom.git axom_repo
 
 # Build/install TPLs via spack and then remove the temporary build directory on success
 RUN cd ${HOME}/axom_repo && python3 ./scripts/uberenv/uberenv.py --spack-env-file=./scripts/spack/configs/docker/ubuntu20_cuda/spack.yaml \
