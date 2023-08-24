@@ -5,7 +5,7 @@ In this lesson, we will begin developing our application by loading a triangle m
 We use the [CLI11](https://github.com/CLIUtils/CLI11) library for parsing command line options. Axom vendors a copy of ``CLI11`` for internal use and provides it to downstream users. It is available via the `axom::cli11` CMake target.
 
 This example uses the following Axom components:
-* ``core`` -- has a dynamic array class ``axom::Array```
+* ``core`` -- has a dynamic array class ``axom::Array``
 * ``slic`` -- provides logging functionality
 * ``quest`` -- has a utility function for loading the STL mesh
 * ``mint`` -- provides a class for triangle meshes
@@ -154,7 +154,7 @@ We next add the `CLI::App` to our application's main function:
 
 ## Setting up our triangle mesh
 
-Our final step in this lesson will be to load the triangle mesh. Axom has built-in support for loading STL meshes via the `quest::STLReader` class, which loads the mesh into a `mint::UnstructuredMesh` instance. For the purposes of this tutorial, we will begin with a (simpler) array of triangles as our basic mesh data structure. We abstract this into our local `TriangleMesh` struct:
+Our final step in this lesson will be to load the triangle mesh. Axom has built-in support for loading STL meshes via the ``quest::STLReader`` class, which loads the mesh into a ``mint::UnstructuredMesh`` instance. For the purposes of this tutorial, we will begin with a (simpler) array of triangles as our basic mesh data structure. We abstract this into our local ``TriangleMesh`` struct:
 ```cpp
 struct TriangleMesh
 {
@@ -212,9 +212,9 @@ TriangleMesh makeTriangleMesh(const std::string& stl_mesh_path)
   return triMesh;
 }
 ```
-The above function loads an STL mesh into a `mint::UnstructureMesh`, extracts its triangles into an ``axom::Array`` and returns the initialized `TriangleMesh` instance.
+The above function loads an STL mesh into a ``mint::UnstructuredMesh``, extracts its triangles into an ``axom::Array`` and returns the initialized ``TriangleMesh`` instance.
 
-We call this from `main()` using:
+We call this from ``main()`` using:
 ```cpp
   TriangleMesh mesh = makeTriangleMesh(params.mesh_file);
 ```
@@ -225,20 +225,12 @@ Finally, we can output some properties of the parsed mesh using:
                               "Parsed STL mesh has {:L} triangles.",
                               mesh.numTriangles()));
 ```
-> :memo: The `locale` helps with the formatting of the output for improved readability. Axom's default locale is `"en_US.UTF-8"`.
+> :bulb: The ``locale`` helps with the formatting of the output for improved readability. Axom's default locale is `"en_US.UTF-8"`.
 
 ## Running the application
-The [axom_data](https://github.com/LLNL/axom_data) repository provides several STL meshes that we will use in this tutorial.
+The [axom_data](https://github.com/LLNL/axom_data) repository provides several STL meshes that we will use in this tutorial. We will also use several larger meshes that are not part of the ``axom_data`` repo.
 
-Axom uses `axom_data` as a submodule in `<axom_root>/data`. We simplify usage in this tutorial, we will create a symbolic link
-```shell
-ln -s <path/to/axom_data> <local_path>
-```
-Specifically:
-```shell
-# From tutorial build directory
-ln -s ../../../../data/quest/ ../stl_meshes
-```
+> :memo: Axom uses `axom_data` as a submodule in `<axom_root>/data`
 
 #### Run application without passing an input mesh
 ```shell

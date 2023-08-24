@@ -164,11 +164,12 @@ We are now ready to discuss the ``axom::Array`` class, and its counterpart, ``ax
 Rather, we pass in a lightweight view class ``axom::ArrayView`` -- similar to a ``std::span`` -- that contains a pointer to the underlying data and the number of elements within an ``axom::Array``. ArrayView supports a subset of the operations of ``axom::Array``; it allows users to modify the data in the array, but does not allow modifications that might change the size of the array.
 
 ##### Naming conventions
-Our implementation will use the following variable naming convention for arrays:
+Our implementation will use the following variable naming convention for arrays, views and pointers:
 * We use the suffix ``_h`` for variables that live in the host space, e.g. ``foo_h``
 * We use the suffix ``_d`` for variables that live in the device space, e.g. ``foo_d``
-* We use the suffice ``_v`` for views of an array, e.g. ``foo_v``.
-* We use the suffice ``_p`` for raw pointers, e.g. ``foo_p``.
+* We use the suffix ``_v`` for views of an array, e.g. ``foo_v``
+* We use the suffix ``_p`` for raw pointers, e.g. ``foo_p``
+
 ## First pass: count the number of intersections
 
 Now that we know the number of valid triangles and their indices, we are ready to apply the first pass of our algorithm, which counts the number of pairs of intersecting triangles.

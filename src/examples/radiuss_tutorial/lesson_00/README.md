@@ -29,7 +29,7 @@ Our application can be configured and built using the following commands:
 > make -j16
 ```
 
-> :hint:  BLT provides a few lightweight "smoke" tests to help diagnose configuration issues. If we configure our application with the ``ENABLE_TESTS`` CMake option, the above command will build these tests and we can run them using ``ctest``.
+> 📝  BLT provides a few lightweight "smoke" tests to help diagnose configuration issues. If we configure our application with the ``ENABLE_TESTS`` CMake option, the above command will build these tests and we can run them using ``ctest``.
 
 The following CMake snippet imports the provided Axom installation into our project's build system:
 ```cmake
