@@ -109,7 +109,7 @@ In this lesson, we will be using the following primitives, which are defined as 
 
 Since computational geometry primitives are typically used in performance-critical code sections, ``primal``'s primitives and operators are typically templated on the spatial dimension as well as the coordinate types. Thus, e.g., we have ``primal::Point<double, 3>`` for a point with 64-bit floating point coordinates in three-dimensional space. 
 
-To simplify code readability, we often use type aliases when the types are known. For example, if our application always uses 3D triangles with floating point coordinate types, we might define
+To simplify code readability, we often use type aliases when the types are known. For example, if our application always uses 3D triangles with floating point coordinate types, we might define:
 ```cpp
 using BoundingBoxType = axom::primal::BoundingBox<double, 3>;
 ```

@@ -22,7 +22,7 @@ int main()
   // Check Axom version
   std::cout << axom::fmt::format("Version: {}", axom::getVersion()) << "\n\n";
 
-  // Print axom about
+  // Print Axom about
   axom::about();
 
   return 0;

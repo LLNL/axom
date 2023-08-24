@@ -1,6 +1,6 @@
 # Lesson 03: Naive self-intersections... now on the device!
 
-In this lesson, we will port our naive self-intersection algorithm from the previous lesson to different execution spaces, including serial (sequential), threaded (OpenMP) and/or GPU-based (cuda) backends with the help of the RAJA and Umpire libraries. These libraries allow a single implementation to run on different execution spaces.
+In this lesson, we will port our naive self-intersection algorithm from the previous lesson to different execution spaces, including serial (sequential), threaded (OpenMP) and/or GPU-based (CUDA) backends with the help of the RAJA and Umpire libraries. These libraries allow a single implementation to run on different execution spaces.
 
 > :memo:  We are still using (an adaptation of) our naive algorithm in this lesson, so the performance will improve but will still scale quadratically in the number of triangles in the mesh.
 
@@ -54,7 +54,7 @@ enum class RuntimePolicy
   raja_cuda = 3
 };
 ```
-and add a ``RuntimePolicy`` member to  our ``Input`` class
+and add a ``RuntimePolicy`` member to  our ``Input`` class:
 ```cpp
   RuntimePolicy policy {RuntimePolicy::raja_seq};
 ```

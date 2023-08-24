@@ -13,7 +13,7 @@ A BVH tree is a nested spatial index over the objects in our mesh. Specifically,
 Our BVH-based algorithm consists of three phases:
 1. We use the BVH tree to find, for each triangle ``t``, the index of all candidate triangles whose bounding boxes overlap that of ``t``. This uses the relatively inexpensive ``primal::intersect(BoundingBox, BoundingBox)`` predicate
 2. We then filter the list to remove degenerate triangles, and to remove duplicate pairs
-3. Finally, from the above list of potential candidates, we retain the pairs of triangles that actually intersect using the relatively expensive ``primal::intersect(Triangle, Triangle))`` predicate
+3. Finally, from the above list of potential candidates, we retain the pairs of triangles that actually intersect using the relatively expensive ``primal::intersect(Triangle, Triangle)`` predicate
 
 > :key:  This approach significantly reduces the computational work for reasonable meshes, such as those that Axom users would use for simulations, since each triangle's bounding box is expected to overlap with only a few others in the mesh. Thus, to find the candidates, we expect to only check ``O(lg(N))`` other triangles, rather than ``O(N)`` triangles for a mesh with ``N`` triangles.
 
@@ -37,7 +37,7 @@ and then query the tree with a collection of bounding boxes using the built-in `
 ```
 The input to this query is a collection of bounding boxes, and the output is returned as a CSR-like collection of arrays indexed by the input bounding boxes (which correspond to the triangles from the mesh). After the call:
 * ``counts[idx]`` contains the number of entities that intersect with input entity ``idx``
-* ``offsets[idx]`` contains the offset within the returned ``candidates`` array of the first result of input entity ``idx
+* ``offsets[idx]`` contains the offset within the returned ``candidates`` array of the first result of input entity ``idx``
 * The ``candidates`` array contains all the potential intersection candidates.
 
 > :memo: In this case, the input bounding boxes are identical to the query bounding boxes, but this is not generally the case

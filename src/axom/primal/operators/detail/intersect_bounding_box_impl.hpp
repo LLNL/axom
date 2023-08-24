@@ -19,10 +19,10 @@ namespace detail
 /*!
  * \brief Helper routine for AABB / AABB intersection test.
  *
- * \param [in] min1 the 1st AABB min coordinate along a direction.
- * \param [in] max1 the 1st AABB max coordinate along a drection.
- * \param [in] min2 the 2nd AABB min coordinate along a direction.
- * \param [in] max2 the 2nd AABB max coordinate along a drection.
+ * \param [in] min1 the 1st AABB min coordinate along a direction
+ * \param [in] max1 the 1st AABB max coordinate along a direction
+ * \param [in] min2 the 2nd AABB min coordinate along a direction
+ * \param [in] max2 the 2nd AABB max coordinate along a direction
  *
  * \return status true if the AABB's intersect, otherwise false.
  *

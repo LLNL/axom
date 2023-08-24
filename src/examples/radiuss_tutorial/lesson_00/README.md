@@ -3,7 +3,7 @@
 In this lesson, we will develop a simple application that uses an installed version of Axom. 
 Specifically, we will print the version of Axom and some of its configuration properties.
 
-> :bulb: Our examples will be using the ``C++14`` standard since that's Axom's current version. 
+> :information_source: Our examples use the ``C++14`` standard since that's Axom's current version.
 
 We will also be using the [fmt](https://fmt.dev/latest/index.html) library for string formatting, which Axom uses internally and vendors for its users.
 The vast majority of ``fmt`` has been included in recent C++ standards, starting with ``C++20``. See also the [fmt cheat sheet](https://hackingcpp.com/cpp/libs/fmt.html).
@@ -29,7 +29,7 @@ Our application can be configured and built using the following commands:
 > make -j16
 ```
 
-> 📝  BLT provides a few lightweight "smoke" tests to help diagnose configuration issues. If we configure our application with the ``ENABLE_TESTS`` CMake option, the above command will build these tests and we can run them using ``ctest``.
+> :memo:  BLT provides a few lightweight "smoke" tests to help diagnose configuration issues. If we configure our application with the ``ENABLE_TESTS`` CMake option, the above command will build these tests and we can run them using ``ctest``.
 
 The following CMake snippet imports the provided Axom installation into our project's build system:
 ```cmake
@@ -58,7 +58,7 @@ For example, to include Axom's ``core`` component, an application would include 
 #include "axom/core.hpp"
 ```
 
-Axom also generates a config header file containing most of the compiler defines related to the configured axom. This file is located in ``axom/config.hpp``. For example, to guard MPI-related code, we would use the ``AXOM_USE_MPI`` as follows:
+Axom also generates a config header file containing most of the compiler defines related to the configured Axom. This file is located in ``axom/config.hpp``. For example, to guard MPI-related code, we would use the ``AXOM_USE_MPI`` as follows:
 ```cpp
 #include "axom/config.hpp"
 
@@ -136,4 +136,4 @@ Active Dependencies:
 
 
 ### Next time:
-In the next lesson, we will add a logger and command line parser and load in a triangle mesh 
+In the next lesson, we will add a logger and command line parser and load in a triangle mesh. 

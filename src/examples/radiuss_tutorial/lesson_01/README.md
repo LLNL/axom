@@ -12,11 +12,11 @@ This example uses the following Axom components:
 
 ## Using a SLIC-based logger
 
-We begin by setting up a logger for our application using axom's `slic` component ([Simple Logging Interface Code](https://axom.readthedocs.io/en/develop/axom/slic/docs/sphinx/index.html)).
+We begin by setting up a logger for our application using Axom's `slic` component ([Simple Logging Interface Code](https://axom.readthedocs.io/en/develop/axom/slic/docs/sphinx/index.html)).
 
 `slic` uses a C-style API over a singleton instance and also provides a few basic logging macros that applications can either use or extend/build upon. 
 
-For our application, we will use an RAII-based wrapper struct
+For our application, we will use an RAII-based wrapper struct:
 
 ```cpp
 struct BasicLogger
@@ -64,7 +64,7 @@ We now add a `BasicLogger` instance to the application with
 
 `slic`'s logging levels are:
 * ``slic::message::Error``: Used for logging error messages. By default prints a stacktrace and exits the application.
-* ``slic::message::Warning``: Used for logging warning messages. By default, this prints a warning messsage and continues executing the application.
+* ``slic::message::Warning``: Used for logging warning messages. By default, this prints a warning message and continues executing the application.
 * ``slic::message::Info``: Used for logging informational messages.
 * ``slic::message::Debug``: Used for logging debug messages. By default, these are compiled out in ``Release`` configurations.
  

@@ -5,10 +5,11 @@
 
 //-----------------------------------------------------------------------------
 ///
-/// file: device_self_intersections.cpp
+/// file: device_spatial_indexes.cpp
 ///
-/// This example ports the naive self-intersection algorithm to additional
-/// execution and memory spaces w/ the help of RAJA and Umpire
+/// This example uses a spatial index, the linear BVH tree from Axom's spin
+/// component, in addition to RAJA and Umpire based kernels for a highly
+//  efficient performance-portable self-intersection algorithm.
 //-----------------------------------------------------------------------------
 
 #include "axom/config.hpp"
