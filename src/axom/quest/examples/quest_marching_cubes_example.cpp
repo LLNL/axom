@@ -1057,7 +1057,6 @@ struct ContourTestBase
     auto domainIdView = getDomainIdView(contourMesh);
 
     const axom::IndexType domainCount = computationalMesh.domainCount();
-#if 1
     axom::Array<typename axom::quest::MeshViewUtil<DIM, MemorySpace>::ConstCoordsViewsType> allCoordsViews(domainCount);
     for(int n=0; n<domainCount; ++n)
     {
@@ -1110,75 +1109,6 @@ struct ContourTestBase
         }
       }
     }
-#else
-    axom::Array<axom::ArrayView<const double, DIM>> coordsViews(domainCount * DIM);
-
-    // Get info about the computational domains available for look-up.
-    axom::Array<axom::StackArray<axom::IndexType, DIM>> domainLengths(domainCount);
-    for(axom::IndexType n = 0; n < domainCount; ++n)
-    {
-      auto& domain = computationalMesh.domain(n);
-      axom::ArrayView<const double, DIM>* domainCoordsView =
-        &coordsViews[DIM * n];
-      getCoordsViews(domain, computationalMesh.coordsetPath(), domainCoordsView);
-
-      axom::Array<axom::IndexType> domLengths =
-        computationalMesh.domainLengths(n);
-      for(int d = 0; d < DIM; ++d)
-      {
-        domainLengths[n][d] = domLengths[d];
-      }
-    }
-
-    for(axom::IndexType cn = 0; cn < cellCount; ++cn)
-    {
-      axom::IndexType domainId = domainIdView[cn];
-
-      axom::StackArray<axom::IndexType, DIM> parentCellIdx =
-        parentCellIdxView[cn];
-      reverse(parentCellIdx);  // ArrayView expects indices in reverse order.
-      // This should work but breaks gcc11 on 64-bit linux:
-      // axom::StackArray<axom::IndexType, DIM> upperIdx = parentCellIdx + 1;
-      axom::StackArray<axom::IndexType, DIM> upperIdx = parentCellIdx;
-      addToStackArray(upperIdx, 1);
-
-      axom::ArrayView<const double, DIM>* domainCoordsView =
-        &coordsViews[DIM * domainId];
-      axom::primal::Point<double, DIM> lower, upper;
-      for(int d = 0; d < DIM; ++d)
-      {
-        lower[d] = domainCoordsView[d][parentCellIdx];
-        upper[d] = domainCoordsView[d][upperIdx];
-      }
-      axom::primal::BoundingBox<double, DIM> parentCellBox(lower, upper);
-      double tol = errorTolerance();
-      axom::primal::BoundingBox<double, DIM> big(parentCellBox);
-      axom::primal::BoundingBox<double, DIM> small(parentCellBox);
-      big.expand(tol);
-      small.expand(-tol);
-
-      // WRONG: the node ids should increased by the number of nodes in all previous domains.
-      axom::IndexType* cellNodeIds = contourMesh.getCellNodeIDs(cn);
-      const axom::IndexType cellNodeCount = contourMesh.getNumberOfCellNodes(cn);
-
-      for(axom::IndexType nn = 0; nn < cellNodeCount; ++nn)
-      {
-        axom::primal::Point<double, DIM> nodeCoords;
-        contourMesh.getNode(cellNodeIds[nn], nodeCoords.data());
-
-        if(!big.contains(nodeCoords) || small.contains(nodeCoords))
-        {
-          ++errCount;
-          SLIC_INFO_IF(
-            params.isVerbose(),
-            axom::fmt::format("checkContourCellLimits: node {} at {} is not "
-                              "on parent cell boundary.",
-                              cellNodeIds[nn],
-                              nodeCoords));
-        }
-      }
-    }
-#endif
 
     SLIC_INFO_IF(params.isVerbose(),
                  axom::fmt::format("checkContourCellLimits: found {} nodes "
@@ -1303,33 +1233,6 @@ struct ContourTestBase
                                    errCount));
     return errCount;
   }
-
-#if 0
-  void getCoordsViews(conduit::Node& domain,
-                      const std::string& coordsetPath,
-                      axom::ArrayView<const double, DIM> coordsViews[DIM])
-  {
-    const conduit::Node& dimsNode =
-      domain.fetch_existing("topologies/mesh/elements/dims");
-    axom::StackArray<axom::IndexType, DIM> coordsViewShape;
-    for(int d = 0; d < DIM; ++d)
-    {
-      coordsViewShape[d] = 1 + dimsNode[DIM - 1 - d].as_int();
-    }
-
-    const conduit::Node& coordValues =
-      domain.fetch_existing(coordsetPath + "/values");
-    bool isInterleaved = conduit::blueprint::mcarray::is_interleaved(coordValues);
-    const int coordSp = isInterleaved ? DIM : 1;
-
-    for(int d = 0; d < DIM; ++d)
-    {
-      auto* coordsPtr = coordValues[d].as_double_ptr();
-      coordsViews[d] =
-        axom::ArrayView<const double, DIM>(coordsPtr, coordsViewShape, coordSp);
-    }
-  }
-#endif
 
   /**
    * Change cp_domain data from a local index to a global domain index
@@ -1598,7 +1501,7 @@ int testNdimInstance(BlueprintStructuredMesh& computationalMesh)
       params.planeNormal<DIM>());
     planarTest->computeNodalDistance(computationalMesh);
   }
-  computationalMesh.printMeshInfo();
+  if(params.isVerbose()) { computationalMesh.printMeshInfo(); }
 
   // Write computational mesh with contour functions.
   saveMesh(computationalMesh.asConduitNode(), params.fieldsFile);

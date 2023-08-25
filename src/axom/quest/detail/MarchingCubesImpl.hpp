@@ -314,17 +314,10 @@ public:
       {
         // clang-format off
           double nodalValues[CELL_CORNER_COUNT] =
-#if 1
             {fcnView(i    , j    ),
              fcnView(i + 1, j    ),
              fcnView(i + 1, j + 1),
              fcnView(i    , j + 1)};
-#else
-            {fcnView(j    , i    ),
-             fcnView(j    , i + 1),
-             fcnView(j + 1, i + 1),
-             fcnView(j + 1, i    )};
-#endif
         // clang-format on
         caseIdsView(i, j) = computeCrossingCase(nodalValues);
       }
@@ -340,7 +333,6 @@ public:
       {
         // clang-format off
           double nodalValues[CELL_CORNER_COUNT] =
-#if 1
             {fcnView(i + 1, j    , k    ),
              fcnView(i + 1, j + 1, k    ),
              fcnView(i    , j + 1, k    ),
@@ -349,16 +341,6 @@ public:
              fcnView(i + 1, j + 1, k + 1),
              fcnView(i    , j + 1, k + 1),
              fcnView(i    , j    , k + 1)};
-#else
-            {fcnView(k    , j    , i + 1),
-             fcnView(k    , j + 1, i + 1),
-             fcnView(k    , j + 1, i    ),
-             fcnView(k    , j    , i    ),
-             fcnView(k + 1, j    , i + 1),
-             fcnView(k + 1, j + 1, i + 1),
-             fcnView(k + 1, j + 1, i    ),
-             fcnView(k + 1, j    , i    )};
-#endif
         // clang-format on
         caseIdsView(i, j, k) = computeCrossingCase(nodalValues);
       }
@@ -531,7 +513,6 @@ public:
       const auto& j = c[1];
 
       // clang-format off
-#if 1
       cornerCoords[0] = { x(i    , j    ), y(i    , j    ) };
       cornerCoords[1] = { x(i + 1, j    ), y(i + 1, j    ) };
       cornerCoords[2] = { x(i + 1, j + 1), y(i + 1, j + 1) };
@@ -541,17 +522,6 @@ public:
       cornerValues[1] = fcnView(i + 1, j    );
       cornerValues[2] = fcnView(i + 1, j + 1);
       cornerValues[3] = fcnView(i    , j + 1);
-#else
-      cornerCoords[0] = { x(j    , i    ), y(j    , i    ) };
-      cornerCoords[1] = { x(j    , i + 1), y(j    , i + 1) };
-      cornerCoords[2] = { x(j + 1, i + 1), y(j + 1, i + 1) };
-      cornerCoords[3] = { x(j + 1, i    ), y(j + 1, i    ) };
-
-      cornerValues[0] = fcnView(j    , i    );
-      cornerValues[1] = fcnView(j    , i + 1);
-      cornerValues[2] = fcnView(j + 1, i + 1);
-      cornerValues[3] = fcnView(j + 1, i    );
-#endif
       // clang-format on
     }
     template <int TDIM = DIM>
@@ -571,7 +541,6 @@ public:
       const auto& k = c[2];
 
       // clang-format off
-#if 1
       cornerCoords[0] = { x(i+1, j  , k  ), y(i+1, j  , k  ), z(i+1, j  , k  ) };
       cornerCoords[1] = { x(i+1, j+1, k  ), y(i+1, j+1, k  ), z(i+1, j+1, k  ) };
       cornerCoords[2] = { x(i  , j+1, k  ), y(i  , j+1, k  ), z(i  , j+1, k  ) };
@@ -589,25 +558,6 @@ public:
       cornerValues[5] = fcnView(i+1, j+1, k+1);
       cornerValues[6] = fcnView(i  , j+1, k+1);
       cornerValues[7] = fcnView(i  , j  , k+1);
-#else
-      cornerCoords[0] = { x(k  , j  , i+1), y(k  , j  , i+1), z(k  , j  , i+1) };
-      cornerCoords[1] = { x(k  , j+1, i+1), y(k  , j+1, i+1), z(k  , j+1, i+1) };
-      cornerCoords[2] = { x(k  , j+1, i  ), y(k  , j+1, i  ), z(k  , j+1, i  ) };
-      cornerCoords[3] = { x(k  , j  , i  ), y(k  , j  , i  ), z(k  , j  , i  ) };
-      cornerCoords[4] = { x(k+1, j  , i+1), y(k+1, j  , i+1), z(k+1, j  , i+1) };
-      cornerCoords[5] = { x(k+1, j+1, i+1), y(k+1, j+1, i+1), z(k+1, j+1, i+1) };
-      cornerCoords[6] = { x(k+1, j+1, i  ), y(k+1, j+1, i  ), z(k+1, j+1, i  ) };
-      cornerCoords[7] = { x(k+1, j  , i  ), y(k+1, j  , i  ), z(k+1, j  , i  ) };
-
-      cornerValues[0] = fcnView(k  , j  , i+1);
-      cornerValues[1] = fcnView(k  , j+1, i+1);
-      cornerValues[2] = fcnView(k  , j+1, i  );
-      cornerValues[3] = fcnView(k  , j  , i  );
-      cornerValues[4] = fcnView(k+1, j  , i+1);
-      cornerValues[5] = fcnView(k+1, j+1, i+1);
-      cornerValues[6] = fcnView(k+1, j+1, i  );
-      cornerValues[7] = fcnView(k+1, j  , i  );
-#endif
       // clang-format on
     }
 
