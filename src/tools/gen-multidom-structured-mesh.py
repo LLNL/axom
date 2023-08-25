@@ -17,14 +17,15 @@ except ModuleNotFoundError as e:
 import numpy as np
 
 def i_c(s):
-  '''Integer coordinates.'''
+  '''Convert comma-separated string to list of integers.'''
   return list(map(int, s.split(',')))
+
 def f_c(s):
-  '''Floating point coordinates.'''
+  '''Convert comma-separated string to list of floating point numbers.'''
   return list(map(float, s.split(',')))
 
 from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
-ps = ArgumentParser(description='Write a blueprint multidomain unstructured mesh.',
+ps = ArgumentParser(description='Write a blueprint strided-unstructured mesh.',
                     formatter_class=ArgumentDefaultsHelpFormatter)
 ps.add_argument('--useList', action='store_true', help='Put domains in a list instead of a map')
 ps.add_argument('-ml', type=f_c, default=(0.,0.), help='Mesh lower coordinates')
@@ -32,6 +33,7 @@ ps.add_argument('-mu', type=f_c, default=(1.,1.), help='Mesh upper coordinates')
 ps.add_argument('-ms', type=i_c, default=(3,3), help='Logical size of mesh (cells)')
 ps.add_argument('-dc', type=i_c, default=(1,1), help='Domain counts in each index direction')
 ps.add_argument('-o', '--output', type=str, default='mdmesh', help='Output file base name')
+ps.add_argument('--strided', action='store_true', help='Use strided_structured (has ghosts)')
 opts,unkn = ps.parse_known_args()
 print(opts, unkn)
 if(unkn):
@@ -51,6 +53,12 @@ goodDc = [opts.ms[i] >= opts.dc[i] for i in range(dim)]
 if sum(goodDc) < dim:
   raise RuntimeError(f'ms ({opts.ms}) must be >= dc ({opts.dc}) in all directions.')
 
+# Number of phony nodes on left and right sides, for strided option
+if opts.strided:
+  npnl, npnr = 2, 1
+else:
+  npnl, npnr = 0, 0
+
 def scale_structured_domain(n, startCoord, endCoord):
   '''This function scales and shifts a blueprint structured domain after
   it has been created.  There's no way to specify the physical extent
@@ -58,26 +66,53 @@ def scale_structured_domain(n, startCoord, endCoord):
   can tell.
 
   '''
-  domPhysicalSize = np.array(endCoord) - np.array(startCoord)
-  xyz = 'xyz'
-  assert(n['topologies/mesh/type'] == 'structured')
+  #print(f'Rescaling to {startCoord} -> {endCoord}')
+
   ndim = n['coordsets/coords/values'].number_of_children()
+
+  domLens = n['topologies/mesh/elements/dims']
+  dirs = 'ij' if ndim == 2 else 'ijk'
+  domLens = [ domLens[d] for d in dirs ]
+  domLens = np.array(domLens)
+  domPhysicalSize = np.array(endCoord) - np.array(startCoord)
+  #print(f'domLens={domLens}   domPhysicalSize={domPhysicalSize}')
+  assert(n['topologies/mesh/type'] == 'structured')
   assert(len(startCoord) >= ndim)
   assert(len(domPhysicalSize) >= ndim)
+
+  coordArrayLens = domLens + 1 + npnl + npnr
+  #print(f'coordArrayLens={coordArrayLens}')
+
+  xyz = 'xyz'
   for d in range(ndim):
     coords = n['coordsets/coords/values'][d]
-    minC, maxC = min(coords), max(coords)
+    coords = np.reshape(coords, np.flip(coordArrayLens))
+
+    # realCoords excludes the ghost layers.
+    if ndim == 2:
+      if npnr == 0:
+        realCoords = coords[npnl:, npnl:]
+      else:
+        realCoords = coords[npnl:-npnr, npnl:-npnr]
+    else:
+      if npnr == 0:
+        realCoords = coords[npnl:, npnl:, npnl:]
+      else:
+        realCoords = coords[npnl:-npnr, npnl:-npnr, npnl:-npnr]
+
+    minC, maxC = np.amin(realCoords), np.amax(realCoords)
     curRange = maxC - minC
     shift = startCoord[d] - minC
+    scale = domPhysicalSize[d]/curRange
     coords = (coords - minC) * domPhysicalSize[d]/curRange + startCoord[d]
     n['coordsets/coords/values'][xyz[d]] = coords
 
 domType = 'structured'
 
-domCounts = opts.dc if dim == 3 else (*opts.dc, 1)
-meshSize = opts.ms if dim == 3 else (*opts.ms, 1)
-meshLower = opts.ml if dim == 3 else (*opts.ml, 0)
-meshUpper = opts.mu if dim == 3 else (*opts.mu, 0)
+domCounts = opts.dc if dim == 3 else (*opts.dc, 1) # domCounts must be length 3, even for 2D.
+meshSize = opts.ms
+meshLower = opts.ml
+meshUpper = opts.mu
 
 # Convert to np.array to use element-wise arithmetic.
 domCounts = np.array(domCounts, dtype=np.int)
@@ -85,26 +120,20 @@ meshSize = np.array(meshSize, dtype=np.int)
 meshLower = np.array(meshLower)
 meshUpper = np.array(meshUpper)
 
-domPhysicalSize = (meshUpper - meshLower)/domCounts
+domPhysicalSize = (meshUpper - meshLower)/domCounts[:dim]
 cellPhysicalSize = (meshUpper - meshLower)/meshSize
 
-domSize = meshSize//domCounts
-domSizeRem = meshSize % domCounts
+domSize = meshSize//domCounts[:dim]
+domSizeRem = meshSize % domCounts[:dim]
 print(f'meshSize={meshSize} cells, domCounts={domCounts} domSize={domSize} domSizeRem={domSizeRem}')
 
-def domain_size(di, dj, dk):
-  rval = np.array(domSize)
-  rval += (di,dj,dk) < domSizeRem
-  rval[0:dim] += 1
-  return rval
-
-def domain_index_begin(di, dj, dk):
-  '''Compute first cell index of domain (di, dj, dk).'''
-  idx = np.array( (di, dj, dk) )
-  std = np.array(domSize) * (di, dj, dk)
-  extra = np.where( idx < domSizeRem, idx, domSizeRem )
+def domain_index_begin(di, dj, dk=None):
+  '''Compute first cell index of the domain with multi-dimensional index (di, dj, dk).'''
+  ds = (di, dj) if dim == 2 else (di, dj, dk)
+  idx = np.array(ds)
+  std = domSize * ds
+  extra = np.where( idx < domSizeRem[:dim], idx, domSizeRem[:dim] )
   begin = std + extra
-  #print(di, dj, dk, f'begin={begin}, std={std}, extra={extra}')
   return begin
 
 mdMesh = conduit.Node()
@@ -114,25 +143,45 @@ for dk in range(domCounts[2]):
       if opts.useList:
         dom = mdMesh.append()
       else:
-        domName = f'domain_{di:1d}_{dj:1d}' if len(opts.dc) == 2 else f'domain_{di:1d}_{dj:1d}_{dk:1d}'
+        domName = f'domain_{di:1d}_{dj:1d}'
+        if len(opts.dc) == 3: domName += f'_{dk:1d}'
         dom = mdMesh[domName]
 
       cellStart = domain_index_begin(di, dj, dk)
-      cellEnd = domain_index_begin(di+1, dj+1, dk+1)
-      pointCounts = cellEnd - cellStart + (1, 1, 1 if dim == 3 else 0)
-      #print(di, dj, dk, f'{cellStart} -> {cellEnd}, {pointCounts}')
+      cellEnd = domain_index_begin(di+1, dj+1, dk+1 if dim == 3 else 0)
+      pointCounts = cellEnd - cellStart + 1
+      #print(f'cellStart={cellStart}  cellEnd={cellEnd}  pointCounts={pointCounts}')
 
-      conduit.blueprint.mesh.examples.basic(domType, *pointCounts, dom)
+      elemExtents = (cellEnd - cellStart) + (npnl + npnr + 1)
+      vertExtents = np.array(pointCounts) + (npnl + npnr)
+      elemOffset = np.full(dim, npnl)
+      vertOffset = np.full(dim, npnl)
+      #print(f'\n{domName}: {cellStart} -> {cellEnd}')
 
-      domLower = meshLower + cellStart * cellPhysicalSize
-      domUpper = meshLower + cellEnd * cellPhysicalSize
+      pointCounts3 = pointCounts if len(pointCounts) == 3 else (*pointCounts, 0)
+      if opts.strided:
+        desc = conduit.Node()
+        desc['vertex_data/shape'].set(vertExtents)
+        desc['vertex_data/origin'].set(vertOffset)
+        desc['element_data/shape'].set(elemExtents)
+        desc['element_data/origin'].set(elemOffset)
+        #print(f'\ndesc({di},{dj},{dk}):', end=''); print(desc)
+        conduit.blueprint.mesh.examples.strided_structured(desc, *pointCounts3, dom)
+        if dom.has_child("state"): dom.remove_child("state")
+      else:
+        conduit.blueprint.mesh.examples.basic(domType, *pointCounts3, dom)
+
+      domLower = meshLower[:dim] + cellStart * cellPhysicalSize[:dim]
+      domUpper = meshLower[:dim] + cellEnd * cellPhysicalSize[:dim]
       scale_structured_domain(dom, domLower, domUpper)
+      #print(dom)
 
-# print(mdMesh)
+#print('mdMesh:'); print(mdMesh)
 
 info = conduit.Node()
 if not conduit.blueprint.mesh.verify(mdMesh, info):
-    print(info)
+  print("Mesh failed blueprint verification.  Info:")
+  print(info)
 
-conduit.relay.io.blueprint.save_mesh(mdMesh,opts.output, "hdf5")
+conduit.relay.io.blueprint.save_mesh(mdMesh, opts.output, "hdf5")
 print(f'Wrote mesh {opts.output}')
