@@ -6,12 +6,13 @@
 #include "axom/core/execution/execution_space.hpp"
 #include "axom/quest/MarchingCubes.hpp"
 #include "axom/quest/detail/marching_cubes_lookup.hpp"
-// #include "axom/quest/MeshViewUtil.hpp"
+#include "axom/quest/MeshViewUtil.hpp"
 #include "axom/primal/geometry/Point.hpp"
 #include "axom/primal/constants.hpp"
 #include "axom/mint/execution/internal/structured_exec.hpp"
 #include "conduit_blueprint.hpp"
 #include "axom/fmt.hpp"
+#include "axom/core/WhereMacro.hpp"
 
 namespace axom
 {
@@ -41,6 +42,83 @@ static void reverse(axom::StackArray<T, DIM>& a)
   return;
 }
 
+template<typename T, int DIM>
+class StructuredIndexer {
+  axom::StackArray<T, DIM> m_strides;
+  axom::StackArray<std::uint16_t, DIM> m_slowestDirs;
+public:
+  //!@brief Constructor for row- or column major indexing.
+  StructuredIndexer(const axom::StackArray<T, DIM>& lengths, bool rowMajor)
+  {
+    if(rowMajor)
+    {
+      for(int d=0; d<DIM; ++d) { m_slowestDirs[d] = DIM - 1 - d; }
+      m_strides[0] = 1;
+      for(int d=1; d<DIM; ++d)
+      {
+        m_strides[d] = m_strides[d-1] * lengths[d-1];
+      }
+    }
+    else
+    {
+      for(int d=0; d<DIM; ++d) { m_slowestDirs[d] = d; }
+      m_strides[DIM-1] = 1;
+      for(int d=DIM-2; d>=0; --d)
+      {
+        m_strides[d] = m_strides[d+1] * lengths[d+1];
+      }
+    }
+  }
+
+  //!@brief Constructor for arbitrary-stride indexing.
+  StructuredIndexer(const axom::StackArray<T, DIM>& strides)
+    : m_strides(strides)
+  {
+    for(int d=0; d<DIM; ++d) { m_slowestDirs[d] = d; }
+    for(int s=0; s<DIM; ++s)
+    {
+      for(int d=s; d<DIM; ++d)
+      {
+        if(m_strides[m_slowestDirs[s]] < m_strides[m_slowestDirs[d]])
+        {
+          std::swap(m_slowestDirs[s], m_slowestDirs[d]);
+        }
+      }
+    }
+  }
+
+  //!@brief Directions, ordered from slowest to fastest.
+  axom::StackArray<std::uint16_t, DIM>& slowestDirs() const
+  {
+    return m_slowestDirs;
+  }
+
+  //!@brief Strides.
+  axom::StackArray<axom::IndexType, DIM>& strides() const
+  {
+    return m_strides;
+  }
+
+  //!@brief Convert multidimensional index to flat index.
+  T toFlatIndex(const axom::StackArray<T, DIM>& multiIndex) const
+  {
+    T rval = numerics::dot_product(multiIndex.data(), m_strides.data());
+  }
+
+  //!@brief Convert flat index to multidimensional index.
+  axom::StackArray<T, DIM> toMultiIndex(T flatIndex) const
+  {
+    axom::StackArray<T, DIM> multiIndex;
+    for(int d = 0; d<DIM; ++d)
+    {
+      int dir = m_slowestDirs[d];
+      multiIndex[dir] = flatIndex/m_strides[dir];
+      flatIndex -= multiIndex[dir]*m_strides[dir];
+    }
+    return multiIndex;
+  }
+};
+
 /*!
   @brief Computations for MarchingCubesSingleDomain
 
@@ -67,8 +145,8 @@ public:
     @brief Initialize data to a blueprint domain.
     @param dom Blueprint structured mesh domain
     @param coordsetPath Where coordinates are in dom
-    @param fcnPath Where nodal function is in dom
-    @param maskPath Where cell mask function is in dom
+    @param fcnFieldName Name of nodal function is in dom
+    @param maskFieldName Name of cell mask function is in dom
 
     Set up views to domain data and allocate other data to work on the
     given domain.
@@ -77,9 +155,9 @@ public:
     compatible with ExecSpace.
   */
   AXOM_HOST void initialize(const conduit::Node& dom,
-                            const std::string& coordsetPath,
-                            const std::string& fcnPath,
-                            const std::string& maskPath) override
+                            const std::string& topologyName,
+                            const std::string& fcnFieldName,
+                            const std::string& maskFieldName) override
   {
     clear();
 
@@ -104,80 +182,19 @@ public:
     }
 
     // Domain's node coordinates
-#if 0
-    axom::quest::MeshViewUtil<DIM> mvu(dom);
-    m_coordsViews = mvu.getCoordsViews();
-#else
-    {
-      const conduit::Node& coordValues =
-        dom.fetch_existing(coordsetPath + "/values");
-      if(dimsNode.has_child("strides"))
-      {
-        const auto* stridesPtr = dimsNode.fetch_existing("strides").as_int32_ptr();
-        StackArray<IndexType, DIM> strides;
-        for(IndexType d=0; d<DIM; ++d)
-        {
-          strides[d] = stridesPtr[d];
-        }
-        for(int d = 0; d < DIM; ++d)
-        {
-          const double* coordsPtr = coordValues[d].as_double_ptr();
-          m_coordsViews[d] =
-            axom::ArrayView<const double, DIM, MemorySpace>(coordsPtr, m_pShape, strides);
-        }
-      }
-      else
-      {
-        assert(false); // Temporarily not supported, since supporting ghosts.
-        const bool isInterleaved =
-          conduit::blueprint::mcarray::is_interleaved(coordValues);
-        const int coordSp = isInterleaved ? DIM : 1;
-        for(int d = 0; d < DIM; ++d)
-        {
-          const double* coordsPtr = coordValues[d].as_double_ptr();
-          m_coordsViews[d] =
-            axom::ArrayView<const double, DIM, MemorySpace>(coordsPtr, m_pShape, coordSp);
-        }
-      }
-    }
-#endif
+    axom::quest::MeshViewUtil<DIM, MemorySpace> mvu(dom, topologyName);
+    m_coordsViews = mvu.getConstCoordsViews(false);
 
-    // Nodal function
-    {
-      auto& fcnValues = dom.fetch_existing(fcnPath + "/values");
-      const double* fcnPtr = fcnValues.as_double_ptr();
-      if(dom.fetch_existing(fcnPath).has_child("strides"))
-      {
-        const auto* stridesPtr = dom.fetch_existing(fcnPath + "/strides").as_int32_ptr();
-        StackArray<IndexType, DIM> strides;
-        for(IndexType d=0; d<DIM; ++d)
-        {
-          strides[d] = stridesPtr[d];
-        }
-        m_fcnView = axom::ArrayView<const double, DIM, MemorySpace>(fcnPtr, m_pShape, strides);
-      }
-      else
-      {
-        m_fcnView = axom::ArrayView<const double, DIM, MemorySpace>(fcnPtr, m_pShape);
-      }
-    }
+    m_fcnView = mvu.template getConstFieldView<double>(fcnFieldName, false);
+    // TODO: set up m_maskView, but first fix getFieldView to support more than double data types.
 
-    // Mask
-    {
-      const int* maskPtr = nullptr;
-      if(!maskPath.empty())
-      {
-        auto& maskValues = dom.fetch_existing(maskPath + "/values");
-        maskPtr = maskValues.as_int_ptr();
-      }
-      if(maskPtr)
-      {
-        m_maskView =
-          axom::ArrayView<const int, DIM, MemorySpace>(maskPtr, m_cShape);
-      }
-    }
-
-    m_caseIds = axom::Array<std::uint16_t, DIM, MemorySpace>(m_cShape);
+    /*
+      TODO: To get good cache performance, we should make m_caseIds
+      row-major if fcn is that way, and vice versa.  However, Array
+      only support column-major, so we're stuck with that for now.
+    */
+    m_caseIds = axom::Array<std::uint16_t, DIM, MemorySpace>(m_bShape);
+    m_caseIds.fill(0);
   }
 
   //!@brief Set a value to find the contour for.
@@ -198,8 +215,6 @@ public:
   template <int TDIM = DIM>
   typename std::enable_if<TDIM == 2>::type markCrossings_dim()
   {
-    m_caseIds.fill(0);
-
     MarkCrossings_Util mcu(m_caseIds, m_fcnView, m_maskView, m_contourVal);
 
 #if defined(AXOM_USE_RAJA)
@@ -227,8 +242,6 @@ public:
   template <int TDIM = DIM>
   typename std::enable_if<TDIM == 3>::type markCrossings_dim()
   {
-    m_caseIds.fill(0);
-
     MarkCrossings_Util mcu(m_caseIds, m_fcnView, m_maskView, m_contourVal);
 
 #if defined(AXOM_USE_RAJA)
@@ -301,12 +314,19 @@ public:
       {
         // clang-format off
           double nodalValues[CELL_CORNER_COUNT] =
+#if 1
+            {fcnView(i    , j    ),
+             fcnView(i + 1, j    ),
+             fcnView(i + 1, j + 1),
+             fcnView(i    , j + 1)};
+#else
             {fcnView(j    , i    ),
              fcnView(j    , i + 1),
              fcnView(j + 1, i + 1),
              fcnView(j + 1, i    )};
+#endif
         // clang-format on
-        caseIdsView(j, i) = computeCrossingCase(nodalValues);
+        caseIdsView(i, j) = computeCrossingCase(nodalValues);
       }
     }
 
@@ -320,6 +340,16 @@ public:
       {
         // clang-format off
           double nodalValues[CELL_CORNER_COUNT] =
+#if 1
+            {fcnView(i + 1, j    , k    ),
+             fcnView(i + 1, j + 1, k    ),
+             fcnView(i    , j + 1, k    ),
+             fcnView(i    , j    , k    ),
+             fcnView(i + 1, j    , k + 1),
+             fcnView(i + 1, j + 1, k + 1),
+             fcnView(i    , j + 1, k + 1),
+             fcnView(i    , j    , k + 1)};
+#else
             {fcnView(k    , j    , i + 1),
              fcnView(k    , j + 1, i + 1),
              fcnView(k    , j + 1, i    ),
@@ -328,8 +358,9 @@ public:
              fcnView(k + 1, j + 1, i + 1),
              fcnView(k + 1, j + 1, i    ),
              fcnView(k + 1, j    , i    )};
+#endif
         // clang-format on
-        caseIdsView(k, j, i) = computeCrossingCase(nodalValues);
+        caseIdsView(i, j, k) = computeCrossingCase(nodalValues);
       }
     }
   };  // MarkCrossings_Util
@@ -469,6 +500,7 @@ public:
   {
     double contourVal;
     MIdx bStrides;
+    StructuredIndexer<axom::IndexType, DIM> indexer;
     axom::ArrayView<const double, DIM, MemorySpace> fcnView;
     axom::StackArray<axom::ArrayView<const double, DIM, MemorySpace>, DIM> coordsViews;
     ComputeContour_Util(
@@ -479,6 +511,7 @@ public:
         coordsViews_)
       : contourVal(contourVal_)
       , bStrides(bStrides_)
+      , indexer(bStrides_)
       , fcnView(fcnView_)
       , coordsViews(coordsViews_)
     { }
@@ -492,11 +525,23 @@ public:
       const auto& x = coordsViews[0];
       const auto& y = coordsViews[1];
 
-      const auto c = multidim_cell_index(cellNum);
+      // const auto c = multidim_cell_index(cellNum);
+      const auto c = indexer.toMultiIndex(cellNum);
       const auto& i = c[0];
       const auto& j = c[1];
 
       // clang-format off
+#if 1
+      cornerCoords[0] = { x(i    , j    ), y(i    , j    ) };
+      cornerCoords[1] = { x(i + 1, j    ), y(i + 1, j    ) };
+      cornerCoords[2] = { x(i + 1, j + 1), y(i + 1, j + 1) };
+      cornerCoords[3] = { x(i    , j + 1), y(i    , j + 1) };
+
+      cornerValues[0] = fcnView(i    , j    );
+      cornerValues[1] = fcnView(i + 1, j    );
+      cornerValues[2] = fcnView(i + 1, j + 1);
+      cornerValues[3] = fcnView(i    , j + 1);
+#else
       cornerCoords[0] = { x(j    , i    ), y(j    , i    ) };
       cornerCoords[1] = { x(j    , i + 1), y(j    , i + 1) };
       cornerCoords[2] = { x(j + 1, i + 1), y(j + 1, i + 1) };
@@ -506,6 +551,7 @@ public:
       cornerValues[1] = fcnView(j    , i + 1);
       cornerValues[2] = fcnView(j + 1, i + 1);
       cornerValues[3] = fcnView(j + 1, i    );
+#endif
       // clang-format on
     }
     template <int TDIM = DIM>
@@ -518,12 +564,32 @@ public:
       const auto& y = coordsViews[1];
       const auto& z = coordsViews[2];
 
-      const auto c = multidim_cell_index(cellNum);
+      // const auto c = multidim_cell_index(cellNum);
+      const auto c = indexer.toMultiIndex(cellNum);
       const auto& i = c[0];
       const auto& j = c[1];
       const auto& k = c[2];
 
       // clang-format off
+#if 1
+      cornerCoords[0] = { x(i+1, j  , k  ), y(i+1, j  , k  ), z(i+1, j  , k  ) };
+      cornerCoords[1] = { x(i+1, j+1, k  ), y(i+1, j+1, k  ), z(i+1, j+1, k  ) };
+      cornerCoords[2] = { x(i  , j+1, k  ), y(i  , j+1, k  ), z(i  , j+1, k  ) };
+      cornerCoords[3] = { x(i  , j  , k  ), y(i  , j  , k  ), z(i  , j  , k  ) };
+      cornerCoords[4] = { x(i+1, j  , k+1), y(i+1, j  , k+1), z(i+1, j  , k+1) };
+      cornerCoords[5] = { x(i+1, j+1, k+1), y(i+1, j+1, k+1), z(i+1, j+1, k+1) };
+      cornerCoords[6] = { x(i  , j+1, k+1), y(i  , j+1, k+1), z(i  , j+1, k+1) };
+      cornerCoords[7] = { x(i  , j  , k+1), y(i  , j  , k+1), z(i  , j  , k+1) };
+
+      cornerValues[0] = fcnView(i+1, j  , k  );
+      cornerValues[1] = fcnView(i+1, j+1, k  );
+      cornerValues[2] = fcnView(i  , j+1, k  );
+      cornerValues[3] = fcnView(i  , j  , k  );
+      cornerValues[4] = fcnView(i+1, j  , k+1);
+      cornerValues[5] = fcnView(i+1, j+1, k+1);
+      cornerValues[6] = fcnView(i  , j+1, k+1);
+      cornerValues[7] = fcnView(i  , j  , k+1);
+#else
       cornerCoords[0] = { x(k  , j  , i+1), y(k  , j  , i+1), z(k  , j  , i+1) };
       cornerCoords[1] = { x(k  , j+1, i+1), y(k  , j+1, i+1), z(k  , j+1, i+1) };
       cornerCoords[2] = { x(k  , j+1, i  ), y(k  , j+1, i  ), z(k  , j+1, i  ) };
@@ -541,6 +607,7 @@ public:
       cornerValues[5] = fcnView(k+1, j+1, i+1);
       cornerValues[6] = fcnView(k+1, j+1, i  );
       cornerValues[7] = fcnView(k+1, j  , i  );
+#endif
       // clang-format on
     }
 
@@ -674,7 +741,7 @@ public:
     auto cellCornersView = m_contourCellCorners.view();
     auto cellParentsView = m_contourCellParents.view();
 
-    ComputeContour_Util ccu(m_contourVal, m_bStrides, m_fcnView, m_coordsViews);
+    ComputeContour_Util ccu(m_contourVal, m_caseIds.strides(), m_fcnView, m_coordsViews);
 
     auto loopBody = AXOM_LAMBDA(axom::IndexType iCrossing)
     {
@@ -784,9 +851,6 @@ public:
 
   /*!
     @brief Output contour mesh to a mint::UnstructuredMesh object.
-
-    mint uses host memory.  If internal memory isn't on the host,
-    make a temporary copy of it on the host.
   */
   void populateContourMesh(
     axom::mint::UnstructuredMesh<axom::mint::SINGLE_SHAPE>& mesh,
@@ -794,6 +858,11 @@ public:
   {
     auto internalAllocatorID = axom::execution_space<ExecSpace>::allocatorID();
     auto hostAllocatorID = axom::execution_space<axom::SEQ_EXEC>::allocatorID();
+
+    /*
+      mint uses host memory.  If internal memory is on the host, use
+      it.  Otherwise, make a temporary copy of it on the host.
+    */
     if(internalAllocatorID == hostAllocatorID)
     {
       populateContourMesh(mesh,
@@ -827,9 +896,9 @@ public:
   void populateContourMesh(
     axom::mint::UnstructuredMesh<axom::mint::SINGLE_SHAPE>& mesh,
     const std::string& cellIdField,
-    axom::Array<Point, 1, MemorySpace::Dynamic> contourNodeCoords,
-    axom::Array<MIdx, 1, MemorySpace::Dynamic> contourCellCorners,
-    axom::Array<IndexType, 1, MemorySpace::Dynamic> contourCellParents) const
+    const axom::Array<Point, 1, MemorySpace::Dynamic> contourNodeCoords,
+    const axom::Array<MIdx, 1, MemorySpace::Dynamic> contourCellCorners,
+    const axom::Array<IndexType, 1, MemorySpace::Dynamic> contourCellParents) const
   {
     if(!cellIdField.empty() &&
        !mesh.hasField(cellIdField, axom::mint::CELL_CENTERED))
@@ -857,19 +926,21 @@ public:
         mesh.appendCell(cornerIds);
       }
       axom::IndexType numComponents = -1;
-      axom::IndexType* dstPtr =
+      axom::IndexType* cellIdPtr =
         mesh.getFieldPtr<axom::IndexType>(cellIdField,
                                           axom::mint::CELL_CENTERED,
                                           numComponents);
       SLIC_ASSERT(numComponents == DIM);
       // Bump corner indices by priorCellCount to avoid indices
       // used by other parents domains.
-      axom::ArrayView<axom::StackArray<axom::IndexType, DIM>> dstView(
-        (axom::StackArray<axom::IndexType, DIM>*)dstPtr,
+      axom::ArrayView<axom::StackArray<axom::IndexType, DIM>> cellIdView(
+        (axom::StackArray<axom::IndexType, DIM>*)cellIdPtr,
         priorCellCount + addedCellCount);
+      StructuredIndexer<axom::IndexType, DIM> si(m_caseIds.shape(), false);
       for(axom::IndexType i = 0; i < addedCellCount; ++i)
       {
-        dstView[priorCellCount + i] = multidim_cell_index(contourCellParents[i]);
+        cellIdView[priorCellCount + i] = si.toMultiIndex(contourCellParents[i]);
+        // cellIdView[priorCellCount + i] = multidim_cell_index(contourCellParents[i]);
       }
     }
   }
@@ -921,7 +992,7 @@ public:
       , caseNum(caseNum_)
       , firstSurfaceCellId(std::numeric_limits<axom::IndexType>::max())
     { }
-    axom::IndexType parentCellNum;       //!< @brief Flat index of parent cell.
+    axom::IndexType parentCellNum;       //!< @brief Flat index of parent cell in m_caseIds.
     std::uint16_t caseNum;               //!< @brief Index in cases2D or cases3D
     axom::IndexType firstSurfaceCellId;  //!< @brief First index for generated cells.
   };
@@ -932,6 +1003,7 @@ private:
   MIdx m_cShape;    //!< @brief Cell-centered array shape for ArrayViews.
   MIdx m_pShape;    //!< @brief Node-centered array shape for ArrayViews.
   MIdx m_bStrides;  //!< @brief Strides for m_bShape arrays.
+  MIdx m_fastestDir;  //!< @brief Directions, from fastest to slowest striding.
 
   // Views of parent domain data.
   // DIM coordinate components, each on a DIM-dimensional mesh.

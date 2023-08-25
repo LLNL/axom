@@ -20,7 +20,9 @@ MarchingCubes::MarchingCubes(RuntimePolicy runtimePolicy,
   : m_runtimePolicy(runtimePolicy)
   , m_singles()
   , m_topologyName(topologyName)
+  , m_fcnFieldName()
   , m_fcnPath()
+  , m_maskFieldName(maskField)
   , m_maskPath(maskField.empty() ? std::string() : "fields/" + maskField)
 {
   const bool isMultidomain = conduit::blueprint::mesh::is_multi_domain(bpMesh);
@@ -40,6 +42,7 @@ MarchingCubes::MarchingCubes(RuntimePolicy runtimePolicy,
 
 void MarchingCubes::setFunctionField(const std::string& fcnField)
 {
+  m_fcnFieldName = fcnField;
   m_fcnPath = "fields/" + fcnField;
   for(auto& s : m_singles)
   {
@@ -49,7 +52,7 @@ void MarchingCubes::setFunctionField(const std::string& fcnField)
 
 void MarchingCubes::computeIsocontour(double contourVal)
 {
-  SLIC_ASSERT_MSG(!m_fcnPath.empty(),
+  SLIC_ASSERT_MSG(!m_fcnFieldName.empty(),
                   "You must call setFunctionField before computeIsocontour.");
 
   for(int dId = 0; dId < m_singles.size(); ++dId)
@@ -139,7 +142,9 @@ MarchingCubesSingleDomain::MarchingCubesSingleDomain(RuntimePolicy runtimePolicy
   , m_dom(nullptr)
   , m_ndim(0)
   , m_topologyName(topologyName)
+  , m_fcnFieldName()
   , m_fcnPath()
+  , m_maskFieldName(maskField)
   , m_maskPath(maskField.empty() ? std::string() : "fields/" + maskField)
 {
   SLIC_ASSERT_MSG(
@@ -184,6 +189,7 @@ void MarchingCubesSingleDomain::setDomain(const conduit::Node& dom)
 
 void MarchingCubesSingleDomain::setFunctionField(const std::string& fcnField)
 {
+  m_fcnFieldName = fcnField;
   m_fcnPath = "fields/" + fcnField;
   SLIC_ASSERT(m_dom->has_path(m_fcnPath));
   SLIC_ASSERT(m_dom->fetch_existing(m_fcnPath + "/association").as_string() ==
@@ -193,13 +199,11 @@ void MarchingCubesSingleDomain::setFunctionField(const std::string& fcnField)
 
 void MarchingCubesSingleDomain::computeIsocontour(double contourVal)
 {
-  SLIC_ASSERT_MSG(!m_fcnPath.empty(),
+  SLIC_ASSERT_MSG(!m_fcnFieldName.empty(),
                   "You must call setFunctionField before computeIsocontour.");
 
   allocateImpl();
-  const std::string coordsetPath = "coordsets/" +
-    m_dom->fetch_existing("topologies/" + m_topologyName + "/coordset").as_string();
-  m_impl->initialize(*m_dom, coordsetPath, m_fcnPath, m_maskPath);
+  m_impl->initialize(*m_dom, m_topologyName, m_fcnFieldName, m_maskFieldName);
   m_impl->setContourValue(contourVal);
   m_impl->markCrossings();
   m_impl->scanCrossings();

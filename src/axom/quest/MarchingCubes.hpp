@@ -179,7 +179,9 @@ private:
   //! @brief Single-domain implementations.
   axom::Array<std::unique_ptr<MarchingCubesSingleDomain>> m_singles;
   const std::string m_topologyName;
+  std::string m_fcnFieldName;
   std::string m_fcnPath;
+  std::string m_maskFieldName;
   std::string m_maskPath;
 
   void setMesh(const conduit::Node &bpMesh);
@@ -322,9 +324,11 @@ private:
   //!@brief Name of Blueprint topology in m_dom.
   const std::string m_topologyName;
 
+  std::string m_fcnFieldName;
   //!@brief Path to nodal scalar function in m_dom.
   std::string m_fcnPath;
 
+  const std::string m_maskFieldName;
   //!@brief Path to mask in m_dom.
   const std::string m_maskPath;
 
