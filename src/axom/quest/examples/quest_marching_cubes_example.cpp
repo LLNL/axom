@@ -272,6 +272,7 @@ void putConduitDataInNewMemorySpace(conduit::Node& node,
   T* newPtr = axom::allocate<T>(count, allocId);
   axom::copy(newPtr, oldPtr, count * sizeof(T));
   dataNode.set_external(newPtr, count);
+  // Don't delete oldPtr.  Conduit took care of that.
 }
 
 Input params;
@@ -781,6 +782,9 @@ static void addToStackArray(axom::StackArray<T, DIM>& a, U b)
 
   The flatId corresponds to the multidimensional index through
   an order that advances the first index fastest.
+
+  TODO: This has been superceded by StructuredIndexer.  Eventually, I
+  want to rename move StructuredIndexer to axom::core::ArrayIndexer.
 */
 template <int DIM>
 axom::StackArray<axom::IndexType, DIM> flatToMultidimIndex(
@@ -868,6 +872,13 @@ struct ContourTestBase
       mc.getContourCellCount());
     mc.populateContourMesh(contourMesh, m_parentCellIdField, m_domainIdField);
 
+    // Move node function data back to host for verification.
+    if(allocatorId != axom::execution_space<axom::SEQ_EXEC>::allocatorID())
+    {
+      computationalMesh.putMeshDataInNewMemorySpace<double>(
+        axom::fmt::format("fields/{}/values", functionName()), axom::execution_space<axom::SEQ_EXEC>::allocatorID());
+    }
+
     int localErrCount = 0;
     if(params.checkResults)
     {
@@ -909,6 +920,13 @@ struct ContourTestBase
       const auto coordsViews = mvu.getConstCoordsViews(false);
       axom::ArrayView<double, DIM, MemorySpace> fieldView = mvu.template getFieldView<double>(functionName(), false);
       populateNodalDistance(coordsViews, fieldView);
+    }
+    // Conduit doesn't support putting array data on devices
+    // very well, so move it to devices after allocating.
+    if(allocatorId != axom::execution_space<axom::SEQ_EXEC>::allocatorID())
+    {
+      bpMesh.putMeshDataInNewMemorySpace<double>(
+        axom::fmt::format("fields/{}/values", functionName()), allocatorId);
     }
   }
   template <int TDIM = DIM>

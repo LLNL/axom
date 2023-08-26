@@ -88,25 +88,25 @@ public:
   }
 
   //!@brief Directions, ordered from slowest to fastest.
-  axom::StackArray<std::uint16_t, DIM>& slowestDirs() const
+  AXOM_HOST_DEVICE axom::StackArray<std::uint16_t, DIM>& slowestDirs() const
   {
     return m_slowestDirs;
   }
 
   //!@brief Strides.
-  axom::StackArray<axom::IndexType, DIM>& strides() const
+  AXOM_HOST_DEVICE axom::StackArray<axom::IndexType, DIM>& strides() const
   {
     return m_strides;
   }
 
   //!@brief Convert multidimensional index to flat index.
-  T toFlatIndex(const axom::StackArray<T, DIM>& multiIndex) const
+  AXOM_HOST_DEVICE T toFlatIndex(const axom::StackArray<T, DIM>& multiIndex) const
   {
     T rval = numerics::dot_product(multiIndex.data(), m_strides.data());
   }
 
   //!@brief Convert flat index to multidimensional index.
-  axom::StackArray<T, DIM> toMultiIndex(T flatIndex) const
+  AXOM_HOST_DEVICE axom::StackArray<T, DIM> toMultiIndex(T flatIndex) const
   {
     axom::StackArray<T, DIM> multiIndex;
     for(int d = 0; d<DIM; ++d)
