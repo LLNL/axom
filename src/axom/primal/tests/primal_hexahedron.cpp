@@ -78,11 +78,30 @@ protected:
     qData2[5] = QPoint {1.5, 1, 3.5};
     qData2[6] = QPoint {3.5, 1, 3.5};
     qData2[7] = QPoint {3.5, 1, 1.5};
+
+    // Case 1
+    qData3[0] =
+      QPoint {-70.83333333333334, -165.0000000000000, -238.0000000000000};
+    qData3[1] =
+      QPoint {-70.83333333333334, -143.0000000000000, -238.0000000000000};
+    qData3[2] =
+      QPoint {-52.0000000000000, -143.0000000000000, -238.0000000000000};
+    qData3[3] =
+      QPoint {-52.0000000000000, -165.0000000000000, -238.0000000000000};
+    qData3[4] =
+      QPoint {-70.83333333333334, -165.0000000000000, -221.0000000000000};
+    qData3[5] =
+      QPoint {-70.83333333333334, -143.0000000000000, -221.0000000000000};
+    qData3[6] =
+      QPoint {-52.0000000000000, -143.0000000000000, -221.0000000000000};
+    qData3[7] =
+      QPoint {-52.0000000000000, -165.0000000000000, -221.0000000000000};
   }
 
   QPoint qData0[8];
   QPoint qData1[8];
   QPoint qData2[8];
+  QPoint qData3[8];
   double EPS;
 };
 
@@ -180,25 +199,30 @@ TEST_F(HexahedronTest, volume)
   const QPoint* pt0 = this->qData0;
   const QPoint* pt1 = this->qData1;
   const QPoint* pt2 = this->qData2;
+  const QPoint* pt3 = this->qData3;
 
   // Initialize hexahedrons
   QHex hex0(pt0[0], pt0[1], pt0[2], pt0[3], pt0[4], pt0[5], pt0[6], pt0[7]);
   QHex hex1(pt1[0], pt1[1], pt1[2], pt1[3], pt1[4], pt1[5], pt1[6], pt1[7]);
   QHex hex2(pt2[0], pt2[1], pt2[2], pt2[3], pt2[4], pt2[5], pt2[6], pt2[7]);
+  QHex hex3(pt3[0], pt3[1], pt3[2], pt3[3], pt3[4], pt3[5], pt3[6], pt3[7]);
 
   // Check volume
   EXPECT_DOUBLE_EQ(hex0.signedVolume(), 1);
   EXPECT_DOUBLE_EQ(hex1.signedVolume(), 1);
   EXPECT_DOUBLE_EQ(hex2.signedVolume(), 13);
+  EXPECT_DOUBLE_EQ(hex3.signedVolume(), -7043.66666666667);
 
   EXPECT_DOUBLE_EQ(hex0.volume(), 1);
   EXPECT_DOUBLE_EQ(hex1.volume(), 1);
   EXPECT_DOUBLE_EQ(hex2.volume(), 13);
+  EXPECT_DOUBLE_EQ(hex3.volume(), 7043.66666666667);
 
   // Check hexahedron volume against 24-tetrahedron subvolumes
   EXPECT_DOUBLE_EQ(hex0.volume(), volume_tet_decomp(hex0));
   EXPECT_DOUBLE_EQ(hex1.volume(), volume_tet_decomp(hex1));
   EXPECT_DOUBLE_EQ(hex2.volume(), volume_tet_decomp(hex2));
+  EXPECT_DOUBLE_EQ(hex3.volume(), volume_tet_decomp(hex3));
 }
 
 TEST_F(HexahedronTest, equals)
