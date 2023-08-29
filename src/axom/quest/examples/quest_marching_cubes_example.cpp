@@ -269,10 +269,11 @@ void putConduitDataInNewMemorySpace(conduit::Node& node,
 
   std::size_t count = dataNode.dtype().number_of_elements();
   T* oldPtr = static_cast<T*>(dataNode.data_ptr());
+  bool deleteOld = dataNode.is_data_external();
   T* newPtr = axom::allocate<T>(count, allocId);
   axom::copy(newPtr, oldPtr, count * sizeof(T));
   dataNode.set_external(newPtr, count);
-  // Don't delete oldPtr.  Conduit took care of that.
+  if(deleteOld) { axom::deallocate(oldPtr); }
 }
 
 Input params;
