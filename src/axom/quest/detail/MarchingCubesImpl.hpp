@@ -513,15 +513,15 @@ public:
       const auto& j = c[1];
 
       // clang-format off
-      cornerCoords[0] = { x(i    , j    ), y(i    , j    ) };
-      cornerCoords[1] = { x(i + 1, j    ), y(i + 1, j    ) };
-      cornerCoords[2] = { x(i + 1, j + 1), y(i + 1, j + 1) };
-      cornerCoords[3] = { x(i    , j + 1), y(i    , j + 1) };
+      cornerCoords[0] = { x(i  , j  ), y(i  , j  ) };
+      cornerCoords[1] = { x(i+1, j  ), y(i+1, j  ) };
+      cornerCoords[2] = { x(i+1, j+1), y(i+1, j+1) };
+      cornerCoords[3] = { x(i  , j+1), y(i  , j+1) };
 
-      cornerValues[0] = fcnView(i    , j    );
-      cornerValues[1] = fcnView(i + 1, j    );
-      cornerValues[2] = fcnView(i + 1, j + 1);
-      cornerValues[3] = fcnView(i    , j + 1);
+      cornerValues[0] = fcnView(i  , j  );
+      cornerValues[1] = fcnView(i+1, j  );
+      cornerValues[2] = fcnView(i+1, j+1);
+      cornerValues[3] = fcnView(i  , j+1);
       // clang-format on
     }
     template <int TDIM = DIM>

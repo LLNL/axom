@@ -377,8 +377,8 @@ public:
     axom::StackArray<axom::ArrayView<double, DIM, MemSpace>, DIM> rval;
     for(int d=0; d<DIM; ++d)
     {
-      auto* dataValues = valuesNode[d].as_double_ptr();
-      rval[d] = axom::ArrayView<double, DIM, MemSpace>(dataValues, m_coordsMemShape, m_coordsStrides);
+      auto* dataPtr = valuesNode[d].as_double_ptr();
+      rval[d] = axom::ArrayView<double, DIM, MemSpace>(dataPtr, m_coordsMemShape, m_coordsStrides);
     }
 
     if(withGhosts == false)
@@ -403,8 +403,8 @@ public:
     axom::StackArray<axom::ArrayView<const double, DIM, MemSpace>, DIM> rval;
     for(int d=0; d<DIM; ++d)
     {
-      auto* dataValues = valuesNode[d].as_double_ptr();
-      rval[d] = axom::ArrayView<const double, DIM, MemSpace>(dataValues, m_coordsMemShape, m_coordsStrides);
+      auto* dataPtr = valuesNode[d].as_double_ptr();
+      rval[d] = axom::ArrayView<const double, DIM, MemSpace>(dataPtr, m_coordsMemShape, m_coordsStrides);
     }
 
     if(withGhosts == false)
@@ -425,6 +425,9 @@ public:
 
   /*!
     @brief Return view to a scalar field variable.
+
+    WARNING: The view returned has an allocator id determined by MemSpace,
+    regardless of the memory type.
   */
   template<typename T>
   axom::ArrayView<T, DIM, MemSpace> getFieldView(const std::string& fieldName,
@@ -468,8 +471,8 @@ public:
     }
     shape[DIM-1] = valuesCount / strides[DIM-1];
 
-    T* dataValues = valuesNode.as_double_ptr();// TODO: Use template parameter T.
-    axom::ArrayView<double, DIM, MemSpace> rval(dataValues, shape, strides);
+    T* dataPtr = valuesNode.as_double_ptr();// TODO: Use template parameter T.
+    axom::ArrayView<double, DIM, MemSpace> rval(dataPtr, shape, strides);
 
     if(withGhosts == false)
     {
@@ -524,8 +527,8 @@ public:
     }
     shape[DIM-1] = valuesCount / strides[DIM-1];
 
-    const T* dataValues = valuesNode.as_double_ptr();// TODO: Use template parameter T.
-    axom::ArrayView<const double, DIM, MemSpace> rval(dataValues, shape, strides);
+    const T* dataPtr = valuesNode.as_double_ptr();// TODO: Use template parameter T.
+    axom::ArrayView<const double, DIM, MemSpace> rval(dataPtr, shape, strides);
 
     if(withGhosts == false)
     {
@@ -551,6 +554,10 @@ public:
                 big enough for the strides specified.
     @param [in] strides Data strides.  Set to zero for no ghosts and default strides.
     @param [in] offsets Data index offsets.
+
+    Field data allocation is done by Conduit, so the data lives in
+    host memory.  Conduit currently doesn't provide a means to allocate
+    the array in device memory.
   */
   void createField( const std::string& fieldName,
                     const std::string& association,
