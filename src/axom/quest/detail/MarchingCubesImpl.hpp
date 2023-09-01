@@ -12,7 +12,6 @@
 #include "axom/mint/execution/internal/structured_exec.hpp"
 #include "conduit_blueprint.hpp"
 #include "axom/fmt.hpp"
-#include "axom/core/WhereMacro.hpp"
 
 namespace axom
 {
@@ -42,6 +41,9 @@ static void reverse(axom::StackArray<T, DIM>& a)
   return;
 }
 
+/*!
+  @brief Indexing into a multidimensional structured array.
+*/
 template <typename T, int DIM>
 class StructuredIndexer
 {
@@ -98,26 +100,26 @@ public:
     }
   }
 
-  //!@brief Directions, ordered from slowest to fastest.
-  AXOM_HOST_DEVICE axom::StackArray<std::uint16_t, DIM>& slowestDirs() const
+  //!@brief Index directions, ordered from slowest to fastest.
+  inline AXOM_HOST_DEVICE axom::StackArray<std::uint16_t, DIM>& slowestDirs() const
   {
     return m_slowestDirs;
   }
 
   //!@brief Strides.
-  AXOM_HOST_DEVICE axom::StackArray<axom::IndexType, DIM>& strides() const
+  inline AXOM_HOST_DEVICE axom::StackArray<axom::IndexType, DIM>& strides() const
   {
     return m_strides;
   }
 
   //!@brief Convert multidimensional index to flat index.
-  AXOM_HOST_DEVICE T toFlatIndex(const axom::StackArray<T, DIM>& multiIndex) const
+  inline AXOM_HOST_DEVICE T toFlatIndex(const axom::StackArray<T, DIM>& multiIndex) const
   {
     T rval = numerics::dot_product(multiIndex.data(), m_strides.data());
   }
 
   //!@brief Convert flat index to multidimensional index.
-  AXOM_HOST_DEVICE axom::StackArray<T, DIM> toMultiIndex(T flatIndex) const
+  inline AXOM_HOST_DEVICE axom::StackArray<T, DIM> toMultiIndex(T flatIndex) const
   {
     axom::StackArray<T, DIM> multiIndex;
     for(int d = 0; d < DIM; ++d)
@@ -157,7 +159,7 @@ public:
     @param dom Blueprint structured mesh domain
     @param coordsetPath Where coordinates are in dom
     @param fcnFieldName Name of nodal function is in dom
-    @param maskFieldName Name of cell mask function is in dom
+    @param maskFieldName Name of integer cell mask function is in dom
 
     Set up views to domain data and allocate other data to work on the
     given domain.
@@ -168,36 +170,19 @@ public:
   AXOM_HOST void initialize(const conduit::Node& dom,
                             const std::string& topologyName,
                             const std::string& fcnFieldName,
-                            const std::string& maskFieldName) override
+                            const std::string& maskFieldName = {}) override
   {
     clear();
 
-    // Data sizes
-    const conduit::Node& dimsNode =
-      dom.fetch_existing("topologies/mesh/elements/dims");
-    for(int d = 0; d < DIM; ++d)
-    {
-      m_bShape[d] = dimsNode[d].as_int();
-    }
-    m_cShape = m_bShape;
-    reverse(m_cShape);
-    // This should work but breaks gcc11 on 64-bit linux:
-    // m_pShape = m_cShape + 1;
-    m_pShape = m_cShape;
-    add_to_StackArray(m_pShape, 1);
-
-    m_bStrides[0] = 1;
-    for(int d = 1; d < DIM; ++d)
-    {
-      m_bStrides[d] = m_bStrides[d - 1] * m_bShape[d - 1];
-    }
-
-    // Domain's node coordinates
     axom::quest::MeshViewUtil<DIM, MemorySpace> mvu(dom, topologyName);
-    m_coordsViews = mvu.getConstCoordsViews(false);
 
+    m_bShape = mvu.getDomainShape();
+    m_coordsViews = mvu.getConstCoordsViews(false);
     m_fcnView = mvu.template getConstFieldView<double>(fcnFieldName, false);
-    // TODO: set up m_maskView, but first fix getFieldView to support more than double data types.
+    if(!maskFieldName.empty())
+    {
+      m_maskView = mvu.template getConstFieldView<int>(maskFieldName, false);
+    }
 
     /*
       TODO: To get good cache performance, we should make m_caseIds
@@ -229,8 +214,8 @@ public:
     MarkCrossings_Util mcu(m_caseIds, m_fcnView, m_maskView, m_contourVal);
 
 #if defined(AXOM_USE_RAJA)
-    RAJA::RangeSegment jRange(0, m_cShape[0]);
-    RAJA::RangeSegment iRange(0, m_cShape[1]);
+    RAJA::RangeSegment jRange(0, m_bShape[1]);
+    RAJA::RangeSegment iRange(0, m_bShape[0]);
     using EXEC_POL =
       typename axom::mint::internal::structured_exec<ExecSpace>::loop2d_policy;
     RAJA::kernel<EXEC_POL>(
@@ -239,9 +224,9 @@ public:
         mcu.computeCaseId(i, j);
       });
 #else
-    for(int j = 0; j < m_cShape[0]; ++j)
+    for(int j = 0; j < m_bShape[1]; ++j)
     {
-      for(int i = 0; i < m_cShape[1]; ++i)
+      for(int i = 0; i < m_bShape[0]; ++i)
       {
         mcu.computeCaseId(i, j);
       }
@@ -256,9 +241,9 @@ public:
     MarkCrossings_Util mcu(m_caseIds, m_fcnView, m_maskView, m_contourVal);
 
 #if defined(AXOM_USE_RAJA)
-    RAJA::RangeSegment kRange(0, m_cShape[0]);
-    RAJA::RangeSegment jRange(0, m_cShape[1]);
-    RAJA::RangeSegment iRange(0, m_cShape[2]);
+    RAJA::RangeSegment kRange(0, m_bShape[2]);
+    RAJA::RangeSegment jRange(0, m_bShape[1]);
+    RAJA::RangeSegment iRange(0, m_bShape[0]);
     using EXEC_POL =
       typename axom::mint::internal::structured_exec<ExecSpace>::loop3d_policy;
     RAJA::kernel<EXEC_POL>(
@@ -267,11 +252,11 @@ public:
         mcu.computeCaseId(i, j, k);
       });
 #else
-    for(int k = 0; k < m_cShape[0]; ++k)
+    for(int k = 0; k < m_bShape[2]; ++k)
     {
-      for(int j = 0; j < m_cShape[1]; ++j)
+      for(int j = 0; j < m_bShape[1]; ++j)
       {
-        for(int i = 0; i < m_cShape[2]; ++i)
+        for(int i = 0; i < m_bShape[0]; ++i)
         {
           mcu.computeCaseId(i, j, k);
         }
@@ -320,8 +305,8 @@ public:
     AXOM_HOST_DEVICE inline typename std::enable_if<TDIM == 2>::type
     computeCaseId(axom::IndexType i, axom::IndexType j) const
     {
-      const bool skipZone = !maskView.empty() && bool(maskView(j, i));
-      if(!skipZone)
+      const bool useZone = maskView.empty() || bool(maskView(i, j));
+      if(useZone)
       {
         // clang-format off
           double nodalValues[CELL_CORNER_COUNT] =
@@ -339,8 +324,8 @@ public:
     AXOM_HOST_DEVICE inline typename std::enable_if<TDIM == 3>::type
     computeCaseId(axom::IndexType i, axom::IndexType j, axom::IndexType k) const
     {
-      const bool skipZone = !maskView.empty() && bool(maskView(k, j, i));
-      if(!skipZone)
+      const bool useZone = maskView.empty() || bool(maskView(i, j, k));
+      if(useZone)
       {
         // clang-format off
           double nodalValues[CELL_CORNER_COUNT] =
@@ -518,7 +503,6 @@ public:
       const auto& x = coordsViews[0];
       const auto& y = coordsViews[1];
 
-      // const auto c = multidim_cell_index(cellNum);
       const auto c = indexer.toMultiIndex(cellNum);
       const auto& i = c[0];
       const auto& j = c[1];
@@ -545,7 +529,6 @@ public:
       const auto& y = coordsViews[1];
       const auto& z = coordsViews[2];
 
-      // const auto c = multidim_cell_index(cellNum);
       const auto c = indexer.toMultiIndex(cellNum);
       const auto& i = c[0];
       const auto& j = c[1];
@@ -671,18 +654,6 @@ public:
         crossingPt[d] = p1[d] + w * (p2[d] - p1[d]);
       }
     }
-
-    AXOM_HOST_DEVICE inline axom::StackArray<axom::IndexType, DIM>
-    multidim_cell_index(axom::IndexType flatId) const
-    {
-      axom::StackArray<axom::IndexType, DIM> rval;
-      for(int d = DIM - 1; d >= 0; --d)
-      {
-        rval[d] = flatId / bStrides[d];
-        flatId -= rval[d] * bStrides[d];
-      }
-      return rval;
-    }
   };  // ComputeContour_Util
 
   void computeContour() override
@@ -798,22 +769,6 @@ public:
   }
 
   /*!
-    @brief Compute multidimensional index from flat cell index
-    in domain data.
-  */
-  AXOM_HOST_DEVICE inline axom::StackArray<axom::IndexType, DIM>
-  multidim_cell_index(axom::IndexType flatId) const
-  {
-    axom::StackArray<axom::IndexType, DIM> rval;
-    for(int d = DIM - 1; d >= 0; --d)
-    {
-      rval[d] = flatId / m_bStrides[d];
-      flatId -= rval[d] * m_bStrides[d];
-    }
-    return rval;
-  }
-
-  /*!
     @brief Output contour mesh to a mint::UnstructuredMesh object.
   */
   void populateContourMesh(
@@ -856,7 +811,6 @@ public:
   }
 
   //!@brief Output contour mesh to a mint::UnstructuredMesh object.
-  // TODO: If cellIdField was allocated by user, we should look at its strides/offsets.
   void populateContourMesh(
     axom::mint::UnstructuredMesh<axom::mint::SINGLE_SHAPE>& mesh,
     const std::string& cellIdField,
@@ -904,7 +858,6 @@ public:
       for(axom::IndexType i = 0; i < addedCellCount; ++i)
       {
         cellIdView[priorCellCount + i] = si.toMultiIndex(contourCellParents[i]);
-        // cellIdView[priorCellCount + i] = multidim_cell_index(contourCellParents[i]);
       }
     }
   }
@@ -938,8 +891,7 @@ public:
     @brief Constructor.
   */
   MarchingCubesImpl()
-    : m_allocatorID(execution_space<ExecSpace>::allocatorID())
-    , m_crossings(0, 0)
+    : m_crossings(0, 0)
     , m_contourNodeCoords(0, 0)
     , m_contourCellCorners(0, 0)
     , m_contourCellParents(0, 0)
@@ -962,12 +914,7 @@ public:
   };
 
 private:
-  const int m_allocatorID;  //!< @brief ExecSpace-based allocator ID for all internal data
-  MIdx m_bShape;            //!< @brief Blueprint cell data shape.
-  MIdx m_cShape;      //!< @brief Cell-centered array shape for ArrayViews.
-  MIdx m_pShape;      //!< @brief Node-centered array shape for ArrayViews.
-  MIdx m_bStrides;    //!< @brief Strides for m_bShape arrays.
-  MIdx m_fastestDir;  //!< @brief Directions, from fastest to slowest striding.
+  MIdx m_bShape;  //!< @brief Blueprint cell data shape.
 
   // Views of parent domain data.
   // DIM coordinate components, each on a DIM-dimensional mesh.
@@ -985,6 +932,7 @@ private:
 
   //!@brief Number of parent cells crossing the contour surface.
   axom::IndexType m_crossingCount = 0;
+
   //!@brief Number of contour surface cells from crossings.
   axom::IndexType m_contourCellCount = 0;
   axom::IndexType getContourCellCount() const override

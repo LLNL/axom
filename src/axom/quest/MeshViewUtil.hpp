@@ -8,12 +8,15 @@
 
 #include "axom/config.hpp"
 #include "axom/core.hpp"
-#include "axom/core/WhereMacro.hpp"
 
 #include "axom/fmt.hpp"
 
 #include "conduit_blueprint_mesh.hpp"
 #include "conduit_blueprint_mcarray.hpp"
+#ifdef AXOM_USE_MPI
+  #include "conduit_blueprint_mpi.hpp"
+  #include "conduit_relay_mpi_io_blueprint.hpp"
+#endif
 
 #include <memory>
 #include <limits>
@@ -64,7 +67,7 @@ inline axom::StackArray<T, DIM> makeStackArray(const T* v)
    meshes.  They are also topology specific, with the topology name
    given to the constructor.
 
-   TODO: Figure out a more appropriate place for this file.
+   TODO: Figure out if there's a better place for this utility.
    It's only in axom/quest because the initial need was there.
 */
 template <int DIM, axom::MemorySpace MemSpace>
@@ -97,30 +100,23 @@ public:
     }
 
     const std::string topoPath = "topologies/" + m_topologyName;
-    SLIC_ASSERT(m_dom->has_path(topoPath));
     m_topology = &m_dom->fetch_existing(topoPath);
-
-    SLIC_ASSERT(m_topology->fetch_existing("type").as_string() == "structured");
 
     const std::string coordsetPath =
       "coordsets/" + m_dom->fetch_existing(topoPath + "/coordset").as_string();
     m_coordset = &m_dom->fetch_existing(coordsetPath);
 
-    SLIC_ASSERT(m_coordset->fetch_existing("type").as_string() == "explicit");
-
-    int dim = conduit::blueprint::mesh::coordset::dims(*m_coordset);
-    if(dim != DIM)
-    {
-      SLIC_ERROR(
-        axom::fmt::format("MeshViewUtil template parameter DIM={} doesn't "
-                          "match mesh topology dimension ({})",
-                          DIM,
-                          dim));
-    }
-
     m_cdom = m_dom;
     m_ctopology = m_topology;
     m_ccoordset = m_coordset;
+
+    if(!isValid())
+    {
+      SLIC_ERROR(
+        "Invalid domain in MeshViewUtil.  Domain must be blueprint-valid,"
+        " structured, with exlicit coordinates and dimension equal to "
+        " the template DIM parameter.");
+    }
 
     computeCoordsDataLayout();
   }
@@ -138,25 +134,48 @@ public:
     SLIC_ASSERT(m_cdom->has_path(topoPath));
     m_ctopology = &m_cdom->fetch_existing(topoPath);
 
-    SLIC_ASSERT(m_ctopology->fetch_existing("type").as_string() == "structured");
-
     const std::string coordsetPath =
       "coordsets/" + m_cdom->fetch_existing(topoPath + "/coordset").as_string();
     m_ccoordset = &m_cdom->fetch_existing(coordsetPath);
 
-    SLIC_ASSERT(m_ccoordset->fetch_existing("type").as_string() == "explicit");
-
-    int dim = conduit::blueprint::mesh::coordset::dims(*m_ccoordset);
-    if(dim != DIM)
+    if(!isValid())
     {
       SLIC_ERROR(
-        axom::fmt::format("MeshViewUtil mesh topology dimension ({}) doesn't "
-                          "match template parameter DIM={}",
-                          dim,
-                          DIM));
+        "Invalid domain in MeshViewUtil.  Domain must be blueprint-valid,"
+        " structured, with exlicit coordinates. and dimension equal to "
+        " the template DIM parameter.");
     }
 
     computeCoordsDataLayout();
+  }
+
+  /*!
+    @brief Whether the domain is a valid one for this utility.
+
+    In addition to checking for blueprint validity (unless \a
+    checkBlueprint is false), this method checks against its own
+    requirements.
+  */
+  bool isValid(bool checkBlueprint = false) const
+  {
+    bool rval = true;
+    if(checkBlueprint)
+    {
+      conduit::Node info;
+#ifdef AXOM_USE_MPI
+      rval = rval &&
+        conduit::blueprint::mpi::verify("mesh", *m_cdom, info, MPI_COMM_WORLD);
+#else
+      rval = rval && conduit::blueprint::verify("mesh", *m_cdom, info);
+#endif
+    }
+    rval =
+      rval && (m_ctopology->fetch_existing("type").as_string() == "structured");
+    rval =
+      rval && (m_ccoordset->fetch_existing("type").as_string() == "explicit");
+    rval =
+      rval && (conduit::blueprint::mesh::coordset::dims(*m_ccoordset) == DIM);
+    return true;
   }
   //@}
 
@@ -202,6 +221,7 @@ public:
     return rval;
   }
 
+  //! @brief Return the real (ghost-free) extents of mesh data.
   axom::StackArray<axom::IndexType, DIM> getRealExtents(const std::string& association)
   {
     axom::StackArray<axom::IndexType, DIM> rval = getDomainShape();
@@ -219,8 +239,9 @@ public:
     else
     {
       SLIC_ERROR(
-        "MeshVieuUtil only supports element and vertex data association for "
-        "now.");
+        axom::fmt::format("MeshVieuUtil only supports element and vertex data "
+                          "association for now, not '{}'.",
+                          association));
     }
 
     return rval;
@@ -241,7 +262,7 @@ public:
   }
 
   /*!
-    @brief Return the array strides for nodal coordinates.
+    @brief Return the array strides for ghost-free nodal coordinates.
   */
   axom::StackArray<axom::IndexType, DIM> getCoordsStrides() const
   {
@@ -330,7 +351,7 @@ public:
   }
 
   /*!
-    @brief Get the strides of a named field data.
+    @brief Get the strides of a named Blueprint field.
     If strides are not specified, assume direction 0 is
     fastest (Conduit's default striding).
   */
@@ -369,6 +390,7 @@ public:
   //@{
   //!@name Data views
 
+  //!@brief Return the views of the DIM coordinates component data.
   CoordsViewsType getCoordsViews(bool withGhosts = false)
   {
     conduit::Node& valuesNode = getCoordSet().fetch_existing("values");
@@ -403,6 +425,7 @@ public:
     return rval;
   }
 
+  //!@brief Return the views of the DIM coordinates component data.
   ConstCoordsViewsType getConstCoordsViews(bool withGhosts = false) const
   {
     const conduit::Node& valuesNode = getCoordSet().fetch_existing("values");
@@ -440,8 +463,12 @@ public:
   /*!
     @brief Return view to a scalar field variable.
 
-    WARNING: The view returned has an allocator id determined by MemSpace,
-    regardless of the memory type.
+    WARNING: The view returned has an allocator id determined by
+    \a MemSpace, regardless of the memory type.
+
+    WARNING: Assuming, without checking, that the field contains
+    data of type \a T.  User is responsible for using the correct
+    type.
   */
   template <typename T>
   axom::ArrayView<T, DIM, MemSpace> getFieldView(const std::string& fieldName,
@@ -492,7 +519,7 @@ public:
     }
     shape[DIM - 1] = valuesCount / strides[DIM - 1];
 
-    T* dataPtr = valuesNode.as_double_ptr();  // TODO: Use template parameter T.
+    T* dataPtr = static_cast<T*>(valuesNode.data_ptr());
     axom::ArrayView<double, DIM, MemSpace> rval(dataPtr, shape, strides);
 
     if(withGhosts == false)
@@ -513,6 +540,13 @@ public:
 
   /*!
     @brief Return view to a scalar field variable.
+
+    WARNING: The view returned has an allocator id determined by
+    \a MemSpace, regardless of the memory type.
+
+    WARNING: Assuming, without checking, that the field contains
+    data of type \a T.  User is responsible for using the correct
+    type.
   */
   template <typename T>
   axom::ArrayView<const T, DIM, MemSpace> getConstFieldView(
@@ -559,9 +593,8 @@ public:
     }
     shape[DIM - 1] = valuesCount / strides[DIM - 1];
 
-    const T* dataPtr =
-      valuesNode.as_double_ptr();  // TODO: Use template parameter T.
-    axom::ArrayView<const double, DIM, MemSpace> rval(dataPtr, shape, strides);
+    const T* dataPtr = static_cast<const T*>(valuesNode.data_ptr());
+    axom::ArrayView<const T, DIM, MemSpace> rval(dataPtr, shape, strides);
 
     if(withGhosts == false)
     {

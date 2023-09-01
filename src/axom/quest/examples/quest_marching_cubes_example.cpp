@@ -25,7 +25,6 @@
 #include "axom/quest/MeshViewUtil.hpp"
 #include "axom/sidre.hpp"
 #include "axom/core/Types.hpp"
-#include "axom/core/WhereMacro.hpp"
 
 #include "conduit_blueprint.hpp"
 #include "conduit_relay_io_blueprint.hpp"
@@ -304,15 +303,6 @@ public:
       auto dl = domainLengths(d);
       SLIC_INFO(axom::fmt::format("dom[{}] size={}", d, dl));
     }
-    if(_ndims == 2)
-    {
-      checkMeshStorage<2>();
-    }
-    if(_ndims == 3)
-    {
-      checkMeshStorage<3>();
-    }
-
     _maxSpacing = maxSpacing();
   }
 
@@ -517,107 +507,6 @@ public:
 
   void printMeshInfo() const { _mdMesh.print(); }
 
-  //!@brief Get the shape of cell-based arrays for a domain.
-  template <int DIM>
-  axom::StackArray<axom::IndexType, DIM> getCellsShape(int domainNum)
-  {
-    auto domLengths = domainLengths(domainNum);
-    axom::StackArray<axom::IndexType, DIM> shape;
-    for(int i = 0; i < DIM; ++i)
-    {
-      shape[i] = domLengths[i];
-    }
-    return shape;
-  }
-
-  //!@brief Get the shape of node-based arrays for a domain.
-  template <int DIM>
-  axom::StackArray<axom::IndexType, DIM> getNodesShape(int domainNum)
-  {
-    auto domLengths = domainLengths(domainNum);
-    axom::StackArray<axom::IndexType, DIM> shape;
-    for(int i = 0; i < DIM; ++i)
-    {
-      shape[i] = 1 + domLengths[i];
-    }
-    return shape;
-  }
-
-  //!@brief Get an ArrayView of coordinates data for a domain.
-  template <int DIM>
-  axom::Array<axom::ArrayView<double, DIM>> get_coords_view(int domainNum)
-  {
-    axom::StackArray<axom::IndexType, DIM> shape = getNodesShape<DIM>(domainNum);
-    for(int d = 0; d < DIM / 2; ++d)
-    {
-      std::swap(shape[d], shape[DIM - 1 - d]);
-    }
-
-    conduit::Node& dom = _mdMesh[domainNum];
-    conduit::Node& coordsValues = dom.fetch_existing("coordsets/coords/values");
-    axom::Array<axom::ArrayView<double, DIM>> coordsViews(DIM);
-    for(int d = 0; d < DIM; ++d)
-    {
-      double* ptr = coordsValues[d].as_double_ptr();
-      coordsViews[d] = axom::ArrayView<double, DIM>(ptr, shape);
-    }
-    return coordsViews;
-  }
-
-  template <int DIM>
-  typename std::enable_if<DIM == 2>::type checkMeshStorage()
-  {
-    SLIC_ASSERT(dimension() == DIM);
-    for(int d = 0; d < _mdMesh.number_of_children(); ++d)
-    {
-      axom::Array<axom::ArrayView<double, DIM>> coordsViews =
-        get_coords_view<DIM>(d);
-      const axom::StackArray<axom::IndexType, DIM>& shape =
-        coordsViews[0].shape();
-
-      // Verify that i is slowest in m_coordsViews.
-      // It appears conduit stores column major and ArrayView computes offsets
-      // assuming row major.
-      int n = 0, errCount = 0;
-      for(int j = 0; j < shape[0]; ++j)
-      {
-        for(int i = 0; i < shape[1]; ++i)
-        {
-          errCount += (&coordsViews[0].data()[n++] != &coordsViews[0](j, i));
-        }
-      }
-      assert(errCount == 0);
-    }
-  }
-  template <int DIM>
-  typename std::enable_if<DIM == 3>::type checkMeshStorage()
-  {
-    SLIC_ASSERT(dimension() == DIM);
-    for(int d = 0; d < _mdMesh.number_of_children(); ++d)
-    {
-      axom::Array<axom::ArrayView<double, DIM>> coordsViews =
-        get_coords_view<DIM>(d);
-      const axom::StackArray<axom::IndexType, DIM>& shape =
-        coordsViews[0].shape();
-
-      // Verify that i is slowest in m_coordsViews.
-      // It appears conduit stores column major and ArrayView computes offsets
-      // assuming row major.
-      int n = 0, errCount = 0;
-      for(int k = 0; k < shape[0]; ++k)
-      {
-        for(int j = 0; j < shape[1]; ++j)
-        {
-          for(int i = 0; i < shape[2]; ++i)
-          {
-            errCount += (&coordsViews[0].data()[n++] != &coordsViews[0](k, j, i));
-          }
-        }
-      }
-      assert(errCount == 0);
-    }
-  }
-
   /*!
     @param[in] path Path to existing data in the blueprint mesh,
     relative to each domain in the mesh.
@@ -745,17 +634,6 @@ void saveMesh(const sidre::Group& mesh, const std::string& filename)
     // info.print();
   }
   saveMesh(tmpMesh, filename);
-}
-
-//!@brief Reverse the order of a StackArray.
-template <typename T, int DIM>
-void reverse(axom::StackArray<T, DIM>& a)
-{
-  for(int d = 0; d < DIM / 2; ++d)
-  {
-    std::swap(a[d], a[DIM - 1 - d]);
-  }
-  return;
 }
 
 template <typename T, int DIM>
@@ -1175,14 +1053,14 @@ struct ContourTestBase
       allCoordsViews[n] = mvu.getConstCoordsViews(false);
     }
 
-    for(axom::IndexType cn = 0; cn < cellCount; ++cn)
+    for(axom::IndexType contourCellNum = 0; contourCellNum < cellCount; ++contourCellNum)
     {
-      axom::IndexType domainId = domainIdView[cn];
+      axom::IndexType domainId = domainIdView[contourCellNum];
       typename axom::quest::MeshViewUtil<DIM, MemorySpace>::ConstCoordsViewsType&
         coordsViews = allCoordsViews[domainId];
 
       axom::StackArray<axom::IndexType, DIM> parentCellIdx =
-        parentCellIdxView[cn];
+        parentCellIdxView[contourCellNum];
       axom::StackArray<axom::IndexType, DIM> upperIdx = parentCellIdx;
       addToStackArray(upperIdx, 1);
 
@@ -1199,9 +1077,8 @@ struct ContourTestBase
       big.expand(tol);
       small.expand(-tol);
 
-      // WRONG: the node ids should increased by the number of nodes in all previous domains.
-      axom::IndexType* cellNodeIds = contourMesh.getCellNodeIDs(cn);
-      const axom::IndexType cellNodeCount = contourMesh.getNumberOfCellNodes(cn);
+      axom::IndexType* cellNodeIds = contourMesh.getCellNodeIDs(contourCellNum);
+      const axom::IndexType cellNodeCount = contourMesh.getNumberOfCellNodes(contourCellNum);
 
       for(axom::IndexType nn = 0; nn < cellNodeCount; ++nn)
       {
@@ -1244,46 +1121,37 @@ struct ContourTestBase
 
     const axom::IndexType domainCount = computationalMesh.domainCount();
 
-    // Nodal values of functions for each domain.
+    /*
+      Space to store function views and whether a computational cell
+      contains the contour.  We set these up for all domains ahead
+      of time for accessing as needed later.
+    */
     axom::Array<axom::ArrayView<const double, DIM, MemorySpace>> fcnViews(
       domainCount);
-    // Whether a computational cell has parts of the contour mesh.
     axom::Array<axom::Array<bool, DIM>> hasContours(domainCount);
-
     for(axom::IndexType domId = 0; domId < domainCount; ++domId)
     {
       const auto& dom = computationalMesh.domain(domId);
       axom::quest::MeshViewUtil<DIM, MemorySpace> mvu(dom, "mesh");
 
-      axom::StackArray<axom::IndexType, DIM> domLengths;
-      computationalMesh.domainLengths(domId, domLengths);
-      assert(domLengths == mvu.getRealExtents("element"));
+      const axom::StackArray<axom::IndexType, DIM> domLengths = mvu.getRealExtents("element");
 
       axom::Array<bool, DIM>& hasContour = hasContours[domId];
       hasContour.resize(domLengths, false);
 
-      // Add 1 to count nodes.  Reverse to match Conduit data.
-      reverse(domLengths);
-      // This should work but breaks gcc11 on 64-bit linux:
-      // domLengths = domLengths + 1;
-      addToStackArray(domLengths, 1);
-
       fcnViews[domId] =
         mvu.template getConstFieldView<double>(functionName(), false);
-      // double* fcnPtr =
-      // dom.fetch_existing("fields/" + functionName() + "/values").as_double_ptr();
-      // fcnViews[domId] = axom::ArrayView<const double, DIM>(fcnPtr, domLengths);
     }
-    for(axom::IndexType cn = 0; cn < cellCount; ++cn)
+    for(axom::IndexType contourCellNum = 0; contourCellNum < cellCount; ++contourCellNum)
     {
-      axom::IndexType domainId = domainIdView[cn];
+      axom::IndexType domainId = domainIdView[contourCellNum];
       const axom::StackArray<axom::IndexType, DIM>& parentCellIdx =
-        parentCellIdxView[cn];
+        parentCellIdxView[contourCellNum];
       hasContours[domainId][parentCellIdx] = true;
     }
 
-    // Verify that marked cells contain the contour value
-    // and unmarked ones don't.
+    // Verify that cells marked by hasContours touches the contour
+    // and other cells don't.
     for(axom::IndexType domId = 0; domId < domainCount; ++domId)
     {
       const auto& dom = computationalMesh.domain(domId);
@@ -1317,7 +1185,6 @@ struct ContourTestBase
             }
           }
 
-          // reverse(cornerIdx);
           double fcnValue = fcnView[cornerIdx];
           minFcnValue = std::min(minFcnValue, fcnValue);
           maxFcnValue = std::max(maxFcnValue, fcnValue);
@@ -1656,8 +1523,6 @@ int main(int argc, char** argv)
   }
 
   s_allocatorId = allocatorIdForPolicy(params.policy);
-  umpire::ResourceManager& rm = umpire::ResourceManager::getInstance();
-  umpire::Allocator allocator = rm.getAllocator(s_allocatorId);
 
   //---------------------------------------------------------------------------
   // Load computational mesh.
