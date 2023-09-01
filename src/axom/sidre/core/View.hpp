@@ -1371,6 +1371,18 @@ private:
   void copyView(View* copy) const;
 
   /*!
+   * \brief Deep copy view contents into an undescribed EMPTY view.
+   *
+   * For SCALAR and STRING the data is copied and the state is preserved.
+   * For BUFFER and EXTERNAL, the data described by this View is copied into a
+   * new Buffer that is of the size needed to hold the copied data. Any
+   * parts of the source Buffer or external array that are not seen due
+   * to offsets and strides in the description will not be copied. The copied
+   * View will have BUFFER state with zero offset and a stride of one.
+   */
+  void deepCopyView(View* copy) const;
+
+  /*!
    * \brief Add view description and references to it's data to a conduit tree.
    */
   void exportTo(conduit::Node& data_holder,

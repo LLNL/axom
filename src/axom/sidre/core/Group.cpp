@@ -966,6 +966,39 @@ View* Group::copyView(View* view)
   return copy;
 }
 
+/*
+ *************************************************************************
+ *
+ * Create a deep copy of given View and attach to this Group.
+ *
+ * The deep copy performs a copy of all described data.
+ *
+ *************************************************************************
+ */
+View* Group::deepCopyView(View* view)
+{
+  if(view == nullptr || hasChildView(view->getName()))
+  {
+    SLIC_CHECK_MSG(
+      view != nullptr,
+      SIDRE_GROUP_LOG_PREPEND << "Null pointer provided, no View to copy.");
+
+    if(view != nullptr)
+    {
+      SLIC_CHECK_MSG(!hasChildView(view->getName()),
+                     SIDRE_GROUP_LOG_PREPEND
+                       << "Group already has a View named '" << view->getName()
+                       << "' so View copy operation cannot happen");
+    }
+
+    return nullptr;
+  }
+
+  View* copy = createView(view->getName());
+  view->deepCopyView(copy);
+  return copy;
+}
+
 ////////////////////////////////////////////////////////////////////////
 //
 // Child Group query methods.
@@ -1367,6 +1400,56 @@ Group* Group::copyGroup(Group* group)
   while(indexIsValid(vidx))
   {
     res->copyView(group->getView(vidx));
+    vidx = group->getNextValidViewIndex(vidx);
+  }
+
+  return res;
+}
+
+/*
+ *************************************************************************
+ *
+ * Create a deep copy of given Group and make it a child of this Group.
+ *
+ * The deep copy of a Group will copy the group hierarchy and deep copy
+ * all Views within the hierarchy.
+ *
+ *************************************************************************
+ */
+Group* Group::deepCopyGroup(Group* group)
+{
+  if(group == nullptr || hasChildGroup(group->getName()))
+  {
+    SLIC_CHECK_MSG(
+      group != nullptr,
+      SIDRE_GROUP_LOG_PREPEND << "Null pointer provided, no Group to copy.");
+
+    if(group != nullptr)
+    {
+      SLIC_CHECK_MSG(!hasChildGroup(group->getName()),
+                     SIDRE_GROUP_LOG_PREPEND
+                       << "Invalid copy operation. Group already has "
+                       << "a child named '" << group->getName() << "'.");
+    }
+
+    return nullptr;
+  }
+
+  Group* res = createGroup(group->getName());
+
+  // copy child Groups to new Group
+  IndexType gidx = group->getFirstValidGroupIndex();
+  while(indexIsValid(gidx))
+  {
+    res->deepCopyGroup(group->getGroup(gidx));
+    gidx = group->getNextValidGroupIndex(gidx);
+  }
+
+  // copy Views to new Group
+  IndexType vidx = group->getFirstValidViewIndex();
+  while(indexIsValid(vidx))
+  {
+    res->deepCopyView(group->getView(vidx));
     vidx = group->getNextValidViewIndex(vidx);
   }
 
