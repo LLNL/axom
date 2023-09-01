@@ -326,10 +326,14 @@ public:
       conduit::blueprint::mesh::number_of_domains(mdMesh);
     if(domCount > 0)
     {
-      m_coordsAreStrided = mdMesh[0].fetch_existing("topologies/mesh/elements/dims").has_child("strides");
+      m_coordsAreStrided = mdMesh[0]
+                             .fetch_existing("topologies/mesh/elements/dims")
+                             .has_child("strides");
       if(m_coordsAreStrided)
       {
-        SLIC_WARNING(axom::fmt::format("Mesh '{}' is strided.  Stride support is under development.", meshFilename));
+        SLIC_WARNING(axom::fmt::format(
+          "Mesh '{}' is strided.  Stride support is under development.",
+          meshFilename));
       }
     }
 

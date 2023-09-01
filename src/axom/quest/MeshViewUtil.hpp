@@ -27,29 +27,29 @@ namespace quest
 {
 namespace internal
 {
-  template<typename T>
-  constexpr T BADINDEX = std::numeric_limits<T>::max();
-  template<typename T, int DIM>
-  inline axom::StackArray<T, DIM> makeStackArray(T v=std::numeric_limits<T>::max())
+template <typename T>
+constexpr T BADINDEX = std::numeric_limits<T>::max();
+template <typename T, int DIM>
+inline axom::StackArray<T, DIM> makeStackArray(T v = std::numeric_limits<T>::max())
+{
+  axom::StackArray<T, DIM> rval;
+  for(int d = 0; d < DIM; ++d)
   {
-    axom::StackArray<T, DIM> rval;
-    for(int d=0; d<DIM; ++d)
-    {
-      rval[d] = v;
-    }
-    return rval;
+    rval[d] = v;
   }
-  template<typename T, int DIM>
-  inline axom::StackArray<T, DIM> makeStackArray(const T* v)
-  {
-    axom::StackArray<T, DIM> rval;
-    for(int d=0; d<DIM; ++d)
-    {
-      rval[d] = v[d];
-    }
-    return rval;
-  }
+  return rval;
 }
+template <typename T, int DIM>
+inline axom::StackArray<T, DIM> makeStackArray(const T* v)
+{
+  axom::StackArray<T, DIM> rval;
+  for(int d = 0; d < DIM; ++d)
+  {
+    rval[d] = v[d];
+  }
+  return rval;
+}
+}  // namespace internal
 
 /**
    \brief Utility for high-level access into a blueprint mesh,
@@ -67,12 +67,14 @@ namespace internal
    TODO: Figure out a more appropriate place for this file.
    It's only in axom/quest because the initial need was there.
 */
-template<int DIM, axom::MemorySpace MemSpace>
+template <int DIM, axom::MemorySpace MemSpace>
 class MeshViewUtil
 {
 public:
-  using CoordsViewsType = axom::StackArray<axom::ArrayView<double, DIM, MemSpace>, DIM>;
-  using ConstCoordsViewsType = axom::StackArray<axom::ArrayView<const double, DIM, MemSpace>, DIM>;
+  using CoordsViewsType =
+    axom::StackArray<axom::ArrayView<double, DIM, MemSpace>, DIM>;
+  using ConstCoordsViewsType =
+    axom::StackArray<axom::ArrayView<const double, DIM, MemSpace>, DIM>;
 
   //@{
   //@name Setting up
@@ -88,37 +90,40 @@ public:
   MeshViewUtil(conduit::Node& bpDomain, const std::string& topologyName = "")
     : m_dom(&bpDomain)
     , m_topologyName(topologyName)
+  {
+    if(m_topologyName.empty())
     {
-      if(m_topologyName.empty())
-      {
-        m_topologyName = bpDomain.fetch_existing("topologies")[0].name();
-      }
-
-      const std::string topoPath = "topologies/" + m_topologyName;
-      SLIC_ASSERT(m_dom->has_path(topoPath));
-      m_topology = &m_dom->fetch_existing(topoPath);
-
-      SLIC_ASSERT(m_topology->fetch_existing("type").as_string() == "structured");
-
-      const std::string coordsetPath =
-        "coordsets/" + m_dom->fetch_existing(topoPath + "/coordset").as_string();
-      m_coordset = &m_dom->fetch_existing(coordsetPath);
-
-      SLIC_ASSERT( m_coordset->fetch_existing("type").as_string() == "explicit");
-
-      int dim = conduit::blueprint::mesh::coordset::dims(*m_coordset);
-      if(dim != DIM)
-      {
-        SLIC_ERROR(axom::fmt::format("MeshViewUtil template parameter DIM={} doesn't match mesh topology dimension ({})",
-                                     DIM, dim));
-      }
-
-      m_cdom = m_dom;
-      m_ctopology = m_topology;
-      m_ccoordset = m_coordset;
-
-      computeCoordsDataLayout();
+      m_topologyName = bpDomain.fetch_existing("topologies")[0].name();
     }
+
+    const std::string topoPath = "topologies/" + m_topologyName;
+    SLIC_ASSERT(m_dom->has_path(topoPath));
+    m_topology = &m_dom->fetch_existing(topoPath);
+
+    SLIC_ASSERT(m_topology->fetch_existing("type").as_string() == "structured");
+
+    const std::string coordsetPath =
+      "coordsets/" + m_dom->fetch_existing(topoPath + "/coordset").as_string();
+    m_coordset = &m_dom->fetch_existing(coordsetPath);
+
+    SLIC_ASSERT(m_coordset->fetch_existing("type").as_string() == "explicit");
+
+    int dim = conduit::blueprint::mesh::coordset::dims(*m_coordset);
+    if(dim != DIM)
+    {
+      SLIC_ERROR(
+        axom::fmt::format("MeshViewUtil template parameter DIM={} doesn't "
+                          "match mesh topology dimension ({})",
+                          DIM,
+                          dim));
+    }
+
+    m_cdom = m_dom;
+    m_ctopology = m_topology;
+    m_ccoordset = m_coordset;
+
+    computeCoordsDataLayout();
+  }
 
   /*!
     @brief Constructor
@@ -128,30 +133,32 @@ public:
   MeshViewUtil(const conduit::Node& bpDomain, const std::string& topologyName)
     : m_cdom(&bpDomain)
     , m_topologyName(topologyName)
+  {
+    const std::string topoPath = "topologies/" + m_topologyName;
+    SLIC_ASSERT(m_cdom->has_path(topoPath));
+    m_ctopology = &m_cdom->fetch_existing(topoPath);
+
+    SLIC_ASSERT(m_ctopology->fetch_existing("type").as_string() == "structured");
+
+    const std::string coordsetPath =
+      "coordsets/" + m_cdom->fetch_existing(topoPath + "/coordset").as_string();
+    m_ccoordset = &m_cdom->fetch_existing(coordsetPath);
+
+    SLIC_ASSERT(m_ccoordset->fetch_existing("type").as_string() == "explicit");
+
+    int dim = conduit::blueprint::mesh::coordset::dims(*m_ccoordset);
+    if(dim != DIM)
     {
-      const std::string topoPath = "topologies/" + m_topologyName;
-      SLIC_ASSERT(m_cdom->has_path(topoPath));
-      m_ctopology = &m_cdom->fetch_existing(topoPath);
-
-      SLIC_ASSERT(m_ctopology->fetch_existing("type").as_string() == "structured");
-
-      const std::string coordsetPath =
-        "coordsets/" + m_cdom->fetch_existing(topoPath + "/coordset").as_string();
-      m_ccoordset = &m_cdom->fetch_existing(coordsetPath);
-
-      SLIC_ASSERT( m_ccoordset->fetch_existing("type").as_string() == "explicit");
-
-      int dim = conduit::blueprint::mesh::coordset::dims(*m_ccoordset);
-      if(dim != DIM)
-      {
-        SLIC_ERROR(axom::fmt::format("MeshViewUtil mesh topology dimension ({}) doesn't match template parameter DIM={}",
-                                     dim, DIM));
-      }
-
-      computeCoordsDataLayout();
+      SLIC_ERROR(
+        axom::fmt::format("MeshViewUtil mesh topology dimension ({}) doesn't "
+                          "match template parameter DIM={}",
+                          dim,
+                          DIM));
     }
-  //@}
 
+    computeCoordsDataLayout();
+  }
+  //@}
 
   //@{
   //!@name Blueprint data organization
@@ -160,36 +167,20 @@ public:
 
     @return the Conduit node at "topologies/<topologyName>".
   */
-  const conduit::Node& getTopology()
-  {
-    return *m_topology;
-  }
-  const conduit::Node& getTopology() const
-  {
-    return *m_ctopology;
-  }
+  const conduit::Node& getTopology() { return *m_topology; }
+  const conduit::Node& getTopology() const { return *m_ctopology; }
 
   /*!
     @brief Get the coordinates conduit::Node for the named topology.
   */
-  conduit::Node& getCoordSet()
-  {
-    return *m_coordset;
-  }
-  const conduit::Node& getCoordSet() const
-  {
-    return *m_ccoordset;
-  }
+  conduit::Node& getCoordSet() { return *m_coordset; }
+  const conduit::Node& getCoordSet() const { return *m_ccoordset; }
 
   /*!
     @brief Get the spatial dimension of the named topology.
   */
-  conduit::index_t getTopologyDim() const
-  {
-    return DIM;
-  }
+  conduit::index_t getTopologyDim() const { return DIM; }
   //@}
-
 
   //@{
   //!@name Sizes and shapes
@@ -201,7 +192,8 @@ public:
   */
   axom::StackArray<axom::IndexType, DIM> getDomainShape() const
   {
-    const conduit::Node& dimsNode = m_ctopology->fetch_existing("elements/dims");
+    const conduit::Node& dimsNode =
+      m_ctopology->fetch_existing("elements/dims");
     axom::StackArray<axom::IndexType, DIM> rval;
     for(int i = 0; i < DIM; ++i)
     {
@@ -215,7 +207,7 @@ public:
     axom::StackArray<axom::IndexType, DIM> rval = getDomainShape();
     if(association == "vertex")
     {
-      for(int d=0; d<DIM; ++d)
+      for(int d = 0; d < DIM; ++d)
       {
         ++rval[d];
       }
@@ -226,7 +218,9 @@ public:
     }
     else
     {
-      SLIC_ERROR("MeshVieuUtil only supports element and vertex data association for now.");
+      SLIC_ERROR(
+        "MeshVieuUtil only supports element and vertex data association for "
+        "now.");
     }
 
     return rval;
@@ -239,7 +233,7 @@ public:
   {
     auto domainShape = getDomainShape();
     axom::IndexType rval = 0;
-    for(int d=0; d<DIM; ++d)
+    for(int d = 0; d < DIM; ++d)
     {
       rval += 1 + domainShape[d];
     }
@@ -289,18 +283,18 @@ public:
     if(stridesPtr)
     {
       axom::StackArray<axom::IndexType, DIM> strides;
-      for(int d=0; d<DIM; ++d)
+      for(int d = 0; d < DIM; ++d)
       {
         strides[d] = stridesPtr[d];
-        memShape[d] = (d < DIM-1 ? stridesPtr[d+1] : coordValuesCount) /
-          stridesPtr[d];
+        memShape[d] =
+          (d < DIM - 1 ? stridesPtr[d + 1] : coordValuesCount) / stridesPtr[d];
       }
     }
     else
     {
       // No strides implies no ghosts, so memory shape is domain shape.
       memShape = getDomainShape();
-      for(int d=0; d<DIM; ++d)
+      for(int d = 0; d < DIM; ++d)
       {
         memShape[d] += 1;
       }
@@ -314,7 +308,8 @@ public:
   */
   const conduit::int32* getCoordsStridesPtr() const
   {
-    const conduit::Node& topologyDims = m_ctopology->fetch_existing("elements/dims");
+    const conduit::Node& topologyDims =
+      m_ctopology->fetch_existing("elements/dims");
     const conduit::int32* rval = nullptr;
     if(topologyDims.has_child("strides"))
     {
@@ -328,7 +323,8 @@ public:
   */
   axom::IndexType getFieldCountWithGhosts(const std::string& fieldName) const
   {
-    const conduit::Node& valuesNode = m_cdom->fetch_existing("field/" + fieldName + "values");
+    const conduit::Node& valuesNode =
+      m_cdom->fetch_existing("field/" + fieldName + "values");
     axom::IndexType rval = valuesNode.dtype().number_of_elements();
     return rval;
   }
@@ -338,17 +334,20 @@ public:
     If strides are not specified, assume direction 0 is
     fastest (Conduit's default striding).
   */
-  axom::StackArray<axom::IndexType, DIM> getFieldStrides(const std::string& fieldName) const
+  axom::StackArray<axom::IndexType, DIM> getFieldStrides(
+    const std::string& fieldName) const
   {
     const conduit::Node& fieldNode = m_dom->fetch_existing("fields/" + fieldName);
-    const bool atVertex = fieldNode.fetch_existing("association").as_string() == "vertex";
-    const conduit::int32* stridesPtr = fieldNode.has_child("strides") ?
-      fieldNode.fetch_existing("strides").as_int32_ptr() : nullptr;
+    const bool atVertex =
+      fieldNode.fetch_existing("association").as_string() == "vertex";
+    const conduit::int32* stridesPtr = fieldNode.has_child("strides")
+      ? fieldNode.fetch_existing("strides").as_int32_ptr()
+      : nullptr;
 
     axom::StackArray<axom::IndexType, DIM> rval;
     if(stridesPtr)
     {
-      for(int d=0; d<DIM; ++d)
+      for(int d = 0; d < DIM; ++d)
       {
         rval[d] = stridesPtr[d];
       }
@@ -357,7 +356,7 @@ public:
     {
       auto domainShape = getDomainShape();
       axom::IndexType tmpStride = 1;
-      for(int d=0; d<DIM; ++d)
+      for(int d = 0; d < DIM; ++d)
       {
         rval[d] = tmpStride;
         tmpStride *= domainShape[d] + atVertex;
@@ -367,7 +366,6 @@ public:
   }
   //@}
 
-
   //@{
   //!@name Data views
 
@@ -375,19 +373,27 @@ public:
   {
     conduit::Node& valuesNode = getCoordSet().fetch_existing("values");
     axom::StackArray<axom::ArrayView<double, DIM, MemSpace>, DIM> rval;
-    for(int d=0; d<DIM; ++d)
+    for(int d = 0; d < DIM; ++d)
     {
       auto* dataPtr = valuesNode[d].as_double_ptr();
-      rval[d] = axom::ArrayView<double, DIM, MemSpace>(dataPtr, m_coordsMemShape, m_coordsStrides);
+      rval[d] = axom::ArrayView<double, DIM, MemSpace>(dataPtr,
+                                                       m_coordsMemShape,
+                                                       m_coordsStrides);
     }
 
     if(withGhosts == false)
     {
-      axom::StackArray<axom::IndexType, DIM> offsets = conduitIndicesToMultidimIndices(
-        m_ctopology->fetch_existing("elements/dims"), "offsets", 0);
+      axom::StackArray<axom::IndexType, DIM> offsets =
+        conduitIndicesToMultidimIndices(
+          m_ctopology->fetch_existing("elements/dims"),
+          "offsets",
+          0);
       axom::StackArray<axom::IndexType, DIM> counts = m_domainShape;
-      for(int d=0; d<DIM; ++d) { ++counts[d]; }
-      for(int d=0; d<DIM; ++d)
+      for(int d = 0; d < DIM; ++d)
+      {
+        ++counts[d];
+      }
+      for(int d = 0; d < DIM; ++d)
       {
         auto rval1 = rval[d];
         rval[d] = rval1.subspan(offsets, counts);
@@ -401,19 +407,27 @@ public:
   {
     const conduit::Node& valuesNode = getCoordSet().fetch_existing("values");
     axom::StackArray<axom::ArrayView<const double, DIM, MemSpace>, DIM> rval;
-    for(int d=0; d<DIM; ++d)
+    for(int d = 0; d < DIM; ++d)
     {
       auto* dataPtr = valuesNode[d].as_double_ptr();
-      rval[d] = axom::ArrayView<const double, DIM, MemSpace>(dataPtr, m_coordsMemShape, m_coordsStrides);
+      rval[d] = axom::ArrayView<const double, DIM, MemSpace>(dataPtr,
+                                                             m_coordsMemShape,
+                                                             m_coordsStrides);
     }
 
     if(withGhosts == false)
     {
-      axom::StackArray<axom::IndexType, DIM> offsets = conduitIndicesToMultidimIndices(
-        m_ctopology->fetch_existing("elements/dims"), "offsets", 0);
+      axom::StackArray<axom::IndexType, DIM> offsets =
+        conduitIndicesToMultidimIndices(
+          m_ctopology->fetch_existing("elements/dims"),
+          "offsets",
+          0);
       axom::StackArray<axom::IndexType, DIM> counts = m_domainShape;
-      for(int d=0; d<DIM; ++d) { ++counts[d]; }
-      for(int d=0; d<DIM; ++d)
+      for(int d = 0; d < DIM; ++d)
+      {
+        ++counts[d];
+      }
+      for(int d = 0; d < DIM; ++d)
       {
         auto rval1 = rval[d];
         rval[d] = rval1.subspan(offsets, counts);
@@ -429,35 +443,42 @@ public:
     WARNING: The view returned has an allocator id determined by MemSpace,
     regardless of the memory type.
   */
-  template<typename T>
+  template <typename T>
   axom::ArrayView<T, DIM, MemSpace> getFieldView(const std::string& fieldName,
                                                  bool withGhosts = false)
   {
     if(!m_dom)
     {
-      SLIC_ERROR("Cannot use getFieldView from MeshViewUtil initialized with a const conduit::Node.  Use getConstFieldView.");
+      SLIC_ERROR(
+        "Cannot use getFieldView from MeshViewUtil initialized with a const "
+        "conduit::Node.  Use getConstFieldView.");
     }
-// std::cout<<__WHERE << " in getFieldView with " << fieldName << std::endl;
-// m_dom->print();
     conduit::Node& fieldNode = m_dom->fetch_existing("fields/" + fieldName);
-    const std::string association = fieldNode.fetch_existing("association").as_string();
+    const std::string association =
+      fieldNode.fetch_existing("association").as_string();
     conduit::Node& valuesNode = fieldNode.fetch_existing("values");
     const axom::IndexType valuesCount = valuesNode.dtype().number_of_elements();
 
-    SLIC_ASSERT_MSG(association == "vertex" || association == "element",
-                    "MeshViewUtil only supports vertex and element-based fields right now.");
+    SLIC_ASSERT_MSG(
+      association == "vertex" || association == "element",
+      "MeshViewUtil only supports vertex and element-based fields right now.");
     const bool onVertex = association == "vertex";
 
-    axom::StackArray<axom::IndexType, DIM> strides = conduitIndicesToMultidimIndices(fieldNode, "strides");
+    axom::StackArray<axom::IndexType, DIM> strides =
+      conduitIndicesToMultidimIndices(fieldNode, "strides");
     if(fieldNode.has_child("strides"))
     {
-      const conduit::int32* stridesPtr = fieldNode.fetch_existing("strides").as_int32_ptr();
-      for(int d=0; d<DIM; ++d) { strides[d] = stridesPtr[d]; }
+      const conduit::int32* stridesPtr =
+        fieldNode.fetch_existing("strides").as_int32_ptr();
+      for(int d = 0; d < DIM; ++d)
+      {
+        strides[d] = stridesPtr[d];
+      }
     }
     else
     {
       axom::IndexType tmpStride = 1;
-      for(int d=0; d<DIM; ++d)
+      for(int d = 0; d < DIM; ++d)
       {
         strides[d] = tmpStride;
         tmpStride *= m_domainShape[d] + onVertex;
@@ -465,20 +486,24 @@ public:
     }
 
     axom::StackArray<axom::IndexType, DIM> shape;
-    for(int d=0; d<DIM-1; ++d)
+    for(int d = 0; d < DIM - 1; ++d)
     {
-      shape[d] = strides[d+1] / strides[d];
+      shape[d] = strides[d + 1] / strides[d];
     }
-    shape[DIM-1] = valuesCount / strides[DIM-1];
+    shape[DIM - 1] = valuesCount / strides[DIM - 1];
 
-    T* dataPtr = valuesNode.as_double_ptr();// TODO: Use template parameter T.
+    T* dataPtr = valuesNode.as_double_ptr();  // TODO: Use template parameter T.
     axom::ArrayView<double, DIM, MemSpace> rval(dataPtr, shape, strides);
 
     if(withGhosts == false)
     {
-      axom::StackArray<axom::IndexType, DIM> offsets = conduitIndicesToMultidimIndices(fieldNode, "offsets", 0);
+      axom::StackArray<axom::IndexType, DIM> offsets =
+        conduitIndicesToMultidimIndices(fieldNode, "offsets", 0);
       axom::StackArray<axom::IndexType, DIM> counts = m_domainShape;
-      for(int d=0; d<DIM; ++d) { counts[d] += onVertex; }
+      for(int d = 0; d < DIM; ++d)
+      {
+        counts[d] += onVertex;
+      }
       auto rval1 = rval;
       rval = rval1.subspan(offsets, counts);
     }
@@ -489,31 +514,38 @@ public:
   /*!
     @brief Return view to a scalar field variable.
   */
-  template<typename T>
-  axom::ArrayView<const T, DIM, MemSpace> getConstFieldView(const std::string& fieldName,
-                                                            bool withGhosts = false)
+  template <typename T>
+  axom::ArrayView<const T, DIM, MemSpace> getConstFieldView(
+    const std::string& fieldName,
+    bool withGhosts = false)
   {
-// std::cout<<__WHERE << " in getFieldView with " << fieldName << std::endl;
-// m_cdom->print();
-    const conduit::Node& fieldNode = m_cdom->fetch_existing("fields/" + fieldName);
-    const std::string association = fieldNode.fetch_existing("association").as_string();
+    const conduit::Node& fieldNode =
+      m_cdom->fetch_existing("fields/" + fieldName);
+    const std::string association =
+      fieldNode.fetch_existing("association").as_string();
     const conduit::Node& valuesNode = fieldNode.fetch_existing("values");
     const axom::IndexType valuesCount = valuesNode.dtype().number_of_elements();
 
-    SLIC_ASSERT_MSG(association == "vertex" || association == "element",
-                    "MeshViewUtil only supports vertex and element-based fields right now.");
+    SLIC_ASSERT_MSG(
+      association == "vertex" || association == "element",
+      "MeshViewUtil only supports vertex and element-based fields right now.");
     const bool onVertex = association == "vertex";
 
-    axom::StackArray<axom::IndexType, DIM> strides = conduitIndicesToMultidimIndices(fieldNode, "strides");
+    axom::StackArray<axom::IndexType, DIM> strides =
+      conduitIndicesToMultidimIndices(fieldNode, "strides");
     if(fieldNode.has_child("strides"))
     {
-      const conduit::int32* stridesPtr = fieldNode.fetch_existing("strides").as_int32_ptr();
-      for(int d=0; d<DIM; ++d) { strides[d] = stridesPtr[d]; }
+      const conduit::int32* stridesPtr =
+        fieldNode.fetch_existing("strides").as_int32_ptr();
+      for(int d = 0; d < DIM; ++d)
+      {
+        strides[d] = stridesPtr[d];
+      }
     }
     else
     {
       axom::IndexType tmpStride = 1;
-      for(int d=0; d<DIM; ++d)
+      for(int d = 0; d < DIM; ++d)
       {
         strides[d] = tmpStride;
         tmpStride *= m_domainShape[d] + onVertex;
@@ -521,20 +553,25 @@ public:
     }
 
     axom::StackArray<axom::IndexType, DIM> shape;
-    for(int d=0; d<DIM-1; ++d)
+    for(int d = 0; d < DIM - 1; ++d)
     {
-      shape[d] = strides[d+1] / strides[d];
+      shape[d] = strides[d + 1] / strides[d];
     }
-    shape[DIM-1] = valuesCount / strides[DIM-1];
+    shape[DIM - 1] = valuesCount / strides[DIM - 1];
 
-    const T* dataPtr = valuesNode.as_double_ptr();// TODO: Use template parameter T.
+    const T* dataPtr =
+      valuesNode.as_double_ptr();  // TODO: Use template parameter T.
     axom::ArrayView<const double, DIM, MemSpace> rval(dataPtr, shape, strides);
 
     if(withGhosts == false)
     {
-      axom::StackArray<axom::IndexType, DIM> offsets = conduitIndicesToMultidimIndices(fieldNode, "offsets", 0);
+      axom::StackArray<axom::IndexType, DIM> offsets =
+        conduitIndicesToMultidimIndices(fieldNode, "offsets", 0);
       axom::StackArray<axom::IndexType, DIM> counts = m_domainShape;
-      for(int d=0; d<DIM; ++d) { counts[d] += onVertex; }
+      for(int d = 0; d < DIM; ++d)
+      {
+        counts[d] += onVertex;
+      }
       auto rval1 = rval;
       rval = rval1.subspan(offsets, counts);
     }
@@ -559,64 +596,67 @@ public:
     host memory.  Conduit currently doesn't provide a means to allocate
     the array in device memory.
   */
-  void createField( const std::string& fieldName,
-                    const std::string& association,
-                    const conduit::DataType& dtype,
-                    const axom::StackArray<axom::IndexType, DIM>& strides,
-                    const axom::StackArray<axom::IndexType, DIM>& offsets)
+  void createField(const std::string& fieldName,
+                   const std::string& association,
+                   const conduit::DataType& dtype,
+                   const axom::StackArray<axom::IndexType, DIM>& strides,
+                   const axom::StackArray<axom::IndexType, DIM>& offsets)
+  {
+    if(m_dom->has_path("fields/" + fieldName))
     {
-      if(m_dom->has_path("fields/" + fieldName))
-      {
-        SLIC_ERROR(axom::fmt::format("Cannot create field {}.  It already exists.", fieldName));
-      }
-      if(association != "vertex" && association != "element")
-      {
-        SLIC_ERROR(axom::fmt::format("Not yet supporting association '{}'.", association));
-      }
-
-      auto realExtents = getRealExtents(association);
-
-      conduit::Node& fieldNode = m_dom->fetch("fields/" + fieldName);
-      fieldNode["association"] = association;
-      fieldNode["topology"] = m_topologyName;
-
-      {
-        fieldNode["strides"].set(conduit::DataType::int32(DIM));
-        std::int32_t* tmpPtr = fieldNode["strides"].as_int32_ptr();
-        for(int d=0; d<DIM; ++d)
-        {
-          tmpPtr[d] = strides[d];
-        }
-      }
-
-      {
-        fieldNode["offsets"].set(conduit::DataType::int32(DIM));
-        std::int32_t* tmpPtr = fieldNode["offsets"].as_int32_ptr();
-        for(int d=0; d<DIM; ++d)
-        {
-          tmpPtr[d] = offsets[d];
-        }
-      }
-
-      axom::IndexType slowDir = 0;
-      for(int d=0; d<DIM; ++d)
-      {
-        if(strides[slowDir] < strides[d])
-        {
-          slowDir = d;
-        }
-      }
-      auto extras = dtype.number_of_elements() -
-        strides[slowDir]*(offsets[slowDir] + realExtents[slowDir]);
-      if(extras < 0)
-      {
-        SLIC_ERROR(axom::fmt::format("Insufficient space allocated for data, given the offsets and strides."));
-      }
-
-      fieldNode["values"].set(dtype);
-// std::cout<<__WHERE << " After crating field " << fieldName << std::endl;
-// m_dom->print();
+      SLIC_ERROR(
+        axom::fmt::format("Cannot create field {}.  It already exists.",
+                          fieldName));
     }
+    if(association != "vertex" && association != "element")
+    {
+      SLIC_ERROR(
+        axom::fmt::format("Not yet supporting association '{}'.", association));
+    }
+
+    auto realExtents = getRealExtents(association);
+
+    conduit::Node& fieldNode = m_dom->fetch("fields/" + fieldName);
+    fieldNode["association"] = association;
+    fieldNode["topology"] = m_topologyName;
+
+    {
+      fieldNode["strides"].set(conduit::DataType::int32(DIM));
+      std::int32_t* tmpPtr = fieldNode["strides"].as_int32_ptr();
+      for(int d = 0; d < DIM; ++d)
+      {
+        tmpPtr[d] = strides[d];
+      }
+    }
+
+    {
+      fieldNode["offsets"].set(conduit::DataType::int32(DIM));
+      std::int32_t* tmpPtr = fieldNode["offsets"].as_int32_ptr();
+      for(int d = 0; d < DIM; ++d)
+      {
+        tmpPtr[d] = offsets[d];
+      }
+    }
+
+    axom::IndexType slowDir = 0;
+    for(int d = 0; d < DIM; ++d)
+    {
+      if(strides[slowDir] < strides[d])
+      {
+        slowDir = d;
+      }
+    }
+    auto extras = dtype.number_of_elements() -
+      strides[slowDir] * (offsets[slowDir] + realExtents[slowDir]);
+    if(extras < 0)
+    {
+      SLIC_ERROR(
+        axom::fmt::format("Insufficient space allocated for data, given the "
+                          "offsets and strides."));
+    }
+
+    fieldNode["values"].set(dtype);
+  }
   //@}
 
 private:
@@ -634,8 +674,9 @@ private:
   axom::StackArray<axom::IndexType, DIM> m_coordsMemShape;
 
   axom::StackArray<axom::IndexType, DIM> conduitIndicesToMultidimIndices(
-    const conduit::Node& node, const std::string& path,
-    axom::IndexType defaultVal=std::numeric_limits<axom::IndexType>::max()) const
+    const conduit::Node& node,
+    const std::string& path,
+    axom::IndexType defaultVal = std::numeric_limits<axom::IndexType>::max()) const
   {
     if(node.has_path(path))
     {
@@ -647,11 +688,13 @@ private:
 
   void computeCoordsDataLayout()
   {
-    const conduit::Node& topologyDims = m_ctopology->fetch_existing("elements/dims");
+    const conduit::Node& topologyDims =
+      m_ctopology->fetch_existing("elements/dims");
 
-    const std::string coordsetName = m_ctopology->fetch_existing("coordset").as_string();
-    const conduit::Node& coordsValues =
-      m_cdom->fetch_existing(axom::fmt::format("coordsets/{}/values", coordsetName));
+    const std::string coordsetName =
+      m_ctopology->fetch_existing("coordset").as_string();
+    const conduit::Node& coordsValues = m_cdom->fetch_existing(
+      axom::fmt::format("coordsets/{}/values", coordsetName));
 
     const axom::IndexType coordValuesCount =
       coordsValues[0].dtype().number_of_elements();
@@ -668,26 +711,29 @@ private:
 
     if(topologyDims.has_child("strides"))
     {
-      const conduit::int32* stridesPtr = topologyDims.fetch_existing("strides").as_int32_ptr();
-      for(int d=0; d<DIM; ++d) { m_coordsStrides[d] = stridesPtr[d]; }
+      const conduit::int32* stridesPtr =
+        topologyDims.fetch_existing("strides").as_int32_ptr();
+      for(int d = 0; d < DIM; ++d)
+      {
+        m_coordsStrides[d] = stridesPtr[d];
+      }
     }
     else
     {
       axom::IndexType tmpStride = coordsAreInterleaved ? DIM : 1;
-      for(int d=0; d<DIM; ++d)
+      for(int d = 0; d < DIM; ++d)
       {
         m_coordsStrides[d] = tmpStride;
         tmpStride *= 1 + m_domainShape[d];
       }
     }
 
-    for(int d=0; d<DIM-1; ++d)
+    for(int d = 0; d < DIM - 1; ++d)
     {
-      m_coordsMemShape[d] = m_coordsStrides[d+1] / m_coordsStrides[d];
+      m_coordsMemShape[d] = m_coordsStrides[d + 1] / m_coordsStrides[d];
     }
-    m_coordsMemShape[DIM-1] = coordValuesCount / m_coordsStrides[DIM-1];
+    m_coordsMemShape[DIM - 1] = coordValuesCount / m_coordsStrides[DIM - 1];
   }
-
 };
 
 }  // end namespace quest

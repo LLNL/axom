@@ -42,30 +42,38 @@ static void reverse(axom::StackArray<T, DIM>& a)
   return;
 }
 
-template<typename T, int DIM>
-class StructuredIndexer {
+template <typename T, int DIM>
+class StructuredIndexer
+{
   axom::StackArray<T, DIM> m_strides;
   axom::StackArray<std::uint16_t, DIM> m_slowestDirs;
+
 public:
   //!@brief Constructor for row- or column major indexing.
   StructuredIndexer(const axom::StackArray<T, DIM>& lengths, bool rowMajor)
   {
     if(rowMajor)
     {
-      for(int d=0; d<DIM; ++d) { m_slowestDirs[d] = DIM - 1 - d; }
-      m_strides[0] = 1;
-      for(int d=1; d<DIM; ++d)
+      for(int d = 0; d < DIM; ++d)
       {
-        m_strides[d] = m_strides[d-1] * lengths[d-1];
+        m_slowestDirs[d] = DIM - 1 - d;
+      }
+      m_strides[0] = 1;
+      for(int d = 1; d < DIM; ++d)
+      {
+        m_strides[d] = m_strides[d - 1] * lengths[d - 1];
       }
     }
     else
     {
-      for(int d=0; d<DIM; ++d) { m_slowestDirs[d] = d; }
-      m_strides[DIM-1] = 1;
-      for(int d=DIM-2; d>=0; --d)
+      for(int d = 0; d < DIM; ++d)
       {
-        m_strides[d] = m_strides[d+1] * lengths[d+1];
+        m_slowestDirs[d] = d;
+      }
+      m_strides[DIM - 1] = 1;
+      for(int d = DIM - 2; d >= 0; --d)
+      {
+        m_strides[d] = m_strides[d + 1] * lengths[d + 1];
       }
     }
   }
@@ -74,10 +82,13 @@ public:
   StructuredIndexer(const axom::StackArray<T, DIM>& strides)
     : m_strides(strides)
   {
-    for(int d=0; d<DIM; ++d) { m_slowestDirs[d] = d; }
-    for(int s=0; s<DIM; ++s)
+    for(int d = 0; d < DIM; ++d)
     {
-      for(int d=s; d<DIM; ++d)
+      m_slowestDirs[d] = d;
+    }
+    for(int s = 0; s < DIM; ++s)
+    {
+      for(int d = s; d < DIM; ++d)
       {
         if(m_strides[m_slowestDirs[s]] < m_strides[m_slowestDirs[d]])
         {
@@ -109,11 +120,11 @@ public:
   AXOM_HOST_DEVICE axom::StackArray<T, DIM> toMultiIndex(T flatIndex) const
   {
     axom::StackArray<T, DIM> multiIndex;
-    for(int d = 0; d<DIM; ++d)
+    for(int d = 0; d < DIM; ++d)
     {
       int dir = m_slowestDirs[d];
-      multiIndex[dir] = flatIndex/m_strides[dir];
-      flatIndex -= multiIndex[dir]*m_strides[dir];
+      multiIndex[dir] = flatIndex / m_strides[dir];
+      flatIndex -= multiIndex[dir] * m_strides[dir];
     }
     return multiIndex;
   }
@@ -691,7 +702,10 @@ public:
     auto cellCornersView = m_contourCellCorners.view();
     auto cellParentsView = m_contourCellParents.view();
 
-    ComputeContour_Util ccu(m_contourVal, m_caseIds.strides(), m_fcnView, m_coordsViews);
+    ComputeContour_Util ccu(m_contourVal,
+                            m_caseIds.strides(),
+                            m_fcnView,
+                            m_coordsViews);
 
     auto loopBody = AXOM_LAMBDA(axom::IndexType iCrossing)
     {
@@ -942,17 +956,17 @@ public:
       , caseNum(caseNum_)
       , firstSurfaceCellId(std::numeric_limits<axom::IndexType>::max())
     { }
-    axom::IndexType parentCellNum;       //!< @brief Flat index of parent cell in m_caseIds.
-    std::uint16_t caseNum;               //!< @brief Index in cases2D or cases3D
+    axom::IndexType parentCellNum;  //!< @brief Flat index of parent cell in m_caseIds.
+    std::uint16_t caseNum;          //!< @brief Index in cases2D or cases3D
     axom::IndexType firstSurfaceCellId;  //!< @brief First index for generated cells.
   };
 
 private:
   const int m_allocatorID;  //!< @brief ExecSpace-based allocator ID for all internal data
   MIdx m_bShape;            //!< @brief Blueprint cell data shape.
-  MIdx m_cShape;    //!< @brief Cell-centered array shape for ArrayViews.
-  MIdx m_pShape;    //!< @brief Node-centered array shape for ArrayViews.
-  MIdx m_bStrides;  //!< @brief Strides for m_bShape arrays.
+  MIdx m_cShape;      //!< @brief Cell-centered array shape for ArrayViews.
+  MIdx m_pShape;      //!< @brief Node-centered array shape for ArrayViews.
+  MIdx m_bStrides;    //!< @brief Strides for m_bShape arrays.
   MIdx m_fastestDir;  //!< @brief Directions, from fastest to slowest striding.
 
   // Views of parent domain data.
