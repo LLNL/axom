@@ -21,6 +21,7 @@
 #include "axom/primal.hpp"
 #include "axom/mint/mesh/UnstructuredMesh.hpp"
 #include "axom/mint/execution/internal/structured_exec.hpp"
+#include "axom/quest/ArrayIndexer.hpp"
 #include "axom/quest/MarchingCubes.hpp"
 #include "axom/quest/MeshViewUtil.hpp"
 #include "axom/sidre.hpp"
@@ -80,8 +81,6 @@ public:
   std::vector<double> perpDir;
 
   std::size_t ndim {0};
-
-  // TODO: Ensure that fcnCenter, inPlane and perpDir sizes match dimensionality.
 
   double contourVal {1.0};
 
@@ -656,40 +655,6 @@ static void addToStackArray(axom::StackArray<T, DIM>& a, U b)
   }
 }
 
-/*!
-  @brief Compute multidmensional index corresponding to flat index
-  in rectangular index space.
-
-  The flatId corresponds to the multidimensional index through
-  an order that advances the first index fastest.
-
-  TODO: This has been superceded by StructuredIndexer.  Eventually, I
-  want to rename move StructuredIndexer to axom::core::ArrayIndexer.
-*/
-template <int DIM>
-axom::StackArray<axom::IndexType, DIM> flatToMultidimIndex(
-  axom::IndexType flatId,
-  const axom::StackArray<axom::IndexType, DIM>& sizes)
-{
-  axom::IndexType strides[DIM] = {1};
-  for(int d = 1; d < DIM; ++d)
-  {
-    strides[d] = strides[d - 1] * sizes[d - 1];
-  }
-  if(flatId >= strides[DIM - 1] * sizes[DIM - 1])
-  {
-    SLIC_ERROR("flatId is too big.");
-  }
-
-  axom::StackArray<axom::IndexType, DIM> rval;
-  for(int d = DIM - 1; d >= 0; --d)
-  {
-    rval[d] = flatId / strides[d];
-    flatId -= rval[d] * strides[d];
-  }
-  return rval;
-}
-
 template <int DIM, typename ExecSpace>
 struct ContourTestBase
 {
@@ -1053,7 +1018,8 @@ struct ContourTestBase
       allCoordsViews[n] = mvu.getConstCoordsViews(false);
     }
 
-    for(axom::IndexType contourCellNum = 0; contourCellNum < cellCount; ++contourCellNum)
+    for(axom::IndexType contourCellNum = 0; contourCellNum < cellCount;
+        ++contourCellNum)
     {
       axom::IndexType domainId = domainIdView[contourCellNum];
       typename axom::quest::MeshViewUtil<DIM, MemorySpace>::ConstCoordsViewsType&
@@ -1078,7 +1044,8 @@ struct ContourTestBase
       small.expand(-tol);
 
       axom::IndexType* cellNodeIds = contourMesh.getCellNodeIDs(contourCellNum);
-      const axom::IndexType cellNodeCount = contourMesh.getNumberOfCellNodes(contourCellNum);
+      const axom::IndexType cellNodeCount =
+        contourMesh.getNumberOfCellNodes(contourCellNum);
 
       for(axom::IndexType nn = 0; nn < cellNodeCount; ++nn)
       {
@@ -1134,7 +1101,8 @@ struct ContourTestBase
       const auto& dom = computationalMesh.domain(domId);
       axom::quest::MeshViewUtil<DIM, MemorySpace> mvu(dom, "mesh");
 
-      const axom::StackArray<axom::IndexType, DIM> domLengths = mvu.getRealExtents("element");
+      const axom::StackArray<axom::IndexType, DIM> domLengths =
+        mvu.getRealExtents("element");
 
       axom::Array<bool, DIM>& hasContour = hasContours[domId];
       hasContour.resize(domLengths, false);
@@ -1142,7 +1110,8 @@ struct ContourTestBase
       fcnViews[domId] =
         mvu.template getConstFieldView<double>(functionName(), false);
     }
-    for(axom::IndexType contourCellNum = 0; contourCellNum < cellCount; ++contourCellNum)
+    for(axom::IndexType contourCellNum = 0; contourCellNum < cellCount;
+        ++contourCellNum)
     {
       axom::IndexType domainId = domainIdView[contourCellNum];
       const axom::StackArray<axom::IndexType, DIM>& parentCellIdx =
@@ -1163,11 +1132,12 @@ struct ContourTestBase
 
       const auto& fcnView = fcnViews[domId];
 
+      axom::ArrayIndexer<axom::IndexType, DIM> rowMajor(domLengths, 'r');
       const axom::IndexType cellCount = product(domLengths);
       for(axom::IndexType cellId = 0; cellId < cellCount; ++cellId)
       {
         axom::StackArray<axom::IndexType, DIM> cellIdx =
-          flatToMultidimIndex(cellId, domLengths);
+          rowMajor.toMultiIndex(cellId);
 
         // Compute min and max function value in the cell.
         double minFcnValue = std::numeric_limits<double>::max();

@@ -5,6 +5,7 @@
 
 #include "axom/core/execution/execution_space.hpp"
 #include "axom/quest/MarchingCubes.hpp"
+#include "axom/quest/ArrayIndexer.hpp"
 #include "axom/quest/detail/marching_cubes_lookup.hpp"
 #include "axom/quest/MeshViewUtil.hpp"
 #include "axom/primal/geometry/Point.hpp"
@@ -29,108 +30,6 @@ static void add_to_StackArray(axom::StackArray<T, DIM>& a, U b)
     a[d] += b;
   }
 }
-
-//!@brief Reverse the order of a StackArray.
-template <typename T, int DIM>
-static void reverse(axom::StackArray<T, DIM>& a)
-{
-  for(int d = 0; d < DIM / 2; ++d)
-  {
-    std::swap(a[d], a[DIM - 1 - d]);
-  }
-  return;
-}
-
-/*!
-  @brief Indexing into a multidimensional structured array.
-*/
-template <typename T, int DIM>
-class StructuredIndexer
-{
-  axom::StackArray<T, DIM> m_strides;
-  axom::StackArray<std::uint16_t, DIM> m_slowestDirs;
-
-public:
-  //!@brief Constructor for row- or column major indexing.
-  StructuredIndexer(const axom::StackArray<T, DIM>& lengths, bool rowMajor)
-  {
-    if(rowMajor)
-    {
-      for(int d = 0; d < DIM; ++d)
-      {
-        m_slowestDirs[d] = DIM - 1 - d;
-      }
-      m_strides[0] = 1;
-      for(int d = 1; d < DIM; ++d)
-      {
-        m_strides[d] = m_strides[d - 1] * lengths[d - 1];
-      }
-    }
-    else
-    {
-      for(int d = 0; d < DIM; ++d)
-      {
-        m_slowestDirs[d] = d;
-      }
-      m_strides[DIM - 1] = 1;
-      for(int d = DIM - 2; d >= 0; --d)
-      {
-        m_strides[d] = m_strides[d + 1] * lengths[d + 1];
-      }
-    }
-  }
-
-  //!@brief Constructor for arbitrary-stride indexing.
-  StructuredIndexer(const axom::StackArray<T, DIM>& strides)
-    : m_strides(strides)
-  {
-    for(int d = 0; d < DIM; ++d)
-    {
-      m_slowestDirs[d] = d;
-    }
-    for(int s = 0; s < DIM; ++s)
-    {
-      for(int d = s; d < DIM; ++d)
-      {
-        if(m_strides[m_slowestDirs[s]] < m_strides[m_slowestDirs[d]])
-        {
-          std::swap(m_slowestDirs[s], m_slowestDirs[d]);
-        }
-      }
-    }
-  }
-
-  //!@brief Index directions, ordered from slowest to fastest.
-  inline AXOM_HOST_DEVICE axom::StackArray<std::uint16_t, DIM>& slowestDirs() const
-  {
-    return m_slowestDirs;
-  }
-
-  //!@brief Strides.
-  inline AXOM_HOST_DEVICE axom::StackArray<axom::IndexType, DIM>& strides() const
-  {
-    return m_strides;
-  }
-
-  //!@brief Convert multidimensional index to flat index.
-  inline AXOM_HOST_DEVICE T toFlatIndex(const axom::StackArray<T, DIM>& multiIndex) const
-  {
-    T rval = numerics::dot_product(multiIndex.data(), m_strides.data());
-  }
-
-  //!@brief Convert flat index to multidimensional index.
-  inline AXOM_HOST_DEVICE axom::StackArray<T, DIM> toMultiIndex(T flatIndex) const
-  {
-    axom::StackArray<T, DIM> multiIndex;
-    for(int d = 0; d < DIM; ++d)
-    {
-      int dir = m_slowestDirs[d];
-      multiIndex[dir] = flatIndex / m_strides[dir];
-      flatIndex -= multiIndex[dir] * m_strides[dir];
-    }
-    return multiIndex;
-  }
-};
 
 /*!
   @brief Computations for MarchingCubesSingleDomain
@@ -409,7 +308,6 @@ public:
         {
           loopBody(n);
         }
-        // assert(*crossingId == m_crossingCount);
       });
 #else
     *crossingId = 0;
@@ -478,7 +376,7 @@ public:
   {
     double contourVal;
     MIdx bStrides;
-    StructuredIndexer<axom::IndexType, DIM> indexer;
+    axom::ArrayIndexer<axom::IndexType, DIM> indexer;
     axom::ArrayView<const double, DIM, MemorySpace> fcnView;
     axom::StackArray<axom::ArrayView<const double, DIM, MemorySpace>, DIM> coordsViews;
     ComputeContour_Util(
@@ -840,6 +738,8 @@ public:
       for(int n = 0; n < addedCellCount; ++n)
       {
         MIdx cornerIds = contourCellCorners[n];
+        // Bump corner indices by priorNodeCount to avoid indices
+        // used by other parents domains.
         add_to_StackArray(cornerIds, priorNodeCount);
         mesh.appendCell(cornerIds);
       }
@@ -849,12 +749,10 @@ public:
                                           axom::mint::CELL_CENTERED,
                                           numComponents);
       SLIC_ASSERT(numComponents == DIM);
-      // Bump corner indices by priorCellCount to avoid indices
-      // used by other parents domains.
       axom::ArrayView<axom::StackArray<axom::IndexType, DIM>> cellIdView(
         (axom::StackArray<axom::IndexType, DIM>*)cellIdPtr,
         priorCellCount + addedCellCount);
-      StructuredIndexer<axom::IndexType, DIM> si(m_caseIds.shape(), false);
+      axom::ArrayIndexer<axom::IndexType, DIM> si(m_caseIds.shape(), 'c');
       for(axom::IndexType i = 0; i < addedCellCount; ++i)
       {
         cellIdView[priorCellCount + i] = si.toMultiIndex(contourCellParents[i]);

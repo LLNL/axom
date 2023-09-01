@@ -59,6 +59,7 @@ set( quest_headers
 
     util/mesh_helpers.hpp
     MeshViewUtil.hpp
+    ArrayIndexer.hpp
     )
 
 set( quest_sources
