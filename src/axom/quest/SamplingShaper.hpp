@@ -511,7 +511,7 @@ public:
       }
 
       const bool shouldReplace = shape.replaces(otherMatName);
-      SLIC_DEBUG(axom::fmt::format(
+      SLIC_INFO(axom::fmt::format(
         "Should we replace material '{}' with shape '{}' of material '{}'? {}",
         otherMatName,
         shapeName,
