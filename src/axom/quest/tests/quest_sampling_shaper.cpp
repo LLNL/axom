@@ -1038,6 +1038,100 @@ shapes:
   }
 }
 
+TEST_F(SamplingShaperTest2D, check_underscores)
+{
+  const auto& testname =
+    ::testing::UnitTest::GetInstance()->current_test_info()->name();
+
+  constexpr double radius = 1.5;
+
+  const std::string shape_template = R"(
+dimensions: 2
+
+shapes:
+- name: {2}
+  material: {3}
+  geometry:
+    format: c2c
+    path: {0}
+    units: cm
+    operators:
+      - scale: {1}
+- name: {4}
+  material: {5}
+  geometry:
+    format: c2c
+    path: {0}
+    units: cm
+    operators:
+      - scale: {1}
+- name: {6}
+  material: {7}
+  geometry:
+    format: c2c
+    path: {0}
+    units: cm
+    operators:
+      - scale: {1}
+)";
+
+  const std::string shape_name {"shape"};
+  const std::string mat_name {"mat"};
+
+  const std::string underscored_shape_name {"underscored_shape"};
+  const std::string underscored_mat_name {"underscored_mat"};
+
+  const std::string double_underscored_shape_name {"double_underscored_shape"};
+  const std::string double_underscored_mat_name {"double_underscored_mat"};
+
+  ScopedTemporaryFile contour_file(axom::fmt::format("{}.contour", testname),
+                                   unit_semicircle_contour);
+
+  ScopedTemporaryFile shape_file(axom::fmt::format("{}.yaml", testname),
+                                 axom::fmt::format(shape_template,
+                                                   contour_file.getFileName(),
+                                                   radius,
+                                                   shape_name,
+                                                   mat_name,
+                                                   underscored_shape_name,
+                                                   underscored_mat_name,
+                                                   double_underscored_shape_name,
+                                                   double_underscored_mat_name));
+
+  if(very_verbose_output)
+  {
+    SLIC_INFO("Contour file: \n" << contour_file.getFileContents());
+    SLIC_INFO("Shape file: \n" << shape_file.getFileContents());
+  }
+
+  this->validateShapeFile(shape_file.getFileName());
+  this->initializeShaping(shape_file.getFileName());
+
+  this->runShaping();
+
+  // Collect and print registered fields
+  std::vector<std::string> regFields;
+  for(const auto& pr : this->getDC().GetFieldMap())
+  {
+    regFields.push_back(pr.first);
+  }
+  SLIC_INFO(axom::fmt::format("Registered fields: {}",
+                              axom::fmt::join(regFields, ", ")));
+
+  // check that output materials are present
+  EXPECT_TRUE(this->getDC().HasField(axom::fmt::format("vol_frac_{}", mat_name)));
+  EXPECT_TRUE(this->getDC().HasField(
+    axom::fmt::format("vol_frac_{}", underscored_mat_name)));
+  EXPECT_TRUE(this->getDC().HasField(
+    axom::fmt::format("vol_frac_{}", double_underscored_mat_name)));
+
+  // Save meshes and fields
+  if(very_verbose_output)
+  {
+    this->getDC().Save(testname, axom::sidre::Group::getDefaultIOProtocol());
+  }
+}
+
 //-----------------------------------------------------------------------------
 
 TEST_F(SamplingShaperTest3D, basic_tet)

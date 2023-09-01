@@ -464,8 +464,6 @@ public:
 
   void applyReplacementRules(const klee::Shape& shape) override
   {
-    using axom::utilities::string::rsplitN;
-
     internal::ScopedLogLevelChanger logLevelChanger(
       this->isVerbose() ? slic::message::Debug : slic::message::Warning);
 
