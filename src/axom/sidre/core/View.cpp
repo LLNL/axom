@@ -1050,7 +1050,7 @@ void View::deepCopyView(View* copy) const
                   SIDRE_VIEW_LOG_PREPEND
                     << "deepCopyView can only copy into undescribed view "
                     << "with empty state.");
-#if 1
+
   if(isDescribed())
   {
     copy->describe(m_schema.dtype());
@@ -1131,7 +1131,6 @@ void View::deepCopyView(View* copy) const
                     SIDRE_VIEW_LOG_PREPEND << "View is in unexpected state: "
                                            << getStateStringName(m_state));
   }
-#endif
 }
 
 /*

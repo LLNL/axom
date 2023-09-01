@@ -899,8 +899,8 @@ public:
    * If given View pointer is null or Group already has a View with
    * same name as given View, method is a no-op.
    *
-   * \return pointer to given argument View object or nullptr if View
-   * is not copied into this Group.
+   * \return pointer to the new copied View object or nullptr if a View
+   * is not successfully copied into this Group.
    */
   View* copyView(View* view);
 
@@ -919,7 +919,7 @@ public:
    * If given View pointer is null or Group already has a View with
    * same name as given View, method is a no-op.
    *
-   * \return pointer to given argument Group object or nullptr if View
+   * \return pointer to the new copied View object or nullptr if a View
    * is not copied into this Group.
    */
   View* deepCopyView(View* view);
@@ -1261,7 +1261,7 @@ public:
    * If given Group pointer is null or Group already has a child Group with
    * same name as given Group, method is a no-op.
    *
-   * \return pointer to given argument Group object or nullptr if Group
+   * \return pointer to the new copied Group object or nullptr if a Group
    * is not copied into this Group.
    */
   Group* copyGroup(Group* group);
@@ -1280,7 +1280,7 @@ public:
    * If given Group pointer is null or Group already has a child Group with
    * same name as given Group, method is a no-op.
    *
-   * \return pointer to given argument Group object or nullptr if Group
+   * \return pointer to the new copied Group object or nullptr if a Group
    * is not copied into this Group.
    */
   Group* deepCopyGroup(Group* group);

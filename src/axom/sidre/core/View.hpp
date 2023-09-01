@@ -1363,7 +1363,7 @@ private:
   }
 
   /*!
-   * \brief Copy view contents into an undescribed EMPTY view.
+   * \brief Copy contents of this View contents into an undescribed EMPTY View.
    *
    * For SCALAR and STRING the data is copied; EXTERNAL,
    * data pointer is copied; BUFFER attaches the buffer.
@@ -1371,7 +1371,8 @@ private:
   void copyView(View* copy) const;
 
   /*!
-   * \brief Deep copy view contents into an undescribed EMPTY view.
+   * \brief Deep copy contents of this View contents into an undescribed
+   * EMPTY View.
    *
    * For SCALAR and STRING the data is copied and the state is preserved.
    * For BUFFER and EXTERNAL, the data described by this View is copied into a
