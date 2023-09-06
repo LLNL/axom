@@ -41,6 +41,7 @@ using PolyhedronType = axom::primal::Polyhedron<double, 3>;
 TEST(primal_clip, simple_clip)
 {
   using namespace Primal3D;
+  constexpr double EPS = 1e-8;
   BoundingBoxType bbox;
   bbox.addPoint(PointType::zero());
   bbox.addPoint(PointType::ones());
@@ -83,7 +84,10 @@ TEST(primal_clip, simple_clip)
     PolygonType poly = axom::primal::clip(tri, bbox);
     EXPECT_EQ(4, poly.numVertices());
 
-    EXPECT_EQ(PointType(.5), poly.vertexMean());
+    for(int dim = 0; dim < 3; ++dim)
+    {
+      EXPECT_NEAR(PointType(0.5)[dim], poly.vertexMean()[dim], EPS);
+    }
 
     SLIC_INFO("Intersection of triangle " << tri << " and bounding box " << bbox
                                           << " is polygon" << poly);
