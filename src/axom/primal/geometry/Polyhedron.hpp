@@ -501,16 +501,16 @@ public:
   }
 
   /*!
-   * \brief Finds the volume of the polyhedron.
+   * \brief Finds the signed volume of the polyhedron.
    *
-   * \return The volume of the polyhedron
+   * \return The signed volume of the polyhedron
    *
    * \note Function is based off moments() in Mike Owen's PolyClipper.
    *
    * \pre polyhedron vertex neighbors are defined, and polyhedron is 3D
    */
   AXOM_HOST_DEVICE
-  double volume() const
+  double signedVolume() const
   {
     double retVol = 0.0;
 
@@ -519,13 +519,13 @@ public:
       return retVol;
     }
 
-    // Finds the volume of tetrahedrons formed from vertices of the Polyhedron
-    // faces and an arbitrary origin (the first vertex)
+    // Finds the signed volume of tetrahedrons formed from vertices of the
+    // Polyhedron faces and an arbitrary origin (the first vertex)
     else
     {
       SLIC_CHECK_MSG(
         hasNeighbors(),
-        "Polyhedron::volume() is only valid with vertex neighbors.");
+        "Polyhedron::signedVolume() is only valid with vertex neighbors.");
 
       // faces is an overestimation
       int faces[MAX_VERTS * MAX_VERTS];
@@ -554,6 +554,13 @@ public:
 
     return retVol / 6.;
   }
+
+  /*!
+   * \brief Returns the absolute (unsigned) volume of the polyhedron
+   * \sa signedVolume()
+   */
+  AXOM_HOST_DEVICE
+  double volume() const { return axom::utilities::abs(signedVolume()); }
 
   /*!
    * \brief Simple formatted print of a polyhedron instance
@@ -661,9 +668,9 @@ public:
  * \brief Creates a Polyhedron from a given Hexahedron's vertices.
  *
  * \param [in] hex The hexahedron
- * \param [in] checkSign If true (default is false), checks the volume of the
- *             Polyhedron is positive. If volume is negative, order of some
- *             vertices will be swapped.
+ * \param [in] checkSign If true (default is false), checks the signed volume
+ *             of the Polyhedron is positive. If signed volume is negative,
+ *             order of some vertices will be swapped.
  *
  * \return A Polyhedron with the Hexahedron's vertices and added
  *         vertex neighbors
@@ -714,10 +721,10 @@ public:
     poly.addNeighbors(6, {2, 7, 5});
     poly.addNeighbors(7, {3, 4, 6});
 
-    // Reverses order of vertices 1,3 and 5,7 if volume is negative
+    // Reverses order of vertices 1,3 and 5,7 if signed volume is negative
     if(checkSign)
     {
-      if(poly.volume() < 0)
+      if(poly.signedVolume() < 0)
       {
         axom::utilities::swap<Point<T, NDIMS>>(poly[1], poly[3]);
         axom::utilities::swap<Point<T, NDIMS>>(poly[5], poly[7]);
@@ -731,9 +738,9 @@ public:
  * \brief Creates a Polyhedron from a given Octahedron's vertices.
  *
  * \param [in] oct The octahedron
- * \param [in] checkSign If true (default is false), checks the volume of the
- *             Polyhedron is positive. If volume is negative, order of some
- *             vertices will be swapped.
+ * \param [in] checkSign If true (default is false), checks the signed volume
+ *             of the Polyhedron is positive. If signed volume is negative,
+ *             order of some vertices will be swapped.
  *
  * \return A Polyhedron with the Octahedron's vertices and added
  *         vertex neighbors
@@ -784,7 +791,7 @@ public:
     // Expanded swap operations for HIP workaround.
     if(checkSign)
     {
-      double vol = poly.volume();
+      double vol = poly.signedVolume();
       if(vol < 0)
       {
         PointType p2({poly[4][0], poly[4][1], poly[4][2]});
@@ -812,9 +819,9 @@ public:
  * \brief Creates a Polyhedron from a given Tetrahedron's vertices.
  *
  * \param [in] tet The tetrahedron
- * \param [in] checkSign If true (default is false), checks the volume of the
- *             Polyhedron is positive. If volume is negative, order of some
- *             vertices will be swapped.
+ * \param [in] checkSign If true (default is false), checks the signed volume
+ *             of the Polyhedron is positive. If signed volume is negative,
+ *             order of some vertices will be swapped.
  *
  * \return A Polyhedron with the Tetrahedron's vertices and added
  *         vertex neighbors
@@ -858,7 +865,7 @@ public:
     poly.addNeighbors(2, {0, 3, 1});
     poly.addNeighbors(3, {0, 1, 2});
 
-    // Reverses order of vertices 1 and 2 if volume is negative
+    // Reverses order of vertices 1 and 2 if signed volume is negative
     if(checkSign)
     {
       if(tet.signedVolume() < 0)
