@@ -264,9 +264,9 @@ public:
    *  type. This should work as long as the two Ts are comparable with
    *  operator<().
    */
-  template <typename OtherType>
+  template <typename OtherType, int OtherDims>
   AXOM_HOST_DEVICE bool intersectsWith(
-    const BoundingBox<OtherType, NDIMS>& otherBB) const;
+    const BoundingBox<OtherType, OtherDims>& otherBB) const;
 
   /*!
    * \brief Checks that we have a valid bounding box.
@@ -453,14 +453,16 @@ bool BoundingBox<T, NDIMS>::contains(const BoundingBox<OtherT, NDIMS>& otherBB) 
 
 //------------------------------------------------------------------------------
 template <typename T, int NDIMS>
-template <typename OtherType>
+template <typename OtherType, int OtherDims>
 AXOM_HOST_DEVICE bool BoundingBox<T, NDIMS>::intersectsWith(
-  const BoundingBox<OtherType, NDIMS>& otherBB) const
+  const BoundingBox<OtherType, OtherDims>& otherBB) const
 {
   bool status = true;
 
   // AABBs cannot intersect if they are separated along any dimension
-  for(int i = 0; i < NDIMS; ++i)
+  constexpr int MinDims = NDIMS < OtherDims ? NDIMS : OtherDims;
+
+  for(int i = 0; i < MinDims; ++i)
   {
     status &= detail::intersect_bbox_bbox(m_min[i],
                                           m_max[i],
