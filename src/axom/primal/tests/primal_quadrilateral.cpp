@@ -15,9 +15,9 @@ TEST(primal_quadrilateral, area_2D)
 {
   constexpr int DIM = 2;
   constexpr double EPS = 1e-12;
-  using CoordType = double;
-  using PointType = primal::Point<CoordType, DIM>;
-  using QuadrilateralType = primal::Quadrilateral<CoordType, DIM>;
+  using CoordinateType = double;
+  using PointType = primal::Point<CoordinateType, DIM>;
+  using QuadrilateralType = primal::Quadrilateral<CoordinateType, DIM>;
 
   // This is a concave quadrilateral
   QuadrilateralType quad{PointType{-1.0, 0.1},
@@ -25,8 +25,8 @@ TEST(primal_quadrilateral, area_2D)
                          PointType{ 2.0, 0.0},
                          PointType{-0.1, 0.5}};
 
-  const CoordType signedArea = quad.signedArea();
-  const CoordType area = quad.area();
+  const CoordinateType signedArea = quad.signedArea();
+  const CoordinateType area = quad.area();
 
   EXPECT_NEAR(-0.755, signedArea, EPS);
   EXPECT_NEAR(0.755, area, EPS);

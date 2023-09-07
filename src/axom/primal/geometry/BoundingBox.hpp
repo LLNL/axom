@@ -92,6 +92,15 @@ public:
   explicit BoundingBox(const PointType& pt) : m_min(pt), m_max(pt) { }
 
   /*!
+   * \brief Constructor. Creates a bounding box containing the
+   * initializer list of points.
+   *
+   * \param [in] pts an initializer list containing points
+   */
+  AXOM_HOST_DEVICE
+  explicit BoundingBox(std::initializer_list<PointType> pts);
+
+  /*!
    * \brief Constructor. Creates a bounding box containing the collection of
    * points.
    * \pre pt must point to at least n valid point
@@ -401,6 +410,18 @@ AXOM_HOST_DEVICE bool BoundingBox<T, NDIMS>::contains(
   }
 
   return true;
+}
+
+//------------------------------------------------------------------------------
+template <typename T, int NDIMS>
+AXOM_HOST_DEVICE BoundingBox<T, NDIMS>::BoundingBox(std::initializer_list<PointType> pts)
+{
+  clear();
+
+  for(const auto& pt : pts)
+  {
+    this->addPoint(pt);
+  }
 }
 
 //------------------------------------------------------------------------------
