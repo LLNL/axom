@@ -20,12 +20,16 @@ TEST(primal_quadrilateral, area_2D)
   using QuadrilateralType = primal::Quadrilateral<CoordType, DIM>;
 
   // This is a concave quadrilateral
-  QuadrilateralType quad{Point{-1.0, 0.1},
-                         Point{ 0.0, 1.0},
-                         Point{ 2.0, 0.0},
-                         Point{-0.1, 0.5}};
+  QuadrilateralType quad{PointType{-1.0, 0.1},
+                         PointType{ 0.0, 1.0},
+                         PointType{ 2.0, 0.0},
+                         PointType{-0.1, 0.5}};
 
-  EXPECT_NEAR(0.755, quad.area(), EPS);
+  const CoordType signedArea = quad.signedArea();
+  const CoordType area = quad.area();
+
+  EXPECT_NEAR(-0.755, signedArea, EPS);
+  EXPECT_NEAR(0.755, area, EPS);
 }
 
 //----------------------------------------------------------------------
