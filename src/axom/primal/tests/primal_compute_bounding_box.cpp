@@ -129,6 +129,30 @@ TEST(primal_compute_bounding_box, merge_aligned_box_test)
   EXPECT_TRUE(bbox5.contains(bbox4));
 }
 
+TEST(primal_compute_bounding_box, compute_quad_2d_box_test)
+{
+  constexpr int DIM = 2;
+  using CoordinateType = double;
+  using PointType = primal::Point<CoordinateType, DIM>;
+  using BoundingBoxType = primal::BoundingBox<CoordinateType, DIM>;
+  using QuadrilateralType = primal::Octahedron<CoordinateType, DIM>;
+
+  PointType p{-1.0, 0.1};
+  PointType q{ 0.0, 1.0};
+  PointType r{ 2.0, 0.0};
+  PointType s{-0.1, 0.5};
+
+  QuadrilateralType quad{p, q, r, s};
+  BoundingBoxType box = primal::compute_bounding_box<CoordinateType, DIM>(quad);
+
+  EXPECT_TRUE(box.contains(p));
+  EXPECT_TRUE(box.contains(q));
+  EXPECT_TRUE(box.contains(r));
+  EXPECT_TRUE(box.contains(s));
+  EXPECT_EQ(box.getMin(), (PointType{-1.0, 0.0}));
+  EXPECT_EQ(box.getMax(), (PointType{2.0, 1.0}));
+}
+
 TEST(primal_compute_bounding_box, compute_oct_box_test)
 {
   static const int DIM = 3;

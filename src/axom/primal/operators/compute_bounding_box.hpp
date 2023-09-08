@@ -21,6 +21,7 @@
 #include "axom/primal/geometry/Hexahedron.hpp"
 #include "axom/primal/geometry/Point.hpp"
 #include "axom/primal/geometry/Triangle.hpp"
+#include "axom/primal/geometry/Quadrilateral.hpp"
 #include "axom/primal/geometry/Vector.hpp"
 #include "axom/primal/geometry/OrientedBoundingBox.hpp"
 
@@ -119,6 +120,18 @@ AXOM_HOST_DEVICE BoundingBox<T, NDIMS> compute_bounding_box(
     res.addPoint(tri[i]);
   }
   return res;
+}
+
+/*!
+ * \brief Creates a bounding box around a Quadrilateral
+ * \accelerated
+ * \param [in] quad The Quadrilateral
+ */
+template <typename T, int NDIMS>
+AXOM_HOST_DEVICE BoundingBox<T, NDIMS> compute_bounding_box(
+  const Quadrilateral<T, NDIMS> &quad)
+{
+  return BoundingBox<T, NDIMS>{quad[0], quad[1], quad[2], quad[3]};
 }
 
 /*!

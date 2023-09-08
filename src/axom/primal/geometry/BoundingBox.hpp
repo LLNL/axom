@@ -92,6 +92,15 @@ public:
   explicit BoundingBox(const PointType& pt) : m_min(pt), m_max(pt) { }
 
   /*!
+   * \brief Constructor. Creates a bounding box containing the
+   * initializer list of points.
+   *
+   * \param [in] pts an initializer list containing points
+   */
+  AXOM_HOST_DEVICE
+  explicit BoundingBox(std::initializer_list<PointType> pts);
+
+  /*!
    * \brief Constructor. Creates a bounding box containing the collection of
    * points.
    * \pre pt must point to at least n valid point
@@ -255,9 +264,9 @@ public:
    *  type. This should work as long as the two Ts are comparable with
    *  operator<().
    */
-  template <typename OtherType>
+  template <typename OtherType, int OtherDims>
   AXOM_HOST_DEVICE bool intersectsWith(
-    const BoundingBox<OtherType, NDIMS>& otherBB) const;
+    const BoundingBox<OtherType, OtherDims>& otherBB) const;
 
   /*!
    * \brief Checks that we have a valid bounding box.
@@ -405,6 +414,18 @@ AXOM_HOST_DEVICE bool BoundingBox<T, NDIMS>::contains(
 
 //------------------------------------------------------------------------------
 template <typename T, int NDIMS>
+AXOM_HOST_DEVICE BoundingBox<T, NDIMS>::BoundingBox(std::initializer_list<PointType> pts)
+{
+  clear();
+
+  for(const auto& pt : pts)
+  {
+    this->addPoint(pt);
+  }
+}
+
+//------------------------------------------------------------------------------
+template <typename T, int NDIMS>
 AXOM_HOST_DEVICE BoundingBox<T, NDIMS>::BoundingBox(const PointType* pts, int n)
 {
   if(n <= 0)
@@ -432,14 +453,16 @@ bool BoundingBox<T, NDIMS>::contains(const BoundingBox<OtherT, NDIMS>& otherBB) 
 
 //------------------------------------------------------------------------------
 template <typename T, int NDIMS>
-template <typename OtherType>
+template <typename OtherType, int OtherDims>
 AXOM_HOST_DEVICE bool BoundingBox<T, NDIMS>::intersectsWith(
-  const BoundingBox<OtherType, NDIMS>& otherBB) const
+  const BoundingBox<OtherType, OtherDims>& otherBB) const
 {
   bool status = true;
 
   // AABBs cannot intersect if they are separated along any dimension
-  for(int i = 0; i < NDIMS; ++i)
+  constexpr int MinDims = NDIMS < OtherDims ? NDIMS : OtherDims;
+
+  for(int i = 0; i < MinDims; ++i)
   {
     status &= detail::intersect_bbox_bbox(m_min[i],
                                           m_max[i],

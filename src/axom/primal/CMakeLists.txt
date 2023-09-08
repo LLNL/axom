@@ -38,6 +38,7 @@ set( primal_headers
     geometry/Tetrahedron.hpp
     geometry/Octahedron.hpp
     geometry/Triangle.hpp
+    geometry/Quadrilateral.hpp
     geometry/Vector.hpp
 
     ## operators
