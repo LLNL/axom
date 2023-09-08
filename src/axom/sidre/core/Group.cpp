@@ -975,8 +975,10 @@ View* Group::copyView(View* view)
  *
  *************************************************************************
  */
-View* Group::deepCopyView(View* view)
+View* Group::deepCopyView(View* view, int allocID)
 {
+  allocID = getValidAllocatorID(allocID);
+
   if(view == nullptr || hasChildView(view->getName()))
   {
     SLIC_CHECK_MSG(
@@ -995,7 +997,7 @@ View* Group::deepCopyView(View* view)
   }
 
   View* copy = createView(view->getName());
-  view->deepCopyView(copy);
+  view->deepCopyView(copy, allocID);
   return copy;
 }
 
@@ -1388,19 +1390,15 @@ Group* Group::copyGroup(Group* group)
   Group* res = createGroup(group->getName());
 
   // copy child Groups to new Group
-  IndexType gidx = group->getFirstValidGroupIndex();
-  while(indexIsValid(gidx))
+  for(auto& grp : group->groups())
   {
-    res->copyGroup(group->getGroup(gidx));
-    gidx = group->getNextValidGroupIndex(gidx);
+    res->copyGroup(&grp);
   }
 
   // copy Views to new Group
-  IndexType vidx = group->getFirstValidViewIndex();
-  while(indexIsValid(vidx))
+  for(auto& view : group->views())
   {
-    res->copyView(group->getView(vidx));
-    vidx = group->getNextValidViewIndex(vidx);
+    res->copyView(&view);
   }
 
   return res;
@@ -1416,8 +1414,10 @@ Group* Group::copyGroup(Group* group)
  *
  *************************************************************************
  */
-Group* Group::deepCopyGroup(Group* group)
+Group* Group::deepCopyGroup(Group* group, int allocID)
 {
+  allocID = getValidAllocatorID(allocID);
+
   if(group == nullptr || hasChildGroup(group->getName()))
   {
     SLIC_CHECK_MSG(
@@ -1438,19 +1438,15 @@ Group* Group::deepCopyGroup(Group* group)
   Group* res = createGroup(group->getName());
 
   // copy child Groups to new Group
-  IndexType gidx = group->getFirstValidGroupIndex();
-  while(indexIsValid(gidx))
+  for(auto& grp : group->groups())
   {
-    res->deepCopyGroup(group->getGroup(gidx));
-    gidx = group->getNextValidGroupIndex(gidx);
+    res->deepCopyGroup(&grp, allocID);
   }
 
   // copy Views to new Group
-  IndexType vidx = group->getFirstValidViewIndex();
-  while(indexIsValid(vidx))
+  for(auto& view : group->views())
   {
-    res->deepCopyView(group->getView(vidx));
-    vidx = group->getNextValidViewIndex(vidx);
+    res->deepCopyView(&view, allocID);
   }
 
   return res;

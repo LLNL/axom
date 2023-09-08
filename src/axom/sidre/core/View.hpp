@@ -1381,7 +1381,7 @@ private:
    * to offsets and strides in the description will not be copied. The copied
    * View will have BUFFER state with zero offset and a stride of one.
    */
-  void deepCopyView(View* copy) const;
+  void deepCopyView(View* copy, int allocID = INVALID_ALLOCATOR_ID) const;
 
   /*!
    * \brief Add view description and references to it's data to a conduit tree.

@@ -1044,7 +1044,7 @@ void View::copyView(View* copy) const
  *
  *************************************************************************
  */
-void View::deepCopyView(View* copy) const
+void View::deepCopyView(View* copy, int allocID) const
 {
   SLIC_ASSERT_MSG(copy->m_state == EMPTY && !copy->isDescribed(),
                   SIDRE_VIEW_LOG_PREPEND
@@ -1056,7 +1056,7 @@ void View::deepCopyView(View* copy) const
     copy->describe(m_schema.dtype());
     if(hasBuffer() || m_state == EXTERNAL)
     {
-      copy->allocate(getTypeID(), getNumElements());
+      copy->allocate(getTypeID(), getNumElements(), allocID);
     }
   }
 
@@ -1074,7 +1074,7 @@ void View::deepCopyView(View* copy) const
   case EXTERNAL:
     if(!copy->isAllocated())
     {
-      copy->allocate();
+      copy->allocate(allocID);
     }
     if(isApplied())
     {
@@ -1101,7 +1101,7 @@ void View::deepCopyView(View* copy) const
   case BUFFER:
     if(isAllocated() && !copy->isAllocated())
     {
-      copy->allocate();
+      copy->allocate(allocID);
     }
     if(isApplied())
     {
