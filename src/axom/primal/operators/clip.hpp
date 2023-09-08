@@ -117,9 +117,9 @@ Polygon<T, 3> clip(const Triangle<T, 3>& tri, const BoundingBox<T, 3>& bbox)
  * \param [in] hex The hexahedron to clip
  * \param [in] tet The tetrahedron to clip against
  * \param [in] eps The epsilon value
- * \param [in] checkSign If true (default is false), checks the volume of the
- *             shapes are positive. If volume is negative, order of some
- *             vertices will be swapped.
+ * \param [in] checkSign If true (default is false), checks the signed volume
+ *             of the shapes are positive. If signed volume is negative,
+ *             order of some vertices will be swapped.
  *
  * \return A polyhedron of the hexahedron clipped against the tetrahedron.
  *
@@ -157,9 +157,9 @@ AXOM_HOST_DEVICE Polyhedron<T, 3> clip(const Hexahedron<T, 3>& hex,
  * \param [in] tet The tetrahedron to clip against
  * \param [in] hex The hexahedron to clip
  * \param [in] eps The epsilon value
- * \param [in] checkSign If true (default is false), checks the volume of the
- *             shapes are positive. If volume is negative, order of some
- *             vertices will be swapped.
+ * \param [in] checkSign If true (default is false), checks the signed volume
+ *             of the shapes are positive. If signed volume is negative,
+ *             order of some vertices will be swapped.
  *
  * \return A polyhedron of the hexahedron clipped against the tetrahedron.
  *
@@ -197,9 +197,9 @@ AXOM_HOST_DEVICE Polyhedron<T, 3> clip(const Tetrahedron<T, 3>& tet,
  * \param [in] oct The octahedron to clip
  * \param [in] tet The tetrahedron to clip against
  * \param [in] eps The epsilon value
- * \param [in] checkSign If true (default is false), checks the volume of the
- *             shapes are positive. If volume is negative, order of some
- *             vertices will be swapped.
+ * \param [in] checkSign If true (default is false), checks the signed volume
+ *             of the shapes are positive. If signed volume is negative,
+ *             order of some vertices will be swapped.
  *
  * \return A polyhedron of the octahedron clipped against the tetrahedron.
  *
@@ -238,9 +238,9 @@ AXOM_HOST_DEVICE Polyhedron<T, 3> clip(const Octahedron<T, 3>& oct,
  * \param [in] oct The octahedron to clip
  * \param [in] tet The tetrahedron to clip against
  * \param [in] eps The epsilon value
- * \param [in] checkSign If true (default is false), checks the volume of the
- *             shapes are positive. If volume is negative, order of some
- *             vertices will be swapped.
+ * \param [in] checkSign If true (default is false), checks the signed volume
+ *             of the shapes are positive. If signed volume is negative,
+ *             order of some vertices will be swapped.
  *
  * \return A polyhedron of the octahedron clipped against the tetrahedron.
  *
@@ -277,9 +277,9 @@ AXOM_HOST_DEVICE Polyhedron<T, 3> clip(const Tetrahedron<T, 3>& tet,
  * \param [in] tet1 The tetrahedron to clip
  * \param [in] tet2 The tetrahedron to clip against
  * \param [in] eps The epsilon value
- * \param [in] checkSign If true (default is false), checks the volume of the
- *             shapes are positive. If volume is negative, order of some
- *             vertices will be swapped.
+ * \param [in] checkSign If true (default is false), checks the signed volume
+ *             of the shapes are positive. If signed volume is negative,
+ *             order of some vertices will be swapped.
  *
  * \return A polyhedron of the tetrahedron clipped against
  *         the other tetrahedron.

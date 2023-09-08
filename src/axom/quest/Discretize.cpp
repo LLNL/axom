@@ -204,16 +204,7 @@ double octPolyVolume(const OctType& o)
   octPoly.addNeighbors(4, {0, 5, 3, 2});
   octPoly.addNeighbors(5, {0, 1, 3, 4});
 
-  octVolume = octPoly.volume();
-
-  // Flip sign if volume is negative
-  // (expected when vertex order is reversed)
-  if(octVolume < 0)
-  {
-    octVolume = -octVolume;
-  }
-
-  return octVolume;
+  return octPoly.volume();
 }
 }  // namespace
 
