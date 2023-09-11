@@ -493,7 +493,7 @@ private:
                                      return stride[dim_a] < stride[dim_b];
                                    });
 // Work from the smallest-strided dimension to the largest-strided.
-#ifndef NDEBUG
+#if defined(AXOM_DEBUG) && !defined(NDEBUG)
     for(int dim = 0; dim < DIM - 1; dim++)
     {
       const int& minor_dim = sorted_dims[dim];
