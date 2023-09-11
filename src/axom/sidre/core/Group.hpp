@@ -890,19 +890,42 @@ public:
   View* moveView(View* view);
 
   /*!
-   * \brief Create a copy of given View object and add it to this Group.
+   * \brief Create a (shallow) copy of given View object and add it to this
+   *        Group.
    *
    * Note that View copying is a "shallow" copy; the data associated with
    * the View is not copied. The new View object is associated with
    * the same data as the original.
    *
-   * If given Group pointer is null or Group already has a child Group with
-   * same name as given Group, method is a no-op.
+   * If given View pointer is null or Group already has a View with
+   * same name as given View, method is a no-op.
    *
-   * \return pointer to given argument Group object or nullptr if Group
-   * is not moved into this Group.
+   * \sa deepCopyView
+   *
+   * \return pointer to the new copied View object or nullptr if a View
+   * is not successfully copied into this Group.
    */
   View* copyView(View* view);
+
+  /*!
+   * \brief Create a deep copy of given View object and add it to this Group.
+   *
+   * Note that for Views that use sidre Buffers or external data, the
+   * deep copy performs a copy of the data described by the View
+   * into a new Buffer attached to the destination View. If the source View
+   * describes only part of a Buffer or part of an external array, due to
+   * strides and or offsets into the data, only the values seen by the 
+   * description will be copied into the new View. The new View will have
+   * a Buffer that is the exact size of the number of values that are copied,
+   * with an offset of zero and a stride of one.
+   *
+   * If given View pointer is null or Group already has a View with
+   * same name as given View, method is a no-op.
+   *
+   * \return pointer to the new copied View object or nullptr if a View
+   * is not copied into this Group.
+   */
+  View* deepCopyView(View* view, int allocID = INVALID_ALLOCATOR_ID);
 
   //@}
 
@@ -1228,8 +1251,8 @@ public:
   Group* moveGroup(Group* group);
 
   /*!
-   * \brief Create a copy of Group hierarchy rooted at given Group and make it
-   *        a child of this Group.
+   * \brief Create a (shallow) copy of Group hierarchy rooted at given
+   *        Group and make it a child of this Group.
    *
    * Note that all Views in the Group hierarchy are copied as well.
    *
@@ -1241,10 +1264,37 @@ public:
    * If given Group pointer is null or Group already has a child Group with
    * same name as given Group, method is a no-op.
    *
-   * \return pointer to given argument Group object or nullptr if Group
-   * is not moved into this Group.
+   * \sa deepCopyGroup
+   *
+   * \return pointer to the new copied Group object or nullptr if a Group
+   * is not copied into this Group.
    */
   Group* copyGroup(Group* group);
+
+  /*!
+   * \brief Create a deep copy of Group hierarchy rooted at given Group and
+   *        make it a child of this Group.
+   *
+   * Note that all Views in the Group hierarchy are deep copied as well.
+   *
+   * The deep copy of the Group creates a duplicate of the entire Group
+   * hierarchy and performs a deep copy of the data described by the Views
+   * in the hierarchy.
+   *
+   * The Views in the new Group hierarchy will each allocate and use
+   * new Buffers to hold their copied data. Each Buffer will be sized to
+   * receive only the data values seen by the description of the original
+   * View and will have zero offset and a strid of one.
+   *
+   * If given Group pointer is null or Group already has a child Group with
+   * same name as given Group, method is a no-op.
+   *
+   * \sa deepCopyGroup
+   *
+   * \return pointer to the new copied Group object or nullptr if a Group
+   * is not copied into this Group.
+   */
+  Group* deepCopyGroup(Group* group, int allocID = INVALID_ALLOCATOR_ID);
 
   //@}
 
