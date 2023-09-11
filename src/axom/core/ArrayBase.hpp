@@ -359,7 +359,7 @@ protected:
   /// \brief Set the shape
   AXOM_HOST_DEVICE void setShape(const StackArray<IndexType, DIM>& shape_)
   {
-#ifndef NDEBUG
+#if defined(AXOM_DEBUG) && !defined(NDEBUG)
     for(auto s : shape_)
     {
       assert(s >= 0);
