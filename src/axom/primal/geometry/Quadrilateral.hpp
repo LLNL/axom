@@ -235,7 +235,10 @@ public:
   }
 
 private:
-  PointType m_points[NUM_QUAD_VERTS] = {Point(), Point(), Point(), Point()};
+  PointType m_points[NUM_QUAD_VERTS]{PointType{},
+                                     PointType{},
+                                     PointType{},
+                                     PointType{}};
 };
 
 //------------------------------------------------------------------------------
