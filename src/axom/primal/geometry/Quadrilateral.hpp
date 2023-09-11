@@ -43,20 +43,20 @@ std::ostream& operator<<(std::ostream& os, const Quadrilateral<T, NDIMS>& quad);
  * \tparam T the coordinate type, e.g., double, float, etc.
  * \tparam NDIMS the number of dimensions
  *
- * There are four vertices in the quadrilateral, labeled P through S as the
+ * There are four vertices in the quadrilateral, labeled A through D as the
  * constructor's arguments.  They are accessible using the square-brackets
- * operator, with P being index 0, Q index 1, R index 2, and S index 3.
+ * operator, with A being index 0, B index 1, C index 2, and D index 3.
  *
  * Here's a diagram showing a square with the labeled vertices.
  *
  * \verbatim
  *
- * Q +---------+ R       +y
+ * D +---------+ C       +y
  *   |         |         
  *   |         |          ^
  *   |         |          |
  *   |         |          |
- * P +---------+ S        -----> +x
+ * A +---------+ B        -----> +x
  *
  * \endverbatim
  */
@@ -72,22 +72,21 @@ public:
 
 public:
   /// \brief Default constructor. Creates a degenerate quadrilateral.
-  AXOM_HOST_DEVICE
   Quadrilateral() = default;
 
   /*!
-   * \brief Custom Constructor. Creates a quadrilateral from the 4 points p, q, r, s.
-   * \param [in] p point instance corresponding to vertex P of the quadrilateral.
-   * \param [in] q point instance corresponding to vertex Q of the quadrilateral.
-   * \param [in] r point instance corresponding to vertex R of the quadrilateral.
-   * \param [in] s point instance corresponding to vertex S of the quadrilateral.
+   * \brief Custom Constructor. Creates a quadrilateral from the 4 points A, B, C, and D.
+   * \param [in] A point corresponding to vertex A of the quadrilateral.
+   * \param [in] B point corresponding to vertex B of the quadrilateral.
+   * \param [in] C point corresponding to vertex C of the quadrilateral.
+   * \param [in] D point corresponding to vertex D of the quadrilateral.
    */
   AXOM_HOST_DEVICE
-  Quadrilateral(const PointType& p,
-                const PointType& q,
-                const PointType& r,
-                const PointType& s)
-    : m_points {p, q, r, s}
+  Quadrilateral(const PointType& A,
+                const PointType& B,
+                const PointType& C,
+                const PointType& D)
+    : m_points {A, B, C, D}
   { }
 
   /*!
@@ -184,26 +183,26 @@ public:
    *
    * \verbatim
    *
-   * q +----+ r       +y
+   * D +----+ C       +y
    *   |   /|         
    *   |  / |          ^
    *   | /  |          |
    *   |/   |          |
-   * p +----+ s        -----> +x
+   * A +----+ B        -----> +x
    *
    * \endverbatim
    */
   template <int TDIM = NDIMS>
   AXOM_HOST_DEVICE typename std::enable_if<TDIM == 2, double>::type signedArea() const
   {
-    const PointType& p = m_points[0];
-    const PointType& q = m_points[1];
-    const PointType& r = m_points[2];
-    const PointType& s = m_points[3];
+    const PointType& A = m_points[0];
+    const PointType& B = m_points[1];
+    const PointType& C = m_points[2];
+    const PointType& D = m_points[3];
 
     // clang-format off
-    return TriangleType{p, q, r}.signedArea() +
-           TriangleType{r, s, p}.signedArea();
+    return TriangleType{A, B, C}.signedArea() +
+           TriangleType{C, D, A}.signedArea();
     // clang-format on
   }
 
@@ -224,7 +223,7 @@ public:
   }
 
   /*!
-   * \brief Simple formatted print of a triangle instance
+   * \brief Simple formatted print of a quadrilateral instance
    * \param os The output stream to write to
    * \return A reference to the modified ostream
    */
@@ -236,7 +235,7 @@ public:
   }
 
 private:
-  PointType m_points[NUM_QUAD_VERTS];
+  PointType m_points[NUM_QUAD_VERTS] = {Point(), Point(), Point(), Point()};
 };
 
 //------------------------------------------------------------------------------

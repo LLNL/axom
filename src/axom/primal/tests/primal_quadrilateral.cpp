@@ -21,14 +21,14 @@ TEST(primal_quadrilateral, area_2D)
 
   // This is a concave quadrilateral
   QuadrilateralType quad{PointType{-1.0, 0.1},
-                         PointType{ 0.0, 1.0},
+                         PointType{-0.1, 0.5},
                          PointType{ 2.0, 0.0},
-                         PointType{-0.1, 0.5}};
+                         PointType{ 0.0, 1.0}};
 
   const CoordinateType signedArea = quad.signedArea();
   const CoordinateType area = quad.area();
 
-  EXPECT_NEAR(-0.755, signedArea, EPS);
+  EXPECT_NEAR(0.755, signedArea, EPS);
   EXPECT_NEAR(0.755, area, EPS);
 }
 
