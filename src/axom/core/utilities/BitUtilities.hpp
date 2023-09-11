@@ -19,10 +19,12 @@
 #include "axom/core/Types.hpp"
 
 // CUDA intrinsics: https://docs.nvidia.com/cuda/cuda-math-api/group__CUDA__MATH__INTRINSIC__INT.html
-// HIP intrinsics: https://rocm.docs.amd.com/projects/HIP/en/latest/reference/kernel_language.html
+// TODO: Support HIP intrinsics (https://rocm.docs.amd.com/projects/HIP/en/latest/reference/kernel_language.html)
 
 // Check for and setup defines for platform-specific intrinsics
 // Note: `__GNUC__` is defined for the gnu, clang and intel compilers
+#if defined(AXOM_USE_CUDA)
+  // Intrinsics included implicitly
 #if defined(_WIN64) && (_MSC_VER >= 1600)
   #define _AXOM_CORE_USE_INTRINSICS_MSVC
   #include <intrin.h>
@@ -85,7 +87,7 @@ struct BitTraits<std::uint8_t>
 AXOM_HOST_DEVICE inline int trailingZeros(std::uint64_t word)
 {
   /* clang-format off */
-#if defined(AXOM_DEVICE_CODE) && defined(AXOM_USE_GPU)
+#if defined(__CUDA_ARCH__) && defined(AXOM_USE_CUDA)
   return word != std::uint64_t(0) ? __ffsll(word) - 1 : 64;
 #elif defined(_AXOM_CORE_USE_INTRINSICS_MSVC)
   unsigned long cnt;
@@ -122,8 +124,8 @@ AXOM_HOST_DEVICE inline int trailingZeros(std::uint64_t word)
 AXOM_HOST_DEVICE inline int popCount(std::uint64_t word)
 {
   /* clang-format off */
-#if defined(AXOM_DEVICE_CODE) && defined(AXOM_USE_GPU)
-  // Use CUDA/Hip intrinsic for popcount
+#if defined(__CUDA_ARCH__) && defined(AXOM_USE_CUDA)
+  // Use CUDA intrinsic for popcount
   return __popcll(word);
 #elif defined(_AXOM_CORE_USE_INTRINSICS_MSVC)
   return __popcnt64(word);
@@ -161,8 +163,8 @@ AXOM_HOST_DEVICE inline int popCount(std::uint64_t word)
 AXOM_HOST_DEVICE inline std::int32_t leadingZeros(std::int32_t word)
 {
   /* clang-format off */
-#if defined(AXOM_DEVICE_CODE) && defined(AXOM_USE_GPU)
-  // Use CUDA/Hip intrinsic for count leading zeros
+#if defined(__CUDA_ARCH__) && defined(AXOM_USE_CUDA)
+  // Use CUDA intrinsic for count leading zeros
   return __clz(word);
 #elif defined(_AXOM_CORE_USE_INTRINSICS_MSVC)
   unsigned long cnt;
