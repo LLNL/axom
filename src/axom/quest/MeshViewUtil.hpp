@@ -42,8 +42,8 @@ inline axom::StackArray<T, DIM> makeStackArray(T v = std::numeric_limits<T>::max
   }
   return rval;
 }
-template <typename T, int DIM>
-inline axom::StackArray<T, DIM> makeStackArray(const T* v)
+template <typename T, int DIM, typename U>
+inline axom::StackArray<T, DIM> makeStackArray(const U* v)
 {
   axom::StackArray<T, DIM> rval;
   for(int d = 0; d < DIM; ++d)
@@ -713,7 +713,7 @@ private:
   {
     if(node.has_path(path))
     {
-      const conduit::int32* ptr = node.fetch_existing(path).as_int32_ptr();
+      const auto* ptr = node.fetch_existing(path).as_int32_ptr();
       return internal::makeStackArray<axom::IndexType, DIM>(ptr);
     }
     return internal::makeStackArray<axom::IndexType, DIM>(defaultVal);
@@ -744,7 +744,7 @@ private:
 
     if(topologyDims.has_child("strides"))
     {
-      const conduit::int32* stridesPtr =
+      const auto* stridesPtr =
         topologyDims.fetch_existing("strides").as_int32_ptr();
       for(int d = 0; d < DIM; ++d)
       {
