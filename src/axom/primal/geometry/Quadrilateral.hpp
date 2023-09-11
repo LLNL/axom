@@ -143,7 +143,7 @@ public:
   /*!
    * \brief Index operator to get the i^th vertex
    * \param idx The index of the desired vertex
-   * \pre idx is 0, 1 or 2
+   * \pre idx is 0, 1, 2, or 3
    */
   AXOM_HOST_DEVICE
   PointType& operator[](int idx)
@@ -155,7 +155,7 @@ public:
   /*!
    * \brief Index operator to get the i^th vertex
    * \param idx The index of the desired vertex
-   * \pre idx is 0, 1 or 2
+   * \pre idx is 0, 1, 2, or 3
    */
   AXOM_HOST_DEVICE
   const PointType& operator[](int idx) const
