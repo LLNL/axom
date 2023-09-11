@@ -79,7 +79,7 @@ protected:
     qData2[6] = QPoint {3.5, 1, 3.5};
     qData2[7] = QPoint {3.5, 1, 1.5};
 
-    // Case 1
+    // Reproducer Test Case
     qData3[0] =
       QPoint {-70.83333333333334, -165.0000000000000, -238.0000000000000};
     qData3[1] =
@@ -241,6 +241,7 @@ TEST_F(HexahedronTest, volume)
   EXPECT_DOUBLE_EQ(hex2.volume(), 13);
   EXPECT_DOUBLE_EQ(hex3.volume(), 7043.66666666667);
   EXPECT_DOUBLE_EQ(hex4.volume(), 1.25);
+  EXPECT_DOUBLE_EQ(hex5.volume(), 1.375);
   EXPECT_DOUBLE_EQ(hex6.volume(), 1.5625);
 
   // Check hexahedron volume against 24-tetrahedron subvolumes
