@@ -114,12 +114,7 @@ template <typename T, int NDIMS>
 AXOM_HOST_DEVICE BoundingBox<T, NDIMS> compute_bounding_box(
   const Triangle<T, NDIMS> &tri)
 {
-  BoundingBox<T, NDIMS> res(tri[0]);
-  for(int i = 1; i < 3; i++)
-  {
-    res.addPoint(tri[i]);
-  }
-  return res;
+  return BoundingBox<T, NDIMS> {tri[0], tri[1], tri[2]};
 }
 
 /*!
@@ -143,12 +138,8 @@ template <typename T, int NDIMS>
 AXOM_HOST_DEVICE BoundingBox<T, NDIMS> compute_bounding_box(
   const Octahedron<T, NDIMS> &oct)
 {
-  BoundingBox<T, NDIMS> res(oct[0]);
-  for(int i = 1; i < 6; i++)
-  {
-    res.addPoint(oct[i]);
-  }
-  return res;
+  return BoundingBox<T, NDIMS> {oct[0], oct[1], oct[2],
+                                oct[3], oct[4], oct[5]};
 }
 
 /*!
@@ -160,12 +151,8 @@ template <typename T, int NDIMS>
 AXOM_HOST_DEVICE BoundingBox<T, NDIMS> compute_bounding_box(
   const Hexahedron<T, NDIMS> &hex)
 {
-  BoundingBox<T, NDIMS> res(hex[0]);
-  for(int i = 1; i < 8; i++)
-  {
-    res.addPoint(hex[i]);
-  }
-  return res;
+  return BoundingBox<T, NDIMS> {hex[0], hex[1], hex[2], hex[3],
+                                hex[4], hex[5], hex[6], hex[7]};
 }
 
 /*!
@@ -194,12 +181,7 @@ template <typename T, int NDIMS>
 AXOM_HOST_DEVICE BoundingBox<T, NDIMS> compute_bounding_box(
   const Tetrahedron<T, NDIMS> &tet)
 {
-  BoundingBox<T, NDIMS> res(tet[0]);
-  for(int i = 1; i < 4; i++)
-  {
-    res.addPoint(tet[i]);
-  }
-  return res;
+  return BoundingBox<T, NDIMS> {tet[0], tet[1], tet[2], tet[3]};
 }
 
 }  // namespace primal
