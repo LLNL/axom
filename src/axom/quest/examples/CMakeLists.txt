@@ -23,13 +23,15 @@ axom_add_executable(
     )
 
 # BVH two pass example --------------------------------------------------------
-axom_add_executable(
-    NAME        quest_bvh_two_pass_ex
-    SOURCES     quest_bvh_two_pass.cpp
-    OUTPUT_DIR  ${EXAMPLE_OUTPUT_DIRECTORY}
-    DEPENDS_ON  ${quest_example_depends}
-    FOLDER      axom/quest/examples
-    )
+if (RAJA_FOUND AND UMPIRE_FOUND)
+    axom_add_executable(
+        NAME        quest_bvh_two_pass_ex
+        SOURCES     quest_bvh_two_pass.cpp
+        OUTPUT_DIR  ${EXAMPLE_OUTPUT_DIRECTORY}
+        DEPENDS_ON  ${quest_example_depends}
+        FOLDER      axom/quest/examples
+        )
+endif()
 
 # Shaping example -------------------------------------------------------------
 if(AXOM_ENABLE_MPI AND MFEM_FOUND AND MFEM_USE_MPI
