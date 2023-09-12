@@ -260,9 +260,10 @@ public:
   /*!
    * \param [in] otherBB the bounding box that we are checking.
    * \return status true if bb intersects otherBB, else false.
-   * \note We are allowing the other bounding box to have a different coordinate
-   *  type. This should work as long as the two Ts are comparable with
-   *  operator<().
+   * \note We are allowing the other bounding box to have a different
+   *  dimension and coordinate type. Only the coordinates in the
+   *  overlapping dimensions are compared. If different coordinate
+   *  types are used, they must be comparable with operator<().
    */
   template <typename OtherType, int OtherDims>
   AXOM_HOST_DEVICE bool intersectsWith(
