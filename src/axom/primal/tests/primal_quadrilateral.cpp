@@ -25,10 +25,10 @@ TEST(primal_quadrilateral, construct_from_points)
 
   QuadrilateralType quad {A, B, C, D};
 
-  EXPECT_EQUAL(A, quad[0]);
-  EXPECT_EQUAL(B, quad[1]);
-  EXPECT_EQUAL(C, quad[2]);
-  EXPECT_EQUAL(D, quad[3]);
+  EXPECT_EQ(A, quad[0]);
+  EXPECT_EQ(B, quad[1]);
+  EXPECT_EQ(C, quad[2]);
+  EXPECT_EQ(D, quad[3]);
 }
 
 TEST(primal_quadrilateral, construct_from_array_view)
@@ -48,7 +48,7 @@ TEST(primal_quadrilateral, construct_from_array_view)
   QuadrilateralType quad {axom::ArrayView<PointType>{quadPoints, QuadrilateralType::NUM_QUAD_VERTS}};
 
   for (int i = 0; i < QuadrilateralType::NUM_QUAD_VERTS; ++i) {
-    EXPECT_EQUAL(quadPoints[i], quad[i]);
+    EXPECT_EQ(quadPoints[i], quad[i]);
   }
 }
 
