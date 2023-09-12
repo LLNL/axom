@@ -219,7 +219,7 @@ public:
   }
 
 private:
-  PointType m_points[NUM_QUAD_VERTS]{};
+  PointType m_points[NUM_QUAD_VERTS] {};
 };
 
 //------------------------------------------------------------------------------

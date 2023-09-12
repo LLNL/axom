@@ -138,8 +138,7 @@ template <typename T, int NDIMS>
 AXOM_HOST_DEVICE BoundingBox<T, NDIMS> compute_bounding_box(
   const Octahedron<T, NDIMS> &oct)
 {
-  return BoundingBox<T, NDIMS> {oct[0], oct[1], oct[2],
-                                oct[3], oct[4], oct[5]};
+  return BoundingBox<T, NDIMS> {oct[0], oct[1], oct[2], oct[3], oct[4], oct[5]};
 }
 
 /*!
@@ -151,8 +150,14 @@ template <typename T, int NDIMS>
 AXOM_HOST_DEVICE BoundingBox<T, NDIMS> compute_bounding_box(
   const Hexahedron<T, NDIMS> &hex)
 {
-  return BoundingBox<T, NDIMS> {hex[0], hex[1], hex[2], hex[3],
-                                hex[4], hex[5], hex[6], hex[7]};
+  return BoundingBox<T, NDIMS> {hex[0],
+                                hex[1],
+                                hex[2],
+                                hex[3],
+                                hex[4],
+                                hex[5],
+                                hex[6],
+                                hex[7]};
 }
 
 /*!
