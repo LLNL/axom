@@ -90,19 +90,20 @@ public:
   { }
 
   /*!
-   * \brief Quadrilateral constructor from an array of Points
+   * \brief Quadrilateral constructor from an initializer list of Points
    *
-   * \param [in] pts An array containing at least 4 Points.
-   *
-   * \note It is the responsiblity of the caller to pass
-   *       an array with at least 4 Points
+   * \param [in] pts an initializer list containing 4 Points
    */
   AXOM_HOST_DEVICE
-  explicit Quadrilateral(const PointType* pts)
+  explicit Quadrilateral(std::initializer_list<PointType> pts)
   {
-    for(int i = 0; i < NUM_QUAD_VERTS; i++)
+    SLIC_ASSERT(pts.size() == NUM_QUAD_VERTS);
+
+    int i = 0;
+    for(const auto& pt : pts)
     {
-      m_points[i] = pts[i];
+      m_points[i] = pt;
+      i++;
     }
   }
 
@@ -119,24 +120,6 @@ public:
     for(int i = 0; i < NUM_QUAD_VERTS; i++)
     {
       m_points[i] = pts[i];
-    }
-  }
-
-  /*!
-   * \brief Quadrilateral constructor from an initializer list of Points
-   *
-   * \param [in] pts an initializer list containing 4 Points
-   */
-  AXOM_HOST_DEVICE
-  explicit Quadrilateral(std::initializer_list<PointType> pts)
-  {
-    SLIC_ASSERT(pts.size() == NUM_QUAD_VERTS);
-
-    int i = 0;
-    for(const auto& pt : pts)
-    {
-      m_points[i] = pt;
-      i++;
     }
   }
 
