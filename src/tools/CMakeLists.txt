@@ -90,7 +90,11 @@ if(AXOM_ENABLE_QUEST)
             if((CMAKE_BUILD_TYPE MATCHES "(Release|RelWithDebInfo)") OR
               (CMAKE_BUILD_TYPE MATCHES "Debug" AND
               CMAKE_CXX_FLAGS_DEBUG MATCHES "\-O1 \-g \-DNDEBUG"))
-                set (_policies ${_policies} "raja_hip")
+                list(APPEND _policies "raja_hip")
+            else()
+              message(STATUS
+                "HIP policy for mesh_tester executable is not being tested"
+              )
             endif()
         endif()
 

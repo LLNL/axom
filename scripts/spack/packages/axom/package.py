@@ -238,7 +238,8 @@ class Axom(CachedCMakePackage, CudaPackage, ROCmPackage):
         if "+cpp14" in spec and spec.satisfies("@:0.6.1"):
             entries.append(cmake_cache_string("BLT_CXX_STD", "c++14", ""))
 
-        # Add optimization flag to workaround HIP compiler errors
+        # Add optimization flag workaround for Debug builds with
+        # cray compiler or newer HIP
         if "+rocm" in spec:
             if "crayCC" in self.compiler.cxx or spec.satisfies("%clang@16"):
                 entries.append(cmake_cache_string("CMAKE_CXX_FLAGS_DEBUG","-O1 -g -DNDEBUG"))

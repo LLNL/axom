@@ -153,36 +153,36 @@ void Input::parse(int argc, char** argv, axom::CLI::App& app)
       "-m, --method",
       method,
       "Method to use. \n"
-      "Set to \'bvh\' to use the bounding volume hierarchy spatial index.\n"
-      "Set to \'naive\' to use the naive algorithm (without a spatial index).\n"
-      "Set to \'uniform\' to use the uniform grid spatial index.\n"
-      "Set to \'implicit\' to use the implicit grid spatial index.")
+      "Set to 'bvh' to use the bounding volume hierarchy spatial index.\n"
+      "Set to 'naive' to use the naive algorithm (without a spatial index).\n"
+      "Set to 'uniform' to use the uniform grid spatial index.\n"
+      "Set to 'implicit' to use the implicit grid spatial index.")
     ->capture_default_str()
     ->check(axom::CLI::IsMember {Input::s_validMethods});
 
   app
     .add_option("-r,--resolution",
                 resolution,
-                "With \'-m uniform\', set resolution of uniform grid. \n"
+                "With '-m uniform', set resolution of uniform grid. \n"
                 "Set to less than 1 to use the uniform grid spatial index\n"
                 "with a resolution of the cube root of the number of\n"
                 "triangles.")
     ->capture_default_str();
 
   std::stringstream pol_sstr;
-  pol_sstr << "With \'-m bvh\' or \'-m naive\', set runtime policy. \n"
-           << "Set to \'seq\' or 0 to use the sequential algorithm "
+  pol_sstr << "With '-m bvh' or '-m naive', set runtime policy. \n"
+           << "Set to 'seq' or 0 to use the sequential algorithm "
            << "(w/o RAJA).";
 #ifdef AXOM_USE_RAJA
-  pol_sstr << "\nSet to \'raja_seq\' or 1 to use the RAJA sequential policy.";
+  pol_sstr << "\nSet to 'raja_seq' or 1 to use the RAJA sequential policy.";
   #ifdef AXOM_USE_OPENMP
-  pol_sstr << "\nSet to \'raja_omp\' or 2 to use the RAJA OpenMP policy.";
+  pol_sstr << "\nSet to 'raja_omp' or 2 to use the RAJA OpenMP policy.";
   #endif
   #ifdef AXOM_USE_CUDA
-  pol_sstr << "\nSet to \'raja_cuda\' or 3 to use the RAJA CUDA policy.";
+  pol_sstr << "\nSet to 'raja_cuda' or 3 to use the RAJA CUDA policy.";
   #endif
   #if defined(AXOM_USE_HIP) && defined(NDEBUG)
-  pol_sstr << "\nSet to \'raja_hip\' or 4 to use the RAJA HIP policy.";
+  pol_sstr << "\nSet to 'raja_hip' or 4 to use the RAJA HIP policy.";
   #endif
 #endif
 
