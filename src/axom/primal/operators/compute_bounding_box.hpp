@@ -131,7 +131,7 @@ template <typename T, int NDIMS>
 AXOM_HOST_DEVICE BoundingBox<T, NDIMS> compute_bounding_box(
   const Quadrilateral<T, NDIMS> &quad)
 {
-  return BoundingBox<T, NDIMS>{quad[0], quad[1], quad[2], quad[3]};
+  return BoundingBox<T, NDIMS> {quad[0], quad[1], quad[2], quad[3]};
 }
 
 /*!

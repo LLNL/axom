@@ -100,7 +100,7 @@ public:
   AXOM_HOST_DEVICE
   explicit Quadrilateral(const PointType* pts)
   {
-    for (int i = 0; i < NUM_QUAD_VERTS; i++)
+    for(int i = 0; i < NUM_QUAD_VERTS; i++)
     {
       m_points[i] = pts[i];
     }
@@ -229,16 +229,17 @@ public:
    */
   std::ostream& print(std::ostream& os) const
   {
-    os << "{" << m_points[0] << " " << m_points[1] << " " << m_points[2] << " " << m_points[3] << "}";
+    os << "{" << m_points[0] << " " << m_points[1] << " " << m_points[2] << " "
+       << m_points[3] << "}";
 
     return os;
   }
 
 private:
-  PointType m_points[NUM_QUAD_VERTS]{PointType{},
-                                     PointType{},
-                                     PointType{},
-                                     PointType{}};
+  PointType m_points[NUM_QUAD_VERTS] {PointType {},
+                                      PointType {},
+                                      PointType {},
+                                      PointType {}};
 };
 
 //------------------------------------------------------------------------------
@@ -256,7 +257,8 @@ std::ostream& operator<<(std::ostream& os, const Quadrilateral<T, NDIMS>& quad)
 
 /// Overload to format a primal::Quadrilateral using fmt
 template <typename T, int NDIMS>
-struct axom::fmt::formatter<axom::primal::Quadrilateral<T, NDIMS>> : ostream_formatter
+struct axom::fmt::formatter<axom::primal::Quadrilateral<T, NDIMS>>
+  : ostream_formatter
 { };
 
 #endif  // AXOM_PRIMAL_QUADRILATERAL_HPP_

@@ -137,20 +137,20 @@ TEST(primal_compute_bounding_box, compute_quad_2d_box_test)
   using BoundingBoxType = primal::BoundingBox<CoordinateType, DIM>;
   using QuadrilateralType = primal::Octahedron<CoordinateType, DIM>;
 
-  PointType A{-1.0, 0.1};
-  PointType B{-0.1, 0.5};
-  PointType C{ 2.0, 0.0};
-  PointType D{ 0.0, 1.0};
+  PointType A {-1.0, 0.1};
+  PointType B {-0.1, 0.5};
+  PointType C {2.0, 0.0};
+  PointType D {0.0, 1.0};
 
-  QuadrilateralType quad{A, B, C, D};
+  QuadrilateralType quad {A, B, C, D};
   BoundingBoxType box = primal::compute_bounding_box<CoordinateType, DIM>(quad);
 
   EXPECT_TRUE(box.contains(A));
   EXPECT_TRUE(box.contains(B));
   EXPECT_TRUE(box.contains(C));
   EXPECT_TRUE(box.contains(D));
-  EXPECT_EQ(box.getMin(), (PointType{-1.0, 0.0}));
-  EXPECT_EQ(box.getMax(), (PointType{2.0, 1.0}));
+  EXPECT_EQ(box.getMin(), (PointType {-1.0, 0.0}));
+  EXPECT_EQ(box.getMax(), (PointType {2.0, 1.0}));
 }
 
 TEST(primal_compute_bounding_box, compute_oct_box_test)

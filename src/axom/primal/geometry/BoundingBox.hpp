@@ -414,7 +414,8 @@ AXOM_HOST_DEVICE bool BoundingBox<T, NDIMS>::contains(
 
 //------------------------------------------------------------------------------
 template <typename T, int NDIMS>
-AXOM_HOST_DEVICE BoundingBox<T, NDIMS>::BoundingBox(std::initializer_list<PointType> pts)
+AXOM_HOST_DEVICE BoundingBox<T, NDIMS>::BoundingBox(
+  std::initializer_list<PointType> pts)
 {
   clear();
 
