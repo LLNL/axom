@@ -181,6 +181,8 @@ public:
   template <int TDIM = NDIMS>
   AXOM_HOST_DEVICE typename std::enable_if<TDIM == 2, double>::type signedArea() const
   {
+    // TODO: Investigate other algorithms for computing the area
+    //       https://artofproblemsolving.com/wiki/index.php/Shoelace_Theorem
     const PointType& A = m_points[0];
     const PointType& B = m_points[1];
     const PointType& C = m_points[2];
