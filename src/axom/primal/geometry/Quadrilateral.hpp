@@ -74,7 +74,7 @@ public:
   /// \brief Default constructor. Creates a degenerate quadrilateral.
   AXOM_HOST_DEVICE
   Quadrilateral()
-    : m_points {PointType{}, PointType{}, PointType{}, PointType{}}
+    : m_points {PointType {}, PointType {}, PointType {}, PointType {}}
   { }
 
   /*!
