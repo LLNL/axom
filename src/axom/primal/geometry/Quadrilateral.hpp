@@ -72,7 +72,10 @@ public:
 
 public:
   /// \brief Default constructor. Creates a degenerate quadrilateral.
-  Quadrilateral() = default;
+  AXOM_HOST_DEVICE
+  Quadrilateral()
+    : m_points {PointType{}, PointType{}, PointType{}, PointType{}}
+  { }
 
   /*!
    * \brief Custom Constructor. Creates a quadrilateral from the 4 points A, B, C, and D.
@@ -219,7 +222,7 @@ public:
   }
 
 private:
-  PointType m_points[NUM_QUAD_VERTS] {};
+  PointType m_points[NUM_QUAD_VERTS];
 };
 
 //------------------------------------------------------------------------------
