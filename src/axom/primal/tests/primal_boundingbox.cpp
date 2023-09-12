@@ -393,6 +393,46 @@ TEST(primal_boundingBox, bb_add_box)
 }
 
 //------------------------------------------------------------------------------
+TEST(primal_boundingBox, bb_different_dim)
+{
+  static const int DIM2D = 2;
+  using Point2D = primal::Point<double, DIM2D>;
+  using BBox2D = primal::BoundingBox<double, DIM2D>;
+
+  static const int DIM3D = 3;
+  using Point3D = primal::Point<double, DIM3D>;
+  using BBox3D = primal::BoundingBox<double, DIM3D>;
+
+  // Checking that a 2D point is in a 3D bounding box
+  BBox3D bbox3D {Point3D {0.0, 0.0, 0.0}, Point3D {1.0, 1.0, 1.0}};
+  EXPECT_TRUE(bbox3D.contains(Point2D {0.5, 0.5, 0.5}));
+  EXPECT_FALSE(bbox3D.contains(Point2D {0.5, -0.5, 0.5}));
+
+  // Checking that a 3D point is in a 2D bounding box
+  BBox2D bbox2D {Point2D {0.25, 0.25}, Point2D {0.75, 0.75}};
+  EXPECT_TRUE(bbox2D.contains(Point3D {0.5, 0.5}));
+  EXPECT_FALSE(bbox2D.contains(Point3D {-0.5, 0.5}));
+
+  // Checking that a 2D bounding box is in a 3D bounding box
+  EXPECT_TRUE(bbox3D.contains(bbox2D));
+  EXPECT_FALSE(bbox3D.contains(BBox2D {Point2D {-1.0, 0.0}, Point2D {0.5, 0.5}}));
+
+  // Checking that a 3D bounding box is in a 2D bounding box
+  EXPECT_TRUE(bbox2D.contains(BBox3D {Point3D {0.3, 0.3, 0.3}, Point3D {0.6, 0.6, 0.6}}));
+  EXPECT_FALSE(bbox2D.contains(bbox3D));
+
+  // Checking that a 2D bounding box intersects a 3D bounding box
+  EXPECT_TRUE(bbox3D.intersectsWith(BBox2D {Point2D {-1.0, 0.0}, Point2D {0.5, 0.5}}));
+  EXPECT_FALSE(bbox3D.intersectsWith(BBox2D {Point2D {-1.0, -1.0}, Point2D {-0.5, -0.5}}));
+
+  // Checking that a 3D bounding box intersects a 2D bounding box
+  EXPECT_TRUE(bbox2D.intersectsWith(BBox3D {Point3D {0.0, 0.3, 0.0},
+                                            Point3D {0.3, 1.0, 0.3}}));
+  EXPECT_FALSE(bbox2D.intersectsWith(BBox3D {Point3D {0.0, 0.0, 0.0},
+                                             Point3D {0.2, 0.2, 0.3}}));
+}
+
+//------------------------------------------------------------------------------
 TEST(primal_boundingBox, bb_different_coord_types)
 {
   static const int DIM = 3;
