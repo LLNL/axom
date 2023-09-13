@@ -32,10 +32,11 @@ namespace primal
  * \param [in] hex The hexahedron
  * \param [in] tet The tetrahedron
  * \param [in] eps The tolerance for determining the intersection
- * \param [in] checkSign If true (default is false), checks the
- *             signed volumes of the shapes are positive. If signed volume is
- *             negative, order of some vertices will be swapped.
- *
+ * \param [in] checkSign If true (default is false), checks if the
+ *             signed volume of each shape is positive. If the signed volume
+ *             of that shape is negative, order of some vertices will be
+ *             swapped for that shape.
+
  * \return Intersection volume between the hexahedron and tetrahedron
  *
  * \note checkSign flag does not guarantee the shapes' vertex orders
@@ -49,7 +50,7 @@ AXOM_HOST_DEVICE T intersection_volume(const Hexahedron<T, 3>& hex,
                                        double eps = 1.e-10,
                                        bool checkSign = false)
 {
-  return axom::utilities::abs(clip(hex, tet, eps, checkSign).volume());
+  return clip(hex, tet, eps, checkSign).volume();
 }
 
 /*!
@@ -59,9 +60,10 @@ AXOM_HOST_DEVICE T intersection_volume(const Hexahedron<T, 3>& hex,
  * \param [in] hex The tetrahedron
  * \param [in] tet The hexahedron
  * \param [in] eps The tolerance for determining the intersection
- * \param [in] checkSign If true (default is false), checks the
- *             signed volumes of the shapes are positive. If signed volume is
- *             negative, order of some vertices will be swapped.
+ * \param [in] checkSign If true (default is false), checks if the
+ *             signed volume of each shape is positive. If the signed volume
+ *             of that shape is negative, order of some vertices will be
+ *             swapped for that shape.
  *
  * \return Intersection volume between the tetrahedron and hexahedron
  *
@@ -86,9 +88,10 @@ AXOM_HOST_DEVICE T intersection_volume(const Tetrahedron<T, 3>& tet,
  * \param [in] oct The octahedron
  * \param [in] tet The tetrahedron
  * \param [in] eps The tolerance for determining the intersection
- * \param [in] checkSign If true (default is false), checks the
- *             signed volumes of the shapes are positive. If signed volume is
- *             negative, order of some vertices will be swapped.
+ * \param [in] checkSign If true (default is false), checks if the
+ *             signed volume of each shape is positive. If the signed volume
+ *             of that shape is negative, order of some vertices will be
+ *             swapped for that shape.
  *
  * \return Intersection volume between the octahedron and tetrahedron
  *
@@ -103,7 +106,7 @@ AXOM_HOST_DEVICE T intersection_volume(const Octahedron<T, 3>& oct,
                                        double eps = 1.e-10,
                                        bool checkSign = false)
 {
-  return axom::utilities::abs(clip(oct, tet, eps, checkSign).volume());
+  return clip(oct, tet, eps, checkSign).volume();
 }
 
 /*!
@@ -113,9 +116,10 @@ AXOM_HOST_DEVICE T intersection_volume(const Octahedron<T, 3>& oct,
  * \param [in] oct The tetrahedron
  * \param [in] tet The octahedron
  * \param [in] eps The tolerance for determining the intersection
- * \param [in] checkSign If true (default is false), checks the
- *             signed volumes of the shapes are positive. If signed volume is
- *             negative, order of some vertices will be swapped.
+ * \param [in] checkSign If true (default is false), checks if the
+ *             signed volume of each shape is positive. If the signed volume
+ *             of that shape is negative, order of some vertices will be
+ *             swapped for that shape.
  *
  * \return Intersection volume between the tetrahedron and octahedron
  *
@@ -140,9 +144,10 @@ AXOM_HOST_DEVICE T intersection_volume(const Tetrahedron<T, 3>& tet,
  * \param [in] tet1 The tetrahedron
  * \param [in] tet2 The other tetrahedron
  * \param [in] eps The tolerance for determining the intersection
- * \param [in] checkSign If true (default is false), checks the
- *             signed volumes of the shapes are positive. If signed volume is
- *             negative, order of some vertices will be swapped.
+ * \param [in] checkSign If true (default is false), checks if the
+ *             signed volume of each shape is positive. If the signed volume
+ *             of that shape is negative, order of some vertices will be
+ *             swapped for that shape.
  *
  * \return Intersection volume between the tetrahedra
  *
@@ -157,7 +162,7 @@ AXOM_HOST_DEVICE T intersection_volume(const Tetrahedron<T, 3>& tet1,
                                        double eps = 1.e-10,
                                        bool checkSign = false)
 {
-  return axom::utilities::abs(clip(tet1, tet2, eps, checkSign).volume());
+  return clip(tet1, tet2, eps, checkSign).volume();
 }
 
 }  // namespace primal

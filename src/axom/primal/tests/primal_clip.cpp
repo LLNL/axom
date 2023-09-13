@@ -86,7 +86,7 @@ TEST(primal_clip, simple_clip)
 
     for(int dim = 0; dim < 3; ++dim)
     {
-      EXPECT_NEAR(PointType(0.5)[dim], poly.vertexMean()[dim], EPS);
+      EXPECT_NEAR(0.5, poly.vertexMean()[dim], EPS);
     }
 
     SLIC_INFO("Intersection of triangle " << tri << " and bounding box " << bbox
