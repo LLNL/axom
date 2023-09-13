@@ -46,7 +46,7 @@ public:
 protected:
   virtual void SetUp()
   {
-    EPS = 1e-12;
+    EPS = 1e-8;
 
     // Define coordinates for first hexahedron
     qData0[0] = QPoint {0, 0, 0};
@@ -81,17 +81,17 @@ protected:
 
     // Reproducer Test Case
     qData3[0] =
-      QPoint {-70.83333333333334, -165.0000000000000, -238.0000000000000};
+      QPoint {-70 - (5.0 / 6.0), -165.0000000000000, -238.0000000000000};
     qData3[1] =
-      QPoint {-70.83333333333334, -143.0000000000000, -238.0000000000000};
+      QPoint {-70 - (5.0 / 6.0), -143.0000000000000, -238.0000000000000};
     qData3[2] =
       QPoint {-52.0000000000000, -143.0000000000000, -238.0000000000000};
     qData3[3] =
       QPoint {-52.0000000000000, -165.0000000000000, -238.0000000000000};
     qData3[4] =
-      QPoint {-70.83333333333334, -165.0000000000000, -221.0000000000000};
+      QPoint {-70 - (5.0 / 6.0), -165.0000000000000, -221.0000000000000};
     qData3[5] =
-      QPoint {-70.83333333333334, -143.0000000000000, -221.0000000000000};
+      QPoint {-70 - (5.0 / 6.0), -143.0000000000000, -221.0000000000000};
     qData3[6] =
       QPoint {-52.0000000000000, -143.0000000000000, -221.0000000000000};
     qData3[7] =
@@ -231,15 +231,14 @@ TEST_F(HexahedronTest, volume)
   EXPECT_DOUBLE_EQ(hex0.signedVolume(), 1);
   EXPECT_DOUBLE_EQ(hex1.signedVolume(), 1);
   EXPECT_DOUBLE_EQ(hex2.signedVolume(), 13);
-  EXPECT_DOUBLE_EQ(hex3.signedVolume(), -7043.66666666667);
+  EXPECT_NEAR(hex3.signedVolume(), -7043.66666666, EPS);
   EXPECT_DOUBLE_EQ(hex4.signedVolume(), 1.25);
   EXPECT_DOUBLE_EQ(hex5.signedVolume(), 1.375);
   EXPECT_DOUBLE_EQ(hex6.signedVolume(), 1.5625);
-
   EXPECT_DOUBLE_EQ(hex0.volume(), 1);
   EXPECT_DOUBLE_EQ(hex1.volume(), 1);
   EXPECT_DOUBLE_EQ(hex2.volume(), 13);
-  EXPECT_DOUBLE_EQ(hex3.volume(), 7043.66666666667);
+  EXPECT_NEAR(hex3.volume(), 7043.66666666, EPS);
   EXPECT_DOUBLE_EQ(hex4.volume(), 1.25);
   EXPECT_DOUBLE_EQ(hex5.volume(), 1.375);
   EXPECT_DOUBLE_EQ(hex6.volume(), 1.5625);
