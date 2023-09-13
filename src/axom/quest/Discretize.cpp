@@ -188,7 +188,6 @@ double octPolyVolume(const OctType& o)
 {
   // Convert Octahedron into Polyhedrom
   PolyhedronType octPoly;
-  double octVolume;
 
   octPoly.addVertex(o[0]);
   octPoly.addVertex(o[1]);
