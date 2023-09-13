@@ -26,6 +26,11 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
   - `DistributedClosestPoint::computeClosestPoints`
   - `MarchingCubes::MarchingCubes`
   - `MarchingCubesSingleDomain::MarchingCubesSingleDomain`
+- Primal: `Polyhedron::volume()` function changed from returning a signed
+  volume to an unsigned volume. The added `Polyhedron::signedVolume()` function
+  returns the signed volume.
+- Primal: `intersection_volume()` operators changed from returning a signed
+  volume to an unsigned volume.
 
 ### Fixed
 - quest's `SamplingShaper` now properly handles material names containing underscores
