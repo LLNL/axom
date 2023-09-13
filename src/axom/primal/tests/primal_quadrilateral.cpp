@@ -34,7 +34,6 @@ TEST(primal_quadrilateral, construct_from_points)
 TEST(primal_quadrilateral, construct_from_array_view)
 {
   constexpr int DIM = 3;
-  constexpr double EPS = 1e-12;
   using CoordinateType = double;
   using PointType = primal::Point<CoordinateType, DIM>;
   using QuadrilateralType = primal::Quadrilateral<CoordinateType, DIM>;

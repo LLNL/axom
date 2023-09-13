@@ -101,6 +101,17 @@ public:
   BoundingBox(const PointType* pts, int n);
 
   /*!
+   * \brief Constructor. Creates a bounding box containing the
+   * initializer list of points.
+   *
+   * \param [in] pts an initializer list containing points
+   */
+  AXOM_HOST_DEVICE
+  explicit BoundingBox(std::initializer_list<PointType> pts);
+    : BoundingBox {pts.begin(), static_cast<int>(pts.size())}
+  { }
+
+  /*!
    * \brief Constructor. Creates a bounding box with a given min and max point
    *  The code ensures that the bounds are valid, if shouldFixBounds is true.
    */
