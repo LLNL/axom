@@ -145,10 +145,9 @@ void computeVolumeFractions(const std::string& matField,
                             QFunctionCollection& inoutQFuncs,
                             int outputOrder)
 {
-  using axom::utilities::string::rsplitN;
+  SLIC_ASSERT(axom::utilities::string::startsWith(matField, "mat_inout_"));
 
-  auto matName = rsplitN(matField, 2, '_')[1];
-  auto volFracName = axom::fmt::format("vol_frac_{}", matName);
+  const auto volFracName = axom::fmt::format("vol_frac_{}", matField.substr(10));
 
   // Grab a pointer to the inout samples QFunc
   mfem::QuadratureFunction* inout = inoutQFuncs.Get(matField);

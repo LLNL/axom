@@ -464,8 +464,6 @@ public:
 
   void applyReplacementRules(const klee::Shape& shape) override
   {
-    using axom::utilities::string::rsplitN;
-
     internal::ScopedLogLevelChanger logLevelChanger(
       this->isVerbose() ? slic::message::Debug : slic::message::Warning);
 
@@ -513,7 +511,7 @@ public:
       }
 
       const bool shouldReplace = shape.replaces(otherMatName);
-      SLIC_DEBUG(axom::fmt::format(
+      SLIC_INFO(axom::fmt::format(
         "Should we replace material '{}' with shape '{}' of material '{}'? {}",
         otherMatName,
         shapeName,
@@ -659,71 +657,36 @@ public:
   /// This function is intended to help with debugging
   void printRegisteredFieldNames(const std::string& initialMessage)
   {
+    // helper lambda to extract the keys of a map<string,*> as a vector of strings
+    auto extractKeys = [](const auto& map) {
+      std::vector<std::string> keys;
+      for(const auto& kv : map)
+      {
+        keys.push_back(kv.first);
+      }
+      return keys;
+    };
+
     std::stringstream sstr;
     sstr << "List of registered fields in the SamplingShaper " << initialMessage
-         << std::endl;
-    {
-      std::vector<std::string> names;
-      for(auto kv : m_dc->GetFieldMap())
-      {
-        names.push_back(kv.first);
-      }
-      sstr << fmt::format("\t* Data collection grid funcs: {}",
-                          fmt::join(names, ", "))
-           << std::endl;
-    }
-    {
-      std::vector<std::string> names;
-      for(auto kv : m_dc->GetQFieldMap())
-      {
-        names.push_back(kv.first);
-      }
-      sstr << fmt::format("\t* Data collection qfuncs: {}",
-                          fmt::join(names, ", "))
-           << std::endl;
-    }
-
-    {
-      std::vector<std::string> names;
-      for(auto name : m_knownMaterials)
-      {
-        names.push_back(name);
-      }
-      sstr << fmt::format("\t* Known materials: {}", fmt::join(names, ", "))
-           << std::endl;
-    }
+         << fmt::format("\n\t* Data collection grid funcs: {}",
+                        fmt::join(extractKeys(m_dc->GetFieldMap()), ", "))
+         << fmt::format("\n\t* Data collection qfuncs: {}",
+                        fmt::join(extractKeys(m_dc->GetQFieldMap()), ", "))
+         << fmt::format("\n\t* Known materials: {}",
+                        fmt::join(m_knownMaterials, ", "));
 
     if(m_vfSampling == shaping::VolFracSampling::SAMPLE_AT_QPTS)
     {
-      {
-        std::vector<std::string> names;
-        for(auto kv : m_inoutShapeQFuncs)
-        {
-          names.push_back(kv.first);
-        }
-        sstr << fmt::format("\t* Shape qfuncs: {}", fmt::join(names, ", "))
-             << std::endl;
-      }
-      {
-        std::vector<std::string> names;
-        for(auto kv : m_inoutMaterialQFuncs)
-        {
-          names.push_back(kv.first);
-        }
-        sstr << fmt::format("\t* Mat qfuncs: {}", fmt::join(names, ", "))
-             << std::endl;
-      }
+      sstr << fmt::format("\n\t* Shape qfuncs: {}",
+                          fmt::join(extractKeys(m_inoutShapeQFuncs), ", "))
+           << fmt::format("\n\t* Mat qfuncs: {}",
+                          fmt::join(extractKeys(m_inoutMaterialQFuncs), ", "));
     }
     else if(m_vfSampling == shaping::VolFracSampling::SAMPLE_AT_DOFS)
     {
-      std::vector<std::string> names;
-      for(auto kv : m_inoutDofs)
-      {
-        names.push_back(kv.first);
-      }
-      sstr << fmt::format("\t* Shape samples at DOFs: {}",
-                          fmt::join(names, ", "))
-           << std::endl;
+      sstr << fmt::format("\n\t* Shape samples at DOFs: {}",
+                          fmt::join(extractKeys(m_inoutDofs), ", "));
     }
     SLIC_INFO(sstr.str());
   }
