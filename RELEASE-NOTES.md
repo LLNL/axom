@@ -27,6 +27,9 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
   - `MarchingCubes::MarchingCubes`
   - `MarchingCubesSingleDomain::MarchingCubesSingleDomain`
 
+### Fixed
+- quest's `SamplingShaper` now properly handles material names containing underscores
+
 ## [Version 0.8.1] - Release date 2023-08-16
 
 ### Changed
