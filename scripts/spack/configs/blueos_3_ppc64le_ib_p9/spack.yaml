@@ -106,6 +106,22 @@ spack:
         f77: /usr/tce/packages/xl/xl-2022.08.19-cuda-11.2.0/bin/xlf
       spec: xl@16.1.1.2
       target: ppc64le
+  - compiler:
+      environment: {}
+      extra_rpaths: []
+      flags:
+        cflags: --gcc-toolchain=/usr/tce/packages/gcc/gcc-8.3.1
+        cxxflags: --gcc-toolchain=/usr/tce/packages/gcc/gcc-8.3.1
+        fflags: --gcc-toolchain=/usr/tce/packages/gcc/gcc-8.3.1
+      modules: []
+      operating_system: rhel7
+      paths:
+        cc: /usr/tce/packages/clang/clang-ibm-14.0.5/bin/clang
+        cxx: /usr/tce/packages/clang/clang-ibm-14.0.5/bin/clang++
+        fc: /usr/tce/packages/xl/xl-2022.08.19-cuda-11.2.0/bin/xlf2003
+        f77: /usr/tce/packages/xl/xl-2022.08.19-cuda-11.2.0/bin/xlf
+      spec: clangibm@14.0.5.2
+      target: ppc64le
   packages:
     all:
       compiler: [gcc, intel, pgi, clang, xl, nag]
@@ -118,8 +134,8 @@ spack:
     cuda:
       buildable: false
       externals:
-      - spec: cuda@11.2.0
-        prefix: /usr/tce/packages/cuda/cuda-11.2.0
+      - spec: cuda@11.7.0
+        prefix: /usr/tce/packages/cuda/cuda-11.7.0
 
     # LLNL blueos mpi
     mpi:
@@ -139,6 +155,8 @@ spack:
         prefix: /usr/tce/packages/spectrum-mpi/spectrum-mpi-rolling-release-xl-2022.08.19/
       - spec: spectrum-mpi@release%xl@16.1.1.2
         prefix: /usr/tce/packages/spectrum-mpi/spectrum-mpi-rolling-release-xl-2022.08.19-cuda-11.2.0/
+      - spec: spectrum-mpi@release%clang@14.0.5
+        prefix: /usr/tce/packages/spectrum-mpi/spectrum-mpi-rolling-release-clang-14.0.5/
 
     # blas is a bit more complicated because its a virtual package so fake it with
     # the following per spack docs
@@ -157,8 +175,8 @@ spack:
       # These do not have trailing underscores in their symbols
       - spec: netlib-lapack@3.9.0%xl@16.1.1.1
         prefix: /usr/tcetmp/packages/lapack/lapack-3.9.0-P9-xl-2020.11.12/
-      - spec: netlib-lapack@3.9.0%xl@16.1.1.2
-        prefix: /usr/tcetmp/packages/lapack/lapack-3.9.0-P9-xl-2020.11.12/
+      - spec: netlib-lapack@3.9.0%clang@14.0.5
+        prefix: /usr/tcetmp/packages/lapack/lapack-3.9.0-P9-gcc-7.3.1/
 
     # System level packages to not build
     autoconf:
