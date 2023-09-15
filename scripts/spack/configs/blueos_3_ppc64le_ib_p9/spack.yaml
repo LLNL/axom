@@ -120,7 +120,7 @@ spack:
         cxx: /usr/tce/packages/clang/clang-ibm-14.0.5/bin/clang++
         fc: /usr/tce/packages/xl/xl-2022.08.19-cuda-11.2.0/bin/xlf2003
         f77: /usr/tce/packages/xl/xl-2022.08.19-cuda-11.2.0/bin/xlf
-      spec: clangibm@14.0.5.2
+      spec: clang@14.0.5.2
       target: ppc64le
   packages:
     all:
@@ -176,7 +176,7 @@ spack:
       - spec: netlib-lapack@3.9.0%xl@16.1.1.1
         prefix: /usr/tcetmp/packages/lapack/lapack-3.9.0-P9-xl-2020.11.12/
       - spec: netlib-lapack@3.9.0%clang@14.0.5
-        prefix: /usr/tcetmp/packages/lapack/lapack-3.9.0-P9-gcc-7.3.1/
+        prefix: /usr/tcetmp/packages/lapack/lapack-3.9.0-P9-gcc-11.2.1/
 
     # System level packages to not build
     autoconf:
