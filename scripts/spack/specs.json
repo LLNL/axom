@@ -36,7 +36,7 @@
     "blueos_3_ppc64le_ib_p9":
     [ "clang@10.0.1.1~openmp+devtools+mfem+c2c",
       "clang@10.0.1.2~openmp+devtools+mfem+c2c+cuda cuda_arch=70",
-      "clang@14.0.5.2+openmp~devtools+mfem+c2c+cuda cuda_arch=70",
+      "clang@14.0.5.2~openmp~devtools~mfem+c2c+cuda cuda_arch=70 ^cuda+allow-unsupported-compilers",
       "gcc@8.3.1.1+devtools~mfem+c2c",
       "gcc@8.3.1.2+devtools~mfem+c2c+cuda cuda_arch=70",
       "xl@16.1.1.1~openmp+devtools+mfem+c2c",
