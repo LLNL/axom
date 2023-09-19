@@ -518,7 +518,6 @@ public:
         AXOM_LAMBDA(axom::IndexType i) {
           // Convert Octahedron into Polyhedrom
           PolyhedronType octPoly;
-          double octVolume;
 
           octPoly.addVertex(octs_view[i][0]);
           octPoly.addVertex(octs_view[i][1]);
@@ -534,15 +533,7 @@ public:
           octPoly.addNeighbors(4, {0, 5, 3, 2});
           octPoly.addNeighbors(5, {0, 1, 3, 4});
 
-          octVolume = octPoly.volume();
-
-          // Flip sign if volume is negative
-          // (expected when vertex order is reversed)
-          if(octVolume < 0)
-          {
-            octVolume = -octVolume;
-          }
-          total_oct_vol += octVolume;
+          total_oct_vol += octPoly.volume();
         });
 
       SLIC_INFO(axom::fmt::format(
@@ -940,14 +931,8 @@ public:
           // Poly is valid
           if(poly.numVertices() >= 4)
           {
-            double clip_volume = poly.volume();
-            // Flip sign if negative
-            if(clip_volume < 0)
-            {
-              clip_volume = -clip_volume;
-            }
             RAJA::atomicAdd<ATOMIC_POL>(overlap_volumes_view.data() + index,
-                                        clip_volume);
+                                        poly.volume());
           }
         }););
 

@@ -107,7 +107,12 @@ void find_collisions_broadphase(const mint::Mesh* mesh,
 {
   using PointType = axom::primal::Point<double, 3>;
   using BoxType = axom::primal::BoundingBox<double, 3>;
+// Intel oneAPI compiler segfaults with OpenMP RAJA scan
+#ifdef __INTEL_LLVM_COMPILER
+  using exec_pol = typename axom::execution_space<axom::SEQ_EXEC>::loop_policy;
+#else
   using exec_pol = typename axom::execution_space<ExecSpace>::loop_policy;
+#endif
   using reduce_pol = typename axom::execution_space<ExecSpace>::reduce_policy;
 
   int allocatorId = axom::execution_space<ExecSpace>::allocatorID();

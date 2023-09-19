@@ -46,6 +46,19 @@ spack:
         fc: /usr/tce/packages/gcc/gcc-10.3.1/bin/gfortran
       spec: gcc@10.3.1
       target: x86_64
+  - compiler:
+      environment: {}
+      extra_rpaths: []
+      flags: {}
+      modules: []
+      operating_system: rhel8
+      paths:
+        cc: /usr/tce/packages/intel/intel-2022.1.0/compiler/2022.1.0/linux/bin/icx
+        cxx: /usr/tce/packages/intel/intel-2022.1.0/compiler/2022.1.0/linux/bin/icpx
+        f77: /usr/tce/packages/intel/intel-2022.1.0/compiler/2022.1.0/linux/bin/ifx
+        fc: /usr/tce/packages/intel/intel-2022.1.0/compiler/2022.1.0/linux/bin/ifx
+      spec: intel@2022.1.0
+      target: x86_64
 
   packages:
     all:
@@ -86,6 +99,8 @@ spack:
         prefix: /usr/tce/packages/mvapich2/mvapich2-2.3.6-clang-14.0.6
       - spec: mvapich2@2.3.6%gcc@10.3.1 process_managers=slurm arch=linux-rhel8-ivybridge
         prefix: /usr/tce/packages/mvapich2/mvapich2-2.3.6-gcc-10.3.1
+      - spec: mvapich2@2.3.6%intel@2022.1.0 process_managers=slurm arch=linux-rhel8-ivybridge
+        prefix: /usr/tce/packages/mvapich2/mvapich2-2.3.6-intel-2022.1.0
 
     netlib-lapack:
       buildable: false
