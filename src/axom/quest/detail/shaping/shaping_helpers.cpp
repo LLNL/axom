@@ -30,8 +30,8 @@ void replaceMaterial(mfem::QuadratureFunction* shapeQFunc,
   SLIC_ASSERT(materialQFunc->Size() == shapeQFunc->Size());
 
   const int SZ = materialQFunc->Size();
-  double* mData = materialQFunc->GetData();
-  double* sData = shapeQFunc->GetData();
+  double* mData = materialQFunc->HostReadWrite();
+  double* sData = shapeQFunc->HostReadWrite();
 
   if(shapeReplacesMaterial)
   {
@@ -61,8 +61,8 @@ void copyShapeIntoMaterial(const mfem::QuadratureFunction* shapeQFunc,
   SLIC_ASSERT(materialQFunc->Size() == shapeQFunc->Size());
 
   const int SZ = materialQFunc->Size();
-  double* mData = materialQFunc->GetData();
-  const double* sData = shapeQFunc->GetData();
+  double* mData = materialQFunc->HostReadWrite();
+  const double* sData = shapeQFunc->HostRead();
 
   // When reuseExisting, don't reset material values; otherwise, just copy values over
   if(reuseExisting)
@@ -114,9 +114,11 @@ void generatePositionsQFunction(mfem::Mesh* mesh,
   const int nq = ir.GetNPoints();
   const auto* geomFactors =
     mesh->GetGeometricFactors(ir, mfem::GeometricFactors::COORDINATES);
+  geomFactors->X.HostRead();
 
   mfem::QuadratureFunction* pos_coef = new mfem::QuadratureFunction(sp, dim);
   pos_coef->SetOwnsSpace(true);
+  pos_coef->HostReadWrite();
 
   // Rearrange positions into quadrature function
   {
@@ -186,6 +188,7 @@ void computeVolumeFractions(const std::string& matField,
     fes = new mfem::FiniteElementSpace(mesh, fec);
     volFrac = new mfem::GridFunction(fes);
     volFrac->MakeOwner(fec);
+    volFrac->HostReadWrite();
 
     dc->RegisterField(volFracName, volFrac);
   }
@@ -400,6 +403,7 @@ void computeVolumeFractionsIdentity(mfem::DataCollection* dc,
   mfem::FiniteElementSpace* fes = new mfem::FiniteElementSpace(mesh, fec);
   mfem::GridFunction* volFrac = new mfem::GridFunction(fes);
   volFrac->MakeOwner(fec);
+  volFrac->HostReadWrite();
   dc->RegisterField(name, volFrac);
 
   (*volFrac) = (*inout);
