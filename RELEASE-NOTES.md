@@ -34,6 +34,7 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 
 ### Fixed
 - quest's `SamplingShaper` now properly handles material names containing underscores
+- quest's `SamplingShaper` can now be used with an mfem that is configured for (GPU) devices
 
 ## [Version 0.8.1] - Release date 2023-08-16
 
