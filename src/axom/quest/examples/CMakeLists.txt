@@ -207,6 +207,11 @@ if(AXOM_ENABLE_MPI AND AXOM_ENABLE_SIDRE AND HDF5_FOUND)
 endif()
 
 # Marching cubes example -------------------------------------------
+if(CONDUIT_FOUND AND AXOM_ENABLE_MPI)
+    list(APPEND quest_depends_on conduit::conduit
+                                 conduit::conduit_mpi)
+endif()
+
 if(CONDUIT_FOUND)
     axom_add_executable(
             NAME        quest_marching_cubes_ex
