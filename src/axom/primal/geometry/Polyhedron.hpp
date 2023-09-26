@@ -817,8 +817,8 @@ public:
  * \note The Tetrahedron is assumed to have a specific vertex order:
  * \verbatim
  *
- *              3                    +y
- *             / \\                       +z
+ *              3                    +z
+ *             / \\                       +y
  *            /   \ \                 ^  >
  *           /     \  \               | /
  *          /       \   \             |/
