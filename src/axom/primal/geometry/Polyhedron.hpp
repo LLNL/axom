@@ -680,15 +680,16 @@ public:
  * \note The Hexahedron is assumed to have a specific vertex order:
  * \verbatim
  *
- *          7--------6          +y
- *         /|       /|               +z
- *        / |      / |           ^  >
- *       3--------2  |           | /
- *       |  4-----|--5           |/
+ *          3--------2          +y
+ *         /|       /|
+ *        / |      / |           ^
+ *       7--------6  |           |
+ *       |  0-----|--1           |
  *       | /      | /            -----> +x
- *       |/       |/
- *       0--------1
- *
+ *       |/       |/            /
+ *       4--------5            /
+ *                            <
+ *                           +z
  * \endverbatim
  *
  *       The Polyhedron's vertex neighbors are created assuming this vertex

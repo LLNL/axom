@@ -707,6 +707,10 @@ TEST(primal_polyhedron, polyhedron_from_primitive)
   poly = Polyhedron3D::from_primitive(hex, false);
   EXPECT_NEAR(1.0, poly.volume(), EPS);
 
+  // Check signed volume
+  EXPECT_NEAR(1.0, poly.signedVolume(), EPS);
+  EXPECT_NEAR(hex.signedVolume(), poly.signedVolume(), EPS);
+
   // Negative volume
   axom::utilities::swap<Point3D>(hex[1], hex[3]);
   axom::utilities::swap<Point3D>(hex[5], hex[7]);
@@ -749,11 +753,16 @@ TEST(primal_polyhedron, polyhedron_from_primitive)
   poly = Polyhedron3D::from_primitive(tet, false);
   EXPECT_NEAR(2.6666, poly.volume(), EPS);
 
+  // Check signed volume
+  EXPECT_NEAR(2.6666, poly.signedVolume(), EPS);
+  EXPECT_NEAR(tet.signedVolume(), poly.signedVolume(), EPS);
+
   // Negative volume
   axom::utilities::swap<Point3D>(tet[1], tet[2]);
 
   poly = Polyhedron3D::from_primitive(tet, false);
   EXPECT_NEAR(-2.6666, poly.signedVolume(), EPS);
+  EXPECT_NEAR(tet.signedVolume(), poly.signedVolume(), EPS);
 
   // Check sign
   poly = Polyhedron3D::from_primitive(tet, CHECK_SIGN);
