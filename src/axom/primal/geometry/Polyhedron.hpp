@@ -228,14 +228,16 @@ private:
  *
  *       <pre>
  *
- *          4--------7          +z
- *         /|       /|               +y
- *        / |      / |           ^  >
- *       5--------6  |           | /
- *       |  0-----|--3           |/
+ *          3--------2          +y
+ *         /|       /|
+ *        / |      / |           ^
+ *       7--------6  |           |
+ *       |  0-----|--1           |
  *       | /      | /            -----> +x
- *       |/       |/
- *       1--------2
+ *       |/       |/            /
+ *       4--------5            /
+ *                            <
+ *                           +z
  *
  *       </pre>
  *
@@ -680,16 +682,15 @@ public:
  * \note The Hexahedron is assumed to have a specific vertex order:
  * \verbatim
  *
- *          3--------2          +y
- *         /|       /|
- *        / |      / |           ^
- *       7--------6  |           |
- *       |  0-----|--1           |
+ *          4--------7          +z
+ *         /|       /|               +y
+ *        / |      / |           ^  >
+ *       5--------6  |           | /
+ *       |  0-----|--3           |/
  *       | /      | /            -----> +x
- *       |/       |/            /
- *       4--------5            /
- *                            <
- *                           +z
+ *       |/       |/
+ *       1--------2
+ *
  * \endverbatim
  *
  *       The Polyhedron's vertex neighbors are created assuming this vertex
@@ -751,14 +752,14 @@ public:
  * \note The Octahedron is assumed to have a specific vertex order:
  * \verbatim
  *
- *            0                +y
- *            /\                    +z
- *       4 --/  \-- 5           ^  >
+ *            3                +z
+ *            /\                    +y
+ *       0 --/  \-- 2           ^  >
  *         \/    \ /            | /
  *         /      \             |/
- *       2 -------- 1           -----> +x
+ *       4 -------- 5           -----> +x
  *            \/
- *            3
+ *            1
  *
  * \endverbatim
  *
