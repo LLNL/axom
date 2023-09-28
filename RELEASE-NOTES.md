@@ -31,6 +31,9 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
   returns the signed volume.
 - Primal: `intersection_volume()` operators changed from returning a signed
   volume to an unsigned volume.
+- Primal: Adds a `Quadrilateral` primitive
+- Primal: Adds a `compute_bounding_box()` operator for computing the bounding
+  box of a `Quadrilateral`
 
 ### Fixed
 - quest's `SamplingShaper` now properly handles material names containing underscores
