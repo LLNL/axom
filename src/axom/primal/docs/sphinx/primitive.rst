@@ -6,8 +6,10 @@ Primal includes the following primitives:
 - Point
 - Segment, Ray, Vector
 - Plane, Triangle, Polygon
+- Quadrilateral
 - Sphere
 - Tetrahedron
+- Hexahedron
 - BoundingBox, OrientedBoundingBox
 
 Primal also provides the NumericArray class, which implements arithmetic
