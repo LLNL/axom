@@ -94,7 +94,7 @@ might be used in a broad-phase collision detection problem. First, we initialize
 the BVH with the bounding boxes of all the query objects (mesh elements), and
 create a traverser object:
 
-.. literalinclude:: ../../examples/spin_bvh_two_pass.cpp
+.. literalinclude:: ../../../quest/examples/quest_bvh_two_pass.cpp
    :start-after: _bvh_traverse_init_start
    :end-before: _bvh_traverse_init_end
    :language: C++
@@ -104,7 +104,7 @@ in the mesh against each other, our query objects are bounding boxes. Thus, the
 traversal predicate tests if the query bounding box intersects with the bounding
 boxes of nodes in the BVH:
 
-.. literalinclude:: ../../examples/spin_bvh_two_pass.cpp
+.. literalinclude:: ../../../quest/examples/quest_bvh_two_pass.cpp
    :start-after: _bvh_traverse_predicate_start
    :end-before: _bvh_traverse_predicate_end
    :language: C++
@@ -114,7 +114,7 @@ traverse the BVH twice; for the first traversal we count the number of candidate
 intersections for each query object, allowing us to compute offset indices and
 total storage requirements for the collision pairs:
 
-.. literalinclude:: ../../examples/spin_bvh_two_pass.cpp
+.. literalinclude:: ../../../quest/examples/quest_bvh_two_pass.cpp
    :start-after: _bvh_traverse_first_pass_start
    :end-before: _bvh_traverse_first_pass_end
    :language: C++
@@ -123,7 +123,7 @@ After computing offset indices and allocating output arrays, we can then perform
 a second traversal through the BVH. This time, we will store candidate collision
 pairs when we reach a leaf node:
 
-.. literalinclude:: ../../examples/spin_bvh_two_pass.cpp
+.. literalinclude:: ../../../quest/examples/quest_bvh_two_pass.cpp
    :start-after: _bvh_traverse_second_pass_start
    :end-before: _bvh_traverse_second_pass_end
    :language: C++
