@@ -387,7 +387,8 @@ if (ENABLE_FORTRAN)
     set(quest_fortran_examples quest_signed_distance_interface)
     
     # The inout Fortran example fails to compile with hipcc/amdflang in debug configurations
-    if("${CMAKE_Fortran_COMPILER}" MATCHES "amdflang$" AND "${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
+    if("${CMAKE_Fortran_COMPILER}" MATCHES "amdflang$" AND
+       CMAKE_BUILD_TYPE MATCHES "(Debug|RelWithDebInfo)")
         set(_has_inout_fortran_example FALSE)
     else()
         set(_has_inout_fortran_example TRUE)
