@@ -750,6 +750,8 @@ public:
  *         vertex neighbors
  *
  * \note The Octahedron is assumed to have a specific vertex order:
+ *       (view looking down from +z axis):
+ *
  * \verbatim
  *
  *            4                +z
