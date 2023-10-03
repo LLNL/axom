@@ -752,12 +752,12 @@ public:
  * \note The Octahedron is assumed to have a specific vertex order:
  * \verbatim
  *
- *            3                +z
+ *            4                +z
  *            /\                    +y
  *       0 --/  \-- 2           ^  >
  *         \/    \ /            | /
  *         /      \             |/
- *       4 -------- 5           -----> +x
+ *       5 -------- 3           -----> +x
  *            \/
  *            1
  *
