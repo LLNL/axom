@@ -255,6 +255,7 @@ TEST(primal_polyhedron, polyhedron_octahedron)
   octA.addNeighbors(octA[5], {0, 1, 3, 4});
 
   EXPECT_NEAR(1.3333, octA.volume(), EPS);
+  EXPECT_NEAR(1.3333, octA.signedVolume(), EPS);
 
   PolyhedronType octB;
   octB.addVertex({1, 0, 0});
@@ -272,6 +273,7 @@ TEST(primal_polyhedron, polyhedron_octahedron)
   octB.addNeighbors(octB[5], {0, 1, 3, 4});
 
   EXPECT_NEAR(0.6666, octB.volume(), EPS);
+  EXPECT_NEAR(0.6666, octB.signedVolume(), EPS);
 }
 
 //------------------------------------------------------------------------------
@@ -717,6 +719,7 @@ TEST(primal_polyhedron, polyhedron_from_primitive)
 
   poly = Polyhedron3D::from_primitive(hex, false);
   EXPECT_NEAR(-1.0, poly.signedVolume(), EPS);
+  EXPECT_NEAR(-1.0, hex.signedVolume(), EPS);
 
   // Check sign
   poly = Polyhedron3D::from_primitive(hex, CHECK_SIGN);
