@@ -16,6 +16,7 @@
 #include "core_execution_space.hpp"
 #include "core_map.hpp"
 #include "core_memory_management.hpp"
+#include "core_NumericLimits.hpp"
 #include "core_Path.hpp"
 #include "core_stack_array.hpp"
 
