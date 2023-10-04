@@ -17,6 +17,10 @@
 //------------------------------------------------------------------------------
 TEST(core_NumericLimits, check_CPU)
 {
+  //
+  // Tests to compare axom::numeric_limits to std::numeric_limits
+  // to ensure that Axom type aliasing is correct.
+  // 
   EXPECT_TRUE( axom::numeric_limits<int>::lowest() ==
                std::numeric_limits<int>::lowest() );
   EXPECT_TRUE( axom::numeric_limits<int>::min() ==
@@ -43,7 +47,14 @@ TEST(core_NumericLimits, check_CPU)
 
 //------------------------------------------------------------------------------
 #if defined(AXOM_USE_CUDA)
+//
+// Tests to ensure axom::numeric_limits type alias does the correct thing
+// in host and CUDA device code.
+// 
 
+//
+// Simple device kernel
+//
 __global__ void cuda_kernel(int* a, size_t* b,
                             float* c, double* d)
 {
@@ -56,6 +67,9 @@ __global__ void cuda_kernel(int* a, size_t* b,
 TEST(core_NumericLimits, check_CUDA)
 {
 
+//
+// Device memory allocation and initialiation for a few different types.
+//
 int* a;
 (void) cudaMalloc(&a, sizeof(int));
 (void) cudaMemset(a, 0, sizeof(int));
@@ -72,8 +86,14 @@ double* d;
 (void) cudaMalloc(&d, sizeof(double));
 (void) cudaMemset(d, 0, sizeof(double));
 
+//
+// Set values in device code.
+//
 cuda_kernel<<<1,1>>>(a, b, c, d);
 
+//
+// Copy device values back to host and compare with expectations....
+//
 int ha;
 size_t hb;
 float hc;
@@ -93,8 +113,14 @@ EXPECT_TRUE(hd == axom::numeric_limits<double>::max());
 
 //------------------------------------------------------------------------------
 #if defined(AXOM_USE_HIP)
+//
+// Tests to ensure axom::numeric_limits type alias does the correct thing
+// in host and CUDA device code.
+// 
 
-
+//
+// Simple device kernel
+//
 __global__ void hip_kernel(int* a, size_t* b,
                            float* c, double* d)
 {
@@ -107,6 +133,9 @@ __global__ void hip_kernel(int* a, size_t* b,
 TEST(core_NumericLimits, check_HIP)
 {
 
+//
+// Device memory allocation and initialiation for a few different types.
+//
 int* a;
 (void) hipMalloc(&a, sizeof(int));
 (void) hipMemset(a, 0, sizeof(int));
@@ -123,8 +152,14 @@ double* d;
 (void) hipMalloc(&d, sizeof(double));
 (void) hipMemset(d, 0, sizeof(double));
 
+//
+// Set values in device code.
+//
 hip_kernel<<<1,1>>>(a, b, c, d);
 
+//
+// Copy device values back to host and compare with expectations....
+//
 int ha;
 size_t hb;
 float hc;
