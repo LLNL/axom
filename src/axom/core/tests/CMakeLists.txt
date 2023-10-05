@@ -24,7 +24,7 @@ set(core_serial_tests
     core_execution_space.hpp
     core_map.hpp
     core_memory_management.hpp
-    core_NumericLimits.hpp
+    core_numeric_limits.hpp
     core_Path.hpp
     core_stack_array.hpp
 

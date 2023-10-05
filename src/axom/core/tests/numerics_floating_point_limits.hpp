@@ -5,6 +5,7 @@
 
 // axom includes
 #include "axom/core/Macros.hpp"
+#include "axom/core/NumericLimits.hpp"
 #include "axom/core/utilities/Utilities.hpp"
 #include "axom/core/numerics/floating_point_limits.hpp"
 
@@ -29,10 +30,10 @@ void check_type_limits(const std::string& typeName)
   const T MIN = axom::numerics::floating_point_limits<T>::min();
   const T MAX = axom::numerics::floating_point_limits<T>::max();
 
-  const T STD_EPS = std::numeric_limits<T>::epsilon();
-  const T STD_LOWEST = std::numeric_limits<T>::lowest();
-  const T STD_MIN = std::numeric_limits<T>::min();
-  const T STD_MAX = std::numeric_limits<T>::max();
+  const T STD_EPS = axom::numeric_limits<T>::epsilon();
+  const T STD_LOWEST = axom::numeric_limits<T>::lowest();
+  const T STD_MIN = axom::numeric_limits<T>::min();
+  const T STD_MAX = axom::numeric_limits<T>::max();
 
   EXPECT_TRUE(axom::utilities::isNearlyEqual(LOWEST, STD_LOWEST, EPS));
   EXPECT_TRUE(axom::utilities::isNearlyEqual(MIN, STD_MIN, EPS));
