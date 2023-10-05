@@ -20,18 +20,17 @@
 #include <limits>
 
 #if defined(AXOM_USE_CUDA)
-#include <cuda/std/limits>
+  #include <cuda/std/limits>
 #endif
 
 namespace axom
 {
-
 #if defined(AXOM_USE_CUDA) && defined(AXOM_DEVICE_CODE)
-  template<typename T>
-  using numeric_limits = cuda::std::numeric_limits<T>;
+template <typename T>
+using numeric_limits = cuda::std::numeric_limits<T>;
 #else
-  template<typename T>
-  using numeric_limits = std::numeric_limits<T>;
+template <typename T>
+using numeric_limits = std::numeric_limits<T>;
 #endif
 
 }  // namespace axom
