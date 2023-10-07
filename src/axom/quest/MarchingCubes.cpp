@@ -23,9 +23,8 @@ MarchingCubes::MarchingCubes(RuntimePolicy runtimePolicy,
   , m_fcnPath()
   , m_maskPath(maskField.empty() ? std::string() : "fields/" + maskField)
 {
-  const bool isMultidomain = conduit::blueprint::mesh::is_multi_domain(bpMesh);
   SLIC_ASSERT_MSG(
-    isMultidomain,
+    conduit::blueprint::mesh::is_multi_domain(bpMesh),
     "MarchingCubes class input mesh must be in multidomain format.");
 
   m_singles.reserve(conduit::blueprint::mesh::number_of_domains(bpMesh));
@@ -174,11 +173,9 @@ void MarchingCubesSingleDomain::setDomain(const conduit::Node& dom)
     dom.fetch_existing("coordsets/coords"));
   SLIC_ASSERT(m_ndim >= 2 && m_ndim <= 3);
 
-  const conduit::Node& coordsValues =
-    dom.fetch_existing(coordsetPath + "/values");
-  bool isInterleaved = conduit::blueprint::mcarray::is_interleaved(coordsValues);
   SLIC_ASSERT_MSG(
-    !isInterleaved,
+    !conduit::blueprint::mcarray::is_interleaved(
+      dom.fetch_existing(coordsetPath + "/values")),
     "MarchingCubes currently requires contiguous coordinates layout.");
 }
 

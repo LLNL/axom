@@ -402,7 +402,8 @@ bool intersect(const Segment<T, DIM>& S, const BoundingBox<T, DIM>& bb)
  * \return true iff bb1 intersects with bb2, otherwise, false.
  */
 template <typename T, int DIM>
-bool intersect(const BoundingBox<T, DIM>& bb1, const BoundingBox<T, DIM>& bb2)
+AXOM_HOST_DEVICE bool intersect(const BoundingBox<T, DIM>& bb1,
+                                const BoundingBox<T, DIM>& bb2)
 {
   return bb1.intersectsWith(bb2);
 }

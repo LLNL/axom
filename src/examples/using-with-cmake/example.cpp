@@ -3,7 +3,6 @@
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
-
 //-----------------------------------------------------------------------------
 ///
 /// file: example.cpp
@@ -17,14 +16,15 @@
 
 int main()
 {
-   // Using fmt library exported by axom
-   std::cout << axom::fmt::format(
-        "Example of using an installed version of Axom {}",
-        axom::getVersion()) << std::endl << std::endl;
+  // Using fmt library exported by axom
+  std::cout << axom::fmt::format(
+                 "Example of using an installed version of Axom {}",
+                 axom::getVersion())
+            << std::endl
+            << std::endl;
 
-   // Uses installed axom library
-   axom::about();
+  // Uses installed axom library
+  axom::about();
 
-   return 0;
+  return 0;
 }
-

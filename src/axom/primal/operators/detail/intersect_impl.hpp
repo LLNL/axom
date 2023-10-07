@@ -175,7 +175,7 @@ AXOM_HOST_DEVICE bool intersect_tri3D_tri3D(const Triangle<T, 3>& t1,
                                             bool includeBoundary,
                                             double EPS)
 {
-  typedef primal::Vector<T, 3> Vector3;
+  using Vector3 = primal::Vector<T, 3>;
 
   SLIC_CHECK_MSG(!t1.degenerate(),
                  "\n\n WARNING \n\n Triangle " << t1 << " is degenerate");
@@ -184,13 +184,10 @@ AXOM_HOST_DEVICE bool intersect_tri3D_tri3D(const Triangle<T, 3>& t1,
 
   // Step 1: Check if all the vertices of triangle 1 lie on the same side of
   // the plane created by triangle 2:
-
-  // Vector3 t2Normal = Vector3::cross_product(Vector3(t2[2], t2[0]),
-  //                                           Vector3(t2[2], t2[1]));
   Vector3 t2Normal = t2.normal().unitVector();
-  double dp1 = (Vector3(t2[2], t1[0])).dot(t2Normal);
-  double dq1 = (Vector3(t2[2], t1[1])).dot(t2Normal);
-  double dr1 = (Vector3(t2[2], t1[2])).dot(t2Normal);
+  const double dp1 = (t1[0] - t2[2]).dot(t2Normal);
+  const double dq1 = (t1[1] - t2[2]).dot(t2Normal);
+  const double dr1 = (t1[2] - t2[2]).dot(t2Normal);
 
   if(nonzeroSignMatch(dp1, dq1, dr1, EPS))
   {
@@ -205,13 +202,10 @@ AXOM_HOST_DEVICE bool intersect_tri3D_tri3D(const Triangle<T, 3>& t1,
 
   // Step 2: Check if all the vertices of triangle 2 lie on the same side of
   // the plane created by triangle 1:
-
-  // Vector3 t1Normal = Vector3::cross_product(Vector3(t1[0], t1[1]),
-  //                                           Vector3(t1[0], t1[2]));
   Vector3 t1Normal = t1.normal().unitVector();
-  double dp2 = (Vector3(t1[2], t2[0])).dot(t1Normal);
-  double dq2 = (Vector3(t1[2], t2[1])).dot(t1Normal);
-  double dr2 = (Vector3(t1[2], t2[2])).dot(t1Normal);
+  const double dp2 = (t2[0] - t1[2]).dot(t1Normal);
+  const double dq2 = (t2[1] - t1[2]).dot(t1Normal);
+  const double dr2 = (t2[2] - t1[2]).dot(t1Normal);
 
   if(nonzeroSignMatch(dp2, dq2, dr2, EPS))
   {

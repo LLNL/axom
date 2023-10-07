@@ -79,6 +79,7 @@ void various_traversal_methods(int nmats,
       c_sum += cell_arr[i * ncomp + comp];
     }
   }
+  AXOM_UNUSED_VAR(c_sum);
 
   axom::Array<double> cellmat_arr;
   cellmat_arr.resize((use_sparse ? nfilled : nmats * ncells) * ncomp);
@@ -94,6 +95,7 @@ void various_traversal_methods(int nmats,
       }
     }
   }
+  AXOM_UNUSED_VAR(x_sum);
 
   //create volfrac array
   axom::Array<double> volfrac_arr(ncells * nmats, 0);
@@ -168,6 +170,7 @@ void various_traversal_methods(int nmats,
   timer.stop();
   SLIC_INFO("  Field1D: " << timer.elapsed() << " sec");
   SLIC_ASSERT(c_sum == sum);
+  AXOM_UNUSED_VAR(sum);
 
   sum = 0;
   timer.reset();

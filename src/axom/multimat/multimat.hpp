@@ -1070,6 +1070,7 @@ int MultiMat::addFieldArray_impl(const std::string& field_name,
     set_size = s.size();
   }
   SLIC_ASSERT(set_size * stride == data_arr.size());
+  AXOM_UNUSED_VAR(set_size);
 
   m_fieldBackingVec.back() =
     std::make_unique<FieldBacking>(data_arr, owned, m_fieldAllocatorId);

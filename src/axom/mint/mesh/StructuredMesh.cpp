@@ -57,6 +57,7 @@ void StructuredMesh::setExtent(int ndims, const int64* extent)
   }
 
   SLIC_ASSERT(numNodes == getNumberOfNodes());
+  AXOM_UNUSED_VAR(numNodes);
 
 #ifdef AXOM_MINT_USE_SIDRE
   if(hasSidreGroup())

@@ -3,7 +3,6 @@
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
-
 //-----------------------------------------------------------------------------
 ///
 /// file: example.cpp
@@ -14,8 +13,4 @@
 
 #include "axom/core.hpp"
 
-int main()
-{
-   axom::about();
-}
-
+int main() { axom::about(); }
