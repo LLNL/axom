@@ -18,28 +18,28 @@
 // Implementation requires Conduit.
 #ifdef AXOM_USE_CONDUIT
 
-// Axom includes
-#include "axom/mint/mesh/UnstructuredMesh.hpp"
+  // Axom includes
+  #include "axom/mint/mesh/UnstructuredMesh.hpp"
 
-// Conduit includes
-#include "conduit_node.hpp"
+  // Conduit includes
+  #include "conduit_node.hpp"
 
-// C++ includes
-#include <string>
+  // C++ includes
+  #include <string>
 
-// Add some helper preprocessor defines for using OPENMP, CUDA, and HIP policies
-// within the marching cubes implementation.
-#if defined(AXOM_USE_RAJA)
-  #ifdef AXOM_USE_OPENMP
-    #define _AXOM_MC_USE_OPENMP
+  // Add some helper preprocessor defines for using OPENMP, CUDA, and HIP policies
+  // within the marching cubes implementation.
+  #if defined(AXOM_USE_RAJA)
+    #ifdef AXOM_USE_OPENMP
+      #define _AXOM_MC_USE_OPENMP
+    #endif
+    #if defined(AXOM_USE_CUDA) && defined(AXOM_USE_UMPIRE)
+      #define _AXOM_MC_USE_CUDA
+    #endif
+    #if defined(AXOM_USE_HIP) && defined(AXOM_USE_UMPIRE)
+      #define _AXOM_MC_USE_HIP
+    #endif
   #endif
-  #if defined(AXOM_USE_CUDA) && defined(AXOM_USE_UMPIRE)
-    #define _AXOM_MC_USE_CUDA
-  #endif
-  #if defined(AXOM_USE_HIP) && defined(AXOM_USE_UMPIRE)
-    #define _AXOM_MC_USE_HIP
-  #endif
-#endif
 
 namespace axom
 {
@@ -294,24 +294,24 @@ public:
       return true;
 
     case MarchingCubesRuntimePolicy::omp:
-#ifdef _AXOM_MC_USE_OPENMP
+  #ifdef _AXOM_MC_USE_OPENMP
       return true;
-#else
+  #else
       return false;
-#endif
+  #endif
 
     case MarchingCubesRuntimePolicy::cuda:
-#ifdef _AXOM_MC_USE_CUDA
+  #ifdef _AXOM_MC_USE_CUDA
       return true;
-#else
+  #else
       return false;
-#endif
+  #endif
     case MarchingCubesRuntimePolicy::hip:
-#ifdef _AXOM_MC_USE_HIP
+  #ifdef _AXOM_MC_USE_HIP
       return true;
-#else
+  #else
       return false;
-#endif
+  #endif
     }
 
     return false;

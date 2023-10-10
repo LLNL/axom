@@ -11,20 +11,20 @@
 // Implementation requires Conduit.
 #ifdef AXOM_USE_CONDUIT
 
-#include "axom/core.hpp"
-#include "axom/fmt.hpp"
-#include "conduit_blueprint.hpp"
-#include "conduit_blueprint_mcarray.hpp"
-#ifdef AXOM_USE_MPI
-  #include "conduit_blueprint_mpi.hpp"
-  #include "conduit_relay_mpi_io_blueprint.hpp"
-#endif
+  #include "axom/core.hpp"
+  #include "axom/fmt.hpp"
+  #include "conduit_blueprint.hpp"
+  #include "conduit_blueprint_mcarray.hpp"
+  #ifdef AXOM_USE_MPI
+    #include "conduit_blueprint_mpi.hpp"
+    #include "conduit_relay_mpi_io_blueprint.hpp"
+  #endif
 
-#include <memory>
-#include <limits>
-#include <cstdlib>
-#include <cmath>
-#include <vector>
+  #include <memory>
+  #include <limits>
+  #include <cstdlib>
+  #include <cmath>
+  #include <vector>
 
 namespace axom
 {
@@ -164,12 +164,12 @@ public:
     if(checkBlueprint)
     {
       conduit::Node info;
-#ifdef AXOM_USE_MPI
+  #ifdef AXOM_USE_MPI
       rval = rval &&
         conduit::blueprint::mpi::verify("mesh", *m_cdom, info, MPI_COMM_WORLD);
-#else
+  #else
       rval = rval && conduit::blueprint::verify("mesh", *m_cdom, info);
-#endif
+  #endif
     }
     rval =
       rval && (m_ctopology->fetch_existing("type").as_string() == "structured");

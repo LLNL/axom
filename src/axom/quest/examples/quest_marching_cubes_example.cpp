@@ -19,38 +19,38 @@
 // Implementation requires Conduit.
 #ifdef AXOM_USE_CONDUIT
 
-// Axom includes
-#include "axom/core.hpp"
-#include "axom/slic.hpp"
-#include "axom/primal.hpp"
-#include "axom/mint/mesh/UnstructuredMesh.hpp"
-#include "axom/mint/execution/internal/structured_exec.hpp"
-#include "axom/quest/ArrayIndexer.hpp"
-#include "axom/quest/MarchingCubes.hpp"
-#include "axom/quest/MeshViewUtil.hpp"
-#include "axom/sidre.hpp"
-#include "axom/core/Types.hpp"
+  // Axom includes
+  #include "axom/core.hpp"
+  #include "axom/slic.hpp"
+  #include "axom/primal.hpp"
+  #include "axom/mint/mesh/UnstructuredMesh.hpp"
+  #include "axom/mint/execution/internal/structured_exec.hpp"
+  #include "axom/quest/ArrayIndexer.hpp"
+  #include "axom/quest/MarchingCubes.hpp"
+  #include "axom/quest/MeshViewUtil.hpp"
+  #include "axom/sidre.hpp"
+  #include "axom/core/Types.hpp"
 
-#include "conduit_blueprint.hpp"
-#include "conduit_relay_io_blueprint.hpp"
-#ifdef AXOM_USE_MPI
-  #include "conduit_blueprint_mpi.hpp"
-  #include "conduit_relay_mpi_io_blueprint.hpp"
-#endif
+  #include "conduit_blueprint.hpp"
+  #include "conduit_relay_io_blueprint.hpp"
+  #ifdef AXOM_USE_MPI
+    #include "conduit_blueprint_mpi.hpp"
+    #include "conduit_relay_mpi_io_blueprint.hpp"
+  #endif
 
-#include "axom/fmt.hpp"
-#include "axom/CLI11.hpp"
+  #include "axom/fmt.hpp"
+  #include "axom/CLI11.hpp"
 
-#ifdef AXOM_USE_MPI
-  #include "mpi.h"
-#endif
+  #ifdef AXOM_USE_MPI
+    #include "mpi.h"
+  #endif
 
-// C/C++ includes
-#include <string>
-#include <limits>
-#include <map>
-#include <vector>
-#include <cmath>
+  // C/C++ includes
+  #include <string>
+  #include <limits>
+  #include <map>
+  #include <vector>
+  #include <cmath>
 
 namespace quest = axom::quest;
 namespace slic = axom::slic;
@@ -430,9 +430,9 @@ public:
     }
 
     double rval = localRval;
-#ifdef AXOM_USE_MPI
+  #ifdef AXOM_USE_MPI
     MPI_Allreduce(&localRval, &rval, 1, MPI_DOUBLE, MPI_MAX, MPI_COMM_WORLD);
-#endif
+  #endif
 
     return rval;
   }
@@ -493,11 +493,11 @@ public:
   bool isValid() const
   {
     conduit::Node info;
-#ifdef AXOM_USE_MPI
+  #ifdef AXOM_USE_MPI
     if(!conduit::blueprint::mpi::verify("mesh", _mdMesh, info, MPI_COMM_WORLD))
-#else
+  #else
     if(!conduit::blueprint::verify("mesh", _mdMesh, info))
-#endif
+  #endif
     {
       SLIC_INFO("Invalid blueprint for mesh: \n" << info.to_yaml());
       slic::flushStreams();
@@ -541,13 +541,13 @@ private:
     SLIC_ASSERT(!meshFilename.empty());
 
     _mdMesh.reset();
-#ifdef AXOM_USE_MPI
+  #ifdef AXOM_USE_MPI
     conduit::relay::mpi::io::blueprint::load_mesh(meshFilename,
                                                   _mdMesh,
                                                   MPI_COMM_WORLD);
-#else
+  #else
     conduit::relay::io::blueprint::load_mesh(meshFilename, _mdMesh);
-#endif
+  #endif
     SLIC_ASSERT(conduit::blueprint::mesh::is_multi_domain(_mdMesh));
     _domCount = conduit::blueprint::mesh::number_of_domains(_mdMesh);
 
@@ -571,9 +571,9 @@ private:
       const conduit::Node coordsetNode = _mdMesh[0].fetch_existing(_coordsetPath);
       _ndims = conduit::blueprint::mesh::coordset::dims(coordsetNode);
     }
-#ifdef AXOM_USE_MPI
+  #ifdef AXOM_USE_MPI
     MPI_Allreduce(MPI_IN_PLACE, &_ndims, 1, MPI_INT, MPI_MAX, MPI_COMM_WORLD);
-#endif
+  #endif
     SLIC_ASSERT(_ndims > 0);
 
     SLIC_ASSERT(isValid());
@@ -585,15 +585,15 @@ void printTimingStats(axom::utilities::Timer& t, const std::string& description)
 {
   auto getDoubleMinMax =
     [](double inVal, double& minVal, double& maxVal, double& sumVal) {
-#ifdef AXOM_USE_MPI
+  #ifdef AXOM_USE_MPI
       MPI_Allreduce(&inVal, &minVal, 1, MPI_DOUBLE, MPI_MIN, MPI_COMM_WORLD);
       MPI_Allreduce(&inVal, &maxVal, 1, MPI_DOUBLE, MPI_MAX, MPI_COMM_WORLD);
       MPI_Allreduce(&inVal, &sumVal, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
-#else
+  #else
       minVal = inVal;
       maxVal = inVal;
       sumVal = inVal;
-#endif
+  #endif
     };
 
   {
@@ -611,14 +611,14 @@ void printTimingStats(axom::utilities::Timer& t, const std::string& description)
 /// Write blueprint mesh to disk
 void saveMesh(const conduit::Node& mesh, const std::string& filename)
 {
-#ifdef AXOM_USE_MPI
+  #ifdef AXOM_USE_MPI
   conduit::relay::mpi::io::blueprint::save_mesh(mesh,
                                                 filename,
                                                 "hdf5",
                                                 MPI_COMM_WORLD);
-#else
+  #else
   conduit::relay::io::blueprint::save_mesh(mesh, filename, "hdf5");
-#endif
+  #endif
 }
 
 /// Write blueprint mesh to disk
@@ -628,11 +628,11 @@ void saveMesh(const sidre::Group& mesh, const std::string& filename)
   mesh.createNativeLayout(tmpMesh);
   {
     conduit::Node info;
-#ifdef AXOM_USE_MPI
+  #ifdef AXOM_USE_MPI
     if(!conduit::blueprint::mpi::verify("mesh", tmpMesh, info, MPI_COMM_WORLD))
-#else
+  #else
     if(!conduit::blueprint::verify("mesh", tmpMesh, info))
-#endif
+  #endif
     {
       SLIC_INFO("Invalid blueprint for mesh: \n" << info.to_yaml());
       slic::flushStreams();
@@ -709,7 +709,7 @@ struct ContourTestBase
         s_allocatorId);
     }
 
-#if defined(AXOM_USE_UMPIRE)
+  #if defined(AXOM_USE_UMPIRE)
     /*
       Make sure data is correctly on host or device.
       We don't test with Unified memory because it's too forgiving.
@@ -742,14 +742,14 @@ struct ContourTestBase
         SLIC_ASSERT(resourceName == "DEVICE");
       }
     }
-#endif
+  #endif
 
     mc.setFunctionField(functionName());
 
     axom::utilities::Timer computeTimer(false);
-#ifdef AXOM_USE_MPI
+  #ifdef AXOM_USE_MPI
     MPI_Barrier(MPI_COMM_WORLD);
-#endif
+  #endif
     computeTimer.start();
     mc.computeIsocontour(params.contourVal);
     computeTimer.stop();
@@ -855,7 +855,7 @@ struct ContourTestBase
       SLIC_ASSERT(coordsViews[d].shape() == fieldShape);
     }
 
-#if defined(AXOM_USE_RAJA)
+  #if defined(AXOM_USE_RAJA)
     RAJA::RangeSegment iRange(0, fieldShape[0]);
     RAJA::RangeSegment jRange(0, fieldShape[1]);
     using EXEC_POL =
@@ -871,7 +871,7 @@ struct ContourTestBase
         // auto v = value(pt);
         fieldView(i, j) = 0.0;  // value(pt);
       });
-#else
+  #else
     for(axom::IndexType j = 0; j < fieldShape[1]; ++j)
     {
       for(axom::IndexType i = 0; i < fieldShape[0]; ++i)
@@ -884,7 +884,7 @@ struct ContourTestBase
         fieldView(i, j) = value(pt);
       }
     }
-#endif
+  #endif
   }
   template <int TDIM = DIM>
   typename std::enable_if<TDIM == 3>::type populateNodalDistance(
@@ -1201,7 +1201,7 @@ struct ContourTestBase
     int localDomainCount,
     axom::mint::UnstructuredMesh<axom::mint::SINGLE_SHAPE>& contourMesh)
   {
-#ifdef AXOM_USE_MPI
+  #ifdef AXOM_USE_MPI
     axom::Array<axom::IndexType> starts(numRanks, numRanks);
     {
       axom::Array<axom::IndexType> indivDomainCounts(numRanks, numRanks);
@@ -1230,7 +1230,7 @@ struct ContourTestBase
     {
       domainIdPtr[i] += starts[myRank];
     }
-#endif
+  #endif
   }
 };
 
@@ -1342,18 +1342,18 @@ void initializeLogger()
 
   slic::LogStream* logStream;
 
-#ifdef AXOM_USE_MPI
+  #ifdef AXOM_USE_MPI
   std::string fmt = "[<RANK>][<LEVEL>]: <MESSAGE>\n";
-  #ifdef AXOM_USE_LUMBERJACK
+    #ifdef AXOM_USE_LUMBERJACK
   const int RLIMIT = 8;
   logStream = new slic::LumberjackStream(&std::cout, MPI_COMM_WORLD, RLIMIT, fmt);
-  #else
+    #else
   logStream = new slic::SynchronizedStream(&std::cout, MPI_COMM_WORLD, fmt);
-  #endif
-#else
+    #endif
+  #else
   std::string fmt = "[<LEVEL>]: <MESSAGE>\n";
   logStream = new slic::GenericOutputStream(&std::cout, fmt);
-#endif  // AXOM_USE_MPI
+  #endif  // AXOM_USE_MPI
 
   slic::addStreamToAllMsgLevels(logStream);
 
@@ -1437,11 +1437,11 @@ int testNdimInstance(BlueprintStructuredMesh& computationalMesh)
   int errCount = 0;
   if(params.checkResults)
   {
-#ifdef AXOM_USE_MPI
+  #ifdef AXOM_USE_MPI
     MPI_Allreduce(&localErrCount, &errCount, 1, MPI_INT, MPI_SUM, MPI_COMM_WORLD);
-#else
+  #else
     errCount = localErrCount;
-#endif
+  #endif
 
     if(errCount)
     {
@@ -1463,14 +1463,14 @@ int testNdimInstance(BlueprintStructuredMesh& computationalMesh)
 //------------------------------------------------------------------------------
 int main(int argc, char** argv)
 {
-#ifdef AXOM_USE_MPI
+  #ifdef AXOM_USE_MPI
   MPI_Init(&argc, &argv);
   MPI_Comm_rank(MPI_COMM_WORLD, &myRank);
   MPI_Comm_size(MPI_COMM_WORLD, &numRanks);
-#else
+  #else
   numRanks = 1;
   myRank = 0;
-#endif
+  #endif
 
   initializeLogger();
   //slic::setAbortOnWarning(true);
@@ -1492,10 +1492,10 @@ int main(int argc, char** argv)
       retval = app.exit(e);
     }
 
-#ifdef AXOM_USE_MPI
+  #ifdef AXOM_USE_MPI
     MPI_Bcast(&retval, 1, MPI_INT, 0, MPI_COMM_WORLD);
     MPI_Finalize();
-#endif
+  #endif
 
     exit(retval);
   }
@@ -1515,15 +1515,15 @@ int main(int argc, char** argv)
   slic::flushStreams();
 
   auto getIntMinMax = [](int inVal, int& minVal, int& maxVal, int& sumVal) {
-#ifdef AXOM_USE_MPI
+  #ifdef AXOM_USE_MPI
     MPI_Allreduce(&inVal, &minVal, 1, MPI_INT, MPI_MIN, MPI_COMM_WORLD);
     MPI_Allreduce(&inVal, &maxVal, 1, MPI_INT, MPI_MAX, MPI_COMM_WORLD);
     MPI_Allreduce(&inVal, &sumVal, 1, MPI_INT, MPI_SUM, MPI_COMM_WORLD);
-#else
+  #else
     minVal = inVal;
     maxVal = inVal;
     sumVal = inVal;
-#endif
+  #endif
   };
 
   // Output some global mesh size stats
@@ -1565,8 +1565,8 @@ int main(int argc, char** argv)
       errCount = testNdimInstance<3, axom::SEQ_EXEC>(computationalMesh);
     }
   }
-#if defined(AXOM_USE_RAJA)
-  #ifdef AXOM_USE_OPENMP
+  #if defined(AXOM_USE_RAJA)
+    #ifdef AXOM_USE_OPENMP
   else if(params.policy == quest::MarchingCubesRuntimePolicy::omp)
   {
     if(params.ndim == 2)
@@ -1578,8 +1578,8 @@ int main(int argc, char** argv)
       errCount = testNdimInstance<3, axom::OMP_EXEC>(computationalMesh);
     }
   }
-  #endif
-  #if defined(AXOM_USE_CUDA) && defined(AXOM_USE_UMPIRE)
+    #endif
+    #if defined(AXOM_USE_CUDA) && defined(AXOM_USE_UMPIRE)
   else if(params.policy == quest::MarchingCubesRuntimePolicy::cuda)
   {
     if(params.ndim == 2)
@@ -1591,8 +1591,8 @@ int main(int argc, char** argv)
       errCount = testNdimInstance<3, axom::CUDA_EXEC<256>>(computationalMesh);
     }
   }
-  #endif
-  #if defined(AXOM_USE_HIP) && defined(AXOM_USE_UMPIRE)
+    #endif
+    #if defined(AXOM_USE_HIP) && defined(AXOM_USE_UMPIRE)
   else if(params.policy == quest::MarchingCubesRuntimePolicy::hip)
   {
     if(params.ndim == 2)
@@ -1604,15 +1604,15 @@ int main(int argc, char** argv)
       errCount = testNdimInstance<3, axom::HIP_EXEC<256>>(computationalMesh);
     }
   }
+    #endif
   #endif
-#endif
 
   finalizeLogger();
-#ifdef AXOM_USE_MPI
+  #ifdef AXOM_USE_MPI
   MPI_Finalize();
-#endif
+  #endif
 
   return errCount != 0;
 }
 
-#endif // AXOM_USE_CONDUIT
+#endif  // AXOM_USE_CONDUIT

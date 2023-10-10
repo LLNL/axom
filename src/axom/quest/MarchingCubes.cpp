@@ -7,12 +7,12 @@
 
 // Implementation requires Conduit.
 #ifdef AXOM_USE_CONDUIT
-#include "conduit_blueprint.hpp"
+  #include "conduit_blueprint.hpp"
 
-#include "axom/core/execution/execution_space.hpp"
-#include "axom/quest/MarchingCubes.hpp"
-#include "axom/quest/detail/MarchingCubesImpl.hpp"
-#include "axom/fmt.hpp"
+  #include "axom/core/execution/execution_space.hpp"
+  #include "axom/quest/MarchingCubes.hpp"
+  #include "axom/quest/detail/MarchingCubesImpl.hpp"
+  #include "axom/fmt.hpp"
 
 namespace axom
 {
@@ -226,7 +226,7 @@ void MarchingCubesSingleDomain::allocateImpl()
       : std::unique_ptr<ImplBase>(
           new MarchingCubesImpl<3, axom::SEQ_EXEC, axom::SEQ_EXEC>);
   }
-#ifdef _AXOM_MC_USE_OPENMP
+  #ifdef _AXOM_MC_USE_OPENMP
   else if(m_runtimePolicy == RuntimePolicy::omp)
   {
     m_impl = m_ndim == 2
@@ -235,8 +235,8 @@ void MarchingCubesSingleDomain::allocateImpl()
       : std::unique_ptr<ImplBase>(
           new MarchingCubesImpl<3, axom::OMP_EXEC, axom::SEQ_EXEC>);
   }
-#endif
-#ifdef _AXOM_MC_USE_CUDA
+  #endif
+  #ifdef _AXOM_MC_USE_CUDA
   else if(m_runtimePolicy == RuntimePolicy::cuda)
   {
     m_impl = m_ndim == 2
@@ -245,8 +245,8 @@ void MarchingCubesSingleDomain::allocateImpl()
       : std::unique_ptr<ImplBase>(
           new MarchingCubesImpl<3, axom::CUDA_EXEC<256>, axom::CUDA_EXEC<1>>);
   }
-#endif
-#ifdef _AXOM_MC_USE_HIP
+  #endif
+  #ifdef _AXOM_MC_USE_HIP
   else if(m_runtimePolicy == RuntimePolicy::hip)
   {
     m_impl = m_ndim == 2
@@ -255,7 +255,7 @@ void MarchingCubesSingleDomain::allocateImpl()
       : std::unique_ptr<ImplBase>(
           new MarchingCubesImpl<3, axom::HIP_EXEC<256>, axom::HIP_EXEC<1>>);
   }
-#endif
+  #endif
   else
   {
     SLIC_ERROR(axom::fmt::format(
@@ -264,7 +264,7 @@ void MarchingCubesSingleDomain::allocateImpl()
   }
 }
 
-#endif // AXOM_USE_CONDUIT
+#endif  // AXOM_USE_CONDUIT
 
 }  // end namespace quest
 }  // end namespace axom
