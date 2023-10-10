@@ -799,8 +799,6 @@ struct ContourTestBase
     }
 
     // Write contour mesh to file.
-    addRankOffsetToContourMeshDomainIds(computationalMesh.domainCount(),
-                                        contourMesh);
     std::string outputName = name() + "_contour_mesh";
     saveMesh(*meshGroup, outputName);
     SLIC_INFO(axom::fmt::format("Wrote {} contour in {}", name(), outputName));
@@ -1026,12 +1024,25 @@ struct ContourTestBase
       allCoordsViews[n] = mvu.getConstCoordsViews(false);
     }
 
+    std::map<axom::IndexType, axom::IndexType> domainIdToContiguousId;
+    for(int n = 0; n < domainCount; ++n)
+    {
+      const auto& dom = computationalMesh.domain(n);
+      int domainId = n;
+      if(dom.has_path("state/domain_id"))
+      {
+        domainId = dom.fetch_existing("state/domain_id").value();
+      }
+      domainIdToContiguousId[domainId] = n;
+    }
+
     for(axom::IndexType contourCellNum = 0; contourCellNum < cellCount;
         ++contourCellNum)
     {
       axom::IndexType domainId = domainIdView[contourCellNum];
+      axom::IndexType contiguousIndex = domainIdToContiguousId[domainId];
       typename axom::quest::MeshViewUtil<DIM, MemorySpace>::ConstCoordsViewsType&
-        coordsViews = allCoordsViews[domainId];
+        coordsViews = allCoordsViews[contiguousIndex];
 
       axom::StackArray<axom::IndexType, DIM> parentCellIdx =
         parentCellIdxView[contourCellNum];
@@ -1118,13 +1129,27 @@ struct ContourTestBase
       fcnViews[domId] =
         mvu.template getConstFieldView<double>(functionName(), false);
     }
+
+    std::map<axom::IndexType, axom::IndexType> domainIdToContiguousId;
+    for(int n = 0; n < domainCount; ++n)
+    {
+      const auto& dom = computationalMesh.domain(n);
+      int domainId = n;
+      if(dom.has_path("state/domain_id"))
+      {
+        domainId = dom.fetch_existing("state/domain_id").value();
+      }
+      domainIdToContiguousId[domainId] = n;
+    }
+
     for(axom::IndexType contourCellNum = 0; contourCellNum < cellCount;
         ++contourCellNum)
     {
       axom::IndexType domainId = domainIdView[contourCellNum];
+      axom::IndexType contiguousId = domainIdToContiguousId[domainId];
       const axom::StackArray<axom::IndexType, DIM>& parentCellIdx =
         parentCellIdxView[contourCellNum];
-      hasContours[domainId][parentCellIdx] = true;
+      hasContours[contiguousId][parentCellIdx] = true;
     }
 
     // Verify that cells marked by hasContours touches the contour
@@ -1190,47 +1215,6 @@ struct ContourTestBase
                                    "misrepresented computational cells.",
                                    errCount));
     return errCount;
-  }
-
-  /**
-   * Change cp_domain data from a local index to a global domain index
-   * by adding rank offsets.
-   * This is an optional step to make domain ids globally unique.
-   */
-  void addRankOffsetToContourMeshDomainIds(
-    int localDomainCount,
-    axom::mint::UnstructuredMesh<axom::mint::SINGLE_SHAPE>& contourMesh)
-  {
-  #ifdef AXOM_USE_MPI
-    axom::Array<axom::IndexType> starts(numRanks, numRanks);
-    {
-      axom::Array<axom::IndexType> indivDomainCounts(numRanks, numRanks);
-      indivDomainCounts.fill(-1);
-      MPI_Allgather(&localDomainCount,
-                    1,
-                    MPI_INT,
-                    indivDomainCounts.data(),
-                    1,
-                    MPI_INT,
-                    MPI_COMM_WORLD);
-      starts[0] = 0;
-      for(int i = 1; i < numRanks; ++i)
-      {
-        starts[i] = starts[i - 1] + indivDomainCounts[i - 1];
-      }
-    }
-
-    const std::string domainIdField = m_domainIdField;
-    auto* domainIdPtr =
-      contourMesh.getFieldPtr<axom::IndexType>(domainIdField,
-                                               axom::mint::CELL_CENTERED);
-    int cellCount = contourMesh.getNumberOfCells();
-
-    for(int i = 0; i < cellCount; ++i)
-    {
-      domainIdPtr[i] += starts[myRank];
-    }
-  #endif
   }
 };
 

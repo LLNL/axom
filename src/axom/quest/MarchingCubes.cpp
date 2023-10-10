@@ -126,13 +126,16 @@ void MarchingCubes::populateContourMesh(
       auto* domainIdPtr =
         mesh.getFieldPtr<axom::IndexType>(domainIdField,
                                           axom::mint::CELL_CENTERED);
+
+      int userDomainId = single->getDomainId(dId);
+
       // TODO: Verify that UnstructuredMesh only supports host memory.
       axom::detail::ArrayOps<axom::IndexType, MemorySpace::Dynamic>::fill(
         domainIdPtr,
         nPrev,
         nNew - nPrev,
         execution_space<axom::SEQ_EXEC>::allocatorID(),
-        dId);
+        userDomainId);
     }
   }
   SLIC_ASSERT(mesh.getNumberOfNodes() == contourNodeCount);
@@ -200,6 +203,16 @@ void MarchingCubesSingleDomain::setFunctionField(const std::string& fcnField)
   SLIC_ASSERT(m_dom->fetch_existing(m_fcnPath + "/association").as_string() ==
               "vertex");
   SLIC_ASSERT(m_dom->has_path(m_fcnPath + "/values"));
+}
+
+int MarchingCubesSingleDomain::getDomainId(int defaultId) const
+{
+  int rval = defaultId;
+  if(m_dom->has_path("state/domain_id"))
+  {
+    rval = m_dom->fetch_existing("state/domain_id").as_int();
+  }
+  return rval;
 }
 
 void MarchingCubesSingleDomain::computeIsocontour(double contourVal)

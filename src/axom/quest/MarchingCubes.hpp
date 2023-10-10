@@ -171,6 +171,11 @@ public:
       parent domain ids. If omitted, the data is not provided.
 
     If the fields aren't in the mesh, they will be created.
+
+    Blueprint allows users to specify ids for the domains.  If
+    "state/domain_id" exists in the domains, it is used as the domain
+    id.  Otherwise, the domain's interation index within the
+    multidomain mesh is used.
   */
   void populateContourMesh(
     axom::mint::UnstructuredMesh<axom::mint::SINGLE_SHAPE> &mesh,
@@ -240,6 +245,12 @@ public:
     \param [in] fcnField Name of node-based scalar function values.
   */
   void setFunctionField(const std::string &fcnField);
+
+  /*!
+    @brief Get the Blueprint domain id specified in \a state/domain_id
+    if it is provided, or use the given default if not provided.
+  */
+  int getDomainId(int defaultId) const;
 
   /*!
    * \brief Compute the isocontour.
