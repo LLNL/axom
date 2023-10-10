@@ -11,7 +11,7 @@
 
 #include "axom/fmt.hpp"
 
-#include "conduit_blueprint_mesh.hpp"
+#include "conduit_blueprint.hpp"
 #include "conduit_blueprint_mcarray.hpp"
 #ifdef AXOM_USE_MPI
   #include "conduit_blueprint_mpi.hpp"
