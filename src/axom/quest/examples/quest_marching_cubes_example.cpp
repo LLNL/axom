@@ -291,10 +291,8 @@ struct BlueprintStructuredMesh
 {
 public:
   explicit BlueprintStructuredMesh(const std::string& meshFile,
-                                   const std::string& coordset = "coords",
-                                   const std::string& topology = "mesh")
-    : _coordsetPath("coordsets/" + coordset)
-    , _topologyPath("topologies/" + topology)
+                                   const std::string& topologyName)
+    : _topologyPath("topologies/" + topologyName)
   {
     readBlueprintMesh(meshFile);
     for(int d = 0; d < _mdMesh.number_of_children(); ++d)
@@ -527,8 +525,8 @@ private:
   conduit::Node _mdMesh;
   axom::IndexType _domCount;
   bool _coordsAreStrided = false;
-  const std::string _coordsetPath;
   const std::string _topologyPath;
+  std::string _coordsetPath;
   double _maxSpacing = -1.0;
 
   /*!
@@ -551,8 +549,14 @@ private:
 
     if(_domCount > 0)
     {
+      SLIC_ASSERT(_mdMesh[0].has_path(_topologyPath));
+      auto coordsetName =
+        _mdMesh[0].fetch_existing(_topologyPath + "/coordset").as_string();
+      _coordsetPath = axom::fmt::format("coordsets/{}/", coordsetName);
+      SLIC_ASSERT(_mdMesh[0].has_path(_coordsetPath));
+
       _coordsAreStrided = _mdMesh[0]
-                            .fetch_existing("topologies/mesh/elements/dims")
+                            .fetch_existing(_topologyPath + "/elements/dims")
                             .has_child("strides");
       if(_coordsAreStrided)
       {
@@ -1497,7 +1501,7 @@ int main(int argc, char** argv)
   //---------------------------------------------------------------------------
   // Load computational mesh.
   //---------------------------------------------------------------------------
-  BlueprintStructuredMesh computationalMesh(params.meshFile);
+  BlueprintStructuredMesh computationalMesh(params.meshFile, "mesh");
 
   SLIC_INFO_IF(
     params.isVerbose(),
