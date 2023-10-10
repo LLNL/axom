@@ -14,8 +14,12 @@
   for the function not varying linearly along mesh lines.
 */
 
-// Axom includes
 #include "axom/config.hpp"
+
+// Implementation requires Conduit.
+#ifdef AXOM_USE_CONDUIT
+
+// Axom includes
 #include "axom/core.hpp"
 #include "axom/slic.hpp"
 #include "axom/primal.hpp"
@@ -1610,3 +1614,5 @@ int main(int argc, char** argv)
 
   return errCount != 0;
 }
+
+#endif // AXOM_USE_CONDUIT

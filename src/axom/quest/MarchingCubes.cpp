@@ -3,10 +3,15 @@
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
+#include "axom/config.hpp"
+
+// Implementation requires Conduit.
+#ifdef AXOM_USE_CONDUIT
+#include "conduit_blueprint.hpp"
+
 #include "axom/core/execution/execution_space.hpp"
 #include "axom/quest/MarchingCubes.hpp"
 #include "axom/quest/detail/MarchingCubesImpl.hpp"
-#include "conduit_blueprint.hpp"
 #include "axom/fmt.hpp"
 
 namespace axom
@@ -258,6 +263,8 @@ void MarchingCubesSingleDomain::allocateImpl()
       m_runtimePolicy));
   }
 }
+
+#endif // AXOM_USE_CONDUIT
 
 }  // end namespace quest
 }  // end namespace axom

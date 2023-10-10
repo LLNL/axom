@@ -10,11 +10,15 @@
  * compute isocontour from a scalar field in a blueprint mesh.
  */
 
-#ifndef AXOM_PRIMAL_MARCHINGCUBES_H_
-#define AXOM_PRIMAL_MARCHINGCUBES_H_
+#ifndef AXOM_QUEST_MARCHINGCUBES_H_
+#define AXOM_QUEST_MARCHINGCUBES_H_
+
+#include "axom/config.hpp"
+
+// Implementation requires Conduit.
+#ifdef AXOM_USE_CONDUIT
 
 // Axom includes
-#include "axom/config.hpp"
 #include "axom/mint/mesh/UnstructuredMesh.hpp"
 
 // Conduit includes
@@ -387,4 +391,5 @@ private:
 }  // namespace quest
 }  // namespace axom
 
-#endif  // AXOM_PRIMAL_ISOSURFACE_H_
+#endif  // AXOM_USE_CONDUIT
+#endif  // AXOM_QUEST_MARCHINGCUBES_H_

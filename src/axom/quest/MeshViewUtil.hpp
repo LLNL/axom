@@ -7,10 +7,12 @@
 #define QUEST_MESH_VIEW_UTIL_H_
 
 #include "axom/config.hpp"
+
+// Implementation requires Conduit.
+#ifdef AXOM_USE_CONDUIT
+
 #include "axom/core.hpp"
-
 #include "axom/fmt.hpp"
-
 #include "conduit_blueprint.hpp"
 #include "conduit_blueprint_mcarray.hpp"
 #ifdef AXOM_USE_MPI
@@ -772,4 +774,5 @@ private:
 }  // end namespace quest
 }  // end namespace axom
 
+#endif  //  AXOM_USE_CONDUIT
 #endif  //  QUEST_MESH_VIEW_UTIL_H_

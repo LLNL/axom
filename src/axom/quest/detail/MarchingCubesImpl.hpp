@@ -3,15 +3,19 @@
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
+#include "axom/config.hpp"
+
+// Implementation requires Conduit.
+#ifdef AXOM_USE_CONDUIT
+#include "conduit_blueprint.hpp"
+
 #include "axom/core/execution/execution_space.hpp"
-#include "axom/quest/MarchingCubes.hpp"
 #include "axom/quest/ArrayIndexer.hpp"
 #include "axom/quest/detail/marching_cubes_lookup.hpp"
 #include "axom/quest/MeshViewUtil.hpp"
 #include "axom/primal/geometry/Point.hpp"
 #include "axom/primal/constants.hpp"
 #include "axom/mint/execution/internal/structured_exec.hpp"
-#include "conduit_blueprint.hpp"
 #include "axom/fmt.hpp"
 
 namespace axom
@@ -855,6 +859,7 @@ private:
 
   double m_contourVal = 0.0;
 };
+#endif // AXOM_USE_CONDUIT
 
 }  // end namespace marching_cubes
 }  // end namespace detail
