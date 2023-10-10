@@ -669,7 +669,6 @@ private:
   }
 
 private:
-  //!@brief Whether stride/offsets are given for blueprint mesh coordinates data.
   std::string m_topologyName;
   std::string m_coordsetName;
   /// Parent group for the entire mesh
