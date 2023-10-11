@@ -800,7 +800,6 @@ INPUT                  = @PROJECT_SOURCE_DIR@/axom/doxygen_mainpage.md \
                          @PROJECT_SOURCE_DIR@/axom/quest \
                          @PROJECT_SOURCE_DIR@/axom/quest/doxygen_mainpage.md \
                          @PROJECT_SOURCE_DIR@/axom/quest/interface \
-                         @PROJECT_SOURCE_DIR@/axom/quest/stl \
                          @PROJECT_SOURCE_DIR@/axom/sidre/doxygen_mainpage.md \
                          @PROJECT_SOURCE_DIR@/axom/sidre/core \
                          @PROJECT_SOURCE_DIR@/axom/sidre/spio \
