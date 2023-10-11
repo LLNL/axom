@@ -11,3 +11,7 @@
       overflow: visible !important;
    }
 }
+
+a img.logo {
+    transform: scale(.75)
+}

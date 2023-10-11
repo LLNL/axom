@@ -254,7 +254,7 @@ html_css_files = [
     '_static/theme_overrides.css',
 ]
 
-html_logo = "../share/axom/logo/axom-logo.png"
+html_logo = "../share/axom/logo/axom_logo.png"
 
 # -- Options for LaTeX output ---------------------------------------------
 
