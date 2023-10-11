@@ -244,7 +244,7 @@ htmlhelp_basename = 'Axomdoc'
 # primal, quest, sphinx:
 # override wide tables in RTD theme
 # (Thanks to https://rackerlabs.github.io/docs-rackspace/tools/rtd-tables.html)
-html_context = { 'css_files': [ '_static/theme_overrides.css', ], }
+#html_context = { 'css_files': [ '_static/theme_overrides.css', ], }
 
 
 # -- Options for LaTeX output ---------------------------------------------
