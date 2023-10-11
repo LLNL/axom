@@ -54,6 +54,7 @@ extensions = [
     'sphinx.ext.graphviz',
     'sphinx.ext.autodoc',
     'sphinx.ext.doctest',
+    'sphinxcontrib.jquery',
     'sphinx.ext.todo',
     'sphinx.ext.coverage',
     'sphinx.ext.mathjax'
@@ -244,7 +245,14 @@ htmlhelp_basename = 'Axomdoc'
 # primal, quest, sphinx:
 # override wide tables in RTD theme
 # (Thanks to https://rackerlabs.github.io/docs-rackspace/tools/rtd-tables.html)
-#html_context = { 'css_files': [ '_static/theme_overrides.css', ], }
+# These folders are copied to the documentation's HTML output
+html_static_path = ['docs/sphinx/_static/theme_overrides.css']
+
+# These paths are either relative to html_static_path
+# or fully qualified paths (eg. https://...)
+html_css_files = [
+    '_static/theme_overrides.css',
+]
 
 
 # -- Options for LaTeX output ---------------------------------------------
