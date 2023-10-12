@@ -17,6 +17,6 @@ a img.logo {
 }
 
 /* Sidebar header (and topbar for mobile) */
-.wy-side-nav-search, .wy-nav-top {
+.wy-side-nav-search, .wy-nav-top, .wy-nav-side {
   background: #343131;
 }
