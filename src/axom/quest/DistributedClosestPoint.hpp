@@ -1638,6 +1638,7 @@ public:
       conduit::blueprint::mesh::to_multi_domain(meshNode, *tmpNode);
     }
     const conduit::Node& mdMeshNode(isMultidomain ? meshNode : *tmpNode);
+    verifyTopologyName(mdMeshNode, topologyName);
 
     auto domainCount = conduit::blueprint::mesh::number_of_domains(mdMeshNode);
 
@@ -1776,6 +1777,30 @@ private:
     }
 
     return success;
+  }
+
+  void verifyTopologyName(const conduit::Node& meshNode,
+                          const std::string& topologyName)
+  {
+    std::string coordsetPath;
+    const std::string topologyPath =
+      axom::fmt::format("topologies/{}", topologyName);
+    for(axom::IndexType d = 0; d < meshNode.number_of_children(); ++d)
+    {
+      const auto& domain = meshNode.child(d);
+      if(!domain.has_path(topologyPath))
+      {
+        auto errMsg = fmt::format("No such topology '{}' found.", topologyName);
+        if(domain.has_path("coordsets/" + topologyName))
+        {
+          errMsg += fmt::format(
+            "  You may have mistakenly specified a coordset name."
+            "  The interface has changed to use topology name"
+            " instead of coordset.");
+        }
+        SLIC_ERROR(errMsg);
+      }
+    }
   }
 
 private:
