@@ -251,7 +251,7 @@ html_static_path = ['docs/sphinx/_static/theme_overrides.css']
 # These paths are either relative to html_static_path
 # or fully qualified paths (eg. https://...)
 html_css_files = [
-    '_static/theme_overrides.css',
+    'theme_overrides.css',
 ]
 
 html_logo = "../share/axom/logo/axom_logo_transparent.png"
