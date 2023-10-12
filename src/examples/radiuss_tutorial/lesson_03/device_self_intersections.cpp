@@ -426,6 +426,7 @@ axom::Array<IndexPair> naiveFindIntersections(const TriangleMesh& triMesh,
     // allocate an array for the intersections (without initializing it)
     IndexArray intersections_d(axom::ArrayOptions::Uninitialized {},
                                numIndices,
+                               numIndices,
                                kernel_allocator);
 
     // allocate a counter; we'll use atomic operations to increment it

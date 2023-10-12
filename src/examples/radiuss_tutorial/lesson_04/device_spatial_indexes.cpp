@@ -360,9 +360,11 @@ axom::Array<IndexPair> findIntersectionsBVH(const TriangleMesh& triMesh,
   // and when both are non-degenerate
   IndexArray indices_d(axom::ArrayOptions::Uninitialized {},
                        candidates_d.size(),
+                       candidates_d.size(),
                        kernel_allocator);
 
   IndexArray validCandidates_d(axom::ArrayOptions::Uninitialized {},
+                               candidates_d.size(),
                                candidates_d.size(),
                                kernel_allocator);
 
@@ -372,7 +374,6 @@ axom::Array<IndexPair> findIntersectionsBVH(const TriangleMesh& triMesh,
     const int totalTriangles = triMesh.numTriangles();
 
     IndexArray numValidCandidates_d(1, 1, kernel_allocator);
-    numValidCandidates_d.fill(0);
     auto* numValidCandidates_p = numValidCandidates_d.data();
 
     auto indices_v = indices_d.view();
@@ -381,6 +382,7 @@ axom::Array<IndexPair> findIntersectionsBVH(const TriangleMesh& triMesh,
 
     // Compute a device bool array of validity flags
     axom::Array<bool> is_valid_d(axom::ArrayOptions::Uninitialized {},
+                                 bbox_v.size(),
                                  bbox_v.size(),
                                  kernel_allocator);
     auto is_valid_v = is_valid_d.view();
@@ -417,8 +419,10 @@ axom::Array<IndexPair> findIntersectionsBVH(const TriangleMesh& triMesh,
   // Iterate through valid candidates to find actual intersections
   IndexArray intersect_d[2] = {IndexArray(axom::ArrayOptions::Uninitialized {},
                                           numCandidates,
+                                          numCandidates,
                                           kernel_allocator),
                                IndexArray(axom::ArrayOptions::Uninitialized {},
+                                          numCandidates,
                                           numCandidates,
                                           kernel_allocator)};
   axom::IndexType numIntersections {};
