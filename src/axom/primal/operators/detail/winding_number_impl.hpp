@@ -384,6 +384,7 @@ double stokes_winding_number(const Point<T, 3>& query,
  * \param [in] quad_rule The mfem quadrature rule object
  * \param [in] quad_coarse The integral evaluated on the original curve
  * \param [in] quad_tol The maximum relative error allowed in each quadrature
+ * \param [in] depth The current recursive depth
  * 
  * Recursively apply quadrature for one of three possible integrals along two halfs 
  * of a curve. The sum of this integral along the subcurves should be equal to to

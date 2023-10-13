@@ -546,7 +546,12 @@ public:
     }
   }
 
-  /// Return an isocurve for a fixed value of u
+  /*!
+   * \brief Returns an isocurve with a fixed value of u
+   *
+   * \param [in] u Parameter value fixed in the isocurve
+   * \return c The isocurve C(v) = S(u, v) for fixed u
+   */
   BezierCurveType isocurve_u(T u) const
   {
     using axom::utilities::lerp;
@@ -662,7 +667,12 @@ public:
     }
   }
 
-  /// Return an isocurve for a fixed value of v
+  /*!
+   * \brief Returns an isocurve with a fixed value of v
+   *
+   * \param [in] v Parameter value fixed in the isocurve
+   * \return c The isocurve C(u) = S(u, v) for fixed v
+   */
   BezierCurveType isocurve_v(T v) const
   {
     using axom::utilities::lerp;
@@ -799,6 +809,17 @@ public:
     }
   }
 
+  /*!
+   * \brief Evaluates all first derivatives Bezier patch at (\a u, \a v)
+   *
+   * \param [in] u Parameter value at which to evaluate on the first axis
+   * \param [in] v Parameter value at which to evaluate on the second axis
+   * \param [out] eval The point value of the Bezier patch at (u, v)
+   * \param [out] Du The vector value of S_u(u, v)
+   * \param [out] Dv The vector value of S_v(u, v)
+   *
+   * \note We typically evaluate the patch at \a u and \a v between 0 and 1
+   */
   void evaluate_first_derivatives(T u,
                                   T v,
                                   Point<T, NDIMS>& eval,
@@ -958,6 +979,18 @@ public:
     }
   }
 
+  /*!
+   * \brief Evaluates all linear derivatives Bezier patch at (\a u, \a v)
+   *
+   * \param [in] u Parameter value at which to evaluate on the first axis
+   * \param [in] v Parameter value at which to evaluate on the second axis
+   * \param [out] eval The point value of the Bezier patch at (u, v)
+   * \param [out] Du The vector value of S_u(u, v)
+   * \param [out] Dv The vector value of S_v(u, v)
+   * \param [out] DuDv The vector value of S_uv(u, v) == S_vu(u, v)
+   *
+   * \note We typically evaluate the patch at \a u and \a v between 0 and 1
+   */
   void evaluate_linear_derivatives(T u,
                                    T v,
                                    Point<T, NDIMS>& eval,
@@ -1124,6 +1157,20 @@ public:
     }
   }
 
+  /*!
+   * \brief Evaluates all second derivatives Bezier patch at (\a u, \a v)
+   *
+   * \param [in] u Parameter value at which to evaluate on the first axis
+   * \param [in] v Parameter value at which to evaluate on the second axis
+   * \param [out] eval The point value of the Bezier patch at (u, v)
+   * \param [out] Du The vector value of S_u(u, v)
+   * \param [out] Dv The vector value of S_v(u, v)
+   * \param [out] DuDu The vector value of S_uu(u, v)
+   * \param [out] DvDv The vector value of S_vv(u, v)
+   * \param [out] DuDv The vector value of S_uv(u, v) == S_vu(u, v)
+   *
+   * \note We typically evaluate the patch at \a u and \a v between 0 and 1
+   */
   void evaluate_second_derivatives(T u,
                                    T v,
                                    Point<T, NDIMS>& eval,
@@ -1379,12 +1426,21 @@ public:
    *
    * \param [in] u parameter value at which to evaluate on the first axis
    * \param [in] v parameter value at which to evaluate on the second axis
-   * \return vec a tangent vector of the Bezier patch at (u, v)
+   * \return vec a tangent vector in u of the Bezier patch at (u, v)
    *
    * \note We typically find the tangent of the patch at \a u and \a v between 0 and 1
    */
   VectorType du(T u, T v) const { return isocurve_v(v).dt(u); }
 
+  /*!
+   * \brief Computes the second derivative of a Bezier patch at (\a u, \a v) along the u axis
+   *
+   * \param [in] u Parameter value at which to evaluate on the first axis
+   * \param [in] v Parameter value at which to evaluate on the second axis
+   * \return vec The vector value of S_uu(u, v)
+   *
+   * \note We typically find the tangent of the patch at \a u and \a v between 0 and 1
+   */
   VectorType dudu(T u, T v) const { return isocurve_v(v).dtdt(u); }
 
   /*!
@@ -1392,14 +1448,32 @@ public:
    *
    * \param [in] u parameter value at which to evaluate on the first axis
    * \param [in] v parameter value at which to evaluate on the second axis
-   * \return vec a tangent vector of the Bezier patch at (u, v)
+   * \return vec a tangent vector in v of the Bezier patch at (u, v)
    *
    * \note We typically find the tangent of the patch at \a u and \a v between 0 and 1
    */
   VectorType dv(T u, T v) const { return isocurve_u(u).dt(v); }
 
+  /*!
+   * \brief Computes the second derivative of a Bezier patch at (\a u, \a v) along the v axis
+   *
+   * \param [in] u Parameter value at which to evaluate on the first axis
+   * \param [in] v Parameter value at which to evaluate on the second axis
+   * \return vec The vector value of S_vv(u, v)
+   *
+   * \note We typically find the tangent of the patch at \a u and \a v between 0 and 1
+   */
   VectorType dvdv(T u, T v) const { return isocurve_u(u).dtdt(v); }
 
+  /*!
+   * \brief Computes the mixed second derivative of a Bezier patch at (\a u, \a v)
+   *
+   * \param [in] u Parameter value at which to evaluate on the first axis
+   * \param [in] v Parameter value at which to evaluate on the second axis
+   * \return vec The vector value of S_uv(u, v) == S_vu(u, v)
+   *
+   * \note We typically find the tangent of the patch at \a u and \a v between 0 and 1
+   */
   VectorType dudv(T u, T v) const
   {
     using axom::utilities::lerp;
@@ -1551,6 +1625,15 @@ public:
     }
   }
 
+  /*!
+   * \brief Computes the mixed second derivative of a Bezier patch at (\a u, \a v)
+   *
+   * \param [in] u Parameter value at which to evaluate on the first axis
+   * \param [in] v Parameter value at which to evaluate on the second axis
+   * \return vec The vector value of S_uv(u, v) == S_vu(u, v)
+   *
+   * \note We typically find the tangent of the patch at \a u and \a v between 0 and 1
+   */
   VectorType dvdu(T u, T v) const { return dudv(u, v); }
 
   /*!

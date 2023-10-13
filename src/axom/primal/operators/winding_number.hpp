@@ -454,6 +454,25 @@ int winding_number(const Point<T, 3>& query,
 }
 
 #ifdef AXOM_USE_MFEM
+
+/*
+ * \brief Computes the solid angle winding number for a Bezier patch
+ *
+ * \param [in] query The query point to test
+ * \param [in] bPatch The Bezier patch object
+ * \param [in] edge_tol The physical distance level at which objects are 
+ *                      considered indistinguishable
+ * \param [in] quad_tol The maximum relative error allowed in the quadrature
+ * \param [in] EPS Miscellaneous numerical tolerance level for nonphysical distances
+ * \param [in] depth The current recursive depth
+ * 
+ * Computes the generalized winding number for a Bezier patch using Stokes theorem.
+ *
+ * \note Warning: This algorithm is only tested to high accuracy for queries within
+ *  1e-5 of the surface. Otherwise, it will return less accurate results.
+ * 
+ * \return double The generalized winding number.
+ */
 template <typename T>
 double winding_number(const Point<T, 3>& query,
                       const BezierPatch<T, 3>& bPatch,
