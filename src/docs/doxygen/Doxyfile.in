@@ -231,12 +231,6 @@ TAB_SIZE               = 4
 ALIASES                = "accelerated=\xrefitem accelerated_list \"\"\"\"" \
                          "collective=\xrefitem collective_list \"\"\"\""
 
-# This tag can be used to specify a number of word-keyword mappings (TCL only).
-# A mapping has the form "name=value". For example adding "class=itcl::class"
-# will allow you to use the command class in the itcl::class meaning.
-
-TCL_SUBST              =
-
 # Set the OPTIMIZE_OUTPUT_FOR_C tag to YES if your project consists of C sources
 # only. Doxygen will then generate output that is more tailored for C. For
 # instance, some of the names that are used will be different. The list of all
@@ -800,7 +794,6 @@ INPUT                  = @PROJECT_SOURCE_DIR@/axom/doxygen_mainpage.md \
                          @PROJECT_SOURCE_DIR@/axom/quest \
                          @PROJECT_SOURCE_DIR@/axom/quest/doxygen_mainpage.md \
                          @PROJECT_SOURCE_DIR@/axom/quest/interface \
-                         @PROJECT_SOURCE_DIR@/axom/quest/stl \
                          @PROJECT_SOURCE_DIR@/axom/sidre/doxygen_mainpage.md \
                          @PROJECT_SOURCE_DIR@/axom/sidre/core \
                          @PROJECT_SOURCE_DIR@/axom/sidre/spio \
@@ -1080,13 +1073,6 @@ VERBATIM_HEADERS       = NO
 # The default value is: YES.
 
 ALPHABETICAL_INDEX     = YES
-
-# The COLS_IN_ALPHA_INDEX tag can be used to specify the number of columns in
-# which the alphabetical index list will be split.
-# Minimum value: 1, maximum value: 20, default value: 5.
-# This tag requires that the tag ALPHABETICAL_INDEX is set to YES.
-
-COLS_IN_ALPHA_INDEX    = 5
 
 # In case all classes in a project start with a common prefix, all classes will
 # be put under the same header in the alphabetical index. The IGNORE_PREFIX tag
@@ -2148,12 +2134,6 @@ EXTERNAL_GROUPS        = YES
 
 EXTERNAL_PAGES         = YES
 
-# The PERL_PATH should be the absolute path and name of the perl script
-# interpreter (i.e. the result of 'which perl').
-# The default file (with absolute path) is: /usr/bin/perl.
-
-PERL_PATH              = @SAMRAI_PERL@
-
 #---------------------------------------------------------------------------
 # Configuration options related to the dot tool
 #---------------------------------------------------------------------------
@@ -2166,15 +2146,6 @@ PERL_PATH              = @SAMRAI_PERL@
 # The default value is: YES.
 
 CLASS_DIAGRAMS         = YES
-
-# You can define message sequence charts within doxygen comments using the \msc
-# command. Doxygen will then run the mscgen tool (see:
-# http://www.mcternan.me.uk/mscgen/)) to produce the chart and insert it in the
-# documentation. The MSCGEN_PATH tag allows you to specify the directory where
-# the mscgen tool resides. If left empty the tool is assumed to be found in the
-# default search path.
-
-MSCGEN_PATH            =
 
 # You can include diagrams made with dia in doxygen documentation. Doxygen will
 # then run dia to produce the diagram and insert it in the documentation. The
@@ -2374,7 +2345,7 @@ INTERACTIVE_SVG        = YES
 # found. If left blank, it is assumed the dot tool can be found in the path.
 # This tag requires that the tag HAVE_DOT is set to YES.
 
-DOT_PATH               = @DOT_PATH@
+DOT_PATH               =
 
 # The DOTFILE_DIRS tag can be used to specify one or more directories that
 # contain dot files that are included in the documentation (see the \dotfile

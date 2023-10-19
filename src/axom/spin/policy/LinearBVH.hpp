@@ -354,8 +354,13 @@ axom::Array<IndexType> LinearBVH<FloatType, NDIMS, ExecSpace>::findCandidatesImp
         total_count_reduce += count;
       }););
 
-  // STEP 2: exclusive scan to get offsets in candidate array for each query
+    // STEP 2: exclusive scan to get offsets in candidate array for each query
+    // Intel oneAPI compiler segfaults with OpenMP RAJA scan
+  #ifdef __INTEL_LLVM_COMPILER
+  using exec_policy = typename axom::execution_space<axom::SEQ_EXEC>::loop_policy;
+  #else
   using exec_policy = typename axom::execution_space<ExecSpace>::loop_policy;
+  #endif
   AXOM_PERF_MARK_SECTION(
     "exclusive_scan",
     RAJA::exclusive_scan<exec_policy>(RAJA::make_span(counts.data(), numObjs),

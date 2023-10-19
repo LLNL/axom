@@ -7,7 +7,7 @@
 [comment]: # (#################################################################)
 
 
-# <img src="/share/axom/logo/axom_logo.png?raw=true" width="250" valign="middle" alt="Axom"/>
+# <img src="/share/axom/logo/axom_logo_transparent.png?raw=true" width="250" valign="middle" alt="Axom"/>
 
 [![Azure Pipelines Build Status](https://dev.azure.com/axom/axom/_apis/build/status/LLNL.axom?branchName=develop)](https://dev.azure.com/axom/axom/_build/latest?definitionId=1&branchName=develop)
 [![Documentation Status](https://readthedocs.org/projects/axom/badge/?version=develop)](https://axom.readthedocs.io/en/develop/?badge=develop)

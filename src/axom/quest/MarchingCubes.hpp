@@ -119,7 +119,7 @@ public:
    *             The simplest policy is RuntimePolicy::seq, which specifies
    *             running sequentially on the CPU.
    * \param [in] bpMesh Blueprint multi-domain mesh containing scalar field.
-   * \param [in] coordsetName Name of blueprint point coordinate set.
+   * \param [in] topologyName Name of Blueprint topology to use in \a bpMesh.
    * \param [in] maskField Cell-based std::int32_t mask field.  If provided,
    *             cells where this field evaluates to false are skipped.
    *
@@ -137,7 +137,7 @@ public:
    */
   MarchingCubes(RuntimePolicy runtimePolicy,
                 const conduit::Node &bpMesh,
-                const std::string &coordsetName,
+                const std::string &topologyName,
                 const std::string &maskField = {});
 
   /*!
@@ -178,7 +178,7 @@ private:
 
   //! @brief Single-domain implementations.
   axom::Array<std::unique_ptr<MarchingCubesSingleDomain>> m_singles;
-  const std::string m_coordsetPath;
+  const std::string m_topologyName;
   std::string m_fcnPath;
   std::string m_maskPath;
 
@@ -206,7 +206,7 @@ public:
    *             The simplest policy is RuntimePolicy::seq, which specifies
    *             running sequentially on the CPU.
    * \param [in] dom Blueprint single-domain mesh containing scalar field.
-   * \param [in] coordsetName Name of blueprint point coordinate set.
+   * \param [in] topologyName Name of Blueprint topology to use in \a dom
    * \param [in] maskField Cell-based std::int32_t mask field.  If provided,
    *             cells where this field evaluates to false are skipped.
    *
@@ -225,7 +225,7 @@ public:
    */
   MarchingCubesSingleDomain(RuntimePolicy runtimePolicy,
                             const conduit::Node &dom,
-                            const std::string &coordsetName,
+                            const std::string &topologyName,
                             const std::string &maskfield);
 
   /*!
@@ -319,8 +319,8 @@ private:
   const conduit::Node *m_dom;
   int m_ndim;
 
-  //!@brief Path to coordinate set in m_dom.
-  const std::string m_coordsetPath;
+  //!@brief Name of Blueprint topology in m_dom.
+  const std::string m_topologyName;
 
   //!@brief Path to nodal scalar function in m_dom.
   std::string m_fcnPath;
@@ -339,7 +339,7 @@ private:
   {
     //!@brief Prepare internal data for operating on the given domain.
     virtual void initialize(const conduit::Node &dom,
-                            const std::string &coordsetPath,
+                            const std::string &topologyName,
                             const std::string &fcnPath,
                             const std::string &maskPath) = 0;
     //!@brief Set the contour value

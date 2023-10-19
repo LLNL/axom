@@ -37,6 +37,7 @@ set( primal_tests
     primal_tetrahedron.cpp
     primal_octahedron.cpp
     primal_triangle.cpp
+    primal_quadrilateral.cpp
     primal_vector.cpp
     primal_winding_number.cpp
     primal_zip.cpp

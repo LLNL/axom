@@ -1490,6 +1490,132 @@ TEST(sidre_group, groups_move_copy)
 }
 
 //------------------------------------------------------------------------------
+TEST(sidre_group, group_deep_copy)
+{
+  DataStore* ds = new DataStore();
+  Group* flds = ds->getRoot()->createGroup("fields");
+
+  Group* ga = flds->createGroup("a");
+  Group* gb = flds->createGroup("b");
+
+  double dval0 = 100.0;
+  double dval1 = 301.0;
+
+  ga->createView("i0")->setScalar(1);
+  ga->createView("d0")->setScalar(dval0);
+  gb->createView("d1")->setScalar(dval1);
+  gb->createView("s0")->setString("my string");
+
+  // check that all sub groups exist
+  EXPECT_TRUE(flds->hasGroup("a"));
+  EXPECT_TRUE(flds->hasGroup("b"));
+
+  int viewlen = 8;
+  View* ownsbuf = ga->createViewAndAllocate("ownsbuf", DataType::c_int(viewlen));
+
+  int* int_vals = ownsbuf->getData();
+  for(int i = 0; i < viewlen; ++i)
+  {
+    int_vals[i] = i + 1;
+  }
+
+  IndexType buflen = 24;
+  Buffer* dbuff = ds->createBuffer()->allocate(FLOAT64_ID, buflen);
+
+  dbuff->allocate();
+  conduit::float64* buf_ptr = dbuff->getData();
+
+  for(int i = 0; i < buflen; ++i)
+  {
+    buf_ptr[i] = 2.0 * conduit::float64(i);
+  }
+
+  const int NUM_VIEWS = 4;
+  int size[NUM_VIEWS] = {5, 4, 10, 11};
+  int stride[NUM_VIEWS] = {3, 2, 2, 1};
+  int offset[NUM_VIEWS] = {2, 9, 0, 10};
+  std::string names[NUM_VIEWS] = {"viewa", "viewb", "viewc", "viewd"};
+
+  for(int i = 0; i < NUM_VIEWS; ++i)
+  {
+    ga->createView(names[i], dbuff)->apply(size[i], offset[i], stride[i]);
+  }
+
+  const int extlen = 30;
+  conduit::float64 ext_array[extlen];
+  for(int i = 0; i < extlen; ++i)
+  {
+    ext_array[i] = -1.0 * conduit::float64(i);
+  }
+
+  for(int i = 0; i < NUM_VIEWS; ++i)
+  {
+    gb->createView(names[i], ext_array)
+      ->apply(FLOAT64_ID, size[i], offset[i], stride[i]);
+  }
+
+  Group* deep_copy = ds->getRoot()->createGroup("deep_copy");
+  deep_copy->deepCopyGroup(flds);
+
+  EXPECT_TRUE(deep_copy->hasGroup("fields/a"));
+  EXPECT_TRUE(deep_copy->hasGroup("fields/b"));
+
+  Group* copy_ga = deep_copy->getGroup("fields/a");
+  Group* copy_gb = deep_copy->getGroup("fields/b");
+
+  int io_val = copy_ga->getView("i0")->getScalar();
+  EXPECT_EQ(io_val, 1);
+  EXPECT_NEAR(copy_ga->getView("d0")->getScalar(), dval0, 1.0e-12);
+  EXPECT_NEAR(copy_gb->getView("d1")->getScalar(), dval1, 1.0e-12);
+  EXPECT_EQ(copy_gb->getView("s0")->getString(), std::string("my string"));
+
+  for(int i = 0; i < NUM_VIEWS; ++i)
+  {
+    EXPECT_TRUE(copy_ga->hasView(names[i]));
+    View* copy_view = copy_ga->getView(names[i]);
+    EXPECT_TRUE(copy_view->hasBuffer());
+
+    // The deep copy creates a compact buffer in the copied View, associated
+    // only with that View.
+    Buffer* buffer = copy_view->getBuffer();
+    EXPECT_EQ(buffer->getNumViews(), 1);
+    EXPECT_EQ(buffer->getNumElements(), size[i]);
+    EXPECT_EQ(copy_view->getOffset(), 0);
+    EXPECT_EQ(copy_view->getStride(), 1);
+
+    conduit::float64* fdata = copy_view->getData();
+    for(int j = 0; j < size[i]; ++j)
+    {
+      EXPECT_NEAR(fdata[j], 2.0 * (offset[i] + j * stride[i]), 1.0e-12);
+    }
+  }
+
+  for(int i = 0; i < NUM_VIEWS; ++i)
+  {
+    EXPECT_TRUE(copy_gb->hasView(names[i]));
+    View* copy_view = copy_gb->getView(names[i]);
+    EXPECT_TRUE(copy_view->hasBuffer());
+
+    // The deep copy creates a compact buffer in the copied View, associated
+    // only with that View.  Here external data was copied to internal
+    // buffers.
+    Buffer* buffer = copy_view->getBuffer();
+    EXPECT_EQ(buffer->getNumViews(), 1);
+    EXPECT_EQ(buffer->getNumElements(), size[i]);
+    EXPECT_EQ(copy_view->getOffset(), 0);
+    EXPECT_EQ(copy_view->getStride(), 1);
+
+    conduit::float64* fdata = copy_view->getData();
+    for(int j = 0; j < size[i]; ++j)
+    {
+      EXPECT_NEAR(fdata[j], -1.0 * (offset[i] + j * stride[i]), 1.0e-12);
+    }
+  }
+
+  delete ds;
+}
+
+//------------------------------------------------------------------------------
 TEST(sidre_group, create_destroy_view_and_buffer2)
 {
   DataStore* const ds = new DataStore();

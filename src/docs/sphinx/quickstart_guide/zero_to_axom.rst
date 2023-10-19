@@ -127,8 +127,8 @@ See:  ``examples/axom/using-with-blt``
 Makefile-based build system example
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-.. literalinclude:: ../../../examples/using-with-make/Makefile
+.. literalinclude:: ../../../examples/using-with-make/Makefile.in
    :language: make
-   :lines: 20-25
+   :lines: 28-39
 
 See: ``examples/axom/using-with-make``

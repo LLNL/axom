@@ -216,17 +216,17 @@ endif()
 #------------------------------------------------------------------------------
 
 # Build up an AXOM_CONFIG_NAME if not already provided
+# Note: some variables might be defined but empty (e.g. CMAKE_BUILD_TYPE in our 
+# MacOS CI AppleClang configuration) so check before appending them to the list
 if(NOT DEFINED AXOM_CONFIG_NAME)
     set(_config "")
-    if(DEFINED ENV{SYS_TYPE})
+    if(DEFINED ENV{SYS_TYPE} AND NOT "$ENV{SYS_TYPE}" STREQUAL "")
         blt_list_append(TO _config ELEMENTS $ENV{SYS_TYPE})
     endif()
-    if(DEFINED ENV{LCSCHEDCLUSTER})
+    if(DEFINED ENV{LCSCHEDCLUSTER} AND NOT "$ENV{LCSCHEDCLUSTER}" STREQUAL "")
         blt_list_append(TO _config ELEMENTS $ENV{LCSCHEDCLUSTER})
     endif()
     blt_list_append(TO _config ELEMENTS ${CMAKE_CXX_COMPILER_ID})
-    # Note: the second condition is required since CMAKE_BUILD_TYPE might be empty
-    # e.g. in our MacOS CI AppleClang configuration
     if(NOT CMAKE_CONFIGURATION_TYPES AND NOT "${CMAKE_BUILD_TYPE}" STREQUAL "")
         blt_list_append(TO _config ELEMENTS ${CMAKE_BUILD_TYPE})
     endif()

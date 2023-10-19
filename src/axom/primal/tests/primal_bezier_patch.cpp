@@ -22,7 +22,7 @@ namespace primal = axom::primal;
 TEST(primal_bezierpatch, constructor)
 {
   using CoordType = double;
-  using BezierPatchType = primal::BezierPatch<CoordType>;
+  using BezierPatchType = primal::BezierPatch<CoordType, 3>;
   using CoordsMat = BezierPatchType::CoordsMat;
 
   {
@@ -60,7 +60,7 @@ TEST(primal_bezierpatch, set_order)
   const int DIM = 3;
   using CoordType = double;
   using PointType = primal::Point<CoordType, DIM>;
-  using BezierPatchType = primal::BezierPatch<CoordType>;
+  using BezierPatchType = primal::BezierPatch<CoordType, DIM>;
 
   SLIC_INFO("Test adding control points to an empty Bezier patch");
 
@@ -104,7 +104,7 @@ TEST(primal_bezierpatch, array_constructors)
   const int DIM = 3;
   using CoordType = double;
   using PointType = primal::Point<CoordType, DIM>;
-  using BezierPatchType = primal::BezierPatch<CoordType>;
+  using BezierPatchType = primal::BezierPatch<CoordType, DIM>;
 
   SLIC_INFO("Testing point array constructor");
 
@@ -178,7 +178,7 @@ TEST(primal_bezierpatch, axom_array_constructors)
   const int DIM = 3;
   using CoordType = double;
   using PointType = primal::Point<CoordType, DIM>;
-  using BezierPatchType = primal::BezierPatch<CoordType>;
+  using BezierPatchType = primal::BezierPatch<CoordType, DIM>;
 
   SLIC_INFO("Testing point array constructor");
 
@@ -283,7 +283,7 @@ TEST(primal_bezierpatch, make_rational)
   const int DIM = 3;
   using CoordType = double;
   using PointType = primal::Point<CoordType, DIM>;
-  using BezierPatchType = primal::BezierPatch<CoordType>;
+  using BezierPatchType = primal::BezierPatch<CoordType, DIM>;
 
   const int order_u = 1;
   const int order_v = 1;
@@ -340,7 +340,7 @@ TEST(primal_bezierpatch, evaluate)
   const int DIM = 3;
   using CoordType = double;
   using PointType = primal::Point<CoordType, DIM>;
-  using BezierPatchType = primal::BezierPatch<CoordType>;
+  using BezierPatchType = primal::BezierPatch<CoordType, DIM>;
 
   const int order_u = 3;
   const int order_v = 2;
@@ -405,7 +405,7 @@ TEST(primal_bezierpatch, isocurve)
   const int DIM = 3;
   using CoordType = double;
   using PointType = primal::Point<CoordType, DIM>;
-  using BezierPatchType = primal::BezierPatch<CoordType>;
+  using BezierPatchType = primal::BezierPatch<CoordType, DIM>;
 
   const int order_u = 3;
   const int order_v = 2;
@@ -430,50 +430,6 @@ TEST(primal_bezierpatch, isocurve)
 }
 
 //------------------------------------------------------------------------------
-TEST(primal_bezierpatch, evaluate_tall)
-{
-  SLIC_INFO("Testing bezier Patch evaluation with axes swapped");
-
-  const int DIM = 3;
-  using CoordType = double;
-  using PointType = primal::Point<CoordType, DIM>;
-  using BezierPatchType = primal::BezierPatch<CoordType>;
-
-  const int order_u = 2;
-  const int order_v = 3;
-
-  // clang-format off
-  PointType controlPoints[(order_u + 1) * (order_v + 1)] = {
-    PointType {0, 0,  0}, PointType {2, 0, 6}, PointType {4, 0, 0}, PointType {6, 0, 0},
-    PointType {0, 4,  0}, PointType {2, 4, 0}, PointType {4, 4, 0}, PointType {6, 4, -3},
-    PointType {0, 8, -3}, PointType {2, 8, 0}, PointType {4, 8, 3}, PointType {6, 8,  0}};
-  // clang-format on
-
-  BezierPatchType bPatch(controlPoints, order_u, order_v);
-
-  // Evaluate the patch at each of the four corners, where the patch interpolates
-  for(int i = 0; i < DIM; ++i)
-  {
-    EXPECT_DOUBLE_EQ(bPatch.evaluate(0, 0)[i], controlPoints[0][i]);
-    EXPECT_DOUBLE_EQ(bPatch.evaluate(0, 1)[i], controlPoints[3][i]);
-    EXPECT_DOUBLE_EQ(bPatch.evaluate(1, 0)[i], controlPoints[8][i]);
-    EXPECT_DOUBLE_EQ(bPatch.evaluate(1, 1)[i], controlPoints[11][i]);
-  }
-
-  // Evaluate the patch at some interior points
-  PointType interior_1 {3.0, 4.0, 0.5625};          // (0.5, 0.5)
-  PointType interior_2 {1.5, 6.0, -171.0 / 512.0};  // (0.75, 0.25)
-  PointType interior_3 {4.5, 2.0, 39.0 / 512.0};    // (0.25, 0.75)
-
-  for(int i = 0; i < DIM; ++i)
-  {
-    EXPECT_DOUBLE_EQ(bPatch.evaluate(0.5, 0.5)[i], interior_1[i]);
-    EXPECT_DOUBLE_EQ(bPatch.evaluate(0.75, 0.25)[i], interior_2[i]);
-    EXPECT_DOUBLE_EQ(bPatch.evaluate(0.25, 0.75)[i], interior_3[i]);
-  }
-}
-
-//------------------------------------------------------------------------------
 TEST(primal_bezierpatch, evaluation_degenerate)
 {
   SLIC_INFO("Testing Bezier patch evaluation with one degenerate axis");
@@ -483,7 +439,7 @@ TEST(primal_bezierpatch, evaluation_degenerate)
   using CoordType = double;
   using PointType = primal::Point<CoordType, DIM>;
   using BezierCurveType = primal::BezierCurve<CoordType, DIM>;
-  using BezierPatchType = primal::BezierPatch<CoordType>;
+  using BezierPatchType = primal::BezierPatch<CoordType, DIM>;
 
   const int order = 3;
   PointType data[order + 1] = {PointType {0.6, 1.2, 1.0},
@@ -494,7 +450,7 @@ TEST(primal_bezierpatch, evaluation_degenerate)
   BezierCurveType bCurve(data, order);
   BezierPatchType bPatch(data, order, 0);
 
-  for(double t = 0; t <= 1; t += 0.01)
+  for(double t = 0; t <= 1; t += 0.1)
   {
     for(int i = 0; i < DIM; ++i)
     {
@@ -514,7 +470,7 @@ TEST(primal_bezierpatch, tangent)
   using CoordType = double;
   using PointType = primal::Point<CoordType, DIM>;
   using VectorType = primal::Vector<CoordType, DIM>;
-  using BezierPatchType = primal::BezierPatch<CoordType>;
+  using BezierPatchType = primal::BezierPatch<CoordType, DIM>;
 
   const int order_u = 3;
   const int order_v = 2;
@@ -566,7 +522,7 @@ TEST(primal_bezierpatch, normal)
   using CoordType = double;
   using PointType = primal::Point<CoordType, DIM>;
   using VectorType = primal::Vector<CoordType, DIM>;
-  using BezierPatchType = primal::BezierPatch<CoordType>;
+  using BezierPatchType = primal::BezierPatch<CoordType, DIM>;
 
   const int order_u = 3;
   const int order_v = 2;
@@ -597,6 +553,384 @@ TEST(primal_bezierpatch, normal)
 }
 
 //------------------------------------------------------------------------------
+TEST(primal_bezierpatch, rational_evaluation)
+{
+  const int DIM = 3;
+  using CoordType = double;
+  using PointType = primal::Point<CoordType, DIM>;
+  using VectorType = primal::Vector<CoordType, DIM>;
+  using BezierPatchType = primal::BezierPatch<CoordType, DIM>;
+
+  const int max_order_u = 3;
+  const int order_v = 4;
+
+  // clang-format off
+  PointType controlPoints[(max_order_u + 1) * (order_v + 1)] = {
+                  PointType {0, 0, 0}, PointType{0, 4,  0}, PointType{0, 8, -3}, PointType{0, 12, 1}, PointType{0, 16, 3},
+                  PointType {2, 0, 6}, PointType{2, 4,  5}, PointType{2, 8,  0}, PointType{4, 12, 2}, PointType{2, 16, 2},
+                  PointType {4, 0, 0}, PointType{4, 4,  5}, PointType{4, 8,  3}, PointType{2, 12, 3}, PointType{4, 16, 1},
+                  PointType {6, 0, 0}, PointType{6, 4, -3}, PointType{6, 8,  0}, PointType{6, 12, 2}, PointType{6, 16, 0}};
+  
+  double weights[(max_order_u + 1) * (order_v + 1)] = {
+                  1.0, 1.0, 1.0, 1.0, 1.0,
+                  1.0, 2.0, 3.0, 2.0, 1.0,
+                  1.0, 2.0, 3.0, 2.0, 1.0,
+                  1.0, 1.0, 1.0, 1.0, 1.0};
+
+  PointType exp_vals[4][3] = {{PointType {0.0, 0.0,   0.0}, PointType {       0.0,         6.4,      -0.8064}, PointType {0.0, 16.0, 3.0}},
+                              {PointType {0.4, 0.0,   1.2}, PointType {1561./997.,  6736./997.,   1279./997.}, PointType {1.6, 16.0, 2.2}},
+                              {PointType {0.8, 0.0,  1.92}, PointType {  218./91., 8104./1183.,  2579./1183.}, PointType {3.2, 16.0, 1.4}},
+                              {PointType {1.2, 0.0, 2.304}, PointType {       3.0, 8104./1183., 11157./4732.}, PointType {4.8, 16.0, 0.6}}};
+  // clang-format on
+
+  double u0 = 0.2, u1 = 0.5, u2 = 0.8;
+  double v0 = 0.0, v1 = 0.4, v2 = 1.0;
+
+  // For each test order, construct a Bezier patch using the first order_u + 1
+  //  rows of control points and weights
+  for(int order_u = 0; order_u <= max_order_u; ++order_u)
+  {
+    BezierPatchType patch(controlPoints, weights, order_u, order_v);
+
+    PointType calc_0 = patch.evaluate(u0, v0);
+    PointType calc_1 = patch.evaluate(u1, v1);
+    PointType calc_2 = patch.evaluate(u2, v2);
+
+    for(int i = 0; i < DIM; ++i)
+    {
+      EXPECT_NEAR(calc_0[i], exp_vals[order_u][0][i], 1e-15);
+      EXPECT_NEAR(calc_1[i], exp_vals[order_u][1][i], 1e-15);
+      EXPECT_NEAR(calc_2[i], exp_vals[order_u][2][i], 1e-15);
+    }
+
+    patch.swapAxes();
+
+    calc_0 = patch.evaluate(v0, u0);
+    calc_1 = patch.evaluate(v1, u1);
+    calc_2 = patch.evaluate(v2, u2);
+
+    for(int i = 0; i < DIM; ++i)
+    {
+      EXPECT_NEAR(calc_0[i], exp_vals[order_u][0][i], 1e-15);
+      EXPECT_NEAR(calc_1[i], exp_vals[order_u][1][i], 1e-15);
+      EXPECT_NEAR(calc_2[i], exp_vals[order_u][2][i], 1e-15);
+    }
+  }
+}
+
+//------------------------------------------------------------------------------
+TEST(primal_bezierpatch, rational_first_derivatives)
+{
+  const int DIM = 3;
+  using CoordType = double;
+  using PointType = primal::Point<CoordType, DIM>;
+  using VectorType = primal::Vector<CoordType, DIM>;
+  using BezierPatchType = primal::BezierPatch<CoordType, DIM>;
+
+  const int max_order_u = 3;
+  const int order_v = 4;
+
+  // clang-format off
+  PointType controlPoints[(max_order_u + 1) * (order_v + 1)] = {
+                  PointType {0, 0, 0}, PointType{0, 4,  0}, PointType{0, 8, -3}, PointType{0, 12, 1}, PointType{0, 16, 3},
+                  PointType {2, 0, 6}, PointType{2, 4,  5}, PointType{2, 8,  0}, PointType{4, 12, 2}, PointType{2, 16, 2},
+                  PointType {4, 0, 0}, PointType{4, 4,  5}, PointType{4, 8,  3}, PointType{2, 12, 3}, PointType{4, 16, 1},
+                  PointType {6, 0, 0}, PointType{6, 4, -3}, PointType{6, 8,  0}, PointType{6, 12, 2}, PointType{6, 16, 0}};
+  
+  double weights[(max_order_u + 1) * (order_v + 1)] = {
+                  1.0, 1.0, 1.0, 1.0, 1.0,
+                  1.0, 2.0, 3.0, 2.0, 1.0,
+                  1.0, 2.0, 3.0, 2.0, 1.0,
+                  1.0, 1.0, 1.0, 1.0, 1.0};
+                                                                      
+  VectorType exp_du[4][3] = {{VectorType {0.0, 0.0,  0.0}, VectorType {             0.0,              0.0,               0.0}, VectorType {0.0, 0.0,  0.0}},
+                             {VectorType {2.0, 0.0,  6.0}, VectorType {1951250./994009.,  444000./994009.,  2603726./994009.}, VectorType {2.0, 0.0, -1.0}},
+                             {VectorType {4.0, 0.0,  7.2}, VectorType { 301180./107653., 444000./1399489., 4232824./1399489.}, VectorType {4.0, 0.0, -2.0}},
+                             {VectorType {6.0, 0.0, 5.76}, VectorType {        330./91.,              0.0,       2523./2366.}, VectorType {6.0, 0.0, -3.0}}};
+
+  VectorType exp_dv[4][3] = {{VectorType {  0.0,  16.0,     0.0}, VectorType {             0.0,               16.0,              -0.064}, VectorType {   0.0,  16.0,     8.0}},
+                             {VectorType { 1.28,  19.2,    2.24}, VectorType {1276850./994009.,  12622200./994009.,   -3524050./994009.}, VectorType {-14.08,  28.8,    2.24}},
+                             {VectorType {2.048, 21.76,  3.9552}, VectorType {  64650./107653., 16488700./1399489.,  -4637275./1399489.}, VectorType { 4.608, 31.36,  -9.664}},
+                             {VectorType {2.304, 23.68, 5.46432}, VectorType {             0.0, 16488700./1399489., -12970725./5597956.}, VectorType { 6.912, 23.68, -11.328}}};
+  // clang-format on 
+
+  double u0 = 0.2, u1 = 0.5, u2 = 0.8;
+  double v0 = 0.0, v1 = 0.4, v2 = 1.0;
+
+  // For each test order, construct a Bezier patch using the first order_u + 1
+  //  rows of control points and weights
+  for(int order_u = 0; order_u <= max_order_u; ++order_u)
+  {
+    BezierPatchType patch(controlPoints, weights, order_u, order_v);
+
+    VectorType calc_du_0 = patch.du(u0, v0);
+    VectorType calc_du_1 = patch.du(u1, v1);
+    VectorType calc_du_2 = patch.du(u2, v2);
+
+    VectorType calc_dv_0 = patch.dv(u0, v0);
+    VectorType calc_dv_1 = patch.dv(u1, v1);
+    VectorType calc_dv_2 = patch.dv(u2, v2);
+
+    for(int i = 0; i < DIM; ++i)
+    {
+      EXPECT_NEAR(calc_du_0[i], exp_du[order_u][0][i], 1e-13);
+      EXPECT_NEAR(calc_du_1[i], exp_du[order_u][1][i], 1e-13);
+      EXPECT_NEAR(calc_du_2[i], exp_du[order_u][2][i], 1e-13);
+
+      EXPECT_NEAR(calc_dv_0[i], exp_dv[order_u][0][i], 1e-13);
+      EXPECT_NEAR(calc_dv_1[i], exp_dv[order_u][1][i], 1e-13);
+      EXPECT_NEAR(calc_dv_2[i], exp_dv[order_u][2][i], 1e-13);
+    }
+
+    // Swap the axes and check that the derivatives are correct
+    patch.swapAxes();
+
+    calc_du_0 = patch.dv(v0, u0);
+    calc_du_1 = patch.dv(v1, u1);
+    calc_du_2 = patch.dv(v2, u2);
+
+    calc_dv_0 = patch.du(v0, u0);
+    calc_dv_1 = patch.du(v1, u1);
+    calc_dv_2 = patch.du(v2, u2);
+
+    for(int i = 0; i < DIM; ++i)
+    {
+      EXPECT_NEAR(calc_du_0[i], exp_du[order_u][0][i], 1e-13);
+      EXPECT_NEAR(calc_du_1[i], exp_du[order_u][1][i], 1e-13);
+      EXPECT_NEAR(calc_du_2[i], exp_du[order_u][2][i], 1e-13);
+
+      EXPECT_NEAR(calc_dv_0[i], exp_dv[order_u][0][i], 1e-13);
+      EXPECT_NEAR(calc_dv_1[i], exp_dv[order_u][1][i], 1e-13);
+      EXPECT_NEAR(calc_dv_2[i], exp_dv[order_u][2][i], 1e-13);
+    }
+  }
+}
+
+//------------------------------------------------------------------------------
+TEST(primal_bezierpatch, rational_second_derivatives)
+{
+  const int DIM = 3;
+  using CoordType = double;
+  using PointType = primal::Point<CoordType, DIM>;
+  using VectorType = primal::Vector<CoordType, DIM>;
+  using BezierPatchType = primal::BezierPatch<CoordType, DIM>;
+
+  const int max_order_u = 3;
+  const int order_v = 4;
+
+  // clang-format off
+  PointType controlPoints[(max_order_u + 1) * (order_v + 1)] = {
+                  PointType {0, 0, 0}, PointType{0, 4,  0}, PointType{0, 8, -3}, PointType{0, 12, 1}, PointType{0, 16, 3},
+                  PointType {2, 0, 6}, PointType{2, 4,  5}, PointType{2, 8,  0}, PointType{4, 12, 2}, PointType{2, 16, 2},
+                  PointType {4, 0, 0}, PointType{4, 4,  5}, PointType{4, 8,  3}, PointType{2, 12, 3}, PointType{4, 16, 1},
+                  PointType {6, 0, 0}, PointType{6, 4, -3}, PointType{6, 8,  0}, PointType{6, 12, 2}, PointType{6, 16, 0}};
+  
+  double weights[(max_order_u + 1) * (order_v + 1)] = {
+                  1.0, 1.0, 1.0, 1.0, 1.0,
+                  1.0, 2.0, 3.0, 2.0, 1.0,
+                  1.0, 2.0, 3.0, 2.0, 1.0,
+                  1.0, 1.0, 1.0, 1.0, 1.0};
+                                                                    
+  // Exact rational values get unwieldy here. For example, exp_dudu[1][1][0] = -2903460000/991026973 exactly.
+  VectorType exp_dudu[4][3] = {{VectorType {0.0, 0.0,   0.0}, VectorType {           0.0,             0.0,            0.0}, VectorType {0.0, 0.0, 0.0}},
+                               {VectorType {0.0, 0.0,   0.0}, VectorType {-2.92974871432, -0.666653903476, -3.90942365198}, VectorType {0.0, 0.0, 0.0}},
+                               {VectorType {0.0, 0.0, -24.0}, VectorType {-2.45334507849, -1.03357131222,     -4.32849911}, VectorType {0.0, 0.0, 0.0}},
+                               {VectorType {0.0, 0.0, -50.4}, VectorType {           0.0, -1.90355193931,  -13.2112292415}, VectorType {0.0, 0.0, 0.0}}};
+
+  VectorType exp_dvdv[4][3] = {{VectorType {     0.0,      0.0,        -36.0}, VectorType {            0.0,            0.0,         23.52}, VectorType {     0.0,      0.0,      -24.0}},
+                               {VectorType {  -2.048,   -11.52,      -65.984}, VectorType {-0.114397491782, -7.89784961786, 17.3438006414}, VectorType {-166.912,   107.52,    -48.064}},
+                               {VectorType {-5.89824, -28.1088,   -93.470976}, VectorType {-0.786421266682, -8.69476156044, 10.1439670088}, VectorType {66.10944, 148.6848, -113.57952}},
+                               {VectorType {-8.84736, -44.8512, -116.0229888}, VectorType {            0.0, -8.69476156044, 4.56797689827}, VectorType {54.19008,  44.8512,  -84.39552}}};
+
+  VectorType exp_dudv[4][3] = {{VectorType { 0.0,  0.0,    0.0}, VectorType {           0.0,            0.0,            0.0}, VectorType {  0.0,   0.0,    0.0}},
+                               {VectorType { 4.8, 16.0,    6.4}, VectorType {0.882014338474, -4.30534194956, -5.33680771976}, VectorType {-11.2,  16.0,  -10.4}},
+                               {VectorType {5.12, 25.6, 12.544}, VectorType {-2.58010892971, -3.12014017951, 0.484714839042}, VectorType {49.28,   6.4, -31.04}},
+                               {VectorType {0.96, 28.8, 19.872}, VectorType { -3.6032437554,            0.0,  5.97901269678}, VectorType {-2.88, -28.8,  -0.48}}};
+  // clang-format on
+
+  double u0 = 0.2, u1 = 0.5, u2 = 0.8;
+  double v0 = 0.0, v1 = 0.4, v2 = 1.0;
+
+  // For each test order, construct a Bezier patch using the first order_u + 1
+  //  rows of control points and weights
+  for(int order_u = 0; order_u <= max_order_u; ++order_u)
+  {
+    BezierPatchType patch(controlPoints, weights, order_u, order_v);
+
+    VectorType calc_dudu_0 = patch.dudu(u0, v0);
+    VectorType calc_dudu_1 = patch.dudu(u1, v1);
+    VectorType calc_dudu_2 = patch.dudu(u2, v2);
+
+    VectorType calc_dvdv_0 = patch.dvdv(u0, v0);
+    VectorType calc_dvdv_1 = patch.dvdv(u1, v1);
+    VectorType calc_dvdv_2 = patch.dvdv(u2, v2);
+
+    VectorType calc_dudv_0 = patch.dudv(u0, v0);
+    VectorType calc_dudv_1 = patch.dudv(u1, v1);
+    VectorType calc_dudv_2 = patch.dudv(u2, v2);
+
+    for(int i = 0; i < DIM; ++i)
+    {
+      EXPECT_NEAR(calc_dudu_0[i], exp_dudu[order_u][0][i], 1e-10);
+      EXPECT_NEAR(calc_dudu_1[i], exp_dudu[order_u][1][i], 1e-10);
+      EXPECT_NEAR(calc_dudu_2[i], exp_dudu[order_u][2][i], 1e-10);
+
+      EXPECT_NEAR(calc_dvdv_0[i], exp_dvdv[order_u][0][i], 1e-10);
+      EXPECT_NEAR(calc_dvdv_1[i], exp_dvdv[order_u][1][i], 1e-10);
+      EXPECT_NEAR(calc_dvdv_2[i], exp_dvdv[order_u][2][i], 1e-10);
+
+      EXPECT_NEAR(calc_dudv_0[i], exp_dudv[order_u][0][i], 1e-10);
+      EXPECT_NEAR(calc_dudv_1[i], exp_dudv[order_u][1][i], 1e-10);
+      EXPECT_NEAR(calc_dudv_2[i], exp_dudv[order_u][2][i], 1e-10);
+    }
+
+    // Swap the axes and check that the derivatives are correct
+    patch.swapAxes();
+
+    calc_dudu_0 = patch.dvdv(v0, u0);
+    calc_dudu_1 = patch.dvdv(v1, u1);
+    calc_dudu_2 = patch.dvdv(v2, u2);
+
+    calc_dvdv_0 = patch.dudu(v0, u0);
+    calc_dvdv_1 = patch.dudu(v1, u1);
+    calc_dvdv_2 = patch.dudu(v2, u2);
+
+    calc_dudv_0 = patch.dudv(v0, u0);
+    calc_dudv_1 = patch.dudv(v1, u1);
+    calc_dudv_2 = patch.dudv(v2, u2);
+
+    for(int i = 0; i < DIM; ++i)
+    {
+      EXPECT_NEAR(calc_dudu_0[i], exp_dudu[order_u][0][i], 1e-10);
+      EXPECT_NEAR(calc_dudu_1[i], exp_dudu[order_u][1][i], 1e-10);
+      EXPECT_NEAR(calc_dudu_2[i], exp_dudu[order_u][2][i], 1e-10);
+
+      EXPECT_NEAR(calc_dvdv_0[i], exp_dvdv[order_u][0][i], 1e-10);
+      EXPECT_NEAR(calc_dvdv_1[i], exp_dvdv[order_u][1][i], 1e-10);
+      EXPECT_NEAR(calc_dvdv_2[i], exp_dvdv[order_u][2][i], 1e-10);
+
+      EXPECT_NEAR(calc_dudv_0[i], exp_dudv[order_u][0][i], 1e-10);
+      EXPECT_NEAR(calc_dudv_1[i], exp_dudv[order_u][1][i], 1e-10);
+      EXPECT_NEAR(calc_dudv_2[i], exp_dudv[order_u][2][i], 1e-10);
+    }
+  }
+}
+
+//------------------------------------------------------------------------------
+TEST(primal_bezierpatch, rational_batch_derivatives)
+{
+  const int DIM = 3;
+  using CoordType = double;
+  using PointType = primal::Point<CoordType, DIM>;
+  using VectorType = primal::Vector<CoordType, DIM>;
+  using BezierPatchType = primal::BezierPatch<CoordType, DIM>;
+
+  const int max_order_u = 3;
+  const int order_v = 4;
+
+  // clang-format off
+  PointType controlPoints[(max_order_u + 1) * (order_v + 1)] = {
+                  PointType {0, 0, 0}, PointType{0, 4,  0}, PointType{0, 8, -3}, PointType{0, 12, 1}, PointType{0, 16, 3},
+                  PointType {2, 0, 6}, PointType{2, 4,  5}, PointType{2, 8,  0}, PointType{4, 12, 2}, PointType{2, 16, 2},
+                  PointType {4, 0, 0}, PointType{4, 4,  5}, PointType{4, 8,  3}, PointType{2, 12, 3}, PointType{4, 16, 1},
+                  PointType {6, 0, 0}, PointType{6, 4, -3}, PointType{6, 8,  0}, PointType{6, 12, 2}, PointType{6, 16, 0}};
+  
+  double weights[(max_order_u + 1) * (order_v + 1)] = {
+                  1.0, 1.0, 1.0, 1.0, 1.0,
+                  1.0, 2.0, 3.0, 2.0, 1.0,
+                  1.0, 2.0, 3.0, 2.0, 1.0,
+                  1.0, 1.0, 1.0, 1.0, 1.0};
+  // clang-format on
+
+  PointType batch1_val, batch2_val, batch3_val;
+  VectorType batch1_du, batch1_dv;
+  VectorType batch2_du, batch2_dv, batch2_dudv;
+  VectorType batch3_du, batch3_dv, batch3_dudu, batch3_dvdv, batch3_dudv;
+
+  const double u = 0.4, v = 0.6;
+
+  // For each test order, construct a Bezier patch using the first order_u + 1
+  //  rows of control points and weights
+  for(int order_u = 0; order_u <= max_order_u; ++order_u)
+  {
+    BezierPatchType patch(controlPoints, weights, order_u, order_v);
+
+    patch.evaluate_first_derivatives(u, v, batch1_val, batch1_du, batch1_dv);
+    patch.evaluate_linear_derivatives(u,
+                                      v,
+                                      batch2_val,
+                                      batch2_du,
+                                      batch2_dv,
+                                      batch2_dudv);
+    patch.evaluate_second_derivatives(u,
+                                      v,
+                                      batch3_val,
+                                      batch3_du,
+                                      batch3_dv,
+                                      batch3_dudu,
+                                      batch3_dvdv,
+                                      batch3_dudv);
+
+    for(int i = 0; i < DIM; ++i)
+    {
+      EXPECT_NEAR(patch.evaluate(u, v)[i], batch1_val[i], 1e-13);
+      EXPECT_NEAR(patch.du(u, v)[i], batch1_du[i], 1e-13);
+      EXPECT_NEAR(patch.dv(u, v)[i], batch1_dv[i], 1e-13);
+
+      EXPECT_NEAR(patch.evaluate(u, v)[i], batch2_val[i], 1e-13);
+      EXPECT_NEAR(patch.du(u, v)[i], batch2_du[i], 1e-13);
+      EXPECT_NEAR(patch.dv(u, v)[i], batch2_dv[i], 1e-13);
+      EXPECT_NEAR(patch.dudv(u, v)[i], batch2_dudv[i], 1e-13);
+
+      EXPECT_NEAR(patch.evaluate(u, v)[i], batch3_val[i], 1e-13);
+      EXPECT_NEAR(patch.du(u, v)[i], batch2_du[i], 1e-13);
+      EXPECT_NEAR(patch.dv(u, v)[i], batch2_dv[i], 1e-13);
+      EXPECT_NEAR(patch.dudu(u, v)[i], batch3_dudu[i], 1e-13);
+      EXPECT_NEAR(patch.dvdv(u, v)[i], batch3_dvdv[i], 1e-13);
+      EXPECT_NEAR(patch.dudv(u, v)[i], batch3_dudv[i], 1e-13);
+    }
+
+    // Swap the axes and check that the derivatives are correct
+    patch.swapAxes();
+
+    patch.evaluate_first_derivatives(u, v, batch1_val, batch1_du, batch1_dv);
+    patch.evaluate_linear_derivatives(u,
+                                      v,
+                                      batch2_val,
+                                      batch2_du,
+                                      batch2_dv,
+                                      batch2_dudv);
+    patch.evaluate_second_derivatives(u,
+                                      v,
+                                      batch3_val,
+                                      batch3_du,
+                                      batch3_dv,
+                                      batch3_dudu,
+                                      batch3_dvdv,
+                                      batch3_dudv);
+
+    for(int i = 0; i < DIM; ++i)
+    {
+      EXPECT_NEAR(patch.evaluate(u, v)[i], batch1_val[i], 1e-13);
+      EXPECT_NEAR(patch.du(u, v)[i], batch1_du[i], 1e-13);
+      EXPECT_NEAR(patch.dv(u, v)[i], batch1_dv[i], 1e-13);
+
+      EXPECT_NEAR(patch.evaluate(u, v)[i], batch2_val[i], 1e-13);
+      EXPECT_NEAR(patch.du(u, v)[i], batch2_du[i], 1e-13);
+      EXPECT_NEAR(patch.dv(u, v)[i], batch2_dv[i], 1e-13);
+      EXPECT_NEAR(patch.dudv(u, v)[i], batch2_dudv[i], 1e-13);
+
+      EXPECT_NEAR(patch.evaluate(u, v)[i], batch3_val[i], 1e-13);
+      EXPECT_NEAR(patch.du(u, v)[i], batch3_du[i], 1e-13);
+      EXPECT_NEAR(patch.dv(u, v)[i], batch3_dv[i], 1e-13);
+      EXPECT_NEAR(patch.dudu(u, v)[i], batch3_dudu[i], 1e-13);
+      EXPECT_NEAR(patch.dvdv(u, v)[i], batch3_dvdv[i], 1e-13);
+      EXPECT_NEAR(patch.dudv(u, v)[i], batch3_dudv[i], 1e-13);
+    }
+  }
+}
+
+//------------------------------------------------------------------------------
 TEST(primal_bezierpatch, split_degenerate)
 {
   SLIC_INFO("Testing bezier Patch splitting for order 0 surface");
@@ -604,7 +938,7 @@ TEST(primal_bezierpatch, split_degenerate)
   const int DIM = 3;
   using CoordType = double;
   using PointType = primal::Point<CoordType, DIM>;
-  using BezierPatchType = primal::BezierPatch<CoordType>;
+  using BezierPatchType = primal::BezierPatch<CoordType, DIM>;
 
   const int order_u = 0;
   const int order_v = 0;
@@ -636,7 +970,7 @@ TEST(primal_bezierpatch, split_curve)
   using CoordType = double;
   using PointType = primal::Point<CoordType, DIM>;
   using BezierCurveType = primal::BezierCurve<CoordType, DIM>;
-  using BezierPatchType = primal::BezierPatch<CoordType>;
+  using BezierPatchType = primal::BezierPatch<CoordType, DIM>;
 
   const int order = 3;
   PointType data[order + 1] = {PointType {0.6, 1.2, 1.0},
@@ -680,7 +1014,7 @@ TEST(primal_bezierpatch, split_plane)
   const int DIM = 3;
   using CoordType = double;
   using PointType = primal::Point<CoordType, DIM>;
-  using BezierPatchType = primal::BezierPatch<CoordType>;
+  using BezierPatchType = primal::BezierPatch<CoordType, DIM>;
 
   const int order_u = 1;
   const int order_v = 1;
@@ -717,7 +1051,7 @@ TEST(primal_bezierpatch, split_patch)
   const int DIM = 3;
   using CoordType = double;
   using PointType = primal::Point<CoordType, DIM>;
-  using BezierPatchType = primal::BezierPatch<CoordType>;
+  using BezierPatchType = primal::BezierPatch<CoordType, DIM>;
 
   const int order_u = 3;
   const int order_v = 2;
@@ -757,7 +1091,7 @@ TEST(primal_bezierpatch, isPlanar)
   using CoordType = double;
   using PointType = primal::Point<CoordType, DIM>;
   using VectorType = primal::Vector<CoordType, DIM>;
-  using BezierPatchType = primal::BezierPatch<CoordType>;
+  using BezierPatchType = primal::BezierPatch<CoordType, DIM>;
 
   // order (0, 0) -- always true
   {
@@ -837,7 +1171,7 @@ TEST(primal_bezierpatch, reverse_orientation)
   const int DIM = 3;
   using CoordType = double;
   using PointType = primal::Point<CoordType, DIM>;
-  using BezierPatchType = primal::BezierPatch<CoordType>;
+  using BezierPatchType = primal::BezierPatch<CoordType, DIM>;
 
   SLIC_INFO("Testing reverseOrientation(axis) on Bezier patches");
 
@@ -929,7 +1263,7 @@ TEST(primal_bezierpatch, rational_evaluation_split)
   const int DIM = 3;
   using CoordType = double;
   using PointType = primal::Point<CoordType, DIM>;
-  using BezierPatchType = primal::BezierPatch<CoordType>;
+  using BezierPatchType = primal::BezierPatch<CoordType, DIM>;
 
   const int ord_u = 3;
   const int ord_v = 3;

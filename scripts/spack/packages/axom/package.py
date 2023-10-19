@@ -40,6 +40,7 @@ class Axom(CachedCMakePackage, CudaPackage, ROCmPackage):
 
     version("main", branch="main")
     version("develop", branch="develop")
+    version("0.8.1", tag="v0.8.1")
     version("0.8.0", tag="v0.8.0")
     version("0.7.0", tag="v0.7.0")
     version("0.6.1", tag="v0.6.1")
@@ -237,10 +238,11 @@ class Axom(CachedCMakePackage, CudaPackage, ROCmPackage):
         if "+cpp14" in spec and spec.satisfies("@:0.6.1"):
             entries.append(cmake_cache_string("BLT_CXX_STD", "c++14", ""))
 
-        # Add optimization flag to workaround HIP compiler errors
+        # Add optimization flag workaround for Debug builds with
+        # cray compiler or newer HIP
         if "+rocm" in spec:
             if "crayCC" in self.compiler.cxx or spec.satisfies("%clang@16"):
-                entries.append(cmake_cache_string("CMAKE_CXX_FLAGS","-O1"))
+                entries.append(cmake_cache_string("CMAKE_CXX_FLAGS_DEBUG","-O1 -g -DNDEBUG"))
 
 
         return entries
