@@ -424,7 +424,7 @@ AXOM_HOST_DEVICE Polyhedron<T, NDIMS> clipPolyhedron(
   BoxType polyBox(&poly[0], poly.numVertices());
 
   //Clip Polyhedron by each plane
-  for(PlaneType plane : planes)
+  for(const PlaneType& plane : planes)
   {
     // Check that plane intersects Polyhedron
     if(intersect(plane, polyBox, true, eps))

@@ -52,7 +52,7 @@ public:
   /*!
    * \brief Constructs an empty NeighborCollection.
    */
-  AXOM_HOST_DEVICE NeighborCollection() : num_nbrs {0} { }
+  NeighborCollection() = default;
 
   /*!
    * \brief Clears the set of neighbors.
@@ -205,8 +205,8 @@ public:
   }
 
 private:
-  std::int8_t num_nbrs[MAX_VERTS];
-  VertexNbrs nbrs[MAX_VERTS];
+  std::int8_t num_nbrs[MAX_VERTS] {};
+  VertexNbrs nbrs[MAX_VERTS] {};
 };
 
 /*!
@@ -261,7 +261,7 @@ private:
 
 public:
   /*! Default constructor for an empty polyhedron   */
-  AXOM_HOST_DEVICE Polyhedron() : m_num_vertices(0) { }
+  Polyhedron() = default;
 
   /*! Return the number of vertices in the polyhedron */
   AXOM_HOST_DEVICE int numVertices() const { return m_num_vertices; }
@@ -865,9 +865,40 @@ public:
   }
 
 private:
-  int m_num_vertices;
-  Coords m_vertices;
-  Neighbors m_neighbors;
+  int m_num_vertices {0};
+  Coords m_vertices {PointType {},
+                     PointType {},
+                     PointType {},
+                     PointType {},
+                     PointType {},
+                     PointType {},
+                     PointType {},
+                     PointType {},
+                     PointType {},
+                     PointType {},
+                     PointType {},
+                     PointType {},
+                     PointType {},
+                     PointType {},
+                     PointType {},
+                     PointType {},
+                     PointType {},
+                     PointType {},
+                     PointType {},
+                     PointType {},
+                     PointType {},
+                     PointType {},
+                     PointType {},
+                     PointType {},
+                     PointType {},
+                     PointType {},
+                     PointType {},
+                     PointType {},
+                     PointType {},
+                     PointType {},
+                     PointType {},
+                     PointType {}};
+  Neighbors m_neighbors {};
 };
 
 //------------------------------------------------------------------------------
