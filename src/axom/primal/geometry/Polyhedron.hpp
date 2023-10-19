@@ -866,38 +866,14 @@ public:
 
 private:
   int m_num_vertices {0};
-  Coords m_vertices {PointType {},
-                     PointType {},
-                     PointType {},
-                     PointType {},
-                     PointType {},
-                     PointType {},
-                     PointType {},
-                     PointType {},
-                     PointType {},
-                     PointType {},
-                     PointType {},
-                     PointType {},
-                     PointType {},
-                     PointType {},
-                     PointType {},
-                     PointType {},
-                     PointType {},
-                     PointType {},
-                     PointType {},
-                     PointType {},
-                     PointType {},
-                     PointType {},
-                     PointType {},
-                     PointType {},
-                     PointType {},
-                     PointType {},
-                     PointType {},
-                     PointType {},
-                     PointType {},
-                     PointType {},
-                     PointType {},
-                     PointType {}};
+  Coords m_vertices {PointType {}, PointType {}, PointType {}, PointType {},
+                     PointType {}, PointType {}, PointType {}, PointType {},
+                     PointType {}, PointType {}, PointType {}, PointType {},
+                     PointType {}, PointType {}, PointType {}, PointType {},
+                     PointType {}, PointType {}, PointType {}, PointType {},
+                     PointType {}, PointType {}, PointType {}, PointType {},
+                     PointType {}, PointType {}, PointType {}, PointType {},
+                     PointType {}, PointType {}, PointType {}, PointType {}};
   Neighbors m_neighbors {};
 };
 
