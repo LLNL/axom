@@ -60,7 +60,8 @@ public:
   /*!
     @brief Initialize data to a blueprint domain.
     @param dom Blueprint structured mesh domain
-    @param coordsetPath Where coordinates are in dom
+    @param topologyName Name of mesh topology (see blueprint
+           mesh documentation)
     @param fcnFieldName Name of nodal function is in dom
     @param maskFieldName Name of integer cell mask function is in dom
 
