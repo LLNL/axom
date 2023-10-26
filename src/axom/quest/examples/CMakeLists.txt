@@ -22,6 +22,17 @@ axom_add_executable(
     FOLDER      axom/quest/examples
     )
 
+# BVH two pass example --------------------------------------------------------
+if (RAJA_FOUND AND UMPIRE_FOUND)
+    axom_add_executable(
+        NAME        quest_bvh_two_pass_ex
+        SOURCES     quest_bvh_two_pass.cpp
+        OUTPUT_DIR  ${EXAMPLE_OUTPUT_DIRECTORY}
+        DEPENDS_ON  ${quest_example_depends}
+        FOLDER      axom/quest/examples
+        )
+endif()
+
 # Shaping example -------------------------------------------------------------
 if(AXOM_ENABLE_MPI AND MFEM_FOUND AND MFEM_USE_MPI
                    AND AXOM_ENABLE_SIDRE AND AXOM_ENABLE_MFEM_SIDRE_DATACOLLECTION
@@ -383,7 +394,8 @@ if (ENABLE_FORTRAN)
     set(quest_fortran_examples quest_signed_distance_interface)
     
     # The inout Fortran example fails to compile with hipcc/amdflang in debug configurations
-    if("${CMAKE_Fortran_COMPILER}" MATCHES "amdflang$" AND "${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
+    if("${CMAKE_Fortran_COMPILER}" MATCHES "amdflang$" AND
+       CMAKE_BUILD_TYPE MATCHES "(Debug|RelWithDebInfo)")
         set(_has_inout_fortran_example FALSE)
     else()
         set(_has_inout_fortran_example TRUE)

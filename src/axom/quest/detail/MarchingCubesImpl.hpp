@@ -334,8 +334,15 @@ public:
     {
       crossingsView[n].firstSurfaceCellId = prefixSumView[n];
     };
-  #if defined(AXOM_USE_RAJA)
-    RAJA::exclusive_scan<LoopPolicy>(
+#if defined(AXOM_USE_RAJA)
+      // Intel oneAPI compiler segfaults with OpenMP RAJA scan
+  #ifdef __INTEL_LLVM_COMPILER
+    using ScanPolicy =
+      typename axom::execution_space<axom::SEQ_EXEC>::loop_policy;
+  #else
+    using ScanPolicy = typename axom::execution_space<ExecSpace>::loop_policy;
+  #endif
+    RAJA::exclusive_scan<ScanPolicy>(
       RAJA::make_span(addCellsView.data(), m_crossingCount),
       RAJA::make_span(prefixSumView.data(), m_crossingCount),
       RAJA::operators::plus<axom::IndexType> {});

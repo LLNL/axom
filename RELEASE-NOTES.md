@@ -26,6 +26,18 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
   - `DistributedClosestPoint::computeClosestPoints`
   - `MarchingCubes::MarchingCubes`
   - `MarchingCubesSingleDomain::MarchingCubesSingleDomain`
+- Primal: `Polyhedron::volume()` function changed from returning a signed
+  volume to an unsigned volume. The added `Polyhedron::signedVolume()` function
+  returns the signed volume.
+- Primal: `intersection_volume()` operators changed from returning a signed
+  volume to an unsigned volume.
+- Primal: Adds a `Quadrilateral` primitive
+- Primal: Adds a `compute_bounding_box()` operator for computing the bounding
+  box of a `Quadrilateral`
+
+### Fixed
+- quest's `SamplingShaper` now properly handles material names containing underscores
+- quest's `SamplingShaper` can now be used with an mfem that is configured for (GPU) devices
 
 ## [Version 0.8.1] - Release date 2023-08-16
 

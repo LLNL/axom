@@ -745,8 +745,13 @@ void UniformGrid<T, NDIMS, ExecSpace, StoragePolicy>::getCandidatesAsArray(
       totalCountReduce += counts_view[i];
     });
 
-  // Step 2: exclusive scan for offsets in candidate array
+    // Step 2: exclusive scan for offsets in candidate array
+    // Intel oneAPI compiler segfaults with OpenMP RAJA scan
+  #ifdef __INTEL_LLVM_COMPILER
+  using exec_policy = typename axom::execution_space<axom::SEQ_EXEC>::loop_policy;
+  #else
   using exec_policy = typename axom::execution_space<ExecSpace>::loop_policy;
+  #endif
   RAJA::exclusive_scan<exec_policy>(RAJA::make_span(outCounts.data(), qsize),
                                     RAJA::make_span(outOffsets.data(), qsize),
                                     RAJA::operators::plus<IndexType> {});

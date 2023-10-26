@@ -216,11 +216,21 @@ public:
   using PointArray2D = axom::Array<Point2D>;
   using PointArray3D = axom::Array<Point3D>;
 
-  explicit BlueprintParticleMesh(sidre::Group* group = nullptr,
-                                 const std::string& coordset = "coords",
-                                 const std::string& topology = "mesh")
-    : m_coordsetName(coordset)
-    , m_topologyName(topology)
+  explicit BlueprintParticleMesh(sidre::Group* group,
+                                 const std::string& topology,
+                                 const std::string& coordset)
+    : m_topologyName(topology)
+    , m_coordsetName(coordset)
+    , m_group(group)
+    , m_domainGroups()
+  {
+    MPI_Comm_rank(MPI_COMM_WORLD, &m_rank);
+    MPI_Comm_size(MPI_COMM_WORLD, &m_nranks);
+  }
+
+  explicit BlueprintParticleMesh(sidre::Group* group)
+    : m_topologyName()
+    , m_coordsetName()
     , m_group(group)
     , m_domainGroups()
   {
@@ -306,6 +316,10 @@ public:
 
   /*!
     @brief Read a blueprint mesh and store it internally in m_group.
+
+    If the topology wasn't specified in the constructor, the first
+    topology from the file is used.  The coordset name will be
+    replaced with the one corresponding to the topology.
   */
   void read_blueprint_mesh(const std::string& meshFilename)
   {
@@ -323,6 +337,7 @@ public:
     assert(conduit::blueprint::mesh::is_multi_domain(mdMesh));
     conduit::index_t domCount =
       conduit::blueprint::mesh::number_of_domains(mdMesh);
+
     if(domCount > 0)
     {
       m_coordsAreStrided = mdMesh[0]
@@ -338,10 +353,20 @@ public:
 
     if(domCount > 0)
     {
+      if(m_topologyName.empty())
+      {
+        // No topology given.  Pick the first one.
+        m_topologyName = mdMesh[0].fetch_existing("topologies")[0].name();
+      }
+      auto topologyPath = axom::fmt::format("topologies/{}", m_topologyName);
+
+      m_coordsetName =
+        mdMesh[0].fetch_existing(topologyPath + "/coordset").as_string();
       const conduit::Node coordsetNode =
         mdMesh[0].fetch_existing("coordsets").fetch_existing(m_coordsetName);
       m_dimension = conduit::blueprint::mesh::coordset::dims(coordsetNode);
     }
+
     MPI_Allreduce(MPI_IN_PLACE, &m_dimension, 1, MPI_INT, MPI_MAX, MPI_COMM_WORLD);
     SLIC_ASSERT(m_dimension > 0);
 
@@ -674,8 +699,8 @@ private:
 private:
   //!@brief Whether stride/offsets are given for blueprint mesh coordinates data.
   bool m_coordsAreStrided = false;
-  const std::string m_coordsetName;
-  const std::string m_topologyName;
+  std::string m_topologyName;
+  std::string m_coordsetName;
   /// Parent group for the entire mesh
   sidre::Group* m_group;
   /// Group for each domain in multidomain mesh
@@ -699,7 +724,7 @@ class ObjectMeshWrapper
 public:
   using Circle = primal::Sphere<double, 2>;
 
-  ObjectMeshWrapper(sidre::Group* group) : m_objectMesh(group)
+  ObjectMeshWrapper(sidre::Group* group) : m_objectMesh(group, "mesh", "coords")
   {
     SLIC_ASSERT(group != nullptr);
   }

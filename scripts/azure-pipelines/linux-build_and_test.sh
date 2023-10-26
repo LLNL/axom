@@ -33,9 +33,9 @@ if [[ "$DO_BUILD" == "yes" ]] ; then
     or_die cd build-$HOST_CONFIG-${BUILD_TYPE,,}
     echo "~~~~~~ BUILDING ~~~~~~~~"
     if [[ ${CMAKE_EXTRA_FLAGS} == *COVERAGE* ]] ; then
-        or_die make -j 10
+        or_die make -j 8
     else
-        or_die make -j 10 VERBOSE=1
+        or_die make -j 8 VERBOSE=1
     fi
     if [[ "${DO_TEST}" == "yes" ]] ; then
         echo "~~~~~~ RUNNING TESTS ~~~~~~~~"

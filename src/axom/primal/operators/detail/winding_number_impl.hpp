@@ -311,30 +311,56 @@ double stokes_winding_number(const Point<T, 3>& query,
 
     // Compute one of three vector field line integrals depending on
     //  the orientation of the original surface, indicated through ax.
-    if(ax == SingularityAxis::x)
+    switch(ax)
     {
+    case(SingularityAxis::x):
       quadrature += quad_rule.IntPoint(q).weight *
         (node[2] * node[0] * node_dt[1] - node[1] * node[0] * node_dt[2]) /
         (node[1] * node[1] + node[2] * node[2]) / node_norm;
-    }
-    else if(ax == SingularityAxis::y)
-    {
+      break;
+    case(SingularityAxis::y):
       quadrature += quad_rule.IntPoint(q).weight *
         (node[0] * node[1] * node_dt[2] - node[2] * node[1] * node_dt[0]) /
         (node[0] * node[0] + node[2] * node[2]) / node_norm;
-    }
-    else  // ax == SingularityAxis::z || ax == SingularityAxis::rotated
-    {
+      break;
+    case(SingularityAxis::z):
+    case(SingularityAxis::rotated):
       quadrature += quad_rule.IntPoint(q).weight *
         (node[1] * node[2] * node_dt[0] - node[0] * node[2] * node_dt[1]) /
         (node[0] * node[0] + node[1] * node[1]) / node_norm;
+      break;
     }
   }
 
-  // Adaptively refine quadrature over curves if query is not far enough away.
+  // Adaptively refine quadrature over curves if query is not far enough away
+  //  from the singularity axis. If rotated, assume you need to adapt.
+  bool needs_adapt = false;
   BoundingBox<T, 3> cBox(curve.boundingBox());
-  if(squared_distance(query, cBox.getCentroid()) <=
-     2 * cBox.range().squared_norm())
+  Point<T, 3> centroid = cBox.getCentroid();
+
+  switch(ax)
+  {
+  case(SingularityAxis::x):
+    needs_adapt = (query[1] - centroid[1]) * (query[1] - centroid[1]) +
+        (query[2] - centroid[2]) * (query[2] - centroid[2]) <=
+      cBox.range().squared_norm();
+    break;
+  case(SingularityAxis::y):
+    needs_adapt = (query[0] - centroid[0]) * (query[0] - centroid[0]) +
+        (query[2] - centroid[2]) * (query[2] - centroid[2]) <=
+      cBox.range().squared_norm();
+    break;
+  case(SingularityAxis::z):
+    needs_adapt = (query[0] - centroid[0]) * (query[0] - centroid[0]) *
+        (query[1] - centroid[1]) * (query[1] - centroid[1]) <=
+      cBox.range().squared_norm();
+    break;
+  case(SingularityAxis::rotated):
+    needs_adapt = true;
+    break;
+  }
+
+  if(needs_adapt)
   {
     return stokes_winding_number_adaptive(query,
                                           curve,
@@ -358,6 +384,7 @@ double stokes_winding_number(const Point<T, 3>& query,
  * \param [in] quad_rule The mfem quadrature rule object
  * \param [in] quad_coarse The integral evaluated on the original curve
  * \param [in] quad_tol The maximum relative error allowed in each quadrature
+ * \param [in] depth The current recursive depth
  * 
  * Recursively apply quadrature for one of three possible integrals along two halfs 
  * of a curve. The sum of this integral along the subcurves should be equal to to
@@ -394,23 +421,24 @@ double stokes_winding_number_adaptive(const Point<T, 3>& query,
 
       // Compute one of three vector field line integrals depending on
       //  the orientation of the original surface, indicated through ax.
-      if(ax == SingularityAxis::x)
+      switch(ax)
       {
+      case(SingularityAxis::x):
         quad_fine[i] += quad_rule.IntPoint(q).weight *
           (node[2] * node[0] * node_dt[1] - node[1] * node[0] * node_dt[2]) /
           (node[1] * node[1] + node[2] * node[2]) / node_norm;
-      }
-      else if(ax == SingularityAxis::y)
-      {
+        break;
+      case(SingularityAxis::y):
         quad_fine[i] += quad_rule.IntPoint(q).weight *
           (node[0] * node[1] * node_dt[2] - node[2] * node[1] * node_dt[0]) /
           (node[0] * node[0] + node[2] * node[2]) / node_norm;
-      }
-      else  // ax == SingularityAxis::z || ax == SingularityAxis::rotated
-      {
+        break;
+      case(SingularityAxis::z):
+      case(SingularityAxis::rotated):
         quad_fine[i] += quad_rule.IntPoint(q).weight *
           (node[1] * node[2] * node_dt[0] - node[0] * node[2] * node_dt[1]) /
           (node[0] * node[0] + node[1] * node[1]) / node_norm;
+        break;
       }
     }
   }
@@ -420,7 +448,7 @@ double stokes_winding_number_adaptive(const Point<T, 3>& query,
      axom::utilities::isNearlyEqualRelative(quad_fine[0] + quad_fine[1],
                                             quad_coarse,
                                             quad_tol,
-                                            0.0))
+                                            1e-10))
   {
     return 0.25 * M_1_PI * (quad_fine[0] + quad_fine[1]);
   }
