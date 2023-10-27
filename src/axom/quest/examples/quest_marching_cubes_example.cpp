@@ -456,7 +456,7 @@ public:
 
     double rval = 0.0;
 
-    const conduit::Node& cVals = dom.fetch_existing("coordsets/coords/values");
+    const conduit::Node& cVals = dom.fetch_existing(_coordsetPath + "/values");
     if(_ndims == 2)
     {
       axom::ArrayView<const double, 2> xs(cVals["x"].as_double_ptr(),
@@ -556,7 +556,7 @@ private:
       SLIC_ASSERT(_mdMesh[0].has_path(_topologyPath));
       auto coordsetName =
         _mdMesh[0].fetch_existing(_topologyPath + "/coordset").as_string();
-      _coordsetPath = axom::fmt::format("coordsets/{}/", coordsetName);
+      _coordsetPath = axom::fmt::format("coordsets/{}", coordsetName);
       SLIC_ASSERT(_mdMesh[0].has_path(_coordsetPath));
 
       _coordsAreStrided = _mdMesh[0]

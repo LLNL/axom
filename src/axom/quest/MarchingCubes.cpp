@@ -183,8 +183,8 @@ void MarchingCubesSingleDomain::setDomain(const conduit::Node& dom)
 
   m_dom = &dom;
 
-  m_ndim = conduit::blueprint::mesh::coordset::dims(
-    dom.fetch_existing("coordsets/coords"));
+  m_ndim = conduit::blueprint::mesh::topology::dims(
+    dom.fetch_existing(axom::fmt::format("topologies/{}", m_topologyName)));
   SLIC_ASSERT(m_ndim >= 2 && m_ndim <= 3);
 
   const conduit::Node& coordsValues =
