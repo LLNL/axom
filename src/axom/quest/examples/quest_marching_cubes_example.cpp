@@ -663,15 +663,21 @@ static void addToStackArray(axom::StackArray<T, DIM>& a, U b)
   }
 }
 
-template <int DIM, typename ExecSpace>
+/**
+  ValueFunctorType is a copy-able functor that returns the scalar
+  function value.  It should have operator(const PointType &) return
+  a double.
+*/
+template <int DIM, typename ExecSpace, typename ValueFunctorType>
 struct ContourTestBase
 {
   static constexpr auto MemorySpace =
     axom::execution_space<ExecSpace>::memory_space;
   using PointType = axom::primal::Point<double, DIM>;
-  ContourTestBase()
+  ContourTestBase(const ValueFunctorType& valueFunctor)
     : m_parentCellIdField("parentCellIds")
     , m_domainIdField("domainIdField")
+    , m_valueFunctor(valueFunctor)
   { }
   virtual ~ContourTestBase() { }
 
@@ -681,14 +687,12 @@ struct ContourTestBase
   //!@brief Return field name for storing nodal function.
   virtual std::string functionName() const = 0;
 
-  //!@brief Return function value at a point.
-  virtual AXOM_HOST_DEVICE double value(const PointType& pt) const = 0;
-
   //!@brief Return error tolerance for contour mesh accuracy check.
   virtual double errorTolerance() const = 0;
 
   const std::string m_parentCellIdField;
   const std::string m_domainIdField;
+  ValueFunctorType m_valueFunctor;
 
   int runTest(BlueprintStructuredMesh& computationalMesh, quest::MarchingCubes& mc)
   {
@@ -854,6 +858,7 @@ struct ContourTestBase
     }
 
   #if defined(AXOM_USE_RAJA)
+    auto valueFunctor = m_valueFunctor;
     RAJA::RangeSegment iRange(0, fieldShape[0]);
     RAJA::RangeSegment jRange(0, fieldShape[1]);
     using EXEC_POL =
@@ -866,8 +871,7 @@ struct ContourTestBase
         {
           pt[d] = coordsViews[d](i, j);
         }
-        // auto v = value(pt);
-        fieldView(i, j) = 0.0;  // value(pt);
+        fieldView(i, j) = valueFunctor(pt);
       });
   #else
     for(axom::IndexType j = 0; j < fieldShape[1]; ++j)
@@ -879,11 +883,12 @@ struct ContourTestBase
         {
           pt[d] = coordsViews[d](i, j);
         }
-        fieldView(i, j) = value(pt);
+        fieldView(i, j) = m_valueFunctor(pt);
       }
     }
   #endif
   }
+
   template <int TDIM = DIM>
   typename std::enable_if<TDIM == 3>::type populateNodalDistance(
     const axom::StackArray<axom::ArrayView<const double, DIM, MemorySpace>, DIM>&
@@ -896,6 +901,24 @@ struct ContourTestBase
       SLIC_ASSERT(coordsViews[d].shape() == fieldShape);
     }
 
+  #if defined(AXOM_USE_RAJA)
+    auto valueFunctor = m_valueFunctor;
+    RAJA::RangeSegment iRange(0, fieldShape[0]);
+    RAJA::RangeSegment jRange(0, fieldShape[1]);
+    RAJA::RangeSegment kRange(0, fieldShape[2]);
+    using EXEC_POL =
+      typename axom::mint::internal::structured_exec<axom::SEQ_EXEC>::loop3d_policy;
+    RAJA::kernel<EXEC_POL>(
+      RAJA::make_tuple(iRange, jRange, kRange),
+      AXOM_LAMBDA(axom::IndexType i, axom::IndexType j, axom::IndexType k) {
+        PointType pt;
+        for(int d = 0; d < DIM; ++d)
+        {
+          pt[d] = coordsViews[d](i, j, k);
+        }
+        fieldView(i, j, k) = valueFunctor(pt);
+      });
+  #else
     for(axom::IndexType k = 0; k < fieldShape[2]; ++k)
     {
       for(axom::IndexType j = 0; j < fieldShape[1]; ++j)
@@ -907,10 +930,11 @@ struct ContourTestBase
           {
             pt[d] = coordsViews[d](i, j, k);
           }
-          fieldView(i, j, k) = value(pt);
+          fieldView(i, j, k) = m_valueFunctor(pt);
         }
       }
     }
+  #endif
   }
 
   /*
@@ -943,7 +967,7 @@ struct ContourTestBase
     for(axom::IndexType i = 0; i < nodeCount; ++i)
     {
       contourMesh.getNode(i, pt.data());
-      double analyticalVal = value(pt);
+      double analyticalVal = m_valueFunctor(pt);
       double diff = std::abs(analyticalVal - contourVal);
       if(diffPtr)
       {
@@ -1221,19 +1245,39 @@ struct ContourTestBase
 /*!
   @brief Function providing distance from a point.
 */
+template <int DIM>
+struct RoundFunctor
+{
+  using PointType = axom::primal::Point<double, DIM>;
+  const axom::primal::Sphere<double, DIM> _sphere;
+  RoundFunctor(const PointType& center) : _sphere(center, 0.0) { }
+  double operator()(const PointType& pt) const
+  {
+    return _sphere.computeSignedDistance(pt);
+  }
+};
 template <int DIM, typename ExecSpace>
-struct RoundContourTest : public ContourTestBase<DIM, ExecSpace>
+struct RoundContourTest
+  : public ContourTestBase<DIM, ExecSpace, RoundFunctor<DIM>>
 {
   static constexpr auto MemorySpace =
     axom::execution_space<ExecSpace>::memory_space;
   using PointType = axom::primal::Point<double, DIM>;
+  using FunctorType = RoundFunctor<DIM>;
+  /*!
+    @brief Constructor.
+
+    @param center [in] Center of ring or sphere
+  */
   RoundContourTest(const PointType& center)
-    : ContourTestBase<DIM, ExecSpace>()
+    : ContourTestBase<DIM, ExecSpace, FunctorType>(FunctorType(center))
     , _sphere(center, 0.0)
+    , _roundFunctor(center)
     , _errTol(1e-3)
   { }
   virtual ~RoundContourTest() { }
   const axom::primal::Sphere<double, DIM> _sphere;
+  FunctorType _roundFunctor;
   double _errTol;
 
   virtual std::string name() const override { return std::string("round"); }
@@ -1241,11 +1285,6 @@ struct RoundContourTest : public ContourTestBase<DIM, ExecSpace>
   virtual std::string functionName() const override
   {
     return std::string("dist_to_center");
-  }
-
-  AXOM_HOST_DEVICE double value(const PointType& pt) const override
-  {
-    return _sphere.computeSignedDistance(pt);
   }
 
   double errorTolerance() const override { return _errTol; }
@@ -1260,12 +1299,28 @@ struct RoundContourTest : public ContourTestBase<DIM, ExecSpace>
 /*!
   @brief Function providing signed distance from a plane.
 */
+template <int DIM>
+struct PlanarFunctor
+{
+  using PointType = axom::primal::Point<double, DIM>;
+  const axom::primal::Plane<double, DIM> _plane;
+  PlanarFunctor(const axom::primal::Vector<double, DIM>& perpDir,
+                const PointType& inPlane)
+    : _plane(perpDir.unitVector(), inPlane)
+  { }
+  double operator()(const PointType& pt) const
+  {
+    return _plane.signedDistance(pt);
+  }
+};
 template <int DIM, typename ExecSpace>
-struct PlanarContourTest : public ContourTestBase<DIM, ExecSpace>
+struct PlanarContourTest
+  : public ContourTestBase<DIM, ExecSpace, PlanarFunctor<DIM>>
 {
   static constexpr auto MemorySpace =
     axom::execution_space<ExecSpace>::memory_space;
   using PointType = axom::primal::Point<double, DIM>;
+  using FunctorType = PlanarFunctor<DIM>;
   /*!
     @brief Constructor.
 
@@ -1274,7 +1329,8 @@ struct PlanarContourTest : public ContourTestBase<DIM, ExecSpace>
   */
   PlanarContourTest(const PointType& inPlane,
                     const axom::primal::Vector<double, DIM>& perpDir)
-    : ContourTestBase<DIM, ExecSpace>()
+    : ContourTestBase<DIM, ExecSpace, FunctorType>(
+        FunctorType(perpDir.unitVector(), inPlane))
     , _plane(perpDir.unitVector(), inPlane)
   { }
   virtual ~PlanarContourTest() { }
@@ -1285,11 +1341,6 @@ struct PlanarContourTest : public ContourTestBase<DIM, ExecSpace>
   virtual std::string functionName() const override
   {
     return std::string("dist_to_plane");
-  }
-
-  AXOM_HOST_DEVICE double value(const PointType& pt) const override
-  {
-    return _plane.signedDistance(pt);
   }
 
   double errorTolerance() const override { return 1e-15; }
