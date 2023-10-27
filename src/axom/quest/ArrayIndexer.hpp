@@ -3,6 +3,9 @@
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
+#ifndef QUEST_ARRAYINDEXER_HPP_
+#define QUEST_ARRAYINDEXER_HPP_
+
 #include "axom/core/StackArray.hpp"
 #include "axom/core/numerics/matvecops.hpp"
 
@@ -10,6 +13,9 @@ namespace axom
 {
 /*!
   @brief Indexing into a multidimensional structured array.
+
+  Supports row-major and column-major ordering and arbitrary
+  permutations of the indices.
 */
 template <typename T, int DIM>
 class ArrayIndexer
@@ -105,3 +111,5 @@ public:
 };
 
 }  // end namespace axom
+
+#endif  // QUEST_ARRAYINDEXER_HPP_
