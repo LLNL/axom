@@ -788,7 +788,11 @@ struct ContourTestBase
       meshGroup,
       mc.getContourNodeCount(),
       mc.getContourCellCount());
+    axom::utilities::Timer extractTimer(false);
+    extractTimer.start();
     mc.populateContourMesh(contourMesh, m_parentCellIdField, m_domainIdField);
+    extractTimer.stop();
+    printTimingStats(extractTimer, name() + " extract");
 
     int localErrCount = 0;
     if(params.checkResults)

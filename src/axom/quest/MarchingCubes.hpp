@@ -204,9 +204,6 @@ private:
  */
 class MarchingCubesSingleDomain
 {
-  template <int DIM, typename ExecSpace, typename SequentialLoopPolicy>
-  friend class detail::marching_cubes::MarchingCubesImpl;
-
 public:
   using RuntimePolicy = MarchingCubesRuntimePolicy;
   /*!
@@ -328,6 +325,37 @@ public:
     return false;
   }
 
+  /*!
+    @brief Base class for implementations templated on dimension
+    and execution space.
+
+    This class allows m_impl to refer to any implementation used
+    at runtime.
+  */
+  struct ImplBase
+  {
+    //!@brief Prepare internal data for operating on the given domain.
+    virtual void initialize(const conduit::Node &dom,
+                            const std::string &topologyName,
+                            const std::string &fcnPath,
+                            const std::string &maskPath) = 0;
+    //!@brief Set the contour value
+    virtual void setContourValue(double contourVal) = 0;
+    //!@brief Compute the contour mesh.
+    virtual void computeContourMesh() = 0;
+    virtual axom::IndexType getContourCellCount() const = 0;
+    /*!
+      @brief Populate output mesh object with generated contour.
+
+      Note: Output format is in flux.  We will likely output
+      a blueprint object in the future.
+    */
+    virtual void populateContourMesh(
+      axom::mint::UnstructuredMesh<axom::mint::SINGLE_SHAPE> &mesh,
+      const std::string &cellIdField) const = 0;
+    virtual ~ImplBase() { }
+  };
+
 private:
   MarchingCubesRuntimePolicy m_runtimePolicy;
   /*!
@@ -346,45 +374,6 @@ private:
   const std::string m_maskFieldName;
   //!@brief Path to mask in m_dom.
   const std::string m_maskPath;
-
-  /*!
-    @brief Base class for implementations templated on dimension
-    and execution space.
-
-    This class allows m_impl to refer to any implementation used
-    at runtime.
-  */
-  struct ImplBase
-  {
-    //!@brief Prepare internal data for operating on the given domain.
-    virtual void initialize(const conduit::Node &dom,
-                            const std::string &topologyName,
-                            const std::string &fcnPath,
-                            const std::string &maskPath) = 0;
-    //!@brief Set the contour value
-    virtual void setContourValue(double contourVal) = 0;
-    //@{
-    //!@name Phases of the computation
-    //!@brief Mark domain cells that cross the contour.
-    virtual void markCrossings() = 0;
-    //!@brief Precompute some metadata for contour mesh.
-    virtual void scanCrossings() = 0;
-    //!@brief Generate the contour mesh in internal data format.
-    virtual void computeContour() = 0;
-    //!@brief Get the number of contour mesh cells generated.
-    //@}
-    virtual axom::IndexType getContourCellCount() const = 0;
-    /*!
-      @brief Populate output mesh object with generated contour.
-
-      Note: Output format is in flux.  We will likely output
-      a blueprint object in the future.
-    */
-    virtual void populateContourMesh(
-      axom::mint::UnstructuredMesh<axom::mint::SINGLE_SHAPE> &mesh,
-      const std::string &cellIdField) const = 0;
-    virtual ~ImplBase() { }
-  };
 
   std::unique_ptr<ImplBase> m_impl;
   //!@brief Allocate implementation object and set m_impl.

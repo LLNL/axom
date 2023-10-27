@@ -12,6 +12,7 @@
   #include "axom/core/execution/execution_space.hpp"
   #include "axom/quest/MarchingCubes.hpp"
   #include "axom/quest/detail/MarchingCubesImpl.hpp"
+  #include "axom/quest/detail/MarchingCubesImplA.hpp"
   #include "axom/fmt.hpp"
 
 namespace axom
@@ -30,9 +31,8 @@ MarchingCubes::MarchingCubes(RuntimePolicy runtimePolicy,
   , m_maskFieldName(maskField)
   , m_maskPath(maskField.empty() ? std::string() : "fields/" + maskField)
 {
-  const bool isMultidomain = conduit::blueprint::mesh::is_multi_domain(bpMesh);
   SLIC_ASSERT_MSG(
-    isMultidomain,
+    conduit::blueprint::mesh::is_multi_domain(bpMesh),
     "MarchingCubes class input mesh must be in multidomain format.");
 
   m_singles.reserve(conduit::blueprint::mesh::number_of_domains(bpMesh));
@@ -187,11 +187,9 @@ void MarchingCubesSingleDomain::setDomain(const conduit::Node& dom)
     dom.fetch_existing(axom::fmt::format("topologies/{}", m_topologyName)));
   SLIC_ASSERT(m_ndim >= 2 && m_ndim <= 3);
 
-  const conduit::Node& coordsValues =
-    dom.fetch_existing(coordsetPath + "/values");
-  bool isInterleaved = conduit::blueprint::mcarray::is_interleaved(coordsValues);
   SLIC_ASSERT_MSG(
-    !isInterleaved,
+    !conduit::blueprint::mcarray::is_interleaved(
+      dom.fetch_existing(coordsetPath + "/values")),
     "MarchingCubes currently requires contiguous coordinates layout.");
 }
 
@@ -220,12 +218,27 @@ void MarchingCubesSingleDomain::computeIsocontour(double contourVal)
   SLIC_ASSERT_MSG(!m_fcnFieldName.empty(),
                   "You must call setFunctionField before computeIsocontour.");
 
-  allocateImpl();
+  if(1)
+  {
+    m_impl = axom::quest::detail::marching_cubes::newMarchingCubesImplA(
+      m_runtimePolicy,
+      *m_dom,
+      m_topologyName,
+      m_fcnFieldName,
+      m_maskFieldName);
+  }
+  else
+  {
+    m_impl =
+      axom::quest::detail::marching_cubes::newMarchingCubesImpl(m_runtimePolicy,
+                                                                *m_dom,
+                                                                m_topologyName,
+                                                                m_fcnFieldName,
+                                                                m_maskFieldName);
+  }
   m_impl->initialize(*m_dom, m_topologyName, m_fcnFieldName, m_maskFieldName);
   m_impl->setContourValue(contourVal);
-  m_impl->markCrossings();
-  m_impl->scanCrossings();
-  m_impl->computeContour();
+  m_impl->computeContourMesh();
 }
 
 void MarchingCubesSingleDomain::allocateImpl()

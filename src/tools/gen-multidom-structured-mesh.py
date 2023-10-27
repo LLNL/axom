@@ -115,8 +115,8 @@ meshLower = opts.ml
 meshUpper = opts.mu
 
 # Convert to np.array to use element-wise arithmetic.
-domCounts = np.array(domCounts, dtype=np.int)
-meshSize = np.array(meshSize, dtype=np.int)
+domCounts = np.array(domCounts, dtype=int)
+meshSize = np.array(meshSize, dtype=int)
 meshLower = np.array(meshLower)
 meshUpper = np.array(meshUpper)
 
