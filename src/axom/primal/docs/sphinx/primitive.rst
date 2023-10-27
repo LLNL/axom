@@ -11,6 +11,9 @@ Primal includes the following primitives:
 - Tetrahedron
 - Hexahedron
 - BoundingBox, OrientedBoundingBox
+- Polyhedron
+
+.. note:: Primitives in Axom use a right-handed coordinate system.
 
 Primal also provides the NumericArray class, which implements arithmetic
 operations on numerical tuples and supports Primal's Point and Vector classes.
