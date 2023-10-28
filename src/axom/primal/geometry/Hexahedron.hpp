@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -39,16 +39,16 @@ namespace primal
  *
  * \verbatim
  *
- * U +---------+ V              +y
- *   |\        |\           +z
- *   |  \      |  \           <  ^
- *   | T + --------+ W         \ |
- * Q +---|-----+ R |            \|
+ * S +---------+ R              +y
+ *   |\        |\
+ *   |  \      |  \              ^
+ *   | W + --------+ V           |
+ * P +---|-----+ Q |             |
  *   \   |     \   |             -----> +x
- *    \  |      \  |
- *     \ |       \ |
- *   P  +----------+ S
- *
+ *    \  |      \  |              \
+ *     \ |       \ |               \
+ *   T  +----------+ U              >
+ *                                   +z
  * \endverbatim
  *
  */

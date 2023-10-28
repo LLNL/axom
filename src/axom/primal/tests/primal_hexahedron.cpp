@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -48,17 +48,43 @@ protected:
   {
     EPS = 1e-8;
 
-    // Define coordinates for first hexahedron
+    /*
+     * Define coordinates for first hexahedron:
+     *
+     * 7 +---------+ 6              +z
+     *   |\        |\           +y
+     *   |  \      |  \           <  ^
+     *   | 4 + --------+ 5         \ |
+     * 3 +---|-----+ 2 |            \|
+     *   \   |     \   |             -----> +x
+     *    \  |      \  |
+     *     \ |       \ |
+     *   0  +----------+ 1
+     *
+     */
     qData0[0] = QPoint {0, 0, 0};
-    qData0[1] = QPoint {0, 0, 1};
-    qData0[2] = QPoint {1, 0, 1};
-    qData0[3] = QPoint {1, 0, 0};
-    qData0[4] = QPoint {0, 1, 0};
-    qData0[5] = QPoint {0, 1, 1};
+    qData0[1] = QPoint {1, 0, 0};
+    qData0[2] = QPoint {1, 1, 0};
+    qData0[3] = QPoint {0, 1, 0};
+    qData0[4] = QPoint {0, 0, 1};
+    qData0[5] = QPoint {1, 0, 1};
     qData0[6] = QPoint {1, 1, 1};
-    qData0[7] = QPoint {1, 1, 0};
+    qData0[7] = QPoint {0, 1, 1};
 
-    // Define coordinates for second hexahedron
+    /*
+     * Define coordinates for second hexahedron:
+     *
+     * 3 +---------+ 2              +y
+     *   |\        |\
+     *   |  \      |  \              ^
+     *   | 7 + --------+ 6           |
+     * 0 +---|-----+ 1 |             |
+     *   \   |     \   |             -----> +x
+     *    \  |      \  |              \
+     *     \ |       \ |               \
+     *   4  +----------+ 5              >
+     *                                   +z
+     */
     qData1[0] = QPoint {-1, 0, 0};
     qData1[1] = QPoint {0, 0, 0};
     qData1[2] = QPoint {0, 1, 0};

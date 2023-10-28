@@ -228,14 +228,16 @@ private:
  *
  *       <pre>
  *
- *          4--------5          +y
- *         /|       /|               +z
- *        / |      / |           ^  >
- *       7--------6  |           | /
- *       |  0-----|--1           |/
+ *          3--------2          +y
+ *         /|       /|
+ *        / |      / |           ^
+ *       7--------6  |           |
+ *       |  0-----|--1           |
  *       | /      | /            -----> +x
- *       |/       |/
- *       3--------2
+ *       |/       |/            /
+ *       4--------5            /
+ *                            <
+ *                           +z
  *
  *       </pre>
  *
@@ -680,14 +682,14 @@ public:
  * \note The Hexahedron is assumed to have a specific vertex order:
  * \verbatim
  *
- *          7--------6          +y
- *         /|       /|               +z
+ *          4--------7          +z
+ *         /|       /|               +y
  *        / |      / |           ^  >
- *       3--------2  |           | /
- *       |  4-----|--5           |/
+ *       5--------6  |           | /
+ *       |  0-----|--3           |/
  *       | /      | /            -----> +x
  *       |/       |/
- *       0--------1
+ *       1--------2
  *
  * \endverbatim
  *
@@ -748,16 +750,18 @@ public:
  *         vertex neighbors
  *
  * \note The Octahedron is assumed to have a specific vertex order:
+ *       (view looking down from +z axis):
+ *
  * \verbatim
  *
- *            0                +y
- *            /\                    +z
- *       4 --/  \-- 5           ^  >
+ *            4                +z
+ *            /\                    +y
+ *       0 --/  \-- 2           ^  >
  *         \/    \ /            | /
  *         /      \             |/
- *       2 -------- 1           -----> +x
+ *       5 -------- 3           -----> +x
  *            \/
- *            3
+ *            1
  *
  * \endverbatim
  *
@@ -816,8 +820,8 @@ public:
  * \note The Tetrahedron is assumed to have a specific vertex order:
  * \verbatim
  *
- *              3                    +y
- *             / \\                       +z
+ *              3                    +z
+ *             / \\                       +y
  *            /   \ \                 ^  >
  *           /     \  \               | /
  *          /       \   \             |/
