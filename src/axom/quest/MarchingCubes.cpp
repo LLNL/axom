@@ -221,73 +221,16 @@ void MarchingCubesSingleDomain::computeIsocontour(double contourVal)
   if(1)
   {
     m_impl = axom::quest::detail::marching_cubes::newMarchingCubesImplA(
-      m_runtimePolicy,
-      *m_dom,
-      m_topologyName,
-      m_fcnFieldName,
-      m_maskFieldName);
+      m_runtimePolicy, m_ndim);
   }
   else
   {
-    m_impl =
-      axom::quest::detail::marching_cubes::newMarchingCubesImpl(m_runtimePolicy,
-                                                                *m_dom,
-                                                                m_topologyName,
-                                                                m_fcnFieldName,
-                                                                m_maskFieldName);
+    m_impl = axom::quest::detail::marching_cubes::newMarchingCubesImpl(
+      m_runtimePolicy, m_ndim);
   }
   m_impl->initialize(*m_dom, m_topologyName, m_fcnFieldName, m_maskFieldName);
   m_impl->setContourValue(contourVal);
   m_impl->computeContourMesh();
-}
-
-void MarchingCubesSingleDomain::allocateImpl()
-{
-  using namespace detail::marching_cubes;
-  if(m_runtimePolicy == RuntimePolicy::seq)
-  {
-    m_impl = m_ndim == 2
-      ? std::unique_ptr<ImplBase>(
-          new MarchingCubesImpl<2, axom::SEQ_EXEC, axom::SEQ_EXEC>)
-      : std::unique_ptr<ImplBase>(
-          new MarchingCubesImpl<3, axom::SEQ_EXEC, axom::SEQ_EXEC>);
-  }
-  #ifdef _AXOM_MC_USE_OPENMP
-  else if(m_runtimePolicy == RuntimePolicy::omp)
-  {
-    m_impl = m_ndim == 2
-      ? std::unique_ptr<ImplBase>(
-          new MarchingCubesImpl<2, axom::OMP_EXEC, axom::SEQ_EXEC>)
-      : std::unique_ptr<ImplBase>(
-          new MarchingCubesImpl<3, axom::OMP_EXEC, axom::SEQ_EXEC>);
-  }
-  #endif
-  #ifdef _AXOM_MC_USE_CUDA
-  else if(m_runtimePolicy == RuntimePolicy::cuda)
-  {
-    m_impl = m_ndim == 2
-      ? std::unique_ptr<ImplBase>(
-          new MarchingCubesImpl<2, axom::CUDA_EXEC<256>, axom::CUDA_EXEC<1>>)
-      : std::unique_ptr<ImplBase>(
-          new MarchingCubesImpl<3, axom::CUDA_EXEC<256>, axom::CUDA_EXEC<1>>);
-  }
-  #endif
-  #ifdef _AXOM_MC_USE_HIP
-  else if(m_runtimePolicy == RuntimePolicy::hip)
-  {
-    m_impl = m_ndim == 2
-      ? std::unique_ptr<ImplBase>(
-          new MarchingCubesImpl<2, axom::HIP_EXEC<256>, axom::HIP_EXEC<1>>)
-      : std::unique_ptr<ImplBase>(
-          new MarchingCubesImpl<3, axom::HIP_EXEC<256>, axom::HIP_EXEC<1>>);
-  }
-  #endif
-  else
-  {
-    SLIC_ERROR(axom::fmt::format(
-      "MarchingCubesSingleDomain has no implementation for runtime policy {}",
-      m_runtimePolicy));
-  }
 }
 
 #endif  // AXOM_USE_CONDUIT

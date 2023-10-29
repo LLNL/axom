@@ -376,8 +376,6 @@ private:
   const std::string m_maskPath;
 
   std::unique_ptr<ImplBase> m_impl;
-  //!@brief Allocate implementation object and set m_impl.
-  void allocateImpl();
 
   /*!
    * \brief Set the blueprint single-domain mesh.

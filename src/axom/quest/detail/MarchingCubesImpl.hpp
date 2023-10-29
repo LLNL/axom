@@ -76,6 +76,11 @@ public:
                             const std::string& fcnFieldName,
                             const std::string& maskFieldName = {}) override
   {
+    SLIC_ASSERT(
+      conduit::blueprint::mesh::topology::dims(
+        dom.fetch_existing(axom::fmt::format("topologies/{}", topologyName)))
+      == DIM);
+
     clear();
 
     axom::quest::MeshViewUtil<DIM, MemorySpace> mvu(dom, topologyName);
@@ -877,16 +882,11 @@ private:
 
 static std::unique_ptr<axom::quest::MarchingCubesSingleDomain::ImplBase>
 newMarchingCubesImpl(MarchingCubesRuntimePolicy runtimePolicy,
-                     const conduit::Node& dom,
-                     const std::string& topologyName,
-                     const std::string& fcnFieldName,
-                     const std::string& maskFieldName)
+                     int dim)
 {
   using ImplBase = axom::quest::MarchingCubesSingleDomain::ImplBase;
   using RuntimePolicy = axom::quest::MarchingCubesRuntimePolicy;
 
-  int dim = conduit::blueprint::mesh::topology::dims(
-    dom.fetch_existing(axom::fmt::format("topologies/{}", topologyName)));
   SLIC_ASSERT(dim >= 2 && dim <= 3);
   std::unique_ptr<ImplBase> impl;
   if(runtimePolicy == RuntimePolicy::seq)
@@ -933,7 +933,6 @@ newMarchingCubesImpl(MarchingCubesRuntimePolicy runtimePolicy,
       "MarchingCubesSingleDomain has no implementation for runtime policy {}",
       runtimePolicy));
   }
-  impl->initialize(dom, topologyName, fcnFieldName, maskFieldName);
   return impl;
 }
 #endif  // AXOM_USE_CONDUIT
