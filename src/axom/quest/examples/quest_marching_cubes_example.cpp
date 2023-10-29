@@ -841,10 +841,9 @@ struct ContourTestBase
       const auto coordsViews = mvu.getConstCoordsViews(false);
       axom::ArrayView<double, DIM, MemorySpace> fieldView =
         mvu.template getFieldView<double>(functionName(), false);
-      const auto& fieldShape = fieldView.shape();
       for(int d = 0; d < DIM; ++d)
       {
-        SLIC_ASSERT(coordsViews[d].shape() == fieldShape);
+        SLIC_ASSERT(coordsViews[d].shape() == fieldView.shape());
       }
       populateNodalDistance(coordsViews, fieldView);
     }

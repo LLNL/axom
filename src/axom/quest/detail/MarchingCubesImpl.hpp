@@ -76,10 +76,8 @@ public:
                             const std::string& fcnFieldName,
                             const std::string& maskFieldName = {}) override
   {
-    SLIC_ASSERT(
-      conduit::blueprint::mesh::topology::dims(
-        dom.fetch_existing(axom::fmt::format("topologies/{}", topologyName)))
-      == DIM);
+    SLIC_ASSERT(conduit::blueprint::mesh::topology::dims(dom.fetch_existing(
+                  axom::fmt::format("topologies/{}", topologyName))) == DIM);
 
     clear();
 
@@ -881,8 +879,7 @@ private:
 };
 
 static std::unique_ptr<axom::quest::MarchingCubesSingleDomain::ImplBase>
-newMarchingCubesImpl(MarchingCubesRuntimePolicy runtimePolicy,
-                     int dim)
+newMarchingCubesImpl(MarchingCubesRuntimePolicy runtimePolicy, int dim)
 {
   using ImplBase = axom::quest::MarchingCubesSingleDomain::ImplBase;
   using RuntimePolicy = axom::quest::MarchingCubesRuntimePolicy;
