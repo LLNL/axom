@@ -17,7 +17,7 @@ namespace primal = axom::primal;
 
 namespace
 {
-double volume_tet_decomp(primal::Hexahedron<double, 3> hex)
+double signed_volume_tet_decomp(primal::Hexahedron<double, 3> hex)
 {
   double retVol = 0.0;
   axom::StackArray<primal::Tetrahedron<double, 3>, 24> tets;
@@ -26,7 +26,8 @@ double volume_tet_decomp(primal::Hexahedron<double, 3> hex)
 
   for(int i = 0; i < 24; i++)
   {
-    retVol += tets[i].volume();
+    // Get the signed volumes
+    retVol += tets[i].signedVolume();
   }
 
   return retVol;
@@ -270,13 +271,16 @@ TEST_F(HexahedronTest, volume)
   EXPECT_DOUBLE_EQ(hex6.volume(), 1.5625);
 
   // Check hexahedron volume against 24-tetrahedron subvolumes
-  EXPECT_DOUBLE_EQ(hex0.volume(), volume_tet_decomp(hex0));
-  EXPECT_DOUBLE_EQ(hex1.volume(), volume_tet_decomp(hex1));
-  EXPECT_DOUBLE_EQ(hex2.volume(), volume_tet_decomp(hex2));
-  EXPECT_DOUBLE_EQ(hex3.volume(), volume_tet_decomp(hex3));
-  EXPECT_DOUBLE_EQ(hex4.volume(), volume_tet_decomp(hex4));
-  EXPECT_DOUBLE_EQ(hex5.volume(), volume_tet_decomp(hex5));
-  EXPECT_DOUBLE_EQ(hex6.volume(), volume_tet_decomp(hex6));
+  EXPECT_DOUBLE_EQ(hex0.volume(), signed_volume_tet_decomp(hex0));
+  EXPECT_DOUBLE_EQ(hex1.volume(), signed_volume_tet_decomp(hex1));
+  EXPECT_DOUBLE_EQ(hex2.volume(), signed_volume_tet_decomp(hex2));
+
+  // Negative volume expected
+  EXPECT_DOUBLE_EQ(hex3.signedVolume(), signed_volume_tet_decomp(hex3));
+
+  EXPECT_DOUBLE_EQ(hex4.volume(), signed_volume_tet_decomp(hex4));
+  EXPECT_DOUBLE_EQ(hex5.volume(), signed_volume_tet_decomp(hex5));
+  EXPECT_DOUBLE_EQ(hex6.volume(), signed_volume_tet_decomp(hex6));
 }
 
 TEST_F(HexahedronTest, equals)
