@@ -20,6 +20,7 @@
 #include "axom/fmt.hpp"
 
 #include <math.h>
+#include <algorithm>  // std::next_permutation
 
 namespace primal = axom::primal;
 
@@ -49,8 +50,8 @@ protected:
     // Define coordinates for second tetrahedron
     qData1[0] = QPoint {1, 0, 0};
     qData1[1] = QPoint {0, 1, 0};
-    qData1[2] = QPoint {0, 0, 1};
-    qData1[3] = QPoint {0, 0, 0};
+    qData1[2] = QPoint {0, 0, 0};
+    qData1[3] = QPoint {0, 0, 1};
 
     double angles[3];
     for(int i = 0; i < 3; ++i)
@@ -623,6 +624,30 @@ TEST_F(TetrahedronTest, regularTetrahedron)
     EXPECT_EQ(primal::ON_POSITIVE_SIDE, primal::orientation(pt, tri));
   }
 }
+
+TEST_F(TetrahedronTest, checkSign)
+{
+  using QPoint = TetrahedronTest::QPoint;
+  using QTet = TetrahedronTest::QTet;
+
+  int indices[] = {0, 1, 2, 3};
+
+  for(int i = 0; i < this->numTetrahedra(); ++i)
+  {
+    QTet tet = this->getTet(i);
+    double expVolume = tet.signedVolume();
+
+    // Run sign check through all vertex permutations for the tetrahedron
+    do
+    {
+      QTet tetPermuted =
+        QTet(tet[indices[0]], tet[indices[1]], tet[indices[2]], tet[indices[3]]);
+      tetPermuted.checkAndFixOrientation();
+      EXPECT_NEAR(expVolume, tetPermuted.signedVolume(), this->EPS);
+    } while(std::next_permutation(indices, indices + QTet::NUM_VERTS));
+  }
+}
+
 //----------------------------------------------------------------------
 //----------------------------------------------------------------------
 int main(int argc, char* argv[])
