@@ -34,16 +34,30 @@ namespace marching_cubes
   classes MarchCubes and MarchingCubesSingleDomain.
 
   ExecSpace is the general execution space, like axom::SEQ_EXEC and
-  axom::CUDA_EXEC<256>.
+  axom::CUDA_EXEC<256>.  SequentialExecSpace is used for loops that
+  cannot be parallelized but must access data allocated for ExecSpace.
+  Use something like axom::SEQ_EXEC or axom::CUDA_EXEC<1>.
+
+  The difference between MarchingCubesPartParallel and MarchingCubesFullParallel
+  is how they compute indices for the unstructured surface mesh.
+  - MarchingCubesPartParallel uses sequential loop, and skips over parents
+    cells that don't touch the surface contour.  It processes less data
+    but is not data-parallel.
+  - MarchingCubesFullParallel that checks all parents cells.
+    It process more data but is data-parallel.
+  We've observed that MarchingCubesPartParallel is faster for seq policy
+  and MarchingCubesPartParallel is faster on the GPU.
 */
-template <int DIM, typename ExecSpace>
-class MarchingCubesImplA : public MarchingCubesSingleDomain::ImplBase
+template <int DIM, typename ExecSpace, typename SequentialExecSpace>
+class MarchingCubesPartParallel : public MarchingCubesSingleDomain::ImplBase
 {
 public:
   using Point = axom::primal::Point<double, DIM>;
   using MIdx = axom::StackArray<axom::IndexType, DIM>;
   using LoopPolicy = typename execution_space<ExecSpace>::loop_policy;
   using ReducePolicy = typename execution_space<ExecSpace>::reduce_policy;
+  using SequentialLoopPolicy =
+    typename execution_space<SequentialExecSpace>::loop_policy;
   static constexpr auto MemorySpace = execution_space<ExecSpace>::memory_space;
   /*!
     @brief Initialize data to a blueprint domain.
@@ -64,10 +78,8 @@ public:
                             const std::string& fcnFieldName,
                             const std::string& maskFieldName = {}) override
   {
-    SLIC_ASSERT(
-      conduit::blueprint::mesh::topology::dims(
-        dom.fetch_existing(axom::fmt::format("topologies/{}", topologyName)))
-      == DIM);
+    SLIC_ASSERT(conduit::blueprint::mesh::topology::dims(dom.fetch_existing(
+                  axom::fmt::format("topologies/{}", topologyName))) == DIM);
 
     clear();
 
@@ -100,6 +112,7 @@ public:
   {
     markCrossings();
     scanCrossings();
+    computeContour();
   }
 
   /*!
@@ -169,7 +182,7 @@ public:
   }
 
   /*!
-    @brief Implementation used by MarchingCubesImplA::markCrossings_dim()
+    @brief Implementation used by MarchingCubesPartParallel::markCrossings_dim()
     containing just the objects needed for that part, to be made available
     on devices.
   */
@@ -247,118 +260,139 @@ public:
   };  // MarkCrossings_Util
 
   /*!
-    @brief Populate the 1D m_contourNodeCoords, m_contourCellCorners
-    and m_contourCellParents arrays that defines the unstructured
-    contour mesh.
+    @brief Populate the 1D m_crossings array, one entry for each
+    parent cell that crosses the contour.
+
+    We sum up the number of contour surface cells from the crossings,
+    allocate space, then populate it.
   */
   void scanCrossings()
   {
-  #ifdef __INTEL_LLVM_COMPILER
-    // Intel oneAPI compiler segfaults with OpenMP RAJA scan
-    using ScanPolicy =
-      typename axom::execution_space<axom::SEQ_EXEC>::loop_policy;
-  #else
-    using ScanPolicy = typename axom::execution_space<ExecSpace>::loop_policy;
-  #endif
-
     const axom::IndexType parentCellCount = m_caseIds.size();
     auto caseIdsView = m_caseIds.view();
-
   #if defined(AXOM_USE_RAJA)
-    // Compute number of surface facets added by each parent cell.
-    m_addFacets.resize(parentCellCount);
-    const axom::ArrayView<int, 1, MemorySpace> addFacetsView = m_addFacets.view();
-    axom::for_all<ExecSpace>(0, parentCellCount,
-                             AXOM_LAMBDA(axom::IndexType parentCellId) {
-                               addFacetsView.flatIndex(parentCellId) =
-                                 num_contour_cells(
-                                   caseIdsView.flatIndex(parentCellId));
-                             });
-
-    // Compute index of first facet added by each parent cell
-    // (whether the cell generates any facet!).
-    m_firstFacetIds.resize(parentCellCount);
-    const axom::ArrayView<axom::IndexType, 1, MemorySpace> firstFacetIdsView =
-      m_firstFacetIds.view();
-    RAJA::exclusive_scan<ScanPolicy>(
-      RAJA::make_span(addFacetsView.data(), parentCellCount),
-      RAJA::make_span(firstFacetIdsView.data(), parentCellCount),
-      RAJA::operators::plus<axom::IndexType> {});
-
-    // m_addFacets and m_firstFacetIds, combined with m_caseIds,
-    // are all we need to compute the surface mesh.
+    RAJA::ReduceSum<ReducePolicy, axom::IndexType> vsum(0);
+    RAJA::forall<LoopPolicy>(
+      RAJA::RangeSegment(0, parentCellCount),
+      AXOM_LAMBDA(RAJA::Index_type n) {
+        vsum += bool(num_contour_cells(caseIdsView.flatIndex(n)));
+      });
+    m_crossingCount = static_cast<axom::IndexType>(vsum.get());
   #else
-    SLIC_ERROR("Incomplete coding in scanCrossings!");
+    axom::IndexType vsum = 0;
+    for(axom::IndexType n = 0; n < parentCellCount; ++n)
+    {
+      vsum += bool(num_contour_cells(caseIdsView.flatIndex(n)));
+    }
+    m_crossingCount = vsum;
   #endif
 
-    // Compute number of facets in domain.
-    // In case data is on device, copy to host before computing.
-    axom::IndexType firstFacetIds_back=0;
-    axom::IndexType addFacets_back=0;
-    axom::copy(&firstFacetIds_back,
-      m_firstFacetIds.data() + m_firstFacetIds.size() - 1,
-      sizeof(firstFacetIds_back));
-    axom::copy(&addFacets_back,
-      m_addFacets.data() + m_addFacets.size() - 1,
-      sizeof(addFacets_back));
-    m_facetCount = firstFacetIds_back + addFacets_back;
+    m_crossings.resize(m_crossingCount, {0, 0});
+    axom::ArrayView<CrossingInfo, 1, MemorySpace> crossingsView =
+      m_crossings.view();
 
-    // Allocate space for surface mesh.
-    const axom::IndexType cornersCount = DIM * m_facetCount;
-    m_contourCellParents.resize(m_facetCount);
-    m_contourCellCorners.resize(m_facetCount);
-    m_contourNodeCoords.resize(cornersCount);
+    axom::Array<int, 1, MemorySpace> addCells(m_crossingCount, m_crossingCount);
+    const axom::ArrayView<int, 1, MemorySpace> addCellsView = addCells.view();
 
-    //
-    // Fill in surface mesh data.
-    //
+    axom::IndexType* crossingId = axom::allocate<axom::IndexType>(
+      1,
+      axom::detail::getAllocatorID<MemorySpace>());
 
-    auto contourCellParentsView = m_contourCellParents.view();
-    auto contourCellCornersView = m_contourCellCorners.view();
-    auto contourNodeCoordsView = m_contourNodeCoords.view();
-
-    ComputeContour_Util ccu(m_contourVal,
-                            m_caseIds.strides(),
-                            m_fcnView,
-                            m_coordsViews);
-    auto gen_for_parent_cell =
-      AXOM_LAMBDA(axom::IndexType parentCellId)
+    auto loopBody = AXOM_LAMBDA(axom::IndexType n)
+    {
+      auto caseId = caseIdsView.flatIndex(n);
+      auto ccc = num_contour_cells(caseId);
+      if(ccc != 0)
       {
-        Point cornerCoords[CELL_CORNER_COUNT];
-        double cornerValues[CELL_CORNER_COUNT];
-        ccu.get_corner_coords_and_values(parentCellId, cornerCoords, cornerValues);
+        addCellsView[*crossingId] = ccc;
+        crossingsView[*crossingId].caseNum = caseId;
+        crossingsView[*crossingId].parentCellNum = n;
+        ++(*crossingId);
+      }
+    };
 
-        auto additionalFacets = addFacetsView[parentCellId];
-        auto firstFacetId = firstFacetIdsView[parentCellId];
-
-        auto caseId = caseIdsView.flatIndex(parentCellId);
-
-        for(axom::IndexType fId = 0; fId < additionalFacets; ++fId)
+  #if defined(AXOM_USE_RAJA)
+    /*
+      The m_crossings filling loop isn't data-parallel and shouldn't
+      be parallelized.  This contrived RAJA::forall forces it to run
+      sequentially.
+    */
+    RAJA::forall<SequentialLoopPolicy>(
+      RAJA::RangeSegment(0, 1),
+      [=] AXOM_HOST_DEVICE(int /* i */) {
+        *crossingId = 0;
+        for(axom::IndexType n = 0; n < parentCellCount; ++n)
         {
-          axom::IndexType newFacetId = firstFacetId + fId;
-          axom::IndexType firstCornerId = newFacetId * DIM;
-
-          contourCellParentsView[newFacetId] = parentCellId;
-
-          for(axom::IndexType d = 0; d < DIM; ++d)
-          {
-            axom::IndexType newCornerId = firstCornerId + d;
-            contourCellCornersView[newFacetId][d] = newCornerId;
-
-            int edge = cases_table(caseId, fId*DIM + d);
-            ccu.linear_interp(edge,
-                              cornerCoords,
-                              cornerValues,
-                              contourNodeCoordsView[newCornerId]);
-          }
+          loopBody(n);
         }
-      };
-    axom::for_all<ExecSpace>(0, parentCellCount, gen_for_parent_cell);
+      });
+  #else
+    *crossingId = 0;
+    for(axom::IndexType n = 0; n < parentCellCount; ++n)
+    {
+      loopBody(n);
+    }
+    SLIC_ASSERT(*crossingId == m_crossingCount);
+  #endif
 
+    axom::deallocate(crossingId);
+
+    axom::Array<axom::IndexType, 1, MemorySpace> prefixSum(m_crossingCount,
+                                                           m_crossingCount);
+    const axom::ArrayView<axom::IndexType, 1, MemorySpace> prefixSumView =
+      prefixSum.view();
+
+    auto copyFirstSurfaceCellId = AXOM_LAMBDA(axom::IndexType n)
+    {
+      crossingsView[n].firstSurfaceCellId = prefixSumView[n];
+    };
+  #if defined(AXOM_USE_RAJA)
+        // Intel oneAPI compiler segfaults with OpenMP RAJA scan
+    #ifdef __INTEL_LLVM_COMPILER
+    using ScanPolicy =
+      typename axom::execution_space<axom::SEQ_EXEC>::loop_policy;
+    #else
+    using ScanPolicy = typename axom::execution_space<ExecSpace>::loop_policy;
+    #endif
+    RAJA::exclusive_scan<ScanPolicy>(
+      RAJA::make_span(addCellsView.data(), m_crossingCount),
+      RAJA::make_span(prefixSumView.data(), m_crossingCount),
+      RAJA::operators::plus<axom::IndexType> {});
+    RAJA::forall<LoopPolicy>(RAJA::RangeSegment(0, m_crossingCount),
+                             copyFirstSurfaceCellId);
+  #else
+    if(m_crossingCount > 0)
+    {
+      prefixSumView[0] = 0;
+      for(axom::IndexType i = 1; i < m_crossingCount; ++i)
+      {
+        prefixSumView[i] = prefixSumView[i - 1] + addCellsView[i - 1];
+      }
+      for(axom::IndexType i = 0; i < m_crossingCount; ++i)
+      {
+        copyFirstSurfaceCellId(i);
+      }
+    }
+  #endif
+
+    // Data from the last crossing tells us how many contour cells there are.
+    if(m_crossings.empty())
+    {
+      m_contourCellCount = 0;
+    }
+    else
+    {
+      CrossingInfo back;
+      axom::copy(&back,
+                 m_crossings.data() + m_crossings.size() - 1,
+                 sizeof(CrossingInfo));
+      m_contourCellCount =
+        back.firstSurfaceCellId + num_contour_cells(back.caseNum);
+    }
   }
 
   /*!
-    @brief Implementation used by MarchingCubesImplA::computeContour().
+    @brief Implementation used by MarchingCubesPartParallel::computeContour().
     containing just the objects needed for that part, to be made available
     on devices.
   */
@@ -544,6 +578,70 @@ public:
     }
   };  // ComputeContour_Util
 
+  void computeContour()
+  {
+    auto crossingsView = m_crossings.view();
+
+    /*
+      Reserve contour mesh data space so we can add data without
+      reallocation.
+    */
+    const axom::IndexType contourNodeCount = DIM * m_contourCellCount;
+    m_contourNodeCoords.resize(contourNodeCount);
+    m_contourCellCorners.resize(m_contourCellCount);
+    m_contourCellParents.resize(m_contourCellCount);
+
+    auto nodeCoordsView = m_contourNodeCoords.view();
+    auto cellCornersView = m_contourCellCorners.view();
+    auto cellParentsView = m_contourCellParents.view();
+
+    ComputeContour_Util ccu(m_contourVal,
+                            m_caseIds.strides(),
+                            m_fcnView,
+                            m_coordsViews);
+
+    auto loopBody = AXOM_LAMBDA(axom::IndexType iCrossing)
+    {
+      const auto& crossingInfo = crossingsView[iCrossing];
+      const IndexType crossingCellCount = num_contour_cells(crossingInfo.caseNum);
+      SLIC_ASSERT(crossingCellCount > 0);
+
+      // Parent cell data for interpolating new node coordinates.
+      Point cornerCoords[CELL_CORNER_COUNT];
+      double cornerValues[CELL_CORNER_COUNT];
+      ccu.get_corner_coords_and_values(crossingInfo.parentCellNum,
+                                       cornerCoords,
+                                       cornerValues);
+
+      /*
+        Create the new cell and its DIM nodes.  New nodes are on
+        parent cell edges where the edge intersects the isocontour.
+        linear_interp for the exact coordinates.
+
+        TODO: The varying crossingCellCount value may inhibit device
+        performance.  Try grouping m_crossings items that have the
+        same values for crossingCellCount.
+      */
+      for(int iCell = 0; iCell < crossingCellCount; ++iCell)
+      {
+        IndexType contourCellId = crossingInfo.firstSurfaceCellId + iCell;
+        cellParentsView[contourCellId] = crossingInfo.parentCellNum;
+        for(int d = 0; d < DIM; ++d)
+        {
+          IndexType contourNodeId = contourCellId * DIM + d;
+          cellCornersView[contourCellId][d] = contourNodeId;
+
+          const int edge = cases_table(crossingInfo.caseNum, iCell * DIM + d);
+          ccu.linear_interp(edge,
+                            cornerCoords,
+                            cornerValues,
+                            nodeCoordsView[contourNodeId]);
+        }
+      }
+    };
+    axom::for_all<ExecSpace>(0, m_crossingCount, loopBody);
+  }
+
   // These 4 functions provide access to the look-up table
   // whether on host or device.  Is there a more elegant way
   // to put static 1D and 2D arrays on both host and device?  BTNG.
@@ -711,14 +809,15 @@ public:
     m_contourCellCorners.clear();
     m_contourCellParents.clear();
     m_crossingCount = 0;
-    m_facetCount = 0;
+    m_contourCellCount = 0;
   }
 
   /*!
     @brief Constructor.
   */
-  MarchingCubesImplA()
-    : m_contourNodeCoords(0, 0)
+  MarchingCubesPartParallel()
+    : m_crossings(0, 0)
+    , m_contourNodeCoords(0, 0)
     , m_contourCellCorners(0, 0)
     , m_contourCellParents(0, 0)
   { }
@@ -753,20 +852,17 @@ private:
   //!@brief Crossing case for each computational mesh cell.
   axom::Array<std::uint16_t, DIM, MemorySpace> m_caseIds;
 
+  //!@brief Info on every parent cell that crosses the contour surface.
+  axom::Array<CrossingInfo, 1, MemorySpace> m_crossings;
+
   //!@brief Number of parent cells crossing the contour surface.
   axom::IndexType m_crossingCount = 0;
 
-  //!@brief Number of surface mesh facets added by computational mesh cells.
-  axom::Array<int, 1, MemorySpace> m_addFacets;
-
-  //!@brief First index of facets in computational mesh cells.
-  axom::Array<axom::IndexType, 1, MemorySpace> m_firstFacetIds;
-
   //!@brief Number of contour surface cells from crossings.
-  axom::IndexType m_facetCount = 0;
+  axom::IndexType m_contourCellCount = 0;
   axom::IndexType getContourCellCount() const override
   {
-    return m_facetCount;
+    return m_contourCellCount;
   }
 
   //!@brief Number of corners (nodes) on each parent cell.
@@ -788,8 +884,7 @@ private:
 };
 
 static std::unique_ptr<axom::quest::MarchingCubesSingleDomain::ImplBase>
-newMarchingCubesImplA( MarchingCubesRuntimePolicy runtimePolicy,
-                       int dim)
+newMarchingCubesPartParallel(MarchingCubesRuntimePolicy runtimePolicy, int dim)
 {
   using ImplBase = axom::quest::MarchingCubesSingleDomain::ImplBase;
   using RuntimePolicy = axom::quest::MarchingCubesRuntimePolicy;
@@ -800,45 +895,45 @@ newMarchingCubesImplA( MarchingCubesRuntimePolicy runtimePolicy,
   {
     impl = dim == 2
       ? std::unique_ptr<ImplBase>(
-        new MarchingCubesImplA<2, axom::SEQ_EXEC>)
+          new MarchingCubesPartParallel<2, axom::SEQ_EXEC, axom::SEQ_EXEC>)
       : std::unique_ptr<ImplBase>(
-        new MarchingCubesImplA<3, axom::SEQ_EXEC>);
+          new MarchingCubesPartParallel<3, axom::SEQ_EXEC, axom::SEQ_EXEC>);
   }
-#ifdef _AXOM_MC_USE_OPENMP
+  #ifdef _AXOM_MC_USE_OPENMP
   else if(runtimePolicy == RuntimePolicy::omp)
   {
     impl = dim == 2
       ? std::unique_ptr<ImplBase>(
-        new MarchingCubesImplA<2, axom::OMP_EXEC>)
+          new MarchingCubesPartParallel<2, axom::OMP_EXEC, axom::SEQ_EXEC>)
       : std::unique_ptr<ImplBase>(
-        new MarchingCubesImplA<3, axom::OMP_EXEC>);
+          new MarchingCubesPartParallel<3, axom::OMP_EXEC, axom::SEQ_EXEC>);
   }
-#endif
-#ifdef _AXOM_MC_USE_CUDA
+  #endif
+  #ifdef _AXOM_MC_USE_CUDA
   else if(runtimePolicy == RuntimePolicy::cuda)
   {
     impl = dim == 2
       ? std::unique_ptr<ImplBase>(
-        new MarchingCubesImplA<2, axom::CUDA_EXEC<256>>)
+          new MarchingCubesPartParallel<2, axom::CUDA_EXEC<256>, axom::CUDA_EXEC<1>>)
       : std::unique_ptr<ImplBase>(
-        new MarchingCubesImplA<3, axom::CUDA_EXEC<256>>);
+          new MarchingCubesPartParallel<3, axom::CUDA_EXEC<256>, axom::CUDA_EXEC<1>>);
   }
-#endif
-#ifdef _AXOM_MC_USE_HIP
+  #endif
+  #ifdef _AXOM_MC_USE_HIP
   else if(runtimePolicy == RuntimePolicy::hip)
   {
     impl = dim == 2
       ? std::unique_ptr<ImplBase>(
-        new MarchingCubesImplA<2, axom::HIP_EXEC<256>>)
+          new MarchingCubesPartParallel<2, axom::HIP_EXEC<256>, axom::HIP_EXEC<1>>)
       : std::unique_ptr<ImplBase>(
-        new MarchingCubesImplA<3, axom::HIP_EXEC<256>>);
+          new MarchingCubesPartParallel<3, axom::HIP_EXEC<256>, axom::HIP_EXEC<1>>);
   }
-#endif
+  #endif
   else
   {
     SLIC_ERROR(axom::fmt::format(
-                 "MarchingCubesSingleDomain has no implementation for runtime policy {}",
-                 runtimePolicy));
+      "MarchingCubesSingleDomain has no implementation for runtime policy {}",
+      runtimePolicy));
   }
   return impl;
 }

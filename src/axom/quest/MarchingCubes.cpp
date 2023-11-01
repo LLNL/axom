@@ -11,8 +11,8 @@
 
   #include "axom/core/execution/execution_space.hpp"
   #include "axom/quest/MarchingCubes.hpp"
-  #include "axom/quest/detail/MarchingCubesImpl.hpp"
-  #include "axom/quest/detail/MarchingCubesImplA.hpp"
+  #include "axom/quest/detail/MarchingCubesPartParallel.hpp"
+  #include "axom/quest/detail/MarchingCubesFullParallel.hpp"
   #include "axom/fmt.hpp"
 
 namespace axom
@@ -218,20 +218,20 @@ void MarchingCubesSingleDomain::computeIsocontour(double contourVal)
   SLIC_ASSERT_MSG(!m_fcnFieldName.empty(),
                   "You must call setFunctionField before computeIsocontour.");
 
-  // We have 2 implementations.  MarchingCubesImpl is faster on the host
-  // and MarchingCubesImplA is faster on GPUs.  Both work in all cases,
+  // We have 2 implementations.  MarchingCubesPartParallel is faster on the host
+  // and MarchingCubesFullParallel is faster on GPUs.  Both work in all cases,
   // but we choose the best one for performance.
   if(m_runtimePolicy == axom::quest::MarchingCubesRuntimePolicy::seq)
   {
-    m_impl =
-      axom::quest::detail::marching_cubes::newMarchingCubesImpl(m_runtimePolicy,
-                                                                m_ndim);
+    m_impl = axom::quest::detail::marching_cubes::newMarchingCubesPartParallel(
+      m_runtimePolicy,
+      m_ndim);
   }
   else
   {
-    m_impl =
-      axom::quest::detail::marching_cubes::newMarchingCubesImplA(m_runtimePolicy,
-                                                                 m_ndim);
+    m_impl = axom::quest::detail::marching_cubes::newMarchingCubesFullParallel(
+      m_runtimePolicy,
+      m_ndim);
   }
   m_impl->initialize(*m_dom, m_topologyName, m_fcnFieldName, m_maskFieldName);
   m_impl->setContourValue(contourVal);

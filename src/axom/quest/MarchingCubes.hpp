@@ -64,15 +64,6 @@ inline auto format_as(MarchingCubesRuntimePolicy pol)
   return fmt::underlying(pol);
 }
 
-namespace detail
-{
-namespace marching_cubes
-{
-template <int DIM, typename ExecSpace, typename SequentialLoopPolicy>
-class MarchingCubesImpl;
-}
-}  // namespace detail
-
 class MarchingCubesSingleDomain;
 
 /*!
@@ -343,6 +334,7 @@ public:
     virtual void setContourValue(double contourVal) = 0;
     //!@brief Compute the contour mesh.
     virtual void computeContourMesh() = 0;
+    //!@brief Return number of contour mesh facets generated.
     virtual axom::IndexType getContourCellCount() const = 0;
     /*!
       @brief Populate output mesh object with generated contour.
