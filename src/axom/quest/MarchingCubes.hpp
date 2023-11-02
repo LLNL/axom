@@ -58,6 +58,22 @@ enum class MarchingCubesRuntimePolicy
   hip = 3
 };
 
+/*!
+  @brief Enum for implementation.
+
+  Partial parallel implementation uses a non-parallizable loop and
+  processes less data.  It has been shown to work well on CPUs.
+  Full parallel implementation processes more data, but parallelizes
+  fully and has been shown to work well on GPUs.  byPolicy chooses
+  based on runtime policy.
+*/
+enum class MarchingCubesDataParallelism
+  {
+    byPolicy = 0,
+    partialParallel = 1,
+    fullParallel = 2
+  };
+
 /// Utility function to allow formating a MarchingCubesRuntimePolicy
 inline auto format_as(MarchingCubesRuntimePolicy pol)
 {
@@ -173,8 +189,22 @@ public:
     const std::string &cellIdField = {},
     const std::string &domainIdField = {});
 
+
+  /*!
+    @brief Set choice of data-parallelism implementation.
+
+    By default, choice is MarchingCubesDataParallelism::byPolicy.
+  */
+  void setDataParallelism( MarchingCubesDataParallelism dataPar )
+  {
+    m_dataParallelism = dataPar;
+  }
+
 private:
   MarchingCubesRuntimePolicy m_runtimePolicy;
+
+  //@brief Choice of full or partial data-parallelism, or byPolicy.
+  MarchingCubesDataParallelism m_dataParallelism = MarchingCubesDataParallelism::byPolicy;
 
   //! @brief Single-domain implementations.
   axom::Array<std::unique_ptr<MarchingCubesSingleDomain>> m_singles;
@@ -226,6 +256,11 @@ public:
                             const conduit::Node &dom,
                             const std::string &topologyName,
                             const std::string &maskfield);
+
+  void setDataParallelism( MarchingCubesDataParallelism &dataPar )
+  {
+    m_dataParallelism = dataPar;
+  }
 
   /*!
     @brief Specify the field containing the nodal scalar function
@@ -350,6 +385,10 @@ public:
 
 private:
   MarchingCubesRuntimePolicy m_runtimePolicy;
+
+  //@brief Choice of full or partial data-parallelism, or byPolicy.
+  MarchingCubesDataParallelism m_dataParallelism = MarchingCubesDataParallelism::byPolicy;
+
   /*!
     \brief Computational mesh as a conduit::Node.
   */

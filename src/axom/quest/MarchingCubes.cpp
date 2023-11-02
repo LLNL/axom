@@ -63,6 +63,7 @@ void MarchingCubes::computeIsocontour(double contourVal)
   for(int dId = 0; dId < m_singles.size(); ++dId)
   {
     std::unique_ptr<MarchingCubesSingleDomain>& single = m_singles[dId];
+    single->setDataParallelism(m_dataParallelism);
     single->computeIsocontour(contourVal);
   }
 }
@@ -219,9 +220,11 @@ void MarchingCubesSingleDomain::computeIsocontour(double contourVal)
                   "You must call setFunctionField before computeIsocontour.");
 
   // We have 2 implementations.  MarchingCubesPartParallel is faster on the host
-  // and MarchingCubesFullParallel is faster on GPUs.  Both work in all cases,
-  // but we choose the best one for performance.
-  if(m_runtimePolicy == axom::quest::MarchingCubesRuntimePolicy::seq)
+  // and MarchingCubesFullParallel is faster on GPUs.  Both work in all cases.
+  // but we can choose based on runtime policy or by user choice
+  if( m_dataParallelism == axom::quest::MarchingCubesDataParallelism::partialParallel ||
+      (m_dataParallelism == axom::quest::MarchingCubesDataParallelism::byPolicy &&
+       m_runtimePolicy == axom::quest::MarchingCubesRuntimePolicy::seq) )
   {
     m_impl = axom::quest::detail::marching_cubes::newMarchingCubesPartParallel(
       m_runtimePolicy,

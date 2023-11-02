@@ -93,6 +93,8 @@ public:
   quest::MarchingCubesRuntimePolicy policy {
     quest::MarchingCubesRuntimePolicy::seq};
 
+  quest::MarchingCubesDataParallelism dataParallelism = quest::MarchingCubesDataParallelism::byPolicy;
+
 private:
   bool _verboseOutput {false};
 
@@ -114,6 +116,15 @@ private:
   };
   // clang-format on
 
+  // clang-format off
+  const std::map<std::string, quest::MarchingCubesDataParallelism> s_validImplChoices
+  {
+      {"byPolicy", quest::MarchingCubesDataParallelism::byPolicy}
+    , {"partialParallel", quest::MarchingCubesDataParallelism::partialParallel}
+    , {"fullParallel", quest::MarchingCubesDataParallelism::fullParallel}
+  };
+  // clang-format on
+
 public:
   bool isVerbose() const { return _verboseOutput; }
 
@@ -123,6 +134,11 @@ public:
       ->description("Set runtime policy for point query method")
       ->capture_default_str()
       ->transform(axom::CLI::CheckedTransformer(s_validPolicies));
+
+    app.add_option("--dataParallelism", dataParallelism)
+      ->description("Set full or partial data-parallelism, or by-policy")
+      ->capture_default_str()
+      ->transform(axom::CLI::CheckedTransformer(s_validImplChoices));
 
     app.add_option("-m,--mesh-file", meshFile)
       ->description(
@@ -755,6 +771,7 @@ struct ContourTestBase
     MPI_Barrier(MPI_COMM_WORLD);
   #endif
     computeTimer.start();
+    mc.setDataParallelism(params.dataParallelism);
     mc.computeIsocontour(params.contourVal);
     computeTimer.stop();
     printTimingStats(computeTimer, name() + " contour");
