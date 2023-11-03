@@ -93,7 +93,8 @@ public:
   quest::MarchingCubesRuntimePolicy policy {
     quest::MarchingCubesRuntimePolicy::seq};
 
-  quest::MarchingCubesDataParallelism dataParallelism = quest::MarchingCubesDataParallelism::byPolicy;
+  quest::MarchingCubesDataParallelism dataParallelism =
+    quest::MarchingCubesDataParallelism::byPolicy;
 
 private:
   bool _verboseOutput {false};

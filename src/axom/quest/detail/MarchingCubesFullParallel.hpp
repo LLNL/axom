@@ -26,7 +26,6 @@ namespace detail
 {
 namespace marching_cubes
 {
-
 /*!
   @brief Computations for MarchingCubesSingleDomain
 
@@ -67,10 +66,8 @@ public:
                             const std::string& fcnFieldName,
                             const std::string& maskFieldName = {}) override
   {
-    SLIC_ASSERT(
-      conduit::blueprint::mesh::topology::dims(
-        dom.fetch_existing(axom::fmt::format("topologies/{}", topologyName)))
-      == DIM);
+    SLIC_ASSERT(conduit::blueprint::mesh::topology::dims(dom.fetch_existing(
+                  axom::fmt::format("topologies/{}", topologyName))) == DIM);
 
     clear();
 
@@ -271,12 +268,13 @@ public:
     // Compute number of surface facets added by each parent cell.
     m_addFacets.resize(parentCellCount);
     const axom::ArrayView<int, 1, MemorySpace> addFacetsView = m_addFacets.view();
-    axom::for_all<ExecSpace>(0, parentCellCount,
-                             AXOM_LAMBDA(axom::IndexType parentCellId) {
-                               addFacetsView.flatIndex(parentCellId) =
-                                 num_contour_cells(
-                                   caseIdsView.flatIndex(parentCellId));
-                             });
+    axom::for_all<ExecSpace>(
+      0,
+      parentCellCount,
+      AXOM_LAMBDA(axom::IndexType parentCellId) {
+        addFacetsView.flatIndex(parentCellId) =
+          num_contour_cells(caseIdsView.flatIndex(parentCellId));
+      });
 
     // Compute index of first facet added by each parent cell
     // (whether the cell generates any facet!).
@@ -288,22 +286,22 @@ public:
       RAJA::make_span(firstFacetIdsView.data(), parentCellCount),
       RAJA::operators::plus<axom::IndexType> {});
 
-    // m_addFacets and m_firstFacetIds, combined with m_caseIds,
-    // are all we need to compute the surface mesh.
+      // m_addFacets and m_firstFacetIds, combined with m_caseIds,
+      // are all we need to compute the surface mesh.
   #else
     SLIC_ERROR("Incomplete coding in scanCrossings!");
   #endif
 
     // Compute number of facets in domain.
     // In case data is on device, copy to host before computing.
-    axom::IndexType firstFacetIds_back=0;
-    axom::IndexType addFacets_back=0;
+    axom::IndexType firstFacetIds_back = 0;
+    axom::IndexType addFacets_back = 0;
     axom::copy(&firstFacetIds_back,
-      m_firstFacetIds.data() + m_firstFacetIds.size() - 1,
-      sizeof(firstFacetIds_back));
+               m_firstFacetIds.data() + m_firstFacetIds.size() - 1,
+               sizeof(firstFacetIds_back));
     axom::copy(&addFacets_back,
-      m_addFacets.data() + m_addFacets.size() - 1,
-      sizeof(addFacets_back));
+               m_addFacets.data() + m_addFacets.size() - 1,
+               sizeof(addFacets_back));
     m_facetCount = firstFacetIds_back + addFacets_back;
 
     // Allocate space for surface mesh.
@@ -324,40 +322,38 @@ public:
                             m_caseIds.strides(),
                             m_fcnView,
                             m_coordsViews);
-    auto gen_for_parent_cell =
-      AXOM_LAMBDA(axom::IndexType parentCellId)
+    auto gen_for_parent_cell = AXOM_LAMBDA(axom::IndexType parentCellId)
+    {
+      Point cornerCoords[CELL_CORNER_COUNT];
+      double cornerValues[CELL_CORNER_COUNT];
+      ccu.get_corner_coords_and_values(parentCellId, cornerCoords, cornerValues);
+
+      auto additionalFacets = addFacetsView[parentCellId];
+      auto firstFacetId = firstFacetIdsView[parentCellId];
+
+      auto caseId = caseIdsView.flatIndex(parentCellId);
+
+      for(axom::IndexType fId = 0; fId < additionalFacets; ++fId)
       {
-        Point cornerCoords[CELL_CORNER_COUNT];
-        double cornerValues[CELL_CORNER_COUNT];
-        ccu.get_corner_coords_and_values(parentCellId, cornerCoords, cornerValues);
+        axom::IndexType newFacetId = firstFacetId + fId;
+        axom::IndexType firstCornerId = newFacetId * DIM;
 
-        auto additionalFacets = addFacetsView[parentCellId];
-        auto firstFacetId = firstFacetIdsView[parentCellId];
+        contourCellParentsView[newFacetId] = parentCellId;
 
-        auto caseId = caseIdsView.flatIndex(parentCellId);
-
-        for(axom::IndexType fId = 0; fId < additionalFacets; ++fId)
+        for(axom::IndexType d = 0; d < DIM; ++d)
         {
-          axom::IndexType newFacetId = firstFacetId + fId;
-          axom::IndexType firstCornerId = newFacetId * DIM;
+          axom::IndexType newCornerId = firstCornerId + d;
+          contourCellCornersView[newFacetId][d] = newCornerId;
 
-          contourCellParentsView[newFacetId] = parentCellId;
-
-          for(axom::IndexType d = 0; d < DIM; ++d)
-          {
-            axom::IndexType newCornerId = firstCornerId + d;
-            contourCellCornersView[newFacetId][d] = newCornerId;
-
-            int edge = cases_table(caseId, fId*DIM + d);
-            ccu.linear_interp(edge,
-                              cornerCoords,
-                              cornerValues,
-                              contourNodeCoordsView[newCornerId]);
-          }
+          int edge = cases_table(caseId, fId * DIM + d);
+          ccu.linear_interp(edge,
+                            cornerCoords,
+                            cornerValues,
+                            contourNodeCoordsView[newCornerId]);
         }
-      };
+      }
+    };
     axom::for_all<ExecSpace>(0, parentCellCount, gen_for_parent_cell);
-
   }
 
   /*!
@@ -767,10 +763,7 @@ private:
 
   //!@brief Number of contour surface cells from crossings.
   axom::IndexType m_facetCount = 0;
-  axom::IndexType getContourCellCount() const override
-  {
-    return m_facetCount;
-  }
+  axom::IndexType getContourCellCount() const override { return m_facetCount; }
 
   //!@brief Number of corners (nodes) on each parent cell.
   static constexpr std::uint8_t CELL_CORNER_COUNT = (DIM == 3) ? 8 : 4;
@@ -791,8 +784,7 @@ private:
 };
 
 static std::unique_ptr<axom::quest::MarchingCubesSingleDomain::ImplBase>
-newMarchingCubesFullParallel( MarchingCubesRuntimePolicy runtimePolicy,
-                       int dim)
+newMarchingCubesFullParallel(MarchingCubesRuntimePolicy runtimePolicy, int dim)
 {
   using ImplBase = axom::quest::MarchingCubesSingleDomain::ImplBase;
   using RuntimePolicy = axom::quest::MarchingCubesRuntimePolicy;
@@ -801,47 +793,43 @@ newMarchingCubesFullParallel( MarchingCubesRuntimePolicy runtimePolicy,
   std::unique_ptr<ImplBase> impl;
   if(runtimePolicy == RuntimePolicy::seq)
   {
-    impl = dim == 2
-      ? std::unique_ptr<ImplBase>(
-        new MarchingCubesFullParallel<2, axom::SEQ_EXEC>)
-      : std::unique_ptr<ImplBase>(
-        new MarchingCubesFullParallel<3, axom::SEQ_EXEC>);
+    impl = dim == 2 ? std::unique_ptr<ImplBase>(
+                        new MarchingCubesFullParallel<2, axom::SEQ_EXEC>)
+                    : std::unique_ptr<ImplBase>(
+                        new MarchingCubesFullParallel<3, axom::SEQ_EXEC>);
   }
-#ifdef _AXOM_MC_USE_OPENMP
+  #ifdef _AXOM_MC_USE_OPENMP
   else if(runtimePolicy == RuntimePolicy::omp)
   {
-    impl = dim == 2
-      ? std::unique_ptr<ImplBase>(
-        new MarchingCubesFullParallel<2, axom::OMP_EXEC>)
-      : std::unique_ptr<ImplBase>(
-        new MarchingCubesFullParallel<3, axom::OMP_EXEC>);
+    impl = dim == 2 ? std::unique_ptr<ImplBase>(
+                        new MarchingCubesFullParallel<2, axom::OMP_EXEC>)
+                    : std::unique_ptr<ImplBase>(
+                        new MarchingCubesFullParallel<3, axom::OMP_EXEC>);
   }
-#endif
-#ifdef _AXOM_MC_USE_CUDA
+  #endif
+  #ifdef _AXOM_MC_USE_CUDA
   else if(runtimePolicy == RuntimePolicy::cuda)
   {
-    impl = dim == 2
-      ? std::unique_ptr<ImplBase>(
-        new MarchingCubesFullParallel<2, axom::CUDA_EXEC<256>>)
-      : std::unique_ptr<ImplBase>(
-        new MarchingCubesFullParallel<3, axom::CUDA_EXEC<256>>);
+    impl = dim == 2 ? std::unique_ptr<ImplBase>(
+                        new MarchingCubesFullParallel<2, axom::CUDA_EXEC<256>>)
+                    : std::unique_ptr<ImplBase>(
+                        new MarchingCubesFullParallel<3, axom::CUDA_EXEC<256>>);
   }
-#endif
-#ifdef _AXOM_MC_USE_HIP
+  #endif
+  #ifdef _AXOM_MC_USE_HIP
   else if(runtimePolicy == RuntimePolicy::hip)
   {
-    impl = dim == 2
-      ? std::unique_ptr<ImplBase>(
-        new MarchingCubesFullParallel<2, axom::HIP_EXEC<256>>)
-      : std::unique_ptr<ImplBase>(
-        new MarchingCubesFullParallel<3, axom::HIP_EXEC<256>>);
+    impl = dim == 2 ? std::unique_ptr<ImplBase>(
+                        new MarchingCubesFullParallel<2, axom::HIP_EXEC<256>>)
+                    : std::unique_ptr<ImplBase>(
+                        new MarchingCubesFullParallel<3, axom::HIP_EXEC<256>>);
   }
-#endif
+  #endif
   else
   {
     SLIC_ERROR(axom::fmt::format(
-                 "MarchingCubesSingleDomain has no implementation for runtime policy {}",
-                 runtimePolicy));
+      "MarchingCubesSingleDomain has no implementation for runtime policy {}",
+      runtimePolicy));
   }
   return impl;
 }

@@ -26,7 +26,6 @@ namespace detail
 {
 namespace marching_cubes
 {
-
 /*!
   @brief Computations for MarchingCubesSingleDomain
 

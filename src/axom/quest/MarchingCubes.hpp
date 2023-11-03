@@ -68,11 +68,11 @@ enum class MarchingCubesRuntimePolicy
   based on runtime policy.
 */
 enum class MarchingCubesDataParallelism
-  {
-    byPolicy = 0,
-    partialParallel = 1,
-    fullParallel = 2
-  };
+{
+  byPolicy = 0,
+  partialParallel = 1,
+  fullParallel = 2
+};
 
 /// Utility function to allow formating a MarchingCubesRuntimePolicy
 inline auto format_as(MarchingCubesRuntimePolicy pol)
@@ -189,13 +189,12 @@ public:
     const std::string &cellIdField = {},
     const std::string &domainIdField = {});
 
-
   /*!
     @brief Set choice of data-parallelism implementation.
 
     By default, choice is MarchingCubesDataParallelism::byPolicy.
   */
-  void setDataParallelism( MarchingCubesDataParallelism dataPar )
+  void setDataParallelism(MarchingCubesDataParallelism dataPar)
   {
     m_dataParallelism = dataPar;
   }
@@ -204,7 +203,8 @@ private:
   MarchingCubesRuntimePolicy m_runtimePolicy;
 
   //@brief Choice of full or partial data-parallelism, or byPolicy.
-  MarchingCubesDataParallelism m_dataParallelism = MarchingCubesDataParallelism::byPolicy;
+  MarchingCubesDataParallelism m_dataParallelism =
+    MarchingCubesDataParallelism::byPolicy;
 
   //! @brief Single-domain implementations.
   axom::Array<std::unique_ptr<MarchingCubesSingleDomain>> m_singles;
@@ -257,7 +257,7 @@ public:
                             const std::string &topologyName,
                             const std::string &maskfield);
 
-  void setDataParallelism( MarchingCubesDataParallelism &dataPar )
+  void setDataParallelism(MarchingCubesDataParallelism &dataPar)
   {
     m_dataParallelism = dataPar;
   }
@@ -387,7 +387,8 @@ private:
   MarchingCubesRuntimePolicy m_runtimePolicy;
 
   //@brief Choice of full or partial data-parallelism, or byPolicy.
-  MarchingCubesDataParallelism m_dataParallelism = MarchingCubesDataParallelism::byPolicy;
+  MarchingCubesDataParallelism m_dataParallelism =
+    MarchingCubesDataParallelism::byPolicy;
 
   /*!
     \brief Computational mesh as a conduit::Node.
