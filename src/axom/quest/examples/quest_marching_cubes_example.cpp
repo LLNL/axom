@@ -79,6 +79,10 @@ public:
   bool usingRound {false};
   std::vector<double> fcnCenter;
 
+  // Scaling factor for gyroid function
+  bool usingGyroid {false};
+  std::vector<double> gyroidScale;
+
   // Parameters for planar contour function
   bool usingPlanar {false};
   std::vector<double> inPlane;
@@ -162,6 +166,13 @@ public:
       ->description("Center for distance-from-point function (x,y[,z])")
       ->expected(2, 3);
 
+    auto* gyroidOption = app.add_option_group(
+      "gyroidOption",
+      "Options for setting up gyroid function");
+    gyroidOption->add_option("--scale", gyroidScale)
+      ->description("Scaling factor for gyroid function (x,y[,z])")
+      ->expected(2, 3);
+
     auto* distFromPlaneOption = app.add_option_group(
       "distFromPlaneOption",
       "Options for setting up distance-from-plane function");
@@ -193,18 +204,20 @@ public:
     ndim = std::max(ndim, fcnCenter.size());
     ndim = std::max(ndim, inPlane.size());
     ndim = std::max(ndim, perpDir.size());
+    ndim = std::max(ndim, gyroidScale.size());
     SLIC_ASSERT_MSG((fcnCenter.empty() || fcnCenter.size() == ndim) &&
                       (inPlane.empty() || inPlane.size() == ndim) &&
-                      (perpDir.empty() || perpDir.size() == ndim),
+                      (perpDir.empty() || perpDir.size() == ndim) &&
+                      (gyroidScale.empty() || gyroidScale.size() == ndim),
                     "fcnCenter, inPlane and perpDir must have consistent sizes "
                     "if specified.");
 
     usingPlanar = !perpDir.empty();
     usingRound = !fcnCenter.empty();
+    usingGyroid = !gyroidScale.empty();
     SLIC_ASSERT_MSG(
-      usingPlanar || usingRound,
-      "You must specify a planar scalar function or a round scalar"
-      " function or both.");
+      usingPlanar || usingRound || usingGyroid,
+      "No functions specified.  Please specify a comibnation of round, gyroid or planar functions.");
 
     // inPlane defaults to origin if omitted.
     if(usingPlanar && inPlane.empty())
@@ -218,6 +231,13 @@ public:
   {
     SLIC_ASSERT(fcnCenter.size() == DIM);
     return axom::primal::Point<double, DIM>(fcnCenter.data());
+  }
+
+  template <int DIM>
+  axom::primal::Point<double, DIM> gyroidScaleFactor() const
+  {
+    SLIC_ASSERT(gyroidScale.size() == DIM);
+    return axom::primal::Point<double, DIM>(gyroidScale.data());
   }
 
   template <int DIM>
@@ -1314,8 +1334,79 @@ struct RoundContourTest
 
   void setToleranceByLongestEdge(const BlueprintStructuredMesh& bsm)
   {
+    // Heuristic of appropriate error tolerance.
     double maxSpacing = bsm.maxSpacing();
     _errTol = 0.1 * maxSpacing;
+  }
+};
+
+/*!
+  @brief Function for approximate gyroid surface
+*/
+template <int DIM>
+struct GyroidFunctor
+{
+  using PointType = axom::primal::Point<double, DIM>;
+  const PointType _scale;
+  const double _offset;
+  GyroidFunctor(const PointType& scale, double offset) : _scale(scale), _offset(offset) { }
+  double operator()(const PointType& pt) const
+  {
+    if( DIM == 3 )
+    {
+      return sin(pt[0]*_scale[0])*cos(pt[1]*_scale[1])
+           + sin(pt[1]*_scale[1])*cos(pt[2]*_scale[2])
+           + sin(pt[2]*_scale[2])*cos(pt[0]*_scale[0])
+           + _offset;
+    }
+    else
+    {
+      // Use the 3D function, with z=0.
+      return sin(pt[0]*_scale[0])*cos(pt[1]*_scale[1])
+           + sin(pt[1]*_scale[1])
+           + _offset;
+    }
+  }
+};
+template <int DIM, typename ExecSpace>
+struct GyroidContourTest
+  : public ContourTestBase<DIM, ExecSpace, GyroidFunctor<DIM>>
+{
+  static constexpr auto MemorySpace =
+    axom::execution_space<ExecSpace>::memory_space;
+  using PointType = axom::primal::Point<double, DIM>;
+  using FunctorType = GyroidFunctor<DIM>;
+  /*!
+    @brief Constructor.
+
+    @param scale [in] Gyroid function scaling factors
+  */
+  GyroidContourTest(const PointType& scale, double offset)
+    : ContourTestBase<DIM, ExecSpace, FunctorType>(FunctorType(scale, offset))
+    , _scale(scale)
+    , _gyroidFunctor(scale, offset)
+    , _errTol(1e-3)
+  { }
+  virtual ~GyroidContourTest() { }
+  const PointType _scale;
+  FunctorType _gyroidFunctor;
+  double _errTol;
+
+  virtual std::string name() const override { return std::string("gyroid"); }
+
+  virtual std::string functionName() const override
+  {
+    return std::string("gyroid_fcn");
+  }
+
+  double errorTolerance() const override { return _errTol; }
+
+  void setToleranceByLongestEdge(const BlueprintStructuredMesh& bsm)
+  {
+    // Heuristic of appropriate error tolerance.
+    double maxSpacing = bsm.maxSpacing();
+    axom::primal::Vector<double, DIM> v(_scale);
+    _errTol = 0.1 * v.norm() * maxSpacing;
   }
 };
 
@@ -1452,6 +1543,7 @@ int testNdimInstance(BlueprintStructuredMesh& computationalMesh)
   //---------------------------------------------------------------------------
 
   std::shared_ptr<RoundContourTest<DIM, ExecSpace>> roundTest;
+  std::shared_ptr<GyroidContourTest<DIM, ExecSpace>> gyroidTest;
   std::shared_ptr<PlanarContourTest<DIM, ExecSpace>> planarTest;
 
   if(params.usingRound)
@@ -1460,6 +1552,13 @@ int testNdimInstance(BlueprintStructuredMesh& computationalMesh)
       params.roundContourCenter<DIM>());
     roundTest->setToleranceByLongestEdge(computationalMesh);
     roundTest->computeNodalDistance(computationalMesh);
+  }
+  if(params.usingGyroid)
+  {
+    gyroidTest = std::make_shared<GyroidContourTest<DIM, ExecSpace>>(
+      params.gyroidScaleFactor<DIM>(), params.contourVal);
+    gyroidTest->setToleranceByLongestEdge(computationalMesh);
+    gyroidTest->computeNodalDistance(computationalMesh);
   }
   if(params.usingPlanar)
   {
@@ -1487,6 +1586,12 @@ int testNdimInstance(BlueprintStructuredMesh& computationalMesh)
   if(roundTest)
   {
     localErrCount += roundTest->runTest(computationalMesh, mc);
+  }
+  slic::flushStreams();
+
+  if(gyroidTest)
+  {
+    localErrCount += gyroidTest->runTest(computationalMesh, mc);
   }
   slic::flushStreams();
 
