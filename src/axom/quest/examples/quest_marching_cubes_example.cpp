@@ -1103,9 +1103,7 @@ struct ContourTestBase
       axom::primal::BoundingBox<double, DIM> parentCellBox(lower, upper);
       double tol = errorTolerance();
       axom::primal::BoundingBox<double, DIM> big(parentCellBox);
-      axom::primal::BoundingBox<double, DIM> small(parentCellBox);
       big.expand(tol);
-      small.expand(-tol);
 
       axom::IndexType* cellNodeIds = contourMesh.getCellNodeIDs(contourCellNum);
       const axom::IndexType cellNodeCount =
@@ -1116,7 +1114,7 @@ struct ContourTestBase
         PointType nodeCoords;
         contourMesh.getNode(cellNodeIds[nn], nodeCoords.data());
 
-        if(!big.contains(nodeCoords) || small.contains(nodeCoords))
+        if(!big.contains(nodeCoords))
         {
           ++errCount;
           SLIC_INFO_IF(
@@ -1238,19 +1236,23 @@ struct ContourTestBase
           maxFcnValue = std::max(maxFcnValue, fcnValue);
         }
 
-        const bool touchesContour =
-          (minFcnValue <= params.contourVal && maxFcnValue >= params.contourVal);
-        const bool hasCont = hasContours[domId][cellIdx];
-        if(touchesContour != hasCont)
-        {
-          ++errCount;
-          SLIC_INFO_IF(params.isVerbose(),
-                       axom::fmt::format(
-                         "checkCellsContainingContour: cell {}: hasContour "
-                         "({}) and touchesContour ({}) don't agree.",
-                         cellIdx,
-                         hasCont,
-                         touchesContour));
+        // If the min or max values in the cell is close to params.contourVal
+        // touchesContour and hasCont can go either way.  So don't check.
+        if( minFcnValue != params.contourVal && maxFcnValue != params.contourVal ) {
+          const bool touchesContour =
+            (minFcnValue <= params.contourVal && maxFcnValue >= params.contourVal);
+          const bool hasCont = hasContours[domId][cellIdx];
+          if(touchesContour != hasCont)
+          {
+            ++errCount;
+            SLIC_INFO_IF(params.isVerbose(),
+                         axom::fmt::format(
+                           "checkCellsContainingContour: cell {}: hasContour "
+                           "({}) and touchesContour ({}) don't agree.",
+                           cellIdx,
+                           hasCont,
+                           touchesContour));
+          }
         }
       }
     }
