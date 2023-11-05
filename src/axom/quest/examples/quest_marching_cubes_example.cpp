@@ -166,9 +166,9 @@ public:
       ->description("Center for distance-from-point function (x,y[,z])")
       ->expected(2, 3);
 
-    auto* gyroidOption = app.add_option_group(
-      "gyroidOption",
-      "Options for setting up gyroid function");
+    auto* gyroidOption =
+      app.add_option_group("gyroidOption",
+                           "Options for setting up gyroid function");
     gyroidOption->add_option("--scale", gyroidScale)
       ->description("Scaling factor for gyroid function (x,y[,z])")
       ->expected(2, 3);
@@ -215,9 +215,9 @@ public:
     usingPlanar = !perpDir.empty();
     usingRound = !fcnCenter.empty();
     usingGyroid = !gyroidScale.empty();
-    SLIC_ASSERT_MSG(
-      usingPlanar || usingRound || usingGyroid,
-      "No functions specified.  Please specify a comibnation of round, gyroid or planar functions.");
+    SLIC_ASSERT_MSG(usingPlanar || usingRound || usingGyroid,
+                    "No functions specified.  Please specify a comibnation of "
+                    "round, gyroid or planar functions.");
 
     // inPlane defaults to origin if omitted.
     if(usingPlanar && inPlane.empty())
@@ -830,7 +830,7 @@ struct ContourTestBase
     extractTimer.start();
     mc.populateContourMesh(contourMesh, m_parentCellIdField, m_domainIdField);
     extractTimer.stop();
-    printTimingStats(extractTimer, name() + " extract");
+    // printTimingStats(extractTimer, name() + " extract");
 
     int localErrCount = 0;
     if(params.checkResults)
@@ -1258,9 +1258,10 @@ struct ContourTestBase
 
         // If the min or max values in the cell is close to params.contourVal
         // touchesContour and hasCont can go either way.  So don't check.
-        if( minFcnValue != params.contourVal && maxFcnValue != params.contourVal ) {
-          const bool touchesContour =
-            (minFcnValue <= params.contourVal && maxFcnValue >= params.contourVal);
+        if(minFcnValue != params.contourVal && maxFcnValue != params.contourVal)
+        {
+          const bool touchesContour = (minFcnValue <= params.contourVal &&
+                                       maxFcnValue >= params.contourVal);
           const bool hasCont = hasContours[domId][cellIdx];
           if(touchesContour != hasCont)
           {
@@ -1349,22 +1350,23 @@ struct GyroidFunctor
   using PointType = axom::primal::Point<double, DIM>;
   const PointType _scale;
   const double _offset;
-  GyroidFunctor(const PointType& scale, double offset) : _scale(scale), _offset(offset) { }
+  GyroidFunctor(const PointType& scale, double offset)
+    : _scale(scale)
+    , _offset(offset)
+  { }
   double operator()(const PointType& pt) const
   {
-    if( DIM == 3 )
+    if(DIM == 3)
     {
-      return sin(pt[0]*_scale[0])*cos(pt[1]*_scale[1])
-           + sin(pt[1]*_scale[1])*cos(pt[2]*_scale[2])
-           + sin(pt[2]*_scale[2])*cos(pt[0]*_scale[0])
-           + _offset;
+      return sin(pt[0] * _scale[0]) * cos(pt[1] * _scale[1]) +
+        sin(pt[1] * _scale[1]) * cos(pt[2] * _scale[2]) +
+        sin(pt[2] * _scale[2]) * cos(pt[0] * _scale[0]) + _offset;
     }
     else
     {
       // Use the 3D function, with z=0.
-      return sin(pt[0]*_scale[0])*cos(pt[1]*_scale[1])
-           + sin(pt[1]*_scale[1])
-           + _offset;
+      return sin(pt[0] * _scale[0]) * cos(pt[1] * _scale[1]) +
+        sin(pt[1] * _scale[1]) + _offset;
     }
   }
 };
@@ -1556,7 +1558,8 @@ int testNdimInstance(BlueprintStructuredMesh& computationalMesh)
   if(params.usingGyroid)
   {
     gyroidTest = std::make_shared<GyroidContourTest<DIM, ExecSpace>>(
-      params.gyroidScaleFactor<DIM>(), params.contourVal);
+      params.gyroidScaleFactor<DIM>(),
+      params.contourVal);
     gyroidTest->setToleranceByLongestEdge(computationalMesh);
     gyroidTest->computeNodalDistance(computationalMesh);
   }
