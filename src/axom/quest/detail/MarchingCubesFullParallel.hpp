@@ -264,10 +264,11 @@ public:
     const axom::IndexType parentCellCount = m_caseIds.size();
     auto caseIdsView = m_caseIds.view();
 
-  #if defined(AXOM_USE_RAJA)
     // Compute number of surface facets added by each parent cell.
     m_addFacets.resize(parentCellCount);
     const axom::ArrayView<int, 1, MemorySpace> addFacetsView = m_addFacets.view();
+
+  #if defined(AXOM_USE_RAJA)
     axom::for_all<ExecSpace>(
       0,
       parentCellCount,
@@ -275,12 +276,20 @@ public:
         addFacetsView.flatIndex(parentCellId) =
           num_contour_cells(caseIdsView.flatIndex(parentCellId));
       });
+  #else
+    for(axom::IndexType pcId = 0; pcId < parentCellCount; ++pcId)
+    {
+      addFacetsView.flatIndex(pcId) =
+        num_contour_cells(caseIdsView.flatIndex(pcId));
+    }
+  #endif
 
     // Compute index of first facet added by each parent cell
     // (whether the cell generates any facet!).
     m_firstFacetIds.resize(parentCellCount);
     const axom::ArrayView<axom::IndexType, 1, MemorySpace> firstFacetIdsView =
       m_firstFacetIds.view();
+  #if defined(AXOM_USE_RAJA)
     RAJA::exclusive_scan<ScanPolicy>(
       RAJA::make_span(addFacetsView.data(), parentCellCount),
       RAJA::make_span(firstFacetIdsView.data(), parentCellCount),
@@ -289,7 +298,12 @@ public:
       // m_addFacets and m_firstFacetIds, combined with m_caseIds,
       // are all we need to compute the surface mesh.
   #else
-    SLIC_ERROR("Incomplete coding in scanCrossings!");
+    firstFacetIdsView[0] = 0;
+    for(axom::IndexType pcId = 1; pcId < parentCellCount; ++pcId)
+    {
+      firstFacetIdsView[pcId] =
+        firstFacetIdsView[pcId - 1] + addFacetsView[pcId - 1];
+    }
   #endif
 
     // Compute number of facets in domain.
@@ -353,7 +367,15 @@ public:
         }
       }
     };
+  #if defined(AXOM_USE_RAJA)
     axom::for_all<ExecSpace>(0, parentCellCount, gen_for_parent_cell);
+  #else
+    firstFacetIdsView[0] = 0;
+    for(axom::IndexType pcId = 1; pcId < parentCellCount; ++pcId)
+    {
+      gen_for_parent_cell(pcId);
+    }
+  #endif
   }
 
   /*!
