@@ -120,15 +120,18 @@ Polygon<T, 3> clip(const Triangle<T, 3>& tri, const BoundingBox<T, 3>& bbox)
  * \param [in] checkSign If true (default is false), checks if the
  *             signed volume of each shape is positive. If the signed volume
  *             of that shape is negative, order of some vertices will be
- *             swapped for that shape.
+ *             swapped to try to obtain a positive volume
+ *             for that shape. Otherwise, the returned polyhedron
+ *             will have a non-positive volume.
  *
  * \return A polyhedron of the hexahedron clipped against the tetrahedron.
  *
  * \note Function is based off clipPolyhedron() in Mike Owen's PolyClipper.
  *
- * \note checkSign flag does not guarantee the shapes' vertex orders
- *       will be valid. It is the responsiblity of the caller to pass
- *       shapes with a valid vertex order.
+ * \warning checkSign flag does not guarantee the shapes' vertex orders
+ *          will be valid. It is the responsiblity of the caller to pass
+ *          shapes with a valid vertex order. Otherwise, returned polyhedron
+ *          will have a non-positive volume with invalid vertex orders.
  *
  */
 template <typename T>
@@ -161,15 +164,18 @@ AXOM_HOST_DEVICE Polyhedron<T, 3> clip(const Hexahedron<T, 3>& hex,
  * \param [in] checkSign If true (default is false), checks if the
  *             signed volume of each shape is positive. If the signed volume
  *             of that shape is negative, order of some vertices will be
- *             swapped for that shape.
+ *             swapped to try to obtain a positive volume
+ *             for that shape. Otherwise, the returned polyhedron
+ *             will have a non-positive volume.
  *
  * \return A polyhedron of the hexahedron clipped against the tetrahedron.
  *
  * \note Function is based off clipPolyhedron() in Mike Owen's PolyClipper.
  *
- * \note checkSign flag does not guarantee the shapes' vertex orders
- *       will be valid. It is the responsiblity of the caller to pass
- *       shapes with a valid vertex order.
+ * \warning checkSign flag does not guarantee the shapes' vertex orders
+ *          will be valid. It is the responsiblity of the caller to pass
+ *          shapes with a valid vertex order. Otherwise, returned polyhedron
+ *          will have a non-positive volume with invalid vertex orders.
  *
  */
 template <typename T>
@@ -202,15 +208,18 @@ AXOM_HOST_DEVICE Polyhedron<T, 3> clip(const Tetrahedron<T, 3>& tet,
  * \param [in] checkSign If true (default is false), checks if the
  *             signed volume of each shape is positive. If the signed volume
  *             of that shape is negative, order of some vertices will be
- *             swapped for that shape.
+ *             swapped to try to obtain a positive volume
+ *             for that shape. Otherwise, the returned polyhedron
+ *             will have a non-positive volume.
  *
  * \return A polyhedron of the octahedron clipped against the tetrahedron.
  *
  * \note Function is based off clipPolyhedron() in Mike Owen's PolyClipper.
  *
- * \note checkSign flag does not guarantee the shapes' vertex orders
- *       will be valid. It is the responsiblity of the caller to pass
- *       shapes with a valid vertex order.
+ * \warning checkSign flag does not guarantee the shapes' vertex orders
+ *          will be valid. It is the responsiblity of the caller to pass
+ *          shapes with a valid vertex order. Otherwise, returned polyhedron
+ *          will have a non-positive volume with invalid vertex orders.
  *
  */
 template <typename T>
@@ -244,15 +253,18 @@ AXOM_HOST_DEVICE Polyhedron<T, 3> clip(const Octahedron<T, 3>& oct,
  * \param [in] checkSign If true (default is false), checks if the
  *             signed volume of each shape is positive. If the signed volume
  *             of that shape is negative, order of some vertices will be
- *             swapped for that shape.
+ *             swapped to try to obtain a positive volume
+ *             for that shape. Otherwise, the returned polyhedron
+ *             will have a non-positive volume.
  *
  * \return A polyhedron of the octahedron clipped against the tetrahedron.
  *
  * \note Function is based off clipPolyhedron() in Mike Owen's PolyClipper.
  *
- * \note checkSign flag does not guarantee the shapes' vertex orders
- *       will be valid. It is the responsiblity of the caller to pass
- *       shapes with a valid vertex order.
+ * \warning checkSign flag does not guarantee the shapes' vertex orders
+ *          will be valid. It is the responsiblity of the caller to pass
+ *          shapes with a valid vertex order. Otherwise, returned polyhedron
+ *          will have a non-positive volume with invalid vertex orders.
  *
  */
 template <typename T>
@@ -284,16 +296,20 @@ AXOM_HOST_DEVICE Polyhedron<T, 3> clip(const Tetrahedron<T, 3>& tet,
  * \param [in] checkSign If true (default is false), checks if the
  *             signed volume of each shape is positive. If the signed volume
  *             of that shape is negative, order of some vertices will be
- *             swapped for that shape.
+ *             swapped to try to obtain a positive volume
+ *             for that shape. Otherwise, the returned polyhedron
+ *             will have a non-positive volume.
  *
  * \return A polyhedron of the tetrahedron clipped against
  *         the other tetrahedron.
  *
  * \note Function is based off clipPolyhedron() in Mike Owen's PolyClipper.
  *
- * \note checkSign flag does not guarantee the shapes' vertex orders
- *       will be valid. It is the responsiblity of the caller to pass
- *       shapes with a valid vertex order.
+ * \warning checkSign flag does not guarantee the shapes' vertex orders
+ *          will be valid. It is the responsiblity of the caller to pass
+ *          shapes with a valid vertex order. Otherwise, returned polyhedron
+ *          will have a non-positive volume with invalid vertex orders.
+ *
  */
 template <typename T>
 AXOM_HOST_DEVICE Polyhedron<T, 3> clip(const Tetrahedron<T, 3>& tet1,
