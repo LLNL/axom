@@ -675,8 +675,9 @@ public:
    * \param [in] checkSign If true (default is false), checks if the
    *             signed volume of the Polyhedron is positive. If signed volume
    *             is negative, order of some vertices will be swapped to try to
-   *             obtain a positive volume for the Polyhedron. Otherwise, the
-   *             returned Polyhedron will have a non-positive volume.
+   *             obtain a positive volume for the Polyhedron. Otherwise, if the
+   *             signed volume is negative and the vertices are not swapped,
+   *             the returned Polyhedron will have a non-positive volume.
    *
    * \return A Polyhedron with the Hexahedron's vertices and added
    *         vertex neighbors
@@ -700,9 +701,9 @@ public:
    *
    * \warning checkSign flag does not guarantee the Polyhedron's vertex order
    *          will be valid. It is the responsiblity of the caller to pass
-   *          a Hexahedron with a valid vertex order. Otherwise, the
-   *          Polyhedron will have a non-positive volume with an
-   *          invalid vertex order.
+   *          a Hexahedron with a valid vertex order. Otherwise, if the
+   *          Hexahedron has an invalid vertex order, the returned Polyhedron
+   *          will have a non-positive and/or unexpected volume.
    */
   AXOM_HOST_DEVICE
   static Polyhedron from_primitive(const Hexahedron<T, NDIMS>& hex,
@@ -749,8 +750,9 @@ public:
    * \param [in] checkSign If true (default is false), checks if the
    *             signed volume of the Polyhedron is positive. If signed volume
    *             is negative, order of some vertices will be swapped to try to
-   *             obtain a positive volume for the Polyhedron. Otherwise, the
-   *             returned Polyhedron will have a non-positive volume.
+   *             obtain a positive volume for the Polyhedron. Otherwise, if the
+   *             signed volume is negative and the vertices are not swapped,
+   *             the returned Polyhedron will have a non-positive volume.
    *
    * \return A Polyhedron with the Octahedron's vertices and added
    *         vertex neighbors
@@ -776,9 +778,10 @@ public:
    *
    * \warning checkSign flag does not guarantee the Polyhedron's vertex order
    *          will be valid. It is the responsiblity of the caller to pass
-   *          an Octahedron with a valid vertex order. Otherwise, the
-   *          Polyhedron will have a non-positive volume with an
-   *          invalid vertex order.
+   *          an Octahedron with a valid vertex order. Otherwise, if the
+   *          Octahedron has an invalid vertex order, the returned Polyhedron
+   *          will have a non-positive and/or unexpected volume.
+   *
    */
   AXOM_HOST_DEVICE
   static Polyhedron from_primitive(const Octahedron<T, NDIMS>& oct,
@@ -821,8 +824,9 @@ public:
    * \param [in] checkSign If true (default is false), checks if the
    *             signed volume of the Polyhedron is positive. If signed volume
    *             is negative, order of some vertices will be swapped to try to
-   *             obtain a positive volume for the Polyhedron. Otherwise, the
-   *             returned Polyhedron will have a non-positive volume.
+   *             obtain a positive volume for the Polyhedron. Otherwise, if the
+   *             signed volume is negative and the vertices are not swapped,
+   *             the returned Polyhedron will have a non-positive volume.
    *
    * \return A Polyhedron with the Tetrahedron's vertices and added
    *         vertex neighbors
@@ -847,9 +851,9 @@ public:
    *
    * \warning checkSign flag does not guarantee the Polyhedron's vertex order
    *          will be valid. It is the responsiblity of the caller to pass
-   *          a Tetrahedron with a valid vertex order. Otherwise, the
-   *          Polyhedron will have a non-positive volume with an
-   *          invalid vertex order.
+   *          a Tetrahedron with a valid vertex order. Otherwise, if the
+   *          Tetrahedron has an invalid vertex order, the returned Polyhedron
+   *          will have a non-positive and/or unexpected volume.
    *
    */
   AXOM_HOST_DEVICE

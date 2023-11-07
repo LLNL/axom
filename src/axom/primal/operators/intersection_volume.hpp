@@ -36,15 +36,17 @@ namespace primal
  *             signed volume of each shape is positive. If the signed volume
  *             of that shape is negative, order of some vertices will be
  *             swapped to try to obtain a positive volume
- *             for that shape. Otherwise, the returned volume
- *             may be zero.
-
+ *             for that shape. Otherwise, if the
+ *             signed volume is negative and the vertices are not swapped,
+ *             the returned volume may be zero and/or unexpected.
+ *
  * \return Intersection volume between the hexahedron and tetrahedron
  *
  * \warning checkSign flag does not guarantee the shapes' vertex orders
  *          will be valid. It is the responsiblity of the caller to pass
- *          shapes with a valid vertex order. Otherwise, the returned
- *          volume may be zero.
+ *          shapes with a valid vertex order. Otherwise, if the shapes have
+ *          invalid vertex orders, the returned volume may be zero
+ *          and/or unexpected.
  *
  */
 template <typename T>
@@ -67,15 +69,17 @@ AXOM_HOST_DEVICE T intersection_volume(const Hexahedron<T, 3>& hex,
  *             signed volume of each shape is positive. If the signed volume
  *             of that shape is negative, order of some vertices will be
  *             swapped to try to obtain a positive volume
- *             for that shape. Otherwise, the returned volume
- *             may be zero.
+ *             for that shape. Otherwise, if the
+ *             signed volume is negative and the vertices are not swapped,
+ *             the returned volume may be zero and/or unexpected.
  *
  * \return Intersection volume between the tetrahedron and hexahedron
  *
  * \warning checkSign flag does not guarantee the shapes' vertex orders
  *          will be valid. It is the responsiblity of the caller to pass
- *          shapes with a valid vertex order. Otherwise, the returned
- *          volume may be zero.
+ *          shapes with a valid vertex order. Otherwise, if the shapes have
+ *          invalid vertex orders, the returned volume may be zero
+ *          and/or unexpected.
  *
  */
 template <typename T>
@@ -98,15 +102,17 @@ AXOM_HOST_DEVICE T intersection_volume(const Tetrahedron<T, 3>& tet,
  *             signed volume of each shape is positive. If the signed volume
  *             of that shape is negative, order of some vertices will be
  *             swapped to try to obtain a positive volume
- *             for that shape. Otherwise, the returned volume
- *             may be zero.
+ *             for that shape. Otherwise, if the
+ *             signed volume is negative and the vertices are not swapped,
+ *             the returned volume may be zero and/or unexpected.
  *
  * \return Intersection volume between the octahedron and tetrahedron
  *
  * \warning checkSign flag does not guarantee the shapes' vertex orders
  *          will be valid. It is the responsiblity of the caller to pass
- *          shapes with a valid vertex order. Otherwise, the returned
- *          volume may be zero.
+ *          shapes with a valid vertex order. Otherwise, if the shapes have
+ *          invalid vertex orders, the returned volume may be zero
+ *          and/or unexpected.
  *
  */
 template <typename T>
@@ -129,15 +135,17 @@ AXOM_HOST_DEVICE T intersection_volume(const Octahedron<T, 3>& oct,
  *             signed volume of each shape is positive. If the signed volume
  *             of that shape is negative, order of some vertices will be
  *             swapped to try to obtain a positive volume
- *             for that shape. Otherwise, the returned volume
- *             may be zero.
+ *             for that shape. Otherwise, if the
+ *             signed volume is negative and the vertices are not swapped,
+ *             the returned volume may be zero and/or unexpected.
  *
  * \return Intersection volume between the tetrahedron and octahedron
  *
  * \warning checkSign flag does not guarantee the shapes' vertex orders
  *          will be valid. It is the responsiblity of the caller to pass
- *          shapes with a valid vertex order. Otherwise, the returned
- *          volume may be zero.
+ *          shapes with a valid vertex order. Otherwise, if the shapes have
+ *          invalid vertex orders, the returned volume may be zero
+ *          and/or unexpected.
  *
  */
 template <typename T>
@@ -160,15 +168,17 @@ AXOM_HOST_DEVICE T intersection_volume(const Tetrahedron<T, 3>& tet,
  *             signed volume of each shape is positive. If the signed volume
  *             of that shape is negative, order of some vertices will be
  *             swapped to try to obtain a positive volume
- *             for that shape. Otherwise, the returned volume
- *             may be zero.
+ *             for that shape. Otherwise, if the
+ *             signed volume is negative and the vertices are not swapped,
+ *             the returned volume may be zero and/or unexpected.
  *
  * \return Intersection volume between the tetrahedra
  *
  * \warning checkSign flag does not guarantee the shapes' vertex orders
  *          will be valid. It is the responsiblity of the caller to pass
- *          shapes with a valid vertex order. Otherwise, the returned
- *          volume may be zero.
+ *          shapes with a valid vertex order. Otherwise, if the shapes have
+ *          invalid vertex orders, the returned volume may be zero
+ *          and/or unexpected.
  *
  */
 template <typename T>
