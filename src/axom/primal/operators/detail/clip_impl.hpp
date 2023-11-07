@@ -400,6 +400,68 @@ AXOM_HOST_DEVICE void poly_clip_reindex(Polyhedron<T, NDIMS>& poly,
 }
 
 /*!
+ * \brief Finds the polyhedron formed from clipping a polyhedron with a plane
+ *
+ * \param [in] poly The polyhedron to clip
+ * \param [in] plane The plane used to clip the polyhedron
+ * \param [in] eps The tolerance for plane point orientation
+ *
+ * \return The polyhedron formed from clipping the input polyhedron with a plane
+ */
+template <typename T, int NDIMS>
+AXOM_HOST_DEVICE Polyhedron<T, NDIMS> clipPolyhedron(
+  Polyhedron<T, NDIMS>& poly,
+  const Plane<T, NDIMS>& plane,
+  double eps)
+{
+  using BoxType = BoundingBox<T, NDIMS>;
+
+  // Check that plane intersects Polyhedron
+  if (intersect(plane, BoxType(&poly[0], poly.numVertices(), true, eps))
+  {
+    int numVerts = poly.numVertices();
+
+    // Each bit value indicates if that Polyhedron vertex is formed from
+    // Polyhedron clipping with a plane.
+    unsigned int clipped = 0;
+
+    // Clip polyhedron against current plane, generating extra vertices
+    // where edges meet the plane.
+    poly_clip_vertices(poly, plane, eps, clipped);
+
+    // Adjust connectivity to link up newly-generated vertices.
+    poly_clip_fix_nbrs(poly, plane, numVerts, eps, clipped);
+
+    // Reindex polyhedron connectivity by removing vertices on the negative
+    // side of the plane.
+    poly_clip_reindex(poly, clipped);
+  }
+
+  // If entire polyhedron is below a plane (points can be on the plane),
+  // it is completely removed.
+  else
+  {
+    bool completeClip = true;
+
+    for (int i = 0; i < poly.numVertices(); i++)
+    {
+      if (plane.getOrientation(poly[i], eps) == ON_POSITIVE_SIDE)
+      {
+        completeClip = false;
+        break;
+      }
+    }
+
+    if (completeClip)
+    {
+      poly.clear();
+    }
+  }
+
+  return poly;
+}
+
+/*!
  * \brief Finds the clipped intersection Polyhedron between Polyhedron
  *        poly and an array of Planes.
  *
@@ -637,16 +699,12 @@ AXOM_HOST_DEVICE Polyhedron<T, NDIMS> clipTetrahedron(
   double eps,
   bool checkSign)
 {
-  using PlaneType = Plane<T, NDIMS>;
   using PolyhedronType = Polyhedron<T, NDIMS>;
 
   // Initialize our polyhedron to return
   PolyhedronType poly = PolyhedronType::from_primitive(tet, checkSign);
 
-  axom::StackArray<IndexType, 1> planeSize = {1};
-  axom::ArrayView<PlaneType> planesView(&plane, planeSize);
-
-  return clipPolyhedron(poly, planesView, eps);
+  return clipPolyhedron(poly, plane, eps);
 }
 
 }  // namespace detail
