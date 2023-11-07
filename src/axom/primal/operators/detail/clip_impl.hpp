@@ -620,6 +620,35 @@ AXOM_HOST_DEVICE Polyhedron<T, NDIMS> clipTetrahedron(
   return clipPolyhedron(poly, planesView, eps);
 }
 
+/*!
+ * \brief Finds the polyhedron formed from clipping a tetrahedron by a plane.
+ *
+ * \param [in] tet The tetrahedron to clip
+ * \param [in] plane The plane used to clip the tetrahedron
+ * \param [in] eps The tolerance for plane point orientation
+ * \param [in] checkSign Check if the signed volume of each shape is positive
+ *
+ * \return The polyhedron formed from clipping a tetrahedron by a plane
+ */
+template <typename T, int NDIMS>
+AXOM_HOST_DEVICE Polyhedron<T, NDIMS> clipTetrahedron(
+  const Tetrahedron<T, NDIMS>& tet,
+  const Plane<T, NDIMS>& plane,
+  double eps,
+  bool checkSign)
+{
+  using PlaneType = Plane<T, NDIMS>;
+  using PolyhedronType = Polyhedron<T, NDIMS>;
+
+  // Initialize our polyhedron to return
+  PolyhedronType poly = PolyhedronType::from_primitive(tet, checkSign);
+
+  axom::StackArray<IndexType, 1> planeSize = {1};
+  axom::ArrayView<PlaneType> planesView(&plane, planeSize);
+
+  return clipPolyhedron(poly, planesView, eps);
+}
+
 }  // namespace detail
 }  // namespace primal
 }  // namespace axom
