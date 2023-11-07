@@ -1294,6 +1294,124 @@ TEST(primal_clip, tet_tet_clip_special_case_1)
     EPS);
 }
 
+TEST(primal_clip, tet_plane_no_intersect_below)
+{
+  using namespace Primal3D;
+  constexpr double EPS = 1e-10;
+  constexpr bool CHECK_SIGN = true;
+
+  // Tet and plane do not intersect
+  TetrahedronType tet(PointType {0.0, 0.0, 0.0},
+                      PointType {1.0, 0.0, 0.0},
+                      PointType {0.0, 1.0, 0.0},
+                      PointType {0.0, 0.0, 1.0});
+
+  PlaneType plane(VectorType {0.0, 0.0, -1.0}, PointType {0.0, 0.0, -0.5});
+
+  PolyhedronType poly = axom::primal::clip(tet, plane, EPS, CHECK_SIGN);
+
+  EXPECT_NEAR(0.0, poly.volume(), EPS);
+}
+
+TEST(primal_clip, tet_plane_no_intersect_above)
+{
+  using namespace Primal3D;
+  constexpr double EPS = 1e-10;
+  constexpr bool CHECK_SIGN = true;
+
+  // Tet and plane do not intersect
+  TetrahedronType tet(PointType {0.0, 0.0, 0.0},
+                      PointType {1.0, 0.0, 0.0},
+                      PointType {0.0, 1.0, 0.0},
+                      PointType {0.0, 0.0, 1.0});
+
+  PlaneType plane(VectorType {0.0, 0.0, 1.0}, PointType {0.0, 0.0, -0.5});
+
+  PolyhedronType poly = axom::primal::clip(tet, plane, EPS, CHECK_SIGN);
+
+  EXPECT_NEAR(tet.volume(), poly.volume(), EPS);
+}
+
+TEST(primal_clip, tet_plane_borders_face_below)
+{
+  using namespace Primal3D;
+  constexpr double EPS = 1e-10;
+  constexpr bool CHECK_SIGN = true;
+
+  // Tet and plane do not intersect, but border each other
+  TetrahedronType tet(PointType {0.0, 0.0, 0.0},
+                      PointType {1.0, 0.0, 0.0},
+                      PointType {0.0, 1.0, 0.0},
+                      PointType {0.0, 0.0, 1.0});
+
+  constexpr double planeOffset = 0.0;
+  PlaneType plane(VectorType {0.0, 0.0, -1.0}, planeOffset);
+
+  PolyhedronType poly = axom::primal::clip(plane, tet, EPS, CHECK_SIGN);
+
+  EXPECT_NEAR(0.0, poly.volume(), EPS);
+}
+
+TEST(primal_clip, tet_plane_borders_face_above)
+{
+  using namespace Primal3D;
+  constexpr double EPS = 1e-10;
+  constexpr bool CHECK_SIGN = true;
+
+  // Tet and plane do not intersect, but border each other
+  TetrahedronType tet(PointType {0.0, 0.0, 0.0},
+                      PointType {1.0, 0.0, 0.0},
+                      PointType {0.0, 1.0, 0.0},
+                      PointType {0.0, 0.0, 1.0});
+
+  constexpr double planeOffset = 0.0;
+  PlaneType plane(VectorType {0.0, 0.0, 1.0}, planeOffset);
+
+  PolyhedronType poly = axom::primal::clip(plane, tet, EPS, CHECK_SIGN);
+
+  EXPECT_NEAR(tet.volume(), poly.volume(), EPS);
+}
+
+TEST(primal_clip, tet_plane_intersects_two_faces)
+{
+  using namespace Primal3D;
+  constexpr double EPS = 1e-10;
+  constexpr bool CHECK_SIGN = true;
+
+  // Tet and plane do not intersect, but border each other
+  TetrahedronType tet(PointType {0.0, 0.0, 0.0},
+                      PointType {1.0, 0.0, 0.0},
+                      PointType {0.0, 1.0, 0.0},
+                      PointType {0.0, 0.0, 1.0});
+
+  constexpr double planeOffset = 0.5;
+  PlaneType plane(VectorType {0.5, 0.5, -0.5}, planeOffset);
+
+  PolyhedronType poly = axom::primal::clip(plane, tet, EPS, CHECK_SIGN);
+
+  EXPECT_NEAR(tet.volume()/2.0, poly.volume(), EPS);
+}
+
+TEST(primal_clip, tet_plane_intersects_three_faces)
+{
+  using namespace Primal3D;
+  constexpr double EPS = 1e-10;
+  constexpr bool CHECK_SIGN = true;
+
+  // Tet and plane do not intersect, but border each other
+  TetrahedronType tet(PointType {0.0, 0.0, 0.0},
+                      PointType {1.0, 0.0, 0.0},
+                      PointType {0.0, 1.0, 0.0},
+                      PointType {0.0, 0.0, 1.0});
+
+  constexpr double planeOffset = 0.5;
+  PlaneType plane(VectorType {0.0, 0.0, -1.0}, planeOffset);
+
+  PolyhedronType poly = axom::primal::clip(plane, tet, EPS, CHECK_SIGN);
+
+  EXPECT_NEAR(0.125, poly.volume(), EPS);
+}
+
 //------------------------------------------------------------------------------
 int main(int argc, char* argv[])
 {
