@@ -417,7 +417,7 @@ AXOM_HOST_DEVICE Polyhedron<T, NDIMS> clipPolyhedron(
   using BoxType = BoundingBox<T, NDIMS>;
 
   // Check that plane intersects Polyhedron
-  if (intersect(plane, BoxType(&poly[0], poly.numVertices(), true, eps))
+  if (intersect(plane, BoxType(&poly[0], poly.numVertices()), true, eps))
   {
     int numVerts = poly.numVertices();
 
