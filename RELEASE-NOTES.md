@@ -19,6 +19,11 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 
 ## [Unreleased] - Release date yyyy-mm-dd
 
+### Added
+- Primal: Adds a `checkAndFixOrientation()` function to `primal::Tetrahedron`
+  that swaps the order of vertices if the signed volume of the Tetrahedron is
+  negative, resulting in the signed volume becoming positive.
+
 ### Changed
 - `MarchingCubes` and `DistributedClosestPoint` classes changed from requiring the Blueprint
   coordset name to requiring the Blueprint topology name.  The changed interface methods are:
