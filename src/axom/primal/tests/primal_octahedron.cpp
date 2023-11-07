@@ -32,6 +32,21 @@ protected:
   {
     EPS = 1e-12;
 
+    /*
+     * Define coordinates for first octahedron
+     * (view looking down from +z axis):
+     *
+     *            4                +z
+     *            /\                    +y
+     *       0 --/  \-- 2           ^  >
+     *         \/    \ /            | /
+     *         /      \             |/
+     *       5 -------- 3           -----> +x
+     *            \/
+     *            1
+     *
+     */
+
     // Define coordinates for first octahedron
     qData0[0] = QPoint::make_point(1, 0, 0);
     qData0[1] = QPoint::make_point(1, 1, 0);
@@ -39,6 +54,28 @@ protected:
     qData0[3] = QPoint::make_point(0, 1, 1);
     qData0[4] = QPoint::make_point(0, 0, 1);
     qData0[5] = QPoint::make_point(1, 0, 1);
+
+    /*
+     * Define coordinates for second octahedron (regular octahedron):
+     *
+     *              3                    +z
+     *             / \\                       +y
+     *            /   \ \                 ^  >
+     *           /     \  \               | /
+     *          /       \   \             |/
+     *         4- - - - -\- 2             -----> +x
+     *        /           \ /
+     *       /_____________/
+     *      5              1
+     *       \            /
+     *        \          /
+     *         \        /
+     *          \      /
+     *           \    /
+     *            \  /
+     *             \/
+     *             0
+     */
 
     // Define coordinates for second octahedron
     qData1[0] = QPoint::make_point(0, 0, -1);

@@ -298,11 +298,11 @@ spack:
       - spec: cppcheck@2.9
         prefix: /collab/usr/gapps/axom/devtools/toss_4_x86_64_ib/latest/cppcheck-2.9
     doxygen:
-      version: [1.8.14]
+      version: [1.9.6]
       buildable: false
       externals:
-      - spec: doxygen@1.8.14
-        prefix: /collab/usr/gapps/axom/devtools/toss_4_x86_64_ib/latest/doxygen-1.8.14
+      - spec: doxygen@1.9.6
+        prefix: /collab/usr/gapps/axom/devtools/toss_4_x86_64_ib/latest/doxygen-1.9.6
     # TODO: make installed clang 14.0.6 work
     llvm:
       version: [10.0.0]
