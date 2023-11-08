@@ -201,7 +201,7 @@ if(NOT AXOM_FOUND)
 
   ## axom_find_target_dependencies(TARGET <target> TLIST <list name>)
   ##
-  ## Store all target's dependencies (link libraries and interface link libraries)
+  ## Store all targets' dependencies (link libraries and interface link libraries)
   ## recursively in the variable name TLIST holds.
   macro(axom_find_target_dependencies)
 
