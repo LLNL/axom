@@ -187,10 +187,109 @@ if(NOT AXOM_FOUND)
     set_target_properties(RAJA PROPERTIES INTERFACE_COMPILE_OPTIONS "")
   endif()
 
+
+  #---------------------------------------------------------------------------
+  # Remove non-existant INTERFACE_INCLUDE_DIRECTORIES from imported targets
+  # to work around CMake error
+  #---------------------------------------------------------------------------
+
+  # Support IN_LIST operator for if()
+  # Policy added in 3.3+
+  if(POLICY CMP0057)
+    cmake_policy(SET CMP0057 NEW)
+  endif()
+
+  ## axom_find_target_dependencies(TARGET <target> TLIST <list name>)
+  ##
+  ## Store all target's dependencies (link libraries and interface link libraries)
+  ## recursively in the variable name TLIST holds.
+  macro(axom_find_target_dependencies)
+
+    set(options)
+    set(singleValuedArgs TARGET TLIST)
+    set(multiValuedArgs)
+
+    # parse the arguments to the macro
+    cmake_parse_arguments(arg
+         "${options}" "${singleValuedArgs}" "${multiValuedArgs}" ${ARGN})
+
+    # check for required arguments
+    if(NOT DEFINED arg_TARGET)
+      message(FATAL_ERROR "TARGET is a required parameter for the axom_find_target_dependencies macro")
+    endif()
+
+    if(NOT DEFINED arg_TLIST OR NOT DEFINED ${arg_TLIST})
+      message(FATAL_ERROR "TLIST is a required parameter for the axom_find_target_dependencies macro")
+    endif()
+
+    string(TOUPPER ${arg_TARGET} _target_upper)
+    if(_BLT_${_target_upper}_IS_REGISTERED_LIBRARY)
+      # recursive call
+      set (_depends_on "${_BLT_${_target_upper}_DEPENDS_ON}")
+      foreach(t ${_depends_on})
+        if (NOT "${t}" IN_LIST ${arg_TLIST})
+          list(APPEND ${arg_TLIST} ${t})
+          axom_find_target_dependencies(TARGET ${t} TLIST ${arg_TLIST})
+        endif()
+      endforeach()
+      unset(_depends_on)
+    endif()
+
+    # check if this is a valid cmake target
+    if(TARGET ${arg_TARGET})
+      # get link libaries if whitelisted
+      set(_property_list "")
+      get_property(_target_type TARGET ${arg_TARGET} PROPERTY TYPE)
+      if(NOT "${_target_type}" STREQUAL "INTERFACE_LIBRARY")
+        get_property(_propval TARGET ${arg_TARGET} PROPERTY LINK_LIBRARIES SET)
+        get_target_property(_propval ${arg_TARGET} LINK_LIBRARIES)
+        if (_propval AND NOT "${_propval}" IN_LIST ${arg_TLIST})
+          list(APPEND _property_list ${_propval})
+        endif()
+      endif()
+
+      # get interface link libraries
+      get_property(_propval TARGET ${arg_TARGET} PROPERTY INTERFACE_LINK_LIBRARIES SET)
+      get_target_property(_propval ${arg_TARGET} INTERFACE_LINK_LIBRARIES)
+      if (_propval AND NOT "${_propval}" IN_LIST ${arg_TLIST})
+        list(APPEND _property_list ${_propval})
+      endif()
+  
+      # recursive call
+      foreach(t ${_property_list})
+        list(APPEND ${arg_TLIST} ${t})
+        axom_find_target_dependencies(TARGET ${t} TLIST ${arg_TLIST})
+      endforeach()
+
+      unset(_property_list)
+      unset(_propval)
+    endif()
+  endmacro(axom_find_target_dependencies)
+
+  set(_deps "")
+  axom_find_target_dependencies(TARGET axom TLIST _deps)
+  list(REMOVE_DUPLICATES _deps)
+  message(STATUS "Removing non-existant include directories from Axom's dependencies...")
+
+  foreach(_target ${_deps})
+    if(TARGET ${_target})
+      get_target_property(_dirs ${_target} INTERFACE_INCLUDE_DIRECTORIES)
+      set(_existing_dirs)
+      foreach(_dir ${_dirs})
+        if (EXISTS "${_dir}")
+          list(APPEND _existing_dirs "${_dir}")
+        endif()
+      endforeach()
+      if (_existing_dirs)
+        set_target_properties(${_target} PROPERTIES
+                              INTERFACE_INCLUDE_DIRECTORIES "${_existing_dirs}" )
+      endif()
+    endif()
+  endforeach()
+
   #----------------------------------------------------------------------------
-  # Indicate that axom is correctly set up
+  # Indicate that Axom is correctly set up
   #----------------------------------------------------------------------------
   set(AXOM_FOUND TRUE)
 
 endif()
-
