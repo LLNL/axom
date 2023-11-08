@@ -1452,7 +1452,7 @@ TEST(primal_clip, tet_plane_intersect_triangle)
   constexpr double EPS = 1e-10;
   constexpr bool CHECK_SIGN = true;
 
-  // Tet and plane do not intersect, but border each other
+  // Plane intersects three edges of tet, forming a triangle
   TetrahedronType tet(PointType {0.0, 0.0, 0.0},
                       PointType {1.0, 0.0, 0.0},
                       PointType {0.0, 1.0, 0.0},
@@ -1471,18 +1471,17 @@ TEST(primal_clip, tet_plane_intersect_quadrilateral)
   constexpr double EPS = 1e-10;
   constexpr bool CHECK_SIGN = true;
 
-  // Tet and plane do not intersect, but border each other
+  // Plane intersects four edges of tet, forming a quadrilateral
   TetrahedronType tet(PointType {0.0, 0.0, 0.0},
                       PointType {1.0, 0.0, 0.0},
                       PointType {0.0, 1.0, 0.0},
                       PointType {0.0, 0.0, 1.0});
 
-  constexpr double planeOffset = 0.5;
-  PlaneType plane(VectorType {0.0, 0.0, -1.0}, planeOffset);
+  PlaneType plane(VectorType {0.25, 0.25, 0.0}, PointType {0.5, 0.0, 0.0});
 
   PolyhedronType poly = axom::primal::clip(plane, tet, EPS, CHECK_SIGN);
 
-  EXPECT_NEAR(0.125, poly.volume(), EPS);
+  EXPECT_NEAR(0.5*sqrt(0.5), poly.volume(), EPS);
 }
 
 //------------------------------------------------------------------------------
