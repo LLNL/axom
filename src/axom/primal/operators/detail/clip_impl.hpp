@@ -478,64 +478,12 @@ AXOM_HOST_DEVICE Polyhedron<T, NDIMS> clipPolyhedron(
   axom::ArrayView<Plane<T, NDIMS>> planes,
   double eps)
 {
-  using PointType = Point<T, NDIMS>;
-  using BoxType = BoundingBox<T, NDIMS>;
   using PlaneType = Plane<T, NDIMS>;
 
-  //Bounding Box of Polyhedron
-  BoxType polyBox(&poly[0], poly.numVertices());
-
-  //Clip Polyhedron by each plane
-  for(PlaneType plane : planes)
+  // Clip Polyhedron by each plane
+  for (const PlaneType& plane : planes)
   {
-    // Check that plane intersects Polyhedron
-    if(intersect(plane, polyBox, true, eps))
-    {
-      int numVerts = poly.numVertices();
-
-      // Each bit value indicates if that Polyhedron vertex is formed from
-      // Polyhedron clipping with a plane.
-      unsigned int clipped = 0;
-
-      // Clip polyhedron against current plane, generating extra vertices
-      // where edges meet the plane.
-      poly_clip_vertices(poly, plane, eps, clipped);
-
-      // Adjust connectivity to link up newly-generated vertices.
-      poly_clip_fix_nbrs(poly, plane, numVerts, eps, clipped);
-
-      // Reindex polyhedron connectivity by removing vertices on the negative
-      // side of the plane.
-      poly_clip_reindex(poly, clipped);
-
-      // Generate new bounding box for polyhedron
-      polyBox = BoxType();
-
-      for(int i = 0; i < poly.numVertices(); i++)
-      {
-        polyBox.addPoint(PointType(poly[i]));
-      }
-    }
-
-    // If entire polyhedron is below a plane (points can be on the plane), it is completely removed.
-    else
-    {
-      bool completeClip = true;
-      for(int i = 0; i < poly.numVertices(); i++)
-      {
-        if(plane.getOrientation(poly[i], eps) == ON_POSITIVE_SIDE)
-        {
-          completeClip = false;
-          break;
-        }
-      }
-
-      if(completeClip)
-      {
-        poly.clear();
-        return poly;
-      }
-    }
+    clipPolyhedron(poly, plane, eps);
   }
 
   return poly;
