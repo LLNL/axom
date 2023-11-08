@@ -625,7 +625,7 @@ TEST_F(TetrahedronTest, regularTetrahedron)
   }
 }
 
-TEST_F(TetrahedronTest, checkSign)
+TEST_F(TetrahedronTest, checkAndFixOrientation)
 {
   using QPoint = TetrahedronTest::QPoint;
   using QTet = TetrahedronTest::QTet;
@@ -643,15 +643,16 @@ TEST_F(TetrahedronTest, checkSign)
       QTet tetPermuted =
         QTet(tet[indices[0]], tet[indices[1]], tet[indices[2]], tet[indices[3]]);
 
-      double preCheckVolume = tetPermuted.volume();
+      double preCheckAbsoluteVolume = tetPermuted.volume();
 
       tetPermuted.checkAndFixOrientation();
-      EXPECT_NEAR(expVolume, tetPermuted.signedVolume(), this->EPS);
+
+      double postCheckAbsoluteVolume = tetPermuted.volume();
+
+      EXPECT_NEAR(expVolume, postCheckAbsoluteVolume, this->EPS);
 
       // Verify absolute value of volume is still the same
-      EXPECT_NEAR(axom::utilities::abs(preCheckVolume),
-                  tetPermuted.signedVolume(),
-                  this->EPS);
+      EXPECT_NEAR(preCheckAbsoluteVolume, postCheckAbsoluteVolume, this->EPS);
 
     } while(std::next_permutation(indices, indices + QTet::NUM_VERTS));
   }

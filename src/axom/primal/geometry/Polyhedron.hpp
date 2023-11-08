@@ -672,12 +672,10 @@ public:
    * \brief Creates a Polyhedron from a given Hexahedron's vertices.
    *
    * \param [in] hex The hexahedron
-   * \param [in] checkSign If true (default is false), checks if the
-   *             signed volume of the Polyhedron is positive. If signed volume
-   *             is negative, order of some vertices will be swapped to try to
-   *             obtain a positive volume for the Polyhedron. Otherwise, if the
-   *             signed volume is negative and the vertices are not swapped,
-   *             the returned Polyhedron will have a non-positive volume.
+   * \param [in] tryFixOrientation If true, checks if the signed volume of the
+   *             Polyhedron is positive and swaps the order of some vertices
+   *             in that shape to try to obtain a nonnegative signed volume.
+   *             Defaults to false.
    *
    * \return A Polyhedron with the Hexahedron's vertices and added
    *         vertex neighbors
@@ -699,15 +697,20 @@ public:
    *       The Polyhedron's vertex neighbors are created assuming this vertex
    *       ordering.
    *
-   * \warning checkSign flag does not guarantee the Polyhedron's vertex order
+   * \warning tryFixOrientation flag does not guarantee the Polyhedron's vertex order
    *          will be valid. It is the responsiblity of the caller to pass
    *          a Hexahedron with a valid vertex order. Otherwise, if the
    *          Hexahedron has an invalid vertex order, the returned Polyhedron
    *          will have a non-positive and/or unexpected volume.
+   *
+   * \warning If tryFixOrientation flag is false and some of the shapes have
+   *          a negative signed volume, the returned Polyhedron
+   *          will have a non-positive and/or unexpected volume.
+   *
    */
   AXOM_HOST_DEVICE
   static Polyhedron from_primitive(const Hexahedron<T, NDIMS>& hex,
-                                   bool checkSign = false)
+                                   bool tryFixOrientation = false)
   {
     // Initialize our polyhedron to return
     Polyhedron<T, NDIMS> poly;
@@ -731,7 +734,7 @@ public:
     poly.addNeighbors(7, {3, 4, 6});
 
     // Reverses order of vertices 1,3 and 5,7 if signed volume is negative
-    if(checkSign)
+    if(tryFixOrientation)
     {
       if(poly.signedVolume() < 0)
       {
@@ -747,12 +750,10 @@ public:
    * \brief Creates a Polyhedron from a given Octahedron's vertices.
    *
    * \param [in] oct The octahedron
-   * \param [in] checkSign If true (default is false), checks if the
-   *             signed volume of the Polyhedron is positive. If signed volume
-   *             is negative, order of some vertices will be swapped to try to
-   *             obtain a positive volume for the Polyhedron. Otherwise, if the
-   *             signed volume is negative and the vertices are not swapped,
-   *             the returned Polyhedron will have a non-positive volume.
+   * \param [in] tryFixOrientation If true, checks if the signed volume of the
+   *             Polyhedron is positive and swaps the order of some vertices
+   *             in that shape to try to obtain a nonnegative signed volume.
+   *             Defaults to false.
    *
    * \return A Polyhedron with the Octahedron's vertices and added
    *         vertex neighbors
@@ -776,16 +777,20 @@ public:
    *       The Polyhedron's vertex neighbors are created assuming this vertex
    *       ordering.
    *
-   * \warning checkSign flag does not guarantee the Polyhedron's vertex order
+   * \warning tryFixOrientation flag does not guarantee the Polyhedron's vertex order
    *          will be valid. It is the responsiblity of the caller to pass
    *          an Octahedron with a valid vertex order. Otherwise, if the
    *          Octahedron has an invalid vertex order, the returned Polyhedron
    *          will have a non-positive and/or unexpected volume.
    *
+   * \warning If tryFixOrientation flag is false and some of the shapes have
+   *          a negative signed volume, the returned Polyhedron
+   *          will have a non-positive and/or unexpected volume.
+   *
    */
   AXOM_HOST_DEVICE
   static Polyhedron from_primitive(const Octahedron<T, NDIMS>& oct,
-                                   bool checkSign = false)
+                                   bool tryFixOrientation = false)
   {
     // Initialize our polyhedron to return
     Polyhedron<T, NDIMS> poly;
@@ -805,7 +810,7 @@ public:
     poly.addNeighbors(5, {0, 1, 3, 4});
 
     // Reverses order of vertices 1,2 and 4,5 if volume is negative.
-    if(checkSign)
+    if(tryFixOrientation)
     {
       if(poly.signedVolume() < 0)
       {
@@ -821,12 +826,10 @@ public:
    * \brief Creates a Polyhedron from a given Tetrahedron's vertices.
    *
    * \param [in] tet The tetrahedron
-   * \param [in] checkSign If true (default is false), checks if the
-   *             signed volume of the Polyhedron is positive. If signed volume
-   *             is negative, order of some vertices will be swapped to try to
-   *             obtain a positive volume for the Polyhedron. Otherwise, if the
-   *             signed volume is negative and the vertices are not swapped,
-   *             the returned Polyhedron will have a non-positive volume.
+   * \param [in] tryFixOrientation If true, checks if the signed volume of the
+   *             Polyhedron is positive and swaps the order of some vertices
+   *             in that shape to try to obtain a nonnegative signed volume.
+   *             Defaults to false.
    *
    * \return A Polyhedron with the Tetrahedron's vertices and added
    *         vertex neighbors
@@ -849,16 +852,20 @@ public:
    *       The Polyhedron's vertex neighbors are created assuming this vertex
    *       ordering.
    *
-   * \warning checkSign flag does not guarantee the Polyhedron's vertex order
-   *          will be valid. It is the responsiblity of the caller to pass
-   *          a Tetrahedron with a valid vertex order. Otherwise, if the
+   * \warning tryFixOrientation flag does not guarantee the Polyhedron's vertex
+   *          order will be valid. It is the responsiblity of the caller to
+   *          pass a Tetrahedron with a valid vertex order. Otherwise, if the
    *          Tetrahedron has an invalid vertex order, the returned Polyhedron
+   *          will have a non-positive and/or unexpected volume.
+   *
+   * \warning If tryFixOrientation flag is false and some of the shapes have
+   *          a negative signed volume, the returned Polyhedron
    *          will have a non-positive and/or unexpected volume.
    *
    */
   AXOM_HOST_DEVICE
   static Polyhedron from_primitive(const Tetrahedron<T, NDIMS>& tet,
-                                   bool checkSign = false)
+                                   bool tryFixOrientation = false)
   {
     // Initialize our polyhedron to return
     Polyhedron<T, NDIMS> poly;
@@ -874,7 +881,7 @@ public:
     poly.addNeighbors(3, {0, 1, 2});
 
     // Reverses order of vertices 1 and 2 if signed volume is negative
-    if(checkSign)
+    if(tryFixOrientation)
     {
       if(tet.signedVolume() < 0)
       {
