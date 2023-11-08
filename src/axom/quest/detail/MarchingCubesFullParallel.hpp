@@ -100,6 +100,7 @@ public:
   {
     markCrossings();
     scanCrossings();
+    computeContour();
   }
 
   /*!
@@ -265,21 +266,21 @@ public:
     auto caseIdsView = m_caseIds.view();
 
     // Compute number of surface facets added by each parent cell.
-    m_addFacets.resize(parentCellCount);
-    const axom::ArrayView<int, 1, MemorySpace> addFacetsView = m_addFacets.view();
+    m_facetIncrs.resize(parentCellCount);
+    const axom::ArrayView<int, 1, MemorySpace> facetIncrsView = m_facetIncrs.view();
 
   #if defined(AXOM_USE_RAJA)
     axom::for_all<ExecSpace>(
       0,
       parentCellCount,
       AXOM_LAMBDA(axom::IndexType parentCellId) {
-        addFacetsView.flatIndex(parentCellId) =
+        facetIncrsView.flatIndex(parentCellId) =
           num_contour_cells(caseIdsView.flatIndex(parentCellId));
       });
   #else
     for(axom::IndexType pcId = 0; pcId < parentCellCount; ++pcId)
     {
-      addFacetsView.flatIndex(pcId) =
+      facetIncrsView.flatIndex(pcId) =
         num_contour_cells(caseIdsView.flatIndex(pcId));
     }
   #endif
@@ -291,42 +292,64 @@ public:
       m_firstFacetIds.view();
   #if defined(AXOM_USE_RAJA)
     RAJA::exclusive_scan<ScanPolicy>(
-      RAJA::make_span(addFacetsView.data(), parentCellCount),
+      RAJA::make_span(facetIncrsView.data(), parentCellCount),
       RAJA::make_span(firstFacetIdsView.data(), parentCellCount),
       RAJA::operators::plus<axom::IndexType> {});
 
-      // m_addFacets and m_firstFacetIds, combined with m_caseIds,
+      // m_facetIncrs and m_firstFacetIds, combined with m_caseIds,
       // are all we need to compute the surface mesh.
   #else
     firstFacetIdsView[0] = 0;
     for(axom::IndexType pcId = 1; pcId < parentCellCount; ++pcId)
     {
       firstFacetIdsView[pcId] =
-        firstFacetIdsView[pcId - 1] + addFacetsView[pcId - 1];
+        firstFacetIdsView[pcId - 1] + facetIncrsView[pcId - 1];
     }
   #endif
 
-    // Compute number of facets in domain.
+    // Use last facet info to compute number of facets in domain.
     // In case data is on device, copy to host before computing.
     axom::IndexType firstFacetIds_back = 0;
-    axom::IndexType addFacets_back = 0;
+    axom::IndexType facetIncrs_back = 0;
     axom::copy(&firstFacetIds_back,
                m_firstFacetIds.data() + m_firstFacetIds.size() - 1,
                sizeof(firstFacetIds_back));
-    axom::copy(&addFacets_back,
-               m_addFacets.data() + m_addFacets.size() - 1,
-               sizeof(addFacets_back));
-    m_facetCount = firstFacetIds_back + addFacets_back;
+    axom::copy(&facetIncrs_back,
+               m_facetIncrs.data() + m_facetIncrs.size() - 1,
+               sizeof(facetIncrs_back));
+    m_facetCount = firstFacetIds_back + facetIncrs_back;
 
     // Allocate space for surface mesh.
     const axom::IndexType cornersCount = DIM * m_facetCount;
     m_contourCellParents.resize(m_facetCount);
     m_contourCellCorners.resize(m_facetCount);
     m_contourNodeCoords.resize(cornersCount);
+  }
 
+  void computeContour()
+  {
     //
     // Fill in surface mesh data.
     //
+
+    const axom::IndexType parentCellCount = m_caseIds.size();
+    const auto facetIncrsView = m_facetIncrs.view();
+    const auto firstFacetIdsView = m_firstFacetIds.view();
+    const auto caseIdsView = m_caseIds.view();
+
+    // sortedIndices are parent cell indices, sorted by number
+    // of facets in them.
+    axom::Array<axom::IndexType, 1, MemorySpace> sortedFacetIncrs(m_facetIncrs);
+    axom::Array<axom::IndexType, 1, MemorySpace> sortedIndices(parentCellCount);
+    auto sortedIndicesView = sortedIndices.view();
+    auto sortedFacetIncrsView = sortedFacetIncrs.view();
+    axom::for_all<ExecSpace>(0, parentCellCount,
+                             AXOM_LAMBDA(axom::IndexType pcId) {
+                               sortedIndicesView[pcId] = pcId;
+                             });
+    RAJA::stable_sort_pairs<LoopPolicy>(RAJA::make_span(sortedFacetIncrs.data(), parentCellCount),
+                                        RAJA::make_span(sortedIndices.data(), parentCellCount),
+                                        RAJA::operators::greater<axom::IndexType>{});
 
     auto contourCellParentsView = m_contourCellParents.view();
     auto contourCellCornersView = m_contourCellCorners.view();
@@ -336,13 +359,14 @@ public:
                             m_caseIds.strides(),
                             m_fcnView,
                             m_coordsViews);
-    auto gen_for_parent_cell = AXOM_LAMBDA(axom::IndexType parentCellId)
+    auto gen_for_parent_cell = AXOM_LAMBDA(axom::IndexType loopIndex)
     {
+      axom::IndexType parentCellId = sortedIndicesView[loopIndex];
       Point cornerCoords[CELL_CORNER_COUNT];
       double cornerValues[CELL_CORNER_COUNT];
       ccu.get_corner_coords_and_values(parentCellId, cornerCoords, cornerValues);
 
-      auto additionalFacets = addFacetsView[parentCellId];
+      auto additionalFacets = facetIncrsView[parentCellId];
       auto firstFacetId = firstFacetIdsView[parentCellId];
 
       auto caseId = caseIdsView.flatIndex(parentCellId);
@@ -367,10 +391,10 @@ public:
         }
       }
     };
+
   #if defined(AXOM_USE_RAJA)
     axom::for_all<ExecSpace>(0, parentCellCount, gen_for_parent_cell);
   #else
-    firstFacetIdsView[0] = 0;
     for(axom::IndexType pcId = 1; pcId < parentCellCount; ++pcId)
     {
       gen_for_parent_cell(pcId);
@@ -778,7 +802,7 @@ private:
   axom::IndexType m_crossingCount = 0;
 
   //!@brief Number of surface mesh facets added by computational mesh cells.
-  axom::Array<int, 1, MemorySpace> m_addFacets;
+  axom::Array<int, 1, MemorySpace> m_facetIncrs;
 
   //!@brief First index of facets in computational mesh cells.
   axom::Array<axom::IndexType, 1, MemorySpace> m_firstFacetIds;
