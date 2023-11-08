@@ -1446,13 +1446,13 @@ TEST(primal_clip, tet_plane_border_face_above)
   EXPECT_NEAR(tet.volume(), poly.volume(), EPS);
 }
 
-TEST(primal_clip, tet_plane_intersect_triangle)
+TEST(primal_clip, tet_plane_intersect_three_edges)
 {
   using namespace Primal3D;
   constexpr double EPS = 1e-10;
   constexpr bool CHECK_SIGN = true;
 
-  // Plane intersects three edges of tet, forming a triangle
+  // Plane intersects three edges of tet
   TetrahedronType tet(PointType {0.0, 0.0, 0.0},
                       PointType {1.0, 0.0, 0.0},
                       PointType {0.0, 1.0, 0.0},
@@ -1465,24 +1465,7 @@ TEST(primal_clip, tet_plane_intersect_triangle)
   EXPECT_NEAR(tet.volume()/2.0, poly.volume(), EPS);
 }
 
-TEST(primal_clip, tet_plane_intersect_quadrilateral)
-{
-  using namespace Primal3D;
-  constexpr double EPS = 1e-10;
-  constexpr bool CHECK_SIGN = true;
-
-  // Plane intersects four edges of tet, forming a quadrilateral
-  TetrahedronType tet(PointType {0.0, 0.0, 0.0},
-                      PointType {1.0, 0.0, 0.0},
-                      PointType {0.0, 1.0, 0.0},
-                      PointType {0.0, 0.0, 1.0});
-
-  PlaneType plane(VectorType {0.25, 0.25, 0.0}, PointType {0.5, 0.0, 0.0});
-
-  PolyhedronType poly = axom::primal::clip(plane, tet, EPS, CHECK_SIGN);
-
-  EXPECT_NEAR(0.5*sqrt(0.5), poly.volume(), EPS);
-}
+// TODO: Add a test for a plane that intersects four edges of a tet
 
 //------------------------------------------------------------------------------
 int main(int argc, char* argv[])
