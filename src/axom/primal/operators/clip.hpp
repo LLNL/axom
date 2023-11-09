@@ -305,79 +305,87 @@ AXOM_HOST_DEVICE Polyhedron<T, 3> clip(const Tetrahedron<T, 3>& tet1,
 }
 
 /*!
- * \brief Clips a 3D tetrahedron against a plane in 3D, returning
- *        the geometric intersection as a polyhedron
+ * \brief Clips a 3D tetrahedron against the half-space defined by a plane
+ *        and returns the resulting polyhedron
  *
- *  This function clips the tetrahedron against the given plane. This
- *  involves finding new vertices at the intersection of the polyhedron
- *  edges and the plane, removing vertices from the polyhedron that are
- *  below the plane, and redefining the neighbors for each vertex (a
- *  vertex is a neighbor of another vertex if there is an edge between
+ *  This function clips a tetrahedron against the half-space defined by a
+ *  plane. This involves finding new vertices at the intersection of the
+ *  polyhedron edges and the plane, removing vertices from the polyhedron
+ *  that are below the plane, and redefining the neighbors for each vertex
+ *  (a vertex is a neighbor of another vertex if there is an edge between
  *  them).
  *
  * \param [in] tet The tetrahedron to clip
- * \param [in] plane The plane used to clip the tetrahedron
- * \param [in] eps The tolerance used when computing on which side of the
- *             plane a point lies
- * \param [in] checkSign If true (default is false), checks if the signed
- *             volume of the tetrahedron is positive. If the signed volume
- *             of the tetrahedron is negative, the order of some vertices
- *             will be swapped in order to obtain a positive signed volume.
+ * \param [in] plane The plane defining the half-space used to clip the tetrahedron
+ * \param [in] eps The tolerance for plane point orientation
+ * \param [in] tryFixOrientation If true and the tetrahedron has a negative
+ *             signed volume, swaps the order of some vertices in the
+ *             tetrathedron to try to obtain a nonnegative signed volume.
+ *             Defaults to false.
  *
- * \return The polyhedron obtained from clipping the tetrahedron against
- *         the plane.
+ * \return The polyhedron obtained from clipping a tetrahedron against
+ *         the half-space defined by a plane.
  *
  * \note Function is based off clipPolyhedron() in Mike Owen's PolyClipper.
  *
- * \note checkSign flag does not guarantee the shapes' vertex orders
- *       will be valid. It is the responsiblity of the caller to pass
- *       shapes with a valid vertex order.
+ * \warning tryFixOrientation flag does not guarantee the tetrahedron's vertex
+ *          order will be valid. It is the responsiblity of the caller to pass
+ *          a tetrahedron with a valid vertex order. Otherwise, the returned
+ *          polyhedron will have a non-positive and/or unexpected volume.
+ *
+ * \warning If the tryFixOrientation flag is false and the tetrahedron has
+ *          a negative signed volume, the returned polyhedron will have a
+ *          non-positive and/or unexpected volume.
  */
 template <typename T>
 AXOM_HOST_DEVICE Polyhedron<T, 3> clip(const Tetrahedron<T, 3>& tet,
                                        const Plane<T, 3>& plane,
                                        double eps = 1.e-10,
-                                       bool checkSign = false)
+                                       bool tryFixOrientation = false)
 {
-  return detail::clipTetrahedron(tet, plane, eps, checkSign);
+  return detail::clipTetrahedron(tet, plane, eps, tryFixOrientation);
 }
 
 /*!
- * \brief Clips a 3D tetrahedron against a plane in 3D, returning
- *        the geometric intersection as a polyhedron
+ * \brief Clips a 3D tetrahedron against the half-space defined by a plane
+ *        and returns the resulting polyhedron
  *
- *  This function clips the tetrahedron against the given plane. This
- *  involves finding new vertices at the intersection of the polyhedron
- *  edges and the plane, removing vertices from the polyhedron that are
- *  below the plane, and redefining the neighbors for each vertex (a
- *  vertex is a neighbor of another vertex if there is an edge between
+ *  This function clips a tetrahedron against the half-space defined by a
+ *  plane. This involves finding new vertices at the intersection of the
+ *  polyhedron edges and the plane, removing vertices from the polyhedron
+ *  that are below the plane, and redefining the neighbors for each vertex
+ *  (a vertex is a neighbor of another vertex if there is an edge between
  *  them).
  *
- * \param [in] plane The plane used to clip the tetrahedron
+ * \param [in] plane The plane defining the half-space used to clip the tetrahedron
  * \param [in] tet The tetrahedron to clip
- * \param [in] eps The tolerance used when computing on which side of the
- *             plane a point lies
- * \param [in] checkSign If true (default is false), checks if the signed
- *             volume of the tetrahedron is positive. If the signed volume
- *             of the tetrahedron is negative, the order of some vertices
- *             will be swapped in order to obtain a positive signed volume.
+ * \param [in] eps The tolerance for plane point orientation
+ * \param [in] tryFixOrientation If true and the tetrahedron has a negative
+ *             signed volume, swaps the order of some vertices in the
+ *             tetrathedron to try to obtain a nonnegative signed volume.
+ *             Defaults to false.
  *
- * \return The polyhedron obtained from clipping the tetrahedron against
- *         the plane.
+ * \return The polyhedron obtained from clipping a tetrahedron against
+ *         the half-space defined by a plane.
  *
  * \note Function is based off clipPolyhedron() in Mike Owen's PolyClipper.
  *
- * \note checkSign flag does not guarantee the shapes' vertex orders
- *       will be valid. It is the responsiblity of the caller to pass
- *       shapes with a valid vertex order.
+ * \warning tryFixOrientation flag does not guarantee the tetrahedron's vertex
+ *          order will be valid. It is the responsiblity of the caller to pass
+ *          a tetrahedron with a valid vertex order. Otherwise, the returned
+ *          polyhedron will have a non-positive and/or unexpected volume.
+ *
+ * \warning If the tryFixOrientation flag is false and the tetrahedron has
+ *          a negative signed volume, the returned polyhedron will have a
+ *          non-positive and/or unexpected volume.
  */
 template <typename T>
 AXOM_HOST_DEVICE Polyhedron<T, 3> clip(const Plane<T, 3>& plane,
                                        const Tetrahedron<T, 3>& tet,
                                        double eps = 1.e-10,
-                                       bool checkSign = false)
+                                       bool tryFixOrientation = false)
 {
-  return clip(tet, plane, eps, checkSign);
+  return clip(tet, plane, eps, tryFixOrientation);
 }
 
 }  // namespace primal

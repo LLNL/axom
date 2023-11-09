@@ -631,27 +631,38 @@ AXOM_HOST_DEVICE Polyhedron<T, NDIMS> clipTetrahedron(
 }
 
 /*!
- * \brief Finds the polyhedron formed from clipping a tetrahedron by a plane.
+ * \brief Clips a tetrahedron against the half-space defined by a plane
+ *        and returns the resulting polyhedron
  *
  * \param [in] tet The tetrahedron to clip
- * \param [in] plane The plane used to clip the tetrahedron
+ * \param [in] plane The plane defining the half-space used to clip the tetrahedron
  * \param [in] eps The tolerance for plane point orientation
- * \param [in] checkSign Check if the signed volume of each shape is positive
+ * \param [in] tryFixOrientation If true and the tetrahedron has a negative
+ *             signed volume, swaps the order of some vertices in the
+ *             tetrathedron to try to obtain a nonnegative signed volume.
+ *             Defaults to false.
  *
- * \return The polyhedron formed from clipping a tetrahedron by a plane
+ * \return The polyhedron obtained from clipping a tetrahedron against
+ *         the half-space defined a plane
+ *
+ * \warning tryFixOrientation flag does not guarantee the tetrahedron's vertex
+ *          order will be valid. It is the responsiblity of the caller to pass
+ *          a tetrahedron with a valid vertex order. Otherwise, the returned
+ *          polyhedron will have a non-positive and/or unexpected volume.
+ *
+ * \warning If the tryFixOrientation flag is false and the tetrahedron has
+ *          a negative signed volume, the returned polyhedron will have a
+ *          non-positive and/or unexpected volume.
  */
 template <typename T, int NDIMS>
 AXOM_HOST_DEVICE Polyhedron<T, NDIMS> clipTetrahedron(
   const Tetrahedron<T, NDIMS>& tet,
   const Plane<T, NDIMS>& plane,
   double eps,
-  bool checkSign)
+  bool tryFixOrientation)
 {
   using PolyhedronType = Polyhedron<T, NDIMS>;
-
-  // Initialize our polyhedron to return
-  PolyhedronType poly = PolyhedronType::from_primitive(tet, checkSign);
-
+  PolyhedronType poly = PolyhedronType::from_primitive(tet, tryFixOrientation);
   clipPolyhedron(poly, plane, eps);
   return poly;
 }
