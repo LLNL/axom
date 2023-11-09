@@ -233,20 +233,20 @@ static int allocatorIdForPolicy(quest::MarchingCubesRuntimePolicy policy)
     aid = axom::execution_space<axom::SEQ_EXEC>::allocatorID();
   }
 #if defined(AXOM_USE_RAJA)
-#ifdef _AXOM_MC_USE_OPENMP
+#ifdef _AXOM_MARCHINGCUBES_USE_OPENMP
   else if(policy == axom::quest::MarchingCubesRuntimePolicy::omp)
   {
     aid = axom::execution_space<axom::OMP_EXEC>::allocatorID();
   }
 #endif
-#ifdef _AXOM_MC_USE_CUDA
+#ifdef _AXOM_MARCHINGCUBES_USE_CUDA
   else if(policy == axom::quest::MarchingCubesRuntimePolicy::cuda)
   {
     // aid = axom::execution_space<axom::CUDA_EXEC<256>>::allocatorID();
     aid = axom::getUmpireResourceAllocatorID(umpire::resource::Device);
   }
 #endif
-#ifdef _AXOM_MC_USE_HIP
+#ifdef _AXOM_MARCHINGCUBES_USE_HIP
   else if(policy == axom::quest::MarchingCubesRuntimePolicy::hip)
   {
     // aid = axom::execution_space<axom::HIP_EXEC<256>>::allocatorID();

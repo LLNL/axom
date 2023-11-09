@@ -62,7 +62,7 @@ public:
     @param dom Blueprint structured mesh domain
     @param topologyName Name of mesh topology (see blueprint
            mesh documentation)
-    @param fcnFieldName Name of nodal function is in dom
+    @param fcnFieldName Name of nodal function in dom
     @param maskFieldName Name of integer cell mask function is in dom
 
     Set up views to domain data and allocate other data to work on the
