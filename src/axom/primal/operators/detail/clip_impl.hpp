@@ -400,18 +400,16 @@ AXOM_HOST_DEVICE void poly_clip_reindex(Polyhedron<T, NDIMS>& poly,
 }
 
 /*!
- * \brief Finds the polyhedron formed from clipping a polyhedron with a plane
+ * \brief Clips a polyhedron against a half-space defined by a plane
  *
- * \param [in] poly The polyhedron to clip
- * \param [in] plane The plane used to clip the polyhedron
+ * \param [in/out] poly The polyhedron to clip
+ * \param [in] plane The plane defining the half-space used to clip the polyhedron
  * \param [in] eps The tolerance for plane point orientation
- *
- * \return The polyhedron formed from clipping the input polyhedron with a plane
  */
 template <typename T, int NDIMS>
-AXOM_HOST_DEVICE Polyhedron<T, NDIMS> clipPolyhedron(Polyhedron<T, NDIMS>& poly,
-                                                     const Plane<T, NDIMS>& plane,
-                                                     double eps)
+AXOM_HOST_DEVICE void clipPolyhedron(Polyhedron<T, NDIMS>& poly,
+                                     const Plane<T, NDIMS>& plane,
+                                     double eps)
 {
   using BoxType = BoundingBox<T, NDIMS>;
 
@@ -457,25 +455,20 @@ AXOM_HOST_DEVICE Polyhedron<T, NDIMS> clipPolyhedron(Polyhedron<T, NDIMS>& poly,
     }
   }
 
-  return poly;
+  return;
 }
 
 /*!
- * \brief Finds the clipped intersection Polyhedron between Polyhedron
- *        poly and an array of Planes.
+ * \brief Clips a polyhedron against an array of planes
  *
- * \param [in] poly The polyhedron
+ * \param [in/out] poly The polyhedron to clip
  * \param [in] planes The array of planes
- * \param [in] eps The tolerance for plane point orientation.
- *
- * \return The Polyhedron formed from clipping the polyhedron with a set of planes.
- *
+ * \param [in] eps The tolerance for plane point orientation
  */
 template <typename T, int NDIMS>
-AXOM_HOST_DEVICE Polyhedron<T, NDIMS> clipPolyhedron(
-  Polyhedron<T, NDIMS>& poly,
-  axom::ArrayView<Plane<T, NDIMS>> planes,
-  double eps)
+AXOM_HOST_DEVICE void clipPolyhedron(Polyhedron<T, NDIMS>& poly,
+                                     axom::ArrayView<Plane<T, NDIMS>> planes,
+                                     double eps)
 {
   using PlaneType = Plane<T, NDIMS>;
 
@@ -483,9 +476,14 @@ AXOM_HOST_DEVICE Polyhedron<T, NDIMS> clipPolyhedron(
   for(const PlaneType& plane : planes)
   {
     clipPolyhedron(poly, plane, eps);
+
+    if(poly.numVertices() == 0)
+    {
+      return;
+    }
   }
 
-  return poly;
+  return;
 }
 
 /*!
@@ -532,7 +530,8 @@ AXOM_HOST_DEVICE Polyhedron<T, NDIMS> clipHexahedron(
   axom::StackArray<IndexType, 1> planeSize = {4};
   axom::ArrayView<PlaneType> planesView(planes, planeSize);
 
-  return clipPolyhedron(poly, planesView, eps);
+  clipPolyhedron(poly, planesView, eps);
+  return poly;
 }
 
 /*!
@@ -579,7 +578,8 @@ AXOM_HOST_DEVICE Polyhedron<T, NDIMS> clipOctahedron(
   axom::StackArray<IndexType, 1> planeSize = {4};
   axom::ArrayView<PlaneType> planesView(planes, planeSize);
 
-  return clipPolyhedron(poly, planesView, eps);
+  clipPolyhedron(poly, planesView, eps);
+  return poly;
 }
 
 /*!
@@ -626,7 +626,8 @@ AXOM_HOST_DEVICE Polyhedron<T, NDIMS> clipTetrahedron(
   axom::StackArray<IndexType, 1> planeSize = {4};
   axom::ArrayView<PlaneType> planesView(planes, planeSize);
 
-  return clipPolyhedron(poly, planesView, eps);
+  clipPolyhedron(poly, planesView, eps);
+  return poly;
 }
 
 /*!
@@ -651,7 +652,8 @@ AXOM_HOST_DEVICE Polyhedron<T, NDIMS> clipTetrahedron(
   // Initialize our polyhedron to return
   PolyhedronType poly = PolyhedronType::from_primitive(tet, checkSign);
 
-  return clipPolyhedron(poly, plane, eps);
+  clipPolyhedron(poly, plane, eps);
+  return poly;
 }
 
 }  // namespace detail
