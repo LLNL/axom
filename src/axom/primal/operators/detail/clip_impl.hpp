@@ -402,7 +402,7 @@ AXOM_HOST_DEVICE void poly_clip_reindex(Polyhedron<T, NDIMS>& poly,
 /*!
  * \brief Clips a polyhedron against a half-space defined by a plane
  *
- * \param [in/out] poly The polyhedron to clip
+ * \param [inout] poly The polyhedron to clip
  * \param [in] plane The plane defining the half-space used to clip the polyhedron
  * \param [in] eps The tolerance for plane point orientation
  */
@@ -461,7 +461,7 @@ AXOM_HOST_DEVICE void clipPolyhedron(Polyhedron<T, NDIMS>& poly,
 /*!
  * \brief Clips a polyhedron against an array of planes
  *
- * \param [in/out] poly The polyhedron to clip
+ * \param [inout] poly The polyhedron to clip
  * \param [in] planes The array of planes
  * \param [in] eps The tolerance for plane point orientation
  */
