@@ -321,6 +321,19 @@ void moveConduitDataToNewMemorySpace(conduit::Node& node,
   }
 }
 
+void getIntMinMax(int inVal, int& minVal, int& maxVal, int& sumVal)
+{
+  #ifdef AXOM_USE_MPI
+  MPI_Allreduce(&inVal, &minVal, 1, MPI_INT, MPI_MIN, MPI_COMM_WORLD);
+  MPI_Allreduce(&inVal, &maxVal, 1, MPI_INT, MPI_MAX, MPI_COMM_WORLD);
+  MPI_Allreduce(&inVal, &sumVal, 1, MPI_INT, MPI_SUM, MPI_COMM_WORLD);
+  #else
+  minVal = inVal;
+  maxVal = inVal;
+  sumVal = inVal;
+  #endif
+}
+
 Input params;
 
 int myRank = -1, numRanks = -1;  // MPI stuff, set in main().
@@ -339,7 +352,8 @@ public:
     for(int d = 0; d < _mdMesh.number_of_children(); ++d)
     {
       auto dl = domainLengths(d);
-      SLIC_INFO(axom::fmt::format("dom[{}] size={}", d, dl));
+      SLIC_INFO_IF(params.isVerbose(),
+                   axom::fmt::format("dom[{}] size={}", d, dl));
     }
     _maxSpacing = maxSpacing();
   }
@@ -797,6 +811,16 @@ struct ContourTestBase
     computeTimer.stop();
     printTimingStats(computeTimer, name() + " contour");
 
+    {
+      int mn, mx, sum;
+      getIntMinMax(mc.getContourCellCount(), mn, mx, sum);
+      SLIC_INFO(axom::fmt::format(
+        "Contour mesh has {{min:{}, max:{}, sum:{}, avg:{}}} cells",
+        mn,
+        mx,
+        sum,
+        (double)sum / numRanks));
+    }
     SLIC_INFO(axom::fmt::format("Surface mesh has locally {} cells, {} nodes.",
                                 mc.getContourCellCount(),
                                 mc.getContourNodeCount()));
@@ -1679,18 +1703,6 @@ int main(int argc, char** argv)
                       computationalMesh.cellCount(),
                       computationalMesh.domainCount()));
   slic::flushStreams();
-
-  auto getIntMinMax = [](int inVal, int& minVal, int& maxVal, int& sumVal) {
-  #ifdef AXOM_USE_MPI
-    MPI_Allreduce(&inVal, &minVal, 1, MPI_INT, MPI_MIN, MPI_COMM_WORLD);
-    MPI_Allreduce(&inVal, &maxVal, 1, MPI_INT, MPI_MAX, MPI_COMM_WORLD);
-    MPI_Allreduce(&inVal, &sumVal, 1, MPI_INT, MPI_SUM, MPI_COMM_WORLD);
-  #else
-    minVal = inVal;
-    maxVal = inVal;
-    sumVal = inVal;
-  #endif
-  };
 
   // Output some global mesh size stats
   {
