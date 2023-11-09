@@ -67,7 +67,13 @@ inline axom::StackArray<T, DIM> makeStackArray(const U* v)
 
    Views are single-domain-specific.  They don't apply to multi-domain
    meshes.  They are also topology specific, with the topology name
-   given to the constructor.
+   given to the constructor.  They are valid only while their domain
+   exists with no change to its data layout.
+
+   This class recognizes potential ghost (a.k.a. phony, image) data
+   layers around the domain.  Some methods and paramenters names refer
+   to the data with ghosts, while others refer to the data without
+   hosts (a.k.a. real data).
 
    TODO: Figure out if there's a better place for this utility.
    It's only in axom/quest because the initial need was there.
@@ -88,7 +94,7 @@ public:
     @param [in] bpDomain Blueprint single domain.
     @param [in] topologyName Name of topology in the domain.
 
-    If \a topologyName is omitted, use the first topology,
+    If \a topologyName is omitted, use the first topology.
 
     The topology dimension must match DIM.
   */
@@ -158,26 +164,42 @@ public:
     checkBlueprint is false), this method checks against its own
     requirements.
   */
-  bool isValid(bool checkBlueprint = false) const
+  bool isValid(bool checkBlueprint = false, bool printFailureCause = false) const
   {
-    bool rval = true;
+    bool valA = true;
     if(checkBlueprint)
     {
       conduit::Node info;
   #ifdef AXOM_USE_MPI
-      rval = rval &&
+      valA =
         conduit::blueprint::mpi::verify("mesh", *m_cdom, info, MPI_COMM_WORLD);
   #else
-      rval = rval && conduit::blueprint::verify("mesh", *m_cdom, info);
+      valA = conduit::blueprint::verify("mesh", *m_cdom, info);
   #endif
+      if(printFailureCause && !valA)
+      {
+        info.print();
+      }
     }
-    rval =
-      rval && (m_ctopology->fetch_existing("type").as_string() == "structured");
-    rval =
-      rval && (m_ccoordset->fetch_existing("type").as_string() == "explicit");
-    rval =
-      rval && (conduit::blueprint::mesh::coordset::dims(*m_ccoordset) == DIM);
-    return true;
+    bool valB = m_ctopology->fetch_existing("type").as_string() == "structured";
+    if(printFailureCause && !valB)
+    {
+      SLIC_INFO("MeshViewUtil domain is not structured");
+    }
+
+    bool valC = m_ccoordset->fetch_existing("type").as_string() == "explicit";
+    if(printFailureCause && !valC)
+    {
+      SLIC_INFO("MeshViewUtil domain coords is not explicit");
+    }
+
+    bool valD = conduit::blueprint::mesh::coordset::dims(*m_ccoordset) == DIM;
+    if(printFailureCause && !valD)
+    {
+      SLIC_INFO("MeshViewUtil domain has wrong dimension");
+    }
+
+    return valA && valB && valC && valD;
   }
   //@}
 
@@ -264,7 +286,8 @@ public:
   }
 
   /*!
-    @brief Return the array strides for ghost-free nodal coordinates.
+    @brief Return the array strides for ghost-free nodal
+    coordinates.
   */
   axom::StackArray<axom::IndexType, DIM> getCoordsStrides() const
   {
@@ -272,7 +295,8 @@ public:
   }
 
   /*!
-    @brief Return the array index offsets for nodal coordinates.
+    @brief Return the array index offsets for ghost-free nodal
+    coordinates.
   */
   axom::StackArray<axom::IndexType, DIM> getCoordsOffsets() const
   {
