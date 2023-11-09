@@ -409,15 +409,14 @@ AXOM_HOST_DEVICE void poly_clip_reindex(Polyhedron<T, NDIMS>& poly,
  * \return The polyhedron formed from clipping the input polyhedron with a plane
  */
 template <typename T, int NDIMS>
-AXOM_HOST_DEVICE Polyhedron<T, NDIMS> clipPolyhedron(
-  Polyhedron<T, NDIMS>& poly,
-  const Plane<T, NDIMS>& plane,
-  double eps)
+AXOM_HOST_DEVICE Polyhedron<T, NDIMS> clipPolyhedron(Polyhedron<T, NDIMS>& poly,
+                                                     const Plane<T, NDIMS>& plane,
+                                                     double eps)
 {
   using BoxType = BoundingBox<T, NDIMS>;
 
   // Check that plane intersects Polyhedron
-  if (intersect(plane, BoxType(&poly[0], poly.numVertices()), true, eps))
+  if(intersect(plane, BoxType(&poly[0], poly.numVertices()), true, eps))
   {
     int numVerts = poly.numVertices();
 
@@ -443,16 +442,16 @@ AXOM_HOST_DEVICE Polyhedron<T, NDIMS> clipPolyhedron(
   {
     bool completeClip = true;
 
-    for (int i = 0; i < poly.numVertices(); i++)
+    for(int i = 0; i < poly.numVertices(); i++)
     {
-      if (plane.getOrientation(poly[i], eps) == ON_POSITIVE_SIDE)
+      if(plane.getOrientation(poly[i], eps) == ON_POSITIVE_SIDE)
       {
         completeClip = false;
         break;
       }
     }
 
-    if (completeClip)
+    if(completeClip)
     {
       poly.clear();
     }
@@ -481,7 +480,7 @@ AXOM_HOST_DEVICE Polyhedron<T, NDIMS> clipPolyhedron(
   using PlaneType = Plane<T, NDIMS>;
 
   // Clip Polyhedron by each plane
-  for (const PlaneType& plane : planes)
+  for(const PlaneType& plane : planes)
   {
     clipPolyhedron(poly, plane, eps);
   }

@@ -1462,7 +1462,7 @@ TEST(primal_clip, tet_plane_intersect_three_edges)
 
   PolyhedronType poly = axom::primal::clip(plane, tet, EPS, CHECK_SIGN);
 
-  EXPECT_NEAR(tet.volume()/2.0, poly.volume(), EPS);
+  EXPECT_NEAR(tet.volume() / 2.0, poly.volume(), EPS);
 }
 
 // TODO: Add a test for a plane that intersects four edges of a tet
