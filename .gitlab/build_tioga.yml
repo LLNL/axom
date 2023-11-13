@@ -6,8 +6,6 @@
 ####
 # This is the shared configuration of jobs for tioga
 .on_tioga:
-  variables:
-    LLNL_SERVICE_USER: atk
   tags:
     - shell
     - tioga

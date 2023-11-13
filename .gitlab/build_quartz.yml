@@ -6,8 +6,6 @@
 ####
 # This is the shared configuration of jobs for quartz
 .on_quartz:
-  variables:
-    LLNL_SERVICE_USER: atk
   tags:
     - shell
     - quartz
