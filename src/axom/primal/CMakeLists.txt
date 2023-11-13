@@ -28,6 +28,8 @@ set( primal_headers
     geometry/OrientedBoundingBox.hpp
     geometry/OrientationResult.hpp
     geometry/NumericArray.hpp
+    geometry/NumericArrayBase.hpp
+    geometry/NumericArrayView.hpp
     geometry/Plane.hpp
     geometry/Point.hpp
     geometry/Polygon.hpp

@@ -341,6 +341,18 @@ protected:
   {
     SLIC_ASSERT(idx >= 0 && idx < SIZE);
   }
+
+private:
+  /// \brief Returns a reference to the Derived CRTP object - see https://www.fluentcpp.com/2017/05/12/curiously-recurring-template-pattern/
+  AXOM_HOST_DEVICE ArrayType& asDerived()
+  {
+    return static_cast<ArrayType&>(*this);
+  }
+  /// \overload
+  AXOM_HOST_DEVICE const ArrayType& asDerived() const
+  {
+    return static_cast<const ArrayType&>(*this);
+  }
 };
 
 }  // namespace primal
@@ -360,7 +372,7 @@ template <typename T, int SIZE, typename ArrayType>
 AXOM_HOST_DEVICE inline T& NumericArrayBase<T, SIZE, ArrayType>::operator[](int i)
 {
   verifyIndex(i);
-  return m_components[i];
+  return asDerived().component(i);
 }
 
 //------------------------------------------------------------------------------
@@ -368,7 +380,7 @@ template <typename T, int SIZE, typename ArrayType>
 AXOM_HOST_DEVICE inline const T& NumericArrayBase<T, SIZE, ArrayType>::operator[](int i) const
 {
   verifyIndex(i);
-  return m_components[i];
+  return asDerived().component(i);
 }
 
 //------------------------------------------------------------------------------
@@ -378,7 +390,7 @@ AXOM_HOST_DEVICE void NumericArrayBase<T, SIZE, ArrayType>::to_array(T* arr) con
   SLIC_ASSERT(arr != nullptr);
   for(int dim = 0; dim < SIZE; ++dim)
   {
-    arr[dim] = m_components[dim];
+    arr[dim] = asDerived().component(dim);
   }
 }
 
@@ -389,10 +401,10 @@ std::ostream& NumericArrayBase<T, SIZE, ArrayType>::print(std::ostream& os) cons
   os << "[ ";
   for(int dim = 0; dim < SIZE - 1; ++dim)
   {
-    os << static_cast<typename NonChar<T>::type>(m_components[dim]) << " ";
+    os << static_cast<typename NonChar<T>::type>(asDerived().component(dim)) << " ";
   }
 
-  os << static_cast<typename NonChar<T>::type>(m_components[SIZE - 1]) << "]";
+  os << static_cast<typename NonChar<T>::type>(asDerived().component(SIZE - 1)) << "]";
 
   return os;
 }
@@ -407,7 +419,7 @@ AXOM_HOST_DEVICE inline NumericArrayBase<T, SIZE, ArrayType>& NumericArrayBase<T
 {
   for(int i = 0; i < SIZE; ++i)
   {
-    m_components[i] = static_cast<T>(m_components[i] * scalar);
+    asDerived().component(i) = static_cast<T>(asDerived().component(i) * scalar);
   }
 
   return *this;
@@ -429,7 +441,7 @@ AXOM_HOST_DEVICE inline NumericArrayBase<T, SIZE, ArrayType>& NumericArrayBase<T
 {
   for(int i = 0; i < SIZE; ++i)
   {
-    m_components[i] *= v[i];
+    asDerived().component(i) *= v[i];
   }
 
   return *this;
@@ -443,7 +455,7 @@ inline NumericArrayBase<T, SIZE, ArrayType>& NumericArrayBase<T, SIZE, ArrayType
   for(int i = 0; i < SIZE; ++i)
   {
     SLIC_ASSERT(v[i] != 0.);
-    m_components[i] /= v[i];
+    asDerived().component(i) /= v[i];
   }
 
   return *this;
@@ -456,7 +468,7 @@ AXOM_HOST_DEVICE inline NumericArrayBase<T, SIZE, ArrayType>& NumericArrayBase<T
 {
   for(int i = 0; i < SIZE; ++i)
   {
-    m_components[i] += v[i];
+    asDerived().component(i) += v[i];
   }
 
   return *this;
@@ -469,7 +481,7 @@ AXOM_HOST_DEVICE inline NumericArrayBase<T, SIZE, ArrayType>& NumericArrayBase<T
 {
   for(int i = 0; i < SIZE; ++i)
   {
-    m_components[i] -= v[i];
+    asDerived().component(i) -= v[i];
   }
 
   return *this;
@@ -484,8 +496,8 @@ inline NumericArrayBase<T, SIZE, ArrayType>& NumericArrayBase<T, SIZE, ArrayType
 
   for(int i = 0; i < SIZE; ++i)
   {
-    m_components[i] =
-      axom::utilities::clampVal(m_components[i], lowerVal, upperVal);
+    asDerived().component(i) =
+      axom::utilities::clampVal(asDerived().component(i), lowerVal, upperVal);
   }
 
   return *this;
@@ -497,7 +509,7 @@ inline NumericArrayBase<T, SIZE, ArrayType>& NumericArrayBase<T, SIZE, ArrayType
 {
   for(int i = 0; i < SIZE; ++i)
   {
-    m_components[i] = std::max(m_components[i], lowerVal);
+    asDerived().component(i) = std::max(asDerived().component(i), lowerVal);
   }
 
   return *this;
@@ -509,7 +521,7 @@ inline NumericArrayBase<T, SIZE, ArrayType>& NumericArrayBase<T, SIZE, ArrayType
 {
   for(int i = 0; i < SIZE; ++i)
   {
-    m_components[i] = std::min(m_components[i], upperVal);
+    asDerived().component(i) = std::min(asDerived().component(i), upperVal);
   }
 
   return *this;
@@ -519,10 +531,10 @@ inline NumericArrayBase<T, SIZE, ArrayType>& NumericArrayBase<T, SIZE, ArrayType
 template <typename T, int SIZE, typename ArrayType>
 inline T NumericArrayBase<T, SIZE, ArrayType>::max() const
 {
-  T result = this->m_components[0];
+  T result = this->asDerived().component(0);
   for(int i = 1; i < SIZE; ++i)
   {
-    T tmp = m_components[i];
+    T tmp = asDerived().component(i);
 
     if(tmp > result)
     {
@@ -537,10 +549,10 @@ inline T NumericArrayBase<T, SIZE, ArrayType>::max() const
 template <typename T, int SIZE, typename ArrayType>
 inline T NumericArrayBase<T, SIZE, ArrayType>::min() const
 {
-  T result = this->m_components[0];
+  T result = this->asDerived().component(0);
   for(int i = 1; i < SIZE; ++i)
   {
-    T tmp = this->m_components[i];
+    T tmp = this->asDerived().component(i);
 
     if(tmp < result)
     {
@@ -558,7 +570,7 @@ inline int NumericArrayBase<T, SIZE, ArrayType>::argMax() const
   int idx = 0;
   for(int i = 1; i < SIZE; ++i)
   {
-    if(m_components[i] > m_components[idx])
+    if(asDerived().component(i) > asDerived().component(idx))
     {
       idx = i;
     }
@@ -574,7 +586,7 @@ inline int NumericArrayBase<T, SIZE, ArrayType>::argMin() const
   int idx = 0;
   for(int i = 1; i < SIZE; ++i)
   {
-    if(m_components[i] < m_components[idx])
+    if(asDerived().component(i) < asDerived().component(idx))
     {
       idx = i;
     }
@@ -590,7 +602,7 @@ inline T NumericArrayBase<T, SIZE, ArrayType>::sum() const
   T result {};
   for(int i = 0; i < SIZE; ++i)
   {
-    result += this->m_components[i];
+    result += this->asDerived().component(i);
   }
 
   return result;
@@ -728,11 +740,5 @@ inline NumericArrayBase<T, SIZE, ArrayType> abs(const NumericArrayBase<T, SIZE, 
 
 }  // namespace primal
 }  // namespace axom
-
-/// Overload to format a primal::NumericArrayBase using fmt
-template <typename T, int NDIMS, typename ArrayType>
-struct axom::fmt::formatter<axom::primal::NumericArrayBase<T, NDIMS, ArrayType>>
-  : ostream_formatter
-{ };
 
 #endif  // AXOM_PRIMAL_NUMERIC_ARRAY_BASE_HPP_

@@ -3,12 +3,13 @@
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
-#ifndef AXOM_PRIMAL_NUMERIC_ARRAY_HPP_
-#define AXOM_PRIMAL_NUMERIC_ARRAY_HPP_
+#ifndef AXOM_PRIMAL_NUMERIC_ARRAY_VIEW_HPP_
+#define AXOM_PRIMAL_NUMERIC_ARRAY_VIEW_HPP_
 
 #include "axom/primal/geometry/NumericArrayBase.hpp"
 
 #include "axom/core/Macros.hpp"
+#include "axom/core/ArrayView.hpp"
 #include "axom/core/utilities/Utilities.hpp"
 #include "axom/slic/interface/slic.hpp"
 
@@ -24,7 +25,7 @@ namespace primal
 {
 /*!
  * \accelerated
- * \class NumericArray
+ * \class NumericArrayView
  *
  * \brief A simple statically sized array of data with component-wise operators.
  *
@@ -32,7 +33,7 @@ namespace primal
  * \tparam SIZE the size of the array
  */
 template <typename T, int SIZE>
-class NumericArray : public NumericArrayBase<T, SIZE, NumericArray<T, SIZE>>
+class NumericArrayView : public NumericArrayBase<T, SIZE, NumericArrayView<T, SIZE>>
 {
 public:
   /*!
@@ -44,31 +45,11 @@ public:
    */
   AXOM_SUPPRESS_HD_WARN
   AXOM_HOST_DEVICE
-  explicit NumericArray(T val = T(), int sz = SIZE);
+  explicit NumericArrayView(T* data, int stride = 1);
 
-  /*!
-   * \brief Creates a numeric array from the first sz values of the input array.
-   * \param [in] vals An array containing at least sz values
-   * \param [in] sz number of coordinates. Defaults to SIZE.
-   * \note If sz is greater than SIZE, we only take the first SIZE values.
-   */
   AXOM_SUPPRESS_HD_WARN
   AXOM_HOST_DEVICE
-  explicit NumericArray(const T* vals, int sz = SIZE);
-
-  /*!
-   * \brief Creates a numeric array from an initializer list
-   * \param [in] values an initializer list containing the values of the
-   * array. If the size is not the same as the size of this array, this
-   * behaves the same way as the constructor which takes a pointer and size.
-   */
-  NumericArray(std::initializer_list<T> values)
-    : NumericArray {values.begin(), static_cast<int>(values.size())}
-  { }
-
-  NumericArray(NumericArrayBase<T, SIZE, NumericArray<T, SIZE>> base)
-    : NumericArray {std::move(static_cast<NumericArray<T, SIZE>>(base))}
-  { }
+  explicit NumericArrayView(ArrayView<T>& view);
 
   /*!
    * \brief Returns a pointer to the underlying data.
@@ -80,13 +61,14 @@ public:
   T* data();
 
   AXOM_HOST_DEVICE
-  T& component(int i) { return m_components[i]; }
+  T& component(int i) { return m_components[i*m_stride]; }
   
   AXOM_HOST_DEVICE
-  const T& component(int i) const { return m_components[i]; }
+  const T& component(int i) const { return m_components[i*m_stride]; }
 
 protected:
-  T m_components[SIZE];  /// The encapsulated array
+  T* m_components = nullptr;  /// The encapsulated array
+  int m_stride;
 };
 
 }  // namespace primal
@@ -102,56 +84,32 @@ namespace primal
 {
 //------------------------------------------------------------------------------
 template <typename T, int SIZE>
-AXOM_HOST_DEVICE NumericArray<T, SIZE>::NumericArray(T val, int sz)
-{
+AXOM_HOST_DEVICE NumericArrayView<T, SIZE>::NumericArrayView(T* data, int stride)
+  : m_components {data}, m_stride {stride}
+{ 
   // NOTE (KW): This should be a static assert in the class
   SLIC_ASSERT(SIZE >= 1);
-
-  // Fill first nvals coordinates with val ( 0 <= nvals <= SIZE )
-  const int nvals = axom::utilities::clampVal(sz, 0, SIZE);
-  for(int i = 0; i < nvals; i++)
-  {
-    m_components[i] = val;
-  }
-
-  // Fill any remaining coordinates with zero
-  for(int j = nvals; j < SIZE; j++)
-  {
-    m_components[j] = T();
-  }
 }
 
 //------------------------------------------------------------------------------
 template <typename T, int SIZE>
-AXOM_HOST_DEVICE NumericArray<T, SIZE>::NumericArray(const T* vals, int sz)
+AXOM_HOST_DEVICE NumericArrayView<T, SIZE>::NumericArrayView(ArrayView<T>& view)
+  : m_components {view.data()}, m_stride {view.minStride()}
 {
   SLIC_ASSERT(SIZE >= 1);
-
-  const int nvals = axom::utilities::clampVal(sz, 0, SIZE);
-
-  // Copy first nvals coordinates from vals array ( 0 <= nvals <= SIZE )
-  for(int i = 0; i < nvals; i++)
-  {
-    m_components[i] = vals[i];
-  }
-
-  // Fill any remaining coordinates with zero
-  for(int j = nvals; j < SIZE; j++)
-  {
-    m_components[j] = T();
-  }
+  SLIC_ASSERT(view.size() >= SIZE);
 }
 
 //------------------------------------------------------------------------------
 template <typename T, int SIZE>
-AXOM_HOST_DEVICE inline const T* NumericArray<T, SIZE>::data() const
+AXOM_HOST_DEVICE inline const T* NumericArrayView<T, SIZE>::data() const
 {
   return m_components;
 }
 
 //------------------------------------------------------------------------------
 template <typename T, int SIZE>
-AXOM_HOST_DEVICE inline T* NumericArray<T, SIZE>::data()
+AXOM_HOST_DEVICE inline T* NumericArrayView<T, SIZE>::data()
 {
   return m_components;
 }
@@ -159,10 +117,10 @@ AXOM_HOST_DEVICE inline T* NumericArray<T, SIZE>::data()
 }  // namespace primal
 }  // namespace axom
 
-/// Overload to format a primal::NumericArray using fmt
+/// Overload to format a primal::NumericArrayView using fmt
 template <typename T, int NDIMS>
-struct axom::fmt::formatter<axom::primal::NumericArray<T, NDIMS>>
+struct axom::fmt::formatter<axom::primal::NumericArrayView<T, NDIMS>>
   : ostream_formatter
 { };
 
-#endif  // AXOM_PRIMAL_NUMERIC_ARRAY_HPP_
+#endif  // AXOM_PRIMAL_NUMERIC_ARRAY_VIEW_HPP_
