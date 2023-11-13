@@ -673,7 +673,7 @@ public:
    *
    * \param [in] hex The hexahedron
    * \param [in] tryFixOrientation If true, checks if the signed volume of the
-   *             Polyhedron is positive and swaps the order of some vertices
+   *             Polyhedron is negative and swaps the order of some vertices
    *             in that shape to try to obtain a nonnegative signed volume.
    *             Defaults to false.
    *
@@ -751,7 +751,7 @@ public:
    *
    * \param [in] oct The octahedron
    * \param [in] tryFixOrientation If true, checks if the signed volume of the
-   *             Polyhedron is positive and swaps the order of some vertices
+   *             Polyhedron is negative and swaps the order of some vertices
    *             in that shape to try to obtain a nonnegative signed volume.
    *             Defaults to false.
    *
@@ -827,7 +827,7 @@ public:
    *
    * \param [in] tet The tetrahedron
    * \param [in] tryFixOrientation If true, checks if the signed volume of the
-   *             Polyhedron is positive and swaps the order of some vertices
+   *             Polyhedron is negative and swaps the order of some vertices
    *             in that shape to try to obtain a nonnegative signed volume.
    *             Defaults to false.
    *
