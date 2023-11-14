@@ -1310,7 +1310,7 @@ TEST(primal_clip, tet_plane_intersect_none_below)
 
   PolyhedronType poly = axom::primal::clip(tet, plane, EPS, CHECK_SIGN);
 
-  EXPECT_NEAR(0.0, poly.volume(), EPS);
+  EXPECT_NEAR(0.0, poly.signedVolume(), EPS);
 }
 
 TEST(primal_clip, tet_plane_intersect_none_above)
@@ -1329,7 +1329,7 @@ TEST(primal_clip, tet_plane_intersect_none_above)
 
   PolyhedronType poly = axom::primal::clip(tet, plane, EPS, CHECK_SIGN);
 
-  EXPECT_NEAR(tet.volume(), poly.volume(), EPS);
+  EXPECT_NEAR(tet.signedVolume(), poly.signedVolume(), EPS);
 }
 
 TEST(primal_clip, tet_plane_border_vertex_below)
@@ -1348,7 +1348,7 @@ TEST(primal_clip, tet_plane_border_vertex_below)
 
   PolyhedronType poly = axom::primal::clip(tet, plane, EPS, CHECK_SIGN);
 
-  EXPECT_NEAR(0.0, poly.volume(), EPS);
+  EXPECT_NEAR(0.0, poly.signedVolume(), EPS);
 }
 
 TEST(primal_clip, tet_plane_border_vertex_above)
@@ -1367,7 +1367,7 @@ TEST(primal_clip, tet_plane_border_vertex_above)
 
   PolyhedronType poly = axom::primal::clip(tet, plane, EPS, CHECK_SIGN);
 
-  EXPECT_NEAR(tet.volume(), poly.volume(), EPS);
+  EXPECT_NEAR(tet.signedVolume(), poly.signedVolume(), EPS);
 }
 
 TEST(primal_clip, tet_plane_border_edge_below)
@@ -1386,7 +1386,7 @@ TEST(primal_clip, tet_plane_border_edge_below)
 
   PolyhedronType poly = axom::primal::clip(tet, plane, EPS, CHECK_SIGN);
 
-  EXPECT_NEAR(0.0, poly.volume(), EPS);
+  EXPECT_NEAR(0.0, poly.signedVolume(), EPS);
 }
 
 TEST(primal_clip, tet_plane_border_edge_above)
@@ -1405,7 +1405,7 @@ TEST(primal_clip, tet_plane_border_edge_above)
 
   PolyhedronType poly = axom::primal::clip(tet, plane, EPS, CHECK_SIGN);
 
-  EXPECT_NEAR(tet.volume(), poly.volume(), EPS);
+  EXPECT_NEAR(tet.signedVolume(), poly.signedVolume(), EPS);
 }
 
 TEST(primal_clip, tet_plane_border_face_below)
@@ -1424,7 +1424,7 @@ TEST(primal_clip, tet_plane_border_face_below)
 
   PolyhedronType poly = axom::primal::clip(plane, tet, EPS, CHECK_SIGN);
 
-  EXPECT_NEAR(0.0, poly.volume(), EPS);
+  EXPECT_NEAR(0.0, poly.signedVolume(), EPS);
 }
 
 TEST(primal_clip, tet_plane_border_face_above)
@@ -1443,7 +1443,7 @@ TEST(primal_clip, tet_plane_border_face_above)
 
   PolyhedronType poly = axom::primal::clip(plane, tet, EPS, CHECK_SIGN);
 
-  EXPECT_NEAR(tet.volume(), poly.volume(), EPS);
+  EXPECT_NEAR(tet.signedVolume(), poly.signedVolume(), EPS);
 }
 
 TEST(primal_clip, tet_plane_intersect_three_edges)
@@ -1462,7 +1462,7 @@ TEST(primal_clip, tet_plane_intersect_three_edges)
 
   PolyhedronType poly = axom::primal::clip(plane, tet, EPS, CHECK_SIGN);
 
-  EXPECT_NEAR(tet.volume() / 2.0, poly.volume(), EPS);
+  EXPECT_NEAR(tet.signedVolume() / 2.0, poly.signedVolume(), EPS);
 }
 
 // TODO: Add a test for a plane that intersects four edges of a tet
