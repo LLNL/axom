@@ -1294,6 +1294,196 @@ TEST(primal_clip, tet_tet_clip_special_case_1)
     EPS);
 }
 
+TEST(primal_clip, tet_plane_intersect_none_below)
+{
+  using namespace Primal3D;
+  constexpr double EPS = 1e-10;
+  constexpr bool CHECK_SIGN = true;
+
+  // Plane intersects one vertex of tet
+  TetrahedronType tet(PointType {0.0, 0.0, 0.0},
+                      PointType {1.0, 0.0, 0.0},
+                      PointType {0.0, 1.0, 0.0},
+                      PointType {0.0, 0.0, 1.0});
+
+  PlaneType plane(VectorType {0.0, 0.0, -1.0}, PointType {0.0, 0.0, -0.5});
+
+  PolyhedronType poly = axom::primal::clip(tet, plane, EPS, CHECK_SIGN);
+
+  EXPECT_NEAR(0.0, poly.signedVolume(), EPS);
+}
+
+TEST(primal_clip, tet_plane_intersect_none_above)
+{
+  using namespace Primal3D;
+  constexpr double EPS = 1e-10;
+  constexpr bool CHECK_SIGN = true;
+
+  // Plane intersects one vertex of tet
+  TetrahedronType tet(PointType {0.0, 0.0, 0.0},
+                      PointType {1.0, 0.0, 0.0},
+                      PointType {0.0, 1.0, 0.0},
+                      PointType {0.0, 0.0, 1.0});
+
+  PlaneType plane(VectorType {0.0, 0.0, 1.0}, PointType {0.0, 0.0, -0.5});
+
+  PolyhedronType poly = axom::primal::clip(tet, plane, EPS, CHECK_SIGN);
+
+  EXPECT_NEAR(tet.signedVolume(), poly.signedVolume(), EPS);
+}
+
+TEST(primal_clip, tet_plane_border_vertex_below)
+{
+  using namespace Primal3D;
+  constexpr double EPS = 1e-10;
+  constexpr bool CHECK_SIGN = true;
+
+  // Plane intersects one vertex of tet
+  TetrahedronType tet(PointType {0.0, 0.0, 0.0},
+                      PointType {1.0, 0.0, 0.0},
+                      PointType {0.0, 1.0, 0.0},
+                      PointType {0.0, 0.0, 1.0});
+
+  PlaneType plane(VectorType {0.0, 0.0, 1.0}, PointType {0.0, 0.0, 1.0});
+
+  PolyhedronType poly = axom::primal::clip(tet, plane, EPS, CHECK_SIGN);
+
+  EXPECT_NEAR(0.0, poly.signedVolume(), EPS);
+}
+
+TEST(primal_clip, tet_plane_border_vertex_above)
+{
+  using namespace Primal3D;
+  constexpr double EPS = 1e-10;
+  constexpr bool CHECK_SIGN = true;
+
+  // Plane intersects one vertex of tet
+  TetrahedronType tet(PointType {0.0, 0.0, 0.0},
+                      PointType {1.0, 0.0, 0.0},
+                      PointType {0.0, 1.0, 0.0},
+                      PointType {0.0, 0.0, 1.0});
+
+  PlaneType plane(VectorType {0.0, 0.0, -1.0}, PointType {0.0, 0.0, 1.0});
+
+  PolyhedronType poly = axom::primal::clip(tet, plane, EPS, CHECK_SIGN);
+
+  EXPECT_NEAR(tet.signedVolume(), poly.signedVolume(), EPS);
+}
+
+TEST(primal_clip, tet_plane_border_edge_below)
+{
+  using namespace Primal3D;
+  constexpr double EPS = 1e-10;
+  constexpr bool CHECK_SIGN = true;
+
+  // Plane intersects one edge of tet
+  TetrahedronType tet(PointType {0.0, 0.0, 0.0},
+                      PointType {1.0, 0.0, 0.0},
+                      PointType {0.0, 1.0, 0.0},
+                      PointType {0.0, 0.0, 1.0});
+
+  PlaneType plane(VectorType {0.0, -1.0, -1.0}, 0.0);
+
+  PolyhedronType poly = axom::primal::clip(tet, plane, EPS, CHECK_SIGN);
+
+  EXPECT_NEAR(0.0, poly.signedVolume(), EPS);
+}
+
+TEST(primal_clip, tet_plane_border_edge_above)
+{
+  using namespace Primal3D;
+  constexpr double EPS = 1e-10;
+  constexpr bool CHECK_SIGN = true;
+
+  // Plane intersects one edge of tet
+  TetrahedronType tet(PointType {0.0, 0.0, 0.0},
+                      PointType {1.0, 0.0, 0.0},
+                      PointType {0.0, 1.0, 0.0},
+                      PointType {0.0, 0.0, 1.0});
+
+  PlaneType plane(VectorType {0.0, 1.0, 1.0}, 0.0);
+
+  PolyhedronType poly = axom::primal::clip(tet, plane, EPS, CHECK_SIGN);
+
+  EXPECT_NEAR(tet.signedVolume(), poly.signedVolume(), EPS);
+}
+
+TEST(primal_clip, tet_plane_border_face_below)
+{
+  using namespace Primal3D;
+  constexpr double EPS = 1e-10;
+  constexpr bool CHECK_SIGN = true;
+
+  // Tet and plane do not intersect, but border each other
+  TetrahedronType tet(PointType {0.0, 0.0, 0.0},
+                      PointType {1.0, 0.0, 0.0},
+                      PointType {0.0, 1.0, 0.0},
+                      PointType {0.0, 0.0, 1.0});
+
+  PlaneType plane(VectorType {0.0, 0.0, -1.0}, 0.0);
+
+  PolyhedronType poly = axom::primal::clip(plane, tet, EPS, CHECK_SIGN);
+
+  EXPECT_NEAR(0.0, poly.signedVolume(), EPS);
+}
+
+TEST(primal_clip, tet_plane_border_face_above)
+{
+  using namespace Primal3D;
+  constexpr double EPS = 1e-10;
+  constexpr bool CHECK_SIGN = true;
+
+  // Tet and plane do not intersect, but border each other
+  TetrahedronType tet(PointType {0.0, 0.0, 0.0},
+                      PointType {1.0, 0.0, 0.0},
+                      PointType {0.0, 1.0, 0.0},
+                      PointType {0.0, 0.0, 1.0});
+
+  PlaneType plane(VectorType {0.0, 0.0, 1.0}, 0.0);
+
+  PolyhedronType poly = axom::primal::clip(plane, tet, EPS, CHECK_SIGN);
+
+  EXPECT_NEAR(tet.signedVolume(), poly.signedVolume(), EPS);
+}
+
+TEST(primal_clip, tet_plane_intersect_three_edges)
+{
+  using namespace Primal3D;
+  constexpr double EPS = 1e-10;
+  constexpr bool CHECK_SIGN = true;
+
+  // Plane intersects three edges of tet
+  TetrahedronType tet(PointType {0.0, 0.0, 0.0},
+                      PointType {1.0, 0.0, 0.0},
+                      PointType {0.0, 1.0, 0.0},
+                      PointType {0.0, 0.0, 1.0});
+
+  PlaneType plane(VectorType {-1.0, 0.0, 1.0}, 0.0);
+
+  PolyhedronType poly = axom::primal::clip(plane, tet, EPS, CHECK_SIGN);
+
+  EXPECT_NEAR(tet.signedVolume() / 2.0, poly.signedVolume(), EPS);
+}
+
+TEST(primal_clip, tet_plane_intersect_four_edges)
+{
+  using namespace Primal3D;
+  constexpr double EPS = 1e-10;
+  constexpr bool CHECK_SIGN = true;
+
+  // Plane intersects four edges of tet
+  TetrahedronType tet(PointType {0.0, 0.0, 0.0},
+                      PointType {1.0, 1.0, 0.0},
+                      PointType {0.0, 1.0, 1.0},
+                      PointType {1.0, 0.0, 1.0});
+
+  PlaneType plane(VectorType {0.0, 0.0, 1.0}, 0.5);
+
+  PolyhedronType poly = axom::primal::clip(plane, tet, EPS, CHECK_SIGN);
+
+  EXPECT_NEAR(tet.signedVolume() / 2.0, poly.signedVolume(), EPS);
+}
+
 //------------------------------------------------------------------------------
 int main(int argc, char* argv[])
 {

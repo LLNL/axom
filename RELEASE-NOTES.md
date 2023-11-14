@@ -34,6 +34,8 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 - Primal: Adds a `Quadrilateral` primitive
 - Primal: Adds a `compute_bounding_box()` operator for computing the bounding
   box of a `Quadrilateral`
+- Primal: Adds a `clip()` operator for clipping a tetrahedron against the
+  half-space defined by a plane
 
 ### Fixed
 - quest's `SamplingShaper` now properly handles material names containing underscores
