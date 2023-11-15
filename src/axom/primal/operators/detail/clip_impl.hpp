@@ -493,7 +493,7 @@ AXOM_HOST_DEVICE void clipPolyhedron(Polyhedron<T, NDIMS>& poly,
  * \param [in] hex The hexahedron
  * \param [in] tet The tetrahedron
  * \param [in] eps The tolerance for plane point orientation.
- * \param [in] checkSign Check if the signed volume of each shape is positive.
+ * \param [in] tryFixOrientation Check if the signed volume of each shape is positive.
  * \return The Polyhedron formed from clipping the hexahedron with a tetrahedron.
  *
  */
@@ -502,13 +502,13 @@ AXOM_HOST_DEVICE Polyhedron<T, NDIMS> clipHexahedron(
   const Hexahedron<T, NDIMS>& hex,
   const Tetrahedron<T, NDIMS>& tet,
   double eps,
-  bool checkSign)
+  bool tryFixOrientation)
 {
   using PlaneType = Plane<T, NDIMS>;
   using PolyhedronType = Polyhedron<T, NDIMS>;
 
   // Initialize our polyhedron to return
-  PolyhedronType poly = PolyhedronType::from_primitive(hex, checkSign);
+  PolyhedronType poly = PolyhedronType::from_primitive(hex, tryFixOrientation);
 
   // Initialize planes from tetrahedron vertices
   // (Ordering here matters to get the correct winding)
@@ -518,9 +518,10 @@ AXOM_HOST_DEVICE Polyhedron<T, NDIMS> clipHexahedron(
                          make_plane(tet[0], tet[1], tet[2])};
 
   // Adjusts planes in case tetrahedron signed volume is negative
-  if(checkSign)
+  if(tryFixOrientation)
   {
-    PolyhedronType tet_poly = PolyhedronType::from_primitive(tet, checkSign);
+    PolyhedronType tet_poly =
+      PolyhedronType::from_primitive(tet, tryFixOrientation);
     planes[0] = make_plane(tet_poly[1], tet_poly[3], tet_poly[2]);
     planes[1] = make_plane(tet_poly[0], tet_poly[2], tet_poly[3]);
     planes[2] = make_plane(tet_poly[0], tet_poly[3], tet_poly[1]);
@@ -541,7 +542,7 @@ AXOM_HOST_DEVICE Polyhedron<T, NDIMS> clipHexahedron(
  * \param [in] oct The octahedron
  * \param [in] tet The tetrahedron
  * \param [in] eps The tolerance for plane point orientation.
- * \param [in] checkSign Check if the signed volume of each shape is positive.
+ * \param [in] tryFixOrientation Check if the signed volume of each shape is positive.
  * \return The Polyhedron formed from clipping the octahedron with a tetrahedron.
  *
  */
@@ -550,13 +551,13 @@ AXOM_HOST_DEVICE Polyhedron<T, NDIMS> clipOctahedron(
   const Octahedron<T, NDIMS>& oct,
   const Tetrahedron<T, NDIMS>& tet,
   double eps,
-  bool checkSign)
+  bool tryFixOrientation)
 {
   using PlaneType = Plane<T, NDIMS>;
   using PolyhedronType = Polyhedron<T, NDIMS>;
 
   // Initialize our polyhedron to return
-  PolyhedronType poly = PolyhedronType::from_primitive(oct, checkSign);
+  PolyhedronType poly = PolyhedronType::from_primitive(oct, tryFixOrientation);
 
   // Initialize planes from tetrahedron vertices
   // (Ordering here matters to get the correct winding)
@@ -566,9 +567,10 @@ AXOM_HOST_DEVICE Polyhedron<T, NDIMS> clipOctahedron(
                          make_plane(tet[0], tet[1], tet[2])};
 
   // Adjusts planes in case tetrahedron signed volume is negative
-  if(checkSign)
+  if(tryFixOrientation)
   {
-    PolyhedronType tet_poly = PolyhedronType::from_primitive(tet, checkSign);
+    PolyhedronType tet_poly =
+      PolyhedronType::from_primitive(tet, tryFixOrientation);
     planes[0] = make_plane(tet_poly[1], tet_poly[3], tet_poly[2]);
     planes[1] = make_plane(tet_poly[0], tet_poly[2], tet_poly[3]);
     planes[2] = make_plane(tet_poly[0], tet_poly[3], tet_poly[1]);
@@ -589,7 +591,7 @@ AXOM_HOST_DEVICE Polyhedron<T, NDIMS> clipOctahedron(
  * \param [in] tet1 The tetrahedron to clip
  * \param [in] tet2 The tetrahedron to clip against
  * \param [in] eps The tolerance for plane point orientation.
- * \param [in] checkSign Check if the signed volume of each shape is positive.
+ * \param [in] tryFixOrientation Check if the signed volume of each shape is positive.
  * \return The Polyhedron formed from clipping the tetrahedron with a tetrahedron.
  *
  */
@@ -598,13 +600,13 @@ AXOM_HOST_DEVICE Polyhedron<T, NDIMS> clipTetrahedron(
   const Tetrahedron<T, NDIMS>& tet1,
   const Tetrahedron<T, NDIMS>& tet2,
   double eps,
-  bool checkSign)
+  bool tryFixOrientation)
 {
   using PlaneType = Plane<T, NDIMS>;
   using PolyhedronType = Polyhedron<T, NDIMS>;
 
   // Initialize our polyhedron to return
-  PolyhedronType poly = PolyhedronType::from_primitive(tet1, checkSign);
+  PolyhedronType poly = PolyhedronType::from_primitive(tet1, tryFixOrientation);
 
   // Initialize planes from tetrahedron vertices
   // (Ordering here matters to get the correct winding)
@@ -614,9 +616,10 @@ AXOM_HOST_DEVICE Polyhedron<T, NDIMS> clipTetrahedron(
                          make_plane(tet2[0], tet2[1], tet2[2])};
 
   // Adjusts planes in case tetrahedron signed volume is negative
-  if(checkSign)
+  if(tryFixOrientation)
   {
-    PolyhedronType tet_poly = PolyhedronType::from_primitive(tet2, checkSign);
+    PolyhedronType tet_poly =
+      PolyhedronType::from_primitive(tet2, tryFixOrientation);
     planes[0] = make_plane(tet_poly[1], tet_poly[3], tet_poly[2]);
     planes[1] = make_plane(tet_poly[0], tet_poly[2], tet_poly[3]);
     planes[2] = make_plane(tet_poly[0], tet_poly[3], tet_poly[1]);

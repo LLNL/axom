@@ -117,27 +117,33 @@ Polygon<T, 3> clip(const Triangle<T, 3>& tri, const BoundingBox<T, 3>& bbox)
  * \param [in] hex The hexahedron to clip
  * \param [in] tet The tetrahedron to clip against
  * \param [in] eps The epsilon value
- * \param [in] checkSign If true (default is false), checks if the
- *             signed volume of each shape is positive. If the signed volume
- *             of that shape is negative, order of some vertices will be
- *             swapped for that shape.
+ * \param [in] tryFixOrientation If true, takes each shape with a negative
+ *             signed volume and swaps the order of some vertices in that
+ *             shape to try to obtain a nonnegative signed volume.
+ *             Defaults to false.
  *
  * \return A polyhedron of the hexahedron clipped against the tetrahedron.
  *
  * \note Function is based off clipPolyhedron() in Mike Owen's PolyClipper.
  *
- * \note checkSign flag does not guarantee the shapes' vertex orders
- *       will be valid. It is the responsiblity of the caller to pass
- *       shapes with a valid vertex order.
+ * \warning tryFixOrientation flag does not guarantee the shapes' vertex orders
+ *          will be valid. It is the responsiblity of the caller to pass
+ *          shapes with a valid vertex order. Otherwise, if the shapes have
+ *          invalid vertex orders, the returned Polyhedron
+ *          will have a non-positive and/or unexpected volume.
+ *
+ * \warning If tryFixOrientation flag is false and some of the shapes have
+ *          a negative signed volume, the returned Polyhedron
+ *          will have a non-positive and/or unexpected volume.
  *
  */
 template <typename T>
 AXOM_HOST_DEVICE Polyhedron<T, 3> clip(const Hexahedron<T, 3>& hex,
                                        const Tetrahedron<T, 3>& tet,
                                        double eps = 1.e-10,
-                                       bool checkSign = false)
+                                       bool tryFixOrientation = false)
 {
-  return detail::clipHexahedron(hex, tet, eps, checkSign);
+  return detail::clipHexahedron(hex, tet, eps, tryFixOrientation);
 }
 
 /*!
@@ -158,27 +164,33 @@ AXOM_HOST_DEVICE Polyhedron<T, 3> clip(const Hexahedron<T, 3>& hex,
  * \param [in] tet The tetrahedron to clip against
  * \param [in] hex The hexahedron to clip
  * \param [in] eps The epsilon value
- * \param [in] checkSign If true (default is false), checks if the
- *             signed volume of each shape is positive. If the signed volume
- *             of that shape is negative, order of some vertices will be
- *             swapped for that shape.
+ * \param [in] tryFixOrientation If true, takes each shape with a negative
+ *             signed volume and swaps the order of some vertices in that
+ *             shape to try to obtain a nonnegative signed volume.
+ *             Defaults to false.
  *
  * \return A polyhedron of the hexahedron clipped against the tetrahedron.
  *
  * \note Function is based off clipPolyhedron() in Mike Owen's PolyClipper.
  *
- * \note checkSign flag does not guarantee the shapes' vertex orders
- *       will be valid. It is the responsiblity of the caller to pass
- *       shapes with a valid vertex order.
+ * \warning tryFixOrientation flag does not guarantee the shapes' vertex orders
+ *          will be valid. It is the responsiblity of the caller to pass
+ *          shapes with a valid vertex order. Otherwise, if the shapes have
+ *          invalid vertex orders, the returned Polyhedron
+ *          will have a non-positive and/or unexpected volume.
+ *
+ * \warning If tryFixOrientation flag is false and some of the shapes have
+ *          a negative signed volume, the returned Polyhedron
+ *          will have a non-positive and/or unexpected volume.
  *
  */
 template <typename T>
 AXOM_HOST_DEVICE Polyhedron<T, 3> clip(const Tetrahedron<T, 3>& tet,
                                        const Hexahedron<T, 3>& hex,
                                        double eps = 1.e-10,
-                                       bool checkSign = false)
+                                       bool tryFixOrientation = false)
 {
-  return clip(hex, tet, eps, checkSign);
+  return clip(hex, tet, eps, tryFixOrientation);
 }
 
 /*!
@@ -199,27 +211,33 @@ AXOM_HOST_DEVICE Polyhedron<T, 3> clip(const Tetrahedron<T, 3>& tet,
  * \param [in] oct The octahedron to clip
  * \param [in] tet The tetrahedron to clip against
  * \param [in] eps The epsilon value
- * \param [in] checkSign If true (default is false), checks if the
- *             signed volume of each shape is positive. If the signed volume
- *             of that shape is negative, order of some vertices will be
- *             swapped for that shape.
+ * \param [in] tryFixOrientation If true, takes each shape with a negative
+ *             signed volume and swaps the order of some vertices in that
+ *             shape to try to obtain a nonnegative signed volume.
+ *             Defaults to false.
  *
  * \return A polyhedron of the octahedron clipped against the tetrahedron.
  *
  * \note Function is based off clipPolyhedron() in Mike Owen's PolyClipper.
  *
- * \note checkSign flag does not guarantee the shapes' vertex orders
- *       will be valid. It is the responsiblity of the caller to pass
- *       shapes with a valid vertex order.
+ * \warning tryFixOrientation flag does not guarantee the shapes' vertex orders
+ *          will be valid. It is the responsiblity of the caller to pass
+ *          shapes with a valid vertex order. Otherwise, if the shapes have
+ *          invalid vertex orders, the returned Polyhedron
+ *          will have a non-positive and/or unexpected volume.
+ *
+ * \warning If tryFixOrientation flag is false and some of the shapes have
+ *          a negative signed volume, the returned Polyhedron
+ *          will have a non-positive and/or unexpected volume.
  *
  */
 template <typename T>
 AXOM_HOST_DEVICE Polyhedron<T, 3> clip(const Octahedron<T, 3>& oct,
                                        const Tetrahedron<T, 3>& tet,
                                        double eps = 1.e-10,
-                                       bool checkSign = false)
+                                       bool tryFixOrientation = false)
 {
-  return detail::clipOctahedron(oct, tet, eps, checkSign);
+  return detail::clipOctahedron(oct, tet, eps, tryFixOrientation);
 }
 
 /*!
@@ -241,27 +259,33 @@ AXOM_HOST_DEVICE Polyhedron<T, 3> clip(const Octahedron<T, 3>& oct,
  * \param [in] oct The octahedron to clip
  * \param [in] tet The tetrahedron to clip against
  * \param [in] eps The epsilon value
- * \param [in] checkSign If true (default is false), checks if the
- *             signed volume of each shape is positive. If the signed volume
- *             of that shape is negative, order of some vertices will be
- *             swapped for that shape.
+ * \param [in] tryFixOrientation If true, takes each shape with a negative
+ *             signed volume and swaps the order of some vertices in that
+ *             shape to try to obtain a nonnegative signed volume.
+ *             Defaults to false.
  *
  * \return A polyhedron of the octahedron clipped against the tetrahedron.
  *
  * \note Function is based off clipPolyhedron() in Mike Owen's PolyClipper.
  *
- * \note checkSign flag does not guarantee the shapes' vertex orders
- *       will be valid. It is the responsiblity of the caller to pass
- *       shapes with a valid vertex order.
+ * \warning tryFixOrientation flag does not guarantee the shapes' vertex orders
+ *          will be valid. It is the responsiblity of the caller to pass
+ *          shapes with a valid vertex order. Otherwise, if the shapes have
+ *          invalid vertex orders, the returned Polyhedron
+ *          will have a non-positive and/or unexpected volume.
+ *
+ * \warning If tryFixOrientation flag is false and some of the shapes have
+ *          a negative signed volume, the returned Polyhedron
+ *          will have a non-positive and/or unexpected volume.
  *
  */
 template <typename T>
 AXOM_HOST_DEVICE Polyhedron<T, 3> clip(const Tetrahedron<T, 3>& tet,
                                        const Octahedron<T, 3>& oct,
                                        double eps = 1.e-10,
-                                       bool checkSign = false)
+                                       bool tryFixOrientation = false)
 {
-  return clip(oct, tet, eps, checkSign);
+  return clip(oct, tet, eps, tryFixOrientation);
 }
 
 /*!
@@ -281,27 +305,34 @@ AXOM_HOST_DEVICE Polyhedron<T, 3> clip(const Tetrahedron<T, 3>& tet,
  * \param [in] tet1 The tetrahedron to clip
  * \param [in] tet2 The tetrahedron to clip against
  * \param [in] eps The epsilon value
- * \param [in] checkSign If true (default is false), checks if the
- *             signed volume of each shape is positive. If the signed volume
- *             of that shape is negative, order of some vertices will be
- *             swapped for that shape.
+ * \param [in] tryFixOrientation If true, takes each shape with a negative
+ *             signed volume and swaps the order of some vertices in that
+ *             shape to try to obtain a nonnegative signed volume.
+ *             Defaults to false.
  *
  * \return A polyhedron of the tetrahedron clipped against
  *         the other tetrahedron.
  *
  * \note Function is based off clipPolyhedron() in Mike Owen's PolyClipper.
  *
- * \note checkSign flag does not guarantee the shapes' vertex orders
- *       will be valid. It is the responsiblity of the caller to pass
- *       shapes with a valid vertex order.
+ * \warning tryFixOrientation flag does not guarantee the shapes' vertex orders
+ *          will be valid. It is the responsiblity of the caller to pass
+ *          shapes with a valid vertex order. Otherwise, if the shapes have
+ *          invalid vertex orders, the returned Polyhedron
+ *          will have a non-positive and/or unexpected volume.
+ *
+ * \warning If tryFixOrientation flag is false and some of the shapes have
+ *          a negative signed volume, the returned Polyhedron
+ *          will have a non-positive and/or unexpected volume.
+ *
  */
 template <typename T>
 AXOM_HOST_DEVICE Polyhedron<T, 3> clip(const Tetrahedron<T, 3>& tet1,
                                        const Tetrahedron<T, 3>& tet2,
                                        double eps = 1.e-10,
-                                       bool checkSign = false)
+                                       bool tryFixOrientation = false)
 {
-  return detail::clipTetrahedron(tet1, tet2, eps, checkSign);
+  return detail::clipTetrahedron(tet1, tet2, eps, tryFixOrientation);
 }
 
 /*!
