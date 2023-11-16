@@ -48,6 +48,38 @@ TEST(core_flatmap, insert_only)
   }
 }
 
+TEST(core_flatmap_str, insert_only)
+{
+  axom::FlatMap<std::string, std::string> int_to_dbl;
+
+  int_to_dbl.insert({std::to_string(0), std::to_string(10.0)});
+  EXPECT_EQ(1, int_to_dbl.size());
+
+  int_to_dbl.insert({std::to_string(1), std::to_string(20.0)});
+  EXPECT_EQ(2, int_to_dbl.size());
+
+  int_to_dbl.insert({std::to_string(2), std::to_string(30.0)});
+  EXPECT_EQ(3, int_to_dbl.size());
+
+  // Check consistency of added values.
+  const double expected_str[3] {10.0, 20.0, 30.0};
+  for(int i = 0; i < 3; i++)
+  {
+    std::string key = std::to_string(i);
+    std::string expected_value = std::to_string(expected_str[i]);
+    auto iterator = int_to_dbl.find(key);
+    EXPECT_NE(iterator, int_to_dbl.end());
+    EXPECT_EQ(iterator->first, key);
+    EXPECT_EQ(iterator->second, expected_value);
+
+    // Using operator[] with an already-existing key should return the
+    // existing value and not add a value.
+    std::string value = int_to_dbl[key];
+    EXPECT_EQ(value, expected_value);
+    EXPECT_EQ(int_to_dbl.size(), 3);
+  }
+}
+
 TEST(core_flatmap, insert_until_rehash)
 {
   axom::FlatMap<int, double> int_to_dbl;
