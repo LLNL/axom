@@ -188,7 +188,21 @@ private:
   IndexType m_numGroups2;  // Number of groups of 15 buckets, expressed as a power of 2
   IndexType m_size;
   axom::Array<detail::flat_map::GroupBucket> m_metadata;
-  axom::Array<KeyValuePair> m_buckets;
+
+  // Storage details:
+  struct alignas(KeyValuePair) PairStorage
+  {
+    unsigned char data[sizeof(KeyValuePair)];
+
+    const KeyValuePair& get() const
+    {
+      return *(reinterpret_cast<const KeyValuePair*>(&data));
+    }
+
+    KeyValuePair& get() { return *(reinterpret_cast<KeyValuePair*>(&data)); }
+  };
+
+  axom::Array<PairStorage> m_buckets;
 
   // Boost flat_unordered_map uses a fixed load factor.
   constexpr static double MAX_LOAD_FACTOR = 0.875;
@@ -254,9 +268,12 @@ public:
     return next;
   }
 
-  reference operator*() const { return m_map->m_buckets[m_internalIdx]; }
+  reference operator*() const { return m_map->m_buckets[m_internalIdx].get(); }
 
-  pointer operator->() const { return &(m_map->m_buckets[m_internalIdx]); }
+  pointer operator->() const
+  {
+    return &(m_map->m_buckets[m_internalIdx].get());
+  }
 
 private:
   MapConstType* m_map;
@@ -306,7 +323,7 @@ auto FlatMap<KeyType, ValueType, Hash>::find(const KeyType& key) -> iterator
                    m_metadata,
                    hash,
                    [&](IndexType bucket_index) -> bool {
-                     if(this->m_buckets[bucket_index].first == key)
+                     if(this->m_buckets[bucket_index].get().first == key)
                      {
                        found_iter = iterator(this, bucket_index);
                        // Stop tracking.
@@ -327,7 +344,7 @@ auto FlatMap<KeyType, ValueType, Hash>::find(const KeyType& key) const
                    m_metadata,
                    hash,
                    [&](IndexType bucket_index) -> bool {
-                     if(this->m_buckets[bucket_index].first == key)
+                     if(this->m_buckets[bucket_index].get().first == key)
                      {
                        found_iter = const_iterator(this, bucket_index);
                        // Stop tracking.
@@ -370,7 +387,7 @@ auto FlatMap<KeyType, ValueType, Hash>::emplaceImpl(bool assign_on_existence,
   bool keyExistsAlready = false;
   IndexType foundBucketIndex = NO_MATCH;
   auto FindExistingElem = [&, this](IndexType bucket_index) -> bool {
-    if(this->m_buckets[bucket_index].first == key)
+    if(this->m_buckets[bucket_index].get().first == key)
     {
       keyExistsAlready = true;
       foundBucketIndex = bucket_index;
@@ -393,12 +410,12 @@ auto FlatMap<KeyType, ValueType, Hash>::emplaceImpl(bool assign_on_existence,
   iterator keyIterator = iterator(this, foundBucketIndex);
   if(!keyExistsAlready)
   {
-    new(&m_buckets[foundBucketIndex])
+    new(&m_buckets[foundBucketIndex].data)
       KeyValuePair(std::move(key), std::forward<InputArgs>(args)...);
   }
   else if(keyExistsAlready && assign_on_existence)
   {
-    m_buckets[foundBucketIndex].second =
+    m_buckets[foundBucketIndex].get().second =
       ValueType(std::forward<InputArgs>(args)...);
   }
   return {keyIterator, !keyExistsAlready};
