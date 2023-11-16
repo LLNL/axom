@@ -80,9 +80,9 @@ public:
     return const_iterator(this, firstBucketIndex);
   }
 
-  iterator end() { return iterator(this, m_buckets.size()); }
-  const_iterator end() const { return const_iterator(this, m_buckets.size()); }
-  const_iterator cend() const { return const_iterator(this, m_buckets.size()); }
+  iterator end() { return iterator(this, bucket_count()); }
+  const_iterator end() const { return const_iterator(this, bucket_count()); }
+  const_iterator cend() const { return const_iterator(this, bucket_count()); }
 
   // Capacity
   bool empty() const { return m_size == 0; }
@@ -165,10 +165,7 @@ public:
 
   // Hashing
   IndexType bucket_count() const { return m_buckets.size(); }
-  double load_factor() const
-  {
-    return ((double)m_loadCount) / m_buckets.size();
-  }
+  double load_factor() const { return ((double)m_loadCount) / bucket_count(); }
   double max_load_factor() const { return MAX_LOAD_FACTOR; }
   void rehash(IndexType count)
   {
@@ -225,7 +222,7 @@ public:
     : m_map(map)
     , m_internalIdx(internalIdx)
   {
-    assert(m_internalIdx >= 0 && m_internalIdx <= m_map->m_buckets.size());
+    assert(m_internalIdx >= 0 && m_internalIdx <= m_map->bucket_count());
   }
 
   template <bool UConst = Const, typename Enable = std::enable_if_t<UConst>>
@@ -364,7 +361,7 @@ auto FlatMap<KeyType, ValueType, Hash>::emplaceImpl(bool assign_on_existence,
   auto hash = MixedHash {}(key);
   // Resize to double the number of bucket groups if insertion would put us
   // above the maximum load factor.
-  if(((m_loadCount + 1) / (double)m_buckets.size()) >= MAX_LOAD_FACTOR)
+  if(((m_loadCount + 1) / (double)bucket_count()) >= MAX_LOAD_FACTOR)
   {
     IndexType newNumGroups = m_metadata.size() * 2;
     rehash(newNumGroups * BucketsPerGroup - 1);

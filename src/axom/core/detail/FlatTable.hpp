@@ -42,7 +42,7 @@ struct HashMixer64
   uint64_t operator()(const KeyType& key) const
   {
     uint64_t hash = HashFunc {}(key);
-	hash *= 0xbf58476d1ce4e5b9ULL;
+    hash *= 0xbf58476d1ce4e5b9ULL;
     hash ^= hash >> 32;
     hash *= 0x94d049bb133111ebULL;
     hash ^= hash >> 32;
