@@ -34,8 +34,9 @@ ps.add_argument('-ms', type=i_c, default=(3,3), help='Logical size of mesh (cell
 ps.add_argument('-dc', type=i_c, default=(1,1), help='Domain counts in each index direction')
 ps.add_argument('-o', '--output', type=str, default='mdmesh', help='Output file base name')
 ps.add_argument('--strided', action='store_true', help='Use strided_structured (has ghosts)')
+ps.add_argument('-v', '--verbose', action='store_true', help='Print additional info')
 opts,unkn = ps.parse_known_args()
-print(opts, unkn)
+if(opts.verbose): print(opts, unkn)
 if(unkn):
   print("Unrecognized arguments:", *unkn)
   quit(1)
@@ -62,9 +63,8 @@ else:
 def scale_structured_domain(n, startCoord, endCoord):
   '''This function scales and shifts a blueprint structured domain after
   it has been created.  There's no way to specify the physical extent
-  of a domain using conduit.blueprint.mesh.examples.basic, as far as I
-  can tell.
-
+  of a domain using conduit.blueprint.mesh.examples methods, as far as
+  I can tell.
   '''
   #print(f'Rescaling to {startCoord} -> {endCoord}')
 
@@ -115,8 +115,8 @@ meshLower = opts.ml
 meshUpper = opts.mu
 
 # Convert to np.array to use element-wise arithmetic.
-domCounts = np.array(domCounts, dtype=np.int)
-meshSize = np.array(meshSize, dtype=np.int)
+domCounts = np.array(domCounts, dtype=np.int32)
+meshSize = np.array(meshSize, dtype=np.int64)
 meshLower = np.array(meshLower)
 meshUpper = np.array(meshUpper)
 
@@ -125,7 +125,9 @@ cellPhysicalSize = (meshUpper - meshLower)/meshSize
 
 domSize = meshSize//domCounts[:dim]
 domSizeRem = meshSize % domCounts[:dim]
-print(f'meshSize={meshSize} cells, domCounts={domCounts} domSize={domSize} domSizeRem={domSizeRem}')
+if opts.verbose:
+  print(f'meshSize={meshSize} cells, domCounts={domCounts[0:dim]}'
+        f' domSize={domSize} domSizeRem={domSizeRem}')
 
 def domain_index_begin(di, dj, dk=None):
   '''Compute first cell index of the domain with multi-dimensional index (di, dj, dk).'''
@@ -174,9 +176,10 @@ for dk in range(domCounts[2]):
       domLower = meshLower[:dim] + cellStart * cellPhysicalSize[:dim]
       domUpper = meshLower[:dim] + cellEnd * cellPhysicalSize[:dim]
       scale_structured_domain(dom, domLower, domUpper)
-      #print(dom)
+      # if opts.verbose: print(f'Domain [{di},{dj},{dk}]: {dom}')
 
-#print('mdMesh:'); print(mdMesh)
+if opts.verbose:
+  print('mdMesh:'); print(mdMesh)
 
 info = conduit.Node()
 if not conduit.blueprint.mesh.verify(mdMesh, info):
