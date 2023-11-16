@@ -80,7 +80,7 @@ public:
 
     axom::quest::MeshViewUtil<DIM, MemorySpace> mvu(dom, topologyName);
 
-    m_bShape = mvu.getDomainShape();
+    m_bShape = mvu.getCellShape();
     m_coordsViews = mvu.getConstCoordsViews(false);
     m_fcnView = mvu.template getConstFieldView<double>(fcnFieldName, false);
     if(!maskFieldName.empty())

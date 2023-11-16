@@ -360,9 +360,8 @@ TEST(quest_array_indexer, quest_arbitrary_strides)
 // Test column-major element offsets with Array's.
 TEST(quest_array_indexer, quest_array_match)
 {
-  {
-    // No test for 1D.  Array doesn't provide non-trivial interface to test.
-  }
+  // No test for 1D.  Array provides no non-trivial interface to test.
+
   {
     constexpr int DIM = 2;
     axom::StackArray<axom::IndexType, DIM> lengths {3, 2};

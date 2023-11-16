@@ -57,6 +57,32 @@ if(TARGET quest_discretize_test)
 endif()
 
 #------------------------------------------------------------------------------
+# Tests that use Conduit when available
+#------------------------------------------------------------------------------
+
+if(CONDUIT_FOUND AND AXOM_DATA_DIR)
+    axom_add_executable(
+            NAME        quest_mesh_view_util_test
+            SOURCES     quest_mesh_view_util.cpp
+            OUTPUT_DIR  ${TEST_OUTPUT_DIRECTORY}
+            DEPENDS_ON  ${quest_tests_depends} conduit
+            FOLDER      axom/quest/tests
+            )
+    set(quest_data_dir  ${AXOM_DATA_DIR}/quest)
+
+    # These examples currently segfault on windows without MPI when loading the test data into conduit
+    if(AXOM_ENABLE_TESTS AND AXOM_DATA_DIR AND NOT WIN32)
+        axom_add_test(
+            NAME    quest_mesh_view_util
+            COMMAND quest_mesh_view_util_test
+                        --verbose)
+        unset(_nranks)
+        unset(_test)
+    endif()
+
+endif()
+
+#------------------------------------------------------------------------------
 # Tests that use MFEM when available
 #------------------------------------------------------------------------------
 

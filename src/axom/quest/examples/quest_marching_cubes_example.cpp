@@ -562,12 +562,6 @@ private:
       _coordsAreStrided = _mdMesh[0]
                             .fetch_existing(_topologyPath + "/elements/dims")
                             .has_child("strides");
-      if(_coordsAreStrided)
-      {
-        SLIC_WARNING(axom::fmt::format(
-          "Mesh '{}' is strided.  Stride support is under development.",
-          meshFilename));
-      }
       const conduit::Node coordsetNode = _mdMesh[0].fetch_existing(_coordsetPath);
       _ndims = conduit::blueprint::mesh::coordset::dims(coordsetNode);
     }
