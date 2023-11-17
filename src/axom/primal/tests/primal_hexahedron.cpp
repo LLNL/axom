@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -17,7 +17,7 @@ namespace primal = axom::primal;
 
 namespace
 {
-double volume_tet_decomp(primal::Hexahedron<double, 3> hex)
+double signed_volume_tet_decomp(primal::Hexahedron<double, 3> hex)
 {
   double retVol = 0.0;
   axom::StackArray<primal::Tetrahedron<double, 3>, 24> tets;
@@ -26,7 +26,8 @@ double volume_tet_decomp(primal::Hexahedron<double, 3> hex)
 
   for(int i = 0; i < 24; i++)
   {
-    retVol += tets[i].volume();
+    // Get the signed volumes
+    retVol += tets[i].signedVolume();
   }
 
   return retVol;
@@ -48,17 +49,43 @@ protected:
   {
     EPS = 1e-8;
 
-    // Define coordinates for first hexahedron
+    /*
+     * Define coordinates for first hexahedron:
+     *
+     * 7 +---------+ 6              +z
+     *   |\        |\           +y
+     *   |  \      |  \           <  ^
+     *   | 4 + --------+ 5         \ |
+     * 3 +---|-----+ 2 |            \|
+     *   \   |     \   |             -----> +x
+     *    \  |      \  |
+     *     \ |       \ |
+     *   0  +----------+ 1
+     *
+     */
     qData0[0] = QPoint {0, 0, 0};
-    qData0[1] = QPoint {0, 0, 1};
-    qData0[2] = QPoint {1, 0, 1};
-    qData0[3] = QPoint {1, 0, 0};
-    qData0[4] = QPoint {0, 1, 0};
-    qData0[5] = QPoint {0, 1, 1};
+    qData0[1] = QPoint {1, 0, 0};
+    qData0[2] = QPoint {1, 1, 0};
+    qData0[3] = QPoint {0, 1, 0};
+    qData0[4] = QPoint {0, 0, 1};
+    qData0[5] = QPoint {1, 0, 1};
     qData0[6] = QPoint {1, 1, 1};
-    qData0[7] = QPoint {1, 1, 0};
+    qData0[7] = QPoint {0, 1, 1};
 
-    // Define coordinates for second hexahedron
+    /*
+     * Define coordinates for second hexahedron:
+     *
+     * 3 +---------+ 2              +y
+     *   |\        |\
+     *   |  \      |  \              ^
+     *   | 7 + --------+ 6           |
+     * 0 +---|-----+ 1 |             |
+     *   \   |     \   |             -----> +x
+     *    \  |      \  |              \
+     *     \ |       \ |               \
+     *   4  +----------+ 5              >
+     *                                   +z
+     */
     qData1[0] = QPoint {-1, 0, 0};
     qData1[1] = QPoint {0, 0, 0};
     qData1[2] = QPoint {0, 1, 0};
@@ -244,13 +271,16 @@ TEST_F(HexahedronTest, volume)
   EXPECT_DOUBLE_EQ(hex6.volume(), 1.5625);
 
   // Check hexahedron volume against 24-tetrahedron subvolumes
-  EXPECT_DOUBLE_EQ(hex0.volume(), volume_tet_decomp(hex0));
-  EXPECT_DOUBLE_EQ(hex1.volume(), volume_tet_decomp(hex1));
-  EXPECT_DOUBLE_EQ(hex2.volume(), volume_tet_decomp(hex2));
-  EXPECT_DOUBLE_EQ(hex3.volume(), volume_tet_decomp(hex3));
-  EXPECT_DOUBLE_EQ(hex4.volume(), volume_tet_decomp(hex4));
-  EXPECT_DOUBLE_EQ(hex5.volume(), volume_tet_decomp(hex5));
-  EXPECT_DOUBLE_EQ(hex6.volume(), volume_tet_decomp(hex6));
+  EXPECT_DOUBLE_EQ(hex0.volume(), signed_volume_tet_decomp(hex0));
+  EXPECT_DOUBLE_EQ(hex1.volume(), signed_volume_tet_decomp(hex1));
+  EXPECT_DOUBLE_EQ(hex2.volume(), signed_volume_tet_decomp(hex2));
+
+  // Negative volume expected
+  EXPECT_DOUBLE_EQ(hex3.signedVolume(), signed_volume_tet_decomp(hex3));
+
+  EXPECT_DOUBLE_EQ(hex4.volume(), signed_volume_tet_decomp(hex4));
+  EXPECT_DOUBLE_EQ(hex5.volume(), signed_volume_tet_decomp(hex5));
+  EXPECT_DOUBLE_EQ(hex6.volume(), signed_volume_tet_decomp(hex6));
 }
 
 TEST_F(HexahedronTest, equals)
