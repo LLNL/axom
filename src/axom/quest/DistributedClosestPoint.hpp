@@ -455,9 +455,16 @@ public:
     axom::Array<axom::IndexType> domIds(ptCount, ptCount);
     std::size_t copiedCount = 0;
     conduit::Node tmpValues;
-    for(conduit::index_t d = 0; d < mdMeshNode.number_of_children(); ++d)
+    for(axom::IndexType d = 0; d < mdMeshNode.number_of_children(); ++d)
     {
       const conduit::Node& domain = mdMeshNode.child(d);
+
+      axom::IndexType domainId = d;
+      if(domain.has_path("state/domain_id"))
+      {
+        domainId = domain.fetch_existing("state/domain_id").to_int32();
+      }
+
       const std::string coordsetName =
         domain
           .fetch_existing(
@@ -483,7 +490,7 @@ public:
                  nBytes);
       tmpValues.reset();
 
-      domIds.fill(d, copiedCount, N);
+      domIds.fill(domainId, N, copiedCount);
 
       copiedCount += N;
     }

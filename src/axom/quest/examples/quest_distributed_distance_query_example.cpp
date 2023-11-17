@@ -412,10 +412,13 @@ public:
     the mesh is read in.
   */
   template <int NDIMS>
-  void setPoints(const axom::Array<primal::Point<double, NDIMS>>& pts)
+  void setPoints(axom::IndexType domainId,
+                 const axom::Array<primal::Point<double, NDIMS>>& pts)
   {
-    axom::IndexType domainIdx = createBlueprintStubs();
-    SLIC_ASSERT(m_domainGroups[domainIdx] != nullptr);
+    axom::IndexType localIdx = createBlueprintStubs();
+    SLIC_ASSERT(m_domainGroups[localIdx] != nullptr);
+    m_domainGroups[localIdx]->createViewScalar<std::int64_t>("state/domain_id",
+                                                             domainId);
 
     const int SZ = pts.size();
 
@@ -447,19 +450,19 @@ public:
 
     // create views into a shared buffer for the coordinates, with stride NDIMS
     {
-      auto* buf = m_domainGroups[domainIdx]
+      auto* buf = m_domainGroups[localIdx]
                     ->getDataStore()
                     ->createBuffer(sidre::DOUBLE_ID, NDIMS * SZ)
                     ->allocate();
 
-      createAndApplyView(m_coordsGroups[domainIdx], "values/x", buf, 0, SZ);
+      createAndApplyView(m_coordsGroups[localIdx], "values/x", buf, 0, SZ);
       if(NDIMS > 1)
       {
-        createAndApplyView(m_coordsGroups[domainIdx], "values/y", buf, 1, SZ);
+        createAndApplyView(m_coordsGroups[localIdx], "values/y", buf, 1, SZ);
       }
       if(NDIMS > 2)
       {
-        createAndApplyView(m_coordsGroups[domainIdx], "values/z", buf, 2, SZ);
+        createAndApplyView(m_coordsGroups[localIdx], "values/z", buf, 2, SZ);
       }
 
       // copy coordinate data into the buffer
@@ -470,7 +473,7 @@ public:
     // set the default connectivity
     // May be required by an old version of visit.  May not be needed by newer versions of visit.
     sidre::Array<int> arr(
-      m_topoGroups[domainIdx]->createView("elements/connectivity"),
+      m_topoGroups[localIdx]->createView("elements/connectivity"),
       SZ,
       SZ);
     for(int i = 0; i < SZ; ++i)
@@ -686,7 +689,7 @@ private:
 
     auto* fieldsGroup = domainGroup->createGroup("fields");
 
-    domainGroup->createViewScalar<std::int64_t>("state/domain_id", m_rank);
+    // domainGroup->createViewScalar<std::int64_t>("state/domain_id", m_rank);
 
     m_domainGroups.push_back(domainGroup);
     m_coordsGroups.push_back(coordsGroup);
@@ -823,58 +826,11 @@ public:
         const double rcosT = center[0] + radius * std::cos(ang);
         pts.push_back(PointType {rcosT, rsinT});
       }
-      m_objectMesh.setPoints(pts);
+      m_objectMesh.setPoints(di, pts);
     }
 
     axom::slic::flushStreams();
     SLIC_ASSERT(m_objectMesh.isValid());
-  }
-
-  /**
-   * Change cp_domain data from a local index to a global domain index
-   * by adding rank offsets.
-   * This is an optional step to transform domain ids verification.
-   */
-  void add_rank_offset_to_cp_domain_ids(conduit::Node& queryMesh)
-  {
-    int nranks = m_objectMesh.getNumRanks();
-
-    int localDomainCount = m_objectMesh.domain_count();
-
-    // perform scan on ranks to compute totalNumPoints, thetaStart and thetaEnd
-    axom::Array<int> starts(nranks, nranks);
-    {
-      axom::Array<int> indivDomainCounts(nranks, nranks);
-      indivDomainCounts.fill(-1);
-      MPI_Allgather(&localDomainCount,
-                    1,
-                    MPI_INT,
-                    indivDomainCounts.data(),
-                    1,
-                    MPI_INT,
-                    MPI_COMM_WORLD);
-      starts[0] = 0;
-      for(int i = 1; i < nranks; ++i)
-      {
-        starts[i] = starts[i - 1] + indivDomainCounts[i];
-      }
-    }
-
-    for(conduit::Node& dom : queryMesh.children())
-    {
-      auto& fields = dom.fetch_existing("fields");
-      auto cpDomainIdxs =
-        fields.fetch_existing("cp_domain_index/values").as_int_array();
-      auto cpRanks = fields.fetch_existing("cp_rank/values").as_int_array();
-      for(int i = 0; i < cpDomainIdxs.number_of_elements(); ++i)
-      {
-        const auto& r = cpRanks[i];
-        if(r >= 0)
-        {
-          cpDomainIdxs[i] += starts[cpRanks[i]];
-        }
-      }
-    }
   }
 
   /// Outputs the object mesh to disk
@@ -1525,7 +1481,6 @@ int main(int argc, char** argv)
   }
   slic::flushStreams();
 
-  objectMeshWrapper.add_rank_offset_to_cp_domain_ids(queryMeshNode);
   queryMeshWrapper.update_closest_points(queryMeshNode);
 
   int errCount = 0;

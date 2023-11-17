@@ -30,6 +30,8 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
   negative, resulting in the signed volume becoming positive.
 
 ### Changed
+- `MarchingCubes` and `DistributedClosestPoint` classes identify domains by their
+  `state/domain_id` parameters if provided, or the local iteration index if not.
 - `MarchingCubes` and `DistributedClosestPoint` classes changed from requiring the Blueprint
   coordset name to requiring the Blueprint topology name.  The changed interface methods are:
   - `DistributedClosestPoint::setObjectMesh`
