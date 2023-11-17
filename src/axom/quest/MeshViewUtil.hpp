@@ -697,23 +697,13 @@ public:
     fieldNode["association"] = association;
     fieldNode["topology"] = m_topologyName;
 
-    {
-      fieldNode["strides"].set(conduit::DataType::int32(DIM));
-      auto* tmpPtr = fieldNode["strides"].as_int32_ptr();
-      for(int d = 0; d < DIM; ++d)
-      {
-        tmpPtr[d] = strides[d];
-      }
-    }
-
-    {
-      fieldNode["offsets"].set(conduit::DataType::int32(DIM));
-      auto* tmpPtr = fieldNode["offsets"].as_int32_ptr();
-      for(int d = 0; d < DIM; ++d)
-      {
-        tmpPtr[d] = offsets[d];
-      }
-    }
+    constexpr bool isInt32 = std::is_same<axom::IndexType, std::int32_t>::value;
+    const conduit::DataType conduitDtype =
+      isInt32 ? conduit::DataType::int32(DIM) : conduit::DataType::int64(DIM);
+    // Make temporary non-const copies for the "set" methods.
+    auto tmpStrides = strides, tmpOffsets = offsets;
+    fieldNode["strides"].set(conduitDtype, &tmpStrides[0]);
+    fieldNode["offsets"].set(conduitDtype, &tmpOffsets[0]);
 
     axom::IndexType slowDir = strideOrder[DIM - 1];
     auto extras = dtype.number_of_elements() -
@@ -789,7 +779,7 @@ private:
 
     for(int i = 0; i < DIM; ++i)
     {
-      m_cellShape[i] = topologyDims[i].value();
+      m_cellShape[i] = topologyDims[i].to_value();
       m_nodeShape[i] = m_cellShape[i] + 1;
     }
 

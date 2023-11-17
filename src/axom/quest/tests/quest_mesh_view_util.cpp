@@ -365,6 +365,11 @@ int testByConduitExample(const IndexCoords& domainShape,
                                {loPads[0], loPads[1], loPads[2]},
                                {hiPads[0], hiPads[1], hiPads[2]},
                                domain);
+  if(params.isVerbose())
+  {
+    SLIC_INFO("Testing with this domain:");
+    domain.print();
+  }
 
   axom::quest::MeshViewUtil<3, axom::MemorySpace::Dynamic> mview(domain);
 
