@@ -4,7 +4,7 @@
 # CMake executable path: /usr/tce/bin/cmake
 #------------------------------------------------------------------------------
 
-set(CMAKE_PREFIX_PATH "/usr/WS1/axom/libs/toss_4_x86_64_ib/2023_10_23_14_27_32/intel-2022.1.0/umpire-2023.06.0-6wmifjy5c2er4kkfqw7m5s4in7esiln5;/usr/WS1/axom/libs/toss_4_x86_64_ib/2023_10_23_14_27_32/intel-2022.1.0/raja-2023.06.0-urtfojwbjummyvyev7k4zn2oix53f4up;/usr/WS1/axom/libs/toss_4_x86_64_ib/2023_10_23_14_27_32/intel-2022.1.0/camp-2023.06.0-ovewmmz43udq34jrdlokh2zuzgkzrum4;/usr/WS1/axom/libs/toss_4_x86_64_ib/2023_10_23_14_27_32/intel-2022.1.0/mfem-4.5.2-dbvjel6jhwnwf6wzm76w6ghbjpy3v4gj;/usr/WS1/axom/libs/toss_4_x86_64_ib/2023_10_23_14_27_32/intel-2022.1.0/hypre-2.24.0-qdjyl5ibcpl4nxb6t5godfgvi5bb6hac;/usr/WS1/axom/libs/toss_4_x86_64_ib/2023_10_23_14_27_32/intel-2022.1.0/conduit-0.8.8-22refnw4twba4zznewcuczky2udimj7i;/usr/WS1/axom/libs/toss_4_x86_64_ib/2023_10_23_14_27_32/intel-2022.1.0/parmetis-4.0.3-nqxoj5gqogj32hfo5ognkcb6vg24zdlc;/usr/WS1/axom/libs/toss_4_x86_64_ib/2023_10_23_14_27_32/intel-2022.1.0/metis-5.1.0-tb5bijmooj2d6d2npjpajcj4fyu4yd4y;/usr/WS1/axom/libs/toss_4_x86_64_ib/2023_10_23_14_27_32/intel-2022.1.0/hdf5-1.8.22-6oeginq7kyyix35utjgsfxeghcnujtpg;/usr/WS1/axom/libs/toss_4_x86_64_ib/2023_10_23_14_27_32/intel-2022.1.0/c2c-1.8.0-gvlftgplgmtput3k4fy2nssecldmmlsa;/usr/WS1/axom/libs/toss_4_x86_64_ib/2023_10_23_14_27_32/intel-2022.1.0/gmake-4.4.1-e3r4ry6vgi7zp4mbwfokypkutqwpctek;/usr/WS1/axom/libs/toss_4_x86_64_ib/2023_10_23_14_27_32/intel-2022.1.0/blt-0.5.3-i7qltms7ksyz4xltznzbtsafywrykq7b;/collab/usr/gapps/axom/devtools/toss_4_x86_64_ib/latest/python-3.10.10;/collab/usr/gapps/axom/devtools/toss_4_x86_64_ib/latest/python-3.10.10;/collab/usr/gapps/axom/devtools/toss_4_x86_64_ib/latest/python-3.10.10;/collab/usr/gapps/axom/devtools/toss_4_x86_64_ib/latest/llvm-10.0.0;/collab/usr/gapps/axom/devtools/toss_4_x86_64_ib/latest/doxygen-1.9.6;/collab/usr/gapps/axom/devtools/toss_4_x86_64_ib/latest/cppcheck-2.9;/usr/tce/packages/mvapich2/mvapich2-2.3.6-intel-2022.1.0;/usr/tce" CACHE PATH "")
+set(CMAKE_PREFIX_PATH "/usr/WS1/axom/libs/toss_4_x86_64_ib/2023_10_31_08_54_50/intel-2022.1.0/umpire-2023.06.0-6wmifjy5c2er4kkfqw7m5s4in7esiln5;/usr/WS1/axom/libs/toss_4_x86_64_ib/2023_10_31_08_54_50/intel-2022.1.0/raja-2023.06.0-urtfojwbjummyvyev7k4zn2oix53f4up;/usr/WS1/axom/libs/toss_4_x86_64_ib/2023_10_31_08_54_50/intel-2022.1.0/camp-2023.06.0-ovewmmz43udq34jrdlokh2zuzgkzrum4;/usr/WS1/axom/libs/toss_4_x86_64_ib/2023_10_31_08_54_50/intel-2022.1.0/mfem-4.5.2-dbvjel6jhwnwf6wzm76w6ghbjpy3v4gj;/usr/WS1/axom/libs/toss_4_x86_64_ib/2023_10_31_08_54_50/intel-2022.1.0/hypre-2.24.0-qdjyl5ibcpl4nxb6t5godfgvi5bb6hac;/usr/WS1/axom/libs/toss_4_x86_64_ib/2023_10_31_08_54_50/intel-2022.1.0/conduit-0.8.8-22refnw4twba4zznewcuczky2udimj7i;/usr/WS1/axom/libs/toss_4_x86_64_ib/2023_10_31_08_54_50/intel-2022.1.0/parmetis-4.0.3-nqxoj5gqogj32hfo5ognkcb6vg24zdlc;/usr/WS1/axom/libs/toss_4_x86_64_ib/2023_10_31_08_54_50/intel-2022.1.0/metis-5.1.0-tb5bijmooj2d6d2npjpajcj4fyu4yd4y;/usr/WS1/axom/libs/toss_4_x86_64_ib/2023_10_31_08_54_50/intel-2022.1.0/hdf5-1.8.22-6oeginq7kyyix35utjgsfxeghcnujtpg;/usr/WS1/axom/libs/toss_4_x86_64_ib/2023_10_31_08_54_50/intel-2022.1.0/c2c-1.8.0-gvlftgplgmtput3k4fy2nssecldmmlsa;/usr/WS1/axom/libs/toss_4_x86_64_ib/2023_10_31_08_54_50/intel-2022.1.0/gmake-4.4.1-e3r4ry6vgi7zp4mbwfokypkutqwpctek;/usr/WS1/axom/libs/toss_4_x86_64_ib/2023_10_31_08_54_50/intel-2022.1.0/blt-0.5.3-i7qltms7ksyz4xltznzbtsafywrykq7b;/collab/usr/gapps/axom/devtools/toss_4_x86_64_ib/latest/python-3.10.10;/collab/usr/gapps/axom/devtools/toss_4_x86_64_ib/latest/python-3.10.10;/collab/usr/gapps/axom/devtools/toss_4_x86_64_ib/latest/python-3.10.10;/collab/usr/gapps/axom/devtools/toss_4_x86_64_ib/latest/llvm-10.0.0;/collab/usr/gapps/axom/devtools/toss_4_x86_64_ib/latest/doxygen-1.9.6;/collab/usr/gapps/axom/devtools/toss_4_x86_64_ib/latest/cppcheck-2.9;/usr/tce/packages/mvapich2/mvapich2-2.3.6-intel-2022.1.0;/usr/tce" CACHE PATH "")
 
 set(CMAKE_BUILD_TYPE "Release" CACHE STRING "")
 
@@ -15,11 +15,11 @@ set(CMAKE_BUILD_TYPE "Release" CACHE STRING "")
 #------------------------------------------------------------------------------
 if(DEFINED ENV{SPACK_CC})
 
-  set(CMAKE_C_COMPILER "/usr/WS1/axom/libs/toss_4_x86_64_ib/2023_10_23_14_27_32/spack/lib/spack/env/intel/icc" CACHE PATH "")
+  set(CMAKE_C_COMPILER "/usr/WS1/axom/libs/toss_4_x86_64_ib/2023_10_31_08_54_50/spack/lib/spack/env/intel/icc" CACHE PATH "")
 
-  set(CMAKE_CXX_COMPILER "/usr/WS1/axom/libs/toss_4_x86_64_ib/2023_10_23_14_27_32/spack/lib/spack/env/intel/icpc" CACHE PATH "")
+  set(CMAKE_CXX_COMPILER "/usr/WS1/axom/libs/toss_4_x86_64_ib/2023_10_31_08_54_50/spack/lib/spack/env/intel/icpc" CACHE PATH "")
 
-  set(CMAKE_Fortran_COMPILER "/usr/WS1/axom/libs/toss_4_x86_64_ib/2023_10_23_14_27_32/spack/lib/spack/env/intel/ifort" CACHE PATH "")
+  set(CMAKE_Fortran_COMPILER "/usr/WS1/axom/libs/toss_4_x86_64_ib/2023_10_31_08_54_50/spack/lib/spack/env/intel/ifort" CACHE PATH "")
 
 else()
 
@@ -67,7 +67,7 @@ set(ENABLE_GTEST_DEATH_TESTS ON CACHE BOOL "")
 # TPLs
 #------------------------------------------------------------------------------
 
-set(TPL_ROOT "/usr/WS1/axom/libs/toss_4_x86_64_ib/2023_10_23_14_27_32/intel-2022.1.0" CACHE PATH "")
+set(TPL_ROOT "/usr/WS1/axom/libs/toss_4_x86_64_ib/2023_10_31_08_54_50/intel-2022.1.0" CACHE PATH "")
 
 set(CONDUIT_DIR "${TPL_ROOT}/conduit-0.8.8-22refnw4twba4zznewcuczky2udimj7i" CACHE PATH "")
 
