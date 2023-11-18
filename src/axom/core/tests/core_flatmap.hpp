@@ -103,6 +103,23 @@ TEST(core_flatmap, initializer_list)
   }
 }
 
+TEST(core_flatmap, init_and_clear)
+{
+  axom::FlatMap<int, double> int_to_dbl {{0, 10.0}, {1, 20.0}, {2, 30.0}};
+
+  EXPECT_EQ(3, int_to_dbl.size());
+
+  int_to_dbl.clear();
+
+  EXPECT_EQ(int_to_dbl.size(), 0);
+  EXPECT_EQ(int_to_dbl.load_factor(), 0.0);
+  for(int i = 0; i < 3; i++)
+  {
+    auto iterator = int_to_dbl.find(i);
+    EXPECT_EQ(iterator, int_to_dbl.end());
+  }
+}
+
 TEST(core_flatmap, insert_until_rehash)
 {
   axom::FlatMap<int, double> int_to_dbl;
