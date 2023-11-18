@@ -105,7 +105,26 @@ public:
   bool contains(const KeyType& key) const { return (find(key) != end()); }
 
   // Modifiers
-  void clear();
+  void clear()
+  {
+    // Destroy all elements.
+    IndexType index = this->nextValidIndex(m_metadata, NO_MATCH);
+    while(index < bucket_count())
+    {
+      m_buckets[index].get().~KeyValuePair();
+      index = this->nextValidIndex(m_metadata, index);
+    }
+
+    // Also reset metadata.
+    for(int group_index = 0; group_index < m_metadata.size(); group_index++)
+    {
+      m_metadata[group_index] = detail::flat_map::GroupBucket {};
+    }
+    m_metadata[m_metadata.size() - 1].setSentinel();
+    m_size = 0;
+    m_loadCount = 0;
+  }
+
   std::pair<iterator, bool> insert(const value_type& value)
   {
     return emplaceImpl(false, value.first, value.second);
