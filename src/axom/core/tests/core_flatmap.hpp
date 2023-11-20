@@ -155,6 +155,55 @@ TEST(core_flatmap, init_and_clear)
   }
 }
 
+TEST(core_flatmap, init_and_move)
+{
+  axom::FlatMap<int, double> int_to_dbl;
+  int NUM_ELEMS = 40;
+
+  for(int i = 0; i < NUM_ELEMS; i++)
+  {
+    int_to_dbl[i] = i + 10.0;
+  }
+
+  axom::FlatMap<int, double> moved_to_map = std::move(int_to_dbl);
+
+  EXPECT_EQ(int_to_dbl.size(), 0);
+  EXPECT_EQ(int_to_dbl.load_factor(), 0);
+  EXPECT_EQ(moved_to_map.size(), NUM_ELEMS);
+  for(int i = 0; i < NUM_ELEMS; i++)
+  {
+    EXPECT_EQ(moved_to_map[i], i + 10.0);
+
+    auto old_it = int_to_dbl.find(i);
+    EXPECT_EQ(old_it, int_to_dbl.end());
+  }
+}
+
+TEST(core_flatmap, init_and_copy)
+{
+  axom::FlatMap<int, double> int_to_dbl;
+  int NUM_ELEMS = 40;
+
+  for(int i = 0; i < NUM_ELEMS; i++)
+  {
+    int_to_dbl[i] = i + 10.0;
+  }
+
+  int expected_buckets = int_to_dbl.bucket_count();
+
+  axom::FlatMap<int, double> int_to_dbl_copy = int_to_dbl;
+
+  EXPECT_EQ(int_to_dbl.size(), NUM_ELEMS);
+  EXPECT_EQ(int_to_dbl.bucket_count(), expected_buckets);
+  EXPECT_EQ(int_to_dbl_copy.size(), NUM_ELEMS);
+  EXPECT_EQ(int_to_dbl_copy.bucket_count(), expected_buckets);
+  for(int i = 0; i < NUM_ELEMS; i++)
+  {
+    EXPECT_EQ(int_to_dbl[i], i + 10.0);
+    EXPECT_EQ(int_to_dbl_copy[i], i + 10.0);
+  }
+}
+
 TEST(core_flatmap, insert_until_rehash)
 {
   axom::FlatMap<int, double> int_to_dbl;

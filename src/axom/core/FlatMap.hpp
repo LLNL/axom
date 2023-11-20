@@ -56,6 +56,46 @@ public:
     : FlatMap(init.begin(), init.end(), bucket_count)
   { }
 
+  FlatMap(FlatMap&& other) : FlatMap() { swap(other); }
+  FlatMap& operator=(FlatMap&& other) { swap(other); }
+
+  FlatMap(const FlatMap& other)
+    : m_numGroups2(other.m_numGroups2)
+    , m_size(other.m_size)
+    , m_metadata(other.m_metadata)
+    , m_buckets(other.m_buckets.size())
+    , m_loadCount(other.m_loadCount)
+  {
+    // Copy all elements.
+    IndexType index = this->nextValidIndex(m_metadata, NO_MATCH);
+    while(index < bucket_count())
+    {
+      new(&m_buckets[index].data) KeyValuePair(other.m_buckets[index].get());
+      index = this->nextValidIndex(m_metadata, index);
+    }
+  }
+  FlatMap& operator=(const FlatMap& other)
+  {
+    if(*this != other)
+    {
+      FlatMap new_map(other);
+      swap(new_map);
+    }
+  }
+
+  ~FlatMap()
+  {
+    // Destroy all elements.
+    IndexType index = this->nextValidIndex(m_metadata, NO_MATCH);
+    while(index < bucket_count())
+    {
+      m_buckets[index].get().~KeyValuePair();
+      index = this->nextValidIndex(m_metadata, index);
+    }
+
+    // Unlike in clear() we don't need to reset metadata here.
+  }
+
   void swap(FlatMap& other)
   {
     axom::utilities::swap(m_numGroups2, other.m_numGroups2);
