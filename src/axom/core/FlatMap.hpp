@@ -6,6 +6,8 @@
 #ifndef Axom_Core_FlatMap_HPP
 #define Axom_Core_FlatMap_HPP
 
+#include <tuple>
+#include <utility>
 #include "axom/config.hpp"
 #include "axom/core/Macros.hpp"
 #include "axom/core/detail/FlatTable.hpp"
@@ -98,8 +100,14 @@ public:
     return this->find(key)->second;
   }
 
-  ValueType& operator[](const KeyType& key) { return at(key); }
-  const ValueType& operator[](const KeyType& key) const { return at(key); }
+  ValueType& operator[](const KeyType& key)
+  {
+    return this->try_emplace(key).first->second;
+  }
+  const ValueType& operator[](const KeyType& key) const
+  {
+    return this->try_emplace(key).first->second;
+  }
 
   IndexType count(const KeyType& key) const { return (find(key) != end()); }
   bool contains(const KeyType& key) const { return (find(key) != end()); }
@@ -430,7 +438,9 @@ auto FlatMap<KeyType, ValueType, Hash>::emplaceImpl(bool assign_on_existence,
   if(!keyExistsAlready)
   {
     new(&m_buckets[foundBucketIndex].data)
-      KeyValuePair(std::move(key), std::forward<InputArgs>(args)...);
+      KeyValuePair(std::piecewise_construct,
+                   std::forward_as_tuple(key),
+                   std::forward_as_tuple(args...));
   }
   else if(keyExistsAlready && assign_on_existence)
   {

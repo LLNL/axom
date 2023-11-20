@@ -103,6 +103,28 @@ TEST(core_flatmap, initializer_list)
   }
 }
 
+TEST(core_flatmap, index_operator_default)
+{
+  axom::FlatMap<int, double> int_to_dbl;
+
+  int NUM_ELEMS = 10;
+
+  for(int i = 0; i < NUM_ELEMS; i++)
+  {
+    double default_value = int_to_dbl[i];
+    EXPECT_EQ(default_value, 0);
+    int_to_dbl[i] = i + 10.0;
+  }
+
+  EXPECT_EQ(NUM_ELEMS, int_to_dbl.size());
+
+  for(int i = 0; i < NUM_ELEMS; i++)
+  {
+    auto iterator = int_to_dbl.find(i);
+    EXPECT_EQ(iterator->second, i + 10.0);
+  }
+}
+
 TEST(core_flatmap, init_and_clear)
 {
   axom::FlatMap<int, double> int_to_dbl {{0, 10.0}, {1, 20.0}, {2, 30.0}};
