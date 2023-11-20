@@ -175,11 +175,15 @@ public:
 
   std::pair<iterator, bool> insert(const value_type& value)
   {
-    return emplaceImpl(false, value.first, value.second);
+    auto emplace_pos = getEmplacePos(value.first);
+    emplaceImpl(emplace_pos, false, value);
+    return emplace_pos;
   }
   std::pair<iterator, bool> insert(value_type&& value)
   {
-    return emplaceImpl(false, std::move(value.first), std::move(value.second));
+    auto emplace_pos = getEmplacePos(value.first);
+    emplaceImpl(emplace_pos, false, std::move(value));
+    return emplace_pos;
   }
   template <typename InputPair>
   std::pair<iterator, bool> insert(InputPair&& pair)
@@ -189,7 +193,10 @@ public:
   template <typename... InputArgs>
   std::pair<iterator, bool> emplace(InputArgs&&... pair)
   {
-    return emplaceImpl(false, std::forward<InputArgs>(pair)...);
+    KeyValuePair kv {std::forward<InputArgs>(pair)...};
+    auto emplace_pos = getEmplacePos(kv.first);
+    emplaceImpl(emplace_pos, false, std::move(kv));
+    return emplace_pos;
   }
 
   template <typename InputIt>
@@ -198,23 +205,47 @@ public:
   template <typename... Args>
   std::pair<iterator, bool> insert_or_assign(const KeyType& key, Args&&... args)
   {
-    return emplaceImpl(true, KeyType {key}, std::forward<Args>(args)...);
+    auto emplace_pos = getEmplacePos(key);
+    emplaceImpl(emplace_pos,
+                true,
+                std::piecewise_construct,
+                std::forward_as_tuple(key),
+                std::forward_as_tuple(std::forward<Args>(args)...));
+    return emplace_pos;
   }
   template <typename... Args>
   std::pair<iterator, bool> insert_or_assign(KeyType&& key, Args&&... args)
   {
-    return emplaceImpl(true, std::move(key), std::forward<Args>(args)...);
+    auto emplace_pos = getEmplacePos(key);
+    emplaceImpl(emplace_pos,
+                true,
+                std::piecewise_construct,
+                std::forward_as_tuple(key),
+                std::forward_as_tuple(std::forward<Args>(args)...));
+    return emplace_pos;
   }
 
   template <typename... Args>
   std::pair<iterator, bool> try_emplace(const KeyType& key, Args&&... args)
   {
-    return emplaceImpl(false, KeyType {key}, std::forward<Args>(args)...);
+    auto emplace_pos = getEmplacePos(key);
+    emplaceImpl(emplace_pos,
+                false,
+                std::piecewise_construct,
+                std::forward_as_tuple(key),
+                std::forward_as_tuple(std::forward<Args>(args)...));
+    return emplace_pos;
   }
   template <typename... Args>
   std::pair<iterator, bool> try_emplace(KeyType&& key, Args&&... args)
   {
-    return emplaceImpl(false, std::move(key), std::forward<Args>(args)...);
+    auto emplace_pos = getEmplacePos(key);
+    emplaceImpl(emplace_pos,
+                false,
+                std::piecewise_construct,
+                std::forward_as_tuple(key),
+                std::forward_as_tuple(std::forward<Args>(args)...));
+    return emplace_pos;
   }
 
   iterator erase(iterator pos) { erase(const_iterator {pos}); }
@@ -236,7 +267,10 @@ public:
   double max_load_factor() const { return MAX_LOAD_FACTOR; }
   void rehash(IndexType count)
   {
-    FlatMap rehashed(m_size, cbegin(), cend(), count);
+    FlatMap rehashed(m_size,
+                     std::make_move_iterator(begin()),
+                     std::make_move_iterator(end()),
+                     count);
     this->swap(rehashed);
   }
   void reserve(IndexType count) { rehash(std::ceil(count / MAX_LOAD_FACTOR)); }
@@ -245,10 +279,12 @@ private:
   template <typename InputIt>
   FlatMap(IndexType num_elems, InputIt first, InputIt last, IndexType bucket_count);
 
-  template <typename UKeyType, typename... Args>
-  std::pair<iterator, bool> emplaceImpl(bool assign_on_existence,
-                                        UKeyType&& key,
-                                        Args&&... args);
+  std::pair<iterator, bool> getEmplacePos(const KeyType& key);
+
+  template <typename... Args>
+  void emplaceImpl(const std::pair<iterator, bool>& pos,
+                   bool assign_on_existence,
+                   Args&&... args);
 
   constexpr static IndexType MIN_NUM_BUCKETS {29};
 
@@ -434,14 +470,9 @@ void FlatMap<KeyType, ValueType, Hash>::insert(InputIt first, InputIt last)
 }
 
 template <typename KeyType, typename ValueType, typename Hash>
-template <typename UKeyType, typename... InputArgs>
-auto FlatMap<KeyType, ValueType, Hash>::emplaceImpl(bool assign_on_existence,
-                                                    UKeyType&& key,
-                                                    InputArgs&&... args)
+auto FlatMap<KeyType, ValueType, Hash>::getEmplacePos(const KeyType& key)
   -> std::pair<iterator, bool>
 {
-  static_assert(std::is_convertible<UKeyType, KeyType>::value,
-                "UKeyType -> KeyType not convertible");
   auto hash = MixedHash {}(key);
   // Resize to double the number of bucket groups if insertion would put us
   // above the maximum load factor.
@@ -475,19 +506,28 @@ auto FlatMap<KeyType, ValueType, Hash>::emplaceImpl(bool assign_on_existence,
     m_loadCount++;
   }
   iterator keyIterator = iterator(this, foundBucketIndex);
+  return {keyIterator, !keyExistsAlready};
+}
+
+template <typename KeyType, typename ValueType, typename Hash>
+template <typename... Args>
+void FlatMap<KeyType, ValueType, Hash>::emplaceImpl(
+  const std::pair<iterator, bool>& pos,
+  bool assign_on_existence,
+  Args&&... args)
+{
+  IndexType bucketIndex = pos.first.m_internalIdx;
+  bool keyExistsAlready = !pos.second;
+
   if(!keyExistsAlready)
   {
-    new(&m_buckets[foundBucketIndex].data)
-      KeyValuePair(std::piecewise_construct,
-                   std::forward_as_tuple(key),
-                   std::forward_as_tuple(args...));
+    new(&m_buckets[bucketIndex].data) KeyValuePair(std::forward<Args>(args)...);
   }
   else if(keyExistsAlready && assign_on_existence)
   {
-    m_buckets[foundBucketIndex].get().second =
-      ValueType(std::forward<InputArgs>(args)...);
+    KeyValuePair kv(std::forward<Args>(args)...);
+    m_buckets[bucketIndex].get().second = std::move(kv.second);
   }
-  return {keyIterator, !keyExistsAlready};
 }
 
 template <typename KeyType, typename ValueType, typename Hash>

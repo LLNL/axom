@@ -179,6 +179,31 @@ TEST(core_flatmap, init_and_move)
   }
 }
 
+TEST(core_flatmap, init_and_move_moveonly)
+{
+  axom::FlatMap<int, std::unique_ptr<double>> int_to_dbl;
+  int NUM_ELEMS = 40;
+
+  for(int i = 0; i < NUM_ELEMS; i++)
+  {
+    int_to_dbl.emplace(i, new double {i + 10.0});
+  }
+
+  axom::FlatMap<int, std::unique_ptr<double>> int_to_dbl_move =
+    std::move(int_to_dbl);
+
+  EXPECT_EQ(int_to_dbl.size(), 0);
+  EXPECT_EQ(int_to_dbl.load_factor(), 0);
+  EXPECT_EQ(int_to_dbl_move.size(), NUM_ELEMS);
+  for(int i = 0; i < NUM_ELEMS; i++)
+  {
+    EXPECT_EQ(*(int_to_dbl_move[i]), i + 10.0);
+
+    auto old_it = int_to_dbl.find(i);
+    EXPECT_EQ(old_it, int_to_dbl.end());
+  }
+}
+
 TEST(core_flatmap, init_and_copy)
 {
   axom::FlatMap<int, double> int_to_dbl;
