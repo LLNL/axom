@@ -127,14 +127,27 @@ TEST(core_flatmap, index_operator_default)
 
 TEST(core_flatmap, init_and_clear)
 {
-  axom::FlatMap<int, double> int_to_dbl {{0, 10.0}, {1, 20.0}, {2, 30.0}};
+  axom::FlatMap<int, double> int_to_dbl;
 
-  EXPECT_EQ(3, int_to_dbl.size());
+  // Insert enough elements to trigger a resize of the buckets.
+  // This allows us to test that a clear() doesn't reset the allocated buckets.
+  int NUM_ELEMS_RESIZE = 40;
+  EXPECT_GT(NUM_ELEMS_RESIZE, int_to_dbl.bucket_count());
+
+  for(int i = 0; i < NUM_ELEMS_RESIZE; i++)
+  {
+    int_to_dbl[i] = i + 10.0;
+  }
+
+  EXPECT_EQ(NUM_ELEMS_RESIZE, int_to_dbl.size());
+
+  int buckets_before_clear = int_to_dbl.bucket_count();
 
   int_to_dbl.clear();
 
   EXPECT_EQ(int_to_dbl.size(), 0);
   EXPECT_EQ(int_to_dbl.load_factor(), 0.0);
+  EXPECT_EQ(int_to_dbl.bucket_count(), buckets_before_clear);
   for(int i = 0; i < 3; i++)
   {
     auto iterator = int_to_dbl.find(i);
