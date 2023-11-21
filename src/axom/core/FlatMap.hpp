@@ -177,10 +177,23 @@ public:
   iterator find(const KeyType& key);
   const_iterator find(const KeyType& key) const;
 
-  ValueType& at(const KeyType& key) { return this->find(key)->second; }
+  ValueType& at(const KeyType& key)
+  {
+    auto it = this->find(key);
+    if(it == end())
+    {
+      throw std::out_of_range {"axom::FlatMap::find(): key not found"};
+    }
+    return it->second;
+  }
   const ValueType& at(const KeyType& key) const
   {
-    return this->find(key)->second;
+    auto it = this->find(key);
+    if(it == end())
+    {
+      throw std::out_of_range {"axom::FlatMap::find(): key not found"};
+    }
+    return it->second;
   }
 
   ValueType& operator[](const KeyType& key)
