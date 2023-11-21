@@ -41,24 +41,60 @@ public:
   using iterator = IteratorImpl<false>;
   using const_iterator = IteratorImpl<true>;
 
-  // Constructors
+  /*!
+   * \brief Constructs a FlatMap with no elements.
+   */
   FlatMap() : FlatMap(MIN_NUM_BUCKETS) { }
 
+  /*!
+   * \brief Constructs a FlatMap with at least a given number of buckets.
+   *
+   * \param [in] bucket_count the minimum number of buckets to allocate
+   */
   explicit FlatMap(IndexType bucket_count);
 
+  /*!
+   * \brief Constructs a FlatMap with a range of elements.
+   *
+   * \param [in] first iterator pointing to the beginning of the range
+   * \param [in] last iterator pointing to the end of the range
+   * \param [in] bucket_count minimum number of buckets to allocate (optional)
+   */
   template <typename InputIt>
   FlatMap(InputIt first, InputIt last, IndexType bucket_count = -1)
     : FlatMap(std::distance(first, last), first, last, bucket_count)
   { }
 
+  /*!
+   * \brief Constructs a FlatMap with a range of elements.
+   *
+   * \param [in] init a list of pairs to initialize the map with
+   * \param [in] bucket_count minimum number of buckets to allocate (optional)
+   */
   explicit FlatMap(std::initializer_list<value_type> init,
                    IndexType bucket_count = -1)
     : FlatMap(init.begin(), init.end(), bucket_count)
   { }
 
+  /*!
+   * \brief Move constructor for a FlatMap instance.
+   *
+   * \param other the FlatMap to move data from
+   */
   FlatMap(FlatMap&& other) : FlatMap() { swap(other); }
+
+  /*!
+   * \brief Move assignment operator for a FlatMap instance.
+   *
+   * \param other the FlatMap to move data from
+   */
   FlatMap& operator=(FlatMap&& other) { swap(other); }
 
+  /*!
+   * \brief Copy constructor for a FlatMap instance.
+   *
+   * \param other the FlatMap to copy data from
+   */
   FlatMap(const FlatMap& other)
     : m_numGroups2(other.m_numGroups2)
     , m_size(other.m_size)
@@ -74,6 +110,12 @@ public:
       index = this->nextValidIndex(m_metadata, index);
     }
   }
+
+  /*!
+   * \brief Copy assignment operator for a FlatMap instance.
+   *
+   * \param other the FlatMap to copy data from
+   */
   FlatMap& operator=(const FlatMap& other)
   {
     if(*this != other)
@@ -83,6 +125,7 @@ public:
     }
   }
 
+  /// \brief Destructor for a FlatMap instance.
   ~FlatMap()
   {
     // Destroy all elements.
