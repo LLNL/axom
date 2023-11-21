@@ -387,6 +387,24 @@ public:
   }
   /// @}
 
+  /*!
+   * \brief Inserts a key-value pair into the FlatMap.
+   *
+   *  If the key already exists in the FlatMap, insertion is skipped.
+   *  Otherwise, the key-value mapping is inserted into the FlatMap.
+   *
+   *  Compared to emplace(), this method only moves-from the value arguments
+   *  if the key does not exist; otherwise, the input arguments are left as-is.
+   *
+   * \param [in] key the key to insert or assign
+   * \param [in] args arguments to construct the value with.
+   *
+   * \return A pair consisting of:
+   *   - an iterator pointing to either the existing key-value pair, or the
+   *     newly-inserted pair
+   *   - true if a new pair was inserted, false otherwise
+   */
+  /// {@
   template <typename... Args>
   std::pair<iterator, bool> try_emplace(const KeyType& key, Args&&... args)
   {
@@ -409,6 +427,7 @@ public:
                 std::forward_as_tuple(std::forward<Args>(args)...));
     return emplace_pos;
   }
+  /// @}
 
   iterator erase(iterator pos) { erase(const_iterator {pos}); }
   iterator erase(const_iterator pos);
