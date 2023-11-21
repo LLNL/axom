@@ -636,6 +636,13 @@ auto FlatMap<KeyType, ValueType, Hash>::getEmplacePos(const KeyType& key)
   -> std::pair<iterator, bool>
 {
   auto hash = MixedHash {}(key);
+
+  // If the key already exists, return the existing iterator.
+  iterator existing_elem = this->find(key);
+  if(existing_elem != this->end())
+  {
+    return {existing_elem, false};
+  }
   // Resize to double the number of bucket groups if insertion would put us
   // above the maximum load factor.
   if(((m_loadCount + 1) / (double)bucket_count()) >= MAX_LOAD_FACTOR)
@@ -644,31 +651,17 @@ auto FlatMap<KeyType, ValueType, Hash>::getEmplacePos(const KeyType& key)
     rehash(newNumGroups * BucketsPerGroup - 1);
   }
 
-  bool keyExistsAlready = false;
-  IndexType foundBucketIndex = NO_MATCH;
-  auto FindExistingElem = [&, this](IndexType bucket_index) -> bool {
-    if(this->m_buckets[bucket_index].get().first == key)
-    {
-      keyExistsAlready = true;
-      foundBucketIndex = bucket_index;
-      // Exit out of probing, we can't insert if the key already exists.
-      return true;
-    }
-    return false;
-  };
+  // Get an empty index to place the element into.
+  IndexType newBucket = this->probeEmptyIndex(m_numGroups2, m_metadata, hash);
 
-  IndexType newBucket =
-    this->probeEmptyIndex(m_numGroups2, m_metadata, hash, FindExistingElem);
-  if(!keyExistsAlready)
-  {
-    foundBucketIndex = newBucket;
-    // Add a hash to the corresponding bucket slot.
-    this->setBucketHash(m_metadata, newBucket, hash);
-    m_size++;
-    m_loadCount++;
-  }
-  iterator keyIterator = iterator(this, foundBucketIndex);
-  return {keyIterator, !keyExistsAlready};
+  // Add a hash to the corresponding bucket slot.
+  this->setBucketHash(m_metadata, newBucket, hash);
+  m_size++;
+  m_loadCount++;
+
+  // Return an iterator pointing to the just-found empty bucket.
+  iterator keyIterator = iterator(this, newBucket);
+  return {keyIterator, true};
 }
 
 template <typename KeyType, typename ValueType, typename Hash>

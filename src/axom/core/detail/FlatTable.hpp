@@ -179,11 +179,9 @@ struct SequentialLookupPolicy
    * \param [in] groups the array of metadata for the groups in the hash map
    * \param [in] hash the hash to insert
    */
-  template <typename FoundIndex>
   IndexType probeEmptyIndex(int ngroups_pow_2,
                             ArrayView<GroupBucket> groups,
-                            HashType hash,
-                            FoundIndex&& on_hash_found) const
+                            HashType hash) const
   {
     // We use the k MSBs of the hash as the initial group probe point,
     // where ngroups = 2^k.
@@ -194,13 +192,8 @@ struct SequentialLookupPolicy
     int empty_bucket = NO_MATCH;
 
     std::uint8_t hash_8 = static_cast<std::uint8_t>(hash);
-    bool key_already_exists = false;
     for(int iteration = 0; iteration < groups.size(); iteration++)
     {
-      groups[curr_group].visitHashBucket(hash_8, [&](IndexType bucket_index) {
-        key_already_exists =
-          on_hash_found(curr_group * GroupBucket::Size + bucket_index);
-      });
       int tentative_empty_bucket = groups[curr_group].getEmptyBucket();
       if(tentative_empty_bucket != GroupBucket::InvalidSlot &&
          empty_group == NO_MATCH)
@@ -209,8 +202,7 @@ struct SequentialLookupPolicy
         empty_bucket = tentative_empty_bucket;
       }
 
-      if(key_already_exists ||
-         (!groups[curr_group].getMaybeOverflowed(hash_8) &&
+      if((!groups[curr_group].getMaybeOverflowed(hash_8) &&
           empty_group != NO_MATCH))
       {
         // We've reached the last group that might contain the hash.
