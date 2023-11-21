@@ -22,36 +22,35 @@ TEST(core_flatmap, insert_only)
 {
   axom::FlatMap<int, double> int_to_dbl;
 
-  int_to_dbl.insert({0, 10.0});
-  EXPECT_EQ(1, int_to_dbl.size());
+  const int NUM_ELEMS = 100;
 
-  int_to_dbl.insert({1, 20.0});
-  EXPECT_EQ(2, int_to_dbl.size());
-
-  int_to_dbl.insert({2, 30.0});
-  EXPECT_EQ(3, int_to_dbl.size());
-
-  // Inserting a duplicate key should not change the value.
-  auto duplicate_key = int_to_dbl.insert({2, 40.0});
-  EXPECT_EQ(3, int_to_dbl.size());
-  EXPECT_FALSE(duplicate_key.second);
-  EXPECT_EQ(duplicate_key.first, int_to_dbl.find(2));
-  EXPECT_EQ(duplicate_key.first->second, 30.0);
-
-  // Check consistency of added values.
-  const double expected_str[3] {10.0, 20.0, 30.0};
-  for(int i = 0; i < 3; i++)
+  for(int i = 0; i < NUM_ELEMS; i++)
   {
-    auto iterator = int_to_dbl.find(i);
-    EXPECT_NE(iterator, int_to_dbl.end());
-    EXPECT_EQ(iterator->first, i);
-    EXPECT_EQ(iterator->second, expected_str[i]);
+    // Initial insertion of a given key should succeed.
+    auto initial_insert = int_to_dbl.insert({i, i * 10.0 + 5.0});
+    EXPECT_EQ(int_to_dbl.size(), i + 1);
+    EXPECT_EQ(initial_insert.first, int_to_dbl.find(i));
+    EXPECT_EQ(i * 10.0 + 5.0, int_to_dbl.at(i));
+    EXPECT_TRUE(initial_insert.second);
+
+    int current_bucket_capacity = int_to_dbl.bucket_count();
+
+    // Inserting a duplicate key should not change the value.
+    auto duplicate_insert = int_to_dbl.insert({i, i * 10.0 + 7.0});
+    EXPECT_EQ(int_to_dbl.size(), i + 1);
+    EXPECT_EQ(duplicate_insert.first, int_to_dbl.find(i));
+    EXPECT_EQ(i * 10.0 + 5.0, int_to_dbl.at(i));
+    EXPECT_FALSE(duplicate_insert.second);
 
     // Using operator[] with an already-existing key should return the
     // existing value and not add a value.
     double value = int_to_dbl[i];
-    EXPECT_EQ(value, expected_str[i]);
-    EXPECT_EQ(int_to_dbl.size(), 3);
+    EXPECT_EQ(i * 10.0 + 5.0, value);
+    EXPECT_EQ(int_to_dbl.size(), i + 1);
+
+    // Check that a rehash didn't occur on the second insertion.
+    EXPECT_EQ(duplicate_insert.first, initial_insert.first);
+    EXPECT_EQ(current_bucket_capacity, int_to_dbl.bucket_count());
   }
 }
 
