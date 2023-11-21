@@ -36,6 +36,8 @@ private:
   using MixedHash = detail::flat_map::HashMixer64<KeyType, Hash>;
 
 public:
+  using key_type = KeyType;
+  using mapped_type = ValueType;
   using size_type = IndexType;
   using value_type = KeyValuePair;
   using iterator = IteratorImpl<false>;
