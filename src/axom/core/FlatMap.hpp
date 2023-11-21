@@ -429,8 +429,27 @@ public:
   }
   /// @}
 
+  /*!
+   * \brief Remove a key-value pair from the FlatMap, specified by iterator.
+   *
+   * \param pos the iterator pointing to the key-value pair to remove
+   *
+   * \return an iterator to the next valid entry after the removed entry
+   */
+  /// {@
   iterator erase(iterator pos) { return erase(const_iterator {pos}); }
   iterator erase(const_iterator pos);
+  /// @}
+
+  /*!
+   * \brief Remove a key-value pair from the FlatMap, specified by key.
+   *
+   *  If the key doesn't exist in the FlatMap, does nothing.
+   *
+   * \param key the key to remove
+   *
+   * \return 1 if an entry was removed, 0 otherwise
+   */
   IndexType erase(const KeyType& key)
   {
     const_iterator it = find(key);
@@ -442,10 +461,29 @@ public:
     return 0;
   }
 
-  // Hashing
+  /*!
+   * \brief Returns the number of buckets allocated in the FlatMap.
+   *
+   *  The maximum number of elements that can be stored in the FlatMap without
+   *  resizing and rehashing is bucket_count() * max_load_factor().
+   */
   IndexType bucket_count() const { return m_buckets.size(); }
+
+  /*!
+   * \brief Returns the current load factor of the FlatMap.
+   */
   double load_factor() const { return ((double)m_loadCount) / bucket_count(); }
+
+  /*!
+   * \brief Returns the maximum load factor of the FlatMap.
+   */
   double max_load_factor() const { return MAX_LOAD_FACTOR; }
+
+  /*!
+   * \brief Explicitly rehash the FlatMap with a given number of buckets.
+   *
+   * \param count the minimum number of buckets to allocate for the rehash
+   */
   void rehash(IndexType count)
   {
     FlatMap rehashed(m_size,
@@ -454,6 +492,13 @@ public:
                      count);
     this->swap(rehashed);
   }
+
+  /*!
+   * \brief Reallocate and rehash the FlatMap, such that up to the specified
+   *  number of elements may be inserted without a rehash.
+   *
+   * \param count the number of elements to fit without a rehash
+   */
   void reserve(IndexType count) { rehash(std::ceil(count / MAX_LOAD_FACTOR)); }
 
 private:
