@@ -361,9 +361,14 @@ TEST(core_flatmap, insert_then_delete)
 
   for(int i = 0; i < NUM_INSERTS; i += 3)
   {
+    auto iterator_to_remove = int_to_dbl.find(i);
+    auto one_after_elem = iterator_to_remove;
+    one_after_elem++;
     // Delete every third entry starting from 0, inclusive.
     // (i.e. keys 0, 3, 6, ...)
-    int_to_dbl.erase(i);
+    auto deleted_iterator = int_to_dbl.erase(iterator_to_remove);
+
+    EXPECT_EQ(deleted_iterator, one_after_elem);
   }
 
   // Check consistency of values.

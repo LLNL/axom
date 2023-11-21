@@ -429,7 +429,7 @@ public:
   }
   /// @}
 
-  iterator erase(iterator pos) { erase(const_iterator {pos}); }
+  iterator erase(iterator pos) { return erase(const_iterator {pos}); }
   iterator erase(const_iterator pos);
   IndexType erase(const KeyType& key)
   {
