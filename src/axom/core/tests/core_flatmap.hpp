@@ -133,6 +133,38 @@ TEST(core_flatmap, insert_or_assign)
   }
 }
 
+TEST(core_flatmap_moveonly, try_emplace)
+{
+  axom::FlatMap<int, std::unique_ptr<double>> int_to_dbl;
+
+  const int NUM_ELEMS = 40;
+
+  // Test behavior when key does not exist.
+  for(int i = 0; i < NUM_ELEMS; i++)
+  {
+    std::unique_ptr<double> value {new double {i + 10.0}};
+    auto result = int_to_dbl.try_emplace(i, std::move(value));
+    EXPECT_EQ(*(int_to_dbl[i]), i + 10.0);
+    EXPECT_EQ(result.first, int_to_dbl.find(i));
+    EXPECT_TRUE(result.second);
+    // Value should have been moved.
+    EXPECT_EQ(value.get(), nullptr);
+  }
+
+  // Test behavior when key already exists.
+  for(int i = 0; i < NUM_ELEMS; i++)
+  {
+    std::unique_ptr<double> value {new double {i + 20.0}};
+    auto result = int_to_dbl.try_emplace(i, std::move(value));
+    EXPECT_EQ(*(int_to_dbl[i]), i + 10.0);
+    EXPECT_EQ(result.first, int_to_dbl.find(i));
+    EXPECT_FALSE(result.second);
+    // Since key already exists, value should NOT be moved.
+    EXPECT_NE(value.get(), nullptr);
+    EXPECT_EQ(*value, i + 20.0);
+  }
+}
+
 TEST(core_flatmap, initializer_list)
 {
   axom::FlatMap<int, double> int_to_dbl {{0, 10.0}, {1, 20.0}, {2, 30.0}};
