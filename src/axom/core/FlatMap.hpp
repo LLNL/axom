@@ -139,6 +139,9 @@ public:
     // Unlike in clear() we don't need to reset metadata here.
   }
 
+  /*!
+   * \brief Swaps the contents of one FlatMap with another.
+   */
   void swap(FlatMap& other)
   {
     axom::utilities::swap(m_numGroups2, other.m_numGroups2);
@@ -148,7 +151,10 @@ public:
     axom::utilities::swap(m_loadCount, other.m_loadCount);
   }
 
-  // Iterators
+  /*!
+   * \brief Returns an iterator to the first valid object in the bucket array.
+   */
+  /// @{
   iterator begin()
   {
     IndexType firstBucketIndex = this->nextValidIndex(m_metadata, NO_MATCH);
@@ -164,19 +170,51 @@ public:
     IndexType firstBucketIndex = this->nextValidIndex(m_metadata, NO_MATCH);
     return const_iterator(this, firstBucketIndex);
   }
+  /// @}
 
+  /*!
+   * \brief Returns an iterator to "one past" the last valid object in the
+   *  bucket array.
+   */
+  /// @{
   iterator end() { return iterator(this, bucket_count()); }
   const_iterator end() const { return const_iterator(this, bucket_count()); }
   const_iterator cend() const { return const_iterator(this, bucket_count()); }
+  /// @}
 
-  // Capacity
+  /*!
+   * \brief Returns true if there are no entries in the FlatMap, false
+   *  otherwise.
+   */
   bool empty() const { return m_size == 0; }
+
+  /*!
+   * \brief Returns the number of entries stored in the FlatMap.
+   */
   IndexType size() const { return m_size; }
 
-  // Lookup
+  /*!
+   * \brief Try to find an entry with a given key.
+   *
+   * \param [in] key the key to search for
+   *
+   * \return An iterator pointing to the corresponding key-value pair, or end()
+   *  if the key wasn't found.
+   */
+  /// @{
   iterator find(const KeyType& key);
   const_iterator find(const KeyType& key) const;
+  /// @}
 
+  /*!
+   * \brief Try to find an entry with a given key.
+   *
+   * \param [in] key the key to search for
+   *
+   * \return A reference to the corresponding value.
+   * \throw std::out_of_range if the key is not found.
+   */
+  /// @{
   ValueType& at(const KeyType& key)
   {
     auto it = this->find(key);
@@ -195,7 +233,19 @@ public:
     }
     return it->second;
   }
+  /// @}
 
+  /*!
+   * \brief Find an entry with a given key.
+   *
+   *  If a corresponding value does not exist, a default value for the value
+   *  type will be inserted for the given key.
+   *
+   * \param [in] key the key to search for
+   *
+   * \return A reference to the corresponding value.
+   */
+  /// @{
   ValueType& operator[](const KeyType& key)
   {
     return this->try_emplace(key).first->second;
@@ -204,11 +254,27 @@ public:
   {
     return this->try_emplace(key).first->second;
   }
+  /// @}
 
+  /*!
+   * \brief Return the number of entries matching a given key.
+   *
+   *  This method will always return 0 or 1.
+   *
+   * \param [in] key the key to search for
+   */
   IndexType count(const KeyType& key) const { return (find(key) != end()); }
+
+  /*!
+   * \brief Return true if the FlatMap contains a key, false otherwise.
+   *
+   * \param [in] key the key to search for
+   */
   bool contains(const KeyType& key) const { return (find(key) != end()); }
 
-  // Modifiers
+  /*!
+   * \brief Erases all elements from the FlatMap.
+   */
   void clear()
   {
     // Destroy all elements.
@@ -229,6 +295,20 @@ public:
     m_loadCount = 0;
   }
 
+  /*!
+   * \brief Inserts a key-value pair into the FlatMap.
+   *
+   *  If the key already exists in the FlatMap, insertion is skipped.
+   *  Otherwise, the key-value mapping is inserted into the FlatMap.
+   *
+   * \param [in] value the key-value pair to insert
+   *
+   * \return A pair consisting of:
+   *   - an iterator pointing to either the existing key-value pair, or the
+   *     newly-inserted pair
+   *   - true if a new pair was inserted, false otherwise
+   */
+  /// @{
   std::pair<iterator, bool> insert(const value_type& value)
   {
     auto emplace_pos = getEmplacePos(value.first);
@@ -254,10 +334,35 @@ public:
     emplaceImpl(emplace_pos, false, std::move(kv));
     return emplace_pos;
   }
+  /// @}
 
+  /*!
+   * \brief Inserts a range of key-value pairs into the FlatMap.
+   *
+   *  If the key already exists in the FlatMap, insertion is skipped.
+   *  Otherwise, the key-value mapping is inserted into the FlatMap.
+   *
+   * \param [in] first the beginning of the range of pairs
+   * \param [in] last the end of the range of pairs
+   */
   template <typename InputIt>
   void insert(InputIt first, InputIt last);
 
+  /*!
+   * \brief Inserts a key-value pair into the FlatMap.
+   *
+   *  If the key already exists, assigns the value to the existing key in the
+   *  FlatMap.
+   *
+   * \param [in] key the key to insert or assign
+   * \param [in] args arguments to construct the value with
+   *
+   * \return A pair consisting of:
+   *   - an iterator pointing to either the existing key-value pair, or the
+   *     newly-inserted pair
+   *   - true if a new pair was inserted, false otherwise
+   */
+  /// {@
   template <typename... Args>
   std::pair<iterator, bool> insert_or_assign(const KeyType& key, Args&&... args)
   {
@@ -280,6 +385,7 @@ public:
                 std::forward_as_tuple(std::forward<Args>(args)...));
     return emplace_pos;
   }
+  /// @}
 
   template <typename... Args>
   std::pair<iterator, bool> try_emplace(const KeyType& key, Args&&... args)
