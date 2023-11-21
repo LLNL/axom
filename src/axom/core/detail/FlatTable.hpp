@@ -6,6 +6,8 @@
 #ifndef Axom_Core_Detail_FlatTable_Hpp
 #define Axom_Core_Detail_FlatTable_Hpp
 
+#include <climits>
+
 #include "axom/core/Array.hpp"
 #include "axom/core/ArrayView.hpp"
 #include "axom/core/utilities/BitUtilities.hpp"
