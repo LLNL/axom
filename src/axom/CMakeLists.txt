@@ -45,6 +45,15 @@ install(EXPORT               axom-targets
         NAMESPACE            axom::
         DESTINATION          lib/cmake)
 
+# Create alias targets for projects that include us as a subdirectory
+add_library(axom INTERFACE)
+target_link_libraries(axom INTERFACE ${AXOM_COMPONENTS_ENABLED})
+
+foreach(_comp ${AXOM_COMPONENTS_ENABLED})
+    add_library(axom::${_comp} ALIAS ${_comp})
+endforeach()
+
+
 #------------------------------------------------------------------------------
 # Generate export symbols
 #------------------------------------------------------------------------------

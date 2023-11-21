@@ -73,7 +73,7 @@ public:
 
     axom::quest::MeshViewUtil<DIM, MemorySpace> mvu(dom, topologyName);
 
-    m_bShape = mvu.getDomainShape();
+    m_bShape = mvu.getCellShape();
     m_coordsViews = mvu.getConstCoordsViews(false);
     m_fcnView = mvu.template getConstFieldView<double>(fcnFieldName, false);
     if(!maskFieldName.empty())
@@ -342,7 +342,6 @@ public:
     axom::Array<axom::IndexType, 1, MemorySpace> sortedFacetIncrs(m_facetIncrs);
     axom::Array<axom::IndexType, 1, MemorySpace> sortedIndices(parentCellCount);
     auto sortedIndicesView = sortedIndices.view();
-    auto sortedFacetIncrsView = sortedFacetIncrs.view();
     axom::for_all<ExecSpace>(0, parentCellCount,
                              AXOM_LAMBDA(axom::IndexType pcId) {
                                sortedIndicesView[pcId] = pcId;
@@ -844,7 +843,7 @@ newMarchingCubesFullParallel(MarchingCubesRuntimePolicy runtimePolicy, int dim)
                     : std::unique_ptr<ImplBase>(
                         new MarchingCubesFullParallel<3, axom::SEQ_EXEC>);
   }
-  #ifdef _AXOM_MC_USE_OPENMP
+  #ifdef _AXOM_MARCHINGCUBES_USE_OPENMP
   else if(runtimePolicy == RuntimePolicy::omp)
   {
     impl = dim == 2 ? std::unique_ptr<ImplBase>(
@@ -853,7 +852,7 @@ newMarchingCubesFullParallel(MarchingCubesRuntimePolicy runtimePolicy, int dim)
                         new MarchingCubesFullParallel<3, axom::OMP_EXEC>);
   }
   #endif
-  #ifdef _AXOM_MC_USE_CUDA
+  #ifdef _AXOM_MARCHINGCUBES_USE_CUDA
   else if(runtimePolicy == RuntimePolicy::cuda)
   {
     impl = dim == 2 ? std::unique_ptr<ImplBase>(
@@ -862,7 +861,7 @@ newMarchingCubesFullParallel(MarchingCubesRuntimePolicy runtimePolicy, int dim)
                         new MarchingCubesFullParallel<3, axom::CUDA_EXEC<256>>);
   }
   #endif
-  #ifdef _AXOM_MC_USE_HIP
+  #ifdef _AXOM_MARCHINGCUBES_USE_HIP
   else if(runtimePolicy == RuntimePolicy::hip)
   {
     impl = dim == 2 ? std::unique_ptr<ImplBase>(

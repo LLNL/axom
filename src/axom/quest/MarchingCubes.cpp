@@ -130,7 +130,6 @@ void MarchingCubes::populateContourMesh(
 
       int userDomainId = single->getDomainId(dId);
 
-      // TODO: Verify that UnstructuredMesh only supports host memory.
       axom::detail::ArrayOps<axom::IndexType, MemorySpace::Dynamic>::fill(
         domainIdPtr,
         nPrev,

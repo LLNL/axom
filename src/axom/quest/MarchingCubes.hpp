@@ -31,13 +31,13 @@
   // within the marching cubes implementation.
   #if defined(AXOM_USE_RAJA)
     #ifdef AXOM_USE_OPENMP
-      #define _AXOM_MC_USE_OPENMP
+      #define _AXOM_MARCHINGCUBES_USE_OPENMP
     #endif
     #if defined(AXOM_USE_CUDA) && defined(AXOM_USE_UMPIRE)
-      #define _AXOM_MC_USE_CUDA
+      #define _AXOM_MARCHINGCUBES_USE_CUDA
     #endif
     #if defined(AXOM_USE_HIP) && defined(AXOM_USE_UMPIRE)
-      #define _AXOM_MC_USE_HIP
+      #define _AXOM_MARCHINGCUBES_USE_HIP
     #endif
   #endif
 
@@ -328,20 +328,20 @@ public:
       return true;
 
     case MarchingCubesRuntimePolicy::omp:
-  #ifdef _AXOM_MC_USE_OPENMP
+  #ifdef _AXOM_MARCHINGCUBES_USE_OPENMP
       return true;
   #else
       return false;
   #endif
 
     case MarchingCubesRuntimePolicy::cuda:
-  #ifdef _AXOM_MC_USE_CUDA
+  #ifdef _AXOM_MARCHINGCUBES_USE_CUDA
       return true;
   #else
       return false;
   #endif
     case MarchingCubesRuntimePolicy::hip:
-  #ifdef _AXOM_MC_USE_HIP
+  #ifdef _AXOM_MARCHINGCUBES_USE_HIP
       return true;
   #else
       return false;

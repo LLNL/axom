@@ -19,6 +19,16 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 
 ## [Unreleased] - Release date yyyy-mm-dd
 
+### Added
+- Primal: Adds a `Quadrilateral` primitive
+- Primal: Adds a `compute_bounding_box()` operator for computing the bounding
+  box of a `Quadrilateral`
+- Primal: Adds a `clip()` operator for clipping a tetrahedron against the
+  half-space defined by a plane
+- Primal: Adds a `checkAndFixOrientation()` function to `primal::Tetrahedron`
+  that swaps the order of vertices if the signed volume of the Tetrahedron is
+  negative, resulting in the signed volume becoming positive.
+
 ### Changed
 - `MarchingCubes` allows user to select the underlying data-parallel implementation
   - `fullParallel` works best on GPUs.
@@ -36,9 +46,6 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
   returns the signed volume.
 - Primal: `intersection_volume()` operators changed from returning a signed
   volume to an unsigned volume.
-- Primal: Adds a `Quadrilateral` primitive
-- Primal: Adds a `compute_bounding_box()` operator for computing the bounding
-  box of a `Quadrilateral`
 
 ### Fixed
 - quest's `SamplingShaper` now properly handles material names containing underscores

@@ -6,6 +6,7 @@
 #ifndef QUEST_ARRAYINDEXER_HPP_
 #define QUEST_ARRAYINDEXER_HPP_
 
+#include "axom/slic.hpp"
 #include "axom/core/StackArray.hpp"
 #include "axom/core/numerics/matvecops.hpp"
 
@@ -15,7 +16,7 @@ namespace axom
   @brief Indexing into a multidimensional structured array.
 
   Supports row-major and column-major ordering and arbitrary
-  permutations of the indices.
+  permutations of the ordering.
 */
 template <typename T, int DIM>
 class ArrayIndexer
@@ -78,13 +79,13 @@ public:
   }
 
   //!@brief Index directions, ordered from slowest to fastest.
-  inline AXOM_HOST_DEVICE axom::StackArray<std::uint16_t, DIM>& slowestDirs() const
+  inline AXOM_HOST_DEVICE const axom::StackArray<std::uint16_t, DIM>& slowestDirs() const
   {
     return m_slowestDirs;
   }
 
   //!@brief Strides.
-  inline AXOM_HOST_DEVICE axom::StackArray<axom::IndexType, DIM>& strides() const
+  inline AXOM_HOST_DEVICE const axom::StackArray<axom::IndexType, DIM>& strides() const
   {
     return m_strides;
   }

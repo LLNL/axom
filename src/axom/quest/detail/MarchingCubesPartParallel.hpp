@@ -63,7 +63,7 @@ public:
     @param dom Blueprint structured mesh domain
     @param topologyName Name of mesh topology (see blueprint
            mesh documentation)
-    @param fcnFieldName Name of nodal function is in dom
+    @param fcnFieldName Name of nodal function in dom
     @param maskFieldName Name of integer cell mask function is in dom
 
     Set up views to domain data and allocate other data to work on the
@@ -84,7 +84,7 @@ public:
 
     axom::quest::MeshViewUtil<DIM, MemorySpace> mvu(dom, topologyName);
 
-    m_bShape = mvu.getDomainShape();
+    m_bShape = mvu.getCellShape();
     m_coordsViews = mvu.getConstCoordsViews(false);
     m_fcnView = mvu.template getConstFieldView<double>(fcnFieldName, false);
     if(!maskFieldName.empty())
@@ -898,7 +898,7 @@ newMarchingCubesPartParallel(MarchingCubesRuntimePolicy runtimePolicy, int dim)
       : std::unique_ptr<ImplBase>(
           new MarchingCubesPartParallel<3, axom::SEQ_EXEC, axom::SEQ_EXEC>);
   }
-  #ifdef _AXOM_MC_USE_OPENMP
+  #ifdef _AXOM_MARCHINGCUBES_USE_OPENMP
   else if(runtimePolicy == RuntimePolicy::omp)
   {
     impl = dim == 2
@@ -908,7 +908,7 @@ newMarchingCubesPartParallel(MarchingCubesRuntimePolicy runtimePolicy, int dim)
           new MarchingCubesPartParallel<3, axom::OMP_EXEC, axom::SEQ_EXEC>);
   }
   #endif
-  #ifdef _AXOM_MC_USE_CUDA
+  #ifdef _AXOM_MARCHINGCUBES_USE_CUDA
   else if(runtimePolicy == RuntimePolicy::cuda)
   {
     impl = dim == 2
@@ -918,7 +918,7 @@ newMarchingCubesPartParallel(MarchingCubesRuntimePolicy runtimePolicy, int dim)
           new MarchingCubesPartParallel<3, axom::CUDA_EXEC<256>, axom::CUDA_EXEC<1>>);
   }
   #endif
-  #ifdef _AXOM_MC_USE_HIP
+  #ifdef _AXOM_MARCHINGCUBES_USE_HIP
   else if(runtimePolicy == RuntimePolicy::hip)
   {
     impl = dim == 2
