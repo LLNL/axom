@@ -31,6 +31,13 @@ TEST(core_flatmap, insert_only)
   int_to_dbl.insert({2, 30.0});
   EXPECT_EQ(3, int_to_dbl.size());
 
+  // Inserting a duplicate key should not change the value.
+  auto duplicate_key = int_to_dbl.insert({2, 40.0});
+  EXPECT_EQ(3, int_to_dbl.size());
+  EXPECT_FALSE(duplicate_key.second);
+  EXPECT_EQ(duplicate_key.first, int_to_dbl.find(2));
+  EXPECT_EQ(duplicate_key.first->second, 30.0);
+
   // Check consistency of added values.
   const double expected_str[3] {10.0, 20.0, 30.0};
   for(int i = 0; i < 3; i++)
