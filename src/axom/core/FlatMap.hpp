@@ -551,7 +551,7 @@ FlatMap<KeyType, ValueType, Hash>::FlatMap(IndexType bucket_count)
   , m_loadCount(0)
 {
   int minBuckets = MIN_NUM_BUCKETS;
-  bucket_count = std::max(minBuckets, bucket_count);
+  bucket_count = axom::utilities::max(minBuckets, bucket_count);
   // Get the smallest power-of-two number of groups satisfying:
   // N * GroupSize - 1 >= minBuckets
   // TODO: we should add a leadingZeros overload for 64-bit integers
