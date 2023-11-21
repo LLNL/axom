@@ -87,6 +87,53 @@ TEST(core_flatmap_str, insert_only)
   }
 }
 
+TEST(core_flatmap, insert_or_assign)
+{
+  axom::FlatMap<int, double> int_to_dbl;
+
+  // Test insert behavior of FlatMap::insert_or_assign.
+  {
+    auto res_0 = int_to_dbl.insert_or_assign(0, 10.0);
+    EXPECT_EQ(1, int_to_dbl.size());
+    EXPECT_EQ(10.0, int_to_dbl.at(0));
+    EXPECT_EQ(res_0.first, int_to_dbl.find(0));
+    EXPECT_TRUE(res_0.second);
+
+    auto res_1 = int_to_dbl.insert_or_assign(1, 20.0);
+    EXPECT_EQ(2, int_to_dbl.size());
+    EXPECT_EQ(20.0, int_to_dbl.at(1));
+    EXPECT_EQ(res_1.first, int_to_dbl.find(1));
+    EXPECT_TRUE(res_1.second);
+
+    auto res_2 = int_to_dbl.insert_or_assign(2, 30.0);
+    EXPECT_EQ(3, int_to_dbl.size());
+    EXPECT_EQ(30.0, int_to_dbl.at(2));
+    EXPECT_EQ(res_2.first, int_to_dbl.find(2));
+    EXPECT_TRUE(res_2.second);
+  }
+
+  // Test assign behavior of FlatMap::insert_or_assign.
+  {
+    auto res_0 = int_to_dbl.insert_or_assign(0, 20.0);
+    EXPECT_EQ(20.0, int_to_dbl.at(0));
+    EXPECT_EQ(res_0.first, int_to_dbl.find(0));
+    EXPECT_FALSE(res_0.second);
+
+    auto res_1 = int_to_dbl.insert_or_assign(1, 40.0);
+    EXPECT_EQ(40.0, int_to_dbl.at(1));
+    EXPECT_EQ(res_1.first, int_to_dbl.find(1));
+    EXPECT_FALSE(res_1.second);
+
+    auto res_2 = int_to_dbl.insert_or_assign(2, 60.0);
+    EXPECT_EQ(60.0, int_to_dbl.at(2));
+    EXPECT_EQ(res_2.first, int_to_dbl.find(2));
+    EXPECT_FALSE(res_2.second);
+
+    // Assignments should not change size of FlatMap.
+    EXPECT_EQ(3, int_to_dbl.size());
+  }
+}
+
 TEST(core_flatmap, initializer_list)
 {
   axom::FlatMap<int, double> int_to_dbl {{0, 10.0}, {1, 20.0}, {2, 30.0}};
