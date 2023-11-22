@@ -1808,7 +1808,7 @@ TEST(sidre_group, save_restore_empty_datastore)
   for(const auto& protocol : protocols)
   {
     const std::string file_path = file_path_base + protocol;
-    ds1->getRoot()->save(file_path, protocol);
+    EXPECT_TRUE(ds1->getRoot()->save(file_path, protocol));
   }
 
   delete ds1;
@@ -1820,7 +1820,7 @@ TEST(sidre_group, save_restore_empty_datastore)
 
     DataStore* ds2 = new DataStore();
     Group* root2 = ds2->getRoot();
-    root2->load(file_path, default_protocol);
+    EXPECT_TRUE(root2->load(file_path, default_protocol));
 
     EXPECT_TRUE(ds2->getNumBuffers() == 0);
     EXPECT_TRUE(root2->getNumGroups() == 0);
@@ -1849,12 +1849,12 @@ TEST(sidre_group, save_load_via_hdf5_ids)
   }
 
   // save using the sidre_hdf5 protocol
-  root->save("out_save_load_via_hdf5_ids.sidre_hdf5", "sidre_hdf5");
+  EXPECT_TRUE(root->save("out_save_load_via_hdf5_ids.sidre_hdf5", "sidre_hdf5"));
 
   // load via path based
   DataStore ds_load_generic;
-  ds_load_generic.getRoot()->load("out_save_load_via_hdf5_ids.sidre_hdf5",
-                                  "sidre_hdf5");
+  EXPECT_TRUE(ds_load_generic.getRoot()->load("out_save_load_via_hdf5_ids.sidre_hdf5",
+                                              "sidre_hdf5"));
 
   // load via hdf5 id
   DataStore ds_load_hdf5;
@@ -1864,7 +1864,7 @@ TEST(sidre_group, save_load_via_hdf5_ids)
   EXPECT_TRUE(h5_id >= 0);
 
   // this implies protocol == "sidre_hdf5"
-  ds_load_hdf5.getRoot()->load(h5_id);
+  EXPECT_TRUE(ds_load_hdf5.getRoot()->load(h5_id));
 
   // ? Does isEquivalentTo check values?
   // check path based with source
@@ -1915,7 +1915,7 @@ TEST(sidre_group, save_root_restore_as_child)
   for(const auto& protocol : protocols)
   {
     const std::string file_path = file_path_base + protocol;
-    root->save(file_path, protocol);
+    EXPECT_TRUE(root->save(file_path, protocol));
   }
 
   // Restore the original DataStore into a child group
@@ -1938,7 +1938,7 @@ TEST(sidre_group, save_root_restore_as_child)
     if(axom::utilities::filesystem::pathExists(file_path))
     {
       std::cout << "loading " << file_path << std::endl;
-      cg->load(file_path, protocol);
+      EXPECT_TRUE(cg->load(file_path, protocol));
 
       EXPECT_TRUE(cg->isEquivalentTo(root, false));
       EXPECT_TRUE(root->isEquivalentTo(cg, false));
@@ -1998,7 +1998,7 @@ TEST(sidre_group, save_child_restore_as_root)
   for(const auto& protocol : protocols)
   {
     const std::string file_path = file_path_base + protocol;
-    child1->save(file_path, protocol);
+    EXPECT_TRUE(child1->save(file_path, protocol));
   }
 
   // Restore the saved child1 into a root group
@@ -2014,7 +2014,7 @@ TEST(sidre_group, save_child_restore_as_root)
     const std::string file_path = file_path_base + protocol;
     if(axom::utilities::filesystem::pathExists(file_path))
     {
-      dscopy->getRoot()->load(file_path, protocol);
+      EXPECT_TRUE(dscopy->getRoot()->load(file_path, protocol));
 
       EXPECT_TRUE(dscopy->getRoot()->isEquivalentTo(child1, false));
       EXPECT_TRUE(child1->isEquivalentTo(dscopy->getRoot(), false));
@@ -2043,13 +2043,13 @@ TEST(sidre_group, save_restore_api)
   // These should be produce identical files.
 
   // No group provided, defaults to root group
-  root1->save("sidre_save_fulltree_conduit", "json");
+  EXPECT_TRUE(root1->save("sidre_save_fulltree_conduit", "json"));
 
   const std::vector<std::string>& protocols = Group::getValidIOProtocols();
   for(const auto& protocol : protocols)
   {
     const std::string file_path = file_path_base + protocol;
-    root1->save(file_path, protocol);
+    EXPECT_TRUE(root1->save(file_path, protocol));
   }
 
   //These are commented out because createViewScalar<int> creates a scalar View
@@ -2059,13 +2059,13 @@ TEST(sidre_group, save_restore_api)
 #if 0
   DataStore* ds2 = new DataStore();
   Group* root2 = ds2->getRoot();
-  root2->load("sidre_save_fulltree_conduit", "json");
+  EXPECT_TRUE(root2->load("sidre_save_fulltree_conduit", "json"));
   EXPECT_TRUE( ds2->getRoot()->isEquivalentTo(root1) );
   delete ds2;
 
   DataStore* ds3 = new DataStore();
   Group* root3 = ds3->getRoot();
-  root3->load("sidre_save_subtree_sidre_json", "sidre_json");
+  EXPECT_TRUE(root3->load("sidre_save_subtree_sidre_json", "sidre_json"));
   EXPECT_TRUE( ds3->getRoot()->isEquivalentTo(root1) );
   delete ds3;
 #endif
@@ -2073,7 +2073,7 @@ TEST(sidre_group, save_restore_api)
 #ifdef AXOM_USE_HDF5
   DataStore* ds4 = new DataStore();
   Group* root4 = ds4->getRoot();
-  root4->load("sidre_save_subtree_sidre_hdf5", "sidre_hdf5");
+  EXPECT_TRUE(root4->load("sidre_save_subtree_sidre_hdf5", "sidre_hdf5"));
   EXPECT_TRUE(ds4->getRoot()->isEquivalentTo(root1));
   delete ds4;
 #endif
@@ -2081,7 +2081,7 @@ TEST(sidre_group, save_restore_api)
 #if 0
   DataStore* ds5 = new DataStore();
   Group* root5 = ds5->getRoot();
-  root5->load("sidre_save_subtree_json", "json");
+  EXPECT_TRUE(root5->load("sidre_save_subtree_json", "json"));
   EXPECT_TRUE( ds5->getRoot()->isEquivalentTo(root1) );
   delete ds5;
 #endif
@@ -2095,8 +2095,8 @@ TEST(sidre_group, save_restore_api)
   Group* load1 = tree1->createGroup("subtree");
   Group* load2 = tree2->createGroup("subtree");
 
-  load1->load("sidre_save_subtree_sidre_json", "sidre_json");
-  load2->load("sidre_save_subtree_sidre_json", "sidre_json");
+  EXPECT_TRUE(load1->load("sidre_save_subtree_sidre_json", "sidre_json"));
+  EXPECT_TRUE(load2->load("sidre_save_subtree_sidre_json", "sidre_json"));
 
   EXPECT_TRUE(load1->isEquivalentTo(load2));
 
@@ -2163,7 +2163,7 @@ TEST(sidre_group, save_restore_scalars_and_strings)
     //      if ( protocol == "conduit_hdf5")
     //    continue;   // XXX - Does not work
     const std::string file_path = file_path_base + protocol;
-    root1->save(file_path, protocol);
+    EXPECT_TRUE(root1->save(file_path, protocol));
   }
 
   for(const auto& protocol : protocols)
@@ -2179,7 +2179,7 @@ TEST(sidre_group, save_restore_scalars_and_strings)
     DataStore* ds2 = new DataStore();
     Group* root2 = ds2->getRoot();
 
-    root2->load(file_path, protocol);
+    EXPECT_TRUE(root2->load(file_path, protocol));
 
     EXPECT_TRUE(root1->isEquivalentTo(root2));
 
@@ -2262,7 +2262,7 @@ TEST(sidre_group, save_restore_name_change)
     //      if ( protocol == "conduit_hdf5")
     //    continue;   // XXX - Does not work
     const std::string file_path = file_path_base + protocol;
-    child1->save(file_path, protocol);
+    EXPECT_TRUE(child1->save(file_path, protocol));
   }
 
   std::string groupname;
@@ -2282,7 +2282,7 @@ TEST(sidre_group, save_restore_name_change)
 
     EXPECT_EQ(child2->getName(), "child2");
 
-    child2->load(file_path, protocol, false, groupname);
+    EXPECT_TRUE(child2->load(file_path, protocol, false, groupname));
 
     EXPECT_EQ(child2->getName(), "child2");
 
@@ -2339,7 +2339,7 @@ TEST(sidre_group, save_restore_external_data)
   for(const auto& protocol : protocols)
   {
     const std::string file_path = file_path_base + protocol;
-    root1->save(file_path, protocol);
+    EXPECT_TRUE(root1->save(file_path, protocol));
   }
 
   delete ds1;
@@ -2360,7 +2360,7 @@ TEST(sidre_group, save_restore_external_data)
     DataStore* ds2 = new DataStore();
     Group* root2 = ds2->getRoot();
 
-    root2->load(file_path, protocol);
+    EXPECT_TRUE(root2->load(file_path, protocol));
 
     // load has set the type and size of the view.
     // Now set the external address before calling loadExternal.
@@ -2402,7 +2402,7 @@ TEST(sidre_group, save_restore_external_data)
     view4->setExternalDataPtr(int2d2);
 
     // Read external data into views
-    root2->loadExternalData(file_path);
+    EXPECT_TRUE(root2->loadExternalData(file_path));
 
     // Make sure addresses have not changed
     EXPECT_TRUE(view1->getVoidPtr() == static_cast<void*>(foo2));
@@ -2553,7 +2553,7 @@ TEST(sidre_group, save_restore_buffer)
   for(const auto& protocol : protocols)
   {
     const std::string file_path = file_path_base + protocol;
-    root1->save(file_path, protocol);
+    EXPECT_TRUE(root1->save(file_path, protocol));
   }
 
   // Now load back in.
@@ -2570,7 +2570,7 @@ TEST(sidre_group, save_restore_buffer)
     DataStore* ds2 = new DataStore();
     Group* root2 = ds2->getRoot();
 
-    root2->load(file_path, protocol);
+    EXPECT_TRUE(root2->load(file_path, protocol));
 
     bool isequivalent = root1->isEquivalentTo(root2);
     EXPECT_TRUE(isequivalent);
@@ -2615,7 +2615,7 @@ TEST(sidre_group, save_restore_other)
   for(const auto& protocol : protocols)
   {
     const std::string file_path = file_path_base + protocol;
-    root1->save(file_path, protocol);
+    EXPECT_TRUE(root1->save(file_path, protocol));
   }
 
   delete ds1;
@@ -2636,7 +2636,7 @@ TEST(sidre_group, save_restore_other)
     DataStore* ds2 = new DataStore();
     Group* root2 = ds2->getRoot();
 
-    root2->load(file_path, protocol);
+    EXPECT_TRUE(root2->load(file_path, protocol));
 
     View* view1 = root2->getView("empty_view");
     EXPECT_TRUE(view1->isEmpty());
@@ -2701,7 +2701,7 @@ TEST(sidre_group, save_restore_complex)
   for(const auto& protocol : protocols)
   {
     const std::string file_path = file_path_base + protocol;
-    ds1->getRoot()->save(file_path, protocol);
+    EXPECT_TRUE(ds1->getRoot()->save(file_path, protocol));
   }
 
   for(const auto& protocol : protocols)
@@ -2716,7 +2716,7 @@ TEST(sidre_group, save_restore_complex)
 
     DataStore* ds2 = new DataStore();
 
-    ds2->getRoot()->load(file_path, protocol);
+    EXPECT_TRUE(ds2->getRoot()->load(file_path, protocol));
 
     EXPECT_TRUE(ds1->getRoot()->isEquivalentTo(ds2->getRoot()));
 
@@ -2844,10 +2844,10 @@ TEST(sidre_group, save_load_all_protocols)
     SLIC_INFO("Testing protocol: " << protocol);
     const std::string file_path = file_path_base + protocol;
     // save using current protocol
-    ds.getRoot()->save(file_path, protocol);
+    EXPECT_TRUE(ds.getRoot()->save(file_path, protocol));
 
     DataStore ds_load;
-    ds_load.getRoot()->load(file_path, protocol);
+    EXPECT_TRUE(ds_load.getRoot()->load(file_path, protocol));
 
     SLIC_INFO("Tree from protocol: " << protocol);
     // show the result
@@ -2915,7 +2915,7 @@ TEST(sidre_group, save_load_preserve_contents)
   for(const auto& protocol : protocols)
   {
     std::string file_path0 = file_path_tree0 + protocol;
-    tree0->save(file_path0, protocol);
+    EXPECT_TRUE(tree0->save(file_path0, protocol));
 
     Group* tree1 = tree0->createGroup("tree1");
 
@@ -2934,7 +2934,7 @@ TEST(sidre_group, save_load_preserve_contents)
 
     std::string file_path1 = file_path_tree1 + protocol;
 
-    tree1->save(file_path1, protocol);
+    EXPECT_TRUE(tree1->save(file_path1, protocol));
 
     // show the source tree
     SLIC_INFO("Source tree");
@@ -2942,8 +2942,8 @@ TEST(sidre_group, save_load_preserve_contents)
 
     DataStore ds_load;
     Group* loadtree0 = ds_load.getRoot()->createGroup("tree0");
-    loadtree0->load(file_path0, protocol, false, groupname);
-    loadtree0->load(file_path1, protocol, true, groupname);
+    EXPECT_TRUE(loadtree0->load(file_path0, protocol, false, groupname));
+    EXPECT_TRUE(loadtree0->load(file_path1, protocol, true, groupname));
     loadtree0->rename(groupname);
 
     SLIC_INFO("Tree from protocol: " << protocol);
@@ -3027,9 +3027,9 @@ TEST(sidre_group, save_layout_protocols)
   gc->createView("empty_view");
 
   std::string file_path = file_path_base + "sidre_layout_json";
-  ds.getRoot()->save(file_path, "sidre_layout_json");
+  EXPECT_TRUE(ds.getRoot()->save(file_path, "sidre_layout_json"));
   file_path = file_path_base + "conduit_layout_json";
-  ds.getRoot()->save(file_path, "conduit_layout_json");
+  EXPECT_TRUE(ds.getRoot()->save(file_path, "conduit_layout_json"));
 
   //restore conduit default errors
   DataStore::setConduitDefaultMessageHandlers();
@@ -3263,10 +3263,10 @@ TEST(sidre_group, import_conduit_lists)
   std::string lists_protocol = "sidre_json";
 #endif
 
-  ds.getRoot()->save(lists_file, lists_protocol);
+  EXPECT_TRUE(ds.getRoot()->save(lists_file, lists_protocol));
 
   DataStore load_ds;
-  load_ds.getRoot()->load(lists_file, lists_protocol);
+  EXPECT_TRUE(load_ds.getRoot()->load(lists_file, lists_protocol));
 
   {
     EXPECT_EQ(
