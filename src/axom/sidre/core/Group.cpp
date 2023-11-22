@@ -1981,7 +1981,7 @@ Group* Group::createGroupAndLoad(std::string& group_name,
   if(child != nullptr)
   {
     load_success = child->load(path, protocol, false, group_name);
-    if (!load_success)
+    if(!load_success)
     {
       delete child;
       child = nullptr;
