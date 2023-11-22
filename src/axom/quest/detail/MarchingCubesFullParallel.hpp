@@ -267,7 +267,8 @@ public:
 
     // Compute number of surface facets added by each parent cell.
     m_facetIncrs.resize(parentCellCount);
-    const axom::ArrayView<int, 1, MemorySpace> facetIncrsView = m_facetIncrs.view();
+    const axom::ArrayView<int, 1, MemorySpace> facetIncrsView =
+      m_facetIncrs.view();
 
   #if defined(AXOM_USE_RAJA)
     axom::for_all<ExecSpace>(
@@ -342,13 +343,14 @@ public:
     axom::Array<axom::IndexType, 1, MemorySpace> sortedFacetIncrs(m_facetIncrs);
     axom::Array<axom::IndexType, 1, MemorySpace> sortedIndices(parentCellCount);
     auto sortedIndicesView = sortedIndices.view();
-    axom::for_all<ExecSpace>(0, parentCellCount,
-                             AXOM_LAMBDA(axom::IndexType pcId) {
-                               sortedIndicesView[pcId] = pcId;
-                             });
-    RAJA::stable_sort_pairs<LoopPolicy>(RAJA::make_span(sortedFacetIncrs.data(), parentCellCount),
-                                        RAJA::make_span(sortedIndices.data(), parentCellCount),
-                                        RAJA::operators::greater<axom::IndexType>{});
+    axom::for_all<ExecSpace>(
+      0,
+      parentCellCount,
+      AXOM_LAMBDA(axom::IndexType pcId) { sortedIndicesView[pcId] = pcId; });
+    RAJA::stable_sort_pairs<LoopPolicy>(
+      RAJA::make_span(sortedFacetIncrs.data(), parentCellCount),
+      RAJA::make_span(sortedIndices.data(), parentCellCount),
+      RAJA::operators::greater<axom::IndexType> {});
 
     auto contourCellParentsView = m_contourCellParents.view();
     auto contourCellCornersView = m_contourCellCorners.view();
