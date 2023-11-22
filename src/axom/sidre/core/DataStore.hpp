@@ -88,6 +88,9 @@ public:
    */
   const Group* getRoot() const { return m_RootGroup; };
 
+  /// Return whether a Conduit error occurred.
+  static bool getConduitErrorOccurred();
+
 public:
   //@{
   //!  @name Methods to query, access, create, and destroy Buffers.
