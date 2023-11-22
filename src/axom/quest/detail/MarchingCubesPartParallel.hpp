@@ -338,8 +338,7 @@ public:
 
     axom::Array<axom::IndexType, 1, MemorySpace> prefixSum(m_crossingCount,
                                                            m_crossingCount);
-    const axom::ArrayView<axom::IndexType, 1, MemorySpace> prefixSumView =
-      prefixSum.view();
+    const auto prefixSumView = prefixSum.view();
 
     auto copyFirstSurfaceCellId = AXOM_LAMBDA(axom::IndexType n)
     {

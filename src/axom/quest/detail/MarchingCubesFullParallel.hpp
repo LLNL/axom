@@ -44,6 +44,7 @@ class MarchingCubesFullParallel : public MarchingCubesSingleDomain::ImplBase
 public:
   using Point = axom::primal::Point<double, DIM>;
   using MIdx = axom::StackArray<axom::IndexType, DIM>;
+  using FacetIdType = int;
   using LoopPolicy = typename execution_space<ExecSpace>::loop_policy;
   using ReducePolicy = typename execution_space<ExecSpace>::reduce_policy;
   static constexpr auto MemorySpace = execution_space<ExecSpace>::memory_space;
@@ -267,8 +268,7 @@ public:
 
     // Compute number of surface facets added by each parent cell.
     m_facetIncrs.resize(parentCellCount);
-    const axom::ArrayView<int, 1, MemorySpace> facetIncrsView =
-      m_facetIncrs.view();
+    const auto facetIncrsView = m_facetIncrs.view();
 
   #if defined(AXOM_USE_RAJA)
     axom::for_all<ExecSpace>(
@@ -311,7 +311,7 @@ public:
     // Use last facet info to compute number of facets in domain.
     // In case data is on device, copy to host before computing.
     axom::IndexType firstFacetIds_back = 0;
-    axom::IndexType facetIncrs_back = 0;
+    FacetIdType facetIncrs_back = 0;
     axom::copy(&firstFacetIds_back,
                m_firstFacetIds.data() + m_firstFacetIds.size() - 1,
                sizeof(firstFacetIds_back));
@@ -340,7 +340,7 @@ public:
 
     // sortedIndices are parent cell indices, sorted by number
     // of facets in them.
-    axom::Array<axom::IndexType, 1, MemorySpace> sortedFacetIncrs(m_facetIncrs);
+    auto sortedFacetIncrs(m_facetIncrs);
     axom::Array<axom::IndexType, 1, MemorySpace> sortedIndices(parentCellCount);
     auto sortedIndicesView = sortedIndices.view();
     axom::for_all<ExecSpace>(
@@ -803,7 +803,7 @@ private:
   axom::IndexType m_crossingCount = 0;
 
   //!@brief Number of surface mesh facets added by computational mesh cells.
-  axom::Array<int, 1, MemorySpace> m_facetIncrs;
+  axom::Array<FacetIdType, 1, MemorySpace> m_facetIncrs;
 
   //!@brief First index of facets in computational mesh cells.
   axom::Array<axom::IndexType, 1, MemorySpace> m_firstFacetIds;
