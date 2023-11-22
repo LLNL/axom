@@ -154,10 +154,6 @@ MarchingCubesSingleDomain::MarchingCubesSingleDomain(RuntimePolicy runtimePolicy
   , m_maskFieldName(maskField)
   , m_maskPath(maskField.empty() ? std::string() : "fields/" + maskField)
 {
-  SLIC_ASSERT_MSG(
-    isValidRuntimePolicy(runtimePolicy),
-    fmt::format("Policy '{}' is not a valid runtime policy", runtimePolicy));
-
   setDomain(dom);
   return;
 }
