@@ -344,6 +344,23 @@ public:
 
   /// @}
 
+  /*!
+    @brief Convert 1D Array into a StackArray.
+  */
+  template <int LENGTH1D, typename TT = T, int TDIM = DIM>
+  AXOM_HOST_DEVICE inline
+    typename std::enable_if<TDIM == 1, axom::StackArray<TT, LENGTH1D>>::type
+    to_stack_array() const
+  {
+    axom::StackArray<TT, LENGTH1D> rval;
+    IndexType copyCount = LENGTH1D <= m_num_elements ? LENGTH1D : m_num_elements;
+    for(IndexType i = 0; i < copyCount; ++i)
+    {
+      rval[i] = m_data[i];
+    }
+    return rval;
+  }
+
   /// @}
 
   /// \name Array methods to modify the data.
