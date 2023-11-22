@@ -148,8 +148,8 @@ public:
   {
     axom::utilities::swap(m_numGroups2, other.m_numGroups2);
     axom::utilities::swap(m_size, other.m_size);
-    axom::utilities::swap(m_metadata, other.m_metadata);
-    axom::utilities::swap(m_buckets, other.m_buckets);
+    m_metadata.swap(other.m_metadata);
+    m_buckets.swap(other.m_buckets);
     axom::utilities::swap(m_loadCount, other.m_loadCount);
   }
 
