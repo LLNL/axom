@@ -31,7 +31,6 @@ namespace axom
 {
 namespace sidre
 {
-
 /*
  *************************************************************************
  *
@@ -179,10 +178,7 @@ void DataStore::setConduitDefaultMessageHandlers()
   conduit::utils::set_error_handler(conduit::utils::default_error_handler);
 }
 
-bool DataStore::getConduitErrorOccurred()
-{
-    return s_conduit_had_error;
-}
+bool DataStore::getConduitErrorOccurred() { return s_conduit_had_error; }
 
 /*
  *************************************************************************
