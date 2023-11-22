@@ -1798,7 +1798,7 @@ bool Group::isEquivalentTo(const Group* other, bool checkName) const
  *************************************************************************
  */
 
-void Group::save(const std::string& path,
+bool Group::save(const std::string& path,
                  const std::string& protocol,
                  const Attribute* attr) const
 {
@@ -1866,6 +1866,8 @@ void Group::save(const std::string& path,
     SLIC_ERROR(SIDRE_GROUP_LOG_PREPEND << "Invalid protocol '" << protocol
                                        << "' for file save.");
   }
+
+  return !DataStore::getConduitErrorOccurred();
 }
 
 /*************************************************************************/
@@ -1877,15 +1879,15 @@ void Group::save(const std::string& path,
  *
  *************************************************************************
  */
-void Group::load(const std::string& path,
+bool Group::load(const std::string& path,
                  const std::string& protocol,
                  bool preserve_contents)
 {
   std::string new_name;
-  load(path, protocol, preserve_contents, new_name);
+  return load(path, protocol, preserve_contents, new_name);
 }
 
-void Group::load(const std::string& path,
+bool Group::load(const std::string& path,
                  const std::string& protocol,
                  bool preserve_contents,
                  std::string& name_from_file)
@@ -1958,6 +1960,8 @@ void Group::load(const std::string& path,
     SLIC_ERROR(SIDRE_GROUP_LOG_PREPEND << "Invalid protocol '" << protocol
                                        << "' for file load.");
   }
+
+  return !DataStore::getConduitErrorOccurred();
 }
 
 /*
@@ -1976,9 +1980,12 @@ Group* Group::createGroupAndLoad(std::string& group_name,
   Group* child = createGroup(group_name);
   if(child != nullptr)
   {
-    // In a forthcoming PR, load() will return a bool for success/failure
-    load_success = true;
-    child->load(path, protocol, false, group_name);
+    load_success = child->load(path, protocol, false, group_name);
+    if (!load_success)
+    {
+      delete child;
+      child = nullptr;
+    }
   }
 
   return child;
@@ -1991,7 +1998,7 @@ Group* Group::createGroupAndLoad(std::string& group_name,
  *
  *************************************************************************
  */
-void Group::loadExternalData(const std::string& path)
+bool Group::loadExternalData(const std::string& path)
 {
   Node n;
   createExternalLayout(n);
@@ -2007,6 +2014,8 @@ void Group::loadExternalData(const std::string& path)
                << "This function requires hdf5 support. "
                << " Please reconfigure with hdf5.");
 #endif
+
+  return !DataStore::getConduitErrorOccurred();
 }
 
 // Functions that directly use the hdf5 API in their signature
@@ -2019,7 +2028,7 @@ void Group::loadExternalData(const std::string& path)
  *
  *************************************************************************
  */
-void Group::save(const hid_t& h5_id,
+bool Group::save(const hid_t& h5_id,
                  const std::string& protocol,
                  const Attribute* attr) const
 {
@@ -2046,6 +2055,8 @@ void Group::save(const hid_t& h5_id,
     SLIC_ERROR(SIDRE_GROUP_LOG_PREPEND << "Invalid protocol '" << protocol
                                        << "' for save with hdf5 handle.");
   }
+
+  return !DataStore::getConduitErrorOccurred();
 }
 
 /*
@@ -2055,15 +2066,15 @@ void Group::save(const hid_t& h5_id,
  *
  *************************************************************************
  */
-void Group::load(const hid_t& h5_id,
+bool Group::load(const hid_t& h5_id,
                  const std::string& protocol,
                  bool preserve_contents)
 {
   std::string name_from_file;
-  load(h5_id, protocol, preserve_contents, name_from_file);
+  return load(h5_id, protocol, preserve_contents, name_from_file);
 }
 
-void Group::load(const hid_t& h5_id,
+bool Group::load(const hid_t& h5_id,
                  const std::string& protocol,
                  bool preserve_contents,
                  std::string& name_from_file)
@@ -2101,6 +2112,8 @@ void Group::load(const hid_t& h5_id,
     SLIC_ERROR(SIDRE_GROUP_LOG_PREPEND << "Invalid protocol '" << protocol
                                        << "' for file load.");
   }
+
+  return !DataStore::getConduitErrorOccurred();
 }
 
 /*
@@ -2111,11 +2124,13 @@ void Group::load(const hid_t& h5_id,
  * Note: this ASSUMES uses the "sidre_hdf5" protocol
  *************************************************************************
  */
-void Group::loadExternalData(const hid_t& h5_id)
+bool Group::loadExternalData(const hid_t& h5_id)
 {
   Node n;
   createExternalLayout(n);
   conduit::relay::io::hdf5_read(h5_id, "sidre/external", n);
+
+  return !DataStore::getConduitErrorOccurred();
 }
 
 #endif /* AXOM_USE_HDF5 */
