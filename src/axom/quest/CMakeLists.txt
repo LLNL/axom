@@ -58,6 +58,8 @@ set( quest_headers
     interface/signed_distance.hpp
 
     util/mesh_helpers.hpp
+    MeshViewUtil.hpp
+    ArrayIndexer.hpp
     )
 
 set( quest_sources
