@@ -1853,8 +1853,9 @@ TEST(sidre_group, save_load_via_hdf5_ids)
 
   // load via path based
   DataStore ds_load_generic;
-  EXPECT_TRUE(ds_load_generic.getRoot()->load("out_save_load_via_hdf5_ids.sidre_hdf5",
-                                              "sidre_hdf5"));
+  EXPECT_TRUE(
+    ds_load_generic.getRoot()->load("out_save_load_via_hdf5_ids.sidre_hdf5",
+                                    "sidre_hdf5"));
 
   // load via hdf5 id
   DataStore ds_load_hdf5;
