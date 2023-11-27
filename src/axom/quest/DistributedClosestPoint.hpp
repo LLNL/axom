@@ -34,20 +34,6 @@
 #endif
 #include "mpi.h"
 
-// Add some helper preprocessor defines for using OPENMP, CUDA, and HIP policies
-// within the distributed closest point query.
-#if defined(AXOM_USE_RAJA)
-  #ifdef AXOM_USE_OPENMP
-    #define _AXOM_DCP_USE_OPENMP
-  #endif
-  #if defined(AXOM_USE_CUDA) && defined(AXOM_USE_UMPIRE)
-    #define _AXOM_DCP_USE_CUDA
-  #endif
-  #if defined(AXOM_USE_HIP) && defined(AXOM_USE_UMPIRE)
-    #define _AXOM_DCP_USE_HIP
-  #endif
-#endif
-
 namespace axom
 {
 namespace quest
@@ -331,13 +317,13 @@ public:
   using BoxArray = axom::Array<BoxType>;
 
   using SeqBVHTree = spin::BVH<DIM, axom::SEQ_EXEC>;
-#ifdef _AXOM_DCP_USE_OPENMP
+#ifdef AXOM_RUNTIME_POLICY_USE_OPENMP
   using OmpBVHTree = spin::BVH<DIM, axom::OMP_EXEC>;
 #endif
-#ifdef _AXOM_DCP_USE_CUDA
+#ifdef AXOM_RUNTIME_POLICY_USE_CUDA
   using CudaBVHTree = spin::BVH<DIM, axom::CUDA_EXEC<256>>;
 #endif
-#ifdef _AXOM_DCP_USE_HIP
+#ifdef AXOM_RUNTIME_POLICY_USE_HIP
   using HipBVHTree = spin::BVH<DIM, axom::HIP_EXEC<256>>;
 #endif
 
@@ -486,17 +472,17 @@ public:
     case RuntimePolicy::seq:
       return m_bvh_seq.get() != nullptr;
 
-#ifdef _AXOM_DCP_USE_OPENMP
+#ifdef AXOM_RUNTIME_POLICY_USE_OPENMP
     case RuntimePolicy::omp:
       return m_bvh_omp.get() != nullptr;
 #endif
 
-#ifdef _AXOM_DCP_USE_CUDA
+#ifdef AXOM_RUNTIME_POLICY_USE_CUDA
     case RuntimePolicy::cuda:
       return m_bvh_cuda.get() != nullptr;
 #endif
 
-#ifdef _AXOM_DCP_USE_HIP
+#ifdef AXOM_RUNTIME_POLICY_USE_HIP
     case RuntimePolicy::hip:
       return m_bvh_hip.get() != nullptr;
 #endif
@@ -527,19 +513,19 @@ public:
       m_bvh_seq = std::make_unique<SeqBVHTree>();
       return generateBVHTreeImpl<SeqBVHTree>(m_bvh_seq.get());
 
-#ifdef _AXOM_DCP_USE_OPENMP
+#ifdef AXOM_RUNTIME_POLICY_USE_OPENMP
     case RuntimePolicy::omp:
       m_bvh_omp = std::make_unique<OmpBVHTree>();
       return generateBVHTreeImpl<OmpBVHTree>(m_bvh_omp.get());
 #endif
 
-#ifdef _AXOM_DCP_USE_CUDA
+#ifdef AXOM_RUNTIME_POLICY_USE_CUDA
     case RuntimePolicy::cuda:
       m_bvh_cuda = std::make_unique<CudaBVHTree>();
       return generateBVHTreeImpl<CudaBVHTree>(m_bvh_cuda.get());
 #endif
 
-#ifdef _AXOM_DCP_USE_HIP
+#ifdef AXOM_RUNTIME_POLICY_USE_HIP
     case RuntimePolicy::hip:
       m_bvh_hip = std::make_unique<HipBVHTree>();
       return generateBVHTreeImpl<HipBVHTree>(m_bvh_hip.get());
@@ -566,19 +552,19 @@ public:
       local_bb = m_bvh_seq->getBounds();
       break;
 
-#ifdef _AXOM_DCP_USE_OPENMP
+#ifdef AXOM_RUNTIME_POLICY_USE_OPENMP
     case RuntimePolicy::omp:
       local_bb = m_bvh_omp->getBounds();
       break;
 #endif
 
-#ifdef _AXOM_DCP_USE_CUDA
+#ifdef AXOM_RUNTIME_POLICY_USE_CUDA
     case RuntimePolicy::cuda:
       local_bb = m_bvh_cuda->getBounds();
       break;
 #endif
 
-#ifdef _AXOM_DCP_USE_HIP
+#ifdef AXOM_RUNTIME_POLICY_USE_HIP
     case RuntimePolicy::hip:
       local_bb = m_bvh_hip->getBounds();
       break;
@@ -985,19 +971,19 @@ private:
       computeLocalClosestPoints<SeqBVHTree>(m_bvh_seq.get(), xferNode);
       break;
 
-#ifdef _AXOM_DCP_USE_OPENMP
+#ifdef AXOM_RUNTIME_POLICY_USE_OPENMP
     case RuntimePolicy::omp:
       computeLocalClosestPoints<OmpBVHTree>(m_bvh_omp.get(), xferNode);
 #endif
       break;
 
-#ifdef _AXOM_DCP_USE_CUDA
+#ifdef AXOM_RUNTIME_POLICY_USE_CUDA
     case RuntimePolicy::cuda:
       computeLocalClosestPoints<CudaBVHTree>(m_bvh_cuda.get(), xferNode);
 #endif
       break;
 
-#ifdef _AXOM_DCP_USE_HIP
+#ifdef AXOM_RUNTIME_POLICY_USE_HIP
     case RuntimePolicy::hip:
       computeLocalClosestPoints<HipBVHTree>(m_bvh_hip.get(), xferNode);
 #endif
@@ -1360,15 +1346,15 @@ private:
 
   std::unique_ptr<SeqBVHTree> m_bvh_seq;
 
-#ifdef _AXOM_DCP_USE_OPENMP
+#ifdef AXOM_RUNTIME_POLICY_USE_OPENMP
   std::unique_ptr<OmpBVHTree> m_bvh_omp;
 #endif
 
-#ifdef _AXOM_DCP_USE_CUDA
+#ifdef AXOM_RUNTIME_POLICY_USE_CUDA
   std::unique_ptr<CudaBVHTree> m_bvh_cuda;
 #endif
 
-#ifdef _AXOM_DCP_USE_HIP
+#ifdef AXOM_RUNTIME_POLICY_USE_HIP
   std::unique_ptr<HipBVHTree> m_bvh_hip;
 #endif
 };  // DistributedClosestPointImpl
@@ -1443,20 +1429,20 @@ public:
       defaultAllocatorID = axom::execution_space<axom::SEQ_EXEC>::allocatorID();
       break;
 
-#ifdef _AXOM_DCP_USE_OPENMP
+#ifdef AXOM_RUNTIME_POLICY_USE_OPENMP
     case RuntimePolicy::omp:
       defaultAllocatorID = axom::execution_space<axom::OMP_EXEC>::allocatorID();
       break;
 #endif
 
-#ifdef _AXOM_DCP_USE_CUDA
+#ifdef AXOM_RUNTIME_POLICY_USE_CUDA
     case RuntimePolicy::cuda:
       defaultAllocatorID =
         axom::execution_space<axom::CUDA_EXEC<256>>::allocatorID();
       break;
 #endif
 
-#ifdef _AXOM_DCP_USE_HIP
+#ifdef AXOM_RUNTIME_POLICY_USE_HIP
     case RuntimePolicy::hip:
       defaultAllocatorID =
         axom::execution_space<axom::HIP_EXEC<256>>::allocatorID();
@@ -1753,10 +1739,5 @@ private:
 
 }  // end namespace quest
 }  // end namespace axom
-
-// Cleanup local #defines
-#undef _AXOM_DCP_USE_OPENMP
-#undef _AXOM_DCP_USE_CUDA
-#undef _AXOM_DCP_USE_HIP
 
 #endif  //  QUEST_DISTRIBUTED_CLOSEST_POINT_H_

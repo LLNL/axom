@@ -6,10 +6,25 @@
 #ifndef AXOM_CORE_EXECUTION_RUNTIME_POLICY_HPP_
 #define AXOM_CORE_EXECUTION_RUNTIME_POLICY_HPP_
 
-#include "axom/config.hpp"                         /* for compile time defs. */
-#include "axom/fmt/format.h"                       /* for axom::fmt */
-#include "axom/core/Macros.hpp"                    /* for AXOM_STATIC_ASSERT */
-#include "axom/core/execution/execution_space.hpp" /* execution_space traits */
+#include "axom/config.hpp"   /* for compile time defs. */
+#include "axom/fmt/format.h" /* for axom::fmt */
+
+#include <map>
+
+// Helper preprocessor defines for using OPENMP, CUDA, and HIP policies.
+// RAJA is required for using OpenMP, CUDA and HIP.
+// UMPIRE is required for using CUDA and HIP.
+#if defined(AXOM_USE_RAJA)
+  #ifdef AXOM_USE_OPENMP
+    #define AXOM_RUNTIME_POLICY_USE_OPENMP
+  #endif
+  #if defined(AXOM_USE_CUDA) && defined(AXOM_USE_UMPIRE)
+    #define AXOM_RUNTIME_POLICY_USE_CUDA
+  #endif
+  #if defined(AXOM_USE_HIP) && defined(AXOM_USE_UMPIRE)
+    #define AXOM_RUNTIME_POLICY_USE_HIP
+  #endif
+#endif
 
 namespace axom
 {
@@ -17,23 +32,21 @@ namespace core
 {
 namespace runtime_policy
 {
-/// Execution policies supported by configuration.
+/// Execution policies supported by Axom's configuration.
 enum class Policy
 {
   seq = 0
-#if defined(AXOM_USE_RAJA)
-  #ifdef AXOM_USE_OPENMP
+#if defined(AXOM_RUNTIME_POLICY_USE_OPENMP)
   ,
   omp = 1
-  #endif
-  #if defined(AXOM_USE_CUDA) && defined(AXOM_USE_UMPIRE)
+#endif
+#if defined(AXOM_RUNTIME_POLICY_USE_CUDA)
   ,
   cuda = 2
-  #endif
-  #if defined(AXOM_USE_HIP) && defined(AXOM_USE_UMPIRE)
+#endif
+#if defined(AXOM_RUNTIME_POLICY_USE_HIP)
   ,
   hip = 3
-  #endif
 #endif
 };
 
@@ -42,16 +55,14 @@ enum class Policy
   static const std::map<std::string, Policy> s_nameToPolicy
   {
     {"seq", Policy::seq}
-#if defined(AXOM_USE_RAJA)
-#ifdef AXOM_USE_OPENMP
+#if defined(AXOM_RUNTIME_POLICY_USE_OPENMP)
     , {"omp", Policy::omp}
 #endif
-#if defined(AXOM_USE_CUDA) && defined(AXOM_USE_UMPIRE)
+#if defined(AXOM_RUNTIME_POLICY_USE_CUDA)
     , {"cuda", Policy::cuda}
 #endif
-#if defined(AXOM_USE_HIP) && defined(AXOM_USE_UMPIRE)
+#if defined(AXOM_RUNTIME_POLICY_USE_HIP)
     , {"hip", Policy::hip}
-#endif
 #endif
   };
 
@@ -59,16 +70,14 @@ enum class Policy
   static const std::map<Policy, std::string> s_policyToName
   {
     {Policy::seq, "seq"}
-#if defined(AXOM_USE_RAJA)
-#ifdef AXOM_USE_OPENMP
+#if defined(AXOM_RUNTIME_POLICY_USE_OPENMP)
     , {Policy::omp, "omp"}
 #endif
-#if defined(AXOM_USE_CUDA) && defined(AXOM_USE_UMPIRE)
+#if defined(AXOM_RUNTIME_POLICY_USE_CUDA)
     , {Policy::cuda, "cuda"}
 #endif
-#if defined(AXOM_USE_HIP) && defined(AXOM_USE_UMPIRE)
+#if defined(AXOM_RUNTIME_POLICY_USE_HIP)
     , {Policy::hip, "hip"}
-#endif
 #endif
   };
 // clang-format on

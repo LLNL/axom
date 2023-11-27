@@ -28,20 +28,6 @@
   // C++ includes
   #include <string>
 
-  // Add some helper preprocessor defines for using OPENMP, CUDA, and HIP policies
-  // within the marching cubes implementation.
-  #if defined(AXOM_USE_RAJA)
-    #ifdef AXOM_USE_OPENMP
-      #define _AXOM_MARCHINGCUBES_USE_OPENMP
-    #endif
-    #if defined(AXOM_USE_CUDA) && defined(AXOM_USE_UMPIRE)
-      #define _AXOM_MARCHINGCUBES_USE_CUDA
-    #endif
-    #if defined(AXOM_USE_HIP) && defined(AXOM_USE_UMPIRE)
-      #define _AXOM_MARCHINGCUBES_USE_HIP
-    #endif
-  #endif
-
 namespace axom
 {
 namespace quest

@@ -1291,7 +1291,7 @@ int main(int argc, char** argv)
   const std::string umpireResourceName = params.policy == RuntimePolicy::seq
     ? "HOST"
     :
-  #ifdef AXOM_USE_OPENMP
+  #if defined(AXOM_RUNTIME_POLICY_USE_OPENMP)
     params.policy == RuntimePolicy::omp ? "HOST" :
   #endif
   #if defined(UMPIRE_ENABLE_DEVICE)
