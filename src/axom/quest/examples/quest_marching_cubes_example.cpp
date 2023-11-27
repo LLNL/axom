@@ -712,11 +712,16 @@ struct ContourTestBase
         axom::fmt::format("Testing with policy {} and function data on {}",
                           params.policy,
                           resourceName));
-      if(params.policy == axom::core::runtime_policy::Policy::seq ||
-         params.policy == axom::core::runtime_policy::Policy::omp)
+      if(params.policy == axom::core::runtime_policy::Policy::seq)
       {
         SLIC_ASSERT(resourceName == "HOST");
       }
+#ifdef AXOM_USE_OPENMP
+      else if(params.policy == axom::core::runtime_policy::Policy::omp)
+      {
+        SLIC_ASSERT(resourceName == "HOST");
+      }
+#endif
       else
       {
         SLIC_ASSERT(resourceName == "DEVICE");

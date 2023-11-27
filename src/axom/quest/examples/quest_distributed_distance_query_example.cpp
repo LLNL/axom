@@ -1288,9 +1288,10 @@ int main(int argc, char** argv)
   // Memory resource.  For testing, choose device memory if appropriate.
   //---------------------------------------------------------------------------
   const std::string umpireResourceName =
-    params.policy == RuntimePolicy::seq || params.policy == RuntimePolicy::omp
-    ? "HOST"
-    :
+    params.policy == RuntimePolicy::seq ? "HOST" :
+  #ifdef AXOM_USE_OPENMP
+    params.policy == RuntimePolicy::omp ? "HOST" :
+  #endif
   #if defined(UMPIRE_ENABLE_DEVICE)
     "DEVICE"
   #elif defined(UMPIRE_ENABLE_UM)
