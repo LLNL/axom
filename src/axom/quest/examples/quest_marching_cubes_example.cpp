@@ -215,7 +215,6 @@ static int allocatorIdForPolicy(axom::core::runtime_policy::Policy policy)
   {
     aid = axom::execution_space<axom::SEQ_EXEC>::allocatorID();
   }
-#if defined(AXOM_USE_RAJA)
 #ifdef AXOM_RUNTIME_POLICY_USE_OPENMP
   else if(policy == axom::core::runtime_policy::Policy::omp)
   {
@@ -235,7 +234,6 @@ static int allocatorIdForPolicy(axom::core::runtime_policy::Policy policy)
     // aid = axom::execution_space<axom::HIP_EXEC<256>>::allocatorID();
     aid = axom::getUmpireResourceAllocatorID(umpire::resource::Device);
   }
-#endif
 #endif
   // clang-format on
 
