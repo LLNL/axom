@@ -17,25 +17,28 @@ namespace core
 {
 namespace runtime_policy
 {
-  /// Execution policies supported by configuration.
-  enum class Policy
-  {
-    seq = 0
+/// Execution policies supported by configuration.
+enum class Policy
+{
+  seq = 0
 #if defined(AXOM_USE_RAJA)
-#ifdef AXOM_USE_OPENMP
-    , omp = 1
+  #ifdef AXOM_USE_OPENMP
+  ,
+  omp = 1
+  #endif
+  #if defined(AXOM_USE_CUDA) && defined(AXOM_USE_UMPIRE)
+  ,
+  cuda = 2
+  #endif
+  #if defined(AXOM_USE_HIP) && defined(AXOM_USE_UMPIRE)
+  ,
+  hip = 3
+  #endif
 #endif
-#if defined(AXOM_USE_CUDA) && defined(AXOM_USE_UMPIRE)
-    , cuda = 2
-#endif
-#if defined(AXOM_USE_HIP) && defined(AXOM_USE_UMPIRE)
-    , hip = 3
-#endif
-#endif
-  };
+};
 
-  //! @brief Mapping from policy name to policy enum.
-  // clang-format off
+//! @brief Mapping from policy name to policy enum.
+// clang-format off
   static const std::map<std::string, Policy> s_nameToPolicy
   {
     {"seq", Policy::seq}
@@ -68,13 +71,10 @@ namespace runtime_policy
 #endif
 #endif
   };
-  // clang-format on
+// clang-format on
 
-  /// Utility function to allow formating a Policy
-  static inline auto format_as(Policy pol)
-  {
-    return axom::fmt::underlying(pol);
-  }
+/// Utility function to allow formating a Policy
+static inline auto format_as(Policy pol) { return axom::fmt::underlying(pol); }
 
 }  // end namespace runtime_policy
 }  // end namespace core

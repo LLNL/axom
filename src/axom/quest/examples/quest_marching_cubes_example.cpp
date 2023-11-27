@@ -104,7 +104,8 @@ public:
     app.add_option("-p, --policy", policy)
       ->description("Set runtime policy for point query method")
       ->capture_default_str()
-      ->transform(axom::CLI::CheckedTransformer(axom::core::runtime_policy::s_nameToPolicy));
+      ->transform(axom::CLI::CheckedTransformer(
+        axom::core::runtime_policy::s_nameToPolicy));
 
     app.add_option("-m,--mesh-file", meshFile)
       ->description(
@@ -716,12 +717,12 @@ struct ContourTestBase
       {
         SLIC_ASSERT(resourceName == "HOST");
       }
-#ifdef AXOM_USE_OPENMP
+    #ifdef AXOM_USE_OPENMP
       else if(params.policy == axom::core::runtime_policy::Policy::omp)
       {
         SLIC_ASSERT(resourceName == "HOST");
       }
-#endif
+    #endif
       else
       {
         SLIC_ASSERT(resourceName == "DEVICE");

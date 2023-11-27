@@ -1429,10 +1429,7 @@ public:
   }
 
   /// Set the runtime execution policy for the query
-  void setRuntimePolicy(RuntimePolicy policy)
-  {
-    m_runtimePolicy = policy;
-  }
+  void setRuntimePolicy(RuntimePolicy policy) { m_runtimePolicy = policy; }
 
   /*!  @brief Sets the allocator ID to the default associated with the
     execution policy

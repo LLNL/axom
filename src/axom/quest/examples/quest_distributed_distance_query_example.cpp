@@ -168,7 +168,8 @@ public:
     app.add_option("-p, --policy", policy)
       ->description("Set runtime policy for point query method")
       ->capture_default_str()
-      ->transform(axom::CLI::CheckedTransformer(axom::core::runtime_policy::s_nameToPolicy));
+      ->transform(axom::CLI::CheckedTransformer(
+        axom::core::runtime_policy::s_nameToPolicy));
 
     app.add_flag("-c,--check-results,!--no-check-results", checkResults)
       ->description(
@@ -1287,13 +1288,14 @@ int main(int argc, char** argv)
   //---------------------------------------------------------------------------
   // Memory resource.  For testing, choose device memory if appropriate.
   //---------------------------------------------------------------------------
-  const std::string umpireResourceName =
-    params.policy == RuntimePolicy::seq ? "HOST" :
+  const std::string umpireResourceName = params.policy == RuntimePolicy::seq
+    ? "HOST"
+    :
   #ifdef AXOM_USE_OPENMP
     params.policy == RuntimePolicy::omp ? "HOST" :
   #endif
   #if defined(UMPIRE_ENABLE_DEVICE)
-    "DEVICE"
+                                        "DEVICE"
   #elif defined(UMPIRE_ENABLE_UM)
     "UM"
   #elif defined(UMPIRE_ENABLE_PINNED)
