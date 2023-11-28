@@ -59,6 +59,8 @@ namespace primal = axom::primal;
 namespace mint = axom::mint;
 namespace numerics = axom::numerics;
 
+using RuntimePolicy = axom::runtime_policy::Policy;
+
 ///////////////////////////////////////////////////////////////
 // converts the input string into an 80 character string
 // padded on both sides with '=' symbols
@@ -90,29 +92,10 @@ public:
 
   bool checkResults {false};
 
-  quest::MarchingCubesRuntimePolicy policy {
-    quest::MarchingCubesRuntimePolicy::seq};
+  RuntimePolicy policy {RuntimePolicy::seq};
 
 private:
   bool _verboseOutput {false};
-
-  // clang-format off
-  const std::map<std::string, quest::MarchingCubesRuntimePolicy> s_validPolicies
-  {
-      {"seq", quest::MarchingCubesRuntimePolicy::seq}
-#if defined(AXOM_USE_RAJA)
-  #ifdef AXOM_USE_OPENMP
-    , {"omp", quest::MarchingCubesRuntimePolicy::omp}
-  #endif
-  #if defined(AXOM_USE_CUDA) && defined(AXOM_USE_UMPIRE)
-    , {"cuda", quest::MarchingCubesRuntimePolicy::cuda}
-  #endif
-  #if defined(AXOM_USE_HIP) && defined(AXOM_USE_UMPIRE)
-    , {"hip", quest::MarchingCubesRuntimePolicy::hip}
-  #endif
-#endif
-  };
-  // clang-format on
 
 public:
   bool isVerbose() const { return _verboseOutput; }
@@ -122,7 +105,8 @@ public:
     app.add_option("-p, --policy", policy)
       ->description("Set runtime policy for point query method")
       ->capture_default_str()
-      ->transform(axom::CLI::CheckedTransformer(s_validPolicies));
+      ->transform(
+        axom::CLI::CheckedTransformer(axom::runtime_policy::s_nameToPolicy));
 
     app.add_option("-m,--mesh-file", meshFile)
       ->description(
@@ -220,7 +204,7 @@ public:
 
 //!@brief Our allocator id, based on execution policy.
 static int s_allocatorId = axom::INVALID_ALLOCATOR_ID;  // Set in main.
-static int allocatorIdForPolicy(quest::MarchingCubesRuntimePolicy policy)
+static int allocatorIdForPolicy(axom::runtime_policy::Policy policy)
 {
   //---------------------------------------------------------------------------
   // Set default allocator for possibly testing on devices
@@ -228,31 +212,29 @@ static int allocatorIdForPolicy(quest::MarchingCubesRuntimePolicy policy)
   int aid = axom::INVALID_ALLOCATOR_ID;
 
   // clang-format off
-  if(policy == axom::quest::MarchingCubesRuntimePolicy::seq)
+  if(policy == axom::runtime_policy::Policy::seq)
   {
     aid = axom::execution_space<axom::SEQ_EXEC>::allocatorID();
   }
-#if defined(AXOM_USE_RAJA)
-#ifdef _AXOM_MARCHINGCUBES_USE_OPENMP
-  else if(policy == axom::quest::MarchingCubesRuntimePolicy::omp)
+#ifdef AXOM_RUNTIME_POLICY_USE_OPENMP
+  else if(policy == axom::runtime_policy::Policy::omp)
   {
     aid = axom::execution_space<axom::OMP_EXEC>::allocatorID();
   }
 #endif
-#ifdef _AXOM_MARCHINGCUBES_USE_CUDA
-  else if(policy == axom::quest::MarchingCubesRuntimePolicy::cuda)
+#ifdef AXOM_RUNTIME_POLICY_USE_CUDA
+  else if(policy == axom::runtime_policy::Policy::cuda)
   {
     // aid = axom::execution_space<axom::CUDA_EXEC<256>>::allocatorID();
     aid = axom::getUmpireResourceAllocatorID(umpire::resource::Device);
   }
 #endif
-#ifdef _AXOM_MARCHINGCUBES_USE_HIP
-  else if(policy == axom::quest::MarchingCubesRuntimePolicy::hip)
+#ifdef AXOM_RUNTIME_POLICY_USE_HIP
+  else if(policy == axom::runtime_policy::Policy::hip)
   {
     // aid = axom::execution_space<axom::HIP_EXEC<256>>::allocatorID();
     aid = axom::getUmpireResourceAllocatorID(umpire::resource::Device);
   }
-#endif
 #endif
   // clang-format on
 
@@ -730,11 +712,16 @@ struct ContourTestBase
         axom::fmt::format("Testing with policy {} and function data on {}",
                           params.policy,
                           resourceName));
-      if(params.policy == quest::MarchingCubesRuntimePolicy::seq ||
-         params.policy == quest::MarchingCubesRuntimePolicy::omp)
+      if(params.policy == axom::runtime_policy::Policy::seq)
       {
         SLIC_ASSERT(resourceName == "HOST");
       }
+    #if defined(AXOM_RUNTIME_POLICY_USE_OPENMP)
+      else if(params.policy == axom::runtime_policy::Policy::omp)
+      {
+        SLIC_ASSERT(resourceName == "HOST");
+      }
+    #endif
       else
       {
         SLIC_ASSERT(resourceName == "DEVICE");
@@ -1583,7 +1570,7 @@ int main(int argc, char** argv)
   // Run test in the execution space set by command line.
   //---------------------------------------------------------------------------
   int errCount = 0;
-  if(params.policy == quest::MarchingCubesRuntimePolicy::seq)
+  if(params.policy == axom::runtime_policy::Policy::seq)
   {
     if(params.ndim == 2)
     {
@@ -1596,7 +1583,7 @@ int main(int argc, char** argv)
   }
   #if defined(AXOM_USE_RAJA)
     #ifdef AXOM_USE_OPENMP
-  else if(params.policy == quest::MarchingCubesRuntimePolicy::omp)
+  else if(params.policy == axom::runtime_policy::Policy::omp)
   {
     if(params.ndim == 2)
     {
@@ -1609,7 +1596,7 @@ int main(int argc, char** argv)
   }
     #endif
     #if defined(AXOM_USE_CUDA) && defined(AXOM_USE_UMPIRE)
-  else if(params.policy == quest::MarchingCubesRuntimePolicy::cuda)
+  else if(params.policy == axom::runtime_policy::Policy::cuda)
   {
     if(params.ndim == 2)
     {
@@ -1622,7 +1609,7 @@ int main(int argc, char** argv)
   }
     #endif
     #if defined(AXOM_USE_HIP) && defined(AXOM_USE_UMPIRE)
-  else if(params.policy == quest::MarchingCubesRuntimePolicy::hip)
+  else if(params.policy == axom::runtime_policy::Policy::hip)
   {
     if(params.ndim == 2)
     {
