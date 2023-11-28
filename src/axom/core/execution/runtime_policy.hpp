@@ -28,8 +28,6 @@
 
 namespace axom
 {
-namespace core
-{
 namespace runtime_policy
 {
 /// Execution policies supported by Axom's configuration.
@@ -86,7 +84,6 @@ enum class Policy
 static inline auto format_as(Policy pol) { return axom::fmt::underlying(pol); }
 
 }  // end namespace runtime_policy
-}  // end namespace core
 }  // end namespace axom
 
 #endif /* AXOM_CORE_EXECUTION_RUNTIME_POLICY_HPP_ */

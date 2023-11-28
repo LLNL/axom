@@ -49,7 +49,7 @@ namespace primal = axom::primal;
 namespace mint = axom::mint;
 namespace numerics = axom::numerics;
 
-using RuntimePolicy = axom::core::runtime_policy::Policy;
+using RuntimePolicy = axom::runtime_policy::Policy;
 
 // converts the input string into an 80 character string
 // padded on both sides with '=' symbols
@@ -169,7 +169,7 @@ public:
       ->description("Set runtime policy for point query method")
       ->capture_default_str()
       ->transform(axom::CLI::CheckedTransformer(
-        axom::core::runtime_policy::s_nameToPolicy));
+        axom::runtime_policy::s_nameToPolicy));
 
     app.add_flag("-c,--check-results,!--no-check-results", checkResults)
       ->description(

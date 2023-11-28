@@ -310,7 +310,7 @@ class DistributedClosestPointImpl
 {
 public:
   static constexpr int DIM = NDIMS;
-  using RuntimePolicy = axom::core::runtime_policy::Policy;
+  using RuntimePolicy = axom::runtime_policy::Policy;
   using PointType = primal::Point<double, DIM>;
   using BoxType = primal::BoundingBox<double, DIM>;
   using PointArray = axom::Array<PointType>;
@@ -1390,7 +1390,7 @@ private:
 class DistributedClosestPoint
 {
 public:
-  using RuntimePolicy = axom::core::runtime_policy::Policy;
+  using RuntimePolicy = axom::runtime_policy::Policy;
 
 public:
   DistributedClosestPoint()

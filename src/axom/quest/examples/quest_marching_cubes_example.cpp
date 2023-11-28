@@ -90,8 +90,8 @@ public:
 
   bool checkResults {false};
 
-  axom::core::runtime_policy::Policy policy {
-    axom::core::runtime_policy::Policy::seq};
+  axom::runtime_policy::Policy policy {
+    axom::runtime_policy::Policy::seq};
 
 private:
   bool _verboseOutput {false};
@@ -105,7 +105,7 @@ public:
       ->description("Set runtime policy for point query method")
       ->capture_default_str()
       ->transform(axom::CLI::CheckedTransformer(
-        axom::core::runtime_policy::s_nameToPolicy));
+        axom::runtime_policy::s_nameToPolicy));
 
     app.add_option("-m,--mesh-file", meshFile)
       ->description(
@@ -203,7 +203,7 @@ public:
 
 //!@brief Our allocator id, based on execution policy.
 static int s_allocatorId = axom::INVALID_ALLOCATOR_ID;  // Set in main.
-static int allocatorIdForPolicy(axom::core::runtime_policy::Policy policy)
+static int allocatorIdForPolicy(axom::runtime_policy::Policy policy)
 {
   //---------------------------------------------------------------------------
   // Set default allocator for possibly testing on devices
@@ -211,25 +211,25 @@ static int allocatorIdForPolicy(axom::core::runtime_policy::Policy policy)
   int aid = axom::INVALID_ALLOCATOR_ID;
 
   // clang-format off
-  if(policy == axom::core::runtime_policy::Policy::seq)
+  if(policy == axom::runtime_policy::Policy::seq)
   {
     aid = axom::execution_space<axom::SEQ_EXEC>::allocatorID();
   }
 #ifdef AXOM_RUNTIME_POLICY_USE_OPENMP
-  else if(policy == axom::core::runtime_policy::Policy::omp)
+  else if(policy == axom::runtime_policy::Policy::omp)
   {
     aid = axom::execution_space<axom::OMP_EXEC>::allocatorID();
   }
 #endif
 #ifdef AXOM_RUNTIME_POLICY_USE_CUDA
-  else if(policy == axom::core::runtime_policy::Policy::cuda)
+  else if(policy == axom::runtime_policy::Policy::cuda)
   {
     // aid = axom::execution_space<axom::CUDA_EXEC<256>>::allocatorID();
     aid = axom::getUmpireResourceAllocatorID(umpire::resource::Device);
   }
 #endif
 #ifdef AXOM_RUNTIME_POLICY_USE_HIP
-  else if(policy == axom::core::runtime_policy::Policy::hip)
+  else if(policy == axom::runtime_policy::Policy::hip)
   {
     // aid = axom::execution_space<axom::HIP_EXEC<256>>::allocatorID();
     aid = axom::getUmpireResourceAllocatorID(umpire::resource::Device);
@@ -711,12 +711,12 @@ struct ContourTestBase
         axom::fmt::format("Testing with policy {} and function data on {}",
                           params.policy,
                           resourceName));
-      if(params.policy == axom::core::runtime_policy::Policy::seq)
+      if(params.policy == axom::runtime_policy::Policy::seq)
       {
         SLIC_ASSERT(resourceName == "HOST");
       }
     #if defined(AXOM_RUNTIME_POLICY_USE_OPENMP)
-      else if(params.policy == axom::core::runtime_policy::Policy::omp)
+      else if(params.policy == axom::runtime_policy::Policy::omp)
       {
         SLIC_ASSERT(resourceName == "HOST");
       }
@@ -1569,7 +1569,7 @@ int main(int argc, char** argv)
   // Run test in the execution space set by command line.
   //---------------------------------------------------------------------------
   int errCount = 0;
-  if(params.policy == axom::core::runtime_policy::Policy::seq)
+  if(params.policy == axom::runtime_policy::Policy::seq)
   {
     if(params.ndim == 2)
     {
@@ -1582,7 +1582,7 @@ int main(int argc, char** argv)
   }
   #if defined(AXOM_USE_RAJA)
     #ifdef AXOM_USE_OPENMP
-  else if(params.policy == axom::core::runtime_policy::Policy::omp)
+  else if(params.policy == axom::runtime_policy::Policy::omp)
   {
     if(params.ndim == 2)
     {
@@ -1595,7 +1595,7 @@ int main(int argc, char** argv)
   }
     #endif
     #if defined(AXOM_USE_CUDA) && defined(AXOM_USE_UMPIRE)
-  else if(params.policy == axom::core::runtime_policy::Policy::cuda)
+  else if(params.policy == axom::runtime_policy::Policy::cuda)
   {
     if(params.ndim == 2)
     {
@@ -1608,7 +1608,7 @@ int main(int argc, char** argv)
   }
     #endif
     #if defined(AXOM_USE_HIP) && defined(AXOM_USE_UMPIRE)
-  else if(params.policy == axom::core::runtime_policy::Policy::hip)
+  else if(params.policy == axom::runtime_policy::Policy::hip)
   {
     if(params.ndim == 2)
     {

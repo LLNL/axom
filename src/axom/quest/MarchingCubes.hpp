@@ -82,7 +82,7 @@ class MarchingCubesSingleDomain;
 class MarchingCubes
 {
 public:
-  using RuntimePolicy = axom::core::runtime_policy::Policy;
+  using RuntimePolicy = axom::runtime_policy::Policy;
   /*!
    * \brief Constructor sets up computational mesh and data for running the
    * marching cubes algorithm.
@@ -176,7 +176,7 @@ class MarchingCubesSingleDomain
   friend class detail::marching_cubes::MarchingCubesImpl;
 
 public:
-  using RuntimePolicy = axom::core::runtime_policy::Policy;
+  using RuntimePolicy = axom::runtime_policy::Policy;
   /*!
    * \brief Constructor for applying algorithm in a single domain.
    * See MarchingCubes for the multi-domain implementation.
