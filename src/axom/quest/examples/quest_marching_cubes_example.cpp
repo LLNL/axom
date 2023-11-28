@@ -59,6 +59,8 @@ namespace primal = axom::primal;
 namespace mint = axom::mint;
 namespace numerics = axom::numerics;
 
+using RuntimePolicy = axom::runtime_policy::Policy;
+
 ///////////////////////////////////////////////////////////////
 // converts the input string into an 80 character string
 // padded on both sides with '=' symbols
@@ -90,7 +92,7 @@ public:
 
   bool checkResults {false};
 
-  axom::runtime_policy::Policy policy {axom::runtime_policy::Policy::seq};
+  RuntimePolicy policy {RuntimePolicy::seq};
 
 private:
   bool _verboseOutput {false};
