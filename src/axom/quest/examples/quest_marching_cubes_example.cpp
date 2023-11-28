@@ -90,8 +90,7 @@ public:
 
   bool checkResults {false};
 
-  axom::runtime_policy::Policy policy {
-    axom::runtime_policy::Policy::seq};
+  axom::runtime_policy::Policy policy {axom::runtime_policy::Policy::seq};
 
 private:
   bool _verboseOutput {false};
@@ -104,8 +103,8 @@ public:
     app.add_option("-p, --policy", policy)
       ->description("Set runtime policy for point query method")
       ->capture_default_str()
-      ->transform(axom::CLI::CheckedTransformer(
-        axom::runtime_policy::s_nameToPolicy));
+      ->transform(
+        axom::CLI::CheckedTransformer(axom::runtime_policy::s_nameToPolicy));
 
     app.add_option("-m,--mesh-file", meshFile)
       ->description(

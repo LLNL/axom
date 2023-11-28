@@ -11,9 +11,37 @@
 
 #include <map>
 
+/*!
+  @file runtime_policy.hpp
+
+  @brief Define runtime policies symbols for selecting.
+
+  The policies are enums corresponding to
+  \a axom::execution_space template parameters.
+  The difference is that runtime policies are selected at
+  run time while \a axom::execution_space is specialized
+  at build time.
+  @see execution_space.hpp.
+
+  The possible runtime parameters are
+  - @c seq: sequential execution on the host
+  - @c omp: OpenMP execution
+  - @c cuda: GPU execution via CUDA
+  - @c hip: GPU execution via HIP
+
+  The available policies depend on how Axom is configured.
+  RAJA is required for using OpenMP, CUDA and HIP.
+  UMPIRE is required for using CUDA and HIP.
+  Sequential execution on host is always available.
+
+  These macros are defined to indicate available non-sequential
+  policies.
+  - @c AXOM_RUNTIME_POLICY_USE_OPENMP
+  - @c AXOM_RUNTIME_POLICY_USE_CUDA
+  - @c AXOM_RUNTIME_POLICY_USE_HIP
+*/
+
 // Helper preprocessor defines for using OPENMP, CUDA, and HIP policies.
-// RAJA is required for using OpenMP, CUDA and HIP.
-// UMPIRE is required for using CUDA and HIP.
 #if defined(AXOM_USE_RAJA)
   #ifdef AXOM_USE_OPENMP
     #define AXOM_RUNTIME_POLICY_USE_OPENMP
@@ -30,7 +58,7 @@ namespace axom
 {
 namespace runtime_policy
 {
-/// Execution policies supported by Axom's configuration.
+/// Execution policies.  The supported set depends on Axom's configuration.
 enum class Policy
 {
   seq = 0
