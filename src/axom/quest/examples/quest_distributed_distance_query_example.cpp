@@ -49,7 +49,7 @@ namespace primal = axom::primal;
 namespace mint = axom::mint;
 namespace numerics = axom::numerics;
 
-using RuntimePolicy = axom::quest::DistributedClosestPoint::RuntimePolicy;
+using RuntimePolicy = axom::runtime_policy::Policy;
 
 // converts the input string into an 80 character string
 // padded on both sides with '=' symbols
@@ -83,24 +83,6 @@ public:
 private:
   bool m_verboseOutput {false};
   double m_emptyRankProbability {0.};
-
-  // clang-format off
-  const std::map<std::string, RuntimePolicy> s_validPolicies
-  {
-      {"seq", RuntimePolicy::seq}
-#if defined(AXOM_USE_RAJA)
-  #ifdef AXOM_USE_OPENMP
-    , {"omp", RuntimePolicy::omp}
-  #endif
-  #if defined(AXOM_USE_CUDA) && defined(AXOM_USE_UMPIRE)
-    , {"cuda", RuntimePolicy::cuda}
-  #endif
-  #if defined(AXOM_USE_HIP) && defined(AXOM_USE_UMPIRE)
-    , {"hip", RuntimePolicy::hip}
-  #endif
-#endif
-  };
-  // clang-format on
 
 public:
   bool isVerbose() const { return m_verboseOutput; }
@@ -186,7 +168,8 @@ public:
     app.add_option("-p, --policy", policy)
       ->description("Set runtime policy for point query method")
       ->capture_default_str()
-      ->transform(axom::CLI::CheckedTransformer(s_validPolicies));
+      ->transform(
+        axom::CLI::CheckedTransformer(axom::runtime_policy::s_nameToPolicy));
 
     app.add_flag("-c,--check-results,!--no-check-results", checkResults)
       ->description(
@@ -945,7 +928,6 @@ public:
         auto dst = dstFieldsGroup.getGroup("cp_rank");
         auto src = srcFieldsNode.fetch_existing("cp_rank");
         bool goodImport = dst->importConduitTree(src);
-        ;
         SLIC_ASSERT(goodImport);
         AXOM_UNUSED_VAR(goodImport);
       }
@@ -953,15 +935,13 @@ public:
         auto dst = dstFieldsGroup.getGroup("cp_index");
         auto src = srcFieldsNode.fetch_existing("cp_index");
         bool goodImport = dst->importConduitTree(src);
-        ;
         SLIC_ASSERT(goodImport);
         AXOM_UNUSED_VAR(goodImport);
       }
       {
-        auto dst = dstFieldsGroup.getGroup("cp_domain_index");
         auto src = srcFieldsNode.fetch_existing("cp_domain_index");
+        auto dst = dstFieldsGroup.getGroup("cp_domain_index");
         bool goodImport = dst->importConduitTree(src);
-        ;
         SLIC_ASSERT(goodImport);
         AXOM_UNUSED_VAR(goodImport);
       }
@@ -1259,12 +1239,14 @@ int main(int argc, char** argv)
   //---------------------------------------------------------------------------
   // Memory resource.  For testing, choose device memory if appropriate.
   //---------------------------------------------------------------------------
-  const std::string umpireResourceName =
-    params.policy == RuntimePolicy::seq || params.policy == RuntimePolicy::omp
+  const std::string umpireResourceName = params.policy == RuntimePolicy::seq
     ? "HOST"
     :
+  #if defined(AXOM_RUNTIME_POLICY_USE_OPENMP)
+    params.policy == RuntimePolicy::omp ? "HOST" :
+  #endif
   #if defined(UMPIRE_ENABLE_DEVICE)
-    "DEVICE"
+                                        "DEVICE"
   #elif defined(UMPIRE_ENABLE_UM)
     "UM"
   #elif defined(UMPIRE_ENABLE_PINNED)
