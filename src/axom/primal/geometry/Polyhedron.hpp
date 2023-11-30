@@ -205,8 +205,8 @@ public:
   }
 
 private:
-  std::int8_t num_nbrs[MAX_VERTS] {};
-  VertexNbrs nbrs[MAX_VERTS] {};
+  std::int8_t num_nbrs[MAX_VERTS];
+  VertexNbrs nbrs[MAX_VERTS];
 };
 
 /*!
