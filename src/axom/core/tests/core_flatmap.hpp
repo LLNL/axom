@@ -64,15 +64,15 @@ TYPED_TEST_SUITE(core_flatmap, MyTypes);
 AXOM_TYPED_TEST(core_flatmap, default_init)
 {
   using MapType = typename TestFixture::MapType;
-  MapType int_to_dbl;
-  EXPECT_EQ(0, int_to_dbl.size());
-  EXPECT_EQ(true, int_to_dbl.empty());
+  MapType test_map;
+  EXPECT_EQ(0, test_map.size());
+  EXPECT_EQ(true, test_map.empty());
 }
 
 AXOM_TYPED_TEST(core_flatmap, insert_only)
 {
   using MapType = typename TestFixture::MapType;
-  MapType int_to_dbl;
+  MapType test_map;
 
   const int NUM_ELEMS = 100;
 
@@ -81,38 +81,38 @@ AXOM_TYPED_TEST(core_flatmap, insert_only)
     auto key = this->getKey(i);
     auto value = this->getValue(i * 10.0 + 5.0);
     // Initial insertion of a given key should succeed.
-    auto initial_insert = int_to_dbl.insert({key, value});
-    EXPECT_EQ(int_to_dbl.size(), i + 1);
-    EXPECT_EQ(initial_insert.first, int_to_dbl.find(key));
-    EXPECT_EQ(value, int_to_dbl.at(key));
+    auto initial_insert = test_map.insert({key, value});
+    EXPECT_EQ(test_map.size(), i + 1);
+    EXPECT_EQ(initial_insert.first, test_map.find(key));
+    EXPECT_EQ(value, test_map.at(key));
     EXPECT_TRUE(initial_insert.second);
 
-    int current_bucket_capacity = int_to_dbl.bucket_count();
+    int current_bucket_capacity = test_map.bucket_count();
 
     // Inserting a duplicate key should not change the value.
     auto value_dup = this->getValue(i * 10.0 + 5.0);
-    auto duplicate_insert = int_to_dbl.insert({key, value_dup});
-    EXPECT_EQ(int_to_dbl.size(), i + 1);
-    EXPECT_EQ(duplicate_insert.first, int_to_dbl.find(key));
-    EXPECT_EQ(value, int_to_dbl.at(key));
+    auto duplicate_insert = test_map.insert({key, value_dup});
+    EXPECT_EQ(test_map.size(), i + 1);
+    EXPECT_EQ(duplicate_insert.first, test_map.find(key));
+    EXPECT_EQ(value, test_map.at(key));
     EXPECT_FALSE(duplicate_insert.second);
 
     // Using operator[] with an already-existing key should return the
     // existing value and not add a value.
-    auto value_indexed = int_to_dbl[key];
+    auto value_indexed = test_map[key];
     EXPECT_EQ(value_indexed, value);
-    EXPECT_EQ(int_to_dbl.size(), i + 1);
+    EXPECT_EQ(test_map.size(), i + 1);
 
     // Check that a rehash didn't occur on the second insertion.
     EXPECT_EQ(duplicate_insert.first, initial_insert.first);
-    EXPECT_EQ(current_bucket_capacity, int_to_dbl.bucket_count());
+    EXPECT_EQ(current_bucket_capacity, test_map.bucket_count());
   }
 }
 
 AXOM_TYPED_TEST(core_flatmap, insert_or_assign)
 {
   using MapType = typename TestFixture::MapType;
-  MapType int_to_dbl;
+  MapType test_map;
 
   const int NUM_ELEMS = 100;
 
@@ -122,10 +122,10 @@ AXOM_TYPED_TEST(core_flatmap, insert_or_assign)
     auto key = this->getKey(i);
     auto value = this->getValue(i * 10.0 + 5.0);
 
-    auto result = int_to_dbl.insert_or_assign(key, value);
-    EXPECT_EQ(i + 1, int_to_dbl.size());
-    EXPECT_EQ(value, int_to_dbl.at(key));
-    EXPECT_EQ(result.first, int_to_dbl.find(key));
+    auto result = test_map.insert_or_assign(key, value);
+    EXPECT_EQ(i + 1, test_map.size());
+    EXPECT_EQ(value, test_map.at(key));
+    EXPECT_EQ(result.first, test_map.find(key));
     EXPECT_TRUE(result.second);
   }
 
@@ -135,19 +135,19 @@ AXOM_TYPED_TEST(core_flatmap, insert_or_assign)
     auto key = this->getKey(i);
     auto value = this->getValue(i * 10.0 + 7.0);
 
-    auto result = int_to_dbl.insert_or_assign(key, value);
-    EXPECT_EQ(value, int_to_dbl.at(key));
-    EXPECT_EQ(result.first, int_to_dbl.find(key));
+    auto result = test_map.insert_or_assign(key, value);
+    EXPECT_EQ(value, test_map.at(key));
+    EXPECT_EQ(result.first, test_map.find(key));
     EXPECT_FALSE(result.second);
   }
 
   // Assignments should not change size of FlatMap.
-  EXPECT_EQ(NUM_ELEMS, int_to_dbl.size());
+  EXPECT_EQ(NUM_ELEMS, test_map.size());
 }
 
 TEST(core_flatmap_moveonly, try_emplace)
 {
-  axom::FlatMap<int, std::unique_ptr<double>> int_to_dbl;
+  axom::FlatMap<int, std::unique_ptr<double>> test_map;
 
   const int NUM_ELEMS = 40;
 
@@ -155,9 +155,9 @@ TEST(core_flatmap_moveonly, try_emplace)
   for(int i = 0; i < NUM_ELEMS; i++)
   {
     std::unique_ptr<double> value {new double {i + 10.0}};
-    auto result = int_to_dbl.try_emplace(i, std::move(value));
-    EXPECT_EQ(*(int_to_dbl[i]), i + 10.0);
-    EXPECT_EQ(result.first, int_to_dbl.find(i));
+    auto result = test_map.try_emplace(i, std::move(value));
+    EXPECT_EQ(*(test_map[i]), i + 10.0);
+    EXPECT_EQ(result.first, test_map.find(i));
     EXPECT_TRUE(result.second);
     // Value should have been moved.
     EXPECT_EQ(value.get(), nullptr);
@@ -167,9 +167,9 @@ TEST(core_flatmap_moveonly, try_emplace)
   for(int i = 0; i < NUM_ELEMS; i++)
   {
     std::unique_ptr<double> value {new double {i + 20.0}};
-    auto result = int_to_dbl.try_emplace(i, std::move(value));
-    EXPECT_EQ(*(int_to_dbl[i]), i + 10.0);
-    EXPECT_EQ(result.first, int_to_dbl.find(i));
+    auto result = test_map.try_emplace(i, std::move(value));
+    EXPECT_EQ(*(test_map[i]), i + 10.0);
+    EXPECT_EQ(result.first, test_map.find(i));
     EXPECT_FALSE(result.second);
     // Since key already exists, value should NOT be moved.
     EXPECT_NE(value.get(), nullptr);
@@ -180,11 +180,11 @@ TEST(core_flatmap_moveonly, try_emplace)
 AXOM_TYPED_TEST(core_flatmap, initializer_list)
 {
   using MapType = typename TestFixture::MapType;
-  MapType int_to_dbl {{this->getKey(0), this->getValue(10.0)},
-                      {this->getKey(1), this->getValue(20.0)},
-                      {this->getKey(2), this->getValue(30.0)}};
+  MapType test_map {{this->getKey(0), this->getValue(10.0)},
+                    {this->getKey(1), this->getValue(20.0)},
+                    {this->getKey(2), this->getValue(30.0)}};
 
-  EXPECT_EQ(3, int_to_dbl.size());
+  EXPECT_EQ(3, test_map.size());
 
   // Check consistency of added values.
   const double expected_str[3] {10.0, 20.0, 30.0};
@@ -193,23 +193,23 @@ AXOM_TYPED_TEST(core_flatmap, initializer_list)
     auto key = this->getKey(i);
     auto value = this->getValue(expected_str[i]);
 
-    auto iterator = int_to_dbl.find(key);
-    EXPECT_NE(iterator, int_to_dbl.end());
+    auto iterator = test_map.find(key);
+    EXPECT_NE(iterator, test_map.end());
     EXPECT_EQ(iterator->first, key);
     EXPECT_EQ(iterator->second, value);
 
     // Using operator[] with an already-existing key should return the
     // existing value and not add a value.
-    auto indexed_value = int_to_dbl[key];
+    auto indexed_value = test_map[key];
     EXPECT_EQ(indexed_value, value);
-    EXPECT_EQ(int_to_dbl.size(), 3);
+    EXPECT_EQ(test_map.size(), 3);
   }
 }
 
 AXOM_TYPED_TEST(core_flatmap, index_operator_default)
 {
   using MapType = typename TestFixture::MapType;
-  MapType int_to_dbl;
+  MapType test_map;
 
   const int NUM_ELEMS = 100;
 
@@ -217,22 +217,22 @@ AXOM_TYPED_TEST(core_flatmap, index_operator_default)
   for(int i = 0; i < NUM_ELEMS; i++)
   {
     auto key = this->getKey(i);
-    auto default_value = int_to_dbl[key];
+    auto default_value = test_map[key];
 
     EXPECT_EQ(default_value, expected_default_value);
 
     auto new_value = this->getValue(i * 10.0 + 5.0);
-    int_to_dbl[key] = new_value;
+    test_map[key] = new_value;
   }
 
-  EXPECT_EQ(NUM_ELEMS, int_to_dbl.size());
+  EXPECT_EQ(NUM_ELEMS, test_map.size());
 
   for(int i = 0; i < NUM_ELEMS; i++)
   {
     auto key = this->getKey(i);
     auto value = this->getValue(i * 10.0 + 5.0);
 
-    auto iterator = int_to_dbl.find(key);
+    auto iterator = test_map.find(key);
     EXPECT_EQ(iterator->second, value);
   }
 }
@@ -240,42 +240,42 @@ AXOM_TYPED_TEST(core_flatmap, index_operator_default)
 AXOM_TYPED_TEST(core_flatmap, init_and_clear)
 {
   using MapType = typename TestFixture::MapType;
-  MapType int_to_dbl;
+  MapType test_map;
 
   // Insert enough elements to trigger a resize of the buckets.
   // This allows us to test that a clear() doesn't reset the allocated buckets.
   int NUM_ELEMS_RESIZE = 100;
-  EXPECT_GT(NUM_ELEMS_RESIZE, int_to_dbl.bucket_count());
+  EXPECT_GT(NUM_ELEMS_RESIZE, test_map.bucket_count());
 
   for(int i = 0; i < NUM_ELEMS_RESIZE; i++)
   {
     auto key = this->getKey(i);
     auto value = this->getValue(i + 10.0);
 
-    int_to_dbl[key] = value;
+    test_map[key] = value;
   }
 
-  EXPECT_EQ(NUM_ELEMS_RESIZE, int_to_dbl.size());
+  EXPECT_EQ(NUM_ELEMS_RESIZE, test_map.size());
 
-  int buckets_before_clear = int_to_dbl.bucket_count();
+  int buckets_before_clear = test_map.bucket_count();
 
-  int_to_dbl.clear();
+  test_map.clear();
 
-  EXPECT_EQ(int_to_dbl.size(), 0);
-  EXPECT_EQ(int_to_dbl.load_factor(), 0.0);
-  EXPECT_EQ(int_to_dbl.bucket_count(), buckets_before_clear);
+  EXPECT_EQ(test_map.size(), 0);
+  EXPECT_EQ(test_map.load_factor(), 0.0);
+  EXPECT_EQ(test_map.bucket_count(), buckets_before_clear);
   for(int i = 0; i < NUM_ELEMS_RESIZE; i++)
   {
     auto key = this->getKey(i);
-    auto iterator = int_to_dbl.find(key);
-    EXPECT_EQ(iterator, int_to_dbl.end());
+    auto iterator = test_map.find(key);
+    EXPECT_EQ(iterator, test_map.end());
   }
 }
 
 AXOM_TYPED_TEST(core_flatmap, init_and_move)
 {
   using MapType = typename TestFixture::MapType;
-  MapType int_to_dbl;
+  MapType test_map;
   int NUM_ELEMS = 40;
 
   for(int i = 0; i < NUM_ELEMS; i++)
@@ -283,13 +283,13 @@ AXOM_TYPED_TEST(core_flatmap, init_and_move)
     auto key = this->getKey(i);
     auto value = this->getValue(i + 10.0);
 
-    int_to_dbl[key] = value;
+    test_map[key] = value;
   }
 
-  MapType moved_to_map = std::move(int_to_dbl);
+  MapType moved_to_map = std::move(test_map);
 
-  EXPECT_EQ(int_to_dbl.size(), 0);
-  EXPECT_EQ(int_to_dbl.load_factor(), 0);
+  EXPECT_EQ(test_map.size(), 0);
+  EXPECT_EQ(test_map.load_factor(), 0);
   EXPECT_EQ(moved_to_map.size(), NUM_ELEMS);
   for(int i = 0; i < NUM_ELEMS; i++)
   {
@@ -297,40 +297,40 @@ AXOM_TYPED_TEST(core_flatmap, init_and_move)
     auto value = this->getValue(i + 10.0);
     EXPECT_EQ(moved_to_map[key], value);
 
-    auto old_it = int_to_dbl.find(key);
-    EXPECT_EQ(old_it, int_to_dbl.end());
+    auto old_it = test_map.find(key);
+    EXPECT_EQ(old_it, test_map.end());
   }
 }
 
 TEST(core_flatmap_moveonly, init_and_move_moveonly)
 {
-  axom::FlatMap<int, std::unique_ptr<double>> int_to_dbl;
+  axom::FlatMap<int, std::unique_ptr<double>> test_map;
   int NUM_ELEMS = 40;
 
   for(int i = 0; i < NUM_ELEMS; i++)
   {
-    int_to_dbl.emplace(i, new double {i + 10.0});
+    test_map.emplace(i, new double {i + 10.0});
   }
 
   axom::FlatMap<int, std::unique_ptr<double>> int_to_dbl_move =
-    std::move(int_to_dbl);
+    std::move(test_map);
 
-  EXPECT_EQ(int_to_dbl.size(), 0);
-  EXPECT_EQ(int_to_dbl.load_factor(), 0);
+  EXPECT_EQ(test_map.size(), 0);
+  EXPECT_EQ(test_map.load_factor(), 0);
   EXPECT_EQ(int_to_dbl_move.size(), NUM_ELEMS);
   for(int i = 0; i < NUM_ELEMS; i++)
   {
     EXPECT_EQ(*(int_to_dbl_move[i]), i + 10.0);
 
-    auto old_it = int_to_dbl.find(i);
-    EXPECT_EQ(old_it, int_to_dbl.end());
+    auto old_it = test_map.find(i);
+    EXPECT_EQ(old_it, test_map.end());
   }
 }
 
 AXOM_TYPED_TEST(core_flatmap, init_and_copy)
 {
   using MapType = typename TestFixture::MapType;
-  MapType int_to_dbl;
+  MapType test_map;
   int NUM_ELEMS = 40;
 
   for(int i = 0; i < NUM_ELEMS; i++)
@@ -338,15 +338,15 @@ AXOM_TYPED_TEST(core_flatmap, init_and_copy)
     auto key = this->getKey(i);
     auto value = this->getValue(i + 10.0);
 
-    int_to_dbl[key] = value;
+    test_map[key] = value;
   }
 
-  int expected_buckets = int_to_dbl.bucket_count();
+  int expected_buckets = test_map.bucket_count();
 
-  MapType int_to_dbl_copy = int_to_dbl;
+  MapType int_to_dbl_copy = test_map;
 
-  EXPECT_EQ(int_to_dbl.size(), NUM_ELEMS);
-  EXPECT_EQ(int_to_dbl.bucket_count(), expected_buckets);
+  EXPECT_EQ(test_map.size(), NUM_ELEMS);
+  EXPECT_EQ(test_map.bucket_count(), expected_buckets);
   EXPECT_EQ(int_to_dbl_copy.size(), NUM_ELEMS);
   EXPECT_EQ(int_to_dbl_copy.bucket_count(), expected_buckets);
   for(int i = 0; i < NUM_ELEMS; i++)
@@ -354,7 +354,7 @@ AXOM_TYPED_TEST(core_flatmap, init_and_copy)
     auto key = this->getKey(i);
     auto value = this->getValue(i + 10.0);
 
-    EXPECT_EQ(int_to_dbl[key], value);
+    EXPECT_EQ(test_map[key], value);
     EXPECT_EQ(int_to_dbl_copy[key], value);
   }
 }
@@ -362,10 +362,10 @@ AXOM_TYPED_TEST(core_flatmap, init_and_copy)
 AXOM_TYPED_TEST(core_flatmap, insert_until_rehash)
 {
   using MapType = typename TestFixture::MapType;
-  MapType int_to_dbl;
+  MapType test_map;
 
-  const int INIT_CAPACITY = int_to_dbl.bucket_count();
-  const double LOAD_FACTOR = int_to_dbl.max_load_factor();
+  const int INIT_CAPACITY = test_map.bucket_count();
+  const double LOAD_FACTOR = test_map.max_load_factor();
   const int SIZE_NO_REHASH = LOAD_FACTOR * INIT_CAPACITY;
 
   for(int i = 0; i < SIZE_NO_REHASH; i++)
@@ -373,20 +373,20 @@ AXOM_TYPED_TEST(core_flatmap, insert_until_rehash)
     auto key = this->getKey(i);
     auto value = this->getValue(2. * i + 1);
 
-    int_to_dbl.insert({key, value});
+    test_map.insert({key, value});
   }
-  EXPECT_EQ(int_to_dbl.bucket_count(), INIT_CAPACITY);
-  EXPECT_EQ(int_to_dbl.size(), SIZE_NO_REHASH);
+  EXPECT_EQ(test_map.bucket_count(), INIT_CAPACITY);
+  EXPECT_EQ(test_map.size(), SIZE_NO_REHASH);
 
   // Next insert should trigger a rehash.
   {
     auto key_rehash = this->getKey(SIZE_NO_REHASH);
     auto value_rehash = this->getValue(2. * SIZE_NO_REHASH + 1);
 
-    int_to_dbl.insert({key_rehash, value_rehash});
+    test_map.insert({key_rehash, value_rehash});
   }
-  EXPECT_GT(int_to_dbl.bucket_count(), INIT_CAPACITY);
-  EXPECT_EQ(int_to_dbl.size(), SIZE_NO_REHASH + 1);
+  EXPECT_GT(test_map.bucket_count(), INIT_CAPACITY);
+  EXPECT_EQ(test_map.size(), SIZE_NO_REHASH + 1);
 
   // Check consistency of values.
   for(int i = 0; i < SIZE_NO_REHASH + 1; i++)
@@ -394,8 +394,8 @@ AXOM_TYPED_TEST(core_flatmap, insert_until_rehash)
     auto key = this->getKey(i);
     auto value = this->getValue(2. * i + 1);
 
-    auto iterator = int_to_dbl.find(key);
-    EXPECT_NE(iterator, int_to_dbl.end());
+    auto iterator = test_map.find(key);
+    EXPECT_NE(iterator, test_map.end());
     EXPECT_EQ(iterator->first, key);
     EXPECT_EQ(iterator->second, value);
   }
@@ -404,10 +404,10 @@ AXOM_TYPED_TEST(core_flatmap, insert_until_rehash)
 AXOM_TYPED_TEST(core_flatmap, insert_then_delete)
 {
   using MapType = typename TestFixture::MapType;
-  MapType int_to_dbl;
+  MapType test_map;
 
-  const int INIT_CAPACITY = int_to_dbl.bucket_count();
-  const double LOAD_FACTOR = int_to_dbl.max_load_factor();
+  const int INIT_CAPACITY = test_map.bucket_count();
+  const double LOAD_FACTOR = test_map.max_load_factor();
   const int NUM_INSERTS = LOAD_FACTOR * INIT_CAPACITY * 4;
 
   for(int i = 0; i < NUM_INSERTS; i++)
@@ -415,21 +415,21 @@ AXOM_TYPED_TEST(core_flatmap, insert_then_delete)
     auto key = this->getKey(i);
     auto value = this->getValue(2. * i + 1);
 
-    int_to_dbl.insert({key, value});
+    test_map.insert({key, value});
   }
-  EXPECT_EQ(int_to_dbl.size(), NUM_INSERTS);
-  EXPECT_GE(int_to_dbl.bucket_count(), NUM_INSERTS);
+  EXPECT_EQ(test_map.size(), NUM_INSERTS);
+  EXPECT_GE(test_map.bucket_count(), NUM_INSERTS);
 
   for(int i = 0; i < NUM_INSERTS; i += 3)
   {
     auto key = this->getKey(i);
 
-    auto iterator_to_remove = int_to_dbl.find(key);
+    auto iterator_to_remove = test_map.find(key);
     auto one_after_elem = iterator_to_remove;
     one_after_elem++;
     // Delete every third entry starting from 0, inclusive.
     // (i.e. keys 0, 3, 6, ...)
-    auto deleted_iterator = int_to_dbl.erase(iterator_to_remove);
+    auto deleted_iterator = test_map.erase(iterator_to_remove);
 
     EXPECT_EQ(deleted_iterator, one_after_elem);
   }
@@ -440,20 +440,20 @@ AXOM_TYPED_TEST(core_flatmap, insert_then_delete)
     auto key = this->getKey(i);
     auto value = this->getValue(2. * i + 1);
 
-    auto iterator = int_to_dbl.find(key);
+    auto iterator = test_map.find(key);
     if(i % 3 == 0)
     {
-      EXPECT_EQ(iterator, int_to_dbl.end());
-      EXPECT_EQ(0, int_to_dbl.count(key));
-      EXPECT_EQ(false, int_to_dbl.contains(key));
+      EXPECT_EQ(iterator, test_map.end());
+      EXPECT_EQ(0, test_map.count(key));
+      EXPECT_EQ(false, test_map.contains(key));
     }
     else
     {
-      EXPECT_NE(iterator, int_to_dbl.end());
+      EXPECT_NE(iterator, test_map.end());
       EXPECT_EQ(iterator->first, key);
       EXPECT_EQ(iterator->second, value);
-      EXPECT_EQ(1, int_to_dbl.count(key));
-      EXPECT_EQ(true, int_to_dbl.contains(key));
+      EXPECT_EQ(1, test_map.count(key));
+      EXPECT_EQ(true, test_map.contains(key));
     }
   }
 }
