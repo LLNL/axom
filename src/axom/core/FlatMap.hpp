@@ -320,7 +320,10 @@ public:
    *
    * \param [in] key the key to search for
    */
-  IndexType count(const KeyType& key) const { return (find(key) != end()); }
+  IndexType count(const KeyType& key) const
+  {
+    return contains(key) ? IndexType {1} : IndexType {0};
+  }
 
   /*!
    * \brief Return true if the FlatMap contains a key, false otherwise.

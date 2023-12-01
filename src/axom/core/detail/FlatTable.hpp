@@ -53,8 +53,8 @@ struct HashMixer64
   }
 };
 
-// Boost::unordered_flat_map uses a 128-bit chunk of metadata for each
-// group of 15 buckets.
+// We follow the design of boost::unordered_flat_map, which uses a 128-bit chunk
+// of metadata for each group of 15 buckets.
 // This is split up into an "overflow bit", and 15 bytes representing the
 // state of each bucket.
 //
@@ -77,7 +77,7 @@ struct GroupBucket
 
   int getEmptyBucket() const
   {
-    for(int i = 0; i < 15; i++)
+    for(int i = 0; i < Size; i++)
     {
       if(metadata.buckets[i] == GroupBucket::Empty)
       {
@@ -90,7 +90,7 @@ struct GroupBucket
 
   int nextFilledBucket(int start_index) const
   {
-    for(int i = start_index + 1; i < 15; i++)
+    for(int i = start_index + 1; i < Size; i++)
     {
       // We intentionally don't check for the sentinel here. This gives us the
       // index of the sentinel bucket at the end, which is needed as a "stop"
@@ -107,7 +107,7 @@ struct GroupBucket
   int visitHashBucket(std::uint8_t hash, Func&& visitor) const
   {
     std::uint8_t reducedHash = reduceHash(hash);
-    for(int i = 0; i < 15; i++)
+    for(int i = 0; i < Size; i++)
     {
       if(metadata.buckets[i] == reducedHash)
       {
@@ -136,9 +136,9 @@ struct GroupBucket
     return (metadata.ofw & hashOfwBit);
   }
 
-  bool hasSentinel() const { return metadata.buckets[14] == Sentinel; }
+  bool hasSentinel() const { return metadata.buckets[Size - 1] == Sentinel; }
 
-  void setSentinel() { metadata.buckets[14] = Sentinel; }
+  void setSentinel() { metadata.buckets[Size - 1] = Sentinel; }
 
   // We need to map hashes in the range [0, 255] to [2, 255], since 0 and 1
   // are taken by the "empty" and "sentinel" values respectively.
@@ -152,7 +152,7 @@ struct GroupBucket
     struct
     {
       std::uint8_t ofw;
-      std::uint8_t buckets[15];
+      std::uint8_t buckets[Size];
     } metadata;
     std::uint64_t data[2];
     static_assert(
