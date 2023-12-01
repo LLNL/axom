@@ -7,6 +7,7 @@
 #define Axom_Core_FlatMap_HPP
 
 #include <tuple>
+#include <type_traits>
 #include <utility>
 #include "axom/config.hpp"
 #include "axom/core/Macros.hpp"
@@ -14,6 +15,34 @@
 
 namespace axom
 {
+/*!
+ * \class FlatMap
+ *
+ * \brief Provides a generic associative key-value container.
+ *
+ *  The FlatMap class is a container which maps unique keys to a single value.
+ *  It supports insertion, removal, and lookup of key-value pairs in amortized
+ *  constant time.
+ *
+ * \note FlatMap is designed to be a largely drop-in replacement for
+ *  std::unordered_map. However, FlatMap is internally represented as an open-
+ *  addressing, quadratic probing hash map; thus, the API differs from
+ *  unordered_map in certain regards:
+ *
+ *   - Operations which insert a new element may invalidate references and
+ *     iterators to existing elements in the container, if a resize of the
+ *     underlying array is triggered.
+ *   - Methods which only make sense for a closed-addressing hash map, such as
+ *     begin/end(bucket_index), or bucket(key), are not implemented.
+ *
+ * \tparam KeyType the type of the keys to hold
+ * \tparam ValueType the type of the values to hold
+ * \tparam Hash the hash to use with the key type
+ *
+ * \pre KeyType must be EqualityComparable
+ * \pre Hash is invocable with an instance of KeyType, and returns an integer
+ *  value (32- or 64-bit)
+ */
 template <typename KeyType, typename ValueType, typename Hash = std::hash<KeyType>>
 class FlatMap
   : detail::flat_map::SequentialLookupPolicy<typename Hash::result_type>
@@ -96,6 +125,9 @@ public:
    * \brief Copy constructor for a FlatMap instance.
    *
    * \param other the FlatMap to copy data from
+   *
+   * \pre KeyType must be copy-constructible
+   * \pre ValueType must be copy-constructible
    */
   FlatMap(const FlatMap& other)
     : m_numGroups2(other.m_numGroups2)
@@ -104,6 +136,12 @@ public:
     , m_buckets(other.m_buckets.size())
     , m_loadCount(other.m_loadCount)
   {
+    static_assert(std::is_copy_constructible<KeyType>::value,
+                  "Cannot copy an axom::FlatMap when key type is not "
+                  "copy-constructible.");
+    static_assert(std::is_copy_constructible<ValueType>::value,
+                  "Cannot copy an axom::FlatMap when value type is not "
+                  "copy-constructible.");
     // Copy all elements.
     IndexType index = this->nextValidIndex(m_metadata, NO_MATCH);
     while(index < bucket_count())
@@ -117,9 +155,18 @@ public:
    * \brief Copy assignment operator for a FlatMap instance.
    *
    * \param other the FlatMap to copy data from
+   *
+   * \pre KeyType must be copy-constructible
+   * \pre ValueType must be copy-constructible
    */
   FlatMap& operator=(const FlatMap& other)
   {
+    static_assert(std::is_copy_constructible<KeyType>::value,
+                  "Cannot copy an axom::FlatMap when key type is not "
+                  "copy-constructible.");
+    static_assert(std::is_copy_constructible<ValueType>::value,
+                  "Cannot copy an axom::FlatMap when value type is not "
+                  "copy-constructible.");
     if(*this != other)
     {
       FlatMap new_map(other);
@@ -246,14 +293,22 @@ public:
    * \param [in] key the key to search for
    *
    * \return A reference to the corresponding value.
+   *
+   * \pre ValueType is default-constructible
    */
   /// @{
   ValueType& operator[](const KeyType& key)
   {
+    static_assert(std::is_default_constructible<ValueType>::value,
+                  "Cannot use axom::FlatMap::operator[] when value type is not "
+                  "default-constructible.");
     return this->try_emplace(key).first->second;
   }
   const ValueType& operator[](const KeyType& key) const
   {
+    static_assert(std::is_default_constructible<ValueType>::value,
+                  "Cannot use axom::FlatMap::operator[] when value type is not "
+                  "default-constructible.");
     return this->try_emplace(key).first->second;
   }
   /// @}
