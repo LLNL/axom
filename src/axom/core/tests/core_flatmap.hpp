@@ -80,9 +80,10 @@ AXOM_TYPED_TEST(core_flatmap, insert_only)
   {
     auto key = this->getKey(i);
     auto value = this->getValue(i * 10.0 + 5.0);
+    const auto expected_size = i + 1;
     // Initial insertion of a given key should succeed.
     auto initial_insert = test_map.insert({key, value});
-    EXPECT_EQ(test_map.size(), i + 1);
+    EXPECT_EQ(test_map.size(), expected_size);
     EXPECT_EQ(initial_insert.first, test_map.find(key));
     EXPECT_EQ(value, test_map.at(key));
     EXPECT_TRUE(initial_insert.second);
@@ -92,7 +93,7 @@ AXOM_TYPED_TEST(core_flatmap, insert_only)
     // Inserting a duplicate key should not change the value.
     auto value_dup = this->getValue(i * 10.0 + 5.0);
     auto duplicate_insert = test_map.insert({key, value_dup});
-    EXPECT_EQ(test_map.size(), i + 1);
+    EXPECT_EQ(test_map.size(), expected_size);
     EXPECT_EQ(duplicate_insert.first, test_map.find(key));
     EXPECT_EQ(value, test_map.at(key));
     EXPECT_FALSE(duplicate_insert.second);
@@ -101,7 +102,7 @@ AXOM_TYPED_TEST(core_flatmap, insert_only)
     // existing value and not add a value.
     auto value_indexed = test_map[key];
     EXPECT_EQ(value_indexed, value);
-    EXPECT_EQ(test_map.size(), i + 1);
+    EXPECT_EQ(test_map.size(), expected_size);
 
     // Check that a rehash didn't occur on the second insertion.
     EXPECT_EQ(duplicate_insert.first, initial_insert.first);
