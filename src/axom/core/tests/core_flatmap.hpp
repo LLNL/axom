@@ -522,3 +522,41 @@ AXOM_TYPED_TEST(core_flatmap, iterator_loop)
     EXPECT_EQ(have_iterator[i], 1);
   }
 }
+
+AXOM_TYPED_TEST(core_flatmap, iterator_loop_write)
+{
+  using MapType = typename TestFixture::MapType;
+  MapType test_map;
+
+  const int NUM_ELEMS = 100;
+
+  for(int i = 0; i < NUM_ELEMS; i++)
+  {
+    auto key = this->getKey(i);
+    auto value = this->getValue(i * 10.0 + 5.0);
+
+    test_map.insert({key, value});
+  }
+
+  // Test mutable iteration
+  for(typename MapType::iterator it = test_map.begin(); it != test_map.end(); ++it)
+  {
+    auto pair = *it;
+    auto iter_key = pair.first;
+
+    // Get the original integer value of the key.
+    int iter_key_int;
+    flatmap_get_value(iter_key, iter_key_int);
+
+    // Modify the stored value.
+    it->second = this->getValue(iter_key_int * 10.0 + 7.0);
+  }
+
+  for(int i = 0; i < NUM_ELEMS; i++)
+  {
+    // All values should be set to the new value.
+    const auto key = this->getKey(i);
+    const auto expected_value = this->getValue(i * 10.0 + 7.0);
+    EXPECT_EQ(test_map[key], expected_value);
+  }
+}
