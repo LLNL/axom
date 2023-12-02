@@ -21,6 +21,16 @@ inline void flatmap_get_value(int key, std::string& out)
   out = std::to_string(key);
 }
 
+inline void flatmap_get_value(const std::string& key, double& out)
+{
+  out = std::stod(key);
+}
+
+inline void flatmap_get_value(const std::string& key, int& out)
+{
+  out = std::stoi(key);
+}
+
 template <typename T, typename U>
 inline void flatmap_get_value(T key, U& out)
 {
@@ -456,5 +466,59 @@ AXOM_TYPED_TEST(core_flatmap, insert_then_delete)
       EXPECT_EQ(1, test_map.count(key));
       EXPECT_EQ(true, test_map.contains(key));
     }
+  }
+}
+
+AXOM_TYPED_TEST(core_flatmap, iterator_loop)
+{
+  using MapType = typename TestFixture::MapType;
+  MapType test_map;
+
+  const int NUM_ELEMS = 100;
+
+  for(int i = 0; i < NUM_ELEMS; i++)
+  {
+    auto key = this->getKey(i);
+    auto value = this->getValue(i * 10.0 + 5.0);
+
+    test_map.insert({key, value});
+  }
+
+  std::vector<int> have_iterator(NUM_ELEMS, 0);
+
+  int iter_count = 0;
+  // Test constant iteration
+  for(typename MapType::const_iterator it = test_map.begin();
+      it != test_map.end();
+      ++it)
+  {
+    auto pair = *it;
+    auto iter_key = pair.first;
+    auto iter_value = pair.second;
+
+    // Get the original integer value of the key.
+    int iter_key_int;
+    flatmap_get_value(iter_key, iter_key_int);
+
+    // Check that the key value is in range.
+    EXPECT_GE(iter_key_int, 0);
+    EXPECT_LT(iter_key_int, NUM_ELEMS);
+
+    // Count the key that we got.
+    have_iterator[iter_key_int]++;
+
+    // Check that the value is what we expect for the given key..
+    auto expected_value = this->getValue(iter_key_int * 10.0 + 5.0);
+    EXPECT_EQ(iter_value, expected_value);
+
+    // Count the number of iterations.
+    iter_count++;
+  }
+  EXPECT_EQ(iter_count, NUM_ELEMS);
+
+  for(int i = 0; i < NUM_ELEMS; i++)
+  {
+    // We should have iterated through every index exactly once.
+    EXPECT_EQ(have_iterator[i], 1);
   }
 }
