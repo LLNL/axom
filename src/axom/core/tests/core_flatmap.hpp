@@ -560,3 +560,91 @@ AXOM_TYPED_TEST(core_flatmap, iterator_loop_write)
     EXPECT_EQ(test_map[key], expected_value);
   }
 }
+
+AXOM_TYPED_TEST(core_flatmap, range_for_loop)
+{
+  using MapType = typename TestFixture::MapType;
+  MapType test_map;
+
+  const int NUM_ELEMS = 100;
+
+  for(int i = 0; i < NUM_ELEMS; i++)
+  {
+    auto key = this->getKey(i);
+    auto value = this->getValue(i * 10.0 + 5.0);
+
+    test_map.insert({key, value});
+  }
+
+  std::vector<int> have_key(NUM_ELEMS, 0);
+
+  int iter_count = 0;
+  // Test constant iteration
+  for(const auto& pair : test_map)
+  {
+    auto iter_key = pair.first;
+    auto iter_value = pair.second;
+
+    // Get the original integer value of the key.
+    int iter_key_int;
+    flatmap_get_value(iter_key, iter_key_int);
+
+    // Check that the key value is in range.
+    EXPECT_GE(iter_key_int, 0);
+    EXPECT_LT(iter_key_int, NUM_ELEMS);
+
+    // Count the key that we got.
+    have_key[iter_key_int]++;
+
+    // Check that the value is what we expect for the given key..
+    auto expected_value = this->getValue(iter_key_int * 10.0 + 5.0);
+    EXPECT_EQ(iter_value, expected_value);
+
+    // Count the number of iterations.
+    iter_count++;
+  }
+  EXPECT_EQ(iter_count, NUM_ELEMS);
+
+  for(int i = 0; i < NUM_ELEMS; i++)
+  {
+    // We should have iterated through every index exactly once.
+    EXPECT_EQ(have_key[i], 1);
+  }
+}
+
+AXOM_TYPED_TEST(core_flatmap, range_for_loop_write)
+{
+  using MapType = typename TestFixture::MapType;
+  MapType test_map;
+
+  const int NUM_ELEMS = 100;
+
+  for(int i = 0; i < NUM_ELEMS; i++)
+  {
+    auto key = this->getKey(i);
+    auto value = this->getValue(i * 10.0 + 5.0);
+
+    test_map.insert({key, value});
+  }
+
+  // Test mutable iteration
+  for(auto& pair : test_map)
+  {
+    auto iter_key = pair.first;
+
+    // Get the original integer value of the key.
+    int iter_key_int;
+    flatmap_get_value(iter_key, iter_key_int);
+
+    // Modify the stored value.
+    pair.second = this->getValue(iter_key_int * 10.0 + 7.0);
+  }
+
+  for(int i = 0; i < NUM_ELEMS; i++)
+  {
+    // All values should be set to the new value.
+    const auto key = this->getKey(i);
+    const auto expected_value = this->getValue(i * 10.0 + 7.0);
+    EXPECT_EQ(test_map[key], expected_value);
+  }
+}
