@@ -11,6 +11,43 @@
 // gtest includes
 #include "gtest/gtest.h"
 
+// Unit test for QuadraticProbing
+TEST(core_flatmap_unit, quadratic_probing)
+{
+  axom::detail::flat_map::QuadraticProbing instance {};
+  for(int array_size = 4; array_size <= 8192; array_size *= 2)
+  {
+    // Generate probe indices.
+    std::vector<int> probe_index(array_size);
+    std::vector<int> probe_index_mod(array_size);
+    int curr_offset = 0;
+    // Compute probe indices for an array of size N.
+    for(int i = 0; i < array_size; i++)
+    {
+      probe_index[i] = curr_offset;
+      probe_index_mod[i] = curr_offset % array_size;
+      curr_offset += instance.getNext(i);
+    }
+
+    for(int i = 0; i < array_size; i++)
+    {
+      // Each probe index should match the formula:
+      // H(i) = H_0 + i/2 + i^2/2 mod m.
+      int expected_probe_index = i * (i + 1) / 2;
+      EXPECT_EQ(probe_index[i], expected_probe_index);
+      EXPECT_EQ(probe_index_mod[i], expected_probe_index % array_size);
+    }
+
+    // Probe indices should be a permutation of the range [0, array_size - 1).
+    std::vector<int> expected_permutation(array_size);
+    std::iota(expected_permutation.begin(), expected_permutation.end(), 0);
+
+    // Sort the modular probe indexes and compare.
+    std::sort(probe_index_mod.begin(), probe_index_mod.end());
+    EXPECT_EQ(probe_index_mod, expected_permutation);
+  }
+}
+
 inline void flatmap_get_value(double key, std::string& out)
 {
   out = std::to_string(key);
