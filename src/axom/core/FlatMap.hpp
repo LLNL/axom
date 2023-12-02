@@ -663,7 +663,7 @@ FlatMap<KeyType, ValueType, Hash>::FlatMap(IndexType bucket_count)
   : m_size(0)
   , m_loadCount(0)
 {
-  int minBuckets = MIN_NUM_BUCKETS;
+  IndexType minBuckets = MIN_NUM_BUCKETS;
   bucket_count = axom::utilities::max(minBuckets, bucket_count);
   // Get the smallest power-of-two number of groups satisfying:
   // N * GroupSize - 1 >= minBuckets
