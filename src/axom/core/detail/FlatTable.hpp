@@ -317,6 +317,16 @@ struct SequentialLookupPolicy
   }
 };
 
+template <typename T>
+struct alignas(T) TypeErasedStorage
+{
+  unsigned char data[sizeof(T)];
+
+  const T& get() const { return *(reinterpret_cast<const T*>(&data)); }
+
+  T& get() { return *(reinterpret_cast<T*>(&data)); }
+};
+
 }  // namespace flat_map
 }  // namespace detail
 }  // namespace axom

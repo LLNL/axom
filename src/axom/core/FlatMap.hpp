@@ -579,18 +579,7 @@ private:
   axom::Array<detail::flat_map::GroupBucket> m_metadata;
 
   // Storage details:
-  struct alignas(KeyValuePair) PairStorage
-  {
-    unsigned char data[sizeof(KeyValuePair)];
-
-    const KeyValuePair& get() const
-    {
-      return *(reinterpret_cast<const KeyValuePair*>(&data));
-    }
-
-    KeyValuePair& get() { return *(reinterpret_cast<KeyValuePair*>(&data)); }
-  };
-
+  using PairStorage = detail::flat_map::TypeErasedStorage<KeyValuePair>;
   axom::Array<PairStorage> m_buckets;
 
   // Boost flat_unordered_map uses a fixed load factor.
