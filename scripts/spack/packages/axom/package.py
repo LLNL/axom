@@ -507,31 +507,10 @@ class Axom(CachedCMakePackage, CudaPackage, ROCmPackage):
                 python_path = python_path.replace(key, path_replacements[key])
             entries.append(cmake_cache_path("PYTHON_EXECUTABLE", python_path))
 
-        if "+py-jsonschema" in spec:
+        if spec.satisfies("^py-jsonschema"):
             jsonschema_dir = get_spec_path(spec, "py-jsonschema", path_replacements, use_bin=True)
             jsonschema_path = os.path.join(jsonschema_dir, 'jsonschema')
-            cfg.write(cmake_cache_path("JSONSCHEMA_EXECUTABLE", jsonschema_path))
-
-        if "doxygen" in spec or "py-sphinx" in spec:
-            cfg.write(cmake_cache_option("ENABLE_DOCS", True))
-
-            if "doxygen" in spec:
-                doxygen_bin_dir = get_spec_path(spec, "doxygen",
-                                                path_replacements,
-                                                use_bin=True)
-                cfg.write(cmake_cache_path("DOXYGEN_EXECUTABLE",
-                                           pjoin(doxygen_bin_dir, "doxygen")))
-
-            if "py-sphinx" in spec:
-                python_bin_dir = get_spec_path(spec, "python",
-                                               path_replacements,
-                                               use_bin=True)
-                cfg.write(cmake_cache_path("SPHINX_EXECUTABLE",
-                                           pjoin(python_bin_dir,
-                                                 "sphinx-build")))
-        else:
-            cfg.write(cmake_cache_option("ENABLE_DOCS", False))
->>>>>>> 3b869eaa3 (tpls: add jsonschema to hostconfig)
+            entries.append(cmake_cache_path("JSONSCHEMA_EXECUTABLE", jsonschema_path))
 
         enable_docs = spec.satisfies("^doxygen") or spec.satisfies("^py-sphinx")
         entries.append(cmake_cache_option("ENABLE_DOCS", enable_docs))
