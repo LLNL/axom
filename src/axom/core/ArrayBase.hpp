@@ -1007,6 +1007,20 @@ struct ArrayOpsBase<T, false>
                               array + dst);
     }
   }
+
+  /*!
+   * \brief Moves a range of elements to a new allocation.
+   *
+   * \param [inout] array the array to move the elements to.
+   * \param [in] nelems the number of elements to move.
+   * \param [in] values the destination index of the range of elements
+   */
+  static void realloc_move(T* array, IndexType nelems, T* values)
+  {
+    std::uninitialized_copy(std::make_move_iterator(values),
+                            std::make_move_iterator(values + nelems),
+                            array);
+  }
 };
 
 #if defined(AXOM_USE_GPU) && defined(AXOM_GPUCC) && defined(AXOM_USE_UMPIRE)
@@ -1255,6 +1269,21 @@ struct ArrayOpsBase<T, true>
     axom::copy(array + dst, tmp_buf, nelems * sizeof(T));
     axom::deallocate(tmp_buf);
   }
+
+  /*!
+   * \brief Moves a range of elements to a new allocation.
+   *
+   * \param [inout] array the array to move the elements to.
+   * \param [in] nelems the number of elements to move.
+   * \param [in] values the destination index of the range of elements
+   */
+  static void realloc_move(T* array, IndexType nelems, T* values)
+  {
+    // NOTE: technically this is incorrect for non-trivially relocatable types,
+    // but since we only support trivially-relocatable types on the GPU, a
+    // bitcopy will suffice.
+    axom::copy(array, values, nelems * sizeof(T));
+  }
 };
 #endif
 
@@ -1320,6 +1349,12 @@ public:
       return;
     }
     Base::move(array, src_begin, src_end, dst);
+  }
+
+  static void realloc_move(T* array, IndexType nelems, T* values, int allocId)
+  {
+    AXOM_UNUSED_VAR(allocId);
+    Base::realloc_move(array, nelems, values);
   }
 
   template <typename... Args>
@@ -1440,6 +1475,22 @@ public:
     AXOM_UNUSED_VAR(allocId);
 #endif
     Base::move(array, src_begin, src_end, dst);
+  }
+
+  static void realloc_move(T* array, IndexType nelems, T* values, int allocId)
+  {
+#if defined(AXOM_USE_GPU) && defined(AXOM_GPUCC) && defined(AXOM_USE_UMPIRE)
+    MemorySpace space = getAllocatorSpace(allocId);
+
+    if(space == MemorySpace::Device)
+    {
+      BaseDevice::realloc_move(array, nelems, values);
+      return;
+    }
+#else
+    AXOM_UNUSED_VAR(allocId);
+#endif
+    Base::realloc_move(array, nelems, values);
   }
 
   template <typename... Args>

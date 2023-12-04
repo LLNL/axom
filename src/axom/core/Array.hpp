@@ -1495,7 +1495,16 @@ inline void Array<T, DIM, SPACE>::setCapacity(IndexType new_capacity)
     updateNumElements(new_capacity);
   }
 
-  m_data = axom::reallocate<T>(m_data, new_capacity, m_allocator_id);
+  // Create a new block of memory, and move the elements over.
+  T* new_data = axom::allocate<T>(new_capacity, m_allocator_id);
+  OpHelper::realloc_move(new_data, m_num_elements, m_data, m_allocator_id);
+
+  // Destroy the original array.
+  OpHelper::destroy(m_data, 0, m_num_elements, m_allocator_id);
+  axom::deallocate(m_data);
+
+  // Set the pointer and capacity to the new memory.
+  m_data = new_data;
   m_capacity = new_capacity;
 
   assert(m_data != nullptr || m_capacity <= 0);
@@ -1523,8 +1532,7 @@ inline void Array<T, DIM, SPACE>::dynamicRealloc(IndexType new_num_elements)
     utilities::processAbort();
   }
 
-  m_data = axom::reallocate<T>(m_data, new_capacity, m_allocator_id);
-  m_capacity = new_capacity;
+  setCapacity(new_capacity);
 
   assert(m_data != nullptr || m_capacity <= 0);
 }
