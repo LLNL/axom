@@ -159,6 +159,7 @@ class Axom(CachedCMakePackage, CudaPackage, ROCmPackage):
     depends_on("python", when="+devtools")
     depends_on("py-sphinx", when="+devtools")
     depends_on("py-shroud", when="+devtools")
+    depends_on("py-jsonschema", when="+devtools")
     depends_on("llvm+clang@10.0.0", when="+devtools", type="build")
 
     # Hard requirement after Axom 0.6.1
