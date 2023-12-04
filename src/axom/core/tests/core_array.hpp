@@ -2308,3 +2308,28 @@ TEST(core_array, reserve_nontrivial_reloc)
     EXPECT_EQ(&(array[i].m_member), array[i].m_localMemberPointer);
   }
 }
+
+TEST(core_array, reserve_nontrivial_reloc_2)
+{
+  const int NUM_ELEMS = 1024;
+  axom::Array<NonTriviallyRelocatable> array(NUM_ELEMS, NUM_ELEMS);
+
+  for(int i = 0; i < NUM_ELEMS; i++)
+  {
+    // Check initial values.
+    EXPECT_EQ(array[i].m_member, NONTRIVIAL_RELOC_MAGIC);
+    EXPECT_EQ(&(array[i].m_member), array[i].m_localMemberPointer);
+  }
+
+  EXPECT_EQ(array.capacity(), NUM_ELEMS);
+
+  // Emplace to trigger a resize.
+  array.emplace_back(NonTriviallyRelocatable {});
+  EXPECT_GE(array.capacity(), NUM_ELEMS);
+
+  for(int i = 0; i < NUM_ELEMS + 1; i++)
+  {
+    EXPECT_EQ(array[i].m_member, NONTRIVIAL_RELOC_MAGIC);
+    EXPECT_EQ(&(array[i].m_member), array[i].m_localMemberPointer);
+  }
+}
