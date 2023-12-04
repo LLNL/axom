@@ -20,9 +20,7 @@ axom_add_library(NAME        inlet_test_utils
 set(gtest_inlet_tests
     inlet_Reader.cpp
     inlet_restart.cpp
-    inlet_errors.cpp
-    inlet_Inlet.cpp 
-    inlet_object.cpp )
+    inlet_errors.cpp )
 
 blt_list_append(TO gtest_inlet_tests ELEMENTS inlet_function.cpp IF SOL_FOUND)
 blt_list_append(TO gtest_inlet_tests ELEMENTS inlet_jsonschema_writer.cpp IF JSONSCHEMA_FOUND)
