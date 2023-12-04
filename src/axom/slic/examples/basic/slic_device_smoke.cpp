@@ -48,7 +48,7 @@ int main(int argc, char** argv)
   #if defined(AXOM_USE_CUDA)
   axom::for_all<axom::CUDA_EXEC<BLOCK_SIZE>>(
     1,
-    AXOM_LAMBDA(axom::IndexType i) { printf("Test print on CUDA device"); });
+    AXOM_LAMBDA(axom::IndexType i) { printf("Test print on CUDA device\n"); });
   #endif
 
   #if defined(AXOM_USE_HIP)

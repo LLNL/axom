@@ -523,26 +523,21 @@ AXOM_HOST_DEVICE inline blackhole &operator<<(blackhole &bh, T)
 }  // namespace slic
 }  // namespace axom
 
-    #define SLIC_ASSERT(EXP) ((void)(EXP))
-    #define SLIC_ASSERT_MSG(EXP, msg)            \
-      {                                          \
-        if(false)                                \
-        {                                        \
-          ((void)(EXP));                         \
-          axom::slic::internal::blackhole __oss; \
-          __oss << msg;                          \
-        }                                        \
+    #define SLIC_ASSERT(EXP) assert(EXP)
+    #define SLIC_CHECK(EXP) assert(EXP)
+    #define SLIC_ASSERT_MSG(EXP, msg)          \
+      {                                        \
+        axom::slic::internal::blackhole __oss; \
+        __oss << msg;                          \
+        assert(EXP);                           \
       }
-    #define SLIC_CHECK(EXP) ((void)(EXP))
-    #define SLIC_CHECK_MSG(EXP, msg)             \
-      {                                          \
-        if(false)                                \
-        {                                        \
-          ((void)(EXP));                         \
-          axom::slic::internal::blackhole __oss; \
-          __oss << msg;                          \
-        }                                        \
+    #define SLIC_CHECK_MSG(EXP, msg)           \
+      {                                        \
+        axom::slic::internal::blackhole __oss; \
+        __oss << msg;                          \
+        assert(EXP);                           \
       }
+
   #endif
 #else  // turn off debug macros and asserts
 
