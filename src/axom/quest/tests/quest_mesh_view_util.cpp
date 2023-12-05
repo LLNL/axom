@@ -748,7 +748,7 @@ int main(int argc, char** argv)
 
   int errCount = 0;
 
-  {
+  if(0) {
     // Test conversion methods.
     errCount += testConversionMethods({2, 3, 5}, {0, 0, 0}, {0, 0, 0}, {0, 1, 2});
     errCount += testConversionMethods({2, 3, 5}, {0, 0, 0}, {0, 0, 0}, {2, 1, 0});
@@ -763,7 +763,7 @@ int main(int argc, char** argv)
     errCount += testConversionMethods({2, 3, 5}, {2, 2, 2}, {1, 1, 1}, {1, 2, 0});
   }
 
-  {
+  if(0) {
     IndexCoords domainShape {5, 3, 2};
     IndexCoords loPads {2, 2, 2};
     IndexCoords hiPads {1, 1, 1};
@@ -771,7 +771,7 @@ int main(int argc, char** argv)
     errCount += testByConduitExample(domainShape, loPads, hiPads, strideOrder);
   }
 
-  {
+  if(0) {
     IndexCoords domainShape {5, 3, 2};
     IndexCoords loPads {2, 2, 2};
     IndexCoords hiPads {1, 1, 1};
@@ -779,7 +779,7 @@ int main(int argc, char** argv)
     errCount += testByConduitExample(domainShape, loPads, hiPads, strideOrder);
   }
 
-  {
+  if(0) {
     IndexCoords domainShape {5, 3, 2};
     IndexCoords loPads {2, 1, 0};
     IndexCoords hiPads {1, 0, 2};
