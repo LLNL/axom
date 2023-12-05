@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -71,10 +71,11 @@ public:
   using BinSet = slam::OrderedSet<IndexType, IndexType, SizePolicy>;
 
   using BitsetType = slam::BitSet;
-  using BinBitMap = slam::Map<slam::Set<IndexType, IndexType>,
-                              BitsetType,
-                              slam::policies::StrideOne<IndexType>,
-                              slam::policies::ArrayStorage<BitsetType>>;
+  using BinBitMap =
+    slam::Map<BitsetType,
+              slam::Set<IndexType, IndexType>,
+              slam::policies::ArrayIndirection<IndexType, BitsetType>,
+              slam::policies::StrideOne<IndexType>>;
 
   struct QueryObject;
 
@@ -204,21 +205,19 @@ public:
     for(int i = 0; i < NDIMS; ++i)
     {
       m_bins[i] = BinSet(m_gridRes[i]);
-      m_binData[i] = BinBitMap(&m_bins[i], BitsetType {}, 1, allocatorID);
+      m_binData[i] =
+        BinBitMap(&m_bins[i], BitsetType(numElts, allocatorID), 1, allocatorID);
 
       axom::IndexType gridResDim = m_gridRes[i];
       m_minBlockBin[i] =
         axom::Array<IndexType>(gridResDim, gridResDim, allocatorID);
       m_maxBlockBin[i] =
         axom::Array<IndexType>(gridResDim, gridResDim, allocatorID);
-      for(int ibin = 0; ibin < m_bins[i].size(); ibin++)
-      {
-        m_binData[i][ibin] = BitsetType(numElts, allocatorID);
-        // We set initial min/max word indices to dummy values. These will be
-        // set correctly on the first call to ImplicitGrid::insert().
-        m_minBlockBin[i][ibin] = numElts;
-        m_maxBlockBin[i][ibin] = 0;
-      }
+
+      // We set initial min/max word indices to dummy values. These will be
+      // set correctly on the first call to ImplicitGrid::insert().
+      m_minBlockBin[i].fill(numElts);
+      m_maxBlockBin[i].fill(0);
     }
 
     // Set the expansion factor for each element to a small fraction of the
@@ -245,7 +244,18 @@ public:
    */
   void insert(const SpatialBoundingBox& bbox, IndexType idx)
   {
-    insert(1, &bbox, idx);
+    if(axom::execution_space<ExecSpace>::onDevice())
+    {
+      int deviceAllocId = axom::execution_space<ExecSpace>::allocatorID();
+      // Copy host box to device array
+      ArrayView<const SpatialBoundingBox> bbox_host(&bbox, 1);
+      Array<SpatialBoundingBox> bbox_device(bbox_host, deviceAllocId);
+      insert(1, bbox_device.data(), idx);
+    }
+    else
+    {
+      insert(1, &bbox, idx);
+    }
   }
 
   /*!
@@ -276,7 +286,9 @@ public:
       maxBlkBins[i] = m_maxBlockBin[i].data();
     }
 
+#ifdef AXOM_USE_RAJA
     using AtomicPol = typename axom::execution_space<ExecSpace>::atomic_policy;
+#endif
 
     for_all<ExecSpace>(
       nelems,
@@ -327,7 +339,10 @@ public:
    */
   BitsetType getCandidates(const SpacePoint& pt) const
   {
-    if(!m_initialized || !m_bb.contains(pt)) return BitsetType(0);
+    if(!m_initialized || !m_bb.contains(pt))
+    {
+      return BitsetType(0);
+    }
 
     const GridCell gridCell = m_lattice.gridCell(pt);
 
@@ -347,6 +362,38 @@ public:
   }
 
   /*!
+   * Finds the candidate elements in the given \a gridCell of the grid
+   *
+   * \param [in] gridCell The cell of the grid
+   * \return A bitset whose bits correspond to the elements of the IndexSet.
+   * The bits are set if their corresponding element bounding boxes overlap \a gridCell
+   */
+  BitsetType getCandidates(const GridCell& gridCell) const
+  {
+    // Perform some validity checks
+    if(!m_initialized)
+    {
+      return BitsetType(0);
+    }
+    for(int i = 0; i < NDIMS; ++i)
+    {
+      if(gridCell[i] < 0 || gridCell[i] > highestBin(i))
+      {
+        return BitsetType(0);
+      }
+    }
+
+    // Note: Due to above checks, gridCell[i] is always valid
+    BitsetType res = m_binData[0][gridCell[0]];
+    for(int i = 1; i < NDIMS; ++i)
+    {
+      res &= m_binData[i][gridCell[i]];
+    }
+
+    return res;
+  }
+
+  /*!
    * Finds the candidate elements in the vicinity of query box \a box
    *
    * \param [in] box The query box
@@ -357,7 +404,10 @@ public:
    */
   BitsetType getCandidates(const SpatialBoundingBox& box) const
   {
-    if(!m_initialized || !m_bb.intersectsWith(box)) return BitsetType(0);
+    if(!m_initialized || !m_bb.intersectsWith(box))
+    {
+      return BitsetType(0);
+    }
 
     const GridCell lowerCell = m_lattice.gridCell(box.getMin());
     const GridCell upperCell = m_lattice.gridCell(box.getMax());
@@ -415,11 +465,12 @@ public:
    * \param [in] queryObjs The array of query objects, of length qsize
    * \param [out] outOffsets Offsets into the candidates array for each query
    *  object
-   * \param [out] out counts The number of candidates for each query object
-   * \param [out] candidates The candidate IDs for each query object
+   * \param [out] outCounts The number of candidates for each query object
+   * \param [out] outCandidates The candidate IDs for each query object
    *
-   * \note The output arrays are allocated inside the function, using the given
-   *  allocator ID passed in during implicit grid initialization.
+   * \note outOffsets and outCounts should point to arrays allocated in a
+   *  memory space accessible from the given execution space, and be of
+   *  length qsize.
    *
    * \note Upon completion, the ith query point has:
    *  * counts[ i ] candidates
@@ -429,9 +480,35 @@ public:
   template <typename QueryGeom>
   void getCandidatesAsArray(axom::IndexType qsize,
                             const QueryGeom* queryObjs,
-                            axom::Array<IndexType>& outOffsets,
-                            axom::Array<IndexType>& outCounts,
-                            axom::Array<IndexType>& outCandidates);
+                            axom::ArrayView<IndexType> outOffsets,
+                            axom::ArrayView<IndexType> outCounts,
+                            axom::Array<IndexType>& outCandidates) const;
+
+  /// \overload
+  void getCandidatesAsArray(axom::ArrayView<const SpacePoint> queryObjs,
+                            axom::ArrayView<IndexType> outOffsets,
+                            axom::ArrayView<IndexType> outCounts,
+                            axom::Array<IndexType>& outCandidates) const
+  {
+    getCandidatesAsArray(queryObjs.size(),
+                         queryObjs.data(),
+                         outOffsets,
+                         outCounts,
+                         outCandidates);
+  }
+
+  /// \overload
+  void getCandidatesAsArray(axom::ArrayView<const SpatialBoundingBox> queryObjs,
+                            axom::ArrayView<IndexType> outOffsets,
+                            axom::ArrayView<IndexType> outCounts,
+                            axom::Array<IndexType>& outCandidates) const
+  {
+    getCandidatesAsArray(queryObjs.size(),
+                         queryObjs.data(),
+                         outOffsets,
+                         outCounts,
+                         outCandidates);
+  }
 
   /*!
    * Tests whether grid cell gridPt indexes the element with index idx
@@ -447,7 +524,10 @@ public:
   {
     bool ret = true;
 
-    if(!m_elementSet.isValidIndex(idx)) ret = false;
+    if(!m_elementSet.isValidIndex(idx))
+    {
+      ret = false;
+    }
 
     for(int i = 0; i < NDIMS; ++i)
     {
@@ -549,10 +629,7 @@ namespace axom
 {
 namespace spin
 {
-/*!
- * \brief Device-copyable query object for running implicit grid queries on the
- *  GPU.
- */
+/// Device-copyable query object for running implicit grid queries on the GPU
 template <int NDIMS, typename ExecSpace, typename IndexType>
 struct ImplicitGrid<NDIMS, ExecSpace, IndexType>::QueryObject
 {
@@ -563,10 +640,11 @@ public:
   using LatticeType = RectangularLattice<NDIMS, double, IndexType>;
 
   using BitsetType = slam::BitSet;
-  using BinBitMap = slam::Map<slam::Set<IndexType, IndexType>,
-                              BitsetType,
-                              slam::policies::StrideOne<IndexType>,
-                              slam::policies::ArrayStorage<BitsetType>>;
+  using BinBitMap =
+    slam::Map<BitsetType,
+              slam::Set<IndexType, IndexType>,
+              slam::policies::ArrayIndirection<IndexType, BitsetType>,
+              slam::policies::StrideOne<IndexType>>;
 
   QueryObject(const SpatialBoundingBox& spaceBb,
               const LatticeType& lattice,
@@ -579,9 +657,9 @@ public:
     for(int idim = 0; idim < NDIMS; idim++)
     {
       m_highestBins[idim] = binData[idim].set()->size() - 1;
-      m_binData[idim] = binData[idim].data().data();
-      m_minBlkBin[idim] = minBlkBins[idim].data();
-      m_maxBlkBin[idim] = maxBlkBins[idim].data();
+      m_binData[idim] = binData[idim].data().view();
+      m_minBlkBin[idim] = minBlkBins[idim].view();
+      m_maxBlkBin[idim] = maxBlkBins[idim].view();
     }
   }
 
@@ -740,13 +818,13 @@ private:
   IndexType m_highestBins[NDIMS];
 
   //! The data associated with each bin
-  const BitsetType* m_binData[NDIMS];
+  axom::ArrayView<const BitsetType> m_binData[NDIMS];
 
   //! The lowest word index in each bin with at least one bit set
-  const IndexType* m_minBlkBin[NDIMS];
+  axom::ArrayView<const IndexType> m_minBlkBin[NDIMS];
 
   //! The highest word index in each bin with at least one bit set
-  const IndexType* m_maxBlkBin[NDIMS];
+  axom::ArrayView<const IndexType> m_maxBlkBin[NDIMS];
 };
 
 template <int NDIMS, typename ExecSpace, typename IndexType>
@@ -765,51 +843,55 @@ template <typename QueryGeom>
 void ImplicitGrid<NDIMS, ExecSpace, IndexType>::getCandidatesAsArray(
   axom::IndexType qsize,
   const QueryGeom* queryObjs,
-  axom::Array<IndexType>& outOffsets,
-  axom::Array<IndexType>& outCounts,
-  axom::Array<IndexType>& outCandidates)
+  axom::ArrayView<IndexType> outOffsets,
+  axom::ArrayView<IndexType> outCounts,
+  axom::Array<IndexType>& outCandidates) const
 {
+  SLIC_ERROR_IF(outOffsets.size() < qsize,
+                "outOffsets must have at least qsize elements");
+  SLIC_ERROR_IF(outCounts.size() < qsize,
+                "outCounts must have at least qsize elements");
   auto gridQuery = getQueryObject();
 
-  outCounts = axom::Array<IndexType>(qsize, qsize, m_allocatorId);
-  outOffsets = axom::Array<IndexType>(qsize, qsize, m_allocatorId);
 #ifdef AXOM_USE_RAJA
-  IndexType* countsPtr = outCounts.data();
-  IndexType* offsetsPtr = outOffsets.data();
-
   using reduce_pol = typename axom::execution_space<ExecSpace>::reduce_policy;
   RAJA::ReduceSum<reduce_pol, IndexType> totalCountReduce(0);
   // Step 1: count number of candidate intersections for each point
   for_all<ExecSpace>(
     qsize,
     AXOM_LAMBDA(IndexType i) {
-      countsPtr[i] = gridQuery.countCandidates(queryObjs[i]);
-      totalCountReduce += countsPtr[i];
+      outCounts[i] = gridQuery.countCandidates(queryObjs[i]);
+      totalCountReduce += outCounts[i];
     });
 
-  // Step 2: exclusive scan for offsets in candidate array
+    // Step 2: exclusive scan for offsets in candidate array
+    // Intel oneAPI compiler segfaults with OpenMP RAJA scan
+  #ifdef __INTEL_LLVM_COMPILER
+  using exec_policy = typename axom::execution_space<axom::SEQ_EXEC>::loop_policy;
+  #else
   using exec_policy = typename axom::execution_space<ExecSpace>::loop_policy;
-  RAJA::exclusive_scan<exec_policy>(RAJA::make_span(countsPtr, qsize),
-                                    RAJA::make_span(offsetsPtr, qsize),
+  #endif
+  RAJA::exclusive_scan<exec_policy>(RAJA::make_span(outCounts.data(), qsize),
+                                    RAJA::make_span(outOffsets.data(), qsize),
                                     RAJA::operators::plus<IndexType> {});
 
   axom::IndexType totalCount = totalCountReduce.get();
 
   // Step 3: allocate memory for all candidates
   outCandidates = axom::Array<IndexType>(totalCount, totalCount, m_allocatorId);
-  IndexType* candidatesPtr = outCandidates.data();
+  const auto candidates_v = outCandidates.view();
 
   // Step 4: fill candidate array for each query box
   for_all<ExecSpace>(
     qsize,
     AXOM_LAMBDA(IndexType i) {
-      int startIdx = offsetsPtr[i];
+      int startIdx = outOffsets[i];
       int currCount = 0;
       auto onCandidate = [&](int candidateIdx) -> bool {
-        candidatesPtr[startIdx] = candidateIdx;
+        candidates_v[startIdx] = candidateIdx;
         currCount++;
         startIdx++;
-        return currCount >= countsPtr[i];
+        return currCount >= outCounts[i];
       };
       gridQuery.visitCandidates(queryObjs[i], onCandidate);
     });
@@ -835,7 +917,10 @@ AXOM_HOST_DEVICE IndexType
 ImplicitGrid<NDIMS, ExecSpace, IndexType>::QueryObject::countCandidates(
   const SpacePoint& pt) const
 {
-  if(!m_bb.contains(pt)) return 0;
+  if(!m_bb.contains(pt))
+  {
+    return 0;
+  }
 
   GridCell gridCell = m_lattice.gridCell(pt);
 
@@ -880,7 +965,10 @@ AXOM_HOST_DEVICE IndexType
 ImplicitGrid<NDIMS, ExecSpace, IndexType>::QueryObject::countCandidates(
   const SpatialBoundingBox& bbox) const
 {
-  if(!m_bb.intersectsWith(bbox)) return 0;
+  if(!m_bb.intersectsWith(bbox))
+  {
+    return 0;
+  }
 
   GridCell lowerCell = m_lattice.gridCell(bbox.getMin());
   GridCell upperCell = m_lattice.gridCell(bbox.getMax());
@@ -889,7 +977,7 @@ ImplicitGrid<NDIMS, ExecSpace, IndexType>::QueryObject::countCandidates(
   {
     // Note: Need to clamp the gridCell ranges since the input box boundaries
     //       are not restricted to the implicit grid's bounding box
-    lowerCell[idim] = axom::utilities::clampLower(lowerCell[idim], 0);
+    lowerCell[idim] = axom::utilities::clampLower(lowerCell[idim], IndexType {0});
     upperCell[idim] =
       axom::utilities::clampUpper(upperCell[idim], m_highestBins[idim]);
   }
@@ -935,7 +1023,10 @@ ImplicitGrid<NDIMS, ExecSpace, IndexType>::QueryObject::visitCandidates(
   const SpacePoint& pt,
   FuncType&& candidatePredicate) const
 {
-  if(!m_bb.contains(pt)) return;
+  if(!m_bb.contains(pt))
+  {
+    return;
+  }
 
   GridCell gridCell = m_lattice.gridCell(pt);
 
@@ -994,7 +1085,10 @@ ImplicitGrid<NDIMS, ExecSpace, IndexType>::QueryObject::visitCandidates(
   const SpatialBoundingBox& bbox,
   FuncType&& candidatePredicate) const
 {
-  if(!m_bb.intersectsWith(bbox)) return;
+  if(!m_bb.intersectsWith(bbox))
+  {
+    return;
+  }
 
   GridCell lowerCell = m_lattice.gridCell(bbox.getMin());
   GridCell upperCell = m_lattice.gridCell(bbox.getMax());
@@ -1003,7 +1097,7 @@ ImplicitGrid<NDIMS, ExecSpace, IndexType>::QueryObject::visitCandidates(
   {
     // Note: Need to clamp the gridCell ranges since the input box boundaries
     //       are not restricted to the implicit grid's bounding box
-    lowerCell[idim] = axom::utilities::clampLower(lowerCell[idim], 0);
+    lowerCell[idim] = axom::utilities::clampLower(lowerCell[idim], IndexType {0});
     upperCell[idim] =
       axom::utilities::clampUpper(upperCell[idim], m_highestBins[idim]);
   }

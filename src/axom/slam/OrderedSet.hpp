@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -26,6 +26,7 @@
 #include "axom/slam/policies/StridePolicies.hpp"
 #include "axom/slam/policies/IndirectionPolicies.hpp"
 #include "axom/slam/policies/SubsettingPolicies.hpp"
+#include "axom/slam/policies/SetInterfacePolicies.hpp"
 #include "axom/slam/ModularInt.hpp"
 
 #include "axom/core/IteratorBase.hpp"
@@ -54,13 +55,15 @@ template <typename PosType = slam::DefaultPositionType,
           typename OffsetPolicy = policies::ZeroOffset<PosType>,
           typename StridePolicy = policies::StrideOne<PosType>,
           typename IndirectionPolicy = policies::NoIndirection<PosType, ElemType>,
-          typename SubsettingPolicy = policies::NoSubset>
-struct OrderedSet : public Set<PosType, ElemType>,
-                    SizePolicy,
-                    OffsetPolicy,
-                    StridePolicy,
-                    IndirectionPolicy,
-                    SubsettingPolicy
+          typename SubsettingPolicy = policies::NoSubset,
+          typename InterfacePolicy = policies::VirtualInterface>
+struct OrderedSet
+  : public policies::SetInterface<InterfacePolicy, PosType, ElemType>,
+    SizePolicy,
+    OffsetPolicy,
+    StridePolicy,
+    IndirectionPolicy,
+    SubsettingPolicy
 {
 public:
   using PositionType = PosType;
@@ -102,7 +105,7 @@ public:
   //, SubsettingPolicyType(parentSet)
   { }
 
-  OrderedSet(const SetBuilder& builder)
+  AXOM_HOST_DEVICE OrderedSet(const SetBuilder& builder)
     : SizePolicyType(builder.m_size)
     , OffsetPolicyType(builder.m_offset)
     , StridePolicyType(builder.m_stride)
@@ -110,8 +113,75 @@ public:
     , SubsettingPolicyType(builder.m_parent)
   { }
 
-  OrderedSet(const OrderedSet& oset) = default;
-  OrderedSet& operator=(const OrderedSet& other) = default;
+private:
+  template <typename OtherPosType,
+            typename OtherElemType,
+            typename OtherSizePolicy,
+            typename OtherOffsetPolicy,
+            typename OtherStridePolicy,
+            typename OtherIndirectionPolicy,
+            typename OtherSubsettingPolicy,
+            typename OtherInterfacePolicy>
+  friend struct OrderedSet;
+
+  /*!
+   * \brief Helper tag class to call OrderedSet conversion constructor.
+   */
+  struct ConversionTag
+  { };
+
+  template <typename OtherIndirectionPolicy, typename OtherInterfaceType>
+  using ConvertibleOrderedSet = OrderedSet<PosType,
+                                           ElemType,
+                                           SizePolicyType,
+                                           OffsetPolicyType,
+                                           StridePolicyType,
+                                           OtherIndirectionPolicy,
+                                           SubsettingPolicyType,
+                                           OtherInterfaceType>;
+
+  /*!
+   * \brief Private constructor to create an OrderedSet from another OrderedSet
+   *  with different IndirectionPolicy and InterfacePolicy.
+   *
+   *  Used by the conversion function defined below.
+   */
+  template <typename OtherIndirectionPolicy, typename OtherInterfaceType>
+  OrderedSet(
+    ConversionTag,
+    const ConvertibleOrderedSet<OtherIndirectionPolicy, OtherInterfaceType>& other)
+    : SizePolicyType(other)
+    , OffsetPolicyType(other)
+    , StridePolicyType(other)
+    , IndirectionPolicyType(other)
+    , SubsettingPolicyType(other)
+  { }
+
+public:
+  using ConcreteSet =
+    ConvertibleOrderedSet<IndirectionPolicy, policies::ConcreteInterface>;
+
+  using VirtualSet =
+    ConvertibleOrderedSet<IndirectionPolicy, policies::VirtualInterface>;
+
+  /*!
+   * \brief Converts this OrderedSet to an OrderedSet of another indirection
+   *  policy and/or interface policy.
+   */
+  template <typename OtherIndirectionPolicy, typename OtherInterfaceType>
+  operator OrderedSet<PosType,
+                      ElemType,
+                      SizePolicyType,
+                      OffsetPolicyType,
+                      StridePolicyType,
+                      OtherIndirectionPolicy,
+                      SubsettingPolicyType,
+                      OtherInterfaceType>() const
+  {
+    using ToOrderedSet =
+      ConvertibleOrderedSet<OtherIndirectionPolicy, OtherInterfaceType>;
+    return ToOrderedSet(typename ToOrderedSet::ConversionTag {}, *this);
+  }
 
 public:
   /**
@@ -125,28 +195,42 @@ public:
   {
     friend struct OrderedSet;
 
-    using DataType = typename IndirectionPolicyType::IndirectionBufferType;
+    using DataType = typename IndirectionPolicyType::IndirectionPtrType;
     using ParentSetType = typename SubsettingPolicyType::ParentSetType;
 
-    SetBuilder& size(PositionType sz)
+    AXOM_HOST_DEVICE SetBuilder& size(PositionType sz)
     {
+      SLIC_ASSERT_MSG(
+        !m_hasRange,
+        "Cannot call both SetBuilder::size() and SetBuilder::range()");
+
       m_size = SizePolicyType(sz);
       return *this;
     }
 
-    SetBuilder& offset(PositionType off)
+    AXOM_HOST_DEVICE SetBuilder& offset(PositionType off)
     {
+      SLIC_ASSERT(!m_hasRange || off == m_offset.offset());
+
       m_offset = OffsetPolicyType(off);
+
       return *this;
     }
 
     SetBuilder& stride(PositionType str)
     {
       m_stride = StridePolicyType(str);
+
+      // Need to recompute size if range() function was used
+      if(m_hasRange)
+      {
+        m_size = SizePolicyType(recomputeSize());
+      }
+
       return *this;
     }
 
-    SetBuilder& data(DataType* bufPtr)
+    AXOM_HOST_DEVICE SetBuilder& data(DataType bufPtr)
     {
       m_data = IndirectionPolicyType(bufPtr);
       return *this;
@@ -162,11 +246,36 @@ public:
     SetBuilder& range(PositionType lower, PositionType upper)
     {
       // Set by range rather than size and offset.
-      // Question: Should we ensure that only one of these options is called
-      //   (e.g. size [+offset] or range, but not both)?
       m_offset = OffsetPolicyType(lower);
-      m_size = SizePolicyType(upper - lower);
+
+      m_hasRange = true;
+      m_rangeLower = lower;
+      m_rangeUpper = upper;
+
+      // set size, account for a stride that has not yet been set
+      m_size = SizePolicyType(recomputeSize());
       return *this;
+    }
+
+  private:
+    /// Recomputes the size based on upper and lower range as well as stride
+    PositionType recomputeSize() const
+    {
+      using axom::utilities::abs;
+      using axom::utilities::ceil;
+
+      if(m_hasRange)
+      {
+        const double str = m_stride.stride();
+        const auto diff = (m_rangeUpper - m_rangeLower);
+
+        // size is 0 if upper==lower, or signs of diff and stride differ
+        return (diff == 0 || ((diff > 0) != (str > 0))) ? 0 : ceil(diff / str);
+      }
+      else
+      {
+        return m_size.size();
+      }
     }
 
   private:
@@ -175,6 +284,11 @@ public:
     StridePolicyType m_stride;
     IndirectionPolicyType m_data;
     SubsettingPolicyType m_parent;
+
+    // Some additional params to account for range() convenience function
+    bool m_hasRange {false};
+    PositionType m_rangeLower {0};  // only used when m_hasRange == true
+    PositionType m_rangeUpper {0};  // only used when m_hasRange == true
   };
 
   /**
@@ -212,6 +326,7 @@ public:
 
     using IndirectionType = typename OrderedSet::IndirectionPolicyType;
     using StrideType = typename OrderedSet::StridePolicyType;
+    using OffsetType = typename OrderedSet::OffsetPolicyType;
 
     using IterBase::m_pos;
 
@@ -225,14 +340,6 @@ public:
       , m_orderedSet(oSet)
     { }
 
-    OrderedSetIterator(const OrderedSetIterator& it) = default;
-
-    OrderedSetIterator& operator=(const OrderedSetIterator& it)
-    {
-      this->m_pos = it.m_pos;
-      this->m_orderedSet = const_cast<OrderedSet&>(it.m_orderedSet);
-      return *this;
-    }
     /// \}
 
     /// \name Member and pointer operators
@@ -295,16 +402,21 @@ public:
     }
     /// \}
 
-    PositionType index() const { return m_pos; }
+    PositionType index() const { return (m_pos - offset()) / stride(); }
 
   protected:
     /** Implementation of advance() as required by IteratorBase */
-    void advance(PositionType n) { m_pos += n * stride(); }
+    AXOM_HOST_DEVICE void advance(PositionType n) { m_pos += n * stride(); }
 
   private:
-    inline const PositionType stride() const
+    AXOM_HOST_DEVICE inline const PositionType stride() const
     {
       return m_orderedSet.StrideType::stride();
+    }
+
+    inline const PositionType offset() const
+    {
+      return m_orderedSet.OffsetType::offset();
     }
 
   private:
@@ -342,24 +454,33 @@ public:
    * \brief Given a position in the Set, return a position in the larger index
    *  space
    */
+  AXOM_HOST_DEVICE
   inline typename IndirectionPolicy::ConstIndirectionResult operator[](
     PositionType pos) const
   {
+#ifndef AXOM_DEVICE_CODE
     verifyPositionImpl(pos);
+#endif
     return IndirectionPolicy::indirection(pos * StridePolicyType::stride() +
                                           OffsetPolicyType::offset());
   }
 
+  AXOM_HOST_DEVICE
   inline typename IndirectionPolicy::IndirectionResult operator[](PositionType pos)
   {
+#ifndef AXOM_DEVICE_CODE
     verifyPositionImpl(pos);
+#endif
     return IndirectionPolicy::indirection(pos * StridePolicyType::stride() +
                                           OffsetPolicyType::offset());
   }
   inline ElementType at(PositionType pos) const { return operator[](pos); }
 
-  inline PositionType size() const { return SizePolicyType::size(); }
-  inline bool empty() const { return SizePolicyType::empty(); }
+  AXOM_HOST_DEVICE inline PositionType size() const
+  {
+    return SizePolicyType::size();
+  }
+  AXOM_HOST_DEVICE inline bool empty() const { return SizePolicyType::empty(); }
 
   bool isValid(bool verboseOutput = false) const;
 
@@ -371,7 +492,10 @@ public:
    * An index pos is valid when \f$ 0 \le pos < size() \f$
    * \return true if the position is valid, false otherwise
    */
-  bool isValidIndex(PositionType pos) const { return pos >= 0 && pos < size(); }
+  inline bool isValidIndex(PositionType pos) const
+  {
+    return pos >= 0 && pos < size();
+  }
 
   /**
    * \brief returns a PositionSet over the set's positions
@@ -403,14 +527,16 @@ template <typename PosType,
           typename OffsetPolicy,
           typename StridePolicy,
           typename IndirectionPolicy,
-          typename SubsettingPolicy>
+          typename SubsettingPolicy,
+          typename InterfacePolicy>
 bool OrderedSet<PosType,
                 ElemType,
                 SizePolicy,
                 OffsetPolicy,
                 StridePolicy,
                 IndirectionPolicy,
-                SubsettingPolicy>::isValid(bool verboseOutput) const
+                SubsettingPolicy,
+                InterfacePolicy>::isValid(bool verboseOutput) const
 {
   bool bValid = SizePolicyType::isValid(verboseOutput) &&
     OffsetPolicyType::isValid(verboseOutput) &&

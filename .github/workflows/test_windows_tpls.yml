@@ -22,10 +22,10 @@ jobs:
         include:
         - arch: "x64"
           triplet: "x64-windows"
-          msvc:    "201964"
+          msvc:    "202264"
         - arch: "x86"
           triplet: "x86-windows"
-          msvc:    "2019"
+          msvc:    "2022"
 
     steps:
     - name: Checkout repo w/ submodules

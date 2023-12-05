@@ -1,4 +1,4 @@
-# Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+# Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
 # other Axom Project Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
@@ -9,6 +9,15 @@
 #------------------------------------------------------------------------------
 # Specify all headers/sources
 #------------------------------------------------------------------------------
+
+# This file contains metadata that often changes (ie. git sha).
+# Hide these changes in the source file so we do not force
+# a full rebuild.
+axom_configure_file(
+    utilities/About.cpp.in
+    ${PROJECT_BINARY_DIR}/axom/core/utilities/About.cpp
+)
+
 set(core_headers
 
     ## utilities
@@ -55,11 +64,13 @@ set(core_headers
     ## execution
     execution/execution_space.hpp
     execution/for_all.hpp
+    execution/runtime_policy.hpp
     execution/synchronize.hpp
 
     execution/internal/seq_exec.hpp
     execution/internal/omp_exec.hpp
     execution/internal/cuda_exec.hpp
+    execution/internal/hip_exec.hpp
 
     )
 
@@ -68,7 +79,7 @@ set(core_sources
     utilities/StringUtilities.cpp
     utilities/System.cpp
     utilities/Utilities.cpp
-    utilities/About.cpp
+    ${PROJECT_BINARY_DIR}/axom/core/utilities/About.cpp
 
     utilities/nvtx/interface.cpp
     utilities/nvtx/Range.cpp
@@ -84,34 +95,33 @@ set(core_sources
 #------------------------------------------------------------------------------
 
 set( core_depends fmt )
+blt_list_append( TO core_depends ELEMENTS camp IF CAMP_FOUND )
 blt_list_append( TO core_depends ELEMENTS umpire IF UMPIRE_FOUND )
 blt_list_append( TO core_depends ELEMENTS RAJA IF RAJA_FOUND )
+blt_list_append( TO core_depends ELEMENTS nvToolsExt IF AXOM_ENABLE_CUDA )
+blt_list_append( TO core_depends ELEMENTS mpi IF AXOM_ENABLE_MPI )
 
-# TODO: remove this when we figure out why RAJA::cub is not getting inherited from RAJA
-if (TARGET RAJA::cub AND RAJA_FOUND)
-  list(APPEND core_depends RAJA::cub)
+# HACK: RAJA's dependencies are not getting added to core due to a bug in
+# dependency propagation in blt_register_library. Explicitly add it in the short term.
+if(TARGET RAJA::roctx)
+    list(APPEND core_depends RAJA::roctx)
 endif()
-
-blt_list_append( TO core_depends ELEMENTS cuda nvToolsExt IF ENABLE_CUDA )
-blt_list_append( TO core_depends ELEMENTS openmp IF ENABLE_OPENMP)
-blt_list_append( TO core_depends ELEMENTS mpi IF ENABLE_MPI )
 
 #------------------------------------------------------------------------------
 # Make/Install the library
 #------------------------------------------------------------------------------
 
-blt_add_library( NAME        core
+axom_add_library(NAME        core
                  SOURCES     ${core_sources}
                  HEADERS     ${core_headers}
                  DEPENDS_ON  ${core_depends}
                  FOLDER      axom/core
-                 OBJECT      TRUE
                  )
 
 # Basic includes that should be inherited to all Axom targets
 target_include_directories(core PUBLIC 
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../..>
-    $<BUILD_INTERFACE:${CMAKE_BINARY_DIR}/include>
+    $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include>
     $<INSTALL_INTERFACE:include>
     )
 
@@ -119,7 +129,6 @@ target_include_directories(core PUBLIC
 if(AXOM_DEBUG_DEFINE_STRING)
   blt_add_target_definitions(TO core SCOPE PUBLIC TARGET_DEFINITIONS "${AXOM_DEBUG_DEFINE_STRING}")
 endif()
-
 
 axom_write_unified_header( NAME    core
                            HEADERS ${core_headers}

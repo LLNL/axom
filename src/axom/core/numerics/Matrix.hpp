@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -117,6 +117,11 @@ template <typename T>
 class Matrix
 {
 public:
+  /*!
+   * \brief Default constructor
+   */
+  Matrix() : m_rows(0), m_cols(0), m_data(nullptr), m_usingExternal(false) { }
+
   /*!
    * \brief Constructor, creates a Matrix with the given rows and columns.
    *
@@ -481,6 +486,13 @@ public:
    */
   Matrix<T>& operator=(const Matrix<T>& rhs);
 
+  /*!
+   * \brief Determines whether matrix is identity matrix.
+   *
+   * \return True if matrix is identity, false otherwise.
+   */
+  bool isIdentity() const;
+
   /// @}
 
   /// \name Static Methods
@@ -527,12 +539,6 @@ public:
   /// @}
 
 private:
-  /*!
-   * \brief Default constructor. Does nothing.
-   * \note Made private to prevent host-code from calling this.
-   */
-  Matrix() : m_rows(0), m_cols(0), m_data(nullptr) {};
-
   /// \name Private Helper Methods
   /// @{
 
@@ -836,6 +842,25 @@ Matrix<T>& Matrix<T>::operator=(const Matrix<T>& rhs)
   }
 
   return *this;
+}
+
+//-----------------------------------------------------------------------------
+template <typename T>
+bool Matrix<T>::isIdentity() const
+{
+  bool ok = (m_rows == m_cols);
+  if(ok)
+  {
+    for(IndexType i = 0; i < m_rows && ok; ++i)
+    {
+      for(IndexType j = 0; j < m_cols && ok; ++j)
+      {
+        T expected = (i == j) ? 1.0 : 0.0;
+        ok = (this->operator()(i, j) == expected);
+      }  // END for all columns
+    }    // END for all rows
+  }
+  return ok;
 }
 
 //-----------------------------------------------------------------------------

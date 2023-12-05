@@ -1,13 +1,10 @@
-vcpkg_fail_port_install(ON_TARGET "UWP")
-
 vcpkg_from_github(
     OUT_SOURCE_PATH SOURCE_PATH
     REPO llnl/conduit
-    REF v0.7.2
-    SHA512 85ee7c2a5483952c0f8b093a0fef95f393cd5c34884caefb03734cfd4095b8f64440b8c599a0547a25adea6da5b0126445885a681d706d4b5b68c22d897aea18
+    REF v0.8.6
+    SHA512 b85c15bfa2687ba47f53c1ca269af72a1a31161848047e653bdc722a07f2682623640758cb5e83565ee655eca7cc993921c656208e6084513843927d76c5db66
     HEAD_REF develop
     PATCHES 
-        "./hdf5-1-12.patch"
         "./setup_deps_vcpkg_triplet.patch"
 )
 

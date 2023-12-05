@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -26,6 +26,7 @@
 #include "axom/core/Macros.hpp"
 
 #include "axom/slam/NullSet.hpp"
+#include "axom/export/slam.h"
 
 #include <set>
 
@@ -44,10 +45,10 @@ namespace policies
 
 struct NoSubset
 {
-  AXOM_EXPORT static const NullSet<> s_nullSet;
+  AXOM_SLAM_EXPORT static const NullSet<> s_nullSet;
   using ParentSetType = const Set<>;
 
-  NoSubset() { }
+  AXOM_HOST_DEVICE NoSubset() { }
 
   // This empty .ctor is here to satisfy the SubsettingPolicy API
   NoSubset(ParentSetType*) { }
@@ -67,7 +68,7 @@ struct NoSubset
 
 struct VirtualParentSubset
 {
-  AXOM_EXPORT static NullSet<> s_nullSet;
+  AXOM_SLAM_EXPORT static NullSet<> s_nullSet;
 
   using ParentSetType = Set<>;
 
@@ -85,11 +86,17 @@ struct VirtualParentSubset
   bool isValid(OrderedSetIt beg, OrderedSetIt end, bool verboseOutput = false) const
   {
     // We allow parent sets to be null (i.e. the subset feature is deactivated)
-    if(!isSubset() || m_parentSet == nullptr) return true;
+    if(!isSubset() || m_parentSet == nullptr)
+    {
+      return true;
+    }
 
     // Next, check if child is empty -- null set is a subset of all sets
     bool childIsEmpty = (beg == end);
-    if(childIsEmpty) return true;
+    if(childIsEmpty)
+    {
+      return true;
+    }
 
     // Next, since child has at least one element, the parent cannot be empty
     if(verboseOutput)
@@ -107,7 +114,9 @@ struct VirtualParentSubset
     using ElType = typename OrderedSetIt::value_type;
     std::set<ElType> pSet;
     for(auto pos = 0; pos < m_parentSet->size(); ++pos)
+    {
       pSet.insert(m_parentSet->at(pos));
+    }
     for(; beg != end; ++beg)
     {
       if(pSet.find(*beg) == pSet.end())
@@ -148,11 +157,17 @@ struct ConcreteParentSubset
   bool isValid(OrderedSetIt beg, OrderedSetIt end, bool verboseOutput = false) const
   {
     // We allow parent sets to be null (i.e. the subset feature is deactivated)
-    if(!isSubset()) return true;
+    if(!isSubset())
+    {
+      return true;
+    }
 
     // Next, check if child is empty -- null set is a subset of all sets
     bool childIsEmpty = (beg == end);
-    if(childIsEmpty) return true;
+    if(childIsEmpty)
+    {
+      return true;
+    }
 
     // Next, since child has at least one element, the parent cannot be empty
     if(verboseOutput)
@@ -167,7 +182,9 @@ struct ConcreteParentSubset
     // At this point, parent and child are both non-null
     std::set<typename ParentSetType::ElementType> pSet;
     for(auto pos = 0; pos < m_parentSet->size(); ++pos)
+    {
       pSet.insert((*m_parentSet)[pos]);
+    }
     for(; beg != end; ++beg)
     {
       if(pSet.find(*beg) == pSet.end())

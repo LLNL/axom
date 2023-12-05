@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -33,6 +33,7 @@ namespace axom
 namespace sidre
 {
 class DataStore;
+class Group;
 class View;
 
 /*!
@@ -47,7 +48,7 @@ class View;
  *    - A Buffer object has a unique identifier within a DataStore,
  *      which is assigned by the DataStore when the Buffer is created.
  *    - The data owned by a Buffer is unique to that Buffer
- *      object; i.e.,  Buffers do not share their data.
+ *      object; i.e.,  Buffers do not share their data with other Buffers.
  *    - Typical usage is to describe the data a Buffer will hold and then
  *      allocate it by calling one of the Buffer allocate or
  *      reallocate methods.
@@ -249,6 +250,11 @@ public:
    * \brief Exports Buffer's state to a Conduit node.
    */
   void exportTo(conduit::Node& data_holder);
+
+  /*!
+   * \brief Exports Buffer's metadata to a Conduit node.
+   */
+  void exportMetadata(conduit::Node& data_holder);
 
   /*!
    * \brief Import Buffer's state from a Conduit node.

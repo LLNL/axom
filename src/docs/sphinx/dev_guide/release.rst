@@ -1,4 +1,4 @@
-.. ## Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+.. ## Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
 .. ## other Axom Project Developers. See the top-level LICENSE file for details.
 .. ##
 .. ## SPDX-License-Identifier: (BSD-3-Clause)
@@ -58,6 +58,12 @@ release changes can be reviewed. Such changes include:
    release version number and release date in the heading, as well as,
    the corresponding link to the version on Github.
 
+#. Update the mail map in ``axom/.mailmap`` by adding the names and emails
+   of new contributors since the last release.
+
+#. Update the citations in ``axom/CITATION.cff`` by adding the names
+   of new LLNL contributors since the last release.
+
 #. Test the code by running it through all continuous integration tests
    and builds. This will ensure that all build configurations are working
    properly and all tests pass.
@@ -82,7 +88,9 @@ release changes can be reviewed. Such changes include:
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Merge the release candidate branch into the main branch once it is ready and
-approved. At this point, the release candidate branch can be deleted.
+approved. Do not "squash merge:" that will make the histories of main and
+release branches disagree, and we want to preserve the history. After
+merging, the release candidate branch can be deleted.
 
 
 4: Draft a Github Release
@@ -114,8 +122,9 @@ approved. At this point, the release candidate branch can be deleted.
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 * Checkout the main branch locally and run ``axom/scripts/make_release_tarball.sh --with-data``
-  This will generate a two tarballs of the form ``Axom-v0.3.1.tar.gz`` and ``AxomData-v0.3.1.tar.gz``
-  each consistsing of the axom source and data respectively.
+  Run this script from the top level ``axom`` subdirectory. This will
+  generate a two tarballs of the form ``Axom-v0.3.1.tar.gz`` and ``AxomData-v0.3.1.tar.gz``
+  consisting of the axom source and data respectively.
 
 * Upload the tarballs for the corresponding release, by going to the
   `Github Releases section <https://github.com/LLNL/axom/releases>`_ and ``Edit``

@@ -1,10 +1,12 @@
-// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
 #ifndef AXOM_QUEST_DISCRETIZE_DETAIL_
 #define AXOM_QUEST_DISCRETIZE_DETAIL_
+
+#include "axom/primal/constants.hpp"
 
 namespace
 {
@@ -17,8 +19,6 @@ enum
   T,
   U
 };
-
-constexpr double PTINY = 1e-80;
 
 using SphereType = axom::quest::SphereType;
 using OctType = axom::quest::OctType;
@@ -84,11 +84,10 @@ inline int count_segment_prisms(int levels)
 AXOM_HOST_DEVICE
 Point3D rescale_YZ(const Point3D &p, double new_dst)
 {
-  double cur_dst = sqrt(p[1] * p[1] + p[2] * p[2]);
-  if(cur_dst < PTINY)
-  {
-    cur_dst = PTINY;
-  }
+  const double cur_dst =
+    axom::utilities::clampLower(sqrt(p[1] * p[1] + p[2] * p[2]),
+                                axom::primal::PRIMAL_TINY);
+
   Point3D retval;
   retval[0] = p[0];
   retval[1] = p[1] * new_dst / cur_dst;
@@ -149,7 +148,11 @@ inline OctType new_inscribed_prism(OctType &old_oct,
  * quadrilateral side-wall.
  */
 template <typename ExecSpace>
-int discrSeg(const Point2D &a, const Point2D &b, int levels, OctType *&out, int idx)
+int discrSeg(const Point2D &a,
+             const Point2D &b,
+             int levels,
+             axom::ArrayView<OctType> &out,
+             int idx)
 {
   // Assert input assumptions
   SLIC_ASSERT(b[0] - a[0] >= 0);
@@ -157,11 +160,11 @@ int discrSeg(const Point2D &a, const Point2D &b, int levels, OctType *&out, int 
   SLIC_ASSERT(b[1] >= 0);
 
   // Deal with degenerate segments
-  if(b[0] - a[0] < PTINY)
+  if(b[0] - a[0] < axom::primal::PRIMAL_TINY)
   {
     return 0;
   }
-  if(a[1] < PTINY && b[1] < PTINY)
+  if(a[1] < axom::primal::PRIMAL_TINY && b[1] < axom::primal::PRIMAL_TINY)
   {
     return 0;
   }
@@ -216,7 +219,7 @@ int discrSeg(const Point2D &a, const Point2D &b, int levels, OctType *&out, int 
     // with comment "the ends switch each level."
     axom::for_all<ExecSpace>(
       curr_lvl_count,
-      AXOM_LAMBDA(axom::IndexType i) {
+      AXOM_LAMBDA(axom::IndexType i) mutable {
         out[next_lvl + i * lvl_factor + 0] =
           new_inscribed_prism(out[curr_lvl + i], Q, T, S, R, pa, pb);
         out[next_lvl + i * lvl_factor + 1] =
@@ -252,16 +255,16 @@ namespace quest
  * less than the polyline's length).  That is exponential growth.  Use
  * appropriate caution.
  *
- * This routine allocates an array pointed to by \a out.  The caller is responsible
- * to free the array.
+ * This routine initializes an Array pointed to by \a out.
  */
 template <typename ExecSpace>
-bool discretize(Point2D *&polyline,
+bool discretize(axom::Array<Point2D> &polyline,
                 int pointcount,
                 int levels,
-                OctType *&out,
+                axom::Array<OctType> &out,
                 int &octcount)
 {
+  int allocId = axom::execution_space<ExecSpace>::allocatorID();
   // Check for invalid input.  If any segment is invalid, exit returning false.
   bool stillValid = true;
   int segmentcount = pointcount - 1;
@@ -289,13 +292,17 @@ bool discretize(Point2D *&polyline,
   // That was the octahedron count for one segment.  Multiply by the number
   // of segments we will compute.
   int totaloctcount = segoctcount * segmentcount;
-  out = axom::allocate<OctType>(totaloctcount);
+  out = axom::Array<OctType>(totaloctcount, totaloctcount, allocId);
+  axom::ArrayView<OctType> out_view = out.view();
   octcount = 0;
 
   for(int seg = 0; seg < segmentcount; ++seg)
   {
-    int segment_prism_count =
-      discrSeg<ExecSpace>(polyline[seg], polyline[seg + 1], levels, out, octcount);
+    int segment_prism_count = discrSeg<ExecSpace>(polyline[seg],
+                                                  polyline[seg + 1],
+                                                  levels,
+                                                  out_view,
+                                                  octcount);
     octcount += segment_prism_count;
   }
 

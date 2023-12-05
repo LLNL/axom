@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -11,10 +11,15 @@
 // Quest includes
 #ifdef AXOM_USE_MPI
   #include "axom/quest/readers/PSTLReader.hpp"
+  #include "axom/quest/readers/PProEReader.hpp"
 #endif
 
-#if defined(AXOM_USE_MPI) && defined(AXOM_USE_C2C)
-  #include "axom/quest/readers/PC2CReader.hpp"
+#if defined(AXOM_USE_C2C)
+  #if defined(AXOM_USE_MPI)
+    #include "axom/quest/readers/PC2CReader.hpp"
+  #else
+    #include "axom/quest/readers/C2CReader.hpp"
+  #endif
 #endif
 
 #include <limits>
@@ -349,17 +354,20 @@ int read_stl_mesh(const std::string& file, mint::Mesh*& m, MPI_Comm comm)
 /*
  * Reads in the contour mesh from the specified file.
  */
-int read_c2c_mesh(const std::string& file,
-                  int segmentsPerPiece,
-                  double vertexWeldThreshold,
-                  mint::Mesh*& m,
-                  MPI_Comm comm)
+int read_c2c_mesh_uniform(const std::string& file,
+                          const numerics::Matrix<double>& transform,
+                          int segmentsPerPiece,
+                          double vertexWeldThreshold,
+                          mint::Mesh*& m,
+                          double& revolvedVolume,
+                          MPI_Comm comm)
 {
   // NOTE: C2C meshes are always 2D
   constexpr int DIMENSION = 2;
   using SegmentMesh = mint::UnstructuredMesh<mint::SINGLE_SHAPE>;
 
   // STEP 0: check input mesh pointer
+  revolvedVolume = 0.;
   if(m != nullptr)
   {
     SLIC_WARNING("supplied mesh pointer is not null!");
@@ -370,7 +378,7 @@ int read_c2c_mesh(const std::string& file,
   m = new SegmentMesh(DIMENSION, mint::SEGMENT);
 
   // STEP 2: construct C2C reader
-  #ifdef AXOM_USE_MPI
+  #if defined(AXOM_USE_MPI) && defined(AXOM_USE_C2C)
   quest::PC2CReader reader(comm);
   #else
   AXOM_UNUSED_VAR(comm);
@@ -383,7 +391,8 @@ int read_c2c_mesh(const std::string& file,
   int rc = reader.read();
   if(rc == READ_SUCCESS)
   {
-    reader.getLinearMesh(static_cast<SegmentMesh*>(m), segmentsPerPiece);
+    reader.getLinearMeshUniform(static_cast<SegmentMesh*>(m), segmentsPerPiece);
+    revolvedVolume = reader.getRevolvedVolume(transform);
   }
   else
   {
@@ -394,7 +403,105 @@ int read_c2c_mesh(const std::string& file,
 
   return rc;
 }
+
+/*
+ * Reads in the contour mesh from the specified file and refines it according
+ * to an error tolerance.
+ */
+int read_c2c_mesh_non_uniform(const std::string& file,
+                              const numerics::Matrix<double>& transform,
+                              double percentError,
+                              double vertexWeldThreshold,
+                              mint::Mesh*& m,
+                              double& revolvedVolume,
+                              MPI_Comm comm)
+{
+  // NOTE: C2C meshes are always 2D
+  constexpr int DIMENSION = 2;
+  using SegmentMesh = mint::UnstructuredMesh<mint::SINGLE_SHAPE>;
+
+  // STEP 0: check input mesh pointer
+  revolvedVolume = 0.;
+  if(m != nullptr)
+  {
+    SLIC_WARNING("supplied mesh pointer is not null!");
+    return READ_FAILED;
+  }
+
+  // STEP 1: allocate output mesh object
+  m = new SegmentMesh(DIMENSION, mint::SEGMENT);
+
+  // STEP 2: construct C2C reader
+  #if defined(AXOM_USE_MPI) && defined(AXOM_USE_C2C)
+  quest::PC2CReader reader(comm);
+  #else
+  AXOM_UNUSED_VAR(comm);
+  quest::C2CReader reader;
+  #endif
+
+  // STEP 3: read the mesh from the input file
+  reader.setFileName(file);
+  reader.setVertexWeldingThreshold(vertexWeldThreshold);
+  int rc = reader.read();
+  if(rc == READ_SUCCESS)
+  {
+    reader.getLinearMeshNonUniform(static_cast<SegmentMesh*>(m), percentError);
+    revolvedVolume = reader.getRevolvedVolume(transform);
+  }
+  else
+  {
+    SLIC_WARNING("reading C2C file failed, setting mesh to NULL");
+    delete m;
+    m = nullptr;
+    revolvedVolume = 0.;
+  }
+
+  return rc;
+}
 #endif  // AXOM_USE_C2C
+
+/*
+ * Reads in the Pro/E tetrahedral from the specified file.
+ */
+int read_pro_e_mesh(const std::string& file, mint::Mesh*& m, MPI_Comm comm)
+{
+  constexpr int DIMENSION = 3;
+  using TetMesh = mint::UnstructuredMesh<mint::SINGLE_SHAPE>;
+
+  // STEP 0: check input mesh pointer
+  if(m != nullptr)
+  {
+    SLIC_WARNING("supplied mesh pointer is not null!");
+    return READ_FAILED;
+  }
+
+  // STEP 1: allocate output mesh object
+  m = new TetMesh(DIMENSION, mint::TET);
+
+  // STEP 2: construct Pro/E reader
+#ifdef AXOM_USE_MPI
+  quest::PProEReader reader(comm);
+#else
+  AXOM_UNUSED_VAR(comm);
+  quest::ProEReader reader;
+#endif
+
+  // STEP 3: read the mesh from the Pro/E file
+  reader.setFileName(file);
+  int rc = reader.read();
+  if(rc == READ_SUCCESS)
+  {
+    reader.getMesh(static_cast<TetMesh*>(m));
+  }
+  else
+  {
+    SLIC_WARNING("reading Pro/E file failed, setting mesh to NULL");
+    delete m;
+    m = nullptr;
+  }
+
+  return rc;
+}
 
 /// Mesh Helper Methods
 

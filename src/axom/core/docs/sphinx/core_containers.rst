@@ -1,7 +1,9 @@
-.. ## Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+.. ## Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
 .. ## other Axom Project Developers. See the top-level LICENSE file for details.
 .. ##
 .. ## SPDX-License-Identifier: (BSD-3-Clause)
+
+.. _core-containers:
 
 ******************************************************
 Core containers
@@ -117,6 +119,30 @@ The output of this example is::
 .. note:: The set of permissible operations on an ``ArrayView`` is somewhat limited,
   as operations that would cause the buffer to resize are not permitted.
 
+``ArrayView`` can view memory spaces at regular intervals while
+ignoring spaces in between.  By default, the spacing is one, meaning
+adjacent elements are one space apart.  A spacing of 2 sees every
+other elements in memory.  A spacing of ``N`` sees every ``N``-th
+element.  Spacing is set in the ``ArrayView`` constructor.
+
+The following example creates a 2D array of 4-tuples and uses an
+``ArrayView`` to access the 3rd item in each 4-tuple.
+
+.. literalinclude:: ../../examples/core_containers.cpp
+   :start-after: _spacing_start
+   :end-before: _spacing_end
+   :language: C++
+
+The output of this example is::
+
+  Third components of 2D array of 4-tuples:
+  a(0,0) = (0,0).2
+  a(0,1) = (0,1).2
+  a(0,2) = (0,2).2
+  a(1,0) = (1,0).2
+  a(1,1) = (1,1).2
+  a(1,2) = (1,2).2
+
 In the future, it will also be possible to restride an ``ArrayView``.
 
 Iteration is also identical between the ``Array`` and ``ArrayView`` classes.
@@ -211,15 +237,15 @@ To illustrate how different memory spaces can be required, the following kernel 
 input arrays ``A`` and ``B`` are in unified memory and its output array ``C`` is in device memory.
 
 .. literalinclude:: ../../examples/core_containers.cpp
-   :start-after: _cuda_kernel_start
-   :end-before: _cuda_kernel_end
+   :start-after: _device_kernel_start
+   :end-before: _device_kernel_end
    :language: C++
 
 The following snippet illustrates how one would create and initialize the inputs/outputs to this kernel.
 
 .. literalinclude:: ../../examples/core_containers.cpp
-   :start-after: _cuda_array_create_start
-   :end-before: _cuda_array_create_end
+   :start-after: _device_array_create_start
+   :end-before: _device_array_create_end
    :language: C++
 
 .. note:: Unless the Dynamic memory space is in use, the ``Array`` constructor will
@@ -229,8 +255,8 @@ The following snippet illustrates how one would create and initialize the inputs
 We can now launch the kernel and display the results via a transfer back to host-accessible memory:
 
 .. literalinclude:: ../../examples/core_containers.cpp
-   :start-after: _cuda_array_call_start
-   :end-before: _cuda_array_call_end
+   :start-after: _device_array_call_start
+   :end-before: _device_array_call_end
    :language: C++
 
 If RAJA is available, we can also use Axom's acceleration utilities to perform an operation on the GPU
@@ -239,6 +265,14 @@ via a lambda:
 .. literalinclude:: ../../examples/core_containers.cpp
    :start-after: _array_w_raja_start
    :end-before: _array_w_raja_end
+   :language: C++
+
+By default, ``Array`` copies and moves will propagate the allocator ID; this ensures that objects
+with ``Array`` members do not accidentally move their data to the host when copied or moved:
+
+.. literalinclude:: ../../examples/core_containers.cpp
+   :start-after: _device_array_propagate_start
+   :end-before: _device_array_propagate_end
    :language: C++
 
 ##########

@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -28,6 +28,7 @@ enum ExecutionMode
   ASYNC
 };
 
+// _cuda_exec_start
 /*!
  * \brief Indicates parallel execution on the GPU with CUDA.
  *
@@ -37,6 +38,7 @@ enum ExecutionMode
 template <int BLOCK_SIZE, ExecutionMode EXEC_MODE = SYNCHRONOUS>
 struct CUDA_EXEC
 { };
+// _cuda_exec_end
 
 /*!
  * \brief execution_space traits specialization for CUDA_EXEC.

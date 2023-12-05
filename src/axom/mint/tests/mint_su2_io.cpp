@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -9,14 +9,10 @@
 #include "axom/mint/utils/su2_utils.hpp"       /* for su2 i/o */
 
 // Slic includes
-#include "axom/slic/interface/slic.hpp"    /* for slic macros */
-#include "axom/slic/core/SimpleLogger.hpp" /* for SimpleLogger */
+#include "axom/slic.hpp"
 
 // gtest includes
-#include "gtest/gtest.h" /* for gtest macros */
-
-// C/C++ includes
-#include <cstdio> /* for std::remove() */
+#include "gtest/gtest.h"
 
 namespace mint = axom::mint;
 
@@ -159,7 +155,7 @@ TEST(mint_su2_io, write_read_mixed_cell_topology_mesh)
 
   // cleanup
   delete test_mesh;
-  std::remove(su2File.c_str());
+  axom::utilities::filesystem::removeFile(su2File);
 }
 
 //------------------------------------------------------------------------------
@@ -216,17 +212,16 @@ TEST(mint_su2_io, write_read_single_cell_topology_mesh)
 
   // cleanup
   delete test_mesh;
-  std::remove(su2File.c_str());
+  axom::utilities::filesystem::removeFile(su2File);
 }
 
 //------------------------------------------------------------------------------
-using axom::slic::SimpleLogger;
-
 int main(int argc, char* argv[])
 {
   int result = 0;
   ::testing::InitGoogleTest(&argc, argv);
-  SimpleLogger logger;
+  axom::slic::SimpleLogger logger;
+
   result = RUN_ALL_TESTS();
   return result;
 }

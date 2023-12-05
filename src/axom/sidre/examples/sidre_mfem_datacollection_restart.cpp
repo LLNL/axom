@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -103,7 +103,8 @@ private:
     m_owns_data = true;
 
     // Build a 2D mesh with 100 square elements
-    m_mesh = new mfem::Mesh(10, 10, mfem::Element::QUADRILATERAL);
+    m_mesh = new mfem::Mesh(
+      mfem::Mesh::MakeCartesian2D(10, 10, mfem::Element::QUADRILATERAL));
 
 #ifdef EXAMPLE_USES_MPI
     mfem::Mesh* tmp_mesh = m_mesh;
@@ -143,7 +144,8 @@ private:
     m_qspace = new mfem::QuadratureSpace(m_mesh, /*order=*/1);
     // Set the data to nullptr so the datacollection will initialize it with
     // its own managed data (needed for a restart)
-    m_qfunc = new mfem::QuadratureFunction(m_qspace, nullptr);
+    m_qfunc = new mfem::QuadratureFunction(m_qspace);
+    m_qfunc->NewDataAndSize(nullptr, m_qfunc->GetSpace()->GetSize());
     m_datacoll.RegisterQField("qpt_data", m_qfunc);
     *m_qfunc = 0.0;
 
@@ -166,7 +168,7 @@ private:
     m_fespace = m_soln_field->FESpace();
     m_fecoll = m_fespace->FEColl();
     m_qfunc = m_datacoll.GetQField("qpt_data");
-    m_qspace = m_qfunc->GetSpace();
+    m_qspace = dynamic_cast<mfem::QuadratureSpace*>(m_qfunc->GetSpace());
   }
 
   // FEM-related objects needed as part of a simulation
@@ -189,8 +191,10 @@ private:
 
 int main(int argc, char* argv[])
 {
+  int num_procs = 1;
 #ifdef EXAMPLE_USES_MPI
   MPI_Init(&argc, &argv);
+  MPI_Comm_size(MPI_COMM_WORLD, &num_procs);
 #endif
 
   // Initialize the datacollection
@@ -220,6 +224,7 @@ int main(int argc, char* argv[])
   std::string protocol = "sidre_conduit_json";
 #endif
 
+  int num_files = -1;
   app.add_option("--cycle", cycle_to_load)
     ->description("Optional simulation cycle to load")
     ->capture_default_str();
@@ -227,7 +232,20 @@ int main(int argc, char* argv[])
     ->description("Optional sidre protocol to use for checkpoints and restarts")
     ->check(axom::CLI::IsMember(sidre_protocols))
     ->capture_default_str();
+  app.add_option("--num_files", num_files)
+    ->description(
+      "Optional flag to set the number of output files for parallel "
+      "simulations (default one output file per rank)")
+    ->capture_default_str()
+    ->check(axom::CLI::Range(1, num_procs).description("Range [1,num_procs]"));
   CLI11_PARSE(app, argc, argv);
+
+#ifdef EXAMPLE_USES_MPI
+  if(num_files > 0)
+  {
+    dc.SetNumFiles(num_files);
+  }
+#endif
 
   // Initialize the simulation data structures
   SimulationState sim_state(dc, cycle_to_load);

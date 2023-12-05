@@ -1,10 +1,11 @@
-// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
 #include "axom/quest/readers/STLReader.hpp"
 #include "axom/mint/mesh/UnstructuredMesh.hpp"
+#include "axom/slic.hpp"
 
 // gtest includes
 #include "gtest/gtest.h"
@@ -81,7 +82,7 @@ TEST(quest_stl_reader_DeathTest, read_to_invalid_mesh)
   EXPECT_DEATH_IF_SUPPORTED(reader.getMesh(&hexmesh), IGNORE_OUTPUT);
 
   // STEP 4: remove STL file
-  std::remove(filename.c_str());
+  axom::utilities::filesystem::removeFile(filename);
 }
 
 //------------------------------------------------------------------------------
@@ -142,7 +143,7 @@ TEST(quest_stl_reader, read_stl)
   }  // END for all nodes
 
   // STEP 4: remove temporary STL file
-  std::remove(filename.c_str());
+  axom::utilities::filesystem::removeFile(filename);
 }
 
 //------------------------------------------------------------------------------
@@ -201,19 +202,14 @@ TEST(quest_stl_reader, read_stl_external)
   }  // END for all nodes
 
   // STEP 4: remove temporary STL file
-  std::remove(filename.c_str());
+  axom::utilities::filesystem::removeFile(filename);
 }
 
 //------------------------------------------------------------------------------
-#include "axom/slic/core/SimpleLogger.hpp"
-using axom::slic::SimpleLogger;
-
 int main(int argc, char* argv[])
 {
   ::testing::InitGoogleTest(&argc, argv);
-
-  SimpleLogger logger;  // create & initialize test logger,
-  // finalized when exiting main scope
+  axom::slic::SimpleLogger logger;
 
   return RUN_ALL_TESTS();
 }

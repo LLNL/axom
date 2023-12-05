@@ -1,4 +1,4 @@
-# Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+# Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
 # other Axom Project Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
@@ -12,7 +12,7 @@
 # Note: Mint also optionally depends on Sidre when AXOM_MINT_USE_SIDRE=ON
 #------------------------------------------------------------------------------
 axom_component_requires(NAME       Mint
-                        COMPONENTS SLIC)
+                        COMPONENTS SLIC SLAM)
 
 #------------------------------------------------------------------------------
 # Add mint options
@@ -25,8 +25,8 @@ cmake_dependent_option( AXOM_MINT_USE_SIDRE "Enables Sidre support in Mint" ON
 # Specify all headers/sources
 #------------------------------------------------------------------------------
 ## generate mint config
-configure_file ( core/config.hpp.in
-                 ${CMAKE_BINARY_DIR}/include/axom/mint/config.hpp )
+axom_configure_file ( core/config.hpp.in
+                      ${PROJECT_BINARY_DIR}/include/axom/mint/config.hpp )
 
 set( mint_headers
 
@@ -61,7 +61,6 @@ set( mint_headers
     fem/shape_functions/lagrange/lagrange_tri_3.hpp
 
     ## Internal implementation
-    mesh/internal/ConnectivityArray_indirection.hpp
     mesh/internal/ConnectivityArray_typed_indirection.hpp
     mesh/internal/ConnectivityArrayHelpers.hpp
     mesh/internal/MeshHelpers.hpp
@@ -88,6 +87,7 @@ set( mint_headers
     ## utils
     utils/vtk_utils.hpp
     utils/su2_utils.hpp
+    utils/ExternalArray.hpp
    )
 
 blt_list_append(TO mint_headers ELEMENTS deprecated/SidreMCArray.hpp IF AXOM_MINT_USE_SIDRE)
@@ -120,28 +120,22 @@ set( mint_sources
 # Make/Install the library
 #------------------------------------------------------------------------------
 set( mint_dependencies
-     core
      slic
      )
 
 if (AXOM_MINT_USE_SIDRE)
-   list( APPEND mint_dependencies sidre conduit::conduit )
+   list( APPEND mint_dependencies sidre)
    blt_list_append( TO mint_dependencies ELEMENTS hdf5 IF HDF5_FOUND )
 endif()
 
 blt_list_append( TO mint_dependencies ELEMENTS RAJA IF RAJA_FOUND )
 
-blt_list_append( TO mint_dependencies ELEMENTS openmp IF ENABLE_OPENMP )
-
-blt_list_append( TO mint_dependencies ELEMENTS cuda IF ENABLE_CUDA )
-
-blt_add_library(
+axom_add_library(
     NAME       mint
     SOURCES    ${mint_sources}
     HEADERS    ${mint_headers}
     DEPENDS_ON ${mint_dependencies}
     FOLDER     axom/mint
-    OBJECT     TRUE
    )
 
 axom_write_unified_header(NAME    mint
@@ -150,7 +144,7 @@ axom_write_unified_header(NAME    mint
 axom_install_component(NAME    mint
                        HEADERS ${mint_headers}
                        )
-install(FILES       ${CMAKE_BINARY_DIR}/include/axom/mint/config.hpp
+install(FILES       ${PROJECT_BINARY_DIR}/include/axom/mint/config.hpp
         DESTINATION include/axom/mint
         )
 

@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -75,6 +75,8 @@ struct BroodRepresentationTraits
       std::numeric_limits<PointRepresenationType>::max();
     map.set_empty_key(maxVal);
     map.set_deleted_key(maxVal - 1);
+#else
+    AXOM_UNUSED_VAR(map);
 #endif
   }
 };
@@ -129,6 +131,8 @@ struct BroodRepresentationTraits<CoordType, DIM, BroodDataType, primal::Point<Co
 
     maxPt[DIM - 1]--;
     map.set_deleted_key(maxPt);
+#else
+    AXOM_UNUSED_VAR(map);
 #endif
   }
 };
@@ -300,7 +304,10 @@ public:
                                        // (default constructed)
     if(this->level() == 0)
     {
-      for(int j = 1; j < Base::BROOD_SIZE; ++j) bd[j].setNonBlock();
+      for(int j = 1; j < Base::BROOD_SIZE; ++j)
+      {
+        bd[j].setNonBlock();
+      }
     }
   }
 
@@ -348,7 +355,10 @@ public:
   /** \brief Returns the number of blocks (internal and leaf) in the level */
   int numBlocks() const
   {
-    if(empty()) return 0;
+    if(empty())
+    {
+      return 0;
+    }
 
     return ((this->m_level == 0)
               ? 1
@@ -361,7 +371,10 @@ public:
   /** \brief Returns the number of leaf blocks in the level */
   int numLeafBlocks() const
   {
-    if(empty()) return 0;
+    if(empty())
+    {
+      return 0;
+    }
 
     int count = 0;
     for(ConstMapIter it = m_map.begin(), itEnd = m_map.end(); it != itEnd; ++it)
@@ -369,7 +382,10 @@ public:
       const BroodData& bd = it->second;
       for(int i = 0; i < Base::BROOD_SIZE; ++i)
       {
-        if(bd[i].isLeaf()) ++count;
+        if(bd[i].isLeaf())
+        {
+          ++count;
+        }
       }
     }
     return count;

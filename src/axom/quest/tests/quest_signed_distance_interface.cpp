@@ -1,49 +1,33 @@
-// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
 // Axom utils
-#include "axom/config.hpp"  // axom compile-time definitions
-#include "axom/core/utilities/Utilities.hpp"
-
-// Mint includes
-#include "axom/mint/config.hpp"                 // mint compile-time definitions
-#include "axom/mint/mesh/CellTypes.hpp"         // for cell types enum
-#include "axom/mint/mesh/Mesh.hpp"              // defines mint::Mesh
-#include "axom/mint/mesh/MeshTypes.hpp"         // for mesh types enum
-#include "axom/mint/mesh/UniformMesh.hpp"       // for mint::UniformMesh
-#include "axom/mint/mesh/UnstructuredMesh.hpp"  // for mint::UnstructuredMesh
-#include "axom/mint/utils/vtk_utils.hpp"        // for mint::write_vtk()
-
-// Primal includes
-#include "axom/primal/geometry/BoundingBox.hpp"  // primal::BoundingBox
-#include "axom/primal/geometry/Plane.hpp"        // defines primal::Plane
-#include "axom/primal/geometry/Sphere.hpp"       // defines primal::Sphere
+#include "axom/config.hpp"
+#include "axom/core.hpp"
+#include "axom/mint.hpp"
+#include "axom/primal.hpp"
+#include "axom/slic.hpp"
 
 // Quest includes
-#include "axom/quest/interface/signed_distance.hpp"  // for signed distance
-#include "quest_test_utilities.hpp"                  // test-utility functions
-
-// Slic includes
-#include "axom/slic/interface/slic.hpp"     // for SLIC macros
-#include "axom/slic/core/SimpleLogger.hpp"  // for the unit test logger
-using axom::slic::SimpleLogger;
+#include "axom/quest/interface/signed_distance.hpp"
+#include "quest_test_utilities.hpp"
 
 // gtest
+#include "gtest/gtest.h"
+
+// Note: Disable death tests when MPI is enabled since they're not being properly handled
 #ifdef AXOM_USE_MPI
-
-  #ifdef GTEST_HAS_DEATH_TEST
-    #undef GTEST_HAS_DEATH_TEST
-  #endif /* GTEST_HAS_DEATH_TEST */
-
-  #define GTEST_HAS_DEATH_TEST 0
-#endif                    /* AXOM_USE_MPI */
-#include "gtest/gtest.h"  // for gtest macros
+  #define _DEATH_TESTS_LOCALLY_DISABLED 1
+#else
+  #define _DEATH_TESTS_LOCALLY_DISABLED 0
+const char IGNORE_OUTPUT[] = ".*";
+#endif
 
 // C/C++ includes
-#include <fstream>  // for std::ofstream
-#include <sstream>  // for std::ostringstream
+#include <fstream>
+#include <sstream>
 
 // Aliases
 namespace quest = axom::quest;
@@ -52,8 +36,6 @@ namespace primal = axom::primal;
 namespace utilities = axom::utilities;
 
 using UnstructuredMesh = mint::UnstructuredMesh<mint::SINGLE_SHAPE>;
-
-const char IGNORE_OUTPUT[] = ".*";
 
 //#define WRITE_VTK_OUTPUT 1
 #define REMOVE_FILES 1
@@ -250,7 +232,7 @@ void check_analytic_plane(bool use_shared = false)
   EXPECT_FALSE(quest::signed_distance_initialized());
 
 #ifdef REMOVE_FILES
-  std::remove(file.c_str());
+  axom::utilities::filesystem::removeFile(file);
 #endif
 }
 
@@ -263,10 +245,12 @@ TEST(quest_signed_distance_interface_DeathTest, get_mesh_bounds_invalid_calls)
 {
   EXPECT_FALSE(quest::signed_distance_initialized());
 
+#if !_DEATH_TESTS_LOCALLY_DISABLED
   double lo[3];
   double hi[3];
   EXPECT_DEATH_IF_SUPPORTED(quest::signed_distance_get_mesh_bounds(lo, hi),
                             IGNORE_OUTPUT);
+#endif
 
   constexpr int NDIMS = 3;
   constexpr double SPHERE_RADIUS = 0.5;
@@ -283,11 +267,13 @@ TEST(quest_signed_distance_interface_DeathTest, get_mesh_bounds_invalid_calls)
 
   quest::signed_distance_init(surface_mesh);
 
+#if !_DEATH_TESTS_LOCALLY_DISABLED
   EXPECT_DEATH_IF_SUPPORTED(quest::signed_distance_get_mesh_bounds(nullptr, hi),
                             IGNORE_OUTPUT);
 
   EXPECT_DEATH_IF_SUPPORTED(quest::signed_distance_get_mesh_bounds(lo, nullptr),
                             IGNORE_OUTPUT);
+#endif
 
   quest::signed_distance_finalize();
   delete surface_mesh;
@@ -298,9 +284,10 @@ TEST(quest_signed_distance_interface_DeathTest, get_mesh_bounds_invalid_calls)
 TEST(quest_signed_distance_interface_DeathTest, call_evaluate_before_init)
 {
   EXPECT_FALSE(quest::signed_distance_initialized());
+
+#if !_DEATH_TESTS_LOCALLY_DISABLED
   EXPECT_DEATH_IF_SUPPORTED(quest::signed_distance_evaluate(0.0, 0.0),
                             IGNORE_OUTPUT);
-
   double x[2];
   double y[2];
   double z[2];
@@ -308,6 +295,7 @@ TEST(quest_signed_distance_interface_DeathTest, call_evaluate_before_init)
 
   EXPECT_DEATH_IF_SUPPORTED(quest::signed_distance_evaluate(x, y, z, 2, phi),
                             IGNORE_OUTPUT);
+#endif
 }
 
 //------------------------------------------------------------------------------
@@ -332,6 +320,8 @@ TEST(quest_signed_distance_interface_DeathTest, set_params_after_init)
   quest::signed_distance_init(surface_mesh);
 
   // STEP 1: setting parameters after init() should fail
+#if !_DEATH_TESTS_LOCALLY_DISABLED
+
   EXPECT_DEATH_IF_SUPPORTED(quest::signed_distance_set_dimension(3),
                             IGNORE_OUTPUT);
   EXPECT_DEATH_IF_SUPPORTED(quest::signed_distance_set_closed_surface(true),
@@ -343,6 +333,7 @@ TEST(quest_signed_distance_interface_DeathTest, set_params_after_init)
   EXPECT_DEATH_IF_SUPPORTED(
     quest::signed_distance_set_execution_space(quest::SignedDistExec::CPU),
     IGNORE_OUTPUT);
+#endif
 
   // STEP 2: finalize
   quest::signed_distance_finalize();
@@ -381,7 +372,7 @@ TEST(quest_signed_distance_interface, initialize)
 
   // remove temp STL file
 #ifdef REMOVE_FILES
-  std::remove(fileName.c_str());
+  axom::utilities::filesystem::removeFile(fileName);
 #endif
 }
 
@@ -493,12 +484,138 @@ TEST(quest_signed_distance_interface, analytic_sphere)
   axom::IndexType nnodes = umesh->getNumberOfNodes();
   for(axom::IndexType inode = 0; inode < nnodes; ++inode)
   {
-    double pt[NDIMS];
-    umesh->getNode(inode, pt);
+    primal::Point<double, NDIMS> pt;
+    umesh->getNode(inode, pt.data());
 
     phi_computed[inode] = quest::signed_distance_evaluate(pt[0], pt[1], pt[2]);
     phi_expected[inode] = analytic_sphere.computeSignedDistance(pt);
     EXPECT_NEAR(phi_computed[inode], phi_expected[inode], 1.e-2);
+
+    // compute error
+    phi_diff[inode] = phi_computed[inode] - phi_expected[inode];
+    phi_err[inode] = utilities::abs(phi_diff[inode]);
+
+    // update norms
+    l1norm += phi_err[inode];
+    l2norm += phi_diff[inode];
+    linf = (phi_err[inode] > linf) ? phi_err[inode] : linf;
+
+  }  // END for all nodes
+
+  l2norm = std::sqrt(l2norm);
+
+  EXPECT_NEAR(l1norm_expected, l1norm, TOL);
+  EXPECT_NEAR(l2norm_expected, l2norm, TOL);
+  EXPECT_NEAR(linf_expected, linf, TOL);
+
+  // STEP 5: finalize the signed distance query
+  quest::signed_distance_finalize();
+  EXPECT_FALSE(quest::signed_distance_initialized());
+
+#ifdef WRITE_VTK_OUTPUT
+  mint::write_vtk(umesh, "analytic_sphere_test_mesh.vtk");
+  mint::write_vtk(surface_mesh, "input_sphere_mesh.vtk");
+#endif
+
+  // STEP 6: delete mesh objects
+  delete umesh;
+  delete surface_mesh;
+
+  umesh = nullptr;
+  surface_mesh = nullptr;
+}
+
+//------------------------------------------------------------------------------
+TEST(quest_signed_distance_interface, analytic_sphere_with_closest_pt_and_normal)
+{
+  // STEP 0: constants
+  constexpr int NDIMS = 3;
+  constexpr double l1norm_expected = 6.7051997372579715;
+  constexpr double l2norm_expected = 2.5894400431865519;
+  constexpr double linf_expected = 0.00532092;
+  constexpr double TOL = 1.e-3;
+
+  constexpr double SPHERE_RADIUS = 0.5;
+  constexpr int SPHERE_THETA_RES = 25;
+  constexpr int SPHERE_PHI_RES = 25;
+  const double SPHERE_CENTER[3] = {0.0, 0.0, 0.0};
+
+  using PointType = primal::Point<double, 3>;
+  using VectorType = primal::Vector<double, 3>;
+  using SphereType = primal::Sphere<double, 3>;
+
+  // STEP 1: create analytic sphere object to compare results with
+  SphereType analytic_sphere(SPHERE_RADIUS);
+
+  // STEP 2: generate sphere mesh to pass to the signed distance query
+  UnstructuredMesh* surface_mesh = new UnstructuredMesh(NDIMS, mint::TRIANGLE);
+  quest::utilities::getSphereSurfaceMesh(surface_mesh,
+                                         SPHERE_CENTER,
+                                         SPHERE_RADIUS,
+                                         SPHERE_THETA_RES,
+                                         SPHERE_PHI_RES);
+
+  // STEP 1: generate the uniform mesh where the signed distance will be
+  //         computed
+  mint::UniformMesh* umesh = nullptr;
+  getUniformMesh(surface_mesh, umesh);
+
+  // STEP 2: create node-centered fields on the uniform mesh to store
+  //         the signed distance etc.
+  double* phi_computed =
+    umesh->createField<double>("phi_computed", mint::NODE_CENTERED);
+  double* phi_expected =
+    umesh->createField<double>("phi_expected", mint::NODE_CENTERED);
+  double* phi_diff = umesh->createField<double>("phi_diff", mint::NODE_CENTERED);
+  double* phi_err = umesh->createField<double>("phi_err", mint::NODE_CENTERED);
+
+  // STEP 3: initialize the signed distance query
+  quest::signed_distance_set_closed_surface(true);
+  quest::signed_distance_init(surface_mesh);
+  EXPECT_TRUE(quest::signed_distance_initialized());
+
+  // STEP 4: Compute signed distance
+  double l1norm = 0.0;
+  double l2norm = 0.0;
+  double linf = std::numeric_limits<double>::min();
+  axom::IndexType nnodes = umesh->getNumberOfNodes();
+  for(axom::IndexType inode = 0; inode < nnodes; ++inode)
+  {
+    PointType pt;
+    umesh->getNode(inode, pt.data());
+
+    PointType closest_point;
+    VectorType normal;
+
+    phi_computed[inode] = quest::signed_distance_evaluate(pt[0],
+                                                          pt[1],
+                                                          pt[2],
+                                                          closest_point[0],
+                                                          closest_point[1],
+                                                          closest_point[2],
+                                                          normal[0],
+                                                          normal[1],
+                                                          normal[2]);
+
+    phi_expected[inode] = analytic_sphere.computeSignedDistance(pt);
+    EXPECT_NEAR(phi_computed[inode], phi_expected[inode], 1.e-2);
+
+    // Check that the computed closest point on the discretized sphere is close
+    // to where it would be on an analytic sphere
+    const auto cp_expected = primal::closest_point(pt, analytic_sphere);
+    EXPECT_NEAR(0., primal::squared_distance(cp_expected, closest_point), 1e-2);
+
+    // Check that the computed (pseudo)-normal on the discretized sphere is close
+    // to where it would be on an analytic sphere, i.e. the dot product
+    // between the two should be close to 1
+    const auto normal_expected = VectorType(cp_expected).unitVector();
+    EXPECT_NEAR(1., normal.dot(normal_expected), 1e-2);
+
+    // Check that the distance (squared) is the same as the distance
+    // between the query point and the returned closest point
+    EXPECT_NEAR(phi_computed[inode] * phi_computed[inode],
+                primal::squared_distance(pt, closest_point),
+                1e-8);
 
     // compute error
     phi_diff[inode] = phi_computed[inode] - phi_expected[inode];
@@ -547,10 +664,7 @@ int main(int argc, char* argv[])
 
   // add this line to avoid a warning in the output about thread safety
   ::testing::FLAGS_gtest_death_test_style = "threadsafe";
-
-  SimpleLogger logger;  // create & initialize test logger,
-
-  // finalized when exiting main scope
+  axom::slic::SimpleLogger logger;
 
   result = RUN_ALL_TESTS();
 

@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -107,12 +107,14 @@ public:
   using IndexType = PositionType;
 
   /// types for Tube and {In,Out}Flow subsets
+  using RuntimeOffsetPolicy = slam::policies::RuntimeOffset<PositionType>;
   using StrideOnePolicy = slam::policies::StrideOne<PositionType>;
   using NoIndirectionPolicy =
     slam::policies::NoIndirection<PositionType, ElementType>;
   using TubeSubsetPolicy = slam::policies::ConcreteParentSubset<ElemSet>;
   using ElemSubset = slam::GenericRangeSet<PositionType,
                                            ElementType,
+                                           RuntimeOffsetPolicy,
                                            StrideOnePolicy,
                                            NoIndirectionPolicy,
                                            TubeSubsetPolicy>;
@@ -134,7 +136,7 @@ public:
   using FECard = slam::policies::ConstantCardinality<PositionType, FEStride>;
   using STLIndirection =
     slam::policies::STLVectorIndirection<PositionType, ElementType>;
-  using IndexVec = STLIndirection::VectorType;
+  using IndexVec = typename STLIndirection::IndirectionBufferType;
 
   using TubeElemToFaceRelation =
     slam::StaticRelation<PositionType, ElementType, EFCard, STLIndirection, ElemSubset, FaceSet>;
@@ -583,10 +585,14 @@ void dumpData(ShockTubeMesh const& mesh)
   {
     ShockTubeMesh::IndexType ind = begSet[i];
     if(i == 0)
+    {
       elemStream << "IN"
                  << "\t";
+    }
     else
+    {
       elemStream << ind << "\t";
+    }
 
     mStream << mass[ind] << "\t";
     pStream << momentum[ind] << "\t";
@@ -604,10 +610,14 @@ void dumpData(ShockTubeMesh const& mesh)
   {
     ShockTubeMesh::IndexType ind = endSet[i];
     if(ind == endSet.parentSet()->size() - 1)
+    {
       elemStream << "OUT"
                  << "\t";
+    }
     else
+    {
       elemStream << ind << "\t";
+    }
 
     mStream << mass[ind] << "\t";
     pStream << momentum[ind] << "\t";

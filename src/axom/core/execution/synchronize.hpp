@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -12,6 +12,7 @@
 
 namespace axom
 {
+// _gpu_synchronize_start
 /*!
  * \brief Synchronizes all execution threads when using an ASYNC policy with
  *  the specified execution space.
@@ -28,6 +29,7 @@ inline void synchronize() noexcept
   RAJA::synchronize<sync_policy>();
 #endif
 }
+// _gpu_synchronize_end
 
 template <>
 inline void synchronize<SEQ_EXEC>() noexcept

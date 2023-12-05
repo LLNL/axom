@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -7,12 +7,13 @@
 #define MFEM_SIDRE_DATACOLLECTION_HPP_
 
 #include "axom/config.hpp"
+#include "DataStore.hpp"
+#include "Group.hpp"
+#include "View.hpp"
 
 #ifdef AXOM_USE_MFEM
 
   #include "mfem.hpp"
-
-  #include "axom/sidre/core/sidre.hpp"
 
 namespace axom
 {
@@ -226,7 +227,20 @@ public:
   /** If no mesh was associated with the collection, this method should be
       called before using any of the Load() methods to read parallel data. */
   void SetComm(MPI_Comm comm);
+
+  /// Set number of files for parallel writing
+  /** Allows the user to consolidate data for N ranks into M files, 0 < M <= N .
+  *   num_files should be less than or equal to the number of ranks N.
+  *   If num_files is less than or equal to zero (default), there will be one file per rank.
+  */
+  void SetNumFiles(int num_files);
   #endif
+
+  /// Returns the number of MPI ranks in the communicator associated with this data collection
+  /** The number of ranks is 1 when using serial MFEM mesh; otherwise the MPI
+  * communicator for the associated parallel mesh instance determines the number of ranks.
+  */
+  int GetNumProcs() const { return this->num_procs; }
 
   /// Register a GridFunction in the Sidre DataStore.
   /** This method is a shortcut for the call
@@ -530,6 +544,10 @@ private:
   // Default value: "mesh_nodes".
   std::string m_meshNodesGFName;
 
+  // For Parallel IO, the user can specify a number of files less than or equal to the
+  // number of processors.
+  int m_num_files;
+
   // If the data collection owns the datastore, it will store a pointer to it.
   // Otherwise, this pointer is nullptr.
   DataStore* m_datastore_ptr;
@@ -696,6 +714,10 @@ private:
   /// After a Field has been registered, check if it's a material-dependent
   /// field - if it is, add it to the matset_values
   void checkForMaterialDependentField(const std::string& field_name);
+
+  /// Before saving the file, add any fields that look like materials to the
+  /// blueprint index.
+  void addMaterialSetToIndex();
 
   // /// Verifies that the contents of the mesh blueprint data is valid.
   // void verifyMeshBlueprint();

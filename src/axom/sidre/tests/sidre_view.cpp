@@ -1,13 +1,12 @@
-// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
 #include "gtest/gtest.h"
-
-#include "axom/sidre/core/sidre.hpp"
-
 #include "axom/core/Types.hpp"
+#include "axom/slic.hpp"
+#include "axom/sidre.hpp"
 
 using axom::sidre::Buffer;
 using axom::sidre::CHAR8_STR_ID;
@@ -712,7 +711,7 @@ TEST(sidre_view, int_alloc_view)
   dv->allocate();
   EXPECT_TRUE(checkViewValues(dv, BUFFER, true, true, true, BLEN));
 
-  dv = root->createView("v1", INT_ID, 1, shape);
+  dv = root->createViewWithShape("v1", INT_ID, 1, shape);
   EXPECT_TRUE(checkViewValues(dv, EMPTY, true, false, false, BLEN));
   dv->allocate();
   EXPECT_TRUE(checkViewValues(dv, BUFFER, true, true, true, BLEN));
@@ -725,7 +724,7 @@ TEST(sidre_view, int_alloc_view)
   dv = root->createViewAndAllocate("a0", INT_ID, BLEN);
   EXPECT_TRUE(checkViewValues(dv, BUFFER, true, true, true, BLEN));
 
-  dv = root->createViewAndAllocate("a1", INT_ID, 1, shape);
+  dv = root->createViewWithShapeAndAllocate("a1", INT_ID, 1, shape);
   EXPECT_TRUE(checkViewValues(dv, BUFFER, true, true, true, BLEN));
 
   dv = root->createViewAndAllocate("a2", DataType::c_int(BLEN));
@@ -1183,18 +1182,18 @@ TEST(sidre_view, view_offset_and_stride)
 
   typedef std::vector<View*> ViewVec;
   ViewVec views;
-  axom::uint8 ui8 = 3;
-  axom::uint16 ui16 = 4;
-  axom::uint32 ui32 = 5;
+  std::uint8_t ui8 = 3;
+  std::uint16_t ui16 = 4;
+  std::uint32_t ui32 = 5;
 #ifndef AXOM_NO_INT46_T
-  axom::uint64 ui64 = 6;
+  std::uint64_t ui64 = 6;
 #endif
 
-  axom::int8 i8 = -3;
-  axom::int16 i16 = -4;
-  axom::int32 i32 = -5;
+  std::int8_t i8 = -3;
+  std::int16_t i16 = -4;
+  std::int32_t i32 = -5;
 #ifndef AXOM_NO_INT46_T
-  axom::int64 i64 = -6;
+  std::int64_t i64 = -6;
 #endif
 
   axom::float32 f32 = 7.7f;
@@ -1899,7 +1898,7 @@ TEST_P(UmpireTest, allocate_default)
 //------------------------------------------------------------------------------
 TEST_P(UmpireTest, reallocate)
 {
-  #if defined(AXOM_USE_CUDA) && defined(UMPIRE_ENABLE_CONST)
+  #if defined(AXOM_USE_GPU) && defined(UMPIRE_ENABLE_CONST)
   if(allocID == axom::getUmpireResourceAllocatorID(umpire::resource::Constant))
   {
     return;
@@ -1930,7 +1929,7 @@ TEST_P(UmpireTest, reallocate)
 //------------------------------------------------------------------------------
 TEST_P(UmpireTest, reallocate_zero)
 {
-  #if defined(AXOM_USE_CUDA) && defined(UMPIRE_ENABLE_CONST)
+  #if defined(AXOM_USE_GPU) && defined(UMPIRE_ENABLE_CONST)
   if(allocID == axom::getUmpireResourceAllocatorID(umpire::resource::Constant))
   {
     return;
@@ -1969,7 +1968,7 @@ TEST_P(UmpireTest, reallocate_zero)
 const int allocators[] = {
   axom::getUmpireResourceAllocatorID(umpire::resource::Host)
 
-  #ifdef AXOM_USE_CUDA
+  #ifdef AXOM_USE_GPU
 
     #ifdef UMPIRE_ENABLE_PINNED
     ,
@@ -1991,7 +1990,7 @@ const int allocators[] = {
   axom::getUmpireResourceAllocatorID(umpire::resource::Unified)
     #endif
 
-  #endif /* AXOM_USE_CUDA */
+  #endif /* defined(AXOM_USE_GPU) */
 
 };
 
@@ -2246,16 +2245,12 @@ INSTANTIATE_TEST_SUITE_P(sidre_view,
                                             ::testing::ValuesIn(offsets)));
 
 //----------------------------------------------------------------------
-#include "axom/slic/core/SimpleLogger.hpp"
-using axom::slic::SimpleLogger;
-
 int main(int argc, char* argv[])
 {
   int result = 0;
 
   ::testing::InitGoogleTest(&argc, argv);
-
-  SimpleLogger logger;  // create & initialize test logger,
+  axom::slic::SimpleLogger logger;  // create & initialize test logger,
 
   result = RUN_ALL_TESTS();
 

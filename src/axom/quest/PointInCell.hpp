@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -89,15 +89,14 @@ template <typename mesh_tag, typename ExecSpace = axom::SEQ_EXEC>
 class PointInCell
 {
 public:
+  using Point2DType = primal::Point<double, 2>;
+  using Point3DType = primal::Point<double, 3>;
+
   using MeshTraits = PointInCellTraits<mesh_tag>;
   using MeshType = typename MeshTraits::MeshType;
   using IndexType = typename MeshTraits::IndexType;
 
-  using Point2DType = primal::Point<double, 2>;
-  using Point3DType = primal::Point<double, 3>;
-
   using MeshWrapperType = detail::PointInCellMeshWrapper<mesh_tag>;
-
   using PointFinder2D = detail::PointFinder<2, mesh_tag, ExecSpace>;
   using PointFinder3D = detail::PointFinder<3, mesh_tag, ExecSpace>;
 
@@ -247,12 +246,6 @@ public:
    */
   bool locatePointInCell(IndexType cellIdx, const double* pos, double* isopar) const
   {
-    // Early return if point is not within cell's bounding box
-    if(!withinBoundingBox(cellIdx, pos))
-    {
-      return false;
-    }
-
     return m_meshWrapper.locatePointInCell(cellIdx, pos, isopar);
   }
 
@@ -272,27 +265,69 @@ public:
   /*! Returns the dimension of the mesh */
   int meshDimension() const { return m_meshWrapper.meshDimension(); }
 
-private:
   /*!
-   * Utility function to check the given point against an element's bounding box
-   * \param [in] cellIdx Index of the cell within the mesh
-   * \param [in] pos Position of the point in space
+   * \brief Sets the print verbosity level for the point in cell query
    *
-   * \return True if the point is contained in the cell's bounding box
+   * \param [in] level The verbosity level (increases with level)
+   *  
+   * This is useful for debugging the point in cell query
+   * 
+   *  For the mfem mesh wrapper, the valid options are: 
+   *  - -1: never print (default)
+   *  -  0: print only errors
+   *  -  1: print the first and last iterations
+   *  -  2: print every iteration
+   *  -  3: print every iteration including point coordinates.
    */
-  bool withinBoundingBox(IndexType cellIdx, const double* pos) const
-  {
-    typedef axom::primal::Point<double, 2> Point2D;
-    typedef axom::primal::Point<double, 3> Point3D;
+  void setPrintLevel(int level) { m_meshWrapper.setPrintLevel(level); }
 
-    switch(meshDimension())
-    {
-    case 2:
-      return m_pointFinder2D->cellBoundingBox(cellIdx).contains(Point2D(pos));
-    case 3:
-      return m_pointFinder3D->cellBoundingBox(cellIdx).contains(Point3D(pos));
-    }
-    return false;
+  /*!
+   * \brief Sets the initial guess type for the element-based point in cell query
+   *
+   * \param [in] guessType The guess type
+   *  
+   *  For the mfem mesh wrapper, the valid options are: 
+   *  - 0: Use the element center in reference space
+   *  - 1: Use the closest physical node on a grid of points in physical space
+   *  - 2: Use the closest reference node on a grid of points in reference space
+   * 
+   *  The grid size is controlled by setInitialGridOrder()
+   */
+  void setInitialGuessType(int guessType)
+  {
+    m_meshWrapper.setInitialGuessType(guessType);
+  }
+
+  /*!
+   * \brief Sets the grid size for the initial guess in the element-based point in cell query
+   *
+   * \param [in] order The order for the grid size 
+   *  
+   *  For the mfem mesh wrapper, the number of points in each spatial direction 
+   *  is given by `max(trans_order+order,0)+1`, where trans_order is the order 
+   *  of the current element.
+   * 
+   *  \sa setInitialGuessType
+   */
+  void setInitialGridOrder(int order)
+  {
+    m_meshWrapper.setInitialGridOrder(order);
+  }
+
+  /*!
+   * \brief Sets the solution strategy for the element-based point in cell query
+   *
+   * \param [in] type The strategy type
+   *  
+   *  For the mfem mesh wrapper, the valid options all use a Newton solve
+   *  but differ in their handling of iterates that leave the reference element
+   *  - 0: Allow the iterates to leave the reference element
+   *  - 1: Project external iterates to the reference space boundary along their current line
+   *  - 2: Project external iterates to the closest reference space boundary location
+   */
+  void setSolverProjectionType(int type)
+  {
+    m_meshWrapper.setSolverProjectionType(type);
   }
 
 private:

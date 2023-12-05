@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -173,24 +173,51 @@ TEST(IOTest, readShapeSet_missingMaterial)
 
 TEST(IOTest, readShapeSet_missingGeometryPath)
 {
-  auto input = R"(
-    dimensions: 2
-
-    shapes:
-      - name: wheel
-        material: steel
-        geometry:
-          format: test_format
-  )";
-
-  try
+  // Expect a validation error when 'geometry/path' is missing
+  // and 'geometry/format' is not "none"
   {
-    readShapeSetFromString(input);
-    FAIL() << "Should have thrown";
+    auto input = R"(
+      dimensions: 2
+
+      shapes:
+        - name: wheel
+          material: steel
+          geometry:
+            format: test_format
+    )";
+
+    try
+    {
+      readShapeSetFromString(input);
+      FAIL() << "Should have thrown";
+    }
+    catch(const KleeError &err)
+    {
+      EXPECT_THAT(err.what(), HasSubstr("Provided format"));
+    }
   }
-  catch(const KleeError &err)
+
+  // Valid when 'geometry/path' is missing and 'geometry/format' is none
   {
-    EXPECT_THAT(err.what(), HasSubstr("path"));
+    auto input = R"(
+      dimensions: 2
+
+      shapes:
+        - name: wheel
+          material: steel
+          geometry:
+            format: none
+    )";
+
+    try
+    {
+      readShapeSetFromString(input);
+      SUCCEED();
+    }
+    catch(const KleeError &err)
+    {
+      FAIL() << "Should not have thrown. Error message: " << err.what();
+    }
   }
 }
 

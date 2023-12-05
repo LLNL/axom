@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -26,41 +26,46 @@ class ArrayIteratorBase
   : public IteratorBase<ArrayIteratorBase<ArrayType, ValueType>, IndexType>
 {
 private:
-  constexpr static bool ReturnConstRef = std::is_const<ValueType>::value;
-  constexpr static bool FromArrayView =
-    !std::is_const<typename ArrayType::RealConstT>::value;
+  using BaseType =
+    IteratorBase<ArrayIteratorBase<ArrayType, ValueType>, IndexType>;
 
 public:
-  using ArrayPointerType =
-    typename std::conditional<ReturnConstRef || FromArrayView,
-                              const ArrayType*,
-                              ArrayType*>::type;
-  // FIXME: Define the iterator_traits types (or possibly in IteratorBase)
-  // https://en.cppreference.com/w/cpp/iterator/iterator_traits
+  // Iterator traits required to satisfy LegacyRandomAccessIterator concept
+  // before C++20
+  // See: https://en.cppreference.com/w/cpp/iterator/iterator_traits
+  using difference_type = IndexType;
+  using value_type = typename std::remove_cv<ValueType>::type;
+  using reference = ValueType&;
+  using pointer = ValueType*;
+  using iterator_category = std::random_access_iterator_tag;
 
+public:
+  using ArrayPointerType = ArrayType*;
+
+  ArrayIteratorBase() : BaseType(0) { }
+
+  AXOM_HOST_DEVICE
   ArrayIteratorBase(IndexType pos, ArrayPointerType arr)
-    : IteratorBase<ArrayIteratorBase<ArrayType, ValueType>, IndexType>(pos)
+    : BaseType(pos)
     , m_arrayPtr(arr)
   { }
 
   /**
    * \brief Returns the current iterator value
    */
-  ValueType& operator*()
+  AXOM_HOST_DEVICE
+  ValueType& operator*() const
   {
-    return (*m_arrayPtr)[IteratorBase<ArrayIteratorBase<ArrayType, ValueType>,
-                                      IndexType>::m_pos];
+    return m_arrayPtr->flatIndex(BaseType::m_pos);
   }
 
 protected:
   /** Implementation of advance() as required by IteratorBase */
-  void advance(IndexType n)
-  {
-    IteratorBase<ArrayIteratorBase<ArrayType, ValueType>, IndexType>::m_pos += n;
-  }
+  AXOM_HOST_DEVICE
+  void advance(IndexType n) { BaseType::m_pos += n; }
 
 protected:
-  ArrayPointerType const m_arrayPtr;
+  ArrayPointerType m_arrayPtr {nullptr};
 };  // end of ArrayIteratorBase class
 
 /// @}

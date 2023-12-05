@@ -40,13 +40,24 @@ Below is a table that lists supported features:
      - 
 
 ***********************
-Extra Lua functionality
+Extra Lua Functionality
 ***********************
 
-Inlet opens four Lua libraries by default: ``base``, ``math``, ``string``, ``package``.  All libraries are
-documented `here <https://sol2.readthedocs.io/en/v2.20.6/api/state.html?highlight=open_libraries#enumerations>`_. 
+The `LuaReader` class has the ability to access the entire Lua State via the protected member function
+``LuaReader::solState()``.  This allows you fully utilize the Sol library, documented in
+`Sol's documentation <https://sol2.readthedocs.io/en/v2.20.6/index.html>`_. This is an advanced feature
+and not recommended unless there is a good reason.  We provide an example on how to create a derived
+reader class here:
 
-For example, you can add the `io` library by doing this:
+.. literalinclude:: ../../examples/lua_library.cpp
+   :start-after: _inlet_sol_state_start
+   :end-before: _inlet_sol_state_end
+   :language: C++
+
+Inlet opens four Lua libraries by default: ``base``, ``math``, ``string``, ``package``. All libraries are documented
+in `Sol's open_library documentation <https://sol2.readthedocs.io/en/v2.20.6/api/state.html?highlight=open_libraries#enumerations>`_. 
+
+For example, you can add the ``io`` library by doing this:
 
 .. literalinclude:: ../../examples/lua_library.cpp
    :start-after: _inlet_io_library_add_start

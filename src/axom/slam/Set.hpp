@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -100,7 +100,7 @@ public:
    * \brief Get the number of entities in the set
    * \return The number of entities in the set.
    */
-  virtual PositionType size() const = 0;
+  AXOM_HOST_DEVICE virtual PositionType size() const = 0;
 
   /**
    * \brief Determines if the Set is a Subset of another set.
@@ -118,7 +118,7 @@ public:
    * \brief Checks if there are any elements in the set -- equivalent to:
    * set.size() == 0
    */
-  virtual bool empty() const = 0;
+  AXOM_HOST_DEVICE virtual bool empty() const = 0;
 
 #if 0
   /**
@@ -156,7 +156,10 @@ inline bool operator==(const Set<P1, E1>& set1, const Set<P2, E2>& set2)
   PosType const numElts = set1.size();
 
   // Sets are different if they have a different size
-  if(set2.size() != numElts) return false;
+  if(set2.size() != numElts)
+  {
+    return false;
+  }
 
   // Otherwise, compare the indices element wise
   for(PosType pos = PosType(); pos < numElts; ++pos)

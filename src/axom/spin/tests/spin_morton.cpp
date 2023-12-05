@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -8,8 +8,7 @@
 #include "axom/spin/MortonIndex.hpp"
 
 #include "axom/primal/geometry/Point.hpp"
-#include "axom/slic/core/SimpleLogger.hpp"
-using axom::slic::SimpleLogger;
+#include "axom/slic.hpp"
 
 #include <cstdlib>
 #include <limits>
@@ -165,55 +164,55 @@ template <int DIM>
 void testIntegralTypes()
 {
   SLIC_INFO("Testing char in " << DIM << "d -- ");
-  testMortonizer<axom::int8, axom::uint8, DIM>();
-  testMortonizer<axom::int8, axom::uint16, DIM>();
-  testMortonizer<axom::int8, axom::uint32, DIM>();
-  testMortonizer<axom::int8, axom::uint64, DIM>();
+  testMortonizer<std::int8_t, std::uint8_t, DIM>();
+  testMortonizer<std::int8_t, std::uint16_t, DIM>();
+  testMortonizer<std::int8_t, std::uint32_t, DIM>();
+  testMortonizer<std::int8_t, std::uint64_t, DIM>();
 
   SLIC_INFO("Testing uchar in " << DIM << "d -- ");
-  testMortonizer<axom::uint8, axom::uint8, DIM>();
-  testMortonizer<axom::uint8, axom::uint16, DIM>();
-  testMortonizer<axom::uint8, axom::uint32, DIM>();
-  testMortonizer<axom::uint8, axom::uint64, DIM>();
+  testMortonizer<std::uint8_t, std::uint8_t, DIM>();
+  testMortonizer<std::uint8_t, std::uint16_t, DIM>();
+  testMortonizer<std::uint8_t, std::uint32_t, DIM>();
+  testMortonizer<std::uint8_t, std::uint64_t, DIM>();
 
   // --
   SLIC_INFO("Testing short in " << DIM << "d -- ");
-  testMortonizer<axom::int16, axom::uint8, DIM>();
-  testMortonizer<axom::int16, axom::uint16, DIM>();
-  testMortonizer<axom::int16, axom::uint32, DIM>();
-  testMortonizer<axom::int16, axom::uint64, DIM>();
+  testMortonizer<std::int16_t, std::uint8_t, DIM>();
+  testMortonizer<std::int16_t, std::uint16_t, DIM>();
+  testMortonizer<std::int16_t, std::uint32_t, DIM>();
+  testMortonizer<std::int16_t, std::uint64_t, DIM>();
 
   SLIC_INFO("Testing ushort in " << DIM << "d -- ");
-  testMortonizer<axom::uint16, axom::uint8, DIM>();
-  testMortonizer<axom::uint16, axom::uint16, DIM>();
-  testMortonizer<axom::uint16, axom::uint32, DIM>();
-  testMortonizer<axom::uint16, axom::uint64, DIM>();
+  testMortonizer<std::uint16_t, std::uint8_t, DIM>();
+  testMortonizer<std::uint16_t, std::uint16_t, DIM>();
+  testMortonizer<std::uint16_t, std::uint32_t, DIM>();
+  testMortonizer<std::uint16_t, std::uint64_t, DIM>();
 
   // --
   SLIC_INFO("Testing int in " << DIM << "d -- ");
-  testMortonizer<axom::int32, axom::uint8, DIM>();
-  testMortonizer<axom::int32, axom::uint16, DIM>();
-  testMortonizer<axom::int32, axom::uint32, DIM>();
-  testMortonizer<axom::int32, axom::uint64, DIM>();
+  testMortonizer<std::int32_t, std::uint8_t, DIM>();
+  testMortonizer<std::int32_t, std::uint16_t, DIM>();
+  testMortonizer<std::int32_t, std::uint32_t, DIM>();
+  testMortonizer<std::int32_t, std::uint64_t, DIM>();
 
   SLIC_INFO("Testing uint in " << DIM << "d -- ");
-  testMortonizer<axom::uint32, axom::uint8, DIM>();
-  testMortonizer<axom::uint32, axom::uint16, DIM>();
-  testMortonizer<axom::uint32, axom::uint32, DIM>();
-  testMortonizer<axom::uint32, axom::uint64, DIM>();
+  testMortonizer<std::uint32_t, std::uint8_t, DIM>();
+  testMortonizer<std::uint32_t, std::uint16_t, DIM>();
+  testMortonizer<std::uint32_t, std::uint32_t, DIM>();
+  testMortonizer<std::uint32_t, std::uint64_t, DIM>();
 
   // --
   SLIC_INFO("Testing long long in " << DIM << "d -- ");
-  testMortonizer<axom::int64, axom::uint8, DIM>();
-  testMortonizer<axom::int64, axom::uint16, DIM>();
-  testMortonizer<axom::int64, axom::uint32, DIM>();
-  testMortonizer<axom::int64, axom::uint64, DIM>();
+  testMortonizer<std::int64_t, std::uint8_t, DIM>();
+  testMortonizer<std::int64_t, std::uint16_t, DIM>();
+  testMortonizer<std::int64_t, std::uint32_t, DIM>();
+  testMortonizer<std::int64_t, std::uint64_t, DIM>();
 
   SLIC_INFO("Testing ull in " << DIM << "d -- ");
-  testMortonizer<axom::uint64, axom::uint8, DIM>();
-  testMortonizer<axom::uint64, axom::uint16, DIM>();
-  testMortonizer<axom::uint64, axom::uint32, DIM>();
-  testMortonizer<axom::uint64, axom::uint64, DIM>();
+  testMortonizer<std::uint64_t, std::uint8_t, DIM>();
+  testMortonizer<std::uint64_t, std::uint16_t, DIM>();
+  testMortonizer<std::uint64_t, std::uint32_t, DIM>();
+  testMortonizer<std::uint64_t, std::uint64_t, DIM>();
 }
 
 TEST(spin_morton, test_integral_types_2D)
@@ -290,10 +289,7 @@ int main(int argc, char* argv[])
 
   ::testing::InitGoogleTest(&argc, argv);
 
-  SimpleLogger logger;  // create & initialize test logger,
-  axom::slic::setLoggingMsgLevel(axom::slic::message::Info);
-
-  // finalized when exiting main scope
+  axom::slic::SimpleLogger logger(axom::slic::message::Info);
 
 #ifdef MORTON_TESTER_SHOULD_SEED
   std::srand(std::time(0));

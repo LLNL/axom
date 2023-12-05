@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -17,8 +17,12 @@
   #include "axom/fmt.hpp"
 
   #include "MFEMSidreDataCollection.hpp"
+  #ifdef AXOM_USE_MPI
+    #include "axom/sidre/spio/IOManager.hpp"
+  #endif
 
   #include "axom/core/utilities/StringUtilities.hpp"
+  #include "axom/core/utilities/Utilities.hpp"
 
 using mfem::Array;
 using mfem::GridFunction;
@@ -86,6 +90,7 @@ MFEMSidreDataCollection::MFEMSidreDataCollection(const std::string& collection_n
   , m_owns_datastore(true)
   , m_owns_mesh_data(own_mesh_data)
   , m_meshNodesGFName("mesh_nodes")
+  , m_num_files(-1)
 {
   m_datastore_ptr = new sidre::DataStore();
 
@@ -126,6 +131,7 @@ MFEMSidreDataCollection::MFEMSidreDataCollection(const std::string& collection_n
   , m_owns_datastore(false)
   , m_owns_mesh_data(own_mesh_data)
   , m_meshNodesGFName("mesh_nodes")
+  , m_num_files(-1)
   , m_datastore_ptr(nullptr)
   , m_bp_index_grp(bp_index_grp)
 {
@@ -155,6 +161,12 @@ void MFEMSidreDataCollection::SetComm(MPI_Comm comm)
   appendRankToFileName = true;
   MPI_Comm_rank(m_comm, &myid);
   MPI_Comm_size(m_comm, &num_procs);
+}
+
+void MFEMSidreDataCollection::SetNumFiles(int num_files)
+{
+  SLIC_ASSERT_MSG(num_files > 0, "Output must be to at least 1 file");
+  m_num_files = num_files;
 }
   #endif
 
@@ -832,10 +844,7 @@ void MFEMSidreDataCollection::SetMesh(MPI_Comm comm, Mesh* new_mesh)
 {
   // use MFEMSidreDataCollection's custom SetMesh, then set MPI info
   SetMesh(new_mesh);
-
-  m_comm = comm;
-  MPI_Comm_rank(comm, &myid);
-  MPI_Comm_size(comm, &num_procs);
+  SetComm(comm);
 }
   #endif
 
@@ -984,6 +993,57 @@ void MFEMSidreDataCollection::UpdateStateToDS()
   }
 }
 
+void MFEMSidreDataCollection::addMaterialSetToIndex()
+{
+  if(myid == 0)
+  {
+    for(auto it = m_matset_associations.begin();
+        it != m_matset_associations.end();
+        it++)
+    {
+      const std::string& mat_prefix = it->first;
+      const std::string& matset_name = it->second;
+
+      conduit::Node matnames;
+      int nmats = 0;
+      // Iterate over the fields in their group order.
+      sidre::Group* fields_grp = m_bp_grp->getGroup("fields");
+      for(auto& group : fields_grp->groups())
+      {
+        const std::string& field_name = group.getName();
+        const auto tokens = utilities::string::rsplitN(field_name, 2, '_');
+        // Expecting [base_field_name, material_id]
+        if(tokens.size() != 2)
+        {
+          // The field_name did not split into 2 tokens matching
+          // [base_field_name, material_id]. It's likely not a material
+          // so we can skip the field.
+          continue;
+        }
+        if(mat_prefix == tokens[0])
+        {
+          matnames[tokens[1]] = nmats++;
+        }
+      }
+
+      // Now we know the material names for the current matset.
+      if(nmats > 0)
+      {
+        Group* bp_matset_index_grp =
+          m_bp_index_grp->createGroup("matsets/" + matset_name);
+        bp_matset_index_grp->createViewString("topology", s_mesh_topology_name);
+        Group* bp_materials_index_grp =
+          bp_matset_index_grp->createGroup("materials");
+        bp_materials_index_grp->importConduitTree(matnames);
+
+        Group* bp_matset_group = m_bp_grp->getGroup("matsets/" + matset_name);
+        bp_matset_index_grp->createViewString("path",
+                                              bp_matset_group->getPathName());
+      }
+    }
+  }
+}
+
 void MFEMSidreDataCollection::UpdateMeshAndFieldsFromDS()
 {
   // 1. Start by constructing the mesh
@@ -1021,13 +1081,14 @@ void MFEMSidreDataCollection::UpdateMeshAndFieldsFromDS()
 void MFEMSidreDataCollection::PrepareToSave()
 {
   verifyMeshBlueprint();
+  addMaterialSetToIndex();
   UpdateStateToDS();
 }
 
 void MFEMSidreDataCollection::Save()
 {
   std::string filename = name;
-  std::string protocol = "sidre_hdf5";
+  std::string protocol = Group::getDefaultIOProtocol();
 
   Save(filename, protocol);
 }
@@ -1078,13 +1139,48 @@ void MFEMSidreDataCollection::Save(const std::string& filename,
     }
     temp_domain_grp->copyGroup(domain_grp);
 
-    writer.write(temp_root, num_procs, file_path, protocol);
+    int num_files = num_procs;
+    if(m_num_files > 0)
+    {
+      SLIC_ASSERT_MSG(num_files <= num_procs,
+                      "Save output must have num_files less than or equal to "
+                      "number of mpi ranks");
+      num_files = m_num_files;
+      num_files = axom::utilities::clampUpper(num_files, num_procs);
+    }
+
+    // Specifying the tree pattern helps visit display our data.
+    std::string tree_pattern = "datagroup";
+    if(num_files != num_procs)
+    {
+      tree_pattern = "datagroup_%07d";
+    }
+    writer.write(temp_root, num_files, file_path, protocol, tree_pattern);
 
     // Now that we've written the data, we can delete the temporary group
     temp_root->getParent()->destroyGroup("_sidre_tmp_save");
 
     if(myid == 0)
     {
+      // 'state/number_of_domains` may have been previously set to an incorrect
+      // value before this object had access to the MPI communicator. Here
+      // we reset to the correct value, or create a View to hold the value if
+      // one does not already exist.
+      if(m_bp_index_grp->hasView("state/number_of_domains"))
+      {
+        View* num_domains =
+          m_bp_index_grp->getView("state/number_of_domains")->setScalar(num_procs);
+
+        SLIC_ASSERT_MSG(num_domains,
+                        "Failed to reset View 'state/number_of_domains' "
+                        "in blueprint index to correct number of domains.");
+        AXOM_UNUSED_VAR(num_domains);
+      }
+      else
+      {
+        m_bp_index_grp->createViewScalar("state/number_of_domains", num_procs);
+      }
+
       if(protocol == "sidre_hdf5")
       {
         writer.writeGroupToRootFile(blueprint_indicies_grp, file_path + ".root");
@@ -1456,15 +1552,11 @@ void MFEMSidreDataCollection::RegisterQField(const std::string& field_name,
   //                                               integration order and vector dimension
   //                                               "QF_Default_[ORDER]_[VDIM]"
 
-  // Set the "basis" string using the qf's order and vdim, overwrite if
-  // necessary.
+  // Set the "basis" string using the qf's order and vdim, overwrite if necessary
   sidre::View* v = alloc_view(grp, "basis");
   // In the future, we should be able to have mfem::QuadratureFunction provide us this name.
-  // FIXME: QF order can be retrieved directly as of MFEM 4.3
   const std::string basis_name =
-    fmt::format("QF_Default_{0}_{1}",
-                qf->GetSpace()->GetElementIntRule(0).GetOrder(),
-                qf->GetVDim());
+    fmt::format("QF_Default_{0}_{1}", qf->GetSpace()->GetOrder(), qf->GetVDim());
   v->setString(basis_name);
 
   // Set the topology of the QuadratureFunction.
@@ -1686,7 +1778,7 @@ void MFEMSidreDataCollection::AssociateSpeciesSet(
   m_specset_associations[species_field_name] = specset_name;
   Group* specset_grp = m_bp_grp->createGroup("specsets/" + specset_name);
   specset_grp->createViewScalar("volume_dependent",
-                                static_cast<int8>(volume_dependent));
+                                static_cast<std::int8_t>(volume_dependent));
   // Since we're creating the species set, associate it with a material set
   specset_grp->createViewString("matset", matset_name);
 }
@@ -1750,9 +1842,12 @@ void MFEMSidreDataCollection::checkForMaterialSet(const std::string& field_name)
 
   Group* fractions_group =
     alloc_group(m_bp_grp, "matsets/" + matset_name + "/volume_fractions");
+
   View* matset_frac_view = fractions_group->copyView(vol_fractions_view);
   matset_frac_view->rename(tokens[1]);
-  // FIXME: Do we need to add anything to the index group?
+
+  // NOTE: The index group is populated with matsets prior to saving once we
+  //       know all of the volume fraction fields.
 }
 
 void MFEMSidreDataCollection::checkForSpeciesSet(const std::string& field_name)
@@ -2290,24 +2385,20 @@ private:
    */
   std::vector<SharedGeometries> GetSharedGeometries(const Group* mesh_adjset_groups)
   {
-    auto num_groups = mesh_adjset_groups->getNumGroups();
-    std::vector<SharedGeometries> shared_geoms(num_groups);
+    std::vector<SharedGeometries> shared_geoms(mesh_adjset_groups->getNumGroups());
 
     // Iterate over both the *sidre* groups group
     // to fill in the shared geometry data
     int group_idx = 0;
-    for(auto idx = mesh_adjset_groups->getFirstValidGroupIndex();
-        sidre::indexIsValid(idx);
-        idx = mesh_adjset_groups->getNextValidGroupIndex(idx))
+    for(const Group& grp : mesh_adjset_groups->groups())
     {
-      const Group* adjset_grp = mesh_adjset_groups->getGroup(idx);
-      auto& shared_geom = shared_geoms[group_idx];
+      const Group* adjset_grp = &grp;
+      auto& shared_geom = shared_geoms[group_idx++];
 
       // Copy the neighbors array
       const View* group_neighbors = adjset_grp->getView("neighbors");
-      const int* neighbors_array = group_neighbors->getData();
-      std::size_t num_neighbors = group_neighbors->getNumElements();
-      shared_geom.neighbors.Append(neighbors_array, num_neighbors);
+      shared_geom.neighbors.Append(group_neighbors->getData(),
+                                   group_neighbors->getNumElements());
 
       // This group's shared vertices
       if(adjset_grp->hasView("values"))
@@ -2338,7 +2429,6 @@ private:
                                              quads->getNumElements(),
                                              4};
       }
-      group_idx++;
     }
 
     return shared_geoms;
@@ -2546,11 +2636,12 @@ void MFEMSidreDataCollection::reconstructField(Group* field_grp)
     }
 
     // We cache the FESpaces to avoid reconstructing them when not needed
-    // An FESpace is uniquely identified by the basis of its FEColl and its ordering
+    // An FESpace is uniquely identified by the basis of its FEColl, ordering, and vdim number
     const std::string fespace_id =
-      axom::fmt::format("{0}_{1}",
+      axom::fmt::format("{0}_{1}_{2}",
                         basis_name,
-                        (ordering == mfem::Ordering::byVDIM) ? "nodes" : "vdim");
+                        (ordering == mfem::Ordering::byVDIM) ? "vdim" : "nodes",
+                        vdim);
 
     // Only need to create a new FESpace if one doesn't already exist
     if(is_gridfunc && (m_fespaces.count(fespace_id) == 0))
@@ -2602,12 +2693,18 @@ void MFEMSidreDataCollection::reconstructField(Group* field_grp)
     else
     {
       m_owned_quadfuncs.emplace_back(
-        new mfem::QuadratureFunction(m_quadspaces.at(basis_name).get(),
-                                     values,
-                                     vdim));
+        new mfem::QuadratureFunction(m_quadspaces.at(basis_name).get(), vdim));
+
+      // FIXME: A bug was fixed in QuadratureFunction::SetSpace after mfem@4.5
+      // See: https://github.com/mfem/mfem/pull/3281
+      // Update using the following when possible to avoid an unnecessary allocation in the constructor
+      // (1) Use default Quadrature function constructor
+      // (2) Use qf->SetSpace(qs, values, vdim);
+      auto* qf = m_owned_quadfuncs.back().get();
+      qf->NewDataAndSize(values, vdim * qf->GetSpace()->GetSize());
+
       // Register a non-owning pointer with the base subobject
-      DataCollection::RegisterQField(field_grp->getName(),
-                                     m_owned_quadfuncs.back().get());
+      DataCollection::RegisterQField(field_grp->getName(), qf);
     }
   }
 }
@@ -2615,14 +2712,15 @@ void MFEMSidreDataCollection::reconstructField(Group* field_grp)
 void MFEMSidreDataCollection::reconstructFields()
 {
   sidre::Group* f = m_bp_grp->getGroup("fields");
-  for(auto idx = f->getFirstValidGroupIndex(); sidre::indexIsValid(idx);
-      idx = f->getNextValidGroupIndex(idx))
+  if(f != nullptr)
   {
-    Group* field_grp = f->getGroup(idx);
-    // The nodal grid function will already have been reconstructed
-    if(field_grp->getName() != m_meshNodesGFName)
+    for(auto& field_grp : f->groups())
     {
-      reconstructField(field_grp);
+      // The nodal grid function will already have been reconstructed
+      if(field_grp.getName() != m_meshNodesGFName)
+      {
+        reconstructField(&field_grp);
+      }
     }
   }
 }

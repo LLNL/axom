@@ -5,8 +5,8 @@
 //
 // For the license information refer to format.h.
 
-#ifndef FMT_ARGS_H_
-#define FMT_ARGS_H_
+#ifndef AXOM_FMT_ARGS_H_
+#define AXOM_FMT_ARGS_H_
 
 #include <functional>  // std::reference_wrapper
 #include <memory>      // std::unique_ptr
@@ -14,7 +14,7 @@
 
 #include "core.h"
 
-FMT_BEGIN_NAMESPACE
+AXOM_FMT_BEGIN_NAMESPACE
 
 namespace detail {
 
@@ -40,10 +40,10 @@ class dynamic_arg_list {
     T value;
 
     template <typename Arg>
-    FMT_CONSTEXPR typed_node(const Arg& arg) : value(arg) {}
+    AXOM_FMT_CONSTEXPR typed_node(const Arg& arg) : value(arg) {}
 
     template <typename Char>
-    FMT_CONSTEXPR typed_node(const basic_string_view<Char>& arg)
+    AXOM_FMT_CONSTEXPR typed_node(const basic_string_view<Char>& arg)
         : value(arg.data(), arg.size()) {}
   };
 
@@ -72,7 +72,7 @@ class dynamic_arg_list {
  */
 template <typename Context>
 class dynamic_format_arg_store
-#if FMT_GCC_VERSION && FMT_GCC_VERSION < 409
+#if AXOM_FMT_GCC_VERSION && AXOM_FMT_GCC_VERSION < 409
     // Workaround a GCC template argument substitution bug.
     : public basic_format_args<Context>
 #endif
@@ -95,10 +95,10 @@ class dynamic_format_arg_store
   };
 
   template <typename T>
-  using stored_type = conditional_t<detail::is_string<T>::value &&
-                                        !has_formatter<T, Context>::value &&
-                                        !detail::is_reference_wrapper<T>::value,
-                                    std::basic_string<char_type>, T>;
+  using stored_type = conditional_t<
+      std::is_convertible<T, std::basic_string<char_type>>::value &&
+          !detail::is_reference_wrapper<T>::value,
+      std::basic_string<char_type>, T>;
 
   // Storage of basic_format_arg must be contiguous.
   std::vector<basic_format_arg<Context>> data_;
@@ -143,6 +143,8 @@ class dynamic_format_arg_store
   }
 
  public:
+  constexpr dynamic_format_arg_store() = default;
+
   /**
     \rst
     Adds an argument into the dynamic store for later passing to a formatting
@@ -220,13 +222,13 @@ class dynamic_format_arg_store
     \endrst
   */
   void reserve(size_t new_cap, size_t new_cap_named) {
-    FMT_ASSERT(new_cap >= new_cap_named,
+    AXOM_FMT_ASSERT(new_cap >= new_cap_named,
                "Set of arguments includes set of named arguments");
     data_.reserve(new_cap);
     named_info_.reserve(new_cap_named);
   }
 };
 
-FMT_END_NAMESPACE
+AXOM_FMT_END_NAMESPACE
 
-#endif  // FMT_ARGS_H_
+#endif  // AXOM_FMT_ARGS_H_

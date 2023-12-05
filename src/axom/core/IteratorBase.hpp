@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -51,6 +51,8 @@ class IteratorBase
 
 protected:
   IteratorBase() : m_pos(PosType()) { }
+
+  AXOM_HOST_DEVICE
   explicit IteratorBase(PosType pos) : m_pos(pos) { }
 
 private:
@@ -60,48 +62,61 @@ private:
    */
   struct accessor : IterType
   {
-    static void adv(IterType& derived, PosType n)
+    AXOM_HOST_DEVICE accessor(const IterType& base) : IterType(base) { }
+
+    AXOM_HOST_DEVICE
+    static void adv(IterType& instance, PosType n)
     {
-      void (IterType::*fn)(PosType) = &accessor::advance;
-      (derived.*fn)(n);
+      // Protected member functions may only be accessed from a derived class
+      // via an instance of the derived class.
+      // As a workaround, we construct an instance of accessor, call
+      // accessor::advance(), then slice it back to the base instance.
+      accessor derived(instance);
+      derived.advance(n);
+      instance = derived;
     }
   };
 
 private:
   /// Call the derived iterator's advance() function
+  AXOM_HOST_DEVICE
   void adv(IterType& derived, PosType n) const { accessor::adv(derived, n); }
 
 public:
   /// \name Equality and relational operators
   /// \{
 
+  using iterator = IteratorBase<IterType, PosType>;
+
   /// Equality operator
-  friend bool operator==(const IterType& lhs, const IterType& rhs)
+  friend bool operator==(const iterator& lhs, const iterator& rhs)
   {
     return lhs.m_pos == rhs.m_pos;
   }
   /// Inequality operator
-  friend bool operator!=(const IterType& lhs, const IterType& rhs)
+  AXOM_HOST_DEVICE
+  friend bool operator!=(const iterator& lhs, const iterator& rhs)
   {
     return lhs.m_pos != rhs.m_pos;
   }
+
   /// Less than operator
-  friend bool operator<(const IterType& lhs, const IterType& rhs)
+  friend bool operator<(const iterator& lhs, const iterator& rhs)
   {
     return lhs.m_pos < rhs.m_pos;
   }
   /// Less than or equal operator
-  friend bool operator<=(const IterType& lhs, const IterType& rhs)
+  friend bool operator<=(const iterator& lhs, const iterator& rhs)
   {
     return lhs.m_pos <= rhs.m_pos;
   }
   /// Greater than operator
-  friend bool operator>(const IterType& lhs, const IterType& rhs)
+  friend bool operator>(const iterator& lhs, const iterator& rhs)
   {
     return lhs.m_pos > rhs.m_pos;
   }
   /// Greater than or equal operator
-  friend bool operator>=(const IterType& lhs, const IterType& rhs)
+  friend bool operator>=(const iterator& lhs, const iterator& rhs)
   {
     return lhs.m_pos >= rhs.m_pos;
   }
@@ -111,6 +126,7 @@ public:
   /// \{
 
   /// Pre-increment operator
+  AXOM_HOST_DEVICE
   IterType& operator++()
   {
     adv(getIter(), 1);
@@ -183,8 +199,11 @@ public:
 
 private:
   /// Accessor to derived class
+  AXOM_HOST_DEVICE
   IterType& getIter() { return *static_cast<IterType*>(this); }
+
   /// Const accessor to derived class
+  AXOM_HOST_DEVICE
   const IterType& getIter() const
   {
     return *static_cast<const IterType*>(this);

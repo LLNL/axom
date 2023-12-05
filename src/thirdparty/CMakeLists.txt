@@ -1,4 +1,4 @@
-# Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+# Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
 # other Axom Project Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
@@ -11,9 +11,9 @@
 # Register the sol library for parsing lua
 #------------------------------------------------------------------------------
 
-if (LUA_FOUND AND (NOT BLT_CXX_STD STREQUAL "c++11"))
+if (LUA_FOUND)
   blt_add_library(NAME    sol
-                  HEADERS axom/sol.hpp)
+                  HEADERS axom/sol.hpp axom/sol_forward.hpp)
 
   target_include_directories(sol SYSTEM INTERFACE
               $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/thirdparty>)
@@ -22,8 +22,8 @@ if (LUA_FOUND AND (NOT BLT_CXX_STD STREQUAL "c++11"))
           EXPORT               axom-targets
           INCLUDES DESTINATION include)
   install(FILES        ${PROJECT_SOURCE_DIR}/thirdparty/axom/sol.hpp
+                       ${PROJECT_SOURCE_DIR}/thirdparty/axom/sol_forward.hpp
           DESTINATION include/axom )
-  install(EXPORT axom-targets DESTINATION lib/cmake)
 
   set(SOL_FOUND TRUE CACHE INTERNAL "")
 else()
@@ -48,7 +48,6 @@ install(TARGETS              cli11
         INCLUDES DESTINATION include)
 install(FILES       ${PROJECT_SOURCE_DIR}/thirdparty/axom/CLI11.hpp
         DESTINATION include/axom )
-install(EXPORT axom-targets DESTINATION lib/cmake)
 
 set(CLI11_FOUND TRUE CACHE INTERNAL "")
 mark_as_advanced(CLI11_FOUND)
@@ -56,6 +55,14 @@ mark_as_advanced(CLI11_FOUND)
 #------------------------------------------------------------------------------
 # Register the built-in fmt library for string formatting
 #------------------------------------------------------------------------------
+
+# NOTE: When updating fmt you must do the following changes to properly guard
+#  our fmt from other fmt's.
+# 
+# 1) Change the namespace from 'fmt' to 'axom::fmt'.  This is in fmt/core.h:203-204,
+#    as well as, search and replace `fmt::` to `axom::fmt`.
+# 2) Search and replace compiler define's prefix from `FMT_` to `AXOM_FMT_`.
+# 3) Keep fmt's headers installed under axom's include directory.
 
 # Headers that Axom adds to fmt
 set(axom_fmt_headers
@@ -69,13 +76,14 @@ set(fmt_headers
     axom/fmt/color.h
     axom/fmt/compile.h
     axom/fmt/core.h
-    axom/fmt/format-inl.h
     axom/fmt/format.h
-    axom/fmt/locale.h
+    axom/fmt/format-inl.h
     axom/fmt/os.h
     axom/fmt/ostream.h
     axom/fmt/printf.h
     axom/fmt/ranges.h
+    axom/fmt/std.h
+    axom/fmt/xchar.h
     )
 
 blt_add_library(NAME    fmt
@@ -85,11 +93,11 @@ target_include_directories(fmt SYSTEM INTERFACE
             $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/thirdparty>)
 
 target_include_directories(fmt INTERFACE 
-            $<BUILD_INTERFACE:${CMAKE_BINARY_DIR}/include> )
+            $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include> )
 
 # Setup some variables for fmt in Axom's config.hpp
-set(FMT_EXCEPTIONS FALSE PARENT_SCOPE)
-set(FMT_HEADER_ONLY TRUE PARENT_SCOPE)
+set(AXOM_FMT_EXCEPTIONS FALSE PARENT_SCOPE)
+set(AXOM_FMT_HEADER_ONLY TRUE PARENT_SCOPE)
 
 install(TARGETS              fmt
         EXPORT               axom-targets
@@ -102,7 +110,6 @@ install(FILES   ${axom_fmt_headers}
 install(DIRECTORY   ${PROJECT_SOURCE_DIR}/thirdparty/axom/fmt
         DESTINATION include/axom
         )
-install(EXPORT axom-targets DESTINATION lib/cmake)
 
 set(FMT_FOUND TRUE CACHE INTERNAL "")
 mark_as_advanced(FMT_FOUND)
@@ -113,32 +120,8 @@ mark_as_advanced(FMT_FOUND)
 
 if (AXOM_ENABLE_SPARSEHASH)
 
-  include(CheckIncludeFileCXX)
-
-  # Try to find the necessary include and namespace for hash functions
-  # This depends on the compiler and C++ standard library version
-  
-  set(_found_hash FALSE)
-
-  set(_hdr <functional>)
-  set(_ns  std)
-  set(_src "#include ${_hdr} \n int main() { int h = ${_ns}::hash<int>()(5)\; return 0\;}")
-  axom_check_code_compiles(SOURCE_STRING "${_src}" CODE_COMPILES _found_hash)
- 
-  if(NOT ${_found_hash})
-    set(_hdr <tr1/functional>)
-    set(_ns  std::tr1)
-    set(_src "#include ${_hdr} \n int main() { int h = ${_ns}::hash<int>()(5)\; return 0\;}")
-    axom_check_code_compiles(SOURCE_STRING "${_src}" CODE_COMPILES _found_hash)
-
-  endif()
-    
-  # Set up sparsehash, if we've found it
-  if(${_found_hash})
-    message(STATUS "Sparsehash configured with '${_hdr}' header")
-    
-    set(SPARSEHASH_HASHFUN_HEADER ${_hdr} CACHE INTERNAL "")
-    set(SPARSEHASH_HASHFUN_NAMESPACE ${_ns} CACHE INTERNAL "")
+    set(SPARSEHASH_HASHFUN_HEADER <functional> CACHE INTERNAL "")
+    set(SPARSEHASH_HASHFUN_NAMESPACE std CACHE INTERNAL "")
     set(SPARSEHASH_FOUND TRUE CACHE INTERNAL "")
 
     mark_as_advanced(
@@ -169,13 +152,13 @@ if (AXOM_ENABLE_SPARSEHASH)
      )
      
     blt_add_library(NAME sparsehash
-            HEADERS ${sparsehash_headers})
+                    HEADERS ${sparsehash_headers})
      
     target_include_directories(sparsehash SYSTEM INTERFACE
                 $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/thirdparty>)
 
     target_include_directories(sparsehash INTERFACE 
-                $<BUILD_INTERFACE:${CMAKE_BINARY_DIR}/include> )
+                $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include> )
 
     # Disable warning introduced in gcc@8.1+ related to how sparsehash casts memory
     # The double guarding for compiler family helps when compiling libraries with GNU
@@ -192,12 +175,6 @@ if (AXOM_ENABLE_SPARSEHASH)
 
     install(DIRECTORY   ${PROJECT_SOURCE_DIR}/thirdparty/axom/sparsehash
             DESTINATION include/axom)
-
-    install(EXPORT axom-targets DESTINATION lib/cmake)
-
-  else()
-    message(STATUS "Could not configure sparsehash")
-  endif()
 endif()
 
 #------------------------------------------------------------------------------

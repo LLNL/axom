@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -144,8 +144,7 @@ public:
   using OctreeLevels = slam::OrderedSet<CoordType, CoordType, MAX_LEVEL_SIZE>;
 
   using OctreeLevelType = OctreeLevel<DIM, BlockDataType>;
-  using LeafIndicesLevelMap =
-    slam::Map<slam::Set<CoordType, CoordType>, OctreeLevelType*>;
+  using LeafIndicesLevelMap = slam::Map<OctreeLevelType*>;
 
   /**
    * \brief Inner class encapsulating the index of an octree <em>block</em>.
@@ -269,7 +268,10 @@ public:
     GridPt neighborPt(const GridPt& offset) const
     {
       GridPt nPoint(m_pt);
-      for(int i = 0; i < DIM; ++i) nPoint[i] += offset[i];
+      for(int i = 0; i < DIM; ++i)
+      {
+        nPoint[i] += offset[i];
+      }
 
       return nPoint;
     }
@@ -323,13 +325,25 @@ public:
 
     bool operator<(const BlockIndex& other) const
     {
-      if(m_lev < other.m_lev) return true;
-      if(m_lev > other.m_lev) return false;
+      if(m_lev < other.m_lev)
+      {
+        return true;
+      }
+      if(m_lev > other.m_lev)
+      {
+        return false;
+      }
 
       for(int i = 0; i < DIM; ++i)
       {
-        if(m_pt[i] < other.m_pt[i]) return true;
-        if(m_pt[i] > other.m_pt[i]) return false;
+        if(m_pt[i] < other.m_pt[i])
+        {
+          return true;
+        }
+        if(m_pt[i] > other.m_pt[i])
+        {
+          return false;
+        }
       }
 
       return false;
@@ -357,7 +371,12 @@ public:
     {
       const CoordType maxVal = (CoordType(1) << m_lev) - CoordType(1);
       for(int i = 0; i < DIM; ++i)
-        if((m_pt[i] < 0) || (m_pt[i] > maxVal)) return false;
+      {
+        if((m_pt[i] < 0) || (m_pt[i] > maxVal))
+        {
+          return false;
+        }
+      }
       return true;
     }
 
@@ -377,10 +396,16 @@ public:
     {
       const int ancestorLevel = ancestor.level();
       const int levelDiff = m_lev - ancestorLevel;
-      if(levelDiff < 0 || m_lev < 0 || ancestorLevel < 0) return false;
+      if(levelDiff < 0 || m_lev < 0 || ancestorLevel < 0)
+      {
+        return false;
+      }
 
       BlockIndex blk(*this);
-      for(int i = 0; i < levelDiff; ++i) blk = blk.parent();
+      for(int i = 0; i < levelDiff; ++i)
+      {
+        blk = blk.parent();
+      }
 
       SLIC_ASSERT(blk.level() == ancestorLevel);
       return blk.pt() == ancestor.pt();
@@ -432,10 +457,10 @@ private:
     MAX_SPARSE64_LEV = 64 / DIM
   };
 
-  using DenseOctLevType = DenseOctreeLevel<DIM, BlockDataType, axom::uint16>;
-  using Sparse16OctLevType = SparseOctreeLevel<DIM, BlockDataType, axom::uint16>;
-  using Sparse32OctLevType = SparseOctreeLevel<DIM, BlockDataType, axom::uint32>;
-  using Sparse64OctLevType = SparseOctreeLevel<DIM, BlockDataType, axom::uint64>;
+  using DenseOctLevType = DenseOctreeLevel<DIM, BlockDataType, std::uint16_t>;
+  using Sparse16OctLevType = SparseOctreeLevel<DIM, BlockDataType, std::uint16_t>;
+  using Sparse32OctLevType = SparseOctreeLevel<DIM, BlockDataType, std::uint32_t>;
+  using Sparse64OctLevType = SparseOctreeLevel<DIM, BlockDataType, std::uint64_t>;
   using SparsePtOctLevType = SparseOctreeLevel<DIM, BlockDataType, GridPt>;
 
   using DenseOctLevPtr = DenseOctLevType*;
@@ -469,15 +494,25 @@ public:
       // Use point bases SparseOctreeLevel (key is Point<int, DIM>,
       // hashed using a MortonIndex)  when MortonIndex requires more than 64
       if(i <= MAX_DENSE_LEV)
+      {
         m_leavesLevelMap[i] = new DenseOctLevType(i);
+      }
       else if(i <= MAX_SPARSE16_LEV)
+      {
         m_leavesLevelMap[i] = new Sparse16OctLevType(i);
+      }
       else if(i <= MAX_SPARSE32_LEV)
+      {
         m_leavesLevelMap[i] = new Sparse32OctLevType(i);
+      }
       else if(i <= MAX_SPARSE64_LEV)
+      {
         m_leavesLevelMap[i] = new Sparse64OctLevType(i);
+      }
       else
+      {
         m_leavesLevelMap[i] = new SparsePtOctLevType(i);
+      }
     }
 
     // Add the root block to the octree
@@ -878,7 +913,9 @@ public:
   {
     // Check that point is in bounds
     if(checkInBounds && !this->inBounds(blk))
+    {
       return BlockIndex::invalid_index();
+    }
 
     switch(blockStatus(blk))
     {
@@ -886,7 +923,10 @@ public:
                           // a leaf)
     {
       BlockIndex ancBlk = blk.parent();
-      while(!this->hasBlock(ancBlk)) ancBlk = ancBlk.parent();
+      while(!this->hasBlock(ancBlk))
+      {
+        ancBlk = ancBlk.parent();
+      }
 
       SLIC_ASSERT(this->isLeaf(ancBlk));
       return ancBlk;

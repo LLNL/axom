@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -21,6 +21,7 @@
 #include "axom/core/ArrayView.hpp"
 #include "axom/core/Macros.hpp"
 #include "axom/core/memory_management.hpp"
+#include "axom/fmt/format.h"
 
 #ifdef AXOM_USE_RAJA
   #include "axom/core/execution/execution_space.hpp"
@@ -64,6 +65,18 @@ void showTupleArrayView(axom::MCArrayView<int>& a, const char* name)
               << std::endl;
   }
   std::cout << "]" << std::endl;
+}
+
+template <typename T>
+void show2DArrayView(axom::ArrayView<T, 2>& a)
+{
+  for(int i = 0; i < a.shape()[0]; ++i)
+  {
+    for(int j = 0; j < a.shape()[1]; ++j)
+    {
+      std::cout << "a(" << i << ',' << j << ") = " << a(i, j) << std::endl;
+    }
+  }
 }
 
 void demoArrayBasic()
@@ -164,22 +177,48 @@ void demoArrayBasic()
   std::cout << "Standard for loop over ArrayView c yields: ";
   for(int i = 0; i < c.size(); i++)
   {
-    std::cout << c[i] << " ";
+    std::cout << c.flatIndex(i) << " ";
   }
   std::cout << std::endl;
   // _iteration_end
+
+  // _spacing_start
+  // An array of tuples can be viewed as a tuple of arrays, by specifying
+  // the spacing between elements to include.  The spacing skips over the
+  // elements to exclude from the view.
+  const axom::StackArray<axom::IndexType, 2> shape {2, 3};  // Shape of 2x3 array.
+  constexpr axom::IndexType TUPSIZE = 4;
+  // 2D array of tuples (stored as a 3D array).
+  axom::Array<std::string, 3> arrayOf4tuples(shape[0], shape[1], TUPSIZE);
+  for(int i = 0; i < shape[0]; ++i)
+  {
+    for(int j = 0; j < shape[1]; ++j)
+    {
+      for(int t = 0; t < TUPSIZE; ++t)
+      {
+        arrayOf4tuples(i, j, t) = axom::fmt::format("({},{}).{}", i, j, t);
+      }
+    }
+  }
+  // View the 3rd of the 4-tuples, as if they were in their own array.
+  axom::ArrayView<std::string, 2> viewOfThird(
+    arrayOf4tuples.data() + 2,
+    shape,
+    TUPSIZE);  // 2D array of the third component of each tuple
+  std::cout << "Third components of 2D array of 4-tuples:" << std::endl;
+  show2DArrayView(viewOfThird);
+  // _spacing_end
 }
 
-// The following example requires CUDA + Umpire + unified memory
-// FIXME: HIP
-#if defined(AXOM_USE_UMPIRE) && defined(AXOM_USE_CUDA) && \
-  defined(__CUDACC__) && defined(UMPIRE_ENABLE_UM)
+// The following example requires CUDA or HIP + Umpire + unified memory
+#if defined(AXOM_USE_UMPIRE) && defined(AXOM_USE_GPU) && \
+  defined(UMPIRE_ENABLE_UM)
   #define AXOM_CONTAINERS_EXAMPLE_ON_DEVICE
 #endif
 
 #ifdef AXOM_CONTAINERS_EXAMPLE_ON_DEVICE
 
-// _cuda_kernel_start
+// _device_kernel_start
 // Aliases used for convenience
 using UnifiedIntArrayView = axom::ArrayView<int, 1, axom::MemorySpace::Unified>;
 using DeviceIntArrayView = axom::ArrayView<int, 1, axom::MemorySpace::Device>;
@@ -193,7 +232,7 @@ __global__ void add(const UnifiedIntArrayView A,
     C[i] = A[i] + B[i];
   }
 }
-// _cuda_kernel_end
+// _device_kernel_end
 
 // _basic_array_function_start
 void takesDeviceArrayView(axom::ArrayView<int, 1, axom::MemorySpace::Device>) { }
@@ -230,10 +269,17 @@ void demoArrayDevice()
   // Create an explicit ArrayView using Array::view()
   auto view_of_array_using_view_method = device_array_dynamic.view();
   takesDeviceArrayView(view_of_array_using_view_method);
+
+  DeviceArrayView view_of_array_using_operator_equals = device_array_dynamic;
+  takesDeviceArrayView(view_of_array_using_operator_equals);
+
+  DeviceArrayView view_of_array_from_pointer(device_array_dynamic.data(), N);
+  takesDeviceArrayView(view_of_array_from_pointer);
+
   // _basic_array_device_explicit_end
 
-  // _cuda_array_create_start
-  const int allocator_id = axom::getUmpireResourceAllocatorID(
+  // _device_array_create_start
+  const int unified_alloc_id = axom::getUmpireResourceAllocatorID(
     umpire::resource::MemoryResourceType::Unified);
 
   // The last template parameter specifies a memory space.
@@ -241,7 +287,7 @@ void demoArrayDevice()
   // memory space at runtime with a memory allocator ID.  The
   // third constructor parameter specifies the allocator.
   // If this argument is not provided host memory will be allocated.
-  axom::Array<int> A_dynamic(N, N, allocator_id);
+  axom::Array<int> A_dynamic(N, N, unified_alloc_id);
 
   // We also have the option to "lock down" the memory space to allow for
   // compile-time guarantees against dereferencing pointers in the wrong memory space.
@@ -257,8 +303,41 @@ void demoArrayDevice()
   // The result array is allocated in device memory
   axom::Array<int, 1, axom::MemorySpace::Device> C_device(N);
 
-  // _cuda_array_create_end
-  // _cuda_array_call_start
+  // _device_array_create_end
+  // _device_array_propagate_start
+
+  // For a Dynamic space memory array, copies and moves will use the allocator
+  // from the other array, unless otherwise specified.
+  axom::Array<int> C_device_copy(C_device);
+  axom::Array<int> C_device_copy_assign = C_device;
+  axom::Array<int> C_device_move(std::move(C_device_copy));
+  axom::Array<int> C_device_move_assign = std::move(C_device_copy_assign);
+
+  // An allocator ID may be passed into the copy constructor, which creates an
+  // array in that memory space.
+  const int host_alloc_id = axom::getDefaultAllocatorID();
+  axom::Array<int> C_host_copy(C_device, host_alloc_id);
+
+  // The semantics for Arrays with compile-time specified memory spaces is similar:
+  // when possible, an allocator ID from the other array is used.
+  axom::Array<int, 1, axom::MemorySpace::Device> C_explicit_device_copy(C_device);
+
+  // Just as before, an allocator ID may be specified explicitly.
+  axom::Array<int, 1, axom::MemorySpace::Unified> C_explicit_unified_copy(
+    C_device,
+    unified_alloc_id);
+
+  // Note that if an allocator ID is incompatible with a memory space, the default
+  // allocator ID for that memory space is used. Both of these examples will copy
+  // memory to the host:
+  axom::Array<int, 1, axom::MemorySpace::Host> C_use_host_alloc(C_device);
+  // The below will also print a warning in debug mode:
+  axom::Array<int, 1, axom::MemorySpace::Host> C_use_host_alloc_2(
+    C_device,
+    unified_alloc_id);
+
+  // _device_array_propagate_end
+  // _device_array_call_start
 
   // Passing by reference is not possible for CUDA kernels, so the three arrays
   // are converted to corresponding ArrayViews that are "shallow copies" of the
@@ -273,10 +352,10 @@ void demoArrayDevice()
   axom::Array<int, 1, axom::MemorySpace::Host> C_host = C_device;
   std::cout << "Array C_host = " << C_host << std::endl;
 
-  // Since by default allocations happen in host memory, we could have also used a dynamic array (the default)
-  axom::Array<int> C_dynamic = C_device;
+  // We can also use a dynamic array, if we specify an allocator ID for host memory in the copy constructor.
+  axom::Array<int> C_dynamic(C_device, host_alloc_id);
   std::cout << "Array C_dynamic = " << C_dynamic << std::endl;
-  // _cuda_array_call_end
+  // _device_array_call_end
 
   #ifdef AXOM_USE_RAJA
   // _array_w_raja_start
@@ -287,8 +366,16 @@ void demoArrayDevice()
   axom::Array<int, 1, axom::MemorySpace::Device> C_device_raja(N);
   DeviceIntArrayView C_view = C_device_raja;
 
-  // Write to the underlying array through C_view, which is captured by value
-  axom::for_all<axom::CUDA_EXEC<1>>(0, N, [=] AXOM_HOST_DEVICE(axom::IndexType i) {
+    // Write to the underlying array through C_view, which is captured by value
+    #if defined(__CUDACC__)
+  using ExecSpace = axom::CUDA_EXEC<1>;
+    #elif defined(__HIPCC__)
+  using ExecSpace = axom::HIP_EXEC<1>;
+    #else
+  using ExecSpace = axom::SEQ_EXEC;
+    #endif
+
+  axom::for_all<ExecSpace>(0, N, [=] AXOM_HOST_DEVICE(axom::IndexType i) {
     C_view[i] = A_view[i] + B_view[i] + 1;
   });
 

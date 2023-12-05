@@ -1,11 +1,9 @@
-vcpkg_fail_port_install(ON_TARGET "UWP")
-
 message(STATUS "Building dependencies for Axom")
 message(STATUS "CURRENT_INSTALLED_DIR -- ${CURRENT_INSTALLED_DIR}")
 message(STATUS "PORT -- ${PORT}")
 
 set(_copyright [=[
-Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
 other Axom Project Developers. See the top-level LICENSE file for details.
 
 SPDX-License-Identifier: (BSD-3-Clause)
@@ -16,7 +14,7 @@ set(_host-config_hdr [=[
 #------------------------------------------------------------------------------
 # !!!! This is a generated file, edit at own risk !!!!
 #------------------------------------------------------------------------------
-# Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+# Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
 # other Axom Project Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
@@ -39,15 +37,15 @@ set(_host-config_hdr [=[
 #         ../src
 #
 # Supported MSVC generators:
-#   For x86 MSVC builds, use "Visual Studio 2017" or "Visual Studio 2019"
-#   For x64 MSVC builds, use "Visual Studio 2017 Win64" or "Visual Studio 2019 -A x64"
-#   (note: msvc 2019 uses the -A flag to set the architecture)
+#   For x86 MSVC builds, use "Visual Studio 2022", "Visual Studio 2019" or "Visual Studio 2017"
+#   For x64 MSVC builds, use "Visual Studio 2022 -A x64", "Visual Studio 2019 -A x64" or "Visual Studio 2017 Win64"
+#   (note: msvc 2019 and later use the -A flag to set the architecture)
 #
 #
 # One can also use Axom's `config-build` script:
 #   cd <axom>
 #   config-build.py -hc @_hc_file@                   \
-#                   --msvc {2017,201764,2019,201964} \
+#                   --msvc {2017,201764,2019,201964,2022,202264} \
 #                   [other options]
 #
 #------------------------------------------------------------------------------
@@ -72,6 +70,10 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON CACHE BOOL "")
 set(AXOM_ENABLE_TESTS ON CACHE BOOL "")
 set(AXOM_ENABLE_DOCS OFF CACHE BOOL "")
 set(AXOM_ENABLE_EXAMPLES ON CACHE BOOL "")
+
+if(VCPKG_TARGET_TRIPLET MATCHES "^x64")
+  set(AXOM_USE_64BIT_INDEXTYPE ON CACHE BOOL "")
+endif()
 
 # BLT options
 set(ENABLE_FORTRAN OFF CACHE BOOL "")
@@ -124,15 +126,57 @@ set(ENABLE_MPI OFF CACHE BOOL "")
 #------------------------------------------------------------------------------
 # Set TPLs
 #------------------------------------------------------------------------------
+]=])
+
+set(_conduit_dep_on [=[
+
 set(CONDUIT_DIR "@CURRENT_INSTALLED_DIR@/share/conduit" CACHE PATH "")
 set(HDF5_DIR "@CURRENT_INSTALLED_DIR@" CACHE PATH "")
+]=])
+set(_conduit_dep_off [=[
+
+# conduit is disabled
+# sidre requires conduit; inlet and klee require sidre
+set(AXOM_ENABLE_SIDRE OFF CACHE BOOL "")
+set(AXOM_ENABLE_INLET OFF CACHE BOOL "")
+set(AXOM_ENABLE_KLEE OFF CACHE BOOL "")
+]=])
+
+set(_lua_dep [=[
+
+set(LUA_DIR "@CURRENT_INSTALLED_DIR@" CACHE PATH "")
+]=])
+
+set(_mfem_dep [=[
+
 set(MFEM_DIR "@CURRENT_INSTALLED_DIR@" CACHE PATH "")
+]=])
+
+set(_camp_dep [=[
+
+set(CAMP_DIR "@CURRENT_INSTALLED_DIR@" CACHE PATH "")
+]=])
+
+set(_raja_dep [=[
+
+set(RAJA_DIR "@CURRENT_INSTALLED_DIR@" CACHE PATH "")
+]=])
+
+set(_umpire_dep [=[
+
+set(UMPIRE_DIR "@CURRENT_INSTALLED_DIR@" CACHE PATH "")
+]=])
+
+set(_openmp_dep [=[
+
+# Setup OpenMP; fix MSVC linker error about unknown flag
+set(ENABLE_OPENMP ON CACHE BOOL "")
+set(BLT_OPENMP_LINK_FLAGS " " CACHE STRING "")
+]=])
 
 # TODO:
-#  * Add TPLs: mfem, umpire, raja
+#  * Add features/TPLs: mpi
 #  * Add tools: uncrustify, sphinx, doxygen
-
-]=])
 
 # Create a copyright file
 file(MAKE_DIRECTORY ${CURRENT_PACKAGES_DIR}/share/${PORT} )
@@ -143,6 +187,28 @@ file(WRITE ${_copyright_file} "${_copyright}")
 file(MAKE_DIRECTORY ${CURRENT_PACKAGES_DIR}/include/${PORT} )
 set(_hc_file ${CURRENT_PACKAGES_DIR}/include/${PORT}/hc.cmake)
 
-file(WRITE ${_hc_file}.in ${_host-config_hdr})
-configure_file(${_hc_file}.in ${_hc_file} @ONLY)
+# Add enabled features to host-config
+message(STATUS "FEATURES: ${FEATURES}")
 
+file(WRITE ${_hc_file}.in "${_host-config_hdr}")
+
+if(conduit IN_LIST FEATURES)
+  file(APPEND ${_hc_file}.in "${_conduit_dep_on}")
+else()
+  file(APPEND ${_hc_file}.in "${_conduit_dep_off}")
+endif()
+
+foreach(_dep lua mfem openmp raja umpire)
+  if(${_dep} IN_LIST FEATURES)
+    file(APPEND ${_hc_file}.in "${_${_dep}_dep}")
+  else()
+    file(APPEND ${_hc_file}.in "# ${_dep} dependency disabled")
+  endif()
+endforeach()
+
+# camp is required if umpire or raja are present
+if(raja IN_LIST FEATURES OR umpire IN_LIST FEATURES)
+  file(APPEND ${_hc_file}.in "${_camp_dep}")
+endif()
+
+configure_file(${_hc_file}.in ${_hc_file} @ONLY)

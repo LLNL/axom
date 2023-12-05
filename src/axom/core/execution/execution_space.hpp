@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -56,6 +56,8 @@
  *
  * The execution spaces bind the corresponding RAJA execution policies and
  * default memory space.
+ *
+ * @see runtime_policy.hpp
  */
 
 namespace axom
@@ -100,6 +102,11 @@ struct execution_space
 #if defined(AXOM_USE_CUDA) && defined(AXOM_USE_RAJA) && \
   defined(AXOM_USE_UMPIRE) && defined(__CUDACC__)
   #include "axom/core/execution/internal/cuda_exec.hpp"
+#endif
+
+#if defined(AXOM_USE_HIP) && defined(AXOM_USE_RAJA) && \
+  defined(AXOM_USE_UMPIRE) && defined(__HIPCC__)
+  #include "axom/core/execution/internal/hip_exec.hpp"
 #endif
 
 #endif  // AXOM_EXECUTIONSPACE_HPP_

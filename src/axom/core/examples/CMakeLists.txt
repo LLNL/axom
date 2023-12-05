@@ -1,4 +1,4 @@
-# Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+# Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
 # other Axom Project Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
@@ -19,11 +19,11 @@ set(example_sources
 #------------------------------------------------------------------------------
 foreach(example_source ${example_sources})
     get_filename_component(exe_name ${example_source} NAME_WE)
-    blt_add_executable(
+    axom_add_executable(
         NAME        ${exe_name}_ex
         SOURCES     ${example_source}
         OUTPUT_DIR  ${EXAMPLE_OUTPUT_DIRECTORY}
-        DEPENDS_ON  axom
+        DEPENDS_ON  core
         FOLDER      axom/core/examples )
 
     if(AXOM_ENABLE_TESTS)
@@ -33,27 +33,27 @@ foreach(example_source ${example_sources})
     endif()
 endforeach()
 
-if(ENABLE_CUDA)
-    blt_add_executable(
+if(AXOM_ENABLE_CUDA)
+    axom_add_executable(
           NAME        core_acceleration_cuda_on_ex
           SOURCES     core_acceleration.cpp
           OUTPUT_DIR  ${EXAMPLE_OUTPUT_DIRECTORY}
-          DEPENDS_ON  axom cuda
+          DEPENDS_ON  core
           FOLDER      axom/core/examples )
 
-    blt_add_executable(
+    axom_add_executable(
           NAME        core_containers_cuda_on_ex
           SOURCES     core_containers.cpp
           OUTPUT_DIR  ${EXAMPLE_OUTPUT_DIRECTORY}
-          DEPENDS_ON  axom cuda
+          DEPENDS_ON  core
           FOLDER      axom/core/examples )
 endif()
 
-blt_add_executable(
+axom_add_executable(
     NAME        core_utilities_ex
     SOURCES     core_utilities.cpp
     OUTPUT_DIR  ${EXAMPLE_OUTPUT_DIRECTORY}
-    DEPENDS_ON  axom
+    DEPENDS_ON  core
     FOLDER      axom/core/examples )
 
 if(AXOM_ENABLE_TESTS)

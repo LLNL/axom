@@ -1,4 +1,4 @@
-.. ## Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+.. ## Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
 .. ## other Axom Project Developers. See the top-level LICENSE file for details.
 .. ##
 .. ## SPDX-License-Identifier: (BSD-3-Clause)
@@ -25,7 +25,7 @@ to the Mesh Blueprint, a hierarchical schema for describing mesh data.
 See the :ref:`Conduit page <sidre-conduit>` for more information on the Mesh 
 Blueprint.
 
-In this page, we first discuss `Getting Started`_ and how MFEM objects can 
+In this page, we first discuss how MFEM objects can 
 be associated with the ``MFEMSidreDataCollection``. We then explain the process
 and options available when `Saving Data to a File`_. The workflow for reading 
 saved data back in is discussed in `Restarting a Simulation`_.

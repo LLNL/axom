@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -26,6 +26,7 @@ namespace axom
 {
 constexpr int INVALID_ALLOCATOR_ID = -1;
 
+// _memory_space_start
 /*! 
  * \brief Memory spaces supported by Array-like types
  *
@@ -44,7 +45,9 @@ enum class MemorySpace
   Constant
 #endif
 };
+// _memory_space_end
 
+// _memory_management_routines_start
 /// \name Memory Management Routines
 /// @{
 
@@ -63,22 +66,33 @@ inline int getUmpireResourceAllocatorID(
   return alloc.getId();
 }
 
+/*!
+ * \brief Sets the default memory allocator to use.
+ * \param [in] resource_type the Umpire resource type
+ */
+inline void setDefaultAllocator(umpire::resource::MemoryResourceType resource_type)
+{
+  umpire::ResourceManager& rm = umpire::ResourceManager::getInstance();
+  umpire::Allocator allocator = rm.getAllocator(resource_type);
+  rm.setDefaultAllocator(allocator);
+}
+
 #endif
 
 /*!
  * \brief Sets the default memory allocator to use.
- * \param [in] allocatorID ID of the Umpire allocator to use.
+ * \param [in] allocId the Umpire allocator id
  * 
  * \note This function has no effect when Axom is not compiled with Umpire.
  */
-inline void setDefaultAllocator(int allocatorID)
+inline void setDefaultAllocator(int allocId)
 {
 #ifdef AXOM_USE_UMPIRE
   umpire::ResourceManager& rm = umpire::ResourceManager::getInstance();
-  umpire::Allocator allocator = rm.getAllocator(allocatorID);
+  umpire::Allocator allocator = rm.getAllocator(allocId);
   rm.setDefaultAllocator(allocator);
 #else
-  AXOM_UNUSED_VAR(allocatorID);
+  AXOM_UNUSED_VAR(allocId);
 #endif
 }
 
@@ -161,6 +175,7 @@ inline T* reallocate(T* p,
 inline void copy(void* dst, const void* src, std::size_t numbytes) noexcept;
 
 /// @}
+// _memory_management_routines_end
 
 //------------------------------------------------------------------------------
 //                        IMPLEMENTATION
@@ -186,7 +201,10 @@ inline T* allocate(std::size_t n, int allocID) noexcept
 template <typename T>
 inline void deallocate(T*& pointer) noexcept
 {
-  if(pointer == nullptr) return;
+  if(pointer == nullptr)
+  {
+    return;
+  }
 
 #ifdef AXOM_USE_UMPIRE
 
@@ -281,6 +299,36 @@ template <>
 inline int getAllocatorID<MemorySpace::Dynamic>()
 {
   return axom::getDefaultAllocatorID();
+}
+
+inline MemorySpace getAllocatorSpace(int allocatorId)
+{
+#ifdef AXOM_USE_UMPIRE
+  using ump_res_type = typename umpire::MemoryResourceTraits::resource_type;
+
+  umpire::ResourceManager& rm = umpire::ResourceManager::getInstance();
+
+  auto umpResType =
+    rm.getAllocator(allocatorId).getAllocationStrategy()->getTraits().resource;
+  switch(umpResType)
+  {
+  case ump_res_type::host:
+    return MemorySpace::Host;
+  case ump_res_type::device:
+    return MemorySpace::Device;
+  case ump_res_type::device_const:
+    return MemorySpace::Constant;
+  case ump_res_type::pinned:
+    return MemorySpace::Pinned;
+  case ump_res_type::um:
+    return MemorySpace::Unified;
+  default:
+    return MemorySpace::Dynamic;
+  }
+#else
+  AXOM_UNUSED_VAR(allocatorId);
+  return MemorySpace::Dynamic;
+#endif
 }
 
 #ifdef AXOM_USE_UMPIRE

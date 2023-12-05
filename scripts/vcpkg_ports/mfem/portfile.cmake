@@ -1,10 +1,8 @@
-vcpkg_fail_port_install(ON_TARGET "UWP")
-
 vcpkg_from_github(
     OUT_SOURCE_PATH SOURCE_PATH
     REPO mfem/mfem
-    REF v4.2
-    SHA512 8945f51f47d434b100e4054d7a3b20b6813c91e106feda78c4ff7f1f8d97e93fbf5b0c80b839c9b7fa9928b41093af065ccb2acb4a23d233b5b8489c76448e90
+    REF v4.5
+    SHA512 86336441b180dde8392c59b82b78cb27073c40f00ebab0e3caefaaf9b0e418b077d43122da0f8b78f93e0e6b3b026d5adc16ecce02f38cdc9362e1dc2760e38a
     HEAD_REF master
     PATCHES "./export-extern-vars.patch"
     )

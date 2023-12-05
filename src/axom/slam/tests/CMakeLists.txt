@@ -1,4 +1,4 @@
-# Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+# Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
 # other Axom Project Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
@@ -20,6 +20,7 @@ set(gtest_slam_tests
     slam_set_BitSet.cpp
     slam_set_DynamicSet.cpp
     slam_set_Iterator.cpp
+    slam_set_BivariateSet.cpp    
 
     # test relations
     slam_relation_StaticVariable.cpp
@@ -28,7 +29,7 @@ set(gtest_slam_tests
     slam_relation_DynamicConstant.cpp
 
     # test maps
-    slam_Map.cpp
+    slam_map_Map.cpp
     slam_map_SubMap.cpp
     slam_map_BivariateMap.cpp
     slam_map_DynamicMap.cpp
@@ -38,21 +39,22 @@ set(gtest_slam_tests
 
     # aux tests
     slam_ModularInt.cpp
+    
+    #mesh structure test
+    slam_IA.cpp
     )
 
-
-set(slam_tests_depends_on axom gtest)
 
 #------------------------------------------------------------------------------
 # Add gtest based tests
 #------------------------------------------------------------------------------
 foreach(test ${gtest_slam_tests})
     get_filename_component( test_name ${test} NAME_WE )
-    blt_add_executable( NAME ${test_name}_test
-                        SOURCES ${test}
+    axom_add_executable(NAME       ${test_name}_test
+                        SOURCES    ${test}
                         OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
-                        DEPENDS_ON ${slam_tests_depends_on}
-                        FOLDER axom/slam/tests )
+                        DEPENDS_ON slam gtest
+                        FOLDER     axom/slam/tests )
     axom_add_test( NAME ${test_name}
                    COMMAND ${test_name}_test )
 endforeach()

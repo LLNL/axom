@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -74,7 +74,10 @@ public:
    */
   Timer(bool startRunning = false) : m_running(startRunning)
   {
-    if(m_running) start();
+    if(m_running)
+    {
+      start();
+    }
   }
 
   /*!
@@ -107,7 +110,10 @@ public:
    */
   double elapsedTimeInSec()
   {
-    if(m_running) stop();
+    if(m_running)
+    {
+      stop();
+    }
     return clockDiff().count();
   }
 
@@ -117,7 +123,10 @@ public:
    */
   double elapsedTimeInMilliSec()
   {
-    if(m_running) stop();
+    if(m_running)
+    {
+      stop();
+    }
     return std::chrono::duration_cast<MilliTimeDiff>(clockDiff()).count();
   }
 
@@ -127,7 +136,10 @@ public:
    */
   double elapsedTimeInMicroSec()
   {
-    if(m_running) stop();
+    if(m_running)
+    {
+      stop();
+    }
     return std::chrono::duration_cast<MicroTimeDiff>(clockDiff()).count();
   }
 

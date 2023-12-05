@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -543,7 +543,7 @@ inline bool linspace(const T& x0, const T& x1, T* v, int N)
 
 //------------------------------------------------------------------------------
 template <typename T>
-inline void cross_product(const T* u, const T* v, T* w)
+inline AXOM_HOST_DEVICE void cross_product(const T* u, const T* v, T* w)
 {
   assert("pre: u pointer is null" && (u != nullptr));
   assert("pre: v pointer is null" && (v != nullptr));
@@ -558,7 +558,7 @@ inline void cross_product(const T* u, const T* v, T* w)
 
 //------------------------------------------------------------------------------
 template <typename T>
-inline T dot_product(const T* u, const T* v, int dim)
+inline AXOM_HOST_DEVICE T dot_product(const T* u, const T* v, int dim)
 {
   assert("pre: u pointer is null" && (u != nullptr));
   assert("pre: v pointer is null" && (v != nullptr));
@@ -585,13 +585,19 @@ void make_orthogonal(T* u, T* v, int dim, double tol)
 
   double norm = static_cast<double>(dot_product(v, v, dim));
 
-  if(norm < tol) return;
+  if(norm < tol)
+  {
+    return;
+  }
 
   T tnorm = static_cast<T>(norm);
 
   T dot = dot_product(u, v, dim);
 
-  for(int l = 0; l < dim; ++l) u[l] -= ((dot * v[l]) / tnorm);
+  for(int l = 0; l < dim; ++l)
+  {
+    u[l] -= ((dot * v[l]) / tnorm);
+  }
 }
 
 //------------------------------------------------------------------------------
@@ -631,7 +637,7 @@ bool orthonormalize(T* basis, int size, int dim, double eps)
 
 //------------------------------------------------------------------------------
 template <typename T>
-inline bool normalize(T* v, int dim, double eps)
+inline AXOM_HOST_DEVICE bool normalize(T* v, int dim, double eps)
 {
   AXOM_STATIC_ASSERT_MSG(std::is_floating_point<T>::value,
                          "pre: T is a floating point type");

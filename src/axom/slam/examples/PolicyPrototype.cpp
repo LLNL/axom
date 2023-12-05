@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -159,7 +159,10 @@ inline ResType sumSet(const SetType& set)
 {
   ResType sum = 0;
 
-  for(int i = 0; i < set.size(); ++i) sum += set.at(i);
+  for(int i = 0; i < set.size(); ++i)
+  {
+    sum += set.at(i);
+  }
 
   return sum;
 }
@@ -167,7 +170,10 @@ inline ResType sumSet(const SetType& set)
 template <typename SetType>
 inline void copySet(const SetType& set, int* buf)
 {
-  for(int i = 0; i < set.size(); ++i) *buf++ = set.at(i);
+  for(int i = 0; i < set.size(); ++i)
+  {
+    *buf++ = set.at(i);
+  }
 }
 
 int main(int argc, char* argv[])
@@ -186,8 +192,14 @@ int main(int argc, char* argv[])
 
   // allocate and initialize the indirection array elements
   int* pVal = new int[numElts];
-  for(int i = 0; i < numElts; ++i) pVal[i] = i * i;
-  if(numElts > 0) pVal[numElts - 1] = 12345;
+  for(int i = 0; i < numElts; ++i)
+  {
+    pVal[i] = i * i;
+  }
+  if(numElts > 0)
+  {
+    pVal[numElts - 1] = 12345;
+  }
 
   slamTemplateEx::PositionSet pSet(numElts);
   slamTemplateEx::RangeSet rSet(rangeBeginElt, numElts + rangeBeginElt);

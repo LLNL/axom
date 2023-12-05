@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -11,8 +11,9 @@
 #include "axom/primal/geometry/NumericArray.hpp"
 
 // C/C++ includes
-#include <cstring>  // For memcpy()
-#include <ostream>  // For print() and operator <<
+#include <cstring>
+#include <ostream>
+#include "axom/fmt.hpp"
 
 namespace axom
 {
@@ -267,9 +268,9 @@ namespace primal
 {
 //------------------------------------------------------------------------------
 template <typename T, int NDIMS>
-inline Point<T, NDIMS> Point<T, NDIMS>::make_point(const T& x,
-                                                   const T& y,
-                                                   const T& z)
+AXOM_HOST_DEVICE inline Point<T, NDIMS> Point<T, NDIMS>::make_point(const T& x,
+                                                                    const T& y,
+                                                                    const T& z)
 {
   T tmp_array[3] = {x, y, z};
   return Point(tmp_array, NDIMS);
@@ -277,8 +278,9 @@ inline Point<T, NDIMS> Point<T, NDIMS>::make_point(const T& x,
 
 //------------------------------------------------------------------------------
 template <typename T, int NDIMS>
-inline Point<T, NDIMS> Point<T, NDIMS>::midpoint(const Point<T, NDIMS>& A,
-                                                 const Point<T, NDIMS>& B)
+AXOM_HOST_DEVICE inline Point<T, NDIMS> Point<T, NDIMS>::midpoint(
+  const Point<T, NDIMS>& A,
+  const Point<T, NDIMS>& B)
 {
   Point<T, NDIMS> mid_point;
 
@@ -292,9 +294,8 @@ inline Point<T, NDIMS> Point<T, NDIMS>::midpoint(const Point<T, NDIMS>& A,
 
 //------------------------------------------------------------------------------
 template <typename T, int NDIMS>
-inline Point<T, NDIMS> Point<T, NDIMS>::lerp(const Point<T, NDIMS>& A,
-                                             const Point<T, NDIMS>& B,
-                                             T alpha)
+AXOM_HOST_DEVICE inline Point<T, NDIMS>
+Point<T, NDIMS>::lerp(const Point<T, NDIMS>& A, const Point<T, NDIMS>& B, T alpha)
 {
   PointType res;
   const T beta = 1. - alpha;
@@ -332,5 +333,10 @@ std::ostream& operator<<(std::ostream& os, const Point<T, NDIMS>& pt)
 
 }  // namespace primal
 }  // namespace axom
+
+/// Overload to format a primal::Point using fmt
+template <typename T, int NDIMS>
+struct axom::fmt::formatter<axom::primal::Point<T, NDIMS>> : ostream_formatter
+{ };
 
 #endif  // AXOM_PRIMAL_POINT_HPP_

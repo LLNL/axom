@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -19,6 +19,7 @@
   #define GetCurrentDir _getcwd
   #define ChangeCurrentDir _chdir
   #define Stat _stat
+  #define Unlink _unlink
 #else
   #include <unistd.h>    // for getcwd
   #include <sys/stat.h>  // for stat
@@ -26,6 +27,7 @@
   #define GetCurrentDir getcwd
   #define ChangeCurrentDir chdir
   #define Stat stat
+  #define Unlink unlink
 #endif
 
 namespace axom
@@ -94,7 +96,7 @@ int makeDirsForPath(const std::string& path)
 #ifdef WIN32
     err = _mkdir(dir_name.c_str());
 #else
-    mode_t mode = 0770;  // user and group rwx permissions
+    mode_t mode = 0777;  // rwx permissions for everyone
     err = mkdir(dir_name.c_str(), mode);
 #endif
     err = (err && (errno != EEXIST)) ? 1 : 0;
@@ -119,6 +121,9 @@ void getDirName(std::string& dir, const std::string& path)
     dir = "";
   }
 }
+
+//-----------------------------------------------------------------------------
+int removeFile(const std::string& filename) { return Unlink(filename.c_str()); }
 
 }  // end namespace filesystem
 }  // end namespace utilities

@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -7,7 +7,8 @@
 
 #include "axom/config.hpp"
 #include "axom/core/Macros.hpp"
-#include "axom/sidre/core/sidre.hpp"
+#include "axom/slic.hpp"
+#include "axom/sidre.hpp"
 
 #include "conduit_blueprint.hpp"
 
@@ -46,7 +47,9 @@ template <typename T>
 void setData(T* data, int size, T initVal = T(0), int intDiv = 1, T scaleFac = T(1))
 {
   for(int i = 0; i < size; ++i)
+  {
     data[i] = initVal + ((i + 1) / intDiv) * scaleFac;
+  }
 }
 
 /**
@@ -514,7 +517,7 @@ TEST(sidre_native_layout, basic_demo_compare)
   // we use int64 and float64 b/c those types persist even with
   // json or yaml output
 
-  axom::int64 sidre_vals_1[5] = {0, 1, 2, 3, 4};
+  std::int64_t sidre_vals_1[5] = {0, 1, 2, 3, 4};
   axom::float64 sidre_vals_2[6] = {
     1.0,
     2.0,
@@ -539,7 +542,7 @@ TEST(sidre_native_layout, basic_demo_compare)
   View* a5_view =
     group3->createViewAndAllocate("a5_i64", axom::sidre::DataType::int64(5));
 
-  axom::int64* a5_view_ptr = a5_view->getData();
+  std::int64_t* a5_view_ptr = a5_view->getData();
 
   for(int i = 0; i < 5; i++)
   {
@@ -612,7 +615,7 @@ TEST(sidre_native_layout, basic_demo_compare)
   // create an equiv conduit tree for testing
   //
 
-  axom::int64 conduit_vals_1[5] = {0, 1, 2, 3, 4};
+  std::int64_t conduit_vals_1[5] = {0, 1, 2, 3, 4};
   axom::float64 conduit_vals_2[6] = {
     1.0,
     2.0,
@@ -656,18 +659,12 @@ TEST(sidre_native_layout, basic_demo_compare)
 
 //----------------------------------------------------------------------
 //----------------------------------------------------------------------
-#include "axom/slic/core/SimpleLogger.hpp"
-using axom::slic::SimpleLogger;
-
 int main(int argc, char* argv[])
 {
   int result = 0;
 
   ::testing::InitGoogleTest(&argc, argv);
-
-  SimpleLogger logger;  // create & initialize test logger, finalized when
-                        // exiting main scope
-  axom::slic::setLoggingMsgLevel(axom::slic::message::Debug);
+  axom::slic::SimpleLogger logger(axom::slic::message::Debug);
 
   result = RUN_ALL_TESTS();
 

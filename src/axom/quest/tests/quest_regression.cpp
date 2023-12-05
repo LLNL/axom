@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -64,7 +64,6 @@ namespace mint = axom::mint;
 namespace primal = axom::primal;
 namespace quest = axom::quest;
 namespace sidre = axom::sidre;
-namespace slic = axom::slic;
 namespace utilities = axom::utilities;
 
 using SpaceBoundingBox = primal::BoundingBox<double, DIM>;
@@ -234,7 +233,9 @@ void loadBaselineData(sidre::Group* grp, Input& args)
   {
     sidre::View* view = grp->getView("mesh_bounding_box");
     if(view->getNumElements() != 6)
+    {
       SLIC_ERROR("Bounding box must contain six doubles");
+    }
 
     double* data = view->getData();
     args.meshBoundingBox =
@@ -250,7 +251,9 @@ void loadBaselineData(sidre::Group* grp, Input& args)
   {
     sidre::View* view = grp->getView("query_resolution");
     if(view->getNumElements() != 3)
+    {
       SLIC_ERROR("Query resolution must contain three ints");
+    }
 
     int* data = view->getData();
     args.queryResolution = GridPt(data, 3);
@@ -260,8 +263,10 @@ void loadBaselineData(sidre::Group* grp, Input& args)
   if(args.testContainment)
   {
     if(!grp->hasView("octree_containment"))
+    {
       SLIC_ERROR("Requested containment, but baseline "
                  << "does not have a 'octree_containment' view");
+    }
     else
     {
       SLIC_ASSERT_MSG(
@@ -565,7 +570,7 @@ bool compareDistanceAndContainment(Input& clargs)
             primal::Point<double, 3> pt;
             umesh->getNode(inode, pt.data());
 
-            axom::fmt::format_to(out,
+            axom::fmt::format_to(std::back_inserter(out),
                                  "\n  Disagreement on sample {} @ {}.  "
                                  "Signed distance: {} ({}) -- InOutOctree: {} ",
                                  inode,
@@ -630,7 +635,7 @@ bool compareToBaselineResults(axom::sidre::Group* grp, Input& clargs)
           umesh->getNode(inode, pt.data());
 
           axom::fmt::format_to(
-            out,
+            std::back_inserter(out),
             "\n  Disagreement on sample {} @ {}.  Expected {}, got {}",
             inode,
             pt,
@@ -678,7 +683,7 @@ bool compareToBaselineResults(axom::sidre::Group* grp, Input& clargs)
           umesh->getNode(inode, pt.data());
 
           axom::fmt::format_to(
-            out,
+            std::back_inserter(out),
             "\n  Disagreement on sample {} @ {}. Expected {} ({}), got {} ({})",
             inode,
             pt,
@@ -789,7 +794,7 @@ int main(int argc, char** argv)
   // initialize the problem
   MPI_Init(&argc, &argv);
 
-  slic::SimpleLogger logger;
+  axom::slic::SimpleLogger logger;
   sidre::DataStore ds;
 
   // parse the command arguments
