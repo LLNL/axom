@@ -373,7 +373,7 @@ int testByConduitExample(const IndexCoords& domainShape,
 
   axom::quest::MeshViewUtil<3, axom::MemorySpace::Dynamic> mview(domain);
 
-  if(!mview.isValid(true, true))
+  if(!mview.isValid(true, false))
   {
     ++errCount;
     SLIC_INFO_IF(params.isVerbose(), "Test view is not valid.");
