@@ -392,7 +392,7 @@ public:
     , m_load_factor(0)
     , m_bucket_fill(false)
 #if defined(AXOM_USE_OPENMP) && defined(AXOM_USE_RAJA)
-    , locks(nullptr)
+    , m_locks(nullptr)
 #endif
   {
     *this = std::move(other);
@@ -419,7 +419,7 @@ public:
       m_end = other.m_end;
       pol = other.pol;
 #if defined(AXOM_USE_OPENMP) && defined(AXOM_USE_RAJA)
-      locks = other.locks;
+      m_locks = other.m_locks;
 #endif
 
       other.m_buckets = nullptr;
@@ -428,7 +428,7 @@ public:
       other.m_size = 0;
       other.m_load_factor = 0;
 #if defined(AXOM_USE_OPENMP) && defined(AXOM_USE_RAJA)
-      other.locks = nullptr;
+      other.m_locks = nullptr;
 #endif
     }
     return *this;
@@ -464,7 +464,7 @@ public:
     IndexType newlen = 0;
     IndexType ind;
     std::size_t hashed;
-    if(buckets != -1 && buckets > static_cast<int>(m_bucket_count))
+    if(buckets != -1 && buckets > m_bucket_count)
     {
       newlen = buckets;
     }
@@ -883,7 +883,7 @@ private:
   void bucket_lock(std::size_t index, axom::OMP_EXEC overload) const
   {
     AXOM_UNUSED_VAR(overload);
-    omp_set_lock(locks + index);
+    omp_set_lock(m_locks + index);
   }
 
   /*!
@@ -894,7 +894,7 @@ private:
   void bucket_unlock(std::size_t index, axom::OMP_EXEC overload) const
   {
     AXOM_UNUSED_VAR(overload);
-    omp_unset_lock(locks + index);
+    omp_unset_lock(m_locks + index);
   }
 
   /*!
@@ -903,10 +903,10 @@ private:
   void init_locks(axom::OMP_EXEC overload) const
   {
     AXOM_UNUSED_VAR(overload);
-    locks = axom::allocate<omp_lock_t>(m_bucket_count);
-    for(std::size_t i = 0; i < m_bucket_count; i++)
+    m_locks = axom::allocate<omp_lock_t>(m_bucket_count);
+    for(IndexType i = 0; i < m_bucket_count; i++)
     {
-      omp_init_lock(locks + i);
+      omp_init_lock(m_locks + i);
     }
   }
 
@@ -916,11 +916,11 @@ private:
   void destroy_locks(axom::OMP_EXEC overload) const
   {
     AXOM_UNUSED_VAR(overload);
-    for(std::size_t i = 0; i < m_bucket_count; i++)
+    for(IndexType i = 0; i < m_bucket_count; i++)
     {
-      omp_destroy_lock(locks + i);
+      omp_destroy_lock(m_locks + i);
     }
-    axom::deallocate<omp_lock_t>(locks);
+    axom::deallocate<omp_lock_t>(m_locks);
   }
 #endif
   /// @}
@@ -929,14 +929,14 @@ private:
   /// @{
 
   axom_map::Bucket<Key, T>* m_buckets; /*!< array of pointers to linked lists containing data */
-  std::size_t m_bucket_count; /*!< the number of buckets in the Map instance */
+  IndexType m_bucket_count; /*!< the number of buckets in the Map instance */
   IndexType m_bucket_len; /*!< the number of items that can be contained in a bucket in this Map instance */
   IndexType m_size; /*!< the number of items currently stored in this Map instance */
   float m_load_factor; /*!< currently unused value, used in STL unordered_map to determine when to resize, which we don't do internally at the moment */
   axom_map::Node<Key, T> m_end; /*!< the sentinel node enabling verification of operation success or failure */
   bool m_bucket_fill; /*!<  status of buckets in general -- if at least one is full, this is set to true, false otherwise*/
 #if defined(AXOM_USE_OPENMP) && defined(AXOM_USE_RAJA)
-  mutable omp_lock_t* locks;
+  mutable omp_lock_t* m_locks;
 #endif
   Policy pol;
   /// @}
