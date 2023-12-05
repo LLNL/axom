@@ -725,13 +725,13 @@ int testByConduitExample(const IndexCoords& domainShape,
 int main(int argc, char** argv)
 {
   int errCount = 0;
+  #if 0
 
   // This test is serial, but conduit might use MPI.
-  #ifdef AXOM_USE_MPI
+    #ifdef AXOM_USE_MPI
   MPI_Init(&argc, &argv);
-  #endif
+    #endif
 
-#if 0
   initializeLogger();
 
   //---------------------------------------------------------------------------
@@ -795,10 +795,10 @@ int main(int argc, char** argv)
   SLIC_INFO(axom::fmt::format("Test found {} errors.", errCount));
 
   finalizeLogger();
-#endif
 
-  #ifdef AXOM_USE_MPI
+    #ifdef AXOM_USE_MPI
   MPI_Finalize();
+    #endif
   #endif
 
   return (errCount != 0);
