@@ -64,6 +64,7 @@ set(core_headers
     ## execution
     execution/execution_space.hpp
     execution/for_all.hpp
+    execution/runtime_policy.hpp
     execution/synchronize.hpp
 
     execution/internal/seq_exec.hpp
