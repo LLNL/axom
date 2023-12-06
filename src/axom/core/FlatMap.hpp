@@ -143,11 +143,12 @@ public:
                   "Cannot copy an axom::FlatMap when value type is not "
                   "copy-constructible.");
     // Copy all elements.
-    IndexType index = this->nextValidIndex(m_metadata, NO_MATCH);
+    const auto metadata = m_metadata.view();
+    IndexType index = this->nextValidIndex(metadata, NO_MATCH);
     while(index < bucket_count())
     {
       new(&m_buckets[index].data) KeyValuePair(other.m_buckets[index].get());
-      index = this->nextValidIndex(m_metadata, index);
+      index = this->nextValidIndex(metadata, index);
     }
   }
 
@@ -178,11 +179,12 @@ public:
   ~FlatMap()
   {
     // Destroy all elements.
-    IndexType index = this->nextValidIndex(m_metadata, NO_MATCH);
+    const auto metadata = m_metadata.view();
+    IndexType index = this->nextValidIndex(metadata, NO_MATCH);
     while(index < bucket_count())
     {
       m_buckets[index].get().~KeyValuePair();
-      index = this->nextValidIndex(m_metadata, index);
+      index = this->nextValidIndex(metadata, index);
     }
 
     // Unlike in clear() we don't need to reset metadata here.
