@@ -155,18 +155,17 @@ struct GroupBucket
       std::uint8_t buckets[Size];
     } metadata;
     std::uint64_t data[2];
-    static_assert(
-      sizeof(metadata) == sizeof(data),
-      "FlatMap::SwissTable::Bucket: sizeof(data_bytes) != sizeof(data)");
+    static_assert(sizeof(metadata) == sizeof(data),
+                  "flat_map::GroupBucket: sizeof(data_bytes) != sizeof(data)");
   };
 };
 
 static_assert(sizeof(GroupBucket) == 16,
-              "FlatMap::SwissTable::Bucket: size != 16 bytes");
+              "flat_map::GroupBucket: size != 16 bytes");
 static_assert(std::alignment_of<GroupBucket>::value == 16,
-              "FlatMap::SwissTable::Bucket: alignment != 16 bytes");
+              "flat_map::GroupBucket: alignment != 16 bytes");
 static_assert(std::is_standard_layout<GroupBucket>::value,
-              "FlatMap::SwissTable::Bucket: not standard layout");
+              "flat_map::GroupBucket: not standard layout");
 
 template <typename HashType, typename ProbePolicy = QuadraticProbing>
 struct SequentialLookupPolicy
@@ -233,8 +232,8 @@ struct SequentialLookupPolicy
    * \param [in] ngroups_pow_2 the number of groups, expressed as a power of 2
    * \param [in] groups the array of metadata for the groups in the hash map
    * \param [in] hash the hash to insert
-   *
-   * \return the first bucket with an empty space, if probing for insertion.
+   * \param [in] on_hash_found functor to call for a bucket index with a
+   *  matching hash
    */
   template <typename FoundIndex>
   void probeIndex(int ngroups_pow_2,
