@@ -323,11 +323,11 @@ spack:
       - spec: cppcheck@2.9
         prefix: /collab/usr/gapps/axom/devtools/blueos_3_ppc64le_ib_p9/latest/cppcheck-2.9
     doxygen:
-      version: [1.8.14]
+      version: [1.9.6]
       buildable: false
       externals:
-      - spec: doxygen@1.8.14
-        prefix: /collab/usr/gapps/axom/devtools/blueos_3_ppc64le_ib_p9/latest/doxygen-1.8.14
+      - spec: doxygen@1.9.6
+        prefix: /collab/usr/gapps/axom/devtools/blueos_3_ppc64le_ib_p9/latest/doxygen-1.9.6
     graphviz:
       version: [7.1.0]
       buildable: false

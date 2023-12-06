@@ -294,14 +294,7 @@ public:
   using TetrahedronType = primal::Tetrahedron<double, 3>;
   using SegmentMesh = mint::UnstructuredMesh<mint::SINGLE_SHAPE>;
 
-  /// Choose runtime policy for RAJA
-  enum ExecPolicy
-  {
-    seq = 0,
-    omp = 1,
-    cuda = 2,
-    hip = 3
-  };
+  using RuntimePolicy = axom::runtime_policy::Policy;
 
   static constexpr int DEFAULT_CIRCLE_REFINEMENT_LEVEL {7};
   static constexpr double DEFAULT_REVOLVED_VOLUME {0.};
@@ -319,7 +312,7 @@ public:
 
   void setLevel(int level) { m_level = level; }
 
-  void setExecPolicy(int policy) { m_execPolicy = (ExecPolicy)policy; }
+  void setExecPolicy(RuntimePolicy policy) { m_execPolicy = policy; }
 
   /*!
    * \brief Set the name of the material used to account for free volume fractions.
@@ -518,7 +511,6 @@ public:
         AXOM_LAMBDA(axom::IndexType i) {
           // Convert Octahedron into Polyhedrom
           PolyhedronType octPoly;
-          double octVolume;
 
           octPoly.addVertex(octs_view[i][0]);
           octPoly.addVertex(octs_view[i][1]);
@@ -534,15 +526,7 @@ public:
           octPoly.addNeighbors(4, {0, 5, 3, 2});
           octPoly.addNeighbors(5, {0, 1, 3, 4});
 
-          octVolume = octPoly.volume();
-
-          // Flip sign if volume is negative
-          // (expected when vertex order is reversed)
-          if(octVolume < 0)
-          {
-            octVolume = -octVolume;
-          }
-          total_oct_vol += octVolume;
+          total_oct_vol += octPoly.volume();
         });
 
       SLIC_INFO(axom::fmt::format(
@@ -921,7 +905,7 @@ public:
       " Calculating element overlap volume from each tet-shape pair "));
 
     constexpr double EPS = 1e-10;
-    constexpr bool checkSign = true;
+    constexpr bool tryFixOrientation = true;
 
     AXOM_PERF_MARK_SECTION(
       "tet_shape_volume",
@@ -935,19 +919,13 @@ public:
           PolyhedronType poly = primal::clip(shapes_view[shapeIndex],
                                              tets_from_hexes_view[tetIndex],
                                              EPS,
-                                             checkSign);
+                                             tryFixOrientation);
 
           // Poly is valid
           if(poly.numVertices() >= 4)
           {
-            double clip_volume = poly.volume();
-            // Flip sign if negative
-            if(clip_volume < 0)
-            {
-              clip_volume = -clip_volume;
-            }
             RAJA::atomicAdd<ATOMIC_POL>(overlap_volumes_view.data() + index,
-                                        clip_volume);
+                                        poly.volume());
           }
         }););
 
@@ -1383,30 +1361,27 @@ public:
     switch(m_execPolicy)
     {
 #if defined(AXOM_USE_RAJA) && defined(AXOM_USE_UMPIRE)
-    case seq:
+    case RuntimePolicy::seq:
       applyReplacementRulesImpl<seq_exec>(shape);
       break;
   #if defined(AXOM_USE_OPENMP)
-    case omp:
+    case RuntimePolicy::omp:
       applyReplacementRulesImpl<omp_exec>(shape);
       break;
   #endif  // AXOM_USE_OPENMP
   #if defined(AXOM_USE_CUDA)
-    case cuda:
+    case RuntimePolicy::cuda:
       applyReplacementRulesImpl<cuda_exec>(shape);
       break;
   #endif  // AXOM_USE_CUDA
   #if defined(AXOM_USE_HIP)
-    case hip:
+    case RuntimePolicy::hip:
       applyReplacementRulesImpl<hip_exec>(shape);
       break;
   #endif  // AXOM_USE_HIP
 #endif    // AXOM_USE_RAJA && AXOM_USE_UMPIRE
-    default:
-      AXOM_UNUSED_VAR(shape);
-      SLIC_ERROR("Unhandled runtime policy case " << m_execPolicy);
-      break;
     }
+    AXOM_UNUSED_VAR(shape);
   }
 
   void finalizeShapeQuery() override
@@ -1441,31 +1416,28 @@ public:
     switch(m_execPolicy)
     {
 #if defined(AXOM_USE_RAJA) && defined(AXOM_USE_UMPIRE)
-    case seq:
+    case RuntimePolicy::seq:
       prepareShapeQueryImpl<seq_exec>(shapeDimension, shape);
       break;
   #if defined(AXOM_USE_OPENMP)
-    case omp:
+    case RuntimePolicy::omp:
       prepareShapeQueryImpl<omp_exec>(shapeDimension, shape);
       break;
   #endif  // AXOM_USE_OPENMP
   #if defined(AXOM_USE_CUDA)
-    case cuda:
+    case RuntimePolicy::cuda:
       prepareShapeQueryImpl<cuda_exec>(shapeDimension, shape);
       break;
   #endif  // AXOM_USE_CUDA
   #if defined(AXOM_USE_HIP)
-    case hip:
+    case RuntimePolicy::hip:
       prepareShapeQueryImpl<hip_exec>(shapeDimension, shape);
       break;
   #endif  // AXOM_USE_HIP
 #endif    // AXOM_USE_RAJA && AXOM_USE_UMPIRE
-    default:
-      AXOM_UNUSED_VAR(shapeDimension);
-      AXOM_UNUSED_VAR(shape);
-      SLIC_ERROR("Unhandled runtime policy case " << m_execPolicy);
-      break;
     }
+    AXOM_UNUSED_VAR(shapeDimension);
+    AXOM_UNUSED_VAR(shape);
 
     // Restore m_percentError, m_level in case refineShape changed them.
     m_percentError = saved_percentError;
@@ -1484,29 +1456,25 @@ public:
       switch(m_execPolicy)
       {
 #if defined(AXOM_USE_RAJA) && defined(AXOM_USE_UMPIRE)
-      case seq:
+      case RuntimePolicy::seq:
         runShapeQueryImpl<seq_exec, TetrahedronType>(shape, m_tets, m_tetcount);
         break;
   #if defined(AXOM_USE_OPENMP)
-      case omp:
+      case RuntimePolicy::omp:
         runShapeQueryImpl<omp_exec, TetrahedronType>(shape, m_tets, m_tetcount);
         break;
   #endif  // AXOM_USE_OPENMP
   #if defined(AXOM_USE_CUDA)
-      case cuda:
+      case RuntimePolicy::cuda:
         runShapeQueryImpl<cuda_exec, TetrahedronType>(shape, m_tets, m_tetcount);
         break;
   #endif  // AXOM_USE_CUDA
   #if defined(AXOM_USE_HIP)
-      case hip:
+      case RuntimePolicy::hip:
         runShapeQueryImpl<hip_exec, TetrahedronType>(shape, m_tets, m_tetcount);
         break;
   #endif  // AXOM_USE_HIP
 #endif    // AXOM_USE_RAJA && AXOM_USE_UMPIRE
-      default:
-        AXOM_UNUSED_VAR(shape);
-        SLIC_ERROR("Unhandled runtime policy case " << m_execPolicy);
-        break;
       }
     }
     else if(shapeFormat == "c2c")
@@ -1514,29 +1482,25 @@ public:
       switch(m_execPolicy)
       {
 #if defined(AXOM_USE_RAJA) && defined(AXOM_USE_UMPIRE)
-      case seq:
+      case RuntimePolicy::seq:
         runShapeQueryImpl<seq_exec, OctahedronType>(shape, m_octs, m_octcount);
         break;
   #if defined(AXOM_USE_OPENMP)
-      case omp:
+      case RuntimePolicy::omp:
         runShapeQueryImpl<omp_exec, OctahedronType>(shape, m_octs, m_octcount);
         break;
   #endif  // AXOM_USE_OPENMP
   #if defined(AXOM_USE_CUDA)
-      case cuda:
+      case RuntimePolicy::cuda:
         runShapeQueryImpl<cuda_exec, OctahedronType>(shape, m_octs, m_octcount);
         break;
   #endif  // AXOM_USE_CUDA
   #if defined(AXOM_USE_HIP)
-      case hip:
+      case RuntimePolicy::hip:
         runShapeQueryImpl<hip_exec, OctahedronType>(shape, m_octs, m_octcount);
         break;
   #endif  // AXOM_USE_HIP
 #endif    // AXOM_USE_RAJA && AXOM_USE_UMPIRE
-      default:
-        AXOM_UNUSED_VAR(shape);
-        SLIC_ERROR("Unhandled runtime policy case " << m_execPolicy);
-        break;
       }
     }
     else
@@ -2024,7 +1988,7 @@ private:
   }
 
 private:
-  ExecPolicy m_execPolicy {seq};
+  RuntimePolicy m_execPolicy {RuntimePolicy::seq};
   int m_level {DEFAULT_CIRCLE_REFINEMENT_LEVEL};
   double m_revolvedVolume {DEFAULT_REVOLVED_VOLUME};
   int m_num_elements {0};

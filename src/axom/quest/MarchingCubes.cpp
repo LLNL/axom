@@ -3,11 +3,16 @@
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
-#include "axom/core/execution/execution_space.hpp"
-#include "axom/quest/MarchingCubes.hpp"
-#include "axom/quest/detail/MarchingCubesImpl.hpp"
-#include "conduit_blueprint.hpp"
-#include "axom/fmt.hpp"
+#include "axom/config.hpp"
+
+// Implementation requires Conduit.
+#ifdef AXOM_USE_CONDUIT
+  #include "conduit_blueprint.hpp"
+
+  #include "axom/core/execution/execution_space.hpp"
+  #include "axom/quest/MarchingCubes.hpp"
+  #include "axom/quest/detail/MarchingCubesImpl.hpp"
+  #include "axom/fmt.hpp"
 
 namespace axom
 {
@@ -20,7 +25,9 @@ MarchingCubes::MarchingCubes(RuntimePolicy runtimePolicy,
   : m_runtimePolicy(runtimePolicy)
   , m_singles()
   , m_topologyName(topologyName)
+  , m_fcnFieldName()
   , m_fcnPath()
+  , m_maskFieldName(maskField)
   , m_maskPath(maskField.empty() ? std::string() : "fields/" + maskField)
 {
   const bool isMultidomain = conduit::blueprint::mesh::is_multi_domain(bpMesh);
@@ -40,6 +47,7 @@ MarchingCubes::MarchingCubes(RuntimePolicy runtimePolicy,
 
 void MarchingCubes::setFunctionField(const std::string& fcnField)
 {
+  m_fcnFieldName = fcnField;
   m_fcnPath = "fields/" + fcnField;
   for(auto& s : m_singles)
   {
@@ -49,7 +57,7 @@ void MarchingCubes::setFunctionField(const std::string& fcnField)
 
 void MarchingCubes::computeIsocontour(double contourVal)
 {
-  SLIC_ASSERT_MSG(!m_fcnPath.empty(),
+  SLIC_ASSERT_MSG(!m_fcnFieldName.empty(),
                   "You must call setFunctionField before computeIsocontour.");
 
   for(int dId = 0; dId < m_singles.size(); ++dId)
@@ -118,13 +126,15 @@ void MarchingCubes::populateContourMesh(
       auto* domainIdPtr =
         mesh.getFieldPtr<axom::IndexType>(domainIdField,
                                           axom::mint::CELL_CENTERED);
-      // TODO: Verify that UnstructuredMesh only supports host memory.
+
+      int userDomainId = single->getDomainId(dId);
+
       axom::detail::ArrayOps<axom::IndexType, MemorySpace::Dynamic>::fill(
         domainIdPtr,
         nPrev,
         nNew - nPrev,
         execution_space<axom::SEQ_EXEC>::allocatorID(),
-        dId);
+        userDomainId);
     }
   }
   SLIC_ASSERT(mesh.getNumberOfNodes() == contourNodeCount);
@@ -139,13 +149,11 @@ MarchingCubesSingleDomain::MarchingCubesSingleDomain(RuntimePolicy runtimePolicy
   , m_dom(nullptr)
   , m_ndim(0)
   , m_topologyName(topologyName)
+  , m_fcnFieldName()
   , m_fcnPath()
+  , m_maskFieldName(maskField)
   , m_maskPath(maskField.empty() ? std::string() : "fields/" + maskField)
 {
-  SLIC_ASSERT_MSG(
-    isValidRuntimePolicy(runtimePolicy),
-    fmt::format("Policy '{}' is not a valid runtime policy", runtimePolicy));
-
   setDomain(dom);
   return;
 }
@@ -170,8 +178,8 @@ void MarchingCubesSingleDomain::setDomain(const conduit::Node& dom)
 
   m_dom = &dom;
 
-  m_ndim = conduit::blueprint::mesh::coordset::dims(
-    dom.fetch_existing("coordsets/coords"));
+  m_ndim = conduit::blueprint::mesh::topology::dims(
+    dom.fetch_existing(axom::fmt::format("topologies/{}", m_topologyName)));
   SLIC_ASSERT(m_ndim >= 2 && m_ndim <= 3);
 
   const conduit::Node& coordsValues =
@@ -184,6 +192,7 @@ void MarchingCubesSingleDomain::setDomain(const conduit::Node& dom)
 
 void MarchingCubesSingleDomain::setFunctionField(const std::string& fcnField)
 {
+  m_fcnFieldName = fcnField;
   m_fcnPath = "fields/" + fcnField;
   SLIC_ASSERT(m_dom->has_path(m_fcnPath));
   SLIC_ASSERT(m_dom->fetch_existing(m_fcnPath + "/association").as_string() ==
@@ -191,15 +200,23 @@ void MarchingCubesSingleDomain::setFunctionField(const std::string& fcnField)
   SLIC_ASSERT(m_dom->has_path(m_fcnPath + "/values"));
 }
 
+int MarchingCubesSingleDomain::getDomainId(int defaultId) const
+{
+  int rval = defaultId;
+  if(m_dom->has_path("state/domain_id"))
+  {
+    rval = m_dom->fetch_existing("state/domain_id").as_int();
+  }
+  return rval;
+}
+
 void MarchingCubesSingleDomain::computeIsocontour(double contourVal)
 {
-  SLIC_ASSERT_MSG(!m_fcnPath.empty(),
+  SLIC_ASSERT_MSG(!m_fcnFieldName.empty(),
                   "You must call setFunctionField before computeIsocontour.");
 
   allocateImpl();
-  const std::string coordsetPath = "coordsets/" +
-    m_dom->fetch_existing("topologies/" + m_topologyName + "/coordset").as_string();
-  m_impl->initialize(*m_dom, coordsetPath, m_fcnPath, m_maskPath);
+  m_impl->initialize(*m_dom, m_topologyName, m_fcnFieldName, m_maskFieldName);
   m_impl->setContourValue(contourVal);
   m_impl->markCrossings();
   m_impl->scanCrossings();
@@ -217,7 +234,7 @@ void MarchingCubesSingleDomain::allocateImpl()
       : std::unique_ptr<ImplBase>(
           new MarchingCubesImpl<3, axom::SEQ_EXEC, axom::SEQ_EXEC>);
   }
-#ifdef _AXOM_MC_USE_OPENMP
+  #ifdef AXOM_RUNTIME_POLICY_USE_OPENMP
   else if(m_runtimePolicy == RuntimePolicy::omp)
   {
     m_impl = m_ndim == 2
@@ -226,8 +243,8 @@ void MarchingCubesSingleDomain::allocateImpl()
       : std::unique_ptr<ImplBase>(
           new MarchingCubesImpl<3, axom::OMP_EXEC, axom::SEQ_EXEC>);
   }
-#endif
-#ifdef _AXOM_MC_USE_CUDA
+  #endif
+  #ifdef AXOM_RUNTIME_POLICY_USE_CUDA
   else if(m_runtimePolicy == RuntimePolicy::cuda)
   {
     m_impl = m_ndim == 2
@@ -236,8 +253,8 @@ void MarchingCubesSingleDomain::allocateImpl()
       : std::unique_ptr<ImplBase>(
           new MarchingCubesImpl<3, axom::CUDA_EXEC<256>, axom::CUDA_EXEC<1>>);
   }
-#endif
-#ifdef _AXOM_MC_USE_HIP
+  #endif
+  #ifdef AXOM_RUNTIME_POLICY_USE_HIP
   else if(m_runtimePolicy == RuntimePolicy::hip)
   {
     m_impl = m_ndim == 2
@@ -246,7 +263,7 @@ void MarchingCubesSingleDomain::allocateImpl()
       : std::unique_ptr<ImplBase>(
           new MarchingCubesImpl<3, axom::HIP_EXEC<256>, axom::HIP_EXEC<1>>);
   }
-#endif
+  #endif
   else
   {
     SLIC_ERROR(axom::fmt::format(
@@ -254,6 +271,8 @@ void MarchingCubesSingleDomain::allocateImpl()
       m_runtimePolicy));
   }
 }
+
+#endif  // AXOM_USE_CONDUIT
 
 }  // end namespace quest
 }  // end namespace axom

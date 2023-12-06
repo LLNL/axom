@@ -84,6 +84,20 @@ if(AXOM_ENABLE_QUEST)
         blt_list_append(TO _policies ELEMENTS "raja_omp" IF AXOM_ENABLE_OPENMP)
         blt_list_append(TO _policies ELEMENTS "raja_cuda" IF AXOM_ENABLE_CUDA)
 
+        # Test with HIP policy for select optimization flags.
+        # Check for Debug flags that have been overwritten.
+        if(AXOM_ENABLE_HIP)
+            if((CMAKE_BUILD_TYPE MATCHES "(Release|RelWithDebInfo)") OR
+              (CMAKE_BUILD_TYPE MATCHES "Debug" AND
+              CMAKE_CXX_FLAGS_DEBUG MATCHES "\-O1 \-g \-DNDEBUG"))
+                list(APPEND _policies "raja_hip")
+            else()
+              message(STATUS
+                "HIP policy for mesh_tester executable is not being tested"
+              )
+            endif()
+        endif()
+
         foreach(_method ${_methods})
             foreach(_policy ${_policies})
 

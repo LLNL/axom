@@ -234,6 +234,7 @@ if (SCR_DIR)
                         TREAT_INCLUDES_AS_SYSTEM ON
                         EXPORTABLE ON)
     blt_list_append(TO TPL_DEPS ELEMENTS scr)
+    set(SCR_FOUND ON CACHE BOOL "")
 else()
     message(STATUS "SCR support is OFF")
 endif()
@@ -318,6 +319,12 @@ if (TARGET blt::openmp)
     set_target_properties(blt::openmp PROPERTIES INTERFACE_COMPILE_OPTIONS "")
     set_target_properties(blt::openmp PROPERTIES INTERFACE_LINK_OPTIONS "")
 endif()
+
+#------------------------------------------------------------------------------
+# jsonschema - for Inlet testing purposes
+#------------------------------------------------------------------------------
+set(ENABLE_JSONSCHEMA ON) # required by blt_find_executable
+blt_find_executable(NAME jsonschema)
 
 #------------------------------------------------------------------------------
 # Targets that need to be exported but don't have a CMake config file

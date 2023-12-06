@@ -49,7 +49,7 @@ namespace primal = axom::primal;
 namespace mint = axom::mint;
 namespace numerics = axom::numerics;
 
-using RuntimePolicy = axom::quest::DistributedClosestPoint::RuntimePolicy;
+using RuntimePolicy = axom::runtime_policy::Policy;
 
 // converts the input string into an 80 character string
 // padded on both sides with '=' symbols
@@ -83,24 +83,6 @@ public:
 private:
   bool m_verboseOutput {false};
   double m_emptyRankProbability {0.};
-
-  // clang-format off
-  const std::map<std::string, RuntimePolicy> s_validPolicies
-  {
-      {"seq", RuntimePolicy::seq}
-#if defined(AXOM_USE_RAJA)
-  #ifdef AXOM_USE_OPENMP
-    , {"omp", RuntimePolicy::omp}
-  #endif
-  #if defined(AXOM_USE_CUDA) && defined(AXOM_USE_UMPIRE)
-    , {"cuda", RuntimePolicy::cuda}
-  #endif
-  #if defined(AXOM_USE_HIP) && defined(AXOM_USE_UMPIRE)
-    , {"hip", RuntimePolicy::hip}
-  #endif
-#endif
-  };
-  // clang-format on
 
 public:
   bool isVerbose() const { return m_verboseOutput; }
@@ -186,7 +168,8 @@ public:
     app.add_option("-p, --policy", policy)
       ->description("Set runtime policy for point query method")
       ->capture_default_str()
-      ->transform(axom::CLI::CheckedTransformer(s_validPolicies));
+      ->transform(
+        axom::CLI::CheckedTransformer(axom::runtime_policy::s_nameToPolicy));
 
     app.add_flag("-c,--check-results,!--no-check-results", checkResults)
       ->description(
@@ -216,11 +199,21 @@ public:
   using PointArray2D = axom::Array<Point2D>;
   using PointArray3D = axom::Array<Point3D>;
 
-  explicit BlueprintParticleMesh(sidre::Group* group = nullptr,
-                                 const std::string& coordset = "coords",
-                                 const std::string& topology = "mesh")
-    : m_coordsetName(coordset)
-    , m_topologyName(topology)
+  explicit BlueprintParticleMesh(sidre::Group* group,
+                                 const std::string& topology,
+                                 const std::string& coordset)
+    : m_topologyName(topology)
+    , m_coordsetName(coordset)
+    , m_group(group)
+    , m_domainGroups()
+  {
+    MPI_Comm_rank(MPI_COMM_WORLD, &m_rank);
+    MPI_Comm_size(MPI_COMM_WORLD, &m_nranks);
+  }
+
+  explicit BlueprintParticleMesh(sidre::Group* group)
+    : m_topologyName()
+    , m_coordsetName()
     , m_group(group)
     , m_domainGroups()
   {
@@ -278,16 +271,16 @@ public:
     return false;
   }
 
-  /// Returns the number of points in a particle mesh domain
+  /*!
+    @brief Returns the number of points in a particle mesh domain
+    including ghost points.
+  */
   int numPoints(axom::IndexType dIdx) const
   {
     int rval = 0;
     auto* cg = m_coordsGroups[dIdx];
-    //BTNG: The following if-check is probably not a use-case
-    if(cg != nullptr && cg->hasView("values/x"))
-    {
-      rval = cg->getView("values/x")->getNumElements();
-    }
+    SLIC_ASSERT(cg != nullptr && cg->hasView("values/x"));
+    rval = cg->getView("values/x")->getNumElements();
     return rval;
   }
   /// Returns the number of points in the particle mesh
@@ -306,6 +299,10 @@ public:
 
   /*!
     @brief Read a blueprint mesh and store it internally in m_group.
+
+    If the topology wasn't specified in the constructor, the first
+    topology from the file is used.  The coordset name will be
+    replaced with the one corresponding to the topology.
   */
   void read_blueprint_mesh(const std::string& meshFilename)
   {
@@ -326,10 +323,33 @@ public:
 
     if(domCount > 0)
     {
+      m_coordsAreStrided = mdMesh[0]
+                             .fetch_existing("topologies/mesh/elements/dims")
+                             .has_child("strides");
+      if(m_coordsAreStrided)
+      {
+        SLIC_WARNING(axom::fmt::format(
+          "Mesh '{}' is strided.  Stride support is under development.",
+          meshFilename));
+      }
+    }
+
+    if(domCount > 0)
+    {
+      if(m_topologyName.empty())
+      {
+        // No topology given.  Pick the first one.
+        m_topologyName = mdMesh[0].fetch_existing("topologies")[0].name();
+      }
+      auto topologyPath = axom::fmt::format("topologies/{}", m_topologyName);
+
+      m_coordsetName =
+        mdMesh[0].fetch_existing(topologyPath + "/coordset").as_string();
       const conduit::Node coordsetNode =
         mdMesh[0].fetch_existing("coordsets").fetch_existing(m_coordsetName);
       m_dimension = conduit::blueprint::mesh::coordset::dims(coordsetNode);
     }
+
     MPI_Allreduce(MPI_IN_PLACE, &m_dimension, 1, MPI_INT, MPI_MAX, MPI_COMM_WORLD);
     SLIC_ASSERT(m_dimension > 0);
 
@@ -431,7 +451,7 @@ public:
     }
 
     // set the default connectivity
-    // Maybe be required by an old version of visit.  May not be needed by newer versions of visit.
+    // May be required by an old version of visit.  May not be needed by newer versions of visit.
     sidre::Array<int> arr(
       m_topoGroups[domainIdx]->createView("elements/connectivity"),
       SZ,
@@ -486,6 +506,13 @@ public:
       auto* fld = m_fieldsGroups[dIdx]->createGroup(fieldName);
       fld->createViewString("association", "vertex");
       fld->createViewString("topology", m_topoGroups[dIdx]->getName());
+      if(m_coordsAreStrided)
+      {
+        auto* offsets = m_topoGroups[dIdx]->getView("elements/dims/offsets");
+        auto* strides = m_topoGroups[dIdx]->getView("elements/dims/strides");
+        fld->copyView(offsets);
+        fld->copyView(strides);
+      }
       fld->createViewAndAllocate("values",
                                  sidre::detail::SidreTT<T>::id,
                                  numPoints(dIdx));
@@ -503,6 +530,13 @@ public:
       auto* fld = m_fieldsGroups[dIdx]->createGroup(fieldName);
       fld->createViewString("association", "vertex");
       fld->createViewString("topology", m_topoGroups[dIdx]->getName());
+      if(m_coordsAreStrided)
+      {
+        auto* offsets = m_topoGroups[dIdx]->getView("elements/dims/offsets");
+        auto* strides = m_topoGroups[dIdx]->getView("elements/dims/strides");
+        fld->copyView(offsets);
+        fld->copyView(strides);
+      }
 
       // create views into a shared buffer for the coordinates, with stride DIM
       auto* buf = m_domainGroups[dIdx]
@@ -646,8 +680,10 @@ private:
   }
 
 private:
-  const std::string m_coordsetName;
-  const std::string m_topologyName;
+  //!@brief Whether stride/offsets are given for blueprint mesh coordinates data.
+  bool m_coordsAreStrided = false;
+  std::string m_topologyName;
+  std::string m_coordsetName;
   /// Parent group for the entire mesh
   sidre::Group* m_group;
   /// Group for each domain in multidomain mesh
@@ -671,7 +707,7 @@ class ObjectMeshWrapper
 public:
   using Circle = primal::Sphere<double, 2>;
 
-  ObjectMeshWrapper(sidre::Group* group) : m_objectMesh(group)
+  ObjectMeshWrapper(sidre::Group* group) : m_objectMesh(group, "mesh", "coords")
   {
     SLIC_ASSERT(group != nullptr);
   }
@@ -1252,12 +1288,14 @@ int main(int argc, char** argv)
   //---------------------------------------------------------------------------
   // Memory resource.  For testing, choose device memory if appropriate.
   //---------------------------------------------------------------------------
-  const std::string umpireResourceName =
-    params.policy == RuntimePolicy::seq || params.policy == RuntimePolicy::omp
+  const std::string umpireResourceName = params.policy == RuntimePolicy::seq
     ? "HOST"
     :
+  #if defined(AXOM_RUNTIME_POLICY_USE_OPENMP)
+    params.policy == RuntimePolicy::omp ? "HOST" :
+  #endif
   #if defined(UMPIRE_ENABLE_DEVICE)
-    "DEVICE"
+                                        "DEVICE"
   #elif defined(UMPIRE_ENABLE_UM)
     "UM"
   #elif defined(UMPIRE_ENABLE_PINNED)
@@ -1277,9 +1315,10 @@ int main(int argc, char** argv)
     PointType(params.circleCenter.data(), params.circleCenter.size()),
     params.circleRadius);
 
-  sidre::DataStore objectDS;
+  sidre::DataStore dataStore;
+
   ObjectMeshWrapper objectMeshWrapper(
-    objectDS.getRoot()->createGroup("object_mesh", true));
+    dataStore.getRoot()->createGroup("object_mesh", true));
   objectMeshWrapper.setVerbosity(params.isVerbose());
 
   {
@@ -1307,9 +1346,8 @@ int main(int argc, char** argv)
   // Load computational mesh and generate a particle mesh over its nodes
   // These will be used to query the closest points on the object mesh(es)
   //---------------------------------------------------------------------------
-  sidre::DataStore queryDS;  // TODO: Need separate stores for object and query?
   QueryMeshWrapper queryMeshWrapper(
-    queryDS.getRoot()->createGroup("queryMesh", true),
+    dataStore.getRoot()->createGroup("queryMesh", true),
     params.meshFile);
   // queryMeshWrapper.print_mesh_info();
 

@@ -32,12 +32,12 @@ namespace axom
 namespace primal
 {
 // Forward declare the templated classes and operator functions
-template <typename T>
+template <typename T, int NDIMS>
 class BezierPatch;
 
 /*! \brief Overloaded output operator for Bezier Patches*/
-template <typename T>
-std::ostream& operator<<(std::ostream& os, const BezierPatch<T>& bPatch);
+template <typename T, int NDIMS>
+std::ostream& operator<<(std::ostream& os, const BezierPatch<T, NDIMS>& bPatch);
 
 /*!
  * \class BezierPatch
@@ -55,22 +55,26 @@ std::ostream& operator<<(std::ostream& os, const BezierPatch<T>& bPatch);
  * Gerald Farin, "Algorithms for rational Bezier curves"
  * Computer-Aided Design, Volume 15, Number 2, 1983,
  */
-template <typename T>
+template <typename T, int NDIMS>
 class BezierPatch
 {
 public:
-  using PointType = Point<T, 3>;
-  using VectorType = Vector<T, 3>;
-  using PlaneType = Plane<T, 3>;
+  using PointType = Point<T, NDIMS>;
+  using VectorType = Vector<T, NDIMS>;
+  using PlaneType = Plane<T, NDIMS>;
 
   using CoordsVec = axom::Array<PointType, 1>;
   using CoordsMat = axom::Array<PointType, 2>;
   using WeightsVec = axom::Array<T, 1>;
   using WeightsMat = axom::Array<T, 2>;
 
-  using BoundingBoxType = BoundingBox<T, 3>;
-  using OrientedBoundingBoxType = OrientedBoundingBox<T, 3>;
-  using BezierCurveType = primal::BezierCurve<T, 3>;
+  using BoundingBoxType = BoundingBox<T, NDIMS>;
+  using OrientedBoundingBoxType = OrientedBoundingBox<T, NDIMS>;
+  using BezierCurveType = primal::BezierCurve<T, NDIMS>;
+
+  AXOM_STATIC_ASSERT_MSG(
+    (NDIMS == 1) || (NDIMS == 2) || (NDIMS == 3),
+    "A Bezier Patch object may be defined in 1-, 2-, or 3-D");
 
   AXOM_STATIC_ASSERT_MSG(
     std::is_arithmetic<T>::value,
@@ -383,15 +387,15 @@ public:
   };
 
   /// Checks equality of two Bezier Patches
-  friend inline bool operator==(const BezierPatch<T>& lhs,
-                                const BezierPatch<T>& rhs)
+  friend inline bool operator==(const BezierPatch<T, NDIMS>& lhs,
+                                const BezierPatch<T, NDIMS>& rhs)
   {
     return (lhs.m_controlPoints == rhs.m_controlPoints) &&
       (lhs.m_weights == rhs.m_weights);
   }
 
-  friend inline bool operator!=(const BezierPatch<T>& lhs,
-                                const BezierPatch<T>& rhs)
+  friend inline bool operator!=(const BezierPatch<T, NDIMS>& lhs,
+                                const BezierPatch<T, NDIMS>& rhs)
   {
     return !(lhs == rhs);
   }
@@ -542,7 +546,12 @@ public:
     }
   }
 
-  /// Return an isocurve for a fixed value of u
+  /*!
+   * \brief Returns an isocurve with a fixed value of u
+   *
+   * \param [in] u Parameter value fixed in the isocurve
+   * \return c The isocurve C(v) = S(u, v) for fixed u
+   */
   BezierCurveType isocurve_u(T u) const
   {
     using axom::utilities::lerp;
@@ -553,9 +562,55 @@ public:
     BezierCurveType c(ord_v);
     axom::Array<T> dCarray(ord_u + 1);
 
-    if(isRational())
+    if(!isRational())
+    {
+      // If looking for an edge, don't need to use De Casteljau
+      if(u == 0.0)
+      {
+        for(int q = 0; q <= ord_v; ++q)
+        {
+          c[q] = m_controlPoints(0, q);
+        }
+        return c;
+      }
+      if(u == 1.0)
+      {
+        for(int q = 0; q <= ord_v; ++q)
+        {
+          c[q] = m_controlPoints(ord_u, q);
+        }
+        return c;
+      }
+
+      // Otherwise, do De Casteljau along the u-axis
+      for(int q = 0; q <= ord_v; ++q)
+      {
+        for(int i = 0; i < NDIMS; ++i)
+        {
+          for(int p = 0; p <= ord_u; ++p)
+          {
+            dCarray[p] = m_controlPoints(p, q)[i];
+          }
+
+          for(int p = 1; p <= ord_u; ++p)
+          {
+            const int end = ord_u - p;
+            for(int k = 0; k <= end; ++k)
+            {
+              dCarray[k] = lerp(dCarray[k], dCarray[k + 1], u);
+            }
+          }
+
+          c[q][i] = dCarray[0];
+        }
+      }
+
+      return c;
+    }
+    else
     {
       c.makeRational();
+
       // If looking for an edge, don't need to use De Casteljau
       if(u == 0.0)
       {
@@ -576,80 +631,48 @@ public:
         return c;
       }
 
-      // Otherwise, do De Casteljau along the v-axis
-      axom::Array<T> dWarray(ord_u + 1);
-      for(int q = 0; q <= ord_v; ++q)
-      {
-        for(int i = 0; i < 3; ++i)
-        {
-          for(int p = 0; p <= ord_u; ++p)
-          {
-            dCarray[p] = m_controlPoints(p, q)[i] * m_weights(p, q);
-            dWarray[p] = m_weights(p, q);
-          }
+      // Otherwise, do de Casteljau on the homogeneous control points
 
-          for(int p = 1; p <= ord_u; ++p)
-          {
-            const int end = ord_u - p;
-            for(int k = 0; k <= end; ++k)
-            {
-              dCarray[k] = lerp(dCarray[k], dCarray[k + 1], u);
-              dWarray[k] = lerp(dWarray[k], dWarray[k + 1], u);
-            }
-          }
+      // Store BezierPatch of projective weights, (wx, wy, wz)
+      //  and BezierPatch of weights (w)
+      BezierPatch<T, NDIMS> projective(ord_u, ord_v);
+      BezierPatch<T, 1> weights(ord_u, ord_v);
 
-          c[q][i] = dCarray[0] / dWarray[0];
-          c.setWeight(q, dWarray[0]);
-        }
-      }
-    }
-    else
-    {
-      // If looking for an edge, don't need to use De Casteljau
-      if(u == 0.0)
+      for(int p = 0; p <= ord_u; ++p)
       {
         for(int q = 0; q <= ord_v; ++q)
         {
-          c[q] = m_controlPoints(0, q);
+          weights(p, q)[0] = m_weights(p, q);
+
+          for(int i = 0; i < NDIMS; ++i)
+          {
+            projective(p, q)[i] = m_controlPoints(p, q)[i] * m_weights(p, q);
+          }
         }
-        return c;
-      }
-      if(u == 1.0)
-      {
-        for(int q = 0; q <= ord_v; ++q)
-        {
-          c[q] = m_controlPoints(ord_u, q);
-        }
-        return c;
       }
 
-      // Otherwise, do De Casteljau along the v-axis
+      BezierCurve<T, NDIMS> P = projective.isocurve_u(u);
+      BezierCurve<T, 1> W = weights.isocurve_u(u);
+
       for(int q = 0; q <= ord_v; ++q)
       {
-        for(int i = 0; i < 3; ++i)
+        for(int i = 0; i < NDIMS; ++i)
         {
-          for(int p = 0; p <= ord_u; ++p)
-          {
-            dCarray[p] = m_controlPoints(p, q)[i];
-          }
-
-          for(int p = 1; p <= ord_u; ++p)
-          {
-            const int end = ord_u - p;
-            for(int k = 0; k <= end; ++k)
-            {
-              dCarray[k] = lerp(dCarray[k], dCarray[k + 1], u);
-            }
-          }
-          c[q][i] = dCarray[0];
+          c[q][i] = P[q][i] / W[q][0];
+          c.setWeight(q, W[q][0]);
         }
       }
-    }
 
-    return c;
+      return c;
+    }
   }
 
-  /// Return an isocurve for a fixed value of v
+  /*!
+   * \brief Returns an isocurve with a fixed value of v
+   *
+   * \param [in] v Parameter value fixed in the isocurve
+   * \return c The isocurve C(u) = S(u, v) for fixed v
+   */
   BezierCurveType isocurve_v(T v) const
   {
     using axom::utilities::lerp;
@@ -660,7 +683,52 @@ public:
     BezierCurveType c(ord_u);
     axom::Array<T> dCarray(ord_v + 1);
 
-    if(isRational())
+    if(!isRational())
+    {
+      // If looking for an edge, don't need to use De Casteljau
+      if(v == 0.0)
+      {
+        for(int p = 0; p <= ord_u; ++p)
+        {
+          c[p] = m_controlPoints(p, 0);
+        }
+        return c;
+      }
+      if(v == 1.0)
+      {
+        for(int p = 0; p <= ord_u; ++p)
+        {
+          c[p] = m_controlPoints(p, ord_v);
+        }
+        return c;
+      }
+
+      // Otherwise, do De Casteljau along the u-axis
+      for(int p = 0; p <= ord_u; ++p)
+      {
+        for(int i = 0; i < NDIMS; ++i)
+        {
+          for(int q = 0; q <= ord_v; ++q)
+          {
+            dCarray[q] = m_controlPoints(p, q)[i];
+          }
+
+          for(int q = 1; q <= ord_v; ++q)
+          {
+            const int end = ord_v - q;
+            for(int k = 0; k <= end; ++k)
+            {
+              dCarray[k] = lerp(dCarray[k], dCarray[k + 1], v);
+            }
+          }
+
+          c[p][i] = dCarray[0];
+        }
+      }
+
+      return c;
+    }
+    else
     {
       c.makeRational();
 
@@ -684,76 +752,40 @@ public:
         return c;
       }
 
-      // Otherwise, do De Casteljau along the u-axis
-      axom::Array<T> dWarray(ord_v + 1);
+      // Otherwise, do de Casteljau on the homogeneous control points
+
+      // Store BezierPatch of projective weights, (wx, wy, wz)
+      //  and BezierPatch of weights (w)
+      BezierPatch<T, NDIMS> projective(ord_u, ord_v);
+      BezierPatch<T, 1> weights(ord_u, ord_v);
+
       for(int p = 0; p <= ord_u; ++p)
       {
-        for(int i = 0; i < 3; ++i)
+        for(int q = 0; q <= ord_v; ++q)
         {
-          for(int q = 0; q <= ord_v; ++q)
-          {
-            dCarray[q] = m_controlPoints(p, q)[i] * m_weights(p, q);
-            dWarray[q] = m_weights(p, q);
-          }
+          weights(p, q)[0] = m_weights(p, q);
 
-          for(int q = 1; q <= ord_v; ++q)
+          for(int i = 0; i < NDIMS; ++i)
           {
-            const int end = ord_v - q;
-            for(int k = 0; k <= end; ++k)
-            {
-              dCarray[k] = lerp(dCarray[k], dCarray[k + 1], v);
-              dWarray[k] = lerp(dWarray[k], dWarray[k + 1], v);
-            }
+            projective(p, q)[i] = m_controlPoints(p, q)[i] * m_weights(p, q);
           }
-          c[p][i] = dCarray[0] / dWarray[0];
-          c.setWeight(p, dWarray[0]);
         }
-      }
-    }
-    else
-    {
-      // If looking for an edge, don't need to use De Casteljau
-      if(v == 0.0)
-      {
-        for(int p = 0; p <= ord_u; ++p)
-        {
-          c[p] = m_controlPoints(p, 0);
-        }
-        return c;
-      }
-      if(v == 1.0)
-      {
-        for(int p = 0; p <= ord_u; ++p)
-        {
-          c[p] = m_controlPoints(p, ord_v);
-        }
-        return c;
       }
 
-      // Otherwise, do De Casteljau along the u-axis
+      BezierCurve<T, NDIMS> P = projective.isocurve_v(v);
+      BezierCurve<T, 1> W = weights.isocurve_v(v);
+
       for(int p = 0; p <= ord_u; ++p)
       {
-        for(int i = 0; i < 3; ++i)
+        for(int i = 0; i < NDIMS; ++i)
         {
-          for(int q = 0; q <= ord_v; ++q)
-          {
-            dCarray[q] = m_controlPoints(p, q)[i];
-          }
-
-          for(int q = 1; q <= ord_v; ++q)
-          {
-            const int end = ord_v - q;
-            for(int k = 0; k <= end; ++k)
-            {
-              dCarray[k] = lerp(dCarray[k], dCarray[k + 1], v);
-            }
-          }
-          c[p][i] = dCarray[0];
+          c[p][i] = P[p][i] / W[p][0];
+          c.setWeight(p, W[p][0]);
         }
       }
-    }
 
-    return c;
+      return c;
+    }
   }
 
   /*!
@@ -778,26 +810,831 @@ public:
   }
 
   /*!
+   * \brief Evaluates all first derivatives Bezier patch at (\a u, \a v)
+   *
+   * \param [in] u Parameter value at which to evaluate on the first axis
+   * \param [in] v Parameter value at which to evaluate on the second axis
+   * \param [out] eval The point value of the Bezier patch at (u, v)
+   * \param [out] Du The vector value of S_u(u, v)
+   * \param [out] Dv The vector value of S_v(u, v)
+   *
+   * \note We typically evaluate the patch at \a u and \a v between 0 and 1
+   */
+  void evaluate_first_derivatives(T u,
+                                  T v,
+                                  Point<T, NDIMS>& eval,
+                                  Vector<T, NDIMS>& Du,
+                                  Vector<T, NDIMS>& Dv) const
+  {
+    using axom::utilities::lerp;
+    const int ord_u = getOrder_u();
+    const int ord_v = getOrder_v();
+
+    axom::Array<T, 2> dCmat(ord_u + 1, ord_v + 1);
+
+    if(!isRational())
+    {
+      // Do de Casteljau until we get a 2x2
+      for(int i = 0; i < NDIMS; ++i)
+      {
+        for(int p = 0; p <= ord_u; ++p)
+        {
+          for(int q = 0; q <= ord_v; ++q)
+          {
+            dCmat(p, q) = m_controlPoints(p, q)[i];
+          }
+        }
+
+        // Store the size after each de Casteljau reduction is made
+        int end_u = ord_u;
+        int end_v = ord_v;
+
+        // Do de Casteljau over the longer direction first
+        if(ord_u >= ord_v)
+        {
+          // Stop 1 steps early in u
+          while(end_u > 1)
+          {
+            end_u -= 1;
+            for(int k = 0; k <= end_u; ++k)
+            {
+              for(int q = 0; q <= end_v; ++q)
+              {
+                dCmat(k, q) = lerp(dCmat(k, q), dCmat(k + 1, q), u);
+              }
+            }
+          }
+
+          // Stop 1 steps early in v
+          while(end_v > 1)
+          {
+            end_v -= 1;
+            for(int k = 0; k <= end_v; ++k)
+            {
+              for(int p = 0; p <= end_u; ++p)
+              {
+                dCmat(p, k) = lerp(dCmat(p, k), dCmat(p, k + 1), v);
+              }
+            }
+          }
+        }
+        else
+        {
+          // Stop 1 steps early in v
+          while(end_v > 1)
+          {
+            end_v -= 1;
+            for(int k = 0; k <= end_v; ++k)
+            {
+              for(int p = 0; p <= end_u; ++p)
+              {
+                dCmat(p, k) = lerp(dCmat(p, k), dCmat(p, k + 1), v);
+              }
+            }
+          }
+
+          // Stop 2 steps early in v over the three columns
+          while(end_u > 1)
+          {
+            end_u -= 1;
+            for(int k = 0; k <= end_u; ++k)
+            {
+              for(int q = 0; q <= end_v; ++q)
+              {
+                dCmat(k, q) = lerp(dCmat(k, q), dCmat(k + 1, q), u);
+              }
+            }
+          }
+        }
+
+        // By now, the first 2x2 submatrix of dCmat should have
+        //  all the intermediate values needed
+
+        // Compute first order derivatives
+        // clang-format off
+        if( end_u == 1 && end_v == 1 )
+        {
+          Du[i] = ord_u * ( (1 - v) * (dCmat(1, 0) - dCmat(0, 0)) + 
+                                  v * (dCmat(1, 1) - dCmat(0, 1)) );
+          Dv[i] = ord_v * ( (1 - u) * (dCmat(0, 1) - dCmat(0, 0)) + 
+                                  u * (dCmat(1, 1) - dCmat(1, 0)) );
+          eval[i] = (1 - u) * (1 - v) * dCmat(0, 0) + u * (1 - v) * dCmat(1, 0) + (1 - u) * v * dCmat(0, 1) + u * v * dCmat(1, 1);
+        }
+        else if (end_u == 1 && end_v == 0)
+        {
+          Du[i] = ord_u * (dCmat(1, 0) - dCmat(0, 0));
+          Dv[i] = 0.0;
+          eval[i] = (1 - u) * dCmat(0, 0) + u * dCmat(1, 0);
+        }
+        else if (end_u == 0 && end_v == 1)
+        {
+          Du[i] = 0.0;
+          Dv[i] = ord_v * (dCmat(0, 1) - dCmat(0, 0));
+          eval[i] = (1 - v) * dCmat(0, 0) + v * dCmat(0, 1);
+        }
+        else
+        {
+          Du[i] = 0.0;
+          Dv[i] = 0.0;
+          eval[i] = dCmat(0, 0);
+        }
+        // clang-format on
+      }
+    }
+    else
+    {
+      // Store BezierPatch of projective weights, (wx, wy, wz)
+      //  and BezierPatch of weights (w)
+      BezierPatch<T, NDIMS> projective(ord_u, ord_v);
+      BezierPatch<T, 1> weights(ord_u, ord_v);
+
+      for(int p = 0; p <= ord_u; ++p)
+      {
+        for(int q = 0; q <= ord_v; ++q)
+        {
+          weights(p, q)[0] = m_weights(p, q);
+
+          for(int i = 0; i < NDIMS; ++i)
+          {
+            projective(p, q)[i] = m_controlPoints(p, q)[i] * m_weights(p, q);
+          }
+        }
+      }
+
+      Point<T, NDIMS> P;
+      Vector<T, NDIMS> P_u, P_v, P_uu, P_vv, P_uv;
+
+      Point<T, 1> W;
+      Vector<T, 1> W_u, W_v, W_uu, W_vv, W_uv;
+
+      projective.evaluate_second_derivatives(u, v, P, P_u, P_v, P_uu, P_vv, P_uv);
+      weights.evaluate_second_derivatives(u, v, W, W_u, W_v, W_uu, W_vv, W_uv);
+
+      for(int i = 0; i < NDIMS; ++i)
+      {
+        eval[i] = P[i] / W[0];
+        Du[i] = (P_u[i] - eval[i] * W_u[0]) / W[0];
+        Dv[i] = (P_v[i] - eval[i] * W_v[0]) / W[0];
+      }
+    }
+  }
+
+  /*!
+   * \brief Evaluates all linear derivatives Bezier patch at (\a u, \a v)
+   *
+   * \param [in] u Parameter value at which to evaluate on the first axis
+   * \param [in] v Parameter value at which to evaluate on the second axis
+   * \param [out] eval The point value of the Bezier patch at (u, v)
+   * \param [out] Du The vector value of S_u(u, v)
+   * \param [out] Dv The vector value of S_v(u, v)
+   * \param [out] DuDv The vector value of S_uv(u, v) == S_vu(u, v)
+   *
+   * \note We typically evaluate the patch at \a u and \a v between 0 and 1
+   */
+  void evaluate_linear_derivatives(T u,
+                                   T v,
+                                   Point<T, NDIMS>& eval,
+                                   Vector<T, NDIMS>& Du,
+                                   Vector<T, NDIMS>& Dv,
+                                   Vector<T, NDIMS>& DuDv) const
+  {
+    using axom::utilities::lerp;
+    const int ord_u = getOrder_u();
+    const int ord_v = getOrder_v();
+
+    axom::Array<T, 2> dCmat(ord_u + 1, ord_v + 1);
+
+    if(!isRational())
+    {
+      // Do de Casteljau until we get a 2x2
+      for(int i = 0; i < NDIMS; ++i)
+      {
+        for(int p = 0; p <= ord_u; ++p)
+        {
+          for(int q = 0; q <= ord_v; ++q)
+          {
+            dCmat(p, q) = m_controlPoints(p, q)[i];
+          }
+        }
+
+        // Store the size after each de Casteljau reduction is made
+        int end_u = ord_u;
+        int end_v = ord_v;
+
+        // Do de Casteljau over the longer direction first
+        if(ord_u >= ord_v)
+        {
+          // Stop 1 steps early in u
+          while(end_u > 1)
+          {
+            end_u -= 1;
+            for(int k = 0; k <= end_u; ++k)
+            {
+              for(int q = 0; q <= end_v; ++q)
+              {
+                dCmat(k, q) = lerp(dCmat(k, q), dCmat(k + 1, q), u);
+              }
+            }
+          }
+
+          // Stop 1 steps early in v
+          while(end_v > 1)
+          {
+            end_v -= 1;
+            for(int k = 0; k <= end_v; ++k)
+            {
+              for(int p = 0; p <= end_u; ++p)
+              {
+                dCmat(p, k) = lerp(dCmat(p, k), dCmat(p, k + 1), v);
+              }
+            }
+          }
+        }
+        else
+        {
+          // Stop 1 steps early in v
+          while(end_v > 1)
+          {
+            end_v -= 1;
+            for(int k = 0; k <= end_v; ++k)
+            {
+              for(int p = 0; p <= end_u; ++p)
+              {
+                dCmat(p, k) = lerp(dCmat(p, k), dCmat(p, k + 1), v);
+              }
+            }
+          }
+
+          // Stop 2 steps early in v over the three columns
+          while(end_u > 1)
+          {
+            end_u -= 1;
+            for(int k = 0; k <= end_u; ++k)
+            {
+              for(int q = 0; q <= end_v; ++q)
+              {
+                dCmat(k, q) = lerp(dCmat(k, q), dCmat(k + 1, q), u);
+              }
+            }
+          }
+        }
+
+        // By now, the first 2x2 submatrix of dCmat should have
+        //  all the intermediate values needed
+
+        // Compute first order derivatives
+        // clang-format off
+        if( end_u == 1 && end_v == 1 )
+        {
+          Du[i] = ord_u * ( (1 - v) * (dCmat(1, 0) - dCmat(0, 0)) + 
+                                  v * (dCmat(1, 1) - dCmat(0, 1)) );
+          Dv[i] = ord_v * ( (1 - u) * (dCmat(0, 1) - dCmat(0, 0)) + 
+                                  u * (dCmat(1, 1) - dCmat(1, 0)) );
+          DuDv[i] = ord_u * ord_v * (dCmat(1, 1) - dCmat(1, 0) - dCmat(0, 1) + dCmat(0, 0));
+          eval[i] = (1 - u) * (1 - v) * dCmat(0, 0) + u * (1 - v) * dCmat(1, 0) + (1 - u) * v * dCmat(0, 1) + u * v * dCmat(1, 1);
+        }
+        else if (end_u == 1 && end_v == 0)
+        {
+          Du[i] = ord_u * (dCmat(1, 0) - dCmat(0, 0));
+          Dv[i] = 0.0;
+          DuDv[i] = 0.0;
+          eval[i] = (1 - u) * dCmat(0, 0) + u * dCmat(1, 0);
+        }
+        else if (end_u == 0 && end_v == 1)
+        {
+          Du[i] = 0.0;
+          Dv[i] = ord_v * (dCmat(0, 1) - dCmat(0, 0));
+          DuDv[i] = 0.0;
+          eval[i] = (1 - v) * dCmat(0, 0) + v * dCmat(0, 1);
+        }
+        else
+        {
+          Du[i] = 0.0;
+          Dv[i] = 0.0;
+          DuDv[i] = 0.0;
+          eval[i] = dCmat(0, 0);
+        }
+        // clang-format on
+      }
+    }
+    else
+    {
+      // Store BezierPatch of projective weights, (wx, wy, wz)
+      //  and BezierPatch of weights (w)
+      BezierPatch<T, NDIMS> projective(ord_u, ord_v);
+      BezierPatch<T, 1> weights(ord_u, ord_v);
+
+      for(int p = 0; p <= ord_u; ++p)
+      {
+        for(int q = 0; q <= ord_v; ++q)
+        {
+          weights(p, q)[0] = m_weights(p, q);
+
+          for(int i = 0; i < NDIMS; ++i)
+          {
+            projective(p, q)[i] = m_controlPoints(p, q)[i] * m_weights(p, q);
+          }
+        }
+      }
+
+      Point<T, NDIMS> P;
+      Vector<T, NDIMS> P_u, P_v, P_uu, P_vv, P_uv;
+
+      Point<T, 1> W;
+      Vector<T, 1> W_u, W_v, W_uu, W_vv, W_uv;
+
+      projective.evaluate_second_derivatives(u, v, P, P_u, P_v, P_uu, P_vv, P_uv);
+      weights.evaluate_second_derivatives(u, v, W, W_u, W_v, W_uu, W_vv, W_uv);
+
+      for(int i = 0; i < NDIMS; ++i)
+      {
+        eval[i] = P[i] / W[0];
+        Du[i] = (P_u[i] - eval[i] * W_u[0]) / W[0];
+        Dv[i] = (P_v[i] - eval[i] * W_v[0]) / W[0];
+        DuDv[i] =
+          (P_uv[i] - Du[i] * W_v[0] - Dv[i] * W_u[0] - eval[i] * W_uv[0]) / W[0];
+      }
+    }
+  }
+
+  /*!
+   * \brief Evaluates all second derivatives Bezier patch at (\a u, \a v)
+   *
+   * \param [in] u Parameter value at which to evaluate on the first axis
+   * \param [in] v Parameter value at which to evaluate on the second axis
+   * \param [out] eval The point value of the Bezier patch at (u, v)
+   * \param [out] Du The vector value of S_u(u, v)
+   * \param [out] Dv The vector value of S_v(u, v)
+   * \param [out] DuDu The vector value of S_uu(u, v)
+   * \param [out] DvDv The vector value of S_vv(u, v)
+   * \param [out] DuDv The vector value of S_uv(u, v) == S_vu(u, v)
+   *
+   * \note We typically evaluate the patch at \a u and \a v between 0 and 1
+   */
+  void evaluate_second_derivatives(T u,
+                                   T v,
+                                   Point<T, NDIMS>& eval,
+                                   Vector<T, NDIMS>& Du,
+                                   Vector<T, NDIMS>& Dv,
+                                   Vector<T, NDIMS>& DuDu,
+                                   Vector<T, NDIMS>& DvDv,
+                                   Vector<T, NDIMS>& DuDv) const
+  {
+    using axom::utilities::lerp;
+    const int ord_u = getOrder_u();
+    const int ord_v = getOrder_v();
+
+    axom::Array<T, 2> dCmat(ord_u + 1, ord_v + 1);
+
+    if(!isRational())
+    {
+      // Do de Casteljau until we get a 3x3
+      for(int i = 0; i < NDIMS; ++i)
+      {
+        for(int p = 0; p <= ord_u; ++p)
+        {
+          for(int q = 0; q <= ord_v; ++q)
+          {
+            dCmat(p, q) = m_controlPoints(p, q)[i];
+          }
+        }
+
+        // Store the size after each de Casteljau reduction is made
+        int end_u = ord_u;
+        int end_v = ord_v;
+
+        // Do de Casteljau over the longer direction first
+        if(ord_u >= ord_v)
+        {
+          // Stop 2 steps early in u
+          while(end_u > 2)
+          {
+            end_u -= 1;
+            for(int k = 0; k <= end_u; ++k)
+            {
+              for(int q = 0; q <= end_v; ++q)
+              {
+                dCmat(k, q) = lerp(dCmat(k, q), dCmat(k + 1, q), u);
+              }
+            }
+          }
+
+          // Stop 2 steps early in v
+          while(end_v > 2)
+          {
+            end_v -= 1;
+            for(int k = 0; k <= end_v; ++k)
+            {
+              for(int p = 0; p <= end_u; ++p)
+              {
+                dCmat(p, k) = lerp(dCmat(p, k), dCmat(p, k + 1), v);
+              }
+            }
+          }
+        }
+        else
+        {
+          // Stop 2 steps early in v
+          while(end_v > 2)
+          {
+            end_v -= 1;
+            for(int k = 0; k <= end_v; ++k)
+            {
+              for(int p = 0; p <= end_u; ++p)
+              {
+                dCmat(p, k) = lerp(dCmat(p, k), dCmat(p, k + 1), v);
+              }
+            }
+          }
+
+          // Stop 2 steps early in v over the three columns
+          while(end_u > 2)
+          {
+            end_u -= 1;
+            for(int k = 0; k <= end_u; ++k)
+            {
+              for(int q = 0; q <= end_v; ++q)
+              {
+                dCmat(k, q) = lerp(dCmat(k, q), dCmat(k + 1, q), u);
+              }
+            }
+          }
+        }
+
+        // By now, the first 3x3 submatrix of dCmat should have
+        //  all the intermediate values needed
+
+        // clang-format off
+        // Get second order derivatives
+        if( ord_u >= 2 )
+        {
+          if (ord_v == 0)
+          {
+            DuDu[i] = (ord_u - 1) * ord_u * 
+                                    (dCmat(2, 0) - 2 * dCmat(1, 0) + dCmat(0, 0));
+          }
+          else if (ord_v == 1)
+          {
+            DuDu[i] = (ord_u - 1) * ord_u * 
+                        ( (1 - v) * (dCmat(2, 0) - 2 * dCmat(1, 0) + dCmat(0, 0)) + 
+                                v * (dCmat(2, 1) - 2 * dCmat(1, 1) + dCmat(0, 1)) ); 
+          }
+          else
+          {
+            DuDu[i] = (ord_u - 1) * ord_u * 
+              ( (1 - v) * (1 - v) * (dCmat(2, 0) - 2 * dCmat(1, 0) + dCmat(0, 0)) + 
+                  2 * v * (1 - v) * (dCmat(2, 1) - 2 * dCmat(1, 1) + dCmat(0, 1)) + 
+                            v * v * (dCmat(2, 2) - 2 * dCmat(1, 2) + dCmat(0, 2)) );
+          }
+        }
+        else
+        {
+          DuDu[i] = 0.0;
+        }
+
+        if( ord_v >= 2 )
+        {
+          if( ord_u == 0 )
+          {
+            DvDv[i] = (ord_v - 1) * ord_v * 
+                                    (dCmat(0, 2) - 2 * dCmat(0, 1) + dCmat(0, 0)); 
+          }
+          else if (ord_u == 1)
+          {
+            DvDv[i] = (ord_v - 1) * ord_v * 
+                        ( (1 - u) * (dCmat(0, 2) - 2 * dCmat(0, 1) + dCmat(0, 0)) + 
+                                u * (dCmat(1, 2) - 2 * dCmat(1, 1) + dCmat(1, 0)) );
+          }
+          else
+          {
+            DvDv[i] = (ord_v - 1) * ord_v * 
+              ( (1 - u) * (1 - u) * (dCmat(0, 2) - 2 * dCmat(0, 1) + dCmat(0, 0)) + 
+                  2 * u * (1 - u) * (dCmat(1, 2) - 2 * dCmat(1, 1) + dCmat(1, 0)) + 
+                            u * u * (dCmat(2, 2) - 2 * dCmat(2, 1) + dCmat(2, 0)) ); 
+          }
+        }
+        else
+        {
+          DvDv[i] = 0.0;
+        }
+        
+        // Do one de Casteljau iteration in u
+        while( end_u > 1 )
+        {
+          end_u -= 1;
+          for(int k = 0; k <= end_u; ++k)
+          {
+            for(int q = 0; q <= end_v; ++q)
+            {
+              dCmat(k, q) = lerp(dCmat(k, q), dCmat(k + 1, q), u);
+            }
+          }
+        }
+
+        // Do (at most) one de Casteljau iteration in v
+        while(end_v > 1)
+        {
+          end_v -= 1;
+          for(int k = 0; k <= end_v; ++k)
+          {
+            for(int p = 0; p <= end_u; ++p)
+            {
+              dCmat(p, k) = lerp(dCmat(p, k), dCmat(p, k + 1), v);
+            }
+          }
+        }
+
+        // Compute first order derivatives
+        // clang-format off
+        if( end_u == 1 && end_v == 1 )
+        {
+          Du[i] = ord_u * ( (1 - v) * (dCmat(1, 0) - dCmat(0, 0)) + 
+                                  v * (dCmat(1, 1) - dCmat(0, 1)) );
+          Dv[i] = ord_v * ( (1 - u) * (dCmat(0, 1) - dCmat(0, 0)) + 
+                                  u * (dCmat(1, 1) - dCmat(1, 0)) );
+          DuDv[i] = ord_u * ord_v * (dCmat(1, 1) - dCmat(1, 0) - dCmat(0, 1) + dCmat(0, 0));
+          eval[i] = (1 - u) * (1 - v) * dCmat(0, 0) + u * (1 - v) * dCmat(1, 0) + (1 - u) * v * dCmat(0, 1) + u * v * dCmat(1, 1);
+        }
+        else if (end_u == 1 && end_v == 0)
+        {
+          Du[i] = ord_u * (dCmat(1, 0) - dCmat(0, 0));
+          Dv[i] = 0.0;
+          DuDv[i] = 0.0;
+          eval[i] = (1 - u) * dCmat(0, 0) + u * dCmat(1, 0);
+        }
+        else if (end_u == 0 && end_v == 1)
+        {
+          Du[i] = 0.0;
+          Dv[i] = ord_v * (dCmat(0, 1) - dCmat(0, 0));
+          DuDv[i] = 0.0;
+          eval[i] = (1 - v) * dCmat(0, 0) + v * dCmat(0, 1);
+        }
+        else
+        {
+          Du[i] = 0.0;
+          Dv[i] = 0.0;
+          DuDv[i] = 0.0;
+          eval[i] = dCmat(0, 0);
+        }
+        // clang-format on
+      }
+    }
+    else
+    {
+      // Store BezierPatch of projective weights, (wx, wy, wz)
+      //  and BezierPatch of weights (w)
+      BezierPatch<T, NDIMS> projective(ord_u, ord_v);
+      BezierPatch<T, 1> weights(ord_u, ord_v);
+
+      for(int p = 0; p <= ord_u; ++p)
+      {
+        for(int q = 0; q <= ord_v; ++q)
+        {
+          weights(p, q)[0] = m_weights(p, q);
+
+          for(int i = 0; i < NDIMS; ++i)
+          {
+            projective(p, q)[i] = m_controlPoints(p, q)[i] * m_weights(p, q);
+          }
+        }
+      }
+
+      Point<T, NDIMS> P;
+      Vector<T, NDIMS> P_u, P_v, P_uu, P_vv, P_uv;
+
+      Point<T, 1> W;
+      Vector<T, 1> W_u, W_v, W_uu, W_vv, W_uv;
+
+      projective.evaluate_second_derivatives(u, v, P, P_u, P_v, P_uu, P_vv, P_uv);
+      weights.evaluate_second_derivatives(u, v, W, W_u, W_v, W_uu, W_vv, W_uv);
+
+      for(int i = 0; i < NDIMS; ++i)
+      {
+        eval[i] = P[i] / W[0];
+        Du[i] = (P_u[i] - eval[i] * W_u[0]) / W[0];
+        Dv[i] = (P_v[i] - eval[i] * W_v[0]) / W[0];
+        DuDu[i] = (P_uu[i] - 2 * W_u[0] * Du[i] - eval[i] * W_uu[0]) / W[0];
+        DvDv[i] = (P_vv[i] - 2 * W_v[0] * Dv[i] - eval[i] * W_vv[0]) / W[0];
+        DuDv[i] =
+          (P_uv[i] - Du[i] * W_v[0] - Dv[i] * W_u[0] - eval[i] * W_uv[0]) / W[0];
+      }
+    }
+  }
+
+  /*!
    * \brief Computes a tangent of a Bezier patch at a particular parameter value (\a u, \a v) along the u axis
    *
    * \param [in] u parameter value at which to evaluate on the first axis
    * \param [in] v parameter value at which to evaluate on the second axis
-   * \return vec a tangent vector of the Bezier patch at (u, v)
+   * \return vec a tangent vector in u of the Bezier patch at (u, v)
    *
    * \note We typically find the tangent of the patch at \a u and \a v between 0 and 1
    */
   VectorType du(T u, T v) const { return isocurve_v(v).dt(u); }
 
   /*!
+   * \brief Computes the second derivative of a Bezier patch at (\a u, \a v) along the u axis
+   *
+   * \param [in] u Parameter value at which to evaluate on the first axis
+   * \param [in] v Parameter value at which to evaluate on the second axis
+   * \return vec The vector value of S_uu(u, v)
+   *
+   * \note We typically find the tangent of the patch at \a u and \a v between 0 and 1
+   */
+  VectorType dudu(T u, T v) const { return isocurve_v(v).dtdt(u); }
+
+  /*!
    * \brief Computes a tangent of a Bezier patch at a particular parameter value (\a u, \a v) along the v axis
    *
    * \param [in] u parameter value at which to evaluate on the first axis
    * \param [in] v parameter value at which to evaluate on the second axis
-   * \return vec a tangent vector of the Bezier patch at (u, v)
+   * \return vec a tangent vector in v of the Bezier patch at (u, v)
    *
    * \note We typically find the tangent of the patch at \a u and \a v between 0 and 1
    */
   VectorType dv(T u, T v) const { return isocurve_u(u).dt(v); }
+
+  /*!
+   * \brief Computes the second derivative of a Bezier patch at (\a u, \a v) along the v axis
+   *
+   * \param [in] u Parameter value at which to evaluate on the first axis
+   * \param [in] v Parameter value at which to evaluate on the second axis
+   * \return vec The vector value of S_vv(u, v)
+   *
+   * \note We typically find the tangent of the patch at \a u and \a v between 0 and 1
+   */
+  VectorType dvdv(T u, T v) const { return isocurve_u(u).dtdt(v); }
+
+  /*!
+   * \brief Computes the mixed second derivative of a Bezier patch at (\a u, \a v)
+   *
+   * \param [in] u Parameter value at which to evaluate on the first axis
+   * \param [in] v Parameter value at which to evaluate on the second axis
+   * \return vec The vector value of S_uv(u, v) == S_vu(u, v)
+   *
+   * \note We typically find the tangent of the patch at \a u and \a v between 0 and 1
+   */
+  VectorType dudv(T u, T v) const
+  {
+    using axom::utilities::lerp;
+
+    const int ord_u = getOrder_u();
+    const int ord_v = getOrder_v();
+
+    // If the curve is nonrational, we can use standard de Casteljau
+    if(!isRational())
+    {
+      Vector<T, NDIMS> val;
+
+      axom::Array<T, 2> dCmat(ord_u + 1, ord_v + 1);
+      axom::Array<T, 2> dWmat(ord_u + 1, ord_v + 1);
+
+      // Do de Casteljau until we get a 2x2
+      for(int i = 0; i < NDIMS; ++i)
+      {
+        for(int p = 0; p <= ord_u; ++p)
+        {
+          for(int q = 0; q <= ord_v; ++q)
+          {
+            dCmat(p, q) = m_controlPoints(p, q)[i];
+          }
+        }
+
+        // Store the size after each de Casteljau reduction is made
+        int end_u = ord_u;
+        int end_v = ord_v;
+
+        // Do de Casteljau over the longer direction first
+        if(ord_u >= ord_v)
+        {
+          // Stop 1 steps early in u
+          while(end_u > 1)
+          {
+            end_u -= 1;
+            for(int k = 0; k <= end_u; ++k)
+            {
+              for(int q = 0; q <= ord_v; ++q)
+              {
+                dCmat(k, q) = lerp(dCmat(k, q), dCmat(k + 1, q), u);
+              }
+            }
+          }
+
+          // Stop 1 steps early in u
+          while(end_v > 1)
+          {
+            end_v -= 1;
+            for(int k = 0; k <= end_v; ++k)
+            {
+              for(int p = 0; p <= end_u; ++p)
+              {
+                dCmat(p, k) = lerp(dCmat(p, k), dCmat(p, k + 1), v);
+              }
+            }
+          }
+        }
+        else
+        {
+          // Stop 1 step early in v
+          while(end_v > 1)
+          {
+            end_v -= 1;
+            for(int k = 0; k <= end_v; ++k)
+            {
+              for(int p = 0; p <= end_u; ++p)
+              {
+                dCmat(p, k) = lerp(dCmat(p, k), dCmat(p, k + 1), v);
+              }
+            }
+          }
+
+          // Stop 1 step early in v over the two columns
+          while(end_u > 1)
+          {
+            end_u -= 1;
+            for(int k = 0; k <= end_u; ++k)
+            {
+              for(int q = 0; q <= ord_v; ++q)
+              {
+                dCmat(k, q) = lerp(dCmat(k, q), dCmat(k + 1, q), u);
+              }
+            }
+          }
+        }
+
+        // Do the evaluation, accounting for insufficient control points
+        if(end_u == 0 || end_v == 0)
+        {
+          val[i] = 0.0;
+        }
+        else
+        {
+          // clang-format off
+        val[i] = (1 - u) * (1 - v) * dCmat(0, 0) + u * (1 - v) * dCmat(1, 0) +
+                       (1 - u) * v * dCmat(0, 1) +       u * v * dCmat(1, 1);
+          // clang-format on
+        }
+      }
+
+      return val;
+    }
+    // If rational, construct the 4D homogeneous surface,
+    //  which requires all first derivatives
+    else
+    {
+      Vector<T, NDIMS> val;
+
+      // Store BezierPatch of projective weights, (wx, wy, wz)
+      //  and BezierPatch of weights (w)
+      BezierPatch<T, NDIMS> projective(ord_u, ord_v);
+      BezierPatch<T, 1> weights(ord_u, ord_v);
+
+      for(int p = 0; p <= ord_u; ++p)
+      {
+        for(int q = 0; q <= ord_v; ++q)
+        {
+          weights(p, q)[0] = m_weights(p, q);
+
+          for(int i = 0; i < NDIMS; ++i)
+          {
+            projective(p, q)[i] = m_controlPoints(p, q)[i] * m_weights(p, q);
+          }
+        }
+      }
+
+      Point<T, NDIMS> P;
+      Vector<T, NDIMS> P_u, P_v, P_uv;
+
+      Point<T, 1> W;
+      Vector<T, 1> W_u, W_v, W_uv;
+
+      projective.evaluate_linear_derivatives(u, v, P, P_u, P_v, P_uv);
+      weights.evaluate_linear_derivatives(u, v, W, W_u, W_v, W_uv);
+
+      // Store values used in each coordinate computation
+      double weight_prod = 2 * W_u[0] * W_v[0] - W[0] * W_uv[0];
+      double weight_cubed = W[0] * W[0] * W[0];
+      for(int i = 0; i < NDIMS; ++i)
+      {
+        val[i] = W[0] * W[0] * P_uv[i] -
+          W[0] * (P_u[i] * W_v[0] + P_v[i] * W_u[0]) + P[i] * weight_prod;
+        val[i] /= weight_cubed;
+      }
+
+      return val;
+    }
+  }
+
+  /*!
+   * \brief Computes the mixed second derivative of a Bezier patch at (\a u, \a v)
+   *
+   * \param [in] u Parameter value at which to evaluate on the first axis
+   * \param [in] v Parameter value at which to evaluate on the second axis
+   * \return vec The vector value of S_uv(u, v) == S_vu(u, v)
+   *
+   * \note We typically find the tangent of the patch at \a u and \a v between 0 and 1
+   */
+  VectorType dvdu(T u, T v) const { return dudv(u, v); }
 
   /*!
    * \brief Computes the normal vector of a Bezier patch at a particular parameter value (\a u, \a v)
@@ -810,7 +1647,10 @@ public:
    */
   VectorType normal(T u, T v) const
   {
-    return VectorType::cross_product(du(u, v), dv(u, v));
+    Point<T, NDIMS> eval;
+    Vector<T, NDIMS> Du, Dv;
+    evaluate_first_derivatives(u, v, eval, Du, Dv);
+    return VectorType::cross_product(Du, Dv);
   }
 
   /*!
@@ -870,7 +1710,7 @@ public:
             double temp_weight =
               lerp(p2.getWeight(k, q), p2.getWeight(k + 1, q), u);
 
-            for(int i = 0; i < 3; ++i)
+            for(int i = 0; i < NDIMS; ++i)
             {
               p2(k, q)[i] = lerp(p2.getWeight(k, q) * p2(k, q)[i],
                                  p2.getWeight(k + 1, q) * p2(k + 1, q)[i],
@@ -892,7 +1732,7 @@ public:
       {
         p1(0, q) = m_controlPoints(0, q);
 
-        for(int i = 0; i < 3; ++i)
+        for(int i = 0; i < NDIMS; ++i)
         {
           for(int p = 1; p <= ord_u; ++p)
           {
@@ -941,7 +1781,7 @@ public:
             double temp_weight =
               lerp(p2.getWeight(p, k), p2.getWeight(p, k + 1), v);
 
-            for(int i = 0; i < 3; ++i)
+            for(int i = 0; i < NDIMS; ++i)
             {
               p2(p, k)[i] = lerp(p2.getWeight(p, k) * p2(p, k)[i],
                                  p2.getWeight(p, k + 1) * p2(p, k + 1)[i],
@@ -963,7 +1803,7 @@ public:
       {
         p1(p, 0) = m_controlPoints(p, 0);
 
-        for(int i = 0; i < 3; ++i)
+        for(int i = 0; i < NDIMS; ++i)
         {
           for(int q = 1; q <= ord_v; ++q)
           {
@@ -1188,8 +2028,8 @@ private:
 //------------------------------------------------------------------------------
 /// Free functions related to BezierPatch
 //------------------------------------------------------------------------------
-template <typename T>
-std::ostream& operator<<(std::ostream& os, const BezierPatch<T>& bPatch)
+template <typename T, int NDIMS>
+std::ostream& operator<<(std::ostream& os, const BezierPatch<T, NDIMS>& bPatch)
 {
   bPatch.print(os);
   return os;

@@ -13,6 +13,7 @@
 #include "axom/sidre.hpp"
 #include "axom/primal.hpp"
 #include "axom/spin.hpp"
+#include "axom/core/execution/runtime_policy.hpp"
 
 #include "axom/fmt.hpp"
 
@@ -33,39 +34,10 @@
 #endif
 #include "mpi.h"
 
-// Add some helper preprocessor defines for using OPENMP, CUDA, and HIP policies
-// within the distributed closest point query.
-#if defined(AXOM_USE_RAJA)
-  #ifdef AXOM_USE_OPENMP
-    #define _AXOM_DCP_USE_OPENMP
-  #endif
-  #if defined(AXOM_USE_CUDA) && defined(AXOM_USE_UMPIRE)
-    #define _AXOM_DCP_USE_CUDA
-  #endif
-  #if defined(AXOM_USE_HIP) && defined(AXOM_USE_UMPIRE)
-    #define _AXOM_DCP_USE_HIP
-  #endif
-#endif
-
 namespace axom
 {
 namespace quest
 {
-/// Enum for runtime execution policy
-enum class DistributedClosestPointRuntimePolicy
-{
-  seq = 0,
-  omp = 1,
-  cuda = 2,
-  hip = 3
-};
-
-/// Utility function to allow formating a DistributedClosestPointRuntimePolicy
-inline auto format_as(DistributedClosestPointRuntimePolicy pol)
-{
-  return fmt::underlying(pol);
-}
-
 namespace internal
 {
 // Utility function to dump a conduit node on each rank, e.g. for debugging
@@ -338,20 +310,20 @@ class DistributedClosestPointImpl
 {
 public:
   static constexpr int DIM = NDIMS;
-  using RuntimePolicy = DistributedClosestPointRuntimePolicy;
+  using RuntimePolicy = axom::runtime_policy::Policy;
   using PointType = primal::Point<double, DIM>;
   using BoxType = primal::BoundingBox<double, DIM>;
   using PointArray = axom::Array<PointType>;
   using BoxArray = axom::Array<BoxType>;
 
   using SeqBVHTree = spin::BVH<DIM, axom::SEQ_EXEC>;
-#ifdef _AXOM_DCP_USE_OPENMP
+#ifdef AXOM_RUNTIME_POLICY_USE_OPENMP
   using OmpBVHTree = spin::BVH<DIM, axom::OMP_EXEC>;
 #endif
-#ifdef _AXOM_DCP_USE_CUDA
+#ifdef AXOM_RUNTIME_POLICY_USE_CUDA
   using CudaBVHTree = spin::BVH<DIM, axom::CUDA_EXEC<256>>;
 #endif
-#ifdef _AXOM_DCP_USE_HIP
+#ifdef AXOM_RUNTIME_POLICY_USE_HIP
   using HipBVHTree = spin::BVH<DIM, axom::HIP_EXEC<256>>;
 #endif
 
@@ -500,24 +472,19 @@ public:
     case RuntimePolicy::seq:
       return m_bvh_seq.get() != nullptr;
 
+#ifdef AXOM_RUNTIME_POLICY_USE_OPENMP
     case RuntimePolicy::omp:
-#ifdef _AXOM_DCP_USE_OPENMP
       return m_bvh_omp.get() != nullptr;
-#else
-      break;
 #endif
 
+#ifdef AXOM_RUNTIME_POLICY_USE_CUDA
     case RuntimePolicy::cuda:
-#ifdef _AXOM_DCP_USE_CUDA
       return m_bvh_cuda.get() != nullptr;
-#else
-      break;
 #endif
+
+#ifdef AXOM_RUNTIME_POLICY_USE_HIP
     case RuntimePolicy::hip:
-#ifdef _AXOM_DCP_USE_HIP
       return m_bvh_hip.get() != nullptr;
-#else
-      break;
 #endif
     }
 
@@ -546,28 +513,22 @@ public:
       m_bvh_seq = std::make_unique<SeqBVHTree>();
       return generateBVHTreeImpl<SeqBVHTree>(m_bvh_seq.get());
 
+#ifdef AXOM_RUNTIME_POLICY_USE_OPENMP
     case RuntimePolicy::omp:
-#ifdef _AXOM_DCP_USE_OPENMP
       m_bvh_omp = std::make_unique<OmpBVHTree>();
       return generateBVHTreeImpl<OmpBVHTree>(m_bvh_omp.get());
-#else
-      break;
 #endif
 
+#ifdef AXOM_RUNTIME_POLICY_USE_CUDA
     case RuntimePolicy::cuda:
-#ifdef _AXOM_DCP_USE_CUDA
       m_bvh_cuda = std::make_unique<CudaBVHTree>();
       return generateBVHTreeImpl<CudaBVHTree>(m_bvh_cuda.get());
-#else
-      break;
 #endif
 
+#ifdef AXOM_RUNTIME_POLICY_USE_HIP
     case RuntimePolicy::hip:
-#ifdef _AXOM_DCP_USE_HIP
       m_bvh_hip = std::make_unique<HipBVHTree>();
       return generateBVHTreeImpl<HipBVHTree>(m_bvh_hip.get());
-#else
-      break;
 #endif
     }
 
@@ -591,27 +552,21 @@ public:
       local_bb = m_bvh_seq->getBounds();
       break;
 
+#ifdef AXOM_RUNTIME_POLICY_USE_OPENMP
     case RuntimePolicy::omp:
-#ifdef _AXOM_DCP_USE_OPENMP
       local_bb = m_bvh_omp->getBounds();
       break;
-#else
-      break;
 #endif
 
+#ifdef AXOM_RUNTIME_POLICY_USE_CUDA
     case RuntimePolicy::cuda:
-#ifdef _AXOM_DCP_USE_CUDA
       local_bb = m_bvh_cuda->getBounds();
       break;
-#else
-      break;
 #endif
 
+#ifdef AXOM_RUNTIME_POLICY_USE_HIP
     case RuntimePolicy::hip:
-#ifdef _AXOM_DCP_USE_HIP
       local_bb = m_bvh_hip->getBounds();
-      break;
-#else
       break;
 #endif
     }
@@ -1016,20 +971,20 @@ private:
       computeLocalClosestPoints<SeqBVHTree>(m_bvh_seq.get(), xferNode);
       break;
 
+#ifdef AXOM_RUNTIME_POLICY_USE_OPENMP
     case RuntimePolicy::omp:
-#ifdef _AXOM_DCP_USE_OPENMP
       computeLocalClosestPoints<OmpBVHTree>(m_bvh_omp.get(), xferNode);
 #endif
       break;
 
+#ifdef AXOM_RUNTIME_POLICY_USE_CUDA
     case RuntimePolicy::cuda:
-#ifdef _AXOM_DCP_USE_CUDA
       computeLocalClosestPoints<CudaBVHTree>(m_bvh_cuda.get(), xferNode);
 #endif
       break;
 
+#ifdef AXOM_RUNTIME_POLICY_USE_HIP
     case RuntimePolicy::hip:
-#ifdef _AXOM_DCP_USE_HIP
       computeLocalClosestPoints<HipBVHTree>(m_bvh_hip.get(), xferNode);
 #endif
       break;
@@ -1391,15 +1346,15 @@ private:
 
   std::unique_ptr<SeqBVHTree> m_bvh_seq;
 
-#ifdef _AXOM_DCP_USE_OPENMP
+#ifdef AXOM_RUNTIME_POLICY_USE_OPENMP
   std::unique_ptr<OmpBVHTree> m_bvh_omp;
 #endif
 
-#ifdef _AXOM_DCP_USE_CUDA
+#ifdef AXOM_RUNTIME_POLICY_USE_CUDA
   std::unique_ptr<CudaBVHTree> m_bvh_cuda;
 #endif
 
-#ifdef _AXOM_DCP_USE_HIP
+#ifdef AXOM_RUNTIME_POLICY_USE_HIP
   std::unique_ptr<HipBVHTree> m_bvh_hip;
 #endif
 };  // DistributedClosestPointImpl
@@ -1435,7 +1390,7 @@ private:
 class DistributedClosestPoint
 {
 public:
-  using RuntimePolicy = DistributedClosestPointRuntimePolicy;
+  using RuntimePolicy = axom::runtime_policy::Policy;
 
 public:
   DistributedClosestPoint()
@@ -1460,45 +1415,7 @@ public:
   }
 
   /// Set the runtime execution policy for the query
-  void setRuntimePolicy(RuntimePolicy policy)
-  {
-    SLIC_ASSERT_MSG(
-      isValidRuntimePolicy(policy),
-      fmt::format("Policy '{}' is not a valid runtime policy", policy));
-    m_runtimePolicy = policy;
-  }
-
-  /// Predicate to determine if a given \a RuntimePolicy is valid for this configuration
-  bool isValidRuntimePolicy(RuntimePolicy policy) const
-  {
-    switch(policy)
-    {
-    case RuntimePolicy::seq:
-      return true;
-
-    case RuntimePolicy::omp:
-#ifdef _AXOM_DCP_USE_OPENMP
-      return true;
-#else
-      return false;
-#endif
-
-    case RuntimePolicy::cuda:
-#ifdef _AXOM_DCP_USE_CUDA
-      return true;
-#else
-      return false;
-#endif
-    case RuntimePolicy::hip:
-#ifdef _AXOM_DCP_USE_HIP
-      return true;
-#else
-      return false;
-#endif
-    }
-
-    return false;
-  }
+  void setRuntimePolicy(RuntimePolicy policy) { m_runtimePolicy = policy; }
 
   /*!  @brief Sets the allocator ID to the default associated with the
     execution policy
@@ -1511,25 +1428,26 @@ public:
     case RuntimePolicy::seq:
       defaultAllocatorID = axom::execution_space<axom::SEQ_EXEC>::allocatorID();
       break;
-    case RuntimePolicy::omp:
-#ifdef _AXOM_DCP_USE_OPENMP
-      defaultAllocatorID = axom::execution_space<axom::OMP_EXEC>::allocatorID();
-#endif
-      break;
 
+#ifdef AXOM_RUNTIME_POLICY_USE_OPENMP
+    case RuntimePolicy::omp:
+      defaultAllocatorID = axom::execution_space<axom::OMP_EXEC>::allocatorID();
+      break;
+#endif
+
+#ifdef AXOM_RUNTIME_POLICY_USE_CUDA
     case RuntimePolicy::cuda:
-#ifdef _AXOM_DCP_USE_CUDA
       defaultAllocatorID =
         axom::execution_space<axom::CUDA_EXEC<256>>::allocatorID();
-#endif
       break;
+#endif
 
+#ifdef AXOM_RUNTIME_POLICY_USE_HIP
     case RuntimePolicy::hip:
-#ifdef _AXOM_DCP_USE_HIP
       defaultAllocatorID =
         axom::execution_space<axom::HIP_EXEC<256>>::allocatorID();
-#endif
       break;
+#endif
     }
     if(defaultAllocatorID == axom::INVALID_ALLOCATOR_ID)
     {
@@ -1638,6 +1556,7 @@ public:
       conduit::blueprint::mesh::to_multi_domain(meshNode, *tmpNode);
     }
     const conduit::Node& mdMeshNode(isMultidomain ? meshNode : *tmpNode);
+    verifyTopologyName(mdMeshNode, topologyName);
 
     auto domainCount = conduit::blueprint::mesh::number_of_domains(mdMeshNode);
 
@@ -1778,6 +1697,30 @@ private:
     return success;
   }
 
+  void verifyTopologyName(const conduit::Node& meshNode,
+                          const std::string& topologyName)
+  {
+    std::string coordsetPath;
+    const std::string topologyPath =
+      axom::fmt::format("topologies/{}", topologyName);
+    for(axom::IndexType d = 0; d < meshNode.number_of_children(); ++d)
+    {
+      const auto& domain = meshNode.child(d);
+      if(!domain.has_path(topologyPath))
+      {
+        auto errMsg = fmt::format("No such topology '{}' found.", topologyName);
+        if(domain.has_path("coordsets/" + topologyName))
+        {
+          errMsg += fmt::format(
+            "  You may have mistakenly specified a coordset name."
+            "  The interface has changed to use topology name"
+            " instead of coordset.");
+        }
+        SLIC_ERROR(errMsg);
+      }
+    }
+  }
+
 private:
   RuntimePolicy m_runtimePolicy {RuntimePolicy::seq};
   MPI_Comm m_mpiComm;
@@ -1796,10 +1739,5 @@ private:
 
 }  // end namespace quest
 }  // end namespace axom
-
-// Cleanup local #defines
-#undef _AXOM_DCP_USE_OPENMP
-#undef _AXOM_DCP_USE_CUDA
-#undef _AXOM_DCP_USE_HIP
 
 #endif  //  QUEST_DISTRIBUTED_CLOSEST_POINT_H_

@@ -118,34 +118,42 @@ TEST(primal_beziercurve, evaluate)
   using PointType = primal::Point<CoordType, DIM>;
   using BezierCurveType = primal::BezierCurve<CoordType, DIM>;
 
-  const int order = 3;
-  PointType data[order + 1] = {PointType {0.6, 1.2, 1.0},
-                               PointType {1.3, 1.6, 1.8},
-                               PointType {2.9, 2.4, 2.3},
-                               PointType {3.2, 3.5, 3.0}};
+  const int max_order = 3;
+  PointType data[max_order + 1] = {PointType {0.6, 1.2, 1.0},
+                                   PointType {1.3, 1.6, 1.8},
+                                   PointType {2.9, 2.4, 2.3},
+                                   PointType {3.2, 3.5, 3.0}};
 
-  BezierCurveType b2Curve(data, order);
+  // clang-format off
+  PointType exp_vals[4][3] = {{PointType {0.6, 1.2, 1.0}, PointType {  0.6,    1.2,    1.0}, PointType {0.6, 1.2, 1.0}},
+                              {PointType {0.6, 1.2, 1.0}, PointType { 0.95,    1.4,    1.4}, PointType {1.3, 1.6, 1.8}},
+                              {PointType {0.6, 1.2, 1.0}, PointType {1.525,    1.7,  1.725}, PointType {2.9, 2.4, 2.3}},
+                              {PointType {0.6, 1.2, 1.0}, PointType { 2.05, 2.0875, 2.0375}, PointType {3.2, 3.5, 3.0}}};
+  // clang-format on
 
-  PointType midtval {2.05, 2.0875, 2.0375};
-
-  // Evaluate the curve at several parameter values
-  // Curve should interpolate endpoints
-  PointType eval0 = b2Curve.evaluate(0.0);
-  PointType eval1 = b2Curve.evaluate(1.0);
-  PointType evalMid = b2Curve.evaluate(0.5);
-
-  for(int i = 0; i < DIM; ++i)
+  // Test evaluation at various orders, using the first `ord`
+  //  points in `data` as control points.
+  for(int ord = 0; ord <= max_order; ++ord)
   {
-    EXPECT_DOUBLE_EQ(b2Curve[0][i], eval0[i]);
-    EXPECT_DOUBLE_EQ(b2Curve[order][i], eval1[i]);
-    EXPECT_DOUBLE_EQ(midtval[i], evalMid[i]);
+    BezierCurveType curve(data, ord);
+
+    PointType calc_start = curve.evaluate(0.0);
+    PointType calc_mid = curve.evaluate(0.5);
+    PointType calc_end = curve.evaluate(1.0);
+
+    for(int i = 0; i < DIM; ++i)
+    {
+      EXPECT_NEAR(calc_start[i], exp_vals[ord][0][i], 1e-15);
+      EXPECT_NEAR(calc_mid[i], exp_vals[ord][1][i], 1e-15);
+      EXPECT_NEAR(calc_end[i], exp_vals[ord][2][i], 1e-15);
+    }
   }
 }
 
 //------------------------------------------------------------------------------
-TEST(primal_beziercurve_, tangent)
+TEST(primal_beziercurve_, first_derivatives)
 {
-  SLIC_INFO("Testing Bezier tangent calculation");
+  SLIC_INFO("Testing Bezier derivative calculation");
 
   const int DIM = 3;
   using CoordType = double;
@@ -153,29 +161,118 @@ TEST(primal_beziercurve_, tangent)
   using VectorType = primal::Vector<CoordType, DIM>;
   using BezierCurveType = primal::BezierCurve<CoordType, DIM>;
 
-  const int order = 3;
-  PointType data[order + 1] = {PointType {0.6, 1.2, 1.0},
-                               PointType {1.3, 1.6, 1.8},
-                               PointType {2.9, 2.4, 2.3},
-                               PointType {3.2, 3.5, 3.0}};
+  const int max_order = 3;
+  PointType data[max_order + 1] = {PointType {0.6, 1.2, 1.0},
+                                   PointType {1.3, 1.6, 1.8},
+                                   PointType {2.9, 2.4, 2.3},
+                                   PointType {3.2, 3.5, 3.0}};
 
-  BezierCurveType b2Curve(data, order);
+  // clang-format off
+  VectorType exp_vals[4][3] = {{VectorType {0.0, 0.0, 0.0}, VectorType { 0.0,   0.0,   0.0}, VectorType {0.0, 0.0, 0.0}},
+                               {VectorType {0.7, 0.4, 0.8}, VectorType { 0.7,   0.4,   0.8}, VectorType {0.7, 0.4, 0.8}},
+                               {VectorType {1.4, 0.8, 1.6}, VectorType { 2.3,   1.2,   1.3}, VectorType {3.2, 1.6, 1.0}},
+                               {VectorType {2.1, 1.2, 2.4}, VectorType {3.15, 2.325, 1.875}, VectorType {0.9, 3.3, 2.1}}};
+  // clang-format on
 
-  VectorType midtval = VectorType {3.15, 2.325, 1.875};
-  VectorType starttval = VectorType {2.1, 1.2, 2.4};
-  VectorType endtval = VectorType {.9, 3.3, 2.1};
-
-  // Evaluate the curve at several parameter values
-  // Curve should be tangent to control net at endpoints
-  VectorType eval0 = b2Curve.dt(0.0);
-  VectorType eval1 = b2Curve.dt(1.0);
-  VectorType evalMid = b2Curve.dt(0.5);
-
-  for(int i = 0; i < DIM; ++i)
+  // Test derivative calculation at various orders, using the first `ord`
+  //  points in `data` as control points.
+  for(int ord = 0; ord <= max_order; ++ord)
   {
-    EXPECT_NEAR(starttval[i], eval0[i], 1e-15);
-    EXPECT_NEAR(endtval[i], eval1[i], 1e-15);
-    EXPECT_NEAR(midtval[i], evalMid[i], 1e-15);
+    BezierCurveType curve(data, ord);
+
+    VectorType calc_start = curve.dt(0.0);
+    VectorType calc_mid = curve.dt(0.5);
+    VectorType calc_end = curve.dt(1.0);
+
+    for(int i = 0; i < DIM; ++i)
+    {
+      EXPECT_NEAR(calc_start[i], exp_vals[ord][0][i], 1e-15);
+      EXPECT_NEAR(calc_mid[i], exp_vals[ord][1][i], 1e-15);
+      EXPECT_NEAR(calc_end[i], exp_vals[ord][2][i], 1e-15);
+    }
+  }
+}
+
+//------------------------------------------------------------------------------
+TEST(primal_beziercurve_, second_derivative)
+{
+  SLIC_INFO("Testing Bezier second derivative calculation");
+
+  const int DIM = 3;
+  using CoordType = double;
+  using PointType = primal::Point<CoordType, DIM>;
+  using VectorType = primal::Vector<CoordType, DIM>;
+  using BezierCurveType = primal::BezierCurve<CoordType, DIM>;
+
+  const int max_order = 3;
+  PointType data[max_order + 1] = {PointType {0.6, 1.2, 1.0},
+                                   PointType {1.3, 1.6, 1.8},
+                                   PointType {2.9, 2.4, 2.3},
+                                   PointType {3.2, 3.5, 3.0}};
+
+  // clang-format off
+  VectorType exp_vals[4][3] = {{VectorType {0.0, 0.0,  0.0}, VectorType { 0.0, 0.0,  0.0}, VectorType { 0.0, 0.0,  0.0}},
+                               {VectorType {0.0, 0.0,  0.0}, VectorType { 0.0, 0.0,  0.0}, VectorType { 0.0, 0.0,  0.0}},
+                               {VectorType {1.8, 0.8, -0.6}, VectorType { 1.8, 0.8, -0.6}, VectorType { 1.8, 0.8, -0.6}},
+                               {VectorType {5.4, 2.4, -1.8}, VectorType {-1.2, 2.1, -0.3}, VectorType {-7.8, 1.8,  1.2}}};
+  // clang-format on
+
+  // Test evaluation at various orders, using the first `ord`
+  //  points in `data` as control points.
+  for(int ord = 0; ord <= max_order; ++ord)
+  {
+    BezierCurveType curve(data, ord);
+
+    VectorType calc_start = curve.dtdt(0.0);
+    VectorType calc_mid = curve.dtdt(0.5);
+    VectorType calc_end = curve.dtdt(1.0);
+
+    for(int i = 0; i < DIM; ++i)
+    {
+      EXPECT_NEAR(calc_start[i], exp_vals[ord][0][i], 1e-14);
+      EXPECT_NEAR(calc_mid[i], exp_vals[ord][1][i], 1e-14);
+      EXPECT_NEAR(calc_end[i], exp_vals[ord][2][i], 1e-14);
+    }
+  }
+}
+
+//------------------------------------------------------------------------------
+TEST(primal_beziercurve_, batch_derivatives)
+{
+  SLIC_INFO("Testing Bezier batched derivative calculations");
+
+  const int DIM = 3;
+  using CoordType = double;
+  using PointType = primal::Point<CoordType, DIM>;
+  using VectorType = primal::Vector<CoordType, DIM>;
+  using BezierCurveType = primal::BezierCurve<CoordType, DIM>;
+
+  const int max_order = 3;
+  PointType data[max_order + 1] = {PointType {0.6, 1.2, 1.0},
+                                   PointType {1.3, 1.6, 1.8},
+                                   PointType {2.9, 2.4, 2.3},
+                                   PointType {3.2, 3.5, 3.0}};
+
+  const double t = 0.6;
+  PointType batch1_val, batch2_val;
+  VectorType batch1_dt, batch2_dt, batch2_dtdt;
+
+  // Test the derivative calculations on various orders
+  for(int ord = 0; ord <= max_order; ++ord)
+  {
+    BezierCurveType curve(data, ord);
+
+    curve.evaluate_first_derivative(t, batch1_val, batch1_dt);
+    curve.evaluate_second_derivative(t, batch2_val, batch2_dt, batch2_dtdt);
+    for(int i = 0; i < DIM; ++i)
+    {
+      EXPECT_NEAR(curve.evaluate(t)[i], batch1_val[i], 1e-15);
+      EXPECT_NEAR(curve.dt(t)[i], batch1_dt[i], 1e-15);
+
+      EXPECT_NEAR(curve.evaluate(t)[i], batch2_val[i], 1e-15);
+      EXPECT_NEAR(curve.dt(t)[i], batch2_dt[i], 1e-15);
+      EXPECT_NEAR(curve.dtdt(t)[i], batch2_dtdt[i], 1e-15);
+    }
   }
 }
 

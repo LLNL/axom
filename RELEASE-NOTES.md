@@ -19,6 +19,16 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 
 ## [Unreleased] - Release date yyyy-mm-dd
 
+### Added
+- Primal: Adds a `Quadrilateral` primitive
+- Primal: Adds a `compute_bounding_box()` operator for computing the bounding
+  box of a `Quadrilateral`
+- Primal: Adds a `clip()` operator for clipping a tetrahedron against the
+  half-space defined by a plane
+- Primal: Adds a `checkAndFixOrientation()` function to `primal::Tetrahedron`
+  that swaps the order of vertices if the signed volume of the Tetrahedron is
+  negative, resulting in the signed volume becoming positive.
+
 ### Changed
 - `MarchingCubes` and `DistributedClosestPoint` classes changed from requiring the Blueprint
   coordset name to requiring the Blueprint topology name.  The changed interface methods are:
@@ -26,6 +36,15 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
   - `DistributedClosestPoint::computeClosestPoints`
   - `MarchingCubes::MarchingCubes`
   - `MarchingCubesSingleDomain::MarchingCubesSingleDomain`
+- Primal: `Polyhedron::volume()` function changed from returning a signed
+  volume to an unsigned volume. The added `Polyhedron::signedVolume()` function
+  returns the signed volume.
+- Primal: `intersection_volume()` operators changed from returning a signed
+  volume to an unsigned volume.
+
+### Fixed
+- quest's `SamplingShaper` now properly handles material names containing underscores
+- quest's `SamplingShaper` can now be used with an mfem that is configured for (GPU) devices
 
 ## [Version 0.8.1] - Release date 2023-08-16
 

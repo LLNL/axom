@@ -255,6 +255,7 @@ TEST(primal_polyhedron, polyhedron_octahedron)
   octA.addNeighbors(octA[5], {0, 1, 3, 4});
 
   EXPECT_NEAR(1.3333, octA.volume(), EPS);
+  EXPECT_NEAR(1.3333, octA.signedVolume(), EPS);
 
   PolyhedronType octB;
   octB.addVertex({1, 0, 0});
@@ -272,6 +273,7 @@ TEST(primal_polyhedron, polyhedron_octahedron)
   octB.addNeighbors(octB[5], {0, 1, 3, 4});
 
   EXPECT_NEAR(0.6666, octB.volume(), EPS);
+  EXPECT_NEAR(0.6666, octB.signedVolume(), EPS);
 }
 
 //------------------------------------------------------------------------------
@@ -707,16 +709,21 @@ TEST(primal_polyhedron, polyhedron_from_primitive)
   poly = Polyhedron3D::from_primitive(hex, false);
   EXPECT_NEAR(1.0, poly.volume(), EPS);
 
+  // Check signed volume
+  EXPECT_NEAR(1.0, poly.signedVolume(), EPS);
+  EXPECT_NEAR(hex.signedVolume(), poly.signedVolume(), EPS);
+
   // Negative volume
   axom::utilities::swap<Point3D>(hex[1], hex[3]);
   axom::utilities::swap<Point3D>(hex[5], hex[7]);
 
   poly = Polyhedron3D::from_primitive(hex, false);
-  EXPECT_NEAR(-1.0, poly.volume(), EPS);
+  EXPECT_NEAR(-1.0, poly.signedVolume(), EPS);
+  EXPECT_NEAR(-1.0, hex.signedVolume(), EPS);
 
   // Check sign
   poly = Polyhedron3D::from_primitive(hex, CHECK_SIGN);
-  EXPECT_NEAR(1.0, poly.volume(), EPS);
+  EXPECT_NEAR(1.0, poly.signedVolume(), EPS);
 
   // Valid octahedron
   Octahedron3D oct(Point3D {1, 0, 0},
@@ -734,11 +741,11 @@ TEST(primal_polyhedron, polyhedron_from_primitive)
   axom::utilities::swap<Point3D>(oct[4], oct[5]);
 
   poly = Polyhedron3D::from_primitive(oct, false);
-  EXPECT_NEAR(-0.6666, poly.volume(), EPS);
+  EXPECT_NEAR(-0.6666, poly.signedVolume(), EPS);
 
   // Check sign
   poly = Polyhedron3D::from_primitive(oct, CHECK_SIGN);
-  EXPECT_NEAR(0.6666, poly.volume(), EPS);
+  EXPECT_NEAR(0.6666, poly.signedVolume(), EPS);
 
   // Valid tetrahedron
   Tetrahedron3D tet(Point3D {1, 1, 1},
@@ -749,15 +756,20 @@ TEST(primal_polyhedron, polyhedron_from_primitive)
   poly = Polyhedron3D::from_primitive(tet, false);
   EXPECT_NEAR(2.6666, poly.volume(), EPS);
 
+  // Check signed volume
+  EXPECT_NEAR(2.6666, poly.signedVolume(), EPS);
+  EXPECT_NEAR(tet.signedVolume(), poly.signedVolume(), EPS);
+
   // Negative volume
   axom::utilities::swap<Point3D>(tet[1], tet[2]);
 
   poly = Polyhedron3D::from_primitive(tet, false);
-  EXPECT_NEAR(-2.6666, poly.volume(), EPS);
+  EXPECT_NEAR(-2.6666, poly.signedVolume(), EPS);
+  EXPECT_NEAR(tet.signedVolume(), poly.signedVolume(), EPS);
 
   // Check sign
   poly = Polyhedron3D::from_primitive(tet, CHECK_SIGN);
-  EXPECT_NEAR(2.6666, poly.volume(), EPS);
+  EXPECT_NEAR(2.6666, poly.signedVolume(), EPS);
 }
 
 //------------------------------------------------------------------------------

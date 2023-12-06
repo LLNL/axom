@@ -41,6 +41,7 @@ using PolyhedronType = axom::primal::Polyhedron<double, 3>;
 TEST(primal_clip, simple_clip)
 {
   using namespace Primal3D;
+  constexpr double EPS = 1e-8;
   BoundingBoxType bbox;
   bbox.addPoint(PointType::zero());
   bbox.addPoint(PointType::ones());
@@ -83,7 +84,10 @@ TEST(primal_clip, simple_clip)
     PolygonType poly = axom::primal::clip(tri, bbox);
     EXPECT_EQ(4, poly.numVertices());
 
-    EXPECT_EQ(PointType(.5), poly.vertexMean());
+    for(int dim = 0; dim < 3; ++dim)
+    {
+      EXPECT_NEAR(0.5, poly.vertexMean()[dim], EPS);
+    }
 
     SLIC_INFO("Intersection of triangle " << tri << " and bounding box " << bbox
                                           << " is polygon" << poly);
@@ -362,7 +366,7 @@ void check_hex_tet_clip(double EPS)
 {
   using namespace Primal3D;
 
-  constexpr bool CHECK_SIGN = true;
+  constexpr bool CHECK_ORIENTATION = true;
 
   // Save current/default allocator
   const int current_allocator = axom::getDefaultAllocatorID();
@@ -397,7 +401,7 @@ void check_hex_tet_clip(double EPS)
               axom::primal::intersection_volume<double>(hex[0], tet[0]),
               EPS);
 
-  // Test checkSign optional parameter using shapes with negative volumes
+  // Test tryFixOrientation optional parameter using shapes with negative volumes
   axom::utilities::swap<PointType>(tet[0][1], tet[0][2]);
   axom::utilities::swap<PointType>(hex[0][1], hex[0][3]);
   axom::utilities::swap<PointType>(hex[0][5], hex[0][7]);
@@ -408,14 +412,16 @@ void check_hex_tet_clip(double EPS)
   axom::for_all<ExecPolicy>(
     1,
     AXOM_LAMBDA(int i) {
-      res[i] = axom::primal::clip(hex[i], tet[i], EPS, CHECK_SIGN);
+      res[i] = axom::primal::clip(hex[i], tet[i], EPS, CHECK_ORIENTATION);
     });
 
   EXPECT_NEAR(0.1666, res[0].volume(), EPS);
-  EXPECT_NEAR(
-    0.1666,
-    axom::primal::intersection_volume<double>(hex[0], tet[0], EPS, CHECK_SIGN),
-    EPS);
+  EXPECT_NEAR(0.1666,
+              axom::primal::intersection_volume<double>(hex[0],
+                                                        tet[0],
+                                                        EPS,
+                                                        CHECK_ORIENTATION),
+              EPS);
 
   axom::deallocate(tet);
   axom::deallocate(hex);
@@ -429,7 +435,7 @@ void check_oct_tet_clip(double EPS)
 {
   using namespace Primal3D;
 
-  constexpr bool CHECK_SIGN = true;
+  constexpr bool CHECK_ORIENTATION = true;
 
   // Save current/default allocator
   const int current_allocator = axom::getDefaultAllocatorID();
@@ -463,7 +469,7 @@ void check_oct_tet_clip(double EPS)
               axom::primal::intersection_volume<double>(oct[0], tet[0]),
               EPS);
 
-  // Test checkSign optional parameter using shapes with negative volumes
+  // Test tryFixOrientation optional parameter using shapes with negative volumes
   axom::utilities::swap<PointType>(tet[0][1], tet[0][2]);
   axom::utilities::swap<PointType>(oct[0][1], oct[0][2]);
   axom::utilities::swap<PointType>(oct[0][4], oct[0][5]);
@@ -473,14 +479,16 @@ void check_oct_tet_clip(double EPS)
   axom::for_all<ExecPolicy>(
     1,
     AXOM_LAMBDA(int i) {
-      res[i] = axom::primal::clip(oct[i], tet[i], EPS, CHECK_SIGN);
+      res[i] = axom::primal::clip(oct[i], tet[i], EPS, CHECK_ORIENTATION);
     });
 
   EXPECT_NEAR(0.1666, res[0].volume(), EPS);
-  EXPECT_NEAR(
-    0.1666,
-    axom::primal::intersection_volume<double>(oct[0], tet[0], EPS, CHECK_SIGN),
-    EPS);
+  EXPECT_NEAR(0.1666,
+              axom::primal::intersection_volume<double>(oct[0],
+                                                        tet[0],
+                                                        EPS,
+                                                        CHECK_ORIENTATION),
+              EPS);
 
   axom::deallocate(tet);
   axom::deallocate(oct);
@@ -494,7 +502,7 @@ void check_tet_tet_clip(double EPS)
 {
   using namespace Primal3D;
 
-  constexpr bool CHECK_SIGN = true;
+  constexpr bool CHECK_ORIENTATION = true;
 
   // Save current/default allocator
   const int current_allocator = axom::getDefaultAllocatorID();
@@ -526,7 +534,7 @@ void check_tet_tet_clip(double EPS)
               axom::primal::intersection_volume<double>(tet1[0], tet2[0]),
               EPS);
 
-  // Test checkSign optional parameter using shapes with negative volumes
+  // Test tryFixOrientation optional parameter using shapes with negative volumes
   axom::utilities::swap<PointType>(tet1[0][1], tet1[0][2]);
   axom::utilities::swap<PointType>(tet2[0][1], tet2[0][2]);
 
@@ -536,14 +544,16 @@ void check_tet_tet_clip(double EPS)
   axom::for_all<ExecPolicy>(
     1,
     AXOM_LAMBDA(int i) {
-      res[i] = axom::primal::clip(tet1[i], tet2[i], EPS, CHECK_SIGN);
+      res[i] = axom::primal::clip(tet1[i], tet2[i], EPS, CHECK_ORIENTATION);
     });
 
   EXPECT_NEAR(0.0833, res[0].volume(), EPS);
-  EXPECT_NEAR(
-    0.0833,
-    axom::primal::intersection_volume<double>(tet1[0], tet2[0], EPS, CHECK_SIGN),
-    EPS);
+  EXPECT_NEAR(0.0833,
+              axom::primal::intersection_volume<double>(tet1[0],
+                                                        tet2[0],
+                                                        EPS,
+                                                        CHECK_ORIENTATION),
+              EPS);
 
   axom::deallocate(tet1);
   axom::deallocate(tet2);
@@ -966,7 +976,7 @@ TEST(primal_clip, oct_tet_clip_special_case_1)
 {
   using namespace Primal3D;
   constexpr double EPS = 1e-4;
-  constexpr bool CHECK_SIGN = true;
+  constexpr bool CHECK_ORIENTATION = true;
 
   TetrahedronType tet(PointType {0.5, 0.5, 0.5},
                       PointType {1, 1, 0},
@@ -999,18 +1009,18 @@ TEST(primal_clip, oct_tet_clip_special_case_1)
 
   EXPECT_NEAR(0.0251, octPoly.volume(), EPS);
 
-  PolyhedronType poly = axom::primal::clip(oct, tet, EPS, CHECK_SIGN);
+  PolyhedronType poly = axom::primal::clip(oct, tet, EPS, CHECK_ORIENTATION);
 
   EXPECT_NEAR(0.0041, poly.volume(), EPS);
   EXPECT_NEAR(
     0.0041,
-    axom::primal::intersection_volume<double>(oct, tet, EPS, CHECK_SIGN),
+    axom::primal::intersection_volume<double>(oct, tet, EPS, CHECK_ORIENTATION),
     EPS);
   EXPECT_NEAR(
     0.0041,
-    axom::primal::intersection_volume<double>(tet, oct, EPS, CHECK_SIGN),
+    axom::primal::intersection_volume<double>(tet, oct, EPS, CHECK_ORIENTATION),
     EPS);
-  EXPECT_NEAR(axom::primal::clip(tet, oct, EPS, CHECK_SIGN).volume(),
+  EXPECT_NEAR(axom::primal::clip(tet, oct, EPS, CHECK_ORIENTATION).volume(),
               poly.volume(),
               EPS);
 }
@@ -1019,7 +1029,7 @@ TEST(primal_clip, oct_tet_clip_special_case_2)
 {
   using namespace Primal3D;
   constexpr double EPS = 1e-4;
-  constexpr bool CHECK_SIGN = true;
+  constexpr bool CHECK_ORIENTATION = true;
 
   TetrahedronType tet(PointType {0.5, 0.5, 0.5},
                       PointType {0, 1, 0},
@@ -1052,18 +1062,18 @@ TEST(primal_clip, oct_tet_clip_special_case_2)
 
   EXPECT_NEAR(0.0251, octPoly.volume(), EPS);
 
-  PolyhedronType poly = axom::primal::clip(oct, tet, EPS, CHECK_SIGN);
+  PolyhedronType poly = axom::primal::clip(oct, tet, EPS, CHECK_ORIENTATION);
 
   EXPECT_NEAR(0.0041, poly.volume(), EPS);
   EXPECT_NEAR(
     0.0041,
-    axom::primal::intersection_volume<double>(oct, tet, EPS, CHECK_SIGN),
+    axom::primal::intersection_volume<double>(oct, tet, EPS, CHECK_ORIENTATION),
     EPS);
   EXPECT_NEAR(
     0.0041,
-    axom::primal::intersection_volume<double>(tet, oct, EPS, CHECK_SIGN),
+    axom::primal::intersection_volume<double>(tet, oct, EPS, CHECK_ORIENTATION),
     EPS);
-  EXPECT_NEAR(axom::primal::clip(tet, oct, EPS, CHECK_SIGN).volume(),
+  EXPECT_NEAR(axom::primal::clip(tet, oct, EPS, CHECK_ORIENTATION).volume(),
               poly.volume(),
               EPS);
 }
@@ -1223,7 +1233,7 @@ TEST(primal_clip, tet_tet_clip_split)
 {
   using namespace Primal3D;
   constexpr double EPS = 1e-4;
-  constexpr bool CHECK_SIGN = true;
+  constexpr bool CHECK_ORIENTATION = true;
 
   TetrahedronType tet(PointType {0.5, 0.5, 2},
                       PointType {2, -1, 0},
@@ -1253,7 +1263,7 @@ TEST(primal_clip, tet_tet_clip_split)
   for(int i = 0; i < split_tets.size(); i++)
   {
     tet_volumes +=
-      (axom::primal::clip(split_tets[i], tet, EPS, CHECK_SIGN)).volume();
+      (axom::primal::clip(split_tets[i], tet, EPS, CHECK_ORIENTATION)).volume();
   }
 
   // Expected result should still be 0.3333
@@ -1264,7 +1274,7 @@ TEST(primal_clip, tet_tet_clip_special_case_1)
 {
   using namespace Primal3D;
   constexpr double EPS = 1e-10;
-  constexpr bool CHECK_SIGN = true;
+  constexpr bool CHECK_ORIENTATION = true;
 
   // Tets do not intersect, but share a face
   TetrahedronType tet1(PointType {0.5, 0.5, -0.125},
@@ -1277,17 +1287,207 @@ TEST(primal_clip, tet_tet_clip_special_case_1)
                        PointType {0.125, 0, -0.25},
                        PointType {0.125, 0.0625, -0.234375});
 
-  PolyhedronType poly = axom::primal::clip(tet1, tet2, EPS, CHECK_SIGN);
+  PolyhedronType poly = axom::primal::clip(tet1, tet2, EPS, CHECK_ORIENTATION);
 
   EXPECT_NEAR(0.00, poly.volume(), EPS);
   EXPECT_NEAR(
     0.00,
-    axom::primal::intersection_volume<double>(tet2, tet1, EPS, CHECK_SIGN),
+    axom::primal::intersection_volume<double>(tet2, tet1, EPS, CHECK_ORIENTATION),
     EPS);
   EXPECT_NEAR(
     0.00,
-    axom::primal::intersection_volume<double>(tet1, tet2, EPS, CHECK_SIGN),
+    axom::primal::intersection_volume<double>(tet1, tet2, EPS, CHECK_ORIENTATION),
     EPS);
+}
+
+TEST(primal_clip, tet_plane_intersect_none_below)
+{
+  using namespace Primal3D;
+  constexpr double EPS = 1e-10;
+  constexpr bool CHECK_SIGN = true;
+
+  // Plane intersects one vertex of tet
+  TetrahedronType tet(PointType {0.0, 0.0, 0.0},
+                      PointType {1.0, 0.0, 0.0},
+                      PointType {0.0, 1.0, 0.0},
+                      PointType {0.0, 0.0, 1.0});
+
+  PlaneType plane(VectorType {0.0, 0.0, -1.0}, PointType {0.0, 0.0, -0.5});
+
+  PolyhedronType poly = axom::primal::clip(tet, plane, EPS, CHECK_SIGN);
+
+  EXPECT_NEAR(0.0, poly.signedVolume(), EPS);
+}
+
+TEST(primal_clip, tet_plane_intersect_none_above)
+{
+  using namespace Primal3D;
+  constexpr double EPS = 1e-10;
+  constexpr bool CHECK_SIGN = true;
+
+  // Plane intersects one vertex of tet
+  TetrahedronType tet(PointType {0.0, 0.0, 0.0},
+                      PointType {1.0, 0.0, 0.0},
+                      PointType {0.0, 1.0, 0.0},
+                      PointType {0.0, 0.0, 1.0});
+
+  PlaneType plane(VectorType {0.0, 0.0, 1.0}, PointType {0.0, 0.0, -0.5});
+
+  PolyhedronType poly = axom::primal::clip(tet, plane, EPS, CHECK_SIGN);
+
+  EXPECT_NEAR(tet.signedVolume(), poly.signedVolume(), EPS);
+}
+
+TEST(primal_clip, tet_plane_border_vertex_below)
+{
+  using namespace Primal3D;
+  constexpr double EPS = 1e-10;
+  constexpr bool CHECK_SIGN = true;
+
+  // Plane intersects one vertex of tet
+  TetrahedronType tet(PointType {0.0, 0.0, 0.0},
+                      PointType {1.0, 0.0, 0.0},
+                      PointType {0.0, 1.0, 0.0},
+                      PointType {0.0, 0.0, 1.0});
+
+  PlaneType plane(VectorType {0.0, 0.0, 1.0}, PointType {0.0, 0.0, 1.0});
+
+  PolyhedronType poly = axom::primal::clip(tet, plane, EPS, CHECK_SIGN);
+
+  EXPECT_NEAR(0.0, poly.signedVolume(), EPS);
+}
+
+TEST(primal_clip, tet_plane_border_vertex_above)
+{
+  using namespace Primal3D;
+  constexpr double EPS = 1e-10;
+  constexpr bool CHECK_SIGN = true;
+
+  // Plane intersects one vertex of tet
+  TetrahedronType tet(PointType {0.0, 0.0, 0.0},
+                      PointType {1.0, 0.0, 0.0},
+                      PointType {0.0, 1.0, 0.0},
+                      PointType {0.0, 0.0, 1.0});
+
+  PlaneType plane(VectorType {0.0, 0.0, -1.0}, PointType {0.0, 0.0, 1.0});
+
+  PolyhedronType poly = axom::primal::clip(tet, plane, EPS, CHECK_SIGN);
+
+  EXPECT_NEAR(tet.signedVolume(), poly.signedVolume(), EPS);
+}
+
+TEST(primal_clip, tet_plane_border_edge_below)
+{
+  using namespace Primal3D;
+  constexpr double EPS = 1e-10;
+  constexpr bool CHECK_SIGN = true;
+
+  // Plane intersects one edge of tet
+  TetrahedronType tet(PointType {0.0, 0.0, 0.0},
+                      PointType {1.0, 0.0, 0.0},
+                      PointType {0.0, 1.0, 0.0},
+                      PointType {0.0, 0.0, 1.0});
+
+  PlaneType plane(VectorType {0.0, -1.0, -1.0}, 0.0);
+
+  PolyhedronType poly = axom::primal::clip(tet, plane, EPS, CHECK_SIGN);
+
+  EXPECT_NEAR(0.0, poly.signedVolume(), EPS);
+}
+
+TEST(primal_clip, tet_plane_border_edge_above)
+{
+  using namespace Primal3D;
+  constexpr double EPS = 1e-10;
+  constexpr bool CHECK_SIGN = true;
+
+  // Plane intersects one edge of tet
+  TetrahedronType tet(PointType {0.0, 0.0, 0.0},
+                      PointType {1.0, 0.0, 0.0},
+                      PointType {0.0, 1.0, 0.0},
+                      PointType {0.0, 0.0, 1.0});
+
+  PlaneType plane(VectorType {0.0, 1.0, 1.0}, 0.0);
+
+  PolyhedronType poly = axom::primal::clip(tet, plane, EPS, CHECK_SIGN);
+
+  EXPECT_NEAR(tet.signedVolume(), poly.signedVolume(), EPS);
+}
+
+TEST(primal_clip, tet_plane_border_face_below)
+{
+  using namespace Primal3D;
+  constexpr double EPS = 1e-10;
+  constexpr bool CHECK_SIGN = true;
+
+  // Tet and plane do not intersect, but border each other
+  TetrahedronType tet(PointType {0.0, 0.0, 0.0},
+                      PointType {1.0, 0.0, 0.0},
+                      PointType {0.0, 1.0, 0.0},
+                      PointType {0.0, 0.0, 1.0});
+
+  PlaneType plane(VectorType {0.0, 0.0, -1.0}, 0.0);
+
+  PolyhedronType poly = axom::primal::clip(plane, tet, EPS, CHECK_SIGN);
+
+  EXPECT_NEAR(0.0, poly.signedVolume(), EPS);
+}
+
+TEST(primal_clip, tet_plane_border_face_above)
+{
+  using namespace Primal3D;
+  constexpr double EPS = 1e-10;
+  constexpr bool CHECK_SIGN = true;
+
+  // Tet and plane do not intersect, but border each other
+  TetrahedronType tet(PointType {0.0, 0.0, 0.0},
+                      PointType {1.0, 0.0, 0.0},
+                      PointType {0.0, 1.0, 0.0},
+                      PointType {0.0, 0.0, 1.0});
+
+  PlaneType plane(VectorType {0.0, 0.0, 1.0}, 0.0);
+
+  PolyhedronType poly = axom::primal::clip(plane, tet, EPS, CHECK_SIGN);
+
+  EXPECT_NEAR(tet.signedVolume(), poly.signedVolume(), EPS);
+}
+
+TEST(primal_clip, tet_plane_intersect_three_edges)
+{
+  using namespace Primal3D;
+  constexpr double EPS = 1e-10;
+  constexpr bool CHECK_SIGN = true;
+
+  // Plane intersects three edges of tet
+  TetrahedronType tet(PointType {0.0, 0.0, 0.0},
+                      PointType {1.0, 0.0, 0.0},
+                      PointType {0.0, 1.0, 0.0},
+                      PointType {0.0, 0.0, 1.0});
+
+  PlaneType plane(VectorType {-1.0, 0.0, 1.0}, 0.0);
+
+  PolyhedronType poly = axom::primal::clip(plane, tet, EPS, CHECK_SIGN);
+
+  EXPECT_NEAR(tet.signedVolume() / 2.0, poly.signedVolume(), EPS);
+}
+
+TEST(primal_clip, tet_plane_intersect_four_edges)
+{
+  using namespace Primal3D;
+  constexpr double EPS = 1e-10;
+  constexpr bool CHECK_SIGN = true;
+
+  // Plane intersects four edges of tet
+  TetrahedronType tet(PointType {0.0, 0.0, 0.0},
+                      PointType {1.0, 1.0, 0.0},
+                      PointType {0.0, 1.0, 1.0},
+                      PointType {1.0, 0.0, 1.0});
+
+  PlaneType plane(VectorType {0.0, 0.0, 1.0}, 0.5);
+
+  PolyhedronType poly = axom::primal::clip(plane, tet, EPS, CHECK_SIGN);
+
+  EXPECT_NEAR(tet.signedVolume() / 2.0, poly.signedVolume(), EPS);
 }
 
 //------------------------------------------------------------------------------
