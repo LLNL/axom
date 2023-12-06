@@ -575,7 +575,7 @@ public:
     if(ret.second == true)
     {
 #ifdef AXOM_USE_RAJA
-      RAJA::atomicAdd<RAJA::auto_atomic>(&m_size, IndexType{1});
+      RAJA::atomicAdd<RAJA::auto_atomic>(&m_size, IndexType {1});
 #else
       m_size++;
 #endif
@@ -623,7 +623,7 @@ public:
     if(ret.second == true)
     {
 #ifdef AXOM_USE_RAJA
-      RAJA::atomicAdd<RAJA::auto_atomic>(&m_size, IndexType{1});
+      RAJA::atomicAdd<RAJA::auto_atomic>(&m_size, IndexType {1});
 #else
       m_size++;
 #endif
@@ -678,7 +678,7 @@ public:
     if(ret == true)
     {
 #ifdef AXOM_USE_RAJA
-      RAJA::atomicSub<RAJA::auto_atomic>(&m_size, IndexType{1});
+      RAJA::atomicSub<RAJA::auto_atomic>(&m_size, IndexType {1});
 #else
       m_size--;
 #endif
