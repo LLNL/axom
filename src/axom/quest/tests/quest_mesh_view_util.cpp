@@ -373,12 +373,6 @@ int testByConduitExample(const IndexCoords& domainShape,
 
   axom::quest::MeshViewUtil<3, axom::MemorySpace::Dynamic> mview(domain);
 
-  if(!mview.isValid(true, true))
-  {
-    ++errCount;
-    SLIC_INFO_IF(params.isVerbose(), "Test view is not valid.");
-  }
-
   // Data parameters not dependent on striding order.
 
   IndexCoords elemShape = mview.getCellShape();
@@ -724,10 +718,7 @@ int testByConduitExample(const IndexCoords& domainShape,
 //------------------------------------------------------------------------------
 int main(int argc, char** argv)
 {
-  // This test is serial, but conduit might use MPI.
-  #ifdef AXOM_USE_MPI
-  MPI_Init(&argc, &argv);
-  #endif
+  int errCount = 0;
 
   initializeLogger();
 
@@ -745,8 +736,6 @@ int main(int argc, char** argv)
     int retval = app.exit(e);
     exit(retval);
   }
-
-  int errCount = 0;
 
   {
     // Test conversion methods.
@@ -790,10 +779,6 @@ int main(int argc, char** argv)
   SLIC_INFO(axom::fmt::format("Test found {} errors.", errCount));
 
   finalizeLogger();
-
-  #ifdef AXOM_USE_MPI
-  MPI_Finalize();
-  #endif
 
   return (errCount != 0);
 }

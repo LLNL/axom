@@ -159,6 +159,7 @@ class Axom(CachedCMakePackage, CudaPackage, ROCmPackage):
     depends_on("python", when="+devtools")
     depends_on("py-sphinx", when="+devtools")
     depends_on("py-shroud", when="+devtools")
+    depends_on("py-jsonschema", when="+devtools")
     depends_on("llvm+clang@10.0.0", when="+devtools", type="build")
 
     # Hard requirement after Axom 0.6.1
@@ -505,6 +506,11 @@ class Axom(CachedCMakePackage, CudaPackage, ROCmPackage):
             for key in path_replacements:
                 python_path = python_path.replace(key, path_replacements[key])
             entries.append(cmake_cache_path("PYTHON_EXECUTABLE", python_path))
+
+        if spec.satisfies("^py-jsonschema"):
+            jsonschema_dir = get_spec_path(spec, "py-jsonschema", path_replacements, use_bin=True)
+            jsonschema_path = os.path.join(jsonschema_dir, 'jsonschema')
+            entries.append(cmake_cache_path("JSONSCHEMA_EXECUTABLE", jsonschema_path))
 
         enable_docs = spec.satisfies("^doxygen") or spec.satisfies("^py-sphinx")
         entries.append(cmake_cache_option("ENABLE_DOCS", enable_docs))
