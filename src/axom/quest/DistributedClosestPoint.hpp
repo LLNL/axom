@@ -9,8 +9,6 @@
 #include "axom/config.hpp"
 #include "axom/core.hpp"
 #include "axom/slic.hpp"
-#include "axom/slam.hpp"
-#include "axom/sidre.hpp"
 #include "axom/primal.hpp"
 #include "axom/spin.hpp"
 #include "axom/core/execution/runtime_policy.hpp"
