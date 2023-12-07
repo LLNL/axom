@@ -19,4 +19,5 @@ class Axomdevtools(BundlePackage):
     depends_on("py-sphinx")
     depends_on("py-shroud")
     depends_on("py-sphinxcontrib-jquery")
+    depends_on("py-jsonschema")
     depends_on("llvm+clang@10.0.0")

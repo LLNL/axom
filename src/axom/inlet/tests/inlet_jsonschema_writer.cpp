@@ -5,6 +5,7 @@
 
 #include "axom/slic.hpp"
 
+#include "axom/config.hpp"
 #include "axom/inlet/Inlet.hpp"
 #include "axom/inlet/JSONSchemaWriter.hpp"
 #include "axom/inlet/tests/inlet_test_utils.hpp"
@@ -20,8 +21,6 @@
 
 using axom::inlet::Inlet;
 using axom::inlet::JSONSchemaWriter;
-
-#define JSONSCHEMA_EXECUTABLE "jsonschema"
 
 bool hasSchemaUtility()
 {
