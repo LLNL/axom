@@ -97,7 +97,7 @@ std::locale locale(const std::string& name)
   }
   catch(std::runtime_error&)
   {
-    loc = std::locale(loc, "", std::locale::ctype);
+    loc = std::locale(loc, "C", std::locale::ctype);
   }
 
   return loc;
