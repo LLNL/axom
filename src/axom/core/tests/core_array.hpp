@@ -2333,3 +2333,29 @@ TEST(core_array, reserve_nontrivial_reloc_2)
     EXPECT_EQ(&(array[i].m_member), array[i].m_localMemberPointer);
   }
 }
+
+#if defined(AXOM_USE_GPU) && defined(AXOM_USE_UMPIRE)
+TEST(core_array, reserve_nontrivial_reloc_um)
+{
+  const int NUM_ELEMS = 1024;
+  axom::Array<NonTriviallyRelocatable, 1, axom::MemorySpace::Unified> array(
+    NUM_ELEMS,
+    NUM_ELEMS);
+
+  for(int i = 0; i < NUM_ELEMS; i++)
+  {
+    // Check initial values.
+    EXPECT_EQ(array[i].m_member, NONTRIVIAL_RELOC_MAGIC);
+    EXPECT_EQ(&(array[i].m_member), array[i].m_localMemberPointer);
+  }
+
+  // Reallocation should work for non-trivially relocatable types.
+  array.reserve(NUM_ELEMS * 4);
+
+  for(int i = 0; i < NUM_ELEMS; i++)
+  {
+    EXPECT_EQ(array[i].m_member, NONTRIVIAL_RELOC_MAGIC);
+    EXPECT_EQ(&(array[i].m_member), array[i].m_localMemberPointer);
+  }
+}
+#endif
