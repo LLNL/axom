@@ -362,16 +362,21 @@ TEST(primal_polygon, area_2d_3d)
   using Point3D = axom::primal::Point<double, 3>;
 
   // test a simple right triangle
-  // use same xy-data in 2D and 3D
   {
     Polygon2D poly2D({Point2D {0, 0}, Point2D {1, 0}, Point2D {1, 1}});
     EXPECT_DOUBLE_EQ(.5, poly2D.area());
 
+    // in xy-plane
     Polygon3D poly3Da({Point3D {0, 0, 0}, Point3D {1, 0, 0}, Point3D {1, 1, 0}});
     EXPECT_DOUBLE_EQ(.5, poly3Da.area());
 
-    Polygon3D poly3Db({Point3D {0, 0, 1}, Point3D {1, 0, 1}, Point3D {1, 1, 1}});
+    // in xz-plane
+    Polygon3D poly3Db({Point3D {0, 0, 0}, Point3D {1, 0, 0}, Point3D {1, 0, 1}});
     EXPECT_DOUBLE_EQ(.5, poly3Db.area());
+
+    // in yz-plane
+    Polygon3D poly3Dc({Point3D {0, 0, 0}, Point3D {0, 1, 0}, Point3D {0, 1, 1}});
+    EXPECT_DOUBLE_EQ(.5, poly3Dc.area());
   }
 
   // test regular polygons

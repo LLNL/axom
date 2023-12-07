@@ -14,6 +14,7 @@
 
 #include "axom/core/Array.hpp"
 #include "axom/primal/geometry/Point.hpp"
+#include "axom/primal/geometry/Vector.hpp"
 
 #include <ostream>
 
@@ -142,27 +143,25 @@ public:
   typename std::enable_if<TDIM == 3, double>::type area() const
   {
     const int nVerts = numVertices();
-    double sum = 0.;
 
     // check for early return
     if(nVerts < 3)
     {
-      return sum;
+      return 0.0;
     }
 
     // Add up areas of triangles connecting polygon edges the vertex average
+    VectorType sum;
     const auto O = vertexMean();  // 'O' for (local) origin
     for(int curr = 0, prev = nVerts - 1; curr < nVerts; prev = curr++)
     {
-      const auto& P = m_vertices[prev];
-      const auto& C = m_vertices[curr];
-      // clang-format off
-      sum += axom::numerics::determinant(P[0] - O[0], C[0] - O[0],
-                                         P[1] - O[1], C[1] - O[1]);
-      // clang-format on
+      const VectorType v0(O, m_vertices[prev]);
+      const VectorType v1(O, m_vertices[curr]);
+
+      sum += VectorType::cross_product(v0, v1);
     }
 
-    return axom::utilities::abs(0.5 * sum);
+    return axom::utilities::abs(0.5 * sum.norm());
   }
 
   /**
