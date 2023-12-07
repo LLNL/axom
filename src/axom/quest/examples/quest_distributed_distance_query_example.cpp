@@ -205,7 +205,6 @@ public:
     : m_topologyName(topology)
     , m_coordsetName(coordset)
     , m_group(group)
-    , m_domainGroups()
   {
     MPI_Comm_rank(MPI_COMM_WORLD, &m_rank);
     MPI_Comm_size(MPI_COMM_WORLD, &m_nranks);
@@ -215,7 +214,6 @@ public:
     : m_topologyName()
     , m_coordsetName()
     , m_group(group)
-    , m_domainGroups()
   {
     MPI_Comm_rank(MPI_COMM_WORLD, &m_rank);
     MPI_Comm_size(MPI_COMM_WORLD, &m_nranks);
@@ -230,23 +228,23 @@ public:
   /// Gets a domain group.
   sidre::Group* domain_group(axom::IndexType groupIdx) const
   {
-    SLIC_ASSERT(size_t(groupIdx) < m_domainGroups.size());
-    return m_domainGroups[groupIdx];
+    SLIC_ASSERT(groupIdx < m_group->getNumGroups());
+    return m_group->getGroup(groupIdx);
   }
   /// Gets the parent group for the blueprint coordinate set
   sidre::Group* coords_group(axom::IndexType groupIdx) const
   {
-    return m_coordsGroups[groupIdx];
+    return domain_group(groupIdx)->getGroup("coordsets")->getGroup(m_coordsetName);
   }
   /// Gets the parent group for the blueprint mesh topology
   sidre::Group* topo_group(axom::IndexType groupIdx) const
   {
-    return m_topoGroups[groupIdx];
+    return domain_group(groupIdx)->getGroup("topologies")->getGroup(m_topologyName);
   }
   /// Gets the parent group for the blueprint fields
   sidre::Group* fields_group(axom::IndexType groupIdx) const
   {
-    return m_fieldsGroups[groupIdx];
+    return domain_group(groupIdx)->getGroup("fields");
   }
 
   const std::string& getTopologyName() const { return m_topologyName; }
@@ -257,20 +255,6 @@ public:
   /// Gets the number of ranks in the problem
   int getNumRanks() const { return m_nranks; }
 
-  /// Returns true if points have been added to the particle mesh
-  bool hasPoints() const
-  {
-    // return m_coordsGroup != nullptr && m_coordsGroup->hasView("values/x");
-    for(auto* cg : m_coordsGroups)
-    {
-      if(cg != nullptr && cg->hasView("values/x"))
-      {
-        return true;
-      }
-    }
-    return false;
-  }
-
   /*!
     @brief Returns the number of points in a particle mesh domain
     including ghost points.
@@ -278,7 +262,7 @@ public:
   int numPoints(axom::IndexType dIdx) const
   {
     int rval = 0;
-    auto* cg = m_coordsGroups[dIdx];
+    auto* cg = coords_group(dIdx);
     SLIC_ASSERT(cg != nullptr && cg->hasView("values/x"));
     rval = cg->getView("values/x")->getNumElements();
     return rval;
@@ -307,11 +291,6 @@ public:
   void read_blueprint_mesh(const std::string& meshFilename)
   {
     SLIC_ASSERT(!meshFilename.empty());
-
-    m_domainGroups.clear();
-    m_coordsGroups.clear();
-    m_topoGroups.clear();
-    m_fieldsGroups.clear();
 
     conduit::Node mdMesh;
     conduit::relay::mpi::io::blueprint::load_mesh(meshFilename,
@@ -365,26 +344,6 @@ public:
     bool valid = isValid();
     SLIC_ASSERT(valid);
     AXOM_UNUSED_VAR(valid);
-
-    reset_group_pointers();
-  }
-
-  void reset_group_pointers()
-  {
-    axom::IndexType domCount = m_group->getNumGroups();
-    m_domainGroups.resize(domCount, nullptr);
-    m_coordsGroups.resize(domCount, nullptr);
-    m_topoGroups.resize(domCount, nullptr);
-    m_fieldsGroups.resize(domCount, nullptr);
-    for(conduit::index_t di = 0; di < domCount; ++di)
-    {
-      m_domainGroups[di] = m_group->getGroup(di);
-      m_coordsGroups[di] =
-        m_domainGroups[di]->getGroup("coordsets")->getGroup(m_coordsetName);
-      m_topoGroups[di] =
-        m_domainGroups[di]->getGroup("topologies")->getGroup(m_topologyName);
-      m_fieldsGroups[di] = m_domainGroups[di]->getGroup("fields");
-    }
   }
 
   /*!  @brief Set the coordinate data from an array of primal Points
@@ -399,9 +358,9 @@ public:
                  const axom::Array<primal::Point<double, NDIMS>>& pts)
   {
     axom::IndexType localIdx = createBlueprintStubs();
-    SLIC_ASSERT(m_domainGroups[localIdx] != nullptr);
-    m_domainGroups[localIdx]->createViewScalar<std::int64_t>("state/domain_id",
-                                                             domainId);
+    SLIC_ASSERT(domain_group(localIdx) != nullptr);
+    domain_group(localIdx)->createViewScalar<std::int64_t>("state/domain_id",
+                                                           domainId);
 
     const int SZ = pts.size();
 
@@ -433,19 +392,19 @@ public:
 
     // create views into a shared buffer for the coordinates, with stride NDIMS
     {
-      auto* buf = m_domainGroups[localIdx]
+      auto* buf = domain_group(localIdx)
                     ->getDataStore()
                     ->createBuffer(sidre::DOUBLE_ID, NDIMS * SZ)
                     ->allocate();
 
-      createAndApplyView(m_coordsGroups[localIdx], "values/x", buf, 0, SZ);
+      createAndApplyView(coords_group(localIdx), "values/x", buf, 0, SZ);
       if(NDIMS > 1)
       {
-        createAndApplyView(m_coordsGroups[localIdx], "values/y", buf, 1, SZ);
+        createAndApplyView(coords_group(localIdx), "values/y", buf, 1, SZ);
       }
       if(NDIMS > 2)
       {
-        createAndApplyView(m_coordsGroups[localIdx], "values/z", buf, 2, SZ);
+        createAndApplyView(coords_group(localIdx), "values/z", buf, 2, SZ);
       }
 
       // copy coordinate data into the buffer
@@ -456,7 +415,7 @@ public:
     // set the default connectivity
     // May be required by an old version of visit.  May not be needed by newer versions of visit.
     sidre::Array<int> arr(
-      m_topoGroups[localIdx]->createView("elements/connectivity"),
+      topo_group(localIdx)->createView("elements/connectivity"),
       SZ,
       SZ);
     for(int i = 0; i < SZ; ++i)
@@ -468,7 +427,7 @@ public:
   template <int NDIMS>
   axom::Array<primal::Point<double, NDIMS>> getPoints(int domainIdx)
   {
-    auto* cGroup = m_coordsGroups[domainIdx];
+    auto* cGroup = coords_group(domainIdx);
     auto* xView = cGroup->getView("values/x");
     auto* yView = cGroup->getView("values/y");
     auto* zView = NDIMS >= 3 ? cGroup->getView("values/z") : nullptr;
@@ -506,13 +465,13 @@ public:
   {
     for(axom::IndexType dIdx = 0; dIdx < domain_count(); ++dIdx)
     {
-      auto* fld = m_fieldsGroups[dIdx]->createGroup(fieldName);
+      auto* fld = fields_group(dIdx)->createGroup(fieldName);
       fld->createViewString("association", "vertex");
-      fld->createViewString("topology", m_topoGroups[dIdx]->getName());
+      fld->createViewString("topology", topo_group(dIdx)->getName());
       if(m_coordsAreStrided)
       {
-        auto* offsets = m_topoGroups[dIdx]->getView("elements/dims/offsets");
-        auto* strides = m_topoGroups[dIdx]->getView("elements/dims/strides");
+        auto* offsets = topo_group(dIdx)->getView("elements/dims/offsets");
+        auto* strides = topo_group(dIdx)->getView("elements/dims/strides");
         fld->copyView(offsets);
         fld->copyView(strides);
       }
@@ -530,19 +489,19 @@ public:
     {
       const int SZ = numPoints(dIdx);
 
-      auto* fld = m_fieldsGroups[dIdx]->createGroup(fieldName);
+      auto* fld = fields_group(dIdx)->createGroup(fieldName);
       fld->createViewString("association", "vertex");
-      fld->createViewString("topology", m_topoGroups[dIdx]->getName());
+      fld->createViewString("topology", topo_group(dIdx)->getName());
       if(m_coordsAreStrided)
       {
-        auto* offsets = m_topoGroups[dIdx]->getView("elements/dims/offsets");
-        auto* strides = m_topoGroups[dIdx]->getView("elements/dims/strides");
+        auto* offsets = topo_group(dIdx)->getView("elements/dims/offsets");
+        auto* strides = topo_group(dIdx)->getView("elements/dims/strides");
         fld->copyView(offsets);
         fld->copyView(strides);
       }
 
       // create views into a shared buffer for the coordinates, with stride DIM
-      auto* buf = m_domainGroups[dIdx]
+      auto* buf = domain_group(dIdx)
                     ->getDataStore()
                     ->createBuffer(sidre::detail::SidreTT<T>::id, DIM * SZ)
                     ->allocate();
@@ -564,9 +523,17 @@ public:
     }
   }
 
-  bool hasField(const std::string& fieldName, int domainIdx = 0) const
+  bool hasScalarField(const std::string& fieldName, int domainIdx = 0) const
   {
-    return m_fieldsGroups[domainIdx]->hasGroup(fieldName);
+    auto* domain = m_group->getGroup(domainIdx);
+    auto* fields = domain->getGroup("fields");
+    auto has = fields->hasGroup(fieldName);
+    return has;
+  }
+
+  bool hasVectorField(const std::string& fieldName, int domainIdx = 0) const
+  {
+    return m_group->getGroup(domainIdx)->getGroup("fields")->hasGroup(fieldName);
   }
 
   template <typename T>
@@ -574,19 +541,20 @@ public:
                                          int domainIdx)
   {
     SLIC_ASSERT_MSG(
-      domainIdx >= 0 && size_t(domainIdx) < m_domainGroups.size(),
+      domainIdx >= 0 && axom::IndexType(domainIdx) < domain_count(),
       axom::fmt::format("Rank {} has no domain {}, only {} domains",
                         m_rank,
                         domainIdx,
-                        m_domainGroups.size()));
+                        domain_count()));
 
-    T* data = hasField(fieldName)
-      ? static_cast<T*>(m_fieldsGroups[domainIdx]
-                          ->getView(axom::fmt::format("{}/values", fieldName))
-                          ->getVoidPtr())
-      : nullptr;
+    auto* domain = m_group->getGroup(domainIdx);
+    auto* fields = domain->getGroup("fields");
+    auto* field = fields->getGroup(fieldName);
+    T* data =
+      field ? static_cast<T*>(field->getView("values")->getVoidPtr()) : nullptr;
 
-    return axom::ArrayView<T>(data, numPoints(domainIdx));
+    return field ? axom::ArrayView<T>(data, numPoints(domainIdx))
+                 : axom::ArrayView<T>();
   }
 
   template <typename T>
@@ -594,23 +562,39 @@ public:
                                          int domainIdx)
   {
     SLIC_ASSERT_MSG(
-      domainIdx >= 0 && size_t(domainIdx) < m_domainGroups.size(),
+      domainIdx >= 0 && axom::IndexType(domainIdx) < domain_count(),
       axom::fmt::format("Rank {} has only {} domains, no domain index {}",
                         m_rank,
-                        m_domainGroups.size(),
+                        domain_count(),
                         domainIdx));
 
     // Note: the implementation currently assumes that the field data is
     // interleaved, so it is safe to get a pointer to the beginning of the
     // x-coordinate's data. This will be relaxed in the future, and we will
     // need to modify this implementation accordingly.
-    T* data = hasField(fieldName)
-      ? static_cast<T*>(m_fieldsGroups[domainIdx]
-                          ->getView(axom::fmt::format("{}/values/x", fieldName))
-                          ->getVoidPtr())
-      : nullptr;
+    T* data = nullptr;
+    axom::IndexType npts = 0;
+    bool has =
+      m_group->getGroup(domainIdx)->getGroup("fields")->hasGroup(fieldName);
+    if(has)
+    {
+      auto xView =
+        m_group->getGroup(domainIdx)->getGroup("fields")->getGroup(fieldName)->getView(
+          "values/x");
+      data = static_cast<T*>(xView->getVoidPtr());
+      npts = xView->getNumElements();
+    }
+    return axom::ArrayView<T>(data, npts);
+  }
 
-    return axom::ArrayView<T>(data, numPoints(domainIdx));
+  sidre::Group* getDomain(axom::IndexType domain)
+  {
+    return m_group->getGroup(domain);
+  }
+  sidre::Group* getFields(axom::IndexType domainIdx)
+  {
+    auto* fields = m_group->getGroup(domainIdx)->getGroup("fields");
+    return fields;
   }
 
   /// Checks whether the blueprint is valid and prints diagnostics
@@ -670,14 +654,10 @@ private:
     topoGroup->createViewString("type", "unstructured");
     topoGroup->createViewString("elements/shape", "point");
 
-    auto* fieldsGroup = domainGroup->createGroup("fields");
+    domainGroup->createGroup("fields");
+    domainGroup->createGroup("state");
 
-    m_domainGroups.push_back(domainGroup);
-    m_coordsGroups.push_back(coordsGroup);
-    m_topoGroups.push_back(topoGroup);
-    m_fieldsGroups.push_back(fieldsGroup);
-
-    return axom::IndexType(m_domainGroups.size() - 1);
+    return m_group->getNumGroups() - 1;
   }
 
 private:
@@ -687,12 +667,6 @@ private:
   std::string m_coordsetName;
   /// Parent group for the entire mesh
   sidre::Group* m_group;
-  /// Group for each domain in multidomain mesh
-  std::vector<sidre::Group*> m_domainGroups;
-
-  std::vector<sidre::Group*> m_coordsGroups;
-  std::vector<sidre::Group*> m_topoGroups;
-  std::vector<sidre::Group*> m_fieldsGroups;
 
   int m_rank;
   int m_nranks;
@@ -839,7 +813,7 @@ public:
   {
     // Test reading in multidomain mesh.
     m_queryMesh.read_blueprint_mesh(meshFilename);
-    setupParticleMesh();
+    // setupParticleMesh();
   }
 
   BlueprintParticleMesh& getParticleMesh() { return m_queryMesh; }
@@ -925,6 +899,10 @@ public:
       sidre::Group& dstFieldsGroup = *domGroup.getGroup("fields");
       const conduit::Node& srcFieldsNode = domNode.fetch_existing("fields");
       {
+        if(!m_queryMesh.hasScalarField("cp_rank"))
+        {
+          m_queryMesh.registerNodalScalarField<axom::IndexType>("cp_rank");
+        }
         auto dst = dstFieldsGroup.getGroup("cp_rank");
         auto src = srcFieldsNode.fetch_existing("cp_rank");
         bool goodImport = dst->importConduitTree(src);
@@ -932,13 +910,23 @@ public:
         AXOM_UNUSED_VAR(goodImport);
       }
       {
+        if(!m_queryMesh.hasScalarField("cp_index"))
+        {
+          m_queryMesh.registerNodalScalarField<axom::IndexType>("cp_index");
+        }
         auto dst = dstFieldsGroup.getGroup("cp_index");
         auto src = srcFieldsNode.fetch_existing("cp_index");
         bool goodImport = dst->importConduitTree(src);
         SLIC_ASSERT(goodImport);
         AXOM_UNUSED_VAR(goodImport);
       }
+      if(srcFieldsNode.has_child("cp_domain_index"))
       {
+        if(!m_queryMesh.hasScalarField("cp_domain_index"))
+        {
+          m_queryMesh.registerNodalScalarField<axom::IndexType>(
+            "cp_domain_index");
+        }
         auto src = srcFieldsNode.fetch_existing("cp_domain_index");
         auto dst = dstFieldsGroup.getGroup("cp_domain_index");
         bool goodImport = dst->importConduitTree(src);
@@ -946,6 +934,10 @@ public:
         AXOM_UNUSED_VAR(goodImport);
       }
       {
+        if(!m_queryMesh.hasVectorField("cp_coords"))
+        {
+          m_queryMesh.registerNodalVectorField<double>("cp_coords");
+        }
         auto dstGroup = dstFieldsGroup.getGroup("cp_coords");
         auto srcNode = srcFieldsNode.fetch_existing("cp_coords");
         int dim = srcNode.fetch_existing("values").number_of_children();
@@ -963,23 +955,6 @@ public:
           }
         }
       }
-    }
-
-    m_queryMesh.reset_group_pointers();
-    for(axom::IndexType di = 0; di < m_queryMesh.domain_count(); ++di)
-    {
-      assert(m_queryMesh.domain_group(di) ==
-             m_queryMesh.root_group()->getGroup(di));
-      assert(m_queryMesh.coords_group(di) ==
-             m_queryMesh.domain_group(di)
-               ->getGroup("coordsets")
-               ->getGroup(m_queryMesh.getCoordsetName()));
-      assert(m_queryMesh.topo_group(di) ==
-             m_queryMesh.domain_group(di)
-               ->getGroup("topologies")
-               ->getGroup(m_queryMesh.getTopologyName()));
-      assert(m_queryMesh.fields_group(di) ==
-             m_queryMesh.domain_group(di)->getGroup("fields"));
     }
   }
 
@@ -1014,10 +989,10 @@ public:
 
       axom::ArrayView<PointType> cpCoords =
         m_queryMesh.getNodalVectorField<PointType>("cp_coords", dIdx);
+      SLIC_INFO(axom::fmt::format("Closest points ({}):", cpCoords.size()));
 
       axom::ArrayView<axom::IndexType> cpIndices =
         m_queryMesh.getNodalScalarField<axom::IndexType>("cp_index", dIdx);
-      SLIC_INFO(axom::fmt::format("Closest points ({}):", cpCoords.size()));
 
       axom::ArrayView<axom::IndexType> errorFlag =
         m_queryMesh.getNodalScalarField<axom::IndexType>("error_flag", dIdx);
@@ -1460,7 +1435,6 @@ int main(int argc, char** argv)
       maxQuery));
   }
   slic::flushStreams();
-
   queryMeshWrapper.update_closest_points(queryMeshNode);
 
   int errCount = 0;
