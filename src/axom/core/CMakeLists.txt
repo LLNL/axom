@@ -56,6 +56,7 @@ set(core_headers
     IteratorBase.hpp
     Macros.hpp
     Map.hpp
+    NumericLimits.hpp
     Path.hpp
     StackArray.hpp
     Types.hpp
