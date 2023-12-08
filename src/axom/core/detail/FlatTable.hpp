@@ -177,11 +177,11 @@ struct SequentialLookupPolicy
    *  for an open-addressing hash map.
    *
    * \param [in] ngroups_pow_2 the number of groups, expressed as a power of 2
-   * \param [in] groups the array of metadata for the groups in the hash map
+   * \param [in] metadata the array of metadata for the groups in the hash map
    * \param [in] hash the hash to insert
    */
   IndexType probeEmptyIndex(int ngroups_pow_2,
-                            ArrayView<GroupBucket> groups,
+                            ArrayView<GroupBucket> metadata,
                             HashType hash) const
   {
     // We use the k MSBs of the hash as the initial group probe point,
@@ -193,9 +193,9 @@ struct SequentialLookupPolicy
     int empty_bucket = NO_MATCH;
 
     std::uint8_t hash_8 = static_cast<std::uint8_t>(hash);
-    for(int iteration = 0; iteration < groups.size(); iteration++)
+    for(int iteration = 0; iteration < metadata.size(); iteration++)
     {
-      int tentative_empty_bucket = groups[curr_group].getEmptyBucket();
+      int tentative_empty_bucket = metadata[curr_group].getEmptyBucket();
       if(tentative_empty_bucket != GroupBucket::InvalidSlot &&
          empty_group == NO_MATCH)
       {
@@ -203,7 +203,7 @@ struct SequentialLookupPolicy
         empty_bucket = tentative_empty_bucket;
       }
 
-      if((!groups[curr_group].getMaybeOverflowed(hash_8) &&
+      if((!metadata[curr_group].getMaybeOverflowed(hash_8) &&
           empty_group != NO_MATCH))
       {
         // We've reached the last group that might contain the hash.
@@ -213,10 +213,10 @@ struct SequentialLookupPolicy
       else if(empty_group == NO_MATCH)
       {
         // Set the overflow bit and continue probing.
-        groups[curr_group].setOverflow(hash_8);
+        metadata[curr_group].setOverflow(hash_8);
       }
       curr_group =
-        (curr_group + ProbePolicy {}.getNext(iteration)) % groups.size();
+        (curr_group + ProbePolicy {}.getNext(iteration)) % metadata.size();
     }
     if(empty_group != NO_MATCH)
     {
@@ -230,14 +230,14 @@ struct SequentialLookupPolicy
    *  array for an open-addressing hash map.
    *
    * \param [in] ngroups_pow_2 the number of groups, expressed as a power of 2
-   * \param [in] groups the array of metadata for the groups in the hash map
+   * \param [in] metadata the array of metadata for the groups in the hash map
    * \param [in] hash the hash to insert
    * \param [in] on_hash_found functor to call for a bucket index with a
    *  matching hash
    */
   template <typename FoundIndex>
   void probeIndex(int ngroups_pow_2,
-                  ArrayView<const GroupBucket> groups,
+                  ArrayView<const GroupBucket> metadata,
                   HashType hash,
                   FoundIndex&& on_hash_found) const
   {
@@ -249,13 +249,13 @@ struct SequentialLookupPolicy
 
     std::uint8_t hash_8 = static_cast<std::uint8_t>(hash);
     bool keep_going = true;
-    for(int iteration = 0; iteration < groups.size(); iteration++)
+    for(int iteration = 0; iteration < metadata.size(); iteration++)
     {
-      groups[curr_group].visitHashBucket(hash_8, [&](IndexType bucket_index) {
+      metadata[curr_group].visitHashBucket(hash_8, [&](IndexType bucket_index) {
         keep_going = on_hash_found(curr_group * GroupBucket::Size + bucket_index);
       });
 
-      if(!groups[curr_group].getMaybeOverflowed(hash_8))
+      if(!metadata[curr_group].getMaybeOverflowed(hash_8))
       {
         // Stop probing if the "overflow" bit is not set.
         keep_going = false;
@@ -268,34 +268,36 @@ struct SequentialLookupPolicy
       }
       // Probe the next bucket.
       curr_group =
-        (curr_group + ProbePolicy {}.getNext(iteration)) % groups.size();
+        (curr_group + ProbePolicy {}.getNext(iteration)) % metadata.size();
     }
   }
 
-  void setBucketHash(ArrayView<GroupBucket> groups, IndexType bucket, HashType hash)
+  void setBucketHash(ArrayView<GroupBucket> metadata,
+                     IndexType bucket,
+                     HashType hash)
   {
     int group_index = bucket / GroupBucket::Size;
     int slot_index = bucket % GroupBucket::Size;
 
-    groups[group_index].setBucket(slot_index, hash);
+    metadata[group_index].setBucket(slot_index, hash);
   }
 
-  bool clearBucket(ArrayView<GroupBucket> groups, IndexType bucket, HashType hash)
+  bool clearBucket(ArrayView<GroupBucket> metadata, IndexType bucket, HashType hash)
   {
     int group_index = bucket / GroupBucket::Size;
     int slot_index = bucket % GroupBucket::Size;
 
-    groups[group_index].clearBucket(slot_index);
+    metadata[group_index].clearBucket(slot_index);
 
     // Return if the overflow bit is set on the bucket. That indicates whether
     // we are deleting an element in the middle of a probing sequence.
-    return groups[group_index].getMaybeOverflowed(hash);
+    return metadata[group_index].getMaybeOverflowed(hash);
   }
 
-  IndexType nextValidIndex(ArrayView<const GroupBucket> groups,
+  IndexType nextValidIndex(ArrayView<const GroupBucket> metadata,
                            int last_bucket) const
   {
-    if(last_bucket >= groups.size() * GroupBucket::Size - 1)
+    if(last_bucket >= metadata.size() * GroupBucket::Size - 1)
     {
       return last_bucket;
     }
@@ -304,13 +306,14 @@ struct SequentialLookupPolicy
 
     do
     {
-      slot_index = groups[group_index].nextFilledBucket(slot_index);
+      slot_index = metadata[group_index].nextFilledBucket(slot_index);
       if(slot_index == GroupBucket::InvalidSlot)
       {
         group_index++;
         slot_index = -1;
       }
-    } while(slot_index == GroupBucket::InvalidSlot && group_index < groups.size());
+    } while(slot_index == GroupBucket::InvalidSlot &&
+            group_index < metadata.size());
 
     return group_index * GroupBucket::Size + slot_index;
   }
