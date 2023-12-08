@@ -168,7 +168,7 @@ static_assert(std::is_standard_layout<GroupBucket>::value,
               "flat_map::GroupBucket: not standard layout");
 
 template <typename HashType, typename ProbePolicy = QuadraticProbing>
-struct SequentialLookupPolicy
+struct SequentialLookupPolicy : ProbePolicy
 {
   constexpr static int NO_MATCH = -1;
 
@@ -215,8 +215,7 @@ struct SequentialLookupPolicy
         // Set the overflow bit and continue probing.
         metadata[curr_group].setOverflow(hash_8);
       }
-      curr_group =
-        (curr_group + ProbePolicy {}.getNext(iteration)) % metadata.size();
+      curr_group = (curr_group + this->getNext(iteration)) % metadata.size();
     }
     if(empty_group != NO_MATCH)
     {
@@ -267,8 +266,7 @@ struct SequentialLookupPolicy
         break;
       }
       // Probe the next bucket.
-      curr_group =
-        (curr_group + ProbePolicy {}.getNext(iteration)) % metadata.size();
+      curr_group = (curr_group + this->getNext(iteration)) % metadata.size();
     }
   }
 
