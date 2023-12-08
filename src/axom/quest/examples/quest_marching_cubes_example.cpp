@@ -815,9 +815,11 @@ struct ContourTestBase
         sum,
         (double)sum / numRanks));
     }
-    SLIC_INFO(axom::fmt::format("Surface mesh has locally {} cells, {} nodes.",
-                                mc.getContourCellCount(),
-                                mc.getContourNodeCount()));
+    SLIC_INFO_IF(
+      params.isVerbose(),
+      axom::fmt::format("Surface mesh has locally {} cells, {} nodes.",
+                        mc.getContourCellCount(),
+                        mc.getContourNodeCount()));
 
     // Return conduit data to host memory.
     if(s_allocatorId != axom::execution_space<axom::SEQ_EXEC>::allocatorID())

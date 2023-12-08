@@ -338,23 +338,31 @@ public:
     const auto firstFacetIdsView = m_firstFacetIds.view();
     const auto caseIdsView = m_caseIds.view();
 
+    /*
+    To minimize diverence, sort parent indices by number of facets
+    they add.  This is a disabled experimental option.  Enable by
+    setting sortFacetsIncrs.  Requires RAJA.
+  */
+    const bool sortFacetsIncrs = false;
   #if defined(AXOM_USE_RAJA)
-    // To minimize diverence and improve GPU performance,
-    // sort parent indices by number of facets they add.
-    //
     // sortedIndices are parent cell indices, sorted by number
     // of facets in them.
-    auto sortedFacetIncrs(m_facetIncrs);
-    axom::Array<axom::IndexType, 1, MemorySpace> sortedIndices(parentCellCount);
+    axom::Array<axom::IndexType, 1, MemorySpace> sortedIndices(
+      sortFacetsIncrs ? parentCellCount : 0);
     auto sortedIndicesView = sortedIndices.view();
-    axom::for_all<ExecSpace>(
-      0,
-      parentCellCount,
-      AXOM_LAMBDA(axom::IndexType pcId) { sortedIndicesView[pcId] = pcId; });
-    RAJA::stable_sort_pairs<LoopPolicy>(
-      RAJA::make_span(sortedFacetIncrs.data(), parentCellCount),
-      RAJA::make_span(sortedIndices.data(), parentCellCount),
-      RAJA::operators::greater<axom::IndexType> {});
+
+    if(sortFacetsIncrs)
+    {
+      auto sortedFacetIncrs = m_facetIncrs;
+      axom::for_all<ExecSpace>(
+        0,
+        parentCellCount,
+        AXOM_LAMBDA(axom::IndexType pcId) { sortedIndicesView[pcId] = pcId; });
+      RAJA::stable_sort_pairs<LoopPolicy>(
+        RAJA::make_span(sortedFacetIncrs.data(), parentCellCount),
+        RAJA::make_span(sortedIndices.data(), parentCellCount),
+        RAJA::operators::greater<axom::IndexType> {});
+    }
   #endif
 
     auto contourCellParentsView = m_contourCellParents.view();
@@ -367,11 +375,9 @@ public:
                             m_coordsViews);
     auto gen_for_parent_cell = AXOM_LAMBDA(axom::IndexType loopIndex)
     {
-  #if defined(AXOM_USE_RAJA)
-      axom::IndexType parentCellId = sortedIndicesView[loopIndex];
-  #else
-      axom::IndexType parentCellId = loopIndex;
-  #endif
+      axom::IndexType parentCellId =
+        sortFacetsIncrs ? sortedIndicesView[loopIndex] : loopIndex;
+
       Point cornerCoords[CELL_CORNER_COUNT];
       double cornerValues[CELL_CORNER_COUNT];
       ccu.get_corner_coords_and_values(parentCellId, cornerCoords, cornerValues);
