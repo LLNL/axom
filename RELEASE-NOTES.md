@@ -28,6 +28,8 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 - Primal: Adds a `checkAndFixOrientation()` function to `primal::Tetrahedron`
   that swaps the order of vertices if the signed volume of the Tetrahedron is
   negative, resulting in the signed volume becoming positive.
+- Adds `FlatMap`, a generic key-value store which aims for drop-in compatibility
+  with `std::unordered_map`, but utilizes an open-addressing design.
 
 ### Changed
 - `MarchingCubes` and `DistributedClosestPoint` classes identify domains by their
