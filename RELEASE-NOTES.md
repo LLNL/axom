@@ -30,6 +30,7 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
   negative, resulting in the signed volume becoming positive.
 
 ### Changed
+- `DistributedClosestPoint` outputs are now controlled by the `setOutput` method.
 - `MarchingCubes` and `DistributedClosestPoint` classes identify domains by their
   `state/domain_id` parameters if provided, or the local iteration index if not.
 - `MarchingCubes` and `DistributedClosestPoint` classes changed from requiring the Blueprint
