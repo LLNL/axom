@@ -57,8 +57,11 @@ TEST(primal_clip, simple_clip)
 
     PointType {0.25, 0.25, 0.5},
     PointType {0.75, 0.25, 0.5},
-    PointType {0.66, 0.5, 0.5},
     PointType {1.5, 0.5, 0.5},
+
+    PointType {2, 1, 0.5},
+    PointType {2, 2, 0.5},
+    PointType {1, 2, 0.5},
   };
 
   {
@@ -94,13 +97,20 @@ TEST(primal_clip, simple_clip)
   }
 
   {
-    TriangleType tri(points[6], points[7], points[9]);
+    TriangleType tri(points[6], points[7], points[8]);
 
     PolygonType poly = axom::primal::clip(tri, bbox);
     EXPECT_EQ(4, poly.numVertices());
 
     SLIC_INFO("Intersection of triangle " << tri << " and bounding box " << bbox
                                           << " is polygon" << poly);
+  }
+
+  {
+    TriangleType tri(points[9], points[10], points[11]);
+
+    PolygonType poly = axom::primal::clip(tri, bbox);
+    EXPECT_EQ(0, poly.numVertices());
   }
 }
 
