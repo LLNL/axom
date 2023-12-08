@@ -82,14 +82,13 @@ Polygon<T, 3> clip(const Triangle<T, 3>& tri, const BoundingBox<T, 3>& bbox)
   {
     // Optimization note: we should be able to save some work based on
     // the clipping plane and the triangle's bounding box
-
-    if(triBox.getMax()[dim] > bbox.getMin()[dim])
+    if(triBox.getMin()[dim] < bbox.getMin()[dim])
     {
       axom::utilities::swap(prevPoly, currentPoly);
       detail::clipAxisPlane(prevPoly, currentPoly, 2 * dim + 0, bbox.getMin()[dim]);
     }
 
-    if(triBox.getMin()[dim] < bbox.getMax()[dim])
+    if(triBox.getMax()[dim] > bbox.getMax()[dim])
     {
       axom::utilities::swap(prevPoly, currentPoly);
       detail::clipAxisPlane(prevPoly, currentPoly, 2 * dim + 1, bbox.getMax()[dim]);
