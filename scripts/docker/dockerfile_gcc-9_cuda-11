@@ -1,3 +1,8 @@
+# Docker image for Axom tutorial with CUDA support.
+# Docker container runs a VS Code server accessible through a web browser.
+# Docker and openvscode setup based on the RAJA suite tutorial:
+# https://github.com/LLNL/raja-suite-tutorial/tree/main/containers/tutorial
+
 # This script can be run with the following command from the root axom directory:
 # docker build --build-arg branch=<your branch here, defaults to develop> -t "axom/tpls:gcc-9-cuda-11" -f ./scripts/docker/dockerfile_gcc-9_cuda-11 .
 
@@ -6,7 +11,7 @@
 
 FROM ghcr.io/rse-ops/cuda-ubuntu-20.04:cuda-11.1.1
 # Tutorial branch
-ARG branch=feature/han12/docker_tutorial
+ARG branch=develop
 ARG USER=axomdev
 ENV HOME /home/${USER}
 
@@ -44,8 +49,10 @@ RUN cd ${HOME}/axom_repo && python3 config-build.py -hc *cuda.cmake \
                          && cd ${HOME}/axom_repo/build-release \
                          && make -j4 install
 
-# Larger STL meshes for testing
-COPY boxedSphere.stl car.stl porsche.stl ${HOME}/axom_repo/data/quest
+# Larger STL meshes for testing (optional)
+# Note: These meshes are large, copied from local directory instead of
+#        downloaded from Github.
+# COPY boxedSphere.stl car.stl porsche.stl ${HOME}/axom_repo/data/quest
 
 
 # Create symlinks for easy access to tutorial material
