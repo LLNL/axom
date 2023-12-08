@@ -1500,7 +1500,6 @@ inline void Array<T, DIM, SPACE>::setCapacity(IndexType new_capacity)
   OpHelper::realloc_move(new_data, m_num_elements, m_data, m_allocator_id);
 
   // Destroy the original array.
-  OpHelper::destroy(m_data, 0, m_num_elements, m_allocator_id);
   axom::deallocate(m_data);
 
   // Set the pointer and capacity to the new memory.

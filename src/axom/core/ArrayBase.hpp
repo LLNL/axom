@@ -1020,6 +1020,7 @@ struct ArrayOpsBase<T, false>
     std::uninitialized_copy(std::make_move_iterator(values),
                             std::make_move_iterator(values + nelems),
                             array);
+    destroy(values, 0, nelems);
   }
 };
 
