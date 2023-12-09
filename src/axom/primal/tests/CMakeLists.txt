@@ -20,6 +20,7 @@ set( primal_tests
     primal_hexahedron.cpp
     primal_in_sphere.cpp
     primal_intersect.cpp
+    primal_intersect_reproducer.cpp
     primal_intersect_impl.cpp
     primal_numeric_array.cpp
     primal_orientation.cpp
