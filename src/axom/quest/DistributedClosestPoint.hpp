@@ -328,15 +328,15 @@ public:
    * \brief Computes the closest point on the object mesh for each point
    * on the provided query mesh
    *
-   * \param [in] query_node The root node of a mesh blueprint for the query points
-   * Can be empty if there are no query points for the calling rank
+   * \param [in] query_node The root node of a mesh blueprint for the query points,
+   * which can be empty if there are no query points for the calling rank
    * \param [in] topology The name of the topology within query_node
    *
    * @c queryMesh should have data on the host, regardless of the runtime
    * policy setting.  Data will be copied to device as needed.
    *
    * On completion, the query mesh contains the following fields:
-   *   - cp_rank: Will hold the rank of the object point containing the closest point
+   *   - cp_rank: will hold the rank of the object point containing the closest point
    *   - cp_domain_index: will hold the index of the object domain containing
    *     the closest points.
    *   - cp_index: Will hold the index of the closest object points.
@@ -348,7 +348,7 @@ public:
    * See setOutput() to toggle these outputs.
    *
    * \note The current implementation assumes that the mesh coordinates
-   * interleaved or contiguous.  The output cp_coords will be contiguous.
+   * are interleaved or contiguous.  The output cp_coords will be contiguous.
    */
   void computeClosestPoints(conduit::Node& query_node, const std::string& topology)
   {
