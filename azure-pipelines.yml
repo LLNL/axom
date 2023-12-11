@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
+# Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
 # other Axom Project Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
@@ -9,8 +9,8 @@ variables:
   DO_BUILD: 'yes'
   DO_TEST: 'yes'
   DO_CLEAN: 'no'
-  CLANG10_IMAGENAME: 'axom/tpls:clang-10_12-09-22_05h-47m'
-  GCC11_IMAGENAME: 'axom/tpls:gcc-11_12-09-22_05h-47m'
+  CLANG10_IMAGENAME: 'axom/tpls:clang-10_07-26-23_22h-58m'
+  GCC11_IMAGENAME: 'axom/tpls:gcc-11_07-26-23_22h-58m'
   system.debug: false
 
 jobs:
@@ -37,6 +37,30 @@ jobs:
         Compiler_ImageName: '$(CLANG10_IMAGENAME)'
         CMAKE_EXTRA_FLAGS: '-DBUILD_SHARED_LIBS=ON -DAXOM_QUEST_ENABLE_EXTRA_REGRESSION_TESTS:BOOL=ON'
         BUILD_TYPE: 'Release'
+        COMPILER: 'clang++'
+        TEST_TARGET: 'linux_clang10'
+        HOST_CONFIG: 'clang@10.0.0'
+      linux_clang10_noraja:
+        VM_ImageName: 'ubuntu-20.04'
+        Compiler_ImageName: '$(CLANG10_IMAGENAME)'
+        CMAKE_EXTRA_FLAGS: '-DBUILD_SHARED_LIBS=ON -DAXOM_QUEST_ENABLE_EXTRA_REGRESSION_TESTS:BOOL=ON -U RAJA_DIR'
+        BUILD_TYPE: 'Debug'
+        COMPILER: 'clang++'
+        TEST_TARGET: 'linux_clang10'
+        HOST_CONFIG: 'clang@10.0.0'
+      linux_clang10_noumpire:
+        VM_ImageName: 'ubuntu-20.04'
+        Compiler_ImageName: '$(CLANG10_IMAGENAME)'
+        CMAKE_EXTRA_FLAGS: '-DBUILD_SHARED_LIBS=ON -DAXOM_QUEST_ENABLE_EXTRA_REGRESSION_TESTS:BOOL=ON -U UMPIRE_DIR'
+        BUILD_TYPE: 'Debug'
+        COMPILER: 'clang++'
+        TEST_TARGET: 'linux_clang10'
+        HOST_CONFIG: 'clang@10.0.0'
+      linux_clang10_noraja_noumpire:
+        VM_ImageName: 'ubuntu-20.04'
+        Compiler_ImageName: '$(CLANG10_IMAGENAME)'
+        CMAKE_EXTRA_FLAGS: '-DBUILD_SHARED_LIBS=ON -DAXOM_QUEST_ENABLE_EXTRA_REGRESSION_TESTS:BOOL=ON -U RAJA_DIR -U UMPIRE_DIR'
+        BUILD_TYPE: 'Debug'
         COMPILER: 'clang++'
         TEST_TARGET: 'linux_clang10'
         HOST_CONFIG: 'clang@10.0.0'

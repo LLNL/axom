@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -340,10 +340,12 @@ public:
     SLIC_ASSERT(elems_group != nullptr);
 
     sidre::View* connec_view = elems_group->getView("connectivity");
+    axom::IndexType element_capacity =
+      ID_capacity == USE_DEFAULT ? USE_DEFAULT : ID_capacity * m_stride;
     m_values = std::make_unique<sidre::MCArray<IndexType>>(connec_view,
                                                            0,
                                                            m_stride,
-                                                           ID_capacity);
+                                                           element_capacity);
     SLIC_ASSERT(m_values != nullptr);
   }
 
@@ -381,10 +383,12 @@ public:
     SLIC_ASSERT(elems_group != nullptr);
 
     sidre::View* connec_view = elems_group->getView("connectivity");
+    axom::IndexType element_capacity =
+      ID_capacity == USE_DEFAULT ? USE_DEFAULT : ID_capacity * m_stride;
     m_values = std::make_unique<sidre::MCArray<IndexType>>(connec_view,
                                                            0,
                                                            m_stride,
-                                                           ID_capacity);
+                                                           element_capacity);
   }
 
 #endif
@@ -420,7 +424,8 @@ public:
    * \param [in] ID_capacity the number of IDs to reserve space for.
    * \param [in] value_capacity not used, does not need to be specified.
    *
-   * \post getIDCapacity() >= n_IDs
+   * If current getIDCapacity() >= ID_capacity, do nothing.
+   * \post getIDCapacity() >= ID_capacity
    */
   void reserve(IndexType ID_capacity,
                IndexType AXOM_UNUSED_PARAM(value_capacity) = 0)

@@ -220,6 +220,16 @@ template <typename Char> class printf_width_handler {
   }
 };
 
+// BEGIN AXOM BUGFIX
+// Workaround for a bug with the XL compiler when initializing
+// printf_arg_formatter's base class.
+template <typename Char>
+auto make_arg_formatter(buffer_appender<Char> iter, basic_format_specs<Char>& s)
+    -> arg_formatter<Char> {
+  return {iter, s, locale_ref()};
+}
+// END AXOM BUGFIX
+
 // The ``printf`` argument formatter.
 template <typename OutputIt, typename Char>
 class printf_arg_formatter : public arg_formatter<Char> {
@@ -237,10 +247,10 @@ class printf_arg_formatter : public arg_formatter<Char> {
   }
 
  public:
-  // BEGIN AXOM BUGFIX
+// BEGIN AXOM BUGFIX
   printf_arg_formatter(OutputIt iter, format_specs& s, context_type& ctx)
-      : base{iter, s}, context_(ctx) {}
-  // END AXOM BUGFIX
+      : base(make_arg_formatter(iter, s)), context_(ctx) {}
+// END AXOM BUGFIX
 
   OutputIt operator()(monostate value) { return base::operator()(value); }
 

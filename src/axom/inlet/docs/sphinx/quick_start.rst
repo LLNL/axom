@@ -106,7 +106,7 @@ Generating Documentation
 ------------------------
 
 We provide a slightly more complex but closer to a real world Inlet usage example of the usage of Inlet.
-You can find that example in our repository `here <https://github.com/LLNL/axom/blob/develop/src/axom/inlet/examples/document_generation.cpp>`_.
+You can find that example in our repository `here <https://github.com/LLNL/axom/blob/develop/src/axom/inlet/examples/documentation_generation.cpp>`_.
 
 Once you have defined your schema, call ``write()`` on your ``Inlet`` class, passing it a concrete
 instantiation of a ``Writer`` class.

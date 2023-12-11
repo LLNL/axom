@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -76,7 +76,7 @@ std::string getUserName()
   else
   {
     // fallback on getpwuid if getlogin_r fails
-    struct passwd *pwd = getpwuid(getuid());
+    struct passwd* pwd = getpwuid(getuid());
     if(pwd)
     {
       userName = std::string(pwd->pw_name);
@@ -85,6 +85,22 @@ std::string getUserName()
 #endif
 
   return userName;
+}
+
+std::locale locale(const std::string& name)
+{
+  std::locale loc;
+
+  try
+  {
+    loc = std::locale(name);
+  }
+  catch(std::runtime_error&)
+  {
+    loc = std::locale(loc, "C", std::locale::ctype);
+  }
+
+  return loc;
 }
 
 }  // end namespace utilities

@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -107,7 +107,7 @@ Field& Field::defaultValue(bool value)
     SLIC_WARNING("[Inlet] Field value type did not match BOOL");
     setWarningFlag(m_sidreRootGroup);
   }
-  setDefaultValue((int8)value);
+  setDefaultValue((std::int8_t)value);
   return *this;
 }
 
@@ -207,8 +207,8 @@ template <>
 bool Field::get<bool>() const
 {
   const auto valueView = checkExistenceAndType(axom::sidre::INT8_ID);
-  // There is no boolean type in conduit/sidre so we use int8
-  const int8 intValue = valueView->getScalar();
+  // There is no boolean type in conduit/sidre so we use std::int8_t
+  const std::int8_t intValue = valueView->getScalar();
   if(intValue < 0 || intValue > 1)
   {
     const std::string msg = fmt::format(
@@ -552,18 +552,16 @@ bool Field::searchValidValues<std::string>(const axom::sidre::View& view,
 {
   const auto string_group = m_sidreGroup->getGroup("validStringValues");
   const std::string value = view.getString();
-  auto idx = string_group->getFirstValidViewIndex();
   bool is_valid = false;
   std::vector<std::string> valid_values;
-  while(axom::sidre::indexIsValid(idx))
+  for(auto& view : string_group->views())
   {
     // Store the valid values so we can print them in the error message
-    valid_values.push_back(string_group->getView(idx)->getString());
+    valid_values.push_back(view.getString());
     if(valid_values.back() == value)
     {
       is_valid = true;
     }
-    idx = string_group->getNextValidViewIndex(idx);
   }
   if(!is_valid)
   {

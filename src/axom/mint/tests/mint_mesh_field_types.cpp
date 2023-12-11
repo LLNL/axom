@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -18,8 +18,8 @@ namespace mint = axom::mint;
 //------------------------------------------------------------------------------
 TEST(mint_mesh_fieldtypes, field_traits)
 {
-  using int32 = axom::int32;
-  using int64 = axom::int64;
+  using int32 = std::int32_t;
+  using int64 = std::int64_t;
 
   EXPECT_EQ(mint::field_traits<char>::type(), mint::UNDEFINED_FIELD_TYPE);
   EXPECT_EQ(mint::field_traits<float>::type(), mint::FLOAT_FIELD_TYPE);

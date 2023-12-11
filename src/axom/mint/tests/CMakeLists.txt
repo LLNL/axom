@@ -1,4 +1,4 @@
-# Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
+# Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
 # other Axom Project Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
@@ -43,20 +43,15 @@ set( mint_tests
      mint_deprecated_mcarray.cpp
    )
 
-set( mint_test_dependencies axom )
-
-blt_list_append( TO mint_test_dependencies ELEMENTS cuda IF ${ENABLE_CUDA} )
-blt_list_append( TO mint_test_dependencies ELEMENTS blt::hip IF ${ENABLE_HIP} )
-
 foreach( test ${mint_tests} )
 
    get_filename_component( test_name ${test} NAME_WE )
 
-   blt_add_executable(
+   axom_add_executable(
         NAME       ${test_name}_test
         SOURCES    ${test}
         OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
-        DEPENDS_ON ${mint_test_dependencies} gtest
+        DEPENDS_ON mint gtest
         FOLDER     axom/mint/tests
         )
 

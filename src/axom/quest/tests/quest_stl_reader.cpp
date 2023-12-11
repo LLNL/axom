@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -82,7 +82,7 @@ TEST(quest_stl_reader_DeathTest, read_to_invalid_mesh)
   EXPECT_DEATH_IF_SUPPORTED(reader.getMesh(&hexmesh), IGNORE_OUTPUT);
 
   // STEP 4: remove STL file
-  std::remove(filename.c_str());
+  axom::utilities::filesystem::removeFile(filename);
 }
 
 //------------------------------------------------------------------------------
@@ -143,7 +143,7 @@ TEST(quest_stl_reader, read_stl)
   }  // END for all nodes
 
   // STEP 4: remove temporary STL file
-  std::remove(filename.c_str());
+  axom::utilities::filesystem::removeFile(filename);
 }
 
 //------------------------------------------------------------------------------
@@ -202,7 +202,7 @@ TEST(quest_stl_reader, read_stl_external)
   }  // END for all nodes
 
   // STEP 4: remove temporary STL file
-  std::remove(filename.c_str());
+  axom::utilities::filesystem::removeFile(filename);
 }
 
 //------------------------------------------------------------------------------

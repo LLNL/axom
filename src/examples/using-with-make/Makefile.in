@@ -1,0 +1,39 @@
+#------------------------------------------------------------------------------
+# Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
+# other Axom Project Developers. See the top-level LICENSE file for details.
+#
+# SPDX-License-Identifier: (BSD-3-Clause)
+# Example that shows how to use an installed instance of Axom in Makefile
+# based build system.
+#
+# To build:
+#  make AXOM_DIR={Axom install path}
+#  ./example
+#
+# From within an Axom install:
+#  make 
+#  ./example
+#
+# Which corresponds to:
+#
+#  make AXOM_DIR=../../../ 
+#  ./example
+#
+# Note:
+#  If you use features that leverage external third party libraries 
+#  (ex: hdf5 features), you may need to pass additional include 
+#  and linking flags. 
+#------------------------------------------------------------------------------
+
+AXOM_DIR ?= ../../..
+
+CXX=@CMAKE_CXX_COMPILER@
+CXX_FLAGS=@CMAKE_CXX_FLAGS@ -std=c++@CMAKE_CXX_STANDARD@
+INC_FLAGS=-I$(AXOM_DIR)/include/
+LINK_FLAGS=-L$(AXOM_DIR)/lib/ @AXOM_ORDERED_LIBS@
+
+main:
+	$(CXX) $(INC_FLAGS) example.cpp $(LINK_FLAGS) -o example
+
+clean:
+	rm -f example

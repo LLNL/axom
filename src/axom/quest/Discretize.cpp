@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -110,7 +110,10 @@ OctType new_inscribed_oct(const SphereType& sphere, OctType& o, int s, int t, in
  * This routine allocates an array pointed to by \a out.  The caller is responsible
  * to free the array.
  */
-bool discretize(const SphereType& sphere, int levels, OctType*& out, int& octcount)
+bool discretize(const SphereType& sphere,
+                int levels,
+                axom::Array<OctType>& out,
+                int& octcount)
 {
   // Check input.  Negative radius: return false.
   if(sphere.getRadius() < 0)
@@ -126,7 +129,7 @@ bool discretize(const SphereType& sphere, int levels, OctType*& out, int& octcou
 
   octcount = count_sphere_octahedra(levels);
 
-  out = axom::allocate<OctType>(octcount);
+  out = axom::Array<OctType>(octcount, octcount);
 
   // index points to an octahedron of the last generation.  We'll generate
   // new octahedra based on out[index].
@@ -185,7 +188,6 @@ double octPolyVolume(const OctType& o)
 {
   // Convert Octahedron into Polyhedrom
   PolyhedronType octPoly;
-  double octVolume;
 
   octPoly.addVertex(o[0]);
   octPoly.addVertex(o[1]);
@@ -201,26 +203,17 @@ double octPolyVolume(const OctType& o)
   octPoly.addNeighbors(4, {0, 5, 3, 2});
   octPoly.addNeighbors(5, {0, 1, 3, 4});
 
-  octVolume = octPoly.volume();
-
-  // Flip sign if volume is negative
-  // (expected when vertex order is reversed)
-  if(octVolume < 0)
-  {
-    octVolume = -octVolume;
-  }
-
-  return octVolume;
+  return octPoly.volume();
 }
 }  // namespace
 
 //------------------------------------------------------------------------------
-int mesh_from_discretized_polyline(const OctType* octs,
+int mesh_from_discretized_polyline(axom::ArrayView<OctType>& octs,
                                    int octcount,
                                    int segcount,
                                    mint::Mesh*& mesh)
 {
-  SLIC_ASSERT(octs != nullptr);
+  SLIC_ASSERT(octs.data() != nullptr);
 
   const int tetcount = 8 * octcount;
   const int vertcount = 4 * tetcount;

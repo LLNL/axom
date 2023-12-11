@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -571,12 +571,13 @@ inline void SignedDistance<NDIMS, ExecSpace>::computeDistances(
     "ComputeDistances",
     for_all<ExecSpace>(
       npts,
-      AXOM_LAMBDA(int32 idx) {
+      AXOM_LAMBDA(std::int32_t idx) {
         PointType qpt = queryPts[idx];
 
         MinCandidate curr_min {};
 
-        auto searchMinDist = [&](int32 current_node, const int32* leaf_nodes) {
+        auto searchMinDist = [&](std::int32_t current_node,
+                                 const std::int32_t* leaf_nodes) {
           int candidate_idx = leaf_nodes[current_node];
 
           checkCandidate(qpt,

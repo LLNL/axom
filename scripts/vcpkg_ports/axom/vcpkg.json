@@ -6,19 +6,24 @@
   "dependencies": ["blt"],
   "default-features": [
     "conduit",
+    "lua",
     "mfem",
     "openmp",
     "raja",
     "umpire"
   ],
   "features": {
-    "mfem": {
-      "description": "mfem functionality for axom",
-      "dependencies" : ["mfem"]
-    },
     "conduit": {
       "description": "conduit functionality for axom",
       "dependencies": ["conduit"]
+    },
+    "lua": {
+      "description": "lua functionality for axom",
+      "dependencies": ["lua"]
+    },
+    "mfem": {
+      "description": "mfem functionality for axom",
+      "dependencies" : ["mfem"]
     },
     "raja": {
       "description": "raja functionality for axom",

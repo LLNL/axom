@@ -10,9 +10,10 @@ class C2c(CMakePackage):
     homepage = 'https://rzlc.llnl.gov/c2c'
     url = 'file:///collab/usr/gapps/c2c/dist/c2c-0.11.0.tgz'
 
-    version('develop', git='ssh://git@rz-bitbucket.llnl.gov:7999/wp/copa.git',
+    version('develop', git='ssh://git@rzgitlab.llnl.gov:7999/c2c/c2c.git',
             submodules=True, branch='develop')
 
+    version('1.8.0', sha256='6421a5314572f9e241514b36b1738289f2b556393db47ca3cac66f3428165cf4')
     version('1.3.0', sha256='8dd3ba73651f61d2f6d0dea43ab9568a566fd73c591c8bcae8792b44cb654c59')
     version('0.12.0', '250aa61251589215dd7f90f7b31dd443')
     version('0.11.0', '28cb091711af15bcb27e01b5ed2a4921')

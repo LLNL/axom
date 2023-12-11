@@ -1,4 +1,4 @@
-# Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
+# Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
 # other Axom Project Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
@@ -20,7 +20,7 @@
 #
 #------------------------------------------------------------------------------
 
-cmake_minimum_required(VERSION 3.8)
+cmake_minimum_required(VERSION 3.14)
 
 project(using_with_blt)
 
@@ -47,9 +47,11 @@ if(NOT DEFINED AXOM_DIR OR NOT EXISTS ${AXOM_DIR}/lib/cmake/axom-config.cmake)
     message(FATAL_ERROR "Missing required 'AXOM_DIR' variable pointing to an installed axom")
 endif()
 
-find_package(axom REQUIRED
-             NO_DEFAULT_PATH 
-             PATHS ${AXOM_DIR}/lib/cmake)
+include(CMakeFindDependencyMacro)
+
+find_dependency(axom REQUIRED
+                NO_DEFAULT_PATH 
+                PATHS ${AXOM_DIR}/lib/cmake)
 
 #------------------------------------------------------------------------------
 # Set up example target that depends on axom

@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -339,7 +339,10 @@ public:
    */
   BitsetType getCandidates(const SpacePoint& pt) const
   {
-    if(!m_initialized || !m_bb.contains(pt)) return BitsetType(0);
+    if(!m_initialized || !m_bb.contains(pt))
+    {
+      return BitsetType(0);
+    }
 
     const GridCell gridCell = m_lattice.gridCell(pt);
 
@@ -368,7 +371,10 @@ public:
   BitsetType getCandidates(const GridCell& gridCell) const
   {
     // Perform some validity checks
-    if(!m_initialized) return BitsetType(0);
+    if(!m_initialized)
+    {
+      return BitsetType(0);
+    }
     for(int i = 0; i < NDIMS; ++i)
     {
       if(gridCell[i] < 0 || gridCell[i] > highestBin(i))
@@ -398,7 +404,10 @@ public:
    */
   BitsetType getCandidates(const SpatialBoundingBox& box) const
   {
-    if(!m_initialized || !m_bb.intersectsWith(box)) return BitsetType(0);
+    if(!m_initialized || !m_bb.intersectsWith(box))
+    {
+      return BitsetType(0);
+    }
 
     const GridCell lowerCell = m_lattice.gridCell(box.getMin());
     const GridCell upperCell = m_lattice.gridCell(box.getMax());
@@ -515,7 +524,10 @@ public:
   {
     bool ret = true;
 
-    if(!m_elementSet.isValidIndex(idx)) ret = false;
+    if(!m_elementSet.isValidIndex(idx))
+    {
+      ret = false;
+    }
 
     for(int i = 0; i < NDIMS; ++i)
     {
@@ -852,8 +864,13 @@ void ImplicitGrid<NDIMS, ExecSpace, IndexType>::getCandidatesAsArray(
       totalCountReduce += outCounts[i];
     });
 
-  // Step 2: exclusive scan for offsets in candidate array
+    // Step 2: exclusive scan for offsets in candidate array
+    // Intel oneAPI compiler segfaults with OpenMP RAJA scan
+  #ifdef __INTEL_LLVM_COMPILER
+  using exec_policy = typename axom::execution_space<axom::SEQ_EXEC>::loop_policy;
+  #else
   using exec_policy = typename axom::execution_space<ExecSpace>::loop_policy;
+  #endif
   RAJA::exclusive_scan<exec_policy>(RAJA::make_span(outCounts.data(), qsize),
                                     RAJA::make_span(outOffsets.data(), qsize),
                                     RAJA::operators::plus<IndexType> {});
@@ -900,7 +917,10 @@ AXOM_HOST_DEVICE IndexType
 ImplicitGrid<NDIMS, ExecSpace, IndexType>::QueryObject::countCandidates(
   const SpacePoint& pt) const
 {
-  if(!m_bb.contains(pt)) return 0;
+  if(!m_bb.contains(pt))
+  {
+    return 0;
+  }
 
   GridCell gridCell = m_lattice.gridCell(pt);
 
@@ -945,7 +965,10 @@ AXOM_HOST_DEVICE IndexType
 ImplicitGrid<NDIMS, ExecSpace, IndexType>::QueryObject::countCandidates(
   const SpatialBoundingBox& bbox) const
 {
-  if(!m_bb.intersectsWith(bbox)) return 0;
+  if(!m_bb.intersectsWith(bbox))
+  {
+    return 0;
+  }
 
   GridCell lowerCell = m_lattice.gridCell(bbox.getMin());
   GridCell upperCell = m_lattice.gridCell(bbox.getMax());
@@ -1000,7 +1023,10 @@ ImplicitGrid<NDIMS, ExecSpace, IndexType>::QueryObject::visitCandidates(
   const SpacePoint& pt,
   FuncType&& candidatePredicate) const
 {
-  if(!m_bb.contains(pt)) return;
+  if(!m_bb.contains(pt))
+  {
+    return;
+  }
 
   GridCell gridCell = m_lattice.gridCell(pt);
 
@@ -1059,7 +1085,10 @@ ImplicitGrid<NDIMS, ExecSpace, IndexType>::QueryObject::visitCandidates(
   const SpatialBoundingBox& bbox,
   FuncType&& candidatePredicate) const
 {
-  if(!m_bb.intersectsWith(bbox)) return;
+  if(!m_bb.intersectsWith(bbox))
+  {
+    return;
+  }
 
   GridCell lowerCell = m_lattice.gridCell(bbox.getMin());
   GridCell upperCell = m_lattice.gridCell(bbox.getMax());

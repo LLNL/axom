@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -257,8 +257,8 @@ inline bool isLittleEndian()
 
   const union
   {
-    axom::uint8 raw[4];
-    axom::uint32 value;
+    std::uint8_t raw[4];
+    std::uint32_t value;
   } host_order = {{0, 1, 2, 3}};
 
   return host_order.value == O32_LITTLE_ENDIAN;
@@ -286,11 +286,11 @@ T swapEndian(T val)
 
   union
   {
-    axom::uint8 raw[NBYTES];
+    std::uint8_t raw[NBYTES];
     T val;
   } swp;
 
-  axom::uint8* src = reinterpret_cast<axom::uint8*>(&val);
+  std::uint8_t* src = reinterpret_cast<std::uint8_t*>(&val);
 
   // Reverse the bytes
   for(int i = 0; i < NBYTES; ++i)
@@ -344,6 +344,31 @@ inline AXOM_HOST_DEVICE bool isNearlyEqualRelative(RealType a,
   // http://realtimecollisiondetection.net/pubs/Tolerances/
   // Note: If we use this, we must update the doxygen
   // return abs(a-b) <= max(absThresh, relThresh * maxFabs );
+}
+
+/*!
+ * \brief Insertion sort of an array.
+ * \accelerated
+ * \param [in] array The array to sort.
+ * \param [in] n The number of entries in the array.
+ * \param [in] cmp The comparator to use for comparing elements; "less than"
+ *  by default.
+ */
+template <typename DataType, typename Predicate = std::less<DataType>>
+inline AXOM_HOST_DEVICE void insertionSort(DataType* array,
+                                           IndexType n,
+                                           Predicate cmp = {})
+{
+  for(int i = 1; i < n; i++)
+  {
+    int j = i;
+    // Keep swapping elements until we're not out-of-order.
+    while(j > 0 && cmp(array[j], array[j - 1]))
+    {
+      axom::utilities::swap(array[j], array[j - 1]);
+      j--;
+    }
+  }
 }
 
 /*!

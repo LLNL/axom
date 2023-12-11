@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -20,6 +20,7 @@
 #include "axom/fmt.hpp"
 
 #include <math.h>
+#include <algorithm>  // std::next_permutation
 
 namespace primal = axom::primal;
 
@@ -49,8 +50,8 @@ protected:
     // Define coordinates for second tetrahedron
     qData1[0] = QPoint {1, 0, 0};
     qData1[1] = QPoint {0, 1, 0};
-    qData1[2] = QPoint {0, 0, 1};
-    qData1[3] = QPoint {0, 0, 0};
+    qData1[2] = QPoint {0, 0, 0};
+    qData1[3] = QPoint {0, 0, 1};
 
     double angles[3];
     for(int i = 0; i < 3; ++i)
@@ -157,16 +158,42 @@ TEST_F(TetrahedronTest, constructFromPoints)
   // Access the test data
   const QPoint* pt = this->qData0;
 
-  QTet tet(pt[0], pt[1], pt[2], pt[3]);
+  axom::Array<QPoint> ptArray({pt[0], pt[1], pt[2], pt[3]});
+
+  QTet tet1(pt[0], pt[1], pt[2], pt[3]);
+
+  QTet tet2(pt);
+
+  QTet tet3(ptArray);
+
+  QTet tet4({pt[0], pt[1], pt[2], pt[3]});
 
   // Test ostream operator
-  SLIC_INFO("Tetrahedron coordinates: " << tet);
+  SLIC_INFO("Tetrahedron 1 coordinates: " << tet1);
+  SLIC_INFO("Tetrahedron 2 coordinates: " << tet2);
+  SLIC_INFO("Tetrahedron 3 coordinates: " << tet3);
+  SLIC_INFO("Tetrahedron 4 coordinates: " << tet4);
 
   // Check indirection operator
-  EXPECT_EQ(pt[0], tet[0]);
-  EXPECT_EQ(pt[1], tet[1]);
-  EXPECT_EQ(pt[2], tet[2]);
-  EXPECT_EQ(pt[3], tet[3]);
+  EXPECT_EQ(pt[0], tet1[0]);
+  EXPECT_EQ(pt[1], tet1[1]);
+  EXPECT_EQ(pt[2], tet1[2]);
+  EXPECT_EQ(pt[3], tet1[3]);
+
+  EXPECT_EQ(pt[0], tet2[0]);
+  EXPECT_EQ(pt[1], tet2[1]);
+  EXPECT_EQ(pt[2], tet2[2]);
+  EXPECT_EQ(pt[3], tet2[3]);
+
+  EXPECT_EQ(pt[0], tet3[0]);
+  EXPECT_EQ(pt[1], tet3[1]);
+  EXPECT_EQ(pt[2], tet3[2]);
+  EXPECT_EQ(pt[3], tet3[3]);
+
+  EXPECT_EQ(pt[0], tet4[0]);
+  EXPECT_EQ(pt[1], tet4[1]);
+  EXPECT_EQ(pt[2], tet4[2]);
+  EXPECT_EQ(pt[3], tet4[3]);
 }
 
 TEST_F(TetrahedronTest, volume)
@@ -362,7 +389,7 @@ TEST_F(TetrahedronTest, tetrahedron_roundtrip_bary_to_physical)
   using CoordType = TetrahedronTest::CoordType;
   using QPoint = TetrahedronTest::QPoint;
   using QTet = TetrahedronTest::QTet;
-  using RPoint = primal::Point<CoordType, QTet::NUM_TET_VERTS>;
+  using RPoint = primal::Point<CoordType, QTet::NUM_VERTS>;
 
   // Test tets
   std::vector<QTet> tets = {this->getTet(0),
@@ -597,6 +624,40 @@ TEST_F(TetrahedronTest, regularTetrahedron)
     EXPECT_EQ(primal::ON_POSITIVE_SIDE, primal::orientation(pt, tri));
   }
 }
+
+TEST_F(TetrahedronTest, checkAndFixOrientation)
+{
+  using QPoint = TetrahedronTest::QPoint;
+  using QTet = TetrahedronTest::QTet;
+
+  int indices[] = {0, 1, 2, 3};
+
+  for(int i = 0; i < this->numTetrahedra(); ++i)
+  {
+    QTet tet = this->getTet(i);
+    double expVolume = tet.signedVolume();
+
+    // Run sign check through all vertex permutations for the tetrahedron
+    do
+    {
+      QTet tetPermuted =
+        QTet(tet[indices[0]], tet[indices[1]], tet[indices[2]], tet[indices[3]]);
+
+      double preCheckAbsoluteVolume = tetPermuted.volume();
+
+      tetPermuted.checkAndFixOrientation();
+
+      double postCheckAbsoluteVolume = tetPermuted.volume();
+
+      EXPECT_NEAR(expVolume, postCheckAbsoluteVolume, this->EPS);
+
+      // Verify absolute value of volume is still the same
+      EXPECT_NEAR(preCheckAbsoluteVolume, postCheckAbsoluteVolume, this->EPS);
+
+    } while(std::next_permutation(indices, indices + QTet::NUM_VERTS));
+  }
+}
+
 //----------------------------------------------------------------------
 //----------------------------------------------------------------------
 int main(int argc, char* argv[])

@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -50,12 +50,13 @@ public:
 
   using IndicesIndirectionPolicy = RelationIndicesIndirectionPolicy;
 
-  using RelationSubset = OrderedSet<SetPosition,
-                                    SetElement,
-                                    BeginsSizePolicy,
-                                    policies::RuntimeOffset<SetPosition>,
-                                    policies::StrideOne<SetPosition>,
-                                    IndicesIndirectionPolicy>;
+  using RelationSubset =
+    typename OrderedSet<SetPosition,
+                        SetElement,
+                        BeginsSizePolicy,
+                        policies::RuntimeOffset<SetPosition>,
+                        policies::StrideOne<SetPosition>,
+                        IndicesIndirectionPolicy>::ConcreteSet;
 
   using IndicesSet = OrderedSet<SetPosition,
                                 SetElement,
@@ -66,6 +67,10 @@ public:
 
   using IndirectionBufferType =
     typename IndicesIndirectionPolicy::IndirectionBufferType;
+  using IndirectionRefType =
+    typename IndicesIndirectionPolicy::IndirectionRefType;
+  using IndirectionConstRefType =
+    typename IndicesIndirectionPolicy::IndirectionConstRefType;
   using IndirectionPtrType =
     typename IndicesIndirectionPolicy::IndirectionPtrType;
 
@@ -152,26 +157,30 @@ public:
   };
 
 public:
-  const RelationSubset operator[](SetPosition fromSetInd) const
+  AXOM_HOST_DEVICE const RelationSubset operator[](SetPosition fromSetInd) const
   {
+#ifndef AXOM_HOST_DEVICE
     SLIC_ASSERT(m_relationIndices.isValid(true));
+#endif
 
     using SetBuilder = typename RelationSubset::SetBuilder;
     return SetBuilder()
       .size(CardinalityPolicy::size(fromSetInd))
       .offset(CardinalityPolicy::offset(fromSetInd))
-      .data(m_relationIndices.data());
+      .data(m_relationIndices.ptr());
   }
 
-  RelationSubset operator[](SetPosition fromSetInd)
+  AXOM_HOST_DEVICE RelationSubset operator[](SetPosition fromSetInd)
   {
+#ifndef AXOM_HOST_DEVICE
     SLIC_ASSERT(m_relationIndices.isValid(true));
+#endif
 
     using SetBuilder = typename RelationSubset::SetBuilder;
     return SetBuilder()
       .size(CardinalityPolicy::size(fromSetInd))
       .offset(CardinalityPolicy::offset(fromSetInd))
-      .data(m_relationIndices.data());
+      .data(m_relationIndices.ptr());
   }
 
   bool isValid(bool verboseOutput = false) const;
@@ -229,12 +238,17 @@ public:
     m_relationIndices = typename IndicesSet::SetBuilder().size(size).data(data);
   }
 
-  const IndirectionPtrType relationData() const
+  AXOM_HOST_DEVICE IndirectionRefType relationData()
   {
     return m_relationIndices.data();
   }
 
-  IndirectionPtrType relationData() { return m_relationIndices.data(); }
+  AXOM_HOST_DEVICE IndirectionConstRefType relationData() const
+  {
+    return m_relationIndices.data();
+  }
+
+  IndirectionPtrType& relationBinding() { return m_relationIndices.ptr(); }
 
 private:
   FromSetType* m_fromSet;

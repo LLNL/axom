@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -74,7 +74,10 @@ public:
     auto itEnd = levelLeafMap.end();
     for(auto it = levelLeafMap.begin(); it != itEnd; ++it)
     {
-      if(!it->isLeaf()) continue;
+      if(!it->isLeaf())
+      {
+        continue;
+      }
 
       SLIC_ASSERT_MSG(
         it->isColored(),
@@ -153,7 +156,10 @@ public:
         CellIndexSet leafCells = m_octree.leafCells(vertBlock, leafData);
         for(int k = 0; !foundCell && k < leafCells.size(); ++k)
         {
-          if(leafCells[k] == cIdx) foundCell = true;
+          if(leafCells[k] == cIdx)
+          {
+            foundCell = true;
+          }
         }
 
         SLIC_ASSERT_MSG(
@@ -301,7 +307,9 @@ public:
   {
     // We are assumed to be valid before we insert the vertices
     if(m_generationState < InOutOctreeType::INOUTOCTREE_VERTICES_INSERTED)
+    {
       return;
+    }
 
     // Iterate through the tree
     // Internal blocks should not have associated vertex data

@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -18,6 +18,7 @@
 #include "axom/primal/geometry/Point.hpp"
 #include "axom/primal/geometry/Triangle.hpp"
 #include "axom/primal/geometry/BoundingBox.hpp"
+#include "axom/primal/geometry/Hexahedron.hpp"
 #include "axom/primal/geometry/Polygon.hpp"
 #include "axom/primal/geometry/Polyhedron.hpp"
 #include "axom/primal/geometry/Octahedron.hpp"
@@ -205,7 +206,7 @@ AXOM_HOST_DEVICE void poly_clip_vertices(Polyhedron<T, NDIMS>& poly,
 
   // Loop over Polyhedron vertices
   int numVerts = poly.numVertices();
-  for(axom::int8 i = 0; i < numVerts; i++)
+  for(std::int8_t i = 0; i < numVerts; i++)
   {
     int orientation = plane.getOrientation(poly[i], eps);
 
@@ -219,7 +220,7 @@ AXOM_HOST_DEVICE void poly_clip_vertices(Polyhedron<T, NDIMS>& poly,
       int numNeighbors = poly.getNumNeighbors(i);
       for(int j = 0; j < numNeighbors; j++)
       {
-        axom::int8 neighborIndex = poly.getNeighbors(i)[j];
+        std::int8_t neighborIndex = poly.getNeighbors(i)[j];
 
         int neighborOrientation = plane.getOrientation(poly[neighborIndex], eps);
 
@@ -357,7 +358,7 @@ AXOM_HOST_DEVICE void poly_clip_reindex(Polyhedron<T, NDIMS>& poly,
                                         const unsigned int clipped)
 {
   // Dictionary for old indices to new indices positions
-  axom::int8 newIndices[Polyhedron<T, NDIMS>::MAX_VERTS] = {0};
+  std::int8_t newIndices[Polyhedron<T, NDIMS>::MAX_VERTS] = {0};
 
   Polyhedron<T, NDIMS> old_poly;
 
@@ -399,82 +400,138 @@ AXOM_HOST_DEVICE void poly_clip_reindex(Polyhedron<T, NDIMS>& poly,
 }
 
 /*!
- * \brief Finds the clipped intersection Polyhedron between Polyhedron
- *        poly and an array of Planes.
+ * \brief Clips a polyhedron against a half-space defined by a plane
  *
- * \param [in] poly The polyhedron
- * \param [in] planes The array of planes
- * \param [in] eps The tolerance for plane point orientation.
- *
- * \return The Polyhedron formed from clipping the polyhedron with a set of planes.
- *
+ * \param [inout] poly The polyhedron to clip
+ * \param [in] plane The plane defining the half-space used to clip the polyhedron
+ * \param [in] eps The tolerance for plane point orientation
  */
 template <typename T, int NDIMS>
-AXOM_HOST_DEVICE Polyhedron<T, NDIMS> clipPolyhedron(
-  Polyhedron<T, NDIMS>& poly,
-  axom::ArrayView<Plane<T, NDIMS>> planes,
-  double eps)
+AXOM_HOST_DEVICE void clipPolyhedron(Polyhedron<T, NDIMS>& poly,
+                                     const Plane<T, NDIMS>& plane,
+                                     double eps)
 {
-  using PointType = Point<T, NDIMS>;
   using BoxType = BoundingBox<T, NDIMS>;
-  using PlaneType = Plane<T, NDIMS>;
 
-  //Bounding Box of Polyhedron
-  BoxType polyBox(&poly[0], poly.numVertices());
-
-  //Clip Polyhedron by each plane
-  for(PlaneType plane : planes)
+  // Check that plane intersects Polyhedron
+  if(intersect(plane, BoxType(&poly[0], poly.numVertices()), true, eps))
   {
-    // Check that plane intersects Polyhedron
-    if(intersect(plane, polyBox, true, eps))
+    int numVerts = poly.numVertices();
+
+    // Each bit value indicates if that Polyhedron vertex is formed from
+    // Polyhedron clipping with a plane.
+    unsigned int clipped = 0;
+
+    // Clip polyhedron against current plane, generating extra vertices
+    // where edges meet the plane.
+    poly_clip_vertices(poly, plane, eps, clipped);
+
+    // Adjust connectivity to link up newly-generated vertices.
+    poly_clip_fix_nbrs(poly, plane, numVerts, eps, clipped);
+
+    // Reindex polyhedron connectivity by removing vertices on the negative
+    // side of the plane.
+    poly_clip_reindex(poly, clipped);
+  }
+
+  // If entire polyhedron is below a plane (points can be on the plane),
+  // it is completely removed.
+  else
+  {
+    bool completeClip = true;
+
+    for(int i = 0; i < poly.numVertices(); i++)
     {
-      int numVerts = poly.numVertices();
-
-      // Each bit value indicates if that Polyhedron vertex is formed from
-      // Polyhedron clipping with a plane.
-      unsigned int clipped = 0;
-
-      // Clip polyhedron against current plane, generating extra vertices
-      // where edges meet the plane.
-      poly_clip_vertices(poly, plane, eps, clipped);
-
-      // Adjust connectivity to link up newly-generated vertices.
-      poly_clip_fix_nbrs(poly, plane, numVerts, eps, clipped);
-
-      // Reindex polyhedron connectivity by removing vertices on the negative
-      // side of the plane.
-      poly_clip_reindex(poly, clipped);
-
-      // Generate new bounding box for polyhedron
-      polyBox = BoxType();
-
-      for(int i = 0; i < poly.numVertices(); i++)
+      if(plane.getOrientation(poly[i], eps) == ON_POSITIVE_SIDE)
       {
-        polyBox.addPoint(PointType(poly[i]));
+        completeClip = false;
+        break;
       }
     }
 
-    // If entire polyhedron is below a plane (points can be on the plane), it is completely removed.
-    else
+    if(completeClip)
     {
-      bool completeClip = true;
-      for(int i = 0; i < poly.numVertices(); i++)
-      {
-        if(plane.getOrientation(poly[i], eps) == ON_POSITIVE_SIDE)
-        {
-          completeClip = false;
-          break;
-        }
-      }
-
-      if(completeClip)
-      {
-        poly.clear();
-        return poly;
-      }
+      poly.clear();
     }
   }
 
+  return;
+}
+
+/*!
+ * \brief Clips a polyhedron against an array of planes
+ *
+ * \param [inout] poly The polyhedron to clip
+ * \param [in] planes The array of planes
+ * \param [in] eps The tolerance for plane point orientation
+ */
+template <typename T, int NDIMS>
+AXOM_HOST_DEVICE void clipPolyhedron(Polyhedron<T, NDIMS>& poly,
+                                     axom::ArrayView<Plane<T, NDIMS>> planes,
+                                     double eps)
+{
+  using PlaneType = Plane<T, NDIMS>;
+
+  // Clip Polyhedron by each plane
+  for(const PlaneType& plane : planes)
+  {
+    clipPolyhedron(poly, plane, eps);
+
+    if(poly.numVertices() == 0)
+    {
+      return;
+    }
+  }
+
+  return;
+}
+
+/*!
+ * \brief Finds the clipped intersection Polyhedron between Hexahedron
+ *        hex and Tetrahedron tet.
+ *
+ * \param [in] hex The hexahedron
+ * \param [in] tet The tetrahedron
+ * \param [in] eps The tolerance for plane point orientation.
+ * \param [in] tryFixOrientation Check if the signed volume of each shape is positive.
+ * \return The Polyhedron formed from clipping the hexahedron with a tetrahedron.
+ *
+ */
+template <typename T, int NDIMS>
+AXOM_HOST_DEVICE Polyhedron<T, NDIMS> clipHexahedron(
+  const Hexahedron<T, NDIMS>& hex,
+  const Tetrahedron<T, NDIMS>& tet,
+  double eps,
+  bool tryFixOrientation)
+{
+  using PlaneType = Plane<T, NDIMS>;
+  using PolyhedronType = Polyhedron<T, NDIMS>;
+
+  // Initialize our polyhedron to return
+  PolyhedronType poly = PolyhedronType::from_primitive(hex, tryFixOrientation);
+
+  // Initialize planes from tetrahedron vertices
+  // (Ordering here matters to get the correct winding)
+  PlaneType planes[4] = {make_plane(tet[1], tet[3], tet[2]),
+                         make_plane(tet[0], tet[2], tet[3]),
+                         make_plane(tet[0], tet[3], tet[1]),
+                         make_plane(tet[0], tet[1], tet[2])};
+
+  // Adjusts planes in case tetrahedron signed volume is negative
+  if(tryFixOrientation)
+  {
+    PolyhedronType tet_poly =
+      PolyhedronType::from_primitive(tet, tryFixOrientation);
+    planes[0] = make_plane(tet_poly[1], tet_poly[3], tet_poly[2]);
+    planes[1] = make_plane(tet_poly[0], tet_poly[2], tet_poly[3]);
+    planes[2] = make_plane(tet_poly[0], tet_poly[3], tet_poly[1]);
+    planes[3] = make_plane(tet_poly[0], tet_poly[1], tet_poly[2]);
+  }
+
+  axom::StackArray<IndexType, 1> planeSize = {4};
+  axom::ArrayView<PlaneType> planesView(planes, planeSize);
+
+  clipPolyhedron(poly, planesView, eps);
   return poly;
 }
 
@@ -485,6 +542,7 @@ AXOM_HOST_DEVICE Polyhedron<T, NDIMS> clipPolyhedron(
  * \param [in] oct The octahedron
  * \param [in] tet The tetrahedron
  * \param [in] eps The tolerance for plane point orientation.
+ * \param [in] tryFixOrientation Check if the signed volume of each shape is positive.
  * \return The Polyhedron formed from clipping the octahedron with a tetrahedron.
  *
  */
@@ -492,34 +550,14 @@ template <typename T, int NDIMS>
 AXOM_HOST_DEVICE Polyhedron<T, NDIMS> clipOctahedron(
   const Octahedron<T, NDIMS>& oct,
   const Tetrahedron<T, NDIMS>& tet,
-  double eps)
+  double eps,
+  bool tryFixOrientation)
 {
-  using PointType = Point<T, NDIMS>;
   using PlaneType = Plane<T, NDIMS>;
+  using PolyhedronType = Polyhedron<T, NDIMS>;
 
   // Initialize our polyhedron to return
-  Polyhedron<T, NDIMS> poly;
-
-  poly.addVertex(oct[0]);
-  poly.addVertex(oct[1]);
-  poly.addVertex(oct[2]);
-  poly.addVertex(oct[3]);
-  poly.addVertex(oct[4]);
-  poly.addVertex(oct[5]);
-
-  poly.addNeighbors(0, {1, 5, 4, 2});
-  poly.addNeighbors(1, {0, 2, 3, 5});
-  poly.addNeighbors(2, {0, 4, 3, 1});
-  poly.addNeighbors(3, {1, 2, 4, 5});
-  poly.addNeighbors(4, {0, 5, 3, 2});
-  poly.addNeighbors(5, {0, 1, 3, 4});
-
-  // Reverses order of vertices 1,2 and 4,5 if volume is negative
-  if(poly.volume() < 0)
-  {
-    axom::utilities::swap<PointType>(poly[1], poly[2]);
-    axom::utilities::swap<PointType>(poly[4], poly[5]);
-  }
+  PolyhedronType poly = PolyhedronType::from_primitive(oct, tryFixOrientation);
 
   // Initialize planes from tetrahedron vertices
   // (Ordering here matters to get the correct winding)
@@ -528,10 +566,22 @@ AXOM_HOST_DEVICE Polyhedron<T, NDIMS> clipOctahedron(
                          make_plane(tet[0], tet[3], tet[1]),
                          make_plane(tet[0], tet[1], tet[2])};
 
+  // Adjusts planes in case tetrahedron signed volume is negative
+  if(tryFixOrientation)
+  {
+    PolyhedronType tet_poly =
+      PolyhedronType::from_primitive(tet, tryFixOrientation);
+    planes[0] = make_plane(tet_poly[1], tet_poly[3], tet_poly[2]);
+    planes[1] = make_plane(tet_poly[0], tet_poly[2], tet_poly[3]);
+    planes[2] = make_plane(tet_poly[0], tet_poly[3], tet_poly[1]);
+    planes[3] = make_plane(tet_poly[0], tet_poly[1], tet_poly[2]);
+  }
+
   axom::StackArray<IndexType, 1> planeSize = {4};
   axom::ArrayView<PlaneType> planesView(planes, planeSize);
 
-  return clipPolyhedron(poly, planesView, eps);
+  clipPolyhedron(poly, planesView, eps);
+  return poly;
 }
 
 /*!
@@ -539,8 +589,9 @@ AXOM_HOST_DEVICE Polyhedron<T, NDIMS> clipOctahedron(
  *        tet1 and Tetrahedron tet2.
  *
  * \param [in] tet1 The tetrahedron to clip
- * \param [in] tet2 TThe tetrahedron to clip against
+ * \param [in] tet2 The tetrahedron to clip against
  * \param [in] eps The tolerance for plane point orientation.
+ * \param [in] tryFixOrientation Check if the signed volume of each shape is positive.
  * \return The Polyhedron formed from clipping the tetrahedron with a tetrahedron.
  *
  */
@@ -548,29 +599,14 @@ template <typename T, int NDIMS>
 AXOM_HOST_DEVICE Polyhedron<T, NDIMS> clipTetrahedron(
   const Tetrahedron<T, NDIMS>& tet1,
   const Tetrahedron<T, NDIMS>& tet2,
-  double eps)
+  double eps,
+  bool tryFixOrientation)
 {
-  using PointType = Point<T, NDIMS>;
   using PlaneType = Plane<T, NDIMS>;
+  using PolyhedronType = Polyhedron<T, NDIMS>;
 
   // Initialize our polyhedron to return
-  Polyhedron<T, NDIMS> poly;
-
-  poly.addVertex(tet1[0]);
-  poly.addVertex(tet1[1]);
-  poly.addVertex(tet1[2]);
-  poly.addVertex(tet1[3]);
-
-  poly.addNeighbors(0, {1, 3, 2});
-  poly.addNeighbors(1, {0, 2, 3});
-  poly.addNeighbors(2, {0, 3, 1});
-  poly.addNeighbors(3, {0, 1, 2});
-
-  // Reverses order of vertices 1,2 if volume is negative
-  if(poly.volume() < 0)
-  {
-    axom::utilities::swap<PointType>(poly[1], poly[2]);
-  }
+  PolyhedronType poly = PolyhedronType::from_primitive(tet1, tryFixOrientation);
 
   // Initialize planes from tetrahedron vertices
   // (Ordering here matters to get the correct winding)
@@ -579,10 +615,59 @@ AXOM_HOST_DEVICE Polyhedron<T, NDIMS> clipTetrahedron(
                          make_plane(tet2[0], tet2[3], tet2[1]),
                          make_plane(tet2[0], tet2[1], tet2[2])};
 
+  // Adjusts planes in case tetrahedron signed volume is negative
+  if(tryFixOrientation)
+  {
+    PolyhedronType tet_poly =
+      PolyhedronType::from_primitive(tet2, tryFixOrientation);
+    planes[0] = make_plane(tet_poly[1], tet_poly[3], tet_poly[2]);
+    planes[1] = make_plane(tet_poly[0], tet_poly[2], tet_poly[3]);
+    planes[2] = make_plane(tet_poly[0], tet_poly[3], tet_poly[1]);
+    planes[3] = make_plane(tet_poly[0], tet_poly[1], tet_poly[2]);
+  }
+
   axom::StackArray<IndexType, 1> planeSize = {4};
   axom::ArrayView<PlaneType> planesView(planes, planeSize);
 
-  return clipPolyhedron(poly, planesView, eps);
+  clipPolyhedron(poly, planesView, eps);
+  return poly;
+}
+
+/*!
+ * \brief Clips a tetrahedron against the half-space defined by a plane
+ *        and returns the resulting polyhedron
+ *
+ * \param [in] tet The tetrahedron to clip
+ * \param [in] plane The plane defining the half-space used to clip the tetrahedron
+ * \param [in] eps The tolerance for plane point orientation
+ * \param [in] tryFixOrientation If true and the tetrahedron has a negative
+ *             signed volume, swaps the order of some vertices in the
+ *             tetrathedron to try to obtain a nonnegative signed volume.
+ *             Defaults to false.
+ *
+ * \return The polyhedron obtained from clipping a tetrahedron against
+ *         the half-space defined a plane
+ *
+ * \warning tryFixOrientation flag does not guarantee the tetrahedron's vertex
+ *          order will be valid. It is the responsiblity of the caller to pass
+ *          a tetrahedron with a valid vertex order. Otherwise, the returned
+ *          polyhedron will have a non-positive and/or unexpected volume.
+ *
+ * \warning If the tryFixOrientation flag is false and the tetrahedron has
+ *          a negative signed volume, the returned polyhedron will have a
+ *          non-positive and/or unexpected volume.
+ */
+template <typename T, int NDIMS>
+AXOM_HOST_DEVICE Polyhedron<T, NDIMS> clipTetrahedron(
+  const Tetrahedron<T, NDIMS>& tet,
+  const Plane<T, NDIMS>& plane,
+  double eps,
+  bool tryFixOrientation)
+{
+  using PolyhedronType = Polyhedron<T, NDIMS>;
+  PolyhedronType poly = PolyhedronType::from_primitive(tet, tryFixOrientation);
+  clipPolyhedron(poly, plane, eps);
+  return poly;
 }
 
 }  // namespace detail

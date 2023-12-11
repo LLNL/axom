@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -89,7 +89,6 @@ inline double evaluate_vector_line_integral_component(
     full_quadrature +=
       quad.IntPoint(q).weight * Vector<T, NDIMS>::dot_product(func_val, dx_q);
   }
-
   return full_quadrature;
 }
 

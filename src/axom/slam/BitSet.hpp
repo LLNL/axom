@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -114,7 +114,7 @@ class BitSet
 {
 public:
   using Index = int;
-  using Word = axom::uint64;
+  using Word = std::uint64_t;
 
   // TODO: update using a policy
   using ArrayType = axom::Array<Word, 1>;
@@ -370,7 +370,10 @@ private:
   AXOM_HOST_DEVICE
   Word& getWord(Index idx, bool checkIndexValid = true)
   {
-    if(checkIndexValid) checkValidIndex(idx);
+    if(checkIndexValid)
+    {
+      checkValidIndex(idx);
+    }
 
     const Index wIdx = idx / BitsPerWord;
     return m_data[wIdx];
@@ -383,7 +386,10 @@ private:
   AXOM_HOST_DEVICE
   const Word& getWord(Index idx, bool checkIndexValid = true) const
   {
-    if(checkIndexValid) checkValidIndex(idx);
+    if(checkIndexValid)
+    {
+      checkValidIndex(idx);
+    }
 
     const Index wIdx = idx / BitsPerWord;
     return m_data[wIdx];

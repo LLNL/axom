@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -201,7 +201,10 @@ inline T* allocate(std::size_t n, int allocID) noexcept
 template <typename T>
 inline void deallocate(T*& pointer) noexcept
 {
-  if(pointer == nullptr) return;
+  if(pointer == nullptr)
+  {
+    return;
+  }
 
 #ifdef AXOM_USE_UMPIRE
 

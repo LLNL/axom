@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -99,11 +99,9 @@ sidre::TypeID recordEnum(const sidre::View* view, conduit::Node& node)
  */
 sidre::TypeID recordEnum(const sidre::Group* group, conduit::Node& node)
 {
-  auto idx = group->getFirstValidViewIndex();
-  while(axom::sidre::indexIsValid(idx))
+  for(auto& view : group->views())
   {
-    node["enum"].append() = std::string(group->getView(idx)->getString());
-    idx = group->getNextValidViewIndex(idx);
+    node["enum"].append() = std::string(view.getString());
   }
   return sidre::CHAR8_STR_ID;
 }
@@ -169,7 +167,7 @@ void recordFieldSchema(const Field& field, conduit::Node& node)
       node["default"] = std::string(default_view->getString());
       break;
     case sidre::INT8_ID:
-      node["default"] = static_cast<int8>(default_view->getData());
+      node["default"] = static_cast<std::int8_t>(default_view->getData());
       break;
     default:
       break;

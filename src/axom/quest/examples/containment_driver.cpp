@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -78,7 +78,8 @@ public:
 
     // Create surface mesh
     m_surfaceMesh = new UMesh(2, mint::SEGMENT);
-    reader.getLinearMesh(static_cast<UMesh*>(m_surfaceMesh), segmentsPerKnotSpan);
+    reader.getLinearMeshUniform(static_cast<UMesh*>(m_surfaceMesh),
+                                segmentsPerKnotSpan);
   }
 #else
   void loadContourMesh(const std::string& inputFile, int segmentsPerKnotSpan)

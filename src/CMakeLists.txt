@@ -1,4 +1,4 @@
-# Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
+# Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
 # other Axom Project Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
@@ -6,9 +6,11 @@
 # Axom project
 #------------------------------------------------------------------------------
 
-if (ENABLE_HIP)
+if (ENABLE_HIP OR AXOM_ENABLE_HIP)
     cmake_minimum_required(VERSION 3.21)
 else()
+    # Do not bump this over 3.14 due to it changing CMake policies and breaking
+    # the CUDA build. We check the required version specifically for this below
     cmake_minimum_required(VERSION 3.14)
 endif()
 
@@ -49,7 +51,6 @@ if (“${PROJECT_SOURCE_DIR}” STREQUAL “${CMAKE_SOURCE_DIR}”)
     # These are not used in Axom, turn them off
     set(_unused_blt_tools
         CLANGQUERY
-        CLANGTIDY
         VALGRIND
         ASTYLE
         CMAKEFORMAT
@@ -63,6 +64,8 @@ if (“${PROJECT_SOURCE_DIR}” STREQUAL “${CMAKE_SOURCE_DIR}”)
     # unless an explicit executable path is given
     set(_used_blt_tools
         CLANGFORMAT
+        CLANGTIDY
+        CLANGAPPLYREPLACEMENTS
         CPPCHECK
         DOXYGEN
         SPHINX)
@@ -75,6 +78,9 @@ if (“${PROJECT_SOURCE_DIR}” STREQUAL “${CMAKE_SOURCE_DIR}”)
     endforeach()
 
     set(BLT_REQUIRED_CLANGFORMAT_VERSION  "10" CACHE STRING "")
+    configure_file(${CMAKE_CURRENT_SOURCE_DIR}/.clang-tidy 
+                   ${CMAKE_CURRENT_BINARY_DIR}/.clang-tidy
+                   COPYONLY)
 
     # If Axom is the top project and AXOM_ENABLE_TESTS is off, force ENABLE_TESTS to off so
     # gtest doesn't build when it's not needed
@@ -118,6 +124,11 @@ endif()
 #------------------------------------------------------------------------------
 include(CMakeDependentOption)
 include(cmake/CMakeBasics.cmake)
+
+# Check for minimum CMake version required w/o changing policies like cmake_minimum_required
+if(AXOM_ENABLE_CUDA AND ${CMAKE_VERSION} VERSION_LESS 3.18.0)
+    message(FATAL_ERROR "Axom requires CMake version 3.18.0+ when CUDA is enabled.")
+endif()
 
 #------------------------------------------------------------------------------
 # Add source directories

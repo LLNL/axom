@@ -1,4 +1,4 @@
-.. ## Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
+.. ## Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
 .. ## other Axom Project Developers. See the top-level LICENSE file for details.
 .. ##
 .. ## SPDX-License-Identifier: (BSD-3-Clause)
@@ -273,7 +273,8 @@ General, Rough Porting Tips
 ================================
 
 * Start with figuring out what memory you need on device, and use
-  ``axom::Array`` class and :ref:`memory_managment routines<gpu-memory-label>`
+  ``axom::Array``, ``axom::ArrayView``, and
+  :ref:`memory_managment routines<gpu-memory-label>`
   to do the allocations:
 
   .. code-block:: c
@@ -282,6 +283,7 @@ General, Rough Porting Tips
     using cuda_exec = axom::CUDA_EXEC<256>;
     using TriangleType = axom::primal::Triangle<double, 2>;
     axom::Array<Triangle> tris (100, axom::execution_space<cuda_exec>::allocatorID()));
+    axom::ArrayView<Triangle> tris_view(tris);
 
     // Allocate the sum of Triangle areas
     using reduce_pol = typename axom::execution_space<cuda_exec>::reduce_policy;
@@ -296,7 +298,7 @@ General, Rough Porting Tips
       100,
       AXOM_LAMBDA(int idx) {
         // Set values on device
-        tris[idx] = Triangle();
+        tris_view[idx] = Triangle();
         totalArea = 0;
       });
 
@@ -307,11 +309,11 @@ General, Rough Porting Tips
       axom::for_all<cuda_exec>(
       100,
       AXOM_LAMBDA(int idx) {
-        tris[idx] = Triangle();
+        tris_view[idx] = Triangle();
         totalArea = 0;
 
         // Call area() method on device
-        double area = tris[idx].area();
+        double area = tris_view[idx].area();
       });
 
 * Apply a ``__host__ __device__`` annotation to your functions if you see the
@@ -342,7 +344,7 @@ General, Rough Porting Tips
       axom::for_all<cuda_exec>(
         100,
         AXOM_LAMBDA(int idx) {
-          totalArea += tris[idx].area();
+          totalArea += tris_view[idx].area();
       });
 
   * If at this point your kernel is not working/segfaulting, it is hopefully a

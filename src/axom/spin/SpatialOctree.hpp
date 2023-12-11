@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -57,7 +57,9 @@ public:
       m_deltaLevelMap[lev] = bbRange / static_cast<double>(CoordType(1) << lev);
 
       for(int dim = 0; dim < DIM; ++dim)
+      {
         m_invDeltaLevelMap[lev][dim] = 1. / m_deltaLevelMap[lev][dim];
+      }
     }
   }
 

@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -909,6 +909,14 @@ public:
   void createNativeLayout(Node& n) const;
 
   /*!
+   * \brief Copy metadata of the View to the given Conduit node
+   *
+   * The View's datatype schema and state information will be copied into the
+   * node, but not the data held by the View.
+   */
+  void copyMetadataToNode(Node& n) const;
+
+  /*!
    * \brief Change the name of this View.
    *
    * The name of this view is changed to the new name.  This also changes
@@ -1355,12 +1363,25 @@ private:
   }
 
   /*!
-   * \brief Copy view contents into an undescribed EMPTY view.
+   * \brief Copy contents of this View contents into an undescribed EMPTY View.
    *
    * For SCALAR and STRING the data is copied; EXTERNAL,
    * data pointer is copied; BUFFER attaches the buffer.
    */
   void copyView(View* copy) const;
+
+  /*!
+   * \brief Deep copy contents of this View contents into an undescribed
+   * EMPTY View.
+   *
+   * For SCALAR and STRING the data is copied and the state is preserved.
+   * For BUFFER and EXTERNAL, the data described by this View is copied into a
+   * new Buffer that is of the size needed to hold the copied data. Any
+   * parts of the source Buffer or external array that are not seen due
+   * to offsets and strides in the description will not be copied. The copied
+   * View will have BUFFER state with zero offset and a stride of one.
+   */
+  void deepCopyView(View* copy, int allocID = INVALID_ALLOCATOR_ID) const;
 
   /*!
    * \brief Add view description and references to it's data to a conduit tree.
@@ -1449,7 +1470,8 @@ private:
   {
     EMPTY,     // View created with name only :
                //    has no data or data description
-    BUFFER,    // View has a buffer attached explicitly. :
+    BUFFER,    // View has a buffer attached, either via call to
+               // View::attachBuffer(), View::allocate(), etc. :
                //    applied may be true or false
     EXTERNAL,  // View holds pointer to external data (no buffer) :
                //    applied may be true or false

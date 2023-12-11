@@ -1,4 +1,4 @@
-.. ## Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
+.. ## Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
 .. ## other Axom Project Developers. See the top-level LICENSE file for details.
 .. ##
 .. ## SPDX-License-Identifier: (BSD-3-Clause)
@@ -34,7 +34,7 @@ Supported Compilers
 ~~~~~~~~~~~~~~~~~~~
 
 Axom supports a wide variety of compilers. Please see the file 
-``axom/scripts/spack/configs/<platform>/compilers.yaml``
+``axom/scripts/spack/configs/<platform>/spack.yaml``
 for the current list of supported and tested compilers for the platforms we
 test on.
 
@@ -267,7 +267,7 @@ in the install directory, go into the build directory and run ``make`` and
 The Python helper script accepts other arguments that allow you to specify
 explicitly the build and install paths and build type. Following CMake
 conventions, we support three build types: ``Release``, ``RelWithDebInfo``, and
-``Debug``. To see the script options, run the script without any arguments::
+``Debug`` (default). To see the script options, run the script without any arguments::
 
    $ ./config-build.py
 
@@ -297,6 +297,11 @@ build with the gcc compiler, you could pass a host-config file to CMake::
            ../src/
    $ make
    $ make install
+
+.. note::
+   Spack generates a host-config for us with many defaults that can be overridden
+   on the command line. For example, ``CMAKE_BUILD_TYPE`` is set to ``Release``.
+   This can be overriden like the above command after the ``-C`` option.
 
 Alternatively, you could forego the host-config file entirely and pass all the
 arguments you need, including paths to third-party libraries,
@@ -347,6 +352,9 @@ Axom components, tests, examples, etc.
 +------------------------------+---------+----------------------------------------+
 | AXOM_ENABLE_TOOLS            | ON      | Enable Axom development tools          |
 +------------------------------+---------+----------------------------------------+
+| AXOM_DEPRECATED_TYPES        | WARN    | WARN, ALLOW or ERROR on using          |
+|                              |         | deprecated types                       |
++------------------------------+---------+----------------------------------------+
 
 If ``AXOM_ENABLE_ALL_COMPONENTS`` is OFF, you must explicitly enable a desired
 component (other than 'core', which is always enabled). Similarly, if 
@@ -392,13 +400,13 @@ Axom build options, compiler support, and parallelism
 +------------------------------+---------+----------------------------------------+
 | ENABLE_FORTRAN               | OFF     | Enable Fortran compiler support        |
 +------------------------------+---------+----------------------------------------+
-| ENABLE_MPI                   | OFF     | Enable MPI                             |
+| AXOM_ENABLE_MPI              | OFF     | Enable MPI                             |
 +------------------------------+---------+----------------------------------------+
-| ENABLE_OPENMP                | OFF     | Enable OpenMP                          |
+| AXOM_ENABLE_OPENMP           | OFF     | Enable OpenMP                          |
 +------------------------------+---------+----------------------------------------+
-| ENABLE_CUDA                  | OFF     | Enable CUDA                            |
+| AXOM_ENABLE_CUDA             | OFF     | Enable CUDA                            |
 +------------------------------+---------+----------------------------------------+
-| ENABLE_HIP                   | OFF     | Enable HIP                             |
+| AXOM_ENABLE_HIP              | OFF     | Enable HIP                             |
 +------------------------------+---------+----------------------------------------+
 
 Note that, in most Axom components, node-level parallelism features, enabled with 

@@ -1,4 +1,4 @@
-.. ## Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
+.. ## Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
 .. ## other Axom Project Developers. See the top-level LICENSE file for details.
 .. ##
 .. ## SPDX-License-Identifier: (BSD-3-Clause)
@@ -225,6 +225,55 @@ Move and Copy Views
  * Copy a view to another group. Note that this is a **shallow** copy of the
    view data; i.e., it is shared by the original and the new view in the
    destination group.
+
+----------------------------
+List Format
+----------------------------
+
+The list format is an alternate way for a group to hold its child groups and
+views. In list format, any number of child group or view items can be created.
+Each can be accessed, in order of creation, using an iterator over groups or
+over views. Child groups and views held in list format cannot be accessed by
+name.
+
+To create a group that uses the list format, the optional argument ``is_list``
+must be set to ``true`` in the call to ``createGroup``.
+
+  .. code-block:: C++
+
+     // list_group will hold its child items in the list format.
+     Group* list_group = group->createGroup("my_list", true);
+
+It is recommended but not required that the items held in the list format
+be created without names. String names may be assigned to these items,
+but the names will not be useful for accessing them from their parent
+group, and none of the methods that access child items by name or path will
+return a valid pointer. The method ``createUnnamedGroup`` is available to
+create an unnamed child group, while unnammed views can be created by passing
+an empty string to any of the several ``createView`` methods in the ``Group``
+class.
+
+  .. code-block:: C++
+          
+     Group* g0 = list_group->createUnnamedGroup();
+     Group* g1 = list_group->createUnnamedGroup();
+     Group* g2 = list_group->createUnnamedGroup();
+     View* v0 = list_group->createView("");
+     View* v1 = list_group->createViewScalar("", 1.0);
+     View* v2 = list_group->createViewString("", "foo");
+     View* v3 = list_group->createView("", type, num_elems, buffer);
+
+While it is allowed to pass a non-empty string to be the name of a child
+item held in the list format, a string with path syntax, like
+``"foo/bar/baz"``, will be considered invalid, and the object creation methods
+will return a nullptr if such a string is provided.
+
+  .. code-block:: C++
+
+     // This is valid, but the string name will not be useful for future access.
+     View* foo = list_group->createView("foo");
+     // This is invalid due to the path syntax, a nullptr will be returned.
+     View* baz = list_group->createView("bar/baz");
 
 ----------------------------
 Group I/O Operations

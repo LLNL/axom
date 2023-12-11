@@ -1,6 +1,6 @@
 
 [comment]: # (#################################################################)
-[comment]: # (Copyright 2017-2022, Lawrence Livermore National Security, LLC)
+[comment]: # (Copyright 2017-2023, Lawrence Livermore National Security, LLC)
 [comment]: # (and Axom Project Developers. See the top-level LICENSE file)
 [comment]: # (for details.)
 [comment]: #
@@ -20,13 +20,121 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 ## [Unreleased] - Release date yyyy-mm-dd
 
 ### Added
+- Primal: Adds a `Quadrilateral` primitive
+- Primal: Adds a `compute_bounding_box()` operator for computing the bounding
+  box of a `Quadrilateral`
+- Primal: Adds a `clip()` operator for clipping a tetrahedron against the
+  half-space defined by a plane
+- Primal: Adds a `checkAndFixOrientation()` function to `primal::Tetrahedron`
+  that swaps the order of vertices if the signed volume of the Tetrahedron is
+  negative, resulting in the signed volume becoming positive.
+- Adds `FlatMap`, a generic key-value store which aims for drop-in compatibility
+  with `std::unordered_map`, but utilizes an open-addressing design.
+
+### Changed
+- `MarchingCubes` and `DistributedClosestPoint` classes identify domains by their
+  `state/domain_id` parameters if provided, or the local iteration index if not.
+- `MarchingCubes` and `DistributedClosestPoint` classes changed from requiring the Blueprint
+  coordset name to requiring the Blueprint topology name.  The changed interface methods are:
+  - `DistributedClosestPoint::setObjectMesh`
+  - `DistributedClosestPoint::computeClosestPoints`
+  - `MarchingCubes::MarchingCubes`
+  - `MarchingCubesSingleDomain::MarchingCubesSingleDomain`
+- Primal: `Polyhedron::volume()` function changed from returning a signed
+  volume to an unsigned volume. The added `Polyhedron::signedVolume()` function
+  returns the signed volume.
+- Primal: `intersection_volume()` operators changed from returning a signed
+  volume to an unsigned volume.
+
+### Fixed
+- quest's `SamplingShaper` now properly handles material names containing underscores
+- quest's `SamplingShaper` can now be used with an mfem that is configured for (GPU) devices
+
+## [Version 0.8.1] - Release date 2023-08-16
+
+### Changed
+- Updates to [RAJA version 2023.06.0][https://github.com/LLNL/RAJA/releases/tag/v2023.06.0]
+- Updates to [camp version 2023.06.0][https://github.com/LLNL/camp/releases/tag/v2023.06.0]
+- Updates to [Umpire version 2023.06.0][https://github.com/LLNL/Umpire/releases/tag/v2023.06.0]
+
+### Fixed
+- Fixed MFEMSidreDataCollection finite element space bug
+- Various fixes to CMake machinery
+
+## [Version 0.8.0] - Release date 2023-07-26
+
+### Added
+- Adds MarchingCubes class implementing the marching cubes algorithm for surface detection.
 - Adds the following methods to `axom::Array` to conform more closely with the `std::vector` interface:
   - `Array::front()`: returns a reference to the first element
   - `Array::back()`: returns a reference to the last element
   - `Array::resize(size, T value)`: resizes the array, and sets any new elements to `value`.
 - Adds an `ArrayView::empty()` method to return whether the view is empty or not.
+- Adds an `area()` function to `primal::Polygon`
+- Adds initial support for using Slam types on the GPU
+- Adds support for using `ArrayViewIndirection` indirection policy with `slam::Map` and
+  `slam::BivariateMap`
+- Adds `const_iterator` support to `slam::BivariateMap` and `slam::SubMap`
+- Primal: Adds a `Hexahedron` primitive
+- Primal: Adds a `clip()` operator for computing the intersection of a
+  `Hexahedron` and another `Tetrahedron` as a `Polyhedron`
+- Primal: Adds an `intersection_volume()` operator for computing the volume of
+  intersection between a primitive and a `Tetrahedron`
+- Primal: Adds a `primal::Polyhedron::from_primitive()` operator that returns a
+  `Polyhedron` object from a given primitive.
+- Adds `DataStore::getBufferInfo()` and `Group::getDataInfo()` methods that insert information into a Conduit `Node` about buffers in a `DataStore` object or data in a `Group` subtree. The information can be accessed from the `Node` by the caller from specifically named fields in the `Node`.
+- Quest: Adds a `quest::ProEReader` for reading in Pro/E tetrahedral meshes
+- Quest: The `quest::IntersectionShaper` class can now use a percent error to determine
+  whether the revolved volume for a shape is sufficiently accurate or whether the shape
+  must be further refined. This new dynamic method of shaping complements the existing
+  segment-based curve refinement method and it is activated using `Shaper::setRefinementType()`
+  and by calling `Shaper::setPercentError()` to set a refinement error percentage.
+- Multimat: adds initial support for fields stored on the GPU. `MultiMat::setAllocatorID()`
+  or `MultiMat::setFieldAllocatorID()` can be called to change the memory space in which a
+  field is allocated.
+- Multimat: adds an `MultiMat::addExternalField()` function to support fields where the
+  memory is managed externally. Fields which are externally-managed cannot be transposed
+  between sparse and dense layouts, or moved between allocator spaces.
+- Multimat: adds a `MultiMat::removeField()` function to remove fields from the Multimat
+  instance.
+- Multimat: adds an overload of `MultiMat::setCellMatRel()` that supports setting a
+  multi-material relation in a compressed sparse-row (CSR) representation.
+- Quest: Adds ability to import volume fractions into `SamplingShaper` before processing `Klee` input
+- Slam: adds a `slam::MappedVariableCardinality` policy to accelerate mapping flat indices
+  back to first-set indices when used in a `StaticRelation`
+- Adds an `ArrayView(data, shape, strides)` constructor to support column-major and custom
+  striding layouts.
+- Adds an `ArrayView::subspan()` overload for multi-dimensional subspans
+- Adds an `axom::utilities::insertionSort()` method.
+- Quest: Adds Pro/E tetrahedral meshes as input to the `IntersectionShaper`
+- Quest: For sample-based shaping, users can register callback functions to modify the input points
+  before querying the spatial index. This allows, e.g. querying 3D points against 2D surfaces
+  of revolution provided as c2c contour files.
+- Adds an ``axom::utilities::locale`` utility function to guard against platforms that do not have the requested 
+  locales via the `std::locale` function. If the system does not have the requested locale (e.g. `en_US.UTF8`),
+  it returns the user's default locale.
+- Sidre: Add new protocols `sidre_layout_json` and `conduit_layout_json` to provide output of DataStore layout in a user-readable format that excludes the numerical arrays held by Views and Buffers.
+- Sidre: Add methods to methods for destroying Groups that will also destroy Buffers if the destruction of a Group and the Views in its subtree cause the Buffer to become detached from all Views.
+- Sidre: Add two Group methods -- one to return a vector of the valid I/O protocols (based on compilation options), and one that returns a default protocol. 
+- Klee: Add support in shaping driver and MFEMSidreDataCollection to write Blueprint datasets that contain matset metadata needed for VisIt to treat volume fraction arrays as a material. This enables VisIt plots such as FilledBoundary.
 
 ### Changed
+- Fixed bug in `mint::mesh::UnstructuredMesh` constructors, affecting capacity.
+  A missing factor was added.  If you worked around this by adding the factor yourself,
+  you may want to undo that work-around.
+- Updates blt submodule to blt@0.5.3
+- Updates uberenv submodule to HEAD of main on 12May2023
+- Updates to [conduit version 0.8.6](https://github.com/LLNL/conduit/compare/v0.8.3...v0.8.6)
+- Updates to [mfem version 4.5](https://github.com/mfem/mfem/releases/tag/v4.5)
+- Updates to [fmt version 9.1.0](https://github.com/fmtlib/fmt/releases/tag/9.1.0)
+- Updates to `c2c` version 1.8.0
+- The Axom library has been broken down into its component libraries (prefixed with `axom_`).
+  This change requires no change to downstream CMake users who import our targets.
+  The exported CMake target `axom` includes all components, but users who do not import our targets
+  will need to create the link line themselves. The following replacement can be used:
+  `-laxom` -> `-laxom_quest -laxom_multimat -laxom_slam -laxom_mint -laxom_klee -laxom_inlet -laxom_sidre -laxom_slic -laxom_lumberjack -laxom_core`
+  If you only need a subset of the components, you can now use those targets directly, ie. `axom::inlet`.
+- `IntersectionShaper` now implements material replacement rules.
 - `axom::Array` move constructors are now `noexcept`.
 - Exported CMake targets, `cli11`, `fmt`, `sol`, and `sparsehash`, have been prefixed with `axom::`
   to guard against conflicts.
@@ -37,11 +145,47 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 - `DistributedClosestPoint` interfacing variable names `closest_point` and `min_distance` have been
   changed to `cp_coords` and `cp_distance`, respectively, to match the naming convention of other
   interfacing variables.
-- Updates mfem dependency to v4.5
-- Updates to [fmt version 9.1.0](https://github.com/fmtlib/fmt/releases/tag/9.1.0)
-- Updates uberenv submodule to HEAD of main on 28Dec2022
-- Updates blt submodule to HEAD of develop on 28Dec2022
 - Adds `vcpkg` ports for `RAJA`, `Umpire` with optional `OpenMP` feature for automated Windows build
+- Reduce size of `ArrayView::subspan` to prevent accessing invalid memory.
+- Adds `vcpkg` port for `lua` as optional dependency on Windows
+- Adds additional parameters to quest's `PointInCell` query to control the Newton solve
+  from physical to reference space for a given element
+- Remove function pointer call in IteratorBase::advance()
+- Slam: `IndirectionPolicy::data()` now returns a reference to the underlying buffer
+  Rebinding an indirection to a new buffer is now achieved through `IndirectionPolicy::ptr()`, which
+  returns a mutable pointer to the buffer.
+- Quest: `Shaper::applyTransforms()` is no longer a public method.
+- Multimat: fields are now returned as shallow, device-copyable views of a field instead
+  of full copies of field data.
+- Multimat: `MultiMat::addField()` and `MultiMat::setVolfracField()` API now use `axom::ArrayView`
+  to accept data.
+- Multimat: Ported field data/sparsity layout conversion methods to GPU.
+- Multimat: `MultiMat::makeOtherRelation()` now runs on the GPU with an appropriately-set allocator ID.
+- Multimat: `MultiMat::setCellMatRel(counts, indices)` now runs on the GPU, and accepts GPU-side data.
+- Renames `ArrayView::spacing()` to `ArrayView::minStride()`.
+- Klee: A shape's geometry no longer needs a `path` field when its `format` is "none"
+- Quest: Shapes without geometry can participate in replacement rules for sample-based shaping. Volume
+fractions for the associated materials must be supplied before shaping.
+- Primal: Expose Polyhedron::getFaces() as public method.
+- Removed custom Spack package recipes in favor of using the radiuss-spack-configs repository as a submodule.
+
+###  Fixed
+- Fixed issues with CUDA build in CMake versions 3.14.5 and above. Now require CMake 3.18+
+  for CUDA/non-gpu builds.
+- Fix to allow Axom to build when using RAJA, but not Umpire.
+- Checks validity of bounding boxes in `primal`'s intersection operators against planes
+  and triangles before using the geometry.
+- Improves import logic for `lua` dependency
+- Improves import logic for `mfem` dependency in device builds when `mfem` is configured with `caliper`
+- Fixes ambiguity when calling `Array::resize(size, value)` for `Array<bool>`
+- Sidre: Group methods `hasChildView()` and `hasChildGroup()` changed to return false when Group holds items in list format. This fixes an IOManager issue causing failures for multi-domain meshes when writing Blueprint index file.
+- Sidre: Changed Group::copyToConduitNode() method to properly handle Groups using the list format. Previously, it was assumed that all child items in a Group have a name, which is not the case for list format.
+- Sidre: Fixed Group method `importConduitTreeExternal()` to handle lists with unnamed members the same as `importConduitTree()`.
+- Slic and Lumberjack: Add missing calls to `flush()` for parallel output log streams.
+
+### Deprecated
+- Integer types in `src/axom/core/Types.hpp` are deprecated because `c++11` supports their equivalents.
+
 
 ## [Version 0.7.0] - Release date 2022-08-30
 
@@ -856,7 +1000,9 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 - Use this section in case of vulnerabilities
 
 
-[Unreleased]:    https://github.com/LLNL/axom/compare/v0.7.0...develop
+[Unreleased]:    https://github.com/LLNL/axom/compare/v0.8.1...develop
+[Version 0.8.1]: https://github.com/LLNL/axom/compare/v0.8.0...v0.8.1
+[Version 0.8.0]: https://github.com/LLNL/axom/compare/v0.7.0...v0.8.0
 [Version 0.7.0]: https://github.com/LLNL/axom/compare/v0.6.1...v0.7.0
 [Version 0.6.1]: https://github.com/LLNL/axom/compare/v0.6.0...v0.6.1
 [Version 0.6.0]: https://github.com/LLNL/axom/compare/v0.5.0...v0.6.0

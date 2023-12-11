@@ -1,4 +1,4 @@
-.. ## Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
+.. ## Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
 .. ## other Axom Project Developers. See the top-level LICENSE file for details.
 .. ##
 .. ## SPDX-License-Identifier: (BSD-3-Clause)
@@ -118,6 +118,30 @@ The output of this example is::
 
 .. note:: The set of permissible operations on an ``ArrayView`` is somewhat limited,
   as operations that would cause the buffer to resize are not permitted.
+
+``ArrayView`` can view memory spaces at regular intervals while
+ignoring spaces in between.  By default, the spacing is one, meaning
+adjacent elements are one space apart.  A spacing of 2 sees every
+other elements in memory.  A spacing of ``N`` sees every ``N``-th
+element.  Spacing is set in the ``ArrayView`` constructor.
+
+The following example creates a 2D array of 4-tuples and uses an
+``ArrayView`` to access the 3rd item in each 4-tuple.
+
+.. literalinclude:: ../../examples/core_containers.cpp
+   :start-after: _spacing_start
+   :end-before: _spacing_end
+   :language: C++
+
+The output of this example is::
+
+  Third components of 2D array of 4-tuples:
+  a(0,0) = (0,0).2
+  a(0,1) = (0,1).2
+  a(0,2) = (0,2).2
+  a(1,0) = (1,0).2
+  a(1,1) = (1,1).2
+  a(1,2) = (1,2).2
 
 In the future, it will also be possible to restride an ``ArrayView``.
 

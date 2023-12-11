@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -9,10 +9,9 @@
 #include "axom/config.hpp"
 #include "axom/core.hpp"
 #include "axom/slic.hpp"
-#include "axom/slam.hpp"
-#include "axom/sidre.hpp"
 #include "axom/primal.hpp"
 #include "axom/spin.hpp"
+#include "axom/core/execution/runtime_policy.hpp"
 
 #include "axom/fmt.hpp"
 
@@ -33,39 +32,10 @@
 #endif
 #include "mpi.h"
 
-// Add some helper preprocessor defines for using OPENMP, CUDA, and HIP policies
-// within the distributed closest point query.
-#if defined(AXOM_USE_RAJA)
-  #ifdef AXOM_USE_OPENMP
-    #define _AXOM_DCP_USE_OPENMP
-  #endif
-  #if defined(AXOM_USE_CUDA) && defined(AXOM_USE_UMPIRE)
-    #define _AXOM_DCP_USE_CUDA
-  #endif
-  #if defined(AXOM_USE_HIP) && defined(AXOM_USE_UMPIRE)
-    #define _AXOM_DCP_USE_HIP
-  #endif
-#endif
-
 namespace axom
 {
 namespace quest
 {
-/// Enum for runtime execution policy
-enum class DistributedClosestPointRuntimePolicy
-{
-  seq = 0,
-  omp = 1,
-  cuda = 2,
-  hip = 3
-};
-
-/// Utility function to allow formating a DistributedClosestPointRuntimePolicy
-auto format_as(DistributedClosestPointRuntimePolicy pol)
-{
-  return fmt::underlying(pol);
-}
-
 namespace internal
 {
 // Utility function to dump a conduit node on each rank, e.g. for debugging
@@ -74,7 +44,7 @@ inline void dump_node(const conduit::Node& n,
                       const std::string& protocol = "json")
 {
   conduit::relay::io::save(n, fname, protocol);
-};
+}
 
 /**
  * \brief Utility function to get a typed pointer to the beginning of an array
@@ -193,8 +163,8 @@ namespace mpi
  * \param [in] tag tag for MPI message
  * \param [in] comm MPI communicator to use
  * \param [in] request object holding state for the sent data
- * \note Adapted from conduit's relay::mpi's \a send_using_schema and \a isend to use
- * non-blocking \a MPI_Isend instead of blocking \a MPI_Send
+ * \note Adapted from conduit's relay::mpi's \a send_using_schema and \a isend
+ * to use non-blocking \a MPI_Isend instead of blocking \a MPI_Send
  */
 inline int isend_using_schema(conduit::Node& node,
                               int dest,
@@ -227,7 +197,7 @@ inline int isend_using_schema(conduit::Node& node,
   request->m_buffer.set_schema(s_msg_compact);
 
   // set up the message's node using this schema
-  request->m_buffer["schema_len"].set((int64)snd_schema_json.length());
+  request->m_buffer["schema_len"].set((std::int64_t)snd_schema_json.length());
   request->m_buffer["schema"].set(snd_schema_json);
   request->m_buffer["data"].update(node);
 
@@ -298,12 +268,12 @@ inline int recv_using_schema(conduit::Node& node, int src, int tag, MPI_Comm com
                        comm,
                        &status);
 
-  uint8* n_buff_ptr = (uint8*)n_buffer.data_ptr();
+  std::uint8_t* n_buff_ptr = (std::uint8_t*)n_buffer.data_ptr();
 
   conduit::Node n_msg;
   // length of the schema is sent as a 64-bit signed int
   // NOTE: we aren't using this value  ...
-  n_msg["schema_len"].set_external((int64*)n_buff_ptr);
+  n_msg["schema_len"].set_external((std::int64_t*)n_buff_ptr);
   n_buff_ptr += 8;
   // wrap the schema string
   n_msg["schema"].set_external_char8_str((char*)(n_buff_ptr));
@@ -338,20 +308,20 @@ class DistributedClosestPointImpl
 {
 public:
   static constexpr int DIM = NDIMS;
-  using RuntimePolicy = DistributedClosestPointRuntimePolicy;
+  using RuntimePolicy = axom::runtime_policy::Policy;
   using PointType = primal::Point<double, DIM>;
   using BoxType = primal::BoundingBox<double, DIM>;
   using PointArray = axom::Array<PointType>;
   using BoxArray = axom::Array<BoxType>;
 
   using SeqBVHTree = spin::BVH<DIM, axom::SEQ_EXEC>;
-#ifdef _AXOM_DCP_USE_OPENMP
+#ifdef AXOM_RUNTIME_POLICY_USE_OPENMP
   using OmpBVHTree = spin::BVH<DIM, axom::OMP_EXEC>;
 #endif
-#ifdef _AXOM_DCP_USE_CUDA
+#ifdef AXOM_RUNTIME_POLICY_USE_CUDA
   using CudaBVHTree = spin::BVH<DIM, axom::CUDA_EXEC<256>>;
 #endif
-#ifdef _AXOM_DCP_USE_HIP
+#ifdef AXOM_RUNTIME_POLICY_USE_HIP
   using HipBVHTree = spin::BVH<DIM, axom::HIP_EXEC<256>>;
 #endif
 
@@ -369,6 +339,16 @@ private:
   };
 
 public:
+  /*!
+    @brief Constructor
+
+    @param [i] runtimePolicy Indicates where local computations
+      are done.  See axom::runtime_policy.
+    @param [i] Allocator ID, which must be compatible with
+      @c runtimePolicy.  See axom::allocate and axom::reallocate.
+      Also see setAllocatorID().
+    @param [i[ isVerbose
+  */
   DistributedClosestPointImpl(RuntimePolicy runtimePolicy,
                               int allocatorID,
                               bool isVerbose)
@@ -419,16 +399,29 @@ public:
     m_allocatorID = allocatorID;
   }
 
+  void setOutputSwitches(bool outputRank,
+                         bool outputIndex,
+                         bool outputDistance,
+                         bool outputCoords,
+                         bool outputDomainIndex)
+  {
+    m_outputRank = outputRank;
+    m_outputIndex = outputIndex;
+    m_outputDistance = outputDistance;
+    m_outputCoords = outputCoords;
+    m_outputDomainIndex = outputDomainIndex;
+  }
+
 public:
   /**
    * Import object mesh points from the object blueprint mesh into internal memory.
    *
    * \param [in] mdMeshNode The blueprint mesh containing the object points.
-   * \param [in] valuesPath The path to the mesh points.
+   * \param [in] topologyName Name of the blueprint topology in \a mdMeshNode.
    * \note This function currently supports mesh blueprints with the "point" topology
    */
   void importObjectPoints(const conduit::Node& mdMeshNode,
-                          const std::string& valuesPath)
+                          const std::string& topologyName)
   {
     // TODO: See if some of the copies in this method can be optimized out.
 
@@ -438,6 +431,13 @@ public:
     int ptCount = 0;
     for(const conduit::Node& domain : mdMeshNode.children())
     {
+      const std::string coordsetName =
+        domain
+          .fetch_existing(
+            axom::fmt::format("topologies/{}/coordset", topologyName))
+          .as_string();
+      const std::string valuesPath =
+        axom::fmt::format("coordsets/{}/values", coordsetName);
       auto& values = domain.fetch_existing(valuesPath);
       const int N = internal::extractSize(values);
       ptCount += N;
@@ -448,9 +448,23 @@ public:
     axom::Array<axom::IndexType> domIds(ptCount, ptCount);
     std::size_t copiedCount = 0;
     conduit::Node tmpValues;
-    for(conduit::index_t d = 0; d < mdMeshNode.number_of_children(); ++d)
+    for(axom::IndexType d = 0; d < mdMeshNode.number_of_children(); ++d)
     {
       const conduit::Node& domain = mdMeshNode.child(d);
+
+      axom::IndexType domainId = d;
+      if(domain.has_path("state/domain_id"))
+      {
+        domainId = domain.fetch_existing("state/domain_id").to_int32();
+      }
+
+      const std::string coordsetName =
+        domain
+          .fetch_existing(
+            axom::fmt::format("topologies/{}/coordset", topologyName))
+          .as_string();
+      const std::string valuesPath =
+        axom::fmt::format("coordsets/{}/values", coordsetName);
 
       auto& values = domain.fetch_existing(valuesPath);
 
@@ -469,7 +483,7 @@ public:
                  nBytes);
       tmpValues.reset();
 
-      domIds.fill(d, copiedCount, N);
+      domIds.fill(domainId, N, copiedCount);
 
       copiedCount += N;
     }
@@ -486,24 +500,19 @@ public:
     case RuntimePolicy::seq:
       return m_bvh_seq.get() != nullptr;
 
+#ifdef AXOM_RUNTIME_POLICY_USE_OPENMP
     case RuntimePolicy::omp:
-#ifdef _AXOM_DCP_USE_OPENMP
       return m_bvh_omp.get() != nullptr;
-#else
-      break;
 #endif
 
+#ifdef AXOM_RUNTIME_POLICY_USE_CUDA
     case RuntimePolicy::cuda:
-#ifdef _AXOM_DCP_USE_CUDA
       return m_bvh_cuda.get() != nullptr;
-#else
-      break;
 #endif
+
+#ifdef AXOM_RUNTIME_POLICY_USE_HIP
     case RuntimePolicy::hip:
-#ifdef _AXOM_DCP_USE_HIP
       return m_bvh_hip.get() != nullptr;
-#else
-      break;
 #endif
     }
 
@@ -532,28 +541,22 @@ public:
       m_bvh_seq = std::make_unique<SeqBVHTree>();
       return generateBVHTreeImpl<SeqBVHTree>(m_bvh_seq.get());
 
+#ifdef AXOM_RUNTIME_POLICY_USE_OPENMP
     case RuntimePolicy::omp:
-#ifdef _AXOM_DCP_USE_OPENMP
       m_bvh_omp = std::make_unique<OmpBVHTree>();
       return generateBVHTreeImpl<OmpBVHTree>(m_bvh_omp.get());
-#else
-      break;
 #endif
 
+#ifdef AXOM_RUNTIME_POLICY_USE_CUDA
     case RuntimePolicy::cuda:
-#ifdef _AXOM_DCP_USE_CUDA
       m_bvh_cuda = std::make_unique<CudaBVHTree>();
       return generateBVHTreeImpl<CudaBVHTree>(m_bvh_cuda.get());
-#else
-      break;
 #endif
 
+#ifdef AXOM_RUNTIME_POLICY_USE_HIP
     case RuntimePolicy::hip:
-#ifdef _AXOM_DCP_USE_HIP
       m_bvh_hip = std::make_unique<HipBVHTree>();
       return generateBVHTreeImpl<HipBVHTree>(m_bvh_hip.get());
-#else
-      break;
 #endif
     }
 
@@ -577,27 +580,21 @@ public:
       local_bb = m_bvh_seq->getBounds();
       break;
 
+#ifdef AXOM_RUNTIME_POLICY_USE_OPENMP
     case RuntimePolicy::omp:
-#ifdef _AXOM_DCP_USE_OPENMP
       local_bb = m_bvh_omp->getBounds();
       break;
-#else
-      break;
 #endif
 
+#ifdef AXOM_RUNTIME_POLICY_USE_CUDA
     case RuntimePolicy::cuda:
-#ifdef _AXOM_DCP_USE_CUDA
       local_bb = m_bvh_cuda->getBounds();
       break;
-#else
-      break;
 #endif
 
+#ifdef AXOM_RUNTIME_POLICY_USE_HIP
     case RuntimePolicy::hip:
-#ifdef _AXOM_DCP_USE_HIP
       local_bb = m_bvh_hip->getBounds();
-      break;
-#else
       break;
 #endif
     }
@@ -621,6 +618,7 @@ public:
                              mpi_traits<double>::type,
                              m_mpiComm);
     SLIC_ASSERT(errf == MPI_SUCCESS);
+    AXOM_UNUSED_VAR(errf);
 
     all_aabbs.clear();
     all_aabbs.reserve(m_nranks);
@@ -662,94 +660,110 @@ public:
    */
   void node_copy_query_to_xfer(conduit::Node& queryNode,
                                conduit::Node& xferNode,
-                               const std::string& coordset) const
+                               const std::string& topologyName) const
   {
     xferNode["homeRank"] = m_rank;
     xferNode["is_first"] = 1;
 
+    const bool isMultidomain =
+      conduit::blueprint::mesh::is_multi_domain(queryNode);
+    const auto domainCount =
+      conduit::blueprint::mesh::number_of_domains(queryNode);
     conduit::Node& xferDoms = xferNode["xferDoms"];
-    for(auto& queryDom : queryNode.children())
+    for(conduit::index_t domainNum = 0; domainNum < domainCount; ++domainNum)
     {
+      auto& queryDom = isMultidomain ? queryNode.child(domainNum) : queryNode;
+
+      const std::string coordsetName =
+        queryDom
+          .fetch_existing(
+            axom::fmt::format("topologies/{}/coordset", topologyName))
+          .as_string();
       const std::string& domName = queryDom.name();
       conduit::Node& xferDom = xferDoms[domName];
-      conduit::Node& fields = queryDom.fetch_existing("fields");
       conduit::Node& queryCoords =
-        queryDom.fetch_existing(fmt::format("coordsets/{}", coordset));
+        queryDom.fetch_existing(fmt::format("coordsets/{}", coordsetName));
       conduit::Node& queryCoordsValues = queryCoords.fetch_existing("values");
-
-      // clang-format off
-      copy_components_to_interleaved(queryCoordsValues, xferDom["coords"]);
-
-      xferDom["cp_index"].set_external(fields.fetch_existing("cp_index/values"));
-      xferDom["cp_domain_index"].set_external(fields.fetch_existing("cp_domain_index/values"));
-      xferDom["cp_rank"].set_external(fields.fetch_existing("cp_rank/values"));
-      copy_components_to_interleaved(fields.fetch_existing("cp_coords/values"),
-                                     xferDom["cp_coords"]);
-
-      if(fields.has_path("cp_distance"))
-      {
-        xferDom["debug/cp_distance"].set_external(fields.fetch_existing("cp_distance/values"));
-      }
-      // clang-format on
 
       const int dim = internal::extractDimension(queryCoordsValues);
       const int qPtCount = internal::extractSize(queryCoordsValues);
       xferDom["qPtCount"] = qPtCount;
       xferDom["dim"] = dim;
+
+      copy_components_to_interleaved(queryCoordsValues, xferDom["coords"]);
+
+      constexpr bool isInt32 = std::is_same<axom::IndexType, std::int32_t>::value;
+      auto dtype =
+        isInt32 ? conduit::DataType::int32() : conduit::DataType::int64();
+      dtype.set_number_of_elements(qPtCount);
+      xferDom["cp_index"].set_dtype(dtype);
+      xferDom["cp_rank"].set_dtype(dtype);
+      xferDom["cp_domain_index"].set_dtype(dtype);
+      xferDom["debug/cp_distance"].set_dtype(conduit::DataType::float64(qPtCount));
+      xferDom["cp_coords"].set_dtype(conduit::DataType::float64(dim * qPtCount));
     }
   }
 
   /// Copy xferNode back to query mesh partition.
-  void node_copy_xfer_to_query(const conduit::Node& xferNode,
-                               conduit::Node& queryNode) const
+  void node_copy_xfer_to_query(conduit::Node& xferNode,
+                               conduit::Node& queryNode,
+                               const std::string& topologyName) const
   {
-    const conduit::Node& xferDoms = xferNode.fetch_existing("xferDoms");
-    conduit::index_t childCount = queryNode.number_of_children();
-    SLIC_ASSERT(xferDoms.number_of_children() == childCount);
-    for(conduit::index_t ci = 0; ci < childCount; ++ci)
+    const bool isMultidomain =
+      conduit::blueprint::mesh::is_multi_domain(queryNode);
+    const auto domainCount =
+      conduit::blueprint::mesh::number_of_domains(queryNode);
+    conduit::Node& xferDoms = xferNode.fetch_existing("xferDoms");
+    SLIC_ASSERT(xferDoms.number_of_children() == domainCount);
+    for(conduit::index_t domainNum = 0; domainNum < domainCount; ++domainNum)
     {
-      const conduit::Node& xferDom = xferDoms.child(ci);
-      conduit::Node& queryDom = queryNode.child(ci);
+      auto& queryDom = isMultidomain ? queryNode.child(domainNum) : queryNode;
+      conduit::Node& xferDom = xferDoms.child(domainNum);
       conduit::Node& fields = queryDom.fetch_existing("fields");
 
+      conduit::Node genericHeaders;
+      genericHeaders["association"] = "vertex";
+      genericHeaders["topology"] = topologyName;
+
+      if(m_outputRank)
       {
         auto& src = xferDom.fetch_existing("cp_rank");
-        auto& dst = fields.fetch_existing("cp_rank/values");
-        if(dst.data_ptr() != src.data_ptr())
-        {
-          dst.update_compatible(src);
-        }
+        auto& dst = fields["cp_rank"];
+        dst.set_node(genericHeaders);
+        dst["values"].move(src);
       }
 
+      if(m_outputIndex)
       {
         auto& src = xferDom.fetch_existing("cp_index");
-        auto& dst = fields.fetch_existing("cp_index/values");
-        if(dst.data_ptr() != src.data_ptr())
-        {
-          dst.update_compatible(src);
-        }
+        auto& dst = fields["cp_index"];
+        dst.set_node(genericHeaders);
+        dst["values"].move(src);
       }
 
+      if(m_outputDomainIndex)
       {
         auto& src = xferDom.fetch_existing("cp_domain_index");
-        auto& dst = fields.fetch_existing("cp_domain_index/values");
-        if(dst.data_ptr() != src.data_ptr())
-        {
-          dst.update_compatible(src);
-        }
+        auto& dst = fields["cp_domain_index"];
+        dst.set_node(genericHeaders);
+        dst["values"].move(src);
       }
 
-      copy_interleaved_to_components(xferDom.fetch_existing("cp_coords"),
-                                     fields.fetch_existing("cp_coords/values"));
-
-      if(xferDom.has_path("debug/cp_distance"))
+      if(m_outputDistance)
       {
         auto& src = xferDom.fetch_existing("debug/cp_distance");
-        auto& dst = fields.fetch_existing("cp_distance/values");
-        if(dst.data_ptr() != src.data_ptr())
-        {
-          dst.update_compatible(src);
-        }
+        auto& dst = fields["cp_distance"];
+        dst.set_node(genericHeaders);
+        dst["values"].move(src);
+      }
+
+      if(m_outputCoords)
+      {
+        auto& dst = fields["cp_coords"];
+        dst.set_node(genericHeaders);
+        auto& dstValues = dst["values"];
+        copy_interleaved_to_components(xferDom.fetch_existing("cp_coords"),
+                                       dstValues);
       }
     }
   }
@@ -795,33 +809,35 @@ public:
   void copy_interleaved_to_components(const conduit::Node& interleaved,
                                       conduit::Node& components) const
   {
-    if(interleaved.data_ptr() != components.child(0).data_ptr())
+    const int qPtCount = interleaved.dtype().number_of_elements() / NDIMS;
+    components.reset();
+    // Copy from 1D-interleaved src to component-wise dst.
+    for(int d = 0; d < NDIMS; ++d)
     {
-      const int dim = internal::extractDimension(components);
-      const int qPtCount = internal::extractSize(components);
-      // Copy from 1D-interleaved src to component-wise dst.
-      for(int d = 0; d < dim; ++d)
+      const double* src = interleaved.as_float64_ptr() + d;
+      auto& dstNode = components.append();
+      dstNode.set_dtype(conduit::DataType(interleaved.dtype().id(), qPtCount));
+      double* dst = dstNode.as_float64_ptr();
+      for(int i = 0; i < qPtCount; ++i)
       {
-        const double* src = interleaved.as_float64_ptr() + d;
-        auto dst = components.child(d).as_float64_array();
-        for(int i = 0; i < qPtCount; ++i)
-        {
-          dst[i] = src[i * dim];
-        }
+        dst[i] = src[i * NDIMS];
       }
     }
   }
 
   /**
    * \brief Computes the closest point within the objects for each query point
-   * in the provided particle mesh, provided in the mesh blueprint rooted at \a queryMesh
+   * in the mesh \a queryMesh.
    *
    * \param queryMesh The root node of a mesh blueprint for the query points
    * Can be empty if there are no query points for the calling rank
-   * \param coordset The coordinate set for the query points
+   * \param topologyName The topology name identifying the query points
    *
-   * When the query mesh contains query points, it uses the \a coordset coordinate set
-   * of the provided blueprint mesh and  contains the following fields:
+   * @c queryMesh should have data on the host, regardless of the runtime
+   * policy setting.  Data will be copied to device as needed.
+   *
+   * The named topology is used to identify the points in the query mesh.
+   * On completion, the query mesh contains the following fields:
    *   - cp_rank: Will hold the rank of the object point containing the closest point
    *   - cp_domain_index: will hold the index of the object domain containing
    *     the closest points.
@@ -842,23 +858,12 @@ public:
    * buffer usage, we occasionally check the sends for completion,
    * using check_send_requests().
    */
-  void computeClosestPoints(conduit::Node& queryMesh_,
-                            const std::string& coordset) const
+  void computeClosestPoints(conduit::Node& queryMesh,
+                            const std::string& topologyName) const
   {
     SLIC_ASSERT_MSG(
       isBVHTreeInitialized(),
       "BVH tree must be initialized before calling 'computeClosestPoints");
-
-    // If query mesh isn't multidomain, create a temporary multidomain representation.
-    const bool qmIsMultidomain =
-      conduit::blueprint::mesh::is_multi_domain(queryMesh_);
-    std::shared_ptr<conduit::Node> tmpNode;
-    if(!qmIsMultidomain)
-    {
-      tmpNode = std::make_shared<conduit::Node>();
-      conduit::blueprint::mesh::to_multi_domain(queryMesh_, *tmpNode);
-    }
-    conduit::Node& queryMesh = qmIsMultidomain ? queryMesh_ : *tmpNode;
 
     std::map<int, std::shared_ptr<conduit::Node>> xferNodes;
 
@@ -867,7 +872,7 @@ public:
     {
       xferNodes[m_rank] = std::make_shared<conduit::Node>();
       conduit::Node& xferNode = *xferNodes[m_rank];
-      node_copy_query_to_xfer(queryMesh, xferNode, coordset);
+      node_copy_query_to_xfer(queryMesh, xferNode, topologyName);
       xferNode["homeRank"] = m_rank;
     }
 
@@ -917,7 +922,7 @@ public:
       if(firstRecipForMyQuery == -1)
       {
         // No need to send anywhere.  Put computed data back into queryMesh.
-        node_copy_xfer_to_query(*xferNodes[m_rank], queryMesh);
+        node_copy_xfer_to_query(*xferNodes[m_rank], queryMesh, topologyName);
         xferNodes.erase(m_rank);
       }
       else
@@ -954,7 +959,7 @@ public:
 
       if(homeRank == m_rank)
       {
-        node_copy_xfer_to_query(xferNode, queryMesh);
+        node_copy_xfer_to_query(xferNode, queryMesh, topologyName);
       }
       else
       {
@@ -996,20 +1001,20 @@ private:
       computeLocalClosestPoints<SeqBVHTree>(m_bvh_seq.get(), xferNode);
       break;
 
+#ifdef AXOM_RUNTIME_POLICY_USE_OPENMP
     case RuntimePolicy::omp:
-#ifdef _AXOM_DCP_USE_OPENMP
       computeLocalClosestPoints<OmpBVHTree>(m_bvh_omp.get(), xferNode);
 #endif
       break;
 
+#ifdef AXOM_RUNTIME_POLICY_USE_CUDA
     case RuntimePolicy::cuda:
-#ifdef _AXOM_DCP_USE_CUDA
       computeLocalClosestPoints<CudaBVHTree>(m_bvh_cuda.get(), xferNode);
 #endif
       break;
 
+#ifdef AXOM_RUNTIME_POLICY_USE_HIP
     case RuntimePolicy::hip:
-#ifdef _AXOM_DCP_USE_HIP
       computeLocalClosestPoints<HipBVHTree>(m_bvh_hip.get(), xferNode);
 #endif
       break;
@@ -1048,30 +1053,40 @@ private:
                            bool atLeastOne) const
   {
     std::vector<MPI_Request> reqs;
-    for(auto& isr : isendRequests) reqs.push_back(isr.m_request);
+    for(auto& isr : isendRequests)
+    {
+      reqs.push_back(isr.m_request);
+    }
 
     int inCount = static_cast<int>(reqs.size());
     int outCount = 0;
     std::vector<int> indices(reqs.size(), -1);
     if(atLeastOne)
+    {
       MPI_Waitsome(inCount,
                    reqs.data(),
                    &outCount,
                    indices.data(),
                    MPI_STATUSES_IGNORE);
+    }
     else
+    {
       MPI_Testsome(inCount,
                    reqs.data(),
                    &outCount,
                    indices.data(),
                    MPI_STATUSES_IGNORE);
+    }
     indices.resize(outCount);
 
     auto reqIter = isendRequests.begin();
     int prevIdx = 0;
     for(const int idx : indices)
     {
-      for(; prevIdx < idx; ++prevIdx) ++reqIter;
+      for(; prevIdx < idx; ++prevIdx)
+      {
+        ++reqIter;
+      }
       reqIter = isendRequests.erase(reqIter);
       ++prevIdx;
     }
@@ -1140,7 +1155,6 @@ public:
   {
     using ExecSpace = typename BVHTreeType::ExecSpaceType;
     using axom::primal::squared_distance;
-    using int32 = axom::int32;
 
     // Note: There is some additional computation the first time this function
     // is called for a query node, even if the local object mesh is empty
@@ -1150,7 +1164,6 @@ public:
     {
       return;
     }
-
     conduit::Node& xferDoms = xferNode["xferDoms"];
     for(conduit::Node& xferDom : xferDoms.children())
     {
@@ -1249,7 +1262,7 @@ public:
           "ComputeClosestPoints",
           axom::for_all<ExecSpace>(
             qPtCount,
-            AXOM_LAMBDA(int32 idx) mutable {
+            AXOM_LAMBDA(std::int32_t idx) mutable {
               PointType qpt = query_pts[idx];
 
               MinCandidate curr_min {};
@@ -1262,8 +1275,8 @@ public:
                 curr_min.rank = query_ranks[idx];
               }
 
-              auto checkMinDist = [&](int32 current_node,
-                                      const int32* leaf_nodes) {
+              auto checkMinDist = [&](std::int32_t current_node,
+                                      const std::int32_t* leaf_nodes) {
                 const int candidate_point_idx = leaf_nodes[current_node];
                 const int candidate_domain_idx =
                   ptDomainIdsView[candidate_point_idx];
@@ -1346,6 +1359,12 @@ private:
   int m_rank;
   int m_nranks;
 
+  bool m_outputRank = true;
+  bool m_outputIndex = true;
+  bool m_outputDistance = true;
+  bool m_outputCoords = true;
+  bool m_outputDomainIndex = true;
+
   /*!
     @brief Object point coordindates array.
 
@@ -1362,15 +1381,15 @@ private:
 
   std::unique_ptr<SeqBVHTree> m_bvh_seq;
 
-#ifdef _AXOM_DCP_USE_OPENMP
+#ifdef AXOM_RUNTIME_POLICY_USE_OPENMP
   std::unique_ptr<OmpBVHTree> m_bvh_omp;
 #endif
 
-#ifdef _AXOM_DCP_USE_CUDA
+#ifdef AXOM_RUNTIME_POLICY_USE_CUDA
   std::unique_ptr<CudaBVHTree> m_bvh_cuda;
 #endif
 
-#ifdef _AXOM_DCP_USE_HIP
+#ifdef AXOM_RUNTIME_POLICY_USE_HIP
   std::unique_ptr<HipBVHTree> m_bvh_hip;
 #endif
 };  // DistributedClosestPointImpl
@@ -1406,7 +1425,7 @@ private:
 class DistributedClosestPoint
 {
 public:
-  using RuntimePolicy = DistributedClosestPointRuntimePolicy;
+  using RuntimePolicy = axom::runtime_policy::Policy;
 
 public:
   DistributedClosestPoint()
@@ -1430,46 +1449,12 @@ public:
     }
   }
 
-  /// Set the runtime execution policy for the query
-  void setRuntimePolicy(RuntimePolicy policy)
-  {
-    SLIC_ASSERT_MSG(
-      isValidRuntimePolicy(policy),
-      fmt::format("Policy '{}' is not a valid runtime policy", policy));
-    m_runtimePolicy = policy;
-  }
+  /*!
+    @brief Set runtime execution policy for local queries
 
-  /// Predicate to determine if a given \a RuntimePolicy is valid for this configuration
-  bool isValidRuntimePolicy(RuntimePolicy policy) const
-  {
-    switch(policy)
-    {
-    case RuntimePolicy::seq:
-      return true;
-
-    case RuntimePolicy::omp:
-#ifdef _AXOM_DCP_USE_OPENMP
-      return true;
-#else
-      return false;
-#endif
-
-    case RuntimePolicy::cuda:
-#ifdef _AXOM_DCP_USE_CUDA
-      return true;
-#else
-      return false;
-#endif
-    case RuntimePolicy::hip:
-#ifdef _AXOM_DCP_USE_HIP
-      return true;
-#else
-      return false;
-#endif
-    }
-
-    return false;
-  }
+    See axom::runtime_policy.
+  */
+  void setRuntimePolicy(RuntimePolicy policy) { m_runtimePolicy = policy; }
 
   /*!  @brief Sets the allocator ID to the default associated with the
     execution policy
@@ -1482,25 +1467,26 @@ public:
     case RuntimePolicy::seq:
       defaultAllocatorID = axom::execution_space<axom::SEQ_EXEC>::allocatorID();
       break;
-    case RuntimePolicy::omp:
-#ifdef _AXOM_DCP_USE_OPENMP
-      defaultAllocatorID = axom::execution_space<axom::OMP_EXEC>::allocatorID();
-#endif
-      break;
 
+#ifdef AXOM_RUNTIME_POLICY_USE_OPENMP
+    case RuntimePolicy::omp:
+      defaultAllocatorID = axom::execution_space<axom::OMP_EXEC>::allocatorID();
+      break;
+#endif
+
+#ifdef AXOM_RUNTIME_POLICY_USE_CUDA
     case RuntimePolicy::cuda:
-#ifdef _AXOM_DCP_USE_CUDA
       defaultAllocatorID =
         axom::execution_space<axom::CUDA_EXEC<256>>::allocatorID();
-#endif
       break;
+#endif
 
+#ifdef AXOM_RUNTIME_POLICY_USE_HIP
     case RuntimePolicy::hip:
-#ifdef _AXOM_DCP_USE_HIP
       defaultAllocatorID =
         axom::execution_space<axom::HIP_EXEC<256>>::allocatorID();
-#endif
       break;
+#endif
     }
     if(defaultAllocatorID == axom::INVALID_ALLOCATOR_ID)
     {
@@ -1581,6 +1567,35 @@ public:
     m_sqDistanceThreshold = threshold * threshold;
   }
 
+  /*!
+    @brief Set what fields to output.
+
+    @param [i] field Must be one of these:
+      "cp_rank", "cp_index", "cp_distance", "cp_coords", "cp_domain_index".
+    @param [i] on Whether to enable outputing @c field.
+
+    By default, all are on.
+  */
+  void setOutput(const std::string& field, bool on)
+  {
+    // clang-format off
+    bool* f
+      = field == "cp_rank" ? &m_outputRank
+      : field == "cp_index" ? &m_outputIndex
+      : field == "cp_distance" ? &m_outputDistance
+      : field == "cp_coords" ? &m_outputCoords
+      : field == "cp_domain_index" ? &m_outputDomainIndex
+      : nullptr;
+    // clang-format on
+    SLIC_ERROR_IF(
+      f == nullptr,
+      axom::fmt::format(
+        "Invald field '{}' should be one of these: "
+        "cp_rank, cp_index, cp_distance, cp_coords, cp_domain_index",
+        field));
+    *f = on;
+  }
+
   /// Sets the logging verbosity of the query. By default the query is not verbose
   void setVerbosity(bool isVerbose) { m_isVerbose = isVerbose; }
 
@@ -1588,12 +1603,13 @@ public:
    * \brief Sets the object mesh for the query
    *
    * \param [in] meshNode Conduit node for the object mesh
-   * \param [in] coordset The name of the coordset for the object mesh's coordinates
+   * \param [in] topologyName The name of the topology for the object mesh
    *
    * \pre \a meshNode must follow the mesh blueprint convention.
    * \pre Dimension of the mesh must be 2D or 3D
    */
-  void setObjectMesh(const conduit::Node& meshNode, const std::string& coordset)
+  void setObjectMesh(const conduit::Node& meshNode,
+                     const std::string& topologyName)
   {
     SLIC_ASSERT(this->isValidBlueprint(meshNode));
 
@@ -1608,9 +1624,9 @@ public:
       conduit::blueprint::mesh::to_multi_domain(meshNode, *tmpNode);
     }
     const conduit::Node& mdMeshNode(isMultidomain ? meshNode : *tmpNode);
+    verifyTopologyName(mdMeshNode, topologyName);
 
     auto domainCount = conduit::blueprint::mesh::number_of_domains(mdMeshNode);
-    const std::string valuesPath = fmt::format("coordsets/{}/values", coordset);
 
     // Extract the dimension from the coordinate values group
     // use allreduce since some ranks might be empty
@@ -1618,10 +1634,15 @@ public:
       int localDim = -1;
       if(domainCount > 0)
       {
-        const conduit::Node& domain0(mdMeshNode[0]);
-        SLIC_ASSERT(domain0.has_path(valuesPath));
-        auto& values = domain0.fetch_existing(valuesPath);
-        localDim = internal::extractDimension(values);
+        const conduit::Node& domain0 = mdMeshNode.child(0);
+        const conduit::Node& topology =
+          domain0.fetch_existing("topologies/" + topologyName);
+        const std::string coordsetName =
+          topology.fetch_existing("coordset").as_string();
+        const conduit::Node& coordset =
+          domain0.fetch_existing("coordsets/" + coordsetName);
+        const conduit::Node& coordsetValues = coordset.fetch_existing("values");
+        localDim = internal::extractDimension(coordsetValues);
       }
       int dim = -1;
       MPI_Allreduce(&localDim, &dim, 1, MPI_INT, MPI_MAX, m_mpiComm);
@@ -1633,10 +1654,10 @@ public:
     switch(m_dimension)
     {
     case 2:
-      m_dcp_2->importObjectPoints(mdMeshNode, valuesPath);
+      m_dcp_2->importObjectPoints(mdMeshNode, topologyName);
       break;
     case 3:
-      m_dcp_3->importObjectPoints(mdMeshNode, valuesPath);
+      m_dcp_3->importObjectPoints(mdMeshNode, topologyName);
       break;
     }
 
@@ -1692,11 +1713,21 @@ public:
     case 2:
       m_dcp_2->setSquaredDistanceThreshold(m_sqDistanceThreshold);
       m_dcp_2->setMpiCommunicator(m_mpiComm);
+      m_dcp_2->setOutputSwitches(m_outputRank,
+                                 m_outputIndex,
+                                 m_outputDistance,
+                                 m_outputCoords,
+                                 m_outputDomainIndex);
       m_dcp_2->computeClosestPoints(query_node, coordset);
       break;
     case 3:
       m_dcp_3->setSquaredDistanceThreshold(m_sqDistanceThreshold);
       m_dcp_3->setMpiCommunicator(m_mpiComm);
+      m_dcp_2->setOutputSwitches(m_outputRank,
+                                 m_outputIndex,
+                                 m_outputDistance,
+                                 m_outputCoords,
+                                 m_outputDomainIndex);
       m_dcp_3->computeClosestPoints(query_node, coordset);
       break;
     }
@@ -1744,6 +1775,30 @@ private:
     return success;
   }
 
+  void verifyTopologyName(const conduit::Node& meshNode,
+                          const std::string& topologyName)
+  {
+    std::string coordsetPath;
+    const std::string topologyPath =
+      axom::fmt::format("topologies/{}", topologyName);
+    for(axom::IndexType d = 0; d < meshNode.number_of_children(); ++d)
+    {
+      const auto& domain = meshNode.child(d);
+      if(!domain.has_path(topologyPath))
+      {
+        auto errMsg = fmt::format("No such topology '{}' found.", topologyName);
+        if(domain.has_path("coordsets/" + topologyName))
+        {
+          errMsg += fmt::format(
+            "  You may have mistakenly specified a coordset name."
+            "  The interface has changed to use topology name"
+            " instead of coordset.");
+        }
+        SLIC_ERROR(errMsg);
+      }
+    }
+  }
+
 private:
   RuntimePolicy m_runtimePolicy {RuntimePolicy::seq};
   MPI_Comm m_mpiComm;
@@ -1755,6 +1810,12 @@ private:
 
   bool m_objectMeshCreated {false};
 
+  bool m_outputRank = true;
+  bool m_outputIndex = true;
+  bool m_outputDistance = true;
+  bool m_outputCoords = true;
+  bool m_outputDomainIndex = true;
+
   // One instance per dimension
   std::unique_ptr<internal::DistributedClosestPointImpl<2>> m_dcp_2;
   std::unique_ptr<internal::DistributedClosestPointImpl<3>> m_dcp_3;
@@ -1762,10 +1823,5 @@ private:
 
 }  // end namespace quest
 }  // end namespace axom
-
-// Cleanup local #defines
-#undef _AXOM_DCP_USE_OPENMP
-#undef _AXOM_DCP_USE_CUDA
-#undef _AXOM_DCP_USE_HIP
 
 #endif  //  QUEST_DISTRIBUTED_CLOSEST_POINT_H_

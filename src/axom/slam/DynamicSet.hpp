@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -296,7 +296,10 @@ public:
     const int sz = size();
     for(int i = 0; i < sz; ++i)
     {
-      if(m_data[i] == e) return i;
+      if(m_data[i] == e)
+      {
+        return i;
+      }
     }
     return INVALID_ENTRY;
   };
@@ -312,7 +315,10 @@ public:
     const int sz = size();
     for(int i = 0; i < sz; ++i)
     {
-      if(m_data[i] == e) return true;
+      if(m_data[i] == e)
+      {
+        return true;
+      }
     }
     return false;
   };
@@ -330,10 +336,13 @@ public:
    * could have been deleted
    * \sa numberOfValidEntries(), isValidEntry()
    */
-  inline PositionType size() const { return SizePolicy::size(); };
+  AXOM_HOST_DEVICE inline PositionType size() const
+  {
+    return SizePolicy::size();
+  };
 
   /// \brief Uses \a SizePolicy::empty() to determine if the set is empty
-  bool empty() const { return SizePolicy::empty(); };
+  AXOM_HOST_DEVICE bool empty() const { return SizePolicy::empty(); };
 
   /// \brief Returns a positionset over the set elements
   PositionSet<PositionType> positions() const
@@ -456,7 +465,10 @@ private:
   /** Fill each entry of the set such that its value is equal to its index. */
   void fill_array_default(PositionType sz)
   {
-    if(sz < 0) return;
+    if(sz < 0)
+    {
+      return;
+    }
 
     m_data.resize(sz);
     for(int i = 0; i < sz; ++i)

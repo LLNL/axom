@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -264,6 +264,71 @@ public:
 
   /*! Returns the dimension of the mesh */
   int meshDimension() const { return m_meshWrapper.meshDimension(); }
+
+  /*!
+   * \brief Sets the print verbosity level for the point in cell query
+   *
+   * \param [in] level The verbosity level (increases with level)
+   *  
+   * This is useful for debugging the point in cell query
+   * 
+   *  For the mfem mesh wrapper, the valid options are: 
+   *  - -1: never print (default)
+   *  -  0: print only errors
+   *  -  1: print the first and last iterations
+   *  -  2: print every iteration
+   *  -  3: print every iteration including point coordinates.
+   */
+  void setPrintLevel(int level) { m_meshWrapper.setPrintLevel(level); }
+
+  /*!
+   * \brief Sets the initial guess type for the element-based point in cell query
+   *
+   * \param [in] guessType The guess type
+   *  
+   *  For the mfem mesh wrapper, the valid options are: 
+   *  - 0: Use the element center in reference space
+   *  - 1: Use the closest physical node on a grid of points in physical space
+   *  - 2: Use the closest reference node on a grid of points in reference space
+   * 
+   *  The grid size is controlled by setInitialGridOrder()
+   */
+  void setInitialGuessType(int guessType)
+  {
+    m_meshWrapper.setInitialGuessType(guessType);
+  }
+
+  /*!
+   * \brief Sets the grid size for the initial guess in the element-based point in cell query
+   *
+   * \param [in] order The order for the grid size 
+   *  
+   *  For the mfem mesh wrapper, the number of points in each spatial direction 
+   *  is given by `max(trans_order+order,0)+1`, where trans_order is the order 
+   *  of the current element.
+   * 
+   *  \sa setInitialGuessType
+   */
+  void setInitialGridOrder(int order)
+  {
+    m_meshWrapper.setInitialGridOrder(order);
+  }
+
+  /*!
+   * \brief Sets the solution strategy for the element-based point in cell query
+   *
+   * \param [in] type The strategy type
+   *  
+   *  For the mfem mesh wrapper, the valid options all use a Newton solve
+   *  but differ in their handling of iterates that leave the reference element
+   *  - 0: Allow the iterates to leave the reference element
+   *  - 1: Project external iterates to the reference space boundary along their current line
+   *  - 2: Project external iterates to the closest reference space boundary location
+   */
+  void setSolverProjectionType(int type)
+  {
+    m_meshWrapper.setSolverProjectionType(type);
+  }
 
 private:
   MeshWrapperType m_meshWrapper;

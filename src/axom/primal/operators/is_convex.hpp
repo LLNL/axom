@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -9,6 +9,7 @@
 #include "axom/primal/geometry/Segment.hpp"
 #include "axom/primal/geometry/Polygon.hpp"
 #include "axom/primal/operators/orientation.hpp"
+#include "axom/primal/operators/squared_distance.hpp"
 
 namespace axom
 {
@@ -19,9 +20,10 @@ namespace primal
  * 
  * \param [in] poly The polygon
  * 
- * Uses dot products to detect whether vertices extend in the "convex" direction.
- * Uses the edge P[0]P[N] as a reference, meaning its adjacent edges are
- * always considered to be oriented correctly.
+ * A 2D polygon is convex when every line that does not contain an edge
+ * intersects the shape at most twice.
+ * Checks whether for each pair of vertices P[i-1]P[i+1], the point
+ * P[i] and (P[0] or P[n]) lie on the same side of the line connecting them.
  * 
  * Algorithm adapted from:
  * Y. L. Ma, W.T. Hewitt. "Point inversion and projection for NURBS curve 
@@ -35,7 +37,10 @@ template <typename T>
 bool is_convex(const Polygon<T, 2>& poly, double EPS = 1e-8)
 {
   int n = poly.numVertices() - 1;
-  if(n + 1 < 3) return true;  // Triangles and lines are convex
+  if(n + 1 < 3)
+  {
+    return true;  // Triangles and lines are convex
+  }
 
   for(int i = 1; i < n; i++)
   {
@@ -45,10 +50,16 @@ bool is_convex(const Polygon<T, 2>& poly, double EPS = 1e-8)
     int res1 = orientation(poly[i], seg, EPS);
 
     // Edge case
-    if(res1 == primal::ON_BOUNDARY) continue;
+    if(res1 == primal::ON_BOUNDARY)
+    {
+      continue;
+    }
 
     // Ensure other point to check against isn't adjacent
-    if(res1 == orientation(poly[(i < n / 2) ? n : 0], seg, EPS)) return false;
+    if(res1 == orientation(poly[(i <= n / 2) ? n : 0], seg, EPS))
+    {
+      return false;
+    }
   }
 
   return true;

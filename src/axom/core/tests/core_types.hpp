@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -93,7 +93,7 @@ TEST(core_types, check_int8)
   constexpr int NUM_DIGITS = 7;
   constexpr bool IS_SIGNED = true;
 
-  check_integral_type<axom::int8>(EXP_BYTES, IS_SIGNED, NUM_DIGITS, MPI_INT8_T);
+  check_integral_type<std::int8_t>(EXP_BYTES, IS_SIGNED, NUM_DIGITS, MPI_INT8_T);
 }
 
 //------------------------------------------------------------------------------
@@ -103,7 +103,7 @@ TEST(core_types, check_uint8)
   constexpr int NUM_DIGITS = 8;
   constexpr bool IS_SIGNED = false;
 
-  check_integral_type<axom::uint8>(EXP_BYTES, IS_SIGNED, NUM_DIGITS, MPI_UINT8_T);
+  check_integral_type<std::uint8_t>(EXP_BYTES, IS_SIGNED, NUM_DIGITS, MPI_UINT8_T);
 }
 
 //------------------------------------------------------------------------------
@@ -113,7 +113,7 @@ TEST(core_types, check_int16)
   constexpr int NUM_DIGITS = 15;
   constexpr bool IS_SIGNED = true;
 
-  check_integral_type<axom::int16>(EXP_BYTES, IS_SIGNED, NUM_DIGITS, MPI_INT16_T);
+  check_integral_type<std::int16_t>(EXP_BYTES, IS_SIGNED, NUM_DIGITS, MPI_INT16_T);
 }
 
 //------------------------------------------------------------------------------
@@ -123,7 +123,7 @@ TEST(core_types, check_uint16)
   constexpr int NUM_DIGITS = 16;
   constexpr bool IS_SIGNED = false;
 
-  check_integral_type<axom::uint16>(EXP_BYTES, IS_SIGNED, NUM_DIGITS, MPI_UINT16_T);
+  check_integral_type<std::uint16_t>(EXP_BYTES, IS_SIGNED, NUM_DIGITS, MPI_UINT16_T);
 }
 
 //------------------------------------------------------------------------------
@@ -133,7 +133,7 @@ TEST(core_types, check_int32)
   constexpr int NUM_DIGITS = 31;
   constexpr bool IS_SIGNED = true;
 
-  check_integral_type<axom::int32>(EXP_BYTES, IS_SIGNED, NUM_DIGITS, MPI_INT32_T);
+  check_integral_type<std::int32_t>(EXP_BYTES, IS_SIGNED, NUM_DIGITS, MPI_INT32_T);
 }
 
 //------------------------------------------------------------------------------
@@ -143,7 +143,7 @@ TEST(core_types, check_uint32)
   constexpr int NUM_DIGITS = 32;
   constexpr bool IS_SIGNED = false;
 
-  check_integral_type<axom::uint32>(EXP_BYTES, IS_SIGNED, NUM_DIGITS, MPI_UINT32_T);
+  check_integral_type<std::uint32_t>(EXP_BYTES, IS_SIGNED, NUM_DIGITS, MPI_UINT32_T);
 }
 
 #ifndef AXOM_NO_INT64_T
@@ -155,7 +155,7 @@ TEST(core_types, check_int64)
   constexpr int NUM_DIGITS = 63;
   constexpr bool IS_SIGNED = true;
 
-  check_integral_type<axom::int64>(EXP_BYTES, IS_SIGNED, NUM_DIGITS, MPI_INT64_T);
+  check_integral_type<std::int64_t>(EXP_BYTES, IS_SIGNED, NUM_DIGITS, MPI_INT64_T);
 }
 
 //------------------------------------------------------------------------------
@@ -165,7 +165,7 @@ TEST(core_types, check_uint64)
   constexpr int NUM_DIGITS = 64;
   constexpr bool IS_SIGNED = false;
 
-  check_integral_type<axom::uint64>(EXP_BYTES, IS_SIGNED, NUM_DIGITS, MPI_UINT64_T);
+  check_integral_type<std::uint64_t>(EXP_BYTES, IS_SIGNED, NUM_DIGITS, MPI_UINT64_T);
 }
 
 //------------------------------------------------------------------------------
@@ -191,7 +191,7 @@ TEST(core_types, check_indextype)
 
 #ifdef AXOM_USE_64BIT_INDEXTYPE
 
-  constexpr bool is_int64 = std::is_same<axom::IndexType, axom::int64>::value;
+  constexpr bool is_int64 = std::is_same<axom::IndexType, std::int64_t>::value;
   EXPECT_TRUE(is_int64);
 
   constexpr std::size_t EXP_BYTES = 8;
@@ -202,7 +202,7 @@ TEST(core_types, check_indextype)
                                        MPI_INT64_T);
 #else
 
-  constexpr bool is_int32 = std::is_same<axom::IndexType, axom::int32>::value;
+  constexpr bool is_int32 = std::is_same<axom::IndexType, std::int32_t>::value;
   EXPECT_TRUE(is_int32);
 
   constexpr std::size_t EXP_BYTES = 4;

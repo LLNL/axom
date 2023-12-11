@@ -1,4 +1,4 @@
-# Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
+# Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
 # other Axom Project Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
@@ -32,12 +32,11 @@ set(lumberjack_sources
 #------------------------------------------------------------------------------
 # Make/Install the library
 #------------------------------------------------------------------------------
-blt_add_library( NAME        lumberjack
+axom_add_library(NAME        lumberjack
                  SOURCES     ${lumberjack_sources}
                  HEADERS     ${lumberjack_headers}
                  DEPENDS_ON  core mpi
                  FOLDER      axom/lumberjack
-                 OBJECT      TRUE
                  )
 
 axom_write_unified_header(NAME    lumberjack

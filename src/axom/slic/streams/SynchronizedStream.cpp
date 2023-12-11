@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -38,6 +38,7 @@ struct SynchronizedStream::MessageCache
       (*stream) << messages[i];
     }  // END for all messages
 
+    stream->flush();
     messages.clear();
   }
 };

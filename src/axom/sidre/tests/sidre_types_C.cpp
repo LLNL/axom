@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -49,18 +49,18 @@ void testTypesForEquality()
 //------------------------------------------------------------------------------
 TEST(sidre_types, compare_common_types)
 {
-  testTypesForEquality<axom::int8, conduit_int8>();
-  testTypesForEquality<axom::uint8, conduit_uint8>();
+  testTypesForEquality<std::int8_t, conduit_int8>();
+  testTypesForEquality<std::uint8_t, conduit_uint8>();
 
-  testTypesForEquality<axom::int16, conduit_int16>();
-  testTypesForEquality<axom::uint16, conduit_uint16>();
+  testTypesForEquality<std::int16_t, conduit_int16>();
+  testTypesForEquality<std::uint16_t, conduit_uint16>();
 
-  testTypesForEquality<axom::int32, conduit_int32>();
-  testTypesForEquality<axom::uint32, conduit_uint32>();
+  testTypesForEquality<std::int32_t, conduit_int32>();
+  testTypesForEquality<std::uint32_t, conduit_uint32>();
 
 #ifndef AXOM_NO_INT64_T
-  testTypesForEquality<axom::int64, conduit_int64>();
-  testTypesForEquality<axom::uint64, conduit_uint64>();
+  testTypesForEquality<std::int64_t, conduit_int64>();
+  testTypesForEquality<std::uint64_t, conduit_uint64>();
 #endif
 
   testTypesForEquality<axom::float32, conduit_float32>();

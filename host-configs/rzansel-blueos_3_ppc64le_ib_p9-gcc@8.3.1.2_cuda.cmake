@@ -1,21 +1,25 @@
 #------------------------------------------------------------------------------
 # !!!! This is a generated file, edit at own risk !!!!
 #------------------------------------------------------------------------------
-# CMake executable path: /usr/tce/packages/cmake/cmake-3.14.5/bin/cmake
+# CMake executable path: /usr/tce/packages/cmake/cmake-3.21.1/bin/cmake
 #------------------------------------------------------------------------------
+
+set(CMAKE_PREFIX_PATH "/usr/WS1/axom/libs/blueos_3_ppc64le_ib_p9/2023_10_17_11_51_45/gcc-8.3.1.2/umpire-2023.06.0-rgprey5lhrxtjnaqmm56x5t4zfwv7n2f;/usr/WS1/axom/libs/blueos_3_ppc64le_ib_p9/2023_10_17_11_51_45/gcc-8.3.1.2/raja-2023.06.0-aszr6mr5prbpfd3qqcb7ukntna6a3rfb;/usr/WS1/axom/libs/blueos_3_ppc64le_ib_p9/2023_10_17_11_51_45/gcc-8.3.1.2/camp-2023.06.0-54bzgyk2if7ilhc2saaia3flihlvkqhu;/usr/WS1/axom/libs/blueos_3_ppc64le_ib_p9/2023_10_17_11_51_45/gcc-8.3.1.2/cub-2.1.0-zpxcavwsek3eamis6c2ekyd4wpc2aff7;/usr/WS1/axom/libs/blueos_3_ppc64le_ib_p9/2023_10_17_11_51_45/gcc-8.3.1.2/lua-5.4.4-uzsm5gerahtqcinqqfwleer62mlgl6xt;/usr/WS1/axom/libs/blueos_3_ppc64le_ib_p9/2023_10_17_11_51_45/gcc-8.3.1.2/conduit-0.8.8-pslusbff27xjqw5sct3jnddyeqlyide3;/usr/WS1/axom/libs/blueos_3_ppc64le_ib_p9/2023_10_17_11_51_45/gcc-8.3.1.2/parmetis-4.0.3-bcniwrmmygfl3ngqqy4ogyuopuilgfy2;/usr/WS1/axom/libs/blueos_3_ppc64le_ib_p9/2023_10_17_11_51_45/gcc-8.3.1.2/metis-5.1.0-tht2h2hqk4psrvunj7egarksgyayew3d;/usr/WS1/axom/libs/blueos_3_ppc64le_ib_p9/2023_10_17_11_51_45/gcc-8.3.1.2/hdf5-1.8.22-h2labsbvwxgxwvphjb5i357an3dgjhqp;/usr/WS1/axom/libs/blueos_3_ppc64le_ib_p9/2023_10_17_11_51_45/gcc-8.3.1.2/zlib-1.2.13-obyznlavcvoyytpvwwyi65s5ngcnpigv;/usr/WS1/axom/libs/blueos_3_ppc64le_ib_p9/2023_10_17_11_51_45/gcc-8.3.1.2/c2c-1.8.0-snpbqgmnulnruetig5di7nef2gir354f;/usr/WS1/axom/libs/blueos_3_ppc64le_ib_p9/2023_10_17_11_51_45/gcc-8.3.1.2/blt-0.5.3-umf5hhz3yl7vspds2fejsjdbmy2npyqb;/collab/usr/gapps/axom/devtools/blueos_3_ppc64le_ib_p9/latest/python-3.10.10;/collab/usr/gapps/axom/devtools/blueos_3_ppc64le_ib_p9/latest/python-3.10.10;/collab/usr/gapps/axom/devtools/blueos_3_ppc64le_ib_p9/latest/python-3.10.10;/usr/tce/packages/clang/clang-10.0.0;/collab/usr/gapps/axom/devtools/blueos_3_ppc64le_ib_p9/latest/graphviz-7.1.0;/collab/usr/gapps/axom/devtools/blueos_3_ppc64le_ib_p9/latest/doxygen-1.9.6;/usr/tce/packages/cuda/cuda-11.2.0;/collab/usr/gapps/axom/devtools/blueos_3_ppc64le_ib_p9/latest/cppcheck-2.9;/usr/tce/packages/spectrum-mpi/spectrum-mpi-rolling-release-gcc-8.3.1;/usr/tcetmp;/usr/tce/packages/cmake/cmake-3.21.1" CACHE PATH "")
+
+set(CMAKE_BUILD_TYPE "Release" CACHE STRING "")
 
 #------------------------------------------------------------------------------
 # Compilers
 #------------------------------------------------------------------------------
-# Compiler Spec: gcc@8.3.1.2
+# Compiler Spec: gcc@=8.3.1.2
 #------------------------------------------------------------------------------
 if(DEFINED ENV{SPACK_CC})
 
-  set(CMAKE_C_COMPILER "/usr/WS1/axom/libs/blueos_3_ppc64le_ib_p9/2023_01_03_13_55_57/spack/lib/spack/env/gcc/gcc" CACHE PATH "")
+  set(CMAKE_C_COMPILER "/usr/WS1/axom/libs/blueos_3_ppc64le_ib_p9/2023_10_17_11_51_45/spack/lib/spack/env/gcc/gcc" CACHE PATH "")
 
-  set(CMAKE_CXX_COMPILER "/usr/WS1/axom/libs/blueos_3_ppc64le_ib_p9/2023_01_03_13_55_57/spack/lib/spack/env/gcc/g++" CACHE PATH "")
+  set(CMAKE_CXX_COMPILER "/usr/WS1/axom/libs/blueos_3_ppc64le_ib_p9/2023_10_17_11_51_45/spack/lib/spack/env/gcc/g++" CACHE PATH "")
 
-  set(CMAKE_Fortran_COMPILER "/usr/WS1/axom/libs/blueos_3_ppc64le_ib_p9/2023_01_03_13_55_57/spack/lib/spack/env/gcc/gfortran" CACHE PATH "")
+  set(CMAKE_Fortran_COMPILER "/usr/WS1/axom/libs/blueos_3_ppc64le_ib_p9/2023_10_17_11_51_45/spack/lib/spack/env/gcc/gfortran" CACHE PATH "")
 
 else()
 
@@ -26,6 +30,8 @@ else()
   set(CMAKE_Fortran_COMPILER "/usr/tce/packages/gcc/gcc-8.3.1/bin/gfortran" CACHE PATH "")
 
 endif()
+
+set(CMAKE_GENERATOR "Unix Makefiles" CACHE STRING "")
 
 set(ENABLE_FORTRAN ON CACHE BOOL "")
 
@@ -55,21 +61,25 @@ set(BLT_MPI_COMMAND_APPEND "mpibind" CACHE STRING "")
 # Cuda
 #------------------------------------------------
 
-set(CUDA_TOOLKIT_ROOT_DIR "/usr/tce/packages/cuda/cuda-11.2.0" CACHE PATH "")
+set(CUDAToolkit_ROOT "/usr/tce/packages/cuda/cuda-11.2.0" CACHE PATH "")
 
-set(CMAKE_CUDA_COMPILER "${CUDA_TOOLKIT_ROOT_DIR}/bin/nvcc" CACHE PATH "")
+set(CMAKE_CUDA_COMPILER "${CUDAToolkit_ROOT}/bin/nvcc" CACHE PATH "")
 
 set(CMAKE_CUDA_HOST_COMPILER "${CMAKE_CXX_COMPILER}" CACHE PATH "")
 
+set(CUDA_TOOLKIT_ROOT_DIR "/usr/tce/packages/cuda/cuda-11.2.0" CACHE PATH "")
+
+set(CMAKE_CUDA_ARCHITECTURES "70" CACHE STRING "")
+
 set(ENABLE_CUDA ON CACHE BOOL "")
 
-set(CUDA_SEPARABLE_COMPILATION ON CACHE BOOL "")
+set(CMAKE_CUDA_SEPARABLE_COMPILATION ON CACHE BOOL "")
 
 set(AXOM_ENABLE_ANNOTATIONS ON CACHE BOOL "")
 
 set(CMAKE_CUDA_ARCHITECTURES "70" CACHE STRING "")
 
-set(CMAKE_CUDA_FLAGS "-restrict --expt-extended-lambda -arch sm_${CMAKE_CUDA_ARCHITECTURES} " CACHE STRING "")
+set(CMAKE_CUDA_FLAGS "-restrict --expt-extended-lambda " CACHE STRING "")
 
 # nvcc does not like gtest's 'pthreads' flag
 
@@ -89,25 +99,23 @@ set(BLT_CMAKE_IMPLICIT_LINK_DIRECTORIES_EXCLUDE "/usr/tce/packages/gcc/gcc-4.9.3
 # TPLs
 #------------------------------------------------------------------------------
 
-# Root directory for generated TPLs
+set(TPL_ROOT "/usr/WS1/axom/libs/blueos_3_ppc64le_ib_p9/2023_10_17_11_51_45/gcc-8.3.1.2" CACHE PATH "")
 
-set(TPL_ROOT "/usr/WS1/axom/libs/blueos_3_ppc64le_ib_p9/2023_01_03_13_55_57/gcc-8.3.1.2" CACHE PATH "")
+set(CONDUIT_DIR "${TPL_ROOT}/conduit-0.8.8-pslusbff27xjqw5sct3jnddyeqlyide3" CACHE PATH "")
 
-set(CONDUIT_DIR "${TPL_ROOT}/conduit-0.8.3" CACHE PATH "")
-
-set(C2C_DIR "${TPL_ROOT}/c2c-1.3.0" CACHE PATH "")
+set(C2C_DIR "${TPL_ROOT}/c2c-1.8.0-snpbqgmnulnruetig5di7nef2gir354f" CACHE PATH "")
 
 # MFEM not built
 
-set(HDF5_DIR "${TPL_ROOT}/hdf5-1.8.22" CACHE PATH "")
+set(HDF5_DIR "${TPL_ROOT}/hdf5-1.8.22-h2labsbvwxgxwvphjb5i357an3dgjhqp" CACHE PATH "")
 
-set(LUA_DIR "${TPL_ROOT}/lua-5.4.4" CACHE PATH "")
+set(LUA_DIR "${TPL_ROOT}/lua-5.4.4-uzsm5gerahtqcinqqfwleer62mlgl6xt" CACHE PATH "")
 
-set(RAJA_DIR "${TPL_ROOT}/raja-2022.03.0" CACHE PATH "")
+set(RAJA_DIR "${TPL_ROOT}/raja-2023.06.0-aszr6mr5prbpfd3qqcb7ukntna6a3rfb" CACHE PATH "")
 
-set(UMPIRE_DIR "${TPL_ROOT}/umpire-2022.03.1" CACHE PATH "")
+set(UMPIRE_DIR "${TPL_ROOT}/umpire-2023.06.0-rgprey5lhrxtjnaqmm56x5t4zfwv7n2f" CACHE PATH "")
 
-set(CAMP_DIR "${TPL_ROOT}/camp-2022.03.2" CACHE PATH "")
+set(CAMP_DIR "${TPL_ROOT}/camp-2023.06.0-54bzgyk2if7ilhc2saaia3flihlvkqhu" CACHE PATH "")
 
 # scr not built
 
@@ -115,22 +123,20 @@ set(CAMP_DIR "${TPL_ROOT}/camp-2022.03.2" CACHE PATH "")
 # Devtools
 #------------------------------------------------------------------------------
 
-# Root directory for generated developer tools
-
-set(DEVTOOLS_ROOT "/collab/usr/gapps/axom/devtools/blueos_3_ppc64le_ib_p9/2022_07_12_11_54_06/gcc-8.3.1" CACHE PATH "")
+set(DEVTOOLS_ROOT "/collab/usr/gapps/axom/devtools/blueos_3_ppc64le_ib_p9/2023_10_17_10_41_04/._view/5gug4et2qymmckk7yvtub4qcapp3figm" CACHE PATH "")
 
 set(CLANGFORMAT_EXECUTABLE "/usr/tce/packages/clang/clang-10.0.0/bin/clang-format" CACHE PATH "")
 
-set(PYTHON_EXECUTABLE "${DEVTOOLS_ROOT}/python-3.9.13/bin/python3.9" CACHE PATH "")
+set(PYTHON_EXECUTABLE "${DEVTOOLS_ROOT}/python-3.10.10/bin/python3.10" CACHE PATH "")
 
 set(ENABLE_DOCS ON CACHE BOOL "")
 
-set(SPHINX_EXECUTABLE "${DEVTOOLS_ROOT}/py-sphinx-5.0.2/bin/sphinx-build" CACHE PATH "")
+set(SPHINX_EXECUTABLE "${DEVTOOLS_ROOT}/python-3.10.10/bin/sphinx-build" CACHE PATH "")
 
-set(SHROUD_EXECUTABLE "${DEVTOOLS_ROOT}/py-shroud-0.12.2/bin/shroud" CACHE PATH "")
+set(SHROUD_EXECUTABLE "${DEVTOOLS_ROOT}/python-3.10.10/bin/shroud" CACHE PATH "")
 
-set(CPPCHECK_EXECUTABLE "${DEVTOOLS_ROOT}/cppcheck-2.8/bin/cppcheck" CACHE PATH "")
+set(CPPCHECK_EXECUTABLE "${DEVTOOLS_ROOT}/cppcheck-2.9/bin/cppcheck" CACHE PATH "")
 
-set(DOXYGEN_EXECUTABLE "${DEVTOOLS_ROOT}/doxygen-1.8.14/bin/doxygen" CACHE PATH "")
+set(DOXYGEN_EXECUTABLE "${DEVTOOLS_ROOT}/doxygen-1.9.6/bin/doxygen" CACHE PATH "")
 
 

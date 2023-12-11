@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -84,7 +84,10 @@ bool BitSet::isValid() const
   {
     // check num words vs. num bits
     int expWords = (m_numBits - 1) / BitsPerWord + 1;
-    if(expWords != m_data.size()) valid = false;
+    if(expWords != m_data.size())
+    {
+      valid = false;
+    }
 
     // check that highest bits are not set
     if(!isLastWordFull())

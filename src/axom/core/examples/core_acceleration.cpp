@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -189,7 +189,7 @@ void demoAxomExecution()
   // Increment sum 100 times
   axom::for_all<ExecSpace>(
     100,
-    AXOM_LAMBDA(axom::IndexType i) { RAJA::atomicAdd<atomic_pol>(sum, 1); });
+    AXOM_LAMBDA(axom::IndexType) { RAJA::atomicAdd<atomic_pol>(sum, 1); });
 
   std::cout << "\nTotal Atomic Sum (" << axom::execution_space<ExecSpace>::name()
             << ") :" << sum[0] << std::endl;

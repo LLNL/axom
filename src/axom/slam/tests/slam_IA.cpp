@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -149,7 +149,10 @@ bool isInBoundary(const IAMeshType& ia_mesh, IndexType vert_id, IndexType elem_i
 {
   for(auto bdry : ia_mesh.boundaryVertices(elem_id))
   {
-    if(bdry == vert_id) return true;
+    if(bdry == vert_id)
+    {
+      return true;
+    }
   }
   return false;
 }
@@ -162,7 +165,10 @@ bool isAdjacent(const IAMeshType& ia_mesh, IndexType el_1, IndexType el_2)
 {
   for(auto adj : ia_mesh.adjacentElements(el_1))
   {
-    if(adj == el_2) return true;
+    if(adj == el_2)
+    {
+      return true;
+    }
   }
   return false;
 }

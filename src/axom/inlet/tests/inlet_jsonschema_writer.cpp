@@ -1,10 +1,11 @@
-// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
 #include "axom/slic.hpp"
 
+#include "axom/config.hpp"
 #include "axom/inlet/Inlet.hpp"
 #include "axom/inlet/JSONSchemaWriter.hpp"
 #include "axom/inlet/tests/inlet_test_utils.hpp"
@@ -20,8 +21,6 @@
 
 using axom::inlet::Inlet;
 using axom::inlet::JSONSchemaWriter;
-
-#define JSONSCHEMA_EXECUTABLE "jsonschema"
 
 bool hasSchemaUtility()
 {

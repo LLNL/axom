@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -306,7 +306,10 @@ public:
       const auto beg_idx = idx * SZ;
       for(auto idx = beg_idx; idx < (beg_idx + SZ); ++idx)
       {
-        if(m_relationsVec[idx] != INVALID_INDEX) return true;
+        if(m_relationsVec[idx] != INVALID_INDEX)
+        {
+          return true;
+        }
       }
     }
     return false;
@@ -374,7 +377,10 @@ public:
   /// \brief Mark all values in entry \a fromSetIndex as invalid.
   void remove(SetPosition fromSetIndex)
   {
-    if(!isValidEntry(fromSetIndex)) return;
+    if(!isValidEntry(fromSetIndex))
+    {
+      return;
+    }
 
     const auto SZ = relationCardinality();
     for(int i = 0; i < SZ; ++i)

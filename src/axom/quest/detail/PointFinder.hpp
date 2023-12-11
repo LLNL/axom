@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -195,8 +195,14 @@ public:
         totalCountReduce += countsPtr[i];
       });
 
-    // Step 2: exclusive scan for offsets in candidate array
+      // Step 2: exclusive scan for offsets in candidate array
+      // Intel oneAPI compiler segfaults with OpenMP RAJA scan
+  #ifdef __INTEL_LLVM_COMPILER
+    using exec_policy =
+      typename axom::execution_space<axom::SEQ_EXEC>::loop_policy;
+  #else
     using exec_policy = typename axom::execution_space<ExecSpace>::loop_policy;
+  #endif
     RAJA::exclusive_scan<exec_policy>(RAJA::make_span(counts.data(), npts),
                                       RAJA::make_span(offsets.data(), npts),
                                       RAJA::operators::plus<IndexType> {});
