@@ -25,6 +25,7 @@
 #include "axom/slam/NullSet.hpp"
 
 #include "axom/core/IteratorBase.hpp"
+#include "axom/core/RangeAdapter.hpp"
 
 #include "axom/slam/policies/StridePolicies.hpp"
 #include "axom/slam/policies/IndirectionPolicies.hpp"
@@ -394,20 +395,9 @@ public:
   };
 
   /**
-   * \class   MapIterator
-   * \brief   An iterator type for a map.
-   *          Each increment operation advances the iterator to the next set
-   *          element.
-   *          To access the j<sup>th</sup> component values of the iterator's
-   *          current element, use `iter(j)`.
-   * \warning Note the difference between the subscript operator ( `iter[off]` )
-   *          and the parenthesis operator ( `iter(j)` ). \n
-   *          `iter[off]` returns the value of the first component of the
-   *          element at offset \a `off` from the currently pointed to
-   *          element.\n
-   *          And `iter(j)` returns the value of the j<sup>th</sup> component of
-   *          the currently pointed to element (where 0 <= j < numComp()).\n
-   *          For example: `iter[off]` is the same as `(iter+off)(0)`
+   * \class MapIterator
+   * \brief An iterator type for a map. Each increment operation advances the
+   *        iterator to the element at the next flat index.
    */
   class MapIterator : public IteratorBase<MapIterator, SetPosition>
   {
@@ -425,26 +415,71 @@ public:
     MapIterator(PositionType pos, Map* oMap) : IterBase(pos), m_mapPtr(oMap) { }
 
     /**
-     * \brief Returns the current iterator value. If the map has multiple
-     *        components, this will return the first component. To access
-     *        the other components, use iter(comp)
+     * \brief Returns the current iterator value.
      */
-    DataType& operator*() { return (*m_mapPtr)(m_pos, 0); }
+    DataType& operator*() { return (*m_mapPtr)[m_pos]; }
+
+  protected:
+    /** Implementation of advance() as required by IteratorBase */
+    void advance(PositionType n) { m_pos += n; }
+
+  protected:
+    Map* m_mapPtr;
+  };
+
+  /**
+   * \class   MapRangeIterator
+   * \brief   An iterator type for a map.
+   *          Each increment operation advances the iterator to the next set
+   *          element.
+   *          To access the j<sup>th</sup> component values of the iterator's
+   *          current element, use `iter(j)`.
+   * \warning Note the difference between the subscript operator ( `iter[off]` )
+   *          and the parenthesis operator ( `iter(j)` ). \n
+   *          `iter[off]` returns the value of the first component of the
+   *          element at offset \a `off` from the currently pointed to
+   *          element.\n
+   *          And `iter(j)` returns the value of the j<sup>th</sup> component of
+   *          the currently pointed to element (where 0 <= j < numComp()).\n
+   *          For example: `iter[off]` is the same as `(iter+off)(0)`
+   */
+  class MapRangeIterator : public IteratorBase<MapIterator, SetPosition>
+  {
+  public:
+    using IterBase = IteratorBase<MapIterator, SetPosition>;
+    using iter = MapIterator;
+    using PositionType = SetPosition;
+    using IterBase::m_pos;
+
+    using iterator_category = std::random_access_iterator_tag;
+    using value_type = axom::ArrayView<DataType>;
+    using difference_type = SetPosition;
+
+  public:
+    MapRangeIterator(PositionType pos, Map* oMap)
+      : IterBase(pos)
+      , m_mapPtr(oMap)
+    { }
+
+    /**
+     * \brief Returns the current iterator value.
+     */
+    value_type operator*()
+    {
+      return value_type {m_mapPtr->data().data() + m_pos * m_mapPtr->stride(),
+                         m_mapPtr->stride()};
+    }
 
     /**
      * \brief Returns the iterator's value at the specified component.
      *        Returns the first component if comp_idx is not specified.
-     * \param comp_idx  (Optional) Zero-based index of the component.
+     * \param comp_idx  Zero-based index of the component.
      */
-    DataType& operator()(SetPosition comp_idx = 0)
+    DataType& operator()(SetPosition comp_idx) const
     {
       return (*m_mapPtr)(m_pos, comp_idx);
     }
-
-    /** \brief Returns the first component value after n increments.  */
-    const DataType& operator[](PositionType n) const { return *(*this + n); }
-
-    DataType& operator[](PositionType n) { return *(*this + n); }
+    DataType& operator[](PositionType n) const { return (*this).flatIndex(n); }
 
     /** \brief Returns the number of components per element in the Map. */
     PositionType numComp() const { return m_mapPtr->stride(); }
@@ -459,8 +494,22 @@ public:
 
 public:  // Functions related to iteration
   MapIterator begin() { return MapIterator(0, this); }
-  MapIterator end() { return MapIterator(size(), this); }
-  const_iterator_pair range() const { return std::make_pair(begin(), end()); }
+  MapIterator end()
+  {
+    return MapIterator(size() * StridePolicyType::stride(), this);
+  }
+
+  RangeAdapter<MapIterator> range() const
+  {
+    return RangeAdapter<MapIterator> {begin(), end()};
+  }
+
+  MapRangeIterator set_begin() { return MapRangeIterator(0, this); }
+  MapRangeIterator set_end() { return MapRangeIterator(size(), this); }
+  RangeAdapter<MapRangeIterator> set_elements()
+  {
+    return RangeAdapter<MapRangeIterator> {set_begin(), set_end()};
+  }
 
 public:
   /**
