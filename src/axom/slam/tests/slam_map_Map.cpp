@@ -285,15 +285,6 @@ TEST(slam_map, iterate)
     }
   }
 
-  //iter[n] access
-  {
-    IterType beginIter = m.begin();
-    for(int idx = 0; idx < m.size(); idx++)
-    {
-      EXPECT_EQ(beginIter[idx], static_cast<double>(idx * multFac));
-    }
-  }
-
   //iter1 - iter2
   {
     IterType beginIter = m.begin();
@@ -315,6 +306,7 @@ void constructAndTestMapIteratorWithStride(int stride)
   using RealMap =
     slam::Map<double, slam::Set<>, VecIndirection<double>, StrideType>;
   using MapIterator = typename RealMap::MapIterator;
+  using MapRangeIterator = typename RealMap::MapRangeIterator;
 
   SetType s(MAX_SET_SIZE);
 
@@ -335,11 +327,11 @@ void constructAndTestMapIteratorWithStride(int stride)
   double multFac2 = 1.010;
   {
     int idx = 0;
-    for(MapIterator iter = m.begin(); iter != m.end(); ++iter)
+    for(auto submap : m.set_elements())
     {
-      for(auto idx2 = 0; idx2 < iter.numComp(); ++idx2)
+      for(auto idx2 = 0; idx2 < submap.size(); ++idx2)
       {
-        iter(idx2) = static_cast<double>(idx * multFac + idx2 * multFac2);
+        submap[idx2] = static_cast<double>(idx * multFac + idx2 * multFac2);
       }
       ++idx;
     }
@@ -352,12 +344,11 @@ void constructAndTestMapIteratorWithStride(int stride)
   //iter++ access
   {
     int idx = 0;
-    for(MapIterator iter = m.begin(); iter != m.end(); iter++)
+    for(auto submap : m.set_elements())
     {
-      EXPECT_EQ(*iter, static_cast<double>(idx * multFac));
-      for(auto idx2 = 0; idx2 < iter.numComp(); ++idx2)
+      for(auto idx2 = 0; idx2 < submap.size(); ++idx2)
       {
-        EXPECT_DOUBLE_EQ(iter(idx2),
+        EXPECT_DOUBLE_EQ(submap[idx2],
                          static_cast<double>(idx * multFac + idx2 * multFac2));
       }
       idx++;

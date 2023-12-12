@@ -284,8 +284,7 @@ void various_traversal_methods(int nmats,
   timer.start();
   {
     auto map = mm.get1dField<double>("Cell Array");
-    for(MultiMat::Field1D<double>::iterator iter = map.begin(); iter != map.end();
-        iter++)
+    for(auto iter = map.set_begin(); iter != map.set_end(); iter++)
     {
       for(int comp = 0; comp < iter.numComp(); ++comp)
       {
