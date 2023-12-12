@@ -61,6 +61,7 @@ set(core_headers
     Map.hpp
     FlatMap.hpp
     Path.hpp
+    RangeAdapter.hpp
     StackArray.hpp
     Types.hpp
     memory_management.hpp
