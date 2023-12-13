@@ -7,19 +7,11 @@
 #define QUEST_DISTRIBUTED_CLOSEST_POINT_H_
 
 #include "axom/config.hpp"
-#include "axom/core.hpp"
-#include "axom/slic.hpp"
 #include "axom/core/execution/runtime_policy.hpp"
-#include "axom/quest/detail/DistributedClosestPointImpl.hpp"
 
-#include "axom/fmt.hpp"
-
-#include "conduit_blueprint.hpp"
-#include "conduit_blueprint_mpi.hpp"
-#include "conduit_relay_mpi.hpp"
+#include "conduit_node.hpp"
 
 #include <memory>
-#include <limits>
 #include <cstdlib>
 
 #ifndef AXOM_USE_MPI
@@ -31,6 +23,12 @@ namespace axom
 {
 namespace quest
 {
+
+namespace internal
+{
+template <int DIM> class DistributedClosestPointImpl;
+}
+
 /**
  * \brief Encapsulated the Distributed closest point query for a collection of query points
  * over an "object mesh"
@@ -61,26 +59,9 @@ public:
   using RuntimePolicy = axom::runtime_policy::Policy;
 
 public:
-  DistributedClosestPoint()
-    : m_mpiComm(MPI_COMM_WORLD)
-    , m_mpiCommIsPrivate(false)
-  {
-    setDefaultAllocatorID();
-    setMpiCommunicator(MPI_COMM_WORLD);
-  }
+  DistributedClosestPoint();
 
-  ~DistributedClosestPoint()
-  {
-    if(m_mpiCommIsPrivate)
-    {
-      int mpiIsFinalized = 0;
-      MPI_Finalized(&mpiIsFinalized);
-      if(!mpiIsFinalized)
-      {
-        MPI_Comm_free(&m_mpiComm);
-      }
-    }
-  }
+  ~DistributedClosestPoint();
 
   /*!
     @brief Set runtime execution policy for local queries
@@ -92,113 +73,31 @@ public:
   /*!  @brief Sets the allocator ID to the default associated with the
     execution policy
   */
-  void setDefaultAllocatorID()
-  {
-    int defaultAllocatorID = axom::INVALID_ALLOCATOR_ID;
-    switch(m_runtimePolicy)
-    {
-    case RuntimePolicy::seq:
-      defaultAllocatorID = axom::execution_space<axom::SEQ_EXEC>::allocatorID();
-      break;
+  void setDefaultAllocatorID();
 
-#ifdef AXOM_RUNTIME_POLICY_USE_OPENMP
-    case RuntimePolicy::omp:
-      defaultAllocatorID = axom::execution_space<axom::OMP_EXEC>::allocatorID();
-      break;
-#endif
+  /*!  @brief Sets the allocator ID.
 
-#ifdef AXOM_RUNTIME_POLICY_USE_CUDA
-    case RuntimePolicy::cuda:
-      defaultAllocatorID =
-        axom::execution_space<axom::CUDA_EXEC<256>>::allocatorID();
-      break;
-#endif
-
-#ifdef AXOM_RUNTIME_POLICY_USE_HIP
-    case RuntimePolicy::hip:
-      defaultAllocatorID =
-        axom::execution_space<axom::HIP_EXEC<256>>::allocatorID();
-      break;
-#endif
-    }
-    if(defaultAllocatorID == axom::INVALID_ALLOCATOR_ID)
-    {
-      SLIC_ERROR(
-        axom::fmt::format("There is no default allocator for runtime policy {}",
-                          m_runtimePolicy));
-    }
-    setAllocatorID(defaultAllocatorID);
-  }
-
-  /*!  @brief Sets the allocator ID to the default associated with the
-    execution policy
+    If not explitly set, the allocator ID is the default is the id
+    associated with the runtimer policy.
   */
-  void setAllocatorID(int allocatorID)
-  {
-    SLIC_ASSERT_MSG(allocatorID != axom::INVALID_ALLOCATOR_ID,
-                    "Invalid allocator id.");
-    m_allocatorID = allocatorID;
-
-    if(m_dcp_2 != nullptr)
-    {
-      m_dcp_2->setAllocatorID(m_allocatorID);
-    }
-    if(m_dcp_3 != nullptr)
-    {
-      m_dcp_3->setAllocatorID(m_allocatorID);
-    }
-  }
+  void setAllocatorID(int allocatorID);
 
   /**
    * \brief Set the MPI communicator.
    *
    * By default, the communicator is MPI_COMM_WORLD.
    *
-   * \param mpiComm The MPI communicator to use.
-   * \param duplicate Whether to duplicate mpiComm for exclusive use
+   * \param [i] mpiComm The MPI communicator to use.
+   * \param [i] duplicate Whether to duplicate mpiComm for exclusive use
    */
-  void setMpiCommunicator(MPI_Comm mpiComm, bool duplicate = false)
-  {
-    if(m_mpiCommIsPrivate)
-    {
-      MPI_Comm_free(&m_mpiComm);
-    }
-
-    if(duplicate)
-    {
-      MPI_Comm_dup(mpiComm, &m_mpiComm);
-    }
-    else
-    {
-      m_mpiComm = mpiComm;
-    }
-    m_mpiCommIsPrivate = duplicate;
-  }
-
-  /**
-   * \brief Sets the dimension for the query
-   *
-   * \note Users do not need to call this function explicitly. The dimension
-   * is set by the \a setObjectMesh function
-   */
-  void setDimension(int dim)
-  {
-    SLIC_ERROR_IF(
-      dim < 2 || dim > 3,
-      "DistributedClosestPoint query only supports 2D or 3D queries");
-    m_dimension = dim;
-  }
+  void setMpiCommunicator(MPI_Comm mpiComm, bool duplicate = false);
 
   /**
    * \brief Sets the threshold for the query
    *
    * \param [in] threshold Ignore distances greater than this value.
    */
-  void setDistanceThreshold(double threshold)
-  {
-    SLIC_ERROR_IF(threshold < 0.0, "Distance threshold must be non-negative.");
-    m_sqDistanceThreshold = threshold * threshold;
-  }
+  void setDistanceThreshold(double threshold);
 
   /*!
     @brief Set what fields to output.
@@ -209,25 +108,7 @@ public:
 
     By default, all are on.
   */
-  void setOutput(const std::string& field, bool on)
-  {
-    // clang-format off
-    bool* f
-      = field == "cp_rank" ? &m_outputRank
-      : field == "cp_index" ? &m_outputIndex
-      : field == "cp_distance" ? &m_outputDistance
-      : field == "cp_coords" ? &m_outputCoords
-      : field == "cp_domain_index" ? &m_outputDomainIndex
-      : nullptr;
-    // clang-format on
-    SLIC_ERROR_IF(
-      f == nullptr,
-      axom::fmt::format(
-        "Invalid field '{}' should be one of these: "
-        "cp_rank, cp_index, cp_distance, cp_coords, cp_domain_index",
-        field));
-    *f = on;
-  }
+  void setOutput(const std::string& field, bool on);
 
   /// Sets the logging verbosity of the query. By default the query is not verbose
   void setVerbosity(bool isVerbose) { m_isVerbose = isVerbose; }
@@ -242,60 +123,7 @@ public:
    * \pre Dimension of the mesh must be 2D or 3D
    */
   void setObjectMesh(const conduit::Node& meshNode,
-                     const std::string& topologyName)
-  {
-    SLIC_ASSERT(this->isValidBlueprint(meshNode));
-
-    const bool isMultidomain =
-      conduit::blueprint::mesh::is_multi_domain(meshNode);
-
-    // If meshNode isn't multidomain, create a temporary multidomain representation.
-    std::shared_ptr<conduit::Node> tmpNode;
-    if(!isMultidomain)
-    {
-      tmpNode = std::make_shared<conduit::Node>();
-      conduit::blueprint::mesh::to_multi_domain(meshNode, *tmpNode);
-    }
-    const conduit::Node& mdMeshNode(isMultidomain ? meshNode : *tmpNode);
-    verifyTopologyName(mdMeshNode, topologyName);
-
-    auto domainCount = conduit::blueprint::mesh::number_of_domains(mdMeshNode);
-
-    // Extract the dimension from the coordinate values group
-    // use allreduce since some ranks might be empty
-    {
-      int localDim = -1;
-      if(domainCount > 0)
-      {
-        const conduit::Node& domain0 = mdMeshNode.child(0);
-        const conduit::Node& topology =
-          domain0.fetch_existing("topologies/" + topologyName);
-        const std::string coordsetName =
-          topology.fetch_existing("coordset").as_string();
-        const conduit::Node& coordset =
-          domain0.fetch_existing("coordsets/" + coordsetName);
-        const conduit::Node& coordsetValues = coordset.fetch_existing("values");
-        localDim = internal::extractDimension(coordsetValues);
-      }
-      int dim = -1;
-      MPI_Allreduce(&localDim, &dim, 1, MPI_INT, MPI_MAX, m_mpiComm);
-      setDimension(dim);
-    }
-
-    allocateQueryInstance();
-
-    switch(m_dimension)
-    {
-    case 2:
-      m_dcp_2->importObjectPoints(mdMeshNode, topologyName);
-      break;
-    case 3:
-      m_dcp_3->importObjectPoints(mdMeshNode, topologyName);
-      break;
-    }
-
-    return;
-  }
+                     const std::string& topologyName);
 
   /**
    * \brief Generates a BVH tree over the object mesh using the runtime execution policy
@@ -303,26 +131,7 @@ public:
    * \pre Users must set the object mesh before generating the BVH tree
    * \sa setObjectMesh()
    */
-  bool generateBVHTree()
-  {
-    SLIC_ASSERT_MSG(m_objectMeshCreated,
-                    "Must call 'setObjectMesh' before calling generateBVHTree");
-
-    bool success = false;
-
-    // dispatch to implementation class over dimension
-    switch(m_dimension)
-    {
-    case 2:
-      success = m_dcp_2->generateBVHTree();
-      break;
-    case 3:
-      success = m_dcp_3->generateBVHTree();
-      break;
-    }
-
-    return success;
-  }
+  bool generateBVHTree();
 
   /**
    * \brief Computes the closest point on the object mesh for each point
@@ -350,113 +159,27 @@ public:
    * \note The current implementation assumes that the mesh coordinates
    * are interleaved or contiguous.  The output cp_coords will be contiguous.
    */
-  void computeClosestPoints(conduit::Node& query_node, const std::string& topology)
-  {
-    SLIC_ASSERT_MSG(m_objectMeshCreated,
-                    "Must call 'setObjectMesh' before calling generateBVHTree");
-
-    SLIC_ASSERT(this->isValidBlueprint(query_node));
-
-    // dispatch to implementation class over dimension
-    switch(m_dimension)
-    {
-    case 2:
-      m_dcp_2->setSquaredDistanceThreshold(m_sqDistanceThreshold);
-      m_dcp_2->setMpiCommunicator(m_mpiComm);
-      m_dcp_2->setOutputSwitches(m_outputRank,
-                                 m_outputIndex,
-                                 m_outputDistance,
-                                 m_outputCoords,
-                                 m_outputDomainIndex);
-      m_dcp_2->computeClosestPoints(query_node, topology);
-      break;
-    case 3:
-      m_dcp_3->setSquaredDistanceThreshold(m_sqDistanceThreshold);
-      m_dcp_3->setMpiCommunicator(m_mpiComm);
-      m_dcp_2->setOutputSwitches(m_outputRank,
-                                 m_outputIndex,
-                                 m_outputDistance,
-                                 m_outputCoords,
-                                 m_outputDomainIndex);
-      m_dcp_3->computeClosestPoints(query_node, topology);
-      break;
-    }
-  }
+  void computeClosestPoints(conduit::Node& query_node, const std::string& topology);
 
 private:
-  void allocateQueryInstance()
-  {
-    SLIC_ASSERT_MSG(m_objectMeshCreated == false, "Object mesh already created");
-
-    switch(m_dimension)
-    {
-    case 2:
-      m_dcp_2 = std::make_unique<internal::DistributedClosestPointImpl<2>>(
-        m_runtimePolicy,
-        m_allocatorID,
-        m_isVerbose);
-      m_objectMeshCreated = true;
-      break;
-    case 3:
-      m_dcp_3 = std::make_unique<internal::DistributedClosestPointImpl<3>>(
-        m_runtimePolicy,
-        m_allocatorID,
-        m_isVerbose);
-      m_objectMeshCreated = true;
-      break;
-    }
-
-    SLIC_ASSERT_MSG(
-      m_objectMeshCreated,
-      "Called allocateQueryInstance, but did not create an instance");
-  }
+  //!@brief Create the implementation objects, either m_dcp_2 or m_dcp_3.
+  void allocateQueryInstance();
 
   /// Check validity of blueprint group
-  bool isValidBlueprint(const conduit::Node& mesh_node) const
-  {
-    bool success = true;
-    conduit::Node info;
-    if(!conduit::blueprint::mpi::verify("mesh", mesh_node, info, m_mpiComm))
-    {
-      SLIC_INFO("Invalid blueprint for particle mesh: \n" << info.to_yaml());
-      success = false;
-    }
-
-    return success;
-  }
+  bool isValidBlueprint(const conduit::Node& mesh_node) const;
 
   void verifyTopologyName(const conduit::Node& meshNode,
-                          const std::string& topologyName)
-  {
-    std::string coordsetPath;
-    const std::string topologyPath =
-      axom::fmt::format("topologies/{}", topologyName);
-    for(axom::IndexType d = 0; d < meshNode.number_of_children(); ++d)
-    {
-      const auto& domain = meshNode.child(d);
-      if(!domain.has_path(topologyPath))
-      {
-        auto errMsg = fmt::format("No such topology '{}' found.", topologyName);
-        if(domain.has_path("coordsets/" + topologyName))
-        {
-          errMsg += fmt::format(
-            "  You may have mistakenly specified a coordset name."
-            "  The interface has changed to use topology name"
-            " instead of coordset.");
-        }
-        SLIC_ERROR(errMsg);
-      }
-    }
-  }
+                          const std::string& topologyName);
 
-private:
+  void setDimension(int dim);
+
   RuntimePolicy m_runtimePolicy {RuntimePolicy::seq};
   MPI_Comm m_mpiComm;
   bool m_mpiCommIsPrivate;
-  int m_allocatorID {axom::INVALID_ALLOCATOR_ID};
+  int m_allocatorID;
   int m_dimension {-1};
   bool m_isVerbose {false};
-  double m_sqDistanceThreshold {std::numeric_limits<double>::max()};
+  double m_sqDistanceThreshold;
 
   bool m_objectMeshCreated {false};
 

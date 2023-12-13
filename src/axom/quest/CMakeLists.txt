@@ -104,7 +104,15 @@ if(AXOM_ENABLE_SIDRE)
 endif()
 
 if(CONDUIT_FOUND AND AXOM_ENABLE_MPI)
-    list(APPEND quest_headers    DistributedClosestPoint.hpp )
+    blt_list_append(
+        TO       quest_headers
+        ELEMENTS DistributedClosestPoint.hpp
+                 detail/DistributedClosestPointImpl.hpp
+                   )
+    blt_list_append(
+        TO       quest_sources
+        ELEMENTS DistributedClosestPoint.cpp
+                   )
     list(APPEND quest_depends_on conduit::conduit
                                  conduit::conduit_mpi)
 endif()
