@@ -25,6 +25,7 @@
 #include <limits>
 #include <cstdlib>
 #include <cmath>
+#include <list>
 #include <vector>
 
 #ifndef AXOM_USE_MPI
