@@ -46,10 +46,10 @@
   #ifdef AXOM_USE_OPENMP
     #define AXOM_RUNTIME_POLICY_USE_OPENMP
   #endif
-  #if defined(AXOM_USE_CUDA) && defined(AXOM_USE_UMPIRE)
+  #if defined(__CUDACC__) && defined(AXOM_USE_CUDA) && defined(AXOM_USE_UMPIRE)
     #define AXOM_RUNTIME_POLICY_USE_CUDA
   #endif
-  #if defined(AXOM_USE_HIP) && defined(AXOM_USE_UMPIRE)
+  #if defined(__HIPCC__) && defined(AXOM_USE_HIP) && defined(AXOM_USE_UMPIRE)
     #define AXOM_RUNTIME_POLICY_USE_HIP
   #endif
 #endif
