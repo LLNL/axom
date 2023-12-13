@@ -23,10 +23,10 @@ namespace axom
 {
 namespace quest
 {
-
 namespace internal
 {
-template <int DIM> class DistributedClosestPointImpl;
+template <int DIM>
+class DistributedClosestPointImpl;
 }
 
 /**
@@ -159,7 +159,8 @@ public:
    * \note The current implementation assumes that the mesh coordinates
    * are interleaved or contiguous.  The output cp_coords will be contiguous.
    */
-  void computeClosestPoints(conduit::Node& query_node, const std::string& topology);
+  void computeClosestPoints(conduit::Node& query_node,
+                            const std::string& topology);
 
 private:
   //!@brief Create the implementation objects, either m_dcp_2 or m_dcp_3.
