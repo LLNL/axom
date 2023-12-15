@@ -257,14 +257,6 @@ public:
   */
   void scanCrossings()
   {
-  #ifdef __INTEL_LLVM_COMPILER
-    // Intel oneAPI compiler segfaults with OpenMP RAJA scan
-    using ScanPolicy =
-      typename axom::execution_space<axom::SEQ_EXEC>::loop_policy;
-  #else
-    using ScanPolicy = typename axom::execution_space<ExecSpace>::loop_policy;
-  #endif
-
     const axom::IndexType parentCellCount = m_caseIds.size();
     auto caseIdsView = m_caseIds.view();
 
@@ -286,6 +278,14 @@ public:
     const axom::ArrayView<axom::IndexType, 1, MemorySpace> firstFacetIdsView =
       m_firstFacetIds.view();
   #if defined(AXOM_USE_RAJA)
+  #ifdef __INTEL_LLVM_COMPILER
+    // Intel oneAPI compiler segfaults with OpenMP RAJA scan
+    using ScanPolicy =
+      typename axom::execution_space<axom::SEQ_EXEC>::loop_policy;
+  #else
+    using ScanPolicy = typename axom::execution_space<ExecSpace>::loop_policy;
+  #endif
+
     RAJA::exclusive_scan<ScanPolicy>(
       RAJA::make_span(facetIncrsView.data(), parentCellCount),
       RAJA::make_span(firstFacetIdsView.data(), parentCellCount),
@@ -338,13 +338,13 @@ public:
     setting sortFacetsIncrs.  Requires RAJA.
   */
     const bool sortFacetsIncrs = false;
-  #if defined(AXOM_USE_RAJA)
     // sortedIndices are parent cell indices, sorted by number
     // of facets in them.
     axom::Array<axom::IndexType, 1, MemorySpace> sortedIndices(
       sortFacetsIncrs ? parentCellCount : 0);
     auto sortedIndicesView = sortedIndices.view();
 
+  #if defined(AXOM_USE_RAJA)
     if(sortFacetsIncrs)
     {
       auto sortedFacetIncrs = m_facetIncrs;
