@@ -270,7 +270,6 @@ public:
     m_facetIncrs.resize(parentCellCount);
     const auto facetIncrsView = m_facetIncrs.view();
 
-  #if defined(AXOM_USE_RAJA)
     axom::for_all<ExecSpace>(
       0,
       parentCellCount,
@@ -278,13 +277,6 @@ public:
         facetIncrsView.flatIndex(parentCellId) =
           num_contour_cells(caseIdsView.flatIndex(parentCellId));
       });
-  #else
-    for(axom::IndexType pcId = 0; pcId < parentCellCount; ++pcId)
-    {
-      facetIncrsView.flatIndex(pcId) =
-        num_contour_cells(caseIdsView.flatIndex(pcId));
-    }
-  #endif
 
     // Compute index of first facet added by each parent cell
     // (whether the cell generates any facet!).
@@ -408,14 +400,7 @@ public:
       }
     };
 
-  #if defined(AXOM_USE_RAJA)
     axom::for_all<ExecSpace>(0, parentCellCount, gen_for_parent_cell);
-  #else
-    for(axom::IndexType pcId = 1; pcId < parentCellCount; ++pcId)
-    {
-      gen_for_parent_cell(pcId);
-    }
-  #endif
   }
 
   /*!
