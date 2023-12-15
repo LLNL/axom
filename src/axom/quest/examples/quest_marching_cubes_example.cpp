@@ -18,7 +18,7 @@
 
 // Implementation requires Conduit.
 #ifndef AXOM_USE_CONDUIT
-#error "MarchingCubesFullParallel.hpp requires conduit"
+  #error "MarchingCubesFullParallel.hpp requires conduit"
 #endif
 
 // Axom includes
@@ -36,15 +36,15 @@
 #include "conduit_blueprint.hpp"
 #include "conduit_relay_io_blueprint.hpp"
 #ifdef AXOM_USE_MPI
-#include "conduit_blueprint_mpi.hpp"
-#include "conduit_relay_mpi_io_blueprint.hpp"
+  #include "conduit_blueprint_mpi.hpp"
+  #include "conduit_relay_mpi_io_blueprint.hpp"
 #endif
 
 #include "axom/fmt.hpp"
 #include "axom/CLI11.hpp"
 
 #ifdef AXOM_USE_MPI
-#include "mpi.h"
+  #include "mpi.h"
 #endif
 
 // C/C++ includes
@@ -142,9 +142,9 @@ public:
       ->description("Enable/disable verbose output")
       ->capture_default_str();
 
-    auto* distanceFunctionOption = app.add_option_group(
-      "distanceFunctionOption",
-      "Options for specifying a distance function.");
+    auto* distanceFunctionOption =
+      app.add_option_group("distanceFunctionOption",
+                           "Options for specifying a distance function.");
 
     auto* distFromPtOption = distanceFunctionOption->add_option_group(
       "distFromPtOption",
@@ -153,9 +153,9 @@ public:
       ->description("Center for distance-from-point function (x,y[,z])")
       ->expected(2, 3);
 
-    auto* gyroidOption =
-      distanceFunctionOption->add_option_group("gyroidOption",
-                                               "Options for setting up gyroid function");
+    auto* gyroidOption = distanceFunctionOption->add_option_group(
+      "gyroidOption",
+      "Options for setting up gyroid function");
     gyroidOption->add_option("--scale", gyroidScale)
       ->description("Scaling factor for gyroid function (x,y[,z])")
       ->expected(2, 3);
@@ -163,10 +163,11 @@ public:
     auto* distFromPlaneOption = distanceFunctionOption->add_option_group(
       "distFromPlaneOption",
       "Options for setting up distance-from-plane function");
-    auto* perpDirOption = distFromPlaneOption->add_option("--dir", perpDir)
-      ->description(
-        "Positive direction for distance-from-plane function (x,y[,z])")
-      ->expected(2, 3);
+    auto* perpDirOption =
+      distFromPlaneOption->add_option("--dir", perpDir)
+        ->description(
+          "Positive direction for distance-from-plane function (x,y[,z])")
+        ->expected(2, 3);
     distFromPlaneOption->add_option("--inPlane", inPlane)
       ->description("In-plane point for distance-from-plane function (x,y[,z])")
       ->expected(2, 3)
@@ -192,7 +193,8 @@ public:
     slic::setLoggingMsgLevel(_verboseOutput ? slic::message::Debug
                                             : slic::message::Info);
 
-    ndim = std::max({ndim, fcnCenter.size(), inPlane.size(), perpDir.size(), gyroidScale.size() });
+    ndim = std::max(
+      {ndim, fcnCenter.size(), inPlane.size(), perpDir.size(), gyroidScale.size()});
     SLIC_ASSERT_MSG((fcnCenter.empty() || fcnCenter.size() == ndim) &&
                       (inPlane.empty() || inPlane.size() == ndim) &&
                       (perpDir.empty() || perpDir.size() == ndim) &&
@@ -306,15 +308,15 @@ void moveConduitDataToNewMemorySpace(conduit::Node& node,
 
 void getIntMinMax(int inVal, int& minVal, int& maxVal, int& sumVal)
 {
-  #ifdef AXOM_USE_MPI
+#ifdef AXOM_USE_MPI
   MPI_Allreduce(&inVal, &minVal, 1, MPI_INT, MPI_MIN, MPI_COMM_WORLD);
   MPI_Allreduce(&inVal, &maxVal, 1, MPI_INT, MPI_MAX, MPI_COMM_WORLD);
   MPI_Allreduce(&inVal, &sumVal, 1, MPI_INT, MPI_SUM, MPI_COMM_WORLD);
-  #else
+#else
   minVal = inVal;
   maxVal = inVal;
   sumVal = inVal;
-  #endif
+#endif
 }
 
 Input params;
@@ -464,9 +466,9 @@ public:
     }
 
     double rval = localRval;
-  #ifdef AXOM_USE_MPI
+#ifdef AXOM_USE_MPI
     MPI_Allreduce(&localRval, &rval, 1, MPI_DOUBLE, MPI_MAX, MPI_COMM_WORLD);
-  #endif
+#endif
 
     return rval;
   }
@@ -527,11 +529,11 @@ public:
   bool isValid() const
   {
     conduit::Node info;
-  #ifdef AXOM_USE_MPI
+#ifdef AXOM_USE_MPI
     if(!conduit::blueprint::mpi::verify("mesh", _mdMesh, info, MPI_COMM_WORLD))
-  #else
+#else
     if(!conduit::blueprint::verify("mesh", _mdMesh, info))
-  #endif
+#endif
     {
       SLIC_INFO("Invalid blueprint for mesh: \n" << info.to_yaml());
       slic::flushStreams();
@@ -575,13 +577,13 @@ private:
     SLIC_ASSERT(!meshFilename.empty());
 
     _mdMesh.reset();
-  #ifdef AXOM_USE_MPI
+#ifdef AXOM_USE_MPI
     conduit::relay::mpi::io::blueprint::load_mesh(meshFilename,
                                                   _mdMesh,
                                                   MPI_COMM_WORLD);
-  #else
+#else
     conduit::relay::io::blueprint::load_mesh(meshFilename, _mdMesh);
-  #endif
+#endif
     SLIC_ASSERT(conduit::blueprint::mesh::is_multi_domain(_mdMesh));
     _domCount = conduit::blueprint::mesh::number_of_domains(_mdMesh);
 
@@ -599,9 +601,9 @@ private:
       const conduit::Node coordsetNode = _mdMesh[0].fetch_existing(_coordsetPath);
       _ndims = conduit::blueprint::mesh::coordset::dims(coordsetNode);
     }
-  #ifdef AXOM_USE_MPI
+#ifdef AXOM_USE_MPI
     MPI_Allreduce(MPI_IN_PLACE, &_ndims, 1, MPI_INT, MPI_MAX, MPI_COMM_WORLD);
-  #endif
+#endif
     SLIC_ASSERT(_ndims > 0);
 
     SLIC_ASSERT(isValid());
@@ -613,15 +615,15 @@ void printTimingStats(axom::utilities::Timer& t, const std::string& description)
 {
   auto getDoubleMinMax =
     [](double inVal, double& minVal, double& maxVal, double& sumVal) {
-  #ifdef AXOM_USE_MPI
+#ifdef AXOM_USE_MPI
       MPI_Allreduce(&inVal, &minVal, 1, MPI_DOUBLE, MPI_MIN, MPI_COMM_WORLD);
       MPI_Allreduce(&inVal, &maxVal, 1, MPI_DOUBLE, MPI_MAX, MPI_COMM_WORLD);
       MPI_Allreduce(&inVal, &sumVal, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
-  #else
+#else
       minVal = inVal;
       maxVal = inVal;
       sumVal = inVal;
-  #endif
+#endif
     };
 
   {
@@ -639,14 +641,14 @@ void printTimingStats(axom::utilities::Timer& t, const std::string& description)
 /// Write blueprint mesh to disk
 void saveMesh(const conduit::Node& mesh, const std::string& filename)
 {
-  #ifdef AXOM_USE_MPI
+#ifdef AXOM_USE_MPI
   conduit::relay::mpi::io::blueprint::save_mesh(mesh,
                                                 filename,
                                                 "hdf5",
                                                 MPI_COMM_WORLD);
-  #else
+#else
   conduit::relay::io::blueprint::save_mesh(mesh, filename, "hdf5");
-  #endif
+#endif
 }
 
 /// Write blueprint mesh to disk
@@ -656,11 +658,11 @@ void saveMesh(const sidre::Group& mesh, const std::string& filename)
   mesh.createNativeLayout(tmpMesh);
   {
     conduit::Node info;
-  #ifdef AXOM_USE_MPI
+#ifdef AXOM_USE_MPI
     if(!conduit::blueprint::mpi::verify("mesh", tmpMesh, info, MPI_COMM_WORLD))
-  #else
+#else
     if(!conduit::blueprint::verify("mesh", tmpMesh, info))
-  #endif
+#endif
     {
       SLIC_INFO("Invalid blueprint for mesh: \n" << info.to_yaml());
       slic::flushStreams();
@@ -741,7 +743,7 @@ struct ContourTestBase
         s_allocatorId);
     }
 
-  #if defined(AXOM_USE_UMPIRE)
+#if defined(AXOM_USE_UMPIRE)
     /*
       Make sure data is correctly on host or device.
       We don't test with Unified memory because it's too forgiving.
@@ -768,25 +770,25 @@ struct ContourTestBase
       {
         SLIC_ASSERT(resourceName == "HOST");
       }
-    #if defined(AXOM_RUNTIME_POLICY_USE_OPENMP)
+  #if defined(AXOM_RUNTIME_POLICY_USE_OPENMP)
       else if(params.policy == axom::runtime_policy::Policy::omp)
       {
         SLIC_ASSERT(resourceName == "HOST");
       }
-    #endif
+  #endif
       else
       {
         SLIC_ASSERT(resourceName == "DEVICE");
       }
     }
-  #endif
+#endif
 
     mc.setFunctionField(functionName());
 
     axom::utilities::Timer computeTimer(false);
-  #ifdef AXOM_USE_MPI
+#ifdef AXOM_USE_MPI
     MPI_Barrier(MPI_COMM_WORLD);
-  #endif
+#endif
     computeTimer.start();
     mc.setDataParallelism(params.dataParallelism);
     mc.computeIsocontour(params.contourVal);
@@ -906,7 +908,7 @@ struct ContourTestBase
       SLIC_ASSERT(coordsViews[d].shape() == fieldShape);
     }
 
-  #if defined(AXOM_USE_RAJA)
+#if defined(AXOM_USE_RAJA)
     auto valueFunctor = m_valueFunctor;
     RAJA::RangeSegment iRange(0, fieldShape[0]);
     RAJA::RangeSegment jRange(0, fieldShape[1]);
@@ -922,7 +924,7 @@ struct ContourTestBase
         }
         fieldView(i, j) = valueFunctor(pt);
       });
-  #else
+#else
     for(axom::IndexType j = 0; j < fieldShape[1]; ++j)
     {
       for(axom::IndexType i = 0; i < fieldShape[0]; ++i)
@@ -935,7 +937,7 @@ struct ContourTestBase
         fieldView(i, j) = m_valueFunctor(pt);
       }
     }
-  #endif
+#endif
   }
 
   template <int TDIM = DIM>
@@ -950,7 +952,7 @@ struct ContourTestBase
       SLIC_ASSERT(coordsViews[d].shape() == fieldShape);
     }
 
-  #if defined(AXOM_USE_RAJA)
+#if defined(AXOM_USE_RAJA)
     auto valueFunctor = m_valueFunctor;
     RAJA::RangeSegment iRange(0, fieldShape[0]);
     RAJA::RangeSegment jRange(0, fieldShape[1]);
@@ -967,7 +969,7 @@ struct ContourTestBase
         }
         fieldView(i, j, k) = valueFunctor(pt);
       });
-  #else
+#else
     for(axom::IndexType k = 0; k < fieldShape[2]; ++k)
     {
       for(axom::IndexType j = 0; j < fieldShape[1]; ++j)
@@ -983,7 +985,7 @@ struct ContourTestBase
         }
       }
     }
-  #endif
+#endif
   }
 
   /*
@@ -1501,18 +1503,18 @@ void initializeLogger()
 
   slic::LogStream* logStream;
 
-  #ifdef AXOM_USE_MPI
+#ifdef AXOM_USE_MPI
   std::string fmt = "[<RANK>][<LEVEL>]: <MESSAGE>\n";
-    #ifdef AXOM_USE_LUMBERJACK
+  #ifdef AXOM_USE_LUMBERJACK
   const int RLIMIT = 8;
   logStream = new slic::LumberjackStream(&std::cout, MPI_COMM_WORLD, RLIMIT, fmt);
-    #else
-  logStream = new slic::SynchronizedStream(&std::cout, MPI_COMM_WORLD, fmt);
-    #endif
   #else
+  logStream = new slic::SynchronizedStream(&std::cout, MPI_COMM_WORLD, fmt);
+  #endif
+#else
   std::string fmt = "[<LEVEL>]: <MESSAGE>\n";
   logStream = new slic::GenericOutputStream(&std::cout, fmt);
-  #endif  // AXOM_USE_MPI
+#endif  // AXOM_USE_MPI
 
   slic::addStreamToAllMsgLevels(logStream);
 
@@ -1611,11 +1613,11 @@ int testNdimInstance(BlueprintStructuredMesh& computationalMesh)
   int errCount = 0;
   if(params.checkResults)
   {
-  #ifdef AXOM_USE_MPI
+#ifdef AXOM_USE_MPI
     MPI_Allreduce(&localErrCount, &errCount, 1, MPI_INT, MPI_SUM, MPI_COMM_WORLD);
-  #else
+#else
     errCount = localErrCount;
-  #endif
+#endif
 
     if(errCount)
     {
@@ -1637,14 +1639,14 @@ int testNdimInstance(BlueprintStructuredMesh& computationalMesh)
 //------------------------------------------------------------------------------
 int main(int argc, char** argv)
 {
-  #ifdef AXOM_USE_MPI
+#ifdef AXOM_USE_MPI
   MPI_Init(&argc, &argv);
   MPI_Comm_rank(MPI_COMM_WORLD, &myRank);
   MPI_Comm_size(MPI_COMM_WORLD, &numRanks);
-  #else
+#else
   numRanks = 1;
   myRank = 0;
-  #endif
+#endif
 
   initializeLogger();
   //slic::setAbortOnWarning(true);
@@ -1666,10 +1668,10 @@ int main(int argc, char** argv)
       retval = app.exit(e);
     }
 
-  #ifdef AXOM_USE_MPI
+#ifdef AXOM_USE_MPI
     MPI_Bcast(&retval, 1, MPI_INT, 0, MPI_COMM_WORLD);
     MPI_Finalize();
-  #endif
+#endif
 
     exit(retval);
   }
@@ -1727,8 +1729,8 @@ int main(int argc, char** argv)
       errCount = testNdimInstance<3, axom::SEQ_EXEC>(computationalMesh);
     }
   }
-  #if defined(AXOM_USE_RAJA)
-    #ifdef AXOM_USE_OPENMP
+#if defined(AXOM_USE_RAJA)
+  #ifdef AXOM_USE_OPENMP
   else if(params.policy == axom::runtime_policy::Policy::omp)
   {
     if(params.ndim == 2)
@@ -1740,8 +1742,8 @@ int main(int argc, char** argv)
       errCount = testNdimInstance<3, axom::OMP_EXEC>(computationalMesh);
     }
   }
-    #endif
-    #if defined(AXOM_USE_CUDA) && defined(AXOM_USE_UMPIRE)
+  #endif
+  #if defined(AXOM_USE_CUDA) && defined(AXOM_USE_UMPIRE)
   else if(params.policy == axom::runtime_policy::Policy::cuda)
   {
     if(params.ndim == 2)
@@ -1753,8 +1755,8 @@ int main(int argc, char** argv)
       errCount = testNdimInstance<3, axom::CUDA_EXEC<256>>(computationalMesh);
     }
   }
-    #endif
-    #if defined(AXOM_USE_HIP) && defined(AXOM_USE_UMPIRE)
+  #endif
+  #if defined(AXOM_USE_HIP) && defined(AXOM_USE_UMPIRE)
   else if(params.policy == axom::runtime_policy::Policy::hip)
   {
     if(params.ndim == 2)
@@ -1766,13 +1768,13 @@ int main(int argc, char** argv)
       errCount = testNdimInstance<3, axom::HIP_EXEC<256>>(computationalMesh);
     }
   }
-    #endif
   #endif
+#endif
 
   finalizeLogger();
-  #ifdef AXOM_USE_MPI
+#ifdef AXOM_USE_MPI
   MPI_Finalize();
-  #endif
+#endif
 
   return errCount != 0;
 }

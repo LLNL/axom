@@ -38,8 +38,8 @@ namespace marching_cubes
 {
 template <int DIM, typename ExecSpace, typename SequentialLoopPolicy>
 class MarchingCubesImpl;
+}  // namespace marching_cubes
 }  // namespace detail
-}
 
 /*!
   @brief Enum for implementation.

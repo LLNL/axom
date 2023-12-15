@@ -7,7 +7,7 @@
 
 // Implementation requires Conduit.
 #ifndef AXOM_USE_CONDUIT
-#error "MarchingCubes.cpp requires conduit"
+  #error "MarchingCubes.cpp requires conduit"
 #endif
 #include "conduit_blueprint.hpp"
 

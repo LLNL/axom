@@ -7,7 +7,7 @@
 
 // Implementation requires Conduit.
 #ifndef AXOM_USE_CONDUIT
-#error "MarchingCubesFullParallel.hpp requires conduit"
+  #error "MarchingCubesFullParallel.hpp requires conduit"
 #endif
 #include "conduit_blueprint.hpp"
 
@@ -120,7 +120,7 @@ public:
   {
     MarkCrossings_Util mcu(m_caseIds, m_fcnView, m_maskView, m_contourVal);
 
-  #if defined(AXOM_USE_RAJA)
+#if defined(AXOM_USE_RAJA)
     RAJA::RangeSegment jRange(0, m_bShape[1]);
     RAJA::RangeSegment iRange(0, m_bShape[0]);
     using EXEC_POL =
@@ -130,7 +130,7 @@ public:
       AXOM_LAMBDA(axom::IndexType i, axom::IndexType j) {
         mcu.computeCaseId(i, j);
       });
-  #else
+#else
     for(int j = 0; j < m_bShape[1]; ++j)
     {
       for(int i = 0; i < m_bShape[0]; ++i)
@@ -138,7 +138,7 @@ public:
         mcu.computeCaseId(i, j);
       }
     }
-  #endif
+#endif
   }
 
   //!@brief Populate m_caseIds with crossing indices.
@@ -147,7 +147,7 @@ public:
   {
     MarkCrossings_Util mcu(m_caseIds, m_fcnView, m_maskView, m_contourVal);
 
-  #if defined(AXOM_USE_RAJA)
+#if defined(AXOM_USE_RAJA)
     RAJA::RangeSegment kRange(0, m_bShape[2]);
     RAJA::RangeSegment jRange(0, m_bShape[1]);
     RAJA::RangeSegment iRange(0, m_bShape[0]);
@@ -158,7 +158,7 @@ public:
       AXOM_LAMBDA(axom::IndexType i, axom::IndexType j, axom::IndexType k) {
         mcu.computeCaseId(i, j, k);
       });
-  #else
+#else
     for(int k = 0; k < m_bShape[2]; ++k)
     {
       for(int j = 0; j < m_bShape[1]; ++j)
@@ -169,7 +169,7 @@ public:
         }
       }
     }
-  #endif
+#endif
   }
 
   /*!
@@ -277,7 +277,7 @@ public:
     m_firstFacetIds.resize(parentCellCount);
     const axom::ArrayView<axom::IndexType, 1, MemorySpace> firstFacetIdsView =
       m_firstFacetIds.view();
-  #if defined(AXOM_USE_RAJA)
+#if defined(AXOM_USE_RAJA)
   #ifdef __INTEL_LLVM_COMPILER
     // Intel oneAPI compiler segfaults with OpenMP RAJA scan
     using ScanPolicy =
@@ -291,16 +291,16 @@ public:
       RAJA::make_span(firstFacetIdsView.data(), parentCellCount),
       RAJA::operators::plus<axom::IndexType> {});
 
-      // m_facetIncrs and m_firstFacetIds, combined with m_caseIds,
-      // are all we need to compute the surface mesh.
-  #else
+    // m_facetIncrs and m_firstFacetIds, combined with m_caseIds,
+    // are all we need to compute the surface mesh.
+#else
     firstFacetIdsView[0] = 0;
     for(axom::IndexType pcId = 1; pcId < parentCellCount; ++pcId)
     {
       firstFacetIdsView[pcId] =
         firstFacetIdsView[pcId - 1] + facetIncrsView[pcId - 1];
     }
-  #endif
+#endif
 
     // Use last facet info to compute number of facets in domain.
     // In case data is on device, copy to host before computing.
@@ -344,7 +344,7 @@ public:
       sortFacetsIncrs ? parentCellCount : 0);
     auto sortedIndicesView = sortedIndices.view();
 
-  #if defined(AXOM_USE_RAJA)
+#if defined(AXOM_USE_RAJA)
     if(sortFacetsIncrs)
     {
       auto sortedFacetIncrs = m_facetIncrs;
@@ -357,7 +357,7 @@ public:
         RAJA::make_span(sortedIndices.data(), parentCellCount),
         RAJA::operators::greater<axom::IndexType> {});
     }
-  #endif
+#endif
 
     auto contourCellParentsView = m_contourCellParents.view();
     auto contourCellCornersView = m_contourCellCorners.view();
@@ -600,9 +600,9 @@ public:
   AXOM_HOST_DEVICE inline typename std::enable_if<TDIM == 2, int>::type
   num_contour_cells(int iCase) const
   {
-  #define _MC_LOOKUP_NUM_SEGMENTS
-  #include "marching_cubes_lookup.hpp"
-  #undef _MC_LOOKUP_NUM_SEGMENTS
+#define _MC_LOOKUP_NUM_SEGMENTS
+#include "marching_cubes_lookup.hpp"
+#undef _MC_LOOKUP_NUM_SEGMENTS
     SLIC_ASSERT(iCase >= 0 && iCase < 16);
     return num_segments[iCase];
   }
@@ -611,9 +611,9 @@ public:
   AXOM_HOST_DEVICE inline typename std::enable_if<TDIM == 2, int>::type
   cases_table(int iCase, int iEdge) const
   {
-  #define _MC_LOOKUP_CASES2D
-  #include "marching_cubes_lookup.hpp"
-  #undef _MC_LOOKUP_CASES2D
+#define _MC_LOOKUP_CASES2D
+#include "marching_cubes_lookup.hpp"
+#undef _MC_LOOKUP_CASES2D
     SLIC_ASSERT(iCase >= 0 && iCase < 16);
     return cases2D[iCase][iEdge];
   }
@@ -622,9 +622,9 @@ public:
   AXOM_HOST_DEVICE inline typename std::enable_if<TDIM == 3, int>::type
   num_contour_cells(int iCase) const
   {
-  #define _MC_LOOKUP_NUM_TRIANGLES
-  #include "marching_cubes_lookup.hpp"
-  #undef _MC_LOOKUP_NUM_TRIANGLES
+#define _MC_LOOKUP_NUM_TRIANGLES
+#include "marching_cubes_lookup.hpp"
+#undef _MC_LOOKUP_NUM_TRIANGLES
     SLIC_ASSERT(iCase >= 0 && iCase < 256);
     return num_triangles[iCase];
   }
@@ -633,9 +633,9 @@ public:
   AXOM_HOST_DEVICE inline typename std::enable_if<TDIM == 3, int>::type
   cases_table(int iCase, int iEdge) const
   {
-  #define _MC_LOOKUP_CASES3D
-  #include "marching_cubes_lookup.hpp"
-  #undef _MC_LOOKUP_CASES3D
+#define _MC_LOOKUP_CASES3D
+#include "marching_cubes_lookup.hpp"
+#undef _MC_LOOKUP_CASES3D
     SLIC_ASSERT(iCase >= 0 && iCase < 256);
     return cases3D[iCase][iEdge];
   }
@@ -846,7 +846,7 @@ newMarchingCubesFullParallel(MarchingCubes::RuntimePolicy runtimePolicy, int dim
                     : std::unique_ptr<ImplBase>(
                         new MarchingCubesFullParallel<3, axom::SEQ_EXEC>);
   }
-  #ifdef AXOM_RUNTIME_POLICY_USE_OPENMP
+#ifdef AXOM_RUNTIME_POLICY_USE_OPENMP
   else if(runtimePolicy == MarchingCubes::RuntimePolicy::omp)
   {
     impl = dim == 2 ? std::unique_ptr<ImplBase>(
@@ -854,8 +854,8 @@ newMarchingCubesFullParallel(MarchingCubes::RuntimePolicy runtimePolicy, int dim
                     : std::unique_ptr<ImplBase>(
                         new MarchingCubesFullParallel<3, axom::OMP_EXEC>);
   }
-  #endif
-  #ifdef AXOM_RUNTIME_POLICY_USE_CUDA
+#endif
+#ifdef AXOM_RUNTIME_POLICY_USE_CUDA
   else if(runtimePolicy == MarchingCubes::RuntimePolicy::cuda)
   {
     impl = dim == 2 ? std::unique_ptr<ImplBase>(
@@ -863,8 +863,8 @@ newMarchingCubesFullParallel(MarchingCubes::RuntimePolicy runtimePolicy, int dim
                     : std::unique_ptr<ImplBase>(
                         new MarchingCubesFullParallel<3, axom::CUDA_EXEC<256>>);
   }
-  #endif
-  #ifdef AXOM_RUNTIME_POLICY_USE_HIP
+#endif
+#ifdef AXOM_RUNTIME_POLICY_USE_HIP
   else if(runtimePolicy == MarchingCubes::RuntimePolicy::hip)
   {
     impl = dim == 2 ? std::unique_ptr<ImplBase>(
@@ -872,7 +872,7 @@ newMarchingCubesFullParallel(MarchingCubes::RuntimePolicy runtimePolicy, int dim
                     : std::unique_ptr<ImplBase>(
                         new MarchingCubesFullParallel<3, axom::HIP_EXEC<256>>);
   }
-  #endif
+#endif
   else
   {
     SLIC_ERROR(axom::fmt::format(
