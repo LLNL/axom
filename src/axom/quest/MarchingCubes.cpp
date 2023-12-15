@@ -11,7 +11,7 @@
 
   #include "axom/core/execution/execution_space.hpp"
   #include "axom/quest/MarchingCubes.hpp"
-  #include "axom/quest/detail/MarchingCubesPartParallel.hpp"
+  #include "axom/quest/detail/MarchingCubesHybridParallel.hpp"
   #include "axom/quest/detail/MarchingCubesFullParallel.hpp"
   #include "axom/fmt.hpp"
 
@@ -218,15 +218,15 @@ void MarchingCubesSingleDomain::computeIsocontour(double contourVal)
   SLIC_ASSERT_MSG(!m_fcnFieldName.empty(),
                   "You must call setFunctionField before computeIsocontour.");
 
-  // We have 2 implementations.  MarchingCubesPartParallel is faster on the host
+  // We have 2 implementations.  MarchingCubesHybridParallel is faster on the host
   // and MarchingCubesFullParallel is faster on GPUs.  Both work in all cases.
-  // but we can choose based on runtime policy or by user choice
+  // We can choose based on runtime policy or by user choice
   if(m_dataParallelism ==
-       axom::quest::MarchingCubesDataParallelism::partialParallel ||
+       axom::quest::MarchingCubesDataParallelism::hybridParallel ||
      (m_dataParallelism == axom::quest::MarchingCubesDataParallelism::byPolicy &&
       m_runtimePolicy == axom::quest::MarchingCubesRuntimePolicy::seq))
   {
-    m_impl = axom::quest::detail::marching_cubes::newMarchingCubesPartParallel(
+    m_impl = axom::quest::detail::marching_cubes::newMarchingCubesHybridParallel(
       m_runtimePolicy,
       m_ndim);
   }

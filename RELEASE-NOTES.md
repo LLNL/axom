@@ -32,7 +32,7 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 ### Changed
 - `MarchingCubes` allows user to select the underlying data-parallel implementation
   - `fullParallel` works best on GPUs.
-  - `partialParallel` reduces the amount of data processed and works best with
+  - `hybridParallel` reduces the amount of data processed and works best with
      `MarchingCubesRuntimePolicy::seq`.
   - `byPolicy` (the default) selects the implementation based on the runtime policy.
 - `MarchingCubes` and `DistributedClosestPoint` classes changed from requiring the Blueprint

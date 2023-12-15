@@ -37,18 +37,18 @@ namespace marching_cubes
   cannot be parallelized but must access data allocated for ExecSpace.
   Use something like axom::SEQ_EXEC or axom::CUDA_EXEC<1>.
 
-  The difference between MarchingCubesPartParallel and MarchingCubesFullParallel
+  The difference between MarchingCubesHybridParallel and MarchingCubesFullParallel
   is how they compute indices for the unstructured surface mesh.
-  - MarchingCubesPartParallel uses sequential loop, and skips over parents
+  - MarchingCubesHybridParallel uses sequential loop, and skips over parents
     cells that don't touch the surface contour.  It processes less data
     but is not data-parallel.
   - MarchingCubesFullParallel that checks all parents cells.
     It process more data but is data-parallel.
-  We've observed that MarchingCubesPartParallel is faster for seq policy
-  and MarchingCubesPartParallel is faster on the GPU.
+  We've observed that MarchingCubesHybridParallel is faster for seq policy
+  and MarchingCubesHybridParallel is faster on the GPU.
 */
 template <int DIM, typename ExecSpace, typename SequentialExecSpace>
-class MarchingCubesPartParallel : public MarchingCubesSingleDomain::ImplBase
+class MarchingCubesHybridParallel : public MarchingCubesSingleDomain::ImplBase
 {
 public:
   using Point = axom::primal::Point<double, DIM>;
@@ -181,7 +181,7 @@ public:
   }
 
   /*!
-    @brief Implementation used by MarchingCubesPartParallel::markCrossings_dim()
+    @brief Implementation used by MarchingCubesHybridParallel::markCrossings_dim()
     containing just the objects needed for that part, to be made available
     on devices.
   */
@@ -390,7 +390,7 @@ public:
   }
 
   /*!
-    @brief Implementation used by MarchingCubesPartParallel::computeContour().
+    @brief Implementation used by MarchingCubesHybridParallel::computeContour().
     containing just the objects needed for that part, to be made available
     on devices.
   */
@@ -813,7 +813,7 @@ public:
   /*!
     @brief Constructor.
   */
-  MarchingCubesPartParallel()
+  MarchingCubesHybridParallel()
     : m_crossings(0, 0)
     , m_contourNodeCoords(0, 0)
     , m_contourCellCorners(0, 0)
@@ -882,7 +882,7 @@ private:
 };
 
 static std::unique_ptr<axom::quest::MarchingCubesSingleDomain::ImplBase>
-newMarchingCubesPartParallel(MarchingCubesRuntimePolicy runtimePolicy, int dim)
+newMarchingCubesHybridParallel(MarchingCubesRuntimePolicy runtimePolicy, int dim)
 {
   using ImplBase = axom::quest::MarchingCubesSingleDomain::ImplBase;
   using RuntimePolicy = axom::quest::MarchingCubesRuntimePolicy;
@@ -893,18 +893,18 @@ newMarchingCubesPartParallel(MarchingCubesRuntimePolicy runtimePolicy, int dim)
   {
     impl = dim == 2
       ? std::unique_ptr<ImplBase>(
-          new MarchingCubesPartParallel<2, axom::SEQ_EXEC, axom::SEQ_EXEC>)
+          new MarchingCubesHybridParallel<2, axom::SEQ_EXEC, axom::SEQ_EXEC>)
       : std::unique_ptr<ImplBase>(
-          new MarchingCubesPartParallel<3, axom::SEQ_EXEC, axom::SEQ_EXEC>);
+          new MarchingCubesHybridParallel<3, axom::SEQ_EXEC, axom::SEQ_EXEC>);
   }
   #ifdef _AXOM_MARCHINGCUBES_USE_OPENMP
   else if(runtimePolicy == RuntimePolicy::omp)
   {
     impl = dim == 2
       ? std::unique_ptr<ImplBase>(
-          new MarchingCubesPartParallel<2, axom::OMP_EXEC, axom::SEQ_EXEC>)
+          new MarchingCubesHybridParallel<2, axom::OMP_EXEC, axom::SEQ_EXEC>)
       : std::unique_ptr<ImplBase>(
-          new MarchingCubesPartParallel<3, axom::OMP_EXEC, axom::SEQ_EXEC>);
+          new MarchingCubesHybridParallel<3, axom::OMP_EXEC, axom::SEQ_EXEC>);
   }
   #endif
   #ifdef _AXOM_MARCHINGCUBES_USE_CUDA
@@ -912,9 +912,9 @@ newMarchingCubesPartParallel(MarchingCubesRuntimePolicy runtimePolicy, int dim)
   {
     impl = dim == 2
       ? std::unique_ptr<ImplBase>(
-          new MarchingCubesPartParallel<2, axom::CUDA_EXEC<256>, axom::CUDA_EXEC<1>>)
+          new MarchingCubesHybridParallel<2, axom::CUDA_EXEC<256>, axom::CUDA_EXEC<1>>)
       : std::unique_ptr<ImplBase>(
-          new MarchingCubesPartParallel<3, axom::CUDA_EXEC<256>, axom::CUDA_EXEC<1>>);
+          new MarchingCubesHybridParallel<3, axom::CUDA_EXEC<256>, axom::CUDA_EXEC<1>>);
   }
   #endif
   #ifdef _AXOM_MARCHINGCUBES_USE_HIP
@@ -922,9 +922,9 @@ newMarchingCubesPartParallel(MarchingCubesRuntimePolicy runtimePolicy, int dim)
   {
     impl = dim == 2
       ? std::unique_ptr<ImplBase>(
-          new MarchingCubesPartParallel<2, axom::HIP_EXEC<256>, axom::HIP_EXEC<1>>)
+          new MarchingCubesHybridParallel<2, axom::HIP_EXEC<256>, axom::HIP_EXEC<1>>)
       : std::unique_ptr<ImplBase>(
-          new MarchingCubesPartParallel<3, axom::HIP_EXEC<256>, axom::HIP_EXEC<1>>);
+          new MarchingCubesHybridParallel<3, axom::HIP_EXEC<256>, axom::HIP_EXEC<1>>);
   }
   #endif
   else

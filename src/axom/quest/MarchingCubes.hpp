@@ -70,7 +70,7 @@ enum class MarchingCubesRuntimePolicy
 enum class MarchingCubesDataParallelism
 {
   byPolicy = 0,
-  partialParallel = 1,
+  hybridParallel = 1,
   fullParallel = 2
 };
 

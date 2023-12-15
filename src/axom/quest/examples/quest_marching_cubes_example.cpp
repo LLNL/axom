@@ -122,7 +122,7 @@ private:
   const std::map<std::string, quest::MarchingCubesDataParallelism> s_validImplChoices
   {
       {"byPolicy", quest::MarchingCubesDataParallelism::byPolicy}
-    , {"partialParallel", quest::MarchingCubesDataParallelism::partialParallel}
+    , {"hybridParallel", quest::MarchingCubesDataParallelism::hybridParallel}
     , {"fullParallel", quest::MarchingCubesDataParallelism::fullParallel}
   };
   // clang-format on
