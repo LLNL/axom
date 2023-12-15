@@ -373,7 +373,7 @@ public:
   }
 
   //! @brief Return the real (ghost-free) extents of mesh data.
-  MdIndices getRealExtents(const std::string& association)
+  const MdIndices& getRealExtents(const std::string& association)
   {
     if(association == "vertex")
     {
@@ -389,7 +389,7 @@ public:
                         "association for now, not '{}'.",
                         association));
 
-    return MdIndices {};
+    return m_cellShape;
   }
   //@}
 
@@ -641,7 +641,8 @@ public:
   //!@name Creating data
 
   /*!
-    @brief Create a new scalar nodal data field.
+    @brief Create a new scalar nodal data field with specified
+    strides and offsets.
 
     @param [in] fieldName
     @param [in] association "vertex" or "element"
@@ -658,7 +659,7 @@ public:
     for matching the strides and offsets of existing data.  It's more
     natural to create the field based on ghost layer thickness and
     index advancement order (row-major, column-major or some other).
-    That is easy to do, but we don't have a use case yet.
+    Use createFieldPadded() for this.
   */
   void createField(const std::string& fieldName,
                    const std::string& association,
@@ -674,7 +675,7 @@ public:
       association != "vertex" && association != "element",
       axom::fmt::format("Not yet supporting association '{}'.", association));
 
-    const auto& realShape = association == "element" ? m_cellShape : m_nodeShape;
+    const auto& realShape = getRealExtents(association);
     MdIndices loPads, hiPads, paddedShape, strideOrder;
     axom::quest::internal::stridesAndOffsetsToShapes(realShape,
                                                      offsets,
@@ -692,8 +693,6 @@ public:
                                       paddedShape));
     }
 
-    auto realExtents = getRealExtents(association);
-
     conduit::Node& fieldNode = m_dom->fetch("fields/" + fieldName);
     fieldNode["association"] = association;
     fieldNode["topology"] = m_topologyName;
@@ -708,7 +707,7 @@ public:
 
     axom::IndexType slowDir = strideOrder[DIM - 1];
     auto extras = dtype.number_of_elements() -
-      strides[slowDir] * (offsets[slowDir] + realExtents[slowDir]);
+      strides[slowDir] * (offsets[slowDir] + realShape[slowDir]);
     if(extras < 0)
     {
       SLIC_ERROR(
@@ -717,6 +716,72 @@ public:
     }
 
     fieldNode["values"].set(dtype);
+  }
+
+  /*!
+    @brief Create a new scalar nodal data field with specified
+    ghost paddings.
+
+    @param [in] fieldName
+    @param [in] association "vertex" or "element"
+    @param [in] dtype Conduit data type to put in the field.
+      If dtype has too few elements, the minimum sufficient
+      size will be allocated.
+    @param loPads [i] Ghost padding amount on low side.
+    @param hiPads [i] Ghost padding amount ont high side.
+    @param strideOrder [i] Fastest-to-slowest advancing
+      index directions.
+
+    Field data allocation is done by Conduit, so the data lives in
+    host memory.  Conduit currently doesn't provide a means to allocate
+    the array in device memory.
+  */
+  void createField(const std::string& fieldName,
+                   const std::string& association,
+                   const conduit::DataType& dtype,
+                   const MdIndices& loPads,
+                   const MdIndices& hiPads,
+                   const MdIndices& strideOrder)
+  {
+    SLIC_ERROR_IF(
+      m_dom->has_path("fields/" + fieldName),
+      axom::fmt::format("Cannot create field {}.  It already exists.", fieldName));
+
+    SLIC_ERROR_IF(
+      association != "vertex" && association != "element",
+      axom::fmt::format("Not yet supporting association '{}'.", association));
+
+    axom::StackArray<axom::IndexType, DIM> offsets;
+    axom::StackArray<axom::IndexType, DIM> strides;
+    axom::IndexType valuesCount;
+    const auto& realShape = getRealExtents(association);
+    axom::quest::internal::shapesToStridesAndOffsets(realShape,
+                                                     loPads,
+                                                     hiPads,
+                                                     strideOrder,
+                                                     1,
+                                                     offsets,
+                                                     strides,
+                                                     valuesCount);
+
+    conduit::Node& fieldNode = m_dom->fetch("fields/" + fieldName);
+    fieldNode["association"] = association;
+    fieldNode["topology"] = m_topologyName;
+
+    constexpr bool isInt32 = std::is_same<axom::IndexType, std::int32_t>::value;
+    const conduit::DataType conduitDtype =
+      isInt32 ? conduit::DataType::int32(DIM) : conduit::DataType::int64(DIM);
+    // Make temporary non-const copies for the "set" methods.
+    auto tmpStrides = strides, tmpOffsets = offsets;
+    fieldNode["strides"].set(conduitDtype, &tmpStrides[0]);
+    fieldNode["offsets"].set(conduitDtype, &tmpOffsets[0]);
+
+    conduit::DataType bumpedDtype = dtype;
+    if(bumpedDtype.number_of_elements() < valuesCount)
+    {
+      bumpedDtype.set_number_of_elements(valuesCount);
+    }
+    fieldNode["values"].set(bumpedDtype);
   }
   //@}
 

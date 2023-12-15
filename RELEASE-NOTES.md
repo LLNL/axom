@@ -28,6 +28,8 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 - Primal: Adds a `checkAndFixOrientation()` function to `primal::Tetrahedron`
   that swaps the order of vertices if the signed volume of the Tetrahedron is
   negative, resulting in the signed volume becoming positive.
+- Adds `FlatMap`, a generic key-value store which aims for drop-in compatibility
+  with `std::unordered_map`, but utilizes an open-addressing design.
 
 ### Changed
 - `MarchingCubes` allows user to select the underlying data-parallel implementation
@@ -35,6 +37,8 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
   - `hybridParallel` reduces the amount of data processed and works best with
      `MarchingCubesRuntimePolicy::seq`.
   - `byPolicy` (the default) selects the implementation based on the runtime policy.
+- `MarchingCubes` and `DistributedClosestPoint` classes identify domains by their
+  `state/domain_id` parameters if provided, or the local iteration index if not.
 - `MarchingCubes` and `DistributedClosestPoint` classes changed from requiring the Blueprint
   coordset name to requiring the Blueprint topology name.  The changed interface methods are:
   - `DistributedClosestPoint::setObjectMesh`

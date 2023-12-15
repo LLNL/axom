@@ -833,22 +833,21 @@ private:
 };
 
 static std::unique_ptr<axom::quest::MarchingCubesSingleDomain::ImplBase>
-newMarchingCubesFullParallel(MarchingCubesRuntimePolicy runtimePolicy, int dim)
+newMarchingCubesFullParallel(MarchingCubes::RuntimePolicy runtimePolicy, int dim)
 {
   using ImplBase = axom::quest::MarchingCubesSingleDomain::ImplBase;
-  using RuntimePolicy = axom::quest::MarchingCubesRuntimePolicy;
 
   SLIC_ASSERT(dim >= 2 && dim <= 3);
   std::unique_ptr<ImplBase> impl;
-  if(runtimePolicy == RuntimePolicy::seq)
+  if(runtimePolicy == MarchingCubes::RuntimePolicy::seq)
   {
     impl = dim == 2 ? std::unique_ptr<ImplBase>(
                         new MarchingCubesFullParallel<2, axom::SEQ_EXEC>)
                     : std::unique_ptr<ImplBase>(
                         new MarchingCubesFullParallel<3, axom::SEQ_EXEC>);
   }
-  #ifdef _AXOM_MARCHINGCUBES_USE_OPENMP
-  else if(runtimePolicy == RuntimePolicy::omp)
+  #ifdef AXOM_RUNTIME_POLICY_USE_OPENMP
+  else if(runtimePolicy == MarchingCubes::RuntimePolicy::omp)
   {
     impl = dim == 2 ? std::unique_ptr<ImplBase>(
                         new MarchingCubesFullParallel<2, axom::OMP_EXEC>)
@@ -856,8 +855,8 @@ newMarchingCubesFullParallel(MarchingCubesRuntimePolicy runtimePolicy, int dim)
                         new MarchingCubesFullParallel<3, axom::OMP_EXEC>);
   }
   #endif
-  #ifdef _AXOM_MARCHINGCUBES_USE_CUDA
-  else if(runtimePolicy == RuntimePolicy::cuda)
+  #ifdef AXOM_RUNTIME_POLICY_USE_CUDA
+  else if(runtimePolicy == MarchingCubes::RuntimePolicy::cuda)
   {
     impl = dim == 2 ? std::unique_ptr<ImplBase>(
                         new MarchingCubesFullParallel<2, axom::CUDA_EXEC<256>>)
@@ -865,8 +864,8 @@ newMarchingCubesFullParallel(MarchingCubesRuntimePolicy runtimePolicy, int dim)
                         new MarchingCubesFullParallel<3, axom::CUDA_EXEC<256>>);
   }
   #endif
-  #ifdef _AXOM_MARCHINGCUBES_USE_HIP
-  else if(runtimePolicy == RuntimePolicy::hip)
+  #ifdef AXOM_RUNTIME_POLICY_USE_HIP
+  else if(runtimePolicy == MarchingCubes::RuntimePolicy::hip)
   {
     impl = dim == 2 ? std::unique_ptr<ImplBase>(
                         new MarchingCubesFullParallel<2, axom::HIP_EXEC<256>>)

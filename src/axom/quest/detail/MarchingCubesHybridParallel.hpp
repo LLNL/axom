@@ -7,7 +7,7 @@
 
 // Implementation requires Conduit.
 #ifndef AXOM_USE_CONDUIT
-#error "MarchingCubesFullParallel.hpp requires conduit"
+#error "MarchingCubesHybridParallel.hpp requires conduit"
 #endif
 #include "conduit_blueprint.hpp"
 
@@ -884,14 +884,13 @@ private:
 };
 
 static std::unique_ptr<axom::quest::MarchingCubesSingleDomain::ImplBase>
-newMarchingCubesHybridParallel(MarchingCubesRuntimePolicy runtimePolicy, int dim)
+newMarchingCubesHybridParallel(MarchingCubes::RuntimePolicy runtimePolicy, int dim)
 {
   using ImplBase = axom::quest::MarchingCubesSingleDomain::ImplBase;
-  using RuntimePolicy = axom::quest::MarchingCubesRuntimePolicy;
 
   SLIC_ASSERT(dim >= 2 && dim <= 3);
   std::unique_ptr<ImplBase> impl;
-  if(runtimePolicy == RuntimePolicy::seq)
+  if(runtimePolicy == MarchingCubes::RuntimePolicy::seq)
   {
     impl = dim == 2
       ? std::unique_ptr<ImplBase>(
@@ -899,8 +898,8 @@ newMarchingCubesHybridParallel(MarchingCubesRuntimePolicy runtimePolicy, int dim
       : std::unique_ptr<ImplBase>(
           new MarchingCubesHybridParallel<3, axom::SEQ_EXEC, axom::SEQ_EXEC>);
   }
-  #ifdef _AXOM_MARCHINGCUBES_USE_OPENMP
-  else if(runtimePolicy == RuntimePolicy::omp)
+  #ifdef AXOM_RUNTIME_POLICY_USE_OPENMP
+  else if(runtimePolicy == MarchingCubes::RuntimePolicy::omp)
   {
     impl = dim == 2
       ? std::unique_ptr<ImplBase>(
@@ -909,8 +908,8 @@ newMarchingCubesHybridParallel(MarchingCubesRuntimePolicy runtimePolicy, int dim
           new MarchingCubesHybridParallel<3, axom::OMP_EXEC, axom::SEQ_EXEC>);
   }
   #endif
-  #ifdef _AXOM_MARCHINGCUBES_USE_CUDA
-  else if(runtimePolicy == RuntimePolicy::cuda)
+  #ifdef AXOM_RUNTIME_POLICY_USE_CUDA
+  else if(runtimePolicy == MarchingCubes::RuntimePolicy::cuda)
   {
     impl = dim == 2
       ? std::unique_ptr<ImplBase>(
@@ -919,8 +918,8 @@ newMarchingCubesHybridParallel(MarchingCubesRuntimePolicy runtimePolicy, int dim
           new MarchingCubesHybridParallel<3, axom::CUDA_EXEC<256>, axom::CUDA_EXEC<1>>);
   }
   #endif
-  #ifdef _AXOM_MARCHINGCUBES_USE_HIP
-  else if(runtimePolicy == RuntimePolicy::hip)
+  #ifdef AXOM_RUNTIME_POLICY_USE_HIP
+  else if(runtimePolicy == MarchingCubes::RuntimePolicy::hip)
   {
     impl = dim == 2
       ? std::unique_ptr<ImplBase>(

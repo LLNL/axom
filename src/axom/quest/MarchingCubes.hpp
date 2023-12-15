@@ -19,6 +19,7 @@
 #ifdef AXOM_USE_CONDUIT
 
   // Axom includes
+  #include "axom/core/execution/runtime_policy.hpp"
   #include "axom/mint/mesh/UnstructuredMesh.hpp"
 
   // Conduit includes
@@ -27,36 +28,18 @@
   // C++ includes
   #include <string>
 
-  // Add some helper preprocessor defines for using OPENMP, CUDA, and HIP policies
-  // within the marching cubes implementation.
-  #if defined(AXOM_USE_RAJA)
-    #ifdef AXOM_USE_OPENMP
-      #define _AXOM_MARCHINGCUBES_USE_OPENMP
-    #endif
-    #if defined(AXOM_USE_CUDA) && defined(AXOM_USE_UMPIRE)
-      #define _AXOM_MARCHINGCUBES_USE_CUDA
-    #endif
-    #if defined(AXOM_USE_HIP) && defined(AXOM_USE_UMPIRE)
-      #define _AXOM_MARCHINGCUBES_USE_HIP
-    #endif
-  #endif
-
 namespace axom
 {
 namespace quest
 {
-/*!
-  @brief Enum for runtime execution policy
-
-  The policy implicitly selects the execution space and allocator id.
-*/
-enum class MarchingCubesRuntimePolicy
+namespace detail
 {
-  seq = 0,
-  omp = 1,
-  cuda = 2,
-  hip = 3
-};
+namespace marching_cubes
+{
+template <int DIM, typename ExecSpace, typename SequentialLoopPolicy>
+class MarchingCubesImpl;
+}  // namespace detail
+}
 
 /*!
   @brief Enum for implementation.
@@ -73,12 +56,6 @@ enum class MarchingCubesDataParallelism
   hybridParallel = 1,
   fullParallel = 2
 };
-
-/// Utility function to allow formating a MarchingCubesRuntimePolicy
-inline auto format_as(MarchingCubesRuntimePolicy pol)
-{
-  return fmt::underlying(pol);
-}
 
 class MarchingCubesSingleDomain;
 
@@ -121,12 +98,12 @@ class MarchingCubesSingleDomain;
 class MarchingCubes
 {
 public:
-  using RuntimePolicy = MarchingCubesRuntimePolicy;
+  using RuntimePolicy = axom::runtime_policy::Policy;
   /*!
    * \brief Constructor sets up computational mesh and data for running the
    * marching cubes algorithm.
    *
-   * \param [in] runtimePolicy A value from MarchingCubesRuntimePolicy.
+   * \param [in] runtimePolicy A value from RuntimePolicy.
    *             The simplest policy is RuntimePolicy::seq, which specifies
    *             running sequentially on the CPU.
    * \param [in] bpMesh Blueprint multi-domain mesh containing scalar field.
@@ -200,7 +177,7 @@ public:
   }
 
 private:
-  MarchingCubesRuntimePolicy m_runtimePolicy;
+  RuntimePolicy m_runtimePolicy;
 
   //@brief Choice of full or partial data-parallelism, or byPolicy.
   MarchingCubesDataParallelism m_dataParallelism =
@@ -226,12 +203,12 @@ private:
 class MarchingCubesSingleDomain
 {
 public:
-  using RuntimePolicy = MarchingCubesRuntimePolicy;
+  using RuntimePolicy = axom::runtime_policy::Policy;
   /*!
    * \brief Constructor for applying algorithm in a single domain.
    * See MarchingCubes for the multi-domain implementation.
    *
-   * \param [in] runtimePolicy A value from MarchingCubesRuntimePolicy.
+   * \param [in] runtimePolicy A value from RuntimePolicy.
    *             The simplest policy is RuntimePolicy::seq, which specifies
    *             running sequentially on the CPU.
    * \param [in] dom Blueprint single-domain mesh containing scalar field.
@@ -245,7 +222,6 @@ public:
    *
    * Some data from \a dom may be cached by the constructor.
    * Any change to it after the constructor leads to undefined behavior.
-   * See setDomain(const conduit::Node &) for requirements on \a dom.
    *
    * The mesh coordinates should be stored contiguously.  See
    * conduit::blueprint::is_contiguous().  In the future, this
@@ -317,41 +293,6 @@ public:
   }
 
   /*!
-    @brief Determine whether a given \a MarchingCubesRuntimePolicy is
-    valid for the Axom build configuration.
-  */
-  inline bool isValidRuntimePolicy(MarchingCubesRuntimePolicy policy) const
-  {
-    switch(policy)
-    {
-    case MarchingCubesRuntimePolicy::seq:
-      return true;
-
-    case MarchingCubesRuntimePolicy::omp:
-  #ifdef _AXOM_MARCHINGCUBES_USE_OPENMP
-      return true;
-  #else
-      return false;
-  #endif
-
-    case MarchingCubesRuntimePolicy::cuda:
-  #ifdef _AXOM_MARCHINGCUBES_USE_CUDA
-      return true;
-  #else
-      return false;
-  #endif
-    case MarchingCubesRuntimePolicy::hip:
-  #ifdef _AXOM_MARCHINGCUBES_USE_HIP
-      return true;
-  #else
-      return false;
-  #endif
-    }
-
-    return false;
-  }
-
-  /*!
     @brief Base class for implementations templated on dimension
     and execution space.
 
@@ -384,7 +325,7 @@ public:
   };
 
 private:
-  MarchingCubesRuntimePolicy m_runtimePolicy;
+  RuntimePolicy m_runtimePolicy;
 
   //@brief Choice of full or partial data-parallelism, or byPolicy.
   MarchingCubesDataParallelism m_dataParallelism =

@@ -48,6 +48,9 @@ set(core_headers
     numerics/matvecops.hpp
     numerics/polynomial_solvers.hpp
 
+    ## detail
+    detail/FlatTable.hpp
+
     ## core
     Array.hpp
     ArrayBase.hpp
@@ -56,6 +59,7 @@ set(core_headers
     IteratorBase.hpp
     Macros.hpp
     Map.hpp
+    FlatMap.hpp
     Path.hpp
     StackArray.hpp
     Types.hpp
@@ -64,6 +68,7 @@ set(core_headers
     ## execution
     execution/execution_space.hpp
     execution/for_all.hpp
+    execution/runtime_policy.hpp
     execution/synchronize.hpp
 
     execution/internal/seq_exec.hpp

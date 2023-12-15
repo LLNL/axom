@@ -6,14 +6,16 @@
 #include "axom/config.hpp"
 
 // Implementation requires Conduit.
-#ifdef AXOM_USE_CONDUIT
-  #include "conduit_blueprint.hpp"
+#ifndef AXOM_USE_CONDUIT
+#error "MarchingCubes.cpp requires conduit"
+#endif
+#include "conduit_blueprint.hpp"
 
-  #include "axom/core/execution/execution_space.hpp"
-  #include "axom/quest/MarchingCubes.hpp"
-  #include "axom/quest/detail/MarchingCubesHybridParallel.hpp"
-  #include "axom/quest/detail/MarchingCubesFullParallel.hpp"
-  #include "axom/fmt.hpp"
+#include "axom/core/execution/execution_space.hpp"
+#include "axom/quest/MarchingCubes.hpp"
+#include "axom/quest/detail/MarchingCubesHybridParallel.hpp"
+#include "axom/quest/detail/MarchingCubesFullParallel.hpp"
+#include "axom/fmt.hpp"
 
 namespace axom
 {
@@ -155,10 +157,6 @@ MarchingCubesSingleDomain::MarchingCubesSingleDomain(RuntimePolicy runtimePolicy
   , m_maskFieldName(maskField)
   , m_maskPath(maskField.empty() ? std::string() : "fields/" + maskField)
 {
-  SLIC_ASSERT_MSG(
-    isValidRuntimePolicy(runtimePolicy),
-    fmt::format("Policy '{}' is not a valid runtime policy", runtimePolicy));
-
   setDomain(dom);
   return;
 }
@@ -224,7 +222,7 @@ void MarchingCubesSingleDomain::computeIsocontour(double contourVal)
   if(m_dataParallelism ==
        axom::quest::MarchingCubesDataParallelism::hybridParallel ||
      (m_dataParallelism == axom::quest::MarchingCubesDataParallelism::byPolicy &&
-      m_runtimePolicy == axom::quest::MarchingCubesRuntimePolicy::seq))
+      m_runtimePolicy == RuntimePolicy::seq))
   {
     m_impl = axom::quest::detail::marching_cubes::newMarchingCubesHybridParallel(
       m_runtimePolicy,
@@ -240,8 +238,6 @@ void MarchingCubesSingleDomain::computeIsocontour(double contourVal)
   m_impl->setContourValue(contourVal);
   m_impl->computeContourMesh();
 }
-
-#endif  // AXOM_USE_CONDUIT
 
 }  // end namespace quest
 }  // end namespace axom

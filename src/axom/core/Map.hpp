@@ -97,7 +97,7 @@ public:
      *
      * \pre len > 0
      */
-  Bucket(int len) { init(len); }
+  Bucket(IndexType len) { init(len); }
 
   /*!
      * \brief If a Bucket instance is created with the default contructor, this
@@ -107,7 +107,7 @@ public:
      *
      * \pre len > 0
      */
-  void init(int len)
+  void init(IndexType len)
   {
     m_list = axom::allocate<axom_map::Node<Key, T>>(len);
     for(int i = 0; i < len - 1; i++)
@@ -331,7 +331,7 @@ public:
   axom_map::Node<Key, T> m_end;
   IndexType m_head;
   IndexType m_free;
-  int m_capacity, m_size;
+  IndexType m_capacity, m_size;
 };
 
 /// @}
@@ -371,7 +371,7 @@ public:
    * \pre num_buckets > 0
    * \pre bucket_len > 0
    */
-  Map(int num_buckets, int bucket_len = 10)
+  Map(IndexType num_buckets, IndexType bucket_len = 10)
   {
     init(num_buckets, bucket_len);
     m_end.key = Key {0};
@@ -392,7 +392,7 @@ public:
     , m_load_factor(0)
     , m_bucket_fill(false)
 #if defined(AXOM_USE_OPENMP) && defined(AXOM_USE_RAJA)
-    , locks(nullptr)
+    , m_locks(nullptr)
 #endif
   {
     *this = std::move(other);
@@ -419,7 +419,7 @@ public:
       m_end = other.m_end;
       pol = other.pol;
 #if defined(AXOM_USE_OPENMP) && defined(AXOM_USE_RAJA)
-      locks = other.locks;
+      m_locks = other.m_locks;
 #endif
 
       other.m_buckets = nullptr;
@@ -428,7 +428,7 @@ public:
       other.m_size = 0;
       other.m_load_factor = 0;
 #if defined(AXOM_USE_OPENMP) && defined(AXOM_USE_RAJA)
-      other.locks = nullptr;
+      other.m_locks = nullptr;
 #endif
     }
     return *this;
@@ -459,12 +459,12 @@ public:
    *  if used properly. However, since this highly manual process has room for error this implementation does
    *  perform a check for if any bucket is now full.
    */
-  bool rehash(int buckets = -1, int factor = -1)
+  bool rehash(IndexType buckets = -1, int factor = -1)
   {
-    int newlen = 0;
+    IndexType newlen = 0;
     IndexType ind;
     std::size_t hashed;
-    if(buckets != -1 && buckets > static_cast<int>(m_bucket_count))
+    if(buckets != -1 && buckets > m_bucket_count)
     {
       newlen = buckets;
     }
@@ -481,7 +481,7 @@ public:
     m_bucket_fill = false;
     axom_map::Bucket<Key, T>* new_list = alloc_map(newlen, m_bucket_len);
 
-    for(std::size_t i = 0; i < m_bucket_count; i++)
+    for(IndexType i = 0; i < m_bucket_count; i++)
     {
       ind = m_buckets[i].m_head;
       while(ind != -1)
@@ -497,7 +497,7 @@ public:
     destroy_locks(pol);
     m_buckets = new_list;
     m_bucket_count = newlen;
-    for(std::size_t i = 0; i < m_bucket_count; i++)
+    for(IndexType i = 0; i < m_bucket_count; i++)
     {
       if(m_buckets[i].get_size() == m_buckets[i].get_capacity())
       {
@@ -515,7 +515,7 @@ public:
    */
   void clear()
   {
-    for(std::size_t i = 0; i < m_bucket_count; i++)
+    for(IndexType i = 0; i < m_bucket_count; i++)
     {
       axom::deallocate(m_buckets[i].m_list);
     }
@@ -532,7 +532,7 @@ public:
    *  Required if use is to continue after a clear().
    *
    */
-  void init(int num_buckets, int bucket_len = 10)
+  void init(IndexType num_buckets, IndexType bucket_len = 10)
   {
     m_bucket_count = num_buckets;
     m_bucket_len = bucket_len;
@@ -575,7 +575,7 @@ public:
     if(ret.second == true)
     {
 #ifdef AXOM_USE_RAJA
-      RAJA::atomicAdd<RAJA::auto_atomic>(&m_size, 1);
+      RAJA::atomicAdd<RAJA::auto_atomic>(&m_size, IndexType {1});
 #else
       m_size++;
 #endif
@@ -623,7 +623,7 @@ public:
     if(ret.second == true)
     {
 #ifdef AXOM_USE_RAJA
-      RAJA::atomicAdd<RAJA::auto_atomic>(&m_size, 1);
+      RAJA::atomicAdd<RAJA::auto_atomic>(&m_size, IndexType {1});
 #else
       m_size++;
 #endif
@@ -678,7 +678,7 @@ public:
     if(ret == true)
     {
 #ifdef AXOM_USE_RAJA
-      RAJA::atomicSub<RAJA::auto_atomic>(&m_size, 1);
+      RAJA::atomicSub<RAJA::auto_atomic>(&m_size, IndexType {1});
 #else
       m_size--;
 #endif
@@ -720,22 +720,22 @@ public:
    * \brief Returns the maximum number of items per bucket.
    * \return bucket_len the maximum number of items per bucket.
    */
-  int bucket_size() const { return m_bucket_len; }
+  IndexType bucket_size() const { return m_bucket_len; }
   /*!
    * \brief Returns the number of buckets in the Map.
    * \return bucket_count
    */
-  int bucket_count() const { return m_bucket_count; }
+  IndexType bucket_count() const { return m_bucket_count; }
   /*!
    * \brief Returns the amount of items in the Map instance.
    * \return size the amount of items in the Map instance.
    */
-  int size() const { return m_size; }
+  IndexType size() const { return m_size; }
   /*!
    * \brief Returns the overall capacity of the Map instance.
    * \return capacity the overall capacity of the Map instance.
    */
-  int max_size() { return m_bucket_len * m_bucket_count; }
+  IndexType max_size() { return m_bucket_len * m_bucket_count; }
   /*!
    * \brief Checks if the container has no elements.
    * \return true if the container is empty, false otherwise
@@ -804,11 +804,11 @@ private:
    *
    * \return A pointer to the now-allocated array of linked lists.
    */
-  axom_map::Bucket<Key, T>* alloc_map(int bucount, int bucklen)
+  axom_map::Bucket<Key, T>* alloc_map(IndexType bucount, IndexType bucklen)
   {
     axom_map::Bucket<Key, T>* tmp =
       axom::allocate<axom_map::Bucket<Key, T>>(bucount);
-    for(int i = 0; i < bucount; i++)
+    for(IndexType i = 0; i < bucount; i++)
     {
       tmp[i].init(bucklen);
     }
@@ -883,7 +883,7 @@ private:
   void bucket_lock(std::size_t index, axom::OMP_EXEC overload) const
   {
     AXOM_UNUSED_VAR(overload);
-    omp_set_lock(locks + index);
+    omp_set_lock(m_locks + index);
   }
 
   /*!
@@ -894,7 +894,7 @@ private:
   void bucket_unlock(std::size_t index, axom::OMP_EXEC overload) const
   {
     AXOM_UNUSED_VAR(overload);
-    omp_unset_lock(locks + index);
+    omp_unset_lock(m_locks + index);
   }
 
   /*!
@@ -903,10 +903,10 @@ private:
   void init_locks(axom::OMP_EXEC overload) const
   {
     AXOM_UNUSED_VAR(overload);
-    locks = axom::allocate<omp_lock_t>(m_bucket_count);
-    for(std::size_t i = 0; i < m_bucket_count; i++)
+    m_locks = axom::allocate<omp_lock_t>(m_bucket_count);
+    for(IndexType i = 0; i < m_bucket_count; i++)
     {
-      omp_init_lock(locks + i);
+      omp_init_lock(m_locks + i);
     }
   }
 
@@ -916,11 +916,11 @@ private:
   void destroy_locks(axom::OMP_EXEC overload) const
   {
     AXOM_UNUSED_VAR(overload);
-    for(std::size_t i = 0; i < m_bucket_count; i++)
+    for(IndexType i = 0; i < m_bucket_count; i++)
     {
-      omp_destroy_lock(locks + i);
+      omp_destroy_lock(m_locks + i);
     }
-    axom::deallocate<omp_lock_t>(locks);
+    axom::deallocate<omp_lock_t>(m_locks);
   }
 #endif
   /// @}
@@ -929,14 +929,14 @@ private:
   /// @{
 
   axom_map::Bucket<Key, T>* m_buckets; /*!< array of pointers to linked lists containing data */
-  std::size_t m_bucket_count; /*!< the number of buckets in the Map instance */
-  int m_bucket_len; /*!< the number of items that can be contained in a bucket in this Map instance */
-  int m_size; /*!< the number of items currently stored in this Map instance */
+  IndexType m_bucket_count; /*!< the number of buckets in the Map instance */
+  IndexType m_bucket_len; /*!< the number of items that can be contained in a bucket in this Map instance */
+  IndexType m_size; /*!< the number of items currently stored in this Map instance */
   float m_load_factor; /*!< currently unused value, used in STL unordered_map to determine when to resize, which we don't do internally at the moment */
   axom_map::Node<Key, T> m_end; /*!< the sentinel node enabling verification of operation success or failure */
   bool m_bucket_fill; /*!<  status of buckets in general -- if at least one is full, this is set to true, false otherwise*/
 #if defined(AXOM_USE_OPENMP) && defined(AXOM_USE_RAJA)
-  mutable omp_lock_t* locks;
+  mutable omp_lock_t* m_locks;
 #endif
   Policy pol;
   /// @}
