@@ -34,7 +34,7 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
   - `fullParallel` works best on GPUs.
   - `partialParallel` reduces the amount of data processed and works best with
      `MarchingCubesRuntimePolicy::seq`.
-  - `byPolicy` (the default) selects the implementation based the runtime policy.
+  - `byPolicy` (the default) selects the implementation based on the runtime policy.
 - `MarchingCubes` and `DistributedClosestPoint` classes changed from requiring the Blueprint
   coordset name to requiring the Blueprint topology name.  The changed interface methods are:
   - `DistributedClosestPoint::setObjectMesh`

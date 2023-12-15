@@ -76,15 +76,12 @@ public:
   std::string fieldsFile {"fields"};
 
   // Center of round contour function
-  bool usingRound {false};
   std::vector<double> fcnCenter;
 
   // Scaling factor for gyroid function
-  bool usingGyroid {false};
   std::vector<double> gyroidScale;
 
   // Parameters for planar contour function
-  bool usingPlanar {false};
   std::vector<double> inPlane;
   std::vector<double> perpDir;
 
@@ -159,7 +156,11 @@ public:
       ->description("Enable/disable verbose output")
       ->capture_default_str();
 
-    auto* distFromPtOption = app.add_option_group(
+    auto* distanceFunctionOption = app.add_option_group(
+      "distanceFunctionOption",
+      "Options for specifying a distance function.");
+
+    auto* distFromPtOption = distanceFunctionOption->add_option_group(
       "distFromPtOption",
       "Options for setting up distance-from-point function");
     distFromPtOption->add_option("--center", fcnCenter)
@@ -167,22 +168,26 @@ public:
       ->expected(2, 3);
 
     auto* gyroidOption =
-      app.add_option_group("gyroidOption",
-                           "Options for setting up gyroid function");
+      distanceFunctionOption->add_option_group("gyroidOption",
+                                               "Options for setting up gyroid function");
     gyroidOption->add_option("--scale", gyroidScale)
       ->description("Scaling factor for gyroid function (x,y[,z])")
       ->expected(2, 3);
 
-    auto* distFromPlaneOption = app.add_option_group(
+    auto* distFromPlaneOption = distanceFunctionOption->add_option_group(
       "distFromPlaneOption",
       "Options for setting up distance-from-plane function");
-    distFromPlaneOption->add_option("--inPlane", inPlane)
-      ->description("In-plane point for distance-from-plane function (x,y[,z])")
-      ->expected(2, 3);
-    distFromPlaneOption->add_option("--dir", perpDir)
+    auto* perpDirOption = distFromPlaneOption->add_option("--dir", perpDir)
       ->description(
         "Positive direction for distance-from-plane function (x,y[,z])")
       ->expected(2, 3);
+    distFromPlaneOption->add_option("--inPlane", inPlane)
+      ->description("In-plane point for distance-from-plane function (x,y[,z])")
+      ->expected(2, 3)
+      ->needs(perpDirOption);
+
+    // Require at least one distance function, and allow all three.
+    distanceFunctionOption->require_option(1, 3);
 
     app.add_option("--contourVal", contourVal)
       ->description("Contour value")
@@ -201,10 +206,7 @@ public:
     slic::setLoggingMsgLevel(_verboseOutput ? slic::message::Debug
                                             : slic::message::Info);
 
-    ndim = std::max(ndim, fcnCenter.size());
-    ndim = std::max(ndim, inPlane.size());
-    ndim = std::max(ndim, perpDir.size());
-    ndim = std::max(ndim, gyroidScale.size());
+    ndim = std::max({ndim, fcnCenter.size(), inPlane.size(), perpDir.size(), gyroidScale.size() });
     SLIC_ASSERT_MSG((fcnCenter.empty() || fcnCenter.size() == ndim) &&
                       (inPlane.empty() || inPlane.size() == ndim) &&
                       (perpDir.empty() || perpDir.size() == ndim) &&
@@ -212,19 +214,16 @@ public:
                     "fcnCenter, inPlane and perpDir must have consistent sizes "
                     "if specified.");
 
-    usingPlanar = !perpDir.empty();
-    usingRound = !fcnCenter.empty();
-    usingGyroid = !gyroidScale.empty();
-    SLIC_ASSERT_MSG(usingPlanar || usingRound || usingGyroid,
-                    "No functions specified.  Please specify a comibnation of "
-                    "round, gyroid or planar functions.");
-
     // inPlane defaults to origin if omitted.
-    if(usingPlanar && inPlane.empty())
+    if(usingPlanar() && inPlane.empty())
     {
       inPlane.insert(inPlane.begin(), ndim, 0.0);
     }
   }
+
+  bool usingPlanar() { return !perpDir.empty(); }
+  bool usingRound() { return !fcnCenter.empty(); }
+  bool usingGyroid() { return !gyroidScale.empty(); }
 
   template <int DIM>
   axom::primal::Point<double, DIM> roundContourCenter() const
@@ -1568,14 +1567,14 @@ int testNdimInstance(BlueprintStructuredMesh& computationalMesh)
   std::shared_ptr<GyroidContourTest<DIM, ExecSpace>> gyroidTest;
   std::shared_ptr<PlanarContourTest<DIM, ExecSpace>> planarTest;
 
-  if(params.usingRound)
+  if(params.usingRound())
   {
     roundTest = std::make_shared<RoundContourTest<DIM, ExecSpace>>(
       params.roundContourCenter<DIM>());
     roundTest->setToleranceByLongestEdge(computationalMesh);
     roundTest->computeNodalDistance(computationalMesh);
   }
-  if(params.usingGyroid)
+  if(params.usingGyroid())
   {
     gyroidTest = std::make_shared<GyroidContourTest<DIM, ExecSpace>>(
       params.gyroidScaleFactor<DIM>(),
@@ -1583,7 +1582,7 @@ int testNdimInstance(BlueprintStructuredMesh& computationalMesh)
     gyroidTest->setToleranceByLongestEdge(computationalMesh);
     gyroidTest->computeNodalDistance(computationalMesh);
   }
-  if(params.usingPlanar)
+  if(params.usingPlanar())
   {
     planarTest = std::make_shared<PlanarContourTest<DIM, ExecSpace>>(
       params.inplanePoint<DIM>(),
