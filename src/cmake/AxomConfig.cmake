@@ -147,6 +147,8 @@ install(
     ${AXOM_INSTALL_CMAKE_MODULE_DIR}
 )
 
+# Install BLT files that recreate BLT targets in downstream projects
+blt_install_tpl_setups(DESTINATION ${AXOM_INSTALL_CONFIG_DIR})
 
 #------------------------------------------------------------------------------
 # Create a list of exported targets so that other projects that include Axom
@@ -155,9 +157,6 @@ install(
 
 # Add it to a temporary list before creating the cache variable to use list(APPEND)
 set(_axom_exported_targets ${AXOM_COMPONENTS_ENABLED})
-
-blt_list_append(TO _axom_exported_targets ELEMENTS cuda cuda_runtime IF AXOM_ENABLE_CUDA)
-blt_list_append(TO _axom_exported_targets ELEMENTS hip hip_runtime IF AXOM_ENABLE_HIP)
 
 set(_optional_targets cli11 fmt hdf5 lua openmp sol sparsehash)
 foreach(_tar ${_optional_targets})

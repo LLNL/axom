@@ -19,7 +19,7 @@ set(TPL_DEPS)
 # Create global variable to toggle between GPU targets
 #------------------------------------------------------------------------------
 if(AXOM_ENABLE_CUDA)
-    set(axom_device_depends cuda CACHE STRING "" FORCE)
+    set(axom_device_depends blt::cuda CACHE STRING "" FORCE)
 endif()
 if(AXOM_ENABLE_HIP)
     set(axom_device_depends blt::hip CACHE STRING "" FORCE)
@@ -86,25 +86,6 @@ if (RAJA_DIR)
         message(STATUS "RAJA loaded: ${RAJA_DIR}")
         set(RAJA_FOUND TRUE CACHE BOOL "")
     endif()
-
-    # Suppress warnings from cub and cuda related to the (low) version
-    # of clang that XL compiler pretends to be.
-    if(C_COMPILER_FAMILY_IS_XL)
-        if(TARGET RAJA::cub)
-            blt_add_target_definitions(
-                TO RAJA::cub
-                SCOPE INTERFACE
-                TARGET_DEFINITIONS CUB_IGNORE_DEPRECATED_CPP_DIALECT)
-        endif()
-
-        if(TARGET cuda)
-            blt_add_target_definitions(
-                TO cuda
-                SCOPE INTERFACE
-                TARGET_DEFINITIONS THRUST_IGNORE_DEPRECATED_CPP_DIALECT)
-        endif()
-    endif()
-
 else()
     message(STATUS "RAJA support is OFF" )
     set(RAJA_FOUND FALSE CACHE BOOL "")
@@ -279,48 +260,6 @@ endif()
 
 
 #------------------------------------------------------------------------------
-# Remove exported OpenMP flags because they are not language agnostic
-#------------------------------------------------------------------------------
-set(_props)
-if( ${CMAKE_VERSION} VERSION_GREATER_EQUAL "3.13.0" )
-    list(APPEND _props INTERFACE_LINK_OPTIONS)
-endif()
-list(APPEND _props INTERFACE_COMPILE_OPTIONS)
-
-foreach(_target RAJA camp umpire umpire_alloc conduit::conduit)
-    if(TARGET ${_target})
-        message(STATUS "Removing OpenMP Flags from target[${_target}]")
-
-        foreach(_prop ${_props})
-            get_target_property(_flags ${_target} ${_prop})
-            if ( _flags )
-                string( REPLACE "${OpenMP_CXX_FLAGS}" ""
-                        correct_flags "${_flags}" )
-                string( REPLACE "${OpenMP_Fortran_FLAGS}" ""
-                        correct_flags "${correct_flags}" )
-
-                set_target_properties( ${_target} PROPERTIES ${_prop} "${correct_flags}" )
-            endif()
-        endforeach()
-    endif()
-endforeach()
-
-# Newer versions of RAJA keeps its flags in a specific target
-if(TARGET RAJA)
-    get_target_property(_flags RAJA INTERFACE_LINK_LIBRARIES)
-    if ( _flags )
-        list(REMOVE_ITEM _flags "RAJA::openmp")
-        set_target_properties( RAJA PROPERTIES INTERFACE_LINK_LIBRARIES "${_flags}" )
-    endif()
-endif()
-
-# Clear Camp's openmp target until BLT handles this fully
-if (TARGET blt::openmp)
-    set_target_properties(blt::openmp PROPERTIES INTERFACE_COMPILE_OPTIONS "")
-    set_target_properties(blt::openmp PROPERTIES INTERFACE_LINK_OPTIONS "")
-endif()
-
-#------------------------------------------------------------------------------
 # jsonschema - for Inlet testing purposes
 #------------------------------------------------------------------------------
 set(ENABLE_JSONSCHEMA ON) # required by blt_find_executable
@@ -329,11 +268,6 @@ blt_find_executable(NAME jsonschema)
 #------------------------------------------------------------------------------
 # Targets that need to be exported but don't have a CMake config file
 #------------------------------------------------------------------------------
-blt_list_append(TO TPL_DEPS ELEMENTS cuda cuda_runtime IF AXOM_ENABLE_CUDA)
-blt_list_append(TO TPL_DEPS ELEMENTS blt_hip blt_hip_runtime IF AXOM_ENABLE_HIP)
-blt_list_append(TO TPL_DEPS ELEMENTS openmp IF AXOM_ENABLE_OPENMP)
-blt_list_append(TO TPL_DEPS ELEMENTS mpi IF AXOM_ENABLE_MPI)
-
 foreach(dep ${TPL_DEPS})
     # If the target is EXPORTABLE, add it to the export set
     get_target_property(_is_imported ${dep} IMPORTED)

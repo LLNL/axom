@@ -92,13 +92,13 @@ if (CONDUIT_FOUND)
 
     if (ENABLE_FORTRAN)
         axom_add_executable(NAME       conduit_smoke_F_test
-                           SOURCES    f_conduit_smoke.f
-                           OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
-                           DEPENDS_ON conduit::conduit fruit
-                           FOLDER     axom/thirdparty/tests )
+                            SOURCES    f_conduit_smoke.f
+                            OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
+                            DEPENDS_ON conduit::conduit fruit
+                            FOLDER     axom/thirdparty/tests )
 
-        axom_add_test(NAME conduit_smoke_F
-                     COMMAND conduit_smoke_F_test)
+        axom_add_test(NAME    conduit_smoke_F
+                      COMMAND conduit_smoke_F_test)
   endif()
 endif()
 
@@ -126,7 +126,6 @@ endif()
 # Smoke test for fmt third party library
 #------------------------------------------------------------------------------
 set(fmt_smoke_dependencies fmt gtest)
-blt_list_append( TO fmt_smoke_dependencies ELEMENTS cuda IF AXOM_ENABLE_CUDA)
 
 axom_add_executable(
     NAME       fmt_smoke_test
