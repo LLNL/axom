@@ -15,7 +15,7 @@
 #   cd <axom_root>
 #   mkdir build
 #   cd build
-#   cmake -C ../host-config/other/no-tpl-toss3-intel@19.0.4.cmake           \
+#   cmake -C ../host-config/other/no-tpl-toss4_x86_64_ib-intel@19.0.4.cmake \
 #         -DCMAKE_BUILD_TYPE={Debug,Release}                                \
 #         -DBUILD_SHARED_LIBS={ON,OFF(DEFAULT)}                             \
 #         -DENABLE_EXAMPLES={ON,OFF}                                        \
@@ -23,7 +23,7 @@
 #         -DCMAKE_INSTALL_PREFIX= /path/to/install/dir                      \
 #         ../src
 #------------------------------------------------------------------------------
-# CMake executable path: /usr/tce/packages/cmake/cmake-3.16.8/bin/cmake
+# CMake executable path: /usr/tce/bin/cmake
 #------------------------------------------------------------------------------
 
 set(ENABLE_FORTRAN ON CACHE BOOL "")
