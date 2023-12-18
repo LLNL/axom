@@ -167,7 +167,7 @@ public:
     const std::string &domainIdField = {});
 
   /*!
-    @brief Set choice of data-parallelism implementation.
+    @brief Set choice of data-parallel implementation.
 
     By default, choice is MarchingCubesDataParallelism::byPolicy.
   */
