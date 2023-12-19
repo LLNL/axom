@@ -1045,7 +1045,7 @@ private:
   /*!
    * \brief Call a function and log errors.
    */
-  void checkConduitCall(const std::function<void(void)> & conduitOp) const;
+  void checkConduitCall(const std::function<void(void)>& conduitOp) const;
 
   /*!
    * \brief Casts the views ItemCollection to a (named) MapCollection

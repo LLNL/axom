@@ -90,12 +90,18 @@ public:
 
   /// Return whether a Conduit error occurred.
   bool getConduitErrorOccurred() const { return m_conduit_error_occurred; };
-  void setConduitErrorOccurred(bool flag) const { m_conduit_error_occurred = flag; };
+  void setConduitErrorOccurred(bool flag) const
+  {
+    m_conduit_error_occurred = flag;
+  };
 
   /// Return information on any Conduit errors.
   std::string getConduitErrors() const { return m_conduit_errors; };
   void clearConduitErrors() const { m_conduit_errors.clear(); };
-  void appendToConduitErrors(const std::string& mesg) const { m_conduit_errors = m_conduit_errors + "\n" + mesg; };
+  void appendToConduitErrors(const std::string& mesg) const
+  {
+    m_conduit_errors = m_conduit_errors + "\n" + mesg;
+  };
 
 public:
   //@{
