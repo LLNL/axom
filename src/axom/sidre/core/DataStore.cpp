@@ -34,16 +34,6 @@ namespace sidre
 /*
  *************************************************************************
  *
- * Flag recording whether a Conduit error has occurred.
- * The language initializes flag this to false.
- *
- *************************************************************************
- */
-static bool s_conduit_had_error;
-
-/*
- *************************************************************************
- *
  * Callback function used to map Conduit errors to SLIC errors.
  *
  *************************************************************************
@@ -52,7 +42,6 @@ void DataStoreConduitErrorHandler(const std::string& message,
                                   const std::string& fileName,
                                   int line)
 {
-  s_conduit_had_error = true;
   axom::slic::logErrorMessage(message, fileName, line);
 }
 
@@ -177,8 +166,6 @@ void DataStore::setConduitDefaultMessageHandlers()
   conduit::utils::set_warning_handler(conduit::utils::default_warning_handler);
   conduit::utils::set_error_handler(conduit::utils::default_error_handler);
 }
-
-bool DataStore::getConduitErrorOccurred() { return s_conduit_had_error; }
 
 /*
  *************************************************************************

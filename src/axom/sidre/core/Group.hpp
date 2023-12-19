@@ -1043,6 +1043,11 @@ public:
   //@}
 private:
   /*!
+   * \brief Call a function and log errors.
+   */
+  void checkConduitCall(const std::function<void(void)> & conduitOp) const;
+
+  /*!
    * \brief Casts the views ItemCollection to a (named) MapCollection
    *
    * \warning This is only valid when the group is using a map rather than a list

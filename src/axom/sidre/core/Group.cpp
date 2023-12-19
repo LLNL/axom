@@ -1790,6 +1790,31 @@ bool Group::isEquivalentTo(const Group* other, bool checkName) const
   return is_equiv;
 }
 
+
+void Group::checkConduitCall(const std::function<void(void)> & conduitOp) const
+{
+    auto conduit_info_handler{ conduit::utils::info_handler() };
+    auto conduit_warning_handler{ conduit::utils::warning_handler() };
+    auto conduit_error_handler{ conduit::utils::error_handler() };
+
+    DataStore::setConduitDefaultMessageHandlers();
+
+    try
+    {
+        conduitOp();
+    }
+    catch (conduit::Error& e)
+    {
+        const DataStore* d = getDataStore();
+        d->setConduitErrorOccurred(true);
+        d->appendToConduitErrors(e.message());
+    }
+
+    conduit::utils::set_error_handler(conduit_error_handler);
+    conduit::utils::set_warning_handler(conduit_warning_handler);
+    conduit::utils::set_info_handler(conduit_info_handler);
+}
+
 /*
  *************************************************************************
  *
@@ -1811,7 +1836,7 @@ bool Group::save(const std::string& path,
     ds->saveAttributeLayout(n["sidre/attribute"]);
     createExternalLayout(n["sidre/external"], attr);
     n["sidre_group_name"] = m_name;
-    conduit::relay::io::save(n, path, "hdf5");
+    checkConduitCall([&] {conduit::relay::io::save(n, path, "hdf5"); });
   }
   else if(protocol == "sidre_conduit_json")
   {
@@ -1820,7 +1845,7 @@ bool Group::save(const std::string& path,
     ds->saveAttributeLayout(n["sidre/attribute"]);
     createExternalLayout(n["sidre/external"], attr);
     n["sidre_group_name"] = m_name;
-    conduit::relay::io::save(n, path, "conduit_json");
+    checkConduitCall([&] {conduit::relay::io::save(n, path, "conduit_json"); });
   }
   else if(protocol == "sidre_json")
   {
@@ -1829,7 +1854,7 @@ bool Group::save(const std::string& path,
     ds->saveAttributeLayout(n["sidre/attribute"]);
     createExternalLayout(n["sidre/external"], attr);
     n["sidre_group_name"] = m_name;
-    conduit::relay::io::save(n, path, "json");
+    checkConduitCall([&] {conduit::relay::io::save(n, path, "json"); });
   }
   else if(protocol == "sidre_layout_json")
   {
@@ -1837,14 +1862,14 @@ bool Group::save(const std::string& path,
     exportWithoutBufferData(n["sidre"], attr);
     ds->saveAttributeLayout(n["sidre/attribute"]);
     n["sidre_group_name"] = m_name;
-    conduit::relay::io::save(n, path, "conduit_json");
+    checkConduitCall([&] {conduit::relay::io::save(n, path, "conduit_json"); });
   }
   else if(protocol == "conduit_hdf5")
   {
     Node n;
     createNativeLayout(n, attr);
     n["sidre_group_name"] = m_name;
-    conduit::relay::io::save(n, path, "hdf5");
+    checkConduitCall([&] {conduit::relay::io::save(n, path, "hdf5"); });
   }
   else if(protocol == "conduit_bin" || protocol == "conduit_json" ||
           protocol == "json")
@@ -1852,14 +1877,14 @@ bool Group::save(const std::string& path,
     Node n;
     createNativeLayout(n, attr);
     n["sidre_group_name"] = m_name;
-    conduit::relay::io::save(n, path, protocol);
+    checkConduitCall([&] {conduit::relay::io::save(n, path, protocol); });
   }
   else if(protocol == "conduit_layout_json")
   {
     Node n;
     createNoDataLayout(n, attr);
     n["sidre_group_name"] = m_name;
-    conduit::relay::io::save(n, path, "conduit_json");
+    checkConduitCall([&] {conduit::relay::io::save(n, path, "conduit_json"); });
   }
   else
   {
@@ -1867,7 +1892,7 @@ bool Group::save(const std::string& path,
                                        << "' for file save.");
   }
 
-  return !DataStore::getConduitErrorOccurred();
+  return !(getDataStore()->getConduitErrorOccurred());
 }
 
 /*************************************************************************/
@@ -1895,7 +1920,7 @@ bool Group::load(const std::string& path,
   if(protocol == "sidre_hdf5")
   {
     Node n;
-    conduit::relay::io::load(path, "hdf5", n);
+    checkConduitCall([&] {conduit::relay::io::load(path, "hdf5", n); });
     SLIC_ASSERT_MSG(n.has_path("sidre"),
                     SIDRE_GROUP_LOG_PREPEND
                       << "Conduit Node " << n.path() << " does not have sidre "
@@ -1909,7 +1934,7 @@ bool Group::load(const std::string& path,
   else if(protocol == "sidre_conduit_json")
   {
     Node n;
-    conduit::relay::io::load(path, "conduit_json", n);
+    checkConduitCall([&] {conduit::relay::io::load(path, "conduit_json", n); });
     SLIC_ASSERT_MSG(n.has_path("sidre"),
                     SIDRE_GROUP_LOG_PREPEND
                       << "Conduit Node " << n.path() << " does not have sidre "
@@ -1923,7 +1948,7 @@ bool Group::load(const std::string& path,
   else if(protocol == "sidre_json")
   {
     Node n;
-    conduit::relay::io::load(path, "json", n);
+    checkConduitCall([&] {conduit::relay::io::load(path, "json", n); });
     SLIC_ASSERT_MSG(n.has_path("sidre"),
                     SIDRE_GROUP_LOG_PREPEND
                       << "Conduit Node " << n.path() << " does not have sidre "
@@ -1937,7 +1962,7 @@ bool Group::load(const std::string& path,
   else if(protocol == "conduit_hdf5")
   {
     Node n;
-    conduit::relay::io::load(path, "hdf5", n);
+    checkConduitCall([&] {conduit::relay::io::load(path, "hdf5", n); });
     importConduitTree(n, preserve_contents);
     if(n.has_path("sidre_group_name"))
     {
@@ -1948,7 +1973,7 @@ bool Group::load(const std::string& path,
           protocol == "json")
   {
     Node n;
-    conduit::relay::io::load(path, protocol, n);
+    checkConduitCall([&] {conduit::relay::io::load(path, protocol, n); });
     importConduitTree(n, preserve_contents);
     if(n.has_path("sidre_group_name"))
     {
@@ -1961,7 +1986,7 @@ bool Group::load(const std::string& path,
                                        << "' for file load.");
   }
 
-  return !DataStore::getConduitErrorOccurred();
+  return !(getDataStore()->getConduitErrorOccurred());
 }
 
 /*
@@ -2006,7 +2031,7 @@ bool Group::loadExternalData(const std::string& path)
 #ifdef AXOM_USE_HDF5
   // CYRUS'-NOTE, not sure ":" will work with multiple trees per
   // output file
-  conduit::relay::io::hdf5_read(path + ":sidre/external", n);
+  checkConduitCall([&] {conduit::relay::io::hdf5_read(path + ":sidre/external", n); });
 #else
   AXOM_UNUSED_VAR(path);
   SLIC_WARNING(SIDRE_GROUP_LOG_PREPEND
@@ -2015,7 +2040,7 @@ bool Group::loadExternalData(const std::string& path)
                << " Please reconfigure with hdf5.");
 #endif
 
-  return !DataStore::getConduitErrorOccurred();
+  return !(getDataStore()->getConduitErrorOccurred());
 }
 
 // Functions that directly use the hdf5 API in their signature
@@ -2041,14 +2066,14 @@ bool Group::save(const hid_t& h5_id,
     exportTo(n["sidre"], attr);
     createExternalLayout(n["sidre/external"], attr);
     n["sidre_group_name"] = m_name;
-    conduit::relay::io::hdf5_write(n, h5_id);
+    checkConduitCall([&] {conduit::relay::io::hdf5_write(n, h5_id); });
   }
   else if(protocol == "conduit_hdf5")
   {
     Node n;
     createNativeLayout(n, attr);
     n["sidre_group_name"] = m_name;
-    conduit::relay::io::hdf5_write(n, h5_id);
+    checkConduitCall([&] {conduit::relay::io::hdf5_write(n, h5_id); });
   }
   else
   {
@@ -2056,7 +2081,7 @@ bool Group::save(const hid_t& h5_id,
                                        << "' for save with hdf5 handle.");
   }
 
-  return !DataStore::getConduitErrorOccurred();
+  return !(getDataStore()->getConduitErrorOccurred());
 }
 
 /*
@@ -2085,7 +2110,7 @@ bool Group::load(const hid_t& h5_id,
   if(protocol == "sidre_hdf5")
   {
     Node n;
-    conduit::relay::io::hdf5_read(h5_id, n);
+    checkConduitCall([&] {conduit::relay::io::hdf5_read(h5_id, n); });
     SLIC_ASSERT_MSG(n.has_path("sidre"),
                     SIDRE_GROUP_LOG_PREPEND
                       << "Conduit Node " << n.path() << " does not have sidre "
@@ -2100,7 +2125,7 @@ bool Group::load(const hid_t& h5_id,
   {
     SLIC_ERROR("Protocol " << protocol << " not yet supported for file load.");
     Node n;
-    conduit::relay::io::hdf5_read(h5_id, n);
+    checkConduitCall([&] {conduit::relay::io::hdf5_read(h5_id, n); });
     importConduitTree(n, preserve_contents);
     if(n.has_path("sidre_group_name"))
     {
@@ -2113,7 +2138,7 @@ bool Group::load(const hid_t& h5_id,
                                        << "' for file load.");
   }
 
-  return !DataStore::getConduitErrorOccurred();
+  return !(getDataStore()->getConduitErrorOccurred());
 }
 
 /*
@@ -2128,9 +2153,10 @@ bool Group::loadExternalData(const hid_t& h5_id)
 {
   Node n;
   createExternalLayout(n);
-  conduit::relay::io::hdf5_read(h5_id, "sidre/external", n);
+  auto f = [&] {conduit::relay::io::hdf5_read(h5_id, "sidre/external", n); };
+  checkConduitCall(f);
 
-  return !DataStore::getConduitErrorOccurred();
+  return !(getDataStore()->getConduitErrorOccurred());
 }
 
 #endif /* AXOM_USE_HDF5 */

@@ -89,7 +89,13 @@ public:
   const Group* getRoot() const { return m_RootGroup; };
 
   /// Return whether a Conduit error occurred.
-  static bool getConduitErrorOccurred();
+  bool getConduitErrorOccurred() const { return m_conduit_error_occurred; };
+  void setConduitErrorOccurred(bool flag) const { m_conduit_error_occurred = flag; };
+
+  /// Return information on any Conduit errors.
+  std::string getConduitErrors() const { return m_conduit_errors; };
+  void clearConduitErrors() const { m_conduit_errors.clear(); };
+  void appendToConduitErrors(const std::string& mesg) const { m_conduit_errors = m_conduit_errors + "\n" + mesg; };
 
 public:
   //@{
@@ -543,6 +549,13 @@ private:
 
   /// Flag indicating whether SLIC logging environment was initialized in ctor.
   bool m_need_to_finalize_slic;
+
+  /// Flag indicating a Conduit error occurred (consult message for details)
+  /// Instead of a boolean flag, we could store an int, an enum, even a bitfield.
+  mutable bool m_conduit_error_occurred;
+
+  /// Details of the most recent Conduit error
+  mutable std::string m_conduit_errors;
 };
 
 } /* end namespace sidre */
