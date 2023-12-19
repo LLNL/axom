@@ -2008,7 +2008,7 @@ Group* Group::createGroupAndLoad(std::string& group_name,
     load_success = child->load(path, protocol, false, group_name);
     if(!load_success)
     {
-      delete child;
+      destroyGroupAndData(group_name);
       child = nullptr;
     }
   }
