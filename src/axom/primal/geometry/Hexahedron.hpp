@@ -71,7 +71,7 @@ public:
   /*!
    * \brief Default constructor. Creates a degenerate hexahedron.
    */
-  AXOM_HOST_DEVICE Hexahedron() { }
+  Hexahedron() = default;
 
   /*!
    * \brief Creates an hexahedron from the 8 points p,q,r,s,t,u,v,w.
@@ -359,7 +359,14 @@ public:
   }
 
 private:
-  PointType m_points[NUM_HEX_VERTS];
+  PointType m_points[NUM_HEX_VERTS] {PointType {},
+                                     PointType {},
+                                     PointType {},
+                                     PointType {},
+                                     PointType {},
+                                     PointType {},
+                                     PointType {},
+                                     PointType {}};
 };
 
 //------------------------------------------------------------------------------
