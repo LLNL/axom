@@ -148,7 +148,7 @@ install(
 )
 
 # Install BLT files that recreate BLT targets in downstream projects
-blt_install_tpl_setups(DESTINATION ${AXOM_INSTALL_CONFIG_DIR})
+blt_install_tpl_setups(DESTINATION ${AXOM_INSTALL_CMAKE_MODULE_DIR})
 
 #------------------------------------------------------------------------------
 # Create a list of exported targets so that other projects that include Axom
