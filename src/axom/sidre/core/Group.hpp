@@ -30,6 +30,7 @@
 #include <vector>
 #include <set>
 #include <cstring>
+#include <functional>
 
 // third party lib headers
 #ifdef AXOM_USE_HDF5
