@@ -15,6 +15,8 @@ endif()
 
 set(TPL_DEPS)
 
+include(CMakeFindDependencyMacro)
+
 #------------------------------------------------------------------------------
 # Create global variable to toggle between GPU targets
 #------------------------------------------------------------------------------
@@ -47,7 +49,8 @@ if (UMPIRE_DIR)
         message(FATAL_ERROR "Given UMPIRE_DIR is not a directory: ${UMPIRE_DIR}")
     endif()
 
-    find_package(umpire REQUIRED PATHS ${UMPIRE_DIR} )
+    set(umpire_DIR ${UMPIRE_DIR})
+    find_dependency(umpire REQUIRED)
 
     message(STATUS "Checking for expected Umpire target 'umpire'")
     if (NOT TARGET umpire)

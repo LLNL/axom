@@ -4,7 +4,7 @@
 # SPDX-License-Identifier: (BSD-3-Clause)
 #------------------------------------------------------------------------------
 
-cmake_minimum_required(VERSION 3.0 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.8 FATAL_ERROR)
 
 @PACKAGE_INIT@
 
@@ -90,6 +90,27 @@ if(NOT AXOM_FOUND)
     find_dependency(camp REQUIRED NO_DEFAULT_PATH PATHS "${CAMP_DIR}/lib/cmake/camp")
   endif()
 
+  # umpire
+  if(AXOM_USE_UMPIRE)
+    set(AXOM_UMPIRE_DIR   "@UMPIRE_DIR@")
+    if(NOT UMPIRE_DIR) 
+      set(UMPIRE_DIR ${AXOM_UMPIRE_DIR}) 
+    endif()
+    set(umpire_DIR ${UMPIRE_DIR})
+    find_dependency(umpire REQUIRED)
+  endif()
+
+  # raja
+  if(AXOM_USE_RAJA)
+    set(AXOM_RAJA_DIR     "@RAJA_DIR@")
+    if(NOT RAJA_DIR) 
+      set(RAJA_DIR ${AXOM_RAJA_DIR}) 
+    endif()
+    find_dependency(RAJA REQUIRED NO_DEFAULT_PATH
+                    PATHS "${RAJA_DIR}/share/raja/cmake"
+                          "${RAJA_DIR}/lib/cmake/raja")
+  endif()
+
   # conduit
   if(AXOM_USE_CONDUIT)
     set(AXOM_CONDUIT_DIR  "@CONDUIT_DIR@")
@@ -124,32 +145,10 @@ if(NOT AXOM_FOUND)
     # Note: 'mfem" target is exported as 'axom::mfem'
   endif()
 
-  # raja
-  if(AXOM_USE_RAJA)
-    set(AXOM_RAJA_DIR     "@RAJA_DIR@")
-    if(NOT RAJA_DIR) 
-      set(RAJA_DIR ${AXOM_RAJA_DIR}) 
-    endif()
-    find_dependency(RAJA REQUIRED NO_DEFAULT_PATH
-                    PATHS "${RAJA_DIR}/share/raja/cmake"
-                          "${RAJA_DIR}/lib/cmake/raja")
-  endif()
-
   # scr
   if(AXOM_USE_SCR)
     set(AXOM_SCR_DIR      "@SCR_DIR@")
     # Note: 'scr" target is exported as 'axom::scr'
-  endif()
-
-  # umpire
-  if(AXOM_USE_UMPIRE)
-    set(AXOM_UMPIRE_DIR   "@UMPIRE_DIR@")
-    if(NOT UMPIRE_DIR) 
-      set(UMPIRE_DIR ${AXOM_UMPIRE_DIR}) 
-    endif()
-    find_dependency(umpire REQUIRED NO_DEFAULT_PATH
-                    PATHS "${UMPIRE_DIR}/share/umpire/cmake"
-                          "${UMPIRE_DIR}/lib/cmake/umpire")
   endif()
 
   #----------------------------------------------------------------------------
