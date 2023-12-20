@@ -155,13 +155,11 @@ public:
     const auto O = vertexMean();  // 'O' for (local) origin
     for(int curr = 0, prev = nVerts - 1; curr < nVerts; prev = curr++)
     {
-      const VectorType v0(O, m_vertices[prev]);
-      const VectorType v1(O, m_vertices[curr]);
-
-      sum += VectorType::cross_product(v0, v1);
+      sum +=
+        VectorType::cross_product(m_vertices[prev] - O, m_vertices[curr] - O);
     }
 
-    return axom::utilities::abs(0.5 * sum.norm());
+    return 0.5 * axom::utilities::abs(sum.norm());
   }
 
   /**
@@ -255,5 +253,10 @@ std::ostream& operator<<(std::ostream& os, const Polygon<T, NDIMS>& poly)
 
 }  // namespace primal
 }  // namespace axom
+
+/// Overload to format a primal::Polygon using fmt
+template <typename T, int NDIMS>
+struct axom::fmt::formatter<axom::primal::Polygon<T, NDIMS>> : ostream_formatter
+{ };
 
 #endif  // AXOM_PRIMAL_POLYGON_HPP_
