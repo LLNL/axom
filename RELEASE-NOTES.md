@@ -32,6 +32,11 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
   with `std::unordered_map`, but utilizes an open-addressing design.
 
 ### Changed
+- `MarchingCubes` allows user to select the underlying data-parallel implementation
+  - `fullParallel` works best on GPUs.
+  - `hybridParallel` reduces the amount of data processed and works best with
+     `MarchingCubesRuntimePolicy::seq`.
+  - `byPolicy` (the default) selects the implementation based on the runtime policy.
 - `MarchingCubes` and `DistributedClosestPoint` classes identify domains by their
   `state/domain_id` parameters if provided, or the local iteration index if not.
 - `MarchingCubes` and `DistributedClosestPoint` classes changed from requiring the Blueprint
