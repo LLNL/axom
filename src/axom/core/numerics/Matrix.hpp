@@ -7,6 +7,8 @@
 #include "axom/core/utilities/Utilities.hpp"  // for utilities::swap()
 #include "axom/core/memory_management.hpp"    // for alloc(), free()
 
+#include "axom/fmt.hpp"
+
 // C/C++ includes
 #include <cassert>   // for assert()
 #include <cstring>   // for memcpy()
@@ -1039,5 +1041,10 @@ std::ostream& operator<<(std::ostream& os, const Matrix<T>& M)
 
 } /* end namespace numerics */
 } /* end namespace axom */
+
+/// Overload to format a numerics::Matrix using fmt
+template <typename T>
+struct axom::fmt::formatter<axom::numerics::Matrix<T>> : ostream_formatter
+{ };
 
 #endif /* AXOM_MATRIX_HPP_ */
