@@ -6,17 +6,19 @@
 #include "axom/config.hpp"
 
 // Implementation requires Conduit.
-#ifdef AXOM_USE_CONDUIT
-  #include "conduit_blueprint.hpp"
+#ifndef AXOM_USE_CONDUIT
+  #error "MarchingCubesHybridParallel.hpp requires conduit"
+#endif
+#include "conduit_blueprint.hpp"
 
-  #include "axom/core/execution/execution_space.hpp"
-  #include "axom/quest/ArrayIndexer.hpp"
-  #include "axom/quest/detail/marching_cubes_lookup.hpp"
-  #include "axom/quest/MeshViewUtil.hpp"
-  #include "axom/primal/geometry/Point.hpp"
-  #include "axom/primal/constants.hpp"
-  #include "axom/mint/execution/internal/structured_exec.hpp"
-  #include "axom/fmt.hpp"
+#include "axom/core/execution/execution_space.hpp"
+#include "axom/quest/ArrayIndexer.hpp"
+#include "axom/quest/detail/marching_cubes_lookup.hpp"
+#include "axom/quest/MeshViewUtil.hpp"
+#include "axom/primal/geometry/Point.hpp"
+#include "axom/primal/constants.hpp"
+#include "axom/mint/execution/internal/structured_exec.hpp"
+#include "axom/fmt.hpp"
 
 namespace axom
 {
@@ -26,15 +28,6 @@ namespace detail
 {
 namespace marching_cubes
 {
-template <typename T, int DIM, typename U>
-static void add_to_StackArray(axom::StackArray<T, DIM>& a, U b)
-{
-  for(int d = 0; d < DIM; ++d)
-  {
-    a[d] += b;
-  }
-}
-
 /*!
   @brief Computations for MarchingCubesSingleDomain
 
@@ -45,9 +38,19 @@ static void add_to_StackArray(axom::StackArray<T, DIM>& a, U b)
   axom::CUDA_EXEC<256>.  SequentialExecSpace is used for loops that
   cannot be parallelized but must access data allocated for ExecSpace.
   Use something like axom::SEQ_EXEC or axom::CUDA_EXEC<1>.
+
+  The difference between MarchingCubesHybridParallel and MarchingCubesFullParallel
+  is how they compute indices for the unstructured surface mesh.
+  - MarchingCubesHybridParallel uses sequential loop, and skips over parents
+    cells that don't touch the surface contour.  It processes less data
+    but is not data-parallel.
+  - MarchingCubesFullParallel that checks all parents cells.
+    It process more data but is data-parallel.
+  We've observed that MarchingCubesHybridParallel is faster for seq policy
+  and MarchingCubesHybridParallel is faster on the GPU.
 */
 template <int DIM, typename ExecSpace, typename SequentialExecSpace>
-class MarchingCubesImpl : public MarchingCubesSingleDomain::ImplBase
+class MarchingCubesHybridParallel : public MarchingCubesSingleDomain::ImplBase
 {
 public:
   using Point = axom::primal::Point<double, DIM>;
@@ -76,6 +79,9 @@ public:
                             const std::string& fcnFieldName,
                             const std::string& maskFieldName = {}) override
   {
+    SLIC_ASSERT(conduit::blueprint::mesh::topology::dims(dom.fetch_existing(
+                  axom::fmt::format("topologies/{}", topologyName))) == DIM);
+
     clear();
 
     axom::quest::MeshViewUtil<DIM, MemorySpace> mvu(dom, topologyName);
@@ -103,13 +109,20 @@ public:
     m_contourVal = contourVal;
   }
 
+  void computeContourMesh() override
+  {
+    markCrossings();
+    scanCrossings();
+    computeContour();
+  }
+
   /*!
     @brief Implementation of virtual markCrossings.
 
     Virtual methods cannot be templated, so this implementation
     delegates to a name templated on DIM.
   */
-  void markCrossings() override { markCrossings_dim(); }
+  void markCrossings() { markCrossings_dim(); }
 
   //!@brief Populate m_caseIds with crossing indices.
   template <int TDIM = DIM>
@@ -117,7 +130,7 @@ public:
   {
     MarkCrossings_Util mcu(m_caseIds, m_fcnView, m_maskView, m_contourVal);
 
-  #if defined(AXOM_USE_RAJA)
+#if defined(AXOM_USE_RAJA)
     RAJA::RangeSegment jRange(0, m_bShape[1]);
     RAJA::RangeSegment iRange(0, m_bShape[0]);
     using EXEC_POL =
@@ -127,7 +140,7 @@ public:
       AXOM_LAMBDA(axom::IndexType i, axom::IndexType j) {
         mcu.computeCaseId(i, j);
       });
-  #else
+#else
     for(int j = 0; j < m_bShape[1]; ++j)
     {
       for(int i = 0; i < m_bShape[0]; ++i)
@@ -135,7 +148,7 @@ public:
         mcu.computeCaseId(i, j);
       }
     }
-  #endif
+#endif
   }
 
   //!@brief Populate m_caseIds with crossing indices.
@@ -144,7 +157,7 @@ public:
   {
     MarkCrossings_Util mcu(m_caseIds, m_fcnView, m_maskView, m_contourVal);
 
-  #if defined(AXOM_USE_RAJA)
+#if defined(AXOM_USE_RAJA)
     RAJA::RangeSegment kRange(0, m_bShape[2]);
     RAJA::RangeSegment jRange(0, m_bShape[1]);
     RAJA::RangeSegment iRange(0, m_bShape[0]);
@@ -155,7 +168,7 @@ public:
       AXOM_LAMBDA(axom::IndexType i, axom::IndexType j, axom::IndexType k) {
         mcu.computeCaseId(i, j, k);
       });
-  #else
+#else
     for(int k = 0; k < m_bShape[2]; ++k)
     {
       for(int j = 0; j < m_bShape[1]; ++j)
@@ -166,11 +179,11 @@ public:
         }
       }
     }
-  #endif
+#endif
   }
 
   /*!
-    @brief Implementation used by MarchingCubesImpl::markCrossings_dim()
+    @brief Implementation used by MarchingCubesHybridParallel::markCrossings_dim()
     containing just the objects needed for that part, to be made available
     on devices.
   */
@@ -254,11 +267,11 @@ public:
     We sum up the number of contour surface cells from the crossings,
     allocate space, then populate it.
   */
-  void scanCrossings() override
+  void scanCrossings()
   {
     const axom::IndexType parentCellCount = m_caseIds.size();
     auto caseIdsView = m_caseIds.view();
-  #if defined(AXOM_USE_RAJA)
+#if defined(AXOM_USE_RAJA)
     RAJA::ReduceSum<ReducePolicy, axom::IndexType> vsum(0);
     RAJA::forall<LoopPolicy>(
       RAJA::RangeSegment(0, parentCellCount),
@@ -266,14 +279,14 @@ public:
         vsum += bool(num_contour_cells(caseIdsView.flatIndex(n)));
       });
     m_crossingCount = static_cast<axom::IndexType>(vsum.get());
-  #else
+#else
     axom::IndexType vsum = 0;
     for(axom::IndexType n = 0; n < parentCellCount; ++n)
     {
       vsum += bool(num_contour_cells(caseIdsView.flatIndex(n)));
     }
     m_crossingCount = vsum;
-  #endif
+#endif
 
     m_crossings.resize(m_crossingCount, {0, 0});
     axom::ArrayView<CrossingInfo, 1, MemorySpace> crossingsView =
@@ -299,7 +312,7 @@ public:
       }
     };
 
-  #if defined(AXOM_USE_RAJA)
+#if defined(AXOM_USE_RAJA)
     /*
       The m_crossings filling loop isn't data-parallel and shouldn't
       be parallelized.  This contrived RAJA::forall forces it to run
@@ -314,41 +327,40 @@ public:
           loopBody(n);
         }
       });
-  #else
+#else
     *crossingId = 0;
     for(axom::IndexType n = 0; n < parentCellCount; ++n)
     {
       loopBody(n);
     }
     SLIC_ASSERT(*crossingId == m_crossingCount);
-  #endif
+#endif
 
     axom::deallocate(crossingId);
 
     axom::Array<axom::IndexType, 1, MemorySpace> prefixSum(m_crossingCount,
                                                            m_crossingCount);
-    const axom::ArrayView<axom::IndexType, 1, MemorySpace> prefixSumView =
-      prefixSum.view();
+    const auto prefixSumView = prefixSum.view();
 
     auto copyFirstSurfaceCellId = AXOM_LAMBDA(axom::IndexType n)
     {
       crossingsView[n].firstSurfaceCellId = prefixSumView[n];
     };
-  #if defined(AXOM_USE_RAJA)
-        // Intel oneAPI compiler segfaults with OpenMP RAJA scan
-    #ifdef __INTEL_LLVM_COMPILER
+#if defined(AXOM_USE_RAJA)
+      // Intel oneAPI compiler segfaults with OpenMP RAJA scan
+  #ifdef __INTEL_LLVM_COMPILER
     using ScanPolicy =
       typename axom::execution_space<axom::SEQ_EXEC>::loop_policy;
-    #else
+  #else
     using ScanPolicy = typename axom::execution_space<ExecSpace>::loop_policy;
-    #endif
+  #endif
     RAJA::exclusive_scan<ScanPolicy>(
       RAJA::make_span(addCellsView.data(), m_crossingCount),
       RAJA::make_span(prefixSumView.data(), m_crossingCount),
       RAJA::operators::plus<axom::IndexType> {});
     RAJA::forall<LoopPolicy>(RAJA::RangeSegment(0, m_crossingCount),
                              copyFirstSurfaceCellId);
-  #else
+#else
     if(m_crossingCount > 0)
     {
       prefixSumView[0] = 0;
@@ -361,7 +373,7 @@ public:
         copyFirstSurfaceCellId(i);
       }
     }
-  #endif
+#endif
 
     // Data from the last crossing tells us how many contour cells there are.
     if(m_crossings.empty())
@@ -380,7 +392,7 @@ public:
   }
 
   /*!
-    @brief Implementation used by MarchingCubesImpl::computeContour().
+    @brief Implementation used by MarchingCubesHybridParallel::computeContour().
     containing just the objects needed for that part, to be made available
     on devices.
   */
@@ -566,7 +578,7 @@ public:
     }
   };  // ComputeContour_Util
 
-  void computeContour() override
+  void computeContour()
   {
     auto crossingsView = m_crossings.view();
 
@@ -638,9 +650,9 @@ public:
   AXOM_HOST_DEVICE inline typename std::enable_if<TDIM == 2, int>::type
   num_contour_cells(int iCase) const
   {
-  #define _MC_LOOKUP_NUM_SEGMENTS
-  #include "marching_cubes_lookup.hpp"
-  #undef _MC_LOOKUP_NUM_SEGMENTS
+#define _MC_LOOKUP_NUM_SEGMENTS
+#include "marching_cubes_lookup.hpp"
+#undef _MC_LOOKUP_NUM_SEGMENTS
     SLIC_ASSERT(iCase >= 0 && iCase < 16);
     return num_segments[iCase];
   }
@@ -649,9 +661,9 @@ public:
   AXOM_HOST_DEVICE inline typename std::enable_if<TDIM == 2, int>::type
   cases_table(int iCase, int iEdge) const
   {
-  #define _MC_LOOKUP_CASES2D
-  #include "marching_cubes_lookup.hpp"
-  #undef _MC_LOOKUP_CASES2D
+#define _MC_LOOKUP_CASES2D
+#include "marching_cubes_lookup.hpp"
+#undef _MC_LOOKUP_CASES2D
     SLIC_ASSERT(iCase >= 0 && iCase < 16);
     return cases2D[iCase][iEdge];
   }
@@ -660,9 +672,9 @@ public:
   AXOM_HOST_DEVICE inline typename std::enable_if<TDIM == 3, int>::type
   num_contour_cells(int iCase) const
   {
-  #define _MC_LOOKUP_NUM_TRIANGLES
-  #include "marching_cubes_lookup.hpp"
-  #undef _MC_LOOKUP_NUM_TRIANGLES
+#define _MC_LOOKUP_NUM_TRIANGLES
+#include "marching_cubes_lookup.hpp"
+#undef _MC_LOOKUP_NUM_TRIANGLES
     SLIC_ASSERT(iCase >= 0 && iCase < 256);
     return num_triangles[iCase];
   }
@@ -671,9 +683,9 @@ public:
   AXOM_HOST_DEVICE inline typename std::enable_if<TDIM == 3, int>::type
   cases_table(int iCase, int iEdge) const
   {
-  #define _MC_LOOKUP_CASES3D
-  #include "marching_cubes_lookup.hpp"
-  #undef _MC_LOOKUP_CASES3D
+#define _MC_LOOKUP_CASES3D
+#include "marching_cubes_lookup.hpp"
+#undef _MC_LOOKUP_CASES3D
     SLIC_ASSERT(iCase >= 0 && iCase < 256);
     return cases3D[iCase][iEdge];
   }
@@ -752,7 +764,10 @@ public:
         MIdx cornerIds = contourCellCorners[n];
         // Bump corner indices by priorNodeCount to avoid indices
         // used by other parents domains.
-        add_to_StackArray(cornerIds, priorNodeCount);
+        for(int d = 0; d < DIM; ++d)
+        {
+          cornerIds[d] += priorNodeCount;
+        }
         mesh.appendCell(cornerIds);
       }
       axom::IndexType numComponents = -1;
@@ -800,7 +815,7 @@ public:
   /*!
     @brief Constructor.
   */
-  MarchingCubesImpl()
+  MarchingCubesHybridParallel()
     : m_crossings(0, 0)
     , m_contourNodeCoords(0, 0)
     , m_contourCellCorners(0, 0)
@@ -867,7 +882,60 @@ private:
 
   double m_contourVal = 0.0;
 };
-#endif  // AXOM_USE_CONDUIT
+
+static std::unique_ptr<axom::quest::MarchingCubesSingleDomain::ImplBase>
+newMarchingCubesHybridParallel(MarchingCubes::RuntimePolicy runtimePolicy, int dim)
+{
+  using ImplBase = axom::quest::MarchingCubesSingleDomain::ImplBase;
+
+  SLIC_ASSERT(dim >= 2 && dim <= 3);
+  std::unique_ptr<ImplBase> impl;
+  if(runtimePolicy == MarchingCubes::RuntimePolicy::seq)
+  {
+    impl = dim == 2
+      ? std::unique_ptr<ImplBase>(
+          new MarchingCubesHybridParallel<2, axom::SEQ_EXEC, axom::SEQ_EXEC>)
+      : std::unique_ptr<ImplBase>(
+          new MarchingCubesHybridParallel<3, axom::SEQ_EXEC, axom::SEQ_EXEC>);
+  }
+#ifdef AXOM_RUNTIME_POLICY_USE_OPENMP
+  else if(runtimePolicy == MarchingCubes::RuntimePolicy::omp)
+  {
+    impl = dim == 2
+      ? std::unique_ptr<ImplBase>(
+          new MarchingCubesHybridParallel<2, axom::OMP_EXEC, axom::SEQ_EXEC>)
+      : std::unique_ptr<ImplBase>(
+          new MarchingCubesHybridParallel<3, axom::OMP_EXEC, axom::SEQ_EXEC>);
+  }
+#endif
+#ifdef AXOM_RUNTIME_POLICY_USE_CUDA
+  else if(runtimePolicy == MarchingCubes::RuntimePolicy::cuda)
+  {
+    impl = dim == 2
+      ? std::unique_ptr<ImplBase>(
+          new MarchingCubesHybridParallel<2, axom::CUDA_EXEC<256>, axom::CUDA_EXEC<1>>)
+      : std::unique_ptr<ImplBase>(
+          new MarchingCubesHybridParallel<3, axom::CUDA_EXEC<256>, axom::CUDA_EXEC<1>>);
+  }
+#endif
+#ifdef AXOM_RUNTIME_POLICY_USE_HIP
+  else if(runtimePolicy == MarchingCubes::RuntimePolicy::hip)
+  {
+    impl = dim == 2
+      ? std::unique_ptr<ImplBase>(
+          new MarchingCubesHybridParallel<2, axom::HIP_EXEC<256>, axom::HIP_EXEC<1>>)
+      : std::unique_ptr<ImplBase>(
+          new MarchingCubesHybridParallel<3, axom::HIP_EXEC<256>, axom::HIP_EXEC<1>>);
+  }
+#endif
+  else
+  {
+    SLIC_ERROR(axom::fmt::format(
+      "MarchingCubesSingleDomain has no implementation for runtime policy {}",
+      runtimePolicy));
+  }
+  return impl;
+}
 
 }  // end namespace marching_cubes
 }  // end namespace detail

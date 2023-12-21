@@ -32,6 +32,11 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
   with `std::unordered_map`, but utilizes an open-addressing design.
 
 ### Changed
+- `MarchingCubes` allows user to select the underlying data-parallel implementation
+  - `fullParallel` works best on GPUs.
+  - `hybridParallel` reduces the amount of data processed and works best with
+     `MarchingCubesRuntimePolicy::seq`.
+  - `byPolicy` (the default) selects the implementation based on the runtime policy.
 - `MarchingCubes` and `DistributedClosestPoint` classes identify domains by their
   `state/domain_id` parameters if provided, or the local iteration index if not.
 - `MarchingCubes` and `DistributedClosestPoint` classes changed from requiring the Blueprint
@@ -49,6 +54,7 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 ### Fixed
 - quest's `SamplingShaper` now properly handles material names containing underscores
 - quest's `SamplingShaper` can now be used with an mfem that is configured for (GPU) devices
+- primal's `Polygon` area computation in 3D previously only worked when the polygon was aligned with the XY-plane. It now works for arbitrary polygons.
 - Build system: updated to current version of vcpkg to successfully build TPLs on Windows
 
 ## [Version 0.8.1] - Release date 2023-08-16
