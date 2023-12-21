@@ -17,40 +17,42 @@
 #include "axom/config.hpp"
 
 // Implementation requires Conduit.
-#ifdef AXOM_USE_CONDUIT
+#ifndef AXOM_USE_CONDUIT
+  #error "MarchingCubesFullParallel.hpp requires conduit"
+#endif
 
-  // Axom includes
-  #include "axom/core.hpp"
-  #include "axom/slic.hpp"
-  #include "axom/primal.hpp"
-  #include "axom/mint/mesh/UnstructuredMesh.hpp"
-  #include "axom/mint/execution/internal/structured_exec.hpp"
-  #include "axom/quest/ArrayIndexer.hpp"
-  #include "axom/quest/MarchingCubes.hpp"
-  #include "axom/quest/MeshViewUtil.hpp"
-  #include "axom/sidre.hpp"
-  #include "axom/core/Types.hpp"
+// Axom includes
+#include "axom/core.hpp"
+#include "axom/slic.hpp"
+#include "axom/primal.hpp"
+#include "axom/mint/mesh/UnstructuredMesh.hpp"
+#include "axom/mint/execution/internal/structured_exec.hpp"
+#include "axom/quest/ArrayIndexer.hpp"
+#include "axom/quest/MarchingCubes.hpp"
+#include "axom/quest/MeshViewUtil.hpp"
+#include "axom/sidre.hpp"
+#include "axom/core/Types.hpp"
 
-  #include "conduit_blueprint.hpp"
-  #include "conduit_relay_io_blueprint.hpp"
-  #ifdef AXOM_USE_MPI
-    #include "conduit_blueprint_mpi.hpp"
-    #include "conduit_relay_mpi_io_blueprint.hpp"
-  #endif
+#include "conduit_blueprint.hpp"
+#include "conduit_relay_io_blueprint.hpp"
+#ifdef AXOM_USE_MPI
+  #include "conduit_blueprint_mpi.hpp"
+  #include "conduit_relay_mpi_io_blueprint.hpp"
+#endif
 
-  #include "axom/fmt.hpp"
-  #include "axom/CLI11.hpp"
+#include "axom/fmt.hpp"
+#include "axom/CLI11.hpp"
 
-  #ifdef AXOM_USE_MPI
-    #include "mpi.h"
-  #endif
+#ifdef AXOM_USE_MPI
+  #include "mpi.h"
+#endif
 
-  // C/C++ includes
-  #include <string>
-  #include <limits>
-  #include <map>
-  #include <vector>
-  #include <cmath>
+// C/C++ includes
+#include <string>
+#include <limits>
+#include <map>
+#include <vector>
+#include <cmath>
 
 namespace quest = axom::quest;
 namespace slic = axom::slic;
@@ -78,11 +80,12 @@ public:
   std::string fieldsFile {"fields"};
 
   // Center of round contour function
-  bool usingRound {false};
   std::vector<double> fcnCenter;
 
+  // Scaling factor for gyroid function
+  std::vector<double> gyroidScale;
+
   // Parameters for planar contour function
-  bool usingPlanar {false};
   std::vector<double> inPlane;
   std::vector<double> perpDir;
 
@@ -94,8 +97,20 @@ public:
 
   RuntimePolicy policy {RuntimePolicy::seq};
 
+  quest::MarchingCubesDataParallelism dataParallelism =
+    quest::MarchingCubesDataParallelism::byPolicy;
+
 private:
   bool _verboseOutput {false};
+
+  // clang-format off
+  const std::map<std::string, quest::MarchingCubesDataParallelism> s_validImplChoices
+  {
+    {"byPolicy", quest::MarchingCubesDataParallelism::byPolicy}
+    , {"hybridParallel", quest::MarchingCubesDataParallelism::hybridParallel}
+    , {"fullParallel", quest::MarchingCubesDataParallelism::fullParallel}
+  };
+  // clang-format on
 
 public:
   bool isVerbose() const { return _verboseOutput; }
@@ -107,6 +122,11 @@ public:
       ->capture_default_str()
       ->transform(
         axom::CLI::CheckedTransformer(axom::runtime_policy::s_nameToPolicy));
+
+    app.add_option("--dataParallelism", dataParallelism)
+      ->description("Set full or partial data-parallelism, or by-policy")
+      ->capture_default_str()
+      ->transform(axom::CLI::CheckedTransformer(s_validImplChoices));
 
     app.add_option("-m,--mesh-file", meshFile)
       ->description(
@@ -122,23 +142,39 @@ public:
       ->description("Enable/disable verbose output")
       ->capture_default_str();
 
-    auto* distFromPtOption = app.add_option_group(
+    auto* distanceFunctionOption =
+      app.add_option_group("distanceFunctionOption",
+                           "Options for specifying a distance function.");
+
+    auto* distFromPtOption = distanceFunctionOption->add_option_group(
       "distFromPtOption",
       "Options for setting up distance-from-point function");
     distFromPtOption->add_option("--center", fcnCenter)
       ->description("Center for distance-from-point function (x,y[,z])")
       ->expected(2, 3);
 
-    auto* distFromPlaneOption = app.add_option_group(
+    auto* gyroidOption = distanceFunctionOption->add_option_group(
+      "gyroidOption",
+      "Options for setting up gyroid function");
+    gyroidOption->add_option("--scale", gyroidScale)
+      ->description("Scaling factor for gyroid function (x,y[,z])")
+      ->expected(2, 3);
+
+    auto* distFromPlaneOption = distanceFunctionOption->add_option_group(
       "distFromPlaneOption",
       "Options for setting up distance-from-plane function");
+    auto* perpDirOption =
+      distFromPlaneOption->add_option("--dir", perpDir)
+        ->description(
+          "Positive direction for distance-from-plane function (x,y[,z])")
+        ->expected(2, 3);
     distFromPlaneOption->add_option("--inPlane", inPlane)
       ->description("In-plane point for distance-from-plane function (x,y[,z])")
-      ->expected(2, 3);
-    distFromPlaneOption->add_option("--dir", perpDir)
-      ->description(
-        "Positive direction for distance-from-plane function (x,y[,z])")
-      ->expected(2, 3);
+      ->expected(2, 3)
+      ->needs(perpDirOption);
+
+    // Require at least one distance function, and allow all three.
+    distanceFunctionOption->require_option(1, 3);
 
     app.add_option("--contourVal", contourVal)
       ->description("Contour value")
@@ -157,34 +193,38 @@ public:
     slic::setLoggingMsgLevel(_verboseOutput ? slic::message::Debug
                                             : slic::message::Info);
 
-    ndim = std::max(ndim, fcnCenter.size());
-    ndim = std::max(ndim, inPlane.size());
-    ndim = std::max(ndim, perpDir.size());
+    ndim = std::max(
+      {ndim, fcnCenter.size(), inPlane.size(), perpDir.size(), gyroidScale.size()});
     SLIC_ASSERT_MSG((fcnCenter.empty() || fcnCenter.size() == ndim) &&
                       (inPlane.empty() || inPlane.size() == ndim) &&
-                      (perpDir.empty() || perpDir.size() == ndim),
+                      (perpDir.empty() || perpDir.size() == ndim) &&
+                      (gyroidScale.empty() || gyroidScale.size() == ndim),
                     "fcnCenter, inPlane and perpDir must have consistent sizes "
                     "if specified.");
 
-    usingPlanar = !perpDir.empty();
-    usingRound = !fcnCenter.empty();
-    SLIC_ASSERT_MSG(
-      usingPlanar || usingRound,
-      "You must specify a planar scalar function or a round scalar"
-      " function or both.");
-
     // inPlane defaults to origin if omitted.
-    if(usingPlanar && inPlane.empty())
+    if(usingPlanar() && inPlane.empty())
     {
       inPlane.insert(inPlane.begin(), ndim, 0.0);
     }
   }
+
+  bool usingPlanar() { return !perpDir.empty(); }
+  bool usingRound() { return !fcnCenter.empty(); }
+  bool usingGyroid() { return !gyroidScale.empty(); }
 
   template <int DIM>
   axom::primal::Point<double, DIM> roundContourCenter() const
   {
     SLIC_ASSERT(fcnCenter.size() == DIM);
     return axom::primal::Point<double, DIM>(fcnCenter.data());
+  }
+
+  template <int DIM>
+  axom::primal::Point<double, DIM> gyroidScaleFactor() const
+  {
+    SLIC_ASSERT(gyroidScale.size() == DIM);
+    return axom::primal::Point<double, DIM>(gyroidScale.data());
   }
 
   template <int DIM>
@@ -266,6 +306,19 @@ void moveConduitDataToNewMemorySpace(conduit::Node& node,
   }
 }
 
+void getIntMinMax(int inVal, int& minVal, int& maxVal, int& sumVal)
+{
+#ifdef AXOM_USE_MPI
+  MPI_Allreduce(&inVal, &minVal, 1, MPI_INT, MPI_MIN, MPI_COMM_WORLD);
+  MPI_Allreduce(&inVal, &maxVal, 1, MPI_INT, MPI_MAX, MPI_COMM_WORLD);
+  MPI_Allreduce(&inVal, &sumVal, 1, MPI_INT, MPI_SUM, MPI_COMM_WORLD);
+#else
+  minVal = inVal;
+  maxVal = inVal;
+  sumVal = inVal;
+#endif
+}
+
 Input params;
 
 int myRank = -1, numRanks = -1;  // MPI stuff, set in main().
@@ -284,7 +337,8 @@ public:
     for(int d = 0; d < _mdMesh.number_of_children(); ++d)
     {
       auto dl = domainLengths(d);
-      SLIC_INFO(axom::fmt::format("dom[{}] size={}", d, dl));
+      SLIC_INFO_IF(params.isVerbose(),
+                   axom::fmt::format("dom[{}] size={}", d, dl));
     }
     _maxSpacing = maxSpacing();
   }
@@ -412,9 +466,9 @@ public:
     }
 
     double rval = localRval;
-  #ifdef AXOM_USE_MPI
+#ifdef AXOM_USE_MPI
     MPI_Allreduce(&localRval, &rval, 1, MPI_DOUBLE, MPI_MAX, MPI_COMM_WORLD);
-  #endif
+#endif
 
     return rval;
   }
@@ -475,11 +529,11 @@ public:
   bool isValid() const
   {
     conduit::Node info;
-  #ifdef AXOM_USE_MPI
+#ifdef AXOM_USE_MPI
     if(!conduit::blueprint::mpi::verify("mesh", _mdMesh, info, MPI_COMM_WORLD))
-  #else
+#else
     if(!conduit::blueprint::verify("mesh", _mdMesh, info))
-  #endif
+#endif
     {
       SLIC_INFO("Invalid blueprint for mesh: \n" << info.to_yaml());
       slic::flushStreams();
@@ -523,13 +577,13 @@ private:
     SLIC_ASSERT(!meshFilename.empty());
 
     _mdMesh.reset();
-  #ifdef AXOM_USE_MPI
+#ifdef AXOM_USE_MPI
     conduit::relay::mpi::io::blueprint::load_mesh(meshFilename,
                                                   _mdMesh,
                                                   MPI_COMM_WORLD);
-  #else
+#else
     conduit::relay::io::blueprint::load_mesh(meshFilename, _mdMesh);
-  #endif
+#endif
     SLIC_ASSERT(conduit::blueprint::mesh::is_multi_domain(_mdMesh));
     _domCount = conduit::blueprint::mesh::number_of_domains(_mdMesh);
 
@@ -547,9 +601,9 @@ private:
       const conduit::Node coordsetNode = _mdMesh[0].fetch_existing(_coordsetPath);
       _ndims = conduit::blueprint::mesh::coordset::dims(coordsetNode);
     }
-  #ifdef AXOM_USE_MPI
+#ifdef AXOM_USE_MPI
     MPI_Allreduce(MPI_IN_PLACE, &_ndims, 1, MPI_INT, MPI_MAX, MPI_COMM_WORLD);
-  #endif
+#endif
     SLIC_ASSERT(_ndims > 0);
 
     SLIC_ASSERT(isValid());
@@ -561,15 +615,15 @@ void printTimingStats(axom::utilities::Timer& t, const std::string& description)
 {
   auto getDoubleMinMax =
     [](double inVal, double& minVal, double& maxVal, double& sumVal) {
-  #ifdef AXOM_USE_MPI
+#ifdef AXOM_USE_MPI
       MPI_Allreduce(&inVal, &minVal, 1, MPI_DOUBLE, MPI_MIN, MPI_COMM_WORLD);
       MPI_Allreduce(&inVal, &maxVal, 1, MPI_DOUBLE, MPI_MAX, MPI_COMM_WORLD);
       MPI_Allreduce(&inVal, &sumVal, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
-  #else
+#else
       minVal = inVal;
       maxVal = inVal;
       sumVal = inVal;
-  #endif
+#endif
     };
 
   {
@@ -587,14 +641,14 @@ void printTimingStats(axom::utilities::Timer& t, const std::string& description)
 /// Write blueprint mesh to disk
 void saveMesh(const conduit::Node& mesh, const std::string& filename)
 {
-  #ifdef AXOM_USE_MPI
+#ifdef AXOM_USE_MPI
   conduit::relay::mpi::io::blueprint::save_mesh(mesh,
                                                 filename,
                                                 "hdf5",
                                                 MPI_COMM_WORLD);
-  #else
+#else
   conduit::relay::io::blueprint::save_mesh(mesh, filename, "hdf5");
-  #endif
+#endif
 }
 
 /// Write blueprint mesh to disk
@@ -604,11 +658,11 @@ void saveMesh(const sidre::Group& mesh, const std::string& filename)
   mesh.createNativeLayout(tmpMesh);
   {
     conduit::Node info;
-  #ifdef AXOM_USE_MPI
+#ifdef AXOM_USE_MPI
     if(!conduit::blueprint::mpi::verify("mesh", tmpMesh, info, MPI_COMM_WORLD))
-  #else
+#else
     if(!conduit::blueprint::verify("mesh", tmpMesh, info))
-  #endif
+#endif
     {
       SLIC_INFO("Invalid blueprint for mesh: \n" << info.to_yaml());
       slic::flushStreams();
@@ -689,7 +743,7 @@ struct ContourTestBase
         s_allocatorId);
     }
 
-  #if defined(AXOM_USE_UMPIRE)
+#if defined(AXOM_USE_UMPIRE)
     /*
       Make sure data is correctly on host or device.
       We don't test with Unified memory because it's too forgiving.
@@ -716,33 +770,46 @@ struct ContourTestBase
       {
         SLIC_ASSERT(resourceName == "HOST");
       }
-    #if defined(AXOM_RUNTIME_POLICY_USE_OPENMP)
+  #if defined(AXOM_RUNTIME_POLICY_USE_OPENMP)
       else if(params.policy == axom::runtime_policy::Policy::omp)
       {
         SLIC_ASSERT(resourceName == "HOST");
       }
-    #endif
+  #endif
       else
       {
         SLIC_ASSERT(resourceName == "DEVICE");
       }
     }
-  #endif
+#endif
 
     mc.setFunctionField(functionName());
 
     axom::utilities::Timer computeTimer(false);
-  #ifdef AXOM_USE_MPI
+#ifdef AXOM_USE_MPI
     MPI_Barrier(MPI_COMM_WORLD);
-  #endif
+#endif
     computeTimer.start();
+    mc.setDataParallelism(params.dataParallelism);
     mc.computeIsocontour(params.contourVal);
     computeTimer.stop();
     printTimingStats(computeTimer, name() + " contour");
 
-    SLIC_INFO(axom::fmt::format("Surface mesh has locally {} cells, {} nodes.",
-                                mc.getContourCellCount(),
-                                mc.getContourNodeCount()));
+    {
+      int mn, mx, sum;
+      getIntMinMax(mc.getContourCellCount(), mn, mx, sum);
+      SLIC_INFO(axom::fmt::format(
+        "Contour mesh has {{min:{}, max:{}, sum:{}, avg:{}}} cells",
+        mn,
+        mx,
+        sum,
+        (double)sum / numRanks));
+    }
+    SLIC_INFO_IF(
+      params.isVerbose(),
+      axom::fmt::format("Surface mesh has locally {} cells, {} nodes.",
+                        mc.getContourCellCount(),
+                        mc.getContourNodeCount()));
 
     // Return conduit data to host memory.
     if(s_allocatorId != axom::execution_space<axom::SEQ_EXEC>::allocatorID())
@@ -769,7 +836,11 @@ struct ContourTestBase
       meshGroup,
       mc.getContourNodeCount(),
       mc.getContourCellCount());
+    axom::utilities::Timer extractTimer(false);
+    extractTimer.start();
     mc.populateContourMesh(contourMesh, m_parentCellIdField, m_domainIdField);
+    extractTimer.stop();
+    // printTimingStats(extractTimer, name() + " extract");
 
     int localErrCount = 0;
     if(params.checkResults)
@@ -818,10 +889,9 @@ struct ContourTestBase
       const auto coordsViews = mvu.getConstCoordsViews(false);
       axom::ArrayView<double, DIM, MemorySpace> fieldView =
         mvu.template getFieldView<double>(functionName(), false);
-      const auto& fieldShape = fieldView.shape();
       for(int d = 0; d < DIM; ++d)
       {
-        SLIC_ASSERT(coordsViews[d].shape() == fieldShape);
+        SLIC_ASSERT(coordsViews[d].shape() == fieldView.shape());
       }
       populateNodalDistance(coordsViews, fieldView);
     }
@@ -838,7 +908,7 @@ struct ContourTestBase
       SLIC_ASSERT(coordsViews[d].shape() == fieldShape);
     }
 
-  #if defined(AXOM_USE_RAJA)
+#if defined(AXOM_USE_RAJA)
     auto valueFunctor = m_valueFunctor;
     RAJA::RangeSegment iRange(0, fieldShape[0]);
     RAJA::RangeSegment jRange(0, fieldShape[1]);
@@ -854,7 +924,7 @@ struct ContourTestBase
         }
         fieldView(i, j) = valueFunctor(pt);
       });
-  #else
+#else
     for(axom::IndexType j = 0; j < fieldShape[1]; ++j)
     {
       for(axom::IndexType i = 0; i < fieldShape[0]; ++i)
@@ -867,7 +937,7 @@ struct ContourTestBase
         fieldView(i, j) = m_valueFunctor(pt);
       }
     }
-  #endif
+#endif
   }
 
   template <int TDIM = DIM>
@@ -882,7 +952,7 @@ struct ContourTestBase
       SLIC_ASSERT(coordsViews[d].shape() == fieldShape);
     }
 
-  #if defined(AXOM_USE_RAJA)
+#if defined(AXOM_USE_RAJA)
     auto valueFunctor = m_valueFunctor;
     RAJA::RangeSegment iRange(0, fieldShape[0]);
     RAJA::RangeSegment jRange(0, fieldShape[1]);
@@ -899,7 +969,7 @@ struct ContourTestBase
         }
         fieldView(i, j, k) = valueFunctor(pt);
       });
-  #else
+#else
     for(axom::IndexType k = 0; k < fieldShape[2]; ++k)
     {
       for(axom::IndexType j = 0; j < fieldShape[1]; ++j)
@@ -915,7 +985,7 @@ struct ContourTestBase
         }
       }
     }
-  #endif
+#endif
   }
 
   /*
@@ -1063,9 +1133,7 @@ struct ContourTestBase
       axom::primal::BoundingBox<double, DIM> parentCellBox(lower, upper);
       double tol = errorTolerance();
       axom::primal::BoundingBox<double, DIM> big(parentCellBox);
-      axom::primal::BoundingBox<double, DIM> small(parentCellBox);
       big.expand(tol);
-      small.expand(-tol);
 
       axom::IndexType* cellNodeIds = contourMesh.getCellNodeIDs(contourCellNum);
       const axom::IndexType cellNodeCount =
@@ -1076,7 +1144,7 @@ struct ContourTestBase
         PointType nodeCoords;
         contourMesh.getNode(cellNodeIds[nn], nodeCoords.data());
 
-        if(!big.contains(nodeCoords) || small.contains(nodeCoords))
+        if(!big.contains(nodeCoords))
         {
           ++errCount;
           SLIC_INFO_IF(
@@ -1198,19 +1266,24 @@ struct ContourTestBase
           maxFcnValue = std::max(maxFcnValue, fcnValue);
         }
 
-        const bool touchesContour =
-          (minFcnValue <= params.contourVal && maxFcnValue >= params.contourVal);
-        const bool hasCont = hasContours[domId][cellIdx];
-        if(touchesContour != hasCont)
+        // If the min or max values in the cell is close to params.contourVal
+        // touchesContour and hasCont can go either way.  So don't check.
+        if(minFcnValue != params.contourVal && maxFcnValue != params.contourVal)
         {
-          ++errCount;
-          SLIC_INFO_IF(params.isVerbose(),
-                       axom::fmt::format(
-                         "checkCellsContainingContour: cell {}: hasContour "
-                         "({}) and touchesContour ({}) don't agree.",
-                         cellIdx,
-                         hasCont,
-                         touchesContour));
+          const bool touchesContour = (minFcnValue <= params.contourVal &&
+                                       maxFcnValue >= params.contourVal);
+          const bool hasCont = hasContours[domId][cellIdx];
+          if(touchesContour != hasCont)
+          {
+            ++errCount;
+            SLIC_INFO_IF(params.isVerbose(),
+                         axom::fmt::format(
+                           "checkCellsContainingContour: cell {}: hasContour "
+                           "({}) and touchesContour ({}) don't agree.",
+                           cellIdx,
+                           hasCont,
+                           touchesContour));
+          }
         }
       }
     }
@@ -1272,8 +1345,80 @@ struct RoundContourTest
 
   void setToleranceByLongestEdge(const BlueprintStructuredMesh& bsm)
   {
+    // Heuristic of appropriate error tolerance.
     double maxSpacing = bsm.maxSpacing();
     _errTol = 0.1 * maxSpacing;
+  }
+};
+
+/*!
+  @brief Function for approximate gyroid surface
+*/
+template <int DIM>
+struct GyroidFunctor
+{
+  using PointType = axom::primal::Point<double, DIM>;
+  const PointType _scale;
+  const double _offset;
+  GyroidFunctor(const PointType& scale, double offset)
+    : _scale(scale)
+    , _offset(offset)
+  { }
+  double operator()(const PointType& pt) const
+  {
+    if(DIM == 3)
+    {
+      return sin(pt[0] * _scale[0]) * cos(pt[1] * _scale[1]) +
+        sin(pt[1] * _scale[1]) * cos(pt[2] * _scale[2]) +
+        sin(pt[2] * _scale[2]) * cos(pt[0] * _scale[0]) + _offset;
+    }
+    else
+    {
+      // Use the 3D function, with z=0.
+      return sin(pt[0] * _scale[0]) * cos(pt[1] * _scale[1]) +
+        sin(pt[1] * _scale[1]) + _offset;
+    }
+  }
+};
+template <int DIM, typename ExecSpace>
+struct GyroidContourTest
+  : public ContourTestBase<DIM, ExecSpace, GyroidFunctor<DIM>>
+{
+  static constexpr auto MemorySpace =
+    axom::execution_space<ExecSpace>::memory_space;
+  using PointType = axom::primal::Point<double, DIM>;
+  using FunctorType = GyroidFunctor<DIM>;
+  /*!
+    @brief Constructor.
+
+    @param scale [in] Gyroid function scaling factors
+  */
+  GyroidContourTest(const PointType& scale, double offset)
+    : ContourTestBase<DIM, ExecSpace, FunctorType>(FunctorType(scale, offset))
+    , _scale(scale)
+    , _gyroidFunctor(scale, offset)
+    , _errTol(1e-3)
+  { }
+  virtual ~GyroidContourTest() { }
+  const PointType _scale;
+  FunctorType _gyroidFunctor;
+  double _errTol;
+
+  virtual std::string name() const override { return std::string("gyroid"); }
+
+  virtual std::string functionName() const override
+  {
+    return std::string("gyroid_fcn");
+  }
+
+  double errorTolerance() const override { return _errTol; }
+
+  void setToleranceByLongestEdge(const BlueprintStructuredMesh& bsm)
+  {
+    // Heuristic of appropriate error tolerance.
+    double maxSpacing = bsm.maxSpacing();
+    axom::primal::Vector<double, DIM> v(_scale);
+    _errTol = 0.1 * v.norm() * maxSpacing;
   }
 };
 
@@ -1358,18 +1503,18 @@ void initializeLogger()
 
   slic::LogStream* logStream;
 
-  #ifdef AXOM_USE_MPI
+#ifdef AXOM_USE_MPI
   std::string fmt = "[<RANK>][<LEVEL>]: <MESSAGE>\n";
-    #ifdef AXOM_USE_LUMBERJACK
+  #ifdef AXOM_USE_LUMBERJACK
   const int RLIMIT = 8;
   logStream = new slic::LumberjackStream(&std::cout, MPI_COMM_WORLD, RLIMIT, fmt);
-    #else
-  logStream = new slic::SynchronizedStream(&std::cout, MPI_COMM_WORLD, fmt);
-    #endif
   #else
+  logStream = new slic::SynchronizedStream(&std::cout, MPI_COMM_WORLD, fmt);
+  #endif
+#else
   std::string fmt = "[<LEVEL>]: <MESSAGE>\n";
   logStream = new slic::GenericOutputStream(&std::cout, fmt);
-  #endif  // AXOM_USE_MPI
+#endif  // AXOM_USE_MPI
 
   slic::addStreamToAllMsgLevels(logStream);
 
@@ -1410,16 +1555,25 @@ int testNdimInstance(BlueprintStructuredMesh& computationalMesh)
   //---------------------------------------------------------------------------
 
   std::shared_ptr<RoundContourTest<DIM, ExecSpace>> roundTest;
+  std::shared_ptr<GyroidContourTest<DIM, ExecSpace>> gyroidTest;
   std::shared_ptr<PlanarContourTest<DIM, ExecSpace>> planarTest;
 
-  if(params.usingRound)
+  if(params.usingRound())
   {
     roundTest = std::make_shared<RoundContourTest<DIM, ExecSpace>>(
       params.roundContourCenter<DIM>());
     roundTest->setToleranceByLongestEdge(computationalMesh);
     roundTest->computeNodalDistance(computationalMesh);
   }
-  if(params.usingPlanar)
+  if(params.usingGyroid())
+  {
+    gyroidTest = std::make_shared<GyroidContourTest<DIM, ExecSpace>>(
+      params.gyroidScaleFactor<DIM>(),
+      params.contourVal);
+    gyroidTest->setToleranceByLongestEdge(computationalMesh);
+    gyroidTest->computeNodalDistance(computationalMesh);
+  }
+  if(params.usingPlanar())
   {
     planarTest = std::make_shared<PlanarContourTest<DIM, ExecSpace>>(
       params.inplanePoint<DIM>(),
@@ -1448,16 +1602,22 @@ int testNdimInstance(BlueprintStructuredMesh& computationalMesh)
   }
   slic::flushStreams();
 
+  if(gyroidTest)
+  {
+    localErrCount += gyroidTest->runTest(computationalMesh, mc);
+  }
+  slic::flushStreams();
+
   // Check results
 
   int errCount = 0;
   if(params.checkResults)
   {
-  #ifdef AXOM_USE_MPI
+#ifdef AXOM_USE_MPI
     MPI_Allreduce(&localErrCount, &errCount, 1, MPI_INT, MPI_SUM, MPI_COMM_WORLD);
-  #else
+#else
     errCount = localErrCount;
-  #endif
+#endif
 
     if(errCount)
     {
@@ -1479,14 +1639,14 @@ int testNdimInstance(BlueprintStructuredMesh& computationalMesh)
 //------------------------------------------------------------------------------
 int main(int argc, char** argv)
 {
-  #ifdef AXOM_USE_MPI
+#ifdef AXOM_USE_MPI
   MPI_Init(&argc, &argv);
   MPI_Comm_rank(MPI_COMM_WORLD, &myRank);
   MPI_Comm_size(MPI_COMM_WORLD, &numRanks);
-  #else
+#else
   numRanks = 1;
   myRank = 0;
-  #endif
+#endif
 
   initializeLogger();
   //slic::setAbortOnWarning(true);
@@ -1508,10 +1668,10 @@ int main(int argc, char** argv)
       retval = app.exit(e);
     }
 
-  #ifdef AXOM_USE_MPI
+#ifdef AXOM_USE_MPI
     MPI_Bcast(&retval, 1, MPI_INT, 0, MPI_COMM_WORLD);
     MPI_Finalize();
-  #endif
+#endif
 
     exit(retval);
   }
@@ -1529,18 +1689,6 @@ int main(int argc, char** argv)
                       computationalMesh.cellCount(),
                       computationalMesh.domainCount()));
   slic::flushStreams();
-
-  auto getIntMinMax = [](int inVal, int& minVal, int& maxVal, int& sumVal) {
-  #ifdef AXOM_USE_MPI
-    MPI_Allreduce(&inVal, &minVal, 1, MPI_INT, MPI_MIN, MPI_COMM_WORLD);
-    MPI_Allreduce(&inVal, &maxVal, 1, MPI_INT, MPI_MAX, MPI_COMM_WORLD);
-    MPI_Allreduce(&inVal, &sumVal, 1, MPI_INT, MPI_SUM, MPI_COMM_WORLD);
-  #else
-    minVal = inVal;
-    maxVal = inVal;
-    sumVal = inVal;
-  #endif
-  };
 
   // Output some global mesh size stats
   {
@@ -1581,8 +1729,8 @@ int main(int argc, char** argv)
       errCount = testNdimInstance<3, axom::SEQ_EXEC>(computationalMesh);
     }
   }
-  #if defined(AXOM_USE_RAJA)
-    #ifdef AXOM_USE_OPENMP
+#if defined(AXOM_USE_RAJA)
+  #ifdef AXOM_USE_OPENMP
   else if(params.policy == axom::runtime_policy::Policy::omp)
   {
     if(params.ndim == 2)
@@ -1594,8 +1742,8 @@ int main(int argc, char** argv)
       errCount = testNdimInstance<3, axom::OMP_EXEC>(computationalMesh);
     }
   }
-    #endif
-    #if defined(AXOM_USE_CUDA) && defined(AXOM_USE_UMPIRE)
+  #endif
+  #if defined(AXOM_USE_CUDA) && defined(AXOM_USE_UMPIRE)
   else if(params.policy == axom::runtime_policy::Policy::cuda)
   {
     if(params.ndim == 2)
@@ -1607,8 +1755,8 @@ int main(int argc, char** argv)
       errCount = testNdimInstance<3, axom::CUDA_EXEC<256>>(computationalMesh);
     }
   }
-    #endif
-    #if defined(AXOM_USE_HIP) && defined(AXOM_USE_UMPIRE)
+  #endif
+  #if defined(AXOM_USE_HIP) && defined(AXOM_USE_UMPIRE)
   else if(params.policy == axom::runtime_policy::Policy::hip)
   {
     if(params.ndim == 2)
@@ -1620,15 +1768,13 @@ int main(int argc, char** argv)
       errCount = testNdimInstance<3, axom::HIP_EXEC<256>>(computationalMesh);
     }
   }
-    #endif
   #endif
+#endif
 
   finalizeLogger();
-  #ifdef AXOM_USE_MPI
+#ifdef AXOM_USE_MPI
   MPI_Finalize();
-  #endif
+#endif
 
   return errCount != 0;
 }
-
-#endif  // AXOM_USE_CONDUIT

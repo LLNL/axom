@@ -6,13 +6,16 @@
 #include "axom/config.hpp"
 
 // Implementation requires Conduit.
-#ifdef AXOM_USE_CONDUIT
-  #include "conduit_blueprint.hpp"
+#ifndef AXOM_USE_CONDUIT
+  #error "MarchingCubes.cpp requires conduit"
+#endif
+#include "conduit_blueprint.hpp"
 
-  #include "axom/core/execution/execution_space.hpp"
-  #include "axom/quest/MarchingCubes.hpp"
-  #include "axom/quest/detail/MarchingCubesImpl.hpp"
-  #include "axom/fmt.hpp"
+#include "axom/core/execution/execution_space.hpp"
+#include "axom/quest/MarchingCubes.hpp"
+#include "axom/quest/detail/MarchingCubesHybridParallel.hpp"
+#include "axom/quest/detail/MarchingCubesFullParallel.hpp"
+#include "axom/fmt.hpp"
 
 namespace axom
 {
@@ -30,9 +33,8 @@ MarchingCubes::MarchingCubes(RuntimePolicy runtimePolicy,
   , m_maskFieldName(maskField)
   , m_maskPath(maskField.empty() ? std::string() : "fields/" + maskField)
 {
-  const bool isMultidomain = conduit::blueprint::mesh::is_multi_domain(bpMesh);
   SLIC_ASSERT_MSG(
-    isMultidomain,
+    conduit::blueprint::mesh::is_multi_domain(bpMesh),
     "MarchingCubes class input mesh must be in multidomain format.");
 
   m_singles.reserve(conduit::blueprint::mesh::number_of_domains(bpMesh));
@@ -63,6 +65,7 @@ void MarchingCubes::computeIsocontour(double contourVal)
   for(int dId = 0; dId < m_singles.size(); ++dId)
   {
     std::unique_ptr<MarchingCubesSingleDomain>& single = m_singles[dId];
+    single->setDataParallelism(m_dataParallelism);
     single->computeIsocontour(contourVal);
   }
 }
@@ -182,11 +185,9 @@ void MarchingCubesSingleDomain::setDomain(const conduit::Node& dom)
     dom.fetch_existing(axom::fmt::format("topologies/{}", m_topologyName)));
   SLIC_ASSERT(m_ndim >= 2 && m_ndim <= 3);
 
-  const conduit::Node& coordsValues =
-    dom.fetch_existing(coordsetPath + "/values");
-  bool isInterleaved = conduit::blueprint::mcarray::is_interleaved(coordsValues);
   SLIC_ASSERT_MSG(
-    !isInterleaved,
+    !conduit::blueprint::mcarray::is_interleaved(
+      dom.fetch_existing(coordsetPath + "/values")),
     "MarchingCubes currently requires contiguous coordinates layout.");
 }
 
@@ -215,64 +216,28 @@ void MarchingCubesSingleDomain::computeIsocontour(double contourVal)
   SLIC_ASSERT_MSG(!m_fcnFieldName.empty(),
                   "You must call setFunctionField before computeIsocontour.");
 
-  allocateImpl();
-  m_impl->initialize(*m_dom, m_topologyName, m_fcnFieldName, m_maskFieldName);
-  m_impl->setContourValue(contourVal);
-  m_impl->markCrossings();
-  m_impl->scanCrossings();
-  m_impl->computeContour();
-}
-
-void MarchingCubesSingleDomain::allocateImpl()
-{
-  using namespace detail::marching_cubes;
-  if(m_runtimePolicy == RuntimePolicy::seq)
+  // We have 2 implementations.  MarchingCubesHybridParallel is faster on the host
+  // and MarchingCubesFullParallel is faster on GPUs.  Both work in all cases.
+  // We can choose based on runtime policy or by user choice
+  if(m_dataParallelism ==
+       axom::quest::MarchingCubesDataParallelism::hybridParallel ||
+     (m_dataParallelism == axom::quest::MarchingCubesDataParallelism::byPolicy &&
+      m_runtimePolicy == RuntimePolicy::seq))
   {
-    m_impl = m_ndim == 2
-      ? std::unique_ptr<ImplBase>(
-          new MarchingCubesImpl<2, axom::SEQ_EXEC, axom::SEQ_EXEC>)
-      : std::unique_ptr<ImplBase>(
-          new MarchingCubesImpl<3, axom::SEQ_EXEC, axom::SEQ_EXEC>);
+    m_impl = axom::quest::detail::marching_cubes::newMarchingCubesHybridParallel(
+      m_runtimePolicy,
+      m_ndim);
   }
-  #ifdef AXOM_RUNTIME_POLICY_USE_OPENMP
-  else if(m_runtimePolicy == RuntimePolicy::omp)
-  {
-    m_impl = m_ndim == 2
-      ? std::unique_ptr<ImplBase>(
-          new MarchingCubesImpl<2, axom::OMP_EXEC, axom::SEQ_EXEC>)
-      : std::unique_ptr<ImplBase>(
-          new MarchingCubesImpl<3, axom::OMP_EXEC, axom::SEQ_EXEC>);
-  }
-  #endif
-  #ifdef AXOM_RUNTIME_POLICY_USE_CUDA
-  else if(m_runtimePolicy == RuntimePolicy::cuda)
-  {
-    m_impl = m_ndim == 2
-      ? std::unique_ptr<ImplBase>(
-          new MarchingCubesImpl<2, axom::CUDA_EXEC<256>, axom::CUDA_EXEC<1>>)
-      : std::unique_ptr<ImplBase>(
-          new MarchingCubesImpl<3, axom::CUDA_EXEC<256>, axom::CUDA_EXEC<1>>);
-  }
-  #endif
-  #ifdef AXOM_RUNTIME_POLICY_USE_HIP
-  else if(m_runtimePolicy == RuntimePolicy::hip)
-  {
-    m_impl = m_ndim == 2
-      ? std::unique_ptr<ImplBase>(
-          new MarchingCubesImpl<2, axom::HIP_EXEC<256>, axom::HIP_EXEC<1>>)
-      : std::unique_ptr<ImplBase>(
-          new MarchingCubesImpl<3, axom::HIP_EXEC<256>, axom::HIP_EXEC<1>>);
-  }
-  #endif
   else
   {
-    SLIC_ERROR(axom::fmt::format(
-      "MarchingCubesSingleDomain has no implementation for runtime policy {}",
-      m_runtimePolicy));
+    m_impl = axom::quest::detail::marching_cubes::newMarchingCubesFullParallel(
+      m_runtimePolicy,
+      m_ndim);
   }
+  m_impl->initialize(*m_dom, m_topologyName, m_fcnFieldName, m_maskFieldName);
+  m_impl->setContourValue(contourVal);
+  m_impl->computeContourMesh();
 }
-
-#endif  // AXOM_USE_CONDUIT
 
 }  // end namespace quest
 }  // end namespace axom

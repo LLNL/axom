@@ -264,9 +264,11 @@ if(CONDUIT_FOUND)
                 if(_ndim EQUAL 2)
                   set(_dir 1.0 0.4)
                   set(_center 1.0 0.4)
+                  set(_scale 3 3)
                 elseif(_ndim EQUAL 3)
                   set(_dir 1.0 0.4 1.2)
                   set(_center 1.0 0.4 1.2)
+                  set(_scale 3 3 1.5)
                 endif()
 
                 set(_test "quest_marching_cubes_run_${_ndim}D_${_pol}_${_mesh}")
@@ -278,6 +280,7 @@ if(CONDUIT_FOUND)
                                 --fields-file ${_test}.field
                                 --dir ${_dir}
                                 --center ${_center}
+                                --scale ${_scale}
                                 --contourVal 1.25
                                 --check-results
                                 --verbose

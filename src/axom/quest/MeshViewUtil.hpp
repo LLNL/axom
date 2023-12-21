@@ -221,6 +221,7 @@ public:
     @param [in] topologyName Name of topology in the domain.
 
     If \a topologyName is omitted, use the first topology.
+
     The topology dimension must match DIM.
   */
   MeshViewUtil(conduit::Node& bpDomain, const std::string& topologyName = "")
