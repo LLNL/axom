@@ -38,8 +38,24 @@ namespace marching_cubes
 {
 template <int DIM, typename ExecSpace, typename SequentialLoopPolicy>
 class MarchingCubesImpl;
-}
+}  // namespace marching_cubes
 }  // namespace detail
+
+/*!
+  @brief Enum for implementation.
+
+  Partial parallel implementation uses a non-parallizable loop and
+  processes less data.  It has been shown to work well on CPUs.
+  Full parallel implementation processes more data, but parallelizes
+  fully and has been shown to work well on GPUs.  byPolicy chooses
+  based on runtime policy.
+*/
+enum class MarchingCubesDataParallelism
+{
+  byPolicy = 0,
+  hybridParallel = 1,
+  fullParallel = 2
+};
 
 class MarchingCubesSingleDomain;
 
@@ -150,8 +166,22 @@ public:
     const std::string &cellIdField = {},
     const std::string &domainIdField = {});
 
+  /*!
+    @brief Set choice of data-parallel implementation.
+
+    By default, choice is MarchingCubesDataParallelism::byPolicy.
+  */
+  void setDataParallelism(MarchingCubesDataParallelism dataPar)
+  {
+    m_dataParallelism = dataPar;
+  }
+
 private:
   RuntimePolicy m_runtimePolicy;
+
+  //@brief Choice of full or partial data-parallelism, or byPolicy.
+  MarchingCubesDataParallelism m_dataParallelism =
+    MarchingCubesDataParallelism::byPolicy;
 
   //! @brief Single-domain implementations.
   axom::Array<std::unique_ptr<MarchingCubesSingleDomain>> m_singles;
@@ -172,9 +202,6 @@ private:
  */
 class MarchingCubesSingleDomain
 {
-  template <int DIM, typename ExecSpace, typename SequentialLoopPolicy>
-  friend class detail::marching_cubes::MarchingCubesImpl;
-
 public:
   using RuntimePolicy = axom::runtime_policy::Policy;
   /*!
@@ -195,7 +222,6 @@ public:
    *
    * Some data from \a dom may be cached by the constructor.
    * Any change to it after the constructor leads to undefined behavior.
-   * See setDomain(const conduit::Node &) for requirements on \a dom.
    *
    * The mesh coordinates should be stored contiguously.  See
    * conduit::blueprint::is_contiguous().  In the future, this
@@ -206,6 +232,11 @@ public:
                             const conduit::Node &dom,
                             const std::string &topologyName,
                             const std::string &maskfield);
+
+  void setDataParallelism(MarchingCubesDataParallelism &dataPar)
+  {
+    m_dataParallelism = dataPar;
+  }
 
   /*!
     @brief Specify the field containing the nodal scalar function
@@ -261,8 +292,45 @@ public:
     m_impl->populateContourMesh(mesh, cellIdField);
   }
 
+  /*!
+    @brief Base class for implementations templated on dimension
+    and execution space.
+
+    This class allows m_impl to refer to any implementation used
+    at runtime.
+  */
+  struct ImplBase
+  {
+    //!@brief Prepare internal data for operating on the given domain.
+    virtual void initialize(const conduit::Node &dom,
+                            const std::string &topologyName,
+                            const std::string &fcnPath,
+                            const std::string &maskPath) = 0;
+    //!@brief Set the contour value
+    virtual void setContourValue(double contourVal) = 0;
+    //!@brief Compute the contour mesh.
+    virtual void computeContourMesh() = 0;
+    //!@brief Return number of contour mesh facets generated.
+    virtual axom::IndexType getContourCellCount() const = 0;
+    /*!
+      @brief Populate output mesh object with generated contour.
+
+      Note: Output format is in flux.  We will likely output
+      a blueprint object in the future.
+    */
+    virtual void populateContourMesh(
+      axom::mint::UnstructuredMesh<axom::mint::SINGLE_SHAPE> &mesh,
+      const std::string &cellIdField) const = 0;
+    virtual ~ImplBase() { }
+  };
+
 private:
   RuntimePolicy m_runtimePolicy;
+
+  //@brief Choice of full or partial data-parallelism, or byPolicy.
+  MarchingCubesDataParallelism m_dataParallelism =
+    MarchingCubesDataParallelism::byPolicy;
+
   /*!
     \brief Computational mesh as a conduit::Node.
   */
@@ -280,48 +348,7 @@ private:
   //!@brief Path to mask in m_dom.
   const std::string m_maskPath;
 
-  /*!
-    @brief Base class for implementations templated on dimension
-    and execution space.
-
-    This class allows m_impl to refer to any implementation used
-    at runtime.
-  */
-  struct ImplBase
-  {
-    //!@brief Prepare internal data for operating on the given domain.
-    virtual void initialize(const conduit::Node &dom,
-                            const std::string &topologyName,
-                            const std::string &fcnPath,
-                            const std::string &maskPath) = 0;
-    //!@brief Set the contour value
-    virtual void setContourValue(double contourVal) = 0;
-    //@{
-    //!@name Phases of the computation
-    //!@brief Mark domain cells that cross the contour.
-    virtual void markCrossings() = 0;
-    //!@brief Precompute some metadata for contour mesh.
-    virtual void scanCrossings() = 0;
-    //!@brief Generate the contour mesh in internal data format.
-    virtual void computeContour() = 0;
-    //!@brief Get the number of contour mesh cells generated.
-    //@}
-    virtual axom::IndexType getContourCellCount() const = 0;
-    /*!
-      @brief Populate output mesh object with generated contour.
-
-      Note: Output format is in flux.  We will likely output
-      a blueprint object in the future.
-    */
-    virtual void populateContourMesh(
-      axom::mint::UnstructuredMesh<axom::mint::SINGLE_SHAPE> &mesh,
-      const std::string &cellIdField) const = 0;
-    virtual ~ImplBase() { }
-  };
-
   std::unique_ptr<ImplBase> m_impl;
-  //!@brief Allocate implementation object and set m_impl.
-  void allocateImpl();
 
   /*!
    * \brief Set the blueprint single-domain mesh.
