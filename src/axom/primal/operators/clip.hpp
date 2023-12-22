@@ -50,16 +50,13 @@ Polygon<T, 3> clip(const Triangle<T, 3>& tri, const BoundingBox<T, 3>& bbox)
   using PolygonType = Polygon<T, 3>;
 
   // Use two polygons with pointers for 'back-buffer'-like swapping
-  const int MAX_VERTS = 6;
+  constexpr int MAX_VERTS = 6;
   PolygonType poly[2] = {PolygonType(MAX_VERTS), PolygonType(MAX_VERTS)};
   PolygonType* currentPoly = &poly[0];
   PolygonType* prevPoly = &poly[1];
 
   // First check if the triangle is contained in the bbox, if not we are empty
-  BoundingBoxType triBox;
-  triBox.addPoint(tri[0]);
-  triBox.addPoint(tri[1]);
-  triBox.addPoint(tri[2]);
+  BoundingBoxType triBox {tri[0], tri[1], tri[2]};
 
   if(!bbox.intersectsWith(triBox))
   {
