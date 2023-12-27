@@ -1790,29 +1790,82 @@ bool Group::isEquivalentTo(const Group* other, bool checkName) const
   return is_equiv;
 }
 
-void Group::checkConduitCall(const std::function<void(void)>& conduitOp) const
+
+/*
+ *************************************************************************
+ *
+ * Private class used to set Conduit error handler to default (throw exception)
+ *
+ * Creating an instance of this class will disable the current Conduit error
+ * callbacks.  The default Conduit callbacks throw exceptions when they
+ * encounter I/O errors.  When the instance is destroyed, the previous
+ * callbacks are restored.
+ *
+ * This class is also a functor.  The operator() method takes a closure,
+ * catches any Conduit error, and saves that in the DataStore.
+ *
+ *************************************************************************
+ */
+
+class ConduitErrorSuppressor
 {
-  auto conduit_info_handler {conduit::utils::info_handler()};
-  auto conduit_warning_handler {conduit::utils::warning_handler()};
-  auto conduit_error_handler {conduit::utils::error_handler()};
+public:
+    using  conduit_error_handler = void(*)(const std::string&, const std::string&, int);
 
-  DataStore::setConduitDefaultMessageHandlers();
+    ConduitErrorSuppressor(const DataStore* ds)
+        : m_ds(ds),
+          m_error_handler(nullptr),
+          m_warning_handler(nullptr),
+          m_info_handler(nullptr)
+    {
+        disable_conduit_error_handlers();
+    }
 
-  try
-  {
-    conduitOp();
-  }
-  catch(conduit::Error& e)
-  {
-    const DataStore* d = getDataStore();
-    d->setConduitErrorOccurred(true);
-    d->appendToConduitErrors(e.message());
-  }
+    ~ConduitErrorSuppressor()
+    {
+        restore_conduit_error_handlers();
+    }
 
-  conduit::utils::set_error_handler(conduit_error_handler);
-  conduit::utils::set_warning_handler(conduit_warning_handler);
-  conduit::utils::set_info_handler(conduit_info_handler);
-}
+    void operator()(const std::function<void(void)>& conduitOp)
+    {
+        try
+        {
+            conduitOp();
+        }
+        catch(conduit::Error& e)
+        {
+            m_ds->setConduitErrorOccurred(true);
+            m_ds->appendToConduitErrors(e.message());
+        }
+    }
+
+private:
+    // saves current error func.
+    // for hdf5's default setup this disable printed error messages
+    // that occur when we are probing properties of the hdf5 tree
+    void disable_conduit_error_handlers()
+    {
+        m_info_handler = conduit::utils::info_handler();
+        m_warning_handler = conduit::utils::warning_handler();
+        m_error_handler = conduit::utils::error_handler();
+
+        DataStore::setConduitDefaultMessageHandlers();
+    }
+
+    // restores saved error func
+    void restore_conduit_error_handlers()
+    {
+        conduit::utils::set_error_handler(m_error_handler);
+        conduit::utils::set_warning_handler(m_warning_handler);
+        conduit::utils::set_info_handler(m_info_handler);
+    }
+
+    /// The DataStore we report to
+    const DataStore * m_ds;
+
+    /// callbacks used for Conduit error interface
+    conduit_error_handler m_error_handler, m_warning_handler, m_info_handler;
+};
 
 /*
  *************************************************************************
@@ -1827,6 +1880,7 @@ bool Group::save(const std::string& path,
                  const Attribute* attr) const
 {
   const DataStore* ds = getDataStore();
+  ConduitErrorSuppressor checkConduitCall(ds);
 
   if(protocol == "sidre_hdf5")
   {
@@ -1916,6 +1970,7 @@ bool Group::load(const std::string& path,
                  bool preserve_contents,
                  std::string& name_from_file)
 {
+  ConduitErrorSuppressor checkConduitCall(getDataStore());
   if(protocol == "sidre_hdf5")
   {
     Node n;
@@ -2026,6 +2081,7 @@ bool Group::loadExternalData(const std::string& path)
 {
   Node n;
   createExternalLayout(n);
+  ConduitErrorSuppressor checkConduitCall(getDataStore());
 
 #ifdef AXOM_USE_HDF5
   // CYRUS'-NOTE, not sure ":" will work with multiple trees per
@@ -2057,6 +2113,8 @@ bool Group::save(const hid_t& h5_id,
                  const std::string& protocol,
                  const Attribute* attr) const
 {
+  ConduitErrorSuppressor checkConduitCall(getDataStore());
+
   // supported here:
   // "sidre_hdf5"
   // "conduit_hdf5"
@@ -2104,6 +2162,8 @@ bool Group::load(const hid_t& h5_id,
                  bool preserve_contents,
                  std::string& name_from_file)
 {
+  ConduitErrorSuppressor checkConduitCall(getDataStore());
+
   // supported here:
   // "sidre_hdf5"
   // "conduit_hdf5"
@@ -2153,8 +2213,9 @@ bool Group::loadExternalData(const hid_t& h5_id)
 {
   Node n;
   createExternalLayout(n);
-  auto f = [&] { conduit::relay::io::hdf5_read(h5_id, "sidre/external", n); };
-  checkConduitCall(f);
+  ConduitErrorSuppressor checkConduitCall(getDataStore());
+
+  checkConduitCall([&] { conduit::relay::io::hdf5_read(h5_id, "sidre/external", n); });
 
   return !(getDataStore()->getConduitErrorOccurred());
 }
