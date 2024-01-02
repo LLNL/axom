@@ -106,10 +106,11 @@ Point<T, NDIMS> findIntersectionPoint(const Point<T, NDIMS>& a,
   // * pt = a + t * (b-a)
   // * pt[ index/2]  == val
 
-  T t = (val - a[index / 2]) / (b[index / 2] - a[index / 2]);
+  const int coord = index / 2;
+  const T t = (val - a[coord]) / (b[coord] - a[coord]);
   SLIC_ASSERT(0. <= t && t <= 1.);
 
-  auto ret = PointType::lerp(a, b, t);
+  const auto ret = PointType::lerp(a, b, t);
   SLIC_ASSERT(classifyPointAxisPlane(ret, index, val) == ON_BOUNDARY);
 
   return ret;
