@@ -518,19 +518,15 @@ void OrientedBoundingBox<T, NDIMS>::addPoint(Point<T, NDIMS> pt)
 template <typename T, int NDIMS>
 void OrientedBoundingBox<T, NDIMS>::addBox(OrientedBoundingBox<T, NDIMS> obb)
 {
-  SLIC_CHECK_MSG(obb.isValid(), "Passed in OBB is invalid.");
   if(!obb.isValid())
   {
     // don't do anything
     return;
   }
 
-  std::vector<Point<T, NDIMS>> res = obb.vertices();
-  int size = static_cast<int>(res.size());
-
-  for(int i = 0; i < size; i++)
+  for(const auto& vert : obb.vertices())
   {
-    this->addPoint(res[i]);
+    this->addPoint(vert);
   }
 }
 
