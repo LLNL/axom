@@ -823,6 +823,50 @@ TEST(primal_clip, hex_tet_clip_point)
   EXPECT_EQ(axom::primal::clip(tet, hex).volume(), poly.volume());
 }
 
+// Tetrahedron with a negative volume clips hexahedron
+TEST(primal_clip, hex_tet_negative_tet_vol)
+{
+  using namespace Primal3D;
+  constexpr double EPS = 1e-4;
+  constexpr bool CHECK_ORIENTATION = true;
+
+  TetrahedronType tet(PointType {0.0774795, -11.3217, -33.5237},
+                      PointType {0.482086, -12.283, -33.5237},
+                      PointType {-0.503954, -12.216, -33.5237},
+                      PointType {0.0368068, -12.1403, -33.4339});
+  HexahedronType hex(PointType {0, -12.1295, -33.6323},
+                     PointType {0, -12.2774, -33.6323},
+                     PointType {0.185429, -12.276, -33.6323},
+                     PointType {0.183195, -12.1281, -33.6323},
+                     PointType {0, -12.1295, -33.5186},
+                     PointType {0, -12.2774, -33.5186},
+                     PointType {0.185429, -12.276, -33.5186},
+                     PointType {0.183195, -12.1281, -33.5186});
+
+  // Clipped polyhedron has volume of zero due to tetrahedron orientation
+  PolyhedronType zeroPoly = axom::primal::clip(hex, tet);
+
+  EXPECT_EQ(0.0, zeroPoly.volume());
+  EXPECT_EQ(0.0, axom::primal::intersection_volume<double>(hex, tet));
+  EXPECT_EQ(0.0, axom::primal::intersection_volume<double>(tet, hex));
+  EXPECT_EQ(axom::primal::clip(tet, hex).volume(), zeroPoly.volume());
+
+  // Run clip operation with orientation flag enabled to fix tetrahedron
+  PolyhedronType fixedPoly = axom::primal::clip(hex, tet, EPS, CHECK_ORIENTATION);
+
+  EXPECT_NEAR(0.00011, fixedPoly.volume(), EPS);
+  EXPECT_NEAR(
+    0.00011,
+    axom::primal::intersection_volume<double>(hex, tet, EPS, CHECK_ORIENTATION),
+    EPS);
+  EXPECT_NEAR(
+    0.00011,
+    axom::primal::intersection_volume<double>(tet, hex, EPS, CHECK_ORIENTATION),
+    EPS);
+  EXPECT_EQ(axom::primal::clip(tet, hex, EPS, CHECK_ORIENTATION).volume(),
+            fixedPoly.volume());
+}
+
 // Tetrahedron does not clip octahedron.
 TEST(primal_clip, oct_tet_clip_nonintersect)
 {
