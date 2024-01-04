@@ -181,10 +181,9 @@ public:
   /*!
    * \brief Expands the box so it contains the passed in box.
    * \param obb [in] OBB to add in
-   * \note If obb is invalid, makes this invalid too.
-   * \note Expands the extents so this box contains obb. This loses
-   * optimality of the box; for a better fit use merge_boxes in
-   * primal/compute_bounding_box.
+   * \note If obb is invalid, this is a no-op
+   * \note Expands the extents so this box contains obb. This loses optimality of the box
+   * for a better fit use merge_boxes in primal/compute_bounding_box.
    * \post this->contains(obb) == true
    */
   void addBox(OrientedBoxType obb);
