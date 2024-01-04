@@ -26,7 +26,7 @@ namespace axom
 namespace quest
 {
 /**
-   * \brief A utility class that wraps access to the mesh data of and InOutOctree
+   * \brief A utility class that wraps access to the mesh data of an InOutOctree
    *
    * This class helps separate the specifics of accessing the underlying mesh
    * for an InOutOctree. It is customized for unstructured Segment meshes in 2D

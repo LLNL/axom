@@ -20,7 +20,7 @@
 #include "axom/spin/OctreeLevel.hpp"
 #include "axom/spin/SparseOctreeLevel.hpp"
 
-#include <ostream>  // for ostream in print
+#include <ostream>
 
 namespace axom
 {

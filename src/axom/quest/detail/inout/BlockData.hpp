@@ -438,4 +438,9 @@ template <>
 struct axom::fmt::formatter<axom::quest::InOutBlockData> : ostream_formatter
 { };
 
+/// Overload to format a quest::DynamicGrayBlockData using fmt
+template <>
+struct axom::fmt::formatter<axom::quest::DynamicGrayBlockData> : ostream_formatter
+{ };
+
 #endif  // AXOM_QUEST_INOUT_OCTREE_BLOCKDATA__HPP_
