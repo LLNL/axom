@@ -25,11 +25,11 @@ enum DType
   _UnknownType_
 };
 
-typedef struct
+using AA_extent = struct
 {
   int ilo;
   int ihi;
-} AA_extent;
+};
 
 AA_extent* AA_extent_new(int lo, int hi)
 {
@@ -60,12 +60,12 @@ int AA_get_num_pts(AA_extent* self, Centering cent)
   return retval;
 }
 
-typedef struct
+using AA_meshvar = struct
 {
   Centering cent;
   DType type;
   int depth;
-} AA_meshvar;
+};
 
 AA_meshvar* AA_meshvar_new(Centering cent, DType type, int depth)
 {

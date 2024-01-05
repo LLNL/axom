@@ -14,7 +14,7 @@
 
 int main()
 {
-  typedef int IntT;
+  using IntT = int;
 
   std::cout << "I have defined type IntT, but am not using it." << std::endl;
   return 0;

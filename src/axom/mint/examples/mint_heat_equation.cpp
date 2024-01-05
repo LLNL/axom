@@ -366,7 +366,7 @@ const std::string help_string =
 /*!
  * \brief A structure that holds the command line arguments.
  */
-typedef struct
+using Arguments = struct
 {
   double h;
   double lower_bound[2];
@@ -379,7 +379,7 @@ typedef struct
   double t_max;
   int period;
   std::string path;
-} Arguments;
+};
 
 /*!
  * \brief Parses and validates the command line arguments.
