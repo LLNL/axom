@@ -41,7 +41,7 @@ using RangeSet = slam::RangeSet<SetPosition, SetElement>;
 using VectorSet = slam::VectorIndirectionSet<SetPosition, SetElement>;
 using CArraySet = slam::CArrayIndirectionSet<SetPosition, SetElement>;
 
-static const int SET_SIZE = 10;
+constexpr int SET_SIZE = 10;
 
 /// Utility function to initialize a set for the test data
 /// Specialized for each set type

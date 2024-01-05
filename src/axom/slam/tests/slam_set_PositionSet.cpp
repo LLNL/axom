@@ -27,7 +27,7 @@ using SetType = axom::slam::PositionSet<>;
 using SetPosition = SetType::PositionType;
 using SetElement = SetType::ElementType;
 
-static const SetPosition MAX_SET_SIZE = 10;
+constexpr SetPosition MAX_SET_SIZE = 10;
 
 }  // end anonymous namespace
 
