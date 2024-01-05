@@ -1,3 +1,7 @@
+# Adds some checks to the code
+# the following might also be useful: 
+#    modernize-use-nullptr
+#    readability-static-definition-in-anonymous-namespace
 Checks:          '-*,readability-braces-around-statements,modernize-use-using'
 WarningsAsErrors: ''
 HeaderFilterRegex: "^.*.hpp$|^.*.cpp$"
