@@ -50,12 +50,14 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
   returns the signed volume.
 - Primal: `intersection_volume()` operators changed from returning a signed
   volume to an unsigned volume.
+- Primal's `BoundingBox::contains(BoundingBox)`  now returns `true` when the input is empty
 
 ### Fixed
 - quest's `SamplingShaper` now properly handles material names containing underscores
 - quest's `SamplingShaper` can now be used with an mfem that is configured for (GPU) devices
 - primal's `Polygon` area computation in 3D previously only worked when the polygon was aligned with the XY-plane. It now works for arbitrary polygons.
 - Upgrades our `vcpkg` usage for automated Windows builds of our TPLs to its [2023.12.12 release](https://github.com/microsoft/vcpkg/releases/tag/2023.12.12)
+- Fixed a bug in the bounds checks for `primal::clip(Triangle, BoundingBox)`
 
 ## [Version 0.8.1] - Release date 2023-08-16
 

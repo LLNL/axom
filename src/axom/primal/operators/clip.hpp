@@ -50,16 +50,13 @@ Polygon<T, 3> clip(const Triangle<T, 3>& tri, const BoundingBox<T, 3>& bbox)
   using PolygonType = Polygon<T, 3>;
 
   // Use two polygons with pointers for 'back-buffer'-like swapping
-  const int MAX_VERTS = 6;
+  constexpr int MAX_VERTS = 6;
   PolygonType poly[2] = {PolygonType(MAX_VERTS), PolygonType(MAX_VERTS)};
   PolygonType* currentPoly = &poly[0];
   PolygonType* prevPoly = &poly[1];
 
   // First check if the triangle is contained in the bbox, if not we are empty
-  BoundingBoxType triBox;
-  triBox.addPoint(tri[0]);
-  triBox.addPoint(tri[1]);
-  triBox.addPoint(tri[2]);
+  BoundingBoxType triBox {tri[0], tri[1], tri[2]};
 
   if(!bbox.intersectsWith(triBox))
   {
@@ -82,14 +79,13 @@ Polygon<T, 3> clip(const Triangle<T, 3>& tri, const BoundingBox<T, 3>& bbox)
   {
     // Optimization note: we should be able to save some work based on
     // the clipping plane and the triangle's bounding box
-
-    if(triBox.getMax()[dim] > bbox.getMin()[dim])
+    if(triBox.getMin()[dim] < bbox.getMin()[dim])
     {
       axom::utilities::swap(prevPoly, currentPoly);
       detail::clipAxisPlane(prevPoly, currentPoly, 2 * dim + 0, bbox.getMin()[dim]);
     }
 
-    if(triBox.getMin()[dim] < bbox.getMax()[dim])
+    if(triBox.getMax()[dim] > bbox.getMax()[dim])
     {
       axom::utilities::swap(prevPoly, currentPoly);
       detail::clipAxisPlane(prevPoly, currentPoly, 2 * dim + 1, bbox.getMax()[dim]);

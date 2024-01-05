@@ -555,14 +555,13 @@ TEST(primal_bezierpatch, normal)
 //------------------------------------------------------------------------------
 TEST(primal_bezierpatch, rational_evaluation)
 {
-  const int DIM = 3;
+  constexpr int DIM = 3;
   using CoordType = double;
   using PointType = primal::Point<CoordType, DIM>;
-  using VectorType = primal::Vector<CoordType, DIM>;
   using BezierPatchType = primal::BezierPatch<CoordType, DIM>;
 
-  const int max_order_u = 3;
-  const int order_v = 4;
+  constexpr int max_order_u = 3;
+  constexpr int order_v = 4;
 
   // clang-format off
   PointType controlPoints[(max_order_u + 1) * (order_v + 1)] = {
