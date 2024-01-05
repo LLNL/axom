@@ -12,10 +12,8 @@ namespace axom
 {
 namespace nvtx
 {
-/*!
- * \brief Predefined set of NVTX colors to use with NVTXRange.
- */
-enum class Color : uint32_t
+/// \brief Predefined set of NVTX colors to use with NVTXRange
+enum class Color : std::uint32_t
 {
   BLACK = 0x00000000,
   GREEN = 0x0000FF00,
