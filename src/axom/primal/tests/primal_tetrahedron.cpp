@@ -627,7 +627,6 @@ TEST_F(TetrahedronTest, regularTetrahedron)
 
 TEST_F(TetrahedronTest, checkAndFixOrientation)
 {
-  using QPoint = TetrahedronTest::QPoint;
   using QTet = TetrahedronTest::QTet;
 
   int indices[] = {0, 1, 2, 3};
