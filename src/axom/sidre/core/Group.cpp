@@ -1790,7 +1790,6 @@ bool Group::isEquivalentTo(const Group* other, bool checkName) const
   return is_equiv;
 }
 
-
 /*
  *************************************************************************
  *
@@ -1810,61 +1809,60 @@ bool Group::isEquivalentTo(const Group* other, bool checkName) const
 class ConduitErrorSuppressor
 {
 public:
-    using  conduit_error_handler = void(*)(const std::string&, const std::string&, int);
+  using conduit_error_handler = void (*)(const std::string&,
+                                         const std::string&,
+                                         int);
 
-    ConduitErrorSuppressor(const DataStore* ds)
-        : m_ds(ds),
-          m_error_handler(nullptr),
-          m_warning_handler(nullptr),
-          m_info_handler(nullptr)
-    {
-        disable_conduit_error_handlers();
-    }
+  ConduitErrorSuppressor(const DataStore* ds)
+    : m_ds(ds)
+    , m_error_handler(nullptr)
+    , m_warning_handler(nullptr)
+    , m_info_handler(nullptr)
+  {
+    disable_conduit_error_handlers();
+  }
 
-    ~ConduitErrorSuppressor()
-    {
-        restore_conduit_error_handlers();
-    }
+  ~ConduitErrorSuppressor() { restore_conduit_error_handlers(); }
 
-    void operator()(const std::function<void(void)>& conduitOp)
+  void operator()(const std::function<void(void)>& conduitOp)
+  {
+    try
     {
-        try
-        {
-            conduitOp();
-        }
-        catch(conduit::Error& e)
-        {
-            m_ds->setConduitErrorOccurred(true);
-            m_ds->appendToConduitErrors(e.message());
-        }
+      conduitOp();
     }
+    catch(conduit::Error& e)
+    {
+      m_ds->setConduitErrorOccurred(true);
+      m_ds->appendToConduitErrors(e.message());
+    }
+  }
 
 private:
-    // saves current error func.
-    // for hdf5's default setup this disable printed error messages
-    // that occur when we are probing properties of the hdf5 tree
-    void disable_conduit_error_handlers()
-    {
-        m_info_handler = conduit::utils::info_handler();
-        m_warning_handler = conduit::utils::warning_handler();
-        m_error_handler = conduit::utils::error_handler();
+  // saves current error func.
+  // for hdf5's default setup this disable printed error messages
+  // that occur when we are probing properties of the hdf5 tree
+  void disable_conduit_error_handlers()
+  {
+    m_info_handler = conduit::utils::info_handler();
+    m_warning_handler = conduit::utils::warning_handler();
+    m_error_handler = conduit::utils::error_handler();
 
-        DataStore::setConduitDefaultMessageHandlers();
-    }
+    DataStore::setConduitDefaultMessageHandlers();
+  }
 
-    // restores saved error func
-    void restore_conduit_error_handlers()
-    {
-        conduit::utils::set_error_handler(m_error_handler);
-        conduit::utils::set_warning_handler(m_warning_handler);
-        conduit::utils::set_info_handler(m_info_handler);
-    }
+  // restores saved error func
+  void restore_conduit_error_handlers()
+  {
+    conduit::utils::set_error_handler(m_error_handler);
+    conduit::utils::set_warning_handler(m_warning_handler);
+    conduit::utils::set_info_handler(m_info_handler);
+  }
 
-    /// The DataStore we report to
-    const DataStore * m_ds;
+  /// The DataStore we report to
+  const DataStore* m_ds;
 
-    /// callbacks used for Conduit error interface
-    conduit_error_handler m_error_handler, m_warning_handler, m_info_handler;
+  /// callbacks used for Conduit error interface
+  conduit_error_handler m_error_handler, m_warning_handler, m_info_handler;
 };
 
 /*
@@ -2215,7 +2213,8 @@ bool Group::loadExternalData(const hid_t& h5_id)
   createExternalLayout(n);
   ConduitErrorSuppressor checkConduitCall(getDataStore());
 
-  checkConduitCall([&] { conduit::relay::io::hdf5_read(h5_id, "sidre/external", n); });
+  checkConduitCall(
+    [&] { conduit::relay::io::hdf5_read(h5_id, "sidre/external", n); });
 
   return !(getDataStore()->getConduitErrorOccurred());
 }
