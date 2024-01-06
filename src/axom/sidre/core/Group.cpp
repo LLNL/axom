@@ -1812,20 +1812,17 @@ public:
   using conduit_error_handler = void (*)(const std::string&,
                                          const std::string&,
                                          int);
-
-  ConduitErrorSuppressor(const DataStore* ds)
-    : m_ds(ds)
-    , m_error_handler(nullptr)
-    , m_warning_handler(nullptr)
-    , m_info_handler(nullptr)
-  {
-    disable_conduit_error_handlers();
-  }
-
-  ~ConduitErrorSuppressor() { restore_conduit_error_handlers(); }
+  
+  ConduitErrorSuppressor(const DataStore* ds, bool suppress_in_call = true);
+  ~ConduitErrorSuppressor();
 
   void operator()(const std::function<void(void)>& conduitOp)
   {
+      if (m_suppress_in_call)
+      {
+          disable_conduit_error_handlers();
+      }
+
     try
     {
       conduitOp();
@@ -1835,6 +1832,11 @@ public:
       m_ds->setConduitErrorOccurred(true);
       m_ds->appendToConduitErrors(e.message());
     }
+
+      if (m_suppress_in_call)
+      {
+          restore_conduit_error_handlers();
+      }
   }
 
 private:
@@ -1863,7 +1865,31 @@ private:
 
   /// callbacks used for Conduit error interface
   conduit_error_handler m_error_handler, m_warning_handler, m_info_handler;
+
+  /// Suppress error handling in the call operator?
+  bool m_suppress_in_call;
 };
+
+ConduitErrorSuppressor::ConduitErrorSuppressor(const DataStore* ds, bool suppress_in_call)
+    : m_ds(ds)
+    , m_error_handler(nullptr)
+    , m_warning_handler(nullptr)
+    , m_info_handler(nullptr)
+    , m_suppress_in_call(suppress_in_call)
+{
+    if (!m_suppress_in_call)
+    {
+        disable_conduit_error_handlers();
+    }
+}
+
+ConduitErrorSuppressor::~ConduitErrorSuppressor()
+  {
+      if (!m_suppress_in_call)
+      {
+          restore_conduit_error_handlers();
+      }
+  }
 
 /*
  *************************************************************************
