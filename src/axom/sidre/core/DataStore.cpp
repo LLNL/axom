@@ -87,7 +87,7 @@ DataStore::DataStore()
   , m_attribute_coll(new AttributeCollection())
   , m_need_to_finalize_slic(false)
   , m_conduit_error_occurred(false)
-  , m_conduit_errors("")
+  , m_conduit_errors()
 {
   if(!axom::slic::isInitialized())
   {
