@@ -14,7 +14,7 @@
 
 namespace
 {
-static int const NUM_ELEMS = 5;
+constexpr int NUM_ELEMS = 5;
 
 namespace slam = axom::slam;
 using RangeSetType = slam::RangeSet<>;

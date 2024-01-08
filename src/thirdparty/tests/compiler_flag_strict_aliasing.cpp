@@ -29,7 +29,7 @@ struct Bar
 
 int main()
 {
-  Foo foo = {1, NULL};
+  Foo foo = {1, nullptr};
   ((Bar*)(&foo))->i++;  // violates strict aliasing
 
   std::cout << " foo.i: " << foo.i << std::endl;

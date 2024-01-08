@@ -41,9 +41,9 @@ using OrderedSetType = axom::slam::OrderedSet<
   slam::policies::StrideOne<PositionType>,
   slam::policies::STLVectorIndirection<PositionType, ElementType>>;
 
-static const double multFac = 1.0001;
+constexpr double multFac = 1.0001;
 
-static PositionType const MAX_SET_SIZE = 10;
+PositionType const MAX_SET_SIZE = 10;
 
 template <typename T>
 T getValue(int idx)

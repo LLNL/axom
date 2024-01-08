@@ -730,7 +730,7 @@ public:
                   "Cannot call Array<T>::resize() when T is non-trivially-"
                   "constructible. Use Array<T>::reserve() and emplace_back()"
                   "instead.");
-    const StackArray<IndexType, DIM> dims {static_cast<IndexType>(args)...};
+    const StackArray<IndexType, DIM> dims {{static_cast<IndexType>(args)...}};
     resizeImpl(dims, true);
   }
 
@@ -738,14 +738,14 @@ public:
   template <typename... Args, typename Enable = std::enable_if_t<sizeof...(Args) == DIM>>
   void resize(ArrayOptions::Uninitialized, Args... args)
   {
-    const StackArray<IndexType, DIM> dims {static_cast<IndexType>(args)...};
+    const StackArray<IndexType, DIM> dims {{static_cast<IndexType>(args)...}};
     resizeImpl(dims, false);
   }
 
   template <int Dims = DIM, typename Enable = std::enable_if_t<Dims == 1>>
   void resize(IndexType size, const T& value)
   {
-    resizeImpl({size}, true, &value);
+    resizeImpl({{size}}, true, &value);
   }
 
   void resize(const StackArray<IndexType, DIM>& size, const T& value)
@@ -911,7 +911,7 @@ template <typename T, int DIM, MemorySpace SPACE>
 template <typename... Args, typename Enable>
 Array<T, DIM, SPACE>::Array(Args... args)
   : ArrayBase<T, DIM, Array<T, DIM, SPACE>>(
-      StackArray<IndexType, DIM> {static_cast<IndexType>(args)...})
+      StackArray<IndexType, DIM> {{static_cast<IndexType>(args)...}})
   , m_allocator_id(axom::detail::getAllocatorID<SPACE>())
 {
   static_assert(sizeof...(Args) == DIM,
@@ -927,7 +927,7 @@ template <typename T, int DIM, MemorySpace SPACE>
 template <typename... Args, typename Enable>
 Array<T, DIM, SPACE>::Array(ArrayOptions::Uninitialized, Args... args)
   : ArrayBase<T, DIM, Array<T, DIM, SPACE>>(
-      StackArray<IndexType, DIM> {static_cast<IndexType>(args)...})
+      StackArray<IndexType, DIM> {{static_cast<IndexType>(args)...}})
   , m_allocator_id(axom::detail::getAllocatorID<SPACE>())
 {
   static_assert(sizeof...(Args) == DIM,

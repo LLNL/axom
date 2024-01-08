@@ -77,11 +77,11 @@ template <typename T, int NDIMS>
 class OrientedBoundingBox
 {
 public:
-  typedef T CoordType;
-  typedef Point<T, NDIMS> PointType;
-  typedef Vector<T, NDIMS> VectorType;
-  typedef OrientedBoundingBox<T, NDIMS> OrientedBoxType;
-  typedef BoundingBox<T, NDIMS> BoxType;
+  using CoordType = T;
+  using PointType = Point<T, NDIMS>;
+  using VectorType = Vector<T, NDIMS>;
+  using OrientedBoxType = OrientedBoundingBox<T, NDIMS>;
+  using BoxType = BoundingBox<T, NDIMS>;
 
 public:
   /*!

@@ -29,7 +29,7 @@ TEST(spio_basic, root_name)
   protocolMap["json"] = "json";
   protocolMap["sidre_conduit_json"] = "conduit_json";
 
-  typedef std::map<std::string, std::string>::const_iterator MapIt;
+  using MapIt = std::map<std::string, std::string>::const_iterator;
   for(MapIt it = protocolMap.begin(); it != protocolMap.end(); ++it)
   {
     const std::string& sidreProtocol = it->first;

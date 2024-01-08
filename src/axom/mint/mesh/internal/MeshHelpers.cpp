@@ -195,7 +195,8 @@ bool initFaces(Mesh* mesh,
   f2noffsets[facecount] = faceNodeOffset;
 
   // Step 4. Now that we have face IDs, record cell-to-face relation.
-  typedef std::unordered_map<IndexType, std::vector<IndexType>> CellFaceBuilderType;
+  using CellFaceBuilderType =
+    std::unordered_map<IndexType, std::vector<IndexType>>;
 
   CellFaceBuilderType cell_to_face;
   int cellFaceCount = 0;

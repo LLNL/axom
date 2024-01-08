@@ -158,7 +158,7 @@ AXOM_HOST_DEVICE bool intersect_tri3D_tri3D(const Triangle<T, 3>& t1,
                                             bool includeBoundary,
                                             double EPS)
 {
-  typedef primal::Vector<T, 3> Vector3;
+  using Vector3 = primal::Vector<T, 3>;
 
   SLIC_CHECK_MSG(!t1.degenerate(),
                  "\n\n WARNING \n\n Triangle " << t1 << " is degenerate");
@@ -762,7 +762,7 @@ bool intersect_tri_ray(const Triangle<T, 3>& tri,
   // I (Arlie Capps, Jan. 2017) don't understand the motivation at this
   // point, but I'll accept this for now.
 
-  typedef NumericArray<T, 3> NumArray;
+  using NumArray = NumericArray<T, 3>;
   const T zero = T();
 
   //find out dimension where ray direction is maximal
@@ -874,7 +874,7 @@ bool intersect_tri_segment(const Triangle<T, 3>& tri,
                            T& t,
                            Point<double, 3>& p)
 {
-  typedef Vector<T, 3> Vector3;
+  using Vector3 = Vector<T, 3>;
   Ray<T, 3> r(S.source(), Vector3(S.source(), S.target()));
 
   //Ray-triangle intersection does not check endpoints, so we explicitly check

@@ -26,7 +26,7 @@ using SetPosition = slam::DefaultPositionType;
 using SetElement = slam::DefaultElementType;
 using SetType = slam::DynamicSet<SetPosition, SetElement>;
 
-static const SetPosition MAX_SET_SIZE = 10;
+constexpr SetPosition MAX_SET_SIZE = 10;
 
 using IntMap = slam::DynamicMap<SetType, int>;
 using RealMap = slam::DynamicMap<SetType, double>;

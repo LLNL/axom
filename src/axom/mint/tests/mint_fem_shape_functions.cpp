@@ -34,8 +34,8 @@ namespace
 template <int BasisType, mint::CellType CELLTYPE>
 void reference_element(double TOL = std::numeric_limits<double>::epsilon())
 {
-  typedef typename mint::FEBasis<BasisType, CELLTYPE> FEMType;
-  typedef typename FEMType::ShapeFunctionType ShapeFunctionType;
+  using FEMType = typename mint::FEBasis<BasisType, CELLTYPE>;
+  using ShapeFunctionType = typename FEMType::ShapeFunctionType;
   ShapeFunctionType sf;
 
   SLIC_INFO("checking " << mint::basis_name[BasisType] << " / "
@@ -84,8 +84,8 @@ void reference_element(double TOL = std::numeric_limits<double>::epsilon())
 template <int BasisType, mint::CellType CELLTYPE>
 void kronecker_delta()
 {
-  typedef typename mint::FEBasis<BasisType, CELLTYPE> FEMType;
-  typedef typename FEMType::ShapeFunctionType ShapeFunctionType;
+  using FEMType = typename mint::FEBasis<BasisType, CELLTYPE>;
+  using ShapeFunctionType = typename FEMType::ShapeFunctionType;
   ShapeFunctionType sf;
 
   SLIC_INFO("checking " << mint::basis_name[BasisType] << " / "
@@ -122,8 +122,8 @@ void kronecker_delta()
 template <int BasisType, mint::CellType CELLTYPE>
 void partition_of_unity()
 {
-  typedef typename mint::FEBasis<BasisType, CELLTYPE> FEMType;
-  typedef typename FEMType::ShapeFunctionType ShapeFunctionType;
+  using FEMType = typename mint::FEBasis<BasisType, CELLTYPE>;
+  using ShapeFunctionType = typename FEMType::ShapeFunctionType;
   ShapeFunctionType sf;
 
   SLIC_INFO("checking " << mint::basis_name[BasisType] << " / "

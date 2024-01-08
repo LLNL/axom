@@ -1180,7 +1180,7 @@ TEST(sidre_view, view_offset_and_stride)
   //          string, scalar, empty, opaque
   Group* othersGroup = root->createGroup("others");
 
-  typedef std::vector<View*> ViewVec;
+  using ViewVec = std::vector<View*>;
   ViewVec views;
   std::uint8_t ui8 = 3;
   std::uint16_t ui16 = 4;
