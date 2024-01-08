@@ -25,7 +25,7 @@ enum DType
   _UnknownType_
 };
 
-using AA_extent = struct
+struct AA_extent
 {
   int ilo;
   int ihi;
@@ -60,7 +60,7 @@ int AA_get_num_pts(AA_extent* self, Centering cent)
   return retval;
 }
 
-using AA_meshvar = struct
+struct AA_meshvar
 {
   Centering cent;
   DType type;

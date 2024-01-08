@@ -363,10 +363,8 @@ const std::string help_string =
   "-d INT, -dumpPeriod INT\n"
   "\tThe number of cycles to wait between writing a dump file.\n";
 
-/*!
- * \brief A structure that holds the command line arguments.
- */
-using Arguments = struct
+/// A structure that holds the command line arguments.
+struct Arguments
 {
   double h;
   double lower_bound[2];

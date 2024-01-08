@@ -108,7 +108,7 @@ constexpr int NUM_CELL_TYPES = static_cast<int>(CellType::NUM_CELL_TYPES);
  *
  * \brief Holds information associated with a given cell type.
  */
-using CellInfo = struct
+struct CellInfo
 {
   CellType cell_type;         /*!< cell type, e.g. mint::QUAD, mint::HEX */
   const char* name;           /*!< the name associated with the cell */
