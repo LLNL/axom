@@ -657,9 +657,13 @@ double winding_number(const Point<T, 3>& query,
     // Find the direction of a ray perpendicular to that
     Vector<T, 3> v1;
     if(axom::utilities::isNearlyEqual(v0[0], v0[1], EPS))
+    {
       v1 = Vector<T, 3>({v0[2], v0[2], -v0[0] - v0[1]}).unitVector();
+    }
     else
+    {
       v1 = Vector<T, 3>({-v0[1] - v0[2], v0[0], v0[0]}).unitVector();
+    }
 
     // Rotate v0 around v1 until it is perpendicular to the plane spanned by k and v1
     double ang = (v0[2] < 0 ? 1.0 : -1.0) *

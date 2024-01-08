@@ -250,8 +250,8 @@ private:
 /// \name Pre-defined point types
 /// @{
 
-typedef Point<double, 2> Point2D;
-typedef Point<double, 3> Point3D;
+using Point2D = Point<double, 2>;
+using Point3D = Point<double, 3>;
 
 /// @}
 

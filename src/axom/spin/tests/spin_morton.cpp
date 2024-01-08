@@ -26,7 +26,7 @@ using axom::primal::Point;
 
 namespace
 {
-static const int MAX_ITER = 10000;
+constexpr int MAX_ITER = 10000;
 
 // Generate a random integer in the range [beg, end)
 template <typename CoordType>

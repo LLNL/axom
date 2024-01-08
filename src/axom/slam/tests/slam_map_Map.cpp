@@ -31,7 +31,7 @@ using RealMap = slam::Map<double, BaseSet>;
 template <typename T>
 using VecIndirection = policies::STLVectorIndirection<SetPosition, T>;
 
-static SetPosition const MAX_SET_SIZE = 10;
+constexpr SetPosition MAX_SET_SIZE = 10;
 
 template <int S>
 using CompileTimeStrideType = policies::CompileTimeStride<int, S>;
