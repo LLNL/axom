@@ -905,7 +905,6 @@ public:
       " Calculating element overlap volume from each tet-shape pair "));
 
     constexpr double EPS = 1e-10;
-    constexpr bool tryFixOrientation = true;
 
     AXOM_PERF_MARK_SECTION(
       "tet_shape_volume",
@@ -918,8 +917,7 @@ public:
 
           PolyhedronType poly = primal::clip(shapes_view[shapeIndex],
                                              tets_from_hexes_view[tetIndex],
-                                             EPS,
-                                             tryFixOrientation);
+                                             EPS);
 
           // Poly is valid
           if(poly.numVertices() >= 4)
