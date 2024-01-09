@@ -32,10 +32,10 @@ namespace quest = axom::quest;
 
 namespace
 {
-static const std::string C2C_LINE_FILENAME = "test_line.contour";
-static const std::string C2C_CIRCLE_FILENAME = "test_circle.contour";
-static const std::string C2C_SQUARE_FILENAME = "test_square.contour";
-static const std::string C2C_SPLINE_FILENAME = "test_spline.contour";
+const std::string C2C_LINE_FILENAME = "test_line.contour";
+const std::string C2C_CIRCLE_FILENAME = "test_circle.contour";
+const std::string C2C_SQUARE_FILENAME = "test_square.contour";
+const std::string C2C_SPLINE_FILENAME = "test_spline.contour";
 }  // end anonymous namespace
 
 /// Writes out a c2c file for a circle

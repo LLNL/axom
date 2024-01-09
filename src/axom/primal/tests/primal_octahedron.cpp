@@ -23,9 +23,9 @@ class OctahedronTest : public ::testing::Test
 public:
   static const int DIM = 3;
 
-  typedef double CoordType;
-  typedef primal::Point<CoordType, DIM> QPoint;
-  typedef primal::Octahedron<CoordType, DIM> QOct;
+  using CoordType = double;
+  using QPoint = primal::Point<CoordType, DIM>;
+  using QOct = primal::Octahedron<CoordType, DIM>;
 
 protected:
   virtual void SetUp()
@@ -94,8 +94,8 @@ protected:
 //------------------------------------------------------------------------------
 TEST_F(OctahedronTest, defaultConstructor)
 {
-  typedef OctahedronTest::QPoint QPoint;
-  typedef OctahedronTest::QOct QOct;
+  using QPoint = OctahedronTest::QPoint;
+  using QOct = OctahedronTest::QOct;
 
   const QOct oct;
 
@@ -113,8 +113,8 @@ TEST_F(OctahedronTest, defaultConstructor)
 
 TEST_F(OctahedronTest, constructFromPoints)
 {
-  typedef OctahedronTest::QPoint QPoint;
-  typedef OctahedronTest::QOct QOct;
+  using QPoint = OctahedronTest::QPoint;
+  using QOct = OctahedronTest::QOct;
 
   // Access the test data
   const QPoint* pt = this->qData0;
@@ -167,8 +167,8 @@ TEST_F(OctahedronTest, constructFromPoints)
 
 TEST_F(OctahedronTest, equals)
 {
-  typedef OctahedronTest::QPoint QPoint;
-  typedef OctahedronTest::QOct QOct;
+  using QPoint = OctahedronTest::QPoint;
+  using QOct = OctahedronTest::QOct;
 
   // Access the test data
   const QPoint* pt0 = this->qData0;

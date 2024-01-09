@@ -979,7 +979,7 @@ void MFEMSidreDataCollection::UpdateStateFromDS()
 void MFEMSidreDataCollection::UpdateStateToDS()
 {
   SLIC_ASSERT_MSG(
-    mesh != NULL,
+    mesh != nullptr,
     "Need to set mesh before updating state in MFEMSidreDataCollection.");
 
   m_bp_grp->getView("state/cycle")->setScalar(GetCycle());

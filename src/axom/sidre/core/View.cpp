@@ -1239,7 +1239,7 @@ bool View::isApplyValid() const
  */
 char const* View::getStateStringName(State state)
 {
-  char const* ret_string = NULL;
+  char const* ret_string = nullptr;
 
   switch(state)
   {

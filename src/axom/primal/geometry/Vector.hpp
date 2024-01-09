@@ -422,8 +422,8 @@ private:
 /// \name Pre-defined Vector types
 /// @{
 
-typedef Vector<double, 2> Vector2D;
-typedef Vector<double, 3> Vector3D;
+using Vector2D = Vector<double, 2>;
+using Vector3D = Vector<double, 3>;
 
 /// @}
 

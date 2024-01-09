@@ -1896,14 +1896,20 @@ public:
          VectorType::scalar_triple_product(v1, v2, v3),
          0.0,
          tol))
+    {
       return false;
+    }
 
     // Find three points that produce a nonzero normal
     Vector3D plane_normal = VectorType::cross_product(v1, v2);
     if(axom::utilities::isNearlyEqual(plane_normal.norm(), 0.0, tol))
+    {
       plane_normal = VectorType::cross_product(v1, v3);
+    }
     if(axom::utilities::isNearlyEqual(plane_normal.norm(), 0.0, tol))
+    {
       plane_normal = VectorType::cross_product(v2, v3);
+    }
     plane_normal = plane_normal.unitVector();
 
     double sqDist = 0.0;
@@ -1936,18 +1942,42 @@ public:
     const int ord_u = getOrder_u();
     const int ord_v = getOrder_v();
 
-    if(ord_u <= 0 && ord_v <= 0) return true;
-    if(ord_u == 1 && ord_v == 0) return true;
-    if(ord_u == 0 && ord_v == 1) return true;
+    if(ord_u <= 0 && ord_v <= 0)
+    {
+      return true;
+    }
+    if(ord_u == 1 && ord_v == 0)
+    {
+      return true;
+    }
+    if(ord_u == 0 && ord_v == 1)
+    {
+      return true;
+    }
 
     // Check if the patch is planar
-    if(!isPlanar(tol)) return false;
+    if(!isPlanar(tol))
+    {
+      return false;
+    }
 
     // Check if each bounding curve is linear
-    if(!isocurve_u(0).isLinear(tol)) return false;
-    if(!isocurve_v(0).isLinear(tol)) return false;
-    if(!isocurve_u(1).isLinear(tol)) return false;
-    if(!isocurve_v(1).isLinear(tol)) return false;
+    if(!isocurve_u(0).isLinear(tol))
+    {
+      return false;
+    }
+    if(!isocurve_v(0).isLinear(tol))
+    {
+      return false;
+    }
+    if(!isocurve_u(1).isLinear(tol))
+    {
+      return false;
+    }
+    if(!isocurve_v(1).isLinear(tol))
+    {
+      return false;
+    }
 
     return true;
   }

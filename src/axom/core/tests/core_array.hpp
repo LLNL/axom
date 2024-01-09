@@ -2219,7 +2219,7 @@ void test_resize_with_stackarray(DataType value)
   const int K_DIMS = 7;
   axom::Array<DataType, 2> arr2;
 
-  axom::StackArray<axom::IndexType, 2> dims2 = {I_DIMS, J_DIMS};
+  axom::StackArray<axom::IndexType, 2> dims2 = {{I_DIMS, J_DIMS}};
   arr2.resize(dims2, value);
   EXPECT_EQ(arr2.size(), I_DIMS * J_DIMS);
   EXPECT_EQ(arr2.shape()[0], I_DIMS);
@@ -2234,7 +2234,7 @@ void test_resize_with_stackarray(DataType value)
 
   axom::Array<DataType, 3> arr3;
 
-  axom::StackArray<axom::IndexType, 3> dims3 = {I_DIMS, J_DIMS, K_DIMS};
+  axom::StackArray<axom::IndexType, 3> dims3 = {{I_DIMS, J_DIMS, K_DIMS}};
   arr3.resize(dims3, value);
   EXPECT_EQ(arr3.size(), I_DIMS * J_DIMS * K_DIMS);
   EXPECT_EQ(arr3.shape()[0], I_DIMS);
