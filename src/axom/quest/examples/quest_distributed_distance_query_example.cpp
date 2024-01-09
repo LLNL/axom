@@ -1382,7 +1382,6 @@ int main(int argc, char** argv)
   query.setAllocatorID(umpireAllocator.getId());
 #endif
   query.setMpiCommunicator(MPI_COMM_WORLD, true);
-  query.setDimension(DIM);
   query.setVerbosity(params.isVerbose());
   query.setDistanceThreshold(params.distThreshold);
   // To test support for single-domain format, use single-domain when possible.

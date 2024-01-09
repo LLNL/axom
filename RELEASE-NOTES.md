@@ -32,6 +32,7 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
   with `std::unordered_map`, but utilizes an open-addressing design.
 
 ### Changed
+- `DistributedClosestPoint` outputs are now controlled by the `setOutput` method.
 - `MarchingCubes` allows user to select the underlying data-parallel implementation
   - `fullParallel` works best on GPUs.
   - `hybridParallel` reduces the amount of data processed and works best with
