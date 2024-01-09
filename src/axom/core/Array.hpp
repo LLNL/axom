@@ -199,7 +199,7 @@ public:
   /*! 
    * \brief Copy constructor for an Array instance 
    */
-  Array(const Array& other);
+  AXOM_HOST_DEVICE Array(const Array& other);
 
   /*! 
    * \brief Move constructor for an Array instance 
@@ -1003,6 +1003,13 @@ Array<T, DIM, SPACE>::Array(const Array& other)
       static_cast<const ArrayBase<T, DIM, Array<T, DIM, SPACE>>&>(other))
   , m_allocator_id(other.m_allocator_id)
 {
+#ifdef AXOM_DEVICE_CODE
+  static_assert(
+    false,
+    "axom::Array: cannot copy-construct on the device.\n"
+    "This is usually the result of capturing an array by-value in a lambda. "
+    "Use axom::ArrayView for value captures instead.");
+#else
   initialize(other.size(), other.capacity());
   // Use fill_range to ensure that copy constructors are invoked for each
   // element.
@@ -1017,6 +1024,7 @@ Array<T, DIM, SPACE>::Array(const Array& other)
                        m_allocator_id,
                        other.data(),
                        srcSpace);
+#endif
 }
 
 //------------------------------------------------------------------------------
