@@ -1552,7 +1552,8 @@ public:
    * protocol.
    *
    * \param path      file path
-   * \return          True if no error occurred, otherwise false.
+   * \return          True if Axom was compiled with HDF5 and no error
+   *                  occurred in this method; otherwise false.
    */
   bool loadExternalData(const std::string& path);
 

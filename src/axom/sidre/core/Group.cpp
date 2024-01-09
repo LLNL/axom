@@ -2107,21 +2107,26 @@ bool Group::loadExternalData(const std::string& path)
   Node n;
   createExternalLayout(n);
   ConduitErrorSuppressor checkConduitCall(getDataStore());
+  bool success;
 
 #ifdef AXOM_USE_HDF5
   // CYRUS'-NOTE, not sure ":" will work with multiple trees per
   // output file
   checkConduitCall(
     [&] { conduit::relay::io::hdf5_read(path + ":sidre/external", n); });
+
+  success = !(getDataStore()->getConduitErrorOccurred());
 #else
   AXOM_UNUSED_VAR(path);
   SLIC_WARNING(SIDRE_GROUP_LOG_PREPEND
                << "External data not loaded. "
                << "This function requires hdf5 support. "
                << " Please reconfigure with hdf5.");
+
+  success = false;
 #endif
 
-  return !(getDataStore()->getConduitErrorOccurred());
+  return success;
 }
 
 // Functions that directly use the hdf5 API in their signature
