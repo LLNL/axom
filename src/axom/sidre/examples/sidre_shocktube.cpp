@@ -503,7 +503,7 @@ void DumpUltra(Group* const prob)
 
   sprintf(tail, "_%04d.ult", prob->getView("cycle")->getData<int>());
 
-  if((fp = fopen(fname, "w")) == NULL)
+  if((fp = fopen(fname, "w")) == nullptr)
   {
     printf("Could not open file %s. Aborting.\n", fname);
     exit(-1);

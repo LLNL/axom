@@ -582,7 +582,9 @@ TEST(primal_integral, bezierpatch_sphere)
     {
       const int idx = 5 * i + j;
       for(int n = 0; n < 6; ++n)
+      {
         sphere_faces[n].setWeight(i, j, weight_data[idx]);
+      }
 
       // Set up each face by rotating one of the patch faces
       sphere_faces[0](i, j)[0] = node_data[idx][1];

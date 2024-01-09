@@ -14,7 +14,9 @@
 
 int main()
 {
+  // NOLINTBEGIN
   typedef int IntT;
+  // NOLINTEND
 
   std::cout << "I have defined type IntT, but am not using it." << std::endl;
   return 0;

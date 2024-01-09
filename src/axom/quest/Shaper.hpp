@@ -48,11 +48,7 @@ public:
   static constexpr double DEFAULT_VERTEX_WELD_THRESHOLD {1e-9};
 
   /// Refinement type.
-  typedef enum
-  {
-    RefinementUniformSegments,
-    RefinementDynamic
-  } RefinementType;
+  using RefinementType = enum { RefinementUniformSegments, RefinementDynamic };
 
   //@{
   //!  @name Functions to get and set shaping parameters

@@ -77,11 +77,11 @@ template <typename T, int NDIMS>
 class OrientedBoundingBox
 {
 public:
-  typedef T CoordType;
-  typedef Point<T, NDIMS> PointType;
-  typedef Vector<T, NDIMS> VectorType;
-  typedef OrientedBoundingBox<T, NDIMS> OrientedBoxType;
-  typedef BoundingBox<T, NDIMS> BoxType;
+  using CoordType = T;
+  using PointType = Point<T, NDIMS>;
+  using VectorType = Vector<T, NDIMS>;
+  using OrientedBoxType = OrientedBoundingBox<T, NDIMS>;
+  using BoxType = BoundingBox<T, NDIMS>;
 
 public:
   /*!
@@ -181,10 +181,9 @@ public:
   /*!
    * \brief Expands the box so it contains the passed in box.
    * \param obb [in] OBB to add in
-   * \note If obb is invalid, makes this invalid too.
-   * \note Expands the extents so this box contains obb. This loses
-   * optimality of the box; for a better fit use merge_boxes in
-   * primal/compute_bounding_box.
+   * \note If obb is invalid, this is a no-op
+   * \note Expands the extents so this box contains obb. This loses optimality of the box
+   * for a better fit use merge_boxes in primal/compute_bounding_box.
    * \post this->contains(obb) == true
    */
   void addBox(OrientedBoxType obb);
@@ -518,19 +517,15 @@ void OrientedBoundingBox<T, NDIMS>::addPoint(Point<T, NDIMS> pt)
 template <typename T, int NDIMS>
 void OrientedBoundingBox<T, NDIMS>::addBox(OrientedBoundingBox<T, NDIMS> obb)
 {
-  SLIC_CHECK_MSG(obb.isValid(), "Passed in OBB is invalid.");
   if(!obb.isValid())
   {
     // don't do anything
     return;
   }
 
-  std::vector<Point<T, NDIMS>> res = obb.vertices();
-  int size = static_cast<int>(res.size());
-
-  for(int i = 0; i < size; i++)
+  for(const auto& vert : obb.vertices())
   {
-    this->addPoint(res[i]);
+    this->addPoint(vert);
   }
 }
 

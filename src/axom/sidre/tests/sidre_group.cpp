@@ -1024,7 +1024,7 @@ TEST(sidre_group, create_destroy_has_view)
   IndexType indx = group->getFirstValidViewIndex();
   IndexType bindx = group->getView(indx)->getBuffer()->getIndex();
   group->destroyViewAndData(indx);
-  EXPECT_TRUE(ds->getBuffer(bindx) == NULL);
+  EXPECT_TRUE(ds->getBuffer(bindx) == nullptr);
 
   // Destroy view but not the buffer
   view = group->createViewAndAllocate("viewWithLength2", INT_ID, 50);
@@ -2323,7 +2323,7 @@ TEST(sidre_group, save_restore_external_data)
     int2d1[i] = i;
     int2d2[i] = 0;
   }
-  foo3 = NULL;
+  foo3 = nullptr;
 
   DataStore* ds1 = new DataStore();
   Group* root1 = ds1->getRoot();

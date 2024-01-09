@@ -68,7 +68,7 @@ int classifyPointAxisPlane(const Point<T, NDIMS>& pt,
   // Note: we are exploiting the fact that the planes are axis aligned
   // So the dot product is +/- the given coordinate.
   // In general, we would need to call distance(pt, plane) here
-  T dist = isEven(index) ? val - pt[index / 2] : pt[index / 2] - val;
+  const T dist = isEven(index) ? val - pt[index / 2] : pt[index / 2] - val;
 
   if(dist > eps)
   {
@@ -106,10 +106,11 @@ Point<T, NDIMS> findIntersectionPoint(const Point<T, NDIMS>& a,
   // * pt = a + t * (b-a)
   // * pt[ index/2]  == val
 
-  T t = (val - a[index / 2]) / (b[index / 2] - a[index / 2]);
+  const int coord = index / 2;
+  const T t = (val - a[coord]) / (b[coord] - a[coord]);
   SLIC_ASSERT(0. <= t && t <= 1.);
 
-  PointType ret = PointType(a.array() + t * (b.array() - a.array()));
+  const auto ret = PointType::lerp(a, b, t);
   SLIC_ASSERT(classifyPointAxisPlane(ret, index, val) == ON_BOUNDARY);
 
   return ret;
@@ -142,7 +143,7 @@ void clipAxisPlane(const Polygon<T, NDIMS>* prevPoly,
   using PointType = Point<T, NDIMS>;
 
   currentPoly->clear();
-  int numVerts = prevPoly->numVertices();
+  const int numVerts = prevPoly->numVertices();
 
   if(numVerts == 0)
   {
@@ -156,7 +157,7 @@ void clipAxisPlane(const Polygon<T, NDIMS>* prevPoly,
   for(int i = 0; i < numVerts; ++i)
   {
     const PointType* b = &(*prevPoly)[i];
-    int bSide = classifyPointAxisPlane(*b, index, val);
+    const int bSide = classifyPointAxisPlane(*b, index, val);
 
     switch(bSide)
     {

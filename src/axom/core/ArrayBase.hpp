@@ -231,7 +231,7 @@ public:
     static_assert(sizeof...(Args) <= DIM,
                   "Index dimensions different from array dimensions");
     constexpr int UDim = sizeof...(Args);
-    const StackArray<IndexType, UDim> indices {static_cast<IndexType>(args)...};
+    const StackArray<IndexType, UDim> indices {{static_cast<IndexType>(args)...}};
     return (*this)[indices];
   }
   /// \overload
@@ -255,14 +255,14 @@ public:
    */
   AXOM_HOST_DEVICE SliceType<1> operator[](const IndexType idx)
   {
-    const StackArray<IndexType, 1> slice {idx};
+    const StackArray<IndexType, 1> slice {{idx}};
     return (*this)[slice];
   }
 
   /// \overload
   AXOM_HOST_DEVICE ConstSliceType<1> operator[](const IndexType idx) const
   {
-    const StackArray<IndexType, 1> slice {idx};
+    const StackArray<IndexType, 1> slice {{idx}};
     return (*this)[slice];
   }
 

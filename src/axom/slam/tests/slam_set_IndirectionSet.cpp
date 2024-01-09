@@ -24,7 +24,7 @@ namespace slam = axom::slam;
 
 namespace
 {
-static const int MAX_SET_SIZE = 10;
+constexpr int MAX_SET_SIZE = 10;
 }
 
 /**

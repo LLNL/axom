@@ -17,6 +17,7 @@
 #include "axom/core/numerics/Determinants.hpp"
 #include "axom/core/utilities/Utilities.hpp"
 
+#include "axom/primal/operators/detail/fuzzy_comparators.hpp"
 #include "axom/primal/geometry/BoundingBox.hpp"
 #include "axom/primal/geometry/OrientedBoundingBox.hpp"
 #include "axom/primal/geometry/Plane.hpp"
@@ -38,24 +39,6 @@ using Point3 = primal::Point<double, 3>;
 using Triangle3 = primal::Triangle<double, 3>;
 using Triangle2 = primal::Triangle<double, 2>;
 using Point2 = primal::Point<double, 2>;
-
-AXOM_HOST_DEVICE
-bool isGt(double x, double y, double EPS = 1E-12);
-
-AXOM_HOST_DEVICE
-bool isLt(double x, double y, double EPS = 1E-12);
-
-AXOM_HOST_DEVICE
-bool isLeq(double x, double y, double EPS = 1E-12);
-
-AXOM_HOST_DEVICE
-bool isLpeq(double x, double y, bool includeEqual = false, double EPS = 1E-12);
-
-AXOM_HOST_DEVICE
-bool isGeq(double x, double y, double EPS = 1E-12);
-
-AXOM_HOST_DEVICE
-bool isGpeq(double x, double y, bool includeEqual = false, double EPS = 1E-12);
 
 AXOM_HOST_DEVICE
 bool nonzeroSignMatch(double x, double y, double z, double EPS = 1E-12);
@@ -175,7 +158,7 @@ AXOM_HOST_DEVICE bool intersect_tri3D_tri3D(const Triangle<T, 3>& t1,
                                             bool includeBoundary,
                                             double EPS)
 {
-  typedef primal::Vector<T, 3> Vector3;
+  using Vector3 = primal::Vector<T, 3>;
 
   SLIC_CHECK_MSG(!t1.degenerate(),
                  "\n\n WARNING \n\n Triangle " << t1 << " is degenerate");
@@ -567,76 +550,6 @@ inline double twoDcross(const Point2& A, const Point2& B, const Point2& C)
 }
 
 /*!
- * \brief Checks if x > y, within a specified tolerance.
- */
-AXOM_HOST_DEVICE
-inline bool isGt(double x, double y, double EPS)
-{
-  return ((x > y) && !(axom::utilities::isNearlyEqual(x, y, EPS)));
-}
-
-/*!
- * \brief Checks if x < y, within a specified tolerance.
- */
-AXOM_HOST_DEVICE
-inline bool isLt(double x, double y, double EPS)
-{
-  return ((x < y) && !(axom::utilities::isNearlyEqual(x, y, EPS)));
-}
-
-/*!
- * \brief Checks if x <= y, within a specified tolerance.
- */
-AXOM_HOST_DEVICE
-inline bool isLeq(double x, double y, double EPS) { return !(isGt(x, y, EPS)); }
-
-/*!
- * \brief Checks if x < y, or possibly x == y, within a specified tolerance.
- *
- * The check for equality is controlled by parameter includeEqual.  This
- * lets users specify at compile time whether triangles intersecting only on
- * border points are reported as intersecting or not.
- *
- * Supports checkEdge and checkVertex
- */
-AXOM_HOST_DEVICE
-inline bool isLpeq(double x, double y, bool includeEqual, double EPS)
-{
-  if(includeEqual && axom::utilities::isNearlyEqual(x, y, EPS))
-  {
-    return true;
-  }
-
-  return isLt(x, y, EPS);
-}
-
-/*!
- * \brief Checks if x >= y, within a specified tolerance.
- */
-AXOM_HOST_DEVICE
-inline bool isGeq(double x, double y, double EPS) { return !(isLt(x, y, EPS)); }
-
-/*!
- * \brief Checks if x > y, or possibly x == y, within a specified tolerance.
- *
- * The check for equality is controlled by parameter includeEqual.  This
- * lets users specify at compile time whether triangles intersecting only on
- * border points are reported as intersecting or not.
- *
- * Supports checkEdge and checkVertex
- */
-AXOM_HOST_DEVICE
-inline bool isGpeq(double x, double y, bool includeEqual, double EPS)
-{
-  if(includeEqual && axom::utilities::isNearlyEqual(x, y, EPS))
-  {
-    return true;
-  }
-
-  return isGt(x, y, EPS);
-}
-
-/*!
  * \brief Check if x, y, and z all have the same sign.
  */
 AXOM_HOST_DEVICE
@@ -849,7 +762,7 @@ bool intersect_tri_ray(const Triangle<T, 3>& tri,
   // I (Arlie Capps, Jan. 2017) don't understand the motivation at this
   // point, but I'll accept this for now.
 
-  typedef NumericArray<T, 3> NumArray;
+  using NumArray = NumericArray<T, 3>;
   const T zero = T();
 
   //find out dimension where ray direction is maximal
@@ -961,7 +874,7 @@ bool intersect_tri_segment(const Triangle<T, 3>& tri,
                            T& t,
                            Point<double, 3>& p)
 {
-  typedef Vector<T, 3> Vector3;
+  using Vector3 = Vector<T, 3>;
   Ray<T, 3> r(S.source(), Vector3(S.source(), S.target()));
 
   //Ray-triangle intersection does not check endpoints, so we explicitly check

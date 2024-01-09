@@ -22,6 +22,7 @@
 #include "axom/primal/geometry/Point.hpp"
 #include "axom/primal/geometry/Triangle.hpp"
 #include "axom/primal/geometry/Quadrilateral.hpp"
+#include "axom/primal/geometry/Polygon.hpp"
 #include "axom/primal/geometry/Vector.hpp"
 #include "axom/primal/geometry/OrientedBoundingBox.hpp"
 
@@ -169,8 +170,8 @@ template <typename T, int NDIMS>
 AXOM_HOST_DEVICE BoundingBox<T, NDIMS> compute_bounding_box(
   const Polyhedron<T, NDIMS> &poly)
 {
-  BoundingBox<T, NDIMS> res(poly[0]);
-  for(int i = 1; i < poly.numVertices(); i++)
+  BoundingBox<T, NDIMS> res;
+  for(int i = 0; i < poly.numVertices(); i++)
   {
     res.addPoint(poly[i]);
   }
@@ -180,13 +181,30 @@ AXOM_HOST_DEVICE BoundingBox<T, NDIMS> compute_bounding_box(
 /*!
  * \brief Creates a bounding box around a Tetrahedron
  *
- * \param [in] tet The Tetrahedron
+ * \param [in] tet The tetrahedron
  */
 template <typename T, int NDIMS>
 AXOM_HOST_DEVICE BoundingBox<T, NDIMS> compute_bounding_box(
   const Tetrahedron<T, NDIMS> &tet)
 {
   return BoundingBox<T, NDIMS> {tet[0], tet[1], tet[2], tet[3]};
+}
+
+/*!
+ * \brief Creates a bounding box around a Polygon
+ *
+ * \param [in] poly The polygon
+ */
+template <typename T, int NDIMS>
+AXOM_HOST_DEVICE BoundingBox<T, NDIMS> compute_bounding_box(
+  const Polygon<T, NDIMS> &poly)
+{
+  BoundingBox<T, NDIMS> res;
+  for(int i = 0; i < poly.numVertices(); ++i)
+  {
+    res.addPoint(poly[i]);
+  }
+  return res;
 }
 
 }  // namespace primal

@@ -192,7 +192,7 @@ void demoMatrix()
   // _eigs_start
   // Solve for eigenvectors and values using the power method
   // The power method calls rand(), so we need to initialize it with srand().
-  std::srand(std::time(0));
+  std::srand(std::time(nullptr));
   double eigvec[nrows * ncols];
   double eigval[nrows];
   int res = numerics::eigen_solve(A, nrows, eigvec, eigval);

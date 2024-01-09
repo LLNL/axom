@@ -1055,21 +1055,21 @@ int MultiMat::addFieldArray_impl(const std::string& field_name,
   SLIC_ASSERT(m_fieldNameVec.size() == m_fieldSparsityLayoutVec.size());
   SLIC_ASSERT(m_fieldNameVec.size() == m_fieldStrideVec.size());
 
-  axom::IndexType set_size = 0;
+#ifdef AXOM_DEBUG
   if(field_mapping == FieldMapping::PER_CELL_MAT)
   {
     const BivariateSetType* s = get_mapped_biSet(data_layout, sparsity_layout);
     SLIC_ASSERT(s != nullptr);
-    set_size = s->size();
+    SLIC_ASSERT(s->size() * stride == data_arr.size());
   }
   else
   {
     SLIC_ASSERT(field_mapping == FieldMapping::PER_CELL ||
                 field_mapping == FieldMapping::PER_MAT);
     const RangeSetType& s = *getMappedRangeSet(field_mapping);
-    set_size = s.size();
+    SLIC_ASSERT(s.size() * stride == data_arr.size());
   }
-  SLIC_ASSERT(set_size * stride == data_arr.size());
+#endif
 
   m_fieldBackingVec.back() =
     std::make_unique<FieldBacking>(data_arr, owned, m_fieldAllocatorId);

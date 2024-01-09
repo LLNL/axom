@@ -32,10 +32,10 @@ using SetType = axom::slam::RangeSet<>;
 using SetPosition = SetType::PositionType;
 using SetElement = SetType::ElementType;
 
-static const SetPosition MAX_SIZE = 20;
-static const SetElement lowerIndex = static_cast<SetElement>(.3 * MAX_SIZE);
-static const SetElement upperIndex = static_cast<SetElement>(.7 * MAX_SIZE);
-static const SetElement range = upperIndex - lowerIndex;
+constexpr SetPosition MAX_SIZE = 20;
+constexpr SetElement lowerIndex = static_cast<SetElement>(.3 * MAX_SIZE);
+constexpr SetElement upperIndex = static_cast<SetElement>(.7 * MAX_SIZE);
+constexpr SetElement range = upperIndex - lowerIndex;
 
 }  // end anonymous namespace
 

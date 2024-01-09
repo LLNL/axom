@@ -162,4 +162,9 @@ std::ostream& operator<<(std::ostream& os, const Ray<T, NDIMS>& ray)
 }  // namespace primal
 }  // namespace axom
 
+/// Overload to format a primal::Ray using fmt
+template <typename T, int NDIMS>
+struct axom::fmt::formatter<axom::primal::Ray<T, NDIMS>> : ostream_formatter
+{ };
+
 #endif  // AXOM_PRIMAL_RAY_HPP_

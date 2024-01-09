@@ -20,6 +20,7 @@
 #include "axom/primal/operators/clip.hpp"
 #include "axom/primal/operators/intersection_volume.hpp"
 #include "axom/primal/operators/split.hpp"
+#include "axom/primal/operators/compute_bounding_box.hpp"
 
 #include <limits>
 
@@ -41,66 +42,120 @@ using PolyhedronType = axom::primal::Polyhedron<double, 3>;
 TEST(primal_clip, simple_clip)
 {
   using namespace Primal3D;
-  constexpr double EPS = 1e-8;
+
+  // all checks in this test are against the cube [-1,-1,-1] to [1,1,1]
   BoundingBoxType bbox;
-  bbox.addPoint(PointType::zero());
-  bbox.addPoint(PointType::ones());
+  bbox.addPoint(PointType {-1, -1, -1});
+  bbox.addPoint(PointType {1, 1, 1});
 
-  PointType points[] = {
-    PointType {2, 2, 2},
-    PointType {2, 2, 4},
-    PointType {2, 4, 2},
+  // define a slightly inflated bbox for containment tests
+  constexpr double EPS = 1e-8;
+  BoundingBoxType expanded_bbox(bbox);
+  expanded_bbox.expand(EPS);
 
-    PointType {-100, -100, 0.5},
-    PointType {-100, 100, 0.5},
-    PointType {100, 0, 0.5},
+  std::vector<std::pair<TriangleType, int>> test_cases;
 
-    PointType {0.25, 0.25, 0.5},
-    PointType {0.75, 0.25, 0.5},
-    PointType {0.66, 0.5, 0.5},
-    PointType {1.5, 0.5, 0.5},
-  };
-
+  // add a bunch of test cases
   {
-    TriangleType tri(points[0], points[1], points[2]);
+    // this triangle is clearly outside the reference cube
+    test_cases.push_back(std::make_pair(
+      TriangleType {PointType {2, 2, 2}, PointType {2, 2, 4}, PointType {2, 4, 2}},
+      0));
 
-    PolygonType poly = axom::primal::clip(tri, bbox);
-    EXPECT_EQ(0, poly.numVertices());
+    // triangle at z=0 that spans entire cube
+    test_cases.push_back(std::make_pair(TriangleType {PointType {-100, -100, 0.},
+                                                      PointType {-100, 100, 0.},
+                                                      PointType {100, 0, 0.}},
+                                        4));
+
+    // triangle at z=0 w/ two vertices inside unit cube
+    test_cases.push_back(std::make_pair(TriangleType {PointType {0.25, 0.25, 0.},
+                                                      PointType {0.75, 0.25, 0.},
+                                                      PointType {1.5, 0.5, 0.}},
+                                        4));
+
+    // triangle at z=0 w/ vertices aligned w/ bounding box planes
+    test_cases.push_back(std::make_pair(TriangleType {PointType {2, 1, 0.},
+                                                      PointType {2, 2, 0.},
+                                                      PointType {1, 2, 0.}},
+                                        0));
+
+    // triangle at z=0 w/ one vertex coincident w/ cube
+    test_cases.push_back(std::make_pair(TriangleType {PointType {1, 2, 0.},
+                                                      PointType {1, 1, 0.},
+                                                      PointType {2, 1, 0.}},
+                                        0));
+
+    // triangle at z=0 w/ one edge midpoint coincident w/ cube
+    test_cases.push_back(std::make_pair(TriangleType {PointType {0, 2, 0.},
+                                                      PointType {2, 0, 0.},
+                                                      PointType {2, 2, 0.}},
+                                        0));
+
+    // triangle at z=0 w/ one edge coincident w/ unit cube and the other outside
+    test_cases.push_back(std::make_pair(TriangleType {PointType {-10, 1, 0.},
+                                                      PointType {10, 1, 0.},
+                                                      PointType {0, 10, 0.}},
+                                        0));
+
+    // triangle at z=0 w/ one edge coincident w/ unit cube and the last vertex inside
+    test_cases.push_back(std::make_pair(TriangleType {PointType {-10, 1, 0.},
+                                                      PointType {10, 1, 0.},
+                                                      PointType {0, 0, 0.}},
+                                        5));
+
+    // triangle at z=0 w/ one edge coincident w/ unit cube and the last vertex on the other side
+    test_cases.push_back(std::make_pair(TriangleType {PointType {-10, 1, 0.},
+                                                      PointType {10, 1, 0.},
+                                                      PointType {0, -10, 0.}},
+                                        4));
+
+    // triangle at z=1 w/ one edge coincident w/ unit cube and the last vertex on the other side
+    test_cases.push_back(std::make_pair(TriangleType {PointType {-10, 1, 1.},
+                                                      PointType {10, 1, 1.},
+                                                      PointType {0, -10, 1.}},
+                                        4));
+
+    // triangle at z=.5 w/ two vertices inside cube and one to the left
+    test_cases.push_back(std::make_pair(TriangleType {PointType {-2, .25, .5},
+                                                      PointType {.25, .25, .5},
+                                                      PointType {.25, .75, .5}},
+                                        4));
+
+    // triangle at z=.5 w/ two vertices inside cube and one to the left
+    test_cases.push_back(std::make_pair(TriangleType {PointType {-2, .25, .5},
+                                                      PointType {.75, .25, .5},
+                                                      PointType {.75, .75, .5}},
+                                        4));
+
+    // all vertices outside cube, one vertex above, one vertex to the left and one to the top left
+    test_cases.push_back(std::make_pair(TriangleType {PointType {.9, 100, .5},
+                                                      PointType {100, -1, .5},
+                                                      PointType {100, 100, .5}},
+                                        0));
   }
 
+  // check each test case
+  for(const auto& pair : test_cases)
   {
-    TriangleType tri(points[3], points[4], points[5]);
+    const auto& tri = pair.first;
+    const int expected_verts = pair.second;
 
     PolygonType poly = axom::primal::clip(tri, bbox);
-    EXPECT_EQ(4, poly.numVertices());
 
-    SLIC_INFO("Intersection of triangle " << tri << " and bounding box " << bbox
-                                          << " is polygon" << poly);
-  }
+    SLIC_INFO(
+      axom::fmt::format("Intersection of triangle {} and bbox {} is polygon {}",
+                        tri,
+                        bbox,
+                        poly));
 
-  {
-    TriangleType tri(points[3], points[4], points[5]);
-
-    PolygonType poly = axom::primal::clip(tri, bbox);
-    EXPECT_EQ(4, poly.numVertices());
-
-    for(int dim = 0; dim < 3; ++dim)
-    {
-      EXPECT_NEAR(0.5, poly.vertexMean()[dim], EPS);
-    }
-
-    SLIC_INFO("Intersection of triangle " << tri << " and bounding box " << bbox
-                                          << " is polygon" << poly);
-  }
-
-  {
-    TriangleType tri(points[6], points[7], points[9]);
-
-    PolygonType poly = axom::primal::clip(tri, bbox);
-    EXPECT_EQ(4, poly.numVertices());
-
-    SLIC_INFO("Intersection of triangle " << tri << " and bounding box " << bbox
-                                          << " is polygon" << poly);
+    // The clipped polygon
+    // ... should have the expected number of vertices
+    EXPECT_EQ(expected_verts, poly.numVertices());
+    // ... should lie inside the bounding box (inflated by EPS to deal w/ boundaries)
+    EXPECT_TRUE(expanded_bbox.contains(axom::primal::compute_bounding_box(poly)));
+    // ... and its area should be at most that of the original triangle
+    EXPECT_GE(tri.area(), poly.area());
   }
 }
 
@@ -821,6 +876,50 @@ TEST(primal_clip, hex_tet_clip_point)
   EXPECT_EQ(0.0, axom::primal::intersection_volume<double>(hex, tet));
   EXPECT_EQ(0.0, axom::primal::intersection_volume<double>(tet, hex));
   EXPECT_EQ(axom::primal::clip(tet, hex).volume(), poly.volume());
+}
+
+// Tetrahedron with a negative volume clips hexahedron
+TEST(primal_clip, hex_tet_negative_tet_vol)
+{
+  using namespace Primal3D;
+  constexpr double EPS = 1e-4;
+  constexpr bool CHECK_ORIENTATION = true;
+
+  TetrahedronType tet(PointType {0.0774795, -11.3217, -33.5237},
+                      PointType {0.482086, -12.283, -33.5237},
+                      PointType {-0.503954, -12.216, -33.5237},
+                      PointType {0.0368068, -12.1403, -33.4339});
+  HexahedronType hex(PointType {0, -12.1295, -33.6323},
+                     PointType {0, -12.2774, -33.6323},
+                     PointType {0.185429, -12.276, -33.6323},
+                     PointType {0.183195, -12.1281, -33.6323},
+                     PointType {0, -12.1295, -33.5186},
+                     PointType {0, -12.2774, -33.5186},
+                     PointType {0.185429, -12.276, -33.5186},
+                     PointType {0.183195, -12.1281, -33.5186});
+
+  // Clipped polyhedron has volume of zero due to tetrahedron orientation
+  PolyhedronType zeroPoly = axom::primal::clip(hex, tet);
+
+  EXPECT_EQ(0.0, zeroPoly.volume());
+  EXPECT_EQ(0.0, axom::primal::intersection_volume<double>(hex, tet));
+  EXPECT_EQ(0.0, axom::primal::intersection_volume<double>(tet, hex));
+  EXPECT_EQ(axom::primal::clip(tet, hex).volume(), zeroPoly.volume());
+
+  // Run clip operation with orientation flag enabled to fix tetrahedron
+  PolyhedronType fixedPoly = axom::primal::clip(hex, tet, EPS, CHECK_ORIENTATION);
+
+  EXPECT_NEAR(0.00011, fixedPoly.volume(), EPS);
+  EXPECT_NEAR(
+    0.00011,
+    axom::primal::intersection_volume<double>(hex, tet, EPS, CHECK_ORIENTATION),
+    EPS);
+  EXPECT_NEAR(
+    0.00011,
+    axom::primal::intersection_volume<double>(tet, hex, EPS, CHECK_ORIENTATION),
+    EPS);
+  EXPECT_EQ(axom::primal::clip(tet, hex, EPS, CHECK_ORIENTATION).volume(),
+            fixedPoly.volume());
 }
 
 // Tetrahedron does not clip octahedron.
