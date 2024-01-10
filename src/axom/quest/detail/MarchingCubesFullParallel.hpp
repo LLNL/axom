@@ -102,8 +102,8 @@ public:
   void computeContourMesh() override
   {
     markCrossings();
-    scanCrossings();
-    computeContour();
+    new_scanCrossings();
+    new_computeContour();
   }
 
   /*!
@@ -313,12 +313,82 @@ public:
                m_facetIncrs.data() + m_facetIncrs.size() - 1,
                sizeof(facetIncrs_back));
     m_facetCount = firstFacetIds_back + facetIncrs_back;
+  }
+  void new_scanCrossings()
+  {
+#if defined(AXOM_USE_RAJA)
+  #ifdef __INTEL_LLVM_COMPILER
+    // Intel oneAPI compiler segfaults with OpenMP RAJA scan
+    using ScanPolicy =
+      typename axom::execution_space<axom::SEQ_EXEC>::loop_policy;
+  #else
+    using ScanPolicy = typename axom::execution_space<ExecSpace>::loop_policy;
+  #endif
+#endif
+    const axom::IndexType parentCellCount = m_caseIds.size();
+    auto caseIdsView = m_caseIds.view();
 
-    // Allocate space for surface mesh.
-    const axom::IndexType cornersCount = DIM * m_facetCount;
-    m_contourCellParents.resize(m_facetCount);
-    m_contourCellCorners.resize(m_facetCount);
-    m_contourNodeCoords.resize(cornersCount);
+    //
+    // Initialize crossingFlags to 0 or 1, prefix-sum it, and count the
+    // crossings.
+    //
+
+    axom::Array<axom::IndexType, 1, MemorySpace> crossingFlags(parentCellCount);
+    auto crossingFlagsView = crossingFlags.view();
+    axom::for_all<ExecSpace>(
+      0,
+      parentCellCount,
+      AXOM_LAMBDA(axom::IndexType parentCellId) {
+        auto numContourCells = num_contour_cells(caseIdsView.flatIndex(parentCellId));
+        crossingFlagsView[parentCellId] = bool(numContourCells);
+      });
+
+    axom::Array<axom::IndexType, 1, MemorySpace> scannedFlags(1 + parentCellCount);
+    auto scannedFlagsView = scannedFlags.view();
+    RAJA::inclusive_scan<ScanPolicy>(
+      RAJA::make_span(crossingFlags.data(), parentCellCount),
+      RAJA::make_span(scannedFlags.data() + 1, parentCellCount),
+      RAJA::operators::plus<axom::IndexType> {});
+
+    axom::copy(&m_crossingCount,
+               scannedFlags.data() + scannedFlags.size() - 1,
+               sizeof(axom::IndexType));
+
+    //
+    // Generate crossing-cells index list and corresponding facet counts.
+    //
+
+    m_crossingParentIds.resize(m_crossingCount);
+    m_facetIncrs.resize(m_crossingCount);
+    auto crossingParentIdsView = m_crossingParentIds.view();
+    auto facetIncrsView = m_facetIncrs.view();
+
+    auto loopBody = AXOM_LAMBDA(axom::IndexType parentCellId) {
+      if(scannedFlagsView[parentCellId] !=
+         scannedFlagsView[1+parentCellId]) {
+        auto crossingId = scannedFlagsView[parentCellId];
+        auto facetIncr = num_contour_cells(caseIdsView.flatIndex(parentCellId));
+        crossingParentIdsView[crossingId] = parentCellId;
+        facetIncrsView[crossingId] = facetIncr;
+      }
+    };
+    axom::for_all<ExecSpace>(0, parentCellCount, loopBody);
+
+    //
+    // Prefix-sum the facets counts to get first facet id for each crossing
+    // and the total number of facets.
+    //
+
+    m_firstFacetIds.resize(1 + m_crossingCount);
+    RAJA::inclusive_scan<ScanPolicy>(
+      RAJA::make_span(m_facetIncrs.data(), m_crossingCount),
+      RAJA::make_span(m_firstFacetIds.data() + 1, m_crossingCount),
+      RAJA::operators::plus<axom::IndexType> {});
+
+    axom::copy(&m_facetCount,
+               m_firstFacetIds.data() + m_firstFacetIds.size() - 1,
+               sizeof(axom::IndexType));
+    m_firstFacetIds.resize(m_crossingCount);
   }
 
   void computeContour()
@@ -327,37 +397,16 @@ public:
     // Fill in surface mesh data.
     //
 
+    // Allocate space for surface mesh.
+    const axom::IndexType cornersCount = DIM * m_facetCount;
+    m_contourCellParents.resize(m_facetCount);
+    m_contourCellCorners.resize(m_facetCount);
+    m_contourNodeCoords.resize(cornersCount);
+
     const axom::IndexType parentCellCount = m_caseIds.size();
     const auto facetIncrsView = m_facetIncrs.view();
     const auto firstFacetIdsView = m_firstFacetIds.view();
     const auto caseIdsView = m_caseIds.view();
-
-    /*
-    To minimize diverence, sort parent indices by number of facets
-    they add.  This is a disabled experimental option.  Enable by
-    setting sortFacetsIncrs.  Requires RAJA.
-  */
-    const bool sortFacetsIncrs = false;
-    // sortedIndices are parent cell indices, sorted by number
-    // of facets in them.
-    axom::Array<axom::IndexType, 1, MemorySpace> sortedIndices(
-      sortFacetsIncrs ? parentCellCount : 0);
-    auto sortedIndicesView = sortedIndices.view();
-
-#if defined(AXOM_USE_RAJA)
-    if(sortFacetsIncrs)
-    {
-      auto sortedFacetIncrs = m_facetIncrs;
-      axom::for_all<ExecSpace>(
-        0,
-        parentCellCount,
-        AXOM_LAMBDA(axom::IndexType pcId) { sortedIndicesView[pcId] = pcId; });
-      RAJA::stable_sort_pairs<LoopPolicy>(
-        RAJA::make_span(sortedFacetIncrs.data(), parentCellCount),
-        RAJA::make_span(sortedIndices.data(), parentCellCount),
-        RAJA::operators::greater<axom::IndexType> {});
-    }
-#endif
 
     auto contourCellParentsView = m_contourCellParents.view();
     auto contourCellCornersView = m_contourCellCorners.view();
@@ -367,11 +416,8 @@ public:
                             m_caseIds.strides(),
                             m_fcnView,
                             m_coordsViews);
-    auto gen_for_parent_cell = AXOM_LAMBDA(axom::IndexType loopIndex)
+    auto gen_for_parent_cell = AXOM_LAMBDA(axom::IndexType parentCellId)
     {
-      axom::IndexType parentCellId =
-        sortFacetsIncrs ? sortedIndicesView[loopIndex] : loopIndex;
-
       Point cornerCoords[CELL_CORNER_COUNT];
       double cornerValues[CELL_CORNER_COUNT];
       ccu.get_corner_coords_and_values(parentCellId, cornerCoords, cornerValues);
@@ -403,6 +449,65 @@ public:
     };
 
     axom::for_all<ExecSpace>(0, parentCellCount, gen_for_parent_cell);
+  }
+  void new_computeContour()
+  {
+    //
+    // Fill in surface mesh data.
+    //
+
+    // Allocate space for surface mesh.
+    const axom::IndexType cornersCount = DIM * m_facetCount;
+    m_contourCellParents.resize(m_facetCount);
+    m_contourCellCorners.resize(m_facetCount);
+    m_contourNodeCoords.resize(cornersCount);
+
+    const auto facetIncrsView = m_facetIncrs.view();
+    const auto firstFacetIdsView = m_firstFacetIds.view();
+    const auto crossingParentIdsView = m_crossingParentIds.view();
+    const auto caseIdsView = m_caseIds.view();
+
+    auto contourCellParentsView = m_contourCellParents.view();
+    auto contourCellCornersView = m_contourCellCorners.view();
+    auto contourNodeCoordsView = m_contourNodeCoords.view();
+
+    ComputeContour_Util ccu(m_contourVal,
+                            m_caseIds.strides(),
+                            m_fcnView,
+                            m_coordsViews);
+    auto gen_for_parent_cell = AXOM_LAMBDA(axom::IndexType crossingId)
+    {
+      auto parentCellId = crossingParentIdsView[crossingId];
+      auto caseId = caseIdsView.flatIndex(parentCellId);
+      Point cornerCoords[CELL_CORNER_COUNT];
+      double cornerValues[CELL_CORNER_COUNT];
+      ccu.get_corner_coords_and_values(parentCellId, cornerCoords, cornerValues);
+
+      auto additionalFacets = facetIncrsView[crossingId];
+      auto firstFacetId = firstFacetIdsView[crossingId];
+
+      for(axom::IndexType fId = 0; fId < additionalFacets; ++fId)
+      {
+        axom::IndexType newFacetId = firstFacetId + fId;
+        axom::IndexType firstCornerId = newFacetId * DIM;
+
+        contourCellParentsView[newFacetId] = parentCellId;
+
+        for(axom::IndexType d = 0; d < DIM; ++d)
+        {
+          axom::IndexType newCornerId = firstCornerId + d;
+          contourCellCornersView[newFacetId][d] = newCornerId;
+
+          int edge = cases_table(caseId, fId * DIM + d);
+          ccu.linear_interp(edge,
+                            cornerCoords,
+                            cornerValues,
+                            contourNodeCoordsView[newCornerId]);
+        }
+      }
+    };
+
+    axom::for_all<ExecSpace>(0, m_crossingCount, gen_for_parent_cell);
   }
 
   /*!
@@ -771,22 +876,6 @@ public:
     , m_contourCellParents(0, 0)
   { }
 
-  /*!
-    @brief Info for a parent cell intersecting the contour surface.
-  */
-  struct CrossingInfo
-  {
-    CrossingInfo() { }
-    CrossingInfo(axom::IndexType parentCellNum_, std::uint16_t caseNum_)
-      : parentCellNum(parentCellNum_)
-      , caseNum(caseNum_)
-      , firstSurfaceCellId(std::numeric_limits<axom::IndexType>::max())
-    { }
-    axom::IndexType parentCellNum;  //!< @brief Flat index of parent cell in m_caseIds.
-    std::uint16_t caseNum;          //!< @brief Index in cases2D or cases3D
-    axom::IndexType firstSurfaceCellId;  //!< @brief First index for generated cells.
-  };
-
 private:
   MIdx m_bShape;  //!< @brief Blueprint cell data shape.
 
@@ -804,8 +893,11 @@ private:
   //!@brief Number of parent cells crossing the contour surface.
   axom::IndexType m_crossingCount = 0;
 
-  //!@brief Number of surface mesh facets added by computational mesh cells.
+  //!@brief Number of surface mesh facets added by crossing mesh cells.
   axom::Array<FacetIdType, 1, MemorySpace> m_facetIncrs;
+
+  //!@brief Parent cell id for each crossing.
+  axom::Array<axom::IndexType, 1, MemorySpace> m_crossingParentIds;
 
   //!@brief First index of facets in computational mesh cells.
   axom::Array<axom::IndexType, 1, MemorySpace> m_firstFacetIds;
