@@ -21,7 +21,6 @@ template <typename ExecSpace>
 void check_bb_policy()
 {
   const int DIM = 3;
-  const int HOST_ID = axom::getUmpireResourceAllocatorID(umpire::resource::Host);
   using BoundingBoxType = primal::BoundingBox<double, DIM>;
   using PointType = primal::Point<double, DIM>;
   using VectorType = primal::Vector<double, DIM>;
@@ -41,13 +40,12 @@ void check_bb_policy()
       box[i].isValid();
     });
 
-  BoundingBoxType* box_host = axom::allocate<BoundingBoxType>(1, HOST_ID);
-  axom::copy(box_host, box, sizeof(BoundingBoxType));
+  BoundingBoxType box_host;
+  axom::copy(&box_host, box, sizeof(BoundingBoxType));
 
-  EXPECT_EQ(box_host[0], BoundingBoxType(PointType(0.0), PointType(10.0)));
+  EXPECT_EQ(box_host, BoundingBoxType(PointType(0.0), PointType(10.0)));
 
   axom::deallocate(box);
-  axom::deallocate(box_host);
 }
 
 //------------------------------------------------------------------------------
