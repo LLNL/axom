@@ -66,24 +66,11 @@ using MyTypes = ::testing::Types<
 TYPED_TEST_SUITE(core_array_for_all, MyTypes);
 
 //------------------------------------------------------------------------------
-AXOM_TYPED_TEST(core_array_for_all, capture_test)
+#if defined(AXOM_USE_RAJA) && defined(AXOM_USE_CUDA) && defined(AXOM_USE_UMPIRE)
+AXOM_CUDA_TEST(core_array_for_all, capture_test)
 {
-  using ExecSpace = typename TestFixture::ExecSpace;
-  using KernelArray = typename TestFixture::KernelArray;
-  using KernelArrayView = typename TestFixture::KernelArrayView;
-  using HostArray = typename TestFixture::HostArray;
-
-  // Don't test on CPU.
-  if(std::is_same<ExecSpace, axom::SEQ_EXEC>::value)
-  {
-    return;
-  }
-#if defined(AXOM_USE_RAJA) && defined(AXOM_USE_OPENMP)
-  if(std::is_same<ExecSpace, axom::OMP_EXEC>::value)
-  {
-    return;
-  }
-#endif
+  using ExecSpace = axom::CUDA_EXEC<256>;
+  using KernelArray = axom::Array<int, 1, axom::MemorySpace::Device>;
 
   EXPECT_DEATH_IF_SUPPORTED(
     {
@@ -106,6 +93,7 @@ AXOM_TYPED_TEST(core_array_for_all, capture_test)
     },
     "");
 }
+#endif
 
 //------------------------------------------------------------------------------
 AXOM_TYPED_TEST(core_array_for_all, explicit_ArrayView)
