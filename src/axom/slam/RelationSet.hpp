@@ -58,6 +58,8 @@ public:
 
   using BaseType::INVALID_POS;
 
+  struct Iterator;
+
 public:
   using ConcreteSet =
     RelationSet<Relation, SetType1, SetType2, policies::ConcreteInterface>;
@@ -244,6 +246,18 @@ public:
    */
   PositionType size(PositionType pos) const { return m_relation->size(pos); }
 
+  /*!
+   * \brief Return an iterator to the first pair of set elements in the
+   *  relation.
+   */
+  Iterator begin() const { return Iterator(this, 0); }
+
+  /*!
+   * \brief Return an iterator to one past the last pair of set elements in the
+   *  relation.
+   */
+  Iterator end() const { return Iterator(this, totalSize()); }
+
   bool isValid(bool verboseOutput = false) const
   {
     if(m_relation == nullptr)
@@ -297,6 +311,98 @@ private:
 
 private:
   RelationType* m_relation;  //the relation that this set is based off of
+};
+
+/*!
+ * \brief Iterator class for a RelationSet.
+ */
+template <typename Relation, typename SetType1, typename SetType2, typename InterfaceType>
+struct RelationSet<Relation, SetType1, SetType2, InterfaceType>::Iterator
+{
+public:
+  using difference_type = IndexType;
+  using value_type = std::pair<IndexType, IndexType>;
+  using reference = value_type&;
+  using pointer = value_type*;
+  using iterator_category = std::forward_iterator_tag;
+
+  using RelationSetType =
+    RelationSet<Relation, SetType1, SetType2, InterfaceType>;
+  using IndexType = typename RelationSetType::PositionType;
+
+  Iterator(const RelationSetType* bset, IndexType flatPos = 0) : m_bset(bset)
+  {
+    if(flatPos >= m_bset->totalSize())
+    {
+      m_firstIndex = m_bset->firstSetSize();
+      m_firstOffset = m_bset->totalSize();
+      m_secondOffset = 0;
+    }
+    else
+    {
+      m_firstIndex = m_bset->flatToFirstIndex(flatPos);
+      m_firstOffset = m_bset->getRelation()->offset(m_firstIndex);
+      m_secondOffset = flatPos - m_firstOffset;
+    }
+  }
+
+  friend bool operator==(const Iterator& lhs, const Iterator& rhs)
+  {
+    return lhs.flatIndex() == rhs.flatIndex();
+  }
+
+  friend bool operator!=(const Iterator& lhs, const Iterator& rhs)
+  {
+    return lhs.flatIndex() != rhs.flatIndex();
+  }
+
+  Iterator& operator++()
+  {
+    this->moveForward();
+    return *this;
+  }
+
+  Iterator operator++(int)
+  {
+    Iterator next = *this;
+    ++(*this);
+    return next;
+  }
+
+  std::pair<IndexType, IndexType> operator*() const
+  {
+    // Going from flat-to-second index is always free for a StaticRelation.
+    return {m_firstIndex, m_bset->flatToSecondIndex(flatIndex())};
+  }
+
+  /// \brief Return the first set index pointed to by this iterator.
+  IndexType firstIndex() const { return m_firstIndex; }
+
+  /// \brief Return the second set index pointed to by this iterator.
+  IndexType secondIndex() const
+  {
+    return m_bset->flatToSecondIndex(flatIndex());
+  }
+
+  /// \brief Return the flat iteration index of this iterator.
+  IndexType flatIndex() const { return m_firstOffset + m_secondOffset; }
+
+private:
+  void moveForward()
+  {
+    m_secondOffset++;
+    if(m_secondOffset == m_bset->size(m_firstIndex))
+    {
+      m_firstOffset += m_bset->size(m_firstIndex);
+      m_firstIndex++;
+      m_secondOffset = 0;
+    }
+  }
+
+  const RelationSetType* m_bset;
+  IndexType m_firstOffset;
+  IndexType m_firstIndex;
+  IndexType m_secondOffset;
 };
 
 }  // end namespace slam
