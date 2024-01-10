@@ -182,8 +182,7 @@ void demoAxomExecution()
   //_gpu_atomic_start
   using atomic_pol = typename axom::execution_space<ExecSpace>::atomic_policy;
 
-  int *sum =
-    axom::allocate<int>(1, axom::execution_space<ExecSpace>::allocatorID());
+  int *sum = axom::allocate<int>(1, allocator_id);
   *sum = 0;
 
   // Increment sum 100 times
@@ -193,6 +192,8 @@ void demoAxomExecution()
 
   std::cout << "\nTotal Atomic Sum (" << axom::execution_space<ExecSpace>::name()
             << ") :" << sum[0] << std::endl;
+
+  axom::deallocate(sum);
   //_gpu_atomic_end
 
 #endif
