@@ -20,6 +20,7 @@
 #include "axom/slic.hpp"
 #include "axom/quest/IntersectionShaper.hpp"
 #include "axom/quest/util/mesh_helpers.hpp"
+#include "conduit_relay_io.hpp"
 
 #ifndef AXOM_USE_MFEM
   #error "Quest's IntersectionShaper tests on mfem meshes require mfem library."
