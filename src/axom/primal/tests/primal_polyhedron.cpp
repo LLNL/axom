@@ -290,43 +290,48 @@ void check_volume()
   // Save current/default allocator
   const int current_allocator = axom::getDefaultAllocatorID();
 
-  // Determine new allocator (for CUDA or HIP policy, set to Unified)
+  // Determine new allocator (for CUDA or HIP policy, set to Device)
   umpire::Allocator allocator =
     rm.getAllocator(axom::execution_space<ExecSpace>::allocatorID());
 
   // Set new default to device
   axom::setDefaultAllocator(allocator.getId());
 
-  // Initialize polyhedron and volume in unified memory
-  PolyhedronType* polys = axom::allocate<PolyhedronType>(1);
+  // Initialize volume
   double* res = axom::allocate<double>(1);
 
-  polys[0] = PolyhedronType();
-  polys[0].addVertex({0, 0, 0});
-  polys[0].addVertex({1, 0, 0});
-  polys[0].addVertex({1, 1, 0});
-  polys[0].addVertex({0, 1, 0});
-  polys[0].addVertex({0, 0, 1});
-  polys[0].addVertex({1, 0, 1});
-  polys[0].addVertex({1, 1, 1});
-  polys[0].addVertex({0, 1, 1});
-
-  polys[0].addNeighbors(0, {1, 4, 3});
-  polys[0].addNeighbors(1, {5, 0, 2});
-  polys[0].addNeighbors(2, {3, 6, 1});
-  polys[0].addNeighbors(3, {7, 2, 0});
-  polys[0].addNeighbors(4, {5, 7, 0});
-  polys[0].addNeighbors(5, {1, 6, 4});
-  polys[0].addNeighbors(6, {2, 7, 5});
-  polys[0].addNeighbors(7, {4, 6, 3});
+  // Volume on host (for CUDA or HIP)
+  double res_host;
 
   axom::for_all<ExecSpace>(
     1,
-    AXOM_LAMBDA(int i) { res[i] = polys[i].volume(); });
+    AXOM_LAMBDA(int i) {
+      PolyhedronType poly;
+      poly.addVertex({0, 0, 0});
+      poly.addVertex({1, 0, 0});
+      poly.addVertex({1, 1, 0});
+      poly.addVertex({0, 1, 0});
+      poly.addVertex({0, 0, 1});
+      poly.addVertex({1, 0, 1});
+      poly.addVertex({1, 1, 1});
+      poly.addVertex({0, 1, 1});
 
-  EXPECT_EQ(res[0], 1);
+      poly.addNeighbors(0, {1, 4, 3});
+      poly.addNeighbors(1, {5, 0, 2});
+      poly.addNeighbors(2, {3, 6, 1});
+      poly.addNeighbors(3, {7, 2, 0});
+      poly.addNeighbors(4, {5, 7, 0});
+      poly.addNeighbors(5, {1, 6, 4});
+      poly.addNeighbors(6, {2, 7, 5});
+      poly.addNeighbors(7, {4, 6, 3});
 
-  axom::deallocate(polys);
+      res[i] = poly.volume();
+    });
+
+  axom::copy(&res_host, res, sizeof(double));
+
+  EXPECT_EQ(res_host, 1);
+
   axom::deallocate(res);
 
   axom::setDefaultAllocator(current_allocator);
