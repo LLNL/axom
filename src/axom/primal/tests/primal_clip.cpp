@@ -329,6 +329,12 @@ void unit_check_poly_clip()
   //      |
   // In addition, vertices 0 and 3 should be marked as clipped.
 
+  const int current_allocator = axom::getDefaultAllocatorID();
+  axom::setDefaultAllocator(axom::execution_space<ExecPolicy>::allocatorID());
+
+  PolyhedronType* out_square = axom::allocate<PolyhedronType>(1);
+  unsigned int* out_clipped = axom::allocate<unsigned int>(1);
+
   PolyhedronType square;
   square.addVertex({0.0, 0.0, 0.0});
   square.addVertex({1.0, 0.0, 0.0});
@@ -340,28 +346,27 @@ void unit_check_poly_clip()
   square.addNeighbors(2, {1, 3});
   square.addNeighbors(3, {0, 2});
 
-  PlaneType plane(VectorType {1, 0, 0}, PointType {0.5, 0.0, 0.0});
-
-  const int current_allocator = axom::getDefaultAllocatorID();
-  axom::setDefaultAllocator(axom::execution_space<ExecPolicy>::allocatorID());
-
-  PolyhedronType* out_square = axom::allocate<PolyhedronType>(1);
-  out_square[0] = square;
-
-  unsigned int* out_clipped = axom::allocate<unsigned int>(1);
-  out_clipped[0] = 0;
+  axom::copy(out_square, &square, sizeof(PolyhedronType));
 
   axom::for_all<ExecPolicy>(
     0,
     1,
     AXOM_LAMBDA(int /* idx */) {
+      PlaneType plane(VectorType {1, 0, 0}, PointType {0.5, 0.0, 0.0});
+
+      out_clipped[0] = 0;
+
       axom::primal::detail::poly_clip_vertices(out_square[0],
                                                plane,
                                                EPS,
                                                out_clipped[0]);
     });
 
-  const PolyhedronType& clippedSquare = out_square[0];
+  PolyhedronType clippedSquare;
+  axom::copy(&clippedSquare, out_square, sizeof(PolyhedronType));
+
+  unsigned int out_clipped_host;
+  axom::copy(&out_clipped_host, out_clipped, sizeof(unsigned int));
 
   EXPECT_EQ(clippedSquare.numVertices(), 6);
   // Check that existing vertices were not modified
@@ -388,7 +393,7 @@ void unit_check_poly_clip()
   EXPECT_NE(hi_idx, -1);
 
   // Check that vertices outside the plane were marked as clipped
-  EXPECT_EQ(out_clipped[0], (1 | (1 << 3)));
+  EXPECT_EQ(out_clipped_host, (1 | (1 << 3)));
 
   // Generate sets of expected neighbors
   std::vector<std::set<int>> expectedNbrs(6);
@@ -434,35 +439,50 @@ void check_hex_tet_clip(double EPS)
   HexahedronType* hex = axom::allocate<HexahedronType>(1);
   PolyhedronType* res = axom::allocate<PolyhedronType>(1);
 
-  tet[0] = TetrahedronType(PointType {1, 0, 0},
-                           PointType {1, 1, 0},
-                           PointType {0, 1, 0},
-                           PointType {1, 0, 1});
+  // Shapes on host
+  TetrahedronType tet_host;
+  HexahedronType hex_host;
+  PolyhedronType res_host;
 
-  hex[0] = HexahedronType(PointType {0, 0, 0},
-                          PointType {1, 0, 0},
-                          PointType {1, 1, 0},
-                          PointType {0, 1, 0},
-                          PointType {0, 0, 1},
-                          PointType {1, 0, 1},
-                          PointType {1, 1, 1},
-                          PointType {0, 1, 1});
   axom::for_all<ExecPolicy>(
     1,
-    AXOM_LAMBDA(int i) { res[i] = axom::primal::clip(hex[i], tet[i]); });
+    AXOM_LAMBDA(int i) {
+      tet[0] = TetrahedronType(PointType {1, 0, 0},
+                               PointType {1, 1, 0},
+                               PointType {0, 1, 0},
+                               PointType {1, 0, 1});
 
-  EXPECT_NEAR(0.1666, res[0].volume(), EPS);
+      hex[0] = HexahedronType(PointType {0, 0, 0},
+                              PointType {1, 0, 0},
+                              PointType {1, 1, 0},
+                              PointType {0, 1, 0},
+                              PointType {0, 0, 1},
+                              PointType {1, 0, 1},
+                              PointType {1, 1, 1},
+                              PointType {0, 1, 1});
+
+      res[i] = axom::primal::clip(hex[i], tet[i]);
+    });
+
+  axom::copy(&tet_host, tet, sizeof(TetrahedronType));
+  axom::copy(&hex_host, hex, sizeof(HexahedronType));
+  axom::copy(&res_host, res, sizeof(PolyhedronType));
+
+  EXPECT_NEAR(0.1666, res_host.volume(), EPS);
   EXPECT_NEAR(0.1666,
-              axom::primal::intersection_volume<double>(hex[0], tet[0]),
+              axom::primal::intersection_volume<double>(hex_host, tet_host),
               EPS);
 
   // Test tryFixOrientation optional parameter using shapes with negative volumes
-  axom::utilities::swap<PointType>(tet[0][1], tet[0][2]);
-  axom::utilities::swap<PointType>(hex[0][1], hex[0][3]);
-  axom::utilities::swap<PointType>(hex[0][5], hex[0][7]);
+  axom::utilities::swap<PointType>(tet_host[1], tet_host[2]);
+  axom::utilities::swap<PointType>(hex_host[1], hex_host[3]);
+  axom::utilities::swap<PointType>(hex_host[5], hex_host[7]);
 
-  EXPECT_LT(tet[0].signedVolume(), 0.0);
-  EXPECT_LT(hex[0].signedVolume(), 0.0);
+  EXPECT_LT(tet_host.signedVolume(), 0.0);
+  EXPECT_LT(hex_host.signedVolume(), 0.0);
+
+  axom::copy(tet, &tet_host, sizeof(TetrahedronType));
+  axom::copy(hex, &hex_host, sizeof(HexahedronType));
 
   axom::for_all<ExecPolicy>(
     1,
@@ -470,10 +490,12 @@ void check_hex_tet_clip(double EPS)
       res[i] = axom::primal::clip(hex[i], tet[i], EPS, CHECK_ORIENTATION);
     });
 
-  EXPECT_NEAR(0.1666, res[0].volume(), EPS);
+  axom::copy(&res_host, res, sizeof(PolyhedronType));
+
+  EXPECT_NEAR(0.1666, res_host.volume(), EPS);
   EXPECT_NEAR(0.1666,
-              axom::primal::intersection_volume<double>(hex[0],
-                                                        tet[0],
+              axom::primal::intersection_volume<double>(hex_host,
+                                                        tet_host,
                                                         EPS,
                                                         CHECK_ORIENTATION),
               EPS);
@@ -503,33 +525,47 @@ void check_oct_tet_clip(double EPS)
   OctahedronType* oct = axom::allocate<OctahedronType>(1);
   PolyhedronType* res = axom::allocate<PolyhedronType>(1);
 
-  tet[0] = TetrahedronType(PointType {1, 0, 0},
-                           PointType {1, 1, 0},
-                           PointType {0, 1, 0},
-                           PointType {1, 0, 1});
-
-  oct[0] = OctahedronType(PointType {1, 0, 0},
-                          PointType {1, 1, 0},
-                          PointType {0, 1, 0},
-                          PointType {0, 1, 1},
-                          PointType {0, 0, 1},
-                          PointType {1, 0, 1});
+  // Shapes on host
+  TetrahedronType tet_host;
+  OctahedronType oct_host;
+  PolyhedronType res_host;
 
   axom::for_all<ExecPolicy>(
     1,
-    AXOM_LAMBDA(int i) { res[i] = axom::primal::clip(oct[i], tet[i]); });
+    AXOM_LAMBDA(int i) {
+      tet[0] = TetrahedronType(PointType {1, 0, 0},
+                               PointType {1, 1, 0},
+                               PointType {0, 1, 0},
+                               PointType {1, 0, 1});
 
-  EXPECT_NEAR(0.1666, res[0].volume(), EPS);
+      oct[0] = OctahedronType(PointType {1, 0, 0},
+                              PointType {1, 1, 0},
+                              PointType {0, 1, 0},
+                              PointType {0, 1, 1},
+                              PointType {0, 0, 1},
+                              PointType {1, 0, 1});
+
+      res[i] = axom::primal::clip(oct[i], tet[i]);
+    });
+
+  axom::copy(&tet_host, tet, sizeof(TetrahedronType));
+  axom::copy(&oct_host, oct, sizeof(OctahedronType));
+  axom::copy(&res_host, res, sizeof(PolyhedronType));
+
+  EXPECT_NEAR(0.1666, res_host.volume(), EPS);
   EXPECT_NEAR(0.1666,
-              axom::primal::intersection_volume<double>(oct[0], tet[0]),
+              axom::primal::intersection_volume<double>(oct_host, tet_host),
               EPS);
 
   // Test tryFixOrientation optional parameter using shapes with negative volumes
-  axom::utilities::swap<PointType>(tet[0][1], tet[0][2]);
-  axom::utilities::swap<PointType>(oct[0][1], oct[0][2]);
-  axom::utilities::swap<PointType>(oct[0][4], oct[0][5]);
+  axom::utilities::swap<PointType>(tet_host[1], tet_host[2]);
+  axom::utilities::swap<PointType>(oct_host[1], oct_host[2]);
+  axom::utilities::swap<PointType>(oct_host[4], oct_host[5]);
 
-  EXPECT_LT(tet[0].signedVolume(), 0.0);
+  EXPECT_LT(tet_host.signedVolume(), 0.0);
+
+  axom::copy(tet, &tet_host, sizeof(TetrahedronType));
+  axom::copy(oct, &oct_host, sizeof(OctahedronType));
 
   axom::for_all<ExecPolicy>(
     1,
@@ -537,10 +573,12 @@ void check_oct_tet_clip(double EPS)
       res[i] = axom::primal::clip(oct[i], tet[i], EPS, CHECK_ORIENTATION);
     });
 
-  EXPECT_NEAR(0.1666, res[0].volume(), EPS);
+  axom::copy(&res_host, res, sizeof(PolyhedronType));
+
+  EXPECT_NEAR(0.1666, res_host.volume(), EPS);
   EXPECT_NEAR(0.1666,
-              axom::primal::intersection_volume<double>(oct[0],
-                                                        tet[0],
+              axom::primal::intersection_volume<double>(oct_host,
+                                                        tet_host,
                                                         EPS,
                                                         CHECK_ORIENTATION),
               EPS);
@@ -570,31 +608,45 @@ void check_tet_tet_clip(double EPS)
   TetrahedronType* tet2 = axom::allocate<TetrahedronType>(1);
   PolyhedronType* res = axom::allocate<PolyhedronType>(1);
 
-  tet1[0] = TetrahedronType(PointType {1, 0, 0},
-                            PointType {1, 1, 0},
-                            PointType {0, 1, 0},
-                            PointType {1, 1, 1});
-
-  tet2[0] = TetrahedronType(PointType {0, 0, 0},
-                            PointType {1, 0, 0},
-                            PointType {1, 1, 0},
-                            PointType {1, 1, 1});
+  // Shapes on host
+  TetrahedronType tet1_host;
+  TetrahedronType tet2_host;
+  PolyhedronType res_host;
 
   axom::for_all<ExecPolicy>(
     1,
-    AXOM_LAMBDA(int i) { res[i] = axom::primal::clip(tet1[i], tet2[i]); });
+    AXOM_LAMBDA(int i) {
+      tet1[0] = TetrahedronType(PointType {1, 0, 0},
+                                PointType {1, 1, 0},
+                                PointType {0, 1, 0},
+                                PointType {1, 1, 1});
 
-  EXPECT_NEAR(0.0833, res[0].volume(), EPS);
+      tet2[0] = TetrahedronType(PointType {0, 0, 0},
+                                PointType {1, 0, 0},
+                                PointType {1, 1, 0},
+                                PointType {1, 1, 1});
+
+      res[i] = axom::primal::clip(tet1[i], tet2[i]);
+    });
+
+  axom::copy(&tet1_host, tet1, sizeof(TetrahedronType));
+  axom::copy(&tet2_host, tet2, sizeof(TetrahedronType));
+  axom::copy(&res_host, res, sizeof(PolyhedronType));
+
+  EXPECT_NEAR(0.0833, res_host.volume(), EPS);
   EXPECT_NEAR(0.0833,
-              axom::primal::intersection_volume<double>(tet1[0], tet2[0]),
+              axom::primal::intersection_volume<double>(tet1_host, tet2_host),
               EPS);
 
   // Test tryFixOrientation optional parameter using shapes with negative volumes
-  axom::utilities::swap<PointType>(tet1[0][1], tet1[0][2]);
-  axom::utilities::swap<PointType>(tet2[0][1], tet2[0][2]);
+  axom::utilities::swap<PointType>(tet1_host[1], tet1_host[2]);
+  axom::utilities::swap<PointType>(tet2_host[1], tet2_host[2]);
 
-  EXPECT_LT(tet1[0].signedVolume(), 0.0);
-  EXPECT_LT(tet2[0].signedVolume(), 0.0);
+  EXPECT_LT(tet1_host.signedVolume(), 0.0);
+  EXPECT_LT(tet2_host.signedVolume(), 0.0);
+
+  axom::copy(tet1, &tet1_host, sizeof(TetrahedronType));
+  axom::copy(tet2, &tet2_host, sizeof(TetrahedronType));
 
   axom::for_all<ExecPolicy>(
     1,
@@ -602,10 +654,12 @@ void check_tet_tet_clip(double EPS)
       res[i] = axom::primal::clip(tet1[i], tet2[i], EPS, CHECK_ORIENTATION);
     });
 
-  EXPECT_NEAR(0.0833, res[0].volume(), EPS);
+  axom::copy(&res_host, res, sizeof(PolyhedronType));
+
+  EXPECT_NEAR(0.0833, res_host.volume(), EPS);
   EXPECT_NEAR(0.0833,
-              axom::primal::intersection_volume<double>(tet1[0],
-                                                        tet2[0],
+              axom::primal::intersection_volume<double>(tet1_host,
+                                                        tet2_host,
                                                         EPS,
                                                         CHECK_ORIENTATION),
               EPS);
