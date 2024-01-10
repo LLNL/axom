@@ -31,6 +31,7 @@ void check_for_all()
   constexpr int VALUE_1 = -42;
   constexpr int VALUE_2 = 42;
   constexpr int N = 256;
+  const int HOST_ID = axom::getUmpireResourceAllocatorID(umpire::resource::Host);
 
   // STEP 1: set default allocator for the execution space
   const int currentAllocatorID = axom::getDefaultAllocatorID();
@@ -50,9 +51,12 @@ void check_for_all()
   }
 
   // STEP 2: check array
+  int* a_host = axom::allocate<int>(N, HOST_ID);
+  axom::copy(a_host, a, N * sizeof(int));
+
   for(int i = 0; i < N; ++i)
   {
-    EXPECT_EQ(a[i], VALUE_1);
+    EXPECT_EQ(a_host[i], VALUE_1);
   }
 
   // STEP 3: add VALUE_2 to all entries resulting to zero
@@ -67,13 +71,16 @@ void check_for_all()
   }
 
   // STEP 4: check result
+  axom::copy(a_host, a, N * sizeof(int));
+
   for(int i = 0; i < N; ++i)
   {
-    EXPECT_EQ(a[i], 0);
+    EXPECT_EQ(a_host[i], 0);
   }
 
   // STEP 5: cleanup
   axom::deallocate(a);
+  axom::deallocate(a_host);
 
   axom::setDefaultAllocator(currentAllocatorID);
 }
