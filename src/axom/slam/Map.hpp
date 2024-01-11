@@ -90,11 +90,17 @@ public:
   class MapBuilder;
 
   // types for iterator
+  template <bool Const>
   class MapIterator;
-  using const_iterator = MapIterator;
+  using const_iterator = MapIterator<true>;
   using const_iterator_pair = std::pair<const_iterator, const_iterator>;
-  using iterator = const_iterator;
-  using iterator_pair = const_iterator_pair;
+  using iterator = MapIterator<false>;
+  using iterator_pair = std::pair<iterator, iterator>;
+
+  template <bool Const>
+  class MapRangeIterator;
+  using const_range_iterator = MapRangeIterator<true>;
+  using range_iterator = MapRangeIterator<false>;
 
 public:
   using ConcreteMap = Map<T, S, IndPol, StrPol, policies::ConcreteInterface>;
@@ -399,11 +405,14 @@ public:
    * \brief An iterator type for a map. Each increment operation advances the
    *        iterator to the element at the next flat index.
    */
-  class MapIterator : public IteratorBase<MapIterator, SetPosition>
+  template <bool Const>
+  class MapIterator : public IteratorBase<MapIterator<Const>, SetPosition>
   {
   public:
     using iterator_category = std::random_access_iterator_tag;
-    using value_type = DataType;
+    using value_type = std::conditional_t<Const, const DataType, DataType>;
+    using reference_type = value_type&;
+    using pointer_type = value_type*;
     using difference_type = SetPosition;
 
     using IterBase = IteratorBase<MapIterator, SetPosition>;
@@ -417,7 +426,7 @@ public:
     /**
      * \brief Returns the current iterator value.
      */
-    DataType& operator*() { return (*m_mapPtr)[m_pos]; }
+    reference_type operator*() { return (*m_mapPtr)[m_pos]; }
 
   protected:
     /** Implementation of advance() as required by IteratorBase */
@@ -443,16 +452,20 @@ public:
    *          the currently pointed to element (where 0 <= j < numComp()).\n
    *          For example: `iter[off]` is the same as `(iter+off)(0)`
    */
-  class MapRangeIterator : public IteratorBase<MapIterator, SetPosition>
+  template <bool Const>
+  class MapRangeIterator
+    : public IteratorBase<MapRangeIterator<Const>, SetPosition>
   {
   public:
-    using IterBase = IteratorBase<MapIterator, SetPosition>;
-    using iter = MapIterator;
+    using IterBase = IteratorBase<MapRangeIterator, SetPosition>;
+    using DataConstType = std::conditional_t<Const, const DataType, DataType>;
     using PositionType = SetPosition;
     using IterBase::m_pos;
 
     using iterator_category = std::random_access_iterator_tag;
-    using value_type = axom::ArrayView<DataType>;
+    using value_type = axom::ArrayView<DataConstType>;
+    using reference_type = value_type&;
+    using pointer_type = value_type*;
     using difference_type = SetPosition;
 
   public:
@@ -475,11 +488,14 @@ public:
      *        Returns the first component if comp_idx is not specified.
      * \param comp_idx  Zero-based index of the component.
      */
-    DataType& operator()(SetPosition comp_idx) const
+    DataConstType& operator()(SetPosition comp_idx) const
     {
       return (*m_mapPtr)(m_pos, comp_idx);
     }
-    DataType& operator[](PositionType n) const { return (*this).flatIndex(n); }
+    DataConstType& operator[](PositionType n) const
+    {
+      return (*this).flatIndex(n);
+    }
 
     /** \brief Returns the number of components per element in the Map. */
     PositionType numComp() const { return m_mapPtr->stride(); }
@@ -493,22 +509,32 @@ public:
   };
 
 public:  // Functions related to iteration
-  MapIterator begin() { return MapIterator(0, this); }
-  MapIterator end()
+  iterator begin() { return iterator(0, this); }
+  iterator end() { return iterator(size() * StridePolicyType::stride(), this); }
+  const_iterator begin() const { return const_iterator(0, this); }
+  const_iterator end() const
   {
-    return MapIterator(size() * StridePolicyType::stride(), this);
+    return const_iterator(size() * StridePolicyType::stride(), this);
   }
 
-  RangeAdapter<MapIterator> range() const
+  RangeAdapter<iterator> range() const
   {
-    return RangeAdapter<MapIterator> {begin(), end()};
+    return RangeAdapter<iterator> {begin(), end()};
   }
 
-  MapRangeIterator set_begin() { return MapRangeIterator(0, this); }
-  MapRangeIterator set_end() { return MapRangeIterator(size(), this); }
-  RangeAdapter<MapRangeIterator> set_elements()
+  range_iterator set_begin() { return range_iterator(0, this); }
+  range_iterator set_end() { return range_iterator(size(), this); }
+  const_range_iterator set_begin() const
   {
-    return RangeAdapter<MapRangeIterator> {set_begin(), set_end()};
+    return const_range_iterator(0, this);
+  }
+  const_range_iterator set_end() const
+  {
+    return const_range_iterator(size(), this);
+  }
+  RangeAdapter<range_iterator> set_elements()
+  {
+    return RangeAdapter<range_iterator> {set_begin(), set_end()};
   }
 
 public:
