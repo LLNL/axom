@@ -385,6 +385,33 @@ void constructAndTestBivariateMapIterator(int stride)
       }
     }
   }
+  SLIC_INFO("Checking the elements with BivariateMap flat iterator.");
+  {
+    auto iter = m.begin();
+    auto flat_idx = 0;
+
+    for(auto idx1 = 0; idx1 < m.firstSetSize(); ++idx1)
+    {
+      for(auto idx2 = 0; idx2 < m.secondSetSize(); ++idx2)
+      {
+        for(auto i = 0; i < stride; i++)
+        {
+          // Check validity of indexing
+          EXPECT_EQ(iter.firstIndex(), idx1);
+          EXPECT_EQ(iter.secondIndex(), idx2);
+          EXPECT_EQ(iter.compIndex(), i);
+          EXPECT_NE(iter, m.end());
+
+          // Check equality of values
+          DataType val = getVal<DataType>(idx1, idx2, i);
+          EXPECT_EQ(val, *iter);
+
+          iter++;
+          flat_idx++;
+        }
+      }
+    }
+  }
 
   SLIC_INFO("Checking the elements with BivariateMap range iterator.");
   {
