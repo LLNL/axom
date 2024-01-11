@@ -330,7 +330,7 @@ void various_traversal_methods(int nmats,
     auto map2d = mm.get2dField<double>("CellMat Array");
     for(int i = 0; i < mm.getNumberOfCells() /*map2d.firstSetSize()*/; i++)
     {
-      for(auto iter = map2d.begin(i); iter != map2d.end(i); iter++)
+      for(auto iter = map2d.set_begin(i); iter != map2d.set_end(i); iter++)
       {
         // int idx = iter.index(); get the index
         for(int comp = 0; comp < map2d.numComp(); ++comp)
@@ -338,8 +338,7 @@ void various_traversal_methods(int nmats,
           sum += iter(comp);                            //<----
           SLIC_ASSERT(iter(comp) == iter.value(comp));  //value()
         }
-        SLIC_ASSERT(iter(0) == *iter);  //2 ways to get the first component
-        SLIC_ASSERT(iter(0) == iter.value());
+        SLIC_ASSERT(iter(0) == iter.value(0));
       }
     }
   }
