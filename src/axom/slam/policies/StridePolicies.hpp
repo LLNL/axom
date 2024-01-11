@@ -107,32 +107,7 @@ struct CompileTimeStride
  * \brief A policy class for a set with stride one (i.e. the default stride)
  */
 template <typename IntType>
-struct StrideOne
-{
-  static const IntType DEFAULT_VALUE;
-  static const bool IS_COMPILE_TIME = true;
-
-  /**
-   * This constructor only exists to allow the derived class to not have
-   * to specialize for when the stride is known at compile time
-   */
-  AXOM_HOST_DEVICE StrideOne(IntType val = DEFAULT_VALUE) { setStride(val); }
-
-  AXOM_HOST_DEVICE inline const IntType stride() const { return DEFAULT_VALUE; }
-  inline const IntType operator()() const { return stride(); }
-
-  AXOM_HOST_DEVICE void setStride(IntType AXOM_DEBUG_PARAM(val))
-  {
-    SLIC_ASSERT_MSG(
-      val == DEFAULT_VALUE,
-      "slam::StrideOne policy -- tried to set a stride-one StridePolicy"
-        << " with value (" << val << "), but should always be 1.");
-  }
-  inline bool isValid(bool) const { return true; }
-};
-
-template <typename IntType>
-const IntType StrideOne<IntType>::DEFAULT_VALUE = IntType {1};
+using StrideOne = CompileTimeStride<IntType, 1>;
 
 /// \}
 
