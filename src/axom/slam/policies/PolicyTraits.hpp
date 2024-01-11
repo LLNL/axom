@@ -53,15 +53,6 @@ struct StrideToSize<CompileTimeStride<IntType, IntType(VAL)>, IntType, VAL>
 };
 
 /**
- * \brief Specialization of StrideToSize trait for a StrideOne type
- */
-template <typename IntType>
-struct StrideToSize<StrideOne<IntType>, IntType>
-{
-  using SizeType = CompileTimeSize<IntType, StrideOne<IntType>::DEFAULT_VALUE>;
-};
-
-/**
  * \brief Type traits for null sets.
  *
  * The null pointer for most sets is nullptr
