@@ -718,7 +718,7 @@ private:
   using difference_type = SetPosition;
 
 public:
-  using DataRefType = std::conditional_t<Const, const DataType&, DataType&>;
+  using DataRefType = typename MapIterator::DataRefType;
   using BivariateMapPtr =
     std::conditional_t<Const, const BivariateMap*, BivariateMap*>;
 

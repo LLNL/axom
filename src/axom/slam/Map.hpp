@@ -409,9 +409,12 @@ public:
   class MapIterator : public IteratorBase<MapIterator<Const>, SetPosition>
   {
   public:
+    using DataRefType = std::conditional_t<Const, ConstValueType, ValueType>;
+    using DataType = std::remove_reference_t<DataRefType>;
+
     using iterator_category = std::random_access_iterator_tag;
-    using value_type = std::conditional_t<Const, const DataType, DataType>;
-    using reference_type = value_type&;
+    using value_type = DataType;
+    using reference_type = DataRefType;
     using pointer_type = value_type*;
     using difference_type = SetPosition;
 
@@ -458,12 +461,15 @@ public:
   {
   public:
     using IterBase = IteratorBase<MapRangeIterator, SetPosition>;
-    using DataConstType = std::conditional_t<Const, const DataType, DataType>;
+
+    using DataRefType = std::conditional_t<Const, ConstValueType, ValueType>;
+    using DataType = std::remove_reference_t<DataRefType>;
+
     using PositionType = SetPosition;
     using IterBase::m_pos;
 
     using iterator_category = std::random_access_iterator_tag;
-    using value_type = axom::ArrayView<DataConstType>;
+    using value_type = axom::ArrayView<DataType>;
     using reference_type = value_type&;
     using pointer_type = value_type*;
     using difference_type = SetPosition;
@@ -488,11 +494,11 @@ public:
      *        Returns the first component if comp_idx is not specified.
      * \param comp_idx  Zero-based index of the component.
      */
-    DataConstType& operator()(SetPosition comp_idx) const
+    DataRefType operator()(SetPosition comp_idx) const
     {
       return (*m_mapPtr)(m_pos, comp_idx);
     }
-    DataConstType& operator[](PositionType n) const
+    DataRefType operator[](PositionType n) const
     {
       return (*this).flatIndex(n);
     }
