@@ -427,31 +427,62 @@ void bSetTraverseTest(slam::BivariateSet<S1, S2>* bset, bool shouldCheckMod)
     SLIC_INFO(sstr.str() << "}");
   }
 
-  DerivedSetType* derivedSet = static_cast<DerivedSetType*>(bset);
+  SLIC_INFO(
+    "Flat traversal through virtual bivariate set:\n       "
+    "----------------------");
 
-  SLIC_INFO("Flat traversal:\n       ----------------------");
-
-  std::stringstream sstr;
-
-  // Iterate through the bivariate set as a list of indexes (i, j) in {S1, S2}
-  int flatIndex = 0;
-  for(auto bsetElem = derivedSet->begin(); bsetElem != derivedSet->end();
-      ++bsetElem)
   {
-    EXPECT_EQ(flatIndex, bsetElem.flatIndex());
-    EXPECT_EQ(flatIndex,
-              derivedSet->findElementFlatIndex(bsetElem.firstIndex(),
-                                               bsetElem.secondIndex()));
-    EXPECT_EQ(bsetElem.firstIndex(), derivedSet->flatToFirstIndex(flatIndex));
-    EXPECT_EQ(bsetElem.secondIndex(), derivedSet->flatToSecondIndex(flatIndex));
+    std::stringstream sstr;
 
-    sstr << flatIndex << ": (" << firstSet->at(bsetElem.firstIndex()) << ","
-         << secondSet->at(bsetElem.secondIndex()) << "), ";
+    // Iterate through the bivariate set as a list of indexes (i, j) in {S1, S2}
+    int flatIndex = 0;
+    for(auto bsetElem = bset->begin(); bsetElem != bset->end(); ++bsetElem)
+    {
+      EXPECT_EQ(flatIndex, bsetElem.flatIndex());
+      EXPECT_EQ(flatIndex,
+                bset->findElementFlatIndex(bsetElem.firstIndex(),
+                                           bsetElem.secondIndex()));
+      EXPECT_EQ(bsetElem.firstIndex(), bset->flatToFirstIndex(flatIndex));
+      EXPECT_EQ(bsetElem.secondIndex(), bset->flatToSecondIndex(flatIndex));
 
-    flatIndex++;
+      sstr << flatIndex << ": (" << firstSet->at(bsetElem.firstIndex()) << ","
+           << secondSet->at(bsetElem.secondIndex()) << "), ";
+
+      flatIndex++;
+    }
+
+    SLIC_INFO("{ " << sstr.str() << " }");
   }
 
-  SLIC_INFO("{ " << sstr.str() << " }");
+  DerivedSetType* derivedSet = static_cast<DerivedSetType*>(bset);
+
+  SLIC_INFO(
+    "Flat traversal through derived bivariate set:\n       "
+    "----------------------");
+
+  {
+    std::stringstream sstr;
+
+    // Iterate through the bivariate set as a list of indexes (i, j) in {S1, S2}
+    int flatIndex = 0;
+    for(auto bsetElem = derivedSet->begin(); bsetElem != derivedSet->end();
+        ++bsetElem)
+    {
+      EXPECT_EQ(flatIndex, bsetElem.flatIndex());
+      EXPECT_EQ(flatIndex,
+                derivedSet->findElementFlatIndex(bsetElem.firstIndex(),
+                                                 bsetElem.secondIndex()));
+      EXPECT_EQ(bsetElem.firstIndex(), derivedSet->flatToFirstIndex(flatIndex));
+      EXPECT_EQ(bsetElem.secondIndex(), derivedSet->flatToSecondIndex(flatIndex));
+
+      sstr << flatIndex << ": (" << firstSet->at(bsetElem.firstIndex()) << ","
+           << secondSet->at(bsetElem.secondIndex()) << "), ";
+
+      flatIndex++;
+    }
+
+    SLIC_INFO("{ " << sstr.str() << " }");
+  }
 }
 
 TYPED_TEST(BivariateSetTester, traverse)
