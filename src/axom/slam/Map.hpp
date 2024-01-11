@@ -294,6 +294,27 @@ public:
     return IndirectionPolicy::getIndirection(m_data, setIndex);
   }
 
+  AXOM_HOST_DEVICE ConstValueType value(SetPosition setIdx,
+                                        SetPosition comp = 0) const
+  {
+#ifndef AXOM_DEVICE_CODE
+    verifyPositionImpl(setIdx, comp);
+#endif
+    SetPosition setIndex = setIdx * StridePolicyType::stride() + comp;
+    return IndirectionPolicy::getConstIndirection(m_data, setIndex);
+  }
+
+  AXOM_HOST_DEVICE ValueType value(SetPosition setIdx, SetPosition comp = 0)
+  {
+#ifndef AXOM_DEVICE_CODE
+    verifyPositionImpl(setIdx, comp);
+#endif
+    SetPosition setIndex = setIdx * StridePolicyType::stride() + comp;
+    return IndirectionPolicy::getIndirection(m_data, setIndex);
+  }
+
+  SetElement index(IndexType idx) const { return set()->at(idx); }
+
   /// @}
 
   /// \name Map cardinality functions
@@ -400,13 +421,57 @@ public:
     DataType m_defaultValue = DataType();
   };
 
+private:
+  /*!
+   * \class MapIteratorStorage
+   *
+   * \brief Helper class to handle storage for iterators.
+   *
+   *  When the Map is backed by a mutable buffer (std::vector or axom::Array),
+   *  access to the underlying Map is provided via a pointer. When the map is
+   *  backed by a view-like object (axom::ArrayView), we just keep a copy of the
+   *  Map by-value.
+   *
+   *  This is necessary to allow BivariateMap to return subset iterators
+   *  pointing to a temporary map. The original SubMap iterator would just keep
+   *  the SubMap by-value.
+   */
+  template <bool Const, bool IsView>
+  struct MapIteratorStorage;
+
+  template <bool Const>
+  struct MapIteratorStorage<Const, false>
+  {
+    using MapConstType = std::conditional_t<Const, const Map*, Map*>;
+    using MapRefType = std::conditional_t<Const, const Map&, Map&>;
+    MapIteratorStorage(MapConstType pMap) : m_map(pMap) { }
+
+    MapRefType map() const { return *m_map; }
+
+    MapConstType m_map;
+  };
+
+  template <bool Const>
+  struct MapIteratorStorage<Const, true>
+  {
+    using MapConstType = std::conditional_t<Const, const Map*, Map*>;
+    MapIteratorStorage(MapConstType pMap) : m_map(*pMap) { }
+
+    const Map& map() const { return m_map; }
+
+    Map m_map;
+  };
+
+public:
   /**
    * \class MapIterator
    * \brief An iterator type for a map. Each increment operation advances the
    *        iterator to the element at the next flat index.
    */
   template <bool Const>
-  class MapIterator : public IteratorBase<MapIterator<Const>, SetPosition>
+  class MapIterator
+    : public IteratorBase<MapIterator<Const>, SetPosition>,
+      MapIteratorStorage<Const, !IndirectionPolicy::IsMutableBuffer>
   {
   public:
     using DataRefType = std::conditional_t<Const, ConstValueType, ValueType>;
@@ -419,24 +484,36 @@ public:
     using difference_type = SetPosition;
 
     using IterBase = IteratorBase<MapIterator, SetPosition>;
+    using MapStorage =
+      MapIteratorStorage<Const, !IndirectionPolicy::IsMutableBuffer>;
     using iter = MapIterator;
     using PositionType = SetPosition;
     using IterBase::m_pos;
 
   public:
-    MapIterator(PositionType pos, Map* oMap) : IterBase(pos), m_mapPtr(oMap) { }
+    MapIterator(PositionType pos, Map* oMap) : IterBase(pos), MapStorage(oMap)
+    { }
 
     /**
      * \brief Returns the current iterator value.
      */
-    reference_type operator*() { return (*m_mapPtr)[m_pos]; }
+    reference_type operator*() { return this->map()[m_pos]; }
+
+    /// \brief Returns the set element mapped by this iterator.
+    SetElement index() const
+    {
+      return this->map().index(this->m_pos / this->map().numComp());
+    }
+
+    /// \brief Returns the component index pointed to by this iterator.
+    PositionType compIndex() const { return m_pos % this->map().numComp(); }
+
+    /// \brief Returns the flat index pointed to by this iterator.
+    SetPosition flatIndex() const { return this->m_pos; }
 
   protected:
     /** Implementation of advance() as required by IteratorBase */
     void advance(PositionType n) { m_pos += n; }
-
-  protected:
-    Map* m_mapPtr;
   };
 
   /**
@@ -457,10 +534,13 @@ public:
    */
   template <bool Const>
   class MapRangeIterator
-    : public IteratorBase<MapRangeIterator<Const>, SetPosition>
+    : public IteratorBase<MapRangeIterator<Const>, SetPosition>,
+      MapIteratorStorage<Const, !IndirectionPolicy::IsMutableBuffer>
   {
   public:
     using IterBase = IteratorBase<MapRangeIterator, SetPosition>;
+    using MapStorage =
+      MapIteratorStorage<Const, !IndirectionPolicy::IsMutableBuffer>;
 
     using DataRefType = std::conditional_t<Const, ConstValueType, ValueType>;
     using DataType = std::remove_reference_t<DataRefType>;
@@ -477,7 +557,7 @@ public:
   public:
     MapRangeIterator(PositionType pos, Map* oMap)
       : IterBase(pos)
-      , m_mapPtr(oMap)
+      , MapStorage(oMap)
     { }
 
     /**
@@ -485,8 +565,8 @@ public:
      */
     value_type operator*()
     {
-      return value_type {m_mapPtr->data().data() + m_pos * m_mapPtr->stride(),
-                         m_mapPtr->stride()};
+      return value_type {this->map().data().data() + m_pos * this->map().stride(),
+                         this->map().stride()};
     }
 
     /**
@@ -496,22 +576,26 @@ public:
      */
     DataRefType operator()(SetPosition comp_idx) const
     {
-      return (*m_mapPtr)(m_pos, comp_idx);
+      return value(comp_idx);
     }
-    DataRefType operator[](PositionType n) const
+    DataRefType value(PositionType comp_idx) const
     {
-      return (*this).flatIndex(n);
+      return this->map()(m_pos, comp_idx);
     }
+    value_type operator[](PositionType n) const { return *(*this + n); }
+
+    /// \brief Returns the set element mapped by this iterator.
+    SetElement index() const { return this->map().index(this->m_pos); }
+
+    /// \brief Returns the flat index pointed to by this iterator.
+    SetPosition flatIndex() const { return this->m_pos; }
 
     /** \brief Returns the number of components per element in the Map. */
-    PositionType numComp() const { return m_mapPtr->stride(); }
+    PositionType numComp() const { return this->map().stride(); }
 
   protected:
     /** Implementation of advance() as required by IteratorBase */
     void advance(PositionType n) { m_pos += n; }
-
-  protected:
-    Map* m_mapPtr;
   };
 
 public:  // Functions related to iteration
