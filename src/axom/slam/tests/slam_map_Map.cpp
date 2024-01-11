@@ -305,8 +305,6 @@ void constructAndTestMapIteratorWithStride(int stride)
 {
   using RealMap =
     slam::Map<double, slam::Set<>, VecIndirection<double>, StrideType>;
-  using MapIterator = typename RealMap::MapIterator;
-  using MapRangeIterator = typename RealMap::MapRangeIterator;
 
   SetType s(MAX_SET_SIZE);
 
