@@ -376,7 +376,7 @@ void various_traversal_methods(int nmats,
   timer.start();
   {
     auto map2d = mm.get2dField<double>("CellMat Array");
-    for(auto iter = map2d.begin(); iter != map2d.end(); ++iter)
+    for(auto iter = map2d.set_begin(); iter != map2d.set_end(); ++iter)
     {
       //get the indices
       //int cell_id = iter.firstIndex();
@@ -387,7 +387,6 @@ void various_traversal_methods(int nmats,
         SLIC_ASSERT(val == iter.value(comp));  //another way to get the value
         sum += val;
       }
-      SLIC_ASSERT(iter(0) == *iter);  //2 ways to get the first component value
       SLIC_ASSERT(iter(0) == iter.value());
     }
   }
