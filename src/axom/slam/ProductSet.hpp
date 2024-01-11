@@ -317,36 +317,36 @@ private:
   using BaseType = IteratorBase<Iterator, IndexType>;
 
 public:
-  using difference_type = IndexType;
-  using value_type = std::pair<IndexType, IndexType>;
+  using SetIndex = typename ProductSetType::PositionType;
+
+  using difference_type = SetIndex;
+  using value_type = std::pair<SetIndex, SetIndex>;
   using reference = value_type&;
   using pointer = value_type*;
   using iterator_category = std::random_access_iterator_tag;
 
-  using IndexType = typename ProductSetType::PositionType;
-
-  Iterator(const ProductSetType* bset, IndexType pos = 0)
+  Iterator(const ProductSetType* bset, SetIndex pos = 0)
     : BaseType(pos)
     , m_bset(bset)
   { }
 
-  std::pair<IndexType, IndexType> operator*() const
+  std::pair<SetIndex, SetIndex> operator*() const
   {
     return {m_bset->flatToFirstIndex(this->m_pos),
             m_bset->flatToSecondIndex(this->m_pos)};
   }
 
   /// \brief Return the first set index pointed to by this iterator.
-  IndexType firstIndex() const { return m_bset->flatToFirstIndex(this->m_pos); }
+  SetIndex firstIndex() const { return m_bset->flatToFirstIndex(this->m_pos); }
 
   /// \brief Return the second set index pointed to by this iterator.
-  IndexType secondIndex() const
+  SetIndex secondIndex() const
   {
     return m_bset->flatToSecondIndex(this->m_pos);
   }
 
   /// \brief Return the flat iteration index of this iterator.
-  IndexType flatIndex() const { return this->m_pos; }
+  SetIndex flatIndex() const { return this->m_pos; }
 
 protected:
   void advance(IndexType n) { this->m_pos += n; }
