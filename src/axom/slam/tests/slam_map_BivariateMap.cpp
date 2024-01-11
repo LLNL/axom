@@ -369,16 +369,35 @@ void constructAndTestBivariateMapIterator(int stride)
       }
     }
   }
+  SLIC_INFO("Checking the elements with SubMap flat iterator.");
+  for(auto idx1 = 0; idx1 < m.firstSetSize(); ++idx1)
+  {
+    auto iter = m.begin(idx1);
+    for(auto idx2 = 0; idx2 < m.secondSetSize(); idx2++)
+    {
+      for(auto i = 0; i < stride; i++)
+      {
+        // Check iterator validity.
+        EXPECT_EQ(iter.index(), idx2);
+        EXPECT_EQ(iter.compIndex(), i);
+        EXPECT_NE(iter, m.end(idx1));
 
-  SLIC_INFO("Checking the elements with SubMap iterator.");
+        // Check iterator data.
+        EXPECT_EQ(*iter, getVal<DataType>(idx1, idx2, i));
+
+        iter++;
+      }
+    }
+  }
+
+  SLIC_INFO("Checking the elements with SubMap range iterator.");
   for(auto idx1 = 0; idx1 < m.firstSetSize(); ++idx1)
   {
     int idx2 = 0;
-    auto begin_iter = m.begin(idx1);
-    for(auto iter = m.begin(idx1); iter != m.end(idx1); ++iter, ++idx2)
+    auto begin_iter = m.set_begin(idx1);
+    for(auto iter = m.set_begin(idx1); iter != m.set_end(idx1); ++iter, ++idx2)
     {
-      EXPECT_EQ(begin_iter[idx2], getVal<DataType>(idx1, idx2));
-      EXPECT_EQ(*iter, getVal<DataType>(idx1, idx2));
+      EXPECT_EQ(begin_iter[idx2], *iter);
       for(auto i = 0; i < iter.numComp(); i++)
       {
         EXPECT_EQ(iter(i), getVal<DataType>(idx1, idx2, i));
