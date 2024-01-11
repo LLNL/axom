@@ -389,9 +389,9 @@ void constructAndTestBivariateMapIterator(int stride)
   SLIC_INFO("Checking the elements with BivariateMap iterator.");
   {
     auto iter = m.begin();
-    auto begin_iter = m.begin();
-    auto end_iter = m.end();
-    auto inval_iter = end_iter + 1;
+    //auto begin_iter = m.begin();
+    //auto end_iter = m.end();
+    //auto inval_iter = end_iter + 1;
     auto flat_idx = 0;
     for(auto idx1 = 0; idx1 < m.firstSetSize(); ++idx1)
     {
@@ -405,9 +405,10 @@ void constructAndTestBivariateMapIterator(int stride)
           DataType val = getVal<DataType>(idx1, idx2, i);
           EXPECT_EQ(iter.value(i), val);
           EXPECT_EQ(iter(i), val);
-          EXPECT_EQ((begin_iter + flat_idx).value(i), val);
-          EXPECT_EQ((end_iter - (m.totalSize() - flat_idx)).value(i), val);
-          EXPECT_EQ((inval_iter - (m.totalSize() - flat_idx + 1)).value(i), val);
+          // Below disabled because we can't test these with just a forward access iterator
+          //EXPECT_EQ((begin_iter + flat_idx).value(i), val);
+          //EXPECT_EQ((end_iter - (m.totalSize() - flat_idx)).value(i), val);
+          //EXPECT_EQ((inval_iter - (m.totalSize() - flat_idx + 1)).value(i), val);
         }
         iter++;
         flat_idx++;

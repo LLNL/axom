@@ -354,6 +354,24 @@ public:
   }
 
   /**
+   * \brief Access the value associated with the given FlatIndex into the
+   *        BivariateSet and the component index.
+   *
+   * \pre `0 <= flatIndex < size()`
+   * \pre `0 <= comp < numComp()`
+   */
+  AXOM_HOST_DEVICE ConstValueType flatValue(SetPosition flatIndex,
+                                            SetPosition comp = 0) const
+  {
+    return useCompIndexing() ? m_map(flatIndex, comp) : m_map[flatIndex];
+  }
+
+  AXOM_HOST_DEVICE ValueType flatValue(SetPosition flatIndex, SetPosition comp = 0)
+  {
+    return useCompIndexing() ? m_map(flatIndex, comp) : m_map[flatIndex];
+  }
+
+  /**
    * \brief Access the value associated with the given DenseIndex into the
    *        BivariateSet and the component index.
    *
@@ -469,15 +487,12 @@ public:
    */
   template <bool Const>
   class BivariateMapIterator
-    : public IteratorBase<BivariateMapIterator<Const>, SetPosition>
   {
   private:
-    using iterator_category = std::random_access_iterator_tag;
+    using iterator_category = std::forward_iterator_tag;
     using value_type = DataType;
     using difference_type = SetPosition;
 
-    using IterBase = IteratorBase<BivariateMapIterator, SetPosition>;
-    using IterBase::m_pos;
     using iter = BivariateMapIterator;
 
   public:
@@ -493,18 +508,26 @@ public:
      * \brief Construct a new BivariateMap Iterator given an ElementFlatIndex
      */
     BivariateMapIterator(BivariateMapPtr sMap, PositionType pos)
-      : IterBase(pos)
-      , m_map(sMap)
-      , firstIdx(INVALID_POS)
-      , secondIdx(INVALID_POS)
-      , secondSparseIdx(INVALID_POS)
+      : m_map(sMap)
+      , m_bsetIterator(m_map->set(), pos)
+    { }
+
+    BivariateMapIterator& operator++()
     {
-      find_indices(pos);
+      m_bsetIterator++;
+      return *this;
+    }
+
+    BivariateMapIterator operator++(int)
+    {
+      BivariateMapIterator next = *this;
+      ++(*this);
+      return next;
     }
 
     bool operator==(const iter& other) const
     {
-      return (m_map == other.m_map) && (m_pos == other.m_pos);
+      return (m_map == other.m_map) && (m_bsetIterator == other.m_bsetIterator);
     }
     bool operator!=(const iter& other) const { return !operator==(other); }
 
@@ -513,7 +536,7 @@ public:
      *        multiple components, this will return the first component.
      *        To access the other components, use iter(comp)
      */
-    DataRefType operator*() { return (*m_map)(firstIdx, secondIdx, 0); }
+    DataRefType operator*() { return value(0); }
 
     /**
      * \brief Returns the iterator's value at the specified component.
@@ -522,7 +545,7 @@ public:
      */
     DataRefType operator()(PositionType comp_idx = 0)
     {
-      return (*m_map)(firstIdx, secondIdx, comp_idx);
+      return value(comp_idx);
     }
 
     /** \brief Returns the first component value after n increments.  */
@@ -533,114 +556,26 @@ public:
      */
     DataRefType value(PositionType comp = 0)
     {
-      return (*m_map)(firstIdx, secondIdx, comp);
+      return m_map->flatValue(m_bsetIterator.flatIndex(), comp);
     }
 
     /**
      * \brief return the current iterator's first index into the BivariateSet
      */
-    PositionType firstIndex() const { return firstIdx; }
+    PositionType firstIndex() const { return m_bsetIterator.firstIndex(); }
 
     /**
      * \brief return the current iterator's second index (DenseIndex)
      *        into the BivariateSet
      */
-    PositionType secondIndex() const { return m_map->set()->at(m_pos); }
+    PositionType secondIndex() const { return m_bsetIterator.secondIndex(); }
 
     /** \brief Returns the number of components per element in the map. */
     PositionType numComp() const { return m_map->numComp(); }
 
   private:
-    /** Given the ElementFlatIndex, search for and update the other indices.
-     *  This function does not depend on the three indices to be correct. */
-    void find_indices(PositionType pos)
-    {
-      if(pos < 0 || pos > m_map->totalSize())
-      {
-        firstIdx = INVALID_POS;
-        secondIdx = INVALID_POS;
-        secondSparseIdx = INVALID_POS;
-        return;
-      }
-      else if(pos == m_map->totalSize())
-      {
-        firstIdx = m_map->firstSetSize();
-        secondIdx = 0;
-        secondSparseIdx = 0;
-        return;
-      }
-
-      firstIdx = 0;
-      PositionType beginIdx = 0;
-      while(beginIdx + m_map->set()->size(firstIdx) <= pos)
-      {
-        beginIdx += m_map->set()->size(firstIdx);
-        firstIdx++;
-      }
-
-      SLIC_ASSERT(firstIdx < m_map->firstSetSize());
-      secondIdx = m_map->set()->at(pos);
-      secondSparseIdx = pos - beginIdx;
-    }
-
-    /* recursive helper function for advance(n) to update the three indices.
-     * This is an updating function, which assumes the pre-advance state is
-     * valid, i.e. the three indices were correct prior to advance(n).
-     * It will recurse as many times as the change in firstIdx. */
-    void advance_helper(PositionType n, PositionType idx1, PositionType idx2)
-    {
-      const BivariateSetType* set = m_map->set();
-      if(idx2 + n < 0)
-      {
-        advance_helper(n + (idx2 + 1), idx1 - 1, set->size(idx1 - 1) - 1);
-      }
-      else if(idx2 + n >= set->size(idx1))
-      {
-        advance_helper(n - (set->size(idx1) - idx2), idx1 + 1, 0);
-      }
-      else
-      {
-        firstIdx = idx1;
-        secondSparseIdx = idx2 + n;
-        secondIdx = m_map->set()->at(m_pos);
-      }
-    }
-
-  protected:
-    /** Implementation of advance() as required by IteratorBase.
-     *  It updates the three other indices as well. */
-    void advance(PositionType n)
-    {
-      m_pos += n;
-      PositionType size = m_map->totalSize();
-
-      if(firstIdx == INVALID_POS)
-      {  //iterator was in an invalid position. search for the indices.
-        find_indices(m_pos);
-      }
-      else if(m_pos == size)
-      {
-        firstIdx = m_map->firstSetSize();
-        secondIdx = 0;
-        secondSparseIdx = 0;
-      }
-      else if(m_pos < 0 || m_pos > size)
-      {
-        firstIdx = INVALID_POS;
-        secondIdx = INVALID_POS;
-        secondSparseIdx = INVALID_POS;
-      }
-      else
-      {
-        advance_helper(n, firstIdx, secondSparseIdx);
-      }
-    }
-
-  private:
     BivariateMapPtr m_map;
-    PositionType firstIdx;
-    PositionType secondIdx;
-    PositionType secondSparseIdx;
+    typename BivariateSetType::IteratorType m_bsetIterator;
   };
 
 public:
