@@ -2000,52 +2000,64 @@ bool Group::load(const std::string& path,
   {
     Node n;
     checkConduitCall([&] { conduit::relay::io::load(path, "hdf5", n); });
-    SLIC_ASSERT_MSG(n.has_path("sidre"),
-                    SIDRE_GROUP_LOG_PREPEND
-                      << "Conduit Node " << n.path() << " does not have sidre "
-                      << "data for this Group " << getPathName() << ".");
-    importFrom(n["sidre"], preserve_contents);
-    if(n.has_path("sidre_group_name"))
+    if (!getDataStore()->getConduitErrorOccurred())
     {
-      name_from_file = n["sidre_group_name"].as_string();
+        SLIC_ASSERT_MSG(n.has_path("sidre"),
+            SIDRE_GROUP_LOG_PREPEND
+            << "Conduit Node " << n.path() << " does not have sidre "
+            << "data for this Group " << getPathName() << ".");
+        importFrom(n["sidre"], preserve_contents);
+        if (n.has_path("sidre_group_name"))
+        {
+            name_from_file = n["sidre_group_name"].as_string();
+        }
     }
   }
   else if(protocol == "sidre_conduit_json")
   {
     Node n;
     checkConduitCall([&] { conduit::relay::io::load(path, "conduit_json", n); });
-    SLIC_ASSERT_MSG(n.has_path("sidre"),
-                    SIDRE_GROUP_LOG_PREPEND
-                      << "Conduit Node " << n.path() << " does not have sidre "
-                      << "data for Group " << getPathName() << ".");
-    importFrom(n["sidre"], preserve_contents);
-    if(n.has_path("sidre_group_name"))
+    if (!getDataStore()->getConduitErrorOccurred())
     {
-      name_from_file = n["sidre_group_name"].as_string();
+        SLIC_ASSERT_MSG(n.has_path("sidre"),
+            SIDRE_GROUP_LOG_PREPEND
+            << "Conduit Node " << n.path() << " does not have sidre "
+            << "data for Group " << getPathName() << ".");
+        importFrom(n["sidre"], preserve_contents);
+        if (n.has_path("sidre_group_name"))
+        {
+            name_from_file = n["sidre_group_name"].as_string();
+        }
     }
   }
   else if(protocol == "sidre_json")
   {
     Node n;
     checkConduitCall([&] { conduit::relay::io::load(path, "json", n); });
-    SLIC_ASSERT_MSG(n.has_path("sidre"),
-                    SIDRE_GROUP_LOG_PREPEND
-                      << "Conduit Node " << n.path() << " does not have sidre "
-                      << "data for Group " << getPathName() << ".");
-    importFrom(n["sidre"], preserve_contents);
-    if(n.has_path("sidre_group_name"))
+    if (!getDataStore()->getConduitErrorOccurred())
     {
-      name_from_file = n["sidre_group_name"].as_string();
+        SLIC_ASSERT_MSG(n.has_path("sidre"),
+            SIDRE_GROUP_LOG_PREPEND
+            << "Conduit Node " << n.path() << " does not have sidre "
+            << "data for Group " << getPathName() << ".");
+        importFrom(n["sidre"], preserve_contents);
+        if (n.has_path("sidre_group_name"))
+        {
+            name_from_file = n["sidre_group_name"].as_string();
+        }
     }
   }
   else if(protocol == "conduit_hdf5")
   {
     Node n;
     checkConduitCall([&] { conduit::relay::io::load(path, "hdf5", n); });
-    importConduitTree(n, preserve_contents);
-    if(n.has_path("sidre_group_name"))
+    if (!getDataStore()->getConduitErrorOccurred())
     {
-      name_from_file = n["sidre_group_name"].as_string();
+        importConduitTree(n, preserve_contents);
+        if (n.has_path("sidre_group_name"))
+        {
+            name_from_file = n["sidre_group_name"].as_string();
+        }
     }
   }
   else if(protocol == "conduit_bin" || protocol == "conduit_json" ||
@@ -2053,10 +2065,13 @@ bool Group::load(const std::string& path,
   {
     Node n;
     checkConduitCall([&] { conduit::relay::io::load(path, protocol, n); });
-    importConduitTree(n, preserve_contents);
-    if(n.has_path("sidre_group_name"))
+    if (!getDataStore()->getConduitErrorOccurred())
     {
-      name_from_file = n["sidre_group_name"].as_string();
+        importConduitTree(n, preserve_contents);
+        if (n.has_path("sidre_group_name"))
+        {
+            name_from_file = n["sidre_group_name"].as_string();
+        }
     }
   }
   else
@@ -2201,14 +2216,17 @@ bool Group::load(const hid_t& h5_id,
   {
     Node n;
     checkConduitCall([&] { conduit::relay::io::hdf5_read(h5_id, n); });
-    SLIC_ASSERT_MSG(n.has_path("sidre"),
-                    SIDRE_GROUP_LOG_PREPEND
-                      << "Conduit Node " << n.path() << " does not have sidre "
-                      << "data for Group " << getPathName() << ".");
-    importFrom(n["sidre"], preserve_contents);
-    if(n.has_path("sidre_group_name"))
+    if (!getDataStore()->getConduitErrorOccurred())
     {
-      name_from_file = n["sidre_group_name"].as_string();
+        SLIC_ASSERT_MSG(n.has_path("sidre"),
+            SIDRE_GROUP_LOG_PREPEND
+            << "Conduit Node " << n.path() << " does not have sidre "
+            << "data for Group " << getPathName() << ".");
+        importFrom(n["sidre"], preserve_contents);
+        if (n.has_path("sidre_group_name"))
+        {
+            name_from_file = n["sidre_group_name"].as_string();
+        }
     }
   }
   else if(protocol == "conduit_hdf5")
@@ -2216,10 +2234,13 @@ bool Group::load(const hid_t& h5_id,
     SLIC_ERROR("Protocol " << protocol << " not yet supported for file load.");
     Node n;
     checkConduitCall([&] { conduit::relay::io::hdf5_read(h5_id, n); });
-    importConduitTree(n, preserve_contents);
-    if(n.has_path("sidre_group_name"))
+    if (!getDataStore()->getConduitErrorOccurred())
     {
-      name_from_file = n["sidre_group_name"].as_string();
+        importConduitTree(n, preserve_contents);
+        if (n.has_path("sidre_group_name"))
+        {
+            name_from_file = n["sidre_group_name"].as_string();
+        }
     }
   }
   else

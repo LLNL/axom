@@ -2421,6 +2421,25 @@ TEST(sidre_group, save_restore_external_data)
     }
 
     delete ds2;
+
+    // Now try to load external from an incorrect path.  This will fail,
+    // causing loadExternalData() to return false.
+    DataStore* ds3 = new DataStore();
+    Group* root3 = ds3->getRoot();
+    root3->load(file_path, protocol);
+    View* view31 = root3->getView("external_array");
+    view31->setExternalDataPtr(foo2);
+    View* view32 = root3->getView("empty_array");
+    view32->setExternalDataPtr(foo3);
+    View* view33 = root3->getView("external_undescribed");
+    view33->setExternalDataPtr(foo2);
+    View* view34 = root3->getView("int2d");
+    view34->setExternalDataPtr(int2d2);
+
+    const std::string bad_file_path = "garbage_" + file_path;
+    EXPECT_FALSE(root3->loadExternalData(bad_file_path));
+
+    delete ds3;
   }
 }
 
@@ -2849,6 +2868,11 @@ TEST(sidre_group, save_load_all_protocols)
 
     DataStore ds_load;
     EXPECT_TRUE(ds_load.getRoot()->load(file_path, protocol));
+    EXPECT_FALSE(ds.getConduitErrorOccurred());
+    EXPECT_LT(ds.getConduitErrors().length(), 1);
+    ds.setConduitErrorOccurred(true);
+    EXPECT_TRUE(ds.getConduitErrorOccurred());
+    ds.setConduitErrorOccurred(false);
 
     SLIC_INFO("Tree from protocol: " << protocol);
     // show the result
@@ -2873,6 +2897,17 @@ TEST(sidre_group, save_load_all_protocols)
     {
       EXPECT_EQ(data_ptr[j], load_data_ptr[j]);
     }
+
+    // Fail to load on a wrong path name
+    const std::string not_file_path = "garbage_" + file_path;
+    DataStore ds_fail_load;
+    EXPECT_FALSE(ds_fail_load.getRoot()->load(not_file_path, protocol));
+    EXPECT_TRUE(ds_fail_load.getConduitErrorOccurred());
+    EXPECT_GT(ds_fail_load.getConduitErrors().length(), 0);
+    ds_fail_load.setConduitErrorOccurred(false);
+    EXPECT_FALSE(ds_fail_load.getConduitErrorOccurred());
+    ds_fail_load.clearConduitErrors();
+    EXPECT_LT(ds_fail_load.getConduitErrors().length(), 1);
   }
 
   // restore conduit default errors
