@@ -273,7 +273,9 @@ AXOM_CUDA_TEST(mint_execution_face_traversals, for_all_face_nodeids)
 
     using cuda_exec = axom::CUDA_EXEC<512>;
 
-    const int exec_space_id = axom::execution_space<cuda_exec>::allocatorID();
+    // Use unified memory
+    const int exec_space_id = axom::getUmpireResourceAllocatorID(
+      umpire::resource::MemoryResourceType::Unified);
     const int prev_allocator = axom::getDefaultAllocatorID();
     axom::setDefaultAllocator(exec_space_id);
 
@@ -291,7 +293,9 @@ AXOM_CUDA_TEST(mint_execution_face_traversals, for_all_face_nodeids)
 
     using hip_exec = axom::HIP_EXEC<512>;
 
-    const int exec_space_id = axom::execution_space<hip_exec>::allocatorID();
+    // Use unified memory
+    const int exec_space_id = axom::getUmpireResourceAllocatorID(
+      umpire::resource::MemoryResourceType::Unified);
     const int prev_allocator = axom::getDefaultAllocatorID();
     axom::setDefaultAllocator(exec_space_id);
 
@@ -335,7 +339,9 @@ AXOM_CUDA_TEST(mint_execution_face_traversals, for_all_face_coords)
 
     using cuda_exec = axom::CUDA_EXEC<512>;
 
-    const int exec_space_id = axom::execution_space<cuda_exec>::allocatorID();
+    // Use unified memory
+    const int exec_space_id = axom::getUmpireResourceAllocatorID(
+      umpire::resource::MemoryResourceType::Unified);
     const int prev_allocator = axom::getDefaultAllocatorID();
     axom::setDefaultAllocator(exec_space_id);
 
@@ -353,7 +359,9 @@ AXOM_CUDA_TEST(mint_execution_face_traversals, for_all_face_coords)
 
     using hip_exec = axom::HIP_EXEC<512>;
 
-    const int exec_space_id = axom::execution_space<hip_exec>::allocatorID();
+    // Use unified memory
+    const int exec_space_id = axom::getUmpireResourceAllocatorID(
+      umpire::resource::MemoryResourceType::Unified);
     const int prev_allocator = axom::getDefaultAllocatorID();
     axom::setDefaultAllocator(exec_space_id);
 
@@ -397,7 +405,9 @@ AXOM_CUDA_TEST(mint_execution_face_traversals, for_all_face_cellids)
 
     using cuda_exec = axom::CUDA_EXEC<512>;
 
-    const int exec_space_id = axom::execution_space<cuda_exec>::allocatorID();
+    // Use unified memory
+    const int exec_space_id = axom::getUmpireResourceAllocatorID(
+      umpire::resource::MemoryResourceType::Unified);
     const int prev_allocator = axom::getDefaultAllocatorID();
     axom::setDefaultAllocator(exec_space_id);
 
@@ -415,7 +425,9 @@ AXOM_CUDA_TEST(mint_execution_face_traversals, for_all_face_cellids)
 
     using hip_exec = axom::HIP_EXEC<512>;
 
-    const int exec_space_id = axom::execution_space<hip_exec>::allocatorID();
+    // Use unified memory
+    const int exec_space_id = axom::getUmpireResourceAllocatorID(
+      umpire::resource::MemoryResourceType::Unified);
     const int prev_allocator = axom::getDefaultAllocatorID();
     axom::setDefaultAllocator(exec_space_id);
 
@@ -460,7 +472,9 @@ AXOM_CUDA_TEST(mint_execution_face_traversals, for_all_faces_index)
 
     using cuda_exec = axom::CUDA_EXEC<512>;
 
-    const int exec_space_id = axom::execution_space<cuda_exec>::allocatorID();
+    // Use unified memory
+    const int exec_space_id = axom::getUmpireResourceAllocatorID(
+      umpire::resource::MemoryResourceType::Unified);
     const int prev_allocator = axom::getDefaultAllocatorID();
     axom::setDefaultAllocator(exec_space_id);
 
@@ -478,7 +492,9 @@ AXOM_CUDA_TEST(mint_execution_face_traversals, for_all_faces_index)
 
     using hip_exec = axom::HIP_EXEC<512>;
 
-    const int exec_space_id = axom::execution_space<hip_exec>::allocatorID();
+    // Use unified memory
+    const int exec_space_id = axom::getUmpireResourceAllocatorID(
+      umpire::resource::MemoryResourceType::Unified);
     const int prev_allocator = axom::getDefaultAllocatorID();
     axom::setDefaultAllocator(exec_space_id);
 
