@@ -306,7 +306,7 @@ spack:
     camp:
       require: "@2023.06.0"
     conduit:
-      require: "@0.8.8~shared~test~examples~utilities"
+      require: "@develop~shared~test~examples~utilities+silo"
     hdf5:
       variants: ~shared~mpi
     hypre:
