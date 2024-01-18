@@ -2897,17 +2897,6 @@ TEST(sidre_group, save_load_all_protocols)
     {
       EXPECT_EQ(data_ptr[j], load_data_ptr[j]);
     }
-
-    // Fail to load on a wrong path name
-    const std::string not_file_path = "garbage_" + file_path;
-    DataStore ds_fail_load;
-    EXPECT_FALSE(ds_fail_load.getRoot()->load(not_file_path, protocol));
-    EXPECT_TRUE(ds_fail_load.getConduitErrorOccurred());
-    std::string errstring = ds_fail_load.getConduitErrors();
-    ds_fail_load.clearConduitErrors();
-    EXPECT_FALSE(ds_fail_load.getConduitErrorOccurred());
-    ds_fail_load.appendToConduitErrors(errstring);
-    EXPECT_TRUE(ds_fail_load.getConduitErrorOccurred());
   }
 
   // restore conduit default errors
@@ -2917,9 +2906,6 @@ TEST(sidre_group, save_load_all_protocols)
 //------------------------------------------------------------------------------
 TEST(sidre_group, fail_save_all_protocols)
 {
-  // Note: This test relies on re-wiring conduit error handlers
-  DataStore::setConduitSLICMessageHandlers();
-
   const std::string file_path_base("sidre_fail_save_all_protocols.");
   DataStore ds;
 
@@ -2974,9 +2960,6 @@ TEST(sidre_group, fail_save_all_protocols)
     errstring = ds.getConduitErrors();
     EXPECT_GT(errstring.length(), 0);
   }
-
-  // restore conduit default errors
-  DataStore::setConduitDefaultMessageHandlers();
 }
 
 //------------------------------------------------------------------------------

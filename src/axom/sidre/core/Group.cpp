@@ -1827,9 +1827,9 @@ public:
     {
       conduitOp();
     }
-    catch(conduit::Error& e)
+    catch(std::exception& e)
     {
-      m_ds->appendToConduitErrors(e.message());
+      m_ds->appendToConduitErrors(e.what());
     }
 
     if(m_suppress_in_call)
@@ -1839,9 +1839,7 @@ public:
   }
 
 private:
-  // saves current error func.
-  // for hdf5's default setup this disable printed error messages
-  // that occur when we are probing properties of the hdf5 tree
+  // saves current error func; set to default
   void disable_conduit_error_handlers()
   {
     m_info_handler = conduit::utils::info_handler();
