@@ -2869,10 +2869,10 @@ TEST(sidre_group, save_load_all_protocols)
     DataStore ds_load;
     EXPECT_TRUE(ds_load.getRoot()->load(file_path, protocol));
     EXPECT_FALSE(ds.getConduitErrorOccurred());
-    EXPECT_LT(ds.getConduitErrors().length(), 1);
-    ds.setConduitErrorOccurred(true);
+    ds.appendToConduitErrors("test: dummy error");
     EXPECT_TRUE(ds.getConduitErrorOccurred());
-    ds.setConduitErrorOccurred(false);
+    ds.clearConduitErrors();
+    EXPECT_FALSE(ds.getConduitErrorOccurred());
 
     SLIC_INFO("Tree from protocol: " << protocol);
     // show the result
@@ -2903,11 +2903,11 @@ TEST(sidre_group, save_load_all_protocols)
     DataStore ds_fail_load;
     EXPECT_FALSE(ds_fail_load.getRoot()->load(not_file_path, protocol));
     EXPECT_TRUE(ds_fail_load.getConduitErrorOccurred());
-    EXPECT_GT(ds_fail_load.getConduitErrors().length(), 0);
-    ds_fail_load.setConduitErrorOccurred(false);
-    EXPECT_FALSE(ds_fail_load.getConduitErrorOccurred());
+    std::string errstring = ds_fail_load.getConduitErrors();
     ds_fail_load.clearConduitErrors();
-    EXPECT_LT(ds_fail_load.getConduitErrors().length(), 1);
+    EXPECT_FALSE(ds_fail_load.getConduitErrorOccurred());
+    ds_fail_load.appendToConduitErrors(errstring);
+    EXPECT_TRUE(ds_fail_load.getConduitErrorOccurred());
   }
 
   // restore conduit default errors
@@ -2964,13 +2964,15 @@ TEST(sidre_group, fail_save_all_protocols)
     // fail to save, since there's a directory with the same name
     EXPECT_FALSE(ds.getRoot()->save(file_path, protocol));
     EXPECT_TRUE(ds.getConduitErrorOccurred());
-    EXPECT_GT(ds.getConduitErrors().length(), 0);
+    std::string errstring = ds.getConduitErrors();
+    EXPECT_GT(errstring.length(), 0);
 
     DataStore ds_load;
     // fail to load, since there's a directory, not a data file
     EXPECT_FALSE(ds_load.getRoot()->load(file_path, protocol));
     EXPECT_TRUE(ds.getConduitErrorOccurred());
-    EXPECT_GT(ds.getConduitErrors().length(), 0);
+    errstring = ds.getConduitErrors();
+    EXPECT_GT(errstring.length(), 0);
   }
 
   // restore conduit default errors

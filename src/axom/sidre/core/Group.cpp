@@ -1829,7 +1829,6 @@ public:
     }
     catch(conduit::Error& e)
     {
-      m_ds->setConduitErrorOccurred(true);
       m_ds->appendToConduitErrors(e.message());
     }
 
@@ -1906,6 +1905,7 @@ bool Group::save(const std::string& path,
 {
   const DataStore* ds = getDataStore();
   ConduitErrorSuppressor checkConduitCall(ds);
+  bool retval = false;
 
   if(protocol == "sidre_hdf5")
   {
@@ -1915,6 +1915,7 @@ bool Group::save(const std::string& path,
     createExternalLayout(n["sidre/external"], attr);
     n["sidre_group_name"] = m_name;
     checkConduitCall([&] { conduit::relay::io::save(n, path, "hdf5"); });
+    retval = !(getDataStore()->getConduitErrorOccurred());
   }
   else if(protocol == "sidre_conduit_json")
   {
@@ -1924,6 +1925,7 @@ bool Group::save(const std::string& path,
     createExternalLayout(n["sidre/external"], attr);
     n["sidre_group_name"] = m_name;
     checkConduitCall([&] { conduit::relay::io::save(n, path, "conduit_json"); });
+    retval = !(getDataStore()->getConduitErrorOccurred());
   }
   else if(protocol == "sidre_json")
   {
@@ -1933,6 +1935,7 @@ bool Group::save(const std::string& path,
     createExternalLayout(n["sidre/external"], attr);
     n["sidre_group_name"] = m_name;
     checkConduitCall([&] { conduit::relay::io::save(n, path, "json"); });
+    retval = !(getDataStore()->getConduitErrorOccurred());
   }
   else if(protocol == "sidre_layout_json")
   {
@@ -1941,6 +1944,7 @@ bool Group::save(const std::string& path,
     ds->saveAttributeLayout(n["sidre/attribute"]);
     n["sidre_group_name"] = m_name;
     checkConduitCall([&] { conduit::relay::io::save(n, path, "conduit_json"); });
+    retval = !(getDataStore()->getConduitErrorOccurred());
   }
   else if(protocol == "conduit_hdf5")
   {
@@ -1948,6 +1952,7 @@ bool Group::save(const std::string& path,
     createNativeLayout(n, attr);
     n["sidre_group_name"] = m_name;
     checkConduitCall([&] { conduit::relay::io::save(n, path, "hdf5"); });
+    retval = !(getDataStore()->getConduitErrorOccurred());
   }
   else if(protocol == "conduit_bin" || protocol == "conduit_json" ||
           protocol == "json")
@@ -1956,6 +1961,7 @@ bool Group::save(const std::string& path,
     createNativeLayout(n, attr);
     n["sidre_group_name"] = m_name;
     checkConduitCall([&] { conduit::relay::io::save(n, path, protocol); });
+    retval = !(getDataStore()->getConduitErrorOccurred());
   }
   else if(protocol == "conduit_layout_json")
   {
@@ -1963,14 +1969,16 @@ bool Group::save(const std::string& path,
     createNoDataLayout(n, attr);
     n["sidre_group_name"] = m_name;
     checkConduitCall([&] { conduit::relay::io::save(n, path, "conduit_json"); });
+    retval = !(getDataStore()->getConduitErrorOccurred());
   }
   else
   {
     SLIC_ERROR(SIDRE_GROUP_LOG_PREPEND << "Invalid protocol '" << protocol
                                        << "' for file save.");
+    retval = false;
   }
 
-  return !(getDataStore()->getConduitErrorOccurred());
+  return retval;
 }
 
 /*************************************************************************/
@@ -1996,6 +2004,7 @@ bool Group::load(const std::string& path,
                  std::string& name_from_file)
 {
   ConduitErrorSuppressor checkConduitCall(getDataStore());
+  bool retval = false;
   if(protocol == "sidre_hdf5")
   {
     Node n;
@@ -2011,6 +2020,7 @@ bool Group::load(const std::string& path,
       {
         name_from_file = n["sidre_group_name"].as_string();
       }
+      retval = true;
     }
   }
   else if(protocol == "sidre_conduit_json")
@@ -2028,6 +2038,7 @@ bool Group::load(const std::string& path,
       {
         name_from_file = n["sidre_group_name"].as_string();
       }
+      retval = true;
     }
   }
   else if(protocol == "sidre_json")
@@ -2045,6 +2056,7 @@ bool Group::load(const std::string& path,
       {
         name_from_file = n["sidre_group_name"].as_string();
       }
+      retval = true;
     }
   }
   else if(protocol == "conduit_hdf5")
@@ -2058,6 +2070,7 @@ bool Group::load(const std::string& path,
       {
         name_from_file = n["sidre_group_name"].as_string();
       }
+      retval = true;
     }
   }
   else if(protocol == "conduit_bin" || protocol == "conduit_json" ||
@@ -2072,15 +2085,17 @@ bool Group::load(const std::string& path,
       {
         name_from_file = n["sidre_group_name"].as_string();
       }
+      retval = true;
     }
   }
   else
   {
     SLIC_ERROR(SIDRE_GROUP_LOG_PREPEND << "Invalid protocol '" << protocol
                                        << "' for file load.");
+    retval = false;
   }
 
-  return !(getDataStore()->getConduitErrorOccurred());
+  return retval;
 }
 
 /*
@@ -2159,6 +2174,7 @@ bool Group::save(const hid_t& h5_id,
                  const Attribute* attr) const
 {
   ConduitErrorSuppressor checkConduitCall(getDataStore());
+  bool retval = false;
 
   // supported here:
   // "sidre_hdf5"
@@ -2170,6 +2186,7 @@ bool Group::save(const hid_t& h5_id,
     createExternalLayout(n["sidre/external"], attr);
     n["sidre_group_name"] = m_name;
     checkConduitCall([&] { conduit::relay::io::hdf5_write(n, h5_id); });
+    retval = !(getDataStore()->getConduitErrorOccurred());
   }
   else if(protocol == "conduit_hdf5")
   {
@@ -2177,14 +2194,16 @@ bool Group::save(const hid_t& h5_id,
     createNativeLayout(n, attr);
     n["sidre_group_name"] = m_name;
     checkConduitCall([&] { conduit::relay::io::hdf5_write(n, h5_id); });
+    retval = !(getDataStore()->getConduitErrorOccurred());
   }
   else
   {
     SLIC_ERROR(SIDRE_GROUP_LOG_PREPEND << "Invalid protocol '" << protocol
                                        << "' for save with hdf5 handle.");
+    retval = false;
   }
 
-  return !(getDataStore()->getConduitErrorOccurred());
+  return retval;
 }
 
 /*
@@ -2208,6 +2227,7 @@ bool Group::load(const hid_t& h5_id,
                  std::string& name_from_file)
 {
   ConduitErrorSuppressor checkConduitCall(getDataStore());
+  bool retval = false;
 
   // supported here:
   // "sidre_hdf5"
@@ -2227,6 +2247,7 @@ bool Group::load(const hid_t& h5_id,
       {
         name_from_file = n["sidre_group_name"].as_string();
       }
+      retval = true;
     }
   }
   else if(protocol == "conduit_hdf5")
@@ -2241,15 +2262,17 @@ bool Group::load(const hid_t& h5_id,
       {
         name_from_file = n["sidre_group_name"].as_string();
       }
+      retval = true;
     }
   }
   else
   {
     SLIC_ERROR(SIDRE_GROUP_LOG_PREPEND << "Invalid protocol '" << protocol
                                        << "' for file load.");
+    retval = false;
   }
 
-  return !(getDataStore()->getConduitErrorOccurred());
+  return retval;
 }
 
 /*

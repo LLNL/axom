@@ -89,11 +89,7 @@ public:
   const Group* getRoot() const { return m_RootGroup; };
 
   /// Return whether a Conduit error occurred.
-  bool getConduitErrorOccurred() const { return m_conduit_error_occurred; };
-  void setConduitErrorOccurred(bool flag) const
-  {
-    m_conduit_error_occurred = flag;
-  };
+  bool getConduitErrorOccurred() const { return !m_conduit_errors.empty(); };
 
   /// Return information on any Conduit errors.
   std::string getConduitErrors() const { return m_conduit_errors; };
@@ -556,11 +552,7 @@ private:
   /// Flag indicating whether SLIC logging environment was initialized in ctor.
   bool m_need_to_finalize_slic;
 
-  /// Flag indicating a Conduit error occurred (consult message for details)
-  /// Instead of a boolean flag, we could store an int, an enum, even a bitfield.
-  mutable bool m_conduit_error_occurred;
-
-  /// Details of the most recent Conduit error
+  /// Details of the most recent Conduit error.  Length > 0 indicates an error occurred.
   mutable std::string m_conduit_errors;
 };
 
