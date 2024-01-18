@@ -2915,6 +2915,69 @@ TEST(sidre_group, save_load_all_protocols)
 }
 
 //------------------------------------------------------------------------------
+TEST(sidre_group, fail_save_all_protocols)
+{
+  // Note: This test relies on re-wiring conduit error handlers
+  DataStore::setConduitSLICMessageHandlers();
+
+  const std::string file_path_base("sidre_fail_save_all_protocols.");
+  DataStore ds;
+
+  Group* flds = ds.getRoot()->createGroup("fields");
+
+  Group* ga = flds->createGroup("a");
+  Group* gb = flds->createGroup("b");
+  Group* gc = flds->createGroup("c");
+  int ndata = 10;
+
+  // prep a tree that can exactly restored by all
+  // i/o protocols.
+  // Specially, use int64 and float64 b/c the
+  // json i/o case uses those types for parsed integers
+  // and floating point numbers.
+
+  ga->createViewScalar<conduit::int64>("i0", 100);
+  ga->createViewScalar<conduit::float64>("d0", 3000.00);
+  gb->createViewString("s0", "foo");
+
+  gc->createViewAndAllocate("int10", DataType::int64(ndata));
+  conduit::int64* data_ptr = gc->getView("int10")->getArray();
+  for(int i = 0; i < ndata; ++i)
+  {
+    data_ptr[i] = (conduit::int64)i;
+  }
+
+  // show the source tree
+  SLIC_INFO("Source tree");
+  ds.print();
+
+  //
+  // test all protocols
+  //
+  const std::vector<std::string>& protocols = Group::getValidIOProtocols();
+  for(const auto& protocol : protocols)
+  {
+    SLIC_INFO("Testing fail to save or load protocol: " << protocol);
+    const std::string file_path = file_path_base + protocol;
+    // create a directory named file_path
+    axom::utilities::filesystem::makeDirsForPath(file_path);
+    // fail to save, since there's a directory with the same name
+    EXPECT_FALSE(ds.getRoot()->save(file_path, protocol));
+    EXPECT_TRUE(ds.getConduitErrorOccurred());
+    EXPECT_GT(ds.getConduitErrors().length(), 0);
+
+    DataStore ds_load;
+    // fail to load, since there's a directory, not a data file
+    EXPECT_FALSE(ds_load.getRoot()->load(file_path, protocol));
+    EXPECT_TRUE(ds.getConduitErrorOccurred());
+    EXPECT_GT(ds.getConduitErrors().length(), 0);
+  }
+
+  // restore conduit default errors
+  DataStore::setConduitDefaultMessageHandlers();
+}
+
+//------------------------------------------------------------------------------
 TEST(sidre_group, save_load_preserve_contents)
 {
   // Note: This test relies on re-wiring conduit error handlers
