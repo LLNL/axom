@@ -77,7 +77,7 @@ struct BasicLogger
     slic::setLoggingMsgLevel(slic::message::Debug);
 
     // Customize logging levels and formatting
-    const std::string slicFormatStr = "[lesson_04: <LEVEL>] <MESSAGE> \n";
+    const std::string slicFormatStr = "[<LEVEL>] <MESSAGE> \n";
 
     slic::addStreamToMsgLevel(new slic::GenericOutputStream(&std::cerr),
                               slic::message::Error);
@@ -225,10 +225,33 @@ void loadSiloMesh(const std::string& mesh_path, double weldThreshold)
   conduit::Node n_load;
   conduit::relay::io::silo::load_mesh(mesh_path, n_load);
 
-  n_load.print_detailed();
-
+  // Oh... don't need detailed, normal print is enough.
+  // n_load.print_detailed();
+  // n_load.print();
   // Gets us the number of domains, yay...
-  SLIC_INFO("Number of children are " << n_load.number_of_children());
+
+
+  int num_domains = n_load.number_of_children();
+  SLIC_INFO("Number of children are " << num_domains);
+
+  // n_load[0].print();
+  // SLIC_INFO("coordsets/MMESH/values is: ");
+  (n_load[0]["coordsets/MMESH/values"]).print();
+
+  // This is how you get the size of the array...
+
+
+  SLIC_INFO("x values are ");
+  n_load[0]["coordsets/MMESH/values"]["x"].print();
+
+  double *x_vals = n_load[0]["coordsets/MMESH/values"]["x"].value();
+  int x_size = (n_load[0]["coordsets/MMESH/values"]["x"]).dtype().number_of_elements();
+  std::vector<double> x (x_vals, x_vals + x_size);
+
+  SLIC_INFO("Vector size is " << x.size());
+
+  // SLIC_INFO("x size is " << (n_load[0]["coordsets/MMESH/values"]["x"]).dtype().number_of_elements());
+
 
 }
 
