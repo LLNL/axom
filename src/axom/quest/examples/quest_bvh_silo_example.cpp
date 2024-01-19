@@ -223,59 +223,13 @@ struct TriangleMesh
 void loadSiloMesh(const std::string& mesh_path, double weldThreshold)
 {
   conduit::Node n_load;
-  conduit::Node n_opts;
-  n_opts["mesh_name"] = "";
+  conduit::relay::io::silo::load_mesh(mesh_path, n_load);
 
-  std::string new_path;
-  new_path.append(mesh_path);
-  new_path.append(":MMESH");
+  n_load.print_detailed();
 
-    // conduit write and read, works
-    // int a_val = 20;
-    // int b_val = 8;
-    // int c_val = 13;
+  // Gets us the number of domains, yay...
+  SLIC_INFO("Number of children are " << n_load.number_of_children());
 
-    // conduit::Node n;
-    // n["a"] = a_val;
-    // n["b"] = b_val;
-    // n["c"] = c_val;
-    // conduit::relay::io::silo_write(n,"tout_cold_storage_test.silo:myobj");
-
-    // conduit::relay::io::silo_read("tout_cold_storage_test.silo:myobj",n_load);
-
-    // std::cout << "round trip" << std::endl;
-    // n_load.print();
-
-
-  // This has to already have blueprint stuff...
-  // conduit::relay::io::blueprint::load_mesh(mesh_path,n_load);
-
-  // Invalid path for load... (same after develop update...)
-  // conduit::relay::io::load(mesh_path,n_load);
-
-  // THIS WORKS!!! After updating to conduit develop...
-  // In t_relay_silo.cpp at the bottom, does not work....
-  //
-  // Function does not exist....
-  // conduit::relay::io::silo::load_mesh(mesh_path, n_opts, n_load);
-  // conduit::relay::io::silo::load_mesh(mesh_path, n_load);
-
-  // In conduit_relay_io_silo_api.hpp, Invalid path for load... (same after develop)
-  // conduit::relay::io::silo_read(mesh_path, n_load);
-
-  // In conduit_relay_io_silo_api.hpp (same after develop update...)
-  // DBGetVarLength: Low-level function call failed: MMESH_conduit_json
-  // DBGetVarLength: Low-level function call failed: MMESH_conduit_bin
-  // terminate called after throwing an instance of 'std::bad_alloc'
-  // conduit::relay::io::silo_read(new_path, n_load);
-
-  // Invalid path for load... (same after develop update...)
-  // DBGetVarLength: Low-level function call failed: MMESH_conduit_json
-  // DBGetVarLength: Low-level function call failed: MMESH_conduit_bin
-  // terminate called after throwing an instance of 'std::bad_alloc'
-  // conduit::relay::io::load(new_path,n_load);
-
-  n_load.print();
 }
 
 TriangleMesh makeTriangleMesh(const std::string& stl_mesh_path,
