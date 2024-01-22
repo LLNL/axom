@@ -66,6 +66,36 @@ using MyTypes = ::testing::Types<
 TYPED_TEST_SUITE(core_array_for_all, MyTypes);
 
 //------------------------------------------------------------------------------
+#if defined(AXOM_USE_RAJA) && defined(AXOM_USE_CUDA) && defined(AXOM_USE_UMPIRE)
+AXOM_CUDA_TEST(core_array_for_all, capture_test)
+{
+  using ExecSpace = axom::CUDA_EXEC<256>;
+  using KernelArray = axom::Array<int, 1, axom::MemorySpace::Device>;
+
+  EXPECT_DEATH_IF_SUPPORTED(
+    {
+      // Create an array of N items using default MemorySpace for ExecSpace
+      constexpr int N = 4;
+      KernelArray arr(N);
+
+      // Capture of axom::Array should fail.
+      axom::for_all<ExecSpace>(
+        N,
+        AXOM_LAMBDA(axom::IndexType idx) {
+          if(arr[0]) return;
+        });
+
+      // handles synchronization, if necessary
+      if(axom::execution_space<ExecSpace>::async())
+      {
+        axom::synchronize<ExecSpace>();
+      }
+    },
+    "");
+}
+#endif
+
+//------------------------------------------------------------------------------
 AXOM_TYPED_TEST(core_array_for_all, explicit_ArrayView)
 {
   using ExecSpace = typename TestFixture::ExecSpace;

@@ -199,7 +199,7 @@ public:
   /*! 
    * \brief Copy constructor for an Array instance 
    */
-  Array(const Array& other);
+  AXOM_HOST_DEVICE Array(const Array& other);
 
   /*! 
    * \brief Move constructor for an Array instance 
@@ -998,11 +998,22 @@ Array<T, DIM, SPACE>::Array(std::initializer_list<T> elems, int allocator_id)
 
 //------------------------------------------------------------------------------
 template <typename T, int DIM, MemorySpace SPACE>
-Array<T, DIM, SPACE>::Array(const Array& other)
+AXOM_HOST_DEVICE Array<T, DIM, SPACE>::Array(const Array& other)
   : ArrayBase<T, DIM, Array<T, DIM, SPACE>>(
       static_cast<const ArrayBase<T, DIM, Array<T, DIM, SPACE>>&>(other))
   , m_allocator_id(other.m_allocator_id)
 {
+#if defined(AXOM_DEVICE_CODE)
+  #if defined(AXOM_DEBUG)
+  printf(
+    "axom::Array: cannot copy-construct on the device.\n"
+    "This is usually the result of capturing an array by-value in a lambda. "
+    "Use axom::ArrayView for value captures instead.\n");
+  #endif
+  #if defined(__CUDA_ARCH__)
+  __trap();
+  #endif
+#else
   initialize(other.size(), other.capacity());
   // Use fill_range to ensure that copy constructors are invoked for each
   // element.
@@ -1017,6 +1028,7 @@ Array<T, DIM, SPACE>::Array(const Array& other)
                        m_allocator_id,
                        other.data(),
                        srcSpace);
+#endif
 }
 
 //------------------------------------------------------------------------------
