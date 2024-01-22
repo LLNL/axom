@@ -1441,8 +1441,9 @@ public:
    * \brief Save the Group to a file.
    *
    *  Saves the tree starting at this Group and the Buffers used by the Views
-   *  in this tree.  Returns true if this operation succeeded, that is, if 
-   *  there was no Conduit I/O error; false, if an error occurred.
+   *  in this tree.  Returns true (success) if no Conduit I/O error occurred
+   *  since this Group's DataStore was created or had its error flag cleared;
+   *  false, if an error occurred at some point.
    *
    *  If attr is a null pointer, dump all Views.  Otherwise, only dump Views
    *  which have the Attribute set.
@@ -1465,9 +1466,10 @@ public:
    *
    * If preserve_contents is true, then the names of the children held by the
    * Node cannot be the same as the names of the children already held by this
-   * Group.  If there is a naming conflict, an error will occur.  Returns true 
-   * if this operation succeeded, that is, if there was no Conduit I/O error; 
-   * false, if an error occurred.
+   * Group.  If there is a naming conflict, an error will occur.  Returns true
+   * (success) if no Conduit I/O error occurred since this Group's DataStore
+   * was created or had its error flag cleared; false, if an error occurred at
+   * some point.
    *
    * \param path     file path
    * \param protocol I/O protocol
@@ -1493,9 +1495,10 @@ public:
    *
    * If preserve_contents is true, then the names of the children held by the
    * Node cannot be the same as the names of the children already held by this
-   * Group.  If there is a naming conflict, an error will occur.  Returns true 
-   * if this operation succeeded, that is, if there was no Conduit I/O error; 
-   * false, if an error occurred.
+   * Group.  If there is a naming conflict, an error will occur.  Returns true
+   * (success) if no Conduit I/O error occurred since this Group's DataStore
+   * was created or had its error flag cleared; false, if an error occurred at
+   * some point.
    *
    * \param [in]  path     file path to load
    * \param [in]  protocol I/O protocol to use
@@ -1563,9 +1566,9 @@ public:
    * \brief Save the Group to an hdf5 handle.
    *
    *  If attr is nullptr, dump all Views.  Otherwise, only dump Views
-   *  which have the Attribute set.  Returns true if this operation 
-   *  succeeded, that is, if there was no Conduit I/O error; false, 
-   *  if an error occurred.
+   *  which have the Attribute set.  Returns true (success) if no Conduit
+   *  I/O error occurred since this Group's DataStore was created or had
+   *  its error flag cleared; false, if an error occurred at some point.
    *
    * \param h5_id      hdf5 handle
    * \param protocol   I/O protocol sidre_hdf5 or conduit_hdf5
@@ -1581,9 +1584,10 @@ public:
    *
    * If preserve_contents is true, then the names of the children held by the
    * Node cannot be the same as the names of the children already held by this
-   * Group.  If there is a naming conflict, an error will occur.  Returns true 
-   * if this operation succeeded, that is, if there was no Conduit I/O error; 
-   * false, if an error occurred.
+   * Group.  If there is a naming conflict, an error will occur.  Returns true
+   * (success) if no Conduit I/O error occurred since this Group's DataStore
+   * was created or had its error flag cleared; false, if an error occurred at
+   * some point.
    *
    * \param h5_id      hdf5 handle
    * \param protocol   I/O protocol sidre_hdf5 or conduit_hdf5
@@ -1602,9 +1606,10 @@ public:
    *
    * If preserve_contents is true, then the names of the children held by the
    * Node cannot be the same as the names of the children already held by this
-   * Group.  If there is a naming conflict, an error will occur.  Returns true 
-   * if this operation succeeded, that is, if there was no Conduit I/O error; 
-   * false, if an error occurred.
+   * Group.  If there is a naming conflict, an error will occur.  Returns true
+   * (success) if no Conduit I/O error occurred since this Group's DataStore
+   * was created or had its error flag cleared; false, if an error occurred at
+   * some point.
    *
    * \param [in]  h5_id      hdf5 handle
    * \param [in]  protocol   I/O protocol sidre_hdf5 or conduit_hdf5
@@ -1624,7 +1629,9 @@ public:
    * \brief Load data into the Group's external views from a hdf5 handle.
    *
    * No protocol argument is needed, as this only is used with the sidre_hdf5
-   * protocol.
+   * protocol.  Returns true (success) if no Conduit I/O error occurred since
+   * this Group's DataStore was created or had its error flag cleared; false,
+   * if an error occurred at some point.
    *
    * \param h5_id      hdf5 handle
    * \return           True if no error occurred, otherwise false.
