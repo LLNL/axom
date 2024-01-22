@@ -2944,18 +2944,19 @@ TEST(sidre_group, fail_save_all_protocols)
   for(const auto& protocol : protocols)
   {
     SLIC_INFO("Testing fail to save or load protocol: " << protocol);
-    const std::string file_path = file_path_base + protocol;
+    const std::string save_file_path = file_path_base + "save." + protocol;
     // create a directory named file_path
-    axom::utilities::filesystem::makeDirsForPath(file_path);
+    axom::utilities::filesystem::makeDirsForPath(save_file_path);
     // fail to save, since there's a directory with the same name
-    EXPECT_FALSE(ds.getRoot()->save(file_path, protocol));
+    EXPECT_FALSE(ds.getRoot()->save(save_file_path, protocol));
     EXPECT_TRUE(ds.getConduitErrorOccurred());
     std::string errstring = ds.getConduitErrors();
     EXPECT_GT(errstring.length(), 0);
 
     DataStore ds_load;
+    const std::string load_file_path = file_path_base + "load." + protocol;
     // fail to load, since there's a directory, not a data file
-    EXPECT_FALSE(ds_load.getRoot()->load(file_path, protocol));
+    EXPECT_FALSE(ds_load.getRoot()->load(load_file_path, protocol));
     EXPECT_TRUE(ds.getConduitErrorOccurred());
     errstring = ds.getConduitErrors();
     EXPECT_GT(errstring.length(), 0);
