@@ -48,6 +48,8 @@
 
 using seq_exec = axom::SEQ_EXEC;
 
+using UMesh = axom::mint::UnstructuredMesh<axom::mint::SINGLE_SHAPE>;
+
 // clang-format off
 #if defined(AXOM_USE_OPENMP)
   using omp_exec = axom::OMP_EXEC;
@@ -222,37 +224,84 @@ struct TriangleMesh
 
 void loadSiloMesh(const std::string& mesh_path, double weldThreshold)
 {
+  // The silo mesh to load into Conduit
   conduit::Node n_load;
+
+  // The Conduit node containing mesh coordinates
+  conduit::Node n_coordinates;
+
+  // The conduit node containing dimensions
+  conduit::Node n_dimensions;
+
   conduit::relay::io::silo::load_mesh(mesh_path, n_load);
+  n_coordinates = n_load[0]["coordsets/MMESH/values"];
+  n_dimensions = n_load[0]["topologies/MMESH/elements/dims"];
 
-  // Oh... don't need detailed, normal print is enough.
-  // n_load.print_detailed();
-  // n_load.print();
+  n_load.print();
   // Gets us the number of domains, yay...
-
 
   int num_domains = n_load.number_of_children();
   SLIC_INFO("Number of children are " << num_domains);
 
-  // n_load[0].print();
-  // SLIC_INFO("coordsets/MMESH/values is: ");
-  (n_load[0]["coordsets/MMESH/values"]).print();
+  (n_coordinates).print();
 
-  // This is how you get the size of the array...
+  // Get x,y,z vertices from Conduit
+  std::vector<std::vector<double>> coordinates(3);
 
+  // Get surface mesh
+  // UMesh * surface_mesh = new UMesh(3, mint::HEX);
 
-  SLIC_INFO("x values are ");
-  n_load[0]["coordsets/MMESH/values"]["x"].print();
+  // Conduit dimensions are number of zones, mint is numnber of nodes (plus 1)
+  int x_dim = n_dimensions[0].value();
+  int y_dim = n_dimensions[1].value();
+  int z_dim = n_dimensions[2].value();
 
-  double *x_vals = n_load[0]["coordsets/MMESH/values"]["x"].value();
-  int x_size = (n_load[0]["coordsets/MMESH/values"]["x"]).dtype().number_of_elements();
-  std::vector<double> x (x_vals, x_vals + x_size);
+  axom::mint::RectilinearMesh mesh(x_dim + 1, y_dim + 1, z_dim + 1);
 
-  SLIC_INFO("Vector size is " << x.size());
+  // Get sorted and unique vertices for structured mesh format
+  for(int i = 0; i < 3; i++)
+  {
+    SLIC_INFO("0 is  x, 1 is y, 2 is z");
+    SLIC_INFO(i << " values are ");
+    n_coordinates[i].print();
 
-  // SLIC_INFO("x size is " << (n_load[0]["coordsets/MMESH/values"]["x"]).dtype().number_of_elements());
+    double* vals = n_coordinates[i].value();
+    int size = (n_coordinates[i]).dtype().number_of_elements();
+    std::vector<double> vals_vec(vals, vals + size);
 
+    SLIC_INFO("Vector size is " << vals_vec.size());
 
+    // Sort and remove duplicate elements
+    sort(vals_vec.begin(), vals_vec.end());
+    std::vector<double>::iterator it;
+    it = unique(vals_vec.begin(), vals_vec.end());
+    vals_vec.resize(distance(vals_vec.begin(), it));
+
+    coordinates[i] = vals_vec;
+
+    std::cout << "component " << i << " contains:";
+
+    for(it = coordinates[i].begin(); it != coordinates[i].end(); ++it)
+      std::cout << ' ' << *it;
+    std::cout << '\n';
+
+    SLIC_INFO("Component size after sort and unique operation is "
+              << coordinates[i].size());
+  }
+
+  // Initialize structured mesh coordinates
+  for(int i = 0; i < 3; i++)
+  {
+    double* component = mesh.getCoordinateArray(i);
+    for(unsigned long j = 0; j < coordinates[i].size(); j++)
+    {
+      component[j] = coordinates[i][j];
+      // SLIC_INFO("Component " << i << ", vertex " << j << " is: " << component[j]);
+    }
+  }
+
+  // Write out to vtk for test viewing
+  axom::mint::write_vtk(&mesh, "test.vtk");
 }
 
 TriangleMesh makeTriangleMesh(const std::string& stl_mesh_path,
@@ -568,60 +617,60 @@ int main(int argc, char** argv)
   // TriangleMesh mesh = makeTriangleMesh(params.mesh_file, params.weldThreshold);
 
   // Check for self-intersections; results are returned as an array of index pairs
-//   axom::Array<IndexPair> intersectionPairs;
-//   axom::utilities::Timer timer(true);
-//   switch(params.policy)
-//   {
-//   case RuntimePolicy::raja_omp:
-// #ifdef AXOM_USE_OPENMP
-//     intersectionPairs =
-//       findIntersectionsBVH<omp_exec>(mesh,
-//                                      params.intersectionThreshold,
-//                                      params.isVerbose());
-// #endif
-//     break;
-//   case RuntimePolicy::raja_cuda:
-// #ifdef AXOM_USE_CUDA
-//     intersectionPairs =
-//       findIntersectionsBVH<cuda_exec>(mesh,
-//                                       params.intersectionThreshold,
-//                                       params.isVerbose());
-// #endif
-//     break;
-//   default:  // RuntimePolicy::raja_seq
-//     intersectionPairs =
-//       findIntersectionsBVH<seq_exec>(mesh,
-//                                      params.intersectionThreshold,
-//                                      params.isVerbose());
-//     break;
-//   }
-//   timer.stop();
+  //   axom::Array<IndexPair> intersectionPairs;
+  //   axom::utilities::Timer timer(true);
+  //   switch(params.policy)
+  //   {
+  //   case RuntimePolicy::raja_omp:
+  // #ifdef AXOM_USE_OPENMP
+  //     intersectionPairs =
+  //       findIntersectionsBVH<omp_exec>(mesh,
+  //                                      params.intersectionThreshold,
+  //                                      params.isVerbose());
+  // #endif
+  //     break;
+  //   case RuntimePolicy::raja_cuda:
+  // #ifdef AXOM_USE_CUDA
+  //     intersectionPairs =
+  //       findIntersectionsBVH<cuda_exec>(mesh,
+  //                                       params.intersectionThreshold,
+  //                                       params.isVerbose());
+  // #endif
+  //     break;
+  //   default:  // RuntimePolicy::raja_seq
+  //     intersectionPairs =
+  //       findIntersectionsBVH<seq_exec>(mesh,
+  //                                      params.intersectionThreshold,
+  //                                      params.isVerbose());
+  //     break;
+  //   }
+  //   timer.stop();
 
-//   SLIC_INFO(axom::fmt::format("Computing intersections {} took {:4.3} seconds.",
-//                               "with a BVH tree",
-//                               timer.elapsedTimeInSec()));
-//   SLIC_INFO(axom::fmt::format(axom::utilities::locale(),
-//                               "Mesh had {:L} intersection pairs",
-//                               intersectionPairs.size()));
+  //   SLIC_INFO(axom::fmt::format("Computing intersections {} took {:4.3} seconds.",
+  //                               "with a BVH tree",
+  //                               timer.elapsedTimeInSec()));
+  //   SLIC_INFO(axom::fmt::format(axom::utilities::locale(),
+  //                               "Mesh had {:L} intersection pairs",
+  //                               intersectionPairs.size()));
 
-//   // print first few pairs
-//   const int numIntersections = intersectionPairs.size();
-//   if(numIntersections > 0 && params.isVerbose())
-//   {
-//     constexpr int MAX_PRINT = 20;
-//     if(numIntersections > MAX_PRINT)
-//     {
-//       intersectionPairs.resize(MAX_PRINT);
-//       SLIC_INFO(axom::fmt::format("First {} intersection pairs: {} ...\n",
-//                                   MAX_PRINT,
-//                                   axom::fmt::join(intersectionPairs, ", ")));
-//     }
-//     else
-//     {
-//       SLIC_INFO(axom::fmt::format("Intersection pairs: {}\n",
-//                                   axom::fmt::join(intersectionPairs, ", ")));
-//     }
-//   }
+  //   // print first few pairs
+  //   const int numIntersections = intersectionPairs.size();
+  //   if(numIntersections > 0 && params.isVerbose())
+  //   {
+  //     constexpr int MAX_PRINT = 20;
+  //     if(numIntersections > MAX_PRINT)
+  //     {
+  //       intersectionPairs.resize(MAX_PRINT);
+  //       SLIC_INFO(axom::fmt::format("First {} intersection pairs: {} ...\n",
+  //                                   MAX_PRINT,
+  //                                   axom::fmt::join(intersectionPairs, ", ")));
+  //     }
+  //     else
+  //     {
+  //       SLIC_INFO(axom::fmt::format("Intersection pairs: {}\n",
+  //                                   axom::fmt::join(intersectionPairs, ", ")));
+  //     }
+  //   }
 
   return 0;
 }
