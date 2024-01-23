@@ -62,6 +62,7 @@ public:
   { }
 
   AXOM_HOST_DEVICE inline IntType stride() const { return m_stride; }
+  AXOM_HOST_DEVICE inline IntType shape() const { return m_stride; }
   AXOM_HOST_DEVICE inline IntType& stride() { return m_stride; }
 
   void setStride(IntType str) { m_stride = str; }
@@ -98,6 +99,7 @@ struct CompileTimeStride
   }
 
   AXOM_HOST_DEVICE inline IntType stride() const { return INT_VAL; }
+  AXOM_HOST_DEVICE inline IntType shape() const { return INT_VAL; }
   inline IntType operator()() const { return stride(); }
 
   AXOM_HOST_DEVICE void setStride(IntType AXOM_DEBUG_PARAM(val))
