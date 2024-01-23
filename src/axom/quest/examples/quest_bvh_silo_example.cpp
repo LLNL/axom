@@ -237,7 +237,7 @@ void loadSiloMesh(const std::string& mesh_path, double weldThreshold)
   n_coordinates = n_load[0]["coordsets/MMESH/values"];
   n_dimensions = n_load[0]["topologies/MMESH/elements/dims"];
 
-  n_load.print_detailed();
+  // n_load.print_detailed();
 
   conduit::Node unstruct_topo;
   conduit::Node unstruct_coords;
@@ -248,6 +248,12 @@ void loadSiloMesh(const std::string& mesh_path, double weldThreshold)
 
   unstruct_topo.print_detailed();
   unstruct_coords.print_detailed();
+
+  UMesh * mesh = new UMesh(3, mint::HEX);
+
+  // Append the mesh nodes
+  // TODO
+
   // using Point = axom::primal::Point<double, 3>;
   // NOTE: This assumes dimension of mesh is same for each axis
   //       As such, I don't think it's general enough...
