@@ -237,71 +237,108 @@ void loadSiloMesh(const std::string& mesh_path, double weldThreshold)
   n_coordinates = n_load[0]["coordsets/MMESH/values"];
   n_dimensions = n_load[0]["topologies/MMESH/elements/dims"];
 
-  n_load.print();
+  n_load.print_detailed();
+
+  conduit::Node unstruct_topo;
+  conduit::Node unstruct_coords;
+
+  conduit::blueprint::mesh::topology::structured::to_unstructured(n_load[0]["topologies/MMESH"],
+                                                                  unstruct_topo,
+                                                                  unstruct_coords);
+
+  unstruct_topo.print_detailed();
+  unstruct_coords.print_detailed();
+  // using Point = axom::primal::Point<double, 3>;
+  // NOTE: This assumes dimension of mesh is same for each axis
+  //       As such, I don't think it's general enough...
+  // std::vector<std::vector<int>> connectivity_array(1000);
+
+  // int dim =  10;
+
+  // for(int i = 0; i < math.pow(dim, 3); i++)
+  // {
+  //   // You need logic to skip nodes along the OTHER edge of the mesh, as there are no
+  //   // nodes around to form a cell.
+  //   // if (???)
+  //   // {
+  //   //   continue;
+  //   // }
+  //   std::vector<Point> connectivity {
+  //     Point(i, i, i),
+  //     Point(i + 1, i + 1, i + 1),
+  //     Point(i + dim + 1, i + dim + 1, i + dim + 1),
+  //     Point(i + dim, i + dim, i + dim),
+  //     Point(i + (dim * dim), i + (dim * dim), i + (dim * dim)),
+  //     Point(i + (dim * dim) + 1, i + (dim * dim) + 1, i + (dim * dim) + 1),
+  //     Point(i + (dim * dim) + dim + 1, i + (dim * dim) + dim + 1, i + (dim * dim) + dim + 1),
+  //     Point(i + (dim * dim) + dim, i + (dim * dim) + dim, i + (dim * dim) + dim)
+  //   };
+  // }
+
   // Gets us the number of domains, yay...
 
-  int num_domains = n_load.number_of_children();
-  SLIC_INFO("Number of children are " << num_domains);
+  // int num_domains = n_load.number_of_children();
+  // SLIC_INFO("Number of children are " << num_domains);
 
-  (n_coordinates).print();
+  // (n_coordinates).print();
 
-  // Get x,y,z vertices from Conduit
-  std::vector<std::vector<double>> coordinates(3);
+  // // Get x,y,z vertices from Conduit
+  // std::vector<std::vector<double>> coordinates(3);
 
-  // Get surface mesh
-  // UMesh * surface_mesh = new UMesh(3, mint::HEX);
+  // // Get surface mesh
+  // // UMesh * surface_mesh = new UMesh(3, mint::HEX);
 
-  // Conduit dimensions are number of zones, mint is numnber of nodes (plus 1)
-  int x_dim = n_dimensions[0].value();
-  int y_dim = n_dimensions[1].value();
-  int z_dim = n_dimensions[2].value();
+  // // Conduit dimensions are number of zones, mint is numnber of nodes (plus 1)
+  // int x_dim = n_dimensions[0].value();
+  // int y_dim = n_dimensions[1].value();
+  // int z_dim = n_dimensions[2].value();
 
-  axom::mint::RectilinearMesh mesh(x_dim + 1, y_dim + 1, z_dim + 1);
+  // axom::mint::RectilinearMesh mesh(x_dim + 1, y_dim + 1, z_dim + 1);
 
-  // Get sorted and unique vertices for structured mesh format
-  for(int i = 0; i < 3; i++)
-  {
-    SLIC_INFO("0 is  x, 1 is y, 2 is z");
-    SLIC_INFO(i << " values are ");
-    n_coordinates[i].print();
+  // // Get sorted and unique vertices for structured mesh format
+  // for(int i = 0; i < 3; i++)
+  // {
+  //   SLIC_INFO("0 is  x, 1 is y, 2 is z");
+  //   SLIC_INFO(i << " values are ");
+  //   n_coordinates[i].print();
 
-    double* vals = n_coordinates[i].value();
-    int size = (n_coordinates[i]).dtype().number_of_elements();
-    std::vector<double> vals_vec(vals, vals + size);
+  //   double* vals = n_coordinates[i].value();
+  //   int size = (n_coordinates[i]).dtype().number_of_elements();
+  //   std::vector<double> vals_vec(vals, vals + size);
 
-    SLIC_INFO("Vector size is " << vals_vec.size());
+  //   SLIC_INFO("Vector size is " << vals_vec.size());
 
-    // Sort and remove duplicate elements
-    sort(vals_vec.begin(), vals_vec.end());
-    std::vector<double>::iterator it;
-    it = unique(vals_vec.begin(), vals_vec.end());
-    vals_vec.resize(distance(vals_vec.begin(), it));
+  //   // Sort and remove duplicate elements
+  //   sort(vals_vec.begin(), vals_vec.end());
+  //   std::vector<double>::iterator it;
+  //   it = unique(vals_vec.begin(), vals_vec.end());
+  //   vals_vec.resize(distance(vals_vec.begin(), it));
 
-    coordinates[i] = vals_vec;
+  //   coordinates[i] = vals_vec;
 
-    std::cout << "component " << i << " contains:";
+  //   std::cout << "component " << i << " contains:";
 
-    for(it = coordinates[i].begin(); it != coordinates[i].end(); ++it)
-      std::cout << ' ' << *it;
-    std::cout << '\n';
+  //   for(it = coordinates[i].begin(); it != coordinates[i].end(); ++it)
+  //     std::cout << ' ' << *it;
+  //   std::cout << '\n';
 
-    SLIC_INFO("Component size after sort and unique operation is "
-              << coordinates[i].size());
-  }
+  //   SLIC_INFO("Component size after sort and unique operation is "
+  //             << coordinates[i].size());
+  // }
 
-  // Initialize structured mesh coordinates
-  for(int i = 0; i < 3; i++)
-  {
-    double* component = mesh.getCoordinateArray(i);
-    for(unsigned long j = 0; j < coordinates[i].size(); j++)
-    {
-      component[j] = coordinates[i][j];
-      // SLIC_INFO("Component " << i << ", vertex " << j << " is: " << component[j]);
-    }
-  }
+  // // Initialize structured mesh coordinates
+  // for(int i = 0; i < 3; i++)
+  // {
+  //   double* component = mesh.getCoordinateArray(i);
+  //   for(unsigned long j = 0; j < coordinates[i].size(); j++)
+  //   {
+  //     component[j] = coordinates[i][j];
+  //     // SLIC_INFO("Component " << i << ", vertex " << j << " is: " << component[j]);
+  //   }
+  // }
 
-  // Write out to vtk for test viewing
-  axom::mint::write_vtk(&mesh, "test.vtk");
+  // // Write out to vtk for test viewing
+  // axom::mint::write_vtk(&mesh, "test.vtk");
 }
 
 TriangleMesh makeTriangleMesh(const std::string& stl_mesh_path,
