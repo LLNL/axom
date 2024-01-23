@@ -1827,7 +1827,7 @@ public:
     {
       conduitOp();
     }
-    catch(std::exception& e)
+    catch(conduit::Error& e)
     {
       m_ds->appendToConduitErrors(e.what());
     }
