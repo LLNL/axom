@@ -51,6 +51,11 @@ struct RuntimeStride
 public:
   static const IntType DEFAULT_VALUE = IntType(1);
   static const bool IS_COMPILE_TIME = false;
+  constexpr static int NumDims = 1;
+
+  using ShapeType = IntType;
+
+  static constexpr IntType DefaultSize() { return DEFAULT_VALUE; }
 
   AXOM_HOST_DEVICE RuntimeStride(IntType stride = DEFAULT_VALUE)
     : m_stride(stride)
@@ -81,6 +86,11 @@ struct CompileTimeStride
 {
   static const IntType DEFAULT_VALUE = INT_VAL;
   static const bool IS_COMPILE_TIME = true;
+  constexpr static int NumDims = 1;
+
+  using ShapeType = IntType;
+
+  static constexpr IntType DefaultSize() { return DEFAULT_VALUE; }
 
   AXOM_HOST_DEVICE CompileTimeStride(IntType val = DEFAULT_VALUE)
   {
@@ -108,6 +118,53 @@ struct CompileTimeStride
  */
 template <typename IntType>
 using StrideOne = CompileTimeStride<IntType, 1>;
+
+/**
+ * \brief A policy class for a set with multi-dimensional stride. Assumed
+ *  layout is row-major.
+ */
+template <typename IntType, int Dims>
+struct MultiDimStride
+{
+  using ShapeType = StackArray<IntType, Dims>;
+  constexpr static int NumDims = Dims;
+
+  static ShapeType DefaultSize()
+  {
+    ShapeType array;
+    for(int i = 0; i < Dims; i++)
+    {
+      array[i] = 1;
+    }
+    return array;
+  }
+
+  AXOM_HOST_DEVICE MultiDimStride(StackArray<IntType, Dims> shape)
+    : m_shape(shape)
+  {
+    m_strides[Dims - 1] = 1;
+    for(int i = Dims - 2; i >= 0; i--)
+    {
+      m_strides[i] = m_strides[i + 1] * m_shape[i + 1];
+    }
+  }
+
+  /// \brief Returns the "flat" stride of all the subcomponents.
+  AXOM_HOST_DEVICE inline IntType stride() const
+  {
+    return m_shape[0] * m_strides[0];
+  }
+
+  inline IntType operator()() const { return stride(); }
+  inline IntType& operator()() { return stride(); }
+
+  AXOM_HOST_DEVICE inline ShapeType strides() const { return m_strides; }
+  AXOM_HOST_DEVICE inline ShapeType shape() const { return m_shape; }
+
+private:
+  ShapeType m_shape;
+  ShapeType m_strides;
+};
 
 /// \}
 
