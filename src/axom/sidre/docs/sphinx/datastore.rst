@@ -17,6 +17,12 @@ does is create the datastore object; this operation also creates the root group.
 Apart from providing access to the root group, a datastore provides methods to 
 retrieve and interact with buffers and attributes.
 
+The ``DataStore`` class provides methods to retrieve error state and messages
+arising from I/O errors reading or writing ``Group`` data:
+
+ * Query or set Conduit error flag
+ * Query, append, or clear exception messages from a Conduit I/O error
+
 .. note:: ``Buffer`` and ``Attribute`` objects can only be created and 
           destroyed using ``DataStore`` methods noted below. The ``Buffer`` and
           ``Attribute`` class constructors and destructors are private.

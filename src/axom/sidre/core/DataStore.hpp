@@ -88,6 +88,32 @@ public:
    */
   const Group* getRoot() const { return m_RootGroup; };
 
+  //@{
+  /*!  @name Methods to query and clear Conduit I/O flags and exception messages.
+   *
+   * If an error occurs, the load(), save(), and loadExternalData() methods of
+   * any Group owned by this DataStore will return false (for I/O failure) and
+   * subsequent calls will continue to return false until the user clears the
+   * Conduit errors.
+   */
+
+  /// Return whether a Conduit error occurred.
+  bool getConduitErrorOccurred() const { return !m_conduit_errors.empty(); };
+
+  /// Return information on any Conduit errors.
+  std::string getConduitErrors() const { return m_conduit_errors; };
+
+  /// Clear any Conduit errors.
+  void clearConduitErrors() const { m_conduit_errors.clear(); };
+
+  /// Append a string to the accumulated Conduit errors.
+  void appendToConduitErrors(const std::string& mesg) const
+  {
+    m_conduit_errors = m_conduit_errors + "\n" + mesg;
+  };
+
+  //@}
+
 public:
   //@{
   //!  @name Methods to query, access, create, and destroy Buffers.
@@ -540,6 +566,9 @@ private:
 
   /// Flag indicating whether SLIC logging environment was initialized in ctor.
   bool m_need_to_finalize_slic;
+
+  /// Details of the most recent Conduit error.  Length > 0 indicates an error occurred.
+  mutable std::string m_conduit_errors;
 };
 
 } /* end namespace sidre */
