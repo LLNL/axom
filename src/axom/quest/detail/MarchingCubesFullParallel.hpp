@@ -102,8 +102,8 @@ public:
   void computeContourMesh() override
   {
     markCrossings();
-    new_scanCrossings();
-    new_computeContour();
+    scanCrossings();
+    computeContour();
   }
 
   /*!
@@ -255,7 +255,7 @@ public:
     and m_contourCellParents arrays that defines the unstructured
     contour mesh.
   */
-  void scanCrossings()
+  void old_scanCrossings()
   {
     const axom::IndexType parentCellCount = m_caseIds.size();
     auto caseIdsView = m_caseIds.view();
@@ -314,7 +314,7 @@ public:
                sizeof(facetIncrs_back));
     m_facetCount = firstFacetIds_back + facetIncrs_back;
   }
-  void new_scanCrossings()
+  void scanCrossings()
   {
 #if defined(AXOM_USE_RAJA)
   #ifdef __INTEL_LLVM_COMPILER
@@ -391,7 +391,7 @@ public:
     m_firstFacetIds.resize(m_crossingCount);
   }
 
-  void computeContour()
+  void old_computeContour()
   {
     //
     // Fill in surface mesh data.
@@ -450,7 +450,7 @@ public:
 
     axom::for_all<ExecSpace>(0, parentCellCount, gen_for_parent_cell);
   }
-  void new_computeContour()
+  void computeContour()
   {
     //
     // Fill in surface mesh data.
@@ -537,14 +537,14 @@ public:
 
     template <int TDIM = DIM>
     AXOM_HOST_DEVICE typename std::enable_if<TDIM == 2>::type
-    get_corner_coords_and_values(IndexType cellNum,
+    get_corner_coords_and_values(IndexType parentCellId,
                                  Point cornerCoords[],
                                  double cornerValues[]) const
     {
       const auto& x = coordsViews[0];
       const auto& y = coordsViews[1];
 
-      const auto c = indexer.toMultiIndex(cellNum);
+      const auto c = indexer.toMultiIndex(parentCellId);
       const auto& i = c[0];
       const auto& j = c[1];
 
@@ -562,7 +562,7 @@ public:
     }
     template <int TDIM = DIM>
     AXOM_HOST_DEVICE typename std::enable_if<TDIM == 3>::type
-    get_corner_coords_and_values(IndexType cellNum,
+    get_corner_coords_and_values(IndexType parentCellId,
                                  Point cornerCoords[],
                                  double cornerValues[]) const
     {
@@ -570,7 +570,7 @@ public:
       const auto& y = coordsViews[1];
       const auto& z = coordsViews[2];
 
-      const auto c = indexer.toMultiIndex(cellNum);
+      const auto c = indexer.toMultiIndex(parentCellId);
       const auto& i = c[0];
       const auto& j = c[1];
       const auto& k = c[2];
@@ -814,6 +814,7 @@ public:
 
       mesh.appendNodes((double*)contourNodeCoords.data(),
                        contourNodeCoords.size());
+
       for(int n = 0; n < addedCellCount; ++n)
       {
         MIdx cornerIds = contourCellCorners[n];
@@ -823,8 +824,9 @@ public:
         {
           cornerIds[d] += priorNodeCount;
         }
-        mesh.appendCell(cornerIds);
+        mesh.appendCell(cornerIds); // This takes too long!
       }
+
       axom::IndexType numComponents = -1;
       axom::IndexType* cellIdPtr =
         mesh.getFieldPtr<axom::IndexType>(cellIdField,

@@ -149,8 +149,9 @@ public:
   /*!
     @brief Put generated contour in a mint::UnstructuredMesh.
     @param mesh Output contour mesh
-    @param cellIdField Name of field to store the (axom::IndexType)
-      parent cell ids. If omitted, the data is not provided.
+    @param cellIdField Name of field to store the array of
+      parent cells' multidimensional indices.
+      If empty, the data is not provided.
     @param domainIdField Name of field to store the (axom::IndexType)
       parent domain ids. If omitted, the data is not provided.
 
@@ -310,6 +311,9 @@ public:
     virtual void setContourValue(double contourVal) = 0;
     //!@brief Compute the contour mesh.
     virtual void computeContourMesh() = 0;
+
+    //@{
+    //!@name Output methods
     //!@brief Return number of contour mesh facets generated.
     virtual axom::IndexType getContourCellCount() const = 0;
     /*!
@@ -321,6 +325,8 @@ public:
     virtual void populateContourMesh(
       axom::mint::UnstructuredMesh<axom::mint::SINGLE_SHAPE> &mesh,
       const std::string &cellIdField) const = 0;
+    //@}
+
     virtual ~ImplBase() { }
   };
 
