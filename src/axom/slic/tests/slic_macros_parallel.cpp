@@ -105,6 +105,17 @@ void check_line(const std::string& msg, int expected_line)
 }
 
 //------------------------------------------------------------------------------
+void check_tag(const std::string& msg, const std::string& expected_tag)
+{
+  EXPECT_FALSE(msg.empty());
+
+  // extract tag
+  size_t start = msg.rfind("##") + 2;
+  std::string tag = msg.substr(start, expected_tag.length());
+  EXPECT_EQ(tag, expected_tag);
+}
+
+//------------------------------------------------------------------------------
 bool has_aborted = false;
 void custom_abort_function() { has_aborted = true; }
 
@@ -137,6 +148,9 @@ public:
 
     std::string msgfmt = "[<LEVEL>]:;;<MESSAGE>;;\n@@<FILE>\n@@<LINE>";
 
+    std::string msgtagfmt =
+      "[<LEVEL>]:;;<MESSAGE>;;\n##<TAG>\n@@<FILE>\n@@<LINE>";
+
     if(stream_type == "Lumberjack")
     {
       slic::addStreamToAllMsgLevels(
@@ -144,6 +158,12 @@ public:
                                    MPI_COMM_WORLD,
                                    RLIMIT,
                                    msgfmt));
+
+      slic::addStreamToTag(new slic::LumberjackStream(&slic::internal::test_stream,
+                                                      MPI_COMM_WORLD,
+                                                      RLIMIT,
+                                                      msgtagfmt),
+                           "myTag");
     }
 
     if(stream_type == "Synchronized")
@@ -152,6 +172,12 @@ public:
         new slic::SynchronizedStream(&slic::internal::test_stream,
                                      MPI_COMM_WORLD,
                                      msgfmt));
+
+      slic::addStreamToTag(
+        new slic::SynchronizedStream(&slic::internal::test_stream,
+                                     MPI_COMM_WORLD,
+                                     msgtagfmt),
+        "myTag");
     }
   }
 
@@ -384,6 +410,27 @@ TEST_P(SlicMacrosParallel, test_info_macros)
     check_line(slic::internal::test_stream.str(), __LINE__ - 8);
   }
   slic::internal::clear_streams();
+
+  SLIC_INFO_TAGGED("test tagged info message", "myTag");
+  slic::flushStreams();
+  if(GetParam() == "Synchronized" || (GetParam() == "Lumberjack" && rank == 0))
+  {
+    EXPECT_FALSE(slic::internal::is_stream_empty());
+    check_level(slic::internal::test_stream.str(), "INFO");
+    check_msg(slic::internal::test_stream.str(), "test tagged info message");
+    check_file(slic::internal::test_stream.str());
+    check_line(slic::internal::test_stream.str(), __LINE__ - 8);
+    check_tag(slic::internal::test_stream.str(), "myTag");
+  }
+  slic::internal::clear_streams();
+
+  SLIC_INFO_TAGGED("this message should not be logged (no tag given)!", "");
+  slic::flushStreams();
+  EXPECT_TRUE(slic::internal::is_stream_empty());
+
+  SLIC_INFO_TAGGED("this message should not be logged (tag DNE)!", "tag404");
+  slic::flushStreams();
+  EXPECT_TRUE(slic::internal::is_stream_empty());
 
   SLIC_INFO_IF(false, "this message should not be logged!");
   slic::flushStreams();
