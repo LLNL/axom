@@ -579,6 +579,35 @@ AXOM_HOST_DEVICE inline blackhole &operator<<(blackhole &bh, T)
   } while(axom::slic::detail::false_value)
 
 /*!
+ * \def SLIC_INFO_TAGGED( tag, msg )
+ * \brief Logs an Info message to a tagged stream
+ *
+ * \param [in] tag user-supplied tag
+ * \param [in] msg user-supplied message
+ *
+ * \note The SLIC_INFO macro is always active.
+ *
+ * Usage:
+ * \code
+ *   SLIC_INFO( "tag","informative text goes here" );
+ * \endcode
+ *
+ */
+#define SLIC_INFO_TAGGED(msg, tag)                    \
+  do                                                  \
+  {                                                   \
+    std::ostringstream __oss;                         \
+    __oss << msg;                                     \
+    axom::slic::logMessage(axom::slic::message::Info, \
+                           __oss.str(),               \
+                           tag,                       \
+                           __FILE__,                  \
+                           __LINE__,                  \
+                           false,                     \
+                           true);                     \
+  } while(axom::slic::detail::false_value)
+
+/*!
  * \def SLIC_INFO_IF( EXP, msg )
  * \brief Logs an Info message iff EXP is true
  *
