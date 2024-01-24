@@ -510,10 +510,9 @@ public:
     }
 
     // Create array of elements to back the map.
-    m_allocatorId = ExecTraits<ExecSpace>::getAllocatorId();
     axom::IndexType backingSize = m_set.size() * stride;
 
-    m_realBacking = RealData(backingSize, backingSize, m_allocatorId);
+    m_realBacking = RealData(backingSize, backingSize, m_unifiedAllocatorId);
   }
 
 protected:
