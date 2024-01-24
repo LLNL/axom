@@ -219,7 +219,10 @@ public:
    * \return  An OrderedSet containing the elements in the row.
    * \pre  0 <= pos1 <= set1.size()
    */
-  SubsetType getElements(PositionType s1) const { return (*m_relation)[s1]; }
+  AXOM_HOST_DEVICE SubsetType getElements(PositionType s1) const
+  {
+    return (*m_relation)[s1];
+  }
 
   ElementType at(PositionType pos) const
   {

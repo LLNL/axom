@@ -75,7 +75,7 @@ private:
                 .data(m_data.view());
     }
 
-    Type get(PositionType) const { return m_set; }
+    AXOM_HOST_DEVICE Type get(PositionType) const { return m_set; }
 
     axom::Array<PositionType> m_data;
     SetType m_set;
@@ -91,7 +91,10 @@ private:
 
     RowSet(PositionType) { }
 
-    Type get(PositionType secondSetSize) const { return Type(secondSetSize); }
+    AXOM_HOST_DEVICE Type get(PositionType secondSetSize) const
+    {
+      return Type(secondSetSize);
+    }
   };
 
   struct Iterator;
@@ -220,7 +223,7 @@ public:
    *
    * \return  An OrderedSet of the elements in the row.
    */
-  SubsetType getElements(PositionType AXOM_DEBUG_PARAM(pos1)) const
+  AXOM_HOST_DEVICE SubsetType getElements(PositionType AXOM_DEBUG_PARAM(pos1)) const
   {
     SLIC_ASSERT(pos1 >= 0 && pos1 < this->firstSetSize());
 

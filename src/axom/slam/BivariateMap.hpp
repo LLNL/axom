@@ -124,8 +124,10 @@ public:
     typename policies::ToViewIndirection<IndirectionPolicy>::Type;
   using SubMapConstIndirection =
     typename policies::ToViewIndirection<IndirectionPolicy>::ConstType;
-  using SubMapType = Map<T, OrderedSetType, SubMapIndirection, StrPol>;
-  using ConstSubMapType = Map<T, OrderedSetType, SubMapConstIndirection, StrPol>;
+  using SubMapType =
+    Map<T, OrderedSetType, SubMapIndirection, StrPol, policies::ConcreteInterface>;
+  using ConstSubMapType =
+    Map<T, OrderedSetType, SubMapConstIndirection, StrPol, policies::ConcreteInterface>;
 
   using SubMapIterator = typename SubMapType::iterator;
   using ConstSubMapIterator = typename ConstSubMapType::iterator;
@@ -332,7 +334,7 @@ public:
     auto elemRange = set()->elementRangeSet(firstIdx);
     SetPosition dataOffset = elemRange.offset() * StrPol::stride();
     SetPosition dataSize = elemRange.size() * StrPol::stride();
-    ArrayViewType submapView(m_map.data().data() + dataOffset, dataSize);
+    ArrayViewType submapView(m_map.data().data() + dataOffset, {dataSize});
 
     auto s = set()->getElements(firstIdx);
     return ConstSubMapType(s, submapView, StrPol::shape());
@@ -348,7 +350,7 @@ public:
     auto elemRange = set()->elementRangeSet(firstIdx);
     SetPosition dataOffset = elemRange.offset() * StrPol::stride();
     SetPosition dataSize = elemRange.size() * StrPol::stride();
-    ArrayViewType submapView(m_map.data().data() + dataOffset, dataSize);
+    ArrayViewType submapView(m_map.data().data() + dataOffset, {dataSize});
 
     auto s = set()->getElements(firstIdx);
     return SubMapType(s, submapView, StrPol::shape());
