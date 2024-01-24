@@ -877,11 +877,11 @@ void slam_bivariate_map_templated<ExecutionSpace>::initializeAndTestCartesianMap
 
             double* ptr = m.findValue(idx1, idx2, i, j, k);
             EXPECT_NE(ptr, nullptr);
-            EXPECT_EQ(*ptr, getVal<double>(idx1, idx2, flatCompIdx));
+            EXPECT_DOUBLE_EQ(*ptr, getVal<double>(idx1, idx2, flatCompIdx));
             // Test other access methods:
-            EXPECT_EQ(*ptr, m.flatValue(bsetIndex, i, j, k));
-            EXPECT_EQ(*ptr, m(idx1, idx2, i, j, k));
-            EXPECT_EQ(*ptr, m[flatIdx]);
+            EXPECT_DOUBLE_EQ(*ptr, m.flatValue(bsetIndex, i, j, k));
+            EXPECT_DOUBLE_EQ(*ptr, m(idx1, idx2, i, j, k));
+            EXPECT_DOUBLE_EQ(*ptr, m[flatIdx]);
           }
     }
   }

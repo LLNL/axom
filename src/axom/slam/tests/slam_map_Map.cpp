@@ -666,11 +666,11 @@ AXOM_TYPED_TEST(slam_map_templated, constructAndTest2DStride)
       for(int j = 0; j < shape[1]; j++)
       {
         double expectedValue = setIdx * multFac + i * multFac2 + j * multFac3;
-        EXPECT_EQ(m(setIdx, i, j), expectedValue);
-        EXPECT_EQ(m.value(setIdx, i, j), expectedValue);
+        EXPECT_DOUBLE_EQ(m(setIdx, i, j), expectedValue);
+        EXPECT_DOUBLE_EQ(m.value(setIdx, i, j), expectedValue);
 
         int flatIndex = i * strides[0] + j * strides[1];
-        EXPECT_EQ(m[setIdx * stride + flatIndex], expectedValue);
+        EXPECT_DOUBLE_EQ(m[setIdx * stride + flatIndex], expectedValue);
       }
     }
   }
