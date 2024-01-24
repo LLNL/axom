@@ -72,7 +72,8 @@ void LumberjackStream::append(message::Level msgLevel,
                               const std::string& tagName,
                               const std::string& fileName,
                               int line,
-                              bool AXOM_UNUSED_PARAM(filter_duplicates))
+                              bool AXOM_UNUSED_PARAM(filter_duplicates),
+                              bool AXOM_UNUSED_PARAM(tag_stream_only))
 {
   if(m_lj == nullptr)
   {

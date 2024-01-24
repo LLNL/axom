@@ -191,7 +191,8 @@ void logMessage(message::Level level,
 void logMessage(message::Level level,
                 const std::string& message,
                 const std::string& tag,
-                bool filter_duplicates)
+                bool filter_duplicates,
+                bool tag_stream_only)
 {
   ensureInitialized();
   Logger::getActiveLogger()->logMessage(level, message, tag, filter_duplicates);
@@ -218,7 +219,8 @@ void logMessage(message::Level level,
                 const std::string& tag,
                 const std::string& fileName,
                 int line,
-                bool filter_duplicates)
+                bool filter_duplicates,
+                bool tag_stream_only)
 {
   ensureInitialized();
   Logger::getActiveLogger()

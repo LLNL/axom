@@ -248,11 +248,14 @@ void logMessage(message::Level level,
  * \param [in] filter_duplicates optional parameter that indicates whether
  * duplicate messages resulting from running in parallel will be filtered out.
  * Default is false.
+ * /param [in] tag_stream_only optional parameter that indicates whether the
+ * message will go only to streams bound to tagName. Default is false.
  */
 void logMessage(message::Level level,
                 const std::string& message,
                 const std::string& tag,
-                bool filter_duplicates = false);
+                bool filter_duplicates = false,
+                bool tag_stream_only = false);
 
 /*!
  * \brief Logs the given message to all registered streams.
@@ -282,13 +285,16 @@ void logMessage(message::Level level,
  * \param [in] filter_duplicates optional parameter that indicates whether
  * duplicate messages resulting from running in parallel will be filtered out.
  * Default is false.
+ * /param [in] tag_stream_only optional parameter that indicates whether the
+ * message will go only to streams bound to tagName. Default is false.
  */
 void logMessage(message::Level level,
                 const std::string& message,
                 const std::string& tag,
                 const std::string& fileName,
                 int line,
-                bool filter_duplicates = false);
+                bool filter_duplicates = false,
+                bool tag_stream_only = false);
 
 /*!
  * \brief Convenience method to log an error message.
