@@ -405,7 +405,10 @@ TEST(slic_macros, test_tagged_macros)
   check_tag(slic::internal::test_stream.str(), "myTag");
   slic::internal::clear();
 
-  SLIC_INFO_TAGGED("this message should not be logged!", "tag404");
+  SLIC_INFO_TAGGED("this message should not be logged (no tag given)!", "");
+  EXPECT_TRUE(slic::internal::is_stream_empty());
+
+  SLIC_INFO_TAGGED("this message should not be logged (tag DNE)!", "tag404");
   EXPECT_TRUE(slic::internal::is_stream_empty());
 }
 
