@@ -97,6 +97,8 @@ public:
   using SetPosition = typename BSet::PositionType;
   using SetElement = typename BSet::ElementType;
 
+  using ElementShape = typename StridePolicyType::ShapeType;
+
   using SetType = typename slam::RangeSet<SetPosition, SetElement>::ConcreteSet;
   using MapType = Map<DataType, SetType, IndPol, StrPol, IfacePol>;
   using OrderedSetType = typename BSet::SubsetType;
@@ -185,19 +187,18 @@ public:
    * \param bSet          (Optional) Pointer to the BivariateSet.
    * \param defaultValue  (Optional) The default value used to initialize the
    *                      entries of the map.
-   * \param stride        (Optional) The stride, or number of component, of the
-   *                      map.
+   * \param shape         (Optional) The number of components in the map.
    *
    * \note  When using a compile time StridePolicy, \a stride must be equal to
    *        \a StridePolicy::stride(), when provided.
    */
   BivariateMap(const BivariateSetType* bSet = &s_nullBiSet,
                DataType defaultValue = DataType(),
-               SetPosition stride = StridePolicyType::DEFAULT_VALUE,
+               ElementShape shape = StridePolicyType::DefaultSize(),
                int allocatorID = axom::getDefaultAllocatorID())
-    : StridePolicyType(stride)
+    : StridePolicyType(shape)
     , m_bset(bSet)
-    , m_map(SetType(bSet->size()), defaultValue, stride, allocatorID)
+    , m_map(SetType(bSet->size()), defaultValue, shape, allocatorID)
   { }
 
   /// \overload
@@ -207,11 +208,11 @@ public:
               std::is_base_of<BivariateSetType, UBSet>::value>::type>
   BivariateMap(const UBSet& bSet,
                DataType defaultValue = DataType(),
-               SetPosition stride = StridePolicyType::DEFAULT_VALUE,
+               ElementShape shape = StridePolicyType::DefaultSize(),
                int allocatorID = axom::getDefaultAllocatorID())
-    : StridePolicyType(stride)
+    : StridePolicyType(shape)
     , m_bset(bSet)
-    , m_map(SetType(bSet->size()), defaultValue, stride, allocatorID)
+    , m_map(SetType(bSet->size()), defaultValue, shape, allocatorID)
   {
     static_assert(std::is_same<BivariateSetType, UBSet>::value,
                   "Argument set is of a more-derived type than the Map's set "
@@ -225,18 +226,18 @@ public:
    *
    * \param bSet    A reference to the map's associated bivariate set
    * \param data    The data buffer to set the map's data to.
-   * \param stride  (Optional) The stride. The number of DataType that
-   *                each element in the set will be mapped to.
+   * \param shape   (Optional) The number of DataType that each element in the
+   *                set will be mapped to.
    *                When using a \a RuntimeStridePolicy, the default is 1.
    * \note  When using a compile time StridePolicy, \a stride must be equal to
    *        \a stride(), when provided.
    */
   BivariateMap(const BivariateSetType* bSet,
                typename MapType::OrderedMap data,
-               SetPosition stride = StridePolicyType::DEFAULT_VALUE)
-    : StridePolicyType(stride)
+               ElementShape shape = StridePolicyType::DefaultSize())
+    : StridePolicyType(shape)
     , m_bset(bSet)
-    , m_map(SetType(bSet->size()), data, stride)
+    , m_map(SetType(bSet->size()), data, shape)
   { }
 
   /**
@@ -245,8 +246,8 @@ public:
    *
    * \param bSet    A reference to the map's associated bivariate set
    * \param data    The data buffer to set the map's data to.
-   * \param stride  (Optional) The stride. The number of DataType that
-   *                each element in the set will be mapped to.
+   * \param shape   (Optional) The number of DataType that each element in the
+   *                set will be mapped to.
    *                When using a \a RuntimeStridePolicy, the default is 1.
    * \note  When using a compile time StridePolicy, \a stride must be equal to
    *        \a stride(), when provided.
@@ -258,10 +259,10 @@ public:
                                       std::is_base_of<TBSet, UBSet>::value>::type>
   BivariateMap(const UBSet& bSet,
                typename MapType::OrderedMap data,
-               SetPosition stride = StridePolicyType::DEFAULT_VALUE)
-    : StridePolicyType(stride)
+               ElementShape shape = StridePolicyType::DefaultSize())
+    : StridePolicyType(shape)
     , m_bset(bSet)
-    , m_map(SetType(bSet.size()), data, stride)
+    , m_map(SetType(bSet.size()), data, shape)
   {
     static_assert(std::is_same<BivariateSetType, UBSet>::value,
                   "Argument set is of a more-derived type than the Map's set "
@@ -334,7 +335,7 @@ public:
     ArrayViewType submapView(m_map.data().data() + dataOffset, dataSize);
 
     auto s = set()->getElements(firstIdx);
-    return ConstSubMapType(s, submapView, StrPol::stride());
+    return ConstSubMapType(s, submapView, StrPol::shape());
   }
 
   AXOM_HOST_DEVICE SubMapType operator()(SetPosition firstIdx)
@@ -350,7 +351,7 @@ public:
     ArrayViewType submapView(m_map.data().data() + dataOffset, dataSize);
 
     auto s = set()->getElements(firstIdx);
-    return SubMapType(s, submapView, StrPol::stride());
+    return SubMapType(s, submapView, StrPol::shape());
   }
 
   /**
@@ -361,20 +362,22 @@ public:
    * \pre `0 <= s2 < size(s1)`
    * \pre `0 <= comp < numComp()`
    */
+  template <typename... ComponentIndex>
   AXOM_HOST_DEVICE ConstValueType operator()(SetPosition s1,
                                              SetPosition s2,
-                                             SetPosition comp = 0) const
+                                             ComponentIndex... comp) const
   {
     auto idx = flatIndex(s1, s2);
-    return useCompIndexing() ? m_map(idx, comp) : m_map[idx];
+    return flatValue(idx, comp...);
   }
 
+  template <typename... ComponentIndex>
   AXOM_HOST_DEVICE ValueType operator()(SetPosition s1,
                                         SetPosition s2,
-                                        SetPosition comp = 0)
+                                        ComponentIndex... comp)
   {
     auto idx = flatIndex(s1, s2);
-    return useCompIndexing() ? m_map(idx, comp) : m_map[idx];
+    return flatValue(idx, comp...);
   }
 
   /**
@@ -384,15 +387,18 @@ public:
    * \pre `0 <= flatIndex < size()`
    * \pre `0 <= comp < numComp()`
    */
+  template <typename... ComponentIndex>
   AXOM_HOST_DEVICE ConstValueType flatValue(SetPosition flatIndex,
-                                            SetPosition comp = 0) const
+                                            ComponentIndex... comp) const
   {
-    return useCompIndexing() ? m_map(flatIndex, comp) : m_map[flatIndex];
+    return m_map(flatIndex, comp...);
   }
 
-  AXOM_HOST_DEVICE ValueType flatValue(SetPosition flatIndex, SetPosition comp = 0)
+  template <typename... ComponentIndex>
+  AXOM_HOST_DEVICE ValueType flatValue(SetPosition flatIndex,
+                                       ComponentIndex... comp)
   {
-    return useCompIndexing() ? m_map(flatIndex, comp) : m_map[flatIndex];
+    return m_map(flatIndex, comp...);
   }
 
   /**
@@ -408,9 +414,10 @@ public:
    * \warning For sparse BivariateSet type, this function may have to do a
    *          linear search and can be slow.
    */
+  template <typename... ComponentIndex>
   AXOM_HOST_DEVICE ConstPointerType findValue(SetPosition s1,
                                               SetPosition s2,
-                                              SetPosition comp = 0) const
+                                              ComponentIndex... comp) const
   {
     SetPosition i = set()->findElementFlatIndex(s1, s2);
     if(i == BivariateSetType::INVALID_POS)
@@ -418,12 +425,13 @@ public:
       //the BivariateSet does not contain this index pair
       return nullptr;
     }
-    return &(m_map(i, comp));
+    return &(m_map(i, comp...));
   }
 
+  template <typename... ComponentIndex>
   AXOM_HOST_DEVICE PointerType findValue(SetPosition s1,
                                          SetPosition s2,
-                                         SetPosition comp = 0)
+                                         ComponentIndex... comp)
   {
     SetPosition i = set()->findElementFlatIndex(s1, s2);
     if(i == BivariateSetType::INVALID_POS)
@@ -431,7 +439,7 @@ public:
       //the BivariateSet does not contain this index pair
       return nullptr;
     }
-    return &(m_map(i, comp));
+    return &(m_map(i, comp...));
   }
 
   /// @}
@@ -474,16 +482,6 @@ public:
   /// @}
 
 protected:
-  /**
-   * \brief Compile time predicate to check if we should use component indexing
-   *
-   * \note Intended to help optimize internal indexing
-   */
-  AXOM_HOST_DEVICE constexpr bool useCompIndexing() const
-  {
-    return !(StrPol::IS_COMPILE_TIME && StrPol::DEFAULT_VALUE == 1);
-  }
-
   /**
    * \brief Utility function to determine if submaps should use indirection
    * when finding the set indices of their elements.
