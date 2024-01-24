@@ -80,7 +80,8 @@ public:
   GenericRangeSet(const OtherIfaceSet& otherSet) : OrderedSetType(otherSet) { }
 
 public:
-  GenericRangeSet(PositionType size = OrderedSetType::SizePolicyType::DEFAULT_VALUE)
+  AXOM_HOST_DEVICE GenericRangeSet(
+    PositionType size = OrderedSetType::SizePolicyType::DEFAULT_VALUE)
     : OrderedSetType(size,
                      OrderedSetType::OffsetPolicyType::DEFAULT_VALUE,
                      OrderedSetType::StridePolicyType::DEFAULT_VALUE)

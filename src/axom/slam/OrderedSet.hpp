@@ -92,13 +92,13 @@ public:
   using iterator_pair = std::pair<iterator, iterator>;
 
 public:
-  OrderedSet(PositionType size = SizePolicyType::DEFAULT_VALUE,
-             PositionType offset = OffsetPolicyType::DEFAULT_VALUE,
-             PositionType stride = StridePolicyType::DEFAULT_VALUE
-             // Note: constructor does not yet take an
-             // indirection type pointer...
-             // const Set* parentSet = &s_nullSet
-             )
+  AXOM_HOST_DEVICE OrderedSet(PositionType size = SizePolicyType::DEFAULT_VALUE,
+                              PositionType offset = OffsetPolicyType::DEFAULT_VALUE,
+                              PositionType stride = StridePolicyType::DEFAULT_VALUE
+                              // Note: constructor does not yet take an
+                              // indirection type pointer...
+                              // const Set* parentSet = &s_nullSet
+                              )
     : SizePolicyType(size)
     , OffsetPolicyType(offset)
     , StridePolicyType(stride)
@@ -474,7 +474,10 @@ public:
     return IndirectionPolicy::indirection(pos * StridePolicyType::stride() +
                                           OffsetPolicyType::offset());
   }
-  inline ElementType at(PositionType pos) const { return operator[](pos); }
+  AXOM_HOST_DEVICE inline ElementType at(PositionType pos) const
+  {
+    return operator[](pos);
+  }
 
   AXOM_HOST_DEVICE inline PositionType size() const
   {
