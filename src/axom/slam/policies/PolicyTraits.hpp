@@ -16,6 +16,7 @@
 #include "axom/slam/NullSet.hpp"
 #include "axom/slam/policies/SizePolicies.hpp"
 #include "axom/slam/policies/StridePolicies.hpp"
+#include "axom/slam/policies/IndirectionPolicies.hpp"
 
 #include <utility>
 
@@ -96,6 +97,32 @@ struct EmptySetTraits<slam::Set<P, E>>
   {
     return set == nullptr || set->empty();
   }
+};
+
+/*!
+ * \brief Type trait to get a compatible ArrayView-based indirection policy for
+ *  another indirection policy.
+ */
+template <typename IndirectionPolicy,
+          typename SetPosition = typename IndirectionPolicy::PosType,
+          typename T = typename IndirectionPolicy::ElemType>
+struct ToViewIndirection
+{
+  using Type = policies::ArrayViewIndirection<SetPosition, T>;
+  using ConstType = policies::ArrayViewIndirection<SetPosition, const T>;
+};
+
+/*!
+ * \brief Specialization for ArrayViewIndirection.
+ *
+ *  Since ArrayViews are shallow-const types, we just pass through the
+ *  constness of the original ArrayView.
+ */
+template <typename SetPosition, typename T>
+struct ToViewIndirection<ArrayViewIndirection<SetPosition, T>>
+{
+  using Type = policies::ArrayViewIndirection<SetPosition, T>;
+  using ConstType = policies::ArrayViewIndirection<SetPosition, T>;
 };
 
 }  // end namespace policies
