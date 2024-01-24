@@ -227,6 +227,55 @@ void addStreamToAllMsgLevels(LogStream* ls);
 void addStreamToAllMsgLevels(GenericOutputStream* ls);
 
 /*!
+* \brief Binds the given stream to the given tag.
+*
+* \param [in] ls pointer to the user-supplied LogStream object.
+* \param [in] tag the tag that this stream will be associated with.
+*
+* \pre ls != nullptr.
+*/
+void addStreamToTag(LogStream* ls, const std::string& tag);
+
+/*!
+* \brief Binds the given GenericOutputStream to the given tag.
+*
+* \param [in] ls pointer to the user-supplied GenericOutputStream.
+* \param [in] tag the tag that this stream will be associated with.
+*
+* \pre ls != nullptr.
+*/
+void addStreamToTag(GenericOutputStream* ls, const std::string& tag);
+
+/*!
+* \brief Binds the given stream to all the tags.
+*
+* \param [in] ls pointer to the user-supplied LogStream object.
+*
+* \pre ls != nullptr.
+*/
+void addStreamToAllTags(LogStream* ls);
+
+/*!
+* \brief Binds the given GenericOutputStream to all the tags.
+*
+* \param [in] ls pointer to the user-supplied GenericOutputStream.
+*
+* \pre ls != nullptr.
+*/
+void addStreamToAllTags(GenericOutputStream* ls);
+
+/*!
+* \brief Returns the number of streams for a given tag.
+*        Returns 0 if the tag does not exist.
+*
+* \param [in] tag the tag in query.
+*
+* \return N the number of streams for the given tag.
+* \post N >= 0
+*/
+int getNumStreamsAtTag(const std::string& tag);
+
+/*!
  * \brief Logs the given message to all registered streams.
  *
  * \param [in] level the level of the message being logged.

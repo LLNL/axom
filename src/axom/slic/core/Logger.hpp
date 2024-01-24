@@ -216,7 +216,7 @@ public:
    *
    * \param [in] tag the tag in query.
    *
-   * \return N the number of streams at the given level.
+   * \return N the number of streams for the given tag.
    * \post N >= 0
    */
   int getNumStreamsAtTag(const std::string& tag);

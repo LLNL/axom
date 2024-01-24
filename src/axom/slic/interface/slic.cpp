@@ -179,6 +179,41 @@ void addStreamToAllMsgLevels(GenericOutputStream* ls)
 }
 
 //------------------------------------------------------------------------------
+void addStreamToTag(LogStream* ls, const std::string& tag)
+{
+  ensureInitialized();
+  Logger::getActiveLogger()->addStreamToTag(ls, tag);
+}
+
+//------------------------------------------------------------------------------
+void addStreamToTag(GenericOutputStream* ls, const std::string& tag)
+{
+  ensureInitialized();
+  Logger::getActiveLogger()->addStreamToTag(ls, tag);
+}
+
+//------------------------------------------------------------------------------
+void addStreamToAllTags(LogStream* ls)
+{
+  ensureInitialized();
+  Logger::getActiveLogger()->addStreamToAllTags(ls);
+}
+
+//------------------------------------------------------------------------------
+void addStreamToAllTags(GenericOutputStream* ls)
+{
+  ensureInitialized();
+  Logger::getActiveLogger()->addStreamToAllTags(ls);
+}
+
+//------------------------------------------------------------------------------
+int getNumStreamsAtTag(const std::string& tag)
+{
+  ensureInitialized();
+  return Logger::getActiveLogger()->getNumStreamsAtTag(tag);
+}
+
+//------------------------------------------------------------------------------
 void logMessage(message::Level level,
                 const std::string& message,
                 bool filter_duplicates)
@@ -195,7 +230,11 @@ void logMessage(message::Level level,
                 bool tag_stream_only)
 {
   ensureInitialized();
-  Logger::getActiveLogger()->logMessage(level, message, tag, filter_duplicates);
+  Logger::getActiveLogger()->logMessage(level,
+                                        message,
+                                        tag,
+                                        filter_duplicates,
+                                        tag_stream_only);
 }
 
 //------------------------------------------------------------------------------
@@ -223,8 +262,13 @@ void logMessage(message::Level level,
                 bool tag_stream_only)
 {
   ensureInitialized();
-  Logger::getActiveLogger()
-    ->logMessage(level, message, tag, fileName, line, filter_duplicates);
+  Logger::getActiveLogger()->logMessage(level,
+                                        message,
+                                        tag,
+                                        fileName,
+                                        line,
+                                        filter_duplicates,
+                                        tag_stream_only);
 }
 
 //------------------------------------------------------------------------------
