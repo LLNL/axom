@@ -189,6 +189,29 @@ void Logger::addStreamToAllMsgLevels(LogStream* ls)
 }
 
 //------------------------------------------------------------------------------
+void Logger::addStreamToAllTags(LogStream* ls)
+{
+  if(ls == nullptr)
+  {
+    std::cerr << "WARNING: supplied log stream is NULL!\n";
+    return;
+  }
+
+  if(ls == nullptr)
+  {
+    std::cerr << "WARNING: no tags are available!\n";
+    return;
+  }
+
+  std::map<std::string, std::vector<LogStream*>>::iterator it;
+
+  for(it = m_taggedStreams.begin(); it != m_taggedStreams.end(); it++)
+  {
+    this->addStreamToTag(ls, it->first);
+  }
+}
+
+//------------------------------------------------------------------------------
 int Logger::getNumStreamsAtMsgLevel(message::Level level)
 {
   return static_cast<int>(m_logStreams[level].size());

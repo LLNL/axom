@@ -201,6 +201,16 @@ public:
                       bool pass_ownership = true);
 
   /*!
+   * \brief Binds the given stream to all the tags for this Logger instance.
+   *
+   * \param [in] ls pointer to the user-supplied LogStream object.
+   *
+   * \note The Logger takes ownership of the LogStream object.
+   * \pre ls != NULL.
+   */
+  void addStreamToAllTags(LogStream* ls);
+
+  /*!
    * \brief Returns the number of streams for a given tag.
    *        Returns 0 if the tag does not exist.
    *
