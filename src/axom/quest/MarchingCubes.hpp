@@ -346,18 +346,6 @@ public:
   */
   int getDomainId(int defaultId) const;
 
-#if 0
-  /*!
-   * \brief Compute the isocontour.
-   *
-   * \param [in] contourVal isocontour value
-   *
-   * Compute isocontour using the marching cubes algorithm.
-   */
-  void computeIsocontour(double contourVal = 0.0);
-#endif
-
-
   //!@brief Get number of cells in the generated contour mesh.
   axom::IndexType getContourCellCount() const
   {
@@ -373,23 +361,6 @@ public:
   {
     return m_ndim * getContourCellCount();
   }
-
-#if 0
-  /*!
-    @brief Put generated contour surface in a mint::UnstructuredMesh
-    object.
-
-    @param mesh Output mesh
-    @param cellIdField Name of field to store the prent cell ids.
-      If omitted, the data is not copied.
-  */
-  void populateContourMesh(
-    axom::mint::UnstructuredMesh<axom::mint::SINGLE_SHAPE> &mesh,
-    const std::string &cellIdField = {}) const
-  {
-    m_impl->populateContourMesh(mesh, cellIdField);
-  }
-#endif
 
   /*!
     @brief Base class for implementations templated on dimension DIM
@@ -431,17 +402,6 @@ public:
     //!@name Output methods
     //!@brief Return number of contour mesh facets generated.
     virtual axom::IndexType getContourCellCount() const = 0;
-#if 0
-    /*!
-      @brief Populate output mesh object with generated contour.
-
-      Note: Output format is in flux.  We will likely output
-      a blueprint object in the future.
-    */
-    virtual void populateContourMesh(
-      axom::mint::UnstructuredMesh<axom::mint::SINGLE_SHAPE> &mesh,
-      const std::string &cellIdField) const = 0;
-#endif
     //@}
 
     void setOutputBuffers(

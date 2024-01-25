@@ -60,7 +60,6 @@ void MarchingCubes::setFunctionField(const std::string& fcnField)
 
 void MarchingCubes::computeIsocontour(double contourVal)
 {
-#if 1
   // Mark and scan domains while adding up their
   // facet counts to get the total facet counts.
   m_facetIndexOffsets.resize(m_singles.size());
@@ -93,17 +92,6 @@ void MarchingCubes::computeIsocontour(double contourVal)
   {
     m_singles[d]->computeContour();
   }
-#else
-  SLIC_ASSERT_MSG(!m_fcnFieldName.empty(),
-                  "You must call setFunctionField before computeIsocontour.");
-
-  for(int dId = 0; dId < m_singles.size(); ++dId)
-  {
-    std::unique_ptr<MarchingCubesSingleDomain>& single = m_singles[dId];
-    single->setDataParallelism(m_dataParallelism);
-    single->computeIsocontour(contourVal);
-  }
-#endif
 }
 
 axom::IndexType MarchingCubes::getContourCellCount() const
@@ -150,7 +138,6 @@ void MarchingCubes::populateContourMesh(
   mesh.reserveCells(contourCellCount);
   mesh.reserveNodes(contourNodeCount);
 
-#if 1
   if (m_facetCount) {
     mesh.appendCells(m_facetNodeIds.data(), m_facetCount);
     mesh.appendNodes(m_facetNodeCoords.data(), mesh.getDimension()*m_facetCount);
@@ -176,33 +163,6 @@ void MarchingCubes::populateContourMesh(
         m_singles[d]->getDomainId(d));
     }
   }
-#else
-  // Populate mesh from single domains and add domain id if requested.
-  for(int dId = 0; dId < m_singles.size(); ++dId)
-  {
-    std::unique_ptr<MarchingCubesSingleDomain>& single = m_singles[dId];
-
-    auto nPrev = mesh.getNumberOfCells();
-    single->populateContourMesh(mesh, cellIdField);
-    auto nNew = mesh.getNumberOfCells();
-
-    if(nNew > nPrev && !domainIdField.empty())
-    {
-      auto* domainIdPtr =
-        mesh.getFieldPtr<axom::IndexType>(domainIdField,
-                                          axom::mint::CELL_CENTERED);
-
-      int userDomainId = single->getDomainId(dId);
-
-      axom::detail::ArrayOps<axom::IndexType, MemorySpace::Dynamic>::fill(
-        domainIdPtr,
-        nPrev,
-        nNew - nPrev,
-        execution_space<axom::SEQ_EXEC>::allocatorID(),
-        userDomainId);
-    }
-  }
-#endif
   SLIC_ASSERT(mesh.getNumberOfNodes() == contourNodeCount);
   SLIC_ASSERT(mesh.getNumberOfCells() == contourCellCount);
 }
@@ -336,36 +296,6 @@ int MarchingCubesSingleDomain::getDomainId(int defaultId) const
   }
   return rval;
 }
-
-#if 0
-void MarchingCubesSingleDomain::computeIsocontour(double contourVal)
-{
-  SLIC_ASSERT_MSG(!m_fcnFieldName.empty(),
-                  "You must call setFunctionField before computeIsocontour.");
-
-  // We have 2 implementations.  MarchingCubesHybridParallel is faster on the host
-  // and MarchingCubesFullParallel is faster on GPUs.  Both work in all cases.
-  // We can choose based on runtime policy or by user choice
-  if(m_dataParallelism ==
-       axom::quest::MarchingCubesDataParallelism::hybridParallel ||
-     (m_dataParallelism == axom::quest::MarchingCubesDataParallelism::byPolicy &&
-      m_runtimePolicy == RuntimePolicy::seq))
-  {
-    m_impl = axom::quest::detail::marching_cubes::newMarchingCubesHybridParallel(
-      m_runtimePolicy,
-      m_ndim);
-  }
-  else
-  {
-    m_impl = axom::quest::detail::marching_cubes::newMarchingCubesFullParallel(
-      m_runtimePolicy,
-      m_ndim);
-  }
-  m_impl->initialize(*m_dom, m_topologyName, m_fcnFieldName, m_maskFieldName);
-  m_impl->setContourValue(contourVal);
-  m_impl->computeContourMesh();
-}
-#endif
 
 }  // end namespace quest
 }  // end namespace axom

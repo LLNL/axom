@@ -13,7 +13,6 @@
 
 #include "axom/core/execution/execution_space.hpp"
 #include "axom/quest/ArrayIndexer.hpp"
-#include "axom/quest/detail/marching_cubes_lookup.hpp"
 #include "axom/quest/MeshViewUtil.hpp"
 #include "axom/primal/geometry/Point.hpp"
 #include "axom/primal/constants.hpp"
@@ -103,15 +102,6 @@ public:
   {
     m_contourVal = contourVal;
   }
-
-#if 0
-  void computeContourMesh() override
-  {
-    markCrossings();
-    scanCrossings();
-    computeContour();
-  }
-#endif
 
   /*!
     @brief Implementation of virtual markCrossings.
@@ -256,71 +246,6 @@ public:
       }
     }
   };  // MarkCrossings_Util
-
-  /*!
-    @brief Populate the 1D m_contourNodeCoords, m_contourCellCorners
-    and m_contourCellParents arrays that defines the unstructured
-    contour mesh.
-  */
-  void old_scanCrossings()
-  {
-    const axom::IndexType parentCellCount = m_caseIds.size();
-    auto caseIdsView = m_caseIds.view();
-
-    // Compute number of surface facets added by each parent cell.
-    m_facetIncrs.resize(parentCellCount);
-    const auto facetIncrsView = m_facetIncrs.view();
-
-    axom::for_all<ExecSpace>(
-      0,
-      parentCellCount,
-      AXOM_LAMBDA(axom::IndexType parentCellId) {
-        facetIncrsView.flatIndex(parentCellId) =
-          num_contour_cells(caseIdsView.flatIndex(parentCellId));
-      });
-
-    // Compute index of first facet added by each parent cell
-    // (whether the cell generates any facet!).
-    m_firstFacetIds.resize(parentCellCount);
-    const axom::ArrayView<axom::IndexType, 1, MemorySpace> firstFacetIdsView =
-      m_firstFacetIds.view();
-#if defined(AXOM_USE_RAJA)
-  #ifdef __INTEL_LLVM_COMPILER
-    // Intel oneAPI compiler segfaults with OpenMP RAJA scan
-    using ScanPolicy =
-      typename axom::execution_space<axom::SEQ_EXEC>::loop_policy;
-  #else
-    using ScanPolicy = typename axom::execution_space<ExecSpace>::loop_policy;
-  #endif
-
-    RAJA::exclusive_scan<ScanPolicy>(
-      RAJA::make_span(facetIncrsView.data(), parentCellCount),
-      RAJA::make_span(firstFacetIdsView.data(), parentCellCount),
-      RAJA::operators::plus<axom::IndexType> {});
-
-    // m_facetIncrs and m_firstFacetIds, combined with m_caseIds,
-    // are all we need to compute the surface mesh.
-#else
-    firstFacetIdsView[0] = 0;
-    for(axom::IndexType pcId = 1; pcId < parentCellCount; ++pcId)
-    {
-      firstFacetIdsView[pcId] =
-        firstFacetIdsView[pcId - 1] + facetIncrsView[pcId - 1];
-    }
-#endif
-
-    // Use last facet info to compute number of facets in domain.
-    // In case data is on device, copy to host before computing.
-    axom::IndexType firstFacetIds_back = 0;
-    FacetIdType facetIncrs_back = 0;
-    axom::copy(&firstFacetIds_back,
-               m_firstFacetIds.data() + m_firstFacetIds.size() - 1,
-               sizeof(firstFacetIds_back));
-    axom::copy(&facetIncrs_back,
-               m_facetIncrs.data() + m_facetIncrs.size() - 1,
-               sizeof(facetIncrs_back));
-    m_facetCount = firstFacetIds_back + facetIncrs_back;
-  }
   void scanCrossings() override
   {
 #if defined(AXOM_USE_RAJA)
@@ -402,70 +327,8 @@ public:
     m_firstFacetIds.resize(m_crossingCount);
   }
 
-#if 0
-  void old_computeContour()
-  {
-    //
-    // Fill in surface mesh data.
-    //
-
-    // Allocate space for surface mesh.
-    const axom::IndexType cornersCount = DIM * m_facetCount;
-    m_contourCellParents.resize(m_facetCount);
-    m_contourCellCorners.resize(m_facetCount);
-    m_contourNodeCoords.resize(cornersCount);
-
-    const axom::IndexType parentCellCount = m_caseIds.size();
-    const auto facetIncrsView = m_facetIncrs.view();
-    const auto firstFacetIdsView = m_firstFacetIds.view();
-    const auto caseIdsView = m_caseIds.view();
-
-    auto contourCellParentsView = m_contourCellParents.view();
-    auto contourCellCornersView = m_contourCellCorners.view();
-    auto contourNodeCoordsView = m_contourNodeCoords.view();
-
-    ComputeContour_Util ccu(m_contourVal,
-                            m_caseIds.strides(),
-                            m_fcnView,
-                            m_coordsViews);
-    auto gen_for_parent_cell = AXOM_LAMBDA(axom::IndexType parentCellId)
-    {
-      Point cornerCoords[CELL_CORNER_COUNT];
-      double cornerValues[CELL_CORNER_COUNT];
-      ccu.get_corner_coords_and_values(parentCellId, cornerCoords, cornerValues);
-
-      auto additionalFacets = facetIncrsView[parentCellId];
-      auto firstFacetId = firstFacetIdsView[parentCellId];
-
-      auto caseId = caseIdsView.flatIndex(parentCellId);
-
-      for(axom::IndexType fId = 0; fId < additionalFacets; ++fId)
-      {
-        axom::IndexType newFacetId = firstFacetId + fId;
-        axom::IndexType firstCornerId = newFacetId * DIM;
-
-        contourCellParentsView[newFacetId] = parentCellId;
-
-        for(axom::IndexType d = 0; d < DIM; ++d)
-        {
-          axom::IndexType newCornerId = firstCornerId + d;
-          contourCellCornersView[newFacetId][d] = newCornerId;
-
-          int edge = cases_table(caseId, fId * DIM + d);
-          ccu.linear_interp(edge,
-                            cornerCoords,
-                            cornerValues,
-                            contourNodeCoordsView[newCornerId]);
-        }
-      }
-    };
-
-    axom::for_all<ExecSpace>(0, parentCellCount, gen_for_parent_cell);
-  }
-#endif
   void computeContour() override
   {
-#if 1
     const auto facetIncrsView = m_facetIncrs.view();
     const auto firstFacetIdsView = m_firstFacetIds.view();
     const auto crossingParentIdsView = m_crossingParentIds.view();
@@ -515,60 +378,6 @@ public:
     };
 
     axom::for_all<ExecSpace>(0, m_crossingCount, gen_for_parent_cell);
-#else
-    // Allocate space for surface mesh.
-    const axom::IndexType cornersCount = DIM * m_facetCount;
-    m_contourCellParents.resize(m_facetCount);
-    m_contourCellCorners.resize(m_facetCount);
-    m_contourNodeCoords.resize(cornersCount);
-
-    const auto facetIncrsView = m_facetIncrs.view();
-    const auto firstFacetIdsView = m_firstFacetIds.view();
-    const auto crossingParentIdsView = m_crossingParentIds.view();
-    const auto caseIdsView = m_caseIds.view();
-
-    auto contourCellParentsView = m_contourCellParents.view();
-    auto contourCellCornersView = m_contourCellCorners.view();
-    auto contourNodeCoordsView = m_contourNodeCoords.view();
-
-    ComputeContour_Util ccu(m_contourVal,
-                            m_caseIds.strides(),
-                            m_fcnView,
-                            m_coordsViews);
-    auto gen_for_parent_cell = AXOM_LAMBDA(axom::IndexType crossingId)
-    {
-      auto parentCellId = crossingParentIdsView[crossingId];
-      auto caseId = caseIdsView.flatIndex(parentCellId);
-      Point cornerCoords[CELL_CORNER_COUNT];
-      double cornerValues[CELL_CORNER_COUNT];
-      ccu.get_corner_coords_and_values(parentCellId, cornerCoords, cornerValues);
-
-      auto additionalFacets = facetIncrsView[crossingId];
-      auto firstFacetId = firstFacetIdsView[crossingId];
-
-      for(axom::IndexType fId = 0; fId < additionalFacets; ++fId)
-      {
-        axom::IndexType newFacetId = firstFacetId + fId;
-        axom::IndexType firstCornerId = newFacetId * DIM;
-
-        contourCellParentsView[newFacetId] = parentCellId;
-
-        for(axom::IndexType d = 0; d < DIM; ++d)
-        {
-          axom::IndexType newCornerId = firstCornerId + d;
-          contourCellCornersView[newFacetId][d] = newCornerId;
-
-          int edge = cases_table(caseId, fId * DIM + d);
-          ccu.linear_interp(edge,
-                            cornerCoords,
-                            cornerValues,
-                            contourNodeCoordsView[newCornerId]);
-        }
-      }
-    };
-
-    axom::for_all<ExecSpace>(0, m_crossingCount, gen_for_parent_cell);
-#endif
   }
 
   /*!
@@ -806,107 +615,6 @@ public:
     return cases3D[iCase][iEdge];
   }
 
-#if 0
-  /*!
-    @brief Output contour mesh to a mint::UnstructuredMesh object.
-  */
-  void populateContourMesh(
-    axom::mint::UnstructuredMesh<axom::mint::SINGLE_SHAPE>& mesh,
-    const std::string& cellIdField) const override
-  {
-    auto internalAllocatorID = axom::execution_space<ExecSpace>::allocatorID();
-    auto hostAllocatorID = axom::execution_space<axom::SEQ_EXEC>::allocatorID();
-
-    /*
-      mint uses host memory.  If internal memory is on the host, use
-      it.  Otherwise, make a temporary copy of it on the host.
-    */
-    if(internalAllocatorID == hostAllocatorID)
-    {
-      populateContourMesh(mesh,
-                          cellIdField,
-                          m_contourNodeCoords,
-                          m_contourCellCorners,
-                          m_contourCellParents);
-    }
-    else
-    {
-      axom::Array<Point, 1, MemorySpace::Dynamic> contourNodeCoords(
-        m_contourNodeCoords,
-        hostAllocatorID);
-      axom::Array<MIdx, 1, MemorySpace::Dynamic> contourCellCorners(
-        m_contourCellCorners,
-        hostAllocatorID);
-      axom::Array<IndexType, 1, MemorySpace::Dynamic> contourCellParents(
-        m_contourCellParents,
-        hostAllocatorID);
-
-      populateContourMesh(mesh,
-                          cellIdField,
-                          contourNodeCoords,
-                          contourCellCorners,
-                          contourCellParents);
-    }
-  }
-
-  //!@brief Output contour mesh to a mint::UnstructuredMesh object.
-  void populateContourMesh(
-    axom::mint::UnstructuredMesh<axom::mint::SINGLE_SHAPE>& mesh,
-    const std::string& cellIdField,
-    const axom::Array<Point, 1, MemorySpace::Dynamic> contourNodeCoords,
-    const axom::Array<MIdx, 1, MemorySpace::Dynamic> contourCellCorners,
-    const axom::Array<IndexType, 1, MemorySpace::Dynamic> contourCellParents) const
-  {
-    if(!cellIdField.empty() &&
-       !mesh.hasField(cellIdField, axom::mint::CELL_CENTERED))
-    {
-      mesh.createField<axom::IndexType>(cellIdField,
-                                        axom::mint::CELL_CENTERED,
-                                        DIM);
-    }
-
-    const axom::IndexType addedCellCount = contourCellCorners.size();
-    const axom::IndexType addedNodeCount = contourNodeCoords.size();
-    if(addedCellCount != 0)
-    {
-      const axom::IndexType priorCellCount = mesh.getNumberOfCells();
-      const axom::IndexType priorNodeCount = mesh.getNumberOfNodes();
-      mesh.reserveNodes(priorNodeCount + addedNodeCount);
-      mesh.reserveCells(priorCellCount + addedCellCount);
-
-      mesh.appendNodes((double*)contourNodeCoords.data(),
-                       contourNodeCoords.size());
-
-      for(int n = 0; n < addedCellCount; ++n)
-      {
-        MIdx cornerIds = contourCellCorners[n];
-        // Bump corner indices by priorNodeCount to avoid indices
-        // used by other parents domains.
-        for(int d = 0; d < DIM; ++d)
-        {
-          cornerIds[d] += priorNodeCount;
-        }
-        mesh.appendCell(cornerIds); // This takes too long!
-      }
-
-      axom::IndexType numComponents = -1;
-      axom::IndexType* cellIdPtr =
-        mesh.getFieldPtr<axom::IndexType>(cellIdField,
-                                          axom::mint::CELL_CENTERED,
-                                          numComponents);
-      SLIC_ASSERT(numComponents == DIM);
-      axom::ArrayView<axom::StackArray<axom::IndexType, DIM>> cellIdView(
-        (axom::StackArray<axom::IndexType, DIM>*)cellIdPtr,
-        priorCellCount + addedCellCount);
-      axom::ArrayIndexer<axom::IndexType, DIM> si(m_caseIds.shape(), 'c');
-      for(axom::IndexType i = 0; i < addedCellCount; ++i)
-      {
-        cellIdView[priorCellCount + i] = si.toMultiIndex(contourCellParents[i]);
-      }
-    }
-  }
-#endif
-
   //!@brief Compute the case index into cases2D or cases3D.
   AXOM_HOST_DEVICE inline int compute_crossing_case(const double* f) const
   {
@@ -922,27 +630,10 @@ public:
     return index;
   }
 
-#if 0
-  //!@brief Clear data so you can rerun with a different contour value.
-  void clear()
-  {
-    m_contourNodeCoords.clear();
-    m_contourCellCorners.clear();
-    m_contourCellParents.clear();
-    m_crossingCount = 0;
-    m_facetCount = 0;
-  }
-#endif
-
   /*!
     @brief Constructor.
   */
   MarchingCubesFullParallel()
-#if 0
-    : m_contourNodeCoords(0, 0)
-    , m_contourCellCorners(0, 0)
-    , m_contourCellParents(0, 0)
-#endif
   { }
 
 private:
@@ -963,35 +654,21 @@ private:
   //!@brief Number of parent cells crossing the contour surface.
   axom::IndexType m_crossingCount = 0;
 
-  //!@brief Number of surface mesh facets added by crossing mesh cells.
-  axom::Array<FacetIdType, 1, MemorySpace> m_facetIncrs;
-
-  //!@brief Parent cell id for each crossing.
-  axom::Array<axom::IndexType, 1, MemorySpace> m_crossingParentIds;
-
-  //!@brief First index of facets in computational mesh cells.
-  axom::Array<axom::IndexType, 1, MemorySpace> m_firstFacetIds;
-
-  //!@brief Number of contour surface cells from crossings.
+  //!@brief Number of contour surface cells from all crossings.
   axom::IndexType m_facetCount = 0;
   axom::IndexType getContourCellCount() const override { return m_facetCount; }
 
+  //!@brief Number of surface mesh facets added by each crossing.
+  axom::Array<FacetIdType, 1, MemorySpace> m_facetIncrs;
+
+  //!@brief Parent cell id (flat index into m_caseIds) for each crossing.
+  axom::Array<axom::IndexType, 1, MemorySpace> m_crossingParentIds;
+
+  //!@brief First index of facets for each crossing.
+  axom::Array<axom::IndexType, 1, MemorySpace> m_firstFacetIds;
+
   //!@brief Number of corners (nodes) on each parent cell.
   static constexpr std::uint8_t CELL_CORNER_COUNT = (DIM == 3) ? 8 : 4;
-
-#if 0
-  //!@name Internal representation of generated contour mesh.
-  //@{
-  //!@brief Coordinates of generated surface mesh nodes.
-  axom::Array<Point, 1, MemorySpace> m_contourNodeCoords;
-
-  //!@brief Corners (index into m_contourNodeCoords) of generated contour cells.
-  axom::Array<MIdx, 1, MemorySpace> m_contourCellCorners;
-
-  //!@brief Flat index of computational cell crossing the contour cell.
-  axom::Array<IndexType, 1, MemorySpace> m_contourCellParents;
-  //@}
-#endif
 
   double m_contourVal = 0.0;
 };
