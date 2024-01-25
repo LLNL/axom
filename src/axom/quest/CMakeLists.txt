@@ -119,7 +119,7 @@ endif()
 
 blt_list_append(
     TO       quest_headers
-    ELEMENTS MarchingCubes.hpp detail/MarchingCubesHybridParallel.hpp detail/MarchingCubesFullParallel.hpp
+    ELEMENTS MarchingCubes.hpp detail/MarchingCubesFullParallel.hpp
     IF       CONDUIT_FOUND
                )
 

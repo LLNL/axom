@@ -32,6 +32,22 @@ public:
   */
   ArrayIndexer(const axom::StackArray<T, DIM>& lengths, char order)
   {
+    initialize(lengths, order);
+  }
+
+  //!@brief Constructor for arbitrary-stride indexing.
+  ArrayIndexer(const axom::StackArray<T, DIM>& strides) : m_strides(strides)
+  {
+    initialize(strides);
+  }
+
+  /*!
+    @brief Initialize for row- or column major indexing.
+    @param [in] shape Shape of the array
+    @param [in] order: c is column major; r is row major.
+  */
+  inline AXOM_HOST_DEVICE void initialize(const axom::StackArray<T, DIM>& shape, char order)
+  {
     SLIC_ASSERT(order == 'c' || order == 'r');
     if(order == 'r')
     {
@@ -42,7 +58,7 @@ public:
       m_strides[0] = 1;
       for(int d = 1; d < DIM; ++d)
       {
-        m_strides[d] = m_strides[d - 1] * lengths[d - 1];
+        m_strides[d] = m_strides[d - 1] * shape[d - 1];
       }
     }
     else
@@ -54,14 +70,16 @@ public:
       m_strides[DIM - 1] = 1;
       for(int d = DIM - 2; d >= 0; --d)
       {
-        m_strides[d] = m_strides[d + 1] * lengths[d + 1];
+        m_strides[d] = m_strides[d + 1] * shape[d + 1];
       }
     }
+    SLIC_ASSERT((DIM == 1 && getOrder() == 'r' | 's') || (getOrder() == order));
   }
 
-  //!@brief Constructor for arbitrary-stride indexing.
-  ArrayIndexer(const axom::StackArray<T, DIM>& strides) : m_strides(strides)
+  //!@brief Initialize for arbitrary-stride indexing.
+  inline AXOM_HOST_DEVICE void initialize(const axom::StackArray<T, DIM>& strides)
   {
+    m_strides = strides;
     for(int d = 0; d < DIM; ++d)
     {
       m_slowestDirs[d] = d;
@@ -88,6 +106,22 @@ public:
   inline AXOM_HOST_DEVICE const axom::StackArray<axom::IndexType, DIM>& strides() const
   {
     return m_strides;
+  }
+
+  /*!
+    @brief Get the stride order (row- or column-major, or something else).
+
+    @return 'r' or 'c' for row- or column major, '\0' for neither,
+    or if DIM == 1, the value of 'r' | 'c'.
+  */
+  inline AXOM_HOST_DEVICE char getOrder() const
+  {
+    char order = 'r' | 'c';
+    for(int d=0; d < DIM - 1; ++d)
+    {
+      order &= m_slowestDirs[d] < m_slowestDirs[d+1] ? 'c' : 'r';
+    }
+    return order;
   }
 
   //!@brief Convert multidimensional index to flat index.

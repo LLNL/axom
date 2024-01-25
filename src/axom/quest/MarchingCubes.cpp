@@ -13,7 +13,7 @@
 
 #include "axom/core/execution/execution_space.hpp"
 #include "axom/quest/MarchingCubes.hpp"
-#include "axom/quest/detail/MarchingCubesHybridParallel.hpp"
+// #include "axom/quest/detail/MarchingCubesHybridParallel.hpp"
 #include "axom/quest/detail/MarchingCubesFullParallel.hpp"
 #include "axom/fmt.hpp"
 
@@ -41,6 +41,7 @@ MarchingCubes::MarchingCubes(RuntimePolicy runtimePolicy,
   for(auto& dom : bpMesh.children())
   {
     m_singles.emplace_back(new MarchingCubesSingleDomain(m_runtimePolicy,
+                                                         m_dataParallelism,
                                                          dom,
                                                          m_topologyName,
                                                          maskField));
@@ -59,6 +60,40 @@ void MarchingCubes::setFunctionField(const std::string& fcnField)
 
 void MarchingCubes::computeIsocontour(double contourVal)
 {
+#if 1
+  // Mark and scan domains while adding up their
+  // facet counts to get the total facet counts.
+  m_facetIndexOffsets.resize(m_singles.size());
+  m_facetCount = 0;
+  for(axom::IndexType d=0; d<m_singles.size(); ++d)
+  {
+    auto& single = *m_singles[d];
+    single.setContourValue(contourVal);
+    single.markCrossings();
+    single.scanCrossings();
+    m_facetIndexOffsets[d] = m_facetCount;
+    m_facetCount += single.getContourCellCount();
+  }
+
+  allocateOutputBuffers();
+
+  // Tell singles where to put contour data.
+  auto facetNodeIdsView = m_facetNodeIds.view();
+  auto facetNodeCoordsView = m_facetNodeCoords.view();
+  auto facetParentIdsView = m_facetParentIds.view();
+  for(axom::IndexType d=0; d<m_singles.size(); ++d)
+  {
+    m_singles[d]->setOutputBuffers(facetNodeIdsView,
+                                   facetNodeCoordsView,
+                                   facetParentIdsView,
+                                   m_facetIndexOffsets[d]);
+  }
+
+  for(axom::IndexType d=0; d<m_singles.size(); ++d)
+  {
+    m_singles[d]->computeContour();
+  }
+#else
   SLIC_ASSERT_MSG(!m_fcnFieldName.empty(),
                   "You must call setFunctionField before computeIsocontour.");
 
@@ -68,6 +103,7 @@ void MarchingCubes::computeIsocontour(double contourVal)
     single->setDataParallelism(m_dataParallelism);
     single->computeIsocontour(contourVal);
   }
+#endif
 }
 
 axom::IndexType MarchingCubes::getContourCellCount() const
@@ -98,9 +134,8 @@ void MarchingCubes::populateContourMesh(
   if(!cellIdField.empty() &&
      !mesh.hasField(cellIdField, axom::mint::CELL_CENTERED))
   {
-    mesh.createField<axom::IndexType>(cellIdField,
-                                      axom::mint::CELL_CENTERED,
-                                      mesh.getDimension());
+    // Create cellId field, currently the multidimensional index of the parent cell.
+    mesh.createField<axom::IndexType>(cellIdField, axom::mint::CELL_CENTERED);
   }
 
   if(!domainIdField.empty() &&
@@ -115,6 +150,33 @@ void MarchingCubes::populateContourMesh(
   mesh.reserveCells(contourCellCount);
   mesh.reserveNodes(contourNodeCount);
 
+#if 1
+  if (m_facetCount) {
+    mesh.appendCells(m_facetNodeIds.data(), m_facetCount);
+    mesh.appendNodes(m_facetNodeCoords.data(), mesh.getDimension()*m_facetCount);
+
+    axom::IndexType* cellIdPtr =
+      mesh.getFieldPtr<axom::IndexType>(cellIdField,
+                                        axom::mint::CELL_CENTERED);
+    axom::copy(cellIdPtr,
+               m_facetParentIds.data(),
+               m_facetCount*sizeof(axom::IndexType));
+
+    // TODO: Move domain id stuff into a separate function.
+    auto* domainIdPtr =
+      mesh.getFieldPtr<axom::IndexType>(domainIdField,
+                                        axom::mint::CELL_CENTERED);
+    for(int d = 0; d < m_singles.size(); ++d)
+    {
+      axom::detail::ArrayOps<axom::IndexType, MemorySpace::Dynamic>::fill(
+        domainIdPtr,
+        m_facetIndexOffsets[d],
+        m_singles[d]->getContourCellCount(),
+        execution_space<axom::SEQ_EXEC>::allocatorID(),
+        m_singles[d]->getDomainId(d));
+    }
+  }
+#else
   // Populate mesh from single domains and add domain id if requested.
   for(int dId = 0; dId < m_singles.size(); ++dId)
   {
@@ -140,15 +202,64 @@ void MarchingCubes::populateContourMesh(
         userDomainId);
     }
   }
+#endif
   SLIC_ASSERT(mesh.getNumberOfNodes() == contourNodeCount);
   SLIC_ASSERT(mesh.getNumberOfCells() == contourCellCount);
 }
 
+void MarchingCubes::allocateOutputBuffers()
+{
+  int allocatorId = -1;
+  if(m_runtimePolicy == MarchingCubes::RuntimePolicy::seq)
+  {
+    allocatorId = axom::execution_space<axom::SEQ_EXEC>::allocatorID();
+  }
+#ifdef AXOM_RUNTIME_POLICY_USE_OPENMP
+  else if(m_runtimePolicy == MarchingCubes::RuntimePolicy::omp)
+  {
+    allocatorId = axom::execution_space<axom::OMP_EXEC>::allocatorID();
+  }
+#endif
+#ifdef AXOM_RUNTIME_POLICY_USE_CUDA
+  else if(m_runtimePolicy == MarchingCubes::RuntimePolicy::cuda)
+  {
+    allocatorId = axom::execution_space<axom::CUDA_EXEC<256>>::allocatorID();
+  }
+#endif
+#ifdef AXOM_RUNTIME_POLICY_USE_HIP
+  else if(m_runtimePolicy == MarchingCubes::RuntimePolicy::hip)
+  {
+    allocatorId = axom::execution_space<axom::HIP_EXEC<256>>::allocatorID();
+  }
+#endif
+  else
+  {
+    SLIC_ERROR(axom::fmt::format(
+      "MarchingCubes doesn't recognize runtime policy {}",
+      m_runtimePolicy));
+  }
+
+  if (!m_singles.empty())
+  {
+    int ndim = m_singles[0]->spatialDimension();
+    const auto nodeCount = m_facetCount * ndim;
+    m_facetNodeIds =
+      axom::Array<axom::IndexType, 2>({m_facetCount, ndim}, allocatorId);
+    m_facetNodeCoords =
+      axom::Array<double, 2>({nodeCount, ndim},  allocatorId);
+    axom::StackArray<axom::IndexType, 1> t1{m_facetCount};
+    m_facetParentIds =
+      axom::Array<axom::IndexType, 1>(t1, allocatorId);
+  }
+}
+
 MarchingCubesSingleDomain::MarchingCubesSingleDomain(RuntimePolicy runtimePolicy,
+                                                     MarchingCubesDataParallelism dataPar,
                                                      const conduit::Node& dom,
                                                      const std::string& topologyName,
                                                      const std::string& maskField)
   : m_runtimePolicy(runtimePolicy)
+  , m_dataParallelism(dataPar)
   , m_dom(nullptr)
   , m_ndim(0)
   , m_topologyName(topologyName)
@@ -157,7 +268,32 @@ MarchingCubesSingleDomain::MarchingCubesSingleDomain(RuntimePolicy runtimePolicy
   , m_maskFieldName(maskField)
   , m_maskPath(maskField.empty() ? std::string() : "fields/" + maskField)
 {
+  // Set domain first, to get m_ndim, which is required to allocate m_impl.
   setDomain(dom);
+
+  /*
+    We have 2 implementations.  MarchingCubesHybridParallel is faster on the host
+    and MarchingCubesFullParallel is faster on GPUs.  Both work in all cases.
+    We can choose based on runtime policy or by user choice
+  */
+  if(m_dataParallelism ==
+     axom::quest::MarchingCubesDataParallelism::hybridParallel ||
+     (m_dataParallelism == axom::quest::MarchingCubesDataParallelism::byPolicy &&
+      m_runtimePolicy == RuntimePolicy::seq))
+  {
+    SLIC_WARNING("Not really using hybrid while developing.  Using full parallel.");
+    m_impl = axom::quest::detail::marching_cubes::newMarchingCubesFullParallel(
+      m_runtimePolicy,
+      m_ndim);
+  }
+  else
+  {
+    m_impl = axom::quest::detail::marching_cubes::newMarchingCubesFullParallel(
+      m_runtimePolicy,
+      m_ndim);
+  }
+
+  m_impl->initialize(*m_dom, m_topologyName, m_maskFieldName);
   return;
 }
 
@@ -191,16 +327,6 @@ void MarchingCubesSingleDomain::setDomain(const conduit::Node& dom)
     "MarchingCubes currently requires contiguous coordinates layout.");
 }
 
-void MarchingCubesSingleDomain::setFunctionField(const std::string& fcnField)
-{
-  m_fcnFieldName = fcnField;
-  m_fcnPath = "fields/" + fcnField;
-  SLIC_ASSERT(m_dom->has_path(m_fcnPath));
-  SLIC_ASSERT(m_dom->fetch_existing(m_fcnPath + "/association").as_string() ==
-              "vertex");
-  SLIC_ASSERT(m_dom->has_path(m_fcnPath + "/values"));
-}
-
 int MarchingCubesSingleDomain::getDomainId(int defaultId) const
 {
   int rval = defaultId;
@@ -211,6 +337,7 @@ int MarchingCubesSingleDomain::getDomainId(int defaultId) const
   return rval;
 }
 
+#if 0
 void MarchingCubesSingleDomain::computeIsocontour(double contourVal)
 {
   SLIC_ASSERT_MSG(!m_fcnFieldName.empty(),
@@ -238,6 +365,7 @@ void MarchingCubesSingleDomain::computeIsocontour(double contourVal)
   m_impl->setContourValue(contourVal);
   m_impl->computeContourMesh();
 }
+#endif
 
 }  // end namespace quest
 }  // end namespace axom

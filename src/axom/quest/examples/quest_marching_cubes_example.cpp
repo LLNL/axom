@@ -840,7 +840,7 @@ struct ContourTestBase
     extractTimer.start();
     mc.populateContourMesh(contourMesh, m_parentCellIdField, m_domainIdField);
     extractTimer.stop();
-    // printTimingStats(extractTimer, name() + " extract");
+    printTimingStats(extractTimer, name() + " extract");
 
     int localErrCount = 0;
     if(params.checkResults)
@@ -1076,6 +1076,23 @@ struct ContourTestBase
     return view;
   }
 
+  axom::ArrayView<const axom::IndexType> get_parent_cell_id_view(
+    axom::mint::UnstructuredMesh<axom::mint::SINGLE_SHAPE>& contourMesh) const
+  {
+    axom::IndexType numIdxComponents = -1;
+    axom::IndexType* ptr =
+      contourMesh.getFieldPtr<axom::IndexType>(m_parentCellIdField,
+                                               axom::mint::CELL_CENTERED,
+                                               numIdxComponents);
+
+    SLIC_ASSERT(numIdxComponents == 1);
+
+    axom::ArrayView<const axom::IndexType> view(
+      (axom::IndexType*)ptr,
+      contourMesh.getNumberOfCells());
+    return view;
+  }
+
   /**
      Check that generated cells fall within their parents.
   */
@@ -1086,7 +1103,7 @@ struct ContourTestBase
     int errCount = 0;
     const axom::IndexType cellCount = contourMesh.getNumberOfCells();
 
-    auto parentCellIdxView = get_parent_cell_idx_view(contourMesh);
+    auto parentCellIdView = get_parent_cell_id_view(contourMesh);
     auto domainIdView = getDomainIdView(contourMesh);
 
     const axom::IndexType domainCount = computationalMesh.domainCount();
@@ -1111,6 +1128,14 @@ struct ContourTestBase
       domainIdToContiguousId[domainId] = n;
     }
 
+    axom::Array<axom::ArrayIndexer<axom::IndexType, DIM>> indexers(domainCount);
+    for(int d=0; d<domainCount; ++d)
+    {
+      axom::StackArray<axom::IndexType, DIM> domShape;
+      computationalMesh.domainLengths(d, domShape);
+      indexers[d].initialize(domShape, 'c');
+    }
+
     for(axom::IndexType contourCellNum = 0; contourCellNum < cellCount;
         ++contourCellNum)
     {
@@ -1119,8 +1144,10 @@ struct ContourTestBase
       typename axom::quest::MeshViewUtil<DIM, MemorySpace>::ConstCoordsViewsType&
         coordsViews = allCoordsViews[contiguousIndex];
 
+      axom::IndexType parentCellId = parentCellIdView[contourCellNum];
+
       axom::StackArray<axom::IndexType, DIM> parentCellIdx =
-        parentCellIdxView[contourCellNum];
+        indexers[contiguousIndex].toMultiIndex(parentCellId);
       axom::StackArray<axom::IndexType, DIM> upperIdx = parentCellIdx;
       addToStackArray(upperIdx, 1);
 
@@ -1175,7 +1202,7 @@ struct ContourTestBase
     int errCount = 0;
     const axom::IndexType cellCount = contourMesh.getNumberOfCells();
 
-    auto parentCellIdxView = get_parent_cell_idx_view(contourMesh);
+    auto parentCellIdView = get_parent_cell_id_view(contourMesh);
     auto domainIdView = getDomainIdView(contourMesh);
 
     const axom::IndexType domainCount = computationalMesh.domainCount();
@@ -1187,17 +1214,16 @@ struct ContourTestBase
     */
     axom::Array<axom::ArrayView<const double, DIM, MemorySpace>> fcnViews(
       domainCount);
-    axom::Array<axom::Array<bool, DIM>> hasContours(domainCount);
+    axom::Array<axom::Array<bool>> hasContours(domainCount);
     for(axom::IndexType domId = 0; domId < domainCount; ++domId)
     {
       const auto& dom = computationalMesh.domain(domId);
       axom::quest::MeshViewUtil<DIM, MemorySpace> mvu(dom, "mesh");
 
-      const axom::StackArray<axom::IndexType, DIM> domLengths =
-        mvu.getRealExtents("element");
+      const axom::IndexType cellCount = mvu.getCellCount();
 
-      axom::Array<bool, DIM>& hasContour = hasContours[domId];
-      hasContour.resize(domLengths, false);
+      axom::Array<bool>& hasContour = hasContours[domId];
+      hasContour.resize(cellCount, false);
 
       fcnViews[domId] =
         mvu.template getConstFieldView<double>(functionName(), false);
@@ -1220,9 +1246,8 @@ struct ContourTestBase
     {
       axom::IndexType domainId = domainIdView[contourCellNum];
       axom::IndexType contiguousId = domainIdToContiguousId[domainId];
-      const axom::StackArray<axom::IndexType, DIM>& parentCellIdx =
-        parentCellIdxView[contourCellNum];
-      hasContours[contiguousId][parentCellIdx] = true;
+      const axom::IndexType parentCellId = parentCellIdView[contourCellNum];
+      hasContours[contiguousId][parentCellId] = true;
     }
 
     // Verify that cells marked by hasContours touches the contour
@@ -1238,12 +1263,12 @@ struct ContourTestBase
 
       const auto& fcnView = fcnViews[domId];
 
-      axom::ArrayIndexer<axom::IndexType, DIM> rowMajor(domLengths, 'r');
+      axom::ArrayIndexer<axom::IndexType, DIM> colMajor(domLengths, 'c');
       const axom::IndexType cellCount = product(domLengths);
       for(axom::IndexType cellId = 0; cellId < cellCount; ++cellId)
       {
         axom::StackArray<axom::IndexType, DIM> cellIdx =
-          rowMajor.toMultiIndex(cellId);
+          colMajor.toMultiIndex(cellId);
 
         // Compute min and max function value in the cell.
         double minFcnValue = std::numeric_limits<double>::max();
@@ -1272,7 +1297,7 @@ struct ContourTestBase
         {
           const bool touchesContour = (minFcnValue <= params.contourVal &&
                                        maxFcnValue >= params.contourVal);
-          const bool hasCont = hasContours[domId][cellIdx];
+          const bool hasCont = hasContours[domId][cellId];
           if(touchesContour != hasCont)
           {
             ++errCount;

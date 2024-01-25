@@ -214,6 +214,15 @@ public:
 
   //@{
   //@name Setting up
+  //!@brief Default constructor doesn't set up the view utility.
+  MeshViewUtil()
+    : m_dom(nullptr)
+    , m_topology(nullptr)
+    , m_coordset(nullptr)
+    , m_cdom(nullptr)
+    , m_ctopology(nullptr)
+    , m_ccoordset(nullptr)
+      {}
   /*!
     @brief Construct view of a non-const domain.
 

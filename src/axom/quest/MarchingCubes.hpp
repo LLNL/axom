@@ -82,8 +82,9 @@ class MarchingCubesSingleDomain;
  *             const std::string &functionName,
  *             double contourValue )
  *   {
- *     MarchingCubes mc(meshNode, coordsName);
- *     setFunctionField(functionName);
+ *     MarchingCubes mc(axom::runtime_policy::Policy::seq,
+ *                      meshNode, coordsName);
+ *     mc.setFunctionField(functionName);
  *     mc.computeIsocontour(contourValue);
  *     axom::mint::UnstructuredMesh<axom::mint::SINGLE_SHAPE>
  *       contourMesh(3, min::CellType::Triangle);
@@ -147,6 +148,33 @@ public:
   axom::IndexType getContourNodeCount() const;
 
   /*!
+    @brief Return pointer to facet corner node indices (connectivity)
+
+    The buffer size is the <spatial dimension> x getContourCellCount().
+    Memory space of data depends on runtime policy.
+  */
+  axom::ArrayView<const axom::IndexType, 2> getContourFacetCorners() const
+  { return m_facetNodeIds.view(); }
+
+  /*!
+    @brief Return pointer to node coordinates.
+
+    The buffer size is <spatial dimension> x getContourNodeCount().
+    Memory space of data depends on runtime policy.
+  */
+  axom::ArrayView<const double, 2> getContourNodeCoords() const
+  { return m_facetNodeCoords.view(); }
+
+  /*!
+    @brief Return pointer to parent cell indices
+
+    The buffer size is getContourCellCount().
+    Memory space of data depends on runtime policy.
+  */
+  axom::ArrayView<const axom::IndexType> getContourFacetParents() const
+  { return m_facetParentIds.view(); }
+
+  /*!
     @brief Put generated contour in a mint::UnstructuredMesh.
     @param mesh Output contour mesh
     @param cellIdField Name of field to store the array of
@@ -192,7 +220,37 @@ private:
   std::string m_maskFieldName;
   std::string m_maskPath;
 
+  //!@brief First facet index from each parent domain.
+  axom::Array<axom::IndexType> m_facetIndexOffsets;
+
+  //!@brief Facet count over all parent domains.
+  axom::IndexType m_facetCount = 0;
+
+  //@{
+  //!@name Generated contour mesh, shared with singles.
+  /*!
+    @brief Corners (index into m_facetNodeCoords) of generated facets.
+    @see allocateOutputBuffers().
+  */
+  axom::Array<axom::IndexType, 2> m_facetNodeIds;
+
+  /*!
+    @brief Coordinates of generated surface mesh nodes.
+    @see allocateOutputBuffers().
+  */
+  axom::Array<double, 2> m_facetNodeCoords;
+
+  /*!
+    @brief Flat index of parent cell of facets.
+    @see allocateOutputBuffers().
+  */
+  axom::Array<IndexType, 1> m_facetParentIds;
+  //@}
+
   void setMesh(const conduit::Node &bpMesh);
+
+  //!@brief Allocate output buffers corresponding to runtime policy.
+  void allocateOutputBuffers();
 };
 
 /*!
@@ -212,6 +270,7 @@ public:
    * \param [in] runtimePolicy A value from RuntimePolicy.
    *             The simplest policy is RuntimePolicy::seq, which specifies
    *             running sequentially on the CPU.
+   * \param [in] dataPar Choice of data-parallel implementation.
    * \param [in] dom Blueprint single-domain mesh containing scalar field.
    * \param [in] topologyName Name of Blueprint topology to use in \a dom
    * \param [in] maskField Cell-based std::int32_t mask field.  If provided,
@@ -230,9 +289,12 @@ public:
    * transformation and storage of the temporary contiguous layout.
    */
   MarchingCubesSingleDomain(RuntimePolicy runtimePolicy,
+                            MarchingCubesDataParallelism dataPar,
                             const conduit::Node &dom,
                             const std::string &topologyName,
                             const std::string &maskfield);
+
+  int spatialDimension() const { return m_ndim; }
 
   void setDataParallelism(MarchingCubesDataParallelism &dataPar)
   {
@@ -244,7 +306,39 @@ public:
     in the input mesh.
     \param [in] fcnField Name of node-based scalar function values.
   */
-  void setFunctionField(const std::string &fcnField);
+  void setFunctionField(const std::string &fcnField)
+  {
+    m_fcnFieldName = fcnField;
+    m_fcnPath = "fields/" + fcnField;
+    SLIC_ASSERT(m_dom->has_path(m_fcnPath));
+    SLIC_ASSERT(m_dom->fetch_existing(m_fcnPath + "/association").as_string() ==
+                "vertex");
+    SLIC_ASSERT(m_dom->has_path(m_fcnPath + "/values"));
+    if (m_impl) m_impl->setFunctionField(fcnField);
+  }
+
+  void setContourValue(double contourVal)
+  {
+    m_contourVal = contourVal;
+    if (m_impl) m_impl->setContourValue(m_contourVal);
+  }
+
+  // Methods trivially delegated to implementation.
+  void markCrossings() { m_impl->markCrossings(); }
+  void scanCrossings() { m_impl->scanCrossings(); }
+  axom::IndexType getContourCellCount() { return m_impl->getContourCellCount(); }
+  void setOutputBuffers(
+    axom::ArrayView<axom::IndexType, 2>& facetNodeIds,
+    axom::ArrayView<double, 2>& facetNodeCoords,
+    axom::ArrayView<axom::IndexType, 1>& facetParentIds,
+    axom::IndexType facetIndexOffset)
+    {
+      m_impl->setOutputBuffers( facetNodeIds,
+                                facetNodeCoords,
+                                facetParentIds,
+                                facetIndexOffset );
+    }
+  void computeContour() { m_impl->computeContour(); }
 
   /*!
     @brief Get the Blueprint domain id specified in \a state/domain_id
@@ -252,15 +346,17 @@ public:
   */
   int getDomainId(int defaultId) const;
 
+#if 0
   /*!
    * \brief Compute the isocontour.
    *
    * \param [in] contourVal isocontour value
    *
    * Compute isocontour using the marching cubes algorithm.
-   * To get the isocontour mesh, use populateContourMesh.
    */
   void computeIsocontour(double contourVal = 0.0);
+#endif
+
 
   //!@brief Get number of cells in the generated contour mesh.
   axom::IndexType getContourCellCount() const
@@ -278,6 +374,7 @@ public:
     return m_ndim * getContourCellCount();
   }
 
+#if 0
   /*!
     @brief Put generated contour surface in a mint::UnstructuredMesh
     object.
@@ -292,30 +389,49 @@ public:
   {
     m_impl->populateContourMesh(mesh, cellIdField);
   }
+#endif
 
   /*!
-    @brief Base class for implementations templated on dimension
-    and execution space.
+    @brief Base class for implementations templated on dimension DIM
+    and execution space ExecSpace.
+
+    Implementation details templated on DIM and ExecSpace cannot
+    be in MarchingCubesSingleDomain so should live in this class.
 
     This class allows m_impl to refer to any implementation used
     at runtime.
   */
   struct ImplBase
   {
-    //!@brief Prepare internal data for operating on the given domain.
+    /*!
+      @brief Prepare internal data for operating on the given domain.
+
+      Put in here codes that can't be in MarchingCubesSingleDomain
+      due to template use (DIM and ExecSpace).
+    */
     virtual void initialize(const conduit::Node &dom,
                             const std::string &topologyName,
-                            const std::string &fcnPath,
                             const std::string &maskPath) = 0;
-    //!@brief Set the contour value
+
+    virtual void setFunctionField(const std::string& fcnFieldName) = 0;
     virtual void setContourValue(double contourVal) = 0;
+
+    //@{
+    //!@name Distinct phases in contour generation.
     //!@brief Compute the contour mesh.
-    virtual void computeContourMesh() = 0;
+    //!@brief Mark parent cells that cross the contour value.
+    virtual void markCrossings() = 0;
+    //!@brief Scan operations to determine counts and offsets.
+    virtual void scanCrossings() = 0;
+    //!@brief Compute contour data.
+    virtual void computeContour() = 0;
+    //@}
 
     //@{
     //!@name Output methods
     //!@brief Return number of contour mesh facets generated.
     virtual axom::IndexType getContourCellCount() const = 0;
+#if 0
     /*!
       @brief Populate output mesh object with generated contour.
 
@@ -325,9 +441,28 @@ public:
     virtual void populateContourMesh(
       axom::mint::UnstructuredMesh<axom::mint::SINGLE_SHAPE> &mesh,
       const std::string &cellIdField) const = 0;
+#endif
     //@}
 
+    void setOutputBuffers(
+      axom::ArrayView<axom::IndexType, 2>& facetNodeIds,
+      axom::ArrayView<double, 2>& facetNodeCoords,
+      axom::ArrayView<axom::IndexType, 1>& facetParentIds,
+      axom::IndexType facetIndexOffset)
+    {
+      m_facetNodeIds = facetNodeIds;
+      m_facetNodeCoords = facetNodeCoords;
+      m_facetParentIds = facetParentIds;
+      m_facetIndexOffset = facetIndexOffset;
+    }
+
     virtual ~ImplBase() { }
+
+    double m_contourVal = 0.0;
+    axom::ArrayView<axom::IndexType, 2> m_facetNodeIds;
+    axom::ArrayView<double, 2> m_facetNodeCoords;
+    axom::ArrayView<IndexType> m_facetParentIds;
+    axom::IndexType m_facetIndexOffset = -1;
   };
 
 private:
@@ -354,12 +489,14 @@ private:
   //!@brief Path to mask in m_dom.
   const std::string m_maskPath;
 
+  double m_contourVal = 0.0;
+
   std::unique_ptr<ImplBase> m_impl;
 
   /*!
    * \brief Set the blueprint single-domain mesh.
    *
-   * Some data from \a dom may be cached by the constructor.
+   * Some data from \a dom may be cached.
    */
   void setDomain(const conduit::Node &dom);
 

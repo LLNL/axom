@@ -55,7 +55,6 @@ public:
     @param dom Blueprint structured mesh domain
     @param topologyName Name of mesh topology (see blueprint
            mesh documentation)
-    @param fcnFieldName Name of nodal function is in dom
     @param maskFieldName Name of integer cell mask function is in dom
 
     Set up views to domain data and allocate other data to work on the
@@ -66,22 +65,20 @@ public:
   */
   AXOM_HOST void initialize(const conduit::Node& dom,
                             const std::string& topologyName,
-                            const std::string& fcnFieldName,
                             const std::string& maskFieldName = {}) override
   {
     SLIC_ASSERT(conduit::blueprint::mesh::topology::dims(dom.fetch_existing(
                   axom::fmt::format("topologies/{}", topologyName))) == DIM);
 
-    clear();
+    // clear();
 
-    axom::quest::MeshViewUtil<DIM, MemorySpace> mvu(dom, topologyName);
+    m_mvu = axom::quest::MeshViewUtil<DIM, MemorySpace>(dom, topologyName);
 
-    m_bShape = mvu.getCellShape();
-    m_coordsViews = mvu.getConstCoordsViews(false);
-    m_fcnView = mvu.template getConstFieldView<double>(fcnFieldName, false);
+    m_bShape = m_mvu.getCellShape();
+    m_coordsViews = m_mvu.getConstCoordsViews(false);
     if(!maskFieldName.empty())
     {
-      m_maskView = mvu.template getConstFieldView<int>(maskFieldName, false);
+      m_maskView = m_mvu.template getConstFieldView<int>(maskFieldName, false);
     }
 
     /*
@@ -93,26 +90,36 @@ public:
     m_caseIds.fill(0);
   }
 
-  //!@brief Set a value to find the contour for.
+  /*!
+    @brief Set the scale field name
+    @param fcnFieldName Name of nodal function is in dom
+  */
+  void setFunctionField(const std::string& fcnFieldName) override
+  {
+    m_fcnView = m_mvu.template getConstFieldView<double>(fcnFieldName, false);
+  }
+
   void setContourValue(double contourVal) override
   {
     m_contourVal = contourVal;
   }
 
+#if 0
   void computeContourMesh() override
   {
     markCrossings();
     scanCrossings();
     computeContour();
   }
+#endif
 
   /*!
     @brief Implementation of virtual markCrossings.
 
     Virtual methods cannot be templated, so this implementation
-    delegates to a name templated on DIM.
+    delegates to an implementation templated on DIM.
   */
-  void markCrossings() { markCrossings_dim(); }
+  void markCrossings() override { markCrossings_dim(); }
 
   //!@brief Populate m_caseIds with crossing indices.
   template <int TDIM = DIM>
@@ -314,7 +321,7 @@ public:
                sizeof(facetIncrs_back));
     m_facetCount = firstFacetIds_back + facetIncrs_back;
   }
-  void scanCrossings()
+  void scanCrossings() override
   {
 #if defined(AXOM_USE_RAJA)
   #ifdef __INTEL_LLVM_COMPILER
@@ -331,6 +338,10 @@ public:
     //
     // Initialize crossingFlags to 0 or 1, prefix-sum it, and count the
     // crossings.
+    //
+    // All 1D array data alligns with m_caseId, which is column-major
+    // (the default for Array class), leading to *column-major* parent
+    // cell ids, regardless of the ordering of the input mesh data.
     //
 
     axom::Array<axom::IndexType, 1, MemorySpace> crossingFlags(parentCellCount);
@@ -391,6 +402,7 @@ public:
     m_firstFacetIds.resize(m_crossingCount);
   }
 
+#if 0
   void old_computeContour()
   {
     //
@@ -450,12 +462,60 @@ public:
 
     axom::for_all<ExecSpace>(0, parentCellCount, gen_for_parent_cell);
   }
-  void computeContour()
+#endif
+  void computeContour() override
   {
-    //
-    // Fill in surface mesh data.
-    //
+#if 1
+    const auto facetIncrsView = m_facetIncrs.view();
+    const auto firstFacetIdsView = m_firstFacetIds.view();
+    const auto crossingParentIdsView = m_crossingParentIds.view();
+    const auto caseIdsView = m_caseIds.view();
 
+    // Internal contour mesh data to populate
+    axom::ArrayView<axom::IndexType, 2> facetNodeIdsView = m_facetNodeIds;
+    axom::ArrayView<double, 2> facetNodeCoordsView = m_facetNodeCoords;
+    axom::ArrayView<axom::IndexType> facetParentIdsView = m_facetParentIds;
+    const axom::IndexType facetIndexOffset = m_facetIndexOffset;
+
+    ComputeContour_Util ccu(m_contourVal,
+                            m_caseIds.strides(),
+                            m_fcnView,
+                            m_coordsViews);
+
+    auto gen_for_parent_cell = AXOM_LAMBDA(axom::IndexType crossingId)
+    {
+      auto parentCellId = crossingParentIdsView[crossingId];
+      auto caseId = caseIdsView.flatIndex(parentCellId);
+      Point cornerCoords[CELL_CORNER_COUNT];
+      double cornerValues[CELL_CORNER_COUNT];
+      ccu.get_corner_coords_and_values(parentCellId, cornerCoords, cornerValues);
+
+      auto additionalFacets = facetIncrsView[crossingId];
+      auto firstFacetId = facetIndexOffset + firstFacetIdsView[crossingId];
+
+      for(axom::IndexType fId = 0; fId < additionalFacets; ++fId)
+      {
+        axom::IndexType newFacetId = firstFacetId + fId;
+        axom::IndexType firstCornerId = newFacetId * DIM;
+
+        facetParentIdsView[newFacetId] = parentCellId;
+
+        for(axom::IndexType d = 0; d < DIM; ++d)
+        {
+          axom::IndexType newCornerId = firstCornerId + d;
+          facetNodeIdsView[newFacetId][d] = newCornerId;
+
+          int edge = cases_table(caseId, fId * DIM + d);
+          ccu.linear_interp(edge,
+                            cornerCoords,
+                            cornerValues,
+                            &facetNodeCoordsView(newCornerId, 0));
+        }
+      }
+    };
+
+    axom::for_all<ExecSpace>(0, m_crossingCount, gen_for_parent_cell);
+#else
     // Allocate space for surface mesh.
     const axom::IndexType cornersCount = DIM * m_facetCount;
     m_contourCellParents.resize(m_facetCount);
@@ -508,6 +568,7 @@ public:
     };
 
     axom::for_all<ExecSpace>(0, m_crossingCount, gen_for_parent_cell);
+#endif
   }
 
   /*!
@@ -602,7 +663,7 @@ public:
       int edgeIdx,
       const Point cornerCoords[4],
       const double nodeValues[4],
-      Point& crossingPt) const
+      double* /* Point& */ crossingPt) const
     {
       // STEP 0: get the edge node indices
       // 2 nodes define the edge.  n1 and n2 are the indices of
@@ -623,13 +684,13 @@ public:
       if(axom::utilities::isNearlyEqual(contourVal, f1) ||
          axom::utilities::isNearlyEqual(f1, f2))
       {
-        crossingPt = p1;
+        crossingPt[0] = p1[0]; crossingPt[1] = p1[1]; // crossingPt = p1;
         return;
       }
 
       if(axom::utilities::isNearlyEqual(contourVal, f2))
       {
-        crossingPt = p2;
+        crossingPt[0] = p2[0]; crossingPt[1] = p2[1]; // crossingPt = p2;
         return;
       }
 
@@ -649,7 +710,7 @@ public:
       int edgeIdx,
       const Point cornerCoords[8],
       const double nodeValues[8],
-      Point& crossingPt) const
+      double* /* Point& */ crossingPt) const
     {
       // STEP 0: get the edge node indices
       // 2 nodes define the edge.  n1 and n2 are the indices of
@@ -676,13 +737,13 @@ public:
       if(axom::utilities::isNearlyEqual(contourVal, f1) ||
          axom::utilities::isNearlyEqual(f1, f2))
       {
-        crossingPt = p1;
+        crossingPt[0] = p1[0]; crossingPt[1] = p1[1]; crossingPt[2] = p1[2]; // crossingPt = p1;
         return;
       }
 
       if(axom::utilities::isNearlyEqual(contourVal, f2))
       {
-        crossingPt = p2;
+        crossingPt[0] = p2[0]; crossingPt[1] = p2[1]; crossingPt[2] = p2[2]; // crossingPt = p2;
         return;
       }
 
@@ -745,6 +806,7 @@ public:
     return cases3D[iCase][iEdge];
   }
 
+#if 0
   /*!
     @brief Output contour mesh to a mint::UnstructuredMesh object.
   */
@@ -843,6 +905,7 @@ public:
       }
     }
   }
+#endif
 
   //!@brief Compute the case index into cases2D or cases3D.
   AXOM_HOST_DEVICE inline int compute_crossing_case(const double* f) const
@@ -859,6 +922,7 @@ public:
     return index;
   }
 
+#if 0
   //!@brief Clear data so you can rerun with a different contour value.
   void clear()
   {
@@ -868,17 +932,21 @@ public:
     m_crossingCount = 0;
     m_facetCount = 0;
   }
+#endif
 
   /*!
     @brief Constructor.
   */
   MarchingCubesFullParallel()
+#if 0
     : m_contourNodeCoords(0, 0)
     , m_contourCellCorners(0, 0)
     , m_contourCellParents(0, 0)
+#endif
   { }
 
 private:
+  axom::quest::MeshViewUtil<DIM, MemorySpace> m_mvu;
   MIdx m_bShape;  //!< @brief Blueprint cell data shape.
 
   // Views of parent domain data.
@@ -911,6 +979,7 @@ private:
   //!@brief Number of corners (nodes) on each parent cell.
   static constexpr std::uint8_t CELL_CORNER_COUNT = (DIM == 3) ? 8 : 4;
 
+#if 0
   //!@name Internal representation of generated contour mesh.
   //@{
   //!@brief Coordinates of generated surface mesh nodes.
@@ -922,10 +991,15 @@ private:
   //!@brief Flat index of computational cell crossing the contour cell.
   axom::Array<IndexType, 1, MemorySpace> m_contourCellParents;
   //@}
+#endif
 
   double m_contourVal = 0.0;
 };
 
+/*!
+  @brief Allocate a MarchingCubesFullParallel object, template-specialized
+  for caller-specified runtime policy and physical dimension.
+*/
 static std::unique_ptr<axom::quest::MarchingCubesSingleDomain::ImplBase>
 newMarchingCubesFullParallel(MarchingCubes::RuntimePolicy runtimePolicy, int dim)
 {
