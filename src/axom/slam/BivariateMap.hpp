@@ -120,10 +120,9 @@ public:
   using range_iterator = RangeIterator<false>;
   using const_range_iterator = RangeIterator<true>;
 
-  using SubMapIndirection =
-    typename policies::ToViewIndirection<IndirectionPolicy>::Type;
+  using SubMapIndirection = policies::ArrayViewIndirection<SetPosition, T>;
   using SubMapConstIndirection =
-    typename policies::ToViewIndirection<IndirectionPolicy>::ConstType;
+    policies::ArrayViewIndirection<SetPosition, const T>;
   using SubMapType = Map<T, OrderedSetType, SubMapIndirection, StrPol>;
   using ConstSubMapType = Map<T, OrderedSetType, SubMapConstIndirection, StrPol>;
 
@@ -327,12 +326,12 @@ public:
 #ifndef AXOM_DEVICE_CODE
     verifyFirstSetIndex(firstIdx);
 #endif
-    using ArrayViewType = typename SubMapConstIndirection::IndirectionBufferType;
     // Construct an ArrayView with the subset data.
     auto elemRange = set()->elementRangeSet(firstIdx);
     SetPosition dataOffset = elemRange.offset() * StrPol::stride();
     SetPosition dataSize = elemRange.size() * StrPol::stride();
-    ArrayViewType submapView(m_map.data().data() + dataOffset, dataSize);
+    axom::ArrayView<const T> submapView(m_map.data().data() + dataOffset,
+                                        dataSize);
 
     auto s = set()->getElements(firstIdx);
     return ConstSubMapType(s, submapView, StrPol::shape());
@@ -343,12 +342,11 @@ public:
 #ifndef AXOM_DEVICE_CODE
     verifyFirstSetIndex(firstIdx);
 #endif
-    using ArrayViewType = typename SubMapIndirection::IndirectionBufferType;
     // Construct an ArrayView with the subset data.
     auto elemRange = set()->elementRangeSet(firstIdx);
     SetPosition dataOffset = elemRange.offset() * StrPol::stride();
     SetPosition dataSize = elemRange.size() * StrPol::stride();
-    ArrayViewType submapView(m_map.data().data() + dataOffset, dataSize);
+    axom::ArrayView<T> submapView(m_map.data().data() + dataOffset, dataSize);
 
     auto s = set()->getElements(firstIdx);
     return SubMapType(s, submapView, StrPol::shape());
