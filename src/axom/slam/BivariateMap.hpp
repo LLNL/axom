@@ -120,16 +120,10 @@ public:
   using range_iterator = RangeIterator<false>;
   using const_range_iterator = RangeIterator<true>;
 
-  using SubMapIndirection = policies::ArrayViewIndirection<SetPosition, T>;
-  using SubMapConstIndirection =
-    policies::ArrayViewIndirection<SetPosition, const T>;
-  using SubMapType = Map<T, OrderedSetType, SubMapIndirection, StrPol>;
-  using ConstSubMapType = Map<T, OrderedSetType, SubMapConstIndirection, StrPol>;
-
+  using SubMapType = SubMap<BivariateMapType, SetType, IfacePol>;
+  using ConstSubMapType = const SubMap<const BivariateMapType, SetType, IfacePol>;
   using SubMapIterator = typename SubMapType::iterator;
   using ConstSubMapIterator = typename ConstSubMapType::iterator;
-  using SubMapRangeIterator = typename SubMapType::range_iterator;
-  using ConstSubMapRangeIterator = typename ConstSubMapType::range_iterator;
 
   using NullBivariateSetType =
     NullBivariateSet<typename BSet::FirstSetType, typename BSet::SecondSetType>;
@@ -326,15 +320,9 @@ public:
 #ifndef AXOM_DEVICE_CODE
     verifyFirstSetIndex(firstIdx);
 #endif
-    // Construct an ArrayView with the subset data.
-    auto elemRange = set()->elementRangeSet(firstIdx);
-    SetPosition dataOffset = elemRange.offset() * StrPol::stride();
-    SetPosition dataSize = elemRange.size() * StrPol::stride();
-    axom::ArrayView<const T> submapView(m_map.data().data() + dataOffset,
-                                        dataSize);
-
-    auto s = set()->getElements(firstIdx);
-    return ConstSubMapType(s, submapView, StrPol::shape());
+    auto s = set()->elementRangeSet(firstIdx);
+    const bool hasInd = submapIndicesHaveIndirection();
+    return ConstSubMapType(this, s, hasInd);
   }
 
   AXOM_HOST_DEVICE SubMapType operator()(SetPosition firstIdx)
@@ -342,14 +330,9 @@ public:
 #ifndef AXOM_DEVICE_CODE
     verifyFirstSetIndex(firstIdx);
 #endif
-    // Construct an ArrayView with the subset data.
-    auto elemRange = set()->elementRangeSet(firstIdx);
-    SetPosition dataOffset = elemRange.offset() * StrPol::stride();
-    SetPosition dataSize = elemRange.size() * StrPol::stride();
-    axom::ArrayView<T> submapView(m_map.data().data() + dataOffset, dataSize);
-
-    auto s = set()->getElements(firstIdx);
-    return SubMapType(s, submapView, StrPol::shape());
+    auto s = set()->elementRangeSet(firstIdx);
+    const bool hasInd = submapIndicesHaveIndirection();
+    return SubMapType(this, s, hasInd);
   }
 
   /**
@@ -535,22 +518,6 @@ public:
   AXOM_HOST_DEVICE ConstSubMapIterator end(int i) const
   {
     return (*this)(i).end();
-  }
-  AXOM_HOST_DEVICE SubMapRangeIterator set_begin(int i)
-  {
-    return (*this)(i).set_begin();
-  }
-  AXOM_HOST_DEVICE SubMapRangeIterator set_end(int i)
-  {
-    return (*this)(i).set_end();
-  }
-  AXOM_HOST_DEVICE ConstSubMapRangeIterator set_begin(int i) const
-  {
-    return (*this)(i).set_begin();
-  }
-  AXOM_HOST_DEVICE ConstSubMapRangeIterator set_end(int i) const
-  {
-    return (*this)(i).set_end();
   }
 
 public:
