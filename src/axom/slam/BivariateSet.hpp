@@ -234,7 +234,7 @@ public:
    * \return  An OrderedSet containing the elements
    * \pre  0 <= pos1 <= set1.size()
    */
-  AXOM_HOST_DEVICE virtual SubsetType getElements(PositionType s1) const = 0;
+  virtual SubsetType getElements(PositionType s1) const = 0;
 
   /*!
    * \brief Return an iterator to the first pair of set elements in the
@@ -448,7 +448,7 @@ public:
 
   PositionType size(PositionType) const override { return PositionType(); }
 
-  AXOM_HOST_DEVICE SubsetType getElements(PositionType) const override
+  SubsetType getElements(PositionType) const override
   {
     using OrderedSetBuilder = typename SubsetType::SetBuilder;
     return OrderedSetBuilder();

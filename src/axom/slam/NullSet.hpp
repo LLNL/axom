@@ -39,7 +39,7 @@ public:
 
   AXOM_HOST_DEVICE inline PositionType size() const { return PositionType(); }
 
-  AXOM_HOST_DEVICE inline ElementType at(PositionType pos) const
+  inline ElementType at(PositionType pos) const
   {
     verifyPosition(pos);
     return PositionType();

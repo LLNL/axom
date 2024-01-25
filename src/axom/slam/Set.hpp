@@ -94,7 +94,7 @@ public:
    *       Are we planning to handle indexes that are intentionally out of range
    *       (e.g. to indicate a problem, or a missing element etc..)?
    */
-  AXOM_HOST_DEVICE virtual ElementType at(PositionType) const = 0;
+  virtual ElementType at(PositionType) const = 0;
 
   /**
    * \brief Get the number of entities in the set
