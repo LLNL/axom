@@ -254,10 +254,7 @@ public:
    *
    * \pre pos must be between 0 and size()
    */
-  AXOM_HOST_DEVICE ElementType at(PositionType pos) const
-  {
-    return operator[](pos);
-  };
+  ElementType at(PositionType pos) const { return operator[](pos); };
 
   /**
    * \brief Access the element at position \a pos

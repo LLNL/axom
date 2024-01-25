@@ -115,7 +115,7 @@ private:
   template <typename USet>
   struct SetContainer<USet, false>
   {
-    AXOM_HOST_DEVICE SetContainer(const USet* set) : m_pSet(set) { }
+    SetContainer(const USet* set) : m_pSet(set) { }
 
     AXOM_HOST_DEVICE const USet* get() const { return m_pSet; }
 
@@ -125,8 +125,8 @@ private:
   template <typename USet>
   struct SetContainer<USet, true>
   {
-    AXOM_HOST_DEVICE SetContainer(const USet* set) : m_pSet(set) { }
-    AXOM_HOST_DEVICE SetContainer(const USet& set) : m_set(set) { }
+    SetContainer(const USet* set) : m_pSet(set) { }
+    SetContainer(const USet& set) : m_set(set) { }
 
     AXOM_HOST_DEVICE const USet* get() const
     {
@@ -205,9 +205,9 @@ public:
             typename TSet = SetType,
             typename Enable = typename std::enable_if<
               !std::is_abstract<TSet>::value && std::is_base_of<TSet, USet>::value>::type>
-  AXOM_HOST_DEVICE Map(const USet& theSet,
-                       OrderedMap data,
-                       ElementShape shape = StridePolicyType::DefaultSize())
+  Map(const USet& theSet,
+      OrderedMap data,
+      ElementShape shape = StridePolicyType::DefaultSize())
     : StridePolicyType(shape)
     , m_set(theSet)
     , m_data(std::move(data))
@@ -217,10 +217,8 @@ public:
                   "type. This may lead to object slicing. Use Map's pointer "
                   "constructor instead to store polymorphic sets.");
 
-#ifndef AXOM_DEVICE_CODE
     checkBackingSize(
       std::integral_constant<bool, IndirectionPolicy::IsMutableBuffer> {});
-#endif
   }
 
   /**
@@ -242,7 +240,7 @@ public:
   /**
    * \brief Returns a pointer to the map's underlying set
    */
-  AXOM_HOST_DEVICE const SetType* set() const { return m_set.get(); }
+  const SetType* set() const { return m_set.get(); }
 
   /// \name Map individual access functions
   /// @{
@@ -356,10 +354,7 @@ public:
     return IndirectionPolicy::getIndirection(m_data, elemIndex);
   }
 
-  AXOM_HOST_DEVICE SetElement index(IndexType idx) const
-  {
-    return set()->at(idx);
-  }
+  SetElement index(IndexType idx) const { return set()->at(idx); }
 
   /// @}
 
@@ -500,9 +495,9 @@ private:
   {
     using MapConstType = std::conditional_t<Const, const Map*, Map*>;
     using MapRefType = std::conditional_t<Const, const Map&, Map&>;
-    AXOM_HOST_DEVICE MapIteratorStorage(MapConstType pMap) : m_map(pMap) { }
+    MapIteratorStorage(MapConstType pMap) : m_map(pMap) { }
 
-    AXOM_HOST_DEVICE MapRefType map() const { return *m_map; }
+    MapRefType map() const { return *m_map; }
 
     MapConstType m_map;
   };
@@ -511,9 +506,9 @@ private:
   struct MapIteratorStorage<Const, true>
   {
     using MapConstType = std::conditional_t<Const, const Map*, Map*>;
-    AXOM_HOST_DEVICE MapIteratorStorage(MapConstType pMap) : m_map(*pMap) { }
+    MapIteratorStorage(MapConstType pMap) : m_map(*pMap) { }
 
-    AXOM_HOST_DEVICE const Map& map() const { return m_map; }
+    const Map& map() const { return m_map; }
 
     Map m_map;
   };
@@ -687,8 +682,8 @@ public:
   /**
    * \brief Returns a reference to the underlying map data
    */
-  AXOM_HOST_DEVICE OrderedMap& data() { return m_data; }
-  AXOM_HOST_DEVICE const OrderedMap& data() const { return m_data; }
+  OrderedMap& data() { return m_data; }
+  const OrderedMap& data() const { return m_data; }
 
 private:
   inline void verifyPosition(SetPosition idx) const { verifyPositionImpl(idx); }
