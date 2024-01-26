@@ -554,41 +554,74 @@ public:
     using DataType = std::remove_reference_t<DataRefType>;
 
     using PositionType = SetPosition;
-    using IterBase::m_pos;
+    constexpr static int Dims = StridePolicyType::NumDims;
 
+    // Type traits to satisfy LegacyRandomAccessIterator concept
     using iterator_category = std::random_access_iterator_tag;
-    using value_type = axom::ArrayView<DataType>;
-    using reference_type = value_type&;
-    using pointer_type = value_type*;
+    using value_type = axom::ArrayView<DataType, Dims>;
+    using reference = const value_type&;
+    using pointer = const value_type*;
     using difference_type = SetPosition;
+
+  private:
+    static StackArray<IndexType, Dims + 1> fetchDims(int stride)
+    {
+      return {0, stride};
+    }
+    static StackArray<IndexType, Dims + 1> fetchDims(
+      const StackArray<PositionType, Dims> stride)
+    {
+      StackArray<IndexType, Dims + 1> dims;
+      for(int idim = 0; idim < Dims; idim++)
+      {
+        dims[idim + 1] = stride[idim];
+      }
+      return dims;
+    }
 
   public:
     MapRangeIterator(PositionType pos, MapConstPtr oMap)
       : IterBase(pos)
       , m_map(oMap)
-    { }
+    {
+      StackArray<IndexType, Dims + 1> dataDims = fetchDims(oMap->shape());
+      dataDims[0] = m_map->size();
+      m_mapData =
+        axom::ArrayView<DataType, Dims + 1>(m_map->data().data(), dataDims);
+      m_currRange = m_mapData[pos];
+    }
 
     /**
      * \brief Returns the current iterator value.
      */
-    value_type operator*()
-    {
-      return value_type {m_map->data().data() + m_pos * m_map->stride(),
-                         m_map->stride()};
-    }
+    reference operator*() const { return m_currRange; }
+
+    pointer operator->() const { return &m_currRange; }
 
     /**
      * \brief Returns the iterator's value at the specified component.
      *        Returns the first component if comp_idx is not specified.
      * \param comp_idx  Zero-based index of the component.
      */
-    DataRefType operator()(SetPosition comp_idx) const
+    template <typename... ComponentIndex>
+    DataRefType operator()(ComponentIndex... comp_idx) const
     {
-      return value(comp_idx);
+      return value(comp_idx...);
     }
     DataRefType value(PositionType comp_idx) const
     {
-      return (*m_map)(m_pos, comp_idx);
+      static_assert(Dims == 1,
+                    "Map::RangeIterator::value(): incorrect number of indexes "
+                    "for the component dimensionality.");
+      return m_currRange[comp_idx];
+    }
+    template <typename... ComponentIndex>
+    DataRefType value(ComponentIndex... comp_idx) const
+    {
+      static_assert(sizeof...(ComponentIndex) == Dims,
+                    "Map::RangeIterator::value(): incorrect number of indexes "
+                    "for the component dimensionality.");
+      return m_currRange(comp_idx...);
     }
     value_type operator[](PositionType n) const { return *(*this + n); }
 
@@ -603,10 +636,16 @@ public:
 
   protected:
     /** Implementation of advance() as required by IteratorBase */
-    void advance(PositionType n) { m_pos += n; }
+    void advance(PositionType n)
+    {
+      this->m_pos += n;
+      m_currRange = m_mapData[this->m_pos];
+    }
 
   private:
     MapConstPtr m_map;
+    axom::ArrayView<DataType, Dims + 1> m_mapData;
+    value_type m_currRange;
   };
 
 public:  // Functions related to iteration
