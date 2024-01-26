@@ -14,7 +14,7 @@
 #include "axom/core/execution/execution_space.hpp"
 #include "axom/quest/MarchingCubes.hpp"
 // #include "axom/quest/detail/MarchingCubesHybridParallel.hpp"
-#include "axom/quest/detail/MarchingCubesFullParallel.hpp"
+#include "axom/quest/detail/MarchingCubesImpl.hpp"
 #include "axom/fmt.hpp"
 
 namespace axom
@@ -233,7 +233,7 @@ MarchingCubesSingleDomain::MarchingCubesSingleDomain(RuntimePolicy runtimePolicy
   // Set domain first, to get m_ndim, which is required to allocate m_impl.
   setDomain(dom);
 
-  m_impl = axom::quest::detail::marching_cubes::newMarchingCubesFullParallel(
+  m_impl = axom::quest::detail::marching_cubes::newMarchingCubesImpl(
     m_runtimePolicy,
     m_ndim);
 
