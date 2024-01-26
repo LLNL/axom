@@ -99,7 +99,7 @@ class Axom(CachedCMakePackage, CudaPackage, ROCmPackage):
     # Dependencies
     # -----------------------------------------------------------------------
     # Basics
-    depends_on("cmake@3.14:", type="build", when="@:0.6.1")
+    depends_on("cmake@3.14:", type="build")
     depends_on("cmake@3.18:", type="build", when="@0.7.0:")
     depends_on("cmake@3.21:", type="build", when="+rocm")
 
@@ -249,7 +249,7 @@ class Axom(CachedCMakePackage, CudaPackage, ROCmPackage):
         # Add optimization flag workaround for Debug builds with
         # cray compiler or newer HIP
         if "+rocm" in spec:
-            if "crayCC" in self.compiler.cxx or spec.satisfies("%clang@16"):
+            if spec.satisfies("%cce") or spec.satisfies("%clang@16"):
                 entries.append(cmake_cache_string("CMAKE_CXX_FLAGS_DEBUG", "-O1 -g -DNDEBUG"))
 
         return entries
@@ -299,6 +299,7 @@ class Axom(CachedCMakePackage, CudaPackage, ROCmPackage):
             rocm_root = hip_root + "/.."
 
             # Fix blt_hip getting HIP_CLANG_INCLUDE_PATH-NOTFOUND bad include directory
+            # TODO: verify that this is still needed and is indeed specific to LC
             if (
                 self.spec.satisfies("%cce") or self.spec.satisfies("%clang")
             ) and "toss_4" in self._get_sys_type(spec):
@@ -372,18 +373,22 @@ class Axom(CachedCMakePackage, CudaPackage, ROCmPackage):
                 )
             )
 
-        if "+openmp" in spec and \
-           "clang" in self.compiler.cxx and \
-           "+fortran" in spec and self.is_fortran_compiler("xlf"):
-            openmp_gen_exp = ( "$<$<NOT:$<COMPILE_LANGUAGE:Fortran>>:"
-                               "-fopenmp=libomp>;$<$<COMPILE_LANGUAGE:"
-                               "Fortran>:-qsmp=omp>")
+        if (
+            "+openmp" in spec
+            and "clang" in self.compiler.cxx
+            and "+fortran" in spec
+            and self.is_fortran_compiler("xlf")
+        ):
+            openmp_gen_exp = (
+                "$<$<NOT:$<COMPILE_LANGUAGE:Fortran>>:"
+                "-fopenmp=libomp>;$<$<COMPILE_LANGUAGE:"
+                "Fortran>:-qsmp=omp>"
+            )
 
             description = "Different OpenMP linker flag between CXX and Fortran"
-            entries.append(cmake_cache_string(
-                "BLT_OPENMP_LINK_FLAGS",
-                openmp_gen_exp,
-                description))
+            entries.append(
+                cmake_cache_string("BLT_OPENMP_LINK_FLAGS", openmp_gen_exp, description)
+            )
 
         if spec.satisfies("target=ppc64le:"):
             # Fix for working around CMake adding implicit link directories
@@ -418,6 +423,9 @@ class Axom(CachedCMakePackage, CudaPackage, ROCmPackage):
             entries.append(cmake_cache_option("ENABLE_MPI", False))
 
         # Replace /usr/bin/srun path with srun flux wrapper path on TOSS 4
+        # TODO: Remove this logic by adding `using_flux` case in 
+        #  spack/lib/spack/spack/build_systems/cached_cmake.py:196 and remove hard-coded
+        #  path to srun in same file.
         if "toss_4" in self._get_sys_type(spec):
             srun_wrapper = which_string("srun")
             mpi_exec_index = [
