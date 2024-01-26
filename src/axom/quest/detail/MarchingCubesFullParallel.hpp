@@ -39,7 +39,7 @@ namespace marching_cubes
   See MarchingCubesImpl for the difference between that class and
   MarchingCubesFullParallel.
 */
-template <int DIM, typename ExecSpace>
+template <int DIM, typename ExecSpace, typename SequentialExecSpace>
 class MarchingCubesFullParallel : public MarchingCubesSingleDomain::ImplBase
 {
 public:
@@ -48,6 +48,8 @@ public:
   using FacetIdType = int;
   using LoopPolicy = typename execution_space<ExecSpace>::loop_policy;
   using ReducePolicy = typename execution_space<ExecSpace>::reduce_policy;
+  using SequentialLoopPolicy =
+    typename execution_space<SequentialExecSpace>::loop_policy;
   static constexpr auto MemorySpace = execution_space<ExecSpace>::memory_space;
   /*!
     @brief Initialize data to a blueprint domain.
@@ -246,7 +248,28 @@ public:
       }
     }
   };  // MarkCrossings_Util
+
   void scanCrossings() override
+  {
+    constexpr MarchingCubesDataParallelism autoPolicy =
+      std::is_same<ExecSpace, axom::SEQ_EXEC>::value ? MarchingCubesDataParallelism::hybridParallel :
+      std::is_same<ExecSpace, axom::OMP_EXEC>::value ? MarchingCubesDataParallelism::hybridParallel :
+      MarchingCubesDataParallelism::fullParallel;
+
+    if(m_dataParallelism ==
+       axom::quest::MarchingCubesDataParallelism::hybridParallel ||
+       (m_dataParallelism == axom::quest::MarchingCubesDataParallelism::byPolicy &&
+        autoPolicy == MarchingCubesDataParallelism::hybridParallel))
+    {
+      scanCrossings_hybridParallel();
+    }
+    else
+    {
+      scanCrossings_fullParallel();
+    }
+  }
+
+  void scanCrossings_fullParallel()
   {
 #if defined(AXOM_USE_RAJA)
   #ifdef __INTEL_LLVM_COMPILER
@@ -296,6 +319,8 @@ public:
 
     m_crossingParentIds.resize(m_crossingCount);
     m_facetIncrs.resize(m_crossingCount);
+    m_firstFacetIds.resize(1 + m_crossingCount);
+
     auto crossingParentIdsView = m_crossingParentIds.view();
     auto facetIncrsView = m_facetIncrs.view();
 
@@ -315,12 +340,117 @@ public:
     // and the total number of facets.
     //
 
-    m_firstFacetIds.resize(1 + m_crossingCount);
     RAJA::inclusive_scan<ScanPolicy>(
       RAJA::make_span(m_facetIncrs.data(), m_crossingCount),
       RAJA::make_span(m_firstFacetIds.data() + 1, m_crossingCount),
       RAJA::operators::plus<axom::IndexType> {});
 
+    axom::copy(&m_facetCount,
+               m_firstFacetIds.data() + m_firstFacetIds.size() - 1,
+               sizeof(axom::IndexType));
+    m_firstFacetIds.resize(m_crossingCount);
+  }
+
+  void scanCrossings_hybridParallel()
+  {
+    //
+    // Compute number of crossings in m_caseIds
+    //
+    const axom::IndexType parentCellCount = m_caseIds.size();
+    auto caseIdsView = m_caseIds.view();
+#if defined(AXOM_USE_RAJA)
+    RAJA::ReduceSum<ReducePolicy, axom::IndexType> vsum(0);
+    RAJA::forall<LoopPolicy>(
+      RAJA::RangeSegment(0, parentCellCount),
+      AXOM_LAMBDA(RAJA::Index_type n) {
+        vsum += bool(num_contour_cells(caseIdsView.flatIndex(n)));
+      });
+    m_crossingCount = static_cast<axom::IndexType>(vsum.get());
+#else
+    axom::IndexType vsum = 0;
+    for(axom::IndexType n = 0; n < parentCellCount; ++n)
+    {
+      vsum += bool(num_contour_cells(caseIdsView.flatIndex(n)));
+    }
+    m_crossingCount = vsum;
+#endif
+
+    //
+    // Allocate space for crossing info
+    //
+    m_crossingParentIds.resize(m_crossingCount);
+    m_facetIncrs.resize(m_crossingCount);
+    m_firstFacetIds.resize(1 + m_crossingCount);
+
+    auto crossingParentIdsView = m_crossingParentIds.view();
+    auto facetIncrsView = m_facetIncrs.view();
+
+    axom::IndexType* crossingId = axom::allocate<axom::IndexType>(
+      1,
+      axom::detail::getAllocatorID<MemorySpace>());
+
+    auto loopBody = AXOM_LAMBDA(axom::IndexType n)
+    {
+      auto caseId = caseIdsView.flatIndex(n);
+      auto ccc = num_contour_cells(caseId);
+      if(ccc != 0)
+      {
+        facetIncrsView[*crossingId] = ccc;
+        crossingParentIdsView[*crossingId] = n;
+        ++(*crossingId);
+      }
+    };
+
+#if defined(AXOM_USE_RAJA)
+    /*
+      loopBody isn't data-parallel and shouldn't be parallelized.
+      This contrived RAJA::forall forces it to run sequentially.
+    */
+    RAJA::forall<SequentialLoopPolicy>(
+      RAJA::RangeSegment(0, 1),
+      [=] AXOM_HOST_DEVICE(int /* i */) {
+        *crossingId = 0;
+        for(axom::IndexType n = 0; n < parentCellCount; ++n)
+        {
+          loopBody(n);
+        }
+      });
+#else
+    *crossingId = 0;
+    for(axom::IndexType n = 0; n < parentCellCount; ++n)
+    {
+      loopBody(n);
+    }
+    SLIC_ASSERT(*crossingId == m_crossingCount);
+#endif
+
+    axom::deallocate(crossingId);
+
+    // axom::Array<axom::IndexType, 1, MemorySpace> prefixSum(m_crossingCount, m_crossingCount);
+    const auto firstFacetIdsView = m_firstFacetIds.view();
+
+#if defined(AXOM_USE_RAJA)
+      // Intel oneAPI compiler segfaults with OpenMP RAJA scan
+  #ifdef __INTEL_LLVM_COMPILER
+    using ScanPolicy =
+      typename axom::execution_space<axom::SEQ_EXEC>::loop_policy;
+  #else
+    using ScanPolicy = typename axom::execution_space<ExecSpace>::loop_policy;
+  #endif
+    RAJA::inclusive_scan<ScanPolicy>(
+      RAJA::make_span(facetIncrsView.data(), m_crossingCount),
+      RAJA::make_span(firstFacetIdsView.data() + 1, m_crossingCount),
+      RAJA::operators::plus<axom::IndexType> {});
+#else
+    if(m_crossingCount > 0)
+    {
+      firstFacetIdsView[0] = 0;
+      for(axom::IndexType i = 1; i < 1 + m_crossingCount; ++i)
+      {
+        firstFacetIdsView[i] = firstFacetIdsView[i - 1] + facetIncrsView[i - 1];
+      }
+    }
+#endif
     axom::copy(&m_facetCount,
                m_firstFacetIds.data() + m_firstFacetIds.size() - 1,
                sizeof(axom::IndexType));
@@ -687,35 +817,35 @@ newMarchingCubesFullParallel(MarchingCubes::RuntimePolicy runtimePolicy, int dim
   if(runtimePolicy == MarchingCubes::RuntimePolicy::seq)
   {
     impl = dim == 2 ? std::unique_ptr<ImplBase>(
-                        new MarchingCubesFullParallel<2, axom::SEQ_EXEC>)
+                        new MarchingCubesFullParallel<2, axom::SEQ_EXEC, axom::SEQ_EXEC>)
                     : std::unique_ptr<ImplBase>(
-                        new MarchingCubesFullParallel<3, axom::SEQ_EXEC>);
+                        new MarchingCubesFullParallel<3, axom::SEQ_EXEC, axom::SEQ_EXEC>);
   }
 #ifdef AXOM_RUNTIME_POLICY_USE_OPENMP
   else if(runtimePolicy == MarchingCubes::RuntimePolicy::omp)
   {
     impl = dim == 2 ? std::unique_ptr<ImplBase>(
-                        new MarchingCubesFullParallel<2, axom::OMP_EXEC>)
+                        new MarchingCubesFullParallel<2, axom::OMP_EXEC, axom::SEQ_EXEC>)
                     : std::unique_ptr<ImplBase>(
-                        new MarchingCubesFullParallel<3, axom::OMP_EXEC>);
+                        new MarchingCubesFullParallel<3, axom::OMP_EXEC, axom::SEQ_EXEC>);
   }
 #endif
 #ifdef AXOM_RUNTIME_POLICY_USE_CUDA
   else if(runtimePolicy == MarchingCubes::RuntimePolicy::cuda)
   {
     impl = dim == 2 ? std::unique_ptr<ImplBase>(
-                        new MarchingCubesFullParallel<2, axom::CUDA_EXEC<256>>)
+                        new MarchingCubesFullParallel<2, axom::CUDA_EXEC<256>, axom::CUDA_EXEC<1>>)
                     : std::unique_ptr<ImplBase>(
-                        new MarchingCubesFullParallel<3, axom::CUDA_EXEC<256>>);
+                        new MarchingCubesFullParallel<3, axom::CUDA_EXEC<256>, axom::CUDA_EXEC<1>>);
   }
 #endif
 #ifdef AXOM_RUNTIME_POLICY_USE_HIP
   else if(runtimePolicy == MarchingCubes::RuntimePolicy::hip)
   {
     impl = dim == 2 ? std::unique_ptr<ImplBase>(
-                        new MarchingCubesFullParallel<2, axom::HIP_EXEC<256>>)
+                        new MarchingCubesFullParallel<2, axom::HIP_EXEC<256>, axom::HIP_EXEC<1>>)
                     : std::unique_ptr<ImplBase>(
-                        new MarchingCubesFullParallel<3, axom::HIP_EXEC<256>>);
+                        new MarchingCubesFullParallel<3, axom::HIP_EXEC<256>, axom::HIP_EXEC<1>>);
   }
 #endif
   else

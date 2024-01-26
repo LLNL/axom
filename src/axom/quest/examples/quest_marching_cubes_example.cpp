@@ -790,7 +790,6 @@ struct ContourTestBase
     MPI_Barrier(MPI_COMM_WORLD);
 #endif
     computeTimer.start();
-    mc.setDataParallelism(params.dataParallelism);
     mc.computeIsocontour(params.contourVal);
     computeTimer.stop();
     printTimingStats(computeTimer, name() + " contour");
@@ -1572,6 +1571,7 @@ int testNdimInstance(BlueprintStructuredMesh& computationalMesh)
 {
   // Create marching cubes algorithm object and set some parameters
   quest::MarchingCubes mc(params.policy,
+                          params.dataParallelism,
                           computationalMesh.asConduitNode(),
                           "mesh");
 

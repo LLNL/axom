@@ -107,6 +107,7 @@ public:
    * \param [in] runtimePolicy A value from RuntimePolicy.
    *             The simplest policy is RuntimePolicy::seq, which specifies
    *             running sequentially on the CPU.
+   * \param [in] dataParallelism Data parallel implementation choice.
    * \param [in] bpMesh Blueprint multi-domain mesh containing scalar field.
    * \param [in] topologyName Name of Blueprint topology to use in \a bpMesh.
    * \param [in] maskField Cell-based std::int32_t mask field.  If provided,
@@ -125,6 +126,7 @@ public:
    * transformation and storage of the temporary contiguous layout.
    */
   MarchingCubes(RuntimePolicy runtimePolicy,
+                MarchingCubesDataParallelism dataParallelism,
                 const conduit::Node &bpMesh,
                 const std::string &topologyName,
                 const std::string &maskField = {});
@@ -195,16 +197,6 @@ public:
     const std::string &cellIdField = {},
     const std::string &domainIdField = {});
 
-  /*!
-    @brief Set choice of data-parallel implementation.
-
-    By default, choice is MarchingCubesDataParallelism::byPolicy.
-  */
-  void setDataParallelism(MarchingCubesDataParallelism dataPar)
-  {
-    m_dataParallelism = dataPar;
-  }
-
 private:
   RuntimePolicy m_runtimePolicy;
 
@@ -246,8 +238,6 @@ private:
   */
   axom::Array<IndexType, 1> m_facetParentIds;
   //@}
-
-  void setMesh(const conduit::Node &bpMesh);
 
   //!@brief Allocate output buffers corresponding to runtime policy.
   void allocateOutputBuffers();
@@ -295,11 +285,6 @@ public:
                             const std::string &maskfield);
 
   int spatialDimension() const { return m_ndim; }
-
-  void setDataParallelism(MarchingCubesDataParallelism &dataPar)
-  {
-    m_dataParallelism = dataPar;
-  }
 
   /*!
     @brief Specify the field containing the nodal scalar function
@@ -387,6 +372,9 @@ public:
     virtual void setFunctionField(const std::string& fcnFieldName) = 0;
     virtual void setContourValue(double contourVal) = 0;
 
+    void setDataParallelism(MarchingCubesDataParallelism dataPar)
+      { m_dataParallelism = dataPar; }
+
     //@{
     //!@name Distinct phases in contour generation.
     //!@brief Compute the contour mesh.
@@ -417,6 +405,9 @@ public:
     }
 
     virtual ~ImplBase() { }
+
+    MarchingCubesDataParallelism m_dataParallelism =
+      MarchingCubesDataParallelism::byPolicy;
 
     double m_contourVal = 0.0;
     axom::ArrayView<axom::IndexType, 2> m_facetNodeIds;

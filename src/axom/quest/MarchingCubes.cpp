@@ -22,10 +22,12 @@ namespace axom
 namespace quest
 {
 MarchingCubes::MarchingCubes(RuntimePolicy runtimePolicy,
+                             MarchingCubesDataParallelism dataParallelism,
                              const conduit::Node& bpMesh,
                              const std::string& topologyName,
                              const std::string& maskField)
   : m_runtimePolicy(runtimePolicy)
+  , m_dataParallelism(dataParallelism)
   , m_singles()
   , m_topologyName(topologyName)
   , m_fcnFieldName()
@@ -231,29 +233,12 @@ MarchingCubesSingleDomain::MarchingCubesSingleDomain(RuntimePolicy runtimePolicy
   // Set domain first, to get m_ndim, which is required to allocate m_impl.
   setDomain(dom);
 
-  /*
-    We have 2 implementations.  MarchingCubesHybridParallel is faster on the host
-    and MarchingCubesFullParallel is faster on GPUs.  Both work in all cases.
-    We can choose based on runtime policy or by user choice
-  */
-  if(m_dataParallelism ==
-     axom::quest::MarchingCubesDataParallelism::hybridParallel ||
-     (m_dataParallelism == axom::quest::MarchingCubesDataParallelism::byPolicy &&
-      m_runtimePolicy == RuntimePolicy::seq))
-  {
-    SLIC_WARNING("Not really using hybrid while developing.  Using full parallel.");
-    m_impl = axom::quest::detail::marching_cubes::newMarchingCubesFullParallel(
-      m_runtimePolicy,
-      m_ndim);
-  }
-  else
-  {
-    m_impl = axom::quest::detail::marching_cubes::newMarchingCubesFullParallel(
-      m_runtimePolicy,
-      m_ndim);
-  }
+  m_impl = axom::quest::detail::marching_cubes::newMarchingCubesFullParallel(
+    m_runtimePolicy,
+    m_ndim);
 
   m_impl->initialize(*m_dom, m_topologyName, m_maskFieldName);
+  m_impl->setDataParallelism(m_dataParallelism);
   return;
 }
 
