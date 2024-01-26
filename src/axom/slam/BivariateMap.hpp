@@ -713,6 +713,8 @@ private:
 
   using iterator_category = std::forward_iterator_tag;
   using value_type = typename MapIterator::value_type;
+  using reference = typename MapIterator::reference;
+  using pointer = typename MapIterator::pointer;
   using difference_type = SetPosition;
 
 public:
@@ -761,14 +763,20 @@ public:
      *        multiple components, this will return the first component.
      *        To access the other components, use iter(comp)
      */
-  value_type operator*() { return *m_mapIterator; }
+  reference operator*() { return *m_mapIterator; }
+
+  pointer operator->() { return m_mapIterator.operator->(); }
 
   /**
      * \brief Returns the iterator's value at the specified component.
      *        Returns the first component if comp_idx is not specified.
      * \param comp_idx  (Optional) Zero-based index of the component.
      */
-  DataRefType operator()(PositionType comp_idx = 0) { return value(comp_idx); }
+  template <typename... ComponentIndex>
+  DataRefType operator()(ComponentIndex... comp_idx)
+  {
+    return value(comp_idx...);
+  }
 
   /** \brief Returns the first component value after n increments.  */
   DataRefType operator[](PositionType n) { return *(this->operator+(n)); }
@@ -776,7 +784,11 @@ public:
   /**
      * \brief Return the value at the iterator's position. Same as operator()
      */
-  DataRefType value(PositionType comp = 0) { return m_mapIterator(comp); }
+  template <typename... ComponentIndex>
+  DataRefType value(ComponentIndex... comp)
+  {
+    return m_mapIterator(comp...);
+  }
 
   /**
      * \brief return the current iterator's first index into the BivariateSet
@@ -788,6 +800,11 @@ public:
      *        into the BivariateSet
      */
   PositionType secondIndex() const { return m_bsetIterator.secondIndex(); }
+
+  /**
+   * \brief Return the current iterator's flat bivariate index.
+   */
+  PositionType flatIndex() const { return m_mapIterator.flatIndex(); }
 
   /** \brief Returns the number of components per element in the map. */
   PositionType numComp() const { return m_map->numComp(); }
