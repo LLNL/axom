@@ -443,14 +443,13 @@ private:
 
   std::string m_name;
   bool m_abortOnError;
+  std::map<std::string, std::vector<LogStream*>> m_taggedStreams;
   bool m_abortOnWarning;
   void (*m_abortFunction)(void);
 
   bool m_isEnabled[message::Num_Levels];
   std::map<LogStream*, LogStream*> m_streamObjectsManager;
   std::vector<LogStream*> m_logStreams[message::Num_Levels];
-
-  std::map<std::string, std::vector<LogStream*>> m_taggedStreams;
 
   ///@}
 
