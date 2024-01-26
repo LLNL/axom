@@ -69,6 +69,8 @@ public:
   using StridePolicyType = typename SuperMapType::StridePolicyType;
   using IndirectionPolicyType = typename SuperMapType::IndirectionPolicy;
 
+  using ElementShape = typename StridePolicyType::ShapeType;
+
   using MapType =
     Map<DataType, SubsetType, IndirectionPolicyType, StridePolicyType>;
 
@@ -98,7 +100,7 @@ public:
   AXOM_HOST_DEVICE SubMap(SuperMapType* supermap,
                           SubsetType subset_idxset,
                           bool indicesHaveIndirection = true)
-    : StridePolicyType(supermap->stride())
+    : StridePolicyType(*supermap)
     , m_superMap(supermap)
     , m_subsetIdx(subset_idxset)
     , m_indicesHaveIndirection(indicesHaveIndirection)
@@ -130,14 +132,16 @@ public:
    * \pre `0 <= idx < size()`
    * \pre `0 <= comp < numComp()`
    */
-  AXOM_HOST_DEVICE DataRefType operator()(IndexType idx, IndexType comp = 0) const
+  template <typename... ComponentIndex>
+  AXOM_HOST_DEVICE DataRefType operator()(IndexType idx,
+                                          ComponentIndex... comp) const
   {
 #ifndef AXOM_DEVICE_CODE
-    verifyPositionImpl(idx, comp);
+    verifyPositionImpl(idx, comp...);
 #endif
     SLIC_ASSERT_MSG(m_superMap != nullptr, "Submap's super map was null.");
-
-    return (*m_superMap)[getMapElemFlatIndex(idx) * numComp() + comp];
+    IndexType elemBegin = getMapElemFlatIndex(idx) * numComp();
+    return (*m_superMap)[elemBegin + componentOffset(comp...)];
   }
 
   /**
@@ -147,9 +151,10 @@ public:
    * \pre `0 <= idx < size()`
    * \pre `0 <= comp < numComp()`
    */
-  DataRefType value(IndexType idx, IndexType comp = 0) const
+  template <typename... ComponentIndex>
+  AXOM_HOST_DEVICE DataRefType value(IndexType idx, ComponentIndex... comp) const
   {
-    return operator()(idx, comp);
+    return operator()(idx, comp...);
   }
 
   /**
@@ -235,6 +240,54 @@ private:  //helper functions
       "Attempted to access element "
         << idx << " component " << comp << ", but Submap's data has size "
         << m_subsetIdx.size() << " with " << numComp() << " component");
+  }
+
+  /** Checks the ElementFlatIndex and the component index is valid */
+  template <typename... ComponentIndex>
+  void verifyPositionImpl(SetPosition AXOM_DEBUG_PARAM(idx),
+                          ComponentIndex... AXOM_DEBUG_PARAM(comp)) const
+  {
+#ifdef AXOM_DEBUG
+    ElementShape indexArray {{comp...}};
+    bool validIndexes = true;
+    for(int dim = 0; dim < StridePolicyType::NumDims; dim++)
+    {
+      validIndexes = validIndexes && (indexArray[dim] >= 0);
+      validIndexes = validIndexes && (indexArray[dim] < m_superMap->shape()[dim]);
+    }
+    std::string invalid_message = fmt::format(
+      "Attempted to access element {} component ({}), but SubMap's data has "
+      "size {} with component shape ({})",
+      idx,
+      fmt::join(indexArray, ", "),
+      m_subsetIdx.size(),
+      fmt::join(m_superMap->shape(), ", "));
+    SLIC_ASSERT_MSG(idx >= 0 && idx < m_subsetIdx.size() && validIndexes,
+                    invalid_message);
+#endif
+  }
+
+  /*!
+   * \brief Computes the flat indexing offset for a given component.
+   */
+  AXOM_HOST_DEVICE inline SetPosition componentOffset(
+    SetPosition componentIndex = 0) const
+  {
+    return componentIndex;
+  }
+
+  template <typename... ComponentIndex>
+  AXOM_HOST_DEVICE inline SetPosition componentOffset(
+    ComponentIndex... componentIndex) const
+  {
+    ElementShape indexArray {{componentIndex...}};
+    ElementShape strides = StridePolicyType::strides();
+    SetPosition offset = 0;
+    for(int dim = 0; dim < StridePolicyType::NumDims; dim++)
+    {
+      offset += indexArray[dim] * strides[dim];
+    }
+    return offset;
   }
 
 public:
