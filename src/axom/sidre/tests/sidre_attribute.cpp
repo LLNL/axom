@@ -3,7 +3,7 @@
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
-#include "axom/config.hpp"  // for AXOM_USE_HDF5
+#include "axom/config.hpp"
 #include "axom/sidre.hpp"
 
 #include "axom/fmt.hpp"
@@ -916,8 +916,7 @@ TEST(sidre_attribute, save_by_attribute)
   // Create a deep path with and without attribute
   root1->createViewScalar("grp1a/grp1b/view3", 3);
 
-  root1->createViewScalar("grp2a/view4", 4);  // make sure empty "views" not
-                                              // saved
+  root1->createViewScalar("grp2a/view4", 4);  // make sure empty "views" not saved
   root1->createViewScalar("grp2a/grp2b/view5", 5)
     ->setAttributeScalar(dump, g_dump_yes);
 
