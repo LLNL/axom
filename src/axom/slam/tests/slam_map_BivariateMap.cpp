@@ -866,6 +866,30 @@ void slam_bivariate_map_templated<ExecutionSpace>::initializeAndTestCartesianMap
           }
     }
   }
+
+  SLIC_INFO("\nChecking the elements with BivariateMap range iterator.");
+  for(auto it = m.set_begin(); it != m.set_end(); ++it)
+  {
+    int idx1 = it.firstIndex();
+    int idx2 = it.secondIndex();
+    int flatIdx = it.flatIndex();
+
+    EXPECT_EQ(idx1, m.set()->flatToFirstIndex(flatIdx));
+    EXPECT_EQ(idx2, m.set()->flatToSecondIndex(flatIdx));
+    EXPECT_EQ(it.numComp(), m.stride());
+
+    for(int i = 0; i < shape[0]; i++)
+      for(int j = 0; j < shape[1]; j++)
+        for(int k = 0; k < shape[2]; k++)
+        {
+          int flatCompIdx = i * strides[0] + j * strides[1] + k * strides[2];
+          double expected_value = getVal<double>(idx1, idx2, flatCompIdx);
+
+          EXPECT_EQ(expected_value, (*it)(i, j, k));
+          EXPECT_EQ(expected_value, it(i, j, k));
+          EXPECT_EQ(expected_value, it.value(i, j, k));
+        }
+  }
 }
 
 //----------------------------------------------------------------------
@@ -1094,6 +1118,30 @@ void slam_bivariate_map_templated<ExecutionSpace>::initializeAndTestRelationMap(
         slot++;
       }
     }
+  }
+
+  SLIC_INFO("\nChecking the elements with BivariateMap range iterator.");
+  for(auto it = m.set_begin(); it != m.set_end(); ++it)
+  {
+    int idx1 = it.firstIndex();
+    int idx2 = it.secondIndex();
+    int flatIdx = it.flatIndex();
+
+    EXPECT_EQ(idx1, m.set()->flatToFirstIndex(flatIdx));
+    EXPECT_EQ(idx2, m.set()->flatToSecondIndex(flatIdx));
+    EXPECT_EQ(it.numComp(), m.stride());
+
+    for(int i = 0; i < shape[0]; i++)
+      for(int j = 0; j < shape[1]; j++)
+        for(int k = 0; k < shape[2]; k++)
+        {
+          int flatCompIdx = i * strides[0] + j * strides[1] + k * strides[2];
+          double expected_value = getVal<double>(idx1, idx2, flatCompIdx);
+
+          EXPECT_EQ(expected_value, (*it)(i, j, k));
+          EXPECT_EQ(expected_value, it(i, j, k));
+          EXPECT_EQ(expected_value, it.value(i, j, k));
+        }
   }
 }
 
