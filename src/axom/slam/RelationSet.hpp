@@ -221,9 +221,11 @@ public:
    */
   SubsetType getElements(PositionType s1) const { return (*m_relation)[s1]; }
 
-  ElementType at(PositionType pos) const
+  AXOM_HOST_DEVICE ElementType at(PositionType pos) const
   {
+#ifndef AXOM_DEVICE_CODE
     RelationSet::verifyPosition(pos);
+#endif
     return m_relation->relationData()[pos];
   }
 

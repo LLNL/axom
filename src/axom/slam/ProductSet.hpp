@@ -227,7 +227,10 @@ public:
     return m_rowSet.get(this->secondSetSize());
   }
 
-  ElementType at(PositionType pos) const { return pos % this->secondSetSize(); }
+  AXOM_HOST_DEVICE ElementType at(PositionType pos) const
+  {
+    return pos % this->secondSetSize();
+  }
 
   AXOM_HOST_DEVICE PositionType size() const
   {
