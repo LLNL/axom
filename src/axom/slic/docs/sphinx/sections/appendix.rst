@@ -87,6 +87,7 @@ The table below details which SLIC macros are collective:
 | | ``SLIC_INFO_IF``         | |                                                                          |
 | | ``SLIC_INFO_ROOT``       | |                                                                          |
 | | ``SLIC_INFO_ROOT_IF``    | |                                                                          |
+| | ``SLIC_INFO_TAGGED``     | |                                                                          |
 +----------------------------+----------------------------------------------------------------------------+
 | | ``SLIC_ERROR``           | | Collective by default.                                                   |
 | | ``SLIC_ERROR_IF``        | | Collective after calling ``slic::enableAbortOnError()``.                 |
