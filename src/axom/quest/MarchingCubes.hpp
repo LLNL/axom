@@ -95,6 +95,13 @@ class MarchingCubesSingleDomain;
  * To avoid confusion between the two meshes, we refer to the input
  * mesh with the scalar function as "parent" and the generated mesh
  * as the "contour".
+ *
+ * The output contour mesh format can be a mint::UnstructuredMesh or
+ * Array data.  IDs of parent cell and domain that generated the
+ * individual contour facets are provided.  Blueprint allows users to
+ * specify ids for the domains.  If "state/domain_id" exists in the
+ * domains, it is used as the domain id.  Otherwise, the domain's
+ * interation index within the multidomain mesh is used.
  */
 class MarchingCubes
 {
@@ -107,6 +114,8 @@ public:
    * \param [in] runtimePolicy A value from RuntimePolicy.
    *             The simplest policy is RuntimePolicy::seq, which specifies
    *             running sequentially on the CPU.
+   * \param [in] allocatorID Data allocator ID.  Choose something compatible
+   *             with \c runtimePolicy.  See \c esecution_space.
    * \param [in] dataParallelism Data parallel implementation choice.
    * \param [in] bpMesh Blueprint multi-domain mesh containing scalar field.
    * \param [in] topologyName Name of Blueprint topology to use in \a bpMesh.
@@ -124,8 +133,14 @@ public:
    * conduit::blueprint::is_contiguous().  In the future, this
    * requirement may be relaxed, possibly at the cost of a
    * transformation and storage of the temporary contiguous layout.
+   *
+   * Blueprint allows users to specify ids for the domains.  If
+   * "state/domain_id" exists in the domains, it is used as the domain
+   * id.  Otherwise, the domain's interation index within the
+   * multidomain mesh is used.
    */
   MarchingCubes(RuntimePolicy runtimePolicy,
+                int allocatorId,
                 MarchingCubesDataParallelism dataParallelism,
                 const conduit::Node &bpMesh,
                 const std::string &topologyName,
@@ -149,33 +164,8 @@ public:
   //!@brief Get number of nodes in the generated contour mesh.
   axom::IndexType getContourNodeCount() const;
 
-  /*!
-    @brief Return pointer to facet corner node indices (connectivity)
-
-    The buffer size is the <spatial dimension> x getContourCellCount().
-    Memory space of data depends on runtime policy.
-  */
-  axom::ArrayView<const axom::IndexType, 2> getContourFacetCorners() const
-  { return m_facetNodeIds.view(); }
-
-  /*!
-    @brief Return pointer to node coordinates.
-
-    The buffer size is <spatial dimension> x getContourNodeCount().
-    Memory space of data depends on runtime policy.
-  */
-  axom::ArrayView<const double, 2> getContourNodeCoords() const
-  { return m_facetNodeCoords.view(); }
-
-  /*!
-    @brief Return pointer to parent cell indices
-
-    The buffer size is getContourCellCount().
-    Memory space of data depends on runtime policy.
-  */
-  axom::ArrayView<const axom::IndexType> getContourFacetParents() const
-  { return m_facetParentIds.view(); }
-
+  //@{
+  //!@name Output methods
   /*!
     @brief Put generated contour in a mint::UnstructuredMesh.
     @param mesh Output contour mesh
@@ -187,18 +177,90 @@ public:
 
     If the fields aren't in the mesh, they will be created.
 
-    Blueprint allows users to specify ids for the domains.  If
-    "state/domain_id" exists in the domains, it is used as the domain
-    id.  Otherwise, the domain's interation index within the
-    multidomain mesh is used.
+    Important: mint::UnstructuredMesh only supports host memory, so
+    regardless of the allocator ID, this method always deep-copies
+    data to host memory.  To access the data without deep-copying, see
+    the other output methods.
   */
   void populateContourMesh(
     axom::mint::UnstructuredMesh<axom::mint::SINGLE_SHAPE> &mesh,
     const std::string &cellIdField = {},
-    const std::string &domainIdField = {});
+    const std::string &domainIdField = {}) const;
+
+  /*!
+    @brief Return view of facet corner node indices (connectivity) Array.
+
+    The array shape is (getContourCellCount(), <spatial dimension>), where
+    the second index is index of the facet corner.
+
+    Memory space of data corresponds to allocator set in the constructor.
+  */
+  axom::ArrayView<const axom::IndexType, 2> getContourFacetCorners() const
+  { return m_facetNodeIds.view(); }
+
+  /*!
+    @brief Return view of node coordinates Array.
+
+    The array shape is (getContourNodeCount(), <spatial dimension>), where
+    the second index is the spatial index.
+
+    Memory space of data corresponds to allocator set in the constructor.
+  */
+  axom::ArrayView<const double, 2> getContourNodeCoords() const
+  { return m_facetNodeCoords.view(); }
+
+  /*!
+    @brief Return view of parent cell indices Array.
+
+    The buffer size is getContourCellCount().  The parent ID is the
+    column-major ordered flat index of the cell in the parent domain
+    (see ArrayIndexer), not counting ghost cells.
+
+    Memory space of data corresponds to allocator set in the constructor.
+  */
+  axom::ArrayView<const axom::IndexType> getContourFacetParents() const
+  { return m_facetParentIds.view(); }
+
+  /*!
+    @brief Return view of parent domain indices Array.
+    @param allocatorID Allocator id for the output data.  If omitted,
+           use the id set in the constructor.
+
+    The buffer size is getContourCellCount().
+
+    Memory space of data corresponds to allocator set in the constructor.
+  */
+  axom::Array<axom::IndexType> getContourFacetDomainIds(int allocatorID=axom::INVALID_ALLOCATOR_ID) const;
+
+#if 1
+  // Is there a use case for this?
+  /*!
+    @brief Give caller posession of the contour data.
+
+    This efficiently turns the generated contour data to the caller,
+    to stay in scope after the MarchingCubes object is deleted.
+
+    @pre isoContour() must have been called.
+    @post outputs can no longer be accessed from object.
+  */
+  void relinguishContourData(
+    axom::Array<axom::IndexType, 2>& facetNodeIds,
+    axom::Array<double, 2>& facetNodeCoords,
+    axom::Array<axom::IndexType, 1>& facetParentIds)
+  {
+    facetNodeIds.swap(m_facetNodeIds);
+    facetNodeCoords.swap(m_facetNodeCoords);
+    facetParentIds.swap(m_facetParentIds);
+    m_facetNodeIds.clear();
+    m_facetNodeCoords.clear();
+    m_facetParentIds.clear();
+  }
+#endif
+  //@}
 
 private:
   RuntimePolicy m_runtimePolicy;
+  int m_allocatorID = axom::INVALID_ALLOCATOR_ID;
 
   //@brief Choice of full or partial data-parallelism, or byPolicy.
   MarchingCubesDataParallelism m_dataParallelism =
@@ -260,6 +322,8 @@ public:
    * \param [in] runtimePolicy A value from RuntimePolicy.
    *             The simplest policy is RuntimePolicy::seq, which specifies
    *             running sequentially on the CPU.
+   * \param [in] allocatorID Data allocator ID.  Choose something compatible
+   *             with \c runtimePolicy.  See \c esecution_space.
    * \param [in] dataPar Choice of data-parallel implementation.
    * \param [in] dom Blueprint single-domain mesh containing scalar field.
    * \param [in] topologyName Name of Blueprint topology to use in \a dom
@@ -279,6 +343,7 @@ public:
    * transformation and storage of the temporary contiguous layout.
    */
   MarchingCubesSingleDomain(RuntimePolicy runtimePolicy,
+                            int allocatorID,
                             MarchingCubesDataParallelism dataPar,
                             const conduit::Node &dom,
                             const std::string &topologyName,
@@ -318,6 +383,9 @@ public:
     axom::ArrayView<axom::IndexType, 1>& facetParentIds,
     axom::IndexType facetIndexOffset)
     {
+      SLIC_ASSERT(facetNodeIds.getAllocatorID() == m_allocatorID);
+      SLIC_ASSERT(facetNodeCoords.getAllocatorID() == m_allocatorID);
+      SLIC_ASSERT(facetParentIds.getAllocatorID() == m_allocatorID);
       m_impl->setOutputBuffers( facetNodeIds,
                                 facetNodeCoords,
                                 facetParentIds,
@@ -418,6 +486,7 @@ public:
 
 private:
   RuntimePolicy m_runtimePolicy;
+  int m_allocatorID = axom::INVALID_ALLOCATOR_ID;
 
   //@brief Choice of full or partial data-parallelism, or byPolicy.
   MarchingCubesDataParallelism m_dataParallelism =

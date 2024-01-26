@@ -51,6 +51,12 @@ public:
   using SequentialLoopPolicy =
     typename execution_space<SequentialExecSpace>::loop_policy;
   static constexpr auto MemorySpace = execution_space<ExecSpace>::memory_space;
+
+  AXOM_HOST MarchingCubesImpl(int allocatorID)
+    : m_allocatorID(allocatorID)
+    , m_caseIds(emptyShape(), m_allocatorID)
+    {}
+
   /*!
     @brief Initialize data to a blueprint domain.
     @param dom Blueprint structured mesh domain
@@ -767,6 +773,8 @@ public:
   { }
 
 private:
+  int m_allocatorID;
+
   axom::quest::MeshViewUtil<DIM, MemorySpace> m_mvu;
   MIdx m_bShape;  //!< @brief Blueprint cell data shape.
 
@@ -801,6 +809,13 @@ private:
   static constexpr std::uint8_t CELL_CORNER_COUNT = (DIM == 3) ? 8 : 4;
 
   double m_contourVal = 0.0;
+
+  axom::StackArray<axom::IndexType, DIM> emptyShape()
+  {
+    axom::StackArray<axom::IndexType, DIM> rval;
+    for(int d=0; d<DIM; ++d) { rval[d] = 0; }
+    return rval;
+  }
 };
 
 /*!
@@ -808,7 +823,7 @@ private:
   for caller-specified runtime policy and physical dimension.
 */
 static std::unique_ptr<axom::quest::MarchingCubesSingleDomain::ImplBase>
-newMarchingCubesImpl(MarchingCubes::RuntimePolicy runtimePolicy, int dim)
+newMarchingCubesImpl(MarchingCubes::RuntimePolicy runtimePolicy, int allocatorID, int dim)
 {
   using ImplBase = axom::quest::MarchingCubesSingleDomain::ImplBase;
 
@@ -817,35 +832,35 @@ newMarchingCubesImpl(MarchingCubes::RuntimePolicy runtimePolicy, int dim)
   if(runtimePolicy == MarchingCubes::RuntimePolicy::seq)
   {
     impl = dim == 2 ? std::unique_ptr<ImplBase>(
-                        new MarchingCubesImpl<2, axom::SEQ_EXEC, axom::SEQ_EXEC>)
+                        new MarchingCubesImpl<2, axom::SEQ_EXEC, axom::SEQ_EXEC>(allocatorID))
                     : std::unique_ptr<ImplBase>(
-                        new MarchingCubesImpl<3, axom::SEQ_EXEC, axom::SEQ_EXEC>);
+                        new MarchingCubesImpl<3, axom::SEQ_EXEC, axom::SEQ_EXEC>(allocatorID));
   }
 #ifdef AXOM_RUNTIME_POLICY_USE_OPENMP
   else if(runtimePolicy == MarchingCubes::RuntimePolicy::omp)
   {
     impl = dim == 2 ? std::unique_ptr<ImplBase>(
-                        new MarchingCubesImpl<2, axom::OMP_EXEC, axom::SEQ_EXEC>)
+                        new MarchingCubesImpl<2, axom::OMP_EXEC, axom::SEQ_EXEC>(allocatorID))
                     : std::unique_ptr<ImplBase>(
-                        new MarchingCubesImpl<3, axom::OMP_EXEC, axom::SEQ_EXEC>);
+                        new MarchingCubesImpl<3, axom::OMP_EXEC, axom::SEQ_EXEC>(allocatorID));
   }
 #endif
 #ifdef AXOM_RUNTIME_POLICY_USE_CUDA
   else if(runtimePolicy == MarchingCubes::RuntimePolicy::cuda)
   {
     impl = dim == 2 ? std::unique_ptr<ImplBase>(
-                        new MarchingCubesImpl<2, axom::CUDA_EXEC<256>, axom::CUDA_EXEC<1>>)
+                        new MarchingCubesImpl<2, axom::CUDA_EXEC<256>, axom::CUDA_EXEC<1>>(allocatorID))
                     : std::unique_ptr<ImplBase>(
-                        new MarchingCubesImpl<3, axom::CUDA_EXEC<256>, axom::CUDA_EXEC<1>>);
+                        new MarchingCubesImpl<3, axom::CUDA_EXEC<256>, axom::CUDA_EXEC<1>>(allocatorID));
   }
 #endif
 #ifdef AXOM_RUNTIME_POLICY_USE_HIP
   else if(runtimePolicy == MarchingCubes::RuntimePolicy::hip)
   {
     impl = dim == 2 ? std::unique_ptr<ImplBase>(
-                        new MarchingCubesImpl<2, axom::HIP_EXEC<256>, axom::HIP_EXEC<1>>)
+                        new MarchingCubesImpl<2, axom::HIP_EXEC<256>, axom::HIP_EXEC<1>>(allocatorID))
                     : std::unique_ptr<ImplBase>(
-                        new MarchingCubesImpl<3, axom::HIP_EXEC<256>, axom::HIP_EXEC<1>>);
+                        new MarchingCubesImpl<3, axom::HIP_EXEC<256>, axom::HIP_EXEC<1>>(allocatorID));
   }
 #endif
   else

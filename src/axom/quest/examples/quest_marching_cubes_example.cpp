@@ -244,45 +244,6 @@ public:
 
 //!@brief Our allocator id, based on execution policy.
 static int s_allocatorId = axom::INVALID_ALLOCATOR_ID;  // Set in main.
-static int allocatorIdForPolicy(axom::runtime_policy::Policy policy)
-{
-  //---------------------------------------------------------------------------
-  // Set default allocator for possibly testing on devices
-  //---------------------------------------------------------------------------
-  int aid = axom::INVALID_ALLOCATOR_ID;
-
-  // clang-format off
-  if(policy == axom::runtime_policy::Policy::seq)
-  {
-    aid = axom::execution_space<axom::SEQ_EXEC>::allocatorID();
-  }
-#ifdef AXOM_RUNTIME_POLICY_USE_OPENMP
-  else if(policy == axom::runtime_policy::Policy::omp)
-  {
-    aid = axom::execution_space<axom::OMP_EXEC>::allocatorID();
-  }
-#endif
-#ifdef AXOM_RUNTIME_POLICY_USE_CUDA
-  else if(policy == axom::runtime_policy::Policy::cuda)
-  {
-    // aid = axom::execution_space<axom::CUDA_EXEC<256>>::allocatorID();
-    aid = axom::getUmpireResourceAllocatorID(umpire::resource::Device);
-  }
-#endif
-#ifdef AXOM_RUNTIME_POLICY_USE_HIP
-  else if(policy == axom::runtime_policy::Policy::hip)
-  {
-    // aid = axom::execution_space<axom::HIP_EXEC<256>>::allocatorID();
-    aid = axom::getUmpireResourceAllocatorID(umpire::resource::Device);
-  }
-#endif
-  // clang-format on
-
-  SLIC_ERROR_IF(
-    aid == axom::INVALID_ALLOCATOR_ID,
-    axom::fmt::format("Cannot find allocator id for policy '{}'", policy));
-  return aid;
-}
 
 //!@brief Put a conduit::Node array data into the specified memory space.
 template <typename T>
@@ -724,7 +685,7 @@ struct ContourTestBase
   const std::string m_domainIdField;
   ValueFunctorType m_valueFunctor;
 
-  int runTest(BlueprintStructuredMesh& computationalMesh, quest::MarchingCubes& mc)
+  int runTest(BlueprintStructuredMesh& computationalMesh)
   {
     SLIC_INFO(banner(axom::fmt::format("Testing {} contour.", name())));
 
@@ -782,6 +743,12 @@ struct ContourTestBase
       }
     }
 #endif
+    // Create marching cubes algorithm object and set some parameters
+    quest::MarchingCubes mc(params.policy,
+        s_allocatorId,
+        params.dataParallelism,
+        computationalMesh.asConduitNode(),
+        "mesh");
 
     mc.setFunctionField(functionName());
 
@@ -825,16 +792,14 @@ struct ContourTestBase
         axom::execution_space<axom::SEQ_EXEC>::allocatorID());
     }
 
-    // Put mesh mesh in a mint object for error checking and output.
+    // Put contour mesh in a mint object for error checking and output.
     std::string sidreGroupName = name() + "_mesh";
     sidre::DataStore objectDS;
     sidre::Group* meshGroup = objectDS.getRoot()->createGroup(sidreGroupName);
     axom::mint::UnstructuredMesh<axom::mint::SINGLE_SHAPE> contourMesh(
       DIM,
       DIM == 2 ? mint::CellType::SEGMENT : mint::CellType::TRIANGLE,
-      meshGroup,
-      mc.getContourNodeCount(),
-      mc.getContourCellCount());
+      meshGroup);
     axom::utilities::Timer extractTimer(false);
     extractTimer.start();
     mc.populateContourMesh(contourMesh, m_parentCellIdField, m_domainIdField);
@@ -1076,10 +1041,10 @@ struct ContourTestBase
   }
 
   axom::ArrayView<const axom::IndexType> get_parent_cell_id_view(
-    axom::mint::UnstructuredMesh<axom::mint::SINGLE_SHAPE>& contourMesh) const
+    const axom::mint::UnstructuredMesh<axom::mint::SINGLE_SHAPE>& contourMesh) const
   {
     axom::IndexType numIdxComponents = -1;
-    axom::IndexType* ptr =
+    const axom::IndexType* ptr =
       contourMesh.getFieldPtr<axom::IndexType>(m_parentCellIdField,
                                                axom::mint::CELL_CENTERED,
                                                numIdxComponents);
@@ -1087,7 +1052,7 @@ struct ContourTestBase
     SLIC_ASSERT(numIdxComponents == 1);
 
     axom::ArrayView<const axom::IndexType> view(
-      (axom::IndexType*)ptr,
+      (const axom::IndexType*)ptr,
       contourMesh.getNumberOfCells());
     return view;
   }
@@ -1329,7 +1294,7 @@ struct RoundFunctor
   using PointType = axom::primal::Point<double, DIM>;
   const axom::primal::Sphere<double, DIM> _sphere;
   RoundFunctor(const PointType& center) : _sphere(center, 0.0) { }
-  double operator()(const PointType& pt) const
+  AXOM_HOST_DEVICE double operator()(const PointType& pt) const
   {
     return _sphere.computeSignedDistance(pt);
   }
@@ -1388,7 +1353,7 @@ struct GyroidFunctor
     : _scale(scale)
     , _offset(offset)
   { }
-  double operator()(const PointType& pt) const
+  AXOM_HOST_DEVICE double operator()(const PointType& pt) const
   {
     if(DIM == 3)
     {
@@ -1458,7 +1423,7 @@ struct PlanarFunctor
                 const PointType& inPlane)
     : _plane(perpDir.unitVector(), inPlane)
   { }
-  double operator()(const PointType& pt) const
+  AXOM_HOST_DEVICE double operator()(const PointType& pt) const
   {
     return _plane.signedDistance(pt);
   }
@@ -1518,6 +1483,31 @@ void makeCoordsInterleaved(conduit::Node& coordValues)
   }
 }
 
+///
+int allocatorIdToTest(axom::runtime_policy::Policy policy)
+{
+#if defined(AXOM_USE_UMPIRE)
+  //---------------------------------------------------------------------------
+  // Memory resource.  For testing, choose device memory if appropriate.
+  //---------------------------------------------------------------------------
+  int allocatorID =
+    policy == RuntimePolicy::seq ? axom::detail::getAllocatorID<axom::MemorySpace::Host>() :
+#if defined(AXOM_RUNTIME_POLICY_USE_OPENMP)
+    policy == RuntimePolicy::omp ? axom::detail::getAllocatorID<axom::MemorySpace::Host>() :
+#endif
+#if defined(AXOM_RUNTIME_POLICY_USE_CUDA)
+    policy == RuntimePolicy::cuda ? axom::detail::getAllocatorID<axom::MemorySpace::Device>() :
+#endif
+#if defined(AXOM_RUNTIME_POLICY_USE_HIP)
+    policy == RuntimePolicy::hip ? axom::detail::getAllocatorID<axom::MemorySpace::Device>() :
+#endif
+    axom::INVALID_ALLOCATOR_ID;
+#else
+  int allocatorID = axom::getDefaultAllocatorID();
+#endif
+  return allocatorID;
+}
+
 /// Utility function to initialize the logger
 void initializeLogger()
 {
@@ -1569,11 +1559,6 @@ void finalizeLogger()
 template <int DIM, typename ExecSpace>
 int testNdimInstance(BlueprintStructuredMesh& computationalMesh)
 {
-  // Create marching cubes algorithm object and set some parameters
-  quest::MarchingCubes mc(params.policy,
-                          params.dataParallelism,
-                          computationalMesh.asConduitNode(),
-                          "mesh");
 
   //---------------------------------------------------------------------------
   // params specify which tests to run.
@@ -1617,19 +1602,19 @@ int testNdimInstance(BlueprintStructuredMesh& computationalMesh)
 
   if(planarTest)
   {
-    localErrCount += planarTest->runTest(computationalMesh, mc);
+    localErrCount += planarTest->runTest(computationalMesh);
   }
   slic::flushStreams();
 
   if(roundTest)
   {
-    localErrCount += roundTest->runTest(computationalMesh, mc);
+    localErrCount += roundTest->runTest(computationalMesh);
   }
   slic::flushStreams();
 
   if(gyroidTest)
   {
-    localErrCount += gyroidTest->runTest(computationalMesh, mc);
+    localErrCount += gyroidTest->runTest(computationalMesh);
   }
   slic::flushStreams();
 
@@ -1701,7 +1686,7 @@ int main(int argc, char** argv)
     exit(retval);
   }
 
-  s_allocatorId = allocatorIdForPolicy(params.policy);
+  s_allocatorId = allocatorIdToTest(params.policy);
 
   //---------------------------------------------------------------------------
   // Load computational mesh.

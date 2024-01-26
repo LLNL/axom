@@ -73,7 +73,7 @@ public:
         m_strides[d] = m_strides[d + 1] * shape[d + 1];
       }
     }
-    SLIC_ASSERT((DIM == 1 && getOrder() == 'r' | 's') || (getOrder() == order));
+    SLIC_ASSERT((DIM == 1 && getOrder() == ('r' | 's')) || (getOrder() == order));
   }
 
   //!@brief Initialize for arbitrary-stride indexing.
@@ -90,7 +90,10 @@ public:
       {
         if(m_strides[m_slowestDirs[s]] < m_strides[m_slowestDirs[d]])
         {
-          std::swap(m_slowestDirs[s], m_slowestDirs[d]);
+          // Swap values.
+          auto tmp = m_slowestDirs[s];
+          m_slowestDirs[s] = m_slowestDirs[d];
+          m_slowestDirs[d] = tmp;
         }
       }
     }
