@@ -225,7 +225,7 @@ public:
   const SecondSetType* getSecondSet() const { return m_set2; }
 
   /** \brief Returns the element at the given FlatIndex \a pos */
-  virtual ElementType at(PositionType pos) const = 0;
+  AXOM_HOST_DEVICE virtual ElementType at(PositionType pos) const = 0;
 
   /**
    * \brief A set of elements with the given first set index.
@@ -442,7 +442,10 @@ public:
     return RangeSetType();
   }
 
-  ElementType at(PositionType) const override { return PositionType(); }
+  AXOM_HOST_DEVICE ElementType at(PositionType) const override
+  {
+    return PositionType();
+  }
 
   AXOM_HOST_DEVICE PositionType size() const override { return PositionType(); }
 

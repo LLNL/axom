@@ -160,7 +160,7 @@ public:
   /**
    * \brief Return the set element in the SuperMap at the given subset index
    */
-  IndexType index(IndexType idx) const
+  AXOM_HOST_DEVICE IndexType index(IndexType idx) const
   {
     return m_indicesHaveIndirection ? m_superMap->set()->at(m_subsetIdx[idx])
                                     : idx;
