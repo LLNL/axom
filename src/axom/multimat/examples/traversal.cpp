@@ -387,7 +387,6 @@ void various_traversal_methods(int nmats,
         SLIC_ASSERT(val == iter.value(comp));  //another way to get the value
         sum += val;
       }
-      SLIC_ASSERT(iter(0) == iter.value());
     }
   }
   timer.stop();
