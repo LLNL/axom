@@ -391,9 +391,7 @@ public:
    */
   bool saveAttributeLayout(Node& node) const;
 
-  /*!
-   * \brief Create attributes from name/value pairs in node["attribute"].
-   */
+  /// \brief Create attributes from name/value pairs in node["attribute"].
   void loadAttributeLayout(Node& node);
 
   //@}

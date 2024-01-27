@@ -637,14 +637,9 @@ bool DataStore::saveAttributeLayout(Node& node) const
 
   bool hasAttributes = false;
 
-  IndexType aidx = getFirstValidAttributeIndex();
-  while(indexIsValid(aidx))
+  for(const auto& attr : attributes())
   {
-    const Attribute* attr = getAttribute(aidx);
-
-    node[attr->getName()] = attr->getDefaultNodeRef();
-
-    aidx = getNextValidAttributeIndex(aidx);
+    node[attr.getName()] = attr.getDefaultNodeRef();
     hasAttributes = true;
   }
 
@@ -670,7 +665,9 @@ void DataStore::loadAttributeLayout(Node& node)
       Node& n_attr = attrs_itr.next();
       std::string attr_name = attrs_itr.name();
 
-      Attribute* attr = createAttributeEmpty(attr_name);
+      auto* attr = !hasAttribute(attr_name) ? createAttributeEmpty(attr_name)
+                                            : getAttribute(attr_name);
+
       attr->setDefaultNodeRef(n_attr);
     }
   }
