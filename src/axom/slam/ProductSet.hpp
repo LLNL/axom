@@ -55,6 +55,9 @@ public:
   using ElementType = typename BaseType::ElementType;
   using ProductSetType = ProductSet<SetType1, SetType2>;
 
+  struct Iterator;
+  using IteratorType = Iterator;
+
 private:
   template <typename Dummy, typename SetType>
   struct RowSet
@@ -93,9 +96,6 @@ private:
 
     Type get(PositionType secondSetSize) const { return Type(secondSetSize); }
   };
-
-  struct Iterator;
-  using IteratorType = Iterator;
 
 public:
   using ConcreteSet = ProductSet<SetType1, SetType2, policies::ConcreteInterface>;
