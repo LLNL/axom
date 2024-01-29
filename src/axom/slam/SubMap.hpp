@@ -136,6 +136,9 @@ public:
   AXOM_HOST_DEVICE DataRefType operator()(IndexType idx,
                                           ComponentIndex... comp) const
   {
+    static_assert(
+      axom::detail::all_types_are_integral<ComponentIndex...>::value,
+      "SubMap::operator(): index parameter pack must all be integral types.");
 #ifndef AXOM_DEVICE_CODE
     verifyPositionImpl(idx, comp...);
 #endif
