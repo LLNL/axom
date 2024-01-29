@@ -457,14 +457,14 @@ public:
   using RealData = axom::Array<double>;
   using IndirectionPolicy =
     slam::policies::ArrayViewIndirection<SetPosition, double>;
-  using StridePolicy = slam::policies::RuntimeStride<int>;
+  using StridePolicy = slam::policies::RuntimeStride<axom::IndexType>;
   using InterfacePolicy = slam::policies::ConcreteInterface;
 
   using RealMap =
     slam::Map<double, ConcreteSetType, IndirectionPolicy, StridePolicy, InterfacePolicy>;
 
   template <int Dims>
-  using MDStridePolicy = slam::policies::MultiDimStride<int, Dims>;
+  using MDStridePolicy = slam::policies::MultiDimStride<axom::IndexType, Dims>;
 
   template <int Dims>
   using MultiDimMap =
@@ -493,7 +493,7 @@ public:
   }
 
   template <int Dims>
-  void initializeWithMultiDimStride(axom::StackArray<int, Dims> shape)
+  void initializeWithMultiDimStride(axom::StackArray<axom::IndexType, Dims> shape)
   {
     // Create associated set.
     m_set = ConcreteSetType(MAX_SET_SIZE);
@@ -629,8 +629,8 @@ AXOM_TYPED_TEST(slam_map_templated, constructAndTest2DStride)
   using ExecSpace = typename TestFixture::ExecSpace;
   using MapType = typename TestFixture::template MultiDimMap<2>;
 
-  const axom::StackArray<int, 2> shape = {3, 5};
-  const axom::StackArray<int, 2> strides = {5, 1};
+  const axom::StackArray<axom::IndexType, 2> shape = {3, 5};
+  const axom::StackArray<axom::IndexType, 2> strides = {5, 1};
   int stride = 3 * 5;
   this->initializeWithMultiDimStride(shape);
 
@@ -700,8 +700,8 @@ AXOM_TYPED_TEST(slam_map_templated, constructAndTest3DStride)
   using ExecSpace = typename TestFixture::ExecSpace;
   using MapType = typename TestFixture::template MultiDimMap<3>;
 
-  const axom::StackArray<int, 3> shape = {2, 3, 4};
-  const axom::StackArray<int, 3> strides = {12, 4, 1};
+  const axom::StackArray<axom::IndexType, 3> shape = {2, 3, 4};
+  const axom::StackArray<axom::IndexType, 3> strides = {12, 4, 1};
   int stride = 2 * 3 * 4;
   this->initializeWithMultiDimStride(shape);
 

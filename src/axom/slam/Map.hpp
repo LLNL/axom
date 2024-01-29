@@ -554,6 +554,7 @@ public:
     using DataType = std::remove_reference_t<DataRefType>;
 
     using PositionType = SetPosition;
+    using StrideIndexType = typename StridePolicyType::IndexType;
     constexpr static int Dims = StridePolicyType::NumDims;
 
     // Type traits to satisfy LegacyRandomAccessIterator concept
@@ -564,12 +565,12 @@ public:
     using difference_type = SetPosition;
 
   private:
-    static StackArray<IndexType, Dims + 1> fetchDims(int stride)
+    static StackArray<IndexType, Dims + 1> fetchDims(StrideIndexType stride)
     {
       return {0, stride};
     }
     static StackArray<IndexType, Dims + 1> fetchDims(
-      const StackArray<PositionType, Dims> stride)
+      const StackArray<StrideIndexType, Dims> stride)
     {
       StackArray<IndexType, Dims + 1> dims;
       for(int idim = 0; idim < Dims; idim++)
@@ -608,7 +609,8 @@ public:
     {
       return value(comp_idx...);
     }
-    DataRefType value(PositionType comp_idx) const
+    template <typename ComponentIndex>
+    DataRefType value(ComponentIndex comp_idx) const
     {
       static_assert(Dims == 1,
                     "Map::RangeIterator::value(): incorrect number of indexes "
@@ -699,8 +701,9 @@ private:
                       << idx << " but map's data has size " << m_data.size());
   }
 
+  template <typename ComponentIndex>
   inline void verifyPositionImpl(SetPosition AXOM_DEBUG_PARAM(setIdx),
-                                 SetPosition AXOM_DEBUG_PARAM(compIdx)) const
+                                 ComponentIndex AXOM_DEBUG_PARAM(compIdx)) const
   {
     SLIC_ASSERT_MSG(
       setIdx >= 0 && setIdx < size() && compIdx >= 0 && compIdx < numComp(),
@@ -733,7 +736,9 @@ private:
 #endif
   }
 
-  AXOM_HOST_DEVICE inline SetPosition componentOffset(SetPosition componentIndex) const
+  template <typename ComponentIndex>
+  AXOM_HOST_DEVICE inline SetPosition componentOffset(
+    ComponentIndex componentIndex) const
   {
     return componentIndex;
   }
