@@ -128,13 +128,12 @@ bool constructAndTestSubMap()
 
       // Check iterator's value access functions
       {
-        auto mapVal = it.value();
-        EXPECT_EQ(mapVal, *it);
-        EXPECT_EQ(mapVal, it());
-        EXPECT_EQ(mapVal, it[0]);
+        auto expectedValue = getValue<T>(submapOffset + cnt);
+        EXPECT_EQ(expectedValue, *it);
+        EXPECT_EQ(expectedValue, it[0]);
 
         auto expVal = getValue<T>(submapOffset + cnt);
-        EXPECT_EQ(expVal, mapVal);
+        EXPECT_EQ(expVal, expectedValue);
       }
     }
   }
