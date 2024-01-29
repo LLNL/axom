@@ -58,16 +58,12 @@ class View;
  * avoid multiple messages for the same error.  For example, if the
  * index cannot be converted to an Attribute pointer in the View
  * class, an error message will be printing and then a NULL pointer
- * passed to the AttrValues class which will not print another
- * message.
+ * passed to the AttrValues class which will not print another message.
  */
 class AttrValues
 {
 public:
-  /*!
-   * Friend declarations to constrain usage via controlled access to
-   * private members.
-   */
+  /// Friend declarations to constrain usage via controlled access to private members.
   friend class View;
 
 private:
@@ -106,7 +102,7 @@ private:
   template <typename ScalarType>
   bool setScalar(const Attribute* attr, ScalarType value)
   {
-    DataTypeId arg_id = detail::SidreTT<ScalarType>::id;
+    const DataTypeId arg_id = detail::SidreTT<ScalarType>::id;
     if(arg_id != attr->getTypeID())
     {
       SLIC_CHECK_MSG(arg_id == attr->getTypeID(),
@@ -117,8 +113,8 @@ private:
       return false;
     }
 
-    IndexType iattr = attr->getIndex();
-    bool ok = createNode(iattr);
+    const IndexType iattr = attr->getIndex();
+    const bool ok = createNode(iattr);
     if(ok)
     {
       (*m_values)[iattr] = value;
@@ -131,7 +127,7 @@ private:
    */
   bool setString(const Attribute* attr, const std::string& value)
   {
-    DataTypeId arg_id = CHAR8_STR_ID;
+    const DataTypeId arg_id = CHAR8_STR_ID;
     if(arg_id != attr->getTypeID())
     {
       SLIC_CHECK_MSG(arg_id == attr->getTypeID(),
@@ -142,8 +138,8 @@ private:
       return false;
     }
 
-    IndexType iattr = attr->getIndex();
-    bool ok = createNode(iattr);
+    const IndexType iattr = attr->getIndex();
+    const bool ok = createNode(iattr);
     if(ok)
     {
       (*m_values)[iattr] = value;
@@ -159,8 +155,8 @@ private:
    */
   bool setNode(const Attribute* attr, const Node& node)
   {
-    IndexType iattr = attr->getIndex();
-    bool ok = createNode(iattr);
+    const IndexType iattr = attr->getIndex();
+    const bool ok = createNode(iattr);
     if(ok)
     {
       (*m_values)[iattr] = node;
