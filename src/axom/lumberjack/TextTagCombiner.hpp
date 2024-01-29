@@ -31,9 +31,9 @@ namespace lumberjack
  * \brief Combines Message classes if their Message::text and Message::tag
  *        are equal.
  *
- *  This class instance is automatically added to Lumberjack's Lumberjack for
- *  you. If you want it removed call Lumberjack::removeCombiner with the string
- * "TextTagCombiner" as it's parameter.
+ *  This class can be added to Lumberjack's Lumberjack by calling
+ *  Lumberjack::addCombiner with a
+ *  TextTagCombiner instance as its parameter.
  *
  * \see Combiner Lumberjack
  *******************************************************************************
