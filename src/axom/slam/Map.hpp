@@ -331,6 +331,9 @@ public:
     static_assert(
       sizeof...(ComponentPos) == StridePolicyType::NumDims,
       "Invalid number of components provided for given Map's StridePolicy");
+    static_assert(
+      axom::detail::all_types_are_integral<ComponentPos...>::value,
+      "Map::value(...): index parameter pack must all be integral types.");
 #ifndef AXOM_DEVICE_CODE
     verifyPositionImpl(setIdx, compIdx...);
 #endif
@@ -346,6 +349,9 @@ public:
     static_assert(
       sizeof...(ComponentPos) == StridePolicyType::NumDims,
       "Invalid number of components provided for given Map's StridePolicy");
+    static_assert(
+      axom::detail::all_types_are_integral<ComponentPos...>::value,
+      "Map::value(...): index parameter pack must all be integral types.");
 #ifndef AXOM_DEVICE_CODE
     verifyPositionImpl(setIdx, compIdx...);
 #endif
@@ -615,6 +621,9 @@ public:
       static_assert(Dims == 1,
                     "Map::RangeIterator::value(): incorrect number of indexes "
                     "for the component dimensionality.");
+      static_assert(std::is_integral<ComponentIndex>::value,
+                    "Map::RangeIterator::value(): index must be an integral "
+                    "type.");
       return m_currRange[comp_idx];
     }
     template <typename... ComponentIndex>
@@ -623,6 +632,9 @@ public:
       static_assert(sizeof...(ComponentIndex) == Dims,
                     "Map::RangeIterator::value(): incorrect number of indexes "
                     "for the component dimensionality.");
+      static_assert(axom::detail::all_types_are_integral<ComponentIndex...>::value,
+                    "Map::RangeIterator::value(...): index parameter pack must "
+                    "all be integral types.");
       return m_currRange(comp_idx...);
     }
     value_type operator[](PositionType n) const { return *(*this + n); }
