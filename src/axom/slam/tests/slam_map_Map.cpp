@@ -687,9 +687,9 @@ AXOM_TYPED_TEST(slam_map_templated, constructAndTest2DStride)
       for(int j = 0; j < shape[1]; j++)
       {
         double expectedValue = setIdx * multFac + i * multFac2 + j * multFac3;
-        EXPECT_EQ(expectedValue, (*it)(i, j));
-        EXPECT_EQ(expectedValue, it(i, j));
-        EXPECT_EQ(expectedValue, it.value(i, j));
+        EXPECT_DOUBLE_EQ(expectedValue, (*it)(i, j));
+        EXPECT_DOUBLE_EQ(expectedValue, it(i, j));
+        EXPECT_DOUBLE_EQ(expectedValue, it.value(i, j));
       }
     }
   }
@@ -744,11 +744,11 @@ AXOM_TYPED_TEST(slam_map_templated, constructAndTest3DStride)
         {
           double expectedValue =
             setIdx * multFac + i * multFac2 + j * multFac3 + k * multFac4;
-          EXPECT_EQ(m(setIdx, i, j, k), expectedValue);
-          EXPECT_EQ(m.value(setIdx, i, j, k), expectedValue);
+          EXPECT_DOUBLE_EQ(m(setIdx, i, j, k), expectedValue);
+          EXPECT_DOUBLE_EQ(m.value(setIdx, i, j, k), expectedValue);
 
           int flatIndex = i * strides[0] + j * strides[1] + k * strides[2];
-          EXPECT_EQ(m[setIdx * stride + flatIndex], expectedValue);
+          EXPECT_DOUBLE_EQ(m[setIdx * stride + flatIndex], expectedValue);
         }
       }
     }
@@ -770,9 +770,9 @@ AXOM_TYPED_TEST(slam_map_templated, constructAndTest3DStride)
         {
           double expectedValue =
             setIdx * multFac + i * multFac2 + j * multFac3 + k * multFac4;
-          EXPECT_EQ(expectedValue, (*it)(i, j, k));
-          EXPECT_EQ(expectedValue, it(i, j, k));
-          EXPECT_EQ(expectedValue, it.value(i, j, k));
+          EXPECT_DOUBLE_EQ(expectedValue, (*it)(i, j, k));
+          EXPECT_DOUBLE_EQ(expectedValue, it(i, j, k));
+          EXPECT_DOUBLE_EQ(expectedValue, it.value(i, j, k));
         }
       }
     }
