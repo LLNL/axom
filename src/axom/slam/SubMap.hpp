@@ -232,8 +232,9 @@ private:  //helper functions
   }
 
   /** Checks the ElementFlatIndex and the component index is valid */
+  template <typename ComponentIndex>
   void verifyPositionImpl(SetPosition AXOM_DEBUG_PARAM(idx),
-                          SetPosition AXOM_DEBUG_PARAM(comp)) const
+                          ComponentIndex AXOM_DEBUG_PARAM(comp)) const
   {
     SLIC_ASSERT_MSG(
       idx >= 0 && idx < m_subsetIdx.size() && comp >= 0 && comp < numComp(),
@@ -270,8 +271,13 @@ private:  //helper functions
   /*!
    * \brief Computes the flat indexing offset for a given component.
    */
+  AXOM_HOST_DEVICE inline SetPosition componentOffset() const
+  {
+    return SetPosition {};
+  }
+  template <typename ComponentIndex>
   AXOM_HOST_DEVICE inline SetPosition componentOffset(
-    SetPosition componentIndex = 0) const
+    ComponentIndex componentIndex) const
   {
     return componentIndex;
   }

@@ -53,6 +53,7 @@ public:
   static const bool IS_COMPILE_TIME = false;
   constexpr static int NumDims = 1;
 
+  using IndexType = IntType;
   using ShapeType = IntType;
 
   static constexpr IntType DefaultSize() { return DEFAULT_VALUE; }
@@ -89,6 +90,7 @@ struct CompileTimeStride
   static const bool IS_COMPILE_TIME = true;
   constexpr static int NumDims = 1;
 
+  using IndexType = IntType;
   using ShapeType = IntType;
 
   static constexpr IntType DefaultSize() { return DEFAULT_VALUE; }
@@ -128,6 +130,7 @@ using StrideOne = CompileTimeStride<IntType, 1>;
 template <typename IntType, int Dims>
 struct MultiDimStride
 {
+  using IndexType = IntType;
   using ShapeType = StackArray<IntType, Dims>;
   constexpr static int NumDims = Dims;
 
