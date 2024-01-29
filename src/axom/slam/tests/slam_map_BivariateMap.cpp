@@ -885,9 +885,9 @@ void slam_bivariate_map_templated<ExecutionSpace>::initializeAndTestCartesianMap
           int flatCompIdx = i * strides[0] + j * strides[1] + k * strides[2];
           double expected_value = getVal<double>(idx1, idx2, flatCompIdx);
 
-          EXPECT_EQ(expected_value, (*it)(i, j, k));
-          EXPECT_EQ(expected_value, it(i, j, k));
-          EXPECT_EQ(expected_value, it.value(i, j, k));
+          EXPECT_DOUBLE_EQ(expected_value, (*it)(i, j, k));
+          EXPECT_DOUBLE_EQ(expected_value, it(i, j, k));
+          EXPECT_DOUBLE_EQ(expected_value, it.value(i, j, k));
         }
   }
 }
@@ -1105,8 +1105,8 @@ void slam_bivariate_map_templated<ExecutionSpace>::initializeAndTestRelationMap(
             {
               // Test set-based indexing: (idx1, idx2)
               EXPECT_NE(valuePtr, nullptr);
-              EXPECT_EQ(expected_value, *valuePtr);
-              EXPECT_EQ(expected_value, m(idx1, idx2, i, j, k));
+              EXPECT_DOUBLE_EQ(expected_value, *valuePtr);
+              EXPECT_DOUBLE_EQ(expected_value, m(idx1, idx2, i, j, k));
             }
             else
             {
@@ -1138,9 +1138,9 @@ void slam_bivariate_map_templated<ExecutionSpace>::initializeAndTestRelationMap(
           int flatCompIdx = i * strides[0] + j * strides[1] + k * strides[2];
           double expected_value = getVal<double>(idx1, idx2, flatCompIdx);
 
-          EXPECT_EQ(expected_value, (*it)(i, j, k));
-          EXPECT_EQ(expected_value, it(i, j, k));
-          EXPECT_EQ(expected_value, it.value(i, j, k));
+          EXPECT_DOUBLE_EQ(expected_value, (*it)(i, j, k));
+          EXPECT_DOUBLE_EQ(expected_value, it(i, j, k));
+          EXPECT_DOUBLE_EQ(expected_value, it.value(i, j, k));
         }
   }
 }
