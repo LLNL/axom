@@ -77,8 +77,9 @@ public:
   using SubsetBuilder = typename SubsetType::SetBuilder;
 
   //iterator type aliases
-  class SubMapIterator;
-  using iterator = SubMapIterator;
+  class Iterator;
+  using iterator = Iterator;
+  using const_iterator = Iterator;
   using iterator_pair = std::pair<iterator, iterator>;
 
   using ValueType = typename IndirectionPolicyType::IndirectionResult;
@@ -299,69 +300,11 @@ private:  //helper functions
     return offset;
   }
 
-public:
-  /**
-   * \class SubMapIterator
-   * \brief An iterator for SubMap, based on MapIterator
-   *
-   * \see MapIterator
-   */
-  class SubMapIterator : public IteratorBase<SubMapIterator, SetPosition>
-  {
-  public:
-    using iterator_category = std::random_access_iterator_tag;
-    using value_type = DataType;
-    using difference_type = SetPosition;
-
-    using IterBase = IteratorBase<SubMapIterator, SetPosition>;
-    using IterBase::m_pos;
-    using iter = SubMapIterator;
-    using PositionType = SetPosition;
-
-    AXOM_HOST_DEVICE SubMapIterator(PositionType pos, SubMap sMap)
-      : IterBase(pos)
-      , m_submap(sMap)
-    { }
-
-    /**
-     * \brief Returns the current iterator value. If the SubMap has multiple
-     *        components, this will return the first component. To access
-     *        the other components, use iter(comp)
-     */
-    AXOM_HOST_DEVICE DataRefType operator*() { return m_submap(m_pos, 0); }
-
-    /**
-     * \brief Returns the iterator's value at the specified component.
-     *        Returns the first component if comp_idx is not specified.
-     * \param comp_idx  (Optional) Zero-based index of the component.
-     */
-    DataRefType operator()(IndexType comp = 0) { return m_submap(m_pos, comp); }
-
-    /** \brief Returns the first component value after n increments.  */
-    DataRefType operator[](PositionType n) { return *(*this + n); }
-
-    /** \brief Same as operator() */
-    DataRefType value(IndexType comp = 0) { return m_submap(m_pos, comp); }
-
-    /** \brief Returns the Set element at the iterator's position */
-    IndexType index() { return m_submap.index(m_pos); }
-
-    /** \brief Returns the number of component per element in the SubMap. */
-    PositionType numComp() const { return m_submap.numComp(); }
-
-  protected:
-    /* Implementation of advance() as required by IteratorBase */
-    AXOM_HOST_DEVICE void advance(PositionType pos) { m_pos += pos; }
-
-  private:
-    SubMap m_submap;
-  };
-
 public:  // Functions related to iteration
   AXOM_HOST_DEVICE iterator begin() const { return iterator(0, *this); }
   AXOM_HOST_DEVICE iterator end() const
   {
-    return iterator(m_subsetIdx.size(), *this);
+    return iterator(m_subsetIdx.size() * numComp(), *this);
   }
 
 protected:  //Member variables
@@ -417,6 +360,59 @@ bool SubMap<SuperMapType, SetType, InterfacePolicy>::isValid(bool verboseOutput)
 
   return isValid;
 }
+
+/**
+ * \class SubMap::Iterator
+ * \brief An iterator for SubMap, based on MapIterator
+ *
+ * \see MapIterator
+ */
+template <typename SuperMapType, typename SubsetType, typename InterfacePolicy>
+class SubMap<SuperMapType, SubsetType, InterfacePolicy>::Iterator
+  : public IteratorBase<Iterator, SetPosition>
+{
+public:
+  using iterator_category = std::random_access_iterator_tag;
+  using value_type = DataType;
+  using reference = DataRefType;
+  using pointer = DataType*;
+  using difference_type = SetPosition;
+
+  using IterBase = IteratorBase<Iterator, SetPosition>;
+  using IterBase::m_pos;
+  using iter = Iterator;
+  using PositionType = SetPosition;
+
+  AXOM_HOST_DEVICE Iterator(PositionType pos, SubMap sMap)
+    : IterBase(pos)
+    , m_submap(sMap)
+  { }
+
+  /// \brief Returns the current iterator value.
+  AXOM_HOST_DEVICE DataRefType operator*() const { return m_submap[m_pos]; }
+
+  /** \brief Returns the first component value after n increments.  */
+  DataRefType operator[](PositionType n) const { return *(*this + n); }
+
+  /** \brief Returns the Set element at the iterator's position */
+  IndexType index() const { return m_submap.index(m_pos / m_submap.numComp()); }
+
+  /// \brief Returns the component index pointed to by this iterator.
+  PositionType compIndex() const { return m_pos % m_submap.numComp(); }
+
+  /// \brief Returns the flat index pointed to by this iterator.
+  SetPosition flatIndex() const { return this->m_pos; }
+
+  /** \brief Returns the number of component per element in the SubMap. */
+  PositionType numComp() const { return m_submap.numComp(); }
+
+protected:
+  /* Implementation of advance() as required by IteratorBase */
+  AXOM_HOST_DEVICE void advance(PositionType pos) { m_pos += pos; }
+
+private:
+  SubMap m_submap;
+};
 
 }  // end namespace slam
 }  // end namespace axom
