@@ -60,6 +60,7 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 - Upgrades our `vcpkg` usage for automated Windows builds of our TPLs to its [2023.12.12 release](https://github.com/microsoft/vcpkg/releases/tag/2023.12.12)
 - Fixed a bug in the bounds checks for `primal::clip(Triangle, BoundingBox)`
 - Fixed a bug when loading Sidre groups with attributes that already exist
+- Fixed `std::locale` error when when compiling `src/axom/core/utilities/System.cpp` using nvcc
 
 ## [Version 0.8.1] - Release date 2023-08-16
 
