@@ -110,9 +110,9 @@ struct Input
 {
   static const std::map<std::string, RuntimePolicy> s_validPolicies;
 
-  std::string mesh_file {""};
+  std::string mesh_file_first {""};
+  std::string mesh_file_second {""};
   bool verboseOutput {false};
-  double weldThreshold {1e-6};
   double intersectionThreshold {1e-08};
   RuntimePolicy policy {RuntimePolicy::raja_seq};
 
@@ -122,8 +122,13 @@ struct Input
 
 void Input::parse(int argc, char** argv, axom::CLI::App& app)
 {
-  app.add_option("-i, --infile", mesh_file)
-    ->description("The input STL mesh file")
+  app.add_option("-i, --infile", mesh_file_first)
+    ->description("The first input silo mesh file to insert into BVH")
+    ->required()
+    ->check(axom::CLI::ExistingFile);
+
+  app.add_option("-q, --queryfile", mesh_file_second)
+    ->description("The second input silo mesh file to query BVH")
     ->required()
     ->check(axom::CLI::ExistingFile);
 
@@ -131,14 +136,8 @@ void Input::parse(int argc, char** argv, axom::CLI::App& app)
     ->description("Increase logging verbosity?")
     ->capture_default_str();
 
-  app.add_option("--weld-threshold", weldThreshold)
-    ->description(
-      "Threshold to use when welding vertices.\n"
-      "Will skip if not strictly positive.")
-    ->capture_default_str();
-
   app.add_option("--intersection-threshold", intersectionThreshold)
-    ->description("Threshold to use when testing for intersecting triangles")
+    ->description("Threshold to use when testing for intersecting hexes")
     ->capture_default_str();
 
   app.add_option("-p, --policy", policy)
@@ -163,16 +162,14 @@ void Input::parse(int argc, char** argv, axom::CLI::App& app)
   SLIC_INFO(axom::fmt::format(
     R"(
      Parsed parameters:
-      * STL mesh: '{}'
-      * Threshold for welding: {}
-      * Skip welding: {}
+      * First Silo mesh to insert into BVH: '{}'
+      * Second Silo mesh to query BVH: '{}'
       * Threshold for intersections: {}
       * Verbose logging: {}
       * Runtime execution policy: '{}'
       )",
-    mesh_file,
-    weldThreshold,
-    (weldThreshold <= 0.),
+    mesh_file_first,
+    mesh_file_second,
     intersectionThreshold,
     verboseOutput,
     policy == RuntimePolicy::raja_omp
@@ -222,129 +219,148 @@ struct TriangleMesh
   BoundingBox m_meshBoundingBox;
 };
 
-void loadSiloMesh(const std::string& mesh_path, double weldThreshold)
+struct HexMesh
 {
-  // The silo mesh to load into Conduit
+  using Point = axom::primal::Point<double, 3>;
+  using Hexahedron = axom::primal::Hexahedron<double, 3>;
+  using BoundingBox = axom::primal::BoundingBox<double, 3>;
+
+  axom::IndexType numHexes() const { return m_hexes.size(); }
+  axom::Array<Hexahedron>& hexes() { return m_hexes; }
+  const axom::Array<Hexahedron>& hexes() const { return m_hexes; }
+
+  BoundingBox& meshBoundingBox() { return m_meshBoundingBox; }
+  const BoundingBox& meshBoundingBox() const { return m_meshBoundingBox; }
+
+  axom::Array<BoundingBox>& hexBoundingBoxes() { return m_hexBoundingBoxes; }
+  const axom::Array<BoundingBox>& hexBoundingBoxes() const
+  {
+    return m_hexBoundingBoxes;
+  }
+
+  axom::Array<Hexahedron> m_hexes;
+  axom::Array<BoundingBox> m_hexBoundingBoxes;
+  BoundingBox m_meshBoundingBox;
+};
+
+HexMesh loadSiloHexMesh(const std::string& mesh_path)
+{
+  HexMesh hexMesh;
+
+  axom::utilities::Timer timer(true);
+
+  // Load silo mesh into Conduit node
   conduit::Node n_load;
-
-  // The Conduit node containing mesh coordinates
-  conduit::Node n_coordinates;
-
-  // The conduit node containing dimensions
-  conduit::Node n_dimensions;
-
   conduit::relay::io::silo::load_mesh(mesh_path, n_load);
-  n_coordinates = n_load[0]["coordsets/MMESH/values"];
-  n_dimensions = n_load[0]["topologies/MMESH/elements/dims"];
 
-  // n_load.print_detailed();
-
+  // Get unstructured topology for the cell connectivity
   conduit::Node unstruct_topo;
   conduit::Node unstruct_coords;
 
-  conduit::blueprint::mesh::topology::structured::to_unstructured(n_load[0]["topologies/MMESH"],
-                                                                  unstruct_topo,
-                                                                  unstruct_coords);
+  conduit::blueprint::mesh::topology::structured::to_unstructured(
+    n_load[0]["topologies/MMESH"],
+    unstruct_topo,
+    unstruct_coords);
 
-  unstruct_topo.print_detailed();
-  unstruct_coords.print_detailed();
+  // Verify this is a hexahedral mesh
+  std::string shape = unstruct_topo["elements/shape"].as_string();
+  if(shape != "hex")
+  {
+    SLIC_ERROR("A hex mesh was expected!");
+  }
 
-  UMesh * mesh = new UMesh(3, mint::HEX);
+  UMesh* mesh = new UMesh(3, axom::mint::HEX);
 
-  // Append the mesh nodes
-  // TODO
+  int* connectivity = unstruct_topo["elements/connectivity"].value();
 
-  // using Point = axom::primal::Point<double, 3>;
-  // NOTE: This assumes dimension of mesh is same for each axis
-  //       As such, I don't think it's general enough...
-  // std::vector<std::vector<int>> connectivity_array(1000);
+  const int HEX_OFFSET = 8;
+  int num_nodes = (unstruct_coords["values/x"]).dtype().number_of_elements();
+  double* x_vals = unstruct_coords["values/x"].value();
+  double* y_vals = unstruct_coords["values/y"].value();
+  double* z_vals = unstruct_coords["values/z"].value();
 
-  // int dim =  10;
+  int connectivity_size =
+    (unstruct_topo["elements/connectivity"]).dtype().number_of_elements();
 
-  // for(int i = 0; i < math.pow(dim, 3); i++)
-  // {
-  //   // You need logic to skip nodes along the OTHER edge of the mesh, as there are no
-  //   // nodes around to form a cell.
-  //   // if (???)
-  //   // {
-  //   //   continue;
-  //   // }
-  //   std::vector<Point> connectivity {
-  //     Point(i, i, i),
-  //     Point(i + 1, i + 1, i + 1),
-  //     Point(i + dim + 1, i + dim + 1, i + dim + 1),
-  //     Point(i + dim, i + dim, i + dim),
-  //     Point(i + (dim * dim), i + (dim * dim), i + (dim * dim)),
-  //     Point(i + (dim * dim) + 1, i + (dim * dim) + 1, i + (dim * dim) + 1),
-  //     Point(i + (dim * dim) + dim + 1, i + (dim * dim) + dim + 1, i + (dim * dim) + dim + 1),
-  //     Point(i + (dim * dim) + dim, i + (dim * dim) + dim, i + (dim * dim) + dim)
-  //   };
-  // }
+  // Sanity check for number of cells
+  int cell_calc_from_nodes =
+    std::round(std::pow(std::pow(num_nodes, 1.0 / 3.0) - 1, 3));
+  int cell_calc_from_connectivity = connectivity_size / HEX_OFFSET;
+  if(cell_calc_from_nodes != cell_calc_from_connectivity)
+  {
+    SLIC_ERROR("Number of connectivity elements is not expected!\n"
+               << "First calculation is " << cell_calc_from_nodes
+               << " and second calculation is " << cell_calc_from_connectivity);
+  }
 
-  // Gets us the number of domains, yay...
+  // Append mesh nodes
+  for(int i = 0; i < num_nodes; i++)
+  {
+    mesh->appendNode(x_vals[i], y_vals[i], z_vals[i]);
+  }
 
-  // int num_domains = n_load.number_of_children();
-  // SLIC_INFO("Number of children are " << num_domains);
+  // Append mesh cells
+  for(int i = 0; i < connectivity_size / HEX_OFFSET; i++)
+  {
+    const axom::IndexType cell[] = {
+      connectivity[i * HEX_OFFSET],
+      connectivity[(i * HEX_OFFSET) + 1],
+      connectivity[(i * HEX_OFFSET) + 2],
+      connectivity[(i * HEX_OFFSET) + 3],
+      connectivity[(i * HEX_OFFSET) + 4],
+      connectivity[(i * HEX_OFFSET) + 5],
+      connectivity[(i * HEX_OFFSET) + 6],
+      connectivity[(i * HEX_OFFSET) + 7],
+    };
 
-  // (n_coordinates).print();
+    mesh->appendCell(cell);
+  }
 
-  // // Get x,y,z vertices from Conduit
-  // std::vector<std::vector<double>> coordinates(3);
-
-  // // Get surface mesh
-  // // UMesh * surface_mesh = new UMesh(3, mint::HEX);
-
-  // // Conduit dimensions are number of zones, mint is numnber of nodes (plus 1)
-  // int x_dim = n_dimensions[0].value();
-  // int y_dim = n_dimensions[1].value();
-  // int z_dim = n_dimensions[2].value();
-
-  // axom::mint::RectilinearMesh mesh(x_dim + 1, y_dim + 1, z_dim + 1);
-
-  // // Get sorted and unique vertices for structured mesh format
-  // for(int i = 0; i < 3; i++)
-  // {
-  //   SLIC_INFO("0 is  x, 1 is y, 2 is z");
-  //   SLIC_INFO(i << " values are ");
-  //   n_coordinates[i].print();
-
-  //   double* vals = n_coordinates[i].value();
-  //   int size = (n_coordinates[i]).dtype().number_of_elements();
-  //   std::vector<double> vals_vec(vals, vals + size);
-
-  //   SLIC_INFO("Vector size is " << vals_vec.size());
-
-  //   // Sort and remove duplicate elements
-  //   sort(vals_vec.begin(), vals_vec.end());
-  //   std::vector<double>::iterator it;
-  //   it = unique(vals_vec.begin(), vals_vec.end());
-  //   vals_vec.resize(distance(vals_vec.begin(), it));
-
-  //   coordinates[i] = vals_vec;
-
-  //   std::cout << "component " << i << " contains:";
-
-  //   for(it = coordinates[i].begin(); it != coordinates[i].end(); ++it)
-  //     std::cout << ' ' << *it;
-  //   std::cout << '\n';
-
-  //   SLIC_INFO("Component size after sort and unique operation is "
-  //             << coordinates[i].size());
-  // }
-
-  // // Initialize structured mesh coordinates
-  // for(int i = 0; i < 3; i++)
-  // {
-  //   double* component = mesh.getCoordinateArray(i);
-  //   for(unsigned long j = 0; j < coordinates[i].size(); j++)
-  //   {
-  //     component[j] = coordinates[i][j];
-  //     // SLIC_INFO("Component " << i << ", vertex " << j << " is: " << component[j]);
-  //   }
-  // }
+  timer.stop();
+  SLIC_INFO(axom::fmt::format("Loading the mesh took {:4.3} seconds.",
+                              timer.elapsedTimeInSec()));
 
   // // Write out to vtk for test viewing
-  // axom::mint::write_vtk(&mesh, "test.vtk");
+  // axom::mint::write_vtk(mesh, "test.vtk");
+
+  // extract hexes into an axom::Array
+  const int numCells = mesh->getNumberOfCells();
+  hexMesh.m_hexes.reserve(numCells);
+  {
+    HexMesh::Hexahedron hex;
+    std::array<axom::IndexType, 8> hexCell;
+    for(int i = 0; i < numCells; ++i)
+    {
+      mesh->getCellNodeIDs(i, hexCell.data());
+      mesh->getNode(hexCell[0], hex[0].data());
+      mesh->getNode(hexCell[1], hex[1].data());
+      mesh->getNode(hexCell[2], hex[2].data());
+      mesh->getNode(hexCell[3], hex[3].data());
+      mesh->getNode(hexCell[4], hex[4].data());
+      mesh->getNode(hexCell[5], hex[5].data());
+      mesh->getNode(hexCell[6], hex[6].data());
+      mesh->getNode(hexCell[7], hex[7].data());
+
+      hexMesh.m_hexes.emplace_back(hex);
+    }
+  }
+
+  delete mesh;
+  mesh = nullptr;
+
+  // compute and store hex bounding boxes and mesh bounding box
+  hexMesh.m_hexBoundingBoxes.reserve(numCells);
+  for(const auto& hex : hexMesh.hexes())
+  {
+    hexMesh.m_hexBoundingBoxes.emplace_back(
+      axom::primal::compute_bounding_box(hex));
+    hexMesh.m_meshBoundingBox.addBox(hexMesh.m_hexBoundingBoxes.back());
+  }
+
+  SLIC_INFO(
+    axom::fmt::format("Mesh bounding box is {}.", hexMesh.meshBoundingBox()));
+
+  return hexMesh;
 }
 
 TriangleMesh makeTriangleMesh(const std::string& stl_mesh_path,
@@ -638,7 +654,7 @@ int main(int argc, char** argv)
   // Parse the command line arguments
   Input params;
   {
-    axom::CLI::App app {"Naive triangle mesh intersection tester"};
+    axom::CLI::App app {"Silo Hex BVH mesh intersection tester"};
     try
     {
       params.parse(argc, argv, app);
@@ -653,10 +669,18 @@ int main(int argc, char** argv)
   axom::slic::setLoggingMsgLevel(params.isVerbose() ? axom::slic::message::Debug
                                                     : axom::slic::message::Info);
 
-  // Load Silo mesh
-  SLIC_INFO(axom::fmt::format("Reading file: '{}'...\n", params.mesh_file));
+  // Load Silo mesh into BVH
+  SLIC_INFO(axom::fmt::format("Reading silo file to insert into BVH: '{}'...\n",
+                              params.mesh_file_first));
 
-  loadSiloMesh(params.mesh_file, params.weldThreshold);
+  HexMesh bvh_mesh = loadSiloHexMesh(params.mesh_file_first);
+
+  // Load Silo mesh for querying BVH
+  SLIC_INFO(axom::fmt::format("Reading silo file to query BVH: '{}'...\n",
+                              params.mesh_file_second));
+
+  HexMesh query_mesh = loadSiloHexMesh(params.mesh_file_second);
+
   // TriangleMesh mesh = makeTriangleMesh(params.mesh_file, params.weldThreshold);
 
   // Check for self-intersections; results are returned as an array of index pairs
