@@ -304,7 +304,7 @@ void various_traversal_methods(int nmats,
     for(int i = 0; i < map2d.firstSetSize(); i++)
     {
       auto submap = map2d(i);
-      for(auto iter = submap.begin(); iter != submap.end(); iter++)
+      for(auto iter = submap.set_begin(); iter != submap.set_end(); iter++)
       {
         //int idx = iter.index();  //get the index
         for(int comp = 0; comp < map2d.numComp(); ++comp)
@@ -312,7 +312,6 @@ void various_traversal_methods(int nmats,
           sum += iter(comp);                            //<----
           SLIC_ASSERT(iter(comp) == iter.value(comp));  //value()
         }
-        SLIC_ASSERT(*iter == iter.value());  //2 ways to get the first component
       }
     }
   }
@@ -330,7 +329,7 @@ void various_traversal_methods(int nmats,
     auto map2d = mm.get2dField<double>("CellMat Array");
     for(int i = 0; i < mm.getNumberOfCells() /*map2d.firstSetSize()*/; i++)
     {
-      for(auto iter = map2d.begin(i); iter != map2d.end(i); iter++)
+      for(auto iter = map2d.set_begin(i); iter != map2d.set_end(i); iter++)
       {
         // int idx = iter.index(); get the index
         for(int comp = 0; comp < map2d.numComp(); ++comp)
@@ -338,8 +337,8 @@ void various_traversal_methods(int nmats,
           sum += iter(comp);                            //<----
           SLIC_ASSERT(iter(comp) == iter.value(comp));  //value()
         }
-        SLIC_ASSERT(iter(0) == *iter);  //2 ways to get the first component
-        SLIC_ASSERT(iter(0) == iter.value());
+        SLIC_ASSERT(iter(0) == (*iter)[0]);  //2 ways to get the first component
+        SLIC_ASSERT(iter(0) == iter.value(0));
       }
     }
   }
