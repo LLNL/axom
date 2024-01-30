@@ -59,6 +59,7 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 - primal's `Polygon` area computation in 3D previously only worked when the polygon was aligned with the XY-plane. It now works for arbitrary polygons.
 - Upgrades our `vcpkg` usage for automated Windows builds of our TPLs to its [2023.12.12 release](https://github.com/microsoft/vcpkg/releases/tag/2023.12.12)
 - Fixed a bug in the bounds checks for `primal::clip(Triangle, BoundingBox)`
+- Fixed a bug when loading Sidre groups with attributes that already exist
 
 ## [Version 0.8.1] - Release date 2023-08-16
 
