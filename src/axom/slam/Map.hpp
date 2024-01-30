@@ -587,7 +587,7 @@ public:
     }
 
   public:
-    MapRangeIterator(PositionType pos, MapConstPtr oMap)
+    MapRangeIterator(MapConstPtr oMap, PositionType pos)
       : IterBase(pos)
       , m_map(oMap)
     {
@@ -676,15 +676,15 @@ public:  // Functions related to iteration
     return RangeAdapter<iterator> {begin(), end()};
   }
 
-  range_iterator set_begin() { return range_iterator(0, this); }
-  range_iterator set_end() { return range_iterator(size(), this); }
+  range_iterator set_begin() { return range_iterator(this, 0); }
+  range_iterator set_end() { return range_iterator(this, size()); }
   const_range_iterator set_begin() const
   {
-    return const_range_iterator(0, this);
+    return const_range_iterator(this, 0);
   }
   const_range_iterator set_end() const
   {
-    return const_range_iterator(size(), this);
+    return const_range_iterator(this, size());
   }
   RangeAdapter<range_iterator> set_elements()
   {
