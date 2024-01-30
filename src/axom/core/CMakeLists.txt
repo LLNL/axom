@@ -122,6 +122,9 @@ axom_add_library(NAME        core
                  FOLDER      axom/core
                  )
 
+# Set file back to C++ due to nvcc compiler error
+set_source_files_properties(utilities/System.cpp PROPERTIES LANGUAGE CXX)
+
 # Basic includes that should be inherited to all Axom targets
 target_include_directories(core PUBLIC 
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../..>
