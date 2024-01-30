@@ -663,10 +663,12 @@ public:
   /**
      * \brief Returns the current map element pointed to by the iterator.
      */
-  DataRefType operator*()
+  DataRefType operator*() const
   {
     return m_map->flatValue(m_bsetIterator.flatIndex(), compIndex());
   }
+
+  pointer operator->() const { return &(*this); }
 
   /**
      * \brief return the current iterator's first index into the BivariateSet
