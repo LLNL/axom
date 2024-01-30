@@ -266,7 +266,7 @@ public:
       std::is_same<ExecSpace, axom::SEQ_EXEC>::value
       ? MarchingCubesDataParallelism::hybridParallel
       :
-#ifdef AXOM_USE_OPENMP
+#if defined(AXOM_USE_OPENMP) && defined(AXOM_USE_RAJA)
       std::is_same<ExecSpace, axom::OMP_EXEC>::value
         ? MarchingCubesDataParallelism::hybridParallel
         :
@@ -322,10 +322,18 @@ public:
 
     axom::Array<axom::IndexType, 1, MemorySpace> scannedFlags(1 + parentCellCount);
     auto scannedFlagsView = scannedFlags.view();
+#if defined(AXOM_USE_RAJA)
     RAJA::inclusive_scan<ScanPolicy>(
       RAJA::make_span(crossingFlags.data(), parentCellCount),
       RAJA::make_span(scannedFlags.data() + 1, parentCellCount),
       RAJA::operators::plus<axom::IndexType> {});
+#else
+    scannedFlags[0] = 0;
+    for(axom::IndexType n = 0; n < parentCellCount; ++n)
+    {
+      scannedFlags[n+1] = scannedFlags[n] + crossingFlags[n];
+    }
+#endif
 
     axom::copy(&m_crossingCount,
                scannedFlags.data() + scannedFlags.size() - 1,
@@ -359,10 +367,18 @@ public:
     // and the total number of facets.
     //
 
+#if defined(AXOM_USE_RAJA)
     RAJA::inclusive_scan<ScanPolicy>(
       RAJA::make_span(m_facetIncrs.data(), m_crossingCount),
       RAJA::make_span(m_firstFacetIds.data() + 1, m_crossingCount),
       RAJA::operators::plus<axom::IndexType> {});
+#else
+    m_firstFacetIds[0] = 0;
+    for(axom::IndexType n = 0; n < parentCellCount; ++n)
+    {
+      m_firstFacetIds[n+1] = m_firstFacetIds[n] + m_facetIncrs[n];
+    }
+#endif
 
     axom::copy(&m_facetCount,
                m_firstFacetIds.data() + m_firstFacetIds.size() - 1,
