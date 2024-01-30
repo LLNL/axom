@@ -55,6 +55,9 @@ public:
   AXOM_HOST MarchingCubesImpl(int allocatorID)
     : m_allocatorID(allocatorID)
     , m_caseIds(emptyShape(), m_allocatorID)
+    , m_crossingParentIds(0, 0, m_allocatorID)
+    , m_facetIncrs(0, 0, m_allocatorID)
+    , m_firstFacetIds(0, 0, m_allocatorID)
     {}
 
   /*!
@@ -93,7 +96,8 @@ public:
       row-major if fcn is that way, and vice versa.  However, Array
       only support column-major, so we're stuck with that for now.
     */
-    m_caseIds = axom::Array<std::uint16_t, DIM, MemorySpace>(m_bShape);
+    // m_caseIds.resize(m_bShape, 0); // This unexpectedly fails.
+    m_caseIds = axom::Array<std::uint16_t, DIM, MemorySpace>(m_bShape, m_allocatorID);
     m_caseIds.fill(0);
   }
 
@@ -259,7 +263,9 @@ public:
   {
     constexpr MarchingCubesDataParallelism autoPolicy =
       std::is_same<ExecSpace, axom::SEQ_EXEC>::value ? MarchingCubesDataParallelism::hybridParallel :
+#ifdef AXOM_USE_OPENMP
       std::is_same<ExecSpace, axom::OMP_EXEC>::value ? MarchingCubesDataParallelism::hybridParallel :
+#endif
       MarchingCubesDataParallelism::fullParallel;
 
     if(m_dataParallelism ==
