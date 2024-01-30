@@ -190,35 +190,8 @@ const std::map<std::string, RuntimePolicy> Input::s_validPolicies(
   });
 
 //-----------------------------------------------------------------------------
-/// Basic triangle mesh to be used in our application
+/// Basic hexahedron mesh to be used in our application
 //-----------------------------------------------------------------------------
-struct TriangleMesh
-{
-  using Point = axom::primal::Point<double, 3>;
-  using Triangle = axom::primal::Triangle<double, 3>;
-  using BoundingBox = axom::primal::BoundingBox<double, 3>;
-
-  axom::IndexType numTriangles() const { return m_triangles.size(); }
-  axom::Array<Triangle>& triangles() { return m_triangles; }
-  const axom::Array<Triangle>& triangles() const { return m_triangles; }
-
-  BoundingBox& meshBoundingBox() { return m_meshBoundingBox; }
-  const BoundingBox& meshBoundingBox() const { return m_meshBoundingBox; }
-
-  axom::Array<BoundingBox>& triangleBoundingBoxes()
-  {
-    return m_triangleBoundingBoxes;
-  }
-  const axom::Array<BoundingBox>& triangleBoundingBoxes() const
-  {
-    return m_triangleBoundingBoxes;
-  }
-
-  axom::Array<Triangle> m_triangles;
-  axom::Array<BoundingBox> m_triangleBoundingBoxes;
-  BoundingBox m_meshBoundingBox;
-};
-
 struct HexMesh
 {
   using Point = axom::primal::Point<double, 3>;
@@ -358,96 +331,24 @@ HexMesh loadSiloHexMesh(const std::string& mesh_path)
   }
 
   SLIC_INFO(
-    axom::fmt::format("Mesh bounding box is {}.", hexMesh.meshBoundingBox()));
+    axom::fmt::format("Mesh bounding box is {}.\n", hexMesh.meshBoundingBox()));
 
   return hexMesh;
-}
-
-TriangleMesh makeTriangleMesh(const std::string& stl_mesh_path,
-                              double weldThreshold)
-{
-  TriangleMesh triMesh;
-
-  // load STL mesh into a mint unstructured mesh
-  auto* surface_mesh = new axom::mint::UnstructuredMesh<axom::mint::SINGLE_SHAPE>(
-    3,
-    axom::mint::TRIANGLE);
-  {
-    axom::utilities::Timer timer(true);
-
-    auto reader = std::make_unique<axom::quest::STLReader>();
-    reader->setFileName(stl_mesh_path);
-    reader->read();
-    reader->getMesh(surface_mesh);
-
-    timer.stop();
-    SLIC_INFO(axom::fmt::format("Loading the mesh took {:4.3} seconds.",
-                                timer.elapsedTimeInSec()));
-  }
-
-  // optionally weld triangle mesh
-  if(weldThreshold > 0.)
-  {
-    axom::utilities::Timer timer(true);
-    axom::quest::weldTriMeshVertices(&surface_mesh, weldThreshold);
-    timer.stop();
-
-    SLIC_INFO(axom::fmt::format("Vertex welding took {:4.3} seconds.",
-                                timer.elapsedTimeInSec()));
-    SLIC_INFO(axom::fmt::format(
-      axom::utilities::locale(),
-      "After welding, mesh has {:L} vertices and {:L} triangles.",
-      surface_mesh->getNumberOfNodes(),
-      surface_mesh->getNumberOfCells()));
-  }
-
-  // extract triangles into an axom::Array
-  const int numCells = surface_mesh->getNumberOfCells();
-  triMesh.m_triangles.reserve(numCells);
-  {
-    TriangleMesh::Triangle tri;
-    std::array<axom::IndexType, 3> triCell;
-    for(int i = 0; i < numCells; ++i)
-    {
-      surface_mesh->getCellNodeIDs(i, triCell.data());
-      surface_mesh->getNode(triCell[0], tri[0].data());
-      surface_mesh->getNode(triCell[1], tri[1].data());
-      surface_mesh->getNode(triCell[2], tri[2].data());
-
-      triMesh.m_triangles.emplace_back(tri);
-    }
-  }
-
-  delete surface_mesh;
-  surface_mesh = nullptr;
-
-  // compute and store triangle bounding boxes and mesh bounding box
-  triMesh.m_triangleBoundingBoxes.reserve(numCells);
-  for(const auto& tri : triMesh.triangles())
-  {
-    triMesh.m_triangleBoundingBoxes.emplace_back(
-      axom::primal::compute_bounding_box(tri));
-    triMesh.m_meshBoundingBox.addBox(triMesh.m_triangleBoundingBoxes.back());
-  }
-
-  SLIC_INFO(
-    axom::fmt::format("Mesh bounding box is {}.", triMesh.meshBoundingBox()));
-
-  return triMesh;
 }
 
 using IndexPair = std::pair<axom::IndexType, axom::IndexType>;
 
 template <typename ExecSpace>
-axom::Array<IndexPair> findIntersectionsBVH(const TriangleMesh& triMesh,
+axom::Array<IndexPair> findIntersectionsBVH(const HexMesh& insertMesh,
+                                            const HexMesh& queryMesh,
                                             double tol,
                                             bool verboseOutput = false)
 {
-  SLIC_INFO("Running naive intersection algorithm in execution Space: "
+  SLIC_INFO("Running BVH intersection algorithm in execution Space: "
             << axom::execution_space<ExecSpace>::name());
 
-  using TriangleArray = axom::Array<typename TriangleMesh::Triangle>;
-  using BBoxArray = axom::Array<typename TriangleMesh::BoundingBox>;
+  using HexArray = axom::Array<typename HexMesh::Hexahedron>;
+  using BBoxArray = axom::Array<typename HexMesh::BoundingBox>;
   using IndexArray = axom::Array<axom::IndexType>;
   constexpr bool on_device = axom::execution_space<ExecSpace>::onDevice();
 
@@ -462,42 +363,60 @@ axom::Array<IndexPair> findIntersectionsBVH(const TriangleMesh& triMesh,
     ? axom::getUmpireResourceAllocatorID(umpire::resource::Device)
     : axom::execution_space<ExecSpace>::allocatorID();
 
-  // Copy the triangles to the device, if necessary
-  // Either way, tris_v will be a view w/ data in the correct space
-  auto& tris_h = triMesh.triangles();
-  TriangleArray tris_d =
-    on_device ? TriangleArray(tris_h, kernel_allocator) : TriangleArray();
-  auto tris_v = on_device ? tris_d.view() : tris_h.view();
+  // Copy the insert-BVH hexes to the device, if necessary
+  // Either way, insert_hexes_v will be a view w/ data in the correct space
+  auto& insert_hexes_h = insertMesh.hexes();
+  HexArray insert_hexes_d =
+    on_device ? HexArray(insert_hexes_h, kernel_allocator) : HexArray();
+  auto insert_hexes_v = on_device ? insert_hexes_d.view() : insert_hexes_h.view();
 
-  // Copy the bboxes to the device, if necessary
+  // Copy the insert-BVH bboxes to the device, if necessary
+  // Either way, insert_bbox_v will be a view w/ data in the correct space
+  auto& insert_bbox_h = insertMesh.hexBoundingBoxes();
+  BBoxArray insert_bbox_d =
+    on_device ? BBoxArray(insert_bbox_h, kernel_allocator) : BBoxArray();
+  auto insert_bbox_v = on_device ? insert_bbox_d.view() : insert_bbox_h.view();
+
+  // Copy the query-BVH hexes to the device, if necessary
+  // Either way, query_hexes_v will be a view w/ data in the correct space
+  auto& query_hexes_h = queryMesh.hexes();
+  HexArray query_hexes_d =
+    on_device ? HexArray(query_hexes_h, kernel_allocator) : HexArray();
+  auto query_hexes_v = on_device ? query_hexes_d.view() : query_hexes_h.view();
+
+  // Copy the query-BVH bboxes to the device, if necessary
   // Either way, bbox_v will be a view w/ data in the correct space
-  auto& bbox_h = triMesh.triangleBoundingBoxes();
-  BBoxArray bbox_d =
-    on_device ? BBoxArray(bbox_h, kernel_allocator) : BBoxArray();
-  auto bbox_v = on_device ? bbox_d.view() : bbox_h.view();
+  auto& query_bbox_h = queryMesh.hexBoundingBoxes();
+  BBoxArray query_bbox_d =
+    on_device ? BBoxArray(query_bbox_h, kernel_allocator) : BBoxArray();
+  auto query_bbox_v = on_device ? query_bbox_d.view() : query_bbox_h.view();
 
   axom::utilities::Timer timer;
 
-  // Initialize a BVH tree over the triangle bounding boxes
+  // Initialize a BVH tree over the insert mesh bounding boxes
   timer.start();
   axom::spin::BVH<3, ExecSpace, double> bvh;
   bvh.setAllocatorID(kernel_allocator);
-  bvh.initialize(bbox_v, bbox_v.size());
+  bvh.initialize(insert_bbox_v, insert_bbox_v.size());
   timer.stop();
   SLIC_INFO_IF(verboseOutput,
                axom::fmt::format("0: Initializing BVH took {:4.3} seconds.",
                                  timer.elapsedTimeInSec()));
 
-  // Search for intersecting bounding boxes of triangles;
+  // Search for intersecting bounding boxes of hexes to query;
   // result is returned as CSR arrays for candidate data
   timer.start();
-  IndexArray offsets_d(bbox_v.size(), bbox_v.size(), kernel_allocator);
-  IndexArray counts_d(bbox_v.size(), bbox_v.size(), kernel_allocator);
+  IndexArray offsets_d(query_bbox_v.size(), query_bbox_v.size(), kernel_allocator);
+  IndexArray counts_d(query_bbox_v.size(), query_bbox_v.size(), kernel_allocator);
   IndexArray candidates_d(0, 0, kernel_allocator);
 
   auto offsets_v = offsets_d.view();
   auto counts_v = counts_d.view();
-  bvh.findBoundingBoxes(offsets_v, counts_v, candidates_d, bbox_v.size(), bbox_v);
+  bvh.findBoundingBoxes(offsets_v,
+                        counts_v,
+                        candidates_d,
+                        query_bbox_v.size(),
+                        query_bbox_v);
 
   timer.stop();
   SLIC_INFO_IF(verboseOutput,
@@ -505,9 +424,7 @@ axom::Array<IndexPair> findIntersectionsBVH(const TriangleMesh& triMesh,
                  "1: Querying candidate bounding boxes took {:4.3} seconds.",
                  timer.elapsedTimeInSec()));
 
-  // Expand candidate list into corresponding arrays of indices
-  // Only keep results where candidate has a greater index than triangle
-  // and when both are non-degenerate
+  // Initialize query indices and bvh candidate indices
   IndexArray indices_d(axom::ArrayOptions::Uninitialized {},
                        candidates_d.size(),
                        kernel_allocator);
@@ -519,7 +436,7 @@ axom::Array<IndexPair> findIntersectionsBVH(const TriangleMesh& triMesh,
   axom::IndexType numCandidates {};
   timer.start();
   {
-    const int totalTriangles = triMesh.numTriangles();
+    const int totalQueryHexes = queryMesh.numHexes();
 
     IndexArray numValidCandidates_d(1, 1, kernel_allocator);
     numValidCandidates_d.fill(0);
@@ -529,42 +446,28 @@ axom::Array<IndexPair> findIntersectionsBVH(const TriangleMesh& triMesh,
     auto validCandidates_v = validCandidates_d.view();
     auto candidates_v = candidates_d.view();
 
-    // Compute a device bool array of validity flags
-    axom::Array<bool> is_valid_d(axom::ArrayOptions::Uninitialized {},
-                                 bbox_v.size(),
-                                 kernel_allocator);
-    auto is_valid_v = is_valid_d.view();
-
+    // Initialize pairs of query and candidate indices
     axom::for_all<ExecSpace>(
-      totalTriangles,
-      AXOM_LAMBDA(axom::IndexType i) { is_valid_v[i] = !tris_v[i].degenerate(); });
-
-    // Keep pairs of valid triangles whose bounding boxes overlap
-    axom::for_all<ExecSpace>(
-      totalTriangles,
+      totalQueryHexes,
       AXOM_LAMBDA(axom::IndexType i) {
         for(int j = 0; j < counts_v[i]; j++)
         {
           const axom::IndexType potential = candidates_v[offsets_v[i] + j];
-          if(i < potential && is_valid_v[i] && is_valid_v[potential])
-          {
-            const auto idx = RAJA::atomicAdd<ATOMIC_POL>(numValidCandidates_p,
-                                                         axom::IndexType {1});
-            indices_v[idx] = i;
-            validCandidates_v[idx] = potential;
-          }
+          const auto idx = RAJA::atomicAdd<ATOMIC_POL>(numValidCandidates_p,
+                                                       axom::IndexType {1});
+          indices_v[idx] = i;
+          validCandidates_v[idx] = potential;
         }
       });
 
     axom::copy(&numCandidates, numValidCandidates_p, sizeof(axom::IndexType));
   }
   timer.stop();
-  SLIC_INFO_IF(
-    verboseOutput,
-    axom::fmt::format("2: Filtering invalid candidates took {:4.3} seconds.",
-                      timer.elapsedTimeInSec()));
+  SLIC_INFO_IF(verboseOutput,
+               axom::fmt::format("2: Linearizing query indices and bvh "
+                                 "candidate indices took {:4.3} seconds.",
+                                 timer.elapsedTimeInSec()));
 
-  // Iterate through valid candidates to find actual intersections
   IndexArray intersect_d[2] = {IndexArray(axom::ArrayOptions::Uninitialized {},
                                           numCandidates,
                                           kernel_allocator),
@@ -583,17 +486,20 @@ axom::Array<IndexPair> findIntersectionsBVH(const TriangleMesh& triMesh,
     auto indices_v = indices_d.view();
     auto validCandidates_v = validCandidates_d.view();
 
-    // Perform triangle-triangle tests
+    // Perform hex-hex tests
     axom::for_all<ExecSpace>(
       numCandidates,
       AXOM_LAMBDA(axom::IndexType i) {
         constexpr bool includeBoundaries = false;
         const auto index = indices_v[i];
         const auto candidate = validCandidates_v[i];
-        if(axom::primal::intersect(tris_v[index],
-                                   tris_v[candidate],
-                                   includeBoundaries,
-                                   tol))
+        // For now, using bbox-bbox intersection, because well, have to implement
+        // the hex-hex intersection routine first.
+        // if(axom::primal::intersect(query_hexes_v[index],
+        //                            insert_hexes_v[candidate],
+        //                            includeBoundaries,
+        //                            tol))
+        if(axom::primal::intersect(query_bbox_v[index], insert_bbox_v[candidate]))
         {
           const auto idx =
             RAJA::atomicAdd<ATOMIC_POL>(numIntersections_p, axom::IndexType {1});
@@ -613,21 +519,22 @@ axom::Array<IndexPair> findIntersectionsBVH(const TriangleMesh& triMesh,
     axom::fmt::format("3: Finding actual intersections took {:4.3} seconds.",
                       timer.elapsedTimeInSec()));
 
-  SLIC_INFO_IF(
-    verboseOutput,
-    axom::fmt::format(axom::utilities::locale(),
-                      R"(Stats for self-intersection query
-    -- Number of mesh triangles {:L}
+  SLIC_INFO_IF(verboseOutput,
+               axom::fmt::format(axom::utilities::locale(),
+                                 R"(Stats for query
+    -- Number of insert-BVH mesh hexes {:L}
+    -- Number of query mesh hexes {:L}
     -- Total possible candidates {:L}
     -- Candidates from BVH query {:L}
-    -- Potential candidates after filtering {:L}
+    -- Potential candidates after linearizing {:L}
     -- Actual intersections {:L}
     )",
-                      triMesh.numTriangles(),
-                      triMesh.numTriangles() * (triMesh.numTriangles() - 1) / 2.,
-                      candidates_d.size(),
-                      numCandidates,
-                      numIntersections));
+                                 insertMesh.numHexes(),
+                                 queryMesh.numHexes(),
+                                 insertMesh.numHexes() * queryMesh.numHexes(),
+                                 candidates_d.size(),
+                                 numCandidates,
+                                 numIntersections));
 
   // copy results back to host and into return vector
   IndexArray intersect_h[2] = {
@@ -644,7 +551,7 @@ axom::Array<IndexPair> findIntersectionsBVH(const TriangleMesh& triMesh,
   }
 
   return intersectionPairs;
-}
+}  // end of findIntersectionsBVH for Silo Meshes
 
 int main(int argc, char** argv)
 {
@@ -673,7 +580,7 @@ int main(int argc, char** argv)
   SLIC_INFO(axom::fmt::format("Reading silo file to insert into BVH: '{}'...\n",
                               params.mesh_file_first));
 
-  HexMesh bvh_mesh = loadSiloHexMesh(params.mesh_file_first);
+  HexMesh insert_mesh = loadSiloHexMesh(params.mesh_file_first);
 
   // Load Silo mesh for querying BVH
   SLIC_INFO(axom::fmt::format("Reading silo file to query BVH: '{}'...\n",
@@ -681,63 +588,64 @@ int main(int argc, char** argv)
 
   HexMesh query_mesh = loadSiloHexMesh(params.mesh_file_second);
 
-  // TriangleMesh mesh = makeTriangleMesh(params.mesh_file, params.weldThreshold);
-
   // Check for self-intersections; results are returned as an array of index pairs
-  //   axom::Array<IndexPair> intersectionPairs;
-  //   axom::utilities::Timer timer(true);
-  //   switch(params.policy)
-  //   {
-  //   case RuntimePolicy::raja_omp:
-  // #ifdef AXOM_USE_OPENMP
-  //     intersectionPairs =
-  //       findIntersectionsBVH<omp_exec>(mesh,
-  //                                      params.intersectionThreshold,
-  //                                      params.isVerbose());
-  // #endif
-  //     break;
-  //   case RuntimePolicy::raja_cuda:
-  // #ifdef AXOM_USE_CUDA
-  //     intersectionPairs =
-  //       findIntersectionsBVH<cuda_exec>(mesh,
-  //                                       params.intersectionThreshold,
-  //                                       params.isVerbose());
-  // #endif
-  //     break;
-  //   default:  // RuntimePolicy::raja_seq
-  //     intersectionPairs =
-  //       findIntersectionsBVH<seq_exec>(mesh,
-  //                                      params.intersectionThreshold,
-  //                                      params.isVerbose());
-  //     break;
-  //   }
-  //   timer.stop();
+  axom::Array<IndexPair> intersectionPairs;
+  axom::utilities::Timer timer(true);
+  switch(params.policy)
+  {
+  case RuntimePolicy::raja_omp:
+#ifdef AXOM_USE_OPENMP
+    intersectionPairs =
+      findIntersectionsBVH<omp_exec>(insert_mesh,
+                                     query_mesh,
+                                     params.intersectionThreshold,
+                                     params.isVerbose());
+#endif
+    break;
+  case RuntimePolicy::raja_cuda:
+#ifdef AXOM_USE_CUDA
+    intersectionPairs =
+      findIntersectionsBVH<cuda_exec>(insert_mesh,
+                                      query_mesh,
+                                      params.intersectionThreshold,
+                                      params.isVerbose());
+#endif
+    break;
+  default:  // RuntimePolicy::raja_seq
+    intersectionPairs =
+      findIntersectionsBVH<seq_exec>(insert_mesh,
+                                     query_mesh,
+                                     params.intersectionThreshold,
+                                     params.isVerbose());
+    break;
+  }
+  timer.stop();
 
-  //   SLIC_INFO(axom::fmt::format("Computing intersections {} took {:4.3} seconds.",
-  //                               "with a BVH tree",
-  //                               timer.elapsedTimeInSec()));
-  //   SLIC_INFO(axom::fmt::format(axom::utilities::locale(),
-  //                               "Mesh had {:L} intersection pairs",
-  //                               intersectionPairs.size()));
+  SLIC_INFO(axom::fmt::format("Computing intersections {} took {:4.3} seconds.",
+                              "with a BVH tree",
+                              timer.elapsedTimeInSec()));
+  SLIC_INFO(axom::fmt::format(axom::utilities::locale(),
+                              "Mesh had {:L} intersection pairs",
+                              intersectionPairs.size()));
 
-  //   // print first few pairs
-  //   const int numIntersections = intersectionPairs.size();
-  //   if(numIntersections > 0 && params.isVerbose())
-  //   {
-  //     constexpr int MAX_PRINT = 20;
-  //     if(numIntersections > MAX_PRINT)
-  //     {
-  //       intersectionPairs.resize(MAX_PRINT);
-  //       SLIC_INFO(axom::fmt::format("First {} intersection pairs: {} ...\n",
-  //                                   MAX_PRINT,
-  //                                   axom::fmt::join(intersectionPairs, ", ")));
-  //     }
-  //     else
-  //     {
-  //       SLIC_INFO(axom::fmt::format("Intersection pairs: {}\n",
-  //                                   axom::fmt::join(intersectionPairs, ", ")));
-  //     }
-  //   }
+  // print first few pairs
+  const int numIntersections = intersectionPairs.size();
+  if(numIntersections > 0 && params.isVerbose())
+  {
+    constexpr int MAX_PRINT = 20;
+    if(numIntersections > MAX_PRINT)
+    {
+      intersectionPairs.resize(MAX_PRINT);
+      SLIC_INFO(axom::fmt::format("First {} intersection pairs: {} ...\n",
+                                  MAX_PRINT,
+                                  axom::fmt::join(intersectionPairs, ", ")));
+    }
+    else
+    {
+      SLIC_INFO(axom::fmt::format("Intersection pairs: {}\n",
+                                  axom::fmt::join(intersectionPairs, ", ")));
+    }
+  }
 
   return 0;
 }
