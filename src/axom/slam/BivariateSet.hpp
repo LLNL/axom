@@ -305,9 +305,9 @@ struct BivariateSetIterator
                         typename BivariateSetType::PositionType>
 {
 public:
+  using IndexType = typename BivariateSetType::PositionType;
   using BaseType =
     IteratorBase<BivariateSetIterator<BivariateSetType>, IndexType>;
-  using IndexType = typename BivariateSetType::PositionType;
   using difference_type = IndexType;
   using value_type = std::pair<IndexType, IndexType>;
   using reference = value_type&;
