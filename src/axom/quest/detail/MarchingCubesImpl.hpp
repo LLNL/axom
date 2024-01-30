@@ -75,7 +75,7 @@ public:
   */
   AXOM_HOST void initialize(const conduit::Node& dom,
                             const std::string& topologyName,
-                            const std::string& maskFieldName = {}) override
+                            const std::string& maskFieldName) override
   {
     SLIC_ASSERT(conduit::blueprint::mesh::topology::dims(dom.fetch_existing(
                   axom::fmt::format("topologies/{}", topologyName))) == DIM);
@@ -802,11 +802,11 @@ private:
   axom::IndexType m_facetCount = 0;
   axom::IndexType getContourCellCount() const override { return m_facetCount; }
 
-  //!@brief Number of surface mesh facets added by each crossing.
-  axom::Array<FacetIdType, 1, MemorySpace> m_facetIncrs;
-
   //!@brief Parent cell id (flat index into m_caseIds) for each crossing.
   axom::Array<axom::IndexType, 1, MemorySpace> m_crossingParentIds;
+
+  //!@brief Number of surface mesh facets added by each crossing.
+  axom::Array<FacetIdType, 1, MemorySpace> m_facetIncrs;
 
   //!@brief First index of facets for each crossing.
   axom::Array<axom::IndexType, 1, MemorySpace> m_firstFacetIds;

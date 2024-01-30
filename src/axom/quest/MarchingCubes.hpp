@@ -435,7 +435,7 @@ public:
     */
     virtual void initialize(const conduit::Node &dom,
                             const std::string &topologyName,
-                            const std::string &maskPath) = 0;
+                            const std::string &maskPath = {}) = 0;
 
     virtual void setFunctionField(const std::string& fcnFieldName) = 0;
     virtual void setContourValue(double contourVal) = 0;
