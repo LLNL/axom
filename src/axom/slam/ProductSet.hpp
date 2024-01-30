@@ -55,8 +55,7 @@ public:
   using ElementType = typename BaseType::ElementType;
   using ProductSetType = ProductSet<SetType1, SetType2>;
 
-  struct Iterator;
-  using IteratorType = Iterator;
+  using IteratorType = BivariateSetIterator<ProductSet>;
 
 private:
   template <typename Dummy, typename SetType>
@@ -243,13 +242,13 @@ public:
    * \brief Return an iterator to the first pair of set elements in the
    *  relation.
    */
-  Iterator begin() const { return Iterator(this, 0); }
+  IteratorType begin() const { return IteratorType(this, 0); }
 
   /*!
    * \brief Return an iterator to one past the last pair of set elements in the
    *  relation.
    */
-  Iterator end() const { return Iterator(this, size()); }
+  IteratorType end() const { return IteratorType(this, size()); }
 
   AXOM_HOST_DEVICE RangeSetType elementRangeSet(PositionType pos1) const
   {
@@ -306,56 +305,6 @@ private:
 
 private:
   RowSet<void, typename BaseType::SubsetType> m_rowSet;
-};
-
-/*!
- * \brief Iterator class for a ProductSet.
- */
-template <typename SetType1, typename SetType2, typename InterfaceType>
-struct ProductSet<SetType1, SetType2, InterfaceType>::Iterator
-  : public IteratorBase<Iterator, typename SetType1::PositionType>
-{
-private:
-  using ProductSetType = ProductSet<SetType1, SetType2, InterfaceType>;
-  using BaseType = IteratorBase<Iterator, IndexType>;
-
-public:
-  using SetIndex = typename ProductSetType::PositionType;
-
-  using difference_type = SetIndex;
-  using value_type = std::pair<SetIndex, SetIndex>;
-  using reference = value_type&;
-  using pointer = value_type*;
-  using iterator_category = std::random_access_iterator_tag;
-
-  Iterator(const ProductSetType* bset, SetIndex pos = 0)
-    : BaseType(pos)
-    , m_bset(bset)
-  { }
-
-  std::pair<SetIndex, SetIndex> operator*() const
-  {
-    return {m_bset->flatToFirstIndex(this->m_pos),
-            m_bset->flatToSecondIndex(this->m_pos)};
-  }
-
-  /// \brief Return the first set index pointed to by this iterator.
-  SetIndex firstIndex() const { return m_bset->flatToFirstIndex(this->m_pos); }
-
-  /// \brief Return the second set index pointed to by this iterator.
-  SetIndex secondIndex() const
-  {
-    return m_bset->flatToSecondIndex(this->m_pos);
-  }
-
-  /// \brief Return the flat iteration index of this iterator.
-  SetIndex flatIndex() const { return this->m_pos; }
-
-protected:
-  void advance(IndexType n) { this->m_pos += n; }
-
-private:
-  const ProductSetType* m_bset;
 };
 
 }  // end namespace slam

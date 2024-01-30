@@ -301,8 +301,12 @@ bool BivariateSet<Set1, Set2>::isValid(bool verboseOutput) const
  */
 template <typename BivariateSetType>
 struct BivariateSetIterator
+  : public IteratorBase<BivariateSetIterator<BivariateSetType>,
+                        typename BivariateSetType::PositionType>
 {
 public:
+  using BaseType =
+    IteratorBase<BivariateSetIterator<BivariateSetType>, IndexType>;
   using IndexType = typename BivariateSetType::PositionType;
   using difference_type = IndexType;
   using value_type = std::pair<IndexType, IndexType>;
@@ -311,55 +315,18 @@ public:
   using iterator_category = std::forward_iterator_tag;
 
   BivariateSetIterator(const BivariateSetType* bset, IndexType flatPos = 0)
-    : m_bset(bset)
-  {
-    if(flatPos >= m_bset->size())
-    {
-      m_firstIndex = m_bset->firstSetSize();
-      m_firstOffset = m_bset->size();
-      m_secondOffset = 0;
-    }
-    else
-    {
-      m_firstIndex = m_bset->flatToFirstIndex(flatPos);
-      m_firstOffset = m_bset->findElementFlatIndex(m_firstIndex);
-      m_secondOffset = flatPos - m_firstOffset;
-    }
-  }
-
-  friend bool operator==(const BivariateSetIterator& lhs,
-                         const BivariateSetIterator& rhs)
-  {
-    return lhs.flatIndex() == rhs.flatIndex();
-  }
-
-  friend bool operator!=(const BivariateSetIterator& lhs,
-                         const BivariateSetIterator& rhs)
-  {
-    return lhs.flatIndex() != rhs.flatIndex();
-  }
-
-  BivariateSetIterator& operator++()
-  {
-    this->moveForward();
-    return *this;
-  }
-
-  BivariateSetIterator operator++(int)
-  {
-    BivariateSetIterator next = *this;
-    ++(*this);
-    return next;
-  }
+    : BaseType(flatPos)
+    , m_bset(bset)
+  { }
 
   std::pair<IndexType, IndexType> operator*() const
   {
     // Going from flat-to-second index is always free for a StaticRelation.
-    return {m_firstIndex, m_bset->flatToSecondIndex(flatIndex())};
+    return {firstIndex(), secondIndex()};
   }
 
   /// \brief Return the first set index pointed to by this iterator.
-  IndexType firstIndex() const { return m_firstIndex; }
+  IndexType firstIndex() const { return m_bset->flatToFirstIndex(flatIndex()); }
 
   /// \brief Return the second set index pointed to by this iterator.
   IndexType secondIndex() const
@@ -368,24 +335,13 @@ public:
   }
 
   /// \brief Return the flat iteration index of this iterator.
-  IndexType flatIndex() const { return m_firstOffset + m_secondOffset; }
+  IndexType flatIndex() const { return this->m_pos; }
+
+protected:
+  void advance(IndexType n) { this->m_pos += n; }
 
 private:
-  void moveForward()
-  {
-    m_secondOffset++;
-    if(m_secondOffset == m_bset->size(m_firstIndex))
-    {
-      m_firstOffset += m_bset->size(m_firstIndex);
-      m_firstIndex++;
-      m_secondOffset = 0;
-    }
-  }
-
   const BivariateSetType* m_bset;
-  IndexType m_firstOffset;
-  IndexType m_firstIndex;
-  IndexType m_secondOffset;
 };
 
 /**
