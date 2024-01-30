@@ -26,7 +26,7 @@ namespace lumberjack
 {
 /*!
  *******************************************************************************
- * \class Tex
+ * \class TextTagCombiner
  *
  * \brief Combines Message classes if their Message::text and Message::tag
  *        are equal.
