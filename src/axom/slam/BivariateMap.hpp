@@ -124,6 +124,8 @@ public:
   using ConstSubMapType = const SubMap<const BivariateMapType, SetType, IfacePol>;
   using SubMapIterator = typename SubMapType::iterator;
   using ConstSubMapIterator = typename ConstSubMapType::iterator;
+  using SubMapRangeIterator = typename SubMapType::range_iterator;
+  using ConstSubMapRangeIterator = typename ConstSubMapType::range_iterator;
 
   using NullBivariateSetType =
     NullBivariateSet<typename BSet::FirstSetType, typename BSet::SecondSetType>;
@@ -518,6 +520,22 @@ public:
   AXOM_HOST_DEVICE ConstSubMapIterator end(int i) const
   {
     return (*this)(i).end();
+  }
+  AXOM_HOST_DEVICE SubMapRangeIterator set_begin(int i)
+  {
+    return (*this)(i).set_begin();
+  }
+  AXOM_HOST_DEVICE SubMapRangeIterator set_end(int i)
+  {
+    return (*this)(i).set_end();
+  }
+  AXOM_HOST_DEVICE ConstSubMapRangeIterator set_begin(int i) const
+  {
+    return (*this)(i).set_begin();
+  }
+  AXOM_HOST_DEVICE ConstSubMapRangeIterator set_end(int i) const
+  {
+    return (*this)(i).set_end();
   }
 
 public:
