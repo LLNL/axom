@@ -82,6 +82,10 @@ public:
   using const_iterator = Iterator;
   using iterator_pair = std::pair<iterator, iterator>;
 
+  class RangeIterator;
+  using const_range_iterator = RangeIterator;
+  using range_iterator = RangeIterator;
+
   using ValueType = typename IndirectionPolicyType::IndirectionResult;
   using ConstValueType = typename IndirectionPolicyType::ConstIndirectionResult;
 
@@ -198,6 +202,7 @@ private:  //function inherit from StridePolicy that should not be accessible
   }
 
 private:  //helper functions
+  friend class RangeIterator;
   /**
    * \brief Get the ElementFlatIndex into the SuperMap given the subset's index.
    */
@@ -306,6 +311,14 @@ public:  // Functions related to iteration
   {
     return iterator(m_subsetIdx.size() * numComp(), *this);
   }
+  AXOM_HOST_DEVICE range_iterator set_begin() const
+  {
+    return range_iterator(0, *this);
+  }
+  AXOM_HOST_DEVICE range_iterator set_end() const
+  {
+    return range_iterator(m_subsetIdx.size(), *this);
+  }
 
 protected:  //Member variables
   SuperMapType* m_superMap;
@@ -412,6 +425,100 @@ protected:
 
 private:
   SubMap m_submap;
+};
+
+/**
+ * \class SubMap::RangeIterator
+ * \brief An iterator for SubMap, based on MapIterator
+ *
+ * \see MapIterator
+ */
+template <typename SuperMapType, typename SubsetType, typename InterfacePolicy>
+class SubMap<SuperMapType, SubsetType, InterfacePolicy>::RangeIterator
+  : public IteratorBase<RangeIterator, SetPosition>
+{
+private:
+public:
+  using IterBase = IteratorBase<RangeIterator, SetPosition>;
+  using IterBase::m_pos;
+  using iter = Iterator;
+  using PositionType = SetPosition;
+
+private:
+  using MapRangeIterator =
+    std::conditional_t<std::is_const<SuperMapType>::value,
+                       typename SuperMapType::const_range_iterator,
+                       typename SuperMapType::range_iterator>;
+
+public:
+  // Type traits to satisfy LegacyRandomAccessIterator concept
+  using iterator_category = typename MapRangeIterator::iterator_category;
+  using value_type = typename MapRangeIterator::value_type;
+  using reference = typename MapRangeIterator::reference;
+  using pointer = typename MapRangeIterator::pointer;
+  using difference_type = SetPosition;
+
+public:
+  AXOM_HOST_DEVICE RangeIterator(PositionType pos, SubMap sMap)
+    : IterBase(pos)
+    , m_submap(sMap)
+    , m_mapIter(m_submap.m_superMap, pos)
+  { }
+
+  /// \brief Returns the current iterator value.
+  reference operator*() const { return (*m_mapIter); }
+
+  pointer operator->() const { return m_mapIter.operator->(); }
+
+  template <typename... ComponentIndex>
+  DataRefType operator()(ComponentIndex... comp_idx) const
+  {
+    return m_mapIter(comp_idx...);
+  }
+  template <typename... ComponentIndex>
+  DataRefType value(ComponentIndex... comp_idx) const
+  {
+    return m_mapIter.value(comp_idx...);
+  }
+
+  value_type operator[](PositionType n) const { return *(*this + n); }
+
+  /// \brief Returns the set element mapped by this iterator.
+  SetElement index() const { return m_submap.index(this->m_pos); }
+
+  /*!
+   * \brief Returns the flat index in the original map pointed to by this
+   *  iterator.
+   */
+  SetPosition flatIndex() const { return m_mapIter.flatIndex(); }
+
+  /// \brief Returns the index into the submap pointed to by this iterator.
+  SetPosition submapIndex() const { return this->m_pos; }
+
+  /** \brief Returns the number of components per element in the Map. */
+  PositionType numComp() const { return m_mapIter.numComp(); }
+
+protected:
+  /** Implementation of advance() as required by IteratorBase */
+  void advance(PositionType n)
+  {
+    PositionType currIndex = m_submap.m_subsetIdx[this->m_pos];
+    // End element is one past the last subset element.
+    PositionType nextIndex =
+      m_submap.m_subsetIdx[m_submap.m_subsetIdx.size() - 1] + 1;
+    if(this->m_pos + n < m_submap.m_subsetIdx.size())
+    {
+      nextIndex = m_submap.m_subsetIdx[this->m_pos + n];
+    }
+    // Move original iterator.
+    m_mapIter += (nextIndex - currIndex);
+
+    this->m_pos += n;
+  }
+
+private:
+  SubMap m_submap;
+  MapRangeIterator m_mapIter;
 };
 
 }  // end namespace slam
