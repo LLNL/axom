@@ -493,8 +493,8 @@ public:
 
     using iterator_category = std::random_access_iterator_tag;
     using value_type = DataType;
-    using reference_type = DataRefType;
-    using pointer_type = value_type*;
+    using reference = DataRefType;
+    using pointer = value_type*;
     using difference_type = SetPosition;
 
     using IterBase = IteratorBase<MapIterator, SetPosition>;
@@ -510,7 +510,9 @@ public:
     /**
      * \brief Returns the current iterator value.
      */
-    reference_type operator*() { return (*m_map)[m_pos]; }
+    reference operator*() const { return (*m_map)[m_pos]; }
+
+    pointer operator->() const { return &(*this); }
 
     /// \brief Returns the set element mapped by this iterator.
     SetElement index() const

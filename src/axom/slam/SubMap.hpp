@@ -404,6 +404,8 @@ public:
   /// \brief Returns the current iterator value.
   AXOM_HOST_DEVICE DataRefType operator*() const { return m_submap[m_pos]; }
 
+  pointer operator->() const { return &(*this); }
+
   /** \brief Returns the first component value after n increments.  */
   DataRefType operator[](PositionType n) const { return *(*this + n); }
 
