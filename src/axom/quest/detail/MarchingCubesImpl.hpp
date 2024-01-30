@@ -58,7 +58,7 @@ public:
     , m_crossingParentIds(0, 0, m_allocatorID)
     , m_facetIncrs(0, 0, m_allocatorID)
     , m_firstFacetIds(0, 0, m_allocatorID)
-    {}
+  { }
 
   /*!
     @brief Initialize data to a blueprint domain.
@@ -97,7 +97,8 @@ public:
       only support column-major, so we're stuck with that for now.
     */
     // m_caseIds.resize(m_bShape, 0); // This unexpectedly fails.
-    m_caseIds = axom::Array<std::uint16_t, DIM, MemorySpace>(m_bShape, m_allocatorID);
+    m_caseIds =
+      axom::Array<std::uint16_t, DIM, MemorySpace>(m_bShape, m_allocatorID);
     m_caseIds.fill(0);
   }
 
@@ -262,14 +263,18 @@ public:
   void scanCrossings() override
   {
     constexpr MarchingCubesDataParallelism autoPolicy =
-      std::is_same<ExecSpace, axom::SEQ_EXEC>::value ? MarchingCubesDataParallelism::hybridParallel :
+      std::is_same<ExecSpace, axom::SEQ_EXEC>::value
+      ? MarchingCubesDataParallelism::hybridParallel
+      :
 #ifdef AXOM_USE_OPENMP
-      std::is_same<ExecSpace, axom::OMP_EXEC>::value ? MarchingCubesDataParallelism::hybridParallel :
+      std::is_same<ExecSpace, axom::OMP_EXEC>::value
+        ? MarchingCubesDataParallelism::hybridParallel
+        :
 #endif
-      MarchingCubesDataParallelism::fullParallel;
+        MarchingCubesDataParallelism::fullParallel;
 
     if(m_dataParallelism ==
-       axom::quest::MarchingCubesDataParallelism::hybridParallel ||
+         axom::quest::MarchingCubesDataParallelism::hybridParallel ||
        (m_dataParallelism == axom::quest::MarchingCubesDataParallelism::byPolicy &&
         autoPolicy == MarchingCubesDataParallelism::hybridParallel))
     {
@@ -310,7 +315,8 @@ public:
       0,
       parentCellCount,
       AXOM_LAMBDA(axom::IndexType parentCellId) {
-        auto numContourCells = num_contour_cells(caseIdsView.flatIndex(parentCellId));
+        auto numContourCells =
+          num_contour_cells(caseIdsView.flatIndex(parentCellId));
         crossingFlagsView[parentCellId] = bool(numContourCells);
       });
 
@@ -336,9 +342,10 @@ public:
     auto crossingParentIdsView = m_crossingParentIds.view();
     auto facetIncrsView = m_facetIncrs.view();
 
-    auto loopBody = AXOM_LAMBDA(axom::IndexType parentCellId) {
-      if(scannedFlagsView[parentCellId] !=
-         scannedFlagsView[1+parentCellId]) {
+    auto loopBody = AXOM_LAMBDA(axom::IndexType parentCellId)
+    {
+      if(scannedFlagsView[parentCellId] != scannedFlagsView[1 + parentCellId])
+      {
         auto crossingId = scannedFlagsView[parentCellId];
         auto facetIncr = num_contour_cells(caseIdsView.flatIndex(parentCellId));
         crossingParentIdsView[crossingId] = parentCellId;
@@ -442,7 +449,7 @@ public:
     const auto firstFacetIdsView = m_firstFacetIds.view();
 
 #if defined(AXOM_USE_RAJA)
-      // Intel oneAPI compiler segfaults with OpenMP RAJA scan
+    // Intel oneAPI compiler segfaults with OpenMP RAJA scan
   #ifdef __INTEL_LLVM_COMPILER
     using ScanPolicy =
       typename axom::execution_space<axom::SEQ_EXEC>::loop_policy;
@@ -635,13 +642,15 @@ public:
       if(axom::utilities::isNearlyEqual(contourVal, f1) ||
          axom::utilities::isNearlyEqual(f1, f2))
       {
-        crossingPt[0] = p1[0]; crossingPt[1] = p1[1]; // crossingPt = p1;
+        crossingPt[0] = p1[0];
+        crossingPt[1] = p1[1];  // crossingPt = p1;
         return;
       }
 
       if(axom::utilities::isNearlyEqual(contourVal, f2))
       {
-        crossingPt[0] = p2[0]; crossingPt[1] = p2[1]; // crossingPt = p2;
+        crossingPt[0] = p2[0];
+        crossingPt[1] = p2[1];  // crossingPt = p2;
         return;
       }
 
@@ -688,13 +697,17 @@ public:
       if(axom::utilities::isNearlyEqual(contourVal, f1) ||
          axom::utilities::isNearlyEqual(f1, f2))
       {
-        crossingPt[0] = p1[0]; crossingPt[1] = p1[1]; crossingPt[2] = p1[2]; // crossingPt = p1;
+        crossingPt[0] = p1[0];
+        crossingPt[1] = p1[1];
+        crossingPt[2] = p1[2];  // crossingPt = p1;
         return;
       }
 
       if(axom::utilities::isNearlyEqual(contourVal, f2))
       {
-        crossingPt[0] = p2[0]; crossingPt[1] = p2[1]; crossingPt[2] = p2[2]; // crossingPt = p2;
+        crossingPt[0] = p2[0];
+        crossingPt[1] = p2[1];
+        crossingPt[2] = p2[2];  // crossingPt = p2;
         return;
       }
 
@@ -775,8 +788,7 @@ public:
   /*!
     @brief Constructor.
   */
-  MarchingCubesImpl()
-  { }
+  MarchingCubesImpl() { }
 
 private:
   int m_allocatorID;
@@ -819,7 +831,10 @@ private:
   axom::StackArray<axom::IndexType, DIM> emptyShape()
   {
     axom::StackArray<axom::IndexType, DIM> rval;
-    for(int d=0; d<DIM; ++d) { rval[d] = 0; }
+    for(int d = 0; d < DIM; ++d)
+    {
+      rval[d] = 0;
+    }
     return rval;
   }
 };
@@ -829,7 +844,9 @@ private:
   for caller-specified runtime policy and physical dimension.
 */
 static std::unique_ptr<axom::quest::MarchingCubesSingleDomain::ImplBase>
-newMarchingCubesImpl(MarchingCubes::RuntimePolicy runtimePolicy, int allocatorID, int dim)
+newMarchingCubesImpl(MarchingCubes::RuntimePolicy runtimePolicy,
+                     int allocatorID,
+                     int dim)
 {
   using ImplBase = axom::quest::MarchingCubesSingleDomain::ImplBase;
 
@@ -837,36 +854,44 @@ newMarchingCubesImpl(MarchingCubes::RuntimePolicy runtimePolicy, int allocatorID
   std::unique_ptr<ImplBase> impl;
   if(runtimePolicy == MarchingCubes::RuntimePolicy::seq)
   {
-    impl = dim == 2 ? std::unique_ptr<ImplBase>(
-                        new MarchingCubesImpl<2, axom::SEQ_EXEC, axom::SEQ_EXEC>(allocatorID))
-                    : std::unique_ptr<ImplBase>(
-                        new MarchingCubesImpl<3, axom::SEQ_EXEC, axom::SEQ_EXEC>(allocatorID));
+    impl = dim == 2
+      ? std::unique_ptr<ImplBase>(
+          new MarchingCubesImpl<2, axom::SEQ_EXEC, axom::SEQ_EXEC>(allocatorID))
+      : std::unique_ptr<ImplBase>(
+          new MarchingCubesImpl<3, axom::SEQ_EXEC, axom::SEQ_EXEC>(allocatorID));
   }
 #ifdef AXOM_RUNTIME_POLICY_USE_OPENMP
   else if(runtimePolicy == MarchingCubes::RuntimePolicy::omp)
   {
-    impl = dim == 2 ? std::unique_ptr<ImplBase>(
-                        new MarchingCubesImpl<2, axom::OMP_EXEC, axom::SEQ_EXEC>(allocatorID))
-                    : std::unique_ptr<ImplBase>(
-                        new MarchingCubesImpl<3, axom::OMP_EXEC, axom::SEQ_EXEC>(allocatorID));
+    impl = dim == 2
+      ? std::unique_ptr<ImplBase>(
+          new MarchingCubesImpl<2, axom::OMP_EXEC, axom::SEQ_EXEC>(allocatorID))
+      : std::unique_ptr<ImplBase>(
+          new MarchingCubesImpl<3, axom::OMP_EXEC, axom::SEQ_EXEC>(allocatorID));
   }
 #endif
 #ifdef AXOM_RUNTIME_POLICY_USE_CUDA
   else if(runtimePolicy == MarchingCubes::RuntimePolicy::cuda)
   {
-    impl = dim == 2 ? std::unique_ptr<ImplBase>(
-                        new MarchingCubesImpl<2, axom::CUDA_EXEC<256>, axom::CUDA_EXEC<1>>(allocatorID))
-                    : std::unique_ptr<ImplBase>(
-                        new MarchingCubesImpl<3, axom::CUDA_EXEC<256>, axom::CUDA_EXEC<1>>(allocatorID));
+    impl = dim == 2
+      ? std::unique_ptr<ImplBase>(
+          new MarchingCubesImpl<2, axom::CUDA_EXEC<256>, axom::CUDA_EXEC<1>>(
+            allocatorID))
+      : std::unique_ptr<ImplBase>(
+          new MarchingCubesImpl<3, axom::CUDA_EXEC<256>, axom::CUDA_EXEC<1>>(
+            allocatorID));
   }
 #endif
 #ifdef AXOM_RUNTIME_POLICY_USE_HIP
   else if(runtimePolicy == MarchingCubes::RuntimePolicy::hip)
   {
-    impl = dim == 2 ? std::unique_ptr<ImplBase>(
-                        new MarchingCubesImpl<2, axom::HIP_EXEC<256>, axom::HIP_EXEC<1>>(allocatorID))
-                    : std::unique_ptr<ImplBase>(
-                        new MarchingCubesImpl<3, axom::HIP_EXEC<256>, axom::HIP_EXEC<1>>(allocatorID));
+    impl = dim == 2
+      ? std::unique_ptr<ImplBase>(
+          new MarchingCubesImpl<2, axom::HIP_EXEC<256>, axom::HIP_EXEC<1>>(
+            allocatorID))
+      : std::unique_ptr<ImplBase>(
+          new MarchingCubesImpl<3, axom::HIP_EXEC<256>, axom::HIP_EXEC<1>>(
+            allocatorID));
   }
 #endif
   else

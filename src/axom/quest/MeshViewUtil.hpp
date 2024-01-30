@@ -222,7 +222,7 @@ public:
     , m_cdom(nullptr)
     , m_ctopology(nullptr)
     , m_ccoordset(nullptr)
-      {}
+  { }
   /*!
     @brief Construct view of a non-const domain.
 

@@ -21,7 +21,6 @@ namespace axom
 {
 namespace quest
 {
-
 MarchingCubes::MarchingCubes(RuntimePolicy runtimePolicy,
                              int allocatorID,
                              MarchingCubesDataParallelism dataParallelism,
@@ -70,7 +69,7 @@ void MarchingCubes::computeIsocontour(double contourVal)
   // facet counts to get the total facet counts.
   m_facetIndexOffsets.resize(m_singles.size());
   m_facetCount = 0;
-  for(axom::IndexType d=0; d<m_singles.size(); ++d)
+  for(axom::IndexType d = 0; d < m_singles.size(); ++d)
   {
     auto& single = *m_singles[d];
     single.setContourValue(contourVal);
@@ -86,7 +85,7 @@ void MarchingCubes::computeIsocontour(double contourVal)
   auto facetNodeIdsView = m_facetNodeIds.view();
   auto facetNodeCoordsView = m_facetNodeCoords.view();
   auto facetParentIdsView = m_facetParentIds.view();
-  for(axom::IndexType d=0; d<m_singles.size(); ++d)
+  for(axom::IndexType d = 0; d < m_singles.size(); ++d)
   {
     m_singles[d]->setOutputBuffers(facetNodeIdsView,
                                    facetNodeCoordsView,
@@ -94,7 +93,7 @@ void MarchingCubes::computeIsocontour(double contourVal)
                                    m_facetIndexOffsets[d]);
   }
 
-  for(axom::IndexType d=0; d<m_singles.size(); ++d)
+  for(axom::IndexType d = 0; d < m_singles.size(); ++d)
   {
     m_singles[d]->computeContour();
   }
@@ -129,8 +128,10 @@ axom::Array<axom::IndexType> MarchingCubes::getContourFacetDomainIds(
 {
   // Put parent domain ids into a new Array.
   const axom::IndexType len = getContourCellCount();
-  axom::Array<axom::IndexType> rval(len, len, allocatorID != axom::INVALID_ALLOCATOR_ID ?
-                                    allocatorID : m_allocatorID);
+  axom::Array<axom::IndexType> rval(
+    len,
+    len,
+    allocatorID != axom::INVALID_ALLOCATOR_ID ? allocatorID : m_allocatorID);
   for(int d = 0; d < m_singles.size(); ++d)
   {
     axom::detail::ArrayOps<axom::IndexType, MemorySpace::Dynamic>::fill(
@@ -167,25 +168,33 @@ void MarchingCubes::populateContourMesh(
   mesh.reserveCells(contourCellCount);
   mesh.reserveNodes(contourNodeCount);
 
-  if (m_facetCount) {
+  if(m_facetCount)
+  {
     // Put nodes and cells into the mesh.
     // If data is not in host memory, copy to temporary host memory first.
-    axom::MemorySpace internalMemorySpace = axom::detail::getAllocatorSpace(m_allocatorID);
+    axom::MemorySpace internalMemorySpace =
+      axom::detail::getAllocatorSpace(m_allocatorID);
     bool copyToHost = internalMemorySpace != axom::MemorySpace::Dynamic
 #ifdef AXOM_USE_UMPIRE
-        && internalMemorySpace != axom::MemorySpace::Host
+      && internalMemorySpace != axom::MemorySpace::Host
 #endif
       ;
-    if(copyToHost) {
-      const int hostAllocatorId = axom::detail::getAllocatorID<axom::MemorySpace::Dynamic>();
-      axom::Array<double, 2>tmpfacetNodeCoords(m_facetNodeCoords, hostAllocatorId);
-      axom::Array<axom::IndexType, 2>tmpfacetNodeIds(m_facetNodeIds, hostAllocatorId);
-      mesh.appendNodes(tmpfacetNodeCoords.data(), mesh.getDimension()*m_facetCount);
+    if(copyToHost)
+    {
+      const int hostAllocatorId =
+        axom::detail::getAllocatorID<axom::MemorySpace::Dynamic>();
+      axom::Array<double, 2> tmpfacetNodeCoords(m_facetNodeCoords,
+                                                hostAllocatorId);
+      axom::Array<axom::IndexType, 2> tmpfacetNodeIds(m_facetNodeIds,
+                                                      hostAllocatorId);
+      mesh.appendNodes(tmpfacetNodeCoords.data(),
+                       mesh.getDimension() * m_facetCount);
       mesh.appendCells(tmpfacetNodeIds.data(), m_facetCount);
     }
     else
     {
-      mesh.appendNodes(m_facetNodeCoords.data(), mesh.getDimension()*m_facetCount);
+      mesh.appendNodes(m_facetNodeCoords.data(),
+                       mesh.getDimension() * m_facetCount);
       mesh.appendCells(m_facetNodeIds.data(), m_facetCount);
     }
 
@@ -193,11 +202,10 @@ void MarchingCubes::populateContourMesh(
     {
       // Put parent cell ids into the mesh.
       axom::IndexType* cellIdPtr =
-        mesh.getFieldPtr<axom::IndexType>(cellIdField,
-                                          axom::mint::CELL_CENTERED);
+        mesh.getFieldPtr<axom::IndexType>(cellIdField, axom::mint::CELL_CENTERED);
       axom::copy(cellIdPtr,
                  m_facetParentIds.data(),
-                 m_facetCount*sizeof(axom::IndexType));
+                 m_facetCount * sizeof(axom::IndexType));
     }
 
     if(!domainIdField.empty())
@@ -208,33 +216,34 @@ void MarchingCubes::populateContourMesh(
                                           axom::mint::CELL_CENTERED);
       auto tmpContourFacetDomainIds = getContourFacetDomainIds(
         axom::execution_space<axom::SEQ_EXEC>::allocatorID());
-      axom::copy(domainIdPtr, tmpContourFacetDomainIds.data(), m_facetCount*sizeof(axom::IndexType));
+      axom::copy(domainIdPtr,
+                 tmpContourFacetDomainIds.data(),
+                 m_facetCount * sizeof(axom::IndexType));
     }
   }
 }
 
 void MarchingCubes::allocateOutputBuffers()
 {
-  if (!m_singles.empty())
+  if(!m_singles.empty())
   {
     int ndim = m_singles[0]->spatialDimension();
     const auto nodeCount = m_facetCount * ndim;
     m_facetNodeIds =
       axom::Array<axom::IndexType, 2>({m_facetCount, ndim}, m_allocatorID);
-    m_facetNodeCoords =
-      axom::Array<double, 2>({nodeCount, ndim},  m_allocatorID);
-    axom::StackArray<axom::IndexType, 1> t1{m_facetCount};
-    m_facetParentIds =
-      axom::Array<axom::IndexType, 1>(t1, m_allocatorID);
+    m_facetNodeCoords = axom::Array<double, 2>({nodeCount, ndim}, m_allocatorID);
+    axom::StackArray<axom::IndexType, 1> t1 {m_facetCount};
+    m_facetParentIds = axom::Array<axom::IndexType, 1>(t1, m_allocatorID);
   }
 }
 
-MarchingCubesSingleDomain::MarchingCubesSingleDomain(RuntimePolicy runtimePolicy,
-                                                     int allocatorID,
-                                                     MarchingCubesDataParallelism dataPar,
-                                                     const conduit::Node& dom,
-                                                     const std::string& topologyName,
-                                                     const std::string& maskField)
+MarchingCubesSingleDomain::MarchingCubesSingleDomain(
+  RuntimePolicy runtimePolicy,
+  int allocatorID,
+  MarchingCubesDataParallelism dataPar,
+  const conduit::Node& dom,
+  const std::string& topologyName,
+  const std::string& maskField)
   : m_runtimePolicy(runtimePolicy)
   , m_allocatorID(allocatorID)
   , m_dataParallelism(dataPar)
@@ -249,10 +258,10 @@ MarchingCubesSingleDomain::MarchingCubesSingleDomain(RuntimePolicy runtimePolicy
   // Set domain first, to get m_ndim, which is required to allocate m_impl.
   setDomain(dom);
 
-  m_impl = axom::quest::detail::marching_cubes::newMarchingCubesImpl(
-    m_runtimePolicy,
-    m_allocatorID,
-    m_ndim);
+  m_impl =
+    axom::quest::detail::marching_cubes::newMarchingCubesImpl(m_runtimePolicy,
+                                                              m_allocatorID,
+                                                              m_ndim);
 
   m_impl->initialize(*m_dom, m_topologyName, m_maskFieldName);
   m_impl->setDataParallelism(m_dataParallelism);

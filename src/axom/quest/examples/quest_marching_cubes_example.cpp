@@ -745,10 +745,10 @@ struct ContourTestBase
 #endif
     // Create marching cubes algorithm object and set some parameters
     quest::MarchingCubes mc(params.policy,
-        s_allocatorId,
-        params.dataParallelism,
-        computationalMesh.asConduitNode(),
-        "mesh");
+                            s_allocatorId,
+                            params.dataParallelism,
+                            computationalMesh.asConduitNode(),
+                            "mesh");
 
     mc.setFunctionField(functionName());
 
@@ -1051,9 +1051,8 @@ struct ContourTestBase
 
     SLIC_ASSERT(numIdxComponents == 1);
 
-    axom::ArrayView<const axom::IndexType> view(
-      (const axom::IndexType*)ptr,
-      contourMesh.getNumberOfCells());
+    axom::ArrayView<const axom::IndexType> view((const axom::IndexType*)ptr,
+                                                contourMesh.getNumberOfCells());
     return view;
   }
 
@@ -1093,7 +1092,7 @@ struct ContourTestBase
     }
 
     axom::Array<axom::ArrayIndexer<axom::IndexType, DIM>> indexers(domainCount);
-    for(int d=0; d<domainCount; ++d)
+    for(int d = 0; d < domainCount; ++d)
     {
       axom::StackArray<axom::IndexType, DIM> domShape;
       computationalMesh.domainLengths(d, domShape);
@@ -1490,18 +1489,25 @@ int allocatorIdToTest(axom::runtime_policy::Policy policy)
   //---------------------------------------------------------------------------
   // Memory resource.  For testing, choose device memory if appropriate.
   //---------------------------------------------------------------------------
-  int allocatorID =
-    policy == RuntimePolicy::seq ? axom::detail::getAllocatorID<axom::MemorySpace::Host>() :
-#if defined(AXOM_RUNTIME_POLICY_USE_OPENMP)
-    policy == RuntimePolicy::omp ? axom::detail::getAllocatorID<axom::MemorySpace::Host>() :
-#endif
-#if defined(AXOM_RUNTIME_POLICY_USE_CUDA)
-    policy == RuntimePolicy::cuda ? axom::detail::getAllocatorID<axom::MemorySpace::Device>() :
-#endif
-#if defined(AXOM_RUNTIME_POLICY_USE_HIP)
-    policy == RuntimePolicy::hip ? axom::detail::getAllocatorID<axom::MemorySpace::Device>() :
-#endif
-    axom::INVALID_ALLOCATOR_ID;
+  int allocatorID = policy == RuntimePolicy::seq
+    ? axom::detail::getAllocatorID<axom::MemorySpace::Host>()
+    :
+  #if defined(AXOM_RUNTIME_POLICY_USE_OPENMP)
+    policy == RuntimePolicy::omp
+      ? axom::detail::getAllocatorID<axom::MemorySpace::Host>()
+      :
+  #endif
+  #if defined(AXOM_RUNTIME_POLICY_USE_CUDA)
+      policy == RuntimePolicy::cuda
+        ? axom::detail::getAllocatorID<axom::MemorySpace::Device>()
+        :
+  #endif
+  #if defined(AXOM_RUNTIME_POLICY_USE_HIP)
+        policy == RuntimePolicy::hip
+          ? axom::detail::getAllocatorID<axom::MemorySpace::Device>()
+          :
+  #endif
+          axom::INVALID_ALLOCATOR_ID;
 #else
   int allocatorID = axom::getDefaultAllocatorID();
 #endif
@@ -1559,7 +1565,6 @@ void finalizeLogger()
 template <int DIM, typename ExecSpace>
 int testNdimInstance(BlueprintStructuredMesh& computationalMesh)
 {
-
   //---------------------------------------------------------------------------
   // params specify which tests to run.
   //---------------------------------------------------------------------------

@@ -196,7 +196,9 @@ public:
     Memory space of data corresponds to allocator set in the constructor.
   */
   axom::ArrayView<const axom::IndexType, 2> getContourFacetCorners() const
-  { return m_facetNodeIds.view(); }
+  {
+    return m_facetNodeIds.view();
+  }
 
   /*!
     @brief Return view of node coordinates Array.
@@ -207,7 +209,9 @@ public:
     Memory space of data corresponds to allocator set in the constructor.
   */
   axom::ArrayView<const double, 2> getContourNodeCoords() const
-  { return m_facetNodeCoords.view(); }
+  {
+    return m_facetNodeCoords.view();
+  }
 
   /*!
     @brief Return view of parent cell indices Array.
@@ -219,7 +223,9 @@ public:
     Memory space of data corresponds to allocator set in the constructor.
   */
   axom::ArrayView<const axom::IndexType> getContourFacetParents() const
-  { return m_facetParentIds.view(); }
+  {
+    return m_facetParentIds.view();
+  }
 
   /*!
     @brief Return view of parent domain indices Array.
@@ -230,9 +236,10 @@ public:
 
     Memory space of data corresponds to allocator set in the constructor.
   */
-  axom::Array<axom::IndexType> getContourFacetDomainIds(int allocatorID=axom::INVALID_ALLOCATOR_ID) const;
+  axom::Array<axom::IndexType> getContourFacetDomainIds(
+    int allocatorID = axom::INVALID_ALLOCATOR_ID) const;
 
-#if 1
+  #if 1
   // Is there a use case for this?
   /*!
     @brief Give caller posession of the contour data.
@@ -243,10 +250,9 @@ public:
     @pre isoContour() must have been called.
     @post outputs can no longer be accessed from object.
   */
-  void relinguishContourData(
-    axom::Array<axom::IndexType, 2>& facetNodeIds,
-    axom::Array<double, 2>& facetNodeCoords,
-    axom::Array<axom::IndexType, 1>& facetParentIds)
+  void relinguishContourData(axom::Array<axom::IndexType, 2> &facetNodeIds,
+                             axom::Array<double, 2> &facetNodeCoords,
+                             axom::Array<axom::IndexType, 1> &facetParentIds)
   {
     facetNodeIds.swap(m_facetNodeIds);
     facetNodeCoords.swap(m_facetNodeCoords);
@@ -255,7 +261,7 @@ public:
     m_facetNodeCoords.clear();
     m_facetParentIds.clear();
   }
-#endif
+  #endif
   //@}
 
 private:
@@ -364,33 +370,35 @@ public:
     SLIC_ASSERT(m_dom->fetch_existing(m_fcnPath + "/association").as_string() ==
                 "vertex");
     SLIC_ASSERT(m_dom->has_path(m_fcnPath + "/values"));
-    if (m_impl) m_impl->setFunctionField(fcnField);
+    if(m_impl) m_impl->setFunctionField(fcnField);
   }
 
   void setContourValue(double contourVal)
   {
     m_contourVal = contourVal;
-    if (m_impl) m_impl->setContourValue(m_contourVal);
+    if(m_impl) m_impl->setContourValue(m_contourVal);
   }
 
   // Methods trivially delegated to implementation.
   void markCrossings() { m_impl->markCrossings(); }
   void scanCrossings() { m_impl->scanCrossings(); }
-  axom::IndexType getContourCellCount() { return m_impl->getContourCellCount(); }
-  void setOutputBuffers(
-    axom::ArrayView<axom::IndexType, 2>& facetNodeIds,
-    axom::ArrayView<double, 2>& facetNodeCoords,
-    axom::ArrayView<axom::IndexType, 1>& facetParentIds,
-    axom::IndexType facetIndexOffset)
-    {
-      SLIC_ASSERT(facetNodeIds.getAllocatorID() == m_allocatorID);
-      SLIC_ASSERT(facetNodeCoords.getAllocatorID() == m_allocatorID);
-      SLIC_ASSERT(facetParentIds.getAllocatorID() == m_allocatorID);
-      m_impl->setOutputBuffers( facetNodeIds,
-                                facetNodeCoords,
-                                facetParentIds,
-                                facetIndexOffset );
-    }
+  axom::IndexType getContourCellCount()
+  {
+    return m_impl->getContourCellCount();
+  }
+  void setOutputBuffers(axom::ArrayView<axom::IndexType, 2> &facetNodeIds,
+                        axom::ArrayView<double, 2> &facetNodeCoords,
+                        axom::ArrayView<axom::IndexType, 1> &facetParentIds,
+                        axom::IndexType facetIndexOffset)
+  {
+    SLIC_ASSERT(facetNodeIds.getAllocatorID() == m_allocatorID);
+    SLIC_ASSERT(facetNodeCoords.getAllocatorID() == m_allocatorID);
+    SLIC_ASSERT(facetParentIds.getAllocatorID() == m_allocatorID);
+    m_impl->setOutputBuffers(facetNodeIds,
+                             facetNodeCoords,
+                             facetParentIds,
+                             facetIndexOffset);
+  }
   void computeContour() { m_impl->computeContour(); }
 
   /*!
@@ -437,11 +445,13 @@ public:
                             const std::string &topologyName,
                             const std::string &maskPath = {}) = 0;
 
-    virtual void setFunctionField(const std::string& fcnFieldName) = 0;
+    virtual void setFunctionField(const std::string &fcnFieldName) = 0;
     virtual void setContourValue(double contourVal) = 0;
 
     void setDataParallelism(MarchingCubesDataParallelism dataPar)
-      { m_dataParallelism = dataPar; }
+    {
+      m_dataParallelism = dataPar;
+    }
 
     //@{
     //!@name Distinct phases in contour generation.
@@ -460,11 +470,10 @@ public:
     virtual axom::IndexType getContourCellCount() const = 0;
     //@}
 
-    void setOutputBuffers(
-      axom::ArrayView<axom::IndexType, 2>& facetNodeIds,
-      axom::ArrayView<double, 2>& facetNodeCoords,
-      axom::ArrayView<axom::IndexType, 1>& facetParentIds,
-      axom::IndexType facetIndexOffset)
+    void setOutputBuffers(axom::ArrayView<axom::IndexType, 2> &facetNodeIds,
+                          axom::ArrayView<double, 2> &facetNodeCoords,
+                          axom::ArrayView<axom::IndexType, 1> &facetParentIds,
+                          axom::IndexType facetIndexOffset)
     {
       m_facetNodeIds = facetNodeIds;
       m_facetNodeCoords = facetNodeCoords;

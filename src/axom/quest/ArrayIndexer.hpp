@@ -46,7 +46,8 @@ public:
     @param [in] shape Shape of the array
     @param [in] order: c is column major; r is row major.
   */
-  inline AXOM_HOST_DEVICE void initialize(const axom::StackArray<T, DIM>& shape, char order)
+  inline AXOM_HOST_DEVICE void initialize(const axom::StackArray<T, DIM>& shape,
+                                          char order)
   {
     SLIC_ASSERT(order == 'c' || order == 'r');
     if(order == 'r')
@@ -120,9 +121,9 @@ public:
   inline AXOM_HOST_DEVICE char getOrder() const
   {
     char order = 'r' | 'c';
-    for(int d=0; d < DIM - 1; ++d)
+    for(int d = 0; d < DIM - 1; ++d)
     {
-      order &= m_slowestDirs[d] < m_slowestDirs[d+1] ? 'c' : 'r';
+      order &= m_slowestDirs[d] < m_slowestDirs[d + 1] ? 'c' : 'r';
     }
     return order;
   }
