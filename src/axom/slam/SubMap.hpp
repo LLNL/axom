@@ -460,11 +460,23 @@ public:
   using pointer = typename MapRangeIterator::pointer;
   using difference_type = SetPosition;
 
+  PositionType getParentPosition(PositionType subset_pos)
+  {
+    PositionType subsetEnd = m_submap.m_subsetIdx.size() - 1;
+    // End element is one past the last subset element.
+    PositionType parentIndex = m_submap.m_subsetIdx[subsetEnd] + 1;
+    if(subset_pos < m_submap.m_subsetIdx.size())
+    {
+      parentIndex = m_submap.m_subsetIdx[subset_pos];
+    }
+    return parentIndex;
+  }
+
 public:
   AXOM_HOST_DEVICE RangeIterator(PositionType pos, SubMap sMap)
     : IterBase(pos)
     , m_submap(sMap)
-    , m_mapIter(m_submap.m_superMap, pos)
+    , m_mapIter(m_submap.m_superMap, getParentPosition(pos))
   { }
 
   /// \brief Returns the current iterator value.
@@ -504,14 +516,8 @@ protected:
   /** Implementation of advance() as required by IteratorBase */
   void advance(PositionType n)
   {
-    PositionType currIndex = m_submap.m_subsetIdx[this->m_pos];
-    // End element is one past the last subset element.
-    PositionType nextIndex =
-      m_submap.m_subsetIdx[m_submap.m_subsetIdx.size() - 1] + 1;
-    if(this->m_pos + n < m_submap.m_subsetIdx.size())
-    {
-      nextIndex = m_submap.m_subsetIdx[this->m_pos + n];
-    }
+    PositionType currIndex = m_mapIter.flatIndex();
+    PositionType nextIndex = getParentPosition(this->m_pos + n);
     // Move original iterator.
     m_mapIter += (nextIndex - currIndex);
 
