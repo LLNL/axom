@@ -663,12 +663,12 @@ public:
   /**
      * \brief Returns the current map element pointed to by the iterator.
      */
-  DataRefType operator*() const
+  AXOM_HOST_DEVICE DataRefType operator*() const
   {
     return m_map->flatValue(m_bsetIterator.flatIndex(), compIndex());
   }
 
-  pointer operator->() const { return &(*this); }
+  AXOM_HOST_DEVICE pointer operator->() const { return &(*this); }
 
   /**
      * \brief return the current iterator's first index into the BivariateSet
@@ -685,10 +685,10 @@ public:
   PositionType compIndex() const { return this->m_pos % numComp(); }
 
   /** \brief Returns the number of components per element in the map. */
-  PositionType numComp() const { return m_map->numComp(); }
+  AXOM_HOST_DEVICE PositionType numComp() const { return m_map->numComp(); }
 
 protected:
-  void advance(IndexType n)
+  AXOM_HOST_DEVICE void advance(IndexType n)
   {
     this->m_pos += n;
     // Advance associated bset iterator.
@@ -752,9 +752,12 @@ public:
      *        multiple components, this will return the first component.
      *        To access the other components, use iter(comp)
      */
-  reference operator*() const { return *m_mapIterator; }
+  AXOM_HOST_DEVICE reference operator*() const { return *m_mapIterator; }
 
-  pointer operator->() const { return m_mapIterator.operator->(); }
+  AXOM_HOST_DEVICE pointer operator->() const
+  {
+    return m_mapIterator.operator->();
+  }
 
   /**
      * \brief Returns the iterator's value at the specified component.
@@ -762,7 +765,7 @@ public:
      * \param comp_idx  (Optional) Zero-based index of the component.
      */
   template <typename... ComponentIndex>
-  DataRefType operator()(ComponentIndex... comp_idx) const
+  AXOM_HOST_DEVICE DataRefType operator()(ComponentIndex... comp_idx) const
   {
     return value(comp_idx...);
   }
@@ -799,7 +802,7 @@ public:
   PositionType numComp() const { return m_map->numComp(); }
 
 protected:
-  void advance(IndexType n)
+  AXOM_HOST_DEVICE void advance(IndexType n)
   {
     this->m_pos += n;
     // Advance associated bset iterator.

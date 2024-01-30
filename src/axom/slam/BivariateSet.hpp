@@ -335,10 +335,10 @@ public:
   }
 
   /// \brief Return the flat iteration index of this iterator.
-  IndexType flatIndex() const { return this->m_pos; }
+  AXOM_HOST_DEVICE IndexType flatIndex() const { return this->m_pos; }
 
 protected:
-  void advance(IndexType n) { this->m_pos += n; }
+  AXOM_HOST_DEVICE void advance(IndexType n) { this->m_pos += n; }
 
 private:
   const BivariateSetType* m_bset;

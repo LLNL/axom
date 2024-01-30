@@ -123,9 +123,11 @@ public:
    *         element, where `setIndex = i * numComp() + j`.
    * \pre    0 <= idx < size() * numComp()
    */
-  DataRefType operator[](IndexType idx) const
+  AXOM_HOST_DEVICE DataRefType operator[](IndexType idx) const
   {
+#ifndef AXOM_DEVICE_CODE
     verifyPositionImpl(idx);
+#endif
     IndexType flat_idx = getMapCompFlatIndex(idx);
     return (*m_superMap)[flat_idx];
   }
@@ -480,17 +482,17 @@ public:
   { }
 
   /// \brief Returns the current iterator value.
-  reference operator*() const { return (*m_mapIter); }
+  AXOM_HOST_DEVICE reference operator*() const { return (*m_mapIter); }
 
-  pointer operator->() const { return m_mapIter.operator->(); }
+  AXOM_HOST_DEVICE pointer operator->() const { return m_mapIter.operator->(); }
 
   template <typename... ComponentIndex>
-  DataRefType operator()(ComponentIndex... comp_idx) const
+  AXOM_HOST_DEVICE DataRefType operator()(ComponentIndex... comp_idx) const
   {
     return m_mapIter(comp_idx...);
   }
   template <typename... ComponentIndex>
-  DataRefType value(ComponentIndex... comp_idx) const
+  AXOM_HOST_DEVICE DataRefType value(ComponentIndex... comp_idx) const
   {
     return m_mapIter.value(comp_idx...);
   }
@@ -514,7 +516,7 @@ public:
 
 protected:
   /** Implementation of advance() as required by IteratorBase */
-  void advance(PositionType n)
+  AXOM_HOST_DEVICE void advance(PositionType n)
   {
     PositionType currIndex = m_mapIter.flatIndex();
     PositionType nextIndex = getParentPosition(this->m_pos + n);

@@ -510,9 +510,9 @@ public:
     /**
      * \brief Returns the current iterator value.
      */
-    reference operator*() const { return (*m_map)[m_pos]; }
+    AXOM_HOST_DEVICE reference operator*() const { return (*m_map)[m_pos]; }
 
-    pointer operator->() const { return &(*this); }
+    AXOM_HOST_DEVICE pointer operator->() const { return &(*this); }
 
     /// \brief Returns the set element mapped by this iterator.
     SetElement index() const
@@ -528,7 +528,7 @@ public:
 
   protected:
     /** Implementation of advance() as required by IteratorBase */
-    void advance(PositionType n) { m_pos += n; }
+    AXOM_HOST_DEVICE void advance(PositionType n) { m_pos += n; }
 
   private:
     MapConstPtr m_map;
@@ -603,9 +603,9 @@ public:
     /**
      * \brief Returns the current iterator value.
      */
-    reference operator*() const { return m_currRange; }
+    AXOM_HOST_DEVICE reference operator*() const { return m_currRange; }
 
-    pointer operator->() const { return &m_currRange; }
+    AXOM_HOST_DEVICE pointer operator->() const { return &m_currRange; }
 
     /**
      * \brief Returns the iterator's value at the specified component.
@@ -613,12 +613,12 @@ public:
      * \param comp_idx  Zero-based index of the component.
      */
     template <typename... ComponentIndex>
-    DataRefType operator()(ComponentIndex... comp_idx) const
+    AXOM_HOST_DEVICE DataRefType operator()(ComponentIndex... comp_idx) const
     {
       return value(comp_idx...);
     }
     template <typename ComponentIndex>
-    DataRefType value(ComponentIndex comp_idx) const
+    AXOM_HOST_DEVICE DataRefType value(ComponentIndex comp_idx) const
     {
       static_assert(Dims == 1,
                     "Map::RangeIterator::value(): incorrect number of indexes "
@@ -629,7 +629,7 @@ public:
       return m_currRange[comp_idx];
     }
     template <typename... ComponentIndex>
-    DataRefType value(ComponentIndex... comp_idx) const
+    AXOM_HOST_DEVICE DataRefType value(ComponentIndex... comp_idx) const
     {
       static_assert(sizeof...(ComponentIndex) == Dims,
                     "Map::RangeIterator::value(): incorrect number of indexes "
@@ -652,7 +652,7 @@ public:
 
   protected:
     /** Implementation of advance() as required by IteratorBase */
-    void advance(PositionType n)
+    AXOM_HOST_DEVICE void advance(PositionType n)
     {
       this->m_pos += n;
       m_currRange = m_mapData[this->m_pos];
