@@ -107,6 +107,7 @@ class MarchingCubes
 {
 public:
   using RuntimePolicy = axom::runtime_policy::Policy;
+  using DomainIdType = int;
   /*!
    * \brief Constructor sets up computational mesh and data for running the
    * marching cubes algorithm.
@@ -236,7 +237,7 @@ public:
 
     Memory space of data corresponds to allocator set in the constructor.
   */
-  axom::Array<axom::IndexType> getContourFacetDomainIds(
+  axom::Array<MarchingCubes::DomainIdType> getContourFacetDomainIds(
     int allocatorID = axom::INVALID_ALLOCATOR_ID) const;
 
   #if 1
@@ -405,7 +406,7 @@ public:
     @brief Get the Blueprint domain id specified in \a state/domain_id
     if it is provided, or use the given default if not provided.
   */
-  int getDomainId(int defaultId) const;
+  MarchingCubes::DomainIdType getDomainId(MarchingCubes::DomainIdType defaultId) const;
 
   //!@brief Get number of cells in the generated contour mesh.
   axom::IndexType getContourCellCount() const

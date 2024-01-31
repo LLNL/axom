@@ -123,23 +123,26 @@ axom::IndexType MarchingCubes::getContourNodeCount() const
   Domain ids are provided as a new Array instead of ArrayView because
   we don't store it internally.
 */
-axom::Array<axom::IndexType> MarchingCubes::getContourFacetDomainIds(
+axom::Array<MarchingCubes::DomainIdType> MarchingCubes::getContourFacetDomainIds(
   int allocatorID) const
 {
   // Put parent domain ids into a new Array.
   const axom::IndexType len = getContourCellCount();
-  axom::Array<axom::IndexType> rval(
+  axom::Array<MarchingCubes::DomainIdType> rval(
     len,
     len,
     allocatorID != axom::INVALID_ALLOCATOR_ID ? allocatorID : m_allocatorID);
   for(int d = 0; d < m_singles.size(); ++d)
   {
-    axom::detail::ArrayOps<axom::IndexType, MemorySpace::Dynamic>::fill(
+    MarchingCubes::DomainIdType domainId = m_singles[d]->getDomainId(d);
+    axom::IndexType contourCellCount = m_singles[d]->getContourCellCount();
+    axom::IndexType offset = m_facetIndexOffsets[d];
+    axom::detail::ArrayOps<MarchingCubes::DomainIdType, MemorySpace::Dynamic>::fill(
       rval.data(),
-      m_facetIndexOffsets[d],
-      m_singles[d]->getContourCellCount(),
-      m_allocatorID,
-      m_singles[d]->getDomainId(d));
+      offset,
+      contourCellCount,
+      allocatorID,
+      domainId);
   }
   return rval;
 }
@@ -174,15 +177,18 @@ void MarchingCubes::populateContourMesh(
     // If data is not in host memory, copy to temporary host memory first.
     axom::MemorySpace internalMemorySpace =
       axom::detail::getAllocatorSpace(m_allocatorID);
-    bool copyToHost = internalMemorySpace != axom::MemorySpace::Dynamic
+    const bool hostAndInternalMemoriesAreSeparate =
+      internalMemorySpace != axom::MemorySpace::Dynamic
 #ifdef AXOM_USE_UMPIRE
       && internalMemorySpace != axom::MemorySpace::Host
 #endif
       ;
-    if(copyToHost)
+    const int hostAllocatorId = hostAndInternalMemoriesAreSeparate
+      ? axom::detail::getAllocatorID<axom::MemorySpace::Dynamic>()
+      : m_allocatorID;
+
+    if(hostAndInternalMemoriesAreSeparate)
     {
-      const int hostAllocatorId =
-        axom::detail::getAllocatorID<axom::MemorySpace::Dynamic>();
       axom::Array<double, 2> tmpfacetNodeCoords(m_facetNodeCoords,
                                                 hostAllocatorId);
       axom::Array<axom::IndexType, 2> tmpfacetNodeIds(m_facetNodeIds,
@@ -214,8 +220,7 @@ void MarchingCubes::populateContourMesh(
       auto* domainIdPtr =
         mesh.getFieldPtr<axom::IndexType>(domainIdField,
                                           axom::mint::CELL_CENTERED);
-      auto tmpContourFacetDomainIds = getContourFacetDomainIds(
-        axom::execution_space<axom::SEQ_EXEC>::allocatorID());
+      auto tmpContourFacetDomainIds = getContourFacetDomainIds(hostAllocatorId);
       axom::copy(domainIdPtr,
                  tmpContourFacetDomainIds.data(),
                  m_facetCount * sizeof(axom::IndexType));
@@ -298,9 +303,10 @@ void MarchingCubesSingleDomain::setDomain(const conduit::Node& dom)
     "MarchingCubes currently requires contiguous coordinates layout.");
 }
 
-int MarchingCubesSingleDomain::getDomainId(int defaultId) const
+MarchingCubes::DomainIdType MarchingCubesSingleDomain::getDomainId(
+  MarchingCubes::DomainIdType defaultId) const
 {
-  int rval = defaultId;
+  MarchingCubes::DomainIdType rval = defaultId;
   if(m_dom->has_path("state/domain_id"))
   {
     rval = m_dom->fetch_existing("state/domain_id").as_int();
