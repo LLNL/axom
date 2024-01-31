@@ -162,7 +162,7 @@ void MarchingCubes::populateContourMesh(
   if(!domainIdField.empty() &&
      !mesh.hasField(domainIdField, axom::mint::CELL_CENTERED))
   {
-    mesh.createField<axom::IndexType>(domainIdField, axom::mint::CELL_CENTERED);
+    mesh.createField<DomainIdType>(domainIdField, axom::mint::CELL_CENTERED);
   }
 
   // Reserve space once for all local domains.
@@ -218,12 +218,11 @@ void MarchingCubes::populateContourMesh(
     {
       // Put parent domain ids into the mesh.
       auto* domainIdPtr =
-        mesh.getFieldPtr<axom::IndexType>(domainIdField,
-                                          axom::mint::CELL_CENTERED);
+        mesh.getFieldPtr<DomainIdType>(domainIdField, axom::mint::CELL_CENTERED);
       auto tmpContourFacetDomainIds = getContourFacetDomainIds(hostAllocatorId);
       axom::copy(domainIdPtr,
                  tmpContourFacetDomainIds.data(),
-                 m_facetCount * sizeof(axom::IndexType));
+                 m_facetCount * sizeof(DomainIdType));
     }
   }
 }

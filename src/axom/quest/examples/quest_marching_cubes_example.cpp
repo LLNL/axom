@@ -1011,14 +1011,16 @@ struct ContourTestBase
   }
 
   //!@brief Get view of output domain id data.
-  axom::ArrayView<const axom::IndexType> getDomainIdView(
+  axom::ArrayView<const axom::quest::MarchingCubes::DomainIdType> getDomainIdView(
     axom::mint::UnstructuredMesh<axom::mint::SINGLE_SHAPE>& contourMesh) const
   {
     const auto* ptr =
-      contourMesh.getFieldPtr<axom::IndexType>(m_domainIdField,
-                                               axom::mint::CELL_CENTERED);
-    axom::ArrayView<const axom::IndexType> view(ptr,
-                                                contourMesh.getNumberOfCells());
+      contourMesh.getFieldPtr<axom::quest::MarchingCubes::DomainIdType>(
+        m_domainIdField,
+        axom::mint::CELL_CENTERED);
+    axom::ArrayView<const axom::quest::MarchingCubes::DomainIdType> view(
+      ptr,
+      contourMesh.getNumberOfCells());
     return view;
   }
 
@@ -1079,11 +1081,13 @@ struct ContourTestBase
       allCoordsViews[n] = mvu.getConstCoordsViews(false);
     }
 
-    std::map<axom::IndexType, axom::IndexType> domainIdToContiguousId;
+    std::map<axom::quest::MarchingCubes::DomainIdType,
+             axom::quest::MarchingCubes::DomainIdType>
+      domainIdToContiguousId;
     for(int n = 0; n < domainCount; ++n)
     {
       const auto& dom = computationalMesh.domain(n);
-      int domainId = n;
+      axom::quest::MarchingCubes::DomainIdType domainId = n;
       if(dom.has_path("state/domain_id"))
       {
         domainId = dom.fetch_existing("state/domain_id").value();
@@ -1102,8 +1106,10 @@ struct ContourTestBase
     for(axom::IndexType contourCellNum = 0; contourCellNum < cellCount;
         ++contourCellNum)
     {
-      axom::IndexType domainId = domainIdView[contourCellNum];
-      axom::IndexType contiguousIndex = domainIdToContiguousId[domainId];
+      axom::quest::MarchingCubes::DomainIdType domainId =
+        domainIdView[contourCellNum];
+      axom::quest::MarchingCubes::DomainIdType contiguousIndex =
+        domainIdToContiguousId[domainId];
       typename axom::quest::MeshViewUtil<DIM, MemorySpace>::ConstCoordsViewsType&
         coordsViews = allCoordsViews[contiguousIndex];
 
@@ -1193,10 +1199,10 @@ struct ContourTestBase
     }
 
     std::map<axom::IndexType, axom::IndexType> domainIdToContiguousId;
-    for(int n = 0; n < domainCount; ++n)
+    for(axom::quest::MarchingCubes::DomainIdType n = 0; n < domainCount; ++n)
     {
       const auto& dom = computationalMesh.domain(n);
-      int domainId = n;
+      axom::quest::MarchingCubes::DomainIdType domainId = n;
       if(dom.has_path("state/domain_id"))
       {
         domainId = dom.fetch_existing("state/domain_id").value();
@@ -1207,8 +1213,10 @@ struct ContourTestBase
     for(axom::IndexType contourCellNum = 0; contourCellNum < cellCount;
         ++contourCellNum)
     {
-      axom::IndexType domainId = domainIdView[contourCellNum];
-      axom::IndexType contiguousId = domainIdToContiguousId[domainId];
+      axom::quest::MarchingCubes::DomainIdType domainId =
+        domainIdView[contourCellNum];
+      axom::quest::MarchingCubes::DomainIdType contiguousId =
+        domainIdToContiguousId[domainId];
       const axom::IndexType parentCellId = parentCellIdView[contourCellNum];
       hasContours[contiguousId][parentCellId] = true;
     }
