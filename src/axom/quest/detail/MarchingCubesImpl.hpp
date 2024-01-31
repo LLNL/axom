@@ -331,7 +331,7 @@ public:
     scannedFlags[0] = 0;
     for(axom::IndexType n = 0; n < parentCellCount; ++n)
     {
-      scannedFlags[n+1] = scannedFlags[n] + crossingFlags[n];
+      scannedFlags[n + 1] = scannedFlags[n] + crossingFlags[n];
     }
 #endif
 
@@ -376,7 +376,7 @@ public:
     m_firstFacetIds[0] = 0;
     for(axom::IndexType n = 0; n < parentCellCount; ++n)
     {
-      m_firstFacetIds[n+1] = m_firstFacetIds[n] + m_facetIncrs[n];
+      m_firstFacetIds[n + 1] = m_firstFacetIds[n] + m_facetIncrs[n];
     }
 #endif
 
