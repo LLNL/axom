@@ -13,7 +13,6 @@
 
 #include "axom/core/execution/execution_space.hpp"
 #include "axom/quest/MarchingCubes.hpp"
-// #include "axom/quest/detail/MarchingCubesHybridParallel.hpp"
 #include "axom/quest/detail/MarchingCubesImpl.hpp"
 #include "axom/fmt.hpp"
 
@@ -99,16 +98,6 @@ void MarchingCubes::computeIsocontour(double contourVal)
   }
 }
 
-axom::IndexType MarchingCubes::getContourCellCount() const
-{
-  axom::IndexType contourCellCount = 0;
-  for(int dId = 0; dId < m_singles.size(); ++dId)
-  {
-    contourCellCount += m_singles[dId]->getContourCellCount();
-  }
-  return contourCellCount;
-}
-
 axom::IndexType MarchingCubes::getContourNodeCount() const
 {
   axom::IndexType contourNodeCount = 0;
@@ -184,7 +173,12 @@ void MarchingCubes::populateContourMesh(
 #endif
       ;
     const int hostAllocatorId = hostAndInternalMemoriesAreSeparate
-      ? axom::detail::getAllocatorID<axom::MemorySpace::Dynamic>()
+      ?
+#ifdef AXOM_USE_UMPIRE
+      axom::detail::getAllocatorID<axom::MemorySpace::Host>()
+#else
+      axom::detail::getAllocatorID<axom::MemorySpace::Dynamic>()
+#endif
       : m_allocatorID;
 
     if(hostAndInternalMemoriesAreSeparate)

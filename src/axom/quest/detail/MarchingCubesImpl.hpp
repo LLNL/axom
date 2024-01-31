@@ -55,9 +55,9 @@ public:
   AXOM_HOST MarchingCubesImpl(int allocatorID)
     : m_allocatorID(allocatorID)
     , m_caseIds(emptyShape(), m_allocatorID)
-    , m_crossingParentIds(0, 0, m_allocatorID)
-    , m_facetIncrs(0, 0, m_allocatorID)
-    , m_firstFacetIds(0, 0, m_allocatorID)
+    , m_crossingParentIds(axom::StackArray<axom::IndexType, 1> {0}, m_allocatorID)
+    , m_facetIncrs(axom::StackArray<axom::IndexType, 1> {0}, m_allocatorID)
+    , m_firstFacetIds(axom::StackArray<axom::IndexType, 1> {0}, m_allocatorID)
   { }
 
   /*!
@@ -309,7 +309,8 @@ public:
     // cell ids, regardless of the ordering of the input mesh data.
     //
 
-    axom::Array<axom::IndexType, 1, MemorySpace> crossingFlags(parentCellCount);
+    axom::StackArray<axom::IndexType, 1> tmpShape {parentCellCount};
+    axom::Array<axom::IndexType, 1, MemorySpace> crossingFlags(tmpShape);
     auto crossingFlagsView = crossingFlags.view();
     axom::for_all<ExecSpace>(
       0,
@@ -320,7 +321,8 @@ public:
         crossingFlagsView[parentCellId] = bool(numContourCells);
       });
 
-    axom::Array<axom::IndexType, 1, MemorySpace> scannedFlags(1 + parentCellCount);
+    axom::StackArray<axom::IndexType, 1> tmpShape1 {1 + parentCellCount};
+    axom::Array<axom::IndexType, 1, MemorySpace> scannedFlags(tmpShape1);
     auto scannedFlagsView = scannedFlags.view();
 #if defined(AXOM_USE_RAJA)
     RAJA::inclusive_scan<ScanPolicy>(
@@ -343,9 +345,11 @@ public:
     // Generate crossing-cells index list and corresponding facet counts.
     //
 
-    m_crossingParentIds.resize(m_crossingCount);
-    m_facetIncrs.resize(m_crossingCount);
-    m_firstFacetIds.resize(1 + m_crossingCount);
+    const axom::StackArray<axom::IndexType, 1> tmpShape2 {m_crossingCount};
+    const axom::StackArray<axom::IndexType, 1> tmpShape3 {1 + m_crossingCount};
+    m_crossingParentIds.resize(tmpShape2, 0);
+    m_facetIncrs.resize(tmpShape2, 0);
+    m_firstFacetIds.resize(tmpShape3, 0);
 
     auto crossingParentIdsView = m_crossingParentIds.view();
     auto facetIncrsView = m_facetIncrs.view();
