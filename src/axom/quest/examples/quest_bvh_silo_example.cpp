@@ -261,7 +261,7 @@ HexMesh loadSiloHexMesh(const std::string& mesh_path)
   int cell_calc_from_connectivity = connectivity_size / HEX_OFFSET;
   if(cell_calc_from_nodes != cell_calc_from_connectivity)
   {
-    SLIC_ERROR("Number of connectivity elements is not expected!\n"
+    SLIC_ERROR("Number of cells is not expected!\n"
                << "First calculation is " << cell_calc_from_nodes
                << " and second calculation is " << cell_calc_from_connectivity);
   }
@@ -427,9 +427,11 @@ axom::Array<IndexPair> findIntersectionsBVH(const HexMesh& insertMesh,
   // Initialize query indices and bvh candidate indices
   IndexArray indices_d(axom::ArrayOptions::Uninitialized {},
                        candidates_d.size(),
+                       candidates_d.size(),
                        kernel_allocator);
 
   IndexArray validCandidates_d(axom::ArrayOptions::Uninitialized {},
+                               candidates_d.size(),
                                candidates_d.size(),
                                kernel_allocator);
 
@@ -470,8 +472,10 @@ axom::Array<IndexPair> findIntersectionsBVH(const HexMesh& insertMesh,
 
   IndexArray intersect_d[2] = {IndexArray(axom::ArrayOptions::Uninitialized {},
                                           numCandidates,
+                                          numCandidates,
                                           kernel_allocator),
                                IndexArray(axom::ArrayOptions::Uninitialized {},
+                                          numCandidates,
                                           numCandidates,
                                           kernel_allocator)};
   axom::IndexType numIntersections {};
@@ -486,6 +490,41 @@ axom::Array<IndexPair> findIntersectionsBVH(const HexMesh& insertMesh,
     auto indices_v = indices_d.view();
     auto validCandidates_v = validCandidates_d.view();
 
+    //   axom::for_all<ExecSpace>(
+    // 1,
+    //     AXOM_LAMBDA(axom::IndexType i) {
+
+    //     printf("indices_v size is %d\n", indices_v.size());
+    //     printf("validCandidates_v size is %d\n", validCandidates_v.size());
+    //     printf("query_bbox_v size is %d\n", query_bbox_v.size());
+    //     printf("insert_bbox_v size is %d\n", insert_bbox_v.size());
+    //     printf("query_hexes_v size is %d\n", query_hexes_v.size());
+    //     printf("insert_hexes_v size is %d\n", insert_hexes_v.size());
+    //     printf("intersect1_v size is %d\n", intersect1_v.size());
+    //     printf("intersect2_v size is %d\n", intersect2_v.size());
+
+    //     printf("numIntersections_p value is %d\n", numIntersections_p[0]);
+
+    //     // Try access stuff
+    //     for (int j = 0; j < query_bbox_v.size(); j++)
+    //     {
+    //       auto qbv = query_bbox_v[j];
+    //       auto ibv = insert_bbox_v[j];
+    //       auto qhv = query_hexes_v[j];
+    //       auto ihv = insert_hexes_v[j];
+    //     }
+
+    //     for (int j = 0; j < intersect1_v.size(); j++)
+    //     {
+    //       auto a1 = indices_v[j];
+    //       auto v1 = validCandidates_v[j];
+    //                 const auto idx =
+    //       RAJA::atomicAdd<ATOMIC_POL>(numIntersections_p, axom::IndexType {1});
+    //       intersect1_v[idx] = j;
+    //       intersect2_v[idx] = j;
+    //     }
+
+    // });
     // Perform hex-hex tests
     axom::for_all<ExecSpace>(
       numCandidates,
@@ -493,12 +532,14 @@ axom::Array<IndexPair> findIntersectionsBVH(const HexMesh& insertMesh,
         constexpr bool includeBoundaries = false;
         const auto index = indices_v[i];
         const auto candidate = validCandidates_v[i];
+
         // For now, using bbox-bbox intersection, because well, have to implement
         // the hex-hex intersection routine first.
         // if(axom::primal::intersect(query_hexes_v[index],
         //                            insert_hexes_v[candidate],
         //                            includeBoundaries,
         //                            tol))
+
         if(axom::primal::intersect(query_bbox_v[index], insert_bbox_v[candidate]))
         {
           const auto idx =
