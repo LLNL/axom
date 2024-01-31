@@ -1126,6 +1126,83 @@ AXOM_HOST_DEVICE bool intersect_plane_seg(const Plane<T, 3>& plane,
   return false;
 }
 
+/*!
+ * \brief Determines if  3D planes representing a polyhedron intersect
+ *   a 3D segment.
+ * \param [in] planes 3D planes
+ * \param [in] seg A 3D segment
+ * \param [out] tfirst First intersection point of plane and seg, w.r.t.
+ *   parametrization of seg
+ * \param [out] tlast Last intersection point of plane and seg, w.r.t.
+ *   parametrization of seg
+ * \return true iff plane intersects with segment, otherwise, false.
+ */
+template <typename T>
+AXOM_HOST_DEVICE bool intersect_planes_as_polyhedron_seg(
+  axom::Array<const Plane<T, 3>>& planes,
+  const Segment<T, 3>& seg,
+  T& tfirst,
+  T& tlast,
+  double EPS = 1E-08)
+{
+  using VectorType = Vector<T, 3>;
+
+  // Direction vector for segment
+  VectorType d(seg.source(), seg.target());
+
+  // Initial interval is the whole segment
+  tfirst = 0.0;
+  tlast = 1.0;
+
+  for(int i = 0; i < planes.size(); i++)
+  {
+    VectorType normal = planes[i].getNormal();
+    T distance = (planes[i].getOffset() - normal.dot(VectorType(seg.source())));
+    T denominator = normal.dot(d);
+
+    // Check if segment is parallel to the plane
+    if(axom::utilities::isNearlyEqual(denominator, 0.0, EPS))
+    {
+      // Segment is outside of plane, no intersection
+      if(isGt(distance, 0.0, EPS))
+      {
+        return false;
+      }
+    }
+    else
+    {
+      // Intersection with the current plane
+      T t = distance / denominator;
+
+      if(isLt(denominator, 0.0, EPS))
+      {
+        // Update tfirst if t is larger when entering plane
+        if(isGt(t, tfirst, EPS))
+        {
+          tfirst = t;
+        }
+      }
+      else
+      {
+        // Update tlast if t is smaller when exiting plane
+        if(isLt(t, tlast, EPS))
+        {
+          tlast = t;
+        }
+      }
+
+      //If intersection becomes empty, no intersection
+      if(isGt(tfirst, tlast, EPS))
+      {
+        return false;
+      }
+    }
+  }
+
+  // Non-zero intersection
+  return true;
+}
+
 AXOM_HOST_DEVICE
 inline bool intersectOnePermutedTriangle(const Point3& p1,
                                          const Point3& q1,

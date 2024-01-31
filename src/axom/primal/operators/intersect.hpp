@@ -588,6 +588,34 @@ AXOM_HOST_DEVICE bool intersect(const Plane<T, 3>& plane,
   return detail::intersect_plane_seg(plane, seg, t);
 }
 
+/*!
+ * \brief Determines if a polyhedron represented by
+ *        multiple planes intersects a segment.
+ * \param [in] planes 3D planes representing the polyhedron
+ * \param [in] seg A 3D line segment
+ * \param [out] tfirst Intersection point of planes and seg, w.r.t. seg's
+ *  parametrization representing one end of the segment.
+ * \param [out] tlast Intersection point of planes and seg, w.r.t. seg's
+ *  parametrization representing the other end of the segment.
+ * \param [in] EPS tolerance parameter
+ * \note If there is an intersection, the intersection points are:
+ *       pt1 = seg.at(tfirst)    and    pt2 = seg.at(tlast)
+ * \return true iff planes intersect with seg, otherwise, false.
+ * \note \a tfirst and tlast are only valid when function returns true
+ *
+ * \note Uses method from pg 199 of
+ *       Real Time Collision Detection by Christer Ericson.
+ */
+template <typename T>
+AXOM_HOST_DEVICE bool intersect(axom::Array<const Plane<T, 3>>& planes,
+                                const Segment<T, 3>& seg,
+                                T& tfirst,
+                                T& tlast,
+                                double EPS = 1E-08)
+{
+  return detail::intersect_planes_as_polyhedron_seg(planes, seg, tfirst, tlast);
+}
+
 /// @}
 
 }  // namespace primal
