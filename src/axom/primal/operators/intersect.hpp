@@ -607,13 +607,13 @@ AXOM_HOST_DEVICE bool intersect(const Plane<T, 3>& plane,
  *       Real Time Collision Detection by Christer Ericson.
  */
 template <typename T>
-AXOM_HOST_DEVICE bool intersect(axom::Array<const Plane<T, 3>>& planes,
+AXOM_HOST_DEVICE bool intersect(axom::ArrayView<Plane<T, 3>>& planes,
                                 const Segment<T, 3>& seg,
                                 T& tfirst,
                                 T& tlast,
                                 double EPS = 1E-08)
 {
-  return detail::intersect_planes_as_polyhedron_seg(planes, seg, tfirst, tlast);
+  return detail::intersect_planes_as_polyhedron_seg(planes, seg, tfirst, tlast, EPS);
 }
 
 /// @}

@@ -2402,6 +2402,119 @@ void check_plane_seg_intersect()
   axom::setDefaultAllocator(current_allocator);
 }
 
+template <typename ExecSpace>
+void check_planes_as_poly_seg_intersect()
+{
+  const int DIM = 3;
+  using PointType = primal::Point<double, DIM>;
+  using PlaneType = primal::Plane<double, DIM>;
+  using SegmentType = primal::Segment<double, DIM>;
+  using VectorType = primal::Vector<double, DIM>;
+
+  umpire::ResourceManager& rm = umpire::ResourceManager::getInstance();
+
+  // Save current/default allocator
+  const int current_allocator = axom::getDefaultAllocatorID();
+
+  // Determine new allocator (for CUDA or HIP policy, set to device)
+  umpire::Allocator allocator =
+    (axom::execution_space<ExecSpace>::onDevice()
+       ? rm.getAllocator(umpire::resource::Device)
+       : rm.getAllocator(axom::execution_space<ExecSpace>::allocatorID()));
+
+  // Set new default to device
+  axom::setDefaultAllocator(allocator.getId());
+
+  // Initialize planes and segments on device,
+  // intersection results in unified memory to check results on host.
+  axom::Array<PlaneType> planes(12, 12, current_allocator);
+  auto planes_view = planes.view();
+
+  SegmentType* segments = axom::allocate<SegmentType>(1);
+  double* t_first = (axom::execution_space<ExecSpace>::onDevice()
+                       ? axom::allocate<double>(
+                           3,
+                           rm.getAllocator(umpire::resource::Unified).getId())
+                       : axom::allocate<double>(2));
+  double* t_last = (axom::execution_space<ExecSpace>::onDevice()
+                      ? axom::allocate<double>(
+                          3,
+                          rm.getAllocator(umpire::resource::Unified).getId())
+                      : axom::allocate<double>(2));
+  bool* res =
+    (axom::execution_space<ExecSpace>::onDevice()
+       ? axom::allocate<bool>(3,
+                              rm.getAllocator(umpire::resource::Unified).getId())
+       : axom::allocate<bool>(3));
+
+  axom::for_all<ExecSpace>(
+    1,
+    AXOM_LAMBDA(int i) {
+      PointType A(-10.0, 3);
+      PointType B(10.0, 3);
+      segments[0] = SegmentType(A, B);
+      SLIC_INFO("Segment at t = -0.5 is " << segments[0].at(-0.5));
+      SLIC_INFO("Segment at t = -1 is " << segments[0].at(-1));
+
+      PointType p1;
+      PointType p2;
+      PointType p3;
+      PointType p4;
+
+      // Segment intersects plane
+      if(i == 0)
+      {
+        p1 = PointType {0.0, 0.5, 0.0};
+        p2 = PointType {3.0, 0.5, 0.0};
+        p3 = PointType {0.5, 3.0, 0.0};
+        p4 = PointType {0.5, 0.5, 3.0};
+      }
+
+      // Segment does not intersect plane
+      if(i == 1)
+      {
+        p1 = PointType {-2.0, 0.0, 0.0};
+        p2 = PointType {-1.0, 0.0, 0.0};
+        p3 = PointType {-1.0, 1.0, 0.0};
+        p4 = PointType {-1.0, 0.0, 1.0};
+      }
+
+      // Segment is an edge (non-intersection)
+      if(i == 2)
+      {
+        p1 = PointType {-2.0, 0.0, 0.0};
+        p2 = PointType {0.0, 0.0, 0.0};
+        p3 = PointType {0.0, 2.0, 0.0};
+        p4 = PointType {1.0, 1.0, 1.0};
+      }
+
+      planes_view[i * 4] = axom::primal::make_plane(p1, p2, p3);
+      planes_view[(i * 4) + 1] = axom::primal::make_plane(p1, p3, p4);
+      planes_view[(i * 4) + 2] = axom::primal::make_plane(p1, p4, p2);
+      // planes_view[(i * 4) + 3] = axom::primal::make_plane(p3, p2, p4);
+      planes_view[(i * 4) + 3] = PlaneType(VectorType {-1, -1, -1}, -2);
+
+      auto subplanes = planes_view.subspan(i * 4, 4);
+
+      res[i] =
+        axom::primal::intersect(subplanes, segments[0], t_first[i], t_last[i]);
+    });
+
+  EXPECT_TRUE(res[0]);
+  // EXPECT_FALSE(res[1]);
+  // EXPECT_FALSE(res[2]);
+
+  EXPECT_EQ(t_first[0], 0.0);
+  EXPECT_EQ(t_last[0], 0.0);
+  // t values are not valid for non-intersection
+
+  axom::deallocate(segments);
+  axom::deallocate(t_first);
+  axom::deallocate(t_last);
+  axom::deallocate(res);
+  axom::setDefaultAllocator(current_allocator);
+}
+
 TEST(primal_intersect, plane_bb_test_intersection_sequential)
 {
   check_plane_bb_intersect<axom::SEQ_EXEC>();
@@ -2412,6 +2525,10 @@ TEST(primal_intersect, plane_seg_test_intersection_sequential)
   check_plane_seg_intersect<axom::SEQ_EXEC>();
 }
 
+TEST(primal_intersect, planes_as_poly_seg_intersect_sequential)
+{
+  check_planes_as_poly_seg_intersect<axom::SEQ_EXEC>();
+}
   #ifdef AXOM_USE_OPENMP
 TEST(primal_intersect, plane_bb_test_intersection_omp)
 {
@@ -2421,6 +2538,11 @@ TEST(primal_intersect, plane_bb_test_intersection_omp)
 TEST(primal_intersect, plane_seg_test_intersection_omp)
 {
   check_plane_seg_intersect<axom::OMP_EXEC>();
+}
+
+TEST(primal_intersect, planes_as_poly_seg_intersect_omp)
+{
+  check_planes_as_poly_seg_intersect<axom::OMP_EXEC>();
 }
   #endif /* AXOM_USE_OPENMP */
 
@@ -2440,6 +2562,14 @@ AXOM_CUDA_TEST(primal_intersect, plane_seg_test_intersection_cuda)
 
   check_plane_seg_intersect<exec>();
 }
+
+TEST(primal_intersect, planes_as_poly_seg_intersect_cuda)
+{
+  constexpr int BLOCK_SIZE = 256;
+  using exec = axom::CUDA_EXEC<BLOCK_SIZE>;
+
+  check_planes_as_poly_seg_intersect<exec>();
+}
   #endif /* AXOM_USE_CUDA */
 
   #ifdef AXOM_USE_HIP
@@ -2457,6 +2587,14 @@ TEST(primal_intersect, plane_seg_test_intersection_hip)
   using exec = axom::HIP_EXEC<BLOCK_SIZE>;
 
   check_plane_seg_intersect<exec>();
+}
+
+TEST(primal_intersect, planes_as_poly_seg_intersect_hip)
+{
+  constexpr int BLOCK_SIZE = 256;
+  using exec = axom::HIP_EXEC<BLOCK_SIZE>;
+
+  check_planes_as_poly_seg_intersect<exec>();
 }
   #endif /* AXOM_USE_HIP */
 

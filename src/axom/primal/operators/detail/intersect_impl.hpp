@@ -1139,7 +1139,7 @@ AXOM_HOST_DEVICE bool intersect_plane_seg(const Plane<T, 3>& plane,
  */
 template <typename T>
 AXOM_HOST_DEVICE bool intersect_planes_as_polyhedron_seg(
-  axom::Array<const Plane<T, 3>>& planes,
+  axom::ArrayView<Plane<T, 3>>& planes,
   const Segment<T, 3>& seg,
   T& tfirst,
   T& tlast,
