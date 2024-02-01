@@ -78,12 +78,13 @@ class MarchingCubesSingleDomain;
  * Usage example:
  * @beginverbatim
  *   void foo( conduit::Node &meshNode,
- *             const std::string &coordsName,
+ *             const std::string &topologyName,
  *             const std::string &functionName,
  *             double contourValue )
  *   {
  *     MarchingCubes mc(axom::runtime_policy::Policy::seq,
- *                      meshNode, coordsName);
+ *                      MarchingCubesDataParallelism::byPolicy,
+ *                      meshNode, topologyName);
  *     mc.setFunctionField(functionName);
  *     mc.computeIsocontour(contourValue);
  *     axom::mint::UnstructuredMesh<axom::mint::SINGLE_SHAPE>
