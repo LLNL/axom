@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 # Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
 # other Axom Project Developers. See the top-level LICENSE file for details.
@@ -9,8 +9,6 @@
 #
 # The script takes a directory and checks all files in the directory.
 # If the second line in the file does not match the copyright string, we add it.
-#
-# Modified from an initial script by P. Sinha
 
 import os
 import sys
@@ -30,11 +28,11 @@ def checkAndAddCopyrightHeader(filename, testOnly=False):
     first_line = f.readline()   # First line might be a c-style comment opener
     second_line = f.readline()  # So, we also check the second line
     
-    print "  Processing file:", filename,
+    print("  Processing file:", filename, end=' ')
     
     if not axom_copyright_begin_str in first_line and not axom_copyright_begin_str in second_line:
         if testOnly:
-            print "\t missing copyright statement."
+            print("\t missing copyright statement.")
         else:
             lines = f.readlines()
             f.seek(0)
@@ -42,9 +40,9 @@ def checkAndAddCopyrightHeader(filename, testOnly=False):
             f.write(first_line)
             f.write(second_line)
             f.writelines(lines)
-            print "\t prepended copyright statement."
+            print("\t prepended copyright statement.")
     else:
-        print "\t already has copyright statement."
+        print("\t already has copyright statement.")
 
 
 def fileNameGenerator(rootDir, validExtensions, isRecursive=False):
@@ -85,7 +83,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     ## Iterate through files, check for and add copyright notice
-    print "Looking at directory {}".format( args.dir )   
+    print("Looking at directory {}".format( args.dir ))   
     for fullFileName in fileNameGenerator(args.dir, valid_extensions, args.isRecursive):
         checkAndAddCopyrightHeader(fullFileName, args.test)
 
