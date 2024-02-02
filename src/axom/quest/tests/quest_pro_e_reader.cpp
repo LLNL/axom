@@ -146,6 +146,173 @@ TEST(quest_pro_e_reader, read_pro_e)
 }
 
 //------------------------------------------------------------------------------
+TEST(quest_pro_e_reader, read_pro_e_bbox)
+{
+  const double x_expected[] = {-1.0, 1.0, 0.0, 0.0};
+  const double y_expected[] = {0.0, 0.0, 1.0, 0.0};
+  const double z_expected[] = {0.0, 0.0, 0.0, 1.0};
+
+  const std::string filename = "tet.proe";
+
+  // STEP 0: generate a temporary Pro/E file for testing
+  generate_pro_e_file(filename);
+
+  // STEP 1: create an Pro/E reader and read-in the mesh data
+  axom::quest::ProEReader reader;
+  // invalid bounding box is the same as no bounding box: keep everything
+  axom::quest::ProEReader::BBox3D invbbox;
+  reader.setBoundingBox(invbbox);
+  reader.setFileName(filename);
+  int status = reader.read();
+  EXPECT_EQ(status, 0);
+
+  // STEP 2: reading the Pro/E mesh data into a axom::mint::Mesh
+  axom::mint::UnstructuredMesh<axom::mint::SINGLE_SHAPE> mesh(3, axom::mint::TET);
+  reader.getMesh(&mesh);
+
+  // STEP 3: ensure the mesh is what is expected
+  EXPECT_EQ(mesh.getNumberOfCells(), 1);
+  EXPECT_EQ(mesh.getNumberOfNodes(), 4);
+
+  const double* x = mesh.getCoordinateArray(axom::mint::X_COORDINATE);
+  const double* y = mesh.getCoordinateArray(axom::mint::Y_COORDINATE);
+  const double* z = mesh.getCoordinateArray(axom::mint::Z_COORDINATE);
+  EXPECT_TRUE(x != nullptr);
+  EXPECT_TRUE(y != nullptr);
+  EXPECT_TRUE(z != nullptr);
+
+  axom::IndexType numNodes = mesh.getNumberOfNodes();
+  for(axom::IndexType inode = 0; inode < numNodes; ++inode)
+  {
+    EXPECT_NEAR(x[inode],
+                x_expected[inode],
+                std::numeric_limits<double>::epsilon());
+    EXPECT_NEAR(y[inode],
+                y_expected[inode],
+                std::numeric_limits<double>::epsilon());
+    EXPECT_NEAR(z[inode],
+                z_expected[inode],
+                std::numeric_limits<double>::epsilon());
+  }  // END for all nodes
+
+  // STEP 4: remove temporary Pro?E file
+  axom::utilities::filesystem::removeFile(filename);
+}
+
+//------------------------------------------------------------------------------
+TEST(quest_pro_e_reader, read_pro_e_bbox_all)
+{
+  const double x_expected[] = {-1.0, 1.0, 0.0, 0.0};
+  const double y_expected[] = {0.0, 0.0, 1.0, 0.0};
+  const double z_expected[] = {0.0, 0.0, 0.0, 1.0};
+
+  const std::string filename = "tet.proe";
+
+  // STEP 0: generate a temporary Pro/E file for testing
+  generate_pro_e_file(filename);
+
+  // STEP 1: create an Pro/E reader and read-in the mesh data
+  axom::quest::ProEReader reader;
+  // A bounding box that catches all the points
+  axom::quest::ProEReader::BBox3D bbox;
+  bbox.addPoint(axom::quest::ProEReader::Point3D{ -1.5, -0.5, -0.5 });
+  bbox.addPoint(axom::quest::ProEReader::Point3D{ 1.5, 1.5, 1.5 });
+  reader.setBoundingBox(bbox);
+  reader.setFileName(filename);
+  int status = reader.read();
+  EXPECT_EQ(status, 0);
+
+  // STEP 2: reading the Pro/E mesh data into a axom::mint::Mesh
+  axom::mint::UnstructuredMesh<axom::mint::SINGLE_SHAPE> mesh(3, axom::mint::TET);
+  reader.getMesh(&mesh);
+
+  // STEP 3: ensure the mesh is what is expected
+  EXPECT_EQ(mesh.getNumberOfCells(), 1);
+  EXPECT_EQ(mesh.getNumberOfNodes(), 4);
+
+  const double* x = mesh.getCoordinateArray(axom::mint::X_COORDINATE);
+  const double* y = mesh.getCoordinateArray(axom::mint::Y_COORDINATE);
+  const double* z = mesh.getCoordinateArray(axom::mint::Z_COORDINATE);
+  EXPECT_TRUE(x != nullptr);
+  EXPECT_TRUE(y != nullptr);
+  EXPECT_TRUE(z != nullptr);
+
+  axom::IndexType numNodes = mesh.getNumberOfNodes();
+  for(axom::IndexType inode = 0; inode < numNodes; ++inode)
+  {
+    EXPECT_NEAR(x[inode],
+                x_expected[inode],
+                std::numeric_limits<double>::epsilon());
+    EXPECT_NEAR(y[inode],
+                y_expected[inode],
+                std::numeric_limits<double>::epsilon());
+    EXPECT_NEAR(z[inode],
+                z_expected[inode],
+                std::numeric_limits<double>::epsilon());
+  }  // END for all nodes
+
+  // STEP 4: remove temporary Pro?E file
+  axom::utilities::filesystem::removeFile(filename);
+}
+
+//------------------------------------------------------------------------------
+TEST(quest_pro_e_reader, read_pro_e_bbox_some)
+{
+  const double x_expected[] = {-1.0, 1.0, 0.0, 0.0};
+  const double y_expected[] = {0.0, 0.0, 1.0, 0.0};
+  const double z_expected[] = {0.0, 0.0, 0.0, 1.0};
+
+  const std::string filename = "tet.proe";
+
+  // STEP 0: generate a temporary Pro/E file for testing
+  generate_pro_e_file(filename);
+
+  // STEP 1: create an Pro/E reader and read-in the mesh data
+  axom::quest::ProEReader reader;
+  // A bounding box that catches some of the points, so the single
+  // tet does not get added.
+  axom::quest::ProEReader::BBox3D bbox;
+  bbox.addPoint(axom::quest::ProEReader::Point3D{ -1.5, -0.5, -0.5 });
+  bbox.addPoint(axom::quest::ProEReader::Point3D{ 0, 1.5, 1.5 });
+  reader.setBoundingBox(bbox);
+  reader.setFileName(filename);
+  int status = reader.read();
+  EXPECT_EQ(status, 0);
+
+  // STEP 2: reading the Pro/E mesh data into a axom::mint::Mesh
+  axom::mint::UnstructuredMesh<axom::mint::SINGLE_SHAPE> mesh(3, axom::mint::TET);
+  reader.getMesh(&mesh);
+
+  // STEP 3: ensure the mesh is what is expected
+  EXPECT_EQ(mesh.getNumberOfCells(), 0);
+  EXPECT_EQ(mesh.getNumberOfNodes(), 4);
+
+  const double* x = mesh.getCoordinateArray(axom::mint::X_COORDINATE);
+  const double* y = mesh.getCoordinateArray(axom::mint::Y_COORDINATE);
+  const double* z = mesh.getCoordinateArray(axom::mint::Z_COORDINATE);
+  EXPECT_TRUE(x != nullptr);
+  EXPECT_TRUE(y != nullptr);
+  EXPECT_TRUE(z != nullptr);
+
+  axom::IndexType numNodes = mesh.getNumberOfNodes();
+  for(axom::IndexType inode = 0; inode < numNodes; ++inode)
+  {
+    EXPECT_NEAR(x[inode],
+                x_expected[inode],
+                std::numeric_limits<double>::epsilon());
+    EXPECT_NEAR(y[inode],
+                y_expected[inode],
+                std::numeric_limits<double>::epsilon());
+    EXPECT_NEAR(z[inode],
+                z_expected[inode],
+                std::numeric_limits<double>::epsilon());
+  }  // END for all nodes
+
+  // STEP 4: remove temporary Pro?E file
+  axom::utilities::filesystem::removeFile(filename);
+}
+
+//------------------------------------------------------------------------------
 TEST(quest_pro_e_reader, read_pro_e_external)
 {
   constexpr axom::IndexType N_NODES = 4;
