@@ -28,15 +28,30 @@ namespace slic
 {
 namespace internal
 {
+// Stream for message levels
 std::ostringstream test_stream;
 
+// Stream for tagged streams
+std::ostringstream test_tag_stream;
+
 bool is_stream_empty() { return test_stream.str().empty(); }
+
+bool is_tag_stream_empty() { return test_tag_stream.str().empty(); }
+
+bool are_all_streams_empty()
+{
+  return (is_stream_empty() && is_tag_stream_empty());
+}
 
 void clear_streams()
 {
   test_stream.clear();
   test_stream.str("");
-  EXPECT_TRUE(is_stream_empty());
+
+  test_tag_stream.clear();
+  test_tag_stream.str("");
+
+  EXPECT_TRUE(are_all_streams_empty());
 }
 
 }  // namespace internal
@@ -159,11 +174,12 @@ public:
                                    RLIMIT,
                                    msgfmt));
 
-      slic::addStreamToTag(new slic::LumberjackStream(&slic::internal::test_stream,
-                                                      MPI_COMM_WORLD,
-                                                      RLIMIT,
-                                                      msgtagfmt),
-                           "myTag");
+      slic::addStreamToTag(
+        new slic::LumberjackStream(&slic::internal::test_tag_stream,
+                                   MPI_COMM_WORLD,
+                                   RLIMIT,
+                                   msgtagfmt),
+        "myTag");
     }
 
     if(stream_type == "Synchronized")
@@ -174,7 +190,7 @@ public:
                                      msgfmt));
 
       slic::addStreamToTag(
-        new slic::SynchronizedStream(&slic::internal::test_stream,
+        new slic::SynchronizedStream(&slic::internal::test_tag_stream,
                                      MPI_COMM_WORLD,
                                      msgtagfmt),
         "myTag");
@@ -194,12 +210,12 @@ public:
 //------------------------------------------------------------------------------
 TEST_P(SlicMacrosParallel, test_error_macros)
 {
-  EXPECT_TRUE(slic::internal::is_stream_empty());
+  EXPECT_TRUE(slic::internal::are_all_streams_empty());
   SLIC_ERROR("test error message");
   slic::flushStreams();
   if(GetParam() == "Synchronized" || (GetParam() == "Lumberjack" && rank == 0))
   {
-    EXPECT_FALSE(slic::internal::is_stream_empty());
+    EXPECT_FALSE(slic::internal::are_all_streams_empty());
     check_level(slic::internal::test_stream.str(), "ERROR");
     check_msg(slic::internal::test_stream.str(), "test error message");
     check_file(slic::internal::test_stream.str());
@@ -209,13 +225,13 @@ TEST_P(SlicMacrosParallel, test_error_macros)
 
   SLIC_ERROR_IF(false, "this message should not be logged!");
   slic::flushStreams();
-  EXPECT_TRUE(slic::internal::is_stream_empty());
+  EXPECT_TRUE(slic::internal::are_all_streams_empty());
 
   SLIC_ERROR_IF(true, "this message is logged!");
   slic::flushStreams();
   if(GetParam() == "Synchronized" || (GetParam() == "Lumberjack" && rank == 0))
   {
-    EXPECT_FALSE(slic::internal::is_stream_empty());
+    EXPECT_FALSE(slic::internal::are_all_streams_empty());
     check_level(slic::internal::test_stream.str(), "ERROR");
     check_msg(slic::internal::test_stream.str(), "this message is logged!");
     check_file(slic::internal::test_stream.str());
@@ -227,7 +243,7 @@ TEST_P(SlicMacrosParallel, test_error_macros)
   axom::slic::setIsRoot(false);
   SLIC_ERROR_ROOT_IF(false, "this message should not be logged!");
   slic::flushStreams();
-  EXPECT_TRUE(slic::internal::is_stream_empty());
+  EXPECT_TRUE(slic::internal::are_all_streams_empty());
 
   // Check selective filter based on root == true
   axom::slic::setIsRoot(true);
@@ -235,7 +251,7 @@ TEST_P(SlicMacrosParallel, test_error_macros)
   slic::flushStreams();
   if(GetParam() == "Synchronized" || (GetParam() == "Lumberjack" && rank == 0))
   {
-    EXPECT_FALSE(slic::internal::is_stream_empty());
+    EXPECT_FALSE(slic::internal::are_all_streams_empty());
     check_level(slic::internal::test_stream.str(), "ERROR");
     check_msg(slic::internal::test_stream.str(), "this message is logged!");
     check_file(slic::internal::test_stream.str());
@@ -247,13 +263,13 @@ TEST_P(SlicMacrosParallel, test_error_macros)
   axom::slic::setIsRoot(true);
   SLIC_ERROR_ROOT_IF(false, "this message should not be logged!");
   slic::flushStreams();
-  EXPECT_TRUE(slic::internal::is_stream_empty());
+  EXPECT_TRUE(slic::internal::are_all_streams_empty());
 
   // is not root, and conditional is true -> no message
   axom::slic::setIsRoot(false);
   SLIC_ERROR_ROOT_IF(true, "this message should not be logged!");
   slic::flushStreams();
-  EXPECT_TRUE(slic::internal::is_stream_empty());
+  EXPECT_TRUE(slic::internal::are_all_streams_empty());
 
   // Check for one rank being root
   axom::slic::setIsRoot(rank == 0);
@@ -261,7 +277,7 @@ TEST_P(SlicMacrosParallel, test_error_macros)
   slic::flushStreams();
   if(rank == 0)
   {
-    EXPECT_FALSE(slic::internal::is_stream_empty());
+    EXPECT_FALSE(slic::internal::are_all_streams_empty());
     check_level(slic::internal::test_stream.str(), "ERROR");
     check_msg(slic::internal::test_stream.str(), "this message is logged!");
     check_file(slic::internal::test_stream.str());
@@ -269,7 +285,7 @@ TEST_P(SlicMacrosParallel, test_error_macros)
   }
   else
   {
-    EXPECT_TRUE(slic::internal::is_stream_empty());
+    EXPECT_TRUE(slic::internal::are_all_streams_empty());
   }
   slic::internal::clear_streams();
 
@@ -280,7 +296,7 @@ TEST_P(SlicMacrosParallel, test_error_macros)
   if(((rank % 2) == 0 && GetParam() == "Synchronized") ||
      (rank == 0 && GetParam() == "Lumberjack"))
   {
-    EXPECT_FALSE(slic::internal::is_stream_empty());
+    EXPECT_FALSE(slic::internal::are_all_streams_empty());
     check_level(slic::internal::test_stream.str(), "ERROR");
     check_msg(slic::internal::test_stream.str(), "this message is logged!");
     check_file(slic::internal::test_stream.str());
@@ -288,7 +304,7 @@ TEST_P(SlicMacrosParallel, test_error_macros)
   }
   else
   {
-    EXPECT_TRUE(slic::internal::is_stream_empty());
+    EXPECT_TRUE(slic::internal::are_all_streams_empty());
   }
   slic::internal::clear_streams();
 }
@@ -296,12 +312,12 @@ TEST_P(SlicMacrosParallel, test_error_macros)
 //------------------------------------------------------------------------------
 TEST_P(SlicMacrosParallel, test_warning_macros)
 {
-  EXPECT_TRUE(slic::internal::is_stream_empty());
+  EXPECT_TRUE(slic::internal::are_all_streams_empty());
   SLIC_WARNING("test warning message");
   slic::flushStreams();
   if(GetParam() == "Synchronized" || (GetParam() == "Lumberjack" && rank == 0))
   {
-    EXPECT_FALSE(slic::internal::is_stream_empty());
+    EXPECT_FALSE(slic::internal::are_all_streams_empty());
     check_level(slic::internal::test_stream.str(), "WARNING");
     check_msg(slic::internal::test_stream.str(), "test warning message");
     check_file(slic::internal::test_stream.str());
@@ -311,13 +327,13 @@ TEST_P(SlicMacrosParallel, test_warning_macros)
 
   SLIC_WARNING_IF(false, "this message should not be logged!");
   slic::flushStreams();
-  EXPECT_TRUE(slic::internal::is_stream_empty());
+  EXPECT_TRUE(slic::internal::are_all_streams_empty());
 
   SLIC_WARNING_IF(true, "this message is logged!");
   slic::flushStreams();
   if(GetParam() == "Synchronized" || (GetParam() == "Lumberjack" && rank == 0))
   {
-    EXPECT_FALSE(slic::internal::is_stream_empty());
+    EXPECT_FALSE(slic::internal::are_all_streams_empty());
     check_level(slic::internal::test_stream.str(), "WARNING");
     check_msg(slic::internal::test_stream.str(), "this message is logged!");
     check_file(slic::internal::test_stream.str());
@@ -329,7 +345,7 @@ TEST_P(SlicMacrosParallel, test_warning_macros)
   axom::slic::setIsRoot(false);
   SLIC_WARNING_ROOT_IF(false, "this message should not be logged!");
   slic::flushStreams();
-  EXPECT_TRUE(slic::internal::is_stream_empty());
+  EXPECT_TRUE(slic::internal::are_all_streams_empty());
 
   // Check selective filter based on root == true
   axom::slic::setIsRoot(true);
@@ -337,7 +353,7 @@ TEST_P(SlicMacrosParallel, test_warning_macros)
   slic::flushStreams();
   if(GetParam() == "Synchronized" || (GetParam() == "Lumberjack" && rank == 0))
   {
-    EXPECT_FALSE(slic::internal::is_stream_empty());
+    EXPECT_FALSE(slic::internal::are_all_streams_empty());
     check_level(slic::internal::test_stream.str(), "WARNING");
     check_msg(slic::internal::test_stream.str(), "this message is logged!");
     check_file(slic::internal::test_stream.str());
@@ -349,13 +365,13 @@ TEST_P(SlicMacrosParallel, test_warning_macros)
   axom::slic::setIsRoot(true);
   SLIC_WARNING_ROOT_IF(false, "this message should not be logged!");
   slic::flushStreams();
-  EXPECT_TRUE(slic::internal::is_stream_empty());
+  EXPECT_TRUE(slic::internal::are_all_streams_empty());
 
   // is not root, and conditional is true -> no message
   axom::slic::setIsRoot(false);
   SLIC_WARNING_ROOT_IF(true, "this message should not be logged!");
   slic::flushStreams();
-  EXPECT_TRUE(slic::internal::is_stream_empty());
+  EXPECT_TRUE(slic::internal::are_all_streams_empty());
 
   // Check for one rank being root
   axom::slic::setIsRoot(rank == 0);
@@ -363,7 +379,7 @@ TEST_P(SlicMacrosParallel, test_warning_macros)
   slic::flushStreams();
   if(rank == 0)
   {
-    EXPECT_FALSE(slic::internal::is_stream_empty());
+    EXPECT_FALSE(slic::internal::are_all_streams_empty());
     check_level(slic::internal::test_stream.str(), "WARNING");
     check_msg(slic::internal::test_stream.str(), "this message is logged!");
     check_file(slic::internal::test_stream.str());
@@ -371,7 +387,7 @@ TEST_P(SlicMacrosParallel, test_warning_macros)
   }
   else
   {
-    EXPECT_TRUE(slic::internal::is_stream_empty());
+    EXPECT_TRUE(slic::internal::are_all_streams_empty());
   }
   slic::internal::clear_streams();
 
@@ -382,7 +398,7 @@ TEST_P(SlicMacrosParallel, test_warning_macros)
   if(((rank % 2) == 0 && GetParam() == "Synchronized") ||
      (rank == 0 && GetParam() == "Lumberjack"))
   {
-    EXPECT_FALSE(slic::internal::is_stream_empty());
+    EXPECT_FALSE(slic::internal::are_all_streams_empty());
     check_level(slic::internal::test_stream.str(), "WARNING");
     check_msg(slic::internal::test_stream.str(), "this message is logged!");
     check_file(slic::internal::test_stream.str());
@@ -390,7 +406,7 @@ TEST_P(SlicMacrosParallel, test_warning_macros)
   }
   else
   {
-    EXPECT_TRUE(slic::internal::is_stream_empty());
+    EXPECT_TRUE(slic::internal::are_all_streams_empty());
   }
   slic::internal::clear_streams();
 }
@@ -398,12 +414,12 @@ TEST_P(SlicMacrosParallel, test_warning_macros)
 //------------------------------------------------------------------------------
 TEST_P(SlicMacrosParallel, test_info_macros)
 {
-  EXPECT_TRUE(slic::internal::is_stream_empty());
+  EXPECT_TRUE(slic::internal::are_all_streams_empty());
   SLIC_INFO("test info message");
   slic::flushStreams();
   if(GetParam() == "Synchronized" || (GetParam() == "Lumberjack" && rank == 0))
   {
-    EXPECT_FALSE(slic::internal::is_stream_empty());
+    EXPECT_FALSE(slic::internal::are_all_streams_empty());
     check_level(slic::internal::test_stream.str(), "INFO");
     check_msg(slic::internal::test_stream.str(), "test info message");
     check_file(slic::internal::test_stream.str());
@@ -415,32 +431,55 @@ TEST_P(SlicMacrosParallel, test_info_macros)
   slic::flushStreams();
   if(GetParam() == "Synchronized" || (GetParam() == "Lumberjack" && rank == 0))
   {
+    EXPECT_FALSE(slic::internal::is_tag_stream_empty());
+    check_level(slic::internal::test_tag_stream.str(), "INFO");
+    check_msg(slic::internal::test_tag_stream.str(), "test tagged info message");
+    check_file(slic::internal::test_tag_stream.str());
+    check_line(slic::internal::test_tag_stream.str(), __LINE__ - 8);
+    check_tag(slic::internal::test_tag_stream.str(), "myTag");
+    EXPECT_TRUE(slic::internal::is_stream_empty());
+  }
+  slic::internal::clear_streams();
+
+  SLIC_INFO("test info message only for normal message-level stream");
+  SLIC_INFO_TAGGED("test tagged info message only for tagged stream", "myTag");
+  slic::flushStreams();
+  if(GetParam() == "Synchronized" || (GetParam() == "Lumberjack" && rank == 0))
+  {
     EXPECT_FALSE(slic::internal::is_stream_empty());
     check_level(slic::internal::test_stream.str(), "INFO");
-    check_msg(slic::internal::test_stream.str(), "test tagged info message");
+    check_msg(slic::internal::test_stream.str(),
+              "test info message only for normal message-level stream");
     check_file(slic::internal::test_stream.str());
-    check_line(slic::internal::test_stream.str(), __LINE__ - 8);
-    check_tag(slic::internal::test_stream.str(), "myTag");
+    check_line(slic::internal::test_stream.str(), __LINE__ - 10);
+
+    EXPECT_FALSE(slic::internal::is_tag_stream_empty());
+    check_level(slic::internal::test_tag_stream.str(), "INFO");
+    check_msg(slic::internal::test_tag_stream.str(),
+              "test tagged info message only for tagged stream");
+    check_file(slic::internal::test_tag_stream.str());
+    check_line(slic::internal::test_tag_stream.str(), __LINE__ - 16);
+    check_tag(slic::internal::test_tag_stream.str(), "myTag");
   }
   slic::internal::clear_streams();
 
   SLIC_INFO_TAGGED("this message should not be logged (no tag given)!", "");
   slic::flushStreams();
-  EXPECT_TRUE(slic::internal::is_stream_empty());
+  EXPECT_TRUE(slic::internal::are_all_streams_empty());
 
   SLIC_INFO_TAGGED("this message should not be logged (tag DNE)!", "tag404");
   slic::flushStreams();
-  EXPECT_TRUE(slic::internal::is_stream_empty());
+  EXPECT_TRUE(slic::internal::are_all_streams_empty());
 
   SLIC_INFO_IF(false, "this message should not be logged!");
   slic::flushStreams();
-  EXPECT_TRUE(slic::internal::is_stream_empty());
+  EXPECT_TRUE(slic::internal::are_all_streams_empty());
 
   SLIC_INFO_IF(true, "this message is logged!");
   slic::flushStreams();
   if(GetParam() == "Synchronized" || (GetParam() == "Lumberjack" && rank == 0))
   {
-    EXPECT_FALSE(slic::internal::is_stream_empty());
+    EXPECT_FALSE(slic::internal::are_all_streams_empty());
     check_level(slic::internal::test_stream.str(), "INFO");
     check_msg(slic::internal::test_stream.str(), "this message is logged!");
     check_file(slic::internal::test_stream.str());
@@ -452,7 +491,7 @@ TEST_P(SlicMacrosParallel, test_info_macros)
   axom::slic::setIsRoot(false);
   SLIC_INFO_ROOT_IF(false, "this message should not be logged!");
   slic::flushStreams();
-  EXPECT_TRUE(slic::internal::is_stream_empty());
+  EXPECT_TRUE(slic::internal::are_all_streams_empty());
 
   // Check selective filter based on root == true
   axom::slic::setIsRoot(true);
@@ -460,7 +499,7 @@ TEST_P(SlicMacrosParallel, test_info_macros)
   slic::flushStreams();
   if(GetParam() == "Synchronized" || (GetParam() == "Lumberjack" && rank == 0))
   {
-    EXPECT_FALSE(slic::internal::is_stream_empty());
+    EXPECT_FALSE(slic::internal::are_all_streams_empty());
     check_level(slic::internal::test_stream.str(), "INFO");
     check_msg(slic::internal::test_stream.str(), "this message is logged!");
     check_file(slic::internal::test_stream.str());
@@ -472,13 +511,13 @@ TEST_P(SlicMacrosParallel, test_info_macros)
   axom::slic::setIsRoot(true);
   SLIC_INFO_ROOT_IF(false, "this message should not be logged!");
   slic::flushStreams();
-  EXPECT_TRUE(slic::internal::is_stream_empty());
+  EXPECT_TRUE(slic::internal::are_all_streams_empty());
 
   // is not root, and conditional is true -> no message
   axom::slic::setIsRoot(false);
   SLIC_INFO_ROOT_IF(true, "this message should not be logged!");
   slic::flushStreams();
-  EXPECT_TRUE(slic::internal::is_stream_empty());
+  EXPECT_TRUE(slic::internal::are_all_streams_empty());
 
   // Check for one rank being root
   axom::slic::setIsRoot(rank == 0);
@@ -486,7 +525,7 @@ TEST_P(SlicMacrosParallel, test_info_macros)
   slic::flushStreams();
   if(rank == 0)
   {
-    EXPECT_FALSE(slic::internal::is_stream_empty());
+    EXPECT_FALSE(slic::internal::are_all_streams_empty());
     check_level(slic::internal::test_stream.str(), "INFO");
     check_msg(slic::internal::test_stream.str(), "this message is logged!");
     check_file(slic::internal::test_stream.str());
@@ -494,7 +533,7 @@ TEST_P(SlicMacrosParallel, test_info_macros)
   }
   else
   {
-    EXPECT_TRUE(slic::internal::is_stream_empty());
+    EXPECT_TRUE(slic::internal::are_all_streams_empty());
   }
   slic::internal::clear_streams();
 
@@ -505,7 +544,7 @@ TEST_P(SlicMacrosParallel, test_info_macros)
   if(((rank % 2) == 0 && GetParam() == "Synchronized") ||
      (rank == 0 && GetParam() == "Lumberjack"))
   {
-    EXPECT_FALSE(slic::internal::is_stream_empty());
+    EXPECT_FALSE(slic::internal::are_all_streams_empty());
     check_level(slic::internal::test_stream.str(), "INFO");
     check_msg(slic::internal::test_stream.str(), "this message is logged!");
     check_file(slic::internal::test_stream.str());
@@ -513,7 +552,7 @@ TEST_P(SlicMacrosParallel, test_info_macros)
   }
   else
   {
-    EXPECT_TRUE(slic::internal::is_stream_empty());
+    EXPECT_TRUE(slic::internal::are_all_streams_empty());
   }
   slic::internal::clear_streams();
 }
@@ -521,13 +560,13 @@ TEST_P(SlicMacrosParallel, test_info_macros)
 //------------------------------------------------------------------------------
 TEST_P(SlicMacrosParallel, test_debug_macros)
 {
-  EXPECT_TRUE(slic::internal::is_stream_empty());
+  EXPECT_TRUE(slic::internal::are_all_streams_empty());
   SLIC_DEBUG("test debug message");
   slic::flushStreams();
 #ifdef AXOM_DEBUG
   if(GetParam() == "Synchronized" || (GetParam() == "Lumberjack" && rank == 0))
   {
-    EXPECT_FALSE(slic::internal::is_stream_empty());
+    EXPECT_FALSE(slic::internal::are_all_streams_empty());
     check_level(slic::internal::test_stream.str(), "DEBUG");
     check_msg(slic::internal::test_stream.str(), "test debug message");
     check_file(slic::internal::test_stream.str());
@@ -536,19 +575,19 @@ TEST_P(SlicMacrosParallel, test_debug_macros)
   slic::internal::clear_streams();
 #else
   // SLIC_DEBUG macros only log messages when AXOM_DEBUG is defined
-  EXPECT_TRUE(slic::internal::is_stream_empty());
+  EXPECT_TRUE(slic::internal::are_all_streams_empty());
 #endif
 
   SLIC_DEBUG_IF(false, "this message should not be logged!");
   slic::flushStreams();
-  EXPECT_TRUE(slic::internal::is_stream_empty());
+  EXPECT_TRUE(slic::internal::are_all_streams_empty());
 
   SLIC_DEBUG_IF(true, "this message is logged!");
   slic::flushStreams();
 #ifdef AXOM_DEBUG
   if(GetParam() == "Synchronized" || (GetParam() == "Lumberjack" && rank == 0))
   {
-    EXPECT_FALSE(slic::internal::is_stream_empty());
+    EXPECT_FALSE(slic::internal::are_all_streams_empty());
     check_level(slic::internal::test_stream.str(), "DEBUG");
     check_msg(slic::internal::test_stream.str(), "this message is logged!");
     check_file(slic::internal::test_stream.str());
@@ -557,14 +596,14 @@ TEST_P(SlicMacrosParallel, test_debug_macros)
   slic::internal::clear_streams();
 #else
   // SLIC_DEBUG macros only log messages when AXOM_DEBUG is defined
-  EXPECT_TRUE(slic::internal::is_stream_empty());
+  EXPECT_TRUE(slic::internal::are_all_streams_empty());
 #endif
 
   // Check selective filtering based on root == false
   axom::slic::setIsRoot(false);
   SLIC_DEBUG_ROOT_IF(false, "this message should not be logged!");
   slic::flushStreams();
-  EXPECT_TRUE(slic::internal::is_stream_empty());
+  EXPECT_TRUE(slic::internal::are_all_streams_empty());
 
   // Check selective filter based on root == true
   axom::slic::setIsRoot(true);
@@ -573,7 +612,7 @@ TEST_P(SlicMacrosParallel, test_debug_macros)
 #ifdef AXOM_DEBUG
   if(GetParam() == "Synchronized" || (GetParam() == "Lumberjack" && rank == 0))
   {
-    EXPECT_FALSE(slic::internal::is_stream_empty());
+    EXPECT_FALSE(slic::internal::are_all_streams_empty());
     check_level(slic::internal::test_stream.str(), "DEBUG");
     check_msg(slic::internal::test_stream.str(), "this message is logged!");
     check_file(slic::internal::test_stream.str());
@@ -582,20 +621,20 @@ TEST_P(SlicMacrosParallel, test_debug_macros)
   slic::internal::clear_streams();
 #else
   // SLIC_DEBUG macros only log messages when AXOM_DEBUG is defined
-  EXPECT_TRUE(slic::internal::is_stream_empty());
+  EXPECT_TRUE(slic::internal::are_all_streams_empty());
 #endif
 
   // is root, but conditional is false -> no message
   axom::slic::setIsRoot(true);
   SLIC_DEBUG_ROOT_IF(false, "this message should not be logged!");
   slic::flushStreams();
-  EXPECT_TRUE(slic::internal::is_stream_empty());
+  EXPECT_TRUE(slic::internal::are_all_streams_empty());
 
   // is not root, and conditional is true -> no message
   axom::slic::setIsRoot(false);
   SLIC_DEBUG_ROOT_IF(true, "this message should not be logged!");
   slic::flushStreams();
-  EXPECT_TRUE(slic::internal::is_stream_empty());
+  EXPECT_TRUE(slic::internal::are_all_streams_empty());
 
   // Check for one rank being root
   axom::slic::setIsRoot(rank == 0);
@@ -604,7 +643,7 @@ TEST_P(SlicMacrosParallel, test_debug_macros)
 #ifdef AXOM_DEBUG
   if(rank == 0)
   {
-    EXPECT_FALSE(slic::internal::is_stream_empty());
+    EXPECT_FALSE(slic::internal::are_all_streams_empty());
     check_level(slic::internal::test_stream.str(), "DEBUG");
     check_msg(slic::internal::test_stream.str(), "this message is logged!");
     check_file(slic::internal::test_stream.str());
@@ -612,12 +651,12 @@ TEST_P(SlicMacrosParallel, test_debug_macros)
   }
   else
   {
-    EXPECT_TRUE(slic::internal::is_stream_empty());
+    EXPECT_TRUE(slic::internal::are_all_streams_empty());
   }
   slic::internal::clear_streams();
 #else
   // SLIC_DEBUG macros only log messages when AXOM_DEBUG is defined
-  EXPECT_TRUE(slic::internal::is_stream_empty());
+  EXPECT_TRUE(slic::internal::are_all_streams_empty());
 #endif
 
   // Check for more than one rank being root
@@ -628,7 +667,7 @@ TEST_P(SlicMacrosParallel, test_debug_macros)
   if(((rank % 2) == 0 && GetParam() == "Synchronized") ||
      (rank == 0 && GetParam() == "Lumberjack"))
   {
-    EXPECT_FALSE(slic::internal::is_stream_empty());
+    EXPECT_FALSE(slic::internal::are_all_streams_empty());
     check_level(slic::internal::test_stream.str(), "DEBUG");
     check_msg(slic::internal::test_stream.str(), "this message is logged!");
     check_file(slic::internal::test_stream.str());
@@ -636,12 +675,12 @@ TEST_P(SlicMacrosParallel, test_debug_macros)
   }
   else
   {
-    EXPECT_TRUE(slic::internal::is_stream_empty());
+    EXPECT_TRUE(slic::internal::are_all_streams_empty());
   }
   slic::internal::clear_streams();
 #else
   // SLIC_DEBUG macros only log messages when AXOM_DEBUG is defined
-  EXPECT_TRUE(slic::internal::is_stream_empty());
+  EXPECT_TRUE(slic::internal::are_all_streams_empty());
 #endif
 }
 
@@ -652,7 +691,7 @@ TEST_P(SlicMacrosParallel, test_abort_error_macros)
   slic::enableAbortOnError(); /* enable abort for testing purposes */
   slic::setAbortFunction(custom_abort_function);
 
-  EXPECT_TRUE(slic::internal::is_stream_empty());
+  EXPECT_TRUE(slic::internal::are_all_streams_empty());
 
   // Test for each rank
   for(int i = 0; i < nranks; i++)
@@ -691,7 +730,7 @@ TEST_P(SlicMacrosParallel, test_abort_error_macros)
         SLIC_ERROR_IF(val == 42, "SLIC_ERROR_IF message is logged!");
         slic::outputLocalMessages();
         EXPECT_EQ(has_aborted, abort_enabled);
-        EXPECT_FALSE(slic::internal::is_stream_empty());
+        EXPECT_FALSE(slic::internal::are_all_streams_empty());
         check_level(slic::internal::test_stream.str(), "ERROR");
         check_msg(slic::internal::test_stream.str(),
                   "SLIC_ERROR_IF message is logged!");
@@ -702,7 +741,7 @@ TEST_P(SlicMacrosParallel, test_abort_error_macros)
         SLIC_ERROR_ROOT("SLIC_ERROR_ROOT message is logged!");
         slic::outputLocalMessages();
         EXPECT_EQ(has_aborted, abort_enabled);
-        EXPECT_FALSE(slic::internal::is_stream_empty());
+        EXPECT_FALSE(slic::internal::are_all_streams_empty());
         check_level(slic::internal::test_stream.str(), "ERROR");
         check_msg(slic::internal::test_stream.str(),
                   "SLIC_ERROR_ROOT message is logged!");
@@ -713,7 +752,7 @@ TEST_P(SlicMacrosParallel, test_abort_error_macros)
         SLIC_ERROR_ROOT_IF(val == 42, "SLIC_ERROR_ROOT_IF message is logged!");
         slic::outputLocalMessages();
         EXPECT_EQ(has_aborted, abort_enabled);
-        EXPECT_FALSE(slic::internal::is_stream_empty());
+        EXPECT_FALSE(slic::internal::are_all_streams_empty());
         check_level(slic::internal::test_stream.str(), "ERROR");
         check_msg(slic::internal::test_stream.str(),
                   "SLIC_ERROR_ROOT_IF message is logged!");
@@ -724,7 +763,7 @@ TEST_P(SlicMacrosParallel, test_abort_error_macros)
         SLIC_ASSERT(val < 0);
         slic::outputLocalMessages();
         EXPECT_EQ(has_aborted, abort_enabled);
-        EXPECT_FALSE(slic::internal::is_stream_empty());
+        EXPECT_FALSE(slic::internal::are_all_streams_empty());
         check_level(slic::internal::test_stream.str(), "ERROR");
         check_msg(slic::internal::test_stream.str(), "Failed Assert: val < 0");
         check_file(slic::internal::test_stream.str());
@@ -734,7 +773,7 @@ TEST_P(SlicMacrosParallel, test_abort_error_macros)
         SLIC_ASSERT_MSG(val < 0, "val should be negative!");
         slic::outputLocalMessages();
         EXPECT_EQ(has_aborted, abort_enabled);
-        EXPECT_FALSE(slic::internal::is_stream_empty());
+        EXPECT_FALSE(slic::internal::are_all_streams_empty());
         check_level(slic::internal::test_stream.str(), "ERROR");
         check_msg(slic::internal::test_stream.str(),
                   "Failed Assert: val < 0\nval should be negative!");
@@ -750,7 +789,7 @@ TEST_P(SlicMacrosParallel, test_abort_error_macros)
       AXOM_UNUSED_VAR(has_aborted);
       reset_state();
 
-      EXPECT_TRUE(slic::internal::is_stream_empty());
+      EXPECT_TRUE(slic::internal::are_all_streams_empty());
 #endif
 
     }  //end NUM_ABORT_STATES loop
@@ -768,7 +807,7 @@ TEST_P(SlicMacrosParallel, test_abort_warning_macros)
   slic::enableAbortOnWarning(); /* enable abort for testing purposes */
   slic::setAbortFunction(custom_abort_function);
 
-  EXPECT_TRUE(slic::internal::is_stream_empty());
+  EXPECT_TRUE(slic::internal::are_all_streams_empty());
 
   // Test for each rank
   for(int i = 0; i < nranks; i++)
@@ -796,7 +835,7 @@ TEST_P(SlicMacrosParallel, test_abort_warning_macros)
         SLIC_WARNING("SLIC_WARNING message is logged!");
         slic::outputLocalMessages();
         EXPECT_EQ(has_aborted, abort_enabled);
-        EXPECT_FALSE(slic::internal::is_stream_empty());
+        EXPECT_FALSE(slic::internal::are_all_streams_empty());
         check_level(slic::internal::test_stream.str(), "WARNING");
         check_msg(slic::internal::test_stream.str(),
                   "SLIC_WARNING message is logged!");
@@ -808,7 +847,7 @@ TEST_P(SlicMacrosParallel, test_abort_warning_macros)
         SLIC_WARNING_IF(val == 42, "SLIC_WARNING_IF message is logged!");
         slic::outputLocalMessages();
         EXPECT_EQ(has_aborted, abort_enabled);
-        EXPECT_FALSE(slic::internal::is_stream_empty());
+        EXPECT_FALSE(slic::internal::are_all_streams_empty());
         check_level(slic::internal::test_stream.str(), "WARNING");
         check_msg(slic::internal::test_stream.str(),
                   "SLIC_WARNING_IF message is logged!");
@@ -819,7 +858,7 @@ TEST_P(SlicMacrosParallel, test_abort_warning_macros)
         SLIC_WARNING_ROOT("SLIC_WARNING_ROOT message is logged!");
         slic::outputLocalMessages();
         EXPECT_EQ(has_aborted, abort_enabled);
-        EXPECT_FALSE(slic::internal::is_stream_empty());
+        EXPECT_FALSE(slic::internal::are_all_streams_empty());
         check_level(slic::internal::test_stream.str(), "WARNING");
         check_msg(slic::internal::test_stream.str(),
                   "SLIC_WARNING_ROOT message is logged!");
@@ -830,7 +869,7 @@ TEST_P(SlicMacrosParallel, test_abort_warning_macros)
         SLIC_WARNING_ROOT_IF(val == 42, "SLIC_WARNING_ROOT_IF msg logged!");
         slic::outputLocalMessages();
         EXPECT_EQ(has_aborted, abort_enabled);
-        EXPECT_FALSE(slic::internal::is_stream_empty());
+        EXPECT_FALSE(slic::internal::are_all_streams_empty());
         check_level(slic::internal::test_stream.str(), "WARNING");
         check_msg(slic::internal::test_stream.str(),
                   "SLIC_WARNING_ROOT_IF msg logged!");
@@ -841,7 +880,7 @@ TEST_P(SlicMacrosParallel, test_abort_warning_macros)
         SLIC_CHECK(val < 0);
         slic::outputLocalMessages();
         EXPECT_EQ(has_aborted, abort_enabled);
-        EXPECT_FALSE(slic::internal::is_stream_empty());
+        EXPECT_FALSE(slic::internal::are_all_streams_empty());
         check_level(slic::internal::test_stream.str(), "WARNING");
         check_msg(slic::internal::test_stream.str(), "Failed Check: val < 0");
         check_file(slic::internal::test_stream.str());
@@ -851,7 +890,7 @@ TEST_P(SlicMacrosParallel, test_abort_warning_macros)
         SLIC_CHECK_MSG(val < 0, "val should be negative!");
         slic::outputLocalMessages();
         EXPECT_EQ(has_aborted, abort_enabled);
-        EXPECT_FALSE(slic::internal::is_stream_empty());
+        EXPECT_FALSE(slic::internal::are_all_streams_empty());
         check_level(slic::internal::test_stream.str(), "WARNING");
         check_msg(slic::internal::test_stream.str(),
                   "Failed Check: val < 0\nval should be negative!");
@@ -864,7 +903,7 @@ TEST_P(SlicMacrosParallel, test_abort_warning_macros)
 
 #else
       // SLIC_CHECK macros only log messages when AXOM_DEBUG is defined
-      EXPECT_TRUE(slic::internal::is_stream_empty());
+      EXPECT_TRUE(slic::internal::are_all_streams_empty());
 #endif
 
     }  //end NUM_ABORT_STATES loop
@@ -878,7 +917,7 @@ TEST_P(SlicMacrosParallel, test_abort_warning_macros)
 TEST_P(SlicMacrosParallel, test_assert_macros)
 {
   slic::internal::clear_streams();
-  EXPECT_TRUE(slic::internal::is_stream_empty());
+  EXPECT_TRUE(slic::internal::are_all_streams_empty());
 
   constexpr int val = 42;
   SLIC_ASSERT(val < 0);
@@ -886,7 +925,7 @@ TEST_P(SlicMacrosParallel, test_assert_macros)
 #if defined(AXOM_DEBUG) && !defined(AXOM_DEVICE_CODE)
   if(GetParam() == "Synchronized" || (GetParam() == "Lumberjack" && rank == 0))
   {
-    EXPECT_FALSE(slic::internal::is_stream_empty());
+    EXPECT_FALSE(slic::internal::are_all_streams_empty());
     check_level(slic::internal::test_stream.str(), "ERROR");
     check_msg(slic::internal::test_stream.str(), "Failed Assert: val < 0");
     check_file(slic::internal::test_stream.str());
@@ -896,19 +935,19 @@ TEST_P(SlicMacrosParallel, test_assert_macros)
 #else
   // SLIC_ASSERT macros only log messages when AXOM_DEBUG is defined
   AXOM_UNUSED_VAR(val);
-  EXPECT_TRUE(slic::internal::is_stream_empty());
+  EXPECT_TRUE(slic::internal::are_all_streams_empty());
 #endif
 
   SLIC_ASSERT(val > 0);
   slic::flushStreams();
-  EXPECT_TRUE(slic::internal::is_stream_empty());
+  EXPECT_TRUE(slic::internal::are_all_streams_empty());
 
   SLIC_ASSERT_MSG(val < 0, "val should be negative!");
   slic::flushStreams();
 #if defined(AXOM_DEBUG) && !defined(AXOM_DEVICE_CODE)
   if(GetParam() == "Synchronized" || (GetParam() == "Lumberjack" && rank == 0))
   {
-    EXPECT_FALSE(slic::internal::is_stream_empty());
+    EXPECT_FALSE(slic::internal::are_all_streams_empty());
     check_level(slic::internal::test_stream.str(), "ERROR");
     check_msg(slic::internal::test_stream.str(),
               "Failed Assert: val < 0\nval should be negative!");
@@ -919,14 +958,14 @@ TEST_P(SlicMacrosParallel, test_assert_macros)
 #else
   // SLIC_ASSERT macros only log messages when AXOM_DEBUG is defined
   AXOM_UNUSED_VAR(val);
-  EXPECT_TRUE(slic::internal::is_stream_empty());
+  EXPECT_TRUE(slic::internal::are_all_streams_empty());
 #endif
 }
 
 // ------------------------------------------------------------------------------
 TEST_P(SlicMacrosParallel, test_check_macros)
 {
-  EXPECT_TRUE(slic::internal::is_stream_empty());
+  EXPECT_TRUE(slic::internal::are_all_streams_empty());
 
   constexpr int val = 42;
   SLIC_CHECK(val < 0);
@@ -934,7 +973,7 @@ TEST_P(SlicMacrosParallel, test_check_macros)
 #if defined(AXOM_DEBUG) && !defined(AXOM_DEVICE_CODE)
   if(GetParam() == "Synchronized" || (GetParam() == "Lumberjack" && rank == 0))
   {
-    EXPECT_FALSE(slic::internal::is_stream_empty());
+    EXPECT_FALSE(slic::internal::are_all_streams_empty());
     check_level(slic::internal::test_stream.str(), "WARNING");
     check_msg(slic::internal::test_stream.str(), "Failed Check: val < 0");
     check_file(slic::internal::test_stream.str());
@@ -944,19 +983,19 @@ TEST_P(SlicMacrosParallel, test_check_macros)
 #else
   // SLIC_CHECK macros only log messages when AXOM_DEBUG is defined
   AXOM_UNUSED_VAR(val);
-  EXPECT_TRUE(slic::internal::is_stream_empty());
+  EXPECT_TRUE(slic::internal::are_all_streams_empty());
 #endif
 
   SLIC_CHECK(val > 0);
   slic::flushStreams();
-  EXPECT_TRUE(slic::internal::is_stream_empty());
+  EXPECT_TRUE(slic::internal::are_all_streams_empty());
 
   SLIC_CHECK_MSG(val < 0, "val should be negative!");
   slic::flushStreams();
 #if defined(AXOM_DEBUG) && !defined(AXOM_DEVICE_CODE)
   if(GetParam() == "Synchronized" || (GetParam() == "Lumberjack" && rank == 0))
   {
-    EXPECT_FALSE(slic::internal::is_stream_empty());
+    EXPECT_FALSE(slic::internal::are_all_streams_empty());
     check_level(slic::internal::test_stream.str(), "WARNING");
     check_msg(slic::internal::test_stream.str(),
               "Failed Check: val < 0\nval should be negative!");
@@ -967,7 +1006,7 @@ TEST_P(SlicMacrosParallel, test_check_macros)
 #else
   // SLIC_CHECK macros only log messages when AXOM_DEBUG is defined
   AXOM_UNUSED_VAR(val);
-  EXPECT_TRUE(slic::internal::is_stream_empty());
+  EXPECT_TRUE(slic::internal::are_all_streams_empty());
 #endif
 }
 
