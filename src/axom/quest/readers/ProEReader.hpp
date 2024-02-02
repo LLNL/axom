@@ -10,6 +10,7 @@
 #include "axom/config.hpp"
 #include "axom/core/Macros.hpp"
 #include "axom/mint/mesh/UnstructuredMesh.hpp"
+#include "axom/primal/geometry/BoundingBox.hpp"
 
 // C/C++ includes
 #include <string>  // for std::string
@@ -32,6 +33,12 @@ namespace quest
  */
 class ProEReader
 {
+public:
+  constexpr static int NUM_NODES_PER_TET = 4;
+  constexpr static int NUM_COMPS_PER_NODE = 3;
+  using Point3D = primal::Point<double, NUM_COMPS_PER_NODE>;
+  using BBox3D = primal::BoundingBox<double, 3>;
+
 public:
   /*!
    * \brief Constructor.
@@ -74,6 +81,15 @@ public:
   virtual int read();
 
   /*!
+   * \brief Sets the bounding box to include.
+   * 
+   * When reading in ProE tets, include only those tets that are fully
+   * contained in the bounding box.  If the box is left unset, or if set
+   * to an invalid box, all tets are included.
+   */
+  virtual void setBoundingBox(BBox3D& box) { m_bbox = box; }
+
+  /*!
    * \brief Stores the Pro/E data in the supplied unstructured mesh object.
    * \param [in,out] mesh pointer to the unstructured mesh.
    * \pre mesh != nullptr.
@@ -88,6 +104,18 @@ protected:
 
   std::vector<double> m_nodes;
   std::vector<int> m_tets;
+
+  BBox3D m_bbox;
+
+  /*!
+   * \brief Compact internal mesh storage arrays
+   * \param [in] retain_vertex Flag of all vertices to retain after compaction
+   * \param [in] elt_count Number of elements stored in array
+   * 
+   * This method compacts the vertex array and resizes the vertex and the
+   * element arrays to their minimum sizes.
+   */
+  void compact_arrays( std::vector<bool>& retain_vertex, int elt_count);
 
 private:
   DISABLE_COPY_AND_ASSIGNMENT(ProEReader);

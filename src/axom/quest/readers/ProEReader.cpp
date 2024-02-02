@@ -9,6 +9,7 @@
 #include "axom/core/utilities/Utilities.hpp"
 #include "axom/mint/mesh/CellTypes.hpp"
 #include "axom/slic/interface/slic.hpp"
+#include "axom/primal/geometry/Point.hpp"
 
 // C/C++ includes
 #include <fstream>
@@ -38,9 +39,6 @@ void ProEReader::clear()
 //------------------------------------------------------------------------------
 int ProEReader::read()
 {
-  constexpr int NUM_NODES_PER_TET = 4;
-  constexpr int NUM_COMPS_PER_NODE = 3;
-  using Point3D = primal::Point<double, NUM_COMPS_PER_NODE>;
 
   std::string junk;
   int id;
@@ -114,16 +112,17 @@ int ProEReader::read()
 
   ifs.close();
 
+  compact_arrays(node_in_box, tet_count);
   m_tets.resize(tet_count * NUM_NODES_PER_TET);
 
   return (0);
 }
 
 //------------------------------------------------------------------------------
-void ProEReader::compact_arrays( primal::Point<double, 3>& node_in_box, int tet_count)
+void ProEReader::compact_arrays( std::vector<bool>& retain_vertex, int elt_count)
 {
     // lots of bookkeeping, ending with
-    m_tets.resize(tet_count * 4);
+    m_tets.resize(elt_count * NUM_NODES_PER_TET);
 }
 
 //------------------------------------------------------------------------------
