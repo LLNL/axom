@@ -40,10 +40,12 @@ int ProEReader::read()
 {
   constexpr int NUM_NODES_PER_TET = 4;
   constexpr int NUM_COMPS_PER_NODE = 3;
+  using Point3D = primal::Point<double, NUM_COMPS_PER_NODE>;
 
   std::string junk;
   int id;
   int tet_nodes[NUM_NODES_PER_TET];
+  std::vector<bool> node_in_box;
 
   struct coordinate
   {
@@ -69,7 +71,8 @@ int ProEReader::read()
   ifs >> m_num_nodes >> m_num_tets;
 
   m_nodes.reserve(m_num_nodes * NUM_COMPS_PER_NODE);
-  m_tets.reserve(m_num_tets * NUM_NODES_PER_TET);
+  m_tets.reserve(m_num_tets * NUM_NODES_PER_TET);    // Keep this line, or remove?
+  node_in_box.reserve(m_num_nodes);
 
   // Initialize nodes
   for(int i = 0; i < m_num_nodes; i++)
@@ -80,22 +83,47 @@ int ProEReader::read()
     {
       m_nodes.push_back(cur_coord.comp[j]);
     }
+    
+    Point3D p(cur_coord.comp);
+    node_in_box[i] = (!m_bbox.isValid() || m_bbox.contains(p));
   }
 
   // Initialize tets
+  int tet_count = 0;
   for(int i = 0; i < m_num_tets; i++)
   {
     ifs >> id >> tet_nodes[0] >> tet_nodes[1] >> tet_nodes[2] >> tet_nodes[3];
 
+    bool keep_tet = true;
     for(int j = 0; j < NUM_NODES_PER_TET; j++)
     {
       // Node IDs start at 1 instead of 0, adjust to 0 for indexing
-      m_tets.push_back(tet_nodes[j] - 1);
+      keep_tet = keep_tet && node_in_box[tet_nodes[j] - 1];
+    }
+
+    if (keep_tet)
+    {
+        tet_count += 1;
+        for(int j = 0; j < NUM_NODES_PER_TET; j++)
+        {
+            // Node IDs start at 1 instead of 0, adjust to 0 for indexing
+            m_tets.push_back(tet_nodes[j] - 1);
+        }
     }
   }
 
   ifs.close();
+
+  m_tets.resize(tet_count * NUM_NODES_PER_TET);
+
   return (0);
+}
+
+//------------------------------------------------------------------------------
+void ProEReader::compact_arrays( primal::Point<double, 3>& node_in_box, int tet_count)
+{
+    // lots of bookkeeping, ending with
+    m_tets.resize(tet_count * 4);
 }
 
 //------------------------------------------------------------------------------
