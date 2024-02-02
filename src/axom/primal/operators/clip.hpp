@@ -143,6 +143,52 @@ AXOM_HOST_DEVICE Polyhedron<T, 3> clip(const Hexahedron<T, 3>& hex,
 }
 
 /*!
+ * \brief Clips a 3D hexahedron against another hexahedron in 3D, returning
+ *        the geometric intersection as a polyhedron
+ *
+ *  This function clips the hexahedron by the 6 planes obtained from the
+ *  hexahedron's faces (normals point inward). Clipping the
+ *  hexahedron/polyhedron by each plane gives the polyhedron above that plane.
+ *  Clipping the polyhedron by a plane involves
+ *  finding new vertices at the intersection of the polyhedron edges and
+ *  the plane, removing vertices from the polyhedron that are below the
+ *  plane, and redefining the neighbors for each vertex (a vertex is a
+ *  neighbor of another vertex if there is an edge between them).
+ *
+ *
+ * \param [in] hex The hexahedron to clip
+ * \param [in] tet The hexahedron to clip against
+ * \param [in] eps The epsilon value
+ * \param [in] tryFixOrientation If true, takes each shape with a negative
+ *             signed volume and swaps the order of some vertices in that
+ *             shape to try to obtain a nonnegative signed volume.
+ *             Defaults to false.
+ *
+ * \return A polyhedron of the hexahedron clipped against the tetrahedron.
+ *
+ * \note Function is based off clipPolyhedron() in Mike Owen's PolyClipper.
+ *
+ * \warning tryFixOrientation flag does not guarantee the shapes' vertex orders
+ *          will be valid. It is the responsiblity of the caller to pass
+ *          shapes with a valid vertex order. Otherwise, if the shapes have
+ *          invalid vertex orders, the returned Polyhedron
+ *          will have a non-positive and/or unexpected volume.
+ *
+ * \warning If tryFixOrientation flag is false and some of the shapes have
+ *          a negative signed volume, the returned Polyhedron
+ *          will have a non-positive and/or unexpected volume.
+ *
+ */
+template <typename T>
+AXOM_HOST_DEVICE Polyhedron<T, 3> clip(const Hexahedron<T, 3>& hex1,
+                                       const Hexahedron<T, 3>& hex2,
+                                       double eps = 1.e-10,
+                                       bool tryFixOrientation = false)
+{
+  return detail::clipHexahedron(hex1, hex2, eps, tryFixOrientation);
+}
+
+/*!
  * \brief Clips a 3D hexahedron against a tetrahedron in 3D, returning
  *        the geometric intersection of the hexahedron and the tetrahedron
  *        as a polyhedron

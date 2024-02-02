@@ -537,6 +537,59 @@ AXOM_HOST_DEVICE Polyhedron<T, NDIMS> clipHexahedron(
 }
 
 /*!
+ * \brief Finds the clipped intersection Polyhedron between Hexahedron
+ *        hex1 and another Hexahedron hex2.
+ *
+ * \param [in] hex1 The hexahedron
+ * \param [in] hex2 The other hexahedron
+ * \param [in] eps The tolerance for plane point orientation.
+ * \param [in] tryFixOrientation Check if the signed volume of each shape is positive.
+ * \return The Polyhedron formed from clipping the hexahedra.
+ *
+ */
+template <typename T, int NDIMS>
+AXOM_HOST_DEVICE Polyhedron<T, NDIMS> clipHexahedron(
+  const Hexahedron<T, NDIMS>& hex1,
+  const Hexahedron<T, NDIMS>& hex2,
+  double eps,
+  bool tryFixOrientation)
+{
+  using PlaneType = Plane<T, NDIMS>;
+  using PolyhedronType = Polyhedron<T, NDIMS>;
+
+  // Initialize our polyhedron to return
+  PolyhedronType poly = PolyhedronType::from_primitive(hex1, tryFixOrientation);
+
+  // Initialize planes from hexahedron vertices
+  // (Ordering here matters to get the correct winding)
+  PlaneType planes[6] = {make_plane(hex2[], hex2[], hex2[]),
+                         make_plane(hex2[], hex2[], hex2[]),
+                         make_plane(hex2[], hex2[], hex2[]),
+                         make_plane(hex2[], hex2[], hex2[]),
+                         make_plane(hex2[], hex2[], hex2[]),
+                         make_plane(hex2[], hex2[], hex2[])};
+
+  // Adjusts planes in case tetrahedron signed volume is negative
+  if(tryFixOrientation)
+  {
+    PolyhedronType hex_poly =
+      PolyhedronType::from_primitive(hex2, tryFixOrientation);
+    planes[0] = make_plane(hex_poly[], hex_poly[], hex_poly[]);
+    planes[1] = make_plane(hex_poly[], hex_poly[], hex_poly[]);
+    planes[2] = make_plane(hex_poly[], hex_poly[], hex_poly[]);
+    planes[3] = make_plane(hex_poly[], hex_poly[], hex_poly[]);
+    planes[4] = make_plane(hex_poly[], hex_poly[], hex_poly[]);
+    planes[5] = make_plane(hex_poly[], hex_poly[], hex_poly[]);
+  }
+
+  axom::StackArray<IndexType, 1> planeSize = {6};
+  axom::ArrayView<PlaneType> planesView(planes, planeSize);
+
+  clipPolyhedron(poly, planesView, eps);
+  return poly;
+}
+
+/*!
  * \brief Finds the clipped intersection Polyhedron between Octahedron
  *        oct and Tetrahedron tet.
  *
