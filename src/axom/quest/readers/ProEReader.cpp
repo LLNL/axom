@@ -70,7 +70,7 @@ int ProEReader::read()
 
   m_nodes.reserve(m_num_nodes * NUM_COMPS_PER_NODE);
   m_tets.reserve(m_num_tets * NUM_NODES_PER_TET);    // Keep this line, or remove?
-  node_in_box.reserve(m_num_nodes);
+  node_in_box.resize(m_num_nodes);
 
   // Initialize nodes
   for(int i = 0; i < m_num_nodes; i++)
@@ -123,6 +123,7 @@ void ProEReader::compact_arrays( std::vector<bool>& retain_vertex, int elt_count
 {
     // lots of bookkeeping, ending with
     m_tets.resize(elt_count * NUM_NODES_PER_TET);
+    m_num_tets = elt_count;
 }
 
 //------------------------------------------------------------------------------
