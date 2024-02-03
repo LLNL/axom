@@ -38,6 +38,7 @@ public:
   constexpr static int NUM_COMPS_PER_NODE = 3;
   using Point3D = primal::Point<double, NUM_COMPS_PER_NODE>;
   using BBox3D = primal::BoundingBox<double, 3>;
+  using TetPred = std::function<bool(int[4], int, std::vector<double>&)>;
 
 public:
   /*!
@@ -81,13 +82,21 @@ public:
   virtual int read();
 
   /*!
-   * \brief Sets the bounding box to include.
+   * \brief Sets the bounding box to include nodes.
    * 
    * When reading in ProE tets, include only those tets that are fully
    * contained in the bounding box.  If the box is left unset, or if set
    * to an invalid box, all tets are included.
    */
-  virtual void setBoundingBox(BBox3D& box) { m_bbox = box; }
+  virtual void setBoundingBox(BBox3D& box);
+
+  /*!
+   * \brief Specifies a test to retain a tetrahedron.
+   * 
+   * When reading in ProE tets, include only those tets for which p returns
+   * true.
+   */
+  virtual void setTetPred(const TetPred &p) { m_tetPredicate = p; }
 
   /*!
    * \brief Stores the Pro/E data in the supplied unstructured mesh object.
@@ -105,7 +114,7 @@ protected:
   std::vector<double> m_nodes;
   std::vector<int> m_tets;
 
-  BBox3D m_bbox;
+  TetPred m_tetPredicate;
 
   /*!
    * \brief Compact internal mesh storage arrays
