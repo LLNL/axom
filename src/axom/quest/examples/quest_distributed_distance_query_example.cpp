@@ -74,8 +74,8 @@ public:
   std::vector<double> circleCenter {0.0, 0.0};
   int circlePoints {100};
 
-  double polarSpread {0.0};
-  int polarResolution {20};
+  std::vector<double> latRange {-90.0, 90.0};
+  int latPointCount {20};
 
   RuntimePolicy policy {RuntimePolicy::seq};
 
@@ -89,11 +89,9 @@ public:
 
 private:
   bool m_verboseOutput {false};
-  double m_emptyRankProbability {0.};
 
 public:
   bool isVerbose() const { return m_verboseOutput; }
-  double percentEmptyRanks() const { return m_emptyRankProbability; }
 
   std::string getDCMeshName() const
   {
@@ -137,20 +135,13 @@ public:
       ->description("Enable/disable verbose output")
       ->capture_default_str();
 
-    app.add_option("--empty-rank-probability", m_emptyRankProbability)
-      ->description(
-        "Probability that a rank's data is empty "
-        "(tests code's ability to handle empty ranks)")
-      ->check(axom::CLI::Range(0., 1.))
-      ->capture_default_str();
-
     app.add_option("-r,--radius", circleRadius)
       ->description("Radius for sphere")
       ->capture_default_str();
 
-    auto* object_options =
-      app.add_option_group("sphere",
-                           "Options for setting up object points on the sphere");
+    auto* object_options = app.add_option_group(
+      "sphere",
+      "Options for setting up object points on the sphere");
     object_options->add_option("--center", circleCenter)
       ->description("Center for object (x,y[,z])")
       ->expected(2, 3);
@@ -159,7 +150,8 @@ public:
       ->description("Range of object domain counts per rank (min, max)")
       ->expected(2);
 
-    object_options->add_flag("--random-spacing,!--no-random-spacing", randomSpacing)
+    object_options
+      ->add_flag("--random-spacing,!--no-random-spacing", randomSpacing)
       ->description("Enable/disable random spacing of object points")
       ->capture_default_str();
 
@@ -167,12 +159,12 @@ public:
       ->description("Number of points around the equatorial direction")
       ->capture_default_str();
 
-    object_options->add_option("--polar-spread", polarSpread)
-      ->description("Object range away from equator, in degrees")
-      ->capture_default_str();
+    object_options->add_option("--lat-range", latRange)
+      ->description("Latitude range in degrees from the equator (3D only)")
+      ->expected(2);
 
-    object_options->add_option("--polar-resolution", polarResolution)
-      ->description("Number of points in the polar direction")
+    object_options->add_option("--lat-point-count", latPointCount)
+      ->description("Number of points in the latitudinal direction (3D only)")
       ->capture_default_str();
 
     app.add_option("-d,--dist-threshold", distThreshold)
@@ -368,24 +360,22 @@ public:
     This method is for manually creating the mesh.  Don't use it if
     the mesh is read in.
   */
-  template <int NDIMS>
-  void setPoints(axom::IndexType domainId,
-                 const axom::Array<primal::Point<double, NDIMS>>& pts)
+  void setPoints(axom::IndexType domainId, const axom::Array<double, 2>& pts)
   {
     axom::IndexType localIdx = createBlueprintStubs();
     SLIC_ASSERT(domain_group(localIdx) != nullptr);
     domain_group(localIdx)->createViewScalar<std::int64_t>("state/domain_id",
                                                            domainId);
 
-    const int SZ = pts.size();
+    const int SZ = pts.shape()[0];
 
     if(m_dimension == -1)
     {
-      m_dimension = NDIMS;
+      m_dimension = pts.shape()[1];
     }
     else
     {
-      SLIC_ASSERT(NDIMS == m_dimension);
+      SLIC_ASSERT(pts.shape()[1] == m_dimension);
     }
 
     // lambda to create a strided view into the buffer
@@ -397,7 +387,7 @@ public:
                                   int sz) {
       if(sz > 0)
       {
-        grp->createView(path)->attachBuffer(buf)->apply(sz, dim, NDIMS);
+        grp->createView(path)->attachBuffer(buf)->apply(sz, dim, m_dimension);
       }
       else
       {
@@ -405,25 +395,25 @@ public:
       }
     };
 
-    // create views into a shared buffer for the coordinates, with stride NDIMS
+    // create views into a shared buffer for the coordinates, with stride m_dimension
     {
       auto* buf = domain_group(localIdx)
                     ->getDataStore()
-                    ->createBuffer(sidre::DOUBLE_ID, NDIMS * SZ)
+                    ->createBuffer(sidre::DOUBLE_ID, m_dimension * SZ)
                     ->allocate();
 
       createAndApplyView(coords_group(localIdx), "values/x", buf, 0, SZ);
-      if(NDIMS > 1)
+      if(m_dimension > 1)
       {
         createAndApplyView(coords_group(localIdx), "values/y", buf, 1, SZ);
       }
-      if(NDIMS > 2)
+      if(m_dimension > 2)
       {
         createAndApplyView(coords_group(localIdx), "values/z", buf, 2, SZ);
       }
 
       // copy coordinate data into the buffer
-      const std::size_t nbytes = sizeof(double) * SZ * NDIMS;
+      const std::size_t nbytes = sizeof(double) * SZ * m_dimension;
       axom::copy(buf->getVoidPtr(), pts.data(), nbytes);
     }
 
@@ -439,13 +429,13 @@ public:
     }
   }
 
-  template <int NDIMS>
-  axom::Array<primal::Point<double, NDIMS>> getPoints(int domainIdx)
+  template <int DIM>
+  axom::Array<primal::Point<double, DIM>> getPoints(int domainIdx)
   {
     auto* cGroup = coords_group(domainIdx);
     auto* xView = cGroup->getView("values/x");
     auto* yView = cGroup->getView("values/y");
-    auto* zView = NDIMS >= 3 ? cGroup->getView("values/z") : nullptr;
+    auto* zView = DIM >= 3 ? cGroup->getView("values/z") : nullptr;
     const auto ptCount = xView->getNumElements();
     assert(xView->getStride() == 1);
     assert(yView->getStride() == 1);
@@ -454,7 +444,7 @@ public:
     double* ys = yView->getArray();
     double* zs = zView ? (double*)(zView->getArray()) : nullptr;
 
-    using PointType = primal::Point<double, NDIMS>;
+    using PointType = primal::Point<double, DIM>;
     axom::Array<PointType> pts;
     pts.resize(ptCount);
     for(int i = 0; i < ptCount; ++i)
@@ -465,11 +455,11 @@ public:
     {
       pts[i][1] = ys[i];
     }
-    if(NDIMS == 3)
+    if(DIM == 3)
     {
       for(int i = 0; i < ptCount; ++i)
       {
-        pts[i][0] = zs[i];
+        pts[i][2] = zs[i];
       }
     }
     return pts;
@@ -477,40 +467,39 @@ public:
 
   void printMeshSizeStats(const std::string& meshLabel) const
   {
-    SLIC_INFO(
-      axom::fmt::format("{} has {} points in {} domains locally",
-                        meshLabel,
-                        numPoints(),
-                        domain_count()));
+    SLIC_INFO(axom::fmt::format("{} has {} points in {} domains locally",
+                                meshLabel,
+                                numPoints(),
+                                domain_count()));
 
     auto getIntMinMax = [](int inVal, int& minVal, int& maxVal, int& sumVal) {
-                          MPI_Allreduce(&inVal, &minVal, 1, MPI_INT, MPI_MIN, MPI_COMM_WORLD);
-                          MPI_Allreduce(&inVal, &maxVal, 1, MPI_INT, MPI_MAX, MPI_COMM_WORLD);
-                          MPI_Allreduce(&inVal, &sumVal, 1, MPI_INT, MPI_SUM, MPI_COMM_WORLD);
-                        };
+      MPI_Allreduce(&inVal, &minVal, 1, MPI_INT, MPI_MIN, MPI_COMM_WORLD);
+      MPI_Allreduce(&inVal, &maxVal, 1, MPI_INT, MPI_MAX, MPI_COMM_WORLD);
+      MPI_Allreduce(&inVal, &sumVal, 1, MPI_INT, MPI_SUM, MPI_COMM_WORLD);
+    };
 
     // Output some global mesh size stats
     {
       int mn, mx, sum;
       getIntMinMax(numPoints(), mn, mx, sum);
-      SLIC_INFO(axom::fmt::format(
-                  "{} has {{min:{}, max:{}, sum:{}, avg:{}}} points",
-                  meshLabel,
-                  mn,
-                  mx,
-                  sum,
-                  (double)sum / num_ranks));
+      SLIC_INFO(
+        axom::fmt::format("{} has {{min:{}, max:{}, sum:{}, avg:{}}} points",
+                          meshLabel,
+                          mn,
+                          mx,
+                          sum,
+                          (double)sum / num_ranks));
     }
     {
       int mn, mx, sum;
       getIntMinMax(domain_count(), mn, mx, sum);
-      SLIC_INFO(axom::fmt::format(
-                  "{} has {{min:{}, max:{}, sum:{}, avg:{}}} domains",
-                  meshLabel,
-                  mn,
-                  mx,
-                  sum,
-                  (double)sum / num_ranks));
+      SLIC_INFO(
+        axom::fmt::format("{} has {{min:{}, max:{}, sum:{}, avg:{}}} domains",
+                          meshLabel,
+                          mn,
+                          mx,
+                          sum,
+                          (double)sum / num_ranks));
     }
   }
 
@@ -931,7 +920,8 @@ public:
    * (not an error) for the purpose of checking.
    */
   template <int DIM>
-  int checkClosestPoints(const axom::primal::Sphere<double, DIM>& sphere, const Input& params)
+  int checkClosestPoints(const axom::primal::Sphere<double, DIM>& sphere,
+                         const Input& params)
   {
     using PointType = axom::primal::Point<double, DIM>;
 
@@ -969,8 +959,13 @@ public:
         predictable, leading to false positives.  We don't claim errors
         for this in when using random.
       */
-      const double avgObjectRes =
+      const double longSpacing =
         2 * M_PI * params.circleRadius / params.circlePoints;
+      const double latSpacing = params.circleRadius * M_PI / 180 *
+        (params.latRange[1] - params.latRange[0]) / params.latPointCount;
+      const double avgObjectRes = DIM == 2
+        ? longSpacing
+        : std::sqrt(longSpacing * longSpacing + latSpacing * latSpacing);
       const double allowableSlack = avgObjectRes / 2;
 
       using IndexSet = slam::PositionSet<>;
@@ -1013,10 +1008,12 @@ public:
                                              0.0))
           {
             errf = true;
-            SLIC_INFO(axom::fmt::format(
-              "***Error: Closest point ({}) for index {} is not on the sphere.",
-              cpCoords[i],
-              i));
+            SLIC_INFO(
+              axom::fmt::format("***Error: Closest point ({}) for index {} "
+                                "({}) is not on the sphere.",
+                                cpCoords[i],
+                                i,
+                                qPt));
           }
 
           double dist = sqrt(primal::squared_distance(qPt, cpCoord));
@@ -1025,19 +1022,24 @@ public:
             if(params.randomSpacing)
             {
               ++sumWarningCount;
-              SLIC_INFO(axom::fmt::format(
-                "***Warning: Closest distance for index {} is {}, off by {}.",
-                i,
-                dist,
-                dist - analyticalDist));
+              SLIC_INFO(
+                axom::fmt::format("***Warning: Closest distance for {} (index "
+                                  "{}, cp {}) is {}, off by {}.",
+                                  qPt,
+                                  i,
+                                  cpCoords[i],
+                                  dist,
+                                  dist - analyticalDist));
             }
             else
             {
               errf = true;
               SLIC_INFO(
-                axom::fmt::format("***Error: Closest distance for index {} is "
-                                  "{}, off by {}.",
+                axom::fmt::format("***Warning: Closest distance for {} (index "
+                                  "{}, cp {}) is {}, off by {}.",
+                                  qPt,
                                   i,
+                                  cpCoords[i],
                                   dist,
                                   dist - analyticalDist));
             }
@@ -1061,25 +1063,28 @@ private:
 };
 
 /**
- * Generates a collection of \a numPoints points on a sphere.
- * Point spacing can be random (default) or uniform.
+ * Generates a collection of \a numPoints points on a sphere,
+ * partitioned into multiple domains.
+ * Point spacing around equator can be random (default) or uniform.
+ * 3D points cover the given latitude range.
  */
-template<int DIM>
 void generateObjectPoints(BlueprintParticleMesh& particleMesh,
-                          const primal::Sphere<double, DIM>& sphere,
-                          int totalNumPoints,
+                          int spatialDimension,
+                          const std::vector<double>& center,
+                          double radius,
+                          int equatorialPointCount,
                           int localDomainCount,
-                          bool randomSpacing = true)
+                          bool randomSpacing = true,
+                          double minLatitude = 0.0,
+                          double maxLatitude = 0.0,
+                          int latPointCount = 1)
 {
   using axom::utilities::random_real;
-
-  using PointType = primal::Point<double, DIM>;
-  using PointArray = axom::Array<PointType>;
 
   int rank = particleMesh.getRank();
   int nranks = particleMesh.getNumRanks();
 
-  // perform scan on ranks to compute totalNumPoints, thetaStart and thetaEnd
+  // scan on ranks to compute equatorialPointCount, thetaStart and thetaEnd
   axom::Array<int> sums(nranks, nranks);
   {
     axom::Array<int> indivDomainCounts(nranks, nranks);
@@ -1101,7 +1106,7 @@ void generateObjectPoints(BlueprintParticleMesh& particleMesh,
     {
       sums[i] = sums[i - 1] + indivDomainCounts[i];
     }
-    // If no rank has any domains, force last one to 1 domain.
+    // If no rank has any domains, force last one to have 1 domain.
     if(sums[nranks - 1] == 0)
     {
       sums[nranks - 1] = 1;
@@ -1117,33 +1122,57 @@ void generateObjectPoints(BlueprintParticleMesh& particleMesh,
     axom::fmt::format("After scan: [{}]", axom::fmt::join(sums, ",")));
 
   int globalDomainCount = sums[nranks - 1];
-  totalNumPoints = std::max(totalNumPoints, globalDomainCount);
-  int ptsPerDomain = totalNumPoints / globalDomainCount;
-  int domainsWithExtraPt = totalNumPoints % globalDomainCount;
+  equatorialPointCount = std::max(equatorialPointCount, globalDomainCount);
+  int ptsPerDomain = equatorialPointCount / globalDomainCount;
+  int domainsWithExtraPt = equatorialPointCount % globalDomainCount;
 
   int myDomainBegin = rank == 0 ? 0 : sums[rank - 1];
   int myDomainEnd = sums[rank];
   assert(myDomainEnd - myDomainBegin == localDomainCount);
 
-  double radius = sphere.getRadius();
-  const auto& center = sphere.getCenter();
-  const double avgAng = 2. * M_PI / totalNumPoints;
+  if(spatialDimension == 2)
+  {
+    minLatitude = 0.0;
+    maxLatitude = 0.0;
+    latPointCount = 1;
+  }
+  minLatitude *= M_PI / 180;
+  maxLatitude *= M_PI / 180;
+  const double longSpacing = 2. * M_PI / equatorialPointCount;
+  const double latSpacing = latPointCount < 2 || latPointCount == 1
+    ? 0
+    : (maxLatitude - minLatitude) / (latPointCount - 1);
 
   for(int di = myDomainBegin; di < myDomainEnd; ++di)
   {
     int pBegin = di * ptsPerDomain + std::min(di, domainsWithExtraPt);
     int pEnd = (di + 1) * ptsPerDomain + std::min((di + 1), domainsWithExtraPt);
     int domainPointCount = pEnd - pBegin;
-    PointArray pts(0, domainPointCount);
+    domainPointCount *= latPointCount;
+    axom::Array<double, 2> pts(domainPointCount, spatialDimension);
+    axom::IndexType iPts = 0;
 
-    for(int pi = pBegin; pi < pEnd; ++pi)
+    for(int li = 0; li < latPointCount; ++li)
     {
-      const double ang = randomSpacing
-        ? random_real(avgAng * pBegin, avgAng * pEnd)
-        : pi * avgAng;
-      const double rsinT = center[1] + radius * std::sin(ang);
-      const double rcosT = center[0] + radius * std::cos(ang);
-      pts.push_back(PointType {rcosT, rsinT});
+      double latAngle = minLatitude + li * latSpacing;
+      double xyRadius = radius * std::cos(latAngle);
+      double z =
+        spatialDimension == 2 ? 0 : center[2] + radius * std::sin(latAngle);
+      for(int pi = pBegin; pi < pEnd; ++pi)
+      {
+        const double ang = randomSpacing
+          ? random_real(longSpacing * pBegin, longSpacing * pEnd)
+          : pi * longSpacing;
+        const double rsinT = center[1] + xyRadius * std::sin(ang);
+        const double rcosT = center[0] + xyRadius * std::cos(ang);
+        pts[iPts][0] = rcosT;
+        pts[iPts][1] = rsinT;
+        if(spatialDimension > 2)
+        {
+          pts[iPts][2] = z;
+        }
+        ++iPts;
+      }
     }
     particleMesh.setPoints(di, pts);
   }
@@ -1155,8 +1184,8 @@ void generateObjectPoints(BlueprintParticleMesh& particleMesh,
 //---------------------------------------------------------------------------
 // Transform closest points to distances and directions
 //---------------------------------------------------------------------------
-template<int DIM>
-void computeDistancesAndDirections(BlueprintParticleMesh &queryMesh,
+template <int DIM>
+void computeDistancesAndDirections(BlueprintParticleMesh& queryMesh,
                                    const std::string& cpCoordsField,
                                    const std::string& cpIndexField,
                                    const std::string& distanceField,
@@ -1332,7 +1361,10 @@ int main(int argc, char** argv)
     params.meshFile);
   // queryMeshWrapper.print_mesh_info();
 
-  if(params.isVerbose()) { queryMeshWrapper.getParticleMesh().printMeshSizeStats("Query mesh"); }
+  if(params.isVerbose())
+  {
+    queryMeshWrapper.getParticleMesh().printMeshSizeStats("Query mesh");
+  }
   slic::flushStreams();
 
   const size_t spatialDim = queryMeshWrapper.getParticleMesh().dimension();
@@ -1352,29 +1384,22 @@ int main(int argc, char** argv)
     const unsigned int omax = params.objDomainCountRange[1];
     const double prob = axom::utilities::random_real(0., 1.);
     int localDomainCount = omin + int(0.5 + prob * (omax - omin));
-    if(spatialDim == 2)
-    {
-      primal::Point<double, 2> center(params.circleCenter.data());
-      primal::Sphere<double, 2> sphere(center, params.circleRadius);
-      generateObjectPoints(objectMeshWrapper.getParticleMesh(),
-                           sphere,
-                           params.circlePoints,
-                           localDomainCount,
-                           params.randomSpacing);
-    }
-    else if(spatialDim == 3)
-    {
-      primal::Point<double, 3> center(params.circleCenter.data());
-      primal::Sphere<double, 3> sphere(center, params.circleRadius);
-      generateObjectPoints(objectMeshWrapper.getParticleMesh(),
-                           sphere,
-                           params.circlePoints,
-                           localDomainCount,
-                           params.randomSpacing);
-    }
+    generateObjectPoints(objectMeshWrapper.getParticleMesh(),
+                         spatialDim,
+                         params.circleCenter,
+                         params.circleRadius,
+                         params.circlePoints,
+                         localDomainCount,
+                         params.randomSpacing,
+                         params.latRange.size() > 0 ? params.latRange[0] : 0.0,
+                         params.latRange.size() > 1 ? params.latRange[1] : 0.0,
+                         params.latPointCount);
   }
 
-  if(params.isVerbose()) { objectMeshWrapper.getParticleMesh().printMeshSizeStats("Object mesh"); }
+  if(params.isVerbose())
+  {
+    objectMeshWrapper.getParticleMesh().printMeshSizeStats("Object mesh");
+  }
   slic::flushStreams();
 
   objectMeshWrapper.saveMesh(params.objectFile);
@@ -1504,14 +1529,18 @@ int main(int argc, char** argv)
   if(spatialDim == 2)
   {
     computeDistancesAndDirections<2>(queryMeshWrapper.getParticleMesh(),
-                                     "cp_coords", "cp_index",
-                                     "distance", "direction");
+                                     "cp_coords",
+                                     "cp_index",
+                                     "distance",
+                                     "direction");
   }
   else if(spatialDim == 3)
   {
     computeDistancesAndDirections<3>(queryMeshWrapper.getParticleMesh(),
-                                     "cp_coords", "cp_index",
-                                     "distance", "direction");
+                                     "cp_coords",
+                                     "cp_index",
+                                     "distance",
+                                     "direction");
   }
 
   // queryMeshNode.print();
