@@ -40,7 +40,7 @@ namespace lumberjack
 class TextEqualityCombiner : public Combiner
 {
 public:
-  TextEqualityCombiner() : m_id("TextEqualityCombiner") { }
+  TextEqualityCombiner() { }
 
   /*!
    *****************************************************************************
@@ -65,11 +65,7 @@ public:
   bool shouldMessagesBeCombined(const Message& leftMessage,
                                 const Message& rightMessage)
   {
-    if(leftMessage.text().compare(rightMessage.text()) == 0)
-    {
-      return true;
-    }
-    return false;
+    return (leftMessage.text().compare(rightMessage.text()) == 0);
   }
 
   /*!
@@ -83,6 +79,8 @@ public:
    * \param [in] combinee the Message that is combined into the other.
    * \param [in] ranksLimit The limit on how many individual ranks are tracked
    *  in the combined Message. Message::rankCount is always incremented.
+   *
+   * \pre shouldMessagesBeCombined(combined, combinee) must be true
    *****************************************************************************
    */
   void combine(Message& combined, const Message& combinee, const int ranksLimit)
@@ -91,7 +89,7 @@ public:
   }
 
 private:
-  std::string m_id;
+  const std::string m_id = "TextEqualityCombiner";
 };
 
 }  // end namespace lumberjack
