@@ -206,7 +206,7 @@ if(AXOM_ENABLE_MPI AND AXOM_ENABLE_SIDRE AND HDF5_FOUND)
                     NAME    ${_test}
                     COMMAND quest_distributed_distance_query_ex
                                 --mesh-file ${quest_data_dir}/${_mesh}.root
-                                --equator-resolution 60
+                                --long-point-count 60
                                 --center ${_center}
                                 --radius 0.9
                                 --lat-point-count 30

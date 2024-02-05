@@ -70,10 +70,10 @@ public:
   std::string objectFile {"object_mesh"};
 
   double circleRadius {1.0};
-  // TODO: Ensure that circleCenter size matches dimensionality.
   std::vector<double> circleCenter {0.0, 0.0};
-  int circlePoints {100};
+  int longPointCount {100};
 
+  // Latitudinal direction of object mesh
   std::vector<double> latRange {-90.0, 90.0};
   int latPointCount {20};
 
@@ -155,8 +155,8 @@ public:
       ->description("Enable/disable random spacing of object points")
       ->capture_default_str();
 
-    object_options->add_option("-n,--equator-resolution", circlePoints)
-      ->description("Number of points around the equatorial direction")
+    object_options->add_option("-n,--long-point-count", longPointCount)
+      ->description("Number of points around the longitudinal direction")
       ->capture_default_str();
 
     object_options->add_option("--lat-range", latRange)
@@ -631,10 +631,8 @@ public:
   }
 
   /// Returns an array containing the positions of the mesh vertices
-  template <int DIM>
-  axom::Array<primal::Point<double, DIM>> getVertexPositions(axom::IndexType domainIdx)
+  axom::Array<double, 2> getVertexPositions(axom::IndexType domainIdx)
   {
-    // SLIC_ERROR("TODO: get a PointArray from a sidre coordset/values group.");
     sidre::Group* cvg = getDomain(domainIdx)->getGroup(
       axom::fmt::format("coordsets/{}/values", getCoordsetName()));
     int ndim = cvg->getNumViews();
@@ -646,13 +644,12 @@ public:
     double* yp = yv->getData();
     double* zp = zv ? (double*)(zv->getData()) : nullptr;
     double* xyzs[3] {xp, yp, zp};
-    axom::Array<primal::Point<double, DIM>> rval(npts, npts);
-    for(int d = 0; d < ndim; ++d)
+    axom::Array<double, 2> rval(npts, ndim);
+    for(int i = 0; i < npts; ++i)
     {
-      double* vs = xyzs[d];
-      for(int i = 0; i < npts; ++i)
+      for(int d = 0; d < ndim; ++d)
       {
-        rval[i][d] = vs[i];
+        rval[i][d] = xyzs[d][i];
       }
     }
     return rval;
@@ -960,7 +957,7 @@ public:
         for this in when using random.
       */
       const double longSpacing =
-        2 * M_PI * params.circleRadius / params.circlePoints;
+        2 * M_PI * params.circleRadius / params.longPointCount;
       const double latSpacing = params.circleRadius * M_PI / 180 *
         (params.latRange[1] - params.latRange[0]) / params.latPointCount;
       const double avgObjectRes = DIM == 2
@@ -1063,16 +1060,15 @@ private:
 };
 
 /**
- * Generates a collection of \a numPoints points on a sphere,
- * partitioned into multiple domains.
- * Point spacing around equator can be random (default) or uniform.
+ * Generates points on a sphere, partitioned into multiple domains.
+ * Point spacing in the longitudinal direction can be random (default) or uniform.
  * 3D points cover the given latitude range.
  */
 void generateObjectPoints(BlueprintParticleMesh& particleMesh,
                           int spatialDimension,
                           const std::vector<double>& center,
                           double radius,
-                          int equatorialPointCount,
+                          int longPointCount,
                           int localDomainCount,
                           bool randomSpacing = true,
                           double minLatitude = 0.0,
@@ -1084,7 +1080,7 @@ void generateObjectPoints(BlueprintParticleMesh& particleMesh,
   int rank = particleMesh.getRank();
   int nranks = particleMesh.getNumRanks();
 
-  // scan on ranks to compute equatorialPointCount, thetaStart and thetaEnd
+  // rank scan to sum longPointCount and determine local range of longitudinal angles.
   axom::Array<int> sums(nranks, nranks);
   {
     axom::Array<int> indivDomainCounts(nranks, nranks);
@@ -1122,13 +1118,13 @@ void generateObjectPoints(BlueprintParticleMesh& particleMesh,
     axom::fmt::format("After scan: [{}]", axom::fmt::join(sums, ",")));
 
   int globalDomainCount = sums[nranks - 1];
-  equatorialPointCount = std::max(equatorialPointCount, globalDomainCount);
-  int ptsPerDomain = equatorialPointCount / globalDomainCount;
-  int domainsWithExtraPt = equatorialPointCount % globalDomainCount;
+  longPointCount = std::max(longPointCount, globalDomainCount);
+  int longPtsPerDomain = longPointCount / globalDomainCount;
+  int domainsWithExtraPt = longPointCount % globalDomainCount;
 
   int myDomainBegin = rank == 0 ? 0 : sums[rank - 1];
   int myDomainEnd = sums[rank];
-  assert(myDomainEnd - myDomainBegin == localDomainCount);
+  SLIC_ASSERT(myDomainEnd - myDomainBegin == localDomainCount);
 
   if(spatialDimension == 2)
   {
@@ -1138,15 +1134,16 @@ void generateObjectPoints(BlueprintParticleMesh& particleMesh,
   }
   minLatitude *= M_PI / 180;
   maxLatitude *= M_PI / 180;
-  const double longSpacing = 2. * M_PI / equatorialPointCount;
+  const double longSpacing = 2. * M_PI / longPointCount;
   const double latSpacing = latPointCount < 2 || latPointCount == 1
     ? 0
     : (maxLatitude - minLatitude) / (latPointCount - 1);
 
   for(int di = myDomainBegin; di < myDomainEnd; ++di)
   {
-    int pBegin = di * ptsPerDomain + std::min(di, domainsWithExtraPt);
-    int pEnd = (di + 1) * ptsPerDomain + std::min((di + 1), domainsWithExtraPt);
+    int pBegin = di * longPtsPerDomain + std::min(di, domainsWithExtraPt);
+    int pEnd =
+      (di + 1) * longPtsPerDomain + std::min((di + 1), domainsWithExtraPt);
     int domainPointCount = pEnd - pBegin;
     domainPointCount *= latPointCount;
     axom::Array<double, 2> pts(domainPointCount, spatialDimension);
@@ -1155,7 +1152,8 @@ void generateObjectPoints(BlueprintParticleMesh& particleMesh,
     for(int li = 0; li < latPointCount; ++li)
     {
       double latAngle = minLatitude + li * latSpacing;
-      double xyRadius = radius * std::cos(latAngle);
+      double xyRadius =
+        radius * std::cos(latAngle);  // Project radius onto x-y plane.
       double z =
         spatialDimension == 2 ? 0 : center[2] + radius * std::sin(latAngle);
       for(int pi = pBegin; pi < pEnd; ++pi)
@@ -1195,7 +1193,6 @@ void computeDistancesAndDirections(BlueprintParticleMesh& queryMesh,
 
   using primal::squared_distance;
   using PointType = primal::Point<double, DIM>;
-  using PointArray = axom::Array<PointType>;
   using IndexSet = slam::PositionSet<>;
 
   PointType nowhere(std::numeric_limits<double>::signaling_NaN());
@@ -1210,7 +1207,7 @@ void computeDistancesAndDirections(BlueprintParticleMesh& queryMesh,
     auto cpIndices =
       queryMesh.getNodalScalarField<axom::IndexType>(cpIndexField, di);
 
-    PointArray qPts = queryMesh.getVertexPositions<DIM>(di);
+    axom::Array<double, 2> qPts = queryMesh.getVertexPositions(di);
     axom::ArrayView<double> distances =
       queryMesh.getNodalScalarField<double>("distance", di);
     axom::ArrayView<PointType> directions =
@@ -1220,10 +1217,10 @@ void computeDistancesAndDirections(BlueprintParticleMesh& queryMesh,
     {
       const bool has_cp = cpIndices[ptIdx] >= 0;
       const PointType& cp = has_cp ? cpCoords[ptIdx] : nowhere;
-      distances[ptIdx] =
-        has_cp ? sqrt(squared_distance(qPts[ptIdx], cp)) : nodist;
+      const PointType& qPt = has_cp ? PointType(&qPts[ptIdx][0]) : nowhere;
+      distances[ptIdx] = has_cp ? sqrt(squared_distance(qPt, cp)) : nodist;
       directions[ptIdx] =
-        PointType(has_cp ? (cp - qPts[ptIdx]).array() : nowhere.array());
+        PointType(has_cp ? (cp - qPt).array() : nowhere.array());
     }
   }
 }
@@ -1291,7 +1288,6 @@ int main(int argc, char** argv)
   MPI_Comm_size(MPI_COMM_WORLD, &num_ranks);
 
   initializeLogger();
-  //slic::setAbortOnWarning(true);
 
   //---------------------------------------------------------------------------
   // Set up and parse command line arguments
@@ -1353,13 +1349,13 @@ int main(int argc, char** argv)
   sidre::DataStore dataStore;
 
   //---------------------------------------------------------------------------
-  // Load computational mesh and generate a particle mesh over its nodes
+  // Load query mesh and generate a particle mesh over its nodes
   // These will be used to query the closest points on the object mesh(es)
   //---------------------------------------------------------------------------
+
   QueryMeshWrapper queryMeshWrapper(
     dataStore.getRoot()->createGroup("queryMesh", true),
     params.meshFile);
-  // queryMeshWrapper.print_mesh_info();
 
   if(params.isVerbose())
   {
@@ -1388,7 +1384,7 @@ int main(int argc, char** argv)
                          spatialDim,
                          params.circleCenter,
                          params.circleRadius,
-                         params.circlePoints,
+                         params.longPointCount,
                          localDomainCount,
                          params.randomSpacing,
                          params.latRange.size() > 0 ? params.latRange[0] : 0.0,
@@ -1406,12 +1402,12 @@ int main(int argc, char** argv)
   slic::flushStreams();
 
   //---------------------------------------------------------------------------
-  // Initialize spatial index for querying points, and run query
+  // Initialize spatial index for object points, and run query
   //---------------------------------------------------------------------------
 
   auto init_str =
     banner(axom::fmt::format("Initializing BVH tree over {} points",
-                             params.circlePoints));
+                             params.longPointCount));
 
   axom::utilities::Timer initTimer(false);
   axom::utilities::Timer queryTimer(false);
