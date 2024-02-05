@@ -598,7 +598,7 @@ public:
    * 
    * \pre DIM == 1
    */
-  void push_back(const T& value);
+  AXOM_HOST_DEVICE void push_back(const T& value);
 
   /*!
    * \brief Push a value to the back of the array.
@@ -609,7 +609,7 @@ public:
    * 
    * \pre DIM == 1
    */
-  void push_back(T&& value);
+  AXOM_HOST_DEVICE void push_back(T&& value);
 
   /*!
    * \brief Inserts new element at the end of the Array.
@@ -622,7 +622,7 @@ public:
    * \pre DIM == 1
    */
   template <typename... Args>
-  void emplace_back(Args&&... args);
+  AXOM_HOST_DEVICE void emplace_back(Args&&... args);
 
   /// @}
 
@@ -848,6 +848,16 @@ protected:
    * \note Reallocation is done if the new size will exceed the capacity.
    */
   T* reserveForInsert(IndexType n, IndexType pos);
+
+  /*!
+   * \brief Make space for a subsequent insertion into the array.
+   *
+   * \param [in] n the number of elements to insert.
+   *
+   * \note This version supports concurrent GPU insertions.
+   * \note Reallocation is not supported.
+   */
+  AXOM_DEVICE IndexType reserveForDeviceInsert(IndexType n);
 
   /*!
    * \brief Update the number of elements.
@@ -1309,7 +1319,7 @@ inline typename Array<T, DIM, SPACE>::ArrayIterator Array<T, DIM, SPACE>::emplac
 
 //------------------------------------------------------------------------------
 template <typename T, int DIM, MemorySpace SPACE>
-inline void Array<T, DIM, SPACE>::push_back(const T& value)
+AXOM_HOST_DEVICE inline void Array<T, DIM, SPACE>::push_back(const T& value)
 {
   static_assert(DIM == 1, "push_back is only supported for 1D arrays");
   emplace_back(value);
@@ -1317,7 +1327,7 @@ inline void Array<T, DIM, SPACE>::push_back(const T& value)
 
 //------------------------------------------------------------------------------
 template <typename T, int DIM, MemorySpace SPACE>
-inline void Array<T, DIM, SPACE>::push_back(T&& value)
+AXOM_HOST_DEVICE inline void Array<T, DIM, SPACE>::push_back(T&& value)
 {
   static_assert(DIM == 1, "push_back is only supported for 1D arrays");
   emplace_back(std::move(value));
@@ -1326,10 +1336,16 @@ inline void Array<T, DIM, SPACE>::push_back(T&& value)
 //------------------------------------------------------------------------------
 template <typename T, int DIM, MemorySpace SPACE>
 template <typename... Args>
-inline void Array<T, DIM, SPACE>::emplace_back(Args&&... args)
+AXOM_HOST_DEVICE inline void Array<T, DIM, SPACE>::emplace_back(Args&&... args)
 {
   static_assert(DIM == 1, "emplace_back is only supported for 1D arrays");
+#ifdef AXOM_DEVICE_CODE
+  IndexType insertIndex = reserveForDeviceInsert(1);
+  // Construct in-place in uninitialized memory.
+  new(m_data + insertIndex) T(std::forward<Args>(args)...);
+#else
   emplace(size(), std::forward<Args>(args)...);
+#endif
 }
 
 //------------------------------------------------------------------------------
@@ -1482,6 +1498,32 @@ inline T* Array<T, DIM, SPACE>::reserveForInsert(IndexType n, IndexType pos)
 
   updateNumElements(new_size);
   return m_data + pos;
+}
+
+//------------------------------------------------------------------------------
+template <typename T, int DIM, MemorySpace SPACE>
+AXOM_DEVICE inline IndexType Array<T, DIM, SPACE>::reserveForDeviceInsert(IndexType n)
+{
+#ifdef AXOM_DEVICE_CODE
+  // Device path: supports insertion while m_num_elements < m_capacity
+  // Does not support insertions which require reallocating the underlying
+  // buffer.
+  IndexType new_pos = RAJA::atomicAdd<RAJA::auto_atomic>(&m_num_elements, n);
+  if(new_pos >= m_capacity)
+  {
+  #ifdef AXOM_DEBUG
+    printf(
+      "Array::reserveForInsert: size() exceeded capacity() when inserting "
+      "on the device.\n");
+  #endif
+  #ifdef AXOM_USE_CUDA
+    __trap();
+  #elif defined(AXOM_USE_HIP)
+    abort();
+  #endif
+  }
+  return new_pos;
+#endif
 }
 
 //------------------------------------------------------------------------------
