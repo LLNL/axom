@@ -1,6 +1,6 @@
 
 [comment]: # (#################################################################)
-[comment]: # (Copyright 2017-2023, Lawrence Livermore National Security, LLC)
+[comment]: # (Copyright 2017-2024, Lawrence Livermore National Security, LLC)
 [comment]: # (and Axom Project Developers. See the top-level LICENSE file)
 [comment]: # (for details.)
 [comment]: #
