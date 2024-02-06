@@ -595,6 +595,9 @@ public:
    * \param [in] value the value to be added to the back.
    *
    * \note Reallocation is done if the new size will exceed the capacity.
+   * \note If used in a device kernel, the number of push_backs must not exceed
+   *  the capacity, since device-side reallocations aren't supported.
+   * \note Array must be allocated in unified memory if calling on the device.
    * 
    * \pre DIM == 1
    */
@@ -606,6 +609,9 @@ public:
    * \param [in] value the value to move to the back.
    *
    * \note Reallocation is done if the new size will exceed the capacity.
+   * \note If used in a device kernel, the number of push_backs must not exceed
+   *  the capacity, since device-side reallocations aren't supported.
+   * \note Array must be allocated in unified memory if calling on the device.
    * 
    * \pre DIM == 1
    */
@@ -618,6 +624,9 @@ public:
    *
    * \note Reallocation is done if the new size will exceed the capacity.
    * \note The size increases by 1.
+   * \note If used in a device kernel, the number of push_backs must not exceed
+   *  the capacity, since device-side reallocations aren't supported.
+   * \note Array must be allocated in unified memory if calling on the device.
    * 
    * \pre DIM == 1
    */
