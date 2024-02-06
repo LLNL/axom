@@ -201,7 +201,7 @@ Input params;
  *
  *  Given a sidre Group, creates the stubs for a mesh blueptint particle mesh
  *
- *  BlueprintParticleMesh is used by both the object mesh and the uery mesh.
+ *  BlueprintParticleMesh is used by both the object mesh and the query mesh.
  */
 struct BlueprintParticleMesh
 {
@@ -912,9 +912,9 @@ public:
    * Populate "error_flag" field with the number of errors, for
    * visualization.
    *
-   * Randomized object points (--random-spacing switch) can cause
-   * false positives, so when it's on, distance inaccuracy is a warning
-   * (not an error) for the purpose of checking.
+   * Randomizing points (--random-spacing switch) can cause false
+   * positives, so when it's on, distance inaccuracy is a warning (not
+   * an error) for the purpose of checking.
    */
   template <int DIM>
   int checkClosestPoints(const axom::primal::Sphere<double, DIM>& sphere,
