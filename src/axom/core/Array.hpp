@@ -1513,7 +1513,12 @@ inline T* Array<T, DIM, SPACE>::reserveForInsert(IndexType n, IndexType pos)
 template <typename T, int DIM, MemorySpace SPACE>
 AXOM_DEVICE inline IndexType Array<T, DIM, SPACE>::reserveForDeviceInsert(IndexType n)
 {
-#ifdef AXOM_DEVICE_CODE
+#ifndef AXOM_DEVICE_CODE
+  // Host path: should never be called.
+  AXOM_UNUSED_VAR(n);
+  assert(false);
+  return {};
+#else
   // Device path: supports insertion while m_num_elements < m_capacity
   // Does not support insertions which require reallocating the underlying
   // buffer.
