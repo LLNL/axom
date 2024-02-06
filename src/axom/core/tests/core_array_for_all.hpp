@@ -1216,7 +1216,8 @@ AXOM_TYPED_TEST(core_array_for_all, device_insert)
   axom::for_all<ExecSpace>(
     N,
     AXOM_LAMBDA(axom::IndexType idx) {
-#ifdef AXOM_USE_OPENMP
+#if defined(AXOM_USE_OPENMP) && defined(AXOM_USE_RAJA) && \
+  !defined(AXOM_DEVICE_CODE)
       if(omp_in_parallel())
       {
   #pragma omp critical
