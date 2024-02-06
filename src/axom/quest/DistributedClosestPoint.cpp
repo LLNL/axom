@@ -258,7 +258,7 @@ void DistributedClosestPoint::computeClosestPoints(conduit::Node& query_node,
   case 3:
     m_dcp_3->setSquaredDistanceThreshold(m_sqDistanceThreshold);
     m_dcp_3->setMpiCommunicator(m_mpiComm);
-    m_dcp_2->setOutputSwitches(m_outputRank,
+    m_dcp_3->setOutputSwitches(m_outputRank,
                                m_outputIndex,
                                m_outputDistance,
                                m_outputCoords,
