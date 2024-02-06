@@ -5,6 +5,7 @@
 
 // Axom includes
 #include "axom/mint.hpp"
+#include "axom/sidre.hpp"
 #include "quest_test_utilities.hpp"
 
 #include "axom/quest/interface/inout.hpp"
@@ -70,6 +71,18 @@ TEST(quest_initialize, signed_distance_pointer_initialize)
   quest::signed_distance_finalize();
 
   delete input_mesh;
+}
+
+// Test immediately reserving space in UnstructuredMesh.
+TEST(quest_initialize, immediate_ug_reserve)
+{
+  axom::sidre::DataStore objectDS;
+  axom::sidre::Group* meshGroup = objectDS.getRoot()->createGroup("myGroup");
+  axom::mint::UnstructuredMesh<axom::mint::SINGLE_SHAPE> contourMesh(
+    2,
+    axom::mint::CellType::SEGMENT,
+    meshGroup);
+  contourMesh.reserveCells(10);  // This may unexpectedly crash.
 }
 
 int main(int argc, char** argv)
