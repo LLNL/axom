@@ -148,10 +148,16 @@ if (TARGET mfem)
     # Note - white238: I can't seem to get this to pass install testing due to mfem being included
     # in multiple export sets
     message(STATUS "MFEM support is ON, using existing mfem target")
+
     # Add it to this export set but don't prefix it with axom::
-    install(TARGETS              mfem
-            EXPORT               axom-targets
-            DESTINATION          lib)
+    # NOTE: imported targets cannot be part of an export set
+    get_target_property(_is_imported mfem IMPORTED)
+    if(NOT "${_is_imported}")
+        install(TARGETS              mfem
+                EXPORT               axom-targets
+                DESTINATION          lib)
+    endif()
+
     set(MFEM_FOUND TRUE CACHE BOOL "" FORCE)
 elseif (MFEM_DIR)
     include(cmake/thirdparty/FindMFEM.cmake)
