@@ -216,15 +216,15 @@ struct HexMesh
   BoundingBox m_meshBoundingBox;
 };
 
-HexMesh loadBlueprintHexMesh(const std::string& mesh_path)
+HexMesh loadBlueprintHexMesh(const std::string& mesh_path,
+                             bool verboseOutput = false)
 {
   HexMesh hexMesh;
 
   axom::utilities::Timer timer(true);
 
-  // Load silo mesh into Conduit node
+  // Load Blueprint mesh into Conduit node
   conduit::Node n_load;
-  // conduit::relay::io::silo::load_mesh(mesh_path, n_load);
   conduit::relay::io::blueprint::read_mesh(mesh_path, n_load);
   n_load.print();
 
@@ -235,16 +235,10 @@ HexMesh loadBlueprintHexMesh(const std::string& mesh_path)
     SLIC_ERROR("A hex mesh was expected!");
   }
 
-  UMesh* mesh = new UMesh(3, axom::mint::HEX);
-
-  int* connectivity = n_load[0]["topologies/topo/elements/connectivity"].value();
-
   const int HEX_OFFSET = 8;
+
   int num_nodes =
     (n_load[0]["coordsets/coords/values/x"]).dtype().number_of_elements();
-  double* x_vals = n_load[0]["coordsets/coords/values/x"].value();
-  double* y_vals = n_load[0]["coordsets/coords/values/y"].value();
-  double* z_vals = n_load[0]["coordsets/coords/values/z"].value();
 
   int connectivity_size =
     (n_load[0]["topologies/topo/elements/connectivity"]).dtype().number_of_elements();
@@ -260,68 +254,30 @@ HexMesh loadBlueprintHexMesh(const std::string& mesh_path)
                << " and second calculation is " << cell_calc_from_connectivity);
   }
 
-  // Append mesh nodes
-  for(int i = 0; i < num_nodes; i++)
-  {
-    mesh->appendNode(x_vals[i], y_vals[i], z_vals[i]);
-  }
-
-  // Append mesh cells
-  for(int i = 0; i < connectivity_size / HEX_OFFSET; i++)
-  {
-    const axom::IndexType cell[] = {
-      connectivity[i * HEX_OFFSET],
-      connectivity[(i * HEX_OFFSET) + 1],
-      connectivity[(i * HEX_OFFSET) + 2],
-      connectivity[(i * HEX_OFFSET) + 3],
-      connectivity[(i * HEX_OFFSET) + 4],
-      connectivity[(i * HEX_OFFSET) + 5],
-      connectivity[(i * HEX_OFFSET) + 6],
-      connectivity[(i * HEX_OFFSET) + 7],
-    };
-
-    mesh->appendCell(cell);
-  }
-
-  timer.stop();
-  SLIC_INFO(axom::fmt::format("Loading the mesh took {:4.3} seconds.",
-                              timer.elapsedTimeInSec()));
-
-  // Write out to vtk for test viewing
-  // SLIC_INFO("Writing out mesh to test.vtk for debugging");
-  // timer.start();
-  // axom::mint::write_vtk(mesh, "test.vtk");
-  // timer.stop();
-  // SLIC_INFO(
-  //   axom::fmt::format("Writing out mesh to test.vtk took {:4.3} seconds.",
-  //                     timer.elapsedTimeInSec()));
-
-  timer.start();
-
   // extract hexes into an axom::Array
-  const int numCells = mesh->getNumberOfCells();
+  int* connectivity = n_load[0]["topologies/topo/elements/connectivity"].value();
+
+  double* x_vals = n_load[0]["coordsets/coords/values/x"].value();
+  double* y_vals = n_load[0]["coordsets/coords/values/y"].value();
+  double* z_vals = n_load[0]["coordsets/coords/values/z"].value();
+
+  const int numCells = connectivity_size / HEX_OFFSET;
   hexMesh.m_hexes.reserve(numCells);
+  HexMesh::Hexahedron hex;
+  axom::Array<HexMesh::Point> hexPoints(HEX_OFFSET);
+
+  for(int i = 0; i < numCells; ++i)
   {
-    HexMesh::Hexahedron hex;
-    std::array<axom::IndexType, 8> hexCell;
-    for(int i = 0; i < numCells; ++i)
+    for(int j = 0; j < HEX_OFFSET; j++)
     {
-      mesh->getCellNodeIDs(i, hexCell.data());
-      mesh->getNode(hexCell[0], hex[0].data());
-      mesh->getNode(hexCell[1], hex[1].data());
-      mesh->getNode(hexCell[2], hex[2].data());
-      mesh->getNode(hexCell[3], hex[3].data());
-      mesh->getNode(hexCell[4], hex[4].data());
-      mesh->getNode(hexCell[5], hex[5].data());
-      mesh->getNode(hexCell[6], hex[6].data());
-      mesh->getNode(hexCell[7], hex[7].data());
-
-      hexMesh.m_hexes.emplace_back(hex);
+      int offset = i * HEX_OFFSET;
+      hexPoints[j] = HexMesh::Point({x_vals[connectivity[offset + j]],
+                                     y_vals[connectivity[offset + j]],
+                                     z_vals[connectivity[offset + j]]});
     }
+    hex = HexMesh::Hexahedron(hexPoints);
+    hexMesh.m_hexes.emplace_back(hex);
   }
-
-  delete mesh;
-  mesh = nullptr;
 
   // compute and store hex bounding boxes and mesh bounding box
   hexMesh.m_hexBoundingBoxes.reserve(numCells);
@@ -336,12 +292,60 @@ HexMesh loadBlueprintHexMesh(const std::string& mesh_path)
     axom::fmt::format("Mesh bounding box is {}.\n", hexMesh.meshBoundingBox()));
 
   timer.stop();
-  SLIC_INFO(
-    axom::fmt::format("Writing out mesh to hexMesh object took {:4.3} seconds.",
-                      timer.elapsedTimeInSec()));
+  SLIC_INFO(axom::fmt::format(
+    "Writing out Blueprint mesh to hexMesh object took {:4.3} seconds.",
+    timer.elapsedTimeInSec()));
+
+  // Optional verbose output that writes Blueprint mesh to vtk
+  if(verboseOutput)
+  {
+    timer.start();
+
+    UMesh* mesh = new UMesh(3, axom::mint::HEX);
+
+    // Append mesh nodes
+    for(int i = 0; i < num_nodes; i++)
+    {
+      mesh->appendNode(x_vals[i], y_vals[i], z_vals[i]);
+    }
+
+    // Append mesh cells
+    for(int i = 0; i < numCells; i++)
+    {
+      const axom::IndexType cell[] = {
+        connectivity[i * HEX_OFFSET],
+        connectivity[(i * HEX_OFFSET) + 1],
+        connectivity[(i * HEX_OFFSET) + 2],
+        connectivity[(i * HEX_OFFSET) + 3],
+        connectivity[(i * HEX_OFFSET) + 4],
+        connectivity[(i * HEX_OFFSET) + 5],
+        connectivity[(i * HEX_OFFSET) + 6],
+        connectivity[(i * HEX_OFFSET) + 7],
+      };
+
+      mesh->appendCell(cell);
+    }
+
+    timer.stop();
+    SLIC_INFO(
+      axom::fmt::format("Loading the Blueprint mesh took {:4.3} seconds.",
+                        timer.elapsedTimeInSec()));
+
+    // Write out to vtk for test viewing
+    SLIC_INFO("Writing out Blueprint mesh to test.vtk for debugging...");
+    timer.start();
+    axom::mint::write_vtk(mesh, "test.vtk");
+    timer.stop();
+    SLIC_INFO(axom::fmt::format(
+      "Writing out Blueprint mesh to test.vtk took {:4.3} seconds.",
+      timer.elapsedTimeInSec()));
+
+    delete mesh;
+    mesh = nullptr;
+  }  // end of verbose output
 
   return hexMesh;
-}
+}  // end of loadBlueprintHexMesh
 
 using IndexPair = std::pair<axom::IndexType, axom::IndexType>;
 
@@ -629,13 +633,14 @@ int main(int argc, char** argv)
     axom::fmt::format("Reading Blueprint file to insert into BVH: '{}'...\n",
                       params.mesh_file_first));
 
-  HexMesh insert_mesh = loadBlueprintHexMesh(params.mesh_file_first);
+  HexMesh insert_mesh =
+    loadBlueprintHexMesh(params.mesh_file_first, params.isVerbose());
 
   // Load Blueprint mesh for querying BVH
   // SLIC_INFO(axom::fmt::format("Reading Blueprint file to query BVH: '{}'...\n",
   //                             params.mesh_file_second));
 
-  // HexMesh query_mesh = loadBlueprintHexMesh(params.mesh_file_second);
+  // HexMesh query_mesh = loadBlueprintHexMesh(params.mesh_file_second, params.isVerbose());
 
   //   // Check for self-intersections; results are returned as an array of index pairs
   //   axom::Array<IndexPair> intersectionPairs;
