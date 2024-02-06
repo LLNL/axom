@@ -1215,7 +1215,23 @@ AXOM_TYPED_TEST(core_array_for_all, device_insert)
 
   axom::for_all<ExecSpace>(
     N,
-    AXOM_LAMBDA(axom::IndexType idx) { arr_v[0].emplace_back(3 * idx + 5); });
+    AXOM_LAMBDA(axom::IndexType idx) {
+#ifdef AXOM_USE_OPENMP
+      if(omp_in_parallel())
+      {
+  #pragma omp critical
+        {
+          arr_v[0].emplace_back(3 * idx + 5);
+        }
+      }
+      else
+      {
+        arr_v[0].emplace_back(3 * idx + 5);
+      }
+#else
+      arr_v[0].emplace_back(3 * idx + 5);
+#endif
+    });
 
   // handles synchronization, if necessary
   if(axom::execution_space<ExecSpace>::async())
