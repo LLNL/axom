@@ -169,7 +169,6 @@ void LumberjackStream::initializeLumberjack(MPI_Comm comm, int ranksLimit)
   m_ljComm->initialize(comm, ranksLimit);
   m_lj = new axom::lumberjack::Lumberjack;
   m_lj->initialize(m_ljComm, ranksLimit);
-  m_lj->addCombiner(new lumberjack::TextTagCombiner);
   m_isLJOwnedBySLIC = true;
 }
 
