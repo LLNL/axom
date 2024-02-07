@@ -36,8 +36,8 @@ endif()
 # BVH silo example ------------------------------------------------------------
 if (CONDUIT_FOUND AND RAJA_FOUND AND UMPIRE_FOUND)
     axom_add_executable(
-        NAME        quest_bvh_silo_example_ex
-        SOURCES     quest_bvh_silo_example.cpp
+        NAME        quest_candidates_example_ex
+        SOURCES     quest_candidates_example.cpp
         OUTPUT_DIR  ${EXAMPLE_OUTPUT_DIRECTORY}
         DEPENDS_ON  ${quest_example_depends} conduit::conduit
         FOLDER      axom/quest/examples
