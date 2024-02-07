@@ -5,8 +5,10 @@
 
 // Axom includes
 #include "axom/mint.hpp"
-#include "axom/sidre.hpp"
 #include "quest_test_utilities.hpp"
+#if defined AXOM_USE_SIDRE
+  #include "axom/sidre.hpp"
+#endif
 
 #include "axom/quest/interface/inout.hpp"
 #include "axom/quest/interface/signed_distance.hpp"
@@ -73,6 +75,7 @@ TEST(quest_initialize, signed_distance_pointer_initialize)
   delete input_mesh;
 }
 
+#if defined AXOM_USE_SIDRE
 // Test immediately reserving space in UnstructuredMesh.
 TEST(quest_initialize, immediate_ug_reserve)
 {
@@ -84,6 +87,7 @@ TEST(quest_initialize, immediate_ug_reserve)
     meshGroup);
   contourMesh.reserveCells(10);  // This may unexpectedly crash.
 }
+#endif
 
 int main(int argc, char** argv)
 {
