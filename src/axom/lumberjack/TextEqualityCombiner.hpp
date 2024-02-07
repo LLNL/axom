@@ -34,6 +34,9 @@ namespace lumberjack
  *  you. If you want it removed call Lumberjack::removeCombiner with the string
  * "TextEqualityCombiner" as it's parameter.
  *
+ * \warning Using the TextEqualityCombiner with Message::tag has undefined
+ *          behavior.
+ *
  * \see Combiner Lumberjack
  *******************************************************************************
  */
