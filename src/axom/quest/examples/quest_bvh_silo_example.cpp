@@ -578,7 +578,7 @@ axom::Array<IndexPair> findIntersectionsBVH(const HexMesh& insertMesh,
     )",
                               insertMesh.numHexes(),
                               queryMesh.numHexes(),
-                              insertMesh.numHexes() * queryMesh.numHexes(),
+                              1.0 * insertMesh.numHexes() * queryMesh.numHexes(),
                               candidates_d.size(),
                               numCandidates,
                               numIntersections));
@@ -699,15 +699,12 @@ int main(int argc, char** argv)
     // Write out candidate pairs
     SLIC_INFO("Writing out candidate pairs...");
     std::ofstream outf("candidates.txt");
-    if(!outf)
-    {
-      return false;
-    }
 
     outf << intersectionPairs.size() << " candidate pairs:" << std::endl;
-    for(size_t i = 0; i < intersectionPairs.size(); ++i)
+    for(int i = 0; i < intersectionPairs.size(); ++i)
     {
-      outf << intersectionPairs[i].first << " " << intersectionPairs[i].second << std::endl;
+      outf << intersectionPairs[i].first << " " << intersectionPairs[i].second
+           << std::endl;
     }
   }
 
