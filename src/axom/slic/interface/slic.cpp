@@ -207,10 +207,10 @@ void addStreamToAllTags(GenericOutputStream* ls)
 }
 
 //------------------------------------------------------------------------------
-int getNumStreamsAtTag(const std::string& tag)
+int getNumStreamsWithTag(const std::string& tag)
 {
   ensureInitialized();
-  return Logger::getActiveLogger()->getNumStreamsAtTag(tag);
+  return Logger::getActiveLogger()->getNumStreamsWithTag(tag);
 }
 
 //------------------------------------------------------------------------------

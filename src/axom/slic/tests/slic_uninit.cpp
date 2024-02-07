@@ -96,8 +96,8 @@ TEST(slic_uninit, manage_loggers)
     axom::slic::addStreamToAllTags(
       new axom::slic::GenericOutputStream(&std::cout, format));
   });
-  testInit("getNumStreamsAtTag",
-           []() { axom::slic::getNumStreamsAtTag("Test"); });
+  testInit("getNumStreamsWithTag",
+           []() { axom::slic::getNumStreamsWithTag("Test"); });
 }
 
 TEST(slic_uninit, log_methods)

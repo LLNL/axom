@@ -273,7 +273,7 @@ void addStreamToAllTags(GenericOutputStream* ls);
 * \return N the number of streams for the given tag.
 * \post N >= 0
 */
-int getNumStreamsAtTag(const std::string& tag);
+int getNumStreamsWithTag(const std::string& tag);
 
 /*!
  * \brief Logs the given message to all registered streams.

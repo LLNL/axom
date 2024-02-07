@@ -219,7 +219,7 @@ public:
    * \return N the number of streams for the given tag.
    * \post N >= 0
    */
-  int getNumStreamsAtTag(const std::string& tag);
+  int getNumStreamsWithTag(const std::string& tag);
 
   /*!
    * \brief Returns the ith stream at the given tag.
@@ -228,7 +228,7 @@ public:
    * \param [in] i the index of the stream in query.
    *
    * \return stream_ptr pointer to the stream.
-   * \pre i >= 0 && i < this->getNumStreamsAtTag( tag )
+   * \pre i >= 0 && i < this->getNumStreamsWithTag( tag )
    * \post stream_ptr != NULL.
    */
   LogStream* getStream(const std::string& tag, int i);

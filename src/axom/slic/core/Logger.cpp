@@ -218,7 +218,7 @@ int Logger::getNumStreamsAtMsgLevel(message::Level level)
 }
 
 //------------------------------------------------------------------------------
-int Logger::getNumStreamsAtTag(const std::string& tag)
+int Logger::getNumStreamsWithTag(const std::string& tag)
 {
   if(m_taggedStreams.find(tag) == m_taggedStreams.end())
   {
