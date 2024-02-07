@@ -226,7 +226,6 @@ HexMesh loadBlueprintHexMesh(const std::string& mesh_path,
   // Load Blueprint mesh into Conduit node
   conduit::Node n_load;
   conduit::relay::io::blueprint::read_mesh(mesh_path, n_load);
-  n_load.print();
 
   // Verify this is a hexahedral mesh
   std::string shape = n_load[0]["topologies/topo/elements/shape"].as_string();
@@ -410,9 +409,8 @@ axom::Array<IndexPair> findIntersectionsBVH(const HexMesh& insertMesh,
   bvh.setAllocatorID(kernel_allocator);
   bvh.initialize(insert_bbox_v, insert_bbox_v.size());
   timer.stop();
-  SLIC_INFO_IF(verboseOutput,
-               axom::fmt::format("0: Initializing BVH took {:4.3} seconds.",
-                                 timer.elapsedTimeInSec()));
+  SLIC_INFO(axom::fmt::format("0: Initializing BVH took {:4.3} seconds.",
+                              timer.elapsedTimeInSec()));
 
   // Search for intersecting bounding boxes of hexes to query;
   // result is returned as CSR arrays for candidate data
@@ -430,10 +428,9 @@ axom::Array<IndexPair> findIntersectionsBVH(const HexMesh& insertMesh,
                         query_bbox_v);
 
   timer.stop();
-  SLIC_INFO_IF(verboseOutput,
-               axom::fmt::format(
-                 "1: Querying candidate bounding boxes took {:4.3} seconds.",
-                 timer.elapsedTimeInSec()));
+  SLIC_INFO(axom::fmt::format(
+    "1: Querying candidate bounding boxes took {:4.3} seconds.",
+    timer.elapsedTimeInSec()));
 
   // Initialize query indices and bvh candidate indices
   IndexArray indices_d(axom::ArrayOptions::Uninitialized {},
@@ -476,10 +473,10 @@ axom::Array<IndexPair> findIntersectionsBVH(const HexMesh& insertMesh,
     axom::copy(&numCandidates, numValidCandidates_p, sizeof(axom::IndexType));
   }
   timer.stop();
-  SLIC_INFO_IF(verboseOutput,
-               axom::fmt::format("2: Linearizing query indices and bvh "
-                                 "candidate indices took {:4.3} seconds.",
-                                 timer.elapsedTimeInSec()));
+  SLIC_INFO(
+    axom::fmt::format("2: Linearizing query indices and bvh "
+                      "candidate indices took {:4.3} seconds.",
+                      timer.elapsedTimeInSec()));
 
   IndexArray intersect_d[2] = {IndexArray(axom::ArrayOptions::Uninitialized {},
                                           numCandidates,
@@ -566,14 +563,12 @@ axom::Array<IndexPair> findIntersectionsBVH(const HexMesh& insertMesh,
   intersect_d[1].resize(numIntersections);
 
   timer.stop();
-  SLIC_INFO_IF(
-    verboseOutput,
+  SLIC_INFO(
     axom::fmt::format("3: Finding actual intersections took {:4.3} seconds.",
                       timer.elapsedTimeInSec()));
 
-  SLIC_INFO_IF(verboseOutput,
-               axom::fmt::format(axom::utilities::locale(),
-                                 R"(Stats for query
+  SLIC_INFO(axom::fmt::format(axom::utilities::locale(),
+                              R"(Stats for query
     -- Number of insert-BVH mesh hexes {:L}
     -- Number of query mesh hexes {:L}
     -- Total possible candidates {:L}
@@ -581,12 +576,12 @@ axom::Array<IndexPair> findIntersectionsBVH(const HexMesh& insertMesh,
     -- Potential candidates after linearizing {:L}
     -- Actual intersections {:L}
     )",
-                                 insertMesh.numHexes(),
-                                 queryMesh.numHexes(),
-                                 insertMesh.numHexes() * queryMesh.numHexes(),
-                                 candidates_d.size(),
-                                 numCandidates,
-                                 numIntersections));
+                              insertMesh.numHexes(),
+                              queryMesh.numHexes(),
+                              insertMesh.numHexes() * queryMesh.numHexes(),
+                              candidates_d.size(),
+                              numCandidates,
+                              numIntersections));
 
   // copy results back to host and into return vector
   IndexArray intersect_h[2] = {
@@ -637,69 +632,70 @@ int main(int argc, char** argv)
     loadBlueprintHexMesh(params.mesh_file_first, params.isVerbose());
 
   // Load Blueprint mesh for querying BVH
-  // SLIC_INFO(axom::fmt::format("Reading Blueprint file to query BVH: '{}'...\n",
-  //                             params.mesh_file_second));
+  SLIC_INFO(axom::fmt::format("Reading Blueprint file to query BVH: '{}'...\n",
+                              params.mesh_file_second));
 
-  // HexMesh query_mesh = loadBlueprintHexMesh(params.mesh_file_second, params.isVerbose());
+  HexMesh query_mesh =
+    loadBlueprintHexMesh(params.mesh_file_second, params.isVerbose());
 
-  //   // Check for self-intersections; results are returned as an array of index pairs
-  //   axom::Array<IndexPair> intersectionPairs;
-  //   axom::utilities::Timer timer(true);
-  //   switch(params.policy)
-  //   {
-  //   case RuntimePolicy::raja_omp:
-  // #ifdef AXOM_USE_OPENMP
-  //     intersectionPairs =
-  //       findIntersectionsBVH<omp_exec>(insert_mesh,
-  //                                      query_mesh,
-  //                                      params.intersectionThreshold,
-  //                                      params.isVerbose());
-  // #endif
-  //     break;
-  //   case RuntimePolicy::raja_cuda:
-  // #ifdef AXOM_USE_CUDA
-  //     intersectionPairs =
-  //       findIntersectionsBVH<cuda_exec>(insert_mesh,
-  //                                       query_mesh,
-  //                                       params.intersectionThreshold,
-  //                                       params.isVerbose());
-  // #endif
-  //     break;
-  //   default:  // RuntimePolicy::raja_seq
-  //     intersectionPairs =
-  //       findIntersectionsBVH<seq_exec>(insert_mesh,
-  //                                      query_mesh,
-  //                                      params.intersectionThreshold,
-  //                                      params.isVerbose());
-  //     break;
-  //   }
-  //   timer.stop();
+  // Check for self-intersections; results are returned as an array of index pairs
+  axom::Array<IndexPair> intersectionPairs;
+  axom::utilities::Timer timer(true);
+  switch(params.policy)
+  {
+  case RuntimePolicy::raja_omp:
+#ifdef AXOM_USE_OPENMP
+    intersectionPairs =
+      findIntersectionsBVH<omp_exec>(insert_mesh,
+                                     query_mesh,
+                                     params.intersectionThreshold,
+                                     params.isVerbose());
+#endif
+    break;
+  case RuntimePolicy::raja_cuda:
+#ifdef AXOM_USE_CUDA
+    intersectionPairs =
+      findIntersectionsBVH<cuda_exec>(insert_mesh,
+                                      query_mesh,
+                                      params.intersectionThreshold,
+                                      params.isVerbose());
+#endif
+    break;
+  default:  // RuntimePolicy::raja_seq
+    intersectionPairs =
+      findIntersectionsBVH<seq_exec>(insert_mesh,
+                                     query_mesh,
+                                     params.intersectionThreshold,
+                                     params.isVerbose());
+    break;
+  }
+  timer.stop();
 
-  //   SLIC_INFO(axom::fmt::format("Computing intersections {} took {:4.3} seconds.",
-  //                               "with a BVH tree",
-  //                               timer.elapsedTimeInSec()));
-  //   SLIC_INFO(axom::fmt::format(axom::utilities::locale(),
-  //                               "Mesh had {:L} intersection pairs",
-  //                               intersectionPairs.size()));
+  SLIC_INFO(axom::fmt::format("Computing intersections {} took {:4.3} seconds.",
+                              "with a BVH tree",
+                              timer.elapsedTimeInSec()));
+  SLIC_INFO(axom::fmt::format(axom::utilities::locale(),
+                              "Mesh had {:L} intersection pairs",
+                              intersectionPairs.size()));
 
-  //   // print first few pairs
-  //   const int numIntersections = intersectionPairs.size();
-  //   if(numIntersections > 0 && params.isVerbose())
-  //   {
-  //     constexpr int MAX_PRINT = 20;
-  //     if(numIntersections > MAX_PRINT)
-  //     {
-  //       intersectionPairs.resize(MAX_PRINT);
-  //       SLIC_INFO(axom::fmt::format("First {} intersection pairs: {} ...\n",
-  //                                   MAX_PRINT,
-  //                                   axom::fmt::join(intersectionPairs, ", ")));
-  //     }
-  //     else
-  //     {
-  //       SLIC_INFO(axom::fmt::format("Intersection pairs: {}\n",
-  //                                   axom::fmt::join(intersectionPairs, ", ")));
-  //     }
-  //   }
+  // print first few pairs
+  const int numIntersections = intersectionPairs.size();
+  if(numIntersections > 0 && params.isVerbose())
+  {
+    constexpr int MAX_PRINT = 20;
+    if(numIntersections > MAX_PRINT)
+    {
+      intersectionPairs.resize(MAX_PRINT);
+      SLIC_INFO(axom::fmt::format("First {} intersection pairs: {} ...\n",
+                                  MAX_PRINT,
+                                  axom::fmt::join(intersectionPairs, ", ")));
+    }
+    else
+    {
+      SLIC_INFO(axom::fmt::format("Intersection pairs: {}\n",
+                                  axom::fmt::join(intersectionPairs, ", ")));
+    }
+  }
 
   return 0;
 }
