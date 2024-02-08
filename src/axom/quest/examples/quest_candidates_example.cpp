@@ -108,10 +108,13 @@ enum class RuntimePolicy
 
 struct Input
 {
+  static const std::set<std::string> s_validMethods;
   static const std::map<std::string, RuntimePolicy> s_validPolicies;
 
   std::string mesh_file_first {""};
   std::string mesh_file_second {""};
+  std::string method {"bvh"};
+  int resolution {0};
   bool verboseOutput {false};
   RuntimePolicy policy {RuntimePolicy::raja_seq};
 
@@ -131,6 +134,15 @@ void Input::parse(int argc, char** argv, axom::CLI::App& app)
     ->required()
     ->check(axom::CLI::ExistingFile);
 
+  app
+    .add_option("-r,--resolution",
+                resolution,
+                "With '-m implicit', set resolution of implicit grid. \n"
+                "Set to less than 1 to use the implicit spatial index\n"
+                "with a resolution of the cube root of the number of\n"
+                "hexes.")
+    ->capture_default_str();
+
   app.add_flag("-v,--verbose", verboseOutput)
     ->description("Increase logging verbosity?")
     ->capture_default_str();
@@ -149,6 +161,16 @@ void Input::parse(int argc, char** argv, axom::CLI::App& app)
     ->capture_default_str()
     ->transform(axom::CLI::CheckedTransformer(Input::s_validPolicies));
 
+  app
+    .add_option(
+      "-m, --method",
+      method,
+      "Method to use. \n"
+      "Set to 'bvh' to use the bounding volume hierarchy spatial index.\n"
+      "Set to 'implicit' to use the implicit grid spatial index.")
+    ->capture_default_str()
+    ->check(axom::CLI::IsMember {Input::s_validMethods});
+
   app.get_formatter()->column_width(40);
 
   app.parse(argc, argv);  // Could throw an exception
@@ -157,14 +179,18 @@ void Input::parse(int argc, char** argv, axom::CLI::App& app)
   SLIC_INFO(axom::fmt::format(
     R"(
      Parsed parameters:
-      * First Blueprint mesh to insert into BVH: '{}'
-      * Second Blueprint mesh to query BVH: '{}'
+      * First Blueprint mesh to insert: '{}'
+      * Second Blueprint mesh to query: '{}'
       * Verbose logging: {}
+      * Spatial method: '{}'
+      * Resolution: '{}'
       * Runtime execution policy: '{}'
       )",
     mesh_file_first,
     mesh_file_second,
     verboseOutput,
+    method == "bvh" ? "Bounding Volume Hierarchy (BVH)" : "Implicit Grid",
+    method == "bvh" ? "Not Applicable" : std::to_string(resolution),
     policy == RuntimePolicy::raja_omp
       ? "raja_omp"
       : (policy == RuntimePolicy::raja_cuda) ? "raja_cuda" : "raja_seq"));
@@ -181,6 +207,11 @@ const std::map<std::string, RuntimePolicy> Input::s_validPolicies(
    {"raja_cuda", RuntimePolicy::raja_cuda}
 #endif
   });
+
+const std::set<std::string> Input::s_validMethods({
+  "bvh",
+  "implicit",
+});
 
 //-----------------------------------------------------------------------------
 /// Basic hexahedron mesh to be used in our application
@@ -400,7 +431,6 @@ axom::Array<IndexPair> findCandidatesBVH(const HexMesh& insertMesh,
                               timer.elapsedTimeInSec()));
 
   // Search for candidate bounding boxes of hexes to query;
-  // result is returned as CSR arrays for candidate data
   timer.start();
   IndexArray offsets_d(query_bbox_v.size(), query_bbox_v.size(), kernel_allocator);
   IndexArray counts_d(query_bbox_v.size(), query_bbox_v.size(), kernel_allocator);
@@ -455,6 +485,130 @@ axom::Array<IndexPair> findCandidatesBVH(const HexMesh& insertMesh,
   return candidatePairs;
 }  // end of findCandidatesBVH for Blueprint Meshes
 
+template <typename ExecSpace>
+axom::Array<IndexPair> findCandidatesImplicit(const HexMesh& insertMesh,
+                                              const HexMesh& queryMesh,
+                                              int resolution)
+{
+  axom::Array<IndexPair> candidatePairs;
+
+  SLIC_INFO("Running Implicit Grid candidates algorithm in execution Space: "
+            << axom::execution_space<ExecSpace>::name());
+
+  using HexArray = axom::Array<typename HexMesh::Hexahedron>;
+  using BBoxArray = axom::Array<typename HexMesh::BoundingBox>;
+  using IndexArray = axom::Array<axom::IndexType>;
+  constexpr bool on_device = axom::execution_space<ExecSpace>::onDevice();
+
+  // Get ids of necessary allocators
+  const int host_allocator =
+    axom::getUmpireResourceAllocatorID(umpire::resource::Host);
+  const int kernel_allocator = on_device
+    ? axom::getUmpireResourceAllocatorID(umpire::resource::Device)
+    : axom::execution_space<ExecSpace>::allocatorID();
+
+  // Copy the insert  hexes to the device, if necessary
+  // Either way, insert_hexes_v will be a view w/ data in the correct space
+  auto& insert_hexes_h = insertMesh.hexes();
+  HexArray insert_hexes_d =
+    on_device ? HexArray(insert_hexes_h, kernel_allocator) : HexArray();
+
+  // Copy the insert bboxes to the device, if necessary
+  // Either way, insert_bbox_v will be a view w/ data in the correct space
+  auto& insert_bbox_h = insertMesh.hexBoundingBoxes();
+
+  // Bounding box of entire insert mesh
+  HexMesh::BoundingBox insert_mesh_bbox_h = insertMesh.meshBoundingBox();
+
+  // Copy the query  hexes to the device, if necessary
+  // Either way, query_hexes_v will be a view w/ data in the correct space
+  auto& query_hexes_h = queryMesh.hexes();
+  HexArray query_hexes_d =
+    on_device ? HexArray(query_hexes_h, kernel_allocator) : HexArray();
+
+  // Copy the query bboxes to the device, if necessary
+  // Either way, bbox_v will be a view w/ data in the correct space
+  auto& query_bbox_h = queryMesh.hexBoundingBoxes();
+  BBoxArray query_bbox_d =
+    on_device ? BBoxArray(query_bbox_h, kernel_allocator) : BBoxArray();
+  auto query_bbox_v = on_device ? query_bbox_d.view() : query_bbox_h.view();
+
+  axom::utilities::Timer timer;
+  timer.start();
+
+  // If given resolution is less than one, use the cube root of the
+  // number of hexes
+  if(resolution < 1)
+  {
+    resolution = (int)(1 + std::pow(insertMesh.numHexes(), 1 / 3.));
+  }
+
+  const axom::primal::Point<int, 3> resolutions(resolution);
+
+  axom::spin::ImplicitGrid<3, ExecSpace, int> gridIndex(insert_mesh_bbox_h,
+                                                        &resolutions,
+                                                        insertMesh.numHexes(),
+                                                        kernel_allocator);
+  gridIndex.insert(insertMesh.numHexes(), insert_bbox_h.data());
+  timer.stop();
+  SLIC_INFO(
+    axom::fmt::format("0: Initializing Implicit Grid took {:4.3} seconds.",
+                      timer.elapsedTimeInSec()));
+
+  timer.start();
+  IndexArray offsets_d(query_bbox_v.size(), query_bbox_v.size(), kernel_allocator);
+  IndexArray counts_d(query_bbox_v.size(), query_bbox_v.size(), kernel_allocator);
+  IndexArray candidates_d(0, 0, kernel_allocator);
+
+  auto offsets_v = offsets_d.view();
+  auto counts_v = counts_d.view();
+
+  gridIndex.getCandidatesAsArray(queryMesh.numHexes(),
+                                 query_bbox_h.data(),
+                                 offsets_v,
+                                 counts_v,
+                                 candidates_d);
+  timer.stop();
+  SLIC_INFO(axom::fmt::format(
+    "1: Querying candidate bounding boxes took {:4.3} seconds.",
+    timer.elapsedTimeInSec()));
+
+  // Initialize candidatePairs to return
+  timer.start();
+
+  IndexArray offsets_h(offsets_d, host_allocator);
+  IndexArray counts_h(counts_d, host_allocator);
+  IndexArray candidates_h(candidates_d, host_allocator);
+
+  for(int i = 0; i < queryMesh.numHexes(); i++)
+  {
+    for(int j = 0; j < counts_h[i]; j++)
+    {
+      candidatePairs.emplace_back(
+        std::make_pair(i, candidates_h[offsets_h[i] + j]));
+    }
+  }
+  timer.stop();
+
+  SLIC_INFO(axom::fmt::format(
+    "2: Initializing candidate pairs on host took {:4.3} seconds.",
+    timer.elapsedTimeInSec()));
+
+  SLIC_INFO(axom::fmt::format(axom::utilities::locale(),
+                              R"(Stats for query
+    -- Number of insert mesh hexes {:L}
+    -- Number of query mesh hexes {:L}
+    -- Total possible candidates {:L}
+    -- Candidates from Implicit Grid query {:L}
+    )",
+                              insertMesh.numHexes(),
+                              queryMesh.numHexes(),
+                              1.0 * insertMesh.numHexes() * queryMesh.numHexes(),
+                              candidates_h.size()));
+
+  return candidatePairs;
+}
+
 int main(int argc, char** argv)
 {
   // Initialize logger; use RAII so it will finalize at the end of the application
@@ -478,16 +632,15 @@ int main(int argc, char** argv)
   axom::slic::setLoggingMsgLevel(params.isVerbose() ? axom::slic::message::Debug
                                                     : axom::slic::message::Info);
 
-  // Load Blueprint mesh into BVH
-  SLIC_INFO(
-    axom::fmt::format("Reading Blueprint file to insert into BVH: '{}'...\n",
-                      params.mesh_file_first));
+  // Load Blueprint mesh to insert into spatial index
+  SLIC_INFO(axom::fmt::format("Reading Blueprint file to insert: '{}'...\n",
+                              params.mesh_file_first));
 
   HexMesh insert_mesh =
     loadBlueprintHexMesh(params.mesh_file_first, params.isVerbose());
 
-  // Load Blueprint mesh for querying BVH
-  SLIC_INFO(axom::fmt::format("Reading Blueprint file to query BVH: '{}'...\n",
+  // Load Blueprint mesh for querying spatial index
+  SLIC_INFO(axom::fmt::format("Reading Blueprint file to query: '{}'...\n",
                               params.mesh_file_second));
 
   HexMesh query_mesh =
@@ -496,26 +649,55 @@ int main(int argc, char** argv)
   // Check for candidates; results are returned as an array of index pairs
   axom::Array<IndexPair> candidatePairs;
   axom::utilities::Timer timer(true);
-  switch(params.policy)
+
+  if(params.method == "bvh")
   {
-  case RuntimePolicy::raja_omp:
+    switch(params.policy)
+    {
+    case RuntimePolicy::raja_omp:
 #ifdef AXOM_USE_OPENMP
-    candidatePairs = findCandidatesBVH<omp_exec>(insert_mesh, query_mesh);
+      candidatePairs = findCandidatesBVH<omp_exec>(insert_mesh, query_mesh);
 #endif
-    break;
-  case RuntimePolicy::raja_cuda:
+      break;
+    case RuntimePolicy::raja_cuda:
 #ifdef AXOM_USE_CUDA
-    candidatePairs = findCandidatesBVH<cuda_exec>(insert_mesh, query_mesh);
+      candidatePairs = findCandidatesBVH<cuda_exec>(insert_mesh, query_mesh);
 #endif
-    break;
-  default:  // RuntimePolicy::raja_seq
-    candidatePairs = findCandidatesBVH<seq_exec>(insert_mesh, query_mesh);
-    break;
+      break;
+    default:  // RuntimePolicy::raja_seq
+      candidatePairs = findCandidatesBVH<seq_exec>(insert_mesh, query_mesh);
+      break;
+    }
+  }
+  // Implicit Grid
+  else
+  {
+    switch(params.policy)
+    {
+    case RuntimePolicy::raja_omp:
+#ifdef AXOM_USE_OPENMP
+      candidatePairs = findCandidatesImplicit<omp_exec>(insert_mesh,
+                                                        query_mesh,
+                                                        params.resolution);
+#endif
+      break;
+    case RuntimePolicy::raja_cuda:
+#ifdef AXOM_USE_CUDA
+      candidatePairs = findCandidatesImplicit<cuda_exec>(insert_mesh,
+                                                         query_mesh,
+                                                         params.resolution);
+#endif
+      break;
+    default:  // RuntimePolicy::raja_seq
+      candidatePairs = findCandidatesImplicit<seq_exec>(insert_mesh,
+                                                        query_mesh,
+                                                        params.resolution);
+      break;
+    }
   }
   timer.stop();
 
-  SLIC_INFO(axom::fmt::format("Computing candidates {} took {:4.3} seconds.",
-                              "with a BVH tree",
+  SLIC_INFO(axom::fmt::format("Computing candidates took {:4.3} seconds.",
                               timer.elapsedTimeInSec()));
   SLIC_INFO(axom::fmt::format(axom::utilities::locale(),
                               "Mesh had {:L} candidates pairs",
