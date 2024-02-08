@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -363,10 +363,8 @@ const std::string help_string =
   "-d INT, -dumpPeriod INT\n"
   "\tThe number of cycles to wait between writing a dump file.\n";
 
-/*!
- * \brief A structure that holds the command line arguments.
- */
-typedef struct
+/// A structure that holds the command line arguments.
+struct Arguments
 {
   double h;
   double lower_bound[2];
@@ -379,7 +377,7 @@ typedef struct
   double t_max;
   int period;
   std::string path;
-} Arguments;
+};
 
 /*!
  * \brief Parses and validates the command line arguments.

@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -23,14 +23,29 @@ class OctahedronTest : public ::testing::Test
 public:
   static const int DIM = 3;
 
-  typedef double CoordType;
-  typedef primal::Point<CoordType, DIM> QPoint;
-  typedef primal::Octahedron<CoordType, DIM> QOct;
+  using CoordType = double;
+  using QPoint = primal::Point<CoordType, DIM>;
+  using QOct = primal::Octahedron<CoordType, DIM>;
 
 protected:
   virtual void SetUp()
   {
     EPS = 1e-12;
+
+    /*
+     * Define coordinates for first octahedron
+     * (view looking down from +z axis):
+     *
+     *            4                +z
+     *            /\                    +y
+     *       0 --/  \-- 2           ^  >
+     *         \/    \ /            | /
+     *         /      \             |/
+     *       5 -------- 3           -----> +x
+     *            \/
+     *            1
+     *
+     */
 
     // Define coordinates for first octahedron
     qData0[0] = QPoint::make_point(1, 0, 0);
@@ -39,6 +54,28 @@ protected:
     qData0[3] = QPoint::make_point(0, 1, 1);
     qData0[4] = QPoint::make_point(0, 0, 1);
     qData0[5] = QPoint::make_point(1, 0, 1);
+
+    /*
+     * Define coordinates for second octahedron (regular octahedron):
+     *
+     *              3                    +z
+     *             / \\                       +y
+     *            /   \ \                 ^  >
+     *           /     \  \               | /
+     *          /       \   \             |/
+     *         4- - - - -\- 2             -----> +x
+     *        /           \ /
+     *       /_____________/
+     *      5              1
+     *       \            /
+     *        \          /
+     *         \        /
+     *          \      /
+     *           \    /
+     *            \  /
+     *             \/
+     *             0
+     */
 
     // Define coordinates for second octahedron
     qData1[0] = QPoint::make_point(0, 0, -1);
@@ -57,8 +94,8 @@ protected:
 //------------------------------------------------------------------------------
 TEST_F(OctahedronTest, defaultConstructor)
 {
-  typedef OctahedronTest::QPoint QPoint;
-  typedef OctahedronTest::QOct QOct;
+  using QPoint = OctahedronTest::QPoint;
+  using QOct = OctahedronTest::QOct;
 
   const QOct oct;
 
@@ -76,8 +113,8 @@ TEST_F(OctahedronTest, defaultConstructor)
 
 TEST_F(OctahedronTest, constructFromPoints)
 {
-  typedef OctahedronTest::QPoint QPoint;
-  typedef OctahedronTest::QOct QOct;
+  using QPoint = OctahedronTest::QPoint;
+  using QOct = OctahedronTest::QOct;
 
   // Access the test data
   const QPoint* pt = this->qData0;
@@ -130,8 +167,8 @@ TEST_F(OctahedronTest, constructFromPoints)
 
 TEST_F(OctahedronTest, equals)
 {
-  typedef OctahedronTest::QPoint QPoint;
-  typedef OctahedronTest::QOct QOct;
+  using QPoint = OctahedronTest::QPoint;
+  using QOct = OctahedronTest::QOct;
 
   // Access the test data
   const QPoint* pt0 = this->qData0;

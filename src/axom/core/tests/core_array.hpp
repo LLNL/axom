@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -2219,7 +2219,7 @@ void test_resize_with_stackarray(DataType value)
   const int K_DIMS = 7;
   axom::Array<DataType, 2> arr2;
 
-  axom::StackArray<axom::IndexType, 2> dims2 = {I_DIMS, J_DIMS};
+  axom::StackArray<axom::IndexType, 2> dims2 = {{I_DIMS, J_DIMS}};
   arr2.resize(dims2, value);
   EXPECT_EQ(arr2.size(), I_DIMS * J_DIMS);
   EXPECT_EQ(arr2.shape()[0], I_DIMS);
@@ -2234,7 +2234,7 @@ void test_resize_with_stackarray(DataType value)
 
   axom::Array<DataType, 3> arr3;
 
-  axom::StackArray<axom::IndexType, 3> dims3 = {I_DIMS, J_DIMS, K_DIMS};
+  axom::StackArray<axom::IndexType, 3> dims3 = {{I_DIMS, J_DIMS, K_DIMS}};
   arr3.resize(dims3, value);
   EXPECT_EQ(arr3.size(), I_DIMS * J_DIMS * K_DIMS);
   EXPECT_EQ(arr3.shape()[0], I_DIMS);
@@ -2257,3 +2257,105 @@ TEST(core_array, resize_stackarray)
   test_resize_with_stackarray<bool>(false);
   test_resize_with_stackarray<int>(-1);
 }
+
+//------------------------------------------------------------------------------
+constexpr static int NONTRIVIAL_RELOC_MAGIC = 123;
+struct NonTriviallyRelocatable
+{
+  NonTriviallyRelocatable()
+    : m_member(NONTRIVIAL_RELOC_MAGIC)
+    , m_localMemberPointer(&m_member)
+  { }
+
+  NonTriviallyRelocatable(const NonTriviallyRelocatable& other)
+    : m_member(other.m_member)
+    , m_localMemberPointer(&m_member)
+  { }
+
+  NonTriviallyRelocatable& operator=(const NonTriviallyRelocatable& other)
+  {
+    if(this != &other)
+    {
+      m_member = other.m_member;
+    }
+    return *this;
+  }
+
+  ~NonTriviallyRelocatable() = default;
+
+  int m_member;
+  int* m_localMemberPointer;
+};
+
+TEST(core_array, reserve_nontrivial_reloc)
+{
+  const int NUM_ELEMS = 1024;
+  axom::Array<NonTriviallyRelocatable> array(NUM_ELEMS, NUM_ELEMS);
+
+  for(int i = 0; i < NUM_ELEMS; i++)
+  {
+    // Check initial values.
+    EXPECT_EQ(array[i].m_member, NONTRIVIAL_RELOC_MAGIC);
+    EXPECT_EQ(&(array[i].m_member), array[i].m_localMemberPointer);
+  }
+
+  // Reallocation should work for non-trivially relocatable types.
+  array.reserve(NUM_ELEMS * 4);
+
+  for(int i = 0; i < NUM_ELEMS; i++)
+  {
+    EXPECT_EQ(array[i].m_member, NONTRIVIAL_RELOC_MAGIC);
+    EXPECT_EQ(&(array[i].m_member), array[i].m_localMemberPointer);
+  }
+}
+
+TEST(core_array, reserve_nontrivial_reloc_2)
+{
+  const int NUM_ELEMS = 1024;
+  axom::Array<NonTriviallyRelocatable> array(NUM_ELEMS, NUM_ELEMS);
+
+  for(int i = 0; i < NUM_ELEMS; i++)
+  {
+    // Check initial values.
+    EXPECT_EQ(array[i].m_member, NONTRIVIAL_RELOC_MAGIC);
+    EXPECT_EQ(&(array[i].m_member), array[i].m_localMemberPointer);
+  }
+
+  EXPECT_EQ(array.capacity(), NUM_ELEMS);
+
+  // Emplace to trigger a resize.
+  array.emplace_back(NonTriviallyRelocatable {});
+  EXPECT_GE(array.capacity(), NUM_ELEMS);
+
+  for(int i = 0; i < NUM_ELEMS + 1; i++)
+  {
+    EXPECT_EQ(array[i].m_member, NONTRIVIAL_RELOC_MAGIC);
+    EXPECT_EQ(&(array[i].m_member), array[i].m_localMemberPointer);
+  }
+}
+
+#if defined(AXOM_USE_GPU) && defined(AXOM_USE_UMPIRE)
+TEST(core_array, reserve_nontrivial_reloc_um)
+{
+  const int NUM_ELEMS = 1024;
+  axom::Array<NonTriviallyRelocatable, 1, axom::MemorySpace::Unified> array(
+    NUM_ELEMS,
+    NUM_ELEMS);
+
+  for(int i = 0; i < NUM_ELEMS; i++)
+  {
+    // Check initial values.
+    EXPECT_EQ(array[i].m_member, NONTRIVIAL_RELOC_MAGIC);
+    EXPECT_EQ(&(array[i].m_member), array[i].m_localMemberPointer);
+  }
+
+  // Reallocation should work for non-trivially relocatable types.
+  array.reserve(NUM_ELEMS * 4);
+
+  for(int i = 0; i < NUM_ELEMS; i++)
+  {
+    EXPECT_EQ(array[i].m_member, NONTRIVIAL_RELOC_MAGIC);
+    EXPECT_EQ(&(array[i].m_member), array[i].m_localMemberPointer);
+  }
+}
+#endif

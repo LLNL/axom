@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -12,17 +12,18 @@
 #include "axom/primal/geometry/Point.hpp"
 #include "axom/primal/geometry/Vector.hpp"
 #include "axom/primal/geometry/OrientedBoundingBox.hpp"
+#include "axom/primal/geometry/Polygon.hpp"
 #include "axom/primal/operators/compute_bounding_box.hpp"
 
-using namespace axom;
+namespace primal = axom::primal;
 
 TEST(primal_compute_bounding_box, compute_oriented_box_test)
 {
-  static const int DIM = 3;
-  typedef double CoordType;
-  typedef primal::Point<CoordType, DIM> QPoint;
-  typedef primal::Vector<CoordType, DIM> QVector;
-  typedef primal::OrientedBoundingBox<CoordType, DIM> QOBBox;
+  constexpr int DIM = 3;
+  using CoordType = double;
+  using QPoint = primal::Point<CoordType, DIM>;
+  using QVector = primal::Vector<CoordType, DIM>;
+  using QOBBox = primal::OrientedBoundingBox<CoordType, DIM>;
 
   QPoint pt1;      // origin
   QVector u[DIM];  // make standard axes
@@ -66,11 +67,11 @@ TEST(primal_compute_bounding_box, compute_oriented_box_test)
 
 TEST(primal_compute_bounding_box, merge_oriented_box_test)
 {
-  static const int DIM = 3;
-  typedef double CoordType;
-  typedef primal::Point<CoordType, DIM> QPoint;
-  typedef primal::Vector<CoordType, DIM> QVector;
-  typedef primal::OrientedBoundingBox<CoordType, DIM> QOBBox;
+  constexpr int DIM = 3;
+  using CoordType = double;
+  using QPoint = primal::Point<CoordType, DIM>;
+  using QVector = primal::Vector<CoordType, DIM>;
+  using QOBBox = primal::OrientedBoundingBox<CoordType, DIM>;
 
   const double ONE_OVER_SQRT_TWO = 0.7071;
   QPoint pt1;      // origin
@@ -105,11 +106,11 @@ TEST(primal_compute_bounding_box, merge_oriented_box_test)
 
 TEST(primal_compute_bounding_box, merge_aligned_box_test)
 {
-  static const int DIM = 3;
-  typedef double CoordType;
-  typedef primal::Point<CoordType, DIM> QPoint;
-  typedef primal::Vector<CoordType, DIM> QVector;
-  typedef primal::BoundingBox<CoordType, DIM> QBBox;
+  constexpr int DIM = 3;
+  using CoordType = double;
+  using QPoint = primal::Point<CoordType, DIM>;
+  using QVector = primal::Vector<CoordType, DIM>;
+  using QBBox = primal::BoundingBox<CoordType, DIM>;
 
   QPoint pt1(0.);
   QPoint pt2(1.);
@@ -129,13 +130,61 @@ TEST(primal_compute_bounding_box, merge_aligned_box_test)
   EXPECT_TRUE(bbox5.contains(bbox4));
 }
 
+TEST(primal_compute_bounding_box, compute_quad_2d_box_test)
+{
+  constexpr int DIM = 2;
+  using CoordinateType = double;
+  using PointType = primal::Point<CoordinateType, DIM>;
+  using BoundingBoxType = primal::BoundingBox<CoordinateType, DIM>;
+  using QuadrilateralType = primal::Quadrilateral<CoordinateType, DIM>;
+
+  PointType A {-1.0, 0.1};
+  PointType B {-0.1, 0.5};
+  PointType C {2.0, 0.0};
+  PointType D {0.0, 1.0};
+
+  QuadrilateralType quad {A, B, C, D};
+  BoundingBoxType box = primal::compute_bounding_box<CoordinateType, DIM>(quad);
+
+  EXPECT_TRUE(box.contains(A));
+  EXPECT_TRUE(box.contains(B));
+  EXPECT_TRUE(box.contains(C));
+  EXPECT_TRUE(box.contains(D));
+  EXPECT_EQ(box.getMin(), (PointType {-1.0, 0.0}));
+  EXPECT_EQ(box.getMax(), (PointType {2.0, 1.0}));
+}
+
+TEST(primal_compute_bounding_box, compute_quad_3d_box_test)
+{
+  constexpr int DIM = 3;
+  using CoordinateType = double;
+  using PointType = primal::Point<CoordinateType, DIM>;
+  using BoundingBoxType = primal::BoundingBox<CoordinateType, DIM>;
+  using QuadrilateralType = primal::Quadrilateral<CoordinateType, DIM>;
+
+  PointType A {-1.0, 0.1, 0.0};
+  PointType B {-0.1, 0.5, 0.0};
+  PointType C {2.0, 0.0, 1.0};
+  PointType D {0.0, 1.0, 1.0};
+
+  QuadrilateralType quad {A, B, C, D};
+  BoundingBoxType box = primal::compute_bounding_box<CoordinateType, DIM>(quad);
+
+  EXPECT_TRUE(box.contains(A));
+  EXPECT_TRUE(box.contains(B));
+  EXPECT_TRUE(box.contains(C));
+  EXPECT_TRUE(box.contains(D));
+  EXPECT_EQ(box.getMin(), (PointType {-1.0, 0.0, 0.0}));
+  EXPECT_EQ(box.getMax(), (PointType {2.0, 1.0, 1.0}));
+}
+
 TEST(primal_compute_bounding_box, compute_oct_box_test)
 {
-  static const int DIM = 3;
-  typedef double CoordType;
-  typedef primal::Point<CoordType, DIM> QPoint;
-  typedef primal::BoundingBox<CoordType, DIM> QBBox;
-  typedef primal::Octahedron<CoordType, DIM> QOct;
+  constexpr int DIM = 3;
+  using CoordType = double;
+  using QPoint = primal::Point<CoordType, DIM>;
+  using QBBox = primal::BoundingBox<CoordType, DIM>;
+  using QOct = primal::Octahedron<CoordType, DIM>;
 
   QPoint p1({1, 0, 0});
   QPoint p2({1, 1, 0});
@@ -159,11 +208,11 @@ TEST(primal_compute_bounding_box, compute_oct_box_test)
 
 TEST(primal_compute_bounding_box, compute_poly_box_test)
 {
-  static const int DIM = 3;
-  typedef double CoordType;
-  typedef primal::Point<CoordType, DIM> QPoint;
-  typedef primal::BoundingBox<CoordType, DIM> QBBox;
-  typedef primal::Polyhedron<CoordType, DIM> QPoly;
+  constexpr int DIM = 3;
+  using CoordType = double;
+  using QPoint = primal::Point<CoordType, DIM>;
+  using QBBox = primal::BoundingBox<CoordType, DIM>;
+  using QPoly = primal::Polyhedron<CoordType, DIM>;
 
   QPoly poly;
   QPoint p1({0, 0, 0});
@@ -197,9 +246,52 @@ TEST(primal_compute_bounding_box, compute_poly_box_test)
   EXPECT_EQ(box.getMax(), QPoint::ones());
 }
 
+TEST(primal_compute_bounding_box, compute_polygon_2)
+{
+  constexpr int DIM = 2;
+  using CoordType = double;
+  using QPoint = primal::Point<CoordType, DIM>;
+  using QBBox = primal::BoundingBox<CoordType, DIM>;
+  using QPoly = primal::Polygon<CoordType, DIM>;
+
+  // empty polygon generates an empty (invalid) bounding box
+  {
+    QPoly empty_poly;
+    QBBox box = primal::compute_bounding_box(empty_poly);
+    EXPECT_FALSE(box.isValid());
+  }
+
+  // non-empty polygon generates expected axis-aligned bounding box
+  {
+    QPoint p1({1, 0});
+    QPoint p2({5, 0});
+    QPoint p3({7, 2});
+    QPoint p4({9, 4});
+    QPoint p5({-1, 4});
+
+    QPoly polygon(5);
+    polygon.addVertex(p1);
+    polygon.addVertex(p2);
+    polygon.addVertex(p3);
+    polygon.addVertex(p4);
+    polygon.addVertex(p5);
+
+    QBBox box = primal::compute_bounding_box(polygon);
+    EXPECT_TRUE(box.contains(p1));
+    EXPECT_TRUE(box.contains(p2));
+    EXPECT_TRUE(box.contains(p3));
+    EXPECT_TRUE(box.contains(p4));
+    EXPECT_TRUE(box.contains(p5));
+
+    EXPECT_EQ(box.getMin(), (QPoint {-1., 0.}));
+    EXPECT_EQ(box.getMax(), (QPoint {9., 4.}));
+  }
+}
+
 int main(int argc, char* argv[])
 {
   ::testing::InitGoogleTest(&argc, argv);
+  axom::slic::SimpleLogger logger;
 
 #ifdef COMPUTE_BOUNDING_BOX_TESTER_SHOULD_SEED
   std::srand(std::time(0));

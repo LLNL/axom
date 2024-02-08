@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -26,7 +26,7 @@ using axom::primal::Point;
 
 namespace
 {
-static const int MAX_ITER = 10000;
+constexpr int MAX_ITER = 10000;
 
 // Generate a random integer in the range [beg, end)
 template <typename CoordType>

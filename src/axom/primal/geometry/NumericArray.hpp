@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -150,21 +150,21 @@ std::ostream& operator<<(std::ostream& os, const NumericArray<T, SIZE>& arr);
 template <typename T>
 struct NonChar
 {
-  typedef T type; /** The non-char type to return */
+  using type = T;  // The non-char type to return
 };
 
 template <>
 struct NonChar<char>
 {
   /** A non-char signed type to which we can cast a char for output */
-  typedef int type;
+  using type = int;
 };
 
 template <>
 struct NonChar<unsigned char>
 {
   /** A non-char unsigned type to which we can cast a char for output */
-  typedef unsigned int type;
+  using type = unsigned int;
 };
 
 /*!

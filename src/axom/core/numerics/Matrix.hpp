@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -6,6 +6,8 @@
 #include "axom/config.hpp"
 #include "axom/core/utilities/Utilities.hpp"  // for utilities::swap()
 #include "axom/core/memory_management.hpp"    // for alloc(), free()
+
+#include "axom/fmt.hpp"
 
 // C/C++ includes
 #include <cassert>   // for assert()
@@ -1039,5 +1041,10 @@ std::ostream& operator<<(std::ostream& os, const Matrix<T>& M)
 
 } /* end namespace numerics */
 } /* end namespace axom */
+
+/// Overload to format a numerics::Matrix using fmt
+template <typename T>
+struct axom::fmt::formatter<axom::numerics::Matrix<T>> : ostream_formatter
+{ };
 
 #endif /* AXOM_MATRIX_HPP_ */

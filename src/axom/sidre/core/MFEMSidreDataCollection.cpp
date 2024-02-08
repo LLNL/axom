@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -979,7 +979,7 @@ void MFEMSidreDataCollection::UpdateStateFromDS()
 void MFEMSidreDataCollection::UpdateStateToDS()
 {
   SLIC_ASSERT_MSG(
-    mesh != NULL,
+    mesh != nullptr,
     "Need to set mesh before updating state in MFEMSidreDataCollection.");
 
   m_bp_grp->getView("state/cycle")->setScalar(GetCycle());

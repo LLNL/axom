@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -10,64 +10,52 @@
  * compute isocontour from a scalar field in a blueprint mesh.
  */
 
-#ifndef AXOM_PRIMAL_MARCHINGCUBES_H_
-#define AXOM_PRIMAL_MARCHINGCUBES_H_
+#ifndef AXOM_QUEST_MARCHINGCUBES_H_
+#define AXOM_QUEST_MARCHINGCUBES_H_
 
-// Axom includes
 #include "axom/config.hpp"
-#include "axom/mint/mesh/UnstructuredMesh.hpp"
 
-// Conduit includes
-#include "conduit_node.hpp"
+// Implementation requires Conduit.
+#ifdef AXOM_USE_CONDUIT
 
-// C++ includes
-#include <string>
+  // Axom includes
+  #include "axom/core/execution/runtime_policy.hpp"
+  #include "axom/mint/mesh/UnstructuredMesh.hpp"
 
-// Add some helper preprocessor defines for using OPENMP, CUDA, and HIP policies
-// within the marching cubes implementation.
-#if defined(AXOM_USE_RAJA)
-  #ifdef AXOM_USE_OPENMP
-    #define _AXOM_MC_USE_OPENMP
-  #endif
-  #if defined(AXOM_USE_CUDA) && defined(AXOM_USE_UMPIRE)
-    #define _AXOM_MC_USE_CUDA
-  #endif
-  #if defined(AXOM_USE_HIP) && defined(AXOM_USE_UMPIRE)
-    #define _AXOM_MC_USE_HIP
-  #endif
-#endif
+  // Conduit includes
+  #include "conduit_node.hpp"
+
+  // C++ includes
+  #include <string>
 
 namespace axom
 {
 namespace quest
 {
-/*!
-  @brief Enum for runtime execution policy
-
-  The policy implicitly selects the execution space and allocator id.
-*/
-enum class MarchingCubesRuntimePolicy
-{
-  seq = 0,
-  omp = 1,
-  cuda = 2,
-  hip = 3
-};
-
-/// Utility function to allow formating a MarchingCubesRuntimePolicy
-inline auto format_as(MarchingCubesRuntimePolicy pol)
-{
-  return fmt::underlying(pol);
-}
-
 namespace detail
 {
 namespace marching_cubes
 {
 template <int DIM, typename ExecSpace, typename SequentialLoopPolicy>
 class MarchingCubesImpl;
-}
+}  // namespace marching_cubes
 }  // namespace detail
+
+/*!
+  @brief Enum for implementation.
+
+  Partial parallel implementation uses a non-parallizable loop and
+  processes less data.  It has been shown to work well on CPUs.
+  Full parallel implementation processes more data, but parallelizes
+  fully and has been shown to work well on GPUs.  byPolicy chooses
+  based on runtime policy.
+*/
+enum class MarchingCubesDataParallelism
+{
+  byPolicy = 0,
+  hybridParallel = 1,
+  fullParallel = 2
+};
 
 class MarchingCubesSingleDomain;
 
@@ -110,16 +98,16 @@ class MarchingCubesSingleDomain;
 class MarchingCubes
 {
 public:
-  using RuntimePolicy = MarchingCubesRuntimePolicy;
+  using RuntimePolicy = axom::runtime_policy::Policy;
   /*!
    * \brief Constructor sets up computational mesh and data for running the
    * marching cubes algorithm.
    *
-   * \param [in] runtimePolicy A value from MarchingCubesRuntimePolicy.
+   * \param [in] runtimePolicy A value from RuntimePolicy.
    *             The simplest policy is RuntimePolicy::seq, which specifies
    *             running sequentially on the CPU.
    * \param [in] bpMesh Blueprint multi-domain mesh containing scalar field.
-   * \param [in] coordsetName Name of blueprint point coordinate set.
+   * \param [in] topologyName Name of Blueprint topology to use in \a bpMesh.
    * \param [in] maskField Cell-based std::int32_t mask field.  If provided,
    *             cells where this field evaluates to false are skipped.
    *
@@ -137,7 +125,7 @@ public:
    */
   MarchingCubes(RuntimePolicy runtimePolicy,
                 const conduit::Node &bpMesh,
-                const std::string &coordsetName,
+                const std::string &topologyName,
                 const std::string &maskField = {});
 
   /*!
@@ -167,19 +155,40 @@ public:
       parent domain ids. If omitted, the data is not provided.
 
     If the fields aren't in the mesh, they will be created.
+
+    Blueprint allows users to specify ids for the domains.  If
+    "state/domain_id" exists in the domains, it is used as the domain
+    id.  Otherwise, the domain's interation index within the
+    multidomain mesh is used.
   */
   void populateContourMesh(
     axom::mint::UnstructuredMesh<axom::mint::SINGLE_SHAPE> &mesh,
     const std::string &cellIdField = {},
     const std::string &domainIdField = {});
 
+  /*!
+    @brief Set choice of data-parallel implementation.
+
+    By default, choice is MarchingCubesDataParallelism::byPolicy.
+  */
+  void setDataParallelism(MarchingCubesDataParallelism dataPar)
+  {
+    m_dataParallelism = dataPar;
+  }
+
 private:
-  MarchingCubesRuntimePolicy m_runtimePolicy;
+  RuntimePolicy m_runtimePolicy;
+
+  //@brief Choice of full or partial data-parallelism, or byPolicy.
+  MarchingCubesDataParallelism m_dataParallelism =
+    MarchingCubesDataParallelism::byPolicy;
 
   //! @brief Single-domain implementations.
   axom::Array<std::unique_ptr<MarchingCubesSingleDomain>> m_singles;
-  const std::string m_coordsetPath;
+  const std::string m_topologyName;
+  std::string m_fcnFieldName;
   std::string m_fcnPath;
+  std::string m_maskFieldName;
   std::string m_maskPath;
 
   void setMesh(const conduit::Node &bpMesh);
@@ -193,20 +202,17 @@ private:
  */
 class MarchingCubesSingleDomain
 {
-  template <int DIM, typename ExecSpace, typename SequentialLoopPolicy>
-  friend class detail::marching_cubes::MarchingCubesImpl;
-
 public:
-  using RuntimePolicy = MarchingCubesRuntimePolicy;
+  using RuntimePolicy = axom::runtime_policy::Policy;
   /*!
    * \brief Constructor for applying algorithm in a single domain.
    * See MarchingCubes for the multi-domain implementation.
    *
-   * \param [in] runtimePolicy A value from MarchingCubesRuntimePolicy.
+   * \param [in] runtimePolicy A value from RuntimePolicy.
    *             The simplest policy is RuntimePolicy::seq, which specifies
    *             running sequentially on the CPU.
    * \param [in] dom Blueprint single-domain mesh containing scalar field.
-   * \param [in] coordsetName Name of blueprint point coordinate set.
+   * \param [in] topologyName Name of Blueprint topology to use in \a dom
    * \param [in] maskField Cell-based std::int32_t mask field.  If provided,
    *             cells where this field evaluates to false are skipped.
    *
@@ -216,7 +222,6 @@ public:
    *
    * Some data from \a dom may be cached by the constructor.
    * Any change to it after the constructor leads to undefined behavior.
-   * See setDomain(const conduit::Node &) for requirements on \a dom.
    *
    * The mesh coordinates should be stored contiguously.  See
    * conduit::blueprint::is_contiguous().  In the future, this
@@ -225,8 +230,13 @@ public:
    */
   MarchingCubesSingleDomain(RuntimePolicy runtimePolicy,
                             const conduit::Node &dom,
-                            const std::string &coordsetName,
+                            const std::string &topologyName,
                             const std::string &maskfield);
+
+  void setDataParallelism(MarchingCubesDataParallelism &dataPar)
+  {
+    m_dataParallelism = dataPar;
+  }
 
   /*!
     @brief Specify the field containing the nodal scalar function
@@ -234,6 +244,12 @@ public:
     \param [in] fcnField Name of node-based scalar function values.
   */
   void setFunctionField(const std::string &fcnField);
+
+  /*!
+    @brief Get the Blueprint domain id specified in \a state/domain_id
+    if it is provided, or use the given default if not provided.
+  */
+  int getDomainId(int defaultId) const;
 
   /*!
    * \brief Compute the isocontour.
@@ -277,58 +293,6 @@ public:
   }
 
   /*!
-    @brief Determine whether a given \a MarchingCubesRuntimePolicy is
-    valid for the Axom build configuration.
-  */
-  inline bool isValidRuntimePolicy(MarchingCubesRuntimePolicy policy) const
-  {
-    switch(policy)
-    {
-    case MarchingCubesRuntimePolicy::seq:
-      return true;
-
-    case MarchingCubesRuntimePolicy::omp:
-#ifdef _AXOM_MC_USE_OPENMP
-      return true;
-#else
-      return false;
-#endif
-
-    case MarchingCubesRuntimePolicy::cuda:
-#ifdef _AXOM_MC_USE_CUDA
-      return true;
-#else
-      return false;
-#endif
-    case MarchingCubesRuntimePolicy::hip:
-#ifdef _AXOM_MC_USE_HIP
-      return true;
-#else
-      return false;
-#endif
-    }
-
-    return false;
-  }
-
-private:
-  MarchingCubesRuntimePolicy m_runtimePolicy;
-  /*!
-    \brief Computational mesh as a conduit::Node.
-  */
-  const conduit::Node *m_dom;
-  int m_ndim;
-
-  //!@brief Path to coordinate set in m_dom.
-  const std::string m_coordsetPath;
-
-  //!@brief Path to nodal scalar function in m_dom.
-  std::string m_fcnPath;
-
-  //!@brief Path to mask in m_dom.
-  const std::string m_maskPath;
-
-  /*!
     @brief Base class for implementations templated on dimension
     and execution space.
 
@@ -339,21 +303,14 @@ private:
   {
     //!@brief Prepare internal data for operating on the given domain.
     virtual void initialize(const conduit::Node &dom,
-                            const std::string &coordsetPath,
+                            const std::string &topologyName,
                             const std::string &fcnPath,
                             const std::string &maskPath) = 0;
     //!@brief Set the contour value
     virtual void setContourValue(double contourVal) = 0;
-    //@{
-    //!@name Phases of the computation
-    //!@brief Mark domain cells that cross the contour.
-    virtual void markCrossings() = 0;
-    //!@brief Precompute some metadata for contour mesh.
-    virtual void scanCrossings() = 0;
-    //!@brief Generate the contour mesh in internal data format.
-    virtual void computeContour() = 0;
-    //!@brief Get the number of contour mesh cells generated.
-    //@}
+    //!@brief Compute the contour mesh.
+    virtual void computeContourMesh() = 0;
+    //!@brief Return number of contour mesh facets generated.
     virtual axom::IndexType getContourCellCount() const = 0;
     /*!
       @brief Populate output mesh object with generated contour.
@@ -367,9 +324,31 @@ private:
     virtual ~ImplBase() { }
   };
 
+private:
+  RuntimePolicy m_runtimePolicy;
+
+  //@brief Choice of full or partial data-parallelism, or byPolicy.
+  MarchingCubesDataParallelism m_dataParallelism =
+    MarchingCubesDataParallelism::byPolicy;
+
+  /*!
+    \brief Computational mesh as a conduit::Node.
+  */
+  const conduit::Node *m_dom;
+  int m_ndim;
+
+  //!@brief Name of Blueprint topology in m_dom.
+  const std::string m_topologyName;
+
+  std::string m_fcnFieldName;
+  //!@brief Path to nodal scalar function in m_dom.
+  std::string m_fcnPath;
+
+  const std::string m_maskFieldName;
+  //!@brief Path to mask in m_dom.
+  const std::string m_maskPath;
+
   std::unique_ptr<ImplBase> m_impl;
-  //!@brief Allocate implementation object and set m_impl.
-  void allocateImpl();
 
   /*!
    * \brief Set the blueprint single-domain mesh.
@@ -383,4 +362,5 @@ private:
 }  // namespace quest
 }  // namespace axom
 
-#endif  // AXOM_PRIMAL_ISOSURFACE_H_
+#endif  // AXOM_USE_CONDUIT
+#endif  // AXOM_QUEST_MARCHINGCUBES_H_

@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -199,7 +199,7 @@ public:
   /*! 
    * \brief Copy constructor for an Array instance 
    */
-  Array(const Array& other);
+  AXOM_HOST_DEVICE Array(const Array& other);
 
   /*! 
    * \brief Move constructor for an Array instance 
@@ -343,6 +343,23 @@ public:
   AXOM_HOST_DEVICE inline const T* data() const { return m_data; }
 
   /// @}
+
+  /*!
+    @brief Convert 1D Array into a StackArray.
+  */
+  template <int LENGTH1D, typename TT = T, int TDIM = DIM>
+  AXOM_HOST_DEVICE inline
+    typename std::enable_if<TDIM == 1, axom::StackArray<TT, LENGTH1D>>::type
+    to_stack_array() const
+  {
+    axom::StackArray<TT, LENGTH1D> rval;
+    IndexType copyCount = LENGTH1D <= m_num_elements ? LENGTH1D : m_num_elements;
+    for(IndexType i = 0; i < copyCount; ++i)
+    {
+      rval[i] = m_data[i];
+    }
+    return rval;
+  }
 
   /// @}
 
@@ -713,7 +730,7 @@ public:
                   "Cannot call Array<T>::resize() when T is non-trivially-"
                   "constructible. Use Array<T>::reserve() and emplace_back()"
                   "instead.");
-    const StackArray<IndexType, DIM> dims {static_cast<IndexType>(args)...};
+    const StackArray<IndexType, DIM> dims {{static_cast<IndexType>(args)...}};
     resizeImpl(dims, true);
   }
 
@@ -721,14 +738,14 @@ public:
   template <typename... Args, typename Enable = std::enable_if_t<sizeof...(Args) == DIM>>
   void resize(ArrayOptions::Uninitialized, Args... args)
   {
-    const StackArray<IndexType, DIM> dims {static_cast<IndexType>(args)...};
+    const StackArray<IndexType, DIM> dims {{static_cast<IndexType>(args)...}};
     resizeImpl(dims, false);
   }
 
   template <int Dims = DIM, typename Enable = std::enable_if_t<Dims == 1>>
   void resize(IndexType size, const T& value)
   {
-    resizeImpl({size}, true, &value);
+    resizeImpl({{size}}, true, &value);
   }
 
   void resize(const StackArray<IndexType, DIM>& size, const T& value)
@@ -894,7 +911,7 @@ template <typename T, int DIM, MemorySpace SPACE>
 template <typename... Args, typename Enable>
 Array<T, DIM, SPACE>::Array(Args... args)
   : ArrayBase<T, DIM, Array<T, DIM, SPACE>>(
-      StackArray<IndexType, DIM> {static_cast<IndexType>(args)...})
+      StackArray<IndexType, DIM> {{static_cast<IndexType>(args)...}})
   , m_allocator_id(axom::detail::getAllocatorID<SPACE>())
 {
   static_assert(sizeof...(Args) == DIM,
@@ -910,7 +927,7 @@ template <typename T, int DIM, MemorySpace SPACE>
 template <typename... Args, typename Enable>
 Array<T, DIM, SPACE>::Array(ArrayOptions::Uninitialized, Args... args)
   : ArrayBase<T, DIM, Array<T, DIM, SPACE>>(
-      StackArray<IndexType, DIM> {static_cast<IndexType>(args)...})
+      StackArray<IndexType, DIM> {{static_cast<IndexType>(args)...}})
   , m_allocator_id(axom::detail::getAllocatorID<SPACE>())
 {
   static_assert(sizeof...(Args) == DIM,
@@ -981,11 +998,22 @@ Array<T, DIM, SPACE>::Array(std::initializer_list<T> elems, int allocator_id)
 
 //------------------------------------------------------------------------------
 template <typename T, int DIM, MemorySpace SPACE>
-Array<T, DIM, SPACE>::Array(const Array& other)
+AXOM_HOST_DEVICE Array<T, DIM, SPACE>::Array(const Array& other)
   : ArrayBase<T, DIM, Array<T, DIM, SPACE>>(
       static_cast<const ArrayBase<T, DIM, Array<T, DIM, SPACE>>&>(other))
   , m_allocator_id(other.m_allocator_id)
 {
+#if defined(AXOM_DEVICE_CODE)
+  #if defined(AXOM_DEBUG)
+  printf(
+    "axom::Array: cannot copy-construct on the device.\n"
+    "This is usually the result of capturing an array by-value in a lambda. "
+    "Use axom::ArrayView for value captures instead.\n");
+  #endif
+  #if defined(__CUDA_ARCH__)
+  __trap();
+  #endif
+#else
   initialize(other.size(), other.capacity());
   // Use fill_range to ensure that copy constructors are invoked for each
   // element.
@@ -1000,6 +1028,7 @@ Array<T, DIM, SPACE>::Array(const Array& other)
                        m_allocator_id,
                        other.data(),
                        srcSpace);
+#endif
 }
 
 //------------------------------------------------------------------------------
@@ -1478,7 +1507,15 @@ inline void Array<T, DIM, SPACE>::setCapacity(IndexType new_capacity)
     updateNumElements(new_capacity);
   }
 
-  m_data = axom::reallocate<T>(m_data, new_capacity, m_allocator_id);
+  // Create a new block of memory, and move the elements over.
+  T* new_data = axom::allocate<T>(new_capacity, m_allocator_id);
+  OpHelper::realloc_move(new_data, m_num_elements, m_data, m_allocator_id);
+
+  // Destroy the original array.
+  axom::deallocate(m_data);
+
+  // Set the pointer and capacity to the new memory.
+  m_data = new_data;
   m_capacity = new_capacity;
 
   assert(m_data != nullptr || m_capacity <= 0);
@@ -1506,8 +1543,7 @@ inline void Array<T, DIM, SPACE>::dynamicRealloc(IndexType new_num_elements)
     utilities::processAbort();
   }
 
-  m_data = axom::reallocate<T>(m_data, new_capacity, m_allocator_id);
-  m_capacity = new_capacity;
+  setCapacity(new_capacity);
 
   assert(m_data != nullptr || m_capacity <= 0);
 }

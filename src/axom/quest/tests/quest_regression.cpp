@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -52,13 +52,14 @@
 #endif
 
 // C/C++ includes
-#include <cmath>  // for std::signbit()
+#include <cmath>
 #include <string>
 
-const int DIM = 3;
-const int MAX_RESULTS = 10;         // Max number of disagreeing entries to show
-                                    // when comparing results
-const int DEFAULT_RESOLUTION = 32;  // Default resolution of query grid
+constexpr int DIM = 3;
+// Default resolution of query grid
+constexpr int DEFAULT_RESOLUTION = 32;
+// Max number of disagreeing entries to show when comparing results
+constexpr int MAX_RESULTS = 10;
 
 namespace mint = axom::mint;
 namespace primal = axom::primal;
@@ -71,7 +72,7 @@ using SpacePt = primal::Point<double, DIM>;
 using SpaceVec = primal::Vector<double, DIM>;
 using GridPt = primal::Point<int, DIM>;
 
-/** Simple structure to hold the command line arguments */
+/// Simple structure to hold the command line arguments
 struct Input
 {
   Input() = default;
@@ -104,9 +105,7 @@ struct Input
   bool hasBoundingBox() const { return meshBoundingBox != SpaceBoundingBox(); }
   bool hasQueryMesh() const { return queryMesh != nullptr; }
 
-  /**
- * \brief Parses the command line options
- */
+  /// Parses the command line options
   void parse(int argc, char** argv, axom::CLI::App& app)
   {
     app
@@ -138,8 +137,7 @@ struct Input
       ->check(axom::CLI::ExistingFile);
 #endif
 
-    // user can supply 1 or 3 values for resolution
-    // the following is not quite right
+    // user can supply 1 or 3 values for resolution the following is not quite right
     auto* res = app
                   .add_option("-r,--resolution",
                               m_resolution,
@@ -211,7 +209,7 @@ struct Input
   }
 };
 
-/** Loads the baseline dataset into the given sidre group */
+/// Loads the baseline dataset into the given sidre group
 void loadBaselineData(sidre::Group* grp, Input& args)
 {
   sidre::IOManager reader(MPI_COMM_WORLD);
@@ -587,11 +585,12 @@ bool compareDistanceAndContainment(Input& clargs)
     if(diffCount != 0)
     {
       passed = false;
-      SLIC_INFO("** Disagreement between SignedDistance "
-                << " and InOutOctree containment queries.  "
-                << "\n There were " << diffCount << " differences."
-                << "\n Showing first " << std::min(diffCount, MAX_RESULTS)
-                << " results:" << out.data());
+      SLIC_INFO(axom::fmt::format(
+        "** Disagreement between SignedDistance and InOutOctree queries.\n"
+        "There were {} differences.\n Showing first {} results -- {}",
+        diffCount,
+        std::min(diffCount, MAX_RESULTS),
+        std::string(out.begin(), out.end())));
     }
   }
 
@@ -599,8 +598,7 @@ bool compareDistanceAndContainment(Input& clargs)
 }
 
 /**
- * \brief Function to compare the results from the InOutOctree and
- * SignedDistance queries
+ * \brief Function to compare the results from the InOutOctree and SignedDistance queries
  * \return True if all results agree, False otherwise.
  * \note When there are differences, the first few are logged
  */
@@ -614,19 +612,41 @@ bool compareToBaselineResults(axom::sidre::Group* grp, Input& clargs)
   mint::UniformMesh* umesh = clargs.queryMesh;
   const int nnodes = umesh->getNumberOfNodes();
 
+  int* base_inout_containment = nullptr;
+  int* exp_inout_containment = nullptr;
+  int* base_sd_containment = nullptr;
+  int* exp_sd_containment = nullptr;
+  double* base_sd_distance = nullptr;
+  double* exp_sd_distance = nullptr;
+
+  // grab pointers to data arrays when appropriate
+  if(clargs.testContainment)
+  {
+    base_inout_containment = grp->getView("octree_containment")->getArray();
+    exp_inout_containment =
+      umesh->getFieldPtr<int>("octree_containment", mint::NODE_CENTERED);
+  }
+
+  if(clargs.testDistance)
+  {
+    base_sd_containment = grp->getView("bvh_containment")->getArray();
+    exp_sd_containment =
+      umesh->getFieldPtr<int>("bvh_containment", mint::NODE_CENTERED);
+
+    base_sd_distance = grp->getView("bvh_distance")->getArray();
+    exp_sd_distance =
+      umesh->getFieldPtr<double>("bvh_distance", mint::NODE_CENTERED);
+  }
+
   if(clargs.testContainment)
   {
     int diffCount = 0;
     axom::fmt::memory_buffer out;
 
-    int* exp_containment =
-      umesh->getFieldPtr<int>("octree_containment", mint::NODE_CENTERED);
-    int* base_containment = grp->getView("octree_containment")->getArray();
-
     for(int inode = 0; inode < nnodes; ++inode)
     {
-      const int expected = base_containment[inode];
-      const int actual = exp_containment[inode];
+      const int expected = base_inout_containment[inode];
+      const int actual = exp_inout_containment[inode];
       if(expected != actual)
       {
         if(diffCount < MAX_RESULTS)
@@ -639,8 +659,16 @@ bool compareToBaselineResults(axom::sidre::Group* grp, Input& clargs)
             "\n  Disagreement on sample {} @ {}.  Expected {}, got {}",
             inode,
             pt,
-            expected,
-            actual);
+            expected ? "inside" : "outside",
+            actual ? "inside" : "outside");
+
+          if(clargs.testDistance)
+          {
+            axom::fmt::format_to(
+              std::back_inserter(out),
+              " -- distance from query point to surface is {} ",
+              base_sd_distance[inode]);
+          }
         }
         ++diffCount;
       }
@@ -649,9 +677,12 @@ bool compareToBaselineResults(axom::sidre::Group* grp, Input& clargs)
     if(diffCount != 0)
     {
       passed = false;
-      SLIC_INFO("** Containment test failed.  There were "
-                << diffCount << " differences. Showing first "
-                << std::min(diffCount, MAX_RESULTS) << out.data());
+      SLIC_INFO(axom::fmt::format(
+        "** Containment test failed.  There were {} differences. "
+        "Showing first {} -- {}",
+        diffCount,
+        std::min(diffCount, MAX_RESULTS),
+        std::string(out.begin(), out.end())));
     }
   }
 
@@ -660,20 +691,12 @@ bool compareToBaselineResults(axom::sidre::Group* grp, Input& clargs)
     int diffCount = 0;
     axom::fmt::memory_buffer out;
 
-    int* base_containment = grp->getView("bvh_containment")->getArray();
-    int* exp_containment =
-      umesh->getFieldPtr<int>("bvh_containment", mint::NODE_CENTERED);
-
-    double* base_distance = grp->getView("bvh_distance")->getArray();
-    double* exp_distance =
-      umesh->getFieldPtr<double>("bvh_distance", mint::NODE_CENTERED);
-
     for(int inode = 0; inode < nnodes; ++inode)
     {
-      const int expected_c = base_containment[inode];
-      const int actual_c = exp_containment[inode];
-      const double expected_d = base_distance[inode];
-      const double actual_d = exp_distance[inode];
+      const int expected_c = base_sd_containment[inode];
+      const int actual_c = exp_sd_containment[inode];
+      const double expected_d = base_sd_distance[inode];
+      const double actual_d = exp_sd_distance[inode];
       if(expected_c != actual_c ||
          !utilities::isNearlyEqual(expected_d, actual_d))
       {
@@ -699,9 +722,12 @@ bool compareToBaselineResults(axom::sidre::Group* grp, Input& clargs)
     if(diffCount != 0)
     {
       passed = false;
-      SLIC_INFO("** Distance test failed.  There were "
-                << diffCount << " differences. Showing first "
-                << std::min(diffCount, MAX_RESULTS) << out.data());
+      SLIC_INFO(axom::fmt::format(
+        "** Distance test failed.  There were {} differences. "
+        "Showing first {} -- {}",
+        diffCount,
+        std::min(diffCount, MAX_RESULTS),
+        std::string(out.begin(), out.end())));
     }
   }
 
@@ -784,9 +810,7 @@ void saveBaseline(axom::sidre::Group* grp, Input& clargs)
                       protocol));
 }
 
-/**
- * \brief Runs regression test for quest containment and signed distance queries
- */
+/// Runs regression test for quest containment and signed distance queries
 int main(int argc, char** argv)
 {
   bool allTestsPassed = true;

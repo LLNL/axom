@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
+ * Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
  * other Axom Project Developers. See the top-level LICENSE file for details.
  *
  * SPDX-License-Identifier: (BSD-3-Clause)
@@ -80,6 +80,10 @@
 #cmakedefine AXOM_USE_SPARSEHASH
 #cmakedefine AXOM_USE_UMPIRE
 
+/*
+ * Compiler defines for third-party executables
+ */
+#cmakedefine JSONSCHEMA_EXECUTABLE "@JSONSCHEMA_EXECUTABLE@"
 
 /*
  * We need to explicitly add some definitions on Windows

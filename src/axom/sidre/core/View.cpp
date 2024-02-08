@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -1040,6 +1040,102 @@ void View::copyView(View* copy) const
 /*
  *************************************************************************
  *
+ * PRIVATE method copy the contents of this into a undescribed EMPTY view.
+ *
+ *************************************************************************
+ */
+void View::deepCopyView(View* copy, int allocID) const
+{
+  SLIC_ASSERT_MSG(copy->m_state == EMPTY && !copy->isDescribed(),
+                  SIDRE_VIEW_LOG_PREPEND
+                    << "deepCopyView can only copy into undescribed view "
+                    << "with empty state.");
+
+  if(isDescribed())
+  {
+    copy->describe(m_schema.dtype());
+    if(hasBuffer() || m_state == EXTERNAL)
+    {
+      copy->allocate(getTypeID(), getNumElements(), allocID);
+    }
+  }
+
+  switch(m_state)
+  {
+  case EMPTY:
+    // Nothing more to do
+    break;
+  case STRING:
+  case SCALAR:
+    copy->m_node = m_node;
+    copy->m_state = m_state;
+    copy->m_is_applied = true;
+    break;
+  case EXTERNAL:
+    if(!copy->isAllocated())
+    {
+      copy->allocate(allocID);
+    }
+    if(isApplied())
+    {
+      copy->apply();
+    }
+    {
+      IndexType stride = getStride();
+      IndexType src_offset = getOffset();
+      IndexType dst_offset = copy->getOffset();
+      IndexType num_bytes = getBytesPerElement();
+      IndexType j = 0;
+      for(IndexType i = 0; i < getNumElements(); ++i)
+      {
+        char* copy_dst =
+          static_cast<char*>(copy->getVoidPtr()) + (dst_offset + i) * num_bytes;
+        const char* copy_src =
+          static_cast<const char*>(getVoidPtr()) + (src_offset + j) * num_bytes;
+        axom::copy(copy_dst, copy_src, num_bytes);
+
+        j += stride;
+      }
+    }
+    break;
+  case BUFFER:
+    if(isAllocated() && !copy->isAllocated())
+    {
+      copy->allocate(allocID);
+    }
+    if(isApplied())
+    {
+      copy->apply();
+    }
+    if(hasBuffer())
+    {
+      IndexType stride = getStride();
+      IndexType src_offset = getOffset();
+      IndexType dst_offset = copy->getOffset();
+      IndexType num_bytes = getBytesPerElement();
+      IndexType j = 0;
+      for(IndexType i = 0; i < getNumElements(); ++i)
+      {
+        char* copy_dst =
+          static_cast<char*>(copy->getVoidPtr()) + (dst_offset + i) * num_bytes;
+        const char* copy_src =
+          static_cast<const char*>(getVoidPtr()) + (src_offset + j) * num_bytes;
+        axom::copy(copy_dst, copy_src, num_bytes);
+
+        j += stride;
+      }
+    }
+    break;
+  default:
+    SLIC_ASSERT_MSG(false,
+                    SIDRE_VIEW_LOG_PREPEND << "View is in unexpected state: "
+                                           << getStateStringName(m_state));
+  }
+}
+
+/*
+ *************************************************************************
+ *
  * PRIVATE method returns true if view can allocate data; else false.
  *
  * This method does not need to emit the view state as part of it's
@@ -1143,7 +1239,7 @@ bool View::isApplyValid() const
  */
 char const* View::getStateStringName(State state)
 {
-  char const* ret_string = NULL;
+  char const* ret_string = nullptr;
 
   switch(state)
   {

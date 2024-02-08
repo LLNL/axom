@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -18,9 +18,12 @@
 #include "axom/core/Macros.hpp"
 #include "axom/core/Types.hpp"
 
+// CUDA intrinsics: https://docs.nvidia.com/cuda/cuda-math-api/group__CUDA__MATH__INTRINSIC__INT.html
+// TODO: Support HIP intrinsics (https://rocm.docs.amd.com/projects/HIP/en/latest/reference/kernel_language.html)
+
 // Check for and setup defines for platform-specific intrinsics
 // Note: `__GNUC__` is defined for the gnu, clang and intel compilers
-#if defined(__CUDACC__)
+#if defined(AXOM_USE_CUDA)
   // Intrinsics included implicitly
 #elif defined(_WIN64) && (_MSC_VER >= 1600)
   #define _AXOM_CORE_USE_INTRINSICS_MSVC
@@ -84,7 +87,7 @@ struct BitTraits<std::uint8_t>
 AXOM_HOST_DEVICE inline int trailingZeros(std::uint64_t word)
 {
   /* clang-format off */
-#if defined(AXOM_DEVICE_CODE) && defined(AXOM_USE_CUDA)
+#if defined(__CUDA_ARCH__) && defined(AXOM_USE_CUDA)
   return word != std::uint64_t(0) ? __ffsll(word) - 1 : 64;
 #elif defined(_AXOM_CORE_USE_INTRINSICS_MSVC)
   unsigned long cnt;
@@ -121,7 +124,7 @@ AXOM_HOST_DEVICE inline int trailingZeros(std::uint64_t word)
 AXOM_HOST_DEVICE inline int popCount(std::uint64_t word)
 {
   /* clang-format off */
-#if defined(AXOM_DEVICE_CODE) && defined(AXOM_USE_CUDA)
+#if defined(__CUDA_ARCH__) && defined(AXOM_USE_CUDA)
   // Use CUDA intrinsic for popcount
   return __popcll(word);
 #elif defined(_AXOM_CORE_USE_INTRINSICS_MSVC)
@@ -160,7 +163,7 @@ AXOM_HOST_DEVICE inline int popCount(std::uint64_t word)
 AXOM_HOST_DEVICE inline std::int32_t leadingZeros(std::int32_t word)
 {
   /* clang-format off */
-#if defined(AXOM_DEVICE_CODE) && defined(AXOM_USE_CUDA)
+#if defined(__CUDA_ARCH__) && defined(AXOM_USE_CUDA)
   // Use CUDA intrinsic for count leading zeros
   return __clz(word);
 #elif defined(_AXOM_CORE_USE_INTRINSICS_MSVC)

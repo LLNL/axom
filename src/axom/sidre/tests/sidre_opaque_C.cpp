@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -25,11 +25,11 @@ enum DType
   _UnknownType_
 };
 
-typedef struct
+struct AA_extent
 {
   int ilo;
   int ihi;
-} AA_extent;
+};
 
 AA_extent* AA_extent_new(int lo, int hi)
 {
@@ -60,12 +60,12 @@ int AA_get_num_pts(AA_extent* self, Centering cent)
   return retval;
 }
 
-typedef struct
+struct AA_meshvar
 {
   Centering cent;
   DType type;
   int depth;
-} AA_meshvar;
+};
 
 AA_meshvar* AA_meshvar_new(Centering cent, DType type, int depth)
 {

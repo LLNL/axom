@@ -1,4 +1,4 @@
-# Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
+# Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
 # other Axom Project Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
@@ -58,6 +58,8 @@ set( quest_headers
     interface/signed_distance.hpp
 
     util/mesh_helpers.hpp
+    MeshViewUtil.hpp
+    ArrayIndexer.hpp
     )
 
 set( quest_sources
@@ -102,14 +104,22 @@ if(AXOM_ENABLE_SIDRE)
 endif()
 
 if(CONDUIT_FOUND AND AXOM_ENABLE_MPI)
-    list(APPEND quest_headers    DistributedClosestPoint.hpp )
+    blt_list_append(
+        TO       quest_headers
+        ELEMENTS DistributedClosestPoint.hpp
+                 detail/DistributedClosestPointImpl.hpp
+                   )
+    blt_list_append(
+        TO       quest_sources
+        ELEMENTS DistributedClosestPoint.cpp
+                   )
     list(APPEND quest_depends_on conduit::conduit
                                  conduit::conduit_mpi)
 endif()
 
 blt_list_append(
     TO       quest_headers
-    ELEMENTS MarchingCubes.hpp detail/MarchingCubesImpl.hpp
+    ELEMENTS MarchingCubes.hpp detail/MarchingCubesHybridParallel.hpp detail/MarchingCubesFullParallel.hpp
     IF       CONDUIT_FOUND
                )
 

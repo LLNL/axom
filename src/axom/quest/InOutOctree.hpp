@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -546,7 +546,7 @@ void InOutOctree<DIM>::insertVertex(VertexIndex idx, int startingLevel)
                 "Looking at block {} w/ blockBB {} indexing leaf vertex {}",
                 pt,
                 idx,
-                block,
+                axom::fmt::streamed(block),
                 this->blockBoundingBox(block),
                 blkData.dataIndex()));
 
@@ -579,7 +579,7 @@ void InOutOctree<DIM>::insertVertex(VertexIndex idx, int startingLevel)
     blkData.dataIndex() == DEBUG_VERT_IDX,
     fmt::format("-- vertex {} is indexed in block {}. Leaf vertex is {}",
                 idx,
-                block,
+                axom::fmt::streamed(block),
                 blkData.dataIndex()));
 }
 
@@ -660,7 +660,7 @@ void InOutOctree<DIM>::insertMeshCells()
                     "\n\tDynamic data: {}"
                     "\n\tBlock data: {}"
                     "\n\tAbout to finalize? {}",
-                    blk,
+                    axom::fmt::streamed(blk),
                     dynamicLeafData,
                     blkData,
                     (!isInternal && !isLeafThatMustRefine ? " yes" : "no")));
@@ -688,7 +688,7 @@ void InOutOctree<DIM>::insertMeshCells()
             fmt::format("[Added block {} into tree as a gray leaf]."
                         "\n\tDynamic data: {}"
                         "\n\tBlock data: {}",
-                        blk,
+                        axom::fmt::streamed(blk),
                         dynamicLeafData,
                         blkData));
         }
@@ -788,7 +788,7 @@ void InOutOctree<DIM>::insertMeshCells()
                           tIdx,
                           spaceTri,
                           tBB,
-                          childBlk[j],
+                          axom::fmt::streamed(childBlk[j]),
                           childBB[j],
                           *childDataPtr[j],
                           (shouldAddCell ? " yes" : "no")));
@@ -819,7 +819,7 @@ void InOutOctree<DIM>::insertMeshCells()
                   tIdx,
                   spaceTri,
                   fmt::join(m_meshWrapper.cellVertexIndices(tIdx), ", "),
-                  childBlk[j],
+                  axom::fmt::streamed(childBlk[j]),
                   *(childDataPtr[j])));
             }
           }
@@ -941,9 +941,10 @@ bool InOutOctree<DIM>::colorLeafAndNeighbors(const BlockIndex& leafBlk,
 {
   bool isColored = leafData.isColored();
 
-  QUEST_OCTREE_DEBUG_LOG_IF(
-    leafBlk == DEBUG_BLOCK_1 || leafBlk == DEBUG_BLOCK_2,
-    fmt::format("Trying to color {} with data: {}", leafBlk, leafData));
+  QUEST_OCTREE_DEBUG_LOG_IF(leafBlk == DEBUG_BLOCK_1 || leafBlk == DEBUG_BLOCK_2,
+                            fmt::format("Trying to color {} with data: {}",
+                                        axom::fmt::streamed(leafBlk),
+                                        leafData));
 
   if(!isColored)
   {
@@ -962,11 +963,11 @@ bool InOutOctree<DIM>::colorLeafAndNeighbors(const BlockIndex& leafBlk,
                       "bounding box {} w/ midpoint {}"
                       "\n\t\t from block {} with data {}, "
                       "bounding box {} w/ midpoint {}.",
-                      leafBlk,
+                      axom::fmt::streamed(leafBlk),
                       leafData,
                       this->blockBoundingBox(leafBlk),
                       this->blockBoundingBox(leafBlk).getCentroid(),
-                      neighborBlk,
+                      axom::fmt::streamed(neighborBlk),
                       neighborData,
                       this->blockBoundingBox(neighborBlk),
                       this->blockBoundingBox(neighborBlk).getCentroid()));
@@ -1004,7 +1005,7 @@ bool InOutOctree<DIM>::colorLeafAndNeighbors(const BlockIndex& leafBlk,
           isColored &&
             (DEBUG_BLOCK_1 == neighborBlk || DEBUG_BLOCK_2 == neighborBlk),
           fmt::format("Leaf block was colored -- {} now has data {}",
-                      leafBlk,
+                      axom::fmt::streamed(leafBlk),
                       leafData));
       }
     }
@@ -1028,11 +1029,11 @@ bool InOutOctree<DIM>::colorLeafAndNeighbors(const BlockIndex& leafBlk,
                         "bounding box {} w/ midpoint {}"
                         "\n\t\t to block {} with data {}, "
                         "bounding box {} w/ midpoint {}.",
-                        leafBlk,
+                        axom::fmt::streamed(leafBlk),
                         leafData,
                         this->blockBoundingBox(leafBlk),
                         this->blockBoundingBox(leafBlk).getCentroid(),
-                        neighborBlk,
+                        axom::fmt::streamed(neighborBlk),
                         neighborData,
                         this->blockBoundingBox(neighborBlk),
                         this->blockBoundingBox(neighborBlk).getCentroid()));
@@ -1070,7 +1071,7 @@ bool InOutOctree<DIM>::colorLeafAndNeighbors(const BlockIndex& leafBlk,
             neighborData.isColored() &&
               (DEBUG_BLOCK_1 == neighborBlk || DEBUG_BLOCK_2 == neighborBlk),
             fmt::format("Neighbor block was colored -- {} now has data {}",
-                        neighborBlk,
+                        axom::fmt::streamed(neighborBlk),
                         neighborData));
         }
       }
@@ -1169,7 +1170,7 @@ typename std::enable_if<TDIM == 3, bool>::type InOutOctree<DIM>::withinGrayBlock
       fmt::format("Checking if pt {} is within block {} with data {}, "
                   "ray is {}, triangle point is {} on triangle with index {}.",
                   queryPt,
-                  leafBlk,
+                  axom::fmt::streamed(leafBlk),
                   leafData,
                   ray,
                   triPt,
@@ -1228,8 +1229,8 @@ typename std::enable_if<TDIM == 3, bool>::type InOutOctree<DIM>::withinGrayBlock
     return normal.dot(ray.direction()) > 0.;
   }
 
-  SLIC_DEBUG("Could not determine inside/outside for point "
-             << queryPt << " on block " << leafBlk);
+  // SLIC_DEBUG("Could not determine inside/outside for point "
+  //            << queryPt << " on block " << leafBlk);
 
   return false;  // query points on boundary might get here -- revisit this.
 }
@@ -1285,7 +1286,7 @@ typename std::enable_if<TDIM == 2, bool>::type InOutOctree<DIM>::withinGrayBlock
       fmt::format("Checking if pt {} is within block {} with data {}, "
                   "ray is {}, segment point is {} on segment with index {}.",
                   queryPt,
-                  leafBlk,
+                  axom::fmt::streamed(leafBlk),
                   leafData,
                   ray,
                   segmentPt,

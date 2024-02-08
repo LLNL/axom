@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -26,7 +26,7 @@ namespace axom
 namespace quest
 {
 /**
-   * \brief A utility class that wraps access to the mesh data of and InOutOctree
+   * \brief A utility class that wraps access to the mesh data of an InOutOctree
    *
    * This class helps separate the specifics of accessing the underlying mesh
    * for an InOutOctree. It is customized for unstructured Segment meshes in 2D

@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -1676,6 +1676,22 @@ TYPED_TEST(PointInCell3DTest, pic_curved_refined_hex_jittered)
   this->testIsoGridPointsOnMesh(meshTypeStr);
 }
 
+void printSummary()
+{
+#ifdef AXOM_DEBUG
+  const std::string buildtype {"DEBUG"};
+#else
+  const std::string buildtype {"RELEASE"};
+#endif
+  SLIC_INFO(
+    axom::fmt::format("{} build; running {} test points with {} refinements; "
+                      "grid resolution factor {}",
+                      buildtype,
+                      NUM_TEST_PTS,
+                      NREFINE,
+                      TEST_GRID_RES));
+}
+
 int main(int argc, char* argv[])
 {
   int result = 0;
@@ -1685,6 +1701,9 @@ int main(int argc, char* argv[])
 
   std::srand(SRAND_SEED);
 
+  printSummary();
   result = RUN_ALL_TESTS();
+  printSummary();
+
   return result;
 }

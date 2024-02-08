@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -13,11 +13,11 @@
 
 namespace
 {
-static const int DIM = 3;
-static const double EPS = 1e-6;
+constexpr int DIM = 3;
+constexpr double EPS = 1e-6;
 
-typedef axom::mint::UnstructuredMesh<axom::mint::SINGLE_SHAPE> UMesh;
-typedef axom::primal::Point<double, 3> Point3;
+using UMesh = axom::mint::UnstructuredMesh<axom::mint::SINGLE_SHAPE>;
+using Point3 = axom::primal::Point<double, 3>;
 
 /*! Insert a vertex with coordinates (x,y,z) into \a mesh  */
 void insertVertex(UMesh* mesh, double x, double y, double z)

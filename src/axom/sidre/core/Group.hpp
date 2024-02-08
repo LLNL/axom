@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -30,6 +30,7 @@
 #include <vector>
 #include <set>
 #include <cstring>
+#include <functional>
 
 // third party lib headers
 #ifdef AXOM_USE_HDF5
@@ -890,19 +891,42 @@ public:
   View* moveView(View* view);
 
   /*!
-   * \brief Create a copy of given View object and add it to this Group.
+   * \brief Create a (shallow) copy of given View object and add it to this
+   *        Group.
    *
    * Note that View copying is a "shallow" copy; the data associated with
    * the View is not copied. The new View object is associated with
    * the same data as the original.
    *
-   * If given Group pointer is null or Group already has a child Group with
-   * same name as given Group, method is a no-op.
+   * If given View pointer is null or Group already has a View with
+   * same name as given View, method is a no-op.
    *
-   * \return pointer to given argument Group object or nullptr if Group
-   * is not moved into this Group.
+   * \sa deepCopyView
+   *
+   * \return pointer to the new copied View object or nullptr if a View
+   * is not successfully copied into this Group.
    */
   View* copyView(View* view);
+
+  /*!
+   * \brief Create a deep copy of given View object and add it to this Group.
+   *
+   * Note that for Views that use sidre Buffers or external data, the
+   * deep copy performs a copy of the data described by the View
+   * into a new Buffer attached to the destination View. If the source View
+   * describes only part of a Buffer or part of an external array, due to
+   * strides and or offsets into the data, only the values seen by the 
+   * description will be copied into the new View. The new View will have
+   * a Buffer that is the exact size of the number of values that are copied,
+   * with an offset of zero and a stride of one.
+   *
+   * If given View pointer is null or Group already has a View with
+   * same name as given View, method is a no-op.
+   *
+   * \return pointer to the new copied View object or nullptr if a View
+   * is not copied into this Group.
+   */
+  View* deepCopyView(View* view, int allocID = INVALID_ALLOCATOR_ID);
 
   //@}
 
@@ -1228,8 +1252,8 @@ public:
   Group* moveGroup(Group* group);
 
   /*!
-   * \brief Create a copy of Group hierarchy rooted at given Group and make it
-   *        a child of this Group.
+   * \brief Create a (shallow) copy of Group hierarchy rooted at given
+   *        Group and make it a child of this Group.
    *
    * Note that all Views in the Group hierarchy are copied as well.
    *
@@ -1241,10 +1265,37 @@ public:
    * If given Group pointer is null or Group already has a child Group with
    * same name as given Group, method is a no-op.
    *
-   * \return pointer to given argument Group object or nullptr if Group
-   * is not moved into this Group.
+   * \sa deepCopyGroup
+   *
+   * \return pointer to the new copied Group object or nullptr if a Group
+   * is not copied into this Group.
    */
   Group* copyGroup(Group* group);
+
+  /*!
+   * \brief Create a deep copy of Group hierarchy rooted at given Group and
+   *        make it a child of this Group.
+   *
+   * Note that all Views in the Group hierarchy are deep copied as well.
+   *
+   * The deep copy of the Group creates a duplicate of the entire Group
+   * hierarchy and performs a deep copy of the data described by the Views
+   * in the hierarchy.
+   *
+   * The Views in the new Group hierarchy will each allocate and use
+   * new Buffers to hold their copied data. Each Buffer will be sized to
+   * receive only the data values seen by the description of the original
+   * View and will have zero offset and a strid of one.
+   *
+   * If given Group pointer is null or Group already has a child Group with
+   * same name as given Group, method is a no-op.
+   *
+   * \sa deepCopyGroup
+   *
+   * \return pointer to the new copied Group object or nullptr if a Group
+   * is not copied into this Group.
+   */
+  Group* deepCopyGroup(Group* group, int allocID = INVALID_ALLOCATOR_ID);
 
   //@}
 
@@ -1390,7 +1441,9 @@ public:
    * \brief Save the Group to a file.
    *
    *  Saves the tree starting at this Group and the Buffers used by the Views
-   *  in this tree.
+   *  in this tree.  Returns true (success) if no Conduit I/O error occurred
+   *  since this Group's DataStore was created or had its error flag cleared;
+   *  false, if an error occurred at some point.
    *
    *  If attr is a null pointer, dump all Views.  Otherwise, only dump Views
    *  which have the Attribute set.
@@ -1398,8 +1451,9 @@ public:
    * \param path      file path
    * \param protocol  I/O protocol
    * \param attr      Save Views that have Attribute set.
+   * \return          True if no error occurred, otherwise false.
    */
-  void save(const std::string& path,
+  bool save(const std::string& path,
             const std::string& protocol = Group::getDefaultIOProtocol(),
             const Attribute* attr = nullptr) const;
 
@@ -1412,7 +1466,10 @@ public:
    *
    * If preserve_contents is true, then the names of the children held by the
    * Node cannot be the same as the names of the children already held by this
-   * Group.  If there is a naming conflict, an error will occur.
+   * Group.  If there is a naming conflict, an error will occur.  Returns true
+   * (success) if no Conduit I/O error occurred since this Group's DataStore
+   * was created or had its error flag cleared; false, if an error occurred at
+   * some point.
    *
    * \param path     file path
    * \param protocol I/O protocol
@@ -1420,8 +1477,9 @@ public:
    *                           this Group remain in place.  If false, all
    *                           child Groups and Views are destroyed before
    *                           loading data from the file.
+   * \return         True if no error occurred, otherwise false.
    */
-  void load(const std::string& path,
+  bool load(const std::string& path,
             const std::string& protocol = Group::getDefaultIOProtocol(),
             bool preserve_contents = false);
 
@@ -1437,7 +1495,10 @@ public:
    *
    * If preserve_contents is true, then the names of the children held by the
    * Node cannot be the same as the names of the children already held by this
-   * Group.  If there is a naming conflict, an error will occur.
+   * Group.  If there is a naming conflict, an error will occur.  Returns true
+   * (success) if no Conduit I/O error occurred since this Group's DataStore
+   * was created or had its error flag cleared; false, if an error occurred at
+   * some point.
    *
    * \param [in]  path     file path to load
    * \param [in]  protocol I/O protocol to use
@@ -1446,8 +1507,9 @@ public:
    *                           If false, all child Groups and Views are
    *                           destroyed before loading data from the file.
    * \param [out] name_from_file    Group name stored in the file
+   * \return         True if no error occurred, otherwise false.
    */
-  void load(const std::string& path,
+  bool load(const std::string& path,
             const std::string& protocol,
             bool preserve_contents,
             std::string& name_from_file);
@@ -1493,8 +1555,10 @@ public:
    * protocol.
    *
    * \param path      file path
+   * \return          True if Axom was compiled with HDF5 and no error
+   *                  occurred in this method; otherwise false.
    */
-  void loadExternalData(const std::string& path);
+  bool loadExternalData(const std::string& path);
 
 #ifdef AXOM_USE_HDF5
 
@@ -1502,13 +1566,16 @@ public:
    * \brief Save the Group to an hdf5 handle.
    *
    *  If attr is nullptr, dump all Views.  Otherwise, only dump Views
-   *  which have the Attribute set.
+   *  which have the Attribute set.  Returns true (success) if no Conduit
+   *  I/O error occurred since this Group's DataStore was created or had
+   *  its error flag cleared; false, if an error occurred at some point.
    *
    * \param h5_id      hdf5 handle
    * \param protocol   I/O protocol sidre_hdf5 or conduit_hdf5
    * \param attr       Save Views that have Attribute set.
+   * \return           True if no error occurred, otherwise false.
    */
-  void save(const hid_t& h5_id,
+  bool save(const hid_t& h5_id,
             const std::string& protocol = Group::getDefaultIOProtocol(),
             const Attribute* attr = nullptr) const;
 
@@ -1517,7 +1584,10 @@ public:
    *
    * If preserve_contents is true, then the names of the children held by the
    * Node cannot be the same as the names of the children already held by this
-   * Group.  If there is a naming conflict, an error will occur.
+   * Group.  If there is a naming conflict, an error will occur.  Returns true
+   * (success) if no Conduit I/O error occurred since this Group's DataStore
+   * was created or had its error flag cleared; false, if an error occurred at
+   * some point.
    *
    * \param h5_id      hdf5 handle
    * \param protocol   I/O protocol sidre_hdf5 or conduit_hdf5
@@ -1525,8 +1595,9 @@ public:
    *                           this Group remain in place.  If false, all
    *                           child Groups and Views are destroyed before
    *                           loading data from the file.
+   * \return           True if no error occurred, otherwise false.
    */
-  void load(const hid_t& h5_id,
+  bool load(const hid_t& h5_id,
             const std::string& protocol = Group::getDefaultIOProtocol(),
             bool preserve_contents = false);
 
@@ -1535,7 +1606,10 @@ public:
    *
    * If preserve_contents is true, then the names of the children held by the
    * Node cannot be the same as the names of the children already held by this
-   * Group.  If there is a naming conflict, an error will occur.
+   * Group.  If there is a naming conflict, an error will occur.  Returns true
+   * (success) if no Conduit I/O error occurred since this Group's DataStore
+   * was created or had its error flag cleared; false, if an error occurred at
+   * some point.
    *
    * \param [in]  h5_id      hdf5 handle
    * \param [in]  protocol   I/O protocol sidre_hdf5 or conduit_hdf5
@@ -1544,8 +1618,9 @@ public:
    *                           child Groups and Views are destroyed before
    *                           loading data from the file.
    * \param [out] name_from_file    Group name stored in the file
+   * \return                 True if no error occurred, otherwise false.
    */
-  void load(const hid_t& h5_id,
+  bool load(const hid_t& h5_id,
             const std::string& protocol,
             bool preserve_contents,
             std::string& name_from_file);
@@ -1554,11 +1629,14 @@ public:
    * \brief Load data into the Group's external views from a hdf5 handle.
    *
    * No protocol argument is needed, as this only is used with the sidre_hdf5
-   * protocol.
+   * protocol.  Returns true (success) if no Conduit I/O error occurred since
+   * this Group's DataStore was created or had its error flag cleared; false,
+   * if an error occurred at some point.
    *
    * \param h5_id      hdf5 handle
+   * \return           True if no error occurred, otherwise false.
    */
-  void loadExternalData(const hid_t& h5_id);
+  bool loadExternalData(const hid_t& h5_id);
 
 #endif /* AXOM_USE_HDF5 */
 

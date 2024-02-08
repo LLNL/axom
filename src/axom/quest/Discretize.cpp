@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -188,7 +188,6 @@ double octPolyVolume(const OctType& o)
 {
   // Convert Octahedron into Polyhedrom
   PolyhedronType octPoly;
-  double octVolume;
 
   octPoly.addVertex(o[0]);
   octPoly.addVertex(o[1]);
@@ -204,16 +203,7 @@ double octPolyVolume(const OctType& o)
   octPoly.addNeighbors(4, {0, 5, 3, 2});
   octPoly.addNeighbors(5, {0, 1, 3, 4});
 
-  octVolume = octPoly.volume();
-
-  // Flip sign if volume is negative
-  // (expected when vertex order is reversed)
-  if(octVolume < 0)
-  {
-    octVolume = -octVolume;
-  }
-
-  return octVolume;
+  return octPoly.volume();
 }
 }  // namespace
 

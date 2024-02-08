@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -59,14 +59,7 @@ enum class ShapingMethod : int
   Intersection
 };
 
-/// Choose runtime policy for RAJA
-enum RuntimePolicy
-{
-  seq = 0,
-  omp = 1,
-  cuda = 2,
-  hip = 3
-};
+using RuntimePolicy = axom::runtime_policy::Policy;
 
 /// Struct to parse and store the input parameters
 struct Input
@@ -84,7 +77,7 @@ public:
   klee::ShapeSet shapeSet;
 
   ShapingMethod shapingMethod {ShapingMethod::Sampling};
-  RuntimePolicy policy {seq};
+  RuntimePolicy policy {RuntimePolicy::seq};
   int quadratureOrder {5};
   int outputOrder {2};
   int samplesPerKnotSpan {25};
@@ -98,23 +91,6 @@ public:
 
 private:
   bool m_verboseOutput {false};
-
-  // clang-format off
-  const std::map<std::string, RuntimePolicy> s_validPolicies{
-    #if defined(AXOM_USE_RAJA) && defined(AXOM_USE_UMPIRE)
-      {"seq", seq}
-      #ifdef AXOM_USE_OPENMP
-    , {"omp", omp}
-      #endif
-      #ifdef AXOM_USE_CUDA
-    , {"cuda", cuda}
-      #endif
-      #ifdef AXOM_USE_HIP
-    , {"hip", hip}
-      #endif
-    #endif
-  };
-  // clang-format on
 
 public:
   bool isVerbose() const { return m_verboseOutput; }
@@ -348,7 +324,8 @@ public:
 
       intersection_options->add_option("-p, --policy", policy, pol_sstr.str())
         ->capture_default_str()
-        ->transform(axom::CLI::CheckedTransformer(s_validPolicies));
+        ->transform(
+          axom::CLI::CheckedTransformer(axom::runtime_policy::s_nameToPolicy));
     }
     app.get_formatter()->column_width(50);
 

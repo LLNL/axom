@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -27,7 +27,7 @@ using SetType = axom::slam::PositionSet<>;
 using SetPosition = SetType::PositionType;
 using SetElement = SetType::ElementType;
 
-static const SetPosition MAX_SET_SIZE = 10;
+constexpr SetPosition MAX_SET_SIZE = 10;
 
 }  // end anonymous namespace
 

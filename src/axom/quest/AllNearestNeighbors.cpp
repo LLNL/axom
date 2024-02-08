@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -31,10 +31,10 @@ void all_nearest_neighbors(const double* x,
   // points in this and neighboring UniformGrid bins (out to distance limit)
   // and report result.
 
-  typedef spin::UniformGrid<int, 3> GridType;
-  typedef GridType::BoxType BoxType;
-  typedef GridType::PointType PointType;
-  typedef BoxType::VectorType VectorType;
+  using GridType = spin::UniformGrid<int, 3>;
+  using BoxType = GridType::BoxType;
+  using PointType = GridType::PointType;
+  using VectorType = BoxType::VectorType;
 
   double sqlimit = limit * limit;
 

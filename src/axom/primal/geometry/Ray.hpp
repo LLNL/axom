@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -161,5 +161,10 @@ std::ostream& operator<<(std::ostream& os, const Ray<T, NDIMS>& ray)
 
 }  // namespace primal
 }  // namespace axom
+
+/// Overload to format a primal::Ray using fmt
+template <typename T, int NDIMS>
+struct axom::fmt::formatter<axom::primal::Ray<T, NDIMS>> : ostream_formatter
+{ };
 
 #endif  // AXOM_PRIMAL_RAY_HPP_

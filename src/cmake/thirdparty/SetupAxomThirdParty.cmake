@@ -1,4 +1,4 @@
-# Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
+# Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
 # other Axom Project Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
@@ -148,10 +148,16 @@ if (TARGET mfem)
     # Note - white238: I can't seem to get this to pass install testing due to mfem being included
     # in multiple export sets
     message(STATUS "MFEM support is ON, using existing mfem target")
+
     # Add it to this export set but don't prefix it with axom::
-    install(TARGETS              mfem
-            EXPORT               axom-targets
-            DESTINATION          lib)
+    # NOTE: imported targets cannot be part of an export set
+    get_target_property(_is_imported mfem IMPORTED)
+    if(NOT "${_is_imported}")
+        install(TARGETS              mfem
+                EXPORT               axom-targets
+                DESTINATION          lib)
+    endif()
+
     set(MFEM_FOUND TRUE CACHE BOOL "" FORCE)
 elseif (MFEM_DIR)
     include(cmake/thirdparty/FindMFEM.cmake)
@@ -234,6 +240,7 @@ if (SCR_DIR)
                         TREAT_INCLUDES_AS_SYSTEM ON
                         EXPORTABLE ON)
     blt_list_append(TO TPL_DEPS ELEMENTS scr)
+    set(SCR_FOUND ON CACHE BOOL "")
 else()
     message(STATUS "SCR support is OFF")
 endif()
@@ -318,6 +325,12 @@ if (TARGET blt::openmp)
     set_target_properties(blt::openmp PROPERTIES INTERFACE_COMPILE_OPTIONS "")
     set_target_properties(blt::openmp PROPERTIES INTERFACE_LINK_OPTIONS "")
 endif()
+
+#------------------------------------------------------------------------------
+# jsonschema - for Inlet testing purposes
+#------------------------------------------------------------------------------
+set(ENABLE_JSONSCHEMA ON) # required by blt_find_executable
+blt_find_executable(NAME jsonschema)
 
 #------------------------------------------------------------------------------
 # Targets that need to be exported but don't have a CMake config file

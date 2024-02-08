@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -250,8 +250,8 @@ private:
 /// \name Pre-defined point types
 /// @{
 
-typedef Point<double, 2> Point2D;
-typedef Point<double, 3> Point3D;
+using Point2D = Point<double, 2>;
+using Point3D = Point<double, 3>;
 
 /// @}
 

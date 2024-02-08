@@ -37,7 +37,7 @@ set(CMAKE_GENERATOR "Unix Makefiles" CACHE STRING "")
 
 set(ENABLE_FORTRAN ON CACHE BOOL "")
 
-set(CMAKE_CXX_FLAGS "-O1" CACHE STRING "")
+set(CMAKE_CXX_FLAGS_DEBUG "-O1 -g -DNDEBUG" CACHE STRING "")
 
 #------------------------------------------------------------------------------
 # MPI

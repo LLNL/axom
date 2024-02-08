@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -239,7 +239,7 @@ void check_intersection_volumes(const Input& params)
   // reduce the number of operations.
   RAJA::ReduceSum<REDUCE_POL, double> total_intersect_vol(0.0);
   constexpr double EPS = 1e-10;
-  constexpr bool checkSign = true;
+  constexpr bool tryFixOrientation = true;
 
   // The lower of the two sizes (NUM_HEXES, NUM_TETS) is used to factor out
   // every pair of hexahedron and tetrahedron indices.
@@ -251,7 +251,7 @@ void check_intersection_volumes(const Input& params)
         total_intersect_vol += intersection_volume(hexes_view[i / NUM_TETS],
                                                    tets_view[i % NUM_TETS],
                                                    EPS,
-                                                   checkSign);
+                                                   tryFixOrientation);
       });
   }
   else
@@ -262,7 +262,7 @@ void check_intersection_volumes(const Input& params)
         total_intersect_vol += intersection_volume(hexes_view[i % NUM_HEXES],
                                                    tets_view[i / NUM_HEXES],
                                                    EPS,
-                                                   checkSign);
+                                                   tryFixOrientation);
       });
   }
 

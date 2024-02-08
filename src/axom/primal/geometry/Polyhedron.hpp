@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -52,7 +52,7 @@ public:
   /*!
    * \brief Constructs an empty NeighborCollection.
    */
-  AXOM_HOST_DEVICE NeighborCollection() : num_nbrs {0} { }
+  NeighborCollection() = default;
 
   /*!
    * \brief Clears the set of neighbors.
@@ -228,14 +228,16 @@ private:
  *
  *       <pre>
  *
- *          4--------5          +y
- *         /|       /|               +z
- *        / |      / |           ^  >
- *       7--------6  |           | /
- *       |  0-----|--1           |/
+ *          3--------2          +y
+ *         /|       /|
+ *        / |      / |           ^
+ *       7--------6  |           |
+ *       |  0-----|--1           |
  *       | /      | /            -----> +x
- *       |/       |/
- *       3--------2
+ *       |/       |/            /
+ *       4--------5            /
+ *                            <
+ *                           +z
  *
  *       </pre>
  *
@@ -261,7 +263,7 @@ private:
 
 public:
   /*! Default constructor for an empty polyhedron   */
-  AXOM_HOST_DEVICE Polyhedron() : m_num_vertices(0) { }
+  Polyhedron() = default;
 
   /*! Return the number of vertices in the polyhedron */
   AXOM_HOST_DEVICE int numVertices() const { return m_num_vertices; }
@@ -501,16 +503,18 @@ public:
   }
 
   /*!
-   * \brief Finds the volume of the polyhedron.
+   * \brief Computes the signed volume of the polyhedron.
    *
-   * \return The volume of the polyhedron
+   * \return The signed volume of the polyhedron
    *
    * \note Function is based off moments() in Mike Owen's PolyClipper.
    *
    * \pre polyhedron vertex neighbors are defined, and polyhedron is 3D
+   *
+   * \sa volume()
    */
   AXOM_HOST_DEVICE
-  double volume() const
+  double signedVolume() const
   {
     double retVol = 0.0;
 
@@ -519,13 +523,13 @@ public:
       return retVol;
     }
 
-    // Finds the volume of tetrahedrons formed from vertices of the Polyhedron
-    // faces and an arbitrary origin (the first vertex)
+    // Computes the signed volume of tetrahedra formed from vertices of the
+    // Polyhedron faces and an arbitrary origin (the first vertex)
     else
     {
       SLIC_CHECK_MSG(
         hasNeighbors(),
-        "Polyhedron::volume() is only valid with vertex neighbors.");
+        "Polyhedron::signedVolume() is only valid with vertex neighbors.");
 
       // faces is an overestimation
       int faces[MAX_VERTS * MAX_VERTS];
@@ -554,6 +558,13 @@ public:
 
     return retVol / 6.;
   }
+
+  /*!
+   * \brief Returns the absolute (unsigned) volume of the polyhedron
+   * \sa signedVolume()
+   */
+  AXOM_HOST_DEVICE
+  double volume() const { return axom::utilities::abs(signedVolume()); }
 
   /*!
    * \brief Simple formatted print of a polyhedron instance
@@ -658,40 +669,48 @@ public:
   }
 
   /*!
- * \brief Creates a Polyhedron from a given Hexahedron's vertices.
- *
- * \param [in] hex The hexahedron
- * \param [in] checkSign If true (default is false), checks the volume of the
- *             Polyhedron is positive. If volume is negative, order of some
- *             vertices will be swapped.
- *
- * \return A Polyhedron with the Hexahedron's vertices and added
- *         vertex neighbors
- *
- * \note The Hexahedron is assumed to have a specific vertex order:
- * \verbatim
- *
- *          7--------6          +y
- *         /|       /|               +z
- *        / |      / |           ^  >
- *       3--------2  |           | /
- *       |  4-----|--5           |/
- *       | /      | /            -----> +x
- *       |/       |/
- *       0--------1
- *
- * \endverbatim
- *
- *       The Polyhedron's vertex neighbors are created assuming this vertex
- *       ordering.
- *
- * \note checkSign flag does not guarantee the Polyhedron's vertex order
- *       will be valid. It is the responsiblity of the caller to pass
- *       a Hexahedron with a valid vertex order.
- */
+   * \brief Creates a Polyhedron from a given Hexahedron's vertices.
+   *
+   * \param [in] hex The hexahedron
+   * \param [in] tryFixOrientation If true, checks if the signed volume of the
+   *             Polyhedron is negative and swaps the order of some vertices
+   *             in that shape to try to obtain a nonnegative signed volume.
+   *             Defaults to false.
+   *
+   * \return A Polyhedron with the Hexahedron's vertices and added
+   *         vertex neighbors
+   *
+   * \note The Hexahedron is assumed to have a specific vertex order:
+   * \verbatim
+   *
+   *          4--------7          +z
+   *         /|       /|               +y
+   *        / |      / |           ^  >
+   *       5--------6  |           | /
+   *       |  0-----|--3           |/
+   *       | /      | /            -----> +x
+   *       |/       |/
+   *       1--------2
+   *
+   * \endverbatim
+   *
+   *       The Polyhedron's vertex neighbors are created assuming this vertex
+   *       ordering.
+   *
+   * \warning tryFixOrientation flag does not guarantee the Polyhedron's vertex order
+   *          will be valid. It is the responsiblity of the caller to pass
+   *          a Hexahedron with a valid vertex order. Otherwise, if the
+   *          Hexahedron has an invalid vertex order, the returned Polyhedron
+   *          will have a non-positive and/or unexpected volume.
+   *
+   * \warning If tryFixOrientation flag is false and some of the shapes have
+   *          a negative signed volume, the returned Polyhedron
+   *          will have a non-positive and/or unexpected volume.
+   *
+   */
   AXOM_HOST_DEVICE
   static Polyhedron from_primitive(const Hexahedron<T, NDIMS>& hex,
-                                   bool checkSign = false)
+                                   bool tryFixOrientation = false)
   {
     // Initialize our polyhedron to return
     Polyhedron<T, NDIMS> poly;
@@ -714,10 +733,10 @@ public:
     poly.addNeighbors(6, {2, 7, 5});
     poly.addNeighbors(7, {3, 4, 6});
 
-    // Reverses order of vertices 1,3 and 5,7 if volume is negative
-    if(checkSign)
+    // Reverses order of vertices 1,3 and 5,7 if signed volume is negative
+    if(tryFixOrientation)
     {
-      if(poly.volume() < 0)
+      if(poly.signedVolume() < 0)
       {
         axom::utilities::swap<Point<T, NDIMS>>(poly[1], poly[3]);
         axom::utilities::swap<Point<T, NDIMS>>(poly[5], poly[7]);
@@ -728,40 +747,50 @@ public:
   }
 
   /*!
- * \brief Creates a Polyhedron from a given Octahedron's vertices.
- *
- * \param [in] oct The octahedron
- * \param [in] checkSign If true (default is false), checks the volume of the
- *             Polyhedron is positive. If volume is negative, order of some
- *             vertices will be swapped.
- *
- * \return A Polyhedron with the Octahedron's vertices and added
- *         vertex neighbors
- *
- * \note The Octahedron is assumed to have a specific vertex order:
- * \verbatim
- *
- *            0                +y
- *            /\                    +z
- *       4 --/  \-- 5           ^  >
- *         \/    \ /            | /
- *         /      \             |/
- *       2 -------- 1           -----> +x
- *            \/
- *            3
- *
- * \endverbatim
- *
- *       The Polyhedron's vertex neighbors are created assuming this vertex
- *       ordering.
- *
- * \note checkSign flag does not guarantee the Polyhedron's vertex order
- *       will be valid. It is the responsiblity of the caller to pass
- *       a Octahedron with a valid vertex order.
- */
+   * \brief Creates a Polyhedron from a given Octahedron's vertices.
+   *
+   * \param [in] oct The octahedron
+   * \param [in] tryFixOrientation If true, checks if the signed volume of the
+   *             Polyhedron is negative and swaps the order of some vertices
+   *             in that shape to try to obtain a nonnegative signed volume.
+   *             Defaults to false.
+   *
+   * \return A Polyhedron with the Octahedron's vertices and added
+   *         vertex neighbors
+   *
+   * \note The Octahedron is assumed to have a specific vertex order:
+   *       (view looking down from +z axis):
+   *
+   * \verbatim
+   *
+   *            4                +z
+   *            /\                    +y
+   *       0 --/  \-- 2           ^  >
+   *         \/    \ /            | /
+   *         /      \             |/
+   *       5 -------- 3           -----> +x
+   *            \/
+   *            1
+   *
+   * \endverbatim
+   *
+   *       The Polyhedron's vertex neighbors are created assuming this vertex
+   *       ordering.
+   *
+   * \warning tryFixOrientation flag does not guarantee the Polyhedron's vertex order
+   *          will be valid. It is the responsiblity of the caller to pass
+   *          an Octahedron with a valid vertex order. Otherwise, if the
+   *          Octahedron has an invalid vertex order, the returned Polyhedron
+   *          will have a non-positive and/or unexpected volume.
+   *
+   * \warning If tryFixOrientation flag is false and some of the shapes have
+   *          a negative signed volume, the returned Polyhedron
+   *          will have a non-positive and/or unexpected volume.
+   *
+   */
   AXOM_HOST_DEVICE
   static Polyhedron from_primitive(const Octahedron<T, NDIMS>& oct,
-                                   bool checkSign = false)
+                                   bool tryFixOrientation = false)
   {
     // Initialize our polyhedron to return
     Polyhedron<T, NDIMS> poly;
@@ -781,27 +810,12 @@ public:
     poly.addNeighbors(5, {0, 1, 3, 4});
 
     // Reverses order of vertices 1,2 and 4,5 if volume is negative.
-    // Expanded swap operations for HIP workaround.
-    if(checkSign)
+    if(tryFixOrientation)
     {
-      double vol = poly.volume();
-      if(vol < 0)
+      if(poly.signedVolume() < 0)
       {
-        PointType p2({poly[4][0], poly[4][1], poly[4][2]});
-        poly[4][0] = poly[5][0];
-        poly[4][1] = poly[5][1];
-        poly[4][2] = poly[5][2];
-        poly[5][0] = p2[0];
-        poly[5][1] = p2[1];
-        poly[5][2] = p2[2];
-
-        PointType p1({poly[1][0], poly[1][1], poly[1][2]});
-        poly[1][0] = poly[2][0];
-        poly[1][1] = poly[2][1];
-        poly[1][2] = poly[2][2];
-        poly[2][0] = p1[0];
-        poly[2][1] = p1[1];
-        poly[2][2] = p1[2];
+        axom::utilities::swap<PointType>(poly[1], poly[2]);
+        axom::utilities::swap<PointType>(poly[4], poly[5]);
       }
     }
 
@@ -809,41 +823,49 @@ public:
   }
 
   /*!
- * \brief Creates a Polyhedron from a given Tetrahedron's vertices.
- *
- * \param [in] tet The tetrahedron
- * \param [in] checkSign If true (default is false), checks the volume of the
- *             Polyhedron is positive. If volume is negative, order of some
- *             vertices will be swapped.
- *
- * \return A Polyhedron with the Tetrahedron's vertices and added
- *         vertex neighbors
- *
- * \note The Tetrahedron is assumed to have a specific vertex order:
- * \verbatim
- *
- *              3                    +y
- *             / \\                       +z
- *            /   \ \                 ^  >
- *           /     \  \               | /
- *          /       \   \             |/
- *         /         \    2           -----> +x
- *        /           \  /
- *       /_____________\/
- *      0               1
- *
- * \endverbatim
- *
- *       The Polyhedron's vertex neighbors are created assuming this vertex
- *       ordering.
- *
- * \note checkSign flag does not guarantee the Polyhedron's vertex order
- *       will be valid. It is the responsiblity of the caller to pass
- *       a Tetrahedron with a valid vertex order.
- */
+   * \brief Creates a Polyhedron from a given Tetrahedron's vertices.
+   *
+   * \param [in] tet The tetrahedron
+   * \param [in] tryFixOrientation If true, checks if the signed volume of the
+   *             Polyhedron is negative and swaps the order of some vertices
+   *             in that shape to try to obtain a nonnegative signed volume.
+   *             Defaults to false.
+   *
+   * \return A Polyhedron with the Tetrahedron's vertices and added
+   *         vertex neighbors
+   *
+   * \note The Tetrahedron is assumed to have a specific vertex order:
+   * \verbatim
+   *
+   *              3                    +z
+   *             / \\                       +y
+   *            /   \ \                 ^  >
+   *           /     \  \               | /
+   *          /       \   \             |/
+   *         /         \    2           -----> +x
+   *        /           \  /
+   *       /_____________\/
+   *      0               1
+   *
+   * \endverbatim
+   *
+   *       The Polyhedron's vertex neighbors are created assuming this vertex
+   *       ordering.
+   *
+   * \warning tryFixOrientation flag does not guarantee the Polyhedron's vertex
+   *          order will be valid. It is the responsiblity of the caller to
+   *          pass a Tetrahedron with a valid vertex order. Otherwise, if the
+   *          Tetrahedron has an invalid vertex order, the returned Polyhedron
+   *          will have a non-positive and/or unexpected volume.
+   *
+   * \warning If tryFixOrientation flag is false and some of the shapes have
+   *          a negative signed volume, the returned Polyhedron
+   *          will have a non-positive and/or unexpected volume.
+   *
+   */
   AXOM_HOST_DEVICE
   static Polyhedron from_primitive(const Tetrahedron<T, NDIMS>& tet,
-                                   bool checkSign = false)
+                                   bool tryFixOrientation = false)
   {
     // Initialize our polyhedron to return
     Polyhedron<T, NDIMS> poly;
@@ -858,8 +880,8 @@ public:
     poly.addNeighbors(2, {0, 3, 1});
     poly.addNeighbors(3, {0, 1, 2});
 
-    // Reverses order of vertices 1 and 2 if volume is negative
-    if(checkSign)
+    // Reverses order of vertices 1 and 2 if signed volume is negative
+    if(tryFixOrientation)
     {
       if(tet.signedVolume() < 0)
       {
@@ -871,9 +893,16 @@ public:
   }
 
 private:
-  int m_num_vertices;
-  Coords m_vertices;
-  Neighbors m_neighbors;
+  int m_num_vertices {0};
+  Coords m_vertices {PointType {}, PointType {}, PointType {}, PointType {},
+                     PointType {}, PointType {}, PointType {}, PointType {},
+                     PointType {}, PointType {}, PointType {}, PointType {},
+                     PointType {}, PointType {}, PointType {}, PointType {},
+                     PointType {}, PointType {}, PointType {}, PointType {},
+                     PointType {}, PointType {}, PointType {}, PointType {},
+                     PointType {}, PointType {}, PointType {}, PointType {},
+                     PointType {}, PointType {}, PointType {}, PointType {}};
+  Neighbors m_neighbors {};
 };
 
 //------------------------------------------------------------------------------

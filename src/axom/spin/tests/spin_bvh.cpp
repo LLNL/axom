@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -1865,7 +1865,7 @@ AXOM_CUDA_TEST(spin_bvh, use_pool_allocator)
     0,
     1,
     AXOM_LAMBDA(axom::IndexType idx) {
-      boxes[idx] = {PointType(0.), PointType(1.)};
+      boxes[idx] = BoxType {PointType(0.), PointType(1.)};
     });
 
   // construct a BVH with a single box

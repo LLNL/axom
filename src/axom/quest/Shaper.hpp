@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -48,11 +48,7 @@ public:
   static constexpr double DEFAULT_VERTEX_WELD_THRESHOLD {1e-9};
 
   /// Refinement type.
-  typedef enum
-  {
-    RefinementUniformSegments,
-    RefinementDynamic
-  } RefinementType;
+  using RefinementType = enum { RefinementUniformSegments, RefinementDynamic };
 
   //@{
   //!  @name Functions to get and set shaping parameters

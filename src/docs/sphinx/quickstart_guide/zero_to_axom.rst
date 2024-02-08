@@ -1,4 +1,4 @@
-.. ## Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
+.. ## Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
 .. ## other Axom Project Developers. See the top-level LICENSE file for details.
 .. ##
 .. ## SPDX-License-Identifier: (BSD-3-Clause)
@@ -127,8 +127,8 @@ See:  ``examples/axom/using-with-blt``
 Makefile-based build system example
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-.. literalinclude:: ../../../examples/using-with-make/Makefile
+.. literalinclude:: ../../../examples/using-with-make/Makefile.in
    :language: make
-   :lines: 20-25
+   :lines: 28-39
 
 See: ``examples/axom/using-with-make``

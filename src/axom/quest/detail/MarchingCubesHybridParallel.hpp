@@ -1,15 +1,23 @@
-// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
+#include "axom/config.hpp"
+
+// Implementation requires Conduit.
+#ifndef AXOM_USE_CONDUIT
+  #error "MarchingCubesHybridParallel.hpp requires conduit"
+#endif
+#include "conduit_blueprint.hpp"
+
 #include "axom/core/execution/execution_space.hpp"
-#include "axom/quest/MarchingCubes.hpp"
+#include "axom/quest/ArrayIndexer.hpp"
 #include "axom/quest/detail/marching_cubes_lookup.hpp"
+#include "axom/quest/MeshViewUtil.hpp"
 #include "axom/primal/geometry/Point.hpp"
 #include "axom/primal/constants.hpp"
 #include "axom/mint/execution/internal/structured_exec.hpp"
-#include "conduit_blueprint.hpp"
 #include "axom/fmt.hpp"
 
 namespace axom
@@ -20,26 +28,6 @@ namespace detail
 {
 namespace marching_cubes
 {
-template <typename T, int DIM, typename U>
-static void add_to_StackArray(axom::StackArray<T, DIM>& a, U b)
-{
-  for(int d = 0; d < DIM; ++d)
-  {
-    a[d] += b;
-  }
-}
-
-//!@brief Reverse the order of a StackArray.
-template <typename T, int DIM>
-static void reverse(axom::StackArray<T, DIM>& a)
-{
-  for(int d = 0; d < DIM / 2; ++d)
-  {
-    std::swap(a[d], a[DIM - 1 - d]);
-  }
-  return;
-}
-
 /*!
   @brief Computations for MarchingCubesSingleDomain
 
@@ -50,9 +38,19 @@ static void reverse(axom::StackArray<T, DIM>& a)
   axom::CUDA_EXEC<256>.  SequentialExecSpace is used for loops that
   cannot be parallelized but must access data allocated for ExecSpace.
   Use something like axom::SEQ_EXEC or axom::CUDA_EXEC<1>.
+
+  The difference between MarchingCubesHybridParallel and MarchingCubesFullParallel
+  is how they compute indices for the unstructured surface mesh.
+  - MarchingCubesHybridParallel uses sequential loop, and skips over parents
+    cells that don't touch the surface contour.  It processes less data
+    but is not data-parallel.
+  - MarchingCubesFullParallel that checks all parents cells.
+    It process more data but is data-parallel.
+  We've observed that MarchingCubesHybridParallel is faster for seq policy
+  and MarchingCubesHybridParallel is faster on the GPU.
 */
 template <int DIM, typename ExecSpace, typename SequentialExecSpace>
-class MarchingCubesImpl : public MarchingCubesSingleDomain::ImplBase
+class MarchingCubesHybridParallel : public MarchingCubesSingleDomain::ImplBase
 {
 public:
   using Point = axom::primal::Point<double, DIM>;
@@ -65,9 +63,10 @@ public:
   /*!
     @brief Initialize data to a blueprint domain.
     @param dom Blueprint structured mesh domain
-    @param coordsetPath Where coordinates are in dom
-    @param fcnPath Where nodal function is in dom
-    @param maskPath Where cell mask function is in dom
+    @param topologyName Name of mesh topology (see blueprint
+           mesh documentation)
+    @param fcnFieldName Name of nodal function in dom
+    @param maskFieldName Name of integer cell mask function is in dom
 
     Set up views to domain data and allocate other data to work on the
     given domain.
@@ -76,73 +75,32 @@ public:
     compatible with ExecSpace.
   */
   AXOM_HOST void initialize(const conduit::Node& dom,
-                            const std::string& coordsetPath,
-                            const std::string& fcnPath,
-                            const std::string& maskPath) override
+                            const std::string& topologyName,
+                            const std::string& fcnFieldName,
+                            const std::string& maskFieldName = {}) override
   {
+    SLIC_ASSERT(conduit::blueprint::mesh::topology::dims(dom.fetch_existing(
+                  axom::fmt::format("topologies/{}", topologyName))) == DIM);
+
     clear();
 
-    // Data sizes
-    const conduit::Node& dimsNode =
-      dom.fetch_existing("topologies/mesh/elements/dims");
-    for(int d = 0; d < DIM; ++d)
-    {
-      m_bShape[d] = dimsNode[d].as_int();
-    }
-    m_cShape = m_bShape;
-    reverse(m_cShape);
-    // This should work but breaks gcc11 on 64-bit linux:
-    // m_pShape = m_cShape + 1;
-    m_pShape = m_cShape;
-    add_to_StackArray(m_pShape, 1);
+    axom::quest::MeshViewUtil<DIM, MemorySpace> mvu(dom, topologyName);
 
-    m_bStrides[0] = 1;
-    for(int d = 1; d < DIM; ++d)
+    m_bShape = mvu.getCellShape();
+    m_coordsViews = mvu.getConstCoordsViews(false);
+    m_fcnView = mvu.template getConstFieldView<double>(fcnFieldName, false);
+    if(!maskFieldName.empty())
     {
-      m_bStrides[d] = m_bStrides[d - 1] * m_bShape[d - 1];
+      m_maskView = mvu.template getConstFieldView<int>(maskFieldName, false);
     }
 
-    // Domain's node coordinates
-    {
-      const conduit::Node& coordValues =
-        dom.fetch_existing(coordsetPath + "/values");
-      const bool isInterleaved =
-        conduit::blueprint::mcarray::is_interleaved(coordValues);
-      const int coordSp = isInterleaved ? DIM : 1;
-      for(int d = 0; d < DIM; ++d)
-      {
-        const double* coordsPtr = coordValues[d].as_double_ptr();
-        m_coordsViews[d] =
-          axom::ArrayView<const double, DIM, MemorySpace>(coordsPtr,
-                                                          m_pShape,
-                                                          coordSp);
-      }
-    }
-
-    // Nodal function
-    {
-      auto& fcnValues = dom.fetch_existing(fcnPath + "/values");
-      const double* fcnPtr = fcnValues.as_double_ptr();
-      m_fcnView =
-        axom::ArrayView<const double, DIM, MemorySpace>(fcnPtr, m_pShape);
-    }
-
-    // Mask
-    {
-      const int* maskPtr = nullptr;
-      if(!maskPath.empty())
-      {
-        auto& maskValues = dom.fetch_existing(maskPath + "/values");
-        maskPtr = maskValues.as_int_ptr();
-      }
-      if(maskPtr)
-      {
-        m_maskView =
-          axom::ArrayView<const int, DIM, MemorySpace>(maskPtr, m_cShape);
-      }
-    }
-
-    m_caseIds = axom::Array<std::uint16_t, DIM, MemorySpace>(m_cShape);
+    /*
+      TODO: To get good cache performance, we should make m_caseIds
+      row-major if fcn is that way, and vice versa.  However, Array
+      only support column-major, so we're stuck with that for now.
+    */
+    m_caseIds = axom::Array<std::uint16_t, DIM, MemorySpace>(m_bShape);
+    m_caseIds.fill(0);
   }
 
   //!@brief Set a value to find the contour for.
@@ -151,25 +109,30 @@ public:
     m_contourVal = contourVal;
   }
 
+  void computeContourMesh() override
+  {
+    markCrossings();
+    scanCrossings();
+    computeContour();
+  }
+
   /*!
     @brief Implementation of virtual markCrossings.
 
     Virtual methods cannot be templated, so this implementation
     delegates to a name templated on DIM.
   */
-  void markCrossings() override { markCrossings_dim(); }
+  void markCrossings() { markCrossings_dim(); }
 
   //!@brief Populate m_caseIds with crossing indices.
   template <int TDIM = DIM>
   typename std::enable_if<TDIM == 2>::type markCrossings_dim()
   {
-    m_caseIds.fill(0);
-
     MarkCrossings_Util mcu(m_caseIds, m_fcnView, m_maskView, m_contourVal);
 
 #if defined(AXOM_USE_RAJA)
-    RAJA::RangeSegment jRange(0, m_cShape[0]);
-    RAJA::RangeSegment iRange(0, m_cShape[1]);
+    RAJA::RangeSegment jRange(0, m_bShape[1]);
+    RAJA::RangeSegment iRange(0, m_bShape[0]);
     using EXEC_POL =
       typename axom::mint::internal::structured_exec<ExecSpace>::loop2d_policy;
     RAJA::kernel<EXEC_POL>(
@@ -178,9 +141,9 @@ public:
         mcu.computeCaseId(i, j);
       });
 #else
-    for(int j = 0; j < m_cShape[0]; ++j)
+    for(int j = 0; j < m_bShape[1]; ++j)
     {
-      for(int i = 0; i < m_cShape[1]; ++i)
+      for(int i = 0; i < m_bShape[0]; ++i)
       {
         mcu.computeCaseId(i, j);
       }
@@ -192,14 +155,12 @@ public:
   template <int TDIM = DIM>
   typename std::enable_if<TDIM == 3>::type markCrossings_dim()
   {
-    m_caseIds.fill(0);
-
     MarkCrossings_Util mcu(m_caseIds, m_fcnView, m_maskView, m_contourVal);
 
 #if defined(AXOM_USE_RAJA)
-    RAJA::RangeSegment kRange(0, m_cShape[0]);
-    RAJA::RangeSegment jRange(0, m_cShape[1]);
-    RAJA::RangeSegment iRange(0, m_cShape[2]);
+    RAJA::RangeSegment kRange(0, m_bShape[2]);
+    RAJA::RangeSegment jRange(0, m_bShape[1]);
+    RAJA::RangeSegment iRange(0, m_bShape[0]);
     using EXEC_POL =
       typename axom::mint::internal::structured_exec<ExecSpace>::loop3d_policy;
     RAJA::kernel<EXEC_POL>(
@@ -208,11 +169,11 @@ public:
         mcu.computeCaseId(i, j, k);
       });
 #else
-    for(int k = 0; k < m_cShape[0]; ++k)
+    for(int k = 0; k < m_bShape[2]; ++k)
     {
-      for(int j = 0; j < m_cShape[1]; ++j)
+      for(int j = 0; j < m_bShape[1]; ++j)
       {
-        for(int i = 0; i < m_cShape[2]; ++i)
+        for(int i = 0; i < m_bShape[0]; ++i)
         {
           mcu.computeCaseId(i, j, k);
         }
@@ -222,7 +183,7 @@ public:
   }
 
   /*!
-    @brief Implementation used by MarchingCubesImpl::markCrossings_dim()
+    @brief Implementation used by MarchingCubesHybridParallel::markCrossings_dim()
     containing just the objects needed for that part, to be made available
     on devices.
   */
@@ -261,17 +222,17 @@ public:
     AXOM_HOST_DEVICE inline typename std::enable_if<TDIM == 2>::type
     computeCaseId(axom::IndexType i, axom::IndexType j) const
     {
-      const bool skipZone = !maskView.empty() && bool(maskView(j, i));
-      if(!skipZone)
+      const bool useZone = maskView.empty() || bool(maskView(i, j));
+      if(useZone)
       {
         // clang-format off
           double nodalValues[CELL_CORNER_COUNT] =
-            {fcnView(j    , i    ),
-             fcnView(j    , i + 1),
-             fcnView(j + 1, i + 1),
-             fcnView(j + 1, i    )};
+            {fcnView(i    , j    ),
+             fcnView(i + 1, j    ),
+             fcnView(i + 1, j + 1),
+             fcnView(i    , j + 1)};
         // clang-format on
-        caseIdsView(j, i) = computeCrossingCase(nodalValues);
+        caseIdsView(i, j) = computeCrossingCase(nodalValues);
       }
     }
 
@@ -280,21 +241,21 @@ public:
     AXOM_HOST_DEVICE inline typename std::enable_if<TDIM == 3>::type
     computeCaseId(axom::IndexType i, axom::IndexType j, axom::IndexType k) const
     {
-      const bool skipZone = !maskView.empty() && bool(maskView(k, j, i));
-      if(!skipZone)
+      const bool useZone = maskView.empty() || bool(maskView(i, j, k));
+      if(useZone)
       {
         // clang-format off
           double nodalValues[CELL_CORNER_COUNT] =
-            {fcnView(k    , j    , i + 1),
-             fcnView(k    , j + 1, i + 1),
-             fcnView(k    , j + 1, i    ),
-             fcnView(k    , j    , i    ),
-             fcnView(k + 1, j    , i + 1),
-             fcnView(k + 1, j + 1, i + 1),
-             fcnView(k + 1, j + 1, i    ),
-             fcnView(k + 1, j    , i    )};
+            {fcnView(i + 1, j    , k    ),
+             fcnView(i + 1, j + 1, k    ),
+             fcnView(i    , j + 1, k    ),
+             fcnView(i    , j    , k    ),
+             fcnView(i + 1, j    , k + 1),
+             fcnView(i + 1, j + 1, k + 1),
+             fcnView(i    , j + 1, k + 1),
+             fcnView(i    , j    , k + 1)};
         // clang-format on
-        caseIdsView(k, j, i) = computeCrossingCase(nodalValues);
+        caseIdsView(i, j, k) = computeCrossingCase(nodalValues);
       }
     }
   };  // MarkCrossings_Util
@@ -306,7 +267,7 @@ public:
     We sum up the number of contour surface cells from the crossings,
     allocate space, then populate it.
   */
-  void scanCrossings() override
+  void scanCrossings()
   {
     const axom::IndexType parentCellCount = m_caseIds.size();
     auto caseIdsView = m_caseIds.view();
@@ -365,7 +326,6 @@ public:
         {
           loopBody(n);
         }
-        // assert(*crossingId == m_crossingCount);
       });
 #else
     *crossingId = 0;
@@ -380,15 +340,21 @@ public:
 
     axom::Array<axom::IndexType, 1, MemorySpace> prefixSum(m_crossingCount,
                                                            m_crossingCount);
-    const axom::ArrayView<axom::IndexType, 1, MemorySpace> prefixSumView =
-      prefixSum.view();
+    const auto prefixSumView = prefixSum.view();
 
     auto copyFirstSurfaceCellId = AXOM_LAMBDA(axom::IndexType n)
     {
       crossingsView[n].firstSurfaceCellId = prefixSumView[n];
     };
 #if defined(AXOM_USE_RAJA)
-    RAJA::exclusive_scan<LoopPolicy>(
+      // Intel oneAPI compiler segfaults with OpenMP RAJA scan
+  #ifdef __INTEL_LLVM_COMPILER
+    using ScanPolicy =
+      typename axom::execution_space<axom::SEQ_EXEC>::loop_policy;
+  #else
+    using ScanPolicy = typename axom::execution_space<ExecSpace>::loop_policy;
+  #endif
+    RAJA::exclusive_scan<ScanPolicy>(
       RAJA::make_span(addCellsView.data(), m_crossingCount),
       RAJA::make_span(prefixSumView.data(), m_crossingCount),
       RAJA::operators::plus<axom::IndexType> {});
@@ -426,7 +392,7 @@ public:
   }
 
   /*!
-    @brief Implementation used by MarchingCubesImpl::computeContour().
+    @brief Implementation used by MarchingCubesHybridParallel::computeContour().
     containing just the objects needed for that part, to be made available
     on devices.
   */
@@ -434,6 +400,7 @@ public:
   {
     double contourVal;
     MIdx bStrides;
+    axom::ArrayIndexer<axom::IndexType, DIM> indexer;
     axom::ArrayView<const double, DIM, MemorySpace> fcnView;
     axom::StackArray<axom::ArrayView<const double, DIM, MemorySpace>, DIM> coordsViews;
     ComputeContour_Util(
@@ -444,6 +411,7 @@ public:
         coordsViews_)
       : contourVal(contourVal_)
       , bStrides(bStrides_)
+      , indexer(bStrides_)
       , fcnView(fcnView_)
       , coordsViews(coordsViews_)
     { }
@@ -457,20 +425,20 @@ public:
       const auto& x = coordsViews[0];
       const auto& y = coordsViews[1];
 
-      const auto c = multidim_cell_index(cellNum);
+      const auto c = indexer.toMultiIndex(cellNum);
       const auto& i = c[0];
       const auto& j = c[1];
 
       // clang-format off
-      cornerCoords[0] = { x(j    , i    ), y(j    , i    ) };
-      cornerCoords[1] = { x(j    , i + 1), y(j    , i + 1) };
-      cornerCoords[2] = { x(j + 1, i + 1), y(j + 1, i + 1) };
-      cornerCoords[3] = { x(j + 1, i    ), y(j + 1, i    ) };
+      cornerCoords[0] = { x(i  , j  ), y(i  , j  ) };
+      cornerCoords[1] = { x(i+1, j  ), y(i+1, j  ) };
+      cornerCoords[2] = { x(i+1, j+1), y(i+1, j+1) };
+      cornerCoords[3] = { x(i  , j+1), y(i  , j+1) };
 
-      cornerValues[0] = fcnView(j    , i    );
-      cornerValues[1] = fcnView(j    , i + 1);
-      cornerValues[2] = fcnView(j + 1, i + 1);
-      cornerValues[3] = fcnView(j + 1, i    );
+      cornerValues[0] = fcnView(i  , j  );
+      cornerValues[1] = fcnView(i+1, j  );
+      cornerValues[2] = fcnView(i+1, j+1);
+      cornerValues[3] = fcnView(i  , j+1);
       // clang-format on
     }
     template <int TDIM = DIM>
@@ -483,29 +451,29 @@ public:
       const auto& y = coordsViews[1];
       const auto& z = coordsViews[2];
 
-      const auto c = multidim_cell_index(cellNum);
+      const auto c = indexer.toMultiIndex(cellNum);
       const auto& i = c[0];
       const auto& j = c[1];
       const auto& k = c[2];
 
       // clang-format off
-      cornerCoords[0] = { x(k  , j  , i+1), y(k  , j  , i+1), z(k  , j  , i+1) };
-      cornerCoords[1] = { x(k  , j+1, i+1), y(k  , j+1, i+1), z(k  , j+1, i+1) };
-      cornerCoords[2] = { x(k  , j+1, i  ), y(k  , j+1, i  ), z(k  , j+1, i  ) };
-      cornerCoords[3] = { x(k  , j  , i  ), y(k  , j  , i  ), z(k  , j  , i  ) };
-      cornerCoords[4] = { x(k+1, j  , i+1), y(k+1, j  , i+1), z(k+1, j  , i+1) };
-      cornerCoords[5] = { x(k+1, j+1, i+1), y(k+1, j+1, i+1), z(k+1, j+1, i+1) };
-      cornerCoords[6] = { x(k+1, j+1, i  ), y(k+1, j+1, i  ), z(k+1, j+1, i  ) };
-      cornerCoords[7] = { x(k+1, j  , i  ), y(k+1, j  , i  ), z(k+1, j  , i  ) };
+      cornerCoords[0] = { x(i+1, j  , k  ), y(i+1, j  , k  ), z(i+1, j  , k  ) };
+      cornerCoords[1] = { x(i+1, j+1, k  ), y(i+1, j+1, k  ), z(i+1, j+1, k  ) };
+      cornerCoords[2] = { x(i  , j+1, k  ), y(i  , j+1, k  ), z(i  , j+1, k  ) };
+      cornerCoords[3] = { x(i  , j  , k  ), y(i  , j  , k  ), z(i  , j  , k  ) };
+      cornerCoords[4] = { x(i+1, j  , k+1), y(i+1, j  , k+1), z(i+1, j  , k+1) };
+      cornerCoords[5] = { x(i+1, j+1, k+1), y(i+1, j+1, k+1), z(i+1, j+1, k+1) };
+      cornerCoords[6] = { x(i  , j+1, k+1), y(i  , j+1, k+1), z(i  , j+1, k+1) };
+      cornerCoords[7] = { x(i  , j  , k+1), y(i  , j  , k+1), z(i  , j  , k+1) };
 
-      cornerValues[0] = fcnView(k  , j  , i+1);
-      cornerValues[1] = fcnView(k  , j+1, i+1);
-      cornerValues[2] = fcnView(k  , j+1, i  );
-      cornerValues[3] = fcnView(k  , j  , i  );
-      cornerValues[4] = fcnView(k+1, j  , i+1);
-      cornerValues[5] = fcnView(k+1, j+1, i+1);
-      cornerValues[6] = fcnView(k+1, j+1, i  );
-      cornerValues[7] = fcnView(k+1, j  , i  );
+      cornerValues[0] = fcnView(i+1, j  , k  );
+      cornerValues[1] = fcnView(i+1, j+1, k  );
+      cornerValues[2] = fcnView(i  , j+1, k  );
+      cornerValues[3] = fcnView(i  , j  , k  );
+      cornerValues[4] = fcnView(i+1, j  , k+1);
+      cornerValues[5] = fcnView(i+1, j+1, k+1);
+      cornerValues[6] = fcnView(i  , j+1, k+1);
+      cornerValues[7] = fcnView(i  , j  , k+1);
       // clang-format on
     }
 
@@ -608,21 +576,9 @@ public:
         crossingPt[d] = p1[d] + w * (p2[d] - p1[d]);
       }
     }
-
-    AXOM_HOST_DEVICE inline axom::StackArray<axom::IndexType, DIM>
-    multidim_cell_index(axom::IndexType flatId) const
-    {
-      axom::StackArray<axom::IndexType, DIM> rval;
-      for(int d = DIM - 1; d >= 0; --d)
-      {
-        rval[d] = flatId / bStrides[d];
-        flatId -= rval[d] * bStrides[d];
-      }
-      return rval;
-    }
   };  // ComputeContour_Util
 
-  void computeContour() override
+  void computeContour()
   {
     auto crossingsView = m_crossings.view();
 
@@ -639,7 +595,10 @@ public:
     auto cellCornersView = m_contourCellCorners.view();
     auto cellParentsView = m_contourCellParents.view();
 
-    ComputeContour_Util ccu(m_contourVal, m_bStrides, m_fcnView, m_coordsViews);
+    ComputeContour_Util ccu(m_contourVal,
+                            m_caseIds.strides(),
+                            m_fcnView,
+                            m_coordsViews);
 
     auto loopBody = AXOM_LAMBDA(axom::IndexType iCrossing)
     {
@@ -732,26 +691,7 @@ public:
   }
 
   /*!
-    @brief Compute multidimensional index from flat cell index
-    in domain data.
-  */
-  AXOM_HOST_DEVICE inline axom::StackArray<axom::IndexType, DIM>
-  multidim_cell_index(axom::IndexType flatId) const
-  {
-    axom::StackArray<axom::IndexType, DIM> rval;
-    for(int d = DIM - 1; d >= 0; --d)
-    {
-      rval[d] = flatId / m_bStrides[d];
-      flatId -= rval[d] * m_bStrides[d];
-    }
-    return rval;
-  }
-
-  /*!
     @brief Output contour mesh to a mint::UnstructuredMesh object.
-
-    mint uses host memory.  If internal memory isn't on the host,
-    make a temporary copy of it on the host.
   */
   void populateContourMesh(
     axom::mint::UnstructuredMesh<axom::mint::SINGLE_SHAPE>& mesh,
@@ -759,6 +699,11 @@ public:
   {
     auto internalAllocatorID = axom::execution_space<ExecSpace>::allocatorID();
     auto hostAllocatorID = axom::execution_space<axom::SEQ_EXEC>::allocatorID();
+
+    /*
+      mint uses host memory.  If internal memory is on the host, use
+      it.  Otherwise, make a temporary copy of it on the host.
+    */
     if(internalAllocatorID == hostAllocatorID)
     {
       populateContourMesh(mesh,
@@ -787,12 +732,13 @@ public:
     }
   }
 
+  //!@brief Output contour mesh to a mint::UnstructuredMesh object.
   void populateContourMesh(
     axom::mint::UnstructuredMesh<axom::mint::SINGLE_SHAPE>& mesh,
     const std::string& cellIdField,
-    axom::Array<Point, 1, MemorySpace::Dynamic> contourNodeCoords,
-    axom::Array<MIdx, 1, MemorySpace::Dynamic> contourCellCorners,
-    axom::Array<IndexType, 1, MemorySpace::Dynamic> contourCellParents) const
+    const axom::Array<Point, 1, MemorySpace::Dynamic> contourNodeCoords,
+    const axom::Array<MIdx, 1, MemorySpace::Dynamic> contourCellCorners,
+    const axom::Array<IndexType, 1, MemorySpace::Dynamic> contourCellParents) const
   {
     if(!cellIdField.empty() &&
        !mesh.hasField(cellIdField, axom::mint::CELL_CENTERED))
@@ -816,23 +762,27 @@ public:
       for(int n = 0; n < addedCellCount; ++n)
       {
         MIdx cornerIds = contourCellCorners[n];
-        add_to_StackArray(cornerIds, priorNodeCount);
+        // Bump corner indices by priorNodeCount to avoid indices
+        // used by other parents domains.
+        for(int d = 0; d < DIM; ++d)
+        {
+          cornerIds[d] += priorNodeCount;
+        }
         mesh.appendCell(cornerIds);
       }
       axom::IndexType numComponents = -1;
-      axom::IndexType* dstPtr =
+      axom::IndexType* cellIdPtr =
         mesh.getFieldPtr<axom::IndexType>(cellIdField,
                                           axom::mint::CELL_CENTERED,
                                           numComponents);
       SLIC_ASSERT(numComponents == DIM);
-      // Bump corner indices by priorCellCount to avoid indices
-      // used by other parents domains.
-      axom::ArrayView<axom::StackArray<axom::IndexType, DIM>> dstView(
-        (axom::StackArray<axom::IndexType, DIM>*)dstPtr,
+      axom::ArrayView<axom::StackArray<axom::IndexType, DIM>> cellIdView(
+        (axom::StackArray<axom::IndexType, DIM>*)cellIdPtr,
         priorCellCount + addedCellCount);
+      axom::ArrayIndexer<axom::IndexType, DIM> si(m_caseIds.shape(), 'c');
       for(axom::IndexType i = 0; i < addedCellCount; ++i)
       {
-        dstView[priorCellCount + i] = multidim_cell_index(contourCellParents[i]);
+        cellIdView[priorCellCount + i] = si.toMultiIndex(contourCellParents[i]);
       }
     }
   }
@@ -865,9 +815,8 @@ public:
   /*!
     @brief Constructor.
   */
-  MarchingCubesImpl()
-    : m_allocatorID(execution_space<ExecSpace>::allocatorID())
-    , m_crossings(0, 0)
+  MarchingCubesHybridParallel()
+    : m_crossings(0, 0)
     , m_contourNodeCoords(0, 0)
     , m_contourCellCorners(0, 0)
     , m_contourCellParents(0, 0)
@@ -884,17 +833,13 @@ public:
       , caseNum(caseNum_)
       , firstSurfaceCellId(std::numeric_limits<axom::IndexType>::max())
     { }
-    axom::IndexType parentCellNum;       //!< @brief Flat index of parent cell.
-    std::uint16_t caseNum;               //!< @brief Index in cases2D or cases3D
+    axom::IndexType parentCellNum;  //!< @brief Flat index of parent cell in m_caseIds.
+    std::uint16_t caseNum;          //!< @brief Index in cases2D or cases3D
     axom::IndexType firstSurfaceCellId;  //!< @brief First index for generated cells.
   };
 
 private:
-  const int m_allocatorID;  //!< @brief ExecSpace-based allocator ID for all internal data
-  MIdx m_bShape;            //!< @brief Blueprint cell data shape.
-  MIdx m_cShape;    //!< @brief Cell-centered array shape for ArrayViews.
-  MIdx m_pShape;    //!< @brief Node-centered array shape for ArrayViews.
-  MIdx m_bStrides;  //!< @brief Strides for m_bShape arrays.
+  MIdx m_bShape;  //!< @brief Blueprint cell data shape.
 
   // Views of parent domain data.
   // DIM coordinate components, each on a DIM-dimensional mesh.
@@ -912,6 +857,7 @@ private:
 
   //!@brief Number of parent cells crossing the contour surface.
   axom::IndexType m_crossingCount = 0;
+
   //!@brief Number of contour surface cells from crossings.
   axom::IndexType m_contourCellCount = 0;
   axom::IndexType getContourCellCount() const override
@@ -936,6 +882,60 @@ private:
 
   double m_contourVal = 0.0;
 };
+
+static std::unique_ptr<axom::quest::MarchingCubesSingleDomain::ImplBase>
+newMarchingCubesHybridParallel(MarchingCubes::RuntimePolicy runtimePolicy, int dim)
+{
+  using ImplBase = axom::quest::MarchingCubesSingleDomain::ImplBase;
+
+  SLIC_ASSERT(dim >= 2 && dim <= 3);
+  std::unique_ptr<ImplBase> impl;
+  if(runtimePolicy == MarchingCubes::RuntimePolicy::seq)
+  {
+    impl = dim == 2
+      ? std::unique_ptr<ImplBase>(
+          new MarchingCubesHybridParallel<2, axom::SEQ_EXEC, axom::SEQ_EXEC>)
+      : std::unique_ptr<ImplBase>(
+          new MarchingCubesHybridParallel<3, axom::SEQ_EXEC, axom::SEQ_EXEC>);
+  }
+#ifdef AXOM_RUNTIME_POLICY_USE_OPENMP
+  else if(runtimePolicy == MarchingCubes::RuntimePolicy::omp)
+  {
+    impl = dim == 2
+      ? std::unique_ptr<ImplBase>(
+          new MarchingCubesHybridParallel<2, axom::OMP_EXEC, axom::SEQ_EXEC>)
+      : std::unique_ptr<ImplBase>(
+          new MarchingCubesHybridParallel<3, axom::OMP_EXEC, axom::SEQ_EXEC>);
+  }
+#endif
+#ifdef AXOM_RUNTIME_POLICY_USE_CUDA
+  else if(runtimePolicy == MarchingCubes::RuntimePolicy::cuda)
+  {
+    impl = dim == 2
+      ? std::unique_ptr<ImplBase>(
+          new MarchingCubesHybridParallel<2, axom::CUDA_EXEC<256>, axom::CUDA_EXEC<1>>)
+      : std::unique_ptr<ImplBase>(
+          new MarchingCubesHybridParallel<3, axom::CUDA_EXEC<256>, axom::CUDA_EXEC<1>>);
+  }
+#endif
+#ifdef AXOM_RUNTIME_POLICY_USE_HIP
+  else if(runtimePolicy == MarchingCubes::RuntimePolicy::hip)
+  {
+    impl = dim == 2
+      ? std::unique_ptr<ImplBase>(
+          new MarchingCubesHybridParallel<2, axom::HIP_EXEC<256>, axom::HIP_EXEC<1>>)
+      : std::unique_ptr<ImplBase>(
+          new MarchingCubesHybridParallel<3, axom::HIP_EXEC<256>, axom::HIP_EXEC<1>>);
+  }
+#endif
+  else
+  {
+    SLIC_ERROR(axom::fmt::format(
+      "MarchingCubesSingleDomain has no implementation for runtime policy {}",
+      runtimePolicy));
+  }
+  return impl;
+}
 
 }  // end namespace marching_cubes
 }  // end namespace detail

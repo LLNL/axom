@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -101,6 +101,17 @@ public:
   BoundingBox(const PointType* pts, int n);
 
   /*!
+   * \brief Constructor. Creates a bounding box containing the
+   * initializer list of points.
+   *
+   * \param [in] pts an initializer list containing points
+   */
+  AXOM_HOST_DEVICE
+  explicit BoundingBox(std::initializer_list<PointType> pts)
+    : BoundingBox {pts.begin(), static_cast<int>(pts.size())}
+  { }
+
+  /*!
    * \brief Constructor. Creates a bounding box with a given min and max point
    *  The code ensures that the bounds are valid, if shouldFixBounds is true.
    */
@@ -129,14 +140,14 @@ public:
    * \return const reference to the min corner of the bounding box.
    */
   AXOM_HOST_DEVICE
-  const PointType& getMin() const { return m_min; };
+  const PointType& getMin() const { return m_min; }
 
   /*!
    * \brief Returns const reference to the max corner of the bounding box.
    * \return const reference to the max corner of the bounding box.
    */
   AXOM_HOST_DEVICE
-  const PointType& getMax() const { return m_max; };
+  const PointType& getMax() const { return m_max; }
 
   /*!
    * \brief Returns the centroid (midpoint) of the bounding box.
@@ -150,7 +161,7 @@ public:
    * \return Vector from min point to max point of bounding box.
    */
   AXOM_HOST_DEVICE
-  VectorType range() const { return VectorType(m_min, m_max); };
+  VectorType range() const { return VectorType(m_min, m_max); }
 
   /*!
    * \brief Updates bounds to include the provided point.
@@ -173,7 +184,7 @@ public:
    * \post d >= 1.
    */
   AXOM_HOST_DEVICE
-  int dimension() const { return NDIMS; };
+  int dimension() const { return NDIMS; }
 
   /*!
    * \brief Finds the longest dimension of the bounding box
@@ -244,6 +255,7 @@ public:
    * \note We are allowing the other bounding box to have a different coordinate
    *  type. This should work as long as the two Ts are comparable with
    *  operator<().
+   * \note If \a otherBB is empty, we return true
    */
   template <typename OtherType>
   bool contains(const BoundingBox<OtherType, NDIMS>& otherBB) const;
@@ -344,7 +356,7 @@ private:
   AXOM_HOST_DEVICE inline void setMin(const PointType& newMin)
   {
     m_min = newMin;
-  };
+  }
 
   /*!
    * \brief Sets the max point for this bounding box instance.
@@ -353,7 +365,7 @@ private:
   AXOM_HOST_DEVICE inline void setMax(const PointType& newMax)
   {
     m_max = newMax;
-  };
+  }
 
   /*!
    * \brief Ensures that the bounds are valid.
@@ -427,7 +439,9 @@ template <typename T, int NDIMS>
 template <typename OtherT>
 bool BoundingBox<T, NDIMS>::contains(const BoundingBox<OtherT, NDIMS>& otherBB) const
 {
-  return this->contains(otherBB.getMin()) && this->contains(otherBB.getMax());
+  return otherBB.isValid()
+    ? this->contains(otherBB.getMin()) && this->contains(otherBB.getMax())
+    : true;
 }
 
 //------------------------------------------------------------------------------

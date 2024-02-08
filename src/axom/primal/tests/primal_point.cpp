@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -37,8 +37,8 @@ void check_point_policy()
 TEST(primal_point, point_default_constructor)
 {
   static const int DIM = 2;
-  typedef double CoordType;
-  typedef primal::Point<CoordType, DIM> QPoint;
+  using CoordType = double;
+  using QPoint = primal::Point<CoordType, DIM>;
 
   QPoint pt;
 
@@ -50,8 +50,8 @@ TEST(primal_point, point_default_constructor)
 TEST(primal_point, point_singleVal_constructor)
 {
   static const int DIM = 5;
-  typedef int CoordType;
-  typedef primal::Point<CoordType, DIM> QPoint;
+  using CoordType = int;
+  using QPoint = primal::Point<CoordType, DIM>;
   const int singleVal = 10;
 
   //
@@ -103,8 +103,8 @@ TEST(primal_point, point_singleVal_constructor)
 TEST(primal_point, point_array_constructor)
 {
   static const int DIM = 5;
-  typedef int CoordType;
-  typedef primal::Point<CoordType, DIM> QPoint;
+  using CoordType = int;
+  using QPoint = primal::Point<CoordType, DIM>;
 
   // Set elt i of input array to i
   CoordType arr[DIM];
@@ -167,9 +167,9 @@ TEST(primal_point, point_array_constructor)
 TEST(primal_point, point_numericArray_constructor)
 {
   static const int DIM = 5;
-  typedef int CoordType;
-  typedef primal::NumericArray<CoordType, DIM> QArray;
-  typedef primal::Point<CoordType, DIM> QPoint;
+  using CoordType = int;
+  using QArray = primal::NumericArray<CoordType, DIM>;
+  using QPoint = primal::Point<CoordType, DIM>;
 
   // Set elt i of input array to i
   CoordType arr[DIM];
@@ -226,8 +226,8 @@ TEST(primal_point, point_initializerList_constructor)
 TEST(primal_point, point_copy_and_assignment)
 {
   static const int DIM = 5;
-  typedef int CoordType;
-  typedef primal::Point<CoordType, DIM> QPoint;
+  using CoordType = int;
+  using QPoint = primal::Point<CoordType, DIM>;
 
   // Set elt i of input array to i
   CoordType arr[DIM];
@@ -262,8 +262,8 @@ TEST(primal_point, point_copy_and_assignment)
 TEST(primal_point, point_equality)
 {
   static const int DIM = 5;
-  typedef int CoordType;
-  typedef primal::Point<CoordType, DIM> QPoint;
+  using CoordType = int;
+  using QPoint = primal::Point<CoordType, DIM>;
 
   // Set elt i of input array to i
   CoordType arr[DIM];
@@ -297,8 +297,8 @@ TEST(primal_point, point_equality)
 TEST(primal_point, point_to_array)
 {
   static const int DIM = 5;
-  typedef int CoordType;
-  typedef primal::Point<CoordType, DIM> QPoint;
+  using CoordType = int;
+  using QPoint = primal::Point<CoordType, DIM>;
 
   // Set elt i of input array to i
   CoordType arr[DIM];
@@ -321,8 +321,8 @@ TEST(primal_point, point_to_array)
 TEST(primal_point, point_make_point)
 {
   static const int DIM = 3;
-  typedef int CoordType;
-  typedef primal::Point<CoordType, DIM> QPoint;
+  using CoordType = int;
+  using QPoint = primal::Point<CoordType, DIM>;
 
   const int x = 10;
   const int y = 20;
@@ -346,8 +346,8 @@ TEST(primal_point, point_make_point)
 TEST(primal_point, point_midpoint)
 {
   static const int DIM = 3;
-  typedef int CoordType;
-  typedef primal::Point<CoordType, DIM> QPoint;
+  using CoordType = int;
+  using QPoint = primal::Point<CoordType, DIM>;
 
   QPoint p10(10);
   QPoint p30(30);

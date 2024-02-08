@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -14,6 +14,7 @@
 
 #include "axom/core/Array.hpp"
 #include "axom/primal/geometry/Point.hpp"
+#include "axom/primal/geometry/Vector.hpp"
 
 #include <ostream>
 
@@ -142,27 +143,23 @@ public:
   typename std::enable_if<TDIM == 3, double>::type area() const
   {
     const int nVerts = numVertices();
-    double sum = 0.;
 
     // check for early return
     if(nVerts < 3)
     {
-      return sum;
+      return 0.0;
     }
 
     // Add up areas of triangles connecting polygon edges the vertex average
+    VectorType sum;
     const auto O = vertexMean();  // 'O' for (local) origin
     for(int curr = 0, prev = nVerts - 1; curr < nVerts; prev = curr++)
     {
-      const auto& P = m_vertices[prev];
-      const auto& C = m_vertices[curr];
-      // clang-format off
-      sum += axom::numerics::determinant(P[0] - O[0], C[0] - O[0],
-                                         P[1] - O[1], C[1] - O[1]);
-      // clang-format on
+      sum +=
+        VectorType::cross_product(m_vertices[prev] - O, m_vertices[curr] - O);
     }
 
-    return axom::utilities::abs(0.5 * sum);
+    return 0.5 * axom::utilities::abs(sum.norm());
   }
 
   /**
@@ -256,5 +253,10 @@ std::ostream& operator<<(std::ostream& os, const Polygon<T, NDIMS>& poly)
 
 }  // namespace primal
 }  // namespace axom
+
+/// Overload to format a primal::Polygon using fmt
+template <typename T, int NDIMS>
+struct axom::fmt::formatter<axom::primal::Polygon<T, NDIMS>> : ostream_formatter
+{ };
 
 #endif  // AXOM_PRIMAL_POLYGON_HPP_

@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -195,7 +195,8 @@ bool initFaces(Mesh* mesh,
   f2noffsets[facecount] = faceNodeOffset;
 
   // Step 4. Now that we have face IDs, record cell-to-face relation.
-  typedef std::unordered_map<IndexType, std::vector<IndexType>> CellFaceBuilderType;
+  using CellFaceBuilderType =
+    std::unordered_map<IndexType, std::vector<IndexType>>;
 
   CellFaceBuilderType cell_to_face;
   int cellFaceCount = 0;
