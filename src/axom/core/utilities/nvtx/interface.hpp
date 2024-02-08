@@ -7,7 +7,7 @@
 #define AXOM_NVTX_INTERFACE_HPP_
 
 #include "axom/core/utilities/nvtx/Macros.hpp"
-#include <cstdint> // For uint32_t
+#include <cstdint>  // For uint32_t
 
 namespace axom
 {
