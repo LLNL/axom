@@ -121,7 +121,7 @@ set(ENABLE_DOCS ON CACHE BOOL "")
 
 set(SPHINX_EXECUTABLE "${DEVTOOLS_ROOT}/python-3.10.10/bin/sphinx-build" CACHE PATH "")
 
-set(SHROUD_EXECUTABLE "${DEVTOOLS_ROOT}/python-3.10.10/bin/shroud" CACHE PATH "")
+set(SHROUD_EXECUTABLE "/collab/usr/gapps/shroud/public/toss_4_x86_64_ib/shroud-0.13.0/bin/shroud" CACHE PATH "")
 
 set(CPPCHECK_EXECUTABLE "${DEVTOOLS_ROOT}/cppcheck-2.9/bin/cppcheck" CACHE PATH "")
 
