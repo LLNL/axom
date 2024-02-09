@@ -58,11 +58,14 @@ using UMesh = axom::mint::UnstructuredMesh<axom::mint::SINGLE_SHAPE>;
 #endif
 
 #if defined(AXOM_USE_CUDA)
-  constexpr int BLK_SZ = 256;
-  using cuda_exec = axom::CUDA_EXEC<BLK_SZ>;
+  constexpr int CUDA_BLK_SZ = 256;
+  using cuda_exec = axom::CUDA_EXEC<CUDA_BLK_SZ>;
 #else
   using cuda_exec = seq_exec;
 #endif
+
+// Hip exec included from IntersectionShaper header
+
 // clang-format on
 
 //-----------------------------------------------------------------------------
@@ -103,7 +106,8 @@ enum class RuntimePolicy
 {
   raja_seq = 1,
   raja_omp = 2,
-  raja_cuda = 3
+  raja_cuda = 3,
+  raja_hip = 4
 };
 
 struct Input
@@ -154,8 +158,11 @@ void Input::parse(int argc, char** argv, axom::CLI::App& app)
 #ifdef AXOM_USE_OPENMP
       "\nSet to 'raja_omp' or 2 to use the RAJA openmp policy."
 #endif
-#ifdef AXOM_USE_OPENMP
+#ifdef AXOM_USE_CUDA
       "\nSet to 'raja_cuda' or 3 to use the RAJA cuda policy."
+#endif
+#ifdef AXOM_USE_HIP
+      "\nSet to 'raja_hip' or 4 to use the RAJA hip policy."
 #endif
       )
     ->capture_default_str()
@@ -191,9 +198,10 @@ void Input::parse(int argc, char** argv, axom::CLI::App& app)
     verboseOutput,
     method == "bvh" ? "Bounding Volume Hierarchy (BVH)" : "Implicit Grid",
     method == "bvh" ? "Not Applicable" : std::to_string(resolution),
-    policy == RuntimePolicy::raja_omp
-      ? "raja_omp"
-      : (policy == RuntimePolicy::raja_cuda) ? "raja_cuda" : "raja_seq"));
+    policy == RuntimePolicy::raja_omp ? "raja_omp"
+                                      : (policy == RuntimePolicy::raja_cuda)
+        ? "raja_cuda"
+        : (policy == RuntimePolicy::raja_hip) ? "raja_hip" : "raja_seq"));
 }
 
 const std::map<std::string, RuntimePolicy> Input::s_validPolicies(
@@ -205,6 +213,10 @@ const std::map<std::string, RuntimePolicy> Input::s_validPolicies(
 #ifdef AXOM_USE_CUDA
    ,
    {"raja_cuda", RuntimePolicy::raja_cuda}
+#endif
+#ifdef AXOM_USE_HIP
+   ,
+   {"raja_hip", RuntimePolicy::raja_hip}
 #endif
   });
 
@@ -657,6 +669,11 @@ int main(int argc, char** argv)
       candidatePairs = findCandidatesBVH<cuda_exec>(insert_mesh, query_mesh);
 #endif
       break;
+    case RuntimePolicy::raja_hip:
+#ifdef AXOM_USE_HIP
+      candidatePairs = findCandidatesBVH<hip_exec>(insert_mesh, query_mesh);
+#endif
+      break;
     default:  // RuntimePolicy::raja_seq
       candidatePairs = findCandidatesBVH<seq_exec>(insert_mesh, query_mesh);
       break;
@@ -679,6 +696,13 @@ int main(int argc, char** argv)
       candidatePairs = findCandidatesImplicit<cuda_exec>(insert_mesh,
                                                          query_mesh,
                                                          params.resolution);
+#endif
+      break;
+    case RuntimePolicy::raja_hip:
+#ifdef AXOM_USE_HIP
+      candidatePairs = findCandidatesImplicit<hip_exec>(insert_mesh,
+                                                        query_mesh,
+                                                        params.resolution);
 #endif
       break;
     default:  // RuntimePolicy::raja_seq
