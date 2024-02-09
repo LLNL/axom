@@ -514,6 +514,9 @@ axom::Array<IndexPair> findCandidatesImplicit(const HexMesh& insertMesh,
   // Copy the insert bboxes to the device, if necessary
   // Either way, insert_bbox_v will be a view w/ data in the correct space
   auto& insert_bbox_h = insertMesh.hexBoundingBoxes();
+  BBoxArray insert_bbox_d =
+    on_device ? BBoxArray(insert_bbox_h, kernel_allocator) : BBoxArray();
+  auto insert_bbox_v = on_device ? insert_bbox_d.view() : insert_bbox_h.view();
 
   // Bounding box of entire insert mesh
   HexMesh::BoundingBox insert_mesh_bbox_h = insertMesh.meshBoundingBox();
@@ -547,7 +550,7 @@ axom::Array<IndexPair> findCandidatesImplicit(const HexMesh& insertMesh,
                                                         &resolutions,
                                                         insertMesh.numHexes(),
                                                         kernel_allocator);
-  gridIndex.insert(insertMesh.numHexes(), insert_bbox_h.data());
+  gridIndex.insert(insertMesh.numHexes(), insert_bbox_v.data());
   timer.stop();
   SLIC_INFO(
     axom::fmt::format("0: Initializing Implicit Grid took {:4.3} seconds.",
@@ -562,7 +565,7 @@ axom::Array<IndexPair> findCandidatesImplicit(const HexMesh& insertMesh,
   auto counts_v = counts_d.view();
 
   gridIndex.getCandidatesAsArray(queryMesh.numHexes(),
-                                 query_bbox_h.data(),
+                                 query_bbox_v.data(),
                                  offsets_v,
                                  counts_v,
                                  candidates_d);
