@@ -245,8 +245,6 @@ HexMesh loadBlueprintHexMesh(const std::string& mesh_path,
 {
   HexMesh hexMesh;
 
-  axom::utilities::Timer timer(true);
-
   // Load Blueprint mesh into Conduit node
   conduit::Node n_load;
   conduit::relay::io::blueprint::read_mesh(mesh_path, n_load);
@@ -314,16 +312,9 @@ HexMesh loadBlueprintHexMesh(const std::string& mesh_path,
   SLIC_INFO(
     axom::fmt::format("Mesh bounding box is {}.\n", hexMesh.meshBoundingBox()));
 
-  timer.stop();
-  SLIC_INFO(axom::fmt::format(
-    "Writing out Blueprint mesh to hexMesh object took {:4.3} seconds.",
-    timer.elapsedTimeInSec()));
-
   // Optional verbose output that writes Blueprint mesh to vtk
   if(verboseOutput)
   {
-    timer.start();
-
     UMesh* mesh = new UMesh(3, axom::mint::HEX);
 
     // Append mesh nodes
@@ -349,14 +340,9 @@ HexMesh loadBlueprintHexMesh(const std::string& mesh_path,
       mesh->appendCell(cell);
     }
 
-    timer.stop();
-    SLIC_INFO(
-      axom::fmt::format("Loading the Blueprint mesh took {:4.3} seconds.",
-                        timer.elapsedTimeInSec()));
-
     // Write out to vtk for test viewing
     SLIC_INFO("Writing out Blueprint mesh to test.vtk for debugging...");
-    timer.start();
+    axom::utilities::Timer timer(true);
     axom::mint::write_vtk(mesh, "test.vtk");
     timer.stop();
     SLIC_INFO(axom::fmt::format(
@@ -628,6 +614,8 @@ int main(int argc, char** argv)
     }
   }
 
+  axom::utilities::Timer timer(true);
+
   // Update the logging level based on verbosity flag
   axom::slic::setLoggingMsgLevel(params.isVerbose() ? axom::slic::message::Debug
                                                     : axom::slic::message::Info);
@@ -646,9 +634,14 @@ int main(int argc, char** argv)
   HexMesh query_mesh =
     loadBlueprintHexMesh(params.mesh_file_second, params.isVerbose());
 
+  timer.stop();
+
+  SLIC_INFO(axom::fmt::format("Reading in Blueprint files took {:4.3} seconds.",
+                              timer.elapsedTimeInSec()));
+
   // Check for candidates; results are returned as an array of index pairs
   axom::Array<IndexPair> candidatePairs;
-  axom::utilities::Timer timer(true);
+  timer.start();
 
   if(params.method == "bvh")
   {
