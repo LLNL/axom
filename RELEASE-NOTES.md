@@ -61,6 +61,7 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 - Fixed a bug in the bounds checks for `primal::clip(Triangle, BoundingBox)`
 - Fixed a bug when loading Sidre groups with attributes that already exist
 - Fixed `std::locale` error when when compiling `src/axom/core/utilities/System.cpp` using nvcc
+- Include `cstdint` for higher gcc version support (e.g. gcc-13)
 
 ## [Version 0.8.1] - Release date 2023-08-16
 
