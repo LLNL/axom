@@ -561,8 +561,8 @@ axom::Array<IndexPair> findCandidatesImplicit(const HexMesh& insertMesh,
   IndexArray counts_d(query_bbox_v.size(), query_bbox_v.size(), kernel_allocator);
   IndexArray candidates_d(0, 0, kernel_allocator);
 
-  auto offsets_v = offsets_d.view();
-  auto counts_v = counts_d.view();
+  axom::ArrayView<axom::IndexType> offsets_v = offsets_d.view();
+  axom::ArrayView<axom::IndexType> counts_v = counts_d.view();
 
   gridIndex.getCandidatesAsArray(queryMesh.numHexes(),
                                  query_bbox_v.data(),
