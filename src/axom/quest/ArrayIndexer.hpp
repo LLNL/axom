@@ -26,7 +26,7 @@ class ArrayIndexer
 
 public:
   /*!
-    @brief Constructor for row- or column major indexing.
+    @brief Constructor for row- or column-major indexing.
     @param [in] lengths Lengths of the array
     @param [in] order: c is column major; r is row major.
   */
@@ -42,7 +42,7 @@ public:
   }
 
   /*!
-    @brief Initialize for row- or column major indexing.
+    @brief Initialize for row- or column-major indexing.
     @param [in] shape Shape of the array
     @param [in] order: c is column major; r is row major.
   */

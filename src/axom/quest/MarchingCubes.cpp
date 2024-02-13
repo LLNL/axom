@@ -187,15 +187,13 @@ void MarchingCubes::populateContourMesh(
                                                 hostAllocatorId);
       axom::Array<axom::IndexType, 2> tmpfacetNodeIds(m_facetNodeIds,
                                                       hostAllocatorId);
-      mesh.appendNodes(tmpfacetNodeCoords.data(),
-                       mesh.getDimension() * m_facetCount);
-      mesh.appendCells(tmpfacetNodeIds.data(), m_facetCount);
+      mesh.appendNodes(tmpfacetNodeCoords.data(), contourNodeCount);
+      mesh.appendCells(tmpfacetNodeIds.data(), contourCellCount);
     }
     else
     {
-      mesh.appendNodes(m_facetNodeCoords.data(),
-                       mesh.getDimension() * m_facetCount);
-      mesh.appendCells(m_facetNodeIds.data(), m_facetCount);
+      mesh.appendNodes(m_facetNodeCoords.data(), contourNodeCount);
+      mesh.appendCells(m_facetNodeIds.data(), contourCellCount);
     }
 
     if(!cellIdField.empty())

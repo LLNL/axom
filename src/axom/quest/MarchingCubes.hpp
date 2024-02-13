@@ -102,7 +102,7 @@ class MarchingCubesSingleDomain;
  * individual contour facets are provided.  Blueprint allows users to
  * specify ids for the domains.  If "state/domain_id" exists in the
  * domains, it is used as the domain id.  Otherwise, the domain's
- * interation index within the multidomain mesh is used.
+ * iteration index within the multidomain mesh is used.
  */
 class MarchingCubes
 {
@@ -172,10 +172,11 @@ public:
     @brief Put generated contour in a mint::UnstructuredMesh.
     @param mesh Output contour mesh
     @param cellIdField Name of field to store the array of
-      parent cells' multidimensional indices.
+      parent cells ids, numbered in column-major ordering.
       If empty, the data is not provided.
-    @param domainIdField Name of field to store the (axom::IndexType)
-      parent domain ids. If omitted, the data is not provided.
+    @param domainIdField Name of field to store the
+      parent domain ids.  The type of this data is \c DomainIdType.
+      If omitted, the data is not provided.
 
     If the fields aren't in the mesh, they will be created.
 
@@ -252,7 +253,7 @@ public:
     @pre isoContour() must have been called.
     @post outputs can no longer be accessed from object.
   */
-  void relinguishContourData(axom::Array<axom::IndexType, 2> &facetNodeIds,
+  void relinquishContourData(axom::Array<axom::IndexType, 2> &facetNodeIds,
                              axom::Array<double, 2> &facetNodeCoords,
                              axom::Array<axom::IndexType, 1> &facetParentIds)
   {
@@ -372,7 +373,7 @@ public:
     SLIC_ASSERT(m_dom->fetch_existing(m_fcnPath + "/association").as_string() ==
                 "vertex");
     SLIC_ASSERT(m_dom->has_path(m_fcnPath + "/values"));
-    if(m_impl) m_impl->setFunctionField(fcnField);
+    m_impl->setFunctionField(fcnField);
   }
 
   void setContourValue(double contourVal)
