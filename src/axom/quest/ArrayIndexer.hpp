@@ -27,12 +27,25 @@ class ArrayIndexer
 public:
   /*!
     @brief Constructor for row- or column-major indexing.
-    @param [in] lengths Lengths of the array
+    @param [in] shape Shape of the array
     @param [in] order: c is column major; r is row major.
   */
-  ArrayIndexer(const axom::StackArray<T, DIM>& lengths, char order)
+  ArrayIndexer(const axom::StackArray<T, DIM>& Shape, char order)
   {
-    initialize(lengths, order);
+    initialize(Shape, order);
+  }
+
+  /*!
+    @brief Constructor for a given order permutation.
+    @param [in] shape Shape of the array
+    @param [in] slowestDirs: permutation vector, where
+      slowestDirs[0] is the slowest direction and
+      slowestDirs[DIM-1] is the fastest.
+  */
+  ArrayIndexer(const axom::StackArray<T, DIM>& shape,
+               const axom::StackArray<std::uint16_t, DIM>& slowestDirs)
+  {
+    initialize(shape, slowestDirs);
   }
 
   //!@brief Constructor for arbitrary-stride indexing.
@@ -74,7 +87,29 @@ public:
         m_strides[d] = m_strides[d + 1] * shape[d + 1];
       }
     }
-    SLIC_ASSERT((DIM == 1 && getOrder() == ('r' | 's')) || (getOrder() == order));
+    SLIC_ASSERT((DIM == 1 && getOrder() == ('r' | 'c')) || (getOrder() == order));
+  }
+
+  /*!
+    @brief Initialize for a given order permutation.
+    @param [in] shape Shape of the array
+    @param [in] slowestDirs: permutation vector, where
+      slowestDirs[0] is the slowest direction and
+      slowestDirs[DIM-1] is the fastest.
+  */
+  inline AXOM_HOST_DEVICE void initialize(
+    const axom::StackArray<T, DIM>& shape,
+    const axom::StackArray<std::uint16_t, DIM>& slowestDirs)
+  {
+    SLIC_ASSERT(isPermutation(slowestDirs));
+    m_slowestDirs = slowestDirs;
+    m_strides[m_slowestDirs[DIM - 1]] = 1;
+    for(int d = DIM - 2; d >= 0; --d)
+    {
+      int dir = m_slowestDirs[d];
+      int fasterDir = m_slowestDirs[d + 1];
+      m_strides[dir] = m_strides[fasterDir] * shape[fasterDir];
+    }
   }
 
   //!@brief Initialize for arbitrary-stride indexing.
@@ -100,6 +135,11 @@ public:
     }
   }
 
+  bool operator==(const ArrayIndexer& other) const
+  {
+    return m_slowestDirs == other.m_slowestDirs && m_strides == other.m_strides;
+  }
+
   //!@brief Index directions, ordered from slowest to fastest.
   inline AXOM_HOST_DEVICE const axom::StackArray<std::uint16_t, DIM>& slowestDirs() const
   {
@@ -110,6 +150,30 @@ public:
   inline AXOM_HOST_DEVICE const axom::StackArray<axom::IndexType, DIM>& strides() const
   {
     return m_strides;
+  }
+
+  //!@brief Whether a vector is a permutation vector
+  bool isPermutation(const axom::StackArray<std::uint16_t, DIM>& v)
+  {
+    // v is a permutation if all its values are unique and in [0, DIM).
+    axom::StackArray<bool, DIM> found;
+    for(int d = 0; d < DIM; ++d)
+    {
+      found[d] = false;
+    }
+    for(int d = 0; d < DIM; ++d)
+    {
+      if(v[d] < 0 || v[d] >= DIM)
+      {
+        return false;
+      }  // Out of range.
+      if(found[v[d]] == true)
+      {
+        return false;
+      }  // Repeated indices
+      found[v[d]] = true;
+    }
+    return true;
   }
 
   /*!

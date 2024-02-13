@@ -12,7 +12,7 @@
 #include "gtest/gtest.h"
 
 // Test strides and permutations.
-TEST(quest_array_indexer, quest_strides_and_permutatations)
+TEST(quest_array_indexer, quest_strides_and_permutations)
 {
   {
     // 1D
@@ -28,6 +28,9 @@ TEST(quest_array_indexer, quest_strides_and_permutatations)
       EXPECT_EQ(colIndexer.slowestDirs()[d], colSlowestDirs[d]);
       EXPECT_EQ(colIndexer.strides()[d], colStrides[d]);
     }
+    EXPECT_TRUE(
+      colIndexer ==
+      (axom::ArrayIndexer<axom::IndexType, DIM>(lengths, colSlowestDirs)));
 
     axom::ArrayIndexer<axom::IndexType, DIM> rowIndexer(lengths, 'r');
     EXPECT_EQ(rowIndexer.getOrder(), 'c' | 'r');
@@ -38,6 +41,9 @@ TEST(quest_array_indexer, quest_strides_and_permutatations)
       EXPECT_EQ(rowIndexer.slowestDirs()[d], rowSlowestDirs[d]);
       EXPECT_EQ(rowIndexer.strides()[d], rowStrides[d]);
     }
+    EXPECT_TRUE(
+      rowIndexer ==
+      (axom::ArrayIndexer<axom::IndexType, DIM>(lengths, rowSlowestDirs)));
   }
   {
     // 2D
