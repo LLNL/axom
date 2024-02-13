@@ -564,11 +564,7 @@ axom::Array<IndexPair> findCandidatesImplicit(const HexMesh& insertMesh,
   axom::ArrayView<axom::IndexType> offsets_v = offsets_d.view();
   axom::ArrayView<axom::IndexType> counts_v = counts_d.view();
 
-  gridIndex.getCandidatesAsArray(queryMesh.numHexes(),
-                                 query_bbox_v.data(),
-                                 offsets_v,
-                                 counts_v,
-                                 candidates_d);
+  gridIndex.getCandidatesAsArray(query_bbox_v, offsets_v, counts_v, candidates_d);
   timer.stop();
   SLIC_INFO(axom::fmt::format(
     "1: Querying candidate bounding boxes took {:4.3} seconds.",
