@@ -15,7 +15,7 @@
 #   cd <axom_root>
 #   mkdir build
 #   cd build
-#   cmake -C ../host-config/other/no-tpl-toss3-intel@19.0.4.cmake           \
+#   cmake -C ../host-config/other/no-tpl-toss_4_x86_64_ib-intel@19.0.4.cmake \
 #         -DCMAKE_BUILD_TYPE={Debug,Release}                                \
 #         -DBUILD_SHARED_LIBS={ON,OFF(DEFAULT)}                             \
 #         -DENABLE_EXAMPLES={ON,OFF}                                        \
@@ -23,12 +23,12 @@
 #         -DCMAKE_INSTALL_PREFIX= /path/to/install/dir                      \
 #         ../src
 #------------------------------------------------------------------------------
-# CMake executable path: /usr/tce/packages/cmake/cmake-3.16.8/bin/cmake
+# CMake executable path: /usr/tce/bin/cmake
 #------------------------------------------------------------------------------
 
 set(ENABLE_FORTRAN ON CACHE BOOL "")
 
-set(COMPILER_HOME "/usr/tce/packages/intel/intel-19.0.4" )
+set(COMPILER_HOME "/usr/tce/packages/intel-classic-tce/intel-classic-19.0.4" )
 set(CMAKE_C_COMPILER "${COMPILER_HOME}/bin/icc" CACHE PATH "")
 set(CMAKE_CXX_COMPILER "${COMPILER_HOME}/bin/icpc" CACHE PATH "")
 set(CMAKE_Fortran_COMPILER "${COMPILER_HOME}/bin/ifort" CACHE PATH "")
