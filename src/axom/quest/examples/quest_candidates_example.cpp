@@ -557,8 +557,8 @@ axom::Array<IndexPair> findCandidatesImplicit(const HexMesh& insertMesh,
                       timer.elapsedTimeInSec()));
 
   timer.start();
-  IndexArray offsets_d(query_bbox_v.size(), query_bbox_v.size(), kernel_allocator);
-  IndexArray counts_d(query_bbox_v.size(), query_bbox_v.size(), kernel_allocator);
+  axom::Array<int> offsets_d(query_bbox_v.size(), query_bbox_v.size(), kernel_allocator);
+  axom::Array<int> counts_d(query_bbox_v.size(), query_bbox_v.size(), kernel_allocator);
   axom::Array<int> candidates_d(0, 0, kernel_allocator);
 
   axom::ArrayView<int> offsets_v = offsets_d.view();
