@@ -323,14 +323,13 @@ public:
 
     axom::StackArray<axom::IndexType, 1> tmpShape1 {1 + parentCellCount};
     axom::Array<axom::IndexType, 1, MemorySpace> scannedFlags(tmpShape1);
-    auto scannedFlagsView = scannedFlags.view();
+    scannedFlags.fill(0, 1, 0);
 #if defined(AXOM_USE_RAJA)
     RAJA::inclusive_scan<ScanPolicy>(
       RAJA::make_span(crossingFlags.data(), parentCellCount),
       RAJA::make_span(scannedFlags.data() + 1, parentCellCount),
       RAJA::operators::plus<axom::IndexType> {});
 #else
-    scannedFlags[0] = 0;
     for(axom::IndexType n = 0; n < parentCellCount; ++n)
     {
       scannedFlags[n + 1] = scannedFlags[n] + crossingFlags[n];
@@ -351,6 +350,7 @@ public:
     m_facetIncrs.resize(tmpShape2, 0);
     m_firstFacetIds.resize(tmpShape3, 0);
 
+    auto scannedFlagsView = scannedFlags.view();
     auto crossingParentIdsView = m_crossingParentIds.view();
     auto facetIncrsView = m_facetIncrs.view();
 
@@ -371,13 +371,13 @@ public:
     // and the total number of facets.
     //
 
+    m_firstFacetIds.fill(0, 1, 0);
 #if defined(AXOM_USE_RAJA)
     RAJA::inclusive_scan<ScanPolicy>(
       RAJA::make_span(m_facetIncrs.data(), m_crossingCount),
       RAJA::make_span(m_firstFacetIds.data() + 1, m_crossingCount),
       RAJA::operators::plus<axom::IndexType> {});
 #else
-    m_firstFacetIds[0] = 0;
     for(axom::IndexType n = 0; n < parentCellCount; ++n)
     {
       m_firstFacetIds[n + 1] = m_firstFacetIds[n] + m_facetIncrs[n];
@@ -465,9 +465,9 @@ public:
 
     axom::deallocate(crossingId);
 
-    // axom::Array<axom::IndexType, 1, MemorySpace> prefixSum(m_crossingCount, m_crossingCount);
-    const auto firstFacetIdsView = m_firstFacetIds.view();
+    m_firstFacetIds.fill(0, 1, 0);
 
+    const auto firstFacetIdsView = m_firstFacetIds.view();
 #if defined(AXOM_USE_RAJA)
     // Intel oneAPI compiler segfaults with OpenMP RAJA scan
   #ifdef __INTEL_LLVM_COMPILER
@@ -481,13 +481,9 @@ public:
       RAJA::make_span(firstFacetIdsView.data() + 1, m_crossingCount),
       RAJA::operators::plus<axom::IndexType> {});
 #else
-    if(m_crossingCount > 0)
+    for(axom::IndexType i = 1; i < 1 + m_crossingCount; ++i)
     {
-      firstFacetIdsView[0] = 0;
-      for(axom::IndexType i = 1; i < 1 + m_crossingCount; ++i)
-      {
-        firstFacetIdsView[i] = firstFacetIdsView[i - 1] + facetIncrsView[i - 1];
-      }
+      firstFacetIdsView[i] = firstFacetIdsView[i - 1] + facetIncrsView[i - 1];
     }
 #endif
     axom::copy(&m_facetCount,
