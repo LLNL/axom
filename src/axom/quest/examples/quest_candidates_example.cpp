@@ -49,6 +49,7 @@
 using seq_exec = axom::SEQ_EXEC;
 
 using UMesh = axom::mint::UnstructuredMesh<axom::mint::SINGLE_SHAPE>;
+using IndexPair = std::pair<axom::IndexType, axom::IndexType>;
 
 // clang-format off
 #if defined(AXOM_USE_OPENMP)
@@ -129,12 +130,13 @@ struct Input
 void Input::parse(int argc, char** argv, axom::CLI::App& app)
 {
   app.add_option("-i, --infile", mesh_file_first)
-    ->description("The first input Blueprint mesh file to insert into BVH")
+    ->description(
+      "The first input Blueprint mesh file to insert into spatial index")
     ->required()
     ->check(axom::CLI::ExistingFile);
 
   app.add_option("-q, --queryfile", mesh_file_second)
-    ->description("The second input Blueprint mesh file to query BVH")
+    ->description("The second input Blueprint mesh file to query spatial index")
     ->required()
     ->check(axom::CLI::ExistingFile);
 
@@ -142,13 +144,13 @@ void Input::parse(int argc, char** argv, axom::CLI::App& app)
     .add_option("-r,--resolution",
                 resolution,
                 "With '-m implicit', set resolution of implicit grid. \n"
-                "Set to less than 1 to use the implicit spatial index\n"
+                "Set to less than 1 to use the implicit grid spatial index\n"
                 "with a resolution of the cube root of the number of\n"
                 "hexes.")
     ->capture_default_str();
 
   app.add_flag("-v,--verbose", verboseOutput)
-    ->description("Increase logging verbosity?")
+    ->description("Increase logging verbosity")
     ->capture_default_str();
 
   app.add_option("-p, --policy", policy)
@@ -368,8 +370,6 @@ HexMesh loadBlueprintHexMesh(const std::string& mesh_path,
   return hexMesh;
 }  // end of loadBlueprintHexMesh
 
-using IndexPair = std::pair<axom::IndexType, axom::IndexType>;
-
 template <typename ExecSpace>
 axom::Array<IndexPair> findCandidatesBVH(const HexMesh& insertMesh,
                                          const HexMesh& queryMesh)
@@ -505,7 +505,7 @@ axom::Array<IndexPair> findCandidatesImplicit(const HexMesh& insertMesh,
     ? axom::getUmpireResourceAllocatorID(umpire::resource::Device)
     : axom::execution_space<ExecSpace>::allocatorID();
 
-  // Copy the insert  hexes to the device, if necessary
+  // Copy the insert hexes to the device, if necessary
   // Either way, insert_hexes_v will be a view w/ data in the correct space
   auto& insert_hexes_h = insertMesh.hexes();
   HexArray insert_hexes_d =
@@ -521,7 +521,7 @@ axom::Array<IndexPair> findCandidatesImplicit(const HexMesh& insertMesh,
   // Bounding box of entire insert mesh
   HexMesh::BoundingBox insert_mesh_bbox_h = insertMesh.meshBoundingBox();
 
-  // Copy the query  hexes to the device, if necessary
+  // Copy the query hexes to the device, if necessary
   // Either way, query_hexes_v will be a view w/ data in the correct space
   auto& query_hexes_h = queryMesh.hexes();
   HexArray query_hexes_d =
