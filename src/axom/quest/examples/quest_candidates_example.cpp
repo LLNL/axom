@@ -495,7 +495,7 @@ axom::Array<IndexPair> findCandidatesImplicit(const HexMesh& insertMesh,
 
   using HexArray = axom::Array<typename HexMesh::Hexahedron>;
   using BBoxArray = axom::Array<typename HexMesh::BoundingBox>;
-  using IndexArray = axom::Array<axom::IndexType>;
+  // using IndexArray = axom::Array<axom::IndexType>;
   constexpr bool on_device = axom::execution_space<ExecSpace>::onDevice();
 
   // Get ids of necessary allocators
@@ -561,8 +561,8 @@ axom::Array<IndexPair> findCandidatesImplicit(const HexMesh& insertMesh,
   axom::Array<int> counts_d(query_bbox_v.size(), query_bbox_v.size(), kernel_allocator);
   axom::Array<int> candidates_d(0, 0, kernel_allocator);
 
-  axom::ArrayView<int> offsets_v = offsets_d.view();
-  axom::ArrayView<int> counts_v = counts_d.view();
+  // axom::ArrayView<int> offsets_v = offsets_d.view();
+  // axom::ArrayView<int> counts_v = counts_d.view();
 
   gridIndex.getCandidatesAsArray(query_bbox_d, offsets_d, counts_d, candidates_d);
   timer.stop();
@@ -573,9 +573,9 @@ axom::Array<IndexPair> findCandidatesImplicit(const HexMesh& insertMesh,
   // Initialize candidatePairs to return
   timer.start();
 
-  IndexArray offsets_h(offsets_d, host_allocator);
-  IndexArray counts_h(counts_d, host_allocator);
-  IndexArray candidates_h(candidates_d, host_allocator);
+  axom::Array<int> offsets_h(offsets_d, host_allocator);
+  axom::Array<int> counts_h(counts_d, host_allocator);
+  axom::Array<int> candidates_h(candidates_d, host_allocator);
 
   for(int i = 0; i < queryMesh.numHexes(); i++)
   {
