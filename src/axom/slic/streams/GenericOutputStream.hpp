@@ -85,7 +85,8 @@ public:
                       const std::string& tagName,
                       const std::string& fileName,
                       int line,
-                      bool filter_duplicates);
+                      bool filter_duplicates,
+                      bool tag_stream_only);
 
   /*!
    * \brief Outputs the log stream to the console.

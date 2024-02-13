@@ -18,6 +18,7 @@ set(lumberjack_headers
     MPIUtility.hpp
     RootCommunicator.hpp
     TextEqualityCombiner.hpp
+    TextTagCombiner.hpp
     )
 
 set(lumberjack_sources
