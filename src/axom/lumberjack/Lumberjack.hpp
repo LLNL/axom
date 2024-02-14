@@ -22,7 +22,7 @@
 #include "axom/lumberjack/Combiner.hpp"
 #include "axom/lumberjack/Communicator.hpp"
 #include "axom/lumberjack/Message.hpp"
-#include "axom/lumberjack/TextEqualityCombiner.hpp"
+#include "axom/lumberjack/TextTagCombiner.hpp"
 
 namespace axom
 {

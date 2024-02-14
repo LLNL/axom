@@ -23,7 +23,7 @@ void Lumberjack::initialize(Communicator* communicator, int ranksLimit)
 {
   m_communicator = communicator;
   m_ranksLimit = ranksLimit;
-  m_combiners.push_back(new TextEqualityCombiner);
+  m_combiners.push_back(new TextTagCombiner);
 }
 
 void Lumberjack::finalize()
