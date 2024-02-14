@@ -91,6 +91,15 @@ public:
   virtual void setBoundingBox(BBox3D& box);
 
   /*!
+   * \brief Sets the bounding box to include nodes.
+   * 
+   * When reading in ProE tets, include only those tets that have at least 
+   * one node in the bounding box.  If the box is left unset, or if set
+   * to an invalid box, all tets are included.
+   */
+  virtual void setInclusiveBoundingBox(BBox3D& box);
+
+  /*!
    * \brief Specifies a test to retain a tetrahedron.
    * 
    * When reading in ProE tets, include only those tets for which p returns
