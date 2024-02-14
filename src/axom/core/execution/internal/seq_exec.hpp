@@ -34,10 +34,15 @@ template <>
 struct execution_space<SEQ_EXEC>
 {
 #ifdef AXOM_USE_RAJA
-  using loop_policy = RAJA::seq_exec;
-
-  using reduce_policy = RAJA::seq_reduce;
-  using atomic_policy = RAJA::seq_atomic;
+  #if RAJA_VERSION_MAJOR > 2022
+    using loop_policy = RAJA::seq_exec;
+    using reduce_policy = RAJA::seq_reduce;
+    using atomic_policy = RAJA::seq_atomic;
+  #else
+    using loop_policy = RAJA::loop_exec;
+    using reduce_policy = RAJA::loop_reduce;
+    using atomic_policy = RAJA::loop_atomic;
+  #endif
 #else
   using loop_policy = void;
   using reduce_policy = void;
