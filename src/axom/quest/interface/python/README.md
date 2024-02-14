@@ -28,7 +28,7 @@ Some functions in `quest_shroud.yaml` are not wrapped pending fixes to shroud.
 (version 0.10.1 is currently used)
 
 A sample host-config file is provided in
-`host-configs/other/no-tpl-toss_3_x86_64_ib-intel@19.0.4.cmake`. This host-config requires
+`host-configs/other/no-tpl-toss_4_x86_64_ib-intel@19.0.4.cmake`. This host-config requires
 no third-party libraries but does not enable Sidre.  The Python interface requires you build
 Axom with shared libraries which can be enabled via the CMake command line with
 `-DBUILD_SHARED_LIBS=ON` and defining MPI_HOME, which is already enabled in the sample host-config.
