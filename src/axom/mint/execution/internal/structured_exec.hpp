@@ -49,17 +49,17 @@ struct structured_exec<SEQ_EXEC>
 #ifdef AXOM_USE_RAJA
   /* clang-format off */
   using loop2d_policy = RAJA::KernelPolicy<
-    RAJA::statement::For< 1, RAJA::loop_exec,   // j
-      RAJA::statement::For< 0, RAJA::loop_exec, // i
+    RAJA::statement::For< 1, RAJA::seq_exec,   // j
+      RAJA::statement::For< 0, RAJA::seq_exec, // i
         RAJA::statement::Lambda< 0 >
       > // END i
     > // END j
   >; // END kernel
 
   using loop3d_policy = RAJA::KernelPolicy<
-    RAJA::statement::For< 2, RAJA::loop_exec,     // k
-      RAJA::statement::For< 1, RAJA::loop_exec,   // j
-        RAJA::statement::For< 0, RAJA::loop_exec, // i
+    RAJA::statement::For< 2, RAJA::seq_exec,     // k
+      RAJA::statement::For< 1, RAJA::seq_exec,   // j
+        RAJA::statement::For< 0, RAJA::seq_exec, // i
           RAJA::statement::Lambda< 0 >
         > // END i
       > // END j
@@ -82,7 +82,7 @@ struct structured_exec<OMP_EXEC>
 
   using loop2d_policy = RAJA::KernelPolicy<
     RAJA::statement::For< 1, RAJA::omp_parallel_for_exec, // j
-      RAJA::statement::For< 0, RAJA::loop_exec,           // i
+      RAJA::statement::For< 0, RAJA::seq_exec,            // i
         RAJA::statement::Lambda< 0 >
      > // END i
     > // END j
@@ -90,8 +90,8 @@ struct structured_exec<OMP_EXEC>
 
   using loop3d_policy = RAJA::KernelPolicy<
     RAJA::statement::For< 2, RAJA::omp_parallel_for_exec, // k
-      RAJA::statement::For< 1, RAJA::loop_exec,           // j
-        RAJA::statement::For< 0, RAJA::loop_exec,         // i
+      RAJA::statement::For< 1, RAJA::seq_exec,            // j
+        RAJA::statement::For< 0, RAJA::seq_exec,          // i
           RAJA::statement::Lambda< 0 >
         > // END i
       > // END j
