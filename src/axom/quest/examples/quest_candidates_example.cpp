@@ -1,15 +1,16 @@
-// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
 //-----------------------------------------------------------------------------
 ///
-/// file: device_spatial_indexes.cpp
+/// file: quest_candidates_examples.cpp
 ///
-/// This example uses a spatial index, the linear BVH tree from Axom's spin
-/// component, in addition to RAJA and Umpire based kernels for a highly
-//  efficient performance-portable candidate-finding algorithm.
+/// This example takes as input two Blueprint unstructured hex meshes, and
+/// finds the candidates of intersection between the meshes using a
+/// spatial index, either a Bounding Volume Hierarchy or an Implicit Grid.
+/// The example supports HIP and CUDA execution through RAJA.
 //-----------------------------------------------------------------------------
 
 #include "axom/config.hpp"
