@@ -139,15 +139,15 @@ TEST(core_execution_space, check_seq_exec)
 
   int allocator_id = axom::getUmpireResourceAllocatorID(umpire::resource::Host);
   check_execution_mappings<axom::SEQ_EXEC,
-#if RAJA_VERSION_MAJOR > 2022
+  #if RAJA_VERSION_MAJOR > 2022
                            RAJA::seq_exec,
                            RAJA::seq_reduce,
                            RAJA::seq_atomic,
-#else
+  #else
                            RAJA::loop_exec,
                            RAJA::loop_reduce,
                            RAJA::loop_atomic,
-#endif
+  #endif
                            void>(allocator_id, IS_ASYNC, ON_DEVICE);
 }
 
