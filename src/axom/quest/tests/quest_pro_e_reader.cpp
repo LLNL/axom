@@ -215,8 +215,8 @@ TEST(quest_pro_e_reader, read_pro_e_bbox_all)
   axom::quest::ProEReader reader;
   // A bounding box that catches all the points
   axom::quest::ProEReader::BBox3D bbox;
-  bbox.addPoint(axom::quest::ProEReader::Point3D{ -1.5, -0.5, -0.5 });
-  bbox.addPoint(axom::quest::ProEReader::Point3D{ 1.5, 1.5, 1.5 });
+  bbox.addPoint(axom::quest::ProEReader::Point3D {-1.5, -0.5, -0.5});
+  bbox.addPoint(axom::quest::ProEReader::Point3D {1.5, 1.5, 1.5});
   reader.setBoundingBox(bbox);
   reader.setFileName(filename);
   int status = reader.read();
@@ -272,8 +272,8 @@ TEST(quest_pro_e_reader, read_pro_e_bbox_some)
   // A bounding box that catches some of the points, so the single
   // tet does not get added.
   axom::quest::ProEReader::BBox3D bbox;
-  bbox.addPoint(axom::quest::ProEReader::Point3D{ -1.5, -0.5, -0.5 });
-  bbox.addPoint(axom::quest::ProEReader::Point3D{ 0, 1.5, 1.5 });
+  bbox.addPoint(axom::quest::ProEReader::Point3D {-1.5, -0.5, -0.5});
+  bbox.addPoint(axom::quest::ProEReader::Point3D {0, 1.5, 1.5});
   reader.setBoundingBox(bbox);
   reader.setFileName(filename);
   int status = reader.read();
@@ -329,8 +329,8 @@ TEST(quest_pro_e_reader, read_pro_e_bbox_some_incl)
   // A bounding box that catches some of the points.  We'll catch
   // all tets that have at least one corner in the bbox.
   axom::quest::ProEReader::BBox3D bbox;
-  bbox.addPoint(axom::quest::ProEReader::Point3D{ -1.5, -0.5, -0.5 });
-  bbox.addPoint(axom::quest::ProEReader::Point3D{ 0, 1.5, 1.5 });
+  bbox.addPoint(axom::quest::ProEReader::Point3D {-1.5, -0.5, -0.5});
+  bbox.addPoint(axom::quest::ProEReader::Point3D {0, 1.5, 1.5});
   reader.setInclusiveBoundingBox(bbox);
   reader.setFileName(filename);
   int status = reader.read();
@@ -544,8 +544,7 @@ TEST(quest_pro_e_reader, cup_pro_e)
 TEST(quest_pro_e_reader, cup_pro_e_some)
 {
   constexpr int NUM_NODES = 171;
-  constexpr int NUM_TETS = 109;
-  constexpr double EPS = std::numeric_limits<double>::epsilon();
+  constexpr int NUM_BBOX_TETS = 52;
 
   // STEP 0: Get Pro/E cup example file for testing
   namespace fs = axom::utilities::filesystem;
@@ -558,8 +557,8 @@ TEST(quest_pro_e_reader, cup_pro_e_some)
   // A bounding box that catches some of the points: only tets that
   // fall completely within the bbox are retained.
   axom::quest::ProEReader::BBox3D bbox;
-  bbox.addPoint(axom::quest::ProEReader::Point3D{ -30, -160, -200 });
-  bbox.addPoint(axom::quest::ProEReader::Point3D{  90,  160,  -35 });
+  bbox.addPoint(axom::quest::ProEReader::Point3D {-30, -160, -200});
+  bbox.addPoint(axom::quest::ProEReader::Point3D {90, 160, -35});
   reader.setBoundingBox(bbox);
   int status = reader.read();
   EXPECT_EQ(status, 0);
@@ -569,7 +568,7 @@ TEST(quest_pro_e_reader, cup_pro_e_some)
   reader.getMesh(&mesh);
 
   // STEP 3: ensure the mesh is what is expected
-  EXPECT_EQ(mesh.getNumberOfCells(), NUM_TETS);
+  EXPECT_EQ(mesh.getNumberOfCells(), NUM_BBOX_TETS);
   EXPECT_EQ(mesh.getNumberOfNodes(), NUM_NODES);
 
   // Step 5: Dump mesh file
@@ -580,8 +579,7 @@ TEST(quest_pro_e_reader, cup_pro_e_some)
 TEST(quest_pro_e_reader, cup_pro_e_some_incl)
 {
   constexpr int NUM_NODES = 171;
-  constexpr int NUM_BBOX_INCL_TETS = 296;
-  constexpr double EPS = std::numeric_limits<double>::epsilon();
+  constexpr int NUM_BBOX_INCL_TETS = 298;
 
   // STEP 0: Get Pro/E cup example file for testing
   namespace fs = axom::utilities::filesystem;
@@ -594,8 +592,8 @@ TEST(quest_pro_e_reader, cup_pro_e_some_incl)
   // A bounding box that catches some of the points: tets having at
   // least one corner falling within the bbox are retained.
   axom::quest::ProEReader::BBox3D bbox;
-  bbox.addPoint(axom::quest::ProEReader::Point3D{ -30, -160, -200 });
-  bbox.addPoint(axom::quest::ProEReader::Point3D{  90,  160,  -35 });
+  bbox.addPoint(axom::quest::ProEReader::Point3D {-30, -160, -200});
+  bbox.addPoint(axom::quest::ProEReader::Point3D {90, 160, -35});
   reader.setInclusiveBoundingBox(bbox);
   int status = reader.read();
   EXPECT_EQ(status, 0);

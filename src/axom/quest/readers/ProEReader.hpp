@@ -105,7 +105,7 @@ public:
    * When reading in ProE tets, include only those tets for which p returns
    * true.
    */
-  virtual void setTetPred(const TetPred &p) { m_tetPredicate = p; }
+  virtual void setTetPred(const TetPred& p) { m_tetPredicate = p; }
 
   /*!
    * \brief Stores the Pro/E data in the supplied unstructured mesh object.
@@ -133,7 +133,7 @@ protected:
    * This method compacts the vertex array and resizes the vertex and the
    * element arrays to their minimum sizes.
    */
-  void compact_arrays( std::vector<bool>& retain_vertex, int elt_count);
+  void compact_arrays(std::vector<bool>& retain_vertex, int elt_count);
 
 private:
   DISABLE_COPY_AND_ASSIGNMENT(ProEReader);
