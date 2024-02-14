@@ -12,7 +12,8 @@
 set(lumberjack_serial_tests
     lumberjack_Lumberjack.hpp
     lumberjack_Message.hpp
-    lumberjack_TextEqualityCombiner.hpp )
+    lumberjack_TextEqualityCombiner.hpp
+    lumberjack_TextTagCombiner.hpp )
 
 axom_add_executable(NAME       lumberjack_serial_tests
                     SOURCES    lumberjack_serial_main.cpp
