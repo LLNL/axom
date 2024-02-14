@@ -28,7 +28,7 @@
 
 set(ENABLE_FORTRAN ON CACHE BOOL "")
 
-set(COMPILER_HOME "/usr/tce/packages/intel-classic-tce/intel-classic-19.0.4" )
+set(COMPILER_HOME "/usr/tce/packages/intel-classic-tce/intel-classic-19.1.2" )
 set(CMAKE_C_COMPILER "${COMPILER_HOME}/bin/icc" CACHE PATH "")
 set(CMAKE_CXX_COMPILER "${COMPILER_HOME}/bin/icpc" CACHE PATH "")
 set(CMAKE_Fortran_COMPILER "${COMPILER_HOME}/bin/ifort" CACHE PATH "")
@@ -44,7 +44,7 @@ set(AXOM_ENABLE_KLEE OFF CACHE BOOL "")
 #------------------------------------------------------------------------------
 set(ENABLE_MPI ON CACHE BOOL "")
 
-set(MPI_HOME             "/usr/tce/packages/mvapich2/mvapich2-2.3-intel-19.0.4" CACHE PATH "")
+set(MPI_HOME             "/usr/tce/packages/mvapich2/mvapich2-2.3.7-intel-classic-19.1.2" CACHE PATH "")
 set(MPI_C_COMPILER       "${MPI_HOME}/bin/mpicc"   CACHE PATH "")
 set(MPI_CXX_COMPILER     "${MPI_HOME}/bin/mpicxx"  CACHE PATH "")
 set(MPI_Fortran_COMPILER "${MPI_HOME}/bin/mpif90" CACHE PATH "")
