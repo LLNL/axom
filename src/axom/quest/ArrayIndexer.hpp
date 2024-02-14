@@ -10,8 +10,19 @@
 #include "axom/core/StackArray.hpp"
 #include "axom/core/numerics/matvecops.hpp"
 
+#include <iostream>
+#include <sstream>
+
 namespace axom
 {
+struct ArrayStrideOrder
+{
+  static constexpr int NEITHER = 0;          // Neither row nor column
+  static constexpr int ROW = 1;              // Row-major
+  static constexpr int COLUMN = 2;           // Column-major
+  static constexpr int BOTH = ROW | COLUMN;  // Only for 1D arrays
+};
+
 /*!
   @brief Indexing into a multidimensional structured array.
 
@@ -30,9 +41,9 @@ public:
     @param [in] shape Shape of the array
     @param [in] order: c is column major; r is row major.
   */
-  ArrayIndexer(const axom::StackArray<T, DIM>& Shape, char order)
+  ArrayIndexer(const axom::StackArray<T, DIM>& shape, int order)
   {
-    initialize(Shape, order);
+    initializeShape(shape, order);
   }
 
   /*!
@@ -45,25 +56,43 @@ public:
   ArrayIndexer(const axom::StackArray<T, DIM>& shape,
                const axom::StackArray<std::uint16_t, DIM>& slowestDirs)
   {
-    initialize(shape, slowestDirs);
+    initializeShape(shape, slowestDirs);
   }
 
-  //!@brief Constructor for arbitrary-stride indexing.
+  /*!
+    @brief Constructor for arbitrary-stride indexing.
+
+    @param [i] strides Strides.  Must be unique when DIM > 1.
+      If not unique, use default constructor and initializeStrides().
+
+    @internal We could add the order preference to this constructor to
+    handle the degenerate case of non-unique strides.  But that would
+    clash with the more prevalent constructor taking the array's
+    shape.
+  */
   ArrayIndexer(const axom::StackArray<T, DIM>& strides) : m_strides(strides)
   {
-    initialize(strides);
+    initializeStrides(strides);
   }
+
+  /*!
+    @brief Default constructor
+
+    Object must be initialized before use.
+  */
+  ArrayIndexer() = default;
 
   /*!
     @brief Initialize for row- or column-major indexing.
     @param [in] shape Shape of the array
     @param [in] order: c is column major; r is row major.
   */
-  inline AXOM_HOST_DEVICE void initialize(const axom::StackArray<T, DIM>& shape,
-                                          char order)
+  inline AXOM_HOST_DEVICE void initializeShape(const axom::StackArray<T, DIM>& shape,
+                                               int order)
   {
-    SLIC_ASSERT(order == 'c' || order == 'r');
-    if(order == 'r')
+    SLIC_ASSERT(order == ArrayStrideOrder::COLUMN ||
+                order == ArrayStrideOrder::ROW);
+    if(order == ArrayStrideOrder::ROW)
     {
       for(int d = 0; d < DIM; ++d)
       {
@@ -87,7 +116,8 @@ public:
         m_strides[d] = m_strides[d + 1] * shape[d + 1];
       }
     }
-    SLIC_ASSERT((DIM == 1 && getOrder() == ('r' | 'c')) || (getOrder() == order));
+    SLIC_ASSERT((DIM == 1 && getStrideOrder() == ArrayStrideOrder::BOTH) ||
+                (getStrideOrder() == order));
   }
 
   /*!
@@ -97,7 +127,7 @@ public:
       slowestDirs[0] is the slowest direction and
       slowestDirs[DIM-1] is the fastest.
   */
-  inline AXOM_HOST_DEVICE void initialize(
+  inline AXOM_HOST_DEVICE void initializeShape(
     const axom::StackArray<T, DIM>& shape,
     const axom::StackArray<std::uint16_t, DIM>& slowestDirs)
   {
@@ -112,13 +142,57 @@ public:
     }
   }
 
-  //!@brief Initialize for arbitrary-stride indexing.
-  inline AXOM_HOST_DEVICE void initialize(const axom::StackArray<T, DIM>& strides)
+  /*!
+    @brief Initialize for arbitrary-stride indexing.
+
+    @param [i] strides Strides.  Must be unique when DIM > 1.
+      If not satisfied, you must use one of the other initializers.
+  */
+  inline AXOM_HOST_DEVICE void initializeStrides(
+    const axom::StackArray<T, DIM>& strides)
   {
+    if(DIM > 1 && !stridesAreUnique(strides))
+    {
+#if !defined(AXOM_DEVICE_CODE)
+      std::ostringstream os;
+      os << "(";
+      for(int d = 0; d < DIM - 1; ++d)
+      {
+        os << strides[d] << ",";
+      }
+      os << strides[DIM - 1] << ")";
+      std::cerr << "ERROR: ArrayIndexer: Non-unique strides " << os.str() << ".\n"
+                << "Likely, multi-dim array shape is 1 in some direction.\n"
+                << "Impossible to compute index ordering.\n"
+                << "Please use a different ArrayIndexer initializer.\n";
+#endif
+      utilities::processAbort();
+    }
+
+    // 2nd argument doesn't matter because strides are unique.
+    initializeStrides(strides, axom::ArrayStrideOrder::COLUMN);
+  }
+
+  /*!
+    @brief Initialize for arbitrary-stride indexing,
+    with ordering preference for non-unique strides.
+
+    @param [i] strides Strides.
+    @param [i] orderPref Ordering preference if strides
+      are non-unique.
+  */
+  inline AXOM_HOST_DEVICE void initializeStrides(
+    const axom::StackArray<T, DIM>& strides,
+    int orderPref)
+  {
+    SLIC_ASSERT(orderPref == axom::ArrayStrideOrder::COLUMN ||
+                orderPref == axom::ArrayStrideOrder::ROW);
+
     m_strides = strides;
     for(int d = 0; d < DIM; ++d)
     {
-      m_slowestDirs[d] = d;
+      m_slowestDirs[d] =
+        orderPref == axom::ArrayStrideOrder::COLUMN ? d : DIM - 1 - d;
     }
     for(int s = 0; s < DIM; ++s)
     {
@@ -135,7 +209,20 @@ public:
     }
   }
 
-  bool operator==(const ArrayIndexer& other) const
+  static AXOM_HOST_DEVICE bool stridesAreUnique(const axom::StackArray<T, DIM>& strides)
+  {
+    bool repeats = false;
+    for(int d = 0; d < DIM; ++d)
+    {
+      for(int e = 0; e < d; ++e)
+      {
+        repeats |= strides[d] == strides[e];
+      }
+    }
+    return !repeats;
+  }
+
+  inline AXOM_HOST_DEVICE bool operator==(const ArrayIndexer& other) const
   {
     return m_slowestDirs == other.m_slowestDirs && m_strides == other.m_strides;
   }
@@ -179,17 +266,18 @@ public:
   /*!
     @brief Get the stride order (row- or column-major, or something else).
 
-    @return 'r' or 'c' for row- or column major, '\0' for neither,
-    or if DIM == 1, the value of 'r' | 'c'.
+    @return 1 if row major, 2 if column major, 0 if neither
+       and, DIM == 1, 3 (satisfying both row and column ordering).
   */
-  inline AXOM_HOST_DEVICE char getOrder() const
+  inline AXOM_HOST_DEVICE int getStrideOrder() const
   {
-    char order = 'r' | 'c';
+    int ord = ArrayStrideOrder::BOTH;
     for(int d = 0; d < DIM - 1; ++d)
     {
-      order &= m_slowestDirs[d] < m_slowestDirs[d + 1] ? 'c' : 'r';
+      ord &= m_slowestDirs[d] < m_slowestDirs[d + 1] ? ArrayStrideOrder::COLUMN
+                                                     : ArrayStrideOrder::ROW;
     }
-    return order;
+    return ord;
   }
 
   //!@brief Convert multidimensional index to flat index.
@@ -210,6 +298,22 @@ public:
       flatIndex -= multiIndex[dir] * m_strides[dir];
     }
     return multiIndex;
+  }
+
+  friend std::ostream& operator<<(std::ostream& os, const ArrayIndexer& a)
+  {
+    os << "ArrayIndexer: strides=(" << a.m_strides[0];
+    for(int d = 1; d < DIM; ++d)
+    {
+      os << ',' << a.m_strides[d];
+    }
+    os << ") slowestDirs=(" << a.m_slowestDirs[0];
+    for(int d = 1; d < DIM; ++d)
+    {
+      os << ',' << a.m_slowestDirs[d];
+    }
+    os << ')';
+    return os;
   }
 };
 

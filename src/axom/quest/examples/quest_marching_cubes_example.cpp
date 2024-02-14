@@ -1100,7 +1100,7 @@ struct ContourTestBase
     {
       axom::StackArray<axom::IndexType, DIM> domShape;
       computationalMesh.domainLengths(d, domShape);
-      indexers[d].initialize(domShape, 'c');
+      indexers[d].initializeShape(domShape, int(axom::ArrayStrideOrder::COLUMN));
     }
 
     for(axom::IndexType contourCellNum = 0; contourCellNum < cellCount;
@@ -1145,8 +1145,8 @@ struct ContourTestBase
           ++errCount;
           SLIC_INFO_IF(
             params.isVerbose(),
-            axom::fmt::format("checkContourCellLimits: node {} at {} is not "
-                              "on parent cell boundary.",
+            axom::fmt::format("checkContourCellLimits: node {} at {} "
+                              "is not on parent cell boundary.",
                               cellNodeIds[nn],
                               nodeCoords));
         }
@@ -1154,8 +1154,8 @@ struct ContourTestBase
     }
 
     SLIC_INFO_IF(params.isVerbose(),
-                 axom::fmt::format("checkContourCellLimits: found {} nodes "
-                                   "not on parent cell boundary.",
+                 axom::fmt::format("checkContourCellLimits: found {} "
+                                   "nodes not on parent cell boundary.",
                                    errCount));
     return errCount;
   }
@@ -1179,9 +1179,12 @@ struct ContourTestBase
     /*
       Space to store function views and whether a computational cell
       contains the contour.  We set these up for all domains ahead
-      of time for accessing as needed later.
+      of time for accessing as needed later.  cellIndexers are for
+      converting between flat and multidim indices.
     */
     axom::Array<axom::ArrayView<const double, DIM, MemorySpace>> fcnViews(
+      domainCount);
+    axom::Array<axom::ArrayIndexer<axom::IndexType, DIM>> cellIndexers(
       domainCount);
     axom::Array<axom::Array<bool>> hasContours(domainCount);
     for(axom::IndexType domId = 0; domId < domainCount; ++domId)
@@ -1196,6 +1199,9 @@ struct ContourTestBase
 
       fcnViews[domId] =
         mvu.template getConstFieldView<double>(functionName(), false);
+      cellIndexers[domId].initializeShape(
+        mvu.getCellShape(),
+        axom::ArrayStrideOrder::COLUMN);
     }
 
     std::map<axom::IndexType, axom::IndexType> domainIdToContiguousId;
@@ -1234,12 +1240,13 @@ struct ContourTestBase
 
       const auto& fcnView = fcnViews[domId];
 
-      axom::ArrayIndexer<axom::IndexType, DIM> colMajor(domLengths, 'c');
+      const axom::ArrayIndexer<axom::IndexType, DIM>& cellIndexer =
+        cellIndexers[domId];
       const axom::IndexType cellCount = product(domLengths);
       for(axom::IndexType cellId = 0; cellId < cellCount; ++cellId)
       {
         axom::StackArray<axom::IndexType, DIM> cellIdx =
-          colMajor.toMultiIndex(cellId);
+          cellIndexer.toMultiIndex(cellId);
 
         // Compute min and max function value in the cell.
         double minFcnValue = std::numeric_limits<double>::max();
@@ -1248,6 +1255,7 @@ struct ContourTestBase
           (1 << DIM);  // Number of nodes in a cell.
         for(short int cornerId = 0; cornerId < cornerCount; ++cornerId)
         {
+          // Compute multidim index of current corner of parent cell.
           axom::StackArray<axom::IndexType, DIM> cornerIdx = cellIdx;
           for(int d = 0; d < DIM; ++d)
           {
