@@ -13,6 +13,23 @@
  ******************************************************************************
  */
 
+// Into typesSidre.h
+// splicer begin types.C_declarations
+#include <axom/sidre/interface/SidreTypes.h>
+// splicer end types.C_declarations
+
+// splicer begin C_declarations
+#if 0
+  #ifndef __cplusplus
+    #if defined(USE_64BIT_INDEXTYPE)
+typedef int64_t IndexType;
+    #else
+typedef int32_t IndexType;
+    #endif
+  #endif
+#endif
+// splicer end C_declarations
+
 // splicer begin C_definitions
 // equivalent to C_LOC
 // called from Fortran
