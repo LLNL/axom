@@ -42,7 +42,6 @@ int ProEReader::read()
   std::string junk;
   int id;
   int tet_nodes[NUM_NODES_PER_TET];
-  std::vector<bool> node_in_box;
 
   struct coordinate
   {
@@ -68,7 +67,7 @@ int ProEReader::read()
   ifs >> m_num_nodes >> m_num_tets;
 
   m_nodes.reserve(m_num_nodes * NUM_COMPS_PER_NODE);
-  node_in_box.resize(m_num_nodes);
+  slam::BitSet node_in_box(m_num_nodes);
 
   // Initialize nodes
   for(int i = 0; i < m_num_nodes; i++)
@@ -94,7 +93,7 @@ int ProEReader::read()
       {
         // Node IDs start at 1 instead of 0, adjust to 0 for indexing
         m_tets.push_back(tet_nodes[j] - 1);
-        node_in_box[tet_nodes[j] - 1] = true;
+        node_in_box.set(tet_nodes[j] - 1);
       }
     }
   }
@@ -149,7 +148,7 @@ void ProEReader::setInclusiveBoundingBox(BBox3D& box)
 }
 
 //------------------------------------------------------------------------------
-void ProEReader::compact_arrays(std::vector<bool>& retain_vertex, int elt_count)
+void ProEReader::compact_arrays(slam::BitSet& retain_vertex, int elt_count)
 {
   // lots of bookkeeping, ending with
   m_tets.resize(elt_count * NUM_NODES_PER_TET);

@@ -11,6 +11,7 @@
 #include "axom/core/Macros.hpp"
 #include "axom/mint/mesh/UnstructuredMesh.hpp"
 #include "axom/primal/geometry/BoundingBox.hpp"
+#include "axom/slam/BitSet.hpp"
 
 // C/C++ includes
 #include <string>  // for std::string
@@ -133,7 +134,7 @@ protected:
    * This method compacts the vertex array and resizes the vertex and the
    * element arrays to their minimum sizes.
    */
-  void compact_arrays(std::vector<bool>& retain_vertex, int elt_count);
+  void compact_arrays(slam::BitSet& retain_vertex, int elt_count);
 
 private:
   DISABLE_COPY_AND_ASSIGNMENT(ProEReader);
