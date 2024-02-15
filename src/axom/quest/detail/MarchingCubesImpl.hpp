@@ -12,6 +12,7 @@
 #include "conduit_blueprint.hpp"
 
 #include "axom/core/execution/execution_space.hpp"
+#include "axom/slic/interface/slic_macros.hpp"
 #include "axom/quest/ArrayIndexer.hpp"
 #include "axom/quest/MeshViewUtil.hpp"
 #include "axom/primal/geometry/Point.hpp"
@@ -45,6 +46,7 @@ class MarchingCubesImpl : public MarchingCubesSingleDomain::ImplBase
 public:
   using Point = axom::primal::Point<double, DIM>;
   using MIdx = axom::StackArray<axom::IndexType, DIM>;
+  using Indexer = axom::ArrayIndexer<axom::IndexType, DIM>;
   using FacetIdType = int;
   using LoopPolicy = typename execution_space<ExecSpace>::loop_policy;
   using ReducePolicy = typename execution_space<ExecSpace>::reduce_policy;
@@ -54,7 +56,6 @@ public:
 
   AXOM_HOST MarchingCubesImpl(int allocatorID)
     : m_allocatorID(allocatorID)
-    , m_caseIds(emptyShape(), m_allocatorID)
     , m_crossingParentIds(axom::StackArray<axom::IndexType, 1> {0}, m_allocatorID)
     , m_facetIncrs(axom::StackArray<axom::IndexType, 1> {0}, m_allocatorID)
     , m_firstFacetIds(axom::StackArray<axom::IndexType, 1> {0}, m_allocatorID)
@@ -80,8 +81,6 @@ public:
     SLIC_ASSERT(conduit::blueprint::mesh::topology::dims(dom.fetch_existing(
                   axom::fmt::format("topologies/{}", topologyName))) == DIM);
 
-    // clear();
-
     m_mvu = axom::quest::MeshViewUtil<DIM, MemorySpace>(dom, topologyName);
 
     m_bShape = m_mvu.getCellShape();
@@ -91,15 +90,11 @@ public:
       m_maskView = m_mvu.template getConstFieldView<int>(maskFieldName, false);
     }
 
-    /*
-      TODO: To get good cache performance, we should make m_caseIds
-      row-major if fcn is that way, and vice versa.  However, Array
-      only support column-major, so we're stuck with that for now.
-    */
-    // m_caseIds.resize(m_bShape, 0); // This unexpectedly fails.
-    m_caseIds =
-      axom::Array<std::uint16_t, DIM, MemorySpace>(m_bShape, m_allocatorID);
-    m_caseIds.fill(0);
+    // I would like to move this section to markCrossings() but it
+    // increases runtime to 10x on HIP and 1.3x on CUDA for some reason.
+    m_caseIdsFlat =
+      axom::Array<std::uint16_t, 1, MemorySpace>(m_mvu.getCellCount(),
+                                                 m_allocatorID);
   }
 
   /*!
@@ -122,7 +117,22 @@ public:
     Virtual methods cannot be templated, so this implementation
     delegates to an implementation templated on DIM.
   */
-  void markCrossings() override { markCrossings_dim(); }
+  void markCrossings() override
+  {
+    m_caseIdsFlat.fill(0);
+    Indexer fcnIndexer(m_fcnView.strides());
+    // Choose caseIds stride order to match function stride order.
+    m_caseIdsIndexer.initializeShape(m_bShape, fcnIndexer.slowestDirs());
+    m_caseIds = axom::ArrayView<std::uint16_t, DIM, MemorySpace>(
+      m_caseIdsFlat.data(),
+      m_bShape,
+      m_caseIdsIndexer.strides());
+    SLIC_ASSERT_MSG(Indexer(m_caseIds.strides()).getStrideOrder() ==
+                      fcnIndexer.getStrideOrder(),
+                    "Mismatched order is inefficient.");
+
+    markCrossings_dim();
+  }
 
   //!@brief Populate m_caseIds with crossing indices.
   template <int TDIM = DIM>
@@ -130,7 +140,8 @@ public:
   {
     MarkCrossings_Util mcu(m_caseIds, m_fcnView, m_maskView, m_contourVal);
 
-    auto order = axom::ArrayStrideOrder::ROW;
+    auto order = m_caseIdsIndexer.getStrideOrder();
+    // order ^= axom::ArrayStrideOrder::BOTH; // Pick wrong ordering to test behavior.
 #if defined(AXOM_USE_RAJA)
     RAJA::RangeSegment jRange(0, m_bShape[1]);
     RAJA::RangeSegment iRange(0, m_bShape[0]);
@@ -182,7 +193,8 @@ public:
   {
     MarkCrossings_Util mcu(m_caseIds, m_fcnView, m_maskView, m_contourVal);
 
-    auto order = axom::ArrayStrideOrder::COLUMN;
+    auto order = m_caseIdsIndexer.getStrideOrder();
+    // order ^= axom::ArrayStrideOrder::BOTH; // Pick wrong ordering to test behavior.
 #if defined(AXOM_USE_RAJA)
     RAJA::RangeSegment kRange(0, m_bShape[2]);
     RAJA::RangeSegment jRange(0, m_bShape[1]);
@@ -246,11 +258,11 @@ public:
     axom::ArrayView<const double, DIM, MemorySpace> fcnView;
     axom::ArrayView<const int, DIM, MemorySpace> maskView;
     double contourVal;
-    MarkCrossings_Util(axom::Array<std::uint16_t, DIM, MemorySpace>& caseIds,
+    MarkCrossings_Util(axom::ArrayView<std::uint16_t, DIM, MemorySpace>& caseIds,
                        axom::ArrayView<const double, DIM, MemorySpace>& fcnView_,
                        axom::ArrayView<const int, DIM, MemorySpace>& maskView_,
                        double contourVal_)
-      : caseIdsView(caseIds.view())
+      : caseIdsView(caseIds)
       , fcnView(fcnView_)
       , maskView(maskView_)
       , contourVal(contourVal_)
@@ -351,7 +363,7 @@ public:
   #endif
 #endif
     const axom::IndexType parentCellCount = m_caseIds.size();
-    auto caseIdsView = m_caseIds.view();
+    auto caseIdsView = m_caseIds;
 
     //
     // Initialize crossingFlags to 0 or 1, prefix-sum it, and count the
@@ -449,7 +461,7 @@ public:
     // Compute number of crossings in m_caseIds
     //
     const axom::IndexType parentCellCount = m_caseIds.size();
-    auto caseIdsView = m_caseIds.view();
+    auto caseIdsView = m_caseIds;
 #if defined(AXOM_USE_RAJA)
     RAJA::ReduceSum<ReducePolicy, axom::IndexType> vsum(0);
     RAJA::forall<LoopPolicy>(
@@ -550,7 +562,7 @@ public:
     const auto facetIncrsView = m_facetIncrs.view();
     const auto firstFacetIdsView = m_firstFacetIds.view();
     const auto crossingParentIdsView = m_crossingParentIds.view();
-    const auto caseIdsView = m_caseIds.view();
+    const auto caseIdsView = m_caseIds;
 
     // Internal contour mesh data to populate
     axom::ArrayView<axom::IndexType, 2> facetNodeIdsView = m_facetNodeIds;
@@ -559,7 +571,7 @@ public:
     const axom::IndexType facetIndexOffset = m_facetIndexOffset;
 
     ComputeContour_Util ccu(m_contourVal,
-                            m_caseIds.strides(),
+                            m_caseIdsIndexer,
                             m_fcnView,
                             m_coordsViews);
 
@@ -606,19 +618,17 @@ public:
   struct ComputeContour_Util
   {
     double contourVal;
-    MIdx bStrides;
     axom::ArrayIndexer<axom::IndexType, DIM> indexer;
     axom::ArrayView<const double, DIM, MemorySpace> fcnView;
     axom::StackArray<axom::ArrayView<const double, DIM, MemorySpace>, DIM> coordsViews;
     ComputeContour_Util(
       double contourVal_,
-      const MIdx& bStrides_,
+      const axom::ArrayIndexer<axom::IndexType, DIM>& parentIndexer_,
       const axom::ArrayView<const double, DIM, MemorySpace>& fcnView_,
       const axom::StackArray<axom::ArrayView<const double, DIM, MemorySpace>, DIM>
         coordsViews_)
       : contourVal(contourVal_)
-      , bStrides(bStrides_)
-      , indexer(bStrides_)
+      , indexer(parentIndexer_)
       , fcnView(fcnView_)
       , coordsViews(coordsViews_)
     { }
@@ -860,7 +870,7 @@ public:
   MarchingCubesImpl() { }
 
 private:
-  int m_allocatorID;
+  const int m_allocatorID;
 
   axom::quest::MeshViewUtil<DIM, MemorySpace> m_mvu;
   MIdx m_bShape;  //!< @brief Blueprint cell data shape.
@@ -874,7 +884,17 @@ private:
   axom::ArrayView<const int, DIM, MemorySpace> m_maskView;
 
   //!@brief Crossing case for each computational mesh cell.
-  axom::Array<std::uint16_t, DIM, MemorySpace> m_caseIds;
+  axom::Array<std::uint16_t, 1, MemorySpace> m_caseIdsFlat;
+  axom::ArrayView<std::uint16_t, DIM, MemorySpace> m_caseIds;
+  /*!
+    @brief Multi-dim indexer to control m_caseIdsFlat data ordering.
+
+    We want caseIds ordering to match m_fcnView, but Array
+    only supports column-major ordering currently.  To control
+    the order, we put caseIds in a 1D array and construct a
+    multidim view with the ordering we want.
+  */
+  axom::ArrayIndexer<axom::IndexType, DIM> m_caseIdsIndexer;
 
   //!@brief Number of parent cells crossing the contour surface.
   axom::IndexType m_crossingCount = 0;

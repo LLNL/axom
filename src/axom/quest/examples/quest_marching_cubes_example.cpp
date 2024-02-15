@@ -1095,12 +1095,16 @@ struct ContourTestBase
       domainIdToContiguousId[domainId] = n;
     }
 
+    // Indexers to transltate between flat and multidim indices.
     axom::Array<axom::ArrayIndexer<axom::IndexType, DIM>> indexers(domainCount);
     for(int d = 0; d < domainCount; ++d)
     {
       axom::StackArray<axom::IndexType, DIM> domShape;
       computationalMesh.domainLengths(d, domShape);
-      indexers[d].initializeShape(domShape, int(axom::ArrayStrideOrder::COLUMN));
+      indexers[d].initializeShape(
+        domShape,
+        axom::ArrayIndexer<axom::IndexType, DIM>(allCoordsViews[d][0].strides())
+          .slowestDirs());
     }
 
     for(axom::IndexType contourCellNum = 0; contourCellNum < cellCount;
@@ -1201,7 +1205,8 @@ struct ContourTestBase
         mvu.template getConstFieldView<double>(functionName(), false);
       cellIndexers[domId].initializeShape(
         mvu.getCellShape(),
-        axom::ArrayStrideOrder::COLUMN);
+        axom::ArrayIndexer<axom::IndexType, DIM>(fcnViews[domId].strides())
+          .slowestDirs());
     }
 
     std::map<axom::IndexType, axom::IndexType> domainIdToContiguousId;

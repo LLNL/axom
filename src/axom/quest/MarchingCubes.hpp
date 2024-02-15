@@ -172,7 +172,8 @@ public:
     @brief Put generated contour in a mint::UnstructuredMesh.
     @param mesh Output contour mesh
     @param cellIdField Name of field to store the array of
-      parent cells ids, numbered in column-major ordering.
+      parent cells ids, numbered in the row- or column-major
+      ordering of the nodal scalar function.
       If empty, the data is not provided.
     @param domainIdField Name of field to store the
       parent domain ids.  The type of this data is \c DomainIdType.
