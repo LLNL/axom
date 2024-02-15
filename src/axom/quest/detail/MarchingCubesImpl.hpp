@@ -130,22 +130,47 @@ public:
   {
     MarkCrossings_Util mcu(m_caseIds, m_fcnView, m_maskView, m_contourVal);
 
+    auto order = axom::ArrayStrideOrder::ROW;
 #if defined(AXOM_USE_RAJA)
     RAJA::RangeSegment jRange(0, m_bShape[1]);
     RAJA::RangeSegment iRange(0, m_bShape[0]);
     using EXEC_POL =
       typename axom::mint::internal::structured_exec<ExecSpace>::loop2d_policy;
-    RAJA::kernel<EXEC_POL>(
-      RAJA::make_tuple(iRange, jRange),
-      AXOM_LAMBDA(axom::IndexType i, axom::IndexType j) {
-        mcu.computeCaseId(i, j);
-      });
+    if(order & axom::ArrayStrideOrder::ROW)
+    {
+      RAJA::kernel<EXEC_POL>(
+        RAJA::make_tuple(iRange, jRange),
+        AXOM_LAMBDA(axom::IndexType i, axom::IndexType j) {
+          mcu.computeCaseId(i, j);
+        });
+    }
+    else
+    {
+      RAJA::kernel<EXEC_POL>(
+        RAJA::make_tuple(jRange, iRange),
+        AXOM_LAMBDA(axom::IndexType j, axom::IndexType i) {
+          mcu.computeCaseId(i, j);
+        });
+    }
 #else
-    for(int j = 0; j < m_bShape[1]; ++j)
+    if(order & axom::ArrayStrideOrder::ROW)
+    {
+      for(int j = 0; j < m_bShape[1]; ++j)
+      {
+        for(int i = 0; i < m_bShape[0]; ++i)
+        {
+          mcu.computeCaseId(i, j);
+        }
+      }
+    }
+    else
     {
       for(int i = 0; i < m_bShape[0]; ++i)
       {
-        mcu.computeCaseId(i, j);
+        for(int j = 0; j < m_bShape[1]; ++j)
+        {
+          mcu.computeCaseId(i, j);
+        }
       }
     }
 #endif
@@ -157,25 +182,53 @@ public:
   {
     MarkCrossings_Util mcu(m_caseIds, m_fcnView, m_maskView, m_contourVal);
 
+    auto order = axom::ArrayStrideOrder::COLUMN;
 #if defined(AXOM_USE_RAJA)
     RAJA::RangeSegment kRange(0, m_bShape[2]);
     RAJA::RangeSegment jRange(0, m_bShape[1]);
     RAJA::RangeSegment iRange(0, m_bShape[0]);
     using EXEC_POL =
       typename axom::mint::internal::structured_exec<ExecSpace>::loop3d_policy;
-    RAJA::kernel<EXEC_POL>(
-      RAJA::make_tuple(iRange, jRange, kRange),
-      AXOM_LAMBDA(axom::IndexType i, axom::IndexType j, axom::IndexType k) {
-        mcu.computeCaseId(i, j, k);
-      });
-#else
-    for(int k = 0; k < m_bShape[2]; ++k)
+    if(order & axom::ArrayStrideOrder::ROW)
     {
-      for(int j = 0; j < m_bShape[1]; ++j)
-      {
-        for(int i = 0; i < m_bShape[0]; ++i)
-        {
+      RAJA::kernel<EXEC_POL>(
+        RAJA::make_tuple(iRange, jRange, kRange),
+        AXOM_LAMBDA(axom::IndexType i, axom::IndexType j, axom::IndexType k) {
           mcu.computeCaseId(i, j, k);
+        });
+    }
+    else
+    {
+      RAJA::kernel<EXEC_POL>(
+        RAJA::make_tuple(kRange, jRange, iRange),
+        AXOM_LAMBDA(axom::IndexType k, axom::IndexType j, axom::IndexType i) {
+          mcu.computeCaseId(i, j, k);
+        });
+    }
+#else
+    if(order & axom::ArrayStrideOrder::ROW)
+    {
+      for(int k = 0; k < m_bShape[2]; ++k)
+      {
+        for(int j = 0; j < m_bShape[1]; ++j)
+        {
+          for(int i = 0; i < m_bShape[0]; ++i)
+          {
+            mcu.computeCaseId(i, j, k);
+          }
+        }
+      }
+    }
+    else
+    {
+      for(int i = 0; i < m_bShape[0]; ++i)
+      {
+        for(int j = 0; j < m_bShape[1]; ++j)
+        {
+          for(int k = 0; k < m_bShape[2]; ++k)
+          {
+            mcu.computeCaseId(i, j, k);
+          }
         }
       }
     }
