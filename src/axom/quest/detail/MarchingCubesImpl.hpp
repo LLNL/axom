@@ -743,8 +743,8 @@ public:
   // to put static 1D and 2D arrays on both host and device?  BTNG.
 
   template <int TDIM = DIM>
-  AXOM_HOST_DEVICE inline typename std::enable_if<TDIM == 2, int>::type
-  num_contour_cells(int iCase) const
+  static AXOM_HOST_DEVICE inline typename std::enable_if<TDIM == 2, int>::type
+  num_contour_cells(int iCase)
   {
 #define _MC_LOOKUP_NUM_SEGMENTS
 #include "marching_cubes_lookup.hpp"
@@ -754,8 +754,8 @@ public:
   }
 
   template <int TDIM = DIM>
-  AXOM_HOST_DEVICE inline typename std::enable_if<TDIM == 2, int>::type
-  cases_table(int iCase, int iEdge) const
+  static AXOM_HOST_DEVICE inline typename std::enable_if<TDIM == 2, int>::type
+  cases_table(int iCase, int iEdge)
   {
 #define _MC_LOOKUP_CASES2D
 #include "marching_cubes_lookup.hpp"
@@ -765,8 +765,8 @@ public:
   }
 
   template <int TDIM = DIM>
-  AXOM_HOST_DEVICE inline typename std::enable_if<TDIM == 3, int>::type
-  num_contour_cells(int iCase) const
+  static AXOM_HOST_DEVICE inline typename std::enable_if<TDIM == 3, int>::type
+  num_contour_cells(int iCase)
   {
 #define _MC_LOOKUP_NUM_TRIANGLES
 #include "marching_cubes_lookup.hpp"
@@ -776,8 +776,8 @@ public:
   }
 
   template <int TDIM = DIM>
-  AXOM_HOST_DEVICE inline typename std::enable_if<TDIM == 3, int>::type
-  cases_table(int iCase, int iEdge) const
+  static AXOM_HOST_DEVICE inline typename std::enable_if<TDIM == 3, int>::type
+  cases_table(int iCase, int iEdge)
   {
 #define _MC_LOOKUP_CASES3D
 #include "marching_cubes_lookup.hpp"
