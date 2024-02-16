@@ -1,4 +1,4 @@
-# Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
+# Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
 # Axom Project Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
@@ -17,7 +17,7 @@ spack:
   view:
     default:
       root: ../view
-      select: [llvm, cppcheck, doxygen, py-shroud, py-sphinx, python, ^python]
+      select: [llvm, cppcheck, doxygen, py-sphinx, python, ^python]
       projections:
         all: '{name}-{version}'
 

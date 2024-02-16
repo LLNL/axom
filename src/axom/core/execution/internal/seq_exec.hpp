@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -34,10 +34,15 @@ template <>
 struct execution_space<SEQ_EXEC>
 {
 #ifdef AXOM_USE_RAJA
+  #if RAJA_VERSION_MAJOR > 2022
+  using loop_policy = RAJA::seq_exec;
+  using reduce_policy = RAJA::seq_reduce;
+  using atomic_policy = RAJA::seq_atomic;
+  #else
   using loop_policy = RAJA::loop_exec;
-
   using reduce_policy = RAJA::loop_reduce;
   using atomic_policy = RAJA::loop_atomic;
+  #endif
 #else
   using loop_policy = void;
   using reduce_policy = void;

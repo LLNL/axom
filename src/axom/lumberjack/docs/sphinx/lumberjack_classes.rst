@@ -15,6 +15,7 @@ Combiners
 Handles Message combination and tests whether Message classes should be combined.
 
 * :ref:`Combiner <combiner_class_label>` - Abstract base class that all Combiners must inherit from.
+* :ref:`TextTagCombiner <texttagcombiner_class_label>` - Combines Message classes that have equal Text and Tag member variables.
 * :ref:`TextEqualityCombiner <textequalitycombiner_class_label>` - Combines Message classes that have equal Text member variables.
 
 

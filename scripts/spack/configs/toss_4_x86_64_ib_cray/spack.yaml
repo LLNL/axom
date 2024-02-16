@@ -1,4 +1,4 @@
-# Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
+# Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
 # Axom Project Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
@@ -352,3 +352,10 @@ spack:
       require: "@3.0.1~shared~tests~examples"
     umpire:
       require: "@2023.06.0~shared~examples"
+
+    py-shroud:
+      version: [0.13.0]
+      buildable: false
+      externals:
+      - spec: py-shroud@0.13.0
+        prefix: /collab/usr/gapps/shroud/public/toss_4_x86_64_ib_cray/shroud-0.13.0

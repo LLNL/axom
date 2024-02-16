@@ -1,4 +1,4 @@
-# Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
+# Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
 # other Axom Project Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
@@ -559,9 +559,7 @@ def build_devtools(builds_dir, timestamp):
     sys_type = get_system_type()
     project_file = "scripts/spack/devtools.json"
 
-    if "toss_3" in sys_type:
-        compiler_spec = "%gcc@8.1.0"
-    elif "toss_4" in sys_type:
+    if "toss_4" in sys_type:
         compiler_spec = "%gcc@10.3.1"
     elif "blueos" in sys_type:
         compiler_spec = "%gcc@8.3.1"
@@ -683,7 +681,7 @@ def get_platform():
 
 
 def get_supported_sys_types():
-    return ["blueos_3_ppc64le_ib_p9", "darwin-x86_64", "toss_3_x86_64_ib", "toss_4_x86_64_ib", "toss_4_x86_64_ib_cray"]
+    return ["blueos_3_ppc64le_ib_p9", "darwin-x86_64", "toss_4_x86_64_ib", "toss_4_x86_64_ib_cray"]
 
 def get_username():
     return getpass.getuser()

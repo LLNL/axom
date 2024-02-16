@@ -1,4 +1,4 @@
-.. ## Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
+.. ## Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
 .. ## other Axom Project Developers. See the top-level LICENSE file for details.
 .. ##
 .. ## SPDX-License-Identifier: (BSD-3-Clause)
@@ -87,6 +87,7 @@ The table below details which SLIC macros are collective:
 | | ``SLIC_INFO_IF``         | |                                                                          |
 | | ``SLIC_INFO_ROOT``       | |                                                                          |
 | | ``SLIC_INFO_ROOT_IF``    | |                                                                          |
+| | ``SLIC_INFO_TAGGED``     | |                                                                          |
 +----------------------------+----------------------------------------------------------------------------+
 | | ``SLIC_ERROR``           | | Collective by default.                                                   |
 | | ``SLIC_ERROR_IF``        | | Collective after calling ``slic::enableAbortOnError()``.                 |

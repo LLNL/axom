@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -279,7 +279,7 @@ public:
   IndexType getNumAttributes() const;
 
   /*!
-   * \brief Create a Attribute object with a default scalar value.
+   * \brief Create an Attribute object with a default scalar value.
    *
    *        The Attribute object is assigned a unique index when created and the
    *        Attribute object is owned by the DataStore object.
@@ -297,7 +297,7 @@ public:
   }
 
   /*!
-   * \brief Create a Attribute object with a default string value.
+   * \brief Create an Attribute object with a default string value.
    *
    *        The Attribute object is assigned a unique index when created and the
    *        Attribute object is owned by the DataStore object.
@@ -313,20 +313,14 @@ public:
     return new_attribute;
   }
 
-  /*!
-   * \brief Return true if DataStore has created attribute name; else false.
-   */
+  /// \brief Return true if DataStore has created attribute name, else false
   bool hasAttribute(const std::string& name) const;
 
-  /*!
-   * \brief Return true if DataStore has created attribute with index; else
-   * false.
-   */
+  /// \brief Return true if DataStore has created attribute with index, else false
   bool hasAttribute(IndexType idx) const;
 
   /*!
-   * \brief Remove Attribute from the DataStore and destroy it and
-   *        its data.
+   * \brief Remove Attribute from the DataStore and destroy it and its data.
    *
    * \note Destruction of an Attribute detaches it from all Views to
    *       which it is attached.
@@ -343,8 +337,7 @@ public:
   void destroyAttribute(IndexType idx);
 
   /*!
-   * \brief Remove Attribute from the DataStore and destroy it and
-   *        its data.
+   * \brief Remove Attribute from the DataStore and destroy it and its data.
    *
    * \note Destruction of an Attribute detaches it from all Views to
    *       which it is attached.
@@ -352,8 +345,7 @@ public:
   void destroyAttribute(Attribute* attr);
 
   /*!
-   * \brief Remove all Attributes from the DataStore and destroy them
-   *        and their data.
+   * \brief Remove all Attributes from the DataStore and destroy them and their data.
    *
    * \note Destruction of an Attribute detaches it from all Views to
    *       which it is attached.
@@ -399,9 +391,7 @@ public:
    */
   bool saveAttributeLayout(Node& node) const;
 
-  /*!
-   * \brief Create attributes from name/value pairs in node["attribute"].
-   */
+  /// \brief Create attributes from name/value pairs in node["attribute"].
   void loadAttributeLayout(Node& node);
 
   //@}
@@ -434,8 +424,7 @@ public:
 
   /*!
    * \brief Return next valid Attribute index in DataStore object after given
-   * index (i.e., smallest index over all Attribute indices larger than given
-   * one).
+   * index (i.e., smallest index over all Attribute indices larger than given one).
    *
    * sidre::InvalidIndex is returned if there is no valid index greater
    * than given one.
