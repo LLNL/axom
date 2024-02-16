@@ -589,8 +589,14 @@ axom::Array<IndexPair> findCandidatesImplicit(const HexMesh& insertMesh,
       totalCandidatePairs += count;
     });
 
-  // Generate offsets from the counts
+// Generate offsets from the counts
+// (Note: exclusive scan for offsets in candidate array
+// Intel oneAPI compiler segfaults with OpenMP RAJA scan)
+#ifdef __INTEL_LLVM_COMPILER
+  using exec_pol = typename axom::execution_space<axom::SEQ_EXEC>::loop_policy;
+#else
   using exec_pol = typename axom::execution_space<ExecSpace>::loop_policy;
+#endif
   RAJA::exclusive_scan<exec_pol>(
     RAJA::make_span(counts_v.data(), queryMesh.numHexes()),
     RAJA::make_span(offsets_v.data(), queryMesh.numHexes()),
