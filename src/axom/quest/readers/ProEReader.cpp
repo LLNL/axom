@@ -67,7 +67,6 @@ int ProEReader::read()
   ifs >> m_num_nodes >> m_num_tets;
 
   m_nodes.reserve(m_num_nodes * NUM_COMPS_PER_NODE);
-  slam::BitSet node_in_box(m_num_nodes);
 
   // Initialize nodes
   for(int i = 0; i < m_num_nodes; i++)
@@ -93,64 +92,60 @@ int ProEReader::read()
       {
         // Node IDs start at 1 instead of 0, adjust to 0 for indexing
         m_tets.push_back(tet_nodes[j] - 1);
-        node_in_box.set(tet_nodes[j] - 1);
       }
     }
   }
 
   ifs.close();
 
-  compact_arrays(node_in_box, tet_count);
+  compact_arrays(tet_count);
 
   return (0);
 }
 
 //------------------------------------------------------------------------------
-void ProEReader::setBoundingBox(BBox3D& box)
+void ProEReader::setTetPredFromBoundingBox(BBox3D& box, bool inclusive)
 {
   if(box.isValid())
   {
-    auto pred = [box](int tet_nodes[4],
-                      [[maybe_unused]] int id,
-                      std::vector<double>& nodes) {
-      bool retval = true;
-      for(int i = 0; i < ProEReader::NUM_NODES_PER_TET; ++i)
-      {
-        // Node IDs start at 1 instead of 0, adjust to 0 for indexing
-        Point3D p(&nodes[3 * (tet_nodes[i] - 1)], 3);
-        retval = retval && box.contains(p);
-      }
-      return retval;
-    };
-    setTetPred(pred);
+    if(!inclusive)
+    {
+      auto pred = [box](int tet_nodes[4],
+                        [[maybe_unused]] int id,
+                        std::vector<double>& nodes) {
+        bool retval = true;
+        for(int i = 0; i < ProEReader::NUM_NODES_PER_TET; ++i)
+        {
+          // Node IDs start at 1 instead of 0, adjust to 0 for indexing
+          Point3D p(&nodes[3 * (tet_nodes[i] - 1)], 3);
+          retval = retval && box.contains(p);
+        }
+        return retval;
+      };
+      setTetPred(pred);
+    }
+    else
+    {
+      auto pred = [box](int tet_nodes[4],
+                        [[maybe_unused]] int id,
+                        std::vector<double>& nodes) {
+        bool retval = false;
+        for(int i = 0; i < ProEReader::NUM_NODES_PER_TET; ++i)
+        {
+          // Node IDs start at 1 instead of 0, adjust to 0 for indexing
+          Point3D p(&nodes[3 * (tet_nodes[i] - 1)], 3);
+          retval = retval || box.contains(p);
+        }
+        return retval;
+      };
+      setTetPred(pred);
+    }
   }
 }
 
 //------------------------------------------------------------------------------
-void ProEReader::setInclusiveBoundingBox(BBox3D& box)
+void ProEReader::compact_arrays(int elt_count)
 {
-  if(box.isValid())
-  {
-    auto pred = [box](int tet_nodes[4],
-                      [[maybe_unused]] int id,
-                      std::vector<double>& nodes) {
-      bool retval = false;
-      for(int i = 0; i < ProEReader::NUM_NODES_PER_TET; ++i)
-      {
-        // Node IDs start at 1 instead of 0, adjust to 0 for indexing
-        Point3D p(&nodes[3 * (tet_nodes[i] - 1)], 3);
-        retval = retval || box.contains(p);
-      }
-      return retval;
-    };
-    setTetPred(pred);
-  }
-}
-
-//------------------------------------------------------------------------------
-void ProEReader::compact_arrays(slam::BitSet& retain_vertex, int elt_count)
-{
-  // lots of bookkeeping, ending with
   m_tets.resize(elt_count * NUM_NODES_PER_TET);
   m_num_tets = elt_count;
 }

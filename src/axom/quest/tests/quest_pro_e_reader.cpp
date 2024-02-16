@@ -141,7 +141,7 @@ TEST(quest_pro_e_reader, read_pro_e)
                 std::numeric_limits<double>::epsilon());
   }  // END for all nodes
 
-  // STEP 4: remove temporary Pro?E file
+  // STEP 4: remove temporary Pro/E file
   axom::utilities::filesystem::removeFile(filename);
 }
 
@@ -161,7 +161,7 @@ TEST(quest_pro_e_reader, read_pro_e_invbbox)
   axom::quest::ProEReader reader;
   // invalid bounding box is the same as no bounding box: keep everything
   axom::quest::ProEReader::BBox3D invbbox;
-  reader.setBoundingBox(invbbox);
+  reader.setTetPredFromBoundingBox(invbbox, false);
   reader.setFileName(filename);
   int status = reader.read();
   EXPECT_EQ(status, 0);
@@ -195,7 +195,7 @@ TEST(quest_pro_e_reader, read_pro_e_invbbox)
                 std::numeric_limits<double>::epsilon());
   }  // END for all nodes
 
-  // STEP 4: remove temporary Pro?E file
+  // STEP 4: remove temporary Pro/E file
   axom::utilities::filesystem::removeFile(filename);
 }
 
@@ -217,7 +217,7 @@ TEST(quest_pro_e_reader, read_pro_e_bbox_all)
   axom::quest::ProEReader::BBox3D bbox;
   bbox.addPoint(axom::quest::ProEReader::Point3D {-1.5, -0.5, -0.5});
   bbox.addPoint(axom::quest::ProEReader::Point3D {1.5, 1.5, 1.5});
-  reader.setBoundingBox(bbox);
+  reader.setTetPredFromBoundingBox(bbox, false);
   reader.setFileName(filename);
   int status = reader.read();
   EXPECT_EQ(status, 0);
@@ -251,7 +251,7 @@ TEST(quest_pro_e_reader, read_pro_e_bbox_all)
                 std::numeric_limits<double>::epsilon());
   }  // END for all nodes
 
-  // STEP 4: remove temporary Pro?E file
+  // STEP 4: remove temporary Pro/E file
   axom::utilities::filesystem::removeFile(filename);
 }
 
@@ -274,7 +274,7 @@ TEST(quest_pro_e_reader, read_pro_e_bbox_some)
   axom::quest::ProEReader::BBox3D bbox;
   bbox.addPoint(axom::quest::ProEReader::Point3D {-1.5, -0.5, -0.5});
   bbox.addPoint(axom::quest::ProEReader::Point3D {0, 1.5, 1.5});
-  reader.setBoundingBox(bbox);
+  reader.setTetPredFromBoundingBox(bbox, false);
   reader.setFileName(filename);
   int status = reader.read();
   EXPECT_EQ(status, 0);
@@ -308,7 +308,7 @@ TEST(quest_pro_e_reader, read_pro_e_bbox_some)
                 std::numeric_limits<double>::epsilon());
   }  // END for all nodes
 
-  // STEP 4: remove temporary Pro?E file
+  // STEP 4: remove temporary Pro/E file
   axom::utilities::filesystem::removeFile(filename);
 }
 
@@ -331,7 +331,7 @@ TEST(quest_pro_e_reader, read_pro_e_bbox_some_incl)
   axom::quest::ProEReader::BBox3D bbox;
   bbox.addPoint(axom::quest::ProEReader::Point3D {-1.5, -0.5, -0.5});
   bbox.addPoint(axom::quest::ProEReader::Point3D {0, 1.5, 1.5});
-  reader.setInclusiveBoundingBox(bbox);
+  reader.setTetPredFromBoundingBox(bbox);
   reader.setFileName(filename);
   int status = reader.read();
   EXPECT_EQ(status, 0);
@@ -365,7 +365,7 @@ TEST(quest_pro_e_reader, read_pro_e_bbox_some_incl)
                 std::numeric_limits<double>::epsilon());
   }  // END for all nodes
 
-  // STEP 4: remove temporary Pro?E file
+  // STEP 4: remove temporary Pro/E file
   axom::utilities::filesystem::removeFile(filename);
 }
 
@@ -559,7 +559,7 @@ TEST(quest_pro_e_reader, cup_pro_e_some)
   axom::quest::ProEReader::BBox3D bbox;
   bbox.addPoint(axom::quest::ProEReader::Point3D {-30, -160, -200});
   bbox.addPoint(axom::quest::ProEReader::Point3D {90, 160, -35});
-  reader.setBoundingBox(bbox);
+  reader.setTetPredFromBoundingBox(bbox, false);
   int status = reader.read();
   EXPECT_EQ(status, 0);
 
@@ -594,7 +594,7 @@ TEST(quest_pro_e_reader, cup_pro_e_some_incl)
   axom::quest::ProEReader::BBox3D bbox;
   bbox.addPoint(axom::quest::ProEReader::Point3D {-30, -160, -200});
   bbox.addPoint(axom::quest::ProEReader::Point3D {90, 160, -35});
-  reader.setInclusiveBoundingBox(bbox);
+  reader.setTetPredFromBoundingBox(bbox);
   int status = reader.read();
   EXPECT_EQ(status, 0);
 

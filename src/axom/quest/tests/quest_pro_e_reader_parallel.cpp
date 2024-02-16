@@ -149,7 +149,7 @@ TEST(quest_pro_e_reader_parallel, read_file_bbox)
   axom::quest::ProEReader::BBox3D bbox;
   bbox.addPoint(axom::quest::ProEReader::Point3D {-1.1, -0.1, -0.1});
   bbox.addPoint(axom::quest::ProEReader::Point3D {1.1, 1.1, 1.1});
-  reader.setBoundingBox(bbox);
+  reader.setTetPredFromBoundingBox(bbox, false);
   int status = reader.read();
   EXPECT_EQ(status, 0);
 
@@ -216,7 +216,7 @@ TEST(quest_pro_e_reader_parallel, read_file_bbox_incl)
   axom::quest::ProEReader::BBox3D bbox;
   bbox.addPoint(axom::quest::ProEReader::Point3D {-1.1, -0.1, -0.1});
   bbox.addPoint(axom::quest::ProEReader::Point3D {1.1, 1.1, 1.1});
-  reader.setInclusiveBoundingBox(bbox);
+  reader.setTetPredFromBoundingBox(bbox);
   int status = reader.read();
   EXPECT_EQ(status, 0);
 

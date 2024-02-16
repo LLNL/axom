@@ -11,7 +11,6 @@
 #include "axom/core/Macros.hpp"
 #include "axom/mint/mesh/UnstructuredMesh.hpp"
 #include "axom/primal/geometry/BoundingBox.hpp"
-#include "axom/slam/BitSet.hpp"
 
 // C/C++ includes
 #include <string>  // for std::string
@@ -29,6 +28,25 @@ namespace quest
  *
  * Pro/Engineer (also known as Creo) is a modeling application.
  *
+ * To read an ASCII Pro/E tet file,
+ *   - instantiate a ProEReader,
+ *   - set the file name,
+ *   - optionally set a tetrahedron predicate to specify a subset of the mesh,
+ *   - call \a read(),
+ *   - optionally, query the number of nodes or tets,
+ *   - retrieve the mesh with \a getMesh().
+ *
+ * The tetrahedron predicate is optional.  If none is specified using
+ * either \a setTetPredFromBoundingBox or \a setTetPred, the reader
+ * retains all tets.  In any case, the reader retains all nodes in the
+ * Pro/E file, even those not referenced by any tets.
+ *
+ * The tetrahedron predicate is intended to save memory by retaining tets
+ * for which the predicate returns true and discarding all others.  A code
+ * can use the convenience function \a setTetPredFromBoundingBox() to
+ * discard all tets outside a bounding box, or specify an arbitrary
+ * function (\a TetPred) for more complicated decisions.
+ *
  * \note Pro/E node IDs start at 1. ProEReader adjusts and stores
  *  node IDs to start at 0 for indexing.
  */
@@ -39,6 +57,13 @@ public:
   constexpr static int NUM_COMPS_PER_NODE = 3;
   using Point3D = primal::Point<double, NUM_COMPS_PER_NODE>;
   using BBox3D = primal::BoundingBox<double, 3>;
+  /*! \brief Specify tets to keep.
+    *
+    * - First argument: Pro/E node IDs for the current tet (1-based)
+    * - Second argument: Pro/E tet ID for the current tet (1-based)
+    * - Third argument: The node locations, stored interleaved
+    *   (x1, y1, z1, x2, y2, z2, ... )
+    */
   using TetPred = std::function<bool(int[4], int, std::vector<double>&)>;
 
 public:
@@ -82,31 +107,27 @@ public:
    */
   virtual int read();
 
+  /// \name Set tetrahedron predicate to read mesh subset
+  /// @{
   /*!
-   * \brief Sets the bounding box to include nodes.
-   * 
-   * When reading in ProE tets, include only those tets that are fully
-   * contained in the bounding box.  If the box is left unset, or if set
-   * to an invalid box, all tets are included.
-   */
-  virtual void setBoundingBox(BBox3D& box);
-
-  /*!
-   * \brief Sets the bounding box to include nodes.
-   * 
-   * When reading in ProE tets, include only those tets that have at least 
-   * one node in the bounding box.  If the box is left unset, or if set
-   * to an invalid box, all tets are included.
-   */
-  virtual void setInclusiveBoundingBox(BBox3D& box);
-
-  /*!
-   * \brief Specifies a test to retain a tetrahedron.
-   * 
-   * When reading in ProE tets, include only those tets for which p returns
-   * true.
+   * The reader calls the \a TetPred \a p after reading each tet,
+   * retaining tets where p returns true and discarding the rest.
+   * If a TetPred is not set, the reader retains all tets.
    */
   virtual void setTetPred(const TetPred& p) { m_tetPredicate = p; }
+
+  /*!
+   * Convenience function to set a \a TetPred from a bounding box.
+   * 
+   * \param box The TetPred will keep all tets with all four nodes in the
+   *        box.  If the box is invalid, no TetPred is constructed, so all
+   *        tets are retained.
+   * \param inclusive If true (the default), the TetPred will keep all tets
+   *        with at least one node in the box.  If false, the TetPred will
+   *        discard any tet with at least one node outside the box.
+   */
+  virtual void setTetPredFromBoundingBox(BBox3D& box, bool inclusive = true);
+  /// @}
 
   /*!
    * \brief Stores the Pro/E data in the supplied unstructured mesh object.
@@ -128,13 +149,12 @@ protected:
 
   /*!
    * \brief Compact internal mesh storage arrays
-   * \param [in] retain_vertex Flag of all vertices to retain after compaction
    * \param [in] elt_count Number of elements stored in array
    * 
    * This method compacts the vertex array and resizes the vertex and the
    * element arrays to their minimum sizes.
    */
-  void compact_arrays(slam::BitSet& retain_vertex, int elt_count);
+  void compact_arrays(int elt_count);
 
 private:
   DISABLE_COPY_AND_ASSIGNMENT(ProEReader);
