@@ -375,6 +375,9 @@ template <typename ExecSpace>
 axom::Array<IndexPair> findCandidatesBVH(const HexMesh& insertMesh,
                                          const HexMesh& queryMesh)
 {
+  axom::utilities::Timer timer;
+  timer.start();
+
   SLIC_INFO("Running BVH candidates algorithm in execution Space: "
             << axom::execution_space<ExecSpace>::name());
 
@@ -418,10 +421,7 @@ axom::Array<IndexPair> findCandidatesBVH(const HexMesh& insertMesh,
     on_device ? BBoxArray(query_bbox_h, kernel_allocator) : BBoxArray();
   auto query_bbox_v = on_device ? query_bbox_d.view() : query_bbox_h.view();
 
-  axom::utilities::Timer timer;
-
   // Initialize a BVH tree over the insert mesh bounding boxes
-  timer.start();
   axom::spin::BVH<3, ExecSpace, double> bvh;
   bvh.setAllocatorID(kernel_allocator);
   bvh.initialize(insert_bbox_v, insert_bbox_v.size());
@@ -489,6 +489,9 @@ axom::Array<IndexPair> findCandidatesImplicit(const HexMesh& insertMesh,
                                               const HexMesh& queryMesh,
                                               int resolution)
 {
+  axom::utilities::Timer timer;
+  timer.start();
+
   axom::Array<IndexPair> candidatePairs;
 
   SLIC_INFO("Running Implicit Grid candidates algorithm in execution Space: "
@@ -535,9 +538,6 @@ axom::Array<IndexPair> findCandidatesImplicit(const HexMesh& insertMesh,
     on_device ? BBoxArray(query_bbox_h, kernel_allocator) : BBoxArray();
   auto query_bbox_v = on_device ? query_bbox_d.view() : query_bbox_h.view();
 
-  axom::utilities::Timer timer;
-  timer.start();
-
   // If given resolution is less than one, use the cube root of the
   // number of hexes
   if(resolution < 1)
@@ -560,17 +560,18 @@ axom::Array<IndexPair> findCandidatesImplicit(const HexMesh& insertMesh,
   timer.start();
   IndexArray offsets_d(query_bbox_v.size(), query_bbox_v.size(), kernel_allocator);
   IndexArray counts_d(query_bbox_v.size(), query_bbox_v.size(), kernel_allocator);
-  IndexArray candidates_d(0, 0, kernel_allocator);
 
   auto offsets_v = offsets_d.view();
   auto counts_v = counts_d.view();
 
-  // First pass: get number of bounding box candidates for each query bounding box
-  // Logic here mirrors the BVH two-pass query
+  // Object to query the candidates
   const auto grid_device = gridIndex.getQueryObject();
+
   using reduce_pol = typename axom::execution_space<ExecSpace>::reduce_policy;
   RAJA::ReduceSum<reduce_pol, int> totalCandidatePairs(0);
 
+  // First pass: get number of bounding box candidates for each query bounding box
+  // Logic here mirrors the BVH two-pass query
   axom::for_all<ExecSpace>(
     queryMesh.numHexes(),
     AXOM_LAMBDA(int icell) {
@@ -602,14 +603,7 @@ axom::Array<IndexPair> findCandidatesImplicit(const HexMesh& insertMesh,
     RAJA::make_span(offsets_v.data(), queryMesh.numHexes()),
     RAJA::operators::plus<int> {});
 
-  timer.stop();
-  SLIC_INFO(axom::fmt::format(
-    "1: Counting candidate bounding boxes took {:4.3} seconds.",
-    timer.elapsedTimeInSec()));
-
-  // Initialize candidatePairs to return
-  timer.start();
-
+  // Initialize candidatePairs to return.
   // Allocate arrays for candidate pairs
   IndexArray firstPair_d(totalCandidatePairs.get(),
                          totalCandidatePairs.get(),
@@ -643,7 +637,7 @@ axom::Array<IndexPair> findCandidatesImplicit(const HexMesh& insertMesh,
   timer.stop();
 
   SLIC_INFO(axom::fmt::format(
-    "2: Initializing candidate pairs on device took {:4.3} seconds.",
+    "1: Querying candidate bounding boxes took {:4.3} seconds.",
     timer.elapsedTimeInSec()));
 
   // copy results back to host and into return vector
@@ -664,9 +658,9 @@ axom::Array<IndexPair> findCandidatesImplicit(const HexMesh& insertMesh,
 
   timer.stop();
 
-  SLIC_INFO(
-    axom::fmt::format("3: Moving candidate pairs to host took {:4.3} seconds.",
-                      timer.elapsedTimeInSec()));
+  SLIC_INFO(axom::fmt::format(
+    "2: Initializing candidate pairs on host took {:4.3} seconds.",
+    timer.elapsedTimeInSec()));
 
   SLIC_INFO(axom::fmt::format(axom::utilities::locale(),
                               R"(Stats for query
