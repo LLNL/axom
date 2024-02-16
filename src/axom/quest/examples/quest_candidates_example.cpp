@@ -51,15 +51,16 @@ using seq_exec = axom::SEQ_EXEC;
 
 using UMesh = axom::mint::UnstructuredMesh<axom::mint::SINGLE_SHAPE>;
 using IndexPair = std::pair<axom::IndexType, axom::IndexType>;
+using RuntimePolicy = axom::runtime_policy::Policy;
 
 // clang-format off
-#if defined(AXOM_USE_OPENMP)
+#if defined(AXOM_RUNTIME_POLICY_USE_OPENMP)
   using omp_exec = axom::OMP_EXEC;
 #else
   using omp_exec = seq_exec;
 #endif
 
-#if defined(AXOM_USE_CUDA)
+#if defined(AXOM_RUNTIME_POLICY_USE_CUDA)
   constexpr int CUDA_BLK_SZ = 256;
   using cuda_exec = axom::CUDA_EXEC<CUDA_BLK_SZ>;
 #else
@@ -104,25 +105,17 @@ struct BasicLogger
 //-----------------------------------------------------------------------------
 /// Struct to help with parsing and storing command line args
 //-----------------------------------------------------------------------------
-enum class RuntimePolicy
-{
-  raja_seq = 1,
-  raja_omp = 2,
-  raja_cuda = 3,
-  raja_hip = 4
-};
 
 struct Input
 {
   static const std::set<std::string> s_validMethods;
-  static const std::map<std::string, RuntimePolicy> s_validPolicies;
 
   std::string mesh_file_first {""};
   std::string mesh_file_second {""};
   std::string method {"bvh"};
   int resolution {0};
   bool verboseOutput {false};
-  RuntimePolicy policy {RuntimePolicy::raja_seq};
+  RuntimePolicy policy {RuntimePolicy::seq};
 
   void parse(int argc, char** argv, axom::CLI::App& app);
   bool isVerbose() const { return verboseOutput; }
@@ -157,19 +150,20 @@ void Input::parse(int argc, char** argv, axom::CLI::App& app)
   app.add_option("-p, --policy", policy)
     ->description(
       "Execution policy."
-      "\nSet to 'raja_seq' or 1 to use the RAJA sequential policy."
-#ifdef AXOM_USE_OPENMP
-      "\nSet to 'raja_omp' or 2 to use the RAJA openmp policy."
+      "\nSet to 'seq' or 0 to use the RAJA sequential policy."
+#ifdef AXOM_RUNTIME_POLICY_USE_OPENMP
+      "\nSet to 'omp' or 1 to use the RAJA openmp policy."
 #endif
-#ifdef AXOM_USE_CUDA
-      "\nSet to 'raja_cuda' or 3 to use the RAJA cuda policy."
+#ifdef AXOM_RUNTIME_POLICY_USE_CUDA
+      "\nSet to 'cuda' or 2 to use the RAJA cuda policy."
 #endif
-#ifdef AXOM_USE_HIP
-      "\nSet to 'raja_hip' or 4 to use the RAJA hip policy."
+#ifdef AXOM_RUNTIME_POLICY_USE_HIP
+      "\nSet to 'hip' or 3 to use the RAJA hip policy."
 #endif
       )
     ->capture_default_str()
-    ->transform(axom::CLI::CheckedTransformer(Input::s_validPolicies));
+    ->transform(
+      axom::CLI::CheckedTransformer(axom::runtime_policy::s_nameToPolicy));
 
   app
     .add_option(
@@ -201,27 +195,26 @@ void Input::parse(int argc, char** argv, axom::CLI::App& app)
     verboseOutput,
     method == "bvh" ? "Bounding Volume Hierarchy (BVH)" : "Implicit Grid",
     method == "bvh" ? "Not Applicable" : std::to_string(resolution),
-    policy == RuntimePolicy::raja_omp ? "raja_omp"
-                                      : (policy == RuntimePolicy::raja_cuda)
-        ? "raja_cuda"
-        : (policy == RuntimePolicy::raja_hip) ? "raja_hip" : "raja_seq"));
+    policy ==
+#ifdef AXOM_RUNTIME_POLICY_USE_OPENMP
+        RuntimePolicy::omp
+      ? "omp"
+      : policy ==
+#endif
+#ifdef AXOM_RUNTIME_POLICY_USE_CUDA
+          RuntimePolicy::cuda
+        ? "cuda"
+        : policy ==
+#endif
+#ifdef AXOM_RUNTIME_POLICY_USE_HIP
+            RuntimePolicy::hip
+          ? "hip"
+          : policy ==
+#endif
+              RuntimePolicy::seq
+            ? "seq"
+            : "policy not valid"));
 }
-
-const std::map<std::string, RuntimePolicy> Input::s_validPolicies(
-  {{"raja_seq", RuntimePolicy::raja_seq}
-#ifdef AXOM_USE_OPENMP
-   ,
-   {"raja_omp", RuntimePolicy::raja_omp}
-#endif
-#ifdef AXOM_USE_CUDA
-   ,
-   {"raja_cuda", RuntimePolicy::raja_cuda}
-#endif
-#ifdef AXOM_USE_HIP
-   ,
-   {"raja_hip", RuntimePolicy::raja_hip}
-#endif
-  });
 
 const std::set<std::string> Input::s_validMethods({
   "bvh",
@@ -729,22 +722,22 @@ int main(int argc, char** argv)
   {
     switch(params.policy)
     {
-    case RuntimePolicy::raja_omp:
-#ifdef AXOM_USE_OPENMP
+#ifdef AXOM_RUNTIME_POLICY_USE_OPENMP
+    case RuntimePolicy::omp:
       candidatePairs = findCandidatesBVH<omp_exec>(insert_mesh, query_mesh);
-#endif
       break;
-    case RuntimePolicy::raja_cuda:
-#ifdef AXOM_USE_CUDA
+#endif
+#ifdef AXOM_RUNTIME_POLICY_USE_CUDA
+    case RuntimePolicy::cuda:
       candidatePairs = findCandidatesBVH<cuda_exec>(insert_mesh, query_mesh);
-#endif
       break;
-    case RuntimePolicy::raja_hip:
-#ifdef AXOM_USE_HIP
+#endif
+#ifdef AXOM_RUNTIME_POLICY_USE_HIP
+    case RuntimePolicy::hip:
       candidatePairs = findCandidatesBVH<hip_exec>(insert_mesh, query_mesh);
-#endif
       break;
-    default:  // RuntimePolicy::raja_seq
+#endif
+    default:  // RuntimePolicy::seq
       candidatePairs = findCandidatesBVH<seq_exec>(insert_mesh, query_mesh);
       break;
     }
@@ -754,28 +747,28 @@ int main(int argc, char** argv)
   {
     switch(params.policy)
     {
-    case RuntimePolicy::raja_omp:
-#ifdef AXOM_USE_OPENMP
+#ifdef AXOM_RUNTIME_POLICY_USE_OPENMP
+    case RuntimePolicy::omp:
       candidatePairs = findCandidatesImplicit<omp_exec>(insert_mesh,
                                                         query_mesh,
                                                         params.resolution);
-#endif
       break;
-    case RuntimePolicy::raja_cuda:
-#ifdef AXOM_USE_CUDA
+#endif
+#ifdef AXOM_RUNTIME_POLICY_USE_CUDA
+    case RuntimePolicy::cuda:
       candidatePairs = findCandidatesImplicit<cuda_exec>(insert_mesh,
                                                          query_mesh,
                                                          params.resolution);
-#endif
       break;
-    case RuntimePolicy::raja_hip:
-#ifdef AXOM_USE_HIP
+#endif
+#ifdef AXOM_RUNTIME_POLICY_USE_HIP
+    case RuntimePolicy::hip:
       candidatePairs = findCandidatesImplicit<hip_exec>(insert_mesh,
                                                         query_mesh,
                                                         params.resolution);
-#endif
       break;
-    default:  // RuntimePolicy::raja_seq
+#endif
+    default:  // RuntimePolicy::seq
       candidatePairs = findCandidatesImplicit<seq_exec>(insert_mesh,
                                                         query_mesh,
                                                         params.resolution);
