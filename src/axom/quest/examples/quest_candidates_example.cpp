@@ -429,147 +429,45 @@ axom::Array<IndexPair> findCandidatesBVH(const HexMesh& insertMesh,
   SLIC_INFO(axom::fmt::format("0: Initializing BVH took {:4.3} seconds.",
                               timer.elapsedTimeInSec()));
 
-  // Initialize candidatePairs to return
+  // Search for candidate bounding boxes of hexes to query;
   timer.start();
-
-  // Create a traverser object from the BVH
-  const auto bvh_device = bvh.getTraverser();
-
-  using reduce_pol = typename axom::execution_space<ExecSpace>::reduce_policy;
-  RAJA::ReduceSum<reduce_pol, int> totalCandidatePairs(0);
-
-  // Lambda to check bounding boxes for intersection
-  auto bbIsect = [] AXOM_HOST_DEVICE(
-                   const HexMesh::BoundingBox& queryBbox,
-                   const HexMesh::BoundingBox& insertBbox) -> bool {
-    return queryBbox.intersectsWith(insertBbox);
-  };
-
-  // Allocate arrays for offsets and counts
   IndexArray offsets_d(query_bbox_v.size(), query_bbox_v.size(), kernel_allocator);
   IndexArray counts_d(query_bbox_v.size(), query_bbox_v.size(), kernel_allocator);
+  IndexArray candidates_d(0, 0, kernel_allocator);
+
   auto offsets_v = offsets_d.view();
   auto counts_v = counts_d.view();
-
-  // First pass: get number of bounding box collisions for each surface element
-  axom::for_all<ExecSpace>(
-    query_bbox_v.size(),
-    AXOM_LAMBDA(axom::IndexType icell) {
-      axom::IndexType count = 0;
-
-      // Define a function that is called on every leaf node reached during
-      // traversal. The function below simply counts the number of candidate
-      // collisions with the given query object.
-      auto countCandidates = [&](std::int32_t currentNode,
-                                 const std::int32_t* leafNodes) {
-        AXOM_UNUSED_VAR(leafNodes);
-        if(currentNode > icell)
-        {
-          count++;
-        }
-      };
-
-      // Call traverse_tree() to run the counting query.
-      bvh_device.traverse_tree(insert_bbox_v[icell], countCandidates, bbIsect);
-
-      // Afterwards, we can store the number of collisions for each surface
-      // element, as well as an overall count of intersections.
-      counts_v[icell] = count;
-      totalCandidatePairs += count;
-    });
-
-  // Generate offsets
-  using exec_pol = typename axom::execution_space<ExecSpace>::loop_policy;
-  RAJA::exclusive_scan<exec_pol>(
-    RAJA::make_span(counts_v.data(), queryMesh.numHexes()),
-    RAJA::make_span(offsets_v.data(), queryMesh.numHexes()),
-    RAJA::operators::plus<int> {});
+  bvh.findBoundingBoxes(offsets_v,
+                        counts_v,
+                        candidates_d,
+                        query_bbox_v.size(),
+                        query_bbox_v);
 
   timer.stop();
   SLIC_INFO(axom::fmt::format(
-    "1: Counting candidate bounding boxes took {:4.3} seconds.",
+    "1: Querying candidate bounding boxes took {:4.3} seconds.",
     timer.elapsedTimeInSec()));
 
   // Initialize candidatePairs to return
   timer.start();
 
-  // Allocate arrays for candidate pairs
-  IndexArray firstPair_d(totalCandidatePairs.get(),
-                         totalCandidatePairs.get(),
-                         kernel_allocator);
-  IndexArray secondPair_d(totalCandidatePairs.get(),
-                          totalCandidatePairs.get(),
-                          kernel_allocator);
-  auto first_pair_v = firstPair_d.view();
-  auto second_pair_v = secondPair_d.view();
+  IndexArray offsets_h(offsets_d, host_allocator);
+  IndexArray counts_h(counts_d, host_allocator);
+  IndexArray candidates_h(candidates_d, host_allocator);
 
-  // Second pass: fill candidates array pairs on device
-  axom::for_all<ExecSpace>(
-    query_bbox_v.size(),
-    AXOM_LAMBDA(axom::IndexType icell) {
-      axom::IndexType offset = offsets_v[icell];
-
-      // Store the intersection candidate
-      auto fillCandidates = [&](std::int32_t currentNode,
-                                const std::int32_t* leafs) {
-        if(currentNode > icell)
-        {
-          first_pair_v[offset] = icell;
-          second_pair_v[offset] = leafs[currentNode];
-          offset++;
-        }
-      };
-
-      // Call traverse_tree() a second time to run the counting query.
-      bvh_device.traverse_tree(query_bbox_v[icell], fillCandidates, bbIsect);
-    });
-
-  timer.stop();
-  SLIC_INFO(axom::fmt::format(
-    "2: Initializing candidate pairs on device took {:4.3} seconds.",
-    timer.elapsedTimeInSec()));
-
-  // copy results back to host and into return vector
-  timer.start();
-
-  IndexArray candidates_h[2] = {
-    on_device ? IndexArray(firstPair_d, host_allocator) : IndexArray(),
-    on_device ? IndexArray(secondPair_d, host_allocator) : IndexArray()};
-
-  auto candidate1_h_v = on_device ? candidates_h[0].view() : firstPair_d.view();
-  auto candidate2_h_v = on_device ? candidates_h[1].view() : secondPair_d.view();
-
-  for(int idx = 0; idx < totalCandidatePairs; ++idx)
+  for(int i = 0; i < queryMesh.numHexes(); i++)
   {
-    candidatePairs.emplace_back(
-      std::make_pair(candidate1_h_v[idx], candidate2_h_v[idx]));
+    for(int j = 0; j < counts_h[i]; j++)
+    {
+      candidatePairs.emplace_back(
+        std::make_pair(i, candidates_h[offsets_h[i] + j]));
+    }
   }
-
   timer.stop();
 
-  SLIC_INFO(
-    axom::fmt::format("3: Moving candidate pairs to host took {:4.3} seconds.",
-                      timer.elapsedTimeInSec()));
-
-  // timer.start();
-
-  // IndexArray offsets_h(offsets_d, host_allocator);
-  // IndexArray counts_h(counts_d, host_allocator);
-  // IndexArray candidates_h(candidates_d, host_allocator);
-
-  // for(int i = 0; i < queryMesh.numHexes(); i++)
-  // {
-  //   for(int j = 0; j < counts_h[i]; j++)
-  //   {
-  //     candidatePairs.emplace_back(
-  //       std::make_pair(i, candidates_h[offsets_h[i] + j]));
-  //   }
-  // }
-  // timer.stop();
-
-  // SLIC_INFO(axom::fmt::format(
-  //   "2: Initializing candidate pairs on host took {:4.3} seconds.",
-  //   timer.elapsedTimeInSec()));
+  SLIC_INFO(axom::fmt::format(
+    "2: Initializing candidate pairs on host took {:4.3} seconds.",
+    timer.elapsedTimeInSec()));
 
   SLIC_INFO(axom::fmt::format(axom::utilities::locale(),
                               R"(Stats for query
@@ -581,7 +479,7 @@ axom::Array<IndexPair> findCandidatesBVH(const HexMesh& insertMesh,
                               insertMesh.numHexes(),
                               queryMesh.numHexes(),
                               1.0 * insertMesh.numHexes() * queryMesh.numHexes(),
-                              candidatePairs.size()));
+                              candidates_h.size()));
 
   return candidatePairs;
 }  // end of findCandidatesBVH for Blueprint Meshes
