@@ -119,9 +119,9 @@ public:
   /*!
    * Convenience function to set a \a TetPred from a bounding box.
    * 
-   * \param box The TetPred will keep all tets with all four nodes in the
-   *        box.  If the box is invalid, no TetPred is constructed, so all
-   *        tets are retained.
+   * \param box The TetPred will be defined in terms of the provided
+   *        bounding box.  If the box is invalid, no TetPred is constructed
+   *        and all tets are retained.
    * \param inclusive If true (the default), the TetPred will keep all tets
    *        with at least one node in the box.  If false, the TetPred will
    *        discard any tet with at least one node outside the box.

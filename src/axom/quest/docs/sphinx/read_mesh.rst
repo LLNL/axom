@@ -13,9 +13,16 @@ Applications commonly need to read a mesh file from disk.  Quest provides the
 ``STLReader`` class, which can read binary or ASCII `STL`_ files, as well as the
 ``PSTLReader`` class for use in parallel codes.  STL (stereolithography)
 is a common file format for triangle surface meshes.  The STL reader classes
-will read the file from disk and build a ``mint::Mesh`` object.
+will read the file from disk and build a ``mint::Mesh`` object.  Quest also
+provides the ``ProEReader`` class, for ASCII Pro/E files containing tetrahedra,
+and the ``PProEReader`` class for use in parallel codes.  PTC Creo is a modeling
+application formerly known as Pro/ENGINEER, and its file format is in use among
+Axom's users.
 
 .. _STL: https://en.wikipedia.org/wiki/STL_(file_format)
+
+Reading an STL file
+-------------------
 
 The code examples are excerpts from the file ``<axom>/src/tools/mesh_tester.cpp``.
 
@@ -50,3 +57,48 @@ The following example shows usage of the STLReader class:
 After reading the STL file, the ``STLReader::getMesh`` method gives access to the
 underlying mesh data.  The reader may then be deleted.
 
+Reading a Pro/E file
+--------------------
+
+As read by Axom, a Pro/E tet file contains:
+
+- Zero or more comment lines starting with a ``#`` character
+- One line with two integers: the number of nodes n and the number of tetrahedra t
+- n lines, one for each node; each line contains a contiguous integer ID starting at 1
+  and three floating-point literals specifying the node location
+- t lines, one for each tetrahedron; each line contains a contiguous integer ID
+  starting at 1 and four integers specifying the tet's nodes
+
+Reading an ASCII Pro/E tet file is similar to reading an STL file.  The code
+examples are excerpts from the file ``<axom>/src/axom/quest/examples/quest_proe_bbox.cpp``.
+
+We include the ProEReader header
+
+.. literalinclude:: ../../examples/quest_proe_bbox.cpp
+   :start-after: _read_proe_include1_start
+   :end-before: _read_proe_include1_end
+   :language: C++
+
+and also the mint Mesh and UnstructuredMesh headers.
+
+.. literalinclude:: ../../examples/quest_proe_bbox.cpp
+   :start-after: _read_proe_include2_start
+   :end-before: _read_proe_include2_end
+   :language: C++
+
+For convenience, we specify some type aliases.
+
+.. literalinclude:: ../../examples/quest_proe_bbox.cpp
+   :start-after: _read_proe_typealiases_start
+   :end-before: _read_proe_typealiases_end
+   :language: C++
+
+The following example shows how to use the ProEReader class.
+
+.. literalinclude:: ../../examples/quest_proe_bbox.cpp
+   :start-after: _read_proe_file_start
+   :end-before: _read_proe_file_end
+   :language: C++
+
+After reading the Pro/E file, the ``ProEReader::getMesh`` method gives access to the
+underlying mesh data.  The reader may then be deleted.
