@@ -565,32 +565,108 @@ axom::Array<IndexPair> findCandidatesImplicit(const HexMesh& insertMesh,
   auto offsets_v = offsets_d.view();
   auto counts_v = counts_d.view();
 
-  gridIndex.getCandidatesAsArray(query_bbox_v, offsets_v, counts_v, candidates_d);
+  // First pass: get number of bounding box candidates for each query bounding box
+  // Logic here mirrors the BVH two-pass query
+  const auto grid_device = gridIndex.getQueryObject();
+  using reduce_pol = typename axom::execution_space<ExecSpace>::reduce_policy;
+  RAJA::ReduceSum<reduce_pol, int> totalCandidatePairs(0);
+
+  axom::for_all<ExecSpace>(
+    queryMesh.numHexes(),
+    AXOM_LAMBDA(int icell) {
+      int count = 0;
+
+      // Define a function that is called on every candidate reached during
+      // traversal. The function below simply counts the number of candidates
+      // that intersect with the given query bounding box.
+      auto isBBIntersect = [&](int candidateIdx) {
+        if(axom::primal::intersect(insert_bbox_v[candidateIdx],
+                                   query_bbox_v[icell]))
+        {
+          count++;
+        }
+      };
+
+      // Call visitCandidates to iterate through the candidates
+      grid_device.visitCandidates(query_bbox_v[icell], isBBIntersect);
+
+      // Store the number of intersections for each query bounding box
+      counts_v[icell] = count;
+      totalCandidatePairs += count;
+    });
+
+  // Generate offsets from the counts
+  using exec_pol = typename axom::execution_space<ExecSpace>::loop_policy;
+  RAJA::exclusive_scan<exec_pol>(
+    RAJA::make_span(counts_v.data(), queryMesh.numHexes()),
+    RAJA::make_span(offsets_v.data(), queryMesh.numHexes()),
+    RAJA::operators::plus<int> {});
+
   timer.stop();
   SLIC_INFO(axom::fmt::format(
-    "1: Querying candidate bounding boxes took {:4.3} seconds.",
+    "1: Counting candidate bounding boxes took {:4.3} seconds.",
     timer.elapsedTimeInSec()));
 
   // Initialize candidatePairs to return
   timer.start();
 
-  IndexArray offsets_h(offsets_d, host_allocator);
-  IndexArray counts_h(counts_d, host_allocator);
-  IndexArray candidates_h(candidates_d, host_allocator);
+  // Allocate arrays for intersection pairs
+  IndexArray firstPair_d(totalCandidatePairs.get(),
+                         totalCandidatePairs.get(),
+                         kernel_allocator);
+  IndexArray secondPair_d(totalCandidatePairs.get(),
+                          totalCandidatePairs.get(),
+                          kernel_allocator);
+  auto first_pair_v = firstPair_d.view();
+  auto second_pair_v = secondPair_d.view();
 
-  for(int i = 0; i < queryMesh.numHexes(); i++)
-  {
-    for(int j = 0; j < counts_h[i]; j++)
-    {
-      candidatePairs.emplace_back(
-        std::make_pair(i, candidates_h[offsets_h[i] + j]));
-    }
-  }
+  // Second pass: fill candidates array pairs on device
+  axom::for_all<ExecSpace>(
+    queryMesh.numHexes(),
+    AXOM_LAMBDA(axom::IndexType icell) {
+      axom::IndexType offset = offsets_v[icell];
+
+      // Store the intersection candidate
+      auto fillCandidates = [&](int candidateIdx) {
+        if(axom::primal::intersect(insert_bbox_v[candidateIdx],
+                                   query_bbox_v[icell]))
+        {
+          first_pair_v[offset] = icell;
+          second_pair_v[offset] = candidateIdx;
+          offset++;
+        }
+      };
+
+      grid_device.visitCandidates(query_bbox_v[icell], fillCandidates);
+    });
+
   timer.stop();
 
   SLIC_INFO(axom::fmt::format(
-    "2: Initializing candidate pairs on host took {:4.3} seconds.",
+    "2: Initializing candidate pairs on device took {:4.3} seconds.",
     timer.elapsedTimeInSec()));
+
+  // copy results back to host and into return vector
+  timer.start();
+
+  IndexArray candidates_h[2] = {
+    on_device ? IndexArray(firstPair_d, host_allocator) : IndexArray(),
+    on_device ? IndexArray(secondPair_d, host_allocator) : IndexArray()};
+
+  auto candidate1_h_v = on_device ? candidates_h[0].view() : firstPair_d.view();
+  auto candidate2_h_v = on_device ? candidates_h[1].view() : secondPair_d.view();
+
+  for(int idx = 0; idx < totalCandidatePairs; ++idx)
+  {
+    candidatePairs.emplace_back(
+      std::make_pair(candidate1_h_v[idx], candidate2_h_v[idx]));
+  }
+
+  timer.stop();
+
+  SLIC_INFO(
+    axom::fmt::format("3: Moving candidate pairs to host took {:4.3} seconds.",
+                      timer.elapsedTimeInSec()));
 
   SLIC_INFO(axom::fmt::format(axom::utilities::locale(),
                               R"(Stats for query
@@ -602,7 +678,7 @@ axom::Array<IndexPair> findCandidatesImplicit(const HexMesh& insertMesh,
                               insertMesh.numHexes(),
                               queryMesh.numHexes(),
                               1.0 * insertMesh.numHexes() * queryMesh.numHexes(),
-                              candidates_h.size()));
+                              candidatePairs.size()));
 
   return candidatePairs;
 }
