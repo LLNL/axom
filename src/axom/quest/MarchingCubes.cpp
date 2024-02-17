@@ -20,6 +20,8 @@ namespace axom
 {
 namespace quest
 {
+const axom::StackArray<axom::IndexType, 2> twoZeros{0, 0};
+
 MarchingCubes::MarchingCubes(RuntimePolicy runtimePolicy,
                              int allocatorID,
                              MarchingCubesDataParallelism dataParallelism,
@@ -35,6 +37,11 @@ MarchingCubes::MarchingCubes(RuntimePolicy runtimePolicy,
   , m_fcnPath()
   , m_maskFieldName(maskField)
   , m_maskPath(maskField.empty() ? std::string() : "fields/" + maskField)
+  , m_facetIndexOffsets(0, 0)
+  , m_facetCount(0)
+  , m_facetNodeIds(twoZeros, m_allocatorID)
+  , m_facetNodeCoords(twoZeros, m_allocatorID)
+  , m_facetParentIds(0, 0, m_allocatorID)
 {
   SLIC_ASSERT_MSG(
     conduit::blueprint::mesh::is_multi_domain(bpMesh),
@@ -64,6 +71,7 @@ void MarchingCubes::setFunctionField(const std::string& fcnField)
 
 void MarchingCubes::computeIsocontour(double contourVal)
 {
+  AXOM_PERF_MARK_FUNCTION("MarchingCubes::computeIsoContour");
   // Mark and scan domains while adding up their
   // facet counts to get the total facet counts.
   m_facetIndexOffsets.resize(m_singles.size());
@@ -86,10 +94,10 @@ void MarchingCubes::computeIsocontour(double contourVal)
   auto facetParentIdsView = m_facetParentIds.view();
   for(axom::IndexType d = 0; d < m_singles.size(); ++d)
   {
-    m_singles[d]->setOutputBuffers(facetNodeIdsView,
-                                   facetNodeCoordsView,
-                                   facetParentIdsView,
-                                   m_facetIndexOffsets[d]);
+    m_singles[d]->getImpl().setOutputBuffers(facetNodeIdsView,
+                                             facetNodeCoordsView,
+                                             facetParentIdsView,
+                                             m_facetIndexOffsets[d]);
   }
 
   for(axom::IndexType d = 0; d < m_singles.size(); ++d)
@@ -136,11 +144,23 @@ axom::Array<MarchingCubes::DomainIdType> MarchingCubes::getContourFacetDomainIds
   return rval;
 }
 
+void MarchingCubes::clear()
+{
+  for(int d = 0; d < m_singles.size(); ++d)
+  {
+    m_singles[d]->getImpl().clear();
+  }
+  m_facetNodeIds.clear();
+  m_facetNodeCoords.clear();
+  m_facetParentIds.clear();
+}
+
 void MarchingCubes::populateContourMesh(
   axom::mint::UnstructuredMesh<axom::mint::SINGLE_SHAPE>& mesh,
   const std::string& cellIdField,
   const std::string& domainIdField) const
 {
+  AXOM_PERF_MARK_FUNCTION("MarchingCubes::populateContourMesh");
   if(!cellIdField.empty() &&
      !mesh.hasField(cellIdField, axom::mint::CELL_CENTERED))
   {
@@ -157,6 +177,8 @@ void MarchingCubes::populateContourMesh(
   // Reserve space once for all local domains.
   const axom::IndexType contourCellCount = getContourCellCount();
   const axom::IndexType contourNodeCount = getContourNodeCount();
+  // Temporarily disable reservation due to unknown bug.
+  // See https://github.com/LLNL/axom/pull/1271
   mesh.reserveCells(contourCellCount);
   mesh.reserveNodes(contourNodeCount);
 
@@ -221,15 +243,14 @@ void MarchingCubes::populateContourMesh(
 
 void MarchingCubes::allocateOutputBuffers()
 {
+  AXOM_PERF_MARK_FUNCTION("MarchingCubes::allocateOutputBuffers");
   if(!m_singles.empty())
   {
     int ndim = m_singles[0]->spatialDimension();
     const auto nodeCount = m_facetCount * ndim;
-    m_facetNodeIds =
-      axom::Array<axom::IndexType, 2>({m_facetCount, ndim}, m_allocatorID);
-    m_facetNodeCoords = axom::Array<double, 2>({nodeCount, ndim}, m_allocatorID);
-    axom::StackArray<axom::IndexType, 1> t1 {m_facetCount};
-    m_facetParentIds = axom::Array<axom::IndexType, 1>(t1, m_allocatorID);
+    m_facetNodeIds.resize(axom::StackArray<axom::IndexType, 2>{m_facetCount, ndim}, 0);
+    m_facetNodeCoords.resize(axom::StackArray<axom::IndexType, 2>{nodeCount, ndim}, 0.0);
+    m_facetParentIds.resize(axom::StackArray<axom::IndexType, 1>{m_facetCount}, 0);
   }
 }
 

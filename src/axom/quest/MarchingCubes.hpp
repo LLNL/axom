@@ -268,6 +268,14 @@ public:
   #endif
   //@}
 
+  /*!
+    @brief Clear computed data (without deallocating memory).
+
+    After clearing, you can choose another field, contour value and
+    recompute the contour.  You cannot change the mesh.
+  */
+  void clear();
+
 private:
   RuntimePolicy m_runtimePolicy;
   int m_allocatorID = axom::INVALID_ALLOCATOR_ID;
@@ -390,19 +398,6 @@ public:
   {
     return m_impl->getContourCellCount();
   }
-  void setOutputBuffers(axom::ArrayView<axom::IndexType, 2> &facetNodeIds,
-                        axom::ArrayView<double, 2> &facetNodeCoords,
-                        axom::ArrayView<axom::IndexType, 1> &facetParentIds,
-                        axom::IndexType facetIndexOffset)
-  {
-    SLIC_ASSERT(facetNodeIds.getAllocatorID() == m_allocatorID);
-    SLIC_ASSERT(facetNodeCoords.getAllocatorID() == m_allocatorID);
-    SLIC_ASSERT(facetParentIds.getAllocatorID() == m_allocatorID);
-    m_impl->setOutputBuffers(facetNodeIds,
-                             facetNodeCoords,
-                             facetParentIds,
-                             facetIndexOffset);
-  }
   void computeContour() { m_impl->computeContour(); }
 
   /*!
@@ -487,6 +482,8 @@ public:
 
     virtual ~ImplBase() { }
 
+    virtual void clear() = 0;
+
     MarchingCubesDataParallelism m_dataParallelism =
       MarchingCubesDataParallelism::byPolicy;
 
@@ -496,6 +493,11 @@ public:
     axom::ArrayView<IndexType> m_facetParentIds;
     axom::IndexType m_facetIndexOffset = -1;
   };
+
+  ImplBase& getImpl()
+  {
+    return *m_impl;
+  }
 
 private:
   RuntimePolicy m_runtimePolicy;

@@ -515,6 +515,7 @@ public:
   template <typename T>
   void moveMeshDataToNewMemorySpace(const std::string& path, int allocId)
   {
+    AXOM_PERF_MARK_FUNCTION("moveMeshDataToNewMemorySpace"); // For reference
     for(auto& dom : _mdMesh.children())
     {
       moveConduitDataToNewMemorySpace<T>(dom, path, allocId);
@@ -758,6 +759,10 @@ struct ContourTestBase
 #endif
     computeTimer.start();
     mc.computeIsocontour(params.contourVal);
+    for(int i=0; i<4; ++i) {
+      mc.clear();
+      mc.computeIsocontour(params.contourVal);
+    }
     computeTimer.stop();
     printTimingStats(computeTimer, name() + " contour");
 

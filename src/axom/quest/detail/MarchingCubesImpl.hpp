@@ -50,15 +50,28 @@ public:
   using FacetIdType = int;
   using LoopPolicy = typename execution_space<ExecSpace>::loop_policy;
   using ReducePolicy = typename execution_space<ExecSpace>::reduce_policy;
+#if defined(AXOM_USE_RAJA)
+    // Intel oneAPI compiler segfaults with OpenMP RAJA scan
+  #ifdef __INTEL_LLVM_COMPILER
+    using ScanPolicy =
+      typename axom::execution_space<axom::SEQ_EXEC>::loop_policy;
+  #else
+    using ScanPolicy = typename axom::execution_space<ExecSpace>::loop_policy;
+  #endif
+#endif
   using SequentialLoopPolicy =
     typename execution_space<SequentialExecSpace>::loop_policy;
   static constexpr auto MemorySpace = execution_space<ExecSpace>::memory_space;
 
   AXOM_HOST MarchingCubesImpl(int allocatorID)
     : m_allocatorID(allocatorID)
-    , m_crossingParentIds(axom::StackArray<axom::IndexType, 1> {0}, m_allocatorID)
-    , m_facetIncrs(axom::StackArray<axom::IndexType, 1> {0}, m_allocatorID)
-    , m_firstFacetIds(axom::StackArray<axom::IndexType, 1> {0}, m_allocatorID)
+    , m_caseIdsFlat(0, 0, m_allocatorID)
+    , m_caseIds()
+    , m_crossingFlags(0, 0, m_allocatorID)
+    , m_scannedFlags(0, 0, m_allocatorID)
+    , m_crossingParentIds(0, 0, m_allocatorID)
+    , m_facetIncrs(0, 0, m_allocatorID)
+    , m_firstFacetIds(0, 0, m_allocatorID)
   { }
 
   /*!
@@ -78,6 +91,9 @@ public:
                             const std::string& topologyName,
                             const std::string& maskFieldName) override
   {
+    // Time this due to potentially slow memory allocation
+    AXOM_PERF_MARK_FUNCTION("MarchingCubesImpl::initialize");
+
     SLIC_ASSERT(conduit::blueprint::mesh::topology::dims(dom.fetch_existing(
                   axom::fmt::format("topologies/{}", topologyName))) == DIM);
 
@@ -89,12 +105,6 @@ public:
     {
       m_maskView = m_mvu.template getConstFieldView<int>(maskFieldName, false);
     }
-
-    // I would like to move this section to markCrossings() but it
-    // increases runtime to 10x on HIP and 1.3x on CUDA for some reason.
-    m_caseIdsFlat =
-      axom::Array<std::uint16_t, 1, MemorySpace>(m_mvu.getCellCount(),
-                                                 m_allocatorID);
   }
 
   /*!
@@ -119,9 +129,13 @@ public:
   */
   void markCrossings() override
   {
+    AXOM_PERF_MARK_FUNCTION("MarchingCubesImpl::markCrossings");
+
+    m_caseIdsFlat.resize(m_mvu.getCellCount(), 0);
     m_caseIdsFlat.fill(0);
-    Indexer fcnIndexer(m_fcnView.strides());
+
     // Choose caseIds stride order to match function stride order.
+    Indexer fcnIndexer(m_fcnView.strides());
     m_caseIdsIndexer.initializeShape(m_bShape, fcnIndexer.slowestDirs());
     m_caseIds = axom::ArrayView<std::uint16_t, DIM, MemorySpace>(
       m_caseIdsFlat.data(),
@@ -291,11 +305,11 @@ public:
       if(useZone)
       {
         // clang-format off
-          double nodalValues[CELL_CORNER_COUNT] =
-            {fcnView(i    , j    ),
-             fcnView(i + 1, j    ),
-             fcnView(i + 1, j + 1),
-             fcnView(i    , j + 1)};
+        double nodalValues[CELL_CORNER_COUNT] =
+          {fcnView(i    , j    ),
+           fcnView(i + 1, j    ),
+           fcnView(i + 1, j + 1),
+           fcnView(i    , j + 1)};
         // clang-format on
         caseIdsView(i, j) = computeCrossingCase(nodalValues);
       }
@@ -310,15 +324,15 @@ public:
       if(useZone)
       {
         // clang-format off
-          double nodalValues[CELL_CORNER_COUNT] =
-            {fcnView(i + 1, j    , k    ),
-             fcnView(i + 1, j + 1, k    ),
-             fcnView(i    , j + 1, k    ),
-             fcnView(i    , j    , k    ),
-             fcnView(i + 1, j    , k + 1),
-             fcnView(i + 1, j + 1, k + 1),
-             fcnView(i    , j + 1, k + 1),
-             fcnView(i    , j    , k + 1)};
+        double nodalValues[CELL_CORNER_COUNT] =
+          {fcnView(i + 1, j    , k    ),
+           fcnView(i + 1, j + 1, k    ),
+           fcnView(i    , j + 1, k    ),
+           fcnView(i    , j    , k    ),
+           fcnView(i + 1, j    , k + 1),
+           fcnView(i + 1, j + 1, k + 1),
+           fcnView(i    , j + 1, k + 1),
+           fcnView(i    , j    , k + 1)};
         // clang-format on
         caseIdsView(i, j, k) = computeCrossingCase(nodalValues);
       }
@@ -327,6 +341,7 @@ public:
 
   void scanCrossings() override
   {
+    AXOM_PERF_MARK_FUNCTION("MarchingCubesImpl::scanCrossings");
     constexpr MarchingCubesDataParallelism autoPolicy =
       std::is_same<ExecSpace, axom::SEQ_EXEC>::value
       ? MarchingCubesDataParallelism::hybridParallel
@@ -343,93 +358,92 @@ public:
        (m_dataParallelism == axom::quest::MarchingCubesDataParallelism::byPolicy &&
         autoPolicy == MarchingCubesDataParallelism::hybridParallel))
     {
-      scanCrossings_hybridParallel();
+      AXOM_PERF_MARK_SECTION(
+        "MarchingCubesImpl::scanCrossings:hybridParallel",
+        scanCrossings_hybridParallel(););
     }
     else
     {
-      scanCrossings_fullParallel();
+      AXOM_PERF_MARK_SECTION(
+        "MarchingCubesImpl::scanCrossings:fullParallel",
+        scanCrossings_fullParallel(););
     }
+  }
+
+  void allocateIndexLists()
+  {
+    AXOM_PERF_MARK_FUNCTION("MarchingCubesImpl::allocateIndexLists");
+    m_crossingParentIds.resize(m_crossingCount, 0);
+    m_facetIncrs.resize(m_crossingCount, 0);
+    m_firstFacetIds.resize(1 + m_crossingCount, 0);
   }
 
   void scanCrossings_fullParallel()
   {
-#if defined(AXOM_USE_RAJA)
-  #ifdef __INTEL_LLVM_COMPILER
-    // Intel oneAPI compiler segfaults with OpenMP RAJA scan
-    using ScanPolicy =
-      typename axom::execution_space<axom::SEQ_EXEC>::loop_policy;
-  #else
-    using ScanPolicy = typename axom::execution_space<ExecSpace>::loop_policy;
-  #endif
-#endif
     const axom::IndexType parentCellCount = m_caseIds.size();
     auto caseIdsView = m_caseIds;
 
     //
-    // Initialize crossingFlags to 0 or 1, prefix-sum it, and count the
+    // Initialize m_crossingFlags, prefix-sum it, and count the
     // crossings.
     //
-    // All 1D array data alligns with m_caseId, which is column-major
-    // (the default for Array class), leading to *column-major* parent
-    // cell ids, regardless of the ordering of the input mesh data.
-    //
 
-    axom::StackArray<axom::IndexType, 1> tmpShape {parentCellCount};
-    axom::Array<axom::IndexType, 1, MemorySpace> crossingFlags(tmpShape);
-    auto crossingFlagsView = crossingFlags.view();
-    axom::for_all<ExecSpace>(
-      0,
-      parentCellCount,
-      AXOM_LAMBDA(axom::IndexType parentCellId) {
-        auto numContourCells =
-          num_contour_cells(caseIdsView.flatIndex(parentCellId));
-        crossingFlagsView[parentCellId] = bool(numContourCells);
-      });
+    m_crossingFlags.resize(m_mvu.getCellCount(), 0);
+    m_scannedFlags.resize(1 + m_mvu.getCellCount(), 0);
 
-    axom::StackArray<axom::IndexType, 1> tmpShape1 {1 + parentCellCount};
-    axom::Array<axom::IndexType, 1, MemorySpace> scannedFlags(tmpShape1);
-    scannedFlags.fill(0, 1, 0);
+    auto crossingFlagsView = m_crossingFlags.view();
+    AXOM_PERF_MARK_SECTION(
+      "MarchingCubesImpl::scanCrossings:set_flags",
+      axom::for_all<ExecSpace>(
+        0,
+        parentCellCount,
+        AXOM_LAMBDA(axom::IndexType parentCellId) {
+          auto numContourCells =
+            num_contour_cells(caseIdsView.flatIndex(parentCellId));
+          crossingFlagsView[parentCellId] = bool(numContourCells);
+      }););
+
+    m_scannedFlags.fill(0, 1, 0);
+    AXOM_PERF_MARK_SECTION(
+      "MarchingCubesImpl::scanCrossings:scan_flags",
 #if defined(AXOM_USE_RAJA)
-    RAJA::inclusive_scan<ScanPolicy>(
-      RAJA::make_span(crossingFlags.data(), parentCellCount),
-      RAJA::make_span(scannedFlags.data() + 1, parentCellCount),
-      RAJA::operators::plus<axom::IndexType> {});
+      RAJA::inclusive_scan<ScanPolicy>(
+        RAJA::make_span(m_crossingFlags.data(), parentCellCount),
+        RAJA::make_span(m_scannedFlags.data() + 1, parentCellCount),
+        RAJA::operators::plus<axom::IndexType> {});
 #else
-    for(axom::IndexType n = 0; n < parentCellCount; ++n)
-    {
-      scannedFlags[n + 1] = scannedFlags[n] + crossingFlags[n];
-    }
+      for(axom::IndexType n = 0; n < parentCellCount; ++n)
+      {
+        m_scannedFlags[n + 1] = m_scannedFlags[n] + m_crossingFlags[n];
+      }
 #endif
+                           );
 
     axom::copy(&m_crossingCount,
-               scannedFlags.data() + scannedFlags.size() - 1,
+               m_scannedFlags.data() + m_scannedFlags.size() - 1,
                sizeof(axom::IndexType));
 
     //
     // Generate crossing-cells index list and corresponding facet counts.
     //
-
-    const axom::StackArray<axom::IndexType, 1> tmpShape2 {m_crossingCount};
-    const axom::StackArray<axom::IndexType, 1> tmpShape3 {1 + m_crossingCount};
-    m_crossingParentIds.resize(tmpShape2, 0);
-    m_facetIncrs.resize(tmpShape2, 0);
-    m_firstFacetIds.resize(tmpShape3, 0);
-
-    auto scannedFlagsView = scannedFlags.view();
+    allocateIndexLists();
+    auto scannedFlagsView = m_scannedFlags.view();
     auto crossingParentIdsView = m_crossingParentIds.view();
     auto facetIncrsView = m_facetIncrs.view();
 
-    auto loopBody = AXOM_LAMBDA(axom::IndexType parentCellId)
-    {
-      if(scannedFlagsView[parentCellId] != scannedFlagsView[1 + parentCellId])
+    AXOM_PERF_MARK_SECTION(
+      "MarchingCubesImpl::scanCrossings:set_incrs",
+      auto loopBody = AXOM_LAMBDA(axom::IndexType parentCellId)
       {
-        auto crossingId = scannedFlagsView[parentCellId];
-        auto facetIncr = num_contour_cells(caseIdsView.flatIndex(parentCellId));
-        crossingParentIdsView[crossingId] = parentCellId;
-        facetIncrsView[crossingId] = facetIncr;
-      }
-    };
-    axom::for_all<ExecSpace>(0, parentCellCount, loopBody);
+        if(scannedFlagsView[parentCellId] != scannedFlagsView[1 + parentCellId])
+        {
+          auto crossingId = scannedFlagsView[parentCellId];
+          auto facetIncr = num_contour_cells(caseIdsView.flatIndex(parentCellId));
+          crossingParentIdsView[crossingId] = parentCellId;
+          facetIncrsView[crossingId] = facetIncr;
+        }
+      };
+      axom::for_all<ExecSpace>(0, parentCellCount, loopBody););
 
     //
     // Prefix-sum the facets counts to get first facet id for each crossing
@@ -437,17 +451,20 @@ public:
     //
 
     m_firstFacetIds.fill(0, 1, 0);
+    AXOM_PERF_MARK_SECTION(
+      "MarchingCubesImpl::scanCrossings:scan_incrs",
 #if defined(AXOM_USE_RAJA)
-    RAJA::inclusive_scan<ScanPolicy>(
-      RAJA::make_span(m_facetIncrs.data(), m_crossingCount),
-      RAJA::make_span(m_firstFacetIds.data() + 1, m_crossingCount),
-      RAJA::operators::plus<axom::IndexType> {});
+      RAJA::inclusive_scan<ScanPolicy>(
+        RAJA::make_span(m_facetIncrs.data(), m_crossingCount),
+        RAJA::make_span(m_firstFacetIds.data() + 1, m_crossingCount),
+        RAJA::operators::plus<axom::IndexType> {});
 #else
-    for(axom::IndexType n = 0; n < parentCellCount; ++n)
-    {
-      m_firstFacetIds[n + 1] = m_firstFacetIds[n] + m_facetIncrs[n];
-    }
+      for(axom::IndexType n = 0; n < parentCellCount; ++n)
+      {
+        m_firstFacetIds[n + 1] = m_firstFacetIds[n] + m_facetIncrs[n];
+      }
 #endif
+      );
 
     axom::copy(&m_facetCount,
                m_firstFacetIds.data() + m_firstFacetIds.size() - 1,
@@ -534,13 +551,6 @@ public:
 
     const auto firstFacetIdsView = m_firstFacetIds.view();
 #if defined(AXOM_USE_RAJA)
-    // Intel oneAPI compiler segfaults with OpenMP RAJA scan
-  #ifdef __INTEL_LLVM_COMPILER
-    using ScanPolicy =
-      typename axom::execution_space<axom::SEQ_EXEC>::loop_policy;
-  #else
-    using ScanPolicy = typename axom::execution_space<ExecSpace>::loop_policy;
-  #endif
     RAJA::inclusive_scan<ScanPolicy>(
       RAJA::make_span(facetIncrsView.data(), m_crossingCount),
       RAJA::make_span(firstFacetIdsView.data() + 1, m_crossingCount),
@@ -559,6 +569,7 @@ public:
 
   void computeContour() override
   {
+    AXOM_PERF_MARK_FUNCTION("MarchingCubesImpl::computeContour");
     const auto facetIncrsView = m_facetIncrs.view();
     const auto firstFacetIdsView = m_firstFacetIds.view();
     const auto crossingParentIdsView = m_crossingParentIds.view();
@@ -869,6 +880,24 @@ public:
   */
   MarchingCubesImpl() { }
 
+  /*!
+    @brief Clear computed data (without deallocating memory).
+
+    After clearing, you can change the field, contour value
+    and recompute the contour.
+  */
+  void clear() override
+  {
+    m_caseIdsFlat.clear();
+    m_crossingFlags.clear();
+    m_scannedFlags.clear();
+    m_crossingParentIds.clear();
+    m_facetIncrs.clear();
+    m_firstFacetIds.clear();
+    m_crossingCount = 0;
+    m_facetCount = 0;
+  }
+
 private:
   const int m_allocatorID;
 
@@ -895,6 +924,12 @@ private:
     multidim view with the ordering we want.
   */
   axom::ArrayIndexer<axom::IndexType, DIM> m_caseIdsIndexer;
+
+  //!@brief Whether a parent cell crosses the contour.
+  axom::Array<std::int16_t, 1, MemorySpace> m_crossingFlags;
+
+  //!@brief Prefix sum of m_crossingFlags
+  axom::Array<axom::IndexType, 1, MemorySpace> m_scannedFlags;
 
   //!@brief Number of parent cells crossing the contour surface.
   axom::IndexType m_crossingCount = 0;
