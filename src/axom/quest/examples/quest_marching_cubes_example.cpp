@@ -100,6 +100,11 @@ public:
   quest::MarchingCubesDataParallelism dataParallelism =
     quest::MarchingCubesDataParallelism::byPolicy;
 
+  // Distinct MarchingCubes objects count.
+  int objectRepCount = 1;
+  // Contour generation count for each MarchingCubes objects.
+  int contourGenCount = 1;
+
 private:
   bool _verboseOutput {false};
 
@@ -183,6 +188,18 @@ public:
     app.add_flag("-c,--check-results,!--no-check-results", checkResults)
       ->description(
         "Enable/disable checking results against analytical solution")
+      ->capture_default_str();
+
+    //
+    // Number of repetitions to run
+    //
+
+    app.add_option("--objectReps", objectRepCount)
+      ->description("Number of MarchingCube object repetitions to run")
+      ->capture_default_str();
+
+    app.add_option("--contourGenReps", contourGenCount)
+      ->description("Number of contour repetitions to run for each MarchingCubes object")
       ->capture_default_str();
 
     app.get_formatter()->column_width(60);
@@ -744,44 +761,47 @@ struct ContourTestBase
       }
     }
 #endif
-for(int j=0; j<5; ++j)
-{
-    // Create marching cubes algorithm object and set some parameters
-    quest::MarchingCubes mc(params.policy,
-                            s_allocatorId,
-                            params.dataParallelism);
-    mc.initialize(computationalMesh.asConduitNode(), "mesh");
-    mc.setFunctionField(functionName());
-
-    axom::utilities::Timer computeTimer(false);
-#ifdef AXOM_USE_MPI
-    MPI_Barrier(MPI_COMM_WORLD);
-#endif
-    computeTimer.start();
-    mc.computeIsocontour(params.contourVal);
-    for(int i=0; i<3; ++i) {
-      mc.clear();
-      mc.computeIsocontour(params.contourVal);
-    }
-    computeTimer.stop();
-    // printTimingStats(computeTimer, name() + " contour");
-
+    std::unique_ptr<quest::MarchingCubes> mcPtr;
+    for(int j=0; j<params.objectRepCount; ++j)
     {
-      int mn, mx, sum;
-      getIntMinMax(mc.getContourCellCount(), mn, mx, sum);
-      SLIC_INFO(axom::fmt::format(
-        "Contour mesh has {{min:{}, max:{}, sum:{}, avg:{}}} cells",
-        mn,
-        mx,
-        sum,
-        (double)sum / numRanks));
+      // Create marching cubes algorithm object and set some parameters
+      mcPtr = std::make_unique<quest::MarchingCubes>(params.policy,
+                                                     s_allocatorId,
+                                                     params.dataParallelism);
+      auto& mc = *mcPtr;
+      mc.initialize(computationalMesh.asConduitNode(), "mesh");
+      mc.setFunctionField(functionName());
+
+      axom::utilities::Timer computeTimer(false);
+#ifdef AXOM_USE_MPI
+      MPI_Barrier(MPI_COMM_WORLD);
+#endif
+      computeTimer.start();
+      for(int i=0; i<params.contourGenCount; ++i) {
+        SLIC_INFO(axom::fmt::format("MarchingCubes object rep {} of {}, contour run {} of {}:",
+                                    j, params.objectRepCount, i, params.contourGenCount ));
+        mc.clear();
+        mc.computeIsocontour(params.contourVal);
+      }
+      computeTimer.stop();
+      // printTimingStats(computeTimer, name() + " contour");
+
+      {
+        int mn, mx, sum;
+        getIntMinMax(mc.getContourCellCount(), mn, mx, sum);
+        SLIC_INFO(axom::fmt::format(
+                    "Contour mesh has {{min:{}, max:{}, sum:{}, avg:{}}} cells",
+                    mn,
+                    mx,
+                    sum,
+                    (double)sum / numRanks));
+      }
+      SLIC_INFO_IF(
+        params.isVerbose(),
+        axom::fmt::format("Surface mesh has locally {} cells, {} nodes.",
+                          mc.getContourCellCount(),
+                          mc.getContourNodeCount()));
     }
-    SLIC_INFO_IF(
-      params.isVerbose(),
-      axom::fmt::format("Surface mesh has locally {} cells, {} nodes.",
-                        mc.getContourCellCount(),
-                        mc.getContourNodeCount()));
-}
 
     // Return conduit data to host memory.
     if(s_allocatorId != axom::execution_space<axom::SEQ_EXEC>::allocatorID())
@@ -798,7 +818,6 @@ for(int j=0; j<5; ++j)
         axom::execution_space<axom::SEQ_EXEC>::allocatorID());
     }
 
-#if 0
     // Put contour mesh in a mint object for error checking and output.
     std::string sidreGroupName = name() + "_mesh";
     sidre::DataStore objectDS;
@@ -807,6 +826,7 @@ for(int j=0; j<5; ++j)
       DIM,
       DIM == 2 ? mint::CellType::SEGMENT : mint::CellType::TRIANGLE,
       meshGroup);
+    auto& mc = *mcPtr;
     axom::utilities::Timer extractTimer(false);
     extractTimer.start();
     mc.populateContourMesh(contourMesh, m_parentCellIdField, m_domainIdField);
@@ -833,9 +853,6 @@ for(int j=0; j<5; ++j)
     objectDS.getRoot()->destroyGroupAndData(sidreGroupName);
 
     return localErrCount;
-#else
-    return 0;
-#endif
   }
 
   void computeNodalDistance(BlueprintStructuredMesh& bpMesh)
