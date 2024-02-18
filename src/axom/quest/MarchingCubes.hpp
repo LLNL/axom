@@ -110,43 +110,44 @@ public:
   using RuntimePolicy = axom::runtime_policy::Policy;
   using DomainIdType = int;
   /*!
-   * \brief Constructor sets up computational mesh and data for running the
-   * marching cubes algorithm.
-   *
-   * \param [in] runtimePolicy A value from RuntimePolicy.
-   *             The simplest policy is RuntimePolicy::seq, which specifies
-   *             running sequentially on the CPU.
-   * \param [in] allocatorID Data allocator ID.  Choose something compatible
-   *             with \c runtimePolicy.  See \c esecution_space.
-   * \param [in] dataParallelism Data parallel implementation choice.
-   * \param [in] bpMesh Blueprint multi-domain mesh containing scalar field.
-   * \param [in] topologyName Name of Blueprint topology to use in \a bpMesh.
-   * \param [in] maskField Cell-based std::int32_t mask field.  If provided,
-   *             cells where this field evaluates to false are skipped.
-   *
-   * Array data in \a dom must be accessible in the \a runtimePolicy
-   * environment.  It's an error if not, e.g., using CPU memory with
-   * a GPU policy.
-   *
-   * Some data from \a bpMesh may be cached by the constructor.
-   * Any change to it after the constructor leads to undefined behavior.
-   *
-   * The mesh coordinates should be contiguous.  See
-   * conduit::blueprint::is_contiguous().  In the future, this
-   * requirement may be relaxed, possibly at the cost of a
-   * transformation and storage of the temporary contiguous layout.
-   *
-   * Blueprint allows users to specify ids for the domains.  If
-   * "state/domain_id" exists in the domains, it is used as the domain
-   * id.  Otherwise, the domain's interation index within the
-   * multidomain mesh is used.
-   */
+    \brief Constructor sets up computational mesh and data for running the
+    marching cubes algorithm.
+
+    \param [in] runtimePolicy A value from RuntimePolicy.
+                The simplest policy is RuntimePolicy::seq, which specifies
+                running sequentially on the CPU.
+    \param [in] allocatorID Data allocator ID.  Choose something compatible
+                with \c runtimePolicy.  See \c esecution_space.
+    \param [in] dataParallelism Data parallel implementation choice.
+    \param [in] bpMesh Blueprint multi-domain mesh containing scalar field.
+    \param [in] topologyName Name of Blueprint topology to use in \a bpMesh.
+    \param [in] maskField Cell-based std::int32_t mask field.  If provided,
+                cells where this field evaluates to false are skipped.
+
+    Array data in \a dom must be accessible in the \a runtimePolicy
+    environment.  It's an error if not, e.g., using CPU memory with
+    a GPU policy.
+
+    Some data from \a bpMesh may be cached by the constructor.
+    Any change to it after the constructor leads to undefined behavior.
+
+    The mesh coordinates should be contiguous.  See
+    conduit::blueprint::is_contiguous().  In the future, this
+    requirement may be relaxed, possibly at the cost of a
+    transformation and storage of the temporary contiguous layout.
+
+    Blueprint allows users to specify ids for the domains.  If
+    "state/domain_id" exists in the domains, it is used as the domain
+    id.  Otherwise, the domain's interation index within the
+    multidomain mesh is used.
+  */
   MarchingCubes(RuntimePolicy runtimePolicy,
                 int allocatorId,
-                MarchingCubesDataParallelism dataParallelism,
-                const conduit::Node &bpMesh,
-                const std::string &topologyName,
-                const std::string &maskField = {});
+                MarchingCubesDataParallelism dataParallelism);
+
+  void initialize(const conduit::Node &bpMesh,
+                  const std::string &topologyName,
+                  const std::string &maskField = {});
 
   /*!
     @brief Set the field containing the nodal function.
@@ -269,10 +270,13 @@ public:
   //@}
 
   /*!
-    @brief Clear computed data (without deallocating memory).
+    @brief Clear computed data.
 
-    After clearing, you can choose another field, contour value and
-    recompute the contour.  You cannot change the mesh.
+    After clearing, you have to call initialize as if it
+    was a new object.
+
+    @internal For good GPU performance, memory is not deallocated.  To
+    really deallocate memory, destruct this object and use another.
   */
   void clear();
 
@@ -284,9 +288,16 @@ private:
   MarchingCubesDataParallelism m_dataParallelism =
     MarchingCubesDataParallelism::byPolicy;
 
-  //! @brief Single-domain implementations.
+  //!@brief Number of domains.
+  axom::IndexType m_domainCount;
+
+  /*!
+    @brief Single-domain implementations.
+
+    May be longer than m_domainCount (the real count).
+  */
   axom::Array<std::unique_ptr<MarchingCubesSingleDomain>> m_singles;
-  const std::string m_topologyName;
+  std::string m_topologyName;
   std::string m_fcnFieldName;
   std::string m_fcnPath;
   std::string m_maskFieldName;
@@ -343,29 +354,34 @@ public:
    * \param [in] allocatorID Data allocator ID.  Choose something compatible
    *             with \c runtimePolicy.  See \c esecution_space.
    * \param [in] dataPar Choice of data-parallel implementation.
-   * \param [in] dom Blueprint single-domain mesh containing scalar field.
-   * \param [in] topologyName Name of Blueprint topology to use in \a dom
-   * \param [in] maskField Cell-based std::int32_t mask field.  If provided,
-   *             cells where this field evaluates to false are skipped.
-   *
-   * Array data in \a dom must be accessible in the \a runtimePolicy
-   * environment.  It's an error if not, e.g., using CPU memory with
-   * a GPU policy.
-   *
-   * Some data from \a dom may be cached by the constructor.
-   * Any change to it after the constructor leads to undefined behavior.
-   *
-   * The mesh coordinates should be stored contiguously.  See
-   * conduit::blueprint::is_contiguous().  In the future, this
-   * requirement may be relaxed, possibly at the cost of a
-   * transformation and storage of the temporary contiguous layout.
    */
   MarchingCubesSingleDomain(RuntimePolicy runtimePolicy,
                             int allocatorID,
-                            MarchingCubesDataParallelism dataPar,
-                            const conduit::Node &dom,
-                            const std::string &topologyName,
-                            const std::string &maskfield);
+                            MarchingCubesDataParallelism dataPar);
+
+  /*!
+    @brief Intitialize object to a domain.
+    \param [in] dom Blueprint single-domain mesh containing scalar field.
+    \param [in] topologyName Name of Blueprint topology to use in \a dom
+    \param [in] maskField Cell-based std::int32_t mask field.  If provided,
+                cells where this field evaluates to false are skipped.
+
+    Array data in \a dom must be accessible in the the \a
+    runtimePolicy environment in the constructor.  It's an error if
+    not, e.g., using CPU memory with a GPU policy.
+
+    Some data from \a dom may be cached by the constructor.  Any
+    change to it without re-initialization leads to undefined
+    behavior.
+
+    The mesh coordinates should be stored contiguously.  See
+    conduit::blueprint::is_contiguous().  In the future, this
+    requirement may be relaxed, possibly at the cost of a
+    transformation and storage of the temporary contiguous layout.
+  */
+  void initialize( const conduit::Node &dom,
+                   const std::string &topologyName,
+                   const std::string &maskfield);
 
   int spatialDimension() const { return m_ndim; }
 
@@ -514,15 +530,15 @@ private:
   int m_ndim;
 
   //!@brief Name of Blueprint topology in m_dom.
-  const std::string m_topologyName;
+  std::string m_topologyName;
 
   std::string m_fcnFieldName;
   //!@brief Path to nodal scalar function in m_dom.
   std::string m_fcnPath;
 
-  const std::string m_maskFieldName;
+  std::string m_maskFieldName;
   //!@brief Path to mask in m_dom.
-  const std::string m_maskPath;
+  std::string m_maskPath;
 
   double m_contourVal = 0.0;
 

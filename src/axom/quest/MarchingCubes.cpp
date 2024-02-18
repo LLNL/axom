@@ -24,39 +24,62 @@ const axom::StackArray<axom::IndexType, 2> twoZeros{0, 0};
 
 MarchingCubes::MarchingCubes(RuntimePolicy runtimePolicy,
                              int allocatorID,
-                             MarchingCubesDataParallelism dataParallelism,
-                             const conduit::Node& bpMesh,
-                             const std::string& topologyName,
-                             const std::string& maskField)
+                             MarchingCubesDataParallelism dataParallelism)
   : m_runtimePolicy(runtimePolicy)
   , m_allocatorID(allocatorID)
   , m_dataParallelism(dataParallelism)
   , m_singles()
-  , m_topologyName(topologyName)
+  , m_topologyName()
   , m_fcnFieldName()
   , m_fcnPath()
-  , m_maskFieldName(maskField)
-  , m_maskPath(maskField.empty() ? std::string() : "fields/" + maskField)
+  , m_maskFieldName()
+  , m_maskPath()
   , m_facetIndexOffsets(0, 0)
   , m_facetCount(0)
   , m_facetNodeIds(twoZeros, m_allocatorID)
   , m_facetNodeCoords(twoZeros, m_allocatorID)
   , m_facetParentIds(0, 0, m_allocatorID)
 {
+}
+
+// Set the object up for a blueprint mesh state.
+void MarchingCubes::initialize(
+  const conduit::Node& bpMesh,
+  const std::string& topologyName,
+  const std::string& maskField)
+{
   SLIC_ASSERT_MSG(
     conduit::blueprint::mesh::is_multi_domain(bpMesh),
     "MarchingCubes class input mesh must be in multidomain format.");
 
-  m_singles.reserve(conduit::blueprint::mesh::number_of_domains(bpMesh));
-  for(auto& dom : bpMesh.children())
+  clear();
+
+  m_topologyName = topologyName;
+  m_maskFieldName = maskField;
+
+  /*
+    To avoid slow memory allocations (especially on GPUs) keep the
+    single-domain objects around and just re-initialize them.  Arrays
+    will be cleared, but not deallocated.  To really deallocate
+    memory, deallocate the MarchingCubes object.  The actual number
+    of domains is m_domainCount, not m_singles.size().
+  */
+  auto newDomainCount = conduit::blueprint::mesh::number_of_domains(bpMesh);
+
+  while( m_singles.size() < newDomainCount )
   {
     m_singles.emplace_back(new MarchingCubesSingleDomain(m_runtimePolicy,
                                                          m_allocatorID,
-                                                         m_dataParallelism,
-                                                         dom,
-                                                         m_topologyName,
-                                                         maskField));
+                                                         m_dataParallelism));
   }
+
+  for (int d = 0; d < newDomainCount; ++d)
+  {
+    const auto& dom = bpMesh.child(d);
+    m_singles[d]->initialize(dom, m_topologyName, maskField);
+  }
+
+  m_domainCount = newDomainCount;
 }
 
 void MarchingCubes::setFunctionField(const std::string& fcnField)
@@ -150,6 +173,7 @@ void MarchingCubes::clear()
   {
     m_singles[d]->getImpl().clear();
   }
+  m_domainCount = 0;
   m_facetNodeIds.clear();
   m_facetNodeCoords.clear();
   m_facetParentIds.clear();
@@ -257,36 +281,28 @@ void MarchingCubes::allocateOutputBuffers()
 MarchingCubesSingleDomain::MarchingCubesSingleDomain(
   RuntimePolicy runtimePolicy,
   int allocatorID,
-  MarchingCubesDataParallelism dataPar,
-  const conduit::Node& dom,
-  const std::string& topologyName,
-  const std::string& maskField)
+  MarchingCubesDataParallelism dataPar)
   : m_runtimePolicy(runtimePolicy)
   , m_allocatorID(allocatorID)
   , m_dataParallelism(dataPar)
   , m_dom(nullptr)
   , m_ndim(0)
-  , m_topologyName(topologyName)
+  , m_topologyName()
   , m_fcnFieldName()
   , m_fcnPath()
-  , m_maskFieldName(maskField)
-  , m_maskPath(maskField.empty() ? std::string() : "fields/" + maskField)
+  , m_maskFieldName()
+  , m_maskPath()
 {
-  // Set domain first, to get m_ndim, which is required to allocate m_impl.
-  setDomain(dom);
-
-  m_impl =
-    axom::quest::detail::marching_cubes::newMarchingCubesImpl(m_runtimePolicy,
-                                                              m_allocatorID,
-                                                              m_ndim);
-
-  m_impl->initialize(*m_dom, m_topologyName, m_maskFieldName);
-  m_impl->setDataParallelism(m_dataParallelism);
   return;
 }
 
-void MarchingCubesSingleDomain::setDomain(const conduit::Node& dom)
+void MarchingCubesSingleDomain::initialize(
+  const conduit::Node& dom,
+  const std::string& topologyName,
+  const std::string& maskField)
 {
+  m_topologyName = topologyName;
+
   SLIC_ASSERT_MSG(
     !conduit::blueprint::mesh::is_multi_domain(dom),
     "MarchingCubesSingleDomain is single-domain only.  Try MarchingCubes.");
@@ -300,7 +316,12 @@ void MarchingCubesSingleDomain::setDomain(const conduit::Node& dom)
 
   if(!m_maskPath.empty())
   {
+    m_maskPath = maskField.empty() ? std::string() : "fields/" + maskField;
     SLIC_ASSERT(dom.has_path(m_maskPath + "/values"));
+  }
+  else
+  {
+    m_maskPath.clear();
   }
 
   m_dom = &dom;
@@ -313,6 +334,14 @@ void MarchingCubesSingleDomain::setDomain(const conduit::Node& dom)
     !conduit::blueprint::mcarray::is_interleaved(
       dom.fetch_existing(coordsetPath + "/values")),
     "MarchingCubes currently requires contiguous coordinates layout.");
+
+  m_impl =
+    axom::quest::detail::marching_cubes::newMarchingCubesImpl(m_runtimePolicy,
+                                                              m_allocatorID,
+                                                              m_ndim);
+
+  m_impl->initialize(dom, topologyName, maskField);
+  m_impl->setDataParallelism(m_dataParallelism);
 }
 
 MarchingCubes::DomainIdType MarchingCubesSingleDomain::getDomainId(
