@@ -15,6 +15,7 @@
 #include "axom/slic/interface/slic_macros.hpp"
 #include "axom/quest/ArrayIndexer.hpp"
 #include "axom/quest/MeshViewUtil.hpp"
+#include "axom/quest/detail/MarchingCubesSingleDomain.hpp"
 #include "axom/primal/geometry/Point.hpp"
 #include "axom/primal/constants.hpp"
 #include "axom/mint/execution/internal/structured_exec.hpp"

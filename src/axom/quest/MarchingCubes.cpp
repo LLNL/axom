@@ -13,6 +13,7 @@
 
 #include "axom/core/execution/execution_space.hpp"
 #include "axom/quest/MarchingCubes.hpp"
+#include "axom/quest/detail/MarchingCubesSingleDomain.hpp"
 #include "axom/quest/detail/MarchingCubesImpl.hpp"
 #include "axom/fmt.hpp"
 
@@ -143,21 +144,22 @@ axom::IndexType MarchingCubes::getContourNodeCount() const
   Domain ids are provided as a new Array instead of ArrayView because
   we don't store it internally.
 */
-axom::Array<MarchingCubes::DomainIdType> MarchingCubes::getContourFacetDomainIds(
+template<typename DomainIdType>
+axom::Array<DomainIdType> MarchingCubes::getContourFacetDomainIds(
   int allocatorID) const
 {
   // Put parent domain ids into a new Array.
   const axom::IndexType len = getContourCellCount();
-  axom::Array<MarchingCubes::DomainIdType> rval(
+  axom::Array<DomainIdType> rval(
     len,
     len,
     allocatorID != axom::INVALID_ALLOCATOR_ID ? allocatorID : m_allocatorID);
   for(int d = 0; d < m_singles.size(); ++d)
   {
-    MarchingCubes::DomainIdType domainId = m_singles[d]->getDomainId(d);
+    DomainIdType domainId = static_cast<DomainIdType>(m_singles[d]->getDomainId(d));
     axom::IndexType contourCellCount = m_singles[d]->getContourCellCount();
     axom::IndexType offset = m_facetIndexOffsets[d];
-    axom::detail::ArrayOps<MarchingCubes::DomainIdType, MemorySpace::Dynamic>::fill(
+    axom::detail::ArrayOps<DomainIdType, MemorySpace::Dynamic>::fill(
       rval.data(),
       offset,
       contourCellCount,
@@ -257,7 +259,7 @@ void MarchingCubes::populateContourMesh(
       // Put parent domain ids into the mesh.
       auto* domainIdPtr =
         mesh.getFieldPtr<DomainIdType>(domainIdField, axom::mint::CELL_CENTERED);
-      auto tmpContourFacetDomainIds = getContourFacetDomainIds(hostAllocatorId);
+      auto tmpContourFacetDomainIds = getContourFacetDomainIds<DomainIdType>(hostAllocatorId);
       axom::copy(domainIdPtr,
                  tmpContourFacetDomainIds.data(),
                  m_facetCount * sizeof(DomainIdType));
