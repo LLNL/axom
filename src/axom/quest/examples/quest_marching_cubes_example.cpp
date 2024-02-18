@@ -786,21 +786,7 @@ struct ContourTestBase
       computeTimer.stop();
       // printTimingStats(computeTimer, name() + " contour");
 
-      {
-        int mn, mx, sum;
-        getIntMinMax(mc.getContourCellCount(), mn, mx, sum);
-        SLIC_INFO(axom::fmt::format(
-                    "Contour mesh has {{min:{}, max:{}, sum:{}, avg:{}}} cells",
-                    mn,
-                    mx,
-                    sum,
-                    (double)sum / numRanks));
-      }
-      SLIC_INFO_IF(
-        params.isVerbose(),
-        axom::fmt::format("Surface mesh has locally {} cells, {} nodes.",
-                          mc.getContourCellCount(),
-                          mc.getContourNodeCount()));
+      printRunStats(mc);
     }
 
     // Return conduit data to host memory.
@@ -853,6 +839,25 @@ struct ContourTestBase
     objectDS.getRoot()->destroyGroupAndData(sidreGroupName);
 
     return localErrCount;
+  }
+
+  void printRunStats(const quest::MarchingCubes& mc)
+  {
+    {
+      int mn, mx, sum;
+      getIntMinMax(mc.getContourCellCount(), mn, mx, sum);
+      SLIC_INFO(axom::fmt::format(
+                  "Contour mesh has {{min:{}, max:{}, sum:{}, avg:{}}} cells",
+                  mn,
+                  mx,
+                  sum,
+                  (double)sum / numRanks));
+    }
+    SLIC_INFO_IF(
+      params.isVerbose(),
+      axom::fmt::format("Contour mesh has locally {} cells, {} nodes.",
+                        mc.getContourCellCount(),
+                        mc.getContourNodeCount()));
   }
 
   void computeNodalDistance(BlueprintStructuredMesh& bpMesh)

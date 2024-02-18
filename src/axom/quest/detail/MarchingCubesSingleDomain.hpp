@@ -125,7 +125,7 @@ public:
   {
     return m_impl->getContourCellCount();
   }
-  void computeContour() { m_impl->computeContour(); }
+  void computeFacets() { m_impl->computeFacets(); }
 
   /*!
     @brief Get the Blueprint domain id specified in \a state/domain_id
@@ -187,7 +187,7 @@ public:
     //!@brief Scan operations to determine counts and offsets.
     virtual void scanCrossings() = 0;
     //!@brief Compute contour data.
-    virtual void computeContour() = 0;
+    virtual void computeFacets() = 0;
     //@}
 
     //@{

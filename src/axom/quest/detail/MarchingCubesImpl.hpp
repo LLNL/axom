@@ -568,9 +568,9 @@ public:
     m_firstFacetIds.resize(m_crossingCount);
   }
 
-  void computeContour() override
+  void computeFacets() override
   {
-    AXOM_PERF_MARK_FUNCTION("MarchingCubesImpl::computeContour");
+    AXOM_PERF_MARK_FUNCTION("MarchingCubesImpl::computeFacets");
     const auto facetIncrsView = m_facetIncrs.view();
     const auto firstFacetIdsView = m_firstFacetIds.view();
     const auto crossingParentIdsView = m_crossingParentIds.view();
@@ -582,7 +582,7 @@ public:
     axom::ArrayView<axom::IndexType> facetParentIdsView = m_facetParentIds;
     const axom::IndexType facetIndexOffset = m_facetIndexOffset;
 
-    ComputeContour_Util ccu(m_contourVal,
+    ComputeFacets_Util cfu(m_contourVal,
                             m_caseIdsIndexer,
                             m_fcnView,
                             m_coordsViews);
@@ -593,7 +593,7 @@ public:
       auto caseId = caseIdsView.flatIndex(parentCellId);
       Point cornerCoords[CELL_CORNER_COUNT];
       double cornerValues[CELL_CORNER_COUNT];
-      ccu.get_corner_coords_and_values(parentCellId, cornerCoords, cornerValues);
+      cfu.get_corner_coords_and_values(parentCellId, cornerCoords, cornerValues);
 
       auto additionalFacets = facetIncrsView[crossingId];
       auto firstFacetId = facetIndexOffset + firstFacetIdsView[crossingId];
@@ -611,7 +611,7 @@ public:
           facetNodeIdsView[newFacetId][d] = newCornerId;
 
           int edge = cases_table(caseId, fId * DIM + d);
-          ccu.linear_interp(edge,
+          cfu.linear_interp(edge,
                             cornerCoords,
                             cornerValues,
                             &facetNodeCoordsView(newCornerId, 0));
@@ -623,17 +623,17 @@ public:
   }
 
   /*!
-    @brief Implementation used by MarchingCubesImpl::computeContour().
+    @brief Implementation used by MarchingCubesImpl::computeFacets().
     containing just the objects needed for that part, to be made available
     on devices.
   */
-  struct ComputeContour_Util
+  struct ComputeFacets_Util
   {
     double contourVal;
     axom::ArrayIndexer<axom::IndexType, DIM> indexer;
     axom::ArrayView<const double, DIM, MemorySpace> fcnView;
     axom::StackArray<axom::ArrayView<const double, DIM, MemorySpace>, DIM> coordsViews;
-    ComputeContour_Util(
+    ComputeFacets_Util(
       double contourVal_,
       const axom::ArrayIndexer<axom::IndexType, DIM>& parentIndexer_,
       const axom::ArrayView<const double, DIM, MemorySpace>& fcnView_,
@@ -811,7 +811,7 @@ public:
         crossingPt[d] = p1[d] + w * (p2[d] - p1[d]);
       }
     }
-  };  // ComputeContour_Util
+  };  // ComputeFacets_Util
 
   // These 4 functions provide access to the look-up table
   // whether on host or device.  Is there a more elegant way
