@@ -65,8 +65,9 @@ public:
 
   AXOM_HOST MarchingCubesImpl(int allocatorID,
                               axom::Array<std::uint16_t>& caseIdsFlat,
-                              axom::Array<std::int16_t>& crossingFlags,
-                              axom::Array<axom::IndexType>& scannedFlags)
+                              axom::Array<std::uint16_t>& crossingFlags,
+                              axom::Array<axom::IndexType>& scannedFlags,
+                              axom::Array<std::uint16_t>& facetIncrs)
     : m_allocatorID(allocatorID)
     , m_caseIds()
     , m_caseIdsIndexer()
@@ -75,7 +76,7 @@ public:
     , m_crossingFlags(crossingFlags)
     , m_scannedFlags(scannedFlags)
     , m_crossingParentIds(0, 0, m_allocatorID)
-    , m_facetIncrs(0, 0, m_allocatorID)
+    , m_facetIncrs(facetIncrs) // (0, 0, m_allocatorID)
     , m_firstFacetIds(0, 0, m_allocatorID)
   {
     SLIC_ASSERT(caseIdsFlat.getAllocatorID() == allocatorID);
@@ -102,6 +103,7 @@ public:
   {
     // Time this due to potentially slow memory allocation
     AXOM_PERF_MARK_FUNCTION("MarchingCubesImpl::initialize");
+    clear();
 
     SLIC_ASSERT(conduit::blueprint::mesh::topology::dims(dom.fetch_existing(
                   axom::fmt::format("topologies/{}", topologyName))) == DIM);
@@ -486,7 +488,7 @@ public:
     axom::copy(&m_facetCount,
                m_firstFacetIds.data() + m_firstFacetIds.size() - 1,
                sizeof(axom::IndexType));
-    m_firstFacetIds.resize(m_crossingCount);
+    // m_firstFacetIds.resize(m_crossingCount);
   }
 
   void scanCrossings_hybridParallel()
@@ -580,17 +582,15 @@ public:
     axom::copy(&m_facetCount,
                m_firstFacetIds.data() + m_firstFacetIds.size() - 1,
                sizeof(axom::IndexType));
-    m_firstFacetIds.resize(m_crossingCount);
+    // m_firstFacetIds.resize(m_crossingCount);
   }
 
   void computeFacets() override
   {
     AXOM_PERF_MARK_FUNCTION("MarchingCubesImpl::computeFacets");
-    const auto facetIncrsView = m_facetIncrs.view();
     const auto firstFacetIdsView = m_firstFacetIds.view();
     const auto crossingParentIdsView = m_crossingParentIds.view();
     const auto crossingCasesView = m_crossingCases.view();
-    const auto caseIdsView = m_caseIds;
 
     // Internal contour mesh data to populate
     axom::ArrayView<axom::IndexType, 2> facetNodeIdsView = m_facetNodeIds;
@@ -604,12 +604,11 @@ public:
     {
       auto parentCellId = crossingParentIdsView[crossingId];
       auto caseId = crossingCasesView[crossingId];
-      // auto caseId = caseIdsView.flatIndex(parentCellId);
       Point cornerCoords[CELL_CORNER_COUNT];
       double cornerValues[CELL_CORNER_COUNT];
       cfu.get_corner_coords_and_values(parentCellId, cornerCoords, cornerValues);
 
-      auto additionalFacets = facetIncrsView[crossingId];
+      auto additionalFacets = firstFacetIdsView[crossingId+1] - firstFacetIdsView[crossingId];
       auto firstFacetId = facetIndexOffset + firstFacetIdsView[crossingId];
 
       for(axom::IndexType fId = 0; fId < additionalFacets; ++fId)
@@ -954,7 +953,7 @@ private:
   axom::Array<std::int16_t> m_crossingCases;
 
   //!@brief Whether a parent cell crosses the contour.
-  axom::Array<std::int16_t>& m_crossingFlags;
+  axom::Array<std::uint16_t>& m_crossingFlags;
 
   //!@brief Prefix sum of m_crossingFlags
   axom::Array<axom::IndexType>& m_scannedFlags;
@@ -970,7 +969,7 @@ private:
   axom::Array<axom::IndexType, 1, MemorySpace> m_crossingParentIds;
 
   //!@brief Number of surface mesh facets added by each crossing.
-  axom::Array<FacetIdType, 1, MemorySpace> m_facetIncrs;
+  axom::Array<std::uint16_t>& m_facetIncrs;
 
   //!@brief First index of facets for each crossing.
   axom::Array<axom::IndexType, 1, MemorySpace> m_firstFacetIds;

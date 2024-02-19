@@ -313,8 +313,9 @@ private:
   //!@name Scratch space from m_allocatorID, shared among singles
   // Memory alloc is slow on CUDA, so this optimizes space AND time.
   axom::Array<std::uint16_t> m_caseIdsFlat;
-  axom::Array<std::int16_t> m_crossingFlags;
+  axom::Array<std::uint16_t> m_crossingFlags;
   axom::Array<axom::IndexType> m_scannedFlags;
+  axom::Array<std::uint16_t> m_facetIncrs;
   //@}
 
   //@{

@@ -101,13 +101,15 @@ MarchingCubesSingleDomain::newMarchingCubesImpl()
             m_mc.m_allocatorID,
             m_mc.m_caseIdsFlat,
             m_mc.m_crossingFlags,
-            m_mc.m_scannedFlags))
+            m_mc.m_scannedFlags,
+            m_mc.m_facetIncrs))
       : std::unique_ptr<ImplBase>(
           new MarchingCubesImpl<3, axom::SEQ_EXEC, axom::SEQ_EXEC>(
             m_mc.m_allocatorID,
             m_mc.m_caseIdsFlat,
             m_mc.m_crossingFlags,
-            m_mc.m_scannedFlags));
+            m_mc.m_scannedFlags,
+            m_mc.m_facetIncrs));
   }
 #ifdef AXOM_RUNTIME_POLICY_USE_OPENMP
   else if(m_runtimePolicy == MarchingCubes::RuntimePolicy::omp)
@@ -118,13 +120,15 @@ MarchingCubesSingleDomain::newMarchingCubesImpl()
             m_mc.m_allocatorID,
             m_mc.m_caseIdsFlat,
             m_mc.m_crossingFlags,
-            m_mc.m_scannedFlags))
+            m_mc.m_scannedFlags,
+            m_mc.m_facetIncrs))
       : std::unique_ptr<ImplBase>(
           new MarchingCubesImpl<3, axom::OMP_EXEC, axom::SEQ_EXEC>(
             m_mc.m_allocatorID,
             m_mc.m_caseIdsFlat,
             m_mc.m_crossingFlags,
-            m_mc.m_scannedFlags));
+            m_mc.m_scannedFlags,
+            m_mc.m_facetIncrs));
   }
 #endif
 #ifdef AXOM_RUNTIME_POLICY_USE_CUDA
@@ -136,13 +140,15 @@ MarchingCubesSingleDomain::newMarchingCubesImpl()
             m_mc.m_allocatorID,
             m_mc.m_caseIdsFlat,
             m_mc.m_crossingFlags,
-            m_mc.m_scannedFlags))
+            m_mc.m_scannedFlags,
+            m_mc.m_facetIncrs))
       : std::unique_ptr<ImplBase>(
           new MarchingCubesImpl<3, axom::CUDA_EXEC<256>, axom::CUDA_EXEC<1>>(
             m_mc.m_allocatorID,
             m_mc.m_caseIdsFlat,
             m_mc.m_crossingFlags,
-            m_mc.m_scannedFlags));
+            m_mc.m_scannedFlags,
+            m_mc.m_facetIncrs));
   }
 #endif
 #ifdef AXOM_RUNTIME_POLICY_USE_HIP
@@ -154,13 +160,15 @@ MarchingCubesSingleDomain::newMarchingCubesImpl()
             m_mc.m_allocatorID,
             m_mc.m_caseIdsFlat,
             m_mc.m_crossingFlags,
-            m_mc.m_scannedFlags))
+            m_mc.m_scannedFlags,
+            m_mc.m_facetIncrs))
       : std::unique_ptr<ImplBase>(
           new MarchingCubesImpl<3, axom::HIP_EXEC<256>, axom::HIP_EXEC<1>>(
             m_mc.m_allocatorID,
             m_mc.m_caseIdsFlat,
             m_mc.m_crossingFlags,
-            m_mc.m_scannedFlags));
+            m_mc.m_scannedFlags,
+            m_mc.m_facetIncrs));
   }
 #endif
   else

@@ -40,6 +40,7 @@ MarchingCubes::MarchingCubes(RuntimePolicy runtimePolicy,
   , m_caseIdsFlat(0, 0, m_allocatorID)
   , m_crossingFlags(0, 0, m_allocatorID)
   , m_scannedFlags(0, 0, m_allocatorID)
+  , m_facetIncrs(0, 0, m_allocatorID)
   , m_facetNodeIds(twoZeros, m_allocatorID)
   , m_facetNodeCoords(twoZeros, m_allocatorID)
   , m_facetParentIds(0, 0, m_allocatorID)
