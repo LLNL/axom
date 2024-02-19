@@ -76,7 +76,7 @@ public:
     , m_crossingFlags(crossingFlags)
     , m_scannedFlags(scannedFlags)
     , m_crossingParentIds(0, 0, m_allocatorID)
-    , m_facetIncrs(facetIncrs) // (0, 0, m_allocatorID)
+    , m_facetIncrs(facetIncrs)  // (0, 0, m_allocatorID)
     , m_firstFacetIds(0, 0, m_allocatorID)
   {
     SLIC_ASSERT(caseIdsFlat.getAllocatorID() == allocatorID);
@@ -375,12 +375,13 @@ public:
   {
     AXOM_PERF_MARK_FUNCTION("MarchingCubesImpl::scanCrossings");
     if(m_dataParallelism ==
-         axom::quest::MarchingCubesDataParallelism::hybridParallel)
+       axom::quest::MarchingCubesDataParallelism::hybridParallel)
     {
       AXOM_PERF_MARK_SECTION("MarchingCubesImpl::scanCrossings:hybridParallel",
                              scanCrossings_hybridParallel(););
     }
-    else if(m_dataParallelism == axom::quest::MarchingCubesDataParallelism::fullParallel)
+    else if(m_dataParallelism ==
+            axom::quest::MarchingCubesDataParallelism::fullParallel)
     {
       AXOM_PERF_MARK_SECTION("MarchingCubesImpl::scanCrossings:fullParallel",
                              scanCrossings_fullParallel(););
@@ -608,7 +609,8 @@ public:
       double cornerValues[CELL_CORNER_COUNT];
       cfu.get_corner_coords_and_values(parentCellId, cornerCoords, cornerValues);
 
-      auto additionalFacets = firstFacetIdsView[crossingId+1] - firstFacetIdsView[crossingId];
+      auto additionalFacets =
+        firstFacetIdsView[crossingId + 1] - firstFacetIdsView[crossingId];
       auto firstFacetId = facetIndexOffset + firstFacetIdsView[crossingId];
 
       for(axom::IndexType fId = 0; fId < additionalFacets; ++fId)
