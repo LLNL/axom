@@ -199,7 +199,8 @@ public:
       ->capture_default_str();
 
     app.add_option("--contourGenReps", contourGenCount)
-      ->description("Number of contour repetitions to run for each MarchingCubes object")
+      ->description(
+        "Number of contour repetitions to run for each MarchingCubes object")
       ->capture_default_str();
 
     app.get_formatter()->column_width(60);
@@ -532,7 +533,7 @@ public:
   template <typename T>
   void moveMeshDataToNewMemorySpace(const std::string& path, int allocId)
   {
-    AXOM_PERF_MARK_FUNCTION("moveMeshDataToNewMemorySpace"); // For reference
+    AXOM_PERF_MARK_FUNCTION("moveMeshDataToNewMemorySpace");  // For reference
     for(auto& dom : _mdMesh.children())
     {
       moveConduitDataToNewMemorySpace<T>(dom, path, allocId);
@@ -762,7 +763,7 @@ struct ContourTestBase
     }
 #endif
     std::unique_ptr<quest::MarchingCubes> mcPtr;
-    for(int j=0; j<params.objectRepCount; ++j)
+    for(int j = 0; j < params.objectRepCount; ++j)
     {
       // Create marching cubes algorithm object and set some parameters
       mcPtr = std::make_unique<quest::MarchingCubes>(params.policy,
@@ -777,9 +778,14 @@ struct ContourTestBase
       MPI_Barrier(MPI_COMM_WORLD);
 #endif
       computeTimer.start();
-      for(int i=0; i<params.contourGenCount; ++i) {
-        SLIC_INFO(axom::fmt::format("MarchingCubes object rep {} of {}, contour run {} of {}:",
-                                    j, params.objectRepCount, i, params.contourGenCount ));
+      for(int i = 0; i < params.contourGenCount; ++i)
+      {
+        SLIC_INFO(axom::fmt::format(
+          "MarchingCubes object rep {} of {}, contour run {} of {}:",
+          j,
+          params.objectRepCount,
+          i,
+          params.contourGenCount));
         mc.clear();
         mc.computeIsocontour(params.contourVal);
       }
@@ -847,11 +853,11 @@ struct ContourTestBase
       int mn, mx, sum;
       getIntMinMax(mc.getContourCellCount(), mn, mx, sum);
       SLIC_INFO(axom::fmt::format(
-                  "Contour mesh has {{min:{}, max:{}, sum:{}, avg:{}}} cells",
-                  mn,
-                  mx,
-                  sum,
-                  (double)sum / numRanks));
+        "Contour mesh has {{min:{}, max:{}, sum:{}, avg:{}}} cells",
+        mn,
+        mx,
+        sum,
+        (double)sum / numRanks));
     }
     SLIC_INFO_IF(
       params.isVerbose(),

@@ -52,12 +52,11 @@ public:
   using LoopPolicy = typename execution_space<ExecSpace>::loop_policy;
   using ReducePolicy = typename execution_space<ExecSpace>::reduce_policy;
 #if defined(AXOM_USE_RAJA)
-    // Intel oneAPI compiler segfaults with OpenMP RAJA scan
+  // Intel oneAPI compiler segfaults with OpenMP RAJA scan
   #ifdef __INTEL_LLVM_COMPILER
-    using ScanPolicy =
-      typename axom::execution_space<axom::SEQ_EXEC>::loop_policy;
+  using ScanPolicy = typename axom::execution_space<axom::SEQ_EXEC>::loop_policy;
   #else
-    using ScanPolicy = typename axom::execution_space<ExecSpace>::loop_policy;
+  using ScanPolicy = typename axom::execution_space<ExecSpace>::loop_policy;
   #endif
 #endif
   using SequentialLoopPolicy =
@@ -368,15 +367,13 @@ public:
        (m_dataParallelism == axom::quest::MarchingCubesDataParallelism::byPolicy &&
         autoPolicy == MarchingCubesDataParallelism::hybridParallel))
     {
-      AXOM_PERF_MARK_SECTION(
-        "MarchingCubesImpl::scanCrossings:hybridParallel",
-        scanCrossings_hybridParallel(););
+      AXOM_PERF_MARK_SECTION("MarchingCubesImpl::scanCrossings:hybridParallel",
+                             scanCrossings_hybridParallel(););
     }
     else
     {
-      AXOM_PERF_MARK_SECTION(
-        "MarchingCubesImpl::scanCrossings:fullParallel",
-        scanCrossings_fullParallel(););
+      AXOM_PERF_MARK_SECTION("MarchingCubesImpl::scanCrossings:fullParallel",
+                             scanCrossings_fullParallel(););
     }
   }
 
@@ -412,7 +409,7 @@ public:
           auto numContourCells =
             num_contour_cells(caseIdsView.flatIndex(parentCellId));
           crossingFlagsView[parentCellId] = bool(numContourCells);
-      }););
+        }););
 
     m_scannedFlags.fill(0, 1, 0);
     AXOM_PERF_MARK_SECTION(
@@ -423,12 +420,11 @@ public:
         RAJA::make_span(m_scannedFlags.data() + 1, parentCellCount),
         RAJA::operators::plus<axom::IndexType> {});
 #else
-      for(axom::IndexType n = 0; n < parentCellCount; ++n)
-      {
+      for(axom::IndexType n = 0; n < parentCellCount; ++n) {
         m_scannedFlags[n + 1] = m_scannedFlags[n] + m_crossingFlags[n];
       }
 #endif
-                           );
+    );
 
     axom::copy(&m_crossingCount,
                m_scannedFlags.data() + m_scannedFlags.size() - 1,
@@ -445,18 +441,18 @@ public:
 
     AXOM_PERF_MARK_SECTION(
       "MarchingCubesImpl::scanCrossings:set_incrs",
-      auto loopBody = AXOM_LAMBDA(axom::IndexType parentCellId)
-      {
-        if(scannedFlagsView[parentCellId] != scannedFlagsView[1 + parentCellId])
-        {
-          auto crossingId = scannedFlagsView[parentCellId];
-          auto caseId = caseIdsView.flatIndex(parentCellId);
-          auto facetIncr = num_contour_cells(caseId);
-          crossingParentIdsView[crossingId] = parentCellId;
-          crossingCasesView[crossingId] = caseId;
-          facetIncrsView[crossingId] = facetIncr;
-        }
-      };
+      auto loopBody =
+        AXOM_LAMBDA(axom::IndexType parentCellId) {
+          if(scannedFlagsView[parentCellId] != scannedFlagsView[1 + parentCellId])
+          {
+            auto crossingId = scannedFlagsView[parentCellId];
+            auto caseId = caseIdsView.flatIndex(parentCellId);
+            auto facetIncr = num_contour_cells(caseId);
+            crossingParentIdsView[crossingId] = parentCellId;
+            crossingCasesView[crossingId] = caseId;
+            facetIncrsView[crossingId] = facetIncr;
+          }
+        };
       axom::for_all<ExecSpace>(0, parentCellCount, loopBody););
 
     //
@@ -473,12 +469,11 @@ public:
         RAJA::make_span(m_firstFacetIds.data() + 1, m_crossingCount),
         RAJA::operators::plus<axom::IndexType> {});
 #else
-      for(axom::IndexType n = 0; n < parentCellCount; ++n)
-      {
+      for(axom::IndexType n = 0; n < parentCellCount; ++n) {
         m_firstFacetIds[n + 1] = m_firstFacetIds[n] + m_facetIncrs[n];
       }
 #endif
-      );
+    );
 
     axom::copy(&m_facetCount,
                m_firstFacetIds.data() + m_firstFacetIds.size() - 1,
@@ -595,10 +590,7 @@ public:
     axom::ArrayView<axom::IndexType> facetParentIdsView = m_facetParentIds;
     const axom::IndexType facetIndexOffset = m_facetIndexOffset;
 
-    ComputeFacets_Util cfu(m_contourVal,
-                            m_caseIdsIndexer,
-                            m_fcnView,
-                            m_coordsViews);
+    ComputeFacets_Util cfu(m_contourVal, m_caseIdsIndexer, m_fcnView, m_coordsViews);
 
     auto gen_for_parent_cell = AXOM_LAMBDA(axom::IndexType crossingId)
     {

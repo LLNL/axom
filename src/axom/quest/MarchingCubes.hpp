@@ -58,7 +58,6 @@ enum class MarchingCubesDataParallelism
   fullParallel = 2
 };
 
-
 /*!
  * \@brief Class implementing marching cubes to compute a contour
  * mesh from a scalar function on an input mesh.
@@ -238,7 +237,7 @@ public:
 
     The buffer size is getContourCellCount().
   */
-  template<typename DomainIdType>
+  template <typename DomainIdType>
   axom::Array<DomainIdType> getContourFacetDomainIds(
     int allocatorID = axom::INVALID_ALLOCATOR_ID) const;
 

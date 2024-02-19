@@ -62,9 +62,9 @@ public:
    *             with \c runtimePolicy.  See \c esecution_space.
    * \param [in] dataPar Choice of data-parallel implementation.
    */
-  MarchingCubesSingleDomain(MarchingCubes& mc);
+  MarchingCubesSingleDomain(MarchingCubes &mc);
 
-  ~MarchingCubesSingleDomain() {}
+  ~MarchingCubesSingleDomain() { }
 
   /*!
     @brief Intitialize object to a domain.
@@ -86,9 +86,9 @@ public:
     requirement may be relaxed, possibly at the cost of a
     transformation and storage of the temporary contiguous layout.
   */
-  void initialize( const conduit::Node &dom,
-                   const std::string &topologyName,
-                   const std::string &maskfield);
+  void initialize(const conduit::Node &dom,
+                  const std::string &topologyName,
+                  const std::string &maskfield);
 
   int spatialDimension() const { return m_ndim; }
 
@@ -217,14 +217,11 @@ public:
     axom::IndexType m_facetIndexOffset = -1;
   };
 
-  ImplBase& getImpl()
-  {
-    return *m_impl;
-  }
+  ImplBase &getImpl() { return *m_impl; }
 
 private:
   //!@brief Multi-somain implementation this object is under.
-  MarchingCubes& m_mc;
+  MarchingCubes &m_mc;
 
   RuntimePolicy m_runtimePolicy;
   int m_allocatorID = axom::INVALID_ALLOCATOR_ID;
