@@ -762,14 +762,21 @@ struct ContourTestBase
       }
     }
 #endif
+
     std::unique_ptr<quest::MarchingCubes> mcPtr;
     for(int j = 0; j < params.objectRepCount; ++j)
     {
-      // Create marching cubes algorithm object and set some parameters
-      mcPtr = std::make_unique<quest::MarchingCubes>(params.policy,
-                                                     s_allocatorId,
-                                                     params.dataParallelism);
+      // Clear and re-use MarchingCubes object.
+      if(!mcPtr)
+      {
+        mcPtr = std::make_unique<quest::MarchingCubes>(params.policy,
+                                                       s_allocatorId,
+                                                       params.dataParallelism);
+      }
+      mcPtr->clear();
+
       auto& mc = *mcPtr;
+
       mc.initialize(computationalMesh.asConduitNode(), "mesh");
       mc.setFunctionField(functionName());
 
