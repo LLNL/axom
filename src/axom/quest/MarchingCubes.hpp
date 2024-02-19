@@ -127,7 +127,7 @@ public:
     environment.  It's an error if not, e.g., using CPU memory with
     a GPU policy.
 
-    Some data from \a bpMesh may be cached by the constructor.
+    Some metadata from \a bpMesh may be cached by the constructor.
     Any change to it after the constructor leads to undefined behavior.
 
     The mesh coordinates should be contiguous.  See
@@ -311,7 +311,7 @@ private:
   axom::IndexType m_facetCount = 0;
 
   //@{
-  //!@name Scratch space, shared among singles
+  //!@name Scratch space from m_allocatorID, shared among singles
   // Memory alloc is slow on CUDA, so this optimizes space AND time.
   axom::Array<std::uint16_t> m_caseIdsFlat;
   axom::Array<std::int16_t> m_crossingFlags;

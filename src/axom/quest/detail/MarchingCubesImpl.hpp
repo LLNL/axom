@@ -69,10 +69,12 @@ public:
                               axom::Array<std::int16_t>& crossingFlags,
                               axom::Array<axom::IndexType>& scannedFlags)
     : m_allocatorID(allocatorID)
-    , m_caseIdsFlat(0, 0, m_allocatorID)
     , m_caseIds()
-    , m_crossingFlags(0, 0, m_allocatorID)
-    , m_scannedFlags(0, 0, m_allocatorID)
+    , m_caseIdsIndexer()
+    , m_caseIdsFlat(caseIdsFlat)
+    , m_crossingCases(0, 0, m_allocatorID)
+    , m_crossingFlags(crossingFlags)
+    , m_scannedFlags(scannedFlags)
     , m_crossingParentIds(0, 0, m_allocatorID)
     , m_facetIncrs(0, 0, m_allocatorID)
     , m_firstFacetIds(0, 0, m_allocatorID)
@@ -382,6 +384,7 @@ public:
   {
     AXOM_PERF_MARK_FUNCTION("MarchingCubesImpl::allocateIndexLists");
     m_crossingParentIds.resize(m_crossingCount, 0);
+    m_crossingCases.resize(m_crossingCount, 0);
     m_facetIncrs.resize(m_crossingCount, 0);
     m_firstFacetIds.resize(1 + m_crossingCount, 0);
   }
@@ -432,11 +435,12 @@ public:
                sizeof(axom::IndexType));
 
     //
-    // Generate crossing-cells index list and corresponding facet counts.
+    // Generate crossing info in compact arrays.
     //
     allocateIndexLists();
     auto scannedFlagsView = m_scannedFlags.view();
     auto crossingParentIdsView = m_crossingParentIds.view();
+    auto crossingCasesView = m_crossingCases.view();
     auto facetIncrsView = m_facetIncrs.view();
 
     AXOM_PERF_MARK_SECTION(
@@ -446,8 +450,10 @@ public:
         if(scannedFlagsView[parentCellId] != scannedFlagsView[1 + parentCellId])
         {
           auto crossingId = scannedFlagsView[parentCellId];
-          auto facetIncr = num_contour_cells(caseIdsView.flatIndex(parentCellId));
+          auto caseId = caseIdsView.flatIndex(parentCellId);
+          auto facetIncr = num_contour_cells(caseId);
           crossingParentIdsView[crossingId] = parentCellId;
+          crossingCasesView[crossingId] = caseId;
           facetIncrsView[crossingId] = facetIncr;
         }
       };
@@ -507,11 +513,9 @@ public:
     //
     // Allocate space for crossing info
     //
-    m_crossingParentIds.resize(m_crossingCount);
-    m_facetIncrs.resize(m_crossingCount);
-    m_firstFacetIds.resize(1 + m_crossingCount);
-
+    allocateIndexLists();
     auto crossingParentIdsView = m_crossingParentIds.view();
+    auto crossingCasesView = m_crossingCases.view();
     auto facetIncrsView = m_facetIncrs.view();
 
     axom::IndexType* crossingId = axom::allocate<axom::IndexType>(
@@ -524,8 +528,9 @@ public:
       auto ccc = num_contour_cells(caseId);
       if(ccc != 0)
       {
-        facetIncrsView[*crossingId] = ccc;
         crossingParentIdsView[*crossingId] = n;
+        crossingCasesView[*crossingId] = caseId;
+        facetIncrsView[*crossingId] = ccc;
         ++(*crossingId);
       }
     };
@@ -581,6 +586,7 @@ public:
     const auto facetIncrsView = m_facetIncrs.view();
     const auto firstFacetIdsView = m_firstFacetIds.view();
     const auto crossingParentIdsView = m_crossingParentIds.view();
+    const auto crossingCasesView = m_crossingCases.view();
     const auto caseIdsView = m_caseIds;
 
     // Internal contour mesh data to populate
@@ -597,7 +603,8 @@ public:
     auto gen_for_parent_cell = AXOM_LAMBDA(axom::IndexType crossingId)
     {
       auto parentCellId = crossingParentIdsView[crossingId];
-      auto caseId = caseIdsView.flatIndex(parentCellId);
+      auto caseId = crossingCasesView[crossingId];
+      // auto caseId = caseIdsView.flatIndex(parentCellId);
       Point cornerCoords[CELL_CORNER_COUNT];
       double cornerValues[CELL_CORNER_COUNT];
       cfu.get_corner_coords_and_values(parentCellId, cornerCoords, cornerValues);
@@ -920,11 +927,16 @@ private:
   axom::ArrayView<const double, DIM, MemorySpace> m_fcnView;
   axom::ArrayView<const int, DIM, MemorySpace> m_maskView;
 
-  //!@brief Crossing case for each computational mesh cell.
-  axom::Array<std::uint16_t, 1, MemorySpace> m_caseIdsFlat;
+  /*!
+    @brief Crossing case for each computational mesh cell.
+
+    This is a multidim view into 1D data from m_caseIdsFlat,
+    set up with help from m_caseIdsIndexer.
+  */
   axom::ArrayView<std::uint16_t, DIM, MemorySpace> m_caseIds;
   /*!
-    @brief Multi-dim indexer to control m_caseIdsFlat data ordering.
+    @brief Multidim indexer to handle data ordering in
+    m_caseIdsFlat.
 
     We want caseIds ordering to match m_fcnView, but Array
     only supports column-major ordering currently.  To control
@@ -933,11 +945,19 @@ private:
   */
   axom::ArrayIndexer<axom::IndexType, DIM> m_caseIdsIndexer;
 
+  // Array references refer to shared Arrays in MarchingCubes.
+
+  //!@brief Crossing case for each computational mesh cell.
+  axom::Array<std::uint16_t>& m_caseIdsFlat;
+
+  //!@brief Case ids for found crossings.
+  axom::Array<std::int16_t> m_crossingCases;
+
   //!@brief Whether a parent cell crosses the contour.
-  axom::Array<std::int16_t, 1, MemorySpace> m_crossingFlags;
+  axom::Array<std::int16_t>& m_crossingFlags;
 
   //!@brief Prefix sum of m_crossingFlags
-  axom::Array<axom::IndexType, 1, MemorySpace> m_scannedFlags;
+  axom::Array<axom::IndexType>& m_scannedFlags;
 
   //!@brief Number of parent cells crossing the contour surface.
   axom::IndexType m_crossingCount = 0;
