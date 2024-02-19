@@ -37,6 +37,9 @@ MarchingCubes::MarchingCubes(RuntimePolicy runtimePolicy,
   , m_maskPath()
   , m_facetIndexOffsets(0, 0)
   , m_facetCount(0)
+  , m_caseIdsFlat(0, 0, m_allocatorID)
+  , m_crossingFlags(0, 0, m_allocatorID)
+  , m_scannedFlags(0, 0, m_allocatorID)
   , m_facetNodeIds(twoZeros, m_allocatorID)
   , m_facetNodeCoords(twoZeros, m_allocatorID)
   , m_facetParentIds(0, 0, m_allocatorID)
@@ -69,9 +72,7 @@ void MarchingCubes::initialize(
 
   while( m_singles.size() < newDomainCount )
   {
-    m_singles.emplace_back(new MarchingCubesSingleDomain(m_runtimePolicy,
-                                                         m_allocatorID,
-                                                         m_dataParallelism));
+    m_singles.emplace_back(new detail::marching_cubes::MarchingCubesSingleDomain(*this));
   }
 
   for (int d = 0; d < newDomainCount; ++d)

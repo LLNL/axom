@@ -39,8 +39,6 @@ namespace marching_cubes
 {
 template <int DIM, typename ExecSpace, typename SequentialLoopPolicy>
 class MarchingCubesImpl;
-}  // namespace marching_cubes
-}  // namespace detail
 
 /*!
  * \@brief Class implementing marching cubes algorithm for a single
@@ -64,9 +62,7 @@ public:
    *             with \c runtimePolicy.  See \c esecution_space.
    * \param [in] dataPar Choice of data-parallel implementation.
    */
-  MarchingCubesSingleDomain(RuntimePolicy runtimePolicy,
-                            int allocatorID,
-                            MarchingCubesDataParallelism dataPar);
+  MarchingCubesSingleDomain(MarchingCubes& mc);
 
   ~MarchingCubesSingleDomain() {}
 
@@ -227,6 +223,9 @@ public:
   }
 
 private:
+  //!@brief Multi-somain implementation this object is under.
+  MarchingCubes& m_mc;
+
   RuntimePolicy m_runtimePolicy;
   int m_allocatorID = axom::INVALID_ALLOCATOR_ID;
 
@@ -262,8 +261,15 @@ private:
    */
   void setDomain(const conduit::Node &dom);
 
+  /*!
+    @brief Allocate MarchingCubesImpl object
+  */
+  std::unique_ptr<ImplBase> newMarchingCubesImpl();
+
 };  // class MarchingCubesSingleDomain
 
+}  // end namespace marching_cubes
+}  // end namespace detail
 }  // namespace quest
 }  // namespace axom
 

@@ -37,7 +37,8 @@ namespace detail
 namespace marching_cubes
 {
 template <int DIM, typename ExecSpace, typename SequentialLoopPolicy>
-class MarchingCubesImpl;
+class MarchingCubesImpl;  // TODO: Delete this.
+class MarchingCubesSingleDomain;
 }  // namespace marching_cubes
 }  // namespace detail
 
@@ -57,7 +58,6 @@ enum class MarchingCubesDataParallelism
   fullParallel = 2
 };
 
-class MarchingCubesSingleDomain;
 
 /*!
  * \@brief Class implementing marching cubes to compute a contour
@@ -278,6 +278,9 @@ public:
   */
   void clear();
 
+  // Allow single-domain code to share common scratch space.
+  friend detail::marching_cubes::MarchingCubesSingleDomain;
+
 private:
   RuntimePolicy m_runtimePolicy;
   int m_allocatorID = axom::INVALID_ALLOCATOR_ID;
@@ -294,7 +297,7 @@ private:
 
     May be longer than m_domainCount (the real count).
   */
-  axom::Array<std::shared_ptr<MarchingCubesSingleDomain>> m_singles;
+  axom::Array<std::shared_ptr<detail::marching_cubes::MarchingCubesSingleDomain>> m_singles;
   std::string m_topologyName;
   std::string m_fcnFieldName;
   std::string m_fcnPath;
@@ -306,6 +309,14 @@ private:
 
   //!@brief Facet count over all parent domains.
   axom::IndexType m_facetCount = 0;
+
+  //@{
+  //!@name Scratch space, shared among singles
+  // Memory alloc is slow on CUDA, so this optimizes space AND time.
+  axom::Array<std::uint16_t> m_caseIdsFlat;
+  axom::Array<std::int16_t> m_crossingFlags;
+  axom::Array<axom::IndexType> m_scannedFlags;
+  //@}
 
   //@{
   //!@name Generated contour mesh, shared with singles.

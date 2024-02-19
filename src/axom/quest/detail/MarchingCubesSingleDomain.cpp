@@ -20,14 +20,17 @@ namespace axom
 {
 namespace quest
 {
+namespace detail
+{
+namespace marching_cubes
+{
 
 MarchingCubesSingleDomain::MarchingCubesSingleDomain(
-  RuntimePolicy runtimePolicy,
-  int allocatorID,
-  MarchingCubesDataParallelism dataPar)
-  : m_runtimePolicy(runtimePolicy)
-  , m_allocatorID(allocatorID)
-  , m_dataParallelism(dataPar)
+  MarchingCubes& mc)
+  : m_mc(mc)
+  , m_runtimePolicy(mc.m_runtimePolicy)
+  , m_allocatorID(mc.m_allocatorID)
+  , m_dataParallelism(mc.m_dataParallelism)
   , m_dom(nullptr)
   , m_ndim(0)
   , m_topologyName()
@@ -78,13 +81,94 @@ void MarchingCubesSingleDomain::initialize(
       dom.fetch_existing(coordsetPath + "/values")),
     "MarchingCubes currently requires contiguous coordinates layout.");
 
-  m_impl =
-    axom::quest::detail::marching_cubes::newMarchingCubesImpl(m_runtimePolicy,
-                                                              m_allocatorID,
-                                                              m_ndim);
+  m_impl = newMarchingCubesImpl();
 
   m_impl->initialize(dom, topologyName, maskField);
   m_impl->setDataParallelism(m_dataParallelism);
+}
+
+/*!
+  @brief Allocate a MarchingCubesImpl object, template-specialized
+  for caller-specified runtime policy and physical dimension.
+*/
+std::unique_ptr<MarchingCubesSingleDomain::ImplBase>
+MarchingCubesSingleDomain::newMarchingCubesImpl()
+{
+  SLIC_ASSERT(m_ndim >= 2 && m_ndim <= 3);
+  std::unique_ptr<ImplBase> impl;
+  if(m_runtimePolicy == MarchingCubes::RuntimePolicy::seq)
+  {
+    impl = m_ndim == 2
+      ? std::unique_ptr<ImplBase>(
+        new MarchingCubesImpl<2, axom::SEQ_EXEC, axom::SEQ_EXEC>(m_mc.m_allocatorID,
+                                                                 m_mc.m_caseIdsFlat,
+                                                                 m_mc.m_crossingFlags,
+                                                                 m_mc.m_scannedFlags))
+      : std::unique_ptr<ImplBase>(
+        new MarchingCubesImpl<3, axom::SEQ_EXEC, axom::SEQ_EXEC>(m_mc.m_allocatorID,
+                                                                 m_mc.m_caseIdsFlat,
+                                                                 m_mc.m_crossingFlags,
+                                                                 m_mc.m_scannedFlags));
+  }
+#ifdef AXOM_RUNTIME_POLICY_USE_OPENMP
+  else if(m_runtimePolicy == MarchingCubes::RuntimePolicy::omp)
+  {
+    impl = m_ndim == 2
+      ? std::unique_ptr<ImplBase>(
+        new MarchingCubesImpl<2, axom::OMP_EXEC, axom::SEQ_EXEC>(m_mc.m_allocatorID,
+                                                                 m_mc.m_caseIdsFlat,
+                                                                 m_mc.m_crossingFlags,
+                                                                 m_mc.m_scannedFlags))
+      : std::unique_ptr<ImplBase>(
+        new MarchingCubesImpl<3, axom::OMP_EXEC, axom::SEQ_EXEC>(m_mc.m_allocatorID,
+                                                                 m_mc.m_caseIdsFlat,
+                                                                 m_mc.m_crossingFlags,
+                                                                 m_mc.m_scannedFlags));
+  }
+#endif
+#ifdef AXOM_RUNTIME_POLICY_USE_CUDA
+  else if(m_runtimePolicy == MarchingCubes::RuntimePolicy::cuda)
+  {
+    impl = m_ndim == 2
+      ? std::unique_ptr<ImplBase>(
+        new MarchingCubesImpl<2, axom::CUDA_EXEC<256>, axom::CUDA_EXEC<1>>(
+          m_mc.m_allocatorID,
+          m_mc.m_caseIdsFlat,
+          m_mc.m_crossingFlags,
+          m_mc.m_scannedFlags))
+      : std::unique_ptr<ImplBase>(
+        new MarchingCubesImpl<3, axom::CUDA_EXEC<256>, axom::CUDA_EXEC<1>>(
+          m_mc.m_allocatorID,
+          m_mc.m_caseIdsFlat,
+          m_mc.m_crossingFlags,
+          m_mc.m_scannedFlags));
+  }
+#endif
+#ifdef AXOM_RUNTIME_POLICY_USE_HIP
+  else if(m_runtimePolicy == MarchingCubes::RuntimePolicy::hip)
+  {
+    impl = m_ndim == 2
+      ? std::unique_ptr<ImplBase>(
+        new MarchingCubesImpl<2, axom::HIP_EXEC<256>, axom::HIP_EXEC<1>>(
+          m_mc.m_allocatorID,
+          m_mc.m_caseIdsFlat,
+          m_mc.m_crossingFlags,
+          m_mc.m_scannedFlags))
+      : std::unique_ptr<ImplBase>(
+        new MarchingCubesImpl<3, axom::HIP_EXEC<256>, axom::HIP_EXEC<1>>(
+          m_mc.m_allocatorID,
+          m_mc.m_caseIdsFlat,
+          m_mc.m_crossingFlags,
+          m_mc.m_scannedFlags));
+  }
+#endif
+  else
+  {
+    SLIC_ERROR(axom::fmt::format(
+      "MarchingCubesSingleDomain has no implementation for runtime policy {}",
+      m_runtimePolicy));
+  }
+  return impl;
 }
 
 int32_t MarchingCubesSingleDomain::getDomainId(
@@ -98,5 +182,7 @@ int32_t MarchingCubesSingleDomain::getDomainId(
   return rval;
 }
 
+}  // end namespace quest
+}  // end namespace axom
 }  // end namespace quest
 }  // end namespace axom
