@@ -116,6 +116,27 @@ public:
     }
   }
 
+  AXOM_HOST void setDataParallelism(MarchingCubesDataParallelism dataPar) override
+  {
+    constexpr MarchingCubesDataParallelism autoPolicy =
+      std::is_same<ExecSpace, axom::SEQ_EXEC>::value
+      ? MarchingCubesDataParallelism::hybridParallel
+      :
+#if defined(AXOM_USE_OPENMP) && defined(AXOM_USE_RAJA)
+      std::is_same<ExecSpace, axom::OMP_EXEC>::value
+        ? MarchingCubesDataParallelism::hybridParallel
+        :
+#endif
+        MarchingCubesDataParallelism::fullParallel;
+
+    m_dataParallelism = dataPar;
+
+    if(m_dataParallelism == axom::quest::MarchingCubesDataParallelism::byPolicy)
+    {
+      m_dataParallelism = autoPolicy;
+    }
+  }
+
   /*!
     @brief Set the scale field name
     @param fcnFieldName Name of nodal function is in dom
@@ -351,26 +372,13 @@ public:
   void scanCrossings() override
   {
     AXOM_PERF_MARK_FUNCTION("MarchingCubesImpl::scanCrossings");
-    constexpr MarchingCubesDataParallelism autoPolicy =
-      std::is_same<ExecSpace, axom::SEQ_EXEC>::value
-      ? MarchingCubesDataParallelism::hybridParallel
-      :
-#if defined(AXOM_USE_OPENMP) && defined(AXOM_USE_RAJA)
-      std::is_same<ExecSpace, axom::OMP_EXEC>::value
-        ? MarchingCubesDataParallelism::hybridParallel
-        :
-#endif
-        MarchingCubesDataParallelism::fullParallel;
-
     if(m_dataParallelism ==
-         axom::quest::MarchingCubesDataParallelism::hybridParallel ||
-       (m_dataParallelism == axom::quest::MarchingCubesDataParallelism::byPolicy &&
-        autoPolicy == MarchingCubesDataParallelism::hybridParallel))
+         axom::quest::MarchingCubesDataParallelism::hybridParallel)
     {
       AXOM_PERF_MARK_SECTION("MarchingCubesImpl::scanCrossings:hybridParallel",
                              scanCrossings_hybridParallel(););
     }
-    else
+    else if(m_dataParallelism == axom::quest::MarchingCubesDataParallelism::fullParallel)
     {
       AXOM_PERF_MARK_SECTION("MarchingCubesImpl::scanCrossings:fullParallel",
                              scanCrossings_fullParallel(););

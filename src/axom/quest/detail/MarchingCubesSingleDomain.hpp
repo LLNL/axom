@@ -170,10 +170,7 @@ public:
     virtual void setFunctionField(const std::string &fcnFieldName) = 0;
     virtual void setContourValue(double contourVal) = 0;
 
-    void setDataParallelism(MarchingCubesDataParallelism dataPar)
-    {
-      m_dataParallelism = dataPar;
-    }
+    virtual void setDataParallelism(MarchingCubesDataParallelism dataPar) = 0;
 
     //@{
     //!@name Distinct phases in contour generation.
