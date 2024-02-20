@@ -764,6 +764,8 @@ struct ContourTestBase
 #endif
 
     std::unique_ptr<quest::MarchingCubes> mcPtr;
+    axom::utilities::Timer repsTimer(false);
+    repsTimer.start();
     for(int j = 0; j < params.objectRepCount; ++j)
     {
       // Clear and re-use MarchingCubes object.
@@ -780,14 +782,12 @@ struct ContourTestBase
       mc.initialize(computationalMesh.asConduitNode(), "mesh");
       mc.setFunctionField(functionName());
 
-      axom::utilities::Timer computeTimer(false);
 #ifdef AXOM_USE_MPI
       MPI_Barrier(MPI_COMM_WORLD);
 #endif
-      computeTimer.start();
       for(int i = 0; i < params.contourGenCount; ++i)
       {
-        SLIC_INFO(axom::fmt::format(
+        SLIC_DEBUG(axom::fmt::format(
           "MarchingCubes object rep {} of {}, contour run {} of {}:",
           j,
           params.objectRepCount,
@@ -796,11 +796,14 @@ struct ContourTestBase
         mc.clear();
         mc.computeIsocontour(params.contourVal);
       }
-      computeTimer.stop();
-      // printTimingStats(computeTimer, name() + " contour");
-
-      printRunStats(mc);
     }
+    repsTimer.stop();
+    SLIC_INFO(axom::fmt::format("Finished {} object reps x {} contour reps",
+                                params.objectRepCount, params.contourGenCount));
+    printTimingStats(repsTimer, name() + " contour");
+
+    auto& mc = *mcPtr;
+    printRunStats(mc);
 
     // Return conduit data to host memory.
     if(s_allocatorId != axom::execution_space<axom::SEQ_EXEC>::allocatorID())
@@ -825,7 +828,6 @@ struct ContourTestBase
       DIM,
       DIM == 2 ? mint::CellType::SEGMENT : mint::CellType::TRIANGLE,
       meshGroup);
-    auto& mc = *mcPtr;
     axom::utilities::Timer extractTimer(false);
     extractTimer.start();
     mc.populateContourMesh(contourMesh, m_parentCellIdField, m_domainIdField);
