@@ -53,7 +53,7 @@ if (CONDUIT_FOUND AND RAJA_FOUND AND UMPIRE_FOUND)
 
         set(_methods "bvh")
 
-        set (_policies "seq")
+        set (_policies)
         blt_list_append(TO _policies ELEMENTS "omp" IF AXOM_ENABLE_OPENMP)
         blt_list_append(TO _policies ELEMENTS "cuda" IF AXOM_ENABLE_CUDA)
         blt_list_append(TO _policies ELEMENTS "hip" IF AXOM_ENABLE_HIP)
