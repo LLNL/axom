@@ -600,8 +600,9 @@ axom::Array<IndexPair> findCandidatesImplicit(const HexMesh& insertMesh,
   using reduce_pol = typename axom::execution_space<ExecSpace>::reduce_policy;
   RAJA::ReduceSum<reduce_pol, int> totalCandidatePairs(0);
 
-  // First pass: get number of bounding box candidates for each query bounding box
-  // Logic here mirrors the BVH two-pass query
+  // First pass: get number of bounding box candidates for each query bounding
+  // box. Logic here mirrors the quest_bvh_two_pass.cpp example. See also
+  // the "Device Traversal API" for BVH.
   axom::for_all<ExecSpace>(
     queryMesh.numHexes(),
     AXOM_LAMBDA(int icell) {
