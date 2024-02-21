@@ -257,6 +257,14 @@ HexMesh loadBlueprintHexMesh(const std::string& mesh_path,
   conduit::Node n_load;
   conduit::relay::io::blueprint::read_mesh(mesh_path, n_load);
 
+  // Check if Blueprint mesh conforms
+  conduit::Node n_info;
+  if(conduit::blueprint::verify("mesh", n_load, n_info) == false)
+  {
+    n_info.print();
+    SLIC_ERROR("Mesh verification has failed!");
+  }
+
   // Verify this is a hexahedral mesh
   std::string shape = n_load[0]["topologies/topo/elements/shape"].as_string();
   if(shape != "hex")
