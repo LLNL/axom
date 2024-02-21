@@ -97,9 +97,8 @@ if (“${PROJECT_SOURCE_DIR}” STREQUAL “${CMAKE_SOURCE_DIR}”)
         set(ENABLE_GMOCK ON CACHE BOOL "")
     endif()
 
-    # Mark BLT's built-in third-party targets as EXPORTABLE so they can be added
-    # to the axom-targets export set
-    set(BLT_EXPORT_THIRDPARTY ON CACHE BOOL "")
+    # We use BLT's install targets logic
+    set(BLT_EXPORT_THIRDPARTY OFF CACHE BOOL "" FORCE)
 endif()
 
 if("${BLT_CXX_STD}" STREQUAL "c++98" OR "${BLT_CXX_STD}" STREQUAL "c++11")
