@@ -46,14 +46,16 @@ if (CONDUIT_FOUND AND RAJA_FOUND AND UMPIRE_FOUND)
     # Add unit tests
     if(AXOM_ENABLE_TESTS AND AXOM_DATA_DIR)
 
-        # Run the candidates example with the BVH and different raja policies
+        # Run the candidates example with the different spatial indices
+        # and raja policies
 
-        set(input_file "${AXOM_DATA_DIR}/quest/ucart23z.cycle_000000.root")
-        set(query_file "${AXOM_DATA_DIR}/quest/ucart23z_shifted.cycle_000000.root")
+        # Use same file for input and query
+        set(input_file "${AXOM_DATA_DIR}/quest/ucart10.cycle_000000.root")
+        set(query_file "${AXOM_DATA_DIR}/quest/ucart10.cycle_000000.root")
 
-        set(_methods "bvh")
+        set(_methods "bvh" "implicit")
 
-        set (_policies)
+        set (_policies "seq")
         blt_list_append(TO _policies ELEMENTS "omp" IF AXOM_ENABLE_OPENMP)
         blt_list_append(TO _policies ELEMENTS "cuda" IF AXOM_ENABLE_CUDA)
         blt_list_append(TO _policies ELEMENTS "hip" IF AXOM_ENABLE_HIP)
@@ -72,8 +74,9 @@ if (CONDUIT_FOUND AND RAJA_FOUND AND UMPIRE_FOUND)
                           --policy ${_policy}
                 )
 
+                # Match either one comma or none for portability
                 set_tests_properties(${_testname} PROPERTIES
-                    PASS_REGULAR_EXPRESSION  "Mesh had 63\,521\,199 candidates pairs")
+                    PASS_REGULAR_EXPRESSION  "Mesh had 21[,]?952 candidates pairs")
             endforeach()
         endforeach()
     endif()
