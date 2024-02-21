@@ -799,7 +799,8 @@ struct ContourTestBase
     }
     repsTimer.stop();
     SLIC_INFO(axom::fmt::format("Finished {} object reps x {} contour reps",
-                                params.objectRepCount, params.contourGenCount));
+                                params.objectRepCount,
+                                params.contourGenCount));
     printTimingStats(repsTimer, name() + " contour");
 
     auto& mc = *mcPtr;
@@ -823,11 +824,11 @@ struct ContourTestBase
     // Put contour mesh in a mint object for error checking and output.
     std::string sidreGroupName = name() + "_mesh";
     sidre::DataStore objectDS;
+    // While awaiting fix for PR #1271, don't use Sidre storage in contourMesh.
     sidre::Group* meshGroup = objectDS.getRoot()->createGroup(sidreGroupName);
     axom::mint::UnstructuredMesh<axom::mint::SINGLE_SHAPE> contourMesh(
       DIM,
-      DIM == 2 ? mint::CellType::SEGMENT : mint::CellType::TRIANGLE,
-      meshGroup);
+      DIM == 2 ? mint::CellType::SEGMENT : mint::CellType::TRIANGLE);
     axom::utilities::Timer extractTimer(false);
     extractTimer.start();
     mc.populateContourMesh(contourMesh, m_parentCellIdField, m_domainIdField);
@@ -846,10 +847,14 @@ struct ContourTestBase
         checkCellsContainingContour(computationalMesh, contourMesh);
     }
 
-    // Write contour mesh to file.
-    std::string outputName = name() + "_contour_mesh";
-    saveMesh(*meshGroup, outputName);
-    SLIC_INFO(axom::fmt::format("Wrote {} contour in {}", name(), outputName));
+    if(contourMesh.hasSidreGroup())
+    {
+      assert(contourMesh.getSidreGroup() == meshGroup);
+      // Write contour mesh to file.
+      std::string outputName = name() + "_contour_mesh";
+      saveMesh(*contourMesh.getSidreGroup(), outputName);
+      SLIC_INFO(axom::fmt::format("Wrote {} contour in {}", name(), outputName));
+    }
 
     objectDS.getRoot()->destroyGroupAndData(sidreGroupName);
 
