@@ -51,7 +51,7 @@ if (CONDUIT_FOUND AND RAJA_FOUND AND UMPIRE_FOUND)
 
         # Use same file for input and query
         set(input_file "${AXOM_DATA_DIR}/quest/ucart10.cycle_000000.root")
-        set(query_file "${AXOM_DATA_DIR}/quest/ucart10.cycle_000000.root")
+        set(query_file "${AXOM_DATA_DIR}/quest/ucart10_shifted.cycle_000000.root")
 
         set(_methods "bvh" "implicit")
 
@@ -76,7 +76,7 @@ if (CONDUIT_FOUND AND RAJA_FOUND AND UMPIRE_FOUND)
 
                 # Match either one comma or none for portability
                 set_tests_properties(${_testname} PROPERTIES
-                    PASS_REGULAR_EXPRESSION  "Mesh had 21[,]?952 candidates pairs")
+                    PASS_REGULAR_EXPRESSION  "Mesh had 6[,]?859 candidates pairs")
             endforeach()
         endforeach()
     endif()
