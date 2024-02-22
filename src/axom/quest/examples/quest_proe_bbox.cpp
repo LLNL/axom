@@ -66,11 +66,19 @@ struct Arguments
 {
   std::string file_name;
   std::string outfile_name;
+  std::vector<double> bbox_min;
+  std::vector<double> bbox_max;
+
+  Arguments()
+  {
+    bbox_min.resize(3);
+    bbox_max.resize(3);
+  }
 
   void parse(int argc, char** argv, axom::CLI::App& app)
   {
     app
-      .add_option("-f,--file", this->file_name, "specifies the input mesh file")
+      .add_option("-i,--input", this->file_name, "specifies the input mesh file")
       ->check(axom::CLI::ExistingFile)
       ->required();
 
@@ -79,6 +87,20 @@ struct Arguments
                   this->outfile_name,
                   "specifies the output mesh file")
       ->required();
+
+    app
+       .add_option("--min",
+                   this->bbox_min,
+                   "specifies the minimum of the bounding box")
+       ->expected(3)
+       ->required();
+
+    app
+       .add_option("--max",
+                   this->bbox_max,
+                   "specifies the maximum of the bounding box")
+       ->expected(3)
+       ->required();
 
     app.get_formatter()->column_width(40);
 
@@ -107,6 +129,10 @@ int main(int argc, char** argv)
     return retval;
   }
 
+  // The constructor of args resizes bbox_min and bbox_max to three elements.
+  double * bbox_min = args.bbox_min.data();
+  double * bbox_max = args.bbox_max.data();
+
   SLIC_INFO("Reading file: '" << args.file_name << "'...\n");
   // _read_proe_file_start
   // Read file
@@ -114,9 +140,10 @@ int main(int argc, char** argv)
   reader.setFileName(args.file_name);
 
   // Set up a bounding box to keep only certain tets.
+  // bbox_min and bbox_max are pointers to double.
   axom::quest::ProEReader::BBox3D bbox;
-  bbox.addPoint(axom::quest::ProEReader::Point3D {-1.5, -0.5, -0.5});
-  bbox.addPoint(axom::quest::ProEReader::Point3D {0, 1.5, 1.5});
+  bbox.addPoint(axom::quest::ProEReader::Point3D {bbox_min, 3});
+  bbox.addPoint(axom::quest::ProEReader::Point3D {bbox_max, 3});
   // Keep only tets with all four nodes inside the bounding box.
   reader.setTetPredFromBoundingBox(bbox, false);
   // Pass true as the second argument of setTetPredFromBoundingBox() to

@@ -30,6 +30,9 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
   negative, resulting in the signed volume becoming positive.
 - Adds `FlatMap`, a generic key-value store which aims for drop-in compatibility
   with `std::unordered_map`, but utilizes an open-addressing design.
+- Quest: Adds `setTetPredFromBoundingBox()` and `setTetPred()` functions to
+  `quest::ProEReader` and `PProEReader` that set a tet predicate, allowing
+  user code to read in a subset of a Pro/E ASCII tetrahedron mesh file.
 
 ### Changed
 - `DistributedClosestPoint` outputs are now controlled by the `setOutput` method.

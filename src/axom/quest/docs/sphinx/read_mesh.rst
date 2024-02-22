@@ -60,17 +60,22 @@ underlying mesh data.  The reader may then be deleted.
 Reading a Pro/E file
 --------------------
 
-As read by Axom, a Pro/E tet file contains:
+As read by Axom, an ASCII Pro/E tet file contains:
 
 - Zero or more comment lines starting with a ``#`` character
-- One line with two integers: the number of nodes n and the number of tetrahedra t
-- n lines, one for each node; each line contains a contiguous integer ID starting at 1
-  and three floating-point literals specifying the node location
-- t lines, one for each tetrahedron; each line contains a contiguous integer ID
-  starting at 1 and four integers specifying the tet's nodes
+- One line with two integers: the number of nodes ``n`` and the number of
+  tetrahedra ``t``
+- ``n`` lines, one for each node; each line contains a contiguous integer ID
+  starting at 1 and three floating-point numbers specifying the node location
+- ``t`` lines, one for each tetrahedron; each line contains a contiguous
+  integer ID starting at 1 and four integers specifying the tet's nodes
 
 Reading an ASCII Pro/E tet file is similar to reading an STL file.  The code
 examples are excerpts from the file ``<axom>/src/axom/quest/examples/quest_proe_bbox.cpp``.
+The Pro/E reader has the ability to read a subset of the mesh in the file,
+defined by a user-supplied predicate function.  The example code shows how
+to use a convenience function to specify a predicate that keeps only tets
+fully included in a user-supplied bounding box.
 
 We include the ProEReader header
 
@@ -94,11 +99,16 @@ For convenience, we specify some type aliases.
    :language: C++
 
 The following example shows how to use the ProEReader class.
+Calling ``reader.setTetPredFromBoundingBox(bbox, false)``, as shown in the
+code, makes a tetrahedron predicate that accepts tets with all four nodes
+falling in ``bbox`` and rejects others.  Alternately, the user can specify
+an arbitrary predicate function with ``setTetPred()``.  If the user specifies
+no tetrahedron predicate, the reader reads all tets in the file.
 
 .. literalinclude:: ../../examples/quest_proe_bbox.cpp
    :start-after: _read_proe_file_start
    :end-before: _read_proe_file_end
    :language: C++
 
-After reading the Pro/E file, the ``ProEReader::getMesh`` method gives access to the
-underlying mesh data.  The reader may then be deleted.
+After reading the Pro/E file, the ``ProEReader::getMesh`` method gives access
+to the underlying mesh data.  The reader may then be deleted.
