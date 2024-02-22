@@ -32,6 +32,7 @@
 #include "axom/quest/MeshViewUtil.hpp"
 #include "axom/sidre.hpp"
 #include "axom/core/Types.hpp"
+#include "axom/core/numerics/floating_point_limits.hpp"
 
 #include "conduit_blueprint.hpp"
 #include "conduit_relay_io_blueprint.hpp"
@@ -828,7 +829,8 @@ struct ContourTestBase
     sidre::Group* meshGroup = objectDS.getRoot()->createGroup(sidreGroupName);
     axom::mint::UnstructuredMesh<axom::mint::SINGLE_SHAPE> contourMesh(
       DIM,
-      DIM == 2 ? mint::CellType::SEGMENT : mint::CellType::TRIANGLE);
+      DIM == 2 ? mint::CellType::SEGMENT : mint::CellType::TRIANGLE,
+      meshGroup);
     axom::utilities::Timer extractTimer(false);
     extractTimer.start();
     mc.populateContourMesh(contourMesh, m_parentCellIdField, m_domainIdField);
@@ -847,7 +849,7 @@ struct ContourTestBase
         checkCellsContainingContour(computationalMesh, contourMesh);
     }
 
-    if(contourMesh.hasSidreGroup())
+    if (contourMesh.hasSidreGroup())
     {
       assert(contourMesh.getSidreGroup() == meshGroup);
       // Write contour mesh to file.
@@ -1183,9 +1185,16 @@ struct ContourTestBase
         upper[d] = coordsViews[d][upperIdx];
       }
       axom::primal::BoundingBox<double, DIM> parentCellBox(lower, upper);
-      double tol = errorTolerance();
+      auto tol = axom::numerics::floating_point_limits<double>::epsilon();
       axom::primal::BoundingBox<double, DIM> big(parentCellBox);
       big.expand(tol);
+      axom::primal::BoundingBox<double, DIM> small(parentCellBox);
+      auto range = parentCellBox.range();
+      bool checkSmall = range >= tol;
+      if (checkSmall)
+      {
+        small.expand(-tol);
+      }
 
       axom::IndexType* cellNodeIds = contourMesh.getCellNodeIDs(contourCellNum);
       const axom::IndexType cellNodeCount =
@@ -1202,7 +1211,18 @@ struct ContourTestBase
           SLIC_INFO_IF(
             params.isVerbose(),
             axom::fmt::format("checkContourCellLimits: node {} at {} "
-                              "is not on parent cell boundary.",
+                              "too far outside parent cell boundary.",
+                              cellNodeIds[nn],
+                              nodeCoords));
+        }
+
+        if(checkSmall && small.contains(nodeCoords))
+        {
+          ++errCount;
+          SLIC_INFO_IF(
+            params.isVerbose(),
+            axom::fmt::format("checkContourCellLimits: node {} at {} "
+                              "too far inside parent cell boundary.",
                               cellNodeIds[nn],
                               nodeCoords));
         }
@@ -1530,7 +1550,9 @@ struct PlanarContourTest
     return std::string("dist_to_plane");
   }
 
-  double errorTolerance() const override { return 1e-15; }
+  double errorTolerance() const override {
+    return axom::numerics::floating_point_limits<double>::epsilon();
+  }
 };
 
 /// Utility function to transform blueprint node storage.

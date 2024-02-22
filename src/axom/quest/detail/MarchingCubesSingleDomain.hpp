@@ -49,7 +49,6 @@ class MarchingCubesImpl;
 class MarchingCubesSingleDomain
 {
 public:
-  using DomainIdType = int;
   using RuntimePolicy = axom::runtime_policy::Policy;
   /*!
    * \brief Constructor for applying algorithm in a single domain.
