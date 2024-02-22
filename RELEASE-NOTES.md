@@ -30,6 +30,7 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
   negative, resulting in the signed volume becoming positive.
 - Adds `FlatMap`, a generic key-value store which aims for drop-in compatibility
   with `std::unordered_map`, but utilizes an open-addressing design.
+- Adds support for device-side use of `Array::push_back()` and `Array::emplace_back()`.
 
 ### Changed
 - `DistributedClosestPoint` outputs are now controlled by the `setOutput` method.
