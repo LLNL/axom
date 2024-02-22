@@ -110,9 +110,7 @@ void ProEReader::setTetPredFromBoundingBox(BBox3D& box, bool inclusive)
   {
     if(!inclusive)
     {
-      auto pred = [box](int tet_nodes[4],
-                        int,
-                        std::vector<double>& nodes) {
+      auto pred = [box](int tet_nodes[4], int, std::vector<double>& nodes) {
         bool retval = true;
         for(int i = 0; i < ProEReader::NUM_NODES_PER_TET; ++i)
         {
@@ -126,9 +124,7 @@ void ProEReader::setTetPredFromBoundingBox(BBox3D& box, bool inclusive)
     }
     else
     {
-      auto pred = [box](int tet_nodes[4],
-                        int,
-                        std::vector<double>& nodes) {
+      auto pred = [box](int tet_nodes[4], int, std::vector<double>& nodes) {
         bool retval = false;
         for(int i = 0; i < ProEReader::NUM_NODES_PER_TET; ++i)
         {

@@ -89,18 +89,18 @@ struct Arguments
       ->required();
 
     app
-       .add_option("--min",
-                   this->bbox_min,
-                   "specifies the minimum of the bounding box")
-       ->expected(3)
-       ->required();
+      .add_option("--min",
+                  this->bbox_min,
+                  "specifies the minimum of the bounding box")
+      ->expected(3)
+      ->required();
 
     app
-       .add_option("--max",
-                   this->bbox_max,
-                   "specifies the maximum of the bounding box")
-       ->expected(3)
-       ->required();
+      .add_option("--max",
+                  this->bbox_max,
+                  "specifies the maximum of the bounding box")
+      ->expected(3)
+      ->required();
 
     app.get_formatter()->column_width(40);
 
@@ -130,8 +130,8 @@ int main(int argc, char** argv)
   }
 
   // The constructor of args resizes bbox_min and bbox_max to three elements.
-  double * bbox_min = args.bbox_min.data();
-  double * bbox_max = args.bbox_max.data();
+  double* bbox_min = args.bbox_min.data();
+  double* bbox_max = args.bbox_max.data();
 
   SLIC_INFO("Reading file: '" << args.file_name << "'...\n");
   // _read_proe_file_start
