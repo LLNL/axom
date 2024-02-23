@@ -208,7 +208,7 @@ void access_datastore(DataStore* ds)
 
 void iterate_datastore(DataStore* ds)
 {
-  const std::string fill_line = fmt::format("{:=^80}", "");
+  const std::string fill_line = axom::fmt::format("{:=^80}", "");
 
   std::cout << fill_line << std::endl;
 
@@ -216,7 +216,7 @@ void iterate_datastore(DataStore* ds)
   std::cout << "The datastore has the following attributes:\n";
   for(auto& attr : ds->attributes())
   {
-    std::cout << fmt::format("  * [{}] '{}' of type {} and default value: {}\n",
+    std::cout << axom::fmt::format("  * [{}] '{}' of type {} and default value: {}\n",
                              attr.getIndex(),
                              attr.getName(),
                              conduit::DataType::id_to_name(attr.getTypeID()),
@@ -229,7 +229,7 @@ void iterate_datastore(DataStore* ds)
   std::cout << "The datastore has the following buffers:\n";
   for(auto& buff : ds->buffers())
   {
-    std::cout << fmt::format(
+    std::cout << axom::fmt::format(
       "  * [{}] {} buffer with {} elements of type {} with {} views\n",
       buff.getIndex(),
       buff.isAllocated() ? "Allocated" : "Unallocated",
@@ -244,7 +244,7 @@ void iterate_datastore(DataStore* ds)
   std::cout << "The root group has the following groups:\n";
   for(auto& grp : ds->getRoot()->groups())
   {
-    std::cout << fmt::format("  * [{}] '{}' with {} groups and {} views\n",
+    std::cout << axom::fmt::format("  * [{}] '{}' with {} groups and {} views\n",
                              grp.getIndex(),
                              grp.getName(),
                              grp.getNumGroups(),
@@ -257,7 +257,7 @@ void iterate_datastore(DataStore* ds)
   std::cout << "The 'state' group has the following views:\n";
   for(auto& view : ds->getRoot()->getGroup("state")->views())
   {
-    std::cout << fmt::format(
+    std::cout << axom::fmt::format(
       "  * [{}] '{}' -- {} view of type {} and {} elements\n",
       view.getIndex(),
       view.getName(),
