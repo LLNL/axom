@@ -35,16 +35,15 @@ if ((RAJA_DIR OR UMPIRE_DIR) AND NOT CAMP_DIR)
 endif()
 
 axom_assert_is_directory(VARIABLE_NAME CAMP_DIR)
-set(camp_DIR ${CAMP_DIR})
-find_dependency(camp REQUIRED)
+find_dependency(camp REQUIRED PATHS "${CAMP_DIR}")
+set(CAMP_FOUND TRUE CACHE BOOL "")
 
 #------------------------------------------------------------------------------
 # UMPIRE
 #------------------------------------------------------------------------------
 if (UMPIRE_DIR)
     axom_assert_is_directory(VARIABLE_NAME UMPIRE_DIR)
-    set(umpire_DIR ${UMPIRE_DIR})
-    find_package(umpire REQUIRED)
+    find_dependency(umpire REQUIRED PATHS "${UMPIRE_DIR}")
 
     message(STATUS "Checking for expected Umpire target 'umpire'")
     if (NOT TARGET umpire)
@@ -65,8 +64,7 @@ endif()
 #------------------------------------------------------------------------------
 if (RAJA_DIR)
     axom_assert_is_directory(VARIABLE_NAME RAJA_DIR)
-    set(raja_DIR ${RAJA_DIR})
-    find_dependency(raja REQUIRED)
+    find_dependency(raja REQUIRED PATHS "${RAJA_DIR}")
 
     message(STATUS "Checking for expected RAJA target 'RAJA'")
     if (NOT TARGET RAJA)
@@ -86,8 +84,9 @@ endif()
 # newer CMake versions
 if (CONDUIT_DIR)
     axom_assert_is_directory(VARIABLE_NAME CONDUIT_DIR)
-    set(conduit_DIR ${CONDUIT_DIR})
-    find_dependency(conduit REQUIRED)
+    find_dependency(Conduit REQUIRED
+                    PATHS "${CONDUIT_DIR}"
+                          "${CONDUIT_DIR}/lib/cmake/conduit")
 
     message(STATUS "Checking for expected Conduit target 'conduit::conduit'")
     if (NOT TARGET conduit::conduit)

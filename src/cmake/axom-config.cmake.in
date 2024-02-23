@@ -75,6 +75,11 @@ if(NOT AXOM_FOUND)
   #----------------------------------------------------------------------------
   include(CMakeFindDependencyMacro)
 
+  # Enable various find commands to look in non-default paths
+  set_property(GLOBAL PROPERTY FIND_LIBRARY_USE_LIB32_PATHS TRUE)
+  set_property(GLOBAL PROPERTY FIND_LIBRARY_USE_LIB64_PATHS TRUE)
+  set_property(GLOBAL PROPERTY FIND_LIBRARY_USE_LIBX32_PATHS TRUE)
+
   # c2c
   if(AXOM_USE_C2C)
     set(AXOM_C2C_DIR     "@C2C_DIR@")
@@ -84,28 +89,28 @@ if(NOT AXOM_FOUND)
   # camp
   if(AXOM_USE_CAMP)
     set(AXOM_CAMP_DIR      "@CAMP_DIR@")
-    if(NOT camp_DIR) 
-      set(camp_DIR ${AXOM_CAMP_DIR})
+    if(NOT CAMP_DIR)
+      set(CAMP_DIR ${AXOM_CAMP_DIR})
     endif()
-    find_dependency(camp REQUIRED)
+    find_dependency(camp REQUIRED PATHS "${CAMP_DIR}")
   endif()
 
   # umpire
   if(AXOM_USE_UMPIRE)
     set(AXOM_UMPIRE_DIR   "@UMPIRE_DIR@")
-    if(NOT umpire_DIR) 
-      set(umpire_DIR ${AXOM_UMPIRE_DIR}) 
+    if(NOT UMPIRE_DIR)
+      set(UMPIRE_DIR ${AXOM_UMPIRE_DIR})
     endif()
-    find_dependency(umpire REQUIRED)
+    find_dependency(umpire REQUIRED PATHS "${UMPIRE_DIR}")
   endif()
 
   # raja
   if(AXOM_USE_RAJA)
     set(AXOM_RAJA_DIR     "@RAJA_DIR@")
-    if(NOT raja_DIR) 
-      set(raja_DIR ${AXOM_RAJA_DIR}) 
+    if(NOT RAJA_DIR)
+      set(RAJA_DIR ${AXOM_RAJA_DIR})
     endif()
-    find_dependency(RAJA REQUIRED)
+    find_dependency(RAJA REQUIRED PATHS "${RAJA_DIR}")
   endif()
 
   # conduit
@@ -120,8 +125,9 @@ if(NOT AXOM_FOUND)
       find_package(MPI REQUIRED)
     endif()
 
-    find_dependency(Conduit REQUIRED NO_DEFAULT_PATH
-                    PATHS "${CONDUIT_DIR}/@AXOM_CONDUIT_CONFIG_SUBDIR@")
+    find_dependency(Conduit REQUIRED
+                    PATHS "${CONDUIT_DIR}"
+                          "${CONDUIT_DIR}/lib/cmake/conduit")
   endif()
 
   # hdf5
@@ -161,7 +167,8 @@ if(NOT AXOM_FOUND)
   # we want the import root, which is right above the "lib" prefix
   get_filename_component(_IMPORT_ROOT "${_IMPORT_PREFIX}" PATH)
 
-  include(${AXOM_CMAKE_CONFIG_DIR}/BLTSetupTargets.cmake)include(${AXOM_CMAKE_CONFIG_DIR}/axom-targets.cmake)
+  include(${AXOM_CMAKE_CONFIG_DIR}/BLTSetupTargets.cmake)
+  include(${AXOM_CMAKE_CONFIG_DIR}/axom-targets.cmake)
 
   # Create convenience target that bundles all Axom targets (axom)
   add_library(axom INTERFACE IMPORTED)
