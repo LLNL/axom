@@ -8,4 +8,4 @@ from spack.pkg.llnl.radiuss.umpire import Umpire as RadiussUmpire
 class Umpire(RadiussUmpire):
     # Note: This just points at a commit in the task/update-blt-tpl-exports branch.
     # It also has a made up version
-    version("2024.01.31", commit="f2ae5edd1e49e7fa18656203d742de3bd9490961", submodules=False)
+    version("2024.01.31.1", commit="f2ae5edd1e49e7fa18656203d742de3bd9490961", submodules=True)
