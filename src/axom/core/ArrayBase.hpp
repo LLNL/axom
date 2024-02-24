@@ -884,11 +884,18 @@ struct all_types_are_integral
   static constexpr bool value = all_types_are_integral_impl<Args...>::value;
 };
 
-template <typename T, bool DeviceOps>
+enum class OperationSpace
+{
+  Host,
+  Device,
+  Unified_Device
+};
+
+template <typename T, OperationSpace Space>
 struct ArrayOpsBase;
 
 template <typename T>
-struct ArrayOpsBase<T, false>
+struct ArrayOpsBase<T, OperationSpace::Host>
 {
   using DefaultCtorTag = std::is_default_constructible<T>;
 
@@ -1065,7 +1072,7 @@ struct ArrayOpsBase<T, false>
 
 #if defined(AXOM_USE_GPU) && defined(AXOM_GPUCC) && defined(AXOM_USE_UMPIRE)
 template <typename T>
-struct ArrayOpsBase<T, true>
+struct ArrayOpsBase<T, OperationSpace::Device>
 {
   #if defined(__CUDACC__)
   using ExecSpace = axom::CUDA_EXEC<256>;
@@ -1327,17 +1334,27 @@ struct ArrayOpsBase<T, true>
 };
 #endif
 
+template <MemorySpace SPACE>
+struct MemSpaceToOpSpace
+{
+  static constexpr OperationSpace value = OperationSpace::Host;
+};
+
+#if defined(AXOM_USE_GPU) && defined(AXOM_GPUCC) && defined(AXOM_USE_UMPIRE)
+template <>
+struct MemSpaceToOpSpace<MemorySpace::Device>
+{
+  static constexpr OperationSpace value = OperationSpace::Device;
+};
+#endif
+
 template <typename T, MemorySpace SPACE>
 struct ArrayOps
 {
 private:
-#if defined(AXOM_USE_GPU) && defined(AXOM_GPUCC) && defined(AXOM_USE_UMPIRE)
-  constexpr static bool IsDevice = (SPACE == MemorySpace::Device);
-#else
-  constexpr static bool IsDevice = false;
-#endif
+  constexpr static OperationSpace OpSpace = MemSpaceToOpSpace<SPACE>::value;
 
-  using Base = ArrayOpsBase<T, IsDevice>;
+  using Base = ArrayOpsBase<T, OpSpace>;
 
 public:
   static void init(T* array, IndexType begin, IndexType nelems, int allocId)
@@ -1409,9 +1426,9 @@ template <typename T>
 struct ArrayOps<T, MemorySpace::Dynamic>
 {
 private:
-  using Base = ArrayOpsBase<T, false>;
+  using Base = ArrayOpsBase<T, OperationSpace::Host>;
 #if defined(AXOM_USE_GPU) && defined(AXOM_GPUCC) && defined(AXOM_USE_UMPIRE)
-  using BaseDevice = ArrayOpsBase<T, true>;
+  using BaseDevice = ArrayOpsBase<T, OperationSpace::Device>;
 #endif
 
 public:
