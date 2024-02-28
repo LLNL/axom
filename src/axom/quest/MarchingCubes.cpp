@@ -44,6 +44,7 @@ MarchingCubes::MarchingCubes(RuntimePolicy runtimePolicy,
   , m_facetNodeIds(twoZeros, m_allocatorID)
   , m_facetNodeCoords(twoZeros, m_allocatorID)
   , m_facetParentIds(0, 0, m_allocatorID)
+  , m_facetDomainIds(0, 0, m_allocatorID)
 { }
 
 // Set the object up for a blueprint mesh state.
@@ -129,6 +130,17 @@ void MarchingCubes::computeIsocontour(double contourVal)
   {
     m_singles[d]->computeFacets();
   }
+
+  for(axom::IndexType d = 0; d < m_singles.size(); ++d)
+  {
+    const auto domainId = m_singles[d]->getDomainId(d);
+    const auto domainFacetCount =
+      ( d < m_singles.size() - 1 ? m_facetIndexOffsets[d+1] : m_facetCount )
+      - m_facetIndexOffsets[d];
+    m_facetDomainIds.fill(domainId,
+                          domainFacetCount,
+                          m_facetIndexOffsets[d]);
+  }
 }
 
 axom::IndexType MarchingCubes::getContourNodeCount() const
@@ -139,35 +151,6 @@ axom::IndexType MarchingCubes::getContourNodeCount() const
     contourNodeCount += m_singles[dId]->getContourNodeCount();
   }
   return contourNodeCount;
-}
-
-/*
-  Domain ids are provided as a new Array instead of ArrayView because
-  we don't store it internally.
-*/
-template <typename DomainIdType>
-axom::Array<DomainIdType> MarchingCubes::getContourFacetDomainIds(int allocatorID) const
-{
-  // Put parent domain ids into a new Array.
-  const axom::IndexType len = getContourCellCount();
-  axom::Array<DomainIdType> rval(
-    len,
-    len,
-    allocatorID != axom::INVALID_ALLOCATOR_ID ? allocatorID : m_allocatorID);
-  for(int d = 0; d < m_singles.size(); ++d)
-  {
-    DomainIdType domainId =
-      static_cast<DomainIdType>(m_singles[d]->getDomainId(d));
-    axom::IndexType contourCellCount = m_singles[d]->getContourCellCount();
-    axom::IndexType offset = m_facetIndexOffsets[d];
-    axom::detail::ArrayOps<DomainIdType, MemorySpace::Dynamic>::fill(
-      rval.data(),
-      offset,
-      contourCellCount,
-      allocatorID,
-      domainId);
-  }
-  return rval;
 }
 
 void MarchingCubes::clear()
@@ -260,11 +243,9 @@ void MarchingCubes::populateContourMesh(
       // Put parent domain ids into the mesh.
       auto* domainIdPtr =
         mesh.getFieldPtr<DomainIdType>(domainIdField, axom::mint::CELL_CENTERED);
-      auto tmpContourFacetDomainIds =
-        getContourFacetDomainIds<DomainIdType>(hostAllocatorId);
       axom::copy(domainIdPtr,
-                 tmpContourFacetDomainIds.data(),
-                 m_facetCount * sizeof(DomainIdType));
+                 m_facetDomainIds.data(),
+                 m_facetCount * sizeof(axom::IndexType));
     }
   }
 }
@@ -283,6 +264,8 @@ void MarchingCubes::allocateOutputBuffers()
       axom::StackArray<axom::IndexType, 2> {nodeCount, ndim},
       0.0);
     m_facetParentIds.resize(axom::StackArray<axom::IndexType, 1> {m_facetCount},
+                            0);
+    m_facetDomainIds.resize(axom::StackArray<axom::IndexType, 1> {m_facetCount},
                             0);
   }
 }

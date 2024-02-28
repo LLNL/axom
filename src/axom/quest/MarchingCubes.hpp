@@ -115,7 +115,7 @@ public:
                 The simplest policy is RuntimePolicy::seq, which specifies
                 running sequentially on the CPU.
     \param [in] allocatorID Data allocator ID.  Choose something compatible
-                with \c runtimePolicy.  See \c esecution_space.
+                with \c runtimePolicy.  See \c execution_space.
     \param [in] dataParallelism Data parallel implementation choice.
     \param [in] bpMesh Blueprint multi-domain mesh containing scalar field.
     \param [in] topologyName Name of Blueprint topology to use in \a bpMesh.
@@ -237,9 +237,10 @@ public:
 
     The buffer size is getContourCellCount().
   */
-  template <typename DomainIdType>
-  axom::Array<DomainIdType> getContourFacetDomainIds(
-    int allocatorID = axom::INVALID_ALLOCATOR_ID) const;
+  axom::ArrayView<const axom::IndexType> getContourFacetDomainIds() const
+  {
+    return m_facetDomainIds.view();
+  }
 
   #if 1
   // Is there a use case for this?
@@ -337,6 +338,11 @@ private:
     @see allocateOutputBuffers().
   */
   axom::Array<IndexType, 1> m_facetParentIds;
+
+  /*!
+    @brief Domain ids of facets.
+  */
+  axom::Array<IndexType, 1> m_facetDomainIds;
   //@}
 
   //!@brief Allocate output buffers corresponding to runtime policy.
