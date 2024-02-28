@@ -40,9 +40,9 @@ MarchingCubesSingleDomain::MarchingCubesSingleDomain(MarchingCubes& mc)
   return;
 }
 
-void MarchingCubesSingleDomain::initialize(const conduit::Node& dom,
-                                           const std::string& topologyName,
-                                           const std::string& maskField)
+void MarchingCubesSingleDomain::setDomain(const conduit::Node& dom,
+                                          const std::string& topologyName,
+                                          const std::string& maskField)
 {
   m_topologyName = topologyName;
 
@@ -80,7 +80,7 @@ void MarchingCubesSingleDomain::initialize(const conduit::Node& dom,
 
   m_impl = newMarchingCubesImpl();
 
-  m_impl->initialize(dom, topologyName, maskField);
+  m_impl->setDomain(dom, topologyName, maskField);
   m_impl->setDataParallelism(m_dataParallelism);
 }
 

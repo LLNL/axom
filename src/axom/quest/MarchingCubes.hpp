@@ -143,9 +143,14 @@ public:
                 int allocatorId,
                 MarchingCubesDataParallelism dataParallelism);
 
-  void initialize(const conduit::Node &bpMesh,
-                  const std::string &topologyName,
-                  const std::string &maskField = {});
+  /*!
+    @brief Set the input mesh.
+
+    @see clearMesh()
+  */
+  void setMesh(const conduit::Node &bpMesh,
+               const std::string &topologyName,
+               const std::string &maskField = {});
 
   /*!
     @brief Set the field containing the nodal function.
@@ -156,7 +161,10 @@ public:
   /*!
    \brief Computes the isocontour.
    \param [in] contourVal isocontour value
-   */
+
+   Each computeIsocontour call adds to previously computed contour
+   mesh.
+  */
   void computeIsocontour(double contourVal = 0.0);
 
   //!@brief Get number of cells in the generated contour mesh.
@@ -268,15 +276,22 @@ public:
   //@}
 
   /*!
-    @brief Clear computed data.
+    @brief Clear the input mesh data.
 
-    After clearing, you have to call initialize as if it
-    was a new object.
+    The contour mesh is *not* cleared.  See clearOutput() for this.
+
+    After clearing, you have to call setMesh() as if it was a new
+    object.
 
     @internal For good GPU performance, memory is not deallocated.  To
     really deallocate memory, destruct this object and use another.
   */
-  void clear();
+  void clearMesh();
+
+  /*!
+    @brief Clear the computed contour mesh.
+  */
+  void clearOutput();
 
   // Allow single-domain code to share common scratch space.
   friend detail::marching_cubes::MarchingCubesSingleDomain;

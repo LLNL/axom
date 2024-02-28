@@ -85,9 +85,9 @@ public:
     requirement may be relaxed, possibly at the cost of a
     transformation and storage of the temporary contiguous layout.
   */
-  void initialize(const conduit::Node &dom,
-                  const std::string &topologyName,
-                  const std::string &maskfield);
+  void setDomain(const conduit::Node &dom,
+                 const std::string &topologyName,
+                 const std::string &maskfield);
 
   int spatialDimension() const { return m_ndim; }
 
@@ -162,9 +162,9 @@ public:
       Put in here codes that can't be in MarchingCubesSingleDomain
       due to template use (DIM and ExecSpace).
     */
-    virtual void initialize(const conduit::Node &dom,
-                            const std::string &topologyName,
-                            const std::string &maskPath = {}) = 0;
+    virtual void setDomain(const conduit::Node &dom,
+                           const std::string &topologyName,
+                           const std::string &maskPath = {}) = 0;
 
     virtual void setFunctionField(const std::string &fcnFieldName) = 0;
     virtual void setContourValue(double contourVal) = 0;
@@ -201,7 +201,7 @@ public:
 
     virtual ~ImplBase() { }
 
-    virtual void clear() = 0;
+    virtual void clearDomain() = 0;
 
     MarchingCubesDataParallelism m_dataParallelism =
       MarchingCubesDataParallelism::byPolicy;

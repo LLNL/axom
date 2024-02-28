@@ -97,13 +97,13 @@ public:
     The above data from the domain MUST be in a memory space
     compatible with ExecSpace.
   */
-  AXOM_HOST void initialize(const conduit::Node& dom,
-                            const std::string& topologyName,
-                            const std::string& maskFieldName) override
+  AXOM_HOST void setDomain(const conduit::Node& dom,
+                         const std::string& topologyName,
+                         const std::string& maskFieldName) override
   {
     // Time this due to potentially slow memory allocation
     AXOM_PERF_MARK_FUNCTION("MarchingCubesImpl::initialize");
-    clear();
+    clearDomain();
 
     SLIC_ASSERT(conduit::blueprint::mesh::topology::dims(dom.fetch_existing(
                   axom::fmt::format("topologies/{}", topologyName))) == DIM);
@@ -902,7 +902,7 @@ public:
     After clearing, you can change the field, contour value
     and recompute the contour.
   */
-  void clear() override
+  void clearDomain() override
   {
     m_caseIdsFlat.clear();
     m_crossingFlags.clear();

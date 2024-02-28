@@ -769,18 +769,16 @@ struct ContourTestBase
     repsTimer.start();
     for(int j = 0; j < params.objectRepCount; ++j)
     {
-      // Clear and re-use MarchingCubes object.
       if(!mcPtr)
       {
         mcPtr = std::make_unique<quest::MarchingCubes>(params.policy,
                                                        s_allocatorId,
                                                        params.dataParallelism);
       }
-      mcPtr->clear();
-
       auto& mc = *mcPtr;
 
-      mc.initialize(computationalMesh.asConduitNode(), "mesh");
+      // Clear and set MarchingCubes object for a "new" mesh.
+      mc.setMesh(computationalMesh.asConduitNode(), "mesh");
       mc.setFunctionField(functionName());
 
 #ifdef AXOM_USE_MPI
@@ -794,7 +792,7 @@ struct ContourTestBase
           params.objectRepCount,
           i,
           params.contourGenCount));
-        mc.clear();
+        mc.clearOutput();
         mc.computeIsocontour(params.contourVal);
       }
     }
