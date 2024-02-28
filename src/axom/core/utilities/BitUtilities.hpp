@@ -25,6 +25,10 @@
 // Note: `__GNUC__` is defined for the gnu, clang and intel compilers
 #if defined(AXOM_USE_CUDA)
   // Intrinsics included implicitly
+
+#elif defined(AXOM_USE_HIP)
+  #include <hip/hip_runtime.h>
+
 #elif defined(_WIN64) && (_MSC_VER >= 1600)
   #define _AXOM_CORE_USE_INTRINSICS_MSVC
   #include <intrin.h>
@@ -89,6 +93,8 @@ AXOM_HOST_DEVICE inline int trailingZeros(std::uint64_t word)
   /* clang-format off */
 #if defined(__CUDA_ARCH__) && defined(AXOM_USE_CUDA)
   return word != std::uint64_t(0) ? __ffsll(word) - 1 : 64;
+#elif defined(__HIP_DEVICE_COMPILE__) && defined(AXOM_USE_HIP)
+  return word != std::uint64_t(0) ? __ffsll(static_cast<unsigned long long int>(word)) - 1 : 64;
 #elif defined(_AXOM_CORE_USE_INTRINSICS_MSVC)
   unsigned long cnt;
   return _BitScanForward64(&cnt, word) ? cnt : 64;
@@ -126,6 +132,9 @@ AXOM_HOST_DEVICE inline int popCount(std::uint64_t word)
   /* clang-format off */
 #if defined(__CUDA_ARCH__) && defined(AXOM_USE_CUDA)
   // Use CUDA intrinsic for popcount
+  return __popcll(word);
+#elif defined(__HIP_DEVICE_COMPILE__) && defined(AXOM_USE_HIP)
+  // Use HIP intrinsic for popcount
   return __popcll(word);
 #elif defined(_AXOM_CORE_USE_INTRINSICS_MSVC)
   return __popcnt64(word);
@@ -165,6 +174,9 @@ AXOM_HOST_DEVICE inline std::int32_t leadingZeros(std::int32_t word)
   /* clang-format off */
 #if defined(__CUDA_ARCH__) && defined(AXOM_USE_CUDA)
   // Use CUDA intrinsic for count leading zeros
+  return __clz(word);
+#elif defined(__HIP_DEVICE_COMPILE__) && defined(AXOM_USE_HIP)
+  // Use HIP intrinsic for count leading zeros
   return __clz(word);
 #elif defined(_AXOM_CORE_USE_INTRINSICS_MSVC)
   unsigned long cnt;
