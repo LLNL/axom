@@ -674,26 +674,15 @@ static void addToStackArray(axom::StackArray<T, DIM>& a, U b)
   }
 }
 
-/**
-  ValueFunctorType is a copy-able functor that returns the scalar
-  function value.  It should have operator(const PointType &) return
-  a double.
+/*!
+  @brief Strategy pattern for supporting different contour types.
 */
-template <int DIM, typename ExecSpace, typename ValueFunctorType>
-struct ContourTestBase
+template<int DIM>
+struct ContourTestStrategy
 {
-  static constexpr auto MemorySpace =
-    axom::execution_space<ExecSpace>::memory_space;
   using PointType = axom::primal::Point<double, DIM>;
-  ContourTestBase(const ValueFunctorType& valueFunctor)
-    : m_parentCellIdField("parentCellIds")
-    , m_domainIdField("domainIdField")
-    , m_valueFunctor(valueFunctor)
-  { }
-  virtual ~ContourTestBase() { }
-
-  //!@brief Return field name for storing nodal function.
-  virtual std::string name() const = 0;
+  //!@brief Return test name.
+  virtual std::string testName() const = 0;
 
   //!@brief Return field name for storing nodal function.
   virtual std::string functionName() const = 0;
@@ -701,13 +690,51 @@ struct ContourTestBase
   //!@brief Return error tolerance for contour mesh accuracy check.
   virtual double errorTolerance() const = 0;
 
+  //!@brief Return the analytical value of the scalar field.
+  virtual double valueAt(const PointType& pt) const = 0;
+
+  virtual ~ContourTestStrategy() {}
+};
+
+/**
+  ValueFunctorType is a copy-able functor that returns the scalar
+  function value.  It should have operator(const PointType &) return
+  a double.
+*/
+template <int DIM, typename ExecSpace>
+struct ContourTestBase
+{
+  static constexpr auto MemorySpace =
+    axom::execution_space<ExecSpace>::memory_space;
+  using PointType = axom::primal::Point<double, DIM>;
+  ContourTestBase(const std::shared_ptr<ContourTestStrategy<DIM>>& testStrategy)
+    : m_testStrategy(testStrategy)
+    , m_parentCellIdField("parentCellIds")
+    , m_domainIdField("domainIdField")
+  { }
+  virtual ~ContourTestBase() { }
+
+  //!@brief Return field name for storing nodal function.
+  virtual std::string testName() const { return m_testStrategy->testName(); }
+
+  //!@brief Return field name for storing nodal function.
+  virtual std::string functionName() const { return m_testStrategy->functionName(); }
+
+  //!@brief Return error tolerance for contour mesh accuracy check.
+  virtual double errorTolerance() const { return m_testStrategy->errorTolerance(); }
+
+  std::shared_ptr<ContourTestStrategy<DIM>> getTestStrategy() const
+  {
+    return m_testStrategy;
+  }
+
+  std::shared_ptr<ContourTestStrategy<DIM>> m_testStrategy;
   const std::string m_parentCellIdField;
   const std::string m_domainIdField;
-  ValueFunctorType m_valueFunctor;
 
   int runTest(BlueprintStructuredMesh& computationalMesh)
   {
-    SLIC_INFO(banner(axom::fmt::format("Testing {} contour.", name())));
+    SLIC_INFO(banner(axom::fmt::format("Testing {} contour.", testName())));
 
     // Conduit data is in host memory, move to devices for testing.
     if(s_allocatorId != axom::execution_space<axom::SEQ_EXEC>::allocatorID())
@@ -800,7 +827,7 @@ struct ContourTestBase
     SLIC_INFO(axom::fmt::format("Finished {} object reps x {} contour reps",
                                 params.objectRepCount,
                                 params.contourGenCount));
-    printTimingStats(repsTimer, name() + " contour");
+    printTimingStats(repsTimer, testName() + " contour");
 
     auto& mc = *mcPtr;
     printRunStats(mc);
@@ -821,7 +848,7 @@ struct ContourTestBase
     }
 
     // Put contour mesh in a mint object for error checking and output.
-    std::string sidreGroupName = name() + "_mesh";
+    std::string sidreGroupName = testName() + "_mesh";
     sidre::DataStore objectDS;
     // While awaiting fix for PR #1271, don't use Sidre storage in contourMesh.
     sidre::Group* meshGroup = objectDS.getRoot()->createGroup(sidreGroupName);
@@ -833,7 +860,7 @@ struct ContourTestBase
     extractTimer.start();
     mc.populateContourMesh(contourMesh, m_parentCellIdField, m_domainIdField);
     extractTimer.stop();
-    printTimingStats(extractTimer, name() + " extract");
+    printTimingStats(extractTimer, testName() + " extract");
 
     int localErrCount = 0;
     if(params.checkResults)
@@ -851,9 +878,9 @@ struct ContourTestBase
     {
       assert(contourMesh.getSidreGroup() == meshGroup);
       // Write contour mesh to file.
-      std::string outputName = name() + "_contour_mesh";
+      std::string outputName = testName() + "_contour_mesh";
       saveMesh(*contourMesh.getSidreGroup(), outputName);
-      SLIC_INFO(axom::fmt::format("Wrote {} contour in {}", name(), outputName));
+      SLIC_INFO(axom::fmt::format("Wrote {} contour in {}", testName(), outputName));
     }
 
     objectDS.getRoot()->destroyGroupAndData(sidreGroupName);
@@ -925,7 +952,6 @@ struct ContourTestBase
     }
 
 #if defined(AXOM_USE_RAJA)
-    auto valueFunctor = m_valueFunctor;
     RAJA::RangeSegment iRange(0, fieldShape[0]);
     RAJA::RangeSegment jRange(0, fieldShape[1]);
     using EXEC_POL =
@@ -938,7 +964,7 @@ struct ContourTestBase
         {
           pt[d] = coordsViews[d](i, j);
         }
-        fieldView(i, j) = valueFunctor(pt);
+        fieldView(i, j) = m_testStrategy->valueAt(pt);
       });
 #else
     for(axom::IndexType j = 0; j < fieldShape[1]; ++j)
@@ -950,7 +976,7 @@ struct ContourTestBase
         {
           pt[d] = coordsViews[d](i, j);
         }
-        fieldView(i, j) = m_valueFunctor(pt);
+        fieldView(i, j) = m_testStrategy->valueAt(pt);
       }
     }
 #endif
@@ -969,7 +995,6 @@ struct ContourTestBase
     }
 
 #if defined(AXOM_USE_RAJA)
-    auto valueFunctor = m_valueFunctor;
     RAJA::RangeSegment iRange(0, fieldShape[0]);
     RAJA::RangeSegment jRange(0, fieldShape[1]);
     RAJA::RangeSegment kRange(0, fieldShape[2]);
@@ -983,7 +1008,7 @@ struct ContourTestBase
         {
           pt[d] = coordsViews[d](i, j, k);
         }
-        fieldView(i, j, k) = valueFunctor(pt);
+        fieldView(i, j, k) = m_testStrategy->valueAt(pt);
       });
 #else
     for(axom::IndexType k = 0; k < fieldShape[2]; ++k)
@@ -997,7 +1022,7 @@ struct ContourTestBase
           {
             pt[d] = coordsViews[d](i, j, k);
           }
-          fieldView(i, j, k) = m_valueFunctor(pt);
+          fieldView(i, j, k) = m_testStrategy->valueAt(pt);
         }
       }
     }
@@ -1034,7 +1059,7 @@ struct ContourTestBase
     for(axom::IndexType i = 0; i < nodeCount; ++i)
     {
       contourMesh.getNode(i, pt.data());
-      double analyticalVal = m_valueFunctor(pt);
+      double analyticalVal = m_testStrategy->valueAt(pt);
       double diff = std::abs(analyticalVal - contourVal);
       if(diffPtr)
       {
@@ -1375,75 +1400,72 @@ struct ContourTestBase
   }
 };
 
-/*!
-  @brief Function providing distance from a point.
-*/
 template <int DIM>
-struct RoundFunctor
-{
+struct PlanarTestStrategy : public ContourTestStrategy<DIM> {
   using PointType = axom::primal::Point<double, DIM>;
-  const axom::primal::Sphere<double, DIM> _sphere;
-  RoundFunctor(const PointType& center) : _sphere(center, 0.0) { }
-  AXOM_HOST_DEVICE double operator()(const PointType& pt) const
+  PlanarTestStrategy(const axom::primal::Vector<double, DIM>& perpDir,
+                     const PointType& inPlane)
+  : ContourTestStrategy<DIM>()
+  , _plane(perpDir.unitVector(), inPlane)
+  , _errTol(axom::numerics::floating_point_limits<double>::epsilon())
+  {}
+  virtual std::string testName() const override { return std::string("planar"); }
+  virtual std::string functionName() const override
   {
-    return _sphere.computeSignedDistance(pt);
+    return std::string("dist_to_plane");
   }
-};
-template <int DIM, typename ExecSpace>
-struct RoundContourTest
-  : public ContourTestBase<DIM, ExecSpace, RoundFunctor<DIM>>
-{
-  static constexpr auto MemorySpace =
-    axom::execution_space<ExecSpace>::memory_space;
-  using PointType = axom::primal::Point<double, DIM>;
-  using FunctorType = RoundFunctor<DIM>;
-  /*!
-    @brief Constructor.
-
-    @param center [in] Center of ring or sphere
-  */
-  RoundContourTest(const PointType& center)
-    : ContourTestBase<DIM, ExecSpace, FunctorType>(FunctorType(center))
-    , _sphere(center, 0.0)
-    , _roundFunctor(center)
-    , _errTol(1e-3)
-  { }
-  virtual ~RoundContourTest() { }
-  const axom::primal::Sphere<double, DIM> _sphere;
-  FunctorType _roundFunctor;
+  double errorTolerance() const override { return _errTol; }
+  virtual double valueAt(const PointType& pt) const override
+  {
+    return _plane.signedDistance(pt);
+  }
+  const axom::primal::Plane<double, DIM> _plane;
   double _errTol;
+};
 
-  virtual std::string name() const override { return std::string("round"); }
-
+template <int DIM>
+struct RoundTestStrategy : public ContourTestStrategy<DIM> {
+  using PointType = axom::primal::Point<double, DIM>;
+  RoundTestStrategy(const PointType& center)
+  : ContourTestStrategy<DIM>()
+  , _sphere(center, 0.0)
+  , _errTol(1e-3)
+  {}
+  virtual std::string testName() const override { return std::string("round"); }
   virtual std::string functionName() const override
   {
     return std::string("dist_to_center");
   }
-
   double errorTolerance() const override { return _errTol; }
-
+  virtual double valueAt(const PointType& pt) const override
+  {
+    return _sphere.computeSignedDistance(pt);
+  }
   void setToleranceByLongestEdge(const BlueprintStructuredMesh& bsm)
   {
     // Heuristic of appropriate error tolerance.
     double maxSpacing = bsm.maxSpacing();
     _errTol = 0.1 * maxSpacing;
   }
+  const axom::primal::Sphere<double, DIM> _sphere;
+  double _errTol;
 };
 
-/*!
-  @brief Function for approximate gyroid surface
-*/
 template <int DIM>
-struct GyroidFunctor
-{
+struct GyroidTestStrategy : public ContourTestStrategy<DIM> {
   using PointType = axom::primal::Point<double, DIM>;
-  const PointType _scale;
-  const double _offset;
-  GyroidFunctor(const PointType& scale, double offset)
-    : _scale(scale)
-    , _offset(offset)
-  { }
-  AXOM_HOST_DEVICE double operator()(const PointType& pt) const
+  GyroidTestStrategy(const PointType& scale, double offset)
+  : ContourTestStrategy<DIM>()
+  , _scale(scale)
+  , _offset(offset)
+  {}
+  virtual std::string testName() const override { return std::string("gyroid"); }
+  virtual std::string functionName() const override
+  {
+    return std::string("gyroid_fcn");
+  }
+  double errorTolerance() const override { return _errTol; }
+  virtual double valueAt(const PointType& pt) const override
   {
     if(DIM == 3)
     {
@@ -1458,40 +1480,6 @@ struct GyroidFunctor
         sin(pt[1] * _scale[1]) + _offset;
     }
   }
-};
-template <int DIM, typename ExecSpace>
-struct GyroidContourTest
-  : public ContourTestBase<DIM, ExecSpace, GyroidFunctor<DIM>>
-{
-  static constexpr auto MemorySpace =
-    axom::execution_space<ExecSpace>::memory_space;
-  using PointType = axom::primal::Point<double, DIM>;
-  using FunctorType = GyroidFunctor<DIM>;
-  /*!
-    @brief Constructor.
-
-    @param scale [in] Gyroid function scaling factors
-  */
-  GyroidContourTest(const PointType& scale, double offset)
-    : ContourTestBase<DIM, ExecSpace, FunctorType>(FunctorType(scale, offset))
-    , _scale(scale)
-    , _gyroidFunctor(scale, offset)
-    , _errTol(1e-3)
-  { }
-  virtual ~GyroidContourTest() { }
-  const PointType _scale;
-  FunctorType _gyroidFunctor;
-  double _errTol;
-
-  virtual std::string name() const override { return std::string("gyroid"); }
-
-  virtual std::string functionName() const override
-  {
-    return std::string("gyroid_fcn");
-  }
-
-  double errorTolerance() const override { return _errTol; }
-
   void setToleranceByLongestEdge(const BlueprintStructuredMesh& bsm)
   {
     // Heuristic of appropriate error tolerance.
@@ -1499,81 +1487,11 @@ struct GyroidContourTest
     axom::primal::Vector<double, DIM> v(_scale);
     _errTol = 0.1 * v.norm() * maxSpacing;
   }
+  const PointType _scale;
+  const double _offset;
+  double _errTol;
 };
 
-/*!
-  @brief Function providing signed distance from a plane.
-*/
-template <int DIM>
-struct PlanarFunctor
-{
-  using PointType = axom::primal::Point<double, DIM>;
-  const axom::primal::Plane<double, DIM> _plane;
-  PlanarFunctor(const axom::primal::Vector<double, DIM>& perpDir,
-                const PointType& inPlane)
-    : _plane(perpDir.unitVector(), inPlane)
-  { }
-  AXOM_HOST_DEVICE double operator()(const PointType& pt) const
-  {
-    return _plane.signedDistance(pt);
-  }
-};
-template <int DIM, typename ExecSpace>
-struct PlanarContourTest
-  : public ContourTestBase<DIM, ExecSpace, PlanarFunctor<DIM>>
-{
-  static constexpr auto MemorySpace =
-    axom::execution_space<ExecSpace>::memory_space;
-  using PointType = axom::primal::Point<double, DIM>;
-  using FunctorType = PlanarFunctor<DIM>;
-  /*!
-    @brief Constructor.
-
-    @param inPlane [in] A point in the plane.
-    @param perpDir [in] Perpendicular direction on positive side.
-  */
-  PlanarContourTest(const PointType& inPlane,
-                    const axom::primal::Vector<double, DIM>& perpDir)
-    : ContourTestBase<DIM, ExecSpace, FunctorType>(
-        FunctorType(perpDir.unitVector(), inPlane))
-    , _plane(perpDir.unitVector(), inPlane)
-  { }
-  virtual ~PlanarContourTest() { }
-  const axom::primal::Plane<double, DIM> _plane;
-
-  virtual std::string name() const override { return std::string("planar"); }
-
-  virtual std::string functionName() const override
-  {
-    return std::string("dist_to_plane");
-  }
-
-  double errorTolerance() const override {
-    return axom::numerics::floating_point_limits<double>::epsilon();
-  }
-};
-
-/// Utility function to transform blueprint node storage.
-void makeCoordsContiguous(conduit::Node& coordValues)
-{
-  bool isInterleaved = conduit::blueprint::mcarray::is_interleaved(coordValues);
-  if(isInterleaved)
-  {
-    conduit::Node oldValues = coordValues;
-    conduit::blueprint::mcarray::to_contiguous(oldValues, coordValues);
-  }
-}
-
-/// Utility function to transform blueprint node storage.
-void makeCoordsInterleaved(conduit::Node& coordValues)
-{
-  bool isInterleaved = conduit::blueprint::mcarray::is_interleaved(coordValues);
-  if(!isInterleaved)
-  {
-    conduit::Node oldValues = coordValues;
-    conduit::blueprint::mcarray::to_interleaved(oldValues, coordValues);
-  }
-}
 
 ///
 int allocatorIdToTest(axom::runtime_policy::Policy policy)
@@ -1662,32 +1580,35 @@ int testNdimInstance(BlueprintStructuredMesh& computationalMesh)
   // params specify which tests to run.
   //---------------------------------------------------------------------------
 
-  std::shared_ptr<RoundContourTest<DIM, ExecSpace>> roundTest;
-  std::shared_ptr<GyroidContourTest<DIM, ExecSpace>> gyroidTest;
-  std::shared_ptr<PlanarContourTest<DIM, ExecSpace>> planarTest;
+  std::shared_ptr<ContourTestBase<DIM, ExecSpace>> planarTest;
+  std::shared_ptr<ContourTestBase<DIM, ExecSpace>> roundTest;
+  std::shared_ptr<ContourTestBase<DIM, ExecSpace>> gyroidTest;
+
+  if(params.usingPlanar())
+  {
+    auto strat = std::make_shared<PlanarTestStrategy<DIM>>(params.planeNormal<DIM>(),
+                                                           params.inplanePoint<DIM>());
+    planarTest = std::make_shared<ContourTestBase<DIM, ExecSpace>>(strat);
+    planarTest->computeNodalDistance(computationalMesh);
+  }
 
   if(params.usingRound())
   {
-    roundTest = std::make_shared<RoundContourTest<DIM, ExecSpace>>(
-      params.roundContourCenter<DIM>());
-    roundTest->setToleranceByLongestEdge(computationalMesh);
+    auto strat = std::make_shared<RoundTestStrategy<DIM>>(params.roundContourCenter<DIM>());
+    strat->setToleranceByLongestEdge(computationalMesh);
+    roundTest = std::make_shared<ContourTestBase<DIM, ExecSpace>>(strat);
     roundTest->computeNodalDistance(computationalMesh);
   }
+
   if(params.usingGyroid())
   {
-    gyroidTest = std::make_shared<GyroidContourTest<DIM, ExecSpace>>(
-      params.gyroidScaleFactor<DIM>(),
-      params.contourVal);
-    gyroidTest->setToleranceByLongestEdge(computationalMesh);
+    auto strat = std::make_shared<GyroidTestStrategy<DIM>>(params.gyroidScaleFactor<DIM>(),
+                                                           params.contourVal);
+    strat->setToleranceByLongestEdge(computationalMesh);
+    gyroidTest = std::make_shared<ContourTestBase<DIM, ExecSpace>>(strat);
     gyroidTest->computeNodalDistance(computationalMesh);
   }
-  if(params.usingPlanar())
-  {
-    planarTest = std::make_shared<PlanarContourTest<DIM, ExecSpace>>(
-      params.inplanePoint<DIM>(),
-      params.planeNormal<DIM>());
-    planarTest->computeNodalDistance(computationalMesh);
-  }
+
   if(params.isVerbose())
   {
     computationalMesh.printMeshInfo();
