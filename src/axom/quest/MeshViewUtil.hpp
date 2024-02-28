@@ -181,13 +181,13 @@ static void stridesAndOffsetsToShapes(const axom::StackArray<IType, DIM>& realSh
    \brief Utility for high-level access into a blueprint mesh,
    for structured mesh with explicit coordinates.
 
-   Note: This class was written for a specific use and is not as
-   general as it may seem.
+   Note: This class was written for a specific use and supports
+   only structured domains with explicit node values.
 
-   Blueprint mesh data is sufficient but sparse, leaving users
-   to compute a number of intermediate data to get to high-level
-   data of interest, such as views into array data.  This class
-   encapsulates those common utilities.
+   Blueprint mesh data is sufficient but sparse, leaving users to
+   compute some intermediate data to get to high-level data of
+   interest, such as views into array data.  This class encapsulates
+   those common functions.
 
    Views are single-domain-specific.  They don't apply to multi-domain
    meshes.  They are also topology specific, with the topology name
@@ -202,7 +202,7 @@ static void stridesAndOffsetsToShapes(const axom::StackArray<IType, DIM>& realSh
    TODO: Figure out if there's a better place for this utility.
    It's only in axom/quest because the initial need was there.
 */
-template <int DIM, axom::MemorySpace MemSpace>
+template <int DIM, axom::MemorySpace MemSpace = MemorySpace::Dynamic>
 class MeshViewUtil
 {
 public:
@@ -677,12 +677,16 @@ public:
                    const MdIndices& offsets)
   {
     SLIC_ERROR_IF(
+      m_dom == nullptr,
+      axom::fmt::format("Cannot create field {}."
+                        "  MeshViewUtil was not constructed with a mutable domain.", fieldName));
+    SLIC_ERROR_IF(
       m_dom->has_path("fields/" + fieldName),
       axom::fmt::format("Cannot create field {}.  It already exists.", fieldName));
 
     SLIC_ERROR_IF(
       association != "vertex" && association != "element",
-      axom::fmt::format("Not yet supporting association '{}'.", association));
+      axom::fmt::format("MeshViewUtil doesn't support association '{}' yet.", association));
 
     const auto& realShape = getRealExtents(association);
     MdIndices loPads, hiPads, paddedShape, strideOrder;
@@ -752,6 +756,10 @@ public:
                    const MdIndices& hiPads,
                    const MdIndices& strideOrder)
   {
+    SLIC_ERROR_IF(
+      m_dom == nullptr,
+      axom::fmt::format("Cannot create field {}."
+                        "  MeshViewUtil was not constructed with a mutable domain.", fieldName));
     SLIC_ERROR_IF(
       m_dom->has_path("fields/" + fieldName),
       axom::fmt::format("Cannot create field {}.  It already exists.", fieldName));

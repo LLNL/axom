@@ -60,6 +60,21 @@ public:
   }
 
   /*!
+    @brief Constructor for a given shape with the ordering of an
+    existing ArrayIndexer.
+
+    @param [in] shape Shape of the array
+    @param [in] orderSource: ArrayIndex to copy stride order
+      from.
+  */
+  ArrayIndexer(
+    const axom::StackArray<T, DIM>& shape,
+    const axom::ArrayIndexer<T, DIM>& orderSource)
+  {
+    initializeShape(shape, orderSource);
+  }
+
+  /*!
     @brief Constructor for arbitrary-stride indexing.
 
     @param [i] strides Strides.  Must be unique when DIM > 1.
@@ -140,6 +155,21 @@ public:
       int fasterDir = m_slowestDirs[d + 1];
       m_strides[dir] = m_strides[fasterDir] * shape[fasterDir];
     }
+  }
+
+  /*!
+    @brief Initialize for a given shape with the ordering of an
+    existing ArrayIndexer.
+
+    @param [in] shape Shape of the array
+    @param [in] orderSource: ArrayIndex to copy stride order
+      from.
+  */
+  inline AXOM_HOST_DEVICE void initializeShape(
+    const axom::StackArray<T, DIM>& shape,
+    const axom::ArrayIndexer<T, DIM>& orderSource)
+  {
+    initializeShape(shape, orderSource.slowestDirs());
   }
 
   /*!

@@ -145,11 +145,8 @@ void MarchingCubes::computeIsocontour(double contourVal)
 
 axom::IndexType MarchingCubes::getContourNodeCount() const
 {
-  axom::IndexType contourNodeCount = 0;
-  for(int dId = 0; dId < m_singles.size(); ++dId)
-  {
-    contourNodeCount += m_singles[dId]->getContourNodeCount();
-  }
+  axom::IndexType contourNodeCount =
+    m_singles.empty() ? 0 : m_facetCount * m_singles[0]->spatialDimension();
   return contourNodeCount;
 }
 
