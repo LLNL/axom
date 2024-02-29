@@ -1124,6 +1124,47 @@ struct DeviceInitTag<T,
 };
 /// @}
 
+template <typename T, OperationSpace SPACE>
+struct DeviceStagingBuffer;
+
+template <typename T>
+struct DeviceStagingBuffer<T, OperationSpace::Device>
+{
+  DeviceStagingBuffer(T* data,
+                      IndexType begin,
+                      IndexType nelems,
+                      bool destroying = false)
+    : m_data(data)
+    , m_begin(begin)
+    , m_num_elems(nelems)
+    , m_is_destroying(destroying)
+  {
+    m_staging_buf = ::operator new(sizeof(T) * nelems);
+    if(destroying)
+    {
+      axom::copy(m_staging_buf, m_data + begin, sizeof(T) * nelems);
+    }
+  }
+
+  DISABLE_COPY_AND_ASSIGNMENT(DeviceStagingBuffer);
+  DISABLE_MOVE_AND_ASSIGNMENT(DeviceStagingBuffer);
+
+  ~DeviceStagingBuffer()
+  {
+    // Copy back staging data to destination buffer.
+    axom::copy(m_data + m_begin, m_staging_buf, m_num_elems * sizeof(T));
+    ::operator delete(m_staging_buf);
+  }
+
+  T* getStagingBuffer() const { return static_cast<T*>(m_staging_buf); }
+
+  void* m_staging_buf;
+  T* m_data;
+  IndexType m_begin;
+  IndexType m_num_elems;
+  bool m_is_destroying;
+};
+
 template <typename T>
 struct ArrayOpsBase<T, OperationSpace::Device>
 {
@@ -1137,6 +1178,7 @@ struct ArrayOpsBase<T, OperationSpace::Device>
   static constexpr bool DefaultCtor = std::is_default_constructible<T>::value;
 
   using HostOp = ArrayOpsBase<T, OperationSpace::Host>;
+  using StagingBuffer = DeviceStagingBuffer<T, OperationSpace::Device>;
 
   /*!
    * \brief Helper for default-initialization of a range of elements.
@@ -1153,11 +1195,8 @@ struct ArrayOpsBase<T, OperationSpace::Device>
       // If we instantiated a fill kernel here it would require
       // that T's default ctor is device-annotated which is too
       // strict of a requirement, so we copy a buffer instead.
-      void* tmp_buffer = ::operator new(sizeof(T) * nelems);
-      T* typed_buffer = static_cast<T*>(tmp_buffer);
-      HostOp::init(typed_buffer, 0, nelems);
-      axom::copy(data + begin, tmp_buffer, nelems * sizeof(T));
-      ::operator delete(tmp_buffer);
+      StagingBuffer tmp_buf(data, begin, nelems);
+      HostOp::init(tmp_buf.getStagingBuffer(), 0, nelems);
     }
   }
 
@@ -1216,14 +1255,11 @@ struct ArrayOpsBase<T, OperationSpace::Device>
                         const T& value,
                         std::false_type)
   {
-    void* buffer = ::operator new(sizeof(T) * nelems);
-    T* typed_buffer = static_cast<T*>(buffer);
     // If we instantiated a fill kernel here it would require
     // that T's copy ctor is device-annotated which is too
     // strict of a requirement, so we copy a buffer instead.
-    std::uninitialized_fill_n(typed_buffer, nelems, value);
-    axom::copy(array + begin, typed_buffer, sizeof(T) * nelems);
-    ::operator delete(buffer);
+    StagingBuffer tmp_buf(array, begin, nelems);
+    HostOp::fill(tmp_buf.getStagingBuffer(), 0, nelems, value);
   }
 
   /*!
@@ -1275,14 +1311,10 @@ struct ArrayOpsBase<T, OperationSpace::Device>
     }
     else
     {
-      void* dst_buf = ::operator new(sizeof(T) * nelems);
-      T* dst_host = static_cast<T*>(dst_buf);
       // HostOp::fill_range will handle the copy to our "staging" host buffer,
       // regardless of the source memory space.
-      HostOp::fill_range(dst_host, 0, nelems, values, space);
-      // Relocate our copy-constructed values into the target device array.
-      axom::copy(array + begin, dst_buf, sizeof(T) * nelems);
-      ::operator delete(dst_buf);
+      StagingBuffer tmp_buf(array, begin, nelems);
+      HostOp::fill_range(tmp_buf.getStagingBuffer(), 0, nelems, values, space);
     }
   }
 
@@ -1314,15 +1346,8 @@ struct ArrayOpsBase<T, OperationSpace::Device>
   {
     if(DestroyOnHost)
     {
-      void* buffer = ::operator new(sizeof(T) * nelems);
-      T* typed_buffer = static_cast<T*>(buffer);
-      axom::copy(typed_buffer, array + begin, sizeof(T) * nelems);
-      for(int i = 0; i < nelems; ++i)
-      {
-        typed_buffer[i].~T();
-      }
-      axom::copy(array + begin, typed_buffer, sizeof(T) * nelems);
-      ::operator delete(buffer);
+      StagingBuffer tmp_buf(array, begin, nelems, true);
+      HostOp::destroy(tmp_buf.getStagingBuffer(), 0, nelems);
     }
   }
 
