@@ -17,10 +17,10 @@ namespace axom
 {
 struct ArrayStrideOrder
 {
-  static constexpr int NEITHER = 0;          // Neither row nor column
+  static constexpr int ARBITRARY = 0;        // Neither row nor column
   static constexpr int ROW = 1;              // Row-major
   static constexpr int COLUMN = 2;           // Column-major
-  static constexpr int BOTH = ROW | COLUMN;  // Only for 1D arrays
+  static constexpr int BOTH = ROW | COLUMN;  // 1D arrays are both
 };
 
 /*!
@@ -40,10 +40,13 @@ public:
     @brief Constructor for row- or column-major indexing.
     @param [in] shape Shape of the array
     @param [in] order: c is column major; r is row major.
+    @param [in] fastestStrideLength: Stride in the fastest
+                direction.
   */
-  ArrayIndexer(const axom::StackArray<T, DIM>& shape, int order)
+  ArrayIndexer(const axom::StackArray<T, DIM>& shape, int order,
+               int fastestStrideLength = 1)
   {
-    initializeShape(shape, order);
+    initializeShape(shape, order, fastestStrideLength);
   }
 
   /*!
@@ -101,9 +104,12 @@ public:
     @brief Initialize for row- or column-major indexing.
     @param [in] shape Shape of the array
     @param [in] order: c is column major; r is row major.
+    @param [in] fastestStrideLength: Stride in the fastest
+                direction.
   */
   inline AXOM_HOST_DEVICE void initializeShape(const axom::StackArray<T, DIM>& shape,
-                                               int order)
+                                               int order,
+                                               int fastestStrideLength = 1)
   {
     SLIC_ASSERT(order == ArrayStrideOrder::COLUMN ||
                 order == ArrayStrideOrder::ROW);
@@ -113,7 +119,7 @@ public:
       {
         m_slowestDirs[d] = DIM - 1 - d;
       }
-      m_strides[0] = 1;
+      m_strides[0] = fastestStrideLength;
       for(int d = 1; d < DIM; ++d)
       {
         m_strides[d] = m_strides[d - 1] * shape[d - 1];
@@ -125,14 +131,12 @@ public:
       {
         m_slowestDirs[d] = d;
       }
-      m_strides[DIM - 1] = 1;
+      m_strides[DIM - 1] = fastestStrideLength;
       for(int d = DIM - 2; d >= 0; --d)
       {
         m_strides[d] = m_strides[d + 1] * shape[d + 1];
       }
     }
-    SLIC_ASSERT((DIM == 1 && getStrideOrder() == ArrayStrideOrder::BOTH) ||
-                (getStrideOrder() == order));
   }
 
   /*!
