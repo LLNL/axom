@@ -106,10 +106,10 @@ class MarchingCubes
 {
 public:
   using RuntimePolicy = axom::runtime_policy::Policy;
-  using DomainIdType = int;
+  using DomainIdType = axom::IndexType;
   /*!
-    \brief Constructor sets up computational mesh and data for running the
-    marching cubes algorithm.
+    \brief Constructor sets up runtime preferences for the marching
+    cubes implementation.
 
     \param [in] runtimePolicy A value from RuntimePolicy.
                 The simplest policy is RuntimePolicy::seq, which specifies
@@ -117,27 +117,6 @@ public:
     \param [in] allocatorID Data allocator ID.  Choose something compatible
                 with \c runtimePolicy.  See \c execution_space.
     \param [in] dataParallelism Data parallel implementation choice.
-    \param [in] bpMesh Blueprint multi-domain mesh containing scalar field.
-    \param [in] topologyName Name of Blueprint topology to use in \a bpMesh.
-    \param [in] maskField Cell-based std::int32_t mask field.  If provided,
-                cells where this field evaluates to false are skipped.
-
-    Array data in \a dom must be accessible in the \a runtimePolicy
-    environment.  It's an error if not, e.g., using CPU memory with
-    a GPU policy.
-
-    Some metadata from \a bpMesh may be cached by the constructor.
-    Any change to it after the constructor leads to undefined behavior.
-
-    The mesh coordinates should be contiguous.  See
-    conduit::blueprint::is_contiguous().  In the future, this
-    requirement may be relaxed, possibly at the cost of a
-    transformation and storage of the temporary contiguous layout.
-
-    Blueprint allows users to specify ids for the domains.  If
-    "state/domain_id" exists in the domains, it is used as the domain
-    id.  Otherwise, the domain's interation index within the
-    multidomain mesh is used.
   */
   MarchingCubes(RuntimePolicy runtimePolicy,
                 int allocatorId,
@@ -145,6 +124,22 @@ public:
 
   /*!
     @brief Set the input mesh.
+    \param [in] bpMesh Blueprint multi-domain mesh containing scalar field.
+    \param [in] topologyName Name of Blueprint topology to use in \a bpMesh.
+    \param [in] maskField Cell-based std::int32_t mask field.  If provided,
+                cells where this field evaluates to false are skipped.
+
+    Array data in \a dom must be accessible in the \a runtimePolicy
+    environment specified in the constructor.  It's an error if not,
+    e.g., using CPU memory with a GPU policy.
+
+    Some metadata from \a bpMesh may be cached.  Any change to it
+    after setMesh() leads to undefined behavior.
+
+    Blueprint allows users to specify ids for the domains.  If
+    "state/domain_id" exists in the domains, it is used as the domain
+    id.  Otherwise, the domain's interation index within the
+    multidomain mesh is used.
 
     @see clearMesh()
   */
