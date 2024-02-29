@@ -1071,6 +1071,59 @@ struct ArrayOpsBase<T, OperationSpace::Host>
 };
 
 #if defined(AXOM_USE_GPU) && defined(AXOM_GPUCC) && defined(AXOM_USE_UMPIRE)
+/*!
+ * \name Tag types for device initialization
+ */
+/// @{
+
+/*!
+ * \brief Tag type representing that a type can be initialized on the device.
+ *
+ *  This only applies to types which are trivially device-constructible.
+ */
+struct InitTypeOnDevice
+{ };
+/*!
+ * \brief Tag type representing that a type can be initialized on the device.
+ *
+ *  This applies to types which are not trivially default-constructible, but are
+ *  trivially-copyable; we can construct a default value on the host and copy-
+ *  construct values with it on the device.
+ */
+struct InitTypeOnDeviceWithCopy
+{ };
+/*!
+ * \brief Tag type representing that a type cannot be initialized on the device.
+ */
+struct InitTypeOnHost
+{ };
+
+/*!
+ * \brief Selector type which matches a type to its corresponding initialization
+ *  tag type.
+ */
+template <typename T, typename Enable = void>
+struct DeviceInitTag
+{
+  using Type = InitTypeOnHost;
+};
+
+template <typename T>
+struct DeviceInitTag<T, std::enable_if_t<std::is_trivially_default_constructible<T>::value>>
+{
+  using Type = InitTypeOnDevice;
+};
+
+template <typename T>
+struct DeviceInitTag<T,
+                     std::enable_if_t<!std::is_trivially_default_constructible<T>::value &&
+                                      std::is_default_constructible<T>::value &&
+                                      std::is_trivially_copyable<T>::value>>
+{
+  using Type = InitTypeOnDeviceWithCopy;
+};
+/// @}
+
 template <typename T>
 struct ArrayOpsBase<T, OperationSpace::Device>
 {
@@ -1080,17 +1133,9 @@ struct ArrayOpsBase<T, OperationSpace::Device>
   using ExecSpace = axom::HIP_EXEC<256>;
   #endif
 
-  static constexpr bool InitOnDevice =
-    std::is_trivially_default_constructible<T>::value;
   static constexpr bool DestroyOnHost = !std::is_trivially_destructible<T>::value;
   static constexpr bool DefaultCtor = std::is_default_constructible<T>::value;
 
-  struct TrivialDefaultCtorTag
-  { };
-  struct NontrivialDefaultCtorTag
-  { };
-  struct NoDefaultCtorTag
-  { };
   using HostOp = ArrayOpsBase<T, OperationSpace::Host>;
 
   /*!
@@ -1099,36 +1144,28 @@ struct ArrayOpsBase<T, OperationSpace::Device>
    * \param [inout] data The data to initialize
    * \param [in] begin The beginning of the subset of \a data that should be initialized
    * \param [in] nelems the number of elements to initialize
-   * \note Specialization for when T is nontrivially default-constructible.
+   * \note Specialization for when T is only initializable on the host.
    */
-  static void init_impl(T* data,
-                        IndexType begin,
-                        IndexType nelems,
-                        NontrivialDefaultCtorTag)
+  static void init_impl(T* data, IndexType begin, IndexType nelems, InitTypeOnHost)
   {
-    // If we instantiated a fill kernel here it would require
-    // that T's default ctor is device-annotated which is too
-    // strict of a requirement, so we copy a buffer instead.
-    void* tmp_buffer = ::operator new(sizeof(T) * nelems);
-    T* typed_buffer = static_cast<T*>(tmp_buffer);
-    for(IndexType i = 0; i < nelems; ++i)
+    if(std::is_default_constructible<T>::value)
     {
-      // We use placement-new to avoid calling destructors in the delete
-      // statement below.
-      new(typed_buffer + i) T();
+      // If we instantiated a fill kernel here it would require
+      // that T's default ctor is device-annotated which is too
+      // strict of a requirement, so we copy a buffer instead.
+      void* tmp_buffer = ::operator new(sizeof(T) * nelems);
+      T* typed_buffer = static_cast<T*>(tmp_buffer);
+      HostOp::init(typed_buffer, 0, nelems);
+      axom::copy(data + begin, tmp_buffer, nelems * sizeof(T));
+      ::operator delete(tmp_buffer);
     }
-    axom::copy(data + begin, tmp_buffer, nelems * sizeof(T));
-    ::operator delete(tmp_buffer);
   }
 
   /*!
    * \overload
    * \note Specialization for when T is trivially default-constructible.
    */
-  static void init_impl(T* data,
-                        IndexType begin,
-                        IndexType nelems,
-                        TrivialDefaultCtorTag)
+  static void init_impl(T* data, IndexType begin, IndexType nelems, InitTypeOnDevice)
   {
     for_all<ExecSpace>(
       begin,
@@ -1138,9 +1175,19 @@ struct ArrayOpsBase<T, OperationSpace::Device>
 
   /*!
    * \overload
-   * \note Specialization for when T is not default-constructible.
+   * \note Specialization for when T is trivially copyable.
    */
-  static void init_impl(T*, IndexType, IndexType, NoDefaultCtorTag) { }
+  static void init_impl(T* data,
+                        IndexType begin,
+                        IndexType nelems,
+                        InitTypeOnDeviceWithCopy)
+  {
+    T object {};
+    for_all<ExecSpace>(
+      begin,
+      begin + nelems,
+      AXOM_LAMBDA(IndexType i) { new(&data[i]) T(object); });
+  }
 
   /*!
    * \brief Default-initializes the "new" segment of an array
@@ -1151,14 +1198,7 @@ struct ArrayOpsBase<T, OperationSpace::Device>
    */
   static void init(T* data, IndexType begin, IndexType nelems)
   {
-    using InitSelectTag =
-      typename std::conditional<InitOnDevice,
-                                TrivialDefaultCtorTag,
-                                NontrivialDefaultCtorTag>::type;
-    using InitTag =
-      typename std::conditional<DefaultCtor, InitSelectTag, NoDefaultCtorTag>::type;
-
-    init_impl(data, begin, nelems, InitTag {});
+    init_impl(data, begin, nelems, typename DeviceInitTag<T>::Type {});
   }
 
   /*!
