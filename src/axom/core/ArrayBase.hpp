@@ -1166,7 +1166,27 @@ struct DeviceStagingBuffer<T, OperationSpace::Device>
 };
 
 template <typename T>
-struct ArrayOpsBase<T, OperationSpace::Device>
+struct DeviceStagingBuffer<T, OperationSpace::Unified_Device>
+{
+  DeviceStagingBuffer(T* data,
+                      IndexType begin,
+                      IndexType nelems,
+                      bool destroying = false)
+    : m_data(data)
+    , m_begin(begin)
+  {
+    AXOM_UNUSED_VAR(nelems);
+    AXOM_UNUSED_VAR(destroying);
+  }
+
+  T* getStagingBuffer() const { return static_cast<T*>(m_data + m_begin); }
+
+  T* m_data;
+  IndexType m_begin;
+};
+
+template <typename T, OperationSpace SPACE>
+struct ArrayOpsBase
 {
   #if defined(__CUDACC__)
   using ExecSpace = axom::CUDA_EXEC<256>;
@@ -1178,7 +1198,7 @@ struct ArrayOpsBase<T, OperationSpace::Device>
   static constexpr bool DefaultCtor = std::is_default_constructible<T>::value;
 
   using HostOp = ArrayOpsBase<T, OperationSpace::Host>;
-  using StagingBuffer = DeviceStagingBuffer<T, OperationSpace::Device>;
+  using StagingBuffer = DeviceStagingBuffer<T, SPACE>;
 
   /*!
    * \brief Helper for default-initialization of a range of elements.
@@ -1328,11 +1348,19 @@ struct ArrayOpsBase<T, OperationSpace::Device>
   template <typename... Args>
   static void emplace(T* array, IndexType i, Args&&... args)
   {
-    // Similar to fill(), except we can allocate stack memory and placement-new
-    // the object with a move constructor.
-    alignas(T) std::uint8_t host_buf[sizeof(T)];
-    T* host_obj = ::new(&host_buf) T(std::forward<Args>(args)...);
-    axom::copy(array + i, host_obj, sizeof(T));
+    if(SPACE == OperationSpace::Device)
+    {
+      // Similar to fill(), except we can allocate stack memory and placement-new
+      // the object with a move constructor.
+      alignas(T) std::uint8_t host_buf[sizeof(T)];
+      T* host_obj = ::new(&host_buf) T(std::forward<Args>(args)...);
+      axom::copy(array + i, host_obj, sizeof(T));
+    }
+    else  // SPACE == OperationSpace::Unified_Device
+    {
+      // Construct directly in unified/pinned memory.
+      ::new(array + i) T(std::forward<Args>(args)...);
+    }
   }
 
   /*!
@@ -1361,14 +1389,26 @@ struct ArrayOpsBase<T, OperationSpace::Device>
    */
   static void move(T* array, IndexType src_begin, IndexType src_end, IndexType dst)
   {
-    // Since this memory is on the device-side, we copy it to a temporary buffer
-    // first.
-    IndexType nelems = src_end - src_begin;
-    T* tmp_buf =
-      axom::allocate<T>(nelems, axom::execution_space<ExecSpace>::allocatorID());
-    axom::copy(tmp_buf, array + src_begin, nelems * sizeof(T));
-    axom::copy(array + dst, tmp_buf, nelems * sizeof(T));
-    axom::deallocate(tmp_buf);
+    if(!std::is_trivially_copyable<T>::value &&
+       SPACE == OperationSpace::Unified_Device)
+    {
+      // Type might not be trivially-relocatable, move the range on the host.
+      // Note that we only do this for objects in unified/pinned memory, since
+      // we assume that objects in device-only memory are trivially-relocatable.
+      HostOp::move(array, src_begin, src_end, dst);
+    }
+    else
+    {
+      // Since this memory is on the device-side, we copy it to a temporary buffer
+      // first.
+      IndexType nelems = src_end - src_begin;
+      T* tmp_buf =
+        axom::allocate<T>(nelems,
+                          axom::execution_space<ExecSpace>::allocatorID());
+      axom::copy(tmp_buf, array + src_begin, nelems * sizeof(T));
+      axom::copy(array + dst, tmp_buf, nelems * sizeof(T));
+      axom::deallocate(tmp_buf);
+    }
   }
 
   /*!
@@ -1380,10 +1420,18 @@ struct ArrayOpsBase<T, OperationSpace::Device>
    */
   static void realloc_move(T* array, IndexType nelems, T* values)
   {
-    // NOTE: technically this is incorrect for non-trivially relocatable types,
-    // but since we only support trivially-relocatable types on the GPU, a
-    // bitcopy will suffice.
-    axom::copy(array, values, nelems * sizeof(T));
+    if(!std::is_trivially_copyable<T>::value &&
+       SPACE == OperationSpace::Unified_Device)
+    {
+      HostOp::realloc_move(array, nelems, values);
+    }
+    else
+    {
+      // NOTE: technically this is incorrect for non-trivially relocatable types,
+      // but since we only support trivially-relocatable types in device-only
+      // memory, a bitcopy will suffice.
+      axom::copy(array, values, nelems * sizeof(T));
+    }
   }
 };
 #endif
