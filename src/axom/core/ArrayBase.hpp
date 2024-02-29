@@ -1091,6 +1091,7 @@ struct ArrayOpsBase<T, OperationSpace::Device>
   { };
   struct NoDefaultCtorTag
   { };
+  using HostOp = ArrayOpsBase<T, OperationSpace::Host>;
 
   /*!
    * \brief Helper for default-initialization of a range of elements.
@@ -1234,23 +1235,11 @@ struct ArrayOpsBase<T, OperationSpace::Device>
     }
     else
     {
-      void* src_buf = nullptr;
-      const T* src_host = values;
-      if(space == MemorySpace::Device)
-      {
-        src_buf = ::operator new(sizeof(T) * nelems);
-        // "Relocate" the device-side values into host memory, before copying
-        // into uninitialized memory
-        axom::copy(src_buf, values, sizeof(T) * nelems);
-        src_host = static_cast<T*>(src_buf);
-      }
       void* dst_buf = ::operator new(sizeof(T) * nelems);
       T* dst_host = static_cast<T*>(dst_buf);
-      std::uninitialized_copy(src_host, src_host + nelems, dst_host);
-      if(src_buf)
-      {
-        ::operator delete(src_buf);
-      }
+      // HostOp::fill_range will handle the copy to our "staging" host buffer,
+      // regardless of the source memory space.
+      HostOp::fill_range(dst_host, 0, nelems, values, space);
       // Relocate our copy-constructed values into the target device array.
       axom::copy(array + begin, dst_buf, sizeof(T) * nelems);
       ::operator delete(dst_buf);
