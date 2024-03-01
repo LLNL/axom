@@ -247,8 +247,6 @@ public:
     return m_facetDomainIds.view();
   }
 
-  #if 1
-  // Is there a use case for this?
   /*!
     @brief Give caller posession of the contour data.
 
@@ -256,20 +254,24 @@ public:
     to stay in scope after the MarchingCubes object is deleted.
 
     @pre isoContour() must have been called.
-    @post outputs can no longer be accessed from object.
+    @post outputs can no longer be accessed from object, as though
+    clearOutput() has been called.
   */
   void relinquishContourData(axom::Array<axom::IndexType, 2> &facetNodeIds,
                              axom::Array<double, 2> &facetNodeCoords,
-                             axom::Array<axom::IndexType, 1> &facetParentIds)
+                             axom::Array<axom::IndexType, 1> &facetParentIds,
+                             axom::Array<axom::IndexType>& facetDomainIds)
   {
+    facetNodeIds.clear();
+    facetNodeCoords.clear();
+    facetParentIds.clear();
+    facetDomainIds.clear();
+
     facetNodeIds.swap(m_facetNodeIds);
     facetNodeCoords.swap(m_facetNodeCoords);
     facetParentIds.swap(m_facetParentIds);
-    m_facetNodeIds.clear();
-    m_facetNodeCoords.clear();
-    m_facetParentIds.clear();
+    facetDomainIds.swap(m_facetDomainIds);
   }
-  #endif
   //@}
 
   /*!
