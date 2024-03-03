@@ -253,7 +253,7 @@ public:
     This efficiently turns the generated contour data to the caller,
     to stay in scope after the MarchingCubes object is deleted.
 
-    @pre isoContour() must have been called.
+    @pre computeIsocontour() must have been called.
     @post outputs can no longer be accessed from object, as though
     clearOutput() has been called.
   */
@@ -266,6 +266,7 @@ public:
     facetNodeCoords.clear();
     facetParentIds.clear();
     facetDomainIds.clear();
+    m_facetCount = 0;
 
     facetNodeIds.swap(m_facetNodeIds);
     facetNodeCoords.swap(m_facetNodeCoords);

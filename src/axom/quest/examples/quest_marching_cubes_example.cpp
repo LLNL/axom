@@ -890,6 +890,18 @@ struct ContourTestBase
     extractTimer.stop();
     printTimingStats(extractTimer, "extract");
 
+    {
+      axom::Array<axom::IndexType, 2> facetNodeIds;
+      axom::Array<double, 2> facetNodeCoords;
+      axom::Array<axom::IndexType, 1> facetParentIds;
+      axom::Array<axom::IndexType> facetDomainIds;
+      mc.relinquishContourData( facetNodeIds,
+                                facetNodeCoords,
+                                facetParentIds,
+                                facetDomainIds );
+      SLIC_ASSERT(mc.getContourFacetCount() == 0);
+    }
+
     int localErrCount = 0;
     if(params.checkResults)
     {
