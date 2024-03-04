@@ -20,6 +20,19 @@
   #error HIP_EXEC requires a HIP enabled UMPIRE with UM support
 #endif
 
+// Needs to be buarded for specifc rocm release
+namespace rocprim {
+template<
+    class Key,
+    unsigned int BlockSizeX,
+    unsigned int ItemsPerThread,
+    class Value,
+    unsigned int BlockSizeY,
+    unsigned int BlockSizeZ
+>
+constexpr unsigned int block_radix_sort<Key, BlockSizeX, ItemsPerThread, Value, BlockSizeY, BlockSizeZ>::radix_bits_per_pass;
+}
+
 namespace axom
 {
 enum ExecutionMode
