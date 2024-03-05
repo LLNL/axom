@@ -150,6 +150,7 @@ jobs:
 - job: Test_Spack_Package
   variables:
     VM_ImageName: 'ubuntu-20.04'
+    Compiler_ImageName: '$(CLANG10_IMAGENAME)'
     TEST_TARGET: 'linux_clang10'
     HOST_CONFIG: 'clang@10.0.0'
   pool:
