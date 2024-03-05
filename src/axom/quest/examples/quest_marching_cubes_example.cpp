@@ -100,6 +100,11 @@ public:
   quest::MarchingCubesDataParallelism dataParallelism =
     quest::MarchingCubesDataParallelism::byPolicy;
 
+  // Distinct MarchingCubes objects count.
+  int objectRepCount = 1;
+  // Contour generation count for each MarchingCubes objects.
+  int contourGenCount = 1;
+
 private:
   bool _verboseOutput {false};
 
@@ -183,6 +188,19 @@ public:
     app.add_flag("-c,--check-results,!--no-check-results", checkResults)
       ->description(
         "Enable/disable checking results against analytical solution")
+      ->capture_default_str();
+
+    //
+    // Number of repetitions to run
+    //
+
+    app.add_option("--objectReps", objectRepCount)
+      ->description("Number of MarchingCube object repetitions to run")
+      ->capture_default_str();
+
+    app.add_option("--contourGenReps", contourGenCount)
+      ->description(
+        "Number of contour repetitions to run for each MarchingCubes object")
       ->capture_default_str();
 
     app.get_formatter()->column_width(60);
@@ -724,7 +742,7 @@ struct ContourTestBase
   const std::string m_domainIdField;
   ValueFunctorType m_valueFunctor;
 
-  int runTest(BlueprintStructuredMesh& computationalMesh, quest::MarchingCubes& mc)
+  int runTest(BlueprintStructuredMesh& computationalMesh)
   {
     SLIC_INFO(banner(axom::fmt::format("Testing {} contour.", name())));
 
@@ -783,16 +801,32 @@ struct ContourTestBase
     }
 #endif
 
-    mc.setFunctionField(functionName());
+#ifdef AXOM_USE_MPI
+      MPI_Barrier(MPI_COMM_WORLD);
+#endif
+
+    int repCount = params.objectRepCount * params.contourGenCount;
 
     axom::utilities::Timer computeTimer(false);
-#ifdef AXOM_USE_MPI
-    MPI_Barrier(MPI_COMM_WORLD);
-#endif
     computeTimer.start();
+    for(int i=0; i<repCount-1; ++i) {
+      quest::MarchingCubes mc(params.policy,
+                              computationalMesh.asConduitNode(),
+                              "mesh");
+      mc.setFunctionField(functionName());
+      mc.setDataParallelism(params.dataParallelism);
+      mc.computeIsocontour(params.contourVal);
+    }
+    quest::MarchingCubes mc(params.policy,
+                            computationalMesh.asConduitNode(),
+                            "mesh");
+    mc.setFunctionField(functionName());
     mc.setDataParallelism(params.dataParallelism);
     mc.computeIsocontour(params.contourVal);
+
     computeTimer.stop();
+    SLIC_INFO(axom::fmt::format("Finished {} total reps",
+                                params.objectRepCount * params.contourGenCount));
     printTimingStats(computeTimer, name() + " contour");
 
     {
@@ -1592,19 +1626,19 @@ int testNdimInstance(BlueprintStructuredMesh& computationalMesh)
 
   if(planarTest)
   {
-    localErrCount += planarTest->runTest(computationalMesh, mc);
+    localErrCount += planarTest->runTest(computationalMesh);
   }
   slic::flushStreams();
 
   if(roundTest)
   {
-    localErrCount += roundTest->runTest(computationalMesh, mc);
+    localErrCount += roundTest->runTest(computationalMesh);
   }
   slic::flushStreams();
 
   if(gyroidTest)
   {
-    localErrCount += gyroidTest->runTest(computationalMesh, mc);
+    localErrCount += gyroidTest->runTest(computationalMesh);
   }
   slic::flushStreams();
 
