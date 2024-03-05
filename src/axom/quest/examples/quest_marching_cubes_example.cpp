@@ -743,12 +743,6 @@ struct ContourTestBase
 
   int runTest(BlueprintStructuredMesh& computationalMesh)
   {
-    // Compute the nodal distance functions.
-    for(const auto& strategy : m_testStrategies)
-    {
-      computeNodalDistance(computationalMesh, *strategy);
-    }
-
     // Conduit data is in host memory, move to devices for testing.
     if(s_allocatorId != axom::execution_space<axom::SEQ_EXEC>::allocatorID())
     {
@@ -882,8 +876,7 @@ struct ContourTestBase
     sidre::Group* meshGroup = objectDS.getRoot()->createGroup(sidreGroupName);
     axom::mint::UnstructuredMesh<axom::mint::SINGLE_SHAPE> contourMesh(
       DIM,
-      DIM == 2 ? mint::CellType::SEGMENT : mint::CellType::TRIANGLE,
-      meshGroup);
+      DIM == 2 ? mint::CellType::SEGMENT : mint::CellType::TRIANGLE);
     axom::utilities::Timer extractTimer(false);
     extractTimer.start();
     mc.populateContourMesh(contourMesh, m_parentCellIdField, m_domainIdField);
@@ -1029,6 +1022,13 @@ struct ContourTestBase
           fieldView(i, j, k) = strat.valueAt(pt);
         }
       }
+    }
+  }
+  void computeNodalDistance(BlueprintStructuredMesh& bpMesh)
+  {
+    for( auto& strategy : m_testStrategies )
+    {
+      computeNodalDistance(bpMesh, *strategy);
     }
   }
 
@@ -1648,6 +1648,8 @@ int testNdimInstance(BlueprintStructuredMesh& computationalMesh)
     gyroidStrat->setToleranceByLongestEdge(computationalMesh);
     contourTest.addTestStrategy(gyroidStrat);
   }
+
+  contourTest.computeNodalDistance(computationalMesh);
 
   if(params.isVerbose())
   {
