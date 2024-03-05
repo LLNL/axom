@@ -23,6 +23,18 @@ combine                   Combines the second message into the first.
 Concrete Instances
 ------------------
 
+.. _texttagcombiner_class_label:
+
+TextTagCombiner
+^^^^^^^^^^^^^^^
+
+This Combiner combines the two given Messages if the Message text strings and tag strings are equal.
+It does so by adding the second Message's ranks to the first Message (if not past
+the ranksLimit) and incrementing the Message's count as well.  This is handled by
+Message.addRanks().
+
+.. note:: This is the only Combiner automatically added to Lumberjack for you.  You can remove it by calling Lumberjack::removeCombiner("TextTagCombiner").
+
 .. _textequalitycombiner_class_label:
 
 TextEqualityCombiner
@@ -33,4 +45,4 @@ It does so by adding the second Message's ranks to the first Message (if not pas
 the ranksLimit) and incrementing the Message's count as well.  This is handled by
 Message.addRanks().
 
-.. note:: This is the only Combiner automatically added to Lumberjack for you.  You can remove it by calling Lumberjack::removeCombiner("TextEqualityCombiner").
+.. note:: You can add this Combiner by calling Lumberjack::addCombiner(new TextEqualityCombiner).

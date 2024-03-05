@@ -103,6 +103,17 @@ void check_line(const std::string& msg, int expected_line)
   EXPECT_EQ(line, expected_line);
 }
 
+//------------------------------------------------------------------------------
+void check_tag(const std::string& msg, const std::string& expected_tag)
+{
+  EXPECT_FALSE(msg.empty());
+
+  // extract tag
+  size_t start = msg.rfind("##") + 2;
+  std::string tag = msg.substr(start, expected_tag.length());
+  EXPECT_EQ(tag, expected_tag);
+}
+
 }  // end anonymous namespace
 
 //------------------------------------------------------------------------------
@@ -382,6 +393,26 @@ TEST(slic_macros, test_check_macros)
 }
 
 //------------------------------------------------------------------------------
+TEST(slic_macros, test_tagged_macros)
+{
+  EXPECT_TRUE(slic::internal::is_stream_empty());
+  SLIC_INFO_TAGGED("test tagged info message", "myTag");
+  EXPECT_FALSE(slic::internal::is_stream_empty());
+  check_level(slic::internal::test_stream.str(), "INFO");
+  check_msg(slic::internal::test_stream.str(), "test tagged info message");
+  check_file(slic::internal::test_stream.str());
+  check_line(slic::internal::test_stream.str(), __LINE__ - 5);
+  check_tag(slic::internal::test_stream.str(), "myTag");
+  slic::internal::clear();
+
+  SLIC_INFO_TAGGED("this message should not be logged (no tag given)!", "");
+  EXPECT_TRUE(slic::internal::is_stream_empty());
+
+  SLIC_INFO_TAGGED("this message should not be logged (tag DNE)!", "tag404");
+  EXPECT_TRUE(slic::internal::is_stream_empty());
+}
+
+//------------------------------------------------------------------------------
 int main(int argc, char* argv[])
 {
   int result = 0;
@@ -397,6 +428,12 @@ int main(int argc, char* argv[])
 
   slic::addStreamToAllMsgLevels(
     new slic::GenericOutputStream(&slic::internal::test_stream, msgfmt));
+
+  std::string msgtagfmt =
+    "[<LEVEL>]:;;<MESSAGE>;;\n##<TAG>\n@@<FILE>\n@@<LINE>";
+  slic::addStreamToTag(
+    new slic::GenericOutputStream(&slic::internal::test_stream, msgtagfmt),
+    "myTag");
 
   // finalized when exiting main scope
   result = RUN_ALL_TESTS();

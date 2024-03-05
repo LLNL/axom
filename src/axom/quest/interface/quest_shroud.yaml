@@ -19,8 +19,8 @@ options:
   F_module_name_library_template: axom_{library_lower}
 #  F_module_per_class: False
   # Change the default template for Fortran functions to include the library name.
-  F_name_impl_template: "{library_lower}_{C_name_scope}{underscore_name}{function_suffix}"
-  F_name_generic_template: "{library_lower}_{underscore_name}"
+  F_name_impl_template: "{library_lower}_{C_name_scope}{F_name_api}{function_suffix}"
+  F_name_generic_template: "{library_lower}_{F_name_api}"
   wrap_python: True
 
 format:

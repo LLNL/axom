@@ -1,19 +1,19 @@
-// Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
 /*!
  *******************************************************************************
- * \file TextEqualityCombiner.hpp
+ * \file TextTagCombiner.hpp
  *
  * \brief This file contains the class implementation of the
- * TextEqualityCombiner.
+ * TextTagCombiner.
  *******************************************************************************
  */
 
-#ifndef TEXTEQUALITYCOMBINER_HPP
-#define TEXTEQUALITYCOMBINER_HPP
+#ifndef TEXTTAGCOMBINER_HPP
+#define TEXTTAGCOMBINER_HPP
 
 #include "axom/lumberjack/Combiner.hpp"
 #include "axom/lumberjack/Message.hpp"
@@ -26,24 +26,22 @@ namespace lumberjack
 {
 /*!
  *******************************************************************************
- * \class TextEqualityCombiner
+ * \class TextTagCombiner
  *
- * \brief Combines Message classes if their Message::text are equal.
+ * \brief Combines Message classes if their Message::text and Message::tag
+ *        are equal.
  *
- *  This class instance is automatically added to Lumberjack's Lumberjack for
- *  you. If you want it removed call Lumberjack::removeCombiner with the string
- * "TextEqualityCombiner" as it's parameter.
- *
- * \warning Using the TextEqualityCombiner with Message::tag has undefined
- *          behavior.
+ *  This class can be added to Lumberjack's Lumberjack by calling
+ *  Lumberjack::addCombiner with a
+ *  TextTagCombiner instance as its parameter.
  *
  * \see Combiner Lumberjack
  *******************************************************************************
  */
-class TextEqualityCombiner : public Combiner
+class TextTagCombiner : public Combiner
 {
 public:
-  TextEqualityCombiner() { }
+  TextTagCombiner() { }
 
   /*!
    *****************************************************************************
@@ -59,7 +57,7 @@ public:
    *  be combined.
    *
    * They are not actually combined by this function. Message classes are
-   * triggered for combination if both Message::text are equal.
+   * triggered for combination if both Message::text and Message::tag are equal.
    *
    * \param [in] leftMessage One of the Messages to be compared.
    * \param [in] rightMessage One of the Messages to be compared.
@@ -68,7 +66,8 @@ public:
   bool shouldMessagesBeCombined(const Message& leftMessage,
                                 const Message& rightMessage)
   {
-    return (leftMessage.text().compare(rightMessage.text()) == 0);
+    return (leftMessage.text().compare(rightMessage.text()) == 0 &&
+            leftMessage.tag().compare(rightMessage.tag()) == 0);
   }
 
   /*!
@@ -92,7 +91,7 @@ public:
   }
 
 private:
-  const std::string m_id = "TextEqualityCombiner";
+  const std::string m_id = "TextTagCombiner";
 };
 
 }  // end namespace lumberjack

@@ -30,6 +30,10 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
   negative, resulting in the signed volume becoming positive.
 - Adds `FlatMap`, a generic key-value store which aims for drop-in compatibility
   with `std::unordered_map`, but utilizes an open-addressing design.
+- Adds support for device-side use of `Array::push_back()` and `Array::emplace_back()`.
+- Adds initial support for using Slic streams with tags
+- Adds an example that finds intersection candidate pairs between two Silo
+  hexahedral meshes using either a BVH or Implicit Grid spatial index
 
 ### Changed
 - `DistributedClosestPoint` outputs are now controlled by the `setOutput` method.
@@ -60,6 +64,8 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 - Upgrades our `vcpkg` usage for automated Windows builds of our TPLs to its [2023.12.12 release](https://github.com/microsoft/vcpkg/releases/tag/2023.12.12)
 - Fixed a bug in the bounds checks for `primal::clip(Triangle, BoundingBox)`
 - Fixed a bug when loading Sidre groups with attributes that already exist
+- Fixed `std::locale` error when when compiling `src/axom/core/utilities/System.cpp` using nvcc
+- Include `cstdint` for higher gcc version support (e.g. gcc-13)
 
 ## [Version 0.8.1] - Release date 2023-08-16
 
