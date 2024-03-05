@@ -33,6 +33,56 @@ if (RAJA_FOUND AND UMPIRE_FOUND)
         )
 endif()
 
+# BVH silo example ------------------------------------------------------------
+if (CONDUIT_FOUND AND RAJA_FOUND AND UMPIRE_FOUND)
+    axom_add_executable(
+        NAME        quest_candidates_example_ex
+        SOURCES     quest_candidates_example.cpp
+        OUTPUT_DIR  ${EXAMPLE_OUTPUT_DIRECTORY}
+        DEPENDS_ON  ${quest_example_depends} conduit::conduit
+        FOLDER      axom/quest/examples
+        )
+
+    # Add unit tests
+    if(AXOM_ENABLE_TESTS AND AXOM_DATA_DIR)
+
+        # Run the candidates example with the different spatial indices
+        # and raja policies
+
+        # Use same file for input and query
+        set(input_file "${AXOM_DATA_DIR}/quest/ucart10.cycle_000000.root")
+        set(query_file "${AXOM_DATA_DIR}/quest/ucart10_shifted.cycle_000000.root")
+
+        set(_methods "bvh" "implicit")
+
+        set (_policies "seq")
+        blt_list_append(TO _policies ELEMENTS "omp" IF AXOM_ENABLE_OPENMP)
+        blt_list_append(TO _policies ELEMENTS "cuda" IF AXOM_ENABLE_CUDA)
+        blt_list_append(TO _policies ELEMENTS "hip" IF AXOM_ENABLE_HIP)
+
+
+        foreach(_method ${_methods})
+            foreach(_policy ${_policies})
+
+                set(_testname "quest_candidates_example_${_method}_${_policy}")
+                axom_add_test(
+                  NAME ${_testname}
+                  COMMAND quest_candidates_example_ex
+                          --infile ${input_file}
+                          --queryfile ${query_file}
+                          --method ${_method}
+                          --policy ${_policy}
+                )
+
+                # Match either one comma or none for portability
+                set_tests_properties(${_testname} PROPERTIES
+                    PASS_REGULAR_EXPRESSION  "Mesh had 6[,]?859 candidates pairs")
+            endforeach()
+        endforeach()
+    endif()
+
+endif()
+
 # Shaping example -------------------------------------------------------------
 if(AXOM_ENABLE_MPI AND MFEM_FOUND AND MFEM_USE_MPI
                    AND AXOM_ENABLE_SIDRE AND AXOM_ENABLE_MFEM_SIDRE_DATACOLLECTION
