@@ -171,7 +171,7 @@ public:
   axom::IndexType getContourNodeCount() const;
 
   //@{
-  //!@name Output methods
+  //!@name Output methods (experimental interface, subject to change)
   /*!
     @brief Put generated contour in a mint::UnstructuredMesh.
     @param mesh Output contour mesh
@@ -260,7 +260,7 @@ public:
   void relinquishContourData(axom::Array<axom::IndexType, 2> &facetNodeIds,
                              axom::Array<double, 2> &facetNodeCoords,
                              axom::Array<axom::IndexType, 1> &facetParentIds,
-                             axom::Array<axom::IndexType>& facetDomainIds)
+                             axom::Array<axom::IndexType> &facetDomainIds)
   {
     facetNodeIds.clear();
     facetNodeCoords.clear();

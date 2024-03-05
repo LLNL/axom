@@ -98,8 +98,8 @@ public:
     compatible with ExecSpace.
   */
   AXOM_HOST void setDomain(const conduit::Node& dom,
-                         const std::string& topologyName,
-                         const std::string& maskFieldName) override
+                           const std::string& topologyName,
+                           const std::string& maskFieldName) override
   {
     // Time this due to potentially slow memory allocation
     AXOM_PERF_MARK_FUNCTION("MarchingCubesImpl::initialize");

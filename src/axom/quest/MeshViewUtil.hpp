@@ -676,17 +676,19 @@ public:
                    const MdIndices& strides,
                    const MdIndices& offsets)
   {
-    SLIC_ERROR_IF(
-      m_dom == nullptr,
-      axom::fmt::format("Cannot create field {}."
-                        "  MeshViewUtil was not constructed with a mutable domain.", fieldName));
+    SLIC_ERROR_IF(m_dom == nullptr,
+                  axom::fmt::format(
+                    "Cannot create field {}."
+                    "  MeshViewUtil was not constructed with a mutable domain.",
+                    fieldName));
     SLIC_ERROR_IF(
       m_dom->has_path("fields/" + fieldName),
       axom::fmt::format("Cannot create field {}.  It already exists.", fieldName));
 
     SLIC_ERROR_IF(
       association != "vertex" && association != "element",
-      axom::fmt::format("MeshViewUtil doesn't support association '{}' yet.", association));
+      axom::fmt::format("MeshViewUtil doesn't support association '{}' yet.",
+                        association));
 
     const auto& realShape = getRealExtents(association);
     MdIndices loPads, hiPads, paddedShape, strideOrder;
@@ -756,10 +758,11 @@ public:
                    const MdIndices& hiPads,
                    const MdIndices& strideOrder)
   {
-    SLIC_ERROR_IF(
-      m_dom == nullptr,
-      axom::fmt::format("Cannot create field {}."
-                        "  MeshViewUtil was not constructed with a mutable domain.", fieldName));
+    SLIC_ERROR_IF(m_dom == nullptr,
+                  axom::fmt::format(
+                    "Cannot create field {}."
+                    "  MeshViewUtil was not constructed with a mutable domain.",
+                    fieldName));
     SLIC_ERROR_IF(
       m_dom->has_path("fields/" + fieldName),
       axom::fmt::format("Cannot create field {}.  It already exists.", fieldName));

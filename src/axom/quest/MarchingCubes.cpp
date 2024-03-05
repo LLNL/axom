@@ -135,11 +135,9 @@ void MarchingCubes::computeIsocontour(double contourVal)
   {
     const auto domainId = m_singles[d]->getDomainId(d);
     const auto domainFacetCount =
-      ( d < m_singles.size() - 1 ? m_facetIndexOffsets[d+1] : m_facetCount )
-      - m_facetIndexOffsets[d];
-    m_facetDomainIds.fill(domainId,
-                          domainFacetCount,
-                          m_facetIndexOffsets[d]);
+      (d < m_singles.size() - 1 ? m_facetIndexOffsets[d + 1] : m_facetCount) -
+      m_facetIndexOffsets[d];
+    m_facetDomainIds.fill(domainId, domainFacetCount, m_facetIndexOffsets[d]);
   }
 }
 

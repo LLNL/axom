@@ -694,7 +694,7 @@ static void addToStackArray(axom::StackArray<T, DIM>& a, U b)
   The strategy encapsulates the scalar functions and things related to
   it.
 */
-template<int DIM>
+template <int DIM>
 struct ContourTestStrategy
 {
   using PointType = axom::primal::Point<double, DIM>;
@@ -711,7 +711,7 @@ struct ContourTestStrategy
   //!@brief Return the analytical value of the scalar field.
   virtual double valueAt(const PointType& pt) const = 0;
 
-  virtual ~ContourTestStrategy() {}
+  virtual ~ContourTestStrategy() { }
 };
 
 template <int DIM, typename ExecSpace>
@@ -728,7 +728,7 @@ struct ContourTestBase
   { }
   virtual ~ContourTestBase() { }
 
-  void addTestStrategy( const std::shared_ptr<ContourTestStrategy<DIM>>& testStrategy )
+  void addTestStrategy(const std::shared_ptr<ContourTestStrategy<DIM>>& testStrategy)
   {
     m_testStrategies.push_back(testStrategy);
     SLIC_INFO(axom::fmt::format("Add test {}.", testStrategy->testName()));
@@ -744,7 +744,7 @@ struct ContourTestBase
   int runTest(BlueprintStructuredMesh& computationalMesh)
   {
     // Compute the nodal distance functions.
-    for( const auto& strategy : m_testStrategies )
+    for(const auto& strategy : m_testStrategies)
     {
       computeNodalDistance(computationalMesh, *strategy);
     }
@@ -759,7 +759,7 @@ struct ContourTestBase
           computationalMesh.coordsetPath() + "/values/" + axes[d],
           s_allocatorId);
       }
-      for( const auto& strategy : m_testStrategies )
+      for(const auto& strategy : m_testStrategies)
       {
         computationalMesh.moveMeshDataToNewMemorySpace<double>(
           axom::fmt::format("fields/{}/values", strategy->functionName()),
@@ -776,7 +776,7 @@ struct ContourTestBase
     {
       std::string resourceName = "HOST";
       umpire::ResourceManager& rm = umpire::ResourceManager::getInstance();
-      for( const auto& strategy : m_testStrategies )
+      for(const auto& strategy : m_testStrategies)
       {
         const std::string dataPath =
           axom::fmt::format("fields/{}/values", strategy->functionName());
@@ -796,12 +796,12 @@ struct ContourTestBase
         {
           SLIC_ASSERT(resourceName == "HOST");
         }
-#if defined(AXOM_RUNTIME_POLICY_USE_OPENMP)
+  #if defined(AXOM_RUNTIME_POLICY_USE_OPENMP)
         else if(params.policy == axom::runtime_policy::Policy::omp)
         {
           SLIC_ASSERT(resourceName == "HOST");
         }
-#endif
+  #endif
         else
         {
           SLIC_ASSERT(resourceName == "DEVICE");
@@ -840,7 +840,7 @@ struct ContourTestBase
         mc.clearOutput();
         m_strategyFacetPrefixSum.clear();
         m_strategyFacetPrefixSum.push_back(0);
-        for( const auto& strategy : m_testStrategies )
+        for(const auto& strategy : m_testStrategies)
         {
           mc.setFunctionField(strategy->functionName());
           mc.computeIsocontour(params.contourVal);
@@ -867,7 +867,7 @@ struct ContourTestBase
           computationalMesh.coordsetPath() + "/values/" + axes[d],
           axom::execution_space<axom::SEQ_EXEC>::allocatorID());
       }
-      for( const auto& strategy : m_testStrategies )
+      for(const auto& strategy : m_testStrategies)
       {
         computationalMesh.moveMeshDataToNewMemorySpace<double>(
           axom::fmt::format("fields/{}/values", strategy->functionName()),
@@ -895,10 +895,10 @@ struct ContourTestBase
       axom::Array<double, 2> facetNodeCoords;
       axom::Array<axom::IndexType, 1> facetParentIds;
       axom::Array<axom::IndexType> facetDomainIds;
-      mc.relinquishContourData( facetNodeIds,
-                                facetNodeCoords,
-                                facetParentIds,
-                                facetDomainIds );
+      mc.relinquishContourData(facetNodeIds,
+                               facetNodeCoords,
+                               facetParentIds,
+                               facetDomainIds);
       SLIC_ASSERT(mc.getContourFacetCount() == 0);
     }
 
@@ -914,7 +914,7 @@ struct ContourTestBase
         checkCellsContainingContour(computationalMesh, contourMesh);
     }
 
-    if (contourMesh.hasSidreGroup())
+    if(contourMesh.hasSidreGroup())
     {
       assert(contourMesh.getSidreGroup() == meshGroup);
       // Write contour mesh to file.
@@ -956,11 +956,12 @@ struct ContourTestBase
       auto domainView = bpMesh.getDomainView<DIM>(domId);
 
       // Create nodal function data with ghosts like node coords.
-      domainView.createField(strat.functionName(),
-                             "vertex",
-                             conduit::DataType::float64(domainView.getCoordsCountWithGhosts()),
-                             domainView.getCoordsStrides(),
-                             domainView.getCoordsOffsets());
+      domainView.createField(
+        strat.functionName(),
+        "vertex",
+        conduit::DataType::float64(domainView.getCoordsCountWithGhosts()),
+        domainView.getCoordsStrides(),
+        domainView.getCoordsOffsets());
     }
 
     for(int domId = 0; domId < bpMesh.domainCount(); ++domId)
@@ -978,8 +979,7 @@ struct ContourTestBase
   }
   template <int TDIM = DIM>
   typename std::enable_if<TDIM == 2>::type populateNodalDistance(
-    const axom::StackArray<axom::ArrayView<const double, DIM>, DIM>&
-      coordsViews,
+    const axom::StackArray<axom::ArrayView<const double, DIM>, DIM>& coordsViews,
     axom::ArrayView<double, DIM>& fieldView,
     ContourTestStrategy<DIM>& strat)
   {
@@ -1005,8 +1005,7 @@ struct ContourTestBase
 
   template <int TDIM = DIM>
   typename std::enable_if<TDIM == 3>::type populateNodalDistance(
-    const axom::StackArray<axom::ArrayView<const double, DIM>, DIM>&
-      coordsViews,
+    const axom::StackArray<axom::ArrayView<const double, DIM>, DIM>& coordsViews,
     axom::ArrayView<double, DIM>& fieldView,
     ContourTestStrategy<DIM>& strat)
   {
@@ -1060,7 +1059,8 @@ struct ContourTestBase
       double tol = strategy.errorTolerance();
 
       PointType pt;
-      for(axom::IndexType iNode = contourNodeBegin; iNode < contourNodeEnd; ++iNode)
+      for(axom::IndexType iNode = contourNodeBegin; iNode < contourNodeEnd;
+          ++iNode)
       {
         contourMesh.getNode(iNode, pt.data());
         double analyticalVal = strategy.valueAt(pt);
@@ -1191,15 +1191,16 @@ struct ContourTestBase
     {
       auto contourCellBegin = m_strategyFacetPrefixSum[iStrat];
       auto contourCellEnd = m_strategyFacetPrefixSum[iStrat + 1];
-      for(axom::IndexType iContourCell = contourCellBegin; iContourCell < contourCellEnd;
+      for(axom::IndexType iContourCell = contourCellBegin;
+          iContourCell < contourCellEnd;
           ++iContourCell)
       {
         axom::quest::MarchingCubes::DomainIdType domainId =
           domainIdView[iContourCell];
         axom::quest::MarchingCubes::DomainIdType contiguousIndex =
           domainIdToContiguousId[domainId];
-        typename axom::quest::MeshViewUtil<DIM>::ConstCoordsViewsType&
-          coordsViews = allCoordsViews[contiguousIndex];
+        typename axom::quest::MeshViewUtil<DIM>::ConstCoordsViewsType& coordsViews =
+          allCoordsViews[contiguousIndex];
 
         axom::IndexType parentCellId = parentCellIdView[iContourCell];
 
@@ -1221,7 +1222,7 @@ struct ContourTestBase
         axom::primal::BoundingBox<double, DIM> small(parentCellBox);
         auto range = parentCellBox.range();
         bool checkSmall = range >= tol;
-        if (checkSmall)
+        if(checkSmall)
         {
           small.expand(-tol);
         }
@@ -1286,7 +1287,9 @@ struct ContourTestBase
     // Compute mapping to look up domains from the domain id.
     //
     std::map<axom::IndexType, axom::IndexType> domainIdToContiguousId;
-    for(axom::quest::MarchingCubes::DomainIdType iDomain = 0; iDomain < domainCount; ++iDomain)
+    for(axom::quest::MarchingCubes::DomainIdType iDomain = 0;
+        iDomain < domainCount;
+        ++iDomain)
     {
       const auto& dom = computationalMesh.domain(iDomain);
       axom::quest::MarchingCubes::DomainIdType domainId = iDomain;
@@ -1309,7 +1312,8 @@ struct ContourTestBase
     axom::Array<axom::Array<axom::IndexType>> hasContours(domainCount);
     for(axom::IndexType domId = 0; domId < domainCount; ++domId)
     {
-      axom::quest::MeshViewUtil<DIM> domainView = computationalMesh.getDomainView<DIM>(domId);
+      axom::quest::MeshViewUtil<DIM> domainView =
+        computationalMesh.getDomainView<DIM>(domId);
 
       const axom::IndexType cellCount = domainView.getCellCount();
 
@@ -1322,7 +1326,8 @@ struct ContourTestBase
       auto contourCellBegin = m_strategyFacetPrefixSum[iStrat];
       auto contourCellEnd = m_strategyFacetPrefixSum[iStrat + 1];
       axom::IndexType bitFlag = (1 << iStrat);
-      for(axom::IndexType iContourCell = contourCellBegin; iContourCell < contourCellEnd;
+      for(axom::IndexType iContourCell = contourCellBegin;
+          iContourCell < contourCellEnd;
           ++iContourCell)
       {
         axom::quest::MarchingCubes::DomainIdType domainId =
@@ -1347,7 +1352,8 @@ struct ContourTestBase
       const axom::IndexType parentCellCount = domainView.getCellCount();
       // axom::Array<bool> hasContour(parentCellCount, parentCellCount);
 
-      for(axom::IndexType parentCellId = 0; parentCellId < parentCellCount; ++parentCellId)
+      for(axom::IndexType parentCellId = 0; parentCellId < parentCellCount;
+          ++parentCellId)
       {
         const axom::IndexType hasContourBits = hasContours[domId][parentCellId];
 
@@ -1356,12 +1362,13 @@ struct ContourTestBase
           auto& strategy = *m_testStrategies[iStrat];
           const axom::IndexType iStratBit = (1 << iStrat);
 
-          const auto& fcnView =
-            domainView.template getConstFieldView<double>(strategy.functionName(), false);
+          const auto& fcnView = domainView.template getConstFieldView<double>(
+            strategy.functionName(),
+            false);
 
-          axom::ArrayIndexer<axom::IndexType, DIM>
-            cellIndexer(domLengths,
-                        axom::ArrayIndexer<axom::IndexType, DIM>(fcnView.strides()));
+          axom::ArrayIndexer<axom::IndexType, DIM> cellIndexer(
+            domLengths,
+            axom::ArrayIndexer<axom::IndexType, DIM>(fcnView.strides()));
 
           axom::StackArray<axom::IndexType, DIM> parentCellIdx =
             cellIndexer.toMultiIndex(parentCellId);
@@ -1402,14 +1409,15 @@ struct ContourTestBase
           if(touchesContour != hasContour)
           {
             ++errCount;
-            SLIC_INFO_IF(params.isVerbose(),
-                         axom::fmt::format(
-                           "checkCellsContainingContour: cell {}: hasContour "
-                           "({}) and touchesContour ({}) don't agree for strategy {}.",
-                           parentCellIdx,
-                           hasContour,
-                           touchesContour,
-                           strategy.testName()));
+            SLIC_INFO_IF(
+              params.isVerbose(),
+              axom::fmt::format(
+                "checkCellsContainingContour: cell {}: hasContour "
+                "({}) and touchesContour ({}) don't agree for strategy {}.",
+                parentCellIdx,
+                hasContour,
+                touchesContour,
+                strategy.testName()));
           }
         }
       }
@@ -1423,15 +1431,19 @@ struct ContourTestBase
 };
 
 template <int DIM>
-struct PlanarTestStrategy : public ContourTestStrategy<DIM> {
+struct PlanarTestStrategy : public ContourTestStrategy<DIM>
+{
   using PointType = axom::primal::Point<double, DIM>;
   PlanarTestStrategy(const axom::primal::Vector<double, DIM>& perpDir,
                      const PointType& inPlane)
-  : ContourTestStrategy<DIM>()
-  , _plane(perpDir.unitVector(), inPlane)
-  , _errTol(axom::numerics::floating_point_limits<double>::epsilon())
-  {}
-  virtual std::string testName() const override { return std::string("planar"); }
+    : ContourTestStrategy<DIM>()
+    , _plane(perpDir.unitVector(), inPlane)
+    , _errTol(axom::numerics::floating_point_limits<double>::epsilon())
+  { }
+  virtual std::string testName() const override
+  {
+    return std::string("planar");
+  }
   virtual std::string functionName() const override
   {
     return std::string("dist_to_plane");
@@ -1446,13 +1458,14 @@ struct PlanarTestStrategy : public ContourTestStrategy<DIM> {
 };
 
 template <int DIM>
-struct RoundTestStrategy : public ContourTestStrategy<DIM> {
+struct RoundTestStrategy : public ContourTestStrategy<DIM>
+{
   using PointType = axom::primal::Point<double, DIM>;
   RoundTestStrategy(const PointType& center)
-  : ContourTestStrategy<DIM>()
-  , _sphere(center, 0.0)
-  , _errTol(1e-3)
-  {}
+    : ContourTestStrategy<DIM>()
+    , _sphere(center, 0.0)
+    , _errTol(1e-3)
+  { }
   virtual std::string testName() const override { return std::string("round"); }
   virtual std::string functionName() const override
   {
@@ -1474,14 +1487,18 @@ struct RoundTestStrategy : public ContourTestStrategy<DIM> {
 };
 
 template <int DIM>
-struct GyroidTestStrategy : public ContourTestStrategy<DIM> {
+struct GyroidTestStrategy : public ContourTestStrategy<DIM>
+{
   using PointType = axom::primal::Point<double, DIM>;
   GyroidTestStrategy(const PointType& scale, double offset)
-  : ContourTestStrategy<DIM>()
-  , _scale(scale)
-  , _offset(offset)
-  {}
-  virtual std::string testName() const override { return std::string("gyroid"); }
+    : ContourTestStrategy<DIM>()
+    , _scale(scale)
+    , _offset(offset)
+  { }
+  virtual std::string testName() const override
+  {
+    return std::string("gyroid");
+  }
   virtual std::string functionName() const override
   {
     return std::string("gyroid_fcn");
@@ -1609,22 +1626,25 @@ int testNdimInstance(BlueprintStructuredMesh& computationalMesh)
 
   if(params.usingPlanar())
   {
-    planarStrat = std::make_shared<PlanarTestStrategy<DIM>>(params.planeNormal<DIM>(),
-                                                            params.inplanePoint<DIM>());
+    planarStrat =
+      std::make_shared<PlanarTestStrategy<DIM>>(params.planeNormal<DIM>(),
+                                                params.inplanePoint<DIM>());
     contourTest.addTestStrategy(planarStrat);
   }
 
   if(params.usingRound())
   {
-    roundStrat = std::make_shared<RoundTestStrategy<DIM>>(params.roundContourCenter<DIM>());
+    roundStrat =
+      std::make_shared<RoundTestStrategy<DIM>>(params.roundContourCenter<DIM>());
     roundStrat->setToleranceByLongestEdge(computationalMesh);
     contourTest.addTestStrategy(roundStrat);
   }
 
   if(params.usingGyroid())
   {
-    gyroidStrat = std::make_shared<GyroidTestStrategy<DIM>>(params.gyroidScaleFactor<DIM>(),
-                                                            params.contourVal);
+    gyroidStrat =
+      std::make_shared<GyroidTestStrategy<DIM>>(params.gyroidScaleFactor<DIM>(),
+                                                params.contourVal);
     gyroidStrat->setToleranceByLongestEdge(computationalMesh);
     contourTest.addTestStrategy(gyroidStrat);
   }

@@ -43,7 +43,8 @@ public:
     @param [in] fastestStrideLength: Stride in the fastest
                 direction.
   */
-  ArrayIndexer(const axom::StackArray<T, DIM>& shape, int order,
+  ArrayIndexer(const axom::StackArray<T, DIM>& shape,
+               int order,
                int fastestStrideLength = 1)
   {
     initializeShape(shape, order, fastestStrideLength);
@@ -70,9 +71,8 @@ public:
     @param [in] orderSource: ArrayIndex to copy stride order
       from.
   */
-  ArrayIndexer(
-    const axom::StackArray<T, DIM>& shape,
-    const axom::ArrayIndexer<T, DIM>& orderSource)
+  ArrayIndexer(const axom::StackArray<T, DIM>& shape,
+               const axom::ArrayIndexer<T, DIM>& orderSource)
   {
     initializeShape(shape, orderSource);
   }
