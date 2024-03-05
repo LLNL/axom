@@ -1170,7 +1170,7 @@ struct ContourTestBase
       axom::quest::MarchingCubes::DomainIdType domainId = iDomain;
       if(dom.has_path("state/domain_id"))
       {
-        domainId = dom.fetch_existing("state/domain_id").value();
+        domainId = dom.fetch_existing("state/domain_id").to_value();
       }
       domainIdToContiguousId[domainId] = iDomain;
     }
@@ -1295,7 +1295,7 @@ struct ContourTestBase
       axom::quest::MarchingCubes::DomainIdType domainId = iDomain;
       if(dom.has_path("state/domain_id"))
       {
-        domainId = dom.fetch_existing("state/domain_id").value();
+        domainId = dom.fetch_existing("state/domain_id").to_value();
       }
       domainIdToContiguousId[domainId] = iDomain;
     }
