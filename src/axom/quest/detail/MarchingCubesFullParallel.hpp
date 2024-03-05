@@ -112,7 +112,10 @@ public:
     Virtual methods cannot be templated, so this implementation
     delegates to a name templated on DIM.
   */
-  void markCrossings() { markCrossings_dim(); }
+  void markCrossings() {
+    AXOM_PERF_MARK_FUNCTION("MarchingCubesFullParallel::markCrossings");
+    markCrossings_dim();
+  }
 
   //!@brief Populate m_caseIds with crossing indices.
   template <int TDIM = DIM>
@@ -257,6 +260,7 @@ public:
   */
   void scanCrossings()
   {
+    AXOM_PERF_MARK_FUNCTION("MarchingCubesFullParallel::scanCrossings");
     const axom::IndexType parentCellCount = m_caseIds.size();
     auto caseIdsView = m_caseIds.view();
 
@@ -314,6 +318,11 @@ public:
                sizeof(facetIncrs_back));
     m_facetCount = firstFacetIds_back + facetIncrs_back;
 
+    allocateSurfaceMeshSpace();
+  }
+  void allocateSurfaceMeshSpace()
+  {
+    AXOM_PERF_MARK_FUNCTION("MarchingCubesFullParallel::allocateSurfaceMeshSpace");
     // Allocate space for surface mesh.
     const axom::IndexType cornersCount = DIM * m_facetCount;
     m_contourCellParents.resize(m_facetCount);
@@ -323,6 +332,7 @@ public:
 
   void computeContour()
   {
+    AXOM_PERF_MARK_FUNCTION("MarchingCubesFullParallel::computeContour");
     //
     // Fill in surface mesh data.
     //

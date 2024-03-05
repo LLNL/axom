@@ -59,6 +59,7 @@ void MarchingCubes::setFunctionField(const std::string& fcnField)
 
 void MarchingCubes::computeIsocontour(double contourVal)
 {
+  AXOM_PERF_MARK_FUNCTION("MarchingCubes::computeIsoContour");
   SLIC_ASSERT_MSG(!m_fcnFieldName.empty(),
                   "You must call setFunctionField before computeIsocontour.");
 
@@ -95,6 +96,7 @@ void MarchingCubes::populateContourMesh(
   const std::string& cellIdField,
   const std::string& domainIdField)
 {
+  AXOM_PERF_MARK_FUNCTION("MarchingCubes::populateContourMesh");
   if(!cellIdField.empty() &&
      !mesh.hasField(cellIdField, axom::mint::CELL_CENTERED))
   {
