@@ -146,3 +146,21 @@ jobs:
       docker run --rm --user='root' -v `pwd`:/home/axom/axom $(Compiler_ImageName) chown -R axom /home/axom
       docker run --rm -v `pwd`:/home/axom/axom -e HOST_CONFIG -e CMAKE_EXTRA_FLAGS $(Compiler_ImageName) ./axom/scripts/azure-pipelines/linux-check.sh
     displayName: '$(TEST_TARGET) Style Check'
+
+- job: Test_Spack_Package
+  variables:
+    VM_ImageName: 'ubuntu-20.04'
+    TEST_TARGET: 'linux_clang10'
+    HOST_CONFIG: 'clang@10.0.0'
+  pool:
+      vmImage: $(VM_ImageName)
+  steps:
+  - checkout: self
+    clean: true
+    submodules: recursive
+  - script:  |
+      echo "python3 scripts/uberenv/uberenv.py --spack-env-file=./scripts/spack/configs/linux_ubuntu_20/spack.yaml --package-final-phase=install --spack-build-mode=dev-build --run_tests"
+      docker run --rm --user='root' -v `pwd`:/home/axom/axom $(Compiler_ImageName) chown -R axom /home/axom
+      docker run --rm -v `pwd`:/home/axom/axom python3 scripts/uberenv/uberenv.py --spack-env-file=./scripts/spack/configs/linux_ubuntu_20/spack.yaml --package-final-phase=install --spack-build-mode=dev-build --run_tests 
+    displayName: '$(TEST_TARGET) Spack Package Test'
+
