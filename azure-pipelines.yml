@@ -162,6 +162,6 @@ jobs:
   - script:  |
       echo "python scripts/uberenv/uberenv.py --spack-env-file=./scripts/spack/configs/linux_ubuntu_20/spack.yaml --package-final-phase=install --spack-build-mode=dev-build --run_tests"
       docker run --rm --user='root' -v `pwd`:/home/axom/axom $(Compiler_ImageName) chown -R axom /home/axom
-      docker run --rm -v `pwd`:/home/axom/axom $(Compiler_ImageName) python scripts/uberenv/uberenv.py --spack-env-file=./scripts/spack/configs/linux_ubuntu_20/spack.yaml --package-final-phase=install --spack-build-mode=dev-build --run_tests 
+      docker run --rm -v `pwd`:/home/axom/axom $(Compiler_ImageName) python3 scripts/uberenv/uberenv.py --spack-env-file=./scripts/spack/configs/linux_ubuntu_20/spack.yaml --package-final-phase=install --spack-build-mode=dev-build --run_tests 
     displayName: '$(TEST_TARGET) Spack Package Test'
 
