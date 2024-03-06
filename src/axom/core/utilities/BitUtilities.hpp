@@ -19,7 +19,7 @@
 #include "axom/core/Types.hpp"
 
 // CUDA intrinsics: https://docs.nvidia.com/cuda/cuda-math-api/group__CUDA__MATH__INTRINSIC__INT.html
-// TODO: Support HIP intrinsics (https://rocm.docs.amd.com/projects/HIP/en/latest/reference/kernel_language.html)
+// HIP intrinsics: https://rocm.docs.amd.com/projects/HIP/en/latest/reference/kernel_language.html
 
 // Check for and setup defines for platform-specific intrinsics
 // Note: `__GNUC__` is defined for the gnu, clang and intel compilers

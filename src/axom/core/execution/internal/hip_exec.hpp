@@ -20,7 +20,7 @@
   #error HIP_EXEC requires a HIP enabled UMPIRE with UM support
 #endif
 
-// Necessary for rocm 5.7.1 to handle
+// Necessary for rocm 5.7 to handle
 // undefined symbol: rocprim::block_radix_sort error
 #if HIP_VERSION_MAJOR == 5 && HIP_VERSION_MINOR == 7
 namespace rocprim

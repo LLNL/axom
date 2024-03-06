@@ -337,11 +337,11 @@ HexMesh loadBlueprintHexMesh(const std::string& mesh_path,
     : axom::Array<double>();
   auto z_vals_view = on_device ? z_vals_arr_d.view() : z_vals_arr_h.view();
 
+  // Move connectivity information onto device
   axom::Array<int> connectivity_arr_h(connectivity_size,
                                       connectivity_size,
                                       host_allocator);
 
-  // Move connectivity information onto device
   for(int i = 0; i < connectivity_size; i++)
   {
     connectivity_arr_h[i] = connectivity[i];
