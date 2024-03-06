@@ -805,30 +805,36 @@ struct ContourTestBase
       MPI_Barrier(MPI_COMM_WORLD);
 #endif
 
-    int repCount = params.objectRepCount * params.contourGenCount;
+    std::unique_ptr<quest::MarchingCubes> mcPtr;
 
     axom::utilities::Timer computeTimer(false);
     computeTimer.start();
-    for(int i=0; i<repCount-1; ++i) {
-      quest::MarchingCubes mc(params.policy,
-                              computationalMesh.asConduitNode(),
-                              "mesh");
-      mc.setFunctionField(functionName());
-      mc.setDataParallelism(params.dataParallelism);
-      mc.computeIsocontour(params.contourVal);
+    for(int j = 0; j < params.objectRepCount; ++j) {
+      for(int i = 0; i < params.contourGenCount; ++i)
+      {
+        mcPtr.reset();
+        mcPtr = std::make_unique<quest::MarchingCubes>(params.policy,
+                                                       computationalMesh.asConduitNode(),
+                                                       "mesh");
+        auto& mc = *mcPtr;
+        mc.setFunctionField(functionName());
+        mc.setDataParallelism(params.dataParallelism);
+        SLIC_DEBUG(axom::fmt::format(
+                     "MarchingCubes object rep {} of {}, contour run {} of {}:",
+                     j,
+                     params.objectRepCount,
+                     i,
+                     params.contourGenCount));
+        mc.computeIsocontour(params.contourVal);
+      }
     }
-    quest::MarchingCubes mc(params.policy,
-                            computationalMesh.asConduitNode(),
-                            "mesh");
-    mc.setFunctionField(functionName());
-    mc.setDataParallelism(params.dataParallelism);
-    mc.computeIsocontour(params.contourVal);
-
     computeTimer.stop();
-    SLIC_INFO(axom::fmt::format("Finished {} total reps",
-                                params.objectRepCount * params.contourGenCount));
+    SLIC_INFO(axom::fmt::format("Finished {} object reps x {} contour reps",
+                                params.objectRepCount,
+                                params.contourGenCount));
     printTimingStats(computeTimer, name() + " contour");
 
+    auto& mc = *mcPtr;
     {
       int mn, mx, sum;
       getIntMinMax(mc.getContourCellCount(), mn, mx, sum);
@@ -1709,6 +1715,9 @@ int main(int argc, char** argv)
 
     exit(retval);
   }
+
+  slic::setLoggingMsgLevel(params.isVerbose() ? slic::message::Debug
+                           : slic::message::Info);
 
   s_allocatorId = allocatorIdForPolicy(params.policy);
 
