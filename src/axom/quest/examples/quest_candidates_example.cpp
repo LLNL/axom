@@ -310,13 +310,7 @@ HexMesh loadBlueprintHexMesh(const std::string& mesh_path,
   double* y_vals = n_load[0]["coordsets/coords/values/y"].value();
   double* z_vals = n_load[0]["coordsets/coords/values/z"].value();
 
-  // axom::ArrayView<double> x_vals_view(x_vals, {num_nodes});
-  // axom::ArrayView<double> y_vals_view(y_vals, {num_nodes});
-  // axom::ArrayView<double> z_vals_view(z_vals, {num_nodes});
-
-  // constexpr axom::MemorySpace exec_space_memory =
-  //   axom::execution_space<ExecSpace>::memory_space;
-
+  // Move xyz values onto device
   axom::Array<double> x_vals_arr_h(num_nodes, num_nodes, host_allocator);
   axom::Array<double> y_vals_arr_h(num_nodes, num_nodes, host_allocator);
   axom::Array<double> z_vals_arr_h(num_nodes, num_nodes, host_allocator);
@@ -347,6 +341,7 @@ HexMesh loadBlueprintHexMesh(const std::string& mesh_path,
                                       connectivity_size,
                                       host_allocator);
 
+  // Move connectivity information onto device
   for(int i = 0; i < connectivity_size; i++)
   {
     connectivity_arr_h[i] = connectivity[i];
@@ -358,16 +353,7 @@ HexMesh loadBlueprintHexMesh(const std::string& mesh_path,
   auto connectivity_view =
     on_device ? connectivity_arr_d.view() : connectivity_arr_h.view();
 
-  // axom::ArrayView<int> connectivity_view_h(connectivity, {connectivity_size});
-  // axom::ArrayView<double> x_vals_view_h(x_vals, {num_nodes});
-  // axom::ArrayView<double> y_vals_view_h(y_vals, {num_nodes});
-  // axom::ArrayView<double> z_vals_view_h(z_vals, {num_nodes});
-
-  // axom::ArrayView<int, 1, exec_space_memory> connectivity_view(connectivity_view_h);
-  // axom::ArrayView<double, 1, exec_space_memory> x_vals_view(x_vals_view_h);
-  // axom::ArrayView<double, 1, exec_space_memory> y_vals_view(y_vals_view_h);
-  // axom::ArrayView<double, 1, exec_space_memory> z_vals_view(z_vals_view_h);
-
+  // Initialize hex elements and bounding boxes
   const int numCells = connectivity_size / HEX_OFFSET;
 
   hexMesh.m_hexes = HexArray(numCells, numCells, kernel_allocator);
@@ -376,7 +362,6 @@ HexMesh loadBlueprintHexMesh(const std::string& mesh_path,
   hexMesh.m_hexBoundingBoxes = BBoxArray(numCells, numCells, kernel_allocator);
   auto m_hexBoundingBoxes_v = (hexMesh.m_hexBoundingBoxes).view();
 
-  printf("DID NOT ERROR YET!!!\n");
   axom::for_all<ExecSpace>(
     numCells,
     AXOM_LAMBDA(axom::IndexType icell) {
@@ -401,7 +386,6 @@ HexMesh loadBlueprintHexMesh(const std::string& mesh_path,
       m_hexes_v[icell] = hex;
       m_hexBoundingBoxes_v[icell] = axom::primal::compute_bounding_box(hex);
     });
-  printf("ACTUALLY, NO ERROR!!!\n");
 
   // Initialize mesh's bounding box on the host
   BBoxArray hexBoundingBoxes_h = on_device
@@ -411,35 +395,6 @@ HexMesh loadBlueprintHexMesh(const std::string& mesh_path,
   {
     hexMesh.m_meshBoundingBox.addBox(hexbb);
   }
-
-  // host initialization
-  /////////////////////////////////////////////////////////////////////////////
-  // hexMesh.m_hexes.reserve(numCells);
-  // HexMesh::Hexahedron hex;
-  // axom::Array<HexMesh::Point> hexPoints(HEX_OFFSET);
-
-  // for(int i = 0; i < numCells; ++i)
-  // {
-  //   for(int j = 0; j < HEX_OFFSET; j++)
-  //   {
-  //     int offset = i * HEX_OFFSET;
-  //     hexPoints[j] = HexMesh::Point({x_vals[connectivity[offset + j]],
-  //                                    y_vals[connectivity[offset + j]],
-  //                                    z_vals[connectivity[offset + j]]});
-  //   }
-  //   hex = HexMesh::Hexahedron(hexPoints);
-  //   hexMesh.m_hexes.emplace_back(hex);
-  // }
-
-  // // compute and store hex bounding boxes and mesh bounding box
-  // hexMesh.m_hexBoundingBoxes.reserve(numCells);
-  // for(const auto& hex : hexMesh.hexes())
-  // {
-  //   hexMesh.m_hexBoundingBoxes.emplace_back(
-  //     axom::primal::compute_bounding_box(hex));
-  //   hexMesh.m_meshBoundingBox.addBox(hexMesh.m_hexBoundingBoxes.back());
-  // }
-  /////////////////////////////////////////////////////////////////////////////
 
   SLIC_INFO(
     axom::fmt::format("Mesh bounding box is {}.\n", hexMesh.meshBoundingBox()));
@@ -498,8 +453,6 @@ axom::Array<IndexPair> findCandidatesBVH(const HexMesh& insertMesh,
   SLIC_INFO("Running BVH candidates algorithm in execution Space: "
             << axom::execution_space<ExecSpace>::name());
 
-  using HexArray = axom::Array<typename HexMesh::Hexahedron>;
-  using BBoxArray = axom::Array<typename HexMesh::BoundingBox>;
   using IndexArray = axom::Array<axom::IndexType>;
   constexpr bool on_device = axom::execution_space<ExecSpace>::onDevice();
 
@@ -512,32 +465,8 @@ axom::Array<IndexPair> findCandidatesBVH(const HexMesh& insertMesh,
     ? axom::getUmpireResourceAllocatorID(umpire::resource::Device)
     : axom::execution_space<ExecSpace>::allocatorID();
 
-  // Copy the insert-BVH hexes to the device, if necessary
-  // Either way, insert_hexes_v will be a view w/ data in the correct space
-  // auto& insert_hexes_h = insertMesh.hexes();
-  // HexArray insert_hexes_d =
-  //   on_device ? HexArray(insert_hexes_h, kernel_allocator) : HexArray();
-
-  // Copy the insert-BVH bboxes to the device, if necessary
-  // Either way, insert_bbox_v will be a view w/ data in the correct space
-  // auto& insert_bbox_h = insertMesh.hexBoundingBoxes();
-  // BBoxArray insert_bbox_d =
-  //   on_device ? BBoxArray(insert_bbox_h, kernel_allocator) : BBoxArray();
-  // auto insert_bbox_v = on_device ? insert_bbox_d.view() : insert_bbox_h.view();
+  // Get the insert and query bounding boxes
   auto insert_bbox_v = (insertMesh.hexBoundingBoxes()).view();
-
-  // Copy the query-BVH hexes to the device, if necessary
-  // Either way, query_hexes_v will be a view w/ data in the correct space
-  // auto& query_hexes_h = queryMesh.hexes();
-  // HexArray query_hexes_d =
-  //   on_device ? HexArray(query_hexes_h, kernel_allocator) : HexArray();
-
-  // Copy the query-BVH bboxes to the device, if necessary
-  // Either way, bbox_v will be a view w/ data in the correct space
-  // auto& query_bbox_h = queryMesh.hexBoundingBoxes();
-  // BBoxArray query_bbox_d =
-  //   on_device ? BBoxArray(query_bbox_h, kernel_allocator) : BBoxArray();
-  // auto query_bbox_v = on_device ? query_bbox_d.view() : query_bbox_h.view();
   auto query_bbox_v = (queryMesh.hexBoundingBoxes()).view();
 
   // Initialize a BVH tree over the insert mesh bounding boxes
@@ -645,8 +574,6 @@ axom::Array<IndexPair> findCandidatesImplicit(const HexMesh& insertMesh,
   SLIC_INFO("Running Implicit Grid candidates algorithm in execution Space: "
             << axom::execution_space<ExecSpace>::name());
 
-  using HexArray = axom::Array<typename HexMesh::Hexahedron>;
-  using BBoxArray = axom::Array<typename HexMesh::BoundingBox>;
   using IndexArray = axom::Array<int>;
   constexpr bool on_device = axom::execution_space<ExecSpace>::onDevice();
 
@@ -657,36 +584,12 @@ axom::Array<IndexPair> findCandidatesImplicit(const HexMesh& insertMesh,
     ? axom::getUmpireResourceAllocatorID(umpire::resource::Device)
     : axom::execution_space<ExecSpace>::allocatorID();
 
-  // Copy the insert hexes to the device, if necessary
-  // Either way, insert_hexes_v will be a view w/ data in the correct space
-  // auto& insert_hexes_h = insertMesh.hexes();
-  // HexArray insert_hexes_d =
-  //   on_device ? HexArray(insert_hexes_h, kernel_allocator) : HexArray();
-
-  // Copy the insert bboxes to the device, if necessary
-  // Either way, insert_bbox_v will be a view w/ data in the correct space
-  // auto& insert_bbox_h = insertMesh.hexBoundingBoxes();
-  // BBoxArray insert_bbox_d =
-  //   on_device ? BBoxArray(insert_bbox_h, kernel_allocator) : BBoxArray();
-  // auto insert_bbox_v = on_device ? insert_bbox_d.view() : insert_bbox_h.view();
+  // Get the insert and query bounding boxes
   auto insert_bbox_v = (insertMesh.hexBoundingBoxes()).view();
+  auto query_bbox_v = (queryMesh.hexBoundingBoxes()).view();
 
   // Bounding box of entire insert mesh
   HexMesh::BoundingBox insert_mesh_bbox_h = insertMesh.meshBoundingBox();
-
-  // Copy the query hexes to the device, if necessary
-  // Either way, query_hexes_v will be a view w/ data in the correct space
-  // auto& query_hexes_h = queryMesh.hexes();
-  // HexArray query_hexes_d =
-  //   on_device ? HexArray(query_hexes_h, kernel_allocator) : HexArray();
-
-  // Copy the query bboxes to the device, if necessary
-  // Either way, bbox_v will be a view w/ data in the correct space
-  // auto& query_bbox_h = queryMesh.hexBoundingBoxes();
-  // BBoxArray query_bbox_d =
-  //   on_device ? BBoxArray(query_bbox_h, kernel_allocator) : BBoxArray();
-  // auto query_bbox_v = on_device ? query_bbox_d.view() : query_bbox_h.view();
-  auto query_bbox_v = (queryMesh.hexBoundingBoxes()).view();
 
   // If given resolution is less than one, use the cube root of the
   // number of hexes
