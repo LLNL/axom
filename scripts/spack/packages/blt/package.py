@@ -8,4 +8,4 @@ from spack.pkg.llnl.radiuss.blt import Blt as RadiussBlt
 class Blt(RadiussBlt):
     # Note: This just points at a commit in the bugfix/white238/openmp branch.
     # It also has a made up version
-    version("0.6.1.3", commit="1b6ababd46d3b1c1fcfa8b713c76121800be9c3e")
+    version("0.6.1.4", commit="c98f320835d71f778fbffcc48f07675142c08635")
