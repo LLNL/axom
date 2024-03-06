@@ -171,7 +171,7 @@ public:
   axom::IndexType getContourNodeCount() const;
 
   //@{
-  //!@name Output methods (experimental interface, subject to change)
+  //!@name Output methods (interim interfaces, subject to change)
   /*!
     @brief Put generated contour in a mint::UnstructuredMesh.
     @param mesh Output contour mesh
@@ -188,7 +188,7 @@ public:
     Important: mint::UnstructuredMesh only supports host memory, so
     regardless of the allocator ID, this method always deep-copies
     data to host memory.  To access the data without deep-copying, see
-    the other output methods.
+    the other output methods in this name group.
   */
   void populateContourMesh(
     axom::mint::UnstructuredMesh<axom::mint::SINGLE_SHAPE> &mesh,

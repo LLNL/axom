@@ -36,6 +36,11 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
   hexahedral meshes using either a BVH or Implicit Grid spatial index
 
 ### Changed
+- `MarchingCubes` has optimizations to improve GPU performance, particularly for
+  repeated computations.  The constructor has changed and a new `setMesh` method
+  is added to set (or change) the mesh.  New accessors present output data
+  without moving them from device to host.  These accessors are an interim
+  solution and likely to be updated in the future.
 - `DistributedClosestPoint` outputs are now controlled by the `setOutput` method.
 - `MarchingCubes` allows user to select the underlying data-parallel implementation
   - `fullParallel` works best on GPUs.
