@@ -15,6 +15,13 @@
 
 namespace axom
 {
+/*!
+  @brief Indicator for stride ordering.
+
+  Multidimensional array data can be in row-major order, column-major order,
+  or some arbitrarily permuted order.  Row and column major ordering are the
+  same thing if the array is 1D.
+*/
 struct ArrayStrideOrder
 {
   static constexpr int ARBITRARY = 0;        // Neither row nor column
@@ -39,21 +46,22 @@ public:
   /*!
     @brief Constructor for row- or column-major indexing.
     @param [in] shape Shape of the array
-    @param [in] order: c is column major; r is row major.
-    @param [in] fastestStrideLength: Stride in the fastest
+    @param [in] arrayStrideOrder A order indicator from
+                ArrayStrideOrder.
+    @param [in] fastestStrideLength Stride in the fastest
                 direction.
   */
   ArrayIndexer(const axom::StackArray<T, DIM>& shape,
-               int order,
+               int arrayStrideOrder,
                int fastestStrideLength = 1)
   {
-    initializeShape(shape, order, fastestStrideLength);
+    initializeShape(shape, arrayStrideOrder, fastestStrideLength);
   }
 
   /*!
     @brief Constructor for a given order permutation.
     @param [in] shape Shape of the array
-    @param [in] slowestDirs: permutation vector, where
+    @param [in] slowestDirs permutation vector, where
       slowestDirs[0] is the slowest direction and
       slowestDirs[DIM-1] is the fastest.
   */
@@ -68,7 +76,7 @@ public:
     existing ArrayIndexer.
 
     @param [in] shape Shape of the array
-    @param [in] orderSource: ArrayIndex to copy stride order
+    @param [in] orderSource ArrayIndex to copy stride order
       from.
   */
   ArrayIndexer(const axom::StackArray<T, DIM>& shape,
@@ -83,9 +91,9 @@ public:
     @param [i] strides Strides.  Must be unique when DIM > 1.
       If not unique, use default constructor and initializeStrides().
 
-    @internal We could add the order preference to this constructor to
-    handle the degenerate case of non-unique strides.  But that would
-    clash with the more prevalent constructor taking the array's
+    @internal We could add the ArrayStrideOrder preference to this constructor
+    to handle the degenerate case of non-unique strides.  But that would
+    clash with the more prevalent usage of constructing from the array's
     shape.
   */
   ArrayIndexer(const axom::StackArray<T, DIM>& strides) : m_strides(strides)
@@ -103,17 +111,19 @@ public:
   /*!
     @brief Initialize for row- or column-major indexing.
     @param [in] shape Shape of the array
-    @param [in] order: c is column major; r is row major.
-    @param [in] fastestStrideLength: Stride in the fastest
+    @param [in] arrayStrideOrder An order indicator from
+                ArrayStrideOrder.
+    @param [in] fastestStrideLength Stride in the fastest
                 direction.
   */
   inline AXOM_HOST_DEVICE void initializeShape(const axom::StackArray<T, DIM>& shape,
-                                               int order,
+                                               int arrayStrideOrder,
                                                int fastestStrideLength = 1)
   {
-    SLIC_ASSERT(order == ArrayStrideOrder::COLUMN ||
-                order == ArrayStrideOrder::ROW);
-    if(order == ArrayStrideOrder::ROW)
+    SLIC_ASSERT(arrayStrideOrder == ArrayStrideOrder::COLUMN ||
+                arrayStrideOrder == ArrayStrideOrder::ROW ||
+                (DIM == 1 && arrayStrideOrder == ArrayStrideOrder::BOTH));
+    if(arrayStrideOrder == ArrayStrideOrder::ROW)
     {
       for(int d = 0; d < DIM; ++d)
       {
@@ -142,7 +152,7 @@ public:
   /*!
     @brief Initialize for a given order permutation.
     @param [in] shape Shape of the array
-    @param [in] slowestDirs: permutation vector, where
+    @param [in] slowestDirs permutation vector, where
       slowestDirs[0] is the slowest direction and
       slowestDirs[DIM-1] is the fastest.
   */
@@ -166,7 +176,7 @@ public:
     existing ArrayIndexer.
 
     @param [in] shape Shape of the array
-    @param [in] orderSource: ArrayIndex to copy stride order
+    @param [in] orderSource ArrayIndex to copy stride order
       from.
   */
   inline AXOM_HOST_DEVICE void initializeShape(
@@ -212,8 +222,8 @@ public:
     with ordering preference for non-unique strides.
 
     @param [i] strides Strides.
-    @param [i] orderPref Ordering preference if strides
-      are non-unique.
+    @param [i] orderPref Ordering preference value
+      (from ArrayStrideOrder) if strides are non-unique.
   */
   inline AXOM_HOST_DEVICE void initializeStrides(
     const axom::StackArray<T, DIM>& strides,
@@ -246,7 +256,7 @@ public:
   static AXOM_HOST_DEVICE bool stridesAreUnique(const axom::StackArray<T, DIM>& strides)
   {
     bool repeats = false;
-    for(int d = 0; d < DIM; ++d)
+    for(int d = 1; d < DIM; ++d)
     {
       for(int e = 0; e < d; ++e)
       {
@@ -300,8 +310,8 @@ public:
   /*!
     @brief Get the stride order (row- or column-major, or something else).
 
-    @return 1 if row major, 2 if column major, 0 if neither
-       and, DIM == 1, 3 (satisfying both row and column ordering).
+    @return Value from ArrayStrideOrder, indicating column order,
+       row order, both column and row (1D only) or arbitrary order.
   */
   inline AXOM_HOST_DEVICE int getStrideOrder() const
   {
