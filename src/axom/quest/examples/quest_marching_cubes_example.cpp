@@ -1026,7 +1026,7 @@ struct ContourTestBase
   }
   void computeNodalDistance(BlueprintStructuredMesh& bpMesh)
   {
-    for( auto& strategy : m_testStrategies )
+    for(auto& strategy : m_testStrategies)
     {
       computeNodalDistance(bpMesh, *strategy);
     }
