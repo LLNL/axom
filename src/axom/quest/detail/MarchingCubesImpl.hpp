@@ -192,7 +192,7 @@ public:
     RAJA::RangeSegment iRange(0, m_bShape[0]);
     using EXEC_POL =
       typename axom::mint::internal::structured_exec<ExecSpace>::loop2d_policy;
-    if(order & axom::ArrayStrideOrder::ROW)
+    if(int(order) & int(axom::ArrayStrideOrder::ROW))
     {
       RAJA::kernel<EXEC_POL>(
         RAJA::make_tuple(iRange, jRange),
@@ -246,7 +246,7 @@ public:
     RAJA::RangeSegment iRange(0, m_bShape[0]);
     using EXEC_POL =
       typename axom::mint::internal::structured_exec<ExecSpace>::loop3d_policy;
-    if(order & axom::ArrayStrideOrder::ROW)
+    if(int(order) & int(axom::ArrayStrideOrder::ROW))
     {
       RAJA::kernel<EXEC_POL>(
         RAJA::make_tuple(iRange, jRange, kRange),

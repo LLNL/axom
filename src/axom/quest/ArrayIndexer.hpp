@@ -22,12 +22,12 @@ namespace axom
   or some arbitrarily permuted order.  Row and column major ordering are the
   same thing if the array is 1D.
 */
-struct ArrayStrideOrder
+enum class ArrayStrideOrder : int
 {
-  static constexpr int ARBITRARY = 0;        // Neither row nor column
-  static constexpr int ROW = 1;              // Row-major
-  static constexpr int COLUMN = 2;           // Column-major
-  static constexpr int BOTH = ROW | COLUMN;  // 1D arrays are both
+  ARBITRARY = 0,       // Neither row nor column
+  ROW = 1,             // Row-major
+  COLUMN = 2,          // Column-major
+  BOTH = ROW | COLUMN  // 1D arrays are both
 };
 
 /*!
@@ -52,7 +52,7 @@ public:
                 direction.
   */
   ArrayIndexer(const axom::StackArray<T, DIM>& shape,
-               int arrayStrideOrder,
+               axom::ArrayStrideOrder arrayStrideOrder,
                int fastestStrideLength = 1)
   {
     initializeShape(shape, arrayStrideOrder, fastestStrideLength);
@@ -117,7 +117,7 @@ public:
                 direction.
   */
   inline AXOM_HOST_DEVICE void initializeShape(const axom::StackArray<T, DIM>& shape,
-                                               int arrayStrideOrder,
+                                               ArrayStrideOrder arrayStrideOrder,
                                                int fastestStrideLength = 1)
   {
     SLIC_ASSERT(arrayStrideOrder == ArrayStrideOrder::COLUMN ||
@@ -227,7 +227,7 @@ public:
   */
   inline AXOM_HOST_DEVICE void initializeStrides(
     const axom::StackArray<T, DIM>& strides,
-    int orderPref)
+    ArrayStrideOrder orderPref)
   {
     SLIC_ASSERT(orderPref == axom::ArrayStrideOrder::COLUMN ||
                 orderPref == axom::ArrayStrideOrder::ROW);
@@ -296,12 +296,12 @@ public:
     {
       if(v[d] < 0 || v[d] >= DIM)
       {
-        return false;
-      }  // Out of range.
+        return false;  // Out of range.
+      }
       if(found[v[d]] == true)
       {
-        return false;
-      }  // Repeated indices
+        return false;  // Repeated index.
+      }
       found[v[d]] = true;
     }
     return true;
@@ -313,15 +313,20 @@ public:
     @return Value from ArrayStrideOrder, indicating column order,
        row order, both column and row (1D only) or arbitrary order.
   */
-  inline AXOM_HOST_DEVICE int getStrideOrder() const
+  inline AXOM_HOST_DEVICE ArrayStrideOrder getStrideOrder() const
   {
-    int ord = ArrayStrideOrder::BOTH;
+    int ord = int(ArrayStrideOrder::BOTH);
     for(int d = 0; d < DIM - 1; ++d)
     {
-      ord &= m_slowestDirs[d] < m_slowestDirs[d + 1] ? ArrayStrideOrder::COLUMN
-                                                     : ArrayStrideOrder::ROW;
+      ord &= m_slowestDirs[d] < m_slowestDirs[d + 1]
+        ? int(ArrayStrideOrder::COLUMN)
+        : int(ArrayStrideOrder::ROW);
     }
-    return ord;
+    static ArrayStrideOrder s_intToOrder[4] = {ArrayStrideOrder::ARBITRARY,
+                                               ArrayStrideOrder::ROW,
+                                               ArrayStrideOrder::COLUMN,
+                                               ArrayStrideOrder::BOTH};
+    return s_intToOrder[ord];
   }
 
   //!@brief Convert multidimensional index to flat index.
