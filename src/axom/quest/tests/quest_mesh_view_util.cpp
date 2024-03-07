@@ -17,7 +17,7 @@
   #include "axom/core.hpp"
   #include "axom/slic.hpp"
   #include "axom/primal.hpp"
-  #include "axom/quest/ArrayIndexer.hpp"
+  #include "axom/core/ArrayIndexer.hpp"
   #include "axom/quest/MeshViewUtil.hpp"
   #include "axom/core/Types.hpp"
 

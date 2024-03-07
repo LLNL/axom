@@ -13,7 +13,7 @@
 
 #include "axom/core/execution/execution_space.hpp"
 #include "axom/slic/interface/slic_macros.hpp"
-#include "axom/quest/ArrayIndexer.hpp"
+#include "axom/core/ArrayIndexer.hpp"
 #include "axom/quest/MeshViewUtil.hpp"
 #include "axom/quest/detail/MarchingCubesSingleDomain.hpp"
 #include "axom/primal/geometry/Point.hpp"

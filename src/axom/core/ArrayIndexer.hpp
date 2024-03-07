@@ -6,7 +6,6 @@
 #ifndef QUEST_ARRAYINDEXER_HPP_
 #define QUEST_ARRAYINDEXER_HPP_
 
-#include "axom/slic.hpp"
 #include "axom/core/StackArray.hpp"
 #include "axom/core/numerics/matvecops.hpp"
 
@@ -120,9 +119,9 @@ public:
                                                ArrayStrideOrder arrayStrideOrder,
                                                int fastestStrideLength = 1)
   {
-    SLIC_ASSERT(arrayStrideOrder == ArrayStrideOrder::COLUMN ||
-                arrayStrideOrder == ArrayStrideOrder::ROW ||
-                (DIM == 1 && arrayStrideOrder == ArrayStrideOrder::BOTH));
+    assert(arrayStrideOrder == ArrayStrideOrder::COLUMN ||
+           arrayStrideOrder == ArrayStrideOrder::ROW ||
+           (DIM == 1 && arrayStrideOrder == ArrayStrideOrder::BOTH));
     if(arrayStrideOrder == ArrayStrideOrder::COLUMN)
     {
       for(int d = 0; d < DIM; ++d)
@@ -160,7 +159,7 @@ public:
     const axom::StackArray<T, DIM>& shape,
     const axom::StackArray<std::uint16_t, DIM>& slowestDirs)
   {
-    SLIC_ASSERT(isPermutation(slowestDirs));
+    assert(isPermutation(slowestDirs));
     m_slowestDirs = slowestDirs;
     m_strides[m_slowestDirs[DIM - 1]] = 1;
     for(int d = DIM - 2; d >= 0; --d)
@@ -229,8 +228,8 @@ public:
     const axom::StackArray<T, DIM>& strides,
     ArrayStrideOrder orderPref)
   {
-    SLIC_ASSERT(orderPref == axom::ArrayStrideOrder::COLUMN ||
-                orderPref == axom::ArrayStrideOrder::ROW);
+    assert(orderPref == axom::ArrayStrideOrder::COLUMN ||
+           orderPref == axom::ArrayStrideOrder::ROW);
 
     m_strides = strides;
     for(int d = 0; d < DIM; ++d)

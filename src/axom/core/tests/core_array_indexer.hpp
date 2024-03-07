@@ -5,14 +5,14 @@
 
 // Axom includes
 #include "axom/core/Array.hpp"
-#include "axom/quest/ArrayIndexer.hpp"
+#include "axom/core/ArrayIndexer.hpp"
 #include "axom/fmt.hpp"
 
 // Google test include
 #include "gtest/gtest.h"
 
 // Test strides and permutations.
-TEST(quest_array_indexer, quest_strides_and_permutations)
+TEST(core_array_indexer, core_strides_and_permutations)
 {
   {
     // 1D
@@ -247,7 +247,7 @@ typename std::enable_if<DIM == 1>::type check_arbitrary_strides_nested_loops(
   axom::IndexType offset = 0;
   for(n = 0; n < lengths[fastestDirs[0]]; ++n)
   {
-    SLIC_INFO(axom::fmt::format("offset {}   i {}", offset, i));
+    // SLIC_INFO(axom::fmt::format("offset {}   i {}", offset, i));
     EXPECT_EQ(ai.toMultiIndex(offset), i);
     EXPECT_EQ(ai.toFlatIndex(i), offset);
     ++offset;
@@ -272,7 +272,7 @@ typename std::enable_if<DIM == 2>::type check_arbitrary_strides_nested_loops(
   {
     for(n = 0; n < lengths[fastestDirs[0]]; ++n)
     {
-      SLIC_INFO(axom::fmt::format("offset {}   ij {}", offset, ij));
+      // SLIC_INFO(axom::fmt::format("offset {}   ij {}", offset, ij));
       EXPECT_EQ(ai.toMultiIndex(offset), ij);
       EXPECT_EQ(ai.toFlatIndex(ij), offset);
       ++offset;
@@ -301,7 +301,7 @@ typename std::enable_if<DIM == 3>::type check_arbitrary_strides_nested_loops(
     {
       for(n = 0; n < lengths[fastestDirs[0]]; ++n)
       {
-        SLIC_INFO(axom::fmt::format("offset {}   ijk {}", offset, ijk));
+        // SLIC_INFO(axom::fmt::format("offset {}   ijk {}", offset, ijk));
         EXPECT_EQ(ai.toMultiIndex(offset), ijk);
         EXPECT_EQ(ai.toFlatIndex(ijk), offset);
         ++offset;
@@ -316,9 +316,7 @@ void check_arbitrary_strides(
   const axom::StackArray<axom::IndexType, DIM>& fastestDirs)
 {
   // fastestDirs should be a permutation.
-  SLIC_INFO(axom::fmt::format("Testing lengths {} with fastestDirs {}",
-                              lengths,
-                              fastestDirs));
+  // SLIC_INFO(axom::fmt::format("Testing lengths {} with fastestDirs {}", lengths, fastestDirs));
 
   axom::StackArray<axom::IndexType, DIM> strides;
   axom::IndexType currentStride = 1;
@@ -341,7 +339,7 @@ void check_arbitrary_strides(
 }
 
 // Test arbitrary strides.
-TEST(quest_array_indexer, quest_arbitrary_strides)
+TEST(core_array_indexer, core_arbitrary_strides)
 {
   {
     constexpr int DIM = 1;
@@ -394,7 +392,7 @@ TEST(quest_array_indexer, quest_arbitrary_strides)
 }
 
 // Test column-major element offsets with Array's.
-TEST(quest_array_indexer, quest_array_match)
+TEST(core_array_indexer, core_array_match)
 {
   // No test for 1D.  Array provides no non-trivial interface to test.
 
@@ -431,13 +429,4 @@ TEST(quest_array_indexer, quest_array_match)
       }
     }
   }
-}
-
-int main(int argc, char** argv)
-{
-  ::testing::InitGoogleTest(&argc, argv);
-
-  int result = RUN_ALL_TESTS();
-
-  return result;
 }
