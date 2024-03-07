@@ -34,9 +34,13 @@ if ((RAJA_DIR OR UMPIRE_DIR) AND NOT CAMP_DIR)
     message(FATAL_ERROR "CAMP_DIR is required if RAJA_DIR or UMPIRE_DIR is provided.")
 endif()
 
-axom_assert_is_directory(VARIABLE_NAME CAMP_DIR)
-find_dependency(camp REQUIRED PATHS "${CAMP_DIR}")
-set(CAMP_FOUND TRUE CACHE BOOL "")
+if(CAMP_DIR)
+    axom_assert_is_directory(VARIABLE_NAME CAMP_DIR)
+    find_dependency(camp REQUIRED PATHS "${CAMP_DIR}")
+    set(CAMP_FOUND TRUE CACHE BOOL "")
+else()
+    set(CAMP_FOUND FALSE CACHE BOOL "")
+endif()
 
 #------------------------------------------------------------------------------
 # UMPIRE
