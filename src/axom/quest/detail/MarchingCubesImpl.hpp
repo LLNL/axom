@@ -209,7 +209,7 @@ public:
         });
     }
 #else
-    if(order & axom::ArrayStrideOrder::ROW)
+    if(int(order) & int(axom::ArrayStrideOrder::ROW))
     {
       for(int j = 0; j < m_bShape[1]; ++j)
       {
@@ -263,7 +263,7 @@ public:
         });
     }
 #else
-    if(order & axom::ArrayStrideOrder::ROW)
+    if(int(order) & int(axom::ArrayStrideOrder::ROW))
     {
       for(int k = 0; k < m_bShape[2]; ++k)
       {
