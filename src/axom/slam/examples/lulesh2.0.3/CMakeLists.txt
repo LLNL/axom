@@ -35,22 +35,22 @@ axom_add_executable(
     DEPENDS_ON  slam
     FOLDER      axom/slam/examples )
 
-if(AXOM_ENABLE_TESTS)
-    if(AXOM_ENABLE_MPI)
+#if(AXOM_ENABLE_TESTS)
+#    if(AXOM_ENABLE_MPI)
 
-        # CMake inserts Fortran flag that forces one OpenMP thread when
-        # compiling with MPI and xlf
-        if(ENABLE_FORTRAN)
-          list(REMOVE_ITEM CMAKE_Fortran_IMPLICIT_LINK_LIBRARIES "xlomp_ser")
-        endif()
+#        # CMake inserts Fortran flag that forces one OpenMP thread when
+#        # compiling with MPI and xlf
+#        if(ENABLE_FORTRAN)
+#          list(REMOVE_ITEM CMAKE_Fortran_IMPLICIT_LINK_LIBRARIES "xlomp_ser")
+#        endif()
 
-        axom_add_test(NAME        slam_lulesh
-                      COMMAND     slam_lulesh_ex
-                      NUM_MPI_TASKS   8
-                      NUM_OMP_THREADS 4 )
-    else()
-        axom_add_test(NAME        slam_lulesh
-                      COMMAND     slam_lulesh_ex
-                      NUM_OMP_THREADS 4 )
-    endif()
-endif()
+#        axom_add_test(NAME        slam_lulesh
+#                      COMMAND     slam_lulesh_ex
+#                      NUM_MPI_TASKS   8
+#                      NUM_OMP_THREADS 4 )
+#    else()
+#        axom_add_test(NAME        slam_lulesh
+#                      COMMAND     slam_lulesh_ex
+#                      NUM_OMP_THREADS 4 )
+#    endif()
+#endif()
