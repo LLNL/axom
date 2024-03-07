@@ -351,7 +351,7 @@ spack:
     scr:
       require: "@3.0.1~shared~tests~examples"
     umpire:
-      require: "@2024.01.31~shared~examples"
+      require: "@2024.02.0~shared~examples"
 
     py-shroud:
       version: [0.13.0]
