@@ -216,11 +216,12 @@ void iterate_datastore(DataStore* ds)
   std::cout << "The datastore has the following attributes:\n";
   for(auto& attr : ds->attributes())
   {
-    std::cout << axom::fmt::format("  * [{}] '{}' of type {} and default value: {}\n",
-                             attr.getIndex(),
-                             attr.getName(),
-                             conduit::DataType::id_to_name(attr.getTypeID()),
-                             attr.getDefaultNodeRef().to_yaml());
+    std::cout << axom::fmt::format(
+      "  * [{}] '{}' of type {} and default value: {}\n",
+      attr.getIndex(),
+      attr.getName(),
+      conduit::DataType::id_to_name(attr.getTypeID()),
+      attr.getDefaultNodeRef().to_yaml());
   }
 
   std::cout << fill_line << std::endl;
@@ -244,11 +245,12 @@ void iterate_datastore(DataStore* ds)
   std::cout << "The root group has the following groups:\n";
   for(auto& grp : ds->getRoot()->groups())
   {
-    std::cout << axom::fmt::format("  * [{}] '{}' with {} groups and {} views\n",
-                             grp.getIndex(),
-                             grp.getName(),
-                             grp.getNumGroups(),
-                             grp.getNumViews());
+    std::cout << axom::fmt::format(
+      "  * [{}] '{}' with {} groups and {} views\n",
+      grp.getIndex(),
+      grp.getName(),
+      grp.getNumGroups(),
+      grp.getNumViews());
   }
 
   std::cout << fill_line << std::endl;
