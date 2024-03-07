@@ -286,6 +286,7 @@ public:
   {
     if(this != &other)
     {
+      this->clear();
       if(m_data != nullptr)
       {
         axom::deallocate(m_data);
