@@ -8,6 +8,7 @@
 
 #include "axom/config.hpp"                    // for compile-time defines
 #include "axom/core/Macros.hpp"               // for axom macros
+#include "axom/core/ArrayIndexer.hpp"         // for index conversion
 #include "axom/core/memory_management.hpp"    // for memory allocation functions
 #include "axom/core/utilities/Utilities.hpp"  // for processAbort()
 #include "axom/core/Types.hpp"                // for IndexType definition
@@ -187,7 +188,9 @@ public:
                              const StackArray<IndexType, DIM>& stride)
     : m_shape {shape}
     , m_strides {stride}
+    , m_indexer()
   {
+    m_indexer.initializeStrides(stride, axom::ArrayStrideOrder::ROW);
     validateShapeAndStride(shape, stride);
   }
 
@@ -334,6 +337,12 @@ public:
     return m_shape;
   }
 
+  /// \brief Returns the indexer of the Array
+  AXOM_HOST_DEVICE const ArrayIndexer<IndexType, DIM>& indexer() const
+  {
+    return m_indexer;
+  }
+
   /*!
    * \brief Returns the memory strides of the Array.
    */
@@ -403,6 +412,9 @@ protected:
     {
       m_strides[i] = m_strides[i + 1] * m_shape[i + 1];
     }
+    // For now, indexer just shadows stride.
+    // Future: indexer will provide the stides and offsets.
+    m_indexer.initializeStrides(m_strides, axom::ArrayStrideOrder::ROW);
   }
 
   /*!
@@ -549,6 +561,8 @@ protected:
   StackArray<IndexType, DIM> m_shape;
   /// \brief Logical strides in each direction
   StackArray<IndexType, DIM> m_strides;
+  /// \brief For converting between multidim indices and offset.
+  ArrayIndexer<IndexType, DIM> m_indexer;
 };
 
 /// \brief Array implementation specific to 1D Arrays

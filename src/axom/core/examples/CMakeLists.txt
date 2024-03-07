@@ -61,3 +61,25 @@ if(AXOM_ENABLE_TESTS)
         NAME    core_utilities
         COMMAND core_utilities_ex ${CMAKE_CURRENT_SOURCE_DIR} )
 endif()
+
+axom_add_executable(
+    NAME        core_array_perf_ex
+    SOURCES     core_array_perf.cpp
+    OUTPUT_DIR  ${EXAMPLE_OUTPUT_DIRECTORY}
+    DEPENDS_ON  core
+    FOLDER      axom/core/examples )
+
+if(AXOM_ENABLE_TESTS)
+    axom_add_test(
+        NAME    core_array_perf_1d
+        COMMAND core_array_perf_ex --shape 120000 )
+    axom_add_test(
+        NAME    core_array_perf_2d
+        COMMAND core_array_perf_ex --shape 300 400 )
+    axom_add_test(
+        NAME    core_array_perf_3d
+        COMMAND core_array_perf_ex --shape 30 200 20 )
+    axom_add_test(
+        NAME    core_array_perf_4d
+        COMMAND core_array_perf_ex --shape 50 20 20 6 )
+endif()
