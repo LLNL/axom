@@ -381,8 +381,8 @@ public:
     return axom::quest::internal::product(m_nodeShape);
   }
 
-  //! @brief Return the real (ghost-free) extents of mesh data.
-  const MdIndices& getRealExtents(const std::string& association)
+  //! @brief Return the real (ghost-free) shape of mesh data.
+  const MdIndices& getRealShape(const std::string& association)
   {
     if(association == "vertex")
     {
@@ -676,11 +676,12 @@ public:
                    const MdIndices& strides,
                    const MdIndices& offsets)
   {
-    SLIC_ERROR_IF(m_dom == nullptr,
-                  axom::fmt::format(
-                    "Cannot create field {}."
-                    "  MeshViewUtil was not constructed with a mutable domain.",
-                    fieldName));
+    SLIC_ERROR_IF(
+      m_dom == nullptr,
+      axom::fmt::format(
+        "Cannot create field {}."
+        "  MeshViewUtil was not constructed with a non-const domain.",
+        fieldName));
     SLIC_ERROR_IF(
       m_dom->has_path("fields/" + fieldName),
       axom::fmt::format("Cannot create field {}.  It already exists.", fieldName));
@@ -690,7 +691,7 @@ public:
       axom::fmt::format("MeshViewUtil doesn't support association '{}' yet.",
                         association));
 
-    const auto& realShape = getRealExtents(association);
+    const auto& realShape = getRealShape(association);
     MdIndices loPads, hiPads, paddedShape, strideOrder;
     axom::quest::internal::stridesAndOffsetsToShapes(realShape,
                                                      offsets,
@@ -758,11 +759,12 @@ public:
                    const MdIndices& hiPads,
                    const MdIndices& strideOrder)
   {
-    SLIC_ERROR_IF(m_dom == nullptr,
-                  axom::fmt::format(
-                    "Cannot create field {}."
-                    "  MeshViewUtil was not constructed with a mutable domain.",
-                    fieldName));
+    SLIC_ERROR_IF(
+      m_dom == nullptr,
+      axom::fmt::format(
+        "Cannot create field {}."
+        "  MeshViewUtil was not constructed with a non-const domain.",
+        fieldName));
     SLIC_ERROR_IF(
       m_dom->has_path("fields/" + fieldName),
       axom::fmt::format("Cannot create field {}.  It already exists.", fieldName));
@@ -774,7 +776,7 @@ public:
     axom::StackArray<axom::IndexType, DIM> offsets;
     axom::StackArray<axom::IndexType, DIM> strides;
     axom::IndexType valuesCount;
-    const auto& realShape = getRealExtents(association);
+    const auto& realShape = getRealShape(association);
     axom::quest::internal::shapesToStridesAndOffsets(realShape,
                                                      loPads,
                                                      hiPads,

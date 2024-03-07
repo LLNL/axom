@@ -72,16 +72,17 @@ public:
     , m_caseIds()
     , m_caseIdsIndexer()
     , m_caseIdsFlat(caseIdsFlat)
-    , m_crossingCases(0, 0, m_allocatorID)
     , m_crossingFlags(crossingFlags)
     , m_scannedFlags(scannedFlags)
+    , m_facetIncrs(facetIncrs)
+    , m_crossingCases(0, 0, m_allocatorID)
     , m_crossingParentIds(0, 0, m_allocatorID)
-    , m_facetIncrs(facetIncrs)  // (0, 0, m_allocatorID)
     , m_firstFacetIds(0, 0, m_allocatorID)
   {
     SLIC_ASSERT(caseIdsFlat.getAllocatorID() == allocatorID);
     SLIC_ASSERT(crossingFlags.getAllocatorID() == allocatorID);
     SLIC_ASSERT(scannedFlags.getAllocatorID() == allocatorID);
+    SLIC_ASSERT(facetIncrs.getAllocatorID() == allocatorID);
   }
 
   /*!
@@ -123,13 +124,11 @@ public:
     constexpr MarchingCubesDataParallelism autoPolicy =
       std::is_same<ExecSpace, axom::SEQ_EXEC>::value
       ? MarchingCubesDataParallelism::hybridParallel
-      :
 #if defined(AXOM_USE_OPENMP) && defined(AXOM_USE_RAJA)
-      std::is_same<ExecSpace, axom::OMP_EXEC>::value
+      : std::is_same<ExecSpace, axom::OMP_EXEC>::value
         ? MarchingCubesDataParallelism::hybridParallel
-        :
 #endif
-        MarchingCubesDataParallelism::fullParallel;
+        : MarchingCubesDataParallelism::fullParallel;
 
     m_dataParallelism = dataPar;
 
@@ -951,14 +950,14 @@ private:
   //!@brief Crossing case for each computational mesh cell.
   axom::Array<std::uint16_t>& m_caseIdsFlat;
 
-  //!@brief Case ids for found crossings.
-  axom::Array<std::int16_t> m_crossingCases;
-
   //!@brief Whether a parent cell crosses the contour.
   axom::Array<std::uint16_t>& m_crossingFlags;
 
   //!@brief Prefix sum of m_crossingFlags
   axom::Array<axom::IndexType>& m_scannedFlags;
+
+  //!@brief Number of surface mesh facets added by each crossing.
+  axom::Array<std::uint16_t>& m_facetIncrs;
 
   //!@brief Number of parent cells crossing the contour surface.
   axom::IndexType m_crossingCount = 0;
@@ -967,11 +966,11 @@ private:
   axom::IndexType m_facetCount = 0;
   axom::IndexType getContourCellCount() const override { return m_facetCount; }
 
+  //!@brief Case ids for found crossings.
+  axom::Array<std::int16_t> m_crossingCases;
+
   //!@brief Parent cell id (flat index into m_caseIds) for each crossing.
   axom::Array<axom::IndexType, 1, MemorySpace> m_crossingParentIds;
-
-  //!@brief Number of surface mesh facets added by each crossing.
-  axom::Array<std::uint16_t>& m_facetIncrs;
 
   //!@brief First index of facets for each crossing.
   axom::Array<axom::IndexType, 1, MemorySpace> m_firstFacetIds;

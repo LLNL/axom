@@ -134,24 +134,6 @@ template <typename T, int NDIMS>
 Vector<T, NDIMS> operator/(const Vector<T, NDIMS>& vec, const T scalar);
 
 /*!
- * \brief Element-wise < operator.
- * \param [in] vec vector instance
- * \param [in] scalar user-supplied scalar.
- * \return Whether all vector elements are < a scalar.
- */
-template <typename T, int NDIMS>
-bool operator<(const Vector<T, NDIMS>& vec, const T scalar);
-
-/*!
- * \brief Element-wise >= operator.
- * \param [in] vec vector instance
- * \param [in] scalar user-supplied scalar.
- * \return Whether all vector elements are >= a scalar.
- */
-template <typename T, int NDIMS>
-bool operator>=(const Vector<T, NDIMS>& vec, const T scalar);
-
-/*!
  * \brief Overloaded output operator for vectors
  * \param [in] os C++ output stream
  * \param [in] vec vector instance
@@ -714,30 +696,6 @@ std::ostream& operator<<(std::ostream& os, const Vector<T, NDIMS>& vec)
 {
   vec.print(os);
   return os;
-}
-
-//------------------------------------------------------------------------------
-template <typename T, int NDIMS>
-inline bool operator<(const Vector<T, NDIMS>& vec, const T scalar)
-{
-  bool result(true);
-  for(int d = 0; d < NDIMS; ++d)
-  {
-    result &= vec[d] < scalar;
-  }
-  return result;
-}
-
-//------------------------------------------------------------------------------
-template <typename T, int NDIMS>
-inline bool operator>=(const Vector<T, NDIMS>& vec, const T scalar)
-{
-  bool result(true);
-  for(int d = 0; d < NDIMS; ++d)
-  {
-    result &= vec[d] >= scalar;
-  }
-  return result;
 }
 
 //------------------------------------------------------------------------------

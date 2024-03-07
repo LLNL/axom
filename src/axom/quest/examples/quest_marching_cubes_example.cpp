@@ -1175,7 +1175,7 @@ struct ContourTestBase
       domainIdToContiguousId[domainId] = iDomain;
     }
 
-    // Indexers to transltate between flat and multidim indices.
+    // Indexers to translate between flat and multidim indices.
     axom::Array<axom::ArrayIndexer<axom::IndexType, DIM>> indexers(domainCount);
     for(int d = 0; d < domainCount; ++d)
     {
@@ -1186,6 +1186,16 @@ struct ContourTestBase
         axom::ArrayIndexer<axom::IndexType, DIM>(allCoordsViews[d][0].strides())
           .slowestDirs());
     }
+
+    auto elementGreaterThan = [](const axom::primal::Vector<double, DIM>& a,
+                                 double b) {
+      bool result(true);
+      for(int d = 0; d < DIM; ++d)
+      {
+        result &= a[d] < b;
+      }
+      return result;
+    };
 
     for(axom::IndexType iStrat = 0; iStrat < m_testStrategies.size(); ++iStrat)
     {
@@ -1221,7 +1231,7 @@ struct ContourTestBase
         big.expand(tol);
         axom::primal::BoundingBox<double, DIM> small(parentCellBox);
         auto range = parentCellBox.range();
-        bool checkSmall = range >= tol;
+        bool checkSmall = elementGreaterThan(range, tol);
         if(checkSmall)
         {
           small.expand(-tol);
@@ -1347,7 +1357,7 @@ struct ContourTestBase
 
       axom::StackArray<axom::IndexType, DIM> domLengths;
       computationalMesh.domainLengths(domId, domLengths);
-      assert(domLengths == domainView.getRealExtents("element"));
+      assert(domLengths == domainView.getRealShape("element"));
 
       const axom::IndexType parentCellCount = domainView.getCellCount();
       // axom::Array<bool> hasContour(parentCellCount, parentCellCount);

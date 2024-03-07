@@ -41,26 +41,21 @@ template <int DIM, typename ExecSpace, typename SequentialLoopPolicy>
 class MarchingCubesImpl;
 
 /*!
- * \@brief Class implementing marching cubes algorithm for a single
- *  domain.
- *
- * \sa MarchingCubes
- */
+   \@brief Class implementing marching cubes algorithm for a single
+   domain.
+
+   This class is an internal detail for multi-domain implementation
+   MarchinCubes class, and should not be used outside it.
+
+   \sa MarchingCubes
+*/
 class MarchingCubesSingleDomain
 {
 public:
   using RuntimePolicy = axom::runtime_policy::Policy;
   /*!
-   * \brief Constructor for applying algorithm in a single domain.
-   * See MarchingCubes for the multi-domain implementation.
-   *
-   * \param [in] runtimePolicy A value from RuntimePolicy.
-   *             The simplest policy is RuntimePolicy::seq, which specifies
-   *             running sequentially on the CPU.
-   * \param [in] allocatorID Data allocator ID.  Choose something compatible
-   *             with \c runtimePolicy.  See \c esecution_space.
-   * \param [in] dataPar Choice of data-parallel implementation.
-   */
+   \brief Constructor for applying algorithm in a single domain.
+  */
   MarchingCubesSingleDomain(MarchingCubes &mc);
 
   ~MarchingCubesSingleDomain() { }
@@ -116,10 +111,6 @@ public:
   // Methods trivially delegated to implementation.
   void markCrossings() { m_impl->markCrossings(); }
   void scanCrossings() { m_impl->scanCrossings(); }
-  axom::IndexType getContourCellCount()
-  {
-    return m_impl->getContourCellCount();
-  }
   void computeFacets() { m_impl->computeFacets(); }
 
   /*!
@@ -131,11 +122,7 @@ public:
   //!@brief Get number of cells in the generated contour mesh.
   axom::IndexType getContourCellCount() const
   {
-    SLIC_ASSERT_MSG(
-      m_impl,
-      "There is no contour mesh until you call computeIsocontour()");
-    axom::IndexType cellCount = m_impl->getContourCellCount();
-    return cellCount;
+    return m_impl->getContourCellCount();
   }
 
   //!@brief Get number of nodes in the generated contour mesh.
