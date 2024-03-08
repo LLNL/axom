@@ -123,7 +123,7 @@ public:
     SLIC_ASSERT(arrayStrideOrder == ArrayStrideOrder::COLUMN ||
                 arrayStrideOrder == ArrayStrideOrder::ROW ||
                 (DIM == 1 && arrayStrideOrder == ArrayStrideOrder::BOTH));
-    if(arrayStrideOrder == ArrayStrideOrder::ROW)
+    if(arrayStrideOrder == ArrayStrideOrder::COLUMN)
     {
       for(int d = 0; d < DIM; ++d)
       {
@@ -319,8 +319,8 @@ public:
     for(int d = 0; d < DIM - 1; ++d)
     {
       ord &= m_slowestDirs[d] < m_slowestDirs[d + 1]
-        ? int(ArrayStrideOrder::COLUMN)
-        : int(ArrayStrideOrder::ROW);
+        ? int(ArrayStrideOrder::ROW)
+        : int(ArrayStrideOrder::COLUMN);
     }
     static ArrayStrideOrder s_intToOrder[4] = {ArrayStrideOrder::ARBITRARY,
                                                ArrayStrideOrder::ROW,
