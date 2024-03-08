@@ -1264,6 +1264,7 @@ void check_find_points_zip2d()
 
   axom::Array<FloatType> xs(ncells, ncells);
   axom::Array<FloatType> ys(ncells, ncells);
+  FloatType* zs {nullptr};
 
   for(int icell = 0; icell < ncells; icell++)
   {
@@ -1271,7 +1272,7 @@ void check_find_points_zip2d()
     ys[icell] = centroids[icell][1];
   }
 
-  primal::ZipIndexable<PointType> zip_test {{xs.data(), ys.data(), nullptr}};
+  primal::ZipIndexable<PointType> zip_test {{xs.data(), ys.data(), zs}};
 
   // construct the BVH
   spin::BVH<NDIMS, ExecSpace, FloatType> bvh;
