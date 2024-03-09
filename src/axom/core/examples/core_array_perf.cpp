@@ -33,6 +33,13 @@ public:
 
   // Array shape.
   std::vector<axom::IndexType> shape;
+  axom::IndexType ghostWidth = 1;
+  std::vector<axom::IndexType> paddedShape;
+  std::vector<axom::IndexType> idxBegin;
+  std::vector<axom::IndexType> idxEnd;
+  axom::IndexType realSize;
+  axom::IndexType paddedSize;
+
   // Array stride order (same length as shape)
   std::vector<std::uint32_t> slowestDirections;
   axom::ArrayStrideOrder strideOrder = axom::ArrayStrideOrder::ARBITRARY;
@@ -67,6 +74,8 @@ public:
       ->capture_default_str();
 
     app.add_option("--shape", shape)->description("Array shape")->expected(1, 4);
+
+    app.add_option("--ghost", ghostWidth)->description("Ghost width");
 
     auto* strideOrderOption =
       app.add_option("--strideOrder", strideOrder)
@@ -108,6 +117,29 @@ public:
         strideOrder == axom::ArrayStrideOrder::ARBITRARY)
     {
       strideOrder = axom::ArrayStrideOrder::ROW;
+    }
+
+
+    //
+    // Dependent data
+    //
+
+    paddedShape.resize(shape.size());
+    idxBegin.resize(shape.size());
+    idxEnd.resize(shape.size());
+    for (size_t i = 0; i<shape.size(); ++i)
+    {
+      paddedShape[i] = shape[i] + 2 * ghostWidth;
+      idxBegin[i] = ghostWidth;
+      idxEnd[i] = idxBegin[i] + shape[i];
+    }
+
+    realSize = shape[0];
+    paddedSize = paddedShape[0];
+    for (size_t i=1; i<shape.size(); ++i)
+    {
+      realSize *= shape[i];
+      paddedSize *= paddedShape[0];
     }
   }
 };
@@ -168,8 +200,9 @@ void runTest_dynamicAccess(axom::ArrayView<double, DIM>& array);
 void runTest_rowMajorAccess(axom::ArrayView<double, 1>& array)
 {
   AXOM_PERF_MARK_FUNCTION("rowMajorAccess-1D");
-  const auto& shape = array.shape();
-  for(axom::IndexType i = 0; i < shape[0]; ++i)
+  const auto idxBegin = params.idxBegin;
+  const auto idxEnd = params.idxEnd;
+  for(axom::IndexType i = idxBegin[0]; i < idxEnd[0]; ++i)
   {
     array[i] += 10;
   }
@@ -178,10 +211,11 @@ void runTest_rowMajorAccess(axom::ArrayView<double, 1>& array)
 void runTest_rowMajorAccess(axom::ArrayView<double, 2>& array)
 {
   AXOM_PERF_MARK_FUNCTION("rowMajorAccess-2D");
-  const auto& shape = array.shape();
-  for(axom::IndexType i = 0; i < shape[0]; ++i)
+  const auto idxBegin = params.idxBegin;
+  const auto idxEnd = params.idxEnd;
+  for(axom::IndexType i = idxBegin[0]; i < idxEnd[0]; ++i)
   {
-    for(axom::IndexType j = 0; j < shape[1]; ++j)
+    for(axom::IndexType j = idxBegin[1]; j < idxEnd[1]; ++j)
     {
       array(i, j) += 10;
     }
@@ -191,12 +225,13 @@ void runTest_rowMajorAccess(axom::ArrayView<double, 2>& array)
 void runTest_rowMajorAccess(axom::ArrayView<double, 3>& array)
 {
   AXOM_PERF_MARK_FUNCTION("rowMajorAccess-3D");
-  const auto& shape = array.shape();
-  for(axom::IndexType i = 0; i < shape[0]; ++i)
+  const auto idxBegin = params.idxBegin;
+  const auto idxEnd = params.idxEnd;
+  for(axom::IndexType i = idxBegin[0]; i < idxEnd[0]; ++i)
   {
-    for(axom::IndexType j = 0; j < shape[1]; ++j)
+    for(axom::IndexType j = idxBegin[1]; j < idxEnd[1]; ++j)
     {
-      for(axom::IndexType k = 0; k < shape[2]; ++k)
+      for(axom::IndexType k = idxBegin[2]; k < idxEnd[2]; ++k)
       {
         array(i, j, k) += 10;
       }
@@ -207,14 +242,15 @@ void runTest_rowMajorAccess(axom::ArrayView<double, 3>& array)
 void runTest_rowMajorAccess(axom::ArrayView<double, 4>& array)
 {
   AXOM_PERF_MARK_FUNCTION("rowMajorAccess-4D");
-  const auto& shape = array.shape();
-  for(axom::IndexType i = 0; i < shape[0]; ++i)
+  const auto idxBegin = params.idxBegin;
+  const auto idxEnd = params.idxEnd;
+  for(axom::IndexType i = idxBegin[0]; i < idxEnd[0]; ++i)
   {
-    for(axom::IndexType j = 0; j < shape[1]; ++j)
+    for(axom::IndexType j = idxBegin[1]; j < idxEnd[1]; ++j)
     {
-      for(axom::IndexType k = 0; k < shape[2]; ++k)
+      for(axom::IndexType k = idxBegin[2]; k < idxEnd[2]; ++k)
       {
-        for(axom::IndexType l = 0; l < shape[3]; ++l)
+        for(axom::IndexType l = idxBegin[3]; l < idxEnd[3]; ++l)
         {
           array(i, j, k, l) += 10;
         }
@@ -226,8 +262,9 @@ void runTest_rowMajorAccess(axom::ArrayView<double, 4>& array)
 void runTest_columnMajorAccess(axom::ArrayView<double, 1>& array)
 {
   AXOM_PERF_MARK_FUNCTION("columnMajorAccess-1D");
-  const auto& shape = array.shape();
-  for(axom::IndexType i = 0; i < shape[0]; ++i)
+  const auto idxBegin = params.idxBegin;
+  const auto idxEnd = params.idxEnd;
+  for(axom::IndexType i = idxBegin[0]; i < idxEnd[0]; ++i)
   {
     array[i] += 100;
   }
@@ -236,10 +273,11 @@ void runTest_columnMajorAccess(axom::ArrayView<double, 1>& array)
 void runTest_columnMajorAccess(axom::ArrayView<double, 2>& array)
 {
   AXOM_PERF_MARK_FUNCTION("columnMajorAccess-2D");
-  const auto& shape = array.shape();
-  for(axom::IndexType j = 0; j < shape[1]; ++j)
+  const auto idxBegin = params.idxBegin;
+  const auto idxEnd = params.idxEnd;
+  for(axom::IndexType j = idxBegin[1]; j < idxEnd[1]; ++j)
   {
-    for(axom::IndexType i = 0; i < shape[0]; ++i)
+    for(axom::IndexType i = idxBegin[0]; i < idxEnd[0]; ++i)
     {
       array(i, j) += 100;
     }
@@ -249,12 +287,13 @@ void runTest_columnMajorAccess(axom::ArrayView<double, 2>& array)
 void runTest_columnMajorAccess(axom::ArrayView<double, 3>& array)
 {
   AXOM_PERF_MARK_FUNCTION("columnMajorAccess-3D");
-  const auto& shape = array.shape();
-  for(axom::IndexType k = 0; k < shape[2]; ++k)
+  const auto idxBegin = params.idxBegin;
+  const auto idxEnd = params.idxEnd;
+  for(axom::IndexType k = idxBegin[2]; k < idxEnd[2]; ++k)
   {
-    for(axom::IndexType j = 0; j < shape[1]; ++j)
+    for(axom::IndexType j = idxBegin[1]; j < idxEnd[1]; ++j)
     {
-      for(axom::IndexType i = 0; i < shape[0]; ++i)
+      for(axom::IndexType i = idxBegin[0]; i < idxEnd[0]; ++i)
       {
         array(i, j, k) += 100;
       }
@@ -265,14 +304,15 @@ void runTest_columnMajorAccess(axom::ArrayView<double, 3>& array)
 void runTest_columnMajorAccess(axom::ArrayView<double, 4>& array)
 {
   AXOM_PERF_MARK_FUNCTION("columnMajorAccess-4D");
-  const auto& shape = array.shape();
-  for(axom::IndexType l = 0; l < shape[3]; ++l)
+  const auto idxBegin = params.idxBegin;
+  const auto idxEnd = params.idxEnd;
+  for(axom::IndexType l = idxBegin[3]; l < idxEnd[3]; ++l)
   {
-    for(axom::IndexType k = 0; k < shape[2]; ++k)
+    for(axom::IndexType k = idxBegin[2]; k < idxEnd[2]; ++k)
     {
-      for(axom::IndexType j = 0; j < shape[1]; ++j)
+      for(axom::IndexType j = idxBegin[1]; j < idxEnd[1]; ++j)
       {
-        for(axom::IndexType i = 0; i < shape[0]; ++i)
+        for(axom::IndexType i = idxBegin[0]; i < idxEnd[0]; ++i)
         {
           array(i, j, k, l) += 100;
         }
@@ -284,8 +324,9 @@ void runTest_columnMajorAccess(axom::ArrayView<double, 4>& array)
 void runTest_dynamicAccess(axom::ArrayView<double, 1>& array)
 {
   AXOM_PERF_MARK_FUNCTION("dynamicAccess-1D");
-  const auto& shape = array.shape();
-  for(axom::IndexType i = 0; i < shape[0]; ++i)
+  const auto idxBegin = params.idxBegin;
+  const auto idxEnd = params.idxEnd;
+  for(axom::IndexType i = idxBegin[0]; i < idxEnd[0]; ++i)
   {
     array[i] += 1000;
   }
@@ -294,17 +335,20 @@ void runTest_dynamicAccess(axom::ArrayView<double, 1>& array)
 void runTest_dynamicAccess(axom::ArrayView<double, 2>& array)
 {
   AXOM_PERF_MARK_FUNCTION("dynamicAccess-2D");
-  const auto& shape = array.shape();
+  const auto idxBegin = params.idxBegin;
+  const auto idxEnd = params.idxEnd;
   const auto& indexer = array.indexer();
   const auto& slowestDirs = indexer.slowestDirs();
+  const axom::StackArray<axom::IndexType, 2> begins {idxBegin[slowestDirs[0]],
+                                                     idxBegin[slowestDirs[1]]};
+  const axom::StackArray<axom::IndexType, 2> ends {idxEnd[slowestDirs[0]],
+                                                   idxEnd[slowestDirs[1]]};
   axom::StackArray<axom::IndexType, 2> idx;
   axom::IndexType& m = idx[slowestDirs[0]];
   axom::IndexType& n = idx[slowestDirs[1]];
-  const axom::StackArray<axom::IndexType, 2> ends {shape[slowestDirs[0]],
-                                                   shape[slowestDirs[1]]};
-  for(m = 0; m < ends[0]; ++m)
+  for(m = begins[0]; m < ends[0]; ++m)
   {
-    for(n = 0; n < ends[1]; ++n)
+    for(n = begins[1]; n < ends[1]; ++n)
     {
       array[idx] += 1000;
     }
@@ -314,21 +358,25 @@ void runTest_dynamicAccess(axom::ArrayView<double, 2>& array)
 void runTest_dynamicAccess(axom::ArrayView<double, 3>& array)
 {
   AXOM_PERF_MARK_FUNCTION("dynamicAccess-3D");
-  const auto& shape = array.shape();
+  const auto idxBegin = params.idxBegin;
+  const auto idxEnd = params.idxEnd;
   const auto& indexer = array.indexer();
   const auto& slowestDirs = indexer.slowestDirs();
+  const axom::StackArray<axom::IndexType, 3> begins {idxBegin[slowestDirs[0]],
+                                                     idxBegin[slowestDirs[1]],
+                                                     idxBegin[slowestDirs[2]]};
+  const axom::StackArray<axom::IndexType, 3> ends {idxEnd[slowestDirs[0]],
+                                                   idxEnd[slowestDirs[1]],
+                                                   idxEnd[slowestDirs[2]]};
   axom::StackArray<axom::IndexType, 3> idx;
   axom::IndexType& m = idx[slowestDirs[0]];
   axom::IndexType& n = idx[slowestDirs[1]];
   axom::IndexType& o = idx[slowestDirs[2]];
-  const axom::StackArray<axom::IndexType, 3> ends {shape[slowestDirs[0]],
-                                                   shape[slowestDirs[1]],
-                                                   shape[slowestDirs[2]]};
-  for(m = 0; m < ends[0]; ++m)
+  for(m = begins[0]; m < ends[0]; ++m)
   {
-    for(n = 0; n < ends[1]; ++n)
+    for(n = begins[1]; n < ends[1]; ++n)
     {
-      for(o = 0; o < ends[2]; ++o)
+      for(o = begins[2]; o < ends[2]; ++o)
       {
         array[idx] += 1000;
       }
@@ -339,25 +387,30 @@ void runTest_dynamicAccess(axom::ArrayView<double, 3>& array)
 void runTest_dynamicAccess(axom::ArrayView<double, 4>& array)
 {
   AXOM_PERF_MARK_FUNCTION("dynamicAccess-4D");
-  const auto& shape = array.shape();
+  const auto idxBegin = params.idxBegin;
+  const auto idxEnd = params.idxEnd;
   const auto& indexer = array.indexer();
   const auto& slowestDirs = indexer.slowestDirs();
+  const axom::StackArray<axom::IndexType, 4> begins {idxBegin[slowestDirs[0]],
+                                                     idxBegin[slowestDirs[1]],
+                                                     idxBegin[slowestDirs[2]],
+                                                     idxBegin[slowestDirs[3]]};
+  const axom::StackArray<axom::IndexType, 4> ends {idxEnd[slowestDirs[0]],
+                                                   idxEnd[slowestDirs[1]],
+                                                   idxEnd[slowestDirs[2]],
+                                                   idxEnd[slowestDirs[3]]};
   axom::StackArray<axom::IndexType, 4> idx;
   axom::IndexType& m = idx[slowestDirs[0]];
   axom::IndexType& n = idx[slowestDirs[1]];
   axom::IndexType& o = idx[slowestDirs[2]];
   axom::IndexType& p = idx[slowestDirs[3]];
-  const axom::StackArray<axom::IndexType, 4> ends {shape[slowestDirs[0]],
-                                                   shape[slowestDirs[1]],
-                                                   shape[slowestDirs[2]],
-                                                   shape[slowestDirs[3]]};
-  for(m = 0; m < ends[0]; ++m)
+  for(m = begins[0]; m < ends[0]; ++m)
   {
-    for(n = 0; n < ends[1]; ++n)
+    for(n = begins[1]; n < ends[1]; ++n)
     {
-      for(o = 0; o < ends[2]; ++o)
+      for(o = begins[2]; o < ends[2]; ++o)
       {
-        for(p = 0; p < ends[3]; ++p)
+        for(p = begins[3]; p < ends[3]; ++p)
         {
           array[idx] += 1000;
         }
@@ -415,19 +468,13 @@ void makeArray(axom::Array<double> & ar, axom::ArrayView<double, DIM> & view)
 {
   assert(DIM <= params.shape.size());
 
-  axom::StackArray<axom::IndexType, DIM> shape;
+  axom::StackArray<axom::IndexType, DIM> paddedShape;
   for(int d = 0; d < DIM; ++d)
   {
-    shape[d] = params.shape[d];
+    paddedShape[d] = params.paddedShape[d];
   }
 
-  axom::IndexType product = shape[0];
-  for(int d = 1; d < DIM; ++d)
-  {
-    product *= shape[d];
-  }
-
-  ar.resize(product);
+  ar.resize(params.paddedSize);
 
   axom::ArrayIndexer<axom::IndexType, DIM> indexer;
   if(!params.slowestDirections.empty())
@@ -437,13 +484,13 @@ void makeArray(axom::Array<double> & ar, axom::ArrayView<double, DIM> & view)
     {
       slowestDirections[d] = params.slowestDirections[d];
     }
-    indexer.initializeShape(shape, slowestDirections);
+    indexer.initializeShape(paddedShape, slowestDirections);
   }
   else
   {
-    indexer.initializeShape(shape, params.strideOrder);
+    indexer.initializeShape(paddedShape, params.strideOrder);
   }
-  view = axom::ArrayView<double, DIM>(ar.data(), shape, indexer.strides());
+  view = axom::ArrayView<double, DIM>(ar.data(), paddedShape, indexer.strides());
 
   return;
 }
@@ -465,6 +512,9 @@ void runTest_dim()
   axom::ArrayView<double, DIM> array;
   makeArray<DIM>(array1D, array);
 #endif
+
+  std::cout << "Real-to-padded size: " << params.realSize << '/' << params.paddedSize
+            << " = " << double(params.realSize)/params.paddedSize << std::endl;
 
   auto count = array.size();
   auto* ptr = array.data();
