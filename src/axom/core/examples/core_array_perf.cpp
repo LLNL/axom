@@ -26,7 +26,7 @@
 
 ///////////////////////////////////////////////////////////////
 /// Struct to parse and store the input parameters
-struct Input
+struct InputParams
 {
 public:
   using RuntimePolicy = axom::runtime_policy::Policy;
@@ -93,7 +93,7 @@ public:
 
     app.parse(argc, argv);
 
-    if (shape.empty())
+    if(shape.empty())
     {
       std::cerr << "You must specify shape (1-4 integers)." << std::endl;
       std::abort();
@@ -105,7 +105,7 @@ public:
     */
     if(!slowestDirections.empty())
     {
-      if (slowestDirections.size() != shape.size())
+      if(slowestDirections.size() != shape.size())
       {
         std::cerr << "slowestDimension size (" << slowestDirections.size()
                   << ") must match shape size (" << shape.size() << ")."
@@ -113,12 +113,11 @@ public:
         std::abort();
       }
     }
-    if (slowestDirections.empty() &&
-        strideOrder == axom::ArrayStrideOrder::ARBITRARY)
+    if(slowestDirections.empty() &&
+       strideOrder == axom::ArrayStrideOrder::ARBITRARY)
     {
       strideOrder = axom::ArrayStrideOrder::ROW;
     }
-
 
     //
     // Dependent data
@@ -127,7 +126,7 @@ public:
     paddedShape.resize(shape.size());
     idxBegin.resize(shape.size());
     idxEnd.resize(shape.size());
-    for (size_t i = 0; i<shape.size(); ++i)
+    for(size_t i = 0; i < shape.size(); ++i)
     {
       paddedShape[i] = shape[i] + 2 * ghostWidth;
       idxBegin[i] = ghostWidth;
@@ -136,7 +135,7 @@ public:
 
     realSize = shape[0];
     paddedSize = paddedShape[0];
-    for (size_t i=1; i<shape.size(); ++i)
+    for(size_t i = 1; i < shape.size(); ++i)
     {
       realSize *= shape[i];
       paddedSize *= paddedShape[0];
@@ -144,7 +143,7 @@ public:
   }
 };
 
-Input params;
+InputParams params;
 
 template <typename T>
 std::string array_to_string(const T* dataPtr, int count)
@@ -196,6 +195,10 @@ void runTest_rowMajorAccess(axom::ArrayView<double, DIM>& array);
 */
 template <int DIM>
 void runTest_dynamicAccess(axom::ArrayView<double, DIM>& array);
+
+//
+// Row-major access tests
+//
 
 void runTest_rowMajorAccess(axom::ArrayView<double, 1>& array)
 {
@@ -259,6 +262,10 @@ void runTest_rowMajorAccess(axom::ArrayView<double, 4>& array)
   }
 }
 
+//
+// Colunn-major access tests
+//
+
 void runTest_columnMajorAccess(axom::ArrayView<double, 1>& array)
 {
   AXOM_PERF_MARK_FUNCTION("columnMajorAccess-1D");
@@ -320,6 +327,10 @@ void runTest_columnMajorAccess(axom::ArrayView<double, 4>& array)
     }
   }
 }
+
+//
+// Dynamic ordering access tests
+//
 
 void runTest_dynamicAccess(axom::ArrayView<double, 1>& array)
 {
@@ -419,6 +430,10 @@ void runTest_dynamicAccess(axom::ArrayView<double, 4>& array)
   }
 }
 
+//
+// Make test Array objects.
+//
+
 /*!
   @brief Return an array for testing, dimension DIM,
   sized and ordered according to params values.
@@ -464,7 +479,7 @@ axom::Array<double, DIM> makeArray()
   view on the data.  The view supports arbitrary ordering.
 */
 template <int DIM>
-void makeArray(axom::Array<double> & ar, axom::ArrayView<double, DIM> & view)
+void makeArray(axom::Array<double>& ar, axom::ArrayView<double, DIM>& view)
 {
   assert(DIM <= params.shape.size());
 
@@ -513,43 +528,53 @@ void runTest_dim()
   makeArray<DIM>(array1D, array);
 #endif
 
-  std::cout << "Real-to-padded size: " << params.realSize << '/' << params.paddedSize
-            << " = " << double(params.realSize)/params.paddedSize << std::endl;
+  std::cout << "Real-to-padded size: " << params.realSize << '/'
+            << params.paddedSize << " = "
+            << double(params.realSize) / params.paddedSize << std::endl;
 
   auto count = array.size();
   auto* ptr = array.data();
   for(axom::IndexType i = 0; i < count; ++i)
   {
-    ptr[i] = double(i*1000000);
+    ptr[i] = double(i * 1000000);
   }
 
   axom::utilities::Timer sequentialTimer(false);
   sequentialTimer.start();
   runTest_sequentialAccess(array);
   sequentialTimer.stop();
-  std::cout << "Sequential time   " << sequentialTimer.elapsedTimeInSec() << " seconds, base" << std::endl;
+  std::cout << "Sequential time   " << sequentialTimer.elapsedTimeInSec()
+            << " seconds, base" << std::endl;
 
   axom::utilities::Timer rowMajorTimer(false);
   rowMajorTimer.start();
   runTest_rowMajorAccess(array);
   rowMajorTimer.stop();
-  std::cout << "Row-major time    " << rowMajorTimer.elapsedTimeInSec() << " seconds, "
-            << std::setprecision(3) << rowMajorTimer.elapsedTimeInSec()/sequentialTimer.elapsedTimeInSec() << 'x' << std::endl;
+  std::cout << "Row-major time    " << rowMajorTimer.elapsedTimeInSec()
+            << " seconds, " << std::setprecision(3)
+            << rowMajorTimer.elapsedTimeInSec() /
+      sequentialTimer.elapsedTimeInSec()
+            << 'x' << std::endl;
 
   axom::utilities::Timer columnMajorTimer(false);
   columnMajorTimer.start();
   runTest_columnMajorAccess(array);
   columnMajorTimer.stop();
-  std::cout << "Column-major time " << columnMajorTimer.elapsedTimeInSec() << " seconds, "
-            << std::setprecision(3) << columnMajorTimer.elapsedTimeInSec()/sequentialTimer.elapsedTimeInSec() << 'x'  << std::endl;
+  std::cout << "Column-major time " << columnMajorTimer.elapsedTimeInSec()
+            << " seconds, " << std::setprecision(3)
+            << columnMajorTimer.elapsedTimeInSec() /
+      sequentialTimer.elapsedTimeInSec()
+            << 'x' << std::endl;
 
   axom::utilities::Timer dynamicTimer(false);
   dynamicTimer.start();
   runTest_dynamicAccess(array);
   dynamicTimer.stop();
-  std::cout << "Dynamic time      " << dynamicTimer.elapsedTimeInSec() << " seconds, "
-            << std::setprecision(3) << dynamicTimer.elapsedTimeInSec()/sequentialTimer.elapsedTimeInSec() << 'x'  << std::endl;
-
+  std::cout << "Dynamic time      " << dynamicTimer.elapsedTimeInSec()
+            << " seconds, " << std::setprecision(3)
+            << dynamicTimer.elapsedTimeInSec() /
+      sequentialTimer.elapsedTimeInSec()
+            << 'x' << std::endl;
 }
 
 /*!
