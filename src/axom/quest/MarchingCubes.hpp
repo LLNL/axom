@@ -162,9 +162,9 @@ public:
   */
   void computeIsocontour(double contourVal = 0.0);
 
-  //!@brief Get number of cells in the generated contour mesh.
+  //!@brief Get number of cells (facets) in the generated contour mesh.
   axom::IndexType getContourCellCount() const { return m_facetCount; }
-  //!@brief Get number of cells in the generated contour mesh.
+  //!@brief Get number of cells (facets) in the generated contour mesh.
   axom::IndexType getContourFacetCount() const { return m_facetCount; }
 
   //!@brief Get number of nodes in the generated contour mesh.
