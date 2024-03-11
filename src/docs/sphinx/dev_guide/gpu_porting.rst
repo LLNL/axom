@@ -254,7 +254,7 @@ Each execution space provides:
 
 The :doc:`Mint <../../../axom/mint/docs/sphinx/index>` component also provides a set of nested execution policies
 located at
-`axom/mint/execution/internal/structured_exec.hpp <https://github.com/LLNL/axom/blob/develop/src/axom/mint/execution/internal/structured_exec.hpp>`_
+`axom/axom/execution/nested_for_exec.hpp <https://github.com/LLNL/axom/blob/develop/src/axom/execution/nested_for_exec.hpp>`_
 to be used with
 ``RAJA::kernel`` e.g. for iterating over mint meshes.
 

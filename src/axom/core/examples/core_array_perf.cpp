@@ -12,7 +12,7 @@
 #include "axom/core/Array.hpp"
 #include "axom/core/ArrayIndexer.hpp"
 #include "axom/core/execution/for_all.hpp"
-#include "axom/core/execution/nested_loop_exec.hpp"
+#include "axom/core/execution/nested_for_exec.hpp"
 #include "axom/core/execution/runtime_policy.hpp"
 #include "axom/core/memory_management.hpp"
 #include "axom/core/utilities/Timer.hpp"

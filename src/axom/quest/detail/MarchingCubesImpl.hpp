@@ -18,7 +18,7 @@
 #include "axom/quest/detail/MarchingCubesSingleDomain.hpp"
 #include "axom/primal/geometry/Point.hpp"
 #include "axom/primal/constants.hpp"
-#include "axom/mint/execution/internal/structured_exec.hpp"
+#include "axom/core/execution/nested_for_exec.hpp"
 #include "axom/fmt.hpp"
 
 namespace axom
@@ -191,7 +191,7 @@ public:
     RAJA::RangeSegment jRange(0, m_bShape[1]);
     RAJA::RangeSegment iRange(0, m_bShape[0]);
     using EXEC_POL =
-      typename axom::mint::internal::structured_exec<ExecSpace>::loop2d_policy;
+      typename axom::internal::nested_for_exec<ExecSpace>::loop2d_policy;
     if(int(order) & int(axom::ArrayStrideOrder::COLUMN))
     {
       RAJA::kernel<EXEC_POL>(
@@ -245,7 +245,7 @@ public:
     RAJA::RangeSegment jRange(0, m_bShape[1]);
     RAJA::RangeSegment iRange(0, m_bShape[0]);
     using EXEC_POL =
-      typename axom::mint::internal::structured_exec<ExecSpace>::loop3d_policy;
+      typename axom::internal::nested_for_exec<ExecSpace>::loop3d_policy;
     if(int(order) & int(axom::ArrayStrideOrder::COLUMN))
     {
       RAJA::kernel<EXEC_POL>(

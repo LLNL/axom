@@ -32,7 +32,7 @@
 #endif
 
 // RAJA policies
-#include "axom/mint/execution/internal/structured_exec.hpp"
+#include "axom/core/execution/nested_for_exec.hpp"
 
 using seq_exec = axom::SEQ_EXEC;
 
@@ -434,7 +434,7 @@ std::vector<std::pair<int, int>> naiveIntersectionAlgorithm(
   RAJA::RangeSegment col_range(0, ncells);
 
   using KERNEL_POL =
-    typename axom::mint::internal::structured_exec<ExecSpace>::loop2d_policy;
+    typename axom::internal::nested_for_exec<ExecSpace>::loop2d_policy;
   using REDUCE_POL = typename axom::execution_space<ExecSpace>::reduce_policy;
   using ATOMIC_POL = typename axom::execution_space<ExecSpace>::atomic_policy;
 

@@ -26,7 +26,6 @@
 #include "axom/slic.hpp"
 #include "axom/primal.hpp"
 #include "axom/mint/mesh/UnstructuredMesh.hpp"
-#include "axom/mint/execution/internal/structured_exec.hpp"
 #include "axom/core/ArrayIndexer.hpp"
 #include "axom/quest/MarchingCubes.hpp"
 #include "axom/quest/MeshViewUtil.hpp"
