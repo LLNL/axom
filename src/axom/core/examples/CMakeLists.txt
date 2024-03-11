@@ -81,5 +81,5 @@ if(AXOM_ENABLE_TESTS)
         COMMAND core_array_perf_ex --shape 30 200 20 )
     axom_add_test(
         NAME    core_array_perf_4d
-        COMMAND core_array_perf_ex --shape 50 20 20 6 )
+        COMMAND core_array_perf_ex --shape 50 20 30 6 )
 endif()
