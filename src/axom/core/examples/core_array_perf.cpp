@@ -12,6 +12,7 @@
 #include "axom/core/Array.hpp"
 #include "axom/core/ArrayIndexer.hpp"
 #include "axom/core/execution/for_all.hpp"
+#include "axom/core/execution/nested_loop_exec.hpp"
 #include "axom/core/execution/runtime_policy.hpp"
 #include "axom/core/memory_management.hpp"
 #include "axom/core/utilities/Timer.hpp"
@@ -138,7 +139,7 @@ public:
     for(size_t i = 1; i < shape.size(); ++i)
     {
       realSize *= shape[i];
-      paddedSize *= paddedShape[0];
+      paddedSize *= paddedShape[i];
     }
   }
 };
@@ -167,10 +168,17 @@ void runTest_sequentialAccess(axom::ArrayView<double, DIM>& array)
 {
   auto count = array.size();
   auto* ptr = array.data();
+#ifdef AXOM_USE_RAJA
   for(axom::IndexType i = 0; i < count; ++i)
   {
     ptr[i] += 1;
   }
+#else
+  for(axom::IndexType i = 0; i < count; ++i)
+  {
+    ptr[i] += 1;
+  }
+#endif
 }
 
 /*!
@@ -205,10 +213,17 @@ void runTest_rowMajorAccess(axom::ArrayView<double, 1>& array)
   AXOM_PERF_MARK_FUNCTION("rowMajorAccess-1D");
   const auto idxBegin = params.idxBegin;
   const auto idxEnd = params.idxEnd;
+#ifdef AXOM_USE_RAJA
   for(axom::IndexType i = idxBegin[0]; i < idxEnd[0]; ++i)
   {
     array[i] += 10;
   }
+#else
+  for(axom::IndexType i = idxBegin[0]; i < idxEnd[0]; ++i)
+  {
+    array[i] += 10;
+  }
+#endif
 }
 
 void runTest_rowMajorAccess(axom::ArrayView<double, 2>& array)
@@ -216,6 +231,7 @@ void runTest_rowMajorAccess(axom::ArrayView<double, 2>& array)
   AXOM_PERF_MARK_FUNCTION("rowMajorAccess-2D");
   const auto idxBegin = params.idxBegin;
   const auto idxEnd = params.idxEnd;
+#ifdef AXOM_USE_RAJA
   for(axom::IndexType i = idxBegin[0]; i < idxEnd[0]; ++i)
   {
     for(axom::IndexType j = idxBegin[1]; j < idxEnd[1]; ++j)
@@ -223,6 +239,15 @@ void runTest_rowMajorAccess(axom::ArrayView<double, 2>& array)
       array(i, j) += 10;
     }
   }
+#else
+  for(axom::IndexType i = idxBegin[0]; i < idxEnd[0]; ++i)
+  {
+    for(axom::IndexType j = idxBegin[1]; j < idxEnd[1]; ++j)
+    {
+      array(i, j) += 10;
+    }
+  }
+#endif
 }
 
 void runTest_rowMajorAccess(axom::ArrayView<double, 3>& array)
@@ -230,6 +255,7 @@ void runTest_rowMajorAccess(axom::ArrayView<double, 3>& array)
   AXOM_PERF_MARK_FUNCTION("rowMajorAccess-3D");
   const auto idxBegin = params.idxBegin;
   const auto idxEnd = params.idxEnd;
+#ifdef AXOM_USE_RAJA
   for(axom::IndexType i = idxBegin[0]; i < idxEnd[0]; ++i)
   {
     for(axom::IndexType j = idxBegin[1]; j < idxEnd[1]; ++j)
@@ -240,6 +266,18 @@ void runTest_rowMajorAccess(axom::ArrayView<double, 3>& array)
       }
     }
   }
+#else
+  for(axom::IndexType i = idxBegin[0]; i < idxEnd[0]; ++i)
+  {
+    for(axom::IndexType j = idxBegin[1]; j < idxEnd[1]; ++j)
+    {
+      for(axom::IndexType k = idxBegin[2]; k < idxEnd[2]; ++k)
+      {
+        array(i, j, k) += 10;
+      }
+    }
+  }
+#endif
 }
 
 void runTest_rowMajorAccess(axom::ArrayView<double, 4>& array)
@@ -247,6 +285,7 @@ void runTest_rowMajorAccess(axom::ArrayView<double, 4>& array)
   AXOM_PERF_MARK_FUNCTION("rowMajorAccess-4D");
   const auto idxBegin = params.idxBegin;
   const auto idxEnd = params.idxEnd;
+#ifdef AXOM_USE_RAJA
   for(axom::IndexType i = idxBegin[0]; i < idxEnd[0]; ++i)
   {
     for(axom::IndexType j = idxBegin[1]; j < idxEnd[1]; ++j)
@@ -260,6 +299,21 @@ void runTest_rowMajorAccess(axom::ArrayView<double, 4>& array)
       }
     }
   }
+#else
+  for(axom::IndexType i = idxBegin[0]; i < idxEnd[0]; ++i)
+  {
+    for(axom::IndexType j = idxBegin[1]; j < idxEnd[1]; ++j)
+    {
+      for(axom::IndexType k = idxBegin[2]; k < idxEnd[2]; ++k)
+      {
+        for(axom::IndexType l = idxBegin[3]; l < idxEnd[3]; ++l)
+        {
+          array(i, j, k, l) += 10;
+        }
+      }
+    }
+  }
+#endif
 }
 
 //
@@ -271,10 +325,17 @@ void runTest_columnMajorAccess(axom::ArrayView<double, 1>& array)
   AXOM_PERF_MARK_FUNCTION("columnMajorAccess-1D");
   const auto idxBegin = params.idxBegin;
   const auto idxEnd = params.idxEnd;
+#ifdef AXOM_USE_RAJA
   for(axom::IndexType i = idxBegin[0]; i < idxEnd[0]; ++i)
   {
     array[i] += 100;
   }
+#else
+  for(axom::IndexType i = idxBegin[0]; i < idxEnd[0]; ++i)
+  {
+    array[i] += 100;
+  }
+#endif
 }
 
 void runTest_columnMajorAccess(axom::ArrayView<double, 2>& array)
@@ -282,6 +343,7 @@ void runTest_columnMajorAccess(axom::ArrayView<double, 2>& array)
   AXOM_PERF_MARK_FUNCTION("columnMajorAccess-2D");
   const auto idxBegin = params.idxBegin;
   const auto idxEnd = params.idxEnd;
+#ifdef AXOM_USE_RAJA
   for(axom::IndexType j = idxBegin[1]; j < idxEnd[1]; ++j)
   {
     for(axom::IndexType i = idxBegin[0]; i < idxEnd[0]; ++i)
@@ -289,6 +351,15 @@ void runTest_columnMajorAccess(axom::ArrayView<double, 2>& array)
       array(i, j) += 100;
     }
   }
+#else
+  for(axom::IndexType j = idxBegin[1]; j < idxEnd[1]; ++j)
+  {
+    for(axom::IndexType i = idxBegin[0]; i < idxEnd[0]; ++i)
+    {
+      array(i, j) += 100;
+    }
+  }
+#endif
 }
 
 void runTest_columnMajorAccess(axom::ArrayView<double, 3>& array)
@@ -296,6 +367,7 @@ void runTest_columnMajorAccess(axom::ArrayView<double, 3>& array)
   AXOM_PERF_MARK_FUNCTION("columnMajorAccess-3D");
   const auto idxBegin = params.idxBegin;
   const auto idxEnd = params.idxEnd;
+#ifdef AXOM_USE_RAJA
   for(axom::IndexType k = idxBegin[2]; k < idxEnd[2]; ++k)
   {
     for(axom::IndexType j = idxBegin[1]; j < idxEnd[1]; ++j)
@@ -306,6 +378,18 @@ void runTest_columnMajorAccess(axom::ArrayView<double, 3>& array)
       }
     }
   }
+#else
+  for(axom::IndexType k = idxBegin[2]; k < idxEnd[2]; ++k)
+  {
+    for(axom::IndexType j = idxBegin[1]; j < idxEnd[1]; ++j)
+    {
+      for(axom::IndexType i = idxBegin[0]; i < idxEnd[0]; ++i)
+      {
+        array(i, j, k) += 100;
+      }
+    }
+  }
+#endif
 }
 
 void runTest_columnMajorAccess(axom::ArrayView<double, 4>& array)
@@ -313,6 +397,7 @@ void runTest_columnMajorAccess(axom::ArrayView<double, 4>& array)
   AXOM_PERF_MARK_FUNCTION("columnMajorAccess-4D");
   const auto idxBegin = params.idxBegin;
   const auto idxEnd = params.idxEnd;
+#ifdef AXOM_USE_RAJA
   for(axom::IndexType l = idxBegin[3]; l < idxEnd[3]; ++l)
   {
     for(axom::IndexType k = idxBegin[2]; k < idxEnd[2]; ++k)
@@ -326,6 +411,21 @@ void runTest_columnMajorAccess(axom::ArrayView<double, 4>& array)
       }
     }
   }
+#else
+  for(axom::IndexType l = idxBegin[3]; l < idxEnd[3]; ++l)
+  {
+    for(axom::IndexType k = idxBegin[2]; k < idxEnd[2]; ++k)
+    {
+      for(axom::IndexType j = idxBegin[1]; j < idxEnd[1]; ++j)
+      {
+        for(axom::IndexType i = idxBegin[0]; i < idxEnd[0]; ++i)
+        {
+          array(i, j, k, l) += 100;
+        }
+      }
+    }
+  }
+#endif
 }
 
 //
@@ -337,10 +437,17 @@ void runTest_dynamicAccess(axom::ArrayView<double, 1>& array)
   AXOM_PERF_MARK_FUNCTION("dynamicAccess-1D");
   const auto idxBegin = params.idxBegin;
   const auto idxEnd = params.idxEnd;
+#ifdef AXOM_USE_RAJA
   for(axom::IndexType i = idxBegin[0]; i < idxEnd[0]; ++i)
   {
     array[i] += 1000;
   }
+#else
+  for(axom::IndexType i = idxBegin[0]; i < idxEnd[0]; ++i)
+  {
+    array[i] += 1000;
+  }
+#endif
 }
 
 void runTest_dynamicAccess(axom::ArrayView<double, 2>& array)
@@ -354,6 +461,7 @@ void runTest_dynamicAccess(axom::ArrayView<double, 2>& array)
                                                      idxBegin[slowestDirs[1]]};
   const axom::StackArray<axom::IndexType, 2> ends {idxEnd[slowestDirs[0]],
                                                    idxEnd[slowestDirs[1]]};
+#ifdef AXOM_USE_RAJA
   axom::StackArray<axom::IndexType, 2> idx;
   axom::IndexType& m = idx[slowestDirs[0]];
   axom::IndexType& n = idx[slowestDirs[1]];
@@ -364,6 +472,18 @@ void runTest_dynamicAccess(axom::ArrayView<double, 2>& array)
       array[idx] += 1000;
     }
   }
+#else
+  axom::StackArray<axom::IndexType, 2> idx;
+  axom::IndexType& m = idx[slowestDirs[0]];
+  axom::IndexType& n = idx[slowestDirs[1]];
+  for(m = begins[0]; m < ends[0]; ++m)
+  {
+    for(n = begins[1]; n < ends[1]; ++n)
+    {
+      array[idx] += 1000;
+    }
+  }
+#endif
 }
 
 void runTest_dynamicAccess(axom::ArrayView<double, 3>& array)
@@ -379,6 +499,7 @@ void runTest_dynamicAccess(axom::ArrayView<double, 3>& array)
   const axom::StackArray<axom::IndexType, 3> ends {idxEnd[slowestDirs[0]],
                                                    idxEnd[slowestDirs[1]],
                                                    idxEnd[slowestDirs[2]]};
+#ifdef AXOM_USE_RAJA
   axom::StackArray<axom::IndexType, 3> idx;
   axom::IndexType& m = idx[slowestDirs[0]];
   axom::IndexType& n = idx[slowestDirs[1]];
@@ -393,6 +514,22 @@ void runTest_dynamicAccess(axom::ArrayView<double, 3>& array)
       }
     }
   }
+#else
+  axom::StackArray<axom::IndexType, 3> idx;
+  axom::IndexType& m = idx[slowestDirs[0]];
+  axom::IndexType& n = idx[slowestDirs[1]];
+  axom::IndexType& o = idx[slowestDirs[2]];
+  for(m = begins[0]; m < ends[0]; ++m)
+  {
+    for(n = begins[1]; n < ends[1]; ++n)
+    {
+      for(o = begins[2]; o < ends[2]; ++o)
+      {
+        array[idx] += 1000;
+      }
+    }
+  }
+#endif
 }
 
 void runTest_dynamicAccess(axom::ArrayView<double, 4>& array)
@@ -410,6 +547,7 @@ void runTest_dynamicAccess(axom::ArrayView<double, 4>& array)
                                                    idxEnd[slowestDirs[1]],
                                                    idxEnd[slowestDirs[2]],
                                                    idxEnd[slowestDirs[3]]};
+#ifdef AXOM_USE_RAJA
   axom::StackArray<axom::IndexType, 4> idx;
   axom::IndexType& m = idx[slowestDirs[0]];
   axom::IndexType& n = idx[slowestDirs[1]];
@@ -428,6 +566,26 @@ void runTest_dynamicAccess(axom::ArrayView<double, 4>& array)
       }
     }
   }
+#else
+  axom::StackArray<axom::IndexType, 4> idx;
+  axom::IndexType& m = idx[slowestDirs[0]];
+  axom::IndexType& n = idx[slowestDirs[1]];
+  axom::IndexType& o = idx[slowestDirs[2]];
+  axom::IndexType& p = idx[slowestDirs[3]];
+  for(m = begins[0]; m < ends[0]; ++m)
+  {
+    for(n = begins[1]; n < ends[1]; ++n)
+    {
+      for(o = begins[2]; o < ends[2]; ++o)
+      {
+        for(p = begins[3]; p < ends[3]; ++p)
+        {
+          array[idx] += 1000;
+        }
+      }
+    }
+  }
+#endif
 }
 
 //
