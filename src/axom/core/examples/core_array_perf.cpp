@@ -165,11 +165,11 @@ public:
   const Element_t dynamicTestAdd = 1000;
 
   /*!
-  @brief Time the sequential access of every element of an array.
+    @brief Time the flat-index access of every element of an array.
 
-  This is the fastest we expect to visit every element.
-*/
-  void runTest_sequentialAccess(axom::ArrayView<Element_t, DIM>& array)
+    This is the fastest we expect to visit every element.
+  */
+  void runTest_flatAccess(axom::ArrayView<Element_t, DIM>& array)
   {
     auto testAdd = sequentiaTestAdd;
     m_testAccumulation += testAdd;
@@ -192,7 +192,7 @@ public:
   Methods to time the access of every element of an array.
 
   Multidimensional loops are capable of skipping ghost
-  layers, but the sequential loop used for the baseline
+  layers, but the flat loop used for the baseline
   performance doesn't have logic to skip them.
 */
 
@@ -662,9 +662,9 @@ public:
   //
 
   /*!
-  @brief Return an array for testing, dimension DIM,
-  sized and ordered according to params values.
-*/
+    @brief Return an array for testing, dimension DIM,
+    sized and ordered according to params values.
+  */
   axom::Array<Element_t, DIM> makeArray()
   {
     assert(DIM <= params.shape.size());
@@ -698,12 +698,12 @@ public:
   }
 
   /*!
-  @brief Return an array for testing, dimension DIM,
-  sized and ordered according to params values.
+    @brief Return an array for testing, dimension DIM,
+    sized and ordered according to params values.
 
-  This method allocates a 1D array and puts a muldimensional
-  view on the data.  The view supports arbitrary ordering.
-*/
+    This method allocates a 1D array and puts a muldimensional
+    view on the data.  The view supports arbitrary ordering.
+  */
   void makeArray(axom::Array<Element_t>& ar, axom::ArrayView<Element_t, DIM>& view)
   {
     assert(DIM <= params.shape.size());
@@ -737,9 +737,9 @@ public:
   }
 
   /*!
-  @brief Run test with array shape of the first DIM values in
-  params.shape.
-*/
+    @brief Run test with array shape of the first DIM values in
+    params.shape.
+  */
   void runTest_dim()
   {
     // Use ArrayView to test, because Array doesn't support
@@ -764,11 +764,11 @@ public:
       ptr[i] = Element_t(i * m_baseFactor);
     }
 
-    axom::utilities::Timer sequentialTimer(false);
-    sequentialTimer.start();
-    runTest_sequentialAccess(array);
-    sequentialTimer.stop();
-    std::cout << "Sequential time   " << sequentialTimer.elapsedTimeInSec()
+    axom::utilities::Timer flatTimer(false);
+    flatTimer.start();
+    runTest_flatAccess(array);
+    flatTimer.stop();
+    std::cout << "Sequential time   " << flatTimer.elapsedTimeInSec()
               << " seconds, base" << std::endl;
 
     axom::utilities::Timer rowMajorTimer(false);
@@ -778,7 +778,7 @@ public:
     std::cout << "Row-major time    " << rowMajorTimer.elapsedTimeInSec()
               << " seconds, " << std::setprecision(3)
               << rowMajorTimer.elapsedTimeInSec() /
-        sequentialTimer.elapsedTimeInSec()
+        flatTimer.elapsedTimeInSec()
               << 'x' << std::endl;
 
     axom::utilities::Timer columnMajorTimer(false);
@@ -788,7 +788,7 @@ public:
     std::cout << "Column-major time " << columnMajorTimer.elapsedTimeInSec()
               << " seconds, " << std::setprecision(3)
               << columnMajorTimer.elapsedTimeInSec() /
-        sequentialTimer.elapsedTimeInSec()
+        flatTimer.elapsedTimeInSec()
               << 'x' << std::endl;
 
     axom::utilities::Timer dynamicTimer(false);
@@ -798,7 +798,7 @@ public:
     std::cout << "Dynamic time      " << dynamicTimer.elapsedTimeInSec()
               << " seconds, " << std::setprecision(3)
               << dynamicTimer.elapsedTimeInSec() /
-        sequentialTimer.elapsedTimeInSec()
+        flatTimer.elapsedTimeInSec()
               << 'x' << std::endl;
 
     // Verify that the elements are touched the correct number of times.
