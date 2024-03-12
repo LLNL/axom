@@ -47,7 +47,7 @@ if(AXOM_ENABLE_TESTS)
         axom_add_test(NAME        slam_lulesh
                       COMMAND     slam_lulesh_ex
                       NUM_MPI_TASKS   8
-                      NUM_OMP_THREADS 2 )
+                      NUM_OMP_THREADS 1 )
     else()
         axom_add_test(NAME        slam_lulesh
                       COMMAND     slam_lulesh_ex
