@@ -33,6 +33,15 @@ if (RAJA_FOUND AND UMPIRE_FOUND)
         )
 endif()
 
+# Read ProE example -----------------------------------------------------------
+axom_add_executable(
+    NAME        quest_proe_bbox_ex
+    SOURCES     quest_proe_bbox.cpp
+    OUTPUT_DIR  ${EXAMPLE_OUTPUT_DIRECTORY}
+    DEPENDS_ON  ${quest_example_depends}
+    FOLDER      axom/quest/examples
+    )
+
 # BVH silo example ------------------------------------------------------------
 if (CONDUIT_FOUND AND RAJA_FOUND AND UMPIRE_FOUND)
     axom_add_executable(
