@@ -1331,10 +1331,10 @@ int main(int argc, char** argv)
   #if defined(AXOM_RUNTIME_POLICY_USE_OPENMP)
     params.policy == RuntimePolicy::omp ? "HOST" :
   #endif
-  #if defined(UMPIRE_ENABLE_DEVICE)
-                                        "DEVICE"
-  #elif defined(UMPIRE_ENABLE_UM)
-    "UM"
+  #if defined(UMPIRE_ENABLE_UM)
+                                        "UM"
+  #elif defined(UMPIRE_ENABLE_DEVICE)
+    "DEVICE"
   #elif defined(UMPIRE_ENABLE_PINNED)
     "PINNED"
   #else
