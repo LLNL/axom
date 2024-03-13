@@ -30,6 +30,10 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
   negative, resulting in the signed volume becoming positive.
 - Adds `FlatMap`, a generic key-value store which aims for drop-in compatibility
   with `std::unordered_map`, but utilizes an open-addressing design.
+- Adds support for device-side use of `Array::push_back()` and `Array::emplace_back()`.
+- Adds initial support for using Slic streams with tags
+- Adds an example that finds intersection candidate pairs between two Silo
+  hexahedral meshes using either a BVH or Implicit Grid spatial index
 - Quest: Adds `setTetPredFromBoundingBox()` and `setTetPred()` functions to
   `quest::ProEReader` and `PProEReader` that set a tet predicate, allowing
   user code to read in a subset of a Pro/E ASCII tetrahedron mesh file.
@@ -65,6 +69,7 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 - Fixed a bug when loading Sidre groups with attributes that already exist
 - Fixed `std::locale` error when when compiling `src/axom/core/utilities/System.cpp` using nvcc
 - Include `cstdint` for higher gcc version support (e.g. gcc-13)
+- Fixed several memory leaks in `axom::Array`, `quest::Shaping` and `sidre::MFEMSidreDataCollection`
 
 ## [Version 0.8.1] - Release date 2023-08-16
 

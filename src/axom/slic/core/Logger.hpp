@@ -156,11 +156,14 @@ public:
    * \brief Binds the given stream to all the levels for this Logger instance.
    *
    * \param [in] ls pointer to the user-supplied LogStream object.
+   * \param [in] pass_ownership flag that indicates whether the given logger
+   *  instance owns the supplied LogStream object. This parameter is optional.
+   *  Default is true.
    *
    * \note The Logger takes ownership of the LogStream object.
    * \pre ls != NULL.
    */
-  void addStreamToAllMsgLevels(LogStream* ls);
+  void addStreamToAllMsgLevels(LogStream* ls, bool pass_ownership = true);
 
   /*!
    * \brief Returns the number of streams at the given level.
@@ -204,11 +207,14 @@ public:
    * \brief Binds the given stream to all the tags for this Logger instance.
    *
    * \param [in] ls pointer to the user-supplied LogStream object.
+   * \param [in] pass_ownership flag that indicates whether the given logger
+   *  instance owns the supplied LogStream object. This parameter is optional.
+   *  Default is true.
    *
    * \note The Logger takes ownership of the LogStream object.
    * \pre ls != NULL.
    */
-  void addStreamToAllTags(LogStream* ls);
+  void addStreamToAllTags(LogStream* ls, bool pass_ownership = true);
 
   /*!
    * \brief Returns the number of streams for a given tag.

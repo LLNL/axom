@@ -1399,6 +1399,7 @@ TEST(mint_connectivity_array, IndirectionExternalSet)
   /* Check that the external constructor functions properly. */
   internal::checkExternalConstructor(ext_mixed);
 
+  delete[] initial_values;
   delete[] values;
   delete[] offsets;
   delete[] types;

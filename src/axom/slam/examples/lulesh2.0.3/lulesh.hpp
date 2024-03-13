@@ -205,6 +205,10 @@ namespace slamLulesh {
         Index_t rowLoc, Index_t planeLoc,
         Index_t nx, Int_t tp, Int_t nr, Int_t balance, Int_t cost);
 
+
+    // Destructor
+    ~Domain();
+    
     //
     // ALLOCATION
     //
@@ -497,8 +501,8 @@ namespace slamLulesh {
 
 #ifdef AXOM_USE_MPI
     // Communication Work space
-    Real_t *commDataSend;
-    Real_t *commDataRecv;
+    Real_t *commDataSend {nullptr};
+    Real_t *commDataRecv {nullptr};
 
     // Maximum number of block neighbors
     MPI_Request recvRequest[26]; // 6 faces + 12 edges + 8 corners

@@ -126,7 +126,7 @@ private:
 
   // Integer and string keys
   // With only two possible types a union is overkill
-  int m_int;
+  int m_int {};
   std::string m_string;
 
   // Active key type

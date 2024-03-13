@@ -1173,9 +1173,9 @@ void check_find_points_zip3d()
   BoxType* aabbs = nullptr;
   generate_aabbs_and_centroids(&mesh, aabbs, centroids);
 
-  FloatType* xs = axom::allocate<FloatType>(ncells);
-  FloatType* ys = axom::allocate<FloatType>(ncells);
-  FloatType* zs = axom::allocate<FloatType>(ncells);
+  axom::Array<FloatType> xs(ncells, ncells);
+  axom::Array<FloatType> ys(ncells, ncells);
+  axom::Array<FloatType> zs(ncells, ncells);
 
   for(int icell = 0; icell < ncells; icell++)
   {
@@ -1184,7 +1184,7 @@ void check_find_points_zip3d()
     zs[icell] = centroids[icell][2];
   }
 
-  primal::ZipIndexable<PointType> zip_test {{xs, ys, zs}};
+  primal::ZipIndexable<PointType> zip_test {{xs.data(), ys.data(), zs.data()}};
 
   // construct the BVH
   spin::BVH<NDIMS, ExecSpace, FloatType> bvh;
@@ -1213,11 +1213,8 @@ void check_find_points_zip3d()
     const int donorCellIdx = ug.getBinIndex(q);
     EXPECT_EQ(counts[i], 1);
     EXPECT_EQ(donorCellIdx, candidates[offsets[i]]);
-  }  // END for all cell centroids
+  }
 
-  axom::deallocate(xs);
-  axom::deallocate(ys);
-  axom::deallocate(zs);
   axom::deallocate(aabbs);
 
   axom::setDefaultAllocator(current_allocator);
@@ -1265,9 +1262,9 @@ void check_find_points_zip2d()
   BoxType* aabbs = nullptr;
   generate_aabbs_and_centroids(&mesh, aabbs, centroids);
 
-  FloatType* xs = axom::allocate<FloatType>(ncells);
-  FloatType* ys = axom::allocate<FloatType>(ncells);
-  FloatType* zs = nullptr;
+  axom::Array<FloatType> xs(ncells, ncells);
+  axom::Array<FloatType> ys(ncells, ncells);
+  FloatType* zs {nullptr};
 
   for(int icell = 0; icell < ncells; icell++)
   {
@@ -1275,7 +1272,7 @@ void check_find_points_zip2d()
     ys[icell] = centroids[icell][1];
   }
 
-  primal::ZipIndexable<PointType> zip_test {{xs, ys, zs}};
+  primal::ZipIndexable<PointType> zip_test {{xs.data(), ys.data(), zs}};
 
   // construct the BVH
   spin::BVH<NDIMS, ExecSpace, FloatType> bvh;
