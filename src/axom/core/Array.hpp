@@ -257,12 +257,12 @@ public:
   {
     if(this != &other)
     {
+      this->clear();
       static_cast<ArrayBase<T, DIM, Array<T, DIM, SPACE>>&>(*this) = other;
       m_allocator_id = other.m_allocator_id;
       m_resize_ratio = other.m_resize_ratio;
-      initialize(other.size(), other.capacity());
-      // Use fill_range to ensure that copy constructors are invoked for each
-      // element.
+      setCapacity(other.capacity());
+      // Use fill_range to ensure that copy constructors are invoked for each element
       MemorySpace srcSpace = SPACE;
       if(srcSpace == MemorySpace::Dynamic)
       {
@@ -270,10 +270,11 @@ public:
       }
       OpHelper::fill_range(m_data,
                            0,
-                           m_num_elements,
+                           other.size(),
                            m_allocator_id,
                            other.data(),
                            srcSpace);
+      updateNumElements(other.size());
     }
 
     return *this;
@@ -286,6 +287,7 @@ public:
   {
     if(this != &other)
     {
+      this->clear();
       if(m_data != nullptr)
       {
         axom::deallocate(m_data);
@@ -1473,15 +1475,15 @@ inline void Array<T, DIM, SPACE>::initialize_from_other(
 #endif
     m_allocator_id = axom::detail::getAllocatorID<SPACE>();
   }
-  initialize(num_elements, num_elements);
-  // Use fill_range to ensure that copy constructors are invoked for each
-  // element.
+  this->setCapacity(num_elements);
+  // Use fill_range to ensure that copy constructors are invoked for each element
   OpHelper::fill_range(m_data,
                        0,
-                       m_num_elements,
+                       num_elements,
                        m_allocator_id,
                        other_data,
                        other_data_space);
+  this->updateNumElements(num_elements);
 }
 
 //------------------------------------------------------------------------------
