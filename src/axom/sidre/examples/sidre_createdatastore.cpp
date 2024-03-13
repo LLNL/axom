@@ -8,8 +8,7 @@
  *  Sidre classes to construct a hierarchical data store and save it to
  *  a file.  (This example does not use the parallel I/O facility.)
  *  This also shows how to use Sidre with Conduit to generate and save a
- *  data store using the Mesh Blueprint, for easy data exchange and
- *  visualization.
+ *  data store using the Mesh Blueprint, for easy data exchange and visualization.
  */
 
 /*
@@ -87,24 +86,23 @@
 #include <cstring>
 
 // "using" directives to simplify code
-using namespace axom;
-using namespace sidre;
+namespace sidre = axom::sidre;
 
-DataStore* create_datastore(int* region)
+std::unique_ptr<sidre::DataStore> create_datastore(int* region)
 {
   // _first_example_creategroups_start
   // Create Sidre datastore object and get root group
-  DataStore* ds = new DataStore();
-  Group* root = ds->getRoot();
+  auto ds = std::unique_ptr<sidre::DataStore> {new sidre::DataStore()};
+  sidre::Group* root = ds->getRoot();
 
   // Create two attributes
   ds->createAttributeScalar("vis", 0);
   ds->createAttributeScalar("restart", 1);
 
   // Create group children of root group
-  Group* state = root->createGroup("state");
-  Group* nodes = root->createGroup("nodes");
-  Group* fields = root->createGroup("fields");
+  sidre::Group* state = root->createGroup("state");
+  sidre::Group* nodes = root->createGroup("nodes");
+  sidre::Group* fields = root->createGroup("fields");
   // _first_example_creategroups_end
 
   // _first_example_state_start
@@ -125,7 +123,8 @@ DataStore* create_datastore(int* region)
   // holds 3 * nodecount doubles.  These views might describe the location of
   // each node in a 16 x 16 x 16 hexahedron mesh.  Each view is described by
   // number of elements, offset, and stride into that data.
-  Buffer* buff = ds->createBuffer(sidre::DOUBLE_ID, 3 * nodecount)->allocate();
+  sidre::Buffer* buff =
+    ds->createBuffer(sidre::DOUBLE_ID, 3 * nodecount)->allocate();
   nodes->createView("x", buff)->apply(sidre::DOUBLE_ID, nodecount, 0, 3);
   nodes->createView("y", buff)->apply(sidre::DOUBLE_ID, nodecount, 1, 3);
   nodes->createView("z", buff)->apply(sidre::DOUBLE_ID, nodecount, 2, 3);
@@ -139,8 +138,10 @@ DataStore* create_datastore(int* region)
   // object.  Likewise with "rho."  Both Views have the default offset (0)
   // and stride (1).  These Views could point to data associated with
   // each of the 15 x 15 x 15 hexahedron elements defined by the nodes above.
-  View* temp = fields->createViewAndAllocate("temp", sidre::DOUBLE_ID, eltcount);
-  View* rho = fields->createViewAndAllocate("rho", sidre::DOUBLE_ID, eltcount);
+  sidre::View* temp =
+    fields->createViewAndAllocate("temp", sidre::DOUBLE_ID, eltcount);
+  sidre::View* rho =
+    fields->createViewAndAllocate("rho", sidre::DOUBLE_ID, eltcount);
 
   // Explicitly set values for the "vis" Attribute on the "temp" and "rho"
   // buffers.
@@ -150,7 +151,7 @@ DataStore* create_datastore(int* region)
   // The "fields" Group also contains a child Group "ext" which holds a pointer
   // to an externally owned integer array.  Although Sidre does not own the
   // data, the data can still be described to Sidre.
-  Group* ext = fields->createGroup("ext");
+  sidre::Group* ext = fields->createGroup("ext");
   // int * region has been passed in as a function argument.  As with "temp"
   // and "rho", view "region" has default offset and stride.
   ext->createView("region", region)->apply(sidre::INT_ID, eltcount);
@@ -159,18 +160,18 @@ DataStore* create_datastore(int* region)
   return ds;
 }
 
-void access_datastore(DataStore* ds)
+void access_datastore(sidre::DataStore* ds)
 {
   // _first_example_access_start
   // Retrieve Group pointers
-  Group* root = ds->getRoot();
-  Group* state = root->getGroup("state");
-  Group* nodes = root->getGroup("nodes");
-  Group* fields = root->getGroup("fields");
+  sidre::Group* root = ds->getRoot();
+  sidre::Group* state = root->getGroup("state");
+  sidre::Group* nodes = root->getGroup("nodes");
+  sidre::Group* fields = root->getGroup("fields");
 
   // Accessing a Group that is not there gives a null pointer
   // Requesting a nonexistent View also gives a null pointer
-  Group* goofy = root->getGroup("goofy");
+  sidre::Group* goofy = root->getGroup("goofy");
   if(goofy == nullptr)
   {
     std::cout << "no such group: goofy" << std::endl;
@@ -206,7 +207,7 @@ void access_datastore(DataStore* ds)
   AXOM_UNUSED_VAR(region);
 }
 
-void iterate_datastore(DataStore* ds)
+void iterate_datastore(sidre::DataStore* ds)
 {
   const std::string fill_line = axom::fmt::format("{:=^80}", "");
 
@@ -271,24 +272,27 @@ void iterate_datastore(DataStore* ds)
   std::cout << fill_line << std::endl;
 }
 
-DataStore* create_tiny_datastore()
+std::unique_ptr<sidre::DataStore> create_tiny_datastore()
 {
   // _tiny_create_start
-  DataStore* ds = new DataStore();
+  auto ds = std::unique_ptr<sidre::DataStore> {new sidre::DataStore()};
 
   int nodecount = 12;
   int elementcount = 2;
 
   // Create views and buffers to hold node positions and field values
-  Group* nodes = ds->getRoot()->createGroup("nodes");
-  View* xs = nodes->createViewAndAllocate("xs", sidre::DOUBLE_ID, nodecount);
-  View* ys = nodes->createViewAndAllocate("ys", sidre::DOUBLE_ID, nodecount);
-  View* zs = nodes->createViewAndAllocate("zs", sidre::DOUBLE_ID, nodecount);
+  sidre::Group* nodes = ds->getRoot()->createGroup("nodes");
+  sidre::View* xs =
+    nodes->createViewAndAllocate("xs", sidre::DOUBLE_ID, nodecount);
+  sidre::View* ys =
+    nodes->createViewAndAllocate("ys", sidre::DOUBLE_ID, nodecount);
+  sidre::View* zs =
+    nodes->createViewAndAllocate("zs", sidre::DOUBLE_ID, nodecount);
 
-  Group* fields = ds->getRoot()->createGroup("fields");
-  View* nodefield =
+  sidre::Group* fields = ds->getRoot()->createGroup("fields");
+  sidre::View* nodefield =
     fields->createViewAndAllocate("nodefield", sidre::INT_ID, nodecount);
-  View* eltfield =
+  sidre::View* eltfield =
     fields->createViewAndAllocate("eltfield", sidre::DOUBLE_ID, elementcount);
 
   // Set node position for two adjacent hexahedrons
@@ -318,14 +322,14 @@ DataStore* create_tiny_datastore()
   // _tiny_create_end
 }
 
-void setup_blueprint_coords(DataStore* ds, Group* coords)
+void setup_blueprint_coords(sidre::DataStore* ds, sidre::Group* coords)
 {
   // _blueprint_restructure_coords_start
   // Set up the coordinates as Mesh Blueprint requires
   coords->createViewString("type", "explicit");
   // We use prior knowledge of the layout of the original datastore
-  View* origv = ds->getRoot()->getView("nodes/xs");
-  Group* conduitval = coords->createGroup("values");
+  sidre::View* origv = ds->getRoot()->getView("nodes/xs");
+  sidre::Group* conduitval = coords->createGroup("values");
   conduitval->createView("x",
                          sidre::DOUBLE_ID,
                          origv->getNumElements(),
@@ -343,14 +347,14 @@ void setup_blueprint_coords(DataStore* ds, Group* coords)
   // _blueprint_restructure_coords_end
 }
 
-void setup_blueprint_external_coords(DataStore* ds, Group* coords)
+void setup_blueprint_external_coords(sidre::DataStore* ds, sidre::Group* coords)
 {
   // _blueprint_external_coords_start
   // Set up the coordinates as Mesh Blueprint requires
   coords->createViewString("type", "explicit");
   // We use prior knowledge of the layout of the original datastore
-  View* origv = ds->getRoot()->getView("nodes/xs");
-  Group* conduitval = coords->createGroup("values");
+  sidre::View* origv = ds->getRoot()->getView("nodes/xs");
+  sidre::Group* conduitval = coords->createGroup("values");
   conduitval->createView("x",
                          sidre::DOUBLE_ID,
                          origv->getNumElements(),
@@ -368,18 +372,18 @@ void setup_blueprint_external_coords(DataStore* ds, Group* coords)
   // _blueprint_external_coords_end
 }
 
-void setup_blueprint_topos(DataStore* ds, Group* topos)
+void setup_blueprint_topos(sidre::DataStore* ds, sidre::Group* topos)
 {
   // _blueprint_restructure_topo_start
   // Sew the nodes together into the two hexahedra, using prior knowledge.
-  Group* connmesh = topos->createGroup("mesh");
+  sidre::Group* connmesh = topos->createGroup("mesh");
   connmesh->createViewString("type", "unstructured");
   connmesh->createViewString("coordset", "coords");
-  Group* elts = connmesh->createGroup("elements");
+  sidre::Group* elts = connmesh->createGroup("elements");
   elts->createViewString("shape", "hex");
 
   // We have two eight-node hex elements, so we need 2 * 8 = 16 ints.
-  View* connectivity =
+  sidre::View* connectivity =
     elts->createViewAndAllocate("connectivity", sidre::INT_ID, 16);
 
   // The Mesh Blueprint connectivity array for a hexahedron lists four nodes on
@@ -417,13 +421,13 @@ void setup_blueprint_topos(DataStore* ds, Group* topos)
   AXOM_UNUSED_VAR(ds);
 }
 
-void setup_blueprint_fields(DataStore* ds, Group* fields)
+void setup_blueprint_fields(sidre::DataStore* ds, sidre::Group* fields)
 {
   // _blueprint_restructure_field_start
   // Set up the node-centered field
   // Get the original data
-  View* origv = ds->getRoot()->getView("fields/nodefield");
-  Group* nodefield = fields->createGroup("nodefield");
+  sidre::View* origv = ds->getRoot()->getView("fields/nodefield");
+  sidre::Group* nodefield = fields->createGroup("nodefield");
   nodefield->createViewString("association", "vertex");
   nodefield->createViewString("type", "scalar");
   nodefield->createViewString("topology", "mesh");
@@ -435,7 +439,7 @@ void setup_blueprint_fields(DataStore* ds, Group* fields)
   // Set up the element-centered field
   // Get the original data
   origv = ds->getRoot()->getView("fields/eltfield");
-  Group* eltfield = fields->createGroup("eltfield");
+  sidre::Group* eltfield = fields->createGroup("eltfield");
   eltfield->createViewString("association", "element");
   eltfield->createViewString("type", "scalar");
   eltfield->createViewString("topology", "mesh");
@@ -446,13 +450,13 @@ void setup_blueprint_fields(DataStore* ds, Group* fields)
   // _blueprint_restructure_field_end
 }
 
-void setup_blueprint_external_fields(DataStore* ds, Group* fields)
+void setup_blueprint_external_fields(sidre::DataStore* ds, sidre::Group* fields)
 {
   // _blueprint_external_field_start
   // Set up the node-centered field
   // Get the original data
-  View* origv = ds->getRoot()->getView("fields/nodefield");
-  Group* nodefield = fields->createGroup("nodefield");
+  sidre::View* origv = ds->getRoot()->getView("fields/nodefield");
+  sidre::Group* nodefield = fields->createGroup("nodefield");
   nodefield->createViewString("association", "vertex");
   nodefield->createViewString("type", "scalar");
   nodefield->createViewString("topology", "mesh");
@@ -464,7 +468,7 @@ void setup_blueprint_external_fields(DataStore* ds, Group* fields)
   // Set up the element-centered field
   // Get the original data
   origv = ds->getRoot()->getView("fields/eltfield");
-  Group* eltfield = fields->createGroup("eltfield");
+  sidre::Group* eltfield = fields->createGroup("eltfield");
   eltfield->createViewString("association", "element");
   eltfield->createViewString("type", "scalar");
   eltfield->createViewString("topology", "mesh");
@@ -475,7 +479,7 @@ void setup_blueprint_external_fields(DataStore* ds, Group* fields)
   // _blueprint_external_field_end
 }
 
-void save_as_blueprint(DataStore* ds)
+void save_as_blueprint(sidre::DataStore* ds)
 {
   // _blueprint_restructure_toplevel_start
   // Conduit needs a specific hierarchy.
@@ -484,11 +488,11 @@ void save_as_blueprint(DataStore* ds)
   std::string mesh_name = "tinymesh";
 
   // The Conduit specifies top-level groups:
-  Group* mroot = ds->getRoot()->createGroup(mesh_name);
-  Group* coords = mroot->createGroup("coordsets/coords");
-  Group* topos = mroot->createGroup("topologies");
+  sidre::Group* mroot = ds->getRoot()->createGroup(mesh_name);
+  sidre::Group* coords = mroot->createGroup("coordsets/coords");
+  sidre::Group* topos = mroot->createGroup("topologies");
   // no material sets in this example
-  Group* fields = mroot->createGroup("fields");
+  sidre::Group* fields = mroot->createGroup("fields");
   // no adjacency sets in this (single-domain) example
   // _blueprint_restructure_toplevel_end
 
@@ -534,7 +538,7 @@ void save_as_blueprint(DataStore* ds)
   // _blueprint_restructure_save_end
 }
 
-void generate_blueprint(DataStore* ds)
+void generate_blueprint(sidre::DataStore* ds)
 {
   // _blueprint_generate_toplevel_start
   // Conduit needs a specific hierarchy.
@@ -545,11 +549,11 @@ void generate_blueprint(DataStore* ds)
   std::string mesh_name = "mesh";
   std::string domain_mesh = domain_location + "/" + mesh_name;
 
-  Group* mroot = ds->getRoot()->createGroup(domain_location);
-  Group* coords = mroot->createGroup(mesh_name + "/coordsets/coords");
-  Group* topos = mroot->createGroup(mesh_name + "/topologies");
+  sidre::Group* mroot = ds->getRoot()->createGroup(domain_location);
+  sidre::Group* coords = mroot->createGroup(mesh_name + "/coordsets/coords");
+  sidre::Group* topos = mroot->createGroup(mesh_name + "/topologies");
   // no material sets in this example
-  Group* fields = mroot->createGroup(mesh_name + "/fields");
+  sidre::Group* fields = mroot->createGroup(mesh_name + "/fields");
   // no adjacency sets in this (single-domain) example
   // _blueprint_generate_toplevel_end
 
@@ -569,7 +573,7 @@ void generate_blueprint(DataStore* ds)
 
     ds->generateBlueprintIndex(domain_mesh, mesh_name, bp, 1);
 
-    Group* rootfile_grp = ds->getRoot()->getGroup("rootfile_data");
+    sidre::Group* rootfile_grp = ds->getRoot()->getGroup("rootfile_data");
     rootfile_grp->createViewString("protocol/name", "json");
     rootfile_grp->createViewString("protocol/version", "0.1");
     rootfile_grp->createViewScalar("number_of_files", 1);
@@ -589,7 +593,7 @@ void generate_blueprint(DataStore* ds)
   // _blueprint_generate_save_end
 }
 
-void generate_blueprint_to_path(DataStore* ds)
+void generate_blueprint_to_path(sidre::DataStore* ds)
 {
   // _blueprint_generate_path_start
   // Conduit needs a specific hierarchy.
@@ -600,11 +604,11 @@ void generate_blueprint_to_path(DataStore* ds)
   std::string mesh_name = "pathmesh";
   std::string domain_mesh = domain_location + "/" + mesh_name;
 
-  Group* mroot = ds->getRoot()->createGroup(domain_location);
-  Group* coords = mroot->createGroup(mesh_name + "/coordsets/coords");
-  Group* topos = mroot->createGroup(mesh_name + "/topologies");
+  sidre::Group* mroot = ds->getRoot()->createGroup(domain_location);
+  sidre::Group* coords = mroot->createGroup(mesh_name + "/coordsets/coords");
+  sidre::Group* topos = mroot->createGroup(mesh_name + "/topologies");
   // no material sets in this example
-  Group* fields = mroot->createGroup(mesh_name + "/fields");
+  sidre::Group* fields = mroot->createGroup(mesh_name + "/fields");
   // no adjacency sets in this (single-domain) example
   // _blueprint_generate_path_end
 
@@ -624,7 +628,7 @@ void generate_blueprint_to_path(DataStore* ds)
 
     ds->generateBlueprintIndex(domain_mesh, mesh_name, bp, 1);
 
-    Group* rootfile_grp = ds->getRoot()->getGroup("rootfile_data");
+    sidre::Group* rootfile_grp = ds->getRoot()->getGroup("rootfile_data");
     rootfile_grp->createViewString("protocol/name", "json");
     rootfile_grp->createViewString("protocol/version", "0.1");
     rootfile_grp->createViewScalar("number_of_files", 1);
@@ -645,7 +649,7 @@ void generate_blueprint_to_path(DataStore* ds)
 }
 
 #ifdef AXOM_USE_MPI
-void generate_spio_blueprint(DataStore* ds)
+void generate_spio_blueprint(sidre::DataStore* ds)
 {
   int comm_size;
   MPI_Comm_size(MPI_COMM_WORLD, &comm_size);
@@ -656,11 +660,11 @@ void generate_spio_blueprint(DataStore* ds)
   std::string mesh_name = "mesh";
   std::string domain_mesh = domain_location + "/" + mesh_name;
 
-  Group* mroot = ds->getRoot()->createGroup(domain_location);
-  Group* coords = mroot->createGroup(mesh_name + "/coordsets/coords");
-  Group* topos = mroot->createGroup(mesh_name + "/topologies");
+  sidre::Group* mroot = ds->getRoot()->createGroup(domain_location);
+  sidre::Group* coords = mroot->createGroup(mesh_name + "/coordsets/coords");
+  sidre::Group* topos = mroot->createGroup(mesh_name + "/topologies");
   // no material sets in this example
-  Group* fields = mroot->createGroup(mesh_name + "/fields");
+  sidre::Group* fields = mroot->createGroup(mesh_name + "/fields");
   // no adjacency sets in this (single-domain) example
   // _blueprint_spio_toplevel_end
 
@@ -671,7 +675,7 @@ void generate_spio_blueprint(DataStore* ds)
   setup_blueprint_fields(ds, fields);
 
   // _blueprint_generate_spio_start
-  IOManager writer(MPI_COMM_WORLD);
+  sidre::IOManager writer(MPI_COMM_WORLD);
 
   conduit::Node info, mesh_node, root_node;
   ds->getRoot()->createNativeLayout(mesh_node);
@@ -701,7 +705,7 @@ void generate_spio_blueprint(DataStore* ds)
   // _blueprint_generate_spio_end
 }
 
-void generate_spio_blueprint_to_path(DataStore* ds)
+void generate_spio_blueprint_to_path(sidre::DataStore* ds)
 {
   int comm_size;
   MPI_Comm_size(MPI_COMM_WORLD, &comm_size);
@@ -712,11 +716,11 @@ void generate_spio_blueprint_to_path(DataStore* ds)
   std::string mesh_name = "spiopathmesh";
   std::string domain_mesh = domain_location + "/" + mesh_name;
 
-  Group* mroot = ds->getRoot()->createGroup(domain_location);
-  Group* coords = mroot->createGroup(mesh_name + "/coordsets/coords");
-  Group* topos = mroot->createGroup(mesh_name + "/topologies");
+  sidre::Group* mroot = ds->getRoot()->createGroup(domain_location);
+  sidre::Group* coords = mroot->createGroup(mesh_name + "/coordsets/coords");
+  sidre::Group* topos = mroot->createGroup(mesh_name + "/topologies");
   // no material sets in this example
-  Group* fields = mroot->createGroup(mesh_name + "/fields");
+  sidre::Group* fields = mroot->createGroup(mesh_name + "/fields");
   // no adjacency sets in this (single-domain) example
   // _blueprint_spio_path_end
 
@@ -727,7 +731,7 @@ void generate_spio_blueprint_to_path(DataStore* ds)
   setup_blueprint_external_fields(ds, fields);
 
   // _blueprint_generate_spio_path_start
-  IOManager writer(MPI_COMM_WORLD);
+  sidre::IOManager writer(MPI_COMM_WORLD);
 
   conduit::Node info, mesh_node, root_node;
   ds->getRoot()->createNativeLayout(mesh_node);
@@ -761,7 +765,7 @@ void generate_spio_blueprint_to_path(DataStore* ds)
 }
 #endif
 
-void serial_save_datastore_and_load_copy_lower(DataStore* ds)
+void serial_save_datastore_and_load_copy_lower(sidre::DataStore* ds)
 {
 #if defined(AXOM_USE_HDF5)
   std::string protocol = "sidre_hdf5";
@@ -777,7 +781,7 @@ void serial_save_datastore_and_load_copy_lower(DataStore* ds)
   ds->getRoot()->save(filename, protocol);
   // Delete the data hierarchy under the root, then load it from the file
   ds->getRoot()->load(filename, protocol);
-  Group* additional = ds->getRoot()->createGroup("additional");
+  sidre::Group* additional = ds->getRoot()->createGroup("additional");
   additional->createGroup("yetanother");
   // Load another copy of the data store into the "additional" group
   // without first clearing all its contents
@@ -798,24 +802,24 @@ int main(int argc, char** argv)
   MPI_Init(&argc, &argv);
 #endif
 
-  DataStore* ds = create_datastore(region);
-  access_datastore(ds);
-  iterate_datastore(ds);
+  auto ds = create_datastore(region);
+  access_datastore(ds.get());
+  iterate_datastore(ds.get());
 
-  DataStore* tds = create_tiny_datastore();
-  save_as_blueprint(tds);
+  auto tds = create_tiny_datastore();
+  save_as_blueprint(tds.get());
 
-  DataStore* bds = create_tiny_datastore();
-  generate_blueprint(bds);
+  auto bds = create_tiny_datastore();
+  generate_blueprint(bds.get());
 
-  DataStore* pds = create_tiny_datastore();
-  generate_blueprint_to_path(pds);
+  auto pds = create_tiny_datastore();
+  generate_blueprint_to_path(pds.get());
 
 #ifdef AXOM_USE_MPI
-  DataStore* sds = create_tiny_datastore();
-  DataStore* spds = create_tiny_datastore();
-  generate_spio_blueprint(sds);
-  generate_spio_blueprint_to_path(spds);
+  auto sds = create_tiny_datastore();
+  auto spds = create_tiny_datastore();
+  generate_spio_blueprint(sds.get());
+  generate_spio_blueprint_to_path(spds.get());
   MPI_Finalize();
 #endif
 

@@ -1797,6 +1797,8 @@ TEST(sidre_group, copy_to_conduit_node)
       EXPECT_EQ(chld_views["d1/value"].as_string(), std::string("33.0"));
     }
   }
+
+  delete ds1;
 }
 //------------------------------------------------------------------------------
 TEST(sidre_group, save_restore_empty_datastore)
@@ -3603,7 +3605,7 @@ TEST(sidre_group, get_data_info)
   Group* gp_D = gp_C->createGroup("D");
   num_groups_chk += 1;
 
-  View* view_D1 = gp_D->createView("ext_D1", INT_ID, 10, &extdata + 10);
+  View* view_D1 = gp_D->createView("ext_D1", INT_ID, 10, extdata + 10);
   num_views_chk += 1;
   num_views_external_chk += 1;
   num_bytes_external_chk += view_D1->getTotalBytes();

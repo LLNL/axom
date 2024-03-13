@@ -802,6 +802,7 @@ void check_interp(double TOL = 1.e-9)
   // STEP 6: clean up
   delete fe;
   delete[] xc;
+  delete[] f;
   delete[] wgts;
 }
 

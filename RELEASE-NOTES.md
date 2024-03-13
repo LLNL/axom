@@ -66,6 +66,7 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 - Fixed a bug when loading Sidre groups with attributes that already exist
 - Fixed `std::locale` error when when compiling `src/axom/core/utilities/System.cpp` using nvcc
 - Include `cstdint` for higher gcc version support (e.g. gcc-13)
+- Fixed several memory leaks in `axom::Array`, `quest::Shaping` and `sidre::MFEMSidreDataCollection`
 
 ## [Version 0.8.1] - Release date 2023-08-16
 

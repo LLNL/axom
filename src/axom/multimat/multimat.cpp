@@ -27,7 +27,6 @@
   #include "RAJA/RAJA.hpp"
 #endif
 
-using namespace std;
 using namespace axom::multimat;
 
 namespace
@@ -354,8 +353,9 @@ void MultiMat::setAllocatorID(int alloc_id)
 
 void MultiMat::setSlamAllocatorID(int alloc_id)
 {
-  bool hasCellDomRelation = hasValidStaticRelation(DataLayout::CELL_DOM);
-  bool hasMatDomRelation = hasValidStaticRelation(DataLayout::MAT_DOM);
+  const bool hasCellDomRelation = hasValidStaticRelation(DataLayout::CELL_DOM);
+  const bool hasMatDomRelation = hasValidStaticRelation(DataLayout::MAT_DOM);
+
   m_slamAllocatorId = alloc_id;
   m_sets = axom::Array<RangeSetType>(m_sets, m_slamAllocatorId);
 
@@ -365,6 +365,7 @@ void MultiMat::setSlamAllocatorID(int alloc_id)
     IndBufferType(m_cellMatRel_indicesVec, m_slamAllocatorId);
   m_cellMatRel_firstIndicesVec =
     IndBufferType(m_cellMatRel_firstIndicesVec, m_slamAllocatorId);
+
   m_matCellRel_beginsVec =
     IndBufferType(m_matCellRel_beginsVec, m_slamAllocatorId);
   m_matCellRel_indicesVec =
@@ -433,7 +434,7 @@ void MultiMat::setFieldAllocatorID(int alloc_id)
   }
 }
 
-void MultiMat::setCellMatRel(const vector<bool>& vecarr, DataLayout layout)
+void MultiMat::setCellMatRel(const std::vector<bool>& vecarr, DataLayout layout)
 {
   //Setup the SLAM cell to mat relation
   //This step is necessary if the volfrac field is sparse
@@ -1802,7 +1803,7 @@ void MultiMat::print() const
   }
   sstr << "\n\n";
 
-  cout << sstr.str() << endl;
+  std::cout << sstr.str() << std::endl;
 }
 
 bool MultiMat::isValid(bool verboseOutput) const
