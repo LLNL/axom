@@ -471,7 +471,6 @@ if (ENABLE_FORTRAN)
     if("${AXOM_CONFIG_NAME}" STREQUAL "GNU-Debug-shared-mpi-openmp")
         # The gcc-11 docker image does not work, turning off for now
         set(_has_inout_fortran_example FALSE)
-        message("~~~~~~~~~~~~ DEBUG REMOVE AFTER")
     elseif("${CMAKE_Fortran_COMPILER}" MATCHES "amdflang$" AND
        CMAKE_BUILD_TYPE MATCHES "(Debug|RelWithDebInfo)")
         # The inout Fortran example fails to compile with hipcc/amdflang in debug configurations
