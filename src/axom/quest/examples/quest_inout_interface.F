@@ -76,7 +76,7 @@ contains
     real(C_DOUBLE)  :: x, y, z
     real(C_DOUBLE)  :: EPS = 1E-7
     real(C_DOUBLE) :: mesh_bb_min(3), mesh_bb_max(3), mesh_center_of_mass(3)
-    character(LEN=40) :: Format = "(I4, F8.2, F8.2, F8.2, L3)"
+    character(LEN=60) :: Format = "(I4, I4, F8.2, F8.2, F8.2, L3)"
 
     !...set parameters for the inout query
     rc = quest_inout_set_verbose(is_verbose)
@@ -109,7 +109,7 @@ contains
 
     if (rank == 0) then
       write(*,*) "** Running containment queries using quest fortran interface"
-      write(*,*) "[rank, (  x,  y,  z),   inside?]"
+      write(*,*) "[rank, id, (  x,  y,  z),   inside?]"
     end if
 
     !...run the inout query at some fixed and random points
@@ -126,7 +126,7 @@ contains
 
       ins = quest_inout_evaluate(x,y,z)
 
-      write(*,Format) rank, x, y, z, ins
+      write(*,Format) rank, i-1, x, y, z, ins
     end do
 
     !...finalize quest_inout query

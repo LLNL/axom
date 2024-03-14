@@ -34,6 +34,9 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 - Adds initial support for using Slic streams with tags
 - Adds an example that finds intersection candidate pairs between two Silo
   hexahedral meshes using either a BVH or Implicit Grid spatial index
+- Quest: Adds `setTetPredFromBoundingBox()` and `setTetPred()` functions to
+  `quest::ProEReader` and `PProEReader` that set a tet predicate, allowing
+  user code to read in a subset of a Pro/E ASCII tetrahedron mesh file.
 
 ### Changed
 - `DistributedClosestPoint` outputs are now controlled by the `setOutput` method.
