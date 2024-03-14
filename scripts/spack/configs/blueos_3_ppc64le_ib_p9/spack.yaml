@@ -304,21 +304,21 @@ spack:
 
     # Globally lock version of third party libraries
     camp:
-      require: "@2023.06.0"
+      require: "@2024.02.0"
     conduit:
-      require: "@0.8.8~shared~test~examples~utilities"
+      require: "@0.9.1~shared~test~examples~utilities"
     hdf5:
       variants: ~shared~mpi
     hypre:
       version: [2.24.0]
     mfem:
-      require: "@4.5.2"
+      require: "@4.6.0"
     raja:
-      require: "@2023.06.0~shared~examples~exercises"
+      require: "@2024.02.0~shared~examples~exercises"
     scr:
       require: "@3.0.1~shared~tests~examples"
     umpire:
-      require: "@2023.06.0~shared~examples"
+      require: "@2024.02.0~shared~examples"
 
     # Globally lock in versions of Devtools
     cmake:
