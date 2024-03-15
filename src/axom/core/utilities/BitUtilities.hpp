@@ -84,7 +84,7 @@ struct BitTraits<std::uint8_t>
  * \return The number of zeros to the right of the first set bit in \word,
  * starting with the least significant bit, or 64 if \a word == 0.
  */
-AXOM_HOST_DEVICE inline int trailingZeros(std::uint64_t word)
+AXOM_HOST_DEVICE inline constexpr int countr_zero(std::uint64_t word) noexcept
 {
   /* clang-format off */
 #if defined(__CUDA_ARCH__) && defined(AXOM_USE_CUDA)

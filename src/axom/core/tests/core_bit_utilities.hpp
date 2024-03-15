@@ -39,23 +39,23 @@ TEST(core_bit_utilities, trailingZeroes)
   constexpr int BITS = axom::utilities::BitTraits<std::uint64_t>::BITS_PER_WORD;
   ASSERT_EQ(64, BITS);
 
-  // Axom's trailingZeros will return 64 when given 0
+  // Axom's countr_zero will return 64 when given 0
   {
-    EXPECT_EQ(BITS, axom::utilities::trailingZeros(ZERO));
+    EXPECT_EQ(BITS, axom::utilities::countr_zero(ZERO));
   }
 
   // Test with a known trailing bit
   for(int i = 0; i < BITS; ++i)
   {
     std::uint64_t val = ::shifted(i);
-    EXPECT_EQ(i, axom::utilities::trailingZeros(val));
+    EXPECT_EQ(i, axom::utilities::countr_zero(val));
 
     // Value doesn't change when you set bits to left of trailing bit
     for(int j = i + 1; j < BITS; ++j)
     {
       std::uint64_t val2 = ::shifted(i) + ::shifted(j);
-      EXPECT_EQ(axom::utilities::trailingZeros(val),
-                axom::utilities::trailingZeros(val2));
+      EXPECT_EQ(axom::utilities::countr_zero(val),
+                axom::utilities::countr_zero(val2));
     }
   }
 
@@ -73,7 +73,7 @@ TEST(core_bit_utilities, trailingZeroes)
         break;
       }
     }
-    EXPECT_EQ(bit, axom::utilities::trailingZeros(rand_val));
+    EXPECT_EQ(bit, axom::utilities::countr_zero(rand_val));
   }
 }
 

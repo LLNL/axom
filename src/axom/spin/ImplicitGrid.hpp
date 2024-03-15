@@ -1061,13 +1061,13 @@ ImplicitGrid<NDIMS, ExecSpace, IndexType>::QueryObject::visitCandidates(
     // currWord now contains the resulting candidacy information
     // for our given point
     int numBits = axom::utilities::min(bitsPerWord, nbits - (iword * 64));
-    int currBit = axom::utilities::trailingZeros(currWord);
+    int currBit = axom::utilities::countr_zero(currWord);
     while(currBit < numBits)
     {
       bool found = getVisitResult(candidatePredicate,
                                   iword * BitsetType::BitsPerWord + currBit);
       currBit++;
-      currBit += axom::utilities::trailingZeros(currWord >> currBit);
+      currBit += axom::utilities::countr_zero(currWord >> currBit);
       if(found)
       {
         return;
@@ -1131,13 +1131,13 @@ ImplicitGrid<NDIMS, ExecSpace, IndexType>::QueryObject::visitCandidates(
     // currWord now contains the resulting candidacy information
     // for our given point
     int numBits = axom::utilities::min(bitsPerWord, nbits - (iword * 64));
-    int currBit = axom::utilities::trailingZeros(currWord);
+    int currBit = axom::utilities::countr_zero(currWord);
     while(currBit < numBits)
     {
       bool found = getVisitResult(candidatePredicate,
                                   iword * BitsetType::BitsPerWord + currBit);
       currBit++;
-      currBit += axom::utilities::trailingZeros(currWord >> currBit);
+      currBit += axom::utilities::countr_zero(currWord >> currBit);
       if(found)
       {
         return;
