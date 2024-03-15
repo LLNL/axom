@@ -203,7 +203,7 @@ public:
   ImplBase &getImpl() { return *m_impl; }
 
 private:
-  //!@brief Multi-somain implementation this object is under.
+  //!@brief Multi-domain implementation this object is under.
   MarchingCubes &m_mc;
 
   RuntimePolicy m_runtimePolicy;

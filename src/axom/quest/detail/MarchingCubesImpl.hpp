@@ -32,14 +32,12 @@ namespace marching_cubes
 /*!
   @brief Computations for MarchingCubesSingleDomain
 
-  Spatial dimension templating is here, to keep out of higher level
-  classes MarchCubes and MarchingCubesSingleDomain.
+  Spatial dimension and execution space are here as template
+  parameters, to keep out of higher level classes MarchingCubes and
+  MarchingCubesSingleDomain.
 
   ExecSpace is the general execution space, like axom::SEQ_EXEC and
   axom::CUDA_EXEC<256>.
-
-  See MarchingCubesImpl for the difference between that class and
-  MarchingCubesImpl.
 */
 template <int DIM, typename ExecSpace, typename SequentialExecSpace>
 class MarchingCubesImpl : public MarchingCubesSingleDomain::ImplBase
@@ -186,7 +184,6 @@ public:
     MarkCrossings_Util mcu(m_caseIds, m_fcnView, m_maskView, m_contourVal);
 
     auto order = m_caseIdsIndexer.getStrideOrder();
-    // order ^= axom::ArrayStrideOrder::BOTH; // Pick wrong ordering to test behavior.
 #if defined(AXOM_USE_RAJA)
     RAJA::RangeSegment jRange(0, m_bShape[1]);
     RAJA::RangeSegment iRange(0, m_bShape[0]);
