@@ -1058,8 +1058,7 @@ ImplicitGrid<NDIMS, ExecSpace, IndexType>::QueryObject::visitCandidates(
     {
       continue;
     }
-    // currWord now contains the resulting candidacy information
-    // for our given point
+    // currWord now contains the resulting candidacy information for our given point
     int numBits = axom::utilities::min(bitsPerWord, nbits - (iword * 64));
     int currBit = axom::utilities::countr_zero(currWord);
     while(currBit < numBits)
