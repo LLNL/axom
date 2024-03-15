@@ -1204,8 +1204,12 @@ AXOM_TYPED_TEST(core_array_for_all, device_insert)
     typename TestFixture::template DynamicTArray<DynamicArray>;
 
   // Use unified memory
-  int kernelAllocID = axom::getUmpireResourceAllocatorID(
-    umpire::resource::MemoryResourceType::Unified);
+  constexpr bool on_device = axom::execution_space<ExecSpace>::onDevice();
+  int kernelAllocID = on_device
+    ? axom::getUmpireResourceAllocatorID(
+        umpire::resource::MemoryResourceType::Unified)
+    : axom::getUmpireResourceAllocatorID(
+        umpire::resource::MemoryResourceType::Host);
 
   constexpr axom::IndexType N = 374;
 
