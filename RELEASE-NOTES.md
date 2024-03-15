@@ -59,6 +59,9 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 - Primal: `intersection_volume()` operators changed from returning a signed
   volume to an unsigned volume.
 - Primal's `BoundingBox::contains(BoundingBox)`  now returns `true` when the input is empty
+- Renamed axom's bit utility functions to conform to `C++20` standard: `popCount() -> popcount()`, 
+  `trailingZeros() -> countr_zero()` and `leadingZeros() -> countl_zero()`
+- Renamed `axom::utilities::swapEndian() -> byteswap()` to conform to `C++23` standard
 
 ### Fixed
 - quest's `SamplingShaper` now properly handles material names containing underscores
