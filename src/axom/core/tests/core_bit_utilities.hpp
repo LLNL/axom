@@ -39,23 +39,23 @@ TEST(core_bit_utilities, trailingZeroes)
   constexpr int BITS = axom::utilities::BitTraits<std::uint64_t>::BITS_PER_WORD;
   ASSERT_EQ(64, BITS);
 
-  // Axom's trailingZeros will return 64 when given 0
+  // Axom's countr_zero will return 64 when given 0
   {
-    EXPECT_EQ(BITS, axom::utilities::trailingZeros(ZERO));
+    EXPECT_EQ(BITS, axom::utilities::countr_zero(ZERO));
   }
 
   // Test with a known trailing bit
   for(int i = 0; i < BITS; ++i)
   {
     std::uint64_t val = ::shifted(i);
-    EXPECT_EQ(i, axom::utilities::trailingZeros(val));
+    EXPECT_EQ(i, axom::utilities::countr_zero(val));
 
     // Value doesn't change when you set bits to left of trailing bit
     for(int j = i + 1; j < BITS; ++j)
     {
       std::uint64_t val2 = ::shifted(i) + ::shifted(j);
-      EXPECT_EQ(axom::utilities::trailingZeros(val),
-                axom::utilities::trailingZeros(val2));
+      EXPECT_EQ(axom::utilities::countr_zero(val),
+                axom::utilities::countr_zero(val2));
     }
   }
 
@@ -73,11 +73,11 @@ TEST(core_bit_utilities, trailingZeroes)
         break;
       }
     }
-    EXPECT_EQ(bit, axom::utilities::trailingZeros(rand_val));
+    EXPECT_EQ(bit, axom::utilities::countr_zero(rand_val));
   }
 }
 
-TEST(core_bit_utilities, popCount)
+TEST(core_bit_utilities, popcount)
 {
   constexpr std::uint64_t ZERO = std::uint64_t(0);
   constexpr int BITS = axom::utilities::BitTraits<std::uint64_t>::BITS_PER_WORD;
@@ -85,16 +85,16 @@ TEST(core_bit_utilities, popCount)
 
   // Test pop count when zero bits are set
   {
-    EXPECT_EQ(0, axom::utilities::popCount(ZERO));
-    EXPECT_EQ(BITS, axom::utilities::popCount(~ZERO));
+    EXPECT_EQ(0, axom::utilities::popcount(ZERO));
+    EXPECT_EQ(BITS, axom::utilities::popcount(~ZERO));
   }
 
   // Test pop count when one bit is set
   for(int i = 0; i < BITS; ++i)
   {
     std::uint64_t val = ::shifted(i);
-    EXPECT_EQ(1, axom::utilities::popCount(val));
-    EXPECT_EQ(BITS - 1, axom::utilities::popCount(~val));
+    EXPECT_EQ(1, axom::utilities::popcount(val));
+    EXPECT_EQ(BITS - 1, axom::utilities::popcount(~val));
   }
 
   // Test pop count when two bits are set
@@ -103,8 +103,8 @@ TEST(core_bit_utilities, popCount)
     for(int j = 0; j < i; ++j)
     {
       std::uint64_t val = shifted(i) + shifted(j);
-      EXPECT_EQ(2, axom::utilities::popCount(val));
-      EXPECT_EQ(BITS - 2, axom::utilities::popCount(~val));
+      EXPECT_EQ(2, axom::utilities::popcount(val));
+      EXPECT_EQ(BITS - 2, axom::utilities::popcount(~val));
     }
   }
 
@@ -116,8 +116,8 @@ TEST(core_bit_utilities, popCount)
       for(int k = 0; k < j; ++k)
       {
         std::uint64_t val = shifted(i) + shifted(j) + shifted(k);
-        EXPECT_EQ(3, axom::utilities::popCount(val));
-        EXPECT_EQ(BITS - 3, axom::utilities::popCount(~val));
+        EXPECT_EQ(3, axom::utilities::popcount(val));
+        EXPECT_EQ(BITS - 3, axom::utilities::popcount(~val));
       }
     }
   }
@@ -136,30 +136,30 @@ TEST(core_bit_utilities, popCount)
       }
     }
 
-    EXPECT_EQ(bits, axom::utilities::popCount(val));
+    EXPECT_EQ(bits, axom::utilities::popcount(val));
   }
 }
 
-TEST(core_bit_utilities, leadingZeros)
+TEST(core_bit_utilities, countl_zero)
 {
   constexpr std::int32_t ZERO = std::int32_t(0);
   constexpr int BITS = axom::utilities::BitTraits<std::uint32_t>::BITS_PER_WORD;
   ASSERT_EQ(32, BITS);
 
-  // Axom's leadingZeros will return 32 when given 0
-  EXPECT_EQ(BITS, axom::utilities::leadingZeros(ZERO));
+  // Axom's countl_zero will return 32 when given 0
+  EXPECT_EQ(BITS, axom::utilities::countl_zero(ZERO));
 
   for(int i = 0; i < BITS; ++i)
   {
     std::int32_t val = ::shifted(i);
-    EXPECT_EQ(BITS - i - 1, axom::utilities::leadingZeros(val));
+    EXPECT_EQ(BITS - i - 1, axom::utilities::countl_zero(val));
 
     // Value doesn't change if you set bits to right of leading zero
     for(int j = 0; j < i; ++j)
     {
       std::int32_t val2 = ::shifted(i) + ::shifted(j);
-      EXPECT_EQ(axom::utilities::leadingZeros(val),
-                axom::utilities::leadingZeros(val2));
+      EXPECT_EQ(axom::utilities::countl_zero(val),
+                axom::utilities::countl_zero(val2));
     }
   }
 
@@ -177,6 +177,6 @@ TEST(core_bit_utilities, leadingZeros)
         break;
       }
     }
-    EXPECT_EQ(bit, axom::utilities::leadingZeros(rand_val));
+    EXPECT_EQ(bit, axom::utilities::countl_zero(rand_val));
   }
 }

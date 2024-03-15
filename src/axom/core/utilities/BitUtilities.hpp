@@ -84,7 +84,7 @@ struct BitTraits<std::uint8_t>
  * \return The number of zeros to the right of the first set bit in \word,
  * starting with the least significant bit, or 64 if \a word == 0.
  */
-AXOM_HOST_DEVICE inline int trailingZeros(std::uint64_t word)
+AXOM_HOST_DEVICE inline int countr_zero(std::uint64_t word) noexcept
 {
   /* clang-format off */
 #if defined(__CUDA_ARCH__) && defined(AXOM_USE_CUDA)
@@ -121,7 +121,7 @@ AXOM_HOST_DEVICE inline int trailingZeros(std::uint64_t word)
  * \accelerated
  * \return number of bits in \a word that are set to 1
  */
-AXOM_HOST_DEVICE inline int popCount(std::uint64_t word)
+AXOM_HOST_DEVICE inline int popcount(std::uint64_t word) noexcept
 {
   /* clang-format off */
 #if defined(__CUDA_ARCH__) && defined(AXOM_USE_CUDA)
@@ -160,7 +160,7 @@ AXOM_HOST_DEVICE inline int popCount(std::uint64_t word)
  * \return The number of zeros to the left of the first set bit in \word,
  * starting with the least significant bit.
  */
-AXOM_HOST_DEVICE inline std::int32_t leadingZeros(std::int32_t word)
+AXOM_HOST_DEVICE inline std::int32_t countl_zero(std::int32_t word) noexcept
 {
   /* clang-format off */
 #if defined(__CUDA_ARCH__) && defined(AXOM_USE_CUDA)
@@ -172,7 +172,7 @@ AXOM_HOST_DEVICE inline std::int32_t leadingZeros(std::int32_t word)
 #elif defined(_AXOM_CORE_USE_INTRINSICS_GCC) || defined(_AXOM_CORE_USE_INTRINSICS_PPC)
   return word != std::int32_t(0) ? __builtin_clz(word) : 32;
 #else
-  std::int32_t y;
+  std::int32_t y {};
   std::int32_t n = 32;
   y = word >> 16; if(y != 0) { n -= 16; word = y;}
   y = word >>  8; if(y != 0) { n -=  8; word = y;}
