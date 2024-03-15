@@ -166,6 +166,9 @@ public:
          Index_t rowLoc, Index_t planeLoc,
          Index_t nx, Int_t tp, Int_t nr, Int_t balance, Int_t cost);
 
+  // Destructor
+  ~Domain();
+
   //
   // ALLOCATION
   //
@@ -584,8 +587,8 @@ public:
 
 #ifdef AXOM_USE_MPI
   // Communication Work space
-  Real_t * commDataSend;
-  Real_t * commDataRecv;
+  Real_t * commDataSend {nullptr};
+  Real_t * commDataRecv {nullptr};
 
   // Maximum number of block neighbors
   MPI_Request recvRequest[26];   // 6 faces + 12 edges + 8 corners
@@ -639,9 +642,9 @@ private:
   // Region information
   Int_t m_numReg;
   Int_t m_cost;     //imbalance cost
-  Index_t * m_regElemSize;    // Size of region sets
-  Index_t * m_regNumList;     // Region number per domain element
-  Index_t * * m_regElemlist;  // region indexset
+  Index_t * m_regElemSize {nullptr};    // Size of region sets
+  Index_t * m_regNumList {nullptr};     // Region number per domain element
+  Index_t * * m_regElemlist {nullptr};  // region indexset
 
   luleshIndexData m_nodelist;        /* elemToNode connectivity */
 

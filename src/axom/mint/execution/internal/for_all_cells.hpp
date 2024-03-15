@@ -187,6 +187,9 @@ inline void for_all_cells_impl(xargs::nodeids,
   const IndexType nodeKp = m.nodeKp();
   const StackArray<IndexType, 8>& offsets = m.getCellNodeOffsetsArray();
 
+  // Note: gcc@10.3.1 emits a '-Warray-bounds' warning in callers of this function
+  // about the sizes of nodeIds and coords not matching due to the runtime switch on dimension
+
   if(dimension == 1)
   {
     for_all_cells_impl<ExecPolicy>(
@@ -452,6 +455,9 @@ inline void for_all_cells_impl(xargs::coords,
 
   const double z0 = origin[2];
   const double dz = spacing[2];
+
+  // Note: gcc@10.3.1 emits a '-Warray-bounds' warning in callers of this function
+  // about the sizes of nodeIds and coords not matching due to the runtime switch on dimension
 
   if(dimension == 1)
   {
