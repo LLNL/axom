@@ -140,26 +140,26 @@ TEST(core_bit_utilities, popcount)
   }
 }
 
-TEST(core_bit_utilities, leadingZeros)
+TEST(core_bit_utilities, countl_zero)
 {
   constexpr std::int32_t ZERO = std::int32_t(0);
   constexpr int BITS = axom::utilities::BitTraits<std::uint32_t>::BITS_PER_WORD;
   ASSERT_EQ(32, BITS);
 
-  // Axom's leadingZeros will return 32 when given 0
-  EXPECT_EQ(BITS, axom::utilities::leadingZeros(ZERO));
+  // Axom's countl_zero will return 32 when given 0
+  EXPECT_EQ(BITS, axom::utilities::countl_zero(ZERO));
 
   for(int i = 0; i < BITS; ++i)
   {
     std::int32_t val = ::shifted(i);
-    EXPECT_EQ(BITS - i - 1, axom::utilities::leadingZeros(val));
+    EXPECT_EQ(BITS - i - 1, axom::utilities::countl_zero(val));
 
     // Value doesn't change if you set bits to right of leading zero
     for(int j = 0; j < i; ++j)
     {
       std::int32_t val2 = ::shifted(i) + ::shifted(j);
-      EXPECT_EQ(axom::utilities::leadingZeros(val),
-                axom::utilities::leadingZeros(val2));
+      EXPECT_EQ(axom::utilities::countl_zero(val),
+                axom::utilities::countl_zero(val2));
     }
   }
 
@@ -177,6 +177,6 @@ TEST(core_bit_utilities, leadingZeros)
         break;
       }
     }
-    EXPECT_EQ(bit, axom::utilities::leadingZeros(rand_val));
+    EXPECT_EQ(bit, axom::utilities::countl_zero(rand_val));
   }
 }

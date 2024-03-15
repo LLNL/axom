@@ -160,7 +160,7 @@ AXOM_HOST_DEVICE inline constexpr int popcount(std::uint64_t word) noexcept
  * \return The number of zeros to the left of the first set bit in \word,
  * starting with the least significant bit.
  */
-AXOM_HOST_DEVICE inline std::int32_t leadingZeros(std::int32_t word)
+AXOM_HOST_DEVICE inline constexpr std::int32_t countl_zero(std::int32_t word) noexcept
 {
   /* clang-format off */
 #if defined(__CUDA_ARCH__) && defined(AXOM_USE_CUDA)
