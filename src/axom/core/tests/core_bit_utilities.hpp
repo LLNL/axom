@@ -77,7 +77,7 @@ TEST(core_bit_utilities, trailingZeroes)
   }
 }
 
-TEST(core_bit_utilities, popCount)
+TEST(core_bit_utilities, popcount)
 {
   constexpr std::uint64_t ZERO = std::uint64_t(0);
   constexpr int BITS = axom::utilities::BitTraits<std::uint64_t>::BITS_PER_WORD;
@@ -85,16 +85,16 @@ TEST(core_bit_utilities, popCount)
 
   // Test pop count when zero bits are set
   {
-    EXPECT_EQ(0, axom::utilities::popCount(ZERO));
-    EXPECT_EQ(BITS, axom::utilities::popCount(~ZERO));
+    EXPECT_EQ(0, axom::utilities::popcount(ZERO));
+    EXPECT_EQ(BITS, axom::utilities::popcount(~ZERO));
   }
 
   // Test pop count when one bit is set
   for(int i = 0; i < BITS; ++i)
   {
     std::uint64_t val = ::shifted(i);
-    EXPECT_EQ(1, axom::utilities::popCount(val));
-    EXPECT_EQ(BITS - 1, axom::utilities::popCount(~val));
+    EXPECT_EQ(1, axom::utilities::popcount(val));
+    EXPECT_EQ(BITS - 1, axom::utilities::popcount(~val));
   }
 
   // Test pop count when two bits are set
@@ -103,8 +103,8 @@ TEST(core_bit_utilities, popCount)
     for(int j = 0; j < i; ++j)
     {
       std::uint64_t val = shifted(i) + shifted(j);
-      EXPECT_EQ(2, axom::utilities::popCount(val));
-      EXPECT_EQ(BITS - 2, axom::utilities::popCount(~val));
+      EXPECT_EQ(2, axom::utilities::popcount(val));
+      EXPECT_EQ(BITS - 2, axom::utilities::popcount(~val));
     }
   }
 
@@ -116,8 +116,8 @@ TEST(core_bit_utilities, popCount)
       for(int k = 0; k < j; ++k)
       {
         std::uint64_t val = shifted(i) + shifted(j) + shifted(k);
-        EXPECT_EQ(3, axom::utilities::popCount(val));
-        EXPECT_EQ(BITS - 3, axom::utilities::popCount(~val));
+        EXPECT_EQ(3, axom::utilities::popcount(val));
+        EXPECT_EQ(BITS - 3, axom::utilities::popcount(~val));
       }
     }
   }
@@ -136,7 +136,7 @@ TEST(core_bit_utilities, popCount)
       }
     }
 
-    EXPECT_EQ(bits, axom::utilities::popCount(val));
+    EXPECT_EQ(bits, axom::utilities::popcount(val));
   }
 }
 

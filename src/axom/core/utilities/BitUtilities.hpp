@@ -121,7 +121,7 @@ AXOM_HOST_DEVICE inline int trailingZeros(std::uint64_t word)
  * \accelerated
  * \return number of bits in \a word that are set to 1
  */
-AXOM_HOST_DEVICE inline int popCount(std::uint64_t word)
+AXOM_HOST_DEVICE inline constexpr int popcount(std::uint64_t word) noexcept
 {
   /* clang-format off */
 #if defined(__CUDA_ARCH__) && defined(AXOM_USE_CUDA)

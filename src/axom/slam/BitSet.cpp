@@ -59,7 +59,7 @@ int BitSet::count() const
 
   for(int i = 0; i < m_data.size(); ++i)
   {
-    ctr += axom::utilities::popCount(m_data[i]);
+    ctr += axom::utilities::popcount(m_data[i]);
   }
   return ctr;
 }
