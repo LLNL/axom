@@ -142,8 +142,8 @@ class Axom(CachedCMakePackage, CudaPackage, ROCmPackage):
         depends_on("raja+cuda", when="+cuda")
 
     with when("+profiling"):
-        depends_on("adiak@0.2.2")
-        depends_on("caliper@2.8.0+adiak~papi")
+        depends_on("adiak")
+        depends_on("caliper+adiak~papi")
 
         depends_on("caliper+cuda", when="+cuda")
         depends_on("caliper~cuda", when="~cuda")
@@ -488,9 +488,9 @@ class Axom(CachedCMakePackage, CudaPackage, ROCmPackage):
 
         # optional tpls
         for dep in ("adiak", "caliper", "c2c", "mfem", "hdf5", "lua", "raja", "umpire"):
-            if "+%s" % dep in spec:
+            if spec.satisfies("^{0}".format(dep)):
                 dep_dir = get_spec_path(spec, dep, path_replacements)
-                entries.append(cmake_cache_path("%s_DIR" % dep.upper(), dep_dir))
+                entries.append(cmake_cache_path("{}_DIR".format(dep.upper()), dep_dir))
             else:
                 entries.append("# %s not built\n" % dep.upper())
 
