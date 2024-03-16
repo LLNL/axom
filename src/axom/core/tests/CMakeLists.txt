@@ -52,6 +52,7 @@ set(core_serial_tests
 set(core_test_depends
     core
     gtest
+    fmt
     )
 
 #------------------------------------------------------------------------------
