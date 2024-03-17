@@ -126,7 +126,7 @@ AXOM_HOST_DEVICE Vector<T, NDIMS> operator*(const T scalar,
 /*!
  * \brief Scalar division of vector; Scalar on rhs.
  * \param [in] vec vector instance
- * \param [in]n scalar user-supplied scalar.
+ * \param [in] scalar user-supplied scalar.
  * \return C resulting vector, \f$ \ni: C_i = vec_i / scalar, \forall i\f$
  * \pre scalar != 0.0
  */

@@ -734,7 +734,10 @@ public:
    *
    * \note Reallocation is done if the new size will exceed the capacity.
    */
-  template <typename... Args, typename Enable = std::enable_if_t<sizeof...(Args) == DIM>>
+  template <
+    typename... Args,
+    typename Enable = typename std::enable_if<
+      sizeof...(Args) == DIM && detail::all_types_are_integral<Args...>::value>::type>
   void resize(Args... args)
   {
     static_assert(std::is_default_constructible<T>::value,
@@ -746,7 +749,10 @@ public:
   }
 
   /// \overload
-  template <typename... Args, typename Enable = std::enable_if_t<sizeof...(Args) == DIM>>
+  template <
+    typename... Args,
+    typename Enable = typename std::enable_if<
+      sizeof...(Args) == DIM && detail::all_types_are_integral<Args...>::value>::type>
   void resize(ArrayOptions::Uninitialized, Args... args)
   {
     const StackArray<IndexType, DIM> dims {{static_cast<IndexType>(args)...}};
