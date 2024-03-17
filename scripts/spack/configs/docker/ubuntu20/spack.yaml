@@ -94,6 +94,11 @@ spack:
       externals:
       - spec: bzip2@1.0.6
         prefix: /usr
+    elfutils:
+      buildable: false
+      externals:
+      - spec: elfutils@0.187
+        prefix: /usr
     gettext:
       buildable: false
       externals:

@@ -114,6 +114,11 @@ spack:
       externals:
       - spec: cuda@11.1.1
         prefix: /usr/local/cuda
+    elfutils:
+      buildable: false
+      externals:
+      - spec: elfutils@0.187
+        prefix: /usr
     gettext:
       buildable: false
       externals:

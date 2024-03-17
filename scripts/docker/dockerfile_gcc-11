@@ -6,7 +6,7 @@ ARG branch=develop
 
 SHELL ["/bin/bash", "-c"]
 RUN sudo apt-get update -y
-RUN sudo apt-get install doxygen gfortran graphviz libopenblas-dev libomp-dev mpich python3-sphinx ssh texlive-full -fy
+RUN sudo apt-get install doxygen elfutils gfortran graphviz libopenblas-dev libomp-dev mpich python3-sphinx ssh texlive-full -fy
 
 WORKDIR "/home/axom"
 USER axom

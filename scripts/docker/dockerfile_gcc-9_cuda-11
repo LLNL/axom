@@ -19,7 +19,7 @@ SHELL ["/bin/bash", "-c"]
 RUN sudo apt-get update -y
 RUN sudo apt-get install -y supervisor
 RUN sudo useradd --create-home --shell /bin/bash ${USER}
-RUN sudo apt-get install doxygen gfortran graphviz language-pack-en-base less libopenblas-dev libomp-dev mpich python3-sphinx ssh texlive-full tree -fy
+RUN sudo apt-get install doxygen elfutils gfortran graphviz language-pack-en-base less libopenblas-dev libomp-dev mpich python3-sphinx ssh texlive-full tree -fy
 
 WORKDIR /opt/archives
 RUN curl -L https://github.com/gitpod-io/openvscode-server/releases/download/openvscode-server-v1.69.1/openvscode-server-v1.69.1-linux-x64.tar.gz > \
