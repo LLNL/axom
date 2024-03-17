@@ -88,6 +88,8 @@ endif()
 # newer CMake versions
 if (CONDUIT_DIR)
     axom_assert_is_directory(VARIABLE_NAME CONDUIT_DIR)
+
+    unset(CONDUIT_FOUND CACHE)
     find_dependency(Conduit REQUIRED
                     PATHS "${CONDUIT_DIR}"
                           "${CONDUIT_DIR}/lib/cmake/conduit")
