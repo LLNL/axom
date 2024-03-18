@@ -19,6 +19,11 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 
 ## [Unreleased] - Release date yyyy-mm-dd
 
+### Added
+- Adds prelimiary support for the optional `caliper` and `adiak` dependencies to axom.
+  These dependencies are added through axom's `spack` package via the new `+profiling` variant,
+  and are enabled in axom's build system via the `CALIPER_DIR` and `ADIAK_DIR` configuration paths.
+
 ### Changed
 - Upgrades `vcpkg` usage for axom's automated Windows builds to its
   [2024.03.19 release](https://github.com/microsoft/vcpkg/releases/tag/2024.03.19).
