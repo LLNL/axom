@@ -20,7 +20,11 @@
 #
 #------------------------------------------------------------------------------
 
-cmake_minimum_required(VERSION 3.20)
+if (ENABLE_HIP OR AXOM_ENABLE_HIP OR ENABLE_CUDA OR AXOM_ENABLE_CUDA)
+    cmake_minimum_required(VERSION 3.21)
+else()
+    cmake_minimum_required(VERSION 3.18)
+endif()
 
 project(using_with_cmake)
 
