@@ -112,8 +112,9 @@ Livermore Computing (LC) organization (in which we run our GitLab CI testing).
 Fortunately, you may still contribute to Axom by `forking the Axom repo
 <https://github.com/LLNL/axom/fork>`_. Forking creates a copy of the Axom
 repository that you own. You can make changes on your local copy and push them
-your fork on GitHub. When you are ready to have your Axom contribution reviewed
-ad added to the Axom project, you may create a pull request in the Axom project.
+to your fork on GitHub. When you are ready to have your Axom contribution
+reviewed and added to the Axom project, you may create a pull request in the 
+Axom project.
 
 --------------------------------------------------
 Accepting a pull request from a forked repository
