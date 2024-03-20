@@ -293,7 +293,7 @@ public:
     }
     for(int d = 0; d < DIM; ++d)
     {
-      if(v[d] < 0 || v[d] >= DIM)
+      if(v[d] >= DIM)
       {
         return false;  // Out of range.
       }
