@@ -96,8 +96,6 @@ void generate_aabbs(const mint::Mesh* mesh,
   // sanity check
   EXPECT_EQ(NDIMS, mesh->getDimension());
 
-  using BoxType = typename primal::BoundingBox<FloatType, NDIMS>;
-
   // calculate some constants
   constexpr int nodes_per_dim = 1 << NDIMS;
 
@@ -159,7 +157,6 @@ void generate_aabbs_and_centroids(
   EXPECT_EQ(NDIMS, mesh->getDimension());
 
   // initialize output arrays
-  const IndexType ncells = mesh->getNumberOfCells();
 
   using exec_policy = axom::SEQ_EXEC;
   mint::for_all_cells<exec_policy, xargs::coords>(
@@ -348,7 +345,6 @@ void check_find_bounding_boxes3d()
   auto offsets_view = offsets_device.view();
   auto counts_view = counts_device.view();
   auto query_boxes_view = query_boxes_device.view();
-  auto candidates_view = candidates_device.view();
 
   bvh.findBoundingBoxes(offsets_view,
                         counts_view,
@@ -484,7 +480,6 @@ void check_find_bounding_boxes2d()
   auto offsets_view = offsets_device.view();
   auto counts_view = counts_device.view();
   auto query_boxes_view = query_boxes_device.view();
-  auto candidates_view = candidates_device.view();
 
   bvh.findBoundingBoxes(offsets_view,
                         counts_view,
@@ -607,7 +602,6 @@ void check_find_rays3d()
   auto offsets_view = offsets_device.view();
   auto counts_view = counts_device.view();
   auto query_rays_view = query_rays_device.view();
-  auto candidates_view = candidates_device.view();
 
   bvh.findRays(offsets_view, counts_view, candidates_device, N, query_rays_view);
 
@@ -752,7 +746,6 @@ void check_find_rays2d()
   auto offsets_view = offsets_device.view();
   auto counts_view = counts_device.view();
   auto query_rays_view = query_rays_device.view();
-  auto candidates_view = candidates_device.view();
 
   bvh.findRays(offsets_view, counts_view, candidates_device, N, query_rays_view);
 
@@ -878,7 +871,6 @@ void check_find_points3d()
   // Create views of device arrays
   auto offsets_view = offsets_device.view();
   auto counts_view = counts_device.view();
-  auto candidates_view = candidates_device.view();
 
   bvh.findPoints(offsets_view,
                  counts_view,
@@ -1005,7 +997,6 @@ void check_find_points2d()
   // Create views of device arrays
   auto offsets_view = offsets_device.view();
   auto counts_view = counts_device.view();
-  auto candidates_view = candidates_device.view();
 
   bvh.findPoints(offsets_view,
                  counts_view,
@@ -1116,7 +1107,6 @@ void check_single_box2d()
   // Create views of device arrays
   auto offsets_view = offsets_device.view();
   auto counts_view = counts_device.view();
-  auto candidates_view = candidates_device.view();
 
   bvh.findPoints(offsets_view,
                  counts_view,
@@ -1210,7 +1200,6 @@ void check_single_box3d()
   // Create views of device arrays
   auto offsets_view = offsets_device.view();
   auto counts_view = counts_device.view();
-  auto candidates_view = candidates_device.view();
 
   bvh.findPoints(offsets_view,
                  counts_view,
