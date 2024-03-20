@@ -160,7 +160,7 @@ jobs:
     clean: true
     submodules: recursive
   - script:  |
-      git submodule udpate
+      git submodule update
       git submodule init
       echo "python scripts/uberenv/uberenv.py --spack-env-file=./scripts/spack/configs/linux_ubuntu_20/spack.yaml --package-final-phase=install --spack-build-mode=dev-build --run_tests"
       docker run --rm --user='root' -v `pwd`:/home/axom/axom $(Compiler_ImageName) chown -R axom /home/axom
