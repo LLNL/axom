@@ -47,6 +47,8 @@ public:
 
   RuntimePolicy runtimePolicy = RuntimePolicy::seq;
 
+  axom::IndexType repCount = 10;
+
 private:
   bool _verboseOutput {false};
   const std::map<std::string, int> strideValidator {
@@ -68,9 +70,11 @@ public:
       ->description("Enable/disable verbose output")
       ->capture_default_str();
 
-    app.add_option("--shape", shape)->description("Array shape")->expected(1, 4);
+    app.add_option("-s, --shape", shape)->description("Array shape")->expected(1, 4);
 
-    app.add_option("--ghost", ghostWidth)->description("Ghost width");
+    app.add_option("-g, --ghost", ghostWidth)->description("Ghost width");
+
+    app.add_option("-r, --repCount", repCount)->description("Number of repetitions to run");
 
     auto* strideOrderOption =
       app.add_option("--strideOrder", strideOrder)
@@ -152,6 +156,36 @@ std::string array_to_string(const T* dataPtr, int count)
   return os.str();
 }
 
+//!@brief Return allocator id suitable for the given runtime policy.
+int allocatorIdFromPolicy(axom::runtime_policy::Policy policy)
+{
+  AXOM_UNUSED_VAR(policy);
+#if defined(AXOM_USE_UMPIRE)
+  int allocatorID = policy == axom::runtime_policy::Policy::seq
+    ? axom::detail::getAllocatorID<axom::MemorySpace::Host>()
+    :
+#if defined(AXOM_RUNTIME_POLICY_USE_OPENMP)
+    policy == axom::runtime_policy::Policy::omp
+    ? axom::detail::getAllocatorID<axom::MemorySpace::Host>()
+    :
+#endif
+#if defined(AXOM_RUNTIME_POLICY_USE_CUDA)
+    policy == axom::runtime_policy::Policy::cuda
+    ? axom::detail::getAllocatorID<axom::MemorySpace::Device>()
+    :
+#endif
+#if defined(AXOM_RUNTIME_POLICY_USE_HIP)
+    policy == axom::runtime_policy::Policy::hip
+    ? axom::detail::getAllocatorID<axom::MemorySpace::Device>()
+    :
+#endif
+    axom::INVALID_ALLOCATOR_ID;
+#else
+  int allocatorID = axom::getDefaultAllocatorID();
+#endif
+  return allocatorID;
+}
+
 template <int DIM, typename ExecSpace>
 class ArrayIndexerPerfTester
 {
@@ -159,19 +193,33 @@ public:
   using Element_t = std::uint64_t;
   const Element_t m_baseFactor = 1000000;
   Element_t m_testAccumulation = 0;
-  const Element_t sequentiaTestAdd = 1;
-  const Element_t rowTestAdd = 10;
-  const Element_t columnTestAdd = 100;
-  const Element_t dynamicTestAdd = 1000;
+  const Element_t m_flatTestAdd = 1;
+  const Element_t m_rowTestAdd = 10;
+  const Element_t m_columnTestAdd = 100;
+  const Element_t m_dynamicTestAdd = 1000;
+
+  int m_allocatorId;
+
+  ArrayIndexerPerfTester ()
+  {
+    m_allocatorId = allocatorIdFromPolicy(params.runtimePolicy);
+#ifdef AXOM_USE_UMPIRE
+    umpire::ResourceManager& rm = umpire::ResourceManager::getInstance();
+    umpire::Allocator allocator = rm.getAllocator(m_allocatorId);
+    std::cout << "Allocator id " << m_allocatorId << ", using Umpire memory space " << allocator.getName() << std::endl;
+#else
+    std::cout << "Allocator id " << m_allocatorId << ", using default memory space" << std::endl;
+#endif
+  }
 
   /*!
-    @brief Time the flat-index access of every element of an array.
+    @brief Time the pointer access of every element of an array.
 
     This is the fastest we expect to visit every element.
   */
-  void runTest_flatAccess(axom::ArrayView<Element_t, DIM>& array)
+  void runTest_pointerAccess(axom::ArrayView<Element_t, DIM>& array)
   {
-    auto testAdd = sequentiaTestAdd;
+    auto testAdd = m_flatTestAdd;
     m_testAccumulation += testAdd;
     auto count = array.size();
     auto* ptr = array.data();
@@ -184,6 +232,29 @@ public:
     for(axom::IndexType i = 0; i < count; ++i)
     {
       ptr[i] += testAdd;
+    }
+#endif
+  }
+
+  /*!
+    @brief Time the flat-index access of every element of an array.
+
+    Compared to runtest_flatAccess, this includes the flatIndex overhead.
+  */
+  void runTest_flatAccess(axom::ArrayView<Element_t, DIM>& array)
+  {
+    auto testAdd = m_flatTestAdd;
+    m_testAccumulation += testAdd;
+    auto count = array.size();
+#ifdef AXOM_USE_RAJA
+    axom::for_all<ExecSpace>(
+      0,
+      count,
+      AXOM_LAMBDA(axom::IndexType i) { array.flatIndex(i) += testAdd; });
+#else
+    for(axom::IndexType i = 0; i < count; ++i)
+    {
+      array.flatIndex(i) += testAdd;
     }
 #endif
   }
@@ -205,7 +276,7 @@ public:
     axom::ArrayView<Element_t, DIM>& array)
   {
     AXOM_PERF_MARK_FUNCTION("rowMajorAccess-1D");
-    auto testAdd = rowTestAdd;
+    auto testAdd = m_rowTestAdd;
     m_testAccumulation += testAdd;
 
     const auto idxBegin = params.idxBegin;
@@ -228,7 +299,7 @@ public:
     axom::ArrayView<Element_t, DIM>& array)
   {
     AXOM_PERF_MARK_FUNCTION("rowMajorAccess-2D");
-    auto testAdd = rowTestAdd;
+    auto testAdd = m_rowTestAdd;
     m_testAccumulation += testAdd;
 
     const auto idxBegin = params.idxBegin;
@@ -259,7 +330,7 @@ public:
     axom::ArrayView<Element_t, DIM>& array)
   {
     AXOM_PERF_MARK_FUNCTION("rowMajorAccess-3D");
-    auto testAdd = rowTestAdd;
+    auto testAdd = m_rowTestAdd;
     m_testAccumulation += testAdd;
 
     const auto idxBegin = params.idxBegin;
@@ -294,25 +365,17 @@ public:
     axom::ArrayView<Element_t, DIM>& array)
   {
     AXOM_PERF_MARK_FUNCTION("rowMajorAccess-4D");
-    auto testAdd = rowTestAdd;
+    auto testAdd = m_rowTestAdd;
     m_testAccumulation += testAdd;
 
     const auto idxBegin = params.idxBegin;
     const auto idxEnd = params.idxEnd;
 #ifdef AXOM_USE_RAJA
-    for(axom::IndexType i = idxBegin[0]; i < idxEnd[0]; ++i)
-    {
-      for(axom::IndexType j = idxBegin[1]; j < idxEnd[1]; ++j)
-      {
-        for(axom::IndexType k = idxBegin[2]; k < idxEnd[2]; ++k)
-        {
-          for(axom::IndexType l = idxBegin[3]; l < idxEnd[3]; ++l)
-          {
-            array(i, j, k, l) += testAdd;
-          }
-        }
-      }
-    }
+    AXOM_UNUSED_VAR(array);
+    AXOM_UNUSED_VAR(idxBegin);
+    AXOM_UNUSED_VAR(idxEnd);
+    std::cerr << "Cannot run higher than 3D with RAJA." << std::endl;
+    std::abort();
 #else
     for(axom::IndexType i = idxBegin[0]; i < idxEnd[0]; ++i)
     {
@@ -339,7 +402,7 @@ public:
     axom::ArrayView<Element_t, DIM>& array)
   {
     AXOM_PERF_MARK_FUNCTION("columnMajorAccess-1D");
-    auto testAdd = columnTestAdd;
+    auto testAdd = m_columnTestAdd;
     m_testAccumulation += testAdd;
 
     const auto idxBegin = params.idxBegin;
@@ -362,7 +425,7 @@ public:
     axom::ArrayView<Element_t, DIM>& array)
   {
     AXOM_PERF_MARK_FUNCTION("columnMajorAccess-2D");
-    auto testAdd = columnTestAdd;
+    auto testAdd = m_columnTestAdd;
     m_testAccumulation += testAdd;
 
     const auto idxBegin = params.idxBegin;
@@ -393,7 +456,7 @@ public:
     axom::ArrayView<Element_t, DIM>& array)
   {
     AXOM_PERF_MARK_FUNCTION("columnMajorAccess-3D");
-    auto testAdd = columnTestAdd;
+    auto testAdd = m_columnTestAdd;
     m_testAccumulation += testAdd;
 
     const auto idxBegin = params.idxBegin;
@@ -428,25 +491,17 @@ public:
     axom::ArrayView<Element_t, DIM>& array)
   {
     AXOM_PERF_MARK_FUNCTION("columnMajorAccess-4D");
-    auto testAdd = columnTestAdd;
+    auto testAdd = m_columnTestAdd;
     m_testAccumulation += testAdd;
 
     const auto idxBegin = params.idxBegin;
     const auto idxEnd = params.idxEnd;
 #ifdef AXOM_USE_RAJA
-    for(axom::IndexType l = idxBegin[3]; l < idxEnd[3]; ++l)
-    {
-      for(axom::IndexType k = idxBegin[2]; k < idxEnd[2]; ++k)
-      {
-        for(axom::IndexType j = idxBegin[1]; j < idxEnd[1]; ++j)
-        {
-          for(axom::IndexType i = idxBegin[0]; i < idxEnd[0]; ++i)
-          {
-            array(i, j, k, l) += testAdd;
-          }
-        }
-      }
-    }
+    AXOM_UNUSED_VAR(array);
+    AXOM_UNUSED_VAR(idxBegin);
+    AXOM_UNUSED_VAR(idxEnd);
+    std::cerr << "Cannot run higher than 3D with RAJA." << std::endl;
+    std::abort();
 #else
     for(axom::IndexType l = idxBegin[3]; l < idxEnd[3]; ++l)
     {
@@ -477,7 +532,7 @@ public:
     axom::ArrayView<Element_t, DIM>& array)
   {
     AXOM_PERF_MARK_FUNCTION("dynamicAccess-1D");
-    auto testAdd = dynamicTestAdd;
+    auto testAdd = m_dynamicTestAdd;
     m_testAccumulation += testAdd;
 
     const auto idxBegin = params.idxBegin;
@@ -500,7 +555,7 @@ public:
     axom::ArrayView<Element_t, DIM>& array)
   {
     AXOM_PERF_MARK_FUNCTION("dynamicAccess-2D");
-    auto testAdd = dynamicTestAdd;
+    auto testAdd = m_dynamicTestAdd;
     m_testAccumulation += testAdd;
 
     const auto idxBegin = params.idxBegin;
@@ -546,7 +601,7 @@ public:
     axom::ArrayView<Element_t, DIM>& array)
   {
     AXOM_PERF_MARK_FUNCTION("dynamicAccess-3D");
-    auto testAdd = dynamicTestAdd;
+    auto testAdd = m_dynamicTestAdd;
     m_testAccumulation += testAdd;
 
     const auto idxBegin = params.idxBegin;
@@ -600,7 +655,7 @@ public:
     axom::ArrayView<Element_t, DIM>& array)
   {
     AXOM_PERF_MARK_FUNCTION("dynamicAccess-4D");
-    auto testAdd = dynamicTestAdd;
+    auto testAdd = m_dynamicTestAdd;
     m_testAccumulation += testAdd;
 
     const auto idxBegin = params.idxBegin;
@@ -617,24 +672,11 @@ public:
                                                        idxEnd[slowestDirs[2]],
                                                        idxEnd[slowestDirs[3]]};
 #ifdef AXOM_USE_RAJA
-    axom::StackArray<axom::IndexType, DIM> idx;
-    axom::IndexType& m = idx[slowestDirs[0]];
-    axom::IndexType& n = idx[slowestDirs[1]];
-    axom::IndexType& o = idx[slowestDirs[2]];
-    axom::IndexType& p = idx[slowestDirs[3]];
-    for(m = begins[0]; m < ends[0]; ++m)
-    {
-      for(n = begins[1]; n < ends[1]; ++n)
-      {
-        for(o = begins[2]; o < ends[2]; ++o)
-        {
-          for(p = begins[3]; p < ends[3]; ++p)
-          {
-            array[idx] += testAdd;
-          }
-        }
-      }
-    }
+    AXOM_UNUSED_VAR(array);
+    AXOM_UNUSED_VAR(begins);
+    AXOM_UNUSED_VAR(ends);
+    std::cerr << "Cannot run higher than 3D with RAJA." << std::endl;
+    std::abort();
 #else
     axom::StackArray<axom::IndexType, DIM> idx;
     axom::IndexType& m = idx[slowestDirs[0]];
@@ -694,7 +736,7 @@ public:
       indexer.initializeShape(shape, params.strideOrder);
     }
 
-    return axom::Array<Element_t, DIM>(shape);
+    return axom::Array<Element_t, DIM>(shape, m_allocatorId);
   }
 
   /*!
@@ -708,13 +750,14 @@ public:
   {
     assert(DIM <= params.shape.size());
 
+    ar = axom::Array<Element_t>(params.paddedSize, params.paddedSize, m_allocatorId);
+    // ar.resize(params.paddedSize);
+
     axom::StackArray<axom::IndexType, DIM> paddedShape;
     for(int d = 0; d < DIM; ++d)
     {
       paddedShape[d] = params.paddedShape[d];
     }
-
-    ar.resize(params.paddedSize);
 
     axom::ArrayIndexer<axom::IndexType, DIM> indexer;
     if(!params.slowestDirections.empty())
@@ -745,8 +788,8 @@ public:
     // Use ArrayView to test, because Array doesn't support
     // arbitrary ordering (yet).
 #if 0
-  axom::Array<Element_t, DIM> arrayMd = makeArray();
-  axom::ArrayView<Element_t, DIM> array = arrayMd.view();
+    axom::Array<Element_t, DIM> arrayMd = makeArray();
+    axom::ArrayView<Element_t, DIM> array = arrayMd.view();
 #else
     axom::Array<Element_t> array1D;
     axom::ArrayView<Element_t, DIM> array;
@@ -758,54 +801,70 @@ public:
               << double(params.realSize) / params.paddedSize << std::endl;
 
     auto count = array.size();
-    auto* ptr = array.data();
-    for(axom::IndexType i = 0; i < count; ++i)
-    {
-      ptr[i] = Element_t(i * m_baseFactor);
-    }
+    auto baseFactor = m_baseFactor;
+    axom::for_all<ExecSpace>(count, AXOM_LAMBDA(axom::IndexType i) {
+        array.flatIndex(i) = Element_t(i * baseFactor);
+      });
 
     axom::utilities::Timer flatTimer(false);
     flatTimer.start();
-    runTest_flatAccess(array);
+    for (int r = 0; r<params.repCount; ++r)
+      runTest_flatAccess(array);
     flatTimer.stop();
-    std::cout << "Sequential time   " << flatTimer.elapsedTimeInSec()
+    std::cout << "Avg flat-index time   " << flatTimer.elapsedTimeInSec()/params.repCount
               << " seconds, base" << std::endl;
+
+    auto baseTime = flatTimer.elapsedTimeInSec();
+
+    axom::utilities::Timer pointerTimer(false);
+    pointerTimer.start();
+    for (int r = 0; r<params.repCount; ++r)
+    runTest_pointerAccess(array);
+    pointerTimer.stop();
+    std::cout << "Avg pointer time   " << pointerTimer.elapsedTimeInSec()
+              << " seconds, " << std::setprecision(3)
+              << pointerTimer.elapsedTimeInSec()/baseTime
+              << 'x' << std::endl;
 
     axom::utilities::Timer rowMajorTimer(false);
     rowMajorTimer.start();
-    runTest_rowMajorAccess(array);
+    for (int r = 0; r<params.repCount; ++r)
+      runTest_rowMajorAccess(array);
     rowMajorTimer.stop();
-    std::cout << "Row-major time    " << rowMajorTimer.elapsedTimeInSec()
+    std::cout << "Avg row-major time    " << rowMajorTimer.elapsedTimeInSec()/params.repCount
               << " seconds, " << std::setprecision(3)
-              << rowMajorTimer.elapsedTimeInSec() /
-        flatTimer.elapsedTimeInSec()
+              << rowMajorTimer.elapsedTimeInSec() / baseTime
               << 'x' << std::endl;
 
     axom::utilities::Timer columnMajorTimer(false);
     columnMajorTimer.start();
-    runTest_columnMajorAccess(array);
+    for (int r = 0; r<params.repCount; ++r)
+      runTest_columnMajorAccess(array);
     columnMajorTimer.stop();
-    std::cout << "Column-major time " << columnMajorTimer.elapsedTimeInSec()
+    std::cout << "Avg column-major time " << columnMajorTimer.elapsedTimeInSec()/params.repCount
               << " seconds, " << std::setprecision(3)
-              << columnMajorTimer.elapsedTimeInSec() /
-        flatTimer.elapsedTimeInSec()
+              << columnMajorTimer.elapsedTimeInSec() / baseTime
               << 'x' << std::endl;
 
     axom::utilities::Timer dynamicTimer(false);
     dynamicTimer.start();
-    runTest_dynamicAccess(array);
+    for (int r = 0; r<params.repCount; ++r)
+      runTest_dynamicAccess(array);
     dynamicTimer.stop();
-    std::cout << "Dynamic time      " << dynamicTimer.elapsedTimeInSec()
+    std::cout << "Avg dynamic time      " << dynamicTimer.elapsedTimeInSec()/params.repCount
               << " seconds, " << std::setprecision(3)
-              << dynamicTimer.elapsedTimeInSec() /
-        flatTimer.elapsedTimeInSec()
+              << dynamicTimer.elapsedTimeInSec() / baseTime
               << 'x' << std::endl;
 
     // Verify that the elements are touched the correct number of times.
+    // (Bring the data to the host so this test doesn't rely on RAJA.)
+    auto hostAllocatorId =
+      axom::detail::getAllocatorID<axom::execution_space<axom::SEQ_EXEC>::memory_space>();
+    axom::Array<Element_t> hostArray(array1D, hostAllocatorId);
     axom::IndexType matchCount = 0;
     for(axom::IndexType i = 0; i < count; ++i)
     {
-      matchCount += (ptr[i] == Element_t(i * m_baseFactor) + m_testAccumulation);
+      matchCount += (hostArray[i] == Element_t(i * m_baseFactor) + m_testAccumulation);
     }
     if(matchCount != params.realSize)
     {
@@ -818,6 +877,9 @@ public:
 
 /*!
   @brief Run test based on dimension specified in params.
+
+  On devices, we skip DIM > 3.  We don't have the RAJA set-up for
+  higher dimensions.
 */
 template <typename ExecSpace>
 void runTest()
@@ -837,7 +899,7 @@ void runTest()
     ArrayIndexerPerfTester<3, ExecSpace> tester3D;
     tester3D.runTest_dim();
   }
-  else if(params.shape.size() == 4)
+  else if(params.shape.size() == 4 && !axom::execution_space<ExecSpace>::onDevice())
   {
     ArrayIndexerPerfTester<4, ExecSpace> tester4D;
     tester4D.runTest_dim();
@@ -863,6 +925,8 @@ int main(int argc, char** argv)
   std::cout << "Testing runtimePolicy "
             << axom::runtime_policy::policyToName(params.runtimePolicy)
             << std::endl;
+
+  std::cout << "Repetition count: " << params.repCount << std::endl;
 
   if(params.runtimePolicy == RuntimePolicy::seq)
   {

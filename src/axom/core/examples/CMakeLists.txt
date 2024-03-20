@@ -70,16 +70,27 @@ axom_add_executable(
     FOLDER      axom/core/examples )
 
 if(AXOM_ENABLE_TESTS)
-    axom_add_test(
-        NAME    core_array_perf_1d
-        COMMAND core_array_perf_ex --shape 120000 )
-    axom_add_test(
-        NAME    core_array_perf_2d
-        COMMAND core_array_perf_ex --shape 300 400 )
-    axom_add_test(
-        NAME    core_array_perf_3d
-        COMMAND core_array_perf_ex --shape 30 200 20 )
-    axom_add_test(
-        NAME    core_array_perf_4d
-        COMMAND core_array_perf_ex --shape 50 20 30 6 )
+    # Run the marching cubes example on N ranks for each enabled policy
+    set(_policies "seq")
+    if(RAJA_FOUND)
+        blt_list_append(TO _policies ELEMENTS "omp" IF AXOM_ENABLE_OPENMP)
+        blt_list_append(TO _policies ELEMENTS "cuda" IF AXOM_ENABLE_CUDA)
+        blt_list_append(TO _policies ELEMENTS "hip" IF AXOM_ENABLE_HIP)
+    endif()
+    foreach(_pol ${_policies})
+        axom_add_test(
+            NAME    "core_array_perf_1d_${_pol}"
+            COMMAND core_array_perf_ex --policy ${_pol} --shape 1200000 -r 10)
+        axom_add_test(
+            NAME    "core_array_perf_2d_${_pol}"
+            COMMAND core_array_perf_ex --policy ${_pol} --shape 1000 1200 -r 10)
+        axom_add_test(
+            NAME    "core_array_perf_3d_${_pol}"
+            COMMAND core_array_perf_ex --policy ${_pol} --shape 100 100 120 -r 10)
+        if(NOT RAJA_FOUND)
+            axom_add_test(
+                NAME    "core_array_perf_4d_${_pol}"
+                COMMAND core_array_perf_ex --policy ${_pol} --shape 50 20 30 6 )
+        endif()
+    endforeach()
 endif()
