@@ -790,10 +790,14 @@ TYPED_TEST(ImplicitGridExecTest, get_candidates_box_vectorized)
             << axom::execution_space<ExecSpace>::name()
             << " execution space for boxes in " << DIM << "D");
 
-  int kernelAllocID = axom::execution_space<ExecSpace>::allocatorID();
-  int unifiedAllocID =
-    axom::getUmpireResourceAllocatorID(umpire::resource::Unified);
-  int hostAllocID = axom::execution_space<axom::SEQ_EXEC>::allocatorID();
+  constexpr bool on_device = axom::execution_space<ExecSpace>::onDevice();
+  int kernelAllocID = on_device
+    ? axom::getUmpireResourceAllocatorID(umpire::resource::Device)
+    : axom::execution_space<ExecSpace>::allocatorID();
+  int unifiedAllocID = on_device
+    ? axom::getUmpireResourceAllocatorID(umpire::resource::Unified)
+    : axom::getUmpireResourceAllocatorID(umpire::resource::Host);
+  int hostAllocID = axom::getUmpireResourceAllocatorID(umpire::resource::Host);
 
   // Note: A 10 x 10 x 10 implicit grid in the unit cube.
   //       Grid cells have a spacing of .1 along each dimension
