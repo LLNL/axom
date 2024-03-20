@@ -304,54 +304,41 @@ HexMesh loadBlueprintHexMesh(const std::string& mesh_path,
   }
 
   // extract hexes into an axom::Array
-  int* connectivity = n_load[0]["topologies/topo/elements/connectivity"].value();
-
-  double* x_vals = n_load[0]["coordsets/coords/values/x"].value();
-  double* y_vals = n_load[0]["coordsets/coords/values/y"].value();
-  double* z_vals = n_load[0]["coordsets/coords/values/z"].value();
+  auto x_vals_h =
+    axom::ArrayView<double>(n_load[0]["coordsets/coords/values/x"].value(),
+                            num_nodes);
+  auto y_vals_h =
+    axom::ArrayView<double>(n_load[0]["coordsets/coords/values/y"].value(),
+                            num_nodes);
+  auto z_vals_h =
+    axom::ArrayView<double>(n_load[0]["coordsets/coords/values/z"].value(),
+                            num_nodes);
 
   // Move xyz values onto device
-  axom::Array<double> x_vals_arr_h(num_nodes, num_nodes, host_allocator);
-  axom::Array<double> y_vals_arr_h(num_nodes, num_nodes, host_allocator);
-  axom::Array<double> z_vals_arr_h(num_nodes, num_nodes, host_allocator);
-
-  for(int i = 0; i < num_nodes; i++)
-  {
-    x_vals_arr_h[i] = x_vals[i];
-    y_vals_arr_h[i] = y_vals[i];
-    z_vals_arr_h[i] = z_vals[i];
-  }
-
-  axom::Array<double> x_vals_arr_d = on_device
-    ? axom::Array<double>(x_vals_arr_h, kernel_allocator)
+  axom::Array<double> x_vals_d = on_device
+    ? axom::Array<double>(x_vals_h, kernel_allocator)
     : axom::Array<double>();
-  auto x_vals_view = on_device ? x_vals_arr_d.view() : x_vals_arr_h.view();
+  auto x_vals_view = on_device ? x_vals_d.view() : x_vals_h;
 
-  axom::Array<double> y_vals_arr_d = on_device
-    ? axom::Array<double>(y_vals_arr_h, kernel_allocator)
+  axom::Array<double> y_vals_d = on_device
+    ? axom::Array<double>(y_vals_h, kernel_allocator)
     : axom::Array<double>();
-  auto y_vals_view = on_device ? y_vals_arr_d.view() : y_vals_arr_h.view();
+  auto y_vals_view = on_device ? y_vals_d.view() : y_vals_h;
 
-  axom::Array<double> z_vals_arr_d = on_device
-    ? axom::Array<double>(z_vals_arr_h, kernel_allocator)
+  axom::Array<double> z_vals_d = on_device
+    ? axom::Array<double>(z_vals_h, kernel_allocator)
     : axom::Array<double>();
-  auto z_vals_view = on_device ? z_vals_arr_d.view() : z_vals_arr_h.view();
+  auto z_vals_view = on_device ? z_vals_d.view() : z_vals_h;
 
   // Move connectivity information onto device
-  axom::Array<int> connectivity_arr_h(connectivity_size,
-                                      connectivity_size,
-                                      host_allocator);
+  auto connectivity_h = axom::ArrayView<int>(
+    n_load[0]["topologies/topo/elements/connectivity"].value(),
+    connectivity_size);
 
-  for(int i = 0; i < connectivity_size; i++)
-  {
-    connectivity_arr_h[i] = connectivity[i];
-  }
-
-  axom::Array<int> connectivity_arr_d = on_device
-    ? axom::Array<int>(connectivity_arr_h, kernel_allocator)
+  axom::Array<int> connectivity_d = on_device
+    ? axom::Array<int>(connectivity_h, kernel_allocator)
     : axom::Array<int>();
-  auto connectivity_view =
-    on_device ? connectivity_arr_d.view() : connectivity_arr_h.view();
+  auto connectivity_view = on_device ? connectivity_d.view() : connectivity_h;
 
   // Initialize hex elements and bounding boxes
   const int numCells = connectivity_size / HEX_OFFSET;
@@ -407,21 +394,21 @@ HexMesh loadBlueprintHexMesh(const std::string& mesh_path,
     // Append mesh nodes
     for(int i = 0; i < num_nodes; i++)
     {
-      mesh->appendNode(x_vals[i], y_vals[i], z_vals[i]);
+      mesh->appendNode(x_vals_h[i], y_vals_h[i], z_vals_h[i]);
     }
 
     // Append mesh cells
     for(int i = 0; i < numCells; i++)
     {
       const axom::IndexType cell[] = {
-        connectivity[i * HEX_OFFSET],
-        connectivity[(i * HEX_OFFSET) + 1],
-        connectivity[(i * HEX_OFFSET) + 2],
-        connectivity[(i * HEX_OFFSET) + 3],
-        connectivity[(i * HEX_OFFSET) + 4],
-        connectivity[(i * HEX_OFFSET) + 5],
-        connectivity[(i * HEX_OFFSET) + 6],
-        connectivity[(i * HEX_OFFSET) + 7],
+        connectivity_h[i * HEX_OFFSET],
+        connectivity_h[(i * HEX_OFFSET) + 1],
+        connectivity_h[(i * HEX_OFFSET) + 2],
+        connectivity_h[(i * HEX_OFFSET) + 3],
+        connectivity_h[(i * HEX_OFFSET) + 4],
+        connectivity_h[(i * HEX_OFFSET) + 5],
+        connectivity_h[(i * HEX_OFFSET) + 6],
+        connectivity_h[(i * HEX_OFFSET) + 7],
       };
 
       mesh->appendCell(cell);
