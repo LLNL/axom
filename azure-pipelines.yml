@@ -160,11 +160,8 @@ jobs:
     clean: true
     submodules: recursive
   - script:  |
-      git submodule update
-      git submodule init
-      ls -al
-      echo "python scripts/uberenv/uberenv.py --spack-env-file=./scripts/spack/configs/linux_ubuntu_20/spack.yaml --package-final-phase=install --spack-build-mode=dev-build --run_tests"
+      echo " $(Compiler_ImageName) ./axom/scripts/azure-pipelines/spack-check.sh"
       docker run --rm --user='root' -v `pwd`:/home/axom/axom $(Compiler_ImageName) chown -R axom /home/axom
-      docker run --rm -v `pwd`:/home/axom/axom $(Compiler_ImageName) python3 ./axom/scripts/uberenv/uberenv.py --spack-env-file=./axom/scripts/spack/configs/linux_ubuntu_20/spack.yaml --package-final-phase=install --spack-build-mode=dev-build --run_tests 
+      docker run --rm -v `pwd`:/home/axom/axom $(Compiler_ImageName) ./axom/scripts/azure-pipelines/spack-check.sh
     displayName: '$(TEST_TARGET) Spack Package Test'
 
