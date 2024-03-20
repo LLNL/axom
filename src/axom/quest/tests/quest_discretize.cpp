@@ -195,10 +195,12 @@ void run_degen_segment_tests()
   // We don't know what order they'll be in, but we do know how many octahedra
   // will be in each generation.
 
-  int unifiedAllocatorID =
-    axom::getUmpireResourceAllocatorID(umpire::resource::Unified);
+  constexpr bool on_device = axom::execution_space<ExecPolicy>::onDevice();
+  int allocID = on_device
+    ? axom::getUmpireResourceAllocatorID(umpire::resource::Unified)
+    : axom::getUmpireResourceAllocatorID(umpire::resource::Host);
 
-  axom::Array<Point2D> polyline(2, 2, unifiedAllocatorID);
+  axom::Array<Point2D> polyline(2, 2, allocID);
 
   polyline[0] = {0., 0.};
   polyline[1] = {0., 0.};
@@ -282,10 +284,12 @@ void segment_test(const char* label, axom::Array<Point2D>& polyline, int len)
 template <typename ExecPolicy>
 void run_single_segment_tests()
 {
-  int unifiedAllocatorID =
-    axom::getUmpireResourceAllocatorID(umpire::resource::Unified);
+  constexpr bool on_device = axom::execution_space<ExecPolicy>::onDevice();
+  int allocID = on_device
+    ? axom::getUmpireResourceAllocatorID(umpire::resource::Unified)
+    : axom::getUmpireResourceAllocatorID(umpire::resource::Host);
 
-  axom::Array<Point2D> polyline(2, 2, unifiedAllocatorID);
+  axom::Array<Point2D> polyline(2, 2, allocID);
 
   polyline[0] = Point2D {0.5, 0.};
   polyline[1] = Point2D {1.8, 0.8};
@@ -381,11 +385,13 @@ void multi_segment_test(const char* label, axom::Array<Point2D>& polyline, int l
 template <typename ExecPolicy>
 void run_multi_segment_tests()
 {
-  int unifiedAllocatorID =
-    axom::getUmpireResourceAllocatorID(umpire::resource::Unified);
+  constexpr bool on_device = axom::execution_space<ExecPolicy>::onDevice();
+  int allocID = on_device
+    ? axom::getUmpireResourceAllocatorID(umpire::resource::Unified)
+    : axom::getUmpireResourceAllocatorID(umpire::resource::Host);
 
   constexpr int pointcount = 5;
-  axom::Array<Point2D> polyline(pointcount, pointcount, unifiedAllocatorID);
+  axom::Array<Point2D> polyline(pointcount, pointcount, allocID);
 
   polyline[0] = Point2D {1.0, 0.5};
   polyline[1] = Point2D {1.6, 0.3};
