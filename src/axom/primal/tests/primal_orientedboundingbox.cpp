@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -9,6 +9,8 @@
 #include "gtest/gtest.h"
 
 #include "axom/config.hpp"
+#include "axom/slic.hpp"
+
 #include "axom/primal/geometry/NumericArray.hpp"
 #include "axom/primal/geometry/Point.hpp"
 #include "axom/primal/geometry/Vector.hpp"
@@ -270,7 +272,7 @@ TEST(primal_OBBox, obb_test_add_box)
   obbox3.addBox(obbox4);
   EXPECT_TRUE(obbox3.contains(obbox1));
 
-  // adding invalid box should make it invalid
+  // adding empty/invalid box is a no-op
   QOBBox obbox5;
   obbox3.addBox(obbox5);
   EXPECT_FALSE(obbox5.isValid());
@@ -604,6 +606,7 @@ TEST(primal_OBBox, obb_test_furthest_point)
 int main(int argc, char* argv[])
 {
   ::testing::InitGoogleTest(&argc, argv);
+  axom::slic::SimpleLogger logger;
 
 #ifdef ORIENTEDBOUNDINGBOX_TESTER_SHOULD_SEED
   std::srand(std::time(0));

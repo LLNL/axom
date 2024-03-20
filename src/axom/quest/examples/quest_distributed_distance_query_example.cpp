@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -49,7 +49,10 @@ namespace primal = axom::primal;
 namespace mint = axom::mint;
 namespace numerics = axom::numerics;
 
-using RuntimePolicy = axom::quest::DistributedClosestPoint::RuntimePolicy;
+using RuntimePolicy = axom::runtime_policy::Policy;
+
+// MPI stuff, initialized in main()
+int my_rank = -1, num_ranks = -1;
 
 // converts the input string into an 80 character string
 // padded on both sides with '=' symbols
@@ -68,8 +71,12 @@ public:
 
   double circleRadius {1.0};
   std::vector<double> circleCenter {0.0, 0.0};
-  // TODO: Ensure that circleCenter size matches dimensionality.
-  int circlePoints {100};
+  int longPointCount {100};
+
+  // Latitudinal direction of object mesh
+  std::vector<double> latRange {-90.0, 90.0};
+  int latPointCount {20};
+
   RuntimePolicy policy {RuntimePolicy::seq};
 
   double distThreshold {std::numeric_limits<double>::max()};
@@ -82,29 +89,9 @@ public:
 
 private:
   bool m_verboseOutput {false};
-  double m_emptyRankProbability {0.};
-
-  // clang-format off
-  const std::map<std::string, RuntimePolicy> s_validPolicies
-  {
-      {"seq", RuntimePolicy::seq}
-#if defined(AXOM_USE_RAJA)
-  #ifdef AXOM_USE_OPENMP
-    , {"omp", RuntimePolicy::omp}
-  #endif
-  #if defined(AXOM_USE_CUDA) && defined(AXOM_USE_UMPIRE)
-    , {"cuda", RuntimePolicy::cuda}
-  #endif
-  #if defined(AXOM_USE_HIP) && defined(AXOM_USE_UMPIRE)
-    , {"hip", RuntimePolicy::hip}
-  #endif
-#endif
-  };
-  // clang-format on
 
 public:
   bool isVerbose() const { return m_verboseOutput; }
-  double percentEmptyRanks() const { return m_emptyRankProbability; }
 
   std::string getDCMeshName() const
   {
@@ -148,30 +135,36 @@ public:
       ->description("Enable/disable verbose output")
       ->capture_default_str();
 
-    app.add_option("--empty-rank-probability", m_emptyRankProbability)
-      ->description(
-        "Probability that a rank's data is empty "
-        "(tests code's ability to handle empty ranks)")
-      ->check(axom::CLI::Range(0., 1.))
-      ->capture_default_str();
-
     app.add_option("-r,--radius", circleRadius)
-      ->description("Radius for circle")
+      ->description("Radius for sphere")
       ->capture_default_str();
 
-    auto* circle_options =
-      app.add_option_group("circle",
-                           "Options for setting up the circle of points");
-    circle_options->add_option("--center", circleCenter)
+    auto* object_options = app.add_option_group(
+      "sphere",
+      "Options for setting up object points on the sphere");
+    object_options->add_option("--center", circleCenter)
       ->description("Center for object (x,y[,z])")
       ->expected(2, 3);
 
-    circle_options->add_option("--obj-domain-count-range", objDomainCountRange)
-      ->description("Range of object domain counts/rank (min, max)")
+    object_options->add_option("--obj-domain-count-range", objDomainCountRange)
+      ->description("Range of object domain counts per rank (min, max)")
       ->expected(2);
 
-    app.add_flag("--random-spacing,!--no-random-spacing", randomSpacing)
-      ->description("Enable/disable random spacing of circle points")
+    object_options
+      ->add_flag("--random-spacing,!--no-random-spacing", randomSpacing)
+      ->description("Enable/disable random spacing of object points")
+      ->capture_default_str();
+
+    object_options->add_option("-n,--long-point-count", longPointCount)
+      ->description("Number of points around the longitudinal direction")
+      ->capture_default_str();
+
+    object_options->add_option("--lat-range", latRange)
+      ->description("Latitude range in degrees from the equator (3D only)")
+      ->expected(2);
+
+    object_options->add_option("--lat-point-count", latPointCount)
+      ->description("Number of points in the latitudinal direction (3D only)")
       ->capture_default_str();
 
     app.add_option("-d,--dist-threshold", distThreshold)
@@ -179,14 +172,11 @@ public:
       ->description("Distance threshold to search")
       ->capture_default_str();
 
-    app.add_option("-n,--num-samples", circlePoints)
-      ->description("Number of points for circle")
-      ->capture_default_str();
-
     app.add_option("-p, --policy", policy)
       ->description("Set runtime policy for point query method")
       ->capture_default_str()
-      ->transform(axom::CLI::CheckedTransformer(s_validPolicies));
+      ->transform(
+        axom::CLI::CheckedTransformer(axom::runtime_policy::s_nameToPolicy));
 
     app.add_flag("-c,--check-results,!--no-check-results", checkResults)
       ->description(
@@ -203,26 +193,34 @@ public:
   }
 };
 
+// Input params set in main()
+Input params;
+
 /**
  *  \brief Simple wrapper to a blueprint particle mesh
  *
  *  Given a sidre Group, creates the stubs for a mesh blueptint particle mesh
+ *
+ *  BlueprintParticleMesh is used by both the object mesh and the query mesh.
  */
 struct BlueprintParticleMesh
 {
 public:
-  using Point2D = primal::Point<double, 2>;
-  using Point3D = primal::Point<double, 3>;
-  using PointArray2D = axom::Array<Point2D>;
-  using PointArray3D = axom::Array<Point3D>;
-
-  explicit BlueprintParticleMesh(sidre::Group* group = nullptr,
-                                 const std::string& coordset = "coords",
-                                 const std::string& topology = "mesh")
-    : m_coordsetName(coordset)
-    , m_topologyName(topology)
+  explicit BlueprintParticleMesh(sidre::Group* group,
+                                 const std::string& topology,
+                                 const std::string& coordset)
+    : m_topologyName(topology)
+    , m_coordsetName(coordset)
     , m_group(group)
-    , m_domainGroups()
+  {
+    MPI_Comm_rank(MPI_COMM_WORLD, &m_rank);
+    MPI_Comm_size(MPI_COMM_WORLD, &m_nranks);
+  }
+
+  explicit BlueprintParticleMesh(sidre::Group* group)
+    : m_topologyName()
+    , m_coordsetName()
+    , m_group(group)
   {
     MPI_Comm_rank(MPI_COMM_WORLD, &m_rank);
     MPI_Comm_size(MPI_COMM_WORLD, &m_nranks);
@@ -237,26 +235,26 @@ public:
   /// Gets a domain group.
   sidre::Group* domain_group(axom::IndexType groupIdx) const
   {
-    SLIC_ASSERT(size_t(groupIdx) < m_domainGroups.size());
-    return m_domainGroups[groupIdx];
+    SLIC_ASSERT(groupIdx < m_group->getNumGroups());
+    return m_group->getGroup(groupIdx);
   }
   /// Gets the parent group for the blueprint coordinate set
   sidre::Group* coords_group(axom::IndexType groupIdx) const
   {
-    return m_coordsGroups[groupIdx];
+    return domain_group(groupIdx)->getGroup("coordsets")->getGroup(m_coordsetName);
   }
   /// Gets the parent group for the blueprint mesh topology
   sidre::Group* topo_group(axom::IndexType groupIdx) const
   {
-    return m_topoGroups[groupIdx];
+    return domain_group(groupIdx)->getGroup("topologies")->getGroup(m_topologyName);
   }
   /// Gets the parent group for the blueprint fields
   sidre::Group* fields_group(axom::IndexType groupIdx) const
   {
-    return m_fieldsGroups[groupIdx];
+    return domain_group(groupIdx)->getGroup("fields");
   }
 
-  const std::string& get_topology_name() const { return m_topologyName; }
+  const std::string& getTopologyName() const { return m_topologyName; }
   const std::string& getCoordsetName() const { return m_coordsetName; }
 
   /// Gets the MPI rank for this mesh
@@ -264,30 +262,16 @@ public:
   /// Gets the number of ranks in the problem
   int getNumRanks() const { return m_nranks; }
 
-  /// Returns true if points have been added to the particle mesh
-  bool hasPoints() const
-  {
-    // return m_coordsGroup != nullptr && m_coordsGroup->hasView("values/x");
-    for(auto* cg : m_coordsGroups)
-    {
-      if(cg != nullptr && cg->hasView("values/x"))
-      {
-        return true;
-      }
-    }
-    return false;
-  }
-
-  /// Returns the number of points in a particle mesh domain
+  /*!
+    @brief Returns the number of points in a particle mesh domain
+    including ghost points.
+  */
   int numPoints(axom::IndexType dIdx) const
   {
     int rval = 0;
-    auto* cg = m_coordsGroups[dIdx];
-    //BTNG: The following if-check is probably not a use-case
-    if(cg != nullptr && cg->hasView("values/x"))
-    {
-      rval = cg->getView("values/x")->getNumElements();
-    }
+    auto* cg = coords_group(dIdx);
+    SLIC_ASSERT(cg != nullptr && cg->hasView("values/x"));
+    rval = cg->getView("values/x")->getNumElements();
     return rval;
   }
   /// Returns the number of points in the particle mesh
@@ -305,16 +289,15 @@ public:
   int dimension() const { return m_dimension; }
 
   /*!
-    @brief Read a blueprint mesh.
+    @brief Read a blueprint mesh and store it internally in m_group.
+
+    If the topology wasn't specified in the constructor, the first
+    topology from the file is used.  The coordset name will be
+    replaced with the one corresponding to the topology.
   */
   void read_blueprint_mesh(const std::string& meshFilename)
   {
     SLIC_ASSERT(!meshFilename.empty());
-
-    m_domainGroups.clear();
-    m_coordsGroups.clear();
-    m_topoGroups.clear();
-    m_fieldsGroups.clear();
 
     conduit::Node mdMesh;
     conduit::relay::mpi::io::blueprint::load_mesh(meshFilename,
@@ -326,10 +309,33 @@ public:
 
     if(domCount > 0)
     {
+      m_coordsAreStrided = mdMesh[0]
+                             .fetch_existing("topologies/mesh/elements/dims")
+                             .has_child("strides");
+      if(m_coordsAreStrided)
+      {
+        SLIC_WARNING(axom::fmt::format(
+          "Mesh '{}' is strided.  Stride support is under development.",
+          meshFilename));
+      }
+    }
+
+    if(domCount > 0)
+    {
+      if(m_topologyName.empty())
+      {
+        // No topology given.  Pick the first one.
+        m_topologyName = mdMesh[0].fetch_existing("topologies")[0].name();
+      }
+      auto topologyPath = axom::fmt::format("topologies/{}", m_topologyName);
+
+      m_coordsetName =
+        mdMesh[0].fetch_existing(topologyPath + "/coordset").as_string();
       const conduit::Node coordsetNode =
         mdMesh[0].fetch_existing("coordsets").fetch_existing(m_coordsetName);
       m_dimension = conduit::blueprint::mesh::coordset::dims(coordsetNode);
     }
+
     MPI_Allreduce(MPI_IN_PLACE, &m_dimension, 1, MPI_INT, MPI_MAX, MPI_COMM_WORLD);
     SLIC_ASSERT(m_dimension > 0);
 
@@ -345,26 +351,6 @@ public:
     bool valid = isValid();
     SLIC_ASSERT(valid);
     AXOM_UNUSED_VAR(valid);
-
-    reset_group_pointers();
-  }
-
-  void reset_group_pointers()
-  {
-    axom::IndexType domCount = m_group->getNumGroups();
-    m_domainGroups.resize(domCount, nullptr);
-    m_coordsGroups.resize(domCount, nullptr);
-    m_topoGroups.resize(domCount, nullptr);
-    m_fieldsGroups.resize(domCount, nullptr);
-    for(conduit::index_t di = 0; di < domCount; ++di)
-    {
-      m_domainGroups[di] = m_group->getGroup(di);
-      m_coordsGroups[di] =
-        m_domainGroups[di]->getGroup("coordsets")->getGroup(m_coordsetName);
-      m_topoGroups[di] =
-        m_domainGroups[di]->getGroup("topologies")->getGroup(m_topologyName);
-      m_fieldsGroups[di] = m_domainGroups[di]->getGroup("fields");
-    }
   }
 
   /*!  @brief Set the coordinate data from an array of primal Points
@@ -374,21 +360,22 @@ public:
     This method is for manually creating the mesh.  Don't use it if
     the mesh is read in.
   */
-  template <int NDIMS>
-  void setPoints(const axom::Array<primal::Point<double, NDIMS>>& pts)
+  void setPoints(axom::IndexType domainId, const axom::Array<double, 2>& pts)
   {
-    axom::IndexType domainIdx = createBlueprintStubs();
-    SLIC_ASSERT(m_domainGroups[domainIdx] != nullptr);
+    axom::IndexType localIdx = createBlueprintStubs();
+    SLIC_ASSERT(domain_group(localIdx) != nullptr);
+    domain_group(localIdx)->createViewScalar<std::int64_t>("state/domain_id",
+                                                           domainId);
 
-    const int SZ = pts.size();
+    const int SZ = pts.shape()[0];
 
     if(m_dimension == -1)
     {
-      m_dimension = NDIMS;
+      m_dimension = pts.shape()[1];
     }
     else
     {
-      SLIC_ASSERT(NDIMS == m_dimension);
+      SLIC_ASSERT(pts.shape()[1] == m_dimension);
     }
 
     // lambda to create a strided view into the buffer
@@ -400,7 +387,7 @@ public:
                                   int sz) {
       if(sz > 0)
       {
-        grp->createView(path)->attachBuffer(buf)->apply(sz, dim, NDIMS);
+        grp->createView(path)->attachBuffer(buf)->apply(sz, dim, m_dimension);
       }
       else
       {
@@ -408,32 +395,32 @@ public:
       }
     };
 
-    // create views into a shared buffer for the coordinates, with stride NDIMS
+    // create views into a shared buffer for the coordinates, with stride m_dimension
     {
-      auto* buf = m_domainGroups[domainIdx]
+      auto* buf = domain_group(localIdx)
                     ->getDataStore()
-                    ->createBuffer(sidre::DOUBLE_ID, NDIMS * SZ)
+                    ->createBuffer(sidre::DOUBLE_ID, m_dimension * SZ)
                     ->allocate();
 
-      createAndApplyView(m_coordsGroups[domainIdx], "values/x", buf, 0, SZ);
-      if(NDIMS > 1)
+      createAndApplyView(coords_group(localIdx), "values/x", buf, 0, SZ);
+      if(m_dimension > 1)
       {
-        createAndApplyView(m_coordsGroups[domainIdx], "values/y", buf, 1, SZ);
+        createAndApplyView(coords_group(localIdx), "values/y", buf, 1, SZ);
       }
-      if(NDIMS > 2)
+      if(m_dimension > 2)
       {
-        createAndApplyView(m_coordsGroups[domainIdx], "values/z", buf, 2, SZ);
+        createAndApplyView(coords_group(localIdx), "values/z", buf, 2, SZ);
       }
 
       // copy coordinate data into the buffer
-      const std::size_t nbytes = sizeof(double) * SZ * NDIMS;
+      const std::size_t nbytes = sizeof(double) * SZ * m_dimension;
       axom::copy(buf->getVoidPtr(), pts.data(), nbytes);
     }
 
     // set the default connectivity
-    // Maybe be required by an old version of visit.  May not be needed by newer versions of visit.
+    // May be required by an old version of visit.  May not be needed by newer versions of visit.
     sidre::Array<int> arr(
-      m_topoGroups[domainIdx]->createView("elements/connectivity"),
+      topo_group(localIdx)->createView("elements/connectivity"),
       SZ,
       SZ);
     for(int i = 0; i < SZ; ++i)
@@ -442,13 +429,13 @@ public:
     }
   }
 
-  template <int NDIMS>
-  axom::Array<primal::Point<double, NDIMS>> getPoints(int domainIdx)
+  template <int DIM>
+  axom::Array<primal::Point<double, DIM>> getPoints(int domainIdx)
   {
-    auto* cGroup = m_coordsGroups[domainIdx];
+    auto* cGroup = coords_group(domainIdx);
     auto* xView = cGroup->getView("values/x");
     auto* yView = cGroup->getView("values/y");
-    auto* zView = NDIMS >= 3 ? cGroup->getView("values/z") : nullptr;
+    auto* zView = DIM >= 3 ? cGroup->getView("values/z") : nullptr;
     const auto ptCount = xView->getNumElements();
     assert(xView->getStride() == 1);
     assert(yView->getStride() == 1);
@@ -457,7 +444,7 @@ public:
     double* ys = yView->getArray();
     double* zs = zView ? (double*)(zView->getArray()) : nullptr;
 
-    using PointType = primal::Point<double, NDIMS>;
+    using PointType = primal::Point<double, DIM>;
     axom::Array<PointType> pts;
     pts.resize(ptCount);
     for(int i = 0; i < ptCount; ++i)
@@ -468,14 +455,52 @@ public:
     {
       pts[i][1] = ys[i];
     }
-    if(NDIMS == 3)
+    if(DIM == 3)
     {
       for(int i = 0; i < ptCount; ++i)
       {
-        pts[i][0] = zs[i];
+        pts[i][2] = zs[i];
       }
     }
     return pts;
+  }
+
+  void printMeshSizeStats(const std::string& meshLabel) const
+  {
+    SLIC_INFO(axom::fmt::format("{} has {} points in {} domains locally",
+                                meshLabel,
+                                numPoints(),
+                                domain_count()));
+
+    auto getIntMinMax = [](int inVal, int& minVal, int& maxVal, int& sumVal) {
+      MPI_Allreduce(&inVal, &minVal, 1, MPI_INT, MPI_MIN, MPI_COMM_WORLD);
+      MPI_Allreduce(&inVal, &maxVal, 1, MPI_INT, MPI_MAX, MPI_COMM_WORLD);
+      MPI_Allreduce(&inVal, &sumVal, 1, MPI_INT, MPI_SUM, MPI_COMM_WORLD);
+    };
+
+    // Output some global mesh size stats
+    {
+      int mn, mx, sum;
+      getIntMinMax(numPoints(), mn, mx, sum);
+      SLIC_INFO(
+        axom::fmt::format("{} has {{min:{}, max:{}, sum:{}, avg:{}}} points",
+                          meshLabel,
+                          mn,
+                          mx,
+                          sum,
+                          (double)sum / num_ranks));
+    }
+    {
+      int mn, mx, sum;
+      getIntMinMax(domain_count(), mn, mx, sum);
+      SLIC_INFO(
+        axom::fmt::format("{} has {{min:{}, max:{}, sum:{}, avg:{}}} domains",
+                          meshLabel,
+                          mn,
+                          mx,
+                          sum,
+                          (double)sum / num_ranks));
+    }
   }
 
   template <typename T>
@@ -483,9 +508,16 @@ public:
   {
     for(axom::IndexType dIdx = 0; dIdx < domain_count(); ++dIdx)
     {
-      auto* fld = m_fieldsGroups[dIdx]->createGroup(fieldName);
+      auto* fld = fields_group(dIdx)->createGroup(fieldName);
       fld->createViewString("association", "vertex");
-      fld->createViewString("topology", m_topoGroups[dIdx]->getName());
+      fld->createViewString("topology", topo_group(dIdx)->getName());
+      if(m_coordsAreStrided)
+      {
+        auto* offsets = topo_group(dIdx)->getView("elements/dims/offsets");
+        auto* strides = topo_group(dIdx)->getView("elements/dims/strides");
+        fld->copyView(offsets);
+        fld->copyView(strides);
+      }
       fld->createViewAndAllocate("values",
                                  sidre::detail::SidreTT<T>::id,
                                  numPoints(dIdx));
@@ -500,12 +532,19 @@ public:
     {
       const int SZ = numPoints(dIdx);
 
-      auto* fld = m_fieldsGroups[dIdx]->createGroup(fieldName);
+      auto* fld = fields_group(dIdx)->createGroup(fieldName);
       fld->createViewString("association", "vertex");
-      fld->createViewString("topology", m_topoGroups[dIdx]->getName());
+      fld->createViewString("topology", topo_group(dIdx)->getName());
+      if(m_coordsAreStrided)
+      {
+        auto* offsets = topo_group(dIdx)->getView("elements/dims/offsets");
+        auto* strides = topo_group(dIdx)->getView("elements/dims/strides");
+        fld->copyView(offsets);
+        fld->copyView(strides);
+      }
 
       // create views into a shared buffer for the coordinates, with stride DIM
-      auto* buf = m_domainGroups[dIdx]
+      auto* buf = domain_group(dIdx)
                     ->getDataStore()
                     ->createBuffer(sidre::detail::SidreTT<T>::id, DIM * SZ)
                     ->allocate();
@@ -527,9 +566,17 @@ public:
     }
   }
 
-  bool hasField(const std::string& fieldName, int domainIdx = 0) const
+  bool hasScalarField(const std::string& fieldName, int domainIdx = 0) const
   {
-    return m_fieldsGroups[domainIdx]->hasGroup(fieldName);
+    auto* domain = m_group->getGroup(domainIdx);
+    auto* fields = domain->getGroup("fields");
+    auto has = fields->hasGroup(fieldName);
+    return has;
+  }
+
+  bool hasVectorField(const std::string& fieldName, int domainIdx = 0) const
+  {
+    return m_group->getGroup(domainIdx)->getGroup("fields")->hasGroup(fieldName);
   }
 
   template <typename T>
@@ -537,19 +584,20 @@ public:
                                          int domainIdx)
   {
     SLIC_ASSERT_MSG(
-      domainIdx >= 0 && size_t(domainIdx) < m_domainGroups.size(),
+      domainIdx >= 0 && axom::IndexType(domainIdx) < domain_count(),
       axom::fmt::format("Rank {} has no domain {}, only {} domains",
                         m_rank,
                         domainIdx,
-                        m_domainGroups.size()));
+                        domain_count()));
 
-    T* data = hasField(fieldName)
-      ? static_cast<T*>(m_fieldsGroups[domainIdx]
-                          ->getView(axom::fmt::format("{}/values", fieldName))
-                          ->getVoidPtr())
-      : nullptr;
+    auto* domain = m_group->getGroup(domainIdx);
+    auto* fields = domain->getGroup("fields");
+    auto* field = fields->getGroup(fieldName);
+    T* data =
+      field ? static_cast<T*>(field->getView("values")->getVoidPtr()) : nullptr;
 
-    return axom::ArrayView<T>(data, numPoints(domainIdx));
+    return field ? axom::ArrayView<T>(data, numPoints(domainIdx))
+                 : axom::ArrayView<T>();
   }
 
   template <typename T>
@@ -557,23 +605,64 @@ public:
                                          int domainIdx)
   {
     SLIC_ASSERT_MSG(
-      domainIdx >= 0 && size_t(domainIdx) < m_domainGroups.size(),
+      domainIdx >= 0 && axom::IndexType(domainIdx) < domain_count(),
       axom::fmt::format("Rank {} has only {} domains, no domain index {}",
                         m_rank,
-                        m_domainGroups.size(),
+                        domain_count(),
                         domainIdx));
 
     // Note: the implementation currently assumes that the field data is
     // interleaved, so it is safe to get a pointer to the beginning of the
     // x-coordinate's data. This will be relaxed in the future, and we will
     // need to modify this implementation accordingly.
-    T* data = hasField(fieldName)
-      ? static_cast<T*>(m_fieldsGroups[domainIdx]
-                          ->getView(axom::fmt::format("{}/values/x", fieldName))
-                          ->getVoidPtr())
-      : nullptr;
+    T* data = nullptr;
+    axom::IndexType npts = 0;
+    bool has =
+      m_group->getGroup(domainIdx)->getGroup("fields")->hasGroup(fieldName);
+    if(has)
+    {
+      auto xView =
+        m_group->getGroup(domainIdx)->getGroup("fields")->getGroup(fieldName)->getView(
+          "values/x");
+      data = static_cast<T*>(xView->getVoidPtr());
+      npts = xView->getNumElements();
+    }
+    return axom::ArrayView<T>(data, npts);
+  }
 
-    return axom::ArrayView<T>(data, numPoints(domainIdx));
+  /// Returns an array containing the positions of the mesh vertices
+  axom::Array<double, 2> getVertexPositions(axom::IndexType domainIdx)
+  {
+    sidre::Group* cvg = getDomain(domainIdx)->getGroup(
+      axom::fmt::format("coordsets/{}/values", getCoordsetName()));
+    int ndim = cvg->getNumViews();
+    sidre::View* xv = cvg->getView("x");
+    sidre::View* yv = cvg->getView("y");
+    sidre::View* zv = ndim == 3 ? cvg->getView("z") : nullptr;
+    axom::IndexType npts = xv->getNumElements();
+    double* xp = xv->getData();
+    double* yp = yv->getData();
+    double* zp = zv ? (double*)(zv->getData()) : nullptr;
+    double* xyzs[3] {xp, yp, zp};
+    axom::Array<double, 2> rval(npts, ndim);
+    for(int i = 0; i < npts; ++i)
+    {
+      for(int d = 0; d < ndim; ++d)
+      {
+        rval[i][d] = xyzs[d][i];
+      }
+    }
+    return rval;
+  }
+
+  sidre::Group* getDomain(axom::IndexType domain)
+  {
+    return m_group->getGroup(domain);
+  }
+  sidre::Group* getFields(axom::IndexType domainIdx)
+  {
+    auto* fields = m_group->getGroup(domainIdx)->getGroup("fields");
+    return fields;
   }
 
   /// Checks whether the blueprint is valid and prints diagnostics
@@ -589,7 +678,6 @@ public:
         slic::flushStreams();
         return false;
       }
-      // info.print();
     }
     return true;
   }
@@ -634,29 +722,19 @@ private:
     topoGroup->createViewString("type", "unstructured");
     topoGroup->createViewString("elements/shape", "point");
 
-    auto* fieldsGroup = domainGroup->createGroup("fields");
+    domainGroup->createGroup("fields");
+    domainGroup->createGroup("state");
 
-    domainGroup->createViewScalar<std::int64_t>("state/domain_id", m_rank);
-
-    m_domainGroups.push_back(domainGroup);
-    m_coordsGroups.push_back(coordsGroup);
-    m_topoGroups.push_back(topoGroup);
-    m_fieldsGroups.push_back(fieldsGroup);
-
-    return axom::IndexType(m_domainGroups.size() - 1);
+    return m_group->getNumGroups() - 1;
   }
 
 private:
-  const std::string m_coordsetName;
-  const std::string m_topologyName;
+  //!@brief Whether stride/offsets are given for blueprint mesh coordinates data.
+  bool m_coordsAreStrided = false;
+  std::string m_topologyName;
+  std::string m_coordsetName;
   /// Parent group for the entire mesh
   sidre::Group* m_group;
-  /// Group for each domain in multidomain mesh
-  std::vector<sidre::Group*> m_domainGroups;
-
-  std::vector<sidre::Group*> m_coordsGroups;
-  std::vector<sidre::Group*> m_topoGroups;
-  std::vector<sidre::Group*> m_fieldsGroups;
 
   int m_rank;
   int m_nranks;
@@ -670,9 +748,7 @@ private:
 class ObjectMeshWrapper
 {
 public:
-  using Circle = primal::Sphere<double, 2>;
-
-  ObjectMeshWrapper(sidre::Group* group) : m_objectMesh(group)
+  ObjectMeshWrapper(sidre::Group* group) : m_objectMesh(group, "mesh", "coords")
   {
     SLIC_ASSERT(group != nullptr);
   }
@@ -682,147 +758,10 @@ public:
   /// Get a pointer to the root group for this mesh
   sidre::Group* getBlueprintGroup() const { return m_objectMesh.root_group(); }
 
+  std::string getTopologyName() const { return m_objectMesh.getTopologyName(); }
   std::string getCoordsetName() const { return m_objectMesh.getCoordsetName(); }
 
   void setVerbosity(bool verbose) { m_verbose = verbose; }
-
-  /**
-   * Generates a collection of \a numPoints points along a circle.
-   * Point spacing can be random (default) or uniform.
-   */
-  void generateCircleMesh(const Circle& circle,
-                          int totalNumPoints,
-                          int localDomainCount,
-                          bool randomSpacing = true)
-  {
-    using axom::utilities::random_real;
-
-    constexpr int DIM = 2;
-    using PointType = primal::Point<double, DIM>;
-    using PointArray = axom::Array<PointType>;
-
-    int rank = m_objectMesh.getRank();
-    int nranks = m_objectMesh.getNumRanks();
-
-    // perform scan on ranks to compute totalNumPoints, thetaStart and thetaEnd
-    axom::Array<int> sums(nranks, nranks);
-    {
-      axom::Array<int> indivDomainCounts(nranks, nranks);
-      indivDomainCounts.fill(-1);
-      MPI_Allgather(&localDomainCount,
-                    1,
-                    MPI_INT,
-                    indivDomainCounts.data(),
-                    1,
-                    MPI_INT,
-                    MPI_COMM_WORLD);
-
-      SLIC_DEBUG_IF(m_verbose,
-                    axom::fmt::format("After all gather: [{}]",
-                                      axom::fmt::join(indivDomainCounts, ",")));
-
-      sums[0] = indivDomainCounts[0];
-      for(int i = 1; i < nranks; ++i)
-      {
-        sums[i] = sums[i - 1] + indivDomainCounts[i];
-      }
-      // If no rank has any domains, force last one to 1 domain.
-      if(sums[nranks - 1] == 0)
-      {
-        sums[nranks - 1] = 1;
-        if(rank == nranks - 1)
-        {
-          localDomainCount = 1;
-        }
-      }
-    }
-
-    SLIC_DEBUG_IF(
-      m_verbose,
-      axom::fmt::format("After scan: [{}]", axom::fmt::join(sums, ",")));
-
-    int globalDomainCount = sums[nranks - 1];
-    totalNumPoints = std::max(totalNumPoints, globalDomainCount);
-    int ptsPerDomain = totalNumPoints / globalDomainCount;
-    int domainsWithExtraPt = totalNumPoints % globalDomainCount;
-
-    int myDomainBegin = rank == 0 ? 0 : sums[rank - 1];
-    int myDomainEnd = sums[rank];
-    assert(myDomainEnd - myDomainBegin == localDomainCount);
-
-    double radius = circle.getRadius();
-    const auto& center = circle.getCenter();
-    const double avgAng = 2. * M_PI / totalNumPoints;
-
-    for(int di = myDomainBegin; di < myDomainEnd; ++di)
-    {
-      int pBegin = di * ptsPerDomain + std::min(di, domainsWithExtraPt);
-      int pEnd = (di + 1) * ptsPerDomain + std::min((di + 1), domainsWithExtraPt);
-      int domainPointCount = pEnd - pBegin;
-      PointArray pts(0, domainPointCount);
-
-      for(int pi = pBegin; pi < pEnd; ++pi)
-      {
-        const double ang = randomSpacing
-          ? random_real(avgAng * pBegin, avgAng * pEnd)
-          : pi * avgAng;
-        const double rsinT = center[1] + radius * std::sin(ang);
-        const double rcosT = center[0] + radius * std::cos(ang);
-        pts.push_back(PointType {rcosT, rsinT});
-      }
-      m_objectMesh.setPoints(pts);
-    }
-
-    axom::slic::flushStreams();
-    SLIC_ASSERT(m_objectMesh.isValid());
-  }
-
-  /**
-   * Change cp_domain data from a local index to a global domain index
-   * by adding rank offsets.
-   * This is an optional step to transform domain ids verification.
-   */
-  void add_rank_offset_to_cp_domain_ids(conduit::Node& queryMesh)
-  {
-    int nranks = m_objectMesh.getNumRanks();
-
-    int localDomainCount = m_objectMesh.domain_count();
-
-    // perform scan on ranks to compute totalNumPoints, thetaStart and thetaEnd
-    axom::Array<int> starts(nranks, nranks);
-    {
-      axom::Array<int> indivDomainCounts(nranks, nranks);
-      indivDomainCounts.fill(-1);
-      MPI_Allgather(&localDomainCount,
-                    1,
-                    MPI_INT,
-                    indivDomainCounts.data(),
-                    1,
-                    MPI_INT,
-                    MPI_COMM_WORLD);
-      starts[0] = 0;
-      for(int i = 1; i < nranks; ++i)
-      {
-        starts[i] = starts[i - 1] + indivDomainCounts[i];
-      }
-    }
-
-    for(conduit::Node& dom : queryMesh.children())
-    {
-      auto& fields = dom.fetch_existing("fields");
-      auto cpDomainIdxs =
-        fields.fetch_existing("cp_domain_index/values").as_int_array();
-      auto cpRanks = fields.fetch_existing("cp_rank/values").as_int_array();
-      for(int i = 0; i < cpDomainIdxs.number_of_elements(); ++i)
-      {
-        const auto& r = cpRanks[i];
-        if(r >= 0)
-        {
-          cpDomainIdxs[i] += starts[cpRanks[i]];
-        }
-      }
-    }
-  }
 
   /// Outputs the object mesh to disk
   void saveMesh(const std::string& filename = "object_mesh")
@@ -841,52 +780,21 @@ private:
 class QueryMeshWrapper
 {
 public:
-  using Circle = primal::Sphere<double, 2>;
-
   //!@brief Construct with blueprint mesh.
   QueryMeshWrapper(sidre::Group* group, const std::string& meshFilename)
     : m_queryMesh(group)
   {
     // Test reading in multidomain mesh.
     m_queryMesh.read_blueprint_mesh(meshFilename);
-    setupParticleMesh();
+    // setupParticleMesh();
   }
 
   BlueprintParticleMesh& getParticleMesh() { return m_queryMesh; }
 
   sidre::Group* getBlueprintGroup() const { return m_queryMesh.root_group(); }
 
+  std::string getTopologyName() const { return m_queryMesh.getTopologyName(); }
   std::string getCoordsetName() const { return m_queryMesh.getCoordsetName(); }
-
-  /// Returns an array containing the positions of the mesh vertices
-  template <typename PointArray>
-  PointArray getVertexPositions(int domainIdx)
-  {
-    // SLIC_ERROR("TODO: get a PointArray from a sidre coordset/values group.");
-    sidre::Group* cvg = m_queryMesh.domain_group(domainIdx)->getGroup(
-      axom::fmt::format("coordsets/{}/values", m_queryMesh.getCoordsetName()));
-    int ndim = cvg->getNumViews();
-    sidre::View* xv = cvg->getView("x");
-    sidre::View* yv = cvg->getView("y");
-    sidre::View* zv = ndim == 3 ? cvg->getView("z") : nullptr;
-    axom::IndexType npts = xv->getNumElements();
-    double* xp = xv->getData();
-    double* yp = yv->getData();
-    double* zp = zv ? (double*)(zv->getData()) : nullptr;
-    double* xyzs[3] {xp, yp, zp};
-    PointArray rval(npts, npts);
-    for(int d = 0; d < ndim; ++d)
-    {
-      double* vs = xyzs[d];
-      for(int i = 0; i < npts; ++i)
-      {
-        rval[i][d] = vs[i];
-      }
-    }
-    typename PointArray::value_type pt;
-    axom::primal::Point<double, PointArray::value_type::DIMENSION> pt1;
-    return rval;
-  }
 
   /// Saves the mesh to disk
   void saveMesh(const std::string& filename)
@@ -934,30 +842,45 @@ public:
       sidre::Group& dstFieldsGroup = *domGroup.getGroup("fields");
       const conduit::Node& srcFieldsNode = domNode.fetch_existing("fields");
       {
+        if(!m_queryMesh.hasScalarField("cp_rank"))
+        {
+          m_queryMesh.registerNodalScalarField<axom::IndexType>("cp_rank");
+        }
         auto dst = dstFieldsGroup.getGroup("cp_rank");
         auto src = srcFieldsNode.fetch_existing("cp_rank");
         bool goodImport = dst->importConduitTree(src);
-        ;
         SLIC_ASSERT(goodImport);
         AXOM_UNUSED_VAR(goodImport);
       }
       {
+        if(!m_queryMesh.hasScalarField("cp_index"))
+        {
+          m_queryMesh.registerNodalScalarField<axom::IndexType>("cp_index");
+        }
         auto dst = dstFieldsGroup.getGroup("cp_index");
         auto src = srcFieldsNode.fetch_existing("cp_index");
         bool goodImport = dst->importConduitTree(src);
-        ;
         SLIC_ASSERT(goodImport);
         AXOM_UNUSED_VAR(goodImport);
       }
+      if(srcFieldsNode.has_child("cp_domain_index"))
       {
-        auto dst = dstFieldsGroup.getGroup("cp_domain_index");
+        if(!m_queryMesh.hasScalarField("cp_domain_index"))
+        {
+          m_queryMesh.registerNodalScalarField<axom::IndexType>(
+            "cp_domain_index");
+        }
         auto src = srcFieldsNode.fetch_existing("cp_domain_index");
+        auto dst = dstFieldsGroup.getGroup("cp_domain_index");
         bool goodImport = dst->importConduitTree(src);
-        ;
         SLIC_ASSERT(goodImport);
         AXOM_UNUSED_VAR(goodImport);
       }
       {
+        if(!m_queryMesh.hasVectorField("cp_coords"))
+        {
+          m_queryMesh.registerNodalVectorField<double>("cp_coords");
+        }
         auto dstGroup = dstFieldsGroup.getGroup("cp_coords");
         auto srcNode = srcFieldsNode.fetch_existing("cp_coords");
         int dim = srcNode.fetch_existing("values").number_of_children();
@@ -976,23 +899,6 @@ public:
         }
       }
     }
-
-    m_queryMesh.reset_group_pointers();
-    for(axom::IndexType di = 0; di < m_queryMesh.domain_count(); ++di)
-    {
-      assert(m_queryMesh.domain_group(di) ==
-             m_queryMesh.root_group()->getGroup(di));
-      assert(m_queryMesh.coords_group(di) ==
-             m_queryMesh.domain_group(di)
-               ->getGroup("coordsets")
-               ->getGroup(m_queryMesh.getCoordsetName()));
-      assert(m_queryMesh.topo_group(di) ==
-             m_queryMesh.domain_group(di)
-               ->getGroup("topologies")
-               ->getGroup(m_queryMesh.get_topology_name()));
-      assert(m_queryMesh.fields_group(di) ==
-             m_queryMesh.domain_group(di)->getGroup("fields"));
-    }
   }
 
   /**
@@ -1000,21 +906,21 @@ public:
    * - check that points within threshold have a closest point
    *   on the object.
    * - check that found closest-point is near its corresponding
-   *   closest point on the circle (within tolerance)
+   *   closest point on the sphere (within tolerance)
    *
    * Return number of errors found on the local mesh partition.
    * Populate "error_flag" field with the number of errors, for
    * visualization.
    *
-   * Randomized circle points (--random-spacing switch) can cause
-   * false positives, so when it's on, distance inaccuracy is a warning
-   * (not an error) for the purpose of checking.
+   * Randomizing points (--random-spacing switch) can cause false
+   * positives, so when it's on, distance inaccuracy is a warning (not
+   * an error) for the purpose of checking.
    */
-  template <int NDIMS>
-  int checkClosestPoints(const Circle& circle, const Input& params)
+  template <int DIM>
+  int checkClosestPoints(const axom::primal::Sphere<double, DIM>& sphere,
+                         const Input& params)
   {
-    using PointType = Circle::PointType;
-    using PointArray = axom::Array<PointType>;
+    using PointType = axom::primal::Point<double, DIM>;
 
     m_queryMesh.registerNodalScalarField<axom::IndexType>("error_flag");
 
@@ -1022,14 +928,14 @@ public:
     int sumWarningCount = 0;
     for(axom::IndexType dIdx = 0; dIdx < m_queryMesh.domain_count(); ++dIdx)
     {
-      PointArray queryPts = m_queryMesh.getPoints<NDIMS>(dIdx);
+      auto queryPts = m_queryMesh.getPoints<DIM>(dIdx);
 
       axom::ArrayView<PointType> cpCoords =
         m_queryMesh.getNodalVectorField<PointType>("cp_coords", dIdx);
+      SLIC_INFO(axom::fmt::format("Closest points ({}):", cpCoords.size()));
 
       axom::ArrayView<axom::IndexType> cpIndices =
         m_queryMesh.getNodalScalarField<axom::IndexType>("cp_index", dIdx);
-      SLIC_INFO(axom::fmt::format("Closest points ({}):", cpCoords.size()));
 
       axom::ArrayView<axom::IndexType> errorFlag =
         m_queryMesh.getNodalScalarField<axom::IndexType>("error_flag", dIdx);
@@ -1043,15 +949,20 @@ public:
       }
 
       /*
-        Allowable slack is half the arclength between 2 adjacent circle
-        points.  A query point on the circle can correctly have that
+        Allowable slack is half the arclength between 2 adjacent object
+        points.  A query point on the object can correctly have that
         closest-distance, even though the analytical distance is zero.
         If spacing is random, distance between adjacent points is not
         predictable, leading to false positives.  We don't claim errors
         for this in when using random.
       */
-      const double avgObjectRes =
-        2 * M_PI * params.circleRadius / params.circlePoints;
+      const double longSpacing =
+        2 * M_PI * params.circleRadius / params.longPointCount;
+      const double latSpacing = params.circleRadius * M_PI / 180 *
+        (params.latRange[1] - params.latRange[0]) / params.latPointCount;
+      const double avgObjectRes = DIM == 2
+        ? longSpacing
+        : std::sqrt(longSpacing * longSpacing + latSpacing * latSpacing);
       const double allowableSlack = avgObjectRes / 2;
 
       using IndexSet = slam::PositionSet<>;
@@ -1061,7 +972,7 @@ public:
 
         const auto& qPt = queryPts[i];
         const auto& cpCoord = cpCoords[i];
-        double analyticalDist = std::fabs(circle.computeSignedDistance(qPt));
+        double analyticalDist = std::fabs(sphere.computeSignedDistance(qPt));
         const bool closestPointFound = (cpIndices[i] == -1);
         if(closestPointFound)
         {
@@ -1090,14 +1001,16 @@ public:
                                 cpCoord));
           }
 
-          if(!axom::utilities::isNearlyEqual(circle.computeSignedDistance(cpCoord),
+          if(!axom::utilities::isNearlyEqual(sphere.computeSignedDistance(cpCoord),
                                              0.0))
           {
             errf = true;
-            SLIC_INFO(axom::fmt::format(
-              "***Error: Closest point ({}) for index {} is not on the circle.",
-              cpCoords[i],
-              i));
+            SLIC_INFO(
+              axom::fmt::format("***Error: Closest point ({}) for index {} "
+                                "({}) is not on the sphere.",
+                                cpCoords[i],
+                                i,
+                                qPt));
           }
 
           double dist = sqrt(primal::squared_distance(qPt, cpCoord));
@@ -1106,19 +1019,24 @@ public:
             if(params.randomSpacing)
             {
               ++sumWarningCount;
-              SLIC_INFO(axom::fmt::format(
-                "***Warning: Closest distance for index {} is {}, off by {}.",
-                i,
-                dist,
-                dist - analyticalDist));
+              SLIC_INFO(
+                axom::fmt::format("***Warning: Closest distance for {} (index "
+                                  "{}, cp {}) is {}, off by {}.",
+                                  qPt,
+                                  i,
+                                  cpCoords[i],
+                                  dist,
+                                  dist - analyticalDist));
             }
             else
             {
               errf = true;
               SLIC_INFO(
-                axom::fmt::format("***Error: Closest distance for index {} is "
-                                  "{}, off by {}.",
+                axom::fmt::format("***Warning: Closest distance for {} (index "
+                                  "{}, cp {}) is {}, off by {}.",
+                                  qPt,
                                   i,
+                                  cpCoords[i],
                                   dist,
                                   dist - analyticalDist));
             }
@@ -1140,6 +1058,172 @@ public:
 private:
   BlueprintParticleMesh m_queryMesh;
 };
+
+/**
+ * Generates points on a sphere, partitioned into multiple domains.
+ * Point spacing in the longitudinal direction can be random (default) or uniform.
+ * 3D points cover the given latitude range.
+ */
+void generateObjectPoints(BlueprintParticleMesh& particleMesh,
+                          int spatialDimension,
+                          const std::vector<double>& center,
+                          double radius,
+                          int longPointCount,
+                          int localDomainCount,
+                          bool randomSpacing = true,
+                          double minLatitude = 0.0,
+                          double maxLatitude = 0.0,
+                          int latPointCount = 1)
+{
+  using axom::utilities::random_real;
+
+  int rank = particleMesh.getRank();
+  int nranks = particleMesh.getNumRanks();
+
+  // rank scan to sum longPointCount and determine local range of longitudinal angles.
+  axom::Array<int> sums(nranks, nranks);
+  {
+    axom::Array<int> indivDomainCounts(nranks, nranks);
+    indivDomainCounts.fill(-1);
+    MPI_Allgather(&localDomainCount,
+                  1,
+                  MPI_INT,
+                  indivDomainCounts.data(),
+                  1,
+                  MPI_INT,
+                  MPI_COMM_WORLD);
+
+    SLIC_DEBUG_IF(params.isVerbose(),
+                  axom::fmt::format("After all gather: [{}]",
+                                    axom::fmt::join(indivDomainCounts, ",")));
+
+    sums[0] = indivDomainCounts[0];
+    for(int i = 1; i < nranks; ++i)
+    {
+      sums[i] = sums[i - 1] + indivDomainCounts[i];
+    }
+    // If no rank has any domains, force last one to have 1 domain.
+    if(sums[nranks - 1] == 0)
+    {
+      sums[nranks - 1] = 1;
+      if(rank == nranks - 1)
+      {
+        localDomainCount = 1;
+      }
+    }
+  }
+
+  SLIC_DEBUG_IF(
+    params.isVerbose(),
+    axom::fmt::format("After scan: [{}]", axom::fmt::join(sums, ",")));
+
+  int globalDomainCount = sums[nranks - 1];
+  longPointCount = std::max(longPointCount, globalDomainCount);
+  int longPtsPerDomain = longPointCount / globalDomainCount;
+  int domainsWithExtraPt = longPointCount % globalDomainCount;
+
+  int myDomainBegin = rank == 0 ? 0 : sums[rank - 1];
+  int myDomainEnd = sums[rank];
+  SLIC_ASSERT(myDomainEnd - myDomainBegin == localDomainCount);
+
+  if(spatialDimension == 2)
+  {
+    minLatitude = 0.0;
+    maxLatitude = 0.0;
+    latPointCount = 1;
+  }
+  minLatitude *= M_PI / 180;
+  maxLatitude *= M_PI / 180;
+  const double longSpacing = 2. * M_PI / longPointCount;
+  const double latSpacing = latPointCount < 2 || latPointCount == 1
+    ? 0
+    : (maxLatitude - minLatitude) / (latPointCount - 1);
+
+  for(int di = myDomainBegin; di < myDomainEnd; ++di)
+  {
+    int pBegin = di * longPtsPerDomain + std::min(di, domainsWithExtraPt);
+    int pEnd =
+      (di + 1) * longPtsPerDomain + std::min((di + 1), domainsWithExtraPt);
+    int domainPointCount = pEnd - pBegin;
+    domainPointCount *= latPointCount;
+    axom::Array<double, 2> pts(domainPointCount, spatialDimension);
+    axom::IndexType iPts = 0;
+
+    for(int li = 0; li < latPointCount; ++li)
+    {
+      double latAngle = minLatitude + li * latSpacing;
+      double xyRadius =
+        radius * std::cos(latAngle);  // Project radius onto x-y plane.
+      double z =
+        spatialDimension == 2 ? 0 : center[2] + radius * std::sin(latAngle);
+      for(int pi = pBegin; pi < pEnd; ++pi)
+      {
+        const double ang = randomSpacing
+          ? random_real(longSpacing * pBegin, longSpacing * pEnd)
+          : pi * longSpacing;
+        const double rsinT = center[1] + xyRadius * std::sin(ang);
+        const double rcosT = center[0] + xyRadius * std::cos(ang);
+        pts[iPts][0] = rcosT;
+        pts[iPts][1] = rsinT;
+        if(spatialDimension > 2)
+        {
+          pts[iPts][2] = z;
+        }
+        ++iPts;
+      }
+    }
+    particleMesh.setPoints(di, pts);
+  }
+
+  axom::slic::flushStreams();
+  SLIC_ASSERT(particleMesh.isValid());
+}
+
+//---------------------------------------------------------------------------
+// Transform closest points to distances and directions
+//---------------------------------------------------------------------------
+template <int DIM>
+void computeDistancesAndDirections(BlueprintParticleMesh& queryMesh,
+                                   const std::string& cpCoordsField,
+                                   const std::string& cpIndexField,
+                                   const std::string& distanceField,
+                                   const std::string& directionField)
+{
+  SLIC_ASSERT(queryMesh.dimension() == DIM);
+
+  using primal::squared_distance;
+  using PointType = primal::Point<double, DIM>;
+  using IndexSet = slam::PositionSet<>;
+
+  PointType nowhere(std::numeric_limits<double>::signaling_NaN());
+  const double nodist = std::numeric_limits<double>::signaling_NaN();
+
+  queryMesh.registerNodalScalarField<double>(distanceField);
+  queryMesh.registerNodalVectorField<double>(directionField);
+  for(axom::IndexType di = 0; di < queryMesh.domain_count(); ++di)
+  {
+    auto cpCoords = queryMesh.getNodalVectorField<PointType>(cpCoordsField, di);
+
+    auto cpIndices =
+      queryMesh.getNodalScalarField<axom::IndexType>(cpIndexField, di);
+
+    axom::Array<double, 2> qPts = queryMesh.getVertexPositions(di);
+    axom::ArrayView<double> distances =
+      queryMesh.getNodalScalarField<double>("distance", di);
+    axom::ArrayView<PointType> directions =
+      queryMesh.getNodalVectorField<PointType>("direction", di);
+    axom::IndexType ptCount = queryMesh.numPoints(di);
+    for(auto ptIdx : IndexSet(ptCount))
+    {
+      const bool has_cp = cpIndices[ptIdx] >= 0;
+      const PointType& cp = has_cp ? cpCoords[ptIdx] : nowhere;
+      const PointType& qPt = has_cp ? PointType(&qPts[ptIdx][0]) : nowhere;
+      distances[ptIdx] = has_cp ? sqrt(squared_distance(qPt, cp)) : nodist;
+      directions[ptIdx] =
+        PointType(has_cp ? (cp - qPt).array() : nowhere.array());
+    }
+  }
+}
 
 void make_coords_contiguous(conduit::Node& coordValues)
 {
@@ -1200,17 +1284,14 @@ void finalizeLogger()
 int main(int argc, char** argv)
 {
   MPI_Init(&argc, &argv);
-  int my_rank, num_ranks;
   MPI_Comm_rank(MPI_COMM_WORLD, &my_rank);
   MPI_Comm_size(MPI_COMM_WORLD, &num_ranks);
 
   initializeLogger();
-  //slic::setAbortOnWarning(true);
 
   //---------------------------------------------------------------------------
   // Set up and parse command line arguments
   //---------------------------------------------------------------------------
-  Input params;
   axom::CLI::App app {"Driver for distributed distance query"};
 
   try
@@ -1236,27 +1317,22 @@ int main(int argc, char** argv)
   {
     SLIC_INFO(axom::fmt::format(
       "***Warning: Result-checking may yield false positive (warnings) when "
-      "circle points have random spacing.  High resolution helps limit this."
+      "sphere points have random spacing.  High resolution helps limit this."
       "We recommend at least 500 points for each radius length unit."));
   }
-
-  constexpr int DIM = 2;
-
-  using PointType = primal::Point<double, DIM>;
-  using PointArray = axom::Array<PointType>;
-  using IndexSet = slam::PositionSet<>;
-  using Circle = primal::Sphere<double, DIM>;
 
 #if defined(AXOM_USE_UMPIRE)
   //---------------------------------------------------------------------------
   // Memory resource.  For testing, choose device memory if appropriate.
   //---------------------------------------------------------------------------
-  const std::string umpireResourceName =
-    params.policy == RuntimePolicy::seq || params.policy == RuntimePolicy::omp
+  const std::string umpireResourceName = params.policy == RuntimePolicy::seq
     ? "HOST"
     :
+  #if defined(AXOM_RUNTIME_POLICY_USE_OPENMP)
+    params.policy == RuntimePolicy::omp ? "HOST" :
+  #endif
   #if defined(UMPIRE_ENABLE_DEVICE)
-    "DEVICE"
+                                        "DEVICE"
   #elif defined(UMPIRE_ENABLE_UM)
     "UM"
   #elif defined(UMPIRE_ENABLE_PINNED)
@@ -1269,16 +1345,33 @@ int main(int argc, char** argv)
   umpire::Allocator umpireAllocator = rm.getAllocator(umpireResourceName);
 #endif
 
-  //---------------------------------------------------------------------------
-  // Load/generate object mesh
-  //---------------------------------------------------------------------------
-  const Circle circle(
-    PointType(params.circleCenter.data(), params.circleCenter.size()),
-    params.circleRadius);
+  // Storage for meshes.
+  sidre::DataStore dataStore;
 
-  sidre::DataStore objectDS;
+  //---------------------------------------------------------------------------
+  // Load query mesh and generate a particle mesh over its nodes
+  // These will be used to query the closest points on the object mesh(es)
+  //---------------------------------------------------------------------------
+
+  QueryMeshWrapper queryMeshWrapper(
+    dataStore.getRoot()->createGroup("queryMesh", true),
+    params.meshFile);
+
+  if(params.isVerbose())
+  {
+    queryMeshWrapper.getParticleMesh().printMeshSizeStats("Query mesh");
+  }
+  slic::flushStreams();
+
+  const size_t spatialDim = queryMeshWrapper.getParticleMesh().dimension();
+  SLIC_ASSERT(params.circleCenter.size() == spatialDim);
+
+  //---------------------------------------------------------------------------
+  // Generate object mesh
+  //---------------------------------------------------------------------------
+
   ObjectMeshWrapper objectMeshWrapper(
-    objectDS.getRoot()->createGroup("object_mesh", true));
+    dataStore.getRoot()->createGroup("object_mesh", true));
   objectMeshWrapper.setVerbosity(params.isVerbose());
 
   {
@@ -1287,95 +1380,34 @@ int main(int argc, char** argv)
     const unsigned int omax = params.objDomainCountRange[1];
     const double prob = axom::utilities::random_real(0., 1.);
     int localDomainCount = omin + int(0.5 + prob * (omax - omin));
-    objectMeshWrapper.generateCircleMesh(circle,
-                                         params.circlePoints,
-                                         localDomainCount,
-                                         params.randomSpacing);
+    generateObjectPoints(objectMeshWrapper.getParticleMesh(),
+                         spatialDim,
+                         params.circleCenter,
+                         params.circleRadius,
+                         params.longPointCount,
+                         localDomainCount,
+                         params.randomSpacing,
+                         params.latRange.size() > 0 ? params.latRange[0] : 0.0,
+                         params.latRange.size() > 1 ? params.latRange[1] : 0.0,
+                         params.latPointCount);
   }
 
-  SLIC_INFO_IF(
-    params.isVerbose(),
-    axom::fmt::format("Object mesh has {} points in {} domains locally",
-                      objectMeshWrapper.getParticleMesh().numPoints(),
-                      objectMeshWrapper.getParticleMesh().domain_count()));
+  if(params.isVerbose())
+  {
+    objectMeshWrapper.getParticleMesh().printMeshSizeStats("Object mesh");
+  }
+  slic::flushStreams();
 
   objectMeshWrapper.saveMesh(params.objectFile);
   slic::flushStreams();
 
   //---------------------------------------------------------------------------
-  // Load computational mesh and generate a particle mesh over its nodes
-  // These will be used to query the closest points on the object mesh(es)
-  //---------------------------------------------------------------------------
-  sidre::DataStore queryDS;  // TODO: Need separate stores for object and query?
-  QueryMeshWrapper queryMeshWrapper(
-    queryDS.getRoot()->createGroup("queryMesh", true),
-    params.meshFile);
-  // queryMeshWrapper.print_mesh_info();
-
-  SLIC_INFO_IF(
-    params.isVerbose(),
-    axom::fmt::format("Query mesh has {} points in {} domains locally",
-                      queryMeshWrapper.getParticleMesh().numPoints(),
-                      queryMeshWrapper.getParticleMesh().domain_count()));
-  slic::flushStreams();
-
-  auto getIntMinMax = [](int inVal, int& minVal, int& maxVal, int& sumVal) {
-    MPI_Allreduce(&inVal, &minVal, 1, MPI_INT, MPI_MIN, MPI_COMM_WORLD);
-    MPI_Allreduce(&inVal, &maxVal, 1, MPI_INT, MPI_MAX, MPI_COMM_WORLD);
-    MPI_Allreduce(&inVal, &sumVal, 1, MPI_INT, MPI_SUM, MPI_COMM_WORLD);
-  };
-
-  // Output some global mesh size stats
-  {
-    int mn, mx, sum;
-    getIntMinMax(objectMeshWrapper.getParticleMesh().numPoints(), mn, mx, sum);
-    SLIC_INFO(axom::fmt::format(
-      "Object mesh has {{min:{}, max:{}, sum:{}, avg:{}}} points",
-      mn,
-      mx,
-      sum,
-      (double)sum / num_ranks));
-  }
-  {
-    int mn, mx, sum;
-    getIntMinMax(objectMeshWrapper.getParticleMesh().domain_count(), mn, mx, sum);
-    SLIC_INFO(axom::fmt::format(
-      "Object mesh has {{min:{}, max:{}, sum:{}, avg:{}}} domains",
-      mn,
-      mx,
-      sum,
-      (double)sum / num_ranks));
-  }
-  {
-    int mn, mx, sum;
-    getIntMinMax(queryMeshWrapper.getParticleMesh().numPoints(), mn, mx, sum);
-    SLIC_INFO(axom::fmt::format(
-      "Query mesh has {{min:{}, max:{}, sum:{}, avg:{}}} points",
-      mn,
-      mx,
-      sum,
-      (double)sum / num_ranks));
-  }
-  {
-    int mn, mx, sum;
-    getIntMinMax(queryMeshWrapper.getParticleMesh().domain_count(), mn, mx, sum);
-    SLIC_INFO(axom::fmt::format(
-      "Query mesh has {{min:{}, max:{}, sum:{}, avg:{}}} domains",
-      mn,
-      mx,
-      sum,
-      (double)sum / num_ranks));
-  }
-
-  slic::flushStreams();
-
-  //---------------------------------------------------------------------------
-  // Initialize spatial index for querying points, and run query
+  // Initialize spatial index for object points, and run query
   //---------------------------------------------------------------------------
 
   auto init_str =
     banner(axom::fmt::format("Initializing BVH tree over {} points",
-                             params.circlePoints));
+                             params.longPointCount));
 
   axom::utilities::Timer initTimer(false);
   axom::utilities::Timer queryTimer(false);
@@ -1417,13 +1449,12 @@ int main(int argc, char** argv)
   query.setAllocatorID(umpireAllocator.getId());
 #endif
   query.setMpiCommunicator(MPI_COMM_WORLD, true);
-  query.setDimension(DIM);
   query.setVerbosity(params.isVerbose());
   query.setDistanceThreshold(params.distThreshold);
   // To test support for single-domain format, use single-domain when possible.
   query.setObjectMesh(
     objectMeshNode.number_of_children() == 1 ? objectMeshNode[0] : objectMeshNode,
-    objectMeshWrapper.getCoordsetName());
+    objectMeshWrapper.getTopologyName());
 
   // Build the spatial index over the object on each rank
   SLIC_INFO(init_str);
@@ -1438,7 +1469,7 @@ int main(int argc, char** argv)
   queryTimer.start();
   query.computeClosestPoints(
     queryMeshNode.number_of_children() == 1 ? queryMeshNode[0] : queryMeshNode,
-    queryMeshWrapper.getCoordsetName());
+    queryMeshWrapper.getTopologyName());
   queryTimer.stop();
 
   auto getDoubleMinMax =
@@ -1470,50 +1501,42 @@ int main(int argc, char** argv)
       maxQuery));
   }
   slic::flushStreams();
-
-  objectMeshWrapper.add_rank_offset_to_cp_domain_ids(queryMeshNode);
   queryMeshWrapper.update_closest_points(queryMeshNode);
 
   int errCount = 0;
   int localErrCount = 0;
   if(params.checkResults)
   {
-    localErrCount = queryMeshWrapper.checkClosestPoints<DIM>(circle, params);
+    if(spatialDim == 2)
+    {
+      primal::Point<double, 2> center(params.circleCenter.data());
+      primal::Sphere<double, 2> sphere(center, params.circleRadius);
+      localErrCount = queryMeshWrapper.checkClosestPoints(sphere, params);
+    }
+    else if(spatialDim == 3)
+    {
+      primal::Point<double, 3> center(params.circleCenter.data());
+      primal::Sphere<double, 3> sphere(center, params.circleRadius);
+      localErrCount = queryMeshWrapper.checkClosestPoints(sphere, params);
+    }
   }
   MPI_Allreduce(&localErrCount, &errCount, 1, MPI_INT, MPI_SUM, MPI_COMM_WORLD);
 
-  //---------------------------------------------------------------------------
-  // Transform closest points to distances and directions
-  //---------------------------------------------------------------------------
-  using primal::squared_distance;
-
-  auto& queryMesh = queryMeshWrapper.getParticleMesh();
-  PointType nowhere(std::numeric_limits<double>::signaling_NaN());
-  const double nodist = std::numeric_limits<double>::signaling_NaN();
-  queryMesh.registerNodalScalarField<double>("distance");
-  queryMesh.registerNodalVectorField<double>("direction");
-  for(axom::IndexType di = 0; di < queryMesh.domain_count(); ++di)
+  if(spatialDim == 2)
   {
-    auto cpCoords = queryMesh.getNodalVectorField<PointType>("cp_coords", di);
-
-    auto cpIndices =
-      queryMesh.getNodalScalarField<axom::IndexType>("cp_index", di);
-
-    PointArray qPts = queryMeshWrapper.getVertexPositions<PointArray>(di);
-    axom::ArrayView<double> distances =
-      queryMesh.getNodalScalarField<double>("distance", di);
-    axom::ArrayView<PointType> directions =
-      queryMesh.getNodalVectorField<PointType>("direction", di);
-    axom::IndexType ptCount = queryMeshWrapper.getParticleMesh().numPoints(di);
-    for(auto ptIdx : IndexSet(ptCount))
-    {
-      const bool has_cp = cpIndices[ptIdx] >= 0;
-      const PointType& cp = has_cp ? cpCoords[ptIdx] : nowhere;
-      distances[ptIdx] =
-        has_cp ? sqrt(squared_distance(qPts[ptIdx], cp)) : nodist;
-      directions[ptIdx] =
-        PointType(has_cp ? (cp - qPts[ptIdx]).array() : nowhere.array());
-    }
+    computeDistancesAndDirections<2>(queryMeshWrapper.getParticleMesh(),
+                                     "cp_coords",
+                                     "cp_index",
+                                     "distance",
+                                     "direction");
+  }
+  else if(spatialDim == 3)
+  {
+    computeDistancesAndDirections<3>(queryMeshWrapper.getParticleMesh(),
+                                     "cp_coords",
+                                     "cp_index",
+                                     "distance",
+                                     "direction");
   }
 
   // queryMeshNode.print();

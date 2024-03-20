@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -1363,12 +1363,25 @@ private:
   }
 
   /*!
-   * \brief Copy view contents into an undescribed EMPTY view.
+   * \brief Copy contents of this View contents into an undescribed EMPTY View.
    *
    * For SCALAR and STRING the data is copied; EXTERNAL,
    * data pointer is copied; BUFFER attaches the buffer.
    */
   void copyView(View* copy) const;
+
+  /*!
+   * \brief Deep copy contents of this View contents into an undescribed
+   * EMPTY View.
+   *
+   * For SCALAR and STRING the data is copied and the state is preserved.
+   * For BUFFER and EXTERNAL, the data described by this View is copied into a
+   * new Buffer that is of the size needed to hold the copied data. Any
+   * parts of the source Buffer or external array that are not seen due
+   * to offsets and strides in the description will not be copied. The copied
+   * View will have BUFFER state with zero offset and a stride of one.
+   */
+  void deepCopyView(View* copy, int allocID = INVALID_ALLOCATOR_ID) const;
 
   /*!
    * \brief Add view description and references to it's data to a conduit tree.

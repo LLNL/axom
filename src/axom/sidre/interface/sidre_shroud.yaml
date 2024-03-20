@@ -3,7 +3,7 @@
 #
 copyright:
   -
-  - Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
+  - Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
   - other Axom Project Developers. See the top-level LICENSE file for details.
   -
   - "SPDX-License-Identifier: (BSD-3-Clause)"
@@ -14,6 +14,7 @@ namespace: axom sidre
 
 options:
 #  debug: True
+  C_API_case: underscore
   C_line_length: 1000
   F_module_per_class: False
   F_module_name_library_template: axom_{library_lower}
@@ -46,6 +47,16 @@ declarations:
     f_c_module:
       "--import--":
       -  SIDRE_IndexType
+  splicer:
+    f: |
+      #if defined(AXOM_USE_64BIT_INDEXTYPE) && !defined(AXOM_NO_INT64_T)
+      integer, parameter :: SIDRE_IndexType = C_INT64_T
+      #else
+      integer, parameter :: SIDRE_IndexType = C_INT32_T
+      #endif
+      integer, parameter :: invalid_index = -1_SIDRE_IndexType
+    c:
+    - // See SidreTypes.h
 
 - decl: typedef short TypeID
   fields:
@@ -91,22 +102,27 @@ declarations:
   cxx_header: axom/sidre/core/Buffer.hpp
   format:
     F_derived_name:  SidreBuffer
+    C_name_api: Buffer
 
 - decl: class Group
   # SidreTypes.h is required for C_invalid_name pattern.
   cxx_header: axom/sidre/core/Group.hpp
   format:
     F_derived_name:  SidreGroup
+    C_name_api: Group
 
 - decl: class View
   cxx_header: axom/sidre/core/View.hpp
   format:
     F_derived_name:  SidreView
+    C_name_api: View
 
   ####################################################################
 - decl: class DataStore
   cxx_header: axom/sidre/core/DataStore.hpp
   format:
+    C_name_api: DataStore
+    F_name_api: datastore
     F_derived_name:  SidreDataStore
 
   declarations:

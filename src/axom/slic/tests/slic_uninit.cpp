@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -27,6 +27,8 @@ TEST(slic_uninit, log_macro)
            []() { SLIC_DEBUG_IF(true, "debug message should print"); });
 #endif
   testInit("info message", []() { SLIC_INFO("test info message"); });
+  testInit("tagged info message",
+           []() { SLIC_INFO_TAGGED("test info message", "test_tag"); });
   testInit("info_if", []() { SLIC_INFO_IF(true, "info message should print"); });
   testInit("warning message", []() { SLIC_WARNING("test warning message"); });
   testInit("warning_if", []() { SLIC_WARNING_IF(true, "test warning message"); });
@@ -78,11 +80,24 @@ TEST(slic_uninit, manage_loggers)
       new axom::slic::GenericOutputStream(&std::cout, format),
       axom::slic::message::Info);
   });
+  testInit("addStreamToTag", []() {
+    std::string format("[<LEVEL>]: <MESSAGE> <TAG>\n");
+    axom::slic::addStreamToTag(
+      new axom::slic::GenericOutputStream(&std::cout, format),
+      "Test");
+  });
   testInit("addStreamToAllMsgLevels", []() {
     std::string format("[<LEVEL>]: <MESSAGE> \n");
     axom::slic::addStreamToAllMsgLevels(
       new axom::slic::GenericOutputStream(&std::cout, format));
   });
+  testInit("addStreamToAllTags", []() {
+    std::string format("[<LEVEL>]: <MESSAGE> \n");
+    axom::slic::addStreamToAllTags(
+      new axom::slic::GenericOutputStream(&std::cout, format));
+  });
+  testInit("getNumStreamsWithTag",
+           []() { axom::slic::getNumStreamsWithTag("Test"); });
 }
 
 TEST(slic_uninit, log_methods)
@@ -96,11 +111,17 @@ TEST(slic_uninit, log_methods)
   testInit("logMessage_B", [&]() {
     axom::slic::logMessage(lvl, "another info message", "tagB");
   });
+  testInit("logMessage_B_Tagged", [&]() {
+    axom::slic::logMessage(lvl, "another info message", "tagB", false, true);
+  });
   testInit("logMessage_C", [&, fname]() {
     axom::slic::logMessage(lvl, "info msg", fname, line);
   });
   testInit("logMessage_D", [&, fname]() {
     axom::slic::logMessage(lvl, "info msg", "tagD", fname, line);
+  });
+  testInit("logMessage_D_Tagged", [&, fname]() {
+    axom::slic::logMessage(lvl, "info msg", "tagD", fname, line, false, true);
   });
 
   testInit("logErrorMessage", [&, fname]() {

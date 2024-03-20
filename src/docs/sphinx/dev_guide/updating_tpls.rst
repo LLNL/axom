@@ -1,4 +1,4 @@
-.. ## Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
+.. ## Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
 .. ## other Axom Project Developers. See the top-level LICENSE file for details.
 .. ##
 .. ## SPDX-License-Identifier: (BSD-3-Clause)
@@ -308,7 +308,7 @@ other Axom developers to use during development, in Axom Gitlab CI testing, etc.
      # blueos
      $ lalloc 1 -W 120 scripts/llnl/build_tpl.py
      
-     # toss3
+     # toss_4
      $ srun -N1 --interactive -t 120 scripts/llnl/build_tpl.py
 
    This script will build all third-party libraries for all compilers specs

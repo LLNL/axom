@@ -3,7 +3,7 @@
 #
 copyright:
   -
-  - Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
+  - Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
   - other Axom Project Developers. See the top-level LICENSE file for details.
   -
   - "SPDX-License-Identifier: (BSD-3-Clause)"
@@ -32,7 +32,7 @@ typemap:
     c_type: SIDRE_DataStore
     f_module_name: axom_sidre
     f_derived_type: SidreDataStore
-    f_capsule_data_type: SIDRE_SHROUD_datastore_capsule
+    f_capsule_data_type: SIDRE_SHROUD_capsule_data
     f_to_c: '{f_var}%cxxmem'
 
 - type: axom::sidre::Group
@@ -42,12 +42,15 @@ typemap:
     c_type: SIDRE_Group
     f_module_name: axom_sidre
     f_derived_type: SidreGroup
-    f_capsule_data_type: SIDRE_SHROUD_group_capsule
+    f_capsule_data_type: SIDRE_SHROUD_capsule_data
     f_to_c: '{f_var}%cxxmem'
 
 declarations:
 - decl: class IOManager
   cxx_header: axom/sidre/spio/IOManager.hpp
+  format:
+    F_derived_name: iomanager
+    C_name_scope: IOManager_
   declarations:
   - decl: IOManager(MPI_Comm com, bool use_scr = false)
     default_arg_suffix:

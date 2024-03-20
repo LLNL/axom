@@ -1,4 +1,4 @@
-# Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
+# Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
 # other Axom Project Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
@@ -48,6 +48,9 @@ set(core_headers
     numerics/matvecops.hpp
     numerics/polynomial_solvers.hpp
 
+    ## detail
+    detail/FlatTable.hpp
+
     ## core
     Array.hpp
     ArrayBase.hpp
@@ -56,6 +59,7 @@ set(core_headers
     IteratorBase.hpp
     Macros.hpp
     Map.hpp
+    FlatMap.hpp
     Path.hpp
     StackArray.hpp
     Types.hpp
@@ -64,6 +68,7 @@ set(core_headers
     ## execution
     execution/execution_space.hpp
     execution/for_all.hpp
+    execution/runtime_policy.hpp
     execution/synchronize.hpp
 
     execution/internal/seq_exec.hpp
@@ -116,6 +121,9 @@ axom_add_library(NAME        core
                  DEPENDS_ON  ${core_depends}
                  FOLDER      axom/core
                  )
+
+# Set file back to C++ due to nvcc compiler error
+set_source_files_properties(utilities/System.cpp PROPERTIES LANGUAGE CXX)
 
 # Basic includes that should be inherited to all Axom targets
 target_include_directories(core PUBLIC 

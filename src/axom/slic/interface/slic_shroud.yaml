@@ -3,7 +3,7 @@
 #
 copyright:
   -
-  - Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
+  - Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
   - other Axom Project Developers. See the top-level LICENSE file for details.
   -
   - "SPDX-License-Identifier: (BSD-3-Clause)"
@@ -17,7 +17,7 @@ options:
   C_line_length: 1000
   F_module_name_library_template: axom_{library_lower}
   # Change the default template for Fortran functions to include the library name.
-  F_name_impl_template: "{library_lower}_{F_name_scope}{underscore_name}{function_suffix}"
+  F_name_impl_template: "{library_lower}_{F_name_scope}{F_name_api}{function_suffix}"
 
 format:
   C_prefix: SLIC_

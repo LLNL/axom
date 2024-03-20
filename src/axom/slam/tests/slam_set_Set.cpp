@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -14,7 +14,7 @@
 
 namespace
 {
-static int const NUM_ELEMS = 5;
+constexpr int NUM_ELEMS = 5;
 
 namespace slam = axom::slam;
 using RangeSetType = slam::RangeSet<>;

@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -137,8 +137,8 @@ inline CellType initializeFromGroup(
                   "sidre::Group " << group->getPathName()
                                   << " does not conform to mesh blueprint.");
 
-    sidre::View* type_view = elems_group->getView("types");
-    m_types = std::make_unique<sidre::Array<CellType>>(type_view);
+    sidre::View* elem_type_view = elems_group->getView("types");
+    m_types = std::make_unique<sidre::Array<CellType>>(elem_type_view);
   }
 
   return cell_type;

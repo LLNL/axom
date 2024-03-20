@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -168,6 +168,8 @@ void various_traversal_methods(int nmats,
   timer.stop();
   SLIC_INFO("  Field1D: " << timer.elapsed() << " sec");
   SLIC_ASSERT(c_sum == sum);
+  AXOM_UNUSED_VAR(c_sum);
+  AXOM_UNUSED_VAR(sum);
 
   sum = 0;
   timer.reset();
@@ -203,6 +205,7 @@ void various_traversal_methods(int nmats,
   timer.stop();
   SLIC_INFO("  Field2D: " << timer.elapsed() << " sec");
   SLIC_ASSERT(x_sum == sum);
+  AXOM_UNUSED_VAR(x_sum);
 
   // ------- Dense Access ----------
   SLIC_INFO("\n -- Dense Access via map-- ");

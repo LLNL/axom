@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -166,13 +166,27 @@ public:
     EXPECT_NE(nullptr, m_shaper)
       << "Shaper needs to be initialized via initializeShaping()";
 
-    const auto shapeDim = m_shapeSet->getDimensions();
+    // Define lambda to override default dimensions, when necessary
+    auto getShapeDim = [defaultDim =
+                          m_shapeSet->getDimensions()](const auto& shape) {
+      static std::map<std::string, klee::Dimensions> format_dim = {
+        {"c2c", klee::Dimensions::Two},
+        {"stl", klee::Dimensions::Three}};
+
+      const auto& format_str = shape.getGeometry().getFormat();
+      return format_dim.find(format_str) != format_dim.end()
+        ? format_dim[format_str]
+        : defaultDim;
+    };
+
     for(const auto& shape : m_shapeSet->getShapes())
     {
       SLIC_INFO_IF(very_verbose_output,
                    axom::fmt::format("\tshape {} -> material {}",
                                      shape.getName(),
                                      shape.getMaterial()));
+
+      const auto shapeDim = getShapeDim(shape);
 
       m_shaper->loadShape(shape);
       m_shaper->prepareShapeQuery(shapeDim, shape);
@@ -1038,6 +1052,204 @@ shapes:
   }
 }
 
+TEST_F(SamplingShaperTest2D, check_underscores)
+{
+  const auto& testname =
+    ::testing::UnitTest::GetInstance()->current_test_info()->name();
+
+  constexpr double radius = 1.5;
+
+  const std::string shape_template = R"(
+dimensions: 2
+
+shapes:
+- name: {2}
+  material: {3}
+  geometry:
+    format: c2c
+    path: {0}
+    units: cm
+    operators:
+      - scale: {1}
+- name: {4}
+  material: {5}
+  geometry:
+    format: c2c
+    path: {0}
+    units: cm
+    operators:
+      - scale: {1}
+- name: {6}
+  material: {7}
+  geometry:
+    format: c2c
+    path: {0}
+    units: cm
+    operators:
+      - scale: {1}
+)";
+
+  const std::string shape_name {"shape"};
+  const std::string mat_name {"mat"};
+
+  const std::string underscored_shape_name {"underscored_shape"};
+  const std::string underscored_mat_name {"underscored_mat"};
+
+  const std::string double_underscored_shape_name {"double_underscored_shape"};
+  const std::string double_underscored_mat_name {"double_underscored_mat"};
+
+  ScopedTemporaryFile contour_file(axom::fmt::format("{}.contour", testname),
+                                   unit_semicircle_contour);
+
+  ScopedTemporaryFile shape_file(axom::fmt::format("{}.yaml", testname),
+                                 axom::fmt::format(shape_template,
+                                                   contour_file.getFileName(),
+                                                   radius,
+                                                   shape_name,
+                                                   mat_name,
+                                                   underscored_shape_name,
+                                                   underscored_mat_name,
+                                                   double_underscored_shape_name,
+                                                   double_underscored_mat_name));
+
+  if(very_verbose_output)
+  {
+    SLIC_INFO("Contour file: \n" << contour_file.getFileContents());
+    SLIC_INFO("Shape file: \n" << shape_file.getFileContents());
+  }
+
+  this->validateShapeFile(shape_file.getFileName());
+  this->initializeShaping(shape_file.getFileName());
+
+  this->runShaping();
+
+  // Collect and print registered fields
+  std::vector<std::string> regFields;
+  for(const auto& pr : this->getDC().GetFieldMap())
+  {
+    regFields.push_back(pr.first);
+  }
+  SLIC_INFO(axom::fmt::format("Registered fields: {}",
+                              axom::fmt::join(regFields, ", ")));
+
+  // check that output materials are present
+  EXPECT_TRUE(this->getDC().HasField(axom::fmt::format("vol_frac_{}", mat_name)));
+  EXPECT_TRUE(this->getDC().HasField(
+    axom::fmt::format("vol_frac_{}", underscored_mat_name)));
+  EXPECT_TRUE(this->getDC().HasField(
+    axom::fmt::format("vol_frac_{}", double_underscored_mat_name)));
+
+  // Save meshes and fields
+  if(very_verbose_output)
+  {
+    this->getDC().Save(testname, axom::sidre::Group::getDefaultIOProtocol());
+  }
+}
+
+TEST_F(SamplingShaperTest2D, contour_and_stl_2D)
+{
+  using Point2D = primal::Point<double, 2>;
+  using Point3D = primal::Point<double, 3>;
+
+  const auto& testname =
+    ::testing::UnitTest::GetInstance()->current_test_info()->name();
+
+  constexpr double radius = 1.5;
+
+  const std::string shape_template = R"(
+dimensions: 2
+
+shapes:
+# preshape a background material; dimension should be default
+- name: background
+  material: {3}
+  geometry:
+    format: none
+# shape in a revolved sphere given as a c2c contour
+- name: circle_shape
+  material: {4}
+  geometry:
+    format: c2c
+    path: {0}
+    units: cm
+    operators:
+      - scale: {2}
+# shape in a sphere given as an stl surface mesh
+- name: sphere_shape
+  material: {5}
+  geometry:
+    format: stl
+    path: {1}
+    units: cm
+)";
+
+  const std::string background_material = "luminiferous_ether";
+  const std::string circle_material = "steel";
+  const std::string sphere_material = "vaccum";
+  const std::string sphere_path =
+    axom::fmt::format("{}/quest/unit_sphere.stl", AXOM_DATA_DIR);
+
+  ScopedTemporaryFile contour_file(axom::fmt::format("{}.contour", testname),
+                                   unit_circle_contour);
+
+  ScopedTemporaryFile shape_file(axom::fmt::format("{}.yaml", testname),
+                                 axom::fmt::format(shape_template,
+                                                   contour_file.getFileName(),
+                                                   sphere_path,
+                                                   radius,
+                                                   background_material,
+                                                   circle_material,
+                                                   sphere_material));
+
+  if(very_verbose_output)
+  {
+    SLIC_INFO("Contour file: \n" << contour_file.getFileContents());
+    SLIC_INFO("Shape file: \n" << shape_file.getFileContents());
+  }
+
+  // Create an initial background material set to 1 everywhere
+  std::map<std::string, mfem::GridFunction*> initialGridFunctions;
+  {
+    auto* vf = this->registerVolFracGridFunction("init_vf_bg");
+    this->initializeVolFracGridFunction<2>(
+      vf,
+      [](int, const Point2D&, int) -> double { return 1.; });
+    initialGridFunctions[background_material] = vf;
+  }
+
+  this->validateShapeFile(shape_file.getFileName());
+  this->initializeShaping(shape_file.getFileName(), initialGridFunctions);
+
+  // set projector from 2D mesh points to 3D query points within STL
+  this->m_shaper->setPointProjector([](Point2D pt) {
+    return Point3D {pt[0], pt[1], 0.};
+  });
+
+  this->m_shaper->setQuadratureOrder(8);
+
+  this->runShaping();
+
+  // Check that the result has a volume fraction field associated with circle and sphere materials
+  constexpr double exp_volume_contour = M_PI * radius * radius;
+  constexpr double exp_volume_sphere = M_PI * 1. * 1.;
+  this->checkExpectedVolumeFractions(circle_material,
+                                     exp_volume_contour - exp_volume_sphere,
+                                     3e-2);
+  this->checkExpectedVolumeFractions(sphere_material, exp_volume_sphere, 3e-2);
+
+  for(const auto& vf_name :
+      {background_material, circle_material, sphere_material})
+  {
+    EXPECT_TRUE(this->getDC().HasField(axom::fmt::format("vol_frac_{}", vf_name)));
+  }
+
+  // Save meshes and fields
+  if(very_verbose_output)
+  {
+    this->getDC().Save(testname, axom::sidre::Group::getDefaultIOProtocol());
+  }
+}
+
 //-----------------------------------------------------------------------------
 
 TEST_F(SamplingShaperTest3D, basic_tet)
@@ -1497,10 +1709,94 @@ shapes:
 
   this->runShaping();
 
-  // Check that the result has a volume fraction field associated with the tetrahedron material
-  // Scaling by a factor of 1/2 in each dimension should multiply the total volume by a factor of 8
+  // Check that the result has a volume fraction field associated with the circle material
   constexpr double exp_volume = 4. / 3. * M_PI * radius * radius * radius;
   this->checkExpectedVolumeFractions(circle_material, exp_volume, 3e-2);
+
+  // Save meshes and fields
+  if(very_verbose_output)
+  {
+    this->getDC().Save(testname, axom::sidre::Group::getDefaultIOProtocol());
+  }
+}
+
+TEST_F(SamplingShaperTest3D, contour_and_stl_3D)
+{
+  using Point2D = primal::Point<double, 2>;
+  using Point3D = primal::Point<double, 3>;
+
+  const auto& testname =
+    ::testing::UnitTest::GetInstance()->current_test_info()->name();
+
+  constexpr double radius = 1.5;
+
+  const std::string shape_template = R"(
+dimensions: 2
+
+shapes:
+# shape in a revolved sphere given as a c2c contour
+- name: circle_shape
+  material: {3}
+  geometry:
+    format: c2c
+    path: {0}
+    units: cm
+    operators:
+      - scale: {2}
+# shape in a sphere given as an stl surface mesh
+- name: sphere_shape
+  material: {4}
+  geometry:
+    format: stl
+    path: {1}
+    units: cm
+)";
+
+  const std::string circle_material = "steel";
+  const std::string sphere_material = "void";
+  const std::string sphere_path =
+    axom::fmt::format("{}/quest/unit_sphere.stl", AXOM_DATA_DIR);
+
+  ScopedTemporaryFile contour_file(axom::fmt::format("{}.contour", testname),
+                                   unit_semicircle_contour);
+
+  ScopedTemporaryFile shape_file(axom::fmt::format("{}.yaml", testname),
+                                 axom::fmt::format(shape_template,
+                                                   contour_file.getFileName(),
+                                                   sphere_path,
+                                                   radius,
+                                                   circle_material,
+                                                   sphere_material));
+
+  if(very_verbose_output)
+  {
+    SLIC_INFO("Contour file: \n" << contour_file.getFileContents());
+    SLIC_INFO("Shape file: \n" << shape_file.getFileContents());
+  }
+
+  this->validateShapeFile(shape_file.getFileName());
+  this->initializeShaping(shape_file.getFileName());
+
+  // set projector from 3D points to axisymmetric plane
+  this->m_shaper->setPointProjector([](Point3D pt) {
+    const double& x = pt[0];
+    const double& y = pt[1];
+    const double& z = pt[2];
+    return Point2D {z, sqrt(x * x + y * y)};
+  });
+
+  // we need a higher quadrature order to resolve this shape at the (low) testing resolution
+  this->m_shaper->setQuadratureOrder(8);
+
+  this->runShaping();
+
+  // Check that the result has a volume fraction field associated with sphere and circle materials
+  constexpr double exp_volume_contour = 4. / 3. * M_PI * radius * radius * radius;
+  constexpr double exp_volume_sphere = 4. / 3. * M_PI * 1. * 1. * 1.;
+  this->checkExpectedVolumeFractions(circle_material,
+                                     exp_volume_contour - exp_volume_sphere,
+                                     3e-2);
+  this->checkExpectedVolumeFractions(sphere_material, exp_volume_sphere, 3e-2);
 
   // Save meshes and fields
   if(very_verbose_output)

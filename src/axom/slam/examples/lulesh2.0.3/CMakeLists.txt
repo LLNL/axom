@@ -1,4 +1,4 @@
-# Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
+# Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
 # other Axom Project Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
@@ -47,7 +47,7 @@ if(AXOM_ENABLE_TESTS)
         axom_add_test(NAME        slam_lulesh
                       COMMAND     slam_lulesh_ex
                       NUM_MPI_TASKS   8
-                      NUM_OMP_THREADS 4 )
+                      NUM_OMP_THREADS 1 )
     else()
         axom_add_test(NAME        slam_lulesh
                       COMMAND     slam_lulesh_ex

@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -484,7 +484,7 @@ TEST(primal_solid_angle, planar_bezierpatch)
   using Point3D = primal::Point<double, 3>;
   using Vector3D = primal::Vector<double, 3>;
   using Polygon = primal::Polygon<double, 3>;
-  using BezierPatch = primal::BezierPatch<double>;
+  using BezierPatch = primal::BezierPatch<double, 3>;
 
   // Define normal vector for the quadrilateral
   Vector3D v1 = Vector3D({0.0, 1.0, 2.0}).unitVector();
@@ -542,7 +542,7 @@ TEST(primal_integral, bezierpatch_sphere)
 {
   using Point3D = primal::Point<double, 3>;
   using Vector3D = primal::Vector<double, 3>;
-  using BPatch = primal::BezierPatch<double>;
+  using BPatch = primal::BezierPatch<double, 3>;
 
   double rt2 = sqrt(2), rt3 = sqrt(3), rt6 = sqrt(6);
 
@@ -582,7 +582,9 @@ TEST(primal_integral, bezierpatch_sphere)
     {
       const int idx = 5 * i + j;
       for(int n = 0; n < 6; ++n)
+      {
         sphere_faces[n].setWeight(i, j, weight_data[idx]);
+      }
 
       // Set up each face by rotating one of the patch faces
       sphere_faces[0](i, j)[0] = node_data[idx][1];

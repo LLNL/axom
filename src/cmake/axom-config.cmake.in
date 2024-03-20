@@ -1,10 +1,10 @@
-# Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
+# Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
 # other Axom Project Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
 #------------------------------------------------------------------------------
 
-cmake_minimum_required(VERSION 3.0 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.8 FATAL_ERROR)
 
 @PACKAGE_INIT@
 
@@ -75,6 +75,11 @@ if(NOT AXOM_FOUND)
   #----------------------------------------------------------------------------
   include(CMakeFindDependencyMacro)
 
+  # Enable various find commands to look in non-default paths
+  set_property(GLOBAL PROPERTY FIND_LIBRARY_USE_LIB32_PATHS TRUE)
+  set_property(GLOBAL PROPERTY FIND_LIBRARY_USE_LIB64_PATHS TRUE)
+  set_property(GLOBAL PROPERTY FIND_LIBRARY_USE_LIBX32_PATHS TRUE)
+
   # c2c
   if(AXOM_USE_C2C)
     set(AXOM_C2C_DIR     "@C2C_DIR@")
@@ -84,10 +89,28 @@ if(NOT AXOM_FOUND)
   # camp
   if(AXOM_USE_CAMP)
     set(AXOM_CAMP_DIR      "@CAMP_DIR@")
-    if(NOT CAMP_DIR) 
+    if(NOT CAMP_DIR)
       set(CAMP_DIR ${AXOM_CAMP_DIR})
     endif()
-    find_dependency(camp REQUIRED NO_DEFAULT_PATH PATHS "${CAMP_DIR}/lib/cmake/camp")
+    find_dependency(camp REQUIRED PATHS "${CAMP_DIR}")
+  endif()
+
+  # umpire
+  if(AXOM_USE_UMPIRE)
+    set(AXOM_UMPIRE_DIR   "@UMPIRE_DIR@")
+    if(NOT UMPIRE_DIR)
+      set(UMPIRE_DIR ${AXOM_UMPIRE_DIR})
+    endif()
+    find_dependency(umpire REQUIRED PATHS "${UMPIRE_DIR}")
+  endif()
+
+  # raja
+  if(AXOM_USE_RAJA)
+    set(AXOM_RAJA_DIR     "@RAJA_DIR@")
+    if(NOT RAJA_DIR)
+      set(RAJA_DIR ${AXOM_RAJA_DIR})
+    endif()
+    find_dependency(RAJA REQUIRED PATHS "${RAJA_DIR}")
   endif()
 
   # conduit
@@ -102,54 +125,33 @@ if(NOT AXOM_FOUND)
       find_package(MPI REQUIRED)
     endif()
 
-    find_dependency(Conduit REQUIRED NO_DEFAULT_PATH
-                    PATHS "${CONDUIT_DIR}/@AXOM_CONDUIT_CONFIG_SUBDIR@")
+    find_dependency(Conduit REQUIRED
+                    PATHS "${CONDUIT_DIR}"
+                          "${CONDUIT_DIR}/lib/cmake/conduit")
   endif()
 
   # hdf5
   if(AXOM_USE_HDF5)
     set(AXOM_HDF5_DIR     "@HDF5_DIR@")
-    # Note: Targets not currently imported
+    # Note: 'hdf5" target is exported as 'axom::hdf5'
   endif()
 
   # lua
   if(AXOM_USE_LUA)
     set(AXOM_LUA_DIR     "@LUA_DIR@")
-    # Note: Targets not currently imported
+    # Note: 'lua" target is exported as 'axom::lua'
   endif()
 
   # mfem
   if(AXOM_USE_MFEM)
     set(AXOM_MFEM_DIR     "@MFEM_DIR@")
-    # Note: Targets not currently imported
-  endif()
-
-  # raja
-  if(AXOM_USE_RAJA)
-    set(AXOM_RAJA_DIR     "@RAJA_DIR@")
-    if(NOT RAJA_DIR) 
-      set(RAJA_DIR ${AXOM_RAJA_DIR}) 
-    endif()
-    find_dependency(RAJA REQUIRED NO_DEFAULT_PATH
-                    PATHS "${RAJA_DIR}/share/raja/cmake"
-                          "${RAJA_DIR}/lib/cmake/raja")
+    # Note: 'mfem" target is exported as 'axom::mfem'
   endif()
 
   # scr
   if(AXOM_USE_SCR)
     set(AXOM_SCR_DIR      "@SCR_DIR@")
-    # Note: Targets not currently imported
-  endif()
-
-  # umpire
-  if(AXOM_USE_UMPIRE)
-    set(AXOM_UMPIRE_DIR   "@UMPIRE_DIR@")
-    if(NOT UMPIRE_DIR) 
-      set(UMPIRE_DIR ${AXOM_UMPIRE_DIR}) 
-    endif()
-    find_dependency(umpire REQUIRED NO_DEFAULT_PATH
-                    PATHS "${UMPIRE_DIR}/share/umpire/cmake"
-                          "${UMPIRE_DIR}/lib/cmake/umpire")
+    # Note: 'scr" target is exported as 'axom::scr'
   endif()
 
   #----------------------------------------------------------------------------
@@ -165,6 +167,7 @@ if(NOT AXOM_FOUND)
   # we want the import root, which is right above the "lib" prefix
   get_filename_component(_IMPORT_ROOT "${_IMPORT_PREFIX}" PATH)
 
+  include(${AXOM_CMAKE_CONFIG_DIR}/BLTSetupTargets.cmake)
   include(${AXOM_CMAKE_CONFIG_DIR}/axom-targets.cmake)
 
   # Create convenience target that bundles all Axom targets (axom)
@@ -181,16 +184,100 @@ if(NOT AXOM_FOUND)
                  APPEND)
   endforeach()
 
-  # HACK: Clear INTERFACE_COMPILE_OPTIONS to avoid requiring OpenMP in user code
-  # This can (hopefully) be removed when we fix blt's treatment of OpenMP
-  if(TARGET RAJA AND AXOM_USE_OPENMP)
-    set_target_properties(RAJA PROPERTIES INTERFACE_COMPILE_OPTIONS "")
+  #---------------------------------------------------------------------------
+  # Remove non-existant INTERFACE_INCLUDE_DIRECTORIES from imported targets
+  # to work around CMake error
+  #---------------------------------------------------------------------------
+
+  # Support IN_LIST operator for if()
+  # Policy added in 3.3+
+  if(POLICY CMP0057)
+    cmake_policy(SET CMP0057 NEW)
   endif()
 
+  ## axom_find_target_dependencies(TARGET <target> TLIST <list name>)
+  ##
+  ## Store all targets' dependencies (link libraries and interface link libraries)
+  ## recursively in the variable name TLIST holds.
+  macro(axom_find_target_dependencies)
+
+      set(options)
+      set(singleValuedArgs TARGET TLIST)
+      set(multiValuedArgs)
+
+      # parse the arguments to the macro
+      cmake_parse_arguments(arg
+           "${options}" "${singleValuedArgs}" "${multiValuedArgs}" ${ARGN})
+
+      # check for required arguments
+      if(NOT DEFINED arg_TARGET)
+          message(FATAL_ERROR "TARGET is a required parameter for the axom_find_target_dependencies macro")
+      endif()
+
+      if(NOT DEFINED arg_TLIST OR NOT DEFINED ${arg_TLIST})
+          message(FATAL_ERROR "TLIST is a required parameter for the axom_find_target_dependencies macro")
+      endif()
+
+      set(_depends_on "")
+
+      # Get dependencies if BLT registered library
+      string(TOUPPER ${arg_TARGET} _target_upper)
+      if(_BLT_${_target_upper}_IS_REGISTERED_LIBRARY)
+          list(APPEND _depends_on "${_BLT_${_target_upper}_DEPENDS_ON}")
+      endif()
+
+      # Get dependencies if CMake target
+      if(TARGET ${arg_TARGET})
+          get_property(_target_type TARGET ${arg_TARGET} PROPERTY TYPE)
+          if(NOT "${_target_type}" STREQUAL "INTERFACE_LIBRARY")
+              get_target_property(_propval ${arg_TARGET} LINK_LIBRARIES)
+              if(_propval)
+                  list(APPEND _depends_on ${_propval})
+              endif()
+          endif()
+
+          # get interface link libraries
+          get_target_property(_propval ${arg_TARGET} INTERFACE_LINK_LIBRARIES)
+          if (_propval)
+              list(APPEND _depends_on ${_propval})
+          endif()
+      endif()
+
+      blt_list_remove_duplicates(TO _depends_on)
+      foreach(t ${_depends_on})
+          if (NOT "${t}" IN_LIST ${arg_TLIST})
+              list(APPEND ${arg_TLIST} ${t})
+              axom_find_target_dependencies(TARGET ${t} TLIST ${arg_TLIST})
+          endif()
+      endforeach()
+
+      unset(_depends_on)
+  endmacro(axom_find_target_dependencies)
+
+  set(_deps "")
+  axom_find_target_dependencies(TARGET axom TLIST _deps)
+  list(REMOVE_DUPLICATES _deps)
+  message(STATUS "Removing non-existant include directories from Axom's dependencies...")
+
+  foreach(_target ${_deps})
+    if(TARGET ${_target})
+      get_target_property(_dirs ${_target} INTERFACE_INCLUDE_DIRECTORIES)
+      set(_existing_dirs)
+      foreach(_dir ${_dirs})
+        if (EXISTS "${_dir}")
+          list(APPEND _existing_dirs "${_dir}")
+        endif()
+      endforeach()
+      if (_existing_dirs)
+        set_target_properties(${_target} PROPERTIES
+                              INTERFACE_INCLUDE_DIRECTORIES "${_existing_dirs}" )
+      endif()
+    endif()
+  endforeach()
+
   #----------------------------------------------------------------------------
-  # Indicate that axom is correctly set up
+  # Indicate that Axom is correctly set up
   #----------------------------------------------------------------------------
   set(AXOM_FOUND TRUE)
 
 endif()
-

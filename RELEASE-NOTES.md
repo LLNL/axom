@@ -1,6 +1,6 @@
 
 [comment]: # (#################################################################)
-[comment]: # (Copyright 2017-2023, Lawrence Livermore National Security, LLC)
+[comment]: # (Copyright 2017-2024, Lawrence Livermore National Security, LLC)
 [comment]: # (and Axom Project Developers. See the top-level LICENSE file)
 [comment]: # (for details.)
 [comment]: #
@@ -19,7 +19,69 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 
 ## [Unreleased] - Release date yyyy-mm-dd
 
-## [v0.8.1] - Release date 2023-08-16
+## [Version 0.9.0] - Release date 2024-03-19
+
+### Added
+- Primal: Adds a `Quadrilateral` primitive
+- Primal: Adds a `compute_bounding_box()` operator for computing the bounding
+  box of a `Quadrilateral`
+- Primal: Adds a `clip()` operator for clipping a tetrahedron against the
+  half-space defined by a plane
+- Primal: Adds a `checkAndFixOrientation()` function to `primal::Tetrahedron`
+  that swaps the order of vertices if the signed volume of the Tetrahedron is
+  negative, resulting in the signed volume becoming positive.
+- Adds `FlatMap`, a generic key-value store which aims for drop-in compatibility
+  with `std::unordered_map`, but utilizes an open-addressing design.
+- Adds support for device-side use of `Array::push_back()` and `Array::emplace_back()`.
+- Adds initial support for using Slic streams with tags
+- Adds an example that finds intersection candidate pairs between two Silo
+  hexahedral meshes using either a BVH or Implicit Grid spatial index
+- Quest: Adds `setTetPredFromBoundingBox()` and `setTetPred()` functions to
+  `quest::ProEReader` and `PProEReader` that set a tet predicate, allowing
+  user code to read in a subset of a Pro/E ASCII tetrahedron mesh file.
+
+### Changed
+- `MarchingCubes` has optimizations to improve GPU performance, particularly for
+  repeated computations.  The constructor has changed and a new `setMesh` method
+  is added to set (or change) the mesh.  New accessors present output data
+  without moving them from device to host.  These accessors are an interim
+  solution and likely to be updated in the future.
+- `DistributedClosestPoint` outputs are now controlled by the `setOutput` method.
+- `MarchingCubes` allows user to select the underlying data-parallel implementation
+  - `fullParallel` works best on GPUs.
+  - `hybridParallel` reduces the amount of data processed and works best with
+     `MarchingCubesRuntimePolicy::seq`.
+  - `byPolicy` (the default) selects the implementation based on the runtime policy.
+- `MarchingCubes` and `DistributedClosestPoint` classes identify domains by their
+  `state/domain_id` parameters if provided, or the local iteration index if not.
+- `MarchingCubes` and `DistributedClosestPoint` classes changed from requiring the Blueprint
+  coordset name to requiring the Blueprint topology name.  The changed interface methods are:
+  - `DistributedClosestPoint::setObjectMesh`
+  - `DistributedClosestPoint::computeClosestPoints`
+  - `MarchingCubes::MarchingCubes`
+  - `MarchingCubesSingleDomain::MarchingCubesSingleDomain`
+- Primal: `Polyhedron::volume()` function changed from returning a signed
+  volume to an unsigned volume. The added `Polyhedron::signedVolume()` function
+  returns the signed volume.
+- Primal: `intersection_volume()` operators changed from returning a signed
+  volume to an unsigned volume.
+- Primal's `BoundingBox::contains(BoundingBox)`  now returns `true` when the input is empty
+- Renamed axom's bit utility functions to conform to `C++20` standard: `popCount() -> popcount()`, 
+  `trailingZeros() -> countr_zero()` and `leadingZeros() -> countl_zero()`
+- Renamed `axom::utilities::swapEndian() -> byteswap()` to conform to `C++23` standard
+
+### Fixed
+- quest's `SamplingShaper` now properly handles material names containing underscores
+- quest's `SamplingShaper` can now be used with an mfem that is configured for (GPU) devices
+- primal's `Polygon` area computation in 3D previously only worked when the polygon was aligned with the XY-plane. It now works for arbitrary polygons.
+- Upgrades our `vcpkg` usage for automated Windows builds of our TPLs to its [2023.12.12 release](https://github.com/microsoft/vcpkg/releases/tag/2023.12.12)
+- Fixed a bug in the bounds checks for `primal::clip(Triangle, BoundingBox)`
+- Fixed a bug when loading Sidre groups with attributes that already exist
+- Fixed `std::locale` error when when compiling `src/axom/core/utilities/System.cpp` using nvcc
+- Include `cstdint` for higher gcc version support (e.g. gcc-13)
+- Fixed several memory leaks in `axom::Array`, `quest::Shaping` and `sidre::MFEMSidreDataCollection`
+
+## [Version 0.8.1] - Release date 2023-08-16
 
 ### Changed
 - Updates to [RAJA version 2023.06.0][https://github.com/LLNL/RAJA/releases/tag/v2023.06.0]
@@ -30,7 +92,7 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 - Fixed MFEMSidreDataCollection finite element space bug
 - Various fixes to CMake machinery
 
-## [v0.8.0] - Release date 2023-07-26
+## [Version 0.8.0] - Release date 2023-07-26
 
 ### Added
 - Adds MarchingCubes class implementing the marching cubes algorithm for surface detection.
@@ -969,7 +1031,8 @@ fractions for the associated materials must be supplied before shaping.
 - Use this section in case of vulnerabilities
 
 
-[Unreleased]:    https://github.com/LLNL/axom/compare/v0.8.1...develop
+[Unreleased]:    https://github.com/LLNL/axom/compare/v0.9.0...develop
+[Version 0.9.0]: https://github.com/LLNL/axom/compare/v0.8.1...v0.9.0
 [Version 0.8.1]: https://github.com/LLNL/axom/compare/v0.8.0...v0.8.1
 [Version 0.8.0]: https://github.com/LLNL/axom/compare/v0.7.0...v0.8.0
 [Version 0.7.0]: https://github.com/LLNL/axom/compare/v0.6.1...v0.7.0

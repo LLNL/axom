@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -58,7 +58,7 @@ struct InOutHelper
     void setDefault() { *this = State {}; }
   };
 
-  InOutHelper() : m_surfaceMesh(nullptr), m_inoutTree(nullptr)
+  InOutHelper()
   {
     m_params.setDefault();
     m_state.setDefault();
@@ -214,14 +214,14 @@ struct InOutHelper
     // deal with spatial index
     if(m_inoutTree != nullptr)
     {
-      delete(m_inoutTree);
+      delete m_inoutTree;
       m_inoutTree = nullptr;
     }
 
     // deal with mesh
     if(m_state.m_should_delete_mesh)
     {
-      delete(m_surfaceMesh);
+      delete m_surfaceMesh;
     }
     m_surfaceMesh = nullptr;
 
@@ -294,8 +294,8 @@ struct InOutHelper
   }
 
 private:
-  mint::Mesh* m_surfaceMesh;
-  InOutOctree<DIM>* m_inoutTree;
+  mint::Mesh* m_surfaceMesh {nullptr};
+  InOutOctree<DIM>* m_inoutTree {nullptr};
   GeometricBoundingBox m_meshBoundingBox;
   SpacePt m_meshCenterOfMass;
 
@@ -401,13 +401,21 @@ int inout_init(mint::Mesh*& mesh, MPI_Comm comm)
 int inout_finalize()
 {
   const int dim = inout_get_dimension();
+  SLIC_ASSERT(dim == 2 || dim == 3);
 
-  // Finalize the 2D and 3D structures and reset the params
-  int rc2 = s_inoutHelper2D.finalize();
-  int rc3 = s_inoutHelper3D.finalize();
+  // Finalize the inout structures and reset the params
+  int rc = QUEST_INOUT_FAILED;
+  if(dim == 2)
+  {
+    rc = s_inoutHelper2D.finalize();
+  }
+  else  // dim == 3
+  {
+    rc = s_inoutHelper3D.finalize();
+  }
   s_inoutParams.setDefault();
 
-  return (dim == 2) ? rc2 : rc3;
+  return rc;
 }
 
 //------------------------------------------------------------------------------

@@ -11,3 +11,12 @@
       overflow: visible !important;
    }
 }
+
+a img.logo {
+    transform: scale(.75)
+}
+
+/* Sidebar header (and topbar for mobile) */
+.wy-side-nav-search, .wy-nav-top {
+  background: #343131;
+}

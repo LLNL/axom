@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -35,33 +35,21 @@ namespace sidre
  */
 bool AttrValues::hasValue(const Attribute* attr) const
 {
-  if(attr == nullptr)
+  // check for empty values
+  if(attr == nullptr || m_values == nullptr)
   {
     return false;
   }
 
-  if(m_values == nullptr)
-  {
-    // No attributes have been set in this View.
-    return false;
-  }
-
-  IndexType iattr = attr->getIndex();
-
-  if((size_t)iattr >= m_values->size())
+  const auto iattr = static_cast<std::size_t>(attr->getIndex());
+  if(iattr >= m_values->size())
   {
     // This attribute has not been set for this View.
     return false;
   }
 
   Node& value = (*m_values)[iattr];
-
-  if(isEmpty(value))
-  {
-    return false;
-  }
-
-  return true;
+  return !isEmpty(value);
 }
 
 /*
@@ -87,9 +75,8 @@ bool AttrValues::setToDefault(const Attribute* attr)
     return true;
   }
 
-  IndexType iattr = attr->getIndex();
-
-  if((size_t)iattr >= m_values->size())
+  const auto iattr = static_cast<std::size_t>(attr->getIndex());
+  if(iattr >= m_values->size())
   {
     // This attribute has not been set for this View, already default.
     return true;
@@ -117,13 +104,13 @@ bool AttrValues::createNode(IndexType iattr)
     m_values = new(std::nothrow) Values();
   }
 
-  if((size_t)iattr >= m_values->size())
+  if(static_cast<std::size_t>(iattr) >= m_values->size())
   {
     // Create all attributes up to iattr, push back empty Nodes
     m_values->reserve(iattr + 1);
     for(int n = m_values->size(); n < iattr + 1; ++n)
     {
-      m_values->push_back(Node());
+      m_values->emplace_back(Node());
     }
   }
 
@@ -192,9 +179,8 @@ const Node& AttrValues::getValueNodeRef(const Attribute* attr) const
     return attr->getDefaultNodeRef();
   }
 
-  IndexType iattr = attr->getIndex();
-
-  if((size_t)iattr >= m_values->size())
+  const auto iattr = static_cast<std::size_t>(attr->getIndex());
+  if(iattr >= m_values->size())
   {
     // This attribute has not been set for this View
     return attr->getDefaultNodeRef();

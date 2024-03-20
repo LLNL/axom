@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -29,7 +29,7 @@ struct Bar
 
 int main()
 {
-  Foo foo = {1, NULL};
+  Foo foo = {1, nullptr};
   ((Bar*)(&foo))->i++;  // violates strict aliasing
 
   std::cout << " foo.i: " << foo.i << std::endl;

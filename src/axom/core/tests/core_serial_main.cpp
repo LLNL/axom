@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -15,6 +15,7 @@
 #include "core_execution_for_all.hpp"
 #include "core_execution_space.hpp"
 #include "core_map.hpp"
+#include "core_flatmap.hpp"
 #include "core_memory_management.hpp"
 #include "core_Path.hpp"
 #include "core_stack_array.hpp"

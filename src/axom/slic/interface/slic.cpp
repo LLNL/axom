@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -179,6 +179,41 @@ void addStreamToAllMsgLevels(GenericOutputStream* ls)
 }
 
 //------------------------------------------------------------------------------
+void addStreamToTag(LogStream* ls, const std::string& tag)
+{
+  ensureInitialized();
+  Logger::getActiveLogger()->addStreamToTag(ls, tag);
+}
+
+//------------------------------------------------------------------------------
+void addStreamToTag(GenericOutputStream* ls, const std::string& tag)
+{
+  ensureInitialized();
+  Logger::getActiveLogger()->addStreamToTag(ls, tag);
+}
+
+//------------------------------------------------------------------------------
+void addStreamToAllTags(LogStream* ls)
+{
+  ensureInitialized();
+  Logger::getActiveLogger()->addStreamToAllTags(ls);
+}
+
+//------------------------------------------------------------------------------
+void addStreamToAllTags(GenericOutputStream* ls)
+{
+  ensureInitialized();
+  Logger::getActiveLogger()->addStreamToAllTags(ls);
+}
+
+//------------------------------------------------------------------------------
+int getNumStreamsWithTag(const std::string& tag)
+{
+  ensureInitialized();
+  return Logger::getActiveLogger()->getNumStreamsWithTag(tag);
+}
+
+//------------------------------------------------------------------------------
 void logMessage(message::Level level,
                 const std::string& message,
                 bool filter_duplicates)
@@ -191,10 +226,15 @@ void logMessage(message::Level level,
 void logMessage(message::Level level,
                 const std::string& message,
                 const std::string& tag,
-                bool filter_duplicates)
+                bool filter_duplicates,
+                bool tag_stream_only)
 {
   ensureInitialized();
-  Logger::getActiveLogger()->logMessage(level, message, tag, filter_duplicates);
+  Logger::getActiveLogger()->logMessage(level,
+                                        message,
+                                        tag,
+                                        filter_duplicates,
+                                        tag_stream_only);
 }
 
 //------------------------------------------------------------------------------
@@ -218,11 +258,17 @@ void logMessage(message::Level level,
                 const std::string& tag,
                 const std::string& fileName,
                 int line,
-                bool filter_duplicates)
+                bool filter_duplicates,
+                bool tag_stream_only)
 {
   ensureInitialized();
-  Logger::getActiveLogger()
-    ->logMessage(level, message, tag, fileName, line, filter_duplicates);
+  Logger::getActiveLogger()->logMessage(level,
+                                        message,
+                                        tag,
+                                        fileName,
+                                        line,
+                                        filter_duplicates,
+                                        tag_stream_only);
 }
 
 //------------------------------------------------------------------------------

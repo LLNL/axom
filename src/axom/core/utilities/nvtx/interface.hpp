@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -7,15 +7,14 @@
 #define AXOM_NVTX_INTERFACE_HPP_
 
 #include "axom/core/utilities/nvtx/Macros.hpp"
+#include <cstdint>  // For uint32_t
 
 namespace axom
 {
 namespace nvtx
 {
-/*!
- * \brief Predefined set of NVTX colors to use with NVTXRange.
- */
-enum class Color : uint32_t
+/// \brief Predefined set of NVTX colors to use with NVTXRange
+enum class Color : std::uint32_t
 {
   BLACK = 0x00000000,
   GREEN = 0x0000FF00,

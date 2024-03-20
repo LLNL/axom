@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -30,8 +30,8 @@ void replaceMaterial(mfem::QuadratureFunction* shapeQFunc,
   SLIC_ASSERT(materialQFunc->Size() == shapeQFunc->Size());
 
   const int SZ = materialQFunc->Size();
-  double* mData = materialQFunc->GetData();
-  double* sData = shapeQFunc->GetData();
+  double* mData = materialQFunc->HostReadWrite();
+  double* sData = shapeQFunc->HostReadWrite();
 
   if(shapeReplacesMaterial)
   {
@@ -61,8 +61,8 @@ void copyShapeIntoMaterial(const mfem::QuadratureFunction* shapeQFunc,
   SLIC_ASSERT(materialQFunc->Size() == shapeQFunc->Size());
 
   const int SZ = materialQFunc->Size();
-  double* mData = materialQFunc->GetData();
-  const double* sData = shapeQFunc->GetData();
+  double* mData = materialQFunc->HostReadWrite();
+  const double* sData = shapeQFunc->HostRead();
 
   // When reuseExisting, don't reset material values; otherwise, just copy values over
   if(reuseExisting)
@@ -114,9 +114,11 @@ void generatePositionsQFunction(mfem::Mesh* mesh,
   const int nq = ir.GetNPoints();
   const auto* geomFactors =
     mesh->GetGeometricFactors(ir, mfem::GeometricFactors::COORDINATES);
+  geomFactors->X.HostRead();
 
   mfem::QuadratureFunction* pos_coef = new mfem::QuadratureFunction(sp, dim);
   pos_coef->SetOwnsSpace(true);
+  pos_coef->HostReadWrite();
 
   // Rearrange positions into quadrature function
   {
@@ -145,10 +147,9 @@ void computeVolumeFractions(const std::string& matField,
                             QFunctionCollection& inoutQFuncs,
                             int outputOrder)
 {
-  using axom::utilities::string::rsplitN;
+  SLIC_ASSERT(axom::utilities::string::startsWith(matField, "mat_inout_"));
 
-  auto matName = rsplitN(matField, 2, '_')[1];
-  auto volFracName = axom::fmt::format("vol_frac_{}", matName);
+  const auto volFracName = axom::fmt::format("vol_frac_{}", matField.substr(10));
 
   // Grab a pointer to the inout samples QFunc
   mfem::QuadratureFunction* inout = inoutQFuncs.Get(matField);
@@ -187,6 +188,7 @@ void computeVolumeFractions(const std::string& matField,
     fes = new mfem::FiniteElementSpace(mesh, fec);
     volFrac = new mfem::GridFunction(fes);
     volFrac->MakeOwner(fec);
+    volFrac->HostReadWrite();
 
     dc->RegisterField(volFracName, volFrac);
   }
@@ -401,6 +403,7 @@ void computeVolumeFractionsIdentity(mfem::DataCollection* dc,
   mfem::FiniteElementSpace* fes = new mfem::FiniteElementSpace(mesh, fec);
   mfem::GridFunction* volFrac = new mfem::GridFunction(fes);
   volFrac->MakeOwner(fec);
+  volFrac->HostReadWrite();
   dc->RegisterField(name, volFrac);
 
   (*volFrac) = (*inout);

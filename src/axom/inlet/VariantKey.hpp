@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -126,7 +126,7 @@ private:
 
   // Integer and string keys
   // With only two possible types a union is overkill
-  int m_int;
+  int m_int {};
   std::string m_string;
 
   // Active key type

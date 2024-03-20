@@ -1,4 +1,4 @@
-# Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
+# Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
 # other Axom Project Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
@@ -38,6 +38,7 @@ set( primal_headers
     geometry/Tetrahedron.hpp
     geometry/Octahedron.hpp
     geometry/Triangle.hpp
+    geometry/Quadrilateral.hpp
     geometry/Vector.hpp
 
     ## operators
@@ -59,6 +60,7 @@ set( primal_headers
 
     operators/detail/clip_impl.hpp
     operators/detail/compute_moments_impl.hpp
+    operators/detail/fuzzy_comparators.hpp
     operators/detail/intersect_bezier_impl.hpp
     operators/detail/intersect_bounding_box_impl.hpp
     operators/detail/intersect_impl.hpp

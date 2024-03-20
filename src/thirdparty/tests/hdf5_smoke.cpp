@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -59,7 +59,7 @@ TEST(hdf5_smoke, create_dset)
   // Create the data space for the dataset.
   dims[0] = 4;
   dims[1] = 6;
-  dataspace_id = H5Screate_simple(2, dims, NULL);
+  dataspace_id = H5Screate_simple(2, dims, nullptr);
   EXPECT_GE(dataspace_id, 0);
 
   // Create the dataset.

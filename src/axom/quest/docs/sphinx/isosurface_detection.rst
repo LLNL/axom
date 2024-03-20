@@ -1,4 +1,4 @@
-.. ## Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
+.. ## Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
 .. ## other Axom Project Developers. See the top-level LICENSE file for details.
 .. ##
 .. ## SPDX-License-Identifier: (BSD-3-Clause)
@@ -78,7 +78,7 @@ size constraints.  Any number of domains is allowed, including zero.
 
 Blueprint convention allows for named coordinate sets and scalar
 fields.  Here, we tell the ``MarchingCubes`` constructor that the
-coordinate set name is "coordset", and the name of the nodal scalar
+topology is "mesh", and the name of the nodal scalar
 field is "scalarFieldName".
 
 The constructor's ``quest::MarchingCubesRuntimePolicy::seq`` argument
@@ -91,7 +91,7 @@ and HIP.
    conduit::Node blueprintMesh = blueprint_mesh_from_user();
    quest::MarchingCubes mc(quest::MarchingCubesRuntimePolicy::seq,
                            blueprintMesh,
-                           "coordset",
+                           "mesh",
                            "scalarFieldName");
 
 Run the algorithm:

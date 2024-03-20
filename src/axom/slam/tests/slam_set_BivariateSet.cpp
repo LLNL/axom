@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -26,11 +26,11 @@ namespace policies = axom::slam::policies;
 
 namespace
 {
-static const int SET_SIZE_1 = 5;
-static const int SET_SIZE_2 = 16;
+constexpr int SET_SIZE_1 = 5;
+constexpr int SET_SIZE_2 = 16;
 
-static const int SET_OFFSET_1 = 3;
-static const int SET_OFFSET_2 = 2;
+constexpr int SET_OFFSET_1 = 3;
+constexpr int SET_OFFSET_2 = 2;
 
 // Template aliases to simplify specifying some sets and relations
 template <typename P, typename E, typename FromSet, typename ToSet>

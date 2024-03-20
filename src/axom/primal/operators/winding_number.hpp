@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -454,7 +454,8 @@ int winding_number(const Point<T, 3>& query,
 }
 
 #ifdef AXOM_USE_MFEM
-/*!
+
+/*
  * \brief Computes the solid angle winding number for a Bezier patch
  *
  * \param [in] query The query point to test
@@ -463,6 +464,7 @@ int winding_number(const Point<T, 3>& query,
  *                      considered indistinguishable
  * \param [in] quad_tol The maximum relative error allowed in the quadrature
  * \param [in] EPS Miscellaneous numerical tolerance level for nonphysical distances
+ * \param [in] depth The current recursive depth
  * 
  * Computes the generalized winding number for a Bezier patch using Stokes theorem.
  *
@@ -473,7 +475,7 @@ int winding_number(const Point<T, 3>& query,
  */
 template <typename T>
 double winding_number(const Point<T, 3>& query,
-                      const BezierPatch<T>& bPatch,
+                      const BezierPatch<T, 3>& bPatch,
                       const double edge_tol = 1e-8,
                       const double quad_tol = 1e-8,
                       const double EPS = 1e-8,
@@ -507,7 +509,7 @@ double winding_number(const Point<T, 3>& query,
   constexpr double edge_offset = 0.01;
   if(squared_distance(query, bPatch(0, 0)) <= edge_tol_sq)
   {
-    BezierPatch<T> p1, p2, p3, p4;
+    BezierPatch<T, 3> p1, p2, p3, p4;
     bPatch.split(0.0 + edge_offset, 0.0 + edge_offset, p1, p2, p3, p4);
     double new_edge_tol = 0.5 *
       sqrt(axom::utilities::min(
@@ -521,7 +523,7 @@ double winding_number(const Point<T, 3>& query,
   }
   if(squared_distance(query, bPatch(ord_u, 0)) <= edge_tol_sq)
   {
-    BezierPatch<T> p1, p2, p3, p4;
+    BezierPatch<T, 3> p1, p2, p3, p4;
     bPatch.split(1.0 - edge_offset, 0.0 + edge_offset, p1, p2, p3, p4);
     double new_edge_tol = 0.5 *
       sqrt(axom::utilities::min(
@@ -535,7 +537,7 @@ double winding_number(const Point<T, 3>& query,
   }
   if(squared_distance(query, bPatch(0, ord_v)) <= edge_tol_sq)
   {
-    BezierPatch<T> p1, p2, p3, p4;
+    BezierPatch<T, 3> p1, p2, p3, p4;
     bPatch.split(0.0 + edge_offset, 1.0 - edge_offset, p1, p2, p3, p4);
     double new_edge_tol = 0.5 *
       sqrt(axom::utilities::min(
@@ -549,7 +551,7 @@ double winding_number(const Point<T, 3>& query,
   }
   if(squared_distance(query, bPatch(ord_u, ord_v)) <= edge_tol_sq)
   {
-    BezierPatch<T> p1, p2, p3, p4;
+    BezierPatch<T, 3> p1, p2, p3, p4;
     bPatch.split(1.0 - edge_offset, 1.0 - edge_offset, p1, p2, p3, p4);
     double new_edge_tol = 0.5 *
       sqrt(axom::utilities::min(
@@ -602,7 +604,7 @@ double winding_number(const Point<T, 3>& query,
     OrientedBoundingBox<T, 3> oBox(bPatch.orientedBoundingBox().expand(edge_tol));
     if(oBox.contains(query))
     {
-      BezierPatch<T> p1, p2, p3, p4;
+      BezierPatch<T, 3> p1, p2, p3, p4;
       bPatch.split(0.5, 0.5, p1, p2, p3, p4);
       return winding_number(query, p1, edge_tol, quad_tol, EPS, depth + 1) +
         winding_number(query, p2, edge_tol, quad_tol, EPS, depth + 1) +
@@ -655,9 +657,13 @@ double winding_number(const Point<T, 3>& query,
     // Find the direction of a ray perpendicular to that
     Vector<T, 3> v1;
     if(axom::utilities::isNearlyEqual(v0[0], v0[1], EPS))
+    {
       v1 = Vector<T, 3>({v0[2], v0[2], -v0[0] - v0[1]}).unitVector();
+    }
     else
+    {
       v1 = Vector<T, 3>({-v0[1] - v0[2], v0[0], v0[0]}).unitVector();
+    }
 
     // Rotate v0 around v1 until it is perpendicular to the plane spanned by k and v1
     double ang = (v0[2] < 0 ? 1.0 : -1.0) *

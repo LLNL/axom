@@ -1,4 +1,4 @@
-# Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
+# Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
 # other Axom Project Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
@@ -19,11 +19,11 @@ axom_add_library(NAME        inlet_test_utils
 # Add Serial GTests based tests
 set(gtest_inlet_tests
     inlet_Reader.cpp
-    inlet_jsonschema_writer.cpp
     inlet_restart.cpp
     inlet_errors.cpp )
 
 blt_list_append(TO gtest_inlet_tests ELEMENTS inlet_function.cpp IF SOL_FOUND)
+blt_list_append(TO gtest_inlet_tests ELEMENTS inlet_jsonschema_writer.cpp IF JSONSCHEMA_FOUND)
 
 foreach(test ${gtest_inlet_tests})
     get_filename_component( test_name ${test} NAME_WE )

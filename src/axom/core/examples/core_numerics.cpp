@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -192,7 +192,7 @@ void demoMatrix()
   // _eigs_start
   // Solve for eigenvectors and values using the power method
   // The power method calls rand(), so we need to initialize it with srand().
-  std::srand(std::time(0));
+  std::srand(std::time(nullptr));
   double eigvec[nrows * ncols];
   double eigval[nrows];
   int res = numerics::eigen_solve(A, nrows, eigvec, eigval);

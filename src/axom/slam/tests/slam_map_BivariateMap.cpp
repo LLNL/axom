@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -51,12 +51,12 @@ using RelationSetType = slam::RelationSet<RelationType>;
 template <typename T, typename B, typename I, typename S>
 using BivariateMapType = slam::BivariateMap<T, B, I, S>;
 
-static const SetPosition MAX_SET_SIZE1 = 10;
-static const SetPosition MAX_SET_SIZE2 = 15;
+constexpr SetPosition MAX_SET_SIZE1 = 10;
+constexpr SetPosition MAX_SET_SIZE2 = 15;
 
-static double const multFac3 = 0000.1;
-static double const multFac1 = 1000.0;
-static double const multFac2 = 0010.0;
+constexpr double multFac3 = 0000.1;
+constexpr double multFac1 = 1000.0;
+constexpr double multFac2 = 0010.0;
 
 }  // end anonymous namespace
 

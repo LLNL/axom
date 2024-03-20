@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -9,14 +9,11 @@
 
 #include "axom/config.hpp"
 #include "axom/slic.hpp"
+#include "axom/sidre.hpp"
 
 namespace
 {
-#ifdef AXOM_USE_HDF5
-const std::string PROTOCOL = "sidre_hdf5";
-#else
-const std::string PROTOCOL = "sidre_json";
-#endif
+const std::string PROTOCOL = axom::sidre::Group::getDefaultIOProtocol();
 const std::string ROOT_EXT = ".root";
 }  // namespace
 
