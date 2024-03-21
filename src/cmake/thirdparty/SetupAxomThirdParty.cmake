@@ -198,28 +198,14 @@ if(ADIAK_DIR)
                           "${ADIAK_DIR}/lib/cmake/adiak")
 
     message(STATUS "Checking for expected adiak target 'adiak::adiak'")
-    # Earlier versions of adiak (before 0.2.2) did not use the adiak:: alias 
-    # or attach its include directory
-    if(TARGET adiak AND NOT TARGET adiak::adiak)
-        set_target_properties(adiak PROPERTIES IMPORTED_GLOBAL TRUE)
-        set_target_properties(adiak PROPERTIES
-            INTERFACE_INCLUDE_DIRECTORIES ${adiak_INCLUDE_DIRS})
-        add_library(adiak::adiak ALIAS adiak)
-    endif()
-
     if (NOT TARGET adiak::adiak)
         message(FATAL_ERROR "adiak failed to load: ${ADIAK_DIR}")
     endif()
 
-
     # Apply patch for adiak's missing `-ldl' for mpi when built statically
     get_target_property(_target_type adiak::adiak TYPE)
-    if(MPI_FOUND AND ${_target_type} STREQUAL "STATIC_LIBRARY")
-        if(TARGET adiak::mpi)
-            blt_patch_target(NAME adiak::mpi DEPENDS_ON dl)
-        else()
-            set_property(TARGET adiak APPEND PROPERTY INTERFACE_LINK_LIBRARIES dl)
-        endif()
+    if(MPI_FOUND AND ${_target_type} STREQUAL "STATIC_LIBRARY" AND TARGET adiak::mpi)
+        blt_patch_target(NAME adiak::mpi DEPENDS_ON dl)
     endif()
 
     message(STATUS "adiak loaded: ${ADIAK_DIR}")
@@ -229,12 +215,16 @@ else()
     set(ADIAK_FOUND FALSE)
 endif()
 
+#------------------------------------------------------------------------------
+# Caliper
+#------------------------------------------------------------------------------
 if(CALIPER_DIR)
     # Extra handling for caliper's cuda dependencies
     if(AXOM_ENABLE_CUDA)
         find_package(CUDAToolkit REQUIRED)
     endif()
 
+    axom_assert_is_directory(VARIABLE_NAME CALIPER_DIR)
     find_dependency(caliper REQUIRED 
                     PATHS "${CALIPER_DIR}" 
                           "${CALIPER_DIR}/share/cmake/caliper")
@@ -243,11 +233,7 @@ if(CALIPER_DIR)
     if (NOT TARGET caliper)
         message(FATAL_ERROR "caliper failed to load: ${CALIPER_DIR}")
     endif()
-
-    # Set the include directories as caliper does not completely configure the "adiak" target
-    set_target_properties(caliper PROPERTIES
-        INTERFACE_INCLUDE_DIRECTORIES ${caliper_INCLUDE_PATH})
-
+    
     message(STATUS "caliper loaded: ${CALIPER_DIR}")
     set(CALIPER_FOUND TRUE)
 else()
