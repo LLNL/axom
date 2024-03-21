@@ -19,6 +19,8 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 
 ## [Unreleased] - Release date yyyy-mm-dd
 
+## [Version 0.9.0] - Release date 2024-03-19
+
 ### Added
 - Primal: Adds a `Quadrilateral` primitive
 - Primal: Adds a `compute_bounding_box()` operator for computing the bounding
@@ -1029,7 +1031,8 @@ fractions for the associated materials must be supplied before shaping.
 - Use this section in case of vulnerabilities
 
 
-[Unreleased]:    https://github.com/LLNL/axom/compare/v0.8.1...develop
+[Unreleased]:    https://github.com/LLNL/axom/compare/v0.9.0...develop
+[Version 0.9.0]: https://github.com/LLNL/axom/compare/v0.8.1...v0.9.0
 [Version 0.8.1]: https://github.com/LLNL/axom/compare/v0.8.0...v0.8.1
 [Version 0.8.0]: https://github.com/LLNL/axom/compare/v0.7.0...v0.8.0
 [Version 0.7.0]: https://github.com/LLNL/axom/compare/v0.6.1...v0.7.0
