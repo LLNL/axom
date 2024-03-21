@@ -137,7 +137,7 @@ TYPED_TEST(InOutInterfaceTest, initialize_from_mesh)
 
   EXPECT_TRUE(axom::utilities::filesystem::pathExists(this->meshfile));
 
-  axom::mint::Mesh* mesh = nullptr;
+  axom::mint::Mesh* mesh {nullptr};
 
   int rc = failCode;
 
@@ -179,6 +179,8 @@ TYPED_TEST(InOutInterfaceTest, initialize_from_mesh)
 
   // InOut should no longer  be initialized
   EXPECT_FALSE(axom::quest::inout_initialized());
+
+  delete mesh;
 }
 
 TYPED_TEST(InOutInterfaceTest, query_properties)

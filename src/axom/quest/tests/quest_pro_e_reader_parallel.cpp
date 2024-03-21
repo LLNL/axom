@@ -34,16 +34,18 @@ void generate_pro_e_file(const std::string& file)
   ofs << "# Another comment" << std::endl;
 
   // Number of nodes followed by number of tetrahedra
-  ofs << "4 1" << std::endl;
+  ofs << "5 2" << std::endl;
 
   // Node ID followed by xyz coordinates
   ofs << "1 -1.0 0.0 0.0" << std::endl;
   ofs << "2 1.0 0.0 0.0" << std::endl;
   ofs << "3 0.0 1.0 0.0" << std::endl;
   ofs << "4 0.0 0.0 1.0" << std::endl;
+  ofs << "5 3.0 3.0 3.0" << std::endl;
 
   // Tetrahedron ID followed by corresponding Node IDs
   ofs << "1 1 2 3 4" << std::endl;
+  ofs << "2 2 3 4 5" << std::endl;
 
   ofs.close();
 }
@@ -66,9 +68,9 @@ TEST(quest_pro_e_reader_parallel, read_file)
   int rank;
   MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 
-  const double x_expected[] = {-1.0, 1.0, 0.0, 0.0};
-  const double y_expected[] = {0.0, 0.0, 1.0, 0.0};
-  const double z_expected[] = {0.0, 0.0, 0.0, 1.0};
+  const double x_expected[] = {-1.0, 1.0, 0.0, 0.0, 3.0};
+  const double y_expected[] = {0.0, 0.0, 1.0, 0.0, 3.0};
+  const double z_expected[] = {0.0, 0.0, 0.0, 1.0, 3.0};
 
   const std::string filename = "tet.proe";
 
@@ -89,8 +91,142 @@ TEST(quest_pro_e_reader_parallel, read_file)
   reader.getMesh(&mesh);
 
   // STEP 3: ensure the mesh is what is expected
+  EXPECT_EQ(mesh.getNumberOfCells(), 2);
+  EXPECT_EQ(mesh.getNumberOfNodes(), 5);
+
+  const double* x = mesh.getCoordinateArray(axom::mint::X_COORDINATE);
+  const double* y = mesh.getCoordinateArray(axom::mint::Y_COORDINATE);
+  const double* z = mesh.getCoordinateArray(axom::mint::Z_COORDINATE);
+  EXPECT_TRUE(x != nullptr);
+  EXPECT_TRUE(y != nullptr);
+  EXPECT_TRUE(z != nullptr);
+
+  axom::IndexType numNodes = mesh.getNumberOfNodes();
+  for(axom::IndexType inode = 0; inode < numNodes; ++inode)
+  {
+    EXPECT_NEAR(x[inode],
+                x_expected[inode],
+                std::numeric_limits<double>::epsilon());
+    EXPECT_NEAR(y[inode],
+                y_expected[inode],
+                std::numeric_limits<double>::epsilon());
+    EXPECT_NEAR(z[inode],
+                z_expected[inode],
+                std::numeric_limits<double>::epsilon());
+  }  // END for all nodes
+
+  // // STEP 4: remove temporary Pro/E file
+  if(rank == 0)
+  {
+    std::remove(filename.c_str());
+  }
+}
+
+//------------------------------------------------------------------------------
+TEST(quest_pro_e_reader_parallel, read_file_bbox)
+{
+  int rank;
+  MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+
+  const double x_expected[] = {-1.0, 1.0, 0.0, 0.0, 3.0};
+  const double y_expected[] = {0.0, 0.0, 1.0, 0.0, 3.0};
+  const double z_expected[] = {0.0, 0.0, 0.0, 1.0, 3.0};
+
+  const std::string filename = "tet.proe";
+
+  // STEP 0: generate a temporary Pro/E file for testing
+  if(rank == 0)
+  {
+    generate_pro_e_file(filename);
+  }
+
+  // STEP 1: create an Pro/E reader and read-in the mesh data
+  axom::quest::PProEReader reader(MPI_COMM_WORLD);
+  reader.setFileName(filename);
+
+  // STEP 1a: create a bounding box.  Only tets where all four nodes
+  // fall in the bbox will be retained.
+  axom::quest::ProEReader::BBox3D bbox;
+  bbox.addPoint(axom::quest::ProEReader::Point3D {-1.1, -0.1, -0.1});
+  bbox.addPoint(axom::quest::ProEReader::Point3D {1.1, 1.1, 1.1});
+  reader.setTetPredFromBoundingBox(bbox, false);
+  int status = reader.read();
+  EXPECT_EQ(status, 0);
+
+  // STEP 2: reading the Pro/E mesh data into a axom::mint::Mesh
+  axom::mint::UnstructuredMesh<axom::mint::SINGLE_SHAPE> mesh(3, axom::mint::TET);
+  reader.getMesh(&mesh);
+
+  // STEP 3: ensure the mesh is what is expected
   EXPECT_EQ(mesh.getNumberOfCells(), 1);
-  EXPECT_EQ(mesh.getNumberOfNodes(), 4);
+  EXPECT_EQ(mesh.getNumberOfNodes(), 5);
+
+  const double* x = mesh.getCoordinateArray(axom::mint::X_COORDINATE);
+  const double* y = mesh.getCoordinateArray(axom::mint::Y_COORDINATE);
+  const double* z = mesh.getCoordinateArray(axom::mint::Z_COORDINATE);
+  EXPECT_TRUE(x != nullptr);
+  EXPECT_TRUE(y != nullptr);
+  EXPECT_TRUE(z != nullptr);
+
+  axom::IndexType numNodes = mesh.getNumberOfNodes();
+  for(axom::IndexType inode = 0; inode < numNodes; ++inode)
+  {
+    EXPECT_NEAR(x[inode],
+                x_expected[inode],
+                std::numeric_limits<double>::epsilon());
+    EXPECT_NEAR(y[inode],
+                y_expected[inode],
+                std::numeric_limits<double>::epsilon());
+    EXPECT_NEAR(z[inode],
+                z_expected[inode],
+                std::numeric_limits<double>::epsilon());
+  }  // END for all nodes
+
+  // // STEP 4: remove temporary Pro/E file
+  if(rank == 0)
+  {
+    std::remove(filename.c_str());
+  }
+}
+
+//------------------------------------------------------------------------------
+TEST(quest_pro_e_reader_parallel, read_file_bbox_incl)
+{
+  int rank;
+  MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+
+  const double x_expected[] = {-1.0, 1.0, 0.0, 0.0, 3.0};
+  const double y_expected[] = {0.0, 0.0, 1.0, 0.0, 3.0};
+  const double z_expected[] = {0.0, 0.0, 0.0, 1.0, 3.0};
+
+  const std::string filename = "tet.proe";
+
+  // STEP 0: generate a temporary Pro/E file for testing
+  if(rank == 0)
+  {
+    generate_pro_e_file(filename);
+  }
+
+  // STEP 1: create an Pro/E reader and read-in the mesh data
+  axom::quest::PProEReader reader(MPI_COMM_WORLD);
+  reader.setFileName(filename);
+
+  // STEP 1a: create a bounding box.  Only tets where all four nodes
+  // fall in the bbox will be retained.
+  axom::quest::ProEReader::BBox3D bbox;
+  bbox.addPoint(axom::quest::ProEReader::Point3D {-1.1, -0.1, -0.1});
+  bbox.addPoint(axom::quest::ProEReader::Point3D {1.1, 1.1, 1.1});
+  reader.setTetPredFromBoundingBox(bbox);
+  int status = reader.read();
+  EXPECT_EQ(status, 0);
+
+  // STEP 2: reading the Pro/E mesh data into a axom::mint::Mesh
+  axom::mint::UnstructuredMesh<axom::mint::SINGLE_SHAPE> mesh(3, axom::mint::TET);
+  reader.getMesh(&mesh);
+
+  // STEP 3: ensure the mesh is what is expected
+  EXPECT_EQ(mesh.getNumberOfCells(), 2);
+  EXPECT_EQ(mesh.getNumberOfNodes(), 5);
 
   const double* x = mesh.getCoordinateArray(axom::mint::X_COORDINATE);
   const double* y = mesh.getCoordinateArray(axom::mint::Y_COORDINATE);

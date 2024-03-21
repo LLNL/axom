@@ -667,7 +667,7 @@ void IAMesh<TDIM, SDIM, P>::fixVertexNeighborhood(
       {
         // Add all element-face associations to an array;
         // we'll update the adjacencies outside this loop
-        FaceLinkVerts face_link_verts;
+        FaceLinkVerts face_link_verts {};
         for(int i = 0, idx = 0; i < TDIM; ++i)
         {
           if(i != vert_i &&          // i is a vertex in face_i

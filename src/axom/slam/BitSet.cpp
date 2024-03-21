@@ -59,7 +59,7 @@ int BitSet::count() const
 
   for(int i = 0; i < m_data.size(); ++i)
   {
-    ctr += axom::utilities::popCount(m_data[i]);
+    ctr += axom::utilities::popcount(m_data[i]);
   }
   return ctr;
 }
@@ -130,7 +130,7 @@ BitSet::Index BitSet::find_next(Index idx) const
     if(startWord != Word(0))
     {
       return (startWordIdx * BitsPerWord) +
-        axom::utilities::trailingZeros(startWord << startOffset);
+        axom::utilities::countr_zero(startWord << startOffset);
     }
 
     ++startWordIdx;
@@ -142,7 +142,7 @@ BitSet::Index BitSet::find_next(Index idx) const
     const Word& w = m_data[i];
     if(w != Word(0))
     {
-      return (i * BitsPerWord) + axom::utilities::trailingZeros(w);
+      return (i * BitsPerWord) + axom::utilities::countr_zero(w);
     }
   }
   return BitSet::npos;

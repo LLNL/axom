@@ -1720,6 +1720,8 @@ TEST(sidre_view, import_array_node)
 
   v4->importArrayNode(n_ints);
   EXPECT_TRUE(v4->isString());
+
+  delete ds;
 }
 
 //------------------------------------------------------------------------------
@@ -1820,6 +1822,8 @@ TEST(sidre_view, clear_view)
     view->clear();
     EXPECT_TRUE(checkViewValues(view, EMPTY, false, false, false, 0));
   }
+
+  delete ds;
 }
 
 //------------------------------------------------------------------------------

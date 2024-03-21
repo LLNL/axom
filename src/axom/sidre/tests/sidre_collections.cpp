@@ -934,6 +934,7 @@ TYPED_TEST(IndexedCollectionTest, insertBadIdx)
       if(idx < 0)
       {
         EXPECT_EQ(sidre::InvalidIndex, insertedIdx);
+        delete val;
       }
       else
       {

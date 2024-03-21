@@ -33,6 +33,15 @@ if (RAJA_FOUND AND UMPIRE_FOUND)
         )
 endif()
 
+# Read ProE example -----------------------------------------------------------
+axom_add_executable(
+    NAME        quest_proe_bbox_ex
+    SOURCES     quest_proe_bbox.cpp
+    OUTPUT_DIR  ${EXAMPLE_OUTPUT_DIRECTORY}
+    DEPENDS_ON  ${quest_example_depends}
+    FOLDER      axom/quest/examples
+    )
+
 # BVH silo example ------------------------------------------------------------
 if (CONDUIT_FOUND AND RAJA_FOUND AND UMPIRE_FOUND)
     axom_add_executable(
@@ -459,9 +468,12 @@ if (ENABLE_FORTRAN)
 
     set(quest_fortran_examples quest_signed_distance_interface)
     
-    # The inout Fortran example fails to compile with hipcc/amdflang in debug configurations
-    if("${CMAKE_Fortran_COMPILER}" MATCHES "amdflang$" AND
+    if("${AXOM_CONFIG_NAME}" STREQUAL "GNU-Debug-shared-mpi-openmp")
+        # The gcc-11 docker image does not work, turning off for now
+        set(_has_inout_fortran_example FALSE)
+    elseif("${CMAKE_Fortran_COMPILER}" MATCHES "amdflang$" AND
        CMAKE_BUILD_TYPE MATCHES "(Debug|RelWithDebInfo)")
+        # The inout Fortran example fails to compile with hipcc/amdflang in debug configurations
         set(_has_inout_fortran_example FALSE)
     else()
         set(_has_inout_fortran_example TRUE)

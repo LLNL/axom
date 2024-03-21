@@ -89,8 +89,6 @@ MFEMSidreDataCollection::MFEMSidreDataCollection(const std::string& collection_n
   : mfem::DataCollection(collection_name, the_mesh)
   , m_owns_datastore(true)
   , m_owns_mesh_data(own_mesh_data)
-  , m_meshNodesGFName("mesh_nodes")
-  , m_num_files(-1)
 {
   m_datastore_ptr = new sidre::DataStore();
 
@@ -104,6 +102,8 @@ MFEMSidreDataCollection::MFEMSidreDataCollection(const std::string& collection_n
   m_bp_index_grp = global_grp->createGroup("blueprint_index/" + name);
 
   m_named_bufs_grp = domain_grp->createGroup("named_buffers");
+
+  this->own_data = own_mesh_data;
 
   if(the_mesh)
   {
@@ -130,9 +130,6 @@ MFEMSidreDataCollection::MFEMSidreDataCollection(const std::string& collection_n
   : mfem::DataCollection(collection_name)
   , m_owns_datastore(false)
   , m_owns_mesh_data(own_mesh_data)
-  , m_meshNodesGFName("mesh_nodes")
-  , m_num_files(-1)
-  , m_datastore_ptr(nullptr)
   , m_bp_index_grp(bp_index_grp)
 {
   m_bp_grp = domain_grp->createGroup("blueprint");
@@ -142,6 +139,8 @@ MFEMSidreDataCollection::MFEMSidreDataCollection(const std::string& collection_n
   #if defined(AXOM_USE_MPI) && defined(MFEM_USE_MPI)
   m_comm = MPI_COMM_NULL;
   #endif
+
+  this->own_data = false;
 }
 
 MFEMSidreDataCollection::~MFEMSidreDataCollection()
@@ -843,8 +842,8 @@ void MFEMSidreDataCollection::SetMesh(Mesh* new_mesh)
 void MFEMSidreDataCollection::SetMesh(MPI_Comm comm, Mesh* new_mesh)
 {
   // use MFEMSidreDataCollection's custom SetMesh, then set MPI info
-  SetMesh(new_mesh);
-  SetComm(comm);
+  this->SetMesh(new_mesh);
+  this->SetComm(comm);
 }
   #endif
 
@@ -2648,7 +2647,7 @@ void MFEMSidreDataCollection::reconstructField(Group* field_grp)
     {
       // FiniteElementSpace - mesh ptr and FEColl ptr
   #if defined(AXOM_USE_MPI) && defined(MFEM_USE_MPI)
-      auto parmesh = dynamic_cast<mfem::ParMesh*>(mesh);
+      auto* parmesh = dynamic_cast<mfem::ParMesh*>(mesh);
       if(parmesh)
       {
         m_fespaces[fespace_id] = std::unique_ptr<mfem::ParFiniteElementSpace>(

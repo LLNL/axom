@@ -1093,11 +1093,11 @@ TYPED_TEST(PointInCell2DTest, pic_flat_single_quad)
 
   // Add a bilinear gridfunction
   mfem::Mesh& mesh = *this->getMesh();
-  mfem::FiniteElementCollection* fec =
-    mfem::FiniteElementCollection::New("Linear");
-  mfem::FiniteElementSpace* fes = new mfem::FiniteElementSpace(&mesh, fec, 1);
+  auto* fec = mfem::FiniteElementCollection::New("Linear");
+  auto* fes = new mfem::FiniteElementSpace(&mesh, fec, 1);
 
   mfem::GridFunction gf(fes);
+  gf.MakeOwner(fec);
   gf(0) = gf(2) = 1.;
   gf(1) = gf(3) = 0.;
 

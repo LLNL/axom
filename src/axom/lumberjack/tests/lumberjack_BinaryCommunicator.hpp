@@ -113,6 +113,13 @@ TEST(lumberjack_BinaryCommunicator, basic)
   c.finalize();
 
   MPI_Barrier(MPI_COMM_WORLD);
+
+  // cleanup allocated memory from received messages
+  for(auto& rm : receivedPackedMessages)
+  {
+    delete rm;
+  }
+  receivedPackedMessages.clear();
 }
 
 TEST(lumberjack_BinaryCommunicator, pushNothing)

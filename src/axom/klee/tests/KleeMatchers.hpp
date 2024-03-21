@@ -61,13 +61,24 @@ public:
   void DescribeTo(std::ostream*) const { }
   void DescribeNegationTo(std::ostream*) const { }
 
+  friend bool operator==(const AlmostEqMatrixMatcher& lhs,
+                         const axom::numerics::Matrix<T>& rhs)
+  {
+    return lhs.MatchAndExplain(rhs, nullptr);
+  }
+
+  friend bool operator==(const axom::numerics::Matrix<T>& lhs,
+                         const AlmostEqMatrixMatcher& rhs)
+  {
+    return rhs == lhs;
+  }
+
 private:
   const axom::numerics::Matrix<T> m_mat;
 };
 
 template <typename T>
-inline ::testing::Matcher<const axom::numerics::Matrix<T>&> AlmostEqMatrix(
-  const axom::numerics::Matrix<T>& mat)
+inline auto AlmostEqMatrix(const axom::numerics::Matrix<T>& mat)
 {
   return AlmostEqMatrixMatcher<T>(mat);
 }
@@ -99,20 +110,30 @@ public:
   void DescribeTo(std::ostream*) const { }
   void DescribeNegationTo(std::ostream*) const { }
 
+  friend bool operator==(const AlmostEqArrMatcher& lhs, const T& rhs)
+  {
+    return lhs.MatchAndExplain(rhs, nullptr);
+  }
+
+  friend bool operator==(const T& lhs, const AlmostEqArrMatcher& rhs)
+  {
+    return rhs == lhs;
+  }
+
+  explicit operator const T() const { return m_arr; }
+
 private:
   const T m_arr;
 };
 
 template <typename T, int DIM>
-inline ::testing::Matcher<const primal::Vector<T, DIM>&> AlmostEqVector(
-  const primal::Vector<T, DIM>& vec)
+inline auto AlmostEqVector(const primal::Vector<T, DIM>& vec)
 {
   return AlmostEqArrMatcher<primal::Vector<T, DIM>>(vec);
 }
 
 template <typename T, int DIM>
-inline ::testing::Matcher<const primal::Point<T, DIM>&> AlmostEqPoint(
-  const primal::Point<T, DIM>& pt)
+inline auto AlmostEqPoint(const primal::Point<T, DIM>& pt)
 {
   return AlmostEqArrMatcher<primal::Point<T, DIM>>(pt);
 }
@@ -142,12 +163,23 @@ public:
   void DescribeTo(std::ostream*) const { }
   void DescribeNegationTo(std::ostream*) const { }
 
+  friend bool operator==(const AlmostEqSliceMatcher& lhs,
+                         const klee::SliceOperator& rhs)
+  {
+    return lhs.MatchAndExplain(rhs, nullptr);
+  }
+
+  friend bool operator==(const klee::SliceOperator& lhs,
+                         const AlmostEqSliceMatcher& rhs)
+  {
+    return rhs == lhs;
+  }
+
 private:
   const klee::SliceOperator m_slice;
 };
 
-inline ::testing::Matcher<const klee::SliceOperator&> AlmostEqSlice(
-  const klee::SliceOperator& slice)
+inline auto AlmostEqSlice(const klee::SliceOperator& slice)
 {
   return AlmostEqSliceMatcher(slice);
 }

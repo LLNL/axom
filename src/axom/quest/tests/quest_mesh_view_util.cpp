@@ -427,22 +427,21 @@ int testByConduitExample(const IndexCoords& domainShape,
                                      elemShape));
     }
 
-    if(!isEqual(mview.getRealExtents("element"), elemShape))
-    {
-      ++errCount;
-      SLIC_INFO_IF(
-        params.isVerbose(),
-        axom::fmt::format("Mismatched real element extents: {} vs {}",
-                          mview.getRealExtents("element"),
-                          elemShape));
-    }
-
-    if(!isEqual(mview.getRealExtents("vertex"), vertShape))
+    if(!isEqual(mview.getRealShape("element"), elemShape))
     {
       ++errCount;
       SLIC_INFO_IF(params.isVerbose(),
-                   axom::fmt::format("Mismatched real vertex extents: {} vs {}",
-                                     mview.getRealExtents("vertex"),
+                   axom::fmt::format("Mismatched real element shape: {} vs {}",
+                                     mview.getRealShape("element"),
+                                     elemShape));
+    }
+
+    if(!isEqual(mview.getRealShape("vertex"), vertShape))
+    {
+      ++errCount;
+      SLIC_INFO_IF(params.isVerbose(),
+                   axom::fmt::format("Mismatched real vertex shape: {} vs {}",
+                                     mview.getRealShape("vertex"),
                                      vertShape));
     }
 

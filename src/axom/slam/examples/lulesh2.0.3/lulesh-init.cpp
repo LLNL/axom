@@ -208,6 +208,14 @@ namespace slamLulesh {
   } // End constructor
 
 
+Domain::~Domain()
+{
+#ifdef AXOM_USE_MPI
+    delete [] commDataSend;
+    delete [] commDataRecv;
+#endif
+}
+
 ////////////////////////////////////////////////////////////////////////////////
   void
   Domain::BuildMesh(Int_t nx, Int_t edgeNodes, Int_t edgeElems)

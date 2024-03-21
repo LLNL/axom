@@ -81,8 +81,7 @@ primal::CurvedPolygon<CoordType, DIM> createPolygon(
       subCP[i] = ControlPoints[i + iter];
     }
 
-    BezierCurveType addCurve(subCP, orders[j]);
-    bPolygon.addEdge(addCurve);
+    bPolygon.addEdge(BezierCurveType {subCP, orders[j]});
     iter += (orders[j]);
   }
 
@@ -101,7 +100,7 @@ TEST(primal_curvedpolygon, constructor)
     SLIC_INFO("Testing default CurvedPolygon constructor ");
     CurvedPolygonType bPolygon;
 
-    int expNumEdges = 0;
+    const int expNumEdges = 0;
     EXPECT_EQ(expNumEdges, bPolygon.numEdges());
     EXPECT_EQ(expNumEdges, bPolygon.getEdges().size());
     EXPECT_EQ(axom::Array<BezierCurveType>(), bPolygon.getEdges());
@@ -111,7 +110,7 @@ TEST(primal_curvedpolygon, constructor)
     SLIC_INFO("Testing CurvedPolygon numEdges constructor ");
 
     CurvedPolygonType bPolygon(1);
-    int expNumEdges = 1;
+    const int expNumEdges = 1;
     EXPECT_EQ(expNumEdges, bPolygon.numEdges());
     EXPECT_EQ(expNumEdges, static_cast<int>(bPolygon.getEdges().size()));
   }

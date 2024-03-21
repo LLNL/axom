@@ -101,7 +101,7 @@ void writeSpline(const std::string& filename)
 
 TEST(quest_c2c_reader, basic_read)
 {
-  std::string fileName = C2C_CIRCLE_FILENAME;
+  const std::string fileName = C2C_CIRCLE_FILENAME;
   writeSimpleCircle(fileName);
 
   quest::C2CReader reader;
@@ -113,7 +113,7 @@ TEST(quest_c2c_reader, basic_read)
 
 TEST(quest_c2c_reader, interpolate_circle)
 {
-  std::string fileName = C2C_CIRCLE_FILENAME;
+  const std::string fileName = C2C_CIRCLE_FILENAME;
   writeSimpleCircle(fileName);
 
   quest::C2CReader reader;
@@ -122,7 +122,7 @@ TEST(quest_c2c_reader, interpolate_circle)
   reader.read();
   reader.log();
 
-  const int DIM = 2;
+  constexpr int DIM = 2;
   using MeshType = mint::UnstructuredMesh<mint::SINGLE_SHAPE>;
   MeshType* mesh = new MeshType(DIM, mint::SEGMENT);
 
@@ -158,7 +158,7 @@ TEST(quest_c2c_reader, interpolate_circle)
 
 TEST(quest_c2c_reader, interpolate_square)
 {
-  std::string fileName = C2C_SQUARE_FILENAME;
+  const std::string fileName = C2C_SQUARE_FILENAME;
   writeSquare(fileName);
 
   quest::C2CReader reader;
@@ -167,11 +167,11 @@ TEST(quest_c2c_reader, interpolate_square)
   reader.read();
   reader.log();
 
-  const int DIM = 2;
+  constexpr int DIM = 2;
   using MeshType = mint::UnstructuredMesh<mint::SINGLE_SHAPE>;
   MeshType* mesh = new MeshType(DIM, mint::SEGMENT);
 
-  int segmentsPerKnotSpan = 10;
+  const int segmentsPerKnotSpan = 10;
   reader.getLinearMeshUniform(mesh, segmentsPerKnotSpan);
 
   SLIC_INFO(axom::fmt::format("Mesh has {} nodes and {} cells",
@@ -188,11 +188,13 @@ TEST(quest_c2c_reader, interpolate_square)
   EXPECT_EQ(expSegs, mesh->getNumberOfCells());
 
   mint::write_vtk(mesh, "test_square.vtk");
+
+  delete mesh;
 }
 
 TEST(quest_c2c_reader, interpolate_spline)
 {
-  std::string fileName = C2C_SPLINE_FILENAME;
+  const std::string fileName = C2C_SPLINE_FILENAME;
   writeSpline(fileName);
 
   quest::C2CReader reader;
@@ -201,11 +203,11 @@ TEST(quest_c2c_reader, interpolate_spline)
   reader.read();
   reader.log();
 
-  const int DIM = 2;
+  constexpr int DIM = 2;
   using MeshType = mint::UnstructuredMesh<mint::SINGLE_SHAPE>;
   MeshType* mesh = new MeshType(DIM, mint::SEGMENT);
 
-  int segmentsPerKnotSpan = 20;
+  const int segmentsPerKnotSpan = 20;
   reader.getLinearMeshUniform(mesh, segmentsPerKnotSpan);
 
   SLIC_INFO(axom::fmt::format("Mesh has {} nodes and {} cells",
@@ -220,6 +222,8 @@ TEST(quest_c2c_reader, interpolate_spline)
   EXPECT_EQ(expSegs, mesh->getNumberOfCells());
 
   mint::write_vtk(mesh, "test_spline.vtk");
+
+  delete mesh;
 }
 
 //------------------------------------------------------------------------------

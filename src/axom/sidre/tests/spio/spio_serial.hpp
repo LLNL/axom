@@ -5,9 +5,10 @@
 
 #include "gtest/gtest.h"
 
-#include "axom/config.hpp"      // for AXOM_USE_HDF5
-#include "axom/core/Types.hpp"  // for common::std::int64_t
+#include "axom/config.hpp"
 #include "axom/sidre.hpp"
+#include "axom/fmt.hpp"
+
 #include <list>
 
 #include "mpi.h"
@@ -15,8 +16,6 @@
 using axom::sidre::DataStore;
 using axom::sidre::Group;
 using axom::sidre::IOManager;
-
-using std::int64_t;
 
 //------------------------------------------------------------------------------
 
@@ -36,7 +35,7 @@ TEST(spio_serial, basic_writeread)
   ga->createViewScalar<std::int64_t>("i0", 101);
   gb->createViewScalar<std::int64_t>("i1", 404);
 
-  int num_files = 1;
+  const int num_files = 1;
   IOManager writer(MPI_COMM_WORLD);
 
   const std::string file_name = "out_spio_basic_write_read";
@@ -83,12 +82,8 @@ TEST(spio_serial, basic_writeread_protocols)
   protocols.push_back("sidre_conduit_json");
   protocols.push_back("sidre_json");
 
-  for(std::list<std::string>::const_iterator itr = protocols.begin();
-      itr != protocols.end();
-      ++itr)
+  for(const auto& protocol : protocols)
   {
-    const std::string& protocol = *itr;
-
     DataStore* ds1 = new DataStore();
 
     Group* root1 = ds1->getRoot();
@@ -103,7 +98,7 @@ TEST(spio_serial, basic_writeread_protocols)
     ga->createViewScalar<std::int64_t>("i0", 101);
     gb->createViewScalar<std::int64_t>("i1", 404);
 
-    int num_files = 1;
+    const int num_files = 1;
     IOManager writer(MPI_COMM_WORLD);
 
     const std::string file_name = "out_spio_basic_write_read" + protocol;
@@ -144,10 +139,8 @@ TEST(spio_serial, write_read_write)
   MPI_Comm_rank(MPI_COMM_WORLD, &my_rank);
   MPI_Comm_size(MPI_COMM_WORLD, &num_ranks);
 
-  int num_files = std::max(num_ranks / 2, 1);
-  std::stringstream sstr;
-  sstr << "out_spio_WRW_" << num_ranks;
-  std::string filename = sstr.str();
+  const int num_files = std::max(num_ranks / 2, 1);
+  const std::string filename = axom::fmt::format("out_spio_WRW_{}", num_ranks);
 
   // Initialize a datastore and dump to disk
   DataStore* ds = new DataStore();
@@ -174,6 +167,8 @@ TEST(spio_serial, write_read_write)
   //      minor: Unable to open file
   IOManager writer_b(MPI_COMM_WORLD);
   writer_b.write(ds_r.getRoot(), num_files, filename, PROTOCOL);
+
+  delete ds;
 }
 
 //------------------------------------------------------------------------------
@@ -221,5 +216,7 @@ TEST(spio_serial, rootfile_suffix)
             ds->getRoot()->getView("grp/i")->getData<int>());
   EXPECT_EQ(ds_suffix.getRoot()->getView("grp/i")->getData<int>(),
             ds_nosuffix.getRoot()->getView("grp/i")->getData<int>());
+
+  delete ds;
 }
 #endif  // AXOM_USE_HDF5

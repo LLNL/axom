@@ -278,8 +278,7 @@ const char* packMessages(const std::vector<Message*>& messages)
 
   int totalSize = 1;  // include size for null terminator
 
-  //Calculate total size of char array after all messages are
-  //  combined.
+  //Calculate total size of char array after all messages are combined.
   std::vector<std::string> packedMessages;
   std::vector<std::string> sizeStrings;
   int currSize = 0;

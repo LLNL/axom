@@ -57,7 +57,7 @@ public:
   }
 
 private:
-  slic::message::Level m_previousLevel;
+  slic::message::Level m_previousLevel {slic::message::Level::Debug};
 };
 
 /// \name MPI Helper/Wrapper Methods

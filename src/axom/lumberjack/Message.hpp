@@ -315,8 +315,7 @@ private:
 
 /*!
  *****************************************************************************
- * \brief This packs all given Message classes into one const char
- *  buffer.
+ * \brief This packs all given Message classes into one const char buffer
  *
  * The messages are packed into the following format:
  *  <message count>[*<packed message size>*<packed message>]...
@@ -325,6 +324,7 @@ private:
  * \param [in] messages Message classes to be packed for sending
  *
  * \return Packed char array of all given messages
+ * \note It is the caller's responsibility to deallocate the returned buffer
  *****************************************************************************
  */
 const char* packMessages(const std::vector<Message*>& messages);
@@ -339,6 +339,9 @@ const char* packMessages(const std::vector<Message*>& messages);
  * This function only adds to the messages vector and does not alter the
  * packagedMessages parameter.
  *
+ * \note It is the caller's responsibility to deallocate the Message added 
+ * to the \a messages vector
+ * 
  * \param [in,out] messages Vector to append created messages to
  * \param [in]  packedMessages Packed messages to be unpacked
  * \param [in]  ranksLimit Limits how many ranks are tracked per Message.

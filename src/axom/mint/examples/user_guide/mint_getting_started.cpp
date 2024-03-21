@@ -195,7 +195,7 @@ mint::Mesh* getUniformMesh()
   const double lo[] = {-5.0, -5.0};
   const double hi[] = {5.0, 5.0};
   mint::Mesh* m = new mint::UniformMesh(lo, hi, Arguments.res, Arguments.res);
-  return (m);
+  return m;
 }
 // sphinx_tutorial_walkthrough_construct_umesh_end
 
@@ -278,7 +278,7 @@ mint::Mesh* getUnstructuredMesh()
   delete umesh;
   umesh = nullptr;
 
-  return (m);
+  return m;
 }
 
 // sphinx_tutorial_basic_example_end

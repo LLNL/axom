@@ -396,7 +396,11 @@ TEST(core_map, bucket_return_value)
 
     EXPECT_EQ(0, bucket.get_size());
     EXPECT_EQ(length, bucket.get_capacity());
+
+    // Note: Bucket's not intended to be used on its own; explicitly free the memory
+    axom::deallocate(bucket.m_list);
   }
+
   {
     const int length = 5;
     auto fn = [](Key i) { return i * i; };
@@ -411,6 +415,9 @@ TEST(core_map, bucket_return_value)
       EXPECT_EQ(i, node.key);
       EXPECT_EQ(fn(i), node.value);
     }
+
+    // Note: Bucket's not intended to be used on its own; explicitly free the memory
+    axom::deallocate(bucket.m_list);
   }
 
   {
@@ -427,6 +434,9 @@ TEST(core_map, bucket_return_value)
       EXPECT_EQ(i, node.key);
       EXPECT_EQ(fn(i), node.value);
     }
+
+    // Note: Bucket's not intended to be used on its own; explicitly free the memory
+    axom::deallocate(bucket.m_list);
   }
 }
 

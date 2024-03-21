@@ -320,6 +320,18 @@ public:
     : Shaper(shapeSet, dc)
   { }
 
+  ~SamplingShaper()
+  {
+    m_inoutShapeQFuncs.DeleteData(true);
+    m_inoutShapeQFuncs.clear();
+
+    m_inoutMaterialQFuncs.DeleteData(true);
+    m_inoutMaterialQFuncs.clear();
+
+    m_inoutDofs.DeleteData(true);
+    m_inoutDofs.clear();
+  }
+
   //@{
   //!  @name Functions to get and set shaping parameters related to sampling; supplements parameters in base class
 

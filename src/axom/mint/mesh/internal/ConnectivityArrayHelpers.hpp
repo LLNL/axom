@@ -137,8 +137,8 @@ inline CellType initializeFromGroup(
                   "sidre::Group " << group->getPathName()
                                   << " does not conform to mesh blueprint.");
 
-    sidre::View* type_view = elems_group->getView("types");
-    m_types = std::make_unique<sidre::Array<CellType>>(type_view);
+    sidre::View* elem_type_view = elems_group->getView("types");
+    m_types = std::make_unique<sidre::Array<CellType>>(elem_type_view);
   }
 
   return cell_type;

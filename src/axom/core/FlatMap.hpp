@@ -669,11 +669,11 @@ FlatMap<KeyType, ValueType, Hash>::FlatMap(IndexType bucket_count)
   bucket_count = axom::utilities::max(minBuckets, bucket_count);
   // Get the smallest power-of-two number of groups satisfying:
   // N * GroupSize - 1 >= minBuckets
-  // TODO: we should add a leadingZeros overload for 64-bit integers
+  // TODO: we should add a countl_zero overload for 64-bit integers
   {
     std::int32_t numGroups =
       std::ceil((bucket_count + 1) / (double)BucketsPerGroup);
-    m_numGroups2 = 31 - (axom::utilities::leadingZeros(numGroups));
+    m_numGroups2 = 31 - (axom::utilities::countl_zero(numGroups));
   }
 
   IndexType numGroupsRounded = 1 << m_numGroups2;

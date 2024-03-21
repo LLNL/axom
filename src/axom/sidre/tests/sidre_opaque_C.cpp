@@ -137,6 +137,8 @@ TEST(C_sidre_opaque, basic_inout)
   int test_ihi2 = test_extent2->ihi;
 
   EXPECT_EQ(test_ihi2, 2 * ihi_val);
+
+  AA_extent_delete(ext2);
 #endif
 
   // clean up...

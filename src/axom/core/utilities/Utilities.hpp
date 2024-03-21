@@ -265,24 +265,24 @@ inline bool isLittleEndian()
 }
 
 /*!
- * \brief Swaps the endianness of the input value.
- * \param [in] val The input value.
- * \return The value with endianness swapped.
+ * \brief Reverses the bytes of the input value.
+ * \param [in] val The input value
+ * \return The value with swapped bytes
  * \note Assumes endianness is either little or big (not PDP).
  * \pre T is a native arithmetic type (i.e. integral or floating point).
- * \pre sizeof(T) must be 2, 4, or 8 bytes.
+ * \pre sizeof(T) must be 1, 2, 4, or 8 bytes.
  */
 template <typename T>
-T swapEndian(T val)
+constexpr T byteswap(T val) noexcept
 {
-  const int NBYTES = sizeof(T);
+  constexpr int NBYTES = sizeof(T);
 
   AXOM_STATIC_ASSERT_MSG(
-    NBYTES == 2 || NBYTES == 4 || NBYTES == 8,
-    "swapEndian only valid for types of size 2, 4 or 8 bytes.");
+    NBYTES == 1 || NBYTES == 2 || NBYTES == 4 || NBYTES == 8,
+    "byteswap only valid for types of size 1, 2, 4 or 8 bytes.");
 
   AXOM_STATIC_ASSERT_MSG(std::is_arithmetic<T>::value,
-                         "swapEndian only valid for native arithmetic types");
+                         "byteswap only valid for native arithmetic types");
 
   union
   {
