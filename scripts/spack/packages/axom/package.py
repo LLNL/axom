@@ -487,12 +487,19 @@ class Axom(CachedCMakePackage, CudaPackage, ROCmPackage):
         entries.append(cmake_cache_path("CONDUIT_DIR", conduit_dir))
 
         # optional tpls
-        for dep in ("adiak", "caliper", "c2c", "mfem", "hdf5", "lua", "raja", "umpire"):
-            if spec.satisfies("^{0}".format(dep)):
+        for dep in ("c2c", "mfem", "hdf5", "lua", "raja", "umpire"):
+            if "+%s" % dep in spec:
                 dep_dir = get_spec_path(spec, dep, path_replacements)
-                entries.append(cmake_cache_path("{}_DIR".format(dep.upper()), dep_dir))
+                entries.append(cmake_cache_path("%s_DIR" % dep.upper(), dep_dir))
             else:
                 entries.append("# %s not built\n" % dep.upper())
+
+        if "+profiling" in spec:
+            dep_dir = get_spec_path(spec, "adiak", path_replacements)
+            entries.append(cmake_cache_path("ADIAK_DIR", dep_dir))
+
+            dep_dir = get_spec_path(spec, "caliper", path_replacements)
+            entries.append(cmake_cache_path("CALIPER_DIR", dep_dir))
 
         if "+umpire" in spec and spec.satisfies("^camp"):
             dep_dir = get_spec_path(spec, "camp", path_replacements)
