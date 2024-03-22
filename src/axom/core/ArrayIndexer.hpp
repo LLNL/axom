@@ -3,8 +3,8 @@
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
-#ifndef QUEST_ARRAYINDEXER_HPP_
-#define QUEST_ARRAYINDEXER_HPP_
+#ifndef AXOM_ARRAYINDEXER_HPP_
+#define AXOM_ARRAYINDEXER_HPP_
 
 #include "axom/core/StackArray.hpp"
 #include "axom/core/numerics/matvecops.hpp"
@@ -17,9 +17,9 @@ namespace axom
 /*!
   @brief Indicator for stride ordering.
 
-  Multidimensional array data can be in row-major order, column-major order,
-  or some arbitrarily permuted order.  Row and column major ordering are the
-  same thing if the array is 1D.
+  Multidimensional array data can be in row-major order, column-major
+  order, or some arbitrarily permuted order.  Row- and column-major
+  ordering are the same if the array is 1D.
 */
 enum class ArrayStrideOrder : int
 {
@@ -30,7 +30,7 @@ enum class ArrayStrideOrder : int
 };
 
 /*!
-  @brief Indexing into a multidimensional structured array.
+  @brief For indexing multidimensional arrays.
 
   Supports row-major and column-major ordering and arbitrary
   permutations of the ordering.
@@ -38,15 +38,12 @@ enum class ArrayStrideOrder : int
 template <typename T, int DIM>
 class ArrayIndexer
 {
-  axom::StackArray<T, DIM> m_strides;
-  axom::StackArray<std::uint16_t, DIM> m_slowestDirs;
-
 public:
   /*!
     @brief Constructor for row- or column-major indexing.
     @param [in] shape Shape of the array
-    @param [in] arrayStrideOrder A order indicator from
-                ArrayStrideOrder.
+    @param [in] arrayStrideOrder An order indicator,
+      not ArrayStrideOrder::ARBITRARY.
     @param [in] fastestStrideLength Stride in the fastest
                 direction.
   */
@@ -110,10 +107,10 @@ public:
   /*!
     @brief Initialize for row- or column-major indexing.
     @param [in] shape Shape of the array
-    @param [in] arrayStrideOrder An order indicator from
-                ArrayStrideOrder.
+    @param [in] arrayStrideOrder An order indicator,
+      not ArrayStrideOrder::ARBITRARY.
     @param [in] fastestStrideLength Stride in the fastest
-                direction.
+                chnaging direction.
   */
   inline AXOM_HOST_DEVICE void initializeShape(const axom::StackArray<T, DIM>& shape,
                                                ArrayStrideOrder arrayStrideOrder,
@@ -122,6 +119,8 @@ public:
     assert(arrayStrideOrder == ArrayStrideOrder::COLUMN ||
            arrayStrideOrder == ArrayStrideOrder::ROW ||
            (DIM == 1 && arrayStrideOrder == ArrayStrideOrder::BOTH));
+    assert(fastestStrideLength > 0);
+
     if(arrayStrideOrder == ArrayStrideOrder::COLUMN)
     {
       for(int d = 0; d < DIM; ++d)
@@ -188,13 +187,13 @@ public:
   /*!
     @brief Initialize for arbitrary-stride indexing.
 
-    @param [i] strides Strides.  Must be unique when DIM > 1.
-      If not satisfied, you must use one of the other initializers.
+    @param [i] strides Strides.  Values must be unique.
+      If not unique, use one of the other initializers.
   */
   inline AXOM_HOST_DEVICE void initializeStrides(
     const axom::StackArray<T, DIM>& strides)
   {
-    if(DIM > 1 && !stridesAreUnique(strides))
+    if(!stridesAreUnique(strides))
     {
 #if !defined(AXOM_DEVICE_CODE)
       std::ostringstream os;
@@ -221,8 +220,9 @@ public:
     with ordering preference for non-unique strides.
 
     @param [i] strides Strides.
-    @param [i] orderPref Ordering preference value
-      (from ArrayStrideOrder) if strides are non-unique.
+    @param [i] orderPref ArrayStrideOrder::ROW or
+      ArrayStrideOrder::COLUMN, to use where strides
+      are non-unique.
   */
   inline AXOM_HOST_DEVICE void initializeStrides(
     const axom::StackArray<T, DIM>& strides,
@@ -243,10 +243,7 @@ public:
       {
         if(m_strides[m_slowestDirs[s]] < m_strides[m_slowestDirs[d]])
         {
-          // Swap values.
-          auto tmp = m_slowestDirs[s];
-          m_slowestDirs[s] = m_slowestDirs[d];
-          m_slowestDirs[d] = tmp;
+          std::swap(m_slowestDirs[s], m_slowestDirs[d]);
         }
       }
     }
@@ -363,8 +360,12 @@ public:
     os << ')';
     return os;
   }
+
+private:
+  axom::StackArray<T, DIM> m_strides;
+  axom::StackArray<std::uint16_t, DIM> m_slowestDirs;
 };
 
 }  // end namespace axom
 
-#endif  // QUEST_ARRAYINDEXER_HPP_
+#endif  // AXOM_ARRAYINDEXER_HPP_
