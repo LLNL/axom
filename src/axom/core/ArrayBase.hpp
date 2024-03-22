@@ -157,7 +157,10 @@ public:
 
   constexpr static int Dims = DIM;
 
-  AXOM_HOST_DEVICE ArrayBase() : m_shape {}
+  //! @brief Construct row-major, unitnitialized array.
+  AXOM_HOST_DEVICE ArrayBase()
+    : m_shape()
+    , m_indexer(ArrayStrideOrder::ROW)
   {
     m_strides[DIM - 1] = 1;
     updateStrides();
@@ -173,9 +176,10 @@ public:
   AXOM_HOST_DEVICE ArrayBase(const StackArray<IndexType, DIM>& shape,
                              int min_stride = 1)
     : m_shape {shape}
+    , m_indexer(shape, ArrayStrideOrder::ROW)
   {
     m_strides[DIM - 1] = min_stride;
-    updateStrides();
+    updateStrides(min_stride);
   }
 
   /*!
@@ -191,6 +195,7 @@ public:
     , m_indexer()
   {
     m_indexer.initializeStrides(stride, axom::ArrayStrideOrder::ROW);
+    m_minStride = m_indexer.strides()[ m_indexer.slowestDirs()[DIM - 1] ];
     validateShapeAndStride(shape, stride);
   }
 
@@ -206,7 +211,10 @@ public:
     const ArrayBase<typename std::remove_const<T>::type, DIM, OtherArrayType>& other)
     : m_shape(other.shape())
     , m_strides(other.strides())
-  { }
+    , m_indexer(other.indexer())
+  {
+    m_minStride = m_indexer.strides()[ m_indexer.slowestDirs()[DIM - 1] ];
+  }
 
   /// \overload
   template <typename OtherArrayType>
@@ -214,7 +222,10 @@ public:
     const ArrayBase<const typename std::remove_const<T>::type, DIM, OtherArrayType>& other)
     : m_shape(other.shape())
     , m_strides(other.strides())
-  { }
+    , m_indexer(other.indexer())
+  {
+    m_minStride = m_indexer.strides()[ m_indexer.slowestDirs()[DIM - 1] ];
+  }
 
   /*!
    * \brief Dimension-aware accessor; with N=DIM indices, returns a reference
@@ -329,6 +340,8 @@ public:
   {
     std::swap(m_shape, other.m_shape);
     std::swap(m_strides, other.m_strides);
+    std::swap(m_indexer, other.m_indexer);
+    std::swap(m_minStride, other.m_minStride);
   }
 
   /// \brief Returns the dimensions of the Array
@@ -348,7 +361,7 @@ public:
    */
   AXOM_HOST_DEVICE const StackArray<IndexType, DIM>& strides() const
   {
-    return m_strides;
+    return m_indexer.strides();
   }
 
   /*!
@@ -356,12 +369,18 @@ public:
    */
   AXOM_HOST_DEVICE IndexType minStride() const
   {
-    IndexType minStride = m_strides[0];
-    for(int dim = 1; dim < DIM; dim++)
-    {
-      minStride = axom::utilities::min(minStride, m_strides[dim]);
-    }
-    return minStride;
+   /*
+     For some reason, using the #else block slows down flatIndex() for
+     CUDA and HIP, though it doesn't seem tricky to optimize.  As a
+     work around, we store the value in m_minStrides and update it
+     when m_indexer changes.
+   */
+#if 1
+    return m_minStride;
+#else
+    auto fastestDir = m_indexer.slowestDirs()[DIM - 1];
+    return m_indexer.strides()[ fastestDir ];
+#endif
   }
 
 protected:
@@ -388,6 +407,8 @@ protected:
 #endif
     m_shape = shape;
     m_strides = stride;
+    m_indexer.initializeStrides(stride);
+    m_minStride = m_indexer.strides()[ m_indexer.slowestDirs()[DIM - 1] ];
   }
 
   /*!
@@ -396,7 +417,10 @@ protected:
    * This is used when resizing/reallocating; it wouldn't make sense to have a
    * capacity of 3 in the array described above.
    */
-  IndexType blockSize() const { return m_strides[0]; }
+  IndexType blockSize() const {
+    auto slowestDir = m_indexer.slowestDirs()[0];
+    return m_indexer.strides()[slowestDir];
+  }
 
   /*!
    * \brief Updates the internal striding information to a row-major format
@@ -404,17 +428,11 @@ protected:
    * In the future, this class will support different striding schemes (e.g., column-major)
    * and/or user-provided striding
    */
-  AXOM_HOST_DEVICE void updateStrides()
+  AXOM_HOST_DEVICE void updateStrides(int min_stride = 1)
   {
-    // Row-major
-    // Note that the fastest stride is not updated.  It's unaffected by shape.
-    for(int i = static_cast<int>(DIM) - 2; i >= 0; i--)
-    {
-      m_strides[i] = m_strides[i + 1] * m_shape[i + 1];
-    }
-    // For now, indexer just shadows stride.
-    // Future: indexer will provide the stides and offsets.
-    m_indexer.initializeStrides(m_strides, axom::ArrayStrideOrder::ROW);
+    // Update m_indexer strides while preserving stride order.
+    m_indexer.initializeShape(m_shape, m_indexer.slowestDirs(), min_stride);
+    m_minStride = m_indexer.strides()[ m_indexer.slowestDirs()[DIM - 1] ];
   }
 
   /*!
@@ -451,7 +469,7 @@ private:
   //// \brief Memory offset to get to the given multidimensional index.
   AXOM_HOST_DEVICE IndexType offset(const StackArray<IndexType, DIM>& idx) const
   {
-    return numerics::dot_product((const IndexType*)idx, m_strides.begin(), DIM);
+    return m_indexer.toFlatIndex(idx);
   }
 
   /*!
@@ -462,21 +480,24 @@ private:
    */
   AXOM_HOST_DEVICE IndexType memorySize() const
   {
-    IndexType maxSize = 0;
-    for(int dim = 0; dim < DIM; dim++)
-    {
-      maxSize = axom::utilities::max(maxSize, m_strides[dim] * m_shape[dim]);
-    }
-    return maxSize;
+    auto slowestDir = m_indexer.slowestDirs()[0];
+    return m_indexer.strides()[ slowestDir ] * m_shape[ slowestDir ];
   }
 
-  /// \brief Memory offset to a slice at the given lower-dimensional index.
+  /*!
+    \brief Memory offset to a slice at the given lower-dimensional index.
+
+    Allowed only for row-major arrays.
+
+    @pre indexer().getStrideOrder() & ArrayStrideOrder::ROW == true
+  */
   template <int UDim>
   AXOM_HOST_DEVICE IndexType offset(const StackArray<IndexType, UDim>& idx) const
   {
     static_assert(UDim <= DIM,
                   "Index dimensions cannot be larger than array dimensions");
-    return numerics::dot_product(idx.begin(), m_strides.begin(), UDim);
+    assert( indexer().getStrideOrder() & ArrayStrideOrder::ROW );
+    return numerics::dot_product(idx.begin(), m_indexer.strides().begin(), UDim);
   }
 
   /// \name Internal bounds-checking routines
@@ -563,6 +584,8 @@ protected:
   StackArray<IndexType, DIM> m_strides;
   /// \brief For converting between multidim indices and offset.
   ArrayIndexer<DIM> m_indexer;
+  /// \brief Cached value for optimization.  @see minStride()
+  IndexType m_minStride;
 };
 
 /// \brief Array implementation specific to 1D Arrays
