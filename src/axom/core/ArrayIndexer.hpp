@@ -35,7 +35,7 @@ enum class ArrayStrideOrder : int
   Supports row-major and column-major ordering and arbitrary
   permutations of the ordering.
 */
-template <int DIM, typename T=axom::IndexType>
+template <int DIM, typename T = axom::IndexType>
 class ArrayIndexer
 {
 public:

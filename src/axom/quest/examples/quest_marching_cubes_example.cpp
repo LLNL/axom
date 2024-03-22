@@ -1182,8 +1182,7 @@ struct ContourTestBase
       computationalMesh.domainLengths(d, domShape);
       indexers[d].initializeShape(
         domShape,
-        axom::ArrayIndexer<DIM>(allCoordsViews[d][0].strides())
-          .slowestDirs());
+        axom::ArrayIndexer<DIM>(allCoordsViews[d][0].strides()).slowestDirs());
     }
 
     auto elementGreaterThan = [](const axom::primal::Vector<double, DIM>& a,
@@ -1316,8 +1315,7 @@ struct ContourTestBase
     */
     axom::Array<axom::ArrayView<const double, DIM, MemorySpace>> fcnViews(
       domainCount);
-    axom::Array<axom::ArrayIndexer<DIM>> cellIndexers(
-      domainCount);
+    axom::Array<axom::ArrayIndexer<DIM>> cellIndexers(domainCount);
     axom::Array<axom::Array<axom::IndexType>> hasContours(domainCount);
     for(axom::IndexType domId = 0; domId < domainCount; ++domId)
     {

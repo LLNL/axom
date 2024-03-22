@@ -75,7 +75,8 @@ public:
 
     app.add_option("-g, --ghost", ghostWidth)->description("Ghost width");
 
-    app.add_option("-r, --repCount", repCount)->description("Number of repetitions to run");
+    app.add_option("-r, --repCount", repCount)
+      ->description("Number of repetitions to run");
 
     auto* dataOrderOption =
       app.add_option("--dataOrder", dataOrder)
@@ -165,22 +166,22 @@ int allocatorIdFromPolicy(axom::runtime_policy::Policy policy)
   int allocatorID = policy == axom::runtime_policy::Policy::seq
     ? axom::detail::getAllocatorID<axom::MemorySpace::Host>()
     :
-#if defined(AXOM_RUNTIME_POLICY_USE_OPENMP)
+  #if defined(AXOM_RUNTIME_POLICY_USE_OPENMP)
     policy == axom::runtime_policy::Policy::omp
-    ? axom::detail::getAllocatorID<axom::MemorySpace::Host>()
-    :
-#endif
-#if defined(AXOM_RUNTIME_POLICY_USE_CUDA)
-    policy == axom::runtime_policy::Policy::cuda
-    ? axom::detail::getAllocatorID<axom::MemorySpace::Device>()
-    :
-#endif
-#if defined(AXOM_RUNTIME_POLICY_USE_HIP)
-    policy == axom::runtime_policy::Policy::hip
-    ? axom::detail::getAllocatorID<axom::MemorySpace::Device>()
-    :
-#endif
-    axom::INVALID_ALLOCATOR_ID;
+      ? axom::detail::getAllocatorID<axom::MemorySpace::Host>()
+      :
+  #endif
+  #if defined(AXOM_RUNTIME_POLICY_USE_CUDA)
+      policy == axom::runtime_policy::Policy::cuda
+        ? axom::detail::getAllocatorID<axom::MemorySpace::Device>()
+        :
+  #endif
+  #if defined(AXOM_RUNTIME_POLICY_USE_HIP)
+        policy == axom::runtime_policy::Policy::hip
+          ? axom::detail::getAllocatorID<axom::MemorySpace::Device>()
+          :
+  #endif
+          axom::INVALID_ALLOCATOR_ID;
 #else
   int allocatorID = axom::getDefaultAllocatorID();
 #endif
@@ -201,15 +202,17 @@ public:
 
   int m_allocatorId;
 
-  ArrayIndexerPerfTester ()
+  ArrayIndexerPerfTester()
   {
     m_allocatorId = allocatorIdFromPolicy(params.runtimePolicy);
 #ifdef AXOM_USE_UMPIRE
     umpire::ResourceManager& rm = umpire::ResourceManager::getInstance();
     umpire::Allocator allocator = rm.getAllocator(m_allocatorId);
-    std::cout << "Allocator id: " << m_allocatorId << ", Umpire memory space " << allocator.getName() << std::endl;
+    std::cout << "Allocator id: " << m_allocatorId << ", Umpire memory space "
+              << allocator.getName() << std::endl;
 #else
-    std::cout << "Allocator id: " << m_allocatorId << ", default memory space" << std::endl;
+    std::cout << "Allocator id: " << m_allocatorId << ", default memory space"
+              << std::endl;
 #endif
   }
 
@@ -751,7 +754,8 @@ public:
   {
     assert(DIM <= params.shape.size());
 
-    ar = axom::Array<Element_t>(params.paddedSize, params.paddedSize, m_allocatorId);
+    ar =
+      axom::Array<Element_t>(params.paddedSize, params.paddedSize, m_allocatorId);
     // ar.resize(params.paddedSize);
 
     axom::StackArray<axom::IndexType, DIM> paddedShape;
@@ -803,69 +807,69 @@ public:
 
     auto count = array.size();
     auto baseFactor = m_baseFactor;
-    axom::for_all<ExecSpace>(count, AXOM_LAMBDA(axom::IndexType i) {
+    axom::for_all<ExecSpace>(
+      count,
+      AXOM_LAMBDA(axom::IndexType i) {
         array.flatIndex(i) = Element_t(i * baseFactor);
       });
 
     axom::utilities::Timer flatTimer(false);
     flatTimer.start();
-    for (int r = 0; r<params.repCount; ++r)
-      runTest_flatAccess(array);
+    for(int r = 0; r < params.repCount; ++r) runTest_flatAccess(array);
     flatTimer.stop();
-    std::cout << "Avg flat-index time   " << flatTimer.elapsedTimeInSec()/params.repCount
+    std::cout << "Avg flat-index time   "
+              << flatTimer.elapsedTimeInSec() / params.repCount
               << " seconds, base" << std::endl;
 
     auto baseTime = flatTimer.elapsedTimeInSec();
 
     axom::utilities::Timer pointerTimer(false);
     pointerTimer.start();
-    for (int r = 0; r<params.repCount; ++r)
-    runTest_pointerAccess(array);
+    for(int r = 0; r < params.repCount; ++r) runTest_pointerAccess(array);
     pointerTimer.stop();
-    std::cout << "Avg pointer time   " << pointerTimer.elapsedTimeInSec()/params.repCount
+    std::cout << "Avg pointer time   "
+              << pointerTimer.elapsedTimeInSec() / params.repCount
               << " seconds, " << std::setprecision(3)
-              << pointerTimer.elapsedTimeInSec()/baseTime
-              << 'x' << std::endl;
+              << pointerTimer.elapsedTimeInSec() / baseTime << 'x' << std::endl;
 
     axom::utilities::Timer rowMajorTimer(false);
     rowMajorTimer.start();
-    for (int r = 0; r<params.repCount; ++r)
-      runTest_rowMajorAccess(array);
+    for(int r = 0; r < params.repCount; ++r) runTest_rowMajorAccess(array);
     rowMajorTimer.stop();
-    std::cout << "Avg row-major time    " << rowMajorTimer.elapsedTimeInSec()/params.repCount
+    std::cout << "Avg row-major time    "
+              << rowMajorTimer.elapsedTimeInSec() / params.repCount
               << " seconds, " << std::setprecision(3)
-              << rowMajorTimer.elapsedTimeInSec() / baseTime
-              << 'x' << std::endl;
+              << rowMajorTimer.elapsedTimeInSec() / baseTime << 'x' << std::endl;
 
     axom::utilities::Timer columnMajorTimer(false);
     columnMajorTimer.start();
-    for (int r = 0; r<params.repCount; ++r)
-      runTest_columnMajorAccess(array);
+    for(int r = 0; r < params.repCount; ++r) runTest_columnMajorAccess(array);
     columnMajorTimer.stop();
-    std::cout << "Avg column-major time " << columnMajorTimer.elapsedTimeInSec()/params.repCount
+    std::cout << "Avg column-major time "
+              << columnMajorTimer.elapsedTimeInSec() / params.repCount
               << " seconds, " << std::setprecision(3)
-              << columnMajorTimer.elapsedTimeInSec() / baseTime
-              << 'x' << std::endl;
+              << columnMajorTimer.elapsedTimeInSec() / baseTime << 'x'
+              << std::endl;
 
     axom::utilities::Timer dynamicTimer(false);
     dynamicTimer.start();
-    for (int r = 0; r<params.repCount; ++r)
-      runTest_dynamicAccess(array);
+    for(int r = 0; r < params.repCount; ++r) runTest_dynamicAccess(array);
     dynamicTimer.stop();
-    std::cout << "Avg dynamic time      " << dynamicTimer.elapsedTimeInSec()/params.repCount
+    std::cout << "Avg dynamic time      "
+              << dynamicTimer.elapsedTimeInSec() / params.repCount
               << " seconds, " << std::setprecision(3)
-              << dynamicTimer.elapsedTimeInSec() / baseTime
-              << 'x' << std::endl;
+              << dynamicTimer.elapsedTimeInSec() / baseTime << 'x' << std::endl;
 
     // Verify that the elements are touched the correct number of times.
     // (Bring the data to the host so this test doesn't rely on RAJA.)
-    auto hostAllocatorId =
-      axom::detail::getAllocatorID<axom::execution_space<axom::SEQ_EXEC>::memory_space>();
+    auto hostAllocatorId = axom::detail::getAllocatorID<
+      axom::execution_space<axom::SEQ_EXEC>::memory_space>();
     axom::Array<Element_t> hostArray(array1D, hostAllocatorId);
     axom::IndexType matchCount = 0;
     for(axom::IndexType i = 0; i < count; ++i)
     {
-      matchCount += (hostArray[i] == Element_t(i * m_baseFactor) + m_testAccumulation);
+      matchCount +=
+        (hostArray[i] == Element_t(i * m_baseFactor) + m_testAccumulation);
     }
     if(matchCount != params.realSize)
     {
@@ -900,7 +904,8 @@ void runTest()
     ArrayIndexerPerfTester<3, ExecSpace> tester3D;
     tester3D.runTest_dim();
   }
-  else if(params.shape.size() == 4 && !axom::execution_space<ExecSpace>::onDevice())
+  else if(params.shape.size() == 4 &&
+          !axom::execution_space<ExecSpace>::onDevice())
   {
     ArrayIndexerPerfTester<4, ExecSpace> tester4D;
     tester4D.runTest_dim();
@@ -931,10 +936,12 @@ int main(int argc, char** argv)
             << axom::runtime_policy::policyToName(params.runtimePolicy)
             << std::endl;
 
-  std::cout << "Array shape: " << array_to_string(params.shape.data(), params.shape.size())
+  std::cout << "Array shape: "
+            << array_to_string(params.shape.data(), params.shape.size())
             << std::endl;
 
-  std::cout << "Data order: " << (params.dataOrder == axom::ArrayStrideOrder::ROW ? "row" : "col")
+  std::cout << "Data order: "
+            << (params.dataOrder == axom::ArrayStrideOrder::ROW ? "row" : "col")
             << std::endl;
 
   std::cout << "Repetition count: " << params.repCount << std::endl;

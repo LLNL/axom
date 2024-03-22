@@ -51,7 +51,8 @@ inline void for_all_I_faces(xargs::ij, const StructuredMesh& m, KernelType&& ker
   RAJA::RangeSegment i_range(0, Ni);
   RAJA::RangeSegment j_range(0, Nj);
 
-  using exec_pol = typename axom::internal::nested_for_exec<ExecPolicy>::loop2d_policy;
+  using exec_pol =
+    typename axom::internal::nested_for_exec<ExecPolicy>::loop2d_policy;
   RAJA::kernel<exec_pol>(
     RAJA::make_tuple(i_range, j_range),
     AXOM_LAMBDA(IndexType i, IndexType j) {
@@ -96,7 +97,8 @@ inline void for_all_I_faces(xargs::ijk, const StructuredMesh& m, KernelType&& ke
   RAJA::RangeSegment j_range(0, Nj);
   RAJA::RangeSegment k_range(0, Nk);
 
-  using exec_pol = typename axom::internal::nested_for_exec<ExecPolicy>::loop3d_policy;
+  using exec_pol =
+    typename axom::internal::nested_for_exec<ExecPolicy>::loop3d_policy;
   RAJA::kernel<exec_pol>(
     RAJA::make_tuple(i_range, j_range, k_range),
     AXOM_LAMBDA(IndexType i, IndexType j, IndexType k) {
@@ -142,7 +144,8 @@ inline void for_all_J_faces(xargs::ij, const StructuredMesh& m, KernelType&& ker
   RAJA::RangeSegment i_range(0, Ni);
   RAJA::RangeSegment j_range(0, Nj);
 
-  using exec_pol = typename axom::internal::nested_for_exec<ExecPolicy>::loop2d_policy;
+  using exec_pol =
+    typename axom::internal::nested_for_exec<ExecPolicy>::loop2d_policy;
   RAJA::kernel<exec_pol>(
     RAJA::make_tuple(i_range, j_range),
     AXOM_LAMBDA(IndexType i, IndexType j) {
@@ -188,7 +191,8 @@ inline void for_all_J_faces(xargs::ijk, const StructuredMesh& m, KernelType&& ke
   RAJA::RangeSegment j_range(0, Nj);
   RAJA::RangeSegment k_range(0, Nk);
 
-  using exec_pol = typename axom::internal::nested_for_exec<ExecPolicy>::loop3d_policy;
+  using exec_pol =
+    typename axom::internal::nested_for_exec<ExecPolicy>::loop3d_policy;
   RAJA::kernel<exec_pol>(
     RAJA::make_tuple(i_range, j_range, k_range),
     AXOM_LAMBDA(IndexType i, IndexType j, IndexType k) {
@@ -240,7 +244,8 @@ inline void for_all_K_faces(xargs::ijk, const StructuredMesh& m, KernelType&& ke
   RAJA::RangeSegment j_range(0, Nj);
   RAJA::RangeSegment k_range(0, Nk);
 
-  using exec_pol = typename axom::internal::nested_for_exec<ExecPolicy>::loop3d_policy;
+  using exec_pol =
+    typename axom::internal::nested_for_exec<ExecPolicy>::loop3d_policy;
   RAJA::kernel<exec_pol>(
     RAJA::make_tuple(i_range, j_range, k_range),
     AXOM_LAMBDA(IndexType i, IndexType j, IndexType k) {
