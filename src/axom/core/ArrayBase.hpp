@@ -162,7 +162,6 @@ public:
     : m_shape()
     , m_indexer(ArrayStrideOrder::ROW)
   {
-    m_strides[DIM - 1] = 1;
     updateStrides();
   }
 
@@ -178,7 +177,6 @@ public:
     : m_shape {shape}
     , m_indexer(shape, ArrayStrideOrder::ROW)
   {
-    m_strides[DIM - 1] = min_stride;
     updateStrides(min_stride);
   }
 
@@ -191,7 +189,6 @@ public:
   AXOM_HOST_DEVICE ArrayBase(const StackArray<IndexType, DIM>& shape,
                              const StackArray<IndexType, DIM>& stride)
     : m_shape {shape}
-    , m_strides {stride}
     , m_indexer()
   {
     m_indexer.initializeStrides(stride, axom::ArrayStrideOrder::ROW);
@@ -210,7 +207,6 @@ public:
   ArrayBase(
     const ArrayBase<typename std::remove_const<T>::type, DIM, OtherArrayType>& other)
     : m_shape(other.shape())
-    , m_strides(other.strides())
     , m_indexer(other.indexer())
   {
     m_minStride = m_indexer.strides()[ m_indexer.slowestDirs()[DIM - 1] ];
@@ -221,7 +217,6 @@ public:
   ArrayBase(
     const ArrayBase<const typename std::remove_const<T>::type, DIM, OtherArrayType>& other)
     : m_shape(other.shape())
-    , m_strides(other.strides())
     , m_indexer(other.indexer())
   {
     m_minStride = m_indexer.strides()[ m_indexer.slowestDirs()[DIM - 1] ];
@@ -339,7 +334,6 @@ public:
   void swap(ArrayBase& other)
   {
     std::swap(m_shape, other.m_shape);
-    std::swap(m_strides, other.m_strides);
     std::swap(m_indexer, other.m_indexer);
     std::swap(m_minStride, other.m_minStride);
   }
@@ -406,7 +400,6 @@ protected:
     validateShapeAndStride(shape, stride);
 #endif
     m_shape = shape;
-    m_strides = stride;
     m_indexer.initializeStrides(stride);
     m_minStride = m_indexer.strides()[ m_indexer.slowestDirs()[DIM - 1] ];
   }
@@ -580,8 +573,6 @@ private:
 protected:
   /// \brief The extent in each direction
   StackArray<IndexType, DIM> m_shape;
-  /// \brief Logical strides in each direction
-  StackArray<IndexType, DIM> m_strides;
   /// \brief For converting between multidim indices and offset.
   ArrayIndexer<DIM> m_indexer;
   /// \brief Cached value for optimization.  @see minStride()
