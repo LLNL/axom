@@ -722,7 +722,7 @@ public:
     assert(params.dataSlowestDirections.empty());
     assert(int(params.dataOrder) & int(axom::ArrayStrideOrder::ROW));
 
-    axom::ArrayIndexer<axom::IndexType, DIM> indexer;
+    axom::ArrayIndexer<DIM> indexer;
     if(!params.dataSlowestDirections.empty())
     {
       axom::StackArray<std::uint16_t, DIM> dataSlowestDirections;
@@ -760,7 +760,7 @@ public:
       paddedShape[d] = params.paddedShape[d];
     }
 
-    axom::ArrayIndexer<axom::IndexType, DIM> indexer;
+    axom::ArrayIndexer<DIM> indexer;
     if(!params.dataSlowestDirections.empty())
     {
       axom::StackArray<std::uint16_t, DIM> dataSlowestDirections;

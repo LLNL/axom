@@ -338,7 +338,7 @@ public:
   }
 
   /// \brief Returns the indexer of the Array
-  AXOM_HOST_DEVICE const ArrayIndexer<IndexType, DIM>& indexer() const
+  AXOM_HOST_DEVICE const ArrayIndexer<DIM>& indexer() const
   {
     return m_indexer;
   }
@@ -562,7 +562,7 @@ protected:
   /// \brief Logical strides in each direction
   StackArray<IndexType, DIM> m_strides;
   /// \brief For converting between multidim indices and offset.
-  ArrayIndexer<IndexType, DIM> m_indexer;
+  ArrayIndexer<DIM> m_indexer;
 };
 
 /// \brief Array implementation specific to 1D Arrays

@@ -1175,14 +1175,14 @@ struct ContourTestBase
     }
 
     // Indexers to translate between flat and multidim indices.
-    axom::Array<axom::ArrayIndexer<axom::IndexType, DIM>> indexers(domainCount);
+    axom::Array<axom::ArrayIndexer<DIM>> indexers(domainCount);
     for(int d = 0; d < domainCount; ++d)
     {
       axom::StackArray<axom::IndexType, DIM> domShape;
       computationalMesh.domainLengths(d, domShape);
       indexers[d].initializeShape(
         domShape,
-        axom::ArrayIndexer<axom::IndexType, DIM>(allCoordsViews[d][0].strides())
+        axom::ArrayIndexer<DIM>(allCoordsViews[d][0].strides())
           .slowestDirs());
     }
 
@@ -1316,7 +1316,7 @@ struct ContourTestBase
     */
     axom::Array<axom::ArrayView<const double, DIM, MemorySpace>> fcnViews(
       domainCount);
-    axom::Array<axom::ArrayIndexer<axom::IndexType, DIM>> cellIndexers(
+    axom::Array<axom::ArrayIndexer<DIM>> cellIndexers(
       domainCount);
     axom::Array<axom::Array<axom::IndexType>> hasContours(domainCount);
     for(axom::IndexType domId = 0; domId < domainCount; ++domId)
@@ -1375,9 +1375,9 @@ struct ContourTestBase
             strategy.functionName(),
             false);
 
-          axom::ArrayIndexer<axom::IndexType, DIM> cellIndexer(
+          axom::ArrayIndexer<DIM> cellIndexer(
             domLengths,
-            axom::ArrayIndexer<axom::IndexType, DIM>(fcnView.strides()));
+            axom::ArrayIndexer<DIM>(fcnView.strides()));
 
           axom::StackArray<axom::IndexType, DIM> parentCellIdx =
             cellIndexer.toMultiIndex(parentCellId);

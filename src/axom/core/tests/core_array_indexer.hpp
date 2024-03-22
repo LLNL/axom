@@ -19,7 +19,7 @@ TEST(core_array_indexer, core_strides_and_permutations)
     constexpr int DIM = 1;
     axom::StackArray<axom::IndexType, DIM> lengths {2};
 
-    axom::ArrayIndexer<axom::IndexType, DIM> colIndexer(
+    axom::ArrayIndexer<DIM> colIndexer(
       lengths,
       axom::ArrayStrideOrder::COLUMN);
     EXPECT_EQ(colIndexer.getStrideOrder(), axom::ArrayStrideOrder::BOTH);
@@ -32,9 +32,9 @@ TEST(core_array_indexer, core_strides_and_permutations)
     }
     EXPECT_TRUE(
       colIndexer ==
-      (axom::ArrayIndexer<axom::IndexType, DIM>(lengths, colSlowestDirs)));
+      (axom::ArrayIndexer<DIM>(lengths, colSlowestDirs)));
 
-    axom::ArrayIndexer<axom::IndexType, DIM> rowIndexer(
+    axom::ArrayIndexer<DIM> rowIndexer(
       lengths,
       axom::ArrayStrideOrder::ROW);
     EXPECT_EQ(rowIndexer.getStrideOrder(), axom::ArrayStrideOrder::BOTH);
@@ -47,14 +47,14 @@ TEST(core_array_indexer, core_strides_and_permutations)
     }
     EXPECT_TRUE(
       rowIndexer ==
-      (axom::ArrayIndexer<axom::IndexType, DIM>(lengths, rowSlowestDirs)));
+      (axom::ArrayIndexer<DIM>(lengths, rowSlowestDirs)));
   }
   {
     // 2D
     constexpr int DIM = 2;
     axom::StackArray<axom::IndexType, DIM> lengths {3, 2};
 
-    axom::ArrayIndexer<axom::IndexType, DIM> colIndexer(
+    axom::ArrayIndexer<DIM> colIndexer(
       lengths,
       axom::ArrayStrideOrder::COLUMN);
     EXPECT_EQ(colIndexer.getStrideOrder(), axom::ArrayStrideOrder::COLUMN);
@@ -66,7 +66,7 @@ TEST(core_array_indexer, core_strides_and_permutations)
       EXPECT_EQ(colIndexer.strides()[d], colStrides[d]);
     }
 
-    axom::ArrayIndexer<axom::IndexType, DIM> rowIndexer(
+    axom::ArrayIndexer<DIM> rowIndexer(
       lengths,
       axom::ArrayStrideOrder::ROW);
     EXPECT_EQ(rowIndexer.getStrideOrder(), axom::ArrayStrideOrder::ROW);
@@ -83,7 +83,7 @@ TEST(core_array_indexer, core_strides_and_permutations)
     constexpr int DIM = 3;
     axom::StackArray<axom::IndexType, DIM> lengths {5, 3, 2};
 
-    axom::ArrayIndexer<axom::IndexType, DIM> colIndexer(
+    axom::ArrayIndexer<DIM> colIndexer(
       lengths,
       axom::ArrayStrideOrder::COLUMN);
     EXPECT_EQ(colIndexer.getStrideOrder(), axom::ArrayStrideOrder::COLUMN);
@@ -95,7 +95,7 @@ TEST(core_array_indexer, core_strides_and_permutations)
       EXPECT_EQ(colIndexer.strides()[d], colStrides[d]);
     }
 
-    axom::ArrayIndexer<axom::IndexType, DIM> rowIndexer(
+    axom::ArrayIndexer<DIM> rowIndexer(
       lengths,
       axom::ArrayStrideOrder::ROW);
     EXPECT_EQ(rowIndexer.getStrideOrder(), axom::ArrayStrideOrder::ROW);
@@ -116,8 +116,8 @@ TEST(quest_array_indexer, quest_row_major_offset)
     // 1D
     constexpr int DIM = 1;
     axom::StackArray<axom::IndexType, DIM> lengths {3};
-    axom::ArrayIndexer<axom::IndexType, DIM> ai(lengths,
-                                                axom::ArrayStrideOrder::ROW);
+    axom::ArrayIndexer<DIM> ai(lengths,
+                               axom::ArrayStrideOrder::ROW);
     EXPECT_EQ(ai.getStrideOrder(), axom::ArrayStrideOrder::BOTH);
     axom::IndexType offset = 0;
     for(int i = 0; i < lengths[0]; ++i)
@@ -132,8 +132,8 @@ TEST(quest_array_indexer, quest_row_major_offset)
     // 2D
     constexpr int DIM = 2;
     axom::StackArray<axom::IndexType, DIM> lengths {3, 2};
-    axom::ArrayIndexer<axom::IndexType, DIM> ai(lengths,
-                                                axom::ArrayStrideOrder::ROW);
+    axom::ArrayIndexer<DIM> ai(lengths,
+                               axom::ArrayStrideOrder::ROW);
     EXPECT_EQ(ai.getStrideOrder(), axom::ArrayStrideOrder::ROW);
     axom::IndexType offset = 0;
     for(int i = 0; i < lengths[0]; ++i)
@@ -150,8 +150,8 @@ TEST(quest_array_indexer, quest_row_major_offset)
   {
     // 3D
     axom::StackArray<axom::IndexType, 3> lengths {5, 3, 2};
-    axom::ArrayIndexer<axom::IndexType, 3> ai(lengths,
-                                              axom::ArrayStrideOrder::ROW);
+    axom::ArrayIndexer<3> ai(lengths,
+                             axom::ArrayStrideOrder::ROW);
     EXPECT_EQ(ai.getStrideOrder(), axom::ArrayStrideOrder::ROW);
     axom::IndexType offset = 0;
     for(int i = 0; i < lengths[0]; ++i)
@@ -177,8 +177,8 @@ TEST(quest_array_indexer, quest_col_major_offset)
     // 1D
     constexpr int DIM = 1;
     axom::StackArray<axom::IndexType, DIM> lengths {3};
-    axom::ArrayIndexer<axom::IndexType, DIM> ai(lengths,
-                                                axom::ArrayStrideOrder::COLUMN);
+    axom::ArrayIndexer<DIM> ai(lengths,
+                               axom::ArrayStrideOrder::COLUMN);
     EXPECT_EQ(ai.getStrideOrder(), axom::ArrayStrideOrder::BOTH);
     axom::IndexType offset = 0;
     for(int i = 0; i < lengths[0]; ++i)
@@ -193,8 +193,8 @@ TEST(quest_array_indexer, quest_col_major_offset)
     // 2D
     constexpr int DIM = 2;
     axom::StackArray<axom::IndexType, DIM> lengths {3, 2};
-    axom::ArrayIndexer<axom::IndexType, DIM> ai(lengths,
-                                                axom::ArrayStrideOrder::COLUMN);
+    axom::ArrayIndexer<DIM> ai(lengths,
+                               axom::ArrayStrideOrder::COLUMN);
     EXPECT_EQ(ai.getStrideOrder(), axom::ArrayStrideOrder::COLUMN);
     axom::IndexType offset = 0;
     for(int j = 0; j < lengths[1]; ++j)
@@ -212,8 +212,8 @@ TEST(quest_array_indexer, quest_col_major_offset)
     // 3D
     constexpr int DIM = 3;
     axom::StackArray<axom::IndexType, DIM> lengths {5, 3, 2};
-    axom::ArrayIndexer<axom::IndexType, DIM> ai(lengths,
-                                                axom::ArrayStrideOrder::COLUMN);
+    axom::ArrayIndexer<DIM> ai(lengths,
+                               axom::ArrayStrideOrder::COLUMN);
     EXPECT_EQ(ai.getStrideOrder(), axom::ArrayStrideOrder::COLUMN);
     axom::IndexType offset = 0;
     for(int k = 0; k < lengths[2]; ++k)
@@ -236,7 +236,7 @@ template <int DIM>
 typename std::enable_if<DIM == 1>::type check_arbitrary_strides_nested_loops(
   const axom::StackArray<axom::IndexType, DIM>& lengths,
   const axom::StackArray<axom::IndexType, DIM>& fastestDirs,
-  const axom::ArrayIndexer<axom::IndexType, DIM>& ai)
+  const axom::ArrayIndexer<DIM>& ai)
 {
   /*
     We address the array with natural indices, but arange the
@@ -258,7 +258,7 @@ template <int DIM>
 typename std::enable_if<DIM == 2>::type check_arbitrary_strides_nested_loops(
   const axom::StackArray<axom::IndexType, DIM>& lengths,
   const axom::StackArray<axom::IndexType, DIM>& fastestDirs,
-  const axom::ArrayIndexer<axom::IndexType, DIM>& ai)
+  const axom::ArrayIndexer<DIM>& ai)
 {
   /*
     We address the array with natural indices, but arange the
@@ -284,7 +284,7 @@ template <int DIM>
 typename std::enable_if<DIM == 3>::type check_arbitrary_strides_nested_loops(
   const axom::StackArray<axom::IndexType, DIM>& lengths,
   const axom::StackArray<axom::IndexType, DIM>& fastestDirs,
-  const axom::ArrayIndexer<axom::IndexType, DIM>& ai)
+  const axom::ArrayIndexer<DIM>& ai)
 {
   /*
     We address the array with natural indices, but arange the
@@ -327,7 +327,7 @@ void check_arbitrary_strides(
     currentStride *= lengths[currentDir];
   }
 
-  axom::ArrayIndexer<axom::IndexType, DIM> ai(strides);
+  axom::ArrayIndexer<DIM> ai(strides);
 
   const auto slowestDirs = ai.slowestDirs();
   for(int d = 0; d < DIM; ++d)
@@ -400,8 +400,8 @@ TEST(core_array_indexer, core_array_match)
     constexpr int DIM = 2;
     axom::StackArray<axom::IndexType, DIM> lengths {3, 2};
     axom::Array<int, DIM> a(lengths);
-    axom::ArrayIndexer<axom::IndexType, DIM> ai(lengths,
-                                                axom::ArrayStrideOrder::ROW);
+    axom::ArrayIndexer<DIM> ai(lengths,
+                               axom::ArrayStrideOrder::ROW);
     for(axom::IndexType i = 0; i < lengths[0]; ++i)
     {
       for(axom::IndexType j = 0; j < lengths[1]; ++j)
@@ -415,8 +415,8 @@ TEST(core_array_indexer, core_array_match)
     constexpr int DIM = 3;
     axom::StackArray<axom::IndexType, DIM> lengths {5, 3, 2};
     axom::Array<int, DIM> a(lengths);
-    axom::ArrayIndexer<axom::IndexType, DIM> ai(lengths,
-                                                axom::ArrayStrideOrder::ROW);
+    axom::ArrayIndexer<DIM> ai(lengths,
+                               axom::ArrayStrideOrder::ROW);
     for(axom::IndexType i = 0; i < lengths[0]; ++i)
     {
       for(axom::IndexType j = 0; j < lengths[1]; ++j)

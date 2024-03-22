@@ -47,7 +47,7 @@ class MarchingCubesImpl : public MarchingCubesSingleDomain::ImplBase
 public:
   using Point = axom::primal::Point<double, DIM>;
   using MIdx = axom::StackArray<axom::IndexType, DIM>;
-  using Indexer = axom::ArrayIndexer<axom::IndexType, DIM>;
+  using Indexer = axom::ArrayIndexer<DIM>;
   using FacetIdType = int;
   using LoopPolicy = typename execution_space<ExecSpace>::loop_policy;
   using ReducePolicy = typename execution_space<ExecSpace>::reduce_policy;
@@ -644,12 +644,12 @@ public:
   struct ComputeFacets_Util
   {
     double contourVal;
-    axom::ArrayIndexer<axom::IndexType, DIM> indexer;
+    axom::ArrayIndexer<DIM> indexer;
     axom::ArrayView<const double, DIM, MemorySpace> fcnView;
     axom::StackArray<axom::ArrayView<const double, DIM, MemorySpace>, DIM> coordsViews;
     ComputeFacets_Util(
       double contourVal_,
-      const axom::ArrayIndexer<axom::IndexType, DIM>& parentIndexer_,
+      const axom::ArrayIndexer<DIM>& parentIndexer_,
       const axom::ArrayView<const double, DIM, MemorySpace>& fcnView_,
       const axom::StackArray<axom::ArrayView<const double, DIM, MemorySpace>, DIM>
         coordsViews_)
@@ -943,7 +943,7 @@ private:
     the order, we put caseIds in a 1D array and construct a
     multidim view with the ordering we want.
   */
-  axom::ArrayIndexer<axom::IndexType, DIM> m_caseIdsIndexer;
+  axom::ArrayIndexer<DIM> m_caseIdsIndexer;
 
   // Array references refer to shared Arrays in MarchingCubes.
 

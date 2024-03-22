@@ -35,7 +35,7 @@ enum class ArrayStrideOrder : int
   Supports row-major and column-major ordering and arbitrary
   permutations of the ordering.
 */
-template <typename T, int DIM>
+template <int DIM, typename T=axom::IndexType>
 class ArrayIndexer
 {
 public:
@@ -76,7 +76,7 @@ public:
       from.
   */
   ArrayIndexer(const axom::StackArray<T, DIM>& shape,
-               const axom::ArrayIndexer<T, DIM>& orderSource)
+               const axom::ArrayIndexer<DIM, T>& orderSource)
   {
     initializeShape(shape, orderSource);
   }
@@ -179,7 +179,7 @@ public:
   */
   inline AXOM_HOST_DEVICE void initializeShape(
     const axom::StackArray<T, DIM>& shape,
-    const axom::ArrayIndexer<T, DIM>& orderSource)
+    const axom::ArrayIndexer<DIM, T>& orderSource)
   {
     initializeShape(shape, orderSource.slowestDirs());
   }
