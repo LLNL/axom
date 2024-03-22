@@ -212,7 +212,7 @@ public:
     }
 
     // 2nd argument doesn't matter because strides are unique.
-    initializeStrides(strides, axom::ArrayStrideOrder::COLUMN);
+    initializeStrides(strides, axom::ArrayStrideOrder::ROW);
   }
 
   /*!
@@ -235,7 +235,7 @@ public:
     for(int d = 0; d < DIM; ++d)
     {
       m_slowestDirs[d] =
-        orderPref == axom::ArrayStrideOrder::COLUMN ? d : DIM - 1 - d;
+        orderPref == axom::ArrayStrideOrder::ROW ? d : DIM - 1 - d;
     }
     for(int s = 0; s < DIM; ++s)
     {
