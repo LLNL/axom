@@ -60,11 +60,14 @@ public:
     @param [in] slowestDirs permutation vector, where
       slowestDirs[0] is the slowest direction and
       slowestDirs[DIM-1] is the fastest.
+    @param [in] fastestStrideLength Stride in the fastest
+                direction.
   */
   ArrayIndexer(const axom::StackArray<T, DIM>& shape,
-               const axom::StackArray<std::uint16_t, DIM>& slowestDirs)
+               const axom::StackArray<std::uint16_t, DIM>& slowestDirs,
+               int fastestStrideLength = 1)
   {
-    initializeShape(shape, slowestDirs);
+    initializeShape(shape, slowestDirs, fastestStrideLength);
   }
 
   /*!
@@ -103,6 +106,23 @@ public:
     Object must be initialized before use.
   */
   ArrayIndexer() = default;
+
+  /*!
+    @brief Construct indexer for empty shape and the given stride order.
+
+    The expected use case is when a stride order is known but the
+    shape is to be determined.  Initialize the indexer with its own
+    slowestDirs() to preserve ordering as its shape changes.
+  */
+  ArrayIndexer(ArrayStrideOrder arrayStrideOrder)
+  {
+    axom::StackArray<T, DIM> shape;
+    for (int d = 0; d < DIM; ++d)
+    {
+      shape[d] = 0;
+    }
+    initializeShape(shape, arrayStrideOrder);
+  }
 
   /*!
     @brief Initialize for row- or column-major indexing.
@@ -153,14 +173,17 @@ public:
     @param [in] slowestDirs permutation vector, where
       slowestDirs[0] is the slowest direction and
       slowestDirs[DIM-1] is the fastest.
+    @param [in] fastestStrideLength Stride in the fastest
+      direction.
   */
   inline AXOM_HOST_DEVICE void initializeShape(
     const axom::StackArray<T, DIM>& shape,
-    const axom::StackArray<std::uint16_t, DIM>& slowestDirs)
+    const axom::StackArray<std::uint16_t, DIM>& slowestDirs,
+    int fastestStrideLength = 1)
   {
     assert(isPermutation(slowestDirs));
     m_slowestDirs = slowestDirs;
-    m_strides[m_slowestDirs[DIM - 1]] = 1;
+    m_strides[m_slowestDirs[DIM - 1]] = fastestStrideLength;
     for(int d = DIM - 2; d >= 0; --d)
     {
       int dir = m_slowestDirs[d];
