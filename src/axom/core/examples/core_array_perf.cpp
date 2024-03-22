@@ -22,6 +22,7 @@
 #include "axom/CLI11.hpp"
 
 // C/C++ includes
+#include <unistd.h>
 #include <iostream>
 #include <vector>
 
@@ -42,8 +43,8 @@ public:
   axom::IndexType paddedSize;
 
   // Array stride order (same length as shape)
-  std::vector<std::uint32_t> slowestDirections;
-  axom::ArrayStrideOrder strideOrder = axom::ArrayStrideOrder::ARBITRARY;
+  std::vector<std::uint32_t> dataSlowestDirections;
+  axom::ArrayStrideOrder dataOrder = axom::ArrayStrideOrder::ARBITRARY;
 
   RuntimePolicy runtimePolicy = RuntimePolicy::seq;
 
@@ -76,17 +77,17 @@ public:
 
     app.add_option("-r, --repCount", repCount)->description("Number of repetitions to run");
 
-    auto* strideOrderOption =
-      app.add_option("--strideOrder", strideOrder)
-        ->description("Stride order (must be as long as sizes.")
+    auto* dataOrderOption =
+      app.add_option("--dataOrder", dataOrder)
+        ->description("Stride order of array data.")
         ->transform(axom::CLI::CheckedTransformer(strideValidator))
         ->expected(1, 4);
 
-    app.add_option("--slowestDirections", slowestDirections)
+    app.add_option("--dataSlowestDirections", dataSlowestDirections)
       ->description(
-        "Stride directions, from slowest to fastest.  Must be same length as "
-        "shape.")
-      ->excludes(strideOrderOption);
+        "Array data stride directions, from slowest to fastest."
+        "  Must be same length as shape.")
+      ->excludes(dataOrderOption);
 
     app.get_formatter()->column_width(60);
 
@@ -99,23 +100,23 @@ public:
     }
 
     /*
-      If slowestDirections is specified, it must match length of shape.
+      If dataSlowestDirections is specified, it must match length of shape.
       If neither is specified, default to row-major ordering.
     */
-    if(!slowestDirections.empty())
+    if(!dataSlowestDirections.empty())
     {
-      if(slowestDirections.size() != shape.size())
+      if(dataSlowestDirections.size() != shape.size())
       {
-        std::cerr << "slowestDimension size (" << slowestDirections.size()
+        std::cerr << "slowestDimension size (" << dataSlowestDirections.size()
                   << ") must match shape size (" << shape.size() << ")."
                   << std::endl;
         std::abort();
       }
     }
-    if(slowestDirections.empty() &&
-       strideOrder == axom::ArrayStrideOrder::ARBITRARY)
+    if(dataSlowestDirections.empty() &&
+       dataOrder == axom::ArrayStrideOrder::ARBITRARY)
     {
-      strideOrder = axom::ArrayStrideOrder::ROW;
+      dataOrder = axom::ArrayStrideOrder::ROW;
     }
 
     //
@@ -206,9 +207,9 @@ public:
 #ifdef AXOM_USE_UMPIRE
     umpire::ResourceManager& rm = umpire::ResourceManager::getInstance();
     umpire::Allocator allocator = rm.getAllocator(m_allocatorId);
-    std::cout << "Allocator id " << m_allocatorId << ", using Umpire memory space " << allocator.getName() << std::endl;
+    std::cout << "Allocator id: " << m_allocatorId << ", Umpire memory space " << allocator.getName() << std::endl;
 #else
-    std::cout << "Allocator id " << m_allocatorId << ", using default memory space" << std::endl;
+    std::cout << "Allocator id: " << m_allocatorId << ", default memory space" << std::endl;
 #endif
   }
 
@@ -718,22 +719,22 @@ public:
     }
 
     // Until indexer isused, array will have row-major order.
-    assert(params.slowestDirections.empty());
-    assert(int(params.strideOrder) & int(axom::ArrayStrideOrder::ROW));
+    assert(params.dataSlowestDirections.empty());
+    assert(int(params.dataOrder) & int(axom::ArrayStrideOrder::ROW));
 
     axom::ArrayIndexer<axom::IndexType, DIM> indexer;
-    if(!params.slowestDirections.empty())
+    if(!params.dataSlowestDirections.empty())
     {
-      axom::StackArray<std::uint16_t, DIM> slowestDirections;
+      axom::StackArray<std::uint16_t, DIM> dataSlowestDirections;
       for(int d = 0; d < DIM; ++d)
       {
-        slowestDirections[d] = params.slowestDirections[d];
+        dataSlowestDirections[d] = params.dataSlowestDirections[d];
       }
-      indexer.initializeShape(shape, slowestDirections);
+      indexer.initializeShape(shape, dataSlowestDirections);
     }
     else
     {
-      indexer.initializeShape(shape, params.strideOrder);
+      indexer.initializeShape(shape, params.dataOrder);
     }
 
     return axom::Array<Element_t, DIM>(shape, m_allocatorId);
@@ -760,18 +761,18 @@ public:
     }
 
     axom::ArrayIndexer<axom::IndexType, DIM> indexer;
-    if(!params.slowestDirections.empty())
+    if(!params.dataSlowestDirections.empty())
     {
-      axom::StackArray<std::uint16_t, DIM> slowestDirections;
+      axom::StackArray<std::uint16_t, DIM> dataSlowestDirections;
       for(int d = 0; d < DIM; ++d)
       {
-        slowestDirections[d] = params.slowestDirections[d];
+        dataSlowestDirections[d] = params.dataSlowestDirections[d];
       }
-      indexer.initializeShape(paddedShape, slowestDirections);
+      indexer.initializeShape(paddedShape, dataSlowestDirections);
     }
     else
     {
-      indexer.initializeShape(paddedShape, params.strideOrder);
+      indexer.initializeShape(paddedShape, params.dataOrder);
     }
     view =
       axom::ArrayView<Element_t, DIM>(ar.data(), paddedShape, indexer.strides());
@@ -821,7 +822,7 @@ public:
     for (int r = 0; r<params.repCount; ++r)
     runTest_pointerAccess(array);
     pointerTimer.stop();
-    std::cout << "Avg pointer time   " << pointerTimer.elapsedTimeInSec()
+    std::cout << "Avg pointer time   " << pointerTimer.elapsedTimeInSec()/params.repCount
               << " seconds, " << std::setprecision(3)
               << pointerTimer.elapsedTimeInSec()/baseTime
               << 'x' << std::endl;
@@ -920,10 +921,20 @@ int main(int argc, char** argv)
     exit(retval);
   }
 
+  char hostname[50];
+  gethostname(hostname, 50);
+  std::cout << "Host: " << hostname << std::endl;
+
   using RuntimePolicy = axom::runtime_policy::Policy;
 
-  std::cout << "Testing runtimePolicy "
+  std::cout << "Runtime policy: "
             << axom::runtime_policy::policyToName(params.runtimePolicy)
+            << std::endl;
+
+  std::cout << "Array shape: " << array_to_string(params.shape.data(), params.shape.size())
+            << std::endl;
+
+  std::cout << "Data order: " << (params.dataOrder == axom::ArrayStrideOrder::ROW ? "row" : "col")
             << std::endl;
 
   std::cout << "Repetition count: " << params.repCount << std::endl;
