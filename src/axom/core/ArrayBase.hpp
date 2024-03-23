@@ -158,9 +158,7 @@ public:
   constexpr static int Dims = DIM;
 
   //! @brief Construct row-major, unitnitialized array.
-  AXOM_HOST_DEVICE ArrayBase()
-    : m_shape()
-    , m_indexer(ArrayStrideOrder::ROW)
+  AXOM_HOST_DEVICE ArrayBase() : m_shape(), m_indexer(ArrayStrideOrder::ROW)
   {
     updateStrides();
   }
@@ -192,7 +190,7 @@ public:
     , m_indexer()
   {
     m_indexer.initializeStrides(stride, axom::ArrayStrideOrder::ROW);
-    m_minStride = m_indexer.strides()[ m_indexer.slowestDirs()[DIM - 1] ];
+    m_minStride = m_indexer.strides()[m_indexer.slowestDirs()[DIM - 1]];
     validateShapeAndStride(shape, stride);
   }
 
@@ -209,7 +207,7 @@ public:
     : m_shape(other.shape())
     , m_indexer(other.indexer())
   {
-    m_minStride = m_indexer.strides()[ m_indexer.slowestDirs()[DIM - 1] ];
+    m_minStride = m_indexer.strides()[m_indexer.slowestDirs()[DIM - 1]];
   }
 
   /// \overload
@@ -219,7 +217,7 @@ public:
     : m_shape(other.shape())
     , m_indexer(other.indexer())
   {
-    m_minStride = m_indexer.strides()[ m_indexer.slowestDirs()[DIM - 1] ];
+    m_minStride = m_indexer.strides()[m_indexer.slowestDirs()[DIM - 1]];
   }
 
   /*!
@@ -363,7 +361,7 @@ public:
    */
   AXOM_HOST_DEVICE IndexType minStride() const
   {
-   /*
+    /*
      For some reason, using the #else block slows down flatIndex() for
      CUDA and HIP, though it doesn't seem tricky to optimize.  As a
      work around, we store the value in m_minStrides and update it
@@ -373,7 +371,7 @@ public:
     return m_minStride;
 #else
     auto fastestDir = m_indexer.slowestDirs()[DIM - 1];
-    return m_indexer.strides()[ fastestDir ];
+    return m_indexer.strides()[fastestDir];
 #endif
   }
 
@@ -401,7 +399,7 @@ protected:
 #endif
     m_shape = shape;
     m_indexer.initializeStrides(stride);
-    m_minStride = m_indexer.strides()[ m_indexer.slowestDirs()[DIM - 1] ];
+    m_minStride = m_indexer.strides()[m_indexer.slowestDirs()[DIM - 1]];
   }
 
   /*!
@@ -410,7 +408,8 @@ protected:
    * This is used when resizing/reallocating; it wouldn't make sense to have a
    * capacity of 3 in the array described above.
    */
-  IndexType blockSize() const {
+  IndexType blockSize() const
+  {
     auto slowestDir = m_indexer.slowestDirs()[0];
     return m_indexer.strides()[slowestDir];
   }
@@ -425,7 +424,7 @@ protected:
   {
     // Update m_indexer strides while preserving stride order.
     m_indexer.initializeShape(m_shape, m_indexer.slowestDirs(), min_stride);
-    m_minStride = m_indexer.strides()[ m_indexer.slowestDirs()[DIM - 1] ];
+    m_minStride = m_indexer.strides()[m_indexer.slowestDirs()[DIM - 1]];
   }
 
   /*!
@@ -474,7 +473,7 @@ private:
   AXOM_HOST_DEVICE IndexType memorySize() const
   {
     auto slowestDir = m_indexer.slowestDirs()[0];
-    return m_indexer.strides()[ slowestDir ] * m_shape[ slowestDir ];
+    return m_indexer.strides()[slowestDir] * m_shape[slowestDir];
   }
 
   /*!
@@ -489,7 +488,7 @@ private:
   {
     static_assert(UDim <= DIM,
                   "Index dimensions cannot be larger than array dimensions");
-    assert( indexer().getStrideOrder() & ArrayStrideOrder::ROW );
+    assert(indexer().getStrideOrder() & ArrayStrideOrder::ROW);
     return numerics::dot_product(idx.begin(), m_indexer.strides().begin(), UDim);
   }
 

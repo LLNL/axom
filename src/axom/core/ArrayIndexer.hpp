@@ -117,7 +117,7 @@ public:
   ArrayIndexer(ArrayStrideOrder arrayStrideOrder)
   {
     axom::StackArray<T, DIM> shape;
-    for (int d = 0; d < DIM; ++d)
+    for(int d = 0; d < DIM; ++d)
     {
       shape[d] = 0;
     }
