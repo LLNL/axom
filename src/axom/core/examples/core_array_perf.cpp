@@ -15,6 +15,7 @@
 #include "axom/core/execution/nested_for_exec.hpp"
 #include "axom/core/execution/runtime_policy.hpp"
 #include "axom/core/memory_management.hpp"
+#include "axom/core/utilities/System.hpp"
 #include "axom/core/utilities/Timer.hpp"
 #include "axom/core/utilities/AnnotationMacros.hpp"
 
@@ -22,7 +23,6 @@
 #include "axom/CLI11.hpp"
 
 // C/C++ includes
-#include <unistd.h>
 #include <iostream>
 #include <vector>
 
@@ -926,8 +926,7 @@ int main(int argc, char** argv)
     exit(retval);
   }
 
-  char hostname[50];
-  gethostname(hostname, 50);
+  auto hostname = axom::utilities::getHostName();
   std::cout << "Host: " << hostname << std::endl;
 
   using RuntimePolicy = axom::runtime_policy::Policy;
