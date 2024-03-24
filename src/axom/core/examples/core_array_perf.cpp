@@ -708,63 +708,16 @@ public:
   //
 
   /*!
-    @brief Return an array for testing, dimension DIM,
-    sized and ordered according to params values.
+    @brief Make ArrayIndexer based on command line parameters.
   */
-  axom::Array<Element_t, DIM> makeArray()
+  void getPaddedShapeAndIndexer(axom::StackArray<axom::IndexType, DIM>& paddedShape,
+                                axom::ArrayIndexer<DIM>& indexer)
   {
-    assert(DIM <= params.shape.size());
-
-    axom::StackArray<axom::IndexType, DIM> shape;
-    for(int d = 0; d < DIM; ++d)
-    {
-      shape[d] = params.shape[d];
-    }
-
-    // Until indexer isused, array will have row-major order.
-    assert(params.dataSlowestDirections.empty());
-    assert(int(params.dataOrder) & int(axom::ArrayStrideOrder::ROW));
-
-    axom::ArrayIndexer<DIM> indexer;
-    if(!params.dataSlowestDirections.empty())
-    {
-      axom::StackArray<std::uint16_t, DIM> dataSlowestDirections;
-      for(int d = 0; d < DIM; ++d)
-      {
-        dataSlowestDirections[d] = params.dataSlowestDirections[d];
-      }
-      indexer.initializeShape(shape, dataSlowestDirections);
-    }
-    else
-    {
-      indexer.initializeShape(shape, params.dataOrder);
-    }
-
-    return axom::Array<Element_t, DIM>(shape, m_allocatorId);
-  }
-
-  /*!
-    @brief Return an array for testing, dimension DIM,
-    sized and ordered according to params values.
-
-    This method allocates a 1D array and puts a muldimensional
-    view on the data.  The view supports arbitrary ordering.
-  */
-  void makeArray(axom::Array<Element_t>& ar, axom::ArrayView<Element_t, DIM>& view)
-  {
-    assert(DIM <= params.shape.size());
-
-    ar =
-      axom::Array<Element_t>(params.paddedSize, params.paddedSize, m_allocatorId);
-    // ar.resize(params.paddedSize);
-
-    axom::StackArray<axom::IndexType, DIM> paddedShape;
     for(int d = 0; d < DIM; ++d)
     {
       paddedShape[d] = params.paddedShape[d];
     }
 
-    axom::ArrayIndexer<DIM> indexer;
     if(!params.dataSlowestDirections.empty())
     {
       axom::StackArray<std::uint16_t, DIM> dataSlowestDirections;
@@ -778,10 +731,42 @@ public:
     {
       indexer.initializeShape(paddedShape, params.dataOrder);
     }
+  }
+
+  /*!
+    @brief Return an array for testing, dimension DIM,
+    sized and ordered according to params values.
+  */
+  axom::Array<Element_t, DIM> makeArray()
+  {
+    assert(DIM <= params.shape.size());
+
+    axom::StackArray<axom::IndexType, DIM> paddedShape;
+    axom::ArrayIndexer<DIM> indexer;
+    getPaddedShapeAndIndexer(paddedShape, indexer);
+
+    return axom::Array<Element_t, DIM>(paddedShape, indexer, m_allocatorId);
+  }
+
+  /*!
+    @brief Return an array for testing, dimension DIM,
+    sized and ordered according to params values.
+
+    This method allocates a 1D array and puts a muldimensional
+    view on the data.  The view supports arbitrary ordering.
+  */
+  void makeArray(axom::Array<Element_t>& ar, axom::ArrayView<Element_t, DIM>& view)
+  {
+    assert(DIM <= params.shape.size());
+
+    axom::StackArray<axom::IndexType, DIM> paddedShape;
+    axom::ArrayIndexer<DIM> indexer;
+    getPaddedShapeAndIndexer(paddedShape, indexer);
+
+    ar =
+      axom::Array<Element_t>(params.paddedSize, params.paddedSize, m_allocatorId);
     view =
       axom::ArrayView<Element_t, DIM>(ar.data(), paddedShape, indexer.strides());
-
-    return;
   }
 
   /*!
@@ -792,7 +777,7 @@ public:
   {
     // Use ArrayView to test, because Array doesn't support
     // arbitrary ordering (yet).
-#if 0
+#if 1
     axom::Array<Element_t, DIM> arrayMd = makeArray();
     axom::ArrayView<Element_t, DIM> array = arrayMd.view();
 #else
@@ -864,12 +849,16 @@ public:
     // (Bring the data to the host so this test doesn't rely on RAJA.)
     auto hostAllocatorId = axom::detail::getAllocatorID<
       axom::execution_space<axom::SEQ_EXEC>::memory_space>();
+#if 1
+    axom::Array<Element_t, DIM> hostArray(array, hostAllocatorId);
+#else
     axom::Array<Element_t> hostArray(array1D, hostAllocatorId);
+#endif
     axom::IndexType matchCount = 0;
     for(axom::IndexType i = 0; i < count; ++i)
     {
-      matchCount +=
-        (hostArray[i] == Element_t(i * m_baseFactor) + m_testAccumulation);
+      matchCount += (hostArray.flatIndex(i) ==
+                     Element_t(i * m_baseFactor) + m_testAccumulation);
     }
     if(matchCount != params.realSize)
     {

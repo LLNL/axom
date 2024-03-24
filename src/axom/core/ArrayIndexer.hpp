@@ -302,6 +302,12 @@ public:
     return m_strides;
   }
 
+  //!@brief Stride length in fastest direction.
+  inline AXOM_HOST_DEVICE axom::IndexType fastestStrideLength() const
+  {
+    return m_strides[m_slowestDirs[DIM - 1]];
+  }
+
   //!@brief Whether a StackArray represents a permutation.
   bool isPermutation(const axom::StackArray<std::uint16_t, DIM>& v)
   {
@@ -324,6 +330,24 @@ public:
       found[v[d]] = true;
     }
     return true;
+  }
+
+  /*!
+    @brief Whether object's fit with a given array shape.
+
+    This object can index arrays with the given shape if
+    the index ordering and fastest stride also match the
+    array's data ordering and fastest stride.
+  */
+  bool fitsShape(const axom::StackArray<axom::IndexType, DIM>& shape) const
+  {
+    bool fits = true;
+    for(int d = DIM - 1; d > 0; --d)
+    {
+      fits &= m_strides[m_slowestDirs[d]] * shape[m_slowestDirs[d]] ==
+        m_strides[m_slowestDirs[d - 1]];
+    }
+    return fits;
   }
 
   /*!

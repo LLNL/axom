@@ -179,6 +179,22 @@ public:
   }
 
   /*!
+   * \brief Parameterized constructor that sets up the array shape,
+   * with an indexer to specify data ordering.
+   *
+   * \param [in] shape Array size in each direction.
+   * \param [in] indexer Info on how data is laid out in memory.
+   */
+  AXOM_HOST_DEVICE ArrayBase(const StackArray<IndexType, DIM>& shape,
+                             const ArrayIndexer<DIM>& indexer)
+    : m_shape {shape}
+    , m_indexer(indexer)
+    , m_minStride(m_indexer.fastestStrideLength())
+  {
+    assert(indexer.fitsShape(shape));  // Ensure compatible shape and strides.
+  }
+
+  /*!
    * \brief Parameterized constructor that sets up the array shape and stride.
    *
    * \param [in] shape Array size in each direction.
@@ -189,8 +205,8 @@ public:
     : m_shape {shape}
     , m_indexer()
   {
-    m_indexer.initializeStrides(stride, axom::ArrayStrideOrder::ROW);
-    m_minStride = m_indexer.strides()[m_indexer.slowestDirs()[DIM - 1]];
+    m_indexer.initializeStrides(stride, ArrayStrideOrder::ROW);
+    m_minStride = m_indexer.fastestStrideLength();
     validateShapeAndStride(shape, stride);
   }
 
@@ -207,7 +223,7 @@ public:
     : m_shape(other.shape())
     , m_indexer(other.indexer())
   {
-    m_minStride = m_indexer.strides()[m_indexer.slowestDirs()[DIM - 1]];
+    m_minStride = m_indexer.fastestStrideLength();
   }
 
   /// \overload
@@ -217,7 +233,7 @@ public:
     : m_shape(other.shape())
     , m_indexer(other.indexer())
   {
-    m_minStride = m_indexer.strides()[m_indexer.slowestDirs()[DIM - 1]];
+    m_minStride = m_indexer.fastestStrideLength();
   }
 
   /*!
@@ -359,21 +375,7 @@ public:
   /*!
    * \brief Returns the minimum stride between adjacent items.
    */
-  AXOM_HOST_DEVICE IndexType minStride() const
-  {
-    /*
-     For some reason, using the #else block slows down flatIndex() for
-     CUDA and HIP, though it doesn't seem tricky to optimize.  As a
-     work around, we store the value in m_minStrides and update it
-     when m_indexer changes.
-   */
-#if 1
-    return m_minStride;
-#else
-    auto fastestDir = m_indexer.slowestDirs()[DIM - 1];
-    return m_indexer.strides()[fastestDir];
-#endif
-  }
+  AXOM_HOST_DEVICE inline IndexType minStride() const { return m_minStride; }
 
 protected:
   /// \brief Set the shape
@@ -399,7 +401,7 @@ protected:
 #endif
     m_shape = shape;
     m_indexer.initializeStrides(stride);
-    m_minStride = m_indexer.strides()[m_indexer.slowestDirs()[DIM - 1]];
+    m_minStride = m_indexer.fastestStrideLength();
   }
 
   /*!
@@ -424,7 +426,7 @@ protected:
   {
     // Update m_indexer strides while preserving stride order.
     m_indexer.initializeShape(m_shape, m_indexer.slowestDirs(), min_stride);
-    m_minStride = m_indexer.strides()[m_indexer.slowestDirs()[DIM - 1]];
+    m_minStride = m_indexer.fastestStrideLength();
   }
 
   /*!
@@ -574,7 +576,13 @@ protected:
   StackArray<IndexType, DIM> m_shape;
   /// \brief For converting between multidim indices and offset.
   ArrayIndexer<DIM> m_indexer;
-  /// \brief Cached value for optimization.  @see minStride()
+  /*! \brief Cached value for optimization.  @see minStride()
+
+    For some reason, computing min stride in minStride() slows down
+    flatIndex() for CUDA and HIP, even though it doesn't seem tricky
+    to optimize.  As a work around, we cache the value in m_minStrides
+    and update it when m_indexer changes.  BTNG, March 2024.
+  */
   IndexType m_minStride;
 };
 
@@ -604,6 +612,11 @@ public:
   AXOM_HOST_DEVICE ArrayBase(const StackArray<IndexType, 1>&,
                              const StackArray<IndexType, 1>& stride)
     : m_stride(stride[0])
+  { }
+
+  AXOM_HOST_DEVICE ArrayBase(const StackArray<IndexType, 1>&,
+                             const ArrayIndexer<1>& indexer)
+    : m_stride(indexer.strides()[0])
   { }
 
   // Empty implementation because no member data

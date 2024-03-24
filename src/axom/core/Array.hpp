@@ -7,6 +7,7 @@
 #define AXOM_ARRAY_HPP_
 
 #include "axom/config.hpp"
+#include "axom/core/ArrayIndexer.hpp"
 #include "axom/core/Macros.hpp"
 #include "axom/core/utilities/Utilities.hpp"
 #include "axom/core/Types.hpp"
@@ -60,10 +61,13 @@ struct ArrayTraits<Array<T, DIM, SPACE>>
  *
  *  The Array class mirrors std::vector, with future support for GPUs
  *  in-development.  The class's multidimensional array functionality roughly
-    mirrors the multidimensional array support provided by numpy's ndarray.
- * 
+ *  mirrors the multidimensional array support provided by numpy's ndarray.
+ *
  *  \see https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html
- * 
+ *
+ *  Some constructors and initializers accomodate data ordering specifications.
+ *  Unless otherwise specified, data storage defaults to row-major.
+ *
  *  This class is meant to be a drop-in replacement for std::vector.
  *  However, it differs in its memory management and construction semantics.
  *  Specifically, we do not require axom::Array to initialize/construct
@@ -159,6 +163,15 @@ public:
         int allocator_id = axom::detail::getAllocatorID<SPACE>());
 
   Array(const axom::StackArray<axom::IndexType, DIM>& shape,
+        int allocator_id = axom::detail::getAllocatorID<SPACE>());
+
+  /*!
+    \brief Construct Array with an ArrayIndexer to specify data ordering.
+
+    \pre indexer.fastestStrideLength() == 1
+  */
+  Array(const axom::StackArray<axom::IndexType, DIM>& shape,
+        const axom::ArrayIndexer<DIM>& indexer,
         int allocator_id = axom::detail::getAllocatorID<SPACE>());
 
   /*!
@@ -926,6 +939,20 @@ Array<T, DIM, SPACE>::Array(const axom::StackArray<axom::IndexType, DIM>& shape,
   : ArrayBase<T, DIM, Array<T, DIM, SPACE>>(shape)
   , m_allocator_id(allocator_id)
 {
+  initialize(detail::packProduct(shape.m_data),
+             detail::packProduct(shape.m_data),
+             false);
+}
+
+//------------------------------------------------------------------------------
+template <typename T, int DIM, MemorySpace SPACE>
+Array<T, DIM, SPACE>::Array(const axom::StackArray<axom::IndexType, DIM>& shape,
+                            const axom::ArrayIndexer<DIM>& indexer,
+                            int allocator_id)
+  : ArrayBase<T, DIM, Array<T, DIM, SPACE>>(shape, indexer)
+  , m_allocator_id(allocator_id)
+{
+  assert(indexer.fastestStrideLength() == 1);
   initialize(detail::packProduct(shape.m_data),
              detail::packProduct(shape.m_data),
              false);
