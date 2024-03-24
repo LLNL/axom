@@ -369,7 +369,7 @@ TEST(core_array_indexer, core_arbitrary_strides)
   }
 }
 
-// Test column-major element offsets with Array's.
+// Test row- and column-major element offsets with Array's.
 TEST(core_array_indexer, core_array_match)
 {
   // No test for 1D.  Array provides no non-trivial interface to test.
@@ -377,13 +377,33 @@ TEST(core_array_indexer, core_array_match)
   {
     constexpr int DIM = 2;
     axom::StackArray<axom::IndexType, DIM> lengths {3, 2};
-    axom::Array<int, DIM> a(lengths);
     axom::ArrayIndexer<DIM> ai(lengths, axom::ArrayStrideOrder::ROW);
+    axom::Array<int, DIM> a(lengths, ai);
+    axom::IndexType sequenceNum = 0;
     for(axom::IndexType i = 0; i < lengths[0]; ++i)
     {
       for(axom::IndexType j = 0; j < lengths[1]; ++j)
       {
         axom::StackArray<axom::IndexType, DIM> indices {i, j};
+        EXPECT_EQ(ai.toFlatIndex(indices), sequenceNum);
+        ++sequenceNum;
+        EXPECT_EQ(&a(i, j), &a.flatIndex(ai.toFlatIndex(indices)));
+      }
+    }
+  }
+  {
+    constexpr int DIM = 2;
+    axom::StackArray<axom::IndexType, DIM> lengths {3, 2};
+    axom::ArrayIndexer<DIM> ai(lengths, axom::ArrayStrideOrder::COLUMN);
+    axom::Array<int, DIM> a(lengths, ai);
+    axom::IndexType sequenceNum = 0;
+    for(axom::IndexType j = 0; j < lengths[1]; ++j)
+    {
+      for(axom::IndexType i = 0; i < lengths[0]; ++i)
+      {
+        axom::StackArray<axom::IndexType, DIM> indices {i, j};
+        EXPECT_EQ(ai.toFlatIndex(indices), sequenceNum);
+        ++sequenceNum;
         EXPECT_EQ(&a(i, j), &a.flatIndex(ai.toFlatIndex(indices)));
       }
     }
@@ -391,8 +411,9 @@ TEST(core_array_indexer, core_array_match)
   {
     constexpr int DIM = 3;
     axom::StackArray<axom::IndexType, DIM> lengths {5, 3, 2};
-    axom::Array<int, DIM> a(lengths);
     axom::ArrayIndexer<DIM> ai(lengths, axom::ArrayStrideOrder::ROW);
+    axom::Array<int, DIM> a(lengths, ai);
+    axom::IndexType sequenceNum = 0;
     for(axom::IndexType i = 0; i < lengths[0]; ++i)
     {
       for(axom::IndexType j = 0; j < lengths[1]; ++j)
@@ -400,6 +421,28 @@ TEST(core_array_indexer, core_array_match)
         for(axom::IndexType k = 0; k < lengths[2]; ++k)
         {
           axom::StackArray<axom::IndexType, DIM> indices {i, j, k};
+          EXPECT_EQ(ai.toFlatIndex(indices), sequenceNum);
+          ++sequenceNum;
+          EXPECT_EQ(&a(i, j, k), &a.flatIndex(ai.toFlatIndex(indices)));
+        }
+      }
+    }
+  }
+  {
+    constexpr int DIM = 3;
+    axom::StackArray<axom::IndexType, DIM> lengths {5, 3, 2};
+    axom::ArrayIndexer<DIM> ai(lengths, axom::ArrayStrideOrder::COLUMN);
+    axom::Array<int, DIM> a(lengths, ai);
+    axom::IndexType sequenceNum = 0;
+    for(axom::IndexType k = 0; k < lengths[2]; ++k)
+    {
+      for(axom::IndexType j = 0; j < lengths[1]; ++j)
+      {
+        for(axom::IndexType i = 0; i < lengths[0]; ++i)
+        {
+          axom::StackArray<axom::IndexType, DIM> indices {i, j, k};
+          EXPECT_EQ(ai.toFlatIndex(indices), sequenceNum);
+          ++sequenceNum;
           EXPECT_EQ(&a(i, j, k), &a.flatIndex(ai.toFlatIndex(indices)));
         }
       }

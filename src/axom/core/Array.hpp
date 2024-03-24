@@ -65,7 +65,7 @@ struct ArrayTraits<Array<T, DIM, SPACE>>
  *
  *  \see https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html
  *
- *  Some constructors and initializers accomodate data ordering specifications.
+ *  Some interfaces accomodate data ordering specifications.
  *  Unless otherwise specified, data storage defaults to row-major.
  *
  *  This class is meant to be a drop-in replacement for std::vector.
@@ -166,9 +166,19 @@ public:
         int allocator_id = axom::detail::getAllocatorID<SPACE>());
 
   /*!
-    \brief Construct Array with an ArrayIndexer to specify data ordering.
+    \brief Construct Array with data ordering specifications.
 
     \pre indexer.fastestStrideLength() == 1
+
+    Example of column-major Array:
+        Array<DIM, int> ar(
+          shape,
+          ArrayIndexer<DIM>{shape, ArrayStrideOrder::COLUMN});
+
+    Example of Array where j is fastest and k is slowest:
+        Array<3, int> ar(
+          shape,
+          ArrayIndexer<DIM>{shape, {2, 0, 1}});
   */
   Array(const axom::StackArray<axom::IndexType, DIM>& shape,
         const axom::ArrayIndexer<DIM>& indexer,
