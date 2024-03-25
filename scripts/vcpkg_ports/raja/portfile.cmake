@@ -1,8 +1,8 @@
 vcpkg_from_github(
     OUT_SOURCE_PATH SOURCE_PATH
     REPO llnl/raja
-    REF v2022.03.1
-    SHA512 36e2f59e0f4c3e8fcc07a21fc1eeec701c2be147db9395efedad9aa87bcc078e84a5334698c0fb3e2fbd3670c2eaacdebcd63c4caaa3721a3900ff02dfb44ad7
+    REF v2024.02.0
+    SHA512 4955405764a9ccdccf3956fb7a273fec7c9fef4a2c95b2bc7c50a0aeb5a9fc7ba9f4bedf0cef51edee5035e083fdd68e530ba48ce48e93d851514da86867388f
     HEAD_REF develop
 )
 
@@ -71,7 +71,7 @@ else()
 
     # Update paths to dlls in CMake config files
     foreach(_c  debug release)
-        set(_f ${_config_dir}/RAJA-${_c}.cmake)
+        set(_f ${_config_dir}/RAJATargets-${_c}.cmake)
         file(READ ${_f} _fdata)
         string(REPLACE "lib/RAJA.dll" "bin/RAJA.dll" _fdata "${_fdata}")
         file(WRITE  ${_f} "${_fdata}")
