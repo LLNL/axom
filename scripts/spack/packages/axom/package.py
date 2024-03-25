@@ -148,26 +148,26 @@ class Axom(CachedCMakePackage, CudaPackage, ROCmPackage):
         depends_on("caliper+cuda", when="+cuda")
         depends_on("caliper~cuda", when="~cuda")
 
-        for dep in ["adiak", "caliper"]:
-            depends_on("{0}+mpi".format(dep), when="+mpi")
-            depends_on("{0}~mpi".format(dep), when="~mpi")
-            depends_on("{0}+shared".format(dep), when="+shared")
-            depends_on("{0}~shared".format(dep), when="~shared")
+        depends_on("caliper+rocm", when="+rocm")
+        depends_on("caliper~rocm", when="~rocm")
 
+        for dep in ["adiak", "caliper"]:
+            depends_on(f"{dep}+mpi", when="+mpi")
+            depends_on(f"{dep}~mpi", when="~mpi")
+            depends_on(f"{dep}+shared", when="+shared")
+            depends_on(f"{dep}~shared", when="~shared")
 
     for val in CudaPackage.cuda_arch_values:
-        raja_cuda = "raja +cuda cuda_arch={0}".format(val)
-        umpire_cuda = "umpire +cuda cuda_arch={0}".format(val)
-        depends_on(raja_cuda, when="+{0}".format(raja_cuda))
-        depends_on(umpire_cuda, when="+{0}".format(umpire_cuda))
-        depends_on("caliper cuda_arch={0}".format(val), when="+profiling cuda_arch={0}".format(val))
+        ext_cuda_dep = f"+cuda cuda_arch={val}"
+        depends_on(f"raja {ext_cuda_dep}", when=f"+raja {ext_cuda_dep}")
+        depends_on(f"umpire {ext_cuda_dep}", when=f"+umpire {ext_cuda_dep}")
+        depends_on(f"caliper {ext_cuda_dep}", when=f"+profiling {ext_cuda_dep}")
 
     for val in ROCmPackage.amdgpu_targets:
-        raja_rocm = "raja +rocm amdgpu_target={0}".format(val)
-        umpire_rocm = "umpire +rocm amdgpu_target={0}".format(val)
-        depends_on(raja_rocm, when="+{0}".format(raja_rocm))
-        depends_on(umpire_rocm, when="+{0}".format(umpire_rocm))
-        depends_on("caliper amdgpu_target={0}".format(val), when="+profiling amdgpu_target={0}".format(val))
+        ext_rocm_dep = f"+rocm amdgpu_target={val}"
+        depends_on(f"raja {ext_rocm_dep}", when=f"+raja {ext_rocm_dep}")
+        depends_on(f"umpire {ext_rocm_dep}", when=f"+umpire {ext_rocm_dep}")
+        depends_on(f"caliper {ext_rocm_dep}", when=f"+profiling {ext_rocm_dep}")
 
     depends_on("rocprim", when="+rocm")
 
@@ -181,15 +181,19 @@ class Axom(CachedCMakePackage, CudaPackage, ROCmPackage):
     depends_on("python", when="+python")
 
     # Devtools
-    depends_on("cppcheck", when="+devtools")
-    depends_on("doxygen", when="+devtools")
-    depends_on("graphviz", when="+devtools")
-    depends_on("python", when="+devtools")
-    depends_on("py-sphinx", when="+devtools")
-    depends_on("py-shroud", when="+devtools")
-    depends_on("py-jsonschema", when="+devtools")
-    depends_on("llvm+clang@10.0.0", when="+devtools", type="build")
+    with when("+devtools"):
+        depends_on("cppcheck")
+        depends_on("doxygen")
+        depends_on("graphviz")
+        depends_on("python")
+        depends_on("py-sphinx")
+        depends_on("py-shroud")
+        depends_on("py-jsonschema")
+        depends_on("llvm+clang@10.0.0", type="build")
 
+    # -----------------------------------------------------------------------
+    # Conflicts
+    # -----------------------------------------------------------------------
     # Hard requirement after Axom 0.6.1
     conflicts("~cpp14", when="@0.6.2:")
 
@@ -203,6 +207,7 @@ class Axom(CachedCMakePackage, CudaPackage, ROCmPackage):
     conflicts("+cuda", when="+rocm")
 
     conflicts("^blt@:0.3.6", when="+rocm")
+
 
     def flag_handler(self, name, flags):
         if self.spec.satisfies("%cce") and name == "fflags":
