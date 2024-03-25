@@ -1,10 +1,9 @@
 vcpkg_from_github(
     OUT_SOURCE_PATH SOURCE_PATH
     REPO mfem/mfem
-    REF v4.5
-    SHA512 86336441b180dde8392c59b82b78cb27073c40f00ebab0e3caefaaf9b0e418b077d43122da0f8b78f93e0e6b3b026d5adc16ecce02f38cdc9362e1dc2760e38a
+    REF v4.6
+    SHA512 8805b4993b6f11abe7ac7dda59d0ddb2e0f5f6b09c2b9c57e665f481cd9bd6b669e63621b38989f70dc8ae38c42a7e8c4e10a1d87a4ac29d53ddd95ce79db0ae
     HEAD_REF master
-    PATCHES "./export-extern-vars.patch"
     )
 
 set(_is_shared TRUE)
@@ -45,24 +44,6 @@ file(REMOVE_RECURSE "${_config_dir}/mfem")
 if(VCPKG_LIBRARY_LINKAGE STREQUAL static)
     # Note: Not tested
     file(REMOVE_RECURSE ${CURRENT_PACKAGES_DIR}/bin ${CURRENT_PACKAGES_DIR}/debug/bin)
-else()
-    # Move dll files from lib to bin directory
-    file(MAKE_DIRECTORY ${CURRENT_PACKAGES_DIR}/bin )
-    file(MAKE_DIRECTORY ${CURRENT_PACKAGES_DIR}/debug/bin )
-
-    file(RENAME ${CURRENT_PACKAGES_DIR}/lib/mfem.dll
-                ${CURRENT_PACKAGES_DIR}/bin/mfem.dll)
-
-    file(RENAME ${CURRENT_PACKAGES_DIR}/debug/lib/mfem.dll
-                ${CURRENT_PACKAGES_DIR}/debug/bin/mfem.dll)
-
-    # Update paths to dlls in CMake config files
-    foreach(_c  debug release)
-        set(_f ${_config_dir}/MFEMTargets-${_c}.cmake)
-        file(READ ${_f} _fdata)
-        string(REPLACE "lib/mfem.dll" "bin/mfem.dll" _fdata "${_fdata}")
-        file(WRITE  ${_f} "${_fdata}")
-    endforeach()
 endif()
 
 
