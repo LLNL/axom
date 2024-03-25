@@ -63,8 +63,9 @@ public:
     @param [in] fastestStrideLength Stride in the fastest
                 direction.
   */
+  template<typename DirType>
   ArrayIndexer(const axom::StackArray<T, DIM>& shape,
-               const axom::StackArray<std::uint16_t, DIM>& slowestDirs,
+               const axom::StackArray<DirType, DIM>& slowestDirs,
                int fastestStrideLength = 1)
   {
     initializeShape(shape, slowestDirs, fastestStrideLength);
@@ -176,13 +177,17 @@ public:
     @param [in] fastestStrideLength Stride in the fastest
       direction.
   */
+  template<typename DirType>
   inline AXOM_HOST_DEVICE void initializeShape(
     const axom::StackArray<T, DIM>& shape,
-    const axom::StackArray<std::uint16_t, DIM>& slowestDirs,
+    const axom::StackArray<DirType, DIM>& slowestDirs,
     int fastestStrideLength = 1)
   {
     assert(isPermutation(slowestDirs));
-    m_slowestDirs = slowestDirs;
+    for(int d = 0; d < DIM; ++d)
+    {
+      m_slowestDirs[d] = slowestDirs[d];
+    }
     m_strides[m_slowestDirs[DIM - 1]] = fastestStrideLength;
     for(int d = DIM - 2; d >= 0; --d)
     {
@@ -309,7 +314,8 @@ public:
   }
 
   //!@brief Whether a StackArray represents a permutation.
-  bool isPermutation(const axom::StackArray<std::uint16_t, DIM>& v)
+  template<typename DirType>
+  bool isPermutation(const axom::StackArray<DirType, DIM>& v)
   {
     // v is a permutation if all its values are unique and in [0, DIM).
     axom::StackArray<bool, DIM> found;
