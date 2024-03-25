@@ -82,4 +82,9 @@ else()
 endif()
 
 # Put the license file where vcpkg expects it
-file(INSTALL ${SOURCE_PATH}/LICENSE DESTINATION ${CURRENT_PACKAGES_DIR}/share/camp RENAME copyright)
+# Note: LICENSE occasionally cannot be found
+if(EXISTS "${SOURCE_PATH}/LICENSE")
+    file(INSTALL     ${SOURCE_PATH}/LICENSE 
+         DESTINATION ${CURRENT_PACKAGES_DIR}/share/camp 
+         RENAME      copyright)
+endif()
