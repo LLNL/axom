@@ -259,6 +259,30 @@ macro(axom_add_test)
 endmacro(axom_add_test)
 
 
+#------------------------------------------------------------------------------
+# Asserts that the given VARIABLE_NAME's value is a directory and exists.
+# Fails with a helpful message when it doesn't.
+#------------------------------------------------------------------------------
+macro(axom_assert_is_directory)
+
+    set(options)
+    set(singleValueArgs VARIABLE_NAME)
+    set(multiValueArgs)
+
+    # Parse the arguments to the macro
+    cmake_parse_arguments(arg
+         "${options}" "${singleValueArgs}" "${multiValueArgs}" ${ARGN})
+
+    if (NOT EXISTS "${${arg_VARIABLE_NAME}}")
+        message(FATAL_ERROR "Given ${arg_VARIABLE_NAME} does not exist: ${${arg_VARIABLE_NAME}}")
+    endif()
+
+    if (NOT IS_DIRECTORY "${${arg_VARIABLE_NAME}}")
+        message(FATAL_ERROR "Given ${arg_VARIABLE_NAME} is not a directory: ${${arg_VARIABLE_NAME}}")
+    endif()
+
+endmacro(axom_assert_is_directory)
+
 ##------------------------------------------------------------------------------
 ## convert_to_native_escaped_file_path( path output )
 ##

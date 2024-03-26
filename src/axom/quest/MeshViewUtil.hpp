@@ -541,14 +541,7 @@ public:
       }
     }
 
-    MdIndices offsets = conduitIndicesToStackArray(fieldNode, "offsets");
-    if(!fieldNode.has_child("offsets"))
-    {
-      for(int d = 0; d < DIM; ++d)
-      {
-        offsets[d] = 0;
-      }
-    }
+    MdIndices offsets = conduitIndicesToStackArray(fieldNode, "offsets", 0);
 
     MdIndices loPads, hiPads, paddedShape, strideOrder;
     axom::quest::internal::stridesAndOffsetsToShapes(realShape,
@@ -565,7 +558,6 @@ public:
 
     if(withGhosts == false)
     {
-      MdIndices offsets = conduitIndicesToStackArray(fieldNode, "offsets", 0);
       auto rval1 = rval;
       rval = rval1.subspan(offsets, realShape);
     }

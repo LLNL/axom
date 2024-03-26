@@ -36,8 +36,6 @@ namespace detail
 {
 namespace marching_cubes
 {
-template <int DIM, typename ExecSpace, typename SequentialLoopPolicy>
-class MarchingCubesImpl;  // TODO: Delete this.
 class MarchingCubesSingleDomain;
 }  // namespace marching_cubes
 }  // namespace detail
@@ -101,6 +99,10 @@ enum class MarchingCubesDataParallelism
  * specify ids for the domains.  If "state/domain_id" exists in the
  * domains, it is used as the domain id.  Otherwise, the domain's
  * iteration index within the multidomain mesh is used.
+ *
+ * Output arrays use the allocator id specified in the constructor.
+ * However, the output mint mesh currently uses host data.  The data
+ * output interfaces are interim and subject to change)
  */
 class MarchingCubes
 {
@@ -129,17 +131,12 @@ public:
     \param [in] maskField Cell-based std::int32_t mask field.  If provided,
                 cells where this field evaluates to false are skipped.
 
-    Array data in \a dom must be accessible in the \a runtimePolicy
+    Array data in \a bpMesh must be accessible in the \a runtimePolicy
     environment specified in the constructor.  It's an error if not,
     e.g., using CPU memory with a GPU policy.
 
     Some metadata from \a bpMesh may be cached.  Any change to it
     after setMesh() leads to undefined behavior.
-
-    Blueprint allows users to specify ids for the domains.  If
-    "state/domain_id" exists in the domains, it is used as the domain
-    id.  Otherwise, the domain's interation index within the
-    multidomain mesh is used.
 
     @see clearMesh()
   */
@@ -162,16 +159,16 @@ public:
   */
   void computeIsocontour(double contourVal = 0.0);
 
-  //!@brief Get number of cells in the generated contour mesh.
+  //!@brief Get number of cells (facets) in the generated contour mesh.
   axom::IndexType getContourCellCount() const { return m_facetCount; }
-  //!@brief Get number of cells in the generated contour mesh.
+  //!@brief Get number of cells (facets) in the generated contour mesh.
   axom::IndexType getContourFacetCount() const { return m_facetCount; }
 
   //!@brief Get number of nodes in the generated contour mesh.
   axom::IndexType getContourNodeCount() const;
 
   //@{
-  //!@name Output methods (interim interfaces, subject to change)
+  //!@name Access to output contour mesh
   /*!
     @brief Put generated contour in a mint::UnstructuredMesh.
     @param mesh Output contour mesh
@@ -200,8 +197,6 @@ public:
 
     The array shape is (getContourCellCount(), <spatial dimension>), where
     the second index is index of the facet corner.
-
-    Memory space of data corresponds to allocator set in the constructor.
   */
   axom::ArrayView<const axom::IndexType, 2> getContourFacetCorners() const
   {
@@ -213,8 +208,6 @@ public:
 
     The array shape is (getContourNodeCount(), <spatial dimension>), where
     the second index is the spatial index.
-
-    Memory space of data corresponds to allocator set in the constructor.
   */
   axom::ArrayView<const double, 2> getContourNodeCoords() const
   {
@@ -227,8 +220,6 @@ public:
     The buffer size is getContourCellCount().  The parent ID is the
     column-major ordered flat index of the cell in the parent domain
     (see ArrayIndexer), not counting ghost cells.
-
-    Memory space of data corresponds to allocator set in the constructor.
   */
   axom::ArrayView<const axom::IndexType> getContourFacetParents() const
   {
@@ -250,8 +241,17 @@ public:
   /*!
     @brief Give caller posession of the contour data.
 
-    This efficiently turns the generated contour data to the caller,
+    This efficiently gives the generated contour data to the caller,
     to stay in scope after the MarchingCubes object is deleted.
+
+    @param [i] facetNodeIds Node ids for the node at the corners of
+      each facet.  @see getContourFacetCorners().
+    @param [i] facetNodeCoords Coordinates of each facet node.
+      @see getContourNodeCoords().
+    @param [i] facetParentIds Parent cell id of each facet.
+      @see getContourFacetParents().
+    @param [i] facetDomainIds Domain id of each facet.
+      @see getContourFacetDomainIds().
 
     @pre computeIsocontour() must have been called.
     @post outputs can no longer be accessed from object, as though

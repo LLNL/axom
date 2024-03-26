@@ -19,6 +19,15 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 
 ## [Unreleased] - Release date yyyy-mm-dd
 
+### Changed
+- Upgrades `vcpkg` usage for axom's automated Windows builds to its
+  [2024.03.19 release](https://github.com/microsoft/vcpkg/releases/tag/2024.03.19).
+  Also updates vcpkg port versions for axom dependencies. Temporarily removes `umpire`
+  from axom's default dependencies on Windows due to incompatibility between umpire's
+  external `fmt` and axom's vendored copy.
+
+## [Version 0.9.0] - Release date 2024-03-19
+
 ### Added
 - Primal: Adds a `Quadrilateral` primitive
 - Primal: Adds a `compute_bounding_box()` operator for computing the bounding
@@ -34,6 +43,9 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 - Adds initial support for using Slic streams with tags
 - Adds an example that finds intersection candidate pairs between two Silo
   hexahedral meshes using either a BVH or Implicit Grid spatial index
+- Quest: Adds `setTetPredFromBoundingBox()` and `setTetPred()` functions to
+  `quest::ProEReader` and `PProEReader` that set a tet predicate, allowing
+  user code to read in a subset of a Pro/E ASCII tetrahedron mesh file.
 
 ### Changed
 - `MarchingCubes` has optimizations to improve GPU performance, particularly for
@@ -61,6 +73,9 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 - Primal: `intersection_volume()` operators changed from returning a signed
   volume to an unsigned volume.
 - Primal's `BoundingBox::contains(BoundingBox)`  now returns `true` when the input is empty
+- Renamed axom's bit utility functions to conform to `C++20` standard: `popCount() -> popcount()`, 
+  `trailingZeros() -> countr_zero()` and `leadingZeros() -> countl_zero()`
+- Renamed `axom::utilities::swapEndian() -> byteswap()` to conform to `C++23` standard
 
 ### Fixed
 - quest's `SamplingShaper` now properly handles material names containing underscores
@@ -71,6 +86,7 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 - Fixed a bug when loading Sidre groups with attributes that already exist
 - Fixed `std::locale` error when when compiling `src/axom/core/utilities/System.cpp` using nvcc
 - Include `cstdint` for higher gcc version support (e.g. gcc-13)
+- Fixed several memory leaks in `axom::Array`, `quest::Shaping` and `sidre::MFEMSidreDataCollection`
 
 ## [Version 0.8.1] - Release date 2023-08-16
 
@@ -1022,7 +1038,8 @@ fractions for the associated materials must be supplied before shaping.
 - Use this section in case of vulnerabilities
 
 
-[Unreleased]:    https://github.com/LLNL/axom/compare/v0.8.1...develop
+[Unreleased]:    https://github.com/LLNL/axom/compare/v0.9.0...develop
+[Version 0.9.0]: https://github.com/LLNL/axom/compare/v0.8.1...v0.9.0
 [Version 0.8.1]: https://github.com/LLNL/axom/compare/v0.8.0...v0.8.1
 [Version 0.8.0]: https://github.com/LLNL/axom/compare/v0.7.0...v0.8.0
 [Version 0.7.0]: https://github.com/LLNL/axom/compare/v0.6.1...v0.7.0

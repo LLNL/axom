@@ -191,8 +191,6 @@ void MarchingCubes::populateContourMesh(
   // Reserve space once for all local domains.
   const axom::IndexType contourCellCount = getContourCellCount();
   const axom::IndexType contourNodeCount = getContourNodeCount();
-  // Temporarily disable reservation due to unknown bug.
-  // See https://github.com/LLNL/axom/pull/1271
   mesh.reserveCells(contourCellCount);
   mesh.reserveNodes(contourNodeCount);
 

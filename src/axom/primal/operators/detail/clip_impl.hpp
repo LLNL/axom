@@ -328,7 +328,7 @@ AXOM_HOST_DEVICE void poly_clip_fix_nbrs(Polyhedron<T, NDIMS>& poly,
             }
             else
             {
-              int offset;
+              int offset {};
               for(int oi = 0; oi < old_nbrs.getNumNeighbors(inext); oi++)
               {
                 if(old_nbrs[inext][oi] == iprev)

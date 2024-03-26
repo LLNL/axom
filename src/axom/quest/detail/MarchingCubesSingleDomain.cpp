@@ -46,9 +46,9 @@ void MarchingCubesSingleDomain::setDomain(const conduit::Node& dom,
 {
   m_topologyName = topologyName;
 
-  SLIC_ASSERT_MSG(
-    !conduit::blueprint::mesh::is_multi_domain(dom),
-    "MarchingCubesSingleDomain is single-domain only.  Try MarchingCubes.");
+  SLIC_ASSERT_MSG(!conduit::blueprint::mesh::is_multi_domain(dom),
+                  "Internal error.  Attempt to set a multi-domain mesh in "
+                  "MarchingCubesSingleDomain.");
   SLIC_ASSERT(
     dom.fetch_existing("topologies/" + m_topologyName + "/type").as_string() ==
     "structured");

@@ -4,13 +4,11 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 
 #include "axom/slic/core/Logger.hpp"
-
 #include "axom/slic/core/LogStream.hpp"
-
-#include "axom/core/utilities/Utilities.hpp"  // for utilities::processAbort()
+#include "axom/core/utilities/Utilities.hpp"
 
 // C/C++ includes
-#include <iostream>  // for std::cout, std::cerr
+#include <iostream>
 
 namespace axom
 {
@@ -64,17 +62,15 @@ Logger::Logger(const std::string& name)
 //------------------------------------------------------------------------------
 Logger::~Logger()
 {
-  std::map<LogStream*, LogStream*>::iterator it = m_streamObjectsManager.begin();
-  for(; it != m_streamObjectsManager.end(); ++it)
+  for(auto& kv : m_streamObjectsManager)
   {
-    delete it->second;
-  }  // END for all logStreams
+    delete kv.second;
+  }
 
   for(int level = message::Error; level < message::Num_Levels; ++level)
   {
     m_logStreams[level].clear();
-
-  }  // END for all levels
+  }
 
   m_taggedStreams.clear();
 }
@@ -160,7 +156,6 @@ void Logger::addStreamToTag(LogStream* ls,
   {
     m_taggedStreams[tag] = std::vector<LogStream*> {ls};
   }
-
   else
   {
     m_taggedStreams[tag].push_back(ls);
@@ -173,7 +168,7 @@ void Logger::addStreamToTag(LogStream* ls,
 }
 
 //------------------------------------------------------------------------------
-void Logger::addStreamToAllMsgLevels(LogStream* ls)
+void Logger::addStreamToAllMsgLevels(LogStream* ls, bool pass_ownership)
 {
   if(ls == nullptr)
   {
@@ -183,13 +178,14 @@ void Logger::addStreamToAllMsgLevels(LogStream* ls)
 
   for(int level = message::Error; level < message::Num_Levels; ++level)
   {
-    this->addStreamToMsgLevel(ls, static_cast<message::Level>(level));
-
-  }  // END for all levels
+    this->addStreamToMsgLevel(ls,
+                              static_cast<message::Level>(level),
+                              pass_ownership);
+  }
 }
 
 //------------------------------------------------------------------------------
-void Logger::addStreamToAllTags(LogStream* ls)
+void Logger::addStreamToAllTags(LogStream* ls, bool pass_ownership)
 {
   if(ls == nullptr)
   {
@@ -197,17 +193,20 @@ void Logger::addStreamToAllTags(LogStream* ls)
     return;
   }
 
-  if(ls == nullptr)
+  if(m_taggedStreams.empty())
   {
     std::cerr << "WARNING: no tags are available!\n";
+    if(pass_ownership)
+    {
+      m_streamObjectsManager[ls] = ls;
+    }
+
     return;
   }
 
-  std::map<std::string, std::vector<LogStream*>>::iterator it;
-
-  for(it = m_taggedStreams.begin(); it != m_taggedStreams.end(); it++)
+  for(auto& kv : m_taggedStreams)
   {
-    this->addStreamToTag(ls, it->first);
+    this->addStreamToTag(ls, kv.first, pass_ownership);
   }
 }
 
@@ -525,16 +524,15 @@ bool Logger::activateLogger(const std::string& name)
 void Logger::finalize()
 {
   Loggermap& loggers = getLoggers();
-  for(Loggermap::iterator it = loggers.begin(); it != loggers.end(); ++it)
+  for(auto& kv : loggers)
   {
-    it->second->flushStreams();
+    kv.second->flushStreams();
   }
 
-  for(Loggermap::iterator it = loggers.begin(); it != loggers.end(); ++it)
+  for(auto& kv : loggers)
   {
-    delete it->second;
+    delete kv.second;
   }
-
   loggers.clear();
 
   getLogger() = nullptr;
