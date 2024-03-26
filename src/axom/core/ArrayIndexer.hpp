@@ -339,24 +339,6 @@ public:
   }
 
   /*!
-    @brief Whether object's fit with a given array shape.
-
-    This object can index arrays with the given shape if
-    the index ordering and fastest stride also match the
-    array's data ordering and fastest stride.
-  */
-  bool fitsShape(const axom::StackArray<axom::IndexType, DIM>& shape) const
-  {
-    bool fits = true;
-    for(int d = DIM - 1; d > 0; --d)
-    {
-      fits &= m_strides[m_slowestDirs[d]] * shape[m_slowestDirs[d]] ==
-        m_strides[m_slowestDirs[d - 1]];
-    }
-    return fits;
-  }
-
-  /*!
     @brief Get the stride order (row- or column-major, or something else).
 
     @return Value from ArrayStrideOrder, indicating column order,

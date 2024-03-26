@@ -173,9 +173,9 @@ public:
   AXOM_HOST_DEVICE ArrayBase(const StackArray<IndexType, DIM>& shape,
                              int min_stride = 1)
     : m_shape {shape}
-    , m_indexer(shape, ArrayStrideOrder::ROW)
+    , m_indexer(shape, ArrayStrideOrder::ROW, min_stride)
+    , m_minStride(m_indexer.fastestStrideLength())
   {
-    updateStrides(min_stride);
   }
 
   /*!
@@ -183,15 +183,18 @@ public:
    * with an indexer to specify data ordering.
    *
    * \param [in] shape Array size in each direction.
-   * \param [in] indexer Info on how data is laid out in memory.
+   * \param [in] indexer Model indexer, specifying
+   *   the array stride order and minimum stride.
+   *
+   * The object is constructed with the given shape.
+   * The partial shape information in \c indexer is not used.
    */
   AXOM_HOST_DEVICE ArrayBase(const StackArray<IndexType, DIM>& shape,
                              const ArrayIndexer<DIM>& indexer)
     : m_shape {shape}
-    , m_indexer(indexer)
+    , m_indexer(shape, indexer.slowestDirs(), indexer.fastestStrideLength())
     , m_minStride(m_indexer.fastestStrideLength())
   {
-    assert(indexer.fitsShape(shape));  // Ensure compatible shape and strides.
   }
 
   /*!
@@ -203,7 +206,6 @@ public:
   AXOM_HOST_DEVICE ArrayBase(const StackArray<IndexType, DIM>& shape,
                              const StackArray<IndexType, DIM>& stride)
     : m_shape {shape}
-    , m_indexer()
   {
     m_indexer.initializeStrides(stride, ArrayStrideOrder::ROW);
     m_minStride = m_indexer.fastestStrideLength();
@@ -222,8 +224,8 @@ public:
     const ArrayBase<typename std::remove_const<T>::type, DIM, OtherArrayType>& other)
     : m_shape(other.shape())
     , m_indexer(other.indexer())
+    , m_minStride(m_indexer.fastestStrideLength())
   {
-    m_minStride = m_indexer.fastestStrideLength();
   }
 
   /// \overload
@@ -232,8 +234,8 @@ public:
     const ArrayBase<const typename std::remove_const<T>::type, DIM, OtherArrayType>& other)
     : m_shape(other.shape())
     , m_indexer(other.indexer())
+    , m_minStride(m_indexer.fastestStrideLength())
   {
-    m_minStride = m_indexer.fastestStrideLength();
   }
 
   /*!
@@ -419,8 +421,6 @@ protected:
   /*!
    * \brief Updates the internal striding information to a row-major format
    * Intended to be called after shape is updated.
-   * In the future, this class will support different striding schemes (e.g., column-major)
-   * and/or user-provided striding
    */
   AXOM_HOST_DEVICE void updateStrides(int min_stride = 1)
   {
