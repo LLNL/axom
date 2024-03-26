@@ -175,8 +175,7 @@ public:
     : m_shape {shape}
     , m_indexer(shape, ArrayStrideOrder::ROW, min_stride)
     , m_minStride(m_indexer.fastestStrideLength())
-  {
-  }
+  { }
 
   /*!
    * \brief Parameterized constructor that sets up the array shape,
@@ -194,8 +193,7 @@ public:
     : m_shape {shape}
     , m_indexer(shape, indexer.slowestDirs(), indexer.fastestStrideLength())
     , m_minStride(m_indexer.fastestStrideLength())
-  {
-  }
+  { }
 
   /*!
    * \brief Parameterized constructor that sets up the array shape and stride.
@@ -225,8 +223,7 @@ public:
     : m_shape(other.shape())
     , m_indexer(other.indexer())
     , m_minStride(m_indexer.fastestStrideLength())
-  {
-  }
+  { }
 
   /// \overload
   template <typename OtherArrayType>
@@ -235,8 +232,7 @@ public:
     : m_shape(other.shape())
     , m_indexer(other.indexer())
     , m_minStride(m_indexer.fastestStrideLength())
-  {
-  }
+  { }
 
   /*!
    * \brief Dimension-aware accessor; with N=DIM indices, returns a reference
