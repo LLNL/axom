@@ -16,7 +16,6 @@
 // RAJA includes
 #if defined(AXOM_USE_RAJA)
   #include "RAJA/RAJA.hpp"
-  #include "axom/mint/execution/internal/structured_exec.hpp"
 #endif
 
 // Acceleration data structure includes
