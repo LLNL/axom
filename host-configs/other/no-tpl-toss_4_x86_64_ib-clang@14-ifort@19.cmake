@@ -1,4 +1,4 @@
-# Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
+# Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
 # other Axom Project Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
@@ -16,7 +16,7 @@
 #   cd <axom_root>
 #   mkdir build
 #   cd build
-#   cmake -C ../host-config/other/no-tpl-toss_3_x86_64_ib-clang@10-ifort@19.cmake \
+#   cmake -C ../host-config/other/no-tpl-toss_4_x86_64_ib-clang@14-ifort@19.cmake \
 #         -DCMAKE_BUILD_TYPE={Debug,Release}                                      \
 #         -DBUILD_SHARED_LIBS={ON,OFF(DEFAULT)}                                   \
 #         -DENABLE_EXAMPLES={ON,OFF}                                              \
@@ -24,14 +24,14 @@
 #         -DCMAKE_INSTALL_PREFIX= /path/to/install/dir                            \
 #         ../src
 #------------------------------------------------------------------------------
-# CMake executable path: /usr/tce/packages/cmake/cmake-3.21.1/bin/cmake
+# CMake executable path: /usr/tce/bin/cmake
 #------------------------------------------------------------------------------
 
 set(ENABLE_FORTRAN ON CACHE BOOL "")
 
 set(_gnu_root   "/usr/tce/packages/gcc/gcc-8.3.1" CACHE PATH "")
-set(_clang_root "/usr/tce/packages/clang/clang-10.0.0" CACHE PATH "")
-set(_intel_root "/usr/tce/packages/intel/intel-19.0.4" CACHE PATH "")
+set(_clang_root "/usr/tce/packages/clang/clang-14.0.6" CACHE PATH "")
+set(_intel_root "/usr/tce/packages/intel-classic-tce/intel-classic-19.0.4" CACHE PATH "")
 
 set(CMAKE_C_COMPILER   "${_clang_root}/bin/clang" CACHE PATH "")
 set(CMAKE_CXX_COMPILER "${_clang_root}/bin/clang++" CACHE PATH "")
@@ -60,7 +60,7 @@ set(AXOM_ENABLE_KLEE  OFF CACHE BOOL "")
 #------------------------------------------------------------------------------
 set(ENABLE_MPI ON CACHE BOOL "")
 
-set(_mpi_root            "/usr/tce/packages/mvapich2/mvapich2-2.3-clang-10.0.0" CACHE PATH "")
+set(_mpi_root            "/usr/tce/packages/mvapich2/mvapich2-2.3-clang-14.0.6" CACHE PATH "")
 set(MPI_C_COMPILER       "${_mpi_root}/bin/mpicc" CACHE PATH "")
 set(MPI_CXX_COMPILER     "${_mpi_root}/bin/mpicxx" CACHE PATH "")
 set(MPI_Fortran_COMPILER "${_mpi_root}/bin/mpif90" CACHE PATH "")
@@ -75,4 +75,4 @@ set(ENABLE_OPENMP OFF CACHE BOOL "")
 set(ENABLE_GTEST_DEATH_TESTS ON CACHE BOOL "")
 set(ENABLE_DOCS OFF CACHE BOOL "")
 
-set(CLANGFORMAT_EXECUTABLE "/usr/tce/packages/clang/clang-10.0.0/bin/clang-format" CACHE PATH "")
+set(CLANGFORMAT_EXECUTABLE "/usr/tce/packages/clang/clang-14.0.6/bin/clang-format" CACHE PATH "")

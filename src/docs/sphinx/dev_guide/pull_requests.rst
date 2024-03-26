@@ -1,4 +1,4 @@
-.. ## Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
+.. ## Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
 .. ## other Axom Project Developers. See the top-level LICENSE file for details.
 .. ##
 .. ## SPDX-License-Identifier: (BSD-3-Clause)
@@ -15,7 +15,7 @@ must be tested, documented, reviewed, and accepted. Creating a pull request on
 the Axom Github project to merge a branch into develop or main 
 initiates the test and review processes. All required build configurations
 and tests must pass for a pull request to be approved. Also, new tests 
-(unit, integration, etc.) must be created that exercise any new functionality 
+(unit, integration, etc.) must be created to exercise any new functionality 
 that is introduced. This will be assessed by reviewers of each pull request. 
 See :ref:`createpr-label` for details about creating pull requests.
 
@@ -35,7 +35,6 @@ In addition to successful compilation and test passing, changes to the
 develop and main branches should be scrutinized in other ways and using 
 other code health tools we use. See :ref:`github-label` for more information 
 about using our continuous integration tools.
-
 
 =======================
 Pull Request Summary

@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -402,7 +402,8 @@ bool intersect(const Segment<T, DIM>& S, const BoundingBox<T, DIM>& bb)
  * \return true iff bb1 intersects with bb2, otherwise, false.
  */
 template <typename T, int DIM>
-bool intersect(const BoundingBox<T, DIM>& bb1, const BoundingBox<T, DIM>& bb2)
+AXOM_HOST_DEVICE bool intersect(const BoundingBox<T, DIM>& bb1,
+                                const BoundingBox<T, DIM>& bb2)
 {
   return bb1.intersectsWith(bb2);
 }

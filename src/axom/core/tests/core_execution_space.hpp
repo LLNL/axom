@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -139,9 +139,15 @@ TEST(core_execution_space, check_seq_exec)
 
   int allocator_id = axom::getUmpireResourceAllocatorID(umpire::resource::Host);
   check_execution_mappings<axom::SEQ_EXEC,
+  #if RAJA_VERSION_MAJOR > 2022
+                           RAJA::seq_exec,
+                           RAJA::seq_reduce,
+                           RAJA::seq_atomic,
+  #else
                            RAJA::loop_exec,
                            RAJA::loop_reduce,
                            RAJA::loop_atomic,
+  #endif
                            void>(allocator_id, IS_ASYNC, ON_DEVICE);
 }
 

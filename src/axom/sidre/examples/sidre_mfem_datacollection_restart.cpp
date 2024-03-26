@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -198,8 +198,7 @@ int main(int argc, char* argv[])
 #endif
 
   // Initialize the datacollection
-  // Needs to be configured to own the mesh data so all mesh data is saved to datastore/output file
-  const bool owns_mesh_data = true;
+  const bool owns_mesh_data = false;
   axom::sidre::MFEMSidreDataCollection dc("sidre_mfem_datacoll_restart_ex",
                                           nullptr,
                                           owns_mesh_data);

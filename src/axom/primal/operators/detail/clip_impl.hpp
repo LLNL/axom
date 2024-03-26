@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -328,7 +328,7 @@ AXOM_HOST_DEVICE void poly_clip_fix_nbrs(Polyhedron<T, NDIMS>& poly,
             }
             else
             {
-              int offset;
+              int offset {};
               for(int oi = 0; oi < old_nbrs.getNumNeighbors(inext); oi++)
               {
                 if(old_nbrs[inext][oi] == iprev)

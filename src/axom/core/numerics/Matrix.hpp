@@ -1,18 +1,18 @@
-// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
 #include "axom/config.hpp"
-#include "axom/core/utilities/Utilities.hpp"  // for utilities::swap()
-#include "axom/core/memory_management.hpp"    // for alloc(), free()
+#include "axom/core/utilities/Utilities.hpp"
+#include "axom/core/memory_management.hpp"
 
 #include "axom/fmt.hpp"
 
 // C/C++ includes
-#include <cassert>   // for assert()
-#include <cstring>   // for memcpy()
-#include <iostream>  // for std::ostream
+#include <cassert>
+#include <cstring>
+#include <iostream>
 
 #ifndef AXOM_MATRIX_HPP_
   #define AXOM_MATRIX_HPP_
@@ -39,6 +39,25 @@ class Matrix;
 template <typename T>
 std::ostream& operator<<(std::ostream& os, const Matrix<T>& A);
 
+/*!
+ * \brief Checks if two matrices are component-wise equal
+ *
+ * \param [in] lhs first matrix
+ * \param [in] rhs second matrix
+ * \return status true if lhs==rhs, otherwise, false.
+ */
+template <typename T>
+bool operator==(const Matrix<T>& lhs, const Matrix<T>& rhs);
+
+/*!
+ * \brief Checks if two matrices are not component-wise equal
+ *
+ * \param [in] lhs first matrix
+ * \param [in] rhs second matrix
+ * \return status true if lhs!=rhs, otherwise, false.
+ */
+template <typename T>
+bool operator!=(const Matrix<T>& lhs, const Matrix<T>& rhs);
 /// @}
 
 /// \name Matrix Operators
@@ -948,6 +967,37 @@ AXOM_HOST_DEVICE void Matrix<T>::clear()
 //-----------------------------------------------------------------------------
 // FREE METHODS
 //-----------------------------------------------------------------------------
+
+template <typename T>
+bool operator==(const Matrix<T>& lhs, const Matrix<T>& rhs)
+{
+  const int R = lhs.getNumRows();
+  const int C = lhs.getNumColumns();
+
+  if(R != rhs.getNumRows() || C != rhs.getNumColumns())
+  {
+    return false;
+  }
+
+  using axom::utilities::isNearlyEqual;
+  constexpr double EPS = 1e-12;
+
+  for(int i = 0; i < R * C; ++i)
+  {
+    if(!isNearlyEqual(lhs.data()[i], rhs.data()[i], EPS))
+    {
+      return false;
+    }
+  }
+
+  return true;
+}
+
+template <typename T>
+bool operator!=(const Matrix<T>& lhs, const Matrix<T>& rhs)
+{
+  return !(lhs == rhs);
+}
 
 //-----------------------------------------------------------------------------
 template <typename T>

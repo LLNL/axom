@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -1174,6 +1174,94 @@ AXOM_TYPED_TEST(core_array_for_all, nontrivial_emplace)
     // copied objects should be at the beginning and end
     EXPECT_EQ(localArr[0], MAGIC_COPY_CTOR);
     EXPECT_EQ(localArr[N + 5], MAGIC_COPY_CTOR);
+  }
+}
+
+//------------------------------------------------------------------------------
+constexpr int INSERT_ON_HOST = 1;
+constexpr int INSERT_ON_DEVICE = 2;
+struct DeviceInsert
+{
+  AXOM_HOST_DEVICE DeviceInsert(int value) : m_value(value)
+  {
+#ifdef AXOM_DEVICE_CODE
+    m_host_or_device = INSERT_ON_DEVICE;
+#else
+    m_host_or_device = INSERT_ON_HOST;
+#endif
+  }
+
+  int m_value;
+  int m_host_or_device;
+};
+
+AXOM_TYPED_TEST(core_array_for_all, device_insert)
+{
+  using ExecSpace = typename TestFixture::ExecSpace;
+  using DynamicArray = typename TestFixture::template DynamicTArray<DeviceInsert>;
+  using DynamicArrayOfArrays =
+    typename TestFixture::template DynamicTArray<DynamicArray>;
+
+  int kernelAllocID = axom::execution_space<ExecSpace>::allocatorID();
+
+  constexpr axom::IndexType N = 374;
+
+  DynamicArrayOfArrays arr_container(1, 1, kernelAllocID);
+  arr_container[0] = DynamicArray(0, N, kernelAllocID);
+  const auto arr_v = arr_container.view();
+
+  EXPECT_EQ(arr_container[0].size(), 0);
+  EXPECT_EQ(arr_container[0].capacity(), N);
+
+  axom::for_all<ExecSpace>(
+    N,
+    AXOM_LAMBDA(axom::IndexType idx) {
+#if defined(AXOM_USE_OPENMP) && defined(AXOM_USE_RAJA) && \
+  !defined(AXOM_DEVICE_CODE)
+      if(omp_in_parallel())
+      {
+  #pragma omp critical
+        {
+          arr_v[0].emplace_back(3 * idx + 5);
+        }
+      }
+      else
+      {
+        arr_v[0].emplace_back(3 * idx + 5);
+      }
+#else
+      arr_v[0].emplace_back(3 * idx + 5);
+#endif
+    });
+
+  // handles synchronization, if necessary
+  if(axom::execution_space<ExecSpace>::async())
+  {
+    axom::synchronize<ExecSpace>();
+  }
+
+  EXPECT_EQ(arr_container[0].size(), N);
+  EXPECT_EQ(arr_container[0].capacity(), N);
+
+  // Device-side inserts may occur in any order.
+  // Sort them before we check the inserted values.
+  std::sort(arr_container[0].begin(),
+            arr_container[0].end(),
+            [](const DeviceInsert& a, const DeviceInsert& b) -> bool {
+              return a.m_value < b.m_value;
+            });
+
+  for(int i = 0; i < N; i++)
+  {
+    EXPECT_EQ(arr_container[0][i].m_value, 3 * i + 5);
+    if(axom::execution_space<ExecSpace>::onDevice())
+    {
+      EXPECT_EQ(arr_container[0][i].m_host_or_device, INSERT_ON_DEVICE);
+    }
+    else
+    {
+      EXPECT_EQ(arr_container[0][i].m_host_or_device, INSERT_ON_HOST);
+    }
   }
 }
 

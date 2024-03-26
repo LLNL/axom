@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -137,6 +137,8 @@ TEST(C_sidre_opaque, basic_inout)
   int test_ihi2 = test_extent2->ihi;
 
   EXPECT_EQ(test_ihi2, 2 * ihi_val);
+
+  AA_extent_delete(ext2);
 #endif
 
   // clean up...

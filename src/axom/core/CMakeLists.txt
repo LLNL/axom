@@ -1,4 +1,4 @@
-# Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
+# Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
 # other Axom Project Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
@@ -122,6 +122,9 @@ axom_add_library(NAME        core
                  DEPENDS_ON  ${core_depends}
                  FOLDER      axom/core
                  )
+
+# Set file back to C++ due to nvcc compiler error
+set_source_files_properties(utilities/System.cpp PROPERTIES LANGUAGE CXX)
 
 # Basic includes that should be inherited to all Axom targets
 target_include_directories(core PUBLIC 

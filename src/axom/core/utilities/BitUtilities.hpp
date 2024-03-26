@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -19,12 +19,16 @@
 #include "axom/core/Types.hpp"
 
 // CUDA intrinsics: https://docs.nvidia.com/cuda/cuda-math-api/group__CUDA__MATH__INTRINSIC__INT.html
-// TODO: Support HIP intrinsics (https://rocm.docs.amd.com/projects/HIP/en/latest/reference/kernel_language.html)
+// HIP intrinsics: https://rocm.docs.amd.com/projects/HIP/en/latest/reference/kernel_language.html
 
 // Check for and setup defines for platform-specific intrinsics
 // Note: `__GNUC__` is defined for the gnu, clang and intel compilers
 #if defined(AXOM_USE_CUDA)
   // Intrinsics included implicitly
+
+#elif defined(AXOM_USE_HIP)
+  #include <hip/hip_runtime.h>
+
 #elif defined(_WIN64) && (_MSC_VER >= 1600)
   #define _AXOM_CORE_USE_INTRINSICS_MSVC
   #include <intrin.h>
@@ -84,11 +88,13 @@ struct BitTraits<std::uint8_t>
  * \return The number of zeros to the right of the first set bit in \word,
  * starting with the least significant bit, or 64 if \a word == 0.
  */
-AXOM_HOST_DEVICE inline int trailingZeros(std::uint64_t word)
+AXOM_HOST_DEVICE inline int countr_zero(std::uint64_t word) noexcept
 {
   /* clang-format off */
 #if defined(__CUDA_ARCH__) && defined(AXOM_USE_CUDA)
   return word != std::uint64_t(0) ? __ffsll(word) - 1 : 64;
+#elif defined(__HIP_DEVICE_COMPILE__) && defined(AXOM_USE_HIP)
+  return word != std::uint64_t(0) ? __ffsll(static_cast<unsigned long long int>(word)) - 1 : 64;
 #elif defined(_AXOM_CORE_USE_INTRINSICS_MSVC)
   unsigned long cnt;
   return _BitScanForward64(&cnt, word) ? cnt : 64;
@@ -121,11 +127,14 @@ AXOM_HOST_DEVICE inline int trailingZeros(std::uint64_t word)
  * \accelerated
  * \return number of bits in \a word that are set to 1
  */
-AXOM_HOST_DEVICE inline int popCount(std::uint64_t word)
+AXOM_HOST_DEVICE inline int popcount(std::uint64_t word) noexcept
 {
   /* clang-format off */
 #if defined(__CUDA_ARCH__) && defined(AXOM_USE_CUDA)
   // Use CUDA intrinsic for popcount
+  return __popcll(word);
+#elif defined(__HIP_DEVICE_COMPILE__) && defined(AXOM_USE_HIP)
+  // Use HIP intrinsic for popcount
   return __popcll(word);
 #elif defined(_AXOM_CORE_USE_INTRINSICS_MSVC)
   return __popcnt64(word);
@@ -160,11 +169,14 @@ AXOM_HOST_DEVICE inline int popCount(std::uint64_t word)
  * \return The number of zeros to the left of the first set bit in \word,
  * starting with the least significant bit.
  */
-AXOM_HOST_DEVICE inline std::int32_t leadingZeros(std::int32_t word)
+AXOM_HOST_DEVICE inline std::int32_t countl_zero(std::int32_t word) noexcept
 {
   /* clang-format off */
 #if defined(__CUDA_ARCH__) && defined(AXOM_USE_CUDA)
   // Use CUDA intrinsic for count leading zeros
+  return __clz(word);
+#elif defined(__HIP_DEVICE_COMPILE__) && defined(AXOM_USE_HIP)
+  // Use HIP intrinsic for count leading zeros
   return __clz(word);
 #elif defined(_AXOM_CORE_USE_INTRINSICS_MSVC)
   unsigned long cnt;
@@ -172,7 +184,7 @@ AXOM_HOST_DEVICE inline std::int32_t leadingZeros(std::int32_t word)
 #elif defined(_AXOM_CORE_USE_INTRINSICS_GCC) || defined(_AXOM_CORE_USE_INTRINSICS_PPC)
   return word != std::int32_t(0) ? __builtin_clz(word) : 32;
 #else
-  std::int32_t y;
+  std::int32_t y {};
   std::int32_t n = 32;
   y = word >> 16; if(y != 0) { n -= 16; word = y;}
   y = word >>  8; if(y != 0) { n -=  8; word = y;}

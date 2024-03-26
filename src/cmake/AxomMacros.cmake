@@ -1,4 +1,4 @@
-# Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
+# Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
 # other Axom Project Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
@@ -259,6 +259,30 @@ macro(axom_add_test)
 endmacro(axom_add_test)
 
 
+#------------------------------------------------------------------------------
+# Asserts that the given VARIABLE_NAME's value is a directory and exists.
+# Fails with a helpful message when it doesn't.
+#------------------------------------------------------------------------------
+macro(axom_assert_is_directory)
+
+    set(options)
+    set(singleValueArgs VARIABLE_NAME)
+    set(multiValueArgs)
+
+    # Parse the arguments to the macro
+    cmake_parse_arguments(arg
+         "${options}" "${singleValueArgs}" "${multiValueArgs}" ${ARGN})
+
+    if (NOT EXISTS "${${arg_VARIABLE_NAME}}")
+        message(FATAL_ERROR "Given ${arg_VARIABLE_NAME} does not exist: ${${arg_VARIABLE_NAME}}")
+    endif()
+
+    if (NOT IS_DIRECTORY "${${arg_VARIABLE_NAME}}")
+        message(FATAL_ERROR "Given ${arg_VARIABLE_NAME} is not a directory: ${${arg_VARIABLE_NAME}}")
+    endif()
+
+endmacro(axom_assert_is_directory)
+
 ##------------------------------------------------------------------------------
 ## convert_to_native_escaped_file_path( path output )
 ##
@@ -444,7 +468,7 @@ macro(axom_write_unified_header)
     set(_header ${PROJECT_BINARY_DIR}/include/axom/${_lcname}.hpp)
     set(_tmp_header ${_header}.tmp)
 
-    file(WRITE ${_tmp_header} "\/\/ Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
+    file(WRITE ${_tmp_header} "\/\/ Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
 \/\/ other Axom Project Developers. See the top-level LICENSE file for details.
 \/\/
 \/\/ SPDX-License-Identifier: (BSD-3-Clause)

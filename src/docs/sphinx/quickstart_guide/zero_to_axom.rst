@@ -1,4 +1,4 @@
-.. ## Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
+.. ## Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
 .. ## other Axom Project Developers. See the top-level LICENSE file for details.
 .. ##
 .. ## SPDX-License-Identifier: (BSD-3-Clause)
@@ -40,7 +40,7 @@ command line option. Supported compiler specs can be found in the Spack compiler
 We currently regularly test the following Spack configuration files:
 
 * Linux Ubuntu 20.04 (via Windows WSL 2)
-* TOSS 3 (On ruby at LC)
+* TOSS 4 (On Ruby at LC)
 * BlueOS (On Lassen at LC)
 
 To install Axom on a new platform, it is a good idea to start with a known Spack configuration directory

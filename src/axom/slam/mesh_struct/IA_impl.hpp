@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -667,7 +667,7 @@ void IAMesh<TDIM, SDIM, P>::fixVertexNeighborhood(
       {
         // Add all element-face associations to an array;
         // we'll update the adjacencies outside this loop
-        FaceLinkVerts face_link_verts;
+        FaceLinkVerts face_link_verts {};
         for(int i = 0, idx = 0; i < TDIM; ++i)
         {
           if(i != vert_i &&          // i is a vertex in face_i

@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -6,12 +6,12 @@
 #ifndef AXOM_SPIN_BUILD_RADIX_TREE_H_
 #define AXOM_SPIN_BUILD_RADIX_TREE_H_
 
-#include "axom/config.hpp"  // for axom compile-time definitions
+#include "axom/config.hpp"
 
 #include "axom/core/execution/execution_space.hpp"
 #include "axom/core/execution/for_all.hpp"
 
-#include "axom/core/utilities/AnnotationMacros.hpp"  // for annotations
+#include "axom/core/utilities/AnnotationMacros.hpp"
 
 #include "axom/primal/geometry/BoundingBox.hpp"
 #include "axom/primal/geometry/Point.hpp"
@@ -20,16 +20,16 @@
 
 #include "axom/spin/MortonIndex.hpp"
 
-#include "axom/core/utilities/Utilities.hpp"     // for isNearlyEqual()
-#include "axom/core/utilities/BitUtilities.hpp"  // for leadingZeros()
-#include "axom/slic/interface/slic.hpp"          // for slic
+#include "axom/core/utilities/Utilities.hpp"
+#include "axom/core/utilities/BitUtilities.hpp"
+#include "axom/slic/interface/slic.hpp"
 
 #if defined(AXOM_USE_RAJA)
   // RAJA includes
   #include "RAJA/RAJA.hpp"
 #endif
 
-#include <atomic>  // For std::atomic_thread_fence
+#include <atomic>
 
 #if defined(AXOM_USE_CUDA) && defined(AXOM_USE_RAJA)
   // NOTE: uses the cub installation that is  bundled with RAJA
@@ -300,7 +300,7 @@ AXOM_HOST_DEVICE IntType delta(const IntType& a,
   tie = (exor == 0);
   //break the tie, a and b must always differ
   exor = tie ? std::uint32_t(a) ^ std::uint32_t(bb) : exor;
-  std::int32_t count = axom::utilities::leadingZeros(exor);
+  std::int32_t count = axom::utilities::countl_zero(exor);
   if(tie)
   {
     count += 32;

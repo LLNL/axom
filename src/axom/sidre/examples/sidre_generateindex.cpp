@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -46,9 +46,9 @@ namespace sidre = axom::sidre;
 static int cart_nx = 5;  // nodal domain x size for cartesian mesh example
 static int cart_ny = 5;  // nodal domain y size for cartesian mesh example
 
-sidre::DataStore* create_tiny_datastore()
+std::unique_ptr<sidre::DataStore> create_tiny_datastore()
 {
-  sidre::DataStore* ds = new sidre::DataStore();
+  auto ds = std::unique_ptr<sidre::DataStore> {new sidre::DataStore()};
 
   int nodecount = 12;
   int elementcount = 2;
@@ -518,50 +518,60 @@ int main(int argc, char** argv)
   MPI_Init(&argc, &argv);
   MPI_Comm_size(MPI_COMM_WORLD, &num_ranks);
 
-  sidre::DataStore* sds = create_tiny_datastore();
-  sidre::DataStore* spds = create_tiny_datastore();
-  generate_spio_blueprint(sds, true);    //dense
-  generate_spio_blueprint(spds, false);  //sparse
+  auto sds = create_tiny_datastore();
+  generate_spio_blueprint(sds.get(), true);  //dense
+
+  auto spds = create_tiny_datastore();
+  generate_spio_blueprint(spds.get(), false);  //sparse
   spds->getRoot()->destroyGroups();
   spds->getRoot()->destroyViews();
+
   spds = create_tiny_datastore();
-  generate_multidomain_blueprint(spds, "multi1", 1, false);
+  generate_multidomain_blueprint(spds.get(), "multi1", 1, false);
   spds->getRoot()->destroyGroups();
   spds->getRoot()->destroyViews();
+
   spds = create_tiny_datastore();
-  generate_multidomain_blueprint(spds, "multi1_list", 1, true);
+  generate_multidomain_blueprint(spds.get(), "multi1_list", 1, true);
   if(num_ranks > 1)
   {
     spds->getRoot()->destroyGroups();
     spds->getRoot()->destroyViews();
+
     spds = create_tiny_datastore();
-    generate_multidomain_blueprint(spds, "multi2", 2, false);
+    generate_multidomain_blueprint(spds.get(), "multi2", 2, false);
     spds->getRoot()->destroyGroups();
     spds->getRoot()->destroyViews();
+
     spds = create_tiny_datastore();
-    generate_multidomain_blueprint(spds, "multi2_list", 2, true);
+    generate_multidomain_blueprint(spds.get(), "multi2_list", 2, true);
     spds->getRoot()->destroyGroups();
     spds->getRoot()->destroyViews();
+
     spds = create_tiny_datastore();
-    generate_multidomain_blueprint(spds, "multi_all", num_ranks, false);
+    generate_multidomain_blueprint(spds.get(), "multi_all", num_ranks, false);
     spds->getRoot()->destroyGroups();
     spds->getRoot()->destroyViews();
+
     spds = create_tiny_datastore();
-    generate_multidomain_blueprint(spds, "multi_all_list", num_ranks, true);
+    generate_multidomain_blueprint(spds.get(), "multi_all_list", num_ranks, true);
   }
   spds->getRoot()->destroyGroups();
   spds->getRoot()->destroyViews();
-  generate_cartesian_blueprint(spds, "cart1", 1);
+
+  generate_cartesian_blueprint(spds.get(), "cart1", 1);
   if(num_ranks > 1)
   {
     spds->getRoot()->destroyGroups();
     spds->getRoot()->destroyViews();
+
     spds = create_tiny_datastore();
-    generate_cartesian_blueprint(spds, "cart2", 2);
+    generate_cartesian_blueprint(spds.get(), "cart2", 2);
     spds->getRoot()->destroyGroups();
     spds->getRoot()->destroyViews();
+
     spds = create_tiny_datastore();
-    generate_cartesian_blueprint(spds, "cart_all", num_ranks);
+    generate_cartesian_blueprint(spds.get(), "cart_all", num_ranks);
   }
 
   MPI_Finalize();

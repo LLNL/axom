@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -7,13 +7,13 @@
 #define QUEST_INOUT_INTERFACE_HPP_
 
 // Axom includes
-#include "axom/config.hpp"  // for compile-time configuration options
+#include "axom/config.hpp"
 
 // Quest includes
-#include "axom/quest/interface/internal/mpicomm_wrapper.hpp"  // MPI_COMM_SELF
+#include "axom/quest/interface/internal/mpicomm_wrapper.hpp"
 
 // C/C++ includes
-#include <string>  // for std::string
+#include <string>
 
 /*!
  * \file inout.hpp

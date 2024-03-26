@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -2359,3 +2359,103 @@ TEST(core_array, reserve_nontrivial_reloc_um)
   }
 }
 #endif
+
+// Regression test for a memory leak in axom::Array's copy/move/initialization
+template <typename T1, typename T2>
+auto make_arr_data(int SZ1, int SZ2)
+  -> std::pair<axom::Array<axom::Array<T1>>, axom::Array<axom::Array<T2>>>
+{
+  using Arr1 = axom::Array<axom::Array<T1>>;
+  using Arr2 = axom::Array<axom::Array<T2>>;
+
+  T1 val1 {};
+  T2 val2 {};
+
+  Arr1 arr1(SZ1, 2 * SZ1);
+  for(int i = 0; i < SZ1; ++i)
+  {
+    arr1[i].resize(i + 10);
+    arr1[i].shrink();
+    arr1[i].push_back(val1);
+  }
+
+  Arr2 arr2(SZ2, 2 * SZ2);
+  for(int i = 0; i < SZ2; ++i)
+  {
+    arr2[i].resize(i + 10);
+    arr2[i].shrink();
+    arr2[i].push_back(val2);
+  }
+  arr2.shrink();
+
+  return {std::move(arr1), std::move(arr2)};
+}
+
+TEST(core_array, regression_array_move)
+{
+  using T1 = int;
+  using Arr1 = axom::Array<axom::Array<T1>>;
+
+  using T2 = NonTriviallyRelocatable;
+  using Arr2 = axom::Array<axom::Array<T2>>;
+
+  using PArrArr = std::pair<Arr1, Arr2>;
+
+  constexpr int SZ1 = 20;
+  constexpr int SZ2 = 30;
+
+  {
+    PArrArr pr;
+    pr = make_arr_data<T1, T2>(SZ1, SZ2);
+
+    EXPECT_EQ(SZ1, pr.first.size());
+    EXPECT_EQ(2 * SZ1, pr.first.capacity());
+
+    EXPECT_EQ(SZ2, pr.second.size());
+    EXPECT_EQ(SZ2, pr.second.capacity());
+  }
+
+  {
+    auto pr = make_arr_data<T1, T2>(SZ1, SZ2);
+
+    EXPECT_EQ(SZ1, pr.first.size());
+    EXPECT_EQ(2 * SZ1, pr.first.capacity());
+
+    EXPECT_EQ(SZ2, pr.second.size());
+    EXPECT_EQ(SZ2, pr.second.capacity());
+  }
+
+  {
+    auto pr = make_arr_data<T1, T2>(SZ1, SZ2);
+    EXPECT_EQ(SZ1, pr.first.size());
+    EXPECT_EQ(2 * SZ1, pr.first.capacity());
+    EXPECT_EQ(SZ2, pr.second.size());
+    EXPECT_EQ(SZ2, pr.second.capacity());
+
+    pr = make_arr_data<T1, T2>(SZ2, SZ1);
+    EXPECT_EQ(SZ2, pr.first.size());
+    EXPECT_EQ(2 * SZ2, pr.first.capacity());
+    EXPECT_EQ(SZ1, pr.second.size());
+    EXPECT_EQ(SZ1, pr.second.capacity());
+  }
+
+  // lots of copy and move assignments and constructions
+  {
+    auto pr = make_arr_data<T1, T2>(SZ1, SZ2);
+    pr = make_arr_data<T1, T2>(5, 7);
+
+    auto pr2 = std::move(pr);
+    auto pr3 = pr2;
+
+    pr2 = make_arr_data<T1, T2>(13, 17);
+
+    auto pr4 {make_arr_data<T1, T2>(33, 44)};
+
+    auto pr5(std::move(pr4));
+
+    EXPECT_EQ(33, pr5.first.size());
+    EXPECT_EQ(66, pr5.first.capacity());
+    EXPECT_EQ(44, pr5.second.size());
+    EXPECT_EQ(44, pr5.second.capacity());
+  }
+}

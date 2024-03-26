@@ -105,6 +105,7 @@ class Axom(CachedCMakePackage, CudaPackage, ROCmPackage):
 
     depends_on("blt", type="build")
     depends_on("blt@0.5.1:", type="build", when="@0.6.1:")
+    depends_on("blt@0.6.2:", type="build", when="@0.9:")
 
     depends_on("mpi", when="+mpi")
 
@@ -122,12 +123,14 @@ class Axom(CachedCMakePackage, CudaPackage, ROCmPackage):
     depends_on("scr~fortran", when="+scr~fortran")
 
     with when("+umpire"):
+        depends_on("umpire@2024.02.0:", when="@0.9:")
         depends_on("umpire@2022.03.0:", when="@0.7.0:")
         depends_on("umpire@6.0.0", when="@0.6.0")
         depends_on("umpire@5:5.0.1", when="@:0.5.0")
         depends_on("umpire +openmp", when="+openmp")
 
     with when("+raja"):
+        depends_on("raja@2024.02.0:", when="@0.9:")
         depends_on("raja@2022.03.0:", when="@0.7.0:")
         depends_on("raja@0.14.0", when="@0.6.0")
         depends_on("raja@:0.13.0", when="@:0.5.0")
@@ -419,20 +422,20 @@ class Axom(CachedCMakePackage, CudaPackage, ROCmPackage):
             entries.append(cmake_cache_option("ENABLE_MPI", True))
             if spec["mpi"].name == "spectrum-mpi":
                 entries.append(cmake_cache_string("BLT_MPI_COMMAND_APPEND", "mpibind"))
+
+            # Replace /usr/bin/srun path with srun flux wrapper path on TOSS 4
+            # TODO: Remove this logic by adding `using_flux` case in
+            #  spack/lib/spack/spack/build_systems/cached_cmake.py:196 and remove hard-coded
+            #  path to srun in same file.
+            if "toss_4" in self._get_sys_type(spec):
+                srun_wrapper = which_string("srun")
+                mpi_exec_index = [
+                    index for index, entry in enumerate(entries) if "MPIEXEC_EXECUTABLE" in entry
+                ]
+                del entries[mpi_exec_index[0]]
+                entries.append(cmake_cache_path("MPIEXEC_EXECUTABLE", srun_wrapper))
         else:
             entries.append(cmake_cache_option("ENABLE_MPI", False))
-
-        # Replace /usr/bin/srun path with srun flux wrapper path on TOSS 4
-        # TODO: Remove this logic by adding `using_flux` case in
-        #  spack/lib/spack/spack/build_systems/cached_cmake.py:196 and remove hard-coded
-        #  path to srun in same file.
-        if "toss_4" in self._get_sys_type(spec):
-            srun_wrapper = which_string("srun")
-            mpi_exec_index = [
-                index for index, entry in enumerate(entries) if "MPIEXEC_EXECUTABLE" in entry
-            ]
-            del entries[mpi_exec_index[0]]
-            entries.append(cmake_cache_path("MPIEXEC_EXECUTABLE", srun_wrapper))
 
         return entries
 

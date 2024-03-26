@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -7,6 +7,7 @@
 
 #include "axom/sidre/spio/IOManager.hpp"
 #include "axom/sidre/spio/IOBaton.hpp"
+#include "axom/fmt.hpp"
 
 #include "mpi.h"
 
@@ -29,13 +30,12 @@ TEST(spio_basic, root_name)
   protocolMap["json"] = "json";
   protocolMap["sidre_conduit_json"] = "conduit_json";
 
-  using MapIt = std::map<std::string, std::string>::const_iterator;
-  for(MapIt it = protocolMap.begin(); it != protocolMap.end(); ++it)
+  for(const auto& kv : protocolMap)
   {
-    const std::string& sidreProtocol = it->first;
-    const std::string& expRelayProtocol = it->second;
+    const std::string& sidreProtocol = kv.first;
+    const std::string& expRelayProtocol = kv.second;
 
-    std::string relayProtocol =
+    const std::string relayProtocol =
       IOManager::correspondingRelayProtocol(sidreProtocol);
 
     EXPECT_EQ(expRelayProtocol, relayProtocol);
@@ -117,11 +117,9 @@ TEST(spio_basic, baton)
   // Test baton for different numbers of files
   for(int nFiles = 1; nFiles <= num_ranks; ++nFiles)
   {
-    std::stringstream sstr;
-    sstr << "Checking baton for " << nFiles << " files "
-         << " with " << num_ranks << " ranks";
-
-    SCOPED_TRACE(sstr.str());
+    SCOPED_TRACE(axom::fmt::format("Checking baton for {} files with {} ranks",
+                                   nFiles,
+                                   num_ranks));
     checkBaton(nFiles, num_ranks, my_rank);
   }
 }

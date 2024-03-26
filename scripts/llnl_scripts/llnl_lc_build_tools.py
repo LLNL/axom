@@ -1,4 +1,4 @@
-# Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
+# Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
 # other Axom Project Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
@@ -211,13 +211,14 @@ def build_and_test_host_config(test_root, host_config,
     cfg_output_file = pjoin(test_root,"output.log.%s.configure.txt" % host_config_root)
     print("[starting configure of %s]" % host_config)
     print("[log file: %s]" % cfg_output_file)
-    res = sexe("%s config-build.py -bp %s -ip %s -bt %s -hc %s %s" % (sys.executable, build_dir, install_dir, build_type, host_config, extra_cmake_options),
-               output_file = cfg_output_file,
-               echo=True)
-
-    if report_to_stdout:
-        with open(cfg_output_file, 'r', encoding='utf8') as build_out:
-            print(build_out.read())
+    cmd = "{0} config-build.py -bp {1} -ip {2} -bt {3} -hc {4} {5} | tee {6}".format(sys.executable,
+                                                                                     build_dir,
+                                                                                     install_dir,
+                                                                                     build_type,
+                                                                                     host_config,
+                                                                                     extra_cmake_options,
+                                                                                     cfg_output_file)
+    res = sexe(cmd, echo=True)
 
     if res != 0:
         print("[ERROR: Configure for host-config: %s failed]\n" % host_config)
@@ -231,13 +232,8 @@ def build_and_test_host_config(test_root, host_config,
     bld_output_file =  pjoin(build_dir,"output.log.make.txt")
     print("[starting build]")
     print("[log file: %s]" % bld_output_file)
-    res = sexe("cd %s && make -j 16 VERBOSE=1 " % build_dir,
-                output_file = bld_output_file,
-                echo=True)
-
-    if report_to_stdout:
-        with open(bld_output_file, 'r', encoding='utf8') as build_out:
-            print(build_out.read())
+    cmd = "cd {0} && make -j 16 VERBOSE=1 | tee {1}".format(build_dir, bld_output_file)
+    res = sexe(cmd, echo=True)
 
     if res != 0:
         print("[ERROR: Build for host-config: %s failed]\n" % host_config)
@@ -249,15 +245,10 @@ def build_and_test_host_config(test_root, host_config,
     print("[log file: %s]" % tst_output_file)
 
     parallel_test = "" if test_serial else "-j16"
-    tst_cmd = "cd %s && make CTEST_OUTPUT_ON_FAILURE=1 test ARGS=\"--no-compress-output -T Test -VV %s\"" % (build_dir, parallel_test)
-
-    res = sexe(tst_cmd,
-               output_file = tst_output_file,
-               echo=True)
-
-    if report_to_stdout:
-        with open(tst_output_file, 'r', encoding='utf8') as test_out:
-            print(test_out.read())
+    tst_cmd = "cd {0} && make CTEST_OUTPUT_ON_FAILURE=1 test ARGS=\"--no-compress-output -T Test -VV {1}\" | tee {2}".format(build_dir, 
+                                                                                                                             parallel_test,
+                                                                                                                             tst_output_file)
+    res = sexe(tst_cmd, echo=True)
 
     # Convert CTest output to JUnit, do not overwrite previous res
     print("[Checking to see if xsltproc exists...]")
@@ -284,26 +275,20 @@ def build_and_test_host_config(test_root, host_config,
     print("[starting docs generation]")
     print("[log file: %s]" % docs_output_file)
 
-    res = sexe("cd %s && make -j16 docs " % build_dir,
-               output_file = docs_output_file,
-               echo=True)
-
-    if report_to_stdout:
-        with open(docs_output_file, 'r', encoding='utf8') as docs_out:
-            print(docs_out.read())
+    docs_cmd = "cd {0} && make -j16 docs | tee {1}".format(build_dir, docs_output_file)
+    res = sexe(docs_cmd, echo=True)
 
     if res != 0:
         print("[ERROR: Docs generation for host-config: %s failed]\n\n" % host_config)
         return res
 
     # install the code
-    inst_output_file = pjoin(build_dir,"output.log.make.install.txt")
+    install_output_file = pjoin(build_dir,"output.log.make.install.txt")
     print("[starting install]")
-    print("[log file: %s]" % inst_output_file)
+    print("[log file: %s]" % install_output_file)
 
-    res = sexe("cd %s && make -j16 install " % build_dir,
-               output_file = inst_output_file,
-               echo=True)
+    install_cmd = "cd {0} && make -j16 install | tee {1}".format(build_dir, install_output_file)
+    res = sexe(install_cmd, echo=True)
 
     if res != 0:
         print("[ERROR: Install for host-config: %s failed]\n\n" % host_config)
@@ -333,17 +318,16 @@ def build_and_test_host_config(test_root, host_config,
             "mkdir build",
             "cd build",
             """echo "[Configuring '{}' example]" """.format("using-with-cmake"),
-            "cmake -C ../host-config.cmake ..",
+            "cmake -C ../host-config.cmake .. | tee -a {0}".format(install_example_output_file),
             """echo "[Building '{}' example]" """.format("using-with-cmake"),
-            "make ",
+            "make | tee -a {0}".format(install_example_output_file),
             """echo "[Running '{}' example]" """.format("using-with-cmake"),
-            "./example",
+            "./example | tee -a {0}".format(install_example_output_file),
             """echo "[Done]" """
         ]
 
-        res = sexe(" && ".join(example_commands),
-                output_file = install_example_output_file,
-                echo=True)
+        cmd = " && ".join(example_commands)
+        res = sexe(cmd, echo=True)
 
         if res != 0:
             print("[ERROR: Installed 'using-with-cmake' example for host-config: %s failed]\n\n" % host_config)
@@ -362,17 +346,16 @@ def build_and_test_host_config(test_root, host_config,
             "mkdir build",
             "cd build",
             """echo "[Configuring '{}' example]" """.format("using-with-blt"),
-            "cmake -C ../host-config.cmake ..",
+            "cmake -C ../host-config.cmake .. | tee -a {0}".format(install_example_output_file),
             """echo "[Building '{}' example]" """.format("using-with-blt"),
-            "make ",
+            "make | tee -a {0}".format(install_example_output_file),
             """echo "[Running '{}' example]" """.format("using-with-blt"),
-            "./bin/example",
+            "./bin/example | tee -a {0}".format(install_example_output_file),
             """echo "[Done]" """
         ]
 
-        res = sexe(" && ".join(example_commands),
-                output_file = install_example_output_file,
-                echo=True)
+        cmd = " && ".join(example_commands)
+        res = sexe(cmd, echo=True)
 
         if res != 0:
             print("[ERROR: Installed 'using-with-blt' example for host-config: %s failed]\n\n" % host_config)
@@ -559,9 +542,7 @@ def build_devtools(builds_dir, timestamp):
     sys_type = get_system_type()
     project_file = "scripts/spack/devtools.json"
 
-    if "toss_3" in sys_type:
-        compiler_spec = "%gcc@8.1.0"
-    elif "toss_4" in sys_type:
+    if "toss_4" in sys_type:
         compiler_spec = "%gcc@10.3.1"
     elif "blueos" in sys_type:
         compiler_spec = "%gcc@8.3.1"
@@ -683,7 +664,7 @@ def get_platform():
 
 
 def get_supported_sys_types():
-    return ["blueos_3_ppc64le_ib_p9", "darwin-x86_64", "toss_3_x86_64_ib", "toss_4_x86_64_ib", "toss_4_x86_64_ib_cray"]
+    return ["blueos_3_ppc64le_ib_p9", "darwin-x86_64", "toss_4_x86_64_ib", "toss_4_x86_64_ib_cray"]
 
 def get_username():
     return getpass.getuser()

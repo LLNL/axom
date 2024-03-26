@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -42,7 +42,7 @@ namespace axom
 namespace primal
 {
 //@{
-//! @name Winding number operations between 2D points and primatives
+//! @name Winding number operations between 2D points and primitives
 
 /*
  * \brief Compute the winding number with respect to a 2D line segment
@@ -201,8 +201,7 @@ int winding_number(const Point<T, 2>& R,
  *
  * \param [in] query The query point to test
  * \param [in] c The Bezier curve object 
- * \param [in] edge_tol The physical distance level at which objects are 
- *                      considered indistinguishable
+ * \param [in] edge_tol The physical distance level at which objects are considered indistinguishable
  * \param [in] EPS Miscellaneous numerical tolerance level for nonphysical distances
  *
  * Computes the winding number using a recursive, bisection algorithm,
@@ -224,8 +223,7 @@ double winding_number(const Point<T, 2>& q,
  *
  * \param [in] query The query point to test
  * \param [in] cpoly The CurvedPolygon object
- * \param [in] edge_tol The physical distance level at which objects are 
- *                      considered indistinguishable
+ * \param [in] edge_tol The physical distance level at which objects are considered indistinguishable
  * \param [in] EPS Miscellaneous numerical tolerance level for nonphysical distances
  *
  * Computes the winding number by summing the winding number for each curve
@@ -251,7 +249,7 @@ double winding_number(const Point<T, 2>& q,
 //@}
 
 //@{
-//! @name Winding number operations between 3D points and primatives
+//! @name Winding number operations between 3D points and primitives
 
 /*!
  * \brief Computes the solid angle winding number for a 3D triangle
@@ -259,8 +257,7 @@ double winding_number(const Point<T, 2>& q,
  * \param [in] query The query point to test
  * \param [in] tri The 3D Triangle object
  * \param [in] isOnFace An optional return parameter if the point is on the triangle
- * \param [in] edge_tol The physical distance level at which objects are 
- *                      considered indistinguishable
+ * \param [in] edge_tol The physical distance level at which objects are considered indistinguishable
  * \param [in] EPS Miscellaneous numerical tolerance level for nonphysical distances
  *
  * Computes the winding number using the formula from 
