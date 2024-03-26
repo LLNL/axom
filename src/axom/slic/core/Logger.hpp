@@ -156,11 +156,14 @@ public:
    * \brief Binds the given stream to all the levels for this Logger instance.
    *
    * \param [in] ls pointer to the user-supplied LogStream object.
+   * \param [in] pass_ownership flag that indicates whether the given logger
+   *  instance owns the supplied LogStream object. This parameter is optional.
+   *  Default is true.
    *
    * \note The Logger takes ownership of the LogStream object.
    * \pre ls != NULL.
    */
-  void addStreamToAllMsgLevels(LogStream* ls);
+  void addStreamToAllMsgLevels(LogStream* ls, bool pass_ownership = true);
 
   /*!
    * \brief Returns the number of streams at the given level.
@@ -185,6 +188,58 @@ public:
   LogStream* getStream(message::Level level, int i);
 
   /*!
+   * \brief Binds the given stream to the given tag for this Logger instance.
+   *
+   * \param [in] ls pointer to the user-supplied LogStream object.
+   * \param [in] tag the tag that this stream will be associated with.
+   * \param [in] pass_ownership flag that indicates whether the given logger
+   *  instance owns the supplied LogStream object. This parameter is optional.
+   *  Default is true.
+   *
+   * \note The Logger takes ownership of the LogStream object.
+   * \pre ls != NULL.
+   */
+  void addStreamToTag(LogStream* ls,
+                      const std::string& tag,
+                      bool pass_ownership = true);
+
+  /*!
+   * \brief Binds the given stream to all the tags for this Logger instance.
+   *
+   * \param [in] ls pointer to the user-supplied LogStream object.
+   * \param [in] pass_ownership flag that indicates whether the given logger
+   *  instance owns the supplied LogStream object. This parameter is optional.
+   *  Default is true.
+   *
+   * \note The Logger takes ownership of the LogStream object.
+   * \pre ls != NULL.
+   */
+  void addStreamToAllTags(LogStream* ls, bool pass_ownership = true);
+
+  /*!
+   * \brief Returns the number of streams for a given tag.
+   *        Returns 0 if the tag does not exist.
+   *
+   * \param [in] tag the tag in query.
+   *
+   * \return N the number of streams for the given tag.
+   * \post N >= 0
+   */
+  int getNumStreamsWithTag(const std::string& tag);
+
+  /*!
+   * \brief Returns the ith stream at the given tag.
+   *
+   * \param [in] tag the tag in query.
+   * \param [in] i the index of the stream in query.
+   *
+   * \return stream_ptr pointer to the stream.
+   * \pre i >= 0 && i < this->getNumStreamsWithTag( tag )
+   * \post stream_ptr != NULL.
+   */
+  LogStream* getStream(const std::string& tag, int i);
+
+  /*!
    * \brief Logs the given message to all registered streams.
    *
    * \param [in] level the level of the given message.
@@ -206,11 +261,14 @@ public:
    * \param [in] filter_duplicates optional parameter that indicates whether
    * duplicate messages resulting from running in parallel will be filtered out.
    * Default is false.
+   * /param [in] tag_stream_only optional parameter that indicates whether the
+   * message will go only to streams bound to tagName. Default is false.
    */
   void logMessage(message::Level level,
                   const std::string& message,
                   const std::string& tagName,
-                  bool filter_duplicates = false);
+                  bool filter_duplicates = false,
+                  bool tag_stream_only = false);
 
   /*!
    * \brief Logs the given message to all registered streams.
@@ -240,13 +298,16 @@ public:
    * \param [in] filter_duplicates optional parameter that indicates whether
    * duplicate messages resulting from running in parallel will be filtered out.
    * Default is false.
+   * /param [in] tag_stream_only optional parameter that indicates whether the
+   * message will go only to streams bound to tagName. Default is false.
    */
   void logMessage(message::Level level,
                   const std::string& message,
                   const std::string& tagName,
                   const std::string& fileName,
                   int line,
-                  bool filter_duplicates = false);
+                  bool filter_duplicates = false,
+                  bool tag_stream_only = false);
 
   /*!
    * \brief For the current rank, outputs messages from all streams to the
@@ -388,6 +449,7 @@ private:
 
   std::string m_name;
   bool m_abortOnError;
+  std::map<std::string, std::vector<LogStream*>> m_taggedStreams;
   bool m_abortOnWarning;
   void (*m_abortFunction)(void);
 

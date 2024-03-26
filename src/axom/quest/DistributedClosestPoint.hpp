@@ -78,7 +78,7 @@ public:
   /*!  @brief Sets the allocator ID.
 
     If not explitly set, the allocator ID is the default is the id
-    associated with the runtimer policy.
+    associated with the runtime policy.
   */
   void setAllocatorID(int allocatorID);
 

@@ -15,7 +15,7 @@
 #   cd <axom_root>
 #   mkdir build
 #   cd build
-#   cmake -C ../host-config/other/no-tpl-toss3-intel@19.0.4.cmake           \
+#   cmake -C ../host-config/other/no-tpl-toss_4_x86_64_ib-intel@19.0.4.cmake \
 #         -DCMAKE_BUILD_TYPE={Debug,Release}                                \
 #         -DBUILD_SHARED_LIBS={ON,OFF(DEFAULT)}                             \
 #         -DENABLE_EXAMPLES={ON,OFF}                                        \
@@ -23,12 +23,12 @@
 #         -DCMAKE_INSTALL_PREFIX= /path/to/install/dir                      \
 #         ../src
 #------------------------------------------------------------------------------
-# CMake executable path: /usr/tce/packages/cmake/cmake-3.16.8/bin/cmake
+# CMake executable path: /usr/tce/bin/cmake
 #------------------------------------------------------------------------------
 
 set(ENABLE_FORTRAN ON CACHE BOOL "")
 
-set(COMPILER_HOME "/usr/tce/packages/intel/intel-19.0.4" )
+set(COMPILER_HOME "/usr/tce/packages/intel-classic-tce/intel-classic-19.1.2" )
 set(CMAKE_C_COMPILER "${COMPILER_HOME}/bin/icc" CACHE PATH "")
 set(CMAKE_CXX_COMPILER "${COMPILER_HOME}/bin/icpc" CACHE PATH "")
 set(CMAKE_Fortran_COMPILER "${COMPILER_HOME}/bin/ifort" CACHE PATH "")
@@ -44,7 +44,7 @@ set(AXOM_ENABLE_KLEE OFF CACHE BOOL "")
 #------------------------------------------------------------------------------
 set(ENABLE_MPI ON CACHE BOOL "")
 
-set(MPI_HOME             "/usr/tce/packages/mvapich2/mvapich2-2.3-intel-19.0.4" CACHE PATH "")
+set(MPI_HOME             "/usr/tce/packages/mvapich2/mvapich2-2.3.7-intel-classic-19.1.2" CACHE PATH "")
 set(MPI_C_COMPILER       "${MPI_HOME}/bin/mpicc"   CACHE PATH "")
 set(MPI_CXX_COMPILER     "${MPI_HOME}/bin/mpicxx"  CACHE PATH "")
 set(MPI_Fortran_COMPILER "${MPI_HOME}/bin/mpif90" CACHE PATH "")

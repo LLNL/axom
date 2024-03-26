@@ -7,13 +7,13 @@
 #define QUEST_INOUT_INTERFACE_HPP_
 
 // Axom includes
-#include "axom/config.hpp"  // for compile-time configuration options
+#include "axom/config.hpp"
 
 // Quest includes
-#include "axom/quest/interface/internal/mpicomm_wrapper.hpp"  // MPI_COMM_SELF
+#include "axom/quest/interface/internal/mpicomm_wrapper.hpp"
 
 // C/C++ includes
-#include <string>  // for std::string
+#include <string>
 
 /*!
  * \file inout.hpp

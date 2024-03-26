@@ -68,6 +68,8 @@ public:
    * \param [in] line the line within the file at which the message is appended.
    * \param [in] filter_duplicates optional parameter that indicates whether
    * duplicate messages resulting from running in parallel will be filtered out.
+   * /param [in] tag_stream_only optional parameter that indicates whether the
+   * message will go only to streams bound to tagName.
    *
    * \note This method doesn't put anything to the console. Instead the
    *  messages are cached locally to each ranks and are dumped to the console
@@ -78,7 +80,8 @@ public:
                       const std::string& tagName,
                       const std::string& fileName,
                       int line,
-                      bool filter_duplicates);
+                      bool filter_duplicates,
+                      bool tag_stream_only);
 
   /*!
    * \brief Pushes the messages from the current rank directly to the

@@ -7,13 +7,13 @@
 #define AXOM_SPIN_IMPLICIT_GRID__HPP_
 
 #include "axom/config.hpp"
-#include "axom/core.hpp"  // for clamp functions
+#include "axom/core.hpp"
 #include "axom/slic.hpp"
 #include "axom/slam.hpp"
 
-#include "axom/core/execution/execution_space.hpp"  // for execution spaces
-#include "axom/core/memory_management.hpp"          // for setDefaultAllocator()
-#include "axom/core/utilities/BitUtilities.hpp"     // for popCount()
+#include "axom/core/execution/execution_space.hpp"
+#include "axom/core/memory_management.hpp"
+#include "axom/core/utilities/BitUtilities.hpp"
 
 #include "axom/primal/geometry/BoundingBox.hpp"
 #include "axom/primal/geometry/Point.hpp"
@@ -953,9 +953,8 @@ ImplicitGrid<NDIMS, ExecSpace, IndexType>::QueryObject::countCandidates(
     {
       continue;
     }
-    // currWord now contains the resulting candidacy information
-    // for our given point
-    ncandidates += axom::utilities::popCount(currWord);
+    // currWord now contains the resulting candidacy information for our given point
+    ncandidates += axom::utilities::popcount(currWord);
   }
   return ncandidates;
 }
@@ -1009,9 +1008,8 @@ ImplicitGrid<NDIMS, ExecSpace, IndexType>::QueryObject::countCandidates(
     {
       continue;
     }
-    // currWord now contains the resulting candidacy information
-    // for our given point
-    ncandidates += axom::utilities::popCount(currWord);
+    // currWord now contains the resulting candidacy information for our given point
+    ncandidates += axom::utilities::popcount(currWord);
   }
   return ncandidates;
 }
@@ -1060,16 +1058,15 @@ ImplicitGrid<NDIMS, ExecSpace, IndexType>::QueryObject::visitCandidates(
     {
       continue;
     }
-    // currWord now contains the resulting candidacy information
-    // for our given point
+    // currWord now contains the resulting candidacy information for our given point
     int numBits = axom::utilities::min(bitsPerWord, nbits - (iword * 64));
-    int currBit = axom::utilities::trailingZeros(currWord);
+    int currBit = axom::utilities::countr_zero(currWord);
     while(currBit < numBits)
     {
       bool found = getVisitResult(candidatePredicate,
                                   iword * BitsetType::BitsPerWord + currBit);
       currBit++;
-      currBit += axom::utilities::trailingZeros(currWord >> currBit);
+      currBit += axom::utilities::countr_zero(currWord >> currBit);
       if(found)
       {
         return;
@@ -1133,13 +1130,13 @@ ImplicitGrid<NDIMS, ExecSpace, IndexType>::QueryObject::visitCandidates(
     // currWord now contains the resulting candidacy information
     // for our given point
     int numBits = axom::utilities::min(bitsPerWord, nbits - (iword * 64));
-    int currBit = axom::utilities::trailingZeros(currWord);
+    int currBit = axom::utilities::countr_zero(currWord);
     while(currBit < numBits)
     {
       bool found = getVisitResult(candidatePredicate,
                                   iword * BitsetType::BitsPerWord + currBit);
       currBit++;
-      currBit += axom::utilities::trailingZeros(currWord >> currBit);
+      currBit += axom::utilities::countr_zero(currWord >> currBit);
       if(found)
       {
         return;

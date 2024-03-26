@@ -73,6 +73,98 @@ how we use pull requests.
 
 
 ======================================================
+Contributors and Project Access
+======================================================
+
+Axom maintains three levels of project access on it GitHub project:
+
+  * **Core team members.** Individuals on the core Axom team are frequent
+    Axom contributors and participate regularly in project meetings,
+    discussions, and other project activities. They are members of
+    the LLNL GitHub organization and the ``axom`` GitHub team. Their
+    project privileges include the ability to create branches in the repository,
+    push code changes to the Axom repo, make PRs, and merge them when they are
+    approved and all checks have passed.
+  * **Regular contributors.** Individuals, who are not on the core Axom team,
+    but are members of the LLNL GitHub organization and are involved in some
+    aspects of Axom development are considered regular contributors. They are
+    members of the ``axom-contrib`` GitHub team. Their project privileges
+    include the ability to create branches in the repository, push code changes
+    to the Axom repo, and make PRs. However, they may not merge PRs and must
+    coordinate with the core team to have their work included in the develop
+    branch. This is mainly due to the way GitHub structures its project
+    access levels.
+  * **Everyone else.** Anyone with a GitHub account is welcome to contribute
+    to Axom. Individuals outside of the two groups described above, and 
+    specifically not a member of LLNL GitHub organization, can make PRs
+    in the Axom project, but must do so from a branch on a *fork* of
+    the Axom repo. Thus, the process of reviewing and merging contributions
+    involves additional steps which we describe here.
+
+--------------------------
+Forking the repository
+--------------------------
+
+The requirement for individuals outside of the LLNL GitHub organization
+to contribute on a fork of the repo is due to policies enforced
+by the LLNL organization on GitHub (in which the Axom project resides) and the
+Livermore Computing (LC) organization (in which we run our GitLab CI testing).
+Fortunately, you may still contribute to Axom by `forking the Axom repo
+<https://github.com/LLNL/axom/fork>`_. Forking creates a copy of the Axom
+repository that you own. You can make changes on your local copy and push them
+to your fork on GitHub. When you are ready to have your Axom contribution
+reviewed and added to the Axom project, you may create a pull request in the 
+Axom project.
+
+--------------------------------------------------
+Accepting a pull request from a forked repository
+--------------------------------------------------
+
+Due to LLNL security policies, some Axom pull requests cannot be run through 
+all Axom CI checks. The Livermore Computing (LC) Center GitLab systems 
+restrict which GitHub PRs may run automatically through its CI test pipelines.
+For example, a PR made from branch on a forked repository will not trigger 
+GitLab CI checks. GitLab CI on LC platforms will be run only on PRs that are 
+made from branches in the GitHub Axom repository.
+
+.. note:: **The following process for accepting PR contributions from a fork
+          of the Axom repo must be executed by a member of the Axom team:**
+
+          To facilitate testing contributions in PRs from forked repositories,
+          we maintain a script to pull a PR branch from a forked repo into the
+          Axom repo. First, identify the number of the PR, which appears at
+          the top of a PR. Then, run a script from the top-level Axom
+          directory::
+
+            $ ./scripts/make_local_branch_from_fork_pr -b <PR #>
+
+          If successful, this will create a branch in your local copy of the
+          Axom repo labeled ``pr-from-fork/<PR #>`` and you will be on that
+          local branch in your checkout space. To verify this, you can run
+          the following command after you run the script::
+
+            $ git branch
+
+          You will see the new branch in the listing of branches and the branch
+          you are on will be starred.
+
+          You can push the new branch to the Axom repo on GitHub::
+
+            $ git push git@github.com:LLNL/axom.git <branch-name>
+
+          and make a PR for the new branch. It is good practice to reference
+          the original PR in the description of the new PR to track the
+          original PR discussion and reviews.
+
+          All CI checks will be triggered to run on the new PR made in the
+          Axom repo. When everything passes and the PR is approved, it may
+          be merged. When it is merged, the original PR from the forked repo
+          will be closed and marked as merged unless it is referenced
+          elsewhere, such as in a GitHub issue. If this is the case, then the
+          original PR (from the forked repo) must be closed manually.
+
+
+======================================================
 Testing and Code Health
 ======================================================
 
