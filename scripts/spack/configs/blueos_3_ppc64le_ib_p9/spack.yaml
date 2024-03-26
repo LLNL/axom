@@ -303,6 +303,10 @@ spack:
         prefix: /usr
 
     # Globally lock version of third party libraries
+    adiak:
+      require: "@0.4.0"
+    caliper:
+      require: "@2.10.0"
     camp:
       require: "@2024.02.0"
     conduit:
