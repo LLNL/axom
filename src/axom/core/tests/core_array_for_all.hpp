@@ -16,24 +16,30 @@
 
 namespace testing
 {
+template <typename ExecSpace, axom::MemorySpace SPACE = axom::MemorySpace::Dynamic>
+struct ArrayTestParams
+{
+  using TheExecSpace = ExecSpace;
+#ifdef AXOM_USE_UMPIRE
+  static constexpr axom::MemorySpace HostSpace = axom::MemorySpace::Host;
+#else
+  static constexpr axom::MemorySpace HostSpace = axom::MemorySpace::Dynamic;
+#endif
+  static constexpr axom::MemorySpace KernelSpace = SPACE;
+};
+
 //------------------------------------------------------------------------------
 //  This test harness defines some types that are useful for the tests below
 //------------------------------------------------------------------------------
-template <typename TheExecSpace>
+template <typename ExecParams>
 class core_array_for_all : public ::testing::Test
 {
 public:
-  using ExecSpace = TheExecSpace;
+  using ExecSpace = typename ExecParams::TheExecSpace;
 
   // Define some memory spaces
-#ifdef AXOM_USE_UMPIRE
-  static constexpr axom::MemorySpace host_memory = axom::MemorySpace::Host;
-#else
-  static constexpr axom::MemorySpace host_memory = axom::MemorySpace::Dynamic;
-#endif
-
-  static constexpr axom::MemorySpace exec_space_memory =
-    axom::execution_space<ExecSpace>::memory_space;
+  static constexpr axom::MemorySpace host_memory = ExecParams::HostSpace;
+  static constexpr axom::MemorySpace exec_space_memory = ExecParams::KernelSpace;
 
   // Define some Array type aliases
   template <typename T>
@@ -49,19 +55,25 @@ public:
 // Generate a list of available execution types
 using MyTypes = ::testing::Types<
 #if defined(AXOM_USE_RAJA) && defined(AXOM_USE_OPENMP)
-  axom::OMP_EXEC,
+  ArrayTestParams<axom::OMP_EXEC>,
 #endif
 #if defined(AXOM_USE_RAJA) && defined(AXOM_USE_CUDA) && defined(AXOM_USE_UMPIRE)
-  axom::CUDA_EXEC<100>,
-  axom::CUDA_EXEC<256>,
-  axom::CUDA_EXEC<256, axom::ASYNC>,
+  ArrayTestParams<axom::CUDA_EXEC<256>, axom::MemorySpace::Device>,
+  ArrayTestParams<axom::CUDA_EXEC<256>, axom::MemorySpace::Unified>,
+  ArrayTestParams<axom::CUDA_EXEC<256>, axom::MemorySpace::Pinned>,
+  ArrayTestParams<axom::CUDA_EXEC<256, axom::ASYNC>, axom::MemorySpace::Device>,
+  ArrayTestParams<axom::CUDA_EXEC<256, axom::ASYNC>, axom::MemorySpace::Unified>,
+  ArrayTestParams<axom::CUDA_EXEC<256, axom::ASYNC>, axom::MemorySpace::Pinned>,
 #endif
 #if defined(AXOM_USE_RAJA) && defined(AXOM_USE_HIP) && defined(AXOM_USE_UMPIRE)
-  axom::HIP_EXEC<100>,
-  axom::HIP_EXEC<256>,
-  axom::HIP_EXEC<256, axom::ASYNC>,
+  ArrayTestParams<axom::HIP_EXEC<256>, axom::MemorySpace::Device>,
+  ArrayTestParams<axom::HIP_EXEC<256>, axom::MemorySpace::Unified>,
+  ArrayTestParams<axom::HIP_EXEC<256>, axom::MemorySpace::Pinned>,
+  ArrayTestParams<axom::HIP_EXEC<256, axom::ASYNC>, axom::MemorySpace::Device>,
+  ArrayTestParams<axom::HIP_EXEC<256, axom::ASYNC>, axom::MemorySpace::Unified>,
+  ArrayTestParams<axom::HIP_EXEC<256, axom::ASYNC>, axom::MemorySpace::Pinned>,
 #endif
-  axom::SEQ_EXEC>;
+  ArrayTestParams<axom::SEQ_EXEC>>;
 
 TYPED_TEST_SUITE(core_array_for_all, MyTypes);
 
