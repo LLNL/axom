@@ -91,7 +91,7 @@ void dump_ray(const std::string& file,
  */
 template <typename FloatType, int NDIMS>
 void generate_aabbs(const mint::Mesh* mesh,
-                    axom::ArrayView<primal::BoundingBox<FloatType, NDIMS>> aabbs)
+                    axom::ArrayView<primal::BoundingBox<FloatType, NDIMS>>& aabbs)
 {
   // sanity check
   EXPECT_EQ(NDIMS, mesh->getDimension());
@@ -99,7 +99,7 @@ void generate_aabbs(const mint::Mesh* mesh,
   // calculate some constants
   constexpr int nodes_per_dim = 1 << NDIMS;
 
-  // allocate output arrays
+  // Check array is expected size
   const IndexType ncells = mesh->getNumberOfCells();
   EXPECT_TRUE(aabbs.size() == ncells);
 
@@ -142,7 +142,7 @@ void generate_aabbs(const mint::Mesh* mesh,
 template <typename FloatType, int NDIMS>
 void generate_aabbs_and_centroids(
   const mint::Mesh* mesh,
-  axom::ArrayView<primal::BoundingBox<FloatType, NDIMS>> aabbs,
+  axom::ArrayView<primal::BoundingBox<FloatType, NDIMS>>& aabbs,
   primal::Point<FloatType, NDIMS>* c)
 {
   // sanity check
@@ -313,17 +313,18 @@ void check_find_bounding_boxes3d()
   mint::UniformMesh mesh(lo, hi, 4, 4, 4);
   const IndexType ncells = mesh.getNumberOfCells();
   axom::Array<BoxType> aabbs(ncells, ncells, hostAllocatorID);
-  generate_aabbs(&mesh, aabbs.view());
+  auto aabbs_view = aabbs.view();
+  generate_aabbs(&mesh, aabbs_view);
   EXPECT_TRUE(aabbs.data() != nullptr);
 
   // Move aabbs to device
-  axom::Array<BoxType> aabbs_device =
-    axom::Array<BoxType>(aabbs, deviceAllocatorID);
+  axom::Array<BoxType> aabbs_device(aabbs, deviceAllocatorID);
+  auto aabbs_device_view = aabbs_device.view();
 
   // construct the BVH
   spin::BVH<NDIMS, ExecSpace, FloatType> bvh;
   bvh.setScaleFactor(1.0);  // i.e., no scaling
-  bvh.initialize(aabbs_device.view(), ncells);
+  bvh.initialize(aabbs_device_view, ncells);
 
   // check BVH bounding box
   BoxType bounds = bvh.getBounds();
@@ -338,8 +339,7 @@ void check_find_bounding_boxes3d()
   axom::Array<IndexType> offsets_device(N, N, deviceAllocatorID);
   axom::Array<IndexType> counts_device(N, N, deviceAllocatorID);
   axom::Array<IndexType> candidates_device(0, 0, deviceAllocatorID);
-  axom::Array<BoxType> query_boxes_device =
-    axom::Array<BoxType>(query_boxes, deviceAllocatorID);
+  axom::Array<BoxType> query_boxes_device(query_boxes, deviceAllocatorID);
 
   // Create views of device arrays
   auto offsets_view = offsets_device.view();
@@ -353,16 +353,14 @@ void check_find_bounding_boxes3d()
                         query_boxes_view);
 
   // Copy back to host
-  axom::Array<IndexType> counts =
-    axom::Array<IndexType>(counts_device, hostAllocatorID);
-  axom::Array<IndexType> offsets =
-    axom::Array<IndexType>(offsets_device, hostAllocatorID);
-  axom::Array<IndexType> candidates =
-    axom::Array<IndexType>(candidates_device, hostAllocatorID);
+  axom::Array<IndexType> counts(counts_device, hostAllocatorID);
+  axom::Array<IndexType> offsets(offsets_device, hostAllocatorID);
+  axom::Array<IndexType> candidates(candidates_device, hostAllocatorID);
 
   // flag cells that are found by the bounding box ID
   int* iblank = mesh.createField<int>("iblank", mint::CELL_CENTERED);
-  mint::for_all_cells<ExecSpace>(
+  using mint_exec_policy = axom::SEQ_EXEC;
+  mint::for_all_cells<mint_exec_policy>(
     &mesh,
     AXOM_LAMBDA(IndexType cellIdx) { iblank[cellIdx] = -1; });
 
@@ -448,17 +446,19 @@ void check_find_bounding_boxes2d()
   mint::UniformMesh mesh(lo, hi, 4, 4);
   const IndexType ncells = mesh.getNumberOfCells();
   axom::Array<BoxType> aabbs(ncells, ncells, hostAllocatorID);
-  generate_aabbs(&mesh, aabbs.view());
+  auto aabbs_view = aabbs.view();
+  generate_aabbs(&mesh, aabbs_view);
   EXPECT_TRUE(aabbs.data() != nullptr);
 
   // Move aabbs to device
   axom::Array<BoxType> aabbs_device =
     axom::Array<BoxType>(aabbs, deviceAllocatorID);
+  auto aabbs_device_view = aabbs_device.view();
 
   // construct the BVH
   spin::BVH<NDIMS, ExecSpace, FloatType> bvh;
   bvh.setScaleFactor(1.0);  // i.e., no scaling
-  bvh.initialize(aabbs_device.view(), ncells);
+  bvh.initialize(aabbs_device_view, ncells);
 
   // check BVH bounding box
   BoxType bounds = bvh.getBounds();
@@ -473,8 +473,7 @@ void check_find_bounding_boxes2d()
   axom::Array<IndexType> offsets_device(N, N, deviceAllocatorID);
   axom::Array<IndexType> counts_device(N, N, deviceAllocatorID);
   axom::Array<IndexType> candidates_device(0, 0, deviceAllocatorID);
-  axom::Array<BoxType> query_boxes_device =
-    axom::Array<BoxType>(query_boxes, deviceAllocatorID);
+  axom::Array<BoxType> query_boxes_device(query_boxes, deviceAllocatorID);
 
   // Create views of device arrays
   auto offsets_view = offsets_device.view();
@@ -488,16 +487,14 @@ void check_find_bounding_boxes2d()
                         query_boxes_view);
 
   // Copy back to host
-  axom::Array<IndexType> counts =
-    axom::Array<IndexType>(counts_device, hostAllocatorID);
-  axom::Array<IndexType> offsets =
-    axom::Array<IndexType>(offsets_device, hostAllocatorID);
-  axom::Array<IndexType> candidates =
-    axom::Array<IndexType>(candidates_device, hostAllocatorID);
+  axom::Array<IndexType> counts(counts_device, hostAllocatorID);
+  axom::Array<IndexType> offsets(offsets_device, hostAllocatorID);
+  axom::Array<IndexType> candidates(candidates_device, hostAllocatorID);
 
   // flag cells that are found by the bounding box ID
   int* iblank = mesh.createField<int>("iblank", mint::CELL_CENTERED);
-  mint::for_all_cells<ExecSpace>(
+  using mint_exec_policy = axom::SEQ_EXEC;
+  mint::for_all_cells<mint_exec_policy>(
     &mesh,
     AXOM_LAMBDA(IndexType cellIdx) { iblank[cellIdx] = -1; });
 
@@ -570,17 +567,19 @@ void check_find_rays3d()
   mint::UniformMesh mesh(lo, hi, 4, 4, 4);
   const IndexType ncells = mesh.getNumberOfCells();
   axom::Array<BoxType> aabbs(ncells, ncells, hostAllocatorID);
-  generate_aabbs(&mesh, aabbs.view());
+  auto aabbs_view = aabbs.view();
+  generate_aabbs(&mesh, aabbs_view);
   EXPECT_TRUE(aabbs.data() != nullptr);
 
   // Move aabbs to device
   axom::Array<BoxType> aabbs_device =
     axom::Array<BoxType>(aabbs, deviceAllocatorID);
+  auto aabbs_device_view = aabbs_device.view();
 
   // construct the BVH
   spin::BVH<NDIMS, ExecSpace, FloatType> bvh;
   bvh.setScaleFactor(1.0);  // i.e., no scaling
-  bvh.initialize(aabbs_device.view(), ncells);
+  bvh.initialize(aabbs_device_view, ncells);
 
   // check BVH bounding box
   BoxType bounds = bvh.getBounds();
@@ -595,8 +594,7 @@ void check_find_rays3d()
   axom::Array<IndexType> offsets_device(N, N, deviceAllocatorID);
   axom::Array<IndexType> counts_device(N, N, deviceAllocatorID);
   axom::Array<IndexType> candidates_device(0, 0, deviceAllocatorID);
-  axom::Array<RayType> query_rays_device =
-    axom::Array<RayType>(query_rays, deviceAllocatorID);
+  axom::Array<RayType> query_rays_device(query_rays, deviceAllocatorID);
 
   // Create views of device arrays
   auto offsets_view = offsets_device.view();
@@ -606,16 +604,14 @@ void check_find_rays3d()
   bvh.findRays(offsets_view, counts_view, candidates_device, N, query_rays_view);
 
   // Copy back to host
-  axom::Array<IndexType> counts =
-    axom::Array<IndexType>(counts_device, hostAllocatorID);
-  axom::Array<IndexType> offsets =
-    axom::Array<IndexType>(offsets_device, hostAllocatorID);
-  axom::Array<IndexType> candidates =
-    axom::Array<IndexType>(candidates_device, hostAllocatorID);
+  axom::Array<IndexType> counts(counts_device, hostAllocatorID);
+  axom::Array<IndexType> offsets(offsets_device, hostAllocatorID);
+  axom::Array<IndexType> candidates(candidates_device, hostAllocatorID);
 
   // flag cells that are found by the ray ID
   int* iblank = mesh.createField<int>("iblank", mint::CELL_CENTERED);
-  mint::for_all_cells<ExecSpace>(
+  using mint_exec_policy = axom::SEQ_EXEC;
+  mint::for_all_cells<mint_exec_policy>(
     &mesh,
     AXOM_LAMBDA(IndexType cellIdx) { iblank[cellIdx] = -1; });
 
@@ -714,17 +710,19 @@ void check_find_rays2d()
   mint::UniformMesh mesh(lo, hi, 4, 4);
   const IndexType ncells = mesh.getNumberOfCells();
   axom::Array<BoxType> aabbs(ncells, ncells, hostAllocatorID);
-  generate_aabbs(&mesh, aabbs.view());
+  auto aabbs_view = aabbs.view();
+  generate_aabbs(&mesh, aabbs_view);
   EXPECT_TRUE(aabbs.data() != nullptr);
 
   // Move aabbs to device
   axom::Array<BoxType> aabbs_device =
     axom::Array<BoxType>(aabbs, deviceAllocatorID);
+  auto aabbs_device_view = aabbs_device.view();
 
   // construct the BVH
   spin::BVH<NDIMS, ExecSpace, FloatType> bvh;
   bvh.setScaleFactor(1.0);  // i.e., no scaling
-  bvh.initialize(aabbs_device.view(), ncells);
+  bvh.initialize(aabbs_device_view, ncells);
 
   // check BVH bounding box
   BoxType bounds = bvh.getBounds();
@@ -739,8 +737,7 @@ void check_find_rays2d()
   axom::Array<IndexType> offsets_device(N, N, deviceAllocatorID);
   axom::Array<IndexType> counts_device(N, N, deviceAllocatorID);
   axom::Array<IndexType> candidates_device(0, 0, deviceAllocatorID);
-  axom::Array<RayType> query_rays_device =
-    axom::Array<RayType>(query_rays, deviceAllocatorID);
+  axom::Array<RayType> query_rays_device(query_rays, deviceAllocatorID);
 
   // Create views of device arrays
   auto offsets_view = offsets_device.view();
@@ -750,16 +747,14 @@ void check_find_rays2d()
   bvh.findRays(offsets_view, counts_view, candidates_device, N, query_rays_view);
 
   // Copy back to host
-  axom::Array<IndexType> counts =
-    axom::Array<IndexType>(counts_device, hostAllocatorID);
-  axom::Array<IndexType> offsets =
-    axom::Array<IndexType>(offsets_device, hostAllocatorID);
-  axom::Array<IndexType> candidates =
-    axom::Array<IndexType>(candidates_device, hostAllocatorID);
+  axom::Array<IndexType> counts(counts_device, hostAllocatorID);
+  axom::Array<IndexType> offsets(offsets_device, hostAllocatorID);
+  axom::Array<IndexType> candidates(candidates_device, hostAllocatorID);
 
   // flag cells that are found by the ray ID
   int* iblank = mesh.createField<int>("iblank", mint::CELL_CENTERED);
-  mint::for_all_cells<ExecSpace>(
+  using mint_exec_policy = axom::SEQ_EXEC;
+  mint::for_all_cells<mint_exec_policy>(
     &mesh,
     AXOM_LAMBDA(IndexType cellIdx) { iblank[cellIdx] = -1; });
 
@@ -840,17 +835,19 @@ void check_find_points3d()
   const IndexType ncells = mesh.getNumberOfCells();
 
   axom::Array<BoxType> aabbs(ncells, ncells, hostAllocatorID);
-  generate_aabbs_and_centroids(&mesh, aabbs.view(), centroids);
+  auto aabbs_view = aabbs.view();
+  generate_aabbs_and_centroids(&mesh, aabbs_view, centroids);
   EXPECT_TRUE(aabbs.data() != nullptr);
 
   // Move aabbs to device
   axom::Array<BoxType> aabbs_device =
     axom::Array<BoxType>(aabbs, deviceAllocatorID);
+  auto aabbs_device_view = aabbs_device.view();
 
   // construct the BVH
   spin::BVH<NDIMS, ExecSpace, FloatType> bvh;
   bvh.setScaleFactor(1.0);  // i.e., no scaling
-  bvh.initialize(aabbs_device.view(), ncells);
+  bvh.initialize(aabbs_device_view, ncells);
 
   BoxType bounds = bvh.getBounds();
 
@@ -966,17 +963,19 @@ void check_find_points2d()
   const IndexType ncells = mesh.getNumberOfCells();
 
   axom::Array<BoxType> aabbs(ncells, ncells, hostAllocatorID);
-  generate_aabbs_and_centroids(&mesh, aabbs.view(), centroids);
+  auto aabbs_view = aabbs.view();
+  generate_aabbs_and_centroids(&mesh, aabbs_view, centroids);
   EXPECT_TRUE(aabbs.data() != nullptr);
 
   // Move aabbs to device
   axom::Array<BoxType> aabbs_device =
     axom::Array<BoxType>(aabbs, deviceAllocatorID);
+  auto aabbs_device_view = aabbs_device.view();
 
   // construct the BVH
   spin::BVH<NDIMS, ExecSpace, FloatType> bvh;
   bvh.setScaleFactor(1.0);  // i.e., no scaling
-  bvh.initialize(aabbs_device.view(), ncells);
+  bvh.initialize(aabbs_device_view, ncells);
 
   BoxType bounds = bvh.getBounds();
 
@@ -1336,7 +1335,8 @@ void check_find_points_zip3d()
   const IndexType ncells = mesh.getNumberOfCells();
 
   axom::Array<BoxType> aabbs(ncells, ncells, current_allocator);
-  generate_aabbs_and_centroids(&mesh, aabbs.view(), centroids);
+  auto aabbs_view = aabbs.view();
+  generate_aabbs_and_centroids(&mesh, aabbs_view, centroids);
 
   axom::Array<FloatType> xs(ncells, ncells);
   axom::Array<FloatType> ys(ncells, ncells);
@@ -1423,7 +1423,8 @@ void check_find_points_zip2d()
   const IndexType ncells = mesh.getNumberOfCells();
 
   axom::Array<BoxType> aabbs(ncells, ncells, current_allocator);
-  generate_aabbs_and_centroids(&mesh, aabbs.view(), centroids);
+  auto aabbs_view = aabbs.view();
+  generate_aabbs_and_centroids(&mesh, aabbs_view, centroids);
 
   axom::Array<FloatType> xs(ncells, ncells);
   axom::Array<FloatType> ys(ncells, ncells);
