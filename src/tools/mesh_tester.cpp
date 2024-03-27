@@ -410,7 +410,12 @@ std::vector<std::pair<int, int>> naiveIntersectionAlgorithm(
 
   // Get allocator
   const int current_allocator = axom::getDefaultAllocatorID();
-  int allocatorID = axom::execution_space<ExecSpace>::allocatorID();
+
+  // Use unified memory if on device
+  constexpr bool on_device = axom::execution_space<ExecSpace>::onDevice();
+  int allocatorID = on_device
+    ? axom::getUmpireResourceAllocatorID(umpire::resource::Unified)
+    : axom::execution_space<ExecSpace>::allocatorID();
   axom::setDefaultAllocator(allocatorID);
 
   std::vector<std::pair<int, int>> retval;
@@ -621,16 +626,20 @@ int main(int argc, char** argv)
 #ifdef AXOM_USE_CUDA
   if(params.policy == raja_cuda)
   {
-    using GPUExec = axom::CUDA_EXEC<256>;
-    axom::setDefaultAllocator(axom::execution_space<GPUExec>::allocatorID());
+    // Use unified memory on device
+    int unified_id =
+      axom::getUmpireResourceAllocatorID(umpire::resource::Unified);
+    axom::setDefaultAllocator(unified_id);
   }
 #endif
 
 #if defined(AXOM_USE_HIP) && defined(NDEBUG)
   if(params.policy == raja_hip)
   {
-    using GPUExec = axom::HIP_EXEC<256>;
-    axom::setDefaultAllocator(axom::execution_space<GPUExec>::allocatorID());
+    // Use unified memory on device
+    int unified_id =
+      axom::getUmpireResourceAllocatorID(umpire::resource::Unified);
+    axom::setDefaultAllocator(unified_id);
   }
 #endif
 
