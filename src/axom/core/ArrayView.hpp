@@ -371,7 +371,7 @@ ArrayView<T, DIM, SPACE>::ArrayView(
   , m_allocator_id(static_cast<const OtherArrayType&>(other).getAllocatorID())
 {
   static_assert(
-    std::is_const<T>::value,
+    std::is_const<T>::value || detail::ArrayTraits<OtherArrayType>::is_view,
     "Cannot create an ArrayView of non-const type from a const Array");
 #ifdef AXOM_DEBUG
   // If it's not dynamic, the allocator ID from the argument array has to match the template param.

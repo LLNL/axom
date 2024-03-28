@@ -128,13 +128,12 @@ bool constructAndTestSubMap()
 
       // Check iterator's value access functions
       {
-        auto mapVal = it.value();
-        EXPECT_EQ(mapVal, *it);
-        EXPECT_EQ(mapVal, it());
-        EXPECT_EQ(mapVal, it[0]);
+        auto expectedValue = getValue<T>(submapOffset + cnt);
+        EXPECT_EQ(expectedValue, *it);
+        EXPECT_EQ(expectedValue, it[0]);
 
         auto expVal = getValue<T>(submapOffset + cnt);
-        EXPECT_EQ(expVal, mapVal);
+        EXPECT_EQ(expVal, expectedValue);
       }
     }
   }
@@ -159,6 +158,20 @@ bool constructAndTestSubMap()
       EXPECT_EQ(ssm[idx], getValue<T>(subset_indices[idx]));
       EXPECT_EQ(ssm.value(idx), getValue<T>(subset_indices[idx]));
       EXPECT_EQ(ssm.index(idx), s[subset_indices[idx]]);
+    }
+
+    SLIC_INFO("Checking the elements using SubMap range iterator.");
+    {
+      int cnt = 0;
+      for(auto it = ssm.set_begin(); it != ssm.set_end(); ++it, ++cnt)
+      {
+        auto expectedValue = getValue<T>(subset_indices[cnt]);
+        EXPECT_EQ(expectedValue, (*it)[0]);
+        EXPECT_EQ(expectedValue, it(0));
+        EXPECT_EQ(expectedValue, it.value(0));
+        EXPECT_EQ(it.index(), s[subset_indices[cnt]]);
+      }
+      EXPECT_EQ(cnt, subset_indices.size());
     }
   }
   return true;

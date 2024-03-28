@@ -285,15 +285,6 @@ TEST(slam_map, iterate)
     }
   }
 
-  //iter[n] access
-  {
-    IterType beginIter = m.begin();
-    for(int idx = 0; idx < m.size(); idx++)
-    {
-      EXPECT_EQ(beginIter[idx], static_cast<double>(idx * multFac));
-    }
-  }
-
   //iter1 - iter2
   {
     IterType beginIter = m.begin();
@@ -314,7 +305,6 @@ void constructAndTestMapIteratorWithStride(int stride)
 {
   using RealMap =
     slam::Map<double, slam::Set<>, VecIndirection<double>, StrideType>;
-  using MapIterator = typename RealMap::MapIterator;
 
   SetType s(MAX_SET_SIZE);
 
@@ -335,11 +325,11 @@ void constructAndTestMapIteratorWithStride(int stride)
   double multFac2 = 1.010;
   {
     int idx = 0;
-    for(MapIterator iter = m.begin(); iter != m.end(); ++iter)
+    for(auto submap : m.set_elements())
     {
-      for(auto idx2 = 0; idx2 < iter.numComp(); ++idx2)
+      for(auto idx2 = 0; idx2 < submap.size(); ++idx2)
       {
-        iter(idx2) = static_cast<double>(idx * multFac + idx2 * multFac2);
+        submap[idx2] = static_cast<double>(idx * multFac + idx2 * multFac2);
       }
       ++idx;
     }
@@ -352,12 +342,11 @@ void constructAndTestMapIteratorWithStride(int stride)
   //iter++ access
   {
     int idx = 0;
-    for(MapIterator iter = m.begin(); iter != m.end(); iter++)
+    for(auto submap : m.set_elements())
     {
-      EXPECT_EQ(*iter, static_cast<double>(idx * multFac));
-      for(auto idx2 = 0; idx2 < iter.numComp(); ++idx2)
+      for(auto idx2 = 0; idx2 < submap.size(); ++idx2)
       {
-        EXPECT_DOUBLE_EQ(iter(idx2),
+        EXPECT_DOUBLE_EQ(submap[idx2],
                          static_cast<double>(idx * multFac + idx2 * multFac2));
       }
       idx++;
@@ -468,11 +457,18 @@ public:
   using RealData = axom::Array<double>;
   using IndirectionPolicy =
     slam::policies::ArrayViewIndirection<SetPosition, double>;
-  using StridePolicy = slam::policies::RuntimeStride<int>;
+  using StridePolicy = slam::policies::RuntimeStride<axom::IndexType>;
   using InterfacePolicy = slam::policies::ConcreteInterface;
 
   using RealMap =
     slam::Map<double, ConcreteSetType, IndirectionPolicy, StridePolicy, InterfacePolicy>;
+
+  template <int Dims>
+  using MDStridePolicy = slam::policies::MultiDimStride<axom::IndexType, Dims>;
+
+  template <int Dims>
+  using MultiDimMap =
+    slam::Map<double, ConcreteSetType, IndirectionPolicy, MDStridePolicy<Dims>, InterfacePolicy>;
 
   slam_map_templated()
     : m_allocatorId(ExecTraits<ExecSpace>::getAllocatorId())
@@ -494,6 +490,29 @@ public:
     axom::IndexType backingSize = m_set.size() * stride;
 
     m_realBacking = RealData(backingSize, backingSize, m_allocatorId);
+  }
+
+  template <int Dims>
+  void initializeWithMultiDimStride(axom::StackArray<axom::IndexType, Dims> shape)
+  {
+    // Create associated set.
+    m_set = ConcreteSetType(MAX_SET_SIZE);
+
+    SLIC_INFO("\nCreating set of size " << m_set.size());
+
+    EXPECT_EQ(m_set.size(), MAX_SET_SIZE);
+    EXPECT_TRUE(m_set.isValid());
+
+    int stride = 1;
+    for(int dim = 0; dim < Dims; dim++)
+    {
+      stride *= shape[dim];
+    }
+
+    // Create array of elements to back the map.
+    axom::IndexType backingSize = m_set.size() * stride;
+
+    m_realBacking = RealData(backingSize, backingSize, m_unifiedAllocatorId);
   }
 
 protected:
@@ -603,6 +622,163 @@ AXOM_TYPED_TEST(slam_map_templated, constructAndTestStride3)
     EXPECT_TRUE(validEntry);
   }
 }
+
+//----------------------------------------------------------------------
+AXOM_TYPED_TEST(slam_map_templated, constructAndTest2DStride)
+{
+  using ExecSpace = typename TestFixture::ExecSpace;
+  using MapType = typename TestFixture::template MultiDimMap<2>;
+
+  const axom::StackArray<axom::IndexType, 2> shape = {3, 5};
+  const axom::StackArray<axom::IndexType, 2> strides = {5, 1};
+  int stride = 3 * 5;
+  this->initializeWithMultiDimStride(shape);
+
+  SLIC_INFO("\nCreating double map with shape (3, 5) on the set ");
+  MapType m(this->m_set, this->m_realBacking.view(), shape);
+
+  EXPECT_EQ(m.stride(), stride);
+  EXPECT_EQ(m.shape(), shape);
+
+  SLIC_INFO("\nSetting the elements.");
+  const double multFac = 100.0001;
+  const double multFac2 = 1.00100;
+  const double multFac3 = 0.10010;
+  axom::for_all<ExecSpace>(
+    this->m_set.size(),
+    AXOM_LAMBDA(int index) {
+      for(int i = 0; i < shape[0]; i++)
+      {
+        for(int j = 0; j < shape[1]; j++)
+        {
+          m(index, i, j) = index * multFac + i * multFac2 + j * multFac3;
+        }
+      }
+    });
+
+  SLIC_INFO("\nChecking the elements.");
+
+  for(int setIdx = 0; setIdx < this->m_set.size(); setIdx++)
+  {
+    for(int i = 0; i < shape[0]; i++)
+    {
+      for(int j = 0; j < shape[1]; j++)
+      {
+        double expectedValue = setIdx * multFac + i * multFac2 + j * multFac3;
+        EXPECT_DOUBLE_EQ(m(setIdx, i, j), expectedValue);
+        EXPECT_DOUBLE_EQ(m.value(setIdx, i, j), expectedValue);
+
+        int flatIndex = i * strides[0] + j * strides[1];
+        EXPECT_DOUBLE_EQ(m[setIdx * stride + flatIndex], expectedValue);
+      }
+    }
+  }
+
+  SLIC_INFO("\nChecking iteration through range iterator.");
+  for(auto it = m.set_begin(); it != m.set_end(); ++it)
+  {
+    int setIdx = it.flatIndex();
+    EXPECT_EQ(m.index(setIdx), it.index());
+    EXPECT_EQ(it->shape(), shape);
+    EXPECT_EQ(it->size(), it.numComp());
+    EXPECT_EQ(m.set_begin() + setIdx, it);
+    for(int i = 0; i < shape[0]; i++)
+    {
+      for(int j = 0; j < shape[1]; j++)
+      {
+        double expectedValue = setIdx * multFac + i * multFac2 + j * multFac3;
+        EXPECT_DOUBLE_EQ(expectedValue, (*it)(i, j));
+        EXPECT_DOUBLE_EQ(expectedValue, it(i, j));
+        EXPECT_DOUBLE_EQ(expectedValue, it.value(i, j));
+      }
+    }
+  }
+}
+//----------------------------------------------------------------------
+AXOM_TYPED_TEST(slam_map_templated, constructAndTest3DStride)
+{
+  using ExecSpace = typename TestFixture::ExecSpace;
+  using MapType = typename TestFixture::template MultiDimMap<3>;
+
+  const axom::StackArray<axom::IndexType, 3> shape = {2, 3, 4};
+  const axom::StackArray<axom::IndexType, 3> strides = {12, 4, 1};
+  int stride = 2 * 3 * 4;
+  this->initializeWithMultiDimStride(shape);
+
+  SLIC_INFO("\nCreating double map with shape (2, 3, 4) on the set ");
+  MapType m(this->m_set, this->m_realBacking.view(), shape);
+
+  EXPECT_EQ(m.stride(), stride);
+  EXPECT_EQ(m.shape(), shape);
+
+  SLIC_INFO("\nSetting the elements.");
+  const double multFac = 100.0001;
+  const double multFac2 = 1.00100;
+  const double multFac3 = 0.10010;
+  const double multFac4 = 0.01001;
+  axom::for_all<ExecSpace>(
+    this->m_set.size(),
+    AXOM_LAMBDA(int index) {
+      for(int i = 0; i < shape[0]; i++)
+      {
+        for(int j = 0; j < shape[1]; j++)
+        {
+          for(int k = 0; k < shape[2]; k++)
+          {
+            m(index, i, j, k) =
+              index * multFac + i * multFac2 + j * multFac3 + k * multFac4;
+          }
+        }
+      }
+    });
+
+  SLIC_INFO("\nChecking the elements.");
+
+  for(int setIdx = 0; setIdx < this->m_set.size(); setIdx++)
+  {
+    for(int i = 0; i < shape[0]; i++)
+    {
+      for(int j = 0; j < shape[1]; j++)
+      {
+        for(int k = 0; k < shape[2]; k++)
+        {
+          double expectedValue =
+            setIdx * multFac + i * multFac2 + j * multFac3 + k * multFac4;
+          EXPECT_DOUBLE_EQ(m(setIdx, i, j, k), expectedValue);
+          EXPECT_DOUBLE_EQ(m.value(setIdx, i, j, k), expectedValue);
+
+          int flatIndex = i * strides[0] + j * strides[1] + k * strides[2];
+          EXPECT_DOUBLE_EQ(m[setIdx * stride + flatIndex], expectedValue);
+        }
+      }
+    }
+  }
+
+  SLIC_INFO("\nChecking iteration through range iterator.");
+  for(auto it = m.set_begin(); it != m.set_end(); ++it)
+  {
+    int setIdx = it.flatIndex();
+    EXPECT_EQ(m.index(setIdx), it.index());
+    EXPECT_EQ(it->shape(), shape);
+    EXPECT_EQ(it->size(), it.numComp());
+    EXPECT_EQ(m.set_begin() + setIdx, it);
+    for(int i = 0; i < shape[0]; i++)
+    {
+      for(int j = 0; j < shape[1]; j++)
+      {
+        for(int k = 0; k < shape[2]; k++)
+        {
+          double expectedValue =
+            setIdx * multFac + i * multFac2 + j * multFac3 + k * multFac4;
+          EXPECT_DOUBLE_EQ(expectedValue, (*it)(i, j, k));
+          EXPECT_DOUBLE_EQ(expectedValue, it(i, j, k));
+          EXPECT_DOUBLE_EQ(expectedValue, it.value(i, j, k));
+        }
+      }
+    }
+  }
+}
+
 }  // namespace testing
 
 //----------------------------------------------------------------------
