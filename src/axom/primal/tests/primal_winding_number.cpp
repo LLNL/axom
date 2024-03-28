@@ -21,8 +21,7 @@ namespace primal = axom::primal;
 
 TEST(primal_winding_number, simple_cases)
 {
-  // Test points that are straightforwardly "inside" or "outside"
-  //  the closed shape
+  // Test points that are straightforwardly "inside" or "outside" the closed shape
   using Point2D = primal::Point<double, 2>;
   using Triangle = primal::Triangle<double, 2>;
   using Bezier = primal::BezierCurve<double, 2>;

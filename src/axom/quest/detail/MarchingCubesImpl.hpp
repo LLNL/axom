@@ -419,19 +419,20 @@ public:
         }););
 
     m_scannedFlags.fill(0, 1, 0);
+#if defined(AXOM_USE_RAJA)
     AXOM_PERF_MARK_SECTION(
       "MarchingCubesImpl::scanCrossings:scan_flags",
-#if defined(AXOM_USE_RAJA)
       RAJA::inclusive_scan<ScanPolicy>(
         RAJA::make_span(m_crossingFlags.data(), parentCellCount),
         RAJA::make_span(m_scannedFlags.data() + 1, parentCellCount),
-        RAJA::operators::plus<axom::IndexType> {});
+        RAJA::operators::plus<axom::IndexType> {}););
 #else
+    AXOM_PERF_MARK_SECTION(
+      "MarchingCubesImpl::scanCrossings:scan_flags",
       for(axom::IndexType n = 0; n < parentCellCount; ++n) {
         m_scannedFlags[n + 1] = m_scannedFlags[n] + m_crossingFlags[n];
-      }
+      });
 #endif
-    );
 
     axom::copy(&m_crossingCount,
                m_scannedFlags.data() + m_scannedFlags.size() - 1,
@@ -468,19 +469,20 @@ public:
     //
 
     m_firstFacetIds.fill(0, 1, 0);
+#if defined(AXOM_USE_RAJA)
     AXOM_PERF_MARK_SECTION(
       "MarchingCubesImpl::scanCrossings:scan_incrs",
-#if defined(AXOM_USE_RAJA)
       RAJA::inclusive_scan<ScanPolicy>(
         RAJA::make_span(m_facetIncrs.data(), m_crossingCount),
         RAJA::make_span(m_firstFacetIds.data() + 1, m_crossingCount),
-        RAJA::operators::plus<axom::IndexType> {});
+        RAJA::operators::plus<axom::IndexType> {}););
 #else
+    AXOM_PERF_MARK_SECTION(
+      "MarchingCubesImpl::scanCrossings:scan_incrs",
       for(axom::IndexType n = 0; n < parentCellCount; ++n) {
         m_firstFacetIds[n + 1] = m_firstFacetIds[n] + m_facetIncrs[n];
-      }
+      });
 #endif
-    );
 
     axom::copy(&m_facetCount,
                m_firstFacetIds.data() + m_firstFacetIds.size() - 1,

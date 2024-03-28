@@ -82,6 +82,9 @@ class Axom(CachedCMakePackage, CudaPackage, ROCmPackage):
     variant("mpi", default=True, description="Build MPI support")
     variant("openmp", default=True, description="Turn on OpenMP support.")
 
+    variant('profiling', default=False, 
+            description='Build with hooks for Adiak/Caliper performance analysis')
+
     variant("c2c",      default=False, description="Build with c2c")
 
     variant("mfem", default=False, description="Build with mfem")
@@ -136,18 +139,35 @@ class Axom(CachedCMakePackage, CudaPackage, ROCmPackage):
         depends_on("raja@:0.13.0", when="@:0.5.0")
         depends_on("raja~openmp", when="~openmp")
         depends_on("raja+openmp", when="+openmp")
+        depends_on("raja+cuda", when="+cuda")
+
+    with when("+profiling"):
+        depends_on("adiak")
+        depends_on("caliper+adiak~papi")
+
+        depends_on("caliper+cuda", when="+cuda")
+        depends_on("caliper~cuda", when="~cuda")
+
+        depends_on("caliper+rocm", when="+rocm")
+        depends_on("caliper~rocm", when="~rocm")
+
+        for dep in ["adiak", "caliper"]:
+            depends_on(f"{dep}+mpi", when="+mpi")
+            depends_on(f"{dep}~mpi", when="~mpi")
+            depends_on(f"{dep}+shared", when="+shared")
+            depends_on(f"{dep}~shared", when="~shared")
 
     for val in CudaPackage.cuda_arch_values:
-        raja_cuda = "raja +cuda cuda_arch={0}".format(val)
-        umpire_cuda = "umpire +cuda cuda_arch={0}".format(val)
-        depends_on(raja_cuda, when="+{0}".format(raja_cuda))
-        depends_on(umpire_cuda, when="+{0}".format(umpire_cuda))
+        ext_cuda_dep = f"+cuda cuda_arch={val}"
+        depends_on(f"raja {ext_cuda_dep}", when=f"+raja {ext_cuda_dep}")
+        depends_on(f"umpire {ext_cuda_dep}", when=f"+umpire {ext_cuda_dep}")
+        depends_on(f"caliper {ext_cuda_dep}", when=f"+profiling {ext_cuda_dep}")
 
     for val in ROCmPackage.amdgpu_targets:
-        raja_rocm = "raja +rocm amdgpu_target={0}".format(val)
-        umpire_rocm = "umpire +rocm amdgpu_target={0}".format(val)
-        depends_on(raja_rocm, when="+{0}".format(raja_rocm))
-        depends_on(umpire_rocm, when="+{0}".format(umpire_rocm))
+        ext_rocm_dep = f"+rocm amdgpu_target={val}"
+        depends_on(f"raja {ext_rocm_dep}", when=f"+raja {ext_rocm_dep}")
+        depends_on(f"umpire {ext_rocm_dep}", when=f"+umpire {ext_rocm_dep}")
+        depends_on(f"caliper {ext_rocm_dep}", when=f"+profiling {ext_rocm_dep}")
 
     depends_on("rocprim", when="+rocm")
 
@@ -161,15 +181,19 @@ class Axom(CachedCMakePackage, CudaPackage, ROCmPackage):
     depends_on("python", when="+python")
 
     # Devtools
-    depends_on("cppcheck", when="+devtools")
-    depends_on("doxygen", when="+devtools")
-    depends_on("graphviz", when="+devtools")
-    depends_on("python", when="+devtools")
-    depends_on("py-sphinx", when="+devtools")
-    depends_on("py-shroud", when="+devtools")
-    depends_on("py-jsonschema", when="+devtools")
-    depends_on("llvm+clang@10.0.0", when="+devtools", type="build")
+    with when("+devtools"):
+        depends_on("cppcheck")
+        depends_on("doxygen")
+        depends_on("graphviz")
+        depends_on("python")
+        depends_on("py-sphinx")
+        depends_on("py-shroud")
+        depends_on("py-jsonschema")
+        depends_on("llvm+clang@10.0.0", type="build")
 
+    # -----------------------------------------------------------------------
+    # Conflicts
+    # -----------------------------------------------------------------------
     # Hard requirement after Axom 0.6.1
     conflicts("~cpp14", when="@0.6.2:")
 
@@ -183,6 +207,7 @@ class Axom(CachedCMakePackage, CudaPackage, ROCmPackage):
     conflicts("+cuda", when="+rocm")
 
     conflicts("^blt@:0.3.6", when="+rocm")
+
 
     def flag_handler(self, name, flags):
         if self.spec.satisfies("%cce") and name == "fflags":
@@ -473,6 +498,13 @@ class Axom(CachedCMakePackage, CudaPackage, ROCmPackage):
                 entries.append(cmake_cache_path("%s_DIR" % dep.upper(), dep_dir))
             else:
                 entries.append("# %s not built\n" % dep.upper())
+
+        if "+profiling" in spec:
+            dep_dir = get_spec_path(spec, "adiak", path_replacements)
+            entries.append(cmake_cache_path("ADIAK_DIR", dep_dir))
+
+            dep_dir = get_spec_path(spec, "caliper", path_replacements)
+            entries.append(cmake_cache_path("CALIPER_DIR", dep_dir))
 
         if "+umpire" in spec and spec.satisfies("^camp"):
             dep_dir = get_spec_path(spec, "camp", path_replacements)
