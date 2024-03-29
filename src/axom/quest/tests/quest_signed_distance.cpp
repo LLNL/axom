@@ -312,7 +312,13 @@ void run_vectorized_sphere_test()
   using PointType = primal::Point<double, 3>;
 
   int host_allocator = axom::getUmpireResourceAllocatorID(umpire::resource::Host);
-  int kernel_allocator = axom::execution_space<ExecSpace>::allocatorID();
+
+  //Use unified memory on device
+  constexpr bool on_device = axom::execution_space<ExecSpace>::onDevice();
+  const int kernel_allocator = on_device
+    ? axom::getUmpireResourceAllocatorID(umpire::resource::Unified)
+    : axom::execution_space<ExecSpace>::allocatorID();
+  axom::setDefaultAllocator(kernel_allocator);
 
   constexpr double l1norm_expected = 6.7051997372579715;
   constexpr double l2norm_expected = 2.5894400431865519;
@@ -414,6 +420,8 @@ void run_vectorized_sphere_test()
 
   delete surface_mesh;
   delete umesh;
+
+  axom::setDefaultAllocator(host_allocator);
 
   SLIC_INFO("Done.");
 }
@@ -519,9 +527,6 @@ TEST(quest_signed_distance, sphere_vec_device_custom_alloc)
                                                       device_pool_id);
   // _quest_distance_cpp_init_end
 
-  int host_allocator = axom::getUmpireResourceAllocatorID(umpire::resource::Host);
-  int kernel_allocator = axom::execution_space<ExecSpace>::allocatorID();
-
   SLIC_INFO("Compute signed distance...");
 
   double l1norm = 0.0;
@@ -536,8 +541,7 @@ TEST(quest_signed_distance, sphere_vec_device_custom_alloc)
   }
 
   // Copy query points to device
-  axom::Array<PointType> queryPtsDevice =
-    axom::Array<PointType>(queryPts, kernel_allocator);
+  axom::Array<PointType> queryPtsDevice(queryPts, kernel_allocator);
   double* phi_computed_device = axom::allocate<double>(nnodes, kernel_allocator);
 
   signed_distance.computeDistances(nnodes,
