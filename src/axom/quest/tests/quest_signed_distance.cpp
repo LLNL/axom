@@ -461,7 +461,23 @@ TEST(quest_signed_distance, sphere_vec_device_custom_alloc)
 {
   constexpr int BLOCK_SIZE = 256;
 
+  #if defined(__CUDACC__)
+  using exec = axom::CUDA_EXEC<BLOCK_SIZE>;
+  #elif defined(__HIPCC__)
+  using exec = axom::HIP_EXEC<BLOCK_SIZE>;
+  #else
+  using exec = axom::SEQ_EXEC;
+  #endif
+
   using PointType = primal::Point<double, 3>;
+
+  const int host_allocator =
+    axom::getUmpireResourceAllocatorID(umpire::resource::Host);
+  constexpr bool on_device = axom::execution_space<exec>::onDevice();
+  const int kernel_allocator = on_device
+    ? axom::getUmpireResourceAllocatorID(umpire::resource::Unified)
+    : axom::execution_space<exec>::allocatorID();
+  axom::setDefaultAllocator(kernel_allocator);
 
   constexpr double l1norm_expected = 6.7051997372579715;
   constexpr double l2norm_expected = 2.5894400431865519;
@@ -587,6 +603,7 @@ TEST(quest_signed_distance, sphere_vec_device_custom_alloc)
   delete surface_mesh;
   delete umesh;
 
+  axom::setDefaultAllocator(host_allocator);
   SLIC_INFO("Done.");
 }
 #endif  // defined(AXOM_USE_GPU) && defined(AXOM_USE_RAJA)
