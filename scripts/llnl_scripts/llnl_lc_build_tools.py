@@ -211,14 +211,13 @@ def build_and_test_host_config(test_root, host_config,
     cfg_output_file = pjoin(test_root,"output.log.%s.configure.txt" % host_config_root)
     print("[starting configure of %s]" % host_config)
     print("[log file: %s]" % cfg_output_file)
-    cmd = "{0} config-build.py -bp {1} -ip {2} -bt {3} -hc {4} {5} | tee {6}".format(sys.executable,
-                                                                                     build_dir,
-                                                                                     install_dir,
-                                                                                     build_type,
-                                                                                     host_config,
-                                                                                     extra_cmake_options,
-                                                                                     cfg_output_file)
-    res = sexe(cmd, echo=True)
+    res = sexe("%s config-build.py -bp %s -ip %s -bt %s -hc %s %s" % (sys.executable, build_dir, install_dir, build_type, host_config, extra_cmake_options),
+               output_file = cfg_output_file,
+               echo=True)
+
+    if report_to_stdout:
+        with open(cfg_output_file, 'r', encoding='utf8') as build_out:
+            print(build_out.read())
 
     if res != 0:
         print("[ERROR: Configure for host-config: %s failed]\n" % host_config)
@@ -232,8 +231,13 @@ def build_and_test_host_config(test_root, host_config,
     bld_output_file =  pjoin(build_dir,"output.log.make.txt")
     print("[starting build]")
     print("[log file: %s]" % bld_output_file)
-    cmd = "cd {0} && make -j 16 VERBOSE=1 | tee {1}".format(build_dir, bld_output_file)
-    res = sexe(cmd, echo=True)
+    res = sexe("cd %s && make -j 16 VERBOSE=1 " % build_dir,
+                output_file = bld_output_file,
+                echo=True)
+
+    if report_to_stdout:
+        with open(bld_output_file, 'r', encoding='utf8') as build_out:
+            print(build_out.read())
 
     if res != 0:
         print("[ERROR: Build for host-config: %s failed]\n" % host_config)
@@ -245,10 +249,15 @@ def build_and_test_host_config(test_root, host_config,
     print("[log file: %s]" % tst_output_file)
 
     parallel_test = "" if test_serial else "-j16"
-    tst_cmd = "cd {0} && make CTEST_OUTPUT_ON_FAILURE=1 test ARGS=\"--no-compress-output -T Test -VV {1}\" | tee {2}".format(build_dir, 
-                                                                                                                             parallel_test,
-                                                                                                                             tst_output_file)
-    res = sexe(tst_cmd, echo=True)
+    tst_cmd = "cd %s && make CTEST_OUTPUT_ON_FAILURE=1 test ARGS=\"--no-compress-output -T Test -VV %s\"" % (build_dir, parallel_test)
+
+    res = sexe(tst_cmd,
+               output_file = tst_output_file,
+               echo=True)
+
+    if report_to_stdout:
+        with open(tst_output_file, 'r', encoding='utf8') as test_out:
+            print(test_out.read())
 
     # Convert CTest output to JUnit, do not overwrite previous res
     print("[Checking to see if xsltproc exists...]")
@@ -275,20 +284,26 @@ def build_and_test_host_config(test_root, host_config,
     print("[starting docs generation]")
     print("[log file: %s]" % docs_output_file)
 
-    docs_cmd = "cd {0} && make -j16 docs | tee {1}".format(build_dir, docs_output_file)
-    res = sexe(docs_cmd, echo=True)
+    res = sexe("cd %s && make -j16 docs " % build_dir,
+               output_file = docs_output_file,
+               echo=True)
+
+    if report_to_stdout:
+        with open(docs_output_file, 'r', encoding='utf8') as docs_out:
+            print(docs_out.read())
 
     if res != 0:
         print("[ERROR: Docs generation for host-config: %s failed]\n\n" % host_config)
         return res
 
     # install the code
-    install_output_file = pjoin(build_dir,"output.log.make.install.txt")
+    inst_output_file = pjoin(build_dir,"output.log.make.install.txt")
     print("[starting install]")
-    print("[log file: %s]" % install_output_file)
+    print("[log file: %s]" % inst_output_file)
 
-    install_cmd = "cd {0} && make -j16 install | tee {1}".format(build_dir, install_output_file)
-    res = sexe(install_cmd, echo=True)
+    res = sexe("cd %s && make -j16 install " % build_dir,
+               output_file = inst_output_file,
+               echo=True)
 
     if res != 0:
         print("[ERROR: Install for host-config: %s failed]\n\n" % host_config)
@@ -318,16 +333,17 @@ def build_and_test_host_config(test_root, host_config,
             "mkdir build",
             "cd build",
             """echo "[Configuring '{}' example]" """.format("using-with-cmake"),
-            "cmake -C ../host-config.cmake .. | tee -a {0}".format(install_example_output_file),
+            "cmake -C ../host-config.cmake ..",
             """echo "[Building '{}' example]" """.format("using-with-cmake"),
-            "make | tee -a {0}".format(install_example_output_file),
+            "make ",
             """echo "[Running '{}' example]" """.format("using-with-cmake"),
-            "./example | tee -a {0}".format(install_example_output_file),
+            "./example",
             """echo "[Done]" """
         ]
 
-        cmd = " && ".join(example_commands)
-        res = sexe(cmd, echo=True)
+        res = sexe(" && ".join(example_commands),
+                output_file = install_example_output_file,
+                echo=True)
 
         if res != 0:
             print("[ERROR: Installed 'using-with-cmake' example for host-config: %s failed]\n\n" % host_config)
@@ -346,16 +362,17 @@ def build_and_test_host_config(test_root, host_config,
             "mkdir build",
             "cd build",
             """echo "[Configuring '{}' example]" """.format("using-with-blt"),
-            "cmake -C ../host-config.cmake .. | tee -a {0}".format(install_example_output_file),
+            "cmake -C ../host-config.cmake ..",
             """echo "[Building '{}' example]" """.format("using-with-blt"),
-            "make | tee -a {0}".format(install_example_output_file),
+            "make ",
             """echo "[Running '{}' example]" """.format("using-with-blt"),
-            "./bin/example | tee -a {0}".format(install_example_output_file),
+            "./bin/example",
             """echo "[Done]" """
         ]
 
-        cmd = " && ".join(example_commands)
-        res = sexe(cmd, echo=True)
+        res = sexe(" && ".join(example_commands),
+                output_file = install_example_output_file,
+                echo=True)
 
         if res != 0:
             print("[ERROR: Installed 'using-with-blt' example for host-config: %s failed]\n\n" % host_config)
