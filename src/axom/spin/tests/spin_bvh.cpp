@@ -209,7 +209,7 @@ void check_build_bvh2d()
   using PointType = typename primal::Point<FloatType, NDIMS>;
 
   const int hostAllocatorID =
-    axom::getUmpireResourceAllocatorID(umpire::resource::Host);
+    axom::execution_space<axom::SEQ_EXEC>::allocatorID();
   const int deviceAllocatorID = axom::execution_space<ExecSpace>::allocatorID();
 
   axom::Array<BoxType> boxes(2, 2, hostAllocatorID);
@@ -252,7 +252,7 @@ void check_build_bvh3d()
   using PointType = typename primal::Point<FloatType, NDIMS>;
 
   const int hostAllocatorID =
-    axom::getUmpireResourceAllocatorID(umpire::resource::Host);
+    axom::execution_space<axom::SEQ_EXEC>::allocatorID();
   const int deviceAllocatorID = axom::execution_space<ExecSpace>::allocatorID();
 
   axom::Array<BoxType> boxes(2, 2, hostAllocatorID);
@@ -290,7 +290,7 @@ void check_find_bounding_boxes3d()
   using PointType = typename primal::Point<FloatType, NDIMS>;
 
   const int hostAllocatorID =
-    axom::getUmpireResourceAllocatorID(umpire::resource::Host);
+    axom::execution_space<axom::SEQ_EXEC>::allocatorID();
   const int deviceAllocatorID = axom::execution_space<ExecSpace>::allocatorID();
 
   // setup query bounding boxes: both boxes have lower left min at
@@ -424,7 +424,7 @@ void check_find_bounding_boxes2d()
   using PointType = typename primal::Point<FloatType, NDIMS>;
 
   const int hostAllocatorID =
-    axom::getUmpireResourceAllocatorID(umpire::resource::Host);
+    axom::execution_space<axom::SEQ_EXEC>::allocatorID();
   const int deviceAllocatorID = axom::execution_space<ExecSpace>::allocatorID();
 
   // setup query bounding boxes: both boxes are source at (-1.0,-1.0) but have
@@ -543,7 +543,7 @@ void check_find_rays3d()
   using VectorType = typename primal::Vector<FloatType, NDIMS>;
 
   const int hostAllocatorID =
-    axom::getUmpireResourceAllocatorID(umpire::resource::Host);
+    axom::execution_space<axom::SEQ_EXEC>::allocatorID();
   const int deviceAllocatorID = axom::execution_space<ExecSpace>::allocatorID();
 
   // setup query rays: both rays are source at (-1.0,-1.0) but point in
@@ -678,7 +678,7 @@ void check_find_rays2d()
   using VectorType = typename primal::Vector<FloatType, NDIMS>;
 
   const int hostAllocatorID =
-    axom::getUmpireResourceAllocatorID(umpire::resource::Host);
+    axom::execution_space<axom::SEQ_EXEC>::allocatorID();
   const int deviceAllocatorID = axom::execution_space<ExecSpace>::allocatorID();
 
   // setup query rays: both rays are source at (-1.0,-1.0) but point in
@@ -817,7 +817,7 @@ void check_find_points3d()
   constexpr IndexType N = 4;
 
   const int hostAllocatorID =
-    axom::getUmpireResourceAllocatorID(umpire::resource::Host);
+    axom::execution_space<axom::SEQ_EXEC>::allocatorID();
   const int deviceAllocatorID = axom::execution_space<ExecSpace>::allocatorID();
 
   using BoxType = typename primal::BoundingBox<FloatType, NDIMS>;
@@ -945,7 +945,7 @@ void check_find_points2d()
   constexpr IndexType N = 4;
 
   const int hostAllocatorID =
-    axom::getUmpireResourceAllocatorID(umpire::resource::Host);
+    axom::execution_space<axom::SEQ_EXEC>::allocatorID();
   const int deviceAllocatorID = axom::execution_space<ExecSpace>::allocatorID();
 
   using BoxType = typename primal::BoundingBox<FloatType, NDIMS>;
@@ -1067,7 +1067,7 @@ void check_single_box2d()
   using PointType = primal::Point<FloatType, NDIMS>;
 
   const int hostAllocatorID =
-    axom::getUmpireResourceAllocatorID(umpire::resource::Host);
+    axom::execution_space<axom::SEQ_EXEC>::allocatorID();
   const int deviceAllocatorID = axom::execution_space<ExecSpace>::allocatorID();
 
   // single bounding box in [0,1] x [0,1]
@@ -1160,7 +1160,7 @@ void check_single_box3d()
   using PointType = primal::Point<FloatType, NDIMS>;
 
   const int hostAllocatorID =
-    axom::getUmpireResourceAllocatorID(umpire::resource::Host);
+    axom::execution_space<axom::SEQ_EXEC>::allocatorID();
   const int deviceAllocatorID = axom::execution_space<ExecSpace>::allocatorID();
 
   // single bounding box in [0,1] x [0,1] x [0,1]
@@ -1528,7 +1528,7 @@ void bvh_compute_point_distances_2d(BVHType& bvh,
   constexpr int FIRST_ELEMENT_INDEX = 0;
 
   const int hostAllocatorID =
-    axom::getUmpireResourceAllocatorID(umpire::resource::Host);
+    axom::execution_space<axom::SEQ_EXEC>::allocatorID();
   const int deviceAllocatorID = axom::execution_space<ExecSpace>::allocatorID();
 
   // Borrowed from DistibutedClosestPoint.

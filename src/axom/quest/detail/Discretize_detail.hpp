@@ -154,7 +154,7 @@ int discrSeg(const Point2D &a,
              axom::ArrayView<OctType> &out,
              int idx)
 {
-  int hostAllocID = axom::getUmpireResourceAllocatorID(umpire::resource::Host);
+  int hostAllocID = axom::execution_space<axom::SEQ_EXEC>::allocatorID();
 
   // Assert input assumptions
   SLIC_ASSERT(b[0] - a[0] >= 0);

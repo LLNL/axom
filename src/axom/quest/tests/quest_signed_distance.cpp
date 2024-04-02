@@ -311,13 +311,18 @@ void run_vectorized_sphere_test()
 {
   using PointType = primal::Point<double, 3>;
 
-  int host_allocator = axom::getUmpireResourceAllocatorID(umpire::resource::Host);
+  int host_allocator = axom::execution_space<axom::SEQ_EXEC>::allocatorID();
+  int kernel_allocator = axom::execution_space<ExecSpace>::allocatorID();
 
   //Use unified memory on device
-  constexpr bool on_device = axom::execution_space<ExecSpace>::onDevice();
-  const int kernel_allocator = on_device
-    ? axom::getUmpireResourceAllocatorID(umpire::resource::Unified)
-    : axom::execution_space<ExecSpace>::allocatorID();
+#if defined(AXOM_USE_GPU) && defined(AXOM_USE_UMPIRE)
+  if(axom::execution_space<ExecSpace>::onDevice())
+  {
+    kernel_allocator =
+      axom::getUmpireResourceAllocatorID(umpire::resource::Unified);
+  }
+#endif
+
   axom::setDefaultAllocator(kernel_allocator);
 
   constexpr double l1norm_expected = 6.7051997372579715;

@@ -195,10 +195,15 @@ void run_degen_segment_tests()
   // We don't know what order they'll be in, but we do know how many octahedra
   // will be in each generation.
 
-  constexpr bool on_device = axom::execution_space<ExecPolicy>::onDevice();
-  int allocID = on_device
-    ? axom::getUmpireResourceAllocatorID(umpire::resource::Unified)
-    : axom::getUmpireResourceAllocatorID(umpire::resource::Host);
+  int allocID = axom::execution_space<axom::SEQ_EXEC>::allocatorID();
+
+  //Use unified memory on device
+#if defined(AXOM_USE_GPU) && defined(AXOM_USE_UMPIRE)
+  if(axom::execution_space<ExecPolicy>::onDevice())
+  {
+    allocID = axom::getUmpireResourceAllocatorID(umpire::resource::Unified);
+  }
+#endif
 
   axom::Array<Point2D> polyline(2, 2, allocID);
 
@@ -230,7 +235,7 @@ void run_degen_segment_tests()
 template <typename ExecPolicy>
 void segment_test(const char* label, axom::Array<Point2D>& polyline, int len)
 {
-  int hostAllocID = axom::getUmpireResourceAllocatorID(umpire::resource::Host);
+  int hostAllocID = axom::execution_space<axom::SEQ_EXEC>::allocatorID();
 
   SCOPED_TRACE(label);
 
@@ -284,10 +289,15 @@ void segment_test(const char* label, axom::Array<Point2D>& polyline, int len)
 template <typename ExecPolicy>
 void run_single_segment_tests()
 {
-  constexpr bool on_device = axom::execution_space<ExecPolicy>::onDevice();
-  int allocID = on_device
-    ? axom::getUmpireResourceAllocatorID(umpire::resource::Unified)
-    : axom::getUmpireResourceAllocatorID(umpire::resource::Host);
+  int allocID = axom::execution_space<axom::SEQ_EXEC>::allocatorID();
+
+  //Use unified memory on device
+#if defined(AXOM_USE_GPU) && defined(AXOM_USE_UMPIRE)
+  if(axom::execution_space<ExecPolicy>::onDevice())
+  {
+    allocID = axom::getUmpireResourceAllocatorID(umpire::resource::Unified);
+  }
+#endif
 
   axom::Array<Point2D> polyline(2, 2, allocID);
 
@@ -317,7 +327,7 @@ void multi_segment_test(const char* label, axom::Array<Point2D>& polyline, int l
 {
   SCOPED_TRACE(label);
 
-  int hostAllocID = axom::getUmpireResourceAllocatorID(umpire::resource::Host);
+  int hostAllocID = axom::execution_space<axom::SEQ_EXEC>::allocatorID();
 
   // Test each of the three generations.
   constexpr int generations = 2;
@@ -385,10 +395,15 @@ void multi_segment_test(const char* label, axom::Array<Point2D>& polyline, int l
 template <typename ExecPolicy>
 void run_multi_segment_tests()
 {
-  constexpr bool on_device = axom::execution_space<ExecPolicy>::onDevice();
-  int allocID = on_device
-    ? axom::getUmpireResourceAllocatorID(umpire::resource::Unified)
-    : axom::getUmpireResourceAllocatorID(umpire::resource::Host);
+  int allocID = axom::execution_space<axom::SEQ_EXEC>::allocatorID();
+
+  //Use unified memory on device
+#if defined(AXOM_USE_GPU) && defined(AXOM_USE_UMPIRE)
+  if(axom::execution_space<ExecPolicy>::onDevice())
+  {
+    allocID = axom::getUmpireResourceAllocatorID(umpire::resource::Unified);
+  }
+#endif
 
   constexpr int pointcount = 5;
   axom::Array<Point2D> polyline(pointcount, pointcount, allocID);
