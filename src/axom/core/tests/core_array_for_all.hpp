@@ -66,7 +66,8 @@ using MyTypes = ::testing::Types<
 TYPED_TEST_SUITE(core_array_for_all, MyTypes);
 
 //------------------------------------------------------------------------------
-#if defined(AXOM_USE_RAJA) && defined(AXOM_USE_CUDA) && defined(AXOM_USE_UMPIRE) && defined(AXOM_DEBUG)
+#if defined(AXOM_USE_RAJA) && defined(AXOM_USE_CUDA) && \
+  defined(AXOM_USE_UMPIRE) && defined(AXOM_DEBUG)
 AXOM_CUDA_TEST(core_array_for_all, capture_test)
 {
   using ExecSpace = axom::CUDA_EXEC<256>;

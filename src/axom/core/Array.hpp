@@ -1038,7 +1038,7 @@ AXOM_HOST_DEVICE Array<T, DIM, SPACE>::Array(const Array& other)
     "Use axom::ArrayView for value captures instead.\n");
   #endif
   #if defined(__CUDA_ARCH__)
-    assert(false);
+  assert(false);
   #endif
 #else
   initialize(other.size(), other.capacity());
