@@ -412,10 +412,14 @@ std::vector<std::pair<int, int>> naiveIntersectionAlgorithm(
   const int current_allocator = axom::getDefaultAllocatorID();
 
   // Use unified memory if on device
-  constexpr bool on_device = axom::execution_space<ExecSpace>::onDevice();
-  int allocatorID = on_device
-    ? axom::getUmpireResourceAllocatorID(umpire::resource::Unified)
-    : axom::execution_space<ExecSpace>::allocatorID();
+  int allocatorID = axom::execution_space<ExecSpace>::allocatorID();
+  #if defined(AXOM_USE_GPU) && defined(AXOM_USE_UMPIRE)
+  if(axom::execution_space<ExecPolicy>::onDevice())
+  {
+    allocatorID = axom::getUmpireResourceAllocatorID(umpire::resource::Unified);
+  }
+  #endif
+
   axom::setDefaultAllocator(allocatorID);
 
   std::vector<std::pair<int, int>> retval;
