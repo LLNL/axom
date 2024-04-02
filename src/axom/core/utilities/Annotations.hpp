@@ -29,9 +29,27 @@ namespace utilities
 {
 namespace annotations
 {
-void initialize();
+namespace detail
+{
+void initialize_adiak();
+void initialize_caliper(const std::string& mode, int num_ranks);
+}  // namespace detail
+
+void initialize(const std::string& mode, int num_ranks);
 
 void finalize();
+
+/// Declares metadata for this run
+template <typename T>
+void declare_metadata(const std::string& name,
+                      const T& value,
+                      std::string category = "")
+{
+#ifdef AXOM_USE_ADIAK
+  detail::initialize_adiak();
+  adiak::value(name, value, adiak_general, category);
+#endif
+}
 
 }  // namespace annotations
 }  // namespace utilities

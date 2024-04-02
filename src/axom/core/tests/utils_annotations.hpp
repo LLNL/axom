@@ -12,7 +12,11 @@
 #include "axom/fmt.hpp"
 
 #ifdef AXOM_USE_ADIAK
-  #include <adiak_tool.h>
+  #include "adiak_tool.h"
+#endif
+
+#ifdef AXOM_USE_CALIPER
+  #include "caliper/cali.h"
 #endif
 
 namespace
@@ -114,7 +118,7 @@ static void get_namevals_as_map(const char *name,
 
 TEST(utils_annotations, initialize_finalize)
 {
-  axom::utilities::annotations::initialize();
+  axom::utilities::annotations::initialize("none", 1);
 
   axom::utilities::annotations::finalize();
 
@@ -123,7 +127,7 @@ TEST(utils_annotations, initialize_finalize)
 
 TEST(utils_annotations, print_adiak_metadata)
 {
-  axom::utilities::annotations::initialize();
+  axom::utilities::annotations::initialize("none", 1);
 
 #ifdef AXOM_USE_ADIAK
   std::map<std::string, std::string> metadata;
@@ -133,6 +137,37 @@ TEST(utils_annotations, print_adiak_metadata)
   for(const auto &kv : metadata)
   {
     std::cout << axom::fmt::format("- {}: {}\n", kv.first, kv.second);
+  }
+#endif
+
+  axom::utilities::annotations::finalize();
+
+  SUCCEED();
+}
+
+TEST(utils_annotations, modes)
+{
+  // TODO: Add tests for the following modes: "none", "report", "counts", "file", "trace"
+  //       Must be done is separate runs since caliper does not cleanly tear down
+
+  const std::string mode = "counts";
+  std::cout << "Testing caliper service '" << mode << "'\n";
+
+  axom::utilities::annotations::initialize(mode, 1);
+
+#ifdef AXOM_USE_CALIPER
+  {
+    CALI_MARK_BEGIN("my region");
+    for(int i = 0; i < 10; ++i)
+    {
+      CALI_CXX_MARK_SCOPE("inner1");
+    }
+
+    for(int i = 0; i < 100; ++i)
+    {
+      CALI_CXX_MARK_SCOPE("inner2");
+    }
+    CALI_MARK_END("my region");
   }
 #endif
 
