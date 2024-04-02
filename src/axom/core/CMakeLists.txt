@@ -21,6 +21,7 @@ axom_configure_file(
 set(core_headers
 
     ## utilities
+    utilities/Annotations.hpp
     utilities/AnnotationMacros.hpp
     utilities/BitUtilities.hpp
     utilities/FileUtilities.hpp
@@ -80,6 +81,7 @@ set(core_headers
     )
 
 set(core_sources
+    utilities/Annotations.cpp
     utilities/FileUtilities.cpp
     utilities/StringUtilities.cpp
     utilities/System.cpp
@@ -100,10 +102,12 @@ set(core_sources
 #------------------------------------------------------------------------------
 
 set( core_depends fmt )
+blt_list_append( TO core_depends ELEMENTS adiak::adiak IF ADIAK_FOUND )
+blt_list_append( TO core_depends ELEMENTS caliper IF CALIPER_FOUND )
 blt_list_append( TO core_depends ELEMENTS camp IF CAMP_FOUND )
 blt_list_append( TO core_depends ELEMENTS umpire IF UMPIRE_FOUND )
 blt_list_append( TO core_depends ELEMENTS RAJA IF RAJA_FOUND )
-blt_list_append( TO core_depends ELEMENTS nvToolsExt IF AXOM_ENABLE_CUDA )
+blt_list_append( TO core_depends ELEMENTS nvToolsExt IF AXOM_ENABLE_CUDA ) ## TODO: Remove
 blt_list_append( TO core_depends ELEMENTS mpi IF AXOM_ENABLE_MPI )
 
 # HACK: RAJA's dependencies are not getting added to core due to a bug in

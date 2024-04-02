@@ -39,6 +39,7 @@ set(core_serial_tests
     numerics_matvecops.hpp
     numerics_polynomial_solvers.hpp
 
+    utils_annotations.hpp
     utils_endianness.hpp
     utils_fileUtilities.hpp
     utils_locale.hpp

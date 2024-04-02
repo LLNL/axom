@@ -5,7 +5,7 @@
 
 #include "gtest/gtest.h"
 
-#include "axom/config.hpp"  // for compile-time definitions
+#include "axom/config.hpp"
 
 #include "core_about.hpp"
 #include "core_array.hpp"
@@ -35,6 +35,7 @@
 #include "numerics_matvecops.hpp"
 #include "numerics_polynomial_solvers.hpp"
 
+#include "utils_annotations.hpp"
 #include "utils_endianness.hpp"
 #include "utils_fileUtilities.hpp"
 #include "utils_locale.hpp"
