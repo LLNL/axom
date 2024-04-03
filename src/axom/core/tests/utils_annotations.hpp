@@ -237,4 +237,3 @@ TEST(utils_annotations, print_help)
 
   SUCCEED();
 }
-

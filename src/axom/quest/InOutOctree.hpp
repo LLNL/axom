@@ -456,11 +456,11 @@ void InOutOctree<DIM>::generateIndex()
   using Timer = axom::utilities::Timer;
 
   // Loop through mesh vertices
-  SLIC_INFO(axom::fmt::format(
-    axom::utilities::locale(),
-    "  Generating InOutOctree over surface mesh with {:L} vertices and {:L} elements.",
-    m_meshWrapper.numMeshVertices(),
-    m_meshWrapper.numMeshCells()));
+  SLIC_INFO(axom::fmt::format(axom::utilities::locale(),
+                              "  Generating InOutOctree over surface mesh with "
+                              "{:L} vertices and {:L} elements.",
+                              m_meshWrapper.numMeshVertices(),
+                              m_meshWrapper.numMeshCells()));
 
   Timer timer;
   AXOM_ANNOTATE_SCOPE("InOutOctree::generateIndex");

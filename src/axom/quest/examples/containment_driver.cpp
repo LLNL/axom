@@ -27,7 +27,6 @@
 #include <iostream>
 #include <limits>
 #include <fstream>
-#include <iomanip>  // for setprecision()
 
 namespace mint = axom::mint;
 namespace primal = axom::primal;
@@ -498,6 +497,7 @@ public:
   int samplesPerKnotSpan {25};
   std::vector<double> queryBoxMins;
   std::vector<double> queryBoxMaxs;
+  std::string annotationMode {"none"};
 
 private:
   bool m_verboseOutput {false};
@@ -579,6 +579,26 @@ public:
       ->capture_default_str()
       ->check(axom::CLI::PositiveNumber);
 
+    app.add_option("--caliper", annotationMode)
+      ->description(
+        "caliper annotation mode. Valid options include 'none' and 'report'. "
+        "Use 'help' to see full list.")
+      ->capture_default_str()
+      ->check([](const std::string& mode) -> std::string {
+        if(mode == "help")
+        {
+          std::cerr << "Valid caliper modes are:\n"
+                    << axom::utilities::annotations::detail::help_string()
+                    << std::endl;
+        }
+        return axom::utilities::annotations::detail::check_mode(mode)
+          ? ""
+          : fmt::format(
+              "'{}' invalid caliper mode. "
+              "Run with '--caliper help' to see all valid options",
+              mode);
+      });
+
     app.get_formatter()->column_width(45);
 
     // could throw an exception
@@ -608,7 +628,7 @@ int main(int argc, char** argv)
     return app.exit(e);
   }
 
-  axom::utilities::annotations::initialize("report", 1);
+  axom::utilities::annotations::initialize(params.annotationMode, 1);
 
   const bool is2D = params.isInput2D();
 
