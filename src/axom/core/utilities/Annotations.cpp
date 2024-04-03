@@ -1,16 +1,25 @@
 #include "Annotations.hpp"
 
+#include "axom/core/utilities/About.hpp"
+
 #ifdef AXOM_USE_MPI
   #include <mpi.h>
 #endif
 
 #ifdef AXOM_USE_CALIPER
-  #include <caliper/Caliper.h>
-  #include <caliper/common/Attribute.h>
-  #include <caliper/cali-manager.h>
+  #include "caliper/Caliper.h"
+  #include "caliper/common/Attribute.h"
+  #include "caliper/cali-manager.h"
   #ifdef AXOM_USE_MPI
-    #include <caliper/cali-mpi.h>
+    #include "caliper/cali-mpi.h"
   #endif
+#endif
+
+#ifdef AXOM_USE_CALIPER
+namespace cali
+{
+extern Attribute region_attr;
+}
 #endif
 
 namespace axom
@@ -42,11 +51,14 @@ void initialize_adiak()
   adiak::init(nullptr);
   #endif
 
+  adiak::user();
   adiak::launchdate();
   adiak::executable();
   adiak::cmdline();
   adiak::clustername();
   adiak::jobsize();
+  adiak::workdir();
+
   adiak::walltime();
   adiak::cputime();
   adiak::systime();
@@ -160,6 +172,8 @@ void initialize(const std::string& mode, int num_ranks)
 {
   detail::initialize_adiak();
   detail::initialize_caliper(mode, num_ranks);
+
+  declare_metadata("axom_version", axom::getVersion());
 }
 
 void finalize()
@@ -182,6 +196,22 @@ void finalize()
     delete cali_mgr;
     cali_mgr = nullptr;
   }
+#endif
+}
+
+void begin(const std::string& name)
+{
+#ifdef AXOM_USE_CALIPER
+  cali::Caliper().begin(
+    cali::region_attr,
+    cali::Variant(CALI_TYPE_STRING, name.c_str(), name.length()));
+#endif
+}
+
+void end(const std::string& /*name*/)
+{
+#ifdef AXOM_USE_CALIPER
+  cali::Caliper().end(cali::region_attr);
 #endif
 }
 

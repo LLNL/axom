@@ -127,14 +127,47 @@ TEST(utils_annotations, initialize_finalize)
 
 TEST(utils_annotations, print_adiak_metadata)
 {
+  using MetadataMap = std::map<std::string, std::string>;
+
   axom::utilities::annotations::initialize("none", 1);
 
 #ifdef AXOM_USE_ADIAK
-  std::map<std::string, std::string> metadata;
-  adiak_list_namevals(1, adiak_category_all, get_namevals_as_map, &metadata);
+  {
+    MetadataMap default_metadata;
+    adiak_list_namevals(1,
+                        adiak_category_all,
+                        get_namevals_as_map,
+                        &default_metadata);
 
+    // some default metadata is present, e.g. jobsize
+    EXPECT_TRUE(default_metadata.find("user") != default_metadata.end());
+
+    // but other metadata is not present before we register it
+    EXPECT_TRUE(default_metadata.find("int_metadata") == default_metadata.end());
+    EXPECT_TRUE(default_metadata.find("str_metadata") == default_metadata.end());
+  }
+
+  // register some metadata
+  AXOM_ANNOTATE_METADATA("str_metadata", "arbitrary string", "");
+  AXOM_ANNOTATE_METADATA("int_metadata", 42, "");
+
+  // check that registered metadata is now present
+  MetadataMap updated_metadata;
+  adiak_list_namevals(1, adiak_category_all, get_namevals_as_map, &updated_metadata);
+
+  // some default metadata is present
+  EXPECT_TRUE(updated_metadata.find("user") != updated_metadata.end());
+
+  // but other metadata is not present before we register it
+  EXPECT_TRUE(updated_metadata.find("int_metadata") != updated_metadata.end());
+  EXPECT_TRUE(updated_metadata.find("str_metadata") != updated_metadata.end());
+
+  EXPECT_EQ(std::to_string(42), updated_metadata["int_metadata"]);
+  EXPECT_EQ("arbitrary string", updated_metadata["str_metadata"]);
+
+  // print the key-value pairs
   std::cout << "Adiak metadata: \n";
-  for(const auto &kv : metadata)
+  for(const auto &kv : updated_metadata)
   {
     std::cout << axom::fmt::format("- {}: {}\n", kv.first, kv.second);
   }
@@ -157,17 +190,18 @@ TEST(utils_annotations, modes)
 
 #ifdef AXOM_USE_CALIPER
   {
-    CALI_MARK_BEGIN("my region");
+    AXOM_ANNOTATE_BEGIN("my region");
+
     for(int i = 0; i < 10; ++i)
     {
-      CALI_CXX_MARK_SCOPE("inner1");
+      AXOM_ANNOTATE_SCOPE("inner1");
     }
 
     for(int i = 0; i < 100; ++i)
     {
-      CALI_CXX_MARK_SCOPE("inner2");
+      AXOM_ANNOTATE_SCOPE("inner2");
     }
-    CALI_MARK_END("my region");
+    AXOM_ANNOTATE_END("my region");
   }
 #endif
 
