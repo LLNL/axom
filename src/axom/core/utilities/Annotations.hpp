@@ -7,6 +7,9 @@
  * \file Annotations.hpp
  *
  * \brief Defines functions to help with performance annotations
+ * 
+ * The annotations API and macros are always available but they are effectively no-ops
+ * unless axom is built with caliper and adiak support
  */
 
 #ifndef AXOM_CORE_ANNOTATIONS_HPP_

@@ -579,6 +579,7 @@ public:
       ->capture_default_str()
       ->check(axom::CLI::PositiveNumber);
 
+#ifdef AXOM_USE_CALIPER
     app.add_option("--caliper", annotationMode)
       ->description(
         "caliper annotation mode. Valid options include 'none' and 'report'. "
@@ -598,6 +599,7 @@ public:
               "Run with '--caliper help' to see all valid options",
               mode);
       });
+#endif
 
     app.get_formatter()->column_width(45);
 
