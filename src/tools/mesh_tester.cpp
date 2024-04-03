@@ -414,7 +414,7 @@ std::vector<std::pair<int, int>> naiveIntersectionAlgorithm(
   // Use unified memory if on device
   int allocatorID = axom::execution_space<ExecSpace>::allocatorID();
   #if defined(AXOM_USE_GPU) && defined(AXOM_USE_UMPIRE)
-  if(axom::execution_space<ExecPolicy>::onDevice())
+  if(axom::execution_space<ExecSpace>::onDevice())
   {
     allocatorID = axom::getUmpireResourceAllocatorID(umpire::resource::Unified);
   }
