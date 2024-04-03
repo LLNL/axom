@@ -143,13 +143,15 @@ TEST(utils_annotations, print_adiak_metadata)
     EXPECT_TRUE(default_metadata.find("user") != default_metadata.end());
 
     // but other metadata is not present before we register it
-    EXPECT_TRUE(default_metadata.find("int_metadata") == default_metadata.end());
-    EXPECT_TRUE(default_metadata.find("str_metadata") == default_metadata.end());
+    EXPECT_TRUE(default_metadata.find("custom_int_metadata") ==
+                default_metadata.end());
+    EXPECT_TRUE(default_metadata.find("custom_str_metadata") ==
+                default_metadata.end());
   }
 
   // register some metadata
-  AXOM_ANNOTATE_METADATA("str_metadata", "arbitrary string", "");
-  AXOM_ANNOTATE_METADATA("int_metadata", 42, "");
+  AXOM_ANNOTATE_METADATA("custom_str_metadata", "arbitrary string", "");
+  AXOM_ANNOTATE_METADATA("custom_int_metadata", 42, "");
 
   // check that registered metadata is now present
   MetadataMap updated_metadata;
@@ -159,11 +161,13 @@ TEST(utils_annotations, print_adiak_metadata)
   EXPECT_TRUE(updated_metadata.find("user") != updated_metadata.end());
 
   // but other metadata is not present before we register it
-  EXPECT_TRUE(updated_metadata.find("int_metadata") != updated_metadata.end());
-  EXPECT_TRUE(updated_metadata.find("str_metadata") != updated_metadata.end());
+  EXPECT_TRUE(updated_metadata.find("custom_int_metadata") !=
+              updated_metadata.end());
+  EXPECT_TRUE(updated_metadata.find("custom_str_metadata") !=
+              updated_metadata.end());
 
-  EXPECT_EQ(std::to_string(42), updated_metadata["int_metadata"]);
-  EXPECT_EQ("arbitrary string", updated_metadata["str_metadata"]);
+  EXPECT_EQ(std::to_string(42), updated_metadata["custom_int_metadata"]);
+  EXPECT_EQ("arbitrary string", updated_metadata["custom_str_metadata"]);
 
   // print the key-value pairs
   std::cout << "Adiak metadata: \n";
@@ -174,8 +178,24 @@ TEST(utils_annotations, print_adiak_metadata)
 #endif
 
   axom::utilities::annotations::finalize();
+}
 
-  SUCCEED();
+TEST(utils_annotations, check_modes)
+{
+  EXPECT_TRUE(axom::utilities::annotations::detail::check_mode("none"));
+
+  EXPECT_TRUE(axom::utilities::annotations::detail::check_mode("counts"));
+  EXPECT_TRUE(axom::utilities::annotations::detail::check_mode("file"));
+  EXPECT_TRUE(axom::utilities::annotations::detail::check_mode("trace"));
+  EXPECT_TRUE(axom::utilities::annotations::detail::check_mode("report"));
+
+  EXPECT_TRUE(axom::utilities::annotations::detail::check_mode("gputx"));
+  EXPECT_TRUE(axom::utilities::annotations::detail::check_mode("nvprof"));
+  EXPECT_TRUE(axom::utilities::annotations::detail::check_mode("nvtx"));
+  EXPECT_TRUE(axom::utilities::annotations::detail::check_mode("roctx"));
+
+  EXPECT_FALSE(
+    axom::utilities::annotations::detail::check_mode("_unregistered_"));
 }
 
 TEST(utils_annotations, modes)
@@ -209,3 +229,12 @@ TEST(utils_annotations, modes)
 
   SUCCEED();
 }
+
+TEST(utils_annotations, print_help)
+{
+  std::cout << "Caliper help string: \n"
+            << axom::utilities::annotations::detail::help_string() << std::endl;
+
+  SUCCEED();
+}
+

@@ -34,22 +34,12 @@
     axom::utilities::annotations::declare_metadata(name, value, category)
 
 #else
-  #define AXOM_ANNOTATE_BEGIN(name) \
-    do                              \
-    {                               \
-    } while(false)
-  #define AXOM_ANNOTATE_END(name) \
-    do                            \
-    {                             \
-    } while(false)
-  #define AXOM_ANNOTATE_SCOPE(name) \
-    do                              \
-    {                               \
-    } while(false)
-  #define AXOM_ANNOTATE_METADATA(name, value, category) \
-    do                                                  \
-    {                                                   \
-    } while(false)
+  // clang-format off
+  #define AXOM_ANNOTATE_BEGIN(name)                     do{} while(false)
+  #define AXOM_ANNOTATE_END(name)                       do{} while(false)
+  #define AXOM_ANNOTATE_SCOPE(name)                     do{} while(false)
+  #define AXOM_ANNOTATE_METADATA(name, value, category) do{} while(false)
+  // clang-format on
 #endif
 
 namespace axom
@@ -62,6 +52,9 @@ namespace detail
 {
 void initialize_adiak();
 void initialize_caliper(const std::string& mode, int num_ranks);
+
+bool check_mode(const std::string& mode);
+std::string help_string();
 }  // namespace detail
 
 /// Initializes the Annotation API

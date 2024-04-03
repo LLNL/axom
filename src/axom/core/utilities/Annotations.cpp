@@ -1,6 +1,7 @@
 #include "Annotations.hpp"
 
 #include "axom/core/utilities/About.hpp"
+#include "axom/fmt.hpp"
 
 #ifdef AXOM_USE_MPI
   #include <mpi.h>
@@ -53,15 +54,18 @@ void initialize_adiak()
 
   adiak::user();
   adiak::launchdate();
+  adiak::launchday();
   adiak::executable();
-  adiak::cmdline();
   adiak::clustername();
+  adiak::cmdline();
   adiak::jobsize();
+  adiak::numhosts();
+  adiak::hostlist();
   adiak::workdir();
 
   adiak::walltime();
-  adiak::cputime();
   adiak::systime();
+  adiak::cputime();
 
   adiak_initialized = true;
 #endif
@@ -162,8 +166,70 @@ void initialize_caliper(const std::string& mode, int num_ranks)
   {
     channel->start();
   }
-
 #endif  // AXOM_USE_CALIPER
+}
+
+static const std::set<std::string> axom_valid_caliper_args = {"counts",
+                                                              "file",
+                                                              "gputx",
+                                                              "none",
+                                                              "nvprof",
+                                                              "nvtx",
+                                                              "report",
+                                                              "trace",
+                                                              "roctx"};
+
+bool check_mode(const std::string& mode)
+{
+#ifdef AXOM_USE_CALIPER
+  cali::ConfigManager test_mgr;
+  cali::ConfigManager::argmap_t app_args;
+
+  const bool result = test_mgr.add(mode.c_str(), app_args);
+  if(!result || test_mgr.error())
+  {
+    std::cerr << axom::fmt::format(
+      "Bad caliper configuration for mode '{}' -> {}\n",
+      mode,
+      test_mgr.error_msg());
+    return false;
+  }
+
+  for(const auto& kv : app_args)
+  {
+    const std::string& name = kv.first;
+    const std::string& val = kv.second;
+
+    if(!name.empty() && !val.empty())
+    {
+      continue;  //adiak-style NAME=VAL
+    }
+    if(axom_valid_caliper_args.find(name) != axom_valid_caliper_args.end())
+    {
+      continue;  //Application argument
+    }
+
+    return false;
+  }
+  return true;
+#else
+  return false;
+#endif
+}
+
+std::string help_string()
+{
+#ifdef AXOM_USE_CALIPER
+  const auto built_in =
+    axom::fmt::format("Built-in configurations: {}",
+                      axom::fmt::join(axom_valid_caliper_args, ","));
+  const auto cali_configs = axom::fmt::format(
+    "Caliper configurations:\n{}",
+    axom::fmt::join(cali::ConfigManager::get_config_docstrings(), "\n"));
+  return built_in + "\n" + cali_configs;
+#else
+  return "<caliper not enabled at build-time>";
+#endif
 }
 
 }  // namespace detail
