@@ -8,6 +8,7 @@
 #include "axom/config.hpp"
 #include "axom/core/Macros.hpp"
 #include "axom/core/utilities/Annotations.hpp"
+#include "axom/core/utilities/AnnotationMacros.hpp"
 
 #include "axom/fmt.hpp"
 
