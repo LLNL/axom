@@ -15,6 +15,7 @@
 #define AXOM_PRIMAL_CLOSEST_POINT_HPP_
 
 #include "axom/primal/geometry/Point.hpp"
+#include "axom/primal/geometry/Segment.hpp"
 #include "axom/primal/geometry/Triangle.hpp"
 #include "axom/primal/geometry/Sphere.hpp"
 #include "axom/primal/geometry/OrientedBoundingBox.hpp"
@@ -23,6 +24,50 @@ namespace axom
 {
 namespace primal
 {
+
+/*!
+ * \brief Computes the closest point from a point, P, to a given segment.
+ *
+ * \param [in] P the query point
+ * \param [in] seg user-supplied segment
+ * \param [in] EPS fuzz factor for equality comparisons
+ * \return cp the closest point from a point P and a segment
+ */
+template <typename T, int NDIMS>
+AXOM_HOST_DEVICE inline Point<T, NDIMS> closest_point(const Point<T, NDIMS>& P,
+                                                      const Segment<T, NDIMS>& seg,
+                                                      double EPS = 1E-8) {
+  using PointType = Point<T, NDIMS>;
+  using VectorType = Vector<T, NDIMS>;
+
+  using detail::isGeq;
+  using detail::isLeq;
+
+  const PointType& A = seg[0];
+  const PointType& B = seg[1];
+
+  const VectorType AB(A, B);
+  const T squaredNormAB = AB.squared_norm();
+
+  // Check if segment is degenerate
+  if (isLeq(squaredNormAB, T(0), EPS)) {
+    return A;
+  }
+
+  // Compute length of the projection of AP onto AB
+  const double t = VectorType(A, P).dot(AB) / squaredNormAB;
+
+  if (isLeq(t, T(0), EPS)) {
+    return A;
+  }
+  else if (isGeq(t, T(1), EPS)) {
+    return B;
+  }
+  else {
+    return seg.at(t);
+  }
+}
+
 /*!
  * \brief Computes the closest point from a point, P, to a given triangle.
  *
