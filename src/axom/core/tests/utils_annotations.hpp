@@ -127,11 +127,10 @@ TEST(utils_annotations, initialize_finalize)
 
 TEST(utils_annotations, print_adiak_metadata)
 {
-  using MetadataMap = std::map<std::string, std::string>;
-
   axom::utilities::annotations::initialize("none", 1);
 
 #ifdef AXOM_USE_ADIAK
+  using MetadataMap = std::map<std::string, std::string>;
   {
     MetadataMap default_metadata;
     adiak_list_namevals(1,
@@ -175,7 +174,7 @@ TEST(utils_annotations, print_adiak_metadata)
   {
     std::cout << axom::fmt::format("- {}: {}\n", kv.first, kv.second);
   }
-#endif
+#endif  // AXOM_USE_ADIAK
 
   axom::utilities::annotations::finalize();
 }
@@ -184,18 +183,17 @@ TEST(utils_annotations, check_modes)
 {
   EXPECT_TRUE(axom::utilities::annotations::detail::check_mode("none"));
 
-  EXPECT_TRUE(axom::utilities::annotations::detail::check_mode("counts"));
-  EXPECT_TRUE(axom::utilities::annotations::detail::check_mode("file"));
-  EXPECT_TRUE(axom::utilities::annotations::detail::check_mode("trace"));
-  EXPECT_TRUE(axom::utilities::annotations::detail::check_mode("report"));
+  for(const auto &m :
+      {"counts", "file", "trace", "report", "gputx", "nvprof", "nvtx", "roctx"})
+  {
+#ifdef AXOM_USE_CALIPER
+    EXPECT_TRUE(axom::utilities::annotations::detail::check_mode(m));
+#else
+    EXPECT_FALSE(axom::utilities::annotations::detail::check_mode(m));
+#endif
+  }
 
-  EXPECT_TRUE(axom::utilities::annotations::detail::check_mode("gputx"));
-  EXPECT_TRUE(axom::utilities::annotations::detail::check_mode("nvprof"));
-  EXPECT_TRUE(axom::utilities::annotations::detail::check_mode("nvtx"));
-  EXPECT_TRUE(axom::utilities::annotations::detail::check_mode("roctx"));
-
-  EXPECT_FALSE(
-    axom::utilities::annotations::detail::check_mode("_unregistered_"));
+  EXPECT_FALSE(axom::utilities::annotations::detail::check_mode("_other_"));
 }
 
 TEST(utils_annotations, modes)

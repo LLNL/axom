@@ -16,6 +16,8 @@
   #endif
 #endif
 
+#include <set>
+
 #ifdef AXOM_USE_CALIPER
 namespace cali
 {
@@ -166,6 +168,9 @@ void initialize_caliper(const std::string& mode, int num_ranks)
   {
     channel->start();
   }
+#else
+  AXOM_UNUSED_VAR(mode);
+  AXOM_UNUSED_VAR(num_ranks);
 #endif  // AXOM_USE_CALIPER
 }
 
@@ -213,7 +218,7 @@ bool check_mode(const std::string& mode)
   }
   return true;
 #else
-  return false;
+  return (mode == "none") ? true : false;
 #endif
 }
 
@@ -271,6 +276,8 @@ void begin(const std::string& name)
   cali::Caliper().begin(
     cali::region_attr,
     cali::Variant(CALI_TYPE_STRING, name.c_str(), name.length()));
+#else
+  AXOM_UNUSED_VAR(name);
 #endif
 }
 

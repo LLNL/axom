@@ -16,6 +16,7 @@
 #define AXOM_CORE_ANNOTATIONS_HPP_
 
 #include "axom/config.hpp"
+#include "axom/core/Macros.hpp"
 
 #ifdef AXOM_USE_ADIAK
   #include "adiak.hpp"
@@ -25,6 +26,8 @@
   #include "caliper/cali-manager.h"
   #include "caliper/cali.h"
 #endif
+
+#include <string>
 
 #ifdef AXOM_USE_CALIPER
   #define AXOM_ANNOTATE_BEGIN(name) axom::utilities::annotations::begin(name)
@@ -81,6 +84,10 @@ void declare_metadata(const std::string& name,
 #ifdef AXOM_USE_ADIAK
   detail::initialize_adiak();
   adiak::value(name, value, adiak_general, category);
+#else
+  AXOM_UNUSED_VAR(name);
+  AXOM_UNUSED_VAR(value);
+  AXOM_UNUSED_VAR(category);
 #endif
 }
 
