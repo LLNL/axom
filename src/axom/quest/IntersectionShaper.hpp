@@ -1358,6 +1358,8 @@ public:
    */
   void applyReplacementRules(const klee::Shape& shape) override
   {
+    AXOM_ANNOTATE_SCOPE("applyReplacementRules");
+
     switch(m_execPolicy)
     {
 #if defined(AXOM_USE_RAJA) && defined(AXOM_USE_UMPIRE)
@@ -1386,6 +1388,8 @@ public:
 
   void finalizeShapeQuery() override
   {
+    AXOM_ANNOTATE_SCOPE("finalizeShapeQuery");
+
     // Implementation here -- destroy BVH tree and other shape-based data structures
     delete m_surfaceMesh;
 
@@ -1400,7 +1404,8 @@ public:
   void prepareShapeQuery(klee::Dimensions shapeDimension,
                          const klee::Shape& shape) override
   {
-    std::string shapeFormat = shape.getGeometry().getFormat();
+    AXOM_ANNOTATE_SCOPE("prepareShapeQuery");
+    const std::string shapeFormat = shape.getGeometry().getFormat();
 
     // Save m_percentError and m_level in case refineShape needs to change them
     // to meet the overall desired error tolerance for the volume.
@@ -1448,7 +1453,8 @@ public:
   // (default is sequential)
   void runShapeQuery(const klee::Shape& shape) override
   {
-    std::string shapeFormat = shape.getGeometry().getFormat();
+    AXOM_ANNOTATE_SCOPE("runShapeQuery");
+    const std::string shapeFormat = shape.getGeometry().getFormat();
 
     // Testing separate workflow for Pro/E
     if(shapeFormat == "proe")

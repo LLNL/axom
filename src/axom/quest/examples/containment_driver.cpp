@@ -631,6 +631,7 @@ int main(int argc, char** argv)
   }
 
   axom::utilities::annotations::initialize(params.annotationMode, 1);
+  AXOM_ANNOTATE_BEGIN("quest containment example");
 
   const bool is2D = params.isInput2D();
 
@@ -717,6 +718,7 @@ int main(int argc, char** argv)
   AXOM_ANNOTATE_END("query");
   SLIC_INFO(axom::fmt::format("{:-^80}", ""));
 
+  AXOM_ANNOTATE_END("quest containment example");
   axom::utilities::annotations::finalize();
 
   return 0;

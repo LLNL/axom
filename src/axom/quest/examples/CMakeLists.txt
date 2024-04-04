@@ -143,7 +143,7 @@ if(AXOM_ENABLE_MPI AND MFEM_FOUND AND MFEM_USE_MPI
                 NUM_MPI_TASKS ${_nranks})
             # background: 3500; balls: ~373; jacks: ~230; air ~2897
             set_tests_properties(${_testname} PROPERTIES 
-                PASS_REGULAR_EXPRESSION  "Volume of material 'air' is 2895.")
+                PASS_REGULAR_EXPRESSION  "Volume of material 'air' is 2,?895.")
 
             set(_testname quest_shaping_driver_ex_sampling_ball_impact)
             axom_add_test(
@@ -200,7 +200,7 @@ if(AXOM_ENABLE_MPI AND MFEM_FOUND AND MFEM_USE_MPI
         # bbox volume: 12^3 = 1728; sphere(r=5): ~523.6; sphere(r=2): 33.5
         # expected analytic volume when fully resolved: ~1237.9
         set_tests_properties(${_testname} PROPERTIES 
-            PASS_REGULAR_EXPRESSION  "Volume of material 'void' is 1239.")
+            PASS_REGULAR_EXPRESSION  "Volume of material 'void' is 1,?239.")
 
         set(_testname quest_shaping_driver_ex_sampling_plane)
         axom_add_test(
@@ -215,7 +215,7 @@ if(AXOM_ENABLE_MPI AND MFEM_FOUND AND MFEM_USE_MPI
         # expected volume when fully resolved: 182,209,421.5
         # actual value is accurate to about 1% at coarse resolution
         set_tests_properties(${_testname} PROPERTIES 
-            PASS_REGULAR_EXPRESSION  "Volume of material 'air' is 182227963")
+            PASS_REGULAR_EXPRESSION  "Volume of material 'air' is 182,?227,?963")
     endif()
 endif()
 

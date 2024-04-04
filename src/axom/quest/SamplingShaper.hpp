@@ -203,8 +203,8 @@ public:
 
     SLIC_INFO(
       axom::fmt::format(axom::utilities::locale(),
-                        "\t Sampling inout field '{}' took {} seconds (@ "
-                        "{:L} queries per second)",
+                        "\t Sampling inout field '{}' took {:.3Lf} seconds "
+                        "(@ {:L} queries per second)",
                         inoutName,
                         timer.elapsed(),
                         static_cast<int>((NE * nq) / timer.elapsed())));
@@ -395,6 +395,8 @@ public:
   void prepareShapeQuery(klee::Dimensions shapeDimension,
                          const klee::Shape& shape) override
   {
+    AXOM_ANNOTATE_SCOPE("prepareShapeQuery");
+
     internal::ScopedLogLevelChanger logLevelChanger(
       this->isVerbose() ? slic::message::Debug : slic::message::Warning);
 
@@ -451,6 +453,8 @@ public:
 
   void runShapeQuery(const klee::Shape& shape) override
   {
+    AXOM_ANNOTATE_SCOPE("runShapeQuery");
+
     internal::ScopedLogLevelChanger logLevelChanger(
       this->isVerbose() ? slic::message::Debug : slic::message::Warning);
 
@@ -476,6 +480,8 @@ public:
 
   void applyReplacementRules(const klee::Shape& shape) override
   {
+    AXOM_ANNOTATE_SCOPE("applyReplacementRules");
+
     internal::ScopedLogLevelChanger logLevelChanger(
       this->isVerbose() ? slic::message::Debug : slic::message::Warning);
 
@@ -570,6 +576,8 @@ public:
 
   void finalizeShapeQuery() override
   {
+    AXOM_ANNOTATE_SCOPE("finalizeShapeQuery");
+
     delete m_inoutSampler2D;
     m_inoutSampler2D = nullptr;
 
@@ -639,6 +647,8 @@ public:
 
   void adjustVolumeFractions() override
   {
+    AXOM_ANNOTATE_SCOPE("adjustVolumeFractions");
+
     internal::ScopedLogLevelChanger logLevelChanger(
       this->isVerbose() ? slic::message::Debug : slic::message::Warning);
 

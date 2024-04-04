@@ -149,6 +149,8 @@ bool Shaper::isValidFormat(const std::string& format) const
 
 void Shaper::loadShape(const klee::Shape& shape)
 {
+  AXOM_ANNOTATE_SCOPE("loadShape");
+
   // Do not save the revolved volume in the default shaper.
   double revolved = 0.;
   loadShapeInternal(shape, m_percentError, revolved);
@@ -292,6 +294,8 @@ void Shaper::applyTransforms(const klee::Shape& shape)
 
 void Shaper::applyTransforms(const numerics::Matrix<double>& transformation)
 {
+  AXOM_ANNOTATE_SCOPE("applyTransforms");
+
   // Apply transformation to coordinates of each vertex in mesh
   if(!transformation.isIdentity())
   {
