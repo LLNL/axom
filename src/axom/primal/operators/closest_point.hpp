@@ -24,7 +24,6 @@ namespace axom
 {
 namespace primal
 {
-
 /*!
  * \brief Computes the closest point from a point, P, to a given segment.
  *
@@ -41,7 +40,8 @@ template <typename T, int NDIMS>
 AXOM_HOST_DEVICE inline Point<T, NDIMS> closest_point(const Point<T, NDIMS>& P,
                                                       const Segment<T, NDIMS>& seg,
                                                       T& t,
-                                                      double EPS = 1E-8) {
+                                                      double EPS = 1E-8)
+{
   using PointType = Point<T, NDIMS>;
   using VectorType = Vector<T, NDIMS>;
 
@@ -49,7 +49,7 @@ AXOM_HOST_DEVICE inline Point<T, NDIMS> closest_point(const Point<T, NDIMS>& P,
   using detail::isLeq;
 
   constexpr T ZERO {0.};
-  constexpr T ONE  {1.};
+  constexpr T ONE {1.};
 
   const PointType& A = seg[0];
   const PointType& B = seg[1];
@@ -58,7 +58,8 @@ AXOM_HOST_DEVICE inline Point<T, NDIMS> closest_point(const Point<T, NDIMS>& P,
   const T squaredNormAB = AB.squared_norm();
 
   // Check if segment is degenerate
-  if (isLeq(squaredNormAB, ZERO, EPS)) {
+  if(isLeq(squaredNormAB, ZERO, EPS))
+  {
     t = ZERO;
     return A;
   }
@@ -66,15 +67,18 @@ AXOM_HOST_DEVICE inline Point<T, NDIMS> closest_point(const Point<T, NDIMS>& P,
   // Compute length of the projection of AP onto AB
   t = VectorType(A, P).dot(AB);
 
-  if (isLeq(t, ZERO, EPS)) {
+  if(isLeq(t, ZERO, EPS))
+  {
     t = ZERO;
     return A;
   }
-  else if (isGeq(t, squaredNormAB, EPS)) {
+  else if(isGeq(t, squaredNormAB, EPS))
+  {
     t = ONE;
     return B;
   }
-  else {
+  else
+  {
     // Normalize t
     t /= squaredNormAB;
     return seg.at(t);
@@ -92,7 +96,8 @@ AXOM_HOST_DEVICE inline Point<T, NDIMS> closest_point(const Point<T, NDIMS>& P,
 template <typename T, int NDIMS>
 AXOM_HOST_DEVICE inline Point<T, NDIMS> closest_point(const Point<T, NDIMS>& P,
                                                       const Segment<T, NDIMS>& seg,
-                                                      double EPS = 1E-8) {
+                                                      double EPS = 1E-8)
+{
   T t;
   return closest_point(P, seg, t, EPS);
 }
