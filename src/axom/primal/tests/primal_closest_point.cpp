@@ -19,18 +19,18 @@ TEST(primal_closest_point, seg_test_closest_point_vertex_0)
   using QPoint = primal::Point<CoordType, DIM>;
   using QSegment = primal::Segment<CoordType, DIM>;
 
-  QPoint A({0.0, 1.0, 0.0});
+  QPoint A({0.0, 1.0, 1.0});
   QPoint B({1.0, 0.0, 0.0});
   QSegment S(A, B);
 
   // Query point is on the line extended past point A
-  EXPECT_TRUE(primal::closest_point(QPoint({-1.0, 2.0, 0.0}), S) == A);
+  EXPECT_TRUE(primal::closest_point(QPoint({-1.0, 2.0, 2.0}), S) == A);
 
   // Query point is on the line perpendicular to AB running through point A
-  EXPECT_TRUE(primal::closest_point(QPoint({-1.0, 0.0, 0.0}), S) == A);
+  EXPECT_TRUE(primal::closest_point(QPoint({-1.0, 0.0, 2.0}), S) == A);
 
   // Query point is equal to A
-  EXPECT_TRUE(primal::closest_point(QPoint({ 0.0, 1.0, 0.0}), S) == A);
+  EXPECT_TRUE(primal::closest_point(QPoint({ 0.0, 1.0, 1.0}), S) == A);
 }
 
 //------------------------------------------------------------------------------
@@ -41,15 +41,15 @@ TEST(primal_closest_point, seg_test_closest_point_vertex_1)
   using QPoint = primal::Point<CoordType, DIM>;
   using QSegment = primal::Segment<CoordType, DIM>;
 
-  QPoint A({0.0, 1.0, 0.0});
+  QPoint A({0.0, 1.0, 1.0});
   QPoint B({1.0, 0.0, 0.0});
   QSegment S(A, B);
 
   // Query point is on the line extended past point B
-  EXPECT_TRUE(primal::closest_point(QPoint({ 2.0, -1.0,  0.0}), S) == B);
+  EXPECT_TRUE(primal::closest_point(QPoint({ 2.0, -1.0,  1.0}), S) == B);
 
   // Query point is on the line perpendicular to AB running through point B
-  EXPECT_TRUE(primal::closest_point(QPoint({ 2.0,  1.0,  0.0}), S) == B);
+  EXPECT_TRUE(primal::closest_point(QPoint({ 2.0,  1.0, -1.0}), S) == B);
 
   // Query point is equal to B
   EXPECT_TRUE(primal::closest_point(QPoint({ 1.0,  0.0,  0.0}), S) == B);
