@@ -81,7 +81,7 @@ AXOM_HOST_DEVICE inline Point<T, NDIMS> closest_point(const Point<T, NDIMS>& P,
   {
     // Normalize t
     t /= squaredNormAB;
-    return seg.at(t);
+    return A + AB * t;
   }
 }
 
