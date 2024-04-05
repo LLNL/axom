@@ -40,9 +40,9 @@ TEST(primal_closest_point, seg_test_closest_point_vertex_1)
   QPoint B({1.0, 0.0, 0.0});
   QSegment S(A, B);
 
-  EXPECT_TRUE(primal::closest_point(QPoint({ 2.0, -1.0, -1.0}), S) == A);
-  EXPECT_TRUE(primal::closest_point(QPoint({ 2.0,  0.0,  0.0}), S) == A);
-  EXPECT_TRUE(primal::closest_point(QPoint({ 1.0,  0.0,  0.0}), S) == A);
+  EXPECT_TRUE(primal::closest_point(QPoint({ 2.0, -1.0, -1.0}), S) == B);
+  EXPECT_TRUE(primal::closest_point(QPoint({ 2.0,  0.0,  0.0}), S) == B);
+  EXPECT_TRUE(primal::closest_point(QPoint({ 1.0,  0.0,  0.0}), S) == B);
 }
 
 //------------------------------------------------------------------------------
