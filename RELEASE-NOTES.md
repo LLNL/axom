@@ -23,6 +23,7 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 - Adds prelimiary support for the optional `caliper` and `adiak` dependencies to axom.
   These dependencies are added through axom's `spack` package via the new `+profiling` variant,
   and are enabled in axom's build system via the `CALIPER_DIR` and `ADIAK_DIR` configuration paths.
+- Primal: Adds a `closest_point` operator for finding the closest point on a `Segment`
 
 ### Changed
 - Upgrades `vcpkg` usage for axom's automated Windows builds to its
