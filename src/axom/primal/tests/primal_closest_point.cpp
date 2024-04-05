@@ -63,15 +63,15 @@ TEST(primal_closest_point, seg_test_closest_point_interior)
   using QPoint = primal::Point<CoordType, DIM>;
   using QSegment = primal::Segment<CoordType, DIM>;
 
-  QPoint A({0.0, 1.0, 0.0});
+  QPoint A({0.0, 1.0, 1.0});
   QPoint B({1.0, 0.0, 0.0});
   QSegment S(A, B);
 
   // Query point is perpendicular to the midpoint of AB
-  EXPECT_TRUE(primal::closest_point(QPoint({0.0, 0.0, 0.0}), S) == QPoint::lerp(A, B, 0.5));
+  EXPECT_TRUE(primal::closest_point(QPoint({0.0, 0.0, 0.5}), S) == QPoint::lerp(A, B, 0.5));
 
   // Query point is a quarter of the way to B from A
-  EXPECT_TRUE(primal::closest_point(QPoint({0.25, 0.75, 0.0}), S) == QPoint::lerp(A, B, 0.25));
+  EXPECT_TRUE(primal::closest_point(QPoint({0.25, 0.75, 0.75}), S) == QPoint::lerp(A, B, 0.25));
 }
 
 //------------------------------------------------------------------------------
