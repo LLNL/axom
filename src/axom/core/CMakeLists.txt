@@ -31,10 +31,6 @@ set(core_headers
     utilities/Utilities.hpp
     utilities/About.hpp
 
-    utilities/nvtx/interface.hpp
-    utilities/nvtx/Macros.hpp
-    utilities/nvtx/Range.hpp
-
     ## numerics
     numerics/internal/matrix_norms.hpp
 
@@ -87,9 +83,6 @@ set(core_sources
     utilities/System.cpp
     utilities/Utilities.cpp
     ${PROJECT_BINARY_DIR}/axom/core/utilities/About.cpp
-
-    utilities/nvtx/interface.cpp
-    utilities/nvtx/Range.cpp
 
     numerics/polynomial_solvers.cpp
 
