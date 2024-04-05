@@ -44,7 +44,6 @@ AXOM_HOST_DEVICE inline Point<T, NDIMS> closest_point(const Point<T, NDIMS>& P,
   using detail::isLeq;
 
   constexpr T ZERO {0.};
-  constexpr T ONE  {1.};
 
   const PointType& A = seg[0];
   const PointType& B = seg[1];
@@ -58,16 +57,16 @@ AXOM_HOST_DEVICE inline Point<T, NDIMS> closest_point(const Point<T, NDIMS>& P,
   }
 
   // Compute length of the projection of AP onto AB
-  const double t = VectorType(A, P).dot(AB) / squaredNormAB;
+  const double t = VectorType(A, P).dot(AB);
 
   if (isLeq(t, ZERO, EPS)) {
     return A;
   }
-  else if (isGeq(t, ONE, EPS)) {
+  else if (isGeq(t, squaredNormAB, EPS)) {
     return B;
   }
   else {
-    return seg.at(t);
+    return seg.at(t / squaredNormAB);
   }
 }
 
