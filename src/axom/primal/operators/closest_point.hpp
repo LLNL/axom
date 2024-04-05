@@ -40,7 +40,7 @@ template <typename T, int NDIMS>
 AXOM_HOST_DEVICE inline Point<T, NDIMS> closest_point(const Point<T, NDIMS>& P,
                                                       const Segment<T, NDIMS>& seg,
                                                       T& t,
-                                                      double EPS = 1E-8)
+                                                      double EPS = 1E-12)
 {
   using PointType = Point<T, NDIMS>;
   using VectorType = Vector<T, NDIMS>;
@@ -96,7 +96,7 @@ AXOM_HOST_DEVICE inline Point<T, NDIMS> closest_point(const Point<T, NDIMS>& P,
 template <typename T, int NDIMS>
 AXOM_HOST_DEVICE inline Point<T, NDIMS> closest_point(const Point<T, NDIMS>& P,
                                                       const Segment<T, NDIMS>& seg,
-                                                      double EPS = 1E-8)
+                                                      double EPS = 1E-12)
 {
   T t;
   return closest_point(P, seg, t, EPS);

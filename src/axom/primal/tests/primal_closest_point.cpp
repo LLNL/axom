@@ -14,7 +14,7 @@ namespace primal = axom::primal;
 //------------------------------------------------------------------------------
 TEST(primal_closest_point, seg_test_degenerate)
 {
-  constexpr double EPS = 1e-8;
+  constexpr double EPS = 1e-12;
 
   constexpr int DIM = 3;
   using CoordType = double;
@@ -68,7 +68,7 @@ TEST(primal_closest_point, seg_test_degenerate)
 //------------------------------------------------------------------------------
 TEST(primal_closest_point, seg_test_closest_point_vertex_0)
 {
-  constexpr double EPS = 1e-8;
+  constexpr double EPS = 1e-12;
 
   constexpr int DIM = 3;
   using CoordType = double;
@@ -114,7 +114,7 @@ TEST(primal_closest_point, seg_test_closest_point_vertex_0)
 //------------------------------------------------------------------------------
 TEST(primal_closest_point, seg_test_closest_point_vertex_1)
 {
-  constexpr double EPS = 1e-8;
+  constexpr double EPS = 1e-12;
 
   constexpr int DIM = 3;
   using CoordType = double;
@@ -160,7 +160,7 @@ TEST(primal_closest_point, seg_test_closest_point_vertex_1)
 //------------------------------------------------------------------------------
 TEST(primal_closest_point, seg_test_closest_point_interior)
 {
-  constexpr double EPS = 1e-8;
+  constexpr double EPS = 1e-12;
 
   constexpr int DIM = 3;
   using CoordType = double;
