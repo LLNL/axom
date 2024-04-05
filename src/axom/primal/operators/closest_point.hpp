@@ -49,7 +49,7 @@ AXOM_HOST_DEVICE inline Point<T, NDIMS> closest_point(const Point<T, NDIMS>& P,
   using detail::isLeq;
 
   constexpr T ZERO {0.};
-  constexpr T ONE  {0.};
+  constexpr T ONE  {1.};
 
   const PointType& A = seg[0];
   const PointType& B = seg[1];
