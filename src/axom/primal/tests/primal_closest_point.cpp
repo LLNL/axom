@@ -12,6 +12,31 @@
 namespace primal = axom::primal;
 
 //------------------------------------------------------------------------------
+TEST(primal_closest_point, seg_test_degenerate)
+{
+  constexpr int DIM = 3;
+  using CoordType = double;
+  using QPoint = primal::Point<CoordType, DIM>;
+  using QSegment = primal::Segment<CoordType, DIM>;
+
+  QPoint A({0.0, 0.0, 0.0});
+  QPoint B({1.0e-9, 0.0, 0.0});
+  QSegment S(A, B);
+
+  // Query point is on the midpoint of AB
+  EXPECT_TRUE(primal::closest_point(QPoint({0.5e-10, 0.0, 0.0}), S) == A);
+
+  // Query point is on the line perpendicular to AB running through the midpoint
+  EXPECT_TRUE(primal::closest_point(QPoint({0.5e-10, 1.0, 0.0}), S) == A);
+
+  // Query point is equal to A
+  EXPECT_TRUE(primal::closest_point(QPoint({ 0.0, 0.0, 0.0}), S) == A);
+
+  // Query point is equal to B (for a degenerate segment, A is always returned)
+  EXPECT_TRUE(primal::closest_point(QPoint({ 1.0e-9, 0.0, 0.0}), S) == A);
+}
+
+//------------------------------------------------------------------------------
 TEST(primal_closest_point, seg_test_closest_point_vertex_0)
 {
   constexpr int DIM = 3;
