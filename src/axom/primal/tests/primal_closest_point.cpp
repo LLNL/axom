@@ -12,6 +12,57 @@
 namespace primal = axom::primal;
 
 //------------------------------------------------------------------------------
+TEST(primal_closest_point, seg_test_closest_point_vertex_0)
+{
+  constexpr int DIM = 3;
+  using CoordType = double;
+  using QPoint = primal::Point<CoordType, DIM>;
+  using QSegment = primal::Segment<CoordType, DIM>;
+
+  QPoint A({0.0, 1.0, 1.0});
+  QPoint B({1.0, 0.0, 0.0});
+  QSegment S(A, B);
+
+  EXPECT_TRUE(primal::closest_point(QPoint({-1.0, 2.0, 2.0}), S) == A);
+  EXPECT_TRUE(primal::closest_point(QPoint({-1.0, 0.0, 1.0}), S) == A);
+  EXPECT_TRUE(primal::closest_point(QPoint({ 0.0, 1.0, 1.0}), S) == A);
+}
+
+//------------------------------------------------------------------------------
+TEST(primal_closest_point, seg_test_closest_point_vertex_1)
+{
+  constexpr int DIM = 3;
+  using CoordType = double;
+  using QPoint = primal::Point<CoordType, DIM>;
+  using QSegment = primal::Segment<CoordType, DIM>;
+
+  QPoint A({0.0, 1.0, 1.0});
+  QPoint B({1.0, 0.0, 0.0});
+  QSegment S(A, B);
+
+  EXPECT_TRUE(primal::closest_point(QPoint({ 2.0, -1.0, -1.0}), S) == A);
+  EXPECT_TRUE(primal::closest_point(QPoint({ 2.0,  0.0,  0.0}), S) == A);
+  EXPECT_TRUE(primal::closest_point(QPoint({ 1.0,  0.0,  0.0}), S) == A);
+}
+
+//------------------------------------------------------------------------------
+TEST(primal_closest_point, seg_test_closest_point_interior)
+{
+  constexpr int DIM = 3;
+  using CoordType = double;
+  using QPoint = primal::Point<CoordType, DIM>;
+  using QSegment = primal::Segment<CoordType, DIM>;
+
+  QPoint A({0.0, 1.0, 1.0});
+  QPoint B({1.0, 0.0, 0.0});
+  QSegment S(A, B);
+
+  QPoint midPoint = QPoint::lerp(A, B, 0.5);
+
+  EXPECT_TRUE(primal::closest_point(QPoint({0.25, 0.25, 0.25}), S) == midPoint);
+}
+
+//------------------------------------------------------------------------------
 TEST(primal_closest_point, obb_test_closest_point_interior)
 {
   constexpr int DIM = 3;
