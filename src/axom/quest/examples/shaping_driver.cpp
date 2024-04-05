@@ -397,7 +397,8 @@ void printMeshInfo(mfem::Mesh* mesh, const std::string& prefixMessage = "")
     {
     case 2:
       SLIC_INFO(axom::fmt::format(
-        "{} mesh has {} elements and (approximate) bounding box {}",
+        axom::utilities::locale(),
+        "{} mesh has {:L} elements and (approximate) bounding box {}",
         prefixMessage,
         numElements,
         primal::BoundingBox<double, 2>(primal::Point<double, 2>(mins.GetData()),
@@ -405,7 +406,8 @@ void printMeshInfo(mfem::Mesh* mesh, const std::string& prefixMessage = "")
       break;
     case 3:
       SLIC_INFO(axom::fmt::format(
-        "{} mesh has {} elements and (approximate) bounding box {}",
+        axom::utilities::locale(),
+        "{} mesh has {:L} elements and (approximate) bounding box {}",
         prefixMessage,
         numElements,
         primal::BoundingBox<double, 3>(primal::Point<double, 3>(mins.GetData()),
@@ -512,6 +514,8 @@ int main(int argc, char** argv)
   {
     AXOM_ANNOTATE_SCOPE("read Klee shape set");
     params.shapeSet = klee::readShapeSet(params.shapeFile);
+
+    slic::flushStreams();
   }
   catch(klee::KleeError& error)
   {
@@ -735,7 +739,7 @@ int main(int argc, char** argv)
       const double volume = shaper->allReduceSum(*gf * vol_form);
 
       SLIC_INFO(axom::fmt::format(axom::utilities::locale(),
-                                  "Volume of material '{}' is {:.3Lf}",
+                                  "Volume of material '{}' is {:.6Lf}",
                                   mat_name,
                                   volume));
     }
@@ -755,6 +759,8 @@ int main(int argc, char** argv)
   // Cleanup and exit
   //---------------------------------------------------------------------------
   SLIC_INFO(axom::fmt::format("{:-^80}", ""));
+  slic::flushStreams();
+
   AXOM_ANNOTATE_END("quest shaping example");
   axom::utilities::annotations::finalize();
 

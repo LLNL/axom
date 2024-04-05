@@ -46,7 +46,7 @@ struct RadixTree
 
   void allocate(std::int32_t size, int allocID)
   {
-    AXOM_PERF_MARK_FUNCTION("RadixTree::allocate");
+    AXOM_ANNOTATE_SCOPE("RadixTree::allocate");
 
     m_size = size;
     m_inner_size = m_size - 1;

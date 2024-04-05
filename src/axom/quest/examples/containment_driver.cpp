@@ -717,6 +717,7 @@ int main(int argc, char** argv)
 
   AXOM_ANNOTATE_END("query");
   SLIC_INFO(axom::fmt::format("{:-^80}", ""));
+  axom::slic::flushStreams();
 
   AXOM_ANNOTATE_END("quest containment example");
   axom::utilities::annotations::finalize();

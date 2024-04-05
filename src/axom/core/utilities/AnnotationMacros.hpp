@@ -9,93 +9,6 @@
 #include "axom/config.hpp"
 #include "axom/core/utilities/Annotations.hpp"
 
-// Note: Caliper integration into Axom is underway.
-//       Axom's annotations will soon rely on caliper.
-
-#include "axom/core/utilities/nvtx/interface.hpp"
-
-/*!
- * \def AXOM_PERF_MARK_FUNCTION( name )
- * 
- * \brief The AXOM_PERF_MARK_FUNCTION is used to annotate a function.
- * 
- * \param [in] name a user-supplied name to annotate the function.
- * 
- * \note Typically, the AXOM_PERF_MARK_FUNCTION is placed in the beginning of
- *  the function to annotate.
- * 
- * 
- * \warning The AXOM_PERF_MARK_FUNCTION can only be called once within a given
- *  (function) scope.
- * 
- * 
- * Usage Example:
- * \code
- *   void foo( )
- *   {
- *     AXOM_PERF_MARK_FUNCTION( "foo" );
- *     ... 
- *   }
- * \endcode
- */
-#if defined(AXOM_USE_ANNOTATIONS)
-  #define AXOM_PERF_MARK_FUNCTION(__func_name__) \
-    AXOM_NVTX_FUNCTION(__func_name__)
-#else
-  #define AXOM_PERF_MARK_FUNCTION(__func_name__)
-#endif
-
-/*!
- * \def AXOM_PERF_MARK_SECTION( name )
- *  
- * \brief The AXOM_PERF_MARK_SECTION macro is used to annotate sections of code.
- * 
- * \note In contrast to the AXOM_PERF_MARK_FUNCTION, the AXOM_PERF_MARK_SECTION
- *  macro is used to annotate sections of code at a much finer granularity
- *  within a given function and it may be use in conjunction with the 
- *  AXOM_PERF_MARK_FUNCTION macro.
- * 
- * \warning Variables declared within an AXOM_PERF_MARK_SECTION are only defined
- *  within the scope of the annotated section.
- * 
- * \warning The AXOM_PERF_MARK_SECTION macro may not be called in a nested
- *  fashion, i.e., within another AXOM_PERF_MARK_SECTION
- *
- * Usage Example:
- * \code
- *   void foo( )
- *   {
- *      AXOM_PERF_MARK_FUNCTION( "foo" );
- *      
- *      AXOM_PERF_MARK_SECTION( "kernel_A",
- *        axom::for_all( 0, N, AXOM_LAMBDA(axom::IndexType idx)
- *        { 
- *          ...
- *        } );
- *      );
- * 
- *      AXOM_PERF_MARK_SECTION( "kernel_B",
- *        axom::for_all( 0, N, AXOM_LAMBDA(axom::IndexType idx)
- *        {
- *          ...
- *        } );
- *      );
- * 
- *   }
- * \endcode
- * 
- */
-#if defined(AXOM_USE_ANNOTATIONS)
-  #define AXOM_PERF_MARK_SECTION(__name__, ...) \
-    AXOM_NVTX_SECTION(__name__, __VA_ARGS__)
-#else
-  #define AXOM_PERF_MARK_SECTION(__name__, ...) \
-    do                                          \
-    {                                           \
-      __VA_ARGS__                               \
-    } while(false)
-#endif
-
 #ifdef AXOM_USE_CALIPER
 
   /*!
@@ -134,13 +47,15 @@
   #define AXOM_ANNOTATE_METADATA(name, value, category) \
     axom::utilities::annotations::declare_metadata(name, value, category)
 
-#else
+#else  // AXOM_USE_CALIPER
+
   // clang-format off
   #define AXOM_ANNOTATE_BEGIN(name)                     do{} while(false)
   #define AXOM_ANNOTATE_END(name)                       do{} while(false)
   #define AXOM_ANNOTATE_SCOPE(name)                     do{} while(false)
   #define AXOM_ANNOTATE_METADATA(name, value, category) do{} while(false)
   // clang-format on
-#endif
 
-#endif
+#endif  // AXOM_USE_CALIPER
+
+#endif  // AXOM_ANNOTATION_MACROS_HPP_

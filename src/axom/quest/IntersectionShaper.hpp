@@ -461,7 +461,8 @@ public:
     SLIC_INFO(axom::fmt::format(
       "{:-^80}",
       axom::fmt::format(
-        " Checking contour with {} points for degenerate segments ",
+        axom::utilities::locale(),
+        " Checking contour with {:L} points for degenerate segments",
         pointcount)));
 
     // The mesh points are filtered like we want. We need only copy
@@ -487,7 +488,8 @@ public:
       "Discretization of contour has failed. Check that contour is valid");
 
     SLIC_INFO(
-      axom::fmt::format("Contour has been discretized into {} octahedra ",
+      axom::fmt::format(axom::utilities::locale(),
+                        "Contour has been discretized into {:L} octahedra ",
                         m_octcount));
 
     if(this->isVerbose())
@@ -833,19 +835,20 @@ public:
 
     using TetHexArray = axom::StackArray<TetrahedronType, NUM_TETS_PER_HEX>;
 
-    AXOM_PERF_MARK_SECTION("init_tets",
-                           axom::for_all<ExecSpace>(
-                             NE,
-                             AXOM_LAMBDA(axom::IndexType i) {
-                               TetHexArray cur_tets;
-                               hexes_view[i].triangulate(cur_tets);
+    {
+      AXOM_ANNOTATE_SCOPE("init_tets");
+      axom::for_all<ExecSpace>(
+        NE,
+        AXOM_LAMBDA(axom::IndexType i) {
+          TetHexArray cur_tets;
+          hexes_view[i].triangulate(cur_tets);
 
-                               for(int j = 0; j < NUM_TETS_PER_HEX; j++)
-                               {
-                                 tets_from_hexes_view[i * NUM_TETS_PER_HEX + j] =
-                                   cur_tets[j];
-                               }
-                             }););
+          for(int j = 0; j < NUM_TETS_PER_HEX; j++)
+          {
+            tets_from_hexes_view[i * NUM_TETS_PER_HEX + j] = cur_tets[j];
+          }
+        });
+    }
 
     SLIC_INFO(
       axom::fmt::format("{:-^80}",
@@ -853,25 +856,27 @@ public:
 
     const auto offsets_v = offsets.view();
     const auto candidates_v = candidates.view();
-    AXOM_PERF_MARK_SECTION("init_candidates",
-                           axom::for_all<ExecSpace>(
-                             NE,
-                             AXOM_LAMBDA(axom::IndexType i) {
-                               for(int j = 0; j < counts_v[i]; j++)
-                               {
-                                 int shapeIdx = candidates_v[offsets_v[i] + j];
+    {
+      AXOM_ANNOTATE_SCOPE("init_candidates");
+      axom::for_all<ExecSpace>(
+        NE,
+        AXOM_LAMBDA(axom::IndexType i) {
+          for(int j = 0; j < counts_v[i]; j++)
+          {
+            int shapeIdx = candidates_v[offsets_v[i] + j];
 
-                                 for(int k = 0; k < NUM_TETS_PER_HEX; k++)
-                                 {
-                                   IndexType idx = RAJA::atomicAdd<ATOMIC_POL>(
-                                     &newTotalCandidates_view[0],
-                                     IndexType {1});
-                                   hex_indices[idx] = i;
-                                   shape_candidates[idx] = shapeIdx;
-                                   tet_indices[idx] = i * NUM_TETS_PER_HEX + k;
-                                 }
-                               }
-                             }););
+            for(int k = 0; k < NUM_TETS_PER_HEX; k++)
+            {
+              IndexType idx =
+                RAJA::atomicAdd<ATOMIC_POL>(&newTotalCandidates_view[0],
+                                            IndexType {1});
+              hex_indices[idx] = i;
+              shape_candidates[idx] = shapeIdx;
+              tet_indices[idx] = i * NUM_TETS_PER_HEX + k;
+            }
+          }
+        });
+    }
 
     // Overlap volume is the volume of clip(oct,tet)
     m_overlap_volumes = axom::Array<double>(NE, NE);
@@ -893,13 +898,14 @@ public:
     SLIC_INFO(
       axom::fmt::format("{:-^80}", " Calculating hexahedron element volume "));
 
-    AXOM_PERF_MARK_SECTION("hex_volume",
-                           axom::for_all<ExecSpace>(
-                             NE,
-                             AXOM_LAMBDA(axom::IndexType i) {
-                               hex_volumes_view[i] = hexes_view[i].volume();
-                             }););
-
+    {
+      AXOM_ANNOTATE_SCOPE("hex_volume");
+      axom::for_all<ExecSpace>(
+        NE,
+        AXOM_LAMBDA(axom::IndexType i) {
+          hex_volumes_view[i] = hexes_view[i].volume();
+        });
+    }
     SLIC_INFO(axom::fmt::format(
       "{:-^80}",
       " Calculating element overlap volume from each tet-shape pair "));
@@ -907,8 +913,8 @@ public:
     constexpr double EPS = 1e-10;
     constexpr bool tryFixOrientation = true;
 
-    AXOM_PERF_MARK_SECTION(
-      "tet_shape_volume",
+    {
+      AXOM_ANNOTATE_SCOPE("tet_shape_volume");
       axom::for_all<ExecSpace>(
         newTotalCandidates_view[0],
         AXOM_LAMBDA(axom::IndexType i) {
@@ -927,7 +933,8 @@ public:
             RAJA::atomicAdd<ATOMIC_POL>(overlap_volumes_view.data() + index,
                                         poly.volume());
           }
-        }););
+        });
+    }
 
     RAJA::ReduceSum<REDUCE_POL, double> totalOverlap(0);
     RAJA::ReduceSum<REDUCE_POL, double> totalHex(0);
@@ -939,9 +946,11 @@ public:
         totalHex += hex_volumes_view[i];
       });
 
-    SLIC_INFO(axom::fmt::format("Total overlap volume with shape is {}",
+    SLIC_INFO(axom::fmt::format(axom::utilities::locale(),
+                                "Total overlap volume with shape is {:.3Lf}",
                                 this->allReduceSum(totalOverlap)));
-    SLIC_INFO(axom::fmt::format("Total mesh volume is {}",
+    SLIC_INFO(axom::fmt::format(axom::utilities::locale(),
+                                "Total mesh volume is {:.3Lf}",
                                 this->allReduceSum(totalHex)));
 
     // Deallocate no longer needed variables
@@ -1089,25 +1098,25 @@ public:
       cfgf = newVolFracGridFunction();
       this->getDC()->RegisterField(fieldName, cfgf);
 
-      AXOM_PERF_MARK_SECTION("compute_free", {
-        int dataSize = cfgf->Size();
-        GridFunctionView<ExecSpace> cfView(cfgf);
+      AXOM_ANNOTATE_SCOPE("compute_free");
+
+      int dataSize = cfgf->Size();
+      GridFunctionView<ExecSpace> cfView(cfgf);
+      axom::for_all<ExecSpace>(
+        dataSize,
+        AXOM_LAMBDA(axom::IndexType i) { cfView[i] = 1.; });
+
+      // Iterate over all materials and subtract off their VFs from cfgf.
+      for(auto& gf : m_vf_grid_functions)
+      {
+        GridFunctionView<ExecSpace> matVFView(gf, false);
         axom::for_all<ExecSpace>(
           dataSize,
-          AXOM_LAMBDA(axom::IndexType i) { cfView[i] = 1.; });
-
-        // Iterate over all materials and subtract off their VFs from cfgf.
-        for(auto& gf : m_vf_grid_functions)
-        {
-          GridFunctionView<ExecSpace> matVFView(gf, false);
-          axom::for_all<ExecSpace>(
-            dataSize,
-            AXOM_LAMBDA(axom::IndexType i) {
-              cfView[i] -= matVFView[i];
-              cfView[i] = (cfView[i] < 0.) ? 0. : cfView[i];
-            });
-        }
-      });
+          AXOM_LAMBDA(axom::IndexType i) {
+            cfView[i] -= matVFView[i];
+            cfView[i] = (cfView[i] < 0.) ? 0. : cfView[i];
+          });
+      }
     }
     return cfgf;
   }
@@ -1264,45 +1273,46 @@ public:
     if(!shape.getMaterialsReplaced().empty())
     {
       // Replaces - We'll sum up the VFs that we can replace in a zone.
-      AXOM_PERF_MARK_SECTION("compute_vf_writable", {
+      AXOM_ANNOTATE_SCOPE("compute_vf_writable");
+      axom::for_all<ExecSpace>(
+        dataSize,
+        AXOM_LAMBDA(axom::IndexType i) { vf_writable[i] = 0.; });
+      for(const auto& name : shape.getMaterialsReplaced())
+      {
+        auto mat = getMaterial(name);
+        GridFunctionView<ExecSpace> matVFView(mat.first, false);
         axom::for_all<ExecSpace>(
           dataSize,
-          AXOM_LAMBDA(axom::IndexType i) { vf_writable[i] = 0.; });
-        for(const auto& name : shape.getMaterialsReplaced())
-        {
-          auto mat = getMaterial(name);
-          GridFunctionView<ExecSpace> matVFView(mat.first, false);
-          axom::for_all<ExecSpace>(
-            dataSize,
-            AXOM_LAMBDA(axom::IndexType i) {
-              vf_writable[i] += matVFView[i];
-              vf_writable[i] = (vf_writable[i] > 1.) ? 1. : vf_writable[i];
-            });
-        }
-      });
+          AXOM_LAMBDA(axom::IndexType i) {
+            vf_writable[i] += matVFView[i];
+            vf_writable[i] = (vf_writable[i] > 1.) ? 1. : vf_writable[i];
+          });
+      }
     }
     else
     {
       // Does not replace. We can replace all except for listed mats.
-      AXOM_PERF_MARK_SECTION("compute_vf_writable", {
+      AXOM_ANNOTATE_SCOPE("compute_vf_writable");
+      axom::for_all<ExecSpace>(
+        dataSize,
+        AXOM_LAMBDA(axom::IndexType i) { vf_writable[i] = 1.; });
+
+      for(auto& gf : excludeVFs)
+      {
+        GridFunctionView<ExecSpace> matVFView(gf, false);
         axom::for_all<ExecSpace>(
           dataSize,
-          AXOM_LAMBDA(axom::IndexType i) { vf_writable[i] = 1.; });
-        for(auto& gf : excludeVFs)
-        {
-          GridFunctionView<ExecSpace> matVFView(gf, false);
-          axom::for_all<ExecSpace>(
-            dataSize,
-            AXOM_LAMBDA(axom::IndexType i) {
-              vf_writable[i] -= matVFView[i];
-              vf_writable[i] = (vf_writable[i] < 0.) ? 0. : vf_writable[i];
-            });
-        }
-      });
+          AXOM_LAMBDA(axom::IndexType i) {
+            vf_writable[i] -= matVFView[i];
+            vf_writable[i] = (vf_writable[i] < 0.) ? 0. : vf_writable[i];
+          });
+      }
     }
 
     // Compute the volume fractions for the current shape's material.
-    AXOM_PERF_MARK_SECTION("compute_vf", {
+    {
+      AXOM_ANNOTATE_SCOPE("compute_vf");
+
       GridFunctionView<ExecSpace> matVFView(matVF.first);
       GridFunctionView<ExecSpace> shapeVFView(shapeVolFrac);
 
@@ -1327,11 +1337,11 @@ public:
           // Store the max shape VF.
           shapeVFView[i] = vf;
         });
-    });
+    }
 
-    // Iterate over updateVFs to subtract off VFs we allocated to the
-    // current shape's material.
-    AXOM_PERF_MARK_SECTION("update_vf", {
+    // Iterate over updateVFs to subtract off VFs we allocated to the current shape's material.
+    {
+      AXOM_ANNOTATE_SCOPE("update_vf");
       for(auto& gf : updateVFs)
       {
         GridFunctionView<ExecSpace> matVFView(gf);
@@ -1348,7 +1358,7 @@ public:
             vf_subtract[i] -= s;
           });
       }
-    });
+    }
   }
 #endif
 
@@ -1610,7 +1620,9 @@ private:
 
     SLIC_INFO(axom::fmt::format(
       "{:-^80}",
-      axom::fmt::format(" Discretizing contour with {} points ", polyline_size)));
+      axom::fmt::format(axom::utilities::locale(),
+                        " Discretizing contour with {:L} points ",
+                        polyline_size)));
 
     // Flip point order
     if(flip)

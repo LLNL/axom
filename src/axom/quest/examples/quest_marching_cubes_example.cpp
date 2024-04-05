@@ -547,7 +547,7 @@ public:
   template <typename T>
   void moveMeshDataToNewMemorySpace(const std::string& path, int allocId)
   {
-    AXOM_PERF_MARK_FUNCTION("moveMeshDataToNewMemorySpace");  // For reference
+    AXOM_ANNOTATE_SCOPE("moveMeshDataToNewMemorySpace");
     for(auto& dom : _mdMesh.children())
     {
       moveConduitDataToNewMemorySpace<T>(dom, path, allocId);
