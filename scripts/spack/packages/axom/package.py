@@ -290,8 +290,6 @@ class Axom(CachedCMakePackage, CudaPackage, ROCmPackage):
             entries.append(cmake_cache_option("ENABLE_CUDA", True))
             entries.append(cmake_cache_option("CMAKE_CUDA_SEPARABLE_COMPILATION", True))
 
-            entries.append(cmake_cache_option("AXOM_ENABLE_ANNOTATIONS", True))
-
             # CUDA_FLAGS
             cudaflags = "-restrict --expt-extended-lambda "
 
