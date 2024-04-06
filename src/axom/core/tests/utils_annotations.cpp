@@ -126,7 +126,11 @@ static void get_namevals_as_map(const char *name,
 
 TEST(utils_annotations, initialize_finalize)
 {
-  axom::utilities::annotations::initialize("none", 1);
+#ifdef AXOM_USE_MPI
+  axom::utilities::annotations::initialize(MPI_COMM_WORLD, "none");
+#else
+  axom::utilities::annotations::initialize("none");
+#endif
 
   axom::utilities::annotations::finalize();
 
@@ -135,7 +139,11 @@ TEST(utils_annotations, initialize_finalize)
 
 TEST(utils_annotations, print_adiak_metadata)
 {
-  axom::utilities::annotations::initialize("none", 1);
+#ifdef AXOM_USE_MPI
+  axom::utilities::annotations::initialize(MPI_COMM_WORLD, "none");
+#else
+  axom::utilities::annotations::initialize("none");
+#endif
 
 #ifdef AXOM_USE_ADIAK
   using MetadataMap = std::map<std::string, std::string>;
@@ -187,7 +195,6 @@ TEST(utils_annotations, print_adiak_metadata)
   #ifdef AXOM_USE_MPI
     MPI_Comm_rank(MPI_COMM_WORLD, &my_rank);
   #endif
-
     if(my_rank == 0)
     {
       std::cout << "Adiak metadata: \n";
@@ -223,7 +230,11 @@ TEST(utils_annotations, modes)
 {
   std::cout << "Testing caliper service '" << s_annotation_mode << "'\n";
 
-  axom::utilities::annotations::initialize(s_annotation_mode, 1);
+#ifdef AXOM_USE_MPI
+  axom::utilities::annotations::initialize(MPI_COMM_WORLD, s_annotation_mode);
+#else
+  axom::utilities::annotations::initialize(s_annotation_mode);
+#endif
 
 #ifdef AXOM_USE_CALIPER
   {

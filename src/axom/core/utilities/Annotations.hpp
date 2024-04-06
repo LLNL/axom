@@ -18,12 +18,15 @@
 #include "axom/config.hpp"
 #include "axom/core/Macros.hpp"
 
+#ifdef AXOM_USE_MPI
+  #include <mpi.h>
+#endif
+
 #ifdef AXOM_USE_ADIAK
   #include "adiak.hpp"
 #endif
 
 #ifdef AXOM_USE_CALIPER
-  #include "caliper/cali-manager.h"
   #include "caliper/cali.h"
 #endif
 
@@ -37,7 +40,12 @@ namespace annotations
 {
 namespace detail
 {
+#ifdef AXOM_USE_MPI
+void initialize_adiak(MPI_Comm comm = MPI_COMM_WORLD);
+#else
 void initialize_adiak();
+#endif
+
 void initialize_caliper(const std::string& mode, int num_ranks);
 
 bool check_mode(const std::string& mode);
@@ -45,7 +53,10 @@ std::string help_string();
 }  // namespace detail
 
 /// Initializes the Annotation API
-void initialize(const std::string& mode, int num_ranks);
+#ifdef AXOM_USE_MPI
+void initialize(MPI_Comm comm, const std::string& mode);
+#endif
+void initialize(const std::string& mode);
 
 /// Finalizes and flushes the Annotation API
 void finalize();

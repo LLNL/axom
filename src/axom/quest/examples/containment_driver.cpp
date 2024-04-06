@@ -630,7 +630,8 @@ int main(int argc, char** argv)
     return app.exit(e);
   }
 
-  axom::utilities::annotations::initialize(params.annotationMode, 1);
+  axom::utilities::annotations::initialize(params.annotationMode);
+
   AXOM_ANNOTATE_BEGIN("quest containment example");
 
   const bool is2D = params.isInput2D();

@@ -503,7 +503,12 @@ int main(int argc, char** argv)
     exit(retval);
   }
 
-  axom::utilities::annotations::initialize(params.annotationMode, 1);
+#ifdef AXOM_USE_MPI
+  axom::utilities::annotations::initialize(MPI_COMM_WORLD, params.annotationMode);
+#else
+  axom::utilities::annotations::initialize(params.annotationMode);
+#endif
+
   AXOM_ANNOTATE_BEGIN("quest shaping example");
   AXOM_ANNOTATE_BEGIN("init");
 

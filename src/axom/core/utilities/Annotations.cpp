@@ -3,10 +3,6 @@
 #include "axom/core/utilities/About.hpp"
 #include "axom/fmt.hpp"
 
-#ifdef AXOM_USE_MPI
-  #include <mpi.h>
-#endif
-
 #ifdef AXOM_USE_CALIPER
   #include "caliper/Caliper.h"
   #include "caliper/common/Attribute.h"
@@ -39,21 +35,9 @@ static cali::ConfigManager* cali_mgr {nullptr};
 
 namespace detail
 {
-void initialize_adiak()
-{
 #ifdef AXOM_USE_ADIAK
-  if(adiak_initialized)
-  {
-    return;
-  }
-
-  #ifdef AXOM_USE_MPI
-  MPI_Comm communicator = MPI_COMM_WORLD;
-  adiak::init((void*)&communicator);
-  #else
-  adiak::init(nullptr);
-  #endif
-
+void initialize_common_adiak_metadata()
+{
   adiak::user();
   adiak::launchdate();
   adiak::launchday();
@@ -68,10 +52,40 @@ void initialize_adiak()
   adiak::walltime();
   adiak::systime();
   adiak::cputime();
+}
+#endif
+
+#ifdef AXOM_USE_MPI
+void initialize_adiak(MPI_Comm comm)
+{
+  #ifdef AXOM_USE_ADIAK
+  if(adiak_initialized)
+  {
+    return;
+  }
+
+  adiak::init((void*)&comm);
+  initialize_common_adiak_metadata();
 
   adiak_initialized = true;
-#endif
+  #endif
 }
+#else  // AXOM_USE_MPI
+void initialize_adiak()
+{
+  #ifdef AXOM_USE_ADIAK
+  if(adiak_initialized)
+  {
+    return;
+  }
+
+  adiak::init(nullptr);
+  initialize_common_adiak_metadata();
+
+  adiak_initialized = true;
+  #endif
+}
+#endif  // AXOM_USE_MPI
 
 void initialize_caliper(const std::string& mode, int num_ranks)
 {
@@ -239,10 +253,23 @@ std::string help_string()
 
 }  // namespace detail
 
-void initialize(const std::string& mode, int num_ranks)
+#ifdef AXOM_USE_MPI
+void initialize(MPI_Comm comm, const std::string& mode)
+{
+  int num_ranks {1};
+  MPI_Comm_size(MPI_COMM_WORLD, &num_ranks);
+
+  detail::initialize_adiak(comm);
+  detail::initialize_caliper(mode, num_ranks);
+
+  declare_metadata("axom_version", axom::getVersion());
+}
+#endif
+
+void initialize(const std::string& mode)
 {
   detail::initialize_adiak();
-  detail::initialize_caliper(mode, num_ranks);
+  detail::initialize_caliper(mode, 1);
 
   declare_metadata("axom_version", axom::getVersion());
 }
