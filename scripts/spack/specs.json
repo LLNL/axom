@@ -21,7 +21,8 @@
     "__comment__":"# Use amdgpu_target=gfx90a for tioga/rzvernal; and gfx908 for rznevada",
     "__comment__":"# -Wno-int-conversion flag needed for building HDF5",
     "toss_4_x86_64_ib_cray":
-    [ "clang@16.0.0~openmp+mfem+c2c+profiling+rocm amdgpu_target=gfx90a ^hip@5.6.0 ^hsa-rocr-dev@5.6.0 ^llvm-amdgpu@5.6.0 ^rocprim@5.6.0 ^raja~openmp+rocm ^umpire~openmp+rocm ^hdf5 cflags=-Wno-int-conversion" ],
+    [ "clang@16.0.0~openmp+mfem+c2c+profiling+rocm amdgpu_target=gfx90a ^hip@5.6.0 ^hsa-rocr-dev@5.6.0 ^llvm-amdgpu@5.6.0 ^rocprim@5.6.0 ^raja~openmp+rocm ^umpire~openmp+rocm ^hdf5 cflags=-Wno-int-conversion",
+      "clang@17.0.0~openmp+mfem+c2c+profiling+rocm amdgpu_target=gfx90a ^hip@5.7.1 ^hsa-rocr-dev@5.7.1 ^llvm-amdgpu@5.7.1 ^rocprim@5.7.1 ^raja~openmp+rocm ^umpire~openmp+rocm ^hdf5 cflags=-Wno-int-conversion" ],
 
     "__comment__":"# Note: clang-ibm + raja+openmp causes runtime failures, turning it off until there is an alternative",
     "blueos_3_ppc64le_ib_p9":
