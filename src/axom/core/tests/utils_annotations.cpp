@@ -11,6 +11,7 @@
 #include "axom/core/utilities/AnnotationMacros.hpp"
 
 #include "axom/fmt.hpp"
+#include "axom/CLI11.hpp"
 
 #ifdef AXOM_USE_ADIAK
   #include "adiak_tool.h"
@@ -22,6 +23,8 @@
 
 namespace
 {
+std::string s_annotation_mode {"none"};
+
 #ifdef AXOM_USE_ADIAK
 static std::string adiak_value_as_string(adiak_value_t *val, adiak_datatype_t *t)
 {
@@ -199,13 +202,9 @@ TEST(utils_annotations, check_modes)
 
 TEST(utils_annotations, modes)
 {
-  // TODO: Add tests for the following modes: "none", "report", "counts", "file", "trace"
-  //       Must be done is separate runs since caliper does not cleanly tear down
+  std::cout << "Testing caliper service '" << s_annotation_mode << "'\n";
 
-  const std::string mode = "counts";
-  std::cout << "Testing caliper service '" << mode << "'\n";
-
-  axom::utilities::annotations::initialize(mode, 1);
+  axom::utilities::annotations::initialize(s_annotation_mode, 1);
 
 #ifdef AXOM_USE_CALIPER
   {
@@ -231,8 +230,29 @@ TEST(utils_annotations, modes)
 
 TEST(utils_annotations, print_help)
 {
-  std::cout << "Caliper help string: \n"
-            << axom::utilities::annotations::detail::help_string() << std::endl;
+  // This prints a lot, so let's only print for the "none" mode test
+  if(s_annotation_mode == "none")
+  {
+    std::cout << "Caliper help string: \n"
+              << axom::utilities::annotations::detail::help_string()
+              << std::endl;
+  }
 
   SUCCEED();
+}
+
+int main(int argc, char **argv)
+{
+  ::testing::InitGoogleTest(&argc, argv);
+
+  // add this line to avoid a warning in the output about thread safety
+  ::testing::FLAGS_gtest_death_test_style = "threadsafe";
+
+  axom::CLI::App app {"Axom annotation tests"};
+  app.add_option("-m,--mode", s_annotation_mode, "Annotation mode")
+    ->capture_default_str();
+
+  CLI11_PARSE(app, argc, argv);
+
+  return RUN_ALL_TESTS();
 }

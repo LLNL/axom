@@ -39,7 +39,6 @@ set(core_serial_tests
     numerics_matvecops.hpp
     numerics_polynomial_solvers.hpp
 
-    utils_annotations.hpp
     utils_endianness.hpp
     utils_fileUtilities.hpp
     utils_locale.hpp
@@ -148,3 +147,30 @@ if(MFEM_FOUND)
     set_property(TARGET utils_config_test
         APPEND_STRING PROPERTY COMPILE_FLAGS "${AXOM_DISABLE_UNUSED_PARAMETER_WARNINGS}")
 endif()
+
+#------------------------------------------------------------------------------
+# Test different annotation modes
+#------------------------------------------------------------------------------
+axom_add_executable(NAME       utils_annotations_test
+                    SOURCES    utils_annotations.cpp
+                    OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
+                    DEPENDS_ON core gtest fmt cli11
+                    FOLDER     axom/core/tests )
+
+foreach(_mode none report counts gputx)
+  axom_add_test( NAME    utils_annotations_${_mode}_serial_test
+                 COMMAND utils_annotations_test -m ${_mode})
+
+  set_property(TEST utils_annotations_${_mode}_serial_test
+               APPEND PROPERTY ENVIRONMENT  "CALI_LOG_VERBOSITY=2")
+
+  if(AXOM_ENABLE_MPI)
+    axom_add_test( NAME    utils_annotations_${_mode}_parallel_test
+                   COMMAND utils_annotations_test -m ${_mode}
+                   NUM_MPI_TASKS 2)
+    set_property(TEST utils_annotations_${_mode}_parallel_test
+                 APPEND PROPERTY ENVIRONMENT  "CALI_LOG_VERBOSITY=2")
+    
+  endif()
+endforeach()
+

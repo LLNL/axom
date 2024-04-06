@@ -35,7 +35,6 @@
 #include "numerics_matvecops.hpp"
 #include "numerics_polynomial_solvers.hpp"
 
-#include "utils_annotations.hpp"
 #include "utils_endianness.hpp"
 #include "utils_fileUtilities.hpp"
 #include "utils_locale.hpp"
