@@ -873,7 +873,7 @@ struct ContourTestBase
     std::string sidreGroupName = "contour_mesh";
     sidre::DataStore objectDS;
     // While awaiting fix for PR #1271, don't use Sidre storage in contourMesh.
-    sidre::Group* meshGroup = objectDS.getRoot()->createGroup(sidreGroupName);
+    /* auto* meshGroup = */ objectDS.getRoot()->createGroup(sidreGroupName);
     axom::mint::UnstructuredMesh<axom::mint::SINGLE_SHAPE> contourMesh(
       DIM,
       DIM == 2 ? mint::CellType::SEGMENT : mint::CellType::TRIANGLE);

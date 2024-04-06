@@ -918,14 +918,14 @@ public:
       axom::for_all<ExecSpace>(
         newTotalCandidates_view[0],
         AXOM_LAMBDA(axom::IndexType i) {
-          int index = hex_indices[i];
-          int shapeIndex = shape_candidates[i];
-          int tetIndex = tet_indices[i];
+          const int index = hex_indices[i];
+          const int shapeIndex = shape_candidates[i];
+          const int tetIndex = tet_indices[i];
 
-          PolyhedronType poly = primal::clip(shapes_view[shapeIndex],
-                                             tets_from_hexes_view[tetIndex],
-                                             EPS,
-                                             tryFixOrientation);
+          const PolyhedronType poly = primal::clip(shapes_view[shapeIndex],
+                                                   tets_from_hexes_view[tetIndex],
+                                                   EPS,
+                                                   tryFixOrientation);
 
           // Poly is valid
           if(poly.numVertices() >= 4)
