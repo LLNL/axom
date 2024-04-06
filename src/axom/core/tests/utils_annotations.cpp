@@ -21,6 +21,10 @@
   #include "caliper/cali.h"
 #endif
 
+#ifdef AXOM_USE_MPI
+  #include <mpi.h>
+#endif
+
 namespace
 {
 std::string s_annotation_mode {"none"};
@@ -153,8 +157,13 @@ TEST(utils_annotations, print_adiak_metadata)
   }
 
   // register some metadata
-  AXOM_ANNOTATE_METADATA("custom_str_metadata", "arbitrary string", "");
-  AXOM_ANNOTATE_METADATA("custom_int_metadata", 42, "");
+  AXOM_ANNOTATE_METADATA("custom_str_metadata",
+                         "arbitrary string",
+                         "test_params");
+  AXOM_ANNOTATE_METADATA("custom_int_metadata", 42, "test_params");
+  AXOM_ANNOTATE_METADATA("test_annotation_mode",
+                         s_annotation_mode,
+                         "test_params");
 
   // check that registered metadata is now present
   MetadataMap updated_metadata;
@@ -172,11 +181,21 @@ TEST(utils_annotations, print_adiak_metadata)
   EXPECT_EQ(std::to_string(42), updated_metadata["custom_int_metadata"]);
   EXPECT_EQ("arbitrary string", updated_metadata["custom_str_metadata"]);
 
-  // print the key-value pairs
-  std::cout << "Adiak metadata: \n";
-  for(const auto &kv : updated_metadata)
+  // print the key-value pairs on rank 0
   {
-    std::cout << axom::fmt::format("- {}: {}\n", kv.first, kv.second);
+    int my_rank {0};
+  #ifdef AXOM_USE_MPI
+    MPI_Comm_rank(MPI_COMM_WORLD, &my_rank);
+  #endif
+
+    if(my_rank == 0)
+    {
+      std::cout << "Adiak metadata: \n";
+      for(const auto &kv : updated_metadata)
+      {
+        std::cout << axom::fmt::format("- {}: {}\n", kv.first, kv.second);
+      }
+    }
   }
 #endif  // AXOM_USE_ADIAK
 
@@ -230,8 +249,16 @@ TEST(utils_annotations, modes)
 
 TEST(utils_annotations, print_help)
 {
+  int my_rank {0}, num_ranks {1};
+
+#ifdef AXOM_USE_MPI
+  MPI_Comm_rank(MPI_COMM_WORLD, &my_rank);
+  MPI_Comm_size(MPI_COMM_WORLD, &num_ranks);
+#endif
+
   // This prints a lot, so let's only print for the "none" mode test
-  if(s_annotation_mode == "none")
+  // when running w/ a single rank
+  if(s_annotation_mode == "none" && num_ranks == 1 && my_rank == 0)
   {
     std::cout << "Caliper help string: \n"
               << axom::utilities::annotations::detail::help_string()
@@ -248,11 +275,21 @@ int main(int argc, char **argv)
   // add this line to avoid a warning in the output about thread safety
   ::testing::FLAGS_gtest_death_test_style = "threadsafe";
 
+#ifdef AXOM_USE_MPI
+  MPI_Init(&argc, &argv);
+#endif
+
   axom::CLI::App app {"Axom annotation tests"};
   app.add_option("-m,--mode", s_annotation_mode, "Annotation mode")
     ->capture_default_str();
 
   CLI11_PARSE(app, argc, argv);
 
-  return RUN_ALL_TESTS();
+  int result = RUN_ALL_TESTS();
+
+#ifdef AXOM_USE_MPI
+  MPI_Finalize();
+#endif
+
+  return result;
 }
