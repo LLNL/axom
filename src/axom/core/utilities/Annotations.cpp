@@ -72,6 +72,9 @@ void initialize_adiak(MPI_Comm comm)
   initialize_common_adiak_metadata();
 
   adiak_initialized = true;
+  #else
+  adiak_initialized = false;
+  AXOM_UNUSED_VAR(comm);
   #endif
 }
 #else  // AXOM_USE_MPI
@@ -87,6 +90,8 @@ void initialize_adiak()
   initialize_common_adiak_metadata();
 
   adiak_initialized = true;
+  #else
+  adiak_initialized = false;
   #endif
 }
 #endif  // AXOM_USE_MPI
@@ -225,11 +230,11 @@ bool is_mode_valid(const std::string &mode)
 
     if(!name.empty() && !val.empty())
     {
-      continue;  //adiak-style NAME=VAL
+      continue;  // adiak-style NAME=VAL
     }
     if(axom_valid_caliper_args.find(name) != axom_valid_caliper_args.end())
     {
-      continue;  //Application argument
+      continue;  // application argument
     }
 
     return false;
