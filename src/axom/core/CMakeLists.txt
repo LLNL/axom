@@ -22,7 +22,6 @@ set(core_headers
 
     ## utilities
     utilities/Annotations.hpp
-    utilities/AnnotationMacros.hpp
     utilities/BitUtilities.hpp
     utilities/FileUtilities.hpp
     utilities/StringUtilities.hpp
@@ -49,6 +48,7 @@ set(core_headers
     detail/FlatTable.hpp
 
     ## core
+    AnnotationMacros.hpp
     Array.hpp
     ArrayBase.hpp
     ArrayIteratorBase.hpp

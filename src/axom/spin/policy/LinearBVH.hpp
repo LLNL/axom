@@ -7,11 +7,10 @@
 #define AXOM_SPIN_POLICY_LINEARBVH_HPP_
 
 // axom core includes
-#include "axom/core/Types.hpp"              // for fixed bitwidth types
-#include "axom/core/execution/for_all.hpp"  // for generic for_all()
-#include "axom/core/memory_management.hpp"  // for alloc()/free()
-
-#include "axom/core/utilities/AnnotationMacros.hpp"  // for annotations
+#include "axom/core/Types.hpp"
+#include "axom/core/execution/for_all.hpp"
+#include "axom/core/memory_management.hpp"
+#include "axom/core/AnnotationMacros.hpp"
 
 #include "axom/primal/geometry/BoundingBox.hpp"
 #include "axom/primal/geometry/Vector.hpp"
@@ -23,10 +22,10 @@
 #include "axom/spin/internal/linear_bvh/bvh_vtkio.hpp"
 
 // C/C++ includes
-#include <fstream>  // for std::ofstream
-#include <sstream>  // for std::ostringstream
-#include <string>   // for std::string
-#include <vector>   // for std::vector
+#include <fstream>
+#include <sstream>
+#include <string>
+#include <vector>
 
 namespace axom
 {

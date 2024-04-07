@@ -7,9 +7,7 @@
 #define AXOM_SPIN_RADIXTREE_HPP_
 
 #include "axom/core/Array.hpp"
-
-#include "axom/core/utilities/AnnotationMacros.hpp"  // for annotations
-
+#include "axom/core/AnnotationMacros.hpp"
 #include "axom/primal/geometry/BoundingBox.hpp"
 
 namespace axom

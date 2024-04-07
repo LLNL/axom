@@ -10,22 +10,19 @@
 
 #include "axom/core/execution/execution_space.hpp"
 #include "axom/core/execution/for_all.hpp"
+#include "axom/core/AnnotationMacros.hpp"
+#include "axom/core/utilities/Utilities.hpp"
+#include "axom/core/utilities/BitUtilities.hpp"
 
-#include "axom/core/utilities/AnnotationMacros.hpp"
+#include "axom/slic/interface/slic.hpp"
 
 #include "axom/primal/geometry/BoundingBox.hpp"
 #include "axom/primal/geometry/Point.hpp"
 
 #include "axom/spin/internal/linear_bvh/RadixTree.hpp"
-
 #include "axom/spin/MortonIndex.hpp"
 
-#include "axom/core/utilities/Utilities.hpp"
-#include "axom/core/utilities/BitUtilities.hpp"
-#include "axom/slic/interface/slic.hpp"
-
 #if defined(AXOM_USE_RAJA)
-  // RAJA includes
   #include "RAJA/RAJA.hpp"
 #endif
 
