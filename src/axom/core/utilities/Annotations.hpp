@@ -31,6 +31,7 @@
 #endif
 
 #include <string>
+#include <map>
 
 namespace axom
 {
@@ -50,6 +51,7 @@ void initialize_caliper(const std::string& mode, int num_ranks);
 
 bool check_mode(const std::string& mode);
 std::string help_string();
+
 }  // namespace detail
 
 /// Initializes the Annotation API
@@ -82,6 +84,14 @@ void declare_metadata(const std::string& name,
   AXOM_UNUSED_VAR(category);
 #endif
 }
+
+/**
+ * \brief Access registered metadata from adiak (when available)
+ * and returns the result as a map of key-value pairs of strings
+ * 
+ * \note Returns an empty map in configurations without adiak
+ */
+std::map<std::string, std::string> retrieve_metadata();
 
 }  // namespace annotations
 }  // namespace utilities

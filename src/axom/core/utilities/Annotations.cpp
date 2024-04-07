@@ -12,6 +12,10 @@
   #endif
 #endif
 
+#ifdef AXOM_USE_ADIAK
+  #include "adiak_tool.h"
+#endif
+
 #include <set>
 
 #ifdef AXOM_USE_CALIPER
@@ -30,7 +34,7 @@ namespace annotations
 static bool adiak_initialized = false;
 
 #ifdef AXOM_USE_CALIPER
-static cali::ConfigManager* cali_mgr {nullptr};
+static cali::ConfigManager *cali_mgr {nullptr};
 #endif
 
 namespace detail
@@ -64,7 +68,7 @@ void initialize_adiak(MPI_Comm comm)
     return;
   }
 
-  adiak::init((void*)&comm);
+  adiak::init((void *)&comm);
   initialize_common_adiak_metadata();
 
   adiak_initialized = true;
@@ -87,7 +91,7 @@ void initialize_adiak()
 }
 #endif  // AXOM_USE_MPI
 
-void initialize_caliper(const std::string& mode, int num_ranks)
+void initialize_caliper(const std::string &mode, int num_ranks)
 {
 #ifdef AXOM_USE_CALIPER
   bool multiprocessing = (num_ranks > 1);
@@ -101,10 +105,10 @@ void initialize_caliper(const std::string& mode, int num_ranks)
   cali_mgr = new cali::ConfigManager();
   cali_mgr->add(mode.c_str(), app_args);
 
-  for(const auto& kv : app_args)
+  for(const auto &kv : app_args)
   {
-    const std::string& cali_mode = kv.first;
-    const std::string& value = kv.second;
+    const std::string &cali_mode = kv.first;
+    const std::string &value = kv.second;
 
     if(cali_mode == "none")
     {
@@ -178,7 +182,7 @@ void initialize_caliper(const std::string& mode, int num_ranks)
                        configuration_service_list.c_str());
   }
 
-  for(auto& channel : cali_mgr->get_all_channels())
+  for(auto &channel : cali_mgr->get_all_channels())
   {
     channel->start();
   }
@@ -198,7 +202,7 @@ static const std::set<std::string> axom_valid_caliper_args = {"counts",
                                                               "trace",
                                                               "roctx"};
 
-bool check_mode(const std::string& mode)
+bool check_mode(const std::string &mode)
 {
 #ifdef AXOM_USE_CALIPER
   cali::ConfigManager test_mgr;
@@ -214,10 +218,10 @@ bool check_mode(const std::string& mode)
     return false;
   }
 
-  for(const auto& kv : app_args)
+  for(const auto &kv : app_args)
   {
-    const std::string& name = kv.first;
-    const std::string& val = kv.second;
+    const std::string &name = kv.first;
+    const std::string &val = kv.second;
 
     if(!name.empty() && !val.empty())
     {
@@ -251,10 +255,104 @@ std::string help_string()
 #endif
 }
 
+#ifdef AXOM_USE_ADIAK
+static std::string adiak_value_as_string(adiak_value_t *val, adiak_datatype_t *t)
+{
+  // Implementation adapted from adiak user docs
+
+  if(!t)
+  {
+    return "ERROR";
+  }
+
+  auto get_vals_array = [](adiak_datatype_t *t, adiak_value_t *val, int count) {
+    std::vector<std::string> s;
+    for(int i = 0; i < count; i++)
+    {
+      adiak_value_t subval;
+      adiak_datatype_t *subtype;
+      adiak_get_subval(t, val, i, &subtype, &subval);
+      s.push_back(adiak_value_as_string(&subval, subtype));
+    }
+    return s;
+  };
+
+  switch(t->dtype)
+  {
+  case adiak_type_unset:
+    return "UNSET";
+  case adiak_long:
+    return axom::fmt::format("{}", val->v_long);
+  case adiak_ulong:
+    return axom::fmt::format("{}", static_cast<unsigned long>(val->v_long));
+  case adiak_longlong:
+    return axom::fmt::format("{}", val->v_longlong);
+  case adiak_ulonglong:
+    return axom::fmt::format("{}",
+                             static_cast<unsigned long long>(val->v_longlong));
+  case adiak_int:
+    return axom::fmt::format("{}", val->v_int);
+  case adiak_uint:
+    return axom::fmt::format("{}", static_cast<unsigned int>(val->v_int));
+  case adiak_double:
+    return axom::fmt::format("{}", val->v_double);
+  case adiak_date:
+    // holds time in seconds since epoch
+    return axom::fmt::format(
+      "{:%a %d %b %Y %T %z}",
+      std::chrono::system_clock::time_point {std::chrono::seconds {val->v_long}});
+  case adiak_timeval:
+  {
+    const auto *tv = static_cast<struct timeval *>(val->v_ptr);
+    return axom::fmt::format("{:%S} seconds:timeval",
+                             std::chrono::seconds {tv->tv_sec} +
+                               std::chrono::microseconds {tv->tv_usec});
+  }
+  case adiak_version:
+    return axom::fmt::format("{}:version", static_cast<char *>(val->v_ptr));
+  case adiak_string:
+    return axom::fmt::format("{}", static_cast<char *>(val->v_ptr));
+  case adiak_catstring:
+    return axom::fmt::format("{}:catstring", static_cast<char *>(val->v_ptr));
+  case adiak_path:
+    return axom::fmt::format("{}:path", static_cast<char *>(val->v_ptr));
+  case adiak_range:
+    return axom::fmt::format("{}",
+                             axom::fmt::join(get_vals_array(t, val, 2), " - "));
+  case adiak_set:
+    return axom::fmt::format(
+      "[{}]",
+      axom::fmt::join(get_vals_array(t, val, adiak_num_subvals(t)), ", "));
+  case adiak_list:
+    return axom::fmt::format(
+      "{{{}}}",
+      axom::fmt::join(get_vals_array(t, val, adiak_num_subvals(t)), ", "));
+  case adiak_tuple:
+    return axom::fmt::format(
+      "({})",
+      axom::fmt::join(get_vals_array(t, val, adiak_num_subvals(t)), ", "));
+  }
+}
+
+static void get_namevals_as_map(const char *name,
+                                int AXOM_UNUSED_PARAM(category),
+                                const char *AXOM_UNUSED_PARAM(subcategory),
+                                adiak_value_t *value,
+                                adiak_datatype_t *t,
+                                void *opaque_value)
+{
+  // add each name/value to adiak metadata map
+  using kv_map = std::map<std::string, std::string>;
+  auto &metadata = *static_cast<kv_map *>(opaque_value);
+  metadata[name] = adiak_value_as_string(value, t);
+}
+
+#endif  // AXOM_USE_ADIAK
+
 }  // namespace detail
 
 #ifdef AXOM_USE_MPI
-void initialize(MPI_Comm comm, const std::string& mode)
+void initialize(MPI_Comm comm, const std::string &mode)
 {
   int num_ranks {1};
   MPI_Comm_size(MPI_COMM_WORLD, &num_ranks);
@@ -266,7 +364,7 @@ void initialize(MPI_Comm comm, const std::string& mode)
 }
 #endif
 
-void initialize(const std::string& mode)
+void initialize(const std::string &mode)
 {
   detail::initialize_adiak();
   detail::initialize_caliper(mode, 1);
@@ -286,7 +384,7 @@ void finalize()
 #ifdef AXOM_USE_CALIPER
   if(cali_mgr)
   {
-    for(auto& channel : cali_mgr->get_all_channels())
+    for(auto &channel : cali_mgr->get_all_channels())
     {
       channel->flush();
     }
@@ -297,7 +395,7 @@ void finalize()
 #endif
 }
 
-void begin(const std::string& name)
+void begin(const std::string &name)
 {
 #ifdef AXOM_USE_CALIPER
   cali::Caliper().begin(
@@ -308,11 +406,23 @@ void begin(const std::string& name)
 #endif
 }
 
-void end(const std::string& /*name*/)
+void end(const std::string & /*name*/)
 {
 #ifdef AXOM_USE_CALIPER
   cali::Caliper().end(cali::region_attr);
 #endif
+}
+
+// returns registered adiak metadata as key-value pairs of strings
+std::map<std::string, std::string> retrieve_metadata()
+{
+  std::map<std::string, std::string> metadata;
+
+#ifdef AXOM_USE_ADIAK
+  adiak_list_namevals(1, adiak_category_all, detail::get_namevals_as_map, &metadata);
+#endif
+
+  return metadata;
 }
 
 }  // namespace annotations
