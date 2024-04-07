@@ -110,19 +110,19 @@ TEST(utils_annotations, print_adiak_metadata)
 
 TEST(utils_annotations, check_modes)
 {
-  EXPECT_TRUE(axom::utilities::annotations::detail::check_mode("none"));
+  EXPECT_TRUE(axom::utilities::annotations::detail::is_mode_valid("none"));
 
   for(const auto &m :
       {"counts", "file", "trace", "report", "gputx", "nvprof", "nvtx", "roctx"})
   {
 #ifdef AXOM_USE_CALIPER
-    EXPECT_TRUE(axom::utilities::annotations::detail::check_mode(m));
+    EXPECT_TRUE(axom::utilities::annotations::detail::is_mode_valid(m));
 #else
-    EXPECT_FALSE(axom::utilities::annotations::detail::check_mode(m));
+    EXPECT_FALSE(axom::utilities::annotations::detail::is_mode_valid(m));
 #endif
   }
 
-  EXPECT_FALSE(axom::utilities::annotations::detail::check_mode("_other_"));
+  EXPECT_FALSE(axom::utilities::annotations::detail::is_mode_valid("_other_"));
 }
 
 TEST(utils_annotations, modes)
@@ -171,7 +171,7 @@ TEST(utils_annotations, print_help)
   if(s_annotation_mode == "none" && num_ranks == 1 && my_rank == 0)
   {
     std::cout << "Caliper help string: \n"
-              << axom::utilities::annotations::detail::help_string()
+              << axom::utilities::annotations::detail::mode_help_string()
               << std::endl;
   }
 

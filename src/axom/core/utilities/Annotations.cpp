@@ -202,7 +202,7 @@ static const std::set<std::string> axom_valid_caliper_args = {"counts",
                                                               "trace",
                                                               "roctx"};
 
-bool check_mode(const std::string &mode)
+bool is_mode_valid(const std::string &mode)
 {
 #ifdef AXOM_USE_CALIPER
   cali::ConfigManager test_mgr;
@@ -240,7 +240,7 @@ bool check_mode(const std::string &mode)
 #endif
 }
 
-std::string help_string()
+std::string mode_help_string()
 {
 #ifdef AXOM_USE_CALIPER
   const auto built_in =
@@ -251,7 +251,7 @@ std::string help_string()
     axom::fmt::join(cali::ConfigManager::get_config_docstrings(), "\n"));
   return built_in + "\n" + cali_configs;
 #else
-  return "<caliper not enabled at build-time>";
+  return "Caliper not enabled at build-time, so the only valid mode is 'none'";
 #endif
 }
 

@@ -41,16 +41,21 @@ namespace annotations
 {
 namespace detail
 {
+/// \note Intended to be called from within the axom::utilities::annotations API
 #ifdef AXOM_USE_MPI
 void initialize_adiak(MPI_Comm comm = MPI_COMM_WORLD);
 #else
 void initialize_adiak();
 #endif
 
+/// \note Intended to be called from within the axom::utilities::annotations API
 void initialize_caliper(const std::string& mode, int num_ranks);
 
-bool check_mode(const std::string& mode);
-std::string help_string();
+// Checks if the provided annotation mode is valid
+bool is_mode_valid(const std::string& mode);
+
+// Returns a help string for valid annotation modes
+std::string mode_help_string();
 
 }  // namespace detail
 

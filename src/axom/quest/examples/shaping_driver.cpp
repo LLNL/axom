@@ -234,10 +234,10 @@ public:
         if(mode == "help")
         {
           std::cerr << "Valid caliper modes are:\n"
-                    << axom::utilities::annotations::detail::help_string()
+                    << axom::utilities::annotations::detail::mode_help_string()
                     << std::endl;
         }
-        return axom::utilities::annotations::detail::check_mode(mode)
+        return axom::utilities::annotations::detail::is_mode_valid(mode)
           ? ""
           : fmt::format(
               "'{}' invalid caliper mode. "
