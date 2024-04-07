@@ -158,19 +158,16 @@ axom_add_executable(NAME       utils_annotations_test
                     FOLDER     axom/core/tests )
 
 foreach(_mode none report counts gputx)
-  axom_add_test( NAME    utils_annotations_${_mode}_serial_test
-                 COMMAND utils_annotations_test -m ${_mode})
-
-  set_property(TEST utils_annotations_${_mode}_serial_test
-               APPEND PROPERTY ENVIRONMENT  "CALI_LOG_VERBOSITY=2")
-
+  set(_test_name utils_annotations_${_mode}_test)
   if(AXOM_ENABLE_MPI)
-    axom_add_test( NAME    utils_annotations_${_mode}_parallel_test
-                   COMMAND utils_annotations_test -m ${_mode}
-                   NUM_MPI_TASKS 2)
-    set_property(TEST utils_annotations_${_mode}_parallel_test
-                 APPEND PROPERTY ENVIRONMENT  "CALI_LOG_VERBOSITY=2")
-    
+    axom_add_test(NAME    ${_test_name}
+                  COMMAND utils_annotations_test -m ${_mode}
+                  NUM_MPI_TASKS 2)
+  else()
+    axom_add_test(NAME    ${_test_name}
+                  COMMAND utils_annotations_test -m ${_mode})
   endif()
+  set_property(TEST ${_test_name}
+               APPEND PROPERTY ENVIRONMENT  "CALI_LOG_VERBOSITY=2")
 endforeach()
 
