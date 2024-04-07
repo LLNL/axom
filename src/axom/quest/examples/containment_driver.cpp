@@ -630,7 +630,8 @@ int main(int argc, char** argv)
     return app.exit(e);
   }
 
-  axom::utilities::annotations::initialize(params.annotationMode);
+  axom::utilities::raii::AnnotationsWrapper annotations_raii_wrapper(
+    params.annotationMode);
 
   AXOM_ANNOTATE_BEGIN("quest containment example");
 
@@ -721,7 +722,6 @@ int main(int argc, char** argv)
   axom::slic::flushStreams();
 
   AXOM_ANNOTATE_END("quest containment example");
-  axom::utilities::annotations::finalize();
 
   return 0;
 }

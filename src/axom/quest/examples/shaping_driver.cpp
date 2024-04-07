@@ -465,15 +465,8 @@ void finalizeLogger()
 //------------------------------------------------------------------------------
 int main(int argc, char** argv)
 {
-#ifdef AXOM_USE_MPI
-  MPI_Init(&argc, &argv);
-  int my_rank, num_ranks;
-  MPI_Comm_rank(MPI_COMM_WORLD, &my_rank);
-  MPI_Comm_size(MPI_COMM_WORLD, &num_ranks);
-#else
-  int my_rank = 0;
-  int num_ranks = 1;
-#endif
+  axom::utilities::raii::MPIWrapper mpi_raii_wrapper(argc, argv);
+  const int my_rank = mpi_raii_wrapper.my_rank();
 
   initializeLogger();
 
@@ -503,11 +496,8 @@ int main(int argc, char** argv)
     exit(retval);
   }
 
-#ifdef AXOM_USE_MPI
-  axom::utilities::annotations::initialize(MPI_COMM_WORLD, params.annotationMode);
-#else
-  axom::utilities::annotations::initialize(params.annotationMode);
-#endif
+  axom::utilities::raii::AnnotationsWrapper annotations_raii_wrapper(
+    params.annotationMode);
 
   AXOM_ANNOTATE_BEGIN("quest shaping example");
   AXOM_ANNOTATE_BEGIN("init");
@@ -767,12 +757,8 @@ int main(int argc, char** argv)
   slic::flushStreams();
 
   AXOM_ANNOTATE_END("quest shaping example");
-  axom::utilities::annotations::finalize();
 
   finalizeLogger();
-#ifdef AXOM_USE_MPI
-  MPI_Finalize();
-#endif
 
   return 0;
 }

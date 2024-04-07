@@ -21,14 +21,15 @@ axom_configure_file(
 set(core_headers
 
     ## utilities
+    utilities/About.hpp
     utilities/Annotations.hpp
     utilities/BitUtilities.hpp
     utilities/FileUtilities.hpp
+    utilities/RAII.hpp
     utilities/StringUtilities.hpp
     utilities/System.hpp
     utilities/Timer.hpp
     utilities/Utilities.hpp
-    utilities/About.hpp
 
     ## numerics
     numerics/internal/matrix_norms.hpp

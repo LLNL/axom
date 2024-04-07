@@ -7,6 +7,7 @@
 
 #include "axom/config.hpp"
 #include "axom/core/Macros.hpp"
+#include "axom/core/utilities/RAII.hpp"
 #include "axom/core/utilities/Annotations.hpp"
 #include "axom/core/AnnotationMacros.hpp"
 
@@ -185,21 +186,17 @@ int main(int argc, char **argv)
   // add this line to avoid a warning in the output about thread safety
   ::testing::FLAGS_gtest_death_test_style = "threadsafe";
 
-#ifdef AXOM_USE_MPI
-  MPI_Init(&argc, &argv);
-#endif
+  // Initialize MPI if axom is configured w/ MPI
+  axom::utilities::raii::MPIWrapper mpi_raii_wrapper(argc, argv);
 
+  // Parse annotation mode for the current test invocation
   axom::CLI::App app {"Axom annotation tests"};
   app.add_option("-m,--mode", s_annotation_mode, "Annotation mode")
     ->capture_default_str();
-
   CLI11_PARSE(app, argc, argv);
 
+  // run tests
   int result = RUN_ALL_TESTS();
-
-#ifdef AXOM_USE_MPI
-  MPI_Finalize();
-#endif
 
   return result;
 }
