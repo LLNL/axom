@@ -106,6 +106,8 @@ public:
   // Contour generation count for each MarchingCubes objects.
   int contourGenCount = 1;
 
+  std::string annotationMode {"none"};
+
 private:
   bool _verboseOutput {false};
 
@@ -203,6 +205,28 @@ public:
       ->description(
         "Number of contour repetitions to run for each MarchingCubes object")
       ->capture_default_str();
+
+#ifdef AXOM_USE_CALIPER
+    app.add_option("--caliper", annotationMode)
+      ->description(
+        "caliper annotation mode. Valid options include 'none' and 'report'. "
+        "Use 'help' to see full list.")
+      ->capture_default_str()
+      ->check([](const std::string& mode) -> std::string {
+        if(mode == "help")
+        {
+          std::cerr << "Valid caliper modes are:\n"
+                    << axom::utilities::annotations::detail::mode_help_string()
+                    << std::endl;
+        }
+        return axom::utilities::annotations::detail::is_mode_valid(mode)
+          ? ""
+          : fmt::format(
+              "'{}' invalid caliper mode. "
+              "Run with '--caliper help' to see all valid options",
+              mode);
+      });
+#endif
 
     app.get_formatter()->column_width(60);
 
@@ -636,6 +660,8 @@ void printTimingStats(axom::utilities::Timer& t, const std::string& description)
 /// Write blueprint mesh to disk
 void saveMesh(const conduit::Node& mesh, const std::string& filename)
 {
+  AXOM_ANNOTATE_SCOPE("save mesh (conduit)");
+
 #ifdef AXOM_USE_MPI
   conduit::relay::mpi::io::blueprint::save_mesh(mesh,
                                                 filename,
@@ -649,6 +675,8 @@ void saveMesh(const conduit::Node& mesh, const std::string& filename)
 /// Write blueprint mesh to disk
 void saveMesh(const sidre::Group& mesh, const std::string& filename)
 {
+  AXOM_ANNOTATE_SCOPE("save mesh (sidre)");
+
   conduit::Node tmpMesh;
   mesh.createNativeLayout(tmpMesh);
   {
@@ -743,9 +771,13 @@ struct ContourTestBase
 
   int runTest(BlueprintStructuredMesh& computationalMesh)
   {
+    AXOM_ANNOTATE_SCOPE("runTest");
+
     // Conduit data is in host memory, move to devices for testing.
     if(s_allocatorId != axom::execution_space<axom::SEQ_EXEC>::allocatorID())
     {
+      AXOM_ANNOTATE_SCOPE("move mesh to device memory");
+
       const std::string axes[3] = {"x", "y", "z"};
       for(int d = 0; d < DIM; ++d)
       {
@@ -768,6 +800,8 @@ struct ContourTestBase
     */
     if(!computationalMesh.empty())
     {
+      AXOM_ANNOTATE_SCOPE("move mesh from unified memory");
+
       std::string resourceName = "HOST";
       umpire::ResourceManager& rm = umpire::ResourceManager::getInstance();
       for(const auto& strategy : m_testStrategies)
@@ -854,6 +888,8 @@ struct ContourTestBase
     // Return conduit data to host memory.
     if(s_allocatorId != axom::execution_space<axom::SEQ_EXEC>::allocatorID())
     {
+      AXOM_ANNOTATE_SCOPE("copy mesh back to host memory");
+
       const std::string axes[3] = {"x", "y", "z"};
       for(int d = 0; d < DIM; ++d)
       {
@@ -870,10 +906,15 @@ struct ContourTestBase
     }
 
     // Put contour mesh in a mint object for error checking and output.
+    AXOM_ANNOTATE_BEGIN("error checking");
+
+    AXOM_ANNOTATE_BEGIN("convert to mint mesh");
     std::string sidreGroupName = "contour_mesh";
     sidre::DataStore objectDS;
     // While awaiting fix for PR #1271, don't use Sidre storage in contourMesh.
-    /* auto* meshGroup = */ objectDS.getRoot()->createGroup(sidreGroupName);
+    auto* meshGroup = objectDS.getRoot()->createGroup(sidreGroupName);
+    AXOM_UNUSED_VAR(meshGroup);  // variable is only referenced in debug configs
+
     axom::mint::UnstructuredMesh<axom::mint::SINGLE_SHAPE> contourMesh(
       DIM,
       DIM == 2 ? mint::CellType::SEGMENT : mint::CellType::TRIANGLE);
@@ -894,6 +935,7 @@ struct ContourTestBase
                                facetDomainIds);
       SLIC_ASSERT(mc.getContourFacetCount() == 0);
     }
+    AXOM_ANNOTATE_END("convert to mint mesh");
 
     int localErrCount = 0;
     if(params.checkResults)
@@ -915,6 +957,7 @@ struct ContourTestBase
       saveMesh(*contourMesh.getSidreGroup(), outputName);
       SLIC_INFO(axom::fmt::format("Wrote contour mesh to {}", outputName));
     }
+    AXOM_ANNOTATE_END("error checking");
 
     objectDS.getRoot()->destroyGroupAndData(sidreGroupName);
 
@@ -943,6 +986,8 @@ struct ContourTestBase
   void computeNodalDistance(BlueprintStructuredMesh& bpMesh,
                             ContourTestStrategy<DIM>& strat)
   {
+    AXOM_ANNOTATE_SCOPE("computeNodalDistance");
+
     SLIC_ASSERT(bpMesh.dimension() == DIM);
     for(int domId = 0; domId < bpMesh.domainCount(); ++domId)
     {
@@ -970,12 +1015,15 @@ struct ContourTestBase
       populateNodalDistance(coordsViews, fieldView, strat);
     }
   }
+
   template <int TDIM = DIM>
   typename std::enable_if<TDIM == 2>::type populateNodalDistance(
     const axom::StackArray<axom::ArrayView<const double, DIM>, DIM>& coordsViews,
     axom::ArrayView<double, DIM>& fieldView,
     ContourTestStrategy<DIM>& strat)
   {
+    AXOM_ANNOTATE_SCOPE("populateNodalDistance 2D");
+
     const auto& fieldShape = fieldView.shape();
     for(int d = 0; d < DIM; ++d)
     {
@@ -1002,6 +1050,8 @@ struct ContourTestBase
     axom::ArrayView<double, DIM>& fieldView,
     ContourTestStrategy<DIM>& strat)
   {
+    AXOM_ANNOTATE_SCOPE("populateNodalDistance 3D");
+
     const auto& fieldShape = fieldView.shape();
     for(int d = 0; d < DIM; ++d)
     {
@@ -1024,6 +1074,7 @@ struct ContourTestBase
       }
     }
   }
+
   void computeNodalDistance(BlueprintStructuredMesh& bpMesh)
   {
     for(auto& strategy : m_testStrategies)
@@ -1042,6 +1093,7 @@ struct ContourTestBase
     double contourVal,
     const std::string& diffField = {})
   {
+    AXOM_ANNOTATE_SCOPE("checkContourSurface");
     double* diffPtr = nullptr;
     if(!diffField.empty())
     {
@@ -1147,6 +1199,8 @@ struct ContourTestBase
     BlueprintStructuredMesh& computationalMesh,
     axom::mint::UnstructuredMesh<axom::mint::SINGLE_SHAPE>& contourMesh)
   {
+    AXOM_ANNOTATE_SCOPE("checkContourCellLimits");
+
     int errCount = 0;
 
     auto parentCellIdView = get_parent_cell_id_view(contourMesh);
@@ -1286,6 +1340,8 @@ struct ContourTestBase
     BlueprintStructuredMesh& computationalMesh,
     axom::mint::UnstructuredMesh<axom::mint::SINGLE_SHAPE>& contourMesh)
   {
+    AXOM_ANNOTATE_SCOPE("checkCellsContainingContour");
+
     int errCount = 0;
 
     auto parentCellIdView = get_parent_cell_id_view(contourMesh);
@@ -1703,14 +1759,9 @@ int testNdimInstance(BlueprintStructuredMesh& computationalMesh)
 //------------------------------------------------------------------------------
 int main(int argc, char** argv)
 {
-#ifdef AXOM_USE_MPI
-  MPI_Init(&argc, &argv);
-  MPI_Comm_rank(MPI_COMM_WORLD, &myRank);
-  MPI_Comm_size(MPI_COMM_WORLD, &numRanks);
-#else
-  numRanks = 1;
-  myRank = 0;
-#endif
+  axom::utilities::raii::MPIWrapper mpi_raii_wrapper(argc, argv);
+  myRank = mpi_raii_wrapper.my_rank();
+  numRanks = mpi_raii_wrapper.num_ranks();
 
   initializeLogger();
   //slic::setAbortOnWarning(true);
@@ -1740,12 +1791,18 @@ int main(int argc, char** argv)
     exit(retval);
   }
 
+  axom::utilities::raii::AnnotationsWrapper annotation_raii_wrapper(
+    params.annotationMode);
+  AXOM_ANNOTATE_SCOPE("quest marching cubes example");
+
   s_allocatorId = allocatorIdToTest(params.policy);
 
   //---------------------------------------------------------------------------
   // Load computational mesh.
   //---------------------------------------------------------------------------
+  AXOM_ANNOTATE_BEGIN("load mesh");
   BlueprintStructuredMesh computationalMesh(params.meshFile, "mesh");
+  AXOM_ANNOTATE_END("load mesh");
 
   SLIC_INFO_IF(
     params.isVerbose(),
@@ -1836,9 +1893,6 @@ int main(int argc, char** argv)
 #endif
 
   finalizeLogger();
-#ifdef AXOM_USE_MPI
-  MPI_Finalize();
-#endif
 
   return errCount != 0;
 }

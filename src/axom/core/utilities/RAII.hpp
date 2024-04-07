@@ -16,6 +16,7 @@
 #define AXOM_CORE_RAII_HPP_
 
 #include "axom/config.hpp"
+#include "axom/core/Macros.hpp"
 #include "axom/core/utilities/Annotations.hpp"
 
 #ifdef AXOM_USE_MPI
@@ -42,6 +43,9 @@ public:
     MPI_Init(&argc, &argv);
     MPI_Comm_rank(MPI_COMM_WORLD, &m_rank);
     MPI_Comm_size(MPI_COMM_WORLD, &m_numranks);
+#else
+    AXOM_UNUSED_VAR(argc);
+    AXOM_UNUSED_VAR(argv);
 #endif
   }
 
