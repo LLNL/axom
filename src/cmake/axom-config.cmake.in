@@ -56,7 +56,9 @@ if(NOT AXOM_FOUND)
   set(AXOM_USE_SPARSEHASH     "@AXOM_USE_SPARSEHASH@")
 
   # Axom external TPLs
+  set(AXOM_USE_ADIAK          "@AXOM_USE_ADIAK@")
   set(AXOM_USE_C2C            "@AXOM_USE_C2C@")
+  set(AXOM_USE_CALIPER        "@AXOM_USE_CALIPER@")
   set(AXOM_USE_CAMP           "@AXOM_USE_CAMP@")
   set(AXOM_USE_CONDUIT        "@AXOM_USE_CONDUIT@")
   set(AXOM_USE_HDF5           "@AXOM_USE_HDF5@")
@@ -80,10 +82,32 @@ if(NOT AXOM_FOUND)
   set_property(GLOBAL PROPERTY FIND_LIBRARY_USE_LIB64_PATHS TRUE)
   set_property(GLOBAL PROPERTY FIND_LIBRARY_USE_LIBX32_PATHS TRUE)
 
+  # adiak
+  if(AXOM_USE_ADIAK)
+    set(AXOM_ADIAK_DIR     "@ADIAK_DIR@")
+    if(NOT ADIAK_DIR) 
+      set(ADIAK_DIR ${AXOM_ADIAK_DIR})
+    endif()
+    find_dependency(adiak REQUIRED 
+                    PATHS "${ADIAK_DIR}"
+                          "${ADIAK_DIR}/lib/cmake/adiak")
+  endif()
+
   # c2c
   if(AXOM_USE_C2C)
     set(AXOM_C2C_DIR     "@C2C_DIR@")
     # Note: Targets not currently imported
+  endif()
+
+  # caliper
+  if(AXOM_USE_CALIPER)
+    set(AXOM_CALIPER_DIR   "@CALIPER_DIR@")
+    if(NOT CALIPER_DIR) 
+      set(CALIPER_DIR ${AXOM_CALIPER_DIR})
+    endif()
+    find_dependency(caliper REQUIRED 
+                    PATHS "${CALIPER_DIR}"
+                          "${CALIPER_DIR}/share/cmake/caliper")
   endif()
 
   # camp

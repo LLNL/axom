@@ -114,6 +114,11 @@ spack:
       externals:
       - spec: cuda@11.1.1
         prefix: /usr/local/cuda
+    elfutils:
+      buildable: false
+      externals:
+      - spec: elfutils@0.187
+        prefix: /usr
     gettext:
       buildable: false
       externals:
@@ -156,6 +161,10 @@ spack:
         prefix: /opt/spack/opt/spack/linux-ubuntu20.04-x86_64/gcc-9.3.0/
 
     # Globally lock version of third party libraries
+    adiak:
+      require: "@0.4.0"
+    caliper:
+      require: "@2.10.0"
     camp:
       require: "@2023.06.0"
     conduit:

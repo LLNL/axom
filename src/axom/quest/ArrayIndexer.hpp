@@ -284,7 +284,8 @@ public:
   }
 
   //!@brief Whether a StackArray represents a permutation.
-  bool isPermutation(const axom::StackArray<std::uint16_t, DIM>& v)
+  inline AXOM_HOST_DEVICE bool isPermutation(
+    const axom::StackArray<std::uint16_t, DIM>& v)
   {
     // v is a permutation if all its values are unique and in [0, DIM).
     axom::StackArray<bool, DIM> found;
@@ -294,7 +295,7 @@ public:
     }
     for(int d = 0; d < DIM; ++d)
     {
-      if(v[d] < 0 || v[d] >= DIM)
+      if(v[d] >= DIM)
       {
         return false;  // Out of range.
       }

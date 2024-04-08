@@ -88,6 +88,8 @@ endif()
 # newer CMake versions
 if (CONDUIT_DIR)
     axom_assert_is_directory(VARIABLE_NAME CONDUIT_DIR)
+
+    unset(CONDUIT_FOUND CACHE)
     find_dependency(Conduit REQUIRED
                     PATHS "${CONDUIT_DIR}"
                           "${CONDUIT_DIR}/lib/cmake/conduit")
@@ -184,6 +186,59 @@ if(TARGET mfem)
         blt_patch_target(NAME mfem DEPENDS_ON roctracer)
     endif()
 
+endif()
+
+#------------------------------------------------------------------------------
+# Adiak
+#------------------------------------------------------------------------------
+if(ADIAK_DIR)
+    axom_assert_is_directory(VARIABLE_NAME ADIAK_DIR)
+    find_dependency(adiak REQUIRED 
+                    PATHS "${ADIAK_DIR}"
+                          "${ADIAK_DIR}/lib/cmake/adiak")
+
+    message(STATUS "Checking for expected adiak target 'adiak::adiak'")
+    if (NOT TARGET adiak::adiak)
+        message(FATAL_ERROR "adiak failed to load: ${ADIAK_DIR}")
+    endif()
+
+    # Apply patch for adiak's missing `-ldl' for mpi when built statically
+    get_target_property(_target_type adiak::adiak TYPE)
+    if(MPI_FOUND AND ${_target_type} STREQUAL "STATIC_LIBRARY" AND TARGET adiak::mpi)
+        blt_patch_target(NAME adiak::mpi DEPENDS_ON dl)
+    endif()
+
+    message(STATUS "adiak loaded: ${ADIAK_DIR}")
+    set(ADIAK_FOUND TRUE)
+else()
+    message(STATUS "adiak support is OFF")
+    set(ADIAK_FOUND FALSE)
+endif()
+
+#------------------------------------------------------------------------------
+# Caliper
+#------------------------------------------------------------------------------
+if(CALIPER_DIR)
+    # Extra handling for caliper's cuda dependencies
+    if(AXOM_ENABLE_CUDA)
+        find_package(CUDAToolkit REQUIRED)
+    endif()
+
+    axom_assert_is_directory(VARIABLE_NAME CALIPER_DIR)
+    find_dependency(caliper REQUIRED 
+                    PATHS "${CALIPER_DIR}" 
+                          "${CALIPER_DIR}/share/cmake/caliper")
+
+    message(STATUS "Checking for expected caliper target 'caliper'")
+    if (NOT TARGET caliper)
+        message(FATAL_ERROR "caliper failed to load: ${CALIPER_DIR}")
+    endif()
+    
+    message(STATUS "caliper loaded: ${CALIPER_DIR}")
+    set(CALIPER_FOUND TRUE)
+else()
+    message(STATUS "caliper support is OFF")
+    set(CALIPER_FOUND FALSE)
 endif()
 
 #------------------------------------------------------------------------------
