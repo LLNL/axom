@@ -290,7 +290,8 @@ public:
    *        the component index.
    *
    * \pre `0 <= setIdx < size()`
-   * \pre `0 <= compIdx[i] < shape()[i]`
+   * \pre `sizeof(compIdx) == StridePolicy::NumDims`
+   * \pre `0 <= compIdx[idim] < shape()[idim]`
    */
   template <typename... ComponentPos>
   AXOM_HOST_DEVICE ConstValueType operator()(SetPosition setIdx,
@@ -322,7 +323,8 @@ public:
    *        the component index.
    *
    * \pre `0 <= setIdx < size()`
-   * \pre `0 <= compIdx[i] < shape()[i]`
+   * \pre `sizeof(compIdx) == StridePolicy::NumDims`
+   * \pre `0 <= compIdx[idim] < shape()[idim]`
    */
   template <typename... ComponentPos>
   AXOM_HOST_DEVICE ConstValueType value(SetPosition setIdx,

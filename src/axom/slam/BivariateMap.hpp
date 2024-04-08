@@ -737,9 +737,9 @@ public:
   static constexpr PositionType INVALID_POS = -2;
 
 public:
-  /**
-     * \brief Construct a new BivariateMap Iterator given an ElementFlatIndex
-     */
+  /*!
+   * \brief Construct a new BivariateMap Iterator given an ElementFlatIndex
+   */
   RangeIterator(BivariateMapPtr sMap, PositionType pos)
     : IterBase(pos)
     , m_map(sMap)
@@ -747,11 +747,9 @@ public:
     , m_bsetIterator(m_map->set(), pos)
   { }
 
-  /**
-     * \brief Returns the current iterator value. If the BivariateMap has
-     *        multiple components, this will return the first component.
-     *        To access the other components, use iter(comp)
-     */
+  /*!
+   * \brief Returns the range of elements pointed to by this iterator.
+   */
   AXOM_HOST_DEVICE reference operator*() const { return *m_mapIterator; }
 
   AXOM_HOST_DEVICE pointer operator->() const
@@ -759,11 +757,12 @@ public:
     return m_mapIterator.operator->();
   }
 
-  /**
-     * \brief Returns the iterator's value at the specified component.
-     *        Returns the first component if comp_idx is not specified.
-     * \param comp_idx  (Optional) Zero-based index of the component.
-     */
+  /*!
+   * \brief Returns the iterator's value at the given component index.
+   *
+   * \pre `sizeof(compIdx) == StridePolicy::NumDims`
+   * \pre `0 <= compIdx[idim] < shape()[idim]`
+   */
   template <typename... ComponentIndex>
   AXOM_HOST_DEVICE DataRefType operator()(ComponentIndex... comp_idx) const
   {
@@ -773,9 +772,10 @@ public:
   /** \brief Returns the first component value after n increments.  */
   DataRefType operator[](PositionType n) const { return *(this->operator+(n)); }
 
-  /**
-     * \brief Return the value at the iterator's position. Same as operator()
-     */
+  /*!
+   * \brief Return the value at the iterator's position for a given component
+   *  index. Same as operator()
+   */
   template <typename... ComponentIndex>
   DataRefType value(ComponentIndex... comp) const
   {

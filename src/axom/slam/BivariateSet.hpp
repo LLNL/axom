@@ -321,7 +321,7 @@ public:
 
   std::pair<IndexType, IndexType> operator*() const
   {
-    // Going from flat-to-second index is always free for a StaticRelation.
+    // Going from flat index to second index is always free for a StaticRelation.
     return {firstIndex(), secondIndex()};
   }
 
