@@ -115,7 +115,7 @@ public:
    * \post d >= 1.
    */
   AXOM_HOST_DEVICE
-  static int dimension() { return NDIMS; };
+  static constexpr int dimension() { return NDIMS; };
 
   /// \name Overloaded [] operator methods
   ///@{
