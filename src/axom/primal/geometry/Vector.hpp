@@ -415,6 +415,7 @@ public:
    * \param [in] z the z--coordinate of the vector. Default is 0.0.
    * \return v a Vector instance with the given coordinates.
    */
+  AXOM_HOST_DEVICE
   static Vector make_vector(const T& x, const T& y, const T& z = 0.0);
 
 private:
@@ -703,6 +704,7 @@ std::ostream& operator<<(std::ostream& os, const Vector<T, NDIMS>& vec)
 
 //------------------------------------------------------------------------------
 template <typename T, int NDIMS>
+AXOM_HOST_DEVICE
 inline Vector<T, NDIMS> Vector<T, NDIMS>::make_vector(const T& x,
                                                       const T& y,
                                                       const T& z)
