@@ -575,17 +575,17 @@ public:
     using difference_type = SetPosition;
 
   private:
-    static StackArray<IndexType, Dims + 1> fetchDims(StrideIndexType stride)
+    static StackArray<IndexType, Dims + 1> fetchDims(StrideIndexType shape)
     {
-      return {0, stride};
+      return {0, shape};
     }
     static StackArray<IndexType, Dims + 1> fetchDims(
-      const StackArray<StrideIndexType, Dims> stride)
+      const StackArray<StrideIndexType, Dims> shape)
     {
       StackArray<IndexType, Dims + 1> dims;
       for(int idim = 0; idim < Dims; idim++)
       {
-        dims[idim + 1] = stride[idim];
+        dims[idim + 1] = shape[idim];
       }
       return dims;
     }
