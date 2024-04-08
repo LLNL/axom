@@ -329,6 +329,14 @@ public:
   T dot(const Vector<T, NDIMS>& v) const;
 
   /*!
+   * \brief Cross product of the Vector instance with another vector v
+   * \param [in] v the other vector in the cross product
+   * \return The cross product of the two vectors.
+   */
+  AXOM_HOST_DEVICE
+  T cross(const Vector<T, NDIMS>& v) const;
+
+  /*!
    * \brief Computes the squared \f$ l^2\f$ norm of this vector instance.
    * \return n the squared norm.
    * \see Vector::norm()
@@ -538,6 +546,13 @@ template <typename T, int NDIMS>
 AXOM_HOST_DEVICE inline T Vector<T, NDIMS>::dot(const Vector<T, NDIMS>& vec) const
 {
   return dot_product(*this, vec);
+}
+
+//------------------------------------------------------------------------------
+template <typename T, int NDIMS>
+AXOM_HOST_DEVICE inline T Vector<T, NDIMS>::cross(const Vector<T, NDIMS>& vec) const
+{
+  return cross_product(*this, vec);
 }
 
 //------------------------------------------------------------------------------
