@@ -12,6 +12,201 @@
 namespace primal = axom::primal;
 
 //------------------------------------------------------------------------------
+TEST(primal_closest_point, seg_test_degenerate)
+{
+  constexpr double EPS = 1e-12;
+
+  constexpr int DIM = 3;
+  using CoordType = double;
+  using QPoint = primal::Point<CoordType, DIM>;
+  using QSegment = primal::Segment<CoordType, DIM>;
+
+  QPoint A({0.0, 0.0, 0.0});
+  QPoint B({1.0e-9, 0.0, 0.0});
+  QSegment S(A, B);
+  double t;
+
+  // Query point is on the midpoint of AB
+  EXPECT_TRUE(primal::closest_point(QPoint({0.5e-10, 0.0, 0.0}), S, t, EPS) == A);
+  EXPECT_NEAR(t, 0.0, EPS);
+
+  // Query point is on the line perpendicular to AB running through the midpoint
+  EXPECT_TRUE(primal::closest_point(QPoint({0.5e-10, 1.0, 0.0}), S, t, EPS) == A);
+  EXPECT_NEAR(t, 0.0, EPS);
+
+  // Query point is equal to A
+  EXPECT_TRUE(primal::closest_point(QPoint({0.0, 0.0, 0.0}), S, t, EPS) == A);
+  EXPECT_NEAR(t, 0.0, EPS);
+
+  // Query point is equal to B (for a degenerate segment, A is always returned)
+  EXPECT_TRUE(primal::closest_point(QPoint({1.0e-9, 0.0, 0.0}), S, t, EPS) == A);
+  EXPECT_NEAR(t, 0.0, EPS);
+
+  //
+  // Now let's reverse the segment
+  //
+  QSegment S_reverse(B, A);
+
+  // Query point is on the midpoint of AB
+  EXPECT_TRUE(
+    primal::closest_point(QPoint({0.5e-10, 0.0, 0.0}), S_reverse, t, EPS) == B);
+  EXPECT_NEAR(t, 0.0, EPS);
+
+  // Query point is on the line perpendicular to AB running through the midpoint
+  EXPECT_TRUE(
+    primal::closest_point(QPoint({0.5e-10, 1.0, 0.0}), S_reverse, t, EPS) == B);
+  EXPECT_NEAR(t, 0.0, EPS);
+
+  // Query point is equal to A
+  EXPECT_TRUE(
+    primal::closest_point(QPoint({0.0, 0.0, 0.0}), S_reverse, t, EPS) == B);
+  EXPECT_NEAR(t, 0.0, EPS);
+
+  // Query point is equal to B (for a degenerate segment, A is always returned)
+  EXPECT_TRUE(
+    primal::closest_point(QPoint({1.0e-9, 0.0, 0.0}), S_reverse, t, EPS) == B);
+  EXPECT_NEAR(t, 0.0, EPS);
+}
+
+//------------------------------------------------------------------------------
+TEST(primal_closest_point, seg_test_closest_point_vertex_0)
+{
+  constexpr double EPS = 1e-12;
+
+  constexpr int DIM = 3;
+  using CoordType = double;
+  using QPoint = primal::Point<CoordType, DIM>;
+  using QSegment = primal::Segment<CoordType, DIM>;
+
+  QPoint A({0.0, 1.0, 1.0});
+  QPoint B({1.0, 0.0, 0.0});
+  QSegment S(A, B);
+  double t;
+
+  // Query point is on the line extended past point A
+  EXPECT_TRUE(primal::closest_point(QPoint({-1.0, 2.0, 2.0}), S, t, EPS) == A);
+  EXPECT_NEAR(t, 0.0, EPS);
+
+  // Query point is on the line perpendicular to AB running through point A
+  EXPECT_TRUE(primal::closest_point(QPoint({-1.0, 0.0, 2.0}), S, t, EPS) == A);
+  EXPECT_NEAR(t, 0.0, EPS);
+
+  // Query point is equal to A
+  EXPECT_TRUE(primal::closest_point(QPoint({0.0, 1.0, 1.0}), S, t, EPS) == A);
+  EXPECT_NEAR(t, 0.0, EPS);
+
+  //
+  // Now let's reverse the segment
+  //
+  QSegment S_reverse(B, A);
+
+  // Query point is on the line extended past point A
+  EXPECT_TRUE(
+    primal::closest_point(QPoint({-1.0, 2.0, 2.0}), S_reverse, t, EPS) == A);
+  EXPECT_NEAR(t, 1.0, EPS);
+
+  // Query point is on the line perpendicular to AB running through point A
+  EXPECT_TRUE(
+    primal::closest_point(QPoint({-1.0, 0.0, 2.0}), S_reverse, t, EPS) == A);
+  EXPECT_NEAR(t, 1.0, EPS);
+
+  // Query point is equal to A
+  EXPECT_TRUE(
+    primal::closest_point(QPoint({0.0, 1.0, 1.0}), S_reverse, t, EPS) == A);
+  EXPECT_NEAR(t, 1.0, EPS);
+}
+
+//------------------------------------------------------------------------------
+TEST(primal_closest_point, seg_test_closest_point_vertex_1)
+{
+  constexpr double EPS = 1e-12;
+
+  constexpr int DIM = 3;
+  using CoordType = double;
+  using QPoint = primal::Point<CoordType, DIM>;
+  using QSegment = primal::Segment<CoordType, DIM>;
+
+  QPoint A({0.0, 1.0, 1.0});
+  QPoint B({1.0, 0.0, 0.0});
+  QSegment S(A, B);
+  double t;
+
+  // Query point is on the line extended past point B
+  EXPECT_TRUE(primal::closest_point(QPoint({2.0, -1.0, 1.0}), S, t, EPS) == B);
+  EXPECT_NEAR(t, 1.0, EPS);
+
+  // Query point is on the line perpendicular to AB running through point B
+  EXPECT_TRUE(primal::closest_point(QPoint({2.0, 1.0, -1.0}), S, t, EPS) == B);
+  EXPECT_NEAR(t, 1.0, EPS);
+
+  // Query point is equal to B
+  EXPECT_TRUE(primal::closest_point(QPoint({1.0, 0.0, 0.0}), S, t, EPS) == B);
+  EXPECT_NEAR(t, 1.0, EPS);
+
+  //
+  // Now let's reverse the segment
+  //
+  QSegment S_reverse(B, A);
+
+  // Query point is on the line extended past point B
+  EXPECT_TRUE(
+    primal::closest_point(QPoint({2.0, -1.0, 1.0}), S_reverse, t, EPS) == B);
+  EXPECT_NEAR(t, 0.0, EPS);
+
+  // Query point is on the line perpendicular to AB running through point B
+  EXPECT_TRUE(
+    primal::closest_point(QPoint({2.0, 1.0, -1.0}), S_reverse, t, EPS) == B);
+  EXPECT_NEAR(t, 0.0, EPS);
+
+  // Query point is equal to B
+  EXPECT_TRUE(
+    primal::closest_point(QPoint({1.0, 0.0, 0.0}), S_reverse, t, EPS) == B);
+  EXPECT_NEAR(t, 0.0, EPS);
+}
+
+//------------------------------------------------------------------------------
+TEST(primal_closest_point, seg_test_closest_point_interior)
+{
+  constexpr double EPS = 1e-12;
+
+  constexpr int DIM = 3;
+  using CoordType = double;
+  using QPoint = primal::Point<CoordType, DIM>;
+  using QSegment = primal::Segment<CoordType, DIM>;
+
+  QPoint A({0.0, 1.0, 1.0});
+  QPoint B({1.0, 0.0, 0.0});
+  QSegment S(A, B);
+  double t;
+
+  // Query point is perpendicular to the midpoint of AB
+  EXPECT_TRUE(primal::closest_point(QPoint({0.0, 0.0, 0.5}), S, t, EPS) ==
+              QPoint::lerp(A, B, 0.5));
+  EXPECT_NEAR(t, 0.5, EPS);
+
+  // Query point is a quarter of the way to B from A
+  EXPECT_TRUE(primal::closest_point(QPoint({0.25, 0.75, 0.75}), S, t, EPS) ==
+              QPoint::lerp(A, B, 0.25));
+  EXPECT_NEAR(t, 0.25, EPS);
+
+  //
+  // Now let's reverse the segment
+  //
+  QSegment S_reverse(B, A);
+
+  // Query point is perpendicular to the midpoint of AB
+  EXPECT_TRUE(primal::closest_point(QPoint({0.0, 0.0, 0.5}), S_reverse, t, EPS) ==
+              QPoint::lerp(A, B, 0.5));
+  EXPECT_NEAR(t, 0.5, EPS);
+
+  // Query point is a quarter of the way to B from A
+  EXPECT_TRUE(
+    primal::closest_point(QPoint({0.25, 0.75, 0.75}), S_reverse, t, EPS) ==
+    QPoint::lerp(A, B, 0.25));
+  EXPECT_NEAR(t, 0.75, EPS);
+}
+
+//------------------------------------------------------------------------------
 TEST(primal_closest_point, obb_test_closest_point_interior)
 {
   constexpr int DIM = 3;
