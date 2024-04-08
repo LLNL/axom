@@ -37,7 +37,8 @@ AXOM_HOST_DEVICE bool operator==(const Point<T, NDIMS>& lhs,
  * \brief Inequality comparison operator for points
  */
 template <typename T, int NDIMS>
-bool operator!=(const Point<T, NDIMS>& lhs, const Point<T, NDIMS>& rhs);
+AXOM_HOST_DEVICE bool operator!=(const Point<T, NDIMS>& lhs,
+                                 const Point<T, NDIMS>& rhs);
 
 /*!
  * \brief Overloaded output operator for points
@@ -113,6 +114,7 @@ public:
    * \return d the dimension of the point.
    * \post d >= 1.
    */
+  AXOM_HOST_DEVICE
   static int dimension() { return NDIMS; };
 
   /// \name Overloaded [] operator methods
@@ -174,6 +176,7 @@ public:
   /*!
    * \brief Inequality operator for points
    */
+  AXOM_HOST_DEVICE
   friend inline bool operator!=(const Point& lhs, const Point& rhs)
   {
     return !(lhs == rhs);
