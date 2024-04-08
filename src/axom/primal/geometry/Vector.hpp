@@ -358,6 +358,18 @@ public:
   void negate();
 
   /*!
+   * \brief In-place normalization of the vector.
+   */
+  AXOM_HOST_DEVICE
+  void normalize();
+
+  /*!
+   * \brief In-place unitization (normalization) of the vector.
+   */
+  AXOM_HOST_DEVICE
+  void unitize();
+
+  /*!
    * \brief Creates a new unit vector in the direction of the vector instance.
    * \note The unit vector of the zero vector is (1,0,0,...) when normalized.
    * \post this->norm() == 1.0f
@@ -525,6 +537,38 @@ AXOM_HOST_DEVICE inline void Vector<T, NDIMS>::negate()
   {
     m_components[i] = -m_components[i];
   }
+}
+
+template <typename T, int NDIMS>
+AXOM_HOST_DEVICE inline void Vector<T, NDIMS>::normalize()
+{
+  const double len_sq = squared_norm();
+
+  if(len_sq >= primal::PRIMAL_TINY)
+  {
+    m_components /= (std::sqrt(len_sq));
+  }
+  else
+  {
+    // TODO: Would it be better to do nothing if the vector is really the
+    //       zero vector? Or if it is tiny but not the zero vector, find
+    //       the component with the largest magnitude and set it to 1 (all
+    //       the other components would then be set to 0).
+
+    // Set the first component to 1 and all others to 0
+    m_components[0] = static_cast<T>(1.);
+
+    for(int i = 1; i < NDIMS; ++i)
+    {
+      m_components[i] = static_cast<T>(0.);
+    }
+  }
+}
+
+template <typename T, int NDIMS>
+AXOM_HOST_DEVICE inline void Vector<T, NDIMS>::unitize()
+{
+  normalize();
 }
 
 //------------------------------------------------------------------------------
