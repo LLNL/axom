@@ -140,7 +140,7 @@ public:
    * \brief Returns the length of the segment
    */
   AXOM_HOST_DEVICE double length() const {
-    return VectorType(m_source, m_target).norm();
+    return std::sqrt(squared_length());
   }
 
   /*!
