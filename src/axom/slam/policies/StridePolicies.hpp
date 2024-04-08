@@ -62,7 +62,12 @@ public:
     : m_stride(stride)
   { }
 
+  /// \brief Returns the stride between consecutive elements.
   AXOM_HOST_DEVICE inline IntType stride() const { return m_stride; }
+  /*!
+   * \brief Returns the shape of the inner data for a given stride.
+   *  This only has meaning when used with Map-based types.
+   */
   AXOM_HOST_DEVICE inline IntType shape() const { return m_stride; }
   AXOM_HOST_DEVICE inline IntType& stride() { return m_stride; }
 
@@ -163,7 +168,12 @@ struct MultiDimStride
   inline IntType operator()() const { return stride(); }
   inline IntType& operator()() { return stride(); }
 
+  /// \brief Returns the strides for each indexing dimension.
   AXOM_HOST_DEVICE inline ShapeType strides() const { return m_strides; }
+  /*!
+   * \brief Returns the multi-dimensional shape of the inner data.
+   *  This only has meaning when used with Map-based types.
+   */
   AXOM_HOST_DEVICE inline ShapeType shape() const { return m_shape; }
 
 private:
