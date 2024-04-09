@@ -614,6 +614,8 @@ public:
 //------------------------------------------------------------------------------
 int main(int argc, char** argv)
 {
+  axom::utilities::raii::MPIWrapper mpi_raii_wrapper(argc, argv);
+
   axom::slic::SimpleLogger logger;
   // slic::debug::checksAreErrors = true;
 
