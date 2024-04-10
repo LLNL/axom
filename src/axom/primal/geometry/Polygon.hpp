@@ -22,13 +22,19 @@ namespace axom
 {
 namespace primal
 {
+namespace
+{
+static constexpr int DEFAULT_MAX_NUM_VERTICES = 20;
+} /* end anonymous namespace */
+
 // Forward declare the templated classes and operator functions
-template <typename T, int NDIMS>
+template <typename T, int NDIMS, int MAX_VERTS>
 class Polygon;
 
 /// \brief Overloaded output operator for polygons
-template <typename T, int NDIMS>
-std::ostream& operator<<(std::ostream& os, const Polygon<T, NDIMS>& poly);
+template <typename T, int NDIMS, int MAX_VERTS>
+std::ostream& operator<<(std::ostream& os,
+                         const Polygon<T, NDIMS, MAX_VERTS>& poly);
 
 /*!
  * \class Polygon
@@ -36,10 +42,11 @@ std::ostream& operator<<(std::ostream& os, const Polygon<T, NDIMS>& poly);
  * \brief Represents a polygon defined by an array of points
  * \tparam T the coordinate type, e.g., double, float, etc.
  * \tparam NDIMS the number of dimensions
+ * \tparam MAX_VERTS the max number of vertices to preallocate space for
  * \note The polygon vertices should be ordered in a counter clockwise
  *       orientation with respect to the polygon's desired normal vector
  */
-template <typename T, int NDIMS>
+template <typename T, int NDIMS, int MAX_VERTS = DEFAULT_MAX_NUM_VERTICES>
 class Polygon
 {
 public:
@@ -50,31 +57,52 @@ public:
   /// Default constructor for an empty polygon
   Polygon() { }
 
-  /*!
-   * \brief Constructor for an empty polygon that reserves space for
-   *  the given number of vertices
-   *
-   * \param [in] numExpectedVerts number of vertices for which to reserve space
-   * \pre numExpectedVerts is not negative
-   *
-   */
-  explicit Polygon(int numExpectedVerts)
+  /// \brief Constructor for a polygon with the given vertices
+  explicit Polygon(const axom::Array<PointType>& vertices)
   {
-    SLIC_ASSERT(numExpectedVerts >= 0);
-    m_vertices.reserve(numExpectedVerts);
+    SLIC_ASSERT(static_cast<int>(vertices.size()) <= MAX_VERTS);
+
+    for(int i = 0; i < vertices.size(); i++)
+    {
+      m_vertices[i] = vertices[i];
+    }
+    m_num_vertices = vertices.size();
   }
 
-  /// \brief Constructor for a polygon with the given vertices
-  Polygon(const axom::Array<PointType>& vertices) { m_vertices = vertices; }
+  // \brief Constructor for a polygon with an initializer list of Points
+  explicit Polygon(std::initializer_list<PointType> vertices)
+  {
+    SLIC_ASSERT(static_cast<int>(vertices.size()) <= MAX_VERTS);
+
+    int i = 0;
+    for(const auto& vertex : vertices)
+    {
+      m_vertices[i] = vertex;
+      i++;
+    }
+    m_num_vertices = vertices.size();
+  }
 
   /// Return the number of vertices in the polygon
-  int numVertices() const { return static_cast<int>(m_vertices.size()); }
+  int numVertices() const { return m_num_vertices; }
 
   /// Appends a vertex to the list of vertices
-  void addVertex(const PointType& pt) { m_vertices.push_back(pt); }
+  void addVertex(const PointType& pt)
+  {
+    SLIC_ASSERT(m_num_vertices + 1 < MAX_VERTS);
+    m_vertices[m_num_vertices] = pt;
+    m_num_vertices++;
+  }
 
   /// Clears the list of vertices
-  void clear() { m_vertices.clear(); }
+  void clear()
+  {
+    for(int i = 0; i < MAX_VERTS; i++)
+    {
+      m_vertices[i] = PointType();
+    }
+    m_num_vertices = 0;
+  }
 
   /// Retrieves the vertex at index idx
   PointType& operator[](int idx) { return m_vertices[idx]; }
@@ -235,17 +263,19 @@ public:
    * Initial check is that the polygon has three or more vertices
    * \return True, if the polygon is valid, False otherwise
    */
-  bool isValid() const { return m_vertices.size() >= 3; }
+  bool isValid() const { return m_num_vertices >= 3; }
 
 private:
-  axom::Array<PointType> m_vertices;
+  PointType m_vertices[MAX_VERTS];
+  int m_num_vertices {0};
 };
 
 //------------------------------------------------------------------------------
 /// Free functions implementing Polygon's operators
 //------------------------------------------------------------------------------
-template <typename T, int NDIMS>
-std::ostream& operator<<(std::ostream& os, const Polygon<T, NDIMS>& poly)
+template <typename T, int NDIMS, int MAX_VERTS>
+std::ostream& operator<<(std::ostream& os,
+                         const Polygon<T, NDIMS, MAX_VERTS>& poly)
 {
   poly.print(os);
   return os;
@@ -255,8 +285,9 @@ std::ostream& operator<<(std::ostream& os, const Polygon<T, NDIMS>& poly)
 }  // namespace axom
 
 /// Overload to format a primal::Polygon using fmt
-template <typename T, int NDIMS>
-struct axom::fmt::formatter<axom::primal::Polygon<T, NDIMS>> : ostream_formatter
+template <typename T, int NDIMS, int MAX_VERTS>
+struct axom::fmt::formatter<axom::primal::Polygon<T, NDIMS, MAX_VERTS>>
+  : ostream_formatter
 { };
 
 #endif  // AXOM_PRIMAL_POLYGON_HPP_
