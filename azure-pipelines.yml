@@ -9,8 +9,8 @@ variables:
   DO_BUILD: 'yes'
   DO_TEST: 'yes'
   DO_CLEAN: 'no'
-  CLANG10_IMAGENAME: 'axom/tpls:clang-10_03-07-24_19h-20m'
-  GCC11_IMAGENAME: 'axom/tpls:gcc-11_03-07-24_19h-20m'
+  CLANG10_IMAGENAME: 'axom/tpls:clang-10_03-17-24_21h-01m'
+  GCC11_IMAGENAME: 'axom/tpls:gcc-11_03-17-24_21h-01m'
   system.debug: false
 
 jobs:
@@ -60,6 +60,14 @@ jobs:
         VM_ImageName: 'ubuntu-20.04'
         Compiler_ImageName: '$(CLANG10_IMAGENAME)'
         CMAKE_EXTRA_FLAGS: '-DBUILD_SHARED_LIBS=ON -DAXOM_QUEST_ENABLE_EXTRA_REGRESSION_TESTS:BOOL=ON -U RAJA_DIR -U UMPIRE_DIR'
+        BUILD_TYPE: 'Debug'
+        COMPILER: 'clang++'
+        TEST_TARGET: 'linux_clang10'
+        HOST_CONFIG: 'clang@10.0.0'
+      linux_clang10_noprofiling:
+        VM_ImageName: 'ubuntu-20.04'
+        Compiler_ImageName: '$(CLANG10_IMAGENAME)'
+        CMAKE_EXTRA_FLAGS: '-DBUILD_SHARED_LIBS=ON -DAXOM_QUEST_ENABLE_EXTRA_REGRESSION_TESTS:BOOL=ON -U CALIPER_DIR -U ADIAK_DIR'
         BUILD_TYPE: 'Debug'
         COMPILER: 'clang++'
         TEST_TARGET: 'linux_clang10'

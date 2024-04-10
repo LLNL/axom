@@ -314,8 +314,9 @@ public:
   }
 
   //!@brief Whether a StackArray represents a permutation.
-  template <typename DirType>
-  bool isPermutation(const axom::StackArray<DirType, DIM>& v)
+  template <typename DirectionType>
+  inline AXOM_HOST_DEVICE bool isPermutation(
+    const axom::StackArray<DirectionType, DIM>& v)
   {
     // v is a permutation if all its values are unique and in [0, DIM).
     axom::StackArray<bool, DIM> found;

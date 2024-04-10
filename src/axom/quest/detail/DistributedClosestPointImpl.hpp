@@ -1207,8 +1207,8 @@ public:
         auto ptCoordsView = m_objectPtCoords.view();
         auto ptDomainIdsView = m_objectPtDomainIds.view();
 
-        AXOM_PERF_MARK_SECTION(
-          "ComputeClosestPoints",
+        {
+          AXOM_ANNOTATE_SCOPE("ComputeClosestPoints");
           axom::for_all<ExecSpace>(
             qPtCount,
             AXOM_LAMBDA(std::int32_t idx) mutable {
@@ -1264,7 +1264,8 @@ public:
                   query_min_dist[idx] = sqrt(curr_min.sqDist);
                 }
               }
-            }););
+            });
+        }
 
         axom::deallocate(sqDistThresh);
       }

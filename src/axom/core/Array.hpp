@@ -1075,7 +1075,7 @@ AXOM_HOST_DEVICE Array<T, DIM, SPACE>::Array(const Array& other)
     "Use axom::ArrayView for value captures instead.\n");
   #endif
   #if defined(__CUDA_ARCH__)
-  __trap();
+  assert(false);
   #endif
 #else
   initialize(other.size(), other.capacity());
@@ -1576,7 +1576,7 @@ AXOM_DEVICE inline IndexType Array<T, DIM, SPACE>::reserveForDeviceInsert(IndexT
       "on the device.\n");
   #endif
   #ifdef AXOM_USE_CUDA
-    __trap();
+    assert(false);
   #elif defined(AXOM_USE_HIP)
     abort();
   #endif

@@ -28,6 +28,9 @@ namespace axom
 {
 namespace slam
 {
+template <typename BivariateSetType>
+struct BivariateSetIterator;
+
 /**
  * \class BivariateSet
  *
@@ -95,6 +98,7 @@ public:
                policies::ArrayViewIndirection<PositionType, ElementType>>;
 
   using RangeSetType = RangeSet<PositionType, ElementType>;
+  using IteratorType = BivariateSetIterator<BivariateSet>;
 
 public:
   static const PositionType INVALID_POS = PositionType(-1);
@@ -221,7 +225,7 @@ public:
   const SecondSetType* getSecondSet() const { return m_set2; }
 
   /** \brief Returns the element at the given FlatIndex \a pos */
-  virtual ElementType at(PositionType pos) const = 0;
+  AXOM_HOST_DEVICE virtual ElementType at(PositionType pos) const = 0;
 
   /**
    * \brief A set of elements with the given first set index.
@@ -231,6 +235,18 @@ public:
    * \pre  0 <= pos1 <= set1.size()
    */
   virtual SubsetType getElements(PositionType s1) const = 0;
+
+  /*!
+   * \brief Return an iterator to the first pair of set elements in the
+   *  relation.
+   */
+  IteratorType begin() const { return IteratorType(this, 0); }
+
+  /*!
+   * \brief Return an iterator to one past the last pair of set elements in the
+   *  relation.
+   */
+  IteratorType end() const { return IteratorType(this, size()); }
 
   virtual bool isValid(bool verboseOutput = false) const;
 
@@ -277,6 +293,56 @@ bool BivariateSet<Set1, Set2>::isValid(bool verboseOutput) const
   }
   return m_set1->isValid(verboseOutput) && m_set2->isValid(verboseOutput);
 }
+
+/*!
+ * \class BivariateSetIterator
+ *
+ * \brief Implements a forward iterator concept on a BivariateSet type.
+ */
+template <typename BivariateSetType>
+struct BivariateSetIterator
+  : public IteratorBase<BivariateSetIterator<BivariateSetType>,
+                        typename BivariateSetType::PositionType>
+{
+public:
+  using IndexType = typename BivariateSetType::PositionType;
+  using BaseType =
+    IteratorBase<BivariateSetIterator<BivariateSetType>, IndexType>;
+  using difference_type = IndexType;
+  using value_type = std::pair<IndexType, IndexType>;
+  using reference = value_type&;
+  using pointer = value_type*;
+  using iterator_category = std::forward_iterator_tag;
+
+  BivariateSetIterator(const BivariateSetType* bset, IndexType flatPos = 0)
+    : BaseType(flatPos)
+    , m_bset(bset)
+  { }
+
+  std::pair<IndexType, IndexType> operator*() const
+  {
+    // Going from flat index to second index is always free for a StaticRelation.
+    return {firstIndex(), secondIndex()};
+  }
+
+  /// \brief Return the first set index pointed to by this iterator.
+  IndexType firstIndex() const { return m_bset->flatToFirstIndex(flatIndex()); }
+
+  /// \brief Return the second set index pointed to by this iterator.
+  IndexType secondIndex() const
+  {
+    return m_bset->flatToSecondIndex(flatIndex());
+  }
+
+  /// \brief Return the flat iteration index of this iterator.
+  AXOM_HOST_DEVICE IndexType flatIndex() const { return this->m_pos; }
+
+protected:
+  AXOM_HOST_DEVICE void advance(IndexType n) { this->m_pos += n; }
+
+private:
+  const BivariateSetType* m_bset;
+};
 
 /**
  * \class NullBivariateSet
@@ -332,7 +398,10 @@ public:
     return RangeSetType();
   }
 
-  ElementType at(PositionType) const override { return PositionType(); }
+  AXOM_HOST_DEVICE ElementType at(PositionType) const override
+  {
+    return PositionType();
+  }
 
   AXOM_HOST_DEVICE PositionType size() const override { return PositionType(); }
 

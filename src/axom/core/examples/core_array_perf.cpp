@@ -17,7 +17,7 @@
 #include "axom/core/memory_management.hpp"
 #include "axom/core/utilities/System.hpp"
 #include "axom/core/utilities/Timer.hpp"
-#include "axom/core/utilities/AnnotationMacros.hpp"
+#include "axom/core/AnnotationMacros.hpp"
 
 #include "axom/fmt/format.h"
 #include "axom/CLI11.hpp"
@@ -279,7 +279,7 @@ public:
   typename std::enable_if<TDIM == 1>::type runTest_rowMajorAccess(
     axom::ArrayView<Element_t, DIM>& array)
   {
-    AXOM_PERF_MARK_FUNCTION("rowMajorAccess-1D");
+    AXOM_ANNOTATE_SCOPE("rowMajorAccess-1D");
     auto testAdd = m_rowTestAdd;
     m_testAccumulation += testAdd;
 
@@ -302,7 +302,7 @@ public:
   typename std::enable_if<TDIM == 2>::type runTest_rowMajorAccess(
     axom::ArrayView<Element_t, DIM>& array)
   {
-    AXOM_PERF_MARK_FUNCTION("rowMajorAccess-2D");
+    AXOM_ANNOTATE_SCOPE("rowMajorAccess-2D");
     auto testAdd = m_rowTestAdd;
     m_testAccumulation += testAdd;
 
@@ -333,7 +333,7 @@ public:
   typename std::enable_if<TDIM == 3>::type runTest_rowMajorAccess(
     axom::ArrayView<Element_t, DIM>& array)
   {
-    AXOM_PERF_MARK_FUNCTION("rowMajorAccess-3D");
+    AXOM_ANNOTATE_SCOPE("rowMajorAccess-3D");
     auto testAdd = m_rowTestAdd;
     m_testAccumulation += testAdd;
 
@@ -368,7 +368,7 @@ public:
   typename std::enable_if<TDIM == 4>::type runTest_rowMajorAccess(
     axom::ArrayView<Element_t, DIM>& array)
   {
-    AXOM_PERF_MARK_FUNCTION("rowMajorAccess-4D");
+    AXOM_ANNOTATE_SCOPE("rowMajorAccess-4D");
     auto testAdd = m_rowTestAdd;
     m_testAccumulation += testAdd;
 
@@ -405,7 +405,7 @@ public:
   typename std::enable_if<TDIM == 1>::type runTest_columnMajorAccess(
     axom::ArrayView<Element_t, DIM>& array)
   {
-    AXOM_PERF_MARK_FUNCTION("columnMajorAccess-1D");
+    AXOM_ANNOTATE_SCOPE("columnMajorAccess-1D");
     auto testAdd = m_columnTestAdd;
     m_testAccumulation += testAdd;
 
@@ -428,7 +428,7 @@ public:
   typename std::enable_if<TDIM == 2>::type runTest_columnMajorAccess(
     axom::ArrayView<Element_t, DIM>& array)
   {
-    AXOM_PERF_MARK_FUNCTION("columnMajorAccess-2D");
+    AXOM_ANNOTATE_SCOPE("columnMajorAccess-2D");
     auto testAdd = m_columnTestAdd;
     m_testAccumulation += testAdd;
 
@@ -459,7 +459,7 @@ public:
   typename std::enable_if<TDIM == 3>::type runTest_columnMajorAccess(
     axom::ArrayView<Element_t, DIM>& array)
   {
-    AXOM_PERF_MARK_FUNCTION("columnMajorAccess-3D");
+    AXOM_ANNOTATE_SCOPE("columnMajorAccess-3D");
     auto testAdd = m_columnTestAdd;
     m_testAccumulation += testAdd;
 
@@ -494,7 +494,7 @@ public:
   typename std::enable_if<TDIM == 4>::type runTest_columnMajorAccess(
     axom::ArrayView<Element_t, DIM>& array)
   {
-    AXOM_PERF_MARK_FUNCTION("columnMajorAccess-4D");
+    AXOM_ANNOTATE_SCOPE("columnMajorAccess-4D");
     auto testAdd = m_columnTestAdd;
     m_testAccumulation += testAdd;
 
@@ -535,7 +535,7 @@ public:
   typename std::enable_if<TDIM == 1>::type runTest_dynamicAccess(
     axom::ArrayView<Element_t, DIM>& array)
   {
-    AXOM_PERF_MARK_FUNCTION("dynamicAccess-1D");
+    AXOM_ANNOTATE_SCOPE("dynamicAccess-1D");
     auto testAdd = m_dynamicTestAdd;
     m_testAccumulation += testAdd;
 
@@ -558,7 +558,7 @@ public:
   typename std::enable_if<TDIM == 2>::type runTest_dynamicAccess(
     axom::ArrayView<Element_t, DIM>& array)
   {
-    AXOM_PERF_MARK_FUNCTION("dynamicAccess-2D");
+    AXOM_ANNOTATE_SCOPE("dynamicAccess-2D");
     auto testAdd = m_dynamicTestAdd;
     m_testAccumulation += testAdd;
 
@@ -604,7 +604,7 @@ public:
   typename std::enable_if<TDIM == 3>::type runTest_dynamicAccess(
     axom::ArrayView<Element_t, DIM>& array)
   {
-    AXOM_PERF_MARK_FUNCTION("dynamicAccess-3D");
+    AXOM_ANNOTATE_SCOPE("dynamicAccess-3D");
     auto testAdd = m_dynamicTestAdd;
     m_testAccumulation += testAdd;
 
@@ -658,7 +658,7 @@ public:
   typename std::enable_if<TDIM == 4>::type runTest_dynamicAccess(
     axom::ArrayView<Element_t, DIM>& array)
   {
-    AXOM_PERF_MARK_FUNCTION("dynamicAccess-4D");
+    AXOM_ANNOTATE_SCOPE("dynamicAccess-4D");
     auto testAdd = m_dynamicTestAdd;
     m_testAccumulation += testAdd;
 
