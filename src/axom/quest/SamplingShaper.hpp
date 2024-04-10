@@ -689,32 +689,35 @@ public:
       return keys;
     };
 
-    std::stringstream sstr;
-    sstr << "List of registered fields in the SamplingShaper " << initialMessage
-         << axom::fmt::format(
-              "\n\t* Data collection grid funcs: {}",
-              axom::fmt::join(extractKeys(m_dc->GetFieldMap()), ", "))
-         << axom::fmt::format(
-              "\n\t* Data collection qfuncs: {}",
-              axom::fmt::join(extractKeys(m_dc->GetQFieldMap()), ", "))
-         << axom::fmt::format("\n\t* Known materials: {}",
-                              axom::fmt::join(m_knownMaterials, ", "));
+    axom::fmt::memory_buffer out;
+
+    axom::fmt::format_to(
+      std::back_inserter(out),
+      "List of registered fields in the SamplingShaper {}"
+      "\n\t* Data collection grid funcs: {}"
+      "\n\t* Data collection qfuncs: {}"
+      "\n\t* Known materials: {}",
+      initialMessage,
+      axom::fmt::join(extractKeys(m_dc->GetFieldMap()), ", "),
+      axom::fmt::join(extractKeys(m_dc->GetQFieldMap()), ", "),
+      axom::fmt::join(m_knownMaterials, ", "));
 
     if(m_vfSampling == shaping::VolFracSampling::SAMPLE_AT_QPTS)
     {
-      sstr << axom::fmt::format(
-                "\n\t* Shape qfuncs: {}",
-                axom::fmt::join(extractKeys(m_inoutShapeQFuncs), ", "))
-           << axom::fmt::format(
-                "\n\t* Mat qfuncs: {}",
-                axom::fmt::join(extractKeys(m_inoutMaterialQFuncs), ", "));
+      axom::fmt::format_to(
+        std::back_inserter(out),
+        "\n\t* Shape qfuncs: {}"
+        "\n\t* Mat qfuncs: {}",
+        axom::fmt::join(extractKeys(m_inoutShapeQFuncs), ", "),
+        axom::fmt::join(extractKeys(m_inoutMaterialQFuncs), ", "));
     }
     else if(m_vfSampling == shaping::VolFracSampling::SAMPLE_AT_DOFS)
     {
-      sstr << axom::fmt::format("\n\t* Shape samples at DOFs: {}",
-                                axom::fmt::join(extractKeys(m_inoutDofs), ", "));
+      axom::fmt::format_to(std::back_inserter(out),
+                           "\n\t* Shape samples at DOFs: {}",
+                           axom::fmt::join(extractKeys(m_inoutDofs), ", "));
     }
-    SLIC_INFO(sstr.str());
+    SLIC_INFO(axom::fmt::to_string(out));
   }
 
 private:

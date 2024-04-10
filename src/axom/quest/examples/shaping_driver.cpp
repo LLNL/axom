@@ -744,6 +744,15 @@ int main(int argc, char** argv)
   //---------------------------------------------------------------------------
   // Save meshes and fields
   //---------------------------------------------------------------------------
+  if(params.isVerbose())
+  {
+    if(auto* samplingShaper = dynamic_cast<quest::SamplingShaper*>(shaper))
+    {
+      SLIC_INFO(axom::fmt::format("{:-^80}", ""));
+      samplingShaper->printRegisteredFieldNames(" -- after shaping");
+    }
+  }
+
 #ifdef MFEM_USE_MPI
   shaper->getDC()->Save();
 #endif
