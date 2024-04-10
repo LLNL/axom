@@ -30,7 +30,11 @@
  * \brief This macro is used to annotate a region within an enclosing scope
  * and is automatically closed when its enclosing scope ends
  * 
- * \warning The \a AXOM_ANNOTATE_SCOPE can only be called once within a given scope.
+ * \warning The \a AXOM_ANNOTATE_SCOPE can only be called once within a given scope
+ * 
+ * \note \a AXOM_ANNOTATE_SCOPE only annotates the portion of the scope following this macro. 
+ * It adds a variable whose constructor begins an annotation region and whose destructor, 
+ * which is called at the end of the scope, ends the annotation region.
  */
 #ifdef AXOM_USE_CALIPER
   #define AXOM_ANNOTATE_SCOPE(name)                        \
