@@ -35,11 +35,9 @@ foreach(comp ${AXOM_COMPONENTS_ENABLED})
 endforeach()
 
 ## Add compile-time options to the config file
-## Check for options of the form AXOM_ENABLE_<OPTION> and sets
-## a corresponding AXOM_USE_<OPTION> accordingly to use when generating
-## the axom/config.hpp
-set(OPTIONS ANNOTATIONS MPI3)
-foreach(option ${OPTIONS})
+## Check for options of the form AXOM_ENABLE_<OPTION> and sets a corresponding 
+## AXOM_USE_<OPTION> accordingly to use when generating the axom/config.hpp
+foreach(option MPI3)
     if( AXOM_ENABLE_${option} )
       set(AXOM_USE_${option} TRUE)
     endif()

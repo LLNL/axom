@@ -21,18 +21,15 @@ axom_configure_file(
 set(core_headers
 
     ## utilities
-    utilities/AnnotationMacros.hpp
+    utilities/About.hpp
+    utilities/Annotations.hpp
     utilities/BitUtilities.hpp
     utilities/FileUtilities.hpp
+    utilities/RAII.hpp
     utilities/StringUtilities.hpp
     utilities/System.hpp
     utilities/Timer.hpp
     utilities/Utilities.hpp
-    utilities/About.hpp
-
-    utilities/nvtx/interface.hpp
-    utilities/nvtx/Macros.hpp
-    utilities/nvtx/Range.hpp
 
     ## numerics
     numerics/internal/matrix_norms.hpp
@@ -52,6 +49,7 @@ set(core_headers
     detail/FlatTable.hpp
 
     ## core
+    AnnotationMacros.hpp
     Array.hpp
     ArrayBase.hpp
     ArrayIteratorBase.hpp
@@ -80,14 +78,12 @@ set(core_headers
     )
 
 set(core_sources
+    utilities/Annotations.cpp
     utilities/FileUtilities.cpp
     utilities/StringUtilities.cpp
     utilities/System.cpp
     utilities/Utilities.cpp
     ${PROJECT_BINARY_DIR}/axom/core/utilities/About.cpp
-
-    utilities/nvtx/interface.cpp
-    utilities/nvtx/Range.cpp
 
     numerics/polynomial_solvers.cpp
 
@@ -100,10 +96,11 @@ set(core_sources
 #------------------------------------------------------------------------------
 
 set( core_depends fmt )
+blt_list_append( TO core_depends ELEMENTS adiak::adiak IF ADIAK_FOUND )
+blt_list_append( TO core_depends ELEMENTS caliper IF CALIPER_FOUND )
 blt_list_append( TO core_depends ELEMENTS camp IF CAMP_FOUND )
 blt_list_append( TO core_depends ELEMENTS umpire IF UMPIRE_FOUND )
 blt_list_append( TO core_depends ELEMENTS RAJA IF RAJA_FOUND )
-blt_list_append( TO core_depends ELEMENTS nvToolsExt IF AXOM_ENABLE_CUDA )
 blt_list_append( TO core_depends ELEMENTS mpi IF AXOM_ENABLE_MPI )
 
 # HACK: RAJA's dependencies are not getting added to core due to a bug in
