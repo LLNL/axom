@@ -50,8 +50,7 @@ Polygon<T, 3> clip(const Triangle<T, 3>& tri, const BoundingBox<T, 3>& bbox)
   using PolygonType = Polygon<T, 3>;
 
   // Use two polygons with pointers for 'back-buffer'-like swapping
-  constexpr int MAX_VERTS = 6;
-  PolygonType poly[2] = {PolygonType(MAX_VERTS), PolygonType(MAX_VERTS)};
+  PolygonType poly[2] = {PolygonType(), PolygonType()};
   PolygonType* currentPoly = &poly[0];
   PolygonType* prevPoly = &poly[1];
 

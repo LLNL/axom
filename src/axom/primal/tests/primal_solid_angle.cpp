@@ -225,7 +225,7 @@ TEST(primal_solid_angle, degenerate_polygon)
   Vector3D v1 = Vector3D({0.0, 1.0, 2.0}).unitVector();
   Vector3D v2 = Vector3D({2.0, -1.0, 0.5}).unitVector();
 
-  Polygon good_pentagon(5), bad_pentagon(9);
+  Polygon good_pentagon, bad_pentagon;
   double good_angles[5] = {0.0, 0.5, 1.2, 3.0, 5.0};
 
   // Test with final vertex coincident with initial vertex
@@ -309,14 +309,14 @@ TEST(primal_solid_angle, selfintersecting_star)
   Vector3D v1 = Vector3D({0.0, 1.0, 2.0}).unitVector();
   Vector3D v2 = Vector3D({2.0, -1.0, 0.5}).unitVector();
 
-  Polygon pentagram(5);
+  Polygon pentagram;
   double outer_angles[5] = {1 * M_PI / 10,
                             9 * M_PI / 10,
                             17 * M_PI / 10,
                             5 * M_PI / 10,
                             13 * M_PI / 10};
 
-  Polygon pentagon(5);
+  Polygon pentagon;
   double inner_angles[5] {3 * M_PI / 10,
                           7 * M_PI / 10,
                           11 * M_PI / 10,
@@ -491,7 +491,7 @@ TEST(primal_solid_angle, planar_bezierpatch)
   Vector3D v2 = Vector3D({2.0, -1.0, 0.5}).unitVector();
   Vector3D v3 = Vector3D::cross_product(v1, v2);
 
-  Polygon quad(4);
+  Polygon quad;
 
   double angles[5] = {1.0, 1.5, 2.5, 3.0};
   // Add vertices to quadrilateral

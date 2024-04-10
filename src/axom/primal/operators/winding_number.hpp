@@ -433,7 +433,7 @@ int winding_number(const Point<T, 3>& query,
   {
     const int N = face_size[i];
     const int i_offset = face_offset[i];
-    Polygon<T, 3> the_face(N);
+    Polygon<T, 3> the_face;
     for(int j = 0; j < N; ++j)
     {
       the_face.addVertex(poly[faces[i_offset + j]]);
