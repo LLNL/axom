@@ -197,7 +197,8 @@ void run_degen_segment_tests()
 
   int allocID = axom::execution_space<axom::SEQ_EXEC>::allocatorID();
 
-  //Use unified memory on device
+  // Use unified memory for frequent movement between device operations
+  // and value checking on host
 #if defined(AXOM_USE_GPU) && defined(AXOM_USE_UMPIRE)
   if(axom::execution_space<ExecPolicy>::onDevice())
   {
@@ -291,7 +292,8 @@ void run_single_segment_tests()
 {
   int allocID = axom::execution_space<axom::SEQ_EXEC>::allocatorID();
 
-  //Use unified memory on device
+  // Use unified memory for frequent movement between device operations
+  // and value checking on host
 #if defined(AXOM_USE_GPU) && defined(AXOM_USE_UMPIRE)
   if(axom::execution_space<ExecPolicy>::onDevice())
   {
@@ -397,7 +399,8 @@ void run_multi_segment_tests()
 {
   int allocID = axom::execution_space<axom::SEQ_EXEC>::allocatorID();
 
-  //Use unified memory on device
+  //Use unified memory for frequent movement between device operations
+  // and value checking on host
 #if defined(AXOM_USE_GPU) && defined(AXOM_USE_UMPIRE)
   if(axom::execution_space<ExecPolicy>::onDevice())
   {

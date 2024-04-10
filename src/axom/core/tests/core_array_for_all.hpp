@@ -1205,7 +1205,8 @@ AXOM_TYPED_TEST(core_array_for_all, device_insert)
 
   int kernelAllocID = axom::execution_space<ExecSpace>::allocatorID();
 #if defined(AXOM_USE_GPU) && defined(AXOM_USE_UMPIRE)
-  // Use unified memory
+  // Use unified memory for frequent movement between device operations
+  // and value checking on host
   if(axom::execution_space<ExecSpace>::onDevice())
   {
     kernelAllocID = axom::getUmpireResourceAllocatorID(
