@@ -1843,9 +1843,9 @@ private:
         dr = avg_pct < percentError;
         if(dr)
         {
-          SLIC_INFO(fmt::format("Dimishing returns triggered: {} < {}.",
-                                avg_pct,
-                                percentError));
+          SLIC_INFO(axom::fmt::format("Dimishing returns triggered: {} < {}.",
+                                      avg_pct,
+                                      percentError));
         }
       }
       return dr;
@@ -1887,32 +1887,32 @@ private:
         pct = 100. * (1. - currentVol / revolvedVolume);
 
         SLIC_INFO(
-          fmt::format("Refining... "
-                      "revolvedVolume = {}"
-                      ", currentVol = {}"
-                      ", pct = {}"
-                      ", level = {}"
-                      ", curvePercentError = {}",
-                      revolvedVolume,
-                      currentVol,
-                      pct,
-                      level,
-                      curvePercentError));
+          axom::fmt::format("Refining... "
+                            "revolvedVolume = {}"
+                            ", currentVol = {}"
+                            ", pct = {}"
+                            ", level = {}"
+                            ", curvePercentError = {}",
+                            revolvedVolume,
+                            currentVol,
+                            pct,
+                            level,
+                            curvePercentError));
 
         if(pct <= m_percentError)
         {
           SLIC_INFO(
-            fmt::format("Contour refinement complete. "
-                        "revolvedVolume = {}"
-                        ", currentVol = {}"
-                        ", pct = {}"
-                        ", level = {}"
-                        ", curvePercentError = {}",
-                        revolvedVolume,
-                        currentVol,
-                        pct,
-                        level,
-                        curvePercentError));
+            axom::fmt::format("Contour refinement complete. "
+                              "revolvedVolume = {}"
+                              ", currentVol = {}"
+                              ", pct = {}"
+                              ", level = {}"
+                              ", curvePercentError = {}",
+                              revolvedVolume,
+                              currentVol,
+                              pct,
+                              level,
+                              curvePercentError));
 
           circleLevel = level;
           refine = false;
@@ -1929,17 +1929,17 @@ private:
         refine = false;
 
         SLIC_INFO(
-          fmt::format("Stop refining due to diminishing returns. "
-                      "revolvedVolume = {}"
-                      ", currentVol = {}"
-                      ", pct = {}"
-                      ", level = {}"
-                      ", curvePercentError = {}",
-                      revolvedVolume,
-                      currentVol,
-                      pct,
-                      circleLevel,
-                      curvePercentError));
+          axom::fmt::format("Stop refining due to diminishing returns. "
+                            "revolvedVolume = {}"
+                            ", currentVol = {}"
+                            ", pct = {}"
+                            ", level = {}"
+                            ", curvePercentError = {}",
+                            revolvedVolume,
+                            currentVol,
+                            pct,
+                            circleLevel,
+                            curvePercentError));
 
         // NOTE: Trying to increase circleLevel at this point does not help.
       }
@@ -1963,9 +1963,9 @@ private:
           // a new m_surfaceMesh to be created.
           double rv = 0.;
           SLIC_INFO(
-            fmt::format("Reloading shape {} with curvePercentError = {}.",
-                        shape.getName(),
-                        curvePercentError));
+            axom::fmt::format("Reloading shape {} with curvePercentError = {}.",
+                              shape.getName(),
+                              curvePercentError));
           loadShapeInternal(shape, curvePercentError, rv);
 
           // Filter the mesh, store in m_surfaceMesh.
@@ -1976,7 +1976,7 @@ private:
         }
         else
         {
-          SLIC_INFO(fmt::format(
+          SLIC_INFO(axom::fmt::format(
             "Stopping refinement due to curvePercentError {} being too small.",
             ce));
           refine = false;

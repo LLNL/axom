@@ -691,24 +691,28 @@ public:
 
     std::stringstream sstr;
     sstr << "List of registered fields in the SamplingShaper " << initialMessage
-         << fmt::format("\n\t* Data collection grid funcs: {}",
-                        fmt::join(extractKeys(m_dc->GetFieldMap()), ", "))
-         << fmt::format("\n\t* Data collection qfuncs: {}",
-                        fmt::join(extractKeys(m_dc->GetQFieldMap()), ", "))
-         << fmt::format("\n\t* Known materials: {}",
-                        fmt::join(m_knownMaterials, ", "));
+         << axom::fmt::format(
+              "\n\t* Data collection grid funcs: {}",
+              axom::fmt::join(extractKeys(m_dc->GetFieldMap()), ", "))
+         << axom::fmt::format(
+              "\n\t* Data collection qfuncs: {}",
+              axom::fmt::join(extractKeys(m_dc->GetQFieldMap()), ", "))
+         << axom::fmt::format("\n\t* Known materials: {}",
+                              axom::fmt::join(m_knownMaterials, ", "));
 
     if(m_vfSampling == shaping::VolFracSampling::SAMPLE_AT_QPTS)
     {
-      sstr << fmt::format("\n\t* Shape qfuncs: {}",
-                          fmt::join(extractKeys(m_inoutShapeQFuncs), ", "))
-           << fmt::format("\n\t* Mat qfuncs: {}",
-                          fmt::join(extractKeys(m_inoutMaterialQFuncs), ", "));
+      sstr << axom::fmt::format(
+                "\n\t* Shape qfuncs: {}",
+                axom::fmt::join(extractKeys(m_inoutShapeQFuncs), ", "))
+           << axom::fmt::format(
+                "\n\t* Mat qfuncs: {}",
+                axom::fmt::join(extractKeys(m_inoutMaterialQFuncs), ", "));
     }
     else if(m_vfSampling == shaping::VolFracSampling::SAMPLE_AT_DOFS)
     {
-      sstr << fmt::format("\n\t* Shape samples at DOFs: {}",
-                          fmt::join(extractKeys(m_inoutDofs), ", "));
+      sstr << axom::fmt::format("\n\t* Shape samples at DOFs: {}",
+                                axom::fmt::join(extractKeys(m_inoutDofs), ", "));
     }
     SLIC_INFO(sstr.str());
   }

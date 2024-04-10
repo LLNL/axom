@@ -594,7 +594,7 @@ public:
         }
         return axom::utilities::annotations::detail::is_mode_valid(mode)
           ? ""
-          : fmt::format(
+          : axom::fmt::format(
               "'{}' invalid caliper mode. "
               "Run with '--caliper help' to see all valid options",
               mode);

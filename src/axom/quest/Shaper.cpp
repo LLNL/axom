@@ -177,9 +177,9 @@ void Shaper::loadShapeInternal(const klee::Shape& shape,
   if(!shape.getGeometry().hasGeometry())
   {
     SLIC_DEBUG(
-      fmt::format("Current shape '{}' of material '{}' has no geometry",
-                  shape.getName(),
-                  shape.getMaterial()));
+      axom::fmt::format("Current shape '{}' of material '{}' has no geometry",
+                        shape.getName(),
+                        shape.getMaterial()));
     return;
   }
 
