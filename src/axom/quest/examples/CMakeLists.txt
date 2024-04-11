@@ -22,6 +22,16 @@ axom_add_executable(
     FOLDER      axom/quest/examples
     )
 
+if(AXOM_ENABLE_TESTS AND AXOM_DATA_DIR AND CALIPER_FOUND)
+    set(input_file "${AXOM_DATA_DIR}/quest/sphere_binary.stl")
+    axom_add_test(
+        NAME    quest_containment_sphere_ex
+        COMMAND quest_containment_driver_ex
+                --input ${input_file}
+                --caliper report
+    )
+endif()
+
 # BVH two pass example --------------------------------------------------------
 if (RAJA_FOUND AND UMPIRE_FOUND)
     axom_add_executable(
