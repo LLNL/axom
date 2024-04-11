@@ -212,20 +212,7 @@ public:
         "caliper annotation mode. Valid options include 'none' and 'report'. "
         "Use 'help' to see full list.")
       ->capture_default_str()
-      ->check([](const std::string& mode) -> std::string {
-        if(mode == "help")
-        {
-          std::cerr << "Valid caliper modes are:\n"
-                    << axom::utilities::annotations::detail::mode_help_string()
-                    << std::endl;
-        }
-        return axom::utilities::annotations::detail::is_mode_valid(mode)
-          ? ""
-          : fmt::format(
-              "'{}' invalid caliper mode. "
-              "Run with '--caliper help' to see all valid options",
-              mode);
-      });
+      ->check(axom::utilities::ValidCaliperMode);
 #endif
 
     app.get_formatter()->column_width(60);
