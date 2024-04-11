@@ -18,13 +18,6 @@
 
 #include <set>
 
-#ifdef AXOM_USE_CALIPER
-namespace cali
-{
-extern Attribute region_attr;
-}
-#endif
-
 namespace axom
 {
 namespace utilities
@@ -403,18 +396,18 @@ void finalize()
 void begin(const std::string &name)
 {
 #ifdef AXOM_USE_CALIPER
-  cali::Caliper().begin(
-    cali::region_attr,
-    cali::Variant(CALI_TYPE_STRING, name.c_str(), name.length()));
+  cali_begin_region(name.c_str());
 #else
   AXOM_UNUSED_VAR(name);
 #endif
 }
 
-void end(const std::string & /*name*/)
+void end(const std::string &name)
 {
 #ifdef AXOM_USE_CALIPER
-  cali::Caliper().end(cali::region_attr);
+  cali_end_region(name.c_str());
+#else
+  AXOM_UNUSED_VAR(name);
 #endif
 }
 
