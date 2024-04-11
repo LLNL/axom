@@ -23,12 +23,20 @@ axom_add_executable(
     )
 
 if(AXOM_ENABLE_TESTS AND AXOM_DATA_DIR AND CALIPER_FOUND)
-    set(input_file "${AXOM_DATA_DIR}/quest/sphere_binary.stl")
+    set(_input_file "${AXOM_DATA_DIR}/quest/sphere_binary.stl")
+    
+    if(AXOM_ENABLE_MPI)     # this test requires MPI when available
+        set(_num_ranks 1)   # (but only 1 rank)
+    else()                  # but can otherwise be run without MPI
+        unset(_num_ranks)
+    endif()
+    
     axom_add_test(
         NAME    quest_containment_sphere_ex
         COMMAND quest_containment_driver_ex
-                --input ${input_file}
+                --input ${_input_file}
                 --caliper report
+        NUM_MPI_TASKS ${_num_ranks}
     )
 endif()
 
