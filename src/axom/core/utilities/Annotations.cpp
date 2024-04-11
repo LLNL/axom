@@ -93,11 +93,6 @@ void initialize_caliper(const std::string &mode)
 {
 #ifdef AXOM_USE_CALIPER
   cali::ConfigManager::argmap_t app_args;
-
-  #ifdef AXOM_USE_MPI
-  cali_mpi_init();
-  #endif
-
   cali_mgr = new cali::ConfigManager();
   cali_mgr->add(mode.c_str(), app_args);
 
