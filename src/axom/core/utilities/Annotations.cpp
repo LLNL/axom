@@ -18,13 +18,6 @@
 
 #include <set>
 
-#ifdef AXOM_USE_CALIPER
-namespace cali
-{
-extern Attribute region_attr;
-}
-#endif
-
 namespace axom
 {
 namespace utilities
@@ -96,17 +89,10 @@ void initialize_adiak()
 }
 #endif  // AXOM_USE_MPI
 
-void initialize_caliper(const std::string &mode, int num_ranks)
+void initialize_caliper(const std::string &mode)
 {
 #ifdef AXOM_USE_CALIPER
-  bool multiprocessing = (num_ranks > 1);
-  std::string configuration_service_list;
   cali::ConfigManager::argmap_t app_args;
-
-  #ifdef AXOM_USE_MPI
-  cali_mpi_init();
-  #endif
-
   cali_mgr = new cali::ConfigManager();
   cali_mgr->add(mode.c_str(), app_args);
 
@@ -126,47 +112,31 @@ void initialize_caliper(const std::string &mode, int num_ranks)
     }
     else if(cali_mode == "counts")
     {
-      configuration_service_list = "event:aggregate:";
-      configuration_service_list += multiprocessing ? "mpireport" : "report";
-
-      cali_config_preset("CALI_REPORT_CONFIG",
-                         "SELECT count() "
-                         "GROUP BY prop:nested "
-                         "WHERE cali.event.end "
-                         "FORMAT tree");
-
-      cali_config_preset("CALI_MPIREPORT_CONFIG",
-                         "SELECT   min(count) as \"Min count\", "
-                         "         max(count) as \"Max count\", "
-                         "         avg(count) as \"Avg count\", "
-                         "         sum(count) as \"Total count\" "
-                         "GROUP BY prop:nested "
-                         "WHERE    cali.event.end "
-                         "FORMAT   tree");
+      cali_mgr->add("runtime-report(output=stdout,region.count)");
     }
     else if(cali_mode == "file")
     {
-      configuration_service_list = "event:aggregate:timestamp:recorder";
+      cali_mgr->add("hatchet-region-profile");
     }
     else if(cali_mode == "trace")
     {
-      configuration_service_list = "event:trace:timestamp:recorder";
+      cali_mgr->add("event-trace");
     }
     else if(cali_mode == "gputx")
     {
   #if defined(AXOM_USE_CUDA)
-      configuration_service_list = "nvtx";
+      cali_mgr->add("nvtx");
   #elif defined(AXOM_USE_HIP)
-      configuration_service_list = "roctx";
+      cali_mgr->add("roctx");
   #endif
     }
     else if(cali_mode == "nvtx" || cali_mode == "nvprof")
     {
-      configuration_service_list = "nvtx";
+      cali_mgr->add("nvtx");
     }
     else if(cali_mode == "roctx")
     {
-      configuration_service_list = "roctx";
+      cali_mgr->add("roctx");
     }
     else if(!value.empty())
     {
@@ -174,26 +144,10 @@ void initialize_caliper(const std::string &mode, int num_ranks)
     }
   }
 
-  if(!configuration_service_list.empty())
-  {
-    if(multiprocessing)
-    {
-      //This ensures mpi appears before any related service
-      configuration_service_list = "mpi:" + configuration_service_list;
-    }
-    cali_config_preset("CALI_TIMER_SNAPSHOT_DURATION", "true");
-    cali_config_preset("CALI_TIMER_INCLUSIVE_DURATION", "false");
-    cali_config_preset("CALI_SERVICES_ENABLE",
-                       configuration_service_list.c_str());
-  }
+  cali_mgr->start();
 
-  for(auto &channel : cali_mgr->get_all_channels())
-  {
-    channel->start();
-  }
 #else
   AXOM_UNUSED_VAR(mode);
-  AXOM_UNUSED_VAR(num_ranks);
 #endif  // AXOM_USE_CALIPER
 }
 
@@ -336,6 +290,8 @@ static std::string adiak_value_as_string(adiak_value_t *val, adiak_datatype_t *t
     return axom::fmt::format(
       "({})",
       axom::fmt::join(get_vals_array(t, val, adiak_num_subvals(t)), ", "));
+  default:
+    return std::string("<unknown type>");
   }
 }
 
@@ -359,11 +315,8 @@ static void get_namevals_as_map(const char *name,
 #ifdef AXOM_USE_MPI
 void initialize(MPI_Comm comm, const std::string &mode)
 {
-  int num_ranks {1};
-  MPI_Comm_size(MPI_COMM_WORLD, &num_ranks);
-
   detail::initialize_adiak(comm);
-  detail::initialize_caliper(mode, num_ranks);
+  detail::initialize_caliper(mode);
 
   declare_metadata("axom_version", axom::getVersion());
 }
@@ -372,7 +325,7 @@ void initialize(MPI_Comm comm, const std::string &mode)
 void initialize(const std::string &mode)
 {
   detail::initialize_adiak();
-  detail::initialize_caliper(mode, 1);
+  detail::initialize_caliper(mode);
 
   declare_metadata("axom_version", axom::getVersion());
 }
@@ -389,10 +342,7 @@ void finalize()
 #ifdef AXOM_USE_CALIPER
   if(cali_mgr)
   {
-    for(auto &channel : cali_mgr->get_all_channels())
-    {
-      channel->flush();
-    }
+    cali_mgr->flush();
 
     delete cali_mgr;
     cali_mgr = nullptr;
@@ -403,18 +353,18 @@ void finalize()
 void begin(const std::string &name)
 {
 #ifdef AXOM_USE_CALIPER
-  cali::Caliper().begin(
-    cali::region_attr,
-    cali::Variant(CALI_TYPE_STRING, name.c_str(), name.length()));
+  cali_begin_region(name.c_str());
 #else
   AXOM_UNUSED_VAR(name);
 #endif
 }
 
-void end(const std::string & /*name*/)
+void end(const std::string &name)
 {
 #ifdef AXOM_USE_CALIPER
-  cali::Caliper().end(cali::region_attr);
+  cali_end_region(name.c_str());
+#else
+  AXOM_UNUSED_VAR(name);
 #endif
 }
 
