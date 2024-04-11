@@ -84,8 +84,11 @@ class Axom(CachedCMakePackage, CudaPackage, ROCmPackage):
     variant("mpi", default=True, description="Build MPI support")
     variant("openmp", default=True, description="Turn on OpenMP support.")
 
-    variant('profiling', default=False, 
-            description='Build with hooks for Adiak/Caliper performance analysis')
+    variant(
+        "profiling",
+        default=False,
+        description="Build with hooks for Adiak/Caliper performance analysis",
+    )
 
     variant("c2c",      default=False, description="Build with c2c")
 
@@ -276,7 +279,11 @@ class Axom(CachedCMakePackage, CudaPackage, ROCmPackage):
 
         # Add optimization flag workaround for Debug builds with cray compiler or newer HIP
         if "+rocm" in spec:
-            if spec.satisfies("%cce") or spec.satisfies("%clang@16") or spec.satisfies("%clang@17"):
+            if (
+                spec.satisfies("%cce")
+                or spec.satisfies("%clang@16")
+                or spec.satisfies("%clang@17")
+            ):
                 entries.append(cmake_cache_string("CMAKE_CXX_FLAGS_DEBUG", "-O1 -g -DNDEBUG"))
 
         return entries
