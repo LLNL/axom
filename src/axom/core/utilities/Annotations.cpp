@@ -295,6 +295,8 @@ static std::string adiak_value_as_string(adiak_value_t *val, adiak_datatype_t *t
     return axom::fmt::format(
       "({})",
       axom::fmt::join(get_vals_array(t, val, adiak_num_subvals(t)), ", "));
+  default:
+    return std::string("<unknown type>");
   }
 }
 
