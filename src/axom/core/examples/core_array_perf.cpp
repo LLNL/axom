@@ -798,6 +798,19 @@ public:
         array.flatIndex(i) = Element_t(i * baseFactor);
       });
 
+    /*
+      Warm-up: The first rep can be a slow outlier.  Since we are
+      generally interested in the steady-state performance, get past
+      this outlier before timing.
+    */
+    for(int r = 0; r < 1; ++r)
+    {
+      runTest_flatAccess(array);
+      runTest_rowMajorAccess(array);
+      runTest_columnMajorAccess(array);
+      runTest_dynamicAccess(array);
+    }
+
     axom::utilities::Timer flatTimer(false);
     flatTimer.start();
     for(int r = 0; r < params.repCount; ++r) runTest_flatAccess(array);
