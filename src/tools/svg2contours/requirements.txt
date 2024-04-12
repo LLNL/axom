@@ -1,0 +1,3 @@
+svgpathtools
+jupyter
+# mfem not yet available on windows
