@@ -41,7 +41,13 @@ echo "~~~~~~~~~~~~~~~~~~~~~~"
 
 
 echo "~~~~~~ RUNNING SPACK ~~~~~~~~"
-python3 /home/axom/axom/scripts/uberenv/uberenv.py --spack-env-file=/home/axom/axom/scripts/spack/configs/linux_ubuntu_20/spack.yaml --package-final-phase=install --spack-build-mode=dev-build --run_tests
-
+UPSTREAM=/home/axom/axom_tpls/spack
+ls -al $UPSTREAM
+python3 /home/axom/axom/scripts/uberenv/uberenv.py \
+    --upstream=$UPSTREAM \
+    --spack-env-file=/home/axom/axom/scripts/spack/configs/linux_ubuntu_20/spack.yaml \
+    --spack-build-mode=dev-build
+    --package-final-phase=install \
+    --run_tests
 
 exit 0
