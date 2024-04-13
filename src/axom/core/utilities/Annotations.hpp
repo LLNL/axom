@@ -49,7 +49,7 @@ void initialize_adiak();
 #endif
 
 /// \note Intended to be called from within the axom::utilities::annotations API
-void initialize_caliper(const std::string& mode, int num_ranks);
+void initialize_caliper(const std::string& mode);
 
 // Checks if the provided annotation mode is valid
 bool is_mode_valid(const std::string& mode);
