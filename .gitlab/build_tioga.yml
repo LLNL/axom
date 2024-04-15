@@ -39,7 +39,6 @@ tioga-clang_16_0_0_hip_5_6_0-src:
     COMPILER: "clang@16.0.0_hip"
     HOST_CONFIG: "tioga-toss_4_x86_64_ib_cray-${COMPILER}.cmake"
   extends: .src_build_on_tioga
-  allow_failure: true
 
 ####
 # Full Build jobs
@@ -49,4 +48,3 @@ tioga-clang_16_0_0_hip_5_6_0-full:
     SPEC: "%${COMPILER}~openmp+rocm+mfem+c2c"
     EXTRASPEC: "amdgpu_target=gfx90a ^hip@5.6.0 ^hsa-rocr-dev@5.6.0 ^llvm-amdgpu@5.6.0 ^raja~openmp+rocm ^umpire~openmp+rocm ^hdf5 cflags=-Wno-int-conversion"
   extends: .full_build_on_tioga
-  allow_failure: true
