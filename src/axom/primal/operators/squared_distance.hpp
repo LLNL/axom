@@ -39,6 +39,7 @@ namespace primal
  * \return the squared distance from point A to point B.  If N < 1, return 0.
  * \pre A and B are arrays of at least length N.
  */
+AXOM_HOST_DEVICE
 inline double squared_distance(const double* A, const double* B, int N)
 {
   double retval = 0;
