@@ -30,6 +30,22 @@ namespace mint
 //------------------------------------------------------------------------------
 namespace
 {
+#if defined(AXOM_USE_RAJA) && defined(AXOM_USE_UMPIRE) &&   \
+  ((defined(AXOM_USE_CUDA) && defined(RAJA_ENABLE_CUDA)) || \
+   (defined(AXOM_USE_HIP) && defined(RAJA_ENABLE_HIP)))
+
+int set_um_memory_return_previous_allocator()
+{
+  // Use unified memory
+  const int exec_space_id = axom::getUmpireResourceAllocatorID(
+    umpire::resource::MemoryResourceType::Unified);
+  const int prev_allocator = axom::getDefaultAllocatorID();
+  axom::setDefaultAllocator(exec_space_id);
+  return prev_allocator;
+}
+
+#endif
+
 template <typename ExecPolicy, int MeshType, int Topology = SINGLE_SHAPE>
 void check_for_all_cells_idx(int dimension)
 {
@@ -378,11 +394,7 @@ AXOM_CUDA_TEST(mint_execution_cell_traversals, for_all_cells_nodeids)
 
     using cuda_exec = axom::CUDA_EXEC<512>;
 
-    // Use unified memory
-    const int exec_space_id = axom::getUmpireResourceAllocatorID(
-      umpire::resource::MemoryResourceType::Unified);
-    const int prev_allocator = axom::getDefaultAllocatorID();
-    axom::setDefaultAllocator(exec_space_id);
+    const int prev_allocator = set_um_memory_return_previous_allocator();
 
     check_for_all_cell_nodes<cuda_exec, STRUCTURED_UNIFORM_MESH>(i);
     check_for_all_cell_nodes<cuda_exec, STRUCTURED_CURVILINEAR_MESH>(i);
@@ -398,11 +410,7 @@ AXOM_CUDA_TEST(mint_execution_cell_traversals, for_all_cells_nodeids)
 
     using hip_exec = axom::HIP_EXEC<512>;
 
-    // Use unified memory
-    const int exec_space_id = axom::getUmpireResourceAllocatorID(
-      umpire::resource::MemoryResourceType::Unified);
-    const int prev_allocator = axom::getDefaultAllocatorID();
-    axom::setDefaultAllocator(exec_space_id);
+    const int prev_allocator = set_um_memory_return_previous_allocator();
 
     check_for_all_cell_nodes<hip_exec, STRUCTURED_UNIFORM_MESH>(i);
     check_for_all_cell_nodes<hip_exec, STRUCTURED_CURVILINEAR_MESH>(i);
@@ -445,11 +453,7 @@ AXOM_CUDA_TEST(mint_execution_cell_traversals, for_all_cells_coords)
 
     using cuda_exec = axom::CUDA_EXEC<512>;
 
-    // Use unified memory
-    const int exec_space_id = axom::getUmpireResourceAllocatorID(
-      umpire::resource::MemoryResourceType::Unified);
-    const int prev_allocator = axom::getDefaultAllocatorID();
-    axom::setDefaultAllocator(exec_space_id);
+    const int prev_allocator = set_um_memory_return_previous_allocator();
 
     check_for_all_cell_coords<cuda_exec, STRUCTURED_UNIFORM_MESH>(i);
     check_for_all_cell_coords<cuda_exec, STRUCTURED_CURVILINEAR_MESH>(i);
@@ -465,11 +469,7 @@ AXOM_CUDA_TEST(mint_execution_cell_traversals, for_all_cells_coords)
 
     using hip_exec = axom::HIP_EXEC<512>;
 
-    // Use unified memory
-    const int exec_space_id = axom::getUmpireResourceAllocatorID(
-      umpire::resource::MemoryResourceType::Unified);
-    const int prev_allocator = axom::getDefaultAllocatorID();
-    axom::setDefaultAllocator(exec_space_id);
+    const int prev_allocator = set_um_memory_return_previous_allocator();
 
     check_for_all_cell_coords<hip_exec, STRUCTURED_UNIFORM_MESH>(i);
     check_for_all_cell_coords<hip_exec, STRUCTURED_CURVILINEAR_MESH>(i);
@@ -512,11 +512,7 @@ AXOM_CUDA_TEST(mint_execution_cell_traversals, for_all_cells_faceids)
 
     using cuda_exec = axom::CUDA_EXEC<512>;
 
-    // Use unified memory
-    const int exec_space_id = axom::getUmpireResourceAllocatorID(
-      umpire::resource::MemoryResourceType::Unified);
-    const int prev_allocator = axom::getDefaultAllocatorID();
-    axom::setDefaultAllocator(exec_space_id);
+    const int prev_allocator = set_um_memory_return_previous_allocator();
 
     check_for_all_cell_faces<cuda_exec, STRUCTURED_UNIFORM_MESH>(i);
     check_for_all_cell_faces<cuda_exec, STRUCTURED_CURVILINEAR_MESH>(i);
@@ -532,11 +528,7 @@ AXOM_CUDA_TEST(mint_execution_cell_traversals, for_all_cells_faceids)
 
     using hip_exec = axom::HIP_EXEC<512>;
 
-    // Use unified memory
-    const int exec_space_id = axom::getUmpireResourceAllocatorID(
-      umpire::resource::MemoryResourceType::Unified);
-    const int prev_allocator = axom::getDefaultAllocatorID();
-    axom::setDefaultAllocator(exec_space_id);
+    const int prev_allocator = set_um_memory_return_previous_allocator();
 
     check_for_all_cell_faces<hip_exec, STRUCTURED_UNIFORM_MESH>(i);
     check_for_all_cell_faces<hip_exec, STRUCTURED_CURVILINEAR_MESH>(i);
@@ -573,11 +565,7 @@ AXOM_CUDA_TEST(mint_execution_cell_traversals, for_all_cells_ij)
 
   using cuda_exec = axom::CUDA_EXEC<512>;
 
-  // Use unified memory
-  const int exec_space_id = axom::getUmpireResourceAllocatorID(
-    umpire::resource::MemoryResourceType::Unified);
-  const int prev_allocator = axom::getDefaultAllocatorID();
-  axom::setDefaultAllocator(exec_space_id);
+  const int prev_allocator = set_um_memory_return_previous_allocator();
 
   check_for_all_cells_ij<cuda_exec, STRUCTURED_UNIFORM_MESH>();
   check_for_all_cells_ij<cuda_exec, STRUCTURED_CURVILINEAR_MESH>();
@@ -591,11 +579,7 @@ AXOM_CUDA_TEST(mint_execution_cell_traversals, for_all_cells_ij)
 
   using hip_exec = axom::HIP_EXEC<512>;
 
-  // Use unified memory
-  const int exec_space_id = axom::getUmpireResourceAllocatorID(
-    umpire::resource::MemoryResourceType::Unified);
-  const int prev_allocator = axom::getDefaultAllocatorID();
-  axom::setDefaultAllocator(exec_space_id);
+  const int prev_allocator = set_um_memory_return_previous_allocator();
 
   check_for_all_cells_ij<hip_exec, STRUCTURED_UNIFORM_MESH>();
   check_for_all_cells_ij<hip_exec, STRUCTURED_CURVILINEAR_MESH>();
@@ -628,11 +612,7 @@ AXOM_CUDA_TEST(mint_execution_cell_traversals, for_all_cells_ijk)
 
   using cuda_exec = axom::CUDA_EXEC<512>;
 
-  // Use unified memory
-  const int exec_space_id = axom::getUmpireResourceAllocatorID(
-    umpire::resource::MemoryResourceType::Unified);
-  const int prev_allocator = axom::getDefaultAllocatorID();
-  axom::setDefaultAllocator(exec_space_id);
+  const int prev_allocator = set_um_memory_return_previous_allocator();
 
   check_for_all_cells_ijk<cuda_exec, STRUCTURED_UNIFORM_MESH>();
   check_for_all_cells_ijk<cuda_exec, STRUCTURED_CURVILINEAR_MESH>();
@@ -646,11 +626,7 @@ AXOM_CUDA_TEST(mint_execution_cell_traversals, for_all_cells_ijk)
 
   using hip_exec = axom::HIP_EXEC<512>;
 
-  // Use unified memory
-  const int exec_space_id = axom::getUmpireResourceAllocatorID(
-    umpire::resource::MemoryResourceType::Unified);
-  const int prev_allocator = axom::getDefaultAllocatorID();
-  axom::setDefaultAllocator(exec_space_id);
+  const int prev_allocator = set_um_memory_return_previous_allocator();
 
   check_for_all_cells_ijk<hip_exec, STRUCTURED_UNIFORM_MESH>();
   check_for_all_cells_ijk<hip_exec, STRUCTURED_CURVILINEAR_MESH>();
@@ -690,11 +666,7 @@ AXOM_CUDA_TEST(mint_execution_cell_traversals, for_all_cells_index)
 
     using cuda_exec = axom::CUDA_EXEC<512>;
 
-    // Use unified memory
-    const int exec_space_id = axom::getUmpireResourceAllocatorID(
-      umpire::resource::MemoryResourceType::Unified);
-    const int prev_allocator = axom::getDefaultAllocatorID();
-    axom::setDefaultAllocator(exec_space_id);
+    const int prev_allocator = set_um_memory_return_previous_allocator();
 
     check_for_all_cells_idx<cuda_exec, STRUCTURED_UNIFORM_MESH>(i);
     check_for_all_cells_idx<cuda_exec, STRUCTURED_CURVILINEAR_MESH>(i);
@@ -710,12 +682,7 @@ AXOM_CUDA_TEST(mint_execution_cell_traversals, for_all_cells_index)
 
     using hip_exec = axom::HIP_EXEC<512>;
 
-    // Use unified memory
-    const int exec_space_id = axom::getUmpireResourceAllocatorID(
-      umpire::resource::MemoryResourceType::Unified);
-
-    const int prev_allocator = axom::getDefaultAllocatorID();
-    axom::setDefaultAllocator(exec_space_id);
+    const int prev_allocator = set_um_memory_return_previous_allocator();
 
     check_for_all_cells_idx<hip_exec, STRUCTURED_UNIFORM_MESH>(i);
     check_for_all_cells_idx<hip_exec, STRUCTURED_CURVILINEAR_MESH>(i);
