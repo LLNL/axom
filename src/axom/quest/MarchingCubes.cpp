@@ -70,13 +70,14 @@ void MarchingCubes::setMesh(const conduit::Node& bpMesh,
   */
   auto newDomainCount = conduit::blueprint::mesh::number_of_domains(bpMesh);
 
-  if (m_singles.size() < newDomainCount)
+  if(m_singles.size() < newDomainCount)
   {
     auto tmpSize = m_singles.size();
     m_singles.resize(newDomainCount);
     for(int d = tmpSize; d < newDomainCount; ++d)
     {
-      m_singles[d].reset(new detail::marching_cubes::MarchingCubesSingleDomain(*this));
+      m_singles[d].reset(
+        new detail::marching_cubes::MarchingCubesSingleDomain(*this));
     }
   }
 

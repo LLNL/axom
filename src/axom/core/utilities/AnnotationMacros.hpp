@@ -8,9 +8,10 @@
 
 #include "axom/config.hpp"
 
-#ifndef AXOM_USE_CALIPER
-  #include "axom/core/utilities/nvtx/interface.hpp"
-#endif
+// Note: Caliper integration into Axom is underway.
+//       Axom's annotations will soon rely on caliper.
+
+#include "axom/core/utilities/nvtx/interface.hpp"
 
 /*!
  * \def AXOM_PERF_MARK_FUNCTION( name )
@@ -36,9 +37,7 @@
  *   }
  * \endcode
  */
-#if defined(AXOM_USE_ANNOTATIONS) && defined(AXOM_USE_CALIPER)
-  #error "Support for Caliper has not yet been implemented in Axom!"
-#elif defined(AXOM_USE_ANNOTATIONS)
+#if defined(AXOM_USE_ANNOTATIONS)
   #define AXOM_PERF_MARK_FUNCTION(__func_name__) \
     AXOM_NVTX_FUNCTION(__func_name__)
 #else
@@ -85,9 +84,7 @@
  * \endcode
  * 
  */
-#if defined(AXOM_USE_ANNOTATIONS) && defined(AXOM_USE_CALIPER)
-  #error "Support for Caliper has not yet been implemented in Axom!"
-#elif defined(AXOM_USE_ANNOTATIONS)
+#if defined(AXOM_USE_ANNOTATIONS)
   #define AXOM_PERF_MARK_SECTION(__name__, ...) \
     AXOM_NVTX_SECTION(__name__, __VA_ARGS__)
 #else
