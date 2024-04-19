@@ -298,10 +298,10 @@ void check_volume()
   axom::setDefaultAllocator(allocator.getId());
 
   // Initialize volume
-  double* res = axom::allocate<double>(1);
+  double* volume = axom::allocate<double>(1);
 
   // Volume on host (for CUDA or HIP)
-  double res_host;
+  double volume_host;
 
   axom::for_all<ExecSpace>(
     1,
@@ -325,14 +325,14 @@ void check_volume()
       poly.addNeighbors(6, {2, 7, 5});
       poly.addNeighbors(7, {4, 6, 3});
 
-      res[i] = poly.volume();
+      volume[i] = poly.volume();
     });
 
-  axom::copy(&res_host, res, sizeof(double));
+  axom::copy(&volume_host, volume, sizeof(double));
 
-  EXPECT_EQ(res_host, 1);
+  EXPECT_EQ(volume_host, 1);
 
-  axom::deallocate(res);
+  axom::deallocate(volume);
 
   axom::setDefaultAllocator(current_allocator);
 }
