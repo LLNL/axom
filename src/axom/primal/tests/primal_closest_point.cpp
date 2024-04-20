@@ -255,7 +255,7 @@ TEST(primal_closest_point, triangle_test_degenerate)
   QPoint closestPoint = primal::closest_point(queryPoint, tri, &loc, EPS);
 
   for (int i = 0; i < DIM; ++i) {
-    EXPECT_NEAR(closestPoint[i], queryPoint[i], 1.1e-14);
+    EXPECT_NEAR(closestPoint[i], queryPoint[i], 1.0e-16);
   }
 
   EXPECT_EQ(loc, -1);
@@ -266,7 +266,7 @@ TEST(primal_closest_point, triangle_test_degenerate)
   QPoint expectedClosestPoint({0.0, 0.0, 1.0e-14});
 
   for (int i = 0; i < DIM; ++i) {
-    EXPECT_NEAR(closestPoint[i], expectedClosestPoint[i], 1.1e-14);
+    EXPECT_NEAR(closestPoint[i], expectedClosestPoint[i], 1.0e-16);
   }
 
   EXPECT_EQ(loc, -1);
@@ -276,7 +276,7 @@ TEST(primal_closest_point, triangle_test_degenerate)
   closestPoint = primal::closest_point(queryPoint, tri, &loc, EPS);
 
   for (int i = 0; i < DIM; ++i) {
-    EXPECT_NEAR(closestPoint[i], queryPoint[i], 1.1e-14);
+    EXPECT_NEAR(closestPoint[i], queryPoint[i], 1.0e-16);
   }
 
   EXPECT_EQ(loc, -2);
@@ -287,7 +287,7 @@ TEST(primal_closest_point, triangle_test_degenerate)
   expectedClosestPoint = QPoint({0.0, 0.5, 5.0e-14});
 
   for (int i = 0; i < DIM; ++i) {
-    EXPECT_NEAR(closestPoint[i], expectedClosestPoint[i], 1.1e-14);
+    EXPECT_NEAR(closestPoint[i], expectedClosestPoint[i], 1.0e-16);
   }
 
   EXPECT_EQ(loc, -2);
@@ -297,7 +297,7 @@ TEST(primal_closest_point, triangle_test_degenerate)
   closestPoint = primal::closest_point(queryPoint, tri, &loc, EPS);
 
   for (int i = 0; i < DIM; ++i) {
-    EXPECT_NEAR(closestPoint[i], queryPoint[i], 1.1e-14);
+    EXPECT_NEAR(closestPoint[i], queryPoint[i], 1.0e-16);
   }
 
   EXPECT_EQ(loc, -3);
@@ -308,7 +308,7 @@ TEST(primal_closest_point, triangle_test_degenerate)
   expectedClosestPoint = QPoint({0.0, 0.75, 0.0});
 
   for (int i = 0; i < DIM; ++i) {
-    EXPECT_NEAR(closestPoint[i], expectedClosestPoint[i], 1.1e-14);
+    EXPECT_NEAR(closestPoint[i], expectedClosestPoint[i], 1.0e-16);
   }
 
   EXPECT_EQ(loc, -3);
@@ -318,7 +318,7 @@ TEST(primal_closest_point, triangle_test_degenerate)
   closestPoint = primal::closest_point(queryPoint, tri, &loc, EPS);
 
   for (int i = 0; i < DIM; ++i) {
-    EXPECT_NEAR(closestPoint[i], queryPoint[i], 1.1e-14);
+    EXPECT_NEAR(closestPoint[i], queryPoint[i], 1.0e-16);
   }
 
   EXPECT_EQ(loc, 3);
@@ -329,7 +329,7 @@ TEST(primal_closest_point, triangle_test_degenerate)
   expectedClosestPoint = QPoint({0.0, 1.0/3.0, 1.0e-13/3.0});
 
   for (int i = 0; i < DIM; ++i) {
-    EXPECT_NEAR(closestPoint[i], expectedClosestPoint[i], 1.1e-14);
+    EXPECT_NEAR(closestPoint[i], expectedClosestPoint[i], 1.0e-16);
   }
 
   EXPECT_EQ(loc, 3);
