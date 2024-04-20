@@ -312,6 +312,27 @@ TEST(primal_closest_point, triangle_test_degenerate)
   }
 
   EXPECT_EQ(loc, -3);
+
+  // Query point is on the interior of the triangle
+  queryPoint = QPoint({0.0, 1.0/3.0, 1.0e-13/3.0});
+  closestPoint = primal::closest_point(queryPoint, tri, &loc, 0.0);
+
+  for (int i = 0; i < DIM; ++i) {
+    EXPECT_NEAR(closestPoint[i], queryPoint[i], 1.1e-14);
+  }
+
+  EXPECT_EQ(loc, 3);
+
+  // Query point is in the interior region of the triangle
+  queryPoint = QPoint({-0.5, 1.0/3.0, 1.0e-13/3.0});
+  closestPoint = primal::closest_point(queryPoint, tri, &loc, 0.0);
+  expectedClosestPoint = QPoint({0.0, 1.0/3.0, 1.0e-13/3.0});
+
+  for (int i = 0; i < DIM; ++i) {
+    EXPECT_NEAR(closestPoint[i], expectedClosestPoint[i], 1.1e-14);
+  }
+
+  EXPECT_EQ(loc, 3);
 }
 
 //------------------------------------------------------------------------------
