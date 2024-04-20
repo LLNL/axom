@@ -65,7 +65,7 @@ public:
                               axom::Array<std::uint16_t>& caseIdsFlat,
                               axom::Array<std::uint16_t>& crossingFlags,
                               axom::Array<axom::IndexType>& scannedFlags,
-                              axom::Array<std::uint16_t>& facetIncrs)
+                              axom::Array<axom::IndexType>& facetIncrs)
     : m_allocatorID(allocatorID)
     , m_caseIds()
     , m_caseIdsIndexer()
@@ -956,7 +956,7 @@ private:
   axom::Array<axom::IndexType>& m_scannedFlags;
 
   //!@brief Number of surface mesh facets added by each crossing.
-  axom::Array<std::uint16_t>& m_facetIncrs;
+  axom::Array<axom::IndexType>& m_facetIncrs;
 
   //!@brief Number of parent cells crossing the contour surface.
   axom::IndexType m_crossingCount = 0;
