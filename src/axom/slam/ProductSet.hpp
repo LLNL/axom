@@ -13,6 +13,7 @@
 #ifndef SLAM_PRODUCT_SET_H_
 #define SLAM_PRODUCT_SET_H_
 
+#include "axom/core/IteratorBase.hpp"
 #include "axom/slam/BivariateSet.hpp"
 #include "axom/slam/RangeSet.hpp"
 
@@ -53,6 +54,8 @@ public:
   using PositionType = typename BaseType::PositionType;
   using ElementType = typename BaseType::ElementType;
   using ProductSetType = ProductSet<SetType1, SetType2>;
+
+  using IteratorType = BivariateSetIterator<ProductSet>;
 
 private:
   template <typename Dummy, typename SetType>
@@ -223,7 +226,10 @@ public:
     return m_rowSet.get(this->secondSetSize());
   }
 
-  ElementType at(PositionType pos) const { return pos % this->secondSetSize(); }
+  AXOM_HOST_DEVICE ElementType at(PositionType pos) const
+  {
+    return pos % this->secondSetSize();
+  }
 
   AXOM_HOST_DEVICE PositionType size() const
   {
@@ -231,6 +237,18 @@ public:
   }
 
   PositionType size(PositionType) const { return this->secondSetSize(); }
+
+  /*!
+   * \brief Return an iterator to the first pair of set elements in the
+   *  relation.
+   */
+  IteratorType begin() const { return IteratorType(this, 0); }
+
+  /*!
+   * \brief Return an iterator to one past the last pair of set elements in the
+   *  relation.
+   */
+  IteratorType end() const { return IteratorType(this, size()); }
 
   AXOM_HOST_DEVICE RangeSetType elementRangeSet(PositionType pos1) const
   {

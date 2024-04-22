@@ -101,7 +101,7 @@ public:
                            const std::string& maskFieldName) override
   {
     // Time this due to potentially slow memory allocation
-    AXOM_PERF_MARK_FUNCTION("MarchingCubesImpl::initialize");
+    AXOM_ANNOTATE_SCOPE("MarchingCubesImpl::initialize");
     clearDomain();
 
     SLIC_ASSERT(conduit::blueprint::mesh::topology::dims(dom.fetch_existing(
@@ -158,7 +158,7 @@ public:
   */
   void markCrossings() override
   {
-    AXOM_PERF_MARK_FUNCTION("MarchingCubesImpl::markCrossings");
+    AXOM_ANNOTATE_SCOPE("MarchingCubesImpl::markCrossings");
 
     m_caseIdsFlat.resize(m_mvu.getCellCount(), 0);
     m_caseIdsFlat.fill(0);
@@ -369,24 +369,24 @@ public:
 
   void scanCrossings() override
   {
-    AXOM_PERF_MARK_FUNCTION("MarchingCubesImpl::scanCrossings");
+    AXOM_ANNOTATE_SCOPE("MarchingCubesImpl::scanCrossings");
     if(m_dataParallelism ==
        axom::quest::MarchingCubesDataParallelism::hybridParallel)
     {
-      AXOM_PERF_MARK_SECTION("MarchingCubesImpl::scanCrossings:hybridParallel",
-                             scanCrossings_hybridParallel(););
+      AXOM_ANNOTATE_SCOPE("MarchingCubesImpl::scanCrossings:hybridParallel");
+      scanCrossings_hybridParallel();
     }
     else if(m_dataParallelism ==
             axom::quest::MarchingCubesDataParallelism::fullParallel)
     {
-      AXOM_PERF_MARK_SECTION("MarchingCubesImpl::scanCrossings:fullParallel",
-                             scanCrossings_fullParallel(););
+      AXOM_ANNOTATE_SCOPE("MarchingCubesImpl::scanCrossings:fullParallel");
+      scanCrossings_fullParallel();
     }
   }
 
   void allocateIndexLists()
   {
-    AXOM_PERF_MARK_FUNCTION("MarchingCubesImpl::allocateIndexLists");
+    AXOM_ANNOTATE_SCOPE("MarchingCubesImpl::allocateIndexLists");
     m_crossingParentIds.resize(m_crossingCount, 0);
     m_crossingCases.resize(m_crossingCount, 0);
     m_facetIncrs.resize(m_crossingCount, 0);
@@ -407,8 +407,8 @@ public:
     m_scannedFlags.resize(1 + m_mvu.getCellCount(), 0);
 
     auto crossingFlagsView = m_crossingFlags.view();
-    AXOM_PERF_MARK_SECTION(
-      "MarchingCubesImpl::scanCrossings:set_flags",
+    {
+      AXOM_ANNOTATE_SCOPE("MarchingCubesImpl::scanCrossings:set_flags");
       axom::for_all<ExecSpace>(
         0,
         parentCellCount,
@@ -416,23 +416,26 @@ public:
           auto numContourCells =
             num_contour_cells(caseIdsView.flatIndex(parentCellId));
           crossingFlagsView[parentCellId] = bool(numContourCells);
-        }););
+        });
+    }
 
     m_scannedFlags.fill(0, 1, 0);
+
+    {
+      AXOM_ANNOTATE_SCOPE("MarchingCubesImpl::scanCrossings:scan_flags");
 #if defined(AXOM_USE_RAJA)
-    AXOM_PERF_MARK_SECTION(
-      "MarchingCubesImpl::scanCrossings:scan_flags",
       RAJA::inclusive_scan<ScanPolicy>(
         RAJA::make_span(m_crossingFlags.data(), parentCellCount),
         RAJA::make_span(m_scannedFlags.data() + 1, parentCellCount),
-        RAJA::operators::plus<axom::IndexType> {}););
+        RAJA::operators::plus<axom::IndexType> {});
+
 #else
-    AXOM_PERF_MARK_SECTION(
-      "MarchingCubesImpl::scanCrossings:scan_flags",
-      for(axom::IndexType n = 0; n < parentCellCount; ++n) {
+      for(axom::IndexType n = 0; n < parentCellCount; ++n)
+      {
         m_scannedFlags[n + 1] = m_scannedFlags[n] + m_crossingFlags[n];
-      });
+      }
 #endif
+    }
 
     axom::copy(&m_crossingCount,
                m_scannedFlags.data() + m_scannedFlags.size() - 1,
@@ -447,21 +450,22 @@ public:
     auto crossingCasesView = m_crossingCases.view();
     auto facetIncrsView = m_facetIncrs.view();
 
-    AXOM_PERF_MARK_SECTION(
-      "MarchingCubesImpl::scanCrossings:set_incrs",
-      auto loopBody =
-        AXOM_LAMBDA(axom::IndexType parentCellId) {
-          if(scannedFlagsView[parentCellId] != scannedFlagsView[1 + parentCellId])
-          {
-            auto crossingId = scannedFlagsView[parentCellId];
-            auto caseId = caseIdsView.flatIndex(parentCellId);
-            auto facetIncr = num_contour_cells(caseId);
-            crossingParentIdsView[crossingId] = parentCellId;
-            crossingCasesView[crossingId] = caseId;
-            facetIncrsView[crossingId] = facetIncr;
-          }
-        };
-      axom::for_all<ExecSpace>(0, parentCellCount, loopBody););
+    {
+      AXOM_ANNOTATE_SCOPE("MarchingCubesImpl::scanCrossings:set_incrs");
+      auto loopBody = AXOM_LAMBDA(axom::IndexType parentCellId)
+      {
+        if(scannedFlagsView[parentCellId] != scannedFlagsView[1 + parentCellId])
+        {
+          auto crossingId = scannedFlagsView[parentCellId];
+          auto caseId = caseIdsView.flatIndex(parentCellId);
+          auto facetIncr = num_contour_cells(caseId);
+          crossingParentIdsView[crossingId] = parentCellId;
+          crossingCasesView[crossingId] = caseId;
+          facetIncrsView[crossingId] = facetIncr;
+        }
+      };
+      axom::for_all<ExecSpace>(0, parentCellCount, loopBody);
+    }
 
     //
     // Prefix-sum the facets counts to get first facet id for each crossing
@@ -469,20 +473,21 @@ public:
     //
 
     m_firstFacetIds.fill(0, 1, 0);
+
+    {
+      AXOM_ANNOTATE_SCOPE("MarchingCubesImpl::scanCrossings:scan_incrs");
 #if defined(AXOM_USE_RAJA)
-    AXOM_PERF_MARK_SECTION(
-      "MarchingCubesImpl::scanCrossings:scan_incrs",
       RAJA::inclusive_scan<ScanPolicy>(
         RAJA::make_span(m_facetIncrs.data(), m_crossingCount),
         RAJA::make_span(m_firstFacetIds.data() + 1, m_crossingCount),
-        RAJA::operators::plus<axom::IndexType> {}););
+        RAJA::operators::plus<axom::IndexType> {});
 #else
-    AXOM_PERF_MARK_SECTION(
-      "MarchingCubesImpl::scanCrossings:scan_incrs",
-      for(axom::IndexType n = 0; n < parentCellCount; ++n) {
+      for(axom::IndexType n = 0; n < parentCellCount; ++n)
+      {
         m_firstFacetIds[n + 1] = m_firstFacetIds[n] + m_facetIncrs[n];
-      });
+      }
 #endif
+    }
 
     axom::copy(&m_facetCount,
                m_firstFacetIds.data() + m_firstFacetIds.size() - 1,
@@ -586,7 +591,7 @@ public:
 
   void computeFacets() override
   {
-    AXOM_PERF_MARK_FUNCTION("MarchingCubesImpl::computeFacets");
+    AXOM_ANNOTATE_SCOPE("MarchingCubesImpl::computeFacets");
     const auto firstFacetIdsView = m_firstFacetIds.view();
     const auto crossingParentIdsView = m_crossingParentIds.view();
     const auto crossingCasesView = m_crossingCases.view();
@@ -990,7 +995,7 @@ private:
   }
 };
 
-}  // end namespace marching_cubes
-}  // end namespace detail
-}  // end namespace quest
-}  // end namespace axom
+}  // namespace marching_cubes
+}  // namespace detail
+}  // namespace quest
+}  // namespace axom

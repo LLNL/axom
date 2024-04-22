@@ -15,6 +15,7 @@
 #define AXOM_PRIMAL_CLOSEST_POINT_HPP_
 
 #include "axom/primal/geometry/Point.hpp"
+#include "axom/primal/geometry/Segment.hpp"
 #include "axom/primal/geometry/Triangle.hpp"
 #include "axom/primal/geometry/Sphere.hpp"
 #include "axom/primal/geometry/OrientedBoundingBox.hpp"
@@ -23,6 +24,84 @@ namespace axom
 {
 namespace primal
 {
+/*!
+ * \brief Computes the closest point from a point, P, to a given segment.
+ *
+ * \param [in] P the query point
+ * \param [in] seg user-supplied segment
+ * \param [out] t location along the line segment
+ * \param [in] EPS fuzz factor for equality comparisons
+ * \return cp the closest point from a point P and a segment
+ *
+ * \note t \f$ \in [0, 1] \f% represents the fraction of the way from A to B,
+ *  with 0 corresponding to A and 1 corresponding to B.
+ */
+template <typename T, int NDIMS>
+AXOM_HOST_DEVICE inline Point<T, NDIMS> closest_point(const Point<T, NDIMS>& P,
+                                                      const Segment<T, NDIMS>& seg,
+                                                      T& t,
+                                                      double EPS = 1E-12)
+{
+  using PointType = Point<T, NDIMS>;
+  using VectorType = Vector<T, NDIMS>;
+
+  using detail::isGeq;
+  using detail::isLeq;
+
+  constexpr T ZERO {0.};
+  constexpr T ONE {1.};
+
+  const PointType& A = seg[0];
+  const PointType& B = seg[1];
+
+  const VectorType AB(A, B);
+  const T squaredNormAB = AB.squared_norm();
+
+  // Check if segment is degenerate
+  if(isLeq(squaredNormAB, ZERO, EPS))
+  {
+    t = ZERO;
+    return A;
+  }
+
+  // Compute length of the projection of AP onto AB
+  t = VectorType(A, P).dot(AB);
+
+  if(isLeq(t, ZERO, EPS))
+  {
+    t = ZERO;
+    return A;
+  }
+  else if(isGeq(t, squaredNormAB, EPS))
+  {
+    t = ONE;
+    return B;
+  }
+  else
+  {
+    // Normalize t
+    t /= squaredNormAB;
+    return A + AB * t;
+  }
+}
+
+/*!
+ * \brief Computes the closest point from a point, P, to a given segment.
+ *
+ * \param [in] P the query point
+ * \param [in] seg user-supplied segment
+ * \param [in] EPS fuzz factor for equality comparisons
+ * \return cp the closest point from a point P and a segment
+ */
+template <typename T, int NDIMS>
+AXOM_HOST_DEVICE inline Point<T, NDIMS> closest_point(const Point<T, NDIMS>& P,
+                                                      const Segment<T, NDIMS>& seg,
+                                                      double EPS = 1E-12)
+{
+  T t;
+  return closest_point(P, seg, t, EPS);
+}
+
 /*!
  * \brief Computes the closest point from a point, P, to a given triangle.
  *

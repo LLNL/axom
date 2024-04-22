@@ -388,7 +388,7 @@ TYPED_TEST(BivariateSetTester, sizes)
 
 // Tests BivariateSet::getFirstSet(), getSecondSet(), getElements(idx)
 // and the ability to operate and iterate on the resulting sets
-template <typename S1, typename S2>
+template <typename S1, typename S2, typename DerivedSetType>
 void bSetTraverseTest(slam::BivariateSet<S1, S2>* bset, bool shouldCheckMod)
 {
   const auto firstSetSize = bset->firstSetSize();
@@ -426,6 +426,63 @@ void bSetTraverseTest(slam::BivariateSet<S1, S2>* bset, bool shouldCheckMod)
     }
     SLIC_INFO(sstr.str() << "}");
   }
+
+  SLIC_INFO(
+    "Flat traversal through virtual bivariate set:\n       "
+    "----------------------");
+
+  {
+    std::stringstream sstr;
+
+    // Iterate through the bivariate set as a list of indexes (i, j) in {S1, S2}
+    int flatIndex = 0;
+    for(auto bsetElem = bset->begin(); bsetElem != bset->end(); ++bsetElem)
+    {
+      EXPECT_EQ(flatIndex, bsetElem.flatIndex());
+      EXPECT_EQ(flatIndex,
+                bset->findElementFlatIndex(bsetElem.firstIndex(),
+                                           bsetElem.secondIndex()));
+      EXPECT_EQ(bsetElem.firstIndex(), bset->flatToFirstIndex(flatIndex));
+      EXPECT_EQ(bsetElem.secondIndex(), bset->flatToSecondIndex(flatIndex));
+
+      sstr << flatIndex << ": (" << firstSet->at(bsetElem.firstIndex()) << ","
+           << secondSet->at(bsetElem.secondIndex()) << "), ";
+
+      flatIndex++;
+    }
+
+    SLIC_INFO("{ " << sstr.str() << " }");
+  }
+
+  DerivedSetType* derivedSet = static_cast<DerivedSetType*>(bset);
+
+  SLIC_INFO(
+    "Flat traversal through derived bivariate set:\n       "
+    "----------------------");
+
+  {
+    std::stringstream sstr;
+
+    // Iterate through the bivariate set as a list of indexes (i, j) in {S1, S2}
+    int flatIndex = 0;
+    for(auto bsetElem = derivedSet->begin(); bsetElem != derivedSet->end();
+        ++bsetElem)
+    {
+      EXPECT_EQ(flatIndex, bsetElem.flatIndex());
+      EXPECT_EQ(flatIndex,
+                derivedSet->findElementFlatIndex(bsetElem.firstIndex(),
+                                                 bsetElem.secondIndex()));
+      EXPECT_EQ(bsetElem.firstIndex(), derivedSet->flatToFirstIndex(flatIndex));
+      EXPECT_EQ(bsetElem.secondIndex(), derivedSet->flatToSecondIndex(flatIndex));
+
+      sstr << flatIndex << ": (" << firstSet->at(bsetElem.firstIndex()) << ","
+           << secondSet->at(bsetElem.secondIndex()) << "), ";
+
+      flatIndex++;
+    }
+
+    SLIC_INFO("{ " << sstr.str() << " }");
+  }
 }
 
 TYPED_TEST(BivariateSetTester, traverse)
@@ -443,7 +500,7 @@ TYPED_TEST(BivariateSetTester, traverse)
     EXPECT_TRUE(pset.isValid(true));
 
     bool checkMod = false;
-    bSetTraverseTest<S1, S2>(&pset, checkMod);
+    bSetTraverseTest<S1, S2, PSet>(&pset, checkMod);
   }
 
   // Test traversal functions for a RelationSet
@@ -458,7 +515,7 @@ TYPED_TEST(BivariateSetTester, traverse)
     EXPECT_TRUE(rset.isValid(true));
 
     bool checkMod = true;
-    bSetTraverseTest<S1, S2>(&rset, checkMod);
+    bSetTraverseTest<S1, S2, RSet>(&rset, checkMod);
   }
 }
 

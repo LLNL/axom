@@ -20,9 +20,14 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 ## [Unreleased] - Release date yyyy-mm-dd
 
 ### Added
-- Adds prelimiary support for the optional `caliper` and `adiak` dependencies to axom.
+- Adds support for the optional `caliper` and `adiak` dependencies to axom.
   These dependencies are added through axom's `spack` package via the new `+profiling` variant,
   and are enabled in axom's build system via the `CALIPER_DIR` and `ADIAK_DIR` configuration paths.
+- Adds new annotation macros to axom: `AXOM_ANNOTATE_{BEGIN,END,SCOPE,METADATA}`. These replace
+  the previous annotation macros `AXOM_PERF_MARK_{FUNCTION,SECTION}`.
+- Adds a RAII-based `MPIWrapper` utility class to axom's core component. This can help setup/teardown
+  MPI in axom's examples. It can also be used in configurations with MPI.
+- Primal: Adds a `closest_point` operator for finding the closest point on a `Segment`
 
 ### Changed
 - Upgrades `vcpkg` usage for axom's automated Windows builds to its
@@ -30,6 +35,12 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
   Also updates vcpkg port versions for axom dependencies. Temporarily removes `umpire`
   from axom's default dependencies on Windows due to incompatibility between umpire's
   external `fmt` and axom's vendored copy.
+
+### Removed
+- Removes config option `AXOM_ENABLE_ANNOTATIONS`. Annotations are now provided by `caliper` 
+  (and `adiak` for metadata) and are available when axom is configured with `CALIPER_DIR` and `ADIAK_DIR` 
+  config variables.
+
 
 ## [Version 0.9.0] - Release date 2024-03-19
 

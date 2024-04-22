@@ -63,6 +63,20 @@ spack:
   - compiler:
       environment: {}
       extra_rpaths: []
+      flags:
+        fflags: -Mfreeform
+      modules: []
+      operating_system: rhel8
+      paths:
+        cc: /opt/rocm-5.7.1/llvm/bin/amdclang
+        cxx: /opt/rocm-5.7.1/llvm/bin/amdclang++
+        f77: /opt/rocm-5.7.1/llvm/bin/amdflang
+        fc: /opt/rocm-5.7.1/llvm/bin/amdflang
+      spec: clang@17.0.0
+      target: x86_64
+  - compiler:
+      environment: {}
+      extra_rpaths: []
       # Flag for lowercase Fortran module names
       flags:
         fflags: -ef
@@ -85,7 +99,7 @@ spack:
         mpi: [cray-mpich]
 
     hip:
-      version: [5.2.3, 5.4.3, 5.6.0]
+      version: [5.2.3, 5.4.3, 5.6.0, 5.7.1]
       buildable: false
       externals:
       - spec: hip@5.2.3
@@ -94,9 +108,11 @@ spack:
         prefix: /opt/rocm-5.4.3/hip
       - spec: hip@5.6.0
         prefix: /opt/rocm-5.6.0/hip
+      - spec: hip@5.7.1
+        prefix: /opt/rocm-5.7.1/hip
 
     llvm-amdgpu:
-      version: [5.2.3, 5.4.3, 5.6.0]
+      version: [5.2.3, 5.4.3, 5.6.0, 5.7.1]
       buildable: false
       externals:
       - spec: llvm-amdgpu@5.2.3
@@ -105,9 +121,11 @@ spack:
         prefix: /opt/rocm-5.4.3/llvm
       - spec: llvm-amdgpu@5.6.0
         prefix: /opt/rocm-5.6.0/llvm
+      - spec: llvm-amdgpu@5.7.1
+        prefix: /opt/rocm-5.7.1/llvm
 
     hsa-rocr-dev:
-      version: [5.2.3, 5.4.3, 5.6.0]
+      version: [5.2.3, 5.4.3, 5.6.0, 5.7.1]
       buildable: false
       externals:
       - spec: hsa-rocr-dev@5.2.3
@@ -116,9 +134,11 @@ spack:
         prefix: /opt/rocm-5.4.3/
       - spec: hsa-rocr-dev@5.6.0
         prefix: /opt/rocm-5.6.0/
+      - spec: hsa-rocr-dev@5.7.1
+        prefix: /opt/rocm-5.7.1/
 
     rocblas:
-      version: [5.2.3, 5.4.3, 5.6.0]
+      version: [5.2.3, 5.4.3, 5.6.0, 5.7.1]
       buildable: false
       externals:
       - spec: rocblas@5.2.3
@@ -127,9 +147,11 @@ spack:
         prefix: /opt/rocm-5.4.3/
       - spec: rocblas@5.6.0
         prefix: /opt/rocm-5.6.0/
+      - spec: rocblas@5.7.1
+        prefix: /opt/rocm-5.7.1/
 
     rocminfo:
-      version: [5.2.3, 5.4.3, 5.6.0]
+      version: [5.2.3, 5.4.3, 5.6.0, 5.7.1]
       buildable: false
       externals:
       - spec: rocminfo@5.2.3
@@ -138,9 +160,11 @@ spack:
         prefix: /opt/rocm-5.4.3/
       - spec: rocminfo@5.6.0
         prefix: /opt/rocm-5.6.0/
+      - spec: rocminfo@5.7.1
+        prefix: /opt/rocm-5.7.1
 
     rocprim:
-      version: [5.2.3, 5.4.3, 5.6.0]
+      version: [5.2.3, 5.4.3, 5.6.0, 5.7.1]
       buildable: false
       externals:
       - spec: rocprim@5.2.3
@@ -149,9 +173,11 @@ spack:
         prefix: /opt/rocm-5.4.3/
       - spec: rocprim@5.6.0
         prefix: /opt/rocm-5.6.0/
+      - spec: rocprim@5.7.1
+        prefix: /opt/rocm-5.7.1/
 
     rocm-device-libs:
-      version: [5.2.3, 5.4.3, 5.6.0]
+      version: [5.2.3, 5.4.3, 5.6.0, 5.7.1]
       buildable: false
       externals:
       - spec: rocm-device-libs@5.2.3
@@ -160,6 +186,8 @@ spack:
         prefix: /opt/rocm-5.4.3/
       - spec: rocm-device-libs@5.6.0
         prefix: /opt/rocm-5.6.0/
+      - spec: rocm-device-libs@5.7.1
+        prefix: /opt/rocm-5.7.1/
 
     # Lock down which MPI we are using
     mpi:
@@ -173,6 +201,8 @@ spack:
         prefix: /usr/tce/packages/cray-mpich-tce/cray-mpich-8.1.25-rocmcc-5.4.3/
       - spec: cray-mpich@8.1.25%clang@16.0.0+slurm
         prefix: /usr/tce/packages/cray-mpich-tce/cray-mpich-8.1.25-rocmcc-5.6.0/
+      - spec: cray-mpich@8.1.27%clang@17.0.0+slurm
+        prefix: /usr/tce/packages/cray-mpich-tce/cray-mpich-8.1.27-rocmcc-5.7.1/
       - spec: cray-mpich@8.1.25%cce@15.0.1+slurm
         prefix: /usr/tce/packages/cray-mpich-tce/cray-mpich-8.1.25-rocmcc-5.4.3-cce-15.0.1/
 
@@ -339,7 +369,7 @@ spack:
     adiak:
       require: "@0.4.0"
     caliper:
-      require: "@2.10.0"
+      require: "@2.10.0~kokkos"
     camp:
       require: "@2024.02.0"
     conduit:
