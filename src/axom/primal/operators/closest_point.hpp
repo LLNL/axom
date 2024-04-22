@@ -187,22 +187,6 @@ AXOM_HOST_DEVICE inline Point<T, NDIMS> closest_point(const Point<T, NDIMS>& P,
   }
 
   //----------------------------------------------------------------------------
-  // Check if P in edge region of AB
-  const T vc = d1 * d4 - d3 * d2;
-  if(isLeq(vc, T(0), EPS) && isGeq(d1, T(0), EPS) && isLeq(d3, T(0), EPS))
-  {
-    const T v = d1 / (d1 - d3);
-    const VectorType v_ab = ab * v;
-
-    if(loc != nullptr)
-    {
-      *loc = -1;
-    }
-
-    return A + v_ab;
-  }
-
-  //----------------------------------------------------------------------------
   // Check if P in vertex region outside C
   const VectorType cp(C, P);
   const T d5 = VectorType::dot_product(ab, cp);
@@ -216,6 +200,22 @@ AXOM_HOST_DEVICE inline Point<T, NDIMS> closest_point(const Point<T, NDIMS>& P,
     }
 
     return C;
+  }
+
+  //----------------------------------------------------------------------------
+  // Check if P in edge region of AB
+  const T vc = d1 * d4 - d3 * d2;
+  if(isLeq(vc, T(0), EPS) && isGeq(d1, T(0), EPS) && isLeq(d3, T(0), EPS) && !utilities::isNearlyEqual(d1, d3, EPS))
+  {
+    const T v = d1 / (d1 - d3);
+    const VectorType v_ab = ab * v;
+
+    if(loc != nullptr)
+    {
+      *loc = -1;
+    }
+
+    return A + v_ab;
   }
 
   //----------------------------------------------------------------------------
