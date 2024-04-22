@@ -515,6 +515,33 @@ TEST(primal_closest_point, triangle_test_degenerate_side_CA)
 }
 
 //------------------------------------------------------------------------------
+TEST(primal_closest_point, triangle_test_all_sides_degenerate)
+{
+  constexpr double EPS = primal::PRIMAL_TINY;
+
+  constexpr int DIM = 3;
+  using CoordType = double;
+  using QPoint = primal::Point<CoordType, DIM>;
+  using QTriangle = primal::Triangle<CoordType, DIM>;
+
+  QTriangle tri({QPoint({1.0, 3.0, 1.0}),
+                 QPoint({1.0, 3.0, 1.0}),
+                 QPoint({1.0, 3.0, 1.0})});
+
+  const QPoint& A = tri[0];
+
+  int loc;
+
+  // Query point is on vertex A/B/C
+  EXPECT_TRUE(primal::closest_point(QPoint({1.0, 3.0, 1.0}), tri, &loc, EPS) == A);
+  EXPECT_EQ(loc, 0);
+
+  // Query point is in the vertex region of A/B/C
+  EXPECT_TRUE(primal::closest_point(QPoint({2.0, 4.0, 2.0}), tri, &loc, EPS) == A);
+  EXPECT_EQ(loc, 0);
+}
+
+//------------------------------------------------------------------------------
 TEST(primal_closest_point, obb_test_closest_point_interior)
 {
   constexpr int DIM = 3;
