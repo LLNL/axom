@@ -217,7 +217,7 @@ TEST(primal_closest_point, triangle_test_tiny)
   using QTriangle = primal::Triangle<CoordType, DIM>;
 
   QTriangle tri({QPoint({0.0, 0.0, 0.0}),
-                 QPoint({0.0, 0.0, 1.0e-13}),
+                 QPoint({0.0, 0.0, 1.0e-16}),
                  QPoint({0.0, 1.0, 0.0})});
 
   const QPoint& A = tri[0];
@@ -231,15 +231,15 @@ TEST(primal_closest_point, triangle_test_tiny)
   EXPECT_EQ(loc, 0);
 
   // Query point is in the vertex region of A
-  EXPECT_TRUE(primal::closest_point(QPoint({0.0, 0.0, -1.0e-11}), tri, &loc, EPS) == A);
+  EXPECT_TRUE(primal::closest_point(QPoint({0.0, 0.0, -1.0e-16}), tri, &loc, EPS) == A);
   EXPECT_EQ(loc, 0);
 
   // Query point is on vertex B
-  EXPECT_TRUE(primal::closest_point(QPoint({0.0, 0.0, 1.0e-13}), tri, &loc, EPS) == B);
+  EXPECT_TRUE(primal::closest_point(QPoint({0.0, 0.0, 1.0e-16}), tri, &loc, EPS) == B);
   EXPECT_EQ(loc, 1);
 
   // Query point is in the vertex region of B
-  EXPECT_TRUE(primal::closest_point(QPoint({0.0, 0.0, 1.0e-11}), tri, &loc, EPS) == B);
+  EXPECT_TRUE(primal::closest_point(QPoint({0.0, 0.0, 1.0e-15}), tri, &loc, EPS) == B);
   EXPECT_EQ(loc, 1);
 
   // Query point is on vertex C
@@ -247,11 +247,11 @@ TEST(primal_closest_point, triangle_test_tiny)
   EXPECT_EQ(loc, 2);
 
   // Query point is in the vertex region of C
-  EXPECT_TRUE(primal::closest_point(QPoint({0.0, 1.00000000001, 0.0}), tri, &loc, EPS) == C);
+  EXPECT_TRUE(primal::closest_point(QPoint({0.0, 1.0 + 1.0e-16, 0.0}), tri, &loc, EPS) == C);
   EXPECT_EQ(loc, 2);
 
   // Query point is on AB
-  QPoint queryPoint({0.0, 0.0, 1.0e-14});
+  QPoint queryPoint({0.0, 0.0, 1.0e-17});
   QPoint closestPoint = primal::closest_point(queryPoint, tri, &loc, EPS);
 
   for (int i = 0; i < DIM; ++i) {
@@ -261,9 +261,9 @@ TEST(primal_closest_point, triangle_test_tiny)
   EXPECT_EQ(loc, -1);
 
   // Query point is in the edge region of AB
-  queryPoint = QPoint({0.0, -0.1, 1.0e-14});
+  queryPoint = QPoint({0.0, -0.1, 1.0e-17});
   closestPoint = primal::closest_point(queryPoint, tri, &loc, EPS);
-  QPoint expectedClosestPoint({0.0, 0.0, 1.0e-14});
+  QPoint expectedClosestPoint({0.0, 0.0, 1.0e-17});
 
   for (int i = 0; i < DIM; ++i) {
     EXPECT_NEAR(closestPoint[i], expectedClosestPoint[i], 1.0e-16);
@@ -272,7 +272,7 @@ TEST(primal_closest_point, triangle_test_tiny)
   EXPECT_EQ(loc, -1);
 
   // Query point is on BC
-  queryPoint = QPoint({0.0, 0.5, 5.0e-14});
+  queryPoint = QPoint({0.0, 0.5, 5.0e-17});
   closestPoint = primal::closest_point(queryPoint, tri, &loc, EPS);
 
   for (int i = 0; i < DIM; ++i) {
@@ -282,9 +282,9 @@ TEST(primal_closest_point, triangle_test_tiny)
   EXPECT_EQ(loc, -2);
 
   // Query point is in the edge region of BC
-  queryPoint = QPoint({0.5, 0.5, 5.0e-14});
+  queryPoint = QPoint({0.5, 0.5, 5.0e-17});
   closestPoint = primal::closest_point(queryPoint, tri, &loc, EPS);
-  expectedClosestPoint = QPoint({0.0, 0.5, 5.0e-14});
+  expectedClosestPoint = QPoint({0.0, 0.5, 5.0e-17});
 
   for (int i = 0; i < DIM; ++i) {
     EXPECT_NEAR(closestPoint[i], expectedClosestPoint[i], 1.0e-16);
@@ -314,7 +314,7 @@ TEST(primal_closest_point, triangle_test_tiny)
   EXPECT_EQ(loc, -3);
 
   // Query point is on the interior of the triangle
-  queryPoint = QPoint({0.0, 1.0/3.0, 1.0e-13/3.0});
+  queryPoint = QPoint({0.0, 1.0/3.0, 1.0e-16/3.0});
   closestPoint = primal::closest_point(queryPoint, tri, &loc, EPS);
 
   for (int i = 0; i < DIM; ++i) {
@@ -324,9 +324,9 @@ TEST(primal_closest_point, triangle_test_tiny)
   EXPECT_EQ(loc, 3);
 
   // Query point is in the interior region of the triangle
-  queryPoint = QPoint({-0.5, 1.0/3.0, 1.0e-13/3.0});
+  queryPoint = QPoint({-0.5, 1.0/3.0, 1.0e-16/3.0});
   closestPoint = primal::closest_point(queryPoint, tri, &loc, EPS);
-  expectedClosestPoint = QPoint({0.0, 1.0/3.0, 1.0e-13/3.0});
+  expectedClosestPoint = QPoint({0.0, 1.0/3.0, 1.0e-16/3.0});
 
   for (int i = 0; i < DIM; ++i) {
     EXPECT_NEAR(closestPoint[i], expectedClosestPoint[i], 1.0e-16);
