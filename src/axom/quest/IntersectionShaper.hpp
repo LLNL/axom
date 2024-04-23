@@ -66,6 +66,29 @@
 #endif
 // clang-format on
 
+namespace
+{
+#if defined(AXOM_USE_RAJA) && defined(AXOM_USE_UMPIRE)
+
+/*!
+   *
+   * \brief Helper function that returns the Umpire allocator id for device
+   *        (for CUDA/HIP policy, set to Unified)
+   * \return The Umpire allocator id for device
+   */
+
+template <typename ExecSpace>
+int getUmpireDeviceId()
+{
+  constexpr bool on_device = axom::execution_space<ExecSpace>::onDevice();
+  int allocator_id = on_device
+    ? axom::getUmpireResourceAllocatorID(umpire::resource::Unified)
+    : axom::execution_space<ExecSpace>::allocatorID();
+  return allocator_id;
+}
+#endif
+}  // namespace
+
 namespace axom
 {
 namespace quest
@@ -162,10 +185,8 @@ private:
     m_hostData = hostPtr;
     m_numElements = nElem;
     m_needResult = _needResult;
-    constexpr bool on_device = axom::execution_space<ExecSpace>::onDevice();
-    int execSpaceAllocatorID = on_device
-      ? axom::getUmpireResourceAllocatorID(umpire::resource::Unified)
-      : axom::execution_space<ExecSpace>::allocatorID();
+    int execSpaceAllocatorID = ::getUmpireDeviceId<ExecSpace>();
+
     auto dataSize = sizeof(double) * m_numElements;
     m_deviceData = axom::allocate<double>(dataSize, execSpaceAllocatorID);
     axom::copy(m_deviceData, m_hostData, dataSize);
@@ -582,11 +603,7 @@ public:
 
     // Determine new allocator (for CUDA/HIP policy, set to Unified)
     // Set new default to device
-    constexpr bool on_device = axom::execution_space<ExecSpace>::onDevice();
-    int allocator_id = on_device
-      ? axom::getUmpireResourceAllocatorID(umpire::resource::Unified)
-      : axom::execution_space<ExecSpace>::allocatorID();
-    axom::setDefaultAllocator(allocator_id);
+    axom::setDefaultAllocator(::getUmpireDeviceId<ExecSpace>());
 
     const auto& shapeName = shape.getName();
     AXOM_UNUSED_VAR(shapeDimension);
@@ -632,11 +649,7 @@ public:
 
     // Determine new allocator (for CUDA/HIP policy, set to Unified)
     // Set new default to device
-    constexpr bool on_device = axom::execution_space<ExecSpace>::onDevice();
-    int allocator_id = on_device
-      ? axom::getUmpireResourceAllocatorID(umpire::resource::Unified)
-      : axom::execution_space<ExecSpace>::allocatorID();
-    axom::setDefaultAllocator(allocator_id);
+    axom::setDefaultAllocator(::getUmpireDeviceId<ExecSpace>());
 
     SLIC_INFO(axom::fmt::format("{:-^80}",
                                 " Inserting shapes' bounding boxes into BVH "));
@@ -1202,10 +1215,8 @@ public:
     SLIC_ASSERT(shapeVolFrac != nullptr);
 
     // Allocate some memory for the replacement rule data arrays.
-    constexpr bool on_device = axom::execution_space<ExecSpace>::onDevice();
-    int execSpaceAllocatorID = on_device
-      ? axom::getUmpireResourceAllocatorID(umpire::resource::Unified)
-      : axom::execution_space<ExecSpace>::allocatorID();
+    int execSpaceAllocatorID = ::getUmpireDeviceId<ExecSpace>();
+
     Array<double> vf_subtract_array(dataSize, dataSize, execSpaceAllocatorID);
     Array<double> vf_writable_array(dataSize, dataSize, execSpaceAllocatorID);
     ArrayView<double> vf_subtract(vf_subtract_array);
