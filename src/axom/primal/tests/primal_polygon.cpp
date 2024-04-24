@@ -7,6 +7,8 @@
 #include "axom/primal.hpp"
 #include "axom/slic.hpp"
 
+#include "axom/core/execution/execution_space.hpp"
+
 #include <math.h>
 #include "gtest/gtest.h"
 
@@ -717,6 +719,144 @@ TEST(primal_polygon, normal)
     }
   }
 }
+
+#if defined(AXOM_USE_RAJA) && defined(AXOM_USE_UMPIRE)
+template <typename ExecPolicy>
+void check_polygon_policy()
+{
+  using Polygon3D = axom::primal::Polygon<double, 3>;
+  using Point3D = axom::primal::Point<double, 3>;
+  using Polygon2D = axom::primal::Polygon<double, 2>;
+  using Point2D = axom::primal::Point<double, 2>;
+  using Vector3D = axom::primal::Vector<double, 3>;
+
+  const int NUM_VERTS_SQUARE = 4;
+
+  Polygon3D* poly_3d_device =
+    axom::allocate<Polygon3D>(1,
+                              axom::execution_space<ExecPolicy>::allocatorID());
+  Polygon2D* poly_2d_device =
+    axom::allocate<Polygon2D>(1,
+                              axom::execution_space<ExecPolicy>::allocatorID());
+
+  Point3D* vertex_mean_3d_device =
+    axom::allocate<Point3D>(1, axom::execution_space<ExecPolicy>::allocatorID());
+  Point2D* vertex_mean_2d_device =
+    axom::allocate<Point2D>(1, axom::execution_space<ExecPolicy>::allocatorID());
+
+  double* area_3d_device =
+    axom::allocate<double>(1, axom::execution_space<ExecPolicy>::allocatorID());
+  double* area_2d_device =
+    axom::allocate<double>(1, axom::execution_space<ExecPolicy>::allocatorID());
+
+  // 3d only
+  Vector3D* normal_3d_device =
+    axom::allocate<Vector3D>(1, axom::execution_space<ExecPolicy>::allocatorID());
+
+  axom::for_all<ExecPolicy>(
+    1,
+    AXOM_LAMBDA(int i) {
+      // Initialize to empty polygons
+      poly_3d_device[i] = Polygon3D();
+      poly_2d_device[i] = Polygon2D();
+      poly_3d_device[i].clear();
+      poly_2d_device[i].clear();
+
+      // Initialize to triangles
+      poly_3d_device[i] = Polygon3D({Point3D({0.0, 0.0, 0.0}),
+                                     Point3D({1.0, 0.0, 0.0}),
+                                     Point3D({1.0, 1.0, 0.0})});
+      poly_2d_device[i] = Polygon2D(
+        {Point2D({0.0, 0.0}), Point2D({1.0, 0.0}), Point2D({1.0, 1.0})});
+
+      // Add a vertex to make squares
+      (poly_3d_device[i]).addVertex(Point3D({0.0, 1.0, 0.0}));
+      (poly_2d_device[i]).addVertex(Point2D({0.0, 1.0}));
+
+      // Collect info about squares
+      vertex_mean_3d_device[i] = poly_3d_device[i].vertexMean();
+      vertex_mean_2d_device[i] = poly_2d_device[i].vertexMean();
+      area_3d_device[i] = poly_3d_device[i].area();
+      area_2d_device[i] = poly_2d_device[i].area();
+      normal_3d_device[i] = poly_3d_device[i].normal();
+
+      //Sanity check - functions are callable on device
+      poly_3d_device[i].numVertices();
+      poly_3d_device[i].isValid();
+      poly_2d_device[i].numVertices();
+      poly_2d_device[i].isValid();
+    });
+
+  // Copy polygons and data back to host
+  Polygon3D poly_3d_host;
+  Polygon2D poly_2d_host;
+  Point3D vertex_mean_3d_host;
+  Point3D vertex_mean_2d_host;
+  double area_3d_host;
+  double area_2d_host;
+  Vector3D normal_3d_host;
+
+  axom::copy(&poly_3d_host, poly_3d_device, sizeof(Polygon3D));
+  axom::copy(&poly_2d_host, poly_2d_device, sizeof(Polygon2D));
+  axom::copy(&vertex_mean_3d_host, vertex_mean_3d_device, sizeof(Point3D));
+  axom::copy(&vertex_mean_2d_host, vertex_mean_2d_device, sizeof(Point2D));
+  axom::copy(&area_3d_host, area_3d_device, sizeof(double));
+  axom::copy(&area_2d_host, area_2d_device, sizeof(double));
+  axom::copy(&normal_3d_host, normal_3d_device, sizeof(Vector3D));
+
+  // Verify values
+  EXPECT_EQ(poly_3d_host.numVertices(), NUM_VERTS_SQUARE);
+  EXPECT_EQ(poly_2d_host.numVertices(), NUM_VERTS_SQUARE);
+
+  EXPECT_EQ(vertex_mean_3d_host, Point3D({0.5, 0.5, 0}));
+  EXPECT_EQ(vertex_mean_2d_host, Point3D({0.5, 0.5}));
+
+  EXPECT_DOUBLE_EQ(area_3d_host, 1.0);
+  EXPECT_DOUBLE_EQ(area_2d_host, 1.0);
+
+  EXPECT_EQ(normal_3d_host, Vector3D(Point3D({0.0, 0.0, 2.0})));
+
+  EXPECT_TRUE(poly_3d_host.isValid());
+  EXPECT_TRUE(poly_2d_host.isValid());
+
+  // Cleanup allocations
+  axom::deallocate(poly_3d_device);
+  axom::deallocate(poly_2d_device);
+  axom::deallocate(vertex_mean_3d_device);
+  axom::deallocate(vertex_mean_2d_device);
+  axom::deallocate(area_3d_device);
+  axom::deallocate(area_2d_device);
+  axom::deallocate(normal_3d_device);
+}
+
+//------------------------------------------------------------------------------
+TEST(primal_polygon, polygon_check_seq)
+{
+  check_polygon_policy<axom::SEQ_EXEC>();
+}
+
+  #ifdef AXOM_USE_OPENMP
+TEST(primal_polygon, polygon_check_omp)
+{
+  check_polygon_policy<axom::OMP_EXEC>();
+}
+  #endif /* AXOM_USE_OPENMP */
+
+  #ifdef AXOM_USE_CUDA
+TEST(primal_polygon, polygon_check_cuda)
+{
+  check_polygon_policy<axom::CUDA_EXEC<256>>();
+}
+  #endif /* AXOM_USE_CUDA */
+
+  #ifdef AXOM_USE_HIP
+TEST(primal_clip, polygon_check_hip)
+{
+  check_polygon_policy<axom::HIP_EXEC<256>>();
+}
+  #endif /* AXOM_USE_HIP */
+
+#endif /* AXOM_USE_RAJA && AXOM_USE_UMPIRE */
 
 //------------------------------------------------------------------------------
 int main(int argc, char* argv[])

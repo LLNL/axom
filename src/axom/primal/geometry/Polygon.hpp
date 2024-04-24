@@ -55,6 +55,7 @@ public:
 
 public:
   /// Default constructor for an empty polygon
+  AXOM_HOST_DEVICE
   Polygon() { }
 
   /// \brief Constructor for a polygon with the given vertices
@@ -70,6 +71,7 @@ public:
   }
 
   // \brief Constructor for a polygon with an initializer list of Points
+  AXOM_HOST_DEVICE
   explicit Polygon(std::initializer_list<PointType> vertices)
   {
     SLIC_ASSERT(static_cast<int>(vertices.size()) <= MAX_VERTS);
@@ -84,9 +86,11 @@ public:
   }
 
   /// Return the number of vertices in the polygon
+  AXOM_HOST_DEVICE
   int numVertices() const { return m_num_vertices; }
 
   /// Appends a vertex to the list of vertices
+  AXOM_HOST_DEVICE
   void addVertex(const PointType& pt)
   {
     SLIC_ASSERT(m_num_vertices + 1 < MAX_VERTS);
@@ -95,6 +99,7 @@ public:
   }
 
   /// Clears the list of vertices
+  AXOM_HOST_DEVICE
   void clear()
   {
     for(int i = 0; i < MAX_VERTS; i++)
@@ -105,8 +110,11 @@ public:
   }
 
   /// Retrieves the vertex at index idx
+  AXOM_HOST_DEVICE
   PointType& operator[](int idx) { return m_vertices[idx]; }
+
   /// Retrieves the vertex at index idx
+  AXOM_HOST_DEVICE
   const PointType& operator[](int idx) const { return m_vertices[idx]; }
 
   /*! 
@@ -115,6 +123,7 @@ public:
    * \return normal polygon normal vector
    */
   template <int TDIM = NDIMS>
+  AXOM_HOST_DEVICE
   typename std::enable_if<TDIM == 3, VectorType>::type normal() const
   {
     SLIC_ASSERT(isValid());
@@ -141,6 +150,7 @@ public:
    * \return A point at the mean of the polygon's vertices
    * \pre  polygon.isValid() is true
    */
+  AXOM_HOST_DEVICE
   PointType vertexMean() const
   {
     SLIC_ASSERT(isValid());
@@ -168,6 +178,7 @@ public:
    * The area is always non-negative since 3D polygons do not have a unique orientation.
    */
   template <int TDIM = NDIMS>
+  AXOM_HOST_DEVICE
   typename std::enable_if<TDIM == 3, double>::type area() const
   {
     const int nVerts = numVertices();
@@ -197,6 +208,7 @@ public:
    * \sa signedArea()
    */
   template <int TDIM = NDIMS>
+  AXOM_HOST_DEVICE
   typename std::enable_if<TDIM == 2, double>::type area() const
   {
     return axom::utilities::abs(signedArea());
@@ -212,6 +224,7 @@ public:
    * \sa area()
    */
   template <int TDIM = NDIMS>
+  AXOM_HOST_DEVICE
   typename std::enable_if<TDIM == 2, double>::type signedArea() const
   {
     const int nVerts = numVertices();
@@ -263,6 +276,7 @@ public:
    * Initial check is that the polygon has three or more vertices
    * \return True, if the polygon is valid, False otherwise
    */
+  AXOM_HOST_DEVICE
   bool isValid() const { return m_num_vertices >= 3; }
 
 private:
