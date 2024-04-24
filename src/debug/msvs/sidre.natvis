@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?> 
+<AutoVisualizer xmlns="http://schemas.microsoft.com/vstudio/debugger/natvis/2010">
+    <Type Name="axom::sidre::Group">
+        <!-- Group can be map or list.  Group contains groups and views. -->
+        <DisplayString>{ m_name } {{ groups: { m_group_coll } views:  { m_view_coll } }}</DisplayString>
+        <Expand>
+            <Item Name="groups">m_group_coll</Item>
+            <Item Name="views">m_view_coll</Item>
+        </Expand>
+    </Type>
+    <Type Name="axom::sidre::ListCollection&lt;axom::sidre::Group&gt;">
+        <DisplayString>{{ size: { m_items.size() } }}</DisplayString>
+        <Expand>
+            <ArrayItems>
+                <Size>m_items.size()</Size>
+                <ValuePointer>m_items._Mypair._Myval2._Myfirst</ValuePointer>
+            </ArrayItems>
+        </Expand>
+    </Type>
+    <Type Name="axom::sidre::MapCollection&lt;axom::sidre::Group&gt;">
+        <DisplayString>{{ size: { m_items.size() } }}</DisplayString>
+        <Expand>
+            <ArrayItems>
+                <Size>m_items.size()</Size>
+                <ValuePointer>m_items._Mypair._Myval2._Myfirst</ValuePointer>
+            </ArrayItems>
+        </Expand>
+    </Type>
+    <Type Name="axom::sidre::ListCollection&lt;axom::sidre::View&gt;">
+        <DisplayString>{{ size: { m_items.size() } }}</DisplayString>
+        <Expand>
+            <ArrayItems>
+                <Size>m_items.size()</Size>
+                <ValuePointer>m_items._Mypair._Myval2._Myfirst</ValuePointer>
+            </ArrayItems>
+        </Expand>
+    </Type>
+    <Type Name="axom::sidre::MapCollection&lt;axom::sidre::View&gt;">
+        <DisplayString>{{ size: { m_items.size() } }}</DisplayString>
+        <Expand>
+            <ArrayItems>
+                <Size>m_items.size()</Size>
+                <ValuePointer>m_items._Mypair._Myval2._Myfirst</ValuePointer>
+            </ArrayItems>
+        </Expand>
+    </Type>
+    <Type Name="axom::sidre::View">
+        <DisplayString Condition="m_state == EMPTY">{ m_name } EMPTY</DisplayString>
+        <DisplayString Condition="m_state == BUFFER">{ m_name } buffer { m_data_buffer->m_index }; len: { m_schema.m_dtype.m_num_ele } offset: { m_schema.m_dtype.m_offset / m_schema.m_dtype.m_ele_bytes } stride: { m_schema.m_dtype.m_stride / m_schema.m_dtype.m_ele_bytes }</DisplayString>
+        <DisplayString Condition="m_state == EXTERNAL &amp;&amp; !m_is_applied">{ m_name } opaque { m_external_ptr }</DisplayString>
+        <DisplayString Condition="m_state == EXTERNAL &amp;&amp; m_is_applied">{ m_name } external { m_external_ptr }</DisplayString>
+        <DisplayString Condition="m_state == SCALAR">{ m_name } : { m_node }</DisplayString>
+        <DisplayString Condition="m_state == STRING">{ m_name } : { m_node }</DisplayString>
+        <Expand>
+            <ArrayItems Condition="m_state == BUFFER">
+                <Size>m_schema.m_dtype.m_num_ele</Size>
+                <ValuePointer>m_data_buffer->m_node.m_data</ValuePointer>
+            </ArrayItems>
+        </Expand>
+    </Type>
+</AutoVisualizer>
