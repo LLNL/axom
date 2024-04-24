@@ -37,7 +37,7 @@ RUN cd ${HOME}/axom_repo && python3 ./scripts/uberenv/uberenv.py --spack-env-fil
                                                                  --project-json=.uberenv_config.json \
                                                                  --spec="%gcc@9.3.0+mfem+profiling+cuda cuda_arch=70" \
                                                                  --prefix=${HOME}/axom_tpls -k \
-                         && rm -rf ${HOME}/axom_tpls/builds
+                         && rm -rf ${HOME}/axom_tpls/build_stage ${HOME}/axom_tpls/spack
 
 # Make sure the new hostconfig works with a release build
 # Note: having high job slots causes build log to disappear and job to fail
