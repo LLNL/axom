@@ -1625,7 +1625,7 @@ AXOM_HOST_DEVICE bool intersect_plane_tet3d(const Plane<T, 3>& p,
   distances[2] = p.signedDistance(tet[2]);
   distances[3] = p.signedDistance(tet[3]);
 
-  constexpr T zero{0};
+  constexpr T zero {0};
   int gt[4];
   gt[0] = distances[0] > zero;
   gt[1] = distances[1] > zero;
@@ -1646,6 +1646,7 @@ AXOM_HOST_DEVICE bool intersect_plane_tet3d(const Plane<T, 3>& p,
     caseNumber = (~((lt[3] << 3) | (lt[2] << 2) | (lt[1] << 1) | lt[0])) & 0xf;
   }
 
+  // clang-format off
   // Edge lookup (pairs of point ids)
   const std::uint8_t edges[] = {
    /* 0 */ // None
@@ -1666,9 +1667,12 @@ AXOM_HOST_DEVICE bool intersect_plane_tet3d(const Plane<T, 3>& p,
    /* 15 */ // None
   };
   const std::uint8_t edges_offsets[] = {0, 0, 6, 12, 20, 26, 34, 42, 48, 54, 62, 70, 76, 84, 90, 96, 96};
+  // clang-format on
 
   // Add new vertices to the polygon according to the case.
-  const int n = static_cast<int>(edges_offsets[caseNumber + 1] - edges_offsets[caseNumber]) >> 1;
+  const int n =
+    static_cast<int>(edges_offsets[caseNumber + 1] - edges_offsets[caseNumber]) >>
+    1;
   for(int i = 0; i < n; i++)
   {
     const auto eOffset = static_cast<int>(edges_offsets[caseNumber]) + (i << 1);

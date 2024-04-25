@@ -607,7 +607,7 @@ AXOM_HOST_DEVICE bool intersect(const Plane<T, 3>& plane,
 template <typename T>
 AXOM_HOST_DEVICE bool intersect(const Plane<T, 3>& p,
                                 const Tetrahedron<T, 3>& tet,
-                                Polygon<T, 3> &intersection)
+                                Polygon<T, 3>& intersection)
 {
   return detail::intersect_plane_tet3d(p, tet, intersection);
 }
