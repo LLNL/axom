@@ -103,6 +103,23 @@ AXOM_HOST_DEVICE inline Point<T, NDIMS> closest_point(const Point<T, NDIMS>& P,
 }
 
 /*!
+ * \brief Computes the closest point from a point, P, to a given segment.
+ *
+ * \param [in] P the query point
+ * \param [in] seg user-supplied segment
+ * \param [in] EPS fuzz factor for equality comparisons
+ * \return cp the closest point from a point P and a segment
+ */
+template <typename T, int NDIMS>
+AXOM_HOST_DEVICE inline Point<T, NDIMS> closest_point(const Point<T, NDIMS>& P,
+                                                      const Segment<T, NDIMS>& seg,
+                                                      double EPS = PRIMAL_TINY)
+{
+  T* loc = nullptr;
+  return closest_point(P, seg, loc, EPS);
+}
+
+/*!
  * \brief Computes the closest point from a point, P, to a given triangle.
  *
  * \param [in] P the query point

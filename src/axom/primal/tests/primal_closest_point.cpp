@@ -242,6 +242,11 @@ TEST(primal_closest_point, seg_test_closest_point_interior)
     primal::closest_point(QPoint({0.25, 0.75, 0.75}), S_reverse, &t, EPS) ==
     QPoint::lerp(A, B, 0.25));
   EXPECT_NEAR(t, 0.75, EPS);
+
+  // Test without loc argument
+  EXPECT_TRUE(
+    primal::closest_point(QPoint({0.25, 0.75, 0.75}), S_reverse, EPS) ==
+    QPoint::lerp(A, B, 0.25));
 }
 
 //------------------------------------------------------------------------------
