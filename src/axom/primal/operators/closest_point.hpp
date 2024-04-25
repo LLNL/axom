@@ -55,14 +55,6 @@ AXOM_HOST_DEVICE inline Point<T, NDIMS> closest_point(const Point<T, NDIMS>& P,
   const PointType& B = seg[1];
 
   const VectorType AB(A, B);
-  const T squaredNormAB = AB.squared_norm();
-
-  // Check if segment is degenerate
-  if(isLeq(squaredNormAB, ZERO, EPS))
-  {
-    t = ZERO;
-    return A;
-  }
 
   // Compute length of the projection of AP onto AB
   t = VectorType(A, P).dot(AB);
@@ -72,16 +64,27 @@ AXOM_HOST_DEVICE inline Point<T, NDIMS> closest_point(const Point<T, NDIMS>& P,
     t = ZERO;
     return A;
   }
-  else if(isGeq(t, squaredNormAB, EPS))
-  {
-    t = ONE;
-    return B;
-  }
   else
   {
-    // Normalize t
-    t /= squaredNormAB;
-    return A + AB * t;
+    const T squaredNormAB = AB.squared_norm();
+
+    if(isGeq(t, squaredNormAB, EPS))
+    {
+      t = ONE;
+      return B;
+    }
+    else if(isLeq(squaredNormAB, ZERO, EPS))
+    {
+      // Segment is degenerate
+      t = ZERO;
+      return A;
+    }
+    else
+    {
+      // Normalize t
+      t /= squaredNormAB;
+      return A + AB * t;
+    }
   }
 }
 
