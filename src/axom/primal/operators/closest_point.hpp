@@ -83,7 +83,7 @@ AXOM_HOST_DEVICE inline Point<T, NDIMS> closest_point(const Point<T, NDIMS>& P,
     }
     else if(isLeq(squaredNormAB, ZERO, EPS))
     {
-      // Segment is degenerate
+      // Segment is degenerate, so can pick either endpoint. We pick A.
       if(loc)
       {
         *loc = ZERO;
