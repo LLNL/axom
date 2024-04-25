@@ -29,17 +29,17 @@ namespace primal
  *
  * \param [in] P the query point
  * \param [in] seg user-supplied segment
- * \param [out] t location along the line segment
+ * \param [out] loc location along the line segment
  * \param [in] EPS fuzz factor for equality comparisons
  * \return cp the closest point from a point P and a segment
  *
- * \note t \f$ \in [0, 1] \f% represents the fraction of the way from A to B,
+ * \note loc \f$ \in [0, 1] \f% represents the fraction of the way from A to B,
  *  with 0 corresponding to A and 1 corresponding to B.
  */
 template <typename T, int NDIMS>
 AXOM_HOST_DEVICE inline Point<T, NDIMS> closest_point(const Point<T, NDIMS>& P,
                                                       const Segment<T, NDIMS>& seg,
-                                                      T& t,
+                                                      T* loc,
                                                       double EPS = 1E-12)
 {
   using PointType = Point<T, NDIMS>;
@@ -57,11 +57,14 @@ AXOM_HOST_DEVICE inline Point<T, NDIMS> closest_point(const Point<T, NDIMS>& P,
   const VectorType AB(A, B);
 
   // Compute length of the projection of AP onto AB
-  t = VectorType(A, P).dot(AB);
+  T t = VectorType(A, P).dot(AB);
 
   if(isLeq(t, ZERO, EPS))
   {
-    t = ZERO;
+    if(loc) {
+      *loc = ZERO;
+    }
+
     return A;
   }
   else
@@ -70,39 +73,33 @@ AXOM_HOST_DEVICE inline Point<T, NDIMS> closest_point(const Point<T, NDIMS>& P,
 
     if(isGeq(t, squaredNormAB, EPS))
     {
-      t = ONE;
+      if(loc) {
+        *loc = ONE;
+      }
+
       return B;
     }
     else if(isLeq(squaredNormAB, ZERO, EPS))
     {
       // Segment is degenerate
-      t = ZERO;
+      if(loc) {
+        *loc = ZERO;
+      }
+
       return A;
     }
     else
     {
       // Normalize t
       t /= squaredNormAB;
+
+      if(loc) {
+        *loc = t;
+      }
+
       return A + AB * t;
     }
   }
-}
-
-/*!
- * \brief Computes the closest point from a point, P, to a given segment.
- *
- * \param [in] P the query point
- * \param [in] seg user-supplied segment
- * \param [in] EPS fuzz factor for equality comparisons
- * \return cp the closest point from a point P and a segment
- */
-template <typename T, int NDIMS>
-AXOM_HOST_DEVICE inline Point<T, NDIMS> closest_point(const Point<T, NDIMS>& P,
-                                                      const Segment<T, NDIMS>& seg,
-                                                      double EPS = 1E-12)
-{
-  T t;
-  return closest_point(P, seg, t, EPS);
 }
 
 /*!
