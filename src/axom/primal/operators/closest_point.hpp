@@ -141,7 +141,7 @@ template <typename T, int NDIMS>
 AXOM_HOST_DEVICE inline Point<T, NDIMS> closest_point(const Point<T, NDIMS>& P,
                                                       const Triangle<T, NDIMS>& tri,
                                                       int* loc = nullptr,
-                                                      double EPS = 1E-8)
+                                                      double EPS = PRIMAL_TINY)
 {
   using PointType = Point<T, NDIMS>;
   using VectorType = Vector<T, NDIMS>;
