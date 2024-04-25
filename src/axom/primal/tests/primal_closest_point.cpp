@@ -14,6 +14,44 @@ namespace primal = axom::primal;
 //------------------------------------------------------------------------------
 TEST(primal_closest_point, seg_test_degenerate)
 {
+  constexpr double EPS = primal::PRIMAL_TINY;
+
+  constexpr int DIM = 3;
+  using CoordType = double;
+  using QPoint = primal::Point<CoordType, DIM>;
+  using QSegment = primal::Segment<CoordType, DIM>;
+
+  QPoint A({1.1, 1.1, 1.1});
+  QPoint B({1.1, 1.1, 1.1});
+  QSegment S(A, B);
+  double t;
+
+  // Query point is on A/B
+  EXPECT_TRUE(primal::closest_point(QPoint({1.1, 1.1, 1.1}), S, &t, EPS) == A);
+  EXPECT_NEAR(t, 0.0, EPS);
+
+  // Query point is anywhere else
+  EXPECT_TRUE(primal::closest_point(QPoint({2.2, 2.2, 2.2}), S, &t, EPS) == A);
+  EXPECT_NEAR(t, 0.0, EPS);
+
+  //
+  // Now let's reverse the segment
+  //
+  QSegment S_reverse(B, A);
+
+  // Query point is on A/B
+  EXPECT_TRUE(
+    primal::closest_point(QPoint({1.1, 1.1, 1.1}), S_reverse, &t, EPS) == B);
+  EXPECT_NEAR(t, 0.0, EPS);
+
+  // Query point is anywhere else
+  EXPECT_TRUE(primal::closest_point(QPoint({2.2, 2.2, 2.2}), S_reverse, &t, EPS) == B);
+  EXPECT_NEAR(t, 0.0, EPS);
+}
+
+//------------------------------------------------------------------------------
+TEST(primal_closest_point, seg_test_tiny)
+{
   constexpr double EPS = 1e-12;
 
   constexpr int DIM = 3;
