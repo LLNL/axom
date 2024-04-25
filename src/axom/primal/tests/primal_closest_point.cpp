@@ -45,7 +45,8 @@ TEST(primal_closest_point, seg_test_degenerate)
   EXPECT_NEAR(t, 0.0, EPS);
 
   // Query point is anywhere else
-  EXPECT_TRUE(primal::closest_point(QPoint({2.2, 2.2, 2.2}), S_reverse, &t, EPS) == B);
+  EXPECT_TRUE(
+    primal::closest_point(QPoint({2.2, 2.2, 2.2}), S_reverse, &t, EPS) == B);
   EXPECT_NEAR(t, 0.0, EPS);
 }
 
@@ -244,9 +245,8 @@ TEST(primal_closest_point, seg_test_closest_point_interior)
   EXPECT_NEAR(t, 0.75, EPS);
 
   // Test without loc argument
-  EXPECT_TRUE(
-    primal::closest_point(QPoint({0.25, 0.75, 0.75}), S_reverse, EPS) ==
-    QPoint::lerp(A, B, 0.25));
+  EXPECT_TRUE(primal::closest_point(QPoint({0.25, 0.75, 0.75}), S_reverse, EPS) ==
+              QPoint::lerp(A, B, 0.25));
 }
 
 //------------------------------------------------------------------------------

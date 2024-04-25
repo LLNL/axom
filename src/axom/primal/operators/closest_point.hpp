@@ -61,7 +61,8 @@ AXOM_HOST_DEVICE inline Point<T, NDIMS> closest_point(const Point<T, NDIMS>& P,
 
   if(isLeq(t, ZERO, EPS))
   {
-    if(loc) {
+    if(loc)
+    {
       *loc = ZERO;
     }
 
@@ -73,7 +74,8 @@ AXOM_HOST_DEVICE inline Point<T, NDIMS> closest_point(const Point<T, NDIMS>& P,
 
     if(isGeq(t, squaredNormAB, EPS))
     {
-      if(loc) {
+      if(loc)
+      {
         *loc = ONE;
       }
 
@@ -82,7 +84,8 @@ AXOM_HOST_DEVICE inline Point<T, NDIMS> closest_point(const Point<T, NDIMS>& P,
     else if(isLeq(squaredNormAB, ZERO, EPS))
     {
       // Segment is degenerate
-      if(loc) {
+      if(loc)
+      {
         *loc = ZERO;
       }
 
@@ -93,7 +96,8 @@ AXOM_HOST_DEVICE inline Point<T, NDIMS> closest_point(const Point<T, NDIMS>& P,
       // Normalize t
       t /= squaredNormAB;
 
-      if(loc) {
+      if(loc)
+      {
         *loc = t;
       }
 
