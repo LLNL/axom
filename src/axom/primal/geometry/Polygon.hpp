@@ -123,8 +123,7 @@ public:
    * \return normal polygon normal vector
    */
   template <int TDIM = NDIMS>
-  AXOM_HOST_DEVICE
-  typename std::enable_if<TDIM == 3, VectorType>::type normal() const
+  AXOM_HOST_DEVICE typename std::enable_if<TDIM == 3, VectorType>::type normal() const
   {
     SLIC_ASSERT(isValid());
     const int nverts = numVertices();
@@ -178,8 +177,7 @@ public:
    * The area is always non-negative since 3D polygons do not have a unique orientation.
    */
   template <int TDIM = NDIMS>
-  AXOM_HOST_DEVICE
-  typename std::enable_if<TDIM == 3, double>::type area() const
+  AXOM_HOST_DEVICE typename std::enable_if<TDIM == 3, double>::type area() const
   {
     const int nVerts = numVertices();
 
@@ -208,8 +206,7 @@ public:
    * \sa signedArea()
    */
   template <int TDIM = NDIMS>
-  AXOM_HOST_DEVICE
-  typename std::enable_if<TDIM == 2, double>::type area() const
+  AXOM_HOST_DEVICE typename std::enable_if<TDIM == 2, double>::type area() const
   {
     return axom::utilities::abs(signedArea());
   }
@@ -224,8 +221,7 @@ public:
    * \sa area()
    */
   template <int TDIM = NDIMS>
-  AXOM_HOST_DEVICE
-  typename std::enable_if<TDIM == 2, double>::type signedArea() const
+  AXOM_HOST_DEVICE typename std::enable_if<TDIM == 2, double>::type signedArea() const
   {
     const int nVerts = numVertices();
     double sum = 0.;
