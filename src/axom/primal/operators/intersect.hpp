@@ -21,9 +21,11 @@
 #include "axom/primal/geometry/OrientedBoundingBox.hpp"
 #include "axom/primal/geometry/Plane.hpp"
 #include "axom/primal/geometry/Point.hpp"
+#include "axom/primal/geometry/Polygon.hpp"
 #include "axom/primal/geometry/Ray.hpp"
 #include "axom/primal/geometry/Segment.hpp"
 #include "axom/primal/geometry/Sphere.hpp"
+#include "axom/primal/geometry/Tetrahedron.hpp"
 #include "axom/primal/geometry/Triangle.hpp"
 #include "axom/primal/geometry/BezierCurve.hpp"
 
@@ -587,6 +589,27 @@ AXOM_HOST_DEVICE bool intersect(const Plane<T, 3>& plane,
                                 T& t)
 {
   return detail::intersect_plane_seg(plane, seg, t);
+}
+
+/*!
+ * \brief Determines if a 3D plane intersects a tetrahedron.
+ *
+ * \param [in] p A 3D plane
+ * \param [in] tet A 3D tetrahedron
+ * \param [out] intersection A polygon containing the intersection.
+ *
+ * \return true if plane intersects with tetrahedron, otherwise, false.
+ *
+ * \note If no intersection is found, the output polygon will be empty.
+ *       If the plane intersects at a tetrahedron vertex, the polygon
+ *       will contain duplicated points.
+ */
+template <typename T>
+AXOM_HOST_DEVICE bool intersect(const Plane<T, 3>& p,
+                                const Tetrahedron<T, 3>& tet,
+                                Polygon<T, 3>& intersection)
+{
+  return detail::intersect_plane_tet3d(p, tet, intersection);
 }
 
 /// @}

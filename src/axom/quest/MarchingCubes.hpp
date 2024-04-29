@@ -331,7 +331,7 @@ private:
   axom::Array<std::uint16_t> m_caseIdsFlat;
   axom::Array<std::uint16_t> m_crossingFlags;
   axom::Array<axom::IndexType> m_scannedFlags;
-  axom::Array<std::uint16_t> m_facetIncrs;
+  axom::Array<axom::IndexType> m_facetIncrs;
   //@}
 
   //@{

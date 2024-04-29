@@ -24,6 +24,7 @@ set(core_headers
     utilities/About.hpp
     utilities/Annotations.hpp
     utilities/BitUtilities.hpp
+    utilities/CommandLineUtilities.hpp
     utilities/FileUtilities.hpp
     utilities/RAII.hpp
     utilities/StringUtilities.hpp

@@ -575,14 +575,14 @@ public:
     using difference_type = SetPosition;
 
   private:
-    static StackArray<IndexType, Dims + 1> fetchDims(StrideIndexType shape)
+    static StackArray<axom::IndexType, Dims + 1> fetchDims(StrideIndexType shape)
     {
       return {0, shape};
     }
-    static StackArray<IndexType, Dims + 1> fetchDims(
+    static StackArray<axom::IndexType, Dims + 1> fetchDims(
       const StackArray<StrideIndexType, Dims> shape)
     {
-      StackArray<IndexType, Dims + 1> dims;
+      StackArray<axom::IndexType, Dims + 1> dims;
       for(int idim = 0; idim < Dims; idim++)
       {
         dims[idim + 1] = shape[idim];
@@ -595,7 +595,7 @@ public:
       : IterBase(pos)
       , m_map(oMap)
     {
-      StackArray<IndexType, Dims + 1> dataDims = fetchDims(oMap->shape());
+      StackArray<axom::IndexType, Dims + 1> dataDims = fetchDims(oMap->shape());
       dataDims[0] = m_map->size();
       m_mapData =
         axom::ArrayView<DataType, Dims + 1>(m_map->data().data(), dataDims);
