@@ -12,6 +12,597 @@
 namespace primal = axom::primal;
 
 //------------------------------------------------------------------------------
+TEST(primal_closest_point, seg_test_degenerate)
+{
+  constexpr double EPS = primal::PRIMAL_TINY;
+
+  constexpr int DIM = 3;
+  using CoordType = double;
+  using QPoint = primal::Point<CoordType, DIM>;
+  using QSegment = primal::Segment<CoordType, DIM>;
+
+  QPoint A({1.1, 1.1, 1.1});
+  QPoint B({1.1, 1.1, 1.1});
+  QSegment S(A, B);
+  double t;
+
+  // Query point is on A/B
+  EXPECT_TRUE(primal::closest_point(QPoint({1.1, 1.1, 1.1}), S, &t, EPS) == A);
+  EXPECT_NEAR(t, 0.0, EPS);
+
+  // Query point is anywhere else
+  EXPECT_TRUE(primal::closest_point(QPoint({2.2, 2.2, 2.2}), S, &t, EPS) == A);
+  EXPECT_NEAR(t, 0.0, EPS);
+
+  //
+  // Now let's reverse the segment
+  //
+  QSegment S_reverse(B, A);
+
+  // Query point is on A/B
+  EXPECT_TRUE(
+    primal::closest_point(QPoint({1.1, 1.1, 1.1}), S_reverse, &t, EPS) == B);
+  EXPECT_NEAR(t, 0.0, EPS);
+
+  // Query point is anywhere else
+  EXPECT_TRUE(
+    primal::closest_point(QPoint({2.2, 2.2, 2.2}), S_reverse, &t, EPS) == B);
+  EXPECT_NEAR(t, 0.0, EPS);
+}
+
+//------------------------------------------------------------------------------
+TEST(primal_closest_point, seg_test_tiny)
+{
+  constexpr double EPS = 1e-12;
+
+  constexpr int DIM = 3;
+  using CoordType = double;
+  using QPoint = primal::Point<CoordType, DIM>;
+  using QSegment = primal::Segment<CoordType, DIM>;
+
+  QPoint A({0.0, 0.0, 0.0});
+  QPoint B({1.0e-9, 0.0, 0.0});
+  QSegment S(A, B);
+  double t;
+
+  // Query point is on the midpoint of AB
+  EXPECT_TRUE(primal::closest_point(QPoint({0.5e-10, 0.0, 0.0}), S, &t, EPS) == A);
+  EXPECT_NEAR(t, 0.0, EPS);
+
+  // Query point is on the line perpendicular to AB running through the midpoint
+  EXPECT_TRUE(primal::closest_point(QPoint({0.5e-10, 1.0, 0.0}), S, &t, EPS) == A);
+  EXPECT_NEAR(t, 0.0, EPS);
+
+  // Query point is equal to A
+  EXPECT_TRUE(primal::closest_point(QPoint({0.0, 0.0, 0.0}), S, &t, EPS) == A);
+  EXPECT_NEAR(t, 0.0, EPS);
+
+  // Query point is equal to B (for a degenerate segment, A is always returned)
+  EXPECT_TRUE(primal::closest_point(QPoint({1.0e-9, 0.0, 0.0}), S, &t, EPS) == A);
+  EXPECT_NEAR(t, 0.0, EPS);
+
+  //
+  // Now let's reverse the segment
+  //
+  QSegment S_reverse(B, A);
+
+  // Query point is on the midpoint of AB
+  EXPECT_TRUE(
+    primal::closest_point(QPoint({0.5e-10, 0.0, 0.0}), S_reverse, &t, EPS) == B);
+  EXPECT_NEAR(t, 0.0, EPS);
+
+  // Query point is on the line perpendicular to AB running through the midpoint
+  EXPECT_TRUE(
+    primal::closest_point(QPoint({0.5e-10, 1.0, 0.0}), S_reverse, &t, EPS) == B);
+  EXPECT_NEAR(t, 0.0, EPS);
+
+  // Query point is equal to A
+  EXPECT_TRUE(
+    primal::closest_point(QPoint({0.0, 0.0, 0.0}), S_reverse, &t, EPS) == B);
+  EXPECT_NEAR(t, 0.0, EPS);
+
+  // Query point is equal to B (for a degenerate segment, A is always returned)
+  EXPECT_TRUE(
+    primal::closest_point(QPoint({1.0e-9, 0.0, 0.0}), S_reverse, &t, EPS) == B);
+  EXPECT_NEAR(t, 0.0, EPS);
+}
+
+//------------------------------------------------------------------------------
+TEST(primal_closest_point, seg_test_closest_point_vertex_0)
+{
+  constexpr double EPS = 1e-12;
+
+  constexpr int DIM = 3;
+  using CoordType = double;
+  using QPoint = primal::Point<CoordType, DIM>;
+  using QSegment = primal::Segment<CoordType, DIM>;
+
+  QPoint A({0.0, 1.0, 1.0});
+  QPoint B({1.0, 0.0, 0.0});
+  QSegment S(A, B);
+  double t;
+
+  // Query point is on the line extended past point A
+  EXPECT_TRUE(primal::closest_point(QPoint({-1.0, 2.0, 2.0}), S, &t, EPS) == A);
+  EXPECT_NEAR(t, 0.0, EPS);
+
+  // Query point is on the line perpendicular to AB running through point A
+  EXPECT_TRUE(primal::closest_point(QPoint({-1.0, 0.0, 2.0}), S, &t, EPS) == A);
+  EXPECT_NEAR(t, 0.0, EPS);
+
+  // Query point is equal to A
+  EXPECT_TRUE(primal::closest_point(QPoint({0.0, 1.0, 1.0}), S, &t, EPS) == A);
+  EXPECT_NEAR(t, 0.0, EPS);
+
+  //
+  // Now let's reverse the segment
+  //
+  QSegment S_reverse(B, A);
+
+  // Query point is on the line extended past point A
+  EXPECT_TRUE(
+    primal::closest_point(QPoint({-1.0, 2.0, 2.0}), S_reverse, &t, EPS) == A);
+  EXPECT_NEAR(t, 1.0, EPS);
+
+  // Query point is on the line perpendicular to AB running through point A
+  EXPECT_TRUE(
+    primal::closest_point(QPoint({-1.0, 0.0, 2.0}), S_reverse, &t, EPS) == A);
+  EXPECT_NEAR(t, 1.0, EPS);
+
+  // Query point is equal to A
+  EXPECT_TRUE(
+    primal::closest_point(QPoint({0.0, 1.0, 1.0}), S_reverse, &t, EPS) == A);
+  EXPECT_NEAR(t, 1.0, EPS);
+}
+
+//------------------------------------------------------------------------------
+TEST(primal_closest_point, seg_test_closest_point_vertex_1)
+{
+  constexpr double EPS = 1e-12;
+
+  constexpr int DIM = 3;
+  using CoordType = double;
+  using QPoint = primal::Point<CoordType, DIM>;
+  using QSegment = primal::Segment<CoordType, DIM>;
+
+  QPoint A({0.0, 1.0, 1.0});
+  QPoint B({1.0, 0.0, 0.0});
+  QSegment S(A, B);
+  double t;
+
+  // Query point is on the line extended past point B
+  EXPECT_TRUE(primal::closest_point(QPoint({2.0, -1.0, 1.0}), S, &t, EPS) == B);
+  EXPECT_NEAR(t, 1.0, EPS);
+
+  // Query point is on the line perpendicular to AB running through point B
+  EXPECT_TRUE(primal::closest_point(QPoint({2.0, 1.0, -1.0}), S, &t, EPS) == B);
+  EXPECT_NEAR(t, 1.0, EPS);
+
+  // Query point is equal to B
+  EXPECT_TRUE(primal::closest_point(QPoint({1.0, 0.0, 0.0}), S, &t, EPS) == B);
+  EXPECT_NEAR(t, 1.0, EPS);
+
+  //
+  // Now let's reverse the segment
+  //
+  QSegment S_reverse(B, A);
+
+  // Query point is on the line extended past point B
+  EXPECT_TRUE(
+    primal::closest_point(QPoint({2.0, -1.0, 1.0}), S_reverse, &t, EPS) == B);
+  EXPECT_NEAR(t, 0.0, EPS);
+
+  // Query point is on the line perpendicular to AB running through point B
+  EXPECT_TRUE(
+    primal::closest_point(QPoint({2.0, 1.0, -1.0}), S_reverse, &t, EPS) == B);
+  EXPECT_NEAR(t, 0.0, EPS);
+
+  // Query point is equal to B
+  EXPECT_TRUE(
+    primal::closest_point(QPoint({1.0, 0.0, 0.0}), S_reverse, &t, EPS) == B);
+  EXPECT_NEAR(t, 0.0, EPS);
+}
+
+//------------------------------------------------------------------------------
+TEST(primal_closest_point, seg_test_closest_point_interior)
+{
+  constexpr double EPS = 1e-12;
+
+  constexpr int DIM = 3;
+  using CoordType = double;
+  using QPoint = primal::Point<CoordType, DIM>;
+  using QSegment = primal::Segment<CoordType, DIM>;
+
+  QPoint A({0.0, 1.0, 1.0});
+  QPoint B({1.0, 0.0, 0.0});
+  QSegment S(A, B);
+  double t;
+
+  // Query point is perpendicular to the midpoint of AB
+  EXPECT_TRUE(primal::closest_point(QPoint({0.0, 0.0, 0.5}), S, &t, EPS) ==
+              QPoint::lerp(A, B, 0.5));
+  EXPECT_NEAR(t, 0.5, EPS);
+
+  // Query point is a quarter of the way to B from A
+  EXPECT_TRUE(primal::closest_point(QPoint({0.25, 0.75, 0.75}), S, &t, EPS) ==
+              QPoint::lerp(A, B, 0.25));
+  EXPECT_NEAR(t, 0.25, EPS);
+
+  //
+  // Now let's reverse the segment
+  //
+  QSegment S_reverse(B, A);
+
+  // Query point is perpendicular to the midpoint of AB
+  EXPECT_TRUE(primal::closest_point(QPoint({0.0, 0.0, 0.5}), S_reverse, &t, EPS) ==
+              QPoint::lerp(A, B, 0.5));
+  EXPECT_NEAR(t, 0.5, EPS);
+
+  // Query point is a quarter of the way to B from A
+  EXPECT_TRUE(
+    primal::closest_point(QPoint({0.25, 0.75, 0.75}), S_reverse, &t, EPS) ==
+    QPoint::lerp(A, B, 0.25));
+  EXPECT_NEAR(t, 0.75, EPS);
+
+  // Test without loc argument
+  EXPECT_TRUE(primal::closest_point(QPoint({0.25, 0.75, 0.75}), S_reverse, EPS) ==
+              QPoint::lerp(A, B, 0.25));
+}
+
+//------------------------------------------------------------------------------
+TEST(primal_closest_point, triangle_test_tiny)
+{
+  constexpr double EPS = primal::PRIMAL_TINY;
+
+  constexpr int DIM = 3;
+  using CoordType = double;
+  using QPoint = primal::Point<CoordType, DIM>;
+  using QTriangle = primal::Triangle<CoordType, DIM>;
+
+  QTriangle tri({QPoint({0.0, 0.0, 0.0}),
+                 QPoint({0.0, 0.0, 1.0e-16}),
+                 QPoint({0.0, 1.0, 0.0})});
+
+  const QPoint& A = tri[0];
+  const QPoint& B = tri[1];
+  const QPoint& C = tri[2];
+
+  int loc;
+
+  // Query point is on vertex A
+  EXPECT_TRUE(primal::closest_point(QPoint({0.0, 0.0, 0.0}), tri, &loc, EPS) == A);
+  EXPECT_EQ(loc, 0);
+
+  // Query point is in the vertex region of A
+  EXPECT_TRUE(
+    primal::closest_point(QPoint({0.0, 0.0, -1.0e-16}), tri, &loc, EPS) == A);
+  EXPECT_EQ(loc, 0);
+
+  // Query point is on vertex B
+  EXPECT_TRUE(
+    primal::closest_point(QPoint({0.0, 0.0, 1.0e-16}), tri, &loc, EPS) == B);
+  EXPECT_EQ(loc, 1);
+
+  // Query point is in the vertex region of B
+  EXPECT_TRUE(
+    primal::closest_point(QPoint({0.0, 0.0, 1.0e-15}), tri, &loc, EPS) == B);
+  EXPECT_EQ(loc, 1);
+
+  // Query point is on vertex C
+  EXPECT_TRUE(primal::closest_point(QPoint({0.0, 1.0, 0.0}), tri, &loc, EPS) == C);
+  EXPECT_EQ(loc, 2);
+
+  // Query point is in the vertex region of C
+  EXPECT_TRUE(
+    primal::closest_point(QPoint({0.0, 1.0 + 1.0e-16, 0.0}), tri, &loc, EPS) == C);
+  EXPECT_EQ(loc, 2);
+
+  // Query point is on AB
+  QPoint queryPoint({0.0, 0.0, 1.0e-17});
+  QPoint closestPoint = primal::closest_point(queryPoint, tri, &loc, EPS);
+
+  for(int i = 0; i < DIM; ++i)
+  {
+    EXPECT_NEAR(closestPoint[i], queryPoint[i], 1.0e-16);
+  }
+
+  EXPECT_EQ(loc, -1);
+
+  // Query point is in the edge region of AB
+  queryPoint = QPoint({0.0, -0.1, 1.0e-17});
+  closestPoint = primal::closest_point(queryPoint, tri, &loc, EPS);
+  QPoint expectedClosestPoint({0.0, 0.0, 1.0e-17});
+
+  for(int i = 0; i < DIM; ++i)
+  {
+    EXPECT_NEAR(closestPoint[i], expectedClosestPoint[i], 1.0e-16);
+  }
+
+  EXPECT_EQ(loc, -1);
+
+  // Query point is on BC
+  queryPoint = QPoint({0.0, 0.5, 5.0e-17});
+  closestPoint = primal::closest_point(queryPoint, tri, &loc, EPS);
+
+  for(int i = 0; i < DIM; ++i)
+  {
+    EXPECT_NEAR(closestPoint[i], queryPoint[i], 1.0e-16);
+  }
+
+  EXPECT_EQ(loc, -2);
+
+  // Query point is in the edge region of BC
+  queryPoint = QPoint({0.5, 0.5, 5.0e-17});
+  closestPoint = primal::closest_point(queryPoint, tri, &loc, EPS);
+  expectedClosestPoint = QPoint({0.0, 0.5, 5.0e-17});
+
+  for(int i = 0; i < DIM; ++i)
+  {
+    EXPECT_NEAR(closestPoint[i], expectedClosestPoint[i], 1.0e-16);
+  }
+
+  EXPECT_EQ(loc, -2);
+
+  // Query point is on CA
+  queryPoint = QPoint({0.0, 0.25, 0.0});
+  closestPoint = primal::closest_point(queryPoint, tri, &loc, EPS);
+
+  for(int i = 0; i < DIM; ++i)
+  {
+    EXPECT_NEAR(closestPoint[i], queryPoint[i], 1.0e-16);
+  }
+
+  EXPECT_EQ(loc, -3);
+
+  // Query point is in the edge region of BC
+  queryPoint = QPoint({-0.25, 0.75, -0.25});
+  closestPoint = primal::closest_point(queryPoint, tri, &loc, EPS);
+  expectedClosestPoint = QPoint({0.0, 0.75, 0.0});
+
+  for(int i = 0; i < DIM; ++i)
+  {
+    EXPECT_NEAR(closestPoint[i], expectedClosestPoint[i], 1.0e-16);
+  }
+
+  EXPECT_EQ(loc, -3);
+
+  // Query point is on the interior of the triangle
+  queryPoint = QPoint({0.0, 1.0 / 3.0, 1.0e-16 / 3.0});
+  closestPoint = primal::closest_point(queryPoint, tri, &loc, EPS);
+
+  for(int i = 0; i < DIM; ++i)
+  {
+    EXPECT_NEAR(closestPoint[i], queryPoint[i], 1.0e-16);
+  }
+
+  EXPECT_EQ(loc, 3);
+
+  // Query point is in the interior region of the triangle
+  queryPoint = QPoint({-0.5, 1.0 / 3.0, 1.0e-16 / 3.0});
+  closestPoint = primal::closest_point(queryPoint, tri, &loc, EPS);
+  expectedClosestPoint = QPoint({0.0, 1.0 / 3.0, 1.0e-16 / 3.0});
+
+  for(int i = 0; i < DIM; ++i)
+  {
+    EXPECT_NEAR(closestPoint[i], expectedClosestPoint[i], 1.0e-16);
+  }
+
+  EXPECT_EQ(loc, 3);
+}
+
+//------------------------------------------------------------------------------
+TEST(primal_closest_point, triangle_test_degenerate_side_AB)
+{
+  constexpr double EPS = primal::PRIMAL_TINY;
+
+  constexpr int DIM = 3;
+  using CoordType = double;
+  using QPoint = primal::Point<CoordType, DIM>;
+  using QTriangle = primal::Triangle<CoordType, DIM>;
+
+  QTriangle tri(
+    {QPoint({0.0, 0.0, 0.0}), QPoint({0.0, 0.0, 0.0}), QPoint({0.0, 1.0, 0.0})});
+
+  const QPoint& A = tri[0];
+  const QPoint& C = tri[2];
+
+  int loc;
+
+  // Query point is on vertex A/B
+  EXPECT_TRUE(primal::closest_point(QPoint({0.0, 0.0, 0.0}), tri, &loc, EPS) == A);
+  EXPECT_EQ(loc, 0);
+
+  // Query point is in the vertex region of A/B
+  EXPECT_TRUE(
+    primal::closest_point(QPoint({0.0, 0.0, -1.0e-16}), tri, &loc, EPS) == A);
+  EXPECT_EQ(loc, 0);
+
+  // Query point is in the vertex region of A/B
+  EXPECT_TRUE(
+    primal::closest_point(QPoint({0.0, 0.0, 1.0e-16}), tri, &loc, EPS) == A);
+  EXPECT_EQ(loc, 0);
+
+  // Query point is in the vertex region of A/B
+  EXPECT_TRUE(
+    primal::closest_point(QPoint({0.0, -1.0e-16, 0.0}), tri, &loc, EPS) == A);
+  EXPECT_EQ(loc, 0);
+
+  // Query point is on vertex C
+  EXPECT_TRUE(primal::closest_point(QPoint({0.0, 1.0, 0.0}), tri, &loc, EPS) == C);
+  EXPECT_EQ(loc, 2);
+
+  // Query point is in the vertex region of C
+  EXPECT_TRUE(
+    primal::closest_point(QPoint({0.0, 1.0 + 1.0e-16, 0.0}), tri, &loc, EPS) == C);
+  EXPECT_EQ(loc, 2);
+
+  // Query point is on BC/CA
+  QPoint queryPoint({0.0, 0.25, 0.0});
+  QPoint closestPoint = primal::closest_point(queryPoint, tri, &loc, EPS);
+
+  for(int i = 0; i < DIM; ++i)
+  {
+    EXPECT_NEAR(closestPoint[i], queryPoint[i], 1.0e-16);
+  }
+
+  EXPECT_EQ(loc, -3);
+
+  // Query point is in the edge region of BC/CA
+  queryPoint = QPoint({-0.25, 0.75, -0.25});
+  closestPoint = primal::closest_point(queryPoint, tri, &loc, EPS);
+  QPoint expectedClosestPoint({0.0, 0.75, 0.0});
+
+  for(int i = 0; i < DIM; ++i)
+  {
+    EXPECT_NEAR(closestPoint[i], expectedClosestPoint[i], 1.0e-16);
+  }
+
+  EXPECT_EQ(loc, -3);
+}
+
+//------------------------------------------------------------------------------
+TEST(primal_closest_point, triangle_test_degenerate_side_BC)
+{
+  constexpr double EPS = primal::PRIMAL_TINY;
+
+  constexpr int DIM = 3;
+  using CoordType = double;
+  using QPoint = primal::Point<CoordType, DIM>;
+  using QTriangle = primal::Triangle<CoordType, DIM>;
+
+  QTriangle tri(
+    {QPoint({2.0, 0.0, 0.0}), QPoint({2.0, 1.0, 1.0}), QPoint({2.0, 1.0, 1.0})});
+
+  const QPoint& A = tri[0];
+  const QPoint& B = tri[1];
+
+  int loc;
+
+  // Query point is on vertex A
+  EXPECT_TRUE(primal::closest_point(QPoint({2.0, 0.0, 0.0}), tri, &loc, EPS) == A);
+  EXPECT_EQ(loc, 0);
+
+  // Query point is in the vertex region of A
+  EXPECT_TRUE(primal::closest_point(QPoint({2.0, 0.0, 0.0}), tri, &loc, EPS) == A);
+  EXPECT_EQ(loc, 0);
+
+  // Query point is on vertex B/C
+  EXPECT_TRUE(primal::closest_point(QPoint({2.0, 1.0, 1.0}), tri, &loc, EPS) == B);
+  EXPECT_EQ(loc, 1);
+
+  // Query point is in the vertex region of B/C
+  EXPECT_TRUE(primal::closest_point(QPoint({3.0, 2.0, 2.0}), tri, &loc, EPS) == B);
+  EXPECT_EQ(loc, 1);
+
+  // Query point is on AB/CA
+  QPoint queryPoint({2.0, 0.75, 0.75});
+  QPoint closestPoint = primal::closest_point(queryPoint, tri, &loc, EPS);
+
+  for(int i = 0; i < DIM; ++i)
+  {
+    EXPECT_NEAR(closestPoint[i], queryPoint[i], 1.0e-16);
+  }
+
+  EXPECT_EQ(loc, -1);
+
+  // Query point is in the edge region of AB/CA
+  queryPoint = QPoint({2.0, 1.0, 0.0});
+  closestPoint = primal::closest_point(queryPoint, tri, &loc, EPS);
+  QPoint expectedClosestPoint({2.0, 0.5, 0.5});
+
+  for(int i = 0; i < DIM; ++i)
+  {
+    EXPECT_NEAR(closestPoint[i], expectedClosestPoint[i], 1.0e-16);
+  }
+
+  EXPECT_EQ(loc, -1);
+}
+
+//------------------------------------------------------------------------------
+TEST(primal_closest_point, triangle_test_degenerate_side_CA)
+{
+  constexpr double EPS = primal::PRIMAL_TINY;
+
+  constexpr int DIM = 3;
+  using CoordType = double;
+  using QPoint = primal::Point<CoordType, DIM>;
+  using QTriangle = primal::Triangle<CoordType, DIM>;
+
+  QTriangle tri(
+    {QPoint({1.0, 3.0, 1.0}), QPoint({2.0, 4.0, 2.0}), QPoint({1.0, 3.0, 1.0})});
+
+  const QPoint& A = tri[0];
+  const QPoint& B = tri[1];
+
+  int loc;
+
+  // Query point is on vertex A/C
+  EXPECT_TRUE(primal::closest_point(QPoint({1.0, 3.0, 1.0}), tri, &loc, EPS) == A);
+  EXPECT_EQ(loc, 0);
+
+  // Query point is in the vertex region of A/C
+  EXPECT_TRUE(primal::closest_point(QPoint({0.0, 0.0, 0.0}), tri, &loc, EPS) == A);
+  EXPECT_EQ(loc, 0);
+
+  // Query point is on vertex B
+  EXPECT_TRUE(primal::closest_point(QPoint({2.0, 4.0, 2.0}), tri, &loc, EPS) == B);
+  EXPECT_EQ(loc, 1);
+
+  // Query point is in the vertex region of B
+  EXPECT_TRUE(primal::closest_point(QPoint({2.1, 4.1, 2.1}), tri, &loc, EPS) == B);
+  EXPECT_EQ(loc, 1);
+
+  // Query point is on AB/BC
+  QPoint queryPoint({4.0 / 3.0, 10.0 / 3.0, 4.0 / 3.0});
+  QPoint closestPoint = primal::closest_point(queryPoint, tri, &loc, EPS);
+
+  for(int i = 0; i < DIM; ++i)
+  {
+    EXPECT_NEAR(closestPoint[i], queryPoint[i], 1.0e-16);
+  }
+
+  EXPECT_EQ(loc, -1);
+
+  // Query point is in the edge region of AB/BC
+  queryPoint = QPoint({1.0, 4.0, 1.0});
+  closestPoint = primal::closest_point(queryPoint, tri, &loc, EPS);
+  QPoint expectedClosestPoint({4.0 / 3.0, 10.0 / 3.0, 4.0 / 3.0});
+
+  for(int i = 0; i < DIM; ++i)
+  {
+    EXPECT_NEAR(closestPoint[i], expectedClosestPoint[i], 1.0e-16);
+  }
+
+  EXPECT_EQ(loc, -1);
+}
+
+//------------------------------------------------------------------------------
+TEST(primal_closest_point, triangle_test_all_sides_degenerate)
+{
+  constexpr double EPS = primal::PRIMAL_TINY;
+
+  constexpr int DIM = 3;
+  using CoordType = double;
+  using QPoint = primal::Point<CoordType, DIM>;
+  using QTriangle = primal::Triangle<CoordType, DIM>;
+
+  QTriangle tri(
+    {QPoint({1.0, 3.0, 1.0}), QPoint({1.0, 3.0, 1.0}), QPoint({1.0, 3.0, 1.0})});
+
+  const QPoint& A = tri[0];
+
+  int loc;
+
+  // Query point is on vertex A/B/C
+  EXPECT_TRUE(primal::closest_point(QPoint({1.0, 3.0, 1.0}), tri, &loc, EPS) == A);
+  EXPECT_EQ(loc, 0);
+
+  // Query point is in the vertex region of A/B/C
+  EXPECT_TRUE(primal::closest_point(QPoint({2.0, 4.0, 2.0}), tri, &loc, EPS) == A);
+  EXPECT_EQ(loc, 0);
+}
+
+//------------------------------------------------------------------------------
 TEST(primal_closest_point, obb_test_closest_point_interior)
 {
   constexpr int DIM = 3;

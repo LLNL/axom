@@ -34,11 +34,6 @@
 #define AXOM_BIN_DIR "@AXOM_BIN_DIR@"
 #cmakedefine AXOM_DATA_DIR "@AXOM_DATA_DIR@"
 
-/*
- * Indicates whether Axom is compiled with Annotations that can facilitate
- * evaluation of performance with various performance tools.
- */
-#cmakedefine AXOM_USE_ANNOTATIONS
 
 /*
  * Platform specific definitions
@@ -46,7 +41,6 @@
 #define AXOM_CXX_STD "@BLT_CXX_STD@"
 #cmakedefine AXOM_CUDA_ARCH "@AXOM_CUDA_ARCH@"
 #cmakedefine AXOM_NO_INT64_T
-#cmakedefine AXOM_USE_MPI3
 
 #ifndef AXOM_NO_INT64_T
 #cmakedefine AXOM_USE_64BIT_INDEXTYPE
@@ -58,22 +52,29 @@
  */
 #cmakedefine USE_C_LOC_WITH_ASSUMED_SHAPE
 
+/*
+ * Compiler defines for programming models
+ */
+#cmakedefine AXOM_USE_CUDA
+#cmakedefine AXOM_USE_HIP
+#cmakedefine AXOM_USE_MPI
+#cmakedefine AXOM_USE_MPI3
+#cmakedefine AXOM_USE_MPIF_HEADER
+#cmakedefine AXOM_USE_OPENMP
+
 
 /*
  * Compiler defines for libraries (built-in and third party)
  */
+#cmakedefine AXOM_USE_ADIAK
 #cmakedefine AXOM_USE_C2C
+#cmakedefine AXOM_USE_CALIPER
 #cmakedefine AXOM_USE_CLI11
 #cmakedefine AXOM_USE_CONDUIT
-#cmakedefine AXOM_USE_CUDA
-#cmakedefine AXOM_USE_HIP
 #cmakedefine AXOM_USE_FMT
 #cmakedefine AXOM_USE_HDF5
 #cmakedefine AXOM_USE_LUA
 #cmakedefine AXOM_USE_MFEM
-#cmakedefine AXOM_USE_MPI
-#cmakedefine AXOM_USE_MPIF_HEADER
-#cmakedefine AXOM_USE_OPENMP
 #cmakedefine AXOM_USE_RAJA
 #cmakedefine AXOM_USE_SCR
 #cmakedefine AXOM_USE_SOL
@@ -102,8 +103,8 @@
  */
 #cmakedefine AXOM_USE_INLET
 #cmakedefine AXOM_USE_KLEE
-#cmakedefine AXOM_USE_MINT
 #cmakedefine AXOM_USE_LUMBERJACK
+#cmakedefine AXOM_USE_MINT
 #cmakedefine AXOM_USE_PRIMAL
 #cmakedefine AXOM_USE_QUEST
 #cmakedefine AXOM_USE_SIDRE

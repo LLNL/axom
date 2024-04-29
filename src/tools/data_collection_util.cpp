@@ -570,7 +570,7 @@ int main(int argc, char** argv)
   sidre::MFEMSidreDataCollection dc(params.dcName, nullptr, true);
 
   // Create or load the serial mfem mesh
-  mfem::Mesh* mesh = nullptr;
+  mfem::Mesh* mesh {nullptr};
   switch(params.meshForm)
   {
   case MeshForm::Box:

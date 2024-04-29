@@ -4,7 +4,13 @@
 # CMake executable path: /usr/tce/packages/cmake/cmake-3.21.1/bin/cmake
 #------------------------------------------------------------------------------
 
-set(CMAKE_PREFIX_PATH "/usr/WS1/axom/libs/blueos_3_ppc64le_ib_p9/2023_10_17_11_51_45/gcc-8.3.1.1/umpire-2023.06.0-g7qmb2qhubkm3azuvfmqs76otesjurcs;/usr/WS1/axom/libs/blueos_3_ppc64le_ib_p9/2023_10_17_11_51_45/gcc-8.3.1.1/raja-2023.06.0-tvlbnpgx2hbiu3bjvx44ozxhvusclguk;/usr/WS1/axom/libs/blueos_3_ppc64le_ib_p9/2023_10_17_11_51_45/gcc-8.3.1.1/camp-2023.06.0-civqzez47ip24ln7c5q6gofaniemdr54;/usr/WS1/axom/libs/blueos_3_ppc64le_ib_p9/2023_10_17_11_51_45/gcc-8.3.1.1/lua-5.4.4-e7cdhkbaxuyqljoyozzxrt2n57erhszx;/usr/WS1/axom/libs/blueos_3_ppc64le_ib_p9/2023_10_17_11_51_45/gcc-8.3.1.1/conduit-0.8.8-3li2jcc2mecqbanoew5tznr4uzl2k2jg;/usr/WS1/axom/libs/blueos_3_ppc64le_ib_p9/2023_10_17_11_51_45/gcc-8.3.1.1/parmetis-4.0.3-c2ub4mddqt7faykccls5eae7xogpi32w;/usr/WS1/axom/libs/blueos_3_ppc64le_ib_p9/2023_10_17_11_51_45/gcc-8.3.1.1/metis-5.1.0-t6qk2khpceidsormndy6gj56qbnehxai;/usr/WS1/axom/libs/blueos_3_ppc64le_ib_p9/2023_10_17_11_51_45/gcc-8.3.1.1/hdf5-1.8.22-nydokvym7klek6hqoyijbwf3tbmd32ux;/usr/WS1/axom/libs/blueos_3_ppc64le_ib_p9/2023_10_17_11_51_45/gcc-8.3.1.1/zlib-1.2.13-zd2x25bmmjwxhw7siucfywjgk7oc262j;/usr/WS1/axom/libs/blueos_3_ppc64le_ib_p9/2023_10_17_11_51_45/gcc-8.3.1.1/c2c-1.8.0-zgwmbota3vhdxcdjlwxbhomlwllwhvnc;/usr/WS1/axom/libs/blueos_3_ppc64le_ib_p9/2023_10_17_11_51_45/gcc-8.3.1.1/blt-0.5.3-zghdcshuqlqnbrezcylwnefie7pkvsab;/collab/usr/gapps/axom/devtools/blueos_3_ppc64le_ib_p9/latest/python-3.10.10;/collab/usr/gapps/axom/devtools/blueos_3_ppc64le_ib_p9/latest/python-3.10.10;/collab/usr/gapps/axom/devtools/blueos_3_ppc64le_ib_p9/latest/python-3.10.10;/usr/tce/packages/clang/clang-10.0.0;/collab/usr/gapps/axom/devtools/blueos_3_ppc64le_ib_p9/latest/graphviz-7.1.0;/collab/usr/gapps/axom/devtools/blueos_3_ppc64le_ib_p9/latest/doxygen-1.9.6;/collab/usr/gapps/axom/devtools/blueos_3_ppc64le_ib_p9/latest/cppcheck-2.9;/usr/tce/packages/spectrum-mpi/spectrum-mpi-rolling-release-gcc-8.3.1;/usr/tcetmp;/usr/tce/packages/cmake/cmake-3.21.1" CACHE PATH "")
+set(CMAKE_PREFIX_PATH "/usr/WS1/axom/libs/blueos_3_ppc64le_ib_p9/2024_03_25_14_14_33/gcc-8.3.1.1/umpire-2024.02.0-wmjkgqeq37s4au6bhrxhdibw6zxhayz3;/usr/WS1/axom/libs/blueos_3_ppc64le_ib_p9/2024_03_25_14_14_33/gcc-8.3.1.1/fmt-10.2.1-2vqr6w6s2qq7bt4iq7mdrfiqgfiw6f5l;/usr/WS1/axom/libs/blueos_3_ppc64le_ib_p9/2024_03_25_14_14_33/gcc-8.3.1.1/raja-2024.02.0-fu7lkeidkclq2szlyoxwxnewwajkptvp;/usr/WS1/axom/libs/blueos_3_ppc64le_ib_p9/2024_03_25_14_14_33/gcc-8.3.1.1/camp-2024.02.0-j3h5y7mlqm2hqtaebbgcph7ybpegpk3c;/usr/WS1/axom/libs/blueos_3_ppc64le_ib_p9/2024_03_25_14_14_33/gcc-8.3.1.1/py-jsonschema-2.6.0-me5qygs6iauo7miussleiado3nbnw5ot;/usr/WS1/axom/libs/blueos_3_ppc64le_ib_p9/2024_03_25_14_14_33/gcc-8.3.1.1/lua-5.4.4-v5n5ab5npmyxguqaja6xdmyl6r3gsc5a;/usr/WS1/axom/libs/blueos_3_ppc64le_ib_p9/2024_03_25_14_14_33/gcc-8.3.1.1/conduit-0.9.1-7fwf4minhh6ymveutjnb4zetvxwurm66;/usr/WS1/axom/libs/blueos_3_ppc64le_ib_p9/2024_03_25_14_14_33/gcc-8.3.1.1/parmetis-4.0.3-p5pmp73u6nshwemscw43atzgaerk4ulu;/usr/WS1/axom/libs/blueos_3_ppc64le_ib_p9/2024_03_25_14_14_33/gcc-8.3.1.1/metis-5.1.0-devoja547pbzdundjnarm3hug2hhay2l;/usr/WS1/axom/libs/blueos_3_ppc64le_ib_p9/2024_03_25_14_14_33/gcc-8.3.1.1/hdf5-1.8.23-7cjtcdwjrtfgcnqoiyfrufybdw5g6i6h;/usr/WS1/axom/libs/blueos_3_ppc64le_ib_p9/2024_03_25_14_14_33/gcc-8.3.1.1/caliper-2.10.0-jzz3z5l5oauzqxroiyxl7yyusnzbzvjj;/usr/WS1/axom/libs/blueos_3_ppc64le_ib_p9/2024_03_25_14_14_33/gcc-8.3.1.1/c2c-1.8.0-vj22dsxnnfc6hx73lfgpdmlhithbd5bq;/usr/WS1/axom/libs/blueos_3_ppc64le_ib_p9/2024_03_25_14_14_33/gcc-8.3.1.1/blt-0.6.2-7zonpoigzaeybhuwllcmba7quqxlb6ab;/usr/WS1/axom/libs/blueos_3_ppc64le_ib_p9/2024_03_25_14_14_33/gcc-8.3.1.1/adiak-0.4.0-hf3tgpysazchk7gnfba2c3l2w4ztmv46;/usr/WS1/axom/libs/blueos_3_ppc64le_ib_p9/2024_03_25_14_14_33/gcc-8.3.1.1/gcc-runtime-8.3.1.1-pykxuo3lctv7fu6i325szadkdcwrrkim;/collab/usr/gapps/axom/devtools/blueos_3_ppc64le_ib_p9/latest/python-3.10.10;/collab/usr/gapps/shroud/public/blueos_3_ppc64le_ib_p9/shroud-0.13.0;/usr/tce/packages/spectrum-mpi/spectrum-mpi-rolling-release-gcc-8.3.1;/collab/usr/gapps/axom/devtools/blueos_3_ppc64le_ib_p9/latest/python-3.10.10;/usr/tce/packages/clang/clang-10.0.0;/collab/usr/gapps/axom/devtools/blueos_3_ppc64le_ib_p9/latest/graphviz-7.1.0;/usr/tcetmp;/collab/usr/gapps/axom/devtools/blueos_3_ppc64le_ib_p9/latest/doxygen-1.9.6;/collab/usr/gapps/axom/devtools/blueos_3_ppc64le_ib_p9/latest/cppcheck-2.9;/usr/tce/packages/cmake/cmake-3.21.1" CACHE STRING "")
+
+set(CMAKE_INSTALL_RPATH_USE_LINK_PATH "ON" CACHE STRING "")
+
+set(CMAKE_BUILD_RPATH "/usr/WS1/axom/libs/blueos_3_ppc64le_ib_p9/2024_03_25_14_14_33/gcc-8.3.1.1/axom-develop-pcjqmlnyoalv6yzhtblmfaasddysgymo/lib;/usr/WS1/axom/libs/blueos_3_ppc64le_ib_p9/2024_03_25_14_14_33/gcc-8.3.1.1/axom-develop-pcjqmlnyoalv6yzhtblmfaasddysgymo/lib64;/usr/WS1/axom/libs/blueos_3_ppc64le_ib_p9/2024_03_25_14_14_33/gcc-8.3.1.1/adiak-0.4.0-hf3tgpysazchk7gnfba2c3l2w4ztmv46/lib;/usr/WS1/axom/libs/blueos_3_ppc64le_ib_p9/2024_03_25_14_14_33/gcc-8.3.1.1/gcc-runtime-8.3.1.1-pykxuo3lctv7fu6i325szadkdcwrrkim/lib;/usr/tce/packages/spectrum-mpi/spectrum-mpi-rolling-release-gcc-8.3.1/lib;/usr/WS1/axom/libs/blueos_3_ppc64le_ib_p9/2024_03_25_14_14_33/gcc-8.3.1.1/c2c-1.8.0-vj22dsxnnfc6hx73lfgpdmlhithbd5bq/lib;/usr/WS1/axom/libs/blueos_3_ppc64le_ib_p9/2024_03_25_14_14_33/gcc-8.3.1.1/conduit-0.9.1-7fwf4minhh6ymveutjnb4zetvxwurm66/lib;/usr/WS1/axom/libs/blueos_3_ppc64le_ib_p9/2024_03_25_14_14_33/gcc-8.3.1.1/hdf5-1.8.23-7cjtcdwjrtfgcnqoiyfrufybdw5g6i6h/lib;/usr/WS1/axom/libs/blueos_3_ppc64le_ib_p9/2024_03_25_14_14_33/gcc-8.3.1.1/metis-5.1.0-devoja547pbzdundjnarm3hug2hhay2l/lib;/usr/WS1/axom/libs/blueos_3_ppc64le_ib_p9/2024_03_25_14_14_33/gcc-8.3.1.1/parmetis-4.0.3-p5pmp73u6nshwemscw43atzgaerk4ulu/lib;/usr/WS1/axom/libs/blueos_3_ppc64le_ib_p9/2024_03_25_14_14_33/gcc-8.3.1.1/lua-5.4.4-v5n5ab5npmyxguqaja6xdmyl6r3gsc5a/lib;/usr/WS1/axom/libs/blueos_3_ppc64le_ib_p9/2024_03_25_14_14_33/gcc-8.3.1.1/py-jsonschema-2.6.0-me5qygs6iauo7miussleiado3nbnw5ot/lib;/collab/usr/gapps/axom/devtools/blueos_3_ppc64le_ib_p9/latest/python-3.10.10/lib;/usr/WS1/axom/libs/blueos_3_ppc64le_ib_p9/2024_03_25_14_14_33/gcc-8.3.1.1/raja-2024.02.0-fu7lkeidkclq2szlyoxwxnewwajkptvp/lib;/usr/WS1/axom/libs/blueos_3_ppc64le_ib_p9/2024_03_25_14_14_33/gcc-8.3.1.1/camp-2024.02.0-j3h5y7mlqm2hqtaebbgcph7ybpegpk3c/lib;/usr/WS1/axom/libs/blueos_3_ppc64le_ib_p9/2024_03_25_14_14_33/gcc-8.3.1.1/caliper-2.10.0-jzz3z5l5oauzqxroiyxl7yyusnzbzvjj/lib64;/usr/WS1/axom/libs/blueos_3_ppc64le_ib_p9/2024_03_25_14_14_33/gcc-8.3.1.1/umpire-2024.02.0-wmjkgqeq37s4au6bhrxhdibw6zxhayz3/lib64;/usr/WS1/axom/libs/blueos_3_ppc64le_ib_p9/2024_03_25_14_14_33/gcc-8.3.1.1/fmt-10.2.1-2vqr6w6s2qq7bt4iq7mdrfiqgfiw6f5l/lib64;/usr/tce/packages/gcc/gcc-8.3.1/rh/usr/lib/gcc/ppc64le-redhat-linux/8" CACHE STRING "")
+
+set(CMAKE_INSTALL_RPATH "/usr/WS1/axom/libs/blueos_3_ppc64le_ib_p9/2024_03_25_14_14_33/gcc-8.3.1.1/axom-develop-pcjqmlnyoalv6yzhtblmfaasddysgymo/lib;/usr/WS1/axom/libs/blueos_3_ppc64le_ib_p9/2024_03_25_14_14_33/gcc-8.3.1.1/axom-develop-pcjqmlnyoalv6yzhtblmfaasddysgymo/lib64;/usr/WS1/axom/libs/blueos_3_ppc64le_ib_p9/2024_03_25_14_14_33/gcc-8.3.1.1/adiak-0.4.0-hf3tgpysazchk7gnfba2c3l2w4ztmv46/lib;/usr/WS1/axom/libs/blueos_3_ppc64le_ib_p9/2024_03_25_14_14_33/gcc-8.3.1.1/gcc-runtime-8.3.1.1-pykxuo3lctv7fu6i325szadkdcwrrkim/lib;/usr/tce/packages/spectrum-mpi/spectrum-mpi-rolling-release-gcc-8.3.1/lib;/usr/WS1/axom/libs/blueos_3_ppc64le_ib_p9/2024_03_25_14_14_33/gcc-8.3.1.1/c2c-1.8.0-vj22dsxnnfc6hx73lfgpdmlhithbd5bq/lib;/usr/WS1/axom/libs/blueos_3_ppc64le_ib_p9/2024_03_25_14_14_33/gcc-8.3.1.1/conduit-0.9.1-7fwf4minhh6ymveutjnb4zetvxwurm66/lib;/usr/WS1/axom/libs/blueos_3_ppc64le_ib_p9/2024_03_25_14_14_33/gcc-8.3.1.1/hdf5-1.8.23-7cjtcdwjrtfgcnqoiyfrufybdw5g6i6h/lib;/usr/WS1/axom/libs/blueos_3_ppc64le_ib_p9/2024_03_25_14_14_33/gcc-8.3.1.1/metis-5.1.0-devoja547pbzdundjnarm3hug2hhay2l/lib;/usr/WS1/axom/libs/blueos_3_ppc64le_ib_p9/2024_03_25_14_14_33/gcc-8.3.1.1/parmetis-4.0.3-p5pmp73u6nshwemscw43atzgaerk4ulu/lib;/usr/WS1/axom/libs/blueos_3_ppc64le_ib_p9/2024_03_25_14_14_33/gcc-8.3.1.1/lua-5.4.4-v5n5ab5npmyxguqaja6xdmyl6r3gsc5a/lib;/usr/WS1/axom/libs/blueos_3_ppc64le_ib_p9/2024_03_25_14_14_33/gcc-8.3.1.1/py-jsonschema-2.6.0-me5qygs6iauo7miussleiado3nbnw5ot/lib;/collab/usr/gapps/axom/devtools/blueos_3_ppc64le_ib_p9/latest/python-3.10.10/lib;/usr/WS1/axom/libs/blueos_3_ppc64le_ib_p9/2024_03_25_14_14_33/gcc-8.3.1.1/raja-2024.02.0-fu7lkeidkclq2szlyoxwxnewwajkptvp/lib;/usr/WS1/axom/libs/blueos_3_ppc64le_ib_p9/2024_03_25_14_14_33/gcc-8.3.1.1/camp-2024.02.0-j3h5y7mlqm2hqtaebbgcph7ybpegpk3c/lib;/usr/WS1/axom/libs/blueos_3_ppc64le_ib_p9/2024_03_25_14_14_33/gcc-8.3.1.1/caliper-2.10.0-jzz3z5l5oauzqxroiyxl7yyusnzbzvjj/lib64;/usr/WS1/axom/libs/blueos_3_ppc64le_ib_p9/2024_03_25_14_14_33/gcc-8.3.1.1/umpire-2024.02.0-wmjkgqeq37s4au6bhrxhdibw6zxhayz3/lib64;/usr/WS1/axom/libs/blueos_3_ppc64le_ib_p9/2024_03_25_14_14_33/gcc-8.3.1.1/fmt-10.2.1-2vqr6w6s2qq7bt4iq7mdrfiqgfiw6f5l/lib64;/usr/tce/packages/gcc/gcc-8.3.1/rh/usr/lib/gcc/ppc64le-redhat-linux/8" CACHE STRING "")
 
 set(CMAKE_BUILD_TYPE "Release" CACHE STRING "")
 
@@ -15,11 +21,11 @@ set(CMAKE_BUILD_TYPE "Release" CACHE STRING "")
 #------------------------------------------------------------------------------
 if(DEFINED ENV{SPACK_CC})
 
-  set(CMAKE_C_COMPILER "/usr/WS1/axom/libs/blueos_3_ppc64le_ib_p9/2023_10_17_11_51_45/spack/lib/spack/env/gcc/gcc" CACHE PATH "")
+  set(CMAKE_C_COMPILER "/usr/WS1/axom/libs/blueos_3_ppc64le_ib_p9/2024_03_25_14_14_33/spack/lib/spack/env/gcc/gcc" CACHE PATH "")
 
-  set(CMAKE_CXX_COMPILER "/usr/WS1/axom/libs/blueos_3_ppc64le_ib_p9/2023_10_17_11_51_45/spack/lib/spack/env/gcc/g++" CACHE PATH "")
+  set(CMAKE_CXX_COMPILER "/usr/WS1/axom/libs/blueos_3_ppc64le_ib_p9/2024_03_25_14_14_33/spack/lib/spack/env/gcc/g++" CACHE PATH "")
 
-  set(CMAKE_Fortran_COMPILER "/usr/WS1/axom/libs/blueos_3_ppc64le_ib_p9/2023_10_17_11_51_45/spack/lib/spack/env/gcc/gfortran" CACHE PATH "")
+  set(CMAKE_Fortran_COMPILER "/usr/WS1/axom/libs/blueos_3_ppc64le_ib_p9/2024_03_25_14_14_33/spack/lib/spack/env/gcc/gfortran" CACHE PATH "")
 
 else()
 
@@ -30,8 +36,6 @@ else()
   set(CMAKE_Fortran_COMPILER "/usr/tce/packages/gcc/gcc-8.3.1/bin/gfortran" CACHE PATH "")
 
 endif()
-
-set(CMAKE_GENERATOR "Unix Makefiles" CACHE STRING "")
 
 set(ENABLE_FORTRAN ON CACHE BOOL "")
 
@@ -71,23 +75,27 @@ set(BLT_CMAKE_IMPLICIT_LINK_DIRECTORIES_EXCLUDE "/usr/tce/packages/gcc/gcc-4.9.3
 # TPLs
 #------------------------------------------------------------------------------
 
-set(TPL_ROOT "/usr/WS1/axom/libs/blueos_3_ppc64le_ib_p9/2023_10_17_11_51_45/gcc-8.3.1.1" CACHE PATH "")
+set(TPL_ROOT "/usr/WS1/axom/libs/blueos_3_ppc64le_ib_p9/2024_03_25_14_14_33/gcc-8.3.1.1" CACHE PATH "")
 
-set(CONDUIT_DIR "${TPL_ROOT}/conduit-0.8.8-3li2jcc2mecqbanoew5tznr4uzl2k2jg" CACHE PATH "")
+set(CONDUIT_DIR "${TPL_ROOT}/conduit-0.9.1-7fwf4minhh6ymveutjnb4zetvxwurm66" CACHE PATH "")
 
-set(C2C_DIR "${TPL_ROOT}/c2c-1.8.0-zgwmbota3vhdxcdjlwxbhomlwllwhvnc" CACHE PATH "")
+set(C2C_DIR "${TPL_ROOT}/c2c-1.8.0-vj22dsxnnfc6hx73lfgpdmlhithbd5bq" CACHE PATH "")
 
 # MFEM not built
 
-set(HDF5_DIR "${TPL_ROOT}/hdf5-1.8.22-nydokvym7klek6hqoyijbwf3tbmd32ux" CACHE PATH "")
+set(HDF5_DIR "${TPL_ROOT}/hdf5-1.8.23-7cjtcdwjrtfgcnqoiyfrufybdw5g6i6h" CACHE PATH "")
 
-set(LUA_DIR "${TPL_ROOT}/lua-5.4.4-e7cdhkbaxuyqljoyozzxrt2n57erhszx" CACHE PATH "")
+set(LUA_DIR "${TPL_ROOT}/lua-5.4.4-v5n5ab5npmyxguqaja6xdmyl6r3gsc5a" CACHE PATH "")
 
-set(RAJA_DIR "${TPL_ROOT}/raja-2023.06.0-tvlbnpgx2hbiu3bjvx44ozxhvusclguk" CACHE PATH "")
+set(RAJA_DIR "${TPL_ROOT}/raja-2024.02.0-fu7lkeidkclq2szlyoxwxnewwajkptvp" CACHE PATH "")
 
-set(UMPIRE_DIR "${TPL_ROOT}/umpire-2023.06.0-g7qmb2qhubkm3azuvfmqs76otesjurcs" CACHE PATH "")
+set(UMPIRE_DIR "${TPL_ROOT}/umpire-2024.02.0-wmjkgqeq37s4au6bhrxhdibw6zxhayz3" CACHE PATH "")
 
-set(CAMP_DIR "${TPL_ROOT}/camp-2023.06.0-civqzez47ip24ln7c5q6gofaniemdr54" CACHE PATH "")
+set(ADIAK_DIR "${TPL_ROOT}/adiak-0.4.0-hf3tgpysazchk7gnfba2c3l2w4ztmv46" CACHE PATH "")
+
+set(CALIPER_DIR "${TPL_ROOT}/caliper-2.10.0-jzz3z5l5oauzqxroiyxl7yyusnzbzvjj" CACHE PATH "")
+
+set(CAMP_DIR "${TPL_ROOT}/camp-2024.02.0-j3h5y7mlqm2hqtaebbgcph7ybpegpk3c" CACHE PATH "")
 
 # scr not built
 
@@ -100,6 +108,8 @@ set(DEVTOOLS_ROOT "/collab/usr/gapps/axom/devtools/blueos_3_ppc64le_ib_p9/2023_1
 set(CLANGFORMAT_EXECUTABLE "/usr/tce/packages/clang/clang-10.0.0/bin/clang-format" CACHE PATH "")
 
 set(PYTHON_EXECUTABLE "${DEVTOOLS_ROOT}/python-3.10.10/bin/python3.10" CACHE PATH "")
+
+set(JSONSCHEMA_EXECUTABLE "${TPL_ROOT}/py-jsonschema-2.6.0-me5qygs6iauo7miussleiado3nbnw5ot/bin/jsonschema" CACHE PATH "")
 
 set(ENABLE_DOCS ON CACHE BOOL "")
 

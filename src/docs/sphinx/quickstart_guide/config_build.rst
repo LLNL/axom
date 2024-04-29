@@ -72,7 +72,9 @@ The following table lists:
 ================== ==================================== ======================
   Library          Dependent Components                 Build system variable
 ================== ==================================== ======================
-  `Conduit`_       Required: Inlet, Sidre               CONDUIT_DIR
+  `Adiak`_         Optional: Core                       ADIAK_DIR
+  `Caliper`_       Optional: Core                       CALIPER_DIR
+  `Conduit`_       Required: Inlet, Klee, Sidre         CONDUIT_DIR
   `c2c`_           Optional: Quest                      C2C_DIR
   `HDF5`_          Optional: Sidre                      HDF5_DIR
   `Lua`_           Optional: Inlet                      LUA_DIR
@@ -82,6 +84,8 @@ The following table lists:
   `Umpire`_        Optional: Core, Spin, Quest          UMPIRE_DIR
 ================== ==================================== ======================
 
+.. _Adiak:  https://llnl.github.io/Adiak
+.. _Caliper: https://software.llnl.gov/Caliper
 .. _Conduit: https://llnl-conduit.readthedocs.io/en/latest
 .. _c2c: https://rzlc.llnl.gov/c2c
 .. _HDF5: https://www.hdfgroup.org/solutions/hdf5/
@@ -449,9 +453,6 @@ Tools and features primarily intended for developers
 | OPTION                                   | Default | Description                            |
 +==========================================+=========+========================================+
 | ENABLE_CODECOV                           | ON      | Enable code coverage via gcov          |
-+------------------------------------------+---------+----------------------------------------+
-| AXOM_ENABLE_ANNOTATIONS                  | OFF     | Enable source code annotations to      |
-|                                          |         | facilitate performance evaluation      |
 +------------------------------------------+---------+----------------------------------------+
 | AXOM_QUEST_ENABLE_EXTRA_REGRESSION_TESTS | OFF     | Enable an expanded set of tests for    |
 |                                          |         | the Axom Quest component               |

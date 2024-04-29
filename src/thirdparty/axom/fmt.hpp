@@ -10,19 +10,19 @@
 #include "axom/config.hpp"
 
 // Include all fmt header files
-#include "fmt/core.h"
-#include "fmt/format.h"
+#include "axom/fmt/core.h"
+#include "axom/fmt/format.h"
 
-#include "fmt/args.h"
-#include "fmt/chrono.h"
-#include "fmt/color.h"
-#include "fmt/compile.h"
-#include "fmt/os.h"
-#include "fmt/ostream.h"
-#include "fmt/printf.h"
-#include "fmt/ranges.h"
-#include "fmt/std.h"
-#include "fmt/xchar.h"
+#include "axom/fmt/args.h"
+#include "axom/fmt/chrono.h"
+#include "axom/fmt/color.h"
+#include "axom/fmt/compile.h"
+#include "axom/fmt/os.h"
+#include "axom/fmt/ostream.h"
+#include "axom/fmt/printf.h"
+#include "axom/fmt/ranges.h"
+#include "axom/fmt/std.h"
+#include "axom/fmt/xchar.h"
 
 #endif // AXOM_FMT_H_
 

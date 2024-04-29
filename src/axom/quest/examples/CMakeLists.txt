@@ -22,6 +22,24 @@ axom_add_executable(
     FOLDER      axom/quest/examples
     )
 
+if(AXOM_ENABLE_TESTS AND AXOM_DATA_DIR AND CALIPER_FOUND)
+    set(_input_file "${AXOM_DATA_DIR}/quest/sphere_binary.stl")
+    
+    if(AXOM_ENABLE_MPI)     # this test requires MPI when available
+        set(_num_ranks 1)   # (but only 1 rank)
+    else()                  # but can otherwise be run without MPI
+        unset(_num_ranks)
+    endif()
+    
+    axom_add_test(
+        NAME    quest_containment_sphere_ex
+        COMMAND quest_containment_driver_ex
+                --input ${_input_file}
+                --caliper report
+        NUM_MPI_TASKS ${_num_ranks}
+    )
+endif()
+
 # BVH two pass example --------------------------------------------------------
 if (RAJA_FOUND AND UMPIRE_FOUND)
     axom_add_executable(
@@ -32,6 +50,15 @@ if (RAJA_FOUND AND UMPIRE_FOUND)
         FOLDER      axom/quest/examples
         )
 endif()
+
+# Read ProE example -----------------------------------------------------------
+axom_add_executable(
+    NAME        quest_proe_bbox_ex
+    SOURCES     quest_proe_bbox.cpp
+    OUTPUT_DIR  ${EXAMPLE_OUTPUT_DIRECTORY}
+    DEPENDS_ON  ${quest_example_depends}
+    FOLDER      axom/quest/examples
+    )
 
 # BVH silo example ------------------------------------------------------------
 if (CONDUIT_FOUND AND RAJA_FOUND AND UMPIRE_FOUND)
@@ -134,7 +161,7 @@ if(AXOM_ENABLE_MPI AND MFEM_FOUND AND MFEM_USE_MPI
                 NUM_MPI_TASKS ${_nranks})
             # background: 3500; balls: ~373; jacks: ~230; air ~2897
             set_tests_properties(${_testname} PROPERTIES 
-                PASS_REGULAR_EXPRESSION  "Volume of material 'air' is 2895.")
+                PASS_REGULAR_EXPRESSION  "Volume of material 'air' is 2,?895.")
 
             set(_testname quest_shaping_driver_ex_sampling_ball_impact)
             axom_add_test(
@@ -191,7 +218,7 @@ if(AXOM_ENABLE_MPI AND MFEM_FOUND AND MFEM_USE_MPI
         # bbox volume: 12^3 = 1728; sphere(r=5): ~523.6; sphere(r=2): 33.5
         # expected analytic volume when fully resolved: ~1237.9
         set_tests_properties(${_testname} PROPERTIES 
-            PASS_REGULAR_EXPRESSION  "Volume of material 'void' is 1239.")
+            PASS_REGULAR_EXPRESSION  "Volume of material 'void' is 1,?239.")
 
         set(_testname quest_shaping_driver_ex_sampling_plane)
         axom_add_test(
@@ -206,7 +233,7 @@ if(AXOM_ENABLE_MPI AND MFEM_FOUND AND MFEM_USE_MPI
         # expected volume when fully resolved: 182,209,421.5
         # actual value is accurate to about 1% at coarse resolution
         set_tests_properties(${_testname} PROPERTIES 
-            PASS_REGULAR_EXPRESSION  "Volume of material 'air' is 182227963")
+            PASS_REGULAR_EXPRESSION  "Volume of material 'air' is 182,?227,?963")
     endif()
 endif()
 
@@ -459,9 +486,12 @@ if (ENABLE_FORTRAN)
 
     set(quest_fortran_examples quest_signed_distance_interface)
     
-    # The inout Fortran example fails to compile with hipcc/amdflang in debug configurations
-    if("${CMAKE_Fortran_COMPILER}" MATCHES "amdflang$" AND
+    if("${AXOM_CONFIG_NAME}" STREQUAL "GNU-Debug-shared-mpi-openmp")
+        # The gcc-11 docker image does not work, turning off for now
+        set(_has_inout_fortran_example FALSE)
+    elseif("${CMAKE_Fortran_COMPILER}" MATCHES "amdflang$" AND
        CMAKE_BUILD_TYPE MATCHES "(Debug|RelWithDebInfo)")
+        # The inout Fortran example fails to compile with hipcc/amdflang in debug configurations
         set(_has_inout_fortran_example FALSE)
     else()
         set(_has_inout_fortran_example TRUE)

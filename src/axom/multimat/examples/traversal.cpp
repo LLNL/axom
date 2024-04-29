@@ -284,8 +284,7 @@ void various_traversal_methods(int nmats,
   timer.start();
   {
     auto map = mm.get1dField<double>("Cell Array");
-    for(MultiMat::Field1D<double>::iterator iter = map.begin(); iter != map.end();
-        iter++)
+    for(auto iter = map.set_begin(); iter != map.set_end(); iter++)
     {
       for(int comp = 0; comp < iter.numComp(); ++comp)
       {
@@ -305,7 +304,7 @@ void various_traversal_methods(int nmats,
     for(int i = 0; i < map2d.firstSetSize(); i++)
     {
       auto submap = map2d(i);
-      for(auto iter = submap.begin(); iter != submap.end(); iter++)
+      for(auto iter = submap.set_begin(); iter != submap.set_end(); iter++)
       {
         //int idx = iter.index();  //get the index
         for(int comp = 0; comp < map2d.numComp(); ++comp)
@@ -313,7 +312,6 @@ void various_traversal_methods(int nmats,
           sum += iter(comp);                            //<----
           SLIC_ASSERT(iter(comp) == iter.value(comp));  //value()
         }
-        SLIC_ASSERT(*iter == iter.value());  //2 ways to get the first component
       }
     }
   }
@@ -331,7 +329,7 @@ void various_traversal_methods(int nmats,
     auto map2d = mm.get2dField<double>("CellMat Array");
     for(int i = 0; i < mm.getNumberOfCells() /*map2d.firstSetSize()*/; i++)
     {
-      for(auto iter = map2d.begin(i); iter != map2d.end(i); iter++)
+      for(auto iter = map2d.set_begin(i); iter != map2d.set_end(i); iter++)
       {
         // int idx = iter.index(); get the index
         for(int comp = 0; comp < map2d.numComp(); ++comp)
@@ -339,8 +337,8 @@ void various_traversal_methods(int nmats,
           sum += iter(comp);                            //<----
           SLIC_ASSERT(iter(comp) == iter.value(comp));  //value()
         }
-        SLIC_ASSERT(iter(0) == *iter);  //2 ways to get the first component
-        SLIC_ASSERT(iter(0) == iter.value());
+        SLIC_ASSERT(iter(0) == (*iter)[0]);  //2 ways to get the first component
+        SLIC_ASSERT(iter(0) == iter.value(0));
       }
     }
   }
@@ -377,7 +375,7 @@ void various_traversal_methods(int nmats,
   timer.start();
   {
     auto map2d = mm.get2dField<double>("CellMat Array");
-    for(auto iter = map2d.begin(); iter != map2d.end(); ++iter)
+    for(auto iter = map2d.set_begin(); iter != map2d.set_end(); ++iter)
     {
       //get the indices
       //int cell_id = iter.firstIndex();
@@ -388,8 +386,6 @@ void various_traversal_methods(int nmats,
         SLIC_ASSERT(val == iter.value(comp));  //another way to get the value
         sum += val;
       }
-      SLIC_ASSERT(iter(0) == *iter);  //2 ways to get the first component value
-      SLIC_ASSERT(iter(0) == iter.value());
     }
   }
   timer.stop();

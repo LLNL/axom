@@ -637,6 +637,8 @@ TEST(lumberjack_Message, packMessagesIndividually)
 
     EXPECT_EQ(packedMessage, answer);
 
+    // cleanup
+    delete packedMessage;
     delete m;
     messages.clear();
   }
@@ -664,6 +666,14 @@ TEST(lumberjack_Message, packMessages)
 
   answer = std::to_string((int)testData.size()) + "*" + answer;
   EXPECT_EQ(packedMessages, answer);
+
+  // cleanup
+  delete packedMessages;
+  for(auto* _m : messages)
+  {
+    delete _m;
+  }
+  messages.clear();
 }
 
 TEST(lumberjack_Message, unpackMessagesIndividually)

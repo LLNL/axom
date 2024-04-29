@@ -88,17 +88,17 @@ if (CONDUIT_FOUND)
                         FOLDER     axom/thirdparty/tests )
 
     axom_add_test(NAME conduit_smoke
-                 COMMAND conduit_smoke_test)
+                  COMMAND conduit_smoke_test)
 
     if (ENABLE_FORTRAN)
         axom_add_executable(NAME       conduit_smoke_F_test
-                           SOURCES    f_conduit_smoke.f
-                           OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
-                           DEPENDS_ON conduit::conduit fruit
-                           FOLDER     axom/thirdparty/tests )
+                            SOURCES    f_conduit_smoke.f
+                            OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
+                            DEPENDS_ON conduit::conduit fruit
+                            FOLDER     axom/thirdparty/tests )
 
         axom_add_test(NAME conduit_smoke_F
-                     COMMAND conduit_smoke_F_test)
+                      COMMAND conduit_smoke_F_test)
   endif()
 endif()
 
@@ -123,10 +123,45 @@ if (MFEM_FOUND)
 endif()
 
 #------------------------------------------------------------------------------
+# Smoke test for caliper and adiak third party library
+#------------------------------------------------------------------------------
+if ( CALIPER_FOUND )
+
+  set( caliper_smoke_dependencies caliper gtest )
+  blt_list_append( TO caliper_smoke_dependencies ELEMENTS mpi IF AXOM_ENABLE_MPI)
+  blt_list_append( TO caliper_smoke_dependencies ELEMENTS cuda_runtime IF AXOM_ENABLE_CUDA)
+
+  blt_add_executable( NAME caliper_smoke_test
+                      SOURCES caliper_smoke.cpp
+                      OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
+                      DEPENDS_ON ${caliper_smoke_dependencies}
+                      FOLDER axom/thirdparty/tests )
+
+  axom_add_test( NAME    caliper_smoke
+                 COMMAND caliper_smoke_test )
+
+endif()
+
+if ( ADIAK_FOUND )
+
+  set( adiak_smoke_dependencies adiak::adiak gtest )
+  blt_list_append( TO adiak_smoke_dependencies ELEMENTS mpi IF AXOM_ENABLE_MPI)
+
+  blt_add_executable( NAME adiak_smoke_test
+                      SOURCES adiak_smoke.cpp
+                      OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
+                      DEPENDS_ON ${adiak_smoke_dependencies}
+                      FOLDER axom/thirdparty/tests )
+
+  axom_add_test( NAME    adiak_smoke
+                 COMMAND adiak_smoke_test )
+
+endif()
+
+#------------------------------------------------------------------------------
 # Smoke test for fmt third party library
 #------------------------------------------------------------------------------
 set(fmt_smoke_dependencies fmt gtest)
-blt_list_append( TO fmt_smoke_dependencies ELEMENTS cuda IF AXOM_ENABLE_CUDA)
 
 axom_add_executable(
     NAME       fmt_smoke_test
