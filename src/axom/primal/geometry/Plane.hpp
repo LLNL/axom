@@ -118,8 +118,7 @@ public:
    * \note The supplied normal will be normalized, such that, the Plane's normal
    *  will always be a unit normal.
    */
-  AXOM_HOST_DEVICE
-  Plane(const VectorType& normal, const PointType& x);
+  AXOM_HOST_DEVICE Plane(const VectorType& normal, const PointType& x);
 
   /*!
    * \brief Constructs a plane with a specified normal, \f$ \mathcal{N} \f$,
@@ -131,8 +130,7 @@ public:
    * \note The supplied normal will be normalized, such that, the Plane's normal
    *  will always be a unit normal.
    */
-  AXOM_HOST_DEVICE
-  Plane(const VectorType& normal, T offset);
+  AXOM_HOST_DEVICE Plane(const VectorType& normal, T offset);
 
   /// @}
 
@@ -141,8 +139,7 @@ public:
    * \return dim the dimension of the Plane.
    * \post (dim==2) || (dim==3)
    */
-  AXOM_HOST_DEVICE
-  inline int getDimension() const { return NDIMS; };
+  AXOM_HOST_DEVICE static int getDimension() const { return NDIMS; };
 
   /*!
    * \brief Returns a const pointer to the plane's unit normal.
@@ -175,7 +172,7 @@ public:
    *
    * \post this->getOrientedSide( projx ) == ON_BOUNDARY
    */
-  PointType projectPoint(const PointType& x) const;
+  AXOM_HOST_DEVICE PointType projectPoint(const PointType& x) const;
 
   /*!
    * \brief Computes the reflection of a given point, x, across this Plane.
@@ -186,12 +183,12 @@ public:
    * \post The reflected point will be on the Plane if x is on the Plane,
    *       otherwise it will be on the opposite side of the Plane from x.
    */
-  PointType reflectPoint(const PointType& x) const;
+  AXOM_HOST_DEVICE PointType reflectPoint(const PointType& x) const;
 
   /*!
    * \brief Flips the orientation of the plane.
    */
-  inline void flip();
+  AXOM_HOST_DEVICE void flip();
 
   /*!
    * \brief Computes the orientation of the point with respect to this Plane.
@@ -209,8 +206,8 @@ public:
    *
    * \see OrientationResult
    */
-  AXOM_HOST_DEVICE inline int getOrientation(const PointType& x,
-                                             double TOL = 1.e-9) const;
+  AXOM_HOST_DEVICE int getOrientation(const PointType& x,
+                                      double TOL = 1.e-9) const;
 
   /*!
    * \brief Prints the Plane information in the given output stream.
@@ -227,7 +224,7 @@ private:
    * \param [in] normal pointer to a buffer consisting of the normal
    * \note The supplied buffer must be at least NDIMS long.
    */
-  AXOM_HOST_DEVICE inline void setNormal(const VectorType& normal);
+  AXOM_HOST_DEVICE void setNormal(const VectorType& normal);
 
   VectorType m_normal; /*!< plane unit-normal  */
   T m_offset;          /*!< offset from origin */
@@ -268,7 +265,7 @@ AXOM_HOST_DEVICE Plane<T, NDIMS>::Plane(const VectorType& normal, T offset)
 
 //------------------------------------------------------------------------------
 template <typename T, int NDIMS>
-inline typename Plane<T, NDIMS>::PointType Plane<T, NDIMS>::projectPoint(
+AXOM_HOST_DEVICE typename Plane<T, NDIMS>::PointType Plane<T, NDIMS>::projectPoint(
   const PointType& x) const
 {
   const T signed_distance = this->signedDistance(x);
@@ -277,17 +274,16 @@ inline typename Plane<T, NDIMS>::PointType Plane<T, NDIMS>::projectPoint(
 
 //------------------------------------------------------------------------------
 template <typename T, int NDIMS>
-inline typename Plane<T, NDIMS>::PointType Plane<T, NDIMS>::reflectPoint(
+AXOM_HOST_DEVICE typename Plane<T, NDIMS>::PointType Plane<T, NDIMS>::reflectPoint(
   const PointType& x) const
 {
-  constexpr T TWO {2.};
   const T signed_distance = this->signedDistance(x);
-  return x - TWO * signed_distance * m_normal;
+  return x - static_cast<T>(2.0) * signed_distance * m_normal;
 }
 
 //------------------------------------------------------------------------------
 template <typename T, int NDIMS>
-inline void Plane<T, NDIMS>::flip()
+AXOM_HOST_DEVICE void Plane<T, NDIMS>::flip()
 {
   m_normal *= static_cast<T>(-1.0);
   m_offset *= static_cast<T>(-1.0);
@@ -295,8 +291,8 @@ inline void Plane<T, NDIMS>::flip()
 
 //------------------------------------------------------------------------------
 template <typename T, int NDIMS>
-AXOM_HOST_DEVICE inline int Plane<T, NDIMS>::getOrientation(const PointType& x,
-                                                            double TOL) const
+AXOM_HOST_DEVICE int Plane<T, NDIMS>::getOrientation(const PointType& x,
+                                                     double TOL) const
 {
   const T signed_distance = this->signedDistance(x);
 
@@ -323,7 +319,7 @@ std::ostream& Plane<T, NDIMS>::print(std::ostream& os) const
 
 //------------------------------------------------------------------------------
 template <typename T, int NDIMS>
-AXOM_HOST_DEVICE inline void Plane<T, NDIMS>::setNormal(const VectorType& normal)
+AXOM_HOST_DEVICE void Plane<T, NDIMS>::setNormal(const VectorType& normal)
 {
   m_normal = normal.unitVector();
 }
