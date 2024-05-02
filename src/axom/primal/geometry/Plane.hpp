@@ -178,6 +178,17 @@ public:
   PointType projectPoint(const PointType& x) const;
 
   /*!
+   * \brief Computes the reflection of a given point, x, across this Plane.
+   *
+   * \param [in] x buffer consisting of the coordinates of the point to project.
+   * \return refx the coordinates of the reflected point.
+   *
+   * \post The reflected point will be on the Plane if x is on the Plane,
+   *       otherwise it will be on the opposite side of the Plane from x.
+   */
+  PointType reflectPoint(const PointType& x) const;
+
+  /*!
    * \brief Flips the orientation of the plane.
    */
   inline void flip();
@@ -262,6 +273,16 @@ inline typename Plane<T, NDIMS>::PointType Plane<T, NDIMS>::projectPoint(
 {
   const T signed_distance = this->signedDistance(x);
   return x - signed_distance * m_normal;
+}
+
+//------------------------------------------------------------------------------
+template <typename T, int NDIMS>
+inline typename Plane<T, NDIMS>::PointType Plane<T, NDIMS>::reflectPoint(
+  const PointType& x) const
+{
+  constexpr T TWO {2.};
+  const T signed_distance = this->signedDistance(x);
+  return x - TWO * signed_distance * m_normal;
 }
 
 //------------------------------------------------------------------------------
