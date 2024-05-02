@@ -28,6 +28,8 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 - Adds a RAII-based `MPIWrapper` utility class to axom's core component. This can help setup/teardown
   MPI in axom's examples. It can also be used in configurations with MPI.
 - Primal: Adds a `closest_point` operator for finding the closest point on a `Segment`
+- Primal: Adds a `reflectPoint` method to the `Plane` primitive
+- Primal: Makes several primitive methods available in device code
 
 ### Changed
 - Upgrades `vcpkg` usage for axom's automated Windows builds to its
