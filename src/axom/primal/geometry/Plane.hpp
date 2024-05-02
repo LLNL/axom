@@ -139,7 +139,7 @@ public:
    * \return dim the dimension of the Plane.
    * \post (dim==2) || (dim==3)
    */
-  AXOM_HOST_DEVICE static int getDimension() const { return NDIMS; };
+  AXOM_HOST_DEVICE static constexpr int getDimension() { return NDIMS; };
 
   /*!
    * \brief Returns a const pointer to the plane's unit normal.
