@@ -121,11 +121,15 @@ public:
    *
    * \param [in] normal the supplied plane normal, \f$ \mathcal{N} \f$
    * \param [in] x a specified point that the plane passes through, \f$ x \f$
+   * \param [in] normalize if true, normalize the given vector (default: true)
    *
-   * \note The supplied normal will be normalized, such that, the Plane's normal
-   *  will always be a unit normal.
+   * \note The Plane's normal should always be a unit normal, so the
+   *  normalize flag should only be set to false when the supplied
+   *  normal has already been normalized.
    */
-  AXOM_HOST_DEVICE Plane(const VectorType& normal, const PointType& x);
+  AXOM_HOST_DEVICE Plane(const VectorType& normal,
+                         const PointType& x,
+                         bool normalize = true);
 
   /*!
    * \brief Constructs a plane with a specified normal, \f$ \mathcal{N} \f$,
@@ -133,11 +137,13 @@ public:
    *
    * \param [in] normal the supplied plane normal, \f$ \mathcal{N} \f$
    * \param [in] offset the plane offset from origin
+   * \param [in] normalize if true, normalize the given vector (default: true)
    *
-   * \note The supplied normal will be normalized, such that, the Plane's normal
-   *  will always be a unit normal.
+   * \note The Plane's normal should always be a unit normal, so the
+   *  normalize flag should only be set to false when the supplied
+   *  normal has already been normalized.
    */
-  AXOM_HOST_DEVICE Plane(const VectorType& normal, T offset);
+  AXOM_HOST_DEVICE Plane(const VectorType& normal, T offset, bool normalize = true);
 
   /// @}
 
@@ -243,8 +249,10 @@ private:
    *
    * \param [in] normal pointer to a buffer consisting of the normal
    * \note The supplied buffer must be at least NDIMS long.
+   * \param [in] normalize if true, normalize the given vector
    */
-  AXOM_HOST_DEVICE void setNormal(const VectorType& normal);
+  AXOM_HOST_DEVICE void setNormal(const VectorType& normal,
+                                  bool normalize = true);
 
   VectorType m_normal; /*!< plane unit-normal (defaults to the zero vector) */
   T m_offset {static_cast<T>(0.0)}; /*!< offset from origin */
@@ -262,25 +270,28 @@ namespace primal
 {
 template <typename T, int NDIMS>
 AXOM_HOST_DEVICE Plane<T, NDIMS>::Plane(const VectorType& normal,
-                                        const PointType& x)
+                                        const PointType& x,
+                                        bool normalize)
 {
   SLIC_ASSERT_MSG(!normal.is_zero(),
                   "Normal vector of a plane should be non-zero");
 
-  this->setNormal(normal);
+  this->setNormal(normal, normalize);
 
   m_offset = m_normal.dot(VectorType(x.array()));
 }
 
 //------------------------------------------------------------------------------
 template <typename T, int NDIMS>
-AXOM_HOST_DEVICE Plane<T, NDIMS>::Plane(const VectorType& normal, T offset)
+AXOM_HOST_DEVICE Plane<T, NDIMS>::Plane(const VectorType& normal,
+                                        T offset,
+                                        bool normalize)
   : m_offset(offset)
 {
   SLIC_ASSERT_MSG(!normal.is_zero(),
                   "Normal vector of a plane should be non-zero");
 
-  this->setNormal(normal);
+  this->setNormal(normal, normalize);
 }
 
 //------------------------------------------------------------------------------
@@ -327,7 +338,9 @@ AXOM_HOST_DEVICE int Plane<T, NDIMS>::getOrientation(const PointType& x,
 template <typename T, int NDIMS>
 AXOM_HOST_DEVICE bool Plane<T, NDIMS>::isValid(T TOL) const
 {
-  return utilities::isNearlyEqual(m_normal.squared_norm(), static_cast<T>(1.0), TOL);
+  return utilities::isNearlyEqual(m_normal.squared_norm(),
+                                  static_cast<T>(1.0),
+                                  TOL);
 }
 
 //------------------------------------------------------------------------------
@@ -345,9 +358,17 @@ std::ostream& Plane<T, NDIMS>::print(std::ostream& os) const
 
 //------------------------------------------------------------------------------
 template <typename T, int NDIMS>
-AXOM_HOST_DEVICE void Plane<T, NDIMS>::setNormal(const VectorType& normal)
+AXOM_HOST_DEVICE void Plane<T, NDIMS>::setNormal(const VectorType& normal,
+                                                 bool normalize)
 {
-  m_normal = normal.unitVector();
+  if(normalize)
+  {
+    m_normal = normal.unitVector();
+  }
+  else
+  {
+    m_normal = normal;
+  }
 }
 
 //------------------------------------------------------------------------------
