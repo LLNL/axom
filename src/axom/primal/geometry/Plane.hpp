@@ -245,7 +245,7 @@ private:
   AXOM_HOST_DEVICE void setNormal(const VectorType& normal);
 
   VectorType m_normal; /*!< plane unit-normal (defaults to the zero vector) */
-  T m_offset{static_cast<T>(0.0)}; /*!< offset from origin */
+  T m_offset {static_cast<T>(0.0)}; /*!< offset from origin */
 };
 
 } /* namespace primal */
@@ -327,9 +327,8 @@ AXOM_HOST_DEVICE bool Plane<T, NDIMS>::isValid(T TOL) const
 {
   for(int i = 0; i < NDIMS; ++i)
   {
-    if(!utilities::isNearlyEqual(m_normal[i],
-                                 static_cast<T>(0.0),
-                                 TOL)) {
+    if(!utilities::isNearlyEqual(m_normal[i], static_cast<T>(0.0), TOL))
+    {
       return true;
     }
   }
