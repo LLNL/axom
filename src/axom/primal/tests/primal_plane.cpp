@@ -93,6 +93,31 @@ void check_assignment_operator()
 //------------------------------------------------------------------------------
 // UNIT TEST
 //------------------------------------------------------------------------------
+
+TEST(primal_plane, default_constructor)
+{
+  // test 3D
+  {
+    PlaneType3 P;
+    EXPECT_DOUBLE_EQ(P.getOffset(), 0.0);
+    EXPECT_DOUBLE_EQ(P.getNormal()[0], 0.0);
+    EXPECT_DOUBLE_EQ(P.getNormal()[1], 0.0);
+    EXPECT_DOUBLE_EQ(P.getNormal()[2], 0.0);
+    EXPECT_EQ(P.getDimension(), 3);
+    EXPECT_FALSE(P.isValid());
+  }
+
+  // test 2D
+  {
+    PlaneType2 P;
+    EXPECT_DOUBLE_EQ(P.getOffset(), 0.0);
+    EXPECT_DOUBLE_EQ(P.getNormal()[0], 0.0);
+    EXPECT_DOUBLE_EQ(P.getNormal()[1], 0.0);
+    EXPECT_EQ(P.getDimension(), 2);
+    EXPECT_FALSE(P.isValid());
+  }
+}
+
 TEST(primal_plane, construct_from_normal_and_point)
 {
   // test 3D
@@ -105,6 +130,7 @@ TEST(primal_plane, construct_from_normal_and_point)
     EXPECT_DOUBLE_EQ(P.getNormal()[1], 0.0);
     EXPECT_DOUBLE_EQ(P.getNormal()[2], 1.0);
     EXPECT_EQ(P.getDimension(), 3);
+    EXPECT_TRUE(P.isValid());
   }
 
   // test 2D
@@ -116,6 +142,7 @@ TEST(primal_plane, construct_from_normal_and_point)
     ensure_unit_norm(P2.getNormal());
     EXPECT_DOUBLE_EQ(P2.getOffset(), std::sqrt(5.0));
     EXPECT_EQ(P2.getDimension(), 2);
+    EXPECT_TRUE(P2.isValid());
   }
 }
 
@@ -131,6 +158,7 @@ TEST(primal_plane, construct_from_normal_and_offset)
     EXPECT_DOUBLE_EQ(P.getNormal()[1], 0.0);
     EXPECT_DOUBLE_EQ(P.getNormal()[2], 1.0);
     EXPECT_DOUBLE_EQ(P.getOffset(), offset);
+    EXPECT_TRUE(P.isValid());
   }
 
   // test 3D with non-unit vector
@@ -142,6 +170,7 @@ TEST(primal_plane, construct_from_normal_and_offset)
     EXPECT_DOUBLE_EQ(P.getNormal()[1], std::sqrt(3) / 3);
     EXPECT_DOUBLE_EQ(P.getNormal()[2], std::sqrt(3) / 3);
     EXPECT_DOUBLE_EQ(P.getOffset(), offset);
+    EXPECT_TRUE(P.isValid());
   }
 
   // test 2D
@@ -151,6 +180,7 @@ TEST(primal_plane, construct_from_normal_and_offset)
     PlaneType2 P2(normal2, offset);
     ensure_unit_norm(P2.getNormal());
     EXPECT_DOUBLE_EQ(P2.getOffset(), offset);
+    EXPECT_TRUE(P2.isValid());
   }
 
   // test 2D with non-unit vector
@@ -161,6 +191,7 @@ TEST(primal_plane, construct_from_normal_and_offset)
     EXPECT_DOUBLE_EQ(P.getNormal()[0], std::sqrt(2) / 2);
     EXPECT_DOUBLE_EQ(P.getNormal()[1], std::sqrt(2) / 2);
     EXPECT_DOUBLE_EQ(P.getOffset(), offset);
+    EXPECT_TRUE(P.isValid());
   }
 }
 
@@ -175,6 +206,7 @@ TEST(primal_plane, construct_from_points)
     PlaneType3 P = primal::make_plane(x1, x2, x3);
     ensure_unit_norm(P.getNormal());
     EXPECT_DOUBLE_EQ(P.getOffset(), 3.0);
+    EXPECT_TRUE(P.isValid());
   }
 
   // test 2D
@@ -184,6 +216,7 @@ TEST(primal_plane, construct_from_points)
     PlaneType2 P2 = primal::make_plane(a, b);
     ensure_unit_norm(P2.getNormal());
     EXPECT_DOUBLE_EQ(P2.getOffset(), -2.0);
+    EXPECT_TRUE(P2.isValid());
   }
 }
 

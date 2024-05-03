@@ -109,6 +109,13 @@ public:
   /// @{
 
   /*!
+   * \brief Constructs a Plane with a zero normal vector and zero offset
+   *
+   * \post isValid() == false
+   */
+  Plane() = default;
+
+  /*!
    * \brief Constructs a Plane with a given normal, \f$ \mathcal{N} \f$, that
    *  passes through the specified point, \f$  x \f$
    *
@@ -210,6 +217,17 @@ public:
                                       double TOL = 1.e-9) const;
 
   /*!
+   * \brief Simple check for validity of a Plane
+   *
+   * Check that the normal is not the zero vector
+   *
+   * \param [in] TOL user-supplied tolerance. Optional. Default is 1.0e-50.
+   *
+   * \return True, if the Plane is valid, False otherwise
+   */
+  AXOM_HOST_DEVICE bool isValid(T TOL = static_cast<T>(PRIMAL_TINY)) const;
+
+  /*!
    * \brief Prints the Plane information in the given output stream.
    * \param [in] os The output stream to write to.
    * \note This method is primarily used for debugging.
@@ -226,8 +244,8 @@ private:
    */
   AXOM_HOST_DEVICE void setNormal(const VectorType& normal);
 
-  VectorType m_normal; /*!< plane unit-normal  */
-  T m_offset;          /*!< offset from origin */
+  VectorType m_normal; /*!< plane unit-normal (defaults to the zero vector) */
+  T m_offset{static_cast<T>(0.0)}; /*!< offset from origin */
 };
 
 } /* namespace primal */
@@ -296,12 +314,27 @@ AXOM_HOST_DEVICE int Plane<T, NDIMS>::getOrientation(const PointType& x,
 {
   const T signed_distance = this->signedDistance(x);
 
-  if(utilities::isNearlyEqual(signed_distance, 0.0, TOL))
+  if(utilities::isNearlyEqual(signed_distance, static_cast<T>(0.0), TOL))
   {
     return primal::ON_BOUNDARY;
   }
   return signed_distance < 0. ? primal::ON_NEGATIVE_SIDE
                               : primal::ON_POSITIVE_SIDE;
+}
+
+template <typename T, int NDIMS>
+AXOM_HOST_DEVICE bool Plane<T, NDIMS>::isValid(T TOL) const
+{
+  for(int i = 0; i < NDIMS; ++i)
+  {
+    if(!utilities::isNearlyEqual(m_normal[i],
+                                 static_cast<T>(0.0),
+                                 TOL)) {
+      return true;
+    }
+  }
+
+  return false;
 }
 
 //------------------------------------------------------------------------------
