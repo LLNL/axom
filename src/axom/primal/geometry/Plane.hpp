@@ -143,9 +143,7 @@ public:
    *  normalize flag should only be set to false when the supplied
    *  normal has already been normalized.
    */
-  AXOM_HOST_DEVICE Plane(const VectorType& normal,
-                         T offset,
-                         bool normalize = true);
+  AXOM_HOST_DEVICE Plane(const VectorType& normal, T offset, bool normalize = true);
 
   /// @}
 
