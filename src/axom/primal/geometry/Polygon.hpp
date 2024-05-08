@@ -43,6 +43,7 @@ std::ostream& operator<<(std::ostream& os,
  * \tparam T the coordinate type, e.g., double, float, etc.
  * \tparam NDIMS the number of dimensions
  * \tparam MAX_VERTS the max number of vertices to preallocate space for
+ *         (default max is 20 vertices)
  * \note The polygon vertices should be ordered in a counter clockwise
  *       orientation with respect to the polygon's desired normal vector
  */
