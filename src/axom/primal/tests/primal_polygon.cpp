@@ -724,13 +724,13 @@ TEST(primal_polygon, normal)
 template <typename ExecPolicy>
 void check_polygon_policy()
 {
-  using Polygon3D = axom::primal::Polygon<double, 3>;
+  const int NUM_VERTS_SQUARE = 4;
+
+  using Polygon3D = axom::primal::Polygon<double, 3, NUM_VERTS_SQUARE>;
   using Point3D = axom::primal::Point<double, 3>;
-  using Polygon2D = axom::primal::Polygon<double, 2>;
+  using Polygon2D = axom::primal::Polygon<double, 2, NUM_VERTS_SQUARE>;
   using Point2D = axom::primal::Point<double, 2>;
   using Vector3D = axom::primal::Vector<double, 3>;
-
-  const int NUM_VERTS_SQUARE = 4;
 
   Polygon3D* poly_3d_device =
     axom::allocate<Polygon3D>(1,

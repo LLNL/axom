@@ -94,7 +94,7 @@ public:
   AXOM_HOST_DEVICE
   void addVertex(const PointType& pt)
   {
-    SLIC_ASSERT(m_num_vertices + 1 < MAX_VERTS);
+    SLIC_ASSERT(m_num_vertices + 1 <= MAX_VERTS);
     m_vertices[m_num_vertices] = pt;
     m_num_vertices++;
   }
