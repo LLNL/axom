@@ -102,6 +102,10 @@ void about(std::ostream &oss)
     comps.push_back("sidre");
 #endif
 
+#ifdef AXOM_USE_SINA
+    comps.push_back("sina");
+#endif
+
 #ifdef AXOM_USE_SLAM
     comps.push_back("slam");
 #endif
