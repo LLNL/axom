@@ -333,6 +333,74 @@ TEST(primal_plane, project_point)
 }
 
 //------------------------------------------------------------------------------
+TEST(primal_plane, reflect_point)
+{
+  // test 3D
+  {
+    const PointType3 x1 {1.0, 1.0, 3.0};
+    const PointType3 x2 {2.0, 2.0, 3.0};
+    const PointType3 x3 {1.0, 3.0, 3.0};
+    PointType3 q {0.0, 0.0, 0.0};
+    PointType3 qproj;
+
+    PlaneType3 P = primal::make_plane(x1, x2, x3);
+
+    // (a) test reflect point below plane
+    qproj = P.reflectPoint(q);
+    EXPECT_EQ(P.getOrientation(qproj), primal::ON_POSITIVE_SIDE);
+    EXPECT_DOUBLE_EQ(qproj[0], 0.0);
+    EXPECT_DOUBLE_EQ(qproj[1], 0.0);
+    EXPECT_DOUBLE_EQ(qproj[2], 6.0);
+
+    // (b) test reflect point above plane
+    q[2] = 6.0;
+    qproj = P.reflectPoint(q);
+    EXPECT_EQ(P.getOrientation(qproj), primal::ON_NEGATIVE_SIDE);
+    EXPECT_DOUBLE_EQ(qproj[0], 0.0);
+    EXPECT_DOUBLE_EQ(qproj[1], 0.0);
+    EXPECT_DOUBLE_EQ(qproj[2], 0.0);
+
+    // (c) test reflect point (already) on plane
+    q[2] = 3.0;
+    qproj = P.reflectPoint(q);
+    EXPECT_EQ(P.getOrientation(qproj), primal::ON_BOUNDARY);
+    EXPECT_DOUBLE_EQ(qproj[0], q[0]);
+    EXPECT_DOUBLE_EQ(qproj[1], q[1]);
+    EXPECT_DOUBLE_EQ(qproj[2], q[2]);
+  }
+
+  // test 2D
+  {
+    const PointType2 x1 {2.0, -1.0};
+    const PointType2 x2 {2.0, 2.0};
+    PlaneType2 P = primal::make_plane(x1, x2);
+    PointType2 q {0.0, 0.0};
+    PointType2 qproj;
+
+    // (a) test reflect point below plane
+    q[0] = 4.0;
+    qproj = P.reflectPoint(q);
+    EXPECT_EQ(P.getOrientation(qproj), primal::ON_POSITIVE_SIDE);
+    EXPECT_DOUBLE_EQ(qproj[0], 0.0);
+    EXPECT_DOUBLE_EQ(qproj[1], 0.0);
+
+    // (b) test reflect point above plane
+    q[0] = 0.0;
+    qproj = P.reflectPoint(q);
+    EXPECT_EQ(P.getOrientation(qproj), primal::ON_NEGATIVE_SIDE);
+    EXPECT_DOUBLE_EQ(qproj[0], 4.0);
+    EXPECT_DOUBLE_EQ(qproj[1], 0.0);
+
+    // (c) test reflect point (already) on plane
+    q[0] = 2.0;
+    qproj = P.reflectPoint(q);
+    EXPECT_EQ(P.getOrientation(qproj), primal::ON_BOUNDARY);
+    EXPECT_DOUBLE_EQ(qproj[0], q[0]);
+    EXPECT_DOUBLE_EQ(qproj[1], q[1]);
+  }
+}
+
+//------------------------------------------------------------------------------
 TEST(primal_plane, flip)
 {
   // test 3D
