@@ -42,6 +42,9 @@ set( quest_headers
     MeshTester.hpp
     detail/MeshTester_detail.hpp
 
+    # MIR
+    MIRAlgorithm.hpp
+
     # PointInCell
     PointInCell.hpp
     detail/PointFinder.hpp
@@ -119,13 +122,13 @@ endif()
 
 blt_list_append(
     TO       quest_headers
-    ELEMENTS MarchingCubes.hpp detail/MarchingCubesSingleDomain.hpp detail/MarchingCubesImpl.hpp
+    ELEMENTS MarchingCubes.hpp detail/MarchingCubesSingleDomain.hpp detail/MarchingCubesImpl.hpp MIRAlgorithm.hpp
     IF       CONDUIT_FOUND
                )
 
 blt_list_append(
     TO       quest_sources
-    ELEMENTS MarchingCubes.cpp detail/MarchingCubesSingleDomain.cpp
+    ELEMENTS MarchingCubes.cpp detail/MarchingCubesSingleDomain.cpp MIRAlgorithm.cpp
     IF       CONDUIT_FOUND
                )
 
