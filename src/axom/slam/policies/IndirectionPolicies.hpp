@@ -105,10 +105,14 @@ struct IndexedIndirection : public BasePolicy
     __trap();
   #elif defined(__HIP_DEVICE_COMPILE__)
     abort();
-  #endif
-#endif
+  #else
     // Always return a value.
     return buf[pos];
+  #endif
+#else
+    // Always return a value.
+    return buf[pos];
+#endif
   }
 
   template <bool DeviceEnable = BasePolicy::DeviceAccessible>
@@ -126,10 +130,14 @@ struct IndexedIndirection : public BasePolicy
     __trap();
   #elif defined(__HIP_DEVICE_COMPILE__)
     abort();
-  #endif
-#endif
+  #else
     // Always return a value.
     return buf[pos];
+  #endif
+#else
+    // Always return a value.
+    return buf[pos];
+#endif
   }
 
   AXOM_HOST_DEVICE inline ConstIndirectionResult indirection(PositionType pos) const
