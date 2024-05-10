@@ -218,8 +218,9 @@ public:
     @brief Return view of parent cell indices Array.
 
     The buffer size is getContourCellCount().  The parent ID is the
-    column-major ordered flat index of the cell in the parent domain
-    (see ArrayIndexer), not counting ghost cells.
+    flat index of the cell in the parent domain (see ArrayIndexer),
+    not counting ghost cells, with row- or major-ordering same as that
+    for the input scalar function array.
   */
   axom::ArrayView<const axom::IndexType> getContourFacetParents() const
   {
