@@ -42,7 +42,7 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 - Removes config option `AXOM_ENABLE_ANNOTATIONS`. Annotations are now provided by `caliper` 
   (and `adiak` for metadata) and are available when axom is configured with `CALIPER_DIR` and `ADIAK_DIR` 
   config variables.
-
+- Removes caching of `{PACKAGE}_FOUND` variables in `SetupAxomThirdParty.cmake`
 
 ## [Version 0.9.0] - Release date 2024-03-19
 
