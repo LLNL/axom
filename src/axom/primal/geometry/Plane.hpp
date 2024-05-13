@@ -75,7 +75,7 @@ AXOM_HOST_DEVICE Plane<T, 3> make_plane(const Point<T, 3>& x1,
  *
  *           \f$ \mathcal{N} \cdot x - d = 0 \f$
  *
- *  where, \f$ \mathcal{N} \f$ is a unit normal and \f$ d \f$ is the offset of
+ *  where, \f$ \mathcal{N} \f$ is a normal and \f$ d \f$ is the offset of
  *  the plane (in the direction of the specified normal) to the origin.
  *
  *  The Plane class defines a co-dimension-one plane that splits the ambient
@@ -122,10 +122,6 @@ public:
    * \param [in] normal the supplied plane normal, \f$ \mathcal{N} \f$
    * \param [in] x a specified point that the plane passes through, \f$ x \f$
    * \param [in] normalize if true, normalize the given vector (default: true)
-   *
-   * \note The Plane's normal should always be a unit normal, so the
-   *  normalize flag should only be set to false when the supplied
-   *  normal has already been normalized.
    */
   AXOM_HOST_DEVICE Plane(const VectorType& normal,
                          const PointType& x,
@@ -138,10 +134,6 @@ public:
    * \param [in] normal the supplied plane normal, \f$ \mathcal{N} \f$
    * \param [in] offset the plane offset from origin
    * \param [in] normalize if true, normalize the given vector (default: true)
-   *
-   * \note The Plane's normal should always be a unit normal, so the
-   *  normalize flag should only be set to false when the supplied
-   *  normal has already been normalized.
    */
   AXOM_HOST_DEVICE Plane(const VectorType& normal, T offset, bool normalize = true);
 
@@ -155,8 +147,8 @@ public:
   AXOM_HOST_DEVICE static constexpr int getDimension() { return NDIMS; };
 
   /*!
-   * \brief Returns a const pointer to the plane's unit normal.
-   * \return N the unit normal.
+   * \brief Returns a const pointer to the plane's normal vector.
+   * \return N the normal vector.
    */
   AXOM_HOST_DEVICE const VectorType& getNormal() const { return m_normal; }
 
@@ -252,7 +244,7 @@ private:
   AXOM_HOST_DEVICE void setNormal(const VectorType& normal,
                                   bool normalize = true);
 
-  VectorType m_normal; /*!< plane unit-normal (defaults to the zero vector) */
+  VectorType m_normal; /*!< plane normal vector (defaults to the zero vector) */
   T m_offset {static_cast<T>(0.0)}; /*!< offset from origin */
 };
 
@@ -351,7 +343,7 @@ AXOM_HOST_DEVICE bool Plane<T, NDIMS>::isValid(T TOL) const
 template <typename T, int NDIMS>
 std::ostream& Plane<T, NDIMS>::print(std::ostream& os) const
 {
-  os << "unit normal: [ ";
+  os << "normal: [ ";
   for(int i = 0; i < NDIMS; ++i)
   {
     os << m_normal[i] << " ";
