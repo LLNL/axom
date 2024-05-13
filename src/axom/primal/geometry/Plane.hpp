@@ -225,15 +225,13 @@ public:
   /*!
    * \brief Simple check for validity of a Plane
    *
-   * Check that the normal is a unit vector (which also handles the zero
-   * vector case).
+   * Check that the normal is not the zero vector.
    *
-   * \param [in] TOL user-supplied tolerance for comparing the squared norm
-   *                 of the normal vector with 1.0. Optional. Default is 1.0e-8.
+   * \param [in] TOL user-supplied tolerance. Optional. Default is 1.0e-50.
    *
    * \return True, if the Plane is valid, False otherwise
    */
-  AXOM_HOST_DEVICE bool isValid(T TOL = static_cast<T>(1.0e-8)) const;
+  AXOM_HOST_DEVICE bool isValid(T TOL = static_cast<T>(PRIMAL_TINY)) const;
 
   /*!
    * \brief Prints the Plane information in the given output stream.
@@ -338,9 +336,15 @@ AXOM_HOST_DEVICE int Plane<T, NDIMS>::getOrientation(const PointType& x,
 template <typename T, int NDIMS>
 AXOM_HOST_DEVICE bool Plane<T, NDIMS>::isValid(T TOL) const
 {
-  return utilities::isNearlyEqual(m_normal.squared_norm(),
-                                  static_cast<T>(1.0),
-                                  TOL);
+  for(int i = 0; i < NDIMS; ++i)
+  {
+    if(!utilities::isNearlyEqual(m_normal[i], static_cast<T>(0.0), TOL))
+    {
+      return true;
+    }
+  }
+
+  return false;
 }
 
 //------------------------------------------------------------------------------
