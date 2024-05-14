@@ -317,7 +317,9 @@ AXOM_HOST_DEVICE int Plane<T, NDIMS>::getOrientation(const PointType& x,
 {
   const T signed_distance = this->signedDistance(x);
 
-  if(utilities::isNearlyEqual(signed_distance, static_cast<T>(0.0), static_cast<T>(TOL)))
+  if(utilities::isNearlyEqual(signed_distance,
+                              static_cast<T>(0.0),
+                              static_cast<T>(TOL)))
   {
     return primal::ON_BOUNDARY;
   }
@@ -330,7 +332,9 @@ AXOM_HOST_DEVICE bool Plane<T, NDIMS>::isValid(double TOL) const
 {
   for(int i = 0; i < NDIMS; ++i)
   {
-    if(!utilities::isNearlyEqual(m_normal[i], static_cast<T>(0.0), static_cast<T>(TOL)))
+    if(!utilities::isNearlyEqual(m_normal[i],
+                                 static_cast<T>(0.0),
+                                 static_cast<T>(TOL)))
     {
       return true;
     }
