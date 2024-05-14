@@ -55,7 +55,7 @@ set(core_headers
     ArrayBase.hpp
     ArrayIteratorBase.hpp
     ArrayView.hpp
-    ArrayIndexer.hpp
+    MDMapping.hpp
     IteratorBase.hpp
     Macros.hpp
     Map.hpp

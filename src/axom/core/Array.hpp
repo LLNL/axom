@@ -7,7 +7,7 @@
 #define AXOM_ARRAY_HPP_
 
 #include "axom/config.hpp"
-#include "axom/core/ArrayIndexer.hpp"
+#include "axom/core/MDMapping.hpp"
 #include "axom/core/Macros.hpp"
 #include "axom/core/utilities/Utilities.hpp"
 #include "axom/core/Types.hpp"
@@ -168,20 +168,20 @@ public:
   /*!
     \brief Construct Array with data ordering specifications.
 
-    \pre indexer.fastestStrideLength() == 1
+    \pre mapping.fastestStrideLength() == 1
 
     Example of column-major Array:
         Array<DIM, int> ar(
           shape,
-          ArrayIndexer<DIM>{shape, ArrayStrideOrder::COLUMN});
+          MDMapping<DIM>{shape, ArrayStrideOrder::COLUMN});
 
     Example of Array where j is fastest and k is slowest:
         Array<3, int> ar(
           shape,
-          ArrayIndexer<DIM>{shape, {2, 0, 1}});
+          MDMapping<DIM>{shape, {2, 0, 1}});
   */
   Array(const axom::StackArray<axom::IndexType, DIM>& shape,
-        const axom::ArrayIndexer<DIM>& indexer,
+        const axom::MDMapping<DIM>& mapping,
         int allocator_id = axom::detail::getAllocatorID<SPACE>());
 
   /*!
@@ -959,12 +959,12 @@ Array<T, DIM, SPACE>::Array(const axom::StackArray<axom::IndexType, DIM>& shape,
 //------------------------------------------------------------------------------
 template <typename T, int DIM, MemorySpace SPACE>
 Array<T, DIM, SPACE>::Array(const axom::StackArray<axom::IndexType, DIM>& shape,
-                            const axom::ArrayIndexer<DIM>& indexer,
+                            const axom::MDMapping<DIM>& mapping,
                             int allocator_id)
-  : ArrayBase<T, DIM, Array<T, DIM, SPACE>>(shape, indexer)
+  : ArrayBase<T, DIM, Array<T, DIM, SPACE>>(shape, mapping)
   , m_allocator_id(allocator_id)
 {
-  assert(indexer.fastestStrideLength() == 1);
+  assert(mapping.fastestStrideLength() == 1);
   initialize(detail::packProduct(shape.m_data),
              detail::packProduct(shape.m_data),
              false);

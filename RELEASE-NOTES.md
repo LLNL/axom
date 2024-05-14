@@ -20,6 +20,8 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 ## [Unreleased] - Release date yyyy-mm-dd
 
 ### Added
+- Multidimenional `core::Array` supports column-major and arbitrary stride ordering,
+  in addition to the default row-major ordering.
 - Adds support for the optional `caliper` and `adiak` dependencies to axom.
   These dependencies are added through axom's `spack` package via the new `+profiling` variant,
   and are enabled in axom's build system via the `CALIPER_DIR` and `ADIAK_DIR` configuration paths.
@@ -30,6 +32,8 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 - Primal: Adds a `closest_point` operator for finding the closest point on a `Segment`
 
 ### Changed
+- `quest::ArrayIndexer` is now `axom::MDMapping`, adopting conventional terminology
+  and moving out of `quest`.
 - Upgrades `vcpkg` usage for axom's automated Windows builds to its
   [2024.03.19 release](https://github.com/microsoft/vcpkg/releases/tag/2024.03.19).
   Also updates vcpkg port versions for axom dependencies. Temporarily removes `umpire`

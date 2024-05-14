@@ -26,7 +26,7 @@
 #include "axom/slic.hpp"
 #include "axom/primal.hpp"
 #include "axom/mint/mesh/UnstructuredMesh.hpp"
-#include "axom/core/ArrayIndexer.hpp"
+#include "axom/core/MDMapping.hpp"
 #include "axom/quest/MarchingCubes.hpp"
 #include "axom/quest/MeshViewUtil.hpp"
 #include "axom/sidre.hpp"
@@ -1216,14 +1216,14 @@ struct ContourTestBase
     }
 
     // Indexers to translate between flat and multidim indices.
-    axom::Array<axom::ArrayIndexer<DIM>> indexers(domainCount);
+    axom::Array<axom::MDMapping<DIM>> mappings(domainCount);
     for(int d = 0; d < domainCount; ++d)
     {
       axom::StackArray<axom::IndexType, DIM> domShape;
       computationalMesh.domainLengths(d, domShape);
-      indexers[d].initializeShape(
+      mappings[d].initializeShape(
         domShape,
-        axom::ArrayIndexer<DIM>(allCoordsViews[d][0].strides()).slowestDirs());
+        axom::MDMapping<DIM>(allCoordsViews[d][0].strides()).slowestDirs());
     }
 
     auto elementGreaterThan = [](const axom::primal::Vector<double, DIM>& a,
@@ -1254,7 +1254,7 @@ struct ContourTestBase
         axom::IndexType parentCellId = parentCellIdView[iContourCell];
 
         axom::StackArray<axom::IndexType, DIM> parentCellIdx =
-          indexers[contiguousIndex].toMultiIndex(parentCellId);
+          mappings[contiguousIndex].toMultiIndex(parentCellId);
         axom::StackArray<axom::IndexType, DIM> upperIdx = parentCellIdx;
         addToStackArray(upperIdx, 1);
 
@@ -1358,7 +1358,7 @@ struct ContourTestBase
     */
     axom::Array<axom::ArrayView<const double, DIM, MemorySpace>> fcnViews(
       domainCount);
-    axom::Array<axom::ArrayIndexer<DIM>> cellIndexers(domainCount);
+    axom::Array<axom::MDMapping<DIM>> cellIndexers(domainCount);
     axom::Array<axom::Array<axom::IndexType>> hasContours(domainCount);
     for(axom::IndexType domId = 0; domId < domainCount; ++domId)
     {
@@ -1416,12 +1416,12 @@ struct ContourTestBase
             strategy.functionName(),
             false);
 
-          axom::ArrayIndexer<DIM> cellIndexer(
+          axom::MDMapping<DIM> cellMDMapper(
             domLengths,
-            axom::ArrayIndexer<DIM>(fcnView.strides()));
+            axom::MDMapping<DIM>(fcnView.strides()));
 
           axom::StackArray<axom::IndexType, DIM> parentCellIdx =
-            cellIndexer.toMultiIndex(parentCellId);
+            cellMDMapper.toMultiIndex(parentCellId);
 
           // Compute min and max function values in the cell.
           double minFcnValue = std::numeric_limits<double>::max();

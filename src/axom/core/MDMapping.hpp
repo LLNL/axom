@@ -3,8 +3,8 @@
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
-#ifndef AXOM_ARRAYINDEXER_HPP_
-#define AXOM_ARRAYINDEXER_HPP_
+#ifndef AXOM_MDMAPPING_HPP_
+#define AXOM_MDMAPPING_HPP_
 
 #include "axom/core/StackArray.hpp"
 #include "axom/core/numerics/matvecops.hpp"
@@ -36,7 +36,7 @@ enum class ArrayStrideOrder : int
   permutations of the ordering.
 */
 template <int DIM, typename T = axom::IndexType>
-class ArrayIndexer
+class MDMapping
 {
 public:
   /*!
@@ -47,9 +47,9 @@ public:
     @param [in] fastestStrideLength Stride in the fastest
                 direction.
   */
-  ArrayIndexer(const axom::StackArray<T, DIM>& shape,
-               axom::ArrayStrideOrder arrayStrideOrder,
-               int fastestStrideLength = 1)
+  MDMapping(const axom::StackArray<T, DIM>& shape,
+            axom::ArrayStrideOrder arrayStrideOrder,
+            int fastestStrideLength = 1)
   {
     initializeShape(shape, arrayStrideOrder, fastestStrideLength);
   }
@@ -64,23 +64,23 @@ public:
                 direction.
   */
   template <typename DirType>
-  ArrayIndexer(const axom::StackArray<T, DIM>& shape,
-               const axom::StackArray<DirType, DIM>& slowestDirs,
-               int fastestStrideLength = 1)
+  MDMapping(const axom::StackArray<T, DIM>& shape,
+            const axom::StackArray<DirType, DIM>& slowestDirs,
+            int fastestStrideLength = 1)
   {
     initializeShape(shape, slowestDirs, fastestStrideLength);
   }
 
   /*!
     @brief Constructor for a given shape with the ordering of an
-    existing ArrayIndexer.
+    existing MDMapping.
 
     @param [in] shape Shape of the array
     @param [in] orderSource ArrayIndex to copy stride order
       from.
   */
-  ArrayIndexer(const axom::StackArray<T, DIM>& shape,
-               const axom::ArrayIndexer<DIM, T>& orderSource)
+  MDMapping(const axom::StackArray<T, DIM>& shape,
+            const axom::MDMapping<DIM, T>& orderSource)
   {
     initializeShape(shape, orderSource);
   }
@@ -96,7 +96,7 @@ public:
     clash with the more prevalent usage of constructing from the array's
     shape.
   */
-  ArrayIndexer(const axom::StackArray<T, DIM>& strides) : m_strides(strides)
+  MDMapping(const axom::StackArray<T, DIM>& strides) : m_strides(strides)
   {
     initializeStrides(strides);
   }
@@ -106,16 +106,16 @@ public:
 
     Object must be initialized before use.
   */
-  ArrayIndexer() = default;
+  MDMapping() = default;
 
   /*!
-    @brief Construct indexer for empty shape and the given stride order.
+    @brief Construct mapping for empty shape and the given stride order.
 
     The expected use case is when a stride order is known but the
-    shape is to be determined.  Initialize the indexer with its own
-    slowestDirs() to preserve ordering as its shape changes.
+    shape is to be determined.  Initialize the mapping with its own
+    slowestDirs() to preserve stride order as its shape changes.
   */
-  ArrayIndexer(ArrayStrideOrder arrayStrideOrder)
+  MDMapping(ArrayStrideOrder arrayStrideOrder)
   {
     axom::StackArray<T, DIM> shape;
     for(int d = 0; d < DIM; ++d)
@@ -199,7 +199,7 @@ public:
 
   /*!
     @brief Initialize for a given shape with the ordering of an
-    existing ArrayIndexer.
+    existing MDMapping.
 
     @param [in] shape Shape of the array
     @param [in] orderSource ArrayIndex to copy stride order
@@ -207,7 +207,7 @@ public:
   */
   inline AXOM_HOST_DEVICE void initializeShape(
     const axom::StackArray<T, DIM>& shape,
-    const axom::ArrayIndexer<DIM, T>& orderSource)
+    const axom::MDMapping<DIM, T>& orderSource)
   {
     initializeShape(shape, orderSource.slowestDirs());
   }
@@ -231,10 +231,10 @@ public:
         os << strides[d] << ",";
       }
       os << strides[DIM - 1] << ")";
-      std::cerr << "ERROR: ArrayIndexer: Non-unique strides " << os.str() << ".\n"
+      std::cerr << "ERROR: MDMapping: Non-unique strides " << os.str() << ".\n"
                 << "Likely, multi-dim array shape is 1 in some direction.\n"
                 << "Impossible to compute index ordering.\n"
-                << "Please use a different ArrayIndexer initializer.\n";
+                << "Please use a different MDMapping initializer.\n";
 #endif
       utilities::processAbort();
     }
@@ -290,7 +290,7 @@ public:
     return !repeats;
   }
 
-  inline AXOM_HOST_DEVICE bool operator==(const ArrayIndexer& other) const
+  inline AXOM_HOST_DEVICE bool operator==(const MDMapping& other) const
   {
     return m_slowestDirs == other.m_slowestDirs && m_strides == other.m_strides;
   }
@@ -381,9 +381,9 @@ public:
     return multiIndex;
   }
 
-  friend std::ostream& operator<<(std::ostream& os, const ArrayIndexer& a)
+  friend std::ostream& operator<<(std::ostream& os, const MDMapping& a)
   {
-    os << "ArrayIndexer: strides=(" << a.m_strides[0];
+    os << "MDMapping: strides=(" << a.m_strides[0];
     for(int d = 1; d < DIM; ++d)
     {
       os << ',' << a.m_strides[d];
@@ -404,4 +404,4 @@ private:
 
 }  // end namespace axom
 
-#endif  // AXOM_ARRAYINDEXER_HPP_
+#endif  // AXOM_MDMAPPING_HPP_

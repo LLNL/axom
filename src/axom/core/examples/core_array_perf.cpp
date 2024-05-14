@@ -10,7 +10,7 @@
 // Axom includes
 #include "axom/core/StackArray.hpp"
 #include "axom/core/Array.hpp"
-#include "axom/core/ArrayIndexer.hpp"
+#include "axom/core/MDMapping.hpp"
 #include "axom/core/execution/for_all.hpp"
 #include "axom/core/execution/nested_for_exec.hpp"
 #include "axom/core/execution/runtime_policy.hpp"
@@ -189,7 +189,7 @@ int allocatorIdFromPolicy(axom::runtime_policy::Policy policy)
 }
 
 template <int DIM, typename ExecSpace>
-class ArrayIndexerPerfTester
+class MDMappingPerfTester
 {
 public:
   using Element_t = std::uint64_t;
@@ -202,7 +202,7 @@ public:
 
   int m_allocatorId;
 
-  ArrayIndexerPerfTester()
+  MDMappingPerfTester()
   {
     m_allocatorId = allocatorIdFromPolicy(params.runtimePolicy);
 #ifdef AXOM_USE_UMPIRE
@@ -564,8 +564,8 @@ public:
 
     const auto idxBegin = params.idxBegin;
     const auto idxEnd = params.idxEnd;
-    const auto& indexer = array.indexer();
-    const auto& slowestDirs = indexer.slowestDirs();
+    const auto& mapping = array.mapping();
+    const auto& slowestDirs = mapping.slowestDirs();
     axom::StackArray<axom::IndexType, DIM> invSlowestDirs;
     for(int i = 0; i < DIM; ++i) invSlowestDirs[slowestDirs[i]] = i;
     const axom::StackArray<axom::IndexType, DIM> begins {
@@ -610,8 +610,8 @@ public:
 
     const auto idxBegin = params.idxBegin;
     const auto idxEnd = params.idxEnd;
-    const auto& indexer = array.indexer();
-    const auto& slowestDirs = indexer.slowestDirs();
+    const auto& mapping = array.mapping();
+    const auto& slowestDirs = mapping.slowestDirs();
     axom::StackArray<axom::IndexType, DIM> invSlowestDirs;
     for(int i = 0; i < DIM; ++i) invSlowestDirs[slowestDirs[i]] = i;
     const axom::StackArray<axom::IndexType, DIM> begins {
@@ -664,8 +664,8 @@ public:
 
     const auto idxBegin = params.idxBegin;
     const auto idxEnd = params.idxEnd;
-    const auto& indexer = array.indexer();
-    const auto& slowestDirs = indexer.slowestDirs();
+    const auto& mapping = array.mapping();
+    const auto& slowestDirs = mapping.slowestDirs();
     const axom::StackArray<axom::IndexType, DIM> begins {
       idxBegin[slowestDirs[0]],
       idxBegin[slowestDirs[1]],
@@ -708,10 +708,10 @@ public:
   //
 
   /*!
-    @brief Make ArrayIndexer based on command line parameters.
+    @brief Make MDMapping based on command line parameters.
   */
   void getPaddedShapeAndIndexer(axom::StackArray<axom::IndexType, DIM>& paddedShape,
-                                axom::ArrayIndexer<DIM>& indexer)
+                                axom::MDMapping<DIM>& mapping)
   {
     for(int d = 0; d < DIM; ++d)
     {
@@ -725,11 +725,11 @@ public:
       {
         dataSlowestDirections[d] = params.dataSlowestDirections[d];
       }
-      indexer.initializeShape(paddedShape, dataSlowestDirections);
+      mapping.initializeShape(paddedShape, dataSlowestDirections);
     }
     else
     {
-      indexer.initializeShape(paddedShape, params.dataOrder);
+      mapping.initializeShape(paddedShape, params.dataOrder);
     }
   }
 
@@ -742,10 +742,10 @@ public:
     assert(DIM <= params.shape.size());
 
     axom::StackArray<axom::IndexType, DIM> paddedShape;
-    axom::ArrayIndexer<DIM> indexer;
-    getPaddedShapeAndIndexer(paddedShape, indexer);
+    axom::MDMapping<DIM> mapping;
+    getPaddedShapeAndIndexer(paddedShape, mapping);
 
-    return axom::Array<Element_t, DIM>(paddedShape, indexer, m_allocatorId);
+    return axom::Array<Element_t, DIM>(paddedShape, mapping, m_allocatorId);
   }
 
   /*!
@@ -760,13 +760,13 @@ public:
     assert(DIM <= params.shape.size());
 
     axom::StackArray<axom::IndexType, DIM> paddedShape;
-    axom::ArrayIndexer<DIM> indexer;
-    getPaddedShapeAndIndexer(paddedShape, indexer);
+    axom::MDMapping<DIM> mapping;
+    getPaddedShapeAndIndexer(paddedShape, mapping);
 
     ar =
       axom::Array<Element_t>(params.paddedSize, params.paddedSize, m_allocatorId);
     view =
-      axom::ArrayView<Element_t, DIM>(ar.data(), paddedShape, indexer.strides());
+      axom::ArrayView<Element_t, DIM>(ar.data(), paddedShape, mapping.strides());
   }
 
   /*!
@@ -880,7 +880,7 @@ public:
     }
   }
 
-};  // class ArrayIndexerPerfTester
+};  // class MDMappingPerfTester
 
 /*!
   @brief Run test based on dimension specified in params.
@@ -893,23 +893,23 @@ void runTest()
 {
   if(params.shape.size() == 1)
   {
-    ArrayIndexerPerfTester<1, ExecSpace> tester1D;
+    MDMappingPerfTester<1, ExecSpace> tester1D;
     tester1D.runTest_dim();
   }
   else if(params.shape.size() == 2)
   {
-    ArrayIndexerPerfTester<2, ExecSpace> tester2D;
+    MDMappingPerfTester<2, ExecSpace> tester2D;
     tester2D.runTest_dim();
   }
   else if(params.shape.size() == 3)
   {
-    ArrayIndexerPerfTester<3, ExecSpace> tester3D;
+    MDMappingPerfTester<3, ExecSpace> tester3D;
     tester3D.runTest_dim();
   }
   else if(params.shape.size() == 4 &&
           !axom::execution_space<ExecSpace>::onDevice())
   {
-    ArrayIndexerPerfTester<4, ExecSpace> tester4D;
+    MDMappingPerfTester<4, ExecSpace> tester4D;
     tester4D.runTest_dim();
   }
 }

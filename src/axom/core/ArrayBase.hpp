@@ -8,7 +8,7 @@
 
 #include "axom/config.hpp"                    // for compile-time defines
 #include "axom/core/Macros.hpp"               // for axom macros
-#include "axom/core/ArrayIndexer.hpp"         // for index conversion
+#include "axom/core/MDMapping.hpp"            // for index conversion
 #include "axom/core/memory_management.hpp"    // for memory allocation functions
 #include "axom/core/utilities/Utilities.hpp"  // for processAbort()
 #include "axom/core/Types.hpp"                // for IndexType definition
@@ -158,7 +158,7 @@ public:
   constexpr static int Dims = DIM;
 
   //! @brief Construct row-major, unitnitialized array.
-  AXOM_HOST_DEVICE ArrayBase() : m_shape(), m_indexer(ArrayStrideOrder::ROW)
+  AXOM_HOST_DEVICE ArrayBase() : m_shape(), m_mapping(ArrayStrideOrder::ROW)
   {
     updateStrides();
   }
@@ -173,26 +173,26 @@ public:
   AXOM_HOST_DEVICE ArrayBase(const StackArray<IndexType, DIM>& shape,
                              int min_stride = 1)
     : m_shape {shape}
-    , m_indexer(shape, ArrayStrideOrder::ROW, min_stride)
-    , m_minStride(m_indexer.fastestStrideLength())
+    , m_mapping(shape, ArrayStrideOrder::ROW, min_stride)
+    , m_minStride(m_mapping.fastestStrideLength())
   { }
 
   /*!
    * \brief Parameterized constructor that sets up the array shape,
-   * with an indexer to specify data ordering.
+   * with an MDMapping to specify data ordering.
    *
    * \param [in] shape Array size in each direction.
-   * \param [in] indexer Model indexer, specifying
+   * \param [in] mapping Model mapper, specifying
    *   the array stride order and minimum stride.
    *
    * The object is constructed with the given shape.
-   * The partial shape information in \c indexer is not used.
+   * The partial shape information in \c mapping is not used.
    */
   AXOM_HOST_DEVICE ArrayBase(const StackArray<IndexType, DIM>& shape,
-                             const ArrayIndexer<DIM>& indexer)
+                             const MDMapping<DIM>& mapping)
     : m_shape {shape}
-    , m_indexer(shape, indexer.slowestDirs(), indexer.fastestStrideLength())
-    , m_minStride(m_indexer.fastestStrideLength())
+    , m_mapping(shape, mapping.slowestDirs(), mapping.fastestStrideLength())
+    , m_minStride(m_mapping.fastestStrideLength())
   { }
 
   /*!
@@ -205,8 +205,8 @@ public:
                              const StackArray<IndexType, DIM>& stride)
     : m_shape {shape}
   {
-    m_indexer.initializeStrides(stride, ArrayStrideOrder::ROW);
-    m_minStride = m_indexer.fastestStrideLength();
+    m_mapping.initializeStrides(stride, ArrayStrideOrder::ROW);
+    m_minStride = m_mapping.fastestStrideLength();
     validateShapeAndStride(shape, stride);
   }
 
@@ -221,8 +221,8 @@ public:
   ArrayBase(
     const ArrayBase<typename std::remove_const<T>::type, DIM, OtherArrayType>& other)
     : m_shape(other.shape())
-    , m_indexer(other.indexer())
-    , m_minStride(m_indexer.fastestStrideLength())
+    , m_mapping(other.mapping())
+    , m_minStride(m_mapping.fastestStrideLength())
   { }
 
   /// \overload
@@ -230,8 +230,8 @@ public:
   ArrayBase(
     const ArrayBase<const typename std::remove_const<T>::type, DIM, OtherArrayType>& other)
     : m_shape(other.shape())
-    , m_indexer(other.indexer())
-    , m_minStride(m_indexer.fastestStrideLength())
+    , m_mapping(other.mapping())
+    , m_minStride(m_mapping.fastestStrideLength())
   { }
 
   /*!
@@ -346,7 +346,7 @@ public:
   void swap(ArrayBase& other)
   {
     std::swap(m_shape, other.m_shape);
-    std::swap(m_indexer, other.m_indexer);
+    std::swap(m_mapping, other.m_mapping);
     std::swap(m_minStride, other.m_minStride);
   }
 
@@ -356,18 +356,15 @@ public:
     return m_shape;
   }
 
-  /// \brief Returns the indexer of the Array
-  AXOM_HOST_DEVICE const ArrayIndexer<DIM>& indexer() const
-  {
-    return m_indexer;
-  }
+  /// \brief Returns the multidimensional mapping for the Array
+  AXOM_HOST_DEVICE const MDMapping<DIM>& mapping() const { return m_mapping; }
 
   /*!
    * \brief Returns the memory strides of the Array.
    */
   AXOM_HOST_DEVICE const StackArray<IndexType, DIM>& strides() const
   {
-    return m_indexer.strides();
+    return m_mapping.strides();
   }
 
   /*!
@@ -398,8 +395,8 @@ protected:
     validateShapeAndStride(shape, stride);
 #endif
     m_shape = shape;
-    m_indexer.initializeStrides(stride);
-    m_minStride = m_indexer.fastestStrideLength();
+    m_mapping.initializeStrides(stride);
+    m_minStride = m_mapping.fastestStrideLength();
   }
 
   /*!
@@ -410,8 +407,8 @@ protected:
    */
   IndexType blockSize() const
   {
-    auto slowestDir = m_indexer.slowestDirs()[0];
-    return m_indexer.strides()[slowestDir];
+    auto slowestDir = m_mapping.slowestDirs()[0];
+    return m_mapping.strides()[slowestDir];
   }
 
   /*!
@@ -420,9 +417,9 @@ protected:
    */
   AXOM_HOST_DEVICE void updateStrides(int min_stride = 1)
   {
-    // Update m_indexer strides while preserving stride order.
-    m_indexer.initializeShape(m_shape, m_indexer.slowestDirs(), min_stride);
-    m_minStride = m_indexer.fastestStrideLength();
+    // Update m_mapping strides while preserving stride order.
+    m_mapping.initializeShape(m_shape, m_mapping.slowestDirs(), min_stride);
+    m_minStride = m_mapping.fastestStrideLength();
   }
 
   /*!
@@ -459,7 +456,7 @@ private:
   //// \brief Memory offset to get to the given multidimensional index.
   AXOM_HOST_DEVICE IndexType offset(const StackArray<IndexType, DIM>& idx) const
   {
-    return m_indexer.toFlatIndex(idx);
+    return m_mapping.toFlatIndex(idx);
   }
 
   /*!
@@ -470,8 +467,8 @@ private:
    */
   AXOM_HOST_DEVICE IndexType memorySize() const
   {
-    auto slowestDir = m_indexer.slowestDirs()[0];
-    return m_indexer.strides()[slowestDir] * m_shape[slowestDir];
+    auto slowestDir = m_mapping.slowestDirs()[0];
+    return m_mapping.strides()[slowestDir] * m_shape[slowestDir];
   }
 
   /*!
@@ -479,15 +476,15 @@ private:
 
     Allowed only for row-major arrays.
 
-    @pre indexer().getStrideOrder() & ArrayStrideOrder::ROW == true
+    @pre mapping().getStrideOrder() & ArrayStrideOrder::ROW == true
   */
   template <int UDim>
   AXOM_HOST_DEVICE IndexType offset(const StackArray<IndexType, UDim>& idx) const
   {
     static_assert(UDim <= DIM,
                   "Index dimensions cannot be larger than array dimensions");
-    assert(indexer().getStrideOrder() & ArrayStrideOrder::ROW);
-    return numerics::dot_product(idx.begin(), m_indexer.strides().begin(), UDim);
+    assert(mapping().getStrideOrder() & ArrayStrideOrder::ROW);
+    return numerics::dot_product(idx.begin(), m_mapping.strides().begin(), UDim);
   }
 
   /// \name Internal bounds-checking routines
@@ -571,13 +568,13 @@ protected:
   /// \brief The extent in each direction
   StackArray<IndexType, DIM> m_shape;
   /// \brief For converting between multidim indices and offset.
-  ArrayIndexer<DIM> m_indexer;
+  MDMapping<DIM> m_mapping;
   /*! \brief Cached value for optimization.  @see minStride()
 
     For some reason, computing min stride in minStride() slows down
     flatIndex() for CUDA and HIP, even though it doesn't seem tricky
     to optimize.  As a work around, we cache the value in m_minStrides
-    and update it when m_indexer changes.  BTNG, March 2024.
+    and update it when m_mapping changes.  BTNG, March 2024.
   */
   IndexType m_minStride;
 };
@@ -611,8 +608,8 @@ public:
   { }
 
   AXOM_HOST_DEVICE ArrayBase(const StackArray<IndexType, 1>&,
-                             const ArrayIndexer<1>& indexer)
-    : m_stride(indexer.strides()[0])
+                             const MDMapping<1>& mapping)
+    : m_stride(mapping.strides()[0])
   { }
 
   // Empty implementation because no member data
