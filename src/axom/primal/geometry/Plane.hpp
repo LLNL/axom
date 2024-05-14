@@ -223,7 +223,7 @@ public:
    *
    * \return True, if the Plane is valid, False otherwise
    */
-  AXOM_HOST_DEVICE bool isValid(T TOL = static_cast<T>(PRIMAL_TINY)) const;
+  AXOM_HOST_DEVICE bool isValid(double TOL = PRIMAL_TINY) const;
 
   /*!
    * \brief Prints the Plane information in the given output stream.
@@ -317,20 +317,20 @@ AXOM_HOST_DEVICE int Plane<T, NDIMS>::getOrientation(const PointType& x,
 {
   const T signed_distance = this->signedDistance(x);
 
-  if(utilities::isNearlyEqual(signed_distance, static_cast<T>(0.0), TOL))
+  if(utilities::isNearlyEqual(signed_distance, static_cast<T>(0.0), static_cast<T>(TOL)))
   {
     return primal::ON_BOUNDARY;
   }
-  return signed_distance < 0. ? primal::ON_NEGATIVE_SIDE
-                              : primal::ON_POSITIVE_SIDE;
+  return signed_distance < static_cast<T>(0.0) ? primal::ON_NEGATIVE_SIDE
+                                               : primal::ON_POSITIVE_SIDE;
 }
 
 template <typename T, int NDIMS>
-AXOM_HOST_DEVICE bool Plane<T, NDIMS>::isValid(T TOL) const
+AXOM_HOST_DEVICE bool Plane<T, NDIMS>::isValid(double TOL) const
 {
   for(int i = 0; i < NDIMS; ++i)
   {
-    if(!utilities::isNearlyEqual(m_normal[i], static_cast<T>(0.0), TOL))
+    if(!utilities::isNearlyEqual(m_normal[i], static_cast<T>(0.0), static_cast<T>(TOL)))
     {
       return true;
     }
