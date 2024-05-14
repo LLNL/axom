@@ -36,7 +36,7 @@ endif()
 
 if(CAMP_DIR)
     axom_assert_is_directory(DIR_VARIABLE CAMP_DIR)
-    find_dependency(camp REQUIRED PATHS "${CAMP_DIR}")
+    find_dependency(camp REQUIRED PATHS "${CAMP_DIR}" NO_SYSTEM_ENVIRONMENT_PATH)
     axom_assert_find_succeeded(PROJECT_NAME Camp
                                TARGET       camp
                                DIR_VARIABLE CAMP_DIR)
@@ -50,7 +50,7 @@ endif()
 #------------------------------------------------------------------------------
 if (UMPIRE_DIR)
     axom_assert_is_directory(DIR_VARIABLE UMPIRE_DIR)
-    find_dependency(umpire REQUIRED PATHS "${UMPIRE_DIR}")
+    find_dependency(umpire REQUIRED PATHS "${UMPIRE_DIR}" NO_SYSTEM_ENVIRONMENT_PATH)
     axom_assert_find_succeeded(PROJECT_NAME Umpire
                                TARGET       umpire
                                DIR_VARIABLE UMPIRE_DIR)
@@ -68,7 +68,7 @@ endif()
 #------------------------------------------------------------------------------
 if (RAJA_DIR)
     axom_assert_is_directory(DIR_VARIABLE RAJA_DIR)
-    find_dependency(raja REQUIRED PATHS "${RAJA_DIR}")
+    find_dependency(raja REQUIRED PATHS "${RAJA_DIR}" NO_SYSTEM_ENVIRONMENT_PATH)
     axom_assert_find_succeeded(PROJECT_NAME RAJA
                                TARGET       RAJA
                                DIR_VARIABLE RAJA_DIR)
@@ -88,7 +88,8 @@ if (CONDUIT_DIR)
 
     find_dependency(Conduit REQUIRED
                     PATHS "${CONDUIT_DIR}"
-                          "${CONDUIT_DIR}/lib/cmake/conduit")
+                          "${CONDUIT_DIR}/lib/cmake/conduit"
+                    NO_SYSTEM_ENVIRONMENT_PATH)
     axom_assert_find_succeeded(PROJECT_NAME Conduit
                                TARGET       conduit::conduit
                                DIR_VARIABLE CONDUIT_DIR)
@@ -191,7 +192,8 @@ if(ADIAK_DIR)
     axom_assert_is_directory(DIR_VARIABLE ADIAK_DIR)
     find_dependency(adiak REQUIRED 
                     PATHS "${ADIAK_DIR}"
-                          "${ADIAK_DIR}/lib/cmake/adiak")
+                          "${ADIAK_DIR}/lib/cmake/adiak"
+                    NO_SYSTEM_ENVIRONMENT_PATH)
     axom_assert_find_succeeded(PROJECT_NAME Adiak
                                TARGET       adiak::adiak
                                DIR_VARIABLE ADIAK_DIR)
@@ -220,7 +222,8 @@ if(CALIPER_DIR)
     axom_assert_is_directory(DIR_VARIABLE CALIPER_DIR)
     find_dependency(caliper REQUIRED 
                     PATHS "${CALIPER_DIR}" 
-                          "${CALIPER_DIR}/share/cmake/caliper")
+                          "${CALIPER_DIR}/share/cmake/caliper"
+                    NO_SYSTEM_ENVIRONMENT_PATH)
     axom_assert_find_succeeded(PROJECT_NAME Caliper
                                TARGET       caliper
                                DIR_VARIABLE CALIPER_DIR)
