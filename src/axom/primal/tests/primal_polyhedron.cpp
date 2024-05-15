@@ -602,7 +602,7 @@ TEST(primal_polyhedron, polygonal_cone)
 
   // Create a regular pentagon in the XY plane
   constexpr int N = 5;
-  Polygon2D penta;
+  Polygon2D penta(N);
   for(int i = 0; i < N; ++i)
   {
     const double alpha = 2. * M_PI * i / N;

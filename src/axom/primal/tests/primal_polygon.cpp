@@ -336,8 +336,8 @@ TEST(primal_polygon, signed_area_2d)
   // test regular polygons with CW and CCW orienations
   for(int nSides = 3; nSides < 10; ++nSides)
   {
-    Polygon2D poly2D_ccw;
-    Polygon2D poly2D_cw;
+    Polygon2D poly2D_ccw(nSides);
+    Polygon2D poly2D_cw(nSides);
 
     for(int i = 0; i < nSides; ++i)
     {
@@ -399,7 +399,7 @@ TEST(primal_polygon, area_2d_3d_affine_transforms)
 
   // lambda to generate a regular n-sided 2D polygon centered around origin
   auto generateNSidedPolygon = [](int nSides) {
-    Polygon2D polygon;
+    Polygon2D polygon(nSides);
 
     for(int i = 0; i < nSides; ++i)
     {
@@ -507,7 +507,7 @@ TEST(primal_polygon, area_2d_3d_affine_transforms)
   // lambda to transform a 2D polygon into 2D
   auto transformedPolygon2d = [](const Polygon2D& poly,
                                  const TransformMatrix& matx) {
-    Polygon2D xformed;
+    Polygon2D xformed(poly.numVertices());
     for(int i = 0; i < poly.numVertices(); ++i)
     {
       const double vec_in[3] = {poly[i][0], poly[i][1], 1.};
@@ -521,7 +521,7 @@ TEST(primal_polygon, area_2d_3d_affine_transforms)
   // lambda to transform a 2D polygon into 3D
   auto transformedPolygon3d = [](const Polygon2D& poly,
                                  const TransformMatrix& matx) {
-    Polygon3D xformed;
+    Polygon3D xformed(poly.numVertices());
     for(int i = 0; i < poly.numVertices(); ++i)
     {
       const double vec_in[4] = {poly[i][0], poly[i][1], 0., 1.};
@@ -655,7 +655,7 @@ TEST(primal_polygon, normal)
     Vector3D v2 = Vector3D({2.0, -1.0, 0.5}).unitVector();
     Vector3D exp_normal = Vector3D::cross_product(v1, v2).unitVector();
 
-    Polygon3D poly;
+    Polygon3D poly(5);
 
     double angles[5] = {0.0, 0.5, 1.2, 3.0, 5.0};
 
@@ -680,7 +680,7 @@ TEST(primal_polygon, normal)
     Vector3D v2 = Vector3D({2.0, -1.0, 0.5}).unitVector();
     Vector3D exp_normal = Vector3D::cross_product(v1, v2).unitVector();
 
-    Polygon3D poly;
+    Polygon3D poly(10);
 
     double angles[8] = {0.0, 0.5, 0.5, 1.2, 3.0, 3.0, 3.0, 5.0};
 
