@@ -30,6 +30,8 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 - Adds a RAII-based `MPIWrapper` utility class to axom's core component. This can help setup/teardown
   MPI in axom's examples. It can also be used in configurations with MPI.
 - Primal: Adds a `closest_point` operator for finding the closest point on a `Segment`
+- Primal: Adds a `reflectPoint` method to the `Plane` primitive
+- Primal: Makes several primitive methods available in device code
 
 ### Changed
 - `quest::ArrayIndexer` is now `axom::MDMapping`, adopting conventional terminology
@@ -44,7 +46,7 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 - Removes config option `AXOM_ENABLE_ANNOTATIONS`. Annotations are now provided by `caliper` 
   (and `adiak` for metadata) and are available when axom is configured with `CALIPER_DIR` and `ADIAK_DIR` 
   config variables.
-
+- Removes caching of `{PACKAGE}_FOUND` variables in `SetupAxomThirdParty.cmake`
 
 ## [Version 0.9.0] - Release date 2024-03-19
 
