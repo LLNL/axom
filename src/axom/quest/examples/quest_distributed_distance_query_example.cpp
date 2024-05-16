@@ -767,7 +767,7 @@ public:
   void saveMesh(const std::string& filename = "object_mesh")
   {
     SLIC_INFO(
-      banner(axom::fmt::format("Saving particle mesh '{}' to disk", filename)));
+      banner(axom::fmt::format("Saving object mesh '{}' to disk", filename)));
 
     m_objectMesh.saveMesh(filename);
   }
@@ -1489,13 +1489,13 @@ int main(int argc, char** argv)
 
     SLIC_INFO(axom::fmt::format(
       "Initialization with policy {} took {{avg:{}, min:{}, max:{}}} seconds",
-      params.policy,
+      axom::runtime_policy::s_policyToName.at(params.policy),
       sumInit / num_ranks,
       minInit,
       maxInit));
     SLIC_INFO(axom::fmt::format(
       "Query with policy {} took {{avg:{}, min:{}, max:{}}} seconds",
-      params.policy,
+      axom::runtime_policy::s_policyToName.at(params.policy),
       sumQuery / num_ranks,
       minQuery,
       maxQuery));
