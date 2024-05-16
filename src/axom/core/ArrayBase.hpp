@@ -185,8 +185,8 @@ public:
    * \param [in] mapping Model mapper, specifying
    *   the array stride order and minimum stride.
    *
-   * The object is constructed with the given shape.
-   * The partial shape information in \c mapping is not used.
+   * The object is constructed with the given shape,
+   * not the partial shape information in \c mapping.
    */
   AXOM_HOST_DEVICE ArrayBase(const StackArray<IndexType, DIM>& shape,
                              const MDMapping<DIM>& mapping)
@@ -628,6 +628,12 @@ public:
   AXOM_HOST_DEVICE StackArray<IndexType, 1> shape() const
   {
     return {{asDerived().size()}};
+  }
+
+  /// \brief Returns the multidimensional mapping for the Array
+  AXOM_HOST_DEVICE MDMapping<1> mapping() const
+  {
+    return MDMapping<1> {{m_stride}};
   }
 
   /*!

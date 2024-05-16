@@ -745,7 +745,9 @@ public:
     axom::MDMapping<DIM> mapping;
     getPaddedShapeAndIndexer(paddedShape, mapping);
 
-    return axom::Array<Element_t, DIM>(paddedShape, mapping, m_allocatorId);
+    return axom::Array<Element_t, DIM>(paddedShape,
+                                       mapping.slowestDirs(),
+                                       m_allocatorId);
   }
 
   /*!

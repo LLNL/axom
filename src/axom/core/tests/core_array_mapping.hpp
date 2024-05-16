@@ -378,7 +378,7 @@ TEST(core_array_mapping, core_array_match)
     constexpr int DIM = 2;
     axom::StackArray<axom::IndexType, DIM> lengths {3, 2};
     axom::MDMapping<DIM> mdmap(lengths, axom::ArrayStrideOrder::ROW);
-    axom::Array<int, DIM> a(lengths, mdmap);
+    axom::Array<int, DIM> a(lengths, mdmap.getStrideOrder());
     axom::IndexType sequenceNum = 0;
     for(axom::IndexType i = 0; i < lengths[0]; ++i)
     {
@@ -395,7 +395,7 @@ TEST(core_array_mapping, core_array_match)
     constexpr int DIM = 2;
     axom::StackArray<axom::IndexType, DIM> lengths {3, 2};
     axom::MDMapping<DIM> mdmap(lengths, axom::ArrayStrideOrder::COLUMN);
-    axom::Array<int, DIM> a(lengths, mdmap);
+    axom::Array<int, DIM> a(lengths, mdmap.getStrideOrder());
     axom::IndexType sequenceNum = 0;
     for(axom::IndexType j = 0; j < lengths[1]; ++j)
     {
@@ -412,7 +412,7 @@ TEST(core_array_mapping, core_array_match)
     constexpr int DIM = 3;
     axom::StackArray<axom::IndexType, DIM> lengths {5, 3, 2};
     axom::MDMapping<DIM> mdmap(lengths, axom::ArrayStrideOrder::ROW);
-    axom::Array<int, DIM> a(lengths, mdmap);
+    axom::Array<int, DIM> a(lengths, mdmap.getStrideOrder());
     axom::IndexType sequenceNum = 0;
     for(axom::IndexType i = 0; i < lengths[0]; ++i)
     {
@@ -432,7 +432,7 @@ TEST(core_array_mapping, core_array_match)
     constexpr int DIM = 3;
     axom::StackArray<axom::IndexType, DIM> lengths {5, 3, 2};
     axom::MDMapping<DIM> mdmap(lengths, axom::ArrayStrideOrder::COLUMN);
-    axom::Array<int, DIM> a(lengths, mdmap);
+    axom::Array<int, DIM> a(lengths, mdmap.getStrideOrder());
     axom::IndexType sequenceNum = 0;
     for(axom::IndexType k = 0; k < lengths[2]; ++k)
     {

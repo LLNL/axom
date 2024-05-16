@@ -166,22 +166,28 @@ public:
         int allocator_id = axom::detail::getAllocatorID<SPACE>());
 
   /*!
-    \brief Construct Array with data ordering specifications.
+    \brief Construct Array with row- or column-major data ordering.
 
-    \pre mapping.fastestStrideLength() == 1
-
-    Example of column-major Array:
-        Array<DIM, int> ar(
-          shape,
-          MDMapping<DIM>{shape, ArrayStrideOrder::COLUMN});
-
-    Example of Array where j is fastest and k is slowest:
-        Array<3, int> ar(
-          shape,
-          MDMapping<DIM>{shape, {2, 0, 1}});
+    \pre rowOrColumn must be either ArrayStrideOrder::ROW or
+    ArrayStrideOrder::COLUMN (or, if DIM is 1, ArrayStrideOrder::BOTH).
   */
   Array(const axom::StackArray<axom::IndexType, DIM>& shape,
-        const axom::MDMapping<DIM>& mapping,
+        axom::ArrayStrideOrder rowOrColumn,
+        int allocator_id = axom::detail::getAllocatorID<SPACE>());
+
+  /*!
+    \brief Construct Array with data ordering specifications.
+
+    Example of 3D Array where j is slowest and i is fastest:
+        Array<3, int> ar(
+          shape,
+          axom::StackArray<axom::IndexType, DIM>{2, 0, 1});
+
+    \pre slowestDirs must be a permutation of [0 ... DIM-1]
+  */
+  template <typename DirType = axom::IndexType>
+  Array(const axom::StackArray<axom::IndexType, DIM>& shape,
+        const axom::StackArray<DirType, DIM>& slowestDirs,
         int allocator_id = axom::detail::getAllocatorID<SPACE>());
 
   /*!
@@ -959,12 +965,30 @@ Array<T, DIM, SPACE>::Array(const axom::StackArray<axom::IndexType, DIM>& shape,
 //------------------------------------------------------------------------------
 template <typename T, int DIM, MemorySpace SPACE>
 Array<T, DIM, SPACE>::Array(const axom::StackArray<axom::IndexType, DIM>& shape,
-                            const axom::MDMapping<DIM>& mapping,
+                            axom::ArrayStrideOrder rowOrColumn,
                             int allocator_id)
-  : ArrayBase<T, DIM, Array<T, DIM, SPACE>>(shape, mapping)
+  : ArrayBase<T, DIM, Array<T, DIM, SPACE>>(
+      shape,
+      MDMapping<DIM> {shape, rowOrColumn, 1})
   , m_allocator_id(allocator_id)
 {
-  assert(mapping.fastestStrideLength() == 1);
+  assert(rowOrColumn == axom::ArrayStrideOrder::ROW ||
+         rowOrColumn == axom::ArrayStrideOrder::COLUMN ||
+         (DIM == 1 && rowOrColumn == axom::ArrayStrideOrder::BOTH));
+  initialize(detail::packProduct(shape.m_data),
+             detail::packProduct(shape.m_data),
+             false);
+}
+
+//------------------------------------------------------------------------------
+template <typename T, int DIM, MemorySpace SPACE>
+template <typename DirType>
+Array<T, DIM, SPACE>::Array(const axom::StackArray<axom::IndexType, DIM>& shape,
+                            const axom::StackArray<DirType, DIM>& slowestDirs,
+                            int allocator_id)
+  : ArrayBase<T, DIM, Array<T, DIM, SPACE>>(shape, {shape, slowestDirs, 1})
+  , m_allocator_id(allocator_id)
+{
   initialize(detail::packProduct(shape.m_data),
              detail::packProduct(shape.m_data),
              false);

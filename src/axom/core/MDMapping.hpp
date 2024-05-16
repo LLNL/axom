@@ -43,7 +43,8 @@ public:
     @brief Constructor for row- or column-major indexing.
     @param [in] shape Shape of the array
     @param [in] arrayStrideOrder An order indicator,
-      not ArrayStrideOrder::ARBITRARY.
+      either \c ROW or \c COLUMN or if DIM == 1,
+      \c BOTH.
     @param [in] fastestStrideLength Stride in the fastest
                 direction.
   */
@@ -316,7 +317,7 @@ public:
   //!@brief Whether a StackArray represents a permutation.
   template <typename DirectionType>
   inline AXOM_HOST_DEVICE bool isPermutation(
-    const axom::StackArray<DirectionType, DIM>& v)
+    const axom::StackArray<DirectionType, DIM>& v) const
   {
     // v is a permutation if all its values are unique and in [0, DIM).
     axom::StackArray<bool, DIM> found;
@@ -326,7 +327,7 @@ public:
     }
     for(int d = 0; d < DIM; ++d)
     {
-      if(v[d] >= DIM)
+      if(v[d] < 0 || v[d] >= DIM)
       {
         return false;  // Out of range.
       }
