@@ -327,6 +327,224 @@ public:
     m_outputDomainIndex = outputDomainIndex;
   }
 
+
+  /*!
+   * Copy parts of query mesh partition to a conduit::Node for
+   * computation and communication.
+   * queryNode must be a blueprint multidomain mesh.
+   */
+  void node_copy_query_to_xfer(conduit::Node& queryNode,
+                               conduit::Node& xferNode,
+                               const std::string& topologyName) const
+  {
+    xferNode["homeRank"] = m_rank;
+    xferNode["is_first"] = 1;
+
+    const bool isMultidomain =
+      conduit::blueprint::mesh::is_multi_domain(queryNode);
+    const auto domainCount =
+      conduit::blueprint::mesh::number_of_domains(queryNode);
+    conduit::Node& xferDoms = xferNode["xferDoms"];
+    for(conduit::index_t domainNum = 0; domainNum < domainCount; ++domainNum)
+    {
+      auto& queryDom = isMultidomain ? queryNode.child(domainNum) : queryNode;
+
+      const std::string coordsetName =
+        queryDom
+          .fetch_existing(
+            axom::fmt::format("topologies/{}/coordset", topologyName))
+          .as_string();
+      const std::string& domName = queryDom.name();
+      conduit::Node& xferDom = xferDoms[domName];
+      conduit::Node& queryCoords =
+        queryDom.fetch_existing(fmt::format("coordsets/{}", coordsetName));
+      conduit::Node& queryCoordsValues = queryCoords.fetch_existing("values");
+
+      const int dim = internal::extractDimension(queryCoordsValues);
+      const int qPtCount = internal::extractSize(queryCoordsValues);
+      xferDom["qPtCount"] = qPtCount;
+      xferDom["dim"] = dim;
+
+      copy_components_to_interleaved(queryCoordsValues, xferDom["coords"]);
+
+      constexpr bool isInt32 = std::is_same<axom::IndexType, std::int32_t>::value;
+      auto dtype =
+        isInt32 ? conduit::DataType::int32() : conduit::DataType::int64();
+      dtype.set_number_of_elements(qPtCount);
+      xferDom["cp_index"].set_dtype(dtype);
+      xferDom["cp_rank"].set_dtype(dtype);
+      xferDom["cp_domain_index"].set_dtype(dtype);
+      xferDom["debug/cp_distance"].set_dtype(conduit::DataType::float64(qPtCount));
+      xferDom["cp_coords"].set_dtype(conduit::DataType::float64(dim * qPtCount));
+    }
+  }
+
+  /// Copy xferNode back to query mesh partition.
+  void node_copy_xfer_to_query(conduit::Node& xferNode,
+                               conduit::Node& queryNode,
+                               const std::string& topologyName) const
+  {
+    const bool isMultidomain =
+      conduit::blueprint::mesh::is_multi_domain(queryNode);
+    const auto domainCount =
+      conduit::blueprint::mesh::number_of_domains(queryNode);
+    conduit::Node& xferDoms = xferNode.fetch_existing("xferDoms");
+    SLIC_ASSERT(xferDoms.number_of_children() == domainCount);
+    for(conduit::index_t domainNum = 0; domainNum < domainCount; ++domainNum)
+    {
+      auto& queryDom = isMultidomain ? queryNode.child(domainNum) : queryNode;
+      conduit::Node& xferDom = xferDoms.child(domainNum);
+      conduit::Node& fields = queryDom.fetch_existing("fields");
+
+      conduit::Node genericHeaders;
+      genericHeaders["association"] = "vertex";
+      genericHeaders["topology"] = topologyName;
+
+      if(m_outputRank)
+      {
+        auto& src = xferDom.fetch_existing("cp_rank");
+        auto& dst = fields["cp_rank"];
+        dst.set_node(genericHeaders);
+        dst["values"].move(src);
+      }
+
+      if(m_outputIndex)
+      {
+        auto& src = xferDom.fetch_existing("cp_index");
+        auto& dst = fields["cp_index"];
+        dst.set_node(genericHeaders);
+        dst["values"].move(src);
+      }
+
+      if(m_outputDomainIndex)
+      {
+        auto& src = xferDom.fetch_existing("cp_domain_index");
+        auto& dst = fields["cp_domain_index"];
+        dst.set_node(genericHeaders);
+        dst["values"].move(src);
+      }
+
+      if(m_outputDistance)
+      {
+        auto& src = xferDom.fetch_existing("debug/cp_distance");
+        auto& dst = fields["cp_distance"];
+        dst.set_node(genericHeaders);
+        dst["values"].move(src);
+      }
+
+      if(m_outputCoords)
+      {
+        auto& dst = fields["cp_coords"];
+        dst.set_node(genericHeaders);
+        auto& dstValues = dst["values"];
+        copy_interleaved_to_components(xferDom.fetch_existing("cp_coords"),
+                                       dstValues);
+      }
+    }
+  }
+
+  /*
+    Special copy from coordinates (in a format that's not
+    necessarily interleaved) to a 1D array of interleaved values).
+    If coordinates are already interleaved, copy pointer.
+  */
+  void copy_components_to_interleaved(conduit::Node& components,
+                                      conduit::Node& interleaved) const
+  {
+    const int dim = getDimension();
+    const int qPtCount = internal::extractSize(components);
+    bool interleavedSrc = conduit::blueprint::mcarray::is_interleaved(components);
+    if(interleavedSrc)
+    {
+      interleaved.set_external(internal::getPointer<double>(components.child(0)),
+                               dim * qPtCount);
+    }
+    else
+    {
+      // Copy from component-wise src to 1D-interleaved dst.
+      interleaved.reset();
+      interleaved.set_dtype(conduit::DataType::float64(dim * qPtCount));
+      for(int d = 0; d < dim; ++d)
+      {
+        auto src = components.child(d).as_float64_array();
+        double* dst = interleaved.as_float64_ptr() + d;
+        for(int i = 0; i < qPtCount; ++i)
+        {
+          dst[i * dim] = src[i];
+        }
+      }
+    }
+  }
+
+  /*
+    Special copy from 1D interleaved coordinate values back to
+    component-wise storage.
+    This is a nop if they point to the same data.
+  */
+  void copy_interleaved_to_components(const conduit::Node& interleaved,
+                                      conduit::Node& components) const
+  {
+    const int dim = getDimension();
+    const int qPtCount = interleaved.dtype().number_of_elements() / dim;
+    components.reset();
+    // Copy from 1D-interleaved src to component-wise dst.
+    for(int d = 0; d < dim; ++d)
+    {
+      const double* src = interleaved.as_float64_ptr() + d;
+      auto& dstNode = components.append();
+      dstNode.set_dtype(conduit::DataType(interleaved.dtype().id(), qPtCount));
+      double* dst = dstNode.as_float64_ptr();
+      for(int i = 0; i < qPtCount; ++i)
+      {
+        dst[i] = src[i * dim];
+      }
+    }
+  }
+
+  /// Wait for some non-blocking sends (if any) to finish.
+  void check_send_requests(std::list<conduit::relay::mpi::Request>& isendRequests,
+                           bool atLeastOne) const
+  {
+    std::vector<MPI_Request> reqs;
+    for(auto& isr : isendRequests)
+    {
+      reqs.push_back(isr.m_request);
+    }
+
+    int inCount = static_cast<int>(reqs.size());
+    int outCount = 0;
+    std::vector<int> indices(reqs.size(), -1);
+    if(atLeastOne)
+    {
+      MPI_Waitsome(inCount,
+                   reqs.data(),
+                   &outCount,
+                   indices.data(),
+                   MPI_STATUSES_IGNORE);
+    }
+    else
+    {
+      MPI_Testsome(inCount,
+                   reqs.data(),
+                   &outCount,
+                   indices.data(),
+                   MPI_STATUSES_IGNORE);
+    }
+    indices.resize(outCount);
+
+    auto reqIter = isendRequests.begin();
+    int prevIdx = 0;
+    for(const int idx : indices)
+    {
+      for(; prevIdx < idx; ++prevIdx)
+      {
+        ++reqIter;
+      }
+      reqIter = isendRequests.erase(reqIter);
+      ++prevIdx;
+    }
+  }
+
   virtual void computeClosestPoints(conduit::Node& queryMesh,
                                     const std::string& topologyName) const = 0;
 
@@ -561,178 +779,6 @@ public:
     return rval;
   }
 
-  /*!
-   * Copy parts of query mesh partition to a conduit::Node for
-   * computation and communication.
-   * queryNode must be a blueprint multidomain mesh.
-   */
-  void node_copy_query_to_xfer(conduit::Node& queryNode,
-                               conduit::Node& xferNode,
-                               const std::string& topologyName) const
-  {
-    xferNode["homeRank"] = m_rank;
-    xferNode["is_first"] = 1;
-
-    const bool isMultidomain =
-      conduit::blueprint::mesh::is_multi_domain(queryNode);
-    const auto domainCount =
-      conduit::blueprint::mesh::number_of_domains(queryNode);
-    conduit::Node& xferDoms = xferNode["xferDoms"];
-    for(conduit::index_t domainNum = 0; domainNum < domainCount; ++domainNum)
-    {
-      auto& queryDom = isMultidomain ? queryNode.child(domainNum) : queryNode;
-
-      const std::string coordsetName =
-        queryDom
-          .fetch_existing(
-            axom::fmt::format("topologies/{}/coordset", topologyName))
-          .as_string();
-      const std::string& domName = queryDom.name();
-      conduit::Node& xferDom = xferDoms[domName];
-      conduit::Node& queryCoords =
-        queryDom.fetch_existing(fmt::format("coordsets/{}", coordsetName));
-      conduit::Node& queryCoordsValues = queryCoords.fetch_existing("values");
-
-      const int dim = internal::extractDimension(queryCoordsValues);
-      const int qPtCount = internal::extractSize(queryCoordsValues);
-      xferDom["qPtCount"] = qPtCount;
-      xferDom["dim"] = dim;
-
-      copy_components_to_interleaved(queryCoordsValues, xferDom["coords"]);
-
-      constexpr bool isInt32 = std::is_same<axom::IndexType, std::int32_t>::value;
-      auto dtype =
-        isInt32 ? conduit::DataType::int32() : conduit::DataType::int64();
-      dtype.set_number_of_elements(qPtCount);
-      xferDom["cp_index"].set_dtype(dtype);
-      xferDom["cp_rank"].set_dtype(dtype);
-      xferDom["cp_domain_index"].set_dtype(dtype);
-      xferDom["debug/cp_distance"].set_dtype(conduit::DataType::float64(qPtCount));
-      xferDom["cp_coords"].set_dtype(conduit::DataType::float64(dim * qPtCount));
-    }
-  }
-
-  /// Copy xferNode back to query mesh partition.
-  void node_copy_xfer_to_query(conduit::Node& xferNode,
-                               conduit::Node& queryNode,
-                               const std::string& topologyName) const
-  {
-    const bool isMultidomain =
-      conduit::blueprint::mesh::is_multi_domain(queryNode);
-    const auto domainCount =
-      conduit::blueprint::mesh::number_of_domains(queryNode);
-    conduit::Node& xferDoms = xferNode.fetch_existing("xferDoms");
-    SLIC_ASSERT(xferDoms.number_of_children() == domainCount);
-    for(conduit::index_t domainNum = 0; domainNum < domainCount; ++domainNum)
-    {
-      auto& queryDom = isMultidomain ? queryNode.child(domainNum) : queryNode;
-      conduit::Node& xferDom = xferDoms.child(domainNum);
-      conduit::Node& fields = queryDom.fetch_existing("fields");
-
-      conduit::Node genericHeaders;
-      genericHeaders["association"] = "vertex";
-      genericHeaders["topology"] = topologyName;
-
-      if(m_outputRank)
-      {
-        auto& src = xferDom.fetch_existing("cp_rank");
-        auto& dst = fields["cp_rank"];
-        dst.set_node(genericHeaders);
-        dst["values"].move(src);
-      }
-
-      if(m_outputIndex)
-      {
-        auto& src = xferDom.fetch_existing("cp_index");
-        auto& dst = fields["cp_index"];
-        dst.set_node(genericHeaders);
-        dst["values"].move(src);
-      }
-
-      if(m_outputDomainIndex)
-      {
-        auto& src = xferDom.fetch_existing("cp_domain_index");
-        auto& dst = fields["cp_domain_index"];
-        dst.set_node(genericHeaders);
-        dst["values"].move(src);
-      }
-
-      if(m_outputDistance)
-      {
-        auto& src = xferDom.fetch_existing("debug/cp_distance");
-        auto& dst = fields["cp_distance"];
-        dst.set_node(genericHeaders);
-        dst["values"].move(src);
-      }
-
-      if(m_outputCoords)
-      {
-        auto& dst = fields["cp_coords"];
-        dst.set_node(genericHeaders);
-        auto& dstValues = dst["values"];
-        copy_interleaved_to_components(xferDom.fetch_existing("cp_coords"),
-                                       dstValues);
-      }
-    }
-  }
-
-  /*
-    Special copy from coordinates (in a format that's not
-    necessarily interleaved) to a 1D array of interleaved values).
-    If coordinates are already interleaved, copy pointer.
-  */
-  void copy_components_to_interleaved(conduit::Node& components,
-                                      conduit::Node& interleaved) const
-  {
-    const int dim = internal::extractDimension(components);
-    const int qPtCount = internal::extractSize(components);
-    bool interleavedSrc = conduit::blueprint::mcarray::is_interleaved(components);
-    if(interleavedSrc)
-    {
-      interleaved.set_external(internal::getPointer<double>(components.child(0)),
-                               dim * qPtCount);
-    }
-    else
-    {
-      // Copy from component-wise src to 1D-interleaved dst.
-      interleaved.reset();
-      interleaved.set_dtype(conduit::DataType::float64(dim * qPtCount));
-      for(int d = 0; d < dim; ++d)
-      {
-        auto src = components.child(d).as_float64_array();
-        double* dst = interleaved.as_float64_ptr() + d;
-        for(int i = 0; i < qPtCount; ++i)
-        {
-          dst[i * dim] = src[i];
-        }
-      }
-    }
-  }
-
-  /*
-    Special copy from 1D interleaved coordinate values back to
-    component-wise storage.
-    This is a nop if they point to the same data.
-  */
-  void copy_interleaved_to_components(const conduit::Node& interleaved,
-                                      conduit::Node& components) const
-  {
-    const int qPtCount = interleaved.dtype().number_of_elements() / DIM;
-    components.reset();
-    // Copy from 1D-interleaved src to component-wise dst.
-    for(int d = 0; d < DIM; ++d)
-    {
-      const double* src = interleaved.as_float64_ptr() + d;
-      auto& dstNode = components.append();
-      dstNode.set_dtype(conduit::DataType(interleaved.dtype().id(), qPtCount));
-      double* dst = dstNode.as_float64_ptr();
-      for(int i = 0; i < qPtCount; ++i)
-      {
-        dst[i] = src[i * DIM];
-      }
-    }
-  }
-
   /**
    * \brief Implementation of the user-facing
    * DistributedClosestPoint::computeClosestPoints() method.
@@ -904,49 +950,6 @@ private:
     return -1;
   }
 
-  /// Wait for some non-blocking sends (if any) to finish.
-  void check_send_requests(std::list<conduit::relay::mpi::Request>& isendRequests,
-                           bool atLeastOne) const
-  {
-    std::vector<MPI_Request> reqs;
-    for(auto& isr : isendRequests)
-    {
-      reqs.push_back(isr.m_request);
-    }
-
-    int inCount = static_cast<int>(reqs.size());
-    int outCount = 0;
-    std::vector<int> indices(reqs.size(), -1);
-    if(atLeastOne)
-    {
-      MPI_Waitsome(inCount,
-                   reqs.data(),
-                   &outCount,
-                   indices.data(),
-                   MPI_STATUSES_IGNORE);
-    }
-    else
-    {
-      MPI_Testsome(inCount,
-                   reqs.data(),
-                   &outCount,
-                   indices.data(),
-                   MPI_STATUSES_IGNORE);
-    }
-    indices.resize(outCount);
-
-    auto reqIter = isendRequests.begin();
-    int prevIdx = 0;
-    for(const int idx : indices)
-    {
-      for(; prevIdx < idx; ++prevIdx)
-      {
-        ++reqIter;
-      }
-      reqIter = isendRequests.erase(reqIter);
-      ++prevIdx;
-    }
-  }
 
   // Note: following should be private, but nvcc complains about lambdas in private scope
 public:
