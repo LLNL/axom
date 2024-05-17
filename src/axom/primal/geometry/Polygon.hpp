@@ -52,7 +52,8 @@ std::ostream& operator<<(std::ostream& os,
  * \tparam T the coordinate type, e.g., double, float, etc.
  * \tparam NDIMS the number of dimensions
  * \tparam PolygonArray the array type of the polygon can be dynamic or
- *         static (default is dynamic)
+ *         static (default is dynamic). The static array type is for use in
+ *         a device kernel.
  * \tparam MAX_VERTS the max number of vertices to preallocate space for
  *         a static array (default max is 20 vertices). MAX_VERTS is unused
  *         if array type is dynamic.
