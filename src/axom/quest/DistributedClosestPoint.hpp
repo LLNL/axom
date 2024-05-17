@@ -25,7 +25,6 @@ namespace quest
 {
 namespace internal
 {
-template <int DIM>
 class DistributedClosestPointImpl;
 }
 
@@ -68,7 +67,10 @@ public:
 
     See axom::runtime_policy.
   */
-  void setRuntimePolicy(RuntimePolicy policy) { m_runtimePolicy = policy; }
+  void setRuntimePolicy(RuntimePolicy policy) {
+    SLIC_ASSERT_MSG(!m_impl, "Runtime policy may not change after setObjectMesh()");
+    m_runtimePolicy = policy;
+  }
 
   /*!  @brief Sets the allocator ID to the default associated with the
     execution policy
@@ -121,6 +123,13 @@ public:
    *
    * \pre \a meshNode must follow the mesh blueprint convention.
    * \pre Dimension of the mesh must be 2D or 3D
+   *
+   * \post The physical dimension and runtime policy are locked in,
+   * and attempts to change them are disallowed.
+   *
+   * \internal This method also allocates the templated query instance,
+   * which locks in the physical dimension and the runtime policy.
+   *
    */
   void setObjectMesh(const conduit::Node& meshNode,
                      const std::string& topologyName);
@@ -163,7 +172,12 @@ public:
                             const std::string& topology);
 
 private:
-  //!@brief Create the implementation objects, either m_dcp_2 or m_dcp_3.
+  /*!
+    @brief Allocate the templated the implementation object.
+
+    \post The problem dimension and runtime policy are a part of the
+    implementation object, so changes to them are disallowed.
+  */
   void allocateQueryInstance();
 
   /// Check validity of blueprint group
@@ -182,17 +196,14 @@ private:
   bool m_isVerbose {false};
   double m_sqDistanceThreshold;
 
-  bool m_objectMeshCreated {false};
-
   bool m_outputRank = true;
   bool m_outputIndex = true;
   bool m_outputDistance = true;
   bool m_outputCoords = true;
   bool m_outputDomainIndex = true;
 
-  // One instance per dimension
-  std::unique_ptr<internal::DistributedClosestPointImpl<2>> m_dcp_2;
-  std::unique_ptr<internal::DistributedClosestPointImpl<3>> m_dcp_3;
+  //!@brief Instantiated implementation, created by setting object mesh.
+  std::unique_ptr<internal::DistributedClosestPointImpl> m_impl;
 };
 
 }  // end namespace quest
