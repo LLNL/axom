@@ -1207,11 +1207,8 @@ AXOM_TYPED_TEST(core_array_for_all, device_insert)
 #if defined(AXOM_USE_GPU) && defined(AXOM_USE_UMPIRE)
   // Use unified memory for frequent movement between device operations
   // and value checking on host
-  if(axom::execution_space<ExecSpace>::onDevice())
-  {
-    kernelAllocID = axom::getUmpireResourceAllocatorID(
-      umpire::resource::MemoryResourceType::Unified);
-  }
+  kernelAllocID = axom::getUmpireResourceAllocatorID(
+    umpire::resource::MemoryResourceType::Unified);
 #endif
 
   constexpr axom::IndexType N = 374;
