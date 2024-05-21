@@ -16,55 +16,55 @@
 
 from llnl_lc_build_tools import *
 
-from optparse import OptionParser
+from argparse import ArgumentParser
 
 
 def parse_args():
     "Parses args from command line"
-    parser = OptionParser()
+    parser = ArgumentParser()
     # Location of source directory to build
-    parser.add_option("-d", "--directory",
-                      dest="directory",
-                      default="",
-                      help="Directory of source to be built (Defaults to current)")
+    parser.add_argument("-d", "--directory",
+                        dest="directory",
+                        default="",
+                        help="Directory of source to be built (Defaults to current)")
     # Whether to build a specific hostconfig
-    parser.add_option("--host-config",
-                      dest="hostconfig",
-                      default="",
-                      help="Specific host-config file to build (Tries multiple known paths to locate given file)")
+    parser.add_argument("--host-config",
+                        dest="hostconfig",
+                        default="",
+                        help="Specific host-config file to build (Tries multiple known paths to locate given file)")
     # Build type for the configuration
-    parser.add_option("--build-type",
-                      dest="buildtype",
-                      default="Debug",
-                      choices = ("Debug", "RelWithDebInfo", "Release", "MinSizeRel"),
-                      help="The CMake build type to use")
+    parser.add_argument("--build-type",
+                        dest="buildtype",
+                        default="Debug",
+                        choices = ("Debug", "RelWithDebInfo", "Release", "MinSizeRel"),
+                        help="The CMake build type to use")
     # Run unit tests serially (MPI Bug on El Capitan)
-    parser.add_option("--test-serial",
-                      action="store_true",
-                      dest="testserial",
-                      default=False,
-                      help="Run unit tests serially")
+    parser.add_argument("--test-serial",
+                        action="store_true",
+                        dest="testserial",
+                        default=False,
+                        help="Run unit tests serially")
     # Extra cmake options to pass to config build
-    parser.add_option("--extra-cmake-options",
-                      dest="extra_cmake_options",
-                      default="",
-                      help="Extra cmake options to add to the cmake configure line")
-    parser.add_option("--automation-mode",
-                      action="store_true",
-                      dest="automation",
-                      default=False,
-                      help="Toggle automation mode which uses env $HOST_CONFIG then $SYS_TYPE/$COMPILER if found")
-    parser.add_option("-v", "--verbose",
-                      action="store_true",
-                      dest="verbose",
-                      default=False,
-                      help="Output logs to screen as well as to files")
+    parser.add_argument("--extra-cmake-options",
+                        dest="extra_cmake_options",
+                        default="",
+                        help="Extra cmake options to add to the cmake configure line")
+    parser.add_argument("--automation-mode",
+                        action="store_true",
+                        dest="automation",
+                        default=False,
+                        help="Toggle automation mode which uses env $HOST_CONFIG then $SYS_TYPE/$COMPILER if found")
+    parser.add_argument("-v", "--verbose",
+                        action="store_true",
+                        dest="verbose",
+                        default=False,
+                        help="Output logs to screen as well as to files")
     ###############
     # parse args
     ###############
-    opts, extras = parser.parse_args()
+    opts = parser.parse_args()
     # we want a dict b/c the values could
-    # be passed without using optparse
+    # be passed without using argparse
     opts = vars(opts)
 
     # Ensure correctness

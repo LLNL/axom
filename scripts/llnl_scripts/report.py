@@ -1,5 +1,5 @@
 #!/bin/sh
-"exec" "python" "-u" "-B" "$0" "$@"
+"exec" "python3" "-u" "-B" "$0" "$@"
 
 # Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
 # other Axom Project Developers. See the top-level LICENSE file for details.
@@ -26,9 +26,9 @@ try:
 except ImportError:
     import xml.etree.ElementTree as ET
 
-from optparse import OptionParser
+from argparse import ArgumentParser
 from smtplib import SMTP
-from email.MIMEText import MIMEText
+from email.mime.text import MIMEText
 from dateutil.parser import parse
 from llnl_lc_build_tools import *
 
@@ -61,32 +61,32 @@ class SpecInfo(object):
 
 def parse_args():
     "Parses args from command line"
-    parser = OptionParser()
+    parser = ArgumentParser()
     
-    parser.add_option("--clean",
-                      dest="clean",
-                      action="store_true",
-                      default=False,
-                      help="!!DESTRUCTIVE!! This option cleans old archived jobs (leaves 20 jobs)")
+    parser.add_argument("--clean",
+                        dest="clean",
+                        action="store_true",
+                        default=False,
+                        help="!!DESTRUCTIVE!! This option cleans old archived jobs (leaves 20 jobs)")
 
-    parser.add_option("-e", "--email",
-                      type="string",
-                      dest="email",
-                      default="axom-dev@llnl.gov",
-                      help="Email address to send report (Defaults to 'axom-dev@llnl.gov')")
+    parser.add_argument("-e", "--email",
+                        type=str,
+                        dest="email",
+                        default="axom-dev@llnl.gov",
+                        help="Email address to send report (Defaults to 'axom-dev@llnl.gov')")
 
-    parser.add_option("--html",
-                      type="string",
-                      dest="html",
-                      default="status.html",
-                      help="File name for saving generated html status file (Defaults to 'status.html')")
+    parser.add_argument("--html",
+                        type=str,
+                        dest="html",
+                        default="status.html",
+                        help="File name for saving generated html status file (Defaults to 'status.html')")
 
     ###############
     # parse args
     ###############
-    opts, extras = parser.parse_args()
+    opts = parser.parse_args()
     # we want a dict b/c the values could 
-    # be passed without using optparse
+    # be passed without using argparse
     opts = vars(opts)
     return opts
 
@@ -109,17 +109,17 @@ def main():
         cleanOldArchives(archive_dir)
 
     #Generate build email and send
-    print "Reading archived job information..."
+    print("Reading archived job information...")
     basicJobInfos, srcJobInfos, tplJobInfos = generateJobInfos(archive_dir)
 
-    print "Generating email content..."
+    print("Generating email content...")
     emailContent = generateEmailContent(basicJobInfos, srcJobInfos, tplJobInfos)
     
-    print "Saving html file '{}'".format( opts["html"] )
+    print("Saving html file '{}'".format( opts["html"] ))
     with open(opts["html"], 'w') as f:
         f.write(emailContent)
 
-    print "Sending email to {}...".format(opts["email"])
+    print("Sending email to {}...".format(opts["email"]))
     return sendEmail(emailContent, emailSubject, sender, receiver, emailServer)
 
 
@@ -128,7 +128,7 @@ def getAllDirectoryNames(path):
 
 
 def cleanOldArchives(archive_dir):
-    print "Deleting old archive directories..."    
+    print("Deleting old archive directories...")
 
     # Remove only the individual jobs not any of the directory structure
     # Directory structure = <archive base>/<sys_type>/<job name>/<datetime>
@@ -147,7 +147,7 @@ def cleanOldArchives(archive_dir):
                 datetime_dir = pjoin(jobName_dir, datetime)
                 shutil.rmtree(datetime_dir)
 
-    print "Done deleting."
+    print("Done deleting.")
 
 
 def determineSuccessState(path):
@@ -209,7 +209,7 @@ def generateJobInfos(archive_dir):
 
                 populateTests(currSpecInfo, spec_dir)
                 if currJobInfo.specInfos.has_key(currSpecInfo.name):
-                    print "Warning: duplicate spec ({0}) found in job: {1}".format(spec, currJobInfo.name)
+                    print("Warning: duplicate spec ({0}) found in job: {1}".format(spec, currJobInfo.name))
                 currJobInfo.specInfos[spec] = currSpecInfo
 
                 currJobInfo.success = True
@@ -254,14 +254,14 @@ def populateTests(specInfo, path):
                 name = child_elem.text
                 break
         if name == "":
-            print "Error: {0}: Unknown to find test name".format(test_xml_path)
+            print("Error: {0}: Unknown to find test name".format(test_xml_path))
 
         if test_elem.attrib["Status"] == "passed":
             specInfo.passed.append(name)
         elif test_elem.attrib["Status"] == "failed":
             specInfo.failed.append(name)
         else:
-            print "Error: {0}: Unknown test status ({1})".format(test_xml_path, test_elem.attrib["Status"])
+            print("Error: {0}: Unknown test status ({1})".format(test_xml_path, test_elem.attrib["Status"]))
 
 
 def generateEmailContent(basicJobInfos, srcJobInfos, tplJobInfos):
@@ -424,9 +424,9 @@ def sendEmail(content, subject, sender, receiver, emailServer):
         finally:
             conn.close()
     except Exception as e:
-        print "Failed to send email:\n {0}".format(str(e))
+        print("Failed to send email:\n {0}".format(str(e)))
         return False
-    print "Sent."
+    print("Sent.")
 
     return True
 
