@@ -90,7 +90,8 @@ if(NOT AXOM_FOUND)
     endif()
     find_dependency(adiak REQUIRED 
                     PATHS "${ADIAK_DIR}"
-                          "${ADIAK_DIR}/lib/cmake/adiak")
+                          "${ADIAK_DIR}/lib/cmake/adiak"
+                    NO_SYSTEM_ENVIRONMENT_PATH)
   endif()
 
   # c2c
@@ -107,7 +108,8 @@ if(NOT AXOM_FOUND)
     endif()
     find_dependency(caliper REQUIRED 
                     PATHS "${CALIPER_DIR}"
-                          "${CALIPER_DIR}/share/cmake/caliper")
+                          "${CALIPER_DIR}/share/cmake/caliper"
+                    NO_SYSTEM_ENVIRONMENT_PATH)
   endif()
 
   # camp
@@ -116,7 +118,7 @@ if(NOT AXOM_FOUND)
     if(NOT CAMP_DIR)
       set(CAMP_DIR ${AXOM_CAMP_DIR})
     endif()
-    find_dependency(camp REQUIRED PATHS "${CAMP_DIR}")
+    find_dependency(camp REQUIRED PATHS "${CAMP_DIR}" NO_SYSTEM_ENVIRONMENT_PATH)
   endif()
 
   # umpire
@@ -125,7 +127,7 @@ if(NOT AXOM_FOUND)
     if(NOT UMPIRE_DIR)
       set(UMPIRE_DIR ${AXOM_UMPIRE_DIR})
     endif()
-    find_dependency(umpire REQUIRED PATHS "${UMPIRE_DIR}")
+    find_dependency(umpire REQUIRED PATHS "${UMPIRE_DIR}" NO_SYSTEM_ENVIRONMENT_PATH)
   endif()
 
   # raja
@@ -134,7 +136,7 @@ if(NOT AXOM_FOUND)
     if(NOT RAJA_DIR)
       set(RAJA_DIR ${AXOM_RAJA_DIR})
     endif()
-    find_dependency(RAJA REQUIRED PATHS "${RAJA_DIR}")
+    find_dependency(RAJA REQUIRED PATHS "${RAJA_DIR}" NO_SYSTEM_ENVIRONMENT_PATH)
   endif()
 
   # conduit
@@ -151,7 +153,8 @@ if(NOT AXOM_FOUND)
 
     find_dependency(Conduit REQUIRED
                     PATHS "${CONDUIT_DIR}"
-                          "${CONDUIT_DIR}/lib/cmake/conduit")
+                          "${CONDUIT_DIR}/lib/cmake/conduit"
+                    NO_SYSTEM_ENVIRONMENT_PATH)
   endif()
 
   # hdf5
