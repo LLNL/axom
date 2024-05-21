@@ -33,7 +33,7 @@ static constexpr int DEFAULT_MAX_NUM_VERTICES = 20;
 enum class PolygonArray
 {
   Dynamic,
-  Static,
+  Static
 };
 
 // Forward declare the templated classes and operator functions
@@ -124,9 +124,11 @@ public:
   {
     SLIC_ASSERT(static_cast<int>(vertices.size()) <= MAX_VERTS);
 
-    for(int i = 0; i < vertices.size(); i++)
+    int i = 0;
+    for(const auto& vertex : vertices)
     {
-      m_vertices[i] = vertices[i];
+      m_vertices[i] = vertex;
+      i++;
     }
     m_num_vertices = vertices.size();
   }
@@ -195,9 +197,9 @@ public:
             std::enable_if_t<P_ARRAY_TYPE == PolygonArray::Static, int> = 0>
   AXOM_HOST_DEVICE void clear()
   {
-    for(int i = 0; i < MAX_VERTS; i++)
+    for(auto& vertex : m_vertices)
     {
-      m_vertices[i] = PointType();
+      vertex = PointType();
     }
     m_num_vertices = 0;
   }
