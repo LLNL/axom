@@ -32,6 +32,7 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 - Primal: Makes several primitive methods available in device code
 
 ### Changed
+- Set default Umpire allocator id to device instead of unified for CUDA and HIP execution policies.
 - Upgrades `vcpkg` usage for axom's automated Windows builds to its
   [2024.03.19 release](https://github.com/microsoft/vcpkg/releases/tag/2024.03.19).
   Also updates vcpkg port versions for axom dependencies. Temporarily removes `umpire`

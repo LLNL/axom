@@ -32,12 +32,12 @@ void check_for_all()
   constexpr int VALUE_2 = 42;
   constexpr int N = 256;
 
-  // STEP 1: set default allocator for the execution space
-  const int currentAllocatorID = axom::getDefaultAllocatorID();
-  axom::setDefaultAllocator(axom::execution_space<ExecSpace>::allocatorID());
+  // STEP 1: set allocators for the execution spaces
+  const int hostID = axom::execution_space<axom::SEQ_EXEC>::allocatorID();
+  const int allocID = axom::execution_space<ExecSpace>::allocatorID();
 
   // STEP 0: allocate buffer
-  int* a = axom::allocate<int>(N);
+  int* a = axom::allocate<int>(N, allocID);
 
   // STEP 1: initialize to VALUE_1
   axom::for_all<ExecSpace>(
@@ -50,9 +50,12 @@ void check_for_all()
   }
 
   // STEP 2: check array
+  int* a_host = axom::allocate<int>(N, hostID);
+  axom::copy(a_host, a, N * sizeof(int));
+
   for(int i = 0; i < N; ++i)
   {
-    EXPECT_EQ(a[i], VALUE_1);
+    EXPECT_EQ(a_host[i], VALUE_1);
   }
 
   // STEP 3: add VALUE_2 to all entries resulting to zero
@@ -67,15 +70,16 @@ void check_for_all()
   }
 
   // STEP 4: check result
+  axom::copy(a_host, a, N * sizeof(int));
+
   for(int i = 0; i < N; ++i)
   {
-    EXPECT_EQ(a[i], 0);
+    EXPECT_EQ(a_host[i], 0);
   }
 
   // STEP 5: cleanup
   axom::deallocate(a);
-
-  axom::setDefaultAllocator(currentAllocatorID);
+  axom::deallocate(a_host);
 }
 
 } /* end anonymous namespace */

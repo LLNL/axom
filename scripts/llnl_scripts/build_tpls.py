@@ -17,40 +17,40 @@
 
 from llnl_lc_build_tools import *
 
-from optparse import OptionParser
+from argparse import ArgumentParser
 
 import os
 
 
 def parse_args():
     "Parses args from command line"
-    parser = OptionParser()
+    parser = ArgumentParser()
     # Directory to do all the building
-    parser.add_option("-d", "--directory",
-                      dest="directory",
-                      default="",
-                      help="Location to build all TPL's, timestamp directory will be created (Defaults to shared location)")
+    parser.add_argument("-d", "--directory",
+                        dest="directory",
+                        default="",
+                        help="Location to build all TPL's, timestamp directory will be created (Defaults to shared location)")
     # Spack spec to use for the build
-    parser.add_option("-s", "--spec",
-                      dest="spec",
-                      default="",
-                      help="Spack spec to build (defaults to all available on SYS_TYPE)")
-    parser.add_option("-v", "--verbose",
-                      action="store_true",
-                      dest="verbose",
-                      default=False,
-                      help="Output logs to screen as well as to files")
-    parser.add_option("-m", "--mirror",
-                      dest="mirror",
-                      default="",
-                      help="Mirror location to use (defaults to shared location)")
+    parser.add_argument("-s", "--spec",
+                        dest="spec",
+                        default="",
+                        help="Spack spec to build (defaults to all available on SYS_TYPE)")
+    parser.add_argument("-v", "--verbose",
+                        action="store_true",
+                        dest="verbose",
+                        default=False,
+                        help="Output logs to screen as well as to files")
+    parser.add_argument("-m", "--mirror",
+                        dest="mirror",
+                        default="",
+                        help="Mirror location to use (defaults to shared location)")
 
     ###############
     # parse args
     ###############
-    opts, _ = parser.parse_args()
+    opts = parser.parse_args()
     # we want a dict b/c the values could 
-    # be passed without using optparse
+    # be passed without using argparse
     opts = vars(opts)
     return opts
 
