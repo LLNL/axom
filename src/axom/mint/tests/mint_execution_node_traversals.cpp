@@ -29,6 +29,22 @@ namespace mint
 //------------------------------------------------------------------------------
 namespace
 {
+#if defined(AXOM_USE_RAJA) && defined(AXOM_USE_UMPIRE) &&   \
+  ((defined(AXOM_USE_CUDA) && defined(RAJA_ENABLE_CUDA)) || \
+   (defined(AXOM_USE_HIP) && defined(RAJA_ENABLE_HIP)))
+
+int set_um_memory_return_previous_allocator()
+{
+  // Use unified memory
+  const int exec_space_id = axom::getUmpireResourceAllocatorID(
+    umpire::resource::MemoryResourceType::Unified);
+  const int prev_allocator = axom::getDefaultAllocatorID();
+  axom::setDefaultAllocator(exec_space_id);
+  return prev_allocator;
+}
+
+#endif
+
 template <typename ExecPolicy, int MeshType, int Topology = SINGLE_SHAPE>
 void check_for_all_nodes_idx(int dimension)
 {
@@ -350,9 +366,7 @@ AXOM_CUDA_TEST(mint_execution_node_traversals, for_all_nodes_xyz)
 
   using cuda_exec = axom::CUDA_EXEC<512>;
 
-  const int exec_space_id = axom::execution_space<cuda_exec>::allocatorID();
-  const int prev_allocator = axom::getDefaultAllocatorID();
-  axom::setDefaultAllocator(exec_space_id);
+  const int prev_allocator = set_um_memory_return_previous_allocator();
 
   check_for_all_nodes_xyz<cuda_exec, STRUCTURED_UNIFORM_MESH>();
   check_for_all_nodes_xyz<cuda_exec, STRUCTURED_CURVILINEAR_MESH>();
@@ -369,9 +383,7 @@ AXOM_CUDA_TEST(mint_execution_node_traversals, for_all_nodes_xyz)
 
   using hip_exec = axom::HIP_EXEC<512>;
 
-  const int exec_space_id = axom::execution_space<hip_exec>::allocatorID();
-  const int prev_allocator = axom::getDefaultAllocatorID();
-  axom::setDefaultAllocator(exec_space_id);
+  const int prev_allocator = set_um_memory_return_previous_allocator();
 
   check_for_all_nodes_xyz<hip_exec, STRUCTURED_UNIFORM_MESH>();
   check_for_all_nodes_xyz<hip_exec, STRUCTURED_CURVILINEAR_MESH>();
@@ -413,9 +425,7 @@ AXOM_CUDA_TEST(mint_execution_node_traversals, for_all_nodes_xy)
 
   using cuda_exec = axom::CUDA_EXEC<512>;
 
-  const int exec_space_id = axom::execution_space<cuda_exec>::allocatorID();
-  const int prev_allocator = axom::getDefaultAllocatorID();
-  axom::setDefaultAllocator(exec_space_id);
+  const int prev_allocator = set_um_memory_return_previous_allocator();
 
   check_for_all_nodes_xy<cuda_exec, STRUCTURED_UNIFORM_MESH>();
   check_for_all_nodes_xy<cuda_exec, STRUCTURED_CURVILINEAR_MESH>();
@@ -432,9 +442,7 @@ AXOM_CUDA_TEST(mint_execution_node_traversals, for_all_nodes_xy)
 
   using hip_exec = axom::HIP_EXEC<512>;
 
-  const int exec_space_id = axom::execution_space<hip_exec>::allocatorID();
-  const int prev_allocator = axom::getDefaultAllocatorID();
-  axom::setDefaultAllocator(exec_space_id);
+  const int prev_allocator = set_um_memory_return_previous_allocator();
 
   check_for_all_nodes_xy<hip_exec, STRUCTURED_UNIFORM_MESH>();
   check_for_all_nodes_xy<hip_exec, STRUCTURED_CURVILINEAR_MESH>();
@@ -476,9 +484,7 @@ AXOM_CUDA_TEST(mint_execution_node_traversals, for_all_nodes_x)
 
   using cuda_exec = axom::CUDA_EXEC<512>;
 
-  const int exec_space_id = axom::execution_space<cuda_exec>::allocatorID();
-  const int prev_allocator = axom::getDefaultAllocatorID();
-  axom::setDefaultAllocator(exec_space_id);
+  const int prev_allocator = set_um_memory_return_previous_allocator();
 
   check_for_all_nodes_x<cuda_exec, STRUCTURED_UNIFORM_MESH>();
   check_for_all_nodes_x<cuda_exec, STRUCTURED_CURVILINEAR_MESH>();
@@ -495,9 +501,7 @@ AXOM_CUDA_TEST(mint_execution_node_traversals, for_all_nodes_x)
 
   using hip_exec = axom::HIP_EXEC<512>;
 
-  const int exec_space_id = axom::execution_space<hip_exec>::allocatorID();
-  const int prev_allocator = axom::getDefaultAllocatorID();
-  axom::setDefaultAllocator(exec_space_id);
+  const int prev_allocator = set_um_memory_return_previous_allocator();
 
   check_for_all_nodes_x<hip_exec, STRUCTURED_UNIFORM_MESH>();
   check_for_all_nodes_x<hip_exec, STRUCTURED_CURVILINEAR_MESH>();
@@ -533,9 +537,7 @@ AXOM_CUDA_TEST(mint_execution_node_traversals, for_all_nodes_ijk)
 
   using cuda_exec = axom::CUDA_EXEC<512>;
 
-  const int exec_space_id = axom::execution_space<cuda_exec>::allocatorID();
-  const int prev_allocator = axom::getDefaultAllocatorID();
-  axom::setDefaultAllocator(exec_space_id);
+  const int prev_allocator = set_um_memory_return_previous_allocator();
 
   check_for_all_nodes_ijk<cuda_exec, STRUCTURED_UNIFORM_MESH>();
   check_for_all_nodes_ijk<cuda_exec, STRUCTURED_CURVILINEAR_MESH>();
@@ -549,9 +551,7 @@ AXOM_CUDA_TEST(mint_execution_node_traversals, for_all_nodes_ijk)
 
   using hip_exec = axom::HIP_EXEC<512>;
 
-  const int exec_space_id = axom::execution_space<hip_exec>::allocatorID();
-  const int prev_allocator = axom::getDefaultAllocatorID();
-  axom::setDefaultAllocator(exec_space_id);
+  const int prev_allocator = set_um_memory_return_previous_allocator();
 
   check_for_all_nodes_ijk<hip_exec, STRUCTURED_UNIFORM_MESH>();
   check_for_all_nodes_ijk<hip_exec, STRUCTURED_CURVILINEAR_MESH>();
@@ -584,9 +584,7 @@ AXOM_CUDA_TEST(mint_execution_node_traversals, for_all_nodes_ij)
 
   using cuda_exec = axom::CUDA_EXEC<512>;
 
-  const int exec_space_id = axom::execution_space<cuda_exec>::allocatorID();
-  const int prev_allocator = axom::getDefaultAllocatorID();
-  axom::setDefaultAllocator(exec_space_id);
+  const int prev_allocator = set_um_memory_return_previous_allocator();
 
   check_for_all_nodes_ij<cuda_exec, STRUCTURED_UNIFORM_MESH>();
   check_for_all_nodes_ij<cuda_exec, STRUCTURED_CURVILINEAR_MESH>();
@@ -600,9 +598,7 @@ AXOM_CUDA_TEST(mint_execution_node_traversals, for_all_nodes_ij)
 
   using hip_exec = axom::HIP_EXEC<512>;
 
-  const int exec_space_id = axom::execution_space<hip_exec>::allocatorID();
-  const int prev_allocator = axom::getDefaultAllocatorID();
-  axom::setDefaultAllocator(exec_space_id);
+  const int prev_allocator = set_um_memory_return_previous_allocator();
 
   check_for_all_nodes_ij<hip_exec, STRUCTURED_UNIFORM_MESH>();
   check_for_all_nodes_ij<hip_exec, STRUCTURED_CURVILINEAR_MESH>();
@@ -644,9 +640,7 @@ AXOM_CUDA_TEST(mint_execution_node_traversals, for_all_nodes_index)
 
     using cuda_exec = axom::CUDA_EXEC<512>;
 
-    const int exec_space_id = axom::execution_space<cuda_exec>::allocatorID();
-    const int prev_allocator = axom::getDefaultAllocatorID();
-    axom::setDefaultAllocator(exec_space_id);
+    const int prev_allocator = set_um_memory_return_previous_allocator();
 
     check_for_all_nodes_idx<cuda_exec, STRUCTURED_UNIFORM_MESH>(i);
     check_for_all_nodes_idx<cuda_exec, STRUCTURED_CURVILINEAR_MESH>(i);
@@ -663,9 +657,7 @@ AXOM_CUDA_TEST(mint_execution_node_traversals, for_all_nodes_index)
 
     using hip_exec = axom::HIP_EXEC<512>;
 
-    const int exec_space_id = axom::execution_space<hip_exec>::allocatorID();
-    const int prev_allocator = axom::getDefaultAllocatorID();
-    axom::setDefaultAllocator(exec_space_id);
+    const int prev_allocator = set_um_memory_return_previous_allocator();
 
     check_for_all_nodes_idx<hip_exec, STRUCTURED_UNIFORM_MESH>(i);
     check_for_all_nodes_idx<hip_exec, STRUCTURED_CURVILINEAR_MESH>(i);

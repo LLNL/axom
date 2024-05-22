@@ -1136,9 +1136,7 @@ public:
         auto it = bvh->getTraverser();
         const int rank = m_rank;
 
-        double* sqDistThresh = axom::allocate<double>(
-          1,
-          axom::execution_space<ExecSpace>::allocatorID());
+        double* sqDistThresh = axom::allocate<double>(1, m_allocatorID);
         *sqDistThresh = m_sqDistanceThreshold;
 
         auto ptCoordsView = m_objectPtCoords.view();
