@@ -102,7 +102,7 @@ struct IndexedIndirection : public BasePolicy
         << " -- Attempting to indirect on an unsupported indirection policy.");
 
     static ElemType elem;
-    // Disable no-return warnings from device code
+      // Disable no-return warnings from device code
   #if defined(__CUDA_ARCH__)
     __trap();
     // Return reference to element (not used) to silence warning.
@@ -124,7 +124,7 @@ struct IndexedIndirection : public BasePolicy
         << " -- Attempting to indirect on an unsupported indirection policy.");
 
     static ElemType elem;
-    // Disable no-return warnings from device code
+      // Disable no-return warnings from device code
   #if defined(__CUDA_ARCH__)
     __trap();
     // Return reference to element (not used) to silence warning.

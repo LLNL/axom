@@ -204,8 +204,8 @@ namespace primal
 {
 //------------------------------------------------------------------------------
 template <typename T, int NDIMS>
-AXOM_HOST_DEVICE
-Sphere<T, NDIMS>::Sphere(const T* center, T radius) : m_radius(radius)
+AXOM_HOST_DEVICE Sphere<T, NDIMS>::Sphere(const T* center, T radius)
+  : m_radius(radius)
 {
   SLIC_ASSERT(center != nullptr);
   for(int i = 0; i < NDIMS; ++i)
@@ -224,9 +224,9 @@ std::ostream& Sphere<T, NDIMS>::print(std::ostream& os) const
 
 //------------------------------------------------------------------------------
 template <typename T, int NDIMS>
-AXOM_HOST_DEVICE
-inline bool Sphere<T, NDIMS>::intersectsWith(const Sphere<T, NDIMS>& sphere,
-                                             double TOL) const
+AXOM_HOST_DEVICE inline bool Sphere<T, NDIMS>::intersectsWith(
+  const Sphere<T, NDIMS>& sphere,
+  double TOL) const
 {
   const T distance_squared =
     VectorType(sphere.getCenter(), m_center).squared_norm();
