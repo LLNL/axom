@@ -25,6 +25,36 @@ namespace primal
 namespace
 {
 static constexpr int DEFAULT_MAX_NUM_VERTICES = 20;
+
+/*!
+ * \brief A helper class for the Polygon class
+ *
+ * This class helps define a StackArray with a current size and additional
+ * functions to mirror axom::Array.
+ */
+template <typename T, int N>
+struct StaticArray : public StackArray<T, N>
+{
+  AXOM_HOST_DEVICE int size() const { return m_size; }
+  AXOM_HOST_DEVICE void push_back(const T& obj)
+  {
+    SLIC_ASSERT(m_size + 1 <= N);
+    StackArray<T, N>::m_data[m_size++] = obj;
+  }
+
+  AXOM_HOST_DEVICE void clear()
+  {
+    for(T& datum : StackArray<T, N>::m_data)
+    {
+      datum = T();
+    }
+    m_size = 0;
+  }
+
+private:
+  int m_size {0};
+};
+
 } /* end anonymous namespace */
 
 /**
@@ -70,10 +100,10 @@ public:
   using PointType = Point<T, NDIMS>;
   using VectorType = Vector<T, NDIMS>;
 
-  // axom::Array for dynamic array type, axom::StackArray for static array type
+  // axom::Array for dynamic array type, StaticArray for static array type
   using ArrayType = std::conditional_t<ARRAY_TYPE == PolygonArray::Dynamic,
                                        axom::Array<PointType>,
-                                       axom::StackArray<PointType, MAX_VERTS>>;
+                                       StaticArray<PointType, MAX_VERTS>>;
 
 public:
   /// Default constructor for an empty polygon (dynamic array specialization).
@@ -107,30 +137,12 @@ public:
   }
 
   /// \brief Constructor for a polygon with the given vertices
-  ///        (dynamic array specialization)
-  template <PolygonArray P_ARRAY_TYPE = ARRAY_TYPE,
-            std::enable_if_t<P_ARRAY_TYPE == PolygonArray::Dynamic, int> = 0>
   explicit Polygon(const axom::Array<PointType>& vertices)
   {
-    m_vertices = vertices;
-    m_num_vertices = m_vertices.size();
-  }
-
-  /// \brief Constructor for a polygon with the given vertices
-  ///        (static array specialization)
-  template <PolygonArray P_ARRAY_TYPE = ARRAY_TYPE,
-            std::enable_if_t<P_ARRAY_TYPE == PolygonArray::Static, int> = 0>
-  explicit Polygon(const axom::Array<PointType>& vertices)
-  {
-    SLIC_ASSERT(static_cast<int>(vertices.size()) <= MAX_VERTS);
-
-    int i = 0;
     for(const auto& vertex : vertices)
     {
-      m_vertices[i] = vertex;
-      i++;
+      m_vertices.push_back(vertex);
     }
-    m_num_vertices = vertices.size();
   }
 
   // \brief Constructor for a polygon with an initializer list of Points
@@ -140,7 +152,6 @@ public:
   explicit Polygon(std::initializer_list<PointType> vertices)
   {
     m_vertices = vertices;
-    m_num_vertices = m_vertices.size();
   }
 
   // \brief Constructor for a polygon with an initializer list of Points
@@ -151,45 +162,28 @@ public:
   {
     SLIC_ASSERT(static_cast<int>(vertices.size()) <= MAX_VERTS);
 
-    int i = 0;
     for(const auto& vertex : vertices)
     {
-      m_vertices[i] = vertex;
-      i++;
+      m_vertices.push_back(vertex);
     }
-    m_num_vertices = vertices.size();
   }
 
   /// Return the number of vertices in the polygon
   AXOM_HOST_DEVICE
-  int numVertices() const { return m_num_vertices; }
+  int numVertices() const { return m_vertices.size(); }
 
   /// Appends a vertex to the list of vertices (dynamic array specialization)
-  template <PolygonArray P_ARRAY_TYPE = ARRAY_TYPE,
-            std::enable_if_t<P_ARRAY_TYPE == PolygonArray::Dynamic, int> = 0>
-  void addVertex(const PointType& pt)
-  {
-    m_vertices.push_back(pt);
-    m_num_vertices = m_vertices.size();
-  }
+  AXOM_HOST_DEVICE
+  void addVertex(const PointType& pt) { m_vertices.push_back(pt); }
 
-  /// Appends a vertex to the list of vertices (static array specialization)
-  template <PolygonArray P_ARRAY_TYPE = ARRAY_TYPE,
-            std::enable_if_t<P_ARRAY_TYPE == PolygonArray::Static, int> = 0>
-  AXOM_HOST_DEVICE void addVertex(const PointType& pt)
-  {
-    SLIC_ASSERT(m_num_vertices + 1 <= MAX_VERTS);
-    m_vertices[m_num_vertices] = pt;
-    m_num_vertices++;
-  }
-
-  /// Clears the list of vertices (dynamic array specialization)
+  /// Clears the list of vertices (dynamic array specialization).
+  /// Specializations are necessary to remove __host__ __device__ warning for
+  /// axom::Array usage with the dynamic array type.
   template <PolygonArray P_ARRAY_TYPE = ARRAY_TYPE,
             std::enable_if_t<P_ARRAY_TYPE == PolygonArray::Dynamic, int> = 0>
   void clear()
   {
     m_vertices.clear();
-    m_num_vertices = 0;
   }
 
   /// Clears the list of vertices (static array specialization)
@@ -197,11 +191,7 @@ public:
             std::enable_if_t<P_ARRAY_TYPE == PolygonArray::Static, int> = 0>
   AXOM_HOST_DEVICE void clear()
   {
-    for(auto& vertex : m_vertices)
-    {
-      vertex = PointType();
-    }
-    m_num_vertices = 0;
+    m_vertices.clear();
   }
 
   /// Retrieves the vertex at index idx
@@ -368,11 +358,10 @@ public:
    * \return True, if the polygon is valid, False otherwise
    */
   AXOM_HOST_DEVICE
-  bool isValid() const { return m_num_vertices >= 3; }
+  bool isValid() const { return m_vertices.size() >= 3; }
 
 private:
   ArrayType m_vertices;
-  int m_num_vertices {0};
 };
 
 //------------------------------------------------------------------------------
