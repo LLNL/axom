@@ -170,7 +170,7 @@ public:
 
   /// Return the number of vertices in the polygon
   AXOM_HOST_DEVICE
-  int numVertices() const { return m_vertices.size(); }
+  int numVertices() const { return static_cast<int>(m_vertices.size()); }
 
   /// Appends a vertex to the list of vertices (dynamic array specialization)
   AXOM_HOST_DEVICE
