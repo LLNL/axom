@@ -720,7 +720,6 @@ TEST(primal_polygon, normal)
   }
 }
 
-#if defined(AXOM_USE_RAJA) && defined(AXOM_USE_UMPIRE)
 template <typename ExecPolicy>
 void check_polygon_policy()
 {
@@ -837,6 +836,7 @@ TEST(primal_polygon, polygon_check_seq)
   check_polygon_policy<axom::SEQ_EXEC>();
 }
 
+#if defined(AXOM_USE_RAJA) && defined(AXOM_USE_UMPIRE)
   #ifdef AXOM_USE_OPENMP
 TEST(primal_polygon, polygon_check_omp)
 {
