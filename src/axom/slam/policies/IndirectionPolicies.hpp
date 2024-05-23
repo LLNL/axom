@@ -60,7 +60,6 @@ template <typename BasePolicy>
 struct IndexedIndirection : public BasePolicy
 {
   using PositionType = typename BasePolicy::PosType;
-  using ElemType = typename BasePolicy::ElemType;
 
   using typename BasePolicy::ConstIndirectionResult;
   using typename BasePolicy::IndirectionResult;
@@ -91,55 +90,24 @@ struct IndexedIndirection : public BasePolicy
     return buf[pos];
   }
 
-#ifdef AXOM_DEVICE_CODE
-  template <bool DeviceEnable = BasePolicy::DeviceAccessible>
-  AXOM_HOST_DEVICE static inline std::enable_if_t<!DeviceEnable, IndirectionResult>
-  getIndirection(IndirectionRefType /*buf*/, PositionType /*pos*/)
-  {
-    SLIC_ASSERT_MSG(
-      false,
-      BasePolicy::Name
-        << " -- Attempting to indirect on an unsupported indirection policy.");
-
-    static ElemType elem;
-      // Disable no-return warnings from device code
-  #if defined(__CUDA_ARCH__)
-    __trap();
-    // Return reference to element (not used) to silence warning.
-    return elem;
-  #elif defined(__HIP_DEVICE_COMPILE__)
-    abort();
-    // Return reference to element (not used) to silence warning.
-    return elem;
-  #endif
-  }
-
-  template <bool DeviceEnable = BasePolicy::DeviceAccessible>
-  AXOM_HOST_DEVICE static inline std::enable_if_t<!DeviceEnable, ConstIndirectionResult>
-  getConstIndirection(IndirectionConstRefType /*buf*/, PositionType /*pos*/)
-  {
-    SLIC_ASSERT_MSG(
-      false,
-      BasePolicy::Name
-        << " -- Attempting to indirect on an unsupported indirection policy.");
-
-    static ElemType elem;
-      // Disable no-return warnings from device code
-  #if defined(__CUDA_ARCH__)
-    __trap();
-    // Return reference to element (not used) to silence warning.
-    return elem;
-  #elif defined(__HIP_DEVICE_COMPILE__)
-    abort();
-    // Return reference to element (not used) to silence warning.
-    return elem;
-  #endif
-  }
-#else
   template <bool DeviceEnable = BasePolicy::DeviceAccessible>
   AXOM_HOST_DEVICE static inline std::enable_if_t<!DeviceEnable, IndirectionResult>
   getIndirection(IndirectionRefType buf, PositionType pos)
   {
+#ifdef AXOM_DEVICE_CODE
+    SLIC_ASSERT_MSG(
+      false,
+      BasePolicy::Name
+        << " -- Attempting to indirect on an unsupported indirection policy.");
+
+  // Disable no-return warnings from device code
+  #if defined(__CUDA_ARCH__)
+    __trap();
+  #elif defined(__HIP_DEVICE_COMPILE__)
+    abort();
+  #endif
+#endif
+    // Always return a value.
     return buf[pos];
   }
 
@@ -147,9 +115,22 @@ struct IndexedIndirection : public BasePolicy
   AXOM_HOST_DEVICE static inline std::enable_if_t<!DeviceEnable, ConstIndirectionResult>
   getConstIndirection(IndirectionConstRefType buf, PositionType pos)
   {
+#ifdef AXOM_DEVICE_CODE
+    SLIC_ASSERT_MSG(
+      false,
+      BasePolicy::Name
+        << " -- Attempting to indirect on an unsupported indirection policy.");
+
+  // Disable no-return warnings from device code
+  #if defined(__CUDA_ARCH__)
+    __trap();
+  #elif defined(__HIP_DEVICE_COMPILE__)
+    abort();
+  #endif
+#endif
+    // Always return a value.
     return buf[pos];
   }
-#endif
 
   AXOM_HOST_DEVICE inline ConstIndirectionResult indirection(PositionType pos) const
   {
