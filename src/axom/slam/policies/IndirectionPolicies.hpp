@@ -94,7 +94,7 @@ struct IndexedIndirection : public BasePolicy
 #ifdef AXOM_DEVICE_CODE
   template <bool DeviceEnable = BasePolicy::DeviceAccessible>
   AXOM_HOST_DEVICE static inline std::enable_if_t<!DeviceEnable, IndirectionResult>
-  getIndirection(IndirectionRefType /*buf*/, PositionType /*pos*/)
+    getIndirection(IndirectionRefType /*buf*/, PositionType /*pos*/)
   {
     SLIC_ASSERT_MSG(
       false,
@@ -116,7 +116,7 @@ struct IndexedIndirection : public BasePolicy
 
   template <bool DeviceEnable = BasePolicy::DeviceAccessible>
   AXOM_HOST_DEVICE static inline std::enable_if_t<!DeviceEnable, ConstIndirectionResult>
-  getConstIndirection(IndirectionConstRefType /*buf*/, PositionType /*pos*/)
+    getConstIndirection(IndirectionConstRefType /*buf*/, PositionType /*pos*/)
   {
     SLIC_ASSERT_MSG(
       false,
