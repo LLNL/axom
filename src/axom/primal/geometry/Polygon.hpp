@@ -172,7 +172,7 @@ public:
   AXOM_HOST_DEVICE
   int numVertices() const { return static_cast<int>(m_vertices.size()); }
 
-  /// Appends a vertex to the list of vertices (dynamic array specialization)
+  /// Appends a vertex to the list of vertices
   AXOM_HOST_DEVICE
   void addVertex(const PointType& pt) { m_vertices.push_back(pt); }
 
