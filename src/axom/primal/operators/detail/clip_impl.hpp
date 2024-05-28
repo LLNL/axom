@@ -671,6 +671,123 @@ AXOM_HOST_DEVICE Polyhedron<T, NDIMS> clipTetrahedron(
   return poly;
 }
 
+/*!
+ * \brief Clips a subject polygon against a clip polygon and returns the
+ *        resultign polygon
+ *
+ * \param [in] subjectPolygon The subject polygon
+ * \param [in] clipPolygon The clip polygon
+ * \param [in] eps The epsilon value
+ * \param [in] tryFixOrientation If true, takes each shape with a negative
+ *             signed area and swaps the order of some vertices in that
+ *             shape to try to obtain a nonnegative signed area.
+ *             Defaults to false.
+ *
+ * \return A polygon of the subject polygon clipped against the clip polygon.
+ *
+ * \note Function is based off the Sutherland–Hodgman algorithm.
+ *
+ * \warning tryFixOrientation flag does not guarantee the shapes' vertex orders
+ *          will be valid. It is the responsiblity of the caller to pass
+ *          shapes with a valid vertex order. Otherwise, if the shapes have
+ *          invalid vertex orders, the returned Polygon
+ *          will have a non-positive and/or unexpected area.
+ *
+ * \warning If tryFixOrientation flag is false and some of the shapes have
+ *          a negative signed area, the returned Polygon
+ *          will have a non-positive and/or unexpected area.
+ */
+template <typename T>
+Polygon<T, 2> clipPolygonPolygon(const Polygon<T, 2>& subjectPolygon,
+                                 const Polygon<T, 2>& clipPolygon,
+                                 double eps = 1.e-10,
+                                 bool tryFixOrientation = false)
+{
+  using PlaneType = Plane<T, 2>;
+  using PointType = Point<T, 2>;
+  using SegmentType = Segment<T, 2>;
+
+  Polygon<T, 2> outputList = subjectPolygon;
+  Polygon<T, 2> planePoints = clipPolygon;
+
+  if(tryFixOrientation)
+  {
+    Polygon<T, 2> tempPolygon;
+    if(subjectPolygon.signedArea() < 0)
+    {
+      for(int i = 0; i < subjectPolygon.numVertices(); i++)
+      {
+        tempPolygon.addVertex(
+          subjectPolygon[subjectPolygon.numVertices() - i - 1]);
+      }
+      outputList = tempPolygon;
+      tempPolygon.clear();
+    }
+
+    if(clipPolygon.signedArea() < 0)
+    {
+      for(int i = 0; i < clipPolygon.numVertices(); i++)
+      {
+        tempPolygon.addVertex(clipPolygon[clipPolygon.numVertices() - i - 1]);
+      }
+      planePoints = tempPolygon;
+      tempPolygon.clear();
+    }
+  }
+
+  int numClipEdges = planePoints.numVertices();
+  PlaneType planes[numClipEdges];
+  for(int i = 0; i < numClipEdges; i++)
+  {
+    planes[i] = make_plane(planePoints[i], planePoints[(i + 1) % numClipEdges]);
+  }
+
+  // Iterate through edges of clip polygon, represented as planes
+  for(PlaneType plane : planes)
+  {
+    Polygon<T, 2> inputList = outputList;
+    outputList.clear();
+
+    for(int i = 0; i < inputList.numVertices(); i++)
+    {
+      PointType current_point = inputList[i];
+      PointType prev_point =
+        inputList[(i - 1) == -1 ? (inputList.numVertices() - 1) : (i - 1)];
+
+      T seg_param;
+      PointType intersecting_point;
+      SegmentType subject_edge(prev_point, current_point);
+
+      if(intersect(plane, subject_edge, seg_param))
+      {
+        intersecting_point = subject_edge.at(seg_param);
+      }
+
+      int cur_p_orientation = plane.getOrientation(current_point, eps);
+      int prev_p_orientation = plane.getOrientation(prev_point, eps);
+
+      if(cur_p_orientation == ON_POSITIVE_SIDE)
+      {
+        if(prev_p_orientation == ON_NEGATIVE_SIDE)
+        {
+          outputList.addVertex(intersecting_point);
+        }
+        outputList.addVertex(current_point);
+      }
+      else if(prev_p_orientation == ON_POSITIVE_SIDE)
+      {
+        outputList.addVertex(intersecting_point);
+      }
+      else if(cur_p_orientation == ON_BOUNDARY)
+      {
+        outputList.addVertex(current_point);
+      }
+    }
+  }  // end of iteration through edges of clip polygon
+
+  return outputList;
+}
+
 }  // namespace detail
 }  // namespace primal
 }  // namespace axom
