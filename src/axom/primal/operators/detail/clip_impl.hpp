@@ -736,15 +736,13 @@ Polygon<T, 2> clipPolygonPolygon(const Polygon<T, 2>& subjectPolygon,
   }
 
   int numClipEdges = planePoints.numVertices();
-  PlaneType planes[numClipEdges];
-  for(int i = 0; i < numClipEdges; i++)
-  {
-    planes[i] = make_plane(planePoints[i], planePoints[(i + 1) % numClipEdges]);
-  }
 
   // Iterate through edges of clip polygon, represented as planes
-  for(PlaneType plane : planes)
+  for(int i = 0; i < numClipEdges; i++)
   {
+    PlaneType plane =
+      make_plane(planePoints[i], planePoints[(i + 1) % numClipEdges]);
+
     Polygon<T, 2> inputList = outputList;
     outputList.clear();
 
