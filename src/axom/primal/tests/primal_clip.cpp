@@ -1643,6 +1643,74 @@ TEST(primal_clip, tet_plane_intersect_four_edges)
   EXPECT_NEAR(tet.signedVolume() / 2.0, poly.signedVolume(), EPS);
 }
 
+TEST(primal_clip, empty_polygon)
+{
+  using Polygon2D = axom::primal::Polygon<double, 2>;
+
+  Polygon2D subjectPolygon;
+
+  Polygon2D clipPolygon;
+
+  Polygon2D poly = axom::primal::clip(subjectPolygon, clipPolygon);
+
+  EXPECT_EQ(poly.isValid(), false);
+}
+
+TEST(primal_clip, rectangles)
+{
+  using Polygon2D = axom::primal::Polygon<double, 2>;
+  using Point2D = axom::primal::Point<double, 2>;
+  constexpr double EPS = 1e-10;
+  constexpr bool CHECK_SIGN = true;
+
+  // Expected counter-clockwise vertex ordering
+  {
+    Polygon2D subjectPolygon;
+    subjectPolygon.addVertex(Point2D {0, 0});
+    subjectPolygon.addVertex(Point2D {1, 0});
+    subjectPolygon.addVertex(Point2D {1, 1});
+    subjectPolygon.addVertex(Point2D {0, 1});
+
+    Polygon2D clipPolygon;
+    clipPolygon.addVertex(Point2D {0.5, -1});
+    clipPolygon.addVertex(Point2D {1.5, -1});
+    clipPolygon.addVertex(Point2D {1.5, 2});
+    clipPolygon.addVertex(Point2D {0.5, 2});
+
+    Polygon2D poly = axom::primal::clip(subjectPolygon, clipPolygon, EPS);
+
+    EXPECT_NEAR(subjectPolygon.signedArea(), 1.0, EPS);
+    EXPECT_NEAR(clipPolygon.signedArea(), 3.0, EPS);
+    EXPECT_NEAR(poly.signedArea(), 0.5, EPS);
+  }
+
+  // Negative clockwise vertex ordering, use tryFixOrientation optional
+  // parameter to fix.
+  {
+    Polygon2D subjectPolygon;
+    subjectPolygon.addVertex(Point2D {0, 0});
+    subjectPolygon.addVertex(Point2D {0, 1});
+    subjectPolygon.addVertex(Point2D {1, 1});
+    subjectPolygon.addVertex(Point2D {1, 0});
+
+    Polygon2D clipPolygon;
+    clipPolygon.addVertex(Point2D {0.5, -1});
+    clipPolygon.addVertex(Point2D {0.5, 2});
+    clipPolygon.addVertex(Point2D {1.5, 2});
+    clipPolygon.addVertex(Point2D {1.5, -1});
+
+    Polygon2D poly_fix_orientation =
+      axom::primal::clip(subjectPolygon, clipPolygon, EPS, CHECK_SIGN);
+
+    // Negative areas
+    EXPECT_NEAR(subjectPolygon.signedArea(), -1.0, EPS);
+    EXPECT_NEAR(clipPolygon.signedArea(), -3.0, EPS);
+
+    // Positive area with tryFixOrientation flag enabled
+    EXPECT_NEAR(poly_fix_orientation.signedArea(), 0.5, EPS);
+  }
+}
+
 //------------------------------------------------------------------------------
 int main(int argc, char* argv[])
 {
