@@ -673,7 +673,7 @@ AXOM_HOST_DEVICE Polyhedron<T, NDIMS> clipTetrahedron(
 
 /*!
  * \brief Clips a subject polygon against a clip polygon and returns the
- *        resultign polygon
+ *        resulting polygon
  *
  * \param [in] subjectPolygon The subject polygon
  * \param [in] clipPolygon The clip polygon
@@ -766,7 +766,7 @@ Polygon<T, 2> clipPolygonPolygon(const Polygon<T, 2>& subjectPolygon,
 
       if(cur_p_orientation == ON_POSITIVE_SIDE)
       {
-        if(prev_p_orientation == ON_NEGATIVE_SIDE)
+        if(prev_p_orientation != ON_POSITIVE_SIDE)
         {
           outputList.addVertex(intersecting_point);
         }
@@ -775,10 +775,6 @@ Polygon<T, 2> clipPolygonPolygon(const Polygon<T, 2>& subjectPolygon,
       else if(prev_p_orientation == ON_POSITIVE_SIDE)
       {
         outputList.addVertex(intersecting_point);
-      }
-      else if(cur_p_orientation == ON_BOUNDARY)
-      {
-        outputList.addVertex(current_point);
       }
     }
   }  // end of iteration through edges of clip polygon
