@@ -58,10 +58,6 @@ set(sina_sources
     )
 
 # Add Adiak header and source
-if (AXOM_SINA_USE_ADIAK)
-    list(APPEND sina_headers include/AdiakWriter.hpp)
-    list(APPEND sina_sources src/AdiakWriter.cpp)
-endif()
 
 blt_list_append( TO sina_headers ELEMENTS include/AdiakWriter.hpp IF AXOM_SINA_USE_ADIAK )
 blt_list_append( TO sina_sources ELEMENTS src/AdiakWriter.cpp IF AXOM_SINA_USE_ADIAK )
@@ -95,9 +91,9 @@ install(FILES           ${PROJECT_BINARY_DIR}/include/axom/sina/config.hpp
 #------------------------------------------------------------------------------
 # Add tests and examples
 #------------------------------------------------------------------------------
-# if(AXOM_ENABLE_TESTS)
-#   add_subdirectory(tests)
-# endif()
+if(AXOM_ENABLE_TESTS)
+  add_subdirectory(tests)
+endif()
 
 # if(AXOM_ENABLE_EXAMPLES)
 #   add_subdirectory(examples)
