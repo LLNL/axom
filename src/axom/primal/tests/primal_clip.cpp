@@ -1643,7 +1643,7 @@ TEST(primal_clip, tet_plane_intersect_four_edges)
   EXPECT_NEAR(tet.signedVolume() / 2.0, poly.signedVolume(), EPS);
 }
 
-TEST(primal_clip, empty_polygon)
+TEST(primal_clip, empty_polygons)
 {
   using Polygon2D = axom::primal::Polygon<double, 2>;
 
@@ -1656,7 +1656,7 @@ TEST(primal_clip, empty_polygon)
   EXPECT_EQ(poly.isValid(), false);
 }
 
-TEST(primal_clip, rectangles)
+TEST(primal_clip, polygon_intersects_polygon)
 {
   using Polygon2D = axom::primal::Polygon<double, 2>;
   using Point2D = axom::primal::Point<double, 2>;
@@ -1708,6 +1708,72 @@ TEST(primal_clip, rectangles)
 
     // Positive area with tryFixOrientation flag enabled
     EXPECT_NEAR(poly_fix_orientation.signedArea(), 0.5, EPS);
+  }
+
+  // Non-clipping - polygons intersect at a line
+  {
+    Polygon2D subjectPolygon;
+    subjectPolygon.addVertex(Point2D {0, 0});
+    subjectPolygon.addVertex(Point2D {1, 0});
+    subjectPolygon.addVertex(Point2D {1, 1});
+    subjectPolygon.addVertex(Point2D {0, 1});
+
+    Polygon2D clipPolygon;
+    clipPolygon.addVertex(Point2D {-1, 0});
+    clipPolygon.addVertex(Point2D {0, 0});
+    clipPolygon.addVertex(Point2D {0, 1});
+    clipPolygon.addVertex(Point2D {-1, 1});
+
+    Polygon2D poly =
+      axom::primal::clip(subjectPolygon, clipPolygon, EPS, CHECK_SIGN);
+
+    EXPECT_EQ(poly.isValid(), false);
+    EXPECT_EQ(poly.numVertices(), 0);
+  }
+
+  // Non-clipping - polygons intersect at a point
+  {
+    Polygon2D subjectPolygon;
+    subjectPolygon.addVertex(Point2D {0, 0});
+    subjectPolygon.addVertex(Point2D {1, 0});
+    subjectPolygon.addVertex(Point2D {1, 1});
+    subjectPolygon.addVertex(Point2D {0, 1});
+
+    Polygon2D clipPolygon;
+    clipPolygon.addVertex(Point2D {-1, -1});
+    clipPolygon.addVertex(Point2D {0, -1});
+    clipPolygon.addVertex(Point2D {0, 0});
+    clipPolygon.addVertex(Point2D {-1, 0});
+
+    Polygon2D poly =
+      axom::primal::clip(subjectPolygon, clipPolygon, EPS, CHECK_SIGN);
+
+    EXPECT_EQ(poly.isValid(), false);
+    EXPECT_EQ(poly.numVertices(), 0);
+  }
+
+  // Rosetta Code example
+  {
+    Polygon2D subjectPolygon;
+    subjectPolygon.addVertex(Point2D {50, 150});
+    subjectPolygon.addVertex(Point2D {200, 50});
+    subjectPolygon.addVertex(Point2D {350, 150});
+    subjectPolygon.addVertex(Point2D {350, 300});
+    subjectPolygon.addVertex(Point2D {250, 300});
+    subjectPolygon.addVertex(Point2D {200, 250});
+    subjectPolygon.addVertex(Point2D {150, 350});
+    subjectPolygon.addVertex(Point2D {100, 250});
+    subjectPolygon.addVertex(Point2D {100, 200});
+
+    Polygon2D clipPolygon;
+    clipPolygon.addVertex(Point2D {100, 100});
+    clipPolygon.addVertex(Point2D {300, 100});
+    clipPolygon.addVertex(Point2D {300, 300});
+    clipPolygon.addVertex(Point2D {100, 300});
+
+    Polygon2D poly = axom::primal::clip(subjectPolygon, clipPolygon, EPS);
+    EXPECT_NEAR(poly.signedArea(), 37083.3333333333, EPS);
+    SLIC_INFO(poly);
   }
 }
 
