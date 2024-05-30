@@ -6,8 +6,10 @@
 ####
 # This is the shared configuration of jobs for quartz
 .on_quartz:
+  variables:
+    SCHEDULER_PARAMETERS: "--res=ci --exclusive=user --deadline=now+1hour -N1 -t ${ALLOC_TIME}"
   tags:
-    - shell
+    - batch
     - quartz
   rules:
     - if: '$CI_COMMIT_BRANCH =~ /_qnone/ || $ON_QUARTZ == "OFF"' #run except if ...
@@ -19,41 +21,16 @@
     - module load cmake/3.19.2
 
 ####
-# In pre-build phase, allocate a node for builds
-quartz_allocate:
-  variables:
-    GIT_STRATEGY: none
-  extends: [.on_quartz, .src_workflow]
-  stage: allocate
-  script:
-    - salloc -N 1 -c 36 -t 60 --res=ci --no-shell --job-name=${PROJECT_ALLOC_NAME}
-  needs: []
-
-####
-# In post-build phase, deallocate resources
-# Note : make sure this is run even on build phase failure
-quartz_release:
-  variables:
-    GIT_STRATEGY: none
-  extends: [.on_quartz, .src_workflow]
-  stage: release
-  script:
-    - export JOBID=$(squeue -h --name=${PROJECT_ALLOC_NAME} --format=%A)
-    - if [[ -n "${JOBID}" ]]; then scancel ${JOBID}; fi
-
-####
 # Template
 .src_build_on_quartz:
-  stage: build
   variables:
-    ALLOC_COMMAND: "srun -t 60 -N 1 -p pdebug"
+    ALLOC_TIME: "30"
   extends: [.src_build_script, .on_quartz, .src_workflow]
-  needs: [quartz_allocate]
+  needs: []
 
 .full_build_on_quartz:
-  stage: build
   variables:
-    ALLOC_COMMAND: "srun -t 60 -N 1 -p pdebug"
+    ALLOC_TIME: "60"
   extends: [.full_build_script, .on_quartz, .full_workflow]
   needs: []
 
