@@ -95,9 +95,9 @@ if(AXOM_ENABLE_TESTS)
   add_subdirectory(tests)
 endif()
 
-# if(AXOM_ENABLE_EXAMPLES)
-#   add_subdirectory(examples)
-# endif()
+if(AXOM_ENABLE_EXAMPLES)
+  add_subdirectory(examples)
+endif()
 
 #------------------------------------------------------------------------------
 # Add code checks
