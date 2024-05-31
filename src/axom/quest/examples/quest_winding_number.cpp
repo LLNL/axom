@@ -31,32 +31,54 @@ BezierCurve2D segment_to_curve(const mfem::Mesh* mesh, int elem_id)
   const auto* fec = fes->FEColl();
   //auto* nodes = mesh->GetNodes();
 
+  const bool isBernstein =
+    dynamic_cast<const mfem::H1Pos_FECollection*>(fec) != nullptr;
+  const bool isNURBS =
+    dynamic_cast<const mfem::NURBSFECollection*>(fec) != nullptr;
+
+  SLIC_ASSERT(isBernstein || isNURBS);
+
+  mfem::Array<int> dofs;
   mfem::Array<int> vdofs;
+
+  mfem::Vector dvec;
   mfem::Vector v;
 
+  fes->GetElementDofs(elem_id, dofs);
   fes->GetElementVDofs(elem_id, vdofs);
   mesh->GetNodes()->GetSubVector(vdofs, v);
 
-  //for(int j = 0; j < vdofs.Size(); ++j)
-  //{
-  //  SLIC_INFO(axom::fmt::format("Element {} -- vdof {}", elem_id, vdofs[j]));
-  //}
+  for(int j = 0; j < vdofs.Size(); ++j)
+  {
+    SLIC_INFO(axom::fmt::format("Element {} -- vdof {}", elem_id, vdofs[j]));
+  }
 
   // temporarily hard-code for 3rd order
   axom::Array<Point2D> points(4, 4);
-  points[0] = Point2D {v[0], v[0 + 4]};
-  points[1] = Point2D {v[2], v[2 + 4]};
-  points[2] = Point2D {v[3], v[3 + 4]};
-  points[3] = Point2D {v[1], v[1 + 4]};
+  if(isBernstein)
+  {
+    points[0] = Point2D {v[0], v[0 + 4]};
+    points[1] = Point2D {v[2], v[2 + 4]};
+    points[2] = Point2D {v[3], v[3 + 4]};
+    points[3] = Point2D {v[1], v[1 + 4]};
 
-  // // TODO: Handle interleaved points
-  // const int stride = vdofs.Size() / 2;
-  // for(int n = 0; n < stride; ++n)
-  // {
-  //   points.push_back(Point2D {v[n], v[n + stride]});
-  // }
+    return BezierCurve2D(points, fec->GetOrder());
+  }
+  else  // isNURBS
+  {
+    // temporary assumption is that there are no interior knots
+    // i.e. the NURBS curve is essentially a rational Bezier curve
 
-  return BezierCurve2D(points, fec->GetOrder());
+    points[0] = Point2D {v[0], v[0 + 4]};
+    points[1] = Point2D {v[1], v[1 + 4]};
+    points[2] = Point2D {v[2], v[2 + 4]};
+    points[3] = Point2D {v[3], v[3 + 4]};
+
+    fes->GetNURBSext()->GetWeights().GetSubVector(dofs, dvec);
+    axom::Array<double> weights {dvec[0], dvec[1], dvec[2], dvec[3]};
+
+    return BezierCurve2D(points, weights, fec->GetOrder());
+  }
 }
 
 bool check_mesh_valid(const mfem::Mesh* mesh)
@@ -64,12 +86,18 @@ bool check_mesh_valid(const mfem::Mesh* mesh)
   const auto* fes = mesh->GetNodes()->FESpace();
   const auto* fec = fes->FEColl();
 
+  const bool isBernstein =
+    dynamic_cast<const mfem::H1Pos_FECollection*>(fec) != nullptr;
+  const bool isNURBS =
+    dynamic_cast<const mfem::NURBSFECollection*>(fec) != nullptr;
+  const bool isValidFEC = isBernstein || isNURBS;
+
   // TODO: Convert from Lagrange to Bernstein, if/when necessary
-  if(!dynamic_cast<const mfem::H1Pos_FECollection*>(fec))
+  if(!isValidFEC)
   {
     SLIC_WARNING(
-      "Example only currently supports meshes with nodes in the Bernstein "
-      "basis");
+      "Example only currently supports 1D NURBS meshes "
+      "or meshes with nodes in the Bernstein basis");
     return false;
   }
 
@@ -192,7 +220,7 @@ int main(int argc, char** argv)
   {
     Point2D q;
     query_mesh->GetNode(nidx, q.data());
-    SLIC_INFO(axom::fmt::format("Node {} -- {}", nidx, q));
+    // SLIC_INFO(axom::fmt::format("Node {} -- {}", nidx, q));
 
     double wn {};
     for(const auto& c : curves)
