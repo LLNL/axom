@@ -99,6 +99,7 @@ int main(int argc, char** argv)
   std::vector<double> boxMins;
   std::vector<double> boxMaxs;
   std::vector<int> boxResolution;
+  int queryOrder {1};
 
   app.add_option("-f,--file", filename)
     ->description("Mfem mesh containing contours")
@@ -106,24 +107,25 @@ int main(int argc, char** argv)
 
   app.add_flag("-v,--verbose", verbose, "verbose output")->capture_default_str();
 
-  auto* inline_mesh_subcommand =
-    app.add_subcommand("inline_mesh")
+  auto* query_mesh_subcommand =
+    app.add_subcommand("query_mesh")
       ->description("Options for setting up a query mesh")
       ->fallthrough();
-
-  inline_mesh_subcommand->add_option("--min", boxMins)
+  query_mesh_subcommand->add_option("--min", boxMins)
     ->description("Min bounds for box mesh (x,y)")
     ->expected(2)
     ->required();
-  inline_mesh_subcommand->add_option("--max", boxMaxs)
+  query_mesh_subcommand->add_option("--max", boxMaxs)
     ->description("Max bounds for box mesh (x,y)")
     ->expected(2)
     ->required();
-
-  inline_mesh_subcommand->add_option("--res", boxResolution)
+  query_mesh_subcommand->add_option("--res", boxResolution)
     ->description("Resolution of the box mesh (i,j)")
     ->expected(2)
     ->required();
+  query_mesh_subcommand->add_option("-o,--order", queryOrder)
+    ->description("polynomial order of the query mesh")
+    ->check(axom::CLI::PositiveNumber);
 
   CLI11_PARSE(app, argc, argv);
 
@@ -175,21 +177,22 @@ int main(int argc, char** argv)
   const auto query_res = primal::NumericArray<int, 2>(boxResolution.data());
   const auto query_box =
     BoundingBox2D(Point2D(boxMins.data()), Point2D(boxMaxs.data()));
-  constexpr int query_order = 1;
 
   auto query_mesh = std::unique_ptr<mfem::Mesh>(
     axom::quest::util::make_cartesian_mfem_mesh_2D(query_box,
                                                    query_res,
-                                                   query_order));
-  auto fec = mfem::H1_FECollection(query_order, 2);
+                                                   queryOrder));
+  auto fec = mfem::H1_FECollection(queryOrder, 2);
   auto fes = mfem::FiniteElementSpace(query_mesh.get(), &fec, 1);
   auto winding = mfem::GridFunction(&fes);
   auto inout = mfem::GridFunction(&fes);
+  auto nodes_fes = query_mesh->GetNodalFESpace();
 
-  for(int vidx = 0; vidx < query_mesh->GetNV(); ++vidx)
+  for(int nidx = 0; nidx < nodes_fes->GetNDofs(); ++nidx)
   {
-    Point2D q(query_mesh->GetVertex(vidx), 2);
-    // SLIC_INFO(axom::fmt::format("Vertex {} -- {}", vidx, q));
+    Point2D q;
+    query_mesh->GetNode(nidx, q.data());
+    SLIC_INFO(axom::fmt::format("Node {} -- {}", nidx, q));
 
     double wn {};
     for(const auto& c : curves)
@@ -197,8 +200,8 @@ int main(int argc, char** argv)
       wn += axom::primal::winding_number(q, c);
     }
 
-    winding[vidx] = wn;
-    inout[vidx] = std::round(wn);
+    winding[nidx] = wn;
+    inout[nidx] = std::round(wn);
 
     // SLIC_INFO(axom::fmt::format(
     //   "Winding number for query point {} is {} -- rounded to {}",
