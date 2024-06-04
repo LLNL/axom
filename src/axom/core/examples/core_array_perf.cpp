@@ -19,7 +19,7 @@
 #include "axom/core/utilities/Timer.hpp"
 #include "axom/core/AnnotationMacros.hpp"
 
-#include "axom/fmt/format.h"
+#include "axom/fmt.hpp"
 #include "axom/CLI11.hpp"
 
 // C/C++ includes
@@ -108,8 +108,10 @@ public:
     {
       if(dataSlowestDirections.size() != shape.size())
       {
-        std::cerr << "slowestDimension size (" << dataSlowestDirections.size()
-                  << ") must match shape size (" << shape.size() << ")."
+        std::cerr << axom::fmt::format(
+                       "slowestDimension size ({}) must match shape size ({}).",
+                       dataSlowestDirections.size(),
+                       shape.size())
                   << std::endl;
         std::abort();
       }
@@ -145,18 +147,6 @@ public:
 };
 
 InputParams params;
-
-template <typename T>
-std::string array_to_string(const T* dataPtr, int count)
-{
-  std::ostringstream os;
-  os << '[';
-  for(int i = 0; i < count; ++i)
-  {
-    os << dataPtr[i] << (i < count - 1 ? ',' : ']');
-  }
-  return os.str();
-}
 
 //!@brief Return allocator id suitable for the given runtime policy.
 int allocatorIdFromPolicy(axom::runtime_policy::Policy policy)
@@ -208,10 +198,13 @@ public:
 #ifdef AXOM_USE_UMPIRE
     umpire::ResourceManager& rm = umpire::ResourceManager::getInstance();
     umpire::Allocator allocator = rm.getAllocator(m_allocatorId);
-    std::cout << "Allocator id: " << m_allocatorId << ", Umpire memory space "
-              << allocator.getName() << std::endl;
+    std::cout << axom::fmt::format("Allocator id: {}, Umpire memory space {}",
+                                   m_allocatorId,
+                                   allocator.getName())
+              << std::endl;
 #else
-    std::cout << "Allocator id: " << m_allocatorId << ", default memory space"
+    std::cout << axom::fmt::format("Allocator id: {}, default memory space",
+                                   m_allocatorId)
               << std::endl;
 #endif
   }
@@ -788,9 +781,11 @@ public:
     makeArray(array1D, array);
 #endif
 
-    std::cout << "Real-to-padded size: " << params.realSize << '/'
-              << params.paddedSize << " = "
-              << double(params.realSize) / params.paddedSize << std::endl;
+    std::cout << axom::fmt::format("Real-to-padded size: {}/{} = {:.4f}",
+                                   params.realSize,
+                                   params.paddedSize,
+                                   double(params.realSize) / params.paddedSize)
+              << std::endl;
 
     auto count = array.size();
     auto baseFactor = m_baseFactor;
@@ -817,9 +812,9 @@ public:
     flatTimer.start();
     for(int r = 0; r < params.repCount; ++r) runTest_flatAccess(array);
     flatTimer.stop();
-    std::cout << "Avg flat-index time   "
-              << flatTimer.elapsedTimeInSec() / params.repCount
-              << " seconds, base" << std::endl;
+    std::cout << axom::fmt::format("Avg flat-index time   {:.8f} seconds, base",
+                                   flatTimer.elapsedTimeInSec() / params.repCount)
+              << std::endl;
 
     auto baseTime = flatTimer.elapsedTimeInSec();
 
@@ -827,38 +822,41 @@ public:
     pointerTimer.start();
     for(int r = 0; r < params.repCount; ++r) runTest_pointerAccess(array);
     pointerTimer.stop();
-    std::cout << "Avg pointer time   "
-              << pointerTimer.elapsedTimeInSec() / params.repCount
-              << " seconds, " << std::setprecision(3)
-              << pointerTimer.elapsedTimeInSec() / baseTime << 'x' << std::endl;
+    std::cout << axom::fmt::format(
+                   "Avg pointer time      {:.8f} seconds, {:.2f}x",
+                   pointerTimer.elapsedTimeInSec() / params.repCount,
+                   pointerTimer.elapsedTimeInSec() / baseTime)
+              << std::endl;
 
     axom::utilities::Timer rowMajorTimer(false);
     rowMajorTimer.start();
     for(int r = 0; r < params.repCount; ++r) runTest_rowMajorAccess(array);
     rowMajorTimer.stop();
-    std::cout << "Avg row-major time    "
-              << rowMajorTimer.elapsedTimeInSec() / params.repCount
-              << " seconds, " << std::setprecision(3)
-              << rowMajorTimer.elapsedTimeInSec() / baseTime << 'x' << std::endl;
+    std::cout << axom::fmt::format(
+                   "Avg row-major time    {:.8f} seconds, {:.2f}x",
+                   rowMajorTimer.elapsedTimeInSec() / params.repCount,
+                   rowMajorTimer.elapsedTimeInSec() / baseTime)
+              << std::endl;
 
     axom::utilities::Timer columnMajorTimer(false);
     columnMajorTimer.start();
     for(int r = 0; r < params.repCount; ++r) runTest_columnMajorAccess(array);
     columnMajorTimer.stop();
-    std::cout << "Avg column-major time "
-              << columnMajorTimer.elapsedTimeInSec() / params.repCount
-              << " seconds, " << std::setprecision(3)
-              << columnMajorTimer.elapsedTimeInSec() / baseTime << 'x'
+    std::cout << axom::fmt::format(
+                   "Avg column-major time {:.8f} seconds, {:.2f}x",
+                   columnMajorTimer.elapsedTimeInSec() / params.repCount,
+                   columnMajorTimer.elapsedTimeInSec() / baseTime)
               << std::endl;
 
     axom::utilities::Timer dynamicTimer(false);
     dynamicTimer.start();
     for(int r = 0; r < params.repCount; ++r) runTest_dynamicAccess(array);
     dynamicTimer.stop();
-    std::cout << "Avg dynamic time      "
-              << dynamicTimer.elapsedTimeInSec() / params.repCount
-              << " seconds, " << std::setprecision(3)
-              << dynamicTimer.elapsedTimeInSec() / baseTime << 'x' << std::endl;
+    std::cout << axom::fmt::format(
+                   "Avg dynamic time      {:.8f} seconds, {:.2f}x",
+                   dynamicTimer.elapsedTimeInSec() / params.repCount,
+                   dynamicTimer.elapsedTimeInSec() / baseTime)
+              << std::endl;
 
     // Verify that the elements are touched the correct number of times.
     // (Bring the data to the host so this test doesn't rely on RAJA.)
@@ -877,8 +875,12 @@ public:
     }
     if(matchCount != params.realSize)
     {
-      std::cerr << "Unexpected error in tests: counted match (" << matchCount
-                << ") != expected (" << params.realSize << ")" << std::endl;
+      std::cerr
+        << axom::fmt::format(
+             "Unexpected error in tests: counted match ({}) != expected ({})",
+             matchCount,
+             params.realSize)
+        << std::endl;
     }
   }
 
@@ -931,23 +933,21 @@ int main(int argc, char** argv)
   }
 
   auto hostname = axom::utilities::getHostName();
-  std::cout << "Host: " << hostname << std::endl;
+  std::cout << axom::fmt::format("Host: {}", hostname) << std::endl;
 
   using RuntimePolicy = axom::runtime_policy::Policy;
 
-  std::cout << "Runtime policy: "
-            << axom::runtime_policy::policyToName(params.runtimePolicy)
+  std::cout << axom::fmt::format(
+                 "Runtime policy: {}",
+                 axom::runtime_policy::policyToName(params.runtimePolicy))
             << std::endl;
-
-  std::cout << "Array shape: "
-            << array_to_string(params.shape.data(), params.shape.size())
+  std::cout << axom::fmt::format("Array shape: {::d}", params.shape) << std::endl;
+  std::cout << axom::fmt::format(
+                 "Data order: {}",
+                 (params.dataOrder == axom::ArrayStrideOrder::ROW ? "row" : "col"))
             << std::endl;
-
-  std::cout << "Data order: "
-            << (params.dataOrder == axom::ArrayStrideOrder::ROW ? "row" : "col")
+  std::cout << axom::fmt::format("Repetition count: {}", params.repCount)
             << std::endl;
-
-  std::cout << "Repetition count: " << params.repCount << std::endl;
 
   if(params.runtimePolicy == RuntimePolicy::seq)
   {
