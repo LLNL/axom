@@ -22,6 +22,8 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 ### Added
 - Multidimenional `core::Array` supports column-major and arbitrary stride ordering,
   in addition to the default row-major ordering.
+- Adds new `PolygonArray` and `MAX_VERTS` template parameters to `primal::Polygon` for dynamic
+  or static allocation.
 - Adds support for the optional `caliper` and `adiak` dependencies to axom.
   These dependencies are added through axom's `spack` package via the new `+profiling` variant,
   and are enabled in axom's build system via the `CALIPER_DIR` and `ADIAK_DIR` configuration paths.

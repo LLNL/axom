@@ -22,13 +22,61 @@ namespace axom
 {
 namespace primal
 {
+namespace
+{
+static constexpr int DEFAULT_MAX_NUM_VERTICES = 8;
+
+/*!
+ * \brief A helper class for the Polygon class
+ *
+ * This class helps define a StackArray with a current size and additional
+ * functions to mirror axom::Array.
+ */
+template <typename T, int N>
+struct StaticArray : public StackArray<T, N>
+{
+  AXOM_HOST_DEVICE int size() const { return m_size; }
+  AXOM_HOST_DEVICE void push_back(const T& obj)
+  {
+    assert(m_size < N);
+    if(m_size < N)
+    {
+      StackArray<T, N>::m_data[m_size++] = obj;
+    }
+  }
+
+  AXOM_HOST_DEVICE void clear()
+  {
+    for(T& datum : StackArray<T, N>::m_data)
+    {
+      datum = T();
+    }
+    m_size = 0;
+  }
+
+private:
+  int m_size {0};
+};
+
+} /* end anonymous namespace */
+
+/**
+ * The polygon can have a dynamic or static array to store vertices
+ */
+enum class PolygonArray
+{
+  Dynamic,
+  Static
+};
+
 // Forward declare the templated classes and operator functions
-template <typename T, int NDIMS>
+template <typename T, int NDIMS, axom::primal::PolygonArray ARRAY_TYPE, int MAX_VERTS>
 class Polygon;
 
 /// \brief Overloaded output operator for polygons
-template <typename T, int NDIMS>
-std::ostream& operator<<(std::ostream& os, const Polygon<T, NDIMS>& poly);
+template <typename T, int NDIMS, axom::primal::PolygonArray ARRAY_TYPE, int MAX_VERTS>
+std::ostream& operator<<(std::ostream& os,
+                         const Polygon<T, NDIMS, ARRAY_TYPE, MAX_VERTS>& poly);
 
 /*!
  * \class Polygon
@@ -36,28 +84,55 @@ std::ostream& operator<<(std::ostream& os, const Polygon<T, NDIMS>& poly);
  * \brief Represents a polygon defined by an array of points
  * \tparam T the coordinate type, e.g., double, float, etc.
  * \tparam NDIMS the number of dimensions
+ * \tparam PolygonArray the array type of the polygon can be dynamic or
+ *         static (default is dynamic). The static array type is for use in
+ *         a device kernel.
+ * \tparam MAX_VERTS the max number of vertices to preallocate space for
+ *         a static array (default max is 8 vertices). MAX_VERTS is unused
+ *         if array type is dynamic.
  * \note The polygon vertices should be ordered in a counter clockwise
  *       orientation with respect to the polygon's desired normal vector
  */
-template <typename T, int NDIMS>
+template <typename T,
+          int NDIMS,
+          PolygonArray ARRAY_TYPE = PolygonArray::Dynamic,
+          int MAX_VERTS = DEFAULT_MAX_NUM_VERTICES>
 class Polygon
 {
 public:
   using PointType = Point<T, NDIMS>;
   using VectorType = Vector<T, NDIMS>;
 
+  // axom::Array for dynamic array type, StaticArray for static array type
+  using ArrayType = std::conditional_t<ARRAY_TYPE == PolygonArray::Dynamic,
+                                       axom::Array<PointType>,
+                                       StaticArray<PointType, MAX_VERTS>>;
+
 public:
-  /// Default constructor for an empty polygon
-  Polygon() { }
+  /// Default constructor for an empty polygon (dynamic array specialization).
+  /// Specializations are necessary to remove __host__ __device__ warning for
+  /// axom::Array usage with the dynamic array type.
+  template <PolygonArray P_ARRAY_TYPE = ARRAY_TYPE,
+            std::enable_if_t<P_ARRAY_TYPE == PolygonArray::Dynamic, int> = 0>
+  Polygon()
+  { }
+
+  /// Default constructor for an empty polygon (static array specialization)
+  template <PolygonArray P_ARRAY_TYPE = ARRAY_TYPE,
+            std::enable_if_t<P_ARRAY_TYPE == PolygonArray::Static, int> = 0>
+  AXOM_HOST_DEVICE Polygon()
+  { }
 
   /*!
    * \brief Constructor for an empty polygon that reserves space for
-   *  the given number of vertices
+   *  the given number of vertices. Only available for dynamic arrays.
    *
    * \param [in] numExpectedVerts number of vertices for which to reserve space
    * \pre numExpectedVerts is not negative
    *
    */
+  template <PolygonArray P_ARRAY_TYPE = ARRAY_TYPE,
+            std::enable_if_t<P_ARRAY_TYPE == PolygonArray::Dynamic, int> = 0>
   explicit Polygon(int numExpectedVerts)
   {
     SLIC_ASSERT(numExpectedVerts >= 0);
@@ -65,20 +140,69 @@ public:
   }
 
   /// \brief Constructor for a polygon with the given vertices
-  Polygon(const axom::Array<PointType>& vertices) { m_vertices = vertices; }
+  explicit Polygon(const axom::Array<PointType>& vertices)
+  {
+    for(const auto& vertex : vertices)
+    {
+      m_vertices.push_back(vertex);
+    }
+  }
+
+  // \brief Constructor for a polygon with an initializer list of Points
+  //        (dynamic array specialization)
+  template <PolygonArray P_ARRAY_TYPE = ARRAY_TYPE,
+            std::enable_if_t<P_ARRAY_TYPE == PolygonArray::Dynamic, int> = 0>
+  explicit Polygon(std::initializer_list<PointType> vertices)
+  {
+    m_vertices = vertices;
+  }
+
+  // \brief Constructor for a polygon with an initializer list of Points
+  //        (static array specialization)
+  template <PolygonArray P_ARRAY_TYPE = ARRAY_TYPE,
+            std::enable_if_t<P_ARRAY_TYPE == PolygonArray::Static, int> = 0>
+  AXOM_HOST_DEVICE explicit Polygon(std::initializer_list<PointType> vertices)
+  {
+    SLIC_ASSERT(static_cast<int>(vertices.size()) <= MAX_VERTS);
+
+    for(const auto& vertex : vertices)
+    {
+      m_vertices.push_back(vertex);
+    }
+  }
 
   /// Return the number of vertices in the polygon
+  AXOM_HOST_DEVICE
   int numVertices() const { return static_cast<int>(m_vertices.size()); }
 
   /// Appends a vertex to the list of vertices
+  AXOM_HOST_DEVICE
   void addVertex(const PointType& pt) { m_vertices.push_back(pt); }
 
-  /// Clears the list of vertices
-  void clear() { m_vertices.clear(); }
+  /// Clears the list of vertices (dynamic array specialization).
+  /// Specializations are necessary to remove __host__ __device__ warning for
+  /// axom::Array usage with the dynamic array type.
+  template <PolygonArray P_ARRAY_TYPE = ARRAY_TYPE,
+            std::enable_if_t<P_ARRAY_TYPE == PolygonArray::Dynamic, int> = 0>
+  void clear()
+  {
+    m_vertices.clear();
+  }
+
+  /// Clears the list of vertices (static array specialization)
+  template <PolygonArray P_ARRAY_TYPE = ARRAY_TYPE,
+            std::enable_if_t<P_ARRAY_TYPE == PolygonArray::Static, int> = 0>
+  AXOM_HOST_DEVICE void clear()
+  {
+    m_vertices.clear();
+  }
 
   /// Retrieves the vertex at index idx
+  AXOM_HOST_DEVICE
   PointType& operator[](int idx) { return m_vertices[idx]; }
+
   /// Retrieves the vertex at index idx
+  AXOM_HOST_DEVICE
   const PointType& operator[](int idx) const { return m_vertices[idx]; }
 
   /*! 
@@ -87,7 +211,7 @@ public:
    * \return normal polygon normal vector
    */
   template <int TDIM = NDIMS>
-  typename std::enable_if<TDIM == 3, VectorType>::type normal() const
+  AXOM_HOST_DEVICE typename std::enable_if<TDIM == 3, VectorType>::type normal() const
   {
     SLIC_ASSERT(isValid());
     const int nverts = numVertices();
@@ -113,6 +237,7 @@ public:
    * \return A point at the mean of the polygon's vertices
    * \pre  polygon.isValid() is true
    */
+  AXOM_HOST_DEVICE
   PointType vertexMean() const
   {
     SLIC_ASSERT(isValid());
@@ -140,7 +265,7 @@ public:
    * The area is always non-negative since 3D polygons do not have a unique orientation.
    */
   template <int TDIM = NDIMS>
-  typename std::enable_if<TDIM == 3, double>::type area() const
+  AXOM_HOST_DEVICE typename std::enable_if<TDIM == 3, double>::type area() const
   {
     const int nVerts = numVertices();
 
@@ -169,7 +294,7 @@ public:
    * \sa signedArea()
    */
   template <int TDIM = NDIMS>
-  typename std::enable_if<TDIM == 2, double>::type area() const
+  AXOM_HOST_DEVICE typename std::enable_if<TDIM == 2, double>::type area() const
   {
     return axom::utilities::abs(signedArea());
   }
@@ -184,7 +309,7 @@ public:
    * \sa area()
    */
   template <int TDIM = NDIMS>
-  typename std::enable_if<TDIM == 2, double>::type signedArea() const
+  AXOM_HOST_DEVICE typename std::enable_if<TDIM == 2, double>::type signedArea() const
   {
     const int nVerts = numVertices();
     double sum = 0.;
@@ -235,17 +360,19 @@ public:
    * Initial check is that the polygon has three or more vertices
    * \return True, if the polygon is valid, False otherwise
    */
+  AXOM_HOST_DEVICE
   bool isValid() const { return m_vertices.size() >= 3; }
 
 private:
-  axom::Array<PointType> m_vertices;
+  ArrayType m_vertices;
 };
 
 //------------------------------------------------------------------------------
 /// Free functions implementing Polygon's operators
 //------------------------------------------------------------------------------
-template <typename T, int NDIMS>
-std::ostream& operator<<(std::ostream& os, const Polygon<T, NDIMS>& poly)
+template <typename T, int NDIMS, axom::primal::PolygonArray ARRAY_TYPE, int MAX_VERTS>
+std::ostream& operator<<(std::ostream& os,
+                         const Polygon<T, NDIMS, ARRAY_TYPE, MAX_VERTS>& poly)
 {
   poly.print(os);
   return os;
@@ -255,8 +382,9 @@ std::ostream& operator<<(std::ostream& os, const Polygon<T, NDIMS>& poly)
 }  // namespace axom
 
 /// Overload to format a primal::Polygon using fmt
-template <typename T, int NDIMS>
-struct axom::fmt::formatter<axom::primal::Polygon<T, NDIMS>> : ostream_formatter
+template <typename T, int NDIMS, axom::primal::PolygonArray ARRAY_TYPE, int MAX_VERTS>
+struct axom::fmt::formatter<axom::primal::Polygon<T, NDIMS, ARRAY_TYPE, MAX_VERTS>>
+  : ostream_formatter
 { };
 
 #endif  // AXOM_PRIMAL_POLYGON_HPP_
