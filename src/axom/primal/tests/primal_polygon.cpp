@@ -734,8 +734,7 @@ void check_polygon_policy()
   using Vector3D = axom::primal::Vector<double, 3>;
 
   // Get ids of necessary allocators
-  const int host_allocator =
-    axom::getUmpireResourceAllocatorID(umpire::resource::Host);
+  const int host_allocator = axom::execution_space<axom::SEQ_EXEC>::allocatorID();
   const int kernel_allocator = axom::execution_space<ExecPolicy>::allocatorID();
 
   axom::Array<Polygon3D> poly_3d_device(1, 1, kernel_allocator);
