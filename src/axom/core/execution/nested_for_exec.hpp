@@ -3,8 +3,8 @@
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
-#ifndef AXOM_CORE_STRUCTURED_EXEC_HPP_
-#define AXOM_CORE_STRUCTURED_EXEC_HPP_
+#ifndef AXOM_CORE_NESTED_FOR_EXEC_HPP_
+#define AXOM_CORE_NESTED_FOR_EXEC_HPP_
 
 #include "axom/core/execution/execution_space.hpp"
 
@@ -307,4 +307,4 @@ struct nested_for_exec<HIP_EXEC<BLOCK_SIZE, ASYNC>>
 
 } /* namespace axom */
 
-#endif /* AXOM_CORE_STRUCTURED_EXEC_HPP_ */
+#endif /* AXOM_CORE_NESTED_FOR_EXEC_HPP_ */

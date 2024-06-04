@@ -36,6 +36,8 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 ### Changed
 - `quest::ArrayIndexer` is now `axom::MDMapping`, adopting conventional terminology
   and moving out of `quest`.
+- `mint::structured_exec` is now `axom::nested_for_exec`, to support nested for loops
+  for all of Axom.  See `src/axom/core/execution/nested_for_exec.hpp`.
 - Upgrades `vcpkg` usage for axom's automated Windows builds to its
   [2024.03.19 release](https://github.com/microsoft/vcpkg/releases/tag/2024.03.19).
   Also updates vcpkg port versions for axom dependencies. Temporarily removes `umpire`

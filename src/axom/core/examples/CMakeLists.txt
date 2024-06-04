@@ -70,7 +70,7 @@ axom_add_executable(
     FOLDER      axom/core/examples )
 
 if(AXOM_ENABLE_TESTS)
-    # Run the marching cubes example on N ranks for each enabled policy
+    # Run the core array performance example on N ranks for each enabled policy
     set(_policies "seq")
     if(RAJA_FOUND)
         blt_list_append(TO _policies ELEMENTS "omp" IF AXOM_ENABLE_OPENMP)
@@ -88,6 +88,8 @@ if(AXOM_ENABLE_TESTS)
             NAME    "core_array_perf_3d_${_pol}"
             COMMAND core_array_perf_ex --policy ${_pol} --shape 100 100 120 -r 10)
         if(NOT RAJA_FOUND)
+            # RAJA provides support for up to 3D tiled nested loops,
+            # so run 4D test only for non-RAJA builds.
             axom_add_test(
                 NAME    "core_array_perf_4d_${_pol}"
                 COMMAND core_array_perf_ex --policy ${_pol} --shape 50 20 30 6 )

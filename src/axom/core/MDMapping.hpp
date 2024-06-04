@@ -45,8 +45,8 @@ public:
     @param [in] arrayStrideOrder An order indicator,
       either \c ROW or \c COLUMN or if DIM == 1,
       \c BOTH.
-    @param [in] fastestStrideLength Stride in the fastest
-                direction.
+    @param [in] fastestStrideLength Stride in the
+      fastest-changing direction.
   */
   MDMapping(const axom::StackArray<T, DIM>& shape,
             axom::ArrayStrideOrder arrayStrideOrder,
@@ -61,8 +61,8 @@ public:
     @param [in] slowestDirs permutation vector, where
       slowestDirs[0] is the slowest direction and
       slowestDirs[DIM-1] is the fastest.
-    @param [in] fastestStrideLength Stride in the fastest
-                direction.
+    @param [in] fastestStrideLength Stride in the
+      fastest-changing direction.
   */
   template <typename DirType>
   MDMapping(const axom::StackArray<T, DIM>& shape,
@@ -129,10 +129,10 @@ public:
   /*!
     @brief Initialize for row- or column-major indexing.
     @param [in] shape Shape of the array
-    @param [in] arrayStrideOrder An order indicator,
-      not ArrayStrideOrder::ARBITRARY.
-    @param [in] fastestStrideLength Stride in the fastest
-                chnaging direction.
+    @param [in] arrayStrideOrder An order indicator
+      other than ArrayStrideOrder::ARBITRARY.
+    @param [in] fastestStrideLength Stride in the
+      fastest-changing direction.
   */
   inline AXOM_HOST_DEVICE void initializeShape(const axom::StackArray<T, DIM>& shape,
                                                ArrayStrideOrder arrayStrideOrder,
@@ -175,8 +175,8 @@ public:
     @param [in] slowestDirs permutation vector, where
       slowestDirs[0] is the slowest direction and
       slowestDirs[DIM-1] is the fastest.
-    @param [in] fastestStrideLength Stride in the fastest
-      direction.
+    @param [in] fastestStrideLength Stride in the
+      fastest-changing direction.
   */
   template <typename DirType>
   inline AXOM_HOST_DEVICE void initializeShape(
