@@ -733,101 +733,94 @@ void check_polygon_policy()
   using Point2D = axom::primal::Point<double, 2>;
   using Vector3D = axom::primal::Vector<double, 3>;
 
-  Polygon3D* poly_3d_device =
-    axom::allocate<Polygon3D>(1,
-                              axom::execution_space<ExecPolicy>::allocatorID());
-  Polygon2D* poly_2d_device =
-    axom::allocate<Polygon2D>(1,
-                              axom::execution_space<ExecPolicy>::allocatorID());
+  // Get ids of necessary allocators
+  const int host_allocator =
+    axom::getUmpireResourceAllocatorID(umpire::resource::Host);
+  const int kernel_allocator = axom::execution_space<ExecPolicy>::allocatorID();
 
-  Point3D* vertex_mean_3d_device =
-    axom::allocate<Point3D>(1, axom::execution_space<ExecPolicy>::allocatorID());
-  Point2D* vertex_mean_2d_device =
-    axom::allocate<Point2D>(1, axom::execution_space<ExecPolicy>::allocatorID());
+  axom::Array<Polygon3D> poly_3d_device(1, 1, kernel_allocator);
+  auto poly_3d_view = poly_3d_device.view();
+  axom::Array<Polygon2D> poly_2d_device(1, 1, kernel_allocator);
+  auto poly_2d_view = poly_2d_device.view();
 
-  double* area_3d_device =
-    axom::allocate<double>(1, axom::execution_space<ExecPolicy>::allocatorID());
-  double* area_2d_device =
-    axom::allocate<double>(1, axom::execution_space<ExecPolicy>::allocatorID());
+  axom::Array<Point3D> vertex_mean_3d_device(1, 1, kernel_allocator);
+  auto vertex_mean_3d_view = vertex_mean_3d_device.view();
+  axom::Array<Point2D> vertex_mean_2d_device(1, 1, kernel_allocator);
+  auto vertex_mean_2d_view = vertex_mean_2d_device.view();
+
+  axom::Array<double> area_3d_device(1, 1, kernel_allocator);
+  auto area_3d_view = area_3d_device.view();
+  axom::Array<double> area_2d_device(1, 1, kernel_allocator);
+  auto area_2d_view = area_2d_device.view();
 
   // 3d only
-  Vector3D* normal_3d_device =
-    axom::allocate<Vector3D>(1, axom::execution_space<ExecPolicy>::allocatorID());
+  axom::Array<Vector3D> normal_3d_device(1, 1, kernel_allocator);
+  auto normal_3d_view = normal_3d_device.view();
 
   axom::for_all<ExecPolicy>(
     1,
     AXOM_LAMBDA(int i) {
       // Initialize to empty polygons
-      poly_3d_device[i] = Polygon3D();
-      poly_2d_device[i] = Polygon2D();
-      poly_3d_device[i].clear();
-      poly_2d_device[i].clear();
+      poly_3d_view[i] = Polygon3D();
+      poly_2d_view[i] = Polygon2D();
+      poly_3d_view[i].clear();
+      poly_2d_view[i].clear();
 
       // Initialize to triangles
-      poly_3d_device[i] = Polygon3D({Point3D({0.0, 0.0, 0.0}),
-                                     Point3D({1.0, 0.0, 0.0}),
-                                     Point3D({1.0, 1.0, 0.0})});
-      poly_2d_device[i] = Polygon2D(
+      poly_3d_view[i] = Polygon3D({Point3D({0.0, 0.0, 0.0}),
+                                   Point3D({1.0, 0.0, 0.0}),
+                                   Point3D({1.0, 1.0, 0.0})});
+      poly_2d_view[i] = Polygon2D(
         {Point2D({0.0, 0.0}), Point2D({1.0, 0.0}), Point2D({1.0, 1.0})});
 
       // Add a vertex to make squares
-      (poly_3d_device[i]).addVertex(Point3D({0.0, 1.0, 0.0}));
-      (poly_2d_device[i]).addVertex(Point2D({0.0, 1.0}));
+      (poly_3d_view[i]).addVertex(Point3D({0.0, 1.0, 0.0}));
+      (poly_2d_view[i]).addVertex(Point2D({0.0, 1.0}));
 
       // Collect info about squares
-      vertex_mean_3d_device[i] = poly_3d_device[i].vertexMean();
-      vertex_mean_2d_device[i] = poly_2d_device[i].vertexMean();
-      area_3d_device[i] = poly_3d_device[i].area();
-      area_2d_device[i] = poly_2d_device[i].area();
-      normal_3d_device[i] = poly_3d_device[i].normal();
+      vertex_mean_3d_view[i] = poly_3d_view[i].vertexMean();
+      vertex_mean_2d_view[i] = poly_2d_view[i].vertexMean();
+      area_3d_view[i] = poly_3d_view[i].area();
+      area_2d_view[i] = poly_2d_view[i].area();
+      normal_3d_view[i] = poly_3d_view[i].normal();
 
       //Sanity check - functions are callable on device
-      poly_3d_device[i].numVertices();
-      poly_3d_device[i].isValid();
-      poly_2d_device[i].numVertices();
-      poly_2d_device[i].isValid();
+      poly_3d_view[i].numVertices();
+      poly_3d_view[i].isValid();
+      poly_2d_view[i].numVertices();
+      poly_2d_view[i].isValid();
     });
 
   // Copy polygons and data back to host
-  Polygon3D poly_3d_host;
-  Polygon2D poly_2d_host;
-  Point3D vertex_mean_3d_host;
-  Point3D vertex_mean_2d_host;
-  double area_3d_host;
-  double area_2d_host;
-  Vector3D normal_3d_host;
-
-  axom::copy(&poly_3d_host, poly_3d_device, sizeof(Polygon3D));
-  axom::copy(&poly_2d_host, poly_2d_device, sizeof(Polygon2D));
-  axom::copy(&vertex_mean_3d_host, vertex_mean_3d_device, sizeof(Point3D));
-  axom::copy(&vertex_mean_2d_host, vertex_mean_2d_device, sizeof(Point2D));
-  axom::copy(&area_3d_host, area_3d_device, sizeof(double));
-  axom::copy(&area_2d_host, area_2d_device, sizeof(double));
-  axom::copy(&normal_3d_host, normal_3d_device, sizeof(Vector3D));
+  axom::Array<Polygon3D> poly_3d_host =
+    axom::Array<Polygon3D>(poly_3d_device, host_allocator);
+  axom::Array<Polygon2D> poly_2d_host =
+    axom::Array<Polygon2D>(poly_2d_device, host_allocator);
+  axom::Array<Point3D> vertex_mean_3d_host =
+    axom::Array<Point3D>(vertex_mean_3d_device, host_allocator);
+  axom::Array<Point2D> vertex_mean_2d_host =
+    axom::Array<Point2D>(vertex_mean_2d_device, host_allocator);
+  axom::Array<double> area_3d_host =
+    axom::Array<double>(area_3d_device, host_allocator);
+  axom::Array<double> area_2d_host =
+    axom::Array<double>(area_2d_device, host_allocator);
+  axom::Array<Vector3D> normal_3d_host =
+    axom::Array<Vector3D>(normal_3d_device, host_allocator);
 
   // Verify values
-  EXPECT_EQ(poly_3d_host.numVertices(), NUM_VERTS_SQUARE);
-  EXPECT_EQ(poly_2d_host.numVertices(), NUM_VERTS_SQUARE);
+  EXPECT_EQ(poly_3d_host[0].numVertices(), NUM_VERTS_SQUARE);
+  EXPECT_EQ(poly_2d_host[0].numVertices(), NUM_VERTS_SQUARE);
 
-  EXPECT_EQ(vertex_mean_3d_host, Point3D({0.5, 0.5, 0}));
-  EXPECT_EQ(vertex_mean_2d_host, Point3D({0.5, 0.5}));
+  EXPECT_EQ(vertex_mean_3d_host[0], Point3D({0.5, 0.5, 0}));
+  EXPECT_EQ(vertex_mean_2d_host[0], Point2D({0.5, 0.5}));
 
-  EXPECT_DOUBLE_EQ(area_3d_host, 1.0);
-  EXPECT_DOUBLE_EQ(area_2d_host, 1.0);
+  EXPECT_DOUBLE_EQ(area_3d_host[0], 1.0);
+  EXPECT_DOUBLE_EQ(area_2d_host[0], 1.0);
 
-  EXPECT_EQ(normal_3d_host, Vector3D(Point3D({0.0, 0.0, 2.0})));
+  EXPECT_EQ(normal_3d_host[0], Vector3D(Point3D({0.0, 0.0, 2.0})));
 
-  EXPECT_TRUE(poly_3d_host.isValid());
-  EXPECT_TRUE(poly_2d_host.isValid());
-
-  // Cleanup allocations
-  axom::deallocate(poly_3d_device);
-  axom::deallocate(poly_2d_device);
-  axom::deallocate(vertex_mean_3d_device);
-  axom::deallocate(vertex_mean_2d_device);
-  axom::deallocate(area_3d_device);
-  axom::deallocate(area_2d_device);
-  axom::deallocate(normal_3d_device);
+  EXPECT_TRUE(poly_3d_host[0].isValid());
+  EXPECT_TRUE(poly_2d_host[0].isValid());
 }
 
 //------------------------------------------------------------------------------
