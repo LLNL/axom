@@ -24,7 +24,7 @@ namespace primal
 {
 namespace
 {
-static constexpr int DEFAULT_MAX_NUM_VERTICES = 20;
+static constexpr int DEFAULT_MAX_NUM_VERTICES = 8;
 
 /*!
  * \brief A helper class for the Polygon class
@@ -85,7 +85,7 @@ std::ostream& operator<<(std::ostream& os,
  *         static (default is dynamic). The static array type is for use in
  *         a device kernel.
  * \tparam MAX_VERTS the max number of vertices to preallocate space for
- *         a static array (default max is 20 vertices). MAX_VERTS is unused
+ *         a static array (default max is 8 vertices). MAX_VERTS is unused
  *         if array type is dynamic.
  * \note The polygon vertices should be ordered in a counter clockwise
  *       orientation with respect to the polygon's desired normal vector
