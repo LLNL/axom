@@ -15,6 +15,8 @@
 #include "axom/core/execution/nested_for_exec.hpp"
 #include "axom/core/execution/runtime_policy.hpp"
 #include "axom/core/memory_management.hpp"
+#include "axom/core/utilities/RAII.hpp"
+#include "axom/core/utilities/CommandLineUtilities.hpp"
 #include "axom/core/utilities/System.hpp"
 #include "axom/core/utilities/Timer.hpp"
 #include "axom/core/AnnotationMacros.hpp"
@@ -49,6 +51,8 @@ public:
   RuntimePolicy runtimePolicy = RuntimePolicy::seq;
 
   axom::IndexType repCount = 10;
+
+  std::string annotationMode {"none"};
 
 private:
   bool _verboseOutput {false};
@@ -89,6 +93,15 @@ public:
         "Array data stride directions, from slowest to fastest."
         "  Must be same length as shape.")
       ->excludes(dataOrderOption);
+
+#ifdef AXOM_USE_CALIPER
+    app.add_option("--caliper", annotationMode)
+      ->description(
+        "caliper annotation mode. Valid options include 'none' and 'report'. "
+        "Use 'help' to see full list.")
+      ->capture_default_str()
+      ->check(axom::utilities::ValidCaliperMode);
+#endif
 
     app.get_formatter()->column_width(60);
 
@@ -216,6 +229,7 @@ public:
   */
   void runTest_pointerAccess(axom::ArrayView<Element_t, DIM>& array)
   {
+    AXOM_ANNOTATE_SCOPE("pointerAccess");
     auto testAdd = m_flatTestAdd;
     m_testAccumulation += testAdd;
     auto count = array.size();
@@ -240,6 +254,7 @@ public:
   */
   void runTest_flatAccess(axom::ArrayView<Element_t, DIM>& array)
   {
+    AXOM_ANNOTATE_SCOPE("flatAccess");
     auto testAdd = m_flatTestAdd;
     m_testAccumulation += testAdd;
     auto count = array.size();
@@ -734,6 +749,7 @@ public:
   {
     assert(DIM <= params.shape.size());
 
+    AXOM_ANNOTATE_SCOPE("makeArray");
     axom::StackArray<axom::IndexType, DIM> paddedShape;
     axom::MDMapping<DIM> mapping;
     getPaddedShapeAndIndexer(paddedShape, mapping);
@@ -744,42 +760,14 @@ public:
   }
 
   /*!
-    @brief Return an array for testing, dimension DIM,
-    sized and ordered according to params values.
-
-    This method allocates a 1D array and puts a muldimensional
-    view on the data.  The view supports arbitrary ordering.
-  */
-  void makeArray(axom::Array<Element_t>& ar, axom::ArrayView<Element_t, DIM>& view)
-  {
-    assert(DIM <= params.shape.size());
-
-    axom::StackArray<axom::IndexType, DIM> paddedShape;
-    axom::MDMapping<DIM> mapping;
-    getPaddedShapeAndIndexer(paddedShape, mapping);
-
-    ar =
-      axom::Array<Element_t>(params.paddedSize, params.paddedSize, m_allocatorId);
-    view =
-      axom::ArrayView<Element_t, DIM>(ar.data(), paddedShape, mapping.strides());
-  }
-
-  /*!
     @brief Run test with array shape of the first DIM values in
     params.shape.
   */
   void runTest_dim()
   {
-    // Use ArrayView to test, because Array doesn't support
-    // arbitrary ordering (yet).
-#if 1
+    AXOM_ANNOTATE_SCOPE("MDMappingPerfTester::runTest_dim");
     axom::Array<Element_t, DIM> arrayMd = makeArray();
     axom::ArrayView<Element_t, DIM> array = arrayMd.view();
-#else
-    axom::Array<Element_t> array1D;
-    axom::ArrayView<Element_t, DIM> array;
-    makeArray(array1D, array);
-#endif
 
     std::cout << axom::fmt::format("Real-to-padded size: {}/{} = {:.4f}",
                                    params.realSize,
@@ -858,15 +846,13 @@ public:
                    dynamicTimer.elapsedTimeInSec() / baseTime)
               << std::endl;
 
+    {
+    AXOM_ANNOTATE_SCOPE("MDMappingPerfTester::runTest_dim-verify");
     // Verify that the elements are touched the correct number of times.
     // (Bring the data to the host so this test doesn't rely on RAJA.)
     auto hostAllocatorId = axom::detail::getAllocatorID<
       axom::execution_space<axom::SEQ_EXEC>::memory_space>();
-#if 1
     axom::Array<Element_t, DIM> hostArray(array, hostAllocatorId);
-#else
-    axom::Array<Element_t> hostArray(array1D, hostAllocatorId);
-#endif
     axom::IndexType matchCount = 0;
     for(axom::IndexType i = 0; i < count; ++i)
     {
@@ -882,6 +868,7 @@ public:
              params.realSize)
         << std::endl;
     }
+    }
   }
 
 };  // class MDMappingPerfTester
@@ -895,6 +882,7 @@ public:
 template <typename ExecSpace>
 void runTest()
 {
+  AXOM_ANNOTATE_SCOPE("runTest");
   if(params.shape.size() == 1)
   {
     MDMappingPerfTester<1, ExecSpace> tester1D;
@@ -931,6 +919,10 @@ int main(int argc, char** argv)
     auto retval = app.exit(e);
     exit(retval);
   }
+
+  axom::utilities::raii::AnnotationsWrapper annotation_raii_wrapper(
+    params.annotationMode);
+  AXOM_ANNOTATE_SCOPE("core array performance example");
 
   auto hostname = axom::utilities::getHostName();
   std::cout << axom::fmt::format("Host: {}", hostname) << std::endl;
