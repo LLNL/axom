@@ -687,6 +687,11 @@ AXOM_HOST_DEVICE Polyhedron<T, NDIMS> clipTetrahedron(
  *
  * \note Function is based off the Sutherland–Hodgman algorithm.
  *
+ * \warning Polygons with static array types must have enough vertices
+ *          preallocated for the output polygon. It is recommended that
+ *          MAX_VERTS >= subjectPolygon.numVertices() + clipPolygon.numVertices()
+ *          for the output polygon with the largest possible vertex count.
+ *
  * \warning tryFixOrientation flag does not guarantee the shapes' vertex orders
  *          will be valid. It is the responsiblity of the caller to pass
  *          shapes with a valid vertex order. Otherwise, if the shapes have
@@ -697,22 +702,24 @@ AXOM_HOST_DEVICE Polyhedron<T, NDIMS> clipTetrahedron(
  *          a negative signed area, the returned Polygon
  *          will have a non-positive and/or unexpected area.
  */
-template <typename T>
-Polygon<T, 2> clipPolygonPolygon(const Polygon<T, 2>& subjectPolygon,
-                                 const Polygon<T, 2>& clipPolygon,
-                                 double eps = 1.e-10,
-                                 bool tryFixOrientation = false)
+template <typename T, axom::primal::PolygonArray ARRAY_TYPE, int MAX_VERTS>
+Polygon<T, 2, ARRAY_TYPE, MAX_VERTS> clipPolygonPolygon(
+  const Polygon<T, 2, ARRAY_TYPE, MAX_VERTS>& subjectPolygon,
+  const Polygon<T, 2, ARRAY_TYPE, MAX_VERTS>& clipPolygon,
+  double eps = 1.e-10,
+  bool tryFixOrientation = false)
 {
   using PlaneType = Plane<T, 2>;
   using PointType = Point<T, 2>;
   using SegmentType = Segment<T, 2>;
+  using PolygonType = Polygon<T, 2, ARRAY_TYPE, MAX_VERTS>;
 
-  Polygon<T, 2> outputList = subjectPolygon;
-  Polygon<T, 2> planePoints = clipPolygon;
+  PolygonType outputList = subjectPolygon;
+  PolygonType planePoints = clipPolygon;
 
   if(tryFixOrientation)
   {
-    Polygon<T, 2> tempPolygon;
+    PolygonType tempPolygon;
     if(subjectPolygon.signedArea() < 0)
     {
       for(int i = 0; i < subjectPolygon.numVertices(); i++)
@@ -743,7 +750,7 @@ Polygon<T, 2> clipPolygonPolygon(const Polygon<T, 2>& subjectPolygon,
     PlaneType plane =
       make_plane(planePoints[i], planePoints[(i + 1) % numClipEdges]);
 
-    Polygon<T, 2> inputList = outputList;
+    PolygonType inputList = outputList;
     outputList.clear();
 
     for(int i = 0; i < inputList.numVertices(); i++)
