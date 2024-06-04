@@ -121,6 +121,11 @@ Polygon<T, 3> clip(const Triangle<T, 3>& tri, const BoundingBox<T, 3>& bbox)
  *
  * \note Function is based off the Sutherland–Hodgman algorithm.
  *
+ * \warning Polygons with static array types must have enough vertices
+ *          preallocated for the output polygon. It is recommended that
+ *          MAX_VERTS >= subjectPolygon.numVertices() + clipPolygon.numVertices()
+ *          for the output polygon with the largest possible vertex count.
+ *
  * \warning tryFixOrientation flag does not guarantee the shapes' vertex orders
  *          will be valid. It is the responsiblity of the caller to pass
  *          shapes with a valid vertex order. Otherwise, if the shapes have
@@ -132,11 +137,12 @@ Polygon<T, 3> clip(const Triangle<T, 3>& tri, const BoundingBox<T, 3>& bbox)
  *          will have a non-positive and/or unexpected area.
  *
  */
-template <typename T>
-Polygon<T, 2> clip(const Polygon<T, 2>& subjectPolygon,
-                   const Polygon<T, 2>& clipPolygon,
-                   double eps = 1.e-10,
-                   bool tryFixOrientation = false)
+template <typename T, axom::primal::PolygonArray ARRAY_TYPE, int MAX_VERTS>
+Polygon<T, 2, ARRAY_TYPE, MAX_VERTS> clip(
+  const Polygon<T, 2, ARRAY_TYPE, MAX_VERTS>& subjectPolygon,
+  const Polygon<T, 2, ARRAY_TYPE, MAX_VERTS>& clipPolygon,
+  double eps = 1.e-10,
+  bool tryFixOrientation = false)
 {
   return detail::clipPolygonPolygon(subjectPolygon,
                                     clipPolygon,

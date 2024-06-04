@@ -1659,6 +1659,8 @@ TEST(primal_clip, empty_polygons)
 TEST(primal_clip, polygon_intersects_polygon)
 {
   using Polygon2D = axom::primal::Polygon<double, 2>;
+  using PolygonStatic2D =
+    axom::primal::Polygon<double, 2, axom::primal::PolygonArray::Static>;
   using Point2D = axom::primal::Point<double, 2>;
   constexpr double EPS = 1e-10;
   constexpr bool CHECK_SIGN = true;
@@ -1678,6 +1680,27 @@ TEST(primal_clip, polygon_intersects_polygon)
     clipPolygon.addVertex(Point2D {0.5, 2});
 
     Polygon2D poly = axom::primal::clip(subjectPolygon, clipPolygon, EPS);
+
+    EXPECT_NEAR(subjectPolygon.signedArea(), 1.0, EPS);
+    EXPECT_NEAR(clipPolygon.signedArea(), 3.0, EPS);
+    EXPECT_NEAR(poly.signedArea(), 0.5, EPS);
+  }
+
+  // Same polygons with static arrays
+  {
+    PolygonStatic2D subjectPolygon;
+    subjectPolygon.addVertex(Point2D {0, 0});
+    subjectPolygon.addVertex(Point2D {1, 0});
+    subjectPolygon.addVertex(Point2D {1, 1});
+    subjectPolygon.addVertex(Point2D {0, 1});
+
+    PolygonStatic2D clipPolygon;
+    clipPolygon.addVertex(Point2D {0.5, -1});
+    clipPolygon.addVertex(Point2D {1.5, -1});
+    clipPolygon.addVertex(Point2D {1.5, 2});
+    clipPolygon.addVertex(Point2D {0.5, 2});
+
+    PolygonStatic2D poly = axom::primal::clip(subjectPolygon, clipPolygon, EPS);
 
     EXPECT_NEAR(subjectPolygon.signedArea(), 1.0, EPS);
     EXPECT_NEAR(clipPolygon.signedArea(), 3.0, EPS);
@@ -1773,7 +1796,6 @@ TEST(primal_clip, polygon_intersects_polygon)
 
     Polygon2D poly = axom::primal::clip(subjectPolygon, clipPolygon, EPS);
     EXPECT_NEAR(poly.signedArea(), 37083.3333333333, EPS);
-    SLIC_INFO(poly);
   }
 }
 
