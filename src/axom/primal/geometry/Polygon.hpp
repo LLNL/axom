@@ -38,7 +38,7 @@ struct StaticArray : public StackArray<T, N>
   AXOM_HOST_DEVICE int size() const { return m_size; }
   AXOM_HOST_DEVICE void push_back(const T& obj)
   {
-    SLIC_ASSERT(m_size + 1 <= N);
+    assert(m_size + 1 <= N);
     StackArray<T, N>::m_data[m_size++] = obj;
   }
 
