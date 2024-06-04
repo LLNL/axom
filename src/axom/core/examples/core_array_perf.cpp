@@ -847,27 +847,27 @@ public:
               << std::endl;
 
     {
-    AXOM_ANNOTATE_SCOPE("MDMappingPerfTester::runTest_dim-verify");
-    // Verify that the elements are touched the correct number of times.
-    // (Bring the data to the host so this test doesn't rely on RAJA.)
-    auto hostAllocatorId = axom::detail::getAllocatorID<
-      axom::execution_space<axom::SEQ_EXEC>::memory_space>();
-    axom::Array<Element_t, DIM> hostArray(array, hostAllocatorId);
-    axom::IndexType matchCount = 0;
-    for(axom::IndexType i = 0; i < count; ++i)
-    {
-      matchCount += (hostArray.flatIndex(i) ==
-                     Element_t(i * m_baseFactor) + m_testAccumulation);
-    }
-    if(matchCount != params.realSize)
-    {
-      std::cerr
-        << axom::fmt::format(
-             "Unexpected error in tests: counted match ({}) != expected ({})",
-             matchCount,
-             params.realSize)
-        << std::endl;
-    }
+      AXOM_ANNOTATE_SCOPE("MDMappingPerfTester::runTest_dim-verify");
+      // Verify that the elements are touched the correct number of times.
+      // (Bring the data to the host so this test doesn't rely on RAJA.)
+      auto hostAllocatorId = axom::detail::getAllocatorID<
+        axom::execution_space<axom::SEQ_EXEC>::memory_space>();
+      axom::Array<Element_t, DIM> hostArray(array, hostAllocatorId);
+      axom::IndexType matchCount = 0;
+      for(axom::IndexType i = 0; i < count; ++i)
+      {
+        matchCount += (hostArray.flatIndex(i) ==
+                       Element_t(i * m_baseFactor) + m_testAccumulation);
+      }
+      if(matchCount != params.realSize)
+      {
+        std::cerr
+          << axom::fmt::format(
+               "Unexpected error in tests: counted match ({}) != expected ({})",
+               matchCount,
+               params.realSize)
+          << std::endl;
+      }
     }
   }
 
