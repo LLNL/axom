@@ -83,33 +83,25 @@ void dump_ray(const std::string& file,
  *  a corresponding centroid.
  *
  * \param [in]  mesh pointer to the mesh object.
- * \param [out] aabbs array of bounding boxes
+ * \param [out] aabbs ArrayView of bounding boxes
  *
  * \note The intent of this method is to generate synthetic input test data
  *  to test the functionality of the BVH.
  *
- * \warning This method allocates aabbs internally. The caller is responsible
- *  for properly deallocating aabbs.
- *
- * \pre aabbs == nullptr
- * \post aabbs != nullptr
  */
 template <typename FloatType, int NDIMS>
 void generate_aabbs(const mint::Mesh* mesh,
-                    primal::BoundingBox<FloatType, NDIMS>*& aabbs)
+                    axom::ArrayView<primal::BoundingBox<FloatType, NDIMS>>& aabbs)
 {
-  // sanity checks
-  EXPECT_TRUE(aabbs == nullptr);
+  // sanity check
   EXPECT_EQ(NDIMS, mesh->getDimension());
-
-  using BoxType = typename primal::BoundingBox<FloatType, NDIMS>;
 
   // calculate some constants
   constexpr int nodes_per_dim = 1 << NDIMS;
 
-  // allocate output arrays
+  // Check array is expected size
   const IndexType ncells = mesh->getNumberOfCells();
-  aabbs = axom::allocate<BoxType>(ncells);
+  EXPECT_TRUE(aabbs.size() == ncells);
 
   using exec_policy = axom::SEQ_EXEC;
   mint::for_all_cells<exec_policy, xargs::coords>(
@@ -129,9 +121,6 @@ void generate_aabbs(const mint::Mesh* mesh,
       aabbs[cellIdx].clear();
       aabbs[cellIdx].addBox(range);
     });
-
-  // post-condition sanity checks
-  EXPECT_TRUE(aabbs != nullptr);
 }
 
 //------------------------------------------------------------------------------
@@ -142,27 +131,21 @@ void generate_aabbs(const mint::Mesh* mesh,
  *  a corresponding centroid.
  *
  * \param [in]  mesh pointer to the mesh object.
- * \param [out] aabbs array of bounding boxes
+ * \param [out] aabbs ArrayView of bounding boxes
  * \param [out] c buffer to store the cell centroids
  *
  * \note The intent of this method is to generate synthetic input test data
  *  to test the functionality of the BVH.
  *
- * \warning This method allocates aabbs internally. The caller is responsible
- *  for properly deallocating aabbs.
- *
- * \pre aabbs == nullptr
  * \pre c != nullptr
- *
- * \post aabbs != nullptr
  */
 template <typename FloatType, int NDIMS>
-void generate_aabbs_and_centroids(const mint::Mesh* mesh,
-                                  primal::BoundingBox<FloatType, NDIMS>*& aabbs,
-                                  primal::Point<FloatType, NDIMS>* c)
+void generate_aabbs_and_centroids(
+  const mint::Mesh* mesh,
+  axom::ArrayView<primal::BoundingBox<FloatType, NDIMS>>& aabbs,
+  primal::Point<FloatType, NDIMS>* c)
 {
-  // sanity checks
-  EXPECT_TRUE(aabbs == nullptr);
+  // sanity check
   EXPECT_TRUE(c != nullptr);
 
   // calculate some constants
@@ -173,9 +156,7 @@ void generate_aabbs_and_centroids(const mint::Mesh* mesh,
 
   EXPECT_EQ(NDIMS, mesh->getDimension());
 
-  // allocate output arrays
-  const IndexType ncells = mesh->getNumberOfCells();
-  aabbs = axom::allocate<BoxType>(ncells);
+  // initialize output arrays
 
   using exec_policy = axom::SEQ_EXEC;
   mint::for_all_cells<exec_policy, xargs::coords>(
@@ -210,9 +191,6 @@ void generate_aabbs_and_centroids(const mint::Mesh* mesh,
 
       aabbs[cellIdx] = range;
     });
-
-  // post-condition sanity checks
-  EXPECT_TRUE(aabbs != nullptr);
 }
 
 //------------------------------------------------------------------------------
@@ -230,17 +208,21 @@ void check_build_bvh2d()
   using BoxType = typename primal::BoundingBox<FloatType, NDIMS>;
   using PointType = typename primal::Point<FloatType, NDIMS>;
 
-  const int current_allocator = axom::getDefaultAllocatorID();
-  axom::setDefaultAllocator(axom::execution_space<ExecSpace>::allocatorID());
+  const int hostAllocatorID =
+    axom::execution_space<axom::SEQ_EXEC>::allocatorID();
+  const int deviceAllocatorID = axom::execution_space<ExecSpace>::allocatorID();
 
-  BoxType* boxes = axom::allocate<BoxType>(2);
+  axom::Array<BoxType> boxes(2, 2, hostAllocatorID);
   boxes[0] = BoxType {PointType(0.), PointType(1.)};
   boxes[1] = BoxType {PointType(1.), PointType(2.)};
 
   spin::BVH<NDIMS, ExecSpace, FloatType> bvh;
 
+  // Copy boxes to device
+  axom::Array<BoxType> boxesDevice(boxes, deviceAllocatorID);
+
   bvh.setScaleFactor(1.0);  // i.e., no scaling
-  bvh.initialize(boxes, NUM_BOXES);
+  bvh.initialize(boxesDevice.view(), NUM_BOXES);
 
   int allocatorID = bvh.getAllocatorID();
   EXPECT_EQ(allocatorID, axom::execution_space<ExecSpace>::allocatorID());
@@ -252,9 +234,6 @@ void check_build_bvh2d()
     EXPECT_NEAR(bounds.getMin()[idim], 0.0, EPS);
     EXPECT_NEAR(bounds.getMax()[idim], 2.0, EPS);
   }
-
-  axom::deallocate(boxes);
-  axom::setDefaultAllocator(current_allocator);
 }
 
 //------------------------------------------------------------------------------
@@ -272,17 +251,21 @@ void check_build_bvh3d()
   using BoxType = typename primal::BoundingBox<FloatType, NDIMS>;
   using PointType = typename primal::Point<FloatType, NDIMS>;
 
-  const int current_allocator = axom::getDefaultAllocatorID();
-  axom::setDefaultAllocator(axom::execution_space<ExecSpace>::allocatorID());
+  const int hostAllocatorID =
+    axom::execution_space<axom::SEQ_EXEC>::allocatorID();
+  const int deviceAllocatorID = axom::execution_space<ExecSpace>::allocatorID();
 
-  BoxType* boxes = axom::allocate<BoxType>(2);
+  axom::Array<BoxType> boxes(2, 2, hostAllocatorID);
   boxes[0] = BoxType {PointType(0.), PointType(1.)};
   boxes[1] = BoxType {PointType(1.), PointType(2.)};
 
   spin::BVH<NDIMS, ExecSpace, FloatType> bvh;
 
+  // Copy boxes to device
+  axom::Array<BoxType> boxesDevice(boxes, deviceAllocatorID);
+
   bvh.setScaleFactor(1.0);  // i.e., no scaling
-  bvh.initialize(boxes, NUM_BOXES);
+  bvh.initialize(boxesDevice.view(), NUM_BOXES);
 
   int allocatorID = bvh.getAllocatorID();
   EXPECT_EQ(allocatorID, axom::execution_space<ExecSpace>::allocatorID());
@@ -294,9 +277,6 @@ void check_build_bvh3d()
     EXPECT_NEAR(bounds.getMin()[idim], 0.0, EPS);
     EXPECT_NEAR(bounds.getMax()[idim], 2.0, EPS);
   }
-
-  axom::deallocate(boxes);
-  axom::setDefaultAllocator(current_allocator);
 }
 
 //------------------------------------------------------------------------------
@@ -309,14 +289,15 @@ void check_find_bounding_boxes3d()
   using BoxType = typename primal::BoundingBox<FloatType, NDIMS>;
   using PointType = typename primal::Point<FloatType, NDIMS>;
 
-  const int current_allocator = axom::getDefaultAllocatorID();
-  axom::setDefaultAllocator(axom::execution_space<ExecSpace>::allocatorID());
+  const int hostAllocatorID =
+    axom::execution_space<axom::SEQ_EXEC>::allocatorID();
+  const int deviceAllocatorID = axom::execution_space<ExecSpace>::allocatorID();
 
   // setup query bounding boxes: both boxes have lower left min at
   // (-1.0,-1.0,-1.0) but different upper right max.
   // The first bounding box is setup such that it intersects
   // 18 bounding boxes of the mesh.
-  BoxType* query_boxes = axom::allocate<BoxType>(N);
+  axom::Array<BoxType> query_boxes(N, N, hostAllocatorID);
   query_boxes[0].clear();
   query_boxes[1].clear();
 
@@ -331,14 +312,19 @@ void check_find_bounding_boxes3d()
   double hi[NDIMS] = {3.0, 3.0, 3.0};
   mint::UniformMesh mesh(lo, hi, 4, 4, 4);
   const IndexType ncells = mesh.getNumberOfCells();
-  BoxType* aabbs = nullptr;
-  generate_aabbs(&mesh, aabbs);
-  EXPECT_TRUE(aabbs != nullptr);
+  axom::Array<BoxType> aabbs(ncells, ncells, hostAllocatorID);
+  auto aabbs_view = aabbs.view();
+  generate_aabbs(&mesh, aabbs_view);
+  EXPECT_TRUE(aabbs.data() != nullptr);
+
+  // Move aabbs to device
+  axom::Array<BoxType> aabbs_device(aabbs, deviceAllocatorID);
+  auto aabbs_device_view = aabbs_device.view();
 
   // construct the BVH
   spin::BVH<NDIMS, ExecSpace, FloatType> bvh;
   bvh.setScaleFactor(1.0);  // i.e., no scaling
-  bvh.initialize(aabbs, ncells);
+  bvh.initialize(aabbs_device_view, ncells);
 
   // check BVH bounding box
   BoxType bounds = bvh.getBounds();
@@ -350,14 +336,31 @@ void check_find_bounding_boxes3d()
   }
 
   // traverse the BVH to find the candidates for all the bounding boxes
-  axom::Array<IndexType> offsets(N);
-  axom::Array<IndexType> counts(N);
-  axom::Array<IndexType> candidates;
-  bvh.findBoundingBoxes(offsets, counts, candidates, N, query_boxes);
+  axom::Array<IndexType> offsets_device(N, N, deviceAllocatorID);
+  axom::Array<IndexType> counts_device(N, N, deviceAllocatorID);
+  axom::Array<IndexType> candidates_device(0, 0, deviceAllocatorID);
+  axom::Array<BoxType> query_boxes_device(query_boxes, deviceAllocatorID);
+
+  // Create views of device arrays
+  auto offsets_view = offsets_device.view();
+  auto counts_view = counts_device.view();
+  auto query_boxes_view = query_boxes_device.view();
+
+  bvh.findBoundingBoxes(offsets_view,
+                        counts_view,
+                        candidates_device,
+                        N,
+                        query_boxes_view);
+
+  // Copy back to host
+  axom::Array<IndexType> counts(counts_device, hostAllocatorID);
+  axom::Array<IndexType> offsets(offsets_device, hostAllocatorID);
+  axom::Array<IndexType> candidates(candidates_device, hostAllocatorID);
 
   // flag cells that are found by the bounding box ID
   int* iblank = mesh.createField<int>("iblank", mint::CELL_CENTERED);
-  mint::for_all_cells<ExecSpace>(
+  using mint_exec_policy = axom::SEQ_EXEC;
+  mint::for_all_cells<mint_exec_policy>(
     &mesh,
     AXOM_LAMBDA(IndexType cellIdx) { iblank[cellIdx] = -1; });
 
@@ -407,13 +410,6 @@ void check_find_bounding_boxes3d()
       EXPECT_EQ(iblank[i], DOES_NOT_INTERSECT_BB);
     }
   }  // END for all mesh cells
-
-  // deallocate
-  axom::deallocate(aabbs);
-
-  axom::deallocate(query_boxes);
-
-  axom::setDefaultAllocator(current_allocator);
 }
 
 //------------------------------------------------------------------------------
@@ -427,13 +423,14 @@ void check_find_bounding_boxes2d()
   using BoxType = typename primal::BoundingBox<FloatType, NDIMS>;
   using PointType = typename primal::Point<FloatType, NDIMS>;
 
-  const int current_allocator = axom::getDefaultAllocatorID();
-  axom::setDefaultAllocator(axom::execution_space<ExecSpace>::allocatorID());
+  const int hostAllocatorID =
+    axom::execution_space<axom::SEQ_EXEC>::allocatorID();
+  const int deviceAllocatorID = axom::execution_space<ExecSpace>::allocatorID();
 
   // setup query bounding boxes: both boxes are source at (-1.0,-1.0) but have
   // different max (upper right). The first box is setup to intersect six
   // bounding boxes of the mesh.
-  BoxType* query_boxes = axom::allocate<BoxType>(N);
+  axom::Array<BoxType> query_boxes(N, N, hostAllocatorID);
   query_boxes[0].clear();
   query_boxes[1].clear();
 
@@ -448,14 +445,20 @@ void check_find_bounding_boxes2d()
   double hi[NDIMS] = {3.0, 3.0};
   mint::UniformMesh mesh(lo, hi, 4, 4);
   const IndexType ncells = mesh.getNumberOfCells();
-  BoxType* aabbs = nullptr;
-  generate_aabbs(&mesh, aabbs);
-  EXPECT_TRUE(aabbs != nullptr);
+  axom::Array<BoxType> aabbs(ncells, ncells, hostAllocatorID);
+  auto aabbs_view = aabbs.view();
+  generate_aabbs(&mesh, aabbs_view);
+  EXPECT_TRUE(aabbs.data() != nullptr);
+
+  // Move aabbs to device
+  axom::Array<BoxType> aabbs_device =
+    axom::Array<BoxType>(aabbs, deviceAllocatorID);
+  auto aabbs_device_view = aabbs_device.view();
 
   // construct the BVH
   spin::BVH<NDIMS, ExecSpace, FloatType> bvh;
   bvh.setScaleFactor(1.0);  // i.e., no scaling
-  bvh.initialize(aabbs, ncells);
+  bvh.initialize(aabbs_device_view, ncells);
 
   // check BVH bounding box
   BoxType bounds = bvh.getBounds();
@@ -467,14 +470,31 @@ void check_find_bounding_boxes2d()
   }
 
   // traverse the BVH to find the candidates for all the bounding boxes
-  axom::Array<IndexType> offsets(N);
-  axom::Array<IndexType> counts(N);
-  axom::Array<IndexType> candidates;
-  bvh.findBoundingBoxes(offsets, counts, candidates, N, query_boxes);
+  axom::Array<IndexType> offsets_device(N, N, deviceAllocatorID);
+  axom::Array<IndexType> counts_device(N, N, deviceAllocatorID);
+  axom::Array<IndexType> candidates_device(0, 0, deviceAllocatorID);
+  axom::Array<BoxType> query_boxes_device(query_boxes, deviceAllocatorID);
+
+  // Create views of device arrays
+  auto offsets_view = offsets_device.view();
+  auto counts_view = counts_device.view();
+  auto query_boxes_view = query_boxes_device.view();
+
+  bvh.findBoundingBoxes(offsets_view,
+                        counts_view,
+                        candidates_device,
+                        N,
+                        query_boxes_view);
+
+  // Copy back to host
+  axom::Array<IndexType> counts(counts_device, hostAllocatorID);
+  axom::Array<IndexType> offsets(offsets_device, hostAllocatorID);
+  axom::Array<IndexType> candidates(candidates_device, hostAllocatorID);
 
   // flag cells that are found by the bounding box ID
   int* iblank = mesh.createField<int>("iblank", mint::CELL_CENTERED);
-  mint::for_all_cells<ExecSpace>(
+  using mint_exec_policy = axom::SEQ_EXEC;
+  mint::for_all_cells<mint_exec_policy>(
     &mesh,
     AXOM_LAMBDA(IndexType cellIdx) { iblank[cellIdx] = -1; });
 
@@ -508,16 +528,9 @@ void check_find_bounding_boxes2d()
     }
 
   }  // END for all mesh cells
-
-  // deallocate
-  axom::deallocate(aabbs);
-
-  axom::deallocate(query_boxes);
-
-  axom::setDefaultAllocator(current_allocator);
 }
 
-//------------------------------------------------------------------------------
+// //------------------------------------------------------------------------------
 template <typename ExecSpace, typename FloatType>
 void check_find_rays3d()
 {
@@ -529,13 +542,14 @@ void check_find_rays3d()
   using PointType = typename primal::Point<FloatType, NDIMS>;
   using VectorType = typename primal::Vector<FloatType, NDIMS>;
 
-  const int current_allocator = axom::getDefaultAllocatorID();
-  axom::setDefaultAllocator(axom::execution_space<ExecSpace>::allocatorID());
+  const int hostAllocatorID =
+    axom::execution_space<axom::SEQ_EXEC>::allocatorID();
+  const int deviceAllocatorID = axom::execution_space<ExecSpace>::allocatorID();
 
   // setup query rays: both rays are source at (-1.0,-1.0) but point in
   // opposite directions. The first ray is setup such that it intersects
   // three bounding boxes of the mesh.
-  RayType* query_rays = axom::allocate<RayType>(N);
+  axom::Array<RayType> query_rays(N, N, hostAllocatorID);
   query_rays[0] =
     RayType {PointType {-1.0, -1.0, -1.0}, VectorType {1.0, 1.0, 1.0}};
   query_rays[1] =
@@ -552,14 +566,20 @@ void check_find_rays3d()
   double hi[NDIMS] = {3.0, 3.0, 3.0};
   mint::UniformMesh mesh(lo, hi, 4, 4, 4);
   const IndexType ncells = mesh.getNumberOfCells();
-  BoxType* aabbs = nullptr;
-  generate_aabbs(&mesh, aabbs);
-  EXPECT_TRUE(aabbs != nullptr);
+  axom::Array<BoxType> aabbs(ncells, ncells, hostAllocatorID);
+  auto aabbs_view = aabbs.view();
+  generate_aabbs(&mesh, aabbs_view);
+  EXPECT_TRUE(aabbs.data() != nullptr);
+
+  // Move aabbs to device
+  axom::Array<BoxType> aabbs_device =
+    axom::Array<BoxType>(aabbs, deviceAllocatorID);
+  auto aabbs_device_view = aabbs_device.view();
 
   // construct the BVH
   spin::BVH<NDIMS, ExecSpace, FloatType> bvh;
   bvh.setScaleFactor(1.0);  // i.e., no scaling
-  bvh.initialize(aabbs, ncells);
+  bvh.initialize(aabbs_device_view, ncells);
 
   // check BVH bounding box
   BoxType bounds = bvh.getBounds();
@@ -570,15 +590,28 @@ void check_find_rays3d()
     EXPECT_NEAR(bounds.getMax()[idim], hi[idim], EPS);
   }
 
-  // traverse the BVH to find the candidates for all the centroids
-  axom::Array<IndexType> offsets(N);
-  axom::Array<IndexType> counts(N);
-  axom::Array<IndexType> candidates;
-  bvh.findRays(offsets, counts, candidates, N, query_rays);
+  // traverse the BVH to find the candidates for all the bounding boxes
+  axom::Array<IndexType> offsets_device(N, N, deviceAllocatorID);
+  axom::Array<IndexType> counts_device(N, N, deviceAllocatorID);
+  axom::Array<IndexType> candidates_device(0, 0, deviceAllocatorID);
+  axom::Array<RayType> query_rays_device(query_rays, deviceAllocatorID);
+
+  // Create views of device arrays
+  auto offsets_view = offsets_device.view();
+  auto counts_view = counts_device.view();
+  auto query_rays_view = query_rays_device.view();
+
+  bvh.findRays(offsets_view, counts_view, candidates_device, N, query_rays_view);
+
+  // Copy back to host
+  axom::Array<IndexType> counts(counts_device, hostAllocatorID);
+  axom::Array<IndexType> offsets(offsets_device, hostAllocatorID);
+  axom::Array<IndexType> candidates(candidates_device, hostAllocatorID);
 
   // flag cells that are found by the ray ID
   int* iblank = mesh.createField<int>("iblank", mint::CELL_CENTERED);
-  mint::for_all_cells<ExecSpace>(
+  using mint_exec_policy = axom::SEQ_EXEC;
+  mint::for_all_cells<mint_exec_policy>(
     &mesh,
     AXOM_LAMBDA(IndexType cellIdx) { iblank[cellIdx] = -1; });
 
@@ -629,16 +662,9 @@ void check_find_rays3d()
       EXPECT_EQ(iblank[i], DOES_NOT_INTERSECT_RAY);
     }
   }  // END for all mesh cells
-
-  // deallocate
-  axom::deallocate(aabbs);
-
-  axom::deallocate(query_rays);
-
-  axom::setDefaultAllocator(current_allocator);
 }
 
-//------------------------------------------------------------------------------
+// //------------------------------------------------------------------------------
 
 template <typename ExecSpace, typename FloatType>
 void check_find_rays2d()
@@ -651,13 +677,14 @@ void check_find_rays2d()
   using PointType = typename primal::Point<FloatType, NDIMS>;
   using VectorType = typename primal::Vector<FloatType, NDIMS>;
 
-  const int current_allocator = axom::getDefaultAllocatorID();
-  axom::setDefaultAllocator(axom::execution_space<ExecSpace>::allocatorID());
+  const int hostAllocatorID =
+    axom::execution_space<axom::SEQ_EXEC>::allocatorID();
+  const int deviceAllocatorID = axom::execution_space<ExecSpace>::allocatorID();
 
   // setup query rays: both rays are source at (-1.0,-1.0) but point in
   // opposite directions. The first ray is setup such that it intersects
   // seven bounding boxes of the mesh.
-  RayType* query_rays = axom::allocate<RayType>(N);
+  axom::Array<RayType> query_rays(N, N, hostAllocatorID);
   query_rays[0] = RayType {PointType {-1.0, -1.0}, VectorType {1.0, 1.0}};
   query_rays[1] = RayType {PointType {-1.0, -1.0}, VectorType {-1.0, -1.0}};
 
@@ -682,14 +709,20 @@ void check_find_rays2d()
   double hi[NDIMS] = {3.0, 3.0};
   mint::UniformMesh mesh(lo, hi, 4, 4);
   const IndexType ncells = mesh.getNumberOfCells();
-  BoxType* aabbs = nullptr;
-  generate_aabbs(&mesh, aabbs);
-  EXPECT_TRUE(aabbs != nullptr);
+  axom::Array<BoxType> aabbs(ncells, ncells, hostAllocatorID);
+  auto aabbs_view = aabbs.view();
+  generate_aabbs(&mesh, aabbs_view);
+  EXPECT_TRUE(aabbs.data() != nullptr);
+
+  // Move aabbs to device
+  axom::Array<BoxType> aabbs_device =
+    axom::Array<BoxType>(aabbs, deviceAllocatorID);
+  auto aabbs_device_view = aabbs_device.view();
 
   // construct the BVH
   spin::BVH<NDIMS, ExecSpace, FloatType> bvh;
   bvh.setScaleFactor(1.0);  // i.e., no scaling
-  bvh.initialize(aabbs, ncells);
+  bvh.initialize(aabbs_device_view, ncells);
 
   // check BVH bounding box
   BoxType bounds = bvh.getBounds();
@@ -700,15 +733,28 @@ void check_find_rays2d()
     EXPECT_NEAR(bounds.getMax()[idim], hi[idim], EPS);
   }
 
-  // traverse the BVH to find the candidates for all the centroids
-  axom::Array<IndexType> offsets(N);
-  axom::Array<IndexType> counts(N);
-  axom::Array<IndexType> candidates;
-  bvh.findRays(offsets, counts, candidates, N, query_rays);
+  // traverse the BVH to find the candidates for all the bounding boxes
+  axom::Array<IndexType> offsets_device(N, N, deviceAllocatorID);
+  axom::Array<IndexType> counts_device(N, N, deviceAllocatorID);
+  axom::Array<IndexType> candidates_device(0, 0, deviceAllocatorID);
+  axom::Array<RayType> query_rays_device(query_rays, deviceAllocatorID);
+
+  // Create views of device arrays
+  auto offsets_view = offsets_device.view();
+  auto counts_view = counts_device.view();
+  auto query_rays_view = query_rays_device.view();
+
+  bvh.findRays(offsets_view, counts_view, candidates_device, N, query_rays_view);
+
+  // Copy back to host
+  axom::Array<IndexType> counts(counts_device, hostAllocatorID);
+  axom::Array<IndexType> offsets(offsets_device, hostAllocatorID);
+  axom::Array<IndexType> candidates(candidates_device, hostAllocatorID);
 
   // flag cells that are found by the ray ID
   int* iblank = mesh.createField<int>("iblank", mint::CELL_CENTERED);
-  mint::for_all_cells<ExecSpace>(
+  using mint_exec_policy = axom::SEQ_EXEC;
+  mint::for_all_cells<mint_exec_policy>(
     &mesh,
     AXOM_LAMBDA(IndexType cellIdx) { iblank[cellIdx] = -1; });
 
@@ -746,13 +792,6 @@ void check_find_rays2d()
     }
 
   }  // END for all mesh cells
-
-  // deallocate
-  axom::deallocate(aabbs);
-
-  axom::deallocate(query_rays);
-
-  axom::setDefaultAllocator(current_allocator);
 }
 
 //------------------------------------------------------------------------------
@@ -777,8 +816,9 @@ void check_find_points3d()
   constexpr int NDIMS = 3;
   constexpr IndexType N = 4;
 
-  const int current_allocator = axom::getDefaultAllocatorID();
-  axom::setDefaultAllocator(axom::execution_space<ExecSpace>::allocatorID());
+  const int hostAllocatorID =
+    axom::execution_space<axom::SEQ_EXEC>::allocatorID();
+  const int deviceAllocatorID = axom::execution_space<ExecSpace>::allocatorID();
 
   using BoxType = typename primal::BoundingBox<FloatType, NDIMS>;
   using PointType = primal::Point<FloatType, NDIMS>;
@@ -794,13 +834,20 @@ void check_find_points3d()
   PointType* centroids = reinterpret_cast<PointType*>(centroids_raw);
   const IndexType ncells = mesh.getNumberOfCells();
 
-  BoxType* aabbs = nullptr;
-  generate_aabbs_and_centroids(&mesh, aabbs, centroids);
+  axom::Array<BoxType> aabbs(ncells, ncells, hostAllocatorID);
+  auto aabbs_view = aabbs.view();
+  generate_aabbs_and_centroids(&mesh, aabbs_view, centroids);
+  EXPECT_TRUE(aabbs.data() != nullptr);
+
+  // Move aabbs to device
+  axom::Array<BoxType> aabbs_device =
+    axom::Array<BoxType>(aabbs, deviceAllocatorID);
+  auto aabbs_device_view = aabbs_device.view();
 
   // construct the BVH
   spin::BVH<NDIMS, ExecSpace, FloatType> bvh;
   bvh.setScaleFactor(1.0);  // i.e., no scaling
-  bvh.initialize(aabbs, ncells);
+  bvh.initialize(aabbs_device_view, ncells);
 
   BoxType bounds = bvh.getBounds();
 
@@ -810,11 +857,31 @@ void check_find_points3d()
     EXPECT_NEAR(bounds.getMax()[idim], hi[idim], EPS);
   }
 
-  // traverse the BVH to find the candidates for all the centroids
-  axom::Array<IndexType> offsets(ncells);
-  axom::Array<IndexType> counts(ncells);
-  axom::Array<IndexType> candidates;
-  bvh.findPoints(offsets, counts, candidates, ncells, centroids);
+  // traverse the BVH to find the candidates for all the bounding boxes
+  axom::Array<IndexType> offsets_device(ncells, ncells, deviceAllocatorID);
+  axom::Array<IndexType> counts_device(ncells, ncells, deviceAllocatorID);
+  axom::Array<IndexType> candidates_device(0, 0, deviceAllocatorID);
+  PointType* centroids_device =
+    axom::allocate<PointType>(ncells, deviceAllocatorID);
+  axom::copy(centroids_device, centroids, ncells * sizeof(PointType));
+
+  // Create views of device arrays
+  auto offsets_view = offsets_device.view();
+  auto counts_view = counts_device.view();
+
+  bvh.findPoints(offsets_view,
+                 counts_view,
+                 candidates_device,
+                 ncells,
+                 centroids_device);
+
+  // Copy back to host
+  axom::Array<IndexType> counts =
+    axom::Array<IndexType>(counts_device, hostAllocatorID);
+  axom::Array<IndexType> offsets =
+    axom::Array<IndexType>(offsets_device, hostAllocatorID);
+  axom::Array<IndexType> candidates =
+    axom::Array<IndexType>(candidates_device, hostAllocatorID);
 
   spin::UniformGrid<IndexType, NDIMS> ug(lo, hi, res);
 
@@ -835,16 +902,24 @@ void check_find_points3d()
     centroids[i][2] += OFFSET;
   }
 
-  bvh.findPoints(offsets, counts, candidates, ncells, centroids);
+  // Reallocate modified centroids on device
+  axom::copy(centroids_device, centroids, ncells * sizeof(PointType));
+
+  bvh.findPoints(offsets_view,
+                 counts_view,
+                 candidates_device,
+                 ncells,
+                 centroids_device);
+
+  // Copy back to host
+  counts = axom::Array<IndexType>(counts_device, hostAllocatorID);
 
   for(IndexType i = 0; i < ncells; ++i)
   {
     EXPECT_EQ(counts[i], 0);
   }
 
-  axom::deallocate(aabbs);
-
-  axom::setDefaultAllocator(current_allocator);
+  axom::deallocate(centroids_device);
 }
 
 //------------------------------------------------------------------------------
@@ -869,8 +944,9 @@ void check_find_points2d()
   constexpr int NDIMS = 2;
   constexpr IndexType N = 4;
 
-  const int current_allocator = axom::getDefaultAllocatorID();
-  axom::setDefaultAllocator(axom::execution_space<ExecSpace>::allocatorID());
+  const int hostAllocatorID =
+    axom::execution_space<axom::SEQ_EXEC>::allocatorID();
+  const int deviceAllocatorID = axom::execution_space<ExecSpace>::allocatorID();
 
   using BoxType = typename primal::BoundingBox<FloatType, NDIMS>;
   using PointType = primal::Point<FloatType, NDIMS>;
@@ -886,13 +962,20 @@ void check_find_points2d()
   PointType* centroids = reinterpret_cast<PointType*>(centroids_raw);
   const IndexType ncells = mesh.getNumberOfCells();
 
-  BoxType* aabbs = nullptr;
-  generate_aabbs_and_centroids(&mesh, aabbs, centroids);
+  axom::Array<BoxType> aabbs(ncells, ncells, hostAllocatorID);
+  auto aabbs_view = aabbs.view();
+  generate_aabbs_and_centroids(&mesh, aabbs_view, centroids);
+  EXPECT_TRUE(aabbs.data() != nullptr);
+
+  // Move aabbs to device
+  axom::Array<BoxType> aabbs_device =
+    axom::Array<BoxType>(aabbs, deviceAllocatorID);
+  auto aabbs_device_view = aabbs_device.view();
 
   // construct the BVH
   spin::BVH<NDIMS, ExecSpace, FloatType> bvh;
   bvh.setScaleFactor(1.0);  // i.e., no scaling
-  bvh.initialize(aabbs, ncells);
+  bvh.initialize(aabbs_device_view, ncells);
 
   BoxType bounds = bvh.getBounds();
 
@@ -902,11 +985,31 @@ void check_find_points2d()
     EXPECT_NEAR(bounds.getMax()[idim], hi[idim], EPS);
   }
 
-  // traverse the BVH to find the candidates for all the centroids
-  axom::Array<IndexType> offsets(ncells);
-  axom::Array<IndexType> counts(ncells);
-  axom::Array<IndexType> candidates;
-  bvh.findPoints(offsets, counts, candidates, ncells, centroids);
+  // traverse the BVH to find the candidates for all the bounding boxes
+  axom::Array<IndexType> offsets_device(ncells, ncells, deviceAllocatorID);
+  axom::Array<IndexType> counts_device(ncells, ncells, deviceAllocatorID);
+  axom::Array<IndexType> candidates_device(0, 0, deviceAllocatorID);
+  PointType* centroids_device =
+    axom::allocate<PointType>(ncells, deviceAllocatorID);
+  axom::copy(centroids_device, centroids, ncells * sizeof(PointType));
+
+  // Create views of device arrays
+  auto offsets_view = offsets_device.view();
+  auto counts_view = counts_device.view();
+
+  bvh.findPoints(offsets_view,
+                 counts_view,
+                 candidates_device,
+                 ncells,
+                 centroids_device);
+
+  // Copy back to host
+  axom::Array<IndexType> counts =
+    axom::Array<IndexType>(counts_device, hostAllocatorID);
+  axom::Array<IndexType> offsets =
+    axom::Array<IndexType>(offsets_device, hostAllocatorID);
+  axom::Array<IndexType> candidates =
+    axom::Array<IndexType>(candidates_device, hostAllocatorID);
 
   spin::UniformGrid<IndexType, NDIMS> ug(lo, hi, res);
 
@@ -926,16 +1029,24 @@ void check_find_points2d()
     centroids[i][1] += OFFSET;
   }
 
-  bvh.findPoints(offsets, counts, candidates, ncells, centroids);
+  // Reallocate modified centroids on device
+  axom::copy(centroids_device, centroids, ncells * sizeof(PointType));
+
+  bvh.findPoints(offsets_view,
+                 counts_view,
+                 candidates_device,
+                 ncells,
+                 centroids_device);
+
+  // Copy back to host
+  counts = axom::Array<IndexType>(counts_device, hostAllocatorID);
 
   for(IndexType i = 0; i < ncells; ++i)
   {
     EXPECT_EQ(counts[i], 0);
   }
 
-  axom::deallocate(aabbs);
-
-  axom::setDefaultAllocator(current_allocator);
+  axom::deallocate(centroids_device);
 }
 
 //------------------------------------------------------------------------------
@@ -955,17 +1066,22 @@ void check_single_box2d()
   using BoxType = typename primal::BoundingBox<FloatType, NDIMS>;
   using PointType = primal::Point<FloatType, NDIMS>;
 
-  const int current_allocator = axom::getDefaultAllocatorID();
-  axom::setDefaultAllocator(axom::execution_space<ExecSpace>::allocatorID());
+  const int hostAllocatorID =
+    axom::execution_space<axom::SEQ_EXEC>::allocatorID();
+  const int deviceAllocatorID = axom::execution_space<ExecSpace>::allocatorID();
 
   // single bounding box in [0,1] x [0,1]
-  BoxType* boxes = axom::allocate<BoxType>(2);
+  axom::Array<BoxType> boxes(2, 2, hostAllocatorID);
   boxes[0] = BoxType {PointType(0.), PointType(1.)};
 
-  // construct a BVH with a single box
+  // Move box to device
+  axom::Array<BoxType> boxes_device =
+    axom::Array<BoxType>(boxes, deviceAllocatorID);
+
+  // construct the BVH with a single box
   spin::BVH<NDIMS, ExecSpace, FloatType> bvh;
   bvh.setScaleFactor(1.0);  // i.e., no scaling
-  bvh.initialize(boxes, NUM_BOXES);
+  bvh.initialize(boxes_device.view(), NUM_BOXES);
 
   // check the bounds -- should match the bounds of the input bounding box
   BoxType bounds = bvh.getBounds();
@@ -980,13 +1096,31 @@ void check_single_box2d()
   // Should return one and only one candidate that corresponds to the
   // single bounding box.
   PointType centroid {0.5, 0.5};
-  PointType* centroid_device = axom::allocate<PointType>(1);
+  PointType* centroid_device = axom::allocate<PointType>(1, deviceAllocatorID);
   axom::copy(centroid_device, &centroid, sizeof(PointType));
 
-  axom::Array<IndexType> offsets(NUM_BOXES);
-  axom::Array<IndexType> counts(NUM_BOXES);
-  axom::Array<IndexType> candidates;
-  bvh.findPoints(offsets, counts, candidates, NUM_BOXES, centroid_device);
+  axom::Array<IndexType> offsets_device(NUM_BOXES, NUM_BOXES, deviceAllocatorID);
+  axom::Array<IndexType> counts_device(NUM_BOXES, NUM_BOXES, deviceAllocatorID);
+  axom::Array<IndexType> candidates_device(0, 0, deviceAllocatorID);
+
+  // Create views of device arrays
+  auto offsets_view = offsets_device.view();
+  auto counts_view = counts_device.view();
+
+  bvh.findPoints(offsets_view,
+                 counts_view,
+                 candidates_device,
+                 NUM_BOXES,
+                 centroid_device);
+
+  // Copy back to host
+  axom::Array<IndexType> counts =
+    axom::Array<IndexType>(counts_device, hostAllocatorID);
+  axom::Array<IndexType> offsets =
+    axom::Array<IndexType>(offsets_device, hostAllocatorID);
+  axom::Array<IndexType> candidates =
+    axom::Array<IndexType>(candidates_device, hostAllocatorID);
+
   EXPECT_EQ(counts[0], 1);
   EXPECT_EQ(0, candidates[offsets[0]]);
 
@@ -994,14 +1128,18 @@ void check_single_box2d()
   centroid[0] += 10.0;
   centroid[1] += 10.0;
   axom::copy(centroid_device, &centroid, sizeof(PointType));
-  bvh.findPoints(offsets, counts, candidates, NUM_BOXES, centroid_device);
+  bvh.findPoints(offsets_view,
+                 counts_view,
+                 candidates_device,
+                 NUM_BOXES,
+                 centroid_device);
+
+  // Copy back to host
+  counts = axom::Array<IndexType>(counts_device, hostAllocatorID);
 
   EXPECT_EQ(counts[0], 0);
 
   axom::deallocate(centroid_device);
-  axom::deallocate(boxes);
-
-  axom::setDefaultAllocator(current_allocator);
 }
 
 //------------------------------------------------------------------------------
@@ -1021,17 +1159,22 @@ void check_single_box3d()
   using BoxType = typename primal::BoundingBox<FloatType, NDIMS>;
   using PointType = primal::Point<FloatType, NDIMS>;
 
-  const int current_allocator = axom::getDefaultAllocatorID();
-  axom::setDefaultAllocator(axom::execution_space<ExecSpace>::allocatorID());
+  const int hostAllocatorID =
+    axom::execution_space<axom::SEQ_EXEC>::allocatorID();
+  const int deviceAllocatorID = axom::execution_space<ExecSpace>::allocatorID();
 
   // single bounding box in [0,1] x [0,1] x [0,1]
-  BoxType* boxes = axom::allocate<BoxType>(2);
+  axom::Array<BoxType> boxes(2, 2, hostAllocatorID);
   boxes[0] = BoxType {PointType(0.), PointType(1.)};
 
-  // construct a BVH with a single box
+  // Move box to device
+  axom::Array<BoxType> boxes_device =
+    axom::Array<BoxType>(boxes, deviceAllocatorID);
+
+  // construct the BVH with a single box
   spin::BVH<NDIMS, ExecSpace, FloatType> bvh;
   bvh.setScaleFactor(1.0);  // i.e., no scaling
-  bvh.initialize(boxes, NUM_BOXES);
+  bvh.initialize(boxes_device.view(), NUM_BOXES);
 
   // check the bounds -- should match the bounds of the input bounding box
   BoxType bounds = bvh.getBounds();
@@ -1046,13 +1189,30 @@ void check_single_box3d()
   // Should return one and only one candidate that corresponds to the
   // single bounding box.
   PointType centroid {0.5, 0.5, 0.5};
-  PointType* centroid_device = axom::allocate<PointType>(1);
+  PointType* centroid_device = axom::allocate<PointType>(1, deviceAllocatorID);
   axom::copy(centroid_device, &centroid, sizeof(PointType));
 
-  axom::Array<IndexType> offsets(NUM_BOXES);
-  axom::Array<IndexType> counts(NUM_BOXES);
-  axom::Array<IndexType> candidates;
-  bvh.findPoints(offsets, counts, candidates, NUM_BOXES, centroid_device);
+  axom::Array<IndexType> offsets_device(NUM_BOXES, NUM_BOXES, deviceAllocatorID);
+  axom::Array<IndexType> counts_device(NUM_BOXES, NUM_BOXES, deviceAllocatorID);
+  axom::Array<IndexType> candidates_device(0, 0, deviceAllocatorID);
+
+  // Create views of device arrays
+  auto offsets_view = offsets_device.view();
+  auto counts_view = counts_device.view();
+
+  bvh.findPoints(offsets_view,
+                 counts_view,
+                 candidates_device,
+                 NUM_BOXES,
+                 centroid_device);
+
+  // Copy back to host
+  axom::Array<IndexType> counts =
+    axom::Array<IndexType>(counts_device, hostAllocatorID);
+  axom::Array<IndexType> offsets =
+    axom::Array<IndexType>(offsets_device, hostAllocatorID);
+  axom::Array<IndexType> candidates =
+    axom::Array<IndexType>(candidates_device, hostAllocatorID);
 
   EXPECT_EQ(counts[0], 1);
   EXPECT_EQ(0, candidates[offsets[0]]);
@@ -1061,14 +1221,18 @@ void check_single_box3d()
   centroid[0] += 10.0;
   centroid[1] += 10.0;
   axom::copy(centroid_device, &centroid, sizeof(PointType));
-  bvh.findPoints(offsets, counts, candidates, NUM_BOXES, centroid_device);
+  bvh.findPoints(offsets_view,
+                 counts_view,
+                 candidates_device,
+                 NUM_BOXES,
+                 centroid_device);
+
+  // Copy back to host
+  counts = axom::Array<IndexType>(counts_device, hostAllocatorID);
 
   EXPECT_EQ(counts[0], 0);
 
   axom::deallocate(centroid_device);
-  axom::deallocate(boxes);
-
-  axom::setDefaultAllocator(current_allocator);
 }
 
 //------------------------------------------------------------------------------
@@ -1170,8 +1334,9 @@ void check_find_points_zip3d()
   PointType* centroids = reinterpret_cast<PointType*>(centroids_raw);
   const IndexType ncells = mesh.getNumberOfCells();
 
-  BoxType* aabbs = nullptr;
-  generate_aabbs_and_centroids(&mesh, aabbs, centroids);
+  axom::Array<BoxType> aabbs(ncells, ncells, current_allocator);
+  auto aabbs_view = aabbs.view();
+  generate_aabbs_and_centroids(&mesh, aabbs_view, centroids);
 
   axom::Array<FloatType> xs(ncells, ncells);
   axom::Array<FloatType> ys(ncells, ncells);
@@ -1215,8 +1380,6 @@ void check_find_points_zip3d()
     EXPECT_EQ(donorCellIdx, candidates[offsets[i]]);
   }
 
-  axom::deallocate(aabbs);
-
   axom::setDefaultAllocator(current_allocator);
 }
 
@@ -1259,8 +1422,9 @@ void check_find_points_zip2d()
   PointType* centroids = reinterpret_cast<PointType*>(centroids_raw);
   const IndexType ncells = mesh.getNumberOfCells();
 
-  BoxType* aabbs = nullptr;
-  generate_aabbs_and_centroids(&mesh, aabbs, centroids);
+  axom::Array<BoxType> aabbs(ncells, ncells, current_allocator);
+  auto aabbs_view = aabbs.view();
+  generate_aabbs_and_centroids(&mesh, aabbs_view, centroids);
 
   axom::Array<FloatType> xs(ncells, ncells);
   axom::Array<FloatType> ys(ncells, ncells);
@@ -1302,8 +1466,6 @@ void check_find_points_zip2d()
     EXPECT_EQ(counts[i], 1);
     EXPECT_EQ(donorCellIdx, candidates[offsets[i]]);
   }  // END for all cell centroids
-
-  axom::deallocate(aabbs);
 
   axom::setDefaultAllocator(current_allocator);
 }
@@ -1365,6 +1527,10 @@ void bvh_compute_point_distances_2d(BVHType& bvh,
   constexpr int INVALID_ELEMENT_INDEX = -1;
   constexpr int FIRST_ELEMENT_INDEX = 0;
 
+  const int hostAllocatorID =
+    axom::execution_space<axom::SEQ_EXEC>::allocatorID();
+  const int deviceAllocatorID = axom::execution_space<ExecSpace>::allocatorID();
+
   // Borrowed from DistibutedClosestPoint.
   struct MinCandidate
   {
@@ -1376,37 +1542,49 @@ void bvh_compute_point_distances_2d(BVHType& bvh,
 
   // Initialize the BVH with the points.
   axom::IndexType npts = none ? 0 : points.size();
-  BoxType* bboxes =
-    axom::allocate<BoxType>(npts ? npts : 1,  // do not allocate 0 elements
-                            axom::execution_space<ExecSpace>::allocatorID());
+  // do not allocate 0 elements
+  axom::Array<BoxType> bboxes = npts
+    ? axom::Array<BoxType>(npts, npts, hostAllocatorID)
+    : axom::Array<BoxType>(1, 1, hostAllocatorID);
   for(axom::IndexType i = 0; i < npts; i++)
   {
     bboxes[i] = BoxType(points[i]);
   }
-  bvh.initialize(bboxes, npts);
+
+  // Copy boxes to device
+  axom::Array<BoxType> bboxes_device =
+    axom::Array<BoxType>(bboxes, deviceAllocatorID);
+
+  bvh.initialize(bboxes_device.view(), npts);
 
   // Call the BVH like the DistributedClosestPoint does.
   auto it = bvh.getTraverser();
 
   // Make a results array to contain the data values we read.
-  axom::Array<int> results(query_pts.size());
-  axom::ArrayView<int> results_view(results.data(), results.size());
+  axom::Array<int> results_device(query_pts.size(),
+                                  query_pts.size(),
+                                  deviceAllocatorID);
+  axom::ArrayView<int> results_view = results_device.view();
 
   // Loop over the query points.
-  axom::ArrayView<PointType> pointsView(points.data(), points.size());
-  axom::ArrayView<PointType> query_pts_view(query_pts.data(), query_pts.size());
+  axom::Array<PointType> points_device =
+    axom::Array<PointType>(points, deviceAllocatorID);
+  axom::ArrayView<PointType> points_device_view = points_device.view();
+  axom::Array<PointType> query_pts_device =
+    axom::Array<PointType>(query_pts, deviceAllocatorID);
+  axom::ArrayView<PointType> query_pts_device_view = query_pts_device.view();
   npts = query_pts.size();
   axom::for_all<ExecSpace>(
     npts,
     AXOM_LAMBDA(std::int32_t idx) mutable {
       // Get the current query point.
-      auto qpt = query_pts_view[idx];
+      auto qpt = query_pts_device_view[idx];
       MinCandidate curr_min;
 
       auto checkMinDist = [&](std::int32_t current_node,
                               const std::int32_t* leaf_nodes) {
         int candidate_idx = leaf_nodes[current_node];
-        const PointType candidate_pt = pointsView[candidate_idx];
+        const PointType candidate_pt = points_device_view[candidate_idx];
         const double sq_dist = squared_distance(qpt, candidate_pt);
 
         if(sq_dist < curr_min.minSqDist)
@@ -1429,25 +1607,21 @@ void bvh_compute_point_distances_2d(BVHType& bvh,
       results_view[idx] = curr_min.minElem;
     });
 
+  // Copy results back to host
+  axom::Array<int> results = axom::Array<int>(results_device, hostAllocatorID);
+
   // Make sure all of the indices we found are the expected value.
   int expected_idx = none ? INVALID_ELEMENT_INDEX : FIRST_ELEMENT_INDEX;
   for(axom::IndexType i = 0; i < results.size(); i++)
   {
     EXPECT_EQ(expected_idx, results[i]);
   }
-
-  axom::deallocate(bboxes);
 }
 
 //------------------------------------------------------------------------------
 template <typename ExecType, typename FloatType>
 void check_0_or_1_bbox_2d()
 {
-  // Temporarily force the allocator for the ExecType so the query points as
-  // well as any other important allocations are available in that space.
-  const int current_allocator = axom::getDefaultAllocatorID();
-  axom::setDefaultAllocator(axom::execution_space<ExecType>::allocatorID());
-
   // Make a 1 element array that we'll access from a BVH callback lambda.
   using PointType = axom::primal::Point<FloatType, 2>;
   axom::Array<PointType> src_pts;
@@ -1464,8 +1638,6 @@ void check_0_or_1_bbox_2d()
   // 0 src points
   spin::BVH<2, ExecType, FloatType> bvh2;
   bvh_compute_point_distances_2d(bvh2, src_pts, query_pts, true);
-
-  axom::setDefaultAllocator(current_allocator);
 }
 
 } /* end unnamed namespace */

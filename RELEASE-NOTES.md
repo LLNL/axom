@@ -38,11 +38,13 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
   and moving out of `quest`.
 - `mint::structured_exec` is now `axom::nested_for_exec`, to support nested for loops
   for all of Axom.  See `src/axom/core/execution/nested_for_exec.hpp`.
+- Set default Umpire allocator id to device instead of unified for CUDA and HIP execution policies.
 - Upgrades `vcpkg` usage for axom's automated Windows builds to its
   [2024.03.19 release](https://github.com/microsoft/vcpkg/releases/tag/2024.03.19).
   Also updates vcpkg port versions for axom dependencies. Temporarily removes `umpire`
   from axom's default dependencies on Windows due to incompatibility between umpire's
   external `fmt` and axom's vendored copy.
+- Turn off CMake finding dependencies on system paths.
 
 ### Removed
 - Removes config option `AXOM_ENABLE_ANNOTATIONS`. Annotations are now provided by `caliper` 

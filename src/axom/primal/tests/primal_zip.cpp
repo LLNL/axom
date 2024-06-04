@@ -45,6 +45,7 @@ void check_zip_points_3d()
   double* z = axom::allocate<double>(N);
 
   bool* valid = axom::allocate<bool>(N);
+  bool valid_host[N];
 
   axom::for_all<ExecSpace>(
     0,
@@ -64,9 +65,11 @@ void check_zip_points_3d()
       valid[idx] = (it[idx] == PrimitiveType {x[idx], y[idx], z[idx]});
     });
 
+  axom::copy(&valid_host, valid, N * sizeof(bool));
+
   for(int i = 0; i < N; i++)
   {
-    EXPECT_TRUE(valid[i]);
+    EXPECT_TRUE(valid_host[i]);
   }
 
   axom::deallocate(x);
@@ -92,6 +95,7 @@ void check_zip_points_2d_from_3d()
   double* z = nullptr;
 
   bool* valid = axom::allocate<bool>(N);
+  bool valid_host[N];
 
   axom::for_all<ExecSpace>(
     0,
@@ -110,9 +114,11 @@ void check_zip_points_2d_from_3d()
       valid[idx] = (it[idx] == PointType {x[idx], y[idx]});
     });
 
+  axom::copy(&valid_host, valid, N * sizeof(bool));
+
   for(int i = 0; i < N; i++)
   {
-    EXPECT_TRUE(valid[i]);
+    EXPECT_TRUE(valid_host[i]);
   }
 
   axom::deallocate(x);
@@ -137,6 +143,7 @@ void check_zip_vectors_2d_from_3d()
   double* z = nullptr;
 
   bool* valid = axom::allocate<bool>(N);
+  bool valid_host[N];
 
   axom::for_all<ExecSpace>(
     0,
@@ -155,9 +162,11 @@ void check_zip_vectors_2d_from_3d()
       valid[idx] = (it[idx] == PointType {x[idx], y[idx]});
     });
 
+  axom::copy(&valid_host, valid, N * sizeof(bool));
+
   for(int i = 0; i < N; i++)
   {
-    EXPECT_TRUE(valid[i]);
+    EXPECT_TRUE(valid_host[i]);
   }
 
   axom::deallocate(x);
@@ -187,6 +196,7 @@ void check_zip_bbs_3d()
   double* zmax = axom::allocate<double>(N);
 
   bool* valid = axom::allocate<bool>(N);
+  bool valid_host[N];
 
   axom::for_all<ExecSpace>(
     0,
@@ -213,9 +223,11 @@ void check_zip_bbs_3d()
       valid[idx] = (it[idx] == actual);
     });
 
+  axom::copy(&valid_host, valid, N * sizeof(bool));
+
   for(int i = 0; i < N; i++)
   {
-    EXPECT_TRUE(valid[i]);
+    EXPECT_TRUE(valid_host[i]);
   }
 
   axom::deallocate(xmin);
@@ -251,6 +263,7 @@ void check_zip_bbs_2d_from_3d()
   double* zmax = nullptr;
 
   bool* valid = axom::allocate<bool>(N);
+  bool valid_host[N];
 
   axom::for_all<ExecSpace>(
     0,
@@ -275,9 +288,11 @@ void check_zip_bbs_2d_from_3d()
       valid[idx] = (it[idx] == actual);
     });
 
+  axom::copy(&valid_host, valid, N * sizeof(bool));
+
   for(int i = 0; i < N; i++)
   {
-    EXPECT_TRUE(valid[i]);
+    EXPECT_TRUE(valid_host[i]);
   }
 
   axom::deallocate(xmin);
@@ -312,6 +327,7 @@ void check_zip_rays_3d()
   double* zd = axom::allocate<double>(N);
 
   bool* valid = axom::allocate<bool>(N);
+  bool valid_host[N];
 
   axom::for_all<ExecSpace>(
     0,
@@ -349,9 +365,11 @@ void check_zip_rays_3d()
         (it[idx].direction() == actual.direction());
     });
 
+  axom::copy(&valid_host, valid, N * sizeof(bool));
+
   for(int i = 0; i < N; i++)
   {
-    EXPECT_TRUE(valid[i]);
+    EXPECT_TRUE(valid_host[i]);
   }
 
   axom::deallocate(xo);
@@ -388,6 +406,7 @@ void check_zip_rays_2d_from_3d()
   double* zd = nullptr;
 
   bool* valid = axom::allocate<bool>(N);
+  bool valid_host[N];
 
   axom::for_all<ExecSpace>(
     0,
@@ -425,9 +444,11 @@ void check_zip_rays_2d_from_3d()
         (it[idx].direction() == actual.direction());
     });
 
+  axom::copy(&valid_host, valid, N * sizeof(bool));
+
   for(int i = 0; i < N; i++)
   {
-    EXPECT_TRUE(valid[i]);
+    EXPECT_TRUE(valid_host[i]);
   }
 
   axom::deallocate(xo);
