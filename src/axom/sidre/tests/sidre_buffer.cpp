@@ -1,31 +1,29 @@
-// Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC and
-// other Axom Project Developers. See the top-level COPYRIGHT file for details.
+// Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
+// other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
 #include "gtest/gtest.h"
 
-#include "axom/sidre/core/sidre.hpp"
+#include "axom/sidre.hpp"
 
-
-using axom::sidre::DataStore;
 using axom::sidre::Buffer;
+using axom::sidre::DataStore;
 using axom::sidre::DataType;
 using axom::sidre::Group;
-using axom::sidre::View;
 using axom::sidre::IndexType;
 using axom::sidre::INT_ID;
+using axom::sidre::View;
 
 constexpr IndexType ZERO = 0;
 
 //------------------------------------------------------------------------------
 
-
 // id's are created in sequence.
 // After detaching or destroying a buffer, the next createBuffer will recycle
 // the id.
 
-TEST(sidre_buffer,create_buffers)
+TEST(sidre_buffer, create_buffers)
 {
   DataStore* ds = new DataStore();
   EXPECT_EQ(0u, ds->getNumBuffers());
@@ -62,7 +60,7 @@ TEST(sidre_buffer,create_buffers)
 
 //------------------------------------------------------------------------------
 
-TEST(sidre_buffer,create_buffer_with_description)
+TEST(sidre_buffer, create_buffer_with_description)
 {
   DataStore* ds = new DataStore();
   Buffer* dbuff = ds->createBuffer(INT_ID, 10);
@@ -74,9 +72,9 @@ TEST(sidre_buffer,create_buffer_with_description)
 
   int* data_ptr = dbuff->getData();
 
-  for(int i=0 ; i<10 ; i++)
+  for(int i = 0; i < 10; i++)
   {
-    data_ptr[i] = i*i;
+    data_ptr[i] = i * i;
   }
 
   dbuff->print();
@@ -88,7 +86,7 @@ TEST(sidre_buffer,create_buffer_with_description)
 
 //------------------------------------------------------------------------------
 
-TEST(sidre_buffer,alloc_buffer_for_int_array)
+TEST(sidre_buffer, alloc_buffer_for_int_array)
 {
   DataStore* ds = new DataStore();
   Buffer* dbuff = ds->createBuffer();
@@ -105,9 +103,9 @@ TEST(sidre_buffer,alloc_buffer_for_int_array)
   //  int * data_ptr = static_cast<int *>(dbuff->getData());
   int* data_ptr = dbuff->getData();
 
-  for(int i=0 ; i<10 ; i++)
+  for(int i = 0; i < 10; i++)
   {
-    data_ptr[i] = i*i;
+    data_ptr[i] = i * i;
   }
 
   dbuff->print();
@@ -121,7 +119,7 @@ TEST(sidre_buffer,alloc_buffer_for_int_array)
 
 //------------------------------------------------------------------------------
 
-TEST(sidre_buffer,init_buffer_for_int_array)
+TEST(sidre_buffer, init_buffer_for_int_array)
 {
   DataStore* ds = new DataStore();
   Buffer* dbuff = ds->createBuffer();
@@ -134,9 +132,9 @@ TEST(sidre_buffer,init_buffer_for_int_array)
 
   int* data_ptr = static_cast<int*>(dbuff->getData());
 
-  for(int i=0 ; i<10 ; i++)
+  for(int i = 0; i < 10; i++)
   {
-    data_ptr[i] = i*i;
+    data_ptr[i] = i * i;
   }
 
   dbuff->print();
@@ -145,10 +143,9 @@ TEST(sidre_buffer,init_buffer_for_int_array)
   delete ds;
 }
 
-
 //------------------------------------------------------------------------------
 
-TEST(sidre_buffer,realloc_buffer)
+TEST(sidre_buffer, realloc_buffer)
 {
   DataStore* ds = new DataStore();
   Buffer* dbuff = ds->createBuffer();
@@ -161,17 +158,17 @@ TEST(sidre_buffer,realloc_buffer)
 
   int* data_ptr = static_cast<int*>(dbuff->getVoidPtr());
 
-  for(int i=0 ; i<5 ; i++)
+  for(int i = 0; i < 5; i++)
   {
     data_ptr[i] = 5;
   }
 
-  for(int i=0 ; i<5 ; i++)
+  for(int i = 0; i < 5; i++)
   {
-    EXPECT_EQ(data_ptr[i],5);
+    EXPECT_EQ(data_ptr[i], 5);
   }
 
-//  dbuff->print();
+  //  dbuff->print();
 
   dbuff->reallocate(10);
 
@@ -183,24 +180,24 @@ TEST(sidre_buffer,realloc_buffer)
   // data buffer changes
   data_ptr = static_cast<int*>(dbuff->getVoidPtr());
 
-  for(int i=5 ; i<10 ; i++)
+  for(int i = 5; i < 10; i++)
   {
     data_ptr[i] = 10;
   }
 
-  for(int i=0 ; i<10 ; i++)
+  for(int i = 0; i < 10; i++)
   {
     int value = 5;
-    if ( i > 4)
+    if(i > 4)
     {
       value = 10;
     }
-    EXPECT_EQ(data_ptr[i],value);
+    EXPECT_EQ(data_ptr[i], value);
   }
 
-//  dbuff->print();
+  //  dbuff->print();
 
-//  ds->print();
+  //  ds->print();
   delete ds;
 }
 
@@ -208,58 +205,53 @@ TEST(sidre_buffer,realloc_buffer)
 
 TEST(sidre_buffer, create_buffer_view)
 {
-  DataStore* ds   = new DataStore();
+  DataStore* ds = new DataStore();
   Group* root = ds->getRoot();
 
   const IndexType len = 11;
   const int ndims = 1;
-  IndexType shape[] = { len };
+  IndexType shape[] = {len};
 
   Buffer* buff = ds->createBuffer(INT_ID, len)->allocate();
 
   int* idata = buff->getData();
 
-  for (int ii = 0 ; ii < len ; ++ii)
+  for(int ii = 0; ii < len; ++ii)
   {
     idata[ii] = ii;
   }
 
-  for (unsigned int i=0 ; i < 8 ; i++)
+  for(unsigned int i = 0; i < 8; i++)
   {
     View* view;
 
-    switch (i)
+    switch(i)
     {
     case 0:
       view = root->createView("data0", INT_ID, len, buff);
       break;
     case 1:
-      view = root->createView("data1", INT_ID, len)
-             ->attachBuffer(buff);
+      view = root->createView("data1", INT_ID, len)->attachBuffer(buff);
       break;
     case 2:
-      view = root->createView("data2")
-             ->attachBuffer(INT_ID, len, buff);
+      view = root->createView("data2")->attachBuffer(INT_ID, len, buff);
       break;
     case 3:
-      view = root->createView("data3", buff)
-             ->apply(INT_ID, len);
+      view = root->createView("data3", buff)->apply(INT_ID, len);
       break;
 
     case 4:
-      view = root->createView("data4", INT_ID, ndims, shape, buff);
+      view = root->createViewWithShape("data4", INT_ID, ndims, shape, buff);
       break;
     case 5:
-      view = root->createView("data5", INT_ID, ndims, shape)
-             ->attachBuffer(buff);
+      view =
+        root->createViewWithShape("data5", INT_ID, ndims, shape)->attachBuffer(buff);
       break;
     case 6:
-      view = root->createView("data6")
-             ->attachBuffer(INT_ID, ndims, shape, buff);
+      view = root->createView("data6")->attachBuffer(INT_ID, ndims, shape, buff);
       break;
     case 7:
-      view = root->createView("data7", buff)
-             ->apply(INT_ID, ndims, shape);
+      view = root->createView("data7", buff)->apply(INT_ID, ndims, shape);
       break;
     }
 
@@ -278,23 +270,22 @@ TEST(sidre_buffer, create_buffer_view)
     view->print();
 
     int* idata_chk = view->getData();
-    for (int ii = 0 ; ii < len ; ++ii)
+    for(int ii = 0; ii < len; ++ii)
     {
       EXPECT_EQ(idata_chk[ii], idata[ii]);
     }
-
   }
   delete ds;
 }
 
 //------------------------------------------------------------------------------
 
-TEST(sidre_buffer,with_multiple_views)
+TEST(sidre_buffer, with_multiple_views)
 {
   DataStore* ds = new DataStore();
   Group* root = ds->getRoot();
   Buffer* dbuff;
-  View* dv1, * dv2;
+  View *dv1, *dv2;
 
   dbuff = ds->createBuffer();
   IndexType idx = dbuff->getIndex();
@@ -307,29 +298,29 @@ TEST(sidre_buffer,with_multiple_views)
   EXPECT_EQ(dbuff->getNumViews(), 2);
 
   // Detach buffer from first view will not detach from datastore.
-  dv1->attachBuffer(NULL);
+  dv1->attachBuffer(nullptr);
   EXPECT_FALSE(dv1->hasBuffer());
   EXPECT_EQ(ds->getNumBuffers(), 1u);
   EXPECT_EQ(dbuff->getNumViews(), 1);
 
   // Detach buffer from second view will detach from datastore.
-  dv2->attachBuffer(NULL);
+  dv2->attachBuffer(nullptr);
   EXPECT_FALSE(dv2->hasBuffer());
   EXPECT_EQ(ds->getNumBuffers(), 0u);
 
   // Buffer has been destroyed since there are no more attached views
-  EXPECT_TRUE(ds->getBuffer(idx) == NULL);
+  EXPECT_TRUE(ds->getBuffer(idx) == nullptr);
 
   delete ds;
 }
 
 //------------------------------------------------------------------------------
-TEST(sidre_buffer,move_buffer)
+TEST(sidre_buffer, move_buffer)
 {
   DataStore* ds = new DataStore();
   Group* root = ds->getRoot();
-  Buffer* dbuff, * dbuff2;
-  View* dv1, * dv2;
+  Buffer *dbuff, *dbuff2;
+  View *dv1, *dv2;
 
   dbuff = ds->createBuffer();
 
@@ -350,7 +341,7 @@ TEST(sidre_buffer,move_buffer)
 }
 
 //------------------------------------------------------------------------------
-TEST(sidre_buffer,destroy_all_buffers)
+TEST(sidre_buffer, destroy_all_buffers)
 {
   DataStore* ds = new DataStore();
 
@@ -371,18 +362,16 @@ TEST(sidre_buffer,destroy_all_buffers)
 class UmpireTest : public ::testing::TestWithParam<int>
 {
 public:
-  void SetUp() override
-  {
-    allocID = GetParam();
-  }
+  void SetUp() override { allocID = GetParam(); }
 
   void TearDown() override
   {
-    axom::setDefaultAllocator(umpire::resource::Host);
+    int allocID = axom::getUmpireResourceAllocatorID(umpire::resource::Host);
+    axom::setDefaultAllocator(allocID);
   }
 
   DataStore ds;
-  umpire::ResourceManager & rm = umpire::ResourceManager::getInstance();
+  umpire::ResourceManager& rm = umpire::ResourceManager::getInstance();
   int allocID;
 };
 
@@ -453,10 +442,12 @@ TEST_P(UmpireTest, reallocate)
 {
   constexpr int SIZE = 100;
 
-  if (allocID == umpire::resource::Constant)
+  #if defined(AXOM_USE_GPU) && defined(UMPIRE_ENABLE_CONST)
+  if(allocID == axom::getUmpireResourceAllocatorID(umpire::resource::Constant))
   {
     return;
   }
+  #endif
 
   {
     Buffer* buff = ds.createBuffer();
@@ -492,10 +483,15 @@ TEST_P(UmpireTest, reallocate_zero)
 {
   constexpr int SIZE = 100;
 
-  if (allocID == umpire::resource::Constant)
+  #if defined(AXOM_USE_GPU) && defined(UMPIRE_ENABLE_CONST)
+  if(allocID == axom::getUmpireResourceAllocatorID(umpire::resource::Constant))
   {
     return;
   }
+  #endif
+
+  // set the default allocator
+  axom::setDefaultAllocator(allocID);
 
   {
     Buffer* buff = ds.createBuffer();
@@ -504,7 +500,7 @@ TEST_P(UmpireTest, reallocate_zero)
     buff->reallocate(0);
     buff->reallocate(SIZE);
 
-    ASSERT_EQ(axom::getDefaultAllocator().getId(),
+    ASSERT_EQ(axom::getDefaultAllocatorID(),
               rm.getAllocator(buff->getVoidPtr()).getId());
 
     buff->deallocate();
@@ -516,7 +512,7 @@ TEST_P(UmpireTest, reallocate_zero)
     buff->reallocate(0);
     buff->reallocate(SIZE);
 
-    ASSERT_EQ(axom::getDefaultAllocator().getId(),
+    ASSERT_EQ(axom::getDefaultAllocatorID(),
               rm.getAllocator(buff->getVoidPtr()).getId());
     buff->deallocate();
   }
@@ -527,25 +523,41 @@ TEST_P(UmpireTest, reallocate_zero)
     buff->reallocate(0);
     buff->reallocate(SIZE);
 
-    ASSERT_EQ(axom::getDefaultAllocator().getId(),
+    ASSERT_EQ(axom::getDefaultAllocatorID(),
               rm.getAllocator(buff->getVoidPtr()).getId());
     buff->deallocate();
   }
 }
 
-const int allocators[] = { umpire::resource::Host
-#ifdef AXOM_USE_CUDA
-                           , umpire::resource::Pinned
-                           , umpire::resource::Device
-                           , umpire::resource::Constant
-                           , umpire::resource::Unified
-#endif
+const int allocators[] = {
+  axom::getUmpireResourceAllocatorID(umpire::resource::Host)
+  #ifdef AXOM_USE_GPU
+
+    #ifdef UMPIRE_ENABLE_PINNED
+    ,
+  axom::getUmpireResourceAllocatorID(umpire::resource::Pinned)
+    #endif
+
+    #ifdef UMPIRE_ENABLE_DEVICE
+    ,
+  axom::getUmpireResourceAllocatorID(umpire::resource::Device)
+    #endif
+
+    #ifdef UMPIRE_ENABLE_CONST
+    ,
+  axom::getUmpireResourceAllocatorID(umpire::resource::Constant)
+    #endif
+
+    #ifdef UMPIRE_ENABLE_UM
+    ,
+  axom::getUmpireResourceAllocatorID(umpire::resource::Unified)
+    #endif
+
+  #endif /* defined(AXOM_USE_GPU) */
 };
 
-INSTANTIATE_TEST_CASE_P(
-  sidre_buffer,
-  UmpireTest,
-  ::testing::ValuesIn(allocators)
-  );
+INSTANTIATE_TEST_SUITE_P(sidre_buffer,
+                         UmpireTest,
+                         ::testing::ValuesIn(allocators));
 
-#endif // AXOM_USE_UMPIRE
+#endif  // AXOM_USE_UMPIRE

@@ -16,6 +16,24 @@ import sys
 import os
 import shlex
 
+# Call doxygen in ReadtheDocs
+read_the_docs_build = os.environ.get('READTHEDOCS', None) == 'True'
+if read_the_docs_build:
+
+    # Modify Doxyfile for ReadTheDocs compatibility
+    with open('./docs/doxygen/Doxyfile.in', 'r') as f:
+        fdata = f.read()
+    fdata = fdata.replace('@PROJECT_SOURCE_DIR@', '.')
+    with open('./docs/doxygen/Doxyfile.in', 'w') as f:
+        f.write(fdata)
+    with open('./docs/doxygen/Doxyfile.in', 'a') as f:
+        f.write("\nOUTPUT_DIRECTORY=../_readthedocs/html/doxygen")
+
+    # Call doxygen
+    from subprocess import call
+    call(['doxygen', "./docs/doxygen/Doxyfile.in"])
+
+
 # Get current directory
 conf_directory = os.path.dirname(os.path.realpath(__file__))
 
@@ -36,6 +54,7 @@ extensions = [
     'sphinx.ext.graphviz',
     'sphinx.ext.autodoc',
     'sphinx.ext.doctest',
+    'sphinxcontrib.jquery',
     'sphinx.ext.todo',
     'sphinx.ext.coverage',
     'sphinx.ext.mathjax'
@@ -54,12 +73,12 @@ source_suffix = '.rst'
 # The encoding of source files.
 #source_encoding = 'utf-8-sig'
 
-# The master toctree document.
+# The main toctree document.
 master_doc = 'index'
 
 # General information about the project.
 project = u'Axom'
-copyright = u'2017-2019, Lawrence Livermore National Security, LLNS'
+copyright = u'2017-2024, Lawrence Livermore National Security, LLNS'
 
 # -- Option for numbering figures/tables/etc.-----------------------------------
 # Note: numfig requires Sphinx (1.3+)
@@ -79,7 +98,7 @@ numfig = True
 #
 # This is also used if you do content translation via gettext catalogs.
 # Usually you set "language" from the command line for these cases.
-language = None
+language = 'English'
 
 # There are two options for replacing |today|: either, you set today to some
 # non-false value, then it is used:
@@ -89,7 +108,9 @@ language = None
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
-exclude_patterns = [ '_build', 'cmake/blt/docs' ]
+exclude_patterns = [ '_build',
+                     'cmake/blt/docs',
+                     'thirdparty']
 
 # The reST default role (used for this markup: `text`) to use for all
 # documents.
@@ -107,7 +128,7 @@ exclude_patterns = [ '_build', 'cmake/blt/docs' ]
 #show_authors = False
 
 # The name of the Pygments (syntax highlighting) style to use.
-pygments_style = 'sphinx'
+pygments_style = 'default'
 
 # A list of ignored prefixes for module index sorting.
 #modindex_common_prefix = []
@@ -224,8 +245,16 @@ htmlhelp_basename = 'Axomdoc'
 # primal, quest, sphinx:
 # override wide tables in RTD theme
 # (Thanks to https://rackerlabs.github.io/docs-rackspace/tools/rtd-tables.html)
-html_context = { 'css_files': [ '_static/theme_overrides.css', ], }
+# These folders are copied to the documentation's HTML output
+html_static_path = ['docs/sphinx/_static/theme_overrides.css']
 
+# These paths are either relative to html_static_path
+# or fully qualified paths (eg. https://...)
+html_css_files = [
+    'theme_overrides.css',
+]
+
+html_logo = "../share/axom/logo/axom_logo_transparent.png"
 
 # -- Options for LaTeX output ---------------------------------------------
 

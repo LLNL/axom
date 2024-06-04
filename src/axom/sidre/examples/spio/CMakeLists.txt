@@ -1,43 +1,48 @@
-# Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC and
-# other Axom Project Developers. See the top-level COPYRIGHT file for details.
+# Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
+# other Axom Project Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
+#------------------------------------------------------------------------------
+# Spio examples
+#------------------------------------------------------------------------------
 
-#
+#------------------------------------------------------------------------------
 # List of single source file examples
-#
-set(example_sources
+#------------------------------------------------------------------------------
+set(spio_example_sources
     IORead.cpp
     IOWrite.cpp
     )
 
-if (SCR_FOUND)
-    list(APPEND example_sources IOSCRRead.cpp)
-    list(APPEND example_sources IOSCRWrite.cpp)
-endif() 
+set(spio_example_depends sidre ${EXTRA_LIBS})
 
-set(spio_example_depends sidre conduit conduit_relay slic ${EXTRA_LIBS})
-
-if (HDF5_FOUND)
-    list(APPEND spio_example_depends hdf5)
-endif()
-
-if (SCR_FOUND)
-    list(APPEND spio_example_depends scr)
-endif()
-
-
-#
-# Build the example sources
-#
-foreach(src ${example_sources})
+#------------------------------------------------------------------------------
+# Add targets and tests for spio examples
+#------------------------------------------------------------------------------
+foreach(src ${spio_example_sources})
     get_filename_component(exe_name ${src} NAME_WE)
-    blt_add_executable(
-        NAME spio_${exe_name}_ex
-        SOURCES ${src}
+    axom_add_executable(
+        NAME       spio_${exe_name}_ex
+        SOURCES    ${src}
         OUTPUT_DIR ${EXAMPLE_OUTPUT_DIRECTORY}
         DEPENDS_ON ${spio_example_depends}
-        FOLDER axom/sidre/examples
+        FOLDER     axom/sidre/examples
         )
 endforeach()
 
+if(SCR_FOUND AND AXOM_ENABLE_TESTS)
+    # Note: This example is a combination of a test and an example due
+    # inability to run two SCR executables at the same time
+    axom_add_executable(
+        NAME       spio_IO_SCR_Checkpoint_ex
+        SOURCES    IO_SCR_Checkpoint.cpp
+        OUTPUT_DIR ${EXAMPLE_OUTPUT_DIRECTORY}
+        DEPENDS_ON ${spio_example_depends} gtest
+        FOLDER     axom/sidre/examples
+        )
+
+    axom_add_test(
+        NAME          spio_IO_SCR_Checkpoint
+        COMMAND       spio_IO_SCR_Checkpoint_ex
+        NUM_MPI_TASKS 4 )
+endif()

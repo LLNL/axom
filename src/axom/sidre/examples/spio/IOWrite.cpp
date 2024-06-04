@@ -1,5 +1,5 @@
-// Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC and
-// other Axom Project Developers. See the top-level COPYRIGHT file for details.
+// Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
+// other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
@@ -8,13 +8,14 @@
 
 #include "mpi.h"
 
-#include "axom/core.hpp"
+#include "axom/core/utilities/Utilities.hpp"
+#include "axom/core/utilities/FileUtilities.hpp"
 #include "axom/slic.hpp"
 #include "axom/sidre.hpp"
 
-using axom::sidre::Group;
 using axom::sidre::DataStore;
 using axom::sidre::DataType;
+using axom::sidre::Group;
 using axom::sidre::IOManager;
 using namespace axom::utilities;
 
@@ -26,15 +27,15 @@ using namespace axom::utilities;
 int main(int argc, char* argv[])
 {
   MPI_Init(&argc, &argv);
-  axom::slic::UnitTestLogger logger;
+  axom::slic::SimpleLogger logger;
 
   SLIC_ERROR_IF(argc != 3,
                 "Missing command line arguments. \n\t"
-                << "Usage: spio_IOWrite <num_files> <base_file_name>");
+                  << "Usage: spio_IOWrite <num_files> <base_file_name>");
 
   size_t num_files = 0;
   std::string file_base;
-  if (argc == 3)
+  if(argc == 3)
   {
     num_files = static_cast<size_t>(atoi(argv[1]));
     file_base = argv[2];
@@ -57,9 +58,9 @@ int main(int argc, char* argv[])
   Group* ga = flds->createGroup("a");
   Group* gb = flds2->createGroup("b");
   ga->createViewScalar<int>("i0", my_rank + 101);
-  gb->createViewScalar<int>("i1", 4*my_rank*my_rank + 404);
+  gb->createViewScalar<int>("i1", 4 * my_rank * my_rank + 404);
 
-  if (my_rank == 0)
+  if(my_rank == 0)
   {
     std::string dir;
     filesystem::getDirName(dir, file_base);
@@ -71,7 +72,7 @@ int main(int argc, char* argv[])
   writer.write(root, num_files, file_base, "sidre_hdf5");
 
   MPI_Barrier(MPI_COMM_WORLD);
-  if (my_rank == 0)
+  if(my_rank == 0)
   {
     Group* extra = root->createGroup("extra");
     extra->createViewScalar<double>("dval", 1.1);
@@ -88,7 +89,6 @@ int main(int argc, char* argv[])
   delete ds;
 
   MPI_Finalize();
-
 
   return 0;
 }

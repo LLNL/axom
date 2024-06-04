@@ -1,5 +1,5 @@
-! Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC and
-! other Axom Project Developers. See the top-level COPYRIGHT file for details.
+! Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
+! other Axom Project Developers. See the top-level LICENSE file for details.
 !
 ! SPDX-License-Identifier: (BSD-3-Clause)
 
@@ -39,6 +39,32 @@ contains
     endif
   end function get_state
 
+  subroutine check_view_values(view, state, is_described, is_allocated, &
+       is_applied, length)
+
+    type(SidreView), intent(IN) :: view
+    integer, intent(IN) :: state
+    logical, intent(IN) :: is_described, is_allocated, is_applied
+    integer, intent(IN) :: length
+    character(30) name
+
+    integer(SIDRE_IndexType) dims(2)
+
+    name = view%get_name()
+
+    call assert_equals(get_state(view), state)
+    call assert_equals(view%is_described(), is_described, trim(name) // " is_described")
+    call assert_equals(view%is_allocated(), is_allocated, trim(name) // "is_allocated")
+    call assert_equals(view%is_applied(), is_applied, trim(name) // " is_applied")
+
+    call assert_equals(int(view%get_num_elements(), kind(length)), length, trim(name) // " get_num_elements")
+    if (view%is_described()) then
+       call assert_equals(view%get_num_dimensions(), 1, trim(name) // " get_num_dimensions")
+       call assert_true(view%get_shape(1, dims) == 1, trim(name) // " get_shape")
+       call assert_true(dims(1) == length, trim(name) // " dims(1)")
+    endif
+  end subroutine check_view_values
+  
 !------------------------------------------------------------------------------
 
   subroutine create_views()
@@ -49,7 +75,7 @@ contains
 
     call set_case_name("create_views")
 
-    ds = datastore_new()
+    ds = SidreDataStore()
     root = ds%get_root()
 
     dv_0 = root%create_view_and_allocate("field0", SIDRE_INT_ID, 1)
@@ -72,7 +98,7 @@ contains
 
     call set_case_name("get_path_name")
 
-    ds = datastore_new()
+    ds = SidreDataStore()
     root = ds%get_root()
     v1 = root%create_view("test/a/b/v1")
     v2 = root%create_view("test/v2")
@@ -87,7 +113,7 @@ contains
     call assert_true(v2%get_path_name() == "test/v2")
 
     call assert_true(v3%get_name() == "v3")
-    call assert_true(v3%get_path() == "")
+    call assert_true(v3%get_path() == " ")
     call assert_true(v3%get_path_name() == "v3")
 
     call ds%delete()
@@ -104,7 +130,7 @@ contains
 
     call set_case_name("scalar_view")
 
-    ds = datastore_new()
+    ds = SidreDataStore()
     root = ds%get_root()
 
     i1 = 1
@@ -184,7 +210,7 @@ contains
         type(SidreView), intent(IN) :: view
         integer, intent(IN) :: state
         logical, intent(IN) :: is_described, is_allocated, is_applied
-        integer, intent(IN) :: type
+        integer(TypeID), intent(IN) :: type
         integer, intent(IN) :: length
         character(30) name
 
@@ -197,10 +223,11 @@ contains
         call assert_equals(view%is_allocated(), is_allocated, trim(name) // "is_allocated")
         call assert_equals(view%is_applied(), is_applied, trim(name) // " is_applied")
 
-        call assert_equals(view%get_type_id(), type, trim(name) // " get_type_id")
+        call assert_true(view%get_type_id() == type, trim(name) // " get_type_id")
         call assert_equals(int(view%get_num_elements(), kind(length)), length, trim(name) // " get_num_elements")
         call assert_equals(view%get_num_dimensions(), 1, trim(name) // " get_num_dimensions")
-        call assert_true(view%get_shape(1, dims) == 1 .and. dims(1) == length)
+        call assert_true(view%get_shape(1, dims) == 1, trim(name) // " get_shape")
+        call assert_true(dims(1) == length, trim(name) // " dims(1)")
       end subroutine check_scalar_values
 
   end subroutine scalar_view
@@ -220,11 +247,11 @@ contains
 
     call set_case_name("int_buffer_from_view")
 
-    ds = datastore_new()
+    ds = SidreDataStore()
     root = ds%get_root()
 
     dv = root%create_view_and_allocate("u0", SIDRE_INT_ID, elem_count)
-    call assert_equals(dv%get_type_id(), SIDRE_INT_ID, "dv%get_type_id(), SIDRE_INT_ID")
+    call assert_true(dv%get_type_id() == SIDRE_INT_ID, "dv%get_type_id(), SIDRE_INT_ID")
     call dv%get_data(data)
 
     do i = 1, elem_count
@@ -251,7 +278,7 @@ contains
 
     call set_case_name("int_buffer_from_view_conduit")
 
-    ds = datastore_new()
+    ds = SidreDataStore()
     root = ds%get_root()
 
     dv = root%create_view_and_allocate("u0", SIDRE_INT_ID, 10_8)
@@ -280,7 +307,7 @@ contains
 
     call set_case_name("int_array_multi_view")
 
-    ds = datastore_new()
+    ds = SidreDataStore()
     root = ds%get_root()
     dbuff = ds%create_buffer(SIDRE_INT_ID, 10_8)
 
@@ -343,7 +370,7 @@ contains
     
     call set_case_name("init_int_array_multi_view")
 
-    ds = datastore_new()
+    ds = SidreDataStore()
     root = ds%get_root()
     dbuff = ds%create_buffer()
     
@@ -410,13 +437,13 @@ contains
     integer(C_INT), pointer :: data(:)
     type(C_PTR) data_ptr
     integer i
-    integer(C_LONG) depth_nelems
-    integer(C_LONG) total_nelems
+    integer(SIDRE_IndexType) depth_nelems
+    integer(SIDRE_IndexType) total_nelems
 
     call set_case_name("int_array_depth_view")
 
     ! create our main data store
-    ds = datastore_new()
+    ds = SidreDataStore()
 
     depth_nelems = 10 
     total_nelems = 4 * depth_nelems
@@ -489,14 +516,14 @@ contains
     integer(C_INT), pointer :: data(:)
     type(C_PTR) data_ptr
     integer i
-    integer(C_LONG) field_nelems
-    integer(C_LONG) elem_count
-    integer(C_LONG) offset0, offset1
+    integer(SIDRE_IndexType) field_nelems
+    integer(SIDRE_IndexType) elem_count
+    integer(SIDRE_IndexType) offset0, offset1
 
     call set_case_name("int_array_view_attach_buffer")
 
     ! create our main data store
-    ds = datastore_new()
+    ds = SidreDataStore()
 
     ! get access to our root data Group
     root = ds%get_root()
@@ -574,10 +601,10 @@ contains
     real(C_DOUBLE), pointer :: data(:)
     type(C_PTR) data_ptr
     integer(C_INT) i
-    integer(C_LONG) field_nelems
-    integer(C_LONG) v1_nelems, v1_stride, v1_offset
-    integer(C_LONG) v2_nelems, v2_stride, v2_offset
-    integer(C_LONG) v3_nelems, v3_stride, v3_offset
+    integer(SIDRE_IndexType) field_nelems
+    integer(SIDRE_IndexType) v1_nelems, v1_stride, v1_offset
+    integer(SIDRE_IndexType) v2_nelems, v2_stride, v2_offset
+    integer(SIDRE_INdexType) v3_nelems, v3_stride, v3_offset
     real(C_DOUBLE), pointer :: data1(:), data2(:), data3(:)
     real(C_DOUBLE) :: elem
     integer int_size, double_size
@@ -589,7 +616,7 @@ contains
     call set_case_name("int_array_offset_stride")
 
     ! create our main data store
-    ds = datastore_new()
+    ds = SidreDataStore()
 
     ! get access to our root data Group
     root = ds%get_root()
@@ -715,7 +742,7 @@ contains
     call set_case_name("int_array_multi_view_resize")
 
     ! create our main data store
-    ds = datastore_new()
+    ds = SidreDataStore()
 
     ! get access to our root data Group
     root = ds%get_root()
@@ -870,7 +897,7 @@ contains
     call set_case_name("int_array_realloc")
 
     ! create our main data store
-    ds = datastore_new()
+    ds = SidreDataStore()
 
     ! get access to our root data Group
     root = ds%get_root()
@@ -935,7 +962,7 @@ contains
     call set_case_name("simple_opaque")
 
     ! create our main data store
-    ds = datastore_new()
+    ds = SidreDataStore()
 
     ! get access to our root data Group
     root = ds%get_root()
@@ -964,6 +991,148 @@ contains
 !--  free(src_data)
   end subroutine simple_opaque
 
+!------------------------------------------------------------------------------
+
+  subroutine clear_view
+    type(SidreDataStore) ds
+    type(SidreGroup) root
+    integer, parameter :: BLEN = 10
+
+    ds = SidreDataStore()
+    root = ds%get_root()
+
+    call v_empty
+    call v_described
+    call v_scalar
+    call v_string
+    call v_allocated
+    call v_undescribed_buffer
+    call v_buffer
+    call v_external
+    call v_opaque
+    
+  contains 
+    ! Create an empty view.
+    subroutine v_empty
+      type(SidreView) view
+
+      view = root%create_view("v_empty")
+      call check_view_values(view, EMPTYVIEW, .false., .false., .false., 0)
+      call view%clear
+      call check_view_values(view, EMPTYVIEW, .false., .false., .false., 0)
+    end subroutine v_empty
+
+    ! Describe an empty view.
+    subroutine v_described
+      type(SidreView) view
+
+      view = root%create_view("v_described", SIDRE_INT_ID, BLEN)
+      call check_view_values(view, EMPTYVIEW, .true., .false., .false., BLEN)
+      call view%clear
+      call check_view_values(view, EMPTYVIEW, .false., .false., .false., 0)
+    end subroutine v_described
+
+    ! scalar view.
+    subroutine v_scalar
+      type(SidreView) view
+
+      view = root%create_view_scalar("v_scalar", 1)
+      call check_view_values(view, SCALARVIEW, .true., .true., .true., 1)
+      call view%clear
+      call check_view_values(view, EMPTYVIEW, .false., .false., .false., 0)
+    end subroutine v_scalar
+
+    ! string view.
+    subroutine v_string
+      type(SidreView) view
+
+      view = root%create_view_string("v_string", "string-test")
+      call view%clear
+      call check_view_values(view, EMPTYVIEW, .false., .false., .false., 0)
+    end subroutine v_string
+
+    ! Allocated view, Buffer will be released.
+    subroutine v_allocated
+      type(SidreView) view
+      integer nbuf
+
+      nbuf = ds%get_num_buffers()
+      view = root%create_view_and_allocate("v_allocated", SIDRE_INT_ID, BLEN)
+      call check_view_values(view, BUFFERVIEW, .true., .true., .true., BLEN)
+      call view%clear
+      call check_view_values(view, EMPTYVIEW, .false., .false., .false., 0)
+      call assert_true(ds%get_num_buffers() == nbuf)
+    end subroutine v_allocated
+
+    ! Undescribed Buffer.
+    subroutine v_undescribed_buffer
+      type(SidreView) view
+      type(SidreBuffer) dbuff
+      integer nbuf
+
+      nbuf = ds%get_num_buffers()
+      dbuff = ds%create_buffer()
+      view = root%create_view("v_undescribed_buffer", dbuff)
+      call check_view_values(view, BUFFERVIEW, .false., .false., .false., 0)
+      call view%clear
+      call check_view_values(view, EMPTYVIEW, .false., .false., .false., 0)
+      call assert_true(ds%get_num_buffers() == nbuf)
+    end subroutine v_undescribed_buffer
+
+    ! Explicit Buffer attached to two views.
+    ! Buffer will not be released.
+    subroutine v_buffer
+      type(SidreView) view, vother
+      type(SidreBuffer) dbuff
+      integer nbuf
+
+      dbuff = ds%create_buffer()
+      call dbuff%allocate(SIDRE_INT_ID, BLEN)
+      nbuf = ds%get_num_buffers()
+      call assert_true(dbuff%get_num_views() == 0)
+
+      vother = root%create_view("v_other", SIDRE_INT_ID, BLEN)
+      view = root%create_view("v_buffer", SIDRE_INT_ID, BLEN)
+      call vother%attach_buffer(dbuff)
+      call assert_true(dbuff%get_num_views() == 1)
+      call view%attach_buffer(dbuff)
+      call assert_true(dbuff%get_num_views() == 2)
+      
+      call check_view_values(view, BUFFERVIEW, .true., .true., .true., BLEN)
+      call view%clear
+      call check_view_values(view, EMPTYVIEW, .false., .false., .false., 0)
+      
+      call assert_true(ds%get_num_buffers() == nbuf)
+      call assert_true(dbuff%get_num_views() == 1)
+    end subroutine v_buffer
+
+    ! External view.
+    subroutine v_external
+      type(SidreView) view
+      integer(C_INT), target :: extdata(BLEN)
+      type(C_PTR) ptr
+
+      ptr = c_loc(extdata)
+      view = root%create_view("v_external", SIDRE_INT_ID, BLEN, ptr)
+      call check_view_values(view, EXTERNALVIEW, .true., .true., .true., BLEN)
+      call view%clear
+      call check_view_values(view, EMPTYVIEW, .false., .false., .false., 0)
+    end subroutine v_external
+
+    ! Opaque view.
+    subroutine v_opaque
+      type(SidreView) view
+      integer(C_INT), target :: extdata(BLEN)
+      type(C_PTR) ptr
+
+      ptr = c_loc(extdata)
+      view = root%create_view("v_opaque", ptr)
+      call check_view_values(view, EXTERNALVIEW, .false., .true., .false., 0)
+      call view%clear
+      call check_view_values(view, EMPTYVIEW, .false., .false., .false., 0)
+    end subroutine v_opaque
+  end subroutine clear_view
+  
 !----------------------------------------------------------------------
 end module sidre_view_test
 !----------------------------------------------------------------------
@@ -993,6 +1162,7 @@ program fortran_test
   call int_array_multi_view_resize
   call int_array_realloc
   call simple_opaque
+  call clear_view
 
   call fruit_summary
   call fruit_finalize

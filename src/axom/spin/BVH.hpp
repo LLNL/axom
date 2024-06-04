@@ -1,54 +1,60 @@
-// Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC and
-// other Axom Project Developers. See the top-level COPYRIGHT file for details.
+// Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
+// other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
 #ifndef AXOM_SPIN_BVH_H_
 #define AXOM_SPIN_BVH_H_
 
-#include "axom/config.hpp"                 // for Axom compile-time definitions
-#include "axom/core/Macros.hpp"            // for Axom macros
-#include "axom/core/memory_management.hpp" // for memory functions
-#include "axom/core/Types.hpp"             // for fixed bitwidth types
-#include "axom/slic/interface/slic.hpp"    // for SLIC macros
+// axom core includes
+#include "axom/config.hpp"       // for Axom compile-time definitions
+#include "axom/core/Macros.hpp"  // for Axom macros
+#include "axom/core/Types.hpp"   // for axom::IndexType
+#include "axom/core/numerics/floating_point_limits.hpp"  // floating_point_limits
 
-// spin includes
-#include "axom/spin/execution_space.hpp"
+#include "axom/core/execution/execution_space.hpp"  // for execution spaces
 
-#include "axom/spin/internal/linear_bvh/aabb.hpp"
-#include "axom/spin/internal/linear_bvh/vec.hpp"
-#include "axom/spin/internal/linear_bvh/bvh_vtkio.hpp"
-#include "axom/spin/internal/linear_bvh/BVHData.hpp"
-#include "axom/spin/internal/linear_bvh/emit_bvh.hpp"
-#include "axom/spin/internal/linear_bvh/build_radix_tree.hpp"
+#include "axom/primal/geometry/BoundingBox.hpp"
+#include "axom/primal/geometry/Point.hpp"
+#include "axom/primal/geometry/Ray.hpp"
+
+#include "axom/primal/operators/intersect.hpp"  // for detail::intersect_ray()
+
+#include "axom/spin/policy/LinearBVH.hpp"
+
+// slic includes
+#include "axom/slic/interface/slic.hpp"  // for SLIC macros
 
 // C/C++ includes
-#include <fstream>  // for std::ofstream
-#include <sstream>  // for std::ostringstream
-#include <string>   // for std::string
-#include <cstring>  // for memcpy
-
-#if !defined(AXOM_USE_RAJA) || !defined(AXOM_USE_UMPIRE)
-#error *** The spin::BVH class requires RAJA and Umpire ***
-#endif
-
-// RAJA includes
-#include "RAJA/RAJA.hpp"
+#include <type_traits>  // for std::is_floating_point(), std::is_same()
+#include <memory>
 
 namespace axom
 {
 namespace spin
 {
-
 /*!
  * \brief Enumerates the list of return codes for various BVH operations.
  */
 enum BVHReturnCodes
 {
-  BVH_BUILD_FAILED=-1, //!< indicates that generation of the BVH failed
-  BVH_BUILD_OK,        //!< indicates that the BVH was generated successfully
+  BVH_BUILD_FAILED = -1,  //!< indicates that generation of the BVH failed
+  BVH_BUILD_OK,           //!< indicates that the BVH was generated successfully
 };
 
+enum class BVHType
+{
+  LinearBVH
+};
+
+template <typename FloatType, int NDIMS, typename ExecType, BVHType Policy>
+struct BVHPolicy;
+
+template <typename FloatType, int NDIMS, typename ExecType>
+struct BVHPolicy<FloatType, NDIMS, ExecType, BVHType::LinearBVH>
+{
+  using ImplType = policy::LinearBVH<FloatType, NDIMS, ExecType>;
+};
 
 /*!
  * \class BVH
@@ -71,8 +77,7 @@ enum BVHReturnCodes
  * \note The last template parameter is optional. Defaults to double precision
  *  if not specified.
  *
- * \pre The spin::BVH class requires RAJA and Umpire. For a CPU-only, sequential
- *  implementation, see the spin::BVHTree class.
+ * \pre The spin::BVH class requires RAJA and Umpire with CUDA_EXEC.
  *
  * \note The Execution Space, supplied as the 2nd template argument, specifies
  *
@@ -80,28 +85,7 @@ enum BVHReturnCodes
  *  2. Where and how subsequent queries are performed
  *  3. The default memory space, bound to the corresponding execution space
  *
- *  The list of currently available options are:
- *
- *  * <b> SEQ_EXEC </b> <br />
- *
- *    The BVH is constructed sequentially and stored on the CPU. All subsequent
- *    queries are performed sequentially on the CPU. This option is always
- *    available. The default memory space for SEQ_EXEC is host/cpu memory.
- *
- *  * <b> OMP_EXEC </b> <br />
- *
- *    The BVH is constructed in parallel on the CPU, using OpenMP, and likewise
- *    all subsequent queries are performed in parallel on the CPU. This option
- *    is available when Axom is compiled with OpenMP enabled. The default
- *    memory space used for OMP_EXEC is host/cpu memory.
- *
- *  * <b> CUDA_EXEC </b> <br />
- *
- *    The BVH is constructed in parallel and stored on the GPU, using CUDA.
- *    Likewise all subsequent queries are perfomed in parallel on the GPU.
- *    This option is availe when Axom is compiled with CUDA support. The
- *    default memory space used for CUDA_EXEC is unified memory, which can
- *    be accessed both from the CPU and GPU.
+ * \see axom::execution_space for more details.
  *
  *  A simple example illustrating how to use the BVH class is given below:
  *  \code
@@ -110,17 +94,19 @@ enum BVHReturnCodes
  *     constexpr int DIMENSION = 3;
  *
  *     // get a list of axis-aligned bounding boxes in a flat array
- *     const double* aabbs = ...
+ *     const primal::BoundingBox<float, DIMENSION>* aabbs = ...
  *
  *     // create a 3D BVH instance in parallel on the CPU using OpenMP
- *     spin::BVH< DIMENSION, spin::OMP_EXEC > bvh( aabbs, numItems );
- *     bvh.build();
+ *     spin::BVH< DIMENSION, axom::OMP_EXEC > bvh;
+ *     bvh.initialize( aabbs, numItems );
  *
- *     // query points supplied in arrays, qx, qy, qz,
+ *     // query points supplied in arrays, qx, qy, qz
  *     const axom::IndexType numPoints = ...
  *     const double* qx = ...
  *     const double* qy = ...
  *     const double* qz = ...
+ *     //use the ZipPoint class to tie them together
+ *     ZipPoint qpts {{qx,qy,qz}};
  *
  *     // output array buffers
  *     axom::IndexType* offsets    = axom::allocate< IndexType >( numPoints );
@@ -129,7 +115,7 @@ enum BVHReturnCodes
  *
  *     // find candidates in parallel, allocates and populates the supplied
  *     // candidates array
- *     bvh.find( offsets, counts, candidates, numPoints, qx, qy, qz );
+ *     bvh.findPoints( offsets, counts, candidates, numPoints, qpts );
  *     SLIC_ASSERT( candidates != nullptr );
  *
  *     ...
@@ -138,49 +124,90 @@ enum BVHReturnCodes
  *     axom::deallocate( candidates );
  *
  *  \endcode
- *
+ *  \accelerated
  */
-template < int NDIMS, typename ExecSpace, typename FloatType = double >
+template <int NDIMS,
+          typename ExecSpace = axom::SEQ_EXEC,
+          typename FloatType = double,
+          BVHType BVHImpl = BVHType::LinearBVH>
 class BVH
 {
+private:
+  // compile time checks
+  AXOM_STATIC_ASSERT_MSG(((NDIMS == 2) || (NDIMS == 3)),
+                         "The BVH class may be used only in 2D or 3D.");
+  AXOM_STATIC_ASSERT_MSG(std::is_floating_point<FloatType>::value,
+                         "A valid FloatingType must be used for the BVH.");
+  AXOM_STATIC_ASSERT_MSG(
+    axom::execution_space<ExecSpace>::valid(),
+    "A valid execution space must be supplied to the BVH.");
+
+  using ImplType =
+    typename BVHPolicy<FloatType, NDIMS, ExecSpace, BVHImpl>::ImplType;
+
+  template <typename It>
+  class IteratorTraits
+  {
+  private:
+    template <typename U, typename Ret = decltype(std::declval<U&>()[0])>
+    static Ret array_operator_type(U AXOM_UNUSED_PARAM(obj))
+    { }
+
+    static std::false_type array_operator_type(...)
+    {
+      return std::false_type {};
+    }
+
+  public:
+    // The base object of the return type of a call to iter[], or std::false_type
+    // if operator[] does not exist.
+    using BaseType =
+      typename std::decay<decltype(array_operator_type(std::declval<It>()))>::type;
+
+    // The iterator must be an array-like type.
+    static_assert(
+      !std::is_same<BaseType, std::false_type>::value,
+      "Iterator type must be accessible with the array operator[].");
+
+    // The iterator object is copy-captured in a lambda and thus needs to be
+    // copy-constructible.
+    AXOM_STATIC_ASSERT_MSG(std::is_copy_constructible<It>::value,
+                           "Iterator type must be copy constructible.");
+
+    // We need to be able to copy-construct a primitve BaseType within the
+    // traversal kernel.
+    AXOM_STATIC_ASSERT_MSG(std::is_copy_constructible<BaseType>::value,
+                           "Iterator's value type must be copy constructible.");
+  };
+
 public:
+  using BoxType = typename primal::BoundingBox<FloatType, NDIMS>;
+  using PointType = typename primal::Point<FloatType, NDIMS>;
+  using RayType = typename primal::Ray<FloatType, NDIMS>;
 
-  AXOM_STATIC_ASSERT_MSG( ( (NDIMS==2) || (NDIMS==3) ),
-                          "The BVH class may be used only in 2D or 3D." );
-  AXOM_STATIC_ASSERT_MSG( std::is_floating_point< FloatType >::value,
-                          "A valid FloatingType must be used for the BVH." );
-  AXOM_STATIC_ASSERT_MSG( spin::execution_space< ExecSpace >::valid(),
-      "A valid execution space must be supplied to the BVH." );
+  using TraverserType = typename ImplType::TraverserType;
+  using ExecSpaceType = ExecSpace;
 
-
+public:
   /*!
-   * \brief Default constructor. Disabled.
+   * \brief Default constructor.
    */
-  BVH() = delete;
+  BVH() : m_AllocatorID(axom::execution_space<ExecSpace>::allocatorID()) { }
 
   /*!
-   * \brief Creates a BVH instance, of specified dimension, over a given set
+   * \brief Initializes a BVH instance, of specified dimension, over a given set
    *  of geometric entities, each represented by its corresponding axis-aligned
    *  bounding box.
    *
    * \param [in] boxes buffer consisting of bounding boxes for each entity.
    * \param [in] numItems the total number of items to store in the BVH.
    *
-   * \note boxes is an array of length 2*dimension*numItems, that stores the
-   *  two corners of the axis-aligned bounding box corresponding to a given
-   *  geometric entity. For example, in 3D, the two corners of the ith bounding
-   *  box are given by:
-   *  \code
-   *    const int offset = i*6;
+   * \return status set to BVH_BUILD_OK on success.
    *
-   *    double xmin = boxes[ offset   ];
-   *    double ymin = boxes[ offset+1 ];
-   *    double zmin = boxes[ offset+2 ];
-   *
-   *    double xmax = boxes[ offset+3 ];
-   *    double ymax = boxes[ offset+4 ];
-   *    double zmax = boxes[ offset+5 ];
-   *  \endcode
+   * \note If an allocatorID has not been set in a call to setAllocatorID(),
+   *  the code will use the default allocator ID for the execution space
+   *  specified via axom::execution_space<ExecSpace>::allocatorID() when the
+   *  BVH object is instantiated.
    *
    * \warning The supplied boxes array must point to a buffer in a memory space
    *  that is compatible with the execution space. For example, when using
@@ -190,692 +217,360 @@ public:
    * \pre boxes != nullptr
    * \pre numItems > 0
    */
-  BVH( const FloatType* boxes, IndexType numItems );
+  template <typename BoxIndexable>
+  int initialize(const BoxIndexable boxes, IndexType numItems);
+
+  bool isInitialized() const { return m_bvh != nullptr; }
 
   /*!
-   * \brief Destructor.
+   * \brief Sets the ID of the allocator used by the BVH.
+   * \param [in] allocatorID the ID of the allocator to use in BVH construction
    */
-  ~BVH();
+  void setAllocatorID(int allocatorID) { m_AllocatorID = allocatorID; };
 
   /*!
-   * \brief Generates the BVH
-   * \return status set to BVH_BUILD_OK on success.
+   * \brief Get the ID of the allocator used by the BVH.
+   * \return allocatorID the ID of the allocator used by the BVH.
    */
-  int build( );
+  int getAllocatorID() const { return m_AllocatorID; };
+
+  /*!
+   * \brief Sets the scale factor for scaling the supplied bounding boxes.
+   * \param [in] scale_factor the scale factor
+   *
+   * \note The default scale factor is set to 1.000123
+   */
+  void setScaleFactor(FloatType scale_factor) { m_scaleFactor = scale_factor; };
+
+  /*!
+   * \brief Returns the scale factor used when constructing the BVH.
+   * \return scale_factor the scale factor
+   */
+  FloatType getScaleFactor() const { return m_scaleFactor; };
+
+  /*!
+   * \brief Sets the tolerance used for querying the BVH.
+   * \param [in] TOL the tolerance to use.
+   *
+   * \note Default tolerance set to floating_point_limits<FloatType>::epsilon()
+   */
+  void setTolerance(FloatType EPS) { m_tolerance = EPS; };
+
+  /*!
+   * \brief Returns the tolerance value used for BVH queries.
+   * \return TOL the tolerance
+   */
+  FloatType getTolerance() const { return m_tolerance; };
 
   /*!
    * \brief Returns the bounds of the BVH, given by the the root bounding box.
    *
-   * \param [out] min buffer to store the lower corner of the root bounding box.
-   * \param [out] max buffer to store the upper corner of the root bounding box.
-   *
-   * \note min/max point to arrays that are at least NDIMS long.
-   *
-   * \pre min != nullptr
-   * \pre max != nullptr
+   * \return box the bounding box of the constructed BVH, or an invalid
+   *  bounding box if the BVH has not been initialized.
    */
-  void getBounds( FloatType* min, FloatType* max ) const;
+  BoxType getBounds() const
+  {
+    if(m_bvh)
+    {
+      return m_bvh->getBoundsImpl();
+    }
+    else
+    {
+      // return invalid box
+      return BoxType {};
+    }
+  }
 
   /*!
-   * \brief Finds the candidate geometric entities that contain each of the
-   *  given query points.
+   * \brief Returns a device-copyable object that can be used to traverse the
+   *  BVH from inside a device kernel.
+   *
+   * \return it the traverser object for the current BVH.
+   *
+   * \node The traverser object may only be used in the same execution space as
+   *  the one that the BVH class was instantiated with.
+   */
+  TraverserType getTraverser() const { return m_bvh->getTraverserImpl(); }
+
+  /*!
+   * \brief Finds the candidate bins that contain each of the query points.
    *
    * \param [out] offsets offset to the candidates array for each query point
    * \param [out] counts stores the number of candidates per query point
    * \param [out] candidates array of the candidate IDs for each query point
    * \param [in]  numPts the total number of query points supplied
-   * \param [in]  x array of x-coordinates
-   * \param [in]  y array of y-coordinates
-   * \param [in]  z array of z-coordinates, may be nullptr if 2D
-   *
-   * \note offsets and counts are pointers to arrays of size numPts that are
-   *  pre-allocated by the caller before calling find().
-   *
-   * \note The candidates array is allocated internally by the method and
-   *  ownership of the memory is transferred to the caller. Consequently, the
-   *  caller is responsible for properly deallocating the candidates buffer.
+   * \param [in]  points array of points to query against the BVH
    *
    * \note Upon completion, the ith query point has:
    *  * counts[ i ] candidates
    *  * Stored in the candidates array in the following range:
    *    [ offsets[ i ], offsets[ i ]+counts[ i ] ]
+   *  * The sum of all counts is the size of the candidates array,
+   *    candidates.size()
    *
-   * \pre offsets != nullptr
-   * \pre counts  != nullptr
-   * \pre candidates == nullptr
-   * \pre x != nullptr
-   * \pre y != nullptr if dimension==2 || dimension==3
-   * \pre z != nullptr if dimension==3
+   * \pre offsets.size() == numPts
+   * \pre counts.size()  == numPts
+   * \pre points != nullptr
    */
-  /// @{
-  void find( IndexType* offsets, IndexType* counts, IndexType*& candidates,
-             IndexType numPts, const FloatType* x, const FloatType* y ) const;
-  void find( IndexType* offsets, IndexType* counts,
-             IndexType*& candidates, IndexType numPts,
-             const FloatType* x, const FloatType* y, const FloatType* z ) const;
-  /// @}
+  template <typename PointIndexable>
+  void findPoints(axom::ArrayView<IndexType> offsets,
+                  axom::ArrayView<IndexType> counts,
+                  axom::Array<IndexType>& candidates,
+                  IndexType numPts,
+                  PointIndexable points) const;
+
+  /*!
+   * \brief Finds the candidate bins that intersect the given rays.
+   *
+   * \param [out] offsets offset to the candidates array for each ray
+   * \param [out] counts stores the number of candidates for each ray
+   * \param [out] candidates array of candidate IDs for each ray
+   * \param [in] numRays the total number of rays
+   * \param [in] rays array of the rays to query against the BVH
+   *
+   * \note After the call to findRays(), the ith ray has:
+   *  * counts[ i ] candidates
+   *  * candidates stored in [ offsets[ i ], offsets[i]+counts[i] ]
+   *  * The sum of all counts is the size of the candidates array,
+   *    candidates.size()
+   *
+   * \pre offsets.size() == numRays
+   * \pre counts.size()  == numRays
+   * \pre rays != nullptr
+   */
+  template <typename RayIndexable>
+  void findRays(axom::ArrayView<IndexType> offsets,
+                axom::ArrayView<IndexType> counts,
+                axom::Array<IndexType>& candidates,
+                IndexType numRays,
+                RayIndexable rays) const;
+
+  /*!
+   * \brief Finds the candidate bins that intersect the given bounding boxes.
+   *
+   * \param [out] offsets offset to the candidates array for each bounding box
+   * \param [out] counts stores the number of candidates for each bounding box
+   * \param [out] candidates array of candidate IDs for each bounding box
+   * \param [in]  numBoxes the total number of bounding boxes
+   * \param [in]  boxes array of boxes to query against the BVH
+   *
+   * \note After the call to findBoundingBoxes(), the ith bounding box has:
+   *  * counts[ i ] candidates
+   *  * candidates stored in [ offsets[ i ], offsets[i]+counts[i] ]
+   *  * The sum of all counts is the size of the candidates array,
+   *    candidates.size()
+   *
+   * \pre offsets.size() == numBoxes
+   * \pre counts.size()  == numBoxes
+   * \pre boxes != nullptr
+   */
+  template <typename BoxIndexable>
+  void findBoundingBoxes(axom::ArrayView<IndexType> offsets,
+                         axom::ArrayView<IndexType> counts,
+                         axom::Array<IndexType>& candidates,
+                         IndexType numBoxes,
+                         BoxIndexable boxes) const;
 
   /*!
    * \brief Writes the BVH to the specified VTK file for visualization.
    * \param [in] fileName the name of VTK file.
    * \note Primarily used for debugging.
    */
-  void writeVtkFile( const std::string& fileName ) const;
+  void writeVtkFile(const std::string& fileName) const;
 
 private:
+  /// \name Private Members
+  /// @{
+  static constexpr FloatType DEFAULT_SCALE_FACTOR = 1.000123;
+  static constexpr FloatType DEFAULT_TOLERANCE =
+    axom::numerics::floating_point_limits<FloatType>::epsilon();
 
-/// \name Private Members
-/// @{
-
-  IndexType m_numItems;
-  const FloatType* m_boxes;
-  internal::linear_bvh::BVHData< FloatType,NDIMS > m_bvh;
-
-/// @}
-
-  DISABLE_COPY_AND_ASSIGNMENT(BVH);
-  DISABLE_MOVE_AND_ASSIGNMENT(BVH);
+  int m_AllocatorID;
+  FloatType m_tolerance {DEFAULT_TOLERANCE};
+  FloatType m_scaleFactor {DEFAULT_SCALE_FACTOR};
+  std::unique_ptr<ImplType> m_bvh {};
+  /// @}
 };
 
 //------------------------------------------------------------------------------
-//  BVH IMPLEMENTATION HELPER METHODS
+//  BVH implementation
 //------------------------------------------------------------------------------
-namespace
+template <int NDIMS, typename ExecSpace, typename FloatType, BVHType Impl>
+template <typename BoxIndexable>
+int BVH<NDIMS, ExecSpace, FloatType, Impl>::initialize(const BoxIndexable boxes,
+                                                       IndexType numBoxes)
 {
+  AXOM_ANNOTATE_SCOPE("BVH::initialize");
 
-//------------------------------------------------------------------------------
-template< typename FloatType >
-AXOM_HOST_DEVICE
-bool InLeft( const internal::linear_bvh::Vec< FloatType, 3>& point,
-             const internal::linear_bvh::Vec< FloatType, 4>& s1,
-             const internal::linear_bvh::Vec< FloatType, 4>& s2 )
-{
-  bool in_left = true;
-  if ( point[0]  < s1[0] ) in_left = false;
-  if ( point[1]  < s1[1] ) in_left = false;
-  if ( point[2]  < s1[2] ) in_left = false;
+  using IterBase = typename IteratorTraits<BoxIndexable>::BaseType;
 
-  if ( point[0]  > s1[3] ) in_left = false;
-  if ( point[1]  > s2[0] ) in_left = false;
-  if ( point[2]  > s2[1] ) in_left = false;
+  // Ensure that the iterator returns objects convertible to primal::BoundingBox.
+  static_assert(
+    std::is_convertible<IterBase, BoxType>::value,
+    "Iterator must return objects convertible to primal::BoundingBox.");
 
-  return in_left;
-}
+  using BoxType = primal::BoundingBox<FloatType, NDIMS>;
 
-//------------------------------------------------------------------------------
-template< typename FloatType >
-AXOM_HOST_DEVICE
-bool InLeft( const internal::linear_bvh::Vec< FloatType, 2>& point,
-             const internal::linear_bvh::Vec< FloatType, 4>& s1,
-             const internal::linear_bvh::Vec< FloatType, 4>& s2 )
-{
-  bool in_left = true;
-  if ( point[0]  < s1[0] ) in_left = false;
-  if ( point[1]  < s1[1] ) in_left = false;
+  // STEP 1: Allocate a BVH, potentially deleting the existing BVH if it exists
+  m_bvh.reset(new ImplType);
 
-  if ( point[0]  > s1[3] ) in_left = false;
-  if ( point[1]  > s2[0] ) in_left = false;
-
-  return in_left;
-}
-
-//------------------------------------------------------------------------------
-template< typename FloatType >
-AXOM_HOST_DEVICE
-bool InRight( const internal::linear_bvh::Vec< FloatType, 3>& point,
-              const internal::linear_bvh::Vec< FloatType, 4>& s2,
-              const internal::linear_bvh::Vec< FloatType, 4>& s3 )
-{
-  bool in_right = true;
-
-  if ( point[0] < s2[2] ) in_right = false;
-  if ( point[1] < s2[3] ) in_right = false;
-  if ( point[2] < s3[0] ) in_right = false;
-
-  if ( point[0] > s3[1] ) in_right = false;
-  if ( point[1] > s3[2] ) in_right = false;
-  if ( point[2] > s3[3] ) in_right = false;
-
-  return in_right;
-}
-
-//------------------------------------------------------------------------------
-template< typename FloatType >
-AXOM_HOST_DEVICE
-bool InRight( const internal::linear_bvh::Vec< FloatType, 2>& point,
-              const internal::linear_bvh::Vec< FloatType, 4>& s2,
-              const internal::linear_bvh::Vec< FloatType, 4>& s3 )
-{
-  bool in_right = true;
-
-  if ( point[0] < s2[2] ) in_right = false;
-  if ( point[1] < s2[3] ) in_right = false;
-
-  if ( point[0] > s3[1] ) in_right = false;
-  if ( point[1] > s3[2] ) in_right = false;
-
-  return in_right;
-}
-
-}
-
-//------------------------------------------------------------------------------
-//  BVH IMPLEMENTATION
-//------------------------------------------------------------------------------
-template< int NDIMS, typename ExecSpace, typename FloatType >
-BVH< NDIMS, ExecSpace, FloatType >::BVH( const FloatType* boxes,
-                                         IndexType numItems ) :
-  m_numItems( numItems ),
-  m_boxes( boxes )
-{
-
-}
-
-//------------------------------------------------------------------------------
-template< int NDIMS, typename ExecSpace, typename FloatType >
-BVH< NDIMS, ExecSpace, FloatType >::~BVH()
-{
-  m_bvh.deallocate();
-}
-
-//------------------------------------------------------------------------------
-template< int NDIMS, typename ExecSpace, typename FloatType >
-int BVH< NDIMS, ExecSpace, FloatType >::build()
-{
-  // STEP 0: set the default memory allocator to use for the execution space.
-  umpire::Allocator current_allocator = axom::getDefaultAllocator();
-  const int allocatorID = spin::execution_space< ExecSpace >::allocatorID();
-  axom::setDefaultAllocator( allocatorID );
-
-  // STEP 1: Handle case when user supplied a single bounding box
-  int numBoxes        = m_numItems;
-  FloatType* boxesptr = nullptr;
-  if ( m_numItems == 1 )
+  // STEP 1: Handle case when user supplied 0 or 1 bounding boxes.
+  BoxType* boxesptr = nullptr;
+  if(numBoxes <= 1)
   {
-    numBoxes          = 2;
-    constexpr int32 M = NDIMS * 2;      // number of entries for one box
-    const int N       = numBoxes * M;   // number of entries for N boxes
-    boxesptr          = axom::allocate< FloatType >( N );
-
-    const FloatType* myboxes = m_boxes;
+    const bool copyFirst = numBoxes == 1;
+    numBoxes = 2;
+    boxesptr = axom::allocate<BoxType>(numBoxes, m_AllocatorID);
 
     // copy first box and add a fake 2nd box
-    using exec_policy = typename spin::execution_space< ExecSpace >::raja_exec;
-    RAJA::forall< exec_policy >(
-          RAJA::RangeSegment(0,N), AXOM_LAMBDA(IndexType i)
-    {
-      boxesptr[ i ] = ( i < M ) ? myboxes[ i ] : 0.0;
-    } );
-
-  } // END if single item
+    for_all<ExecSpace>(
+      2,
+      AXOM_LAMBDA(IndexType i) {
+        if(copyFirst && i == 0)
+        {
+          boxesptr[i] = boxes[i];
+        }
+        else
+        {
+          BoxType empty_box;
+          // Make the box invalid.
+          empty_box.clear();
+          boxesptr[i] = empty_box;
+        }
+      });
+    m_bvh->buildImpl(boxesptr, numBoxes, m_scaleFactor, m_AllocatorID);
+  }
   else
   {
-    boxesptr = const_cast< FloatType* >( m_boxes );
+    m_bvh->buildImpl(boxes, numBoxes, m_scaleFactor, m_AllocatorID);
   }
-
-  // STEP 2: Build a RadixTree consisting of the bounding boxes, sorted
-  // by their corresponding morton code.
-  internal::linear_bvh::RadixTree< FloatType, NDIMS > radix_tree;
-  internal::linear_bvh::AABB< FloatType, NDIMS > global_bounds;
-  internal::linear_bvh::build_radix_tree< ExecSpace >(
-      boxesptr, numBoxes, global_bounds, radix_tree );
-
-  // STEP 3: emit the BVH data-structure from the radix tree
-  m_bvh.m_bounds = global_bounds;
-  m_bvh.allocate( numBoxes );
-
-  // STEP 4: emit the BVH
-  internal::linear_bvh::emit_bvh< ExecSpace >( radix_tree, m_bvh );
-
-  radix_tree.deallocate();
 
   // STEP 5: deallocate boxesptr if user supplied a single box
-  if ( m_numItems == 1 )
+  if(boxesptr)
   {
-    SLIC_ASSERT( boxesptr != m_boxes );
-    axom::deallocate( boxesptr );
+    SLIC_ASSERT(boxesptr != nullptr);
+    axom::deallocate(boxesptr);
   }
-
-  // STEP 6: restore default allocator
-  axom::setDefaultAllocator( current_allocator );
   return BVH_BUILD_OK;
 }
 
 //------------------------------------------------------------------------------
-template< int NDIMS, typename ExecSpace, typename FloatType >
-void BVH< NDIMS, ExecSpace, FloatType >::getBounds( FloatType* min,
-                                                    FloatType* max ) const
+template <int NDIMS, typename ExecSpace, typename FloatType, BVHType Impl>
+template <typename PointIndexable>
+void BVH<NDIMS, ExecSpace, FloatType, Impl>::findPoints(
+  axom::ArrayView<IndexType> offsets,
+  axom::ArrayView<IndexType> counts,
+  axom::Array<IndexType>& candidates,
+  IndexType numPts,
+  PointIndexable pts) const
 {
-  SLIC_ASSERT( min != nullptr );
-  SLIC_ASSERT( max != nullptr );
-  m_bvh.m_bounds.min( min );
-  m_bvh.m_bounds.max( max );
+  AXOM_ANNOTATE_SCOPE("BVH::findPoints");
+
+  using IterBase = typename IteratorTraits<PointIndexable>::BaseType;
+
+  // Ensure that the iterator returns objects convertible to primal::Point.
+  static_assert(std::is_convertible<IterBase, PointType>::value,
+                "Iterator must return objects convertible to primal::Point.");
+
+  SLIC_ASSERT(m_bvh != nullptr);
+
+  // Define traversal predicates
+  auto predicate = [=] AXOM_HOST_DEVICE(const PointType& p,
+                                        const BoxType& bb) -> bool {
+    return bb.contains(p);
+  };
+
+  candidates = m_bvh->template findCandidatesImpl<PointType>(predicate,
+                                                             offsets,
+                                                             counts,
+                                                             numPts,
+                                                             pts,
+                                                             m_AllocatorID);
 }
 
 //------------------------------------------------------------------------------
-template< int NDIMS, typename ExecSpace, typename FloatType >
-void BVH< NDIMS, ExecSpace, FloatType >::find( IndexType* offsets,
-                                               IndexType* counts,
-                                               IndexType*& candidates,
-                                               IndexType numPts,
-                                               const FloatType* x,
-                                               const FloatType* y,
-                                               const FloatType* z ) const
+template <int NDIMS, typename ExecSpace, typename FloatType, BVHType Impl>
+template <typename RayIndexable>
+void BVH<NDIMS, ExecSpace, FloatType, Impl>::findRays(
+  axom::ArrayView<IndexType> offsets,
+  axom::ArrayView<IndexType> counts,
+  axom::Array<IndexType>& candidates,
+  IndexType numRays,
+  RayIndexable rays) const
 {
-  AXOM_STATIC_ASSERT_MSG( NDIMS==3,
-     "The 3D version of find() must be called on a 3D BVH" );
+  AXOM_ANNOTATE_SCOPE("BVH::findRays");
 
-  SLIC_ASSERT( offsets != nullptr );
-  SLIC_ASSERT( counts != nullptr );
-  SLIC_ASSERT( candidates == nullptr );
-  SLIC_ASSERT( x != nullptr );
-  SLIC_ASSERT( y != nullptr );
-  SLIC_ASSERT( z != nullptr );
+  using IterBase = typename IteratorTraits<RayIndexable>::BaseType;
 
-  // STEP 0: set the default memory allocator to use for the execution space.
-  umpire::Allocator current_allocator = axom::getDefaultAllocator();
-  const int allocatorID = spin::execution_space< ExecSpace >::allocatorID();
-  axom::setDefaultAllocator( allocatorID );
+  // Ensure that the iterator returns objects convertible to primal::Ray.
+  static_assert(std::is_convertible<IterBase, RayType>::value,
+                "Iterator must return objects convertible to primal::Ray.");
 
-  // STEP 1: count number of candidates for each query point
-  using vec4_t = internal::linear_bvh::Vec< FloatType, 4 >;
+  SLIC_ASSERT(m_bvh != nullptr);
 
-  const vec4_t* inner_nodes = m_bvh.m_inner_nodes;
-  const int32*  leaf_nodes  = m_bvh.m_leaf_nodes;
-  SLIC_ASSERT( inner_nodes != nullptr );
-  SLIC_ASSERT( leaf_nodes != nullptr );
+  const FloatType TOL = m_tolerance;
 
-  using exec_policy = typename spin::execution_space< ExecSpace >::raja_exec;
-  RAJA::forall< exec_policy >(
-      RAJA::RangeSegment(0,numPts), AXOM_LAMBDA(IndexType i)
-  {
-    int32 count = 0;
-    internal::linear_bvh::Vec< FloatType, NDIMS > point;
-    point[0] = x[i];
-    point[1] = y[i];
-    point[2] = z[i];
+  // Define traversal predicates
+  auto predicate = [=] AXOM_HOST_DEVICE(const RayType& r,
+                                        const BoxType& bb) -> bool {
+    primal::Point<FloatType, NDIMS> tmp;
+    return primal::detail::intersect_ray(r, bb, tmp, TOL);
+  };
 
-   int32 current_node = 0;
-   int32 todo[64];
-   int32 stackptr = 0;
-
-   constexpr int32 barrier = -2000000000;
-   todo[stackptr] = barrier;
-   while (current_node != barrier)
-   {
-     if (current_node > -1)
-     {
-       const vec4_t first4  = inner_nodes[current_node + 0];
-       const vec4_t second4 = inner_nodes[current_node + 1];
-       const vec4_t third4  = inner_nodes[current_node + 2];
-
-       const bool in_left  = InLeft( point, first4, second4 );
-       const bool in_right = InRight( point, second4, third4 );
-
-       if (!in_left && !in_right)
-       {
-         // pop the stack and continue
-         current_node = todo[stackptr];
-         stackptr--;
-       }
-       else
-       {
-         vec4_t children = inner_nodes[current_node + 3];
-         int32 l_child;
-         constexpr int32 isize = sizeof(int32);
-         // memcpy the int bits hidden in the floats
-         memcpy(&l_child, &children[0], isize);
-         int32 r_child;
-         memcpy(&r_child, &children[1], isize);
-
-         current_node = (in_left) ? l_child : r_child;
-
-          if (in_left && in_right)
-          {
-            stackptr++;
-            todo[stackptr] = r_child;
-            // TODO: if we are in both children we could
-            // go down the "closer" first by perhaps the distance
-            // from the point to the center of the aabb
-          }
-
-       } // END else
-
-     } // END if
-     else
-     {
-       // leaf node
-       count++;
-       current_node = todo[stackptr];
-       stackptr--;
-     }
-
-   } // while
-
-  counts[ i ] = count;
-
-  } );
-
-  RAJA::exclusive_scan< exec_policy >(
-      counts, counts+numPts, offsets, RAJA::operators::plus<IndexType>{} );
-
-  // TODO: this will segault with raw(unmanaged) cuda pointers
-  IndexType total_candidates = offsets[numPts-1] + counts[numPts - 1];
-
-  candidates = axom::allocate< IndexType >( total_candidates);
-
-  // STEP 2: fill in candidates for each point
-  RAJA::forall< exec_policy >(
-      RAJA::RangeSegment(0, numPts), AXOM_LAMBDA (IndexType i)
-  {
-    int32 offset = offsets[ i ];
-
-    internal::linear_bvh::Vec< FloatType,NDIMS > point;
-    point[0] = x[i];
-    point[1] = y[i];
-    point[2] = z[i];
-
-    int32 current_node = 0;
-    int32 todo[64];
-    int32 stackptr = 0;
-
-    constexpr int32 barrier = -2000000000;
-    todo[stackptr] = barrier;
-    while (current_node != barrier)
-    {
-      if (current_node > -1)
-      {
-        const vec4_t first4  = inner_nodes[current_node + 0];
-        const vec4_t second4 = inner_nodes[current_node + 1];
-        const vec4_t third4  = inner_nodes[current_node + 2];
-
-        const bool in_left  = InLeft( point, first4, second4 );
-        const bool in_right = InRight( point, second4, third4 );
-
-        if (!in_left && !in_right)
-        {
-          // pop the stack and continue
-          current_node = todo[stackptr];
-          stackptr--;
-        }
-        else
-        {
-          vec4_t children = inner_nodes[current_node + 3];
-          int32 l_child;
-          constexpr int32 isize = sizeof(int32);
-          // memcpy the int bits hidden in the floats
-          memcpy(&l_child, &children[0], isize);
-          int32 r_child;
-          memcpy(&r_child, &children[1], isize);
-
-          current_node = (in_left) ? l_child : r_child;
-
-          if (in_left && in_right)
-          {
-            stackptr++;
-            todo[stackptr] = r_child;
-            // TODO: if we are in both children we could
-            // go down the "closer" first by perhaps the distance
-            // from the point to the center of the aabb
-          }
-        }
-      }
-      else
-      {
-        current_node = -current_node - 1; //swap the neg address
-        candidates[offset] = leaf_nodes[current_node];
-        offset++;
-        current_node = todo[stackptr];
-        stackptr--;
-      }
-
-    } // while
-
-  } );
-
-  // STEP 3: restore default allocator
-  axom::setDefaultAllocator( current_allocator );
+  candidates = m_bvh->template findCandidatesImpl<RayType>(predicate,
+                                                           offsets,
+                                                           counts,
+                                                           numRays,
+                                                           rays,
+                                                           m_AllocatorID);
 }
 
 //------------------------------------------------------------------------------
-template< int NDIMS, typename ExecSpace, typename FloatType >
-void BVH< NDIMS, ExecSpace, FloatType >::find( IndexType* offsets,
-                                               IndexType* counts,
-                                               IndexType*& candidates,
-                                               IndexType numPts,
-                                               const FloatType* x,
-                                               const FloatType* y ) const
+template <int NDIMS, typename ExecSpace, typename FloatType, BVHType Impl>
+template <typename BoxIndexable>
+void BVH<NDIMS, ExecSpace, FloatType, Impl>::findBoundingBoxes(
+  axom::ArrayView<IndexType> offsets,
+  axom::ArrayView<IndexType> counts,
+  axom::Array<IndexType>& candidates,
+  IndexType numBoxes,
+  BoxIndexable boxes) const
 {
-  AXOM_STATIC_ASSERT_MSG( NDIMS==2,
-     "The 2D version of find() must be called on a 2D BVH" );
+  AXOM_ANNOTATE_SCOPE("BVH::findBoundingBoxes");
 
-  SLIC_ASSERT( offsets != nullptr );
-  SLIC_ASSERT( counts != nullptr );
-  SLIC_ASSERT( candidates == nullptr );
-  SLIC_ASSERT( x != nullptr );
-  SLIC_ASSERT( y != nullptr );
+  using IterBase = typename IteratorTraits<BoxIndexable>::BaseType;
 
-  // STEP 0: set the default memory allocator to use for the execution space.
-  umpire::Allocator current_allocator = axom::getDefaultAllocator();
-  const int allocatorID = spin::execution_space< ExecSpace >::allocatorID();
-  axom::setDefaultAllocator( allocatorID );
+  // Ensure that the iterator returns objects convertible to primal::BoundingBox.
+  static_assert(
+    std::is_convertible<IterBase, BoxType>::value,
+    "Iterator must return objects convertible to primal::BoundingBox.");
 
-  // STEP 1: count number of candidates for each query point
-  const internal::linear_bvh::Vec< FloatType, 4>  *inner_nodes = m_bvh.m_inner_nodes;
-  const int32 *leaf_nodes = m_bvh.m_leaf_nodes;
-  SLIC_ASSERT( inner_nodes != nullptr );
-  SLIC_ASSERT( leaf_nodes != nullptr );
+  SLIC_ASSERT(m_bvh != nullptr);
 
-  using exec_policy = typename spin::execution_space< ExecSpace >::raja_exec;
-  using vec4_t      = internal::linear_bvh::Vec< FloatType, 4 >;
-  RAJA::forall< exec_policy >(
-      RAJA::RangeSegment(0, numPts), AXOM_LAMBDA (IndexType i)
-  {
-    int32 count = 0;
-    internal::linear_bvh::Vec< FloatType, NDIMS > point;
-    point[0] = x[i];
-    point[1] = y[i];
+  // STEP 2: define traversal predicates
+  auto predicate = [=] AXOM_HOST_DEVICE(const BoxType& bb1,
+                                        const BoxType& bb2) -> bool {
+    return bb1.intersectsWith(bb2);
+  };
 
-   int32 current_node = 0;
-   int32 todo[64];
-   int32 stackptr = 0;
-
-   constexpr int32 barrier = -2000000000;
-   todo[stackptr] = barrier;
-   while (current_node != barrier)
-   {
-     if (current_node > -1)
-     {
-       const vec4_t first4  = inner_nodes[current_node + 0];
-       const vec4_t second4 = inner_nodes[current_node + 1];
-       const vec4_t third4  = inner_nodes[current_node + 2];
-
-       const bool in_left  = InLeft( point, first4, second4 );
-       const bool in_right = InRight( point, second4, third4 );
-
-       if (!in_left && !in_right)
-       {
-         // pop the stack and continue
-         current_node = todo[stackptr];
-         stackptr--;
-       }
-       else
-       {
-         vec4_t children = inner_nodes[current_node + 3];
-         int32 l_child;
-         constexpr int32 isize = sizeof(int32);
-         // memcpy the int bits hidden in the floats
-         memcpy(&l_child, &children[0], isize);
-         int32 r_child;
-         memcpy(&r_child, &children[1], isize);
-
-         current_node = (in_left) ? l_child : r_child;
-
-          if (in_left && in_right)
-          {
-            stackptr++;
-            todo[stackptr] = r_child;
-            // TODO: if we are in both children we could
-            // go down the "closer" first by perhaps the distance
-            // from the point to the center of the aabb
-          }
-
-       } // END else
-
-     } // END if
-     else
-     {
-       // leaf node
-       count++;
-       current_node = todo[stackptr];
-       stackptr--;
-     }
-
-   } // while
-
-  counts[ i ] = count;
-
-  } );
-
-  RAJA::exclusive_scan< exec_policy >(
-      counts, counts+numPts, offsets, RAJA::operators::plus<IndexType>{} );
-
-  // TODO: this will segault with raw(unmanaged) cuda pointers
-  IndexType total_candidates = offsets[numPts-1] + counts[numPts - 1];
-
-  candidates = axom::allocate< IndexType >( total_candidates);
-
-  // STEP 2: fill in candidates for each point
-  RAJA::forall< exec_policy >(
-      RAJA::RangeSegment(0, numPts), AXOM_LAMBDA (IndexType i)
-  {
-    int32 offset = offsets[ i ];
-
-    internal::linear_bvh::Vec< FloatType,NDIMS > point;
-    point[0] = x[i];
-    point[1] = y[i];
-
-    int32 current_node = 0;
-    int32 todo[64];
-    int32 stackptr = 0;
-
-    constexpr int32 barrier = -2000000000;
-    todo[stackptr] = barrier;
-    while (current_node != barrier)
-    {
-      if (current_node > -1)
-      {
-        const vec4_t first4  = inner_nodes[current_node + 0];
-        const vec4_t second4 = inner_nodes[current_node + 1];
-        const vec4_t third4  = inner_nodes[current_node + 2];
-
-        const bool in_left  = InLeft( point, first4, second4 );
-        const bool in_right = InRight( point, second4, third4 );
-
-        if (!in_left && !in_right)
-        {
-          // pop the stack and continue
-          current_node = todo[stackptr];
-          stackptr--;
-        }
-        else
-        {
-          vec4_t children = inner_nodes[current_node + 3];
-          int32 l_child;
-          constexpr int32 isize = sizeof(int32);
-          // memcpy the int bits hidden in the floats
-          memcpy(&l_child, &children[0], isize);
-          int32 r_child;
-          memcpy(&r_child, &children[1], isize);
-
-          current_node = (in_left) ? l_child : r_child;
-
-          if (in_left && in_right)
-          {
-            stackptr++;
-            todo[stackptr] = r_child;
-            // TODO: if we are in both children we could
-            // go down the "closer" first by perhaps the distance
-            // from the point to the center of the aabb
-          }
-        }
-      }
-      else
-      {
-        current_node = -current_node - 1; //swap the neg address
-        candidates[offset] = leaf_nodes[current_node];
-        offset++;
-        current_node = todo[stackptr];
-        stackptr--;
-      }
-
-    } // while
-
-  } );
-
-  // STEP 3: restore default allocator
-  axom::setDefaultAllocator( current_allocator );
+  candidates = m_bvh->template findCandidatesImpl<BoxType>(predicate,
+                                                           offsets,
+                                                           counts,
+                                                           numBoxes,
+                                                           boxes,
+                                                           m_AllocatorID);
 }
 
 //------------------------------------------------------------------------------
-template < int NDIMS, typename ExecSpace, typename FloatType >
-void BVH< NDIMS, ExecSpace, FloatType >::writeVtkFile(
-    const std::string& fileName ) const
+template <int NDIMS, typename ExecSpace, typename FloatType, BVHType Impl>
+void BVH<NDIMS, ExecSpace, FloatType, Impl>::writeVtkFile(
+  const std::string& fileName) const
 {
-  std::ostringstream nodes;
-  std::ostringstream cells;
-  std::ostringstream levels;
+  SLIC_ASSERT(m_bvh != nullptr);
 
-  // STEP 0: Write VTK header
-  std::ofstream ofs;
-  ofs.open( fileName.c_str() );
-  ofs << "# vtk DataFile Version 3.0\n";
-  ofs << " BVHTree \n";
-  ofs << "ASCII\n";
-  ofs << "DATASET UNSTRUCTURED_GRID\n";
-
-  // STEP 1: write root
-  int32 numPoints = 0;
-  int32 numBins   = 0;
-  internal::linear_bvh::write_root(
-      m_bvh.m_bounds, numPoints, numBins,nodes,cells,levels );
-
-
-  // STEP 2: traverse the BVH and dump each bin
-  constexpr int32 ROOT = 0;
-  internal::linear_bvh::write_recursive< FloatType, NDIMS >(
-      m_bvh.m_inner_nodes, ROOT, 1, numPoints, numBins, nodes, cells, levels );
-
-  // STEP 3: write nodes
-  ofs << "POINTS " << numPoints << " double\n";
-  ofs << nodes.str() << std::endl;
-
-  // STEP 4: write cells
-  const int32 nnodes = (NDIMS==2) ? 4 : 8;
-  ofs << "CELLS " << numBins << " " << numBins*(nnodes+1) << std::endl;
-  ofs << cells.str() << std::endl;
-
-  // STEP 5: write cell types
-  ofs << "CELL_TYPES " << numBins << std::endl;
-  const int32 cellType = (NDIMS==2) ? 9 : 12;
-  for ( int32 i=0; i < numBins; ++i )
-  {
-    ofs << cellType << std::endl;
-  }
-
-  // STEP 6: dump level information
-  ofs << "CELL_DATA " << numBins << std::endl;
-  ofs << "SCALARS level int\n";
-  ofs << "LOOKUP_TABLE default\n";
-  ofs << levels.str() << std::endl;
-  ofs << std::endl;
-
-  // STEP 7: close file
-  ofs.close();
+  m_bvh->writeVtkFileImpl(fileName);
 }
 
-} /* namespace primal */
-} /* namespace axom */
+}  // namespace spin
+}  // namespace axom
 
-
-#endif /* AXOM_PRIMAL_BVH_H_ */
+#endif  // AXOM_SPIN_BVH_H_

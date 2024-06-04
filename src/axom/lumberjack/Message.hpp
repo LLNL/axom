@@ -1,5 +1,5 @@
-// Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC and
-// other Axom Project Developers. See the top-level COPYRIGHT file for details.
+// Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
+// other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
@@ -22,7 +22,6 @@ namespace axom
 {
 namespace lumberjack
 {
-
 /*!
  *****************************************************************************
  * \brief Message to indicate no messages need to be sent from child node.
@@ -69,11 +68,13 @@ public:
   Message()
     : m_text("")
     , m_ranks()
-    , m_ranksCount(0)
+    , m_ranksLimitReached(false)
+    , m_count(0)
     , m_fileName("")
     , m_lineNumber(0)
     , m_level(0)
-    , m_tag("") {}
+    , m_tag("")
+  { }
 
   /*!
    *****************************************************************************
@@ -88,16 +89,21 @@ public:
    * \param [in] tag The tag of where the Message originated.
    *****************************************************************************
    */
-  Message(const std::string& text, int rank,
-          const std::string& fileName, int lineNumber,
-          int level, const std::string& tag)
+  Message(const std::string& text,
+          int rank,
+          const std::string& fileName,
+          int lineNumber,
+          int level,
+          const std::string& tag)
     : m_text(text)
     , m_ranks(1, rank)
-    , m_ranksCount(1)
+    , m_ranksLimitReached(false)
+    , m_count(1)
     , m_fileName(fileName)
     , m_lineNumber(lineNumber)
     , m_level(level)
-    , m_tag(tag) {}
+    , m_tag(tag)
+  { }
 
   /*!
    *****************************************************************************
@@ -106,8 +112,7 @@ public:
    *
    * \param [in] text Actual text of the Message.
    * \param [in] ranks The rank where the Message originated.
-   * \param [in] ranksCount Total amount of ranks where this Message has
-   *  originated from.
+   * \param [in] count Total number of instances of this Message.
    * \param [in] ranksLimit Limit on how many ranks are individually tracked per
    *  Message.
    * \param [in] fileName The file name where the Message originated.
@@ -116,19 +121,24 @@ public:
    * \param [in] tag The tag of where the Message originated.
    *****************************************************************************
    */
-  Message(const std::string& text, const std::vector<int>& ranks,
-          int ranksCount, int ranksLimit,
-          const std::string& fileName, int lineNumber,
-          int level, const std::string& tag)
+  Message(const std::string& text,
+          const std::vector<int>& ranks,
+          int count,
+          int ranksLimit,
+          const std::string& fileName,
+          int lineNumber,
+          int level,
+          const std::string& tag)
     : m_text(text)
     , m_ranks()
-    , m_ranksCount(0)
+    , m_ranksLimitReached(false)
+    , m_count(0)
     , m_fileName(fileName)
     , m_lineNumber(lineNumber)
     , m_level(level)
     , m_tag(tag)
   {
-    addRanks(ranks, ranksCount, ranksLimit);
+    addRanks(ranks, count, ranksLimit);
   }
 
   // Getters
@@ -148,10 +158,10 @@ public:
 
   /*!
    *****************************************************************************
-   * \brief Returns the total count of ranks where this Message originated.
+   * \brief Returns the total count of this Message.
    *****************************************************************************
    */
-  int ranksCount() const;
+  int count() const;
 
   /*!
    *****************************************************************************
@@ -162,7 +172,7 @@ public:
    *  string.
    *****************************************************************************
    */
-  std::string stringOfRanks(std::string delimiter=",") const;
+  std::string stringOfRanks(std::string delimiter = ",") const;
 
   /*!
    *****************************************************************************
@@ -251,16 +261,15 @@ public:
 
   /*!
    *****************************************************************************
-   * \brief Adds multiple ranks to this Message.  ranksCount is used to
-   * increment since duplicates are removed from Message::ranks.
+   * \brief Adds multiple ranks to this Message.  count tracks how many times
+   * this message has occurred since duplicates are being filtered.
    *
    * \param [in] newRanks The new ranks to be added.
-   * \param [in] ranksCount Count to add to Message::ranksCount
+   * \param [in] count Count to add to Message::count
    * \param [in] ranksLimit Limits how many ranks are tracked per Message.
    *****************************************************************************
    */
-  void addRanks(const std::vector<int>& newRanks, int ranksCount,
-                int ranksLimit);
+  void addRanks(const std::vector<int>& newRanks, int count, int ranksLimit);
 
   // utilities
 
@@ -290,23 +299,23 @@ public:
    *****************************************************************************
    */
   void unpack(const std::string& packedMessage, int ranksLimit);
+
 private:
   void unpackRanks(const std::string& ranksString, int ranksLimit);
 
   std::string m_text;
   std::vector<int> m_ranks;
-  int m_ranksCount;
+  bool m_ranksLimitReached;
+  int m_count;
   std::string m_fileName;
   int m_lineNumber;
   int m_level;
   std::string m_tag;
 };
 
-
 /*!
  *****************************************************************************
- * \brief This packs all given Message classes into one const char
- *  buffer.
+ * \brief This packs all given Message classes into one const char buffer
  *
  * The messages are packed into the following format:
  *  <message count>[*<packed message size>*<packed message>]...
@@ -315,10 +324,10 @@ private:
  * \param [in] messages Message classes to be packed for sending
  *
  * \return Packed char array of all given messages
+ * \note It is the caller's responsibility to deallocate the returned buffer
  *****************************************************************************
  */
 const char* packMessages(const std::vector<Message*>& messages);
-
 
 /*!
  *****************************************************************************
@@ -330,6 +339,9 @@ const char* packMessages(const std::vector<Message*>& messages);
  * This function only adds to the messages vector and does not alter the
  * packagedMessages parameter.
  *
+ * \note It is the caller's responsibility to deallocate the Message added 
+ * to the \a messages vector
+ * 
  * \param [in,out] messages Vector to append created messages to
  * \param [in]  packedMessages Packed messages to be unpacked
  * \param [in]  ranksLimit Limits how many ranks are tracked per Message.
@@ -338,7 +350,6 @@ const char* packMessages(const std::vector<Message*>& messages);
 void unpackMessages(std::vector<Message*>& messages,
                     const char* packedMessages,
                     const int ranksLimit);
-
 
 /*!
  *****************************************************************************
@@ -351,12 +362,11 @@ void unpackMessages(std::vector<Message*>& messages,
  */
 inline bool isPackedMessagesEmpty(const char* packedMessages)
 {
-  return (packedMessages == nullptr) ||
-         (packedMessages[0] == '\0') ||
-         (strcmp(packedMessages, zeroMessage) == 0);
+  return (packedMessages == nullptr) || (packedMessages[0] == '\0') ||
+    (strcmp(packedMessages, zeroMessage) == 0);
 }
 
-} // end namespace lumberjack
-} // end namespace axom
+}  // end namespace lumberjack
+}  // end namespace axom
 
 #endif

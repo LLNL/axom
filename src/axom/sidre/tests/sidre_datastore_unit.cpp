@@ -1,52 +1,49 @@
-// Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC and
-// other Axom Project Developers. See the top-level COPYRIGHT file for details.
+// Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
+// other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
 #include "gtest/gtest.h"
+#include "axom/sidre.hpp"
 
-#include "axom/sidre/core/sidre.hpp"
-
-
-using axom::sidre::DataStore;
-using axom::sidre::View;
-using axom::sidre::Group;
 using axom::sidre::Buffer;
+using axom::sidre::DataStore;
+using axom::sidre::Group;
+using axom::sidre::indexIsValid;
 using axom::sidre::IndexType;
 using axom::sidre::InvalidIndex;
-using axom::sidre::indexIsValid;
+using axom::sidre::View;
 
 #include <map>
 
 //------------------------------------------------------------------------------
 
-void verifyEmptyGroupNamed( Group* dg, std::string name )
+void verifyEmptyGroupNamed(Group* dg, std::string name)
 {
-  EXPECT_EQ( name, dg->getName() );
+  EXPECT_EQ(name, dg->getName());
 
-  EXPECT_EQ( 0UL, dg->getNumGroups() );
-  EXPECT_FALSE( dg->hasGroup( -1 ) );
-  EXPECT_FALSE( dg->hasGroup(  0 ) );
-  EXPECT_FALSE( dg->hasGroup(  1 ) );
-  EXPECT_FALSE( dg->hasGroup("some_name") );
-  EXPECT_EQ( InvalidIndex, dg->getGroupIndex("some_other_name") );
-  EXPECT_EQ( InvalidIndex, dg->getFirstValidGroupIndex() );
-  EXPECT_EQ( InvalidIndex, dg->getNextValidGroupIndex(0) );
-  EXPECT_EQ( InvalidIndex, dg->getNextValidGroupIndex(4) );
+  EXPECT_EQ(0UL, dg->getNumGroups());
+  EXPECT_FALSE(dg->hasGroup(-1));
+  EXPECT_FALSE(dg->hasGroup(0));
+  EXPECT_FALSE(dg->hasGroup(1));
+  EXPECT_FALSE(dg->hasGroup("some_name"));
+  EXPECT_EQ(InvalidIndex, dg->getGroupIndex("some_other_name"));
+  EXPECT_EQ(InvalidIndex, dg->getFirstValidGroupIndex());
+  EXPECT_EQ(InvalidIndex, dg->getNextValidGroupIndex(0));
+  EXPECT_EQ(InvalidIndex, dg->getNextValidGroupIndex(4));
 
-  EXPECT_EQ( 0UL, dg->getNumViews() );
-  EXPECT_FALSE( dg->hasView( -1 ) );
-  EXPECT_FALSE( dg->hasView(  0 ) );
-  EXPECT_FALSE( dg->hasView(  1 ) );
-  EXPECT_FALSE( dg->hasView("some_name") );
-  EXPECT_EQ( InvalidIndex, dg->getViewIndex("some_other_name") );
-  EXPECT_EQ( InvalidIndex, dg->getFirstValidViewIndex() );
-  EXPECT_EQ( InvalidIndex, dg->getNextValidViewIndex(0) );
-  EXPECT_EQ( InvalidIndex, dg->getNextValidViewIndex(4) );
+  EXPECT_EQ(0UL, dg->getNumViews());
+  EXPECT_FALSE(dg->hasView(-1));
+  EXPECT_FALSE(dg->hasView(0));
+  EXPECT_FALSE(dg->hasView(1));
+  EXPECT_FALSE(dg->hasView("some_name"));
+  EXPECT_EQ(InvalidIndex, dg->getViewIndex("some_other_name"));
+  EXPECT_EQ(InvalidIndex, dg->getFirstValidViewIndex());
+  EXPECT_EQ(InvalidIndex, dg->getNextValidViewIndex(0));
+  EXPECT_EQ(InvalidIndex, dg->getNextValidViewIndex(4));
 }
 
-void verifyBufferIdentity(DataStore* ds,
-                          std::map<IndexType, Buffer*> & bs)
+void verifyBufferIdentity(DataStore* ds, std::map<IndexType, Buffer*>& bs)
 {
   int bufcount = bs.size();
 
@@ -59,7 +56,7 @@ void verifyBufferIdentity(DataStore* ds,
   while(indexIsValid(idx) && iteratedCount < bufcount)
   {
     EXPECT_TRUE(bs.count(idx) == 1);
-    if (bs.count(idx) == 1)
+    if(bs.count(idx) == 1)
     {
       EXPECT_EQ(bs[idx], ds->getBuffer(idx));
     }
@@ -73,22 +70,22 @@ void verifyBufferIdentity(DataStore* ds,
   EXPECT_EQ(InvalidIndex, idx);
 }
 
-TEST(sidre_datastore,default_ctor)
+TEST(sidre_datastore, default_ctor)
 {
   DataStore* ds = new DataStore();
 
   // After construction, the DataStore should contain no buffers.
 
-  EXPECT_EQ( 0, static_cast<int>(ds->getNumBuffers()) );
-  EXPECT_FALSE( ds->hasBuffer(-15) );
-  EXPECT_FALSE( ds->hasBuffer(-1) );
-  EXPECT_FALSE( ds->hasBuffer(0) );
-  EXPECT_FALSE( ds->hasBuffer(1) );
-  EXPECT_FALSE( ds->hasBuffer(8) );
+  EXPECT_EQ(0, static_cast<int>(ds->getNumBuffers()));
+  EXPECT_FALSE(ds->hasBuffer(-15));
+  EXPECT_FALSE(ds->hasBuffer(-1));
+  EXPECT_FALSE(ds->hasBuffer(0));
+  EXPECT_FALSE(ds->hasBuffer(1));
+  EXPECT_FALSE(ds->hasBuffer(8));
 
-  EXPECT_EQ( InvalidIndex, ds->getFirstValidBufferIndex() );
-  EXPECT_EQ( InvalidIndex, ds->getNextValidBufferIndex(0) );
-  EXPECT_EQ( InvalidIndex, ds->getNextValidBufferIndex(4) );
+  EXPECT_EQ(InvalidIndex, ds->getFirstValidBufferIndex());
+  EXPECT_EQ(InvalidIndex, ds->getNextValidBufferIndex(0));
+  EXPECT_EQ(InvalidIndex, ds->getNextValidBufferIndex(4));
 
   // The new DataStore should contain exactly one group, the root group.
   // The root group should be named "/" and should contain no views and no
@@ -96,9 +93,9 @@ TEST(sidre_datastore,default_ctor)
 
   Group* dg = ds->getRoot();
 
-  EXPECT_FALSE( nullptr == dg );
-  EXPECT_EQ(dg, dg->getParent() );
-  EXPECT_EQ(ds, dg->getDataStore() );
+  EXPECT_FALSE(nullptr == dg);
+  EXPECT_EQ(dg, dg->getParent());
+  EXPECT_EQ(ds, dg->getDataStore());
 
   verifyEmptyGroupNamed(dg, "");
 
@@ -108,20 +105,20 @@ TEST(sidre_datastore,default_ctor)
 // The dtor destroys all buffers and deletes the root group.
 // An outside tool (valgrind) is used to check for proper memory cleanup.
 
-TEST(sidre_datastore,create_destroy_buffers_basic)
+TEST(sidre_datastore, create_destroy_buffers_basic)
 {
   DataStore* ds = new DataStore();
-  EXPECT_EQ( 0, static_cast<int>(ds->getNumBuffers()));
+  EXPECT_EQ(0, static_cast<int>(ds->getNumBuffers()));
 
   // Basic tests
 
   Buffer* dbuff = ds->createBuffer();
-  EXPECT_EQ( 1, static_cast<int>(ds->getNumBuffers() ) );
+  EXPECT_EQ(1, static_cast<int>(ds->getNumBuffers()));
 
   IndexType bufferIndex = ds->getFirstValidBufferIndex();
-  EXPECT_EQ( 0, dbuff->getIndex());
-  EXPECT_EQ( dbuff->getIndex(), bufferIndex);
-  EXPECT_EQ( InvalidIndex, ds->getNextValidBufferIndex(bufferIndex) );
+  EXPECT_EQ(0, dbuff->getIndex());
+  EXPECT_EQ(dbuff->getIndex(), bufferIndex);
+  EXPECT_EQ(InvalidIndex, ds->getNextValidBufferIndex(bufferIndex));
 
   // Do we get the buffer we expect?
   EXPECT_EQ(dbuff, ds->getBuffer(bufferIndex));
@@ -130,8 +127,8 @@ TEST(sidre_datastore,create_destroy_buffers_basic)
 
   ds->destroyBuffer(bufferIndex);
   // should be no buffers
-  EXPECT_EQ( 0, static_cast<int>(ds->getNumBuffers() ) );
-  EXPECT_EQ( InvalidIndex, ds->getFirstValidBufferIndex() );
+  EXPECT_EQ(0, static_cast<int>(ds->getNumBuffers()));
+  EXPECT_EQ(InvalidIndex, ds->getFirstValidBufferIndex());
   EXPECT_FALSE(ds->hasBuffer(bufferIndex));
   EXPECT_EQ(static_cast<void*>(nullptr), ds->getBuffer(bufferIndex));
   EXPECT_EQ(static_cast<void*>(nullptr), ds->getBuffer(badBufferIndex));
@@ -139,19 +136,19 @@ TEST(sidre_datastore,create_destroy_buffers_basic)
   delete ds;
 }
 
-TEST(sidre_datastore,create_destroy_buffers_order)
+TEST(sidre_datastore, create_destroy_buffers_order)
 {
   DataStore* ds = new DataStore();
-  EXPECT_EQ( 0, static_cast<int>(ds->getNumBuffers() ) );
+  EXPECT_EQ(0, static_cast<int>(ds->getNumBuffers()));
 
   Buffer* dbuff = ds->createBuffer();
-  EXPECT_EQ( 1, static_cast<int>(ds->getNumBuffers()) );
+  EXPECT_EQ(1, static_cast<int>(ds->getNumBuffers()));
 
   IndexType bufferIndex = ds->getFirstValidBufferIndex();
   ds->destroyBuffer(dbuff);
 
   // After destroy, test that buffer index should be available again for reuse.
-  Buffer* dbuff2 = ds->createBuffer( axom::sidre::FLOAT32_ID, 16 );
+  Buffer* dbuff2 = ds->createBuffer(axom::sidre::FLOAT32_ID, 16);
   IndexType d2Index = dbuff2->getIndex();
   EXPECT_EQ(bufferIndex, ds->getFirstValidBufferIndex());
   EXPECT_EQ(bufferIndex, d2Index);
@@ -160,13 +157,13 @@ TEST(sidre_datastore,create_destroy_buffers_order)
 
   Buffer* dbuff3 = ds->createBuffer();
   IndexType d3Index = dbuff3->getIndex();
-  EXPECT_EQ( 2, static_cast<int>(ds->getNumBuffers()) );
+  EXPECT_EQ(2, static_cast<int>(ds->getNumBuffers()));
   EXPECT_TRUE(ds->hasBuffer(d3Index));
 
   // Try destroying the first valid buffer; see if we have the correct count and
   // indices
   ds->destroyBuffer(bufferIndex);
-  EXPECT_EQ( 1, static_cast<int>(ds->getNumBuffers()) );
+  EXPECT_EQ(1, static_cast<int>(ds->getNumBuffers()));
   EXPECT_FALSE(ds->hasBuffer(d2Index));
   EXPECT_TRUE(ds->hasBuffer(d3Index));
 
@@ -176,22 +173,22 @@ TEST(sidre_datastore,create_destroy_buffers_order)
   Buffer* dbuff5 = ds->createBuffer();
   IndexType d4Index = dbuff4->getIndex();
   IndexType d5Index = dbuff5->getIndex();
-  EXPECT_EQ( 3, static_cast<int>(ds->getNumBuffers()) );
-  EXPECT_EQ(d4Index, bufferIndex);    // dbuff4 should have recycled index 0
+  EXPECT_EQ(3, static_cast<int>(ds->getNumBuffers()));
+  EXPECT_EQ(d4Index, bufferIndex);  // dbuff4 should have recycled index 0
   EXPECT_TRUE(ds->hasBuffer(d3Index));
   EXPECT_TRUE(ds->hasBuffer(d4Index));
   EXPECT_TRUE(ds->hasBuffer(d5Index));
 
   ds->destroyBuffer(d3Index);  // Destroy dbuff3 (not dbuff4) because we already
                                // tested destroying index 0
-  EXPECT_EQ( 2, static_cast<int>(ds->getNumBuffers()) );
+  EXPECT_EQ(2, static_cast<int>(ds->getNumBuffers()));
   EXPECT_FALSE(ds->hasBuffer(d3Index));
   EXPECT_TRUE(ds->hasBuffer(d4Index));
   EXPECT_TRUE(ds->hasBuffer(d5Index));
 
   // Can we destroy all buffers?
   ds->destroyAllBuffers();
-  EXPECT_EQ( 0, static_cast<int>(ds->getNumBuffers()) );
+  EXPECT_EQ(0, static_cast<int>(ds->getNumBuffers()));
   EXPECT_FALSE(ds->hasBuffer(d2Index));
   EXPECT_FALSE(ds->hasBuffer(d4Index));
   EXPECT_FALSE(ds->hasBuffer(d5Index));
@@ -199,10 +196,10 @@ TEST(sidre_datastore,create_destroy_buffers_order)
   delete ds;
 }
 
-TEST(sidre_datastore,create_destroy_buffers_views)
+TEST(sidre_datastore, create_destroy_buffers_views)
 {
   DataStore* ds = new DataStore();
-  EXPECT_EQ( 0, static_cast<int>(ds->getNumBuffers()) );
+  EXPECT_EQ(0, static_cast<int>(ds->getNumBuffers()));
 
   Buffer* dbuff3 = ds->createBuffer();
   IndexType d3Index = dbuff3->getIndex();
@@ -234,7 +231,7 @@ TEST(sidre_datastore,create_destroy_buffers_views)
 
   // Destroying a buffer should detach it from the view
   ds->destroyBuffer(d4Index);
-  EXPECT_EQ( 3, static_cast<int>(ds->getNumBuffers()) );
+  EXPECT_EQ(3, static_cast<int>(ds->getNumBuffers()));
   EXPECT_TRUE(ds->hasBuffer(d3Index));
   EXPECT_FALSE(ds->hasBuffer(d4Index));
   EXPECT_TRUE(ds->hasBuffer(d5Index));
@@ -247,7 +244,7 @@ TEST(sidre_datastore,create_destroy_buffers_views)
 
   // Destroying a buffer should detach it from all of its views
   ds->destroyBuffer(d3Index);
-  EXPECT_EQ( 2, static_cast<int>(ds->getNumBuffers()) );
+  EXPECT_EQ(2, static_cast<int>(ds->getNumBuffers()));
   EXPECT_FALSE(ds->hasBuffer(d3Index));
   EXPECT_FALSE(ds->hasBuffer(d4Index));
   EXPECT_TRUE(ds->hasBuffer(d5Index));
@@ -265,7 +262,7 @@ TEST(sidre_datastore,create_destroy_buffers_views)
   vB->attachBuffer(dbuff3);
   vC->attachBuffer(dbuff4);
   ds->destroyAllBuffers();
-  EXPECT_EQ( 0, static_cast<int>(ds->getNumBuffers()) );
+  EXPECT_EQ(0, static_cast<int>(ds->getNumBuffers()));
   EXPECT_FALSE(vA->hasBuffer());
   EXPECT_FALSE(vB->hasBuffer());
   EXPECT_FALSE(vC->hasBuffer());
@@ -281,7 +278,7 @@ int psrand(int min, int max)
 {
   // Returns a pseudorandom int in [min, max].  Note the closed interval.
   int range = max - min + 1;
-  return min + int(range * rand()/(RAND_MAX + 1.0));
+  return min + int(range * rand() / (RAND_MAX + 1.0));
 }
 
 int irhall(int n)
@@ -290,7 +287,7 @@ int irhall(int n)
   // samples that approaches Gaussian distribution
   int retval = 0;
 
-  for (int i = 0 ; i < n ; ++i)
+  for(int i = 0; i < n; ++i)
   {
     retval += psrand(-5, 5);
   }
@@ -300,10 +297,10 @@ int irhall(int n)
 
 // Test iteration through buffers, as well as proper index and buffer behavior
 // while buffers are created and deleted
-TEST(sidre_datastore,iterate_buffers_basic)
+TEST(sidre_datastore, iterate_buffers_basic)
 {
   DataStore* ds = new DataStore();
-  EXPECT_EQ( 0, static_cast<int>(ds->getNumBuffers()) );
+  EXPECT_EQ(0, static_cast<int>(ds->getNumBuffers()));
 
   IndexType badBufferIndex = 9999;
   // Do we get sidre::InvalidIndex for several queries with no buffers?
@@ -316,12 +313,12 @@ TEST(sidre_datastore,iterate_buffers_basic)
   // as expected
   Buffer* initial = ds->createBuffer();
   EXPECT_EQ(0, initial->getIndex());
-  EXPECT_EQ(1, static_cast<int>(ds->getNumBuffers()) );
+  EXPECT_EQ(1, static_cast<int>(ds->getNumBuffers()));
   EXPECT_EQ(0, ds->getFirstValidBufferIndex());
   EXPECT_EQ(InvalidIndex, ds->getNextValidBufferIndex(0));
   // Destroy the data buffer, verify that iterators behave as expected
   ds->destroyBuffer(initial);
-  EXPECT_EQ( 0, static_cast<int>(ds->getNumBuffers()) );
+  EXPECT_EQ(0, static_cast<int>(ds->getNumBuffers()));
   EXPECT_EQ(InvalidIndex, ds->getFirstValidBufferIndex());
   EXPECT_EQ(InvalidIndex, ds->getNextValidBufferIndex(0));
 
@@ -329,17 +326,17 @@ TEST(sidre_datastore,iterate_buffers_basic)
 }
 
 // Test a few buffers: can we create them and iterate?
-TEST(sidre_datastore,iterate_buffers_simple)
+TEST(sidre_datastore, iterate_buffers_simple)
 {
   DataStore* ds = new DataStore();
-  EXPECT_EQ( 0, static_cast<int>(ds->getNumBuffers()) );
+  EXPECT_EQ(0, static_cast<int>(ds->getNumBuffers()));
 
   std::map<IndexType, Buffer*> bs;
   int bufcount = 20;
 
-  for (int i = 0 ; i < bufcount ; ++i)
+  for(int i = 0; i < bufcount; ++i)
   {
-    Buffer* b = ds->createBuffer(axom::sidre::FLOAT64_ID, 400*i);
+    Buffer* b = ds->createBuffer(axom::sidre::FLOAT64_ID, 400 * i);
     IndexType idx = b->getIndex();
     bs[idx] = b;
   }
@@ -348,32 +345,92 @@ TEST(sidre_datastore,iterate_buffers_simple)
   delete ds;
 }
 
-// Test creating and allocating buffers, then destroying several of them
-TEST(sidre_datastore,create_delete_buffers_iterate)
+TEST(sidre_datastore, iterate_buffers_iterators)
 {
   DataStore* ds = new DataStore();
-  EXPECT_EQ( 0, static_cast<int>(ds->getNumBuffers()) );
+  EXPECT_EQ(0, static_cast<int>(ds->getNumBuffers()));
+
+  std::map<IndexType, Buffer*> bs;
+  int bufcount = 20;
+
+  for(int i = 0; i < bufcount; ++i)
+  {
+    Buffer* b = ds->createBuffer(axom::sidre::FLOAT64_ID, 400 * i);
+    IndexType idx = b->getIndex();
+    bs[idx] = b;
+  }
+
+  // non-const iterator on non--const datastore
+  {
+    int foundBuffers = 0;
+    for(auto& buff : ds->buffers())
+    {
+      const IndexType idx = buff.getIndex();
+      ++foundBuffers;
+      EXPECT_TRUE(indexIsValid(idx));
+      EXPECT_EQ(ds->getBuffer(idx), &buff);
+      EXPECT_EQ(bs[idx], &buff);
+    }
+    EXPECT_EQ(bufcount, foundBuffers);
+  }
+
+  // const iterator on non-const datastore
+  {
+    int foundBuffers = 0;
+    for(const auto& buff : ds->buffers())
+    {
+      const IndexType idx = buff.getIndex();
+      ++foundBuffers;
+      EXPECT_TRUE(indexIsValid(idx));
+      EXPECT_EQ(ds->getBuffer(idx), &buff);
+      EXPECT_EQ(bs[idx], &buff);
+    }
+    EXPECT_EQ(bufcount, foundBuffers);
+  }
+
+  // const iterator on const datastore
+  {
+    const DataStore* cds = ds;
+    int foundBuffers = 0;
+    for(auto& buff : cds->buffers())
+    {
+      const IndexType idx = buff.getIndex();
+      ++foundBuffers;
+      EXPECT_TRUE(indexIsValid(idx));
+      EXPECT_EQ(cds->getBuffer(idx), &buff);
+      EXPECT_EQ(bs[idx], &buff);
+    }
+    EXPECT_EQ(bufcount, foundBuffers);
+  }
+
+  delete ds;
+}
+
+// Test creating and allocating buffers, then destroying several of them
+TEST(sidre_datastore, create_delete_buffers_iterate)
+{
+  DataStore* ds = new DataStore();
+  EXPECT_EQ(0, static_cast<int>(ds->getNumBuffers()));
 
   std::map<IndexType, Buffer*> bs;
   int bufcount = 50;  // Arbitrary number of buffers
 
   // Initially, create some buffers of varying size
-  for (int i = 0 ; i < bufcount ; ++i)
+  for(int i = 0; i < bufcount; ++i)
   {
-    Buffer* b = ds->createBuffer(axom::sidre::FLOAT64_ID,
-                                 400*i % 10000)->allocate();
+    Buffer* b =
+      ds->createBuffer(axom::sidre::FLOAT64_ID, 400 * i % 10000)->allocate();
     IndexType idx = b->getIndex();
     bs[idx] = b;
   }
 
   int i = 0;
   std::map<IndexType, Buffer*> nbs;
-  std::map<IndexType, Buffer*>::iterator bsit = bs.begin(),
-                                         bsend = bs.end();
-  for ( ; bsit != bsend ; ++bsit)
+  std::map<IndexType, Buffer*>::iterator bsit = bs.begin(), bsend = bs.end();
+  for(; bsit != bsend; ++bsit)
   {
     // Eliminate some buffers (arbitrarily chosen)
-    if (i % 5 && i % 7)
+    if(i % 5 && i % 7)
     {
       nbs[bsit->first] = bsit->second;
     }
@@ -388,28 +445,119 @@ TEST(sidre_datastore,create_delete_buffers_iterate)
   delete ds;
 }
 
-// Test creating+allocating buffers, then destroying several of them, repeatedly
-TEST(sidre_datastore,loop_create_delete_buffers_iterate)
+TEST(sidre_datastore, iterate_buffers_with_delete_iterators)
 {
   DataStore* ds = new DataStore();
-  EXPECT_EQ( 0, static_cast<int>(ds->getNumBuffers()) );
+  EXPECT_EQ(0, static_cast<int>(ds->getNumBuffers()));
+
+  const int initBuffCount = 22;
+  for(int i = 0; i < initBuffCount; ++i)
+  {
+    ds->createBuffer(axom::sidre::FLOAT64_ID, 400 * i);
+  }
+  EXPECT_EQ(initBuffCount, ds->getNumBuffers());
+
+  // remove a few buffers
+  for(auto idx : {5, 10, 15, 20, 25})
+  {
+    if(ds->hasBuffer(idx))
+    {
+      ds->destroyBuffer(idx);
+    }
+  }
+  int expBuffCount = 18;
+  EXPECT_EQ(expBuffCount, ds->getNumBuffers());
+
+  // Add a buffer
+  {
+    EXPECT_FALSE(ds->hasBuffer(5));
+    auto* buff = ds->createBuffer(axom::sidre::FLOAT64_ID, 10);
+    IndexType idx = buff->getIndex();
+    EXPECT_TRUE(idx < initBuffCount);
+    EXPECT_TRUE(ds->hasBuffer(idx));
+
+    expBuffCount = 19;
+    EXPECT_EQ(expBuffCount, ds->getNumBuffers());
+  }
+
+  // remove a few more
+  for(auto idx : {3, 6, 9, 12, 15, 18, 21})
+  {
+    if(ds->hasBuffer(idx))
+    {
+      auto* buff = ds->getBuffer(idx);
+      ds->destroyBuffer(buff);
+    }
+  }
+  expBuffCount = 13;
+  EXPECT_EQ(expBuffCount, ds->getNumBuffers());
+
+  // iterate using 'range-for' syntax
+  {
+    int foundBuffers = 0;
+    for(auto& buff : ds->buffers())
+    {
+      const IndexType idx = buff.getIndex();
+      ++foundBuffers;
+      EXPECT_TRUE(indexIsValid(idx));
+      EXPECT_EQ(ds->getBuffer(idx), &buff);
+    }
+    EXPECT_EQ(expBuffCount, foundBuffers);
+  }
+
+  // iterate using begin/end iterator syntax
+  {
+    int foundBuffers = 0;
+    for(auto it = ds->buffers().begin(), itEnd = ds->buffers().end(); it != itEnd;
+        ++it)
+    {
+      auto& buff = *it;
+      const IndexType idx = buff.getIndex();
+      ++foundBuffers;
+      EXPECT_TRUE(indexIsValid(idx));
+      EXPECT_EQ(ds->getBuffer(idx), &buff);
+    }
+    EXPECT_EQ(expBuffCount, foundBuffers);
+  }
+
+  // iterate
+  {
+    int foundBuffers = 0;
+    for(const auto& buff : ds->buffers())
+    {
+      const IndexType idx = buff.getIndex();
+      ++foundBuffers;
+      EXPECT_TRUE(indexIsValid(idx));
+      EXPECT_EQ(ds->getBuffer(idx), &buff);
+    }
+    EXPECT_EQ(expBuffCount, foundBuffers);
+  }
+
+  delete ds;
+}
+
+// Test creating+allocating buffers, then destroying several of them, repeatedly
+TEST(sidre_datastore, loop_create_delete_buffers_iterate)
+{
+  DataStore* ds = new DataStore();
+  EXPECT_EQ(0, static_cast<int>(ds->getNumBuffers()));
 
   std::map<IndexType, Buffer*> bs;
   std::vector<int> idxlist;
   int initbufcount = 50;  // Arbitrary number of buffers
 
   // Initially, create some buffers of varying size
-  for (int i = 0 ; i < initbufcount ; ++i)
+  for(int i = 0; i < initbufcount; ++i)
   {
-    Buffer* b = ds->createBuffer(axom::sidre::FLOAT64_ID,
-                                 400*i % 10000)->allocate();
+    Buffer* b =
+      ds->createBuffer(axom::sidre::FLOAT64_ID, 400 * i % 10000)->allocate();
     IndexType idx = b->getIndex();
     bs[idx] = b;
     idxlist.push_back(idx);
   }
 
   int totalrounds = 100;  // Arbitrary number of rounds
-  for (int round = 0 ; round < totalrounds ; ++round)
+  for(int round = 0; round < totalrounds; ++round)
   {
     SCOPED_TRACE(round);
 
@@ -418,15 +566,17 @@ TEST(sidre_datastore,loop_create_delete_buffers_iterate)
       int delta = irhall(5);  // Arbitrary argument to Irwin-Hall distribution
       SCOPED_TRACE(delta);
 
-      if (delta < 0)
+      if(delta < 0)
       {
         int rmvcount = abs(delta);
-        if (rmvcount > static_cast<int>(bs.size()))
-          rmvcount = bs.size();
-
-        for (int i = 0 ; i < rmvcount ; ++i)
+        if(rmvcount > static_cast<int>(bs.size()))
         {
-          int rmvidx = psrand(0, idxlist.size()-1);
+          rmvcount = bs.size();
+        }
+
+        for(int i = 0; i < rmvcount; ++i)
+        {
+          int rmvidx = psrand(0, idxlist.size() - 1);
           int rmvid = idxlist[rmvidx];
           EXPECT_TRUE(ds->hasBuffer(rmvid));
           EXPECT_TRUE(bs.count(rmvid) == 1);
@@ -437,10 +587,10 @@ TEST(sidre_datastore,loop_create_delete_buffers_iterate)
           EXPECT_FALSE(bs.count(rmvid) == 1);
         }
       }
-      else if (delta > 0)
+      else if(delta > 0)
       {
         int addcount = delta;
-        for (int i = 0 ; i < addcount ; ++i)
+        for(int i = 0; i < addcount; ++i)
         {
           Buffer* buf =
             ds->createBuffer(axom::sidre::FLOAT64_ID, 400)->allocate();

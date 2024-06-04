@@ -1,0 +1,11 @@
+{
+"package_name": "axomdevtools",
+"package_version": "fakeversion",
+"package_source_dir": "../..",
+"package_final_phase": "",
+"spack_url": "https://github.com/spack/spack.git",
+"spack_commit": "af0f0942920ffb1fd15e5458e9796f4bd7c8a9d1",
+"spack_configs_path": "scripts/spack/devtools_configs",
+"spack_packages_path": "scripts/spack/packages",
+"spack_concretizer": "clingo"
+}

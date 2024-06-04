@@ -1,5 +1,5 @@
-// Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC and
-// other Axom Project Developers. See the top-level COPYRIGHT file for details.
+// Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
+// other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
@@ -21,6 +21,7 @@ namespace axom
 {
 namespace lumberjack
 {
+constexpr int LJ_TAG = 55432;
 
 const char* mpiBlockingReceiveMessages(MPI_Comm comm)
 {
@@ -29,28 +30,39 @@ const char* mpiBlockingReceiveMessages(MPI_Comm comm)
   MPI_Status mpiStatus;
 
   // Get size and source of MPI message
-  MPI_Probe(MPI_ANY_SOURCE, 0, comm, &mpiStatus);
+  MPI_Probe(MPI_ANY_SOURCE, LJ_TAG, comm, &mpiStatus);
   MPI_Get_count(&mpiStatus, MPI_CHAR, &messageSize);
 
   // Setup where to receive the char array
-  charArray = new char[messageSize+1];
+  charArray = new char[messageSize + 1];
   charArray[messageSize] = '\0';
 
   // Receive packed Message
-  MPI_Recv(charArray, messageSize, MPI_CHAR, mpiStatus.MPI_SOURCE, 0, comm,
+  MPI_Recv(charArray,
+           messageSize,
+           MPI_CHAR,
+           mpiStatus.MPI_SOURCE,
+           LJ_TAG,
+           comm,
            &mpiStatus);
 
   return charArray;
 }
 
-void mpiNonBlockingSendMessages(MPI_Comm comm, int destinationRank,
+void mpiNonBlockingSendMessages(MPI_Comm comm,
+                                int destinationRank,
                                 const char* packedMessagesToBeSent)
 {
   MPI_Request mpiRequest;
   MPI_Isend(const_cast<char*>(packedMessagesToBeSent),
-            strlen(packedMessagesToBeSent), MPI_CHAR,
-            destinationRank, 0, comm, &mpiRequest);
+            strlen(packedMessagesToBeSent),
+            MPI_CHAR,
+            destinationRank,
+            LJ_TAG,
+            comm,
+            &mpiRequest);
+  MPI_Request_free(&mpiRequest);
 }
 
-} // end namespace lumberjack
-} // end namespace axom
+}  // end namespace lumberjack
+}  // end namespace axom

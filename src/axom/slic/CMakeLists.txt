@@ -1,18 +1,22 @@
-# Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC and
-# other Axom Project Developers. See the top-level COPYRIGHT file for details.
+# Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
+# other Axom Project Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
+#------------------------------------------------------------------------------
+# Slic component
+#------------------------------------------------------------------------------
 
-################################
+#------------------------------------------------------------------------------
 # Specify all headers/sources
-################################
+#------------------------------------------------------------------------------
 set(slic_headers
     core/Logger.hpp
     core/LogStream.hpp
-    core/MessageLevel.h
-    core/UnitTestLogger.hpp
+    core/MessageLevel.hpp
+    core/SimpleLogger.hpp
 
     interface/slic.hpp
+    interface/slic_macros.hpp
 
     internal/stacktrace.hpp
 
@@ -30,7 +34,7 @@ set(slic_sources
     streams/GenericOutputStream.cpp
     )
 
-if (ENABLE_MPI)
+if (AXOM_ENABLE_MPI)
     list(APPEND slic_headers streams/SynchronizedStream.hpp)
     list(APPEND slic_sources streams/SynchronizedStream.cpp)
     if (AXOM_ENABLE_LUMBERJACK)
@@ -46,30 +50,33 @@ endif()
 if (ENABLE_FORTRAN)
     list(APPEND slic_headers
         interface/c_fortran/wrapSLIC.h
+        interface/c_fortran/wrapGenericOutputStream.h
         interface/c_fortran/typesSLIC.h
     )
     list(APPEND slic_sources
         interface/c_fortran/wrapSLIC.cpp
+        interface/c_fortran/wrapGenericOutputStream.cpp
         interface/c_fortran/wrapfslic.f
     )
 endif()
 
-################################
+#------------------------------------------------------------------------------
 # Make/Install the library
-################################
+#------------------------------------------------------------------------------
 set(slic_depends core)
 
 blt_list_append( TO slic_depends ELEMENTS lumberjack IF ${AXOM_ENABLE_LUMBERJACK} )
-blt_list_append( TO slic_depends ELEMENTS mpi IF ${ENABLE_MPI} )
 blt_list_append( TO slic_depends ELEMENTS dbghelp IF ${WIN32} )
+if (CMAKE_SYSTEM_NAME STREQUAL "FreeBSD")
+  list( APPEND slic_depends execinfo )
+endif()
 
-blt_add_library(NAME        slic
-                SOURCES     ${slic_sources}
-                HEADERS     ${slic_headers}
-                DEPENDS_ON  ${slic_depends}
-                FOLDER      axom/slic
-                OBJECT      TRUE
-                )
+axom_add_library(NAME        slic
+                 SOURCES     ${slic_sources}
+                 HEADERS     ${slic_headers}
+                 DEPENDS_ON  ${slic_depends}
+                 FOLDER      axom/slic
+                 )
 
 axom_write_unified_header( NAME slic
                            HEADERS ${slic_headers}
@@ -80,21 +87,21 @@ axom_install_component( NAME    slic
                         )
 
 
-################################
+#------------------------------------------------------------------------------
 # Add examples
-################################
+#------------------------------------------------------------------------------
 if (AXOM_ENABLE_EXAMPLES)
   add_subdirectory(examples)
 endif()
 
-################################
+#------------------------------------------------------------------------------
 # Add tests
-################################
+#------------------------------------------------------------------------------
 if (AXOM_ENABLE_TESTS)
   add_subdirectory(tests)
 endif()
 
-################################
+#------------------------------------------------------------------------------
 # Add code checks
-################################
+#------------------------------------------------------------------------------
 axom_add_code_checks(PREFIX slic)

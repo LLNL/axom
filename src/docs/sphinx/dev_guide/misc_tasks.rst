@@ -1,5 +1,5 @@
-.. ## Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC and
-.. ## other Axom Project Developers. See the top-level COPYRIGHT file for details.
+.. ## Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
+.. ## other Axom Project Developers. See the top-level LICENSE file for details.
 .. ##
 .. ## SPDX-License-Identifier: (BSD-3-Clause)
 
@@ -10,44 +10,29 @@ Miscellaneous Development Items
 ********************************
 
 This section describes various development tasks that need to be 
-performed that are not covered in earlier sections.
+performed at times and which are not covered in other sections.
 
 
 ===================
 Web Documentation
 ===================
 
-Describe how to build and install web documentation...
+Axom web-based documentation is hosted on our 
+`Read the Docs project <https://readthedocs.org/projects/axom/>`_. 
+Multiple versions are visible there, including the latest content on the 
+develop branch (*latest*) and the main branch (*main*). The documentation 
+that appears is automatically re-generated each time a change is pushed to 
+a branch in the GitHub repository that is enabled to be displayed on the 
+Read the Docs project. If you are modifying Axom documentation, you can enable 
+the branch you are working on so that you can see what it looks like as you 
+push changes to the branch. If your documentation changes are part of a GitHub
+pull request, it is a good idea to enable the documentation for that branch
+and put a link to it in the pull request summary. This makes it easy for 
+reviewers to check over your changes.
 
-Shared LC web content location axom/src/docs/sphinx/web
-
-
-==================================
-Third-party Library Installation
-==================================
-
-Describe how to run the scripts to install third-party libraries for 
-testing different versions locally on a branch and for installing new
-libraries for the team to use...
-
-Building and installing TPLs for all compilers on LC CHAOS platforms (CZ)::
-
-   $ python ./scripts/uberenv/llnl_install_scripts/llnl_cz_uberenv_install_chaos_5_x86_64_ib_all_compilers.py
-
-Questions we need to answer include:
-
-  * How does one add a new compiler or platform to the mix?
-  * How does one build a new set of TPLs with for a single platform or compiler
-    for testing?
-  * What is the procedure for changing versions of one or more TPLs?
-  * How do we keep things straight when using different TPL versions for 
-    different branches?
-  * How to use the scripts for team TPL support vs. local development 
-    experimentation?
-  * Others?
-
-.. note :: Pull in content from ../web/build_system/thirdparty_deps.rst ...
-           fill in gaps and make sure it it up-to-date...
+.. note :: When you no longer need the documentation of your branch to be
+           visible on Read the Docs (e.g., your pull request is merged), 
+           please disable that branch on Read the Docs.
 
 
 ===================

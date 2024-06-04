@@ -1,5 +1,5 @@
-! Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC and
-! other Axom Project Developers. See the top-level COPYRIGHT file for details.
+! Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
+! other Axom Project Developers. See the top-level LICENSE file for details.
 !
 ! SPDX-License-Identifier: (BSD-3-Clause)
 
@@ -35,7 +35,7 @@ contains
 
     call set_case_name("external_allocatable_int")
 
-    ds = datastore_new()
+    ds = SidreDataStore()
     root = ds%get_root()
 
     allocate(iarray(10))
@@ -49,7 +49,7 @@ contains
     call assert_true(view%is_external())
 
     type = view%get_type_id()
-    call assert_equals(type, SIDRE_INT_ID)
+    call assert_true(type == SIDRE_INT_ID)
 
     num_elements = view%get_num_elements()
     call assert_equals(num_elements, size(iarray))
@@ -88,7 +88,7 @@ contains
 
     call set_case_name("external_allocatable_int_3d")
 
-    ds = datastore_new()
+    ds = SidreDataStore()
     root = ds%get_root()
 
     allocate(iarray(2,3,4))
@@ -106,7 +106,7 @@ contains
     call assert_true(view%is_external())
 
     type = view%get_type_id()
-    call assert_equals(type, SIDRE_INT_ID)
+    call assert_true(type == SIDRE_INT_ID)
 
     num_elements = view%get_num_elements()
     call assert_equals(num_elements, size(iarray))
@@ -141,13 +141,13 @@ contains
     type(SidreDataStore) ds
     type(SidreGroup) root
     type(SidreView)  view
-    integer type
+    integer(TypeID) type
     integer num_elements
     integer i
 
     call set_case_name("external_static_int")
 
-    ds = datastore_new()
+    ds = SidreDataStore()
     root = ds%get_root()
 
     do i=1,10
@@ -157,7 +157,7 @@ contains
     view = root%create_array_view("iarray", iarray)
 
     type = view%get_type_id()
-    call assert_equals(type, SIDRE_INT_ID)
+    call assert_true(type == SIDRE_INT_ID)
 
     num_elements = view%get_num_elements()
     call assert_equals(num_elements, 10)
@@ -181,12 +181,12 @@ contains
     type(SidreGroup) root
     type(SidreView)  view
     integer num_elements
-    integer type
+    integer(TypeID) type
     integer i
 
     call set_case_name("external_allocatable_double")
 
-    ds = datastore_new()
+    ds = SidreDataStore()
     root = ds%get_root()
 
     allocate(darray(10))
@@ -198,7 +198,7 @@ contains
     view = root%create_array_view("darray", darray)
 
     type = view%get_type_id()
-    call assert_equals(type, SIDRE_DOUBLE_ID)
+    call assert_true(type == SIDRE_DOUBLE_ID)
 
     num_elements = view%get_num_elements()
     call assert_equals(num_elements, 10)
@@ -223,7 +223,7 @@ contains
     type(SidreDataStore) ds
     type(SidreGroup) root
     type(SidreView)  view
-    integer type
+    integer(TypeID) type
     integer num_elements
     integer i, j, k
     integer rank
@@ -235,15 +235,15 @@ contains
     extents_in(2) = 3
     extents_in(3) = 4
 
-    ds = datastore_new()
+    ds = SidreDataStore()
     root = ds%get_root()
 
-    view = root%create_view_and_allocate("iarray", SIDRE_INT_ID, 3, extents_in)
+    view = root%create_view_with_shape_and_allocate("iarray", SIDRE_INT_ID, 3, extents_in)
 
     call view%get_data(ipointer)
 
     type = view%get_type_id()
-    call assert_equals(type, SIDRE_INT_ID)
+    call assert_true(type == SIDRE_INT_ID)
 
     num_elements = view%get_num_elements()
     call assert_equals(num_elements, size(ipointer))

@@ -1,5 +1,5 @@
-// Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC and
-// other Axom Project Developers. See the top-level COPYRIGHT file for details.
+// Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
+// other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
@@ -13,8 +13,8 @@
  ******************************************************************************
  */
 
-#ifndef BUFFER_HPP_
-#define BUFFER_HPP_
+#ifndef SIDRE_BUFFER_HPP_
+#define SIDRE_BUFFER_HPP_
 
 // Standard C++ headers
 #include <set>
@@ -32,8 +32,8 @@ namespace axom
 {
 namespace sidre
 {
-
 class DataStore;
+class Group;
 class View;
 
 /*!
@@ -48,7 +48,7 @@ class View;
  *    - A Buffer object has a unique identifier within a DataStore,
  *      which is assigned by the DataStore when the Buffer is created.
  *    - The data owned by a Buffer is unique to that Buffer
- *      object; i.e.,  Buffers do not share their data.
+ *      object; i.e.,  Buffers do not share their data with other Buffers.
  *    - Typical usage is to describe the data a Buffer will hold and then
  *      allocate it by calling one of the Buffer allocate or
  *      reallocate methods.
@@ -58,9 +58,7 @@ class View;
  */
 class Buffer
 {
-
 public:
-
   /*!
    * Friend declarations to constrain usage via controlled access to
    * private members.
@@ -69,16 +67,13 @@ public:
   friend class Group;
   friend class View;
 
-//@{
-//!  @name Basic query and accessor methods
+  //@{
+  //!  @name Basic query and accessor methods
 
   /*!
    * \brief Return the unique index of this Buffer object.
    */
-  IndexType getIndex() const
-  {
-    return m_index;
-  }
+  IndexType getIndex() const { return m_index; }
 
   /*!
    * \brief Return number of Views this Buffer is attached to.
@@ -89,19 +84,15 @@ public:
     return static_cast<IndexType>(m_views.size());
   }
 
-//@}
+  //@}
 
-
-//@{
-//!  @name Methods to query and access Buffer data
+  //@{
+  //!  @name Methods to query and access Buffer data
 
   /*!
    * \brief Return void-pointer to data held by Buffer.
    */
-  void* getVoidPtr()
-  {
-    return m_node.data_ptr();
-  }
+  void* getVoidPtr() { return m_node.data_ptr(); }
 
   /*!
    * \brief Return data held by Buffer (return type is type caller assigns
@@ -112,9 +103,9 @@ public:
    */
   Node::Value getData()
   {
-    if ( !isAllocated() )
+    if(!isAllocated())
     {
-      SLIC_CHECK_MSG( isAllocated(), "Buffer data is not allocated.");
+      SLIC_CHECK_MSG(isAllocated(), "Buffer data is not allocated.");
       return Node().value();
     }
 
@@ -124,10 +115,7 @@ public:
   /*!
    * \brief Return type of data owned by this Buffer object.
    */
-  TypeID getTypeID() const
-  {
-    return static_cast<TypeID>(m_node.dtype().id());
-  }
+  TypeID getTypeID() const { return static_cast<TypeID>(m_node.dtype().id()); }
 
   /*!
    * \brief Return total number of data elements (of its type) owned by
@@ -141,10 +129,7 @@ public:
   /*!
    * \brief Return total number of bytes of data owned by this Buffer object.
    */
-  IndexType getTotalBytes() const
-  {
-    return m_node.dtype().strided_bytes();
-  }
+  IndexType getTotalBytes() const { return m_node.dtype().strided_bytes(); }
 
   /*!
    * \brief Return the number of bytes per element owned by this Buffer object.
@@ -154,30 +139,21 @@ public:
     return m_node.dtype().element_bytes();
   }
 
-
   /*!
    * \brief Return true if Buffer has been (re)allocated with length >= 0, else
    *  false.
    */
-  bool isAllocated() const
-  {
-    return (m_node.data_ptr() != nullptr);
-  }
+  bool isAllocated() const { return (m_node.data_ptr() != nullptr); }
 
   /*!
-   * \brief Return true if data description exists.  It may/may not have been
-   * applied to the data yet.  ( Check isApplied() for that. )
+   * \brief Return true if data description exists.
    */
-  bool isDescribed() const
-  {
-    return !m_node.dtype().is_empty();
-  }
+  bool isDescribed() const { return !m_node.dtype().is_empty(); }
 
-//@}
+  //@}
 
-
-//@{
-//!  @name Data description and allocation methods
+  //@{
+  //!  @name Data description and allocation methods
 
   /*!
    * \brief Describe a Buffer with data given data type and number of elements.
@@ -198,7 +174,7 @@ public:
    *
    * \return pointer to this Buffer object.
    */
-  Buffer* allocate(int allocID=INVALID_ALLOCATOR_ID);
+  Buffer* allocate(int allocID = INVALID_ALLOCATOR_ID);
 
   /*!
    * \brief Allocate Buffer with data type and number of elements.
@@ -209,8 +185,9 @@ public:
    *
    * \return pointer to this Buffer object.
    */
-  Buffer* allocate(TypeID type, IndexType num_elems,
-                   int allocID=INVALID_ALLOCATOR_ID);
+  Buffer* allocate(TypeID type,
+                   IndexType num_elems,
+                   int allocID = INVALID_ALLOCATOR_ID);
 
   /*!
    * \brief Reallocate data to given number of elements.
@@ -242,7 +219,7 @@ public:
    */
   Buffer* deallocate();
 
-//@}
+  //@}
 
   /*!
    * \brief Copy given number of bytes of data from src into Buffer.
@@ -272,12 +249,17 @@ public:
   /*!
    * \brief Exports Buffer's state to a Conduit node.
    */
-  void exportTo( conduit::Node& data_holder );
+  void exportTo(conduit::Node& data_holder);
+
+  /*!
+   * \brief Exports Buffer's metadata to a Conduit node.
+   */
+  void exportMetadata(conduit::Node& data_holder);
 
   /*!
    * \brief Import Buffer's state from a Conduit node.
    */
-  void importFrom( conduit::Node& data_holder );
+  void importFrom(conduit::Node& data_holder);
 
 private:
   DISABLE_DEFAULT_CTOR(Buffer);
@@ -287,12 +269,12 @@ private:
    *  \brief Private ctor assigns id generated by DataStore (must be
    *         unique among Buffers in DataStore.
    */
-  Buffer( IndexType uid );
+  Buffer(IndexType uid);
 
   /*!
    * \brief Private copy ctor.
    */
-  Buffer(const Buffer& source );
+  Buffer(const Buffer& source);
 
   /*!
    * \brief Private dtor.
@@ -304,30 +286,30 @@ private:
    *
    * Note: If View's Buffer pointer does not match 'this', method is a no-op.
    */
-  void attachToView( View* view );
+  void attachToView(View* view);
 
   /*!
    * \brief Private method to detach Buffer from View.
    *
    * Note: If View's Buffer pointer does not match 'this', method is a no-op.
    */
-  void detachFromView( View* view );
+  void detachFromView(View* view);
 
   /*!
    * \brief Private method to detach Buffer from all Views it is attached to.
    */
-  void detachFromAllViews( );
+  void detachFromAllViews();
 
   /*!
    * \brief Private method to allocate num_bytes bytes of data using the given
    * allocator and return a void-pointer to the allocation.
    */
-  void* allocateBytes(IndexType num_bytes, int allocID=INVALID_ALLOCATOR_ID);
+  void* allocateBytes(IndexType num_bytes, int allocID = INVALID_ALLOCATOR_ID);
 
   /*!
    * \brief Private method to delete data referenced by pointer.
    */
-  void  releaseBytes(void* ptr);
+  void releaseBytes(void* ptr);
 
   /// Buffer's unique index within DataStore object that created it.
   IndexType m_index;
@@ -337,10 +319,9 @@ private:
 
   /// Conduit Node that holds Buffer data.
   Node m_node;
-
 };
 
 } /* end namespace sidre */
 } /* end namespace axom */
 
-#endif /* BUFFER_HPP_ */
+#endif /* SIDRE_BUFFER_HPP_ */

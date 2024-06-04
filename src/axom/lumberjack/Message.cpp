@@ -1,5 +1,5 @@
-// Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC and
-// other Axom Project Developers. See the top-level COPYRIGHT file for details.
+// Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
+// other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
@@ -23,124 +23,109 @@ namespace axom
 {
 namespace lumberjack
 {
-
 //Getters
 
-std::string Message::text() const
-{
-  return m_text;
-}
+std::string Message::text() const { return m_text; }
 
-std::vector<int> Message::ranks() const
-{
-  return m_ranks;
-}
+std::vector<int> Message::ranks() const { return m_ranks; }
 
-int Message::ranksCount() const
-{
-  return m_ranksCount;
-}
+int Message::count() const { return m_count; }
 
-std::string Message::fileName() const
-{
-  return m_fileName;
-}
+std::string Message::fileName() const { return m_fileName; }
 
-int Message::lineNumber() const
-{
-  return m_lineNumber;
-}
+int Message::lineNumber() const { return m_lineNumber; }
 
-int Message::level() const
-{
-  return m_level;
-}
+int Message::level() const { return m_level; }
 
-std::string Message::tag() const
-{
-  return m_tag;
-}
+std::string Message::tag() const { return m_tag; }
 
 std::string Message::stringOfRanks(std::string delimiter) const
 {
   std::string returnString = "";
   int ranksSize = m_ranks.size();
-  for(int i=0 ; i<ranksSize ; ++i)
+  for(int i = 0; i < ranksSize; ++i)
   {
     returnString += std::to_string(m_ranks[i]);
-    if (i < (ranksSize-1))
+    if(i < (ranksSize - 1))
     {
       returnString += delimiter;
     }
+  }
+
+  // Indicate we might have more ranks we aren't individually tracking
+  if(m_ranksLimitReached)
+  {
+    returnString += "...";
   }
   return returnString;
 }
 
 //Setters
 
-void Message::text(const std::string& newText)
-{
-  m_text = newText;
-}
+void Message::text(const std::string& newText) { m_text = newText; }
 
 void Message::fileName(const std::string& newFileName)
 {
   m_fileName = newFileName;
 }
 
-void Message::lineNumber(int newLineNumber)
-{
-  m_lineNumber = newLineNumber;
-}
+void Message::lineNumber(int newLineNumber) { m_lineNumber = newLineNumber; }
 
-void Message::level(int newLevel)
-{
-  m_level = newLevel;
-}
+void Message::level(int newLevel) { m_level = newLevel; }
 
-void Message::tag(const std::string& newTag)
-{
-  m_tag = newTag;
-}
+void Message::tag(const std::string& newTag) { m_tag = newTag; }
 
 void Message::addRank(int newRank, int ranksLimit)
 {
   // If ranksLimit has already been reached don't add newRank to m_ranks
-  if (m_ranks.size() < (std::vector<int>::size_type)ranksLimit)
+  if(m_ranks.size() < (std::vector<int>::size_type)ranksLimit)
   {
     // If newRank is already in m_ranks then don't add it
-    std::vector<int>::iterator iter = std::find(m_ranks.begin(),
-                                                m_ranks.end(), newRank);
-    if ((m_ranks.size() == 0) || (iter == m_ranks.end()))
+    std::vector<int>::iterator iter =
+      std::find(m_ranks.begin(), m_ranks.end(), newRank);
+    if((m_ranks.size() == 0) || (iter == m_ranks.end()))
     {
       m_ranks.push_back(newRank);
     }
   }
-  // Always increment rank count
-  m_ranksCount++;
+
+  if(!m_ranksLimitReached &&
+     (m_ranks.size() == (std::vector<int>::size_type)ranksLimit))
+  {
+    m_ranksLimitReached = true;
+  }
+
+  // Always increment message count
+  m_count++;
 }
 
-void Message::addRanks(const std::vector<int>& newRanks, int ranksCount,
-                       int ranksLimit)
+void Message::addRanks(const std::vector<int>& newRanks, int count, int ranksLimit)
 {
   int newRanksSize = newRanks.size();
-  for(int i=0 ; i<newRanksSize ; ++i)
+  for(int i = 0; i < newRanksSize; ++i)
   {
     // If ranksLimit has already been reached don't add newRank to m_ranks
-    if (m_ranks.size() >= (std::vector<int>::size_type)ranksLimit)
+    if(m_ranks.size() >= (std::vector<int>::size_type)ranksLimit)
     {
       break;
     }
     // If newRank is already in m_ranks then don't add it
-    std::vector<int>::iterator iter = std::find(m_ranks.begin(),
-                                                m_ranks.end(), newRanks[i]);
-    if ((m_ranks.size() == 0) || (iter == m_ranks.end()))
+    std::vector<int>::iterator iter =
+      std::find(m_ranks.begin(), m_ranks.end(), newRanks[i]);
+    if((m_ranks.size() == 0) || (iter == m_ranks.end()))
     {
       m_ranks.push_back(newRanks[i]);
     }
   }
-  // Always increment ranks count
-  m_ranksCount += ranksCount;
+
+  if(!m_ranksLimitReached &&
+     (m_ranks.size() == (std::vector<int>::size_type)ranksLimit))
+  {
+    m_ranksLimitReached = true;
+  }
+
+  // Always increment message count
+  m_count += count;
 }
 
 // Utilities
@@ -150,21 +135,21 @@ std::string Message::pack()
   std::string packedMessage;
 
   int ranksSize = (int)m_ranks.size();
-  for (int i=0 ; i<ranksSize ; ++i)
+  for(int i = 0; i < ranksSize; ++i)
   {
     packedMessage += std::to_string(m_ranks[i]);
-    if (i < (ranksSize-1))
+    if(i < (ranksSize - 1))
     {
       packedMessage += rankDelimiter;
     }
   }
   packedMessage += memberDelimiter;
 
-  packedMessage += std::to_string(m_ranksCount) + memberDelimiter;
+  packedMessage += std::to_string(m_count) + memberDelimiter;
 
   packedMessage += m_fileName + memberDelimiter;
 
-  if (m_lineNumber > 0)
+  if(m_lineNumber > 0)
   {
     packedMessage += std::to_string(m_lineNumber);
   }
@@ -186,105 +171,98 @@ void Message::unpack(const std::string& packedMessage, int ranksLimit)
 
   // Grab ranks
   end = packedMessage.find(memberDelimiter);
-  if (end == std::string::npos)
+  if(end == std::string::npos)
   {
     std::cerr << "Error: Lumberjack received a truncated message "
-              << "that ended in the ranks section."
-              << std::endl;
+              << "that ended in the ranks section." << std::endl;
     std::cerr << packedMessage << std::endl;
   }
   unpackRanks(packedMessage.substr(0, end), ranksLimit);
   start = end + 1;
 
-  //Grab rank count since it can differ from list that is sent
+  //Grab message count since it can differ from list that is sent
   end = packedMessage.find(memberDelimiter, start);
-  if (end == std::string::npos)
+  if(end == std::string::npos)
   {
     std::cerr << "Error: Lumberjack received a truncated message "
-              << "that ended in the rank count section."
-              << std::endl;
+              << "that ended in the rank count section." << std::endl;
     std::cerr << packedMessage << std::endl;
   }
-  m_ranksCount = std::stoi(packedMessage.substr(start, end-start));
+  m_count = std::stoi(packedMessage.substr(start, end - start));
   start = end + 1;
 
   //Grab file name
   end = packedMessage.find(memberDelimiter, start);
-  if (end == std::string::npos)
+  if(end == std::string::npos)
   {
     std::cerr << "Error: Lumberjack received a truncated message "
-              << "that ended in the file name section."
-              << std::endl;
+              << "that ended in the file name section." << std::endl;
     std::cerr << packedMessage << std::endl;
   }
-  m_fileName = packedMessage.substr(start, end-start);
+  m_fileName = packedMessage.substr(start, end - start);
   start = end + 1;
 
   //Grab line number
   end = packedMessage.find(memberDelimiter, start);
-  if (end == std::string::npos)
+  if(end == std::string::npos)
   {
     std::cerr << "Error: Lumberjack received a truncated message "
-              << "that ended in the line number section."
-              << std::endl;
+              << "that ended in the line number section." << std::endl;
     std::cerr << packedMessage << std::endl;
   }
-  if (end-start > 0)
+  if(end - start > 0)
   {
-    m_lineNumber = std::stoi(packedMessage.substr(start, end-start));
+    m_lineNumber = std::stoi(packedMessage.substr(start, end - start));
   }
   start = end + 1;
 
   //Grab level
   end = packedMessage.find(memberDelimiter, start);
-  if (end == std::string::npos)
+  if(end == std::string::npos)
   {
     std::cerr << "Error: Lumberjack received a truncated message "
-              << "that ended in the level section."
-              << std::endl;
+              << "that ended in the level section." << std::endl;
     std::cerr << packedMessage << std::endl;
   }
-  m_level = std::stoi(packedMessage.substr(start, end-start));
+  m_level = std::stoi(packedMessage.substr(start, end - start));
   start = end + 1;
 
   //Grab tag
   end = packedMessage.find(memberDelimiter, start);
-  if (end == std::string::npos)
+  if(end == std::string::npos)
   {
     std::cerr << "Error: Lumberjack received a truncated message "
-              << "that ended in the tag section."
-              << std::endl;
+              << "that ended in the tag section." << std::endl;
     std::cerr << packedMessage << std::endl;
   }
-  m_tag = packedMessage.substr(start, end-start);
+  m_tag = packedMessage.substr(start, end - start);
   start = end + 1;
 
   //Grab message
-  m_text = packedMessage.substr(end+1);
+  m_text = packedMessage.substr(start);
 }
 
 void Message::unpackRanks(const std::string& ranksString, int ranksLimit)
 {
   m_ranks.clear();
-  if (ranksString.empty())
+  if(ranksString.empty())
   {
-    std::cerr << "Error: Lumberjack received an empty rank section."
-              << std::endl;
+    std::cerr << "Error: Lumberjack received an empty rank section." << std::endl;
     return;
   }
 
   std::size_t start, end = ranksString.find(rankDelimiter);
   start = 0;
-  while (true)
+  while(true)
   {
-    if (end == std::string::npos)
+    if(end == std::string::npos)
     {
       addRank(std::stoi(ranksString.substr(start)), ranksLimit);
       break;
     }
     else
     {
-      addRank(std::stoi(ranksString.substr(start, end-start)), ranksLimit);
+      addRank(std::stoi(ranksString.substr(start, end - start)), ranksLimit);
     }
     start = end + 1;
     end = ranksString.find(rankDelimiter, start);
@@ -293,20 +271,19 @@ void Message::unpackRanks(const std::string& ranksString, int ranksLimit)
 
 const char* packMessages(const std::vector<Message*>& messages)
 {
-  if (messages.size() == 0)
+  if(messages.size() == 0)
   {
     return zeroMessage;
   }
 
-  int totalSize = 1;   // include size for null terminator
+  int totalSize = 1;  // include size for null terminator
 
-  //Calculate total size of char array after all messages are
-  //  combined.
+  //Calculate total size of char array after all messages are combined.
   std::vector<std::string> packedMessages;
   std::vector<std::string> sizeStrings;
   int currSize = 0;
   int messageCount = (int)messages.size();
-  for (int i=0 ; i<messageCount ; ++i)
+  for(int i = 0; i < messageCount; ++i)
   {
     packedMessages.push_back(messages[i]->pack());
     currSize = packedMessages[i].size();
@@ -323,14 +300,16 @@ const char* packMessages(const std::vector<Message*>& messages)
   char* packedMessagesIndex = (char*)packedMessagesString;
 
   // Copy message count to start of packed message
-  std::memcpy(packedMessagesIndex, messageCountString.c_str(),
+  std::memcpy(packedMessagesIndex,
+              messageCountString.c_str(),
               messageCountString.size());
   packedMessagesIndex += messageCountString.size();
 
-  for (int i=0 ; i<messageCount ; ++i)
+  for(int i = 0; i < messageCount; ++i)
   {
     // Copy current message size
-    std::memcpy(packedMessagesIndex, sizeStrings[i].c_str(),
+    std::memcpy(packedMessagesIndex,
+                sizeStrings[i].c_str(),
                 sizeStrings[i].size());
     packedMessagesIndex += sizeStrings[i].size();
     // Copy memberDelimiter
@@ -338,7 +317,8 @@ const char* packMessages(const std::vector<Message*>& messages)
     std::memcpy(packedMessagesIndex, &memberDelimiter, sizeof(char));
     packedMessagesIndex += 1;
     // Copy packed message
-    std::memcpy(packedMessagesIndex, packedMessages[i].c_str(),
+    std::memcpy(packedMessagesIndex,
+                packedMessages[i].c_str(),
                 packedMessages[i].size());
     packedMessagesIndex += packedMessages[i].size();
   }
@@ -364,11 +344,11 @@ void unpackMessages(std::vector<Message*>& messages,
   // Grab each message
   Message* message;
   int messageSize;
-  for (int j = 0 ; j < messageCount ; ++j)
+  for(int j = 0; j < messageCount; ++j)
   {
     //Get current message size
     end = packedMessagesString.find(memberDelimiter, start);
-    tempSubString = packedMessagesString.substr(start, end-start);
+    tempSubString = packedMessagesString.substr(start, end - start);
     messageSize = std::stoi(tempSubString);
     start = end + 1;
 
@@ -381,6 +361,5 @@ void unpackMessages(std::vector<Message*>& messages,
   }
 }
 
-
-} // end namespace lumberjack
-} // end namespace axom
+}  // end namespace lumberjack
+}  // end namespace axom

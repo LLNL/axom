@@ -1,27 +1,128 @@
-// Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC and
-// other Axom Project Developers. See the top-level COPYRIGHT file for details.
+// Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
+// other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
 /*!
- * \file
+ * \file closest_point.hpp
  *
  * \brief Consists of a set of methods that compute the closest point on a
  *  geometric primitive B from another geometric primitive A.
  *
  */
 
-#ifndef CLOSEST_POINT_HPP_
-#define CLOSEST_POINT_HPP_
+#ifndef AXOM_PRIMAL_CLOSEST_POINT_HPP_
+#define AXOM_PRIMAL_CLOSEST_POINT_HPP_
 
 #include "axom/primal/geometry/Point.hpp"
+#include "axom/primal/geometry/Segment.hpp"
 #include "axom/primal/geometry/Triangle.hpp"
+#include "axom/primal/geometry/Sphere.hpp"
 #include "axom/primal/geometry/OrientedBoundingBox.hpp"
-
+#include "axom/primal/operators/detail/intersect_impl.hpp"
 namespace axom
 {
 namespace primal
 {
+/*!
+ * \brief Computes the closest point from a point, P, to a given segment.
+ *
+ * \param [in] P the query point
+ * \param [in] seg user-supplied segment
+ * \param [out] loc location along the line segment
+ * \param [in] EPS fuzz factor for equality comparisons
+ * \return cp the closest point from a point P and a segment
+ *
+ * \note loc \f$ \in [0, 1] \f% represents the fraction of the way from A to B,
+ *  with 0 corresponding to A and 1 corresponding to B.
+ */
+template <typename T, int NDIMS>
+AXOM_HOST_DEVICE inline Point<T, NDIMS> closest_point(const Point<T, NDIMS>& P,
+                                                      const Segment<T, NDIMS>& seg,
+                                                      T* loc,
+                                                      double EPS = PRIMAL_TINY)
+{
+  using PointType = Point<T, NDIMS>;
+  using VectorType = Vector<T, NDIMS>;
+
+  using detail::isGeq;
+  using detail::isLeq;
+
+  constexpr T ZERO {0.};
+  constexpr T ONE {1.};
+
+  const PointType& A = seg[0];
+  const PointType& B = seg[1];
+
+  const VectorType AB(A, B);
+
+  // Compute length of the projection of AP onto AB
+  T t = VectorType(A, P).dot(AB);
+
+  if(isLeq(t, ZERO, EPS))
+  {
+    if(loc)
+    {
+      *loc = ZERO;
+    }
+
+    return A;
+  }
+  else
+  {
+    const T squaredNormAB = AB.squared_norm();
+
+    if(isGeq(t, squaredNormAB, EPS))
+    {
+      if(loc)
+      {
+        *loc = ONE;
+      }
+
+      return B;
+    }
+    else if(utilities::isNearlyEqual(squaredNormAB, ZERO, EPS))
+    {
+      // Segment is degenerate (A and B are collocated),
+      // so we can pick either end point. We pick A.
+      if(loc)
+      {
+        *loc = ZERO;
+      }
+
+      return A;
+    }
+    else
+    {
+      // Normalize t
+      t /= squaredNormAB;
+
+      if(loc)
+      {
+        *loc = t;
+      }
+
+      return A + AB * t;
+    }
+  }
+}
+
+/*!
+ * \brief Computes the closest point from a point, P, to a given segment.
+ *
+ * \param [in] P the query point
+ * \param [in] seg user-supplied segment
+ * \param [in] EPS fuzz factor for equality comparisons
+ * \return cp the closest point from a point P and a segment
+ */
+template <typename T, int NDIMS>
+AXOM_HOST_DEVICE inline Point<T, NDIMS> closest_point(const Point<T, NDIMS>& P,
+                                                      const Segment<T, NDIMS>& seg,
+                                                      double EPS = PRIMAL_TINY)
+{
+  T* loc = nullptr;
+  return closest_point(P, seg, loc, EPS);
+}
 
 /*!
  * \brief Computes the closest point from a point, P, to a given triangle.
@@ -58,155 +159,135 @@ namespace primal
  * \note Implementation is based on "Real Time Collision Detection,
  *  Chapter 5.1.5 Closest Point on Triangle to Point".
  */
-template < typename T, int NDIMS >
-inline Point< T,NDIMS > closest_point( const Point< T,NDIMS >& P,
-                                       const Triangle< T,NDIMS >& tri,
-                                       int* loc=nullptr )
+template <typename T, int NDIMS>
+AXOM_HOST_DEVICE inline Point<T, NDIMS> closest_point(const Point<T, NDIMS>& P,
+                                                      const Triangle<T, NDIMS>& tri,
+                                                      int* loc = nullptr,
+                                                      double EPS = PRIMAL_TINY)
 {
-// convenience macros to access triangle vertices
-#define A(t) t[0]
-#define B(t) t[1]
-#define C(t) t[2]
+  using PointType = Point<T, NDIMS>;
+  using VectorType = Vector<T, NDIMS>;
+
+  using detail::isGeq;
+  using detail::isLeq;
+
+  const PointType& A = tri[0];
+  const PointType& B = tri[1];
+  const PointType& C = tri[2];
 
   // Check if P in vertex region outside A
-  Vector< T, NDIMS > ab( A(tri), B(tri) );
-  Vector< T, NDIMS > ac( A(tri), C(tri) );
-  Vector< T, NDIMS > ap( A(tri),P );
-  T d1 = Vector< T,NDIMS >::dot_product( ab, ap );
-  T d2 = Vector< T,NDIMS >::dot_product( ac, ap );
-  if ( d1 <= 0.0f && d2 <= 0.0f )
+  const VectorType ab(A, B);
+  const VectorType ac(A, C);
+  const VectorType ap(A, P);
+  const T d1 = VectorType::dot_product(ab, ap);
+  const T d2 = VectorType::dot_product(ac, ap);
+  if(isLeq(d1, T(0), EPS) && isLeq(d2, T(0), EPS))
   {
-
     // A is the closest point
-    if ( loc != nullptr)
+    if(loc != nullptr)
     {
       *loc = 0;
     }
 
-    return ( A(tri) );
-
-  } // END if
+    return A;
+  }
 
   //----------------------------------------------------------------------------
   // Check if P in vertex region outside B
-  Vector< T,NDIMS > bp( B(tri), P );
-  T d3 = Vector< T,NDIMS >::dot_product( ab, bp );
-  T d4 = Vector< T,NDIMS >::dot_product( ac, bp );
-  if ( d3 >= 0.0f && d4 <= d3 )
+  const VectorType bp(B, P);
+  const T d3 = VectorType::dot_product(ab, bp);
+  const T d4 = VectorType::dot_product(ac, bp);
+  if(isGeq(d3, T(0), EPS) && isLeq(d4, d3, EPS))
   {
-
     // B is the closest point
-    if ( loc != nullptr)
+    if(loc != nullptr)
     {
       *loc = 1;
     }
 
-    return ( B(tri) );
-
-  } // END if
+    return B;
+  }
 
   //----------------------------------------------------------------------------
   // Check if P in edge region of AB
-  T vc = d1*d4 - d3*d2;
-  if ( vc <= 0.0f && d1 >= 0.0f && d3 <= 0.0f )
+  const T vc = d1 * d4 - d3 * d2;
+  if(isLeq(vc, T(0), EPS) && isGeq(d1, T(0), EPS) && isLeq(d3, T(0), EPS) &&
+     !utilities::isNearlyEqual(d1, d3, EPS))  // Additional check for degenerate triangles
   {
+    const T v = d1 / (d1 - d3);
+    const VectorType v_ab = ab * v;
 
-    T v = d1 / ( d1-d3 );
-    Vector< T,NDIMS > v_ab = ab*v;
-
-    double x = A(tri)[0] + v_ab[0];
-    double y = A(tri)[1] + v_ab[1];
-    double z = (NDIMS==3) ? A(tri)[2] + v_ab[2] : 0.0;
-
-    if ( loc != nullptr )
+    if(loc != nullptr)
     {
       *loc = -1;
     }
 
-    return ( Point< T,NDIMS >::make_point( x,y,z ) );
-  } // END if
+    return A + v_ab;
+  }
 
   //----------------------------------------------------------------------------
   // Check if P in vertex region outside C
-  Vector< T,NDIMS > cp( C(tri), P );
-  T d5 = Vector< T,NDIMS >::dot_product(ab,cp);
-  T d6 = Vector< T,NDIMS >::dot_product(ac,cp);
-  if ( d6 >= 0.0f && d5 <= d6 )
+  const VectorType cp(C, P);
+  const T d5 = VectorType::dot_product(ab, cp);
+  const T d6 = VectorType::dot_product(ac, cp);
+  if(isGeq(d6, T(0), EPS) && isLeq(d5, d6, EPS))
   {
-
     // C is the closest point
-    if ( loc != nullptr )
+    if(loc != nullptr)
     {
       *loc = 2;
     }
 
-    return ( C(tri) );
+    return C;
   }
 
   //----------------------------------------------------------------------------
   // Check if P in edge region of AC
-  T vb = d5*d2 - d1*d6;
-  if ( vb <= 0.0f && d2 >= 0.0f && d6 <= 0.0f )
+  const T vb = d5 * d2 - d1 * d6;
+  if(isLeq(vb, T(0), EPS) && isGeq(d2, T(0), EPS) && isLeq(d6, T(0), EPS))
   {
+    const T w = d2 / (d2 - d6);
+    const VectorType w_ac = ac * w;
 
-    T w = d2 / (d2-d6);
-    Vector< T, NDIMS > w_ac = ac*w;
-
-    double x = A(tri)[0] + w_ac[0];
-    double y = A(tri)[1] + w_ac[1];
-    double z = (NDIMS==3) ? A(tri)[2] + w_ac[2] : 0.0;
-
-    if ( loc != nullptr)
+    if(loc != nullptr)
     {
       *loc = -3;
     }
 
-    return ( Point< T,NDIMS >::make_point( x,y,z ) );
-  } // END if
+    return A + w_ac;
+  }
 
   //----------------------------------------------------------------------------
   // Check if P in edge region of BC
-  T va = d3*d6 - d5*d4;
-  if ( va <= 0.0f && (d4-d3) >= 0.0f && (d5-d6) >= 0.0f )
+  T va = d3 * d6 - d5 * d4;
+  if(isLeq(va, T(0), EPS) && isGeq(d4 - d3, T(0), EPS) &&
+     isGeq(d5 - d6, T(0), EPS))
   {
+    const T w = (d4 - d3) / ((d4 - d3) + (d5 - d6));
+    const VectorType bc(B, C);
+    const VectorType w_bc = bc * w;
 
-    T w = (d4-d3)/( (d4-d3)+(d5-d6) );
-    Vector< T,NDIMS > bc( B(tri), C(tri) );
-    Vector< T,NDIMS > w_bc = bc*w;
-
-    double x = B(tri)[0] + w_bc[0];
-    double y = B(tri)[1] + w_bc[1];
-    double z = (NDIMS==3) ? B(tri)[2] + w_bc[2] : 0.0;
-
-    if ( loc != nullptr )
+    if(loc != nullptr)
     {
       *loc = -2;
     }
 
-    return ( Point< T,NDIMS >::make_point( x,y,z ) );
-  } // END if
+    return B + w_bc;
+  }
 
   //----------------------------------------------------------------------------
   // P is inside face region
-  T denom = 1.0f / (va + vb + vc );
-  T v     = vb * denom;
-  T w     = vc * denom;
-  Vector< T,NDIMS > N = (ab*v) + (ac*w);
+  const T denom = T(1) / (va + vb + vc);
+  const T v = vb * denom;
+  const T w = vc * denom;
+  const VectorType N = (ab * v) + (ac * w);
 
-  double x = A(tri)[0] + N[0];
-  double y = A(tri)[1] + N[1];
-  double z = (NDIMS==3) ? A(tri)[2] + N[2] : 0.0;
-
-  if ( loc != nullptr )
+  if(loc != nullptr)
   {
-    *loc = Triangle< T,NDIMS >::NUM_TRI_VERTS;
+    *loc = Triangle<T, NDIMS>::NUM_TRI_VERTS;
   }
 
-  return ( Point< T,NDIMS >::make_point( x,y,z ) );
-
-#undef A
-#undef B
-#undef C
+  return A + N;
 }
 
 /*!
@@ -216,39 +297,59 @@ inline Point< T,NDIMS > closest_point( const Point< T,NDIMS >& P,
  * \param [in] obb user-supplied oriented bounding box.
  * \return cp the closest point from a point pt and an OBB.
  */
-template < typename T, int NDIMS >
-inline Point< T, NDIMS > closest_point(const Point< T, NDIMS >& pt,
-                                       const OrientedBoundingBox< T,
-                                                                  NDIMS >& obb)
+template <typename T, int NDIMS>
+inline Point<T, NDIMS> closest_point(const Point<T, NDIMS>& pt,
+                                     const OrientedBoundingBox<T, NDIMS>& obb)
 {
-  Vector< T, NDIMS > e = obb.getExtents();
-  const Vector< T, NDIMS >* u = obb.getAxes();
+  Vector<T, NDIMS> e = obb.getExtents();
+  const Vector<T, NDIMS>* u = obb.getAxes();
 
-  Vector< T, NDIMS > pt_l = obb.toLocal(pt);
-  Vector< T, NDIMS > res(obb.getCentroid());
+  Vector<T, NDIMS> pt_l(obb.toLocal(pt));
+  Vector<T, NDIMS> res(obb.getCentroid());
 
-  for (int i = 0 ; i < NDIMS ; i++)
+  for(int i = 0; i < NDIMS; i++)
   {
     // since the local coordinates are individually constrained, we can simply
     // choose the "best" local coordinate in each axis direction
-    if (pt_l[i] <= e[i] && pt_l[i] >= -e[i])
+    if(pt_l[i] <= e[i] && pt_l[i] >= -e[i])
     {
-      res += pt_l[i]*u[i];
+      res += pt_l[i] * u[i];
     }
-    else if (pt_l[i] > e[i])
+    else if(pt_l[i] > e[i])
     {
-      res += e[i]*u[i];
+      res += e[i] * u[i];
     }
     else
     {
-      res -= e[i]*u[i];
+      res -= e[i] * u[i];
     }
   }
 
-  return Point< T, NDIMS >(res.array());
+  return Point<T, NDIMS>(res.array());
 }
 
-} /* namespace primal */
-} /* namespace axom */
+/*!
+ * \brief Computes the closest point from a point, P, to a sphere.
+ *
+ * \param [in] P the query point
+ * \param [in] sphere user-supplied sphere
+ * \return cp the closest point on \a sphere to point \a P
+ *
+ * \note The closest point is uniquely defined everywhere except at the sphere's center.
+ * We handle that case by returning the point on the sphere along an arbitrary direction
+ * (specifically, the direction determined by \a primal::Vector::unitVector() )
+ */
+template <typename T, int NDIMS>
+AXOM_HOST_DEVICE inline Point<T, NDIMS> closest_point(const Point<T, NDIMS>& P,
+                                                      const Sphere<T, NDIMS>& sphere)
+{
+  using VectorType = Vector<T, NDIMS>;
 
-#endif /* CLOSEST_POINT_HPP_ */
+  const auto v = VectorType(sphere.getCenter(), P).unitVector();
+  return sphere.getCenter() + sphere.getRadius() * v;
+}
+
+}  // namespace primal
+}  // namespace axom
+
+#endif  // AXOM_PRIMAL_CLOSEST_POINT_HPP_

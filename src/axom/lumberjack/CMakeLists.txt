@@ -1,11 +1,14 @@
-# Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC and
-# other Axom Project Developers. See the top-level COPYRIGHT file for details.
+# Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
+# other Axom Project Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
+#------------------------------------------------------------------------------
+# Lumberjack component
+#------------------------------------------------------------------------------
 
-################################
+#------------------------------------------------------------------------------
 # Specify all headers/sources
-################################
+#------------------------------------------------------------------------------
 set(lumberjack_headers
     BinaryTreeCommunicator.hpp
     Combiner.hpp
@@ -15,6 +18,7 @@ set(lumberjack_headers
     MPIUtility.hpp
     RootCommunicator.hpp
     TextEqualityCombiner.hpp
+    TextTagCombiner.hpp
     )
 
 set(lumberjack_sources
@@ -26,15 +30,14 @@ set(lumberjack_sources
     )
 
 
-################################
+#------------------------------------------------------------------------------
 # Make/Install the library
-################################
-blt_add_library( NAME        lumberjack
+#------------------------------------------------------------------------------
+axom_add_library(NAME        lumberjack
                  SOURCES     ${lumberjack_sources}
                  HEADERS     ${lumberjack_headers}
                  DEPENDS_ON  core mpi
                  FOLDER      axom/lumberjack
-                 OBJECT      TRUE
                  )
 
 axom_write_unified_header(NAME    lumberjack
@@ -45,21 +48,21 @@ axom_install_component(NAME      lumberjack
                        )
 
 
-################################
+#------------------------------------------------------------------------------
 # Add examples
-################################
+#------------------------------------------------------------------------------
 if (AXOM_ENABLE_EXAMPLES)
   add_subdirectory(examples)
 endif()
 
-################################
+#------------------------------------------------------------------------------
 # Add tests
-################################
+#------------------------------------------------------------------------------
 if (AXOM_ENABLE_TESTS)
   add_subdirectory(tests)
 endif()
 
-################################
+#------------------------------------------------------------------------------
 # Add code checks
-################################
+#------------------------------------------------------------------------------
 axom_add_code_checks(PREFIX lumberjack)

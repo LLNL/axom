@@ -1,11 +1,11 @@
 #!/bin/sh
 
-# Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC and
-# other Axom Project Developers. See the top-level COPYRIGHT file for details.
+# Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
+# other Axom Project Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
 
-"exec" "python" "-u" "-B" "$0" "$@"
+"exec" "python3" "-u" "-B" "$0" "$@"
 
 # Python wrapper script for generating the correct cmake line with the
 # options specified by the user.
@@ -32,12 +32,13 @@ def extract_cmake_location(file_path):
         content = file_handle.readlines()
         for line in content:
             if line.lower().startswith(cmake_line_prefix):
-                return line.split(" ")[4].strip()
+                return line.partition(":")[2].strip()
     print("Could not find a cmake entry in host config file.\n"
           "Attempting to find cmake on your path...")
     cmake_path = distutils.spawn.find_executable("cmake")
     print("Found: {0}".format(cmake_path))
-    return cmake_path
+    ret_cmake_path = "\"{0}\"".format(cmake_path)
+    return ret_cmake_path
 
 
 def parse_arguments():
@@ -87,6 +88,25 @@ def parse_arguments():
         "-x", "--xcode", action="store_true", help="Create an xcode project."
     )
 
+    # Add supported versions of MS Visual Studio as needed.
+    msvcversions = {'2017': 'Visual Studio 15 2017',
+                    '201764': 'Visual Studio 15 2017 Win64',
+                    '2019': 'Visual Studio 16 2019',
+                    '201964': 'Visual Studio 16 2019',
+                    '2022': 'Visual Studio 17 2022',
+                    '202264': 'Visual Studio 17 2022'}
+    # Newer versions  of MSVC might supply an architecture flag
+    generator_archs = {'2019': 'Win32',
+                       '201964': 'x64',
+                       '2022': 'Win32',
+                       '202264': 'x64'}
+    parser.add_argument(
+        "--msvc",
+        type=str,
+        choices=msvcversions.keys(),
+        help="Create a MS Visual Studio project."
+    )
+
     parser.add_argument(
         "-ecc",
         "--exportcompilercommands",
@@ -112,6 +132,8 @@ def parse_arguments():
     )
 
     args, unknown_args = parser.parse_known_args()
+    args.msvcversions = msvcversions
+    args.generator_archs = generator_archs
     if unknown_args:
         print(
             "[config-build]: Passing the following arguments directly to cmake... %s"
@@ -153,7 +175,10 @@ def setup_build_dir(args, platform_info):
         buildpath = args.buildpath
     else:
         # use platform info & build type
-        buildpath = "-".join(["build", platform_info, args.buildtype.lower()])
+        pathList = ["build", platform_info]
+        if not args.msvc:
+            pathList.append(args.buildtype.lower())
+        buildpath = "-".join(pathList)
 
     buildpath = os.path.abspath(buildpath)
 
@@ -175,9 +200,10 @@ def setup_install_dir(args, platform_info):
         installpath = os.path.abspath(args.installpath)
     else:
         # use platform info & build type
-        installpath = "-".join(
-            ["install", platform_info, args.buildtype.lower()]
-        )
+        pathList = ["install", platform_info]
+        if not args.msvc:
+            pathList.append(args.buildtype.lower())
+        installpath = "-".join(pathList)
 
     installpath = os.path.abspath(installpath)
 
@@ -208,6 +234,7 @@ def create_cmake_command_line(
     args, unknown_args, buildpath, hostconfigpath, installpath
 ):
     cmakeline = extract_cmake_location(hostconfigpath)
+    cmakeline = os.path.normpath(cmakeline) # Fixes path for Windows
     assert cmakeline != None, ("No cmake executable found on path")
     assert executable_exists(cmakeline), (
         "['%s'] invalid path to cmake executable or file does not have execute permissions"
@@ -230,9 +257,10 @@ def create_cmake_command_line(
         os.chmod(ccmake_file, st.st_mode | stat.S_IEXEC)
 
     # Add cache file option
-    cmakeline += " -C %s" % hostconfigpath
-    # Add build type (opt or debug)
-    cmakeline += " -DCMAKE_BUILD_TYPE=" + args.buildtype
+    cmakeline = '"{0}" -C {1}'.format(cmakeline,hostconfigpath)
+    # Add build type (opt or debug); don't add for msvc generator
+    if not args.msvc:
+        cmakeline += " -DCMAKE_BUILD_TYPE=" + args.buildtype
     # Set install dir
     cmakeline += " -DCMAKE_INSTALL_PREFIX=%s" % installpath
 
@@ -244,6 +272,11 @@ def create_cmake_command_line(
 
     if args.xcode:
         cmakeline += ' -G "Xcode"'
+
+    if args.msvc:
+        cmakeline += ' -G "%s"' % args.msvcversions[args.msvc]
+        if args.generator_archs.get(args.msvc):
+            cmakeline += ' -A %s' % args.generator_archs[args.msvc]
 
     if args.docs_only:
         cmakeline += " -DENABLE_ALL_COMPONENTS=OFF"
@@ -276,6 +309,7 @@ def run_cmake(buildpath, cmakeline):
     os.chdir(buildpath)
     print("Executing CMake line: '%s'" % cmakeline)
     print("")
+
     returncode = subprocess.call(cmakeline, shell=True)
     if not returncode == 0:
         print(

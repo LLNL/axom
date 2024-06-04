@@ -1,26 +1,36 @@
-// Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC and
-// other Axom Project Developers. See the top-level COPYRIGHT file for details.
+// Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
+// other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
 #ifndef AXOM_SPIN_BUILD_RADIX_TREE_H_
 #define AXOM_SPIN_BUILD_RADIX_TREE_H_
 
-#include "axom/spin/execution_space.hpp"
-#include "axom/spin/internal/linear_bvh/BVHData.hpp"
+#include "axom/config.hpp"
+
+#include "axom/core/execution/execution_space.hpp"
+#include "axom/core/execution/for_all.hpp"
+#include "axom/core/AnnotationMacros.hpp"
+#include "axom/core/utilities/Utilities.hpp"
+#include "axom/core/utilities/BitUtilities.hpp"
+
+#include "axom/slic/interface/slic.hpp"
+
+#include "axom/primal/geometry/BoundingBox.hpp"
+#include "axom/primal/geometry/Point.hpp"
+
 #include "axom/spin/internal/linear_bvh/RadixTree.hpp"
-#include "axom/spin/internal/linear_bvh/vec.hpp"
-#include "axom/spin/internal/linear_bvh/aabb.hpp"
+#include "axom/spin/MortonIndex.hpp"
 
-#include "axom/core/utilities/Utilities.hpp" // for isNearlyEqual()
-#include "axom/slic/interface/slic.hpp"      // for slic
+#if defined(AXOM_USE_RAJA)
+  #include "RAJA/RAJA.hpp"
+#endif
 
-// RAJA includes
-#include "RAJA/RAJA.hpp"
+#include <atomic>
 
-#if defined(AXOM_USE_CUDA)
-// NOTE: uses the cub installation that is  bundled with RAJA
-#include "cub/device/device_radix_sort.cuh"
+#if defined(AXOM_USE_CUDA) && defined(AXOM_USE_RAJA)
+  // NOTE: uses the cub installation that is  bundled with RAJA
+  #include "cub/device/device_radix_sort.cuh"
 #endif
 
 namespace axom
@@ -31,316 +41,163 @@ namespace internal
 {
 namespace linear_bvh
 {
-
-//expands 10-bit unsigned int into 30 bits
-static inline AXOM_HOST_DEVICE
-axom::int32 expand_bits32(axom::int32 x32)
-{
-  x32 = (x32 | (x32 << 16)) & 0x030000FF;
-  x32 = (x32 | (x32 << 8)) & 0x0300F00F;
-  x32 = (x32 | (x32 << 4)) & 0x030C30C3;
-  x32 = (x32 | (x32 << 2)) & 0x09249249;
-  return x32;
-}
-
-//------------------------------------------------------------------------------
-static inline AXOM_HOST_DEVICE
-axom::int64 expand_bits64(axom::int32 x)
-{
-  axom::int64 x64 = x & 0x1FFFFF;
-  x64 = (x64 | x64 << 32) & 0x1F00000000FFFF;
-  x64 = (x64 | x64 << 16) & 0x1F0000FF0000FF;
-  x64 = (x64 | x64 << 8) & 0x100F00F00F00F00F;
-  x64 = (x64 | x64 << 4) & 0x10c30c30c30c30c3;
-  x64 = (x64 | x64 << 2) & 0x1249249249249249;
-
-  return x64;
-}
-
 //------------------------------------------------------------------------------
 //Returns 30 bit morton code for coordinates for
 // x, y, and z are expecting to be between [0,1]
-static inline AXOM_HOST_DEVICE
-axom::int32 morton32_encode( axom::float32 x,
-                             axom::float32 y,
-                             axom::float32 z=0.0 )
+template <typename FloatType, int Dims>
+static inline AXOM_HOST_DEVICE std::int32_t morton32_encode(
+  const primal::Vector<FloatType, Dims>& point)
 {
-  //take the first 10 bits. Note, 2^10 = 1024
-  x = fmin(fmax(x * 1024.0f, 0.0f), 1023.0f);
-  y = fmin(fmax(y * 1024.0f, 0.0f), 1023.0f);
-  z = fmin(fmax(z * 1024.0f, 0.0f), 1023.0f);
+  //for a float, take the first 10 bits. Note, 2^10 = 1024
+  constexpr int NUM_BITS_PER_DIM = 32 / Dims;
+  constexpr FloatType FLOAT_TO_INT = 1 << NUM_BITS_PER_DIM;
+  constexpr FloatType FLOAT_CEILING = FLOAT_TO_INT - 1;
 
-  //expand 10 bits to 30
-  axom::int32 xx = expand_bits32((axom::int32)x);
-  axom::int32 yy = expand_bits32((axom::int32)y);
-  axom::int32 zz = expand_bits32((axom::int32)z);
-  //interleave coordinates
-  return (zz << 2 | yy << 1 | xx);
+  std::int32_t int_coords[Dims];
+  for(int i = 0; i < Dims; i++)
+  {
+    int_coords[i] =
+      fmin(fmax(point[i] * FLOAT_TO_INT, (FloatType)0), FLOAT_CEILING);
+  }
+
+  primal::Point<std::int32_t, Dims> integer_pt(int_coords);
+
+  return convertPointToMorton<std::int32_t>(integer_pt);
 }
 
 //------------------------------------------------------------------------------
 //Returns 30 bit morton code for coordinates for
 //coordinates in the unit cude
-static inline AXOM_HOST_DEVICE
-axom::int64 morton64_encode( axom::float32 x,
-                             axom::float32 y,
-                             axom::float32 z=0.0 )
+static inline AXOM_HOST_DEVICE std::int64_t morton64_encode(axom::float32 x,
+                                                            axom::float32 y,
+                                                            axom::float32 z = 0.0)
 {
   //take the first 21 bits. Note, 2^21= 2097152.0f
   x = fmin(fmax(x * 2097152.0f, 0.0f), 2097151.0f);
   y = fmin(fmax(y * 2097152.0f, 0.0f), 2097151.0f);
   z = fmin(fmax(z * 2097152.0f, 0.0f), 2097151.0f);
 
-  //expand the 10 bits to 30
-  axom::int64 xx = expand_bits64((axom::int32)x);
-  axom::int64 yy = expand_bits64((axom::int32)y);
-  axom::int64 zz = expand_bits64((axom::int32)z);
+  primal::Point<std::int64_t, 3> integer_pt =
+    primal::Point<std::int64_t, 3>::make_point((std::int64_t)x,
+                                               (std::int64_t)y,
+                                               (std::int64_t)z);
 
-  //interleave coordinates
-  return (zz << 2 | yy << 1 | xx);
+  return convertPointToMorton<std::int64_t>(integer_pt);
 }
 
-template < typename ExecSpace, typename FloatType >
-void transform_boxes( const FloatType *boxes,
-                      AABB<FloatType,3> *aabbs,
-                      int32 size)
+template <typename ExecSpace, typename BoxIndexable, typename FloatType, int NDIMS>
+void transform_boxes(const BoxIndexable boxes,
+                     ArrayView<primal::BoundingBox<FloatType, NDIMS>> aabbs,
+                     std::int32_t size,
+                     FloatType scale_factor)
 {
-  constexpr int NDIMS  = 3;
-  constexpr int STRIDE = 2 * NDIMS;
+  AXOM_ANNOTATE_SCOPE("transform_boxes");
 
-  using exec_policy = typename spin::execution_space< ExecSpace >::raja_exec;
-  RAJA::forall< exec_policy >(
-      RAJA::RangeSegment(0, size), AXOM_LAMBDA (int32 i)
-  {
-    AABB< FloatType, NDIMS > aabb;
-    Vec< FloatType, NDIMS > min_point, max_point;
+  for_all<ExecSpace>(
+    size,
+    AXOM_LAMBDA(std::int32_t i) {
+      primal::BoundingBox<FloatType, NDIMS> aabb = boxes[i];
 
-    const int32 offset = i * STRIDE;
-    min_point[0] = boxes[offset + 0];
-    min_point[1] = boxes[offset + 1];
-    min_point[2] = boxes[offset + 2];
+      aabb.scale(scale_factor);
 
-    max_point[0] = boxes[offset + 3];
-    max_point[1] = boxes[offset + 4];
-    max_point[2] = boxes[offset + 5];
-
-    aabb.include(min_point);
-    aabb.include(max_point);
-    aabbs[i] = aabb;
-  } );
-
+      aabbs[i] = aabb;
+    });
 }
 
 //------------------------------------------------------------------------------
-template < typename ExecSpace, typename FloatType >
-void transform_boxes( const FloatType *boxes,
-                      AABB<FloatType,2> *aabbs,
-                      int32 size)
+template <typename ExecSpace, typename FloatType, int NDIMS>
+primal::BoundingBox<FloatType, NDIMS> reduce(
+  ArrayView<const primal::BoundingBox<FloatType, NDIMS>> aabbs,
+  std::int32_t size)
 {
-  constexpr int NDIMS  = 2;
-  constexpr int STRIDE = 2 * NDIMS;
+  AXOM_ANNOTATE_SCOPE("reduce_abbs");
 
-  using exec_policy = typename spin::execution_space< ExecSpace >::raja_exec;
-  RAJA::forall< exec_policy >(
-      RAJA::RangeSegment(0, size), AXOM_LAMBDA (int32 i)
+#ifdef AXOM_USE_RAJA
+  using reduce_policy = typename axom::execution_space<ExecSpace>::reduce_policy;
+
+  primal::Point<FloatType, NDIMS> min_pt, max_pt;
+
+  FloatType infinity = std::numeric_limits<FloatType>::max();
+  FloatType neg_infinity = std::numeric_limits<FloatType>::lowest();
+
+  for(int dim = 0; dim < NDIMS; dim++)
   {
-    AABB< FloatType, NDIMS > aabb;
-    Vec< FloatType, NDIMS > min_point, max_point;
+    RAJA::ReduceMin<reduce_policy, FloatType> min_coord(infinity);
+    RAJA::ReduceMax<reduce_policy, FloatType> max_coord(neg_infinity);
 
-    const int32 offset = i * STRIDE;
-    min_point[0] = boxes[offset + 0];
-    min_point[1] = boxes[offset + 1];
+    for_all<ExecSpace>(
+      size,
+      AXOM_LAMBDA(std::int32_t i) {
+        const primal::BoundingBox<FloatType, NDIMS>& aabb = aabbs[i];
+        min_coord.min(aabb.getMin()[dim]);
+        max_coord.max(aabb.getMax()[dim]);
+      });
 
-    max_point[0] = boxes[offset + 2];
-    max_point[1] = boxes[offset + 3];
-
-    aabb.include(min_point);
-    aabb.include(max_point);
-    aabbs[ i ] = aabb;
-  } );
-
-}
-
-//------------------------------------------------------------------------------
-template < typename ExecSpace, typename FloatType >
-AABB<FloatType,3> reduce(AABB<FloatType,3> *aabbs, int32 size)
-{
-  constexpr int NDIMS = 3;
-
-  using reduce_policy =
-      typename spin::execution_space< ExecSpace >::raja_reduce;
-  RAJA::ReduceMin< reduce_policy, FloatType> xmin(infinity32());
-  RAJA::ReduceMin< reduce_policy, FloatType> ymin(infinity32());
-  RAJA::ReduceMin< reduce_policy, FloatType> zmin(infinity32());
-
-  RAJA::ReduceMax< reduce_policy, FloatType> xmax(neg_infinity32());
-  RAJA::ReduceMax< reduce_policy, FloatType> ymax(neg_infinity32());
-  RAJA::ReduceMax< reduce_policy, FloatType> zmax(neg_infinity32());
-
-  using exec_policy = typename spin::execution_space< ExecSpace >::raja_exec;
-  RAJA::forall< exec_policy >(RAJA::RangeSegment(0,size), AXOM_LAMBDA(int32 i)
-  {
-
-    const AABB< FloatType, NDIMS > &aabb = aabbs[i];
-
-    xmin.min(aabb.m_x.min());
-    ymin.min(aabb.m_y.min());
-    zmin.min(aabb.m_z.min());
-
-    xmax.max(aabb.m_x.max());
-    ymax.max(aabb.m_y.max());
-    zmax.max(aabb.m_z.max());
-
-  } );
-
-  AABB< FloatType, NDIMS > res;
-
-  Vec< FloatType, NDIMS > mins =
-      make_vec< FloatType >( xmin.get(), ymin.get(), zmin.get() );
-
-  Vec< FloatType, NDIMS > maxs =
-      make_vec< FloatType >( xmax.get(), ymax.get(), zmax.get() );
-
-  res.include(mins);
-  res.include(maxs);
-  return res;
-}
-
-//------------------------------------------------------------------------------
-template < typename ExecSpace, typename FloatType >
-AABB<FloatType,2> reduce(AABB<FloatType,2> *aabbs, int32 size)
-{
-  constexpr int NDIMS = 2;
-
-  using reduce_policy =
-      typename spin::execution_space< ExecSpace >::raja_reduce;
-  RAJA::ReduceMin< reduce_policy, FloatType> xmin(infinity32());
-  RAJA::ReduceMin< reduce_policy, FloatType> ymin(infinity32());
-
-  RAJA::ReduceMax< reduce_policy, FloatType> xmax(neg_infinity32());
-  RAJA::ReduceMax< reduce_policy, FloatType> ymax(neg_infinity32());
-
-
-  using exec_policy =
-      typename spin::execution_space< ExecSpace >::raja_exec;
-  RAJA::forall< exec_policy >(
-      RAJA::RangeSegment(0, size), AXOM_LAMBDA (int32 i)
-  {
-
-    const AABB<FloatType, NDIMS > &aabb = aabbs[ i ];
-    xmin.min(aabb.m_x.min());
-    ymin.min(aabb.m_y.min());
-
-
-    xmax.max(aabb.m_x.max());
-    ymax.max(aabb.m_y.max());
-
-  } );
-
-  AABB<FloatType,NDIMS > res;
-  Vec< FloatType,NDIMS > mins = make_vec< FloatType >(xmin.get(), ymin.get() );
-  Vec< FloatType,NDIMS > maxs = make_vec< FloatType >(xmax.get(), ymax.get() );
-
-  res.include(mins);
-  res.include(maxs);
-  return res;
-}
-
-//------------------------------------------------------------------------------
-template < typename ExecSpace, typename FloatType >
-void get_mcodes( AABB<FloatType,2> *aabbs,
-                    int32 size,
-                    const AABB< FloatType,2 > &bounds,
-                    uint32* mcodes )
-{
-  constexpr int NDIMS = 2;
-
-  Vec< FloatType,NDIMS > extent, inv_extent, min_coord;
-  extent[0] = bounds.m_x.max() - bounds.m_x.min();
-  extent[1] = bounds.m_y.max() - bounds.m_y.min();
-
-  min_coord[0] = bounds.m_x.min();
-  min_coord[1] = bounds.m_y.min();
-
-  for ( int i = 0; i < NDIMS; ++i )
-  {
-    inv_extent[ i ] =
-        utilities::isNearlyEqual< FloatType >( extent[i], .0f ) ?
-            0.f : 1.f / extent[i];
+    min_pt[dim] = min_coord.get();
+    max_pt[dim] = max_coord.get();
   }
 
-  using exec_policy =
-      typename spin::execution_space< ExecSpace >::raja_exec;
-  RAJA::forall< exec_policy >(RAJA::RangeSegment(0,size), AXOM_LAMBDA(int32 i)
-  {
-    const AABB<FloatType,NDIMS> &aabb = aabbs[i];
+  return primal::BoundingBox<FloatType, NDIMS>(min_pt, max_pt);
+#else
+  static_assert(std::is_same<ExecSpace, SEQ_EXEC>::value,
+                "Only SEQ_EXEC supported without RAJA");
 
-    // get the center and normalize it
-    FloatType dx = aabb.m_x.center() - min_coord[ 0 ];
-    FloatType dy = aabb.m_y.center() - min_coord[ 1 ];
-    float32 centroid_x = static_cast< float32 >( dx * inv_extent[0] );
-    float32 centroid_y = static_cast< float32 >( dy * inv_extent[1] );
-    mcodes[ i ] = morton32_encode(centroid_x, centroid_y );
-  } );
+  primal::BoundingBox<FloatType, NDIMS> global_bounds;
 
+  for_all<ExecSpace>(size,
+                     [&](std::int32_t i) { global_bounds.addBox(aabbs[i]); });
+
+  return global_bounds;
+#endif
 }
 
 //------------------------------------------------------------------------------
-template < typename ExecSpace, typename FloatType >
-void get_mcodes( AABB<FloatType,3> *aabbs,
-                    int32 size,
-                    const AABB< FloatType,3 > &bounds,
-                    uint32* mcodes )
+template <typename ExecSpace, typename FloatType, int NDIMS>
+void get_mcodes(ArrayView<const primal::BoundingBox<FloatType, NDIMS>> aabbs,
+                std::int32_t size,
+                const primal::BoundingBox<FloatType, NDIMS>& bounds,
+                const ArrayView<std::uint32_t> mcodes)
 {
-  constexpr int NDIMS = 3;
+  AXOM_ANNOTATE_SCOPE("get_mcodes");
 
-  Vec< FloatType, NDIMS > extent, inv_extent, min_coord;
-  extent[0] = bounds.m_x.max() - bounds.m_x.min();
-  extent[1] = bounds.m_y.max() - bounds.m_y.min();
-  extent[2] = bounds.m_z.max() - bounds.m_z.min();
+  primal::Vector<FloatType, NDIMS> extent, inv_extent, min_coord;
 
-  min_coord[0] = bounds.m_x.min();
-  min_coord[1] = bounds.m_y.min();
-  min_coord[2] = bounds.m_z.min();
+  extent = primal::Vector<FloatType, NDIMS>(bounds.getMax());
+  extent -= primal::Vector<FloatType, NDIMS>(bounds.getMin());
+  min_coord = primal::Vector<FloatType, NDIMS>(bounds.getMin());
 
-  for ( int i = 0; i < NDIMS; ++i )
+  for(int i = 0; i < NDIMS; ++i)
   {
-    inv_extent[ i ] =
-      utilities::isNearlyEqual< FloatType >( extent[i], .0f ) ?
-          0.f : 1.f / extent[i];
+    inv_extent[i] = utilities::isNearlyEqual<FloatType>(extent[i], .0f)
+      ? 0.f
+      : 1.f / extent[i];
   }
 
-  using exec_policy =
-      typename spin::execution_space< ExecSpace >::raja_exec;
-  RAJA::forall< exec_policy >(RAJA::RangeSegment(0,size), AXOM_LAMBDA(int32 i)
-  {
-    const AABB<FloatType,NDIMS> &aabb = aabbs[i];
+  for_all<ExecSpace>(
+    size,
+    AXOM_LAMBDA(std::int32_t i) {
+      const primal::BoundingBox<FloatType, NDIMS>& aabb = aabbs[i];
 
-    // get the center and normalize it
-    FloatType dx = aabb.m_x.center() - min_coord[0];
-    FloatType dy = aabb.m_y.center() - min_coord[1];
-    FloatType dz = aabb.m_z.center() - min_coord[2];
-    float32 centroid_x = static_cast< float32 >( dx * inv_extent[0] );
-    float32 centroid_y = static_cast< float32 >( dy * inv_extent[1] );
-    float32 centroid_z = static_cast< float32 >( dz * inv_extent[2] );
-    mcodes[ i ] = morton32_encode(centroid_x, centroid_y, centroid_z);
-  } );
-
+      // get the center and normalize it
+      primal::Vector<FloatType, NDIMS> centroid(aabb.getCentroid());
+      centroid = primal::Vector<FloatType, NDIMS>(
+        (centroid - min_coord).array() * inv_extent.array());
+      mcodes[i] = morton32_encode(centroid);
+    });
 }
 
 //------------------------------------------------------------------------------
-template < typename ExecSpace, typename IntType >
-void array_counting( IntType* iterator,
-                     const IntType& size,
-                     const IntType& start,
-                     const IntType& step)
+template <typename ExecSpace, typename IntType>
+void array_counting(ArrayView<IntType> iterator,
+                    const IntType& size,
+                    const IntType& start,
+                    const IntType& step)
 {
-  using exec_policy = typename spin::execution_space< ExecSpace >::raja_exec;
-  RAJA::forall< exec_policy >(
-      RAJA::RangeSegment(0, size), AXOM_LAMBDA(int32 i)
-  {
-    iterator[ i ] = start + i * step;
-  } );
+  AXOM_ANNOTATE_SCOPE("array_counting");
+
+  for_all<ExecSpace>(
+    size,
+    AXOM_LAMBDA(std::int32_t i) { iterator[i] = start + i * step; });
 }
 
 //------------------------------------------------------------------------------
@@ -350,337 +207,438 @@ void array_counting( IntType* iterator,
 // indices [1,0,2]
 // result  [b,a,c]
 //
-template< typename ExecSpace, typename T>
-void reorder(int32 *indices, T *&array, int32 size)
+template <typename ExecSpace, typename T>
+void reorder(const ArrayView<const std::int32_t> indices,
+             Array<T>& array,
+             std::int32_t size,
+             int allocatorID)
 {
-  T* temp = axom::allocate< T >( size );
+  AXOM_ANNOTATE_SCOPE("reorder");
 
-  using exec_policy = typename spin::execution_space< ExecSpace >::raja_exec;
-  RAJA::forall< exec_policy >(
-      RAJA::RangeSegment(0, size), AXOM_LAMBDA (int32 i)
+  Array<T> temp =
+    Array<T>(ArrayOptions::Uninitialized {}, size, size, allocatorID);
+  const auto array_v = array.view();
+  const auto temp_v = temp.view();
+
+  for_all<ExecSpace>(
+    size,
+    AXOM_LAMBDA(std::int32_t i) {
+      std::int32_t in_idx = indices[i];
+      temp_v[i] = array_v[in_idx];
+    });
+
+  array = std::move(temp);
+}
+
+//------------------------------------------------------------------------------
+#if defined(AXOM_USE_RAJA) &&  \
+  ((RAJA_VERSION_MAJOR > 0) || \
+   ((RAJA_VERSION_MAJOR == 0) && (RAJA_VERSION_MINOR >= 12)))
+
+template <typename ExecSpace>
+void sort_mcodes(ArrayView<std::uint32_t> mcodes,
+                 std::int32_t size,
+                 ArrayView<std::int32_t> iter)
+{
+  AXOM_ANNOTATE_SCOPE("sort_mcodes");
+
+  array_counting<ExecSpace>(iter, size, 0, 1);
+
   {
-    int32 in_idx = indices[ i ];
-    temp[ i ]    = array[ in_idx ];
-  } );
-
-
-  axom::deallocate(array);
-  array = temp;
+    AXOM_ANNOTATE_SCOPE("raja_stable_sort");
+    using EXEC_POL = typename axom::execution_space<ExecSpace>::loop_policy;
+    RAJA::stable_sort_pairs<EXEC_POL>(RAJA::make_span(mcodes.data(), size),
+                                      RAJA::make_span(iter.data(), size));
+  }
 }
 
-//------------------------------------------------------------------------------
-template < typename ExecSpace >
-void custom_sort( ExecSpace, uint32*& mcodes, int32 size, int32* iter )
+#else
+
+// fall back to std::stable_sort
+template <typename ExecSpace>
+void sort_mcodes(Array<std::uint32_t>& mcodes,
+                 std::int32_t size,
+                 const ArrayView<std::int32_t> iter)
 {
-  array_counting< ExecSpace >(iter, size, 0, 1);
+  AXOM_ANNOTATE_SCOPE("sort_mcodes");
 
-  std::sort(iter,
-            iter + size,
-            [=](int32 i1, int32 i2)
-            {
-              return mcodes[i1] < mcodes[i2];
-            } );
+  array_counting<ExecSpace>(iter, size, 0, 1);
 
-
-  reorder< ExecSpace >(iter, mcodes, size);
-}
-
-//------------------------------------------------------------------------------
-#if defined(AXOM_USE_CUDA) && defined(AXOM_USE_RAJA) && \
-    defined(RAJA_ENABLE_CUDA)
-template < int BLOCK_SIZE >
-void custom_sort( spin::CUDA_EXEC< BLOCK_SIZE >,
-                  uint32*& mcodes, int32 size, int32* iter )
-{
-  using ExecSpace = typename spin::CUDA_EXEC< BLOCK_SIZE >;
-  array_counting< ExecSpace >(iter, size, 0, 1);
-
-  uint32* mcodes_alt_buf = axom::allocate< uint32 >( size );
-  int32*  iter_alt_buf   = axom::allocate< int32 >( size );
-
-  // create double buffers
-  ::cub::DoubleBuffer< uint32 > d_keys( mcodes, mcodes_alt_buf );
-  ::cub::DoubleBuffer< int32 >  d_values( iter, iter_alt_buf );
-
-  // determine temporary device storage requirements
-  void * d_temp_storage     = nullptr;
-  size_t temp_storage_bytes = 0;
-  ::cub::DeviceRadixSort::SortPairs( d_temp_storage, temp_storage_bytes,
-                                   d_keys, d_values, size );
-
-  // Allocate temporary storage
-  d_temp_storage = (void*)axom::allocate< unsigned char >( temp_storage_bytes );
-
-
-  // Run sorting operation
-  ::cub::DeviceRadixSort::SortPairs( d_temp_storage, temp_storage_bytes,
-                                     d_keys, d_values, size );
-
-  uint32* sorted_keys = d_keys.Current();
-  int32*  sorted_vals = d_values.Current();
-
-  using exec_policy = typename spin::execution_space< ExecSpace >::raja_exec;
-  RAJA::forall< exec_policy >(
-      RAJA::RangeSegment(0,size), AXOM_LAMBDA (int32 i)
   {
-    mcodes[ i ] = sorted_keys[ i ];
-    iter[ i ]   = sorted_vals[ i ];
-  } );
+    AXOM_ANNOTATE_SCOPE("cpu_sort");
 
-  // Free temporary storage
-  axom::deallocate( d_temp_storage );
-  axom::deallocate( mcodes_alt_buf );
-  axom::deallocate( iter_alt_buf );
-}
-#endif
+    std::stable_sort(
+      iter.begin(),
+      iter.begin() + size,
+      [&](std::int32_t i1, std::int32_t i2) { return mcodes[i1] < mcodes[i2]; });
+  }
 
-//------------------------------------------------------------------------------
-template < typename ExecSpace  >
-void sort_mcodes( uint32*& mcodes, int32 size, int32* iter )
-{
-  // dispatch
-  custom_sort( ExecSpace(), mcodes, size, iter );
+  const int allocID = axom::execution_space<ExecSpace>::allocatorID();
+  reorder<ExecSpace>(iter, mcodes, size, allocID);
 }
 
+#endif /* RAJA version 0.12.0 and above */
+
 //------------------------------------------------------------------------------
-template < typename IntType, typename MCType >
-AXOM_HOST_DEVICE IntType delta( const IntType &a,
-                                const IntType &b,
-                                const IntType &inner_size,
-                                const MCType *mcodes )
+template <typename IntType, typename MCType>
+AXOM_HOST_DEVICE IntType delta(const IntType& a,
+                               const IntType& b,
+                               const IntType& inner_size,
+                               axom::ArrayView<MCType> mcodes)
 {
   bool tie = false;
   bool out_of_range = (b < 0 || b > inner_size);
   //still make the call but with a valid adderss
-  const int32 bb = (out_of_range) ? 0 : b;
-  const uint32 acode = mcodes[a];
-  const uint32 bcode = mcodes[bb];
+  const std::int32_t bb = (out_of_range) ? 0 : b;
+  const std::uint32_t acode = mcodes[a];
+  const std::uint32_t bcode = mcodes[bb];
   //use xor to find where they differ
-  uint32 exor = acode ^ bcode;
+  std::uint32_t exor = acode ^ bcode;
   tie = (exor == 0);
   //break the tie, a and b must always differ
-  exor = tie ? uint32(a) ^ uint32(bb) : exor;
-  int32 count = clz(exor);
-  if (tie)
+  exor = tie ? std::uint32_t(a) ^ std::uint32_t(bb) : exor;
+  std::int32_t count = axom::utilities::countl_zero(exor);
+  if(tie)
+  {
     count += 32;
-  count = (out_of_range) ? - 1 : count;
+  }
+  count = (out_of_range) ? -1 : count;
   return count;
 }
 
 //------------------------------------------------------------------------------
-template < typename ExecSpace, typename FloatType, int NDIMS >
-void build_tree(  RadixTree< FloatType, NDIMS > &data )
+template <typename ExecSpace, typename FloatType, int NDIMS>
+void build_tree(RadixTree<FloatType, NDIMS>& data)
 {
+  AXOM_ANNOTATE_SCOPE("build_tree");
+
   // http://research.nvidia.com/sites/default/files/publications/karras2012hpg_paper.pdf
 
   // Pointers and vars are redeclared because I have a faint memory
   // of a huge amount of pain and suffering due so cuda
   // lambda captures of pointers inside a struct. Bad memories
   // of random segfaults ........ be warned
-  const int32 inner_size = data.m_inner_size;
-  int32 *lchildren_ptr = data.m_left_children;
-  int32 *rchildren_ptr = data.m_right_children;
-  int32 *parent_ptr = data.m_parents;
-  const uint32 *mcodes_ptr = data.m_mcodes;
+  const std::int32_t inner_size = data.m_inner_size;
+  const auto lchildren_ptr = data.m_left_children.view();
+  const auto rchildren_ptr = data.m_right_children.view();
+  const auto parent_ptr = data.m_parents.view();
+  const auto mcodes_ptr = data.m_mcodes.view();
 
-  using exec_policy = typename spin::execution_space< ExecSpace >::raja_exec;
-  RAJA::forall< exec_policy >(
-      RAJA::RangeSegment(0, inner_size), AXOM_LAMBDA (int32 i)
-  {
-    //determine range direction
-    int32 d = 0 > (delta(i, i + 1, inner_size, mcodes_ptr) - delta(i, i - 1, inner_size, mcodes_ptr)) ? -1 : 1;
+  for_all<ExecSpace>(
+    inner_size,
+    AXOM_LAMBDA(std::int32_t i) {
+      //determine range direction
+      std::int32_t d = 0 > (delta(i, i + 1, inner_size, mcodes_ptr) -
+                            delta(i, i - 1, inner_size, mcodes_ptr))
+        ? -1
+        : 1;
 
-    //find upper bound for the length of the range
-    int32 min_delta = delta(i, i - d, inner_size, mcodes_ptr);
-    int32 lmax = 2;
-    while (delta(i, i + lmax * d, inner_size, mcodes_ptr) > min_delta)
-          lmax *= 2;
-
-    //binary search to find the lower bound
-    int32 l = 0;
-    for (int32 t = lmax / 2; t >= 1; t /= 2)
-    {
-      if (delta(i, i + (l + t) * d, inner_size, mcodes_ptr) > min_delta)
+      //find upper bound for the length of the range
+      std::int32_t min_delta = delta(i, i - d, inner_size, mcodes_ptr);
+      std::int32_t lmax = 2;
+      while(delta(i, i + lmax * d, inner_size, mcodes_ptr) > min_delta)
       {
-        l += t;
+        lmax *= 2;
       }
-    }
 
-    int32 j = i + l * d;
-    int32 delta_node = delta(i, j, inner_size, mcodes_ptr);
-    int32 s = 0;
-    FloatType div_factor = 2.f;
-    //find the split postition using a binary search
-    for (int32 t = (int32)ceil(float32(l) / div_factor);;
-         div_factor *= 2, t = (int32)ceil(float32(l) / div_factor))
-    {
-      if (delta(i, i + (s + t) * d, inner_size, mcodes_ptr) > delta_node)
+      //binary search to find the lower bound
+      std::int32_t l = 0;
+      for(std::int32_t t = lmax / 2; t >= 1; t /= 2)
       {
-        s += t;
+        if(delta(i, i + (l + t) * d, inner_size, mcodes_ptr) > min_delta)
+        {
+          l += t;
+        }
       }
-      if (t == 1) break;
-    }
 
-    int32 split = i + s * d + min(d, 0);
-    // assign parent/child pointers
-    if (min(i, j) == split)
-    {
-      //leaf
-      parent_ptr[split + inner_size] = i;
-      lchildren_ptr[i] = split + inner_size;
-    }
-    else
-    {
-      //inner node
-      parent_ptr[split] = i;
-      lchildren_ptr[i] = split;
-    }
+      std::int32_t j = i + l * d;
+      std::int32_t delta_node = delta(i, j, inner_size, mcodes_ptr);
+      std::int32_t s = 0;
+      FloatType div_factor = 2.f;
+      //find the split postition using a binary search
+      for(std::int32_t t = (std::int32_t)ceil(float32(l) / div_factor);;
+          div_factor *= 2, t = (std::int32_t)ceil(float32(l) / div_factor))
+      {
+        if(delta(i, i + (s + t) * d, inner_size, mcodes_ptr) > delta_node)
+        {
+          s += t;
+        }
+        if(t == 1)
+        {
+          break;
+        }
+      }
 
+      std::int32_t split = i + s * d + utilities::min(d, 0);
+      // assign parent/child pointers
+      if(utilities::min(i, j) == split)
+      {
+        //leaf
+        parent_ptr[split + inner_size] = i;
+        lchildren_ptr[i] = split + inner_size;
+      }
+      else
+      {
+        //inner node
+        parent_ptr[split] = i;
+        lchildren_ptr[i] = split;
+      }
 
-    if (max(i, j) == split + 1)
-    {
-      //leaf
-      parent_ptr[split + inner_size + 1] =  i;
-      rchildren_ptr[i] =  split + inner_size + 1;
-    }
-    else
-    {
-      parent_ptr[split + 1] = i;
-      rchildren_ptr[i] = split + 1;
-    }
+      if(utilities::max(i, j) == split + 1)
+      {
+        //leaf
+        parent_ptr[split + inner_size + 1] = i;
+        rchildren_ptr[i] = split + inner_size + 1;
+      }
+      else
+      {
+        parent_ptr[split + 1] = i;
+        rchildren_ptr[i] = split + 1;
+      }
 
-    if(i == 0)
-    {
-      // flag the root
-      parent_ptr[0] = -1;
-    }
-
-  } );
-
+      if(i == 0)
+      {
+        // flag the root
+        parent_ptr[0] = -1;
+      }
+    });
 }
 
 //------------------------------------------------------------------------------
-template< typename ExecSpace, typename T>
-static void array_memset(T* array, const int32 size, const T val)
+// Fetches a bounding box value synchronized with another thread's store.
+// On the CPU, this is achieved with an acquire fence. This is only really
+//   needed for non-x86 architectures with a weaker memory model (Power, ARM)
+// On the GPU, we poll the bounding box values for a non-sentinel value.
+template <typename ExecSpace, typename BBoxType>
+AXOM_HOST_DEVICE static inline BBoxType sync_load(const BBoxType& box)
 {
-  using exec_policy = typename spin::execution_space< ExecSpace >::raja_exec;
-  RAJA::forall< exec_policy >(
-      RAJA::RangeSegment(0, size), AXOM_LAMBDA (int32 i)
+#ifdef AXOM_DEVICE_CODE
+
+  using FloatType = typename BBoxType::CoordType;
+  using PointType = typename BBoxType::PointType;
+
+  constexpr int NDIMS = PointType::DIMENSION;
+
+  PointType min_pt {BBoxType::InvalidMin};
+  PointType max_pt {BBoxType::InvalidMax};
+
+  #ifdef SPIN_BVH_DEBUG_MEMORY_HAZARD
+  int nreads = 0;  // number of extra reads needed for a non-sentinel value
+  #endif
+  for(int dim = 0; dim < NDIMS; dim++)
   {
-    array[ i ] = val;
-  } );
+    // Cast to volatile so reads always hit L2$ or memory.
+    volatile const FloatType& min_dim =
+      reinterpret_cast<volatile const FloatType&>(box.getMin()[dim]);
+    volatile const FloatType& max_dim =
+      reinterpret_cast<volatile const FloatType&>(box.getMax()[dim]);
+
+      // NOTE: There is a possibility for a read-after-write hazard, where the
+      // uncached store of an AABB on one thread isn't visible when another
+      // thread calls this method to read the value. However, this doesn't seem to
+      // be an issue on Volta; the atomicAdd used to terminate the first thread
+      // seems to correctly synchronize the prior atomic store operations for the
+      // bounding box data.
+      //
+      // Just in case this changes, we poll for a non-sentinel value to be read
+      // out. Naturally, this assumes that reads of sizeof(FloatType) don't tear.
+  #ifdef SPIN_BVH_DEBUG_MEMORY_HAZARD
+    while((min_pt[dim] = min_dim) == BBoxType::InvalidMin)
+    {
+      nreads++;
+    }
+    while((max_pt[dim] = max_dim) == BBoxType::InvalidMax)
+    {
+      nreads++;
+    }
+  #else
+    while((min_pt[dim] = min_dim) == BBoxType::InvalidMin)
+      ;
+    while((max_pt[dim] = max_dim) == BBoxType::InvalidMax)
+      ;
+  #endif
+  }
+
+  #ifdef SPIN_BVH_DEBUG_MEMORY_HAZARD
+  if(nreads > 0)
+  {
+    printf("Warning: needed %d extra reads for address %p\n", nreads, &box);
+  }
+  #endif
+
+  return BBoxType {min_pt, max_pt};
+
+#else  // AXOM_DEVICE_CODE
+  std::atomic_thread_fence(std::memory_order_acquire);
+  return box;
+#endif
 }
 
 //------------------------------------------------------------------------------
-template < typename ExecSpace, typename FloatType, int NDIMS >
-void propagate_aabbs( RadixTree< FloatType, NDIMS >& data)
+// Writes a bounding box to memory, synchronized with another thread's read.
+// On the CPU, this is achieved with a release fence.
+// On the GPU, this function uses atomicExch to write a value directly to the
+// L2 cache, thus avoiding potential cache coherency issues between threads.
+template <typename ExecSpace, typename BBoxType>
+AXOM_HOST_DEVICE static inline void sync_store(BBoxType& box,
+                                               const BBoxType& value)
 {
+#if defined(AXOM_DEVICE_CODE) && defined(AXOM_USE_RAJA)
+  using atomic_policy = typename axom::execution_space<ExecSpace>::atomic_policy;
+
+  using PointType = typename BBoxType::PointType;
+
+  constexpr int NDIMS = PointType::DIMENSION;
+
+  // Cast away the underlying const so we can directly modify the box data.
+  PointType& min_pt = const_cast<PointType&>(box.getMin());
+  PointType& max_pt = const_cast<PointType&>(box.getMax());
+
+  for(int dim = 0; dim < NDIMS; dim++)
+  {
+    RAJA::atomicExchange<atomic_policy>(&(min_pt[dim]), value.getMin()[dim]);
+    RAJA::atomicExchange<atomic_policy>(&(max_pt[dim]), value.getMax()[dim]);
+  }
+#else  // __CUDA_ARCH__ || __HIP_DEVICE_COMPILE__
+  box = value;
+  std::atomic_thread_fence(std::memory_order_release);
+#endif
+}
+
+//------------------------------------------------------------------------------
+template <typename ExecSpace>
+AXOM_HOST_DEVICE static inline int atomic_increment(int* addr)
+{
+#ifdef AXOM_USE_RAJA
+  using atomic_policy = typename axom::execution_space<ExecSpace>::atomic_policy;
+
+  return RAJA::atomicAdd<atomic_policy>(addr, 1);
+#else
+  static_assert(std::is_same<ExecSpace, SEQ_EXEC>::value,
+                "Only SEQ_EXEC supported without RAJA");
+
+  // TODO: use atomic_ref?
+  int old = *addr;
+  (*addr)++;
+  return old;
+#endif  // AXOM_USE_RAJA
+}
+
+//------------------------------------------------------------------------------
+template <typename ExecSpace, typename FloatType, int NDIMS>
+void propagate_aabbs(RadixTree<FloatType, NDIMS>& data, int allocatorID)
+{
+  AXOM_ANNOTATE_SCOPE("propagate_abbs");
+
+  using BoxType = primal::BoundingBox<FloatType, NDIMS>;
+
   const int inner_size = data.m_inner_size;
   const int leaf_size = data.m_inner_size + 1;
-  SLIC_ASSERT( leaf_size == data.m_size );
+  SLIC_ASSERT(leaf_size == data.m_size);
 
   // Pointers and vars are redeclared because I have a faint memory
   // of a huge amount of pain and suffering due so cuda
   // labda captures of pointers indide a struct. Bad memories
   // of random segfaults ........ be warned
-  const int32 *lchildren_ptr = data.m_left_children;
-  const int32 *rchildren_ptr = data.m_right_children;
-  const int32 *parent_ptr = data.m_parents;
-  const AABB< FloatType,NDIMS >  *leaf_aabb_ptr = data.m_leaf_aabbs;
+  const auto lchildren_ptr = data.m_left_children.view();
+  const auto rchildren_ptr = data.m_right_children.view();
+  const auto parent_ptr = data.m_parents.view();
+  const auto leaf_aabb_ptr = data.m_leaf_aabbs.view();
 
-  AABB<FloatType,NDIMS>  *inner_aabb_ptr = data.m_inner_aabbs;
+  const auto inner_aabb_ptr = data.m_inner_aabbs.view();
+  for_all<ExecSpace>(
+    inner_size,
+    AXOM_LAMBDA(IndexType idx) { inner_aabb_ptr[idx] = BoxType {}; });
 
-  int32* counters_ptr = axom::allocate<int32>(inner_size);
+  Array<std::int32_t> counters(inner_size, inner_size, allocatorID);
+  const auto counters_ptr = counters.view();
 
-  array_memset< ExecSpace >(counters_ptr, inner_size, 0);
+  for_all<ExecSpace>(
+    leaf_size,
+    AXOM_LAMBDA(std::int32_t i) {
+      BoxType aabb = leaf_aabb_ptr[i];
+      std::int32_t last_node = inner_size + i;
+      std::int32_t current_node = parent_ptr[inner_size + i];
 
-  using exec_policy   =
-      typename spin::execution_space< ExecSpace >::raja_exec;
-  using atomic_policy =
-      typename spin::execution_space< ExecSpace >::raja_atomic;
-
-  RAJA::forall< exec_policy >(
-      RAJA::RangeSegment(0,leaf_size), AXOM_LAMBDA(int32 i)
-  {
-    int32 current_node = parent_ptr[inner_size + i];
-
-    while( current_node != -1)
-    {
-      int32 old= RAJA::atomic::atomicAdd< atomic_policy >(&(counters_ptr[current_node]),1);
-
-      if(old == 0)
+      while(current_node != -1)
       {
-        // first thread to get here kills itself
-        return;
+        // TODO: If RAJA atomics get memory ordering policies in the future,
+        // we should look at replacing the sync_load/sync_stores by changing
+        // the below atomic to an acquire/release atomic.
+        std::int32_t old =
+          atomic_increment<ExecSpace>(&(counters_ptr[current_node]));
+
+        if(old == 0)
+        {
+          // first thread to get here kills itself
+          return;
+        }
+
+        std::int32_t lchild = lchildren_ptr[current_node];
+        std::int32_t rchild = rchildren_ptr[current_node];
+
+        std::int32_t other_child = (lchild == last_node) ? rchild : lchild;
+
+        primal::BoundingBox<FloatType, NDIMS> other_aabb;
+        if(other_child >= inner_size)
+        {
+          other_aabb = leaf_aabb_ptr[other_child - inner_size];
+        }
+        else
+        {
+          other_aabb = sync_load<ExecSpace>(inner_aabb_ptr[other_child]);
+        }
+        aabb.addBox(other_aabb);
+
+        // Store the final AABB for this internal node coherently.
+        sync_store<ExecSpace>(inner_aabb_ptr[current_node], aabb);
+
+        last_node = current_node;
+        current_node = parent_ptr[current_node];
       }
-
-      int32 lchild = lchildren_ptr[current_node];
-      int32 rchild = rchildren_ptr[current_node];
-
-      // gather the aabbs
-      AABB< FloatType,NDIMS > aabb;
-      if(lchild >= inner_size)
-      {
-        aabb.include(leaf_aabb_ptr[lchild - inner_size]);
-      }
-      else
-      {
-        aabb.include(inner_aabb_ptr[lchild]);
-      }
-
-      if(rchild >= inner_size)
-      {
-        aabb.include(leaf_aabb_ptr[rchild - inner_size]);
-      }
-      else
-      {
-        aabb.include(inner_aabb_ptr[rchild]);
-      }
-
-      inner_aabb_ptr[current_node] = aabb;
-
-      current_node = parent_ptr[current_node];
-    }
-
-  } );
-
-  axom::deallocate(counters_ptr);
+    });
 }
 
-
 //------------------------------------------------------------------------------
-template < typename ExecSpace, typename FloatType, int NDIMS >
-void build_radix_tree( const FloatType* boxes,
-                       int size,
-                       AABB< FloatType, NDIMS >& bounds,
-                       RadixTree< FloatType, NDIMS >& radix_tree )
+template <typename ExecSpace, typename BoxIndexable, typename FloatType, int NDIMS>
+void build_radix_tree(const BoxIndexable boxes,
+                      int size,
+                      primal::BoundingBox<FloatType, NDIMS>& bounds,
+                      RadixTree<FloatType, NDIMS>& radix_tree,
+                      FloatType scale_factor,
+                      int allocatorID)
 {
-  // sanity checks
-  SLIC_ASSERT( boxes !=nullptr );
-  SLIC_ASSERT( size > 0 );
+  AXOM_ANNOTATE_SCOPE("build_radix_tree");
 
-  radix_tree.allocate( size );
+  // sanity checks
+  SLIC_ASSERT(size > 0);
+
+  radix_tree.allocate(size, allocatorID);
 
   // copy so we don't reorder the input
-  transform_boxes< ExecSpace >(boxes, radix_tree.m_leaf_aabbs, size);
+  transform_boxes<ExecSpace>(boxes,
+                             radix_tree.m_leaf_aabbs.view(),
+                             size,
+                             scale_factor);
 
   // evaluate global bounds
-  bounds = reduce< ExecSpace >(radix_tree.m_leaf_aabbs, size);
+  bounds = reduce<ExecSpace, FloatType, NDIMS>(radix_tree.m_leaf_aabbs, size);
 
   // sort aabbs based on morton code
   // original positions of the sorted morton codes.
   // allows us to gather / sort other arrays.
-  get_mcodes< ExecSpace >( radix_tree.m_leaf_aabbs, size, bounds,
-                           radix_tree.m_mcodes );
-  sort_mcodes< ExecSpace >( radix_tree.m_mcodes, size,
-                            radix_tree.m_leafs );
-  reorder< ExecSpace >( radix_tree.m_leafs, radix_tree.m_leaf_aabbs, size );
+  get_mcodes<ExecSpace, FloatType, NDIMS>(radix_tree.m_leaf_aabbs,
+                                          size,
+                                          bounds,
+                                          radix_tree.m_mcodes);
+  sort_mcodes<ExecSpace>(radix_tree.m_mcodes, size, radix_tree.m_leafs);
 
-  build_tree< ExecSpace >( radix_tree );
+  reorder<ExecSpace>(radix_tree.m_leafs, radix_tree.m_leaf_aabbs, size, allocatorID);
 
-  propagate_aabbs< ExecSpace >( radix_tree );
+  build_tree<ExecSpace>(radix_tree);
+
+  propagate_aabbs<ExecSpace>(radix_tree, allocatorID);
 }
-
 
 } /* namespace linear_bvh */
 } /* namespace internal */

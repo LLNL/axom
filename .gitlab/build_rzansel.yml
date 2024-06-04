@@ -1,0 +1,110 @@
+# Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
+# other Axom Project Developers. See the top-level LICENSE file for details.
+#
+# SPDX-License-Identifier: (BSD-3-Clause)
+
+####
+# This is the share configuration of jobs for rzansel
+.on_rzansel:
+  variables:
+  tags:
+    - shell
+    - rzansel
+  before_script:
+    - module load cuda/11.2.0
+    - module load cmake/3.21.1
+
+####
+# Template
+.src_build_on_rzansel:
+  stage: build
+  variables:
+    ALLOC_COMMAND: "lalloc 1 -W 25 -q pdebug"
+  extends: [.src_build_script, .on_rzansel, .src_workflow]
+  needs: []
+
+.full_build_on_rzansel:
+  stage: build
+  variables:
+    ALLOC_COMMAND: "lalloc 1 -W 45 -q pdebug"
+  extends: [.full_build_script, .on_rzansel, .full_workflow]
+  needs: []
+
+####
+# PR Build jobs
+rzansel-clang_10_0_1-src:
+  variables:
+    COMPILER: "clang@10.0.1.1"
+    HOST_CONFIG: "rzansel-blueos_3_ppc64le_ib_p9-${COMPILER}.cmake"
+  extends: [.src_build_on_rzansel]
+
+rzansel-clang_10_0_1_cuda-src:
+  variables:
+    COMPILER: "clang@10.0.1.2_cuda"
+    HOST_CONFIG: "rzansel-blueos_3_ppc64le_ib_p9-${COMPILER}.cmake"
+  extends: [.src_build_on_rzansel]
+
+rzansel-gcc_8_3_1-src:
+  variables:
+    COMPILER: "gcc@8.3.1.1"
+    HOST_CONFIG: "rzansel-blueos_3_ppc64le_ib_p9-${COMPILER}.cmake"
+  extends: [.src_build_on_rzansel]
+
+rzansel-gcc_8_3_1_cuda-src:
+  variables:
+    COMPILER: "gcc@8.3.1.2_cuda"
+    HOST_CONFIG: "rzansel-blueos_3_ppc64le_ib_p9-${COMPILER}.cmake"
+  extends: [.src_build_on_rzansel]
+
+rzansel-xl_16_1_1-src:
+  variables:
+    COMPILER: "xl@16.1.1.1"
+    HOST_CONFIG: "rzansel-blueos_3_ppc64le_ib_p9-${COMPILER}.cmake"
+  extends: [.src_build_on_rzansel]
+
+rzansel-xl_16_1_1_cuda-src:
+  variables:
+    COMPILER: "xl@16.1.1.2_cuda"
+    HOST_CONFIG: "rzansel-blueos_3_ppc64le_ib_p9-${COMPILER}.cmake"
+  extends: [.src_build_on_rzansel]
+
+####
+# Full Build jobs
+rzansel-clang_10_0_1-full:
+  variables:
+    COMPILER: "clang@10.0.1.1"
+    SPEC: "%${COMPILER}+mfem~openmp"
+  extends: [.full_build_on_rzansel]
+
+rzansel-clang_10_0_1_cuda-full:
+  variables:
+    COMPILER: "clang@10.0.1.2"
+    SPEC: "%${COMPILER}+mfem+cuda~openmp"
+    EXTRA_SPEC: "cuda_arch=70"
+  extends: [.full_build_on_rzansel]
+
+rzansel-gcc_8_3_1-full:
+  variables:
+    COMPILER: "gcc@8.3.1.1"
+    SPEC: "%${COMPILER}+mfem"
+  extends: [.full_build_on_rzansel]
+
+rzansel-gcc_8_3_1_cuda-full:
+  variables:
+    COMPILER: "gcc@8.3.1.2"
+    SPEC: "%${COMPILER}~mfem+cuda"
+    EXTRA_SPEC: "cuda_arch=70"
+  extends: [.full_build_on_rzansel]
+
+rzansel-xl_16_1_1-full:
+  variables:
+    COMPILER: "xl@16.1.1.1"
+    SPEC: "%${COMPILER}+mfem~openmp~cpp14"
+  extends: [.full_build_on_rzansel]
+
+rzansel-xl_16_1_1_cuda-full:
+  variables:
+    COMPILER: "xl@16.1.1.2"
+    SPEC: "%${COMPILER}+mfem+cuda~openmp~cpp14"
+    EXTRA_SPEC: "cuda_arch=70"
+  extends: [.full_build_on_rzansel]

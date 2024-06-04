@@ -1,11 +1,10 @@
-// Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC and
-// other Axom Project Developers. See the top-level COPYRIGHT file for details.
+// Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
+// other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
-#ifndef QUEST_POINT_IN_CELL_HPP_
-#define QUEST_POINT_IN_CELL_HPP_
-
+#ifndef AXOM_QUEST_POINT_IN_CELL_HPP_
+#define AXOM_QUEST_POINT_IN_CELL_HPP_
 
 #include "axom/config.hpp"
 #include "axom/core/Macros.hpp"
@@ -14,12 +13,10 @@
 
 #include "axom/quest/detail/PointFinder.hpp"
 
-
 namespace axom
 {
 namespace quest
 {
-
 /*!
  * \class PointInCellTraits
  * \brief A traits class for the mesh associated with a PointInCell query.
@@ -33,14 +30,11 @@ namespace quest
  *     (e.g. with value -1 for signed ints), indicating an invalid cell
  *     index in the mesh
  */
-template<typename mesh_tag>
+template <typename mesh_tag>
 struct PointInCellTraits;
-
 
 namespace detail
 {
-
-
 /*!
  * \class PointInCellMeshWrapper
  * \brief A wrapper class for accessing the mesh instance
@@ -62,9 +56,7 @@ namespace detail
 template <typename mesh_tag>
 class PointInCellMeshWrapper;
 
-
-} // end namespace detail
-
+}  // end namespace detail
 
 /*!
  * \class PointInCell
@@ -93,19 +85,20 @@ class PointInCellMeshWrapper;
  * for [mfem](http://mfem.org) meshes of arbitrary order.  It uses
  * the mesh_tag \a quest_point_in_cell_mfem_tag
  */
-template<typename mesh_tag>
+template <typename mesh_tag, typename ExecSpace = axom::SEQ_EXEC>
 class PointInCell
 {
 public:
+  using Point2DType = primal::Point<double, 2>;
+  using Point3DType = primal::Point<double, 3>;
+
   using MeshTraits = PointInCellTraits<mesh_tag>;
   using MeshType = typename MeshTraits::MeshType;
   using IndexType = typename MeshTraits::IndexType;
 
   using MeshWrapperType = detail::PointInCellMeshWrapper<mesh_tag>;
-
-  using PointFinder2D = detail::PointFinder<2, mesh_tag>;
-  using PointFinder3D = detail::PointFinder<3, mesh_tag>;
-
+  using PointFinder2D = detail::PointFinder<2, mesh_tag, ExecSpace>;
+  using PointFinder3D = detail::PointFinder<3, mesh_tag, ExecSpace>;
 
   /*!
    * Construct a point in cell query structure over a computational mesh
@@ -114,6 +107,8 @@ public:
    * \param [in] resolution Grid resolution for the spatial index. Default: NULL
    * \param [in] bboxTolerance A tolerance factor by which to expand
    * the bounding boxes. Default: 1e-8
+   * \param [in] allocatorId Currently unused. Default value is based on the
+   *  allocator ID set for the specified execution space.
    *
    * \note The bboxTolerance should be a small positive number.  It helps avoid
    * numerical issues in the bounding box containment queries by slightly
@@ -129,7 +124,8 @@ public:
    */
   PointInCell(MeshType* mesh,
               int* resolution = nullptr,
-              double bboxTolerance = 1e-8)
+              double bboxTolerance = 1e-8,
+              int allocatorID = axom::execution_space<ExecSpace>::allocatorID())
     : m_meshWrapper(mesh)
     , m_pointFinder2D(nullptr)
     , m_pointFinder3D(nullptr)
@@ -144,11 +140,11 @@ public:
     {
     case 2:
       m_pointFinder2D =
-        new PointFinder2D(&m_meshWrapper, resolution, bboxScaleFactor);
+        new PointFinder2D(&m_meshWrapper, resolution, bboxScaleFactor, allocatorID);
       break;
     case 3:
       m_pointFinder3D =
-        new PointFinder3D(&m_meshWrapper, resolution, bboxScaleFactor);
+        new PointFinder3D(&m_meshWrapper, resolution, bboxScaleFactor, allocatorID);
       break;
     default:
       SLIC_ERROR("Point in Cell query only defined for 2D or 3D meshes.");
@@ -159,13 +155,13 @@ public:
   /*! Destructor */
   ~PointInCell()
   {
-    if( m_pointFinder2D != nullptr)
+    if(m_pointFinder2D != nullptr)
     {
       delete m_pointFinder2D;
       m_pointFinder2D = nullptr;
     }
 
-    if( m_pointFinder3D != nullptr)
+    if(m_pointFinder3D != nullptr)
     {
       delete m_pointFinder3D;
       m_pointFinder3D = nullptr;
@@ -190,8 +186,7 @@ public:
    * \pre \a pos is a non-null array with at least \a meshDimension() coords
    * \pre When not NULL, \a isopar has space for \a meshDimension() coords
    */
-  IndexType locatePoint(const double* pos,
-                        double* isopar = nullptr) const
+  IndexType locatePoint(const double* pos, double* isopar = nullptr) const
   {
     SLIC_ASSERT(pos != nullptr);
 
@@ -213,6 +208,30 @@ public:
     return cellIndex;
   }
 
+  void locatePoints(axom::ArrayView<const Point2DType> pts,
+                    IndexType* outCellIds,
+                    Point2DType* outIsopar = nullptr)
+  {
+    SLIC_ASSERT(pts.size() > 0);
+    SLIC_ASSERT(pts.data() != nullptr);
+    SLIC_ASSERT(outCellIds != nullptr);
+    SLIC_ASSERT(m_pointFinder2D != nullptr);
+
+    m_pointFinder2D->locatePoints(pts, outCellIds, outIsopar);
+  }
+
+  void locatePoints(axom::ArrayView<const Point3DType> pts,
+                    IndexType* outCellIds,
+                    Point3DType* outIsopar = nullptr) const
+  {
+    SLIC_ASSERT(pts.size() > 0);
+    SLIC_ASSERT(pts.data() != nullptr);
+    SLIC_ASSERT(outCellIds != nullptr);
+    SLIC_ASSERT(m_pointFinder3D != nullptr);
+
+    m_pointFinder3D->locatePoints(pts, outCellIds, outIsopar);
+  }
+
   /*!
    *  Determine if a query point is located within a specified mesh cell
    *
@@ -225,19 +244,10 @@ public:
    *  \pre \a pos is not NULL and has \a meshDimension() entries
    *  \pre \a isopar is not NULL and has space for \a meshDimension() entries
    */
-  bool locatePointInCell(IndexType cellIdx,
-                         const double* pos,
-                         double* isopar) const
+  bool locatePointInCell(IndexType cellIdx, const double* pos, double* isopar) const
   {
-    // Early return if point is not within cell's bounding box
-    if(!withinBoundingBox(cellIdx, pos) )
-    {
-      return false;
-    }
-
     return m_meshWrapper.locatePointInCell(cellIdx, pos, isopar);
   }
-
 
   /*!
    * Evaluate the position of a point within a mesh cell at the given
@@ -247,9 +257,7 @@ public:
    * \param [in[ isopar The isoparametric coordinates at which to evaluate
    * \param [out] pos The computed coordinates of the evaluated point
    */
-  void reconstructPoint(IndexType cellIdx,
-                        const double* isopar,
-                        double* pos) const
+  void reconstructPoint(IndexType cellIdx, const double* isopar, double* pos) const
   {
     m_meshWrapper.reconstructPoint(cellIdx, isopar, pos);
   }
@@ -257,30 +265,70 @@ public:
   /*! Returns the dimension of the mesh */
   int meshDimension() const { return m_meshWrapper.meshDimension(); }
 
-private:
+  /*!
+   * \brief Sets the print verbosity level for the point in cell query
+   *
+   * \param [in] level The verbosity level (increases with level)
+   *  
+   * This is useful for debugging the point in cell query
+   * 
+   *  For the mfem mesh wrapper, the valid options are: 
+   *  - -1: never print (default)
+   *  -  0: print only errors
+   *  -  1: print the first and last iterations
+   *  -  2: print every iteration
+   *  -  3: print every iteration including point coordinates.
+   */
+  void setPrintLevel(int level) { m_meshWrapper.setPrintLevel(level); }
 
   /*!
-   * Utility function to check the given point against an element's bounding box
-   * \param [in] cellIdx Index of the cell within the mesh
-   * \param [in] pos Position of the point in space
+   * \brief Sets the initial guess type for the element-based point in cell query
    *
-   * \return True if the point is contained in the cell's bounding box
+   * \param [in] guessType The guess type
+   *  
+   *  For the mfem mesh wrapper, the valid options are: 
+   *  - 0: Use the element center in reference space
+   *  - 1: Use the closest physical node on a grid of points in physical space
+   *  - 2: Use the closest reference node on a grid of points in reference space
+   * 
+   *  The grid size is controlled by setInitialGridOrder()
    */
-  bool withinBoundingBox(IndexType cellIdx, const double* pos) const
+  void setInitialGuessType(int guessType)
   {
-    typedef axom::primal::Point<double, 2> Point2D;
-    typedef axom::primal::Point<double, 3> Point3D;
-
-    switch(meshDimension())
-    {
-    case 2:
-      return m_pointFinder2D->cellBoundingBox(cellIdx).contains(Point2D(pos));
-    case 3:
-      return m_pointFinder3D->cellBoundingBox(cellIdx).contains(Point3D(pos));
-    }
-    return false;
+    m_meshWrapper.setInitialGuessType(guessType);
   }
 
+  /*!
+   * \brief Sets the grid size for the initial guess in the element-based point in cell query
+   *
+   * \param [in] order The order for the grid size 
+   *  
+   *  For the mfem mesh wrapper, the number of points in each spatial direction 
+   *  is given by `max(trans_order+order,0)+1`, where trans_order is the order 
+   *  of the current element.
+   * 
+   *  \sa setInitialGuessType
+   */
+  void setInitialGridOrder(int order)
+  {
+    m_meshWrapper.setInitialGridOrder(order);
+  }
+
+  /*!
+   * \brief Sets the solution strategy for the element-based point in cell query
+   *
+   * \param [in] type The strategy type
+   *  
+   *  For the mfem mesh wrapper, the valid options all use a Newton solve
+   *  but differ in their handling of iterates that leave the reference element
+   *  - 0: Allow the iterates to leave the reference element
+   *  - 1: Project external iterates to the reference space boundary along their current line
+   *  - 2: Project external iterates to the closest reference space boundary location
+   */
+  void setSolverProjectionType(int type)
+  {
+    m_meshWrapper.setSolverProjectionType(type);
+  }
 
 private:
   MeshWrapperType m_meshWrapper;
@@ -289,10 +337,7 @@ private:
   PointFinder3D* m_pointFinder3D;
 };
 
+}  // end namespace quest
+}  // end namespace axom
 
-
-
-} // end namespace quest
-} // end namespace axom
-
-#endif // QUEST_POINT_IN_CELL_HPP_
+#endif  // AXOM_QUEST_POINT_IN_CELL_HPP_

@@ -1,105 +1,142 @@
-# Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC and
-# other Axom Project Developers. See the top-level COPYRIGHT file for details.
+# Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
+# other Axom Project Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
-
+#------------------------------------------------------------------------------
+# Tests for Axom's Core component
 #
-# Specify list of tests
-#
+# Note: The tests in this file are consolidated into a few executables.
+# In addition to adding files to the lists below, you'll also have  to #include 
+# your headers in the appropriate 'main' cpp file, e.g. `core_serial_main.cpp`
+#------------------------------------------------------------------------------
 
-set(gtest_utils_tests
-   core_array.cpp
-   core_memory_management.cpp
-   core_stack_array.cpp
-   
-   utils_TaskTimer.cpp
-   utils_endianness.cpp
-   utils_fileUtilities.cpp
-   utils_utilities.cpp
-   utils_about.cpp
+#------------------------------------------------------------------------------
+# Specify list of serial tests
+#------------------------------------------------------------------------------
 
+set(core_serial_tests
+    core_about.hpp
+    core_array.hpp
+    core_array_for_all.hpp
+    core_utilities.hpp
+    core_bit_utilities.hpp
+    core_execution_for_all.hpp
+    core_execution_space.hpp
+    core_map.hpp
+    core_flatmap.hpp
+    core_memory_management.hpp
+    core_Path.hpp
+    core_stack_array.hpp
 
-   numerics_determinants.cpp
-   numerics_eigen_solve.cpp
-   numerics_eigen_sort.cpp
-   numerics_jacobi_eigensolve.cpp
-   numerics_linear_solve.cpp
-   numerics_lu.cpp
-   numerics_matrix.cpp
-   numerics_matvecops.cpp
-   numerics_polynomial_solvers.cpp
-   )
+    numerics_determinants.hpp
+    numerics_eigen_solve.hpp
+    numerics_eigen_sort.hpp
+    numerics_floating_point_limits.hpp
+    numerics_jacobi_eigensolve.hpp
+    numerics_linear_solve.hpp
+    numerics_lu.hpp
+    numerics_matrix.hpp
+    numerics_matvecops.hpp
+    numerics_polynomial_solvers.hpp
 
-#
-# When MPI is disabled, compile the core_types test with all other tests
-#
-if ( NOT ENABLE_MPI )
-  list( APPEND gtest_utils_tests core_types.cpp )
+    utils_endianness.hpp
+    utils_fileUtilities.hpp
+    utils_locale.hpp
+    utils_stringUtilities.hpp
+    utils_system.hpp
+    utils_Timer.hpp
+    utils_utilities.hpp
+    )
+
+set(core_test_depends
+    core
+    gtest
+    fmt
+    )
+
+#------------------------------------------------------------------------------
+# Serial GTests
+#------------------------------------------------------------------------------
+
+# Only enable this test in serial mode if AXOM_ENABLE_MPI is off
+if (NOT AXOM_ENABLE_MPI)
+  list(APPEND core_serial_tests core_types.hpp)
 endif()
 
-set(utils_tests_depends
-   core
-   gtest
-   )
+axom_add_executable(NAME       core_serial_tests
+                    SOURCES    core_serial_main.cpp
+                    HEADERS    ${core_serial_tests}
+                    OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
+                    DEPENDS_ON ${core_test_depends}
+                    FOLDER     axom/core/tests )
 
-blt_list_append( TO utils_tests_depends ELEMENTS umpire IF ${UMPIRE_FOUND} )
-
-#
-# Add gtest based tests
-#
-foreach(test ${gtest_utils_tests})
-    get_filename_component( test_name ${test} NAME_WE )
-    blt_add_executable( NAME ${test_name}_test
-                        SOURCES ${test}
-                        OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
-                        DEPENDS_ON ${utils_tests_depends}
-                        FOLDER axom/core/tests )
-    blt_add_test( NAME ${test_name}
-                  COMMAND ${test_name}_test )
+foreach(test_suite ${core_serial_tests})
+    get_filename_component( test_suite ${test_suite} NAME_WE )
+    axom_add_test( NAME    ${test_suite}_serial
+                   COMMAND core_serial_tests --gtest_filter=${test_suite}* )
 endforeach()
 
-#
-# Add MPI tests if MPI is enabled
-#
-if ( ENABLE_MPI )
-  
+#------------------------------------------------------------------------------
+# MPI GTests
+#------------------------------------------------------------------------------
+if (AXOM_ENABLE_MPI)
   set( core_mpi_tests
-       core_types.cpp
+       core_types.hpp
        )
-       
-  foreach( mpitest ${core_mpi_tests} )
-    
-    get_filename_component( mpitest_name ${mpitest} NAME_WE )
-    
-    blt_add_executable( NAME ${mpitest_name}_test
-                        SOURCES ${mpitest} 
-                        OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
-                        DEPENDS_ON ${utils_tests_depends} mpi 
-                        FOLDER axom/core/tests )
-                        
-    blt_add_test( NAME ${mpitest_name} 
-                  COMMAND ${mpitest_name}_test 
-                  NUM_MPI_TASKS 1 )
-                  
+
+  axom_add_executable(NAME       core_mpi_tests
+                      SOURCES    core_mpi_main.cpp
+                      HEADERS    ${core_mpi_tests}
+                      OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
+                      DEPENDS_ON ${core_test_depends} mpi
+                      FOLDER     axom/core/tests )
+
+  foreach( test_suite ${core_mpi_tests} )
+    get_filename_component( test_suite ${test_suite} NAME_WE )
+    axom_add_test( NAME          ${test_suite}_mpi
+                   COMMAND       core_mpi_tests --gtest_filter=${test_suite}*
+                   NUM_MPI_TASKS 1 )
   endforeach()
-   
 endif()
 
-#
+#------------------------------------------------------------------------------
+# OpenMP GTests
+#------------------------------------------------------------------------------
+if (AXOM_ENABLE_OPENMP AND RAJA_FOUND)
+  set( core_openmp_tests
+       core_openmp_map.hpp
+       )
+
+  axom_add_executable(NAME       core_openmp_tests
+                      SOURCES    core_openmp_main.cpp
+                      HEADERS    ${core_mpi_tests}
+                      OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
+                      DEPENDS_ON ${core_test_depends}
+                      FOLDER     axom/core/tests )
+
+  foreach( test_suite ${core_openmp_tests} )
+    get_filename_component( test_suite ${test_suite} NAME_WE )
+    axom_add_test( NAME          ${test_suite}_openmp
+                   COMMAND       core_openmp_tests --gtest_filter=${test_suite}*
+                   NUM_OMP_THREADS 24 )
+  endforeach()
+endif()
+
+#------------------------------------------------------------------------------
 # Add a test to query properties of the configuration
-#
-set(utils_config_test_depends ${utils_tests_depends})
+#------------------------------------------------------------------------------
+set(utils_config_test_depends core gtest )
 
-blt_list_append( TO utils_config_test_depends ELEMENTS mfem IF ${MFEM_FOUND} )
+blt_list_append( TO utils_config_test_depends ELEMENTS mfem IF MFEM_FOUND )
 
-blt_add_executable( NAME utils_config_test
-                    SOURCES utils_config.cpp
+axom_add_executable(NAME       utils_config_test
+                    SOURCES    utils_config.cpp
                     OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
                     DEPENDS_ON ${utils_config_test_depends}
-                    FOLDER axom/core/tests )
+                    FOLDER     axom/core/tests )
 
-blt_add_test( NAME utils_config
-              COMMAND utils_config_test )
+axom_add_test( NAME    utils_config
+               COMMAND utils_config_test )
 
 # Add flag to ignore unknown openmp pragmas in utils_config
 set_property(TARGET utils_config_test
@@ -111,24 +148,26 @@ if(MFEM_FOUND)
         APPEND_STRING PROPERTY COMPILE_FLAGS "${AXOM_DISABLE_UNUSED_PARAMETER_WARNINGS}")
 endif()
 
+#------------------------------------------------------------------------------
+# Test different annotation modes
+#------------------------------------------------------------------------------
+axom_add_executable(NAME       utils_annotations_test
+                    SOURCES    utils_annotations.cpp
+                    OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
+                    DEPENDS_ON core gtest fmt cli11
+                    FOLDER     axom/core/tests )
 
-if(ENABLE_OPENMP)
-    # Add a config test that uses OpenMP
-    blt_add_executable( NAME utils_config_openmp_test
-                        SOURCES utils_config.cpp
-                        OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
-                        DEPENDS_ON ${utils_config_test_depends} openmp
-                        FOLDER axom/core/tests )
-
-    blt_add_test( NAME utils_config_openmp
-                  COMMAND utils_config_openmp_test )
-
-    if(MFEM_FOUND)
-        set_property(TARGET utils_config_openmp_test
-            APPEND_STRING PROPERTY COMPILE_FLAGS "${AXOM_DISABLE_UNUSED_PARAMETER_WARNINGS}")
-    endif()
-
-endif()
-
-
+foreach(_mode none report counts gputx)
+  set(_test_name utils_annotations_${_mode}_test)
+  if(AXOM_ENABLE_MPI)
+    axom_add_test(NAME    ${_test_name}
+                  COMMAND utils_annotations_test -m ${_mode}
+                  NUM_MPI_TASKS 2)
+  else()
+    axom_add_test(NAME    ${_test_name}
+                  COMMAND utils_annotations_test -m ${_mode})
+  endif()
+  set_property(TEST ${_test_name}
+               APPEND PROPERTY ENVIRONMENT  "CALI_LOG_VERBOSITY=2")
+endforeach()
 

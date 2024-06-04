@@ -1,5 +1,5 @@
-// Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC and
-// other Axom Project Developers. See the top-level COPYRIGHT file for details.
+// Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
+// other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
@@ -47,7 +47,7 @@ TEST(hdf5_smoke, create_dset)
   //   https://support.hdfgroup.org/HDF5/examples/intro.html#c
   // Valid return codes are non-negative
 
-  hid_t file_id, dataset_id, dataspace_id;         // identifiers
+  hid_t file_id, dataset_id, dataspace_id;  // identifiers
   hsize_t dims[2];
   herr_t status;
   const char* FILE = "dset.h5";
@@ -59,12 +59,17 @@ TEST(hdf5_smoke, create_dset)
   // Create the data space for the dataset.
   dims[0] = 4;
   dims[1] = 6;
-  dataspace_id = H5Screate_simple(2, dims, NULL);
+  dataspace_id = H5Screate_simple(2, dims, nullptr);
   EXPECT_GE(dataspace_id, 0);
 
   // Create the dataset.
-  dataset_id = H5Dcreate2(file_id, "/dset", H5T_STD_I32BE, dataspace_id,
-                          H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+  dataset_id = H5Dcreate2(file_id,
+                          "/dset",
+                          H5T_STD_I32BE,
+                          dataspace_id,
+                          H5P_DEFAULT,
+                          H5P_DEFAULT,
+                          H5P_DEFAULT);
   EXPECT_GE(dataset_id, 0);
 
   // End access to the dataset and release resources used by it.

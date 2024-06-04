@@ -1,26 +1,24 @@
-// Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC and
-// other Axom Project Developers. See the top-level COPYRIGHT file for details.
+// Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
+// other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
 /**
- * \file
+ * \file AllNearestNeighbors.hpp
  * \brief Defines all-nearest-neighbor queries
  */
 
-#ifndef ALL_NEAREST_NEIGHBORS_HPP_
-#define ALL_NEAREST_NEIGHBORS_HPP_
+#ifndef AXOM_QUEST_ALL_NEAREST_NEIGHBORS_HPP_
+#define AXOM_QUEST_ALL_NEAREST_NEIGHBORS_HPP_
 
 namespace axom
 {
 namespace quest
 {
-
 enum SearchStatus
 {
   NEIGHBOR_NOT_FOUND = -1
 };
-
 
 /// \name Nearest Neighbor query
 /// @{
@@ -50,13 +48,18 @@ enum SearchStatus
  * savings over a brute-force all-to-all algorithm, but the query's run time
  * is dependent on the point distribution.
  */
-void all_nearest_neighbors(const double* x, const double* y, const double* z,
-                           const int* region, int n, double limit,
-                           int* neighbor, double* sqdistance);
+void all_nearest_neighbors(const double* x,
+                           const double* y,
+                           const double* z,
+                           const int* region,
+                           int n,
+                           double limit,
+                           int* neighbor,
+                           double* sqdistance);
 
 /// @}
 
-} // end namespace quest
-} // end namespace axom
+}  // end namespace quest
+}  // end namespace axom
 
-#endif  // ALL_NEAREST_NEIGHBORS_HPP_
+#endif  // AXOM_QUEST_ALL_NEAREST_NEIGHBORS_HPP_

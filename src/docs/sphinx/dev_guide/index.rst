@@ -1,10 +1,10 @@
-.. ## Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC and
-.. ## other Axom Project Developers. See the top-level COPYRIGHT file for details.
+.. ## Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
+.. ## other Axom Project Developers. See the top-level LICENSE file for details.
 .. ##
 .. ## SPDX-License-Identifier: (BSD-3-Clause)
 
 #####################
-Axom Developer Guide
+Developer Guide
 #####################
 
 This guide describes important aspects of software development processes used
@@ -31,8 +31,8 @@ changes are made, this guide should be updated accordingly.
 .. note:: This document does not describe how to configure and build the
           Axom code, or discuss Axom coding guidelines. For information
           on those topics please refer to the following documents:
-          `Axom Quickstart Guide <../../quickstart_guide_docs/html/index.html>`_,
-          `Axom Coding Guide <../../coding_guide_docs/html/index.html>`_.
+          `Axom Quickstart Guide <../quickstart_guide/index.html>`_,
+          `Axom Coding Guide <../coding_guide/index.html>`_.
 
 
 **Contents:**
@@ -41,15 +41,16 @@ changes are made, this guide should be updated accordingly.
    :maxdepth: 2
 
    dev_summary
-   jira
+   continuous_integration
    release
    semantic_versioning
    gitflow_branching
-   bitbucket
+   github
    pull_requests
    component_org
    testing
-   bamboo
+   updating_tpls
+   gpu_porting
    misc_tasks
 
 

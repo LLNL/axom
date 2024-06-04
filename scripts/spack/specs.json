@@ -1,0 +1,38 @@
+{
+    "__comment__":"##############################################################################",
+    "__comment__":"# Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and      ",
+    "__comment__":"# other Axom Project Developers. See the top-level LICENSE file for details.  ",
+    "__comment__":"#                                                                             ",
+    "__comment__":"# SPDX-License-Identifier: (BSD-3-Clause)                                     ",
+    "__comment__":"##############################################################################",
+
+    "__comment__":"##############################################################################",
+    "__comment__":"#                                                                             ",
+    "__comment__":"# Define specs we support and test on LLNL platforms. SYS_TYPE is used unless ",
+    "__comment__":"# a more specific machine name is defined.                                    ",
+    "__comment__":"#                                                                             ",
+    "__comment__":"##############################################################################",
+
+    "toss_4_x86_64_ib":
+    [ "gcc@10.3.1+devtools+hdf5+mfem+c2c+scr+profiling",
+      "clang@14.0.6+devtools+hdf5+mfem+c2c+scr+profiling",
+      "intel@2022.1.0+devtools+hdf5+mfem+c2c+profiling" ],
+
+    "__comment__":"# Use amdgpu_target=gfx90a for tioga/rzvernal; and gfx908 for rznevada",
+    "__comment__":"# -Wno-int-conversion flag needed for building HDF5",
+    "toss_4_x86_64_ib_cray":
+    [ "clang@16.0.0~openmp+mfem+c2c+profiling+rocm amdgpu_target=gfx90a ^hip@5.6.0 ^hsa-rocr-dev@5.6.0 ^llvm-amdgpu@5.6.0 ^rocprim@5.6.0 ^raja~openmp+rocm ^umpire~openmp+rocm ^hdf5 cflags=-Wno-int-conversion",
+      "clang@17.0.0~openmp+mfem+c2c+profiling+rocm amdgpu_target=gfx90a ^hip@5.7.1 ^hsa-rocr-dev@5.7.1 ^llvm-amdgpu@5.7.1 ^rocprim@5.7.1 ^raja~openmp+rocm ^umpire~openmp+rocm ^hdf5 cflags=-Wno-int-conversion" ],
+
+    "__comment__":"# Note: clang-ibm + raja+openmp causes runtime failures, turning it off until there is an alternative",
+    "blueos_3_ppc64le_ib_p9":
+    [ "clang@10.0.1.1+devtools+mfem+c2c+profiling",
+      "clang@10.0.1.2+devtools+mfem+c2c+profiling+cuda cuda_arch=70",
+      "gcc@8.3.1.1+devtools~mfem+c2c+profiling",
+      "gcc@8.3.1.2+devtools~mfem+c2c+profiling+cuda cuda_arch=70",
+      "xl@16.1.1.1~openmp+devtools+mfem+c2c+profiling",
+      "xl@16.1.1.2~openmp+devtools+mfem+c2c+profiling+cuda cuda_arch=70" ],
+
+    "darwin-x86_64":
+    [ "clang@9.0.0+devtools+mfem" ]
+}

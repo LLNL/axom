@@ -7,7 +7,7 @@ The Message class holds the information about a single message or multiple messa
 that were combined via a Combiner instance.
 
 Information
-###########
+-----------
 
 The Message class contains the following information. All fields have their respective 
 getters and setters.
@@ -17,7 +17,7 @@ Name        Description
 =========== ===================
 text        Contents of the message
 ranks       Truncated list of where the message originated
-ranksCount  Total count of how many ranks generated the message
+count       Total count of how many individual messages occurred
 fileName    File name that generated the message
 lineNumber  Line number that generated the message
 level       Message severity (error, warning, debug, etc.)
@@ -25,7 +25,7 @@ tag         Tag for showing what part of the code generated the message
 =========== ===================
 
 Functions
-#########
+---------
 
 The Message class also contains the following helper functions to ease use of the class.
 

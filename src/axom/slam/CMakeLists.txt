@@ -1,5 +1,5 @@
-# Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC and
-# other Axom Project Developers. See the top-level COPYRIGHT file for details.
+# Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
+# other Axom Project Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
 #------------------------------------------------------------------------------
@@ -27,7 +27,6 @@ set(slam_headers
     Utilities.hpp
     FieldRegistry.hpp
     ModularInt.hpp
-    IteratorBase.hpp
 
     #SRM policies
     policies/CardinalityPolicies.hpp
@@ -37,6 +36,10 @@ set(slam_headers
     policies/IndirectionPolicies.hpp
     policies/SubsettingPolicies.hpp
     policies/PolicyTraits.hpp
+    policies/InterfacePolicies.hpp
+    policies/SetInterfacePolicies.hpp
+    policies/MapInterfacePolicies.hpp
+    policies/BivariateSetInterfacePolicies.hpp
 
     # SRM Set headers
     IndirectionSet.hpp
@@ -48,7 +51,6 @@ set(slam_headers
     Set.hpp
     BivariateSet.hpp
     BitSet.hpp
-    internal/BitTwiddle.hpp
     RelationSet.hpp
 
     # SRM Relation headers
@@ -63,12 +65,14 @@ set(slam_headers
     BivariateMap.hpp
     SubMap.hpp
     DynamicMap.hpp
+
+    # Topological mesh headers
+    mesh_struct/IA.hpp
+    mesh_struct/IA_impl.hpp
     )
 
 set(slam_sources
     # SRM Set sources
-    # RangeSet.cpp
-    # IndirectionSet.cpp
     BitSet.cpp
     OrderedSet.cpp
 
@@ -82,15 +86,12 @@ set(slam_sources
 #------------------------------------------------------------------------------
 # Build and install the library
 #------------------------------------------------------------------------------
-set(slam_depends_on core slic)
-
-blt_add_library(
+axom_add_library(
     NAME        slam
     SOURCES     ${slam_sources}
     HEADERS     ${slam_headers}
-    DEPENDS_ON  ${slam_depends_on}
-    FOLDER      axom/slam
-    OBJECT      TRUE )
+    DEPENDS_ON  slic
+    FOLDER      axom/slam )
 
 axom_write_unified_header(NAME    slam
                           HEADERS ${slam_headers} )

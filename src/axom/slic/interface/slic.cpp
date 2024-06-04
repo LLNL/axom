@@ -1,289 +1,318 @@
-// Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC and
-// other Axom Project Developers. See the top-level COPYRIGHT file for details.
+// Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
+// other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
 #include "axom/slic/interface/slic.hpp"
 #include "axom/slic/internal/stacktrace.hpp"
 
-#include <sstream>    // for std::ostringstream
+#include <sstream>  // for std::ostringstream
 
 namespace axom
 {
 namespace slic
 {
-
 //------------------------------------------------------------------------------
 // Initialize static variables for controlling runtime behavior of asserts and
 // error macros.
 //------------------------------------------------------------------------------
 bool debug::checksAreErrors = false;
 
-void initialize()
+static bool s_is_root = true;
+
+void initialize(bool is_root)
 {
+  axom::slic::s_is_root = is_root;
   Logger::initialize();
 }
 
 //------------------------------------------------------------------------------
-bool isInitialized()
+bool isInitialized() { return (Logger::getActiveLogger() != nullptr); }
+
+//------------------------------------------------------------------------------
+bool isRoot() { return axom::slic::s_is_root; }
+
+//------------------------------------------------------------------------------
+void setIsRoot(bool is_root) { axom::slic::s_is_root = is_root; }
+
+//------------------------------------------------------------------------------
+void ensureInitialized()
 {
-  return ( Logger::getActiveLogger() != nullptr );
+  if(!isInitialized())
+  {
+    initialize();
+    disableAbortOnError();
+    disableAbortOnWarning();
+    setLoggingMsgLevel(slic::message::Debug);
+    std::string format = std::string("<TIMESTAMP>\n") +
+      std::string("[<LEVEL>]: <MESSAGE> \n") + std::string("FILE=<FILE>\n") +
+      std::string("LINE=<LINE>\n\n");
+    addStreamToAllMsgLevels(new slic::GenericOutputStream(&std::cout, format));
+
+    logMessage(
+      message::Warning,
+      "slic::initialize() must be called before any other calls to SLIC\n."
+      "The SLIC library called slic::initialize() for you and set up a minimal "
+      "configuration\nto allow log messages to print.\n"
+      "Please call slic::initialize() near the beginning of the code\n"
+      "to fix this error and get rid of this message.\n"
+      "Please call slic::finalize() after all other calls to SLIC.\n");
+  }
 }
 
 //------------------------------------------------------------------------------
-void createLogger( const std::string& name, char imask )
+void createLogger(const std::string& name, char imask)
 {
-  if ( !isInitialized() )
-  {
-    std::cerr << "[ERROR]: slic::initialize() must be called first "
-              << "before making any other calls to SLIC.";
-    return;
-  }
-  Logger::createLogger( name, imask );
+  ensureInitialized();
+  Logger::createLogger(name, imask);
 }
 
 //------------------------------------------------------------------------------
-bool activateLogger( const std::string& name )
+bool activateLogger(const std::string& name)
 {
-  if ( !isInitialized() )
-  {
-    std::cerr << "[ERROR]: slic::initialize() must be called first "
-              << "before making any other calls to SLIC.";
-    return false;
-  }
-  return Logger::activateLogger( name );
+  ensureInitialized();
+  return Logger::activateLogger(name);
 }
 
 //------------------------------------------------------------------------------
 std::string getActiveLoggerName()
 {
-  if ( !isInitialized() )
-  {
-    std::cerr << "[ERROR]: slic::initialize() must be called first "
-              << "before making any other calls to SLIC.";
-    return "";
-  }
-  return ( Logger::getActiveLoggerName() );
+  ensureInitialized();
+  return (Logger::getActiveLoggerName());
 }
 
 //------------------------------------------------------------------------------
 message::Level getLoggingMsgLevel()
 {
-  if ( !isInitialized() )
-  {
-    std::cerr << "[ERROR]: slic::initialize() must be called first "
-              << "before making any other calls to SLIC.";
-    return message::Num_Levels;
-  }
-  return Logger::getActiveLogger()->getLoggingMsgLevel( );
+  ensureInitialized();
+  return Logger::getActiveLogger()->getLoggingMsgLevel();
 }
 
 //------------------------------------------------------------------------------
-void setLoggingMsgLevel( message::Level level )
+void abort()
 {
-  if ( !isInitialized() )
-  {
-    std::cerr << "[ERROR]: slic::initialize() must be called first "
-              << "before making any other calls to SLIC.";
-    return;
-  }
-  Logger::getActiveLogger()->setLoggingMsgLevel( level );
+  ensureInitialized();
+  Logger::getActiveLogger()->abort();
 }
 
 //------------------------------------------------------------------------------
-void setAbortOnError( bool status )
+void setLoggingMsgLevel(message::Level level)
 {
-  if ( !isInitialized() )
-  {
-    std::cerr << "[ERROR]: slic::initialize() must be called first "
-              << "before making any other calls to SLIC.";
-    return;
-  }
-
-  Logger::getActiveLogger()->setAbortOnError( status );
+  ensureInitialized();
+  Logger::getActiveLogger()->setLoggingMsgLevel(level);
 }
 
 //------------------------------------------------------------------------------
-void enableAbortOnError() {
-  setAbortOnError( true );
+void setAbortOnError(bool status)
+{
+  ensureInitialized();
+
+  Logger::getActiveLogger()->setAbortOnError(status);
 }
 
 //------------------------------------------------------------------------------
-void disableAbortOnError() {
-  setAbortOnError( false );
-}
+void enableAbortOnError() { setAbortOnError(true); }
+
+//------------------------------------------------------------------------------
+void disableAbortOnError() { setAbortOnError(false); }
 
 //------------------------------------------------------------------------------
 bool isAbortOnErrorsEnabled()
 {
-  if ( !isInitialized() )
-  {
-    std::cerr << "[ERROR]: slic::initialize() must be called first "
-              << "before making any other calls to SLIC.";
-    return false;
-  }
-
-  return ( Logger::getActiveLogger()->isAbortOnErrorsEnabled() );
+  ensureInitialized();
+  return (Logger::getActiveLogger()->isAbortOnErrorsEnabled());
 }
 
 //------------------------------------------------------------------------------
-void setAbortOnWarning( bool status )
+void setAbortOnWarning(bool status)
 {
-  if ( !isInitialized() )
-  {
-    std::cerr << "[ERROR]: slic::initialize() must be called first "
-              << "before making any other calls to SLIC.";
-    return;
-  }
-
-  Logger::getActiveLogger()->setAbortOnWarning( status );
+  ensureInitialized();
+  Logger::getActiveLogger()->setAbortOnWarning(status);
 }
 
 //------------------------------------------------------------------------------
-void enableAbortOnWarning() {
-  setAbortOnWarning(true);
-}
+void enableAbortOnWarning() { setAbortOnWarning(true); }
 
 //------------------------------------------------------------------------------
-void disableAbortOnWarning() {
-  setAbortOnWarning(false);
-}
+void disableAbortOnWarning() { setAbortOnWarning(false); }
 
 //------------------------------------------------------------------------------
 bool isAbortOnWarningsEnabled()
 {
-  if ( !isInitialized() )
-  {
-    std::cerr << "[ERROR]: slic::initialize() must be called first "
-              << "before making any other calls to SLIC.";
-    return false;
-  }
-
-  return ( Logger::getActiveLogger()->isAbortOnWarningsEnabled() );
+  ensureInitialized();
+  return (Logger::getActiveLogger()->isAbortOnWarningsEnabled());
 }
 
 //------------------------------------------------------------------------------
-void addStreamToMsgLevel( LogStream* ls, message::Level level )
+void setAbortFunction(AbortFunctionPtr abort_func)
 {
-  if ( !isInitialized() )
-  {
-    std::cerr << "[ERROR]: slic::initialize() must be called first "
-              << "before making any other calls to SLIC.";
-    return;
-  }
-  Logger::getActiveLogger()->addStreamToMsgLevel( ls, level );
+  ensureInitialized();
+  Logger::getActiveLogger()->setAbortFunction(abort_func);
 }
 
 //------------------------------------------------------------------------------
-void addStreamToAllMsgLevels( LogStream* ls )
+void addStreamToMsgLevel(LogStream* ls, message::Level level)
 {
-  Logger::getActiveLogger()->addStreamToAllMsgLevels( ls );
+  ensureInitialized();
+  Logger::getActiveLogger()->addStreamToMsgLevel(ls, level);
 }
 
 //------------------------------------------------------------------------------
-void logMessage( message::Level level, const std::string& message,
-                 bool filter_duplicates )
+void addStreamToMsgLevel(GenericOutputStream* ls, message::Level level)
 {
-  if ( !isInitialized() )
-  {
-    return;
-  }
-  Logger::getActiveLogger()->logMessage( level, message, filter_duplicates );
+  ensureInitialized();
+  Logger::getActiveLogger()->addStreamToMsgLevel(ls, level);
 }
 
 //------------------------------------------------------------------------------
-void logMessage( message::Level level,
-                 const std::string& message,
-                 const std::string& tag,
-                 bool filter_duplicates )
+void addStreamToAllMsgLevels(LogStream* ls)
 {
-  if ( !isInitialized() )
-  {
-    return;
-  }
-  Logger::getActiveLogger()->logMessage( level, message, tag,
-                                         filter_duplicates );
+  ensureInitialized();
+  Logger::getActiveLogger()->addStreamToAllMsgLevels(ls);
 }
 
 //------------------------------------------------------------------------------
-void logMessage( message::Level level,
-                 const std::string& message,
-                 const std::string& fileName,
-                 int line,
-                 bool filter_duplicates )
+void addStreamToAllMsgLevels(GenericOutputStream* ls)
 {
-  if ( !isInitialized() )
-  {
-    return;
-  }
-  Logger::getActiveLogger()->logMessage( level, message, fileName, line,
-                                         filter_duplicates );
+  ensureInitialized();
+  Logger::getActiveLogger()->addStreamToAllMsgLevels(ls);
 }
 
 //------------------------------------------------------------------------------
-void logMessage( message::Level level,
-                 const std::string& message,
-                 const std::string& tag,
-                 const std::string& fileName,
-                 int line,
-                 bool filter_duplicates )
+void addStreamToTag(LogStream* ls, const std::string& tag)
 {
-  if ( !isInitialized() )
-  {
-    return;
-  }
-  Logger::getActiveLogger()->logMessage( level, message, tag, fileName, line,
-                                         filter_duplicates );
+  ensureInitialized();
+  Logger::getActiveLogger()->addStreamToTag(ls, tag);
 }
 
 //------------------------------------------------------------------------------
-void logErrorMessage( const std::string& message,
-                      const std::string& fileName,
-                      int line )
+void addStreamToTag(GenericOutputStream* ls, const std::string& tag)
+{
+  ensureInitialized();
+  Logger::getActiveLogger()->addStreamToTag(ls, tag);
+}
+
+//------------------------------------------------------------------------------
+void addStreamToAllTags(LogStream* ls)
+{
+  ensureInitialized();
+  Logger::getActiveLogger()->addStreamToAllTags(ls);
+}
+
+//------------------------------------------------------------------------------
+void addStreamToAllTags(GenericOutputStream* ls)
+{
+  ensureInitialized();
+  Logger::getActiveLogger()->addStreamToAllTags(ls);
+}
+
+//------------------------------------------------------------------------------
+int getNumStreamsWithTag(const std::string& tag)
+{
+  ensureInitialized();
+  return Logger::getActiveLogger()->getNumStreamsWithTag(tag);
+}
+
+//------------------------------------------------------------------------------
+void logMessage(message::Level level,
+                const std::string& message,
+                bool filter_duplicates)
+{
+  ensureInitialized();
+  Logger::getActiveLogger()->logMessage(level, message, filter_duplicates);
+}
+
+//------------------------------------------------------------------------------
+void logMessage(message::Level level,
+                const std::string& message,
+                const std::string& tag,
+                bool filter_duplicates,
+                bool tag_stream_only)
+{
+  ensureInitialized();
+  Logger::getActiveLogger()->logMessage(level,
+                                        message,
+                                        tag,
+                                        filter_duplicates,
+                                        tag_stream_only);
+}
+
+//------------------------------------------------------------------------------
+void logMessage(message::Level level,
+                const std::string& message,
+                const std::string& fileName,
+                int line,
+                bool filter_duplicates)
+{
+  ensureInitialized();
+  Logger::getActiveLogger()->logMessage(level,
+                                        message,
+                                        fileName,
+                                        line,
+                                        filter_duplicates);
+}
+
+//------------------------------------------------------------------------------
+void logMessage(message::Level level,
+                const std::string& message,
+                const std::string& tag,
+                const std::string& fileName,
+                int line,
+                bool filter_duplicates,
+                bool tag_stream_only)
+{
+  ensureInitialized();
+  Logger::getActiveLogger()->logMessage(level,
+                                        message,
+                                        tag,
+                                        fileName,
+                                        line,
+                                        filter_duplicates,
+                                        tag_stream_only);
+}
+
+//------------------------------------------------------------------------------
+void logErrorMessage(const std::string& message,
+                     const std::string& fileName,
+                     int line)
 {
   std::ostringstream oss;
   oss << message << slic::internal::stacktrace();
 
-  slic::logMessage( message::Error, oss.str(), fileName, line );
+  slic::logMessage(message::Error, oss.str(), fileName, line);
 }
 
 //------------------------------------------------------------------------------
-void logWarningMessage( const std::string& message,
-                        const std::string& fileName,
-                        int line )
+void logWarningMessage(const std::string& message,
+                       const std::string& fileName,
+                       int line)
 {
-  slic::logMessage( message::Warning, message, fileName, line );
+  slic::logMessage(message::Warning, message, fileName, line);
+}
+
+//------------------------------------------------------------------------------
+void outputLocalMessages()
+{
+  ensureInitialized();
+  Logger::getActiveLogger()->outputLocalMessages();
 }
 
 //------------------------------------------------------------------------------
 void flushStreams()
 {
-  if ( !isInitialized() )
-  {
-    std::cerr << "[ERROR]: slic::initialize() must be called first "
-              << "before making any other calls to SLIC.";
-    return;
-  }
+  ensureInitialized();
   Logger::getActiveLogger()->flushStreams();
 }
 
 //------------------------------------------------------------------------------
 void pushStreams()
 {
-  if ( !isInitialized() )
-  {
-    std::cerr << "[ERROR]: slic::initialize() must be called first "
-              << "before making any other calls to SLIC.";
-    return;
-  }
+  ensureInitialized();
   Logger::getActiveLogger()->pushStreams();
 }
 
 //------------------------------------------------------------------------------
-void finalize()
-{
-  Logger::finalize();
-}
+void finalize() { Logger::finalize(); }
 
 } /* namespace slic */
 

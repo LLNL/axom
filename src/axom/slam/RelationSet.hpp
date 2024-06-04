@@ -1,12 +1,14 @@
-// Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC and
-// other Axom Project Developers. See the top-level COPYRIGHT file for details.
+// Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
+// other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
 #ifndef SLAM_MAPPED_RELATION_SET_H_
 #define SLAM_MAPPED_RELATION_SET_H_
 
+#include "axom/slam/RangeSet.hpp"
 #include "axom/slam/BivariateSet.hpp"
+#include "axom/slam/policies/BivariateSetInterfacePolicies.hpp"
 
 namespace axom
 {
@@ -27,39 +29,65 @@ namespace slam
  * \see   BivariateSet
  */
 
-template<
-  typename RelationType
-  >
-class RelationSet
-  : public OrderedSet<typename RelationType::SetPosition,
-                      typename RelationType::SetElement>
-  , public BivariateSet<typename RelationType::SetPosition,
-                        typename RelationType::SetElement>
+template <typename Relation,
+          typename SetType1 = typename Relation::FromSetType,
+          typename SetType2 = typename Relation::ToSetType,
+          typename InterfaceType = policies::VirtualInterface>
+class RelationSet final
+  : public policies::BivariateSetInterface<InterfaceType, SetType1, SetType2>
 {
+public:
+  using FirstSetType = SetType1;
+  using SecondSetType = SetType2;
+
+  using RelationType = Relation;
+
+private:
+  using BaseType =
+    policies::BivariateSetInterface<InterfaceType, SetType1, SetType2>;
+  using RangeSetType = typename BaseType::RangeSetType;
+  using BaseSubsetType = typename BaseType::SubsetType;
 
 public:
   using PositionType = typename RelationType::SetPosition;
   using ElementType = typename RelationType::SetElement;
 
   using RelationSubset = typename RelationType::RelationSubset;
+  using SubsetType =
+    std::conditional_t<std::is_same<void, BaseSubsetType>::value, RelationSubset, BaseSubsetType>;
 
-  using BivariateSetType = BivariateSet<PositionType, ElementType>;
-  using SetType = typename BivariateSetType::SetType;
-  using OrderedSetType = typename BivariateSetType::OrderedSetType;
+  using BaseType::INVALID_POS;
 
-  using BivariateSetType::INVALID_POS;
+  using IteratorType = BivariateSetIterator<RelationSet>;
 
 public:
-  RelationSet() {}
+  using ConcreteSet =
+    RelationSet<Relation, SetType1, SetType2, policies::ConcreteInterface>;
+  using VirtualSet =
+    RelationSet<Relation, SetType1, SetType2, policies::VirtualInterface>;
+
+  using OtherSet =
+    std::conditional_t<std::is_same<InterfaceType, policies::VirtualInterface>::value,
+                       ConcreteSet,
+                       VirtualSet>;
+
+  RelationSet(const OtherSet& other)
+    : BaseType(other.getFirstSet(), other.getSecondSet())
+    , m_relation(other.getRelation())
+  { }
+
+public:
+  RelationSet() = default;
 
   /**
    * \brief Constructor taking in the relation this BivariateSet is based on.
    * \pre relation pointer must not be a null pointer
    */
   RelationSet(RelationType* relation)
-    : BivariateSetType(
-      relation ? relation->fromSet() : (SetType*)&BivariateSetType::s_nullSet,
-      relation ? relation->toSet()   : (SetType*)&BivariateSetType::s_nullSet )
+    : BaseType(relation ? relation->fromSet()
+                        : policies::EmptySetTraits<FirstSetType>::emptySet(),
+               relation ? relation->toSet()
+                        : policies::EmptySetTraits<SecondSetType>::emptySet())
     , m_relation(relation)
   {
     SLIC_ASSERT(relation != nullptr);
@@ -83,16 +111,17 @@ public:
    * \pre   0 <= pos1 <= set1.size() && 0 <= pos2 <= size2.size()
    */
 
-  PositionType findElementIndex(PositionType pos1,
-                                PositionType pos2) const override
+  PositionType findElementIndex(PositionType pos1, PositionType pos2) const
   {
     RelationSubset ls = (*m_relation)[pos1];
-    for (PositionType i = 0 ; i < ls.size() ; i++)
+    for(PositionType i = 0; i < ls.size(); i++)
     {
-      if (ls[i] == pos2)
+      if(ls[i] == pos2)
+      {
         return i;
+      }
     }
-    return INVALID_POS;
+    return BaseType::INVALID_POS;
   }
 
   /**
@@ -106,18 +135,19 @@ public:
    * \return  The element's FlatIndex
    * \pre   0 <= pos1 <= set1.size() && 0 <= pos2 <= size2.size()
    */
-  PositionType findElementFlatIndex(PositionType s1,
-                                    PositionType s2) const override
+  AXOM_HOST_DEVICE PositionType findElementFlatIndex(PositionType s1,
+                                                     PositionType s2) const
   {
     RelationSubset ls = (*m_relation)[s1];
-    for (PositionType i = 0 ; i < ls.size() ; i++)
+    for(PositionType i = 0; i < ls.size(); i++)
     {
-      if (ls[i] == s2)
+      if(ls[i] == s2)
+      {
         return ls.offset() + i;
+      }
     }
-    return INVALID_POS;
+    return BaseType::INVALID_POS;
   }
-
 
   /**
    * \brief Given the from-set index pos1, return the FlatIndex of the first
@@ -129,14 +159,57 @@ public:
    *
    * \return  The FlatIndex of the first existing to-set element.
    */
-  PositionType findElementFlatIndex(PositionType pos1) const override
+  PositionType findElementFlatIndex(PositionType pos1) const
   {
     RelationSubset ls = (*m_relation)[pos1];
 
-    if (ls.size() > 0)
+    if(ls.size() > 0)
+    {
       return ls.offset();
+    }
 
-    return INVALID_POS;
+    return BaseType::INVALID_POS;
+  }
+
+  /**
+   * \brief Given the flat index, return the associated to-set index in the
+   *        relation pair.
+   *
+   * \param flatIndex The FlatIndex of the from-set/to-set pair.
+   *
+   * \return pos2  The to-set index.
+   */
+  AXOM_HOST_DEVICE PositionType flatToSecondIndex(PositionType flatIndex) const
+  {
+    if(flatIndex < 0 || flatIndex > size())
+    {
+      SLIC_ASSERT("Flat index out of bounds of the relation set.");
+    }
+    return m_relation->relationData()[flatIndex];
+  }
+
+  /**
+   * \brief Given the flat index, return the associated from-set index in the
+   *        relation pair.
+   *
+   * \param flatIndex The FlatIndex of the from-set/to-set pair.
+   *
+   * \return pos1  The from-set index.
+   */
+  AXOM_HOST_DEVICE PositionType flatToFirstIndex(PositionType flatIndex) const
+  {
+    if(flatIndex < 0 || flatIndex > size())
+    {
+      SLIC_ASSERT("Flat index out of bounds of the relation set.");
+    }
+    return m_relation->firstIndex(flatIndex);
+  }
+
+  AXOM_HOST_DEVICE RangeSetType elementRangeSet(PositionType pos1) const
+  {
+    return typename RangeSetType::SetBuilder()
+      .size(m_relation->size(pos1))
+      .offset(m_relation->offset(pos1));
   }
 
   /**
@@ -146,27 +219,25 @@ public:
    * \return  An OrderedSet containing the elements in the row.
    * \pre  0 <= pos1 <= set1.size()
    */
-  const OrderedSetType getElements(PositionType s1) const override
-  {
-    return (*m_relation)[s1];
-  }
+  SubsetType getElements(PositionType s1) const { return (*m_relation)[s1]; }
 
-  ElementType at(PositionType pos) const override
+  AXOM_HOST_DEVICE ElementType at(PositionType pos) const
   {
-    verifyPosition(pos);
-    return (*m_relation->relationData())[pos];
+#ifndef AXOM_DEVICE_CODE
+    RelationSet::verifyPosition(pos);
+#endif
+    return m_relation->relationData()[pos];
   }
 
   /** \brief Returns the relation pointer   */
-  RelationType* getRelation() const
-  {
-    return m_relation;
-  }
+  RelationType* getRelation() const { return m_relation; }
+
+  RelationType* getRelation() { return m_relation; }
 
   /** \brief Return the size of the relation   */
-  PositionType    totalSize() const
+  PositionType totalSize() const
   {
-    return PositionType( m_relation->relationData()->size() );
+    return PositionType(m_relation->relationData().size());
   }
 
   /**
@@ -175,16 +246,25 @@ public:
    *
    * \param pos The from-set position.
    */
-  PositionType    size(PositionType pos) const override
-  {
-    return m_relation->size(pos);
-  }
+  PositionType size(PositionType pos) const { return m_relation->size(pos); }
 
-  bool isValid(bool verboseOutput = false) const override
+  /*!
+   * \brief Return an iterator to the first pair of set elements in the
+   *  relation.
+   */
+  IteratorType begin() const { return IteratorType(this, 0); }
+
+  /*!
+   * \brief Return an iterator to one past the last pair of set elements in the
+   *  relation.
+   */
+  IteratorType end() const { return IteratorType(this, totalSize()); }
+
+  bool isValid(bool verboseOutput = false) const
   {
-    if (m_relation == nullptr)
+    if(m_relation == nullptr)
     {
-      if (verboseOutput)
+      if(verboseOutput)
       {
         std::cout << "\n*** RelationSet is not valid:\n"
                   << "\t* Relation pointer should not be null.\n"
@@ -195,49 +275,47 @@ public:
     return m_relation->isValid(verboseOutput);
   }
 
-private:
+public:
   //hiding size() from the Set base class, replaced with totalSize().
   //but still implemented due to the function being virtual
   //(and can be called from base ptr)
-  PositionType size() const override
+  // KW -- made this public to use from BivariateMap
+  AXOM_HOST_DEVICE PositionType size() const
   {
-    return PositionType( m_relation->relationData()->size() );
+    return PositionType(m_relation->relationData().size());
   }
 
 private:
   //range check only
   bool isValidIndex(PositionType s1, PositionType s2) const
   {
-    return s1 >= 0 && s1 < m_relation->fromSet()->size() &&
-           s2 >= 0 && s2 < m_relation->size(s1);
+    return s1 >= 0 && s1 < m_relation->fromSet()->size() && s2 >= 0 &&
+      s2 < m_relation->size(s1);
   }
 
-  void verifyPosition(PositionType AXOM_DEBUG_PARAM(sPos) ) const override
-  { //override function from RangeSet, overloading to avoid warning in compiler
+  void verifyPosition(PositionType AXOM_DEBUG_PARAM(sPos)) const
+  {
     SLIC_ASSERT_MSG(
       sPos >= 0 && sPos < size(),
       "SLAM::RelationSet -- requested out-of-range element at position "
-      << sPos << ", but set only has " << size() << " elements.");
+        << sPos << ", but set only has " << size() << " elements.");
   }
 
   void verifyPosition(PositionType AXOM_DEBUG_PARAM(s1),
-                      PositionType AXOM_DEBUG_PARAM(s2) ) const override
+                      PositionType AXOM_DEBUG_PARAM(s2)) const
   {
     SLIC_ASSERT_MSG(
       isValidIndex(s1, s2),
       "SLAM::RelationSet -- requested out-of-range element at position ("
-      << s1 << "," << s2 << "), but set only has "
-      << this->firstSetSize() << "x"
-      << this->secondSetSize() << " elements.");
+        << s1 << "," << s2 << "), but set only has " << this->firstSetSize()
+        << "x" << this->secondSetSize() << " elements.");
   }
 
-
 private:
-  RelationType* m_relation; //the relation that this set is based off of
+  RelationType* m_relation;  //the relation that this set is based off of
 };
 
+}  // end namespace slam
+}  // end namespace axom
 
-} // end namespace slam
-} // end namespace axom
-
-#endif //  SLAM_MAPPED_RELATION_SET_H_
+#endif  //  SLAM_MAPPED_RELATION_SET_H_

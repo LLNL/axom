@@ -1,5 +1,5 @@
-// Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC and
-// other Axom Project Developers. See the top-level COPYRIGHT file for details.
+// Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
+// other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
@@ -11,7 +11,7 @@
 
 #include "VectorXY.hpp"
 
-#include "fmt/fmt.hpp"
+#include "axom/fmt.hpp"
 
 #include "axom/slam.hpp"
 
@@ -25,13 +25,13 @@ namespace tinyHydro {
 
   using SetBase = slam::Set<PositionType, ElementType>;
 
-  using IndexField = slam::Map<SetBase, int>;
+  using IndexField = slam::Map<int>;
 
-  using ScalarField = slam::Map<SetBase, double>;
+  using ScalarField = slam::Map<double,SetBase>;
   using NodalScalarField = ScalarField;
   using ZonalScalarField = ScalarField;
 
-  using VectorField = slam::Map<SetBase, VectorXY>;
+  using VectorField = slam::Map<VectorXY,SetBase>;
   using NodalVectorField = VectorField;
   using ZonalVectorField = VectorField;
   using FaceVectorField = VectorField;
@@ -74,7 +74,7 @@ namespace tinyHydro {
   using NUM_BD_SZ = slam::policies::CompileTimeSize<ZoneSet::PositionType, NUM_DOMAIN_BOUNDARIES>;
   using BoundaryEdgeSet = slam::OrderedSet< PositionType, ElementType, NUM_BD_SZ>;
 
-  using IndexMap = slam::Map<SetBase, IndexType>;
+  using IndexMap = slam::Map<IndexType>;
 
   using IndexRegistry = slam::FieldRegistry<SetBase, ZoneSet::PositionType>;
   using IndexBuffer = IndexRegistry::BufferType;

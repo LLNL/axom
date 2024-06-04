@@ -1,19 +1,20 @@
-// Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC and
-// other Axom Project Developers. See the top-level COPYRIGHT file for details.
+// Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
+// other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
 /**************************************************************************
  *************************************************************************/
 
-#include "axom/core.hpp"
+#include "axom/core/utilities/Utilities.hpp"
+#include "axom/core/utilities/Timer.hpp"
 #include "axom/sidre.hpp"
 
 #include <algorithm>
 #include <set>
 
-using axom::sidre::Group;
 using axom::sidre::DataStore;
+using axom::sidre::Group;
 using axom::sidre::IndexType;
 
 /**************************************************************************
@@ -26,8 +27,8 @@ int main(int argc, char* argv[])
   DataStore* ds = new DataStore();
   Group* root = ds->getRoot();
 
-  IndexType num_groups = 0;
-  if (argc > 1)
+  size_t num_groups = 0;
+  if(argc > 1)
   {
     num_groups = static_cast<IndexType>(atoi(argv[1]));
   }
@@ -46,12 +47,12 @@ int main(int argc, char* argv[])
 
   std::set<std::string> name_set;
 
-  while (static_cast<IndexType>(name_set.size()) < num_groups)
+  while(name_set.size() < num_groups)
   {
     std::string new_string;
-    for (int c = 0 ; c < 8 ; ++c)
+    for(int c = 0; c < 8; ++c)
     {
-      new_string += alphanum[rand() %  num_chars];
+      new_string += alphanum[rand() % num_chars];
     }
     name_set.insert(new_string);
   }
@@ -59,15 +60,16 @@ int main(int argc, char* argv[])
   std::vector<std::string> names(num_groups);
   {
     int i = 0;
-    for (std::set<std::string>::const_iterator itr = name_set.begin() ;
-         itr != name_set.end() ; ++itr)
+    for(std::set<std::string>::const_iterator itr = name_set.begin();
+        itr != name_set.end();
+        ++itr)
     {
       names[i] = *itr;
       ++i;
     }
   }
 
-/*
+  /*
     for (int i = 0; i < num_groups; ++i) {
        std::stringstream sstr;
        sstr << i;
@@ -78,7 +80,7 @@ int main(int argc, char* argv[])
   std::random_shuffle(names.begin(), names.end());
 
   axom::utilities::Timer create_timer(true);
-  for (unsigned int i = 0 ; i < num_groups ; ++i)
+  for(size_t i = 0; i < num_groups; ++i)
   {
     root->createGroup(names[i]);
   }
@@ -88,9 +90,9 @@ int main(int argc, char* argv[])
   std::random_shuffle(names.begin(), names.end());
 
   axom::utilities::Timer query_timer(true);
-  for (unsigned int i = 0 ; i < num_groups ; ++i)
+  for(size_t i = 0; i < num_groups; ++i)
   {
-    if ( !root->hasGroup(names[i]) )
+    if(!root->hasGroup(names[i]))
     {
       break;
     }
@@ -101,7 +103,7 @@ int main(int argc, char* argv[])
   std::random_shuffle(names.begin(), names.end());
 
   axom::utilities::Timer destroy_timer(true);
-  for (unsigned int i = 0 ; i < num_groups ; ++i)
+  for(size_t i = 0; i < num_groups; ++i)
   {
     root->destroyGroup(names[i]);
   }
@@ -109,18 +111,18 @@ int main(int argc, char* argv[])
   std::cout << "Destroy time " << destroy_timer.elapsed() << ".\n";
 
   axom::utilities::Timer mixed_timer(true);
-  if (num_groups > 100)
+  if(num_groups > 100)
   {
     mixed_timer.stop();
     int num_shuffles = num_groups / 100;
-    for (int j = 0 ; j < num_shuffles ; ++j)
+    for(int j = 0; j < num_shuffles; ++j)
     {
       std::random_shuffle(names.begin(), names.end());
 
       mixed_timer.start();
-      for (int i = 0 ; i < 100 ; ++i)
+      for(int i = 0; i < 100; ++i)
       {
-        if ( root->hasGroup(names[i]) )
+        if(root->hasGroup(names[i]))
         {
           root->destroyGroup(names[i]);
         }

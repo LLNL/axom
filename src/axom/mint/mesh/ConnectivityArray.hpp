@@ -1,5 +1,5 @@
-// Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC and
-// other Axom Project Developers. See the top-level COPYRIGHT file for details.
+// Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
+// other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
@@ -9,7 +9,8 @@
 // Axom includes
 #include "axom/core/Macros.hpp"
 #include "axom/core/Types.hpp"
-#include "axom/core/Array.hpp"
+#include "axom/mint/deprecated/MCArray.hpp"
+#include "axom/mint/utils/ExternalArray.hpp"
 
 // Mint includes
 #include "axom/mint/mesh/CellTypes.hpp"
@@ -20,20 +21,28 @@
 #include "axom/slic/interface/slic.hpp"
 
 #ifdef AXOM_MINT_USE_SIDRE
-#include "axom/sidre/core/sidre.hpp"
+  #include "axom/sidre.hpp"
+  #include "axom/mint/deprecated/SidreMCArray.hpp"
 #endif
 
 namespace axom
 {
-
 namespace mint
 {
-
 enum ConnectivityType
 {
   NO_INDIRECTION,
-  INDIRECTION,
   TYPED_INDIRECTION
+};
+
+/*!
+ * \brief Represents the type of storage the ConnectivityArray is constructed with.
+ */
+enum class StorageMode
+{
+  Native,
+  External,
+  Sidre
 };
 
 /*!
@@ -114,24 +123,22 @@ enum ConnectivityType
  * \tparam TYPE the type of the ConnectivityArray this class deals with the
  *  case of TYPE == NO_INDIRECTION.
  *
- * \see ConnectivityArray_indirection.hpp
  * \see ConnectivityArray_typed_indirection.hpp
  * \see ConnectivityArray_internal.hpp
  */
-template < ConnectivityType TYPE >
+template <ConnectivityType TYPE>
 class ConnectivityArray
 {
-  AXOM_STATIC_ASSERT( TYPE == NO_INDIRECTION );
+  AXOM_STATIC_ASSERT(TYPE == NO_INDIRECTION);
 
 public:
-
   /*!
    * \brief Default constructor. Disabled.
    */
   ConnectivityArray() = delete;
 
-/// \name Native Storage ConnectivityArray Constructors
-/// @{
+  /// \name Native Storage ConnectivityArray Constructors
+  /// @{
 
   /*!
    * \brief Constructs an empty ConnectivityArray instance.
@@ -145,19 +152,19 @@ public:
    * \post getNumberOfIDs() == 0
    * \post getIDType() == cell_type
    */
-  ConnectivityArray( CellType cell_type, IndexType ID_capacity=USE_DEFAULT ) :
-    m_cell_type( cell_type ),
-    m_stride( -1 ),
-    m_values( nullptr )
+  ConnectivityArray(CellType cell_type, IndexType ID_capacity = USE_DEFAULT)
+    : m_cell_type(cell_type)
+    , m_stride(-1)
+    , m_storageMode(StorageMode::Native)
   {
-    SLIC_ERROR_IF( m_cell_type == UNDEFINED_CELL,
-                   "Cannot have an undefined cell type." );
-    SLIC_ERROR_IF( cellTypeToInt(m_cell_type) >= NUM_CELL_TYPES,
-                   "Unknown cell type." );
+    SLIC_ERROR_IF(m_cell_type == UNDEFINED_CELL,
+                  "Cannot have an undefined cell type.");
+    SLIC_ERROR_IF(cellTypeToInt(m_cell_type) >= NUM_CELL_TYPES,
+                  "Unknown cell type.");
 
-    m_stride = getCellInfo( cell_type ).num_nodes;
-    m_values = new Array< IndexType >( axom::internal::ZERO,
-                                       m_stride, ID_capacity );
+    m_stride = getCellInfo(cell_type).num_nodes;
+    m_values = std::make_unique<axom::Array<IndexType, 2>>(0, m_stride);
+    m_values->reserve(ID_capacity * m_stride);
   }
 
   /*!
@@ -170,21 +177,21 @@ public:
    * \post getNumberOfIDs() == 0
    * \post getIDType() == UNDEFINED_CELL
    */
-  ConnectivityArray( IndexType stride, IndexType ID_capacity=USE_DEFAULT ) :
-    m_cell_type( UNDEFINED_CELL ),
-    m_stride( stride ),
-    m_values( nullptr )
+  ConnectivityArray(IndexType stride, IndexType ID_capacity = USE_DEFAULT)
+    : m_cell_type(UNDEFINED_CELL)
+    , m_stride(stride)
+    , m_storageMode(StorageMode::Native)
   {
-    SLIC_ERROR_IF( stride <= 0, "Stride must be greater than zero: " << stride );
+    SLIC_ERROR_IF(stride <= 0, "Stride must be greater than zero: " << stride);
 
-    m_values = new Array< IndexType >( axom::internal::ZERO,
-                                       m_stride, ID_capacity );
+    m_values = std::make_unique<axom::Array<IndexType, 2>>(0, m_stride);
+    m_values->reserve(ID_capacity * m_stride);
   }
 
-/// @}
+  /// @}
 
-/// \name External Storage ConnectivityArray Constructors
-/// @{
+  /// \name External Storage ConnectivityArray Constructors
+  /// @{
 
   /*!
    * \brief External constructor which creates a ConnectivityArray instance to
@@ -205,20 +212,23 @@ public:
    * \post getNumberOfIDs() == n_IDs
    * \post getIDType() == cell_type
    */
-  ConnectivityArray( CellType cell_type, IndexType n_IDs, IndexType* values,
-                     IndexType ID_capacity=USE_DEFAULT ) :
-    m_cell_type( cell_type ),
-    m_stride( -1 ),
-    m_values( nullptr )
+  ConnectivityArray(CellType cell_type,
+                    IndexType n_IDs,
+                    IndexType* values,
+                    IndexType ID_capacity = USE_DEFAULT)
+    : m_cell_type(cell_type)
+    , m_stride(-1)
+    , m_storageMode(StorageMode::External)
   {
-    SLIC_ERROR_IF( m_cell_type == UNDEFINED_CELL,
-                   "Cannot have an undefined cell type." );
-    SLIC_ERROR_IF( cellTypeToInt(m_cell_type) >= NUM_CELL_TYPES,
-                   "Unknown cell type." );
+    SLIC_ERROR_IF(m_cell_type == UNDEFINED_CELL,
+                  "Cannot have an undefined cell type.");
+    SLIC_ERROR_IF(cellTypeToInt(m_cell_type) >= NUM_CELL_TYPES,
+                  "Unknown cell type.");
 
-    m_stride = getCellInfo( cell_type ).num_nodes;
-    m_values = new Array< IndexType >( values, n_IDs,
-                                       m_stride, ID_capacity );
+    m_stride = getCellInfo(cell_type).num_nodes;
+    m_values.reset(new ExternalArray<IndexType, 2>(values,
+                                                   {n_IDs, m_stride},
+                                                   ID_capacity * m_stride));
   }
 
   /*!
@@ -240,20 +250,23 @@ public:
    * \post getNumberOfIDs() == n_IDs
    * \post getIDType() == cell_type
    */
-  ConnectivityArray( IndexType stride, IndexType n_IDs, IndexType* values,
-                     IndexType ID_capacity=USE_DEFAULT ) :
-    m_cell_type( UNDEFINED_CELL ),
-    m_stride( stride ),
-    m_values( nullptr )
+  ConnectivityArray(IndexType stride,
+                    IndexType n_IDs,
+                    IndexType* values,
+                    IndexType ID_capacity = USE_DEFAULT)
+    : m_cell_type(UNDEFINED_CELL)
+    , m_stride(stride)
+    , m_storageMode(StorageMode::External)
   {
-    m_values = new Array< IndexType >( values, n_IDs,
-                                       m_stride, ID_capacity );
+    m_values.reset(new ExternalArray<IndexType, 2>(values,
+                                                   {n_IDs, m_stride},
+                                                   ID_capacity * m_stride));
   }
 
-/// @}
+  /// @}
 
-/// \name Sidre Storage ConnectivityArray Constructors
-/// @{
+  /// \name Sidre Storage ConnectivityArray Constructors
+  /// @{
 
 #ifdef AXOM_MINT_USE_SIDRE
 
@@ -269,26 +282,26 @@ public:
    *
    * \post getIDCapacity() >= getNumberOfIDs()
    */
-  ConnectivityArray( sidre::Group* group ) :
-    m_cell_type( UNDEFINED_CELL ),
-    m_stride( -1 ),
-    m_values( nullptr )
+  ConnectivityArray(sidre::Group* group)
+    : m_cell_type(UNDEFINED_CELL)
+    , m_stride(-1)
+    , m_storageMode(StorageMode::Sidre)
+    , m_values(nullptr)
   {
-    m_cell_type = internal::initializeFromGroup( group, &m_values );
-    m_stride = internal::getStride( group );
+    m_cell_type = internal::initializeFromGroup(group, m_values);
+    m_stride = internal::getStride(group);
 
-    if ( m_cell_type != UNDEFINED_CELL )
+    if(m_cell_type != UNDEFINED_CELL)
     {
-      IndexType cell_stride = getCellInfo( m_cell_type ).num_nodes;
-      SLIC_ERROR_IF( cell_stride != m_stride, "Stride mismatch" );
+      IndexType cell_stride = getCellInfo(m_cell_type).num_nodes;
+      SLIC_ERROR_IF(cell_stride != m_stride, "Stride mismatch");
     }
 
-    SLIC_ERROR_IF( m_stride <= 0, "Stride must be greater than zero." );
+    SLIC_ERROR_IF(m_stride <= 0, "Stride must be greater than zero.");
 
-    SLIC_ERROR_IF(
-      m_values->numComponents() != m_stride,
-      "values array must have " << m_stride << " components, is " <<
-      m_values->numComponents() << "." );
+    SLIC_ERROR_IF(m_values->shape()[1] != m_stride,
+                  "values array must have " << m_stride << " components, is "
+                                            << m_values->shape()[1] << ".");
   }
 
   /*!
@@ -308,28 +321,32 @@ public:
    * \post getIDCapacity() >= getNumberOfIDs()
    * \post getIDType() == cell_type
    */
-  ConnectivityArray( CellType cell_type, sidre::Group* group,
-                     const std::string& coordset,
-                     IndexType ID_capacity=USE_DEFAULT ) :
-    m_cell_type( cell_type ),
-    m_stride( getCellInfo( m_cell_type ).num_nodes ),
-    m_values( nullptr )
+  ConnectivityArray(CellType cell_type,
+                    sidre::Group* group,
+                    const std::string& coordset,
+                    IndexType ID_capacity = USE_DEFAULT)
+    : m_cell_type(cell_type)
+    , m_stride(getCellInfo(m_cell_type).num_nodes)
+    , m_storageMode(StorageMode::Sidre)
+    , m_values(nullptr)
   {
-    SLIC_ERROR_IF( m_cell_type == UNDEFINED_CELL, 
-                   "Cannot have an undefined cell type." );
+    SLIC_ERROR_IF(m_cell_type == UNDEFINED_CELL,
+                  "Cannot have an undefined cell type.");
 
-    internal::initializeGroup( group, coordset, m_cell_type );
-    internal::setStride( group, m_stride );
+    internal::initializeGroup(group, coordset, m_cell_type);
+    internal::setStride(group, m_stride);
 
-    sidre::Group* elems_group = group->getGroup( "elements" );
-    SLIC_ASSERT( elems_group != nullptr );
+    sidre::Group* elems_group = group->getGroup("elements");
+    SLIC_ASSERT(elems_group != nullptr);
 
-    sidre::View* connec_view = elems_group->getView( "connectivity" );
-    m_values = new sidre::Array< IndexType >( connec_view,
-                                              0,
-                                              m_stride,
-                                              ID_capacity );
-    SLIC_ASSERT( m_values != nullptr );
+    sidre::View* connec_view = elems_group->getView("connectivity");
+    axom::IndexType element_capacity =
+      ID_capacity == USE_DEFAULT ? USE_DEFAULT : ID_capacity * m_stride;
+    m_values = std::make_unique<sidre::MCArray<IndexType>>(connec_view,
+                                                           0,
+                                                           m_stride,
+                                                           element_capacity);
+    SLIC_ASSERT(m_values != nullptr);
   }
 
   /*!
@@ -349,71 +366,57 @@ public:
    * \post getIDCapacity() >= getNumberOfIDs()
    * \post getIDType() == cell_type
    */
-  ConnectivityArray( IndexType stride, sidre::Group* group,
-                     const std::string& coordset,
-                     IndexType ID_capacity=USE_DEFAULT ) :
-    m_cell_type( UNDEFINED_CELL ),
-    m_stride( stride ),
-    m_values( nullptr )
+  ConnectivityArray(IndexType stride,
+                    sidre::Group* group,
+                    const std::string& coordset,
+                    IndexType ID_capacity = USE_DEFAULT)
+    : m_cell_type(UNDEFINED_CELL)
+    , m_stride(stride)
+    , m_storageMode(StorageMode::Sidre)
   {
-    SLIC_ERROR_IF( stride <= 0, "Stride must be greater than zero." );
+    SLIC_ERROR_IF(stride <= 0, "Stride must be greater than zero.");
 
-    internal::initializeGroup( group, coordset, m_cell_type );
-    internal::setStride( group, m_stride );
+    internal::initializeGroup(group, coordset, m_cell_type);
+    internal::setStride(group, m_stride);
 
-    sidre::Group* elems_group = group->getGroup( "elements" );
-    SLIC_ASSERT( elems_group != nullptr );
+    sidre::Group* elems_group = group->getGroup("elements");
+    SLIC_ASSERT(elems_group != nullptr);
 
-    sidre::View* connec_view = elems_group->getView( "connectivity" );
-    m_values = new sidre::Array< IndexType >( connec_view,
-                                              0,
-                                              m_stride,
-                                              ID_capacity );
-    SLIC_ASSERT( m_values != nullptr );
+    sidre::View* connec_view = elems_group->getView("connectivity");
+    axom::IndexType element_capacity =
+      ID_capacity == USE_DEFAULT ? USE_DEFAULT : ID_capacity * m_stride;
+    m_values = std::make_unique<sidre::MCArray<IndexType>>(connec_view,
+                                                           0,
+                                                           m_stride,
+                                                           element_capacity);
   }
 
 #endif
 
-/// @}
+  /// @}
 
-  /*!
-   * \brief Destructor, free's the allocated array.
-   */
-  ~ConnectivityArray()
-  {
-    if ( m_values != nullptr )
-    {
-      delete m_values;
-    }
-    m_values = nullptr;
-  }
-
-/// \name Attribute get/set Methods
-/// @{
+  /// \name Attribute get/set Methods
+  /// @{
 
   /*!
    * \brief Returns the total number of IDs.
    */
-  IndexType getNumberOfIDs() const
-  { return m_values->size(); }
+  IndexType getNumberOfIDs() const { return m_values->shape()[0]; }
 
   /*!
    * \brief Returns the number of IDs available for storage without resizing.
    */
-  IndexType getIDCapacity() const
-  { return m_values->capacity(); }
+  IndexType getIDCapacity() const { return m_values->capacity() / m_stride; }
 
   /*!
    * \brief Returns the number of values in this ConnectivityArray instance.
    */
-  IndexType getNumberOfValues() const
-  { return m_values->size() * m_stride; }
+  IndexType getNumberOfValues() const { return m_values->size(); }
 
   /*!
    * \brief Returns the number of values available for storage without resizing.
    */
-  IndexType getValueCapacity() const
-  { return getIDCapacity() * m_stride; }
+  IndexType getValueCapacity() const { return getIDCapacity() * m_stride; }
 
   /*!
    * \brief Reserve space for IDs and values.
@@ -421,15 +424,16 @@ public:
    * \param [in] ID_capacity the number of IDs to reserve space for.
    * \param [in] value_capacity not used, does not need to be specified.
    *
-   * \post getIDCapacity() >= n_IDs
+   * If current getIDCapacity() >= ID_capacity, do nothing.
+   * \post getIDCapacity() >= ID_capacity
    */
-  void reserve( IndexType ID_capacity,
-                IndexType AXOM_NOT_USED(value_capacity)=0 )
+  void reserve(IndexType ID_capacity,
+               IndexType AXOM_UNUSED_PARAM(value_capacity) = 0)
   {
-    SLIC_ERROR_IF( isExternal() && ID_capacity > m_values->capacity( ),
-       "cannot exceed initial capacity of external buffer!" );
+    SLIC_ERROR_IF(isExternal() && ID_capacity > m_values->capacity(),
+                  "cannot exceed initial capacity of external buffer!");
 
-    m_values->reserve( ID_capacity );
+    m_values->reserve(ID_capacity * m_stride);
   }
 
   /*!
@@ -440,22 +444,22 @@ public:
    *
    * \post getNumberOfIDs() == newIDSize
    */
-  void resize( IndexType ID_size, IndexType AXOM_NOT_USED(value_size)=0 )
-  { m_values->resize( ID_size ); }
+  void resize(IndexType ID_size, IndexType AXOM_UNUSED_PARAM(value_size) = 0)
+  {
+    m_values->resize(ID_size, m_stride);
+  }
 
   /*!
    * \brief Shrink the array so that there is no extra capacity.
    *
    * \post getIDCapacity() == getNumberOfIDs()
    */
-  void shrink()
-  { m_values->shrink(); }
+  void shrink() { m_values->shrink(); }
 
   /*!
    * \brief Get the resize ratio.
    */
-  double getResizeRatio() const
-  { return m_values->getResizeRatio(); }
+  double getResizeRatio() const { return m_values->getResizeRatio(); }
 
   /*!
    * \brief Set the resize ratio.
@@ -464,34 +468,29 @@ public:
    *
    * \post getResizeRatio() == ratio
    */
-  void setResizeRatio( double ratio )
-  { m_values->setResizeRatio( ratio ); }
+  void setResizeRatio(double ratio) { m_values->setResizeRatio(ratio); }
 
   /*!
    * \brief Checks if this CellConnecitivity instance has a variable number of
    *  values per ID.
    * \return false.
    */
-  bool hasVariableValuesPerID() const
-  { return false; }
+  bool hasVariableValuesPerID() const { return false; }
 
   /*!
    * \brief Return true if this ConnectivityArray instance is empty.
    */
-  bool empty() const
-  { return m_values->empty(); }
+  bool empty() const { return m_values->empty(); }
 
   /*!
    * \brief Return true iff constructed via the external constructor.
    */
-  bool isExternal() const
-  { return m_values->isExternal(); }
+  bool isExternal() const { return m_storageMode == StorageMode::External; }
 
   /*!
    * \brief Return true iff constructed via the sidre constructors.
    */
-  bool isInSidre() const
-  { return m_values->isInSidre(); }
+  bool isInSidre() const { return m_storageMode == StorageMode::Sidre; }
 
   /*
    * \brief Return a const pointer to the sidre::Group that holds the data
@@ -500,36 +499,42 @@ public:
 #ifdef AXOM_MINT_USE_SIDRE
   const sidre::Group* getGroup() const
   {
-    if ( !isInSidre() )
+    if(!isInSidre())
     {
       return nullptr;
     }
 
-    return static_cast<sidre::Array< IndexType >* >(m_values)->
-      getView()->getOwningGroup()->getParent();
+    return static_cast<sidre::MCArray<IndexType>*>(m_values.get())
+      ->getView()
+      ->getOwningGroup()
+      ->getParent();
   }
 #endif
 
-/// @}
+  /// @}
 
-/// \name Data Access Methods
-/// @{
+  /// \name Data Access Methods
+  /// @{
 
   /*!
    * \brief Returns the number of values for the given ID.
    *
    * \param [in] ID not used, does not need to be specified.
    */
-  IndexType getNumberOfValuesForID( IndexType AXOM_NOT_USED(ID)=0 ) const
-  { return m_stride; }
+  IndexType getNumberOfValuesForID(IndexType AXOM_UNUSED_PARAM(ID) = 0) const
+  {
+    return m_stride;
+  }
 
   /*!
    * \brief Returns the cell type of the given ID.
    *
    * \param [in] ID not used, does not need to be specified.
    */
-  CellType getIDType( IndexType AXOM_NOT_USED(ID)=0 ) const
-  { return m_cell_type;  }
+  CellType getIDType(IndexType AXOM_UNUSED_PARAM(ID) = 0) const
+  {
+    return m_cell_type;
+  }
 
   /*!
    * \brief Access operator for the values of the given ID.
@@ -544,16 +549,16 @@ public:
    */
   /// @{
 
-  IndexType* operator[]( IndexType ID )
+  IndexType* operator[](IndexType ID)
   {
-    SLIC_ASSERT( ( ID >= 0 ) && ( ID < getNumberOfIDs() ) );
-    return m_values->getData() + ID * m_stride;
+    SLIC_ASSERT((ID >= 0) && (ID < getNumberOfIDs()));
+    return m_values->data() + ID * m_stride;
   }
 
-  const IndexType* operator[]( IndexType ID ) const
+  const IndexType* operator[](IndexType ID) const
   {
-    SLIC_ASSERT( ( ID >= 0 ) && ( ID < getNumberOfIDs() ) );
-    return m_values->getData() + ID * m_stride;
+    SLIC_ASSERT((ID >= 0) && (ID < getNumberOfIDs()));
+    return m_values->data() + ID * m_stride;
   }
 
   /// @}
@@ -564,11 +569,9 @@ public:
    */
   /// @{
 
-  IndexType* getValuePtr()
-  { return m_values->getData(); }
+  IndexType* getValuePtr() { return m_values->data(); }
 
-  const IndexType* getValuePtr() const
-  { return m_values->getData(); }
+  const IndexType* getValuePtr() const { return m_values->data(); }
 
   /// @}
 
@@ -579,11 +582,9 @@ public:
    */
   /// @{
 
-  IndexType* getOffsetPtr()
-  { return nullptr; }
+  IndexType* getOffsetPtr() { return nullptr; }
 
-  const IndexType* getOffsetPtr() const
-  { return nullptr; }
+  const IndexType* getOffsetPtr() const { return nullptr; }
 
   /// @}
 
@@ -594,11 +595,9 @@ public:
    */
   /// @{
 
-  CellType* getTypePtr()
-  { return nullptr; }
+  CellType* getTypePtr() { return nullptr; }
 
-  const CellType* getTypePtr() const
-  { return nullptr; }
+  const CellType* getTypePtr() const { return nullptr; }
 
   /// @}
 
@@ -612,9 +611,12 @@ public:
    *
    * \pre values != nullptr
    */
-  void append( const IndexType* values, IndexType AXOM_NOT_USED(n_values)=0,
-               CellType AXOM_NOT_USED(type)=UNDEFINED_CELL )
-  { appendM( values, 1 ); }
+  void append(const IndexType* values,
+              IndexType AXOM_UNUSED_PARAM(n_values) = 0,
+              CellType AXOM_UNUSED_PARAM(type) = UNDEFINED_CELL)
+  {
+    appendM(values, 1);
+  }
 
   /*!
    * \brief Adds multiple IDs.
@@ -628,13 +630,14 @@ public:
    * \pre values != nullptr
    * \pre n_IDs >= 0
    */
-  void appendM( const IndexType* values, IndexType n_IDs,
-                const IndexType* AXOM_NOT_USED(offsets)=nullptr,
-                const CellType* AXOM_NOT_USED(types)=nullptr )
+  void appendM(const IndexType* values,
+               IndexType n_IDs,
+               const IndexType* AXOM_UNUSED_PARAM(offsets) = nullptr,
+               const CellType* AXOM_UNUSED_PARAM(types) = nullptr)
   {
-    SLIC_ASSERT( values != nullptr );
-    SLIC_ASSERT( n_IDs >= 0 );
-    m_values->append( values, n_IDs );
+    SLIC_ASSERT(values != nullptr);
+    SLIC_ASSERT(n_IDs >= 0);
+    m_values->append(ArrayView<const IndexType, 2>(values, {n_IDs, m_stride}));
   }
 
   /*!
@@ -647,12 +650,12 @@ public:
    * \pre ID >= 0 && ID < getNumberOfIDs()
    * \pre values != nullptr
    */
-  void set( const IndexType* values, IndexType ID )
+  void set(const IndexType* values, IndexType ID)
   {
-    SLIC_ASSERT( ID >= 0 );
-    SLIC_ASSERT( ID < getNumberOfIDs() );
-    SLIC_ASSERT( values != nullptr );
-    m_values->set( values, 1, ID );
+    SLIC_ASSERT(ID >= 0);
+    SLIC_ASSERT(ID < getNumberOfIDs());
+    SLIC_ASSERT(values != nullptr);
+    m_values->set(values, m_stride, ID * m_stride);
   }
 
   /*!
@@ -666,12 +669,12 @@ public:
    * \pre start_ID >= 0 && start_ID + n_IDs < getNumberOfIDs()
    * \pre values != nullptr
    */
-  void setM( const IndexType* values, IndexType start_ID, IndexType n_IDs )
+  void setM(const IndexType* values, IndexType start_ID, IndexType n_IDs)
   {
-    SLIC_ASSERT( start_ID >= 0 );
-    SLIC_ASSERT( start_ID + n_IDs <= getNumberOfIDs() );
-    SLIC_ASSERT( values != nullptr );
-    m_values->set( values, n_IDs, start_ID );
+    SLIC_ASSERT(start_ID >= 0);
+    SLIC_ASSERT(start_ID + n_IDs <= getNumberOfIDs());
+    SLIC_ASSERT(values != nullptr);
+    m_values->set(values, n_IDs * m_stride, start_ID * m_stride);
   }
 
   /*!
@@ -686,10 +689,13 @@ public:
    * \pre start_ID >= 0 && start_ID <= getNumberOfIDs()
    * \pre values != nullptr
    */
-  void insert( const IndexType* values, IndexType start_ID,
-               IndexType AXOM_NOT_USED(n_values)=0,
-               CellType AXOM_NOT_USED(type)=UNDEFINED_CELL )
-  { insertM( values, start_ID, 1 ); }
+  void insert(const IndexType* values,
+              IndexType start_ID,
+              IndexType AXOM_UNUSED_PARAM(n_values) = 0,
+              CellType AXOM_UNUSED_PARAM(type) = UNDEFINED_CELL)
+  {
+    insertM(values, start_ID, 1);
+  }
 
   /*!
    * \brief Insert the values of multiple IDs before the given ID.
@@ -705,33 +711,38 @@ public:
    * \pre n_IDs >= 0
    * \pre values != nullptr
    */
-  void insertM( const IndexType* values, IndexType start_ID, IndexType n_IDs,
-                const IndexType* AXOM_NOT_USED(offsets)=nullptr,
-                const CellType* AXOM_NOT_USED(types)=nullptr )
+  void insertM(const IndexType* values,
+               IndexType start_ID,
+               IndexType n_IDs,
+               const IndexType* AXOM_UNUSED_PARAM(offsets) = nullptr,
+               const CellType* AXOM_UNUSED_PARAM(types) = nullptr)
   {
-    SLIC_ASSERT( start_ID >= 0 );
-    SLIC_ASSERT( start_ID <= getNumberOfIDs() );
-    SLIC_ASSERT( values != nullptr );
-    m_values->insert( values, n_IDs, start_ID );
+    SLIC_ASSERT(start_ID >= 0);
+    SLIC_ASSERT(start_ID <= getNumberOfIDs());
+    SLIC_ASSERT(values != nullptr);
+    m_values->insert(start_ID * m_stride,
+                     ArrayView<const IndexType, 2>(values, {n_IDs, m_stride}));
   }
 
-/// @}
+  /// @}
 
 private:
-
   CellType m_cell_type;
   IndexType m_stride;
-  Array< IndexType >* m_values;
+  StorageMode m_storageMode;
+  // We keep a unique_ptr to an axom::Array to polymorphically hold:
+  //  * axom::Array if we own the memory
+  //  * sidre::Array if the memory is stored in Sidre
+  //  * mint::utilities::ExternalArray if the memory is externally-owned
+  std::unique_ptr<axom::Array<IndexType, 2>> m_values;
 
-  DISABLE_COPY_AND_ASSIGNMENT( ConnectivityArray );
-  DISABLE_MOVE_AND_ASSIGNMENT( ConnectivityArray );
+  DISABLE_COPY_AND_ASSIGNMENT(ConnectivityArray);
+  DISABLE_MOVE_AND_ASSIGNMENT(ConnectivityArray);
 };
-
 
 } /* namespace mint */
 } /* namespace axom */
 
-#include "axom/mint/mesh/internal/ConnectivityArray_indirection.hpp"
 #include "axom/mint/mesh/internal/ConnectivityArray_typed_indirection.hpp"
 
 #endif /* MINT_ConnectivityArray_HPP_ */

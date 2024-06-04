@@ -1,29 +1,27 @@
-// Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC and
-// other Axom Project Developers. See the top-level COPYRIGHT file for details.
+// Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
+// other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
-#ifndef NUMERIC_ARRAY_HPP_
-#define NUMERIC_ARRAY_HPP_
+#ifndef AXOM_PRIMAL_NUMERIC_ARRAY_HPP_
+#define AXOM_PRIMAL_NUMERIC_ARRAY_HPP_
 
 #include "axom/core/Macros.hpp"
-
 #include "axom/core/utilities/Utilities.hpp"
-
 #include "axom/slic/interface/slic.hpp"
 
 // C/C++ includes
-#include <cstring>    // For memcpy()
-#include <algorithm>  // For std:: copy and fill
-#include <ostream>    // For print() and operator <<
+#include <algorithm>
+#include <ostream>
+#include <initializer_list>
+#include "axom/fmt.hpp"
 
 namespace axom
 {
 namespace primal
 {
-
 // Forward declare the templated classes and operator functions
-template < typename T, int SIZE >
+template <typename T, int SIZE>
 class NumericArray;
 
 /// \name Forward Declared Overloaded Operators
@@ -35,9 +33,9 @@ class NumericArray;
  * \param [in] rhs numeric array instance on the right-hand side.
  * \return status true if lhs==rhs, otherwise, false.
  */
-template < typename T,int SIZE >
-bool operator==( const NumericArray< T,SIZE >& lhs,
-                 const NumericArray< T,SIZE >& rhs );
+template <typename T, int SIZE>
+AXOM_HOST_DEVICE bool operator==(const NumericArray<T, SIZE>& lhs,
+                                 const NumericArray<T, SIZE>& rhs);
 
 /*!
  * \brief Checks if two numeric arrays are *not* component-wise equal.
@@ -45,9 +43,9 @@ bool operator==( const NumericArray< T,SIZE >& lhs,
  * \param [in] rhs numeric array instance on the right-hand side.
  * \return status true if lhs!=rhs, otherwise, false.
  */
-template < typename T,int SIZE >
-bool operator!=( const NumericArray< T,SIZE >& lhs,
-                 const NumericArray< T,SIZE >& rhs);
+template <typename T, int SIZE>
+bool operator!=(const NumericArray<T, SIZE>& lhs,
+                const NumericArray<T, SIZE>& rhs);
 
 /*!
  * \brief Performs component-wise addition of two numeric arrays.
@@ -55,9 +53,9 @@ bool operator!=( const NumericArray< T,SIZE >& lhs,
  * \param [in] rhs numeric array instance on the right-hand side.
  * \return C resulting numeric array from the component-wise addition.
  */
-template < typename T,int SIZE >
-NumericArray< T,SIZE > operator+( const NumericArray< T,SIZE >& lhs,
-                                  const NumericArray< T,SIZE >& rhs  );
+template <typename T, int SIZE>
+AXOM_HOST_DEVICE NumericArray<T, SIZE> operator+(const NumericArray<T, SIZE>& lhs,
+                                                 const NumericArray<T, SIZE>& rhs);
 
 /*!
  * \brief Performs component-wise subtraction of two numeric arrays.
@@ -65,17 +63,17 @@ NumericArray< T,SIZE > operator+( const NumericArray< T,SIZE >& lhs,
  * \param [in] rhs numeric array instance on the right-hand side.
  * \result C resulting numeric array from component-wise subtraction.
  */
-template < typename T,int SIZE >
-NumericArray< T,SIZE > operator-( const NumericArray< T,SIZE >& lhs,
-                                  const NumericArray< T,SIZE >& rhs  );
+template <typename T, int SIZE>
+AXOM_HOST_DEVICE NumericArray<T, SIZE> operator-(const NumericArray<T, SIZE>& lhs,
+                                                 const NumericArray<T, SIZE>& rhs);
 
 /*!
  * \brief Unary negation of a numeric array instance.
  * \param [in] arr numeric array instance on the left-hand side.
  * \result C resulting numeric array from unary negation.
  */
-template < typename T,int SIZE >
-NumericArray< T,SIZE > operator-( const NumericArray< T,SIZE >& arr );
+template <typename T, int SIZE>
+NumericArray<T, SIZE> operator-(const NumericArray<T, SIZE>& arr);
 
 /*!
  * \brief Scalar multiplication a numeric array; Scalar on rhs.
@@ -83,9 +81,8 @@ NumericArray< T,SIZE > operator-( const NumericArray< T,SIZE >& arr );
  * \param [in] scalar user-supplied scalar.
  * \return C resutling numeric array, \f$ \ni: C_i = scalar*arr_i, \forall i\f$
  */
-template < typename T,int SIZE >
-NumericArray< T,SIZE > operator*( const NumericArray< T, SIZE > & arr,
-                                  double scalar );
+template <typename T, int SIZE>
+NumericArray<T, SIZE> operator*(const NumericArray<T, SIZE>& arr, double scalar);
 
 /*!
  * \brief Scalar multiplication a numeric array; Scalar on lhs.
@@ -93,9 +90,8 @@ NumericArray< T,SIZE > operator*( const NumericArray< T, SIZE > & arr,
  * \param [in] arr numeric array instance.
  * \return C resulting numeric array, \f$ \ni: C_i = scalar*arr_i, \forall i\f$
  */
-template < typename T,int SIZE >
-NumericArray< T,SIZE > operator*( double scalar,
-                                  const NumericArray< T, SIZE > & arr );
+template <typename T, int SIZE>
+NumericArray<T, SIZE> operator*(double scalar, const NumericArray<T, SIZE>& arr);
 
 /*!
  * \brief Component-wise multiplication of NumericArrays
@@ -103,9 +99,9 @@ NumericArray< T,SIZE > operator*( double scalar,
  * \param [in] rhs numeric array instance on the right-hand side.
  * \return C resulting numeric array, \f$ \ni: C_i = lhs_i * rhs_i, \forall i\f$
  */
-template < typename T,int SIZE >
-NumericArray< T,SIZE > operator*( const NumericArray< T, SIZE > & lhs,
-                                  const NumericArray< T, SIZE > & rhs  );
+template <typename T, int SIZE>
+AXOM_HOST_DEVICE NumericArray<T, SIZE> operator*(const NumericArray<T, SIZE>& lhs,
+                                                 const NumericArray<T, SIZE>& rhs);
 
 /*!
  * \brief Component-wise division of NumericArrays
@@ -114,9 +110,9 @@ NumericArray< T,SIZE > operator*( const NumericArray< T, SIZE > & lhs,
  * \return C resulting numeric array, \f$ \ni: C_i = lhs_i / rhs_i, \forall i\f$
  * \pre \f$ rhs_i != 0.0, \forall i \f$
  */
-template < typename T,int SIZE >
-NumericArray< T,SIZE > operator/( const NumericArray< T, SIZE > & lhs,
-                                  const NumericArray< T, SIZE > & rhs  );
+template <typename T, int SIZE>
+NumericArray<T, SIZE> operator/(const NumericArray<T, SIZE>& lhs,
+                                const NumericArray<T, SIZE>& rhs);
 
 /*!
  * \brief Scalar division of NumericArray; Scalar on rhs
@@ -125,9 +121,8 @@ NumericArray< T,SIZE > operator/( const NumericArray< T, SIZE > & lhs,
  * \return C resulting numeric array, \f$ \ni: C_i = arr_i/scalar, \forall i\f$
  * \pre scalar != 0.0
  */
-template < typename T,int SIZE >
-NumericArray< T,SIZE > operator/( const NumericArray< T, SIZE >& arr,
-                                  double scalar );
+template <typename T, int SIZE>
+NumericArray<T, SIZE> operator/(const NumericArray<T, SIZE>& arr, double scalar);
 
 /*!
  * \brief Coordinate-wise absolute value on the NumericArray
@@ -135,17 +130,16 @@ NumericArray< T,SIZE > operator/( const NumericArray< T, SIZE >& arr,
  * \pre std::abs is defined for template type T
  * \return A NumericArray whose coordinates are the absolute value of arr
  */
-template < typename T,int SIZE >
-NumericArray< T,SIZE > abs( const NumericArray< T, SIZE >& arr);
+template <typename T, int SIZE>
+NumericArray<T, SIZE> abs(const NumericArray<T, SIZE>& arr);
 
 /*!
  * \brief Overloaded output operator for numeric arrays
  * \param [in] os C++ output stream
  * \param [in] arr numeric array instance.
  */
-template < typename T,int SIZE >
-std::ostream& operator<<( std::ostream & os,
-                          const NumericArray< T,SIZE > & arr );
+template <typename T, int SIZE>
+std::ostream& operator<<(std::ostream& os, const NumericArray<T, SIZE>& arr);
 
 ///@}
 
@@ -153,27 +147,28 @@ std::ostream& operator<<( std::ostream & os,
  * \brief Type trait to avoid outputting chars when a value is expected
  *  This avoids unintentionally outputting system beeps
  */
-template < typename T >
+template <typename T>
 struct NonChar
 {
-  typedef T type;     /** The non-char type to return */
+  using type = T;  // The non-char type to return
 };
 
-template < >
-struct NonChar< char >
+template <>
+struct NonChar<char>
 {
   /** A non-char signed type to which we can cast a char for output */
-  typedef int type;
+  using type = int;
 };
 
-template < >
-struct NonChar < unsigned char >
+template <>
+struct NonChar<unsigned char>
 {
   /** A non-char unsigned type to which we can cast a char for output */
-  typedef unsigned int type;
+  using type = unsigned int;
 };
 
 /*!
+ * \accelerated
  * \class NumericArray
  *
  * \brief A simple statically sized array of data with component-wise operators.
@@ -181,19 +176,10 @@ struct NonChar < unsigned char >
  * \tparam T the numeric type of the elements in the array, e.g., float, double.
  * \tparam SIZE the size of the array
  */
-template < typename T,int SIZE >
-class NumericArray
+template <typename T, int SIZE>
+class NumericArray  // NOLINT
 {
 public:
-  enum
-  {
-    NBYTES = SIZE*sizeof(T)
-  };
-
-public:
-
-  // -- TODO: Add static_assert that T has numeric type --
-
   /*!
    * \brief Fill the first sz coordinates with val and zeros the rest
    * \param [in] val The value to set the coordinates to. Defaults to zero.
@@ -201,7 +187,9 @@ public:
    * The rest will be set to zero.  Defaults is SIZE.
    * If sz is greater than SIZE, we set all coordinates to val
    */
-  explicit NumericArray( T val = T(), int sz = SIZE);
+  AXOM_SUPPRESS_HD_WARN
+  AXOM_HOST_DEVICE
+  explicit NumericArray(T val = T(), int sz = SIZE);
 
   /*!
    * \brief Creates a numeric array from the first sz values of the input array.
@@ -209,18 +197,19 @@ public:
    * \param [in] sz number of coordinates. Defaults to SIZE.
    * \note If sz is greater than SIZE, we only take the first SIZE values.
    */
-  NumericArray(const T* vals, int sz = SIZE);
+  AXOM_SUPPRESS_HD_WARN
+  AXOM_HOST_DEVICE
+  explicit NumericArray(const T* vals, int sz = SIZE);
 
   /*!
-   * \brief Copy constructor.
-   * \param [in] other The numeric array to copy
+   * \brief Creates a numeric array from an initializer list
+   * \param [in] values an initializer list containing the values of the
+   * array. If the size is not the same as the size of this array, this
+   * behaves the same way as the constructor which takes a pointer and size.
    */
-  NumericArray( const NumericArray& other ) { *this = other; };
-
-  /*!
-   * \brief Destructor.
-   */
-  ~NumericArray() { }
+  NumericArray(std::initializer_list<T> values)
+    : NumericArray {values.begin(), static_cast<int>(values.size())}
+  { }
 
   /*!
    * \brief Returns the dimension of this numeric array instance.
@@ -230,33 +219,33 @@ public:
   static int size() { return SIZE; };
 
   /*!
-   * \brief Assignment operator.
-   * \param [in] rhs a numeric array instance on the right hand side.
-   */
-  NumericArray& operator=(const NumericArray& rhs);
-
-  /*!
    * \brief Access operator for individual components.
    * \param [in] i the component index to access
    * \return \f$ p_i \f$ the value at the given component index.
    * \pre \f$  0 \le i < SIZE \f$
    */
+  AXOM_HOST_DEVICE
   const T& operator[](int i) const;
+
+  AXOM_HOST_DEVICE
   T& operator[](int i);
 
   /*!
    * \brief Returns a pointer to the underlying data.
    */
+  AXOM_HOST_DEVICE
   const T* data() const;
+
+  AXOM_HOST_DEVICE
   T* data();
 
   /*!
-   *
    * \brief Copy the coordinate data to the provided array
    * \param [in] arr The array to which we are copying.
    * \pre The user needs to make sure that the provided array has been allocated
    * and has sufficient space for SIZE coordinates.
    */
+  AXOM_HOST_DEVICE
   void to_array(T* arr) const;
 
   /*!
@@ -272,7 +261,8 @@ public:
    * Adds the numeric array arr to this instance (component-wise).
    * \return A reference to the NumericArray instance after addition.
    */
-  NumericArray< T,SIZE >& operator+=( const NumericArray< T,SIZE >& arr );
+  AXOM_HOST_DEVICE
+  NumericArray& operator+=(const NumericArray& arr);
 
   /*!
    * \brief Component-wise subtraction assignment operator.
@@ -280,7 +270,8 @@ public:
    * Subtracts the numeric array arr from this instance (component-wise).
    * \return A reference to the NumericArray instance after subtraction.
    */
-  NumericArray< T,SIZE >& operator-=( const NumericArray< T,SIZE >& arr );
+  AXOM_HOST_DEVICE
+  NumericArray& operator-=(const NumericArray& arr);
 
   /*!
    * \brief Scalar multiplication on the NumericArray instance.
@@ -289,7 +280,8 @@ public:
    * \return A reference to the NumericArray instance after scalar
    * multiplication.
    */
-  NumericArray< T,SIZE >& operator*=(double scalar);
+  AXOM_HOST_DEVICE
+  NumericArray& operator*=(double scalar);
 
   /*!
    * \brief Scalar division on the NumericArray instance.
@@ -298,7 +290,8 @@ public:
    * Each element of the numeric array is divided by scalar
    * \return A reference to the NumericArray instance after scalar division.
    */
-  NumericArray< T,SIZE >& operator/=(double scalar);
+  AXOM_HOST_DEVICE
+  NumericArray& operator/=(double scalar);
 
   /*!
    * \brief Component-wise multiplication assignment operator.
@@ -307,7 +300,8 @@ public:
    * \return A reference to the NumericArray instance after cwise
    * multiplication.
    */
-  NumericArray< T,SIZE >& operator*=( const NumericArray< T,SIZE >& arr );
+  AXOM_HOST_DEVICE
+  NumericArray& operator*=(const NumericArray& arr);
 
   /*!
    * \brief Component-wise division assignment operator.
@@ -316,7 +310,7 @@ public:
    * \pre forall i, arr[i] != 0
    * \return A reference to the NumericArray instance after cwise division.
    */
-  NumericArray< T,SIZE >& operator/=( const NumericArray< T,SIZE >& arr );
+  NumericArray& operator/=(const NumericArray& arr);
 
   /*!
    * \brief Ensures that the highest value of the coordinates is at most
@@ -326,7 +320,7 @@ public:
    * \post forall i, arr[i] <= upperVal
    * \return A reference to the NumericArray instance after clamping upper
    */
-  NumericArray< T,SIZE >& clampUpper( const T& upperVal);
+  NumericArray& clampUpper(const T& upperVal);
 
   /*!
    * \brief Ensures that the lowest value of the coordinates is at least
@@ -338,7 +332,7 @@ public:
    *
    * \return A reference to the NumericArray instance after clamping lower
    */
-  NumericArray< T,SIZE >& clampLower( const T& lowerVal);
+  NumericArray& clampLower(const T& lowerVal);
 
   /*!
    * \brief Ensures that each coordinate's value is in range
@@ -352,7 +346,7 @@ public:
    *
    * \return A reference to the NumericArray instance after clamping
    */
-  NumericArray< T,SIZE >& clamp( const T& lowerVal, const T& upperVal);
+  NumericArray& clamp(const T& lowerVal, const T& upperVal);
 
   /*!
    * \brief Find the max component.
@@ -378,19 +372,22 @@ public:
    */
   int argMin() const;
 
+  /// \brief Computes the sum of the components
+  T sum() const;
+
 private:
+  AXOM_HOST_DEVICE
   void verifyIndex(int AXOM_DEBUG_PARAM(idx)) const
   {
     SLIC_ASSERT(idx >= 0 && idx < SIZE);
   }
 
 protected:
-  T m_components[ SIZE ];    /*! The encapsulated array */
+  T m_components[SIZE];  /// The encapsulated array
 };
 
-} /* namespace primal */
-
-} /* namespace axom */
+}  // namespace primal
+}  // namespace axom
 
 //------------------------------------------------------------------------------
 //  NumericArray implementation
@@ -400,111 +397,100 @@ namespace axom
 {
 namespace primal
 {
-
 //------------------------------------------------------------------------------
-template < typename T, int SIZE >
-NumericArray< T,SIZE >::NumericArray(T val, int sz)
+template <typename T, int SIZE>
+AXOM_HOST_DEVICE NumericArray<T, SIZE>::NumericArray(T val, int sz)
 {
   // NOTE (KW): This should be a static assert in the class
-  SLIC_ASSERT( SIZE >= 1 );
+  SLIC_ASSERT(SIZE >= 1);
 
   // Fill first nvals coordinates with val ( 0 <= nvals <= SIZE )
   const int nvals = axom::utilities::clampVal(sz, 0, SIZE);
-  std::fill( m_components, m_components+nvals, val );
+  for(int i = 0; i < nvals; i++)
+  {
+    m_components[i] = val;
+  }
 
   // Fill any remaining coordinates with zero
-  if ( nvals < SIZE )
+  for(int j = nvals; j < SIZE; j++)
   {
-    std::fill( m_components+nvals, m_components+SIZE, T() );
+    m_components[j] = T();
   }
 }
 
 //------------------------------------------------------------------------------
-template < typename T,int SIZE >
-NumericArray< T, SIZE >::NumericArray(const T* vals, int sz)
+template <typename T, int SIZE>
+AXOM_HOST_DEVICE NumericArray<T, SIZE>::NumericArray(const T* vals, int sz)
 {
-  SLIC_ASSERT( SIZE >= 1 );
+  SLIC_ASSERT(SIZE >= 1);
 
   const int nvals = axom::utilities::clampVal(sz, 0, SIZE);
 
   // Copy first nvals coordinates from vals array ( 0 <= nvals <= SIZE )
-  std::copy( vals, vals+nvals, m_components);
+  for(int i = 0; i < nvals; i++)
+  {
+    m_components[i] = vals[i];
+  }
 
   // Fill any remaining coordinates with zero
-  if ( nvals < SIZE)
+  for(int j = nvals; j < SIZE; j++)
   {
-    std::fill( m_components+nvals, m_components+SIZE, T());
+    m_components[j] = T();
   }
-
 }
 
 //------------------------------------------------------------------------------
-template < typename T,int SIZE >
-inline NumericArray< T,SIZE >&
-NumericArray< T,SIZE >::operator=( const NumericArray< T,SIZE >& rhs )
-{
-
-  if ( this == &rhs )
-  {
-    return *this;
-  }
-
-  // copy all the data
-  memcpy( m_components, rhs.m_components, NBYTES);
-  return *this;
-}
-
-//------------------------------------------------------------------------------
-template < typename T,int SIZE >
-inline T& NumericArray< T,SIZE >::operator[](int i)
+template <typename T, int SIZE>
+AXOM_HOST_DEVICE inline T& NumericArray<T, SIZE>::operator[](int i)
 {
   verifyIndex(i);
-  return m_components[ i ];
+  return m_components[i];
 }
 
 //------------------------------------------------------------------------------
-template < typename T,int SIZE >
-inline const T& NumericArray< T,SIZE >::operator[](int i) const
+template <typename T, int SIZE>
+AXOM_HOST_DEVICE inline const T& NumericArray<T, SIZE>::operator[](int i) const
 {
   verifyIndex(i);
-  return m_components[ i ];
+  return m_components[i];
 }
 
 //------------------------------------------------------------------------------
-template < typename T,int SIZE >
-inline const T* NumericArray< T,SIZE >::data() const
+template <typename T, int SIZE>
+AXOM_HOST_DEVICE inline const T* NumericArray<T, SIZE>::data() const
 {
   return m_components;
 }
 
 //------------------------------------------------------------------------------
-template < typename T,int SIZE >
-inline T* NumericArray< T,SIZE >::data()
+template <typename T, int SIZE>
+AXOM_HOST_DEVICE inline T* NumericArray<T, SIZE>::data()
 {
   return m_components;
 }
 
 //------------------------------------------------------------------------------
-template < typename T,int SIZE >
-void NumericArray< T,SIZE >::to_array(T* arr) const
+template <typename T, int SIZE>
+AXOM_HOST_DEVICE void NumericArray<T, SIZE>::to_array(T* arr) const
 {
-  SLIC_ASSERT( arr != nullptr);
-  memcpy( arr, m_components, NBYTES );
+  SLIC_ASSERT(arr != nullptr);
+  for(int dim = 0; dim < SIZE; ++dim)
+  {
+    arr[dim] = m_components[dim];
+  }
 }
 
 //------------------------------------------------------------------------------
-template < typename T,int SIZE >
-std::ostream& NumericArray< T, SIZE >::print(std::ostream& os) const
+template <typename T, int SIZE>
+std::ostream& NumericArray<T, SIZE>::print(std::ostream& os) const
 {
-  os <<"[ ";
-  for (int dim=0 ; dim < SIZE -1 ; ++dim)
+  os << "[ ";
+  for(int dim = 0; dim < SIZE - 1; ++dim)
   {
-    os << static_cast< typename NonChar< T >::type >( m_components[dim] )
-       << " ";
+    os << static_cast<typename NonChar<T>::type>(m_components[dim]) << " ";
   }
 
-  os << static_cast< typename NonChar< T >::type >(m_components[SIZE-1])
-     << "]";
+  os << static_cast<typename NonChar<T>::type>(m_components[SIZE - 1]) << "]";
 
   return os;
 }
@@ -513,169 +499,164 @@ std::ostream& NumericArray< T, SIZE >::print(std::ostream& os) const
 // Member function arithmetic operators (component-wise)
 //------------------------------------------------------------------------------
 
-template < typename T,int SIZE >
-inline NumericArray< T,SIZE >&
-NumericArray< T,SIZE >::operator*=( double scalar )
+template <typename T, int SIZE>
+AXOM_HOST_DEVICE inline NumericArray<T, SIZE>& NumericArray<T, SIZE>::operator*=(
+  double scalar)
 {
-  for ( int i=0 ; i < SIZE ; ++i )
+  for(int i = 0; i < SIZE; ++i)
   {
-    m_components[ i ] = static_cast<T>(m_components[ i ] * scalar);
+    m_components[i] = static_cast<T>(m_components[i] * scalar);
   }
 
   return *this;
 }
 
 //------------------------------------------------------------------------------
-template < typename T,int SIZE >
-inline NumericArray< T,SIZE >&
-NumericArray< T,SIZE >::operator/=( double scalar )
+template <typename T, int SIZE>
+AXOM_HOST_DEVICE inline NumericArray<T, SIZE>& NumericArray<T, SIZE>::operator/=(
+  double scalar)
 {
   SLIC_ASSERT(scalar != 0.);
-  return operator*=( 1./scalar );
+  return operator*=(1. / scalar);
 }
 
 //------------------------------------------------------------------------------
-template < typename T, int SIZE >
-inline NumericArray< T,SIZE >&
-NumericArray< T,SIZE >::operator*=(const NumericArray< T,SIZE >& v)
+template <typename T, int SIZE>
+AXOM_HOST_DEVICE inline NumericArray<T, SIZE>& NumericArray<T, SIZE>::operator*=(
+  const NumericArray<T, SIZE>& v)
 {
-  for ( int i=0 ; i < SIZE ; ++i )
+  for(int i = 0; i < SIZE; ++i)
   {
-    m_components[ i ] *=  v[ i ];
+    m_components[i] *= v[i];
   }
 
   return *this;
 }
 
 //------------------------------------------------------------------------------
-template < typename T,int SIZE >
-inline NumericArray<  T,SIZE >&
-NumericArray< T,SIZE >::operator/=( const NumericArray< T,SIZE >& v )
+template <typename T, int SIZE>
+inline NumericArray<T, SIZE>& NumericArray<T, SIZE>::operator/=(
+  const NumericArray<T, SIZE>& v)
 {
-  for ( int i=0 ; i < SIZE ; ++i )
+  for(int i = 0; i < SIZE; ++i)
   {
-    SLIC_ASSERT( v[ i ] != 0.);
-    m_components[ i ] /=  v[ i ];
+    SLIC_ASSERT(v[i] != 0.);
+    m_components[i] /= v[i];
   }
 
   return *this;
 }
 
 //------------------------------------------------------------------------------
-template < typename T,int SIZE >
-inline NumericArray< T,SIZE >&
-NumericArray< T,SIZE >::operator+=(const NumericArray< T,SIZE >& v)
+template <typename T, int SIZE>
+AXOM_HOST_DEVICE inline NumericArray<T, SIZE>& NumericArray<T, SIZE>::operator+=(
+  const NumericArray<T, SIZE>& v)
 {
-  for ( int i=0 ; i < SIZE ; ++i )
+  for(int i = 0; i < SIZE; ++i)
   {
-    m_components[ i ] +=  v[ i ];
+    m_components[i] += v[i];
   }
 
   return *this;
 }
 
 //------------------------------------------------------------------------------
-template < typename T, int SIZE >
-inline NumericArray< T, SIZE >&
-NumericArray< T,SIZE >::operator-=(const NumericArray< T,SIZE >& v)
+template <typename T, int SIZE>
+AXOM_HOST_DEVICE inline NumericArray<T, SIZE>& NumericArray<T, SIZE>::operator-=(
+  const NumericArray<T, SIZE>& v)
 {
-  for ( int i=0 ; i < SIZE ; ++i )
+  for(int i = 0; i < SIZE; ++i)
   {
-    m_components[ i ] -= v[ i ];
+    m_components[i] -= v[i];
   }
 
   return *this;
 }
 
 //------------------------------------------------------------------------------
-template < typename T,int SIZE >
-inline NumericArray< T, SIZE >&
-NumericArray< T,SIZE >::clamp( const T& lowerVal, const T& upperVal )
+template <typename T, int SIZE>
+inline NumericArray<T, SIZE>& NumericArray<T, SIZE>::clamp(const T& lowerVal,
+                                                           const T& upperVal)
 {
-  SLIC_ASSERT( lowerVal <= upperVal);
+  SLIC_ASSERT(lowerVal <= upperVal);
 
-  for ( int i=0 ; i < SIZE ; ++i )
+  for(int i = 0; i < SIZE; ++i)
   {
-    m_components[ i ] =
-      axom::utilities::clampVal(m_components[ i ],lowerVal, upperVal);
+    m_components[i] =
+      axom::utilities::clampVal(m_components[i], lowerVal, upperVal);
   }
 
   return *this;
 }
 
 //------------------------------------------------------------------------------
-template < typename T,int SIZE >
-inline NumericArray< T,SIZE >&
-NumericArray< T,SIZE >::clampLower( const T& lowerVal)
+template <typename T, int SIZE>
+inline NumericArray<T, SIZE>& NumericArray<T, SIZE>::clampLower(const T& lowerVal)
 {
-  for ( int i=0 ; i < SIZE ; ++i )
+  for(int i = 0; i < SIZE; ++i)
   {
-    m_components[ i ] = std::max( m_components[ i ], lowerVal);
+    m_components[i] = std::max(m_components[i], lowerVal);
   }
 
   return *this;
 }
 
 //------------------------------------------------------------------------------
-template < typename T,int SIZE >
-inline NumericArray< T,SIZE >&
-NumericArray< T,SIZE >::clampUpper( const T& upperVal)
+template <typename T, int SIZE>
+inline NumericArray<T, SIZE>& NumericArray<T, SIZE>::clampUpper(const T& upperVal)
 {
-  for ( int i=0 ; i < SIZE ; ++i )
+  for(int i = 0; i < SIZE; ++i)
   {
-    m_components[ i ] = std::min( m_components[ i ], upperVal);
+    m_components[i] = std::min(m_components[i], upperVal);
   }
 
   return *this;
 }
 
 //------------------------------------------------------------------------------
-template < typename T,int SIZE >
-inline T NumericArray< T,SIZE >::max() const
+template <typename T, int SIZE>
+inline T NumericArray<T, SIZE>::max() const
 {
   T result = this->m_components[0];
-  for ( int i=1 ; i < SIZE ; ++i )
+  for(int i = 1; i < SIZE; ++i)
   {
-
     T tmp = m_components[i];
 
-    if ( tmp > result)
+    if(tmp > result)
     {
       result = tmp;
     }
-
   }
 
   return result;
 }
 
 //------------------------------------------------------------------------------
-template < typename T,int SIZE >
-inline T NumericArray< T,SIZE >::min() const
+template <typename T, int SIZE>
+inline T NumericArray<T, SIZE>::min() const
 {
   T result = this->m_components[0];
-  for ( int i=1 ; i < SIZE ; ++i )
+  for(int i = 1; i < SIZE; ++i)
   {
     T tmp = this->m_components[i];
 
-    if ( tmp < result)
+    if(tmp < result)
     {
       result = tmp;
     }
-
   }
 
   return result;
 }
 
 //------------------------------------------------------------------------------
-template < typename T,int SIZE >
-inline int NumericArray< T,SIZE >::argMax() const
+template <typename T, int SIZE>
+inline int NumericArray<T, SIZE>::argMax() const
 {
   int idx = 0;
-  for ( int i=1 ; i < SIZE ; ++i )
+  for(int i = 1; i < SIZE; ++i)
   {
-    if ( m_components[i] > m_components[idx])
+    if(m_components[i] > m_components[idx])
     {
       idx = i;
     }
@@ -685,32 +666,45 @@ inline int NumericArray< T,SIZE >::argMax() const
 }
 
 //------------------------------------------------------------------------------
-template < typename T,int SIZE >
-inline int NumericArray< T,SIZE >::argMin() const
+template <typename T, int SIZE>
+inline int NumericArray<T, SIZE>::argMin() const
 {
   int idx = 0;
-  for ( int i=1 ; i < SIZE ; ++i )
+  for(int i = 1; i < SIZE; ++i)
   {
-    if ( m_components[i] < m_components[idx] )
+    if(m_components[i] < m_components[idx])
     {
       idx = i;
     }
   }
 
   return idx;
+}
+
+//------------------------------------------------------------------------------
+template <typename T, int SIZE>
+inline T NumericArray<T, SIZE>::sum() const
+{
+  T result {};
+  for(int i = 0; i < SIZE; ++i)
+  {
+    result += this->m_components[i];
+  }
+
+  return result;
 }
 
 //------------------------------------------------------------------------------
 /// Free functions implementing comparison and arithmetic operators
 //------------------------------------------------------------------------------
 
-template < typename T,int SIZE >
-bool operator==( const NumericArray< T,SIZE >& lhs,
-                 const NumericArray< T,SIZE >& rhs)
+template <typename T, int SIZE>
+AXOM_HOST_DEVICE bool operator==(const NumericArray<T, SIZE>& lhs,
+                                 const NumericArray<T, SIZE>& rhs)
 {
-  for ( int dim=0 ; dim < SIZE ; ++dim )
+  for(int dim = 0; dim < SIZE; ++dim)
   {
-    if ( lhs[dim] != rhs[dim] )
+    if(lhs[dim] != rhs[dim])
     {
       return false;
     }
@@ -720,107 +714,109 @@ bool operator==( const NumericArray< T,SIZE >& lhs,
 }
 
 //------------------------------------------------------------------------------
-template < typename T,int SIZE >
-bool operator!=( const NumericArray< T,SIZE >& lhs,
-                 const NumericArray< T,SIZE >& rhs)
+template <typename T, int SIZE>
+bool operator!=(const NumericArray<T, SIZE>& lhs, const NumericArray<T, SIZE>& rhs)
 {
   return !(lhs == rhs);
 }
 
 //------------------------------------------------------------------------------
-template < typename T,int SIZE >
-std::ostream& operator<<(std::ostream & os, const NumericArray< T,SIZE > & arr)
+template <typename T, int SIZE>
+std::ostream& operator<<(std::ostream& os, const NumericArray<T, SIZE>& arr)
 {
   arr.print(os);
   return os;
 }
 
 //------------------------------------------------------------------------------
-template < typename T,int SIZE >
-inline NumericArray< T,SIZE > operator*( const NumericArray< T,SIZE >& arr,
-                                         double scalar)
+template <typename T, int SIZE>
+inline NumericArray<T, SIZE> operator*(const NumericArray<T, SIZE>& arr,
+                                       double scalar)
 {
-  NumericArray< T,SIZE > result(arr);
-  result *=scalar;
+  NumericArray<T, SIZE> result(arr);
+  result *= scalar;
   return result;
 }
 
 //------------------------------------------------------------------------------
-template < typename T,int SIZE >
-inline NumericArray< T,SIZE > operator*( double scalar,
-                                         const NumericArray< T,SIZE >& arr)
+template <typename T, int SIZE>
+inline NumericArray<T, SIZE> operator*(double scalar,
+                                       const NumericArray<T, SIZE>& arr)
 {
-  NumericArray< T, SIZE > result(arr);
-  result *=scalar;
+  NumericArray<T, SIZE> result(arr);
+  result *= scalar;
   return result;
 }
 
 //------------------------------------------------------------------------------
-template < typename T,int SIZE >
-inline NumericArray< T,SIZE > operator+( const NumericArray< T,SIZE >& lhs,
-                                         const NumericArray< T,SIZE >& rhs)
+template <typename T, int SIZE>
+AXOM_HOST_DEVICE inline NumericArray<T, SIZE> operator+(
+  const NumericArray<T, SIZE>& lhs,
+  const NumericArray<T, SIZE>& rhs)
 {
-  NumericArray< T, SIZE > result(lhs);
+  NumericArray<T, SIZE> result(lhs);
   result += rhs;
   return result;
 }
 
 //------------------------------------------------------------------------------
-template < typename T,int SIZE >
-inline NumericArray< T,SIZE > operator*( const NumericArray< T,SIZE >& lhs,
-                                         const NumericArray< T,SIZE >& rhs)
+template <typename T, int SIZE>
+AXOM_HOST_DEVICE inline NumericArray<T, SIZE> operator*(
+  const NumericArray<T, SIZE>& lhs,
+  const NumericArray<T, SIZE>& rhs)
 {
-  NumericArray< T,SIZE > result(lhs);
+  NumericArray<T, SIZE> result(lhs);
   result *= rhs;
   return result;
 }
 
 //------------------------------------------------------------------------------
-template < typename T,int SIZE >
-inline NumericArray< T,SIZE > operator/( const NumericArray< T,SIZE >& lhs,
-                                         const NumericArray< T,SIZE >& rhs)
+template <typename T, int SIZE>
+inline NumericArray<T, SIZE> operator/(const NumericArray<T, SIZE>& lhs,
+                                       const NumericArray<T, SIZE>& rhs)
 {
-  NumericArray< T,SIZE > result(lhs);
+  NumericArray<T, SIZE> result(lhs);
   result /= rhs;
   return result;
 }
 
 //------------------------------------------------------------------------------
-template < typename T,int SIZE >
-inline NumericArray< T,SIZE > operator/( const NumericArray< T,SIZE >& arr,
-                                         double scalar)
+template <typename T, int SIZE>
+inline NumericArray<T, SIZE> operator/(const NumericArray<T, SIZE>& arr,
+                                       double scalar)
 {
-  NumericArray< T, SIZE > result(arr);
-  result /=scalar;
+  NumericArray<T, SIZE> result(arr);
+  result /= scalar;
   return result;
 }
 
 //------------------------------------------------------------------------------
-template < typename T,int SIZE >
-inline NumericArray< T,SIZE > operator-( const NumericArray< T,SIZE >& lhs,
-                                         const NumericArray< T,SIZE >& rhs)
+template <typename T, int SIZE>
+AXOM_HOST_DEVICE inline NumericArray<T, SIZE> operator-(
+  const NumericArray<T, SIZE>& lhs,
+  const NumericArray<T, SIZE>& rhs)
 {
-  NumericArray< T,SIZE > result(lhs);
+  NumericArray<T, SIZE> result(lhs);
   result -= rhs;
   return result;
 }
 
 //------------------------------------------------------------------------------
-template < typename T,int SIZE >
-inline NumericArray< T,SIZE > operator-(const NumericArray< T,SIZE >& arr)
+template <typename T, int SIZE>
+inline NumericArray<T, SIZE> operator-(const NumericArray<T, SIZE>& arr)
 {
-  NumericArray< T, SIZE > result;
+  NumericArray<T, SIZE> result;
   result -= arr;
   return result;
 }
 
 //------------------------------------------------------------------------------
-template < typename T,int SIZE >
-inline NumericArray< T,SIZE > abs(const NumericArray< T,SIZE >& arr)
+template <typename T, int SIZE>
+inline NumericArray<T, SIZE> abs(const NumericArray<T, SIZE>& arr)
 {
-  NumericArray< T, SIZE > result(arr);
+  NumericArray<T, SIZE> result(arr);
 
-  for (int i=0 ; i<SIZE ; ++i)
+  for(int i = 0; i < SIZE; ++i)
   {
     result[i] = axom::utilities::abs(result[i]);
   }
@@ -828,8 +824,13 @@ inline NumericArray< T,SIZE > abs(const NumericArray< T,SIZE >& arr)
   return result;
 }
 
-} /* namespace primal*/
+}  // namespace primal
+}  // namespace axom
 
-} /* namespace axom */
+/// Overload to format a primal::NumericArray using fmt
+template <typename T, int NDIMS>
+struct axom::fmt::formatter<axom::primal::NumericArray<T, NDIMS>>
+  : ostream_formatter
+{ };
 
-#endif /* NUMERIC_ARRAY_HXX_ */
+#endif  // AXOM_PRIMAL_NUMERIC_ARRAY_HPP_

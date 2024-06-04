@@ -10,10 +10,10 @@ Combiner classes, as well as tell if the current node is supposed to output any 
 
 
 Functions
-#########
+---------
 
 General
-*******
+^^^^^^^
 
 ============== ===================
 Name           Description
@@ -26,7 +26,7 @@ ranksLimit     Gets the limit on individually tracked ranks
 ============== ===================
 
 Combiners
-*********
+^^^^^^^^^
 
 ============== ===================
 Name           Description
@@ -37,7 +37,7 @@ clearCombiners Removes all currently registered Combiners from Lumberjack
 ============== ===================
 
 Messages
-********
+^^^^^^^^
 
 ================== ===================
 Name               Description

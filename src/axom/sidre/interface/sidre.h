@@ -1,8 +1,7 @@
-// Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC and
-// other Axom Project Developers. See the top-level COPYRIGHT file for details.
+// Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
+// other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
-
 
 /**
  * @name sidre.h
@@ -19,6 +18,5 @@
 #include "axom/sidre/interface/c_fortran/wrapBuffer.h"
 #include "axom/sidre/interface/c_fortran/wrapGroup.h"
 #include "axom/sidre/interface/c_fortran/wrapView.h"
-
 
 #endif

@@ -10,12 +10,12 @@ A log file for each batch job will be created.
 After the jobs are finished search for `SUCCESS` or `ERROR`.
 
 The third-party-libraries will be built in the directory
-`/usr/WS1/axom/thirdparty_libs/builds/YYYY_MM_DD_HH_MM_SS`.
+`/usr/WS1/axom/libs/YYYY_MM_DD_HH_MM_SS`.
 When `uberenv` finished it will create some files with the suffix
 `.cmake` which must be copied into the `host-configs` directory.
 
 Then repeat for the CZ.  The libraries will be built in
-`/usr/WS1/axom/thirdparty_libs/builds/YYYY_MM_DD_HH_MM_SS`.
+`/usr/WS1/axom/libs/YYYY_MM_DD_HH_MM_SS`.
 
 ## How to test source for all compilers
 

@@ -1,0 +1,203 @@
+// Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
+// other Axom Project Developers. See the top-level LICENSE file for details.
+//
+// SPDX-License-Identifier: (BSD-3-Clause)
+
+#include "axom/config.hpp"
+#include "axom/core/utilities/About.hpp"
+#include "axom/core/Types.hpp"
+
+#include "axom/fmt.hpp"
+
+#include <iostream>
+#include <string>
+#include <vector>
+
+namespace axom
+{
+std::string gitSHA()
+{
+  // Note: This is generated at configure time so that
+  // when the sha changes it doesn't force a full rebuild
+  // of Axom. Do not add it to the config header.
+
+  return "@AXOM_GIT_SHA@";
+}
+
+void about() { about(std::cout); }
+
+void about(std::ostream &oss)
+{
+  oss << "Axom information:" << std::endl;
+
+  // list axom version info
+  {
+    oss << "  AXOM_VERSION_FULL: " << AXOM_VERSION_FULL << std::endl;
+    oss << "  AXOM_VERSION_MAJOR: " << AXOM_VERSION_MAJOR << std::endl;
+    oss << "  AXOM_VERSION_MINOR: " << AXOM_VERSION_MINOR << std::endl;
+    oss << "  AXOM_VERSION_PATCH: " << AXOM_VERSION_PATCH << std::endl;
+    oss << "  AXOM_GIT_SHA: " << gitSHA() << std::endl;
+  }
+
+  oss << "Compiler Settings: \n"
+      << axom::fmt::format("  C++ Standard: {}\n", AXOM_CXX_STD)
+      << axom::fmt::format("  Size of axom::IndexType: {}\n",
+                           sizeof(axom::IndexType));
+
+  // list compiler/programming model info
+  {
+    std::vector<std::string> models;
+
+#ifdef AXOM_USE_CUDA
+    models.push_back("cuda");
+#endif
+
+#ifdef AXOM_USE_HIP
+    models.push_back("hip");
+#endif
+
+#ifdef AXOM_USE_MPI
+    models.push_back("mpi");
+#endif
+
+#ifdef AXOM_USE_OPENMP
+    models.push_back("openmp");
+#endif
+
+    oss << axom::fmt::format("Active programming models: {{ {} }}\n",
+                             axom::fmt::join(models, ";"));
+  }
+
+  // list axom components
+  {
+    std::vector<std::string> comps;
+
+    comps.push_back("core");
+
+#ifdef AXOM_USE_INLET
+    comps.push_back("inlet");
+#endif
+
+#ifdef AXOM_USE_KLEE
+    comps.push_back("klee");
+#endif
+
+#ifdef AXOM_USE_LUMBERJACK
+    comps.push_back("lumberjack");
+#endif
+
+#ifdef AXOM_USE_MINT
+    comps.push_back("mint");
+#endif
+
+#ifdef AXOM_USE_PRIMAL
+    comps.push_back("primal");
+#endif
+
+#ifdef AXOM_USE_QUEST
+    comps.push_back("quest");
+#endif
+
+#ifdef AXOM_USE_SIDRE
+    comps.push_back("sidre");
+#endif
+
+#ifdef AXOM_USE_SLAM
+    comps.push_back("slam");
+#endif
+
+#ifdef AXOM_USE_SLIC
+    comps.push_back("slic");
+#endif
+
+#ifdef AXOM_USE_SPIN
+    comps.push_back("spin");
+#endif
+
+    oss << axom::fmt::format("Available components: {{ {} }}\n",
+                             axom::fmt::join(comps, ";"));
+  }
+
+  // list axom's built-in dependencies
+  {
+    std::vector<std::string> libs;
+
+#ifdef AXOM_USE_CLI11
+    libs.push_back("CLI11");
+#endif
+
+#ifdef AXOM_USE_FMT
+    libs.push_back("fmt");
+#endif
+
+#ifdef AXOM_USE_SOL
+    libs.push_back("sol");
+#endif
+
+#ifdef AXOM_USE_SPARSEHASH
+    libs.push_back("sparsehash");
+#endif
+
+    oss << fmt::format("Active built-in dependencies: {{ {} }}\n",
+                       fmt::join(libs, ";"));
+  }
+
+  // list axom's external dependencies
+  {
+    std::vector<std::string> libs;
+
+#ifdef AXOM_USE_ADIAK
+    libs.push_back("adiak");
+#endif
+
+#ifdef AXOM_USE_C2C
+    libs.push_back("c2c");
+#endif
+
+#ifdef AXOM_USE_CALIPER
+    libs.push_back("caliper");
+#endif
+
+#ifdef AXOM_USE_CONDUIT
+    libs.push_back("conduit");
+#endif
+
+#ifdef AXOM_USE_HDF5
+    libs.push_back("hdf5");
+#endif
+
+#ifdef AXOM_USE_LUA
+    libs.push_back("lua");
+#endif
+
+#ifdef AXOM_USE_MFEM
+    libs.push_back("mfem");
+#endif
+
+#ifdef AXOM_USE_RAJA
+    libs.push_back("raja");
+#endif
+
+#ifdef AXOM_USE_SCR
+    libs.push_back("scr");
+#endif
+
+#ifdef AXOM_USE_UMPIRE
+    libs.push_back("umpire");
+#endif
+
+    oss << fmt::format("Active external dependencies: {{ {} }}\n",
+                       fmt::join(libs, ";"));
+  }
+}
+
+//-----------------------------------------------------------------------------
+std::string getVersion()
+{
+  // Version includes git sha if not empty
+  std::string sha = gitSHA();
+  return !sha.empty() ? axom::fmt::format("{}-{}", AXOM_VERSION_FULL, sha)
+                      : axom::fmt::format("{}", AXOM_VERSION_FULL);
+}
+
+}  // end namespace axom

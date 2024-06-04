@@ -1,10 +1,10 @@
-.. ## Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC and
-.. ## other Axom Project Developers. See the top-level COPYRIGHT file for details.
+.. ## Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
+.. ## other Axom Project Developers. See the top-level LICENSE file for details.
 .. ##
 .. ## SPDX-License-Identifier: (BSD-3-Clause)
 
-Spin User Documentation
-========================
+Spin User Guide
+===============
 
 The Spin component of Axom provides several index data structures to accelerate
 spatial queries.  The Morton code classes relate each point in a region of
@@ -13,6 +13,13 @@ RectangularLattice helps in the computation of bin coordinates.  The UniformGrid
 and ImplicitGrid classes build one-level indexes of non-intersecting bins, while
 the BVHTree and SpatialOctree classes build nesting hierarchies of bounding
 boxes indexing a region of interest.
+
+
+API Documentation
+-----------------
+
+Doxygen generated API documentation can be found here: `API documentation <../../../../doxygen/html/spintop.html>`_
+
 
 .. toctree::
    :maxdepth: 2
@@ -26,6 +33,6 @@ boxes indexing a region of interest.
    :maxdepth: 2
    :caption: Tree-structure indexes
 
-   bvhtree
+   bvh
    octree
 

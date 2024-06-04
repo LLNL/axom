@@ -1,26 +1,27 @@
-// Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC and
-// other Axom Project Developers. See the top-level COPYRIGHT file for details.
+// Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
+// other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
-#ifndef SPIN_RECTANGULAR_LATTICE_HPP_
-#define SPIN_RECTANGULAR_LATTICE_HPP_
+#ifndef AXOM_SPIN_RECTANGULAR_LATTICE_HPP_
+#define AXOM_SPIN_RECTANGULAR_LATTICE_HPP_
 
-#include "axom/core.hpp"
+#include "axom/config.hpp"
+#include "axom/core/utilities/Utilities.hpp"
 
+#include "axom/primal/constants.hpp"
 #include "axom/primal/geometry/BoundingBox.hpp"
 #include "axom/primal/geometry/NumericArray.hpp"
 #include "axom/primal/geometry/Point.hpp"
 #include "axom/primal/geometry/Vector.hpp"
 
-#include <cmath>     // for std::floor
-#include <iostream>  // for ostream
+#include <cmath>
+#include <iostream>
 
 namespace axom
 {
 namespace spin
 {
-
 /*!
  * \class RectangularLattice
  * \brief A rectangular lattice maps all of space (of dimension NDIMS)
@@ -47,18 +48,17 @@ namespace spin
  * and a grid spacing (a SpaceVector).
  *
  * \note Grid spacing coordinates that are really small (magnitude less
- * than 1E-50) are snapped to zero to avoid division by zero.
+ * than primal::PRIMAL_TINY := 1e-50) are snapped to zero to avoid division by zero.
+ * \sa primal::PRIMAL_TINY
  */
-template < int NDIMS,
-           typename SpaceCoordType = double,
-           typename CellCoordType = int >
+template <int NDIMS, typename SpaceCoordType = double, typename CellCoordType = int>
 class RectangularLattice
 {
 public:
-  using GridCell = primal::Point< CellCoordType, NDIMS >;
-  using SpacePoint = primal::Point< SpaceCoordType, NDIMS >;
-  using SpaceVector = primal::Vector< SpaceCoordType, NDIMS >;
-  using SpatialBoundingBox = primal::BoundingBox< SpaceCoordType, NDIMS >;
+  using GridCell = primal::Point<CellCoordType, NDIMS>;
+  using SpacePoint = primal::Point<SpaceCoordType, NDIMS>;
+  using SpaceVector = primal::Vector<SpaceCoordType, NDIMS>;
+  using SpatialBoundingBox = primal::BoundingBox<SpaceCoordType, NDIMS>;
 
 public:
   /*!
@@ -67,10 +67,10 @@ public:
    * \note Sets the origin to 0 and spacing to 1 in each dimension
    */
   RectangularLattice()
-    : m_origin(SpaceCoordType(0)),
-    m_spacing( SpacePoint(SpaceCoordType(1)) ),
-    m_invSpacing( SpacePoint(SpaceCoordType(1)) )
-  {}
+    : m_origin(SpaceCoordType(0))
+    , m_spacing(SpacePoint(SpaceCoordType(1)))
+    , m_invSpacing(SpacePoint(SpaceCoordType(1)))
+  { }
 
   /*!
    * \brief Constructor from a given origin.
@@ -79,10 +79,10 @@ public:
    * \note Spacing will be set to default (vector of ones)
    */
   RectangularLattice(const SpacePoint& origin)
-    : m_origin(origin),
-    m_spacing( SpacePoint(SpaceCoordType(1)) ),
-    m_invSpacing( SpacePoint(SpaceCoordType(1)) )
-  {}
+    : m_origin(origin)
+    , m_spacing(SpacePoint(SpaceCoordType(1)))
+    , m_invSpacing(SpacePoint(SpaceCoordType(1)))
+  { }
 
   /*!
    * \brief Constructor from a given origin and spacing.
@@ -91,12 +91,12 @@ public:
    * \param spacing The lattice's spacing
    *
    * \note The magnitude of the spacing coordinates should be greater than zero.
-   * If they are less than EPS = 1E-50, the lattice will be degenerate in
+   * If they are less than primal::PRIMAL_TINY, the lattice will be degenerate in
    * that dimension.
    */
-  RectangularLattice(const SpacePoint& origin,
-                     const SpaceVector & spacing)
-    : m_origin(origin), m_spacing(spacing)
+  RectangularLattice(const SpacePoint& origin, const SpaceVector& spacing)
+    : m_origin(origin)
+    , m_spacing(spacing)
   {
     // Note: We use an inverted spacing, m_invSpacing, for efficiency.
     // It trades divisions for multiplications and handles 0-sized spacings
@@ -117,19 +117,16 @@ public:
    * \note Spacing will be set to vector or ones if pointer is NULL
    *
    * \note The magnitude of the spacing coordinates should be greater than zero.
-   * If they are less than EPS = 1E-50, the lattice will be degenerate in
-   * that dimension.
+   * If they are less than EPS = primal::PRIMAL_TINY, the lattice will be 
+   * degenerate in that dimension.
    */
-  RectangularLattice(SpaceCoordType* origin_data,
-                     SpaceCoordType* spacing_data)
+  RectangularLattice(SpaceCoordType* origin_data, SpaceCoordType* spacing_data)
   {
-    m_origin = (origin_data != nullptr)
-               ? SpacePoint(origin_data)
-               : SpacePoint::zero();
+    m_origin =
+      (origin_data != nullptr) ? SpacePoint(origin_data) : SpacePoint::zero();
 
-    m_spacing = (spacing_data != nullptr)
-                ? SpaceVector(spacing_data)
-                : SpaceVector(SpaceCoordType(1));
+    m_spacing = (spacing_data != nullptr) ? SpaceVector(spacing_data)
+                                          : SpaceVector(SpaceCoordType(1));
 
     // Note: We use an inverted spacing, m_invSpacing, for efficiency.
     // It trades divisions for multiplications and handles 0-sized spacings
@@ -138,22 +135,23 @@ public:
   }
 
   /*! Accessor for lattice origin   */
-  const SpacePoint&  origin() const { return m_origin; }
+  const SpacePoint& origin() const { return m_origin; }
 
   /*! Accessor for lattice spacing   */
   const SpaceVector& spacing() const { return m_spacing; }
 
   /*! Returns the lattice cell associated with the given space point pt */
+  AXOM_HOST_DEVICE
   GridCell gridCell(const SpacePoint& pt) const
   {
     GridCell cell;
 
-    for (int i=0 ; i< NDIMS ; ++i)
+    for(int i = 0; i < NDIMS; ++i)
     {
       // Note: Always round down to negative infinity
       // uses inverted spacing, which handles zero-sized spacings
-      cell[i] = static_cast< CellCoordType >(
-        std::floor( (pt[i] - m_origin[i]) * m_invSpacing[i] ) );
+      cell[i] = static_cast<CellCoordType>(
+        axom::utilities::floor((pt[i] - m_origin[i]) * m_invSpacing[i]));
     }
 
     return cell;
@@ -163,7 +161,7 @@ public:
   SpacePoint spacePoint(const GridCell& cell) const
   {
     SpacePoint pt;
-    for (int i=0 ; i< NDIMS ; ++i)
+    for(int i = 0; i < NDIMS; ++i)
     {
       pt[i] = m_origin[i] + (m_spacing[i] * cell[i]);
     }
@@ -178,16 +176,15 @@ public:
    */
   SpatialBoundingBox cellBounds(const GridCell& cell) const
   {
-    return SpatialBoundingBox( spacePoint(cell),
-                               spacePoint(cell.array() +
-                                          GridCell(1).array()));
+    return SpatialBoundingBox(
+      spacePoint(cell),
+      spacePoint(GridCell(cell.array() + GridCell(1).array())));
   }
 
   /*! Simple formatted print of a rectangular lattice */
   std::ostream& print(std::ostream& os) const
   {
-    os <<"{ origin:"<<m_origin
-       <<"; spacing:"<< m_spacing <<" }";
+    os << "{ origin:" << m_origin << "; spacing:" << m_spacing << " }";
     return os;
   }
 
@@ -197,7 +194,7 @@ private:
    * spacing to zero and to initialize the inverted spacing.
    *
    * A spacing coordinate is considered really small when its magnitude
-   * is less than EPS = 1E-50.
+   * is less than primal::PRIMAL_TINY.
    *
    * For each coordinate i, the inverted coordinate will be:
    *     m_invSpacing[i] = 1. / m_spacing[i]
@@ -206,23 +203,21 @@ private:
    */
   void initializeSpacingAndInvSpacing()
   {
-    constexpr SpaceCoordType EPS = 1.0e-50;
+    constexpr SpaceCoordType EPS = primal::PRIMAL_TINY;
     constexpr SpaceCoordType ZERO = SpaceCoordType(0.);
     constexpr SpaceCoordType ONE = SpaceCoordType(1.);
 
-    for (int i=0 ; i< NDIMS ; ++i)
+    for(int i = 0; i < NDIMS; ++i)
     {
       // snap really small values to zero
-      if( axom::utilities::isNearlyEqual(m_spacing[i], ZERO, EPS))
+      if(axom::utilities::isNearlyEqual(m_spacing[i], ZERO, EPS))
       {
         m_spacing[i] = ZERO;
       }
 
       // compute the inverted spacing coordinate
       // It is OK to compare to zero here due to snapping
-      m_invSpacing[i] = (m_spacing[i] != ZERO)
-                        ? ONE / m_spacing[i]
-                        : ZERO;
+      m_invSpacing[i] = (m_spacing[i] != ZERO) ? ONE / m_spacing[i] : ZERO;
     }
   }
 
@@ -245,26 +240,24 @@ private:
  * minimum corner position.
  *
  * \note If the bounding box range along a dimension is near zero (i.e. smaller
- * than 1E-50, the grid resolution in that dimension will be set to zero in
- * that dimension.
+ * than primal::PRIMAL_TINY, the grid resolution in that dimension will be 
+ * set to zero in that dimension.
  */
-template < int NDIMS, typename SpaceCoordType, typename CellCoordType >
-RectangularLattice< NDIMS, SpaceCoordType, CellCoordType >
+template <int NDIMS, typename SpaceCoordType, typename CellCoordType>
+RectangularLattice<NDIMS, SpaceCoordType, CellCoordType>
 rectangular_lattice_from_bounding_box(
-  const primal::BoundingBox< SpaceCoordType, NDIMS >& bbox,
-  const primal::NumericArray< CellCoordType, NDIMS >& gridRes)
+  const primal::BoundingBox<SpaceCoordType, NDIMS>& bbox,
+  const primal::NumericArray<CellCoordType, NDIMS>& gridRes)
 {
-  using LatticeType = RectangularLattice< NDIMS,
-                                          SpaceCoordType,
-                                          CellCoordType >;
+  using LatticeType = RectangularLattice<NDIMS, SpaceCoordType, CellCoordType>;
   using SpaceVector = typename LatticeType::SpaceVector;
 
   SpaceVector spacing;
 
   // Use the resolution and the box range to compute the spacing
-  for (int i=0 ; i< NDIMS ; ++i)
+  for(int i = 0; i < NDIMS; ++i)
   {
-    if ( gridRes[i] != CellCoordType(0) )
+    if(gridRes[i] != CellCoordType(0))
     {
       spacing[i] = (bbox.getMax()[i] - bbox.getMin()[i]) / gridRes[i];
     }
@@ -278,33 +271,31 @@ rectangular_lattice_from_bounding_box(
 /// --------------------------------------------------------------------------------
 
 /*! Equality operator on two RectangularLattices */
-template < int NDIMS, typename SpaceCoordType, typename CellCoordType >
-bool operator==(
-  const RectangularLattice< NDIMS,SpaceCoordType,CellCoordType >& lhs,
-  const RectangularLattice< NDIMS,SpaceCoordType,CellCoordType >& rhs )
+template <int NDIMS, typename SpaceCoordType, typename CellCoordType>
+bool operator==(const RectangularLattice<NDIMS, SpaceCoordType, CellCoordType>& lhs,
+                const RectangularLattice<NDIMS, SpaceCoordType, CellCoordType>& rhs)
 {
   return lhs.origin() == rhs.origin() && lhs.spacing() == rhs.spacing();
 }
 
 /*! Inequality operator on two RectangularLattices */
-template < int NDIMS, typename SpaceCoordType, typename CellCoordType >
-bool operator!=(
-  const RectangularLattice< NDIMS,SpaceCoordType,CellCoordType >& lhs,
-  const RectangularLattice< NDIMS,SpaceCoordType,CellCoordType >& rhs )
+template <int NDIMS, typename SpaceCoordType, typename CellCoordType>
+bool operator!=(const RectangularLattice<NDIMS, SpaceCoordType, CellCoordType>& lhs,
+                const RectangularLattice<NDIMS, SpaceCoordType, CellCoordType>& rhs)
 {
   return !(lhs == rhs);
 }
 
 /*! Stream output operator on a RectangularLattice */
-template < int NDIMS, typename SpaceCoordType, typename CellCoordType >
+template <int NDIMS, typename SpaceCoordType, typename CellCoordType>
 std::ostream& operator<<(
-  std::ostream & os,
-  const RectangularLattice< NDIMS, SpaceCoordType, CellCoordType > & lattice)
+  std::ostream& os,
+  const RectangularLattice<NDIMS, SpaceCoordType, CellCoordType>& lattice)
 {
   return lattice.print(os);
 }
 
-} // end namespace spin
-} // end namespace axom
+}  // end namespace spin
+}  // end namespace axom
 
-#endif  // SPIN_RECTANGULAR_LATTICE_HPP_
+#endif  // AXOM_SPIN_RECTANGULAR_LATTICE_HPP_

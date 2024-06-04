@@ -1,5 +1,5 @@
-// Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC and
-// other Axom Project Developers. See the top-level COPYRIGHT file for details.
+// Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
+// other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
@@ -20,30 +20,24 @@ namespace axom
 {
 namespace slam
 {
-
-
 /**
  * \class NullSet
  *
  * \brief An indexed set (a tuple) of entities in a simulation
  */
-template<
-  typename PosType  = slam::DefaultPositionType,
-  typename ElemType = slam::DefaultElementType >
+template <typename PosType = slam::DefaultPositionType,
+          typename ElemType = slam::DefaultElementType>
 class NullSet : public Set<PosType, ElemType>
 {
 public:
-  using ParentSet    = Set<PosType,ElemType>;
+  using ParentSet = Set<PosType, ElemType>;
   using PositionType = typename ParentSet::PositionType;
-  using ElementType  = typename ParentSet::ElementType;
+  using ElementType = typename ParentSet::ElementType;
 
 public:
-  NullSet() {}
+  NullSet() { }
 
-  inline PositionType size() const
-  {
-    return PositionType();
-  }
+  AXOM_HOST_DEVICE inline PositionType size() const { return PositionType(); }
 
   inline ElementType at(PositionType pos) const
   {
@@ -51,20 +45,17 @@ public:
     return PositionType();
   }
 
-  inline ElementType operator [](PositionType pos) const
-  {
-    return at(pos);
-  }
+  inline ElementType operator[](PositionType pos) const { return at(pos); }
 
   inline bool isSubset() const { return false; }
   const ParentSet* parentSet() const { return this; }
 
-  bool isValid(bool AXOM_NOT_USED(verboseOutput) = false) const
+  bool isValid(bool AXOM_UNUSED_PARAM(verboseOutput) = false) const
   {
     return true;
   }
 
-  bool empty() const { return true; }
+  AXOM_HOST_DEVICE bool empty() const { return true; }
 
   // TODO: Do we need to add iterator stubs here to satisfy some interface?
   //       The result will be invalid, but it may be useful to get the code
@@ -76,13 +67,11 @@ public:
 private:
   void verifyPosition(PositionType AXOM_DEBUG_PARAM(pos)) const
   {
-    SLIC_ASSERT_MSG(
-      false,
-      "Subscripting on NullSet is never valid."
-      << "\n\tAttempted to access item at index " << pos << ".");
+    SLIC_ASSERT_MSG(false,
+                    "Subscripting on NullSet is never valid."
+                      << "\n\tAttempted to access item at index " << pos << ".");
   }
 };
-
 
 #if 0
 /**
@@ -103,8 +92,7 @@ inline bool operator!=(NullSet const&, NullSet const&)
 }
 #endif
 
+}  // end namespace slam
+}  // end namespace axom
 
-} // end namespace slam
-} // end namespace axom
-
-#endif //  SLAM_NULL_SET_H_
+#endif  //  SLAM_NULL_SET_H_

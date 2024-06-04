@@ -1,11 +1,11 @@
-# Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC and
-# other Axom Project Developers. See the top-level COPYRIGHT file for details.
+# Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
+# other Axom Project Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
+#------------------------------------------------------------------------------
+# C++ Benchmarks for Slam component
+#------------------------------------------------------------------------------
 
-################
-# C++ Benchmarks
-################
 set(slam_benchmark_files
     slam_array.cpp
     slam_sets.cpp
@@ -16,11 +16,11 @@ if (ENABLE_BENCHMARKS)
         get_filename_component( test_name ${test} NAME_WE )
         set(test_name "${test_name}_benchmark")
         
-        blt_add_executable(
+        axom_add_executable(
             NAME        ${test_name}
             SOURCES     ${test}
             OUTPUT_DIR  ${TEST_OUTPUT_DIRECTORY}
-            DEPENDS_ON  slic slam gbenchmark
+            DEPENDS_ON  slam gbenchmark
             FOLDER      axom/slam/benchmarks
             )
 

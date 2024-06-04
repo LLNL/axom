@@ -1,19 +1,20 @@
-// Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC and
-// other Axom Project Developers. See the top-level COPYRIGHT file for details.
+// Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
+// other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
 #ifndef MINT_RECTILINEARMESH_HPP_
 #define MINT_RECTILINEARMESH_HPP_
 
-#include "axom/mint/mesh/StructuredMesh.hpp" // base class
-#include "axom/mint/config.hpp"         // for compile-time definitions
+#include "axom/config.hpp"
+#include "axom/mint/mesh/StructuredMesh.hpp"
+#include "axom/mint/config.hpp"
+#include "axom/export/mint.h"
 
 namespace axom
 {
 namespace mint
 {
-
 /*!
  * \class RectilinearMesh
  *
@@ -65,14 +66,13 @@ namespace mint
 class RectilinearMesh : public StructuredMesh
 {
 public:
-
   /*!
    * \brief Default constructor. Disabled.
    */
   RectilinearMesh() = delete;
 
-/// \name Native Constructors
-/// @{
+  /// \name Native Constructors
+  /// @{
 
   /*!
    * \brief Constructs a rectilinear mesh of specified dimensions.
@@ -90,12 +90,12 @@ public:
    * \post hasSidreGroup() == false
    * \post isExternal() == false
    */
-  RectilinearMesh( IndexType Ni, IndexType Nj=-1, IndexType Nk=-1  );
+  RectilinearMesh(IndexType Ni, IndexType Nj = -1, IndexType Nk = -1);
 
-/// @}
+  /// @}
 
-/// \name External Constructors
-/// @{
+  /// \name External Constructors
+  /// @{
 
   /*!
    * \brief Constructs a rectilinear mesh with the specified logical extent and
@@ -120,14 +120,18 @@ public:
    * \post hasSidreGroup() == false.
    * \post isExternal() == true
    */
-  RectilinearMesh( IndexType Ni, double* x, IndexType Nj=-1, double* y=nullptr,
-                   IndexType Nk=-1, double* z=nullptr );
-/// @}
+  RectilinearMesh(IndexType Ni,
+                  double* x,
+                  IndexType Nj = -1,
+                  double* y = nullptr,
+                  IndexType Nk = -1,
+                  double* z = nullptr);
+  /// @}
 
 #ifdef AXOM_MINT_USE_SIDRE
 
-/// \name Sidre Constructors
-/// @{
+  /// \name Sidre Constructors
+  /// @{
 
   /*!
    * \brief Creates a RectilinearMesh from a given Sidre group that holds
@@ -154,7 +158,7 @@ public:
    * \post hasSidreGroup() == true
    * \post isExternal() == false
    */
-  explicit RectilinearMesh( sidre::Group* group, const std::string& topo="" );
+  explicit RectilinearMesh(sidre::Group* group, const std::string& topo = "");
 
   /*!
    * \brief Creates a RectilinearMesh, on an empty Sidre group, given the
@@ -187,25 +191,27 @@ public:
    */
   /// @{
 
-  RectilinearMesh( sidre::Group* group,
-                   const std::string& topo,
-                   const std::string& coordset,
-                   IndexType Ni,
-                   IndexType Nj=-1,
-                   IndexType Nk=-1 );
+  RectilinearMesh(sidre::Group* group,
+                  const std::string& topo,
+                  const std::string& coordset,
+                  IndexType Ni,
+                  IndexType Nj = -1,
+                  IndexType Nk = -1);
 
-  RectilinearMesh( sidre::Group* group, IndexType Ni, IndexType Nj=-1,
-                   IndexType Nk=-1 ) :
-    RectilinearMesh( group, "", "", Ni, Nj, Nk )
-  {}
+  AXOM_MINT_EXPORT RectilinearMesh(sidre::Group* group,
+                                   IndexType Ni,
+                                   IndexType Nj = -1,
+                                   IndexType Nk = -1)
+    : RectilinearMesh(group, "", "", Ni, Nj, Nk)
+  { }
 
-  /// @}
+    /// @}
 
 /// @}
 #endif
 
-/// \name Virtual methods
-/// @{
+  /// \name Virtual methods
+  /// @{
 
   /*!
    * \brief Destructor.
@@ -217,7 +223,9 @@ public:
    * \return status true if the coordinates point to external buffers.
    */
   virtual bool isExternal() const final override
-  { return m_coordinates[ 0 ]->isExternal(); }
+  {
+    return m_coordinates[0]->isExternal();
+  }
 
   /*!
    * \brief Copy the coordinates of the given node into the provided buffer.
@@ -235,7 +243,7 @@ public:
    * \pre 0 <= nodeID < getNumberOfNodes()
    * \pre coords != nullptr
    */
-  virtual void getNode( IndexType nodeID, double* node ) const final override;
+  virtual void getNode(IndexType nodeID, double* node) const final override;
 
   /*!
    * \brief Returns pointer to the nodal positions in the specified dimension.
@@ -249,15 +257,14 @@ public:
    */
   /// @{
 
-  virtual double* getCoordinateArray( int dim ) final override;
-  virtual const double* getCoordinateArray( int dim ) const final override;
+  virtual double* getCoordinateArray(int dim) final override;
+  virtual const double* getCoordinateArray(int dim) const final override;
 
   /// @}
 
-/// @}
+  /// @}
 
 private:
-
   /*!
    * \brief Initializes the RectilinearMesh
    * \note Helper method to be called from a constructor.
@@ -280,10 +287,10 @@ private:
 
 #endif
 
-  Array< double >* m_coordinates[3] = { nullptr, nullptr, nullptr };
+  axom::deprecated::MCArray<double>* m_coordinates[3] = {nullptr, nullptr, nullptr};
 
-  DISABLE_COPY_AND_ASSIGNMENT( RectilinearMesh );
-  DISABLE_MOVE_AND_ASSIGNMENT( RectilinearMesh );
+  DISABLE_COPY_AND_ASSIGNMENT(RectilinearMesh);
+  DISABLE_MOVE_AND_ASSIGNMENT(RectilinearMesh);
 };
 
 } /* namespace mint */

@@ -1,5 +1,5 @@
-// Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC and
-// other Axom Project Developers. See the top-level COPYRIGHT file for details.
+// Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
+// other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
@@ -21,7 +21,6 @@ namespace axom
 {
 namespace lumberjack
 {
-
 /*!
  *******************************************************************************
  * \class Combiner
@@ -42,7 +41,7 @@ public:
    * \brief Virtual destructor.
    *****************************************************************************
    */
-  virtual ~Combiner(){};
+  virtual ~Combiner() {};
 
   /*!
    *****************************************************************************
@@ -75,10 +74,11 @@ public:
    *****************************************************************************
    */
   virtual void combine(Message& combined,
-                       const Message& combinee, const int ranksLimit) = 0;
+                       const Message& combinee,
+                       const int ranksLimit) = 0;
 };
 
-} // end namespace lumberjack
-} // end namespace axom
+}  // end namespace lumberjack
+}  // end namespace axom
 
 #endif

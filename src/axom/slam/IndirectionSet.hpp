@@ -1,5 +1,5 @@
-// Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC and
-// other Axom Project Developers. See the top-level COPYRIGHT file for details.
+// Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
+// other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
@@ -21,26 +21,22 @@ namespace axom
 {
 namespace slam
 {
-
-
 /**
- * \brief Alias template for an OrderedSet with indirection over an array
+ * \brief Alias template for an OrderedSet with indirection over a C array
  *
  * \tparam PosType The position type for indexing into the set
  * \tparam ElemType The type for the set's elements
  * \sa OrderedSet
  */
-template<
-  typename PosType = slam::DefaultPositionType,
-  typename ElemType = slam::DefaultElementType >
-using ArrayIndirectionSet =
-        OrderedSet<
-          PosType,
-          ElemType,
-          policies::RuntimeSize<PosType>,
-          policies::ZeroOffset<PosType>,
-          policies::StrideOne<PosType>,
-          policies::ArrayIndirection<PosType, ElemType> >;
+template <typename PosType = slam::DefaultPositionType,
+          typename ElemType = slam::DefaultElementType>
+using CArrayIndirectionSet =
+  OrderedSet<PosType,
+             ElemType,
+             policies::RuntimeSize<PosType>,
+             policies::ZeroOffset<PosType>,
+             policies::StrideOne<PosType>,
+             policies::CArrayIndirection<PosType, ElemType>>;
 
 /**
  * \brief Alias template for an OrderedSet with indirection over an stl vector
@@ -49,20 +45,51 @@ using ArrayIndirectionSet =
  * \tparam ElemType The type for the set's elements
  * \sa OrderedSet
  */
-template<
-  typename PosType = slam::DefaultPositionType,
-  typename ElemType = slam::DefaultElementType >
+template <typename PosType = slam::DefaultPositionType,
+          typename ElemType = slam::DefaultElementType>
 using VectorIndirectionSet =
-        OrderedSet<
-          PosType,
-          ElemType,
-          policies::RuntimeSize<PosType>,
-          policies::ZeroOffset<PosType>,
-          policies::StrideOne<PosType>,
-          policies::STLVectorIndirection<PosType, ElemType> >;
+  OrderedSet<PosType,
+             ElemType,
+             policies::RuntimeSize<PosType>,
+             policies::ZeroOffset<PosType>,
+             policies::StrideOne<PosType>,
+             policies::STLVectorIndirection<PosType, ElemType>>;
 
+/**
+ * \brief Alias template for an OrderedSet with indirection over an axom::Array
+ *
+ * \tparam PosType The position type for indexing into the set
+ * \tparam ElemType The type for the set's elements
+ * \sa OrderedSet
+ */
+template <typename PosType = slam::DefaultPositionType,
+          typename ElemType = slam::DefaultElementType>
+using ArrayIndirectionSet =
+  OrderedSet<PosType,
+             ElemType,
+             policies::RuntimeSize<PosType>,
+             policies::ZeroOffset<PosType>,
+             policies::StrideOne<PosType>,
+             policies::ArrayIndirection<PosType, ElemType>>;
 
-} // end namespace slam
-} // end namespace axom
+/**
+ * \brief Alias template for an OrderedSet with indirection over an axom::ArrayView
+ *
+ * \tparam PosType The position type for indexing into the set
+ * \tparam ElemType The type for the set's elements
+ * \sa OrderedSet
+ */
+template <typename PosType = slam::DefaultPositionType,
+          typename ElemType = slam::DefaultElementType>
+using ArrayViewIndirectionSet =
+  OrderedSet<PosType,
+             ElemType,
+             policies::RuntimeSize<PosType>,
+             policies::ZeroOffset<PosType>,
+             policies::StrideOne<PosType>,
+             policies::ArrayViewIndirection<PosType, ElemType>>;
 
-#endif //  SLAM_INDIRECTION_SET_H_
+}  // end namespace slam
+}  // end namespace axom
+
+#endif  //  SLAM_INDIRECTION_SET_H_

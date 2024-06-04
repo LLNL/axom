@@ -1,5 +1,5 @@
-// Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC and
-// other Axom Project Developers. See the top-level COPYRIGHT file for details.
+// Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
+// other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
@@ -13,27 +13,33 @@
  ******************************************************************************
  */
 
-#ifndef DATAVIEW_HPP_
-#define DATAVIEW_HPP_
+#ifndef SIDRE_VIEW_HPP_
+#define SIDRE_VIEW_HPP_
 
 // Standard C++ headers
 #include <string>
 #include <set>
 
 // Other axom headers
+#include "axom/config.hpp"
 #include "axom/core/memory_management.hpp"
 #include "axom/core/Macros.hpp"
 #include "axom/core/Types.hpp"
-#include "axom/slic/interface/slic.hpp"
+#include "axom/slic.hpp"
 
-// Sidre project headers
+// Sidre headers
 #include "axom/sidre/core/SidreTypes.hpp"
-#include "AttrValues.hpp"
+#include "axom/sidre/core/AttrValues.hpp"
 
 namespace axom
 {
 namespace sidre
 {
+// Helper macro for defining a prepend string for sidre::View log messages
+// We are using it to add the pathName() of the view
+#ifndef SIDRE_VIEW_LOG_PREPEND
+  #define SIDRE_VIEW_LOG_PREPEND "[View: '" << this->getPathName() << "'] "
+#endif
 
 class Buffer;
 class Group;
@@ -83,7 +89,6 @@ class Attribute;
 class View
 {
 public:
-
   //
   // Friend declaration to constrain usage via controlled access to
   // private members.
@@ -91,29 +96,22 @@ public:
   friend class Group;
   friend class Buffer;
 
-
-//@{
-//!  @name View query and accessor methods
+  //@{
+  //!  @name View query and accessor methods
 
   /*!
    * \brief Return index of View within owning Group.
    *
    * If View is detached, return sidre::InvalidIndex.
    */
-  IndexType getIndex() const
-  {
-    return m_index;
-  }
+  IndexType getIndex() const { return m_index; }
 
   /*!
    * \brief Return const reference to name of View.
    *
    * \sa getPath(), getPathName()
    */
-  const std::string& getName() const
-  {
-    return m_name;
-  }
+  const std::string& getName() const { return m_name; }
 
   /*!
    * \brief Return path of View's owning Group object.
@@ -141,52 +139,34 @@ public:
   /*!
    * \brief Return pointer to non-const Group that owns View object.
    */
-  Group* getOwningGroup()
-  {
-    return m_owning_group;
-  }
+  Group* getOwningGroup() { return m_owning_group; }
 
   /*!
    * \brief Return pointer to const Group that owns View object.
    */
-  const Group* getOwningGroup() const
-  {
-    return m_owning_group;
-  }
+  const Group* getOwningGroup() const { return m_owning_group; }
 
   /*!
    * \brief Return true if view has a an associated Buffer object
    *        (e.g., view is not opaque, it has been created with a buffer,
    *         it has been allocated, etc.); false otherwise.
    */
-  bool  hasBuffer() const
-  {
-    return m_data_buffer != nullptr;
-  }
+  bool hasBuffer() const { return m_data_buffer != nullptr; }
 
   /*!
    * \brief Return pointer to non-const Buffer associated with View.
    */
-  Buffer* getBuffer()
-  {
-    return m_data_buffer;
-  }
+  Buffer* getBuffer() { return m_data_buffer; }
 
   /*!
    * \brief Return pointer to const Buffer associated with View.
    */
-  const Buffer* getBuffer() const
-  {
-    return m_data_buffer;
-  }
+  const Buffer* getBuffer() const { return m_data_buffer; }
 
   /*!
    * \brief Return true if view holds external data; false otherwise.
    */
-  bool isExternal() const
-  {
-    return m_state == EXTERNAL;
-  }
+  bool isExternal() const { return m_state == EXTERNAL; }
 
   /*!
    * \brief Return true if view is described and refers to a buffer
@@ -198,53 +178,35 @@ public:
    * \brief Return true if data description (schema) has been applied to data
    *        in buffer associated with view; false otherwise.
    */
-  bool isApplied() const
-  {
-    return m_is_applied;
-  }
+  bool isApplied() const { return m_is_applied; }
 
   /*!
    * \brief Return true if data description exists.  It may/may not have been
    * applied to the data yet.  ( Check isApplied() for that. )
    */
-  bool isDescribed() const
-  {
-    return !m_schema.dtype().is_empty();
-  }
+  bool isDescribed() const { return !m_schema.dtype().is_empty(); }
 
   /*!
    * \brief Return true if view is empty.
    */
-  bool isEmpty() const
-  {
-    return m_state == EMPTY;
-  }
+  bool isEmpty() const { return m_state == EMPTY; }
 
   /*!
    * \brief Convenience function that returns true if view is opaque
    *        (i.e., has access to data but has no knowledge of the data
    *        type or structure); false otherwise.
    */
-  bool isOpaque() const
-  {
-    return m_state == EXTERNAL && !isApplied();
-  }
+  bool isOpaque() const { return m_state == EXTERNAL && !isApplied(); }
 
   /*!
    * \brief Return true if view contains a scalar value.
    */
-  bool isScalar() const
-  {
-    return m_state == SCALAR;
-  }
+  bool isScalar() const { return m_state == SCALAR; }
 
   /*!
    * \brief Return true if view contains a string value.
    */
-  bool isString() const
-  {
-    return m_state == STRING;
-  }
+  bool isString() const { return m_state == STRING; }
 
   /*!
    * \brief Return type of data for this View object.
@@ -252,7 +214,7 @@ public:
    */
   TypeID getTypeID() const
   {
-    if (isDescribed())
+    if(isDescribed())
     {
       return static_cast<TypeID>(m_schema.dtype().id());
     }
@@ -268,10 +230,7 @@ public:
    * \attention This is the total bytes described by the view; they may not
    *            yet be allocated.
    */
-  IndexType getTotalBytes() const
-  {
-    return m_schema.total_strided_bytes();
-  }
+  IndexType getTotalBytes() const { return m_schema.total_strided_bytes(); }
 
   /*!
    * \brief Return total number of elements described by this View object.
@@ -336,10 +295,7 @@ public:
    *
    * \sa getShape()
    */
-  int getNumDimensions() const
-  {
-    return static_cast<int>(m_shape.size());
-  }
+  int getNumDimensions() const { return static_cast<int>(m_shape.size()); }
 
   /*!
    * \brief Return number of dimensions in data view and fill in shape
@@ -356,26 +312,17 @@ public:
   /*!
    * \brief Return const reference to schema describing data.
    */
-  const Schema& getSchema() const
-  {
-    return m_node.schema();
-  }
+  const Schema& getSchema() const { return m_node.schema(); }
 
   /*!
    * \brief Return non-const reference to Conduit node holding data.
    */
-  Node& getNode()
-  {
-    return m_node;
-  }
+  Node& getNode() { return m_node; }
 
   /*!
    * \brief Return const reference to Conduit node holding data.
    */
-  const Node& getNode() const
-  {
-    return m_node;
-  }
+  const Node& getNode() const { return m_node; }
 
   /*!
    * \brief Returns boolean telling whether two Views have equivalent
@@ -390,11 +337,10 @@ public:
    */
   bool isUpdateableFrom(const View* other) const;
 
-//@}
+  //@}
 
-
-//@{
-//!  @name View allocation methods
+  //@{
+  //!  @name View allocation methods
 
   /*!
    * \brief Allocate data for a view, previously described.
@@ -406,7 +352,7 @@ public:
    *
    * \return pointer to this View object.
    */
-  View* allocate(int allocID=INVALID_ALLOCATOR_ID);
+  View* allocate(int allocID = INVALID_ALLOCATOR_ID);
 
   /*!
    * \brief Allocate data for view given type and number of elements.
@@ -417,8 +363,9 @@ public:
    *
    * \return pointer to this View object.
    */
-  View* allocate(TypeID type, IndexType num_elems,
-                 int allocID=INVALID_ALLOCATOR_ID);
+  View* allocate(TypeID type,
+                 IndexType num_elems,
+                 int allocID = INVALID_ALLOCATOR_ID);
 
   /*!
    * \brief Allocate data for view described by a Conduit data type object.
@@ -429,7 +376,7 @@ public:
    *
    * \return pointer to this View object.
    */
-  View* allocate(const DataType& dtype, int allocID=INVALID_ALLOCATOR_ID);
+  View* allocate(const DataType& dtype, int allocID = INVALID_ALLOCATOR_ID);
 
   /*!
    * \brief  Reallocate data for view to given number of elements (type
@@ -468,8 +415,7 @@ public:
    */
   View* deallocate();
 
-//@}
-
+  //@}
 
   /*!
    * \brief Attach Buffer object to data view.
@@ -493,16 +439,14 @@ public:
    *
    * \return pointer to this View object.
    */
-  View* attachBuffer( Buffer* buff );
+  View* attachBuffer(Buffer* buff);
 
   /*!
    * \brief Describe the data view and attach Buffer object.
    *
    * \return pointer to this View object.
    */
-  View* attachBuffer( TypeID type,
-                      IndexType num_elems,
-                      Buffer* buff )
+  View* attachBuffer(TypeID type, IndexType num_elems, Buffer* buff)
   {
     describe(type, num_elems);
     attachBuffer(buff);
@@ -514,16 +458,12 @@ public:
    *
    * \return pointer to this View object.
    */
-  View* attachBuffer( TypeID type,
-                      int ndims,
-                      IndexType* shape,
-                      Buffer* buff )
+  View* attachBuffer(TypeID type, int ndims, const IndexType* shape, Buffer* buff)
   {
     describe(type, ndims, shape);
     attachBuffer(buff);
     return this;
   }
-
 
   /*!
    * \brief Detach this view from its Buffer.
@@ -534,8 +474,16 @@ public:
    */
   Buffer* detachBuffer();
 
-//@{
-//!  @name Methods to apply View description to data.
+  /*!
+   * \brief Clear data and metadata from a View.
+   *
+   * The view will be EMPTY. There will be no description
+   * or data associated with the View.
+   */
+  void clear();
+
+  //@{
+  //!  @name Methods to apply View description to data.
 
   /*!
    * \brief Apply view description to data.
@@ -563,9 +511,7 @@ public:
    *
    * \return pointer to this View object.
    */
-  View* apply( IndexType num_elems,
-               IndexType offset = 0,
-               IndexType stride = 1);
+  View* apply(IndexType num_elems, IndexType offset = 0, IndexType stride = 1);
 
   /*!
    * \brief Apply data description defined by type and number of elements, and
@@ -583,9 +529,10 @@ public:
    *
    * \return pointer to this View object.
    */
-  View* apply( TypeID type, IndexType num_elems,
-               IndexType offset = 0,
-               IndexType stride = 1);
+  View* apply(TypeID type,
+              IndexType num_elems,
+              IndexType offset = 0,
+              IndexType stride = 1);
 
   /*!
    * \brief Apply data description defined by type and shape information
@@ -602,7 +549,7 @@ public:
    *
    * \return pointer to this View object.
    */
-  View* apply( TypeID type, int ndims, IndexType* shape );
+  View* apply(TypeID type, int ndims, const IndexType* shape);
 
   /*!
    * \brief Apply data description of given Conduit data type to data view.
@@ -613,40 +560,38 @@ public:
    */
   View* apply(const DataType& dtype);
 
-//@}
+  //@}
 
-
-//@{
-//!  @name Methods to set data in the view (scalar, string, or external data).
+  //@{
+  //!  @name Methods to set data in the view (scalar, string, or external data).
 
   /*!
    * \brief Set the view to hold the given scalar.
    *
    * \return pointer to this View object.
    */
-  template<typename ScalarType>
+  template <typename ScalarType>
   View* setScalar(ScalarType value)
   {
     // If this view already contains a scalar, issue a warning if the user is
     // changing the underlying type ( ie: integer -> float ).
 #if defined(AXOM_DEBUG)
-    if (m_state == SCALAR)
+    if(m_state == SCALAR)
     {
       DataTypeId arg_id = detail::SidreTT<ScalarType>::id;
       SLIC_CHECK_MSG(arg_id == m_node.dtype().id(),
-                     "You are setting a scalar value in view "
-                     << getPathName()
-                     << " which has changed the underlying data type."
-                     << "Old type = " << m_node.dtype().name()
-                     << ", new type ="
-                     <<  DataType::id_to_name( arg_id ) << ".");
+                     SIDRE_VIEW_LOG_PREPEND
+                       << "You are setting a scalar value which has changed "
+                       << " the underlying data type. "
+                       << "Old type: " << m_node.dtype().name() << ", "
+                       << "new type: " << DataType::id_to_name(arg_id) << ".");
     }
 #endif
 
     // Note: most of these calls that set the view class members are
     //       unnecessary if the view already holds a scalar.  May be
     //       a future optimization opportunity to split the
-    if (m_state == EMPTY || m_state == SCALAR)
+    if(m_state == EMPTY || m_state == SCALAR)
     {
       m_node.set(value);
       m_schema.set(m_node.schema());
@@ -657,41 +602,39 @@ public:
     else
     {
       SLIC_CHECK_MSG(m_state == EMPTY || m_state == SCALAR,
-                     "Unable to set scalar value on view "
-                     << getPathName() << " with state: "
-                     << getStateStringName(m_state)  );
+                     SIDRE_VIEW_LOG_PREPEND
+                       << "Unable to set scalar value on view "
+                       << " with state: " << getStateStringName(m_state));
     }
     return this;
   }
-
-
 
   /*!
    * \brief Set the view to hold the given scalar.
    *
    * \return pointer to this View object.
    */
-  View* setScalar(Node &value)
+  View* setScalar(Node& value)
   {
     // If this view already contains a scalar, issue a warning if the user is
     // changing the underlying type ( ie: integer -> float ).
-  #if defined(AXOM_DEBUG)
-    if (m_state == SCALAR)
+#if defined(AXOM_DEBUG)
+    if(m_state == SCALAR)
     {
-      SLIC_CHECK_MSG(value.dtype().id() == m_node.dtype().id(),
-                     "You are setting a scalar value in view "
-                     << getPathName()
-                     << " which has changed the underlying data type."
-                     << "Old type = " << m_node.dtype().name()
-                     << ", new type ="
-                     <<  DataType::id_to_name( value.dtype().id() ) << ".");
+      SLIC_CHECK_MSG(
+        value.dtype().id() == m_node.dtype().id(),
+        SIDRE_VIEW_LOG_PREPEND
+          << "Setting a scalar value in view  which has changed "
+          << "the underlying data type."
+          << "Old type: " << m_node.dtype().name() << ", "
+          << "New type: " << DataType::id_to_name(value.dtype().id()) << ".");
     }
-  #endif
+#endif
 
     // Note: most of these calls that set the view class members are
     //       unnecessary if the view already holds a scalar.  May be
     //       a future optimization opportunity to split the
-    if (m_state == EMPTY || m_state == SCALAR)
+    if(m_state == EMPTY || m_state == SCALAR)
     {
       m_node.set(value);
       m_schema.set(m_node.schema());
@@ -702,18 +645,36 @@ public:
     else
     {
       SLIC_CHECK_MSG(m_state == EMPTY || m_state == SCALAR,
-                     "Unable to set scalar value on view "
-                     << getPathName() << " with state: "
-                     << getStateStringName(m_state)  );
+                     SIDRE_VIEW_LOG_PREPEND
+                       << "Unable to set scalar value on view with state: "
+                       << getStateStringName(m_state));
     }
     return this;
   }
 
+  /*
+ * \brief set the View to hold an array in a Buffer
+ *
+ * This takes a Node that holds an array of data and sets up the View to
+ * hold a copy of that data in an attached Buffer.
+ *
+ * The prerequisites are that the Node must have numerical conduit data type
+ * (it returns true for a call to conduit::DataType::is_number()), and the
+ * state of this View must be either EMPTY or BUFFER when entering.  If the
+ * prerequisites are not met, a warning will be issued and this View will be
+ * unchanged.
+ *
+ * If this View has the state BUFFER when this method is called, it will
+ * become detached from its previous Buffer.
+ *
+ * \return pointer to this View object
+ */
+  View* importArrayNode(const Node& array);
 
-//
-// RDH -- Add an overload of the following that takes a const char *.
-//
-/*!
+  //
+  // RDH -- Add an overload of the following that takes a const char *.
+  //
+  /*!
  * \brief Set the view to hold the given string.
  *
  * \return pointer to this View object.
@@ -723,7 +684,7 @@ public:
     // Note: most of these calls that set the view class members are
     //       unnecessary if the view already holds a string.  May be
     //       a future optimization opportunity to split the
-    if (m_state == EMPTY || m_state == STRING)
+    if(m_state == EMPTY || m_state == STRING)
     {
       m_node.set_string(value);
       m_schema.set(m_node.schema());
@@ -734,9 +695,9 @@ public:
     else
     {
       SLIC_CHECK_MSG(m_state == EMPTY || m_state == STRING,
-                     "Unable to set string value on view "
-                     << getPathName() << " with state: "
-                     << getStateStringName(m_state)  );
+                     SIDRE_VIEW_LOG_PREPEND
+                       << "Unable to set string value on view with state: "
+                       << getStateStringName(m_state));
     }
     return this;
   };
@@ -761,9 +722,7 @@ public:
    *
    * \return pointer to this View object.
    */
-  View* setExternalDataPtr(TypeID type,
-                           IndexType num_elems,
-                           void* external_ptr)
+  View* setExternalDataPtr(TypeID type, IndexType num_elems, void* external_ptr)
   {
     describe(type, num_elems);
     setExternalDataPtr(external_ptr);
@@ -779,7 +738,7 @@ public:
    */
   View* setExternalDataPtr(TypeID type,
                            int ndims,
-                           IndexType* shape,
+                           const IndexType* shape,
                            void* external_ptr)
   {
     describe(type, ndims, shape);
@@ -787,9 +746,9 @@ public:
     return this;
   }
 
-//@}
+  //@}
 
-/*!
+  /*!
  * \brief Update the data in this View with the data in other
  * if isUpdateableFrom( other ). Otherwise nothing is done.
  *
@@ -797,8 +756,8 @@ public:
  */
   View* updateFrom(const View* other);
 
-//@{
-//! @name Methods to retrieve data in a view.
+  //@{
+  //! @name Methods to retrieve data in a view.
 
   /*!
    * \brief Return a pointer or conduit array object to the view's array data.
@@ -826,7 +785,7 @@ public:
    */
   const char* getString() const
   {
-    if (m_state == STRING)
+    if(m_state == STRING)
     {
       return m_node.as_char8_str();
     }
@@ -841,8 +800,9 @@ public:
    */
   Node::ConstValue getScalar() const
   {
-    SLIC_CHECK_MSG( (m_state == SCALAR),
-                    "View::getScalar() called on non-scalar view.");
+    SLIC_CHECK_MSG(
+      m_state == SCALAR,
+      SIDRE_VIEW_LOG_PREPEND << "View::getScalar() called on non-scalar view.");
     return getData();
   }
 
@@ -855,31 +815,30 @@ public:
    *
    *  \note The return value already accounts for the View's offset
    *   (when present), so, if the View is an array, getData()[0] already points
-   *   to thefirst element
+   *   to the first element
    */
   /// @{
   Node::Value getData()
   {
-    if ( !isAllocated() || !isDescribed())
-    {
-      SLIC_CHECK_MSG( isAllocated(),
-                      "No view data present, memory has not been allocated.");
-      SLIC_CHECK_MSG( isApplied(),
-                      "View data description not present.");
-    }
+    SLIC_CHECK_MSG(isAllocated(),
+                   SIDRE_VIEW_LOG_PREPEND
+                     << "No view data present, memory has not been allocated.");
+    SLIC_CHECK_MSG(
+      isDescribed(),
+      SIDRE_VIEW_LOG_PREPEND << "View data description not present.");
+
     // this will return a default value
     return m_node.value();
   }
 
   Node::ConstValue getData() const
   {
-    if ( !isAllocated() || !isDescribed())
-    {
-      SLIC_CHECK_MSG( isAllocated(),
-                      "No view data present, memory has not been allocated.");
-      SLIC_CHECK_MSG( isApplied(),
-                      "View data description not present.");
-    }
+    SLIC_CHECK_MSG(isAllocated(),
+                   SIDRE_VIEW_LOG_PREPEND
+                     << "No view data present, memory has not been allocated.");
+    SLIC_CHECK_MSG(isDescribed(),
+                   SIDRE_VIEW_LOG_PREPEND "View data description not present.");
+
     // this will return a default value
     return m_node.value();
   }
@@ -891,7 +850,7 @@ public:
    *
    * \sa getData()
    */
-  template<typename DataType>
+  template <typename DataType>
   DataType getData()
   {
     DataType data = m_node.value();
@@ -917,11 +876,10 @@ public:
    */
   void* getVoidPtr() const;
 
-//@}
+  //@}
 
-
-//@{
-//!  @name View print methods.
+  //@{
+  //!  @name View print methods.
 
   /*!
    * \brief Print JSON description of data view to stdout.
@@ -933,7 +891,7 @@ public:
    */
   void print(std::ostream& os) const;
 
-//@}
+  //@}
 
   /*!
    * \brief Copy data view description to given Conduit node.
@@ -949,6 +907,14 @@ public:
    * Conduit tree.
    */
   void createNativeLayout(Node& n) const;
+
+  /*!
+   * \brief Copy metadata of the View to the given Conduit node
+   *
+   * The View's datatype schema and state information will be copied into the
+   * node, but not the data held by the View.
+   */
+  void copyMetadataToNode(Node& n) const;
 
   /*!
    * \brief Change the name of this View.
@@ -968,27 +934,37 @@ public:
    */
   bool rename(const std::string& new_name);
 
+  //@{
+  //!  @name Attribute Value query and accessor methods
 
-//@{
-//!  @name View query and accessor methods
-
+  /*!
+   * \brief Get an Attribute.
+   *
+   * \param [in] idx Attribute identifier.
+   *
+   * \return the specified Attribute, or nullptr if it doesn't exist.
+   */
   Attribute* getAttribute(IndexType idx);
 
+  /*!
+   * \overload
+   */
   const Attribute* getAttribute(IndexType idx) const;
 
-  Attribute* getAttribute(const std::string & name);
+  /*!
+   * \overload
+   */
+  Attribute* getAttribute(const std::string& name);
 
-  const Attribute* getAttribute(const std::string & name) const;
-
-//@}
-
-//@{
-//!  @name Attribute Value query and accessor methods
+  /*!
+   * \overload
+   */
+  const Attribute* getAttribute(const std::string& name) const;
 
   /*!
    * \brief Return true if the attribute has been explicitly set; else false.
    */
-  bool hasAttributeValue( IndexType idx ) const
+  bool hasAttributeValue(IndexType idx) const
   {
     const Attribute* attr = getAttribute(idx);
     return m_attr_values.hasValue(attr);
@@ -997,7 +973,7 @@ public:
   /*!
    * \brief Return true if the attribute has been explicitly set; else false.
    */
-  bool hasAttributeValue( const std::string & name ) const
+  bool hasAttributeValue(const std::string& name) const
   {
     const Attribute* attr = getAttribute(name);
     return m_attr_values.hasValue(attr);
@@ -1006,63 +982,60 @@ public:
   /*!
    * \brief Return true if the attribute has been explicitly set; else false.
    */
-  bool hasAttributeValue( const Attribute* attr ) const
+  bool hasAttributeValue(const Attribute* attr) const
   {
-    if (attr == nullptr)
-    {
-      SLIC_CHECK_MSG(attr != nullptr,
-                     "hasAttributeValue: called without an Attribute");
-    }
+    SLIC_CHECK_MSG(attr != nullptr,
+                   SIDRE_VIEW_LOG_PREPEND
+                     << "hasAttributeValue: called with a null Attribute");
 
     return m_attr_values.hasValue(attr);
   }
 
   /*!
-   * \brief Set Attribute to its default value from Attribute index.
+   * \brief Set Attribute to its default value.
+   * \param [in] idx Attribute identifier
    *
    * This causes hasAttributeValue to return false for the attribute.
    */
-  bool setAttributeToDefault( IndexType idx )
+  bool setAttributeToDefault(IndexType idx)
   {
     const Attribute* attr = getAttribute(idx);
     return m_attr_values.setToDefault(attr);
   }
 
   /*!
-   * \brief Set Attribute to its default value from Attribute name.
-   *
-   * This causes hasAttributeValue to return false for the attribute.
+   * \overload
    */
-  bool setAttributeToDefault( const std::string & name )
+  bool setAttributeToDefault(const std::string& name)
   {
     const Attribute* attr = getAttribute(name);
     return m_attr_values.setToDefault(attr);
   }
 
   /*!
-   * \brief Set Attribute to its default value from Attribute pointer.
-   *
-   * This causes hasAttributeValue to return false for the attribute.
+   * \overload
    */
-  bool setAttributeToDefault( const Attribute* attr )
+  bool setAttributeToDefault(const Attribute* attr)
   {
-    if (attr == nullptr)
-    {
-      SLIC_CHECK_MSG(attr != nullptr,
-                     "getAttributeToDefault: called without an Attribute");
-    }
+    SLIC_CHECK_MSG(attr != nullptr,
+                   SIDRE_VIEW_LOG_PREPEND
+                     << "getAttributeToDefault: called with a null Attribute");
 
     return m_attr_values.setToDefault(attr);
   }
 
   /*!
-   * \brief Set Attribute for a View from Attribute index.
+   * \brief Set Attribute to a scalar value.
+   * \param [in] idx Attribute identifier
+   * \param [in] value Value of Attribute
+   *
+   * If no such Attribute exists, this is a no-op.
    */
-  template<typename ScalarType>
-  bool setAttributeScalar( IndexType idx, ScalarType value )
+  template <typename ScalarType>
+  bool setAttributeScalar(IndexType idx, ScalarType value)
   {
     const Attribute* attr = getAttribute(idx);
-    if (attr == nullptr)
+    if(attr == nullptr)
     {
       return false;
     }
@@ -1071,13 +1044,13 @@ public:
   }
 
   /*!
-   * \brief Set Attribute for a View from Attribute name.
+   * \overload
    */
-  template<typename ScalarType>
-  bool setAttributeScalar( const std::string & name, ScalarType value )
+  template <typename ScalarType>
+  bool setAttributeScalar(const std::string& name, ScalarType value)
   {
     const Attribute* attr = getAttribute(name);
-    if (attr == nullptr)
+    if(attr == nullptr)
     {
       return false;
     }
@@ -1086,15 +1059,16 @@ public:
   }
 
   /*!
-   * \brief Set Attribute for a View from Attribute pointer.
+   * \overload
    */
-  template<typename ScalarType>
-  bool setAttributeScalar( const Attribute* attr, ScalarType value )
+  template <typename ScalarType>
+  bool setAttributeScalar(const Attribute* attr, ScalarType value)
   {
-    if (attr == nullptr)
+    if(attr == nullptr)
     {
       SLIC_CHECK_MSG(attr != nullptr,
-                     "setAttributeScalar: called without an Attribute");
+                     SIDRE_VIEW_LOG_PREPEND
+                       << "setAttributeScalar: called with a null Attribute");
       return false;
     }
 
@@ -1102,28 +1076,34 @@ public:
   }
 
   /*!
-   * \brief Set Attribute for a View from Attribute index.
+   * \brief Set Attribute to a string value.
+   * \param [in] indx Attribute identifier.
+   * \param [in] value Value of attribute.
+   *
+   * If no such Attribute exists, this is a no-op.
    */
-  bool setAttributeString( IndexType indx, const std::string & value );
+  bool setAttributeString(IndexType indx, const std::string& value);
 
   /*!
-   * \brief Set Attribute for a View from Attribute name.
+   * \overload
    */
-  bool setAttributeString( const std::string & name,
-                           const std::string & value );
+  bool setAttributeString(const std::string& name, const std::string& value);
 
   /*!
-   * \brief Set Attribute for a View from Attribute pointer.
+   * \overload
    */
-  bool setAttributeString( const Attribute* attr, const std::string & value );
+  bool setAttributeString(const Attribute* attr, const std::string& value);
 
   /*!
-   * \brief Return scalar attribute value from Attribute indx.
+   * \brief Return scalar Attribute value.
+   * \param [in] idx Attribute identifier.
+   *
+   * If no such Attribute exists, return empty scalar value.
    */
   Node::ConstValue getAttributeScalar(IndexType idx) const
   {
     const Attribute* attr = getAttribute(idx);
-    if (attr == nullptr)
+    if(attr == nullptr)
     {
       return m_attr_values.getEmptyNodeRef().value();
     }
@@ -1132,12 +1112,12 @@ public:
   }
 
   /*!
-   * \brief Return scalar attribute value from Attribute name.
+   * \overload
    */
-  Node::ConstValue getAttributeScalar(const std::string & name) const
+  Node::ConstValue getAttributeScalar(const std::string& name) const
   {
     const Attribute* attr = getAttribute(name);
-    if (attr == nullptr)
+    if(attr == nullptr)
     {
       return m_attr_values.getEmptyNodeRef().value();
     }
@@ -1146,14 +1126,15 @@ public:
   }
 
   /*!
-   * \brief Return scalar attribute value from Attribute pointer.
+   * \overload
    */
   Node::ConstValue getAttributeScalar(const Attribute* attr) const
   {
-    if (attr == nullptr)
+    if(attr == nullptr)
     {
-      SLIC_CHECK_MSG(attr != nullptr,
-                     "getScalar: called without an Attribute");
+      SLIC_CHECK_MSG(
+        attr != nullptr,
+        SIDRE_VIEW_LOG_PREPEND << "getScalar: called with a null Attribute");
       return m_attr_values.getEmptyNodeRef().value();
     }
 
@@ -1167,11 +1148,11 @@ public:
    *
    * \sa getAttributeScalar()
    */
-  template<typename DataType>
+  template <typename DataType>
   DataType getAttributeScalar(IndexType idx)
   {
     const Attribute* attr = getAttribute(idx);
-    const Node & node = m_attr_values.getValueNodeRef(attr);
+    const Node& node = m_attr_values.getValueNodeRef(attr);
     DataType data = node.value();
     return data;
   }
@@ -1183,11 +1164,11 @@ public:
    *
    * \sa getAttributeScalar()
    */
-  template<typename DataType>
-  DataType getAttributeScalar(const std::string & name)
+  template <typename DataType>
+  DataType getAttributeScalar(const std::string& name)
   {
     const Attribute* attr = getAttribute(name);
-    const Node & node = m_attr_values.getValueNodeRef(attr);
+    const Node& node = m_attr_values.getValueNodeRef(attr);
     DataType data = node.value();
     return data;
   }
@@ -1199,75 +1180,69 @@ public:
    *
    * \sa getAttributeScalar()
    */
-  template<typename DataType>
+  template <typename DataType>
   DataType getAttributeScalar(const Attribute* attr)
   {
-    if (attr == nullptr)
-    {
-      SLIC_CHECK_MSG(attr != nullptr,
-                     "getAttributeScalar: called without an Attribute");
-    }
+    SLIC_CHECK_MSG(attr != nullptr,
+                   SIDRE_VIEW_LOG_PREPEND
+                     << "getAttributeScalar: called with a null Attribute");
 
-    const Node & node = m_attr_values.getValueNodeRef(attr);
+    const Node& node = m_attr_values.getValueNodeRef(attr);
     DataType data = node.value();
     return data;
   }
 
   /*!
-   * \brief Return a string attribute from the Attribute index.
+   * \brief Return a string attribute.
+   * \param [in] idx Attribute identifer.
    *
    * If the value has not been explicitly set, return the current default.
+   *
+   * \return The Attribute name, or nullptr if no such Attribute.
    */
-  const char* getAttributeString( IndexType idx ) const;
+  const char* getAttributeString(IndexType idx) const;
 
   /*!
-   * \brief Return a string attribute from the Attribute name.
-   *
-   * If the value has not been explicitly set, return the current default.
+   * \overload
    */
-  const char* getAttributeString( const std::string & name ) const;
+  const char* getAttributeString(const std::string& name) const;
 
   /*!
-   * \brief Return a string attribute from the Attribute pointer.
-   *
-   * If the value has not been explicitly set, return the current default.
+   * \overload
    */
-  const char* getAttributeString( const Attribute* attr ) const;
+  const char* getAttributeString(const Attribute* attr) const;
 
   /*!
-   * \brief Return reference to attribute node from Attribute index.
+   * \brief Return reference to an Attribute node.
+   * \param [in] idx Attribute identifier
    *
    * If the value has not been explicitly set, return the current default.
+   *
+   * \return The Attribute Node, or an empty Node if no such Attribute.
    */
-  const Node & getAttributeNodeRef( IndexType idx ) const
+  const Node& getAttributeNodeRef(IndexType idx) const
   {
     const Attribute* attr = getAttribute(idx);
     return m_attr_values.getValueNodeRef(attr);
   }
 
   /*!
-   * \brief Return reference to attribute node from Attribute name.
-   *
-   * If the value has not been explicitly set, return the current default.
+   * \overload
    */
-  const Node & getAttributeNodeRef( const std::string & name ) const
+  const Node& getAttributeNodeRef(const std::string& name) const
   {
     const Attribute* attr = getAttribute(name);
     return m_attr_values.getValueNodeRef(attr);
   }
 
   /*!
-   * \brief Return reference to attribute node from Attribute pointer.
-   *
-   * If the value has not been explicitly set, return the current default.
+   * \overload
    */
-  const Node & getAttributeNodeRef( const Attribute* attr ) const
+  const Node& getAttributeNodeRef(const Attribute* attr) const
   {
-    if (attr == nullptr)
-    {
-      SLIC_CHECK_MSG(attr != nullptr,
-                     "getAttributeNodeRef: called without an Attribute");
-    }
+    SLIC_CHECK_MSG(attr != nullptr,
+                   SIDRE_VIEW_LOG_PREPEND
+                     << "getAttributeNodeRef: called with a null Attribute");
 
     return m_attr_values.getValueNodeRef(attr);
   }
@@ -1297,24 +1272,21 @@ public:
     return m_attr_values.getNextValidAttrValueIndex(idx);
   }
 
-//@}
-
+  //@}
 
 private:
-
   DISABLE_DEFAULT_CTOR(View);
   DISABLE_MOVE_AND_ASSIGNMENT(View);
 
-
-//@{
-//!  @name Private View ctor and dtor
-//!        (callable only by Group and View methods).
+  //@{
+  //!  @name Private View ctor and dtor
+  //!        (callable only by Group and View methods).
 
   /*!
    *  \brief Private ctor that creates a View with given name
    *         which has no data associated with it.
    */
-  View( const std::string& name );
+  View(const std::string& name);
 
   /*!
    * \brief Private copy ctor.
@@ -1326,12 +1298,11 @@ private:
    */
   ~View();
 
-//@}
+  //@}
 
-
-//@{
-//!  @name Private View declaration methods.
-//!        (callable only by Group and View methods).
+  //@{
+  //!  @name Private View declaration methods.
+  //!        (callable only by Group and View methods).
 
   /*!
    * \brief Describe a data view with given type and number of elements.
@@ -1344,7 +1315,7 @@ private:
    * If given type of NO_TYPE_ID, or number of elements < 0, or view is opaque,
    * method does nothing.
    */
-  void describe( TypeID type, IndexType num_elems);
+  void describe(TypeID type, IndexType num_elems);
 
   /*!
    * \brief Describe a data view with given type, number of dimensions, and
@@ -1358,7 +1329,7 @@ private:
    * If given type of NO_TYPE_ID, or number of dimensions or total
    * number of elements < 0, or view is opaque, method does nothing.
    */
-  void describe(TypeID type, int ndims, IndexType* shape);
+  void describe(TypeID type, int ndims, const IndexType* shape);
 
   /*!
    * \brief Declare a data view with a Conduit data type object.
@@ -1380,15 +1351,37 @@ private:
   /*!
    * \brief Set the shape to be a ndims dimensions with shape.
    */
-  void describeShape(int ndims, IndexType* shape);
+  void describeShape(int ndims, const IndexType* shape);
 
   /*!
-   * \brief Copy view contents into an undescribed EMPTY view.
+   * \brief Private method to remove user provided description.
+   */
+  void undescribe()
+  {
+    m_schema.reset();
+    m_shape.clear();
+  }
+
+  /*!
+   * \brief Copy contents of this View contents into an undescribed EMPTY View.
    *
    * For SCALAR and STRING the data is copied; EXTERNAL,
    * data pointer is copied; BUFFER attaches the buffer.
    */
-  void copyView( View* copy ) const;
+  void copyView(View* copy) const;
+
+  /*!
+   * \brief Deep copy contents of this View contents into an undescribed
+   * EMPTY View.
+   *
+   * For SCALAR and STRING the data is copied and the state is preserved.
+   * For BUFFER and EXTERNAL, the data described by this View is copied into a
+   * new Buffer that is of the size needed to hold the copied data. Any
+   * parts of the source Buffer or external array that are not seen due
+   * to offsets and strides in the description will not be copied. The copied
+   * View will have BUFFER state with zero offset and a stride of one.
+   */
+  void deepCopyView(View* copy, int allocID = INVALID_ALLOCATOR_ID) const;
 
   /*!
    * \brief Add view description and references to it's data to a conduit tree.
@@ -1447,11 +1440,10 @@ private:
     unapply();
   }
 
-//@}
+  //@}
 
-
-//@{
-//!  @name Private methods that indicate when certain view operations are valid.
+  //@{
+  //!  @name Private methods that indicate when certain view operations are valid.
 
   /*!
    *  \brief Private method returns true if data allocation on view is a
@@ -1465,8 +1457,7 @@ private:
    */
   bool isApplyValid() const;
 
-//@}
-
+  //@}
 
   ///
   /// Enum with constants that identify the state of a view.
@@ -1477,16 +1468,17 @@ private:
   ///
   enum State
   {
-    EMPTY,           // View created with name only :
-                     //    has no data or data description
-    BUFFER,          // View has a buffer attached explicitly. :
-                     //    applied may be true or false
-    EXTERNAL,        // View holds pointer to external data (no buffer) :
-                     //    applied may be true or false
-    SCALAR,          // View holds scalar data (via setScalar()):
-                     //    applied is true
-    STRING           // View holds string data (view setString()):
-                     //    applied is true
+    EMPTY,     // View created with name only :
+               //    has no data or data description
+    BUFFER,    // View has a buffer attached, either via call to
+               // View::attachBuffer(), View::allocate(), etc. :
+               //    applied may be true or false
+    EXTERNAL,  // View holds pointer to external data (no buffer) :
+               //    applied may be true or false
+    SCALAR,    // View holds scalar data (via setScalar()):
+               //    applied is true
+    STRING     // View holds string data (view setString()):
+               //    applied is true
   };
 
   /*!
@@ -1497,13 +1489,13 @@ private:
   /*!
    *  \brief Private method returns state enum value give a state name.
    */
-  State getStateId(const std::string &name) const;
+  State getStateId(const std::string& name) const;
 
   /*!
    * \brief Private method. If allocatorID is a valid allocator ID then return
    *  it. Otherwise return the ID of the default allocator of the owning group.
    */
-  int getValidAllocatorID( int allocatorID );
+  int getValidAllocatorID(int allocatorID);
 
   /// Name of this View object.
   std::string m_name;
@@ -1537,11 +1529,9 @@ private:
 
   /// Attribute Values
   AttrValues m_attr_values;
-
 };
-
 
 } /* end namespace sidre */
 } /* end namespace axom */
 
-#endif /* DATAVIEW_HPP_ */
+#endif /* SIDRE_VIEW_HPP_ */

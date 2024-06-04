@@ -1,5 +1,5 @@
-// Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC and
-// other Axom Project Developers. See the top-level COPYRIGHT file for details.
+// Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
+// other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
@@ -7,14 +7,13 @@
 #define QUEST_INOUT_INTERFACE_HPP_
 
 // Axom includes
-#include "axom/config.hpp"  // for compile-time configuration options
+#include "axom/config.hpp"
 
 // Quest includes
-#include "axom/quest/interface/internal/mpicomm_wrapper.hpp" // MPI_COMM_SELF
+#include "axom/quest/interface/internal/mpicomm_wrapper.hpp"
 
 // C/C++ includes
-#include <string>   // for std::string
-
+#include <string>
 
 /*!
  * \file inout.hpp
@@ -37,7 +36,6 @@
 
 namespace axom
 {
-
 // Forward Mint declarations
 namespace mint
 {
@@ -98,12 +96,9 @@ bool inout_initialized();
 
 /// @}
 
-
-
 /// \name InOut query -- properties and querying functions
 /// \note These must be called after \a inout_init()
 /// @{
-
 
 /*!
  * \brief Tests if the point (\a x, \a y, \a z) is inside the contained volume
@@ -115,7 +110,7 @@ bool inout_initialized();
  *    surface mesh, false otherwise.
  * \pre inout_initialized() == true
  */
-bool inout_evaluate(double x, double y, double z=0.);
+bool inout_evaluate(double x, double y, double z = 0.);
 
 /*!
  * \brief Tests an array of points for containment
@@ -139,8 +134,11 @@ bool inout_evaluate(double x, double y, double z=0.);
  *  and \a res are not \a nullptr and contain sufficient data/space for
  *  \a npoints points.
  */
-int inout_evaluate(const double* x,const double* y,const double* z,
-                   int npoints, int* res);
+int inout_evaluate(const double* x,
+                   const double* y,
+                   const double* z,
+                   int npoints,
+                   int* res);
 
 /*!
  * \brief Returns the lower coordinates of the mesh's bounding box
@@ -182,21 +180,28 @@ int inout_mesh_center_of_mass(double* coords);
 /*!
  * \brief Gets the spatial dimension of the query
  *
- * \return Returns the spatial dimension for query points when the query has
- * been successfully initialized and QUEST_INOUT_FAILED otherwise.
- * \note This determines the number of coordinates for query points in
- * \a inout_evaluate() and the number of returned coordinates in functions like
- * \a inout_mesh_min_bounds()
- * \pre inout_initialized() == true
+ * \return Returns the spatial dimension for the inout query
+ * \note This determines the number of coordinates for the input mesh
+ * \note The default dimension is 3
+ * \sa inout_set_dimension
  */
 int inout_get_dimension();
 
 /// @}
 
-
 /// \name InOut query -- setup options and parameters
 /// \note These must be called before \a inout_init()
 /// @{
+
+/*!
+ * \brief Sets the spatial dimension of the query
+ *
+ * \param dim The dimension for the inout query
+ * \return Return code is QUEST_INOUT_SUCCESS if successful, QUEST_INOUT_FAILED otherwise
+ * \pre dim == 2 || dim == 3
+ * \pre inout_initialized() == false
+ */
+int inout_set_dimension(int dim);
 
 /*!
  * \brief Enables/disables verbose logging output
@@ -225,15 +230,30 @@ int inout_set_verbose(bool verbosity);
  * \return Return code is QUEST_INOUT_SUCCESS if successful
  *  and QUEST_INOUT_FAILED otherwise.
  * \pre inout_initialized() == false
- * \pre thresh >= 0
+ * \pre thresh > 0
  */
 int inout_set_vertex_weld_threshold(double thresh);
 
+/*!
+ * \brief Sets the number of samples for each knot span (2D only)
+ *
+ * By default, the welding threshold is 25
+ *
+ * Span intervals are the segments of each curve. This parameter controls
+ * the number of samples to use when linearizing each knot span
+ * of the contour splines 
+ *
+ * \param segmentsPerKnotSpan The number of segments for each knot span
+ * \return Return code is QUEST_INOUT_SUCCESS if successful
+ *  and QUEST_INOUT_FAILED otherwise.
+ * \pre inout_initialized() == false
+ * \pre segmentsPerKnotSpan >= 1
+ */
+int inout_set_segments_per_knot_span(int segmentsPerKnotSpan);
+
 /// @}
 
+}  // end namespace quest
+}  // end namespace axom
 
-
-} // end namespace quest
-} // end namespace axom
-
-#endif /* QUEST_INOUT_INTERFACE_HPP_ */
+#endif  // QUEST_INOUT_INTERFACE_HPP_

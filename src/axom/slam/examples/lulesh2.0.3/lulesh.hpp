@@ -1,9 +1,8 @@
-// Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC and
-// other Axom Project Developers. See the top-level COPYRIGHT file for details.
+// Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
+// other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
-#include "axom/core.hpp"
 #include "axom/slic.hpp"
 #include "axom/slam.hpp"
 
@@ -38,9 +37,9 @@ namespace slamLulesh {
   typedef double      real8;
   typedef long double real10;  // 10 bytes on x86
 
-  typedef int         Index_t; // array subscript and loop index
-  typedef real8       Real_t; // floating point representation
-  typedef int         Int_t; // integer representation
+  typedef axom::IndexType  Index_t; // array subscript and loop index
+  typedef real8            Real_t; // floating point representation
+  typedef axom::IndexType  Int_t; // integer representation
 
   enum { VolumeError = -1, QStopError = -2 };
 
@@ -180,21 +179,21 @@ namespace slamLulesh {
                                     CornerSet>;
     using NodeCornerSet = const NodeToCornerRelation::RelationSubset ;
 
-    using ElemIndexMap = axom::slam::Map<SetBase, Index_t>;
-    using ElemIntMap = axom::slam::Map<SetBase, Int_t>;
+    using ElemIndexMap = axom::slam::Map<Index_t>;
+    using ElemIntMap = axom::slam::Map<Int_t>;
     //using ElemRealMap = axom::slam::Map<Real_t>;
 
-    using NodeIndexMap = axom::slam::Map<SetBase, Index_t>;
+    using NodeIndexMap = axom::slam::Map<Index_t>;
     //using NodeIntMap = axom::slam::Map<Int_t>;
     //using NodeRealMap = axom::slam::Map<Real_t>;
 
     //using RegionIndexMap = axom::slam::Map<Index_t>;
-    using RegionIntMap = axom::slam::Map<SetBase, Int_t>;
+    using RegionIntMap = axom::slam::Map<Int_t>;
     //using RegionRealMap = axom::slam::Map<Real_t>;
 
     //using CornerIndexMap = axom::slam::Map<Index_t>;
     //using CornerIntMap = axom::slam::Map<Int_t>;
-    using CornerRealMap = axom::slam::Map<SetBase, Real_t>;
+    using CornerRealMap = axom::slam::Map<Real_t>;
 
     using RealsRegistry = axom::slam::FieldRegistry<SetBase, Real_t>;
     using IntsRegistry = axom::slam::FieldRegistry<SetBase, Index_t>;
@@ -206,6 +205,10 @@ namespace slamLulesh {
         Index_t rowLoc, Index_t planeLoc,
         Index_t nx, Int_t tp, Int_t nr, Int_t balance, Int_t cost);
 
+
+    // Destructor
+    ~Domain();
+    
     //
     // ALLOCATION
     //
@@ -498,8 +501,8 @@ namespace slamLulesh {
 
 #ifdef AXOM_USE_MPI
     // Communication Work space
-    Real_t *commDataSend;
-    Real_t *commDataRecv;
+    Real_t *commDataSend {nullptr};
+    Real_t *commDataRecv {nullptr};
 
     // Maximum number of block neighbors
     MPI_Request recvRequest[26]; // 6 faces + 12 edges + 8 corners
@@ -691,7 +694,7 @@ namespace slamLulesh {
 
 // lulesh-util
   void  ParseCommandLineOptions(int argc, char *argv[],
-      Int_t myRank, struct cmdLineOpts *opts);
+      int myRank, struct cmdLineOpts *opts);
   void  VerifyAndWriteFinalOutput(Real_t elapsed_time,
       Domain& locDom,
       Int_t nx,
@@ -701,9 +704,9 @@ namespace slamLulesh {
   void  DumpToVisit(Domain& domain, int numFiles, int myRank, int numRanks);
 
 // lulesh-comm
-  void  CommRecv(Domain& domain, Int_t msgType, Index_t xferFields, Index_t dx, Index_t dy, Index_t dz, bool doRecv, bool planeOnly);
-  void  CommSend(Domain& domain, Int_t msgType, Index_t xferFields, Domain_member *fieldData, Index_t dx, Index_t dy, Index_t dz, bool doSend, bool planeOnly);
-  void  CommSBN(Domain& domain, Int_t xferFields, Domain_member *fieldData);
+  void  CommRecv(Domain& domain, int msgType, Index_t xferFields, Index_t dx, Index_t dy, Index_t dz, bool doRecv, bool planeOnly);
+  void  CommSend(Domain& domain, int msgType, Index_t xferFields, Domain_member *fieldData, Index_t dx, Index_t dy, Index_t dz, bool doSend, bool planeOnly);
+  void  CommSBN(Domain& domain, int xferFields, Domain_member *fieldData);
   void  CommSyncPosVel(Domain& domain);
   void  CommMonoQ(Domain& domain);
 

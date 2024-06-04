@@ -1,5 +1,5 @@
-// Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC and
-// other Axom Project Developers. See the top-level COPYRIGHT file for details.
+// Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
+// other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
@@ -10,10 +10,10 @@
 #include "axom/config.hpp"  // for compile-time definitions
 
 // Quest includes
-#include "axom/quest/interface/internal/mpicomm_wrapper.hpp" // MPI_COMM_SELF
+#include "axom/quest/interface/internal/mpicomm_wrapper.hpp"  // MPI_COMM_SELF
 
 // C/C++ includes
-#include <string>   // for std::string
+#include <string>  // for std::string
 
 /*!
  * \file
@@ -76,7 +76,6 @@
 
 namespace axom
 {
-
 // Forward Mint declarations
 namespace mint
 {
@@ -85,6 +84,13 @@ class Mesh;
 
 namespace quest
 {
+// Signed Distance execution policies
+enum class SignedDistExec
+{
+  CPU = 0,
+  OpenMP = 1,
+  GPU = 2
+};
 
 /// \name Signed Distance Query Initialization Methods
 /// @{
@@ -108,8 +114,7 @@ namespace quest
  * \pre signed_distance_initialized() == false
  * \post signed_distance_initialized() == true
  */
-int signed_distance_init( const std::string& file,
-                          MPI_Comm comm=MPI_COMM_SELF );
+int signed_distance_init(const std::string& file, MPI_Comm comm = MPI_COMM_SELF);
 
 /*!
  * \brief Initializes the Signed Distance Query with the given surface mesh
@@ -129,13 +134,13 @@ int signed_distance_init( const std::string& file,
  *
  * \see mint::Mesh
  */
-int signed_distance_init( const mint::Mesh* m, MPI_Comm comm=MPI_COMM_SELF );
+int signed_distance_init(const mint::Mesh* m, MPI_Comm comm = MPI_COMM_SELF);
 
 /*!
  * \brief Checks if the Signed Distance Query has been initialized
  * \return status true if initialized, else, false.
  */
-bool signed_distance_initialized( );
+bool signed_distance_initialized();
 
 /// @}
 
@@ -149,7 +154,7 @@ bool signed_distance_initialized( );
  * \warning The Signed Distance function is currently supported in 3D
  * \note Options must be set before initializing the Signed Distance Query.
  */
-void signed_distance_set_dimension( int dim );
+void signed_distance_set_dimension(int dim);
 
 /*!
  * \brief Indicates whether the input to the signed distance consists of a
@@ -173,27 +178,24 @@ void signed_distance_set_dimension( int dim );
  *  a normal projection onto the surface does not exist.
  *
  */
-void signed_distance_set_closed_surface( bool status );
+void signed_distance_set_closed_surface(bool status);
 
 /*!
- * \brief Sets the maximum levels of subdivision for the BVH decomposition.
- * \param [in] maxLevels the maximum levels of subdivision.
+ * \brief Sets whether the distance query should compute or ignore the sign
+ * \param [in] computeSign predicate indicating if sign should be computed
  *
  * \note Options must be set before initializing the Signed Distance Query.
  */
-void signed_distance_set_max_levels( int maxLevels );
+void signed_distance_set_compute_signs(bool computeSign);
 
 /*!
- * \brief Sets threshold on the max number of items per BVH bin. This option
- *  controls the BVH decomposition.
+ * \brief Sets the allocator to use for creating internal signed distance query
+ *  data structures.
+ * \param [in] allocatorID the allocator ID to use
  *
- * \param [in] threshold max number of items per bin.
- *
- * \note Options must be set before initializing the Signed Distance Query.
- *
- * \pre theshold >= 1
+ * \note Allocator should be compatible with the set execution space.
  */
-void signed_distance_set_max_occupancy( int threshold );
+void signed_distance_set_allocator(int allocatorID);
 
 /*!
  * \brief Enables/Disables verbose output for the Signed Distance Query.
@@ -204,7 +206,7 @@ void signed_distance_set_max_occupancy( int threshold );
  * \note Currently, this is only applicable when the Signed Distance Query
  *  initializes the SLIC logging environment.
  */
-void signed_distance_set_verbose( bool status );
+void signed_distance_set_verbose(bool status);
 
 /*!
  * \brief Enable/Disable the use of MPI-3 on-node shared memory for storing
@@ -214,7 +216,20 @@ void signed_distance_set_verbose( bool status );
  *
  * \note This option utilities MPI-3 features
  */
-void signed_distance_use_shared_memory( bool status );
+void signed_distance_use_shared_memory(bool status);
+
+/*!
+ * \brief Set the execution space in which to run signed distance queries. By
+ *  default this option is set to SIGNED_DIST_EVAL_CPU.
+ *
+ * \param [in] exec_space the execution space setting, one of the enum values
+ *  in SignedDistExec.
+ *
+ * \note This function resets the default allocator based on the requested
+ *  execution space. If a custom allocator ID is desired, set it in a call to
+ *  axom::setDefaultAllocator after this call.
+ */
+void signed_distance_set_execution_space(SignedDistExec execSpace);
 
 /// @}
 
@@ -230,7 +245,33 @@ void signed_distance_use_shared_memory( bool status );
  *
  * \return d the signed distance evaluated at the specified point.
  */
-double signed_distance_evaluate( double x, double y, double z=0.0 );
+double signed_distance_evaluate(double x, double y, double z = 0.0);
+
+/*!
+ * \brief Evaluates the signed distance function at the given 3D point.
+ *
+ * \param [in] x the x-coordinate of the point in query
+ * \param [in] y the y-coordinate of the point in query
+ * \param [in] z the z-coordinate of the point in query
+ * \param [out] cp_x the x-coordinate of the computed closest point on surface to query point
+ * \param [out] cp_y the y-coordinate of the computed closest point on surface to query point
+ * \param [out] cp_z the z-coordinate of the computed closest point on surface to query point
+ * \param [out] n_x the x-coordinate of the surface normal at the computed closest point
+ * \param [out] n_y the y-coordinate of the surface normal at the computed closest point
+ * \param [out] n_z the z-coordinate of the surface normal at the computed closest point
+ *
+ * \return d the signed distance evaluated at the specified point. The closest surface point
+ * to the query point and the normal at that point are returned as OUT parameters 
+ */
+double signed_distance_evaluate(double x,
+                                double y,
+                                double z,
+                                double& cp_x,
+                                double& cp_y,
+                                double& cp_z,
+                                double& n_x,
+                                double& n_y,
+                                double& n_z);
 
 /*!
  * \brief Evaluates the signed distance function at the given set of points.
@@ -246,11 +287,11 @@ double signed_distance_evaluate( double x, double y, double z=0.0 );
  * \pre z != nullptr
  * \pre phi != nullptr
  */
-void signed_distance_evaluate( const double* x,
-                               const double* y,
-                               const double* z,
-                               int npoints,
-                               double* phi );
+void signed_distance_evaluate(const double* x,
+                              const double* y,
+                              const double* z,
+                              int npoints,
+                              double* phi);
 
 /*!
  * \brief Computes the bounds of the specified input mesh supplied to the
@@ -264,7 +305,7 @@ void signed_distance_evaluate( const double* x,
  * \pre hi & lo must point to a buffer that is at least ndims long.
  * \pre signed_distance_initialized() == true
  */
-void signed_distance_get_mesh_bounds( double* lo, double* hi );
+void signed_distance_get_mesh_bounds(double* lo, double* hi);
 
 /// @}
 
@@ -279,7 +320,7 @@ void signed_distance_finalize();
 
 /// @}
 
-} // end namespace quest
-} // end namespace axom
+}  // end namespace quest
+}  // end namespace axom
 
 #endif /* QUEST_SIGNED_DISTANCE_INTERFACE_HPP_ */

@@ -1,5 +1,5 @@
-// Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC and
-// other Axom Project Developers. See the top-level COPYRIGHT file for details.
+// Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
+// other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
@@ -27,7 +27,7 @@ namespace slamLulesh {
 /////////////////////////////////////////////////////////////////////
   Domain::Domain(Int_t numRanks, Index_t colLoc,
       Index_t rowLoc, Index_t planeLoc,
-      Index_t nx, int tp, int nr, int balance, Int_t cost)
+      Index_t nx, Int_t tp, Int_t nr, Int_t balance, Int_t cost)
       : m_e_cut(Real_t(1.0e-7)),
         m_p_cut(Real_t(1.0e-7)),
         m_q_cut(Real_t(1.0e-7)),
@@ -207,6 +207,14 @@ namespace slamLulesh {
 
   } // End constructor
 
+
+Domain::~Domain()
+{
+#ifdef AXOM_USE_MPI
+    delete [] commDataSend;
+    delete [] commDataRecv;
+#endif
+}
 
 ////////////////////////////////////////////////////////////////////////////////
   void
@@ -391,10 +399,10 @@ namespace slamLulesh {
   void
   Domain::CreateRegionIndexSets(Int_t nr, Int_t balance)
   {
-    using RegionToElemDynamicRelation = axom::slam::DynamicVariableRelation<PositionType, ElementType>;
+    using RegionToElemDynamicRelation = axom::slam::DynamicVariableRelation<RegionSet, ElemSet>;
 
 #ifdef AXOM_USE_MPI
-    Index_t myRank;
+    int myRank;
     MPI_Comm_rank(MPI_COMM_WORLD, &myRank);
     srand(myRank);
 #else
@@ -553,14 +561,14 @@ namespace slamLulesh {
       }
     }
 
-    m_symmX.data() = &loc_symmX;
-    m_symmY.data() = &loc_symmY;
-    m_symmZ.data() = &loc_symmZ;
+    m_symmX.ptr() = &loc_symmX;
+    m_symmY.ptr() = &loc_symmY;
+    m_symmZ.ptr() = &loc_symmZ;
 
     // Verify validity of the sets.
-    SLIC_ASSERT(  m_symmX.isValid() && m_symmX.size() == numSymmNodesX && m_symmX.data() == &loc_symmX);
-    SLIC_ASSERT(  m_symmY.isValid() && m_symmY.size() == numSymmNodesY && m_symmY.data() == &loc_symmY);
-    SLIC_ASSERT(  m_symmZ.isValid() && m_symmZ.size() == numSymmNodesZ && m_symmZ.data() == &loc_symmZ);
+    SLIC_ASSERT(  m_symmX.isValid() && m_symmX.size() == numSymmNodesX && m_symmX.ptr() == &loc_symmX);
+    SLIC_ASSERT(  m_symmY.isValid() && m_symmY.size() == numSymmNodesY && m_symmY.ptr() == &loc_symmY);
+    SLIC_ASSERT(  m_symmZ.isValid() && m_symmZ.size() == numSymmNodesZ && m_symmZ.ptr() == &loc_symmZ);
   }
 
 

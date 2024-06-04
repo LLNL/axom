@@ -1,0 +1,16 @@
+diff --git a/src/config/conduit_setup_targets.cmake b/src/config/conduit_setup_targets.cmake
+index b8a6697..1f21837 100644
+--- a/src/config/conduit_setup_targets.cmake
++++ b/src/config/conduit_setup_targets.cmake
+@@ -15,6 +15,11 @@ endif()
+ # we want the import root, which is right above the "lib" prefix
+ get_filename_component(_IMPORT_ROOT "${_IMPORT_PREFIX}" PATH)
+ 
++# Patch for VCPKG -- need to account for the config type
++if(VCPKG_TARGET_TRIPLET)
++    set(_IMPORT_ROOT "${_IMPORT_ROOT}/${VCPKG_TARGET_TRIPLET}")
++endif()
++
+ 
+ set(CONDUIT_INCLUDE_DIRS "${_IMPORT_ROOT}/include/conduit")
+ 

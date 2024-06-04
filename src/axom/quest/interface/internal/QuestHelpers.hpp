@@ -1,5 +1,5 @@
-// Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC and
-// other Axom Project Developers. See the top-level COPYRIGHT file for details.
+// Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
+// other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
@@ -7,21 +7,18 @@
 #define QUEST_HELPERS_HPP_
 
 // Axom includes
-#include "axom/config.hpp"           // for compile-time definitions
-
-// Mint includes
-#include "axom/mint/mesh/Mesh.hpp"             // for mint::Mesh
-
-// Quest includes
+#include "axom/config.hpp"
+#include "axom/slic.hpp"
+#include "axom/mint/mesh/Mesh.hpp"
 #include "axom/quest/interface/internal/mpicomm_wrapper.hpp"
-#include "axom/quest/stl/STLReader.hpp"
-
+#include "axom/quest/readers/STLReader.hpp"
+#include "axom/quest/readers/ProEReader.hpp"
 
 // C/C++ includes
-#include <string> // for C++ string
+#include <string>
 
 /*!
- * \file
+ * \file QuestHelpers.hpp
  *
  * \brief Helper methods that can be used across the different Quest queries.
  */
@@ -31,9 +28,37 @@ namespace quest
 {
 namespace internal
 {
-
-constexpr int READ_FAILED  = -1;
+constexpr int READ_FAILED = -1;
 constexpr int READ_SUCCESS = 0;
+
+/*!
+ * \brief Simple RAII-based utility class to update the slic logging level within a scope
+ *
+ * The original logging level will be restored when this instance goes out of scope
+ */
+class ScopedLogLevelChanger
+{
+public:
+  ScopedLogLevelChanger(slic::message::Level newLevel)
+  {
+    if(slic::isInitialized())
+    {
+      m_previousLevel = slic::getLoggingMsgLevel();
+      slic::setLoggingMsgLevel(newLevel);
+    }
+  }
+
+  ~ScopedLogLevelChanger()
+  {
+    if(slic::isInitialized())
+    {
+      slic::setLoggingMsgLevel(m_previousLevel);
+    }
+  }
+
+private:
+  slic::message::Level m_previousLevel {slic::message::Level::Debug};
+};
 
 /// \name MPI Helper/Wrapper Methods
 /// @{
@@ -44,13 +69,13 @@ constexpr int READ_SUCCESS = 0;
  * \param [in] window handle to the MPI window.
  * \note All buffers attached to the window are also deallocated.
  */
-void mpi_win_free( MPI_Win* window );
+void mpi_win_free(MPI_Win* window);
 
 /*!
  * \brief Deallocates the specified MPI communicator object.
  * \param [in] comm handle to the MPI communicator object.
  */
-void mpi_comm_free( MPI_Comm* comm );
+void mpi_comm_free(MPI_Comm* comm);
 
 /*!
  * \brief Reads the mesh on rank 0 and exchanges the mesh metadata, i.e., the
@@ -66,10 +91,10 @@ void mpi_comm_free( MPI_Comm* comm );
  * \pre global_comm != MPI_COMM_NULL
  * \pre mesh_metadata != nullptr
  */
-int read_and_exchange_mesh_metadata( int global_rank_id,
-                                     MPI_Comm global_comm,
-                                     quest::STLReader& reader,
-                                     axom::IndexType mesh_metadata[ 2 ] );
+int read_and_exchange_mesh_metadata(int global_rank_id,
+                                    MPI_Comm global_comm,
+                                    quest::STLReader& reader,
+                                    axom::IndexType mesh_metadata[2]);
 
 #endif /* AXOM_USE_MPI */
 
@@ -109,12 +134,12 @@ int read_and_exchange_mesh_metadata( int global_rank_id,
  * \post intra_node_comm != MPI_COMM_NULL
  * \post inter_node_comm != MPI_COMM_NULL
  */
-void create_communicators( MPI_Comm global_comm,
-                           MPI_Comm& intra_node_comm,
-                           MPI_Comm& inter_node_comm,
-                           int& global_rank_id,
-                           int& local_rank_id,
-                           int& intercom_rank_id );
+void create_communicators(MPI_Comm global_comm,
+                          MPI_Comm& intra_node_comm,
+                          MPI_Comm& inter_node_comm,
+                          int& global_rank_id,
+                          int& local_rank_id,
+                          int& intercom_rank_id);
 #endif
 
 #if defined(AXOM_USE_MPI) && defined(AXOM_USE_MPI3)
@@ -149,19 +174,18 @@ void create_communicators( MPI_Comm global_comm,
  * \post mesh_buffer != nullptr
  * \post shared_window != MPI_WIN_NULL
  */
-MPI_Aint allocate_shared_buffer( int local_rank_id,
-                                 MPI_Comm intra_node_comm,
-                                 const axom::IndexType mesh_metadata[ 2 ],
-                                 double*& x,
-                                 double*& y,
-                                 double*& z,
-                                 axom::IndexType*& conn,
-                                 unsigned char*& mesh_buffer,
-                                 MPI_Win& shared_window );
+MPI_Aint allocate_shared_buffer(int local_rank_id,
+                                MPI_Comm intra_node_comm,
+                                const axom::IndexType mesh_metadata[2],
+                                double*& x,
+                                double*& y,
+                                double*& z,
+                                axom::IndexType*& conn,
+                                unsigned char*& mesh_buffer,
+                                MPI_Win& shared_window);
 #endif
 
 /// @}
-
 
 /// \name Mesh I/O methods
 /// @{
@@ -198,14 +222,13 @@ MPI_Aint allocate_shared_buffer( int local_rank_id,
  * \post intra_node_comm != MPI_COMM_NULL
  * \post shared_window != MPI_WIN_NULL
  */
-int read_mesh_shared( const std::string& file,
-                      MPI_Comm global_comm,
-                      unsigned char*& mesh_buffer,
-                      mint::Mesh*& m,
-                      MPI_Comm& intra_node_comm,
-                      MPI_Win& shared_window );
+int read_stl_mesh_shared(const std::string& file,
+                         MPI_Comm global_comm,
+                         unsigned char*& mesh_buffer,
+                         mint::Mesh*& m,
+                         MPI_Comm& intra_node_comm,
+                         MPI_Win& shared_window);
 #endif
-
 
 /*!
  * \brief Reads in the surface mesh from the specified file.
@@ -214,8 +237,7 @@ int read_mesh_shared( const std::string& file,
  * \param [out] m user-supplied pointer to point to the mesh object.
  * \param [in] comm the MPI communicator, only applicable when MPI is available.
  *
- * \note This method currently expects the surface mesh to be given in STL
- *  format.
+ * \note This method currently expects the surface mesh to be given in STL format.
  *
  * \note The caller is responsible for properly de-allocating the mesh object
  *  that is returned by this function.
@@ -233,9 +255,114 @@ int read_mesh_shared( const std::string& file,
  * \see STLReader
  * \see PSTLReader
  */
-int read_mesh( const std::string& file,
-               mint::Mesh*& m,
-               MPI_Comm comm=MPI_COMM_SELF );
+int read_stl_mesh(const std::string& file,
+                  mint::Mesh*& m,
+                  MPI_Comm comm = MPI_COMM_SELF);
+
+#ifdef AXOM_USE_C2C
+/*!
+ * \brief Reads in the contour mesh from the specified file
+ *
+ * \param [in] file the file consisting of a C2C contour defined by one or more c2c::Piece
+ * \param [in] transform A 4x4 matrix that contains a transform to be applied to points.
+ * \param [in] segmentsPerPiece number of segments to sample per contour Piece
+ * \param [in] vertexWeldThreshold threshold for welding vertices of adjacent curves
+ * \param [out] m user-supplied pointer to point to the mesh object
+ * \param [out] revolvedVolume An approximation of the revolved volume of the contour
+ *                             or 0 if it could not be computed.
+ * \param [in] comm the MPI communicator, only applicable when MPI is available
+ *
+ * \note The caller is responsible for properly de-allocating the mesh object
+ *  that is returned by this function
+ *
+ * \return status set to zero on success, or to a non-zero value otherwise
+ *
+ * \pre m == nullptr
+ * \pre !file.empty()
+ *
+ * \post m != nullptr
+ * \post m->getMeshType() == mint::UNSTRUCTURED_MESH
+ * \post m->hasMixedCellTypes() == false
+ * \post m->getCellType() == mint::SEGMENT
+ * \post revolvedVolume > 0 if it could be computed.
+ *
+ * \see C2CReader
+ * \see PC2CReader
+ */
+int read_c2c_mesh_uniform(const std::string& file,
+                          const numerics::Matrix<double>& transform,
+                          int segmentsPerPiece,
+                          double vertexWeldThreshold,
+                          mint::Mesh*& m,
+                          double& revolvedVolume,
+                          MPI_Comm comm = MPI_COMM_SELF);
+
+/*!
+ * \brief Reads in the contour mesh from the specified file and refines it
+ *        according to a percent error.
+ *
+ * \param [in] file the file consisting of a C2C contour defined by one or more c2c::Piece
+ * \param [in] transform A 4x4 matrix that contains a transform to be applied to points.
+ * \param [in] percentError An acceptable percent error in the arc length of the curve.
+ * \param [in] vertexWeldThreshold threshold for welding vertices of adjacent curves
+ * \param [out] m user-supplied pointer to the mesh object
+ * \param [out] revolvedVolume An approximation of the revolved volume of the contour
+ *                             or 0 if it could not be computed.
+ * \param [in] comm the MPI communicator, only applicable when MPI is available
+ *
+ * \note The caller is responsible for properly de-allocating the mesh object
+ *  that is returned by this function
+ *
+ * \return status set to zero on success, or to a non-zero value otherwise
+ *
+ * \pre m == nullptr
+ * \pre !file.empty()
+ * \pre percentError should be in the range (0,1) non-inclusive.
+ *
+ * \post m != nullptr
+ * \post m->getMeshType() == mint::UNSTRUCTURED_MESH
+ * \post m->hasMixedCellTypes() == false
+ * \post m->getCellType() == mint::SEGMENT
+ * \post revolvedVolume > 0 if it could be computed.
+ *
+ * \see C2CReader
+ * \see PC2CReader
+ */
+int read_c2c_mesh_non_uniform(const std::string& file,
+                              const numerics::Matrix<double>& transform,
+                              double percentError,
+                              double vertexWeldThreshold,
+                              mint::Mesh*& m,
+                              double& revolvedVolume,
+                              MPI_Comm comm = MPI_COMM_SELF);
+#endif  // AXOM_USE_C2C
+
+/*!
+ * \brief Reads in the Pro/E tetrahedral mesh from the specified file.
+ *
+ * \param [in] file the file consisting of the Pro/E mesh
+ * \param [out] m user-supplied pointer to point to the mesh object.
+ * \param [in] comm the MPI communicator, only applicable when MPI is available.
+ *
+ * \note The caller is responsible for properly de-allocating the mesh object
+ *  that is returned by this function.
+ *
+ * \return zero on success, or a non-zero value otherwise.
+ *
+ * \pre m == nullptr
+ * \pre !file.empty()
+ *
+ * \post m != nullptr
+ * \post m->getMeshType() == mint::UNSTRUCTURED_MESH
+ * \post m->hasMixedCellTypes() == false
+ * \post m->getCellType() == mint::TET
+ *
+ * \see ProEReader
+ * \see PProEReader
+ */
+int read_pro_e_mesh(const std::string& file,
+                    mint::Mesh*& m,
+                    MPI_Comm comm = MPI_COMM_SELF);
 
 /// @}
 
@@ -255,7 +382,7 @@ int read_mesh( const std::string& file,
  * \pre hi & lo must point to buffers that are at least N long, where N
  *  corresponds to the mesh dimension.
  */
-void compute_mesh_bounds( const mint::Mesh* mesh, double* lo, double* hi );
+void compute_mesh_bounds(const mint::Mesh* mesh, double* lo, double* hi);
 /// @}
 
 /// \name Logger Initialize/Finalize Methods
@@ -281,10 +408,10 @@ void compute_mesh_bounds( const mint::Mesh* mesh, double* lo, double* hi );
  *
  *  \see logger_finalize
  */
-void logger_init( bool& isInitialized,
-                  bool& mustFinalize,
-                  bool verbose,
-                  MPI_Comm comm );
+void logger_init(bool& isInitialized,
+                 bool& mustFinalize,
+                 bool verbose,
+                 MPI_Comm comm);
 
 /*!
  * \brief Finalizes the Slic logger (if needed)
@@ -294,7 +421,7 @@ void logger_init( bool& isInitialized,
  *
  * \see logger_init
  */
-void logger_finalize( bool mustFinalize );
+void logger_finalize(bool mustFinalize);
 /// @}
 
 } /* end namespace internal */

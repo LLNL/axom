@@ -1,5 +1,5 @@
-! Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC and
-! other Axom Project Developers. See the top-level COPYRIGHT file for details.
+! Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
+! other Axom Project Developers. See the top-level LICENSE file for details.
 !
 ! SPDX-License-Identifier: (BSD-3-Clause)
 
@@ -15,7 +15,7 @@ program spio_external_write_read
   include 'mpif.h'
 
   integer, parameter :: nvals = 10
-  integer orig_vals1(nvals), restored_vals1(nvals)
+  integer(C_INT), target :: orig_vals1(nvals), restored_vals1(nvals)
   integer(C_INT), target :: orig_vals2(nvals), restored_vals2(nvals)
   integer my_rank, num_ranks, mpierr
   integer num_output, num_files
@@ -29,7 +29,7 @@ program spio_external_write_read
   type(SidreGroup) ga, gb
   type(SidreView)  view1, view2
 
-  type(iomanager) writer, reader
+  type(IOManager) writer, reader
 
 ! Loading external data is only currently valid for 'sidre_hdf5' protocol
 #ifdef AXOM_USE_HDF5
@@ -53,7 +53,7 @@ program spio_external_write_read
   ! the views are filled with repeatable nonsense data that will vary based
   ! on rank.
 
-  ds1 = datastore_new()
+  ds1 = SidreDataStore()
   root1 = ds1%get_root()
 
   flds = root1%create_group("fields")
@@ -61,23 +61,22 @@ program spio_external_write_read
 
   ga = flds%create_group("a")
   gb = flds2%create_group("b")
-  
   view1 = ga%create_array_view("external_array", orig_vals1)
   view1 = gb%create_view("external_undescribed")
   call view1%set_external_data_ptr(c_loc(orig_vals2))
 
  ! contents of the datastore written to files with io_manager.
   num_files = num_output
-  writer = iomanager_new(MPI_COMM_WORLD)
+  writer = IOManager(MPI_COMM_WORLD)
 
   call writer%write(root1, num_files, "F_out_spio_external_write_read", "sidre_hdf5")
 
   ! create another datastore than holds nothing but the root group.
-  ds2 = datastore_new()
+  ds2 = SidreDataStore()
   root2 = ds2%get_root()
 
   ! read from the files that were written above.
-  reader = iomanager_new(MPI_COMM_WORLD)
+  reader = IOManager(MPI_COMM_WORLD)
 
   call reader%read(root2, "F_out_spio_external_write_read.root")
 
@@ -111,6 +110,7 @@ program spio_external_write_read
 
   call mpi_finalize(mpierr)
 #else
+  return_val = 0
   print *, "Loading external data only valid for 'sidre_hdf5' format &
            & and when Axom is configured with hdf5. Skipping test."
 #endif

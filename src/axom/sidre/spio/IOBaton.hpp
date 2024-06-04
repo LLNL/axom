@@ -1,5 +1,5 @@
-// Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC and
-// other Axom Project Developers. See the top-level COPYRIGHT file for details.
+// Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
+// other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
@@ -13,8 +13,8 @@
  ******************************************************************************
  */
 
-#ifndef IOBATON_HPP_
-#define IOBATON_HPP_
+#ifndef SIDRE_IOBATON_HPP_
+#define SIDRE_IOBATON_HPP_
 
 #include "mpi.h"
 
@@ -22,13 +22,12 @@
 #include "axom/core/Macros.hpp"
 #include "axom/core/Types.hpp"
 #include "axom/slic/interface/slic.hpp"
-
+#include "axom/export/sidre.h"
 
 namespace axom
 {
 namespace sidre
 {
-
 /*!
  * \class IOBaton
  *
@@ -43,7 +42,6 @@ namespace sidre
 class IOBaton
 {
 public:
-
   /*!
    * \brief Constructor
    *
@@ -52,9 +50,7 @@ public:
    * \param num_groups Number of groups stored in the files (usually
    *                   equivalent to the number of MPI ranks providing data).
    */
-  IOBaton(MPI_Comm com,
-          int num_files,
-          int num_groups);
+  IOBaton(MPI_Comm com, int num_files, int num_groups);
 
   /*!
    * \brief Destructor
@@ -82,51 +78,40 @@ public:
    */
   int setSize() const
   {
-    return m_my_rank <
-           m_first_regular_set_rank ? m_set_size + 1 : m_set_size;
+    return m_my_rank < m_first_regular_set_rank ? m_set_size + 1 : m_set_size;
   }
 
   /*!
    * \brief Tells if the local rank is the first (lowest) in its set.
    */
-  bool isFirstInGroup() const
-  {
-    return (m_rank_within_set == 0);
-  }
+  bool isFirstInGroup() const { return (m_rank_within_set == 0); }
 
   /*!
    * \brief Tells if the local rank is the last (highest) in its set.
    */
-  bool isLastInGroup() const
-  {
-    return (m_rank_after_me == s_invalid_rank_id);
-  }
+  bool isLastInGroup() const { return (m_rank_after_me == s_invalid_rank_id); }
 
   /*!
    * \brief Get the number of files involved in the I/O operation.
    */
-  int getNumFiles() const
-  {
-    return m_num_files;
-  }
+  int getNumFiles() const { return m_num_files; }
 
 private:
-
-  DISABLE_COPY_AND_ASSIGNMENT( IOBaton );
+  DISABLE_COPY_AND_ASSIGNMENT(IOBaton);
 
   void setupReducedRanks();
 
-  static const int s_invalid_rank_id;
+  AXOM_SIDRE_EXPORT static const int s_invalid_rank_id;
 
   MPI_Comm m_mpi_comm;
 
-  int m_comm_size;  // num procs in the MPI communicator
-  int m_my_rank;    // rank of this proc
-  int m_num_files; // number of files
-  int m_num_groups; // number of groups (input ranks)
+  int m_comm_size;        // num procs in the MPI communicator
+  int m_my_rank;          // rank of this proc
+  int m_num_files;        // number of files
+  int m_num_groups;       // number of groups (input ranks)
   int m_num_larger_sets;  // some sets have one extra
-  int m_set_size; // regular set size (m_comm_size / m_num_files) w/o
-                  // remainder
+  int m_set_size;         // regular set size (m_comm_size / m_num_files) w/o
+                          // remainder
   int m_set_id;
   int m_first_regular_set_rank;
   int m_rank_within_set;
@@ -136,8 +121,7 @@ private:
   int m_mpi_tag;
 };
 
-
 } /* end namespace sidre */
 } /* end namespace axom */
 
-#endif /* IOBATON_HPP_ */
+#endif /* SIDRE_IOBATON_HPP_ */

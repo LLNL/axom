@@ -1,19 +1,18 @@
-# Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC and
-# other Axom Project Developers. See the top-level COPYRIGHT file for details.
+# Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
+# other Axom Project Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
 #------------------------------------------------------------------------------
 # Axom project
 #------------------------------------------------------------------------------
 
-if (ENABLE_CUDA)
-    cmake_minimum_required(VERSION 3.9)
+if (ENABLE_HIP OR AXOM_ENABLE_HIP)
+    cmake_minimum_required(VERSION 3.21)
 else()
-    cmake_minimum_required(VERSION 3.8.2)
+    # Do not bump this over 3.14 due to it changing CMake policies and breaking
+    # the CUDA build. We check the required version specifically for this below
+    cmake_minimum_required(VERSION 3.14)
 endif()
-
-message(STATUS "Using CMake version ${CMAKE_VERSION}")
-
 
 project(axom LANGUAGES C CXX)
 
@@ -36,15 +35,74 @@ else()
     if (NOT EXISTS ${BLT_SOURCE_DIR}/SetupBLT.cmake)
         message(FATAL_ERROR
             "Cannot locate BLT. "
-            "Either run the following two commands in your git repository: \n"
-            "    git submodule init\n"
-            "    git submodule update\n"
+            "Either run the following command in your git repository: \n"
+            "    git submodule update --init --recursive\n"
             "Or add -DBLT_SOURCE_DIR=/path/to/blt to your CMake command." )
     endif()
 endif()
 
-if (NOT BLT_CXX_STD)
-    set(BLT_CXX_STD "c++11" CACHE STRING "")
+if (“${PROJECT_SOURCE_DIR}” STREQUAL “${CMAKE_SOURCE_DIR}”)
+    # Set some default BLT options before loading BLT only if not included in
+    # another project
+    if (NOT BLT_CXX_STD)
+        set(BLT_CXX_STD "c++14" CACHE STRING "")
+    endif()
+
+    # These are not used in Axom, turn them off
+    set(_unused_blt_tools
+        CLANGQUERY
+        VALGRIND
+        ASTYLE
+        CMAKEFORMAT
+        UNCRUSTIFY
+        YAPF)
+    foreach(_tool ${_unused_blt_tools})
+        set(ENABLE_${_tool} OFF CACHE BOOL "")
+    endforeach()
+
+    # These are only used by Axom developers, so turn them off
+    # unless an explicit executable path is given
+    set(_used_blt_tools
+        CLANGFORMAT
+        CLANGTIDY
+        CLANGAPPLYREPLACEMENTS
+        CPPCHECK
+        DOXYGEN
+        SPHINX)
+    foreach(_tool ${_used_blt_tools})
+        if(NOT ${_tool}_EXECUTABLE)
+            set(ENABLE_${_tool} OFF CACHE BOOL "")
+        else()
+            set(ENABLE_${_tool} ON CACHE BOOL "")
+        endif()
+    endforeach()
+
+    set(BLT_REQUIRED_CLANGFORMAT_VERSION  "10" CACHE STRING "")
+    configure_file(${CMAKE_CURRENT_SOURCE_DIR}/.clang-tidy 
+                   ${CMAKE_CURRENT_BINARY_DIR}/.clang-tidy
+                   COPYONLY)
+
+    # If Axom is the top project and AXOM_ENABLE_TESTS is off, force ENABLE_TESTS to off so
+    # gtest doesn't build when it's not needed
+    if(DEFINED AXOM_ENABLE_TESTS AND NOT AXOM_ENABLE_TESTS)
+        set(ENABLE_TESTS OFF CACHE BOOL "")
+    endif()
+
+    # If either AXOM_ENABLE_TESTS or ENABLE_TEST are explicitly turned off by the user,
+    # turn off GMock, otherwise turn it on
+    if((DEFINED AXOM_ENABLE_TESTS AND NOT AXOM_ENABLE_TESTS) OR
+       (DEFINED ENABLE_TESTS AND NOT ENABLE_TESTS))
+        set(ENABLE_GMOCK OFF CACHE BOOL "")
+    else()
+        set(ENABLE_GMOCK ON CACHE BOOL "")
+    endif()
+
+    # We use BLT's install targets logic
+    set(BLT_EXPORT_THIRDPARTY OFF CACHE BOOL "" FORCE)
+endif()
+
+if("${BLT_CXX_STD}" STREQUAL "c++98" OR "${BLT_CXX_STD}" STREQUAL "c++11")
+    message(FATAL_ERROR "Axom requires BLT_CXX_STD to be 'c++14' or above.")
 endif()
 
 include(${BLT_SOURCE_DIR}/SetupBLT.cmake)
@@ -66,11 +124,10 @@ endif()
 include(CMakeDependentOption)
 include(cmake/CMakeBasics.cmake)
 
-#------------------------------------------------------------------------------
-# Global includes for the Axom projects (restrict these as much as possible)
-#------------------------------------------------------------------------------
-include_directories(${CMAKE_BINARY_DIR}/include)
-include_directories(${PROJECT_SOURCE_DIR})
+# Check for minimum CMake version required w/o changing policies like cmake_minimum_required
+if(AXOM_ENABLE_CUDA AND ${CMAKE_VERSION} VERSION_LESS 3.18.0)
+    message(FATAL_ERROR "Axom requires CMake version 3.18.0+ when CUDA is enabled.")
+endif()
 
 #------------------------------------------------------------------------------
 # Add source directories
@@ -80,14 +137,20 @@ add_subdirectory(thirdparty)
 include(cmake/AxomVersion.cmake)
 add_subdirectory(axom)
 
-add_subdirectory(tools)
-add_subdirectory(examples)
+if(AXOM_ENABLE_TOOLS)
+    add_subdirectory(tools)
+endif()
 
-if (AXOM_ENABLE_DOCS)
-  if (SPHINX_FOUND)
-    blt_add_sphinx_target( axom_docs )
-  endif()
-  add_subdirectory(docs)
+# Using Axom install examples
+if (AXOM_ENABLE_EXAMPLES)
+    add_subdirectory(examples)
+endif()
+
+if(AXOM_ENABLE_DOCS)
+    if(SPHINX_FOUND)
+        blt_add_sphinx_target( axom_docs )
+    endif()
+    add_subdirectory(docs)
 endif()
 
 #------------------------------------------------------------------------------

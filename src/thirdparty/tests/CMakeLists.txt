@@ -1,141 +1,251 @@
-# Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC and
-# other Axom Project Developers. See the top-level COPYRIGHT file for details.
+# Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
+# other Axom Project Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
-
+#------------------------------------------------------------------------------
+# Collection of tests for axom's built-in third party libraries
+#------------------------------------------------------------------------------
 
 # Create cmake targets for running the tests through axom's code checks
 axom_add_code_checks(PREFIX thirdparty_tests)
 
-########################################
-# Smoke test for Umpire thirdparty library
-########################################
+#------------------------------------------------------------------------------
+# Smoke test for Umpire third party library
+#------------------------------------------------------------------------------
 if ( UMPIRE_FOUND )
 
   set( umpire_smoke_dependencies umpire gtest )
 
-  blt_list_append( TO umpire_smoke_dependencies ELEMENTS mpi IF ENABLE_MPI)
+  blt_list_append( TO umpire_smoke_dependencies ELEMENTS mpi IF AXOM_ENABLE_MPI)
 
-  blt_add_executable( NAME umpire_smoke_test
+  axom_add_executable(NAME umpire_smoke_test
                       SOURCES umpire_smoke.cpp
                       OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
                       DEPENDS_ON ${umpire_smoke_dependencies}
                       FOLDER axom/thirdparty/tests )
 
-  blt_add_test( NAME umpire_smoke
-                COMMAND umpire_smoke_test )
+  axom_add_test( NAME    umpire_smoke
+                 COMMAND umpire_smoke_test )
 
 endif()
 
-########################################
-# Smoke test for RAJA thirdparty library
-########################################
+#------------------------------------------------------------------------------
+# Smoke test for RAJA third party library
+#------------------------------------------------------------------------------
 if ( RAJA_FOUND )
 
-  set( raja_smoke_dependencies raja gtest )
+  set( raja_smoke_dependencies RAJA gtest )
 
-  blt_list_append( TO raja_smoke_dependencies ELEMENTS openmp IF ENABLE_OPENMP )
+  blt_list_append( TO raja_smoke_dependencies ELEMENTS umpire IF UMPIRE_FOUND)
+  blt_list_append( TO raja_smoke_dependencies ELEMENTS mpi    IF AXOM_ENABLE_MPI)
 
-  blt_list_append( TO raja_smoke_dependencies ELEMENTS umpire IF UMPIRE_FOUND )
-
-  blt_list_append( TO raja_smoke_dependencies ELEMENTS cuda IF ENABLE_CUDA )
-
-  blt_list_append( TO raja_smoke_dependencies ELEMENTS mpi IF ENABLE_MPI)
-
-  blt_add_executable( NAME raja_smoke_test
+  axom_add_executable(NAME raja_smoke_test
                       SOURCES raja_smoke.cpp
                       OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
                       DEPENDS_ON ${raja_smoke_dependencies}
                       FOLDER axom/thirdparty/tests )
 
-  blt_add_test( NAME raja_smoke
-                COMMAND raja_smoke_test )
+  target_include_directories(raja_smoke_test PUBLIC 
+      $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../..>
+      $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include>)
+
+  axom_add_test( NAME    raja_smoke
+                 COMMAND raja_smoke_test )
 
 endif()
 
-########################################
-# Smoke test for hdf5 thirdparty library
-########################################
-if( HDF5_FOUND)
-    blt_add_executable(NAME hdf5_smoke_test
-                       SOURCES hdf5_smoke.cpp
-                       OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
-                       DEPENDS_ON hdf5 gtest
-                       FOLDER axom/thirdparty/tests )
-    blt_add_test(NAME hdf5_smoke
-                 COMMAND hdf5_smoke_test)
+#------------------------------------------------------------------------------
+# Smoke test for hdf5 third party library
+# Note: we rely on conduit for hdf5 functionality
+#------------------------------------------------------------------------------
+if( HDF5_FOUND AND CONDUIT_FOUND)
+
+    set( hdf5_smoke_dependencies conduit::conduit gtest )
+
+    blt_list_append( TO hdf5_smoke_dependencies ELEMENTS mpi IF AXOM_ENABLE_MPI)
+
+    axom_add_executable(NAME       hdf5_smoke_test
+                        SOURCES    hdf5_smoke.cpp
+                        OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
+                        DEPENDS_ON ${hdf5_smoke_dependencies}
+                        FOLDER     axom/thirdparty/tests )
+
+    target_include_directories(hdf5_smoke_test PUBLIC 
+        $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include> )
+
+    axom_add_test(NAME hdf5_smoke
+                  COMMAND hdf5_smoke_test)
 endif()
 
-###########################################
-# Smoke test for conduit thirdparty library
-###########################################
+#------------------------------------------------------------------------------
+# Smoke test for conduit third party library
+#------------------------------------------------------------------------------
 if (CONDUIT_FOUND)
-    blt_add_executable(NAME conduit_smoke_test
-                       SOURCES conduit_smoke.cpp
-                       OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
-                       DEPENDS_ON conduit gtest
-                       FOLDER axom/thirdparty/tests )
-    blt_add_test(NAME conduit_smoke
-                 COMMAND conduit_smoke_test)
+    axom_add_executable(NAME       conduit_smoke_test
+                        SOURCES    conduit_smoke.cpp
+                        OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
+                        DEPENDS_ON conduit::conduit gtest
+                        FOLDER     axom/thirdparty/tests )
+
+    axom_add_test(NAME conduit_smoke
+                  COMMAND conduit_smoke_test)
 
     if (ENABLE_FORTRAN)
-        blt_add_executable(NAME conduit_smoke_F_test
-                           SOURCES f_conduit_smoke.f
-                           OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
-                           DEPENDS_ON conduit fruit
-                           FOLDER axom/thirdparty/tests )
-        blt_add_test(NAME conduit_smoke_F
-                     COMMAND conduit_smoke_F_test)
+        axom_add_executable(NAME       conduit_smoke_F_test
+                            SOURCES    f_conduit_smoke.f
+                            OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
+                            DEPENDS_ON conduit::conduit fruit
+                            FOLDER     axom/thirdparty/tests )
+
+        axom_add_test(NAME conduit_smoke_F
+                      COMMAND conduit_smoke_F_test)
   endif()
 endif()
 
-########################################
-# Smoke test for mfem thirdparty library
-########################################
+#------------------------------------------------------------------------------
+# Smoke test for mfem third party library
+#------------------------------------------------------------------------------
 if (MFEM_FOUND)
-    blt_add_executable(NAME mfem_smoke_test
-                       SOURCES mfem_smoke.cpp
-                       OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
-                       DEPENDS_ON mfem gtest
-                       FOLDER axom/thirdparty/tests )
+    set( mfem_smoke_dependencies mfem gtest )
+    blt_list_append( TO mfem_smoke_dependencies ELEMENTS mpi IF AXOM_ENABLE_MPI)
+    axom_add_executable(NAME       mfem_smoke_test
+                        SOURCES    mfem_smoke.cpp
+                        OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
+                        DEPENDS_ON ${mfem_smoke_dependencies}
+                        FOLDER     axom/thirdparty/tests )
     set_property(
         TARGET mfem_smoke_test
         APPEND_STRING PROPERTY COMPILE_FLAGS "${AXOM_DISABLE_UNUSED_PARAMETER_WARNINGS}")
 
-    blt_add_test(NAME mfem_smoke
-                 COMMAND mfem_smoke_test)
+    axom_add_test(NAME    mfem_smoke
+                  COMMAND mfem_smoke_test)
 
 endif()
 
-#######################################
-# Smoke test for fmt thirdparty library
-#######################################
-blt_add_executable(
-    NAME fmt_smoke_test
-    SOURCES fmt_smoke.cpp
-    OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
-    DEPENDS_ON fmt gtest
-    FOLDER axom/thirdparty/tests )
-blt_add_test(NAME fmt_smoke
-             COMMAND fmt_smoke_test)
+#------------------------------------------------------------------------------
+# Smoke test for caliper and adiak third party library
+#------------------------------------------------------------------------------
+if ( CALIPER_FOUND )
 
-##############################################
-# Smoke test for sparsehash thirdparty library
-##############################################
+  set( caliper_smoke_dependencies caliper gtest )
+  blt_list_append( TO caliper_smoke_dependencies ELEMENTS mpi IF AXOM_ENABLE_MPI)
+  blt_list_append( TO caliper_smoke_dependencies ELEMENTS cuda_runtime IF AXOM_ENABLE_CUDA)
+
+  blt_add_executable( NAME caliper_smoke_test
+                      SOURCES caliper_smoke.cpp
+                      OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
+                      DEPENDS_ON ${caliper_smoke_dependencies}
+                      FOLDER axom/thirdparty/tests )
+
+  axom_add_test( NAME    caliper_smoke
+                 COMMAND caliper_smoke_test )
+
+endif()
+
+if ( ADIAK_FOUND )
+
+  set( adiak_smoke_dependencies adiak::adiak gtest )
+  blt_list_append( TO adiak_smoke_dependencies ELEMENTS mpi IF AXOM_ENABLE_MPI)
+
+  blt_add_executable( NAME adiak_smoke_test
+                      SOURCES adiak_smoke.cpp
+                      OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
+                      DEPENDS_ON ${adiak_smoke_dependencies}
+                      FOLDER axom/thirdparty/tests )
+
+  axom_add_test( NAME    adiak_smoke
+                 COMMAND adiak_smoke_test )
+
+endif()
+
+#------------------------------------------------------------------------------
+# Smoke test for fmt third party library
+#------------------------------------------------------------------------------
+set(fmt_smoke_dependencies fmt gtest)
+
+axom_add_executable(
+    NAME       fmt_smoke_test
+    SOURCES    fmt_smoke.cpp
+    OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
+    DEPENDS_ON ${fmt_smoke_dependencies}
+    FOLDER     axom/thirdparty/tests )
+    
+axom_add_test(NAME    fmt_smoke
+              COMMAND fmt_smoke_test)
+
+#------------------------------------------------------------------------------
+# Smoke test for CLI11 third party library
+#------------------------------------------------------------------------------
+axom_add_executable(
+    NAME       cli11_smoke_test
+    SOURCES    cli11_smoke.cpp
+    OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
+    DEPENDS_ON cli11
+    FOLDER     axom/thirdparty/tests )
+
+# Set file back to C++ due to nvcc compiler error
+set_source_files_properties(cli11_smoke.cpp PROPERTIES LANGUAGE CXX)
+
+axom_add_test(
+    NAME cli11_smoke_help
+    COMMAND cli11_smoke_test --help)
+
+axom_add_test(
+    NAME cli11_smoke_with_options
+    COMMAND cli11_smoke_test -b -i 42 --some-float=3.14 --some-string "hello world")
+
+#------------------------------------------------------------------------------
+# Smoke test for sparsehash third party library
+#------------------------------------------------------------------------------
 
 if (SPARSEHASH_FOUND)
-  blt_add_executable(
-    NAME sparsehash_smoke_test
-    SOURCES sparsehash_smoke.cpp
+  axom_add_executable(
+    NAME       sparsehash_smoke_test
+    SOURCES    sparsehash_smoke.cpp
     OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
     DEPENDS_ON sparsehash gtest
-    FOLDER axom/thirdparty/tests )
+    FOLDER     axom/thirdparty/tests )
 
-  blt_add_test(NAME sparsehash_smoke
-             COMMAND sparsehash_smoke_test)
+  axom_add_test(NAME    sparsehash_smoke
+                COMMAND sparsehash_smoke_test)
 endif()
 
-################################################################################
+#------------------------------------------------------------------------------
+# Smoke test for SOL third party library
+#------------------------------------------------------------------------------
+
+if (SOL_FOUND)
+    axom_add_executable(
+        NAME       sol_smoke_test
+        SOURCES    sol_smoke.cpp
+        OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
+        DEPENDS_ON sol lua gtest
+        FOLDER     axom/thirdparty/tests )
+
+    # Set file back to C++ due to nvcc compiler error
+    set_source_files_properties(sol_smoke.cpp PROPERTIES LANGUAGE CXX)
+
+    axom_add_test(NAME    sol_smoke
+                  COMMAND sol_smoke_test)
+endif()
+
+#------------------------------------------------------------------------------
+# Smoke test for c2c third party library
+#------------------------------------------------------------------------------
+
+if (C2C_FOUND)
+    axom_add_executable(
+        NAME       c2c_smoke_test
+        SOURCES    c2c_smoke.cpp
+        OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
+        DEPENDS_ON c2c gtest
+        FOLDER     axom/thirdparty/tests )
+
+    axom_add_test(NAME    c2c_smoke
+                  COMMAND c2c_smoke_test)
+endif()
+
+#------------------------------------------------------------------------------
 # Add compiler flag tests.
 #
 # Test whether custom compiler flags actually work as expected on all compilers.
@@ -144,7 +254,7 @@ endif()
 # These tests enable all warnings, treat warnings as errors and add the desired
 # flag. They should fail if we have the wrong flag set for the given configuration.
 # Flag variables are defined in blt's SetupCompilerOptions.cmake
-################################################################################
+#------------------------------------------------------------------------------
 
 set( BLT_SMOKE_TESTS
         compiler_flag_uninitialized.cpp
@@ -161,17 +271,16 @@ endif()
 
 foreach(test ${BLT_SMOKE_TESTS})
     get_filename_component( test_name ${test} NAME_WE )
-    blt_add_executable(
-        NAME ${test_name}_test
-        SOURCES ${test}
+    axom_add_executable(
+        NAME       ${test_name}_test
+        SOURCES    ${test}
         OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
-        USE_OPENMP False
-        FOLDER axom/thirdparty/tests
-        )
-    blt_add_test(
+        FOLDER     axom/thirdparty/tests)
+
+    axom_add_test(
         NAME ${test_name}
-        COMMAND ${test_name}_test
-        )
+        COMMAND ${test_name}_test)
+
 endforeach()
 
 set( ADDL_SMOKE_FLAGS "${BLT_WARNINGS_AS_ERRORS_FLAG} ${BLT_ENABLE_ALL_WARNINGS_FLAG}")
@@ -203,4 +312,3 @@ if(ENABLE_FORTRAN)
     set_target_properties(compiler_flag_fortran_preprocessor_test
                           PROPERTIES LINKER_LANGUAGE Fortran)
 endif()
-

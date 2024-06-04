@@ -1,5 +1,5 @@
-// Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC and
-// other Axom Project Developers. See the top-level COPYRIGHT file for details.
+// Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
+// other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
@@ -12,6 +12,23 @@
  *
  ******************************************************************************
  */
+
+// Into typesSidre.h
+// splicer begin types.C_declarations
+#include <axom/sidre/interface/SidreTypes.h>
+// splicer end types.C_declarations
+
+// splicer begin C_declarations
+#if 0
+  #ifndef __cplusplus
+    #if defined(USE_64BIT_INDEXTYPE)
+typedef int64_t IndexType;
+    #else
+typedef int32_t IndexType;
+    #endif
+  #endif
+#endif
+// splicer end C_declarations
 
 // splicer begin C_definitions
 // equivalent to C_LOC
@@ -27,13 +44,7 @@
 //
 // The result must be an argument because some compilers (Intel)
 // cannot return type(C_PTR)
-void sidre_c_loc(void* addr, void** out)
-{
-  *out = addr;
-}
-void sidre_c_loc_(void* addr, void** out)
-{
-  *out = addr;
-}
+void sidre_c_loc(void* addr, void** out) { *out = addr; }
+void sidre_c_loc_(void* addr, void** out) { *out = addr; }
 
 // splicer end C_definitions

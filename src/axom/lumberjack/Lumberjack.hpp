@@ -1,5 +1,5 @@
-// Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC and
-// other Axom Project Developers. See the top-level COPYRIGHT file for details.
+// Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
+// other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
@@ -22,13 +22,12 @@
 #include "axom/lumberjack/Combiner.hpp"
 #include "axom/lumberjack/Communicator.hpp"
 #include "axom/lumberjack/Message.hpp"
-#include "axom/lumberjack/TextEqualityCombiner.hpp"
+#include "axom/lumberjack/TextTagCombiner.hpp"
 
 namespace axom
 {
 namespace lumberjack
 {
-
 /*!
  *******************************************************************************
  * \class Lumberjack
@@ -189,8 +188,11 @@ public:
    * \param [in] tag The tag of where the Message originated.
    *****************************************************************************
    */
-  void queueMessage(const std::string& text, const std::string& fileName,
-                    const int lineNumber, int level, const std::string& tag);
+  void queueMessage(const std::string& text,
+                    const std::string& fileName,
+                    const int lineNumber,
+                    int level,
+                    const std::string& tag);
 
   /*!
    *****************************************************************************
@@ -226,6 +228,7 @@ public:
    *****************************************************************************
    */
   bool isOutputNode();
+
 private:
   /*!
    *****************************************************************************
@@ -241,7 +244,7 @@ private:
   std::vector<Message*> m_messages;
 };
 
-} // end namespace lumberjack
-} // end namespace axom
+}  // end namespace lumberjack
+}  // end namespace axom
 
 #endif

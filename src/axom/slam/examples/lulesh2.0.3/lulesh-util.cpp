@@ -1,5 +1,5 @@
-// Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC and
-// other Axom Project Developers. See the top-level COPYRIGHT file for details.
+// Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
+// other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
@@ -13,6 +13,8 @@
 
 #include "lulesh.hpp"
 
+#include "axom/core/Macros.hpp"
+
 #ifdef AXOM_USE_MPI
 #include <mpi.h>
 #endif
@@ -21,7 +23,7 @@
 namespace slamLulesh {
 
 /* Helper function for converting strings to ints, with error checking */
-  int StrToInt(const char *token, int *retVal)
+  int StrToInt(const char *token, Int_t *retVal)
   {
     const char *c;
     char *endptr;
@@ -66,13 +68,13 @@ namespace slamLulesh {
     if (myRank == 0)
     {
       SLIC_WARNING(message);
-      axom::slic::flushStreams();
-#ifdef AXOM_USE_MPI
-      MPI_Abort(MPI_COMM_WORLD, -1);
-#else
-      exit(-1);
-#endif
     }
+    axom::slic::flushStreams();
+#ifdef AXOM_USE_MPI
+    MPI_Abort(MPI_COMM_WORLD, -1);
+#else
+    exit(-1);
+#endif
   }
 
   void ParseCommandLineOptions(int argc, char *argv[],
@@ -283,12 +285,12 @@ namespace slamLulesh {
     Int_t gEdge = nx * domainsPerSide;
     if(resultCheckMap.find(gEdge) != resultCheckMap.end() )
     {
-      SLIC_ASSERT_MSG( resultCheckMap[gEdge].first == locDom.cycle(),
+      SLIC_CHECK_MSG( resultCheckMap[gEdge].first == locDom.cycle(),
           "Specs state that num cycles should be "
           << resultCheckMap[gEdge].first
           << " actual number of cycles was " << locDom.cycle() << "." );
 
-      SLIC_ASSERT_MSG(
+      SLIC_CHECK_MSG(
         axom::utilities::isNearlyEqualRelative( resultCheckMap[gEdge].second, locDom.e(ElemId)),
         "Specs state that final energy at origin must be "
         << resultCheckMap[gEdge].second
@@ -300,10 +302,10 @@ namespace slamLulesh {
       double relMaxFabs = 1.0e-6 * maxFabs;
       double relMaxFabsWithAbsolute = relMaxFabs + 1.0e-8;
 
-      AXOM_DEBUG_VAR( diff);
-      AXOM_DEBUG_VAR( maxFabs);
-      AXOM_DEBUG_VAR( relMaxFabs);
-      AXOM_DEBUG_VAR( relMaxFabsWithAbsolute);
+      AXOM_UNUSED_VAR( diff);
+      AXOM_UNUSED_VAR( maxFabs);
+      AXOM_UNUSED_VAR( relMaxFabs);
+      AXOM_UNUSED_VAR( relMaxFabsWithAbsolute);
       SLIC_DEBUG("**  comparing "
           << resultCheckMap[gEdge].second << " with " << locDom.e(ElemId)
           << "\n\tfabs difference: " << diff

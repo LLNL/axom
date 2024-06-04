@@ -1,5 +1,5 @@
-! Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC and
-! other Axom Project Developers. See the top-level COPYRIGHT file for details.
+! Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
+! other Axom Project Developers. See the top-level LICENSE file for details.
 !
 ! SPDX-License-Identifier: (BSD-3-Clause)
 
@@ -22,12 +22,12 @@ contains
     real(C_DOUBLE), allocatable, target :: ddata(:)
     integer(C_INT), pointer :: idata_chk(:)
     real(C_DOUBLE), pointer :: ddata_chk(:)
-    integer(C_LONG), parameter :: len = 11
+    integer(SIDRE_IndexType), parameter :: len = 11
     integer ii
 
     call set_case_name("create_external_view")
 
-    ds = datastore_new()
+    ds = SidreDataStore()
     root = ds%get_root()
 
     allocate(idata(len))
@@ -72,12 +72,12 @@ contains
     real(C_DOUBLE), allocatable, target :: ddata(:)
     integer(C_INT), pointer :: idata_chk(:)
     real(C_DOUBLE), pointer :: ddata_chk(:)
-    integer(C_LONG), parameter :: len = 11
+    integer(SIDRE_IndexType), parameter :: len = 11
     integer ii
 
     call set_case_name("save_load_external_view")
 
-    ds = datastore_new()
+    ds = SidreDataStore()
     root = ds%get_root()
 
     allocate(idata(len))
@@ -104,7 +104,7 @@ contains
     call ds%print()
 
 
-    ds2 = datastore_new()
+    ds2 = SidreDataStore()
     root2 = ds2%get_root()
 
 ! TODO - fix wrapping change to datastore load call

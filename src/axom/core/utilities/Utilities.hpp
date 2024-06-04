@@ -1,5 +1,5 @@
-// Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC and
-// other Axom Project Developers. See the top-level COPYRIGHT file for details.
+// Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
+// other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
@@ -14,22 +14,20 @@
 #ifndef AXOM_UTILITIES_HPP_
 #define AXOM_UTILITIES_HPP_
 
-#include "axom/config.hpp"          // for compile-time definitions
+#include "axom/config.hpp"  // for compile-time definitions
 #include "axom/core/Types.hpp"
-#include "axom/core/Macros.hpp"     // for AXOM_STATIC_ASSERT
+#include "axom/core/Macros.hpp"  // for AXOM_STATIC_ASSERT
 
-#include <cassert>         // for assert()
-#include <cmath>           // for log2()
+#include <cassert>  // for assert()
+#include <cmath>    // for log2()
 
-#include <random>                   // for random  number generator
-#include <type_traits>              // for std::is_floating_point()
-
+#include <random>       // for random  number generator
+#include <type_traits>  // for std::is_floating_point()
 
 namespace axom
 {
 namespace utilities
 {
-
 /*!
  * \brief Gracefully aborts the application
  */
@@ -37,63 +35,88 @@ void processAbort();
 
 /*!
  * \brief Returns the absolute value of x.
+ * \accelerated
  * \param [in] x value whose absolute value is computed.
  * \return abs(x) the absolute value of x.
  */
-template < typename T >
-inline AXOM_HOST_DEVICE
-T abs( const T& x )
+template <typename T>
+inline AXOM_HOST_DEVICE T abs(const T& x)
 {
-  return ( x < T(0) ) ? -x : x;
+  return (x < T(0)) ? -x : x;
+}
+
+/*!
+ * \brief Returns the largest integer less than or equal to x.
+ * \accelerated
+ * \param [in] x value whose floor value is computed.
+ * \return floor(x) the largest integer less than or equal to x.
+ */
+template <typename T>
+inline AXOM_HOST_DEVICE T floor(const T& x)
+{
+  return ::floor(x);
+}
+
+/*!
+ * \brief Returns the smallest integer greater than or equal to x.
+ * \accelerated
+ * \param [in] x value whose ceil value is computed.
+ * \return ceil(x) the smallest integer greater than or equal to x.
+ */
+template <typename T>
+inline AXOM_HOST_DEVICE T ceil(const T& x)
+{
+  return ::ceil(x);
 }
 
 /*!
  * \brief Returns the max value of x and y.
+ * \accelerated
  * \param [in] x the first value to check.
  * \param [in] y the second value to check.
  * \return max(x, y) the max value of x and y.
  */
-template < typename T >
-inline AXOM_HOST_DEVICE
-const T& max( const T& x, const T& y )
+template <typename T>
+inline AXOM_HOST_DEVICE const T& max(const T& x, const T& y)
 {
-  return ( y < x ) ? x : y;
+  return (y < x) ? x : y;
 }
 
 /*!
  * \brief Returns the min value of x and y.
+ * \accelerated
  * \param [in] x the first value to check.
  * \param [in] y the second value to check.
  * \return min(x, y) the min value of x and y.
  */
-template < typename T >
-inline AXOM_HOST_DEVICE
-const T& min( const T& x, const T& y )
+template <typename T>
+inline AXOM_HOST_DEVICE const T& min(const T& x, const T& y)
 {
-  return ( y < x ) ? y : x;
+  return (y < x) ? y : x;
 }
 
 /*!
  * \brief Swaps the values of a, b.
+ * \accelerated
  * \param [in,out] a 1st object to swap.
  * \param [in,out] b 2nd object to swap.
  */
-template < typename T >
-inline AXOM_HOST_DEVICE
-void swap( T& a, T& b )
+template <typename T>
+inline AXOM_HOST_DEVICE void swap(T& a, T& b)
 {
   T tmp = a;
-  a = b; b = tmp;
+  a = b;
+  b = tmp;
 }
 
 /*!
  * \brief Returns the base 2 logarithm of the input.
  * \param [in] val The input value
  */
-template < typename T >
-inline T log2( T& val)
+template <typename T>
+inline T log2(T val)
 {
-  return std::log2(val);
+  return static_cast<T>(std::log2(val));
 }
 
 
@@ -114,6 +137,7 @@ T lerp( T v0, T v1, T t)
 
 /*!
  * \brief Clamps an input value to a given range.
+ * \accelerated
  * \param [in] val  The value to clamp.
  * \param [in] lower The lower range.
  * \param [in] upper The upper range.
@@ -121,43 +145,47 @@ T lerp( T v0, T v1, T t)
  * \pre lower <= upper
  * \post lower <= returned value <= upper.
  */
-template < typename T >
-inline AXOM_HOST_DEVICE
-T clampVal( T val, T lower, T upper )
+template <typename T>
+inline AXOM_HOST_DEVICE T clampVal(T val, T lower, T upper)
 {
-  return (val < lower) ? lower
-         : (val > upper) ? upper : val;
+  return (val < lower) ? lower : (val > upper) ? upper : val;
 }
 
 /*!
  * \brief Clamps the upper range on an input value
- *
+ * \accelerated
  * \param [in] val The value to clamp
  * \param [in] upper The upper range
  * \return upper if val > upper, else val
  * \post returned value is less than or equal to upper
  */
-template < typename T >
-inline AXOM_HOST_DEVICE
-T clampUpper(T val, T upper)
+template <typename T>
+inline AXOM_HOST_DEVICE T clampUpper(T val, T upper)
 {
   return val > upper ? upper : val;
 }
 
 /*!
  * \brief Clamps the lower range on an input value
- *
+ * \accelerated
  * \param [in] val The value to clamp
  * \param [in] lower The lower range
  * \return lower if val < lower, else val
  * \post returned value is greater than or equal to lower
  */
-template < typename T >
-inline AXOM_HOST_DEVICE
-T clampLower(T val, T lower)
+template <typename T>
+inline AXOM_HOST_DEVICE T clampLower(T val, T lower)
 {
   return val < lower ? lower : val;
 }
+
+/*!
+ * \brief Computes the binomial coefficient `n choose k`
+ *
+ * \return \f$ {n\choose k}  = n! / (k! * (n-k)!)\f$
+ * when \f$ n \ge k \ge 0 \f$, 0 otherwise.
+ */
+int binomialCoefficient(int n, int k);
 
 /*!
  * \brief Returns a random real number within the specified interval
@@ -174,18 +202,18 @@ T clampLower(T val, T lower)
  * \pre a < b
  * \post a <= r < b
  */
-template < typename T >
-inline T random_real( const T& a, const T& b )
+template <typename T>
+inline T random_real(const T& a, const T& b)
 {
-  AXOM_STATIC_ASSERT( std::is_floating_point< T >::value );
-  assert( (a < b) && "invalid bounds, a < b" );
+  AXOM_STATIC_ASSERT(std::is_floating_point<T>::value);
+  assert((a < b) && "invalid bounds, a < b");
 
   static std::random_device rd;
-  static std::mt19937_64 mt( rd() );
-  static std::uniform_real_distribution< T > dist(0.0, 1.0);
+  static std::mt19937_64 mt(rd());
+  static std::uniform_real_distribution<T> dist(0.0, 1.0);
 
-  double temp = dist(mt);
-  return temp * ( b - a ) + a;
+  T temp = dist(mt);
+  return temp * (b - a) + a;
 }
 
 /*!
@@ -206,17 +234,17 @@ inline T random_real( const T& a, const T& b )
  * \pre a < b
  * \post a <= r < b
  */
-template < typename T >
-inline T random_real( const T& a, const T& b, unsigned int seed )
+template <typename T>
+inline T random_real(const T& a, const T& b, unsigned int seed)
 {
-  AXOM_STATIC_ASSERT( std::is_floating_point< T >::value );
-  assert( (a < b) && "invalid bounds, a < b" );
+  AXOM_STATIC_ASSERT(std::is_floating_point<T>::value);
+  assert((a < b) && "invalid bounds, a < b");
 
-  static std::mt19937_64 mt( seed );
-  static std::uniform_real_distribution< T > dist(0.0, 1.0);
+  static std::mt19937_64 mt(seed);
+  static std::uniform_real_distribution<T> dist(0.0, 1.0);
 
   double temp = dist(mt);
-  return temp * ( b - a ) + a;
+  return temp * (b - a) + a;
 }
 
 /*!
@@ -230,53 +258,51 @@ inline bool isLittleEndian()
   enum
   {
     O32_LITTLE_ENDIAN = 0x03020100ul,
-    O32_BIG_ENDIAN    = 0x00010203ul,
-    O32_PDP_ENDIAN    = 0x01000302ul
+    O32_BIG_ENDIAN = 0x00010203ul,
+    O32_PDP_ENDIAN = 0x01000302ul
   };
 
   const union
   {
-    axom::uint8 raw[4];
-    axom::uint32 value;
-  }  host_order = {
-    { 0, 1, 2, 3 }
-  };
+    std::uint8_t raw[4];
+    std::uint32_t value;
+  } host_order = {{0, 1, 2, 3}};
 
   return host_order.value == O32_LITTLE_ENDIAN;
 }
 
 /*!
- * \brief Swaps the endianness of the input value.
- * \param [in] val The input value.
- * \return The value with endianness swapped.
+ * \brief Reverses the bytes of the input value.
+ * \param [in] val The input value
+ * \return The value with swapped bytes
  * \note Assumes endianness is either little or big (not PDP).
  * \pre T is a native arithmetic type (i.e. integral or floating point).
- * \pre sizeof(T) must be 2, 4, or 8 bytes.
+ * \pre sizeof(T) must be 1, 2, 4, or 8 bytes.
  */
-template < typename T >
-T swapEndian(T val)
+template <typename T>
+constexpr T byteswap(T val) noexcept
 {
-  const int NBYTES = sizeof(T);
+  constexpr int NBYTES = sizeof(T);
 
   AXOM_STATIC_ASSERT_MSG(
-    NBYTES == 2 || NBYTES == 4 || NBYTES == 8,
-    "swapEndian only valid for types of size 2, 4 or 8 bytes.");
+    NBYTES == 1 || NBYTES == 2 || NBYTES == 4 || NBYTES == 8,
+    "byteswap only valid for types of size 1, 2, 4 or 8 bytes.");
 
-  AXOM_STATIC_ASSERT_MSG( std::is_arithmetic<T>::value,
-                          "swapEndian only valid for native arithmetic types");
+  AXOM_STATIC_ASSERT_MSG(std::is_arithmetic<T>::value,
+                         "byteswap only valid for native arithmetic types");
 
   union
   {
-    axom::uint8 raw[ NBYTES ];
+    std::uint8_t raw[NBYTES];
     T val;
   } swp;
 
-  axom::uint8* src = reinterpret_cast<axom::uint8*>(&val);
+  std::uint8_t* src = reinterpret_cast<std::uint8_t*>(&val);
 
   // Reverse the bytes
-  for(int i=0 ; i < NBYTES ; ++i)
+  for(int i = 0; i < NBYTES; ++i)
   {
-    swp.raw[i] = src[(NBYTES-1)-i];
+    swp.raw[i] = src[(NBYTES - 1) - i];
   }
 
   return swp.val;
@@ -284,21 +310,24 @@ T swapEndian(T val)
 
 /*!
  * \brief Fuzzy comparison of two real valued quantities.
+ * \accelerated
  * \param [in] a The first real valued quantities we are comparing.
  * \param [in] b The second real valued quantities we are comparing.
  * \param [in] thresh The threshold of the fuzzy comparison.  Default is 1.0e-8.
  * \return True if the absolute value of the difference is less than thresh and
  *  false otherwise.
  */
-template<typename RealType>
-inline AXOM_HOST_DEVICE
-bool isNearlyEqual(RealType a, RealType b, RealType thresh = 1.0e-8)
+template <typename RealType>
+inline AXOM_HOST_DEVICE bool isNearlyEqual(RealType a,
+                                           RealType b,
+                                           RealType thresh = 1.0e-8)
 {
-  return abs(a-b) <= thresh;
+  return abs(a - b) <= thresh;
 }
 
 /*!
  * \brief Fuzzy comparison of two real valued quantities.
+ * \accelerated
  * \param [in] a The first real valued quantities we are comparing.
  * \param [in] b The second real valued quantities we are comparing.
  * \param [in] relThresh The relative threshold of the fuzzy comparison.
@@ -309,13 +338,14 @@ bool isNearlyEqual(RealType a, RealType b, RealType thresh = 1.0e-8)
  *  absThresh and the relative difference (relThresh times the absolute max of
  *  a and b).
  */
-template<typename RealType>
-inline AXOM_HOST_DEVICE
-bool isNearlyEqualRelative(RealType a, RealType b, RealType relThresh = 1.0e-6,
-                           RealType absThresh = 1.0e-8)
+template <typename RealType>
+inline AXOM_HOST_DEVICE bool isNearlyEqualRelative(RealType a,
+                                                   RealType b,
+                                                   RealType relThresh = 1.0e-6,
+                                                   RealType absThresh = 1.0e-8)
 {
-  RealType maxFabs = max(abs(a), abs(b) );
-  return abs(a-b) <= ( maxFabs * relThresh + absThresh);
+  RealType maxFabs = max(abs(a), abs(b));
+  return abs(a - b) <= (maxFabs * relThresh + absThresh);
 
   // Equation from Real-Time Collision Detection book --
   // http://realtimecollisiondetection.net/pubs/Tolerances/
@@ -324,38 +354,68 @@ bool isNearlyEqualRelative(RealType a, RealType b, RealType relThresh = 1.0e-6,
 }
 
 /*!
+ * \brief Insertion sort of an array.
+ * \accelerated
+ * \param [in] array The array to sort.
+ * \param [in] n The number of entries in the array.
+ * \param [in] cmp The comparator to use for comparing elements; "less than"
+ *  by default.
+ */
+template <typename DataType, typename Predicate = std::less<DataType>>
+inline AXOM_HOST_DEVICE void insertionSort(DataType* array,
+                                           IndexType n,
+                                           Predicate cmp = {})
+{
+  for(int i = 1; i < n; i++)
+  {
+    int j = i;
+    // Keep swapping elements until we're not out-of-order.
+    while(j > 0 && cmp(array[j], array[j - 1]))
+    {
+      axom::utilities::swap(array[j], array[j - 1]);
+      j--;
+    }
+  }
+}
+
+/*!
  * \brief Compares std::vector< T > in lexicographic order
  *
  * \note T must support > and < operators.
  */
-template<typename T>
+template <typename T>
 class LexiComparator
 {
 public:
-  bool operator()(const std::vector<T> & v1,
-                  const std::vector<T> & v2) const
+  bool operator()(const std::vector<T>& v1, const std::vector<T>& v2) const
   {
     size_t s1 = v1.size();
     size_t s2 = v2.size();
     size_t size = std::min(s1, s2);
     size_t i = 0;
 
-    while (i < size)
+    while(i < size)
     {
-      if (v1[i] < v2[i]) { return true; }
-      else if (v1[i] > v2[i]) { return false; }
+      if(v1[i] < v2[i])
+      {
+        return true;
+      }
+      else if(v1[i] > v2[i])
+      {
+        return false;
+      }
 
       ++i;
     }
 
-    if (s1 < s2) { return true; }
+    if(s1 < s2)
+    {
+      return true;
+    }
 
     return false;
   }
 };
-
-
-
 
 }  // namespace utilities
 }  // namespace axom

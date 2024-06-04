@@ -1,60 +1,94 @@
-# Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC and
-# other Axom Project Developers. See the top-level COPYRIGHT file for details.
+# Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
+# other Axom Project Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
+#------------------------------------------------------------------------------
+# Unit tests for Slic component
+#------------------------------------------------------------------------------
 
 #
-# Specify list of tests
+# Serial Unit Tests
 #
+set(serial_slic_tests
+    slic_asserts.cpp
+    slic_fmt.cpp
+    slic_interface.cpp
+    slic_macros.cpp
+    slic_uninit.cpp )
 
-set(gtest_slic_tests
-   slic_asserts.cpp
-   slic_interface.cpp
-   )
+set(slic_tests_depends slic gtest fmt)
 
-set(bench_slic_tests
-    slic_benchmark_asserts.cpp
-   )
-
-
-#
-# Add gtest based tests
-#
-foreach(test ${gtest_slic_tests})
+foreach(test ${serial_slic_tests})
     get_filename_component( test_name ${test} NAME_WE )
-    blt_add_executable( NAME ${test_name}_test
-                        SOURCES ${test}
+    axom_add_executable(NAME       ${test_name}_test
+                        SOURCES    ${test}
                         OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
-                        DEPENDS_ON slic gtest 
-                        FOLDER      axom/slic/tests )
-    blt_add_test( NAME ${test_name} 
+                        DEPENDS_ON ${slic_tests_depends}
+                        FOLDER     axom/slic/tests )
+    axom_add_test(NAME    ${test_name}
                   COMMAND ${test_name}_test )
 endforeach()
 
-blt_add_executable( NAME slic_fmt_test
-                    SOURCES slic_fmt.cpp
-                    OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
-                    DEPENDS_ON slic gtest fmt 
-                    FOLDER      axom/slic/tests )
-blt_add_test( NAME slic_fmt 
-              COMMAND slic_fmt_test )
 
+#
+# Parallel Unit Tests
+#
+if (AXOM_ENABLE_MPI AND AXOM_ENABLE_LUMBERJACK)
+    set(parallel_slic_tests
+        slic_macros_parallel.cpp )
 
-
-if (ENABLE_BENCHMARKS)
-    foreach(test ${bench_slic_tests})
+    foreach(test ${parallel_slic_tests})
         get_filename_component( test_name ${test} NAME_WE )
-    
-        blt_add_executable(
-            NAME ${test_name}
-            SOURCES ${test}
-            OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
-            DEPENDS_ON slic gbenchmark
-            FOLDER      axom/slic/benchmarks )
+        axom_add_executable(NAME       ${test_name}_test
+                            SOURCES    ${test}
+                            OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
+                            DEPENDS_ON ${slic_tests_depends}
+                            FOLDER     axom/slic/tests )
+        axom_add_test(NAME          ${test_name}
+                      COMMAND       ${test_name}_test 
+                      NUM_MPI_TASKS 4)
+    endforeach()
+endif()
 
-        blt_add_benchmark( 
-            NAME ${test_name} 
-            COMMAND ${test_name} "--benchmark_min_time=0.0001"
-            )
+
+#
+# Benchmarks
+#
+if (ENABLE_BENCHMARKS)
+    set(slic_benchmarks
+        slic_benchmark_asserts.cpp )
+
+    foreach(test ${slic_benchmarks})
+        get_filename_component( test_name ${test} NAME_WE )
+
+        axom_add_executable(NAME       ${test_name}
+                            SOURCES    ${test}
+                            OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
+                            DEPENDS_ON slic gbenchmark
+                            FOLDER     axom/slic/benchmarks )
+
+        blt_add_benchmark(
+            NAME    ${test_name}
+            COMMAND ${test_name} --benchmark_min_time=0.0001 )
+    endforeach()
+endif()
+
+
+#
+# Fortran tests
+#
+if (ENABLE_FORTRAN)
+    set(fruit_slic_tests
+        slic_interface_F.f )
+
+    foreach(test ${fruit_slic_tests})
+        get_filename_component( test_name ${test} NAME_WE )
+        axom_add_executable(NAME ${test_name}_test
+                            SOURCES ${test}
+                            OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
+                            DEPENDS_ON slic fruit
+                            FOLDER axom/slic/tests )
+        axom_add_test(NAME    ${test_name}
+                      COMMAND ${test_name}_test )
     endforeach()
 endif()

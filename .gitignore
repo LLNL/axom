@@ -1,3 +1,4 @@
+
 build-
 install-
 .cproject
@@ -14,4 +15,9 @@ _axom_build_and_test_*
 tpl_dirs_summary.json
 *.swp
 *.vscode*
+.vs/*
 uberenv_libs
+*_build*
+.idea
+*.opendb
+scripts/make_local_branch_from_fork_pr.sh

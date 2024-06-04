@@ -1,5 +1,5 @@
-// Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC and
-// other Axom Project Developers. See the top-level COPYRIGHT file for details.
+// Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
+// other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
@@ -2846,14 +2846,13 @@ namespace slamLulesh {
 
 
 /******************************************/
-
 int main(int argc, char *argv[])
 {
   using namespace slamLulesh;
 
   Domain *locDom;
-  Int_t numRanks;
-  Int_t myRank;
+  int numRanks;
+  int myRank;
   struct cmdLineOpts opts;
 
 #ifdef AXOM_USE_MPI
@@ -2865,10 +2864,6 @@ int main(int argc, char *argv[])
 #else
   numRanks = 1;
   myRank = 0;
-#endif
-
-#ifdef AXOM_USE_OPENMP
-  omp_set_num_threads(4);
 #endif
 
   { // initialize logger
@@ -2927,9 +2922,9 @@ int main(int argc, char *argv[])
         << "\n\tTo write an output file for VisIt, use -v"
         << "\n\tSee help (-h) for more options"
         << "\n");
-
-    axom::slic::flushStreams();
   }
+
+  axom::slic::flushStreams();
 
   // Set up the mesh and decompose. Assumes regular cubes for now
   Int_t col, row, plane, side;

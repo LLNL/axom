@@ -16,21 +16,21 @@ your program.  It does so by giving the currently held Messages at the current n
 two at a time, to the Combiner classes that are currently registered to Lumberjack
 when a Push happens.
 
-Lumberjack only provides one Combiner, the TextEqualityCombiner. You can write your own
+Lumberjack provides one Combiner as default, the TextTagCombiner. You can write your own
 Combiners and register them with Lumberjack.  The idea is that each Combiner would have
 its own criteria for whether a Message should be combined and how to combine that specific
 Message with another of the same type.
 
 Combiner's have two main functions, shouldMessagesBeCombined and combine.
 
-The function shouldMessagesBeCombined, returns True if the pair of messages satisfy the associated criteria.  For example in the TextEqualityCombiner,
-if the Text strings are exactly equal, it signals they should be combined.
+The function shouldMessagesBeCombined, returns True if the pair of messages satisfy the associated criteria.  For example in the TextTagCombiner,
+if the Text strings and tag strings are exactly equal, it signals they should be combined.
 
 The function combine, takes two Messages and combines them in the way that is specific
-to that Combiner class.  For example in the TextEqualityCombiner, the only thing
-that happens is the second Message's ranks gets added to the first.  This is because
-the text strings were equal.  This may not be the case for all Combiners that you write
-yourself.
+to that Combiner class.  For example in the TextTagCombiner, the only thing
+that happens is the second Message's ranks gets added to the first and the message count
+is increased.  This is because the text strings were equal.  This may not be the case
+for all Combiners that you write yourself.
 
 
 .. _communication_label:

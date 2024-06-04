@@ -1,0 +1,216 @@
+diff --git a/src/thirdparty/axom/sparsehash/dense_hash_map b/src/thirdparty/axom/sparsehash/dense_hash_map
+index 05fd580e6..0b5518a6f 100644
+--- a/src/thirdparty/axom/sparsehash/dense_hash_map
++++ b/src/thirdparty/axom/sparsehash/dense_hash_map
+@@ -96,13 +96,13 @@
+ #ifndef _DENSE_HASH_MAP_H_
+ #define _DENSE_HASH_MAP_H_
+ 
+-#include <sparsehash/internal/sparseconfig.h>
++#include <axom/sparsehash/internal/sparseconfig.h>
+ #include <algorithm>                        // needed by stl_alloc
+ #include <functional>                       // for equal_to<>, select1st<>, etc
+ #include <memory>                           // for alloc
+ #include <utility>                          // for pair<>
+-#include <sparsehash/internal/densehashtable.h>        // IWYU pragma: export
+-#include <sparsehash/internal/libc_allocator_with_realloc.h>
++#include <axom/sparsehash/internal/densehashtable.h>        // IWYU pragma: export
++#include <axom/sparsehash/internal/libc_allocator_with_realloc.h>
+ #include HASH_FUN_H                 // for hash<>
+ _START_GOOGLE_NAMESPACE_
+ 
+diff --git a/src/thirdparty/axom/sparsehash/dense_hash_set b/src/thirdparty/axom/sparsehash/dense_hash_set
+index 050b15d1d..32ae85cd3 100644
+--- a/src/thirdparty/axom/sparsehash/dense_hash_set
++++ b/src/thirdparty/axom/sparsehash/dense_hash_set
+@@ -100,13 +100,13 @@
+ #ifndef _DENSE_HASH_SET_H_
+ #define _DENSE_HASH_SET_H_
+ 
+-#include <sparsehash/internal/sparseconfig.h>
++#include <axom/sparsehash/internal/sparseconfig.h>
+ #include <algorithm>                        // needed by stl_alloc
+ #include <functional>                       // for equal_to<>, select1st<>, etc
+ #include <memory>                           // for alloc
+ #include <utility>                          // for pair<>
+-#include <sparsehash/internal/densehashtable.h>        // IWYU pragma: export
+-#include <sparsehash/internal/libc_allocator_with_realloc.h>
++#include <axom/sparsehash/internal/densehashtable.h>        // IWYU pragma: export
++#include <axom/sparsehash/internal/libc_allocator_with_realloc.h>
+ #include HASH_FUN_H                 // for hash<>
+ _START_GOOGLE_NAMESPACE_
+ 
+diff --git a/src/thirdparty/axom/sparsehash/internal/densehashtable.h b/src/thirdparty/axom/sparsehash/internal/densehashtable.h
+index cdf4ff624..e1f5127bd 100644
+--- a/src/thirdparty/axom/sparsehash/internal/densehashtable.h
++++ b/src/thirdparty/axom/sparsehash/internal/densehashtable.h
+@@ -89,7 +89,7 @@
+ #ifndef _DENSEHASHTABLE_H_
+ #define _DENSEHASHTABLE_H_
+ 
+-#include <sparsehash/internal/sparseconfig.h>
++#include <axom/sparsehash/internal/sparseconfig.h>
+ #include <assert.h>
+ #include <stdio.h>              // for FILE, fwrite, fread
+ #include <algorithm>            // For swap(), eg
+@@ -97,9 +97,9 @@
+ #include <limits>               // for numeric_limits
+ #include <memory>               // For uninitialized_fill
+ #include <utility>              // for pair
+-#include <sparsehash/internal/hashtable-common.h>
+-#include <sparsehash/internal/libc_allocator_with_realloc.h>
+-#include <sparsehash/type_traits.h>
++#include <axom/sparsehash/internal/hashtable-common.h>
++#include <axom/sparsehash/internal/libc_allocator_with_realloc.h>
++#include <axom/sparsehash/type_traits.h>
+ #include <stdexcept>                 // For length_error
+ 
+ _START_GOOGLE_NAMESPACE_
+diff --git a/src/thirdparty/axom/sparsehash/internal/hashtable-common.h b/src/thirdparty/axom/sparsehash/internal/hashtable-common.h
+index bac2b8823..3e0d48320 100644
+--- a/src/thirdparty/axom/sparsehash/internal/hashtable-common.h
++++ b/src/thirdparty/axom/sparsehash/internal/hashtable-common.h
+@@ -40,7 +40,7 @@
+ #ifndef UTIL_GTL_HASHTABLE_COMMON_H_
+ #define UTIL_GTL_HASHTABLE_COMMON_H_
+ 
+-#include <sparsehash/internal/sparseconfig.h>
++#include <axom/sparsehash/internal/sparseconfig.h>
+ #include <assert.h>
+ #include <stdio.h>
+ #include <stddef.h>                  // for size_t
+diff --git a/src/thirdparty/axom/sparsehash/internal/libc_allocator_with_realloc.h b/src/thirdparty/axom/sparsehash/internal/libc_allocator_with_realloc.h
+index 769329fa6..e5989dee8 100644
+--- a/src/thirdparty/axom/sparsehash/internal/libc_allocator_with_realloc.h
++++ b/src/thirdparty/axom/sparsehash/internal/libc_allocator_with_realloc.h
+@@ -32,7 +32,7 @@
+ #ifndef UTIL_GTL_LIBC_ALLOCATOR_WITH_REALLOC_H_
+ #define UTIL_GTL_LIBC_ALLOCATOR_WITH_REALLOC_H_
+ 
+-#include <sparsehash/internal/sparseconfig.h>
++#include <axom/sparsehash/internal/sparseconfig.h>
+ #include <stdlib.h>           // for malloc/realloc/free
+ #include <stddef.h>           // for ptrdiff_t
+ #include <new>                // for placement new
+diff --git a/src/thirdparty/axom/sparsehash/internal/sparsehashtable.h b/src/thirdparty/axom/sparsehash/internal/sparsehashtable.h
+index f54ea51e9..808ca0786 100644
+--- a/src/thirdparty/axom/sparsehash/internal/sparsehashtable.h
++++ b/src/thirdparty/axom/sparsehash/internal/sparsehashtable.h
+@@ -95,15 +95,15 @@
+ #ifndef _SPARSEHASHTABLE_H_
+ #define _SPARSEHASHTABLE_H_
+ 
+-#include <sparsehash/internal/sparseconfig.h>
++#include <axom/sparsehash/internal/sparseconfig.h>
+ #include <assert.h>
+ #include <algorithm>                 // For swap(), eg
+ #include <iterator>                  // for iterator tags
+ #include <limits>                    // for numeric_limits
+ #include <utility>                   // for pair
+-#include <sparsehash/type_traits.h>        // for remove_const
+-#include <sparsehash/internal/hashtable-common.h>
+-#include <sparsehash/sparsetable>    // IWYU pragma: export
++#include <axom/sparsehash/type_traits.h>        // for remove_const
++#include <axom/sparsehash/internal/hashtable-common.h>
++#include <axom/sparsehash/sparsetable>    // IWYU pragma: export
+ #include <stdexcept>                 // For length_error
+ 
+ _START_GOOGLE_NAMESPACE_
+diff --git a/src/thirdparty/axom/sparsehash/sparse_hash_map b/src/thirdparty/axom/sparsehash/sparse_hash_map
+index 1687a8b11..52762d71c 100644
+--- a/src/thirdparty/axom/sparsehash/sparse_hash_map
++++ b/src/thirdparty/axom/sparsehash/sparse_hash_map
+@@ -84,13 +84,13 @@
+ #ifndef _SPARSE_HASH_MAP_H_
+ #define _SPARSE_HASH_MAP_H_
+ 
+-#include <sparsehash/internal/sparseconfig.h>
++#include <axom/sparsehash/internal/sparseconfig.h>
+ #include <algorithm>                        // needed by stl_alloc
+ #include <functional>                       // for equal_to<>, select1st<>, etc
+ #include <memory>                           // for alloc
+ #include <utility>                          // for pair<>
+-#include <sparsehash/internal/libc_allocator_with_realloc.h>
+-#include <sparsehash/internal/sparsehashtable.h>       // IWYU pragma: export
++#include <axom/sparsehash/internal/libc_allocator_with_realloc.h>
++#include <axom/sparsehash/internal/sparsehashtable.h>       // IWYU pragma: export
+ #include HASH_FUN_H                 // for hash<>
+ _START_GOOGLE_NAMESPACE_
+ 
+diff --git a/src/thirdparty/axom/sparsehash/sparse_hash_set b/src/thirdparty/axom/sparsehash/sparse_hash_set
+index ae4a97a62..6d086b620 100644
+--- a/src/thirdparty/axom/sparsehash/sparse_hash_set
++++ b/src/thirdparty/axom/sparsehash/sparse_hash_set
+@@ -88,13 +88,13 @@
+ #ifndef _SPARSE_HASH_SET_H_
+ #define _SPARSE_HASH_SET_H_
+ 
+-#include <sparsehash/internal/sparseconfig.h>
++#include <axom/sparsehash/internal/sparseconfig.h>
+ #include <algorithm>                       // needed by stl_alloc
+ #include <functional>                      // for equal_to<>
+ #include <memory>                          // for alloc (which we don't use)
+ #include <utility>                         // for pair<>
+-#include <sparsehash/internal/libc_allocator_with_realloc.h>
+-#include <sparsehash/internal/sparsehashtable.h>      // IWYU pragma: export
++#include <axom/sparsehash/internal/libc_allocator_with_realloc.h>
++#include <axom/sparsehash/internal/sparsehashtable.h>      // IWYU pragma: export
+ #include HASH_FUN_H                // for hash<>
+ 
+ _START_GOOGLE_NAMESPACE_
+diff --git a/src/thirdparty/axom/sparsehash/sparsetable b/src/thirdparty/axom/sparsehash/sparsetable
+index 6259ebdb0..8dadf1a48 100644
+--- a/src/thirdparty/axom/sparsehash/sparsetable
++++ b/src/thirdparty/axom/sparsehash/sparsetable
+@@ -224,7 +224,7 @@
+ #ifndef UTIL_GTL_SPARSETABLE_H_
+ #define UTIL_GTL_SPARSETABLE_H_
+ 
+-#include <sparsehash/internal/sparseconfig.h>
++#include <axom/sparsehash/internal/sparseconfig.h>
+ #include <stdlib.h>             // for malloc/free
+ #include <stdio.h>              // to read/write tables
+ #include <string.h>             // for memcpy
+@@ -242,9 +242,9 @@
+ #include <algorithm>            // equal, lexicographical_compare, swap,...
+ #include <memory>               // uninitialized_copy, uninitialized_fill
+ #include <vector>               // a sparsetable is a vector of groups
+-#include <sparsehash/type_traits.h>
+-#include <sparsehash/internal/hashtable-common.h>
+-#include <sparsehash/internal/libc_allocator_with_realloc.h>
++#include <axom/sparsehash/type_traits.h>
++#include <axom/sparsehash/internal/hashtable-common.h>
++#include <axom/sparsehash/internal/libc_allocator_with_realloc.h>
+ 
+ // A lot of work to get a type that's guaranteed to be 16 bits...
+ #ifndef HAVE_U_INT16_T
+diff --git a/src/thirdparty/axom/sparsehash/template_util.h b/src/thirdparty/axom/sparsehash/template_util.h
+index 6fec3d092..47ffba167 100644
+--- a/src/thirdparty/axom/sparsehash/template_util.h
++++ b/src/thirdparty/axom/sparsehash/template_util.h
+@@ -49,7 +49,7 @@
+ #ifndef BASE_TEMPLATE_UTIL_H_
+ #define BASE_TEMPLATE_UTIL_H_
+ 
+-#include <sparsehash/internal/sparseconfig.h>
++#include <axom/sparsehash/internal/sparseconfig.h>
+ _START_GOOGLE_NAMESPACE_
+ 
+ // Types small_ and big_ are guaranteed such that sizeof(small_) <
+diff --git a/src/thirdparty/axom/sparsehash/type_traits.h b/src/thirdparty/axom/sparsehash/type_traits.h
+index f909cf9a3..7e0653cd6 100644
+--- a/src/thirdparty/axom/sparsehash/type_traits.h
++++ b/src/thirdparty/axom/sparsehash/type_traits.h
+@@ -57,10 +57,10 @@
+ #ifndef BASE_TYPE_TRAITS_H_
+ #define BASE_TYPE_TRAITS_H_
+ 
+-#include <sparsehash/internal/sparseconfig.h>
++#include <axom/sparsehash/internal/sparseconfig.h>
+ #include <utility>                  // For pair
+ 
+-#include <sparsehash/template_util.h>     // For true_type and false_type
++#include <axom/sparsehash/template_util.h>     // For true_type and false_type
+ 
+ _START_GOOGLE_NAMESPACE_
+ 
