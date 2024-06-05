@@ -248,12 +248,8 @@ inline int isend_using_schema(conduit::Node& node,
 class DistributedClosestPointImpl
 {
 public:
-  using RuntimePolicy = axom::runtime_policy::Policy;
-  DistributedClosestPointImpl(RuntimePolicy runtimePolicy,
-                              int allocatorID,
-                              bool isVerbose)
-    : m_runtimePolicy(runtimePolicy)
-    , m_allocatorID(allocatorID)
+  DistributedClosestPointImpl(int allocatorID, bool isVerbose)
+    : m_allocatorID(allocatorID)
     , m_isVerbose(isVerbose)
     , m_mpiComm(MPI_COMM_NULL)
     , m_rank(-1)
@@ -547,7 +543,6 @@ public:
                                     const std::string& topologyName) const = 0;
 
 protected:
-  RuntimePolicy m_runtimePolicy;
   int m_allocatorID;
   bool m_isVerbose;
 
@@ -603,17 +598,13 @@ public:
   /*!
     @brief Constructor
 
-    @param [i] runtimePolicy Indicates where local computations
-      are done.  See axom::runtime_policy.
     @param [i] allocatorID Allocator ID, which must be compatible with
-      @c runtimePolicy.  See axom::allocate and axom::reallocate.
+      @c ExecSpace.  See axom::allocate and axom::reallocate.
       Also see setAllocatorID().
     @param [i[ isVerbose
   */
-  DistributedClosestPointExec(RuntimePolicy runtimePolicy,
-                              int allocatorID,
-                              bool isVerbose)
-    : DistributedClosestPointImpl(runtimePolicy, allocatorID, isVerbose)
+  DistributedClosestPointExec(int allocatorID, bool isVerbose)
+    : DistributedClosestPointImpl(allocatorID, isVerbose)
     , m_objectPtCoords(0, 0, allocatorID)
     , m_objectPtDomainIds(0, 0, allocatorID)
   {

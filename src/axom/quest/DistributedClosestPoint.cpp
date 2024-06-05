@@ -244,12 +244,10 @@ void DistributedClosestPoint::allocateQueryInstance()
     m_impl = m_dimension == 2
       ? std::unique_ptr<internal::DistributedClosestPointImpl>(
           new internal::DistributedClosestPointExec<2, axom::SEQ_EXEC>(
-            m_runtimePolicy,
             m_allocatorID,
             m_isVerbose))
       : std::unique_ptr<internal::DistributedClosestPointImpl>(
           new internal::DistributedClosestPointExec<3, axom::SEQ_EXEC>(
-            m_runtimePolicy,
             m_allocatorID,
             m_isVerbose));
     break;
@@ -259,12 +257,10 @@ void DistributedClosestPoint::allocateQueryInstance()
     m_impl = m_dimension == 2
       ? std::unique_ptr<internal::DistributedClosestPointImpl>(
           new internal::DistributedClosestPointExec<2, axom::OMP_EXEC>(
-            m_runtimePolicy,
             m_allocatorID,
             m_isVerbose))
       : std::unique_ptr<internal::DistributedClosestPointImpl>(
           new internal::DistributedClosestPointExec<3, axom::OMP_EXEC>(
-            m_runtimePolicy,
             m_allocatorID,
             m_isVerbose));
     break;
@@ -275,12 +271,10 @@ void DistributedClosestPoint::allocateQueryInstance()
     m_impl = m_dimension == 2
       ? std::unique_ptr<internal::DistributedClosestPointImpl>(
           new internal::DistributedClosestPointExec<2, axom::CUDA_EXEC<256>>(
-            m_runtimePolicy,
             m_allocatorID,
             m_isVerbose))
       : std::unique_ptr<internal::DistributedClosestPointImpl>(
           new internal::DistributedClosestPointExec<3, axom::CUDA_EXEC<256>>(
-            m_runtimePolicy,
             m_allocatorID,
             m_isVerbose));
     break;
@@ -291,12 +285,10 @@ void DistributedClosestPoint::allocateQueryInstance()
     m_impl = m_dimension == 2
       ? std::unique_ptr<internal::DistributedClosestPointImpl>(
           new internal::DistributedClosestPointExec<2, axom::HIP_EXEC<256>>(
-            m_runtimePolicy,
             m_allocatorID,
             m_isVerbose))
       : std::unique_ptr<internal::DistributedClosestPointImpl>(
           new internal::DistributedClosestPointExec<3, axom::HIP_EXEC<256>>(
-            m_runtimePolicy,
             m_allocatorID,
             m_isVerbose));
     break;
