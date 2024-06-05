@@ -174,6 +174,7 @@ public:
   /*!
    * \brief Inequality operator for points
    */
+  AXOM_HOST_DEVICE
   friend inline bool operator!=(const Point& lhs, const Point& rhs)
   {
     return !(lhs == rhs);

@@ -138,7 +138,7 @@ Polygon<T, 3> clip(const Triangle<T, 3>& tri, const BoundingBox<T, 3>& bbox)
  *
  */
 template <typename T, axom::primal::PolygonArray ARRAY_TYPE, int MAX_VERTS>
-Polygon<T, 2, ARRAY_TYPE, MAX_VERTS> clip(
+AXOM_HOST_DEVICE Polygon<T, 2, ARRAY_TYPE, MAX_VERTS> clip(
   const Polygon<T, 2, ARRAY_TYPE, MAX_VERTS>& subjectPolygon,
   const Polygon<T, 2, ARRAY_TYPE, MAX_VERTS>& clipPolygon,
   double eps = 1.e-10,

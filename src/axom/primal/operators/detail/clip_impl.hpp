@@ -703,7 +703,7 @@ AXOM_HOST_DEVICE Polyhedron<T, NDIMS> clipTetrahedron(
  *          will have a non-positive and/or unexpected area.
  */
 template <typename T, axom::primal::PolygonArray ARRAY_TYPE, int MAX_VERTS>
-Polygon<T, 2, ARRAY_TYPE, MAX_VERTS> clipPolygonPolygon(
+AXOM_HOST_DEVICE Polygon<T, 2, ARRAY_TYPE, MAX_VERTS> clipPolygonPolygon(
   const Polygon<T, 2, ARRAY_TYPE, MAX_VERTS>& subjectPolygon,
   const Polygon<T, 2, ARRAY_TYPE, MAX_VERTS>& clipPolygon,
   double eps = 1.e-10,
@@ -773,7 +773,13 @@ Polygon<T, 2, ARRAY_TYPE, MAX_VERTS> clipPolygonPolygon(
 
       if(cur_p_orientation == ON_POSITIVE_SIDE)
       {
-        if(prev_p_orientation != ON_POSITIVE_SIDE)
+        // Handles the edge case of 3 consecutive vertices with orientations
+        // ON_POSITIVE_SIDE, ON_BOUNDARY, ON_POSITIVE. Default algorithm
+        // check (prev_p_orientation != ON_POSITIVE_SIDE) results in the
+        // vertex on the boundary being added twice.
+        if(prev_p_orientation == ON_NEGATIVE_SIDE ||
+           (prev_p_orientation == ON_BOUNDARY &&
+            intersecting_point != outputList[outputList.numVertices() - 1]))
         {
           outputList.addVertex(intersecting_point);
         }
