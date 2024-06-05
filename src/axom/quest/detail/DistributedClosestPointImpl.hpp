@@ -255,7 +255,7 @@ public:
     , m_mpiComm(MPI_COMM_NULL)
     , m_rank(-1)
     , m_nranks(-1)
-    , m_sqDistanceThreshold(std::numeric_limits<double>::max())
+    , m_sqUserDistanceThreshold(std::numeric_limits<double>::max())
   { }
 
   virtual ~DistributedClosestPointImpl() { }
@@ -304,7 +304,7 @@ public:
   {
     SLIC_ERROR_IF(sqThreshold < 0.0,
                   "Squared distance-threshold must be non-negative.");
-    m_sqDistanceThreshold = sqThreshold;
+    m_sqUserDistanceThreshold = sqThreshold;
   }
 
   /*!
@@ -551,7 +551,8 @@ protected:
   int m_rank;
   int m_nranks;
 
-  double m_sqDistanceThreshold;
+  //!@brief Distance threshold specified by user.
+  double m_sqUserDistanceThreshold;
 
   bool m_outputRank = true;
   bool m_outputIndex = true;
@@ -855,7 +856,7 @@ public:
         const auto& otherQueryBb = allQueryBbs[r];
         double sqDistance =
           axom::primal::squared_distance(otherQueryBb, myObjectBb);
-        if(sqDistance <= m_sqDistanceThreshold)
+        if(sqDistance <= m_sqUserDistanceThreshold)
         {
           ++remainingRecvs;
         }
@@ -971,7 +972,7 @@ private:
       }
       double sqDistance =
         primal::squared_distance(bb, m_objectPartitionBbs[maybeNextRecip]);
-      if(sqDistance <= m_sqDistanceThreshold)
+      if(sqDistance <= m_sqUserDistanceThreshold)
       {
         return maybeNextRecip;
       }
@@ -1082,7 +1083,7 @@ public:
         const int rank = m_rank;
 
         double* sqDistThresh = axom::allocate<double>(1, m_allocatorID);
-        *sqDistThresh = m_sqDistanceThreshold;
+        *sqDistThresh = m_sqUserDistanceThreshold;
 
         auto ptCoordsView = m_objectPtCoords.view();
         auto ptDomainIdsView = m_objectPtDomainIds.view();
