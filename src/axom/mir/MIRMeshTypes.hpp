@@ -40,7 +40,7 @@ namespace mir
   using PosType = slam::DefaultPositionType;
   using ElemType = slam::DefaultElementType;
 
-  using ArrayIndir = slam::policies::ArrayIndirection< PosType, ElemType >;
+  using ArrayIndir = slam::policies::CArrayIndirection< PosType, ElemType >;
 
   using VertSet = slam::PositionSet< PosType, ElemType >;
   using ElemSet = slam::PositionSet< PosType, ElemType >;
@@ -56,9 +56,9 @@ namespace mir
 
   // MAP TYPE ALIASES
   using BaseSet = slam::Set< PosType, ElemType >;
-  using ScalarMap = slam::Map< BaseSet, axom::float64 >;
-  using PointMap = slam::Map< BaseSet, Point2 >;
-  using IntMap = slam::Map< BaseSet, int >;
+  using ScalarMap = slam::Map< axom::float64, BaseSet >;
+  using PointMap = slam::Map< Point2, BaseSet >;
+  using IntMap = slam::Map< int, BaseSet >;
 }
 }
 #endif
