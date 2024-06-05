@@ -885,7 +885,7 @@ public:
         const auto& otherQueryBb = allQueryBbs[r];
         double sqDistance =
           axom::primal::squared_distance(otherQueryBb, myObjectBb);
-        if(sqDistance <= m_sqUserDistanceThreshold)
+        if(sqDistance <= allSqDistanceThreshold[r])
         {
           ++remainingRecvs;
         }
@@ -1002,7 +1002,7 @@ private:
       }
       double sqDistance =
         primal::squared_distance(bb, m_objectPartitionBbs[maybeNextRecip]);
-      if(sqDistance <= m_sqUserDistanceThreshold)
+      if(sqDistance <= sqDistanceThreshold)
       {
         return maybeNextRecip;
       }
@@ -1113,7 +1113,7 @@ public:
         const int rank = m_rank;
 
         double* sqDistThresh = axom::allocate<double>(1, m_allocatorID);
-        *sqDistThresh = m_sqUserDistanceThreshold;
+        *sqDistThresh = xferNode.fetch("sqDistanceThreshold").as_double();
 
         auto ptCoordsView = m_objectPtCoords.view();
         auto ptDomainIdsView = m_objectPtDomainIds.view();
