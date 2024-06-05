@@ -175,13 +175,14 @@ public:
 
 private:
   /*!
-    @brief Allocate the templated the implementation object.
+    @brief Allocate the DistributedClosestPointImpl object, which actually does the work.
 
-    \post The problem dimension and runtime policy are a part of the
-    implementation object, so changes to them are disallowed.
+    \post The implementation object is for a specific dimension and runtime policy,
+    so changes to those are disallowed.
   */
   void allocateQueryInstance();
 
+  //!@brief Allocate the DistributedClosestPointImpl for compile-time dimension and execution space.
   template <int DIM, typename ExecSpace>
   void allocateQueryInstance();
 
