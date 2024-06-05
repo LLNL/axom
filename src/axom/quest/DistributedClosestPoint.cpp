@@ -241,56 +241,28 @@ void DistributedClosestPoint::allocateQueryInstance()
   switch(m_runtimePolicy)
   {
   case RuntimePolicy::seq:
-    m_impl = m_dimension == 2
-      ? std::unique_ptr<internal::DistributedClosestPointImpl>(
-          new internal::DistributedClosestPointExec<2, axom::SEQ_EXEC>(
-            m_allocatorID,
-            m_isVerbose))
-      : std::unique_ptr<internal::DistributedClosestPointImpl>(
-          new internal::DistributedClosestPointExec<3, axom::SEQ_EXEC>(
-            m_allocatorID,
-            m_isVerbose));
+    m_dimension == 2 ? allocateQueryInstance<2, axom::SEQ_EXEC>()
+                     : allocateQueryInstance<3, axom::SEQ_EXEC>();
     break;
 
 #ifdef AXOM_RUNTIME_POLICY_USE_OPENMP
   case RuntimePolicy::omp:
-    m_impl = m_dimension == 2
-      ? std::unique_ptr<internal::DistributedClosestPointImpl>(
-          new internal::DistributedClosestPointExec<2, axom::OMP_EXEC>(
-            m_allocatorID,
-            m_isVerbose))
-      : std::unique_ptr<internal::DistributedClosestPointImpl>(
-          new internal::DistributedClosestPointExec<3, axom::OMP_EXEC>(
-            m_allocatorID,
-            m_isVerbose));
+    m_dimension == 2 ? allocateQueryInstance<2, axom::OMP_EXEC>()
+                     : allocateQueryInstance<3, axom::OMP_EXEC>();
     break;
 #endif
 
 #ifdef AXOM_RUNTIME_POLICY_USE_CUDA
   case RuntimePolicy::cuda:
-    m_impl = m_dimension == 2
-      ? std::unique_ptr<internal::DistributedClosestPointImpl>(
-          new internal::DistributedClosestPointExec<2, axom::CUDA_EXEC<256>>(
-            m_allocatorID,
-            m_isVerbose))
-      : std::unique_ptr<internal::DistributedClosestPointImpl>(
-          new internal::DistributedClosestPointExec<3, axom::CUDA_EXEC<256>>(
-            m_allocatorID,
-            m_isVerbose));
+    m_dimension == 2 ? allocateQueryInstance<2, axom::CUDA_EXEC<256>>()
+                     : allocateQueryInstance<3, axom::CUDA_EXEC<256>>();
     break;
 #endif
 
 #ifdef AXOM_RUNTIME_POLICY_USE_HIP
   case RuntimePolicy::hip:
-    m_impl = m_dimension == 2
-      ? std::unique_ptr<internal::DistributedClosestPointImpl>(
-          new internal::DistributedClosestPointExec<2, axom::HIP_EXEC<256>>(
-            m_allocatorID,
-            m_isVerbose))
-      : std::unique_ptr<internal::DistributedClosestPointImpl>(
-          new internal::DistributedClosestPointExec<3, axom::HIP_EXEC<256>>(
-            m_allocatorID,
-            m_isVerbose));
+    m_dimension == 2 ? allocateQueryInstance<2, axom::HIP_EXEC<256>>()
+                     : allocateQueryInstance<3, axom::HIP_EXEC<256>>();
     break;
 #endif
 
@@ -300,6 +272,15 @@ void DistributedClosestPoint::allocateQueryInstance()
       "  Please select another policy.",
       axom::runtime_policy::s_policyToName.at(m_runtimePolicy)));
   }
+}
+
+template <int DIM, typename ExecSpace>
+void DistributedClosestPoint::allocateQueryInstance()
+{
+  m_impl =
+    std::make_unique<internal::DistributedClosestPointExec<DIM, ExecSpace>>(
+      m_allocatorID,
+      m_isVerbose);
 }
 
 bool DistributedClosestPoint::isValidBlueprint(const conduit::Node& mesh_node) const

@@ -182,6 +182,9 @@ private:
   */
   void allocateQueryInstance();
 
+  template <int DIM, typename ExecSpace>
+  void allocateQueryInstance();
+
   /// Check validity of blueprint group
   bool isValidBlueprint(const conduit::Node& mesh_node) const;
 
