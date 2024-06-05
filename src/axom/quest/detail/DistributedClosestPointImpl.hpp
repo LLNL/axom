@@ -235,7 +235,6 @@ inline int isend_using_schema(conduit::Node& node,
 }  // namespace mpi
 }  // namespace relay
 
-
 /*!
   @brief Non-templated base class for the distributed closest point
   implementation.
@@ -253,16 +252,16 @@ public:
   DistributedClosestPointImpl(RuntimePolicy runtimePolicy,
                               int allocatorID,
                               bool isVerbose)
-  : m_runtimePolicy(runtimePolicy)
-  , m_allocatorID(allocatorID)
-  , m_isVerbose(isVerbose)
-  , m_mpiComm(MPI_COMM_NULL)
-  , m_rank(-1)
-  , m_nranks(-1)
-  , m_sqDistanceThreshold(std::numeric_limits<double>::max())
-  {}
+    : m_runtimePolicy(runtimePolicy)
+    , m_allocatorID(allocatorID)
+    , m_isVerbose(isVerbose)
+    , m_mpiComm(MPI_COMM_NULL)
+    , m_rank(-1)
+    , m_nranks(-1)
+    , m_sqDistanceThreshold(std::numeric_limits<double>::max())
+  { }
 
-  virtual ~DistributedClosestPointImpl() {}
+  virtual ~DistributedClosestPointImpl() { }
 
   virtual int getDimension() const = 0;
 
@@ -326,7 +325,6 @@ public:
     m_outputCoords = outputCoords;
     m_outputDomainIndex = outputDomainIndex;
   }
-
 
   /*!
    * Copy parts of query mesh partition to a conduit::Node for
@@ -922,7 +920,6 @@ public:
   }
 
 private:
-
   /**
     Determine the next rank (in ring order) with an object partition
     close to the query points in xferNode.  The intent is to send
@@ -949,7 +946,6 @@ private:
     }
     return -1;
   }
-
 
   // Note: following should be private, but nvcc complains about lambdas in private scope
 public:

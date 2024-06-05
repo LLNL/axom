@@ -103,7 +103,10 @@ void DistributedClosestPoint::setAllocatorID(int allocatorID)
                   "Invalid allocator id.");
   m_allocatorID = allocatorID;
 
-  if (m_impl) { m_impl->setAllocatorID(m_allocatorID); }
+  if(m_impl)
+  {
+    m_impl->setAllocatorID(m_allocatorID);
+  }
 }
 
 void DistributedClosestPoint::setMpiCommunicator(MPI_Comm mpiComm, bool duplicate)
@@ -159,7 +162,7 @@ void DistributedClosestPoint::setOutput(const std::string& field, bool on)
 void DistributedClosestPoint::setObjectMesh(const conduit::Node& meshNode,
                                             const std::string& topologyName)
 {
-  if (m_impl)
+  if(m_impl)
   {
     SLIC_ERROR("Object mesh already created.");
   }
@@ -240,30 +243,30 @@ void DistributedClosestPoint::allocateQueryInstance()
   case RuntimePolicy::seq:
     m_impl = m_dimension == 2
       ? std::unique_ptr<internal::DistributedClosestPointImpl>(
-        new internal::DistributedClosestPointExec<2, axom::SEQ_EXEC>(
-          m_runtimePolicy,
-          m_allocatorID,
-          m_isVerbose))
+          new internal::DistributedClosestPointExec<2, axom::SEQ_EXEC>(
+            m_runtimePolicy,
+            m_allocatorID,
+            m_isVerbose))
       : std::unique_ptr<internal::DistributedClosestPointImpl>(
-        new internal::DistributedClosestPointExec<3, axom::SEQ_EXEC>(
-          m_runtimePolicy,
-          m_allocatorID,
-          m_isVerbose));
+          new internal::DistributedClosestPointExec<3, axom::SEQ_EXEC>(
+            m_runtimePolicy,
+            m_allocatorID,
+            m_isVerbose));
     break;
 
 #ifdef AXOM_RUNTIME_POLICY_USE_OPENMP
   case RuntimePolicy::omp:
     m_impl = m_dimension == 2
       ? std::unique_ptr<internal::DistributedClosestPointImpl>(
-        new internal::DistributedClosestPointExec<2, axom::OMP_EXEC>(
-          m_runtimePolicy,
-          m_allocatorID,
-          m_isVerbose))
+          new internal::DistributedClosestPointExec<2, axom::OMP_EXEC>(
+            m_runtimePolicy,
+            m_allocatorID,
+            m_isVerbose))
       : std::unique_ptr<internal::DistributedClosestPointImpl>(
-        new internal::DistributedClosestPointExec<3, axom::OMP_EXEC>(
-          m_runtimePolicy,
-          m_allocatorID,
-          m_isVerbose));
+          new internal::DistributedClosestPointExec<3, axom::OMP_EXEC>(
+            m_runtimePolicy,
+            m_allocatorID,
+            m_isVerbose));
     break;
 #endif
 
@@ -271,15 +274,15 @@ void DistributedClosestPoint::allocateQueryInstance()
   case RuntimePolicy::cuda:
     m_impl = m_dimension == 2
       ? std::unique_ptr<internal::DistributedClosestPointImpl>(
-        new internal::DistributedClosestPointExec<2, axom::CUDA_EXEC<256>>(
-          m_runtimePolicy,
-          m_allocatorID,
-          m_isVerbose))
+          new internal::DistributedClosestPointExec<2, axom::CUDA_EXEC<256>>(
+            m_runtimePolicy,
+            m_allocatorID,
+            m_isVerbose))
       : std::unique_ptr<internal::DistributedClosestPointImpl>(
-        new internal::DistributedClosestPointExec<3, axom::CUDA_EXEC<256>>(
-          m_runtimePolicy,
-          m_allocatorID,
-          m_isVerbose));
+          new internal::DistributedClosestPointExec<3, axom::CUDA_EXEC<256>>(
+            m_runtimePolicy,
+            m_allocatorID,
+            m_isVerbose));
     break;
 #endif
 
@@ -287,15 +290,15 @@ void DistributedClosestPoint::allocateQueryInstance()
   case RuntimePolicy::hip:
     m_impl = m_dimension == 2
       ? std::unique_ptr<internal::DistributedClosestPointImpl>(
-        new internal::DistributedClosestPointExec<2, axom::HIP_EXEC<256>>(
-          m_runtimePolicy,
-          m_allocatorID,
-          m_isVerbose))
+          new internal::DistributedClosestPointExec<2, axom::HIP_EXEC<256>>(
+            m_runtimePolicy,
+            m_allocatorID,
+            m_isVerbose))
       : std::unique_ptr<internal::DistributedClosestPointImpl>(
-        new internal::DistributedClosestPointExec<3, axom::HIP_EXEC<256>>(
-          m_runtimePolicy,
-          m_allocatorID,
-          m_isVerbose));
+          new internal::DistributedClosestPointExec<3, axom::HIP_EXEC<256>>(
+            m_runtimePolicy,
+            m_allocatorID,
+            m_isVerbose));
     break;
 #endif
 

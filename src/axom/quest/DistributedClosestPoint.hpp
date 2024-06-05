@@ -67,8 +67,10 @@ public:
 
     See axom::runtime_policy.
   */
-  void setRuntimePolicy(RuntimePolicy policy) {
-    SLIC_ASSERT_MSG(!m_impl, "Runtime policy may not change after setObjectMesh()");
+  void setRuntimePolicy(RuntimePolicy policy)
+  {
+    SLIC_ASSERT_MSG(!m_impl,
+                    "Runtime policy may not change after setObjectMesh()");
     m_runtimePolicy = policy;
   }
 
