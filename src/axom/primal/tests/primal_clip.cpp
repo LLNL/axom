@@ -671,6 +671,84 @@ void check_tet_tet_clip(double EPS)
   axom::setDefaultAllocator(current_allocator);
 }
 
+template <typename ExecPolicy>
+void check_polygon_polygon_clip(double EPS)
+{
+  // Will be clipping two triangles, max number of vertices for output polygon
+  // is 3 + 3 = 6
+  const int MAX_NUM_VERTS = 6;
+
+  constexpr bool CHECK_SIGN = true;
+
+  using PolygonStatic2D =
+    axom::primal::Polygon<double, 2, axom::primal::PolygonArray::Static, MAX_NUM_VERTS>;
+  using Point2D = axom::primal::Point<double, 2>;
+
+  // Get ids of necessary allocators
+  const int host_allocator = axom::execution_space<axom::SEQ_EXEC>::allocatorID();
+  const int kernel_allocator = axom::execution_space<ExecPolicy>::allocatorID();
+
+  axom::Array<PolygonStatic2D> subject_polygon_device(1, 1, kernel_allocator);
+  auto subject_polygon_view = subject_polygon_device.view();
+
+  axom::Array<PolygonStatic2D> clip_polygon_device(1, 1, kernel_allocator);
+  auto clip_polygon_view = clip_polygon_device.view();
+
+  axom::Array<PolygonStatic2D> output_polygon_device(1, 1, kernel_allocator);
+  auto output_polygon_view = output_polygon_device.view();
+
+  axom::for_all<ExecPolicy>(
+    1,
+    AXOM_LAMBDA(int i) {
+      subject_polygon_view[i] = PolygonStatic2D(
+        {Point2D({0.0, 0.0}), Point2D({1.0, 0.0}), Point2D({0.5, 1})});
+
+      clip_polygon_view[i] = PolygonStatic2D({Point2D({0.0, 2.0 / 3.0}),
+                                              Point2D({0.5, -1.0 / 3.0}),
+                                              Point2D({1.0, 2.0 / 3.0})});
+
+      output_polygon_view[i] =
+        axom::primal::clip(subject_polygon_view[i], clip_polygon_view[i], EPS);
+    });
+
+  // Copy output polygon back to host
+  axom::Array<PolygonStatic2D> output_polygon_host =
+    axom::Array<PolygonStatic2D>(output_polygon_device, host_allocator);
+
+  EXPECT_NEAR(0.3333, output_polygon_host[0].signedArea(), EPS);
+  EXPECT_EQ(output_polygon_host[0].numVertices(), 6);
+
+  // Test tryFixOrientation optional parameter using same polygons with
+  // negative volumes (clockwise ordering)
+  axom::for_all<ExecPolicy>(
+    1,
+    AXOM_LAMBDA(int i) {
+      subject_polygon_view[i].clear();
+      clip_polygon_view[i].clear();
+      output_polygon_view[i].clear();
+
+      subject_polygon_view[i].addVertex(Point2D({0.5, 1}));
+      subject_polygon_view[i].addVertex(Point2D({1.0, 0.0}));
+      subject_polygon_view[i].addVertex(Point2D({0.0, 0.0}));
+
+      clip_polygon_view[i].addVertex(Point2D({0.5, -1.0 / 3.0}));
+      clip_polygon_view[i].addVertex(Point2D({0.0, 2.0 / 3.0}));
+      clip_polygon_view[i].addVertex(Point2D({1.0, 2.0 / 3.0}));
+
+      output_polygon_view[i] = axom::primal::clip(subject_polygon_view[i],
+                                                  clip_polygon_view[i],
+                                                  EPS,
+                                                  CHECK_SIGN);
+    });
+
+  // Copy output polygon back to host
+  output_polygon_host =
+    axom::Array<PolygonStatic2D>(output_polygon_device, host_allocator);
+
+  EXPECT_NEAR(0.3333, output_polygon_host[0].signedArea(), EPS);
+  EXPECT_EQ(output_polygon_host[0].numVertices(), 6);
+}
+
 TEST(primal_clip, unit_poly_clip_vertices_sequential)
 {
   unit_check_poly_clip<axom::SEQ_EXEC>();
@@ -692,6 +770,12 @@ TEST(primal_clip, clip_tet_tet_sequential)
 {
   constexpr double EPS = 1e-4;
   check_tet_tet_clip<axom::SEQ_EXEC>(EPS);
+}
+
+TEST(primal_clip, clip_polygon_polygon_sequential)
+{
+  constexpr double EPS = 1e-4;
+  check_polygon_polygon_clip<axom::SEQ_EXEC>(EPS);
 }
 
   #ifdef AXOM_USE_OPENMP
@@ -716,6 +800,12 @@ TEST(primal_clip, clip_tet_tet_omp)
 {
   constexpr double EPS = 1e-4;
   check_tet_tet_clip<axom::OMP_EXEC>(EPS);
+}
+
+TEST(primal_clip, clip_polygon_polygon_omp)
+{
+  constexpr double EPS = 1e-4;
+  check_polygon_polygon_clip<axom::OMP_EXEC>(EPS);
 }
   #endif /* AXOM_USE_OPENMP */
 
@@ -742,6 +832,12 @@ TEST(primal_clip, clip_tet_tet_cuda)
   constexpr double EPS = 1e-4;
   check_tet_tet_clip<axom::CUDA_EXEC<256>>(EPS);
 }
+
+TEST(primal_clip, clip_polygon_polygon_cuda)
+{
+  constexpr double EPS = 1e-4;
+  check_polygon_polygon_clip<axom::CUDA_EXEC<256>>(EPS);
+}
   #endif /* AXOM_USE_CUDA */
 
   #if defined(AXOM_USE_HIP)
@@ -766,6 +862,12 @@ TEST(primal_clip, clip_tet_tet_hip)
 {
   constexpr double EPS = 1e-4;
   check_tet_tet_clip<axom::HIP_EXEC<256>>(EPS);
+}
+
+TEST(primal_clip, clip_polygon_polygon_hip)
+{
+  constexpr double EPS = 1e-4;
+  check_polygon_polygon_clip<axom::HIP_EXEC<256>>(EPS);
 }
   #endif /* AXOM_USE_HIP */
 
@@ -1733,6 +1835,27 @@ TEST(primal_clip, polygon_intersects_polygon)
     EXPECT_NEAR(poly_fix_orientation.signedArea(), 0.5, EPS);
   }
 
+  // Edge case with 3 consecutive vertices having the orientations
+  // ON_POSITIVE_SIDE, ON_BOUNDARY, ON_POSITIVE in respect to the
+  // last edge of the clip polygon. Prior to fix, resulted in the
+  // vertex on the boundary being added twice.
+  {
+    Polygon2D subjectPolygon;
+    subjectPolygon.addVertex(Point2D {0.0, 0.0});
+    subjectPolygon.addVertex(Point2D {1.0, 0.0});
+    subjectPolygon.addVertex(Point2D {1.0, 1.0});
+
+    Polygon2D clipPolygon;
+    clipPolygon.addVertex(Point2D {0.0, 0.0});
+    clipPolygon.addVertex(Point2D {1.0, 0.0});
+    clipPolygon.addVertex(Point2D {0.0, 1.0});
+
+    Polygon2D poly = axom::primal::clip(subjectPolygon, clipPolygon, EPS);
+
+    EXPECT_NEAR(poly.signedArea(), 0.25, EPS);
+    EXPECT_EQ(poly.numVertices(), 3);
+  }
+
   // Non-clipping - polygons intersect at a line
   {
     Polygon2D subjectPolygon;
@@ -1796,6 +1919,7 @@ TEST(primal_clip, polygon_intersects_polygon)
 
     Polygon2D poly = axom::primal::clip(subjectPolygon, clipPolygon, EPS);
     EXPECT_NEAR(poly.signedArea(), 37083.3333333333, EPS);
+    EXPECT_EQ(poly.numVertices(), 10);
   }
 }
 
