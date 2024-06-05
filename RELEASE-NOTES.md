@@ -20,6 +20,8 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 ## [Unreleased] - Release date yyyy-mm-dd
 
 ### Added
+- Multidimenional `core::Array` supports column-major and arbitrary stride ordering,
+  in addition to the default row-major ordering.
 - Adds new `PolygonArray` and `MAX_VERTS` template parameters to `primal::Polygon` for dynamic
   or static allocation.
 - Adds support for the optional `caliper` and `adiak` dependencies to axom.
@@ -34,6 +36,10 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 - Primal: Makes several primitive methods available in device code
 
 ### Changed
+- `quest::ArrayIndexer` is now `axom::MDMapping`, adopting conventional terminology
+  and moving out of `quest`.
+- `mint::structured_exec` is now `axom::nested_for_exec`, to support nested for loops
+  for all of Axom.  See `src/axom/core/execution/nested_for_exec.hpp`.
 - Set default Umpire allocator id to device instead of unified for CUDA and HIP execution policies.
 - Upgrades `vcpkg` usage for axom's automated Windows builds to its
   [2024.03.19 release](https://github.com/microsoft/vcpkg/releases/tag/2024.03.19).

@@ -218,7 +218,7 @@ public:
     @brief Return view of parent cell indices Array.
 
     The buffer size is getContourCellCount().  The parent ID is the
-    flat index of the cell in the parent domain (see ArrayIndexer),
+    flat index of the cell in the parent domain (see MDMapping),
     not counting ghost cells, with row- or major-ordering same as that
     for the input scalar function array.
   */

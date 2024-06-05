@@ -15,7 +15,6 @@ set(quest_tests
     quest_pro_e_reader.cpp
     quest_stl_reader.cpp
     quest_vertex_weld.cpp
-    quest_array_indexer.cpp
    )
 
 blt_list_append(TO       quest_tests
