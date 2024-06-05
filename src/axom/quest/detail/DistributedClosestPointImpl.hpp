@@ -772,6 +772,22 @@ public:
     }
   }
 
+  /// Allgather a primitive value.
+  template<typename T>
+  void gatherPrimitiveValue(const T& val, axom::Array<T>& allVals) const
+  {
+    allVals.resize(m_nranks);
+    int errf = MPI_Allgather(&val,
+                             1,
+                             mpi_traits<T>::type,
+                             allVals.data(),
+                             1,
+                             mpi_traits<T>::type,
+                             m_mpiComm);
+    SLIC_ASSERT(errf == MPI_SUCCESS);
+    AXOM_UNUSED_VAR(errf);
+  }
+
   /// Compute bounding box for local part of a mesh.
   BoxType computeMeshBoundingBox(conduit::Node& xferNode) const
   {
@@ -839,6 +855,21 @@ public:
     put_bounding_box_to_conduit_node(myQueryBb, xferNodes[m_rank]->fetch("aabb"));
     BoxArray allQueryBbs;
     gatherBoundingBoxes(myQueryBb, allQueryBbs);
+
+    // Compute the min of the max distance between m_objectBb and each rank's query box.
+    // TODO: Move this into a function for readability.
+    double minMaxSqDist = std::numeric_limits<double>::max();
+    for( int i = 0; i < m_nranks; ++i )
+    {
+      auto maxSqDist = maxSqDistBetweenBoxes(m_objectBb, allQueryBbs[i]);
+      minMaxSqDist = std::min(minMaxSqDist, maxSqDist);
+    }
+
+    const double sqDistanceThreshold = std::min(m_sqUserDistanceThreshold, minMaxSqDist);
+    xferNodes[m_rank]->fetch("sqDistanceThreshold") = sqDistanceThreshold;
+
+    axom::Array<double> allSqDistanceThreshold(m_nranks);
+    gatherPrimitiveValue(sqDistanceThreshold, allSqDistanceThreshold);
 
     {
       conduit::Node& xferNode = *xferNodes[m_rank];
@@ -961,6 +992,7 @@ private:
     int homeRank = xferNode.fetch_existing("homeRank").value();
     BoxType bb;
     get_bounding_box_from_conduit_node(bb, xferNode.fetch_existing("aabb"));
+    auto sqDistanceThreshold = xferNode.fetch_existing("sqDistanceThreshold").as_double();
     for(int i = 1; i < m_nranks; ++i)
     {
       int maybeNextRecip = (m_rank + i) % m_nranks;
@@ -1197,6 +1229,47 @@ private:
   BoxArray m_objectPartitionBbs;
 
   std::unique_ptr<BVHTreeType> m_bvh;
+
+  //! @brief Compute maximum squared-distance possible between points in 2 boxes.
+  AXOM_HOST_DEVICE double maxSqDistBetweenBoxes(const BoxType& a, const BoxType& b) const
+  {
+    /*
+      The following logic is necessary should one box nest inside the
+      other when projected onto one or more axis directions.
+
+      We look at the distance between each corner of box a and the
+      opposite corner of b.  The max distance is the max among those.
+      Opposite means that if we choose the lower corner in a, we must
+      compare with the upper corner in b.  A vice versa.
+    */
+    double maxSqDist = 0.0;
+    int numCorners = 1 << DIM;
+    for (int i = 0; i<numCorners; ++i)
+    {
+      PointType aCoords; // i-th corner of a.
+      PointType bCoords; // Corner of b opposite from i-th corner of a.
+      for (int d = 0; d < DIM; ++d)
+      {
+        bool upperA_lowerB = i & (1 << d);
+        if (upperA_lowerB)
+        {
+          aCoords[d] = a.getMin()[d];
+          bCoords[d] = b.getMax()[d];
+        }
+        else // upperB_lowerA
+        {
+          bCoords[d] = b.getMin()[d];
+          aCoords[d] = a.getMax()[d];
+        }
+      }
+      primal::Vector<double, DIM> separation{aCoords, bCoords};
+      double sqDist = separation.squared_norm();
+      maxSqDist = std::max(maxSqDist, sqDist);
+    }
+
+    return maxSqDist;
+  }
+
 };  // DistributedClosestPointExec
 
 }  // namespace internal
