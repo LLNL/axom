@@ -685,8 +685,7 @@ public:
       copiedCount += N;
     }
 
-    // Compute bounding box
-    // Don't rely on BVH, whose bounding box is a bit different.
+    // Compute bounding box.
 #if defined(AXOM_USE_RAJA)
     // Coordinates may be on device but should be compatible with ExecSpace.
     axom::ArrayView<PointType> coordsView = m_objectPtCoords.view();
@@ -753,7 +752,6 @@ public:
     aabb.getMin().to_array(&sendbuf[0]);
     aabb.getMax().to_array(&sendbuf[DIM]);
     axom::Array<double> recvbuf(m_nranks * sendbuf.size());
-    // Note: Using axom::Array<double,2> may reduce clutter a tad.
     int errf = MPI_Allgather(sendbuf.data(),
                              2 * DIM,
                              mpi_traits<double>::type,
