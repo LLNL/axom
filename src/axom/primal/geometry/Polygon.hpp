@@ -123,6 +123,164 @@ public:
   AXOM_HOST_DEVICE Polygon()
   { }
 
+  /// Default destructor for an empty polygon (dynamic array specialization).
+  /// Specializations are necessary to remove __host__ __device__ warning for
+  /// axom::Array usage with the dynamic array type.
+  // template <PolygonArray P_ARRAY_TYPE = ARRAY_TYPE,
+  //           std::enable_if_t<P_ARRAY_TYPE == PolygonArray::Dynamic, int> = 0>
+  // ~Polygon()
+  // { }
+
+  /// Default destructor for an empty polygon (static array specialization)
+
+  /***************************************************************************/
+
+  //  Throws warnings because not host device decorated (works)
+  // (Nothing)
+
+  // Same as doing (Nothing), because C++ generating for us (works)
+  // ~Polygon() = default;
+
+  // Decoration is ignored (works)
+  // AXOM_HOST_DEVICE
+  // ~Polygon() = default;
+
+  // This doesn't work on device, runtime failure (because not compiled for it)
+  // ~Polygon()
+  // { m_vertices.clear(); }
+
+  // This throws a bunch of warnings for axom::Array, but works
+  // AXOM_HOST_DEVICE
+  // ~Polygon()
+  // { m_vertices.clear(); }
+
+  // This the above but silences the axom::Array warnings, works.
+  // This does what we want (no warnings + works), but is ugly.
+  // Either it's this, or you live with the default constructed warnings (only 2)
+  AXOM_SUPPRESS_HD_WARN
+  AXOM_HOST_DEVICE
+  ~Polygon() { m_vertices.clear(); }
+
+  // This not allowed, you cannot do this SFINAE stuff, doesn't compile
+  // template <PolygonArray P_ARRAY_TYPE = ARRAY_TYPE,
+  //           std::enable_if_t<P_ARRAY_TYPE == PolygonArray::Dynamic, int> = 0>
+  // ~Polygon()
+  // { }
+
+  // /// Default constructor for an empty polygon (static array specialization)
+  // template <PolygonArray P_ARRAY_TYPE = ARRAY_TYPE,
+  //           std::enable_if_t<P_ARRAY_TYPE == PolygonArray::Static, int> = 0>
+  // AXOM_HOST_DEVICE ~Polygon()
+  // { }
+
+  /***************************************************************************/
+  // Copy assignment operator
+
+  // (Nothing)
+
+  // Same as doing (Nothing), because C++ generating for us (works)
+  // Polygon& operator=(const Polygon& other) = default;
+
+  // This doesn't work on device, runtime failure (because not compiled for it)
+  // Polygon& operator=(const Polygon& other)
+  // {
+  //   if (this == &other)
+  //   {
+  //     return *this;
+  //   }
+
+  //   m_vertices = other.m_vertices;
+  //   return *this;
+  // }
+
+  // This throws a bunch of warnings for axom::Array, but works
+  // AXOM_HOST_DEVICE
+  // Polygon& operator=(const Polygon& other)
+  // {
+  //   if (this == &other)
+  //   {
+  //     return *this;
+  //   }
+
+  //   m_vertices = other.m_vertices;
+  //   return *this;
+  // }
+
+  // This the above but silences the axom::Array warnings, works.
+  // This does what we want (no warnings + works), but is ugly.
+  // Either it's this, or you live with the default constructed warnings (only 2)
+  AXOM_SUPPRESS_HD_WARN
+  AXOM_HOST_DEVICE
+  Polygon& operator=(const Polygon& other)
+  {
+    if(this == &other)
+    {
+      return *this;
+    }
+
+    m_vertices = other.m_vertices;
+    return *this;
+  }
+
+  // Huh, still get the warning...
+  // template <PolygonArray P_ARRAY_TYPE = ARRAY_TYPE,
+  //           std::enable_if_t<P_ARRAY_TYPE == PolygonArray::Dynamic, int> = 0>
+  // Polygon& operator=(const Polygon& other)
+  // {
+  //   if (this == &other)
+  //   {
+  //     return *this;
+  //   }
+
+  //   m_vertices = other.m_vertices;
+  //   return *this;
+  // }
+
+  // // Copy assignment(static array specialization)
+  // template <PolygonArray P_ARRAY_TYPE = ARRAY_TYPE,
+  //           std::enable_if_t<P_ARRAY_TYPE == PolygonArray::Static, int> = 0>
+  // AXOM_HOST_DEVICE
+  // Polygon& operator=(const Polygon& other)
+  // {
+  //   if (this == &other)
+  //   {
+  //     return *this;
+  //   }
+
+  //   m_vertices = other.m_vertices;
+  //   return *this;
+  // }
+
+  /***************************************************************************/
+  // Copy constructor - Huh, doesn't throw a warning, maybe not necessary?
+
+  // (Nothing)
+
+  // Same as doing (Nothing), because C++ generating for us (works)
+  // Polygon(const Polygon& other) = default;
+
+  // This doesn't work on device, runtime failure (because not compiled for it)
+  // Polygon(const Polygon& other) : m_vertices(other.m_vertices)
+  // {}
+
+  // AXOM_HOST_DEVICE
+  // Polygon(const Polygon& other) : m_vertices(other.m_vertices)
+  // {}
+
+  // Oh, this works. Okay then.
+  // template <PolygonArray P_ARRAY_TYPE = ARRAY_TYPE,
+  //           std::enable_if_t<P_ARRAY_TYPE == PolygonArray::Dynamic, int> = 0>
+  // Polygon(const Polygon& other) : m_vertices(other.m_vertices)
+  // {}
+
+  // template <PolygonArray P_ARRAY_TYPE = ARRAY_TYPE,
+  //           std::enable_if_t<P_ARRAY_TYPE == PolygonArray::Static, int> = 0>
+  // AXOM_HOST_DEVICE
+  // Polygon(const Polygon& other) : m_vertices(other.m_vertices)
+  // {}
+
+  /***************************************************************************/
+
   /*!
    * \brief Constructor for an empty polygon that reserves space for
    *  the given number of vertices. Only available for dynamic arrays.
