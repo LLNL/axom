@@ -697,11 +697,8 @@ public:
       RAJA::forall<LoopPolicy>(
         RAJA::RangeSegment(0, ptCount),
         AXOM_LAMBDA(RAJA::Index_type n) {
-          for (int d=0; d<DIM; ++d)
-          {
-            minCoord.min(coordsView[n][d]);
-            maxCoord.max(coordsView[n][d]);
-          }
+          minCoord.min(coordsView[n][d]);
+          maxCoord.max(coordsView[n][d]);
         });
       minPt[d] = minCoord.get();
       maxPt[d] = maxCoord.get();
@@ -856,12 +853,12 @@ public:
     BoxArray allQueryBbs;
     gatherBoundingBoxes(myQueryBb, allQueryBbs);
 
-    // Compute the min of the max distance between m_objectBb and each rank's query box.
+    // Compute the min of the max distance between myQueryBb and each rank's object bounding box.
     // TODO: Move this into a function for readability.
     double minMaxSqDist = std::numeric_limits<double>::max();
     for( int i = 0; i < m_nranks; ++i )
     {
-      auto maxSqDist = maxSqDistBetweenBoxes(m_objectBb, allQueryBbs[i]);
+      auto maxSqDist = maxSqDistBetweenBoxes(myQueryBb, m_objectPartitionBbs[i]);
       minMaxSqDist = std::min(minMaxSqDist, maxSqDist);
     }
 
