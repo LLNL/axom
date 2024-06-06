@@ -339,6 +339,9 @@ public:
     MPI_Allreduce(MPI_IN_PLACE, &m_dimension, 1, MPI_INT, MPI_MAX, MPI_COMM_WORLD);
     SLIC_ASSERT(m_dimension > 0);
 
+    // For debugging, create cell-centered owner-rank field.
+    m_dimension == 2 ? setCellOwnerRank<2>(mdMesh) : setCellOwnerRank<3>(mdMesh);
+
     if(domCount > 0)
     {
       // Put mdMesh into sidre Group.
@@ -426,6 +429,43 @@ public:
     for(int i = 0; i < SZ; ++i)
     {
       arr[i] = i;
+    }
+  }
+
+  /*!
+    @brief Set the cell-centered owner rank field.
+
+    @param mdMesh A multi-domain structured mesh.
+  */
+  template <int DIM>
+  void setCellOwnerRank(conduit::Node& mdMesh)
+  {
+    std::string fieldName = "owner_rank";
+    axom::StackArray<axom::IndexType, DIM> zeroPads;
+    axom::StackArray<axom::IndexType, DIM> strideOrder;
+    for(int d = 0; d < DIM; ++d)
+    {
+      zeroPads[d] = 0;
+      strideOrder[d] = DIM - d - 1;
+    }
+    for(conduit::Node& dom : mdMesh.children())
+    {
+      axom::quest::MeshViewUtil<DIM> domainView(dom, m_topologyName);
+      domainView.createField(fieldName,
+                             "element",
+                             conduit::DataType::uint32(),
+                             zeroPads,
+                             zeroPads,
+                             strideOrder);
+
+      auto ownerRankView =
+        domainView.template getFieldView<std::uint32_t>(fieldName);
+      axom::detail::ArrayOps<std::uint32_t, axom::MemorySpace::Dynamic>::fill(
+        ownerRankView.data(),
+        0,
+        ownerRankView.size(),
+        ownerRankView.getAllocatorID(),
+        m_rank);
     }
   }
 
@@ -1501,12 +1541,16 @@ int main(int argc, char** argv)
       maxQuery));
   }
   slic::flushStreams();
+  SLIC_INFO(axom::fmt::format("Updating closest points."));
+  slic::flushStreams();
   queryMeshWrapper.update_closest_points(queryMeshNode);
 
   int errCount = 0;
   int localErrCount = 0;
   if(params.checkResults)
   {
+    SLIC_INFO(axom::fmt::format("Checking results."));
+    slic::flushStreams();
     if(spatialDim == 2)
     {
       primal::Point<double, 2> center(params.circleCenter.data());
