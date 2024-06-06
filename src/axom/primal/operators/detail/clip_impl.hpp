@@ -702,6 +702,7 @@ AXOM_HOST_DEVICE Polyhedron<T, NDIMS> clipTetrahedron(
  *          a negative signed area, the returned Polygon
  *          will have a non-positive and/or unexpected area.
  */
+AXOM_SUPPRESS_HD_WARN
 template <typename T, axom::primal::PolygonArray ARRAY_TYPE, int MAX_VERTS>
 AXOM_HOST_DEVICE Polygon<T, 2, ARRAY_TYPE, MAX_VERTS> clipPolygonPolygon(
   const Polygon<T, 2, ARRAY_TYPE, MAX_VERTS>& subjectPolygon,
