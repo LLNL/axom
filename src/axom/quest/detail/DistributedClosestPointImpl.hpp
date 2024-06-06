@@ -871,6 +871,7 @@ public:
     {
       conduit::Node& xferNode = *xferNodes[m_rank];
       computeLocalClosestPoints(xferNode);
+      xferNode["localSearchCount"].set_int32(1);
     }
 
     const auto& myObjectBb = m_objectPartitionBbs[m_rank];
@@ -951,6 +952,8 @@ public:
       else
       {
         computeLocalClosestPoints(xferNode);
+        auto tmpCount = xferNode["localSearchCount"].as_int32();
+        xferNode["localSearchCount"].set_int32(1 + tmpCount);
 
         isendRequests.emplace_back(conduit::relay::mpi::Request());
         auto& isendRequest = isendRequests.back();
