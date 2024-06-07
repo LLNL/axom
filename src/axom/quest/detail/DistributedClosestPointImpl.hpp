@@ -12,7 +12,6 @@
 #include "axom/primal.hpp"
 #include "axom/spin.hpp"
 #include "axom/core/execution/runtime_policy.hpp"
-#include "axom/core/WhereMacro.hpp"
 
 #include "axom/fmt.hpp"
 
@@ -858,7 +857,6 @@ public:
     gatherBoundingBoxes(myQueryBb, allQueryBbs);
 
     // Compute the min of the max distance between myQueryBb and each rank's object bounding box.
-    // TODO: Move this into a function for readability.
     double minMaxSqDist = std::numeric_limits<double>::max();
     for(int i = 0; i < m_nranks; ++i)
     {
@@ -881,8 +879,8 @@ public:
 
     /*
       Count number of remote query partitions to receive,
-      based on number of those partitions close enough to myObjectBb.
-      */
+      i.e., how many partitions close enough to myObjectBb.
+    */
     const auto& myObjectBb = m_objectPartitionBbs[m_rank];
     int remainingRecvs = 0;
     if(myObjectBb.isValid())
@@ -963,6 +961,7 @@ public:
       if(homeRank == m_rank)
       {
         node_copy_xfer_to_query(xferNode, queryMesh, topologyName);
+        xferNodes.erase(m_rank);
       }
       else
       {

@@ -1101,6 +1101,7 @@ private:
 
 /**
  * Generates points on a sphere, partitioned into multiple domains.
+ * The sphere's polar axis is in the z-direction.
  * Point spacing in the longitudinal direction can be random (default) or uniform.
  * 3D points cover the given latitude range.
  */
