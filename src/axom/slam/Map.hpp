@@ -865,7 +865,7 @@ void Map<T, S, IndPol, StrPol, IfacePol>::print() const
   {
     std::stringstream sstr;
 
-    if (!m_set)
+    if (!m_set.get())
     {
       sstr << "** map is empty.";
     }

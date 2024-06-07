@@ -162,7 +162,7 @@ private:
  */
 int main(int argc, char** argv)
 {
-  axom::slic::UnitTestLogger logger;  // create & initialize test logger
+  axom::slic::SimpleLogger logger;  // create & initialize test logger
   axom::slic::setLoggingMsgLevel( axom::slic::message::Info );
   
   // Parse arguments
