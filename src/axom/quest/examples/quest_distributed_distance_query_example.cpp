@@ -1006,13 +1006,44 @@ public:
       const double allowableSlack = avgObjectRes / 2;
 
       using IndexSet = slam::PositionSet<>;
+      const PointType circleCenter {params.circleCenter.data(), DIM};
+      double zNorth =
+        params.circleRadius * std::sin(params.latRange[1] * M_PI / 180);
+      double xyNorth =
+        params.circleRadius * std::cos(params.latRange[1] * M_PI / 180);
+      double zSouth =
+        params.circleRadius * std::sin(params.latRange[0] * M_PI / 180);
+      double xySouth =
+        params.circleRadius * std::cos(params.latRange[0] * M_PI / 180);
       for(auto i : IndexSet(queryPts.size()))
       {
         bool errf = false;
 
+        // Compute the analytical distance to sphere (or partial sphere
+        // if the latitude range doesn't go all the way to the poles).
         const auto& qPt = queryPts[i];
         const auto& cpCoord = cpCoords[i];
         double analyticalDist = std::fabs(sphere.computeSignedDistance(qPt));
+        if(DIM == 3 && params.latRange[0] > -90 && params.latRange[1] < 90)
+        {
+          // More complicated analytical distance for partial-sphere object.
+          axom::primal::Vector<double, DIM> cToQ {circleCenter, qPt};
+          double z = cToQ[2];
+          cToQ[2] = 0.0;
+          double xy = cToQ.norm();
+          double qPtLat = std::atan(z / xy) * 180 / M_PI;
+          if(qPtLat > params.latRange[1])
+          {
+            analyticalDist = std::sqrt((z - zNorth) * (z - zNorth) +
+                                       (xy - xyNorth) * (xy - xyNorth));
+          }
+          else if(qPtLat < params.latRange[0])
+          {
+            analyticalDist = std::sqrt((z - zSouth) * (z - zSouth) +
+                                       (xy - xySouth) * (xy - xySouth));
+          }
+        }
+
         const bool closestPointFound = (cpIndices[i] == -1);
         if(closestPointFound)
         {
@@ -1072,7 +1103,7 @@ public:
             {
               errf = true;
               SLIC_INFO(
-                axom::fmt::format("***Warning: Closest distance for {} (index "
+                axom::fmt::format("***Error: Closest distance for {} (index "
                                   "{}, cp {}) is {}, off by {}.",
                                   qPt,
                                   i,
