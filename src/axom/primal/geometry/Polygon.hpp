@@ -13,6 +13,7 @@
 #define AXOM_PRIMAL_POLYGON_HPP_
 
 #include "axom/core/Array.hpp"
+#include "axom/core/StaticArray.hpp"
 #include "axom/primal/geometry/Point.hpp"
 #include "axom/primal/geometry/Vector.hpp"
 
@@ -25,39 +26,6 @@ namespace primal
 namespace
 {
 static constexpr int DEFAULT_MAX_NUM_VERTICES = 8;
-
-/*!
- * \brief A helper class for the Polygon class
- *
- * This class helps define a StackArray with a current size and additional
- * functions to mirror axom::Array.
- */
-template <typename T, int N>
-struct StaticArray : public StackArray<T, N>
-{
-  AXOM_HOST_DEVICE int size() const { return m_size; }
-  AXOM_HOST_DEVICE void push_back(const T& obj)
-  {
-    assert(m_size < N);
-    if(m_size < N)
-    {
-      StackArray<T, N>::m_data[m_size++] = obj;
-    }
-  }
-
-  AXOM_HOST_DEVICE void clear()
-  {
-    for(T& datum : StackArray<T, N>::m_data)
-    {
-      datum = T();
-    }
-    m_size = 0;
-  }
-
-private:
-  int m_size {0};
-};
-
 } /* end anonymous namespace */
 
 /**
@@ -106,7 +74,7 @@ public:
   // axom::Array for dynamic array type, StaticArray for static array type
   using ArrayType = std::conditional_t<ARRAY_TYPE == PolygonArray::Dynamic,
                                        axom::Array<PointType>,
-                                       StaticArray<PointType, MAX_VERTS>>;
+                                       axom::StaticArray<PointType, MAX_VERTS>>;
 
 public:
   /// Default constructor for an empty polygon (dynamic array specialization).
