@@ -879,18 +879,28 @@ public:
       xferNode["localSearchCount"].set_int32(1);
     }
 
+    /*
+      Count number of remote query partitions to receive,
+      based on number of those partitions close enough to myObjectBb.
+      */
     const auto& myObjectBb = m_objectPartitionBbs[m_rank];
     int remainingRecvs = 0;
-    for(int r = 0; r < m_nranks; ++r)
+    if(myObjectBb.isValid())
     {
-      if(r != m_rank)
+      for(int r = 0; r < m_nranks; ++r)
       {
-        const auto& otherQueryBb = allQueryBbs[r];
-        double sqDistance =
-          axom::primal::squared_distance(otherQueryBb, myObjectBb);
-        if(sqDistance <= allSqDistanceThreshold[r])
+        if(r != m_rank)
         {
-          ++remainingRecvs;
+          const auto& otherQueryBb = allQueryBbs[r];
+          if(otherQueryBb.isValid())
+          {
+            double sqDistance =
+              axom::primal::squared_distance(otherQueryBb, myObjectBb);
+            if(sqDistance <= allSqDistanceThreshold[r])
+            {
+              ++remainingRecvs;
+            }
+          }
         }
       }
     }
@@ -1235,10 +1245,19 @@ private:
 
   std::unique_ptr<BVHTreeType> m_bvh;
 
-  //! @brief Compute maximum squared-distance possible between points in 2 boxes.
+  /*!
+    @brief Compute maximum squared-distance possible between points in 2 boxes,
+    or std::numeric_limits<double>::max() if either box is invalid.
+  */
   AXOM_HOST_DEVICE double maxSqDistBetweenBoxes(const BoxType& a,
                                                 const BoxType& b) const
   {
+    if(!a.isValid() || !b.isValid())
+    {
+      return std::numeric_limits<double>::max();
+    }
+
+    double maxSqDist = 0.0;
     /*
       The following logic is necessary should one box nest inside the
       other when projected onto one or more axis directions.
@@ -1246,9 +1265,8 @@ private:
       We look at the distance between each corner of box a and the
       opposite corner of b.  The max distance is the max among those.
       Opposite means that if we choose the lower corner in a, we must
-      compare with the upper corner in b.  A vice versa.
+      compare with the upper corner in b.  And vice versa.
     */
-    double maxSqDist = 0.0;
     int numCorners = 1 << DIM;
     for(int i = 0; i < numCorners; ++i)
     {
@@ -1272,7 +1290,6 @@ private:
       double sqDist = separation.squared_norm();
       maxSqDist = std::max(maxSqDist, sqDist);
     }
-
     return maxSqDist;
   }
 
