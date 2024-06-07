@@ -85,6 +85,13 @@ void  CellGenerator::generateVertexPositions(const mir::Shape shapeType,
       // This vertex is one of the shape's original vertices
       out_cellData.m_mapData.m_vertexPositions.push_back( vertexPositions[vID] );
     }
+    else if ( mir::utilities::isCenterVertex(shapeType, vID) )
+    {
+      // Average the vertex position values at the corners of the shape
+      mir::Point2 centroid = mir::utilities::computeAveragePoint(vertexPositions);
+
+      out_cellData.m_mapData.m_vertexPositions.push_back( centroid );
+    }
     else
     {
       // This vertex is between two of the shape's original vertices
@@ -117,6 +124,13 @@ void  CellGenerator::generateVertexVolumeFractions(const mir::Shape shapeType,
       {
         // This vertex is one of the shape's original vertices
         out_cellData.m_mapData.m_vertexVolumeFractions[matID].push_back( vertexVF[matID][vID] );
+      }
+      else if ( mir::utilities::isCenterVertex(shapeType, vID) )
+      {
+        // Average the vertex volume fractions values at the corners of the shape
+        axom::float64 averageValue = mir::utilities::computeAverageFloat( vertexVF[matID] );
+
+        out_cellData.m_mapData.m_vertexVolumeFractions[matID].push_back( averageValue );
       }
       else
       {
@@ -167,54 +181,6 @@ int  CellGenerator::determineCleanCellMaterial(const Shape elementShape,
 }
 
 //--------------------------------------------------------------------------------
-
-mir::Shape  CellGenerator::determineElementShapeType(const Shape parentShapeType,
-                                                     const int numVerts)
-{
-  mir::Shape newShapeType;
-  if (parentShapeType == mir::Shape::Triangle || parentShapeType == mir::Shape::Quad)
-  {
-    // Handle the two-dimensional case
-    switch (numVerts)
-    {
-      case 3:
-        newShapeType = mir::Shape::Triangle;
-        break;
-      case 4:
-        newShapeType = mir::Shape::Quad;
-        break;
-      default:
-        newShapeType = mir::Shape::Triangle;
-        printf("Invalid number of vertices in determineElementShapeType().\n");
-        break;
-    }
-  }
-  else
-  {
-    // Handle the three-dimensional case
-    switch (numVerts)
-    {
-      case 4:
-        newShapeType = mir::Shape::Tetrahedron;
-        break;
-      case 5:
-        newShapeType = mir::Shape::Pyramid;
-        break;
-      case 6:
-        newShapeType = mir::Shape::Triangular_Prism;
-        break;
-      case 8:
-        newShapeType = mir::Shape::Hexahedron;
-        break;
-      default:
-        newShapeType = mir::Shape::Tetrahedron;
-        printf("Invalid number of vertices in determineElementShapeType().\n");
-        break;
-    }
-  }
-    return newShapeType;
-}
-
 
 }
 }

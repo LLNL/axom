@@ -129,7 +129,9 @@ namespace mir
        * 
        * \note Currently reads in an ASCII, UNSTRUCTURED_GRID .vtk file.
        */
-      void  writeMeshToFile(const std::string filename);
+      void  writeMeshToFile(const std::string& dirName,
+                            const std::string& fileName,
+                            const std::string& separator = "/");
 
 
       /**

@@ -94,7 +94,7 @@ public:
       mir::MIRMesh  initTestCaseFour();
 
       /**
-       * \brief Initializes a mesh to be used for testing a set of concentric circles centered in a uniform grid.
+       * \brief Initializes a mesh to be used for testing a set of concentric circles centered in a uniform 2D grid.
        * 
        * \param gridSize  The number of elements in the width and the height of the uniform grid.
        * \param numCircles  The number of concentric circles that are centered in the grid.
@@ -103,7 +103,19 @@ public:
        * 
        * \return  The generated mesh.
        */
-      mir::MIRMesh  initTestCaseFive(int gridSize, int numCircles); // multiple materials, multiple concentric circles
+      mir::MIRMesh  initTestCaseFive(int gridSize, int numCircles);
+
+      /**
+       * \brief Initializes a mesh to be used for testing a set of concentric spheres centered in a uniform 3D grid.
+       * 
+       * \param gridSize  The number of elements in the width and the height of the uniform grid.
+       * \param numSpheres  The number of concentric spheres that are centered in the grid.
+       * 
+       * \note  Each sphere is composed of a different material.
+       * 
+       * \return  The generated mesh.
+       */
+      mir::MIRMesh  initTestCaseSix(int gridSize, int numSpheres);
 
       /**
        * \brief Initializes a mesh composed of a uniform grid with a circle of material in it.
@@ -135,6 +147,13 @@ public:
        * \param gridSize  The number of elements in the width and height of the uniform grid.
        */
       mir::CellData  generateGrid(int gridSize);
+
+      /**
+       * \brief Generates a 3D uniform grid of n x n x n elements.
+       * 
+       * \param gridSize  The number of elements in the width, height, and depth of the uniform grid.
+       */
+      mir::CellData  generateGrid3D(int gridSize);
 
       /**
        * \brief Calculates the percent overlap between the given circle and quad.

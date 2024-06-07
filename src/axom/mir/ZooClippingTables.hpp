@@ -24,6 +24,10 @@ namespace mir
   
   extern const std::vector<std::vector<int> > triangleClipTableVec;
   extern const std::vector<std::vector<int> > quadClipTableVec;
+  extern const std::vector<std::vector<int> > tetrahedronClipTableVec;
+  extern const std::vector<std::vector<int> > pyramidClipTableVec;
+  extern const std::vector<std::vector<int> > triangularPrismClipTableVec;
+  extern const std::vector<std::vector<int> > hexahedronClipTableVec;
 }
 }
 #endif

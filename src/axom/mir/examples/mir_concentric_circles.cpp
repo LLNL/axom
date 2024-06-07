@@ -21,7 +21,7 @@ std::string usageString()
 
 int main( int argc, char** argv )
 {
-   axom::slic::SimpleLogger logger;  // create & initialize test logger
+   axom::slic::UnitTestLogger logger;  // create & initialize test logger
    axom::slic::setLoggingMsgLevel( axom::slic::message::Info );
   
   if (argc != 4)
@@ -54,7 +54,7 @@ int main( int argc, char** argv )
           << timer.elapsedTimeInMilliSec() << " ms.");
 
     // Output results
-    processedMesh.writeMeshToFile(outputFilePath + "outputConcentricCircles.vtk");
+    processedMesh.writeMeshToFile(outputFilePath, "outputConcentricCircles.vtk");
     
     return 0;
   }

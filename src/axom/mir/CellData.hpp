@@ -75,7 +75,7 @@ namespace mir
       /**
        * \brief Default destructor.
        */
-      ~CellData();
+      ~CellData() = default;
 
       /**
        * \brief Merges the cell data from the given cell into this cell.

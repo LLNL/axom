@@ -40,14 +40,15 @@ set(mir_sources
 #------------------------------------------------------------------------------
 # Build and install the library
 #------------------------------------------------------------------------------
-set(mir_depends_on core slic slam primal)
+set(mir_depends_on core slic slam)
 
 blt_add_library(
     NAME        mir
     SOURCES     ${mir_sources}
     HEADERS     ${mir_headers}
     DEPENDS_ON  ${mir_depends_on}
-    FOLDER      axom/mir)
+    FOLDER      axom/mir
+    OBJECT      TRUE )
 
 axom_write_unified_header(NAME    mir
                           HEADERS ${mir_headers} )
