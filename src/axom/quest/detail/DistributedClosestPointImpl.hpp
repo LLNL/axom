@@ -690,10 +690,12 @@ public:
     // Coordinates may be on device but should be compatible with ExecSpace.
     axom::ArrayView<PointType> coordsView = m_objectPtCoords.view();
     PointType minPt, maxPt;
-    for (int d=0; d<DIM; ++d)
+    for(int d = 0; d < DIM; ++d)
     {
-      RAJA::ReduceMin<ReducePolicy, double> minCoord(std::numeric_limits<double>::max());
-      RAJA::ReduceMax<ReducePolicy, double> maxCoord(std::numeric_limits<double>::min());
+      RAJA::ReduceMin<ReducePolicy, double> minCoord(
+        std::numeric_limits<double>::max());
+      RAJA::ReduceMax<ReducePolicy, double> maxCoord(
+        std::numeric_limits<double>::min());
       RAJA::forall<LoopPolicy>(
         RAJA::RangeSegment(0, ptCount),
         AXOM_LAMBDA(RAJA::Index_type n) {
@@ -705,7 +707,9 @@ public:
     }
     m_objectBb = BoxType(minPt, maxPt);
 #else
-    m_objectBb = axom::primal::BoundingBox<double, DIM>{m_objectPtCoords.data(), m_objectPtCoords.size()};
+    m_objectBb =
+      axom::primal::BoundingBox<double, DIM> {m_objectPtCoords.data(),
+                                              m_objectPtCoords.size()};
 #endif
     gatherBoundingBoxes(m_objectBb, m_objectPartitionBbs);
 
@@ -770,7 +774,7 @@ public:
   }
 
   /// Allgather a primitive value.
-  template<typename T>
+  template <typename T>
   void gatherPrimitiveValue(const T& val, axom::Array<T>& allVals) const
   {
     allVals.resize(m_nranks);
@@ -856,13 +860,14 @@ public:
     // Compute the min of the max distance between myQueryBb and each rank's object bounding box.
     // TODO: Move this into a function for readability.
     double minMaxSqDist = std::numeric_limits<double>::max();
-    for( int i = 0; i < m_nranks; ++i )
+    for(int i = 0; i < m_nranks; ++i)
     {
       auto maxSqDist = maxSqDistBetweenBoxes(myQueryBb, m_objectPartitionBbs[i]);
       minMaxSqDist = std::min(minMaxSqDist, maxSqDist);
     }
 
-    const double sqDistanceThreshold = std::min(m_sqUserDistanceThreshold, minMaxSqDist);
+    const double sqDistanceThreshold =
+      std::min(m_sqUserDistanceThreshold, minMaxSqDist);
     xferNodes[m_rank]->fetch("sqDistanceThreshold") = sqDistanceThreshold;
 
     axom::Array<double> allSqDistanceThreshold(m_nranks);
@@ -992,7 +997,8 @@ private:
     int homeRank = xferNode.fetch_existing("homeRank").value();
     BoxType bb;
     get_bounding_box_from_conduit_node(bb, xferNode.fetch_existing("aabb"));
-    auto sqDistanceThreshold = xferNode.fetch_existing("sqDistanceThreshold").as_double();
+    auto sqDistanceThreshold =
+      xferNode.fetch_existing("sqDistanceThreshold").as_double();
     for(int i = 1; i < m_nranks; ++i)
     {
       int maybeNextRecip = (m_rank + i) % m_nranks;
@@ -1012,7 +1018,6 @@ private:
 
   // Note: following should be private, but nvcc complains about lambdas in private scope
 public:
-
   void computeLocalClosestPoints(conduit::Node& xferNode) const
   {
     using axom::primal::squared_distance;
@@ -1231,7 +1236,8 @@ private:
   std::unique_ptr<BVHTreeType> m_bvh;
 
   //! @brief Compute maximum squared-distance possible between points in 2 boxes.
-  AXOM_HOST_DEVICE double maxSqDistBetweenBoxes(const BoxType& a, const BoxType& b) const
+  AXOM_HOST_DEVICE double maxSqDistBetweenBoxes(const BoxType& a,
+                                                const BoxType& b) const
   {
     /*
       The following logic is necessary should one box nest inside the
@@ -1244,25 +1250,25 @@ private:
     */
     double maxSqDist = 0.0;
     int numCorners = 1 << DIM;
-    for (int i = 0; i<numCorners; ++i)
+    for(int i = 0; i < numCorners; ++i)
     {
-      PointType aCoords; // i-th corner of a.
-      PointType bCoords; // Corner of b opposite from i-th corner of a.
-      for (int d = 0; d < DIM; ++d)
+      PointType aCoords;  // i-th corner of a.
+      PointType bCoords;  // Corner of b opposite from i-th corner of a.
+      for(int d = 0; d < DIM; ++d)
       {
         bool upperA_lowerB = i & (1 << d);
-        if (upperA_lowerB)
+        if(upperA_lowerB)
         {
           aCoords[d] = a.getMin()[d];
           bCoords[d] = b.getMax()[d];
         }
-        else // upperB_lowerA
+        else  // upperB_lowerA
         {
           bCoords[d] = b.getMin()[d];
           aCoords[d] = a.getMax()[d];
         }
       }
-      primal::Vector<double, DIM> separation{aCoords, bCoords};
+      primal::Vector<double, DIM> separation {aCoords, bCoords};
       double sqDist = separation.squared_norm();
       maxSqDist = std::max(maxSqDist, sqDist);
     }
