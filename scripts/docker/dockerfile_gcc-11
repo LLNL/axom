@@ -6,7 +6,7 @@ ARG branch=develop
 
 SHELL ["/bin/bash", "-c"]
 RUN sudo apt-get update -y
-RUN sudo apt-get install doxygen gfortran graphviz libopenblas-dev libomp-dev mpich python3-sphinx ssh texlive-full -fy
+RUN sudo apt-get install doxygen elfutils gfortran graphviz libopenblas-dev libomp-dev mpich python3-sphinx ssh texlive-full -fy
 
 WORKDIR "/home/axom"
 USER axom
@@ -16,8 +16,8 @@ RUN git clone --recursive --branch $branch --single-branch --depth 1 https://git
 # Build/install TPLs via spack and then remove the temporary build directory on success
 RUN cd axom_repo && python3 ./scripts/uberenv/uberenv.py --spack-env-file=./scripts/spack/configs/docker/ubuntu20/spack.yaml \
                                                          --project-json=.uberenv_config.json \
-                                                         --spec=%gcc@11.1.0+mfem+raja+umpire --prefix=/home/axom/axom_tpls -k \
-                 && rm -rf /home/axom/axom_tpls/builds
+                                                         --spec=%gcc@11.1.0+mfem+raja+umpire+profiling --prefix=/home/axom/axom_tpls -k \
+                 && rm -rf /home/axom/axom_tpls/build_stage /home/axom/axom_tpls/spack
 
 RUN mkdir -p /home/axom/export_hostconfig
 RUN cp ./axom_repo/*.cmake /home/axom/export_hostconfig

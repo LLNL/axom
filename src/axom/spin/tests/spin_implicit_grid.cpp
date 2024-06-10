@@ -487,13 +487,14 @@ TYPED_TEST(ImplicitGridExecTest, get_candidates_pt_vectorized)
 
   GridT grid(bbox, &res, maxElts);
 
-  axom::Array<BBox> objBox1(1, 1, kernelAllocID);
+  axom::Array<BBox> objBox1(1, 1, hostAllocID);
   objBox1[0] = BBox {SpacePt {.15, .25, .05}, SpacePt {.45, .25, .35}};
 
-  grid.insert(objBox1[0], 1);
+  axom::Array<BBox> objBox1_device = axom::Array<BBox>(objBox1, kernelAllocID);
+  grid.insert(objBox1_device[0], 1);
 
   {
-    axom::Array<SpacePt> queryPts(9, 9, kernelAllocID);
+    axom::Array<SpacePt> queryPts(9, 9, hostAllocID);
 
     // First three query points inside only obj1
     queryPts[0] = objBox1[0].getMin();
@@ -512,13 +513,15 @@ TYPED_TEST(ImplicitGridExecTest, get_candidates_pt_vectorized)
 
     axom::Array<int> count, offset, candidates;
     {
+      axom::Array<SpacePt> queryPtsDevice =
+        axom::Array<SpacePt>(queryPts, kernelAllocID);
       axom::Array<int> countDevice(9, 9, kernelAllocID);
       axom::Array<int> offsetDevice(9, 9, kernelAllocID);
       axom::Array<int> candidatesDevice;
 
       // Run query against implicit grid
       grid.getCandidatesAsArray(9,
-                                queryPts.data(),
+                                queryPtsDevice.data(),
                                 offsetDevice,
                                 countDevice,
                                 candidatesDevice);
@@ -528,8 +531,6 @@ TYPED_TEST(ImplicitGridExecTest, get_candidates_pt_vectorized)
       offset = axom::Array<int>(offsetDevice, hostAllocID);
       candidates = axom::Array<int>(candidatesDevice, hostAllocID);
     }
-
-    // Copy results back to the host
 
     // Test some points that are expected to match
     for(int i = 0; i < 5; ++i)
@@ -546,16 +547,18 @@ TYPED_TEST(ImplicitGridExecTest, get_candidates_pt_vectorized)
     }
   }
 
-  axom::Array<BBox> objBox2(1, 1, kernelAllocID);
+  axom::Array<BBox> objBox2(1, 1, hostAllocID);
   objBox2[0] = BBox {SpacePt {.75, .85, .85}, SpacePt(.85)};
-  grid.insert(objBox2[0], 2);
+  axom::Array<BBox> objBox2_device = axom::Array<BBox>(objBox2, kernelAllocID);
+  grid.insert(objBox2_device[0], 2);
 
-  axom::Array<BBox> objBox3(1, 1, kernelAllocID);
+  axom::Array<BBox> objBox3(1, 1, hostAllocID);
   objBox3[0] = BBox {SpacePt {.85, .85, .75}, SpacePt(.95)};
-  grid.insert(objBox3[0], 3);
+  axom::Array<BBox> objBox3_device = axom::Array<BBox>(objBox3, kernelAllocID);
+  grid.insert(objBox3_device[0], 3);
 
   {
-    axom::Array<SpacePt> queryPts(3, 3, kernelAllocID);
+    axom::Array<SpacePt> queryPts(3, 3, hostAllocID);
 
     // Should only be inside obj2
     queryPts[0] = SpacePt {.75, .85, .85};
@@ -566,12 +569,14 @@ TYPED_TEST(ImplicitGridExecTest, get_candidates_pt_vectorized)
 
     axom::Array<int> count, offset, candidates;
     {
+      axom::Array<SpacePt> queryPtsDevice =
+        axom::Array<SpacePt>(queryPts, kernelAllocID);
       axom::Array<int> countDevice(3, 3, kernelAllocID);
       axom::Array<int> offsetDevice(3, 3, kernelAllocID);
       axom::Array<int> candidatesDevice;
       // Run query against implicit grid
       grid.getCandidatesAsArray(3,
-                                queryPts.data(),
+                                queryPtsDevice.data(),
                                 offsetDevice,
                                 countDevice,
                                 candidatesDevice);
@@ -785,8 +790,18 @@ TYPED_TEST(ImplicitGridExecTest, get_candidates_box_vectorized)
             << axom::execution_space<ExecSpace>::name()
             << " execution space for boxes in " << DIM << "D");
 
-  int kernelAllocID = axom::execution_space<ExecSpace>::allocatorID();
   int hostAllocID = axom::execution_space<axom::SEQ_EXEC>::allocatorID();
+  int kernelAllocID = axom::execution_space<ExecSpace>::allocatorID();
+  int unifiedAllocID = axom::execution_space<ExecSpace>::allocatorID();
+
+#if defined(AXOM_USE_GPU) && defined(AXOM_USE_UMPIRE)
+  if(axom::execution_space<ExecSpace>::onDevice())
+  {
+    kernelAllocID = axom::getUmpireResourceAllocatorID(umpire::resource::Device);
+    unifiedAllocID =
+      axom::getUmpireResourceAllocatorID(umpire::resource::Unified);
+  }
+#endif
 
   // Note: A 10 x 10 x 10 implicit grid in the unit cube.
   //       Grid cells have a spacing of .1 along each dimension
@@ -794,13 +809,15 @@ TYPED_TEST(ImplicitGridExecTest, get_candidates_box_vectorized)
   BBox bbox(SpacePt(0.), SpacePt(1.));
   const int maxElts = 30;
 
-  GridT grid(bbox, &res, maxElts);
+  // Initialize Implicit Grid in unified memory.
+  // getCandidates() function not yet __host __device__ decorated
+  GridT grid(bbox, &res, maxElts, unifiedAllocID);
   const int i_max = DIM >= 1 ? grid.gridResolution()[0] : 1;
   const int j_max = DIM >= 2 ? grid.gridResolution()[1] : 1;
   const int k_max = DIM >= 3 ? grid.gridResolution()[2] : 1;
 
-  axom::Array<BBox> BBoxes(maxElts, maxElts, kernelAllocID);
-  axom::Array<SpacePt> queryPt(1, 1, kernelAllocID);
+  axom::Array<BBox> BBoxes(maxElts, maxElts, hostAllocID);
+  axom::Array<SpacePt> queryPt(1, 1, hostAllocID);
 
   // Add some boxes to the spatial index
   {
@@ -835,8 +852,10 @@ TYPED_TEST(ImplicitGridExecTest, get_candidates_box_vectorized)
       }
     }
 
-    grid.insert(10 * DIM, BBoxes.data(), 0);
+    // Copy boxes to unified memory (for getCandidates() call)
+    axom::Array<BBox> BBoxesDevice = axom::Array<BBox>(BBoxes, unifiedAllocID);
 
+    grid.insert(10 * DIM, BBoxesDevice.data(), 0);
     // Check that each grid cell contains DIM objects
     for(int i = 0; i < i_max; ++i)
     {
@@ -845,7 +864,9 @@ TYPED_TEST(ImplicitGridExecTest, get_candidates_box_vectorized)
         for(int k = 0; k < k_max; ++k)
         {
           queryPt[0] = SpacePt {i * .1 + .05, j * .1 + .05, k * .1 + .05};
-          EXPECT_EQ(DIM, grid.getCandidates(queryPt[0]).count());
+          axom::Array<SpacePt> queryPtDevice =
+            axom::Array<SpacePt>(queryPt, unifiedAllocID);
+          EXPECT_EQ(DIM, grid.getCandidates(queryPtDevice[0]).count());
         }
       }
     }
@@ -853,7 +874,7 @@ TYPED_TEST(ImplicitGridExecTest, get_candidates_box_vectorized)
 
   //// Run some queries
   constexpr int N_QUERIES = 8;
-  axom::Array<BBox> queryBoxes(N_QUERIES, N_QUERIES, kernelAllocID);
+  axom::Array<BBox> queryBoxes(N_QUERIES, N_QUERIES, hostAllocID);
 
   // Empty box -- covers no objects
   queryBoxes[0] = BBox {};
@@ -883,13 +904,15 @@ TYPED_TEST(ImplicitGridExecTest, get_candidates_box_vectorized)
 
   axom::Array<int> offset, count, candidates;
   {
+    axom::Array<BBox> queryBoxesDevice =
+      axom::Array<BBox>(queryBoxes, kernelAllocID);
     axom::Array<int> countDevice(N_QUERIES, N_QUERIES, kernelAllocID);
     axom::Array<int> offsetDevice(N_QUERIES, N_QUERIES, kernelAllocID);
     axom::Array<int> candidatesDevice;
 
     // Run query against implicit grid
     grid.getCandidatesAsArray(N_QUERIES,
-                              queryBoxes.data(),
+                              queryBoxesDevice.data(),
                               offsetDevice,
                               countDevice,
                               candidatesDevice);

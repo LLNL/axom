@@ -32,7 +32,7 @@
 #endif
 
 // RAJA policies
-#include "axom/mint/execution/internal/structured_exec.hpp"
+#include "axom/core/execution/nested_for_exec.hpp"
 
 using seq_exec = axom::SEQ_EXEC;
 
@@ -410,7 +410,16 @@ std::vector<std::pair<int, int>> naiveIntersectionAlgorithm(
 
   // Get allocator
   const int current_allocator = axom::getDefaultAllocatorID();
+
+  // Use unified memory if on device
   int allocatorID = axom::execution_space<ExecSpace>::allocatorID();
+  #if defined(AXOM_USE_GPU) && defined(AXOM_USE_UMPIRE)
+  if(axom::execution_space<ExecSpace>::onDevice())
+  {
+    allocatorID = axom::getUmpireResourceAllocatorID(umpire::resource::Unified);
+  }
+  #endif
+
   axom::setDefaultAllocator(allocatorID);
 
   std::vector<std::pair<int, int>> retval;
@@ -434,7 +443,7 @@ std::vector<std::pair<int, int>> naiveIntersectionAlgorithm(
   RAJA::RangeSegment col_range(0, ncells);
 
   using KERNEL_POL =
-    typename axom::mint::internal::structured_exec<ExecSpace>::loop2d_policy;
+    typename axom::internal::nested_for_exec<ExecSpace>::loop2d_policy;
   using REDUCE_POL = typename axom::execution_space<ExecSpace>::reduce_policy;
   using ATOMIC_POL = typename axom::execution_space<ExecSpace>::atomic_policy;
 
@@ -621,16 +630,20 @@ int main(int argc, char** argv)
 #ifdef AXOM_USE_CUDA
   if(params.policy == raja_cuda)
   {
-    using GPUExec = axom::CUDA_EXEC<256>;
-    axom::setDefaultAllocator(axom::execution_space<GPUExec>::allocatorID());
+    // Use unified memory on device
+    int unified_id =
+      axom::getUmpireResourceAllocatorID(umpire::resource::Unified);
+    axom::setDefaultAllocator(unified_id);
   }
 #endif
 
 #if defined(AXOM_USE_HIP) && defined(NDEBUG)
   if(params.policy == raja_hip)
   {
-    using GPUExec = axom::HIP_EXEC<256>;
-    axom::setDefaultAllocator(axom::execution_space<GPUExec>::allocatorID());
+    // Use unified memory on device
+    int unified_id =
+      axom::getUmpireResourceAllocatorID(umpire::resource::Unified);
+    axom::setDefaultAllocator(unified_id);
   }
 #endif
 

@@ -16,7 +16,7 @@
 
 from llnl_lc_build_tools import *
 
-from optparse import OptionParser
+from argparse import ArgumentParser
 
 import getpass
 import os
@@ -24,19 +24,19 @@ import os
 
 def parse_args():
     "Parses args from command line"
-    parser = OptionParser()
+    parser = ArgumentParser()
     # Location of source directory to build
-    parser.add_option("-d", "--directory",
-                      dest="directory",
-                      default="",
-                      help="Location to build all TPL's, timestamp directory will be created (Defaults to shared location)")
+    parser.add_argument("-d", "--directory",
+                        dest="directory",
+                        default="",
+                        help="Location to build all TPL's, timestamp directory will be created (Defaults to shared location)")
 
     ###############
     # parse args
     ###############
-    opts, extras = parser.parse_args()
+    opts = parser.parse_args()
     # we want a dict b/c the values could 
-    # be passed without using optparse
+    # be passed without using argparse
     opts = vars(opts)
     return opts
 

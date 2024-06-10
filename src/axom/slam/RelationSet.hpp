@@ -58,6 +58,8 @@ public:
 
   using BaseType::INVALID_POS;
 
+  using IteratorType = BivariateSetIterator<RelationSet>;
+
 public:
   using ConcreteSet =
     RelationSet<Relation, SetType1, SetType2, policies::ConcreteInterface>;
@@ -219,9 +221,11 @@ public:
    */
   SubsetType getElements(PositionType s1) const { return (*m_relation)[s1]; }
 
-  ElementType at(PositionType pos) const
+  AXOM_HOST_DEVICE ElementType at(PositionType pos) const
   {
+#ifndef AXOM_DEVICE_CODE
     RelationSet::verifyPosition(pos);
+#endif
     return m_relation->relationData()[pos];
   }
 
@@ -243,6 +247,18 @@ public:
    * \param pos The from-set position.
    */
   PositionType size(PositionType pos) const { return m_relation->size(pos); }
+
+  /*!
+   * \brief Return an iterator to the first pair of set elements in the
+   *  relation.
+   */
+  IteratorType begin() const { return IteratorType(this, 0); }
+
+  /*!
+   * \brief Return an iterator to one past the last pair of set elements in the
+   *  relation.
+   */
+  IteratorType end() const { return IteratorType(this, totalSize()); }
 
   bool isValid(bool verboseOutput = false) const
   {

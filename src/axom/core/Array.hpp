@@ -7,6 +7,7 @@
 #define AXOM_ARRAY_HPP_
 
 #include "axom/config.hpp"
+#include "axom/core/MDMapping.hpp"
 #include "axom/core/Macros.hpp"
 #include "axom/core/utilities/Utilities.hpp"
 #include "axom/core/Types.hpp"
@@ -60,10 +61,13 @@ struct ArrayTraits<Array<T, DIM, SPACE>>
  *
  *  The Array class mirrors std::vector, with future support for GPUs
  *  in-development.  The class's multidimensional array functionality roughly
-    mirrors the multidimensional array support provided by numpy's ndarray.
- * 
+ *  mirrors the multidimensional array support provided by numpy's ndarray.
+ *
  *  \see https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html
- * 
+ *
+ *  Some interfaces accomodate data ordering specifications.
+ *  Unless otherwise specified, data storage defaults to row-major.
+ *
  *  This class is meant to be a drop-in replacement for std::vector.
  *  However, it differs in its memory management and construction semantics.
  *  Specifically, we do not require axom::Array to initialize/construct
@@ -159,6 +163,31 @@ public:
         int allocator_id = axom::detail::getAllocatorID<SPACE>());
 
   Array(const axom::StackArray<axom::IndexType, DIM>& shape,
+        int allocator_id = axom::detail::getAllocatorID<SPACE>());
+
+  /*!
+    \brief Construct Array with row- or column-major data ordering.
+
+    \pre rowOrColumn must be either ArrayStrideOrder::ROW or
+    ArrayStrideOrder::COLUMN (or, if DIM is 1, ArrayStrideOrder::BOTH).
+  */
+  Array(const axom::StackArray<axom::IndexType, DIM>& shape,
+        axom::ArrayStrideOrder rowOrColumn,
+        int allocator_id = axom::detail::getAllocatorID<SPACE>());
+
+  /*!
+    \brief Construct Array with data ordering specifications.
+
+    Example of 3D Array where j is slowest and i is fastest:
+        Array<3, int> ar(
+          shape,
+          axom::StackArray<axom::IndexType, DIM>{2, 0, 1});
+
+    \pre slowestDirs must be a permutation of [0 ... DIM-1]
+  */
+  template <typename DirType = axom::IndexType>
+  Array(const axom::StackArray<axom::IndexType, DIM>& shape,
+        const axom::StackArray<DirType, DIM>& slowestDirs,
         int allocator_id = axom::detail::getAllocatorID<SPACE>());
 
   /*!
@@ -935,6 +964,38 @@ Array<T, DIM, SPACE>::Array(const axom::StackArray<axom::IndexType, DIM>& shape,
 
 //------------------------------------------------------------------------------
 template <typename T, int DIM, MemorySpace SPACE>
+Array<T, DIM, SPACE>::Array(const axom::StackArray<axom::IndexType, DIM>& shape,
+                            axom::ArrayStrideOrder rowOrColumn,
+                            int allocator_id)
+  : ArrayBase<T, DIM, Array<T, DIM, SPACE>>(
+      shape,
+      MDMapping<DIM> {shape, rowOrColumn, 1})
+  , m_allocator_id(allocator_id)
+{
+  assert(rowOrColumn == axom::ArrayStrideOrder::ROW ||
+         rowOrColumn == axom::ArrayStrideOrder::COLUMN ||
+         (DIM == 1 && rowOrColumn == axom::ArrayStrideOrder::BOTH));
+  initialize(detail::packProduct(shape.m_data),
+             detail::packProduct(shape.m_data),
+             false);
+}
+
+//------------------------------------------------------------------------------
+template <typename T, int DIM, MemorySpace SPACE>
+template <typename DirType>
+Array<T, DIM, SPACE>::Array(const axom::StackArray<axom::IndexType, DIM>& shape,
+                            const axom::StackArray<DirType, DIM>& slowestDirs,
+                            int allocator_id)
+  : ArrayBase<T, DIM, Array<T, DIM, SPACE>>(shape, {shape, slowestDirs, 1})
+  , m_allocator_id(allocator_id)
+{
+  initialize(detail::packProduct(shape.m_data),
+             detail::packProduct(shape.m_data),
+             false);
+}
+
+//------------------------------------------------------------------------------
+template <typename T, int DIM, MemorySpace SPACE>
 template <typename... Args, typename Enable>
 Array<T, DIM, SPACE>::Array(Args... args)
   : ArrayBase<T, DIM, Array<T, DIM, SPACE>>(
@@ -1038,7 +1099,7 @@ AXOM_HOST_DEVICE Array<T, DIM, SPACE>::Array(const Array& other)
     "Use axom::ArrayView for value captures instead.\n");
   #endif
   #if defined(__CUDA_ARCH__)
-  __trap();
+  assert(false);
   #endif
 #else
   initialize(other.size(), other.capacity());
@@ -1539,7 +1600,7 @@ AXOM_DEVICE inline IndexType Array<T, DIM, SPACE>::reserveForDeviceInsert(IndexT
       "on the device.\n");
   #endif
   #ifdef AXOM_USE_CUDA
-    __trap();
+    assert(false);
   #elif defined(AXOM_USE_HIP)
     abort();
   #endif

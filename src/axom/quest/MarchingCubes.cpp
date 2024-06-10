@@ -70,10 +70,15 @@ void MarchingCubes::setMesh(const conduit::Node& bpMesh,
   */
   auto newDomainCount = conduit::blueprint::mesh::number_of_domains(bpMesh);
 
-  while(m_singles.size() < newDomainCount)
+  if(m_singles.size() < newDomainCount)
   {
-    m_singles.emplace_back(
-      new detail::marching_cubes::MarchingCubesSingleDomain(*this));
+    auto tmpSize = m_singles.size();
+    m_singles.resize(newDomainCount);
+    for(int d = tmpSize; d < newDomainCount; ++d)
+    {
+      m_singles[d].reset(
+        new detail::marching_cubes::MarchingCubesSingleDomain(*this));
+    }
   }
 
   for(int d = 0; d < newDomainCount; ++d)
@@ -97,7 +102,7 @@ void MarchingCubes::setFunctionField(const std::string& fcnField)
 
 void MarchingCubes::computeIsocontour(double contourVal)
 {
-  AXOM_PERF_MARK_FUNCTION("MarchingCubes::computeIsoContour");
+  AXOM_ANNOTATE_SCOPE("MarchingCubes::computeIsoContour");
 
   // Mark and scan domains while adding up their
   // facet counts to get the total facet counts.
@@ -174,7 +179,7 @@ void MarchingCubes::populateContourMesh(
   const std::string& cellIdField,
   const std::string& domainIdField) const
 {
-  AXOM_PERF_MARK_FUNCTION("MarchingCubes::populateContourMesh");
+  AXOM_ANNOTATE_SCOPE("MarchingCubes::populateContourMesh");
   if(!cellIdField.empty() &&
      !mesh.hasField(cellIdField, axom::mint::CELL_CENTERED))
   {
@@ -254,7 +259,7 @@ void MarchingCubes::populateContourMesh(
 
 void MarchingCubes::allocateOutputBuffers()
 {
-  AXOM_PERF_MARK_FUNCTION("MarchingCubes::allocateOutputBuffers");
+  AXOM_ANNOTATE_SCOPE("MarchingCubes::allocateOutputBuffers");
   if(!m_singles.empty())
   {
     int ndim = m_singles[0]->spatialDimension();
