@@ -1446,8 +1446,17 @@ struct MemSpaceToOpSpace
 template <>
 struct MemSpaceToOpSpace<MemorySpace::Device>
 {
+  #if defined(AXOM_USE_CUDA)
+  // On CUDA platforms, device memory allocated with cudaMalloc can only be
+  // touched from a device kernel.
   static constexpr OperationSpace value = OperationSpace::Device;
+  #elif defined(AXOM_USE_HIP)
+  // On HIP platforms, device memory allocated with hipMalloc is accessible from
+  // the host.
+  static constexpr OperationSpace value = OperationSpace::Unified_Device;
+  #endif
 };
+
 template <>
 struct MemSpaceToOpSpace<MemorySpace::Pinned>
 {
