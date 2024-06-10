@@ -40,7 +40,10 @@ void check_bb_policy()
       box[i].isValid();
     });
 
-  EXPECT_EQ(box[0], BoundingBoxType(PointType(0.0), PointType(10.0)));
+  BoundingBoxType box_host;
+  axom::copy(&box_host, box, sizeof(BoundingBoxType));
+
+  EXPECT_EQ(box_host, BoundingBoxType(PointType(0.0), PointType(10.0)));
 
   axom::deallocate(box);
 }

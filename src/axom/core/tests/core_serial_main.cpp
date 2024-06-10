@@ -5,11 +5,12 @@
 
 #include "gtest/gtest.h"
 
-#include "axom/config.hpp"  // for compile-time definitions
+#include "axom/config.hpp"
 
 #include "core_about.hpp"
 #include "core_array.hpp"
 #include "core_array_for_all.hpp"
+#include "core_array_mapping.hpp"
 #include "core_utilities.hpp"
 #include "core_bit_utilities.hpp"
 #include "core_execution_for_all.hpp"
@@ -38,7 +39,6 @@
 #include "utils_endianness.hpp"
 #include "utils_fileUtilities.hpp"
 #include "utils_locale.hpp"
-#include "utils_nvtx_settings.hpp"
 #include "utils_stringUtilities.hpp"
 #include "utils_system.hpp"
 #include "utils_Timer.hpp"

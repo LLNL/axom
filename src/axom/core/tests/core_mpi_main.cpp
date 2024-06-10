@@ -7,7 +7,7 @@
 
 #include "mpi.h"
 
-#include "axom/config.hpp"  // for compile-time definitions
+#include "axom/config.hpp"
 
 #include "core_types.hpp"
 

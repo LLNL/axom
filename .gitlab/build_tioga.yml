@@ -6,8 +6,10 @@
 ####
 # This is the shared configuration of jobs for tioga
 .on_tioga:
+  variables:
+    SCHEDULER_PARAMETERS: "--queue pci --exclusive --time-limit=${ALLOC_TIME}m --nodes=1"
   tags:
-    - shell
+    - batch
     - tioga
   rules:
     - if: '$CI_COMMIT_BRANCH =~ /_qnone/ || $ON_TIOGA == "OFF"' #run except if ...
@@ -19,18 +21,14 @@
 ####
 # Template
 .src_build_on_tioga:
-  stage: build
   variables:
-#    ALLOC_COMMAND: "flux run --queue pci --exclusive --time-limit=30m --nodes=1"
-    ALLOC_COMMAND: "flux run --exclusive --time-limit=30m --nodes=1"
+    ALLOC_TIME: "30"
   extends: [.src_build_script, .on_tioga, .src_workflow]
   needs: []
 
 .full_build_on_tioga:
-  stage: build
   variables:
-#    ALLOC_COMMAND: "flux run --queue pci --exclusive --time-limit=60m --nodes=1"
-    ALLOC_COMMAND: "flux run --exclusive --time-limit=60m --nodes=1"
+    ALLOC_TIME: "60"
   extends: [.full_build_script, .on_tioga, .full_workflow]
   needs: []
 

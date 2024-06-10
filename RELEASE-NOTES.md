@@ -20,17 +20,39 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 ## [Unreleased] - Release date yyyy-mm-dd
 
 ### Added
-- Adds prelimiary support for the optional `caliper` and `adiak` dependencies to axom.
+- Multidimenional `core::Array` supports column-major and arbitrary stride ordering,
+  in addition to the default row-major ordering.
+- Adds new `PolygonArray` and `MAX_VERTS` template parameters to `primal::Polygon` for dynamic
+  or static allocation.
+- Adds support for the optional `caliper` and `adiak` dependencies to axom.
   These dependencies are added through axom's `spack` package via the new `+profiling` variant,
   and are enabled in axom's build system via the `CALIPER_DIR` and `ADIAK_DIR` configuration paths.
+- Adds new annotation macros to axom: `AXOM_ANNOTATE_{BEGIN,END,SCOPE,METADATA}`. These replace
+  the previous annotation macros `AXOM_PERF_MARK_{FUNCTION,SECTION}`.
+- Adds a RAII-based `MPIWrapper` utility class to axom's core component. This can help setup/teardown
+  MPI in axom's examples. It can also be used in configurations with MPI.
 - Primal: Adds a `closest_point` operator for finding the closest point on a `Segment`
+- Primal: Adds a `reflectPoint` method to the `Plane` primitive
+- Primal: Makes several primitive methods available in device code
 
 ### Changed
+- `quest::ArrayIndexer` is now `axom::MDMapping`, adopting conventional terminology
+  and moving out of `quest`.
+- `mint::structured_exec` is now `axom::nested_for_exec`, to support nested for loops
+  for all of Axom.  See `src/axom/core/execution/nested_for_exec.hpp`.
+- Set default Umpire allocator id to device instead of unified for CUDA and HIP execution policies.
 - Upgrades `vcpkg` usage for axom's automated Windows builds to its
   [2024.03.19 release](https://github.com/microsoft/vcpkg/releases/tag/2024.03.19).
   Also updates vcpkg port versions for axom dependencies. Temporarily removes `umpire`
   from axom's default dependencies on Windows due to incompatibility between umpire's
   external `fmt` and axom's vendored copy.
+- Turn off CMake finding dependencies on system paths.
+
+### Removed
+- Removes config option `AXOM_ENABLE_ANNOTATIONS`. Annotations are now provided by `caliper` 
+  (and `adiak` for metadata) and are available when axom is configured with `CALIPER_DIR` and `ADIAK_DIR` 
+  config variables.
+- Removes caching of `{PACKAGE}_FOUND` variables in `SetupAxomThirdParty.cmake`
 
 ## [Version 0.9.0] - Release date 2024-03-19
 

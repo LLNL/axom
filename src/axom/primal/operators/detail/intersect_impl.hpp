@@ -22,9 +22,11 @@
 #include "axom/primal/geometry/OrientedBoundingBox.hpp"
 #include "axom/primal/geometry/Plane.hpp"
 #include "axom/primal/geometry/Point.hpp"
+#include "axom/primal/geometry/Polygon.hpp"
 #include "axom/primal/geometry/Ray.hpp"
 #include "axom/primal/geometry/Segment.hpp"
 #include "axom/primal/geometry/Triangle.hpp"
+#include "axom/primal/geometry/Tetrahedron.hpp"
 
 namespace axom
 {
@@ -1608,6 +1610,83 @@ inline bool intervalsDisjoint(double d0, double d1, double d2, double r)
   SLIC_ASSERT(d1 >= d0 && d1 >= d2);
 
   return d1 < -r || d0 > r;
+}
+
+template <typename T>
+AXOM_HOST_DEVICE bool intersect_plane_tet3d(const Plane<T, 3>& p,
+                                            const Tetrahedron<T, 3>& tet,
+                                            Polygon<T, 3>& intersection)
+{
+  intersection.clear();
+
+  T distances[4];
+  distances[0] = p.signedDistance(tet[0]);
+  distances[1] = p.signedDistance(tet[1]);
+  distances[2] = p.signedDistance(tet[2]);
+  distances[3] = p.signedDistance(tet[3]);
+
+  constexpr T zero {0};
+  int gt[4];
+  gt[0] = distances[0] > zero;
+  gt[1] = distances[1] > zero;
+  gt[2] = distances[2] > zero;
+  gt[3] = distances[3] > zero;
+  int caseNumber = (gt[3] << 3) | (gt[2] << 2) | (gt[1] << 1) | gt[0];
+
+  // Cases 0, 15 indicate all points were on one side of the zero. That would
+  // normally not produce geometry. We may have zeroes and some bigger negatives
+  // so try picking a better case.
+  if(caseNumber == 0 || caseNumber == 15)
+  {
+    int lt[4];
+    lt[0] = distances[0] < zero;
+    lt[1] = distances[1] < zero;
+    lt[2] = distances[2] < zero;
+    lt[3] = distances[3] < zero;
+    caseNumber = (~((lt[3] << 3) | (lt[2] << 2) | (lt[1] << 1) | lt[0])) & 0xf;
+  }
+
+  // clang-format off
+  // Edge lookup (pairs of point ids)
+  const std::uint8_t edges[] = {
+   /* 0 */ // None
+   /* 1 */ 0, 2, 0, 1, 0, 3,
+   /* 2 */ 0, 1, 1, 2, 1, 3,
+   /* 3 */ 0, 2, 1, 2, 1, 3, 0, 3,
+   /* 4 */ 1, 2, 0, 2, 2, 3,
+   /* 5 */ 1, 2, 0, 1, 0, 3, 2, 3,
+   /* 6 */ 0, 1, 0, 2, 2, 3, 1, 3,
+   /* 7 */ 2, 3, 1, 3, 0, 3,
+   /* 8 */ 0, 3, 1, 3, 2, 3,
+   /* 9 */ 0, 2, 0, 1, 1, 3, 2, 3,
+   /* 10 */ 0, 1, 1, 2, 2, 3, 0, 3,
+   /* 11 */ 0, 2, 1, 2, 2, 3,
+   /* 12 */ 1, 2, 0, 2, 0, 3, 1, 3,
+   /* 13 */ 1, 2, 0, 1, 1, 3,
+   /* 14 */ 0, 1, 0, 2, 0, 3,
+   /* 15 */ // None
+  };
+  const std::uint8_t edges_offsets[] = {0, 0, 6, 12, 20, 26, 34, 42, 48, 54, 62, 70, 76, 84, 90, 96, 96};
+  // clang-format on
+
+  // Add new vertices to the polygon according to the case.
+  const int n =
+    static_cast<int>(edges_offsets[caseNumber + 1] - edges_offsets[caseNumber]) >>
+    1;
+  for(int i = 0; i < n; i++)
+  {
+    const auto eOffset = static_cast<int>(edges_offsets[caseNumber]) + (i << 1);
+    const auto p0 = static_cast<int>(edges[eOffset]);
+    const auto p1 = static_cast<int>(edges[eOffset + 1]);
+
+    const double d0 = (distances[p0] < 0.) ? -distances[p0] : distances[p0];
+    const double d1 = (distances[p1] < 0.) ? -distances[p1] : distances[p1];
+
+    const auto t = d0 / (d0 + d1);
+    intersection.addVertex(Point<T, 3>::lerp(tet[p0], tet[p1], t));
+  }
+
+  return caseNumber > 0 && caseNumber < 15;
 }
 
 }  // end namespace detail

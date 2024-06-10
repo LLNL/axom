@@ -7,9 +7,7 @@
 #define AXOM_SPIN_RADIXTREE_HPP_
 
 #include "axom/core/Array.hpp"
-
-#include "axom/core/utilities/AnnotationMacros.hpp"  // for annotations
-
+#include "axom/core/AnnotationMacros.hpp"
 #include "axom/primal/geometry/BoundingBox.hpp"
 
 namespace axom
@@ -46,7 +44,7 @@ struct RadixTree
 
   void allocate(std::int32_t size, int allocID)
   {
-    AXOM_PERF_MARK_FUNCTION("RadixTree::allocate");
+    AXOM_ANNOTATE_SCOPE("RadixTree::allocate");
 
     m_size = size;
     m_inner_size = m_size - 1;
