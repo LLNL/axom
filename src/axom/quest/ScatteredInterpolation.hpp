@@ -321,8 +321,10 @@ private:
       spin::Mortonizer<QuantizedCoordType, MortonIndexType, DIM>;
 
     // Fit as many bits as possible per dimension into an int64, i.e. floor(63/DIM)
-    constexpr int shift_bits = (DIM == 2) ? 31 : 21;
-    primal::NumericArray<QuantizedCoordType, DIM> res(1 << shift_bits, DIM);
+    constexpr QuantizedCoordType shift_bits = (DIM == 2) ? 31 : 21;
+    primal::NumericArray<QuantizedCoordType, DIM> res(
+      static_cast<QuantizedCoordType>(1) << shift_bits,
+      DIM);
     auto quantizer =
       spin::rectangular_lattice_from_bounding_box<DIM, CoordType, QuantizedCoordType>(
         bb,
