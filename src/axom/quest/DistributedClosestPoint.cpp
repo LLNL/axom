@@ -103,13 +103,9 @@ void DistributedClosestPoint::setAllocatorID(int allocatorID)
                   "Invalid allocator id.");
   m_allocatorID = allocatorID;
 
-  if(m_dcp_2 != nullptr)
+  if(m_impl)
   {
-    m_dcp_2->setAllocatorID(m_allocatorID);
-  }
-  if(m_dcp_3 != nullptr)
-  {
-    m_dcp_3->setAllocatorID(m_allocatorID);
+    m_impl->setAllocatorID(m_allocatorID);
   }
 }
 
@@ -166,7 +162,10 @@ void DistributedClosestPoint::setOutput(const std::string& field, bool on)
 void DistributedClosestPoint::setObjectMesh(const conduit::Node& meshNode,
                                             const std::string& topologyName)
 {
-  SLIC_ASSERT(this->isValidBlueprint(meshNode));
+  if(m_impl)
+  {
+    SLIC_ERROR("Object mesh already created.");
+  }
 
   const bool isMultidomain = conduit::blueprint::mesh::is_multi_domain(meshNode);
 
@@ -205,99 +204,83 @@ void DistributedClosestPoint::setObjectMesh(const conduit::Node& meshNode,
 
   allocateQueryInstance();
 
-  switch(m_dimension)
-  {
-  case 2:
-    m_dcp_2->importObjectPoints(mdMeshNode, topologyName);
-    break;
-  case 3:
-    m_dcp_3->importObjectPoints(mdMeshNode, topologyName);
-    break;
-  }
+  m_impl->importObjectPoints(mdMeshNode, topologyName);
 
   return;
 }
 
 bool DistributedClosestPoint::generateBVHTree()
 {
-  SLIC_ASSERT_MSG(m_objectMeshCreated,
+  SLIC_ASSERT_MSG(m_impl,
                   "Must call 'setObjectMesh' before calling generateBVHTree");
 
-  bool success = false;
-
-  // dispatch to implementation class over dimension
-  switch(m_dimension)
-  {
-  case 2:
-    success = m_dcp_2->generateBVHTree();
-    break;
-  case 3:
-    success = m_dcp_3->generateBVHTree();
-    break;
-  }
-
+  bool success = m_impl->generateBVHTree();
   return success;
 }
 
 void DistributedClosestPoint::computeClosestPoints(conduit::Node& query_node,
                                                    const std::string& topology)
 {
-  SLIC_ASSERT_MSG(m_objectMeshCreated,
+  SLIC_ASSERT_MSG(m_impl,
                   "Must call 'setObjectMesh' before calling generateBVHTree");
 
   SLIC_ASSERT(this->isValidBlueprint(query_node));
 
-  // dispatch to implementation class over dimension
-  switch(m_dimension)
-  {
-  case 2:
-    m_dcp_2->setSquaredDistanceThreshold(m_sqDistanceThreshold);
-    m_dcp_2->setMpiCommunicator(m_mpiComm);
-    m_dcp_2->setOutputSwitches(m_outputRank,
-                               m_outputIndex,
-                               m_outputDistance,
-                               m_outputCoords,
-                               m_outputDomainIndex);
-    m_dcp_2->computeClosestPoints(query_node, topology);
-    break;
-  case 3:
-    m_dcp_3->setSquaredDistanceThreshold(m_sqDistanceThreshold);
-    m_dcp_3->setMpiCommunicator(m_mpiComm);
-    m_dcp_3->setOutputSwitches(m_outputRank,
-                               m_outputIndex,
-                               m_outputDistance,
-                               m_outputCoords,
-                               m_outputDomainIndex);
-    m_dcp_3->computeClosestPoints(query_node, topology);
-    break;
-  }
+  m_impl->setSquaredDistanceThreshold(m_sqDistanceThreshold);
+  m_impl->setMpiCommunicator(m_mpiComm);
+  m_impl->setOutputSwitches(m_outputRank,
+                            m_outputIndex,
+                            m_outputDistance,
+                            m_outputCoords,
+                            m_outputDomainIndex);
+  m_impl->computeClosestPoints(query_node, topology);
 }
 
 void DistributedClosestPoint::allocateQueryInstance()
 {
-  SLIC_ASSERT_MSG(m_objectMeshCreated == false, "Object mesh already created");
-
-  switch(m_dimension)
+  switch(m_runtimePolicy)
   {
-  case 2:
-    m_dcp_2 =
-      std::make_unique<internal::DistributedClosestPointImpl<2>>(m_runtimePolicy,
-                                                                 m_allocatorID,
-                                                                 m_isVerbose);
-    m_objectMeshCreated = true;
+  case RuntimePolicy::seq:
+    m_dimension == 2 ? allocateQueryInstance<2, axom::SEQ_EXEC>()
+                     : allocateQueryInstance<3, axom::SEQ_EXEC>();
     break;
-  case 3:
-    m_dcp_3 =
-      std::make_unique<internal::DistributedClosestPointImpl<3>>(m_runtimePolicy,
-                                                                 m_allocatorID,
-                                                                 m_isVerbose);
-    m_objectMeshCreated = true;
-    break;
-  }
 
-  SLIC_ASSERT_MSG(
-    m_objectMeshCreated,
-    "Called allocateQueryInstance, but did not create an instance");
+#ifdef AXOM_RUNTIME_POLICY_USE_OPENMP
+  case RuntimePolicy::omp:
+    m_dimension == 2 ? allocateQueryInstance<2, axom::OMP_EXEC>()
+                     : allocateQueryInstance<3, axom::OMP_EXEC>();
+    break;
+#endif
+
+#ifdef AXOM_RUNTIME_POLICY_USE_CUDA
+  case RuntimePolicy::cuda:
+    m_dimension == 2 ? allocateQueryInstance<2, axom::CUDA_EXEC<256>>()
+                     : allocateQueryInstance<3, axom::CUDA_EXEC<256>>();
+    break;
+#endif
+
+#ifdef AXOM_RUNTIME_POLICY_USE_HIP
+  case RuntimePolicy::hip:
+    m_dimension == 2 ? allocateQueryInstance<2, axom::HIP_EXEC<256>>()
+                     : allocateQueryInstance<3, axom::HIP_EXEC<256>>();
+    break;
+#endif
+
+  default:
+    SLIC_ERROR(axom::fmt::format(
+      "DistriburedClosestPoint: axom was not built for runtime policy {}."
+      "  Please select another policy.",
+      axom::runtime_policy::s_policyToName.at(m_runtimePolicy)));
+  }
+}
+
+template <int DIM, typename ExecSpace>
+void DistributedClosestPoint::allocateQueryInstance()
+{
+  m_impl =
+    std::make_unique<internal::DistributedClosestPointExec<DIM, ExecSpace>>(
+      m_allocatorID,
+      m_isVerbose);
 }
 
 bool DistributedClosestPoint::isValidBlueprint(const conduit::Node& mesh_node) const

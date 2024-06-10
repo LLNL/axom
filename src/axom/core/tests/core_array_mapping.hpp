@@ -5,23 +5,21 @@
 
 // Axom includes
 #include "axom/core/Array.hpp"
-#include "axom/quest/ArrayIndexer.hpp"
+#include "axom/core/MDMapping.hpp"
 #include "axom/fmt.hpp"
 
 // Google test include
 #include "gtest/gtest.h"
 
 // Test strides and permutations.
-TEST(quest_array_indexer, quest_strides_and_permutations)
+TEST(core_array_mapping, core_strides_and_permutations)
 {
   {
     // 1D
     constexpr int DIM = 1;
     axom::StackArray<axom::IndexType, DIM> lengths {2};
 
-    axom::ArrayIndexer<axom::IndexType, DIM> colIndexer(
-      lengths,
-      axom::ArrayStrideOrder::COLUMN);
+    axom::MDMapping<DIM> colIndexer(lengths, axom::ArrayStrideOrder::COLUMN);
     EXPECT_EQ(colIndexer.getStrideOrder(), axom::ArrayStrideOrder::BOTH);
     axom::StackArray<std::uint16_t, DIM> colSlowestDirs {0};
     axom::StackArray<axom::IndexType, DIM> colStrides {1};
@@ -30,13 +28,9 @@ TEST(quest_array_indexer, quest_strides_and_permutations)
       EXPECT_EQ(colIndexer.slowestDirs()[d], colSlowestDirs[d]);
       EXPECT_EQ(colIndexer.strides()[d], colStrides[d]);
     }
-    EXPECT_TRUE(
-      colIndexer ==
-      (axom::ArrayIndexer<axom::IndexType, DIM>(lengths, colSlowestDirs)));
+    EXPECT_TRUE(colIndexer == (axom::MDMapping<DIM>(lengths, colSlowestDirs)));
 
-    axom::ArrayIndexer<axom::IndexType, DIM> rowIndexer(
-      lengths,
-      axom::ArrayStrideOrder::ROW);
+    axom::MDMapping<DIM> rowIndexer(lengths, axom::ArrayStrideOrder::ROW);
     EXPECT_EQ(rowIndexer.getStrideOrder(), axom::ArrayStrideOrder::BOTH);
     axom::StackArray<std::uint16_t, DIM> rowSlowestDirs {0};
     axom::StackArray<axom::IndexType, DIM> rowStrides {1};
@@ -45,18 +39,14 @@ TEST(quest_array_indexer, quest_strides_and_permutations)
       EXPECT_EQ(rowIndexer.slowestDirs()[d], rowSlowestDirs[d]);
       EXPECT_EQ(rowIndexer.strides()[d], rowStrides[d]);
     }
-    EXPECT_TRUE(
-      rowIndexer ==
-      (axom::ArrayIndexer<axom::IndexType, DIM>(lengths, rowSlowestDirs)));
+    EXPECT_TRUE(rowIndexer == (axom::MDMapping<DIM>(lengths, rowSlowestDirs)));
   }
   {
     // 2D
     constexpr int DIM = 2;
     axom::StackArray<axom::IndexType, DIM> lengths {3, 2};
 
-    axom::ArrayIndexer<axom::IndexType, DIM> colIndexer(
-      lengths,
-      axom::ArrayStrideOrder::COLUMN);
+    axom::MDMapping<DIM> colIndexer(lengths, axom::ArrayStrideOrder::COLUMN);
     EXPECT_EQ(colIndexer.getStrideOrder(), axom::ArrayStrideOrder::COLUMN);
     axom::StackArray<std::uint16_t, DIM> colSlowestDirs {1, 0};
     axom::StackArray<axom::IndexType, DIM> colStrides {1, 3};
@@ -66,9 +56,7 @@ TEST(quest_array_indexer, quest_strides_and_permutations)
       EXPECT_EQ(colIndexer.strides()[d], colStrides[d]);
     }
 
-    axom::ArrayIndexer<axom::IndexType, DIM> rowIndexer(
-      lengths,
-      axom::ArrayStrideOrder::ROW);
+    axom::MDMapping<DIM> rowIndexer(lengths, axom::ArrayStrideOrder::ROW);
     EXPECT_EQ(rowIndexer.getStrideOrder(), axom::ArrayStrideOrder::ROW);
     axom::StackArray<std::uint16_t, DIM> rowSlowestDirs {0, 1};
     axom::StackArray<axom::IndexType, DIM> rowStrides {2, 1};
@@ -83,9 +71,7 @@ TEST(quest_array_indexer, quest_strides_and_permutations)
     constexpr int DIM = 3;
     axom::StackArray<axom::IndexType, DIM> lengths {5, 3, 2};
 
-    axom::ArrayIndexer<axom::IndexType, DIM> colIndexer(
-      lengths,
-      axom::ArrayStrideOrder::COLUMN);
+    axom::MDMapping<DIM> colIndexer(lengths, axom::ArrayStrideOrder::COLUMN);
     EXPECT_EQ(colIndexer.getStrideOrder(), axom::ArrayStrideOrder::COLUMN);
     axom::StackArray<std::uint16_t, DIM> colSlowestDirs {2, 1, 0};
     axom::StackArray<axom::IndexType, DIM> colStrides {1, 5, 15};
@@ -95,9 +81,7 @@ TEST(quest_array_indexer, quest_strides_and_permutations)
       EXPECT_EQ(colIndexer.strides()[d], colStrides[d]);
     }
 
-    axom::ArrayIndexer<axom::IndexType, DIM> rowIndexer(
-      lengths,
-      axom::ArrayStrideOrder::ROW);
+    axom::MDMapping<DIM> rowIndexer(lengths, axom::ArrayStrideOrder::ROW);
     EXPECT_EQ(rowIndexer.getStrideOrder(), axom::ArrayStrideOrder::ROW);
     axom::StackArray<std::uint16_t, DIM> rowSlowestDirs {0, 1, 2};
     axom::StackArray<axom::IndexType, DIM> rowStrides {6, 2, 1};
@@ -110,21 +94,20 @@ TEST(quest_array_indexer, quest_strides_and_permutations)
 }
 
 // Test row-major offsets.
-TEST(quest_array_indexer, quest_row_major_offset)
+TEST(quest_array_mapping, quest_row_major_offset)
 {
   {
     // 1D
     constexpr int DIM = 1;
     axom::StackArray<axom::IndexType, DIM> lengths {3};
-    axom::ArrayIndexer<axom::IndexType, DIM> ai(lengths,
-                                                axom::ArrayStrideOrder::ROW);
-    EXPECT_EQ(ai.getStrideOrder(), axom::ArrayStrideOrder::BOTH);
+    axom::MDMapping<DIM> mdmap(lengths, axom::ArrayStrideOrder::ROW);
+    EXPECT_EQ(mdmap.getStrideOrder(), axom::ArrayStrideOrder::BOTH);
     axom::IndexType offset = 0;
     for(int i = 0; i < lengths[0]; ++i)
     {
       axom::StackArray<axom::IndexType, DIM> indices {i};
-      EXPECT_EQ(ai.toFlatIndex(indices), offset);
-      EXPECT_EQ(ai.toMultiIndex(offset), indices);
+      EXPECT_EQ(mdmap.toFlatIndex(indices), offset);
+      EXPECT_EQ(mdmap.toMultiIndex(offset), indices);
       ++offset;
     }
   }
@@ -132,17 +115,16 @@ TEST(quest_array_indexer, quest_row_major_offset)
     // 2D
     constexpr int DIM = 2;
     axom::StackArray<axom::IndexType, DIM> lengths {3, 2};
-    axom::ArrayIndexer<axom::IndexType, DIM> ai(lengths,
-                                                axom::ArrayStrideOrder::ROW);
-    EXPECT_EQ(ai.getStrideOrder(), axom::ArrayStrideOrder::ROW);
+    axom::MDMapping<DIM> mdmap(lengths, axom::ArrayStrideOrder::ROW);
+    EXPECT_EQ(mdmap.getStrideOrder(), axom::ArrayStrideOrder::ROW);
     axom::IndexType offset = 0;
     for(int i = 0; i < lengths[0]; ++i)
     {
       for(int j = 0; j < lengths[1]; ++j)
       {
         axom::StackArray<axom::IndexType, DIM> indices {i, j};
-        EXPECT_EQ(ai.toFlatIndex(indices), offset);
-        EXPECT_EQ(ai.toMultiIndex(offset), indices);
+        EXPECT_EQ(mdmap.toFlatIndex(indices), offset);
+        EXPECT_EQ(mdmap.toMultiIndex(offset), indices);
         ++offset;
       }
     }
@@ -150,9 +132,8 @@ TEST(quest_array_indexer, quest_row_major_offset)
   {
     // 3D
     axom::StackArray<axom::IndexType, 3> lengths {5, 3, 2};
-    axom::ArrayIndexer<axom::IndexType, 3> ai(lengths,
-                                              axom::ArrayStrideOrder::ROW);
-    EXPECT_EQ(ai.getStrideOrder(), axom::ArrayStrideOrder::ROW);
+    axom::MDMapping<3> mdmap(lengths, axom::ArrayStrideOrder::ROW);
+    EXPECT_EQ(mdmap.getStrideOrder(), axom::ArrayStrideOrder::ROW);
     axom::IndexType offset = 0;
     for(int i = 0; i < lengths[0]; ++i)
     {
@@ -161,8 +142,8 @@ TEST(quest_array_indexer, quest_row_major_offset)
         for(int k = 0; k < lengths[2]; ++k)
         {
           axom::StackArray<axom::IndexType, 3> indices {i, j, k};
-          EXPECT_EQ(ai.toFlatIndex(indices), offset);
-          EXPECT_EQ(ai.toMultiIndex(offset), indices);
+          EXPECT_EQ(mdmap.toFlatIndex(indices), offset);
+          EXPECT_EQ(mdmap.toMultiIndex(offset), indices);
           ++offset;
         }
       }
@@ -171,21 +152,20 @@ TEST(quest_array_indexer, quest_row_major_offset)
 }
 
 // Test column-major offsets.
-TEST(quest_array_indexer, quest_col_major_offset)
+TEST(quest_array_mapping, quest_col_major_offset)
 {
   {
     // 1D
     constexpr int DIM = 1;
     axom::StackArray<axom::IndexType, DIM> lengths {3};
-    axom::ArrayIndexer<axom::IndexType, DIM> ai(lengths,
-                                                axom::ArrayStrideOrder::COLUMN);
-    EXPECT_EQ(ai.getStrideOrder(), axom::ArrayStrideOrder::BOTH);
+    axom::MDMapping<DIM> mdmap(lengths, axom::ArrayStrideOrder::COLUMN);
+    EXPECT_EQ(mdmap.getStrideOrder(), axom::ArrayStrideOrder::BOTH);
     axom::IndexType offset = 0;
     for(int i = 0; i < lengths[0]; ++i)
     {
       axom::StackArray<axom::IndexType, DIM> indices {i};
-      EXPECT_EQ(ai.toFlatIndex(indices), offset);
-      EXPECT_EQ(ai.toMultiIndex(offset), indices);
+      EXPECT_EQ(mdmap.toFlatIndex(indices), offset);
+      EXPECT_EQ(mdmap.toMultiIndex(offset), indices);
       ++offset;
     }
   }
@@ -193,17 +173,16 @@ TEST(quest_array_indexer, quest_col_major_offset)
     // 2D
     constexpr int DIM = 2;
     axom::StackArray<axom::IndexType, DIM> lengths {3, 2};
-    axom::ArrayIndexer<axom::IndexType, DIM> ai(lengths,
-                                                axom::ArrayStrideOrder::COLUMN);
-    EXPECT_EQ(ai.getStrideOrder(), axom::ArrayStrideOrder::COLUMN);
+    axom::MDMapping<DIM> mdmap(lengths, axom::ArrayStrideOrder::COLUMN);
+    EXPECT_EQ(mdmap.getStrideOrder(), axom::ArrayStrideOrder::COLUMN);
     axom::IndexType offset = 0;
     for(int j = 0; j < lengths[1]; ++j)
     {
       for(int i = 0; i < lengths[0]; ++i)
       {
         axom::StackArray<axom::IndexType, DIM> indices {i, j};
-        EXPECT_EQ(ai.toFlatIndex(indices), offset);
-        EXPECT_EQ(ai.toMultiIndex(offset), indices);
+        EXPECT_EQ(mdmap.toFlatIndex(indices), offset);
+        EXPECT_EQ(mdmap.toMultiIndex(offset), indices);
         ++offset;
       }
     }
@@ -212,9 +191,8 @@ TEST(quest_array_indexer, quest_col_major_offset)
     // 3D
     constexpr int DIM = 3;
     axom::StackArray<axom::IndexType, DIM> lengths {5, 3, 2};
-    axom::ArrayIndexer<axom::IndexType, DIM> ai(lengths,
-                                                axom::ArrayStrideOrder::COLUMN);
-    EXPECT_EQ(ai.getStrideOrder(), axom::ArrayStrideOrder::COLUMN);
+    axom::MDMapping<DIM> mdmap(lengths, axom::ArrayStrideOrder::COLUMN);
+    EXPECT_EQ(mdmap.getStrideOrder(), axom::ArrayStrideOrder::COLUMN);
     axom::IndexType offset = 0;
     for(int k = 0; k < lengths[2]; ++k)
     {
@@ -223,8 +201,8 @@ TEST(quest_array_indexer, quest_col_major_offset)
         for(int i = 0; i < lengths[0]; ++i)
         {
           axom::StackArray<axom::IndexType, DIM> indices {i, j, k};
-          EXPECT_EQ(ai.toFlatIndex(indices), offset);
-          EXPECT_EQ(ai.toMultiIndex(offset), indices);
+          EXPECT_EQ(mdmap.toFlatIndex(indices), offset);
+          EXPECT_EQ(mdmap.toMultiIndex(offset), indices);
           ++offset;
         }
       }
@@ -236,7 +214,7 @@ template <int DIM>
 typename std::enable_if<DIM == 1>::type check_arbitrary_strides_nested_loops(
   const axom::StackArray<axom::IndexType, DIM>& lengths,
   const axom::StackArray<axom::IndexType, DIM>& fastestDirs,
-  const axom::ArrayIndexer<axom::IndexType, DIM>& ai)
+  const axom::MDMapping<DIM>& mdmap)
 {
   /*
     We address the array with natural indices, but arange the
@@ -247,9 +225,9 @@ typename std::enable_if<DIM == 1>::type check_arbitrary_strides_nested_loops(
   axom::IndexType offset = 0;
   for(n = 0; n < lengths[fastestDirs[0]]; ++n)
   {
-    SLIC_INFO(axom::fmt::format("offset {}   i {}", offset, i));
-    EXPECT_EQ(ai.toMultiIndex(offset), i);
-    EXPECT_EQ(ai.toFlatIndex(i), offset);
+    // SLIC_INFO(axom::fmt::format("offset {}   i {}", offset, i));
+    EXPECT_EQ(mdmap.toMultiIndex(offset), i);
+    EXPECT_EQ(mdmap.toFlatIndex(i), offset);
     ++offset;
   }
 }
@@ -258,7 +236,7 @@ template <int DIM>
 typename std::enable_if<DIM == 2>::type check_arbitrary_strides_nested_loops(
   const axom::StackArray<axom::IndexType, DIM>& lengths,
   const axom::StackArray<axom::IndexType, DIM>& fastestDirs,
-  const axom::ArrayIndexer<axom::IndexType, DIM>& ai)
+  const axom::MDMapping<DIM>& mdmap)
 {
   /*
     We address the array with natural indices, but arange the
@@ -272,9 +250,9 @@ typename std::enable_if<DIM == 2>::type check_arbitrary_strides_nested_loops(
   {
     for(n = 0; n < lengths[fastestDirs[0]]; ++n)
     {
-      SLIC_INFO(axom::fmt::format("offset {}   ij {}", offset, ij));
-      EXPECT_EQ(ai.toMultiIndex(offset), ij);
-      EXPECT_EQ(ai.toFlatIndex(ij), offset);
+      // SLIC_INFO(axom::fmt::format("offset {}   ij {}", offset, ij));
+      EXPECT_EQ(mdmap.toMultiIndex(offset), ij);
+      EXPECT_EQ(mdmap.toFlatIndex(ij), offset);
       ++offset;
     }
   }
@@ -284,7 +262,7 @@ template <int DIM>
 typename std::enable_if<DIM == 3>::type check_arbitrary_strides_nested_loops(
   const axom::StackArray<axom::IndexType, DIM>& lengths,
   const axom::StackArray<axom::IndexType, DIM>& fastestDirs,
-  const axom::ArrayIndexer<axom::IndexType, DIM>& ai)
+  const axom::MDMapping<DIM>& mdmap)
 {
   /*
     We address the array with natural indices, but arange the
@@ -301,9 +279,9 @@ typename std::enable_if<DIM == 3>::type check_arbitrary_strides_nested_loops(
     {
       for(n = 0; n < lengths[fastestDirs[0]]; ++n)
       {
-        SLIC_INFO(axom::fmt::format("offset {}   ijk {}", offset, ijk));
-        EXPECT_EQ(ai.toMultiIndex(offset), ijk);
-        EXPECT_EQ(ai.toFlatIndex(ijk), offset);
+        // SLIC_INFO(axom::fmt::format("offset {}   ijk {}", offset, ijk));
+        EXPECT_EQ(mdmap.toMultiIndex(offset), ijk);
+        EXPECT_EQ(mdmap.toFlatIndex(ijk), offset);
         ++offset;
       }
     }
@@ -316,9 +294,7 @@ void check_arbitrary_strides(
   const axom::StackArray<axom::IndexType, DIM>& fastestDirs)
 {
   // fastestDirs should be a permutation.
-  SLIC_INFO(axom::fmt::format("Testing lengths {} with fastestDirs {}",
-                              lengths,
-                              fastestDirs));
+  // SLIC_INFO(axom::fmt::format("Testing lengths {} with fastestDirs {}", lengths, fastestDirs));
 
   axom::StackArray<axom::IndexType, DIM> strides;
   axom::IndexType currentStride = 1;
@@ -329,23 +305,23 @@ void check_arbitrary_strides(
     currentStride *= lengths[currentDir];
   }
 
-  axom::ArrayIndexer<axom::IndexType, DIM> ai(strides);
+  axom::MDMapping<DIM> mdmap(strides);
 
-  const auto slowestDirs = ai.slowestDirs();
+  const auto slowestDirs = mdmap.slowestDirs();
   for(int d = 0; d < DIM; ++d)
   {
     EXPECT_EQ(slowestDirs[d], fastestDirs[DIM - d - 1]);
   }
 
-  check_arbitrary_strides_nested_loops(lengths, fastestDirs, ai);
+  check_arbitrary_strides_nested_loops(lengths, fastestDirs, mdmap);
 }
 
 // Test arbitrary strides.
-TEST(quest_array_indexer, quest_arbitrary_strides)
+TEST(core_array_mapping, core_arbitrary_strides)
 {
   {
     constexpr int DIM = 1;
-    // ArrayIndexer is overkill for 1D, but think of it as a smoke test.
+    // MDMapping is overkill for 1D, but think of it as a smoke test.
     axom::StackArray<axom::IndexType, DIM> lengths {3};
 
     axom::StackArray<axom::IndexType, DIM> fastestDirs {0};
@@ -393,32 +369,51 @@ TEST(quest_array_indexer, quest_arbitrary_strides)
   }
 }
 
-// Test column-major element offsets with Array's.
-TEST(quest_array_indexer, quest_array_match)
+// Test row- and column-major element offsets with Array's.
+TEST(core_array_mapping, core_array_match)
 {
   // No test for 1D.  Array provides no non-trivial interface to test.
 
   {
     constexpr int DIM = 2;
     axom::StackArray<axom::IndexType, DIM> lengths {3, 2};
-    axom::Array<int, DIM> a(lengths);
-    axom::ArrayIndexer<axom::IndexType, DIM> ai(lengths,
-                                                axom::ArrayStrideOrder::ROW);
+    axom::MDMapping<DIM> mdmap(lengths, axom::ArrayStrideOrder::ROW);
+    axom::Array<int, DIM> a(lengths, mdmap.getStrideOrder());
+    axom::IndexType sequenceNum = 0;
     for(axom::IndexType i = 0; i < lengths[0]; ++i)
     {
       for(axom::IndexType j = 0; j < lengths[1]; ++j)
       {
         axom::StackArray<axom::IndexType, DIM> indices {i, j};
-        EXPECT_EQ(&a(i, j), &a.flatIndex(ai.toFlatIndex(indices)));
+        EXPECT_EQ(mdmap.toFlatIndex(indices), sequenceNum);
+        ++sequenceNum;
+        EXPECT_EQ(&a(i, j), &a.flatIndex(mdmap.toFlatIndex(indices)));
+      }
+    }
+  }
+  {
+    constexpr int DIM = 2;
+    axom::StackArray<axom::IndexType, DIM> lengths {3, 2};
+    axom::MDMapping<DIM> mdmap(lengths, axom::ArrayStrideOrder::COLUMN);
+    axom::Array<int, DIM> a(lengths, mdmap.getStrideOrder());
+    axom::IndexType sequenceNum = 0;
+    for(axom::IndexType j = 0; j < lengths[1]; ++j)
+    {
+      for(axom::IndexType i = 0; i < lengths[0]; ++i)
+      {
+        axom::StackArray<axom::IndexType, DIM> indices {i, j};
+        EXPECT_EQ(mdmap.toFlatIndex(indices), sequenceNum);
+        ++sequenceNum;
+        EXPECT_EQ(&a(i, j), &a.flatIndex(mdmap.toFlatIndex(indices)));
       }
     }
   }
   {
     constexpr int DIM = 3;
     axom::StackArray<axom::IndexType, DIM> lengths {5, 3, 2};
-    axom::Array<int, DIM> a(lengths);
-    axom::ArrayIndexer<axom::IndexType, DIM> ai(lengths,
-                                                axom::ArrayStrideOrder::ROW);
+    axom::MDMapping<DIM> mdmap(lengths, axom::ArrayStrideOrder::ROW);
+    axom::Array<int, DIM> a(lengths, mdmap.getStrideOrder());
+    axom::IndexType sequenceNum = 0;
     for(axom::IndexType i = 0; i < lengths[0]; ++i)
     {
       for(axom::IndexType j = 0; j < lengths[1]; ++j)
@@ -426,18 +421,31 @@ TEST(quest_array_indexer, quest_array_match)
         for(axom::IndexType k = 0; k < lengths[2]; ++k)
         {
           axom::StackArray<axom::IndexType, DIM> indices {i, j, k};
-          EXPECT_EQ(&a(i, j, k), &a.flatIndex(ai.toFlatIndex(indices)));
+          EXPECT_EQ(mdmap.toFlatIndex(indices), sequenceNum);
+          ++sequenceNum;
+          EXPECT_EQ(&a(i, j, k), &a.flatIndex(mdmap.toFlatIndex(indices)));
         }
       }
     }
   }
-}
-
-int main(int argc, char** argv)
-{
-  ::testing::InitGoogleTest(&argc, argv);
-
-  int result = RUN_ALL_TESTS();
-
-  return result;
+  {
+    constexpr int DIM = 3;
+    axom::StackArray<axom::IndexType, DIM> lengths {5, 3, 2};
+    axom::MDMapping<DIM> mdmap(lengths, axom::ArrayStrideOrder::COLUMN);
+    axom::Array<int, DIM> a(lengths, mdmap.getStrideOrder());
+    axom::IndexType sequenceNum = 0;
+    for(axom::IndexType k = 0; k < lengths[2]; ++k)
+    {
+      for(axom::IndexType j = 0; j < lengths[1]; ++j)
+      {
+        for(axom::IndexType i = 0; i < lengths[0]; ++i)
+        {
+          axom::StackArray<axom::IndexType, DIM> indices {i, j, k};
+          EXPECT_EQ(mdmap.toFlatIndex(indices), sequenceNum);
+          ++sequenceNum;
+          EXPECT_EQ(&a(i, j, k), &a.flatIndex(mdmap.toFlatIndex(indices)));
+        }
+      }
+    }
+  }
 }
