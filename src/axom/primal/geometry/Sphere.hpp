@@ -65,6 +65,7 @@ public:
    * \param [in] radius the radius of the Sphere (optional).
    * \note If a radius is not supplied, the default radius is 1.0.
    */
+  AXOM_HOST_DEVICE
   explicit Sphere(T radius = 1.0)
     : m_center(PointType::zero())
     , m_radius(radius)
@@ -78,6 +79,7 @@ public:
    *
    * \note If a radius is not supplied, the default radius is 1.0.
    */
+  AXOM_HOST_DEVICE
   explicit Sphere(const PointType& center, T radius = 1.0)
     : m_center(center)
     , m_radius(radius)
@@ -93,6 +95,7 @@ public:
    *
    * \pre center != nullptr
    */
+  AXOM_HOST_DEVICE
   explicit Sphere(const T* center, T radius = 1.0);
 
   /// @}
@@ -101,6 +104,7 @@ public:
    * \brief Returns the radius of the Sphere.
    * \return r the radius of the Sphere.
    */
+  AXOM_HOST_DEVICE
   inline T getRadius() const { return m_radius; };
 
   /*!
@@ -110,6 +114,7 @@ public:
    * \note c points to an array that is NDIMS long.
    * \post c != nullptr
    */
+  AXOM_HOST_DEVICE
   inline const PointType& getCenter() const { return m_center; };
 
   /*!
@@ -147,6 +152,7 @@ public:
    * \see OrientationResult for the list of possible return values.
    *
    */
+  AXOM_HOST_DEVICE
   inline int getOrientation(const PointType& q, double TOL = 1.e-9) const
   {
     const T signed_distance = this->computeSignedDistance(q);
@@ -169,6 +175,7 @@ public:
    *
    * \return status true if the sphere intersects, false otherwise.
    */
+  AXOM_HOST_DEVICE
   inline bool intersectsWith(const Sphere<T, NDIMS>& sphere,
                              double TOL = 1.e-9) const;
 
@@ -197,7 +204,8 @@ namespace primal
 {
 //------------------------------------------------------------------------------
 template <typename T, int NDIMS>
-Sphere<T, NDIMS>::Sphere(const T* center, T radius) : m_radius(radius)
+AXOM_HOST_DEVICE Sphere<T, NDIMS>::Sphere(const T* center, T radius)
+  : m_radius(radius)
 {
   SLIC_ASSERT(center != nullptr);
   for(int i = 0; i < NDIMS; ++i)
@@ -216,8 +224,9 @@ std::ostream& Sphere<T, NDIMS>::print(std::ostream& os) const
 
 //------------------------------------------------------------------------------
 template <typename T, int NDIMS>
-inline bool Sphere<T, NDIMS>::intersectsWith(const Sphere<T, NDIMS>& sphere,
-                                             double TOL) const
+AXOM_HOST_DEVICE inline bool Sphere<T, NDIMS>::intersectsWith(
+  const Sphere<T, NDIMS>& sphere,
+  double TOL) const
 {
   const T distance_squared =
     VectorType(sphere.getCenter(), m_center).squared_norm();
