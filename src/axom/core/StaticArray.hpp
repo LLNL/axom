@@ -9,7 +9,6 @@
 #include "axom/config.hpp"           // for compile-time defines
 #include "axom/core/Macros.hpp"      // for axom macros
 #include "axom/core/StackArray.hpp"  // for StackArray
-#include "axom/core/Types.hpp"       // for axom types
 
 namespace axom
 {
@@ -25,7 +24,24 @@ namespace axom
 template <typename T, int N>
 struct StaticArray : public StackArray<T, N>
 {
+  /*!
+   * \brief Returns the size of the static array
+   *
+   * \return The size of the static array
+   */
   AXOM_HOST_DEVICE int size() const { return m_size; }
+
+  /*!
+   * \brief Pushes an object to the back of the static array
+   *
+   * \param [in] obj the object to be added to the back.
+   *
+   * \note The number of push_backs must not exceed N,
+   *       the max number of values in the array.
+   *
+   * \note If the static array is full, push_back
+   *       will not modify the static array.
+   */
   AXOM_HOST_DEVICE void push_back(const T& obj)
   {
     assert(m_size < N);
@@ -35,6 +51,9 @@ struct StaticArray : public StackArray<T, N>
     }
   }
 
+  /*!
+   * \brief Clears the data from the static array
+   */
   AXOM_HOST_DEVICE void clear()
   {
     for(T& datum : StackArray<T, N>::m_data)
