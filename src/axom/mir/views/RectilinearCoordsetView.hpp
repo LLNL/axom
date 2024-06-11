@@ -1,0 +1,255 @@
+// Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
+// other Axom Project Developers. See the top-level LICENSE file for details.
+//
+// SPDX-License-Identifier: (BSD-3-Clause)
+
+#ifndef AXOM_MIR_UNIFORm_coordinates_VIEW_HPP_
+#define AXOM_MIR_UNIFORm_coordinates_VIEW_HPP_
+
+#include "axom/core/StackArray.hpp"
+#include "axom/core/ArrayView.hpp"
+#include "axom/primal/Point.hpp"
+
+namespace axom
+{
+namespace mir
+{
+namespace views
+{
+
+/**
+ * \class This class provides a view for Conduit/Blueprint 2D rectilinear coordsets.
+ */
+template <typename DataType>
+class RectilinearCoordsetView2
+{
+public:
+  using LogicalIndexType = axom::StackArray<axom::IndexType, 2>;
+  using IndexType = axom::IndexType;
+  using value_type = DataType;
+  using PointType = Point<DataType, 2>;
+
+  /**
+   * \brief Constructor
+   *
+   * \param x The first coordinate component.
+   * \param y The second coordinate component.
+   */
+  AXOM_HOST_DEVICE
+  RectilinearCoordsetView2(const axom::ArrayView<DataType> &x,
+                           const axom::ArrayView<DataType> &y) : m_coordinates{x, y}
+  {
+  }
+
+  /**
+   * \brief Return the number of points in the coordset.
+   *
+   * \return The number of points in the coordset.
+   */
+  AXOM_HOST_DEVICE
+  IndexType size() const
+  {
+    return m_coordinates[0].size() * m_coordinates[1].size();
+  }
+
+  /**
+   * \brief Return the requested point from the coordset.
+   *
+   * \param vertex_index The logical index of the point to return.
+   *
+   * \return A point that corresponds to \a vertex_index.
+   */
+  AXOM_HOST_DEVICE
+  PointType getPoint(LogicalIndexType vertex_index) const
+  {
+    return PointType(m_coordinates[0][vertex_index[0]],
+                     m_coordinates[1][vertex_index[1]]);
+  }
+
+  /**
+   * \brief Return the requested point from the coordset.
+   *
+   * \param vertex_index The index of the point to return.
+   *
+   * \return A point that corresponds to \a vertex_index.
+   */
+  AXOM_HOST_DEVICE
+  PointType getPoint(IndexType vertex_index) const
+  {
+    return getPoint(IndexToLogicalIndex(vert_index));
+  }
+
+  /**
+   * \brief Return the requested point from the coordset.
+   *
+   * \param vertex_index The logical index of the point to return.
+   *
+   * \return A point that corresponds to \a vertex_index.
+   */
+  AXOM_HOST_DEVICE
+  PointType
+  operator[](LogicalIndexType vertex_index) const
+  {
+    return getPoint(vertex_index);
+  }
+
+  /**
+   * \brief Return the requested point from the coordset.
+   *
+   * \param vertex_index The index of the point to return.
+   *
+   * \return A point that corresponds to \a vertex_index.
+   */
+  AXOM_HOST_DEVICE
+  PointType
+  operator[](IndexType vertex_index) const
+  {
+    return getPoint(IndexToLogicalIndex(vertex_index));
+  }
+
+private:
+  RectilinearCoordsetView2() = delete;
+
+  /**
+   * \brief Turn an index into a logical IJ index.
+   *
+   * \param index The index to convert.
+   *
+   * \return The logical index that corresponds to the \a index.
+   */
+  AXOM_HOST_DEVICE
+  LogicalIndexType IndexToLogicalIndex(IndexType index) const
+  {
+    LogicalIndexType logical;
+    const auto nx = m_coordinates[0].size();
+    logical[0] = index % nx;
+    logical[1] = index / nx;
+    return logical;
+  }
+
+  axom::ArrayView<DataType> m_coordinates[2];
+};
+
+/**
+ * \class This class provides a view for Conduit/Blueprint 3D rectilinear coordsets.
+ */
+template <typename DataType>
+class RectilinearCoordsetView3
+{
+public:
+  using LogicalIndexType = axom::StackArray<axom::IndexType, 3>;
+  using IndexType = axom::IndexType;
+  using value_type = DataType;
+  using PointType = Point<DataType, 3>;
+
+  /**
+   * \brief Constructor
+   *
+   * \param x The first coordinate component.
+   * \param y The second coordinate component.
+   * \param z The third coordinate component.
+   */
+  AXOM_HOST_DEVICE
+  RectilinearCoordsetView3(const axom::ArrayView<DataType> &x,
+                           const axom::ArrayView<DataType> &y,
+                           const axom::ArrayView<DataType> &z) : m_coordinates{x, y, z}
+  {
+  }
+
+  /**
+   * \brief Return the number of points in the coordset.
+   *
+   * \return The number of points in the coordset.
+   */
+  AXOM_HOST_DEVICE
+  IndexType size() const
+  {
+    return m_coordinates[0].size() * m_coordinates[1].size() * m_coordinates[2].size();
+  }
+
+  /**
+   * \brief Return the requested point from the coordset.
+   *
+   * \param vertex_index The logical index of the point to return.
+   *
+   * \return A point that corresponds to \a vertex_index.
+   */
+  AXOM_HOST_DEVICE
+  PointType getPoint(LogicalIndexType vertex_index) const
+  {
+    return PointType(m_coordinates[0][vertex_index[0]],
+                     m_coordinates[1][vertex_index[1]],
+                     m_coordinates[2][vertex_index[2]]);
+  }
+
+  /**
+   * \brief Return the requested point from the coordset.
+   *
+   * \param vertex_index The index of the point to return.
+   *
+   * \return A point that corresponds to \a vertex_index.
+   */
+  AXOM_HOST_DEVICE
+  PointType getPoint(IndexType vertex_index) const
+  {
+    return getPoint(IndexToLogicalIndex(vert_index));
+  }
+
+  /**
+   * \brief Return the requested point from the coordset.
+   *
+   * \param vertex_index The logical index of the point to return.
+   *
+   * \return A point that corresponds to \a vertex_index.
+   */
+  AXOM_HOST_DEVICE
+  PointType
+  operator[](LogicalIndexType vertex_index) const
+  {
+    return getPoint(vertex_index);
+  }
+
+  /**
+   * \brief Return the requested point from the coordset.
+   *
+   * \param vertex_index The index of the point to return.
+   *
+   * \return A point that corresponds to \a vertex_index.
+   */
+  AXOM_HOST_DEVICE
+  PointType
+  operator[](IndexType vertex_index) const
+  {
+    return getPoint(IndexToLogicalIndex(vertex_index));
+  }
+
+private:
+  RectilinearCoordsetView3() = delete;
+
+  /**
+   * \brief Turn an index into a logical IJK index.
+   *
+   * \param index The index to convert.
+   *
+   * \return The logical index that corresponds to the \a index.
+   */
+  AXOM_HOST_DEVICE
+  LogicalIndexType IndexToLogicalIndex(IndexType index) const
+  {
+    const auto nx = m_coordinates[0].size();
+    const auto nxy = nx * m_coordinates[1].size();
+    LogicalIndexType logical;
+    logical[0] = index % nx;
+    logical[1] = (index % nxy) / nx;
+    logical[2] = index / nxy;
+    return logical;
+  }
+
+  axom::ArrayView<DataType> m_coordinates[3];
+};
+
+} // end namespace views
+} // end namespace mir
+} // end namespace axom
+
+#endif
