@@ -1130,17 +1130,29 @@ struct DeviceStagingBuffer;
 template <typename T>
 struct DeviceStagingBuffer<T, OperationSpace::Device>
 {
+  /*!
+   * \brief Create a staging buffer for a device memory operation.
+   *
+   * \param [in] data the array to mirror on the CPU
+   * \param [in] begin the beginning index of the range to mirror
+   * \param [in] nelems the number of elements to mirror
+   * \param [in] read_from_data if true, copies existing data range to the
+   *  staging buffer during construction
+   */
   DeviceStagingBuffer(T* data,
                       IndexType begin,
                       IndexType nelems,
-                      bool destroying = false)
+                      bool read_from_data = false)
     : m_data(data)
     , m_begin(begin)
     , m_num_elems(nelems)
-    , m_is_destroying(destroying)
   {
-    m_staging_buf = ::operator new(sizeof(T) * nelems);
-    if(destroying)
+    int allocator_id = 0;
+  #ifdef AXOM_USE_UMPIRE
+    allocator_id = axom::detail::getAllocatorID<axom::MemorySpace::Host>();
+  #endif
+    m_staging_buf = axom::allocate<T>(nelems, allocator_id);
+    if(read_from_data)
     {
       axom::copy(m_staging_buf, m_data + begin, sizeof(T) * nelems);
     }
@@ -1153,16 +1165,15 @@ struct DeviceStagingBuffer<T, OperationSpace::Device>
   {
     // Copy back staging data to destination buffer.
     axom::copy(m_data + m_begin, m_staging_buf, m_num_elems * sizeof(T));
-    ::operator delete(m_staging_buf);
+    axom::deallocate(m_staging_buf);
   }
 
   T* getStagingBuffer() const { return static_cast<T*>(m_staging_buf); }
 
-  void* m_staging_buf;
+  T* m_staging_buf;
   T* m_data;
   IndexType m_begin;
   IndexType m_num_elems;
-  bool m_is_destroying;
 };
 
 template <typename T>
@@ -1171,12 +1182,12 @@ struct DeviceStagingBuffer<T, OperationSpace::Unified_Device>
   DeviceStagingBuffer(T* data,
                       IndexType begin,
                       IndexType nelems,
-                      bool destroying = false)
+                      bool read_from_data = false)
     : m_data(data)
     , m_begin(begin)
   {
     AXOM_UNUSED_VAR(nelems);
-    AXOM_UNUSED_VAR(destroying);
+    AXOM_UNUSED_VAR(read_from_data);
   }
 
   T* getStagingBuffer() const { return static_cast<T*>(m_data + m_begin); }
