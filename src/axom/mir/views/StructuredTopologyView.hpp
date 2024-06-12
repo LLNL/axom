@@ -15,6 +15,8 @@ namespace mir
 namespace views
 {
 
+// NOTE: we could subclass this one and make a strided structured view that lets one define zones where the zones do not span all of the nodes.
+
 /**
  * \brief This class provides a view for Conduit/Blueprint single shape unstructured grids.
  *
@@ -67,11 +69,27 @@ public:
     const auto nzones = numberOfZones();
 
     axom::ArrayView<IndexType> connectivity(m_connectivity);
-    axom::for_all<ExecSpace>(0, nzones, AXOM_LAMBDA(int zoneIndex)
+    if constexpr (NDIMS == 2)
     {
-      const ShapeType shape(axom::ArrayView<IndexType>(connectivity.data() + ShapeType::zoneOffset(zoneIndex), ShapeType::numberOfNodes()));
-      func(zoneIndex, shape);
-    });
+      // Q: Should we make a for_all() that iterates over multiple ranges?
+      // Q: Should the logical index be passed to the lambda?
+
+      axom::for_all<ExecSpace>(0, nzones, AXOM_LAMBDA(int zoneIndex)
+      {
+        using ShapeType = QuadShape<IndexType>;
+        const ShapeType shape(axom::ArrayView<IndexType>(connectivity.data() + ShapeType::zoneOffset(zoneIndex), ShapeType::numberOfNodes()));
+        func(zoneIndex, shape);
+      });
+    }
+    if constexpr (NDIMS == 3)
+    {
+      axom::for_all<ExecSpace>(0, nzones, AXOM_LAMBDA(int zoneIndex)
+      {
+        using ShapeType = HexShape<IndexType>;
+        const ShapeType shape(axom::ArrayView<IndexType>(connectivity.data() + ShapeType::zoneOffset(zoneIndex), ShapeType::numberOfNodes()));
+        func(zoneIndex, shape);
+      });
+    }
   }
 
 private:

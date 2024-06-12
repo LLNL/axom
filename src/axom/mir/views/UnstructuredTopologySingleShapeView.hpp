@@ -33,7 +33,20 @@ public:
    *
    * \param conn The mesh connectivity.
    */
-  UnstructuredTopologySingleShapeView(const axom::ArrayView<IndexType> &conn) : m_connectivity(conn)
+  UnstructuredTopologySingleShapeView(const axom::ArrayView<IndexType> &conn) : m_connectivity(conn), m_sizes(), m_offsets()
+  {
+  }
+
+  /**
+   * \brief Constructor
+   *
+   * \param conn The mesh connectivity.
+   * \param sizes The number of nodes in each zone.
+   * \param offsets The offset to each zone in the connectivity.
+   */
+  UnstructuredTopologySingleShapeView(const axom::ArrayView<IndexType> &conn,
+                                      const axom::ArrayView<IndexType> &sizes,
+                                      const axom::ArrayView<IndexType> &offsets) : m_connectivity(conn), m_sizes(sizes), m_offsets(offsets)
   {
   }
 
@@ -44,7 +57,7 @@ public:
    */
   IndexType numberOfZones() const
   {
-    return m_connectivity.size() / ShapeType::numberOfNodes();
+    return (m_sizes.size() != 0) ? m_sizes.size() : (m_connectivity.size() / ShapeType::numberOfNodes());
   }
 
   /**
@@ -61,15 +74,34 @@ public:
     const auto nzones = numberOfZones();
 
     axom::ArrayView<IndexType> connectivity(m_connectivity);
-    axom::for_all<ExecSpace>(0, nzones, AXOM_LAMBDA(int zoneIndex)
+    if constexpr (ShapeType::is_variable_size())
     {
-      const ShapeType shape(axom::ArrayView<IndexType>(connectivity.data() + ShapeType::zoneOffset(zoneIndex), ShapeType::numberOfNodes()));
-      func(zoneIndex, shape);
-    });
+      assert(m_sizes.size() != 0);
+      assert(m_offsets.size() != 0);
+      assert(m_offsets.size() == m_sizes.size());
+
+      axom::ArrayView<IndexType> sizes(m_sizes);
+      axom::ArrayView<IndexType> offsets(m_offsets);
+      axom::for_all<ExecSpace>(0, nzones, AXOM_LAMBDA(int zoneIndex)
+      {
+        const ShapeType shape(axom::ArrayView<IndexType>(connectivity.data() + offsets[zoneIndex], sizes[zoneIndex]));
+        func(zoneIndex, shape);
+      });
+    }
+    else
+    {
+      axom::for_all<ExecSpace>(0, nzones, AXOM_LAMBDA(int zoneIndex)
+      {
+        const ShapeType shape(axom::ArrayView<IndexType>(connectivity.data() + ShapeType::zoneOffset(zoneIndex), ShapeType::numberOfNodes()));
+        func(zoneIndex, shape);
+      });
+    }
   }
 
 private:
   axom::ArrayView<IndexType> m_connectivity;
+  axom::ArrayView<IndexType> m_sizes;
+  axom::ArrayView<IndexType> m_offsets;
 };
 
 } // end namespace views
