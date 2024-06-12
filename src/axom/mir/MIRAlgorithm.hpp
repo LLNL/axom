@@ -11,7 +11,7 @@
 #include "axom/core.hpp"
 #include "axom/core/ArrayView.hpp"
 
-#include <conduit_node.hpp>
+#include <conduit/conduit.hpp>
 
 #include <vector>
 #include <string>
@@ -19,7 +19,7 @@
 namespace axom
 {
 
-namespace quest
+namespace mir
 {
 
 /**
@@ -97,301 +97,8 @@ protected:
    // TODO: method for mapping vertex field to new topo
 };
 
-/**
-  I was just thinking why not template the class on ExecSpace. That would be nice since it would only instantiate the one(s) we want.
-  However, that would not work with inheritance.
- */
-
-// Goal: We need to take a mesh, matset, field and new mesh+originalElements field and 
-
-namespace detail
-{
-
-/**
- \brief This function wraps the Conduit node data in an axom::ArrayView and passes
-        that view to a lambda. The lambda can be generic so we can instantiate
-        various view types to handle the types of data we see in Conduit. This
-        function deals with indices which are most likely to be int32/int64 only.
-
- \param[in] node1 The Conduit node that we expect to contain index arrays.
- \param[in] func A lamda that can operate on the supplied view.
- */
-template <typename FuncType>
-void IndexNodeToArrayView(conduit::Node &node1, FuncType &&func)
-{
-  const conduit::index_t size = node1.dtype().number_of_elements();
-  if(node1.dtype().is_int32())
-  {
-     axom::ArrayView<conduit::int32, 1> view(node1.as_int32_ptr(), size);
-     func(view);
-  }
-  else if(node1.dtype().is_int64())
-  {
-     axom::ArrayView<conduit::int64, 1> view(node1.as_int64_ptr(), size);
-     func(view);
-  }
-}
-
-/// const version of the function above.
-template <typename FuncType>
-void IndexNodeToArrayView(const conduit::Node &node1, FuncType &&func)
-{
-  const conduit::index_t size = node1.dtype().number_of_elements();
-  if(node1.dtype().is_int32())
-  {
-     axom::ArrayView<conduit::int32, 1> view(const_cast<conduit::int32 *>(node1.as_int32_ptr()), size);
-     func(view);
-  }
-  else if(node1.dtype().is_int64())
-  {
-     axom::ArrayView<conduit::int64, 1> view(const_cast<conduit::int64 *>(node1.as_int64_ptr()), size);
-     func(view);
-  }
-}
-
-/// Convert 2 Conduit nodes to views and pass them to a lambda
-template <typename FuncType>
-void IndexNodeToArrayView(conduit::Node &node1, conduit::Node &node2, FuncType &&func)
-{
-   IndexNodeToArrayView(node1, [&](auto node1_view)
-   {
-      IndexNodeToArrayView(node2, [&](auto node2_view)
-      {
-         func(node1_view, node2_view);
-      });
-   });
-}
-
-template <typename FuncType>
-void IndexNodeToArrayView(const conduit::Node &node1, const conduit::Node &node2, FuncType &&func)
-{
-   IndexNodeToArrayView(node1, [&](auto node1_view)
-   {
-      IndexNodeToArrayView(node2, [&](auto node2_view)
-      {
-         func(node1_view, node2_view);
-      });
-   });
-}
-
-/// Convert 3 Conduit nodes to views and pass them to a lambda
-template <typename FuncType>
-void IndexNodeToArrayView(conduit::Node &node1, conduit::Node &node2, conduit::Node &node3, FuncType &&func)
-{
-   IndexNodeToArrayView(node1, node2, [&](auto node1_view, auto node2_view)
-   {
-      IndexNodeToArrayView(node3, [&](auto node3_view)
-      {
-         func(node1_view, node2_view, node3_view);
-      });
-   });
-}
-
-template <typename FuncType>
-void IndexNodeToArrayView(const conduit::Node &node1, const conduit::Node &node2, const conduit::Node &node3, FuncType &&func)
-{
-   IndexNodeToArrayView(node1, node2, [&](auto node1_view, auto node2_view)
-   {
-      IndexNodeToArrayView(node3, [&](auto node3_view)
-      {
-         func(node1_view, node2_view, node3_view);
-      });
-   });
-}
-
-//------------------------------------------------------------------------------
-
-/**
- \brief This function wraps the Conduit node data in an axom::ArrayView and passes
-        that view to a lambda. The lambda can be generic so we can instantiate
-        various view types to handle the types of data we see in Conduit. Handle
-        the supported Conduit field types.
-
- \param[in] node1 The Conduit node that we expect to contain field values.
- \param[in] func A lamda that can operate on the supplied view.
- */
-template <typename FuncType>
-void NodeToArrayView(conduit::Node &node1, FuncType &&func)
-{
-  const conduit::index_t size = node1.dtype().number_of_elements();
-
-  // TODO: If the node data are not contiguous, we can use some other ArrayView
-  //       constructors to supply stride.
-
-  if(node1.dtype().is_int8())
-  {
-     axom::ArrayView<conduit::int8, 1> view(node1.as_int8_ptr(), size);
-     func(view);
-  }
-  else if(node1.dtype().is_int16())
-  {
-     axom::ArrayView<conduit::int16, 1> view(node1.as_int16_ptr(), size);
-     func(view);
-  }
-  if(node1.dtype().is_int32())
-  {
-     axom::ArrayView<conduit::int32, 1> view(node1.as_int32_ptr(), size);
-     func(view);
-  }
-  else if(node1.dtype().is_int64())
-  {
-     axom::ArrayView<conduit::int64, 1> view(node1.as_int64_ptr(), size);
-     func(view);
-  }
-  else if(node1.dtype().is_uint8())
-  {
-     axom::ArrayView<conduit::uint8, 1> view(node1.as_uint8_ptr(), size);
-     func(view);
-  }
-  else if(node1.dtype().is_uint16())
-  {
-     axom::ArrayView<conduit::uint16, 1> view(node1.as_uint16_ptr(), size);
-     func(view);
-  }
-  if(node1.dtype().is_uint32())
-  {
-     axom::ArrayView<conduit::uint32, 1> view(node1.as_uint32_ptr(), size);
-     func(view);
-  }
-  else if(node1.dtype().is_uint64())
-  {
-     axom::ArrayView<conduit::uint64, 1> view(node1.as_uint64_ptr(), size);
-     func(view);
-  }
-  else if(node1.dtype().is_float32())
-  {
-     axom::ArrayView<float, 1> view(node1.as_float_ptr(), size);
-     func(view);
-  }
-  else if(node1.dtype().is_float64())
-  {
-     axom::ArrayView<double, 1> view(node1.as_double_ptr(), size);
-     func(view);
-  }
-  else
-  {
-    // TODO: Axom error, exception.
-  }
-}
-
-template <typename FuncType>
-void NodeToArrayView(const conduit::Node &node1, FuncType &&func)
-{
-  const conduit::index_t size = node1.dtype().number_of_elements();
-  if(node1.dtype().is_int8())
-  {
-     axom::ArrayView<conduit::int8, 1> view(const_cast<conduit::int8 *>(node1.as_int8_ptr()), size);
-     func(view);
-  }
-  else if(node1.dtype().is_int16())
-  {
-     axom::ArrayView<conduit::int16, 1> view(const_cast<conduit::int16 *>(node1.as_int16_ptr()), size);
-     func(view);
-  }
-  if(node1.dtype().is_int32())
-  {
-     axom::ArrayView<conduit::int32, 1> view(const_cast<conduit::int32 *>(node1.as_int32_ptr()), size);
-     func(view);
-  }
-  else if(node1.dtype().is_int64())
-  {
-     axom::ArrayView<conduit::int64, 1> view(const_cast<conduit::int64 *>(node1.as_int64_ptr()), size);
-     func(view);
-  }
-  else if(node1.dtype().is_uint8())
-  {
-     axom::ArrayView<conduit::uint8, 1> view(const_cast<conduit::uint8 *>(node1.as_uint8_ptr()), size);
-     func(view);
-  }
-  else if(node1.dtype().is_uint16())
-  {
-     axom::ArrayView<conduit::uint16, 1> view(const_cast<conduit::uint16 *>(node1.as_uint16_ptr()), size);
-     func(view);
-  }
-  if(node1.dtype().is_uint32())
-  {
-     axom::ArrayView<conduit::uint32, 1> view(const_cast<conduit::uint32 *>(node1.as_uint32_ptr()), size);
-     func(view);
-  }
-  else if(node1.dtype().is_uint64())
-  {
-     axom::ArrayView<conduit::uint64, 1> view(const_cast<conduit::uint64 *>(node1.as_uint64_ptr()), size);
-     func(view);
-  }
-  else if(node1.dtype().is_float32())
-  {
-     axom::ArrayView<float, 1> view(const_cast<float *>(node1.as_float_ptr()), size);
-     func(view);
-  }
-  else if(node1.dtype().is_float64())
-  {
-     axom::ArrayView<double, 1> view(const_cast<double *>(node1.as_double_ptr()), size);
-     func(view);
-  }
-  else
-  {
-    // TODO: Axom error, exception.
-  }
-}
-template <typename FuncType>
-void NodeToArrayView(conduit::Node &node1, conduit::Node &node2, FuncType &&func)
-{
-   NodeToArrayView(node1, [&](auto node1_view)
-   {
-      NodeToArrayView(node2, [&](auto node2_view)
-      {
-         func(node1_view, node2_view);
-      });
-   });
-}
-
-template <typename FuncType>
-void NodeToArrayView(const conduit::Node &node1, const conduit::Node &node2, FuncType &&func)
-{
-   NodeToArrayView(node1, [&](auto node1_view)
-   {
-      NodeToArrayView(node2, [&](auto node2_view)
-      {
-         func(node1_view, node2_view);
-      });
-   });
-}
-
-template <typename FuncType>
-void NodeToArrayView(conduit::Node &node1, conduit::Node &node2, conduit::Node &node3, FuncType &&func)
-{
-   NodeToArrayView(node1, node2, [&](auto node1_view, auto node2_view)
-   {
-      NodeToArrayView(node3, [&](auto node3_view)
-      {
-         func(node1_view, node2_view, node3_view);
-      });
-   });
-}
-
-template <typename FuncType>
-void NodeToArrayView(const conduit::Node &node1, const conduit::Node &node2, const conduit::Node &node3, FuncType &&func)
-{
-   NodeToArrayView(node1, node2, [&](auto node1_view, auto node2_view)
-   {
-      NodeToArrayView(node3, [&](auto node3_view)
-      {
-         func(node1_view, node2_view, node3_view);
-      });
-   });
-}
-
-template <typename FuncType>
-void NodeToArrayView(const conduit::Node &node1, const conduit::Node &node2, conduit::Node &node3, FuncType &&func)
-{
-   NodeToArrayView(node1, node2, [&](auto node1_view, auto node2_view)
-   {
-      NodeToArrayView(node3, [&](auto node3_view)
-      {
-         func(node1_view, node2_view, node3_view);
-      });
-   });
-}
+#if 0
+// Find a home for this stuff.
 
 
 /**
@@ -538,7 +245,6 @@ blendField(const conduit::Node &field, const conduit::Node &indices, const condu
   }
 }
 
-#if 0
 void conduit_move(const conduit::Node &src, conduit::Node &dest, int dest_allocator)
 {
     if(src.number_of_children() > 0)
@@ -576,8 +282,6 @@ void conduit_move(const conduit::Node &src, conduit::Node &dest, int dest_alloca
     }
 }
 #endif
-
-} // end namespace detail
 
 class ElviraMIRAlgorithm : public MIRAlgorithm
 {

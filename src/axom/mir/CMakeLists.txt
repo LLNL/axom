@@ -10,7 +10,8 @@
 # Check necessary dependencies
 #------------------------------------------------------------------------------
 axom_component_requires(NAME       MIR
-                        COMPONENTS SLIC SLAM PRIMAL)
+                        COMPONENTS SLIC SLAM PRIMAL
+                        TPLS       Conduit)
 
 #------------------------------------------------------------------------------
 # Specify all headers/sources
@@ -25,6 +26,21 @@ set(mir_headers
     CellClipper.hpp
     MIRUtilities.hpp
     CellGenerator.hpp
+
+    MIRAlgorithm.hpp
+    EquiZAlgorithm.hpp
+    views/dispatch_coordset.hpp
+    views/dispatch_unstructured_topology.hpp
+    views/ExplitCoordsetView.hpp
+    views/NodeArrayView.hpp
+    views/RectilinearCoordsetView.hpp
+    views/Shapes.hpp
+    views/StructuredTopologyView.hpp
+    views/UniformCoordsetView.hpp
+    views/UnstructuredTopologyPolyhedralView.hpp
+    views/UnstructuredTopologySingleShapeView.hpp
+    clipping/ClipCases.h
+    clipping/ClipTableManager.hpp
     )
 
 set(mir_sources
@@ -35,12 +51,21 @@ set(mir_sources
     MeshTester.cpp
     CellClipper.cpp
     CellGenerator.cpp
+
+    MIRAlgorithm.cpp
+    EquiZAlgorithm.cpp
+    clipping/ClipCasesHex.cpp
+    clipping/ClipCasesPyr.cpp
+    clipping/ClipCasesQuad.cpp
+    clipping/ClipCasesTet.cpp
+    clipping/ClipCasesTri.cpp
+    clipping/ClipCasesWdg.cpp
     )
 
 #------------------------------------------------------------------------------
 # Build and install the library
 #------------------------------------------------------------------------------
-set(mir_depends_on core slic slam primal)
+set(mir_depends_on core slic slam primal conduit::conduit)
 
 blt_add_library(
     NAME        mir
