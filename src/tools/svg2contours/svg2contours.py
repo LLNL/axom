@@ -1,21 +1,43 @@
 import os
 from svgpathtools import Document, Path, Line, QuadraticBezier, CubicBezier, Arc, is_bezier_path, is_bezier_segment, is_path_segment, svg2paths, bpoints2bezier
 import numpy as np
+import re
 
 def get_root_transform(doc: Document):
     """Create transform to convert 2D coordinate system from y pointing down to y pointing up"""
     
     attr = doc.tree.getroot().attrib
-    # width = attr.get('width', None)
+    width = attr.get('width', None)
     height = attr.get('height', None)
+    viewBox = attr.get("viewBox", None)
+
+    print(f"""SVG dimensions: {width=} {height=} {viewBox=}""")
 
     tf = np.identity(3)
 
     if height and not height.endswith('%'):
-        tf[1,1] = -1
-        tf[1,2] = height
+        match = re.search(r"(\d+)", height.strip())
+        if match:
+            height_number = match.group(0)
+
+            tf[1,1] = -1
+            tf[1,2] = height_number
 
     return tf
+
+def transform_cubic(cubic : CubicBezier, tf):
+    """Apply transformation `tf` to control points of cubic Bezier.
+       Adapted from internal `transform()` function in svgpathtools library
+    """
+
+    def to_point(p):
+        return np.array([[p.real], [p.imag], [1.0]])
+
+    def to_complex(v):
+        return v.item(0) + 1j * v.item(1)
+
+    return bpoints2bezier([to_complex(tf.dot(to_point(p)))
+                               for p in cubic.bpoints()])
 
 def lerp(a,b,t):
     """linear interpolation from a to b with parameter t, typically between 0 and 1"""
@@ -109,17 +131,24 @@ def arc_to_cubic(arc: Arc):
             return (CubicBezier(q_0, c_1, c_2, q_1), [3,1,1,3])
 
 
-def segment_as_cubic(seg):
+def segment_as_cubic(seg, reverse_paths : bool):
     if isinstance(seg,Line):
-        return line_to_cubic(seg)
+        cubic,weights = line_to_cubic(seg)
     elif isinstance(seg,QuadraticBezier):
-        return quadratic_to_cubic(seg)
+        cubic,weights = quadratic_to_cubic(seg)
     elif isinstance(seg, CubicBezier):
-        return (seg, [1,1,1,1])
+        cubic,weights = seg, [1,1,1,1]
     elif isinstance(seg,Arc):
-        return arc_to_cubic(seg)
+        cubic,weights = arc_to_cubic(seg)
     else:
         raise Exception(f"'{type(seg)}' type not supported yet")
+    
+    if reverse_paths:
+      cubic = cubic.reversed()
+      weights.reverse()
+
+    return (cubic,weights)
+
     
 def dist_to_ellipse(center, radius, angle, pt):
     cx,cy = center.real, center.imag
