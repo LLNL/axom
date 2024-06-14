@@ -518,6 +518,9 @@ public:
   {
     double retVol = 0.0;
 
+    VectorType centroid_vector;
+    PointType centroid_point;
+
     if(!isValid() || hasDuplicateVertices())
     {
       return retVol;
@@ -548,15 +551,24 @@ public:
 
         for(int j = 1, k = 2; j < N - 1; ++j, ++k)
         {
-          retVol += VectorType::scalar_triple_product(
-            v0,
-            m_vertices[faces[i_offset + j]] - origin,
-            m_vertices[faces[i_offset + k]] - origin);
+          VectorType v1 = m_vertices[faces[i_offset + j]] - origin;
+          VectorType v2 = m_vertices[faces[i_offset + k]] - origin;
+          double curVol = VectorType::scalar_triple_product(v0, v1, v2);
+
+          retVol += curVol;
+          centroid_vector += (v0 + v1 + v2) * curVol;
         }
       }
+
+      retVol /= 6.;
+      // SLIC_INFO("retVol is " << retVol);
+      double tempVol = (retVol != 0.0) ? (24.0 * retVol) : 1e-12;
+      centroid_vector /= tempVol;
+      centroid_point = centroid_vector + origin;
+      // SLIC_INFO(centroid_point);
     }
 
-    return retVol / 6.;
+    return retVol;
   }
 
   /*!
