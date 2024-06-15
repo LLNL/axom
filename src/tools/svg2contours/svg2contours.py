@@ -1,7 +1,25 @@
+#!/bin/sh
+"exec" "python3" "-u" "-B" "$0" "$@"
+
+# Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
+# other Axom Project Developers. See the top-level LICENSE file for details.
+#
+# SPDX-License-Identifier: (BSD-3-Clause)
+
+"""
+ file: svg2contours.py
+
+ description: 
+  Reads in an SVG document and outputs an MFEM NURBS mesh.
+  Depends on the svgpathtools module
+"""
+
+import sys
 import os
 from svgpathtools import Document, Path, Line, QuadraticBezier, CubicBezier, Arc, is_bezier_path, is_bezier_segment, is_path_segment, svg2paths, bpoints2bezier
 import numpy as np
 import re
+import argparse
 
 def get_root_transform(doc: Document):
     """Create transform to convert 2D coordinate system from y pointing down to y pointing up"""
@@ -257,4 +275,100 @@ class MFEMData:
 
         with open(filename, mode='w') as f:
             f.write("\n".join(mfem_file))
-            print(f"wrote '{filename}' with {self.vert_cnt} vertices and {self.elem_cnt} elements")
+
+
+
+def parse_args():
+    
+    parser = argparse.ArgumentParser(description="svg2contours: Convert the curves in an SVG to MFEM NURBS mesh")
+    
+    parser.add_argument("-i", "--input",
+                        dest="inputfile",
+                        required=True,
+                        type=argparse.FileType('r', encoding='UTF-8'), 
+                        help="Input SVG image (*.svg)")
+
+    parser.add_argument("-o", "--output",
+                        dest="outputfile",
+                        default="drawing.mesh",
+                        help="Output file in mfem NURBS mesh format (*.mesh)")
+
+    parser.add_argument("-v", "--verbose",
+                        dest="verbose",
+                        default=False,
+                        action="store_true",
+                        help="verbose output flag")
+
+    opts = parser.parse_args()
+    return vars(opts)
+
+
+def main():
+    opts = parse_args()
+    verbose = opts["verbose"]
+
+
+    if verbose:
+        print(f"Running from '{os.getcwd()}' with arguments")
+        for k,v in opts.items():
+            print(f"\t{k}: {v}")
+
+    ## Load the SVG document
+    input_file = opts["inputfile"].name
+    doc = Document(input_file)
+    paths = doc.paths()
+
+    if verbose:
+        print(f"Attributes at root of '{input_file}':")
+        for k,v in doc.tree.getroot().attrib.items():
+            print(f"\t{k}: {v}")
+
+    coordinate_transform = get_root_transform(doc)
+    
+    ## Process SVG paths
+    if verbose:
+        print("SVG paths: \n", paths)
+
+    mfem_data = MFEMData()
+
+    for p_idx, p in enumerate(paths):
+        # print(f"""reading {p_idx=} {p=} \n w/ {p.d()=}""")
+
+        is_d_path = 'd' in p.element
+        attrib = p_idx + 1
+
+        reverse_paths = True if np.linalg.det(coordinate_transform) < 0 else False
+
+        if not all(map(is_path_segment, p)):
+            continue
+
+        for seg_idx, seg in enumerate(p):
+
+            if isinstance(seg, Arc) and seg.large_arc and is_d_path:
+                # split large elliptical arcs for easier processing
+                # this simplifies the derivation of the internal control points
+                # in `arc_to_cubic` algorithm
+                arc1,arc2 = seg.split(.5)
+                
+                cubic,weights = segment_as_cubic(arc1, reverse_paths)
+                xformed_cubic = transform_cubic(cubic, coordinate_transform)
+                mfem_data.add_cubic_bezier(xformed_cubic, weights, attrib)
+                
+                cubic,weights = segment_as_cubic(arc2, reverse_paths)
+                xformed_cubic = transform_cubic(cubic, coordinate_transform)
+                mfem_data.add_cubic_bezier(xformed_cubic, weights, attrib)
+            else:
+                cubic,weights = segment_as_cubic(seg, reverse_paths)
+                xformed_cubic = transform_cubic(cubic, coordinate_transform)
+                mfem_data.add_cubic_bezier(xformed_cubic, weights, attrib)
+
+    output_file = opts["outputfile"]
+    mfem_data.write_file(output_file)
+    print(f"Wrote '{output_file}' with {mfem_data.vert_cnt} vertices and NURBS {mfem_data.elem_cnt} elements")
+
+
+
+if __name__ == "__main__":
+    exitcode = main()
+    sys.exit(exitcode)
+    
