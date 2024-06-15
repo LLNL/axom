@@ -55,6 +55,6 @@ Now that we have an MFEM NURBS mesh, we can run our winding number application
 ```shell
 > cd <axom_root>/<build_dir>/
 > ./examples/quest_winding_number_ex      \
-    -f ./drawing.mesh  \
+    -i ./drawing.mesh  \
     query_mesh --min 0 0 --max 250 250 --res 500 500 
 ```

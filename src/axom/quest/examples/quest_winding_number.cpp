@@ -6,7 +6,9 @@
 /*!
  * \file quest_winding_number.cpp
  * \brief Example that computes the winding number of a grid of points
- * against a collection of 2D parametric curves
+ * against a collection of 2D parametric rational curves.
+ * Supports MFEM meshes in the cubic positive Bernstein basis or the (rational)
+ * NURBS basis.
  */
 
 #include "axom/config.hpp"
@@ -25,18 +27,37 @@ using Point2D = primal::Point<double, 2>;
 using BezierCurve2D = primal::BezierCurve<double, 2>;
 using BoundingBox2D = primal::BoundingBox<double, 2>;
 
+/*!
+ * Given an mfem mesh, convert element with id \a elem_id to a (rational) BezierCurve
+ * \pre Assumes the elements of the mfem mesh are in the positive (Bernstein)
+ * basis, or in the NURBS basis
+ */
 BezierCurve2D segment_to_curve(const mfem::Mesh* mesh, int elem_id)
 {
   const auto* fes = mesh->GetNodes()->FESpace();
   const auto* fec = fes->FEColl();
-  //auto* nodes = mesh->GetNodes();
 
   const bool isBernstein =
     dynamic_cast<const mfem::H1Pos_FECollection*>(fec) != nullptr;
   const bool isNURBS =
     dynamic_cast<const mfem::NURBSFECollection*>(fec) != nullptr;
 
-  SLIC_ASSERT(isBernstein || isNURBS);
+  SLIC_ERROR_IF(
+    !(isBernstein || isNURBS),
+    "MFEM mesh elements must be in either the Bernstein or NURBS basis");
+
+  const int NE = isBernstein ? mesh->GetNE() : fes->GetNURBSext()->GetNP();
+  SLIC_ERROR_IF(NE < elem_id,
+                axom::fmt::format("Mesh does not have {} elements", elem_id));
+
+  const int order =
+    isBernstein ? fes->GetOrder(elem_id) : mesh->NURBSext->GetOrders()[elem_id];
+  SLIC_ERROR_IF(order != 3,
+                axom::fmt::format(
+                  "This example currently requires the input mfem mesh to "
+                  "contain cubic elements, but the order of element {} is {}",
+                  elem_id,
+                  order));
 
   mfem::Array<int> dofs;
   mfem::Array<int> vdofs;
@@ -48,12 +69,7 @@ BezierCurve2D segment_to_curve(const mfem::Mesh* mesh, int elem_id)
   fes->GetElementVDofs(elem_id, vdofs);
   mesh->GetNodes()->GetSubVector(vdofs, v);
 
-  for(int j = 0; j < vdofs.Size(); ++j)
-  {
-    SLIC_INFO(axom::fmt::format("Element {} -- vdof {}", elem_id, vdofs[j]));
-  }
-
-  // temporarily hard-code for 3rd order
+  // Currently hard-coded for 3rd order. This can easily be extended to arbitrary order
   axom::Array<Point2D> points(4, 4);
   if(isBernstein)
   {
@@ -84,7 +100,18 @@ BezierCurve2D segment_to_curve(const mfem::Mesh* mesh, int elem_id)
 bool check_mesh_valid(const mfem::Mesh* mesh)
 {
   const auto* fes = mesh->GetNodes()->FESpace();
+  if(fes == nullptr)
+  {
+    SLIC_WARNING("MFEM mesh finite element space was null");
+    return false;
+  }
+
   const auto* fec = fes->FEColl();
+  if(fec == nullptr)
+  {
+    SLIC_WARNING("MFEM mesh finite element collection was null");
+    return false;
+  }
 
   const bool isBernstein =
     dynamic_cast<const mfem::H1Pos_FECollection*>(fec) != nullptr;
@@ -107,6 +134,27 @@ bool check_mesh_valid(const mfem::Mesh* mesh)
     return false;
   }
 
+  const int NE = isBernstein ? mesh->GetNE() : fes->GetNURBSext()->GetNP();
+  int order = -1;
+  if(isBernstein)
+  {
+    order = NE > 0 ? fes->GetOrder(0) : 3;
+  }
+  else  // isNURBS
+  {
+    //SLIC_INFO("nurbsext order :" << mesh->NURBSext->GetOrder());
+    order = NE > 0 ? mesh->NURBSext->GetOrders()[0] : 3;
+  }
+
+  if(order != 3)
+  {
+    SLIC_WARNING(axom::fmt::format(
+      "This example currently requires the input mfem mesh to contain cubic "
+      "elements, but the provided mesh has order {}",
+      order));
+    return false;
+  }
+
   return true;
 }
 
@@ -118,8 +166,8 @@ int main(int argc, char** argv)
     "Load mesh containing collection of curves"
     " and optionally generate a query mesh of winding numbers."};
 
-  std::string filename =
-    std::string(AXOM_SRC_DIR) + "/tools/svg2contours/drawing.mesh";
+  std::string inputFile;
+  std::string outputPrefix = {"winding"};
 
   bool verbose {false};
 
@@ -129,9 +177,16 @@ int main(int argc, char** argv)
   std::vector<int> boxResolution;
   int queryOrder {1};
 
-  app.add_option("-f,--file", filename)
-    ->description("Mfem mesh containing contours")
+  app.add_option("-i,--input", inputFile)
+    ->description("MFEM mesh containing contours (1D segments)")
+    ->required()
     ->check(axom::CLI::ExistingFile);
+
+  app.add_option("-o,--output-prefix", outputPrefix)
+    ->description(
+      "Prefix for output 2D query mesh (in MFEM format) mesh containing "
+      "winding number calculations")
+    ->capture_default_str();
 
   app.add_flag("-v,--verbose", verbose, "verbose output")->capture_default_str();
 
@@ -151,16 +206,16 @@ int main(int argc, char** argv)
     ->description("Resolution of the box mesh (i,j)")
     ->expected(2)
     ->required();
-  query_mesh_subcommand->add_option("-o,--order", queryOrder)
+  query_mesh_subcommand->add_option("--order", queryOrder)
     ->description("polynomial order of the query mesh")
     ->check(axom::CLI::PositiveNumber);
 
   CLI11_PARSE(app, argc, argv);
 
-  mfem::Mesh mesh(filename);
+  mfem::Mesh mesh(inputFile);
   SLIC_INFO(
-    axom::fmt::format("Curve mesh has a topological dimension of {}d, has {} "
-                      "vertices and {} elements\n",
+    axom::fmt::format("Curve mesh has a topological dimension of {}d, "
+                      "has {} vertices and {} elements",
                       mesh.Dimension(),
                       mesh.GetNV(),
                       mesh.GetNE()));
@@ -173,7 +228,7 @@ int main(int argc, char** argv)
   axom::Array<int> segments;
   axom::Array<BezierCurve2D> curves;
 
-  // only retain the 1D segments
+  // Loop through mesh elements, retaining the (curved) 1D segments
   for(int i = 0; i < mesh.GetNE(); ++i)
   {
     auto* el = mesh.GetElement(i);
@@ -183,6 +238,7 @@ int main(int argc, char** argv)
     }
   }
 
+  // Extract the curves and compute their bounding boxes along the way
   BoundingBox2D bbox;
   for(int i = 0; i < segments.size(); ++i)
   {
@@ -202,6 +258,7 @@ int main(int argc, char** argv)
     return 0;
   }
 
+  // Generate a Cartesian (high order) mesh for the query points
   const auto query_res = primal::NumericArray<int, 2>(boxResolution.data());
   const auto query_box =
     BoundingBox2D(Point2D(boxMins.data()), Point2D(boxMaxs.data()));
@@ -216,11 +273,14 @@ int main(int argc, char** argv)
   auto inout = mfem::GridFunction(&fes);
   auto nodes_fes = query_mesh->GetNodalFESpace();
 
+  // Query the winding numbers at each degree of freedom (DoF) of the query mesh.
+  // The loop below independently checks (and adaptively refines) every curve for each query points.
+  // A more efficient algorithm can de defined that caches the refined curves to avoid
+  // extra refinements. We will add this in a follow-up PR.
   for(int nidx = 0; nidx < nodes_fes->GetNDofs(); ++nidx)
   {
     Point2D q;
     query_mesh->GetNode(nidx, q.data());
-    // SLIC_INFO(axom::fmt::format("Node {} -- {}", nidx, q));
 
     double wn {};
     for(const auto& c : curves)
@@ -230,22 +290,16 @@ int main(int argc, char** argv)
 
     winding[nidx] = wn;
     inout[nidx] = std::round(wn);
-
-    // SLIC_INFO(axom::fmt::format(
-    //   "Winding number for query point {} is {} -- rounded to {}",
-    //   q,
-    //   wn,
-    //   std::round(wn)));
   }
 
-  std::string output_name = "winding";
-  mfem::VisItDataCollection windingDC(output_name, query_mesh.get());
+  // Save the query mesh and fields to disk using a format that can be viewed in VisIt
+  mfem::VisItDataCollection windingDC(outputPrefix, query_mesh.get());
   windingDC.RegisterField("winding", &winding);
   windingDC.RegisterField("inout", &inout);
   windingDC.Save();
 
   SLIC_INFO(axom::fmt::format("Outputting generated mesh '{}' to '{}'",
-                              output_name,
+                              windingDC.GetCollectionName(),
                               axom::utilities::filesystem::getCWD()));
 
   return 0;
