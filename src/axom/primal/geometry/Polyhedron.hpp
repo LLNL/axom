@@ -521,6 +521,9 @@ public:
     VectorType centroid_vector;
     PointType centroid_point;
 
+    VectorType centroid_vector_squared;
+    PointType centroid_point_squared;
+
     if(!isValid() || hasDuplicateVertices())
     {
       return retVol;
@@ -557,15 +560,36 @@ public:
 
           retVol += curVol;
           centroid_vector += (v0 + v1 + v2) * curVol;
+
+          VectorType n = VectorType::cross_product(v1 - v0, v2 - v0);
+          for(int z = 0; z < 3; z++)
+          {
+            centroid_vector_squared[z] += n[z] *
+              (((v0[z] + v1[z]) * (v0[z] + v1[z])) +
+               ((v1[z] + v2[z]) * (v1[z] + v2[z])) +
+               ((v2[z] + v0[z]) * (v2[z] + v0[z])));
+          }
         }
       }
 
       retVol /= 6.;
       // SLIC_INFO("retVol is " << retVol);
-      double tempVol = (retVol != 0.0) ? (24.0 * retVol) : 1e-12;
+      double tempVol =
+        (retVol != 0.0) ? (24.0 * retVol) : axom::primal::PRIMAL_TINY;
       centroid_vector /= tempVol;
       centroid_point = centroid_vector + origin;
-      // SLIC_INFO(centroid_point);
+      printf("PolyClipper's centroid point is \t (%f, %f, %f)\n",
+             centroid_point[0],
+             centroid_point[1],
+             centroid_point[2]);
+
+      centroid_vector_squared /=
+        (retVol != 0.0) ? (tempVol * 2.0) : axom::primal::PRIMAL_TINY;
+      centroid_point_squared = centroid_vector_squared + origin;
+      printf("Nurnberg's centroid point is \t\t (%f, %f, %f)\n\n",
+             centroid_point_squared[0],
+             centroid_point_squared[1],
+             centroid_point_squared[2]);
     }
 
     return retVol;
