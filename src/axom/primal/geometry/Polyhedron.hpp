@@ -374,15 +374,15 @@ public:
   }
 
   /*!
-   * \brief Computes the centroid as the average of the polyhedron's vertex
+   * \brief Computes the vertex mean as the average of the polyhedron's vertex
    *  positions
    *
-   * \return The centroid of the polyhedron's vertices
+   * \return The vertex mean of the polyhedron's vertices
    *
    * \pre  polyhedron.isValid() is true
    */
   AXOM_HOST_DEVICE
-  PointType centroid() const
+  PointType vertexMean() const
   {
     SLIC_ASSERT(isValid());
 
@@ -503,30 +503,33 @@ public:
   }
 
   /*!
-   * \brief Computes the signed volume of the polyhedron.
+   * \brief Computes the moments of the polyhedron. The 0th moment is the
+   *        volume of the polyhedron, the 1st moment is the centroid.
    *
-   * \return The signed volume of the polyhedron
+   * \param [out] volume The volume of the polyhedron (0th moment)
+   * \param [out] centroid The centroid of the polyhedron (1st moment)
    *
    * \note Function is based off moments() in Mike Owen's PolyClipper.
    *
    * \pre polyhedron vertex neighbors are defined, and polyhedron is 3D
    *
    * \sa volume()
+   * \sa centroid()
    */
   AXOM_HOST_DEVICE
-  double signedVolume() const
+  void moments(double& volume, PointType& centroid) const
   {
-    double retVol = 0.0;
+    volume = 0.0;
 
     VectorType centroid_vector;
-    PointType centroid_point;
+    // PointType centroid_point;
 
     VectorType centroid_vector_squared;
     PointType centroid_point_squared;
 
     if(!isValid() || hasDuplicateVertices())
     {
-      return retVol;
+      return;
     }
 
     // Computes the signed volume of tetrahedra formed from vertices of the
@@ -535,7 +538,7 @@ public:
     {
       SLIC_CHECK_MSG(
         hasNeighbors(),
-        "Polyhedron::signedVolume() is only valid with vertex neighbors.");
+        "Polyhedron::moments() is only valid with vertex neighbors.");
 
       // faces is an overestimation
       int faces[MAX_VERTS * MAX_VERTS];
@@ -558,7 +561,7 @@ public:
           VectorType v2 = m_vertices[faces[i_offset + k]] - origin;
           double curVol = VectorType::scalar_triple_product(v0, v1, v2);
 
-          retVol += curVol;
+          volume += curVol;
           centroid_vector += (v0 + v1 + v2) * curVol;
 
           VectorType n = VectorType::cross_product(v1 - v0, v2 - v0);
@@ -572,27 +575,43 @@ public:
         }
       }
 
-      retVol /= 6.;
-      // SLIC_INFO("retVol is " << retVol);
+      volume /= 6.;
+      // SLIC_INFO("volume is " << volume);
       double tempVol =
-        (retVol != 0.0) ? (24.0 * retVol) : axom::primal::PRIMAL_TINY;
+        (volume != 0.0) ? (24.0 * volume) : axom::primal::PRIMAL_TINY;
       centroid_vector /= tempVol;
-      centroid_point = centroid_vector + origin;
+      centroid = centroid_vector + origin;
       printf("PolyClipper's centroid point is \t (%f, %f, %f)\n",
-             centroid_point[0],
-             centroid_point[1],
-             centroid_point[2]);
+             centroid[0],
+             centroid[1],
+             centroid[2]);
 
       centroid_vector_squared /=
-        (retVol != 0.0) ? (tempVol * 2.0) : axom::primal::PRIMAL_TINY;
+        (volume != 0.0) ? (tempVol * 2.0) : axom::primal::PRIMAL_TINY;
       centroid_point_squared = centroid_vector_squared + origin;
       printf("Nurnberg's centroid point is \t\t (%f, %f, %f)\n\n",
              centroid_point_squared[0],
              centroid_point_squared[1],
              centroid_point_squared[2]);
     }
+  }
 
-    return retVol;
+  /*!
+   * \brief Computes the signed volume of the polyhedron.
+   *
+   * \return The signed volume of the polyhedron
+   *
+   * \pre polyhedron vertex neighbors are defined, and polyhedron is 3D
+   *
+   * \sa volume()
+   */
+  AXOM_HOST_DEVICE
+  double signedVolume() const
+  {
+    double volume;
+    PointType centroid;
+    moments(volume, centroid);
+    return volume;
   }
 
   /*!
@@ -601,6 +620,22 @@ public:
    */
   AXOM_HOST_DEVICE
   double volume() const { return axom::utilities::abs(signedVolume()); }
+
+  /*!
+   * \brief Computes the centroid as the center of mass of the polyhedron
+   *
+   * \return The centroid of the polyhedron
+   *
+   * \pre  polyhedron.isValid() is true
+   */
+  AXOM_HOST_DEVICE
+  PointType centroid() const
+  {
+    double volume;
+    PointType centroid;
+    moments(volume, centroid);
+    return centroid;
+  }
 
   /*!
    * \brief Simple formatted print of a polyhedron instance

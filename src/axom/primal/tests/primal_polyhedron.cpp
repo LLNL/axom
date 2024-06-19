@@ -395,7 +395,7 @@ TEST(primal_polyhedron, polyhedron_decomposition)
   poly.addNeighbors(poly[7], {4, 6, 3});
 
   // Hex center (hc)
-  PointType hc = poly.centroid();
+  PointType hc = poly.vertexMean();
 
   //Face means (fm)
   PointType fm1 = PointType::midpoint(PointType::midpoint(poly[0], poly[1]),
