@@ -822,6 +822,16 @@ public:
   int getAllocatorID() const { return m_allocator_id; }
 
   /*!
+   * \brief Sets the preferred space where operations on this array should be
+   *  performed.
+   *
+   *  This option only has an effect for memory which is both accessible on the
+   *  CPU and the GPU. For CUDA this is the Unified and Pinned memory spaces,
+   *  while for HIP this is the Unified, Pinned, and Device memory spaces.
+   */
+  void setDevicePreference(bool on_device) { m_executeOnGPU = on_device; }
+
+  /*!
    * \brief Returns a view of the array
    * \sa ArrayView
    */
@@ -934,6 +944,7 @@ protected:
   IndexType m_capacity = 0;
   double m_resize_ratio = DEFAULT_RESIZE_RATIO;
   int m_allocator_id;
+  bool m_executeOnGPU;
 };
 
 /// \brief Helper alias for multi-component arrays
