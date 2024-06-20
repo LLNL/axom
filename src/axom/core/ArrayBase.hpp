@@ -1448,48 +1448,69 @@ struct ArrayOpsBase
 #endif
 
 template <MemorySpace SPACE>
-struct MemSpaceToOpSpace
+struct MemSpaceTraits
 {
-  static constexpr OperationSpace value = OperationSpace::Host;
+  static constexpr OperationSpace Space = OperationSpace::Host;
+  // True if memory is accessible by both the host and device. False otherwise.
+  static constexpr bool IsUVMAccessible = false;
 };
 
 #if defined(AXOM_USE_GPU) && defined(AXOM_GPUCC) && defined(AXOM_USE_UMPIRE)
 template <>
-struct MemSpaceToOpSpace<MemorySpace::Device>
+struct MemSpaceTraits<MemorySpace::Device>
 {
   #if defined(AXOM_USE_CUDA)
   // On CUDA platforms, device memory allocated with cudaMalloc can only be
   // touched from a device kernel.
-  static constexpr OperationSpace value = OperationSpace::Device;
+  static constexpr OperationSpace Space = OperationSpace::Device;
+  static constexpr bool IsUVMAccessible = false;
   #elif defined(AXOM_USE_HIP)
   // On HIP platforms, device memory allocated with hipMalloc is accessible from
   // the host.
-  static constexpr OperationSpace value = OperationSpace::Unified_Device;
+  static constexpr OperationSpace Space = OperationSpace::Unified_Device;
+  static constexpr bool IsUVMAccessible = true;
   #endif
 };
 
 template <>
-struct MemSpaceToOpSpace<MemorySpace::Pinned>
+struct MemSpaceTraits<MemorySpace::Pinned>
 {
-  static constexpr OperationSpace value = OperationSpace::Unified_Device;
+  static constexpr OperationSpace Space = OperationSpace::Unified_Device;
+  static constexpr bool IsUVMAccessible = true;
 };
 template <>
-struct MemSpaceToOpSpace<MemorySpace::Unified>
+struct MemSpaceTraits<MemorySpace::Unified>
 {
-  static constexpr OperationSpace value = OperationSpace::Unified_Device;
+  static constexpr OperationSpace Space = OperationSpace::Unified_Device;
+  static constexpr bool IsUVMAccessible = true;
+};
+
+template <>
+struct MemSpaceTraits<MemorySpace::Dynamic>
+{
+  static constexpr bool IsUVMAccessible = true;
 };
 #endif
 
+template <typename T,
+          MemorySpace SPACE,
+          bool IsUVMAccessible = MemSpaceTraits<SPACE>::IsUVMAccessible>
+struct ArrayOps;
+
 template <typename T, MemorySpace SPACE>
-struct ArrayOps
+struct ArrayOps<T, SPACE, false>
 {
 private:
-  constexpr static OperationSpace OpSpace = MemSpaceToOpSpace<SPACE>::value;
+  constexpr static OperationSpace OpSpace = MemSpaceTraits<SPACE>::Space;
 
   using Base = ArrayOpsBase<T, OpSpace>;
 
 public:
-  ArrayOps(int allocId) { AXOM_UNUSED_VAR(allocId); }
+  ArrayOps(int allocId, bool preferDevice)
+  {
+    AXOM_UNUSED_VAR(allocId);
+    AXOM_UNUSED_VAR(preferDevice);
+  }
 
   void init(T* array, IndexType begin, IndexType nelems)
   {
@@ -1540,8 +1561,8 @@ public:
   }
 };
 
-template <typename T>
-struct ArrayOps<T, MemorySpace::Dynamic>
+template <typename T, MemorySpace SPACE>
+struct ArrayOps<T, SPACE, true>
 {
 private:
   using Base = ArrayOpsBase<T, OperationSpace::Host>;
@@ -1554,10 +1575,28 @@ private:
 #endif
 
 public:
-  ArrayOps(int allocId)
+  ArrayOps(int allocId, bool preferDevice)
   {
 #if defined(AXOM_USE_GPU) && defined(AXOM_GPUCC) && defined(AXOM_USE_UMPIRE)
-    space = getAllocatorSpace(allocId);
+    if(SPACE == MemorySpace::Dynamic)
+    {
+      space = getAllocatorSpace(allocId);
+    }
+    else
+    {
+      space = SPACE;
+    }
+
+    bool isUnifiedSpace = false;
+    isUnifiedSpace =
+      (space == MemorySpace::Unified || space == MemorySpace::Pinned);
+  #if defined(AXOM_USE_HIP)
+    isUnifiedSpace = (isUnifiedSpace || space == MemorySpace::Device);
+  #endif
+    if(!preferDevice && isUnifiedSpace)
+    {
+      space = MemorySpace::Host;
+    }
 #endif
   }
 
