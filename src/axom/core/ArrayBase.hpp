@@ -1489,36 +1489,29 @@ private:
   using Base = ArrayOpsBase<T, OpSpace>;
 
 public:
-  static void init(T* array, IndexType begin, IndexType nelems, int allocId)
+  ArrayOps(int allocId) { AXOM_UNUSED_VAR(allocId); }
+
+  void init(T* array, IndexType begin, IndexType nelems)
   {
-    AXOM_UNUSED_VAR(allocId);
     Base::init(array, begin, nelems);
   }
 
-  static void fill(T* array,
-                   IndexType begin,
-                   IndexType nelems,
-                   int allocId,
-                   const T& value)
+  void fill(T* array, IndexType begin, IndexType nelems, const T& value)
   {
-    AXOM_UNUSED_VAR(allocId);
     Base::fill(array, begin, nelems, value);
   }
 
-  static void fill_range(T* array,
-                         IndexType begin,
-                         IndexType nelems,
-                         int allocId,
-                         const T* values,
-                         MemorySpace space)
+  void fill_range(T* array,
+                  IndexType begin,
+                  IndexType nelems,
+                  const T* values,
+                  MemorySpace space)
   {
-    AXOM_UNUSED_VAR(allocId);
     Base::fill_range(array, begin, nelems, values, space);
   }
 
-  static void destroy(T* array, IndexType begin, IndexType nelems, int allocId)
+  void destroy(T* array, IndexType begin, IndexType nelems)
   {
-    AXOM_UNUSED_VAR(allocId);
     if(nelems == 0)
     {
       return;
@@ -1526,13 +1519,8 @@ public:
     Base::destroy(array, begin, nelems);
   }
 
-  static void move(T* array,
-                   IndexType src_begin,
-                   IndexType src_end,
-                   IndexType dst,
-                   int allocId)
+  void move(T* array, IndexType src_begin, IndexType src_end, IndexType dst)
   {
-    AXOM_UNUSED_VAR(allocId);
     if(src_begin >= src_end)
     {
       return;
@@ -1540,16 +1528,14 @@ public:
     Base::move(array, src_begin, src_end, dst);
   }
 
-  static void realloc_move(T* array, IndexType nelems, T* values, int allocId)
+  void realloc_move(T* array, IndexType nelems, T* values)
   {
-    AXOM_UNUSED_VAR(allocId);
     Base::realloc_move(array, nelems, values);
   }
 
   template <typename... Args>
-  static void emplace(T* array, IndexType dst, IndexType allocId, Args&&... args)
+  void emplace(T* array, IndexType dst, Args&&... args)
   {
-    AXOM_UNUSED_VAR(allocId);
     Base::emplace(array, dst, std::forward<Args>(args)...);
   }
 };
@@ -1563,14 +1549,21 @@ private:
   using BaseDevice = ArrayOpsBase<T, OperationSpace::Device>;
   // Works with unified and pinned memory.
   using BaseUM = ArrayOpsBase<T, OperationSpace::Unified_Device>;
+
+  MemorySpace space {MemorySpace::Dynamic};
 #endif
 
 public:
-  static void init(T* array, IndexType begin, IndexType nelems, int allocId)
+  ArrayOps(int allocId)
   {
 #if defined(AXOM_USE_GPU) && defined(AXOM_GPUCC) && defined(AXOM_USE_UMPIRE)
-    MemorySpace space = getAllocatorSpace(allocId);
+    space = getAllocatorSpace(allocId);
+#endif
+  }
 
+  void init(T* array, IndexType begin, IndexType nelems)
+  {
+#if defined(AXOM_USE_GPU) && defined(AXOM_GPUCC) && defined(AXOM_USE_UMPIRE)
     if(space == MemorySpace::Device)
     {
       BaseDevice::init(array, begin, nelems);
@@ -1581,21 +1574,13 @@ public:
       BaseUM::init(array, begin, nelems);
       return;
     }
-#else
-    AXOM_UNUSED_VAR(allocId);
 #endif
     Base::init(array, begin, nelems);
   }
 
-  static void fill(T* array,
-                   IndexType begin,
-                   IndexType nelems,
-                   int allocId,
-                   const T& value)
+  void fill(T* array, IndexType begin, IndexType nelems, const T& value)
   {
 #if defined(AXOM_USE_GPU) && defined(AXOM_GPUCC) && defined(AXOM_USE_UMPIRE)
-    MemorySpace space = getAllocatorSpace(allocId);
-
     if(space == MemorySpace::Device)
     {
       BaseDevice::fill(array, begin, nelems, value);
@@ -1606,22 +1591,17 @@ public:
       BaseUM::fill(array, begin, nelems, value);
       return;
     }
-#else
-    AXOM_UNUSED_VAR(allocId);
 #endif
     Base::fill(array, begin, nelems, value);
   }
 
-  static void fill_range(T* array,
-                         IndexType begin,
-                         IndexType nelems,
-                         int allocId,
-                         const T* values,
-                         MemorySpace valueSpace)
+  void fill_range(T* array,
+                  IndexType begin,
+                  IndexType nelems,
+                  const T* values,
+                  MemorySpace valueSpace)
   {
 #if defined(AXOM_USE_GPU) && defined(AXOM_GPUCC) && defined(AXOM_USE_UMPIRE)
-    MemorySpace space = getAllocatorSpace(allocId);
-
     if(space == MemorySpace::Device)
     {
       BaseDevice::fill_range(array, begin, nelems, values, valueSpace);
@@ -1632,22 +1612,17 @@ public:
       BaseUM::fill_range(array, begin, nelems, values, valueSpace);
       return;
     }
-#else
-    AXOM_UNUSED_VAR(allocId);
 #endif
-    AXOM_UNUSED_VAR(allocId);
     Base::fill_range(array, begin, nelems, values, valueSpace);
   }
 
-  static void destroy(T* array, IndexType begin, IndexType nelems, int allocId)
+  void destroy(T* array, IndexType begin, IndexType nelems)
   {
     if(nelems == 0)
     {
       return;
     }
 #if defined(AXOM_USE_GPU) && defined(AXOM_GPUCC) && defined(AXOM_USE_UMPIRE)
-    MemorySpace space = getAllocatorSpace(allocId);
-
     if(space == MemorySpace::Device)
     {
       BaseDevice::destroy(array, begin, nelems);
@@ -1658,25 +1633,17 @@ public:
       BaseUM::destroy(array, begin, nelems);
       return;
     }
-#else
-    AXOM_UNUSED_VAR(allocId);
 #endif
     Base::destroy(array, begin, nelems);
   }
 
-  static void move(T* array,
-                   IndexType src_begin,
-                   IndexType src_end,
-                   IndexType dst,
-                   int allocId)
+  void move(T* array, IndexType src_begin, IndexType src_end, IndexType dst)
   {
     if(src_begin >= src_end)
     {
       return;
     }
 #if defined(AXOM_USE_GPU) && defined(AXOM_GPUCC) && defined(AXOM_USE_UMPIRE)
-    MemorySpace space = getAllocatorSpace(allocId);
-
     if(space == MemorySpace::Device)
     {
       BaseDevice::move(array, src_begin, src_end, dst);
@@ -1687,17 +1654,13 @@ public:
       BaseUM::move(array, src_begin, src_end, dst);
       return;
     }
-#else
-    AXOM_UNUSED_VAR(allocId);
 #endif
     Base::move(array, src_begin, src_end, dst);
   }
 
-  static void realloc_move(T* array, IndexType nelems, T* values, int allocId)
+  void realloc_move(T* array, IndexType nelems, T* values)
   {
 #if defined(AXOM_USE_GPU) && defined(AXOM_GPUCC) && defined(AXOM_USE_UMPIRE)
-    MemorySpace space = getAllocatorSpace(allocId);
-
     if(space == MemorySpace::Device)
     {
       BaseDevice::realloc_move(array, nelems, values);
@@ -1708,18 +1671,14 @@ public:
       BaseUM::realloc_move(array, nelems, values);
       return;
     }
-#else
-    AXOM_UNUSED_VAR(allocId);
 #endif
     Base::realloc_move(array, nelems, values);
   }
 
   template <typename... Args>
-  static void emplace(T* array, IndexType dst, IndexType allocId, Args&&... args)
+  void emplace(T* array, IndexType dst, Args&&... args)
   {
 #if defined(AXOM_USE_GPU) && defined(AXOM_GPUCC) && defined(AXOM_USE_UMPIRE)
-    MemorySpace space = getAllocatorSpace(allocId);
-
     if(space == MemorySpace::Device)
     {
       BaseDevice::emplace(array, dst, std::forward<Args>(args)...);
@@ -1730,8 +1689,6 @@ public:
       BaseUM::emplace(array, dst, std::forward<Args>(args)...);
       return;
     }
-#else
-    AXOM_UNUSED_VAR(allocId);
 #endif
     Base::emplace(array, dst, std::forward<Args>(args)...);
   }
