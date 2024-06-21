@@ -1222,4 +1222,49 @@ AXOM_TYPED_TEST(core_array_for_all, device_insert)
   }
 }
 
+//------------------------------------------------------------------------------
+AXOM_TYPED_TEST(core_array_for_all, unified_mem_preference)
+{
+  using ExecSpace = typename TestFixture::ExecSpace;
+  using KernelArray = typename TestFixture::KernelArray;
+
+  int kernelAllocID = TestFixture::getKernelAllocatorID();
+#if defined(AXOM_USE_RAJA) && defined(AXOM_USE_CUDA) && defined(AXOM_USE_UMPIRE)
+  if(TestFixture::exec_space_memory != axom::MemorySpace::Unified &&
+     TestFixture::exec_space_memory != axom::MemorySpace::Pinned)
+  {
+    GTEST_SKIP() << "Skipping test for a memory space that isn't accessible "
+                    "from both CPU and GPU.";
+  }
+#elif defined(AXOM_USE_RAJA) && defined(AXOM_USE_HIP) && \
+  defined(AXOM_USE_UMPIRE)
+  if(TestFixture::exec_space_memory != axom::MemorySpace::Unified &&
+     TestFixture::exec_space_memory != axom::MemorySpace::Pinned &&
+     TestFixture::exec_space_memory != axom::MemorySpace::Device)
+  {
+    GTEST_SKIP() << "Skipping test for a memory space that isn't accessible "
+                    "from both CPU and GPU.";
+  }
+#else
+  GTEST_SKIP() << "Skipping test on non-GPU platform.";
+#endif
+
+  constexpr axom::IndexType N = 374;
+
+  for(bool devicePref : {false, true})
+  {
+    KernelArray arr;
+    arr.setDevicePreference(devicePref);
+
+    // Check that we can do a few miscellaneous array operations.
+    // At the moment, we can't really test that they're actually being
+    // performed on the host or the device, so just check that nothing breaks.
+    arr.resize(N);
+    KernelArray arr_copy(arr);
+    arr.push_back(1);
+    arr.insert(arr.begin(), -1);
+    arr.clear();
+  }
+}
+
 }  // end namespace testing
