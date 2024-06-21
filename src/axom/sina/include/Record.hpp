@@ -67,6 +67,9 @@ struct FileHashByURI {
  */
 class Record : public DataHolder {
 public:
+    /**
+     * An unordered set of File objects.
+     */
     using FileSet = std::unordered_set<File, FileHashByURI, FileEqualByURI>;
 
     /**
@@ -84,8 +87,14 @@ public:
      */
     explicit Record(conduit::Node const &asNode);
 
+    /**
+     * Disable the copy constructor.
+     */
     Record(Record const &) = delete;
 
+    /**
+     * Disable copy assignment.
+     */
     Record &operator=(Record const &) = delete;
 
     /**

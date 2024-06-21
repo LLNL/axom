@@ -14,6 +14,7 @@ Axom provides libraries that address common computer science needs.  It grew fro
 * @subpage primaltop provides an API for geometric primitives and computational geometry tests.
 * @subpage questtop provides an API to query point distance and position relative to meshes.
 * @subpage sidretop provides a data store with hierarchical structure.
+* @subpage sinatop provides an API to convert data to a common file format.
 * @subpage slamtop provides an API to construct and process meshes.
 * @subpage slictop provides infrastructure for logging application messages.
 * @subpage spintop provides spatial acceleration data structures, also known as spatial indexes.
@@ -29,6 +30,7 @@ Dependencies between components are as follows:
   - Quest depends on Slam, Primal, Spin, and Mint
   - Klee depends on Sidre, Inlet and Primal
   - Multimat depends on Slic, and Slam
+- Sina only depends on Core
 
 The figure below summarizes the dependencies between the modules.  Solid links
 indicate hard dependencies; dashed links indicate optional dependencies.

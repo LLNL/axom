@@ -42,12 +42,16 @@ enum class ValueType {
  * sina::Datum myOtherDatum{value};
  * std::vector<double> scalars = {1, 2, 20.0};
  * sina::Datum myArrayDatum{scalars};
+ *
  * //prints 1, corresponding to Scalar
  * std::cout << static_cast<std::underlying_type<sina::ValueType>::type>(myDatum.getType()) << std::endl;
+ *
  * //prints 0, corresponding to String
  * std::cout << static_cast<std::underlying_type<sina::ValueType>::type>(myOtherDatum.getType()) << std::endl;
+ *
  * //prints 3, corresponding to ScalarArray
  * std::cout << static_cast<std::underlying_type<sina::ValueType>::type>(myArrayDatum.getType()) << std::endl;
+ *
  * myRecord->add(myDatum);
  * myOtherDatum.setUnits("km/s");
  * myRecord->add(myOtherDatum);

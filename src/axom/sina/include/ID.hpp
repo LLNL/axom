@@ -28,7 +28,7 @@ enum class IDType {
 };
 
 /**
- * An ID is used to represent the ID of an record. This class holds both the
+ * An ID is used to represent the ID of a Record. This class holds both the
  * actual ID and whether it is a local or global ID.
  */
 class ID {

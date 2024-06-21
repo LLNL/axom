@@ -18,7 +18,7 @@ namespace sina
 {
 
 /**
- * A Curve represents a 1-dimensional curve inside a \see CurveSet.
+ * A Curve represents a 1-dimensional curve inside a CurveSet.
  */
 class Curve {
 public:

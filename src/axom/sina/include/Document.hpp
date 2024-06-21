@@ -61,19 +61,40 @@ namespace sina
  */
 class Document {
 public:
+    /**
+     * A vector of pointers to Record objects.
+     */
     using RecordList = std::vector<std::unique_ptr<Record>>;
+
+    /**
+     * A vector of Relationship objects.
+     */
     using RelationshipList = std::vector<Relationship>;
 
+    /**
+     * Construct an empty Document.
+     */
     Document() = default;
 
-    // Since we hold pointers to polymorphic objects, we can't support
-    // copying or assignment
+    /**
+     * Disable copying Document objects. We must do this since we hold
+     * pointers to polymorphic objects.
+     */
     Document(Document const &) = delete;
 
+    /**
+     * Disabling copy assignment.
+     */
     Document &operator=(Document const &) = delete;
 
+    /**
+     * Move constructor which should be handled by the compiler.
+     */
     Document(Document &&) = default;
 
+    /**
+     * Move assignment which should be handled by the compiler.
+     */
     Document &operator=(Document &&) = default;
 
     /**

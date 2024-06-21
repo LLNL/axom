@@ -24,17 +24,28 @@ namespace sina
 /**
  * A DataHolder is a basic container for certain types of information.
  *
- * DataHolders contain curves, libraries, and data (\see Datum), and represent
+ * DataHolders contain curves, libraries, and data (Datum), and represent
  * all the information a library can have associated with it. Records expand
  * on DataHolders to contain additional info.
  *
  * \see Record
- * \see LibraryData
+ * \see LibraryDataMap
  */
 class DataHolder {
 public:
+    /**
+     * An unordered map of Datum objects.
+     */
     using DatumMap = std::unordered_map<std::string, Datum>;
+
+    /**
+     * An unordered map of CurveSet objects.
+     */
     using CurveSetMap = std::unordered_map<std::string, CurveSet>;
+
+    /**
+     * An unordered map of shared pointers to DataHolder objects.
+     */
     using LibraryDataMap = std::unordered_map<std::string, std::shared_ptr<DataHolder>>;
 
     /**
@@ -42,10 +53,19 @@ public:
      */
     DataHolder() = default;
 
+    /**
+     * Virtual destructor to automatically clean up resources held by an instance of the DataHolder class.
+     */
     virtual ~DataHolder() = default;
 
+    /**
+     * Copy constructor that disallows this constructor type.
+     */
     DataHolder(DataHolder const &) = delete;
 
+    /**
+     * Disable copy assignment.
+     */
     DataHolder &operator=(DataHolder const &) = delete;
 
     /**
@@ -99,6 +119,11 @@ public:
      */
     std::shared_ptr<DataHolder> addLibraryData(std::string const &name);
 
+    /**
+     * Add a new library to this DataHolder with existing library data.
+     *
+     * @return a pointer to a new DataHolder for a library of the given name.
+     */
     std::shared_ptr<DataHolder> addLibraryData(std::string const &name, conduit::Node existingLibraryData);
 
     /**
@@ -118,6 +143,13 @@ public:
     std::shared_ptr<DataHolder> getLibraryData(std::string const &libraryName) {
       return libraryData.at(libraryName);
     }
+
+    /**
+     * Get a specific library associated with this DataHolder.
+     * Used when the object on which this function is called is a const.
+     *
+     * @return the dataholder's library data
+     */
     std::shared_ptr<DataHolder> const getLibraryData(std::string const &libraryName) const {
       return libraryData.at(libraryName);
     }

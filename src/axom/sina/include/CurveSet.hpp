@@ -30,6 +30,9 @@ namespace sina
  */
 class CurveSet {
 public:
+    /**
+     * An unordered map of Curve objects.
+     */
     using CurveMap = std::unordered_map<std::string, Curve>;
 
     /**

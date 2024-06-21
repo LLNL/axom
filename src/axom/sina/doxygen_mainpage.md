@@ -1,7 +1,7 @@
 Sina {#sinatop}
 =========
 
-[Sina](@ref axom::sina) provides an easy way to collect data directly within codes and output them to a common file format designed. This is accomplished in an object oriented manner through the following classes:
+[Sina](@ref axom::sina) provides an easy way to collect data directly within codes and output them to a common file format. This is accomplished in an object oriented manner through the following classes:
 
 - [Curve](@ref axom::sina::Curve): represents a 1D curve
 - [CurveSet](@ref axom::sina::CurveSet): represents an entry in a record's "curve_set"
