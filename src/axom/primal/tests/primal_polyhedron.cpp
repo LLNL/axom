@@ -60,6 +60,11 @@ TEST(primal_polyhedron, polyhedron_unit_cube)
 
   EXPECT_EQ(1, poly.volume());
 
+  PointType centroid = poly.centroid();
+  EXPECT_NEAR(0.5, centroid[0], 1e-12);
+  EXPECT_NEAR(0.5, centroid[1], 1e-12);
+  EXPECT_NEAR(0.5, centroid[2], 1e-12);
+
   // Example usage of experimental getFaces() function
   // (input parameters and/or output may change in the future)
 
@@ -178,6 +183,11 @@ TEST(primal_polyhedron, polyhedron_tetrahedron)
     EXPECT_NEAR(tet.volume(), poly.volume(), EPS);
     EXPECT_NEAR(2.6666, poly.volume(), EPS);
 
+    PointType centroid = poly.centroid();
+    EXPECT_NEAR(0.0, centroid[0], EPS);
+    EXPECT_NEAR(0.0, centroid[1], EPS);
+    EXPECT_NEAR(0.0, centroid[2], EPS);
+
     // Test containment using winding numbers
     const bool includeBoundary = true;
     const bool useNonzeroRule = true;
@@ -230,6 +240,11 @@ TEST(primal_polyhedron, polyhedron_tetrahedron)
 
     EXPECT_NEAR(tet.volume(), poly.volume(), EPS);
     EXPECT_NEAR(0.1666, poly.volume(), EPS);
+
+    PointType centroid = poly.centroid();
+    EXPECT_NEAR(0.75, centroid[0], EPS);
+    EXPECT_NEAR(0.5, centroid[1], EPS);
+    EXPECT_NEAR(0.25, centroid[2], EPS);
   }
 }
 
@@ -237,6 +252,7 @@ TEST(primal_polyhedron, polyhedron_tetrahedron)
 TEST(primal_polyhedron, polyhedron_octahedron)
 {
   using PolyhedronType = primal::Polyhedron<double, 3>;
+  using PointType = primal::Point<double, 3>;
 
   constexpr double EPS = 1e-4;
   PolyhedronType octA;
@@ -257,6 +273,11 @@ TEST(primal_polyhedron, polyhedron_octahedron)
   EXPECT_NEAR(1.3333, octA.volume(), EPS);
   EXPECT_NEAR(1.3333, octA.signedVolume(), EPS);
 
+  PointType centroidA = octA.centroid();
+  EXPECT_NEAR(0.0, centroidA[0], EPS);
+  EXPECT_NEAR(0.0, centroidA[1], EPS);
+  EXPECT_NEAR(0.0, centroidA[2], EPS);
+
   PolyhedronType octB;
   octB.addVertex({1, 0, 0});
   octB.addVertex({1, 1, 0});
@@ -274,6 +295,11 @@ TEST(primal_polyhedron, polyhedron_octahedron)
 
   EXPECT_NEAR(0.6666, octB.volume(), EPS);
   EXPECT_NEAR(0.6666, octB.signedVolume(), EPS);
+
+  PointType centroidB = octB.centroid();
+  EXPECT_NEAR(0.5, centroidB[0], EPS);
+  EXPECT_NEAR(0.5, centroidB[1], EPS);
+  EXPECT_NEAR(0.5, centroidB[2], EPS);
 }
 
 //------------------------------------------------------------------------------
@@ -284,24 +310,21 @@ void check_volume()
 {
   const int DIM = 3;
   using PolyhedronType = primal::Polyhedron<double, DIM>;
+  using PointType = primal::Point<double, 3>;
 
-  umpire::ResourceManager& rm = umpire::ResourceManager::getInstance();
+  constexpr double EPS = 1e-4;
 
-  // Save current/default allocator
-  const int current_allocator = axom::getDefaultAllocatorID();
-
-  // Determine new allocator (for CUDA or HIP policy, set to Device)
-  umpire::Allocator allocator =
-    rm.getAllocator(axom::execution_space<ExecSpace>::allocatorID());
-
-  // Set new default to device
-  axom::setDefaultAllocator(allocator.getId());
+  // Get ids of necessary allocators
+  const int host_allocator = axom::execution_space<axom::SEQ_EXEC>::allocatorID();
+  const int kernel_allocator = axom::execution_space<ExecSpace>::allocatorID();
 
   // Initialize volume
-  double* volume = axom::allocate<double>(1);
+  axom::Array<double> volume_device(1, 1, kernel_allocator);
+  auto volume_view = volume_device.view();
 
-  // Volume on host (for CUDA or HIP)
-  double volume_host;
+  // Initialize centroid
+  axom::Array<PointType> centroid_device(1, 1, kernel_allocator);
+  auto centroid_view = centroid_device.view();
 
   axom::for_all<ExecSpace>(
     1,
@@ -325,16 +348,22 @@ void check_volume()
       poly.addNeighbors(6, {2, 7, 5});
       poly.addNeighbors(7, {4, 6, 3});
 
-      volume[i] = poly.volume();
+      volume_view[i] = poly.volume();
+
+      centroid_view[i] = poly.centroid();
     });
 
-  axom::copy(&volume_host, volume, sizeof(double));
+  // Copy volume and centroid back to host
+  axom::Array<double> volume_host =
+    axom::Array<double>(volume_device, host_allocator);
+  axom::Array<PointType> centroid_host =
+    axom::Array<PointType>(centroid_device, host_allocator);
 
-  EXPECT_EQ(volume_host, 1);
+  EXPECT_EQ(volume_host[0], 1);
 
-  axom::deallocate(volume);
-
-  axom::setDefaultAllocator(current_allocator);
+  EXPECT_NEAR(0.5, centroid_host[0][0], EPS);
+  EXPECT_NEAR(0.5, centroid_host[0][1], EPS);
+  EXPECT_NEAR(0.5, centroid_host[0][2], EPS);
 }
 
 TEST(primal_polyhedron, check_volume_sequential)
@@ -701,6 +730,8 @@ TEST(primal_polyhedron, polyhedron_from_primitive)
 
   Polyhedron3D poly;
 
+  Point3D centroid;
+
   // Valid hexahedron
   Hexahedron3D hex(Point3D {0, 0, 1},
                    Point3D {1, 0, 1},
@@ -717,6 +748,12 @@ TEST(primal_polyhedron, polyhedron_from_primitive)
   // Check signed volume
   EXPECT_NEAR(1.0, poly.signedVolume(), EPS);
   EXPECT_NEAR(hex.signedVolume(), poly.signedVolume(), EPS);
+
+  // Check centroid
+  centroid = poly.centroid();
+  EXPECT_NEAR(0.5, centroid[0], EPS);
+  EXPECT_NEAR(0.5, centroid[1], EPS);
+  EXPECT_NEAR(0.5, centroid[2], EPS);
 
   // Negative volume
   axom::utilities::swap<Point3D>(hex[1], hex[3]);
@@ -741,6 +778,12 @@ TEST(primal_polyhedron, polyhedron_from_primitive)
   poly = Polyhedron3D::from_primitive(oct, false);
   EXPECT_NEAR(0.6666, poly.volume(), EPS);
 
+  // Check centroid
+  centroid = poly.centroid();
+  EXPECT_NEAR(0.5, centroid[0], EPS);
+  EXPECT_NEAR(0.5, centroid[1], EPS);
+  EXPECT_NEAR(0.5, centroid[2], EPS);
+
   // Negative volume
   axom::utilities::swap<Point3D>(oct[1], oct[2]);
   axom::utilities::swap<Point3D>(oct[4], oct[5]);
@@ -760,6 +803,12 @@ TEST(primal_polyhedron, polyhedron_from_primitive)
 
   poly = Polyhedron3D::from_primitive(tet, false);
   EXPECT_NEAR(2.6666, poly.volume(), EPS);
+
+  // Check centroid
+  centroid = poly.centroid();
+  EXPECT_NEAR(0.0, centroid[0], EPS);
+  EXPECT_NEAR(0.0, centroid[1], EPS);
+  EXPECT_NEAR(0.0, centroid[2], EPS);
 
   // Check signed volume
   EXPECT_NEAR(2.6666, poly.signedVolume(), EPS);
