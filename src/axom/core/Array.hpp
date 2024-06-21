@@ -299,7 +299,7 @@ public:
       }
       OpHelper {m_allocator_id, m_executeOnGPU}.fill_range(m_data,
                                                            0,
-                                                           m_num_elements,
+                                                           other.size(),
                                                            other.data(),
                                                            srcSpace);
       updateNumElements(other.size());
@@ -1575,7 +1575,7 @@ inline void Array<T, DIM, SPACE>::initialize_from_other(
   // element.
   OpHelper {m_allocator_id, m_executeOnGPU}.fill_range(m_data,
                                                        0,
-                                                       m_num_elements,
+                                                       num_elements,
                                                        other_data,
                                                        other_data_space);
   this->updateNumElements(num_elements);

@@ -1597,6 +1597,9 @@ public:
     {
       space = MemorySpace::Host;
     }
+#else
+    AXOM_UNUSED_VAR(allocId);
+    AXOM_UNUSED_VAR(preferDevice);
 #endif
   }
 

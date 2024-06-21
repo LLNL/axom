@@ -1150,10 +1150,11 @@ AXOM_TYPED_TEST(core_array_for_all, device_insert)
     typename TestFixture::template DynamicTArray<DynamicArray>;
 
   int kernelAllocID = TestFixture::getKernelAllocatorID();
+  int umAllocID = kernelAllocID;
 #if defined(AXOM_USE_GPU) && defined(AXOM_USE_UMPIRE)
   // Use unified memory for frequent movement between device operations
   // and value checking on host
-  int umAllocID = axom::getUmpireResourceAllocatorID(
+  umAllocID = axom::getUmpireResourceAllocatorID(
     umpire::resource::MemoryResourceType::Unified);
 #endif
   int hostAllocID = axom::execution_space<axom::SEQ_EXEC>::allocatorID();
