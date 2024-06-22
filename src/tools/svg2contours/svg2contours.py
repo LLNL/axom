@@ -332,9 +332,9 @@ def main():
     mfem_data = MFEMData()
 
     for p_idx, p in enumerate(paths):
-        # print(f"""reading {p_idx=} {p=} \n w/ {p.d()=}""")
+        #print(f"""reading {p_idx=} {p=} \n w/ {p.d()=}""")
 
-        is_d_path = 'd' in p.element
+        is_d_path = 'd' in p.element.keys()
         attrib = p_idx + 1
 
         reverse_paths = True if np.linalg.det(coordinate_transform) < 0 else False
@@ -343,6 +343,7 @@ def main():
             continue
 
         for seg_idx, seg in enumerate(p):
+            #print(f"""processing {seg_idx=} {seg=}""")
 
             if isinstance(seg, Arc) and seg.large_arc and is_d_path:
                 # split large elliptical arcs for easier processing
