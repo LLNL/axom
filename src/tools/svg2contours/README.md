@@ -1,6 +1,6 @@
 ## Running the svg2contours Python script
 
-The `svg2countours` script converts [SVG](https://developer.mozilla.org/en-US/docs/Web/SVG) images to [MFEM NURBS meshes](https://mfem.org/mesh-format-v1.0/#nurbs-meshes) using the [svgpathtools](https://github.com/mathandy/svgpathtools) library. 
+The `svg2contours` script converts [SVG](https://developer.mozilla.org/en-US/docs/Web/SVG) images to [MFEM NURBS meshes](https://mfem.org/mesh-format-v1.0/#nurbs-meshes) using the [svgpathtools](https://github.com/mathandy/svgpathtools) library. 
 
 The latter can be used with axom's `quest_winding_number` example application to 
 sample the winding number field over the generated curves.
@@ -20,20 +20,26 @@ Full SVG support requires a (slightly) patched copy of [svgpathtools@1.6.1](http
 > pip3 install -r requirements.txt
 ```
 
-### Apply patch to svgpathtools for proper treatment of rotated ellipse
+### Apply patches to svgpathtools for proper treatment of rotated ellipses and rounded rectangles
 
-[svgpathtools@1.6.1](https://github.com/mathandy/svgpathtools/releases/tag/v1.6.1) has a bug in applying the correct rotation angle
-when transforming ellipses and elliptical arcs. 
+[svgpathtools@1.6.1](https://github.com/mathandy/svgpathtools/releases/tag/v1.6.1) has a bug in applying the correct rotation angle when transforming ellipses and elliptical arcs. 
 This can be resolved by applying the following patch:
 ```shell
 > patch  -p1 venv/lib/python3.9/site-packages/svgpathtools/path.py -i svgpathtools-1.6.1-ellipse-rotation.patch --verbose 
 ```
 See: https://github.com/mathandy/svgpathtools/pull/221
 
-#### Developer's note:
-The patch was generated from a git commit from the above pull request using the following command:
+It has another bug related to rounded rectangles, which can be resolved by applying the following pathc:
 ```shell
-> git format-patch -1 260a44ed2c0d114f77d57016d6d143a50729aca9 --stdout > svgpathtools-1.6.1-ellipse-rotation.patch
+> patch  -p1 venv/lib/python3.9/site-packages/svgpathtools/svg_to_paths.py  -i svgpathtools-1.6.1-rounded-rect.patch --verbose
+```
+See: https://github.com/mathandy/svgpathtools/pull/222
+
+#### Developer's note:
+These patches were generated from a git commit in each of the above pull requests using the following commands:
+```shell
+ > git format-patch -1 260a44ed2c0d114f77d57016d6d143a50729aca9 --stdout > svgpathtools-1.6.1-ellipse-rotation.patch
+ > git format-patch -1 ec1e1101037fcd66967caa40bc2b038c928bae4f --stdout > svgpathtools-1.6.1-rounded-rect.patch
 ```
 
 ### Run the script on an input SVG mesh
