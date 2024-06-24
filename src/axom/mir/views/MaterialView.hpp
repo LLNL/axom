@@ -769,9 +769,9 @@ dispatch_matset(const conduit::Node &matset, FuncType &&func)
   }
   else if(conduit::mesh::matset::is_multi_buffer(matset))
   {
-    const conduit::Node &volume_fractions = matset["volume_fractions"];
-    const conduit::Node &n_firstValues = volume_fractions[0]["values"];
-    const conduit::Node &n_firstIndices = volume_fractions[0]["indices"];
+    const conduit::Node &volume_fractions = matset.fetch_existing("volume_fractions");
+    const conduit::Node &n_firstValues = volume_fractions[0].fetch_existing("values");
+    const conduit::Node &n_firstIndices = volume_fractions[0].fetch_existing("indices");
     IndexNode_To_ArrayView(n_firstIndices, [&](auto firstIndices)
     {
       FloatNode_To_ArrayView(n_firstValues, [&](auto firstValues)
@@ -785,8 +785,8 @@ dispatch_matset(const conduit::Node &matset, FuncType &&func)
 
         for(conduit::index_t i = 0; i < volume_fractions.number_of_children(); i++)
         {
-          const conduit::Node &values = volume_fractions[i]["values"];
-          const conduit::Node &indices = volume_fractions[i]["indices"];
+          const conduit::Node &values = volume_fractions[i].fetch_existing("values");
+          const conduit::Node &indices = volume_fractions[i].fetch_existing("indices");
 
           const IntElement *indices_ptr = indices.value();
           const FloatElement *values_ptr = values.value();
@@ -799,14 +799,64 @@ dispatch_matset(const conduit::Node &matset, FuncType &&func)
         func(matsetView);
       });
     });
-
-  }
-  else if(conduit::mesh::matset::is_material_dominant(matset))
-  {
   }
   else if(conduit::mesh::matset::is_element_dominant(matset))
   {
+    const conduit::Node &volume_fractions = matset.fetch_existing("volume_fractions");
+    const conduit::Node &n_firstValues = volume_fractions[0];
+    FloatNode_To_ArrayView(n_firstValues, [&](auto firstValues)
+    {
+      using FloatView = decltype(firstValues);
+      using FloatElement = typename Floatview::value_type;
+
+      ElementDominantMaterialView<axom::IndexType, FloatElement, MaxMaterials> matsetView;
+
+      for(conduit::index_t i = 0; i < volume_fractions.number_of_children(); i++)
+      {
+        const conduit::Node &values = volume_fractions[i];
+        const FloatElement *values_ptr = values.value();
+        FloatView values_view(values_ptr, values.dtype().number_of_elements());
+        matsetView.add(values_view);
+      }
+
+      func(matsetView);
+    });
   }  
+  else if(conduit::mesh::matset::is_material_dominant(matset))
+  {
+    const conduit::Node &volume_fractions = matset.fetch_existing("volume_fractions");
+    const conduit::Node &element_ids = matset.fetch_existing("element_ids");   
+    const conduit::Node &n_firstValues = volume_fractions[0];
+    const conduit::Node &n_firstIndices = element_ids[0];
+
+    IndexNode_To_ArrayView(n_firstIndices, [&](auto firstIndices)
+    {
+      FloatNode_To_ArrayView(n_firstValues, [&](auto firstValues)
+      {
+        using IntView = decltype(firstIndices);
+        using IntElement = typename IntView::value_type;
+        using FloatView = decltype(firstValues);
+        using FloatElement = typename Floatview::value_type;
+
+        MaterialDominantMaterialView<IntElement, FloatElement, MaxMaterials> matsetView;
+
+        for(conduit::index_t i = 0; i < volume_fractions.number_of_children(); i++)
+        {
+          const conduit::Node &indices = element_ids[i];
+          const conduit::Node &values = volume_fractions[i];
+
+          const IntElement *indices_ptr = indices.value();
+          const FloatElement *values_ptr = values.value();
+
+          IntView   indices_view(indices_ptr, indices.dtype().number_of_elements());
+          FloatView values_view(values_ptr, values.dtype().number_of_elements());
+          matsetView.add(indices_view, values_view);
+        }
+
+        func(matsetView);
+      });
+    });
+  }
 }
 
 #endif
