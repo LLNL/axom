@@ -134,24 +134,29 @@ the following:
 Level 3: Build Scripts
 ----------------------
 
-There are three "build" scripts that live in ``scripts/llnl`` that are designed
-to handle suites of building TPLs via uberenv and Spack. They automatically
-handle the platform differences and know the full list of compilers and package
-specs required.
+The file ``axom/scripts/spack/specs.json`` contains a list of all specs
+required per platform or machine name. These specs automatically handle
+platform differences and contain the full list of compilers and package specs
+required to build.
 
-* ``scripts/spack/specs.json``: This contains a list of all specs required per platform
-  or machine name.
-* ``build_tpls.py``: This script starts with building all TPLs listed in ``specs.json``.
-  It will copy the generated host-configs to the base of the Axom repository.
-  After building all of the TPLs, it will test Axom against those built TPLs. As well,
-  as testing the installed ``using-with-cmake`` example for correctness. This script stops
-  at the first failed TPL build but attempts to build all host-configs against the Axom source
-  with a summary at the end of which succeeded or failed.
-* ``build_src.py``: This scripts takes the existing host-configs, or the specific one you point
-  at, and builds and tests Axom against them. It also tests the ``using-with-cmake`` examples.
-* ``build_devtools.py``: This script builds and installs the developer tools listed in the ``axomdevtools``
-  Spack package.  It also uses a different set of Spack configs located in ``scripts/spack/devtools_config``,
-  so that the regular Spack configs can reuse the seldom and previously built developer tools.
+The directory ``axom/scripts/llnl_scripts`` contains three "build" scripts that
+are designed to handle building suites of TPLs via uberenv and Spack.
+
+* ``build_tpls.py``: This script starts by building all TPLs listed in the file
+  ``specs.json``. It will generate host-config files and copy them to the base
+  of the Axom repository. After building all of the TPLs, it will test Axom
+  against those built TPLs as well as test the installed ``using-with-cmake``
+  example for correctness. This script stops at the first failed TPL build but
+  attempts to build all host-configs against the Axom source with a summary at
+  the end of which succeeded or failed.
+* ``build_src.py``: This scripts takes the existing host-configs, or the
+  specific one you point at, and builds and tests Axom against them. It also
+   tests the ``using-with-cmake`` examples.
+* ``build_devtools.py``: This script builds and installs the developer tools
+  listed in the ``axom/scipts/spack/packages/axomdevtools/package.py`` Spack
+  package. It also uses a different set of Spack configs located in the 
+  ``scripts/spack/devtools_config`` directory, so that the regular Spack configs
+  can reuse previously built developer tools.
 
 .. note::
    Due to the large amount of information printed to the screen over a full build, the build scripts
@@ -172,12 +177,12 @@ as Git submodules. These are the following, including the location of the
 package in the Axom source tree:
 
   * `BLT <https://github.com/LLNL/blt.git>`_, which is the CMake-based build
-    system we use. Location: ``axom/src/cmake/blt``.
-  * `Axom Data <https://github.com/LLNL/axom_data.git>`_, which is where we
-    maintain data files used in testing Axom. Location: ``axom/data``.
+    system we use. It is located in ``axom/src/cmake/blt``.
+  * `Axom Data <https://github.com/LLNL/axom_data.git>`_, which is a collection
+    of data files used in testing Axom. It is located in ``axom/data``.
   * `Uberenv <https://github.com/LLNL/uberenv.git>`_, which contains Python
     scripts we use to help automate building third-party dependencies for
-    development and deployment. Location: ``axom/scripts/uberenv``.
+    development and deployment. It is located in ``axom/scripts/uberenv``.
 
 There is no software installation process for these dependencies in the 
 traditional sense. To update one of these packages in Axom, simply go into
@@ -189,16 +194,16 @@ More info on :ref:`building-axom-label`.
 Built-in TPLs
 -------------
 
-Axom several lightweight header-only libraries that we use internally and
-expose for downstream customers to use if they wish.
+Axom uses several, lightweight, header-only libraries internally which are
+exposed for downstream customers to use if they wish.
 
-  * `CLI11 <https://github.com/CLIUtils/CLI11>`_, is a command line parser
+  * `CLI11 <https://github.com/CLIUtils/CLI11>`_ is a command line parser
     for C++11 and beyond that provides a rich feature set with a simple and
     intuitive interface.
-  * `fmt <https://github.com/fmtlib/fmt>`_, is an open-source formatting
+  * `fmt <https://github.com/fmtlib/fmt>`_ is an open-source formatting
     library providing a fast and safe alternative to C stdio and C++ iostreams.
-  * `sol <https://github.com/ThePhD/sol2>`_, is a C++ library binding to Lua.
-  * `Sparsehash <https://github.com/sparsehash/sparsehash>`_, contains several
+  * `sol <https://github.com/ThePhD/sol2>`_ is a C++ library binding to Lua.
+  * `Sparsehash <https://github.com/sparsehash/sparsehash>`_ contains several
     hash-map implementations.
 
 .. note:: Axom patches all built-in TPLs to be under the ``axom`` namespace.
@@ -206,7 +211,7 @@ expose for downstream customers to use if they wish.
    dependencies or downstream customers who wish their own versions.  For
    example, ``fmt::format("foo")`` is ``axom::fmt::format("foo")``.
 
-They can be found in the directory: ``src/thirdparty``. The basic 
+They can be found in the directory: ``axom/src/thirdparty/axom``. The basic 
 instructions on how to update a built-in TPL are as follows:
 
 #. Download the new release and override the source that is already there.
@@ -215,7 +220,7 @@ instructions on how to update a built-in TPL are as follows:
 
 #. Review and apply the existing patch files. More than likely, you will not
    be able to directly apply the patch but it will give you the general idea
-   on what needs to be applied.  For example, the namespace update mentioned above.
+   on what needs to be applied. For example, the namespace update mentioned above.
 
 #. Ensure that the build and tests still pass. More info on :ref:`testing-label`.
 
@@ -286,9 +291,11 @@ other Axom developers to use during development, in Axom Gitlab CI testing, etc.
              file.
 
    To change a version of a non-system TPL, go into the 
-   ``axom/scripts/spack/packages`` directory. There you will find a 
-   sub-directory for each TPL Axom uses. Modify the contents of the Spack
-   package file ``package.py`` in each package sub-directory as needed. 
+   ``axom/scripts/spack/configs`` directory. There you will find a 
+   sub-directory for each system we test on which contains a Spack
+   package file ``package.py``. TPL versions are pinned in those package files.
+   Modify the contents of the Spack package file ``package.py`` in each
+   package sub-directory as needed to change TPL version numbers.
 
    .. note:: Before continuing, you should test that the installation works
              on all LC systems with the steps in :ref:`local-tpls-label`.
@@ -306,10 +313,10 @@ other Axom developers to use during development, in Axom Gitlab CI testing, etc.
    Run the corresponding command for the system you are on::
 
      # blueos
-     $ lalloc 1 -W 120 scripts/llnl/build_tpl.py
+     $ lalloc 1 -W 120 scripts/llnl_scripts/build_tpls.py
      
      # toss_4
-     $ srun -N1 --interactive -t 120 scripts/llnl/build_tpl.py
+     $ srun -N1 --interactive -t 120 scripts/llnl_scripts/build_tpls.py
 
    This script will build all third-party libraries for all compilers specs
    for the machine you are on. These will be installed into the shared LC directory
