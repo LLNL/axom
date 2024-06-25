@@ -30,7 +30,7 @@ WORKDIR ${HOME}
 USER ${USER}
 
 # Install CMake
-RUN wget -q --no-check-certificate https://cmake.org/files/v3.21/cmake-3.21.7-linux-x86_64.tar.gz && \
+RUN sudo wget -q --no-check-certificate https://cmake.org/files/v3.21/cmake-3.21.7-linux-x86_64.tar.gz && \
     tar -xzf cmake-3.21.7-linux-x86_64.tar.gz && \
     rm -r cmake-3.21.7-linux-x86_64/share/vim/vimfiles && \
     cp -fR cmake-3.21.7-linux-x86_64/* /usr && \
