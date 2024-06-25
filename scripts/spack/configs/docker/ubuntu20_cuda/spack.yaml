@@ -185,11 +185,11 @@ spack:
 
     # Globally lock in version of devtools
     cmake:
-      version: [3.20.4]
+      version: [3.21.7]
       buildable: false
       externals:
-      - spec: cmake@3.20.4
-        prefix: /opt/view
+      - spec: cmake@3.21.7
+        prefix: /usr
     doxygen:
       version: [1.8.17]
       buildable: false
