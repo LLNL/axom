@@ -111,7 +111,8 @@ Polygon<T, 3> clip(const Triangle<T, 3>& tri, const BoundingBox<T, 3>& bbox)
  *
  * \param [in] subjectPolygon The subject polygon
  * \param [in] clipPolygon The clip polygon
- * \param [in] eps The epsilon value
+ * \param [in] eps The tolerance for plane point orientation.
+ *                 Defaults to 1.e-10.
  * \param [in] tryFixOrientation If true, takes each shape with a negative
  *             signed area and swaps the order of some vertices in that
  *             shape to try to obtain a nonnegative signed area.

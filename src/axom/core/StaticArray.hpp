@@ -20,6 +20,9 @@ namespace axom
  *
  * \tparam T the type of the values to hold.
  * \tparam N the number of values in the array.
+ *
+ * \note Type \a T must be default-constructible on device for device
+ *       execution.
  */
 template <typename T, int N>
 struct StaticArray : public StackArray<T, N>

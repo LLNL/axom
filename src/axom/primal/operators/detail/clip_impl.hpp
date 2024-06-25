@@ -677,7 +677,7 @@ AXOM_HOST_DEVICE Polyhedron<T, NDIMS> clipTetrahedron(
  *
  * \param [in] subjectPolygon The subject polygon
  * \param [in] clipPolygon The clip polygon
- * \param [in] eps The epsilon value
+ * \param [in] eps The tolerance for plane point orientation
  * \param [in] tryFixOrientation If true, takes each shape with a negative
  *             signed area and swaps the order of some vertices in that
  *             shape to try to obtain a nonnegative signed area.

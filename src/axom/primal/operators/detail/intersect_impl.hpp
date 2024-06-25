@@ -1098,8 +1098,8 @@ AXOM_HOST_DEVICE bool intersect_plane_bbox(const Plane<T, 3>& p,
 
 /*!
  * \brief Determines if a plane intersects a segment.
- * \param [in] b1 A plane
- * \param [in] b2 A segment
+ * \param [in] plane A plane
+ * \param [in] seg A segment
  * \param [out] t Intersection point of plane and seg, w.r.t. 
  *   parametrization of seg
  * \return true iff plane intersects with segment, otherwise, false.
