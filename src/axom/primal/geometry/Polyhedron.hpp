@@ -529,7 +529,8 @@ public:
     }
 
     // Computes the signed volume of tetrahedra formed from vertices of the
-    // Polyhedron faces and an arbitrary origin (the first vertex)
+    // Polyhedron faces and an arbitrary origin (the first vertex), as well
+    // as the centroid of the Polyhedron.
     else
     {
       SLIC_CHECK_MSG(
