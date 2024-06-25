@@ -6,7 +6,7 @@
 #ifndef AXOM_MIR_VIEWS_SHAPES_HPP_
 #define AXOM_MIR_VIEWS_SHAPES_HPP_
 
-#include "axom/core/AxomArrayView.hpp"
+#include "axom/core/ArrayView.hpp"
 
 #include <conduit/conduit.hpp>
 #include <iostream>

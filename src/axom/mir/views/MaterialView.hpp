@@ -19,7 +19,11 @@ template <typename ElementType, int MAXELEM>
 class StaticArray
 {
 public:
-  constexpr static size_t MaxElements = MAXELEM;
+  AXOM_HOST_DEVICE
+  constexpr size_t capacity() const
+  {
+    return MAXELEM;
+  }
 
   AXOM_HOST_DEVICE
   size_t size() const
@@ -30,7 +34,7 @@ public:
   AXOM_HOST_DEVICE
   void push_back(const ElementType &e)
   {
-    if(m_size + 1 < MaxElements)
+    if(m_size + 1 < capacity())
       m_data[m_size++] = e;
   }
 
@@ -55,7 +59,7 @@ public:
   AXOM_HOST_DEVICE
   void fill(const ElementType &e)
   {
-    for(size_t i = 0; i < MaxElements; i++)
+    for(size_t i = 0; i < capacity(); i++)
       m_data[i] = e;
   }
 
@@ -104,6 +108,13 @@ private:
   std::vector<int> m_ids{};
   std::vector<int> m_names{};
 };
+
+//---------------------------------------------------------------------------
+// Material views - These objects are meant to wrap Blueprint Matsets behind
+//                  an interface that lets us query materials for a single
+//                  zone. It is intended that these views will be used in
+//                  device kernels.
+//---------------------------------------------------------------------------
 
 /**
 
@@ -459,6 +470,8 @@ matsets:
       b: 1
       c: 2
  */
+/// NOTES: This matset type does not seem so GPU friendly since there is some work to do for some of the queries.
+
 template <typename IndexT, typename FloatType, size_t MAXMATERIALS>
 class MaterialDominantMaterialView
 {
@@ -479,6 +492,7 @@ public:
     m_size++;
   }
 
+  AXOM_HOST_DEVICE
   size_t getNumberOfZones()
   {
     if(m_nzones == 0)
@@ -489,6 +503,7 @@ public:
         for(size_t i = 0; i < sz; i++)
           m_nzones = axom::utilties::max(m_nzones, m_element_ids[mi][i]);
 #if 0
+        // host-only
         // Eh, do this.
         RAJA::ReduceMax rm(0);
         axom::forall<ExecSpace>(0, sz, AXOM_LAMBDA(int i)
@@ -502,10 +517,10 @@ public:
     return m_nzones;
   }
 
+  AXOM_HOST_DEVICE
   size_t getNumberOfMaterials(ZoneIndex zi) const
   {
     size_t nmats = 0;
-// Q: Can we RAJA-ify this search?
     for(size_t mi = 0; mi < m_size; mi++)
     {
       const auto sz = m_element_ids[mi].size();
@@ -519,6 +534,7 @@ public:
         }
       }
 #else
+      // host-only
       RAJA::ReduceMax rm(0);
       axom::forall<ExecSpace>(0, sz, AXOM_LAMBDA(int i)
       {
@@ -530,6 +546,7 @@ public:
     return nmats;
   }
 
+  AXOM_HOST_DEVICE
   void getZoneMaterials(ZoneIndex zi, IDList &ids, VFList &vfs) const
   {
     ids.clear();
@@ -568,19 +585,43 @@ public:
   bool zoneContainsMaterial(ZoneIndex zi, MaterialIndex mat) const
   {
     assert(zi < m_sizes.size());
+    assert(mat < m_element_ids.size());
 
-    return false;
+    bool found = false;
+#if 1
+    const auto element_ids = m_element_ids[mat];
+    for(size_t i = 0; i < selectedIds.size(); i++)
+    {
+      if(element_ids[i] == zi)
+      {
+        found = true;
+        break;
+      }
+    }
+#endif
+    return found;
   }
 
+  AXOM_HOST_DEVICE
   bool zoneContainsMaterial(ZoneIndex zi, MaterialIndex mat, FloatType &vf) const
   {
-    return false;
-  }
+    assert(zi < m_sizes.size());
+    assert(mat < m_element_ids.size());
 
-  axom::ArrayView<IndexType> selectZonesContainingMaterial(MaterialIndex mat) const
-  {
-    assert(mat < m_size);
-    return m_element_ids[mat];
+    bool found = false;
+#if 1
+    const auto element_ids = m_element_ids[mat];
+    for(size_t i = 0; i < selectedIds.size(); i++)
+    {
+      if(element_ids[i] == zi)
+      {
+        found = true;
+        vf = m_volume_fractions[mat][i];
+        break;
+      }
+    }
+#endif
+    return found;
   }
 
 private:
@@ -590,6 +631,13 @@ private:
   size_t m_nzones{0};
 };
 
+#if 0
+//---------------------------------------------------------------------------
+// Some host-algorithms on material views.
+//---------------------------------------------------------------------------
+
+/**
+ */
 template <typename ExecSpace>
 axom::Array<int> makeMatsPerZone(const MaterialDominantMaterialView &view, size_t nzones)
 {
@@ -612,20 +660,20 @@ axom::Array<int> makeMatsPerZone(const MaterialDominantMaterialView &view, size_
 }
 
 // NOTE: This needs to be a method of MaterialDominantMaterialView to access the view data.
-template <typename ExecSpace, typename Selection>
-axom::Array<int> selectZones(const MaterialDominantMaterialView &view)
+template <typename ExecSpace, typename Predicate>
+axom::Array<int> selectZones(const MaterialDominantMaterialView &view, Predicate &&pred)
 {
   const auto nzones = view.getNumberOfZones();
 
   // Figure out the number of materials per zone.
-  axom::Array<int> matsPerZone = makeMatsPerZone(view, nzones);
+  axom::Array<int> matsPerZone = makeMatsPerZone<ExecSpace>(view, nzones);
   auto matsPerZone_view = matsPerZone.view();
 
   // Count the clean zones.
   RAJA::ReduceSum num_selected(0);
   axom::forall<ExecSpace>(0, nzones, AXOM_LAMBDA(int i)
   {
-    num_selected += Selection(matsPerZone_view[i]) ? 1 : 0;
+    num_selected += pred(matsPerZone_view[i]) ? 1 : 0;
   });
   size_t outsize = num_selected.get();
   
@@ -639,7 +687,7 @@ axom::Array<int> selectZones(const MaterialDominantMaterialView &view)
   auto zonelist_view = zonelist.view();
   axom::forall<ExecSpace>(0, nzones, AXOM_LAMBDA(int zi)
   {
-    if(Selection(matsPerZone_view[zi]))
+    if(pred(matsPerZone_view[zi]))
       zonelist_view[offset[zi]] = zi;
   });
 
@@ -658,22 +706,20 @@ axom::Array<int> selectZonesContainingMaterial(const MaterialDominantMaterialVie
 template <typename ExecSpace>
 axom::Array<int> selectCleanZones(const MaterialDominantMaterialView &view)
 {
-  auto selectFunc = [](int nmats) -> bool { return nmats == 1; };
-  return selectZones<ExecSpace, decltype(selectFunc)>(view);
+  auto predicate = [](int nmats) -> bool { return nmats == 1; };
+  return selectZones<ExecSpace, decltype(predicate)>(view, predicate);
 }
 
 template <typename ExecSpace>
 axom::Array<int> selectMixedZones(const MaterialDominantMaterialView &view)
 {
-  auto selectFunc = [](int nmats) -> bool { return nmats > 1; };
-  return selectZones<ExecSpace, decltype(selectFunc)>(view);
+  auto predicate = [](int nmats) -> bool { return nmats > 1; };
+  return selectZones<ExecSpace, decltype(predicate)>(view, predicate);
 }
 
 //---------------------------------------------------------------------------
-
-#if 0
-template <typename ExecSpace, typename FuncType>
-axom::Array<int> selectZones(const UnibufferMaterialView &view, MaterialIndex mat, FuncType &&func) const
+template <typename ExecSpace, typename Predicate>
+axom::Array<int> selectZones(const UnibufferMaterialView &view, MaterialIndex mat, Predicate &&pred) const
 {
 /**
  NOTE: I really do not like the code below because it forces the main Axom algorithm to use RAJA directly.
@@ -691,7 +737,7 @@ axom::Array<int> selectZones(const UnibufferMaterialView &view, MaterialIndex ma
   auto zones_view = zones.view();
   axom::forall<ExecSpace>(0, zones.size(), AXOM_LAMBDA(int zi)
   {
-    const int haveMat = func(view, mat, zi) ? 1 : 0;
+    const int haveMat = pred(view, mat, zi) ? 1 : 0;
     zones_view[zi] = haveMat;
     num_selected += haveMat;
   });
@@ -743,122 +789,6 @@ axom::Array<int> selectMixedZones(const UnibufferMaterialView &view)
   };
   return selectZones<ExecSpace>(view, 0, zoneIsClean);
 }
-
-//---------------------------------------------------------------------------
-template <typename FuncType>
-void
-dispatch_matset(const conduit::Node &matset, FuncType &&func)
-{
-  constexpr static size_t MaxMaterials = 20;
-
-  if(conduit::mesh::matset::is_uni_buffer(matset))
-  {
-     IndexNode_to_ArrayView_same(matset["material_ids"],matset["sizes"],matset["offsets"],matset["indices"],
-       [&](auto material_ids, auto sizes, auto offsets, auto indices)
-       {
-          FloatNode_to_ArrayView(matset["volume_fractions"], [&](auto volume_fractions)
-          {
-            using IndexType = typename decltype(material_ids)::value_type;
-            using FloatType = typename decltype(volume_fractions)::value_type;
-
-            UnibufferMaterialView<IndexType, FloatType, MaxMaterials> matsetView;
-            matsetView.set(material_ids, volume_fractions, sizes, offsets, indices);
-            func(matsetView);
-          });
-       });
-  }
-  else if(conduit::mesh::matset::is_multi_buffer(matset))
-  {
-    const conduit::Node &volume_fractions = matset.fetch_existing("volume_fractions");
-    const conduit::Node &n_firstValues = volume_fractions[0].fetch_existing("values");
-    const conduit::Node &n_firstIndices = volume_fractions[0].fetch_existing("indices");
-    IndexNode_To_ArrayView(n_firstIndices, [&](auto firstIndices)
-    {
-      FloatNode_To_ArrayView(n_firstValues, [&](auto firstValues)
-      {
-        using IntView = decltype(firstIndices);
-        using IntElement = typename IntView::value_type;
-        using FloatView = decltype(firstValues);
-        using FloatElement = typename Floatview::value_type;
-
-        MultiBufferMaterialView<IntElement, FloatElement, MaxMaterials> matsetView;
-
-        for(conduit::index_t i = 0; i < volume_fractions.number_of_children(); i++)
-        {
-          const conduit::Node &values = volume_fractions[i].fetch_existing("values");
-          const conduit::Node &indices = volume_fractions[i].fetch_existing("indices");
-
-          const IntElement *indices_ptr = indices.value();
-          const FloatElement *values_ptr = values.value();
-
-          IntView   indices_view(indices_ptr, indices.dtype().number_of_elements());
-          FloatView values_view(values_ptr, values.dtype().number_of_elements());
-          matsetView.add(indices_view, values_view);
-        }
-
-        func(matsetView);
-      });
-    });
-  }
-  else if(conduit::mesh::matset::is_element_dominant(matset))
-  {
-    const conduit::Node &volume_fractions = matset.fetch_existing("volume_fractions");
-    const conduit::Node &n_firstValues = volume_fractions[0];
-    FloatNode_To_ArrayView(n_firstValues, [&](auto firstValues)
-    {
-      using FloatView = decltype(firstValues);
-      using FloatElement = typename Floatview::value_type;
-
-      ElementDominantMaterialView<axom::IndexType, FloatElement, MaxMaterials> matsetView;
-
-      for(conduit::index_t i = 0; i < volume_fractions.number_of_children(); i++)
-      {
-        const conduit::Node &values = volume_fractions[i];
-        const FloatElement *values_ptr = values.value();
-        FloatView values_view(values_ptr, values.dtype().number_of_elements());
-        matsetView.add(values_view);
-      }
-
-      func(matsetView);
-    });
-  }  
-  else if(conduit::mesh::matset::is_material_dominant(matset))
-  {
-    const conduit::Node &volume_fractions = matset.fetch_existing("volume_fractions");
-    const conduit::Node &element_ids = matset.fetch_existing("element_ids");   
-    const conduit::Node &n_firstValues = volume_fractions[0];
-    const conduit::Node &n_firstIndices = element_ids[0];
-
-    IndexNode_To_ArrayView(n_firstIndices, [&](auto firstIndices)
-    {
-      FloatNode_To_ArrayView(n_firstValues, [&](auto firstValues)
-      {
-        using IntView = decltype(firstIndices);
-        using IntElement = typename IntView::value_type;
-        using FloatView = decltype(firstValues);
-        using FloatElement = typename Floatview::value_type;
-
-        MaterialDominantMaterialView<IntElement, FloatElement, MaxMaterials> matsetView;
-
-        for(conduit::index_t i = 0; i < volume_fractions.number_of_children(); i++)
-        {
-          const conduit::Node &indices = element_ids[i];
-          const conduit::Node &values = volume_fractions[i];
-
-          const IntElement *indices_ptr = indices.value();
-          const FloatElement *values_ptr = values.value();
-
-          IntView   indices_view(indices_ptr, indices.dtype().number_of_elements());
-          FloatView values_view(values_ptr, values.dtype().number_of_elements());
-          matsetView.add(indices_view, values_view);
-        }
-
-        func(matsetView);
-      });
-    });
-  }
-}
-
 #endif
 
 } // end namespace views

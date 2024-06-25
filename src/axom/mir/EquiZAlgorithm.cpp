@@ -1,5 +1,6 @@
 #include "axom/mir/EquiZAlgorithm.hpp"
-
+#include "axom/mir/views/StructuredTopologyView.hpp"
+#include "axom/mir/views/dispatch_coordset.hpp"
 
 // RAJA
 #if defined(AXOM_USE_RAJA)
@@ -155,12 +156,117 @@ void EquiZAlgorithm::execute(const conduit::Node &topo,
 #endif
 }
 
+template <typename FuncType>
+void dispatch_uniform(const conduit::Node &topo, const conduit::Node &coordset, FuncType &&func)
+{
+  const conduit::Node &n_dims = coordset["dims"];
+  const conduit::index_t ndims = n_dims.dtype().number_of_elements();
+  if(ndims == 1)
+  {
+    axom::StackArray<axom::IndexType, 1> dims;
+    dims[0] = n_dims.as_int_accessor()[0];
+    StructuredTopologyView<axom::IndexType, 1> topoView;
+    func(topoView);
+  }
+  else if(axes.size() == 2)
+  {
+    axom::StackArray<axom::IndexType, 2> dims;
+    dims[0] = n_dims.as_int_accessor()[0];
+    dims[1] = n_dims.as_int_accessor()[1];
+    StructuredTopologyView<axom::IndexType, 2> topoView;
+    func(topoView);
+  }
+  else if(axes.size() == 3)
+  {
+    axom::StackArray<axom::IndexType, 3> dims;
+    dims[0] = n_dims.as_int_accessor()[0];
+    dims[1] = n_dims.as_int_accessor()[1];
+    dims[2] = n_dims.as_int_accessor()[2];
+    StructuredTopologyView<axom::IndexType, 3> topoView;
+    func(topoView);
+  }
+}
+
+template <typename FuncType>
+void dispatch_rectilinear(const conduit::Node &topo, const conduit::Node &coordset, FuncType &&func)
+{
+  const auto axes = conduit::blueprint::mesh::utils::coordset::axes(coordset);
+  if(axes.size() == 1)
+  {
+    axom::StackArray<axom::IndexType, 1> dims;
+    dims[0] = coordset.fetch_existing(axes[0]).dtype().number_of_elements();
+    StructuredTopologyView<axom::IndexType, 1> topoView;
+    func(topoView);
+  }
+  else if(axes.size() == 2)
+  {
+    axom::StackArray<axom::IndexType, 2> dims;
+    dims[0] = coordset.fetch_existing(axes[0]).dtype().number_of_elements();
+    dims[1] = coordset.fetch_existing(axes[1]).dtype().number_of_elements();
+    StructuredTopologyView<axom::IndexType, 2> topoView;
+    func(topoView);
+  }
+  else if(axes.size() == 3)
+  {
+    axom::StackArray<axom::IndexType, 3> dims;
+    dims[0] = coordset.fetch_existing(axes[0]).dtype().number_of_elements();
+    dims[1] = coordset.fetch_existing(axes[1]).dtype().number_of_elements();
+    dims[2] = coordset.fetch_existing(axes[2]).dtype().number_of_elements();
+    StructuredTopologyView<axom::IndexType, 3> topoView;
+    func(topoView);
+  }
+}
+
+template <typename FuncType>
+void dispatch_structured(const conduit::Node &topo, FuncType &&func)
+{
+  if(topo.has_path("elements/dims/k"))
+  {
+    axom::StackArray<axom::IndexType, 3> dims;
+    dims[0] = topo.fetch_existing("elements/dims/i").as_int();
+    dims[1] = topo.fetch_existing("elements/dims/j").as_int();
+    dims[2] = topo.fetch_existing("elements/dims/k").as_int();
+    StructuredTopologyView<axom::IndexType, 3> topoView;
+    func(topoView);
+  }
+  else if(topo.has_path("elements/dims/j"))
+  {
+    axom::StackArray<axom::IndexType, 2> dims;
+    dims[0] = topo.fetch_existing("elements/dims/i").as_int();
+    dims[1] = topo.fetch_existing("elements/dims/j").as_int();
+    StructuredTopologyView<axom::IndexType, 2> topoView;
+    func(topoView);
+  }
+  else
+  {
+    axom::StackArray<axom::IndexType, 1> dims;
+    dims[0] = topo.fetch_existing("elements/dims/i").as_int();
+    StructuredTopologyView<axom::IndexType, 1> topoView;
+    func(topoView);
+  }
+}
+
+template <typename FuncType>
+void dispatch_topology(const conduit::Node &topo, const conduit::Node &coordset, FuncType &&func)
+{
+  const auto type = topo.fetch_existing("type").as_string();
+
+  if(type == "uniform")
+    dispatch_uniform(topo, coordset, func);
+  else if(type == "rectilinear")
+    dispatch_rectilinear(topo, coordset, func);
+  else if(type == "structured")
+    dispatch_structured(topo, func);
+  else if(type == "unstructured")
+    dispatch_unstructured(topo, func);
+}
+
 template <typename ExecSpace>
 void EquiZAlgorithm::executeImpl(const conduit::Node &topo,
-                                     const conduit::Node &coordset,
-                                     const conduit::Node &options,
-                                     conduit::Node &new_topo,
-                                     conduit::Node &new_coordset)
+                                 const conduit::Node &coordset,
+                                 const conduit::Node &options,
+                                 conduit::Node &new_topo,
+                                 conduit::Node &new_coordset)
 {
   if(options.has_path("zones"))
   {
@@ -185,19 +291,17 @@ void EquiZAlgorithm::executeImpl(const conduit::Node &topo,
   }
   else
   {
-#if 0
-    foreach_coordset_type // rectilinear, structured, uniform - the problem becomse passing ArrayViews to the lambda. Could we pass a StackArray of ArrayViews?
+    dispatch_coordset(coordset, [&](auto coordsetView)
     {
-      // Foreach zone
-      for_all_zones<ExecSpace>(topo, AXOM_LAMBDA(conduit::index_t zoneIndex, const conduit::index_t *ids, conduit::index_t nids)
+      dispatch_topology(topo, [&](auto topoView)
       {
-        // on-device
+        topoView. template for_all_zones<ExecSpace>(AXOM_LAMBDA(int zoneIndex, const auto &zone)
+        {          
 
-        // might want to pass in the ijk coordinate to deal with rectilinear coordsets. Or perhaps it is best to pass in an array of the coordinate values that we pull out as part of the zone iteration.
-
+        });
       });
     });
-#endif
+
   }
 }
 

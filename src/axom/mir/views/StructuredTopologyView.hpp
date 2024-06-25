@@ -68,7 +68,6 @@ public:
   {
     const auto nzones = numberOfZones();
 
-    axom::ArrayView<IndexType> connectivity(m_connectivity);
     if constexpr (NDIMS == 2)
     {
       // Q: Should we make a for_all() that iterates over multiple ranges?
@@ -77,7 +76,8 @@ public:
       axom::for_all<ExecSpace>(0, nzones, AXOM_LAMBDA(int zoneIndex)
       {
         using ShapeType = QuadShape<IndexType>;
-        const ShapeType shape(axom::ArrayView<IndexType>(connectivity.data() + ShapeType::zoneOffset(zoneIndex), ShapeType::numberOfNodes()));
+        IndexType data[4];
+        const ShapeType shape(axom::ArrayView<IndexType>(data, 4));
         func(zoneIndex, shape);
       });
     }
@@ -86,7 +86,8 @@ public:
       axom::for_all<ExecSpace>(0, nzones, AXOM_LAMBDA(int zoneIndex)
       {
         using ShapeType = HexShape<IndexType>;
-        const ShapeType shape(axom::ArrayView<IndexType>(connectivity.data() + ShapeType::zoneOffset(zoneIndex), ShapeType::numberOfNodes()));
+        IndexType data[8];
+        const ShapeType shape(axom::ArrayView<IndexType>(data, 8));
         func(zoneIndex, shape);
       });
     }
