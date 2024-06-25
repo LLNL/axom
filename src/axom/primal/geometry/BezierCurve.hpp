@@ -531,8 +531,6 @@ public:
     //  which requires all first derivatives
     else
     {
-      VectorType val;
-
       // Store BezierPatch of projective weights, (wx, wy, wz)
       //  and BezierPatch of weights (w)
       BezierCurve<T, NDIMS> projective(ord);
@@ -717,8 +715,6 @@ public:
     //  which requires all first derivatives
     else
     {
-      VectorType val;
-
       // Store BezierPatch of projective weights, (wx, wy, wz)
       //  and BezierPatch of weights (w)
       BezierCurve<T, NDIMS> projective(ord);
