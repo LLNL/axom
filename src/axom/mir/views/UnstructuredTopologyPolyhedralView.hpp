@@ -143,6 +143,21 @@ public:
     });
   }
 
+  template <typename ExecSpace, typename ViewType, typename FuncType>
+  void for_selected_zones(const ViewType &selectedIdsView, const FuncType &&func) const
+  {
+    const auto nSelectedZones = selectedIdsView.size();
+
+    ViewType idsView(selectedIdsView);
+    const PolyhedronData sd(m_data);
+    axom::for_all<ExecSpace>(0, nSelectedZones, AXOM_LAMBDA(int selectIndex)
+    {
+      const auto zoneIndex = idsView[selectIndex];
+      const PolyhedronShape shape(sd, zoneIndex);
+      func(zoneIndex, shape);
+    });
+  }
+
 private:
   PolyhedronData m_data;
 };

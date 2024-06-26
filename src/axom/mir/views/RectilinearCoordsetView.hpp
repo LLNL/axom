@@ -9,6 +9,7 @@
 #include "axom/core/StackArray.hpp"
 #include "axom/core/ArrayView.hpp"
 #include "axom/primal/geometry/Point.hpp"
+#include "axom/mir/views/StructuredIndexing.hpp"
 
 namespace axom
 {
@@ -42,6 +43,8 @@ public:
   RectilinearCoordsetView2(const axom::ArrayView<DataType> &x,
                            const axom::ArrayView<DataType> &y) : m_coordinates{x, y}
   {
+    m_shape.m_dimensions[0] = m_coordinates[0].size();
+    m_shape.m_dimensions[1] = m_coordinates[1].size();
   }
 
   /**
@@ -52,7 +55,7 @@ public:
   AXOM_HOST_DEVICE
   IndexType size() const
   {
-    return m_coordinates[0].size() * m_coordinates[1].size();
+    return m_shape.size();
   }
 
   /**
@@ -79,7 +82,7 @@ public:
   AXOM_HOST_DEVICE
   PointType getPoint(IndexType vertex_index) const
   {
-    return getPoint(IndexToLogicalIndex(vertex_index));
+    return getPoint(m_shape.IndexToLogicalIndex(vertex_index));
   }
 
   /**
@@ -107,30 +110,12 @@ public:
   PointType
   operator[](IndexType vertex_index) const
   {
-    return getPoint(IndexToLogicalIndex(vertex_index));
+    return getPoint(m_shape.IndexToLogicalIndex(vertex_index));
   }
 
 private:
-  RectilinearCoordsetView2() = delete;
-
-  /**
-   * \brief Turn an index into a logical IJ index.
-   *
-   * \param index The index to convert.
-   *
-   * \return The logical index that corresponds to the \a index.
-   */
-  AXOM_HOST_DEVICE
-  LogicalIndexType IndexToLogicalIndex(IndexType index) const
-  {
-    LogicalIndexType logical;
-    const auto nx = m_coordinates[0].size();
-    logical[0] = index % nx;
-    logical[1] = index / nx;
-    return logical;
-  }
-
-  axom::ArrayView<DataType> m_coordinates[2];
+  axom::ArrayView<DataType>        m_coordinates[2];
+  StructuredIndexing<IndexType, 2> m_shape;
 };
 
 /**
@@ -155,8 +140,11 @@ public:
   AXOM_HOST_DEVICE
   RectilinearCoordsetView3(const axom::ArrayView<DataType> &x,
                            const axom::ArrayView<DataType> &y,
-                           const axom::ArrayView<DataType> &z) : m_coordinates{x, y, z}
+                           const axom::ArrayView<DataType> &z) : m_coordinates{x, y, z}, m_shape()
   {
+    m_shape.m_dimensions[0] = m_coordinates[0].size();
+    m_shape.m_dimensions[1] = m_coordinates[1].size();
+    m_shape.m_dimensions[2] = m_coordinates[2].size();
   }
 
   /**
@@ -167,7 +155,7 @@ public:
   AXOM_HOST_DEVICE
   IndexType size() const
   {
-    return m_coordinates[0].size() * m_coordinates[1].size() * m_coordinates[2].size();
+    return m_shape.size();
   }
 
   /**
@@ -195,7 +183,7 @@ public:
   AXOM_HOST_DEVICE
   PointType getPoint(IndexType vertex_index) const
   {
-    return getPoint(IndexToLogicalIndex(vertex_index));
+    return getPoint(m_shape.IndexToLogicalIndex(vertex_index));
   }
 
   /**
@@ -223,32 +211,12 @@ public:
   PointType
   operator[](IndexType vertex_index) const
   {
-    return getPoint(IndexToLogicalIndex(vertex_index));
+    return getPoint(m_shape.IndexToLogicalIndex(vertex_index));
   }
 
 private:
-  RectilinearCoordsetView3() = delete;
-
-  /**
-   * \brief Turn an index into a logical IJK index.
-   *
-   * \param index The index to convert.
-   *
-   * \return The logical index that corresponds to the \a index.
-   */
-  AXOM_HOST_DEVICE
-  LogicalIndexType IndexToLogicalIndex(IndexType index) const
-  {
-    const auto nx = m_coordinates[0].size();
-    const auto nxy = nx * m_coordinates[1].size();
-    LogicalIndexType logical;
-    logical[0] = index % nx;
-    logical[1] = (index % nxy) / nx;
-    logical[2] = index / nxy;
-    return logical;
-  }
-
-  axom::ArrayView<DataType> m_coordinates[3];
+  axom::ArrayView<DataType>        m_coordinates[3];
+  StructuredIndexing<IndexType, 3> m_shape;
 };
 
 } // end namespace views

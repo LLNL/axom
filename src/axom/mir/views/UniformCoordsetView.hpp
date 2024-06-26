@@ -9,6 +9,7 @@
 #include "axom/core/StackArray.hpp"
 #include "axom/core/ArrayView.hpp"
 #include "axom/primal/geometry/Point.hpp"
+#include "axom/mir/views/StructuredIndexing.hpp"
 
 namespace axom
 {
@@ -28,7 +29,7 @@ template <typename DataType, int NDIMS = 2>
 class UniformCoordsetView
 {
 public:
-  using LogicalIndexType = axom::StackArray<axom::IndexType, NDIMS>;
+  using LogicalIndexType = typename StructuredIndexing<axom::IndexType, NDIMS>::LogicalIndex;
   using ExtentsType = axom::StackArray<DataType, NDIMS>;
   using IndexType = axom::IndexType;
   using value_type = DataType;
@@ -44,7 +45,7 @@ public:
   AXOM_HOST_DEVICE
   UniformCoordsetView(const LogicalIndexType dims,
                       const ExtentsType origin,
-                      const ExtentsType spacing) : m_dimensions{dims}, m_origin{origin}, m_spacing{spacing}
+                      const ExtentsType spacing) : m_shape{dims}, m_origin{origin}, m_spacing{spacing}
   {
   }
 
@@ -56,10 +57,7 @@ public:
   AXOM_HOST_DEVICE
   IndexType size() const
   {
-     IndexType sz = 1;
-     for(int i = 0; i < NDIMS; i++)
-       sz *= m_dimensions[i];
-     return sz;
+    return m_shape.size();
   }
 
   /**
@@ -70,7 +68,7 @@ public:
    * \return A point that corresponds to \a vertex_index.
    */
   AXOM_HOST_DEVICE
-  PointType getPoint(LogicalIndexType vertex_index) const
+  PointType getPoint(const LogicalIndexType &vertex_index) const
   {
     PointType pt;
     for(int i = 0; i < NDIMS; i++)
@@ -87,7 +85,7 @@ public:
    */
   AXOM_HOST_DEVICE
   PointType
-  operator[](LogicalIndexType vertex_index) const
+  operator[](const LogicalIndexType &vertex_index) const
   {
     return getPoint(vertex_index);
   }
@@ -103,55 +101,12 @@ public:
   PointType
   operator[](IndexType vertex_index) const
   {
-    return getPoint(IndexToLogicalIndex(vertex_index));
+    return getPoint(m_shape.IndexToLogicalIndex(vertex_index));
   }
 
-  
-private:
-  /**
-   * \brief Turn an index into a logical IJ index.
-   *
-   * \param index The index to convert.
-   *
-   * \return The logical index that corresponds to the \a index.
-   */
-  template <size_t _ndims = NDIMS>
-  AXOM_HOST_DEVICE
-  typename std::enable_if<_ndims == 2, LogicalIndexType>::type
-  IndexToLogicalIndex(IndexType index) const
-  {
-    LogicalIndexType logical;
-    const auto nx = m_dimensions[0];
-    assert(index >= 0);
-    logical[0] = index % nx;
-    logical[1] = index / nx;
-    return logical;
-  }
-
-  /**
-   * \brief Turn an index into a logical IJK index.
-   *
-   * \param index The index to convert.
-   *
-   * \return The logical index that corresponds to the \a index.
-   */
-  template <size_t _ndims = NDIMS>
-  AXOM_HOST_DEVICE
-  typename std::enable_if<_ndims == 3, LogicalIndexType>::type
-  IndexToLogicalIndex(IndexType index) const
-  {
-    LogicalIndexType logical;
-    const auto nx = m_dimensions[0];
-    const auto nxy = nx * m_dimensions[1];
-    logical[0] = index % nx;
-    logical[1] = (index % nxy) / nx;
-    logical[2] = index / nxy;
-    return logical;
-  }
-
-  LogicalIndexType m_dimensions;
-  ExtentsType      m_origin;
-  ExtentsType      m_spacing;
+  StructuredIndexing<IndexType, NDIMS> m_shape;
+  ExtentsType                          m_origin;
+  ExtentsType                          m_spacing;
 };
 
 } // end namespace views

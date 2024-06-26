@@ -48,6 +48,9 @@ public:
                                       const axom::ArrayView<IndexType> &sizes,
                                       const axom::ArrayView<IndexType> &offsets) : m_connectivity(conn), m_sizes(sizes), m_offsets(offsets)
   {
+    assert(m_sizes.size() != 0);
+    assert(m_offsets.size() != 0);
+    assert(m_offsets.size() == m_sizes.size());
   }
 
   /**
@@ -76,10 +79,6 @@ public:
     axom::ArrayView<IndexType> connectivity(m_connectivity);
     if constexpr (ShapeType::is_variable_size())
     {
-      assert(m_sizes.size() != 0);
-      assert(m_offsets.size() != 0);
-      assert(m_offsets.size() == m_sizes.size());
-
       axom::ArrayView<IndexType> sizes(m_sizes);
       axom::ArrayView<IndexType> offsets(m_offsets);
       axom::for_all<ExecSpace>(0, nzones, AXOM_LAMBDA(int zoneIndex)
@@ -93,6 +92,46 @@ public:
     {
       axom::for_all<ExecSpace>(0, nzones, AXOM_LAMBDA(int zoneIndex)
       {
+        const axom::ArrayView<IndexType> shapeData(connectivity.data() + ShapeType::zoneOffset(zoneIndex), ShapeType::numberOfNodes());
+        const ShapeType shape(shapeData);
+        func(zoneIndex, shape);
+      });
+    }
+  }
+
+  /**
+   * \brief Execute a function for each zone in the mesh.
+   *
+   * \tparam ExecSpace The execution space for the function body.
+   * \tparam FuncType  The type for the function/lambda to execute. It will accept a zone index and shape.
+   *
+   * \param func The function/lambda that will be executed for each zone in the mesh.
+   */
+  template <typename ExecSpace, typename ViewType, typename FuncType>
+  void for_selected_zones(const ViewType &selectedIdsView, const FuncType &&func) const
+  {
+    const auto nSelectedZones = selectedIdsView.size();
+
+    ViewType idsView(selectedIdsView);
+    axom::ArrayView<IndexType> connectivity(m_connectivity);
+
+    if constexpr (ShapeType::is_variable_size())
+    {
+      axom::ArrayView<IndexType> sizes(m_sizes);
+      axom::ArrayView<IndexType> offsets(m_offsets);
+      axom::for_all<ExecSpace>(0, nSelectedZones, AXOM_LAMBDA(int selectIndex)
+      {
+        const auto zoneIndex = idsView[selectIndex];
+        const axom::ArrayView<IndexType> shapeData(connectivity.data() + offsets[zoneIndex], sizes[zoneIndex]);
+        const ShapeType shape(shapeData);
+        func(zoneIndex, shape);
+      });
+    }
+    else
+    {
+      axom::for_all<ExecSpace>(0, nSelectedZones, AXOM_LAMBDA(int selectIndex)
+      {
+        const auto zoneIndex = idsView[selectIndex];
         const axom::ArrayView<IndexType> shapeData(connectivity.data() + ShapeType::zoneOffset(zoneIndex), ShapeType::numberOfNodes());
         const ShapeType shape(shapeData);
         func(zoneIndex, shape);

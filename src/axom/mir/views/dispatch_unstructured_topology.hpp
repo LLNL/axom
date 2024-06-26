@@ -29,7 +29,8 @@ constexpr int AnyShape = -1;
  * \tparam ShapeTypes Allows us to limit which shape types get compiled in.
  * \tparam FuncType The function/lambda type that will be invoked on the view.
  *
- * \
+ * \param topo The node that contains the topology.
+ * \param func The function/lambda to call with the topology view.
  */
 template <int ShapeTypes = AnyShape, typename FuncType>
 void dispatch_unstructured_topology(const conduit::Node &topo, FuncType &&func)

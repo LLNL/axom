@@ -7,6 +7,7 @@
 #define AXOM_MIR_VIEWS_STRUCTURED_TOPOLOGY_VIEW_HPP_
 
 #include "axom/mir/views/Shapes.hpp"
+#include "axom/mir/views/StructuredIndexing.hpp"
 
 namespace axom
 {
@@ -28,8 +29,9 @@ class StructuredTopologyView
 {
 public:
   using IndexType = IndexT;
-  using LogicalIndexType = StackArray<IndexType, NDIMS>;
-  constexpr static int Dimensions = NDIMS;
+  using LogicalIndexType = axom::StackArray<IndexT, NDIMS>; //typename StructuredIndexing<IndexType, NDIMS>::LogicalIndex;
+
+  constexpr static int dimensions() { return NDIMS; }
 
   /**
    * \brief Constructor
@@ -37,7 +39,7 @@ public:
    * \param conn The mesh connectivity.
    */
   AXOM_HOST_DEVICE
-  StructuredTopologyView(const LogicalIndexType &dims) : m_dimensions(dims)
+  StructuredTopologyView(const LogicalIndexType &dims) : m_shape(dims)
   {
   }
 
@@ -49,10 +51,7 @@ public:
   AXOM_HOST_DEVICE
   IndexType size() const
   {
-     IndexType sz = 1;
-     for(int i = 0; i < NDIMS; i++)
-       sz *= m_dimensions[i];
-     return sz;
+     return m_shape.size();
   }
 
   /**
@@ -67,10 +66,10 @@ public:
    *
    * \return The mesh logical dimensions.
    */
-  const LogicalIndexType &dimensions() const { return m_dimensions; }
+  const LogicalIndexType &logicalDimensions() const { return m_shape; }
 
   /**
-   * \brief Execute a function for each zone in the mesh.
+   * \brief Execute a function for each zone in the mesh using axom::for_all.
    *
    * \tparam ExecSpace The execution space for the function body.
    * \tparam FuncType  The type for the function/lambda to execute. It will accept a zone index and shape.
@@ -83,35 +82,135 @@ public:
   {
     const auto nzones = numberOfZones();
 
-    if constexpr (NDIMS == 2)
-    {
-      // Q: Should we make a for_all() that iterates over multiple ranges?
-      // Q: Should the logical index be passed to the lambda?
-
-      axom::for_all<ExecSpace>(0, nzones, AXOM_LAMBDA(int zoneIndex)
-      {
-        using ShapeType = QuadShape<IndexType>;
-        IndexType data[4];
-        const ShapeType shape(axom::ArrayView<IndexType>(data, 4));
-        func(zoneIndex, shape);
-      });
-    }
     if constexpr (NDIMS == 3)
     {
+      const StructuredIndexing<IndexType, NDIMS> zoneShape{m_shape},
+                                                 nodeShape{{m_shape.m_dimensions[0] + 1,
+                                                            m_shape.m_dimensions[1] + 1,
+                                                            m_shape.m_dimensions[2] + 1}};
+      const auto jp = nodeShape.jStride();
+      const auto kp = nodeShape.kStride();
       axom::for_all<ExecSpace>(0, nzones, AXOM_LAMBDA(int zoneIndex)
       {
         using ShapeType = HexShape<IndexType>;
+
+        const auto logical = zoneShape.IndexToLogicalIndex(zoneIndex);
         IndexType data[8];
+        data[0] = nodeShape.LogicalIndexToIndex(logical);
+        data[1] = data[0] + 1;
+        data[2] = data[1] + jp;
+        data[3] = data[2] - 1;
+        data[4] = data[0] + kp;
+        data[5] = data[1] + kp;
+        data[6] = data[2] + kp;
+        data[7] = data[3] + kp;
+
         const ShapeType shape(axom::ArrayView<IndexType>(data, 8));
         func(zoneIndex, shape);
       });
     }
+    else if constexpr (NDIMS == 2)
+    {
+      // Q: Should we make a for_all() that iterates over multiple ranges?
+      // Q: Should the logical index be passed to the lambda?
+
+      const StructuredIndexing<IndexType, NDIMS> zoneShape{m_shape},
+                                                 nodeShape{{m_shape.m_dimensions[0] + 1,
+                                                            m_shape.m_dimensions[1] + 1}};
+      const auto jp = nodeShape.jStride();
+
+      axom::for_all<ExecSpace>(0, nzones, AXOM_LAMBDA(int zoneIndex)
+      {
+        using ShapeType = QuadShape<IndexType>;
+
+        const auto logical = zoneShape.IndexToLogicalIndex(zoneIndex);
+        IndexType data[4];
+        data[0] = nodeShape.LogicalIndexToIndex(logical);
+        data[1] = data[0] + 1;
+        data[2] = data[1] + jp;
+        data[3] = data[2] - 1;
+
+        const ShapeType shape(axom::ArrayView<IndexType>(data, 4));
+        func(zoneIndex, shape);
+      });
+    }
+    // TODO: NDIMS == 1
+  }
+
+  /**
+   * \brief Execute a function for each zone in the mesh using axom::for_all.
+   *
+   * \tparam ExecSpace The execution space for the function body.
+   * \tparam ViewType  A concrete ArrayView that contains selected zone ids.
+   * \tparam FuncType  The type for the function/lambda to execute. It will accept a zone index and shape.
+   *
+   * \param func The function/lambda that will be executed for each zone in the mesh.
+   */
+  template <typename ExecSpace, typename ViewType, typename FuncType>
+  void for_selected_zones(const ViewType &selectedIdsView, const FuncType &&func) const
+  {
+    const auto nSelectedZones = selectedIdsview.size();
+    ViewType idsView(selectedIdsView);
+
+    if constexpr (NDIMS == 3)
+    {
+      const StructuredIndexing<IndexType, NDIMS> zoneShape{m_shape},
+                                                 nodeShape{{m_shape.m_dimensions[0] + 1,
+                                                            m_shape.m_dimensions[1] + 1,
+                                                            m_shape.m_dimensions[2] + 1}};
+      const auto jp = nodeShape.jStride();
+      const auto kp = nodeShape.kStride();
+      axom::for_all<ExecSpace>(0, nSelectedZones, AXOM_LAMBDA(int selectIndex)
+      {
+        using ShapeType = HexShape<IndexType>;
+
+        const auto zoneIndex = idsView[selectIndex];
+        const auto logical = zoneShape.IndexToLogicalIndex(zoneIndex);
+        IndexType data[8];
+        data[0] = nodeShape.LogicalIndexToIndex(logical);
+        data[1] = data[0] + 1;
+        data[2] = data[1] + jp;
+        data[3] = data[2] - 1;
+        data[4] = data[0] + kp;
+        data[5] = data[1] + kp;
+        data[6] = data[2] + kp;
+        data[7] = data[3] + kp;
+
+        const ShapeType shape(axom::ArrayView<IndexType>(data, 8));
+        func(zoneIndex, shape);
+      });
+    }
+    else if constexpr (NDIMS == 2)
+    {
+      // Q: Should we make a for_all() that iterates over multiple ranges?
+      // Q: Should the logical index be passed to the lambda?
+
+      const StructuredIndexing<IndexType, NDIMS> zoneShape{m_shape},
+                                                 nodeShape{{m_shape.m_dimensions[0] + 1,
+                                                            m_shape.m_dimensions[1] + 1}};
+      const auto jp = nodeShape.jStride();
+
+      axom::for_all<ExecSpace>(0, nSelectedZones, AXOM_LAMBDA(int selectIndex)
+      {
+        using ShapeType = QuadShape<IndexType>;
+
+        const auto zoneIndex = idsView[selectIndex];
+        const auto logical = zoneShape.IndexToLogicalIndex(zoneIndex);
+        IndexType data[4];
+        data[0] = nodeShape.LogicalIndexToIndex(logical);
+        data[1] = data[0] + 1;
+        data[2] = data[1] + jp;
+        data[3] = data[2] - 1;
+
+        const ShapeType shape(axom::ArrayView<IndexType>(data, 4));
+        func(zoneIndex, shape);
+      });
+    }
+    // TODO: NDIMS == 1
   }
 
 private:
-  StructuredTopologyView() = delete;
-
-  LogicalIndexType m_dimensions;
+  StructuredIndexing<IndexType, NDIMS> m_shape;
 };
 
 } // end namespace views
