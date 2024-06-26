@@ -151,7 +151,7 @@ are designed to handle building suites of TPLs via uberenv and Spack.
   the end of which succeeded or failed.
 * ``build_src.py``: This scripts takes the existing host-configs, or the
   specific one you point at, and builds and tests Axom against them. It also
-   tests the ``using-with-cmake`` examples.
+  tests the ``using-with-cmake`` examples.
 * ``build_devtools.py``: This script builds and installs the developer tools
   listed in the ``axom/scipts/spack/packages/axomdevtools/package.py`` Spack
   package. It also uses a different set of Spack configs located in the 
@@ -255,8 +255,7 @@ needed to work with the TPL update(s), make the changes and test them.
           the ``uberenv.py`` script in the top-level Axom directory.
           For example:: 
 
-            python3 ./scrpts/uberenv/uberenv.py --prefix /my/tpl/path
-                    --spec clang@10.0.0~cpp14+devtools+mfem+c2c
+            python3 ./scrpts/uberenv/uberenv.py --prefix /my/tpl/path --spec clang@10.0.0~cpp14+devtools+mfem+c2c
 
           will build the TPLs for the clang 10.0.0 compiler, install them
           to the ``/my/tpl/path`` directory, and generate a host-config file
