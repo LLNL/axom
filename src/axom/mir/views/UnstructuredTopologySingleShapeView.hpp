@@ -21,11 +21,11 @@ namespace views
  * \tparam IndexT The index type that will be used for connectivity, etc.
  * \tparam ShapeT The shape type.
  */
-template <typename IndexT, typename ShapeT>
+template <typename ShapeT>
 class UnstructuredTopologySingleShapeView
 {
 public:
-  using IndexType = IndexT;
+  using IndexType = typename ShapeT::IndexType;
   using ShapeType = ShapeT;
 
   /**
@@ -84,7 +84,8 @@ public:
       axom::ArrayView<IndexType> offsets(m_offsets);
       axom::for_all<ExecSpace>(0, nzones, AXOM_LAMBDA(int zoneIndex)
       {
-        const ShapeType shape(axom::ArrayView<IndexType>(connectivity.data() + offsets[zoneIndex], sizes[zoneIndex]));
+        const axom::ArrayView<IndexType> shapeData(connectivity.data() + offsets[zoneIndex], sizes[zoneIndex]);
+        const ShapeType shape(shapeData);
         func(zoneIndex, shape);
       });
     }
@@ -92,7 +93,8 @@ public:
     {
       axom::for_all<ExecSpace>(0, nzones, AXOM_LAMBDA(int zoneIndex)
       {
-        const ShapeType shape(axom::ArrayView<IndexType>(connectivity.data() + ShapeType::zoneOffset(zoneIndex), ShapeType::numberOfNodes()));
+        const axom::ArrayView<IndexType> shapeData(connectivity.data() + ShapeType::zoneOffset(zoneIndex), ShapeType::numberOfNodes());
+        const ShapeType shape(shapeData);
         func(zoneIndex, shape);
       });
     }

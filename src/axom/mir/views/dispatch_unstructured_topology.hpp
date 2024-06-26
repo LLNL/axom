@@ -3,13 +3,15 @@
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
-#ifndef AXOM_MIR_DISPATCH_COORDSET_HPP_
-#define AXOM_MIR_DISPATCH_COORDSET_HPP_
+#ifndef AXOM_MIR_DISPATCH_UNSTRUCTURED_TOPOLOGY_HPP_
+#define AXOM_MIR_DISPATCH_UNSTRUCTURED_TOPOLOGY_HPP_
 
 #include "axom/mir/views/UnstructuredTopologySingleShapeView.hpp"
 #include "axom/mir/views/UnstructuredTopologyPolyhedralView.hpp"
-#include "axom/mir/views/dispatch_coordset.hpp"
 #include "axom/mir/views/NodeArrayView.hpp"
+#include "axom/mir/views/Shapes.hpp"
+
+#include <conduit/conduit_blueprint.hpp>
 
 namespace axom
 {
@@ -35,10 +37,6 @@ void dispatch_unstructured_topology(const conduit::Node &topo, FuncType &&func)
   const std::string type = topo["type"].as_string();
   if(type == "unstructured")
   {
-    const conduit::Node *coordset_ptr = conduit::blueprint::mesh::utils::find_reference_node(topo, "coordset");
-    const conduit::Node &coordset = *coordset_ptr;
-    dispatch_coordset(coordset, [&](auto coordsetView)
-    {
       const std::string shape = topo["elements/shape"].as_string();
       bool eligible = true;
 
@@ -54,12 +52,13 @@ void dispatch_unstructured_topology(const conduit::Node &topo, FuncType &&func)
             {
               using IndexType = typename decltype(seConnView)::value_type;
               UnstructuredTopologyPolyhedralView<IndexType> ugView(seConnView, seSizesView, seOffsetsView, connView, sizesView, offsetsView);
-              func(shape, ugView, coordsetView);
+              func(shape, ugView);
             });
           eligible = false;
         }
       }
-
+#if 0
+// TODO: Can't use polygon with single shape view because its sizes are not known at compile time.
       if constexpr (ShapeTypes & PolygonShape::id())
       {
         if(eligible && shape == "polygon")
@@ -70,12 +69,12 @@ void dispatch_unstructured_topology(const conduit::Node &topo, FuncType &&func)
           {
             using IndexType = typename decltype(connView)::value_type;
             UnstructuredTopologySingleShapeView<IndexType, PolygonShape<IndexType> > ugView(connView, sizesView, offsetsView);
-            func(shape, ugView, coordsetView);
+            func(shape, ugView);
           });
           eligible = false;
         }
       }
-
+#endif
       if constexpr (ShapeTypes & AnyShape)
       {
         if(eligible && shape == "mixed")
@@ -89,62 +88,64 @@ void dispatch_unstructured_topology(const conduit::Node &topo, FuncType &&func)
       {
         using IndexType = typename decltype(connView)::value_type;
         // TODO: points, lines
-        if constexpr (ShapeTypes & TriShape::id())
+        if constexpr (ShapeTypes & TriShape<IndexType>::id())
         {
           if(eligible && shape == "tet")
           {
-            UnstructuredTopologySingleShapeView<IndexType, TriShape<IndexType> > ugView(connView);
-            func(shape, ugView, coordsetView);
+            UnstructuredTopologySingleShapeView<TriShape<IndexType>> ugView(connView);
+            func(shape, ugView);
             eligible = false;
           }
         }
-        if constexpr (ShapeTypes & QuadShape::id())
+        if constexpr (ShapeTypes & QuadShape<IndexType>::id())
         {
           if(eligible && shape == "tet")
           {
-            UnstructuredTopologySingleShapeView<IndexType, QuadShape<IndexType> > ugView(connView);
-            func(shape, ugView, coordsetView);
+            UnstructuredTopologySingleShapeView<QuadShape<IndexType>> ugView(connView);
+            func(shape, ugView);
             eligible = false;
           }
         }
-        if constexpr (ShapeTypes & TetShape::id())
+        if constexpr (ShapeTypes & TetShape<IndexType>::id())
         {
           if(eligible && shape == "tet")
           {
-            UnstructuredTopologySingleShapeView<IndexType, TetShape<IndexType> > ugView(connView);
-            func(shape, ugView, coordsetView);
+            UnstructuredTopologySingleShapeView<TetShape<IndexType>> ugView(connView);
+            func(shape, ugView);
             eligible = false;
           }
         }
-        if constexpr (ShapeTypes & PyramidShape::id())
+        if constexpr (ShapeTypes & PyramidShape<IndexType>::id())
         {
           if(eligible && shape == "pyramid")
           {
-            UnstructuredTopologySingleShapeView<IndexType, PyramidShape<IndexType> > ugView(connView);
-            func(shape, ugView, coordsetView);
+            UnstructuredTopologySingleShapeView<PyramidShape<IndexType>> ugView(connView);
+            func(shape, ugView);
             eligible = false;
           }
         }
-        if constexpr (ShapeTypes & WedgeShape::id())
+        if constexpr (ShapeTypes & WedgeShape<IndexType>::id())
         {
           if(eligible && shape == "wedge")
           {
-            UnstructuredTopologySingleShapeView<IndexType, WedgeShape<IndexType> > ugView(connView);
-            func(shape, ugView, coordsetView);
+            UnstructuredTopologySingleShapeView<WedgeShape<IndexType>> ugView(connView);
+            func(shape, ugView);
             eligible = false;
           }
         }
-        if constexpr (ShapeTypes & HexShape::id())
+        if constexpr (ShapeTypes & HexShape<IndexType>::id())
         {
           if(eligible && shape == "hex")
           {
-            UnstructuredTopologySingleShapeView<IndexType, HexShape<IndexType> > ugView(connView);
-            func(shape, ugView, coordsetView);
+            UnstructuredTopologySingleShapeView<HexShape<IndexType>> ugView(connView);
+            func(shape, ugView);
             eligible = false;
           }
         }
+
+        // TODO: handle mixed shapes.
+
       });
-    });
   }
 }
 

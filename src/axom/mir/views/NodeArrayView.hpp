@@ -6,7 +6,7 @@
 #ifndef AXOM_MIR_VIEWS_NODE_ARRAY_VIEW_HPP_
 #define AXOM_MIR_VIEWS_NODE_ARRAY_VIEW_HPP_
 
-#include "axom/slic/slic.hpp"
+#include "axom/slic/interface/slic.hpp"
 
 #include <conduit/conduit.hpp>
 #include <iostream>
@@ -80,14 +80,14 @@ template <bool Enabled, typename FuncType> std::enable_if_t<Enabled, void>
 Node_to_ArrayView_single_int8(const conduit::Node &n, FuncType &&func)
 {
   const auto size = n.dtype().number_of_elements();
-  axom::ArrayView<conduit::int8> view(n.as_int8_ptr(), size);
+  axom::ArrayView<const conduit::int8> view(n.as_int8_ptr(), size);
   func(view);
 }
 
 template <bool Enabled, typename FuncType> std::enable_if_t<!Enabled, void>
-Node_to_ArrayView_single_int8(const conduit::Node &n, FuncType &&func)
+Node_to_ArrayView_single_int8(const conduit::Node &AXOM_UNUSED_PARAM(n), FuncType && AXOM_UNUSED_PARAM(func))
 {
-  std::cout << "Unsupported int8 node." << std::endl;
+  SLIC_WARNING("Unsupported int8 node.");
 }
 
 template <bool Enabled, typename FuncType> std::enable_if_t<Enabled, void>
@@ -99,23 +99,23 @@ Node_to_ArrayView_single_int8(conduit::Node &n, FuncType &&func)
 }
 
 template <bool Enabled, typename FuncType> std::enable_if_t<!Enabled, void>
-Node_to_ArrayView_single_int8(conduit::Node &n, FuncType &&func)
+Node_to_ArrayView_single_int8(conduit::Node &AXOM_UNUSED_PARAM(n), FuncType && AXOM_UNUSED_PARAM(func))
 {
-  std::cout << "Unsupported int8 node." << std::endl;
+  SLIC_WARNING("Unsupported int8 node.");
 }
 
 template <bool Enabled, typename FuncType> std::enable_if_t<Enabled, void>
 Node_to_ArrayView_single_int16(const conduit::Node &n, FuncType &&func)
 {
   const auto size = n.dtype().number_of_elements();
-  axom::ArrayView<conduit::int16> view(n.as_int16_ptr(), size);
+  axom::ArrayView<const conduit::int16> view(n.as_int16_ptr(), size);
   func(view);
 }
 
 template <bool Enabled, typename FuncType> std::enable_if_t<!Enabled, void>
-Node_to_ArrayView_single_int16(const conduit::Node &n, FuncType &&func)
+Node_to_ArrayView_single_int16(const conduit::Node &AXOM_UNUSED_PARAM(n), FuncType && AXOM_UNUSED_PARAM(func))
 {
-  std::cout << "Unsupported int16 node." << std::endl;
+  SLIC_WARNING("Unsupported int16 node.");
 }
 
 template <bool Enabled, typename FuncType> std::enable_if_t<Enabled, void>
@@ -127,23 +127,23 @@ Node_to_ArrayView_single_int16(conduit::Node &n, FuncType &&func)
 }
 
 template <bool Enabled, typename FuncType> std::enable_if_t<!Enabled, void>
-Node_to_ArrayView_single_int16(conduit::Node &n, FuncType &&func)
+Node_to_ArrayView_single_int16(conduit::Node &AXOM_UNUSED_PARAM(n), FuncType && AXOM_UNUSED_PARAM(func))
 {
-  std::cout << "Unsupported int16 node." << std::endl;
+  SLIC_WARNING("Unsupported int16 node.");
 }
 
 template <bool Enabled, typename FuncType> std::enable_if_t<Enabled, void>
 Node_to_ArrayView_single_int32(const conduit::Node &n, FuncType &&func)
 {
   const auto size = n.dtype().number_of_elements();
-  axom::ArrayView<conduit::int32> view(n.as_int32_ptr(), size);
+  axom::ArrayView<const conduit::int32> view(n.as_int32_ptr(), size);
   func(view);
 }
 
 template <bool Enabled, typename FuncType> std::enable_if_t<!Enabled, void>
-Node_to_ArrayView_single_int32(const conduit::Node &n, FuncType &&func)
+Node_to_ArrayView_single_int32(const conduit::Node & AXOM_UNUSED_PARAM(n), FuncType && AXOM_UNUSED_PARAM(func))
 {
-  std::cout << "Unsupported int32 node." << std::endl;
+  SLIC_WARNING("Unsupported int32 node.");
 }
 
 template <bool Enabled, typename FuncType> std::enable_if_t<Enabled, void>
@@ -155,23 +155,23 @@ Node_to_ArrayView_single_int32(conduit::Node &n, FuncType &&func)
 }
 
 template <bool Enabled, typename FuncType> std::enable_if_t<!Enabled, void>
-Node_to_ArrayView_single_int32(conduit::Node &n, FuncType &&func)
+Node_to_ArrayView_single_int32(conduit::Node &AXOM_UNUSED_PARAM(n), FuncType && AXOM_UNUSED_PARAM(func))
 {
-  std::cout << "Unsupported int32 node." << std::endl;
+  SLIC_WARNING("Unsupported int32 node.");
 }
 
 template <bool Enabled, typename FuncType> std::enable_if_t<Enabled, void>
 Node_to_ArrayView_single_int64(const conduit::Node &n, FuncType &&func)
 {
   const auto size = n.dtype().number_of_elements();
-  axom::ArrayView<conduit::int64> view(n.as_int64_ptr(), size);
+  axom::ArrayView<const conduit::int64> view(n.as_int64_ptr(), size);
   func(view);
 }
 
 template <bool Enabled, typename FuncType> std::enable_if_t<!Enabled, void>
-Node_to_ArrayView_single_int64(const conduit::Node &n, FuncType &&func)
+Node_to_ArrayView_single_int64(const conduit::Node &AXOM_UNUSED_PARAM(n), FuncType && AXOM_UNUSED_PARAM(func))
 {
-  std::cout << "Unsupported int64 node." << std::endl;
+  SLIC_WARNING("Unsupported int64 node.");
 }
 
 template <bool Enabled, typename FuncType> std::enable_if_t<Enabled, void>
@@ -183,79 +183,79 @@ Node_to_ArrayView_single_int64(conduit::Node &n, FuncType &&func)
 }
 
 template <bool Enabled, typename FuncType> std::enable_if_t<!Enabled, void>
-Node_to_ArrayView_single_int64(conduit::Node &n, FuncType &&func)
+Node_to_ArrayView_single_int64(conduit::Node &AXOM_UNUSED_PARAM(n), FuncType && AXOM_UNUSED_PARAM(func))
 {
-  std::cout << "Unsupported int64 node." << std::endl;
+  SLIC_WARNING("Unsupported int64 node.");
 }
 
 template <bool Enabled, typename FuncType> std::enable_if_t<Enabled, void>
 Node_to_ArrayView_single_uint8(const conduit::Node &n, FuncType &&func)
 {
   const auto size = n.dtype().number_of_elements();
-  axom::ArrayView<conduit::uint8> view(n.as_uint8_ptr(), size);
+  axom::ArrayView<const conduit::uint8> view(n.as_uint8_ptr(), size);
   func(view);
 }
 
 template <bool Enabled, typename FuncType> std::enable_if_t<!Enabled, void>
-Node_to_ArrayView_single_uint8(const conduit::Node &n, FuncType &&func)
+Node_to_ArrayView_single_uint8(const conduit::Node &AXOM_UNUSED_PARAM(n), FuncType && AXOM_UNUSED_PARAM(func))
 {
-  std::cout << "Unsupported uint8 node." << std::endl;
+  SLIC_WARNING("Unsupported uint8 node.");
 }
 
 template <bool Enabled, typename FuncType> std::enable_if_t<Enabled, void>
 Node_to_ArrayView_single_uint8(conduit::Node &n, FuncType &&func)
 {
   const auto size = n.dtype().number_of_elements();
-  axom::ArrayView<conduit::uint8> view(n.as_uint8_ptr(), size);
+  axom::ArrayView<const conduit::uint8> view(n.as_uint8_ptr(), size);
   func(view);
 }
 
 template <bool Enabled, typename FuncType> std::enable_if_t<!Enabled, void>
-Node_to_ArrayView_single_uint8(conduit::Node &n, FuncType &&func)
+Node_to_ArrayView_single_uint8(conduit::Node &AXOM_UNUSED_PARAM(n), FuncType && AXOM_UNUSED_PARAM(func))
 {
-  std::cout << "Unsupported uint8 node." << std::endl;
+  SLIC_WARNING("Unsupported uint8 node.");
 }
 
 template <bool Enabled, typename FuncType> std::enable_if_t<Enabled, void>
 Node_to_ArrayView_single_uint16(const conduit::Node &n, FuncType &&func)
 {
   const auto size = n.dtype().number_of_elements();
-  axom::ArrayView<conduit::uint16> view(n.as_uint16_ptr(), size);
+  axom::ArrayView<const conduit::uint16> view(n.as_uint16_ptr(), size);
   func(view);
 }
 
 template <bool Enabled, typename FuncType> std::enable_if_t<!Enabled, void>
-Node_to_ArrayView_single_uint16(const conduit::Node &n, FuncType &&func)
+Node_to_ArrayView_single_uint16(const conduit::Node &AXOM_UNUSED_PARAM(n), FuncType && AXOM_UNUSED_PARAM(func))
 {
-  std::cout << "Unsupported uint16 node." << std::endl;
+  SLIC_WARNING("Unsupported uint16 node.");
 }
 
 template <bool Enabled, typename FuncType> std::enable_if_t<Enabled, void>
 Node_to_ArrayView_single_uint16(conduit::Node &n, FuncType &&func)
 {
   const auto size = n.dtype().number_of_elements();
-  axom::ArrayView<conduit::uint16> view(n.as_uint16_ptr(), size);
+  axom::ArrayView<const conduit::uint16> view(n.as_uint16_ptr(), size);
   func(view);
 }
 
 template <bool Enabled, typename FuncType> std::enable_if_t<!Enabled, void>
-Node_to_ArrayView_single_uint16(conduit::Node &n, FuncType &&func)
+Node_to_ArrayView_single_uint16(conduit::Node &AXOM_UNUSED_PARAM(n), FuncType && AXOM_UNUSED_PARAM(func))
 {
-  std::cout << "Unsupported uint16 node." << std::endl;
+  SLIC_WARNING("Unsupported uint16 node.");
 }
 
 template <bool Enabled, typename FuncType> std::enable_if_t<Enabled, void>
 Node_to_ArrayView_single_uint32(const conduit::Node &n, FuncType &&func)
 {
   const auto size = n.dtype().number_of_elements();
-  axom::ArrayView<conduit::uint32> view(n.as_uint32_ptr(), size);
+  axom::ArrayView<const conduit::uint32> view(n.as_uint32_ptr(), size);
   func(view);
 }
 
 template <bool Enabled, typename FuncType> std::enable_if_t<!Enabled, void>
-Node_to_ArrayView_single_uint32(const conduit::Node &n, FuncType &&func)
+Node_to_ArrayView_single_uint32(const conduit::Node &AXOM_UNUSED_PARAM(n), FuncType && AXOM_UNUSED_PARAM(func))
 {
-  std::cout << "Unsupported uint32 node." << std::endl;
+  SLIC_WARNING("Unsupported uint32 node.");
 }
 
 template <bool Enabled, typename FuncType> std::enable_if_t<Enabled, void>
@@ -267,23 +267,23 @@ Node_to_ArrayView_single_uint32(conduit::Node &n, FuncType &&func)
 }
 
 template <bool Enabled, typename FuncType> std::enable_if_t<!Enabled, void>
-Node_to_ArrayView_single_uint32(conduit::Node &n, FuncType &&func)
+Node_to_ArrayView_single_uint32(conduit::Node &AXOM_UNUSED_PARAM(n), FuncType && AXOM_UNUSED_PARAM(func))
 {
-  std::cout << "Unsupported uint32 node." << std::endl;
+  SLIC_WARNING("Unsupported uint32 node.");
 }
 
 template <bool Enabled, typename FuncType> std::enable_if_t<Enabled, void>
 Node_to_ArrayView_single_uint64(const conduit::Node &n, FuncType &&func)
 {
   const auto size = n.dtype().number_of_elements();
-  axom::ArrayView<conduit::uint64> view(n.as_uint64_ptr(), size);
+  axom::ArrayView<const conduit::uint64> view(n.as_uint64_ptr(), size);
   func(view);
 }
 
 template <bool Enabled, typename FuncType> std::enable_if_t<!Enabled, void>
-Node_to_ArrayView_single_uint64(const conduit::Node &n, FuncType &&func)
+Node_to_ArrayView_single_uint64(const conduit::Node &AXOM_UNUSED_PARAM(n), FuncType && AXOM_UNUSED_PARAM(func))
 {
-  std::cout << "Unsupported uint64 node." << std::endl;
+  SLIC_WARNING("Unsupported uint64 node.");
 }
 
 template <bool Enabled, typename FuncType> std::enable_if_t<Enabled, void>
@@ -295,23 +295,23 @@ Node_to_ArrayView_single_uint64(conduit::Node &n, FuncType &&func)
 }
 
 template <bool Enabled, typename FuncType> std::enable_if_t<!Enabled, void>
-Node_to_ArrayView_single_uint64(conduit::Node &n, FuncType &&func)
+Node_to_ArrayView_single_uint64(conduit::Node &AXOM_UNUSED_PARAM(n), FuncType && AXOM_UNUSED_PARAM(func))
 {
-  std::cout << "Unsupported uint64 node." << std::endl;
+  SLIC_WARNING("Unsupported uint64 node.");
 }
 
 template <bool Enabled, typename FuncType> std::enable_if_t<Enabled, void>
 Node_to_ArrayView_single_float32(const conduit::Node &n, FuncType &&func)
 {
   const auto size = n.dtype().number_of_elements();
-  axom::ArrayView<conduit::float32> view(n.as_float32_ptr(), size);
+  axom::ArrayView<const conduit::float32> view(n.as_float32_ptr(), size);
   func(view);
 }
 
 template <bool Enabled, typename FuncType> std::enable_if_t<!Enabled, void>
-Node_to_ArrayView_single_float32(const conduit::Node &n, FuncType &&func)
+Node_to_ArrayView_single_float32(const conduit::Node &AXOM_UNUSED_PARAM(n), FuncType && AXOM_UNUSED_PARAM(func))
 {
-  std::cout << "Unsupported float32 node." << std::endl;
+  SLIC_WARNING("Unsupported float32 node.");
 }
 
 template <bool Enabled, typename FuncType> std::enable_if_t<Enabled, void>
@@ -323,23 +323,23 @@ Node_to_ArrayView_single_float32(conduit::Node &n, FuncType &&func)
 }
 
 template <bool Enabled, typename FuncType> std::enable_if_t<!Enabled, void>
-Node_to_ArrayView_single_float32(conduit::Node &n, FuncType &&func)
+Node_to_ArrayView_single_float32(conduit::Node &AXOM_UNUSED_PARAM(n), FuncType && AXOM_UNUSED_PARAM(func))
 {
-  std::cout << "Unsupported float32 node." << std::endl;
+  SLIC_WARNING("Unsupported float32 node.");
 }
 
 template <bool Enabled, typename FuncType> std::enable_if_t<Enabled, void>
 Node_to_ArrayView_single_float64(const conduit::Node &n, FuncType &&func)
 {
   const auto size = n.dtype().number_of_elements();
-  axom::ArrayView<conduit::float64> view(n.as_float64_ptr(), size);
+  axom::ArrayView<const conduit::float64> view(n.as_float64_ptr(), size);
   func(view);
 }
 
 template <bool Enabled, typename FuncType> std::enable_if_t<!Enabled, void>
-Node_to_ArrayView_single_float64(const conduit::Node &n, FuncType &&func)
+Node_to_ArrayView_single_float64(const conduit::Node &AXOM_UNUSED_PARAM(n), FuncType && AXOM_UNUSED_PARAM(func))
 {
-  std::cout << "Unsupported float64 node." << std::endl;
+  SLIC_WARNING("Unsupported float64 node.");
 }
 
 template <bool Enabled, typename FuncType> std::enable_if_t<Enabled, void>
@@ -351,9 +351,9 @@ Node_to_ArrayView_single_float64(conduit::Node &n, FuncType &&func)
 }
 
 template <bool Enabled, typename FuncType> std::enable_if_t<!Enabled, void>
-Node_to_ArrayView_single_float64(conduit::Node &n, FuncType &&func)
+Node_to_ArrayView_single_float64(conduit::Node &AXOM_UNUSED_PARAM(n), FuncType && AXOM_UNUSED_PARAM(func))
 {
-  std::cout << "Unsupported float64 node." << std::endl;
+  SLIC_WARNING("Unsupported float64 node.");
 }
 
 template <int Types = select_all_types(), typename FuncType>
@@ -482,113 +482,115 @@ void Node_to_ArrayView_internal(conduit::Node &first, Args&&... args)
 }
 
 //------------------------------------------------------------------------------
+/// NOTE: handle const conduit::Node& better. For now, const_cast.
+
 template <bool Enabled, typename FuncType, typename... Args> std::enable_if_t<Enabled, void>
 Node_to_ArrayView_same_internal_int8(FuncType &&func, Args&&... args)
 {
-  func(axom::ArrayView<conduit::int8>(args.as_int8_ptr(), args.dtype().number_of_elements())...);
+  func(axom::ArrayView<conduit::int8>(const_cast<conduit::int8 *>(args.as_int8_ptr()), args.dtype().number_of_elements())...);
 }
 
 template <bool Enabled, typename FuncType, typename... Args> std::enable_if_t<!Enabled, void>
-Node_to_ArrayView_same_internal_int8(FuncType &&func, Args&&... args)
+Node_to_ArrayView_same_internal_int8(FuncType && AXOM_UNUSED_PARAM(func), Args&&... AXOM_UNUSED_PARAM(args))
 {
 }
 
 template <bool Enabled, typename FuncType, typename... Args> std::enable_if_t<Enabled, void>
 Node_to_ArrayView_same_internal_int16(FuncType &&func, Args&&... args)
 {
-  func(axom::ArrayView<conduit::int16>(args.as_int16_ptr(), args.dtype().number_of_elements())...);
+  func(axom::ArrayView<conduit::int16>(const_cast<conduit::int16 *>(args.as_int16_ptr()), args.dtype().number_of_elements())...);
 }
 
 template <bool Enabled, typename FuncType, typename... Args> std::enable_if_t<!Enabled, void>
-Node_to_ArrayView_same_internal_int16(FuncType &&func, Args&&... args)
+Node_to_ArrayView_same_internal_int16(FuncType && AXOM_UNUSED_PARAM(func), Args&&... AXOM_UNUSED_PARAM(args))
 {
 }
 
 template <bool Enabled, typename FuncType, typename... Args> std::enable_if_t<Enabled, void>
 Node_to_ArrayView_same_internal_int32(FuncType &&func, Args&&... args)
 {
-  func(axom::ArrayView<conduit::int32>(args.as_int32_ptr(), args.dtype().number_of_elements())...);
+  func(axom::ArrayView<conduit::int32>(const_cast<conduit::int32 *>(args.as_int32_ptr()), args.dtype().number_of_elements())...);
 }
 
 template <bool Enabled, typename FuncType, typename... Args> std::enable_if_t<!Enabled, void>
-Node_to_ArrayView_same_internal_int32(FuncType &&func, Args&&... args)
+Node_to_ArrayView_same_internal_int32(FuncType && AXOM_UNUSED_PARAM(func), Args&&... AXOM_UNUSED_PARAM(args))
 {
 }
 
 template <bool Enabled, typename FuncType, typename... Args> std::enable_if_t<Enabled, void>
 Node_to_ArrayView_same_internal_int64(FuncType &&func, Args&&... args)
 {
-  func(axom::ArrayView<conduit::int64>(args.as_int64_ptr(), args.dtype().number_of_elements())...);
+  func(axom::ArrayView<conduit::int64>(const_cast<conduit::int64 *>(args.as_int64_ptr()), args.dtype().number_of_elements())...);
 }
 
 template <bool Enabled, typename FuncType, typename... Args> std::enable_if_t<!Enabled, void>
-Node_to_ArrayView_same_internal_int64(FuncType &&func, Args&&... args)
+Node_to_ArrayView_same_internal_int64(FuncType && AXOM_UNUSED_PARAM(func), Args&&... AXOM_UNUSED_PARAM(args))
 {
 }
 
 template <bool Enabled, typename FuncType, typename... Args> std::enable_if_t<Enabled, void>
 Node_to_ArrayView_same_internal_uint8(FuncType &&func, Args&&... args)
 {
-  func(axom::ArrayView<conduit::uint8>(args.as_uint8_ptr(), args.dtype().number_of_elements())...);
+  func(axom::ArrayView<conduit::uint8>(const_cast<conduit::uint8 *>(args.as_uint8_ptr()), args.dtype().number_of_elements())...);
 }
 
 template <bool Enabled, typename FuncType, typename... Args> std::enable_if_t<!Enabled, void>
-Node_to_ArrayView_same_internal_uint8(FuncType &&func, Args&&... args)
+Node_to_ArrayView_same_internal_uint8(FuncType && AXOM_UNUSED_PARAM(func), Args&&... AXOM_UNUSED_PARAM(args))
 {
 }
 
 template <bool Enabled, typename FuncType, typename... Args> std::enable_if_t<Enabled, void>
 Node_to_ArrayView_same_internal_uint16(FuncType &&func, Args&&... args)
 {
-  func(axom::ArrayView<conduit::uint16>(args.as_uint16_ptr(), args.dtype().number_of_elements())...);
+  func(axom::ArrayView<conduit::uint16>(const_cast<conduit::uint16 *>(args.as_uint16_ptr()), args.dtype().number_of_elements())...);
 }
 
 template <bool Enabled, typename FuncType, typename... Args> std::enable_if_t<!Enabled, void>
-Node_to_ArrayView_same_internal_uint16(FuncType &&func, Args&&... args)
+Node_to_ArrayView_same_internal_uint16(FuncType && AXOM_UNUSED_PARAM(func), Args&&... AXOM_UNUSED_PARAM(args))
 {
 }
 
 template <bool Enabled, typename FuncType, typename... Args> std::enable_if_t<Enabled, void>
 Node_to_ArrayView_same_internal_uint32(FuncType &&func, Args&&... args)
 {
-  func(axom::ArrayView<conduit::uint32>(args.as_uint32_ptr(), args.dtype().number_of_elements())...);
+  func(axom::ArrayView<conduit::uint32>(const_cast<conduit::uint32 *>(args.as_uint32_ptr()), args.dtype().number_of_elements())...);
 }
 
 template <bool Enabled, typename FuncType, typename... Args> std::enable_if_t<!Enabled, void>
-Node_to_ArrayView_same_internal_uint32(FuncType &&func, Args&&... args)
+Node_to_ArrayView_same_internal_uint32(FuncType && AXOM_UNUSED_PARAM(func), Args&&... AXOM_UNUSED_PARAM(args))
 {
 }
 
 template <bool Enabled, typename FuncType, typename... Args> std::enable_if_t<Enabled, void>
 Node_to_ArrayView_same_internal_uint64(FuncType &&func, Args&&... args)
 {
-  func(axom::ArrayView<conduit::uint64>(args.as_uint64_ptr(), args.dtype().number_of_elements())...);
+  func(axom::ArrayView<conduit::uint64>(const_cast<conduit::uint64 *>(args.as_uint64_ptr()), args.dtype().number_of_elements())...);
 }
 
 template <bool Enabled, typename FuncType, typename... Args> std::enable_if_t<!Enabled, void>
-Node_to_ArrayView_same_internal_uint64(FuncType &&func, Args&&... args)
+Node_to_ArrayView_same_internal_uint64(FuncType && AXOM_UNUSED_PARAM(func), Args&&... AXOM_UNUSED_PARAM(args))
 {
 }
 
 template <bool Enabled, typename FuncType, typename... Args> std::enable_if_t<Enabled, void>
 Node_to_ArrayView_same_internal_float32(FuncType &&func, Args&&... args)
 {
-  func(axom::ArrayView<conduit::float32>(args.as_float32_ptr(), args.dtype().number_of_elements())...);
+  func(axom::ArrayView<conduit::float32>(const_cast<conduit::float32 *>(args.as_float32_ptr()), args.dtype().number_of_elements())...);
 }
 
 template <bool Enabled, typename FuncType, typename... Args> std::enable_if_t<!Enabled, void>
-Node_to_ArrayView_same_internal_float32(FuncType &&func, Args&&... args)
+Node_to_ArrayView_same_internal_float32(FuncType && AXOM_UNUSED_PARAM(func), Args&&... AXOM_UNUSED_PARAM(args))
 {
 }
 
 template <bool Enabled, typename FuncType, typename... Args> std::enable_if_t<Enabled, void>
 Node_to_ArrayView_same_internal_float64(FuncType &&func, Args&&... args)
 {
-  func(axom::ArrayView<conduit::float64>(args.as_float64_ptr(), args.dtype().number_of_elements())...);
+  func(axom::ArrayView<conduit::float64>(const_cast<conduit::float64 *>(args.as_float64_ptr()), args.dtype().number_of_elements())...);
 }
 
 template <bool Enabled, typename FuncType, typename... Args> std::enable_if_t<!Enabled, void>
-Node_to_ArrayView_same_internal_float64(FuncType &&func, Args&&... args)
+Node_to_ArrayView_same_internal_float64(FuncType && AXOM_UNUSED_PARAM(func), Args&&... AXOM_UNUSED_PARAM(args))
 {
 }
 

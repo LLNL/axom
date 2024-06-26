@@ -3,8 +3,8 @@
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
-#ifndef AXOM_MIR_VIEWS_STRUCTURED_TOPOLOGY_SINGLE_SHAPE_VIEW_HPP_
-#define AXOM_MIR_VIEWS_STRUCTURED_TOPOLOGY_SINGLE_SHAPE_VIEW_HPP_
+#ifndef AXOM_MIR_VIEWS_STRUCTURED_TOPOLOGY_VIEW_HPP_
+#define AXOM_MIR_VIEWS_STRUCTURED_TOPOLOGY_VIEW_HPP_
 
 #include "axom/mir/views/Shapes.hpp"
 
@@ -29,13 +29,14 @@ class StructuredTopologyView
 public:
   using IndexType = IndexT;
   using LogicalIndexType = StackArray<IndexType, NDIMS>;
+  constexpr static int Dimensions = NDIMS;
 
   /**
    * \brief Constructor
    *
    * \param conn The mesh connectivity.
    */
-  AXOM_HOST_VIEW
+  AXOM_HOST_DEVICE
   StructuredTopologyView(const LogicalIndexType &dims) : m_dimensions(dims)
   {
   }
@@ -53,6 +54,20 @@ public:
        sz *= m_dimensions[i];
      return sz;
   }
+
+  /**
+   * \brief Return the number of zones.
+   *
+   * \return The number of zones.
+   */
+  AXOM_HOST_DEVICE IndexType numberOfZones() const { return size(); }
+
+  /**
+   * \brief Return the mesh logical dimensions.
+   *
+   * \return The mesh logical dimensions.
+   */
+  const LogicalIndexType &dimensions() const { return m_dimensions; }
 
   /**
    * \brief Execute a function for each zone in the mesh.

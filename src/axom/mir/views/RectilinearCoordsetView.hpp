@@ -8,7 +8,7 @@
 
 #include "axom/core/StackArray.hpp"
 #include "axom/core/ArrayView.hpp"
-#include "axom/primal/Point.hpp"
+#include "axom/primal/geometry/Point.hpp"
 
 namespace axom
 {
@@ -16,6 +16,9 @@ namespace mir
 {
 namespace views
 {
+
+/// NOTE: The rectilinear coordset views could be combined into a single RectilinearCoordset
+///       view that is templated on NDIMS but the resulting SFINAE would just overcomplicate it.
 
 /**
  * \class This class provides a view for Conduit/Blueprint 2D rectilinear coordsets.
@@ -27,7 +30,7 @@ public:
   using LogicalIndexType = axom::StackArray<axom::IndexType, 2>;
   using IndexType = axom::IndexType;
   using value_type = DataType;
-  using PointType = Point<DataType, 2>;
+  using PointType = axom::primal::Point<DataType, 2>;
 
   /**
    * \brief Constructor
@@ -76,7 +79,7 @@ public:
   AXOM_HOST_DEVICE
   PointType getPoint(IndexType vertex_index) const
   {
-    return getPoint(IndexToLogicalIndex(vert_index));
+    return getPoint(IndexToLogicalIndex(vertex_index));
   }
 
   /**
@@ -140,7 +143,7 @@ public:
   using LogicalIndexType = axom::StackArray<axom::IndexType, 3>;
   using IndexType = axom::IndexType;
   using value_type = DataType;
-  using PointType = Point<DataType, 3>;
+  using PointType = axom::primal::Point<DataType, 3>;
 
   /**
    * \brief Constructor
@@ -192,7 +195,7 @@ public:
   AXOM_HOST_DEVICE
   PointType getPoint(IndexType vertex_index) const
   {
-    return getPoint(IndexToLogicalIndex(vert_index));
+    return getPoint(IndexToLogicalIndex(vertex_index));
   }
 
   /**

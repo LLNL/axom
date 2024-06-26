@@ -98,7 +98,6 @@ struct QuadTraits
   AXOM_HOST_DEVICE constexpr static IndexType edges[][2] = {{0,1}, {1,2}, {2,3}, {3,0}};
 };
 
-// TODO: PolygonTraits
 /*
   
 n-1 *-... * 2
@@ -123,8 +122,9 @@ struct PolygonShape
    */
   AXOM_HOST_DEVICE PolygonShape(const axom::ArrayView<IndexType> &ids) : m_ids(ids)
   {
-    assert(m_ids.size() == numberOfNodes());
   }
+
+  AXOM_HOST_DEVICE constexpr static IndexType numberOfFaces() { return 1; }
 
   /**
    * \brief Get the ids that make up this shape.
@@ -140,7 +140,7 @@ struct PolygonShape
    *
    * \return An array view (wrapping m_faceIds) that contains the ids for the face.
    */
-  AXOM_HOST_DEVICE axom::ArrayView<IndexType> getFace(int faceIndex) const
+  AXOM_HOST_DEVICE axom::ArrayView<IndexType> getFace(int /*faceIndex*/) const
   {
     return m_ids;
   }
@@ -211,8 +211,8 @@ struct PyramidTraits
 {
   using IndexType = IndexT;
 
-  AXOM_HOST_DEVICE constexpr int  id() { return 1 << 7; }
-  AXOM_HOST_DEVICE constexpr bool is_polyhedral() { return false; }
+  AXOM_HOST_DEVICE constexpr static int id() { return 1 << 7; }
+  AXOM_HOST_DEVICE constexpr static bool is_polyhedral() { return false; }
   AXOM_HOST_DEVICE constexpr static bool is_variable_size() { return false; }
 
   AXOM_HOST_DEVICE constexpr static IndexType dimension() { return 3; }
@@ -316,15 +316,15 @@ struct HexTraits
 /**
  * \brief This class extends the ShapeTraits with object state so it can represent a zone.
  */
-template <typename IndexT, typename ShapeTraits>
-struct Shape : public ShapeTraits<IndexT>
+template <typename ShapeTraits>
+struct Shape : public ShapeTraits
 {
   /**
    * \brief Construct a shape.
    */
   AXOM_HOST_DEVICE Shape(const axom::ArrayView<IndexType> &ids) : m_ids(ids), m_faceIds()
   {
-    assert(m_ids.size() == numberOfNodes());
+    assert(m_ids.size() == ShapeTraits::numberOfNodes());
   }
 
   /**
@@ -341,44 +341,44 @@ struct Shape : public ShapeTraits<IndexT>
    *
    * \return An array view (wrapping m_faceIds) that contains the ids for the face.
    */
-  AXOM_HOST_DEVICE std::enable_if<dimension() == 2, axom::ArrayView<IndexType>>
+  AXOM_HOST_DEVICE
+  axom::ArrayView<IndexType>
   getFace(int faceIndex) const
   {
-    return m_ids;
-  }
-
-  AXOM_HOST_DEVICE std::enable_if<dimension() == 3, axom::ArrayView<IndexType>>
-  getFace(int faceIndex) const
-  {
-    const auto nnodes = numberOfNodesInFace(faceIndex);
-    for(IndexType i = 0; i < nnodes; i++)
-      m_faceIds[i] = m_ids[faces[faceIndex][i]];
-    return axom::ArrayView<IndexType>(m_faceIds.m_data, nnodes);
+    if constexpr(ShapeTraits::dimension() == 2)
+      return m_ids;
+    else
+    {  
+      const auto nnodes = ShapeTraits::numberOfNodesInFace(faceIndex);
+      for(IndexType i = 0; i < nnodes; i++)
+        m_faceIds[i] = m_ids[ShapeTraits::faces[faceIndex][i]];
+      return axom::ArrayView<IndexType>(m_faceIds.m_data, nnodes);
+    }
   }
 private:
   axom::ArrayView<IndexType> m_ids;
-  mutable axom::StackArray<IndexType, maxNodesInFace()> m_faceIds;
+  mutable axom::StackArray<IndexType, ShapeTraits::maxNodesInFace()> m_faceIds;
 };
 
 // Make some concrete shape classes based on the shape traits.
 template <typename IndexT>
-using TriShape = Shape<IndexT, TriTraits<IndexT>>;
+using TriShape = Shape<TriTraits<IndexT>>;
 
 template <typename IndexT>
-using QuadShape = Shape<IndexT, QuadTraits<IndexT>>;
+using QuadShape = Shape<QuadTraits<IndexT>>;
 
 template <typename IndexT>
-using TetShape = Shape<IndexT, TetTraits<IndexT>>;
+using TetShape = Shape<TetTraits<IndexT>>;
 
 template <typename IndexT>
-using PyramidShape = Shape<IndexT, PyramidTraits<IndexT>>;
+using PyramidShape = Shape<PyramidTraits<IndexT>>;
 
 template <typename IndexT>
-using WedgeShape = Shape<IndexT, WedgeTraits<IndexT>>;
+using WedgeShape = Shape<WedgeTraits<IndexT>>;
 
 template <typename IndexT>
-using HexShape = Shape<IndexT, HexTraits<IndexT>>;
-
+using HexShape = Shape<HexTraits<IndexT>>;
+//struct HexShape : public Shape<HexTraits<IndexT>> {};
 
 } // end namespace views
 } // end namespace mir

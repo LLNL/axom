@@ -1,6 +1,15 @@
+// Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
+// other Axom Project Developers. See the top-level LICENSE file for details.
+//
+// SPDX-License-Identifier: (BSD-3-Clause)
+
 #include "axom/mir/EquiZAlgorithm.hpp"
+#include "axom/core/ArrayView.hpp"
 #include "axom/mir/views/StructuredTopologyView.hpp"
 #include "axom/mir/views/dispatch_coordset.hpp"
+#include "axom/mir/views/dispatch_unstructured_topology.hpp"
+
+#include <conduit/conduit_blueprint.hpp>
 
 // RAJA
 #if defined(AXOM_USE_RAJA)
@@ -157,33 +166,36 @@ void EquiZAlgorithm::execute(const conduit::Node &topo,
 }
 
 template <typename FuncType>
-void dispatch_uniform(const conduit::Node &topo, const conduit::Node &coordset, FuncType &&func)
+void dispatch_uniform(const conduit::Node & AXOM_UNUSED_PARAM(topo), const conduit::Node &coordset, FuncType &&func)
 {
   const conduit::Node &n_dims = coordset["dims"];
   const conduit::index_t ndims = n_dims.dtype().number_of_elements();
-  if(ndims == 1)
-  {
-    axom::StackArray<axom::IndexType, 1> dims;
-    dims[0] = n_dims.as_int_accessor()[0];
-    StructuredTopologyView<axom::IndexType, 1> topoView;
-    func(topoView);
-  }
-  else if(axes.size() == 2)
-  {
-    axom::StackArray<axom::IndexType, 2> dims;
-    dims[0] = n_dims.as_int_accessor()[0];
-    dims[1] = n_dims.as_int_accessor()[1];
-    StructuredTopologyView<axom::IndexType, 2> topoView;
-    func(topoView);
-  }
-  else if(axes.size() == 3)
+  if(ndims == 3)
   {
     axom::StackArray<axom::IndexType, 3> dims;
     dims[0] = n_dims.as_int_accessor()[0];
     dims[1] = n_dims.as_int_accessor()[1];
     dims[2] = n_dims.as_int_accessor()[2];
-    StructuredTopologyView<axom::IndexType, 3> topoView;
-    func(topoView);
+    views::StructuredTopologyView<axom::IndexType, 3> topoView(dims);
+    const std::string shape("hex");
+    func(shape, topoView);
+  }
+  else if(ndims == 2)
+  {
+    axom::StackArray<axom::IndexType, 2> dims;
+    dims[0] = n_dims.as_int_accessor()[0];
+    dims[1] = n_dims.as_int_accessor()[1];
+    views::StructuredTopologyView<axom::IndexType, 2> topoView(dims);
+    const std::string shape("quad");
+    func(shape, topoView);
+  }
+  else if(ndims == 1)
+  {
+    axom::StackArray<axom::IndexType, 1> dims;
+    dims[0] = n_dims.as_int_accessor()[0];
+    views::StructuredTopologyView<axom::IndexType, 1> topoView(dims);
+    const std::string shape("line");
+    func(shape, topoView);
   }
 }
 
@@ -191,29 +203,32 @@ template <typename FuncType>
 void dispatch_rectilinear(const conduit::Node &topo, const conduit::Node &coordset, FuncType &&func)
 {
   const auto axes = conduit::blueprint::mesh::utils::coordset::axes(coordset);
-  if(axes.size() == 1)
+  if(axes.size() == 3)
   {
-    axom::StackArray<axom::IndexType, 1> dims;
+    axom::StackArray<axom::IndexType, 3> dims;
     dims[0] = coordset.fetch_existing(axes[0]).dtype().number_of_elements();
-    StructuredTopologyView<axom::IndexType, 1> topoView;
-    func(topoView);
+    dims[1] = coordset.fetch_existing(axes[1]).dtype().number_of_elements();
+    dims[2] = coordset.fetch_existing(axes[2]).dtype().number_of_elements();
+    views::StructuredTopologyView<axom::IndexType, 3> topoView(dims);
+    const std::string shape("hex");
+    func(shape, topoView);
   }
   else if(axes.size() == 2)
   {
     axom::StackArray<axom::IndexType, 2> dims;
     dims[0] = coordset.fetch_existing(axes[0]).dtype().number_of_elements();
     dims[1] = coordset.fetch_existing(axes[1]).dtype().number_of_elements();
-    StructuredTopologyView<axom::IndexType, 2> topoView;
-    func(topoView);
+    views::StructuredTopologyView<axom::IndexType, 2> topoView(dims);
+    const std::string shape("quad");
+    func(shape, topoView);
   }
-  else if(axes.size() == 3)
+  else if(axes.size() == 1)
   {
-    axom::StackArray<axom::IndexType, 3> dims;
+    axom::StackArray<axom::IndexType, 1> dims;
     dims[0] = coordset.fetch_existing(axes[0]).dtype().number_of_elements();
-    dims[1] = coordset.fetch_existing(axes[1]).dtype().number_of_elements();
-    dims[2] = coordset.fetch_existing(axes[2]).dtype().number_of_elements();
-    StructuredTopologyView<axom::IndexType, 3> topoView;
-    func(topoView);
+    views::StructuredTopologyView<axom::IndexType, 1> topoView(dims);
+    const std::string shape("line");
+    func(shape, topoView);
   }
 }
 
@@ -226,23 +241,26 @@ void dispatch_structured(const conduit::Node &topo, FuncType &&func)
     dims[0] = topo.fetch_existing("elements/dims/i").as_int();
     dims[1] = topo.fetch_existing("elements/dims/j").as_int();
     dims[2] = topo.fetch_existing("elements/dims/k").as_int();
-    StructuredTopologyView<axom::IndexType, 3> topoView;
-    func(topoView);
+    views::StructuredTopologyView<axom::IndexType, 3> topoView(dims);
+    const std::string shape("hex");
+    func(shape, topoView);
   }
   else if(topo.has_path("elements/dims/j"))
   {
     axom::StackArray<axom::IndexType, 2> dims;
     dims[0] = topo.fetch_existing("elements/dims/i").as_int();
     dims[1] = topo.fetch_existing("elements/dims/j").as_int();
-    StructuredTopologyView<axom::IndexType, 2> topoView;
-    func(topoView);
+    views::StructuredTopologyView<axom::IndexType, 2> topoView(dims);
+    const std::string shape("quad");
+    func(shape, topoView);
   }
   else
   {
     axom::StackArray<axom::IndexType, 1> dims;
     dims[0] = topo.fetch_existing("elements/dims/i").as_int();
-    StructuredTopologyView<axom::IndexType, 1> topoView;
-    func(topoView);
+    views::StructuredTopologyView<axom::IndexType, 1> topoView(dims);
+    const std::string shape("line");
+    func(shape, topoView);
   }
 }
 
@@ -258,7 +276,7 @@ void dispatch_topology(const conduit::Node &topo, const conduit::Node &coordset,
   else if(type == "structured")
     dispatch_structured(topo, func);
   else if(type == "unstructured")
-    dispatch_unstructured(topo, func);
+    views::dispatch_unstructured_topology(topo, func);
 }
 
 template <typename ExecSpace>
@@ -291,11 +309,11 @@ void EquiZAlgorithm::executeImpl(const conduit::Node &topo,
   }
   else
   {
-    dispatch_coordset(coordset, [&](auto coordsetView)
+    views::dispatch_coordset(coordset, [&](auto coordsetView)
     {
-      dispatch_topology(topo, [&](auto topoView)
+      dispatch_topology(topo, coordset, [&](const std::string &shape, auto topoView)
       {
-        topoView. template for_all_zones<ExecSpace>(AXOM_LAMBDA(int zoneIndex, const auto &zone)
+        topoView. template for_all_zones<ExecSpace>(AXOM_LAMBDA(auto zoneIndex, const auto &zone)
         {          
 
         });

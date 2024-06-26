@@ -8,7 +8,7 @@
 
 #include "axom/core/StackArray.hpp"
 #include "axom/core/ArrayView.hpp"
-#include "axom/primal/Point.hpp"
+#include "axom/primal/geometry/Point.hpp"
 
 namespace axom
 {
@@ -19,6 +19,10 @@ namespace views
 
 /**
  * \class This class provides a view for Conduit/Blueprint uniform coordsets.
+ *
+ * \tparam DataType The underlying type used for the coordinates.
+ * \tparam NDIMS The number of dimensions in each point.
+ *
  */
 template <typename DataType, int NDIMS = 2>
 class UniformCoordsetView

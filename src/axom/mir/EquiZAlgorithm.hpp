@@ -2,14 +2,11 @@
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
-
-
 #ifndef AXOM_MIR_EQUIZ_ALGORITHM_HPP_
 #define AXOM_MIR_EQUIZ_ALGORITHM_HPP_
 
 #include "axom/config.hpp"
 #include "axom/core.hpp"
-#include "axom/core/ArrayView.hpp"
 #include "axom/mir/MIRAlgorithm.hpp"
 
 #include <conduit/conduit.hpp>
@@ -20,6 +17,10 @@ namespace axom
 namespace mir
 {
 
+/**
+ * \accelerated
+ * \brief Implements Meredith's Equi-Z algorithm on the GPU using Blueprint inputs/outputs.
+ */
 class EquiZAlgorithm : public MIRAlgorithm
 {
 public:
@@ -28,6 +29,14 @@ public:
   EquiZAlgorithm() = default;
   virtual ~EquiZAlgorithm() = default;
 
+  /**
+   * \brief Set the desired execution policy.
+   *
+   * \param policy The execution policy.
+   *
+   * \note The input Conduit nodes must have data located in a memory space
+   *       that is compatible with the execution policy.
+   */
   void setExecPolicy(RuntimePolicy policy) { m_execPolicy = policy; }
 
 protected:

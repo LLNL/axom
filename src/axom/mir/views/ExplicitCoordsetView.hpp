@@ -7,7 +7,7 @@
 #define AXOM_MIR_EXPLICIT_COORDSET_VIEW_HPP_
 
 #include "axom/core/ArrayView.hpp"
-#include "axom/primal/Point.hpp"
+#include "axom/primal/geometry/Point.hpp"
 
 namespace axom
 {
