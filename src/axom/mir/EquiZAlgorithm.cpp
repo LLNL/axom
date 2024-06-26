@@ -309,9 +309,9 @@ void EquiZAlgorithm::executeImpl(const conduit::Node &topo,
   }
   else
   {
-    views::dispatch_coordset(coordset, [&](auto coordsetView)
+    views::dispatch_coordset(coordset, [&](auto &coordsetView)
     {
-      dispatch_topology(topo, coordset, [&](const std::string &shape, auto topoView)
+      dispatch_topology(topo, coordset, [&](const std::string &shape, auto &topoView)
       {
         topoView. template for_all_zones<ExecSpace>(AXOM_LAMBDA(auto zoneIndex, const auto &zone)
         {          

@@ -319,6 +319,8 @@ struct HexTraits
 template <typename ShapeTraits>
 struct Shape : public ShapeTraits
 {
+  using IndexType = typename ShapeTraits::IndexType;
+
   /**
    * \brief Construct a shape.
    */

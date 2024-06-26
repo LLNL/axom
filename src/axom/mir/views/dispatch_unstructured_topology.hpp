@@ -41,7 +41,7 @@ void dispatch_unstructured_topology(const conduit::Node &topo, FuncType &&func)
       bool eligible = true;
 
       // Conditionally add polyhedron support.
-      if constexpr (ShapeTypes & UnstructuredTopologyPolyhedralView::PolyhedralShape::id())
+      if constexpr (ShapeTypes & UnstructuredTopologyPolyhedralView<IndexType>::PolyhedronShape::id())
       {
         if(shape == "polyhedral")
         {

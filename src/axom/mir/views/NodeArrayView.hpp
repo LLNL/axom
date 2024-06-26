@@ -76,11 +76,16 @@ constexpr int select_float_types()
 //------------------------------------------------------------------------------
 // General Node to ArrayView. Handle all types.
 //------------------------------------------------------------------------------
+/// NOTE: Some of these functions use const_cast to get data into the ArrayView.
+///       Is there a better way that does not let const bleed all over?
+///
+/// TODO: Handle strided data from the Conduit node.
+
 template <bool Enabled, typename FuncType> std::enable_if_t<Enabled, void>
 Node_to_ArrayView_single_int8(const conduit::Node &n, FuncType &&func)
 {
   const auto size = n.dtype().number_of_elements();
-  axom::ArrayView<const conduit::int8> view(n.as_int8_ptr(), size);
+  axom::ArrayView<conduit::int8> view(const_cast<conduit::int8 *>(n.as_int8_ptr()), size);
   func(view);
 }
 
@@ -108,7 +113,7 @@ template <bool Enabled, typename FuncType> std::enable_if_t<Enabled, void>
 Node_to_ArrayView_single_int16(const conduit::Node &n, FuncType &&func)
 {
   const auto size = n.dtype().number_of_elements();
-  axom::ArrayView<const conduit::int16> view(n.as_int16_ptr(), size);
+  axom::ArrayView<conduit::int16> view(const_cast<conduit::int16 *>(n.as_int16_ptr()), size);
   func(view);
 }
 
@@ -136,7 +141,7 @@ template <bool Enabled, typename FuncType> std::enable_if_t<Enabled, void>
 Node_to_ArrayView_single_int32(const conduit::Node &n, FuncType &&func)
 {
   const auto size = n.dtype().number_of_elements();
-  axom::ArrayView<const conduit::int32> view(n.as_int32_ptr(), size);
+  axom::ArrayView<conduit::int32> view(const_cast<conduit::int32 *>(n.as_int32_ptr()), size);
   func(view);
 }
 
@@ -164,7 +169,7 @@ template <bool Enabled, typename FuncType> std::enable_if_t<Enabled, void>
 Node_to_ArrayView_single_int64(const conduit::Node &n, FuncType &&func)
 {
   const auto size = n.dtype().number_of_elements();
-  axom::ArrayView<const conduit::int64> view(n.as_int64_ptr(), size);
+  axom::ArrayView<conduit::int64> view(const_cast<conduit::int64 *>(n.as_int64_ptr()), size);
   func(view);
 }
 
@@ -192,7 +197,7 @@ template <bool Enabled, typename FuncType> std::enable_if_t<Enabled, void>
 Node_to_ArrayView_single_uint8(const conduit::Node &n, FuncType &&func)
 {
   const auto size = n.dtype().number_of_elements();
-  axom::ArrayView<const conduit::uint8> view(n.as_uint8_ptr(), size);
+  axom::ArrayView<conduit::uint8> view(const_cast<conduit::uint8 *>(n.as_uint8_ptr()), size);
   func(view);
 }
 
@@ -220,7 +225,7 @@ template <bool Enabled, typename FuncType> std::enable_if_t<Enabled, void>
 Node_to_ArrayView_single_uint16(const conduit::Node &n, FuncType &&func)
 {
   const auto size = n.dtype().number_of_elements();
-  axom::ArrayView<const conduit::uint16> view(n.as_uint16_ptr(), size);
+  axom::ArrayView<conduit::uint16> view(const_cast<conduit::uint16 *>(n.as_uint16_ptr()), size);
   func(view);
 }
 
@@ -248,7 +253,7 @@ template <bool Enabled, typename FuncType> std::enable_if_t<Enabled, void>
 Node_to_ArrayView_single_uint32(const conduit::Node &n, FuncType &&func)
 {
   const auto size = n.dtype().number_of_elements();
-  axom::ArrayView<const conduit::uint32> view(n.as_uint32_ptr(), size);
+  axom::ArrayView<conduit::uint32> view(const_cast<conduit::uint32 *>(n.as_uint32_ptr()), size);
   func(view);
 }
 
@@ -276,7 +281,7 @@ template <bool Enabled, typename FuncType> std::enable_if_t<Enabled, void>
 Node_to_ArrayView_single_uint64(const conduit::Node &n, FuncType &&func)
 {
   const auto size = n.dtype().number_of_elements();
-  axom::ArrayView<const conduit::uint64> view(n.as_uint64_ptr(), size);
+  axom::ArrayView<conduit::uint64> view(const_cast<conduit::uint64 *>(n.as_uint64_ptr()), size);
   func(view);
 }
 
@@ -304,7 +309,7 @@ template <bool Enabled, typename FuncType> std::enable_if_t<Enabled, void>
 Node_to_ArrayView_single_float32(const conduit::Node &n, FuncType &&func)
 {
   const auto size = n.dtype().number_of_elements();
-  axom::ArrayView<const conduit::float32> view(n.as_float32_ptr(), size);
+  axom::ArrayView<conduit::float32> view(const_cast<conduit::float32 *>(n.as_float32_ptr()), size);
   func(view);
 }
 
@@ -332,7 +337,7 @@ template <bool Enabled, typename FuncType> std::enable_if_t<Enabled, void>
 Node_to_ArrayView_single_float64(const conduit::Node &n, FuncType &&func)
 {
   const auto size = n.dtype().number_of_elements();
-  axom::ArrayView<const conduit::float64> view(n.as_float64_ptr(), size);
+  axom::ArrayView<conduit::float64> view(const_cast<conduit::float64 *>(n.as_float64_ptr()), size);
   func(view);
 }
 
@@ -359,7 +364,7 @@ Node_to_ArrayView_single_float64(conduit::Node &AXOM_UNUSED_PARAM(n), FuncType &
 template <int Types = select_all_types(), typename FuncType>
 void Node_to_ArrayView_single(const conduit::Node &n, FuncType &&func)
 {
-  /* Later, with C++17, we can do this:
+  /* Later, with C++17, we can do this instead of using all of the SFINAE functions above:
     if constexpr (type_selected(Types, conduit::DataType::INT8_ID))
     {
       if(n.dtype().is_int8())
