@@ -149,7 +149,7 @@ are designed to handle building suites of TPLs via Uberenv and Spack.
   example for correctness. This script stops at the first failed TPL build but
   attempts to build all host-configs against the Axom source with a summary at
   the end of which succeeded or failed.
-* ``build_src.py``: This scripts takes the existing host-configs, or the
+* ``build_src.py``: This script takes the existing host-configs, or the
   specific one you point at, and builds and tests Axom against them. It also
   tests the ``using-with-cmake`` examples.
 * ``build_devtools.py``: This script builds and installs the developer tools
