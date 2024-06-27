@@ -52,10 +52,10 @@ struct FileHashByURI {
  * File objects and a map of Datum objects.
  *
  * \code
- * sina::ID myID{"my_record", sina::IDType::Local};
- * std::unique_ptr<sina::Record> myRecord{new sina::Record{myID, "my_type"}};
+ * axom::sina::ID myID{"my_record", axom::sina::IDType::Local};
+ * std::unique_ptr<axom::sina::Record> myRecord{new axom::sina::Record{myID, "my_type"}};
  * std::vector<std::string> myTags{"input"};
- * sina::Datum myDatum{12, myTags};
+ * axom::sina::Datum myDatum{12, myTags};
  * myRecord->add("my_scalar",std::move(myDatum));
  * std::cout << myRecord->toNode().to_json() << std::endl;
  * \endcode
@@ -167,12 +167,12 @@ private:
 
 /**
  * A RecordLoader is used to convert conduit::Node instances which represent
- * Sina Records into instances of their corresponding sina::Record
+ * Sina Records into instances of their corresponding axom::sina::Record
  * subclasses. For convenience, a RecordLoader capable of handling Records of all known
  * types can be created using createRecordLoaderWithAllKnownTypes:
  *
  * \code
- * sina::Document myDocument = sina::Document(jObj, sina::createRecordLoaderWithAllKnownTypes());
+ * axom::sina::Document myDocument = axom::sina::Document(jObj, axom::sina::createRecordLoaderWithAllKnownTypes());
  * \endcode
  */
 class RecordLoader {
@@ -193,7 +193,7 @@ public:
     void addTypeLoader(std::string const &type, TypeLoader loader);
 
     /**
-     * Load a sina::Record from its conduit Node representation.
+     * Load a axom::sina::Record from its conduit Node representation.
      *
      * @param recordAsNode the Record as a Node
      * @return the Record

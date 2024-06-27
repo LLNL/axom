@@ -37,11 +37,11 @@ enum class ValueType {
  * or an array of doubles.
  *
  * \code
- * sina::Datum myDatum{12.34};
+ * axom::sina::Datum myDatum{12.34};
  * std::string value = "foobar";
- * sina::Datum myOtherDatum{value};
+ * axom::sina::Datum myOtherDatum{value};
  * std::vector<double> scalars = {1, 2, 20.0};
- * sina::Datum myArrayDatum{scalars};
+ * axom::sina::Datum myArrayDatum{scalars};
  *
  * //prints 1, corresponding to Scalar
  * std::cout << static_cast<std::underlying_type<sina::ValueType>::type>(myDatum.getType()) << std::endl;

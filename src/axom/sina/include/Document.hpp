@@ -35,27 +35,27 @@ namespace sina
  * Documents can be assembled programatically and/or generated from existing JSON. An example of an assembled
  * Document is provided on the main page. To load a Document from an existing JSON file:
  * \code
- * sina::Document myDocument = sina::loadDocument("path/to/infile.json");
+ * axom::sina::Document myDocument = axom::sina::loadDocument("path/to/infile.json");
  * \endcode
  *
  * To generate a Document from a JSON string and vice versa:
  * \code
  * std::string my_json = "{\"records\":[{\"type\":\"run\",\"id\":\"test\"}],\"relationships\":[]}";
- * sina::Document myDocument = sina::Document(my_json, sina::createRecordLoaderWithAllKnownTypes());
+ * axom::sina::Document myDocument = axom::sina::Document(my_json, axom::sina::createRecordLoaderWithAllKnownTypes());
  * std::cout << myDocument.toJson() << std::endl;);
  * \endcode
  *
  * You can add further entries to the Document using add():
  * \code
- * std::unique_ptr<sina::Record> myRun{new sina::Run{someID, "My Sim Code", "1.2.3", "jdoe"}};
- * sina::Relationship myRelationship{someID, "comes before", someOtherID};
+ * std::unique_ptr<sina::Record> myRun{new axom::sina::Run{someID, "My Sim Code", "1.2.3", "jdoe"}};
+ * axom::sina::Relationship myRelationship{someID, "comes before", someOtherID};
  * myDocument.add(myRun);
  * myDocument.add(myRelationship);
  * \endcode
  *
  * You can also export your Document to file:
  * \code
- * sina::saveDocument(myDocument, "path/to/outfile.json")
+ * axom::sina::saveDocument(myDocument, "path/to/outfile.json")
  * \endcode
  *
  */

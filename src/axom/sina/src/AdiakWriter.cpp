@@ -34,24 +34,24 @@ namespace
 enum SinaType {sina_scalar, sina_string, sina_list, sina_file, sina_unknown};
 
 /**
-* Add a sina::Datum object to a Record. These are the sina equivalent
+* Add a axom::sina::Datum object to a Record. These are the sina equivalent
 * of an Adiak datapoint. Since we track slightly different info, this function
 * harvests what it can and hands it off to the Record.
 **/
 template <typename T>
-void addDatum(const std::string &name, T sina_safe_val, const std::vector<std::string> &tags, sina::Record *record){
-    sina::Datum datum{sina_safe_val};
+void addDatum(const std::string &name, T sina_safe_val, const std::vector<std::string> &tags, axom::sina::Record *record){
+    axom::sina::Datum datum{sina_safe_val};
     datum.setTags(std::move(tags));
     record->add(name, datum);
 }
 
 /**
-* Add a sina::File object to our current Record. Adiak stores paths,
+* Add a axom::sina::File object to our current Record. Adiak stores paths,
 * which are essentially the same as Sina's idea of storing files.
 **/
-void addFile(const std::string &name, const std::string &uri, sina::Record *record){
+void addFile(const std::string &name, const std::string &uri, axom::sina::Record *record){
     // We don't care about type here, there's only one adiak type that acts as a file
-    sina::File file{uri};
+    axom::sina::File file{uri};
     file.setTags(std::vector<std::string>{name});
     record->add(std::move(file));
 }
@@ -201,7 +201,7 @@ std::vector<std::string> toStringList(adiak_value_t *subvals, adiak_datatype_t *
 void adiakSinaCallback(const char *name, adiak_category_t, const char *subcategory, adiak_value_t *val, adiak_datatype_t *adiak_type, void *void_record)
 {
     const SinaType sina_type = findSinaType(adiak_type);
-    sina::Record *record = static_cast<sina::Record *>(void_record);
+    axom::sina::Record *record = static_cast<axom::sina::Record *>(void_record);
     std::vector<std::string> tags;
     if(subcategory && subcategory[0]!='\0'){
         tags.emplace_back(subcategory);

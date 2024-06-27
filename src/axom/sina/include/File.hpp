@@ -19,9 +19,9 @@ namespace sina
  * Every File must have a URI, while mimetype and tags are optional.
  *
  * \code
- * sina::File myFile{"/path/to/file.png"};
+ * axom::sina::File myFile{"/path/to/file.png"};
  * myFile.setMimeType("image/png");
- * sina::File myOtherFile{"/path/to/other/file.txt"};
+ * axom::sina::File myOtherFile{"/path/to/other/file.txt"};
  * myOtherFile.setTags({"these","are","tags"});
  * myRecord->add(myFile);
  * myRecord->add(myOtherFile);

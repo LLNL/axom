@@ -43,9 +43,9 @@ namespace sina
  * ID documentation.
  *
  * \code
- * sina::ID task22{"Task_22", sina::IDType::Global};
- * sina::ID run1024{"Run_1024", sina::IDType::Global};
- * sina::Relationship myRelationship{task22, "contains", run1024};
+ * axom::sina::ID task22{"Task_22", axom::sina::IDType::Global};
+ * axom::sina::ID run1024{"Run_1024", axom::sina::IDType::Global};
+ * axom::sina::Relationship myRelationship{task22, "contains", run1024};
  * std::cout << myRelationship.toNode().to_json() << std::endl;
  * \endcode
  *
@@ -60,9 +60,9 @@ namespace sina
  * that ID) will be updated to use the same global ID.
  *
  * \code
- * sina::ID myLocalID{"my_local_run", sina::IDType::Local};
- * std::unique_ptr<sina::Record> myRun{new sina::Run{myLocalID, "My Sim Code", "1.2.3", "jdoe"}};
- * sina::Relationship myRelationship{task22, "contains", myLocalID};
+ * axom::sina::ID myLocalID{"my_local_run", axom::sina::IDType::Local};
+ * std::unique_ptr<axom::sina::Record> myRun{new axom::sina::Run{myLocalID, "My Sim Code", "1.2.3", "jdoe"}};
+ * axom::sina::Relationship myRelationship{task22, "contains", myLocalID};
  * \endcode
  *
  * In the above code, "my_local_run" would be replaced by a global ID on ingestion. If this new global ID was,

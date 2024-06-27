@@ -30,8 +30,8 @@ namespace sina
  * like this:
  *
  * \code
- *     Record record{ID{"my_id", IDType::Local}, "my_record_type"};
- *     adiak_register_cb(1, adiak_category_all, adiakSinaCallback, 0, &record);
+ *     axom::sina::Record record{ID{"my_id", axom::sina::IDType::Local}, "my_record_type"};
+ *     axom::sina::adiak_register_cb(1, adiak_category_all, axom::sina::adiakSinaCallback, 0, &record);
  * \endcode
  *
  * Note that not everything that Sina can capture an be captured through the

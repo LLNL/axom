@@ -21,8 +21,8 @@ namespace sina
  *
  * To create a Run:
  * \code
- * sina::ID run1ID{"run1", sina::IDType::Local};
- * std::unique_ptr<sina::Record> run1{new sina::Run{run1ID, "My Sim Code", "1.2.3", "jdoe"}};
+ * axom::sina::ID run1ID{"run1", axom::sina::IDType::Local};
+ * std::unique_ptr<axom::sina::Record> run1{new axom::sina::Run{run1ID, "My Sim Code", "1.2.3", "jdoe"}};
  * \endcode
  *
  */
