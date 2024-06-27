@@ -11,9 +11,10 @@ The Sina C++ library can read and write JSON files in the Sina schema. It
 can be used by simulation applications to summarize run data to be ingested
 into a database using the Sina tool suite.
 
-The top-level object in the Sina schema is the Document. It contains lists
-of Record and Relationship objects. The example below shows the basics.
-For more details, see the `Tutorial <tutorial.rst>`_.
+The top-level object in the Sina schema is the :doc:`Document <documents>`.
+It contains lists of :doc:`Record <records>` and :doc:`Relationship <relationships>`
+objects. The example below shows the basics. For more details, see the
+:doc:`Tutorial <tutorial>`.
 
 .. literalinclude:: ../../examples/sina_basic.cpp
    :language: cpp

@@ -11,13 +11,14 @@
 #------------------------------------------------------------------------------
 set(sina_example_sources
     sina_basic.cpp
+    sina_curve_set.cpp
     sina_tutorial.cpp
 )
 
 set(sina_example_depends sina conduit::conduit)
 
 #------------------------------------------------------------------------------
-# Add targets and tests for Sina examples
+# Add targets for Sina examples
 #------------------------------------------------------------------------------
 foreach(src ${sina_example_sources})
     get_filename_component(exe_name ${src} NAME_WE)
