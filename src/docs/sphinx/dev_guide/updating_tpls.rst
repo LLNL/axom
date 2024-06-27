@@ -67,7 +67,7 @@ are available on your system as well.
      and any other required information about that compiler.  For example, compiler or 
      linker flags.
    * ``packages``: This section describes the system level packages.  For example,
-     where they are located and what version they are. This file is very imporant
+     where they are located and what version they are. This file is very important
      due to its ability to drastically reduce the amount of packages that Spack builds.
 
 * Axom specific Spack package files live under ``scripts/spack/packages``. These override
@@ -75,7 +75,7 @@ are available on your system as well.
   We try to minimize these but we have had to alter the existing packages to apply fixes before
   pushing them up to Spack proper or alterations to the recipes that are Axom specific.
   This overriding does not happen at the Spack level, but at the next level, Uberenv.
-* `Spack's Github repo <https://github.com/spack/spack>`_
+* `Spack's GitHub repo <https://github.com/spack/spack>`_
 * `Spack's documentation <https://spack.readthedocs.io/en/latest/>`_
 
 .. note::
@@ -101,7 +101,7 @@ Axom only uses it for our Windows TPL builds.
    * ``vcpkg.json``: This is the manifest file that describes information about the
      package.  For example, dependencies, license information, and optional features.
 
-* `Vcpkg's Github repo <https://github.com/microsoft/vcpkg>`_
+* `Vcpkg's GitHub repo <https://github.com/microsoft/vcpkg>`_
 * `Vcpkg's documentation <https://github.com/microsoft/vcpkg#table-of-contents>`_
 
 Level 2: Uberenv
@@ -140,7 +140,7 @@ platform differences and contain the full list of compilers and package specs
 required to build.
 
 The directory ``axom/scripts/llnl_scripts`` contains three "build" scripts that
-are designed to handle building suites of TPLs via uberenv and Spack.
+are designed to handle building suites of TPLs via Uberenv and Spack.
 
 * ``build_tpls.py``: This script starts by building all TPLs listed in the file
   ``specs.json``. It will generate host-config files and copy them to the base
@@ -153,7 +153,7 @@ are designed to handle building suites of TPLs via uberenv and Spack.
   specific one you point at, and builds and tests Axom against them. It also
   tests the ``using-with-cmake`` examples.
 * ``build_devtools.py``: This script builds and installs the developer tools
-  listed in the ``axom/scipts/spack/packages/axomdevtools/package.py`` Spack
+  listed in the ``axom/scripts/spack/packages/axomdevtools/package.py`` Spack
   package. It also uses a different set of Spack configs located in the 
   ``scripts/spack/devtools_config`` directory, so that the regular Spack configs
   can reuse previously built developer tools.
@@ -255,7 +255,7 @@ needed to work with the TPL update(s), make the changes and test them.
           the ``uberenv.py`` script in the top-level Axom directory.
           For example:: 
 
-            python3 ./scrpts/uberenv/uberenv.py --prefix /my/tpl/path --spec clang@10.0.0~cpp14+devtools+mfem+c2c
+            python3 ./scripts/uberenv/uberenv.py --prefix /my/tpl/path --spec clang@10.0.0~cpp14+devtools+mfem+c2c
 
           will build the TPLs for the clang 10.0.0 compiler, install them
           to the ``/my/tpl/path`` directory, and generate a host-config file
@@ -271,7 +271,7 @@ TPLs on Livermore Computing (LC) platforms and recreate our Docker containers
 with a new set of TPLs. Typically, this process is followed when you want to 
 update one or more TPLs which Axom depends on. After they are built and
 the required changes are merged into develop, they will be available for
-other Axom developers to use during development, in Axom Gitlab CI testing, etc.
+other Axom developers to use during development, in Axom GitLab CI testing, etc.
 
 #. **Working on a local branch.** 
    Make a local clone of the Axom repo and create a branch to work on.
