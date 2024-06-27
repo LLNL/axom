@@ -194,7 +194,7 @@ More info on :ref:`building-axom-label`.
 Built-in TPLs
 -------------
 
-Axom uses several, lightweight, header-only libraries internally which are
+Axom uses several lightweight, header-only libraries internally, which are
 exposed for downstream customers to use if they wish.
 
   * `CLI11 <https://github.com/CLIUtils/CLI11>`_ is a command line parser
