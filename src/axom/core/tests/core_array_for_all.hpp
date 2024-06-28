@@ -78,6 +78,9 @@ using MyTypes = ::testing::Types<
   ArrayTestParams<axom::HIP_EXEC<256, axom::ASYNC>, axom::MemorySpace::Unified>,
   ArrayTestParams<axom::HIP_EXEC<256, axom::ASYNC>, axom::MemorySpace::Pinned>,
 #endif
+#if defined(AXOM_USE_UMPIRE)
+  ArrayTestParams<axom::SEQ_EXEC, axom::MemorySpace::Host>,
+#endif
   ArrayTestParams<axom::SEQ_EXEC>>;
 
 TYPED_TEST_SUITE(core_array_for_all, MyTypes);
