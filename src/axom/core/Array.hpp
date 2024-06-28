@@ -1685,7 +1685,12 @@ template <typename T, int DIM, MemorySpace SPACE>
 inline void Array<T, DIM, SPACE>::dynamicRealloc(IndexType new_num_elements)
 {
   assert(m_resize_ratio >= 1.0);
-  IndexType new_capacity = new_num_elements * m_resize_ratio + 0.5;
+
+  // Using resize strategy from LLVM libc++ (vector::__recommend()):
+  //   new_capacity = max(capacity() * resize_ratio, new_num_elements)
+  IndexType new_capacity =
+    axom::utilities::max<IndexType>(this->capacity() * m_resize_ratio + 0.5,
+                                    new_num_elements);
   const IndexType block_size = this->blockSize();
   const IndexType remainder = new_capacity % block_size;
   if(remainder != 0)
