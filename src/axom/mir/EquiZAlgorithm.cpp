@@ -7,7 +7,7 @@
 #include "axom/core/ArrayView.hpp"
 #include "axom/mir/views/StructuredTopologyView.hpp"
 #include "axom/mir/views/dispatch_coordset.hpp"
-#include "axom/mir/views/dispatch_unstructured_topology.hpp"
+#include "axom/mir/views/dispatch_topology.hpp"
 
 #include <conduit/conduit_blueprint.hpp>
 
@@ -42,96 +42,6 @@
 #endif
 // clang-format on
 
-namespace axom
-{
-namespace mir
-{
-
-#if 0
-template <typename ExecSpace, typename FuncType>
-void for_all_zones(const conduit::Node &topo, FuncType &&func)
-{
-  conduit::index_t dims[3] = {1, 1, 1};
-  conduit::blueprint::mesh::utils::topology::logical_dims(topo, dims, 3);
-  const conduit::index_t dimension = conduit::blueprint::mesh::topology::dims(topo);
-  const conduit::index_t nzones = conduit::blueprint::mesh::topology::length(topo);
-
-  if(dimension == 1)
-  {
-    // Line elements
-    axom::for_all<ExecSpace>(
-      nzones,
-      AXOM_LAMBDA(axom::IndexType zoneIndex)
-      {
-        conduit::index_t ids[2];
-        ids[0] = zoneIndex;
-        ids[1] = zoneIndex + 1;
-        func(zoneIndex, ids, 2);
-      });
-  }
-  else if(dimension == 2)
-  {
-    // Quad elements
-    const conduit::index_t nx = dims[0] + 1;
-    axom::for_all<ExecSpace>(
-      nzones,
-      AXOM_LAMBDA(axom::IndexType zoneIndex)
-      {
-        // zoneIndex to i,j
-        const conduit::index_t i = zoneIndex % dims[0];
-        const conduit::index_t j = zoneIndex / dims[0];
-        // Make node ids
-        const conduit::index_t jnx = j * nx;
-        const conduit::index_t j1nx = jnx + nx;
-        conduit::index_t ids[4];
-        ids[0] = jnx + i;
-        ids[1] = jnx + i + 1;
-        ids[2] = j1nx + i + 1;
-        ids[3] = j1nx + i;
-        func(zoneIndex, ids, 4);
-      });
-  }
-  else if(dimension == 3)
-  {
-    // Hex elements
-    const conduit::index_t nx = dims[0] + 1;
-    const conduit::index_t ny = dims[1] + 1;
-    const conduit::index_t nz = dims[2] + 1;
-    axom::for_all<ExecSpace>(
-      nzones,
-      AXOM_LAMBDA(axom::IndexType zoneIndex)
-      {
-        // zoneIndex to i,j,k
-        const conduit::index_t i = zoneIndex % dims[0];
-        const conduit::index_t j = (zoneIndex % (dims[0] * dims[1])) / dims[0];
-        const conduit::index_t k = zoneIndex / (dims[0] * dims[1]);
-
-        // Make node ids
-        const conduit::index_t knxny  = k * nx * ny;
-        const conduit::index_t k1nxny = (k + 1) * nx * ny;
-        const conduit::index_t jnx = j * nx;
-        const conduit::index_t j1nx = jnx + nx;
-        conduit::index_t ids[8];
-        ids[0] = knxny  + jnx  + i;
-        ids[1] = knxny  + jnx  + i + 1;
-        ids[2] = knxny  + j1nx + i + 1;
-        ids[3] = knxny  + j1nx + i;
-        ids[4] = k1nxny + jnx  + i;
-        ids[5] = k1nxny + jnx  + i + 1;
-        ids[6] = k1nxny + j1nx + i + 1;
-        ids[7] = k1nxny + j1nx + i;
-
-        func(zoneIndex, ids, 4);
-      });
-  }
-  else
-  {
-//    CONDUIT_ERROR("Unsupported dimension given to traverse_structured "
-//        << dimension << ".");
-  }
-}
-#endif
-
 void EquiZAlgorithm::execute(const conduit::Node &topo,
                                  const conduit::Node &coordset,
                                  const conduit::Node &options,
@@ -165,120 +75,6 @@ void EquiZAlgorithm::execute(const conduit::Node &topo,
 #endif
 }
 
-template <typename FuncType>
-void dispatch_uniform(const conduit::Node & AXOM_UNUSED_PARAM(topo), const conduit::Node &coordset, FuncType &&func)
-{
-  const conduit::Node &n_dims = coordset["dims"];
-  const conduit::index_t ndims = n_dims.dtype().number_of_elements();
-  if(ndims == 3)
-  {
-    axom::StackArray<axom::IndexType, 3> dims;
-    dims[0] = n_dims.as_int_accessor()[0];
-    dims[1] = n_dims.as_int_accessor()[1];
-    dims[2] = n_dims.as_int_accessor()[2];
-    views::StructuredTopologyView<axom::IndexType, 3> topoView(dims);
-    const std::string shape("hex");
-    func(shape, topoView);
-  }
-  else if(ndims == 2)
-  {
-    axom::StackArray<axom::IndexType, 2> dims;
-    dims[0] = n_dims.as_int_accessor()[0];
-    dims[1] = n_dims.as_int_accessor()[1];
-    views::StructuredTopologyView<axom::IndexType, 2> topoView(dims);
-    const std::string shape("quad");
-    func(shape, topoView);
-  }
-  else if(ndims == 1)
-  {
-    axom::StackArray<axom::IndexType, 1> dims;
-    dims[0] = n_dims.as_int_accessor()[0];
-    views::StructuredTopologyView<axom::IndexType, 1> topoView(dims);
-    const std::string shape("line");
-    func(shape, topoView);
-  }
-}
-
-template <typename FuncType>
-void dispatch_rectilinear(const conduit::Node &topo, const conduit::Node &coordset, FuncType &&func)
-{
-  const auto axes = conduit::blueprint::mesh::utils::coordset::axes(coordset);
-  if(axes.size() == 3)
-  {
-    axom::StackArray<axom::IndexType, 3> dims;
-    dims[0] = coordset.fetch_existing(axes[0]).dtype().number_of_elements();
-    dims[1] = coordset.fetch_existing(axes[1]).dtype().number_of_elements();
-    dims[2] = coordset.fetch_existing(axes[2]).dtype().number_of_elements();
-    views::StructuredTopologyView<axom::IndexType, 3> topoView(dims);
-    const std::string shape("hex");
-    func(shape, topoView);
-  }
-  else if(axes.size() == 2)
-  {
-    axom::StackArray<axom::IndexType, 2> dims;
-    dims[0] = coordset.fetch_existing(axes[0]).dtype().number_of_elements();
-    dims[1] = coordset.fetch_existing(axes[1]).dtype().number_of_elements();
-    views::StructuredTopologyView<axom::IndexType, 2> topoView(dims);
-    const std::string shape("quad");
-    func(shape, topoView);
-  }
-  else if(axes.size() == 1)
-  {
-    axom::StackArray<axom::IndexType, 1> dims;
-    dims[0] = coordset.fetch_existing(axes[0]).dtype().number_of_elements();
-    views::StructuredTopologyView<axom::IndexType, 1> topoView(dims);
-    const std::string shape("line");
-    func(shape, topoView);
-  }
-}
-
-template <typename FuncType>
-void dispatch_structured(const conduit::Node &topo, FuncType &&func)
-{
-  if(topo.has_path("elements/dims/k"))
-  {
-    axom::StackArray<axom::IndexType, 3> dims;
-    dims[0] = topo.fetch_existing("elements/dims/i").as_int();
-    dims[1] = topo.fetch_existing("elements/dims/j").as_int();
-    dims[2] = topo.fetch_existing("elements/dims/k").as_int();
-    views::StructuredTopologyView<axom::IndexType, 3> topoView(dims);
-    const std::string shape("hex");
-    func(shape, topoView);
-  }
-  else if(topo.has_path("elements/dims/j"))
-  {
-    axom::StackArray<axom::IndexType, 2> dims;
-    dims[0] = topo.fetch_existing("elements/dims/i").as_int();
-    dims[1] = topo.fetch_existing("elements/dims/j").as_int();
-    views::StructuredTopologyView<axom::IndexType, 2> topoView(dims);
-    const std::string shape("quad");
-    func(shape, topoView);
-  }
-  else
-  {
-    axom::StackArray<axom::IndexType, 1> dims;
-    dims[0] = topo.fetch_existing("elements/dims/i").as_int();
-    views::StructuredTopologyView<axom::IndexType, 1> topoView(dims);
-    const std::string shape("line");
-    func(shape, topoView);
-  }
-}
-
-template <typename FuncType>
-void dispatch_topology(const conduit::Node &topo, const conduit::Node &coordset, FuncType &&func)
-{
-  const auto type = topo.fetch_existing("type").as_string();
-
-  if(type == "uniform")
-    dispatch_uniform(topo, coordset, func);
-  else if(type == "rectilinear")
-    dispatch_rectilinear(topo, coordset, func);
-  else if(type == "structured")
-    dispatch_structured(topo, func);
-  else if(type == "unstructured")
-    views::dispatch_unstructured_topology(topo, func);
-}
-
 template <typename ExecSpace>
 void EquiZAlgorithm::executeImpl(const conduit::Node &topo,
                                  const conduit::Node &coordset,
@@ -290,28 +86,30 @@ void EquiZAlgorithm::executeImpl(const conduit::Node &topo,
   {
     const conduit::Node &zones = options.fetch_existing("zones");
     const auto nzones = zones.dtype().number_of_elements();
-#if 0
-    detail::IndexNodeToArrayView(options["zones"], [&](auto zonesView)
+
+/// NOTE: since each inner dispatch could be a lot of code, should I just make a zones array for the case where zones is not provided?
+
+    // Operate on a list of zones.
+    views::IndexNode_To_ArrayView(options["zones"], [&](auto zonesView)
     {
-      axom::for_all<ExecSpace>(
-          nzones,
-          AXOM_LAMBDA(axom::IndexType i) {
-            // Do something with zonesView[i].
-
-            // Get number of materials for zone.
-            // for each material, make a plane eq for its interface.
-
-            // for each material, intersect zone with the plane. Make PH fragment and volume, add fragment to new_topo
-
-         });
+      views::dispatch_coordset(coordset, [&](auto &coordsetView)
+      {
+        views::dispatch_topology(topo, coordset, [&](const std::string &shape, auto &topoView)
+        {
+          topoView. template for_selected_zones<ExecSpace>(zonesView, AXOM_LAMBDA(auto zoneIndex, const auto &zone)
+          {          
+  
+          });
+        });
+      });
     });
-#endif
   }
   else
   {
+    // Operate on all zones.
     views::dispatch_coordset(coordset, [&](auto &coordsetView)
     {
-      dispatch_topology(topo, coordset, [&](const std::string &shape, auto &topoView)
+      views::dispatch_topology(topo, coordset, [&](const std::string &shape, auto &topoView)
       {
         topoView. template for_all_zones<ExecSpace>(AXOM_LAMBDA(auto zoneIndex, const auto &zone)
         {          
