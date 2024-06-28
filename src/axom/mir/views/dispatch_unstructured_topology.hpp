@@ -23,6 +23,32 @@ namespace views
 constexpr int AnyShape = -1;
 
 /**
+ * \brief This function dispatches a Conduit polyhedral unstructured topology.
+ *
+ * \tparam FuncType The function/lambda type that will be invoked on the view.
+ *
+ * \param topo The node that contains the topology.
+ * \param func The function/lambda to call with the topology view.
+ */
+template <typename FuncType>
+void dispatch_unstructured_polyhedral_topology(const conduit::Node &topo, FuncType &&func)
+{
+  const std::string shape = topo["elements/shape"].as_string();
+  if(shape == "polyhedral")
+  {
+    IndexNode_to_ArrayView_same(
+      topo["subelements/connectivity"], topo["subelements/sizes"], topo["subelements/offsets"],
+      topo["elements/connectivity"], topo["elements/sizes"], topo["elements/offsets"],
+      [&](auto seConnView, auto seSizesView, auto seOffsetsView, auto connView, auto sizesView, auto offsetsView)
+    {
+      using IndexType = typename decltype(seConnView)::value_type;
+      UnstructuredTopologyPolyhedralView<IndexType> ugView(seConnView, seSizesView, seOffsetsView, connView, sizesView, offsetsView);
+      func(shape, ugView);
+    });
+  }
+}
+
+/**
  * \brief This function dispatches a Conduit topology to the right view type
  *        and passes that view to the supplied function/lambda.
  *
@@ -46,15 +72,7 @@ void dispatch_unstructured_topology(const conduit::Node &topo, FuncType &&func)
       {
         if(shape == "polyhedral")
         {
-          IndexNode_to_ArrayView_same(
-            topo["subelements/connectivity"], topo["subelements/sizes"], topo["subelements/offsets"],
-            topo["elements/connectivity"], topo["elements/sizes"], topo["elements/offsets"],
-            [&](auto seConnView, auto seSizesView, auto seOffsetsView, auto connView, auto sizesView, auto offsetsView)
-            {
-              using IndexType = typename decltype(seConnView)::value_type;
-              UnstructuredTopologyPolyhedralView<IndexType> ugView(seConnView, seSizesView, seOffsetsView, connView, sizesView, offsetsView);
-              func(shape, ugView);
-            });
+          dispatch_unstructured_polyhedral_topology(topo, func);
           eligible = false;
         }
       }

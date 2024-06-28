@@ -29,7 +29,7 @@ namespace views
  * \param func     The function to invoke using the view.
  */
 template <int SelectedDimensions = select_dimensions(1,2,3), typename FuncType>
-void dispatch_rectilinear_topology(const conduit::Node &topo, const conduit::Node &coordset, FuncType &&func)
+void dispatch_rectilinear_topology(const conduit::Node & AXOM_UNUSED_PARAM(topo), const conduit::Node &coordset, FuncType &&func)
 {
   const auto axes = conduit::blueprint::mesh::utils::coordset::axes(coordset);
   switch(axes.size())

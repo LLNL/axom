@@ -92,6 +92,35 @@ public:
         {
           if(nnodes < MaximumNumberOfIds)
             m_ids[nnodes++] = faceIds[i];
+          else
+          {
+            SLIC_ERROR("m_ids is not large enough to hold all node ids.");
+            break;
+          }
+        }
+      }
+      return axom::ArrayView<IndexType>(m_ids.m_data, nnodes);
+    }
+
+    AXOM_HOST_DEVICE axom::ArrayView<IndexType> getUniqueIds() const
+    {
+      axom::IndexType nnodes = 0;
+      const auto nFaces = numberOfFaces();
+      for(axom::IndexType f = 0; f < nFaces; f++)
+      {
+        const auto faceIds = getFace(f);
+        for(axom::IndexType i = 0; i < faceIds.size(); i++)
+        {
+          if(!find(m_ids, nnodes))
+          {
+            if(nnodes < MaximumNumberOfIds)
+              m_ids[nnodes++] = faceIds[i];
+            else
+            {
+              SLIC_ERROR("m_ids is not large enough to hold all node ids.");
+              break;
+            }
+          }
         }
       }
       return axom::ArrayView<IndexType>(m_ids.m_data, nnodes);
@@ -106,6 +135,14 @@ public:
     }
 
   private:
+    AXOM_HOST_DEVICE bool find(const IndexType *arr, axom::IndexType n, IndexType value) const
+    {
+      bool found = false;
+      for(axom::IndexType i = 0; i < n && !found; i++)
+        found = arr[i] == value;
+      return found;
+    }
+
     PolyhedronData m_data;
     IndexType m_zoneIndex {0};
     mutable axom::StackArray<IndexType,MaximumNumberOfIds> m_ids;

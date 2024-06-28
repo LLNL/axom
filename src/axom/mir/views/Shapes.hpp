@@ -337,6 +337,13 @@ struct Shape : public ShapeTraits
   AXOM_HOST_DEVICE axom::ArrayView<IndexType> getIds() const { return m_ids; }
 
   /**
+   * \brief Get the unique ids that make up this shape. For basic shapes, assume they are unique.
+   *
+   * \return A view containing the ids that make up this shape.
+   */
+  AXOM_HOST_DEVICE axom::ArrayView<IndexType> getUniqueIds() const { return m_ids; }
+
+  /**
    * \brief Get the ids for the requested face.
    *
    * \param faceIndex The index of the desired face.
