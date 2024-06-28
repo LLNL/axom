@@ -34,6 +34,9 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 - Primal: Adds a `closest_point` operator for finding the closest point on a `Segment`
 - Primal: Adds a `reflectPoint` method to the `Plane` primitive
 - Primal: Makes several primitive methods available in device code
+- Improves support for `axom::Array` allocated in unified and pinned memory on GPU platforms.
+  Use of GPU-based operations for Arrays allocated in a unified memory space is controlled with
+  a new method, `Array::setDevicePreference()`.
 
 ### Changed
 - `quest::ArrayIndexer` is now `axom::MDMapping`, adopting conventional terminology
@@ -47,6 +50,7 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
   from axom's default dependencies on Windows due to incompatibility between umpire's
   external `fmt` and axom's vendored copy.
 - Turn off CMake finding dependencies on system paths.
+- `axom::Array`: trivially-copyable types with a non-trivial constructor are now initialized on the GPU.
 
 ### Removed
 - Removes config option `AXOM_ENABLE_ANNOTATIONS`. Annotations are now provided by `caliper` 
