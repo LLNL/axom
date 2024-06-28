@@ -8,6 +8,7 @@
 #include "axom/mir/views/StructuredTopologyView.hpp"
 #include "axom/mir/views/dispatch_coordset.hpp"
 #include "axom/mir/views/dispatch_topology.hpp"
+#include "axom/mir/views/dispatch_utilities.hpp"
 
 #include <conduit/conduit_blueprint.hpp>
 
@@ -41,6 +42,11 @@
   #endif
 #endif
 // clang-format on
+
+namespace axom
+{
+namespace mir
+{
 
 void EquiZAlgorithm::execute(const conduit::Node &topo,
                                  const conduit::Node &coordset,
@@ -84,17 +90,16 @@ void EquiZAlgorithm::executeImpl(const conduit::Node &topo,
 {
   if(options.has_path("zones"))
   {
-    const conduit::Node &zones = options.fetch_existing("zones");
-    const auto nzones = zones.dtype().number_of_elements();
+    const conduit::Node &n_zones = options.fetch_existing("zones");
 
 /// NOTE: since each inner dispatch could be a lot of code, should I just make a zones array for the case where zones is not provided?
 
     // Operate on a list of zones.
-    views::IndexNode_To_ArrayView(options["zones"], [&](auto zonesView)
+    views::IndexNode_to_ArrayView(n_zones, [&](auto zonesView)
     {
       views::dispatch_coordset(coordset, [&](auto &coordsetView)
       {
-        views::dispatch_topology(topo, coordset, [&](const std::string &shape, auto &topoView)
+        views::dispatch_topology<views::select_dimensions(2,3)>(topo, coordset, [&](const std::string &shape, auto &topoView)
         {
           topoView. template for_selected_zones<ExecSpace>(zonesView, AXOM_LAMBDA(auto zoneIndex, const auto &zone)
           {          
@@ -109,7 +114,7 @@ void EquiZAlgorithm::executeImpl(const conduit::Node &topo,
     // Operate on all zones.
     views::dispatch_coordset(coordset, [&](auto &coordsetView)
     {
-      views::dispatch_topology(topo, coordset, [&](const std::string &shape, auto &topoView)
+      views::dispatch_topology<views::select_dimensions(2,3)>(topo, coordset, [&](const std::string &shape, auto &topoView)
       {
         topoView. template for_all_zones<ExecSpace>(AXOM_LAMBDA(auto zoneIndex, const auto &zone)
         {          
