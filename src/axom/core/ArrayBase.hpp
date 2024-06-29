@@ -884,11 +884,18 @@ struct all_types_are_integral
   static constexpr bool value = all_types_are_integral_impl<Args...>::value;
 };
 
-template <typename T, bool DeviceOps>
+enum class OperationSpace
+{
+  Host,
+  Device,
+  Unified_Device
+};
+
+template <typename T, OperationSpace Space>
 struct ArrayOpsBase;
 
 template <typename T>
-struct ArrayOpsBase<T, false>
+struct ArrayOpsBase<T, OperationSpace::Host>
 {
   using DefaultCtorTag = std::is_default_constructible<T>;
 
@@ -1064,8 +1071,133 @@ struct ArrayOpsBase<T, false>
 };
 
 #if defined(AXOM_USE_GPU) && defined(AXOM_GPUCC) && defined(AXOM_USE_UMPIRE)
+/*!
+ * \name Tag types for device initialization
+ */
+/// @{
+
+/*!
+ * \brief Tag type representing that a type can be initialized on the device.
+ *
+ *  This only applies to types which are trivially device-constructible.
+ */
+struct InitTypeOnDevice
+{ };
+/*!
+ * \brief Tag type representing that a type can be initialized on the device.
+ *
+ *  This applies to types which are not trivially default-constructible, but are
+ *  trivially-copyable; we can construct a default value on the host and copy-
+ *  construct values with it on the device.
+ */
+struct InitTypeOnDeviceWithCopy
+{ };
+/*!
+ * \brief Tag type representing that a type cannot be initialized on the device.
+ */
+struct InitTypeOnHost
+{ };
+
+/*!
+ * \brief Selector type which matches a type to its corresponding initialization
+ *  tag type.
+ */
+template <typename T, typename Enable = void>
+struct DeviceInitTag
+{
+  using Type = InitTypeOnHost;
+};
+
 template <typename T>
-struct ArrayOpsBase<T, true>
+struct DeviceInitTag<T, std::enable_if_t<std::is_trivially_default_constructible<T>::value>>
+{
+  using Type = InitTypeOnDevice;
+};
+
+template <typename T>
+struct DeviceInitTag<T,
+                     std::enable_if_t<!std::is_trivially_default_constructible<T>::value &&
+                                      std::is_default_constructible<T>::value &&
+                                      std::is_trivially_copyable<T>::value>>
+{
+  using Type = InitTypeOnDeviceWithCopy;
+};
+/// @}
+
+template <typename T, OperationSpace SPACE>
+struct DeviceStagingBuffer;
+
+template <typename T>
+struct DeviceStagingBuffer<T, OperationSpace::Device>
+{
+  /*!
+   * \brief Create a staging buffer for a device memory operation.
+   *
+   * \param [in] data the array to mirror on the CPU
+   * \param [in] begin the beginning index of the range to mirror
+   * \param [in] nelems the number of elements to mirror
+   * \param [in] read_from_data if true, copies existing data range to the
+   *  staging buffer during construction
+   */
+  DeviceStagingBuffer(T* data,
+                      IndexType begin,
+                      IndexType nelems,
+                      bool read_from_data = false)
+    : m_data(data)
+    , m_begin(begin)
+    , m_num_elems(nelems)
+  {
+    int allocator_id = 0;
+  #ifdef AXOM_USE_UMPIRE
+    allocator_id = axom::detail::getAllocatorID<axom::MemorySpace::Host>();
+  #endif
+    m_staging_buf = axom::allocate<T>(nelems, allocator_id);
+    if(read_from_data)
+    {
+      axom::copy(m_staging_buf, m_data + begin, sizeof(T) * nelems);
+    }
+  }
+
+  DISABLE_COPY_AND_ASSIGNMENT(DeviceStagingBuffer);
+  DISABLE_MOVE_AND_ASSIGNMENT(DeviceStagingBuffer);
+
+  ~DeviceStagingBuffer()
+  {
+    // Copy back staging data to destination buffer.
+    axom::copy(m_data + m_begin, m_staging_buf, m_num_elems * sizeof(T));
+    axom::deallocate(m_staging_buf);
+  }
+
+  T* getStagingBuffer() const { return static_cast<T*>(m_staging_buf); }
+
+  T* m_staging_buf;
+  T* m_data;
+  IndexType m_begin;
+  IndexType m_num_elems;
+};
+
+template <typename T>
+struct DeviceStagingBuffer<T, OperationSpace::Unified_Device>
+{
+  DeviceStagingBuffer(T* data,
+                      IndexType begin,
+                      IndexType nelems,
+                      bool read_from_data = false)
+    : m_data(data)
+    , m_begin(begin)
+  {
+    AXOM_UNUSED_VAR(nelems);
+    AXOM_UNUSED_VAR(read_from_data);
+  }
+
+  T* getStagingBuffer() const { return static_cast<T*>(m_data + m_begin); }
+
+  T* m_data;
+  IndexType m_begin;
+};
+
+template <typename T, OperationSpace SPACE>
+struct ArrayOpsBase
 {
   #if defined(__CUDACC__)
   using ExecSpace = axom::CUDA_EXEC<256>;
@@ -1073,17 +1205,11 @@ struct ArrayOpsBase<T, true>
   using ExecSpace = axom::HIP_EXEC<256>;
   #endif
 
-  static constexpr bool InitOnDevice =
-    std::is_trivially_default_constructible<T>::value;
   static constexpr bool DestroyOnHost = !std::is_trivially_destructible<T>::value;
   static constexpr bool DefaultCtor = std::is_default_constructible<T>::value;
 
-  struct TrivialDefaultCtorTag
-  { };
-  struct NontrivialDefaultCtorTag
-  { };
-  struct NoDefaultCtorTag
-  { };
+  using HostOp = ArrayOpsBase<T, OperationSpace::Host>;
+  using StagingBuffer = DeviceStagingBuffer<T, SPACE>;
 
   /*!
    * \brief Helper for default-initialization of a range of elements.
@@ -1091,36 +1217,25 @@ struct ArrayOpsBase<T, true>
    * \param [inout] data The data to initialize
    * \param [in] begin The beginning of the subset of \a data that should be initialized
    * \param [in] nelems the number of elements to initialize
-   * \note Specialization for when T is nontrivially default-constructible.
+   * \note Specialization for when T is only initializable on the host.
    */
-  static void init_impl(T* data,
-                        IndexType begin,
-                        IndexType nelems,
-                        NontrivialDefaultCtorTag)
+  static void init_impl(T* data, IndexType begin, IndexType nelems, InitTypeOnHost)
   {
-    // If we instantiated a fill kernel here it would require
-    // that T's default ctor is device-annotated which is too
-    // strict of a requirement, so we copy a buffer instead.
-    void* tmp_buffer = ::operator new(sizeof(T) * nelems);
-    T* typed_buffer = static_cast<T*>(tmp_buffer);
-    for(IndexType i = 0; i < nelems; ++i)
+    if(std::is_default_constructible<T>::value)
     {
-      // We use placement-new to avoid calling destructors in the delete
-      // statement below.
-      new(typed_buffer + i) T();
+      // If we instantiated a fill kernel here it would require
+      // that T's default ctor is device-annotated which is too
+      // strict of a requirement, so we copy a buffer instead.
+      StagingBuffer tmp_buf(data, begin, nelems);
+      HostOp::init(tmp_buf.getStagingBuffer(), 0, nelems);
     }
-    axom::copy(data + begin, tmp_buffer, nelems * sizeof(T));
-    ::operator delete(tmp_buffer);
   }
 
   /*!
    * \overload
    * \note Specialization for when T is trivially default-constructible.
    */
-  static void init_impl(T* data,
-                        IndexType begin,
-                        IndexType nelems,
-                        TrivialDefaultCtorTag)
+  static void init_impl(T* data, IndexType begin, IndexType nelems, InitTypeOnDevice)
   {
     for_all<ExecSpace>(
       begin,
@@ -1130,9 +1245,19 @@ struct ArrayOpsBase<T, true>
 
   /*!
    * \overload
-   * \note Specialization for when T is not default-constructible.
+   * \note Specialization for when T is trivially copyable.
    */
-  static void init_impl(T*, IndexType, IndexType, NoDefaultCtorTag) { }
+  static void init_impl(T* data,
+                        IndexType begin,
+                        IndexType nelems,
+                        InitTypeOnDeviceWithCopy)
+  {
+    T object {};
+    for_all<ExecSpace>(
+      begin,
+      begin + nelems,
+      AXOM_LAMBDA(IndexType i) { new(&data[i]) T(object); });
+  }
 
   /*!
    * \brief Default-initializes the "new" segment of an array
@@ -1143,14 +1268,7 @@ struct ArrayOpsBase<T, true>
    */
   static void init(T* data, IndexType begin, IndexType nelems)
   {
-    using InitSelectTag =
-      typename std::conditional<InitOnDevice,
-                                TrivialDefaultCtorTag,
-                                NontrivialDefaultCtorTag>::type;
-    using InitTag =
-      typename std::conditional<DefaultCtor, InitSelectTag, NoDefaultCtorTag>::type;
-
-    init_impl(data, begin, nelems, InitTag {});
+    init_impl(data, begin, nelems, typename DeviceInitTag<T>::Type {});
   }
 
   /*!
@@ -1168,14 +1286,11 @@ struct ArrayOpsBase<T, true>
                         const T& value,
                         std::false_type)
   {
-    void* buffer = ::operator new(sizeof(T) * nelems);
-    T* typed_buffer = static_cast<T*>(buffer);
     // If we instantiated a fill kernel here it would require
     // that T's copy ctor is device-annotated which is too
     // strict of a requirement, so we copy a buffer instead.
-    std::uninitialized_fill_n(typed_buffer, nelems, value);
-    axom::copy(array + begin, typed_buffer, sizeof(T) * nelems);
-    ::operator delete(buffer);
+    StagingBuffer tmp_buf(array, begin, nelems);
+    HostOp::fill(tmp_buf.getStagingBuffer(), 0, nelems, value);
   }
 
   /*!
@@ -1227,26 +1342,10 @@ struct ArrayOpsBase<T, true>
     }
     else
     {
-      void* src_buf = nullptr;
-      const T* src_host = values;
-      if(space == MemorySpace::Device)
-      {
-        src_buf = ::operator new(sizeof(T) * nelems);
-        // "Relocate" the device-side values into host memory, before copying
-        // into uninitialized memory
-        axom::copy(src_buf, values, sizeof(T) * nelems);
-        src_host = static_cast<T*>(src_buf);
-      }
-      void* dst_buf = ::operator new(sizeof(T) * nelems);
-      T* dst_host = static_cast<T*>(dst_buf);
-      std::uninitialized_copy(src_host, src_host + nelems, dst_host);
-      if(src_buf)
-      {
-        ::operator delete(src_buf);
-      }
-      // Relocate our copy-constructed values into the target device array.
-      axom::copy(array + begin, dst_buf, sizeof(T) * nelems);
-      ::operator delete(dst_buf);
+      // HostOp::fill_range will handle the copy to our "staging" host buffer,
+      // regardless of the source memory space.
+      StagingBuffer tmp_buf(array, begin, nelems);
+      HostOp::fill_range(tmp_buf.getStagingBuffer(), 0, nelems, values, space);
     }
   }
 
@@ -1260,11 +1359,19 @@ struct ArrayOpsBase<T, true>
   template <typename... Args>
   static void emplace(T* array, IndexType i, Args&&... args)
   {
-    // Similar to fill(), except we can allocate stack memory and placement-new
-    // the object with a move constructor.
-    alignas(T) std::uint8_t host_buf[sizeof(T)];
-    T* host_obj = ::new(&host_buf) T(std::forward<Args>(args)...);
-    axom::copy(array + i, host_obj, sizeof(T));
+    if(SPACE == OperationSpace::Device)
+    {
+      // Similar to fill(), except we can allocate stack memory and placement-new
+      // the object with a move constructor.
+      alignas(T) std::uint8_t host_buf[sizeof(T)];
+      T* host_obj = ::new(&host_buf) T(std::forward<Args>(args)...);
+      axom::copy(array + i, host_obj, sizeof(T));
+    }
+    else  // SPACE == OperationSpace::Unified_Device
+    {
+      // Construct directly in unified/pinned memory.
+      ::new(array + i) T(std::forward<Args>(args)...);
+    }
   }
 
   /*!
@@ -1278,15 +1385,8 @@ struct ArrayOpsBase<T, true>
   {
     if(DestroyOnHost)
     {
-      void* buffer = ::operator new(sizeof(T) * nelems);
-      T* typed_buffer = static_cast<T*>(buffer);
-      axom::copy(typed_buffer, array + begin, sizeof(T) * nelems);
-      for(int i = 0; i < nelems; ++i)
-      {
-        typed_buffer[i].~T();
-      }
-      axom::copy(array + begin, typed_buffer, sizeof(T) * nelems);
-      ::operator delete(buffer);
+      StagingBuffer tmp_buf(array, begin, nelems, true);
+      HostOp::destroy(tmp_buf.getStagingBuffer(), 0, nelems);
     }
   }
 
@@ -1300,14 +1400,26 @@ struct ArrayOpsBase<T, true>
    */
   static void move(T* array, IndexType src_begin, IndexType src_end, IndexType dst)
   {
-    // Since this memory is on the device-side, we copy it to a temporary buffer
-    // first.
-    IndexType nelems = src_end - src_begin;
-    T* tmp_buf =
-      axom::allocate<T>(nelems, axom::execution_space<ExecSpace>::allocatorID());
-    axom::copy(tmp_buf, array + src_begin, nelems * sizeof(T));
-    axom::copy(array + dst, tmp_buf, nelems * sizeof(T));
-    axom::deallocate(tmp_buf);
+    if(!std::is_trivially_copyable<T>::value &&
+       SPACE == OperationSpace::Unified_Device)
+    {
+      // Type might not be trivially-relocatable, move the range on the host.
+      // Note that we only do this for objects in unified/pinned memory, since
+      // we assume that objects in device-only memory are trivially-relocatable.
+      HostOp::move(array, src_begin, src_end, dst);
+    }
+    else
+    {
+      // Since this memory is on the device-side, we copy it to a temporary buffer
+      // first.
+      IndexType nelems = src_end - src_begin;
+      T* tmp_buf =
+        axom::allocate<T>(nelems,
+                          axom::execution_space<ExecSpace>::allocatorID());
+      axom::copy(tmp_buf, array + src_begin, nelems * sizeof(T));
+      axom::copy(array + dst, tmp_buf, nelems * sizeof(T));
+      axom::deallocate(tmp_buf);
+    }
   }
 
   /*!
@@ -1319,57 +1431,108 @@ struct ArrayOpsBase<T, true>
    */
   static void realloc_move(T* array, IndexType nelems, T* values)
   {
-    // NOTE: technically this is incorrect for non-trivially relocatable types,
-    // but since we only support trivially-relocatable types on the GPU, a
-    // bitcopy will suffice.
-    axom::copy(array, values, nelems * sizeof(T));
+    if(!std::is_trivially_copyable<T>::value &&
+       SPACE == OperationSpace::Unified_Device)
+    {
+      HostOp::realloc_move(array, nelems, values);
+    }
+    else
+    {
+      // NOTE: technically this is incorrect for non-trivially relocatable types,
+      // but since we only support trivially-relocatable types in device-only
+      // memory, a bitcopy will suffice.
+      axom::copy(array, values, nelems * sizeof(T));
+    }
   }
 };
 #endif
 
-template <typename T, MemorySpace SPACE>
-struct ArrayOps
+template <MemorySpace SPACE>
+struct MemSpaceTraits
 {
-private:
+  static constexpr OperationSpace Space = OperationSpace::Host;
+  // True if memory is accessible by both the host and device. False otherwise.
+  static constexpr bool IsUVMAccessible = false;
+};
+
 #if defined(AXOM_USE_GPU) && defined(AXOM_GPUCC) && defined(AXOM_USE_UMPIRE)
-  constexpr static bool IsDevice = (SPACE == MemorySpace::Device);
-#else
-  constexpr static bool IsDevice = false;
+template <>
+struct MemSpaceTraits<MemorySpace::Device>
+{
+  #if defined(AXOM_USE_CUDA)
+  // On CUDA platforms, device memory allocated with cudaMalloc can only be
+  // touched from a device kernel.
+  static constexpr OperationSpace Space = OperationSpace::Device;
+  static constexpr bool IsUVMAccessible = false;
+  #elif defined(AXOM_USE_HIP)
+  // On HIP platforms, device memory allocated with hipMalloc is accessible from
+  // the host.
+  static constexpr OperationSpace Space = OperationSpace::Unified_Device;
+  static constexpr bool IsUVMAccessible = true;
+  #endif
+};
+
+template <>
+struct MemSpaceTraits<MemorySpace::Pinned>
+{
+  static constexpr OperationSpace Space = OperationSpace::Unified_Device;
+  static constexpr bool IsUVMAccessible = true;
+};
+template <>
+struct MemSpaceTraits<MemorySpace::Unified>
+{
+  static constexpr OperationSpace Space = OperationSpace::Unified_Device;
+  static constexpr bool IsUVMAccessible = true;
+};
+
+template <>
+struct MemSpaceTraits<MemorySpace::Dynamic>
+{
+  static constexpr bool IsUVMAccessible = true;
+};
 #endif
 
-  using Base = ArrayOpsBase<T, IsDevice>;
+template <typename T,
+          MemorySpace SPACE,
+          bool IsUVMAccessible = MemSpaceTraits<SPACE>::IsUVMAccessible>
+struct ArrayOps;
+
+template <typename T, MemorySpace SPACE>
+struct ArrayOps<T, SPACE, false>
+{
+private:
+  constexpr static OperationSpace OpSpace = MemSpaceTraits<SPACE>::Space;
+
+  using Base = ArrayOpsBase<T, OpSpace>;
 
 public:
-  static void init(T* array, IndexType begin, IndexType nelems, int allocId)
+  ArrayOps(int allocId, bool preferDevice)
   {
     AXOM_UNUSED_VAR(allocId);
+    AXOM_UNUSED_VAR(preferDevice);
+  }
+
+  void init(T* array, IndexType begin, IndexType nelems)
+  {
     Base::init(array, begin, nelems);
   }
 
-  static void fill(T* array,
-                   IndexType begin,
-                   IndexType nelems,
-                   int allocId,
-                   const T& value)
+  void fill(T* array, IndexType begin, IndexType nelems, const T& value)
   {
-    AXOM_UNUSED_VAR(allocId);
     Base::fill(array, begin, nelems, value);
   }
 
-  static void fill_range(T* array,
-                         IndexType begin,
-                         IndexType nelems,
-                         int allocId,
-                         const T* values,
-                         MemorySpace space)
+  void fill_range(T* array,
+                  IndexType begin,
+                  IndexType nelems,
+                  const T* values,
+                  MemorySpace space)
   {
-    AXOM_UNUSED_VAR(allocId);
     Base::fill_range(array, begin, nelems, values, space);
   }
 
-  static void destroy(T* array, IndexType begin, IndexType nelems, int allocId)
+  void destroy(T* array, IndexType begin, IndexType nelems)
   {
-    AXOM_UNUSED_VAR(allocId);
     if(nelems == 0)
     {
       return;
@@ -1377,13 +1540,8 @@ public:
     Base::destroy(array, begin, nelems);
   }
 
-  static void move(T* array,
-                   IndexType src_begin,
-                   IndexType src_end,
-                   IndexType dst,
-                   int allocId)
+  void move(T* array, IndexType src_begin, IndexType src_end, IndexType dst)
   {
-    AXOM_UNUSED_VAR(allocId);
     if(src_begin >= src_end)
     {
       return;
@@ -1391,161 +1549,188 @@ public:
     Base::move(array, src_begin, src_end, dst);
   }
 
-  static void realloc_move(T* array, IndexType nelems, T* values, int allocId)
+  void realloc_move(T* array, IndexType nelems, T* values)
   {
-    AXOM_UNUSED_VAR(allocId);
     Base::realloc_move(array, nelems, values);
   }
 
   template <typename... Args>
-  static void emplace(T* array, IndexType dst, IndexType allocId, Args&&... args)
+  void emplace(T* array, IndexType dst, Args&&... args)
   {
-    AXOM_UNUSED_VAR(allocId);
     Base::emplace(array, dst, std::forward<Args>(args)...);
   }
 };
 
-template <typename T>
-struct ArrayOps<T, MemorySpace::Dynamic>
+template <typename T, MemorySpace SPACE>
+struct ArrayOps<T, SPACE, true>
 {
 private:
-  using Base = ArrayOpsBase<T, false>;
+  using Base = ArrayOpsBase<T, OperationSpace::Host>;
 #if defined(AXOM_USE_GPU) && defined(AXOM_GPUCC) && defined(AXOM_USE_UMPIRE)
-  using BaseDevice = ArrayOpsBase<T, true>;
+  using BaseDevice = ArrayOpsBase<T, OperationSpace::Device>;
+  // Works with unified and pinned memory.
+  using BaseUM = ArrayOpsBase<T, OperationSpace::Unified_Device>;
+
+  MemorySpace space {MemorySpace::Dynamic};
 #endif
 
 public:
-  static void init(T* array, IndexType begin, IndexType nelems, int allocId)
+  ArrayOps(int allocId, bool preferDevice)
   {
 #if defined(AXOM_USE_GPU) && defined(AXOM_GPUCC) && defined(AXOM_USE_UMPIRE)
-    MemorySpace space = getAllocatorSpace(allocId);
+    if(SPACE == MemorySpace::Dynamic)
+    {
+      space = getAllocatorSpace(allocId);
+    }
+    else
+    {
+      space = SPACE;
+    }
 
+    bool isUnifiedSpace = false;
+    isUnifiedSpace =
+      (space == MemorySpace::Unified || space == MemorySpace::Pinned);
+  #if defined(AXOM_USE_HIP)
+    isUnifiedSpace = (isUnifiedSpace || space == MemorySpace::Device);
+  #endif
+    if(!preferDevice && isUnifiedSpace)
+    {
+      space = MemorySpace::Host;
+    }
+#else
+    AXOM_UNUSED_VAR(allocId);
+    AXOM_UNUSED_VAR(preferDevice);
+#endif
+  }
+
+  void init(T* array, IndexType begin, IndexType nelems)
+  {
+#if defined(AXOM_USE_GPU) && defined(AXOM_GPUCC) && defined(AXOM_USE_UMPIRE)
     if(space == MemorySpace::Device)
     {
       BaseDevice::init(array, begin, nelems);
       return;
     }
-#else
-    AXOM_UNUSED_VAR(allocId);
+    else if(space == MemorySpace::Unified || space == MemorySpace::Pinned)
+    {
+      BaseUM::init(array, begin, nelems);
+      return;
+    }
 #endif
     Base::init(array, begin, nelems);
   }
 
-  static void fill(T* array,
-                   IndexType begin,
-                   IndexType nelems,
-                   int allocId,
-                   const T& value)
+  void fill(T* array, IndexType begin, IndexType nelems, const T& value)
   {
 #if defined(AXOM_USE_GPU) && defined(AXOM_GPUCC) && defined(AXOM_USE_UMPIRE)
-    MemorySpace space = getAllocatorSpace(allocId);
-
     if(space == MemorySpace::Device)
     {
       BaseDevice::fill(array, begin, nelems, value);
       return;
     }
-#else
-    AXOM_UNUSED_VAR(allocId);
+    else if(space == MemorySpace::Unified || space == MemorySpace::Pinned)
+    {
+      BaseUM::fill(array, begin, nelems, value);
+      return;
+    }
 #endif
     Base::fill(array, begin, nelems, value);
   }
 
-  static void fill_range(T* array,
-                         IndexType begin,
-                         IndexType nelems,
-                         int allocId,
-                         const T* values,
-                         MemorySpace valueSpace)
+  void fill_range(T* array,
+                  IndexType begin,
+                  IndexType nelems,
+                  const T* values,
+                  MemorySpace valueSpace)
   {
 #if defined(AXOM_USE_GPU) && defined(AXOM_GPUCC) && defined(AXOM_USE_UMPIRE)
-    MemorySpace space = getAllocatorSpace(allocId);
-
     if(space == MemorySpace::Device)
     {
       BaseDevice::fill_range(array, begin, nelems, values, valueSpace);
       return;
     }
-#else
-    AXOM_UNUSED_VAR(allocId);
+    else if(space == MemorySpace::Unified || space == MemorySpace::Pinned)
+    {
+      BaseUM::fill_range(array, begin, nelems, values, valueSpace);
+      return;
+    }
 #endif
-    AXOM_UNUSED_VAR(allocId);
     Base::fill_range(array, begin, nelems, values, valueSpace);
   }
 
-  static void destroy(T* array, IndexType begin, IndexType nelems, int allocId)
+  void destroy(T* array, IndexType begin, IndexType nelems)
   {
     if(nelems == 0)
     {
       return;
     }
 #if defined(AXOM_USE_GPU) && defined(AXOM_GPUCC) && defined(AXOM_USE_UMPIRE)
-    MemorySpace space = getAllocatorSpace(allocId);
-
     if(space == MemorySpace::Device)
     {
       BaseDevice::destroy(array, begin, nelems);
       return;
     }
-#else
-    AXOM_UNUSED_VAR(allocId);
+    else if(space == MemorySpace::Unified || space == MemorySpace::Pinned)
+    {
+      BaseUM::destroy(array, begin, nelems);
+      return;
+    }
 #endif
     Base::destroy(array, begin, nelems);
   }
 
-  static void move(T* array,
-                   IndexType src_begin,
-                   IndexType src_end,
-                   IndexType dst,
-                   int allocId)
+  void move(T* array, IndexType src_begin, IndexType src_end, IndexType dst)
   {
     if(src_begin >= src_end)
     {
       return;
     }
 #if defined(AXOM_USE_GPU) && defined(AXOM_GPUCC) && defined(AXOM_USE_UMPIRE)
-    MemorySpace space = getAllocatorSpace(allocId);
-
     if(space == MemorySpace::Device)
     {
       BaseDevice::move(array, src_begin, src_end, dst);
       return;
     }
-#else
-    AXOM_UNUSED_VAR(allocId);
+    else if(space == MemorySpace::Unified || space == MemorySpace::Pinned)
+    {
+      BaseUM::move(array, src_begin, src_end, dst);
+      return;
+    }
 #endif
     Base::move(array, src_begin, src_end, dst);
   }
 
-  static void realloc_move(T* array, IndexType nelems, T* values, int allocId)
+  void realloc_move(T* array, IndexType nelems, T* values)
   {
 #if defined(AXOM_USE_GPU) && defined(AXOM_GPUCC) && defined(AXOM_USE_UMPIRE)
-    MemorySpace space = getAllocatorSpace(allocId);
-
     if(space == MemorySpace::Device)
     {
       BaseDevice::realloc_move(array, nelems, values);
       return;
     }
-#else
-    AXOM_UNUSED_VAR(allocId);
+    else if(space == MemorySpace::Unified || space == MemorySpace::Pinned)
+    {
+      BaseUM::realloc_move(array, nelems, values);
+      return;
+    }
 #endif
     Base::realloc_move(array, nelems, values);
   }
 
   template <typename... Args>
-  static void emplace(T* array, IndexType dst, IndexType allocId, Args&&... args)
+  void emplace(T* array, IndexType dst, Args&&... args)
   {
 #if defined(AXOM_USE_GPU) && defined(AXOM_GPUCC) && defined(AXOM_USE_UMPIRE)
-    MemorySpace space = getAllocatorSpace(allocId);
-
     if(space == MemorySpace::Device)
     {
       BaseDevice::emplace(array, dst, std::forward<Args>(args)...);
       return;
     }
-#else
-    AXOM_UNUSED_VAR(allocId);
+    else if(space == MemorySpace::Unified || space == MemorySpace::Pinned)
+    {
+      BaseUM::emplace(array, dst, std::forward<Args>(args)...);
+      return;
+    }
 #endif
     Base::emplace(array, dst, std::forward<Args>(args)...);
   }
