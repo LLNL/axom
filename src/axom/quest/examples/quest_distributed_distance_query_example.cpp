@@ -339,6 +339,9 @@ public:
     MPI_Allreduce(MPI_IN_PLACE, &m_dimension, 1, MPI_INT, MPI_MAX, MPI_COMM_WORLD);
     SLIC_ASSERT(m_dimension > 0);
 
+    // For debugging, create cell-centered owner-rank field.
+    m_dimension == 2 ? setCellOwnerRank<2>(mdMesh) : setCellOwnerRank<3>(mdMesh);
+
     if(domCount > 0)
     {
       // Put mdMesh into sidre Group.
@@ -426,6 +429,43 @@ public:
     for(int i = 0; i < SZ; ++i)
     {
       arr[i] = i;
+    }
+  }
+
+  /*!
+    @brief Set the cell-centered owner rank field.
+
+    @param mdMesh A multi-domain structured mesh.
+  */
+  template <int DIM>
+  void setCellOwnerRank(conduit::Node& mdMesh)
+  {
+    std::string fieldName = "owner_rank";
+    axom::StackArray<axom::IndexType, DIM> zeroPads;
+    axom::StackArray<axom::IndexType, DIM> strideOrder;
+    for(int d = 0; d < DIM; ++d)
+    {
+      zeroPads[d] = 0;
+      strideOrder[d] = DIM - d - 1;
+    }
+    for(conduit::Node& dom : mdMesh.children())
+    {
+      axom::quest::MeshViewUtil<DIM> domainView(dom, m_topologyName);
+      domainView.createField(fieldName,
+                             "element",
+                             conduit::DataType::uint32(),
+                             zeroPads,
+                             zeroPads,
+                             strideOrder);
+
+      auto ownerRankView =
+        domainView.template getFieldView<std::uint32_t>(fieldName);
+      axom::detail::ArrayOps<std::uint32_t, axom::MemorySpace::Dynamic>::fill(
+        ownerRankView.data(),
+        0,
+        ownerRankView.size(),
+        ownerRankView.getAllocatorID(),
+        m_rank);
     }
   }
 
@@ -966,13 +1006,44 @@ public:
       const double allowableSlack = avgObjectRes / 2;
 
       using IndexSet = slam::PositionSet<>;
+      const PointType circleCenter {params.circleCenter.data(), DIM};
+      double zNorth =
+        params.circleRadius * std::sin(params.latRange[1] * M_PI / 180);
+      double xyNorth =
+        params.circleRadius * std::cos(params.latRange[1] * M_PI / 180);
+      double zSouth =
+        params.circleRadius * std::sin(params.latRange[0] * M_PI / 180);
+      double xySouth =
+        params.circleRadius * std::cos(params.latRange[0] * M_PI / 180);
       for(auto i : IndexSet(queryPts.size()))
       {
         bool errf = false;
 
+        // Compute the analytical distance to sphere (or partial sphere
+        // if the latitude range doesn't go all the way to the poles).
         const auto& qPt = queryPts[i];
         const auto& cpCoord = cpCoords[i];
         double analyticalDist = std::fabs(sphere.computeSignedDistance(qPt));
+        if(DIM == 3 && params.latRange[0] > -90 && params.latRange[1] < 90)
+        {
+          // More complicated analytical distance for partial-sphere object.
+          axom::primal::Vector<double, DIM> cToQ {circleCenter, qPt};
+          double z = cToQ[2];
+          cToQ[2] = 0.0;
+          double xy = cToQ.norm();
+          double qPtLat = std::atan(z / xy) * 180 / M_PI;
+          if(qPtLat > params.latRange[1])
+          {
+            analyticalDist = std::sqrt((z - zNorth) * (z - zNorth) +
+                                       (xy - xyNorth) * (xy - xyNorth));
+          }
+          else if(qPtLat < params.latRange[0])
+          {
+            analyticalDist = std::sqrt((z - zSouth) * (z - zSouth) +
+                                       (xy - xySouth) * (xy - xySouth));
+          }
+        }
+
         const bool closestPointFound = (cpIndices[i] == -1);
         if(closestPointFound)
         {
@@ -1032,7 +1103,7 @@ public:
             {
               errf = true;
               SLIC_INFO(
-                axom::fmt::format("***Warning: Closest distance for {} (index "
+                axom::fmt::format("***Error: Closest distance for {} (index "
                                   "{}, cp {}) is {}, off by {}.",
                                   qPt,
                                   i,
@@ -1061,6 +1132,7 @@ private:
 
 /**
  * Generates points on a sphere, partitioned into multiple domains.
+ * The sphere's polar axis is in the z-direction.
  * Point spacing in the longitudinal direction can be random (default) or uniform.
  * 3D points cover the given latitude range.
  */
@@ -1501,12 +1573,16 @@ int main(int argc, char** argv)
       maxQuery));
   }
   slic::flushStreams();
+  SLIC_INFO(axom::fmt::format("Updating closest points."));
+  slic::flushStreams();
   queryMeshWrapper.update_closest_points(queryMeshNode);
 
   int errCount = 0;
   int localErrCount = 0;
   if(params.checkResults)
   {
+    SLIC_INFO(axom::fmt::format("Checking results."));
+    slic::flushStreams();
     if(spatialDim == 2)
     {
       primal::Point<double, 2> center(params.circleCenter.data());

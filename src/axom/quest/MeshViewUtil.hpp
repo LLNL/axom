@@ -124,7 +124,9 @@ static void shapesToStridesAndOffsets(
   @param offsets [i] Blueprint-style index offsets.
   @param strides [i] Blueprint-style strides.
   @param valuesCount [i] Number of values in
-    ghost-padded data.
+    ghost-padded data.  If this is too small (results in
+    a negative \a hiPads for the slowest stride
+    direction), that padding will be bumped to zero.
   @param paddedShape [o] \a realShape + \a loPads + \a hiPads
   @param loPads [o] Ghost padding amount on low side.
   @param hiPads [o] Ghost padding amount ont high side.
@@ -165,7 +167,9 @@ static void stridesAndOffsetsToShapes(const axom::StackArray<IType, DIM>& realSh
     const int& nextDir = strideOrder[nd + 1];
     paddedShape[curDir] = strides[nextDir] / strides[curDir];
   }
-  paddedShape[strideOrder[DIM - 1]] = valuesCount / strides[strideOrder[DIM - 1]];
+  const int slowestDir = strideOrder[DIM - 1];
+  paddedShape[slowestDir] = std::max(valuesCount / strides[slowestDir],
+                                     realShape[slowestDir] + offsets[slowestDir]);
 
   for(int d = 0; d < DIM; ++d)
   {
@@ -500,7 +504,7 @@ public:
   /*!
     @brief Return view to a scalar field variable.
 
-    WARNING: The view returned has an allocator id determined by
+    WARNING: The view returned claims an allocator id determined by
     \a MemSpace, regardless of the memory type.
 
     WARNING: Assuming, without checking, that the field contains
@@ -647,8 +651,9 @@ public:
 
     @param [in] fieldName
     @param [in] association "vertex" or "element"
-    @param [in] dtype Conduit data type to put in the field.  Must be at least
-                big enough for the strides and offsets specified.
+    @param [in] dtype Conduit data type to put in the field.  If this is not
+                big enough for the strides and offsets specified, a minimally
+                sufficient size will be used to avoid negative ghost padding.
     @param [in] strides Data strides.  Set to zero for no ghosts and default strides.
     @param [in] offsets Data index offsets.  Set to zero for no ghosts.
 
