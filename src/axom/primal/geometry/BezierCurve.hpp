@@ -26,6 +26,7 @@
 
 #include <vector>
 #include <ostream>
+#include "axom/fmt.hpp"
 
 namespace axom
 {
@@ -918,5 +919,11 @@ std::ostream& operator<<(std::ostream& os, const BezierCurve<T, NDIMS>& bCurve)
 
 }  // namespace primal
 }  // namespace axom
+
+/// Overload to format a primal::BezierCurve using fmt
+template <typename T, int NDIMS>
+struct axom::fmt::formatter<axom::primal::BezierCurve<T, NDIMS>>
+  : ostream_formatter
+{ };
 
 #endif  // AXOM_PRIMAL_BEZIERCURVE_HPP_
