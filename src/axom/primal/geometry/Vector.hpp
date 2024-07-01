@@ -101,7 +101,7 @@ AXOM_HOST_DEVICE Vector<T, NDIMS> operator-(const Point<T, NDIMS>& h,
  * \return C resulting vector from unary negation.
  */
 template <typename T, int NDIMS>
-Vector<T, NDIMS> operator-(const Vector<T, NDIMS>& vec1);
+AXOM_HOST_DEVICE Vector<T, NDIMS> operator-(const Vector<T, NDIMS>& vec1);
 
 /*!
  * \brief Scalar multiplication of vector; Scalar on rhs.
@@ -131,7 +131,8 @@ AXOM_HOST_DEVICE Vector<T, NDIMS> operator*(const T scalar,
  * \pre scalar != 0.0
  */
 template <typename T, int NDIMS>
-Vector<T, NDIMS> operator/(const Vector<T, NDIMS>& vec, const T scalar);
+AXOM_HOST_DEVICE Vector<T, NDIMS> operator/(const Vector<T, NDIMS>& vec,
+                                            const T scalar);
 
 /*!
  * \brief Overloaded output operator for vectors
@@ -229,7 +230,7 @@ public:
    * \post d >= 1.
    */
   AXOM_HOST_DEVICE
-  int dimension() const { return NDIMS; };
+  static constexpr int dimension() { return NDIMS; };
 
   /*!
    * \brief Access operator for individual components.
@@ -273,6 +274,7 @@ public:
   /*!
    * \brief Inequality operator for points
    */
+  AXOM_HOST_DEVICE
   friend bool operator!=(const Vector& lhs, const Vector& rhs)
   {
     return !(lhs == rhs);
@@ -327,6 +329,14 @@ public:
   T dot(const Vector<T, NDIMS>& v) const;
 
   /*!
+   * \brief Cross product of the Vector instance with another vector v
+   * \param [in] v the other vector in the cross product
+   * \return The cross product of the two vectors.
+   */
+  AXOM_HOST_DEVICE
+  T cross(const Vector<T, NDIMS>& v) const;
+
+  /*!
    * \brief Computes the squared \f$ l^2\f$ norm of this vector instance.
    * \return n the squared norm.
    * \see Vector::norm()
@@ -346,6 +356,18 @@ public:
    */
   AXOM_HOST_DEVICE
   void negate();
+
+  /*!
+   * \brief In-place normalization of the vector.
+   */
+  AXOM_HOST_DEVICE
+  void normalize();
+
+  /*!
+   * \brief In-place unitization (normalization) of the vector.
+   */
+  AXOM_HOST_DEVICE
+  void unitize();
 
   /*!
    * \brief Creates a new unit vector in the direction of the vector instance.
@@ -413,6 +435,7 @@ public:
    * \param [in] z the z--coordinate of the vector. Default is 0.0.
    * \return v a Vector instance with the given coordinates.
    */
+  AXOM_HOST_DEVICE
   static Vector make_vector(const T& x, const T& y, const T& z = 0.0);
 
 private:
@@ -516,6 +539,38 @@ AXOM_HOST_DEVICE inline void Vector<T, NDIMS>::negate()
   }
 }
 
+template <typename T, int NDIMS>
+AXOM_HOST_DEVICE inline void Vector<T, NDIMS>::normalize()
+{
+  const double len_sq = squared_norm();
+
+  if(len_sq >= primal::PRIMAL_TINY)
+  {
+    m_components /= (std::sqrt(len_sq));
+  }
+  else
+  {
+    // TODO: Would it be better to do nothing if the vector is really the
+    //       zero vector? Or if it is tiny but not the zero vector, find
+    //       the component with the largest magnitude and set it to 1 (all
+    //       the other components would then be set to 0).
+
+    // Set the first component to 1 and all others to 0
+    m_components[0] = static_cast<T>(1.);
+
+    for(int i = 1; i < NDIMS; ++i)
+    {
+      m_components[i] = static_cast<T>(0.);
+    }
+  }
+}
+
+template <typename T, int NDIMS>
+AXOM_HOST_DEVICE inline void Vector<T, NDIMS>::unitize()
+{
+  normalize();
+}
+
 //------------------------------------------------------------------------------
 template <typename T, int NDIMS>
 AXOM_HOST_DEVICE inline bool Vector<T, NDIMS>::is_zero() const
@@ -535,6 +590,13 @@ template <typename T, int NDIMS>
 AXOM_HOST_DEVICE inline T Vector<T, NDIMS>::dot(const Vector<T, NDIMS>& vec) const
 {
   return dot_product(*this, vec);
+}
+
+//------------------------------------------------------------------------------
+template <typename T, int NDIMS>
+AXOM_HOST_DEVICE inline T Vector<T, NDIMS>::cross(const Vector<T, NDIMS>& vec) const
+{
+  return cross_product(*this, vec);
 }
 
 //------------------------------------------------------------------------------
@@ -656,7 +718,8 @@ AXOM_HOST_DEVICE Point<T, NDIMS> operator-(const Point<T, NDIMS>& P,
 
 //------------------------------------------------------------------------------
 template <typename T, int NDIMS>
-inline Vector<T, NDIMS> operator/(const Vector<T, NDIMS>& vec, const T scalar)
+AXOM_HOST_DEVICE inline Vector<T, NDIMS> operator/(const Vector<T, NDIMS>& vec,
+                                                   const T scalar)
 {
   Vector<T, NDIMS> result(vec);
   result /= scalar;
@@ -683,7 +746,7 @@ AXOM_HOST_DEVICE Vector<T, NDIMS> operator-(const Point<T, NDIMS>& h,
 
 //------------------------------------------------------------------------------
 template <typename T, int NDIMS>
-inline Vector<T, NDIMS> operator-(const Vector<T, NDIMS>& vec1)
+AXOM_HOST_DEVICE inline Vector<T, NDIMS> operator-(const Vector<T, NDIMS>& vec1)
 {
   Vector<T, NDIMS> result(vec1);
   result.negate();
@@ -700,6 +763,7 @@ std::ostream& operator<<(std::ostream& os, const Vector<T, NDIMS>& vec)
 
 //------------------------------------------------------------------------------
 template <typename T, int NDIMS>
+AXOM_HOST_DEVICE
 inline Vector<T, NDIMS> Vector<T, NDIMS>::make_vector(const T& x,
                                                       const T& y,
                                                       const T& z)
