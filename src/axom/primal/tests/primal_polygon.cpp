@@ -720,6 +720,47 @@ TEST(primal_polygon, normal)
   }
 }
 
+//------------------------------------------------------------------------------
+TEST(primal_polygon, reverseOrientation)
+{
+  using Polygon2D = axom::primal::Polygon<double, 2>;
+  using Point2D = axom::primal::Point<double, 2>;
+
+  // Test an odd number of vertices
+  {
+    Polygon2D poly({Point2D {0, 0}, Point2D {1, 0}, Point2D {1, 1}});
+    poly.reverseOrientation();
+
+    EXPECT_NEAR(poly[0][0], 1, EPS);
+    EXPECT_NEAR(poly[0][1], 1, EPS);
+
+    EXPECT_NEAR(poly[1][0], 1, EPS);
+    EXPECT_NEAR(poly[1][1], 0, EPS);
+
+    EXPECT_NEAR(poly[2][0], 0, EPS);
+    EXPECT_NEAR(poly[2][1], 0, EPS);
+  }
+
+  // Test an even number of vertices
+  {
+    Polygon2D poly(
+      {Point2D {0, 0}, Point2D {1, 0}, Point2D {1, 1}, Point2D {0, 1}});
+    poly.reverseOrientation();
+
+    EXPECT_NEAR(poly[0][0], 0, EPS);
+    EXPECT_NEAR(poly[0][1], 1, EPS);
+
+    EXPECT_NEAR(poly[1][0], 1, EPS);
+    EXPECT_NEAR(poly[1][1], 1, EPS);
+
+    EXPECT_NEAR(poly[2][0], 1, EPS);
+    EXPECT_NEAR(poly[2][1], 0, EPS);
+
+    EXPECT_NEAR(poly[3][0], 0, EPS);
+    EXPECT_NEAR(poly[3][1], 0, EPS);
+  }
+}
+
 template <typename ExecPolicy>
 void check_polygon_policy()
 {
@@ -788,6 +829,11 @@ void check_polygon_policy()
       poly_3d_view[i].isValid();
       poly_2d_view[i].numVertices();
       poly_2d_view[i].isValid();
+
+      poly_2d_view[i].reverseOrientation();
+      poly_2d_view[i].reverseOrientation();
+      poly_3d_view[i].reverseOrientation();
+      poly_3d_view[i].reverseOrientation();
     });
 
   // Copy polygons and data back to host
