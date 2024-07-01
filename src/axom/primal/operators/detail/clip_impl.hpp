@@ -672,35 +672,10 @@ AXOM_HOST_DEVICE Polyhedron<T, NDIMS> clipTetrahedron(
 }
 
 /*!
- * \brief Clips a subject polygon against a clip polygon and returns the
- *        resulting polygon
+ * \brief Clips a 2D subject polygon against a clip polygon in 2D, returning
+ *        their geometric intersection as a polygon.
  *
- * \param [in] subjectPolygon The subject polygon
- * \param [in] clipPolygon The clip polygon
- * \param [in] eps The tolerance for plane point orientation
- * \param [in] tryFixOrientation If true, takes each shape with a negative
- *             signed area and swaps the order of some vertices in that
- *             shape to try to obtain a nonnegative signed area.
- *             Defaults to false.
- *
- * \return A polygon of the subject polygon clipped against the clip polygon.
- *
- * \note Function is based off the Sutherland–Hodgman algorithm.
- *
- * \warning Polygons with static array types must have enough vertices
- *          preallocated for the output polygon. It is recommended that
- *          MAX_VERTS >= subjectPolygon.numVertices() + clipPolygon.numVertices()
- *          for the output polygon with the largest possible vertex count.
- *
- * \warning tryFixOrientation flag does not guarantee the shapes' vertex orders
- *          will be valid. It is the responsiblity of the caller to pass
- *          shapes with a valid vertex order. Otherwise, if the shapes have
- *          invalid vertex orders, the returned Polygon
- *          will have a non-positive and/or unexpected area.
- *
- * \warning If tryFixOrientation flag is false and some of the shapes have
- *          a negative signed area, the returned Polygon
- *          will have a non-positive and/or unexpected area.
+ * \sa axom::primal::clip()
  */
 AXOM_SUPPRESS_HD_WARN
 template <typename T, axom::primal::PolygonArray ARRAY_TYPE, int MAX_VERTS>
