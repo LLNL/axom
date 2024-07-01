@@ -25,7 +25,9 @@ axom::IndexType calc_new_capacity(axom::Array<T>& v, axom::IndexType increase)
   axom::IndexType new_num_elements = v.size() + increase;
   if(new_num_elements > v.capacity())
   {
-    return new_num_elements * v.getResizeRatio() + 0.5;
+    axom::IndexType capacity_expanded = v.capacity() * v.getResizeRatio() + 0.5;
+    return axom::utilities::max<axom::IndexType>(capacity_expanded,
+                                                 new_num_elements);
   }
 
   return v.capacity();
