@@ -1920,6 +1920,37 @@ TEST(primal_clip, polygon_intersects_polygon)
     Polygon2D poly = axom::primal::clip(subjectPolygon, clipPolygon, EPS);
     EXPECT_NEAR(poly.signedArea(), 37083.3333333333, EPS);
     EXPECT_EQ(poly.numVertices(), 10);
+
+    // Check vertices
+    EXPECT_NEAR(poly[0][0], 100, EPS);
+    EXPECT_NEAR(poly[0][1], 116.6666666666, EPS);
+
+    EXPECT_NEAR(poly[1][0], 125, EPS);
+    EXPECT_NEAR(poly[1][1], 100, EPS);
+
+    EXPECT_NEAR(poly[2][0], 275, EPS);
+    EXPECT_NEAR(poly[2][1], 100, EPS);
+
+    EXPECT_NEAR(poly[3][0], 300, EPS);
+    EXPECT_NEAR(poly[3][1], 116.6666666666, EPS);
+
+    EXPECT_NEAR(poly[4][0], 300, EPS);
+    EXPECT_NEAR(poly[4][1], 300, EPS);
+
+    EXPECT_NEAR(poly[5][0], 250, EPS);
+    EXPECT_NEAR(poly[5][1], 300, EPS);
+
+    EXPECT_NEAR(poly[6][0], 200, EPS);
+    EXPECT_NEAR(poly[6][1], 250, EPS);
+
+    EXPECT_NEAR(poly[7][0], 175, EPS);
+    EXPECT_NEAR(poly[7][1], 300, EPS);
+
+    EXPECT_NEAR(poly[8][0], 125, EPS);
+    EXPECT_NEAR(poly[8][1], 300, EPS);
+
+    EXPECT_NEAR(poly[9][0], 100, EPS);
+    EXPECT_NEAR(poly[9][1], 250, EPS);
   }
 }
 
