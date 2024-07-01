@@ -685,6 +685,11 @@ AXOM_HOST_DEVICE Polygon<T, 2, ARRAY_TYPE, MAX_VERTS> clipPolygonPolygon(
   double eps = 1.e-10,
   bool tryFixOrientation = false)
 {
+  SLIC_ASSERT(
+    ARRAY_TYPE == axom::primal::PolygonArray::Dynamic ||
+    (ARRAY_TYPE == axom::primal::PolygonArray::Static &&
+     MAX_VERTS >= (subjectPolygon.numVertices() + clipPolygon.numVertices())));
+
   using PlaneType = Plane<T, 2>;
   using PointType = Point<T, 2>;
   using SegmentType = Segment<T, 2>;

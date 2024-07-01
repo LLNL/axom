@@ -122,9 +122,14 @@ Polygon<T, 3> clip(const Triangle<T, 3>& tri, const BoundingBox<T, 3>& bbox)
  * \note Function is based off the Sutherland–Hodgman algorithm.
  *
  * \warning Polygons with static array types must have enough vertices
- *          preallocated for the output polygon. It is recommended that
+ *          preallocated for the output polygon. It is mandatory that
  *          MAX_VERTS >= subjectPolygon.numVertices() + clipPolygon.numVertices()
  *          for the output polygon with the largest possible vertex count.
+ *          Otherwise, if there is not enough preallocated vertices, output
+ *          polygon will have missing vertices.
+ *
+ * \sa axom::primal::Polygon::addVertex(), axom::StaticArray::push_back()
+ *     for behavior when there is not enough preallocated vertices.
  *
  * \warning tryFixOrientation flag does not guarantee the shapes' vertex orders
  *          will be valid. It is the responsiblity of the caller to pass
