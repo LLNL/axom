@@ -29,16 +29,27 @@ set(mir_headers
 
     MIRAlgorithm.hpp
     EquiZAlgorithm.hpp
+
     views/dispatch_coordset.hpp
+    views/dispatch_material.hpp
+    views/dispatch_rectilinear_topology.hpp
+    views/dispatch_structured_topology.hpp
+    views/dispatch_topology.hpp
+    views/dispatch_uniform_topology.hpp
     views/dispatch_unstructured_topology.hpp
-    views/ExplitCoordsetView.hpp
+    views/dispatch_utilities.hpp
+    views/ExplicitCoordsetView.hpp
+    views/MaterialView.hpp
     views/NodeArrayView.hpp
     views/RectilinearCoordsetView.hpp
     views/Shapes.hpp
+    views/StridedStructuredIndexing.hpp
+    views/StructuredIndexing.hpp
     views/StructuredTopologyView.hpp
     views/UniformCoordsetView.hpp
     views/UnstructuredTopologyPolyhedralView.hpp
     views/UnstructuredTopologySingleShapeView.hpp
+
     clipping/ClipCases.h
     clipping/ClipTableManager.hpp
     )

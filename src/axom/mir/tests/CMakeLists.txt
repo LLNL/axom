@@ -1,4 +1,4 @@
-# Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC and
+# Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
 # other Axom Project Developers. See the top-level COPYRIGHT file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
@@ -15,6 +15,7 @@ set(gtest_mir_tests
     mir_mesh.cpp
     mir_cell_clipper.cpp
     mir_utilities.cpp
+    mir_views_indexing.cpp
     mir_cell_generator.cpp
     )
 
