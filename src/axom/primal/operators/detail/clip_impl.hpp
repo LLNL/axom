@@ -700,26 +700,14 @@ AXOM_HOST_DEVICE Polygon<T, 2, ARRAY_TYPE, MAX_VERTS> clipPolygonPolygon(
 
   if(tryFixOrientation)
   {
-    PolygonType tempPolygon;
-    if(subjectPolygon.signedArea() < 0)
+    if(outputList.signedArea() < 0)
     {
-      for(int i = 0; i < subjectPolygon.numVertices(); i++)
-      {
-        tempPolygon.addVertex(
-          subjectPolygon[subjectPolygon.numVertices() - i - 1]);
-      }
-      outputList = tempPolygon;
-      tempPolygon.clear();
+      outputList.reverseOrientation();
     }
 
-    if(clipPolygon.signedArea() < 0)
+    if(planePoints.signedArea() < 0)
     {
-      for(int i = 0; i < clipPolygon.numVertices(); i++)
-      {
-        tempPolygon.addVertex(clipPolygon[clipPolygon.numVertices() - i - 1]);
-      }
-      planePoints = tempPolygon;
-      tempPolygon.clear();
+      planePoints.reverseOrientation();
     }
   }
 

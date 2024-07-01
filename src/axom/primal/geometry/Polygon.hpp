@@ -248,6 +248,22 @@ public:
     return normal;
   }
 
+  /// \brief Reverses orientation of the polygon in-place
+  AXOM_HOST_DEVICE
+  void reverseOrientation()
+  {
+    const int nverts = numVertices();
+    const int mid = nverts >> 1;
+
+    // Swap leftmost/rightmost vertices, midpoint unchanged
+    for(int i = 0; i < mid; ++i)
+    {
+      const int left = i;
+      const int right = nverts - i - 1;
+      axom::utilities::swap(m_vertices[left], m_vertices[right]);
+    }
+  }
+
   /*!
    * \brief Computes the average of the polygon's vertex positions
    *
