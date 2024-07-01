@@ -97,8 +97,7 @@ Polygon<T, 3> clip(const Triangle<T, 3>& tri, const BoundingBox<T, 3>& bbox)
 
 /*!
  * \brief Clips a 2D subject polygon against a clip polygon in 2D, returning
- *        the geometric intersection of the subject polygon and the
- *        clip polygon as a polygon
+ *        their geometric intersection as a polygon
  *
  *  This function clips the subject polygon by the planes obtained from the
  *  clip polygon's edges (normals point inward). Clipping the

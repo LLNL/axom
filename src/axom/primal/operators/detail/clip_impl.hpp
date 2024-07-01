@@ -743,7 +743,7 @@ AXOM_HOST_DEVICE Polygon<T, 2, ARRAY_TYPE, MAX_VERTS> clipPolygonPolygon(
     }
   }
 
-  int numClipEdges = planePoints.numVertices();
+  const int numClipEdges = planePoints.numVertices();
 
   // Iterate through edges of clip polygon, represented as planes
   for(int i = 0; i < numClipEdges; i++)
