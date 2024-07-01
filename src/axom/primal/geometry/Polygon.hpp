@@ -182,7 +182,17 @@ public:
   AXOM_HOST_DEVICE
   int numVertices() const { return static_cast<int>(m_vertices.size()); }
 
-  /// Appends a vertex to the list of vertices
+  /*!
+   * \brief Appends a vertex to the list of vertices
+   *
+   * \param [in] pt the point to be appended to the list of vertices
+   *
+   * \note If the array type is static and the list of vertices is full,
+   *       addVertex will not modify the list of vertices.
+   *
+   * \sa axom::StaticArray::push_back() for behavior when array type is static
+   *     and the list of vertices is full.
+   */
   AXOM_HOST_DEVICE
   void addVertex(const PointType& pt) { m_vertices.push_back(pt); }
 
