@@ -6,7 +6,10 @@
 #ifndef AXOM_MIR_VIEWS_MATERIAL_VIEW_HPP_
 #define AXOM_MIR_VIEWS_MATERIAL_VIEW_HPP_
 
+#include "axom/core.hpp"
 #include "axom/mir/views/Shapes.hpp"
+
+#include <string>
 
 namespace axom
 {
@@ -14,59 +17,6 @@ namespace mir
 {
 namespace views
 {
-
-template <typename ElementType, int MAXELEM>
-class StaticArray
-{
-public:
-  AXOM_HOST_DEVICE
-  constexpr size_t capacity() const
-  {
-    return MAXELEM;
-  }
-
-  AXOM_HOST_DEVICE
-  size_t size() const
-  {
-    return m_size;
-  }
-
-  AXOM_HOST_DEVICE
-  void push_back(const ElementType &e)
-  {
-    if(m_size + 1 < capacity())
-      m_data[m_size++] = e;
-  }
-
-  AXOM_HOST_DEVICE
-  void clear()
-  {
-    m_size = 0;
-  }
-
-  AXOM_HOST_DEVICE
-  ElementType &operator[](size_t index)
-  {
-    return m_data[index];
-  }
-
-  AXOM_HOST_DEVICE
-  const ElementType &operator[](size_t index) const
-  {
-    return m_data[index];
-  }
-
-  AXOM_HOST_DEVICE
-  void fill(const ElementType &e)
-  {
-    for(size_t i = 0; i < capacity(); i++)
-      m_data[i] = e;
-  }
-
-private:
-  axom::StackArray<ElemType, MAXELEM> m_data{};
-  size_t m_size{0};
-};
 
 /**
  * \brief This object contains information about the materials as provided by a Conduit node.
@@ -97,16 +47,16 @@ public:
     }
   }
 
-  const std::map<std::string, int> &getNamesToIds() const { return m_namesToIds; }
-  const std::map<int, std::string> &getIdsToNames() const { return m_idsToNames; }
-  const std::vector<int> &getIds() const { return m_ids; }
-  const std::vector<int> &getNames() const { return m_names; }
+  const axom::Map<std::string, int> &getNamesToIds() const { return m_namesToIds; }
+  const axom::Map<int, std::string> &getIdsToNames() const { return m_idsToNames; }
+  const axom::Array<int> &getIds() const { return m_ids; }
+  const axom::Array<int> &getNames() const { return m_names; }
 
 private:
-  std::map<std::string, int> m_namesToIds{};
-  std::map<int, std::string> m_idsToNames{};
-  std::vector<int> m_ids{};
-  std::vector<int> m_names{};
+  axom::Map<std::string, int> m_namesToIds{};
+  axom::Map<int, std::string> m_idsToNames{};
+  axom::Array<int> m_ids{};
+  axom::Array<int> m_names{};
 };
 
 //---------------------------------------------------------------------------

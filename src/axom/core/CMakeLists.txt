@@ -62,6 +62,7 @@ set(core_headers
     Path.hpp
     RangeAdapter.hpp
     StackArray.hpp
+    StaticArray.hpp
     Types.hpp
     memory_management.hpp
 
