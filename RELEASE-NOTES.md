@@ -20,6 +20,11 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 ## [Unreleased] - Release date yyyy-mm-dd
 
 ### Added
+- Primal: Adds a `clip()` operator overload for clipping a 2D polygon against
+  another 2D polygon.
+- Primal: Adds `Polygon::reverseOrientation()` to reverse orientation of
+  a polygon in-place.
+- Adds `StaticArray`, a wrapper for `StackArray` with a size member variable.
 - Multidimenional `core::Array` supports column-major and arbitrary stride ordering,
   in addition to the default row-major ordering.
 - Adds new `PolygonArray` and `MAX_VERTS` template parameters to `primal::Polygon` for dynamic

@@ -96,6 +96,67 @@ Polygon<T, 3> clip(const Triangle<T, 3>& tri, const BoundingBox<T, 3>& bbox)
 }
 
 /*!
+ * \brief Clips a 2D subject polygon against a clip polygon in 2D, returning
+ *        their geometric intersection as a polygon
+ *
+ *  This function clips the subject polygon by the planes obtained from the
+ *  clip polygon's edges (normals point inward). Clipping the
+ *  subject polygon by each plane gives the polygon above that plane.
+ *  Clipping the polygon by a plane involves
+ *  finding new vertices at the intersection of the polygon edges and
+ *  the plane, and removing vertices from the polygon that are below the
+ *  plane.
+ *
+ *
+ * \param [in] subjectPolygon The subject polygon
+ * \param [in] clipPolygon The clip polygon
+ * \param [in] eps The tolerance for plane point orientation.
+ *                 Defaults to 1.e-10.
+ * \param [in] tryFixOrientation If true, takes each shape with a negative
+ *             signed area and swaps the order of some vertices in that
+ *             shape to try to obtain a nonnegative signed area.
+ *             Defaults to false.
+ *
+ * \return A polygon of the subject polygon clipped against the clip polygon.
+ *
+ * \note Function is based off the Sutherland–Hodgman algorithm.
+ *
+ * \warning Polygons with static array types must have enough vertices
+ *          preallocated for the output polygon. It is mandatory that
+ *          MAX_VERTS >= subjectPolygon.numVertices() + clipPolygon.numVertices()
+ *          for the output polygon with the largest possible vertex count.
+ *          Otherwise, if there is not enough preallocated vertices, output
+ *          polygon will have missing vertices.
+ *
+ * \sa axom::primal::Polygon::addVertex(), axom::StaticArray::push_back()
+ *     for behavior when there is not enough preallocated vertices.
+ *
+ * \warning tryFixOrientation flag does not guarantee the shapes' vertex orders
+ *          will be valid. It is the responsiblity of the caller to pass
+ *          shapes with a valid vertex order. Otherwise, if the shapes have
+ *          invalid vertex orders, the returned Polygon
+ *          will have a non-positive and/or unexpected area.
+ *
+ * \warning If tryFixOrientation flag is false and some of the shapes have
+ *          a negative signed area, the returned Polygon
+ *          will have a non-positive and/or unexpected area.
+ *
+ */
+AXOM_SUPPRESS_HD_WARN
+template <typename T, axom::primal::PolygonArray ARRAY_TYPE, int MAX_VERTS>
+AXOM_HOST_DEVICE Polygon<T, 2, ARRAY_TYPE, MAX_VERTS> clip(
+  const Polygon<T, 2, ARRAY_TYPE, MAX_VERTS>& subjectPolygon,
+  const Polygon<T, 2, ARRAY_TYPE, MAX_VERTS>& clipPolygon,
+  double eps = 1.e-10,
+  bool tryFixOrientation = false)
+{
+  return detail::clipPolygonPolygon(subjectPolygon,
+                                    clipPolygon,
+                                    eps,
+                                    tryFixOrientation);
+}
+
+/*!
  * \brief Clips a 3D hexahedron against a tetrahedron in 3D, returning
  *        the geometric intersection of the hexahedron and the tetrahedron
  *        as a polyhedron

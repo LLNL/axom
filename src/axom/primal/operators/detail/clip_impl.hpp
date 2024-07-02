@@ -671,6 +671,99 @@ AXOM_HOST_DEVICE Polyhedron<T, NDIMS> clipTetrahedron(
   return poly;
 }
 
+/*!
+ * \brief Clips a 2D subject polygon against a clip polygon in 2D, returning
+ *        their geometric intersection as a polygon.
+ *
+ * \sa axom::primal::clip()
+ */
+AXOM_SUPPRESS_HD_WARN
+template <typename T, axom::primal::PolygonArray ARRAY_TYPE, int MAX_VERTS>
+AXOM_HOST_DEVICE Polygon<T, 2, ARRAY_TYPE, MAX_VERTS> clipPolygonPolygon(
+  const Polygon<T, 2, ARRAY_TYPE, MAX_VERTS>& subjectPolygon,
+  const Polygon<T, 2, ARRAY_TYPE, MAX_VERTS>& clipPolygon,
+  double eps = 1.e-10,
+  bool tryFixOrientation = false)
+{
+  SLIC_ASSERT(
+    ARRAY_TYPE == axom::primal::PolygonArray::Dynamic ||
+    (ARRAY_TYPE == axom::primal::PolygonArray::Static &&
+     MAX_VERTS >= (subjectPolygon.numVertices() + clipPolygon.numVertices())));
+
+  using PlaneType = Plane<T, 2>;
+  using PointType = Point<T, 2>;
+  using SegmentType = Segment<T, 2>;
+  using PolygonType = Polygon<T, 2, ARRAY_TYPE, MAX_VERTS>;
+
+  PolygonType outputList = subjectPolygon;
+  PolygonType planePoints = clipPolygon;
+
+  if(tryFixOrientation)
+  {
+    if(outputList.signedArea() < 0)
+    {
+      outputList.reverseOrientation();
+    }
+
+    if(planePoints.signedArea() < 0)
+    {
+      planePoints.reverseOrientation();
+    }
+  }
+
+  const int numClipEdges = planePoints.numVertices();
+
+  // Iterate through edges of clip polygon, represented as planes
+  for(int i = 0; i < numClipEdges; i++)
+  {
+    PlaneType plane =
+      make_plane(planePoints[i], planePoints[(i + 1) % numClipEdges]);
+
+    PolygonType inputList = outputList;
+    outputList.clear();
+
+    for(int i = 0; i < inputList.numVertices(); i++)
+    {
+      PointType current_point = inputList[i];
+      PointType prev_point =
+        inputList[(i - 1) == -1 ? (inputList.numVertices() - 1) : (i - 1)];
+
+      T seg_param;
+      PointType intersecting_point;
+      SegmentType subject_edge(prev_point, current_point);
+
+      if(intersect(plane, subject_edge, seg_param))
+      {
+        intersecting_point = subject_edge.at(seg_param);
+      }
+
+      int cur_p_orientation = plane.getOrientation(current_point, eps);
+      int prev_p_orientation = plane.getOrientation(prev_point, eps);
+
+      if(cur_p_orientation == ON_POSITIVE_SIDE)
+      {
+        // Handles the edge case of 3 consecutive vertices with orientations
+        // ON_POSITIVE_SIDE, ON_BOUNDARY, ON_POSITIVE. Default algorithm
+        // check (prev_p_orientation != ON_POSITIVE_SIDE) results in the
+        // vertex on the boundary being added twice.
+        if(prev_p_orientation == ON_NEGATIVE_SIDE ||
+           (prev_p_orientation == ON_BOUNDARY &&
+            intersecting_point != outputList[outputList.numVertices() - 1]))
+        {
+          outputList.addVertex(intersecting_point);
+        }
+        outputList.addVertex(current_point);
+      }
+      else if(prev_p_orientation == ON_POSITIVE_SIDE)
+      {
+        outputList.addVertex(intersecting_point);
+      }
+    }
+  }  // end of iteration through edges of clip polygon
+
+  return outputList;
+}
+
 }  // namespace detail
 }  // namespace primal
 }  // namespace axom
