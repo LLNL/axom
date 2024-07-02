@@ -9,6 +9,8 @@
 #include "axom/mir/views/MaterialView.hpp"
 #include "axom/mir/views/NodeArrayView.hpp"
 
+#include <conduit/conduit_blueprint.hpp>
+
 namespace axom
 {
 namespace mir
@@ -30,7 +32,7 @@ dispatch_material(const conduit::Node &matset, FuncType &&func)
 {
   constexpr static size_t MaxMaterials = 20;
 
-  if(conduit::mesh::matset::is_uni_buffer(matset))
+  if(conduit::blueprint::mesh::matset::is_uni_buffer(matset))
   {
      IndexNode_to_ArrayView_same(matset["material_ids"],matset["sizes"],matset["offsets"],matset["indices"],
        [&](auto material_ids, auto sizes, auto offsets, auto indices)
@@ -46,7 +48,7 @@ dispatch_material(const conduit::Node &matset, FuncType &&func)
           });
        });
   }
-  else if(conduit::mesh::matset::is_multi_buffer(matset))
+  else if(conduit::blueprint::mesh::matset::is_multi_buffer(matset))
   {
     const conduit::Node &volume_fractions = matset.fetch_existing("volume_fractions");
     const conduit::Node &n_firstValues = volume_fractions[0].fetch_existing("values");
@@ -58,7 +60,7 @@ dispatch_material(const conduit::Node &matset, FuncType &&func)
         using IntView = decltype(firstIndices);
         using IntElement = typename IntView::value_type;
         using FloatView = decltype(firstValues);
-        using FloatElement = typename Floatview::value_type;
+        using FloatElement = typename FloatView::value_type;
 
         MultiBufferMaterialView<IntElement, FloatElement, MaxMaterials> matsetView;
 
@@ -79,14 +81,14 @@ dispatch_material(const conduit::Node &matset, FuncType &&func)
       });
     });
   }
-  else if(conduit::mesh::matset::is_element_dominant(matset))
+  else if(conduit::blueprint::mesh::matset::is_element_dominant(matset))
   {
     const conduit::Node &volume_fractions = matset.fetch_existing("volume_fractions");
     const conduit::Node &n_firstValues = volume_fractions[0];
     FloatNode_To_ArrayView(n_firstValues, [&](auto firstValues)
     {
       using FloatView = decltype(firstValues);
-      using FloatElement = typename Floatview::value_type;
+      using FloatElement = typename FloatView::value_type;
 
       ElementDominantMaterialView<axom::IndexType, FloatElement, MaxMaterials> matsetView;
 
@@ -101,7 +103,7 @@ dispatch_material(const conduit::Node &matset, FuncType &&func)
       func(matsetView);
     });
   }  
-  else if(conduit::mesh::matset::is_material_dominant(matset))
+  else if(conduit::blueprint::mesh::matset::is_material_dominant(matset))
   {
     const conduit::Node &volume_fractions = matset.fetch_existing("volume_fractions");
     const conduit::Node &element_ids = matset.fetch_existing("element_ids");   
@@ -115,7 +117,7 @@ dispatch_material(const conduit::Node &matset, FuncType &&func)
         using IntView = decltype(firstIndices);
         using IntElement = typename IntView::value_type;
         using FloatView = decltype(firstValues);
-        using FloatElement = typename Floatview::value_type;
+        using FloatElement = typename FloatView::value_type;
 
         MaterialDominantMaterialView<IntElement, FloatElement, MaxMaterials> matsetView;
 

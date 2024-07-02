@@ -8,6 +8,7 @@
 // Axom modifications
 //#include <visit_vtk_light_exports.h>
 #define VISIT_VTK_LIGHT_API
+#include <cstdlib>
 namespace axom {
 namespace mir {
 namespace clipping {
@@ -160,6 +161,12 @@ extern VISIT_VTK_LIGHT_API unsigned char clipShapesPoly8[];
 #define ST_MIN ST_TET
 #define ST_MAX (ST_PNT + 1)
 #undef VISIT_VTK_LIGHT_API
+extern const size_t clipShapesTriSize;
+extern const size_t clipShapesQuaSize;
+extern const size_t clipShapesTetSize;
+extern const size_t clipShapesPyrSize;
+extern const size_t clipShapesWdgSize;
+extern const size_t clipShapesHexSize;
 } // namespace visit
 } // namespace clipping
 } // namespace mir

@@ -7,7 +7,7 @@
 #define AXOM_MIR_RECENTER_FIELD_HPP_
 
 #include "axom/core.hpp"
-#include "axom/mir/views/NodeToArrayView.hpp"
+#include "axom/mir/views/NodeArrayView.hpp"
 
 #include <conduit/conduit.hpp>
 #include <conduit/conduit_blueprint.hpp>
@@ -74,7 +74,7 @@ RecenterField<ExecSpace>::execute(const conduit::Node &field, const conduit::Nod
       views::Node_to_ArrayView_same(n_comp, n_out, [&](auto compView, auto outView)
       {
         using Precision = typename decltype(compView)::value_type;
-        using AccumType = accumulate_traits<Precision>::value_type;
+        using AccumType = typename accumulate_traits<Precision>::value_type;
         axom::for_all<ExecSpace>(relSize, AXOM_LAMBDA(int relIndex)
         {
           const auto n = sizesView[relIndex];

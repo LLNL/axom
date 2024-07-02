@@ -57,6 +57,7 @@ unsigned char clipShapesTri[] = {
 
 //---------------------------------------------------------------------------
 // Axom modifications
+const size_t clipShapesTriSize = sizeof(clipShapesTri) / sizeof(unsigned char);
 } // namespace visit
 } // namespace clipping
 } // namespace mir

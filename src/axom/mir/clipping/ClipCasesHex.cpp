@@ -3498,6 +3498,7 @@ unsigned char clipShapesHex[] = {
 
 //---------------------------------------------------------------------------
 // Axom modifications
+const size_t clipShapesHexSize = sizeof(clipShapesHex) / sizeof(unsigned char);
 } // namespace visit
 } // namespace clipping
 } // namespace mir

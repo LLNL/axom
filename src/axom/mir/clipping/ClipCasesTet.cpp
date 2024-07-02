@@ -87,6 +87,7 @@ unsigned char clipShapesTet[] = {
 
 //---------------------------------------------------------------------------
 // Axom modifications
+const size_t clipShapesTetSize = sizeof(clipShapesTet) / sizeof(unsigned char);
 } // namespace visit
 } // namespace clipping
 } // namespace mir

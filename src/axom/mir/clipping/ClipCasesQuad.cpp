@@ -95,6 +95,7 @@ unsigned char clipShapesQua[] = {
 
 //---------------------------------------------------------------------------
 // Axom modifications
+const size_t clipShapesQuaSize = sizeof(clipShapesQua) / sizeof(unsigned char);
 } // namespace visit
 } // namespace clipping
 } // namespace mir

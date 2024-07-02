@@ -9,7 +9,11 @@
 #include "axom/core.hpp"
 #include "axom/mir/views/Shapes.hpp"
 
+#include <conduit/conduit.hpp>
+
 #include <string>
+#include <map>
+#include <vector>
 
 namespace axom
 {
@@ -26,6 +30,11 @@ namespace views
 class MaterialInformation
 {
 public:
+  using StringIntMap = std::map<std::string, int>;
+  using IntStringMap = std::map<int, std::string>;
+  using IntVector = std::vector<int>;
+  using StringVector = std::vector<std::string>;
+
   void set(const conduit::Node &matset)
   {
     if(matset.has_child("material_map"))
@@ -47,16 +56,16 @@ public:
     }
   }
 
-  const axom::Map<std::string, int> &getNamesToIds() const { return m_namesToIds; }
-  const axom::Map<int, std::string> &getIdsToNames() const { return m_idsToNames; }
-  const axom::Array<int> &getIds() const { return m_ids; }
-  const axom::Array<int> &getNames() const { return m_names; }
+  const StringIntMap &getNamesToIds() const { return m_namesToIds; }
+  const IntStringMap &getIdsToNames() const { return m_idsToNames; }
+  const IntVector &getIds() const { return m_ids; }
+  const StringVector &getNames() const { return m_names; }
 
 private:
-  axom::Map<std::string, int> m_namesToIds{};
-  axom::Map<int, std::string> m_idsToNames{};
-  axom::Array<int> m_ids{};
-  axom::Array<int> m_names{};
+  StringIntMap m_namesToIds{};
+  IntStringMap m_idsToNames{};
+  IntVector m_ids{};
+  StringVector m_names{};
 };
 
 //---------------------------------------------------------------------------
@@ -94,10 +103,10 @@ public:
 
   constexpr static size_t MaxMaterials = MAXMATERIALS;
 
-  void set(const axom::ArrayView<IndexType> &material_ids;
-           const axom::ArrayView<FloatType> &volume_fractions;
-           const axom::ArrayView<IndexType> &sizes;
-           const axom::ArrayView<IndexType> &offsets;
+  void set(const axom::ArrayView<IndexType> &material_ids,
+           const axom::ArrayView<FloatType> &volume_fractions,
+           const axom::ArrayView<IndexType> &sizes,
+           const axom::ArrayView<IndexType> &offsets,
            const axom::ArrayView<IndexType> &indices)
   {
     m_material_ids = material_ids;
@@ -235,8 +244,6 @@ public:
   AXOM_HOST_DEVICE
   size_t getNumberOfMaterials(ZoneIndex zi) const
   {
-    assert(zi < m_sizes.size());
-
     size_t nmats = 0;
     for(size_t i = 0; i < m_size; i++)
     {
@@ -254,8 +261,6 @@ public:
   AXOM_HOST_DEVICE
   void getZoneMaterials(ZoneIndex zi, IDList &ids, VFList &vfs) const
   {
-    assert(zi < m_sizes.size());
-
     ids.clear();
     vfs.clear();
 
@@ -279,7 +284,6 @@ public:
     assert(mat < m_size);
     assert(zi < m_indices[mat].size());
     
-    bool contains = false;
     const auto idx = m_indices[mat][zi];
     return m_values[mat][zi] > 0.;
   }
@@ -290,7 +294,6 @@ public:
     assert(mat < m_size);
     assert(zi < m_indices[mat].size());
     
-    bool contains = false;
     const auto idx = m_indices[mat][zi];
     vf = m_values[mat][zi];
     return vf > 0.;
@@ -327,27 +330,23 @@ public:
 
   void add(const axom::ArrayView<FloatType> &vfs)
   {
-    assert(m_size + 1 < MaxMaterials);
-
-    m_indices[m_size] = ids;
-    m_values[m_size] = vfs;
-    m_size++;
+    m_volume_fractions.push_back(vfs);
   }
 
   AXOM_HOST_DEVICE
   size_t getNumberOfZones() const
   {
-    return m_size > 0 ? m_volume_fractions[0].size() : 0;
+    return (m_volume_fractions.size() > 0) ? m_volume_fractions[0].size() : 0;
   }
 
   AXOM_HOST_DEVICE
   size_t getNumberOfMaterials(ZoneIndex zi) const
   {
     size_t nmats = 0;
-    if(m_size > 0)
+    if(m_volume_fractions.size() > 0)
     {
       assert(zi < m_volume_fractions[0].size());
-      for(size_t i = 0; i < m_size; i++)
+      for(size_t i = 0; i < m_volume_fractions.size(); i++)
         nmats += m_volume_fractions[i][zi] > 0. ? 1 : 0;
     }
     return nmats;
@@ -359,10 +358,10 @@ public:
     ids.clear();
     vfs.clear();
 
-    if(m_size > 0)
+    if(m_volume_fractions.size() > 0)
     {
       assert(zi < m_volume_fractions[0].size());
-      for(size_t i = 0; i < m_size; i++)
+      for(size_t i = 0; i < m_volume_fractions.size(); i++)
       {
         if(m_volume_fractions[i][zi] > 0)
         {
@@ -377,7 +376,7 @@ public:
   bool zoneContainsMaterial(ZoneIndex zi, MaterialIndex mat) const
   {
     bool contains = false;
-    if(m_size > 0)
+    if(m_volume_fractions.size() > 0)
     {
       assert(zi < m_volume_fractions[0].size());
       contains = m_volume_fractions[mat][zi] > 0;
@@ -390,7 +389,7 @@ public:
   {
     bool contains = false;
     vf = 0;
-    if(m_size > 0)
+    if(m_volume_fractions.size() > 0)
     {
       assert(zi < m_volume_fractions[0].size());
       vf = m_volume_fractions[mat][zi] > 0;
@@ -399,8 +398,7 @@ public:
     return contains;
   }
 private:
-  axom::StackArray<axom::ArrayView<FloatType>> m_volume_fractions{};
-  size_t m_size{0};
+  axom::StaticArray<axom::ArrayView<FloatType>, MAXMATERIALS> m_volume_fractions{};
 };
 
 /**
@@ -451,7 +449,7 @@ public:
       {
         const auto sz = m_element_ids[mi].size();
         for(size_t i = 0; i < sz; i++)
-          m_nzones = axom::utilties::max(m_nzones, m_element_ids[mi][i]);
+          m_nzones = axom::utilities::max(m_nzones, m_element_ids[mi][i]);
 #if 0
         // host-only
         // Eh, do this.
@@ -511,7 +509,7 @@ public:
         if(m_element_ids[mi][i] == zi)
         {
           ids.push_back(mi);
-          vfs.push_back(m_volume_fractions[mi][i];
+          vfs.push_back(m_volume_fractions[mi][i]);
           break;
         }
       }
@@ -534,13 +532,12 @@ public:
   AXOM_HOST_DEVICE
   bool zoneContainsMaterial(ZoneIndex zi, MaterialIndex mat) const
   {
-    assert(zi < m_sizes.size());
     assert(mat < m_element_ids.size());
 
     bool found = false;
 #if 1
     const auto element_ids = m_element_ids[mat];
-    for(size_t i = 0; i < selectedIds.size(); i++)
+    for(size_t i = 0; i < element_ids.size(); i++)
     {
       if(element_ids[i] == zi)
       {
@@ -555,13 +552,12 @@ public:
   AXOM_HOST_DEVICE
   bool zoneContainsMaterial(ZoneIndex zi, MaterialIndex mat, FloatType &vf) const
   {
-    assert(zi < m_sizes.size());
     assert(mat < m_element_ids.size());
 
     bool found = false;
 #if 1
     const auto element_ids = m_element_ids[mat];
-    for(size_t i = 0; i < selectedIds.size(); i++)
+    for(size_t i = 0; i < element_ids.size(); i++)
     {
       if(element_ids[i] == zi)
       {

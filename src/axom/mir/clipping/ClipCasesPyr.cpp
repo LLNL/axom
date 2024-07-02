@@ -219,6 +219,7 @@ unsigned char clipShapesPyr[] = {
 
 //---------------------------------------------------------------------------
 // Axom modifications
+const size_t clipShapesPyrSize = sizeof(clipShapesPyr) / sizeof(unsigned char);
 } // namespace visit
 } // namespace clipping
 } // namespace mir

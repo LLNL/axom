@@ -56,6 +56,12 @@ public:
   }
 
   AXOM_HOST_DEVICE
+  bool empty() const
+  {
+    return m_size == 0;
+  }
+
+  AXOM_HOST_DEVICE
   void fill(const T &e)
   {
     for(size_t i = 0; i < capacity(); i++)

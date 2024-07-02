@@ -29,6 +29,7 @@ set(mir_headers
 
     MIRAlgorithm.hpp
     EquiZAlgorithm.hpp
+    RecenterField.hpp
 
     views/dispatch_coordset.hpp
     views/dispatch_material.hpp

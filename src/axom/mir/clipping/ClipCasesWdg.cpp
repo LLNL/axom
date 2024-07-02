@@ -615,6 +615,7 @@ unsigned char clipShapesWdg[] = {
 
 //---------------------------------------------------------------------------
 // Axom modifications
+const size_t clipShapesWdgSize = sizeof(clipShapesWdg) / sizeof(unsigned char);
 } // namespace visit
 } // namespace clipping
 } // namespace mir

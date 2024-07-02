@@ -36,18 +36,18 @@ struct StridedStructuredIndexing
    * \param dims The dimensions we're indexing.
    */
   AXOM_HOST_DEVICE
-  StridedStructuredIndexing() : m_dimensions(), m_offset(), m_stride()
+  StridedStructuredIndexing() : m_dimensions(), m_offsets(), m_strides()
   {
     for(int i = 0; i < NDIMS; i++)
     {
       m_dimensions[i] = 1;
-      m_offset[i] = 0;
-      m_stride[i] = 1;
+      m_offsets[i] = 0;
+      m_strides[i] = 1;
     }
   }
 
   AXOM_HOST_DEVICE
-  StridedStructuredIndexing(const LogicalIndex &dims, const LogicalIndex &offset, const LogicalIndex &stride) : m_dimensions(dims), m_offset(offset), m_stride(stride)
+  StridedStructuredIndexing(const LogicalIndex &dims, const LogicalIndex &offset, const LogicalIndex &stride) : m_dimensions(dims), m_offsets(offset), m_strides(stride)
   {
   }
 
@@ -75,7 +75,7 @@ struct StridedStructuredIndexing
   typename std::enable_if<_ndims >= 2, IndexType>::type
   jStride() const
   {
-    return m_stride[1];
+    return m_strides[1];
   }
 
   /**
@@ -88,7 +88,7 @@ struct StridedStructuredIndexing
   typename std::enable_if<_ndims == 3, IndexType>::type
   kStride() const
   {
-    return m_stride[2];
+    return m_strides[2];
   }
 
   /**
@@ -106,7 +106,7 @@ struct StridedStructuredIndexing
   IndexToLogicalIndex(IndexType index) const
   {
     LogicalIndex logical;
-    logical[0] = index - m_origin[0];
+    logical[0] = index - m_offsets[0];
     return logical;
   }
 
@@ -116,8 +116,8 @@ struct StridedStructuredIndexing
   IndexToLogicalIndex(IndexType index) const
   {
     LogicalIndex logical;
-    logical[0] = index % m_stride[1] - m_origin[0];
-    logical[1] = index / m_stride[1] - m_origin[1];
+    logical[0] = index % m_strides[1] - m_offsets[0];
+    logical[1] = index / m_strides[1] - m_offsets[1];
     return logical;
   }
 
@@ -127,9 +127,9 @@ struct StridedStructuredIndexing
   IndexToLogicalIndex(IndexType index) const
   {
     LogicalIndex logical;
-    logical[0] = (index % m_stride[1]) - m_offset[0];
-    logical[1] = ((index % m_stride[2]) / m_stride[1]) - m_offset[1];
-    logical[2] = (index / m_stride[2]) - m_offset[2];
+    logical[0] = (index % m_strides[1]) - m_offsets[0];
+    logical[1] = ((index % m_strides[2]) / m_strides[1]) - m_offsets[1];
+    logical[2] = (index / m_strides[2]) - m_offsets[2];
     return logical;
   }
 
@@ -148,7 +148,7 @@ struct StridedStructuredIndexing
   typename std::enable_if<_ndims == 1, IndexType>::type
   LogicalIndexToIndex(const LogicalIndex &logical) const
   {
-    return ((m_offset[0] + logical[0]) * m_stride[0]);
+    return ((m_offsets[0] + logical[0]) * m_strides[0]);
   }
 
   template <size_t _ndims = NDIMS>
@@ -156,8 +156,8 @@ struct StridedStructuredIndexing
   typename std::enable_if<_ndims == 2, IndexType>::type
   LogicalIndexToIndex(const LogicalIndex &logical) const
   {
-    return ((m_offset[0] + logical[0]) * m_stride[0]) +
-           ((m_offset[1] + logical[1]) * m_stride[1]);
+    return ((m_offsets[0] + logical[0]) * m_strides[0]) +
+           ((m_offsets[1] + logical[1]) * m_strides[1]);
   }
 
   template <size_t _ndims = NDIMS>
@@ -165,16 +165,16 @@ struct StridedStructuredIndexing
   typename std::enable_if<_ndims == 3, IndexType>::type
   LogicalIndexToIndex(const LogicalIndex &logical) const
   {
-    return ((m_offset[0] + logical[0]) * m_stride[0]) +
-           ((m_offset[1] + logical[1]) * m_stride[1]) +
-           ((m_offset[2] + logical[2]) * m_stride[2]);
+    return ((m_offsets[0] + logical[0]) * m_strides[0]) +
+           ((m_offsets[1] + logical[1]) * m_strides[1]) +
+           ((m_offsets[2] + logical[2]) * m_strides[2]);
   }
 
   /// @}
 
   LogicalIndex m_dimensions{};
   LogicalIndex m_offsets{};
-  LogicalIndex m_stride{};
+  LogicalIndex m_strides{};
 };
 
 } // end namespace views
