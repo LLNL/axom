@@ -159,6 +159,7 @@ extern VISIT_VTK_LIGHT_API unsigned char clipShapesPoly8[];
 // Axom modifications
 #define ST_MIN ST_TET
 #define ST_MAX (ST_PNT + 1)
+#undef VISIT_VTK_LIGHT_API
 } // namespace visit
 } // namespace clipping
 } // namespace mir
