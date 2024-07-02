@@ -508,6 +508,8 @@ public:
    *
    * \param [out] volume The volume of the polyhedron (0th moment)
    * \param [out] centroid The centroid of the polyhedron (1st moment)
+   * \param [in]  should_compute_centroid If true, computes the centroid
+   *              of the polyhedron. Default is true.
    *
    * \note Function is based off moments() in Mike Owen's PolyClipper.
    *
@@ -517,7 +519,9 @@ public:
    * \sa centroid()
    */
   AXOM_HOST_DEVICE
-  void moments(double& volume, PointType& centroid) const
+  void moments(double& volume,
+               PointType& centroid,
+               bool should_compute_centroid = true) const
   {
     volume = 0.0;
 
@@ -559,15 +563,21 @@ public:
           double curVol = VectorType::scalar_triple_product(v0, v1, v2);
 
           volume += curVol;
-          centroid_vector += (v0 + v1 + v2) * curVol;
+          if(should_compute_centroid)
+          {
+            centroid_vector += (v0 + v1 + v2) * curVol;
+          }
         }
       }
 
       volume /= 6.;
 
-      centroid_vector /=
-        (volume != 0.0) ? (24.0 * volume) : axom::primal::PRIMAL_TINY;
-      centroid = centroid_vector + origin;
+      if(should_compute_centroid)
+      {
+        centroid_vector /=
+          (volume != 0.0) ? (24.0 * volume) : axom::primal::PRIMAL_TINY;
+        centroid = centroid_vector + origin;
+      }
     }
   }
 
@@ -585,7 +595,7 @@ public:
   {
     double volume;
     PointType centroid;
-    moments(volume, centroid);
+    moments(volume, centroid, false);
     return volume;
   }
 
