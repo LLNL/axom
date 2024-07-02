@@ -172,6 +172,35 @@ struct StridedStructuredIndexing
 
   /// @}
 
+  /**
+   * \brief Determines whether the indexing contains the supplied logical index.
+   *
+   * \param logical The logical index being tested.
+   *
+   * \return True if the logical index is within the index, false otherwise.
+   */
+  bool contains(const LogicalIndex &logical) const
+  {
+    bool retval = true;
+    for(int i = 0; i < dimensions(); i++)
+    {
+      retval &= (logical[i] >= 0 && logical[i] < m_dimensions[i]);
+    }
+    return retval;
+  }
+
+  /**
+   * \brief Determines whether the indexing contains the supplied index.
+   *
+   * \param index The index being tested.
+   *
+   * \return True if the index is within the index, false otherwise.
+   */
+  bool contains(const IndexType index) const
+  {
+    return contains(IndexToLogicalIndex(index));
+  }
+
   LogicalIndex m_dimensions{};
   LogicalIndex m_offsets{};
   LogicalIndex m_strides{};
