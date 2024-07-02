@@ -68,7 +68,7 @@ set(mir_sources
     EquiZAlgorithm.cpp
     clipping/ClipCasesHex.cpp
     clipping/ClipCasesPyr.cpp
-    clipping/ClipCasesQuad.cpp
+    clipping/ClipCasesQua.cpp
     clipping/ClipCasesTet.cpp
     clipping/ClipCasesTri.cpp
     clipping/ClipCasesWdg.cpp
