@@ -312,7 +312,7 @@ void check_volume()
   using PolyhedronType = primal::Polyhedron<double, DIM>;
   using PointType = primal::Point<double, 3>;
 
-  constexpr double EPS = 1e-4;
+  constexpr double EPS = 1e-10;
 
   // Get ids of necessary allocators
   const int host_allocator = axom::execution_space<axom::SEQ_EXEC>::allocatorID();
