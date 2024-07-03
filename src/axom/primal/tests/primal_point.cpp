@@ -22,6 +22,8 @@ void check_point_policy()
   double* coords =
     axom::allocate<double>(DIM, axom::execution_space<ExecSpace>::allocatorID());
 
+  double coords_host[DIM];
+
   axom::for_all<ExecSpace>(
     1,
     AXOM_LAMBDA(int /*i*/) {
@@ -29,7 +31,9 @@ void check_point_policy()
       ones.to_array(coords);
     });
 
-  EXPECT_EQ(PointType(coords), PointType::ones());
+  axom::copy(&coords_host, coords, DIM * sizeof(double));
+
+  EXPECT_EQ(PointType(coords_host), PointType::ones());
   axom::deallocate(coords);
 }
 

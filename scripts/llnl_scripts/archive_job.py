@@ -1,5 +1,5 @@
 #!/bin/sh
-"exec" "python" "-u" "-B" "$0" "$@"
+"exec" "python3" "-u" "-B" "$0" "$@"
 
 # Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
 # other Axom Project Developers. See the top-level LICENSE file for details.
@@ -26,35 +26,35 @@ import os
 import sys
 
 from llnl_lc_build_tools import *
-from optparse import OptionParser
+from argparse import ArgumentParser
 
 
 def parse_args():
     "Parses args from command line"
-    parser = OptionParser()
+    parser = ArgumentParser()
     
-    parser.add_option("-e", "--exitcode",
-                      type="int",
-                      dest="exitcode",
-                      default="0",
-                      help="Exit code to be returned from this script (Defaults to 0)")
+    parser.add_argument("-e", "--exitcode",
+                        type=int,
+                        dest="exitcode",
+                        default="0",
+                        help="Exit code to be returned from this script (Defaults to 0)")
 
-    parser.add_option("-n", "--name",
-                      dest="name",
-                      default="",
-                      help="Archive build results under given name")
+    parser.add_argument("-n", "--name",
+                        dest="name",
+                        default="",
+                        help="Archive build results under given name")
 
-    parser.add_option("-f", "--files",
-                      dest="files",
-                      default="",
-                      help="Files to be archived (comma delimited)")
+    parser.add_argument("-f", "--files",
+                        dest="files",
+                        default="",
+                        help="Files to be archived (comma delimited)")
 
     ###############
     # parse args
     ###############
-    opts, extras = parser.parse_args()
+    opts = parser.parse_args()
     # we want a dict b/c the values could 
-    # be passed without using optparse
+    # be passed without using argparse
     opts = vars(opts)
     return opts
 
@@ -68,9 +68,9 @@ def main():
 
     cwd = os.getcwd()
 
-    print "[Starting Archiving]"
-    print "[  Archive Dir: %s]" % archive_dir
-    print "[  Job Dir: %s]" % cwd
+    print("[Starting Archiving]")
+    print(f"[  Archive Dir: {archive_dir}]")
+    print(f"[  Job Dir: {cwd}]")
 
     # Create a success/failure file if not already created by the job
     if (opts["exitcode"] != 0) and not os.path.exists("failed.json"):

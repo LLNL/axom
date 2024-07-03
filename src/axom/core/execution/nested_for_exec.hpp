@@ -3,8 +3,8 @@
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
-#ifndef AXOM_MINT_STRUCTURED_EXEC_HPP_
-#define AXOM_MINT_STRUCTURED_EXEC_HPP_
+#ifndef AXOM_CORE_NESTED_FOR_EXEC_HPP_
+#define AXOM_CORE_NESTED_FOR_EXEC_HPP_
 
 #include "axom/core/execution/execution_space.hpp"
 
@@ -31,12 +31,10 @@
 
 namespace axom
 {
-namespace mint
-{
 namespace internal
 {
 template <typename ExecSpace>
-struct structured_exec
+struct nested_for_exec
 {
   using loop2d_policy = void;
   using loop3d_policy = void;
@@ -44,7 +42,7 @@ struct structured_exec
 
 //--------------------------------------------------------| SEQ_EXEC |----------
 template <>
-struct structured_exec<SEQ_EXEC>
+struct nested_for_exec<SEQ_EXEC>
 {
 #ifdef AXOM_USE_RAJA
   /* clang-format off */
@@ -87,7 +85,7 @@ struct structured_exec<SEQ_EXEC>
 //--------------------------------------------------------| OMP_EXEC |----------
 #if defined(AXOM_USE_OPENMP) && defined(AXOM_USE_RAJA)
 template <>
-struct structured_exec<OMP_EXEC>
+struct nested_for_exec<OMP_EXEC>
 {
   /* clang-format off */
 
@@ -134,10 +132,11 @@ constexpr int TILE_SIZE_Y = 8;
 constexpr int TILE_SIZE_Z = 4;
 
 //--------------------------------------------------------| CUDA_EXEC |---------
-#if defined(AXOM_USE_CUDA) && defined(AXOM_USE_RAJA) && defined(AXOM_USE_UMPIRE)
+#if defined(AXOM_USE_CUDA) && defined(AXOM_USE_RAJA) && \
+  defined(AXOM_USE_UMPIRE) && defined(__CUDACC__)
 
 template <int BLOCK_SIZE>
-struct structured_exec<CUDA_EXEC<BLOCK_SIZE, SYNCHRONOUS>>
+struct nested_for_exec<CUDA_EXEC<BLOCK_SIZE, SYNCHRONOUS>>
 {
   /* clang-format off */
 
@@ -177,7 +176,7 @@ struct structured_exec<CUDA_EXEC<BLOCK_SIZE, SYNCHRONOUS>>
 };
 
 template <int BLOCK_SIZE>
-struct structured_exec<CUDA_EXEC<BLOCK_SIZE, ASYNC>>
+struct nested_for_exec<CUDA_EXEC<BLOCK_SIZE, ASYNC>>
 {
   /* clang-format off */
 
@@ -219,10 +218,11 @@ struct structured_exec<CUDA_EXEC<BLOCK_SIZE, ASYNC>>
 #endif
 
 //--------------------------------------------------------| HIP_EXEC |---------
-#if defined(AXOM_USE_HIP) && defined(AXOM_USE_RAJA) && defined(AXOM_USE_UMPIRE)
+#if defined(AXOM_USE_HIP) && defined(AXOM_USE_RAJA) && \
+  defined(AXOM_USE_UMPIRE) && defined(__HIPCC__)
 
 template <int BLOCK_SIZE>
-struct structured_exec<HIP_EXEC<BLOCK_SIZE, SYNCHRONOUS>>
+struct nested_for_exec<HIP_EXEC<BLOCK_SIZE, SYNCHRONOUS>>
 {
   /* clang-format off */
 
@@ -262,7 +262,7 @@ struct structured_exec<HIP_EXEC<BLOCK_SIZE, SYNCHRONOUS>>
 };
 
 template <int BLOCK_SIZE>
-struct structured_exec<HIP_EXEC<BLOCK_SIZE, ASYNC>>
+struct nested_for_exec<HIP_EXEC<BLOCK_SIZE, ASYNC>>
 {
   /* clang-format off */
 
@@ -305,8 +305,6 @@ struct structured_exec<HIP_EXEC<BLOCK_SIZE, ASYNC>>
 
 } /* namespace internal */
 
-} /* namespace mint */
-
 } /* namespace axom */
 
-#endif /* AXOM_MINT_STRUCTURED_EXEC_HPP_ */
+#endif /* AXOM_CORE_NESTED_FOR_EXEC_HPP_ */

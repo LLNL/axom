@@ -11,6 +11,7 @@
 #include "axom/core/execution/for_all.hpp"
 #include "axom/core/memory_management.hpp"
 #include "axom/core/AnnotationMacros.hpp"
+#include "axom/core/numerics/floating_point_limits.hpp"
 
 #include "axom/primal/geometry/BoundingBox.hpp"
 #include "axom/primal/geometry/Vector.hpp"
@@ -77,8 +78,9 @@ public:
       double sqDistL = primal::squared_distance(p, l.getCentroid());
       // If the right bbox is not valid, return max. Otherwise, the invalid right
       // bbox might actually win when we should ignore it.
-      double sqDistR = r.isValid() ? primal::squared_distance(p, r.getCentroid())
-                                   : std::numeric_limits<double>::max();
+      double sqDistR = r.isValid()
+        ? primal::squared_distance(p, r.getCentroid())
+        : axom::numerics::floating_point_limits<double>::max();
       return sqDistL > sqDistR;
     };
 

@@ -55,6 +55,7 @@ set(core_headers
     ArrayBase.hpp
     ArrayIteratorBase.hpp
     ArrayView.hpp
+    MDMapping.hpp
     IteratorBase.hpp
     Macros.hpp
     Map.hpp
@@ -68,6 +69,7 @@ set(core_headers
     ## execution
     execution/execution_space.hpp
     execution/for_all.hpp
+    execution/nested_for_exec.hpp
     execution/runtime_policy.hpp
     execution/synchronize.hpp
 

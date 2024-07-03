@@ -35,31 +35,31 @@ if ((RAJA_DIR OR UMPIRE_DIR) AND NOT CAMP_DIR)
 endif()
 
 if(CAMP_DIR)
-    axom_assert_is_directory(VARIABLE_NAME CAMP_DIR)
-    find_dependency(camp REQUIRED PATHS "${CAMP_DIR}")
-    set(CAMP_FOUND TRUE CACHE BOOL "")
+    axom_assert_is_directory(DIR_VARIABLE CAMP_DIR)
+    find_dependency(camp REQUIRED PATHS "${CAMP_DIR}" NO_SYSTEM_ENVIRONMENT_PATH)
+    axom_assert_find_succeeded(PROJECT_NAME Camp
+                               TARGET       camp
+                               DIR_VARIABLE CAMP_DIR)
+    set(CAMP_FOUND TRUE)
 else()
-    set(CAMP_FOUND FALSE CACHE BOOL "")
+    set(CAMP_FOUND FALSE)
 endif()
 
 #------------------------------------------------------------------------------
 # UMPIRE
 #------------------------------------------------------------------------------
 if (UMPIRE_DIR)
-    axom_assert_is_directory(VARIABLE_NAME UMPIRE_DIR)
-    find_dependency(umpire REQUIRED PATHS "${UMPIRE_DIR}")
-
-    message(STATUS "Checking for expected Umpire target 'umpire'")
-    if (NOT TARGET umpire)
-        message(FATAL_ERROR "Umpire failed to load: ${UMPIRE_DIR}")
-    endif()
-    message(STATUS "Umpire loaded: ${UMPIRE_DIR}")
-    set(UMPIRE_FOUND TRUE CACHE BOOL "")
+    axom_assert_is_directory(DIR_VARIABLE UMPIRE_DIR)
+    find_dependency(umpire REQUIRED PATHS "${UMPIRE_DIR}" NO_SYSTEM_ENVIRONMENT_PATH)
+    axom_assert_find_succeeded(PROJECT_NAME Umpire
+                               TARGET       umpire
+                               DIR_VARIABLE UMPIRE_DIR)
+    set(UMPIRE_FOUND TRUE)
 
     blt_convert_to_system_includes(TARGET umpire)
 else()
     message(STATUS "Umpire support is OFF")
-    set(UMPIRE_FOUND FALSE CACHE BOOL "")
+    set(UMPIRE_FOUND FALSE)
 endif()
 
 
@@ -67,18 +67,15 @@ endif()
 # RAJA
 #------------------------------------------------------------------------------
 if (RAJA_DIR)
-    axom_assert_is_directory(VARIABLE_NAME RAJA_DIR)
-    find_dependency(raja REQUIRED PATHS "${RAJA_DIR}")
-
-    message(STATUS "Checking for expected RAJA target 'RAJA'")
-    if (NOT TARGET RAJA)
-        message(FATAL_ERROR "RAJA failed to load: ${RAJA_DIR}")
-    endif()
-    message(STATUS "RAJA loaded: ${RAJA_DIR}")
-    set(RAJA_FOUND TRUE CACHE BOOL "")
+    axom_assert_is_directory(DIR_VARIABLE RAJA_DIR)
+    find_dependency(raja REQUIRED PATHS "${RAJA_DIR}" NO_SYSTEM_ENVIRONMENT_PATH)
+    axom_assert_find_succeeded(PROJECT_NAME RAJA
+                               TARGET       RAJA
+                               DIR_VARIABLE RAJA_DIR)
+    set(RAJA_FOUND TRUE)
 else()
     message(STATUS "RAJA support is OFF" )
-    set(RAJA_FOUND FALSE CACHE BOOL "")
+    set(RAJA_FOUND FALSE)
 endif()
 
 #------------------------------------------------------------------------------
@@ -87,19 +84,16 @@ endif()
 # Find Conduit first, then find HDF5 to fix "Could NOT find HDF5" issue with
 # newer CMake versions
 if (CONDUIT_DIR)
-    axom_assert_is_directory(VARIABLE_NAME CONDUIT_DIR)
+    axom_assert_is_directory(DIR_VARIABLE CONDUIT_DIR)
 
-    unset(CONDUIT_FOUND CACHE)
     find_dependency(Conduit REQUIRED
                     PATHS "${CONDUIT_DIR}"
-                          "${CONDUIT_DIR}/lib/cmake/conduit")
-
-    message(STATUS "Checking for expected Conduit target 'conduit::conduit'")
-    if (NOT TARGET conduit::conduit)
-        message(FATAL_ERROR "Conduit failed to load: ${CONDUIT_DIR}")
-    endif()
-    message(STATUS "Conduit loaded: ${CONDUIT_DIR}")
-    set(CONDUIT_FOUND TRUE CACHE BOOL "")
+                          "${CONDUIT_DIR}/lib/cmake/conduit"
+                    NO_SYSTEM_ENVIRONMENT_PATH)
+    axom_assert_find_succeeded(PROJECT_NAME Conduit
+                               TARGET       conduit::conduit
+                               DIR_VARIABLE CONDUIT_DIR)
+    set(CONDUIT_FOUND TRUE)
 
     blt_convert_to_system_includes(TARGET conduit::conduit)
 else()
@@ -110,8 +104,11 @@ endif()
 # HDF5
 #------------------------------------------------------------------------------
 if (HDF5_DIR)
-    axom_assert_is_directory(VARIABLE_NAME HDF5_DIR)
+    axom_assert_is_directory(DIR_VARIABLE HDF5_DIR)
     include(cmake/thirdparty/SetupHDF5.cmake)
+    axom_assert_find_succeeded(PROJECT_NAME HDF5
+                               TARGET       hdf5
+                               DIR_VARIABLE HDF5_DIR)
     blt_list_append(TO TPL_DEPS ELEMENTS hdf5)
 else()
     message(STATUS "HDF5 support is OFF")
@@ -135,9 +132,9 @@ if (TARGET mfem)
                 DESTINATION          lib)
     endif()
 
-    set(MFEM_FOUND TRUE CACHE BOOL "" FORCE)
+    set(MFEM_FOUND TRUE)
 elseif (MFEM_DIR)
-    axom_assert_is_directory(VARIABLE_NAME MFEM_DIR)
+    axom_assert_is_directory(DIR_VARIABLE MFEM_DIR)
     include(cmake/thirdparty/FindMFEM.cmake)
     # If the CMake build system was used, a CMake target for mfem already exists
     if (NOT TARGET mfem)
@@ -192,15 +189,14 @@ endif()
 # Adiak
 #------------------------------------------------------------------------------
 if(ADIAK_DIR)
-    axom_assert_is_directory(VARIABLE_NAME ADIAK_DIR)
+    axom_assert_is_directory(DIR_VARIABLE ADIAK_DIR)
     find_dependency(adiak REQUIRED 
                     PATHS "${ADIAK_DIR}"
-                          "${ADIAK_DIR}/lib/cmake/adiak")
-
-    message(STATUS "Checking for expected adiak target 'adiak::adiak'")
-    if (NOT TARGET adiak::adiak)
-        message(FATAL_ERROR "adiak failed to load: ${ADIAK_DIR}")
-    endif()
+                          "${ADIAK_DIR}/lib/cmake/adiak"
+                    NO_SYSTEM_ENVIRONMENT_PATH)
+    axom_assert_find_succeeded(PROJECT_NAME Adiak
+                               TARGET       adiak::adiak
+                               DIR_VARIABLE ADIAK_DIR)
 
     # Apply patch for adiak's missing `-ldl' for mpi when built statically
     get_target_property(_target_type adiak::adiak TYPE)
@@ -208,10 +204,9 @@ if(ADIAK_DIR)
         blt_patch_target(NAME adiak::mpi DEPENDS_ON dl)
     endif()
 
-    message(STATUS "adiak loaded: ${ADIAK_DIR}")
     set(ADIAK_FOUND TRUE)
 else()
-    message(STATUS "adiak support is OFF")
+    message(STATUS "Adiak support is OFF")
     set(ADIAK_FOUND FALSE)
 endif()
 
@@ -224,20 +219,18 @@ if(CALIPER_DIR)
         find_package(CUDAToolkit REQUIRED)
     endif()
 
-    axom_assert_is_directory(VARIABLE_NAME CALIPER_DIR)
+    axom_assert_is_directory(DIR_VARIABLE CALIPER_DIR)
     find_dependency(caliper REQUIRED 
                     PATHS "${CALIPER_DIR}" 
-                          "${CALIPER_DIR}/share/cmake/caliper")
+                          "${CALIPER_DIR}/share/cmake/caliper"
+                    NO_SYSTEM_ENVIRONMENT_PATH)
+    axom_assert_find_succeeded(PROJECT_NAME Caliper
+                               TARGET       caliper
+                               DIR_VARIABLE CALIPER_DIR)
 
-    message(STATUS "Checking for expected caliper target 'caliper'")
-    if (NOT TARGET caliper)
-        message(FATAL_ERROR "caliper failed to load: ${CALIPER_DIR}")
-    endif()
-    
-    message(STATUS "caliper loaded: ${CALIPER_DIR}")
     set(CALIPER_FOUND TRUE)
 else()
-    message(STATUS "caliper support is OFF")
+    message(STATUS "Caliper support is OFF")
     set(CALIPER_FOUND FALSE)
 endif()
 
@@ -264,7 +257,7 @@ endif()
 # SCR
 #------------------------------------------------------------------------------
 if (SCR_DIR)
-    axom_assert_is_directory(VARIABLE_NAME SCR_DIR)
+    axom_assert_is_directory(DIR_VARIABLE SCR_DIR)
 
     include(cmake/thirdparty/FindSCR.cmake)
     blt_import_library( NAME       scr
@@ -273,7 +266,7 @@ if (SCR_DIR)
                         TREAT_INCLUDES_AS_SYSTEM ON
                         EXPORTABLE ON)
     blt_list_append(TO TPL_DEPS ELEMENTS scr)
-    set(SCR_FOUND ON CACHE BOOL "")
+    set(SCR_FOUND TRUE)
 else()
     message(STATUS "SCR support is OFF")
 endif()
@@ -283,7 +276,7 @@ endif()
 # LUA
 #------------------------------------------------------------------------------
 if (LUA_DIR)
-    axom_assert_is_directory(VARIABLE_NAME LUA_DIR)
+    axom_assert_is_directory(DIR_VARIABLE LUA_DIR)
     include(cmake/thirdparty/FindLUA.cmake)
     if(NOT TARGET lua)
         blt_import_library( NAME        lua
@@ -296,7 +289,7 @@ if (LUA_DIR)
     blt_list_append(TO TPL_DEPS ELEMENTS lua)
 else()
     message(STATUS "LUA support is OFF")
-    set(LUA_FOUND OFF CACHE BOOL "")
+    set(LUA_FOUND FALSE)
 endif()
 
 
@@ -304,7 +297,7 @@ endif()
 # C2C
 #------------------------------------------------------------------------------
 if (C2C_DIR)
-    axom_assert_is_directory(VARIABLE_NAME C2C_DIR)
+    axom_assert_is_directory(DIR_VARIABLE C2C_DIR)
     include(cmake/thirdparty/FindC2C.cmake)
     blt_import_library(
         NAME          c2c
@@ -315,7 +308,7 @@ if (C2C_DIR)
     blt_list_append(TO TPL_DEPS ELEMENTS c2c)
 else()
     message(STATUS "c2c support is OFF")
-    set(C2C_FOUND OFF CACHE BOOL "")
+    set(C2C_FOUND FALSE)
 endif()
 
 #------------------------------------------------------------------------------

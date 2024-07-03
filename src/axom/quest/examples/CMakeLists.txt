@@ -292,7 +292,7 @@ if(AXOM_ENABLE_MPI AND AXOM_ENABLE_SIDRE AND HDF5_FOUND)
                                 --no-random-spacing
                                 --check-results
                                 --policy ${_pol}
-                                --object-file dcp_object_mesh_2d_${_pol}_${_mesh}
+                                --object-file dcp_object_mesh_${_ndim}d_${_pol}_${_mesh}
                                 --distance-file dcp_closest_point_2d_${_pol}_${_mesh}
                     NUM_MPI_TASKS ${_nranks})
                 if(${_pol} STREQUAL "omp")

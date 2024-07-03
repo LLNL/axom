@@ -21,6 +21,7 @@
 #include "axom/primal/operators/closest_point.hpp"
 
 #include "axom/core/utilities/Utilities.hpp"
+#include "axom/core/numerics/floating_point_limits.hpp"
 
 #include "axom/slic/interface/slic.hpp"
 
@@ -72,7 +73,7 @@ AXOM_HOST_DEVICE inline double squared_distance(const Point<T, NDIMS>& A,
  * \param [in] P the query point.
  * \param [in] B the axis-aligned bounding box.
  * \return the squared distance from P to the closest point on box \a B
- * or std::numeric_limits<T>::max() if \a B is invalid. 
+ * or axom::numerics::floating_point_limits<T>::max() if \a B is invalid.
  */
 template <typename T, int NDIMS>
 AXOM_HOST_DEVICE inline double squared_distance(const Point<T, NDIMS>& P,
@@ -82,7 +83,7 @@ AXOM_HOST_DEVICE inline double squared_distance(const Point<T, NDIMS>& P,
 
   if(!B.isValid())
   {
-    return std::numeric_limits<T>::max();
+    return axom::numerics::floating_point_limits<T>::max();
   }
 
   if(B.contains(P))
@@ -107,7 +108,7 @@ AXOM_HOST_DEVICE inline double squared_distance(const Point<T, NDIMS>& P,
  * \param [in] B the second axis-aligned bounding box.
  * If the boxes overlap, the minimum distance is zero.
  * \return the squared distance between the closest points on A and B
- * or std::numeric_limits<T>::max() if either box is invalid.
+ * or axom::numerics::floating_point_limits<T>::max() if either box is invalid.
  */
 template <typename T, int NDIMS>
 AXOM_HOST_DEVICE inline double squared_distance(const BoundingBox<T, NDIMS>& A,
@@ -131,7 +132,7 @@ AXOM_HOST_DEVICE inline double squared_distance(const BoundingBox<T, NDIMS>& A,
     return v.squared_norm();
   }
 
-  return std::numeric_limits<T>::max();
+  return axom::numerics::floating_point_limits<T>::max();
 }
 
 /*!
