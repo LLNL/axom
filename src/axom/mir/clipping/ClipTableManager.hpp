@@ -110,13 +110,16 @@ struct ClipTableBase
 /**
  * \brief This class contains data arrays for the clipping table and can produce a view for the data.
  */
-template <MemorySpace SPACE = MemorySpace::Dynamic>
-struct ClipTable : public ClipTableBase<axom::Array<int, 1, SPACE>, axom::Array<unsigned char, 1, SPACE>>
+template <typename ExecSpace>
+struct ClipTable : public ClipTableBase<axom::Array<int>, axom::Array<unsigned char>>
 {
-  using SuperClass = ClipTableBase<axom::Array<int, 1, SPACE>, axom::Array<unsigned char, 1, SPACE>>;
-  using IntContainerType = axom::Array<int, 1, SPACE>;
-  using Uint8ContainerType = axom::Array<unsigned char, 1, SPACE>;
-  using ClipTableView = ClipTableBase<axom::ArrayView<int, 1, SPACE>, axom::ArrayView<unsigned char, 1, SPACE>>;
+  using IntContainerType = axom::Array<int>;
+  using Uint8ContainerType = axom::Array<unsigned char>;
+  using IntViewType = axom::ArrayView<int>;
+  using Uint8ViewType = axom::ArrayView<unsigned char>;
+
+  using SuperClass = ClipTableBase<IntContainerType, Uint8ContainerType>;
+  using ClipTableView = ClipTableBase<IntViewType, Uint8ViewType>;
 
   /**
    * \brief Load clipping data into the arrays, moving data as needed.
@@ -129,9 +132,17 @@ struct ClipTable : public ClipTableBase<axom::Array<int, 1, SPACE>, axom::Array<
    */
   void load(size_t n, const int *shapes, const int *offsets, const unsigned char *table, size_t tableLen)
   {
-    SuperClass::m_shapes = IntContainerType(shapes, n);
-    SuperClass::m_offsets = IntContainerType(offsets, n);
-    SuperClass::m_table = Uint8ContainerType(table, tableLen);
+    const int allocatorID = execution_space<ExecSpace>::allocatorID();
+
+    // Allocate space.
+    SuperClass::m_shapes = IntContainerType(n, n, allocatorID);
+    SuperClass::m_offsets = IntContainerType(n, n, allocatorID);
+    SuperClass::m_table = Uint8ContainerType(tableLen, tableLen, allocatorID);
+
+    // Copy data to the arrays.
+    axom::copy(SuperClass::m_shapes.data(), shapes, n * sizeof(int));
+    axom::copy(SuperClass::m_offsets.data(), offsets, n * sizeof(int));
+    axom::copy(SuperClass::m_table.data(), table, tableLen * sizeof(unsigned char));
   }
 
   /**
@@ -153,7 +164,7 @@ struct ClipTable : public ClipTableBase<axom::Array<int, 1, SPACE>, axom::Array<
 /**
  * \brief Manage several clipping tables.
  */
-template <MemorySpace SPACE = MemorySpace::Dynamic>
+template <typename ExecSpace>
 class ClipTableManager
 {
 public:
@@ -163,7 +174,7 @@ public:
   ClipTableManager()
   {
     for(size_t shape = ST_MIN; shape < ST_MAX; shape++)
-      m_clipTables[shapeToIndex(shape)] = ClipTable<SPACE>();
+      m_clipTables[shapeToIndex(shape)] = ClipTable<ExecSpace>();
   }
 
   /**
@@ -173,17 +184,40 @@ public:
    *
    * \return A reference to the clipping table. 
    */
-  const ClipTable<SPACE> &operator[](size_t shape)
+  const ClipTable<ExecSpace> &operator[](size_t shape)
   {
-    assert(shape < ST_MAX);
     const auto index = shapeToIndex(shape);
-    if(m_clipTables[index].size() == 0)
-    {
-      load(shape);
-    }
+    assert(shape < ST_MAX);
+    assert(index >= 0);
+    load(shape, 0);
     return m_clipTables[index];
   }
 
+  /**
+   * \brief Load tables based on dimension.
+   */
+  void load(int dim)
+  {
+    for(const auto shape : shapes(dim))
+      load(shape, 0);
+  }
+
+  /**
+   * \brief Return a vector of clipping shape ids for the given dimension.
+   *
+   * \param The spatial dimension.
+   *
+   * \return A vector of clipping shape ids.
+   */
+  std::vector<size_t> shapes(int dim) const
+  {
+    std::vector<size_t> s;
+    if(dim == 2)
+      s = std::vector<size_t>{ST_TRI, ST_QUA};
+    else if(dim == 3)
+      s = std::vector<size_t>{ST_TET, ST_PYR, ST_WDG, ST_HEX};
+    return s;
+  }
 private:
   /**
    * \brief Turn a shape into an table index.
@@ -202,60 +236,63 @@ private:
    *
    * \param shape The shape whose table will be loaded.
    */
-  void load(size_t shape)
+  void load(size_t shape, int)
   {
     const auto index = shapeToIndex(shape);
-    if(shape == ST_TRI)
+    if(m_clipTables[index].size() == 0)
     {
-      m_clipTables[index].load(axom::mir::clipping::visit::numClipCasesTri,
-                               axom::mir::clipping::visit::numClipShapesTri,
-                               axom::mir::clipping::visit::startClipShapesTri,
-                               axom::mir::clipping::visit::clipShapesTri,
-                               axom::mir::clipping::visit::clipShapesTriSize);
-    }
-    else if(shape == ST_QUA)
-    {
-      m_clipTables[index].load(axom::mir::clipping::visit::numClipCasesQua,
-                               axom::mir::clipping::visit::numClipShapesQua,
-                               axom::mir::clipping::visit::startClipShapesQua,
-                               axom::mir::clipping::visit::clipShapesQua,
-                               axom::mir::clipping::visit::clipShapesQuaSize);
-    }
-    else if(shape == ST_TET)
-    {
-      m_clipTables[index].load(axom::mir::clipping::visit::numClipCasesTet,
-                               axom::mir::clipping::visit::numClipShapesTet,
-                               axom::mir::clipping::visit::startClipShapesTet,
-                               axom::mir::clipping::visit::clipShapesTet,
-                               axom::mir::clipping::visit::clipShapesTetSize);
-    }
-    else if(shape == ST_PYR)
-    {
-      m_clipTables[index].load(axom::mir::clipping::visit::numClipCasesPyr,
-                               axom::mir::clipping::visit::numClipShapesPyr,
-                               axom::mir::clipping::visit::startClipShapesPyr,
-                               axom::mir::clipping::visit::clipShapesPyr,
-                               axom::mir::clipping::visit::clipShapesTetSize);
-    }
-    else if(shape == ST_WDG)
-    {
-      m_clipTables[index].load(axom::mir::clipping::visit::numClipCasesWdg,
-                               axom::mir::clipping::visit::numClipShapesWdg,
-                               axom::mir::clipping::visit::startClipShapesWdg,
-                               axom::mir::clipping::visit::clipShapesWdg,
-                               axom::mir::clipping::visit::clipShapesWdgSize);
-    }
-    else if(shape == ST_HEX)
-    {
-      m_clipTables[index].load(axom::mir::clipping::visit::numClipCasesHex,
-                               axom::mir::clipping::visit::numClipShapesHex,
-                               axom::mir::clipping::visit::startClipShapesHex,
-                               axom::mir::clipping::visit::clipShapesHex,
-                               axom::mir::clipping::visit::clipShapesHexSize);
+      if(shape == ST_TRI)
+      {
+        m_clipTables[index].load(axom::mir::clipping::visit::numClipCasesTri,
+                                 axom::mir::clipping::visit::numClipShapesTri,
+                                 axom::mir::clipping::visit::startClipShapesTri,
+                                 axom::mir::clipping::visit::clipShapesTri,
+                                 axom::mir::clipping::visit::clipShapesTriSize);
+      }
+      else if(shape == ST_QUA)
+      {
+        m_clipTables[index].load(axom::mir::clipping::visit::numClipCasesQua,
+                                 axom::mir::clipping::visit::numClipShapesQua,
+                                 axom::mir::clipping::visit::startClipShapesQua,
+                                 axom::mir::clipping::visit::clipShapesQua,
+                                 axom::mir::clipping::visit::clipShapesQuaSize);
+      }
+      else if(shape == ST_TET)
+      {
+        m_clipTables[index].load(axom::mir::clipping::visit::numClipCasesTet,
+                                 axom::mir::clipping::visit::numClipShapesTet,
+                                 axom::mir::clipping::visit::startClipShapesTet,
+                                 axom::mir::clipping::visit::clipShapesTet,
+                                 axom::mir::clipping::visit::clipShapesTetSize);
+      }
+      else if(shape == ST_PYR)
+      {
+        m_clipTables[index].load(axom::mir::clipping::visit::numClipCasesPyr,
+                                 axom::mir::clipping::visit::numClipShapesPyr,
+                                 axom::mir::clipping::visit::startClipShapesPyr,
+                                 axom::mir::clipping::visit::clipShapesPyr,
+                                 axom::mir::clipping::visit::clipShapesTetSize);
+      }
+      else if(shape == ST_WDG)
+      {
+        m_clipTables[index].load(axom::mir::clipping::visit::numClipCasesWdg,
+                                 axom::mir::clipping::visit::numClipShapesWdg,
+                                 axom::mir::clipping::visit::startClipShapesWdg,
+                                 axom::mir::clipping::visit::clipShapesWdg,
+                                 axom::mir::clipping::visit::clipShapesWdgSize);
+      }
+      else if(shape == ST_HEX)
+      {
+        m_clipTables[index].load(axom::mir::clipping::visit::numClipCasesHex,
+                                 axom::mir::clipping::visit::numClipShapesHex,
+                                 axom::mir::clipping::visit::startClipShapesHex,
+                                 axom::mir::clipping::visit::clipShapesHex,
+                                 axom::mir::clipping::visit::clipShapesHexSize);
+      }
     }
   }
 
-  ClipTable<SPACE> m_clipTables[ST_MAX - ST_MIN];
+  ClipTable<ExecSpace> m_clipTables[ST_MAX - ST_MIN];
 };
 
 } // end namespace clipping

@@ -167,6 +167,13 @@ public:
     return m_data.m_element_sizes.size();
   }
 
+  /**
+   * \brief Return the dimension of the shape.
+   *
+   * \return The dimension of the shape.
+   */
+  static constexpr int dimension() { return 3; }
+
   template <typename ExecSpace, typename FuncType>
   void for_all_zones(FuncType &&func) const
   {

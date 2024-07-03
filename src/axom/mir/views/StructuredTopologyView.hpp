@@ -31,7 +31,7 @@ public:
   using IndexType = IndexT;
   using LogicalIndexType = axom::StackArray<IndexT, NDIMS>; //typename StructuredIndexing<IndexType, NDIMS>::LogicalIndex;
 
-  constexpr static int dimensions() { return NDIMS; }
+  constexpr static int dimension() { return NDIMS; }
 
   /**
    * \brief Constructor

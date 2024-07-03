@@ -54,6 +54,13 @@ public:
   }
 
   /**
+   * \brief Return the dimension of the shape.
+   *
+   * \return The dimension of the shape.
+   */
+  static constexpr int dimension() { return ShapeT::dimension(); }
+
+  /**
    * \brief Return the number of zones.
    *
    * \return The number of zones.

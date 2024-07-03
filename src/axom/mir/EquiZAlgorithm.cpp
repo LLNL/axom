@@ -9,6 +9,7 @@
 #include "axom/mir/views/dispatch_coordset.hpp"
 #include "axom/mir/views/dispatch_topology.hpp"
 #include "axom/mir/views/dispatch_utilities.hpp"
+#include "axom/mir/clipping/ClipTableManager.hpp"
 
 #include <conduit/conduit_blueprint.hpp>
 
@@ -101,6 +102,10 @@ void EquiZAlgorithm::executeImpl(const conduit::Node &topo,
       {
         views::dispatch_topology<views::select_dimensions(2,3)>(topo, coordset, [&](const std::string &shape, auto &topoView)
         {
+          // Create the clipping tables for the topo dimension.
+          axom::mir::clipping::ClipTableManager<ExecSpace> clipManager;
+          clipManager.load(topoView.dimension());
+
           topoView. template for_selected_zones<ExecSpace>(zonesView, AXOM_LAMBDA(auto zoneIndex, const auto &zone)
           {          
   
