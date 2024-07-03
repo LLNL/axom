@@ -827,6 +827,191 @@ TEST(primal_polyhedron, polyhedron_from_primitive)
 }
 
 //------------------------------------------------------------------------------
+TEST(primal_polyhedron, polyhedron_moments)
+{
+  using PointType = primal::Point<double, 3>;
+  using VectorType = primal::Vector<double, 3>;
+  using TetrahedronType = primal::Tetrahedron<double, 3>;
+  using PolyhedronType = primal::Polyhedron<double, 3>;
+  using TransformMatrix = axom::numerics::Matrix<double>;
+
+  constexpr double EPS = 1e-10;
+
+  // Rolling volume and centroid
+  double volume;
+  PointType centroid;
+
+  TetrahedronType tet {PointType {1, 0, 0},
+                       PointType {1, 1, 0},
+                       PointType {0, 1, 0},
+                       PointType {1, 0, 1}};
+
+  EXPECT_TRUE(tet.signedVolume() > 0.);
+
+  PolyhedronType poly;
+  poly.addVertex(tet[0]);
+  poly.addVertex(tet[1]);
+  poly.addVertex(tet[2]);
+  poly.addVertex(tet[3]);
+
+  poly.addNeighbors(0, {1, 3, 2});
+  poly.addNeighbors(1, {0, 2, 3});
+  poly.addNeighbors(2, {0, 3, 1});
+  poly.addNeighbors(3, {0, 1, 2});
+
+  poly.moments(volume, centroid);
+
+  // Volume and centroid without affine transformations applied
+  double original_volume = volume;
+  PointType original_centroid = centroid;
+
+  EXPECT_NEAR(tet.volume(), volume, EPS);
+  EXPECT_NEAR(1.0 / 6.0, volume, EPS);
+
+  EXPECT_NEAR(0.75, centroid[0], EPS);
+  EXPECT_NEAR(0.5, centroid[1], EPS);
+  EXPECT_NEAR(0.25, centroid[2], EPS);
+
+  // lambda to generate an affine transformation matrix for 3D points
+  auto generateTransformMatrix3D = [](const PointType& scale,
+                                      const PointType& translate,
+                                      const VectorType& axis,
+                                      double angle) {
+    // create scaling matrix
+    auto sc_matx = TransformMatrix::identity(4);
+    {
+      sc_matx(0, 0) = scale[0];
+      sc_matx(1, 1) = scale[1];
+      sc_matx(2, 2) = scale[2];
+    }
+
+    // create rotation matrix
+    auto rot_matx = TransformMatrix::zeros(4, 4);
+    {
+      const double sinT = std::sin(angle);
+      const double cosT = std::cos(angle);
+
+      const auto unitAxis = axis.unitVector();
+      const double& ux = unitAxis[0];
+      const double& uy = unitAxis[1];
+      const double& uz = unitAxis[2];
+
+      rot_matx(0, 0) = cosT + ux * ux * (1 - cosT);
+      rot_matx(0, 1) = ux * uy * (1 - cosT) - uz * sinT;
+      rot_matx(0, 2) = ux * uz * (1 - cosT) + uy * sinT;
+      rot_matx(1, 0) = uy * ux * (1 - cosT) + uz * sinT;
+      rot_matx(1, 1) = cosT + uy * uy * (1 - cosT);
+      rot_matx(1, 2) = uy * uz * (1 - cosT) - ux * sinT;
+      rot_matx(2, 0) = uz * ux * (1 - cosT) - uy * sinT;
+      rot_matx(2, 1) = uz * uy * (1 - cosT) + ux * sinT;
+      rot_matx(2, 2) = cosT + uz * uz * (1 - cosT);
+      rot_matx(3, 3) = 1;
+    }
+
+    // create translation matrix
+    auto tr_matx = TransformMatrix::identity(4);
+    {
+      tr_matx(0, 3) = translate[0];
+      tr_matx(1, 3) = translate[1];
+      tr_matx(2, 3) = translate[2];
+    }
+
+    // multiply them to get the final transform
+    TransformMatrix affine_matx1(4, 4);
+    matrix_multiply(rot_matx, sc_matx, affine_matx1);
+    TransformMatrix affine_matx2(4, 4);
+    matrix_multiply(tr_matx, affine_matx1, affine_matx2);
+
+    EXPECT_NEAR(scale[0] * scale[1] * scale[2], determinant(affine_matx2), EPS);
+    return affine_matx2;
+  };
+
+  // Omit scaling by zero, as it results in an invalid transformed polyhedron
+  const auto scales = axom::Array<double>({-3., -1., -.5, 0.01, 1., 42.3});
+  const auto translations = axom::Array<double>({-.5, 0., 1., 42.3});
+  const auto angles = axom::Array<double>({-.57, 0., 2. / 3. * M_PI});
+  const auto axes = axom::Array<VectorType>({
+    VectorType {0., 0., 1.},
+    VectorType {0., 1., 0.},
+    VectorType {1., 0., 0.},
+    VectorType {1., 0., 1.},
+    VectorType {1., 1., 1.},
+    VectorType {-2., -5., 0.},
+  });
+
+  // lambda to transform a point
+  auto transformPoint = [](const PointType& p, const TransformMatrix& matx) {
+    const double vec_in[4] = {p[0], p[1], p[2], 1.};
+    double vec_out[4] = {0., 0., 0., 0.};
+    axom::numerics::matrix_vector_multiply(matx, vec_in, vec_out);
+    return PointType {vec_out[0], vec_out[1], vec_out[2]};
+  };
+
+  // lambda to transform the polyhedron
+  auto transformedPolyhedron = [transformPoint](const PolyhedronType& poly,
+                                                const TransformMatrix& matx) {
+    PolyhedronType xformed;
+    for(int i = 0; i < poly.numVertices(); ++i)
+    {
+      xformed.addVertex(transformPoint(poly[i], matx));
+    }
+
+    xformed.addNeighbors(0, {1, 3, 2});
+    xformed.addNeighbors(1, {0, 2, 3});
+    xformed.addNeighbors(2, {0, 3, 1});
+    xformed.addNeighbors(3, {0, 1, 2});
+    return xformed;
+  };
+
+  // check moments of polyhedron after affine transforms
+  for(double sc_x : scales)
+  {
+    for(double sc_y : scales)
+    {
+      for(double sc_z : scales)
+      {
+        for(double tr_x : translations)
+        {
+          for(double tr_y : translations)
+          {
+            for(double tr_z : translations)
+            {
+              for(const auto& axis : axes)
+              {
+                for(double theta : angles)
+                {
+                  const auto sc = PointType {sc_x, sc_y, sc_z};
+                  const auto tr = PointType {tr_x, tr_y, tr_z};
+                  auto affine_matx =
+                    generateTransformMatrix3D(sc, tr, axis, theta);
+                  auto xformed_polyhedron =
+                    transformedPolyhedron(poly, affine_matx);
+
+                  // Get moments of transformed polyhedron
+                  centroid = PointType();
+                  xformed_polyhedron.moments(volume, centroid);
+
+                  // Compare transformed volume against scaled original volume
+                  EXPECT_NEAR(original_volume * sc_x * sc_y * sc_z, volume, EPS);
+
+                  // Compare centroid of transformed polyhedron against
+                  // transformed original centroid point
+                  PointType xformed_original_centroid =
+                    transformPoint(original_centroid, affine_matx);
+                  EXPECT_NEAR(xformed_original_centroid[0], centroid[0], EPS);
+                  EXPECT_NEAR(xformed_original_centroid[1], centroid[1], EPS);
+                  EXPECT_NEAR(xformed_original_centroid[2], centroid[2], EPS);
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+//------------------------------------------------------------------------------
 
 int main(int argc, char* argv[])
 {
