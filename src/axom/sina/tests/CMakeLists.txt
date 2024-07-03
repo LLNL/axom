@@ -66,3 +66,14 @@ foreach(test ${gtest_sina_tests})
                    COMMAND ${test_name}_test
                    )
 endforeach()
+
+#------------------------------------------------------------------------------
+# Add fortran integration test
+#------------------------------------------------------------------------------
+if (ENABLE_FORTRAN)
+    configure_file(${CMAKE_SOURCE_DIR}/axom/sina/tests/test_fortran_integration.py ${TEST_OUTPUT_DIRECTORY}/test_fortran_integration.py COPYONLY)
+    configure_file(${CMAKE_SOURCE_DIR}/axom/sina/interface/src/sina_schema.json ${TEST_OUTPUT_DIRECTORY}/sina_schema.json COPYONLY)
+
+    axom_add_test( NAME     sina_fortran_integration_test
+                COMMAND  ${PYTHON_EXECUTABLE} ${TEST_OUTPUT_DIRECTORY}/test_fortran_integration.py -bd ${PROJECT_BINARY_DIR})
+endif()

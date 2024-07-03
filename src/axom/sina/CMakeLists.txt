@@ -58,9 +58,15 @@ set(sina_sources
     )
 
 # Add Adiak header and source
-
 blt_list_append( TO sina_headers ELEMENTS include/AdiakWriter.hpp IF AXOM_SINA_USE_ADIAK )
 blt_list_append( TO sina_sources ELEMENTS src/AdiakWriter.cpp IF AXOM_SINA_USE_ADIAK )
+
+# Add fortran interface for Sina
+if (ENABLE_FORTRAN)
+  blt_list_append( TO sina_headers ELEMENTS interface/include/sina_fortran_interface.h)
+  blt_list_append( TO sina_sources
+                   ELEMENTS interface/src/sina_fortran_interface.cpp interface/src/sina_fortran_interface.f90)
+endif()
 
 #------------------------------------------------------------------------------
 # Build and install the library
