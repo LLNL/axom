@@ -48,6 +48,7 @@ dispatch_material(const conduit::Node &matset, FuncType &&func)
           });
        });
   }
+#if 0
   else if(conduit::blueprint::mesh::matset::is_multi_buffer(matset))
   {
     const conduit::Node &volume_fractions = matset.fetch_existing("volume_fractions");
@@ -138,6 +139,7 @@ dispatch_material(const conduit::Node &matset, FuncType &&func)
       });
     });
   }
+#endif
 }
 
 } // end namespace views

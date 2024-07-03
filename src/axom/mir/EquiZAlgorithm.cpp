@@ -8,6 +8,7 @@
 #include "axom/mir/views/StructuredTopologyView.hpp"
 #include "axom/mir/views/dispatch_coordset.hpp"
 #include "axom/mir/views/dispatch_topology.hpp"
+#include "axom/mir/views/dispatch_material.hpp"
 #include "axom/mir/views/dispatch_utilities.hpp"
 #include "axom/mir/clipping/ClipTableManager.hpp"
 
@@ -50,33 +51,35 @@ namespace mir
 {
 
 void EquiZAlgorithm::execute(const conduit::Node &topo,
-                                 const conduit::Node &coordset,
-                                 const conduit::Node &options,
-                                 conduit::Node &new_topo,
-                                 conduit::Node &new_coordset)
+                             const conduit::Node &coordset,
+                             const conduit::Node &matset,
+                             const conduit::Node &options,
+                             conduit::Node &new_topo,
+                             conduit::Node &new_coordset,
+                             conduit::Node &new_matset)
 {
 #if defined (AXOM_USE_RAJA) && defined (AXOM_USE_UMPIRE)
   switch(m_execPolicy)
   {
   #if defined(AXOM_USE_OPENMP)
   case RuntimePolicy::omp:
-    executeImpl<omp_exec>(topo, coordset, options, new_topo, new_coordset);
+    executeImpl<omp_exec>(topo, coordset, matset, options, new_topo, new_coordset, new_matset);
     break;
   #endif
   #if defined(AXOM_USE_CUDA)
   case RuntimePolicy::cuda:
-    executeImpl<cuda_exec>(topo, coordset, options, new_topo, new_coordset);
+    executeImpl<cuda_exec>(topo, coordset, matset, options, new_topo, new_coordset, new_matset);
     break;
   #endif
   #if defined(AXOM_USE_HIP)
   case RuntimePolicy::hip:
-    executeImpl<hip_exec>(topo, coordset, options, new_topo, new_coordset);
+    executeImpl<hip_exec>(topo, coordset, matset, options, new_topo, new_coordset, new_matset);
     break;
   #endif
   default:
     // Falls through
   case RuntimePolicy::seq:
-    executeImpl<seq_exec>(topo, coordset, options, new_topo, new_coordset);
+    executeImpl<seq_exec>(topo, coordset, matset, options, new_topo, new_coordset, new_matset);
     break;
   }
 #endif
@@ -85,10 +88,14 @@ void EquiZAlgorithm::execute(const conduit::Node &topo,
 template <typename ExecSpace>
 void EquiZAlgorithm::executeImpl(const conduit::Node &topo,
                                  const conduit::Node &coordset,
+                                 const conduit::Node &matset,
                                  const conduit::Node &options,
                                  conduit::Node &new_topo,
-                                 conduit::Node &new_coordset)
+                                 conduit::Node &new_coordset,
+                                 conduit::Node &new_matset)
 {
+  // TODO: migrate data for topo, coordset to appropriate memory space if needed.
+
   if(options.has_path("zones"))
   {
     const conduit::Node &n_zones = options.fetch_existing("zones");
@@ -102,13 +109,16 @@ void EquiZAlgorithm::executeImpl(const conduit::Node &topo,
       {
         views::dispatch_topology<views::select_dimensions(2,3)>(topo, coordset, [&](const std::string &shape, auto &topoView)
         {
-          // Create the clipping tables for the topo dimension.
-          axom::mir::clipping::ClipTableManager<ExecSpace> clipManager;
-          clipManager.load(topoView.dimension());
+          views::dispatch_material(matset, [&](auto &matsetView)
+          {
+            // Create the clipping tables for the topo dimension.
+            axom::mir::clipping::ClipTableManager<ExecSpace> clipManager;
+            clipManager.load(topoView.dimension());
 
-          topoView. template for_selected_zones<ExecSpace>(zonesView, AXOM_LAMBDA(auto zoneIndex, const auto &zone)
-          {          
-  
+            topoView. template for_selected_zones<ExecSpace>(zonesView, AXOM_LAMBDA(auto zoneIndex, const auto &zone)
+            {          
+   
+            });
           });
         });
       });
@@ -121,9 +131,12 @@ void EquiZAlgorithm::executeImpl(const conduit::Node &topo,
     {
       views::dispatch_topology<views::select_dimensions(2,3)>(topo, coordset, [&](const std::string &shape, auto &topoView)
       {
-        topoView. template for_all_zones<ExecSpace>(AXOM_LAMBDA(auto zoneIndex, const auto &zone)
-        {          
+        views::dispatch_material(matset, [&](auto &matsetView)
+        {
+          topoView. template for_all_zones<ExecSpace>(AXOM_LAMBDA(auto zoneIndex, const auto &zone)
+          {          
 
+          });
         });
       });
     });

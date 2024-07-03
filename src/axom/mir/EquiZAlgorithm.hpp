@@ -43,18 +43,22 @@ protected:
    /// Implement the EquiZ algorithm on a single domain.
    virtual void execute(const conduit::Node &topo,
                         const conduit::Node &coordset,
+                        const conduit::Node &matset,
                         const conduit::Node &options,
                         conduit::Node &new_topo,
-                        conduit::Node &new_coordset) override;
+                        conduit::Node &new_coordset,
+                        conduit::Node &new_matset) override;
 
    
    /// Implement the EquiZ algorithm on a single domain for a given ExecSpace.
    template <typename ExecSpace>
    void executeImpl(const conduit::Node &topo,
                     const conduit::Node &coordset,
+                    const conduit::Node &matset,
                     const conduit::Node &options,
                     conduit::Node &new_topo,
-                    conduit::Node &new_coordset);
+                    conduit::Node &new_coordset,
+                    conduit::Node &new_matset);
 
    RuntimePolicy m_execPolicy{RuntimePolicy::seq};
 };

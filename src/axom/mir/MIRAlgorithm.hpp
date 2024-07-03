@@ -42,8 +42,10 @@ public:
 
 options:
   topology: main
+  matset: matset
   new_topology: mirtopo
   new_coordset: mircoords
+  new_matset: cleanmat
   fields:
     - temperature
     - pressure
@@ -53,6 +55,7 @@ options:
     The "topology" option specifies which topology we'll reconstruct. It must have an associated matset.
     "new_topology" is the name of the topology that will be created in the output node.
     "new_coordset" is the name of the new coordset that will be created in the output node. If it is not provided then the name of the topology's coordset will be used.  
+    "new_matset" is the name of the new matset that will be created in the output node. If it is not provided then the name of the topology's matset will be used.  
     "fields" is the name of the fields to map to the new topology. If fields is specified but empty, no fields will be mapped. If fields is not present then all fields will be mapped.
     "zones" is a list of zone indices from the topology that need to be reconstructed. If not present then all zones will be considered.
     "mapping" indicates whether we should include an original_element_numbers field on the new topology to indicate where each new zone came from in the original topology.
@@ -78,15 +81,22 @@ protected:
     */
    virtual void execute(const conduit::Node &topo,
                         const conduit::Node &coordset,
+                        const conduit::Node &matset,
                         const conduit::Node &options,
                         conduit::Node &new_topo,
-                        conduit::Node &new_coordset) = 0;
+                        conduit::Node &new_coordset,
+                        conduit::Node &new_matset) = 0;
 
    // Utility methods for derived types.
    void copyState(const conduit::Node &mesh, conduit::Node &destMesh) const;
    std::string topologyName(const conduit::Node &mesh, const conduit::Node &options) const;
    std::string newTopologyName(const conduit::Node &mesh, const conduit::Node &options) const;
+
    std::string newCoordsetName(const conduit::Node &mesh, const conduit::Node &options) const;
+
+   std::string matsetName(const conduit::Node &mesh, const conduit::Node &options) const;
+   std::string newMatsetName(const conduit::Node &mesh, const conduit::Node &options) const;
+
    std::vector<std::string> fieldNames(const conduit::Node &mesh, const conduit::Node &options) const;
 
    const conduit::Node &topology(const conduit::Node &input, const conduit::Node &options) const;
@@ -282,7 +292,7 @@ void conduit_move(const conduit::Node &src, conduit::Node &dest, int dest_alloca
     }
 }
 #endif
-
+#if 0
 class ElviraMIRAlgorithm : public MIRAlgorithm
 {
 public:
@@ -312,9 +322,7 @@ protected:
 
    RuntimePolicy m_execPolicy{RuntimePolicy::seq};
 };
-
-// class EquiZMIRAlgorithm : public MIRAlgorithml
-
+#endif
 
 } // end namespace mir
 } // end namespace axom
