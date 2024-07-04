@@ -10,7 +10,7 @@
 #include "axom/core/Array.hpp"
 #include "axom/core/ArrayView.hpp"
 #include "axom/core/memory_management.hpp"
-#include "axom/mir/views/dispatch_structured_topologies.hpp"
+#include "axom/mir/views/dispatch_structured_topology.hpp"
 
 #include <conduit/conduit.hpp>
 #include <conduit/conduit_blueprint.hpp>
@@ -46,6 +46,7 @@ to_unstructured(const conduit::Node &topo, const conduit::Node &coordset, const 
 
   mesh["coordsets"][coordset.name()].set_external(coordset);
   conduit::Node &newtopo = mesh["topologies"][topoName];
+  newtopo["coordset"] = coordset.name();
 
   if(type == "unstructured")
   {
@@ -55,12 +56,14 @@ to_unstructured(const conduit::Node &topo, const conduit::Node &coordset, const 
   {
     newtopo["type"] = "unstructured";
     conduit::Node &n_newconn = newtopo["elements/connectivity"];
+    conduit::Node &n_newsizes = newtopo["elements/sizes"];
+    conduit::Node &n_newoffsets = newtopo["elements/offsets"];
     n_newconn.set_allocator(allocatorID);
+    n_newsizes.set_allocator(allocatorID);
+    n_newoffsets.set_allocator(allocatorID);
 
-    // Fill in the connectivity.
     views::dispatch_structured_topologies(topo, coordset, [&](const std::string &shape, auto &topoView)
     {
-      const auto nzones = topoView.numberOfZones();
       int ptsPerZone = 2;
       if(shape == "quad")
         ptsPerZone = 4;
@@ -69,15 +72,27 @@ to_unstructured(const conduit::Node &topo, const conduit::Node &coordset, const 
 
       newtopo["elements/shape"] = shape;
 
+      // Allocate new mesh data.
+      const auto nzones = topoView.numberOfZones();
       const auto connSize = nzones * ptsPerZone;
       n_newconn.set(conduit::DataType::index_t(connSize));
-      axom::ArrayView<conduit::index_t> conn(reinterpret_cast<conduit::index_t *>(n_newconn.data_ptr()), connSize);
-      auto conn_view = conn.view();
+      n_newsizes.set(conduit::DataType::index_t(nzones));
+      n_newoffsets.set(conduit::DataType::index_t(nzones));
+
+      // Make views for the mesh data.
+      axom::ArrayView<conduit::index_t> connView(reinterpret_cast<conduit::index_t *>(n_newconn.data_ptr()), connSize);
+      axom::ArrayView<conduit::index_t> sizesView(reinterpret_cast<conduit::index_t *>(n_newsizes.data_ptr()), nzones);
+      axom::ArrayView<conduit::index_t> offsetsView(reinterpret_cast<conduit::index_t *>(n_newoffsets.data_ptr()), nzones);
+
+      // Fill in the new connectivity.
       topoView. template for_all_zones<ExecSpace>(AXOM_LAMBDA(auto zoneIndex, const auto &zone)
       {
         const auto start = zoneIndex * ptsPerZone;
-        for(int i = 0; i < 4; i++)
-          conn_view[start + i] = static_cast<conduit::index_t>(zone.getIds()[i]);
+        for(int i = 0; i < ptsPerZone; i++)
+          connView[start + i] = static_cast<conduit::index_t>(zone.getIds()[i]);
+
+        sizesView[zoneIndex] = ptsPerZone;
+        offsetsView[zoneIndex] = start;
       });
     });
   }

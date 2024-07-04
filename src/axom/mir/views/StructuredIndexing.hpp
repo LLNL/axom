@@ -24,10 +24,11 @@ namespace views
  * \tparam NDIMS The number of dimensions.
  */
 template <typename IndexT, int NDIMS = 3>
-struct StructuredIndexing
+class StructuredIndexing
 {
+public:
   using IndexType = IndexT;
-  using LogicalIndex = axom::StackArray<axom::IndexType, NDIMS>;
+  using LogicalIndex = axom::StackArray<IndexType, NDIMS>;
 
   AXOM_HOST_DEVICE constexpr static int dimensions() { return NDIMS; }
 
@@ -59,6 +60,14 @@ struct StructuredIndexing
        sz *= m_dimensions[i];
      return sz;
   }
+
+  /**
+   * \brief Return the logical dimensions.
+   *
+   * \return The logical dimensions.
+   */
+  AXOM_HOST_DEVICE
+  const LogicalIndex &logicalDimensions() const { return m_dimensions; }
 
   /**
    * \brief Return the j stride.
@@ -167,7 +176,52 @@ struct StructuredIndexing
 
   /// @}
 
-  LogicalIndex m_dimensions{1};
+  /**
+   * \brief Determines whether the indexing contains the supplied logical index.
+   *
+   * \param logical The logical index being tested.
+   *
+   * \return True if the logical index is within the index, false otherwise.
+   */
+  AXOM_HOST_DEVICE
+  bool contains(const LogicalIndex &logical) const
+  {
+    bool retval = true;
+    for(int i = 0; i < dimensions(); i++)
+    {
+      retval &= (logical[i] >= 0 && logical[i] < m_dimensions[i]);
+    }
+    return retval;
+  }
+
+  /**
+   * \brief Determines whether the indexing contains the supplied index.
+   *
+   * \param index The index being tested.
+   *
+   * \return True if the index is within the index, false otherwise.
+   */
+  AXOM_HOST_DEVICE
+  bool contains(const IndexType index) const
+  {
+    return contains(IndexToLogicalIndex(index));
+  }
+
+  /**
+   * \brief Expand the current StructuredIndexing by one in each dimension.
+   *
+   * \return An expanded StructuredIndexing.
+   */
+  AXOM_HOST_DEVICE
+  StructuredIndexing expand() const
+  {
+    StructuredIndexing retval(*this);
+    for(int i = 0; i < dimensions(); i++)
+      retval.m_dimensions[i]++;
+    return retval;
+  }
+private:
+  LogicalIndex m_dimensions{};
 };
 
 } // end namespace views

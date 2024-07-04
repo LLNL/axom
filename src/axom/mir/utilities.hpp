@@ -42,14 +42,13 @@ namespace utilities
 template <typename ExecSpace, typename KeyType>
 void unique(const axom::ArrayView<KeyType> &keys_orig_view, axom::Array<KeyType> &skeys, axom::Array<axom::IndexType> &sindices)
 {
-  using DataType = typename KeyViewType::value_type;
-  using for_policy = axom::execution_space<ExecSpace>::for_policy;
-  using reduce_policy = axom::execution_space<ExecSpace>::reduce_policy;
+  using for_policy = typename axom::execution_space<ExecSpace>::for_policy;
+  using reduce_policy = typename axom::execution_space<ExecSpace>::reduce_policy;
   const int allocatorID = axom::execution_space<ExecSpace>::allocatorID();
 
   // Make a copy of the keys and make original indices.
   const auto n = keys_orig_view.size();
-  axom::Array<DataType> keys(n, n, allocatorID);
+  axom::Array<KeyType> keys(n, n, allocatorID);
   axom::Array<axom::IndexType> indices(n, n, allocatorID);
   auto keys_view = keys.view();
   auto indices_view = indices.view();

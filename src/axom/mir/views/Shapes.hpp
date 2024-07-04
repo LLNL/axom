@@ -30,16 +30,43 @@ namespace views
 {
 
 // TODO: PointTraits
-// TODO: LineTraits
 
 /*
-  3*-----------* 2
-   |           |
-   |           |
-   |           |
-   |           |
-   |           |
+
   0*-----------* 1
+
+ */
+template <typename IndexT>
+struct LineTraits
+{
+  using IndexType = IndexT;
+
+  AXOM_HOST_DEVICE constexpr static int  id() { return 1 << 2; }
+  AXOM_HOST_DEVICE constexpr static bool is_polyhedral() { return false; }
+  AXOM_HOST_DEVICE constexpr static bool is_variable_size() { return false; }
+
+  AXOM_HOST_DEVICE constexpr static IndexType dimension() { return 1; }
+
+  AXOM_HOST_DEVICE constexpr static IndexType numberOfNodes() { return 2; }
+  AXOM_HOST_DEVICE constexpr static IndexType numberOfNodesInFace(int /*faceIndex*/) { return 2; }
+  AXOM_HOST_DEVICE constexpr static IndexType maxNodesInFace() { return 2; }
+
+  AXOM_HOST_DEVICE constexpr static IndexType numberOfFaces() { return 1; }
+  AXOM_HOST_DEVICE constexpr static IndexType numberOfEdges() { return 1; }
+  AXOM_HOST_DEVICE constexpr static IndexType zoneOffset(int zoneIndex) { return numberOfNodes() * zoneIndex; }
+
+  AXOM_HOST_DEVICE constexpr static IndexType faces[][2] = {{0, 1}};
+  AXOM_HOST_DEVICE constexpr static IndexType edges[][2] = {{0,1}};
+};
+
+/*
+  2*
+   |\
+   | \
+   |  \
+   |   \
+   |    \
+  0*-----* 1
 
  */
 template <typename IndexT>
@@ -61,8 +88,8 @@ struct TriTraits
   AXOM_HOST_DEVICE constexpr static IndexType numberOfEdges() { return 3; }
   AXOM_HOST_DEVICE constexpr static IndexType zoneOffset(int zoneIndex) { return numberOfNodes() * zoneIndex; }
 
-  AXOM_HOST_DEVICE constexpr static IndexType faces[][4] = {{0, 1, 2, 3}};
-  AXOM_HOST_DEVICE constexpr static IndexType edges[][2] = {{0,1}, {1,2}, {2,3}, {3,0}};
+  AXOM_HOST_DEVICE constexpr static IndexType faces[][3] = {{0, 1, 2}};
+  AXOM_HOST_DEVICE constexpr static IndexType edges[][2] = {{0,1}, {1,2}, {2,0}};
 };
 
 /*
@@ -371,6 +398,9 @@ private:
 
 // Make some concrete shape classes based on the shape traits.
 template <typename IndexT>
+using LineShape = Shape<LineTraits<IndexT>>;
+
+template <typename IndexT>
 using TriShape = Shape<TriTraits<IndexT>>;
 
 template <typename IndexT>
@@ -387,7 +417,6 @@ using WedgeShape = Shape<WedgeTraits<IndexT>>;
 
 template <typename IndexT>
 using HexShape = Shape<HexTraits<IndexT>>;
-//struct HexShape : public Shape<HexTraits<IndexT>> {};
 
 } // end namespace views
 } // end namespace mir

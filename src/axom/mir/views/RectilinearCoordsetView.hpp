@@ -28,7 +28,7 @@ template <typename DataType>
 class RectilinearCoordsetView2
 {
 public:
-  using LogicalIndexType = axom::StackArray<axom::IndexType, 2>;
+  using LogicalIndex = axom::StackArray<axom::IndexType, 2>;
   using IndexType = axom::IndexType;
   using value_type = DataType;
   using PointType = axom::primal::Point<DataType, 2>;
@@ -41,10 +41,8 @@ public:
    */
   AXOM_HOST_DEVICE
   RectilinearCoordsetView2(const axom::ArrayView<DataType> &x,
-                           const axom::ArrayView<DataType> &y) : m_coordinates{x, y}
+                           const axom::ArrayView<DataType> &y) : m_coordinates{x, y}, m_indexing(LogicalIndex{{x.size(), y.size()}})
   {
-    m_shape.m_dimensions[0] = m_coordinates[0].size();
-    m_shape.m_dimensions[1] = m_coordinates[1].size();
   }
 
   /**
@@ -55,7 +53,7 @@ public:
   AXOM_HOST_DEVICE
   IndexType size() const
   {
-    return m_shape.size();
+    return m_indexing.size();
   }
 
   /**
@@ -66,7 +64,7 @@ public:
    * \return A point that corresponds to \a vertex_index.
    */
   AXOM_HOST_DEVICE
-  PointType getPoint(LogicalIndexType vertex_index) const
+  PointType getPoint(LogicalIndex vertex_index) const
   {
     return PointType(m_coordinates[0][vertex_index[0]],
                      m_coordinates[1][vertex_index[1]]);
@@ -82,7 +80,7 @@ public:
   AXOM_HOST_DEVICE
   PointType getPoint(IndexType vertex_index) const
   {
-    return getPoint(m_shape.IndexToLogicalIndex(vertex_index));
+    return getPoint(m_indexing.IndexToLogicalIndex(vertex_index));
   }
 
   /**
@@ -94,7 +92,7 @@ public:
    */
   AXOM_HOST_DEVICE
   PointType
-  operator[](LogicalIndexType vertex_index) const
+  operator[](LogicalIndex vertex_index) const
   {
     return getPoint(vertex_index);
   }
@@ -110,12 +108,12 @@ public:
   PointType
   operator[](IndexType vertex_index) const
   {
-    return getPoint(m_shape.IndexToLogicalIndex(vertex_index));
+    return getPoint(m_indexing.IndexToLogicalIndex(vertex_index));
   }
 
 private:
   axom::ArrayView<DataType>        m_coordinates[2];
-  StructuredIndexing<IndexType, 2> m_shape;
+  StructuredIndexing<IndexType, 2> m_indexing;
 };
 
 /**
@@ -125,7 +123,7 @@ template <typename DataType>
 class RectilinearCoordsetView3
 {
 public:
-  using LogicalIndexType = axom::StackArray<axom::IndexType, 3>;
+  using LogicalIndex = axom::StackArray<axom::IndexType, 3>;
   using IndexType = axom::IndexType;
   using value_type = DataType;
   using PointType = axom::primal::Point<DataType, 3>;
@@ -140,23 +138,29 @@ public:
   AXOM_HOST_DEVICE
   RectilinearCoordsetView3(const axom::ArrayView<DataType> &x,
                            const axom::ArrayView<DataType> &y,
-                           const axom::ArrayView<DataType> &z) : m_coordinates{x, y, z}, m_shape()
+                           const axom::ArrayView<DataType> &z) : m_coordinates{x, y, z},  m_indexing(LogicalIndex{{x.size(), y.size(), z.size()}})
   {
-    m_shape.m_dimensions[0] = m_coordinates[0].size();
-    m_shape.m_dimensions[1] = m_coordinates[1].size();
-    m_shape.m_dimensions[2] = m_coordinates[2].size();
   }
 
   /**
-   * \brief Return the number of points in the coordset.
+   * \brief Return the number of nodes in the coordset.
    *
-   * \return The number of points in the coordset.
+   * \return The number of nodes in the coordset.
    */
+  /// @{
+
   AXOM_HOST_DEVICE
   IndexType size() const
   {
-    return m_shape.size();
+    return m_indexing.size();
   }
+
+  AXOM_HOST_DEVICE
+  IndexType numberOfNodes() const
+  {
+    return m_indexing.size();
+  }
+  /// @}
 
   /**
    * \brief Return the requested point from the coordset.
@@ -166,7 +170,7 @@ public:
    * \return A point that corresponds to \a vertex_index.
    */
   AXOM_HOST_DEVICE
-  PointType getPoint(LogicalIndexType vertex_index) const
+  PointType getPoint(LogicalIndex vertex_index) const
   {
     return PointType(m_coordinates[0][vertex_index[0]],
                      m_coordinates[1][vertex_index[1]],
@@ -183,7 +187,7 @@ public:
   AXOM_HOST_DEVICE
   PointType getPoint(IndexType vertex_index) const
   {
-    return getPoint(m_shape.IndexToLogicalIndex(vertex_index));
+    return getPoint(m_indexing.IndexToLogicalIndex(vertex_index));
   }
 
   /**
@@ -195,7 +199,7 @@ public:
    */
   AXOM_HOST_DEVICE
   PointType
-  operator[](LogicalIndexType vertex_index) const
+  operator[](LogicalIndex vertex_index) const
   {
     return getPoint(vertex_index);
   }
@@ -211,12 +215,12 @@ public:
   PointType
   operator[](IndexType vertex_index) const
   {
-    return getPoint(m_shape.IndexToLogicalIndex(vertex_index));
+    return getPoint(m_indexing.IndexToLogicalIndex(vertex_index));
   }
 
 private:
   axom::ArrayView<DataType>        m_coordinates[3];
-  StructuredIndexing<IndexType, 3> m_shape;
+  StructuredIndexing<IndexType, 3> m_indexing;
 };
 
 } // end namespace views

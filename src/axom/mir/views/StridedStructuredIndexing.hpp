@@ -17,14 +17,17 @@ namespace views
 {
 
 /**
- * \brief This class encapsulates a structured mesh size and contains methods to
- *        help with indexing into it.
+ * \accelerated
+ * \class StridedStructuredIndexing
+ *
+ * \brief This class encapsulates data for strided structured indexing and provides methods for creating/manipulating indices.
  *
  * \tparam NDIMS The number of dimensions.
  */
 template <typename IndexT, int NDIMS = 3>
-struct StridedStructuredIndexing
+class StridedStructuredIndexing
 {
+public:
   using IndexType = IndexT;
   using LogicalIndex = axom::StackArray<axom::IndexType, NDIMS>;
 
@@ -32,8 +35,6 @@ struct StridedStructuredIndexing
 
   /**
    * \brief constructor
-   *
-   * \param dims The dimensions we're indexing.
    */
   AXOM_HOST_DEVICE
   StridedStructuredIndexing() : m_dimensions(), m_offsets(), m_strides()
@@ -46,8 +47,15 @@ struct StridedStructuredIndexing
     }
   }
 
+  /**
+   * \brief Constructor
+   *
+   * \param dims The number of zones in each logical dimension.
+   * \param offsets The offset of the first zone from the mesh origin in each logical dimension.
+   * \param strides The amount to stride when moving to the next element for each logical dimension.
+   */
   AXOM_HOST_DEVICE
-  StridedStructuredIndexing(const LogicalIndex &dims, const LogicalIndex &offset, const LogicalIndex &stride) : m_dimensions(dims), m_offsets(offset), m_strides(stride)
+  StridedStructuredIndexing(const LogicalIndex &dims, const LogicalIndex &offsets, const LogicalIndex &strides) : m_dimensions(dims), m_offsets(offsets), m_strides(strides)
   {
   }
 
@@ -64,6 +72,14 @@ struct StridedStructuredIndexing
        sz *= m_dimensions[i];
      return sz;
   }
+
+  /**
+   * \brief Return the logical dimensions.
+   *
+   * \return The logical dimensions.
+   */
+  AXOM_HOST_DEVICE
+  const LogicalIndex &logicalDimensions() const { return m_dimensions; }
 
   /**
    * \brief Return the j stride.
@@ -179,6 +195,7 @@ struct StridedStructuredIndexing
    *
    * \return True if the logical index is within the index, false otherwise.
    */
+  AXOM_HOST_DEVICE
   bool contains(const LogicalIndex &logical) const
   {
     bool retval = true;
@@ -196,11 +213,74 @@ struct StridedStructuredIndexing
    *
    * \return True if the index is within the index, false otherwise.
    */
+  AXOM_HOST_DEVICE
   bool contains(const IndexType index) const
   {
     return contains(IndexToLogicalIndex(index));
   }
 
+  /**
+   * \brief Expand the current StridedStructuredIndexing by one in each dimension.
+   *
+   * \return An expanded StridedStructuredIndexing.
+   */
+  AXOM_HOST_DEVICE
+  StridedStructuredIndexing expand() const
+  {
+    StridedStructuredIndexing retval(*this);
+    for(int i = 0; i < dimensions(); i++)
+      retval.m_dimensions[i]++;
+    
+    return retval;
+  }
+
+  /**
+   * \brief Expand the current StridedStructuredIndexing by one in each dimension.
+   *
+   * \return An expanded StridedStructuredIndexing.
+   */
+  /// @{
+  template <size_t _ndims = NDIMS>
+  AXOM_HOST_DEVICE
+  typename std::enable_if<_ndims == 1, StridedStructuredIndexing>::type
+  expand() const
+  {
+    StridedStructuredIndexing retval(*this);
+    retval.m_dimensions[0]++;
+    return retval;
+  }
+
+  template <size_t _ndims = NDIMS>
+  AXOM_HOST_DEVICE
+  typename std::enable_if<_ndims == 2, StridedStructuredIndexing>::type
+  expand() const
+  {
+    StridedStructuredIndexing retval(*this);
+    retval.m_dimensions[0]++;
+    retval.m_dimensions[1]++;
+    retval.m_strides[1]++;
+    return retval;
+  }
+
+  template <size_t _ndims = NDIMS>
+  AXOM_HOST_DEVICE
+  typename std::enable_if<_ndims == 3, StridedStructuredIndexing>::type
+  expand() const
+  {
+    StridedStructuredIndexing retval(*this);
+    retval.m_dimensions[0]++;
+    retval.m_dimensions[1]++;
+    retval.m_dimensions[2]++;
+    const auto nx = retval.m_strides[1];
+    const auto ny = retval.m_strides[2] / nx;
+    retval.m_strides[1] = nx + 1;
+    retval.m_strides[2] = (ny + 1) * (nx + 1);
+    return retval;
+  }
+
+  /// @}
+
+private:
   LogicalIndex m_dimensions{};
   LogicalIndex m_offsets{};
   LogicalIndex m_strides{};

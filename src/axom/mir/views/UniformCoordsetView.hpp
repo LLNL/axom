@@ -29,8 +29,8 @@ template <typename DataType, int NDIMS = 2>
 class UniformCoordsetView
 {
 public:
-  using LogicalIndexType = typename StructuredIndexing<axom::IndexType, NDIMS>::LogicalIndex;
-  using ExtentsType = axom::StackArray<DataType, NDIMS>;
+  using LogicalIndex = axom::StackArray<axom::IndexType, NDIMS>;
+  using ExtentsType = axom::StackArray<double, NDIMS>;;
   using IndexType = axom::IndexType;
   using value_type = DataType;
   using PointType = axom::primal::Point<DataType, NDIMS>;
@@ -43,9 +43,9 @@ public:
    * \param spacing The spacing inbetween points.
    */
   AXOM_HOST_DEVICE
-  UniformCoordsetView(const LogicalIndexType dims,
-                      const ExtentsType origin,
-                      const ExtentsType spacing) : m_shape{dims}, m_origin{origin}, m_spacing{spacing}
+  UniformCoordsetView(const LogicalIndex &dims,
+                      const ExtentsType &origin,
+                      const ExtentsType &spacing) : m_indexing(dims), m_origin(origin), m_spacing(spacing)
   {
   }
 
@@ -54,11 +54,19 @@ public:
    *
    * \return The number of points in the coordset.
    */
+  /// @{
   AXOM_HOST_DEVICE
   IndexType size() const
   {
-    return m_shape.size();
+    return m_indexing.size();
   }
+
+  AXOM_HOST_DEVICE
+  IndexType numberOfNodes() const
+  {
+    return m_indexing.size();
+  }
+  /// @}
 
   /**
    * \brief Return the requested point from the coordset.
@@ -68,7 +76,7 @@ public:
    * \return A point that corresponds to \a vertex_index.
    */
   AXOM_HOST_DEVICE
-  PointType getPoint(const LogicalIndexType &vertex_index) const
+  PointType getPoint(const LogicalIndex &vertex_index) const
   {
     PointType pt;
     for(int i = 0; i < NDIMS; i++)
@@ -85,7 +93,7 @@ public:
    */
   AXOM_HOST_DEVICE
   PointType
-  operator[](const LogicalIndexType &vertex_index) const
+  operator[](const LogicalIndex &vertex_index) const
   {
     return getPoint(vertex_index);
   }
@@ -101,10 +109,10 @@ public:
   PointType
   operator[](IndexType vertex_index) const
   {
-    return getPoint(m_shape.IndexToLogicalIndex(vertex_index));
+    return getPoint(m_indexing.IndexToLogicalIndex(vertex_index));
   }
 
-  StructuredIndexing<IndexType, NDIMS> m_shape;
+  StructuredIndexing<IndexType, NDIMS> m_indexing;
   ExtentsType                          m_origin;
   ExtentsType                          m_spacing;
 };

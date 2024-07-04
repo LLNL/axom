@@ -27,46 +27,27 @@ namespace views
  *
  * \note This would only be used on the host.
  */
-class MaterialInformation
+struct Material
 {
-public:
-  using StringIntMap = std::map<std::string, int>;
-  using IntStringMap = std::map<int, std::string>;
-  using IntVector = std::vector<int>;
-  using StringVector = std::vector<std::string>;
+  int number;
+  std::string name; 
+};
 
-  void set(const conduit::Node &matset)
+using MaterialInformation = std::vector<Material>;
+
+MaterialInformation materials(const conduit::Node &matset)
+{
+  MaterialInformation info;
+  if(matset.has_child("material_map"))
   {
-    if(matset.has_child("material_map"))
+    const conduit::Node &mm = matset["material_map"];
+    for(conduit::index_t i = 0; i < mm.number_of_children(); i++)
     {
-      m_namesToIds.clear();
-      m_idsToNames.clear();
-      m_ids.clear();
-      m_names.clear();
-
-      const conduit::Node &mm = matset["material_map"];
-      for(conduit::index_t i = 0; i < mm.number_of_children(); i++)
-      {
-        const auto id = mm[i].to_int32();
-        m_namesToIds[mm[i].name()] = id;
-        m_idsToNames[id] = mm[i].name();
-        m_ids.push_back(id);
-        m_names.push_back(mm[i].name());
-      }
+      info.push_back(Material{static_cast<int>(i), mm[i].name()});
     }
   }
-
-  const StringIntMap &getNamesToIds() const { return m_namesToIds; }
-  const IntStringMap &getIdsToNames() const { return m_idsToNames; }
-  const IntVector &getIds() const { return m_ids; }
-  const StringVector &getNames() const { return m_names; }
-
-private:
-  StringIntMap m_namesToIds{};
-  IntStringMap m_idsToNames{};
-  IntVector m_ids{};
-  StringVector m_names{};
-};
+  return info;
+}
 
 //---------------------------------------------------------------------------
 // Material views - These objects are meant to wrap Blueprint Matsets behind

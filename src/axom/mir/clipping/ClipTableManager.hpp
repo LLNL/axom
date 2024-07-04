@@ -115,11 +115,11 @@ struct ClipTable : public ClipTableBase<axom::Array<int>, axom::Array<unsigned c
 {
   using IntContainerType = axom::Array<int>;
   using Uint8ContainerType = axom::Array<unsigned char>;
-  using IntViewType = axom::ArrayView<int>;
-  using Uint8ViewType = axom::ArrayView<unsigned char>;
+  using IntViewType = axom::ArrayView<const int>;
+  using Uint8ViewType = axom::ArrayView<const unsigned char>;
 
   using SuperClass = ClipTableBase<IntContainerType, Uint8ContainerType>;
-  using ClipTableView = ClipTableBase<IntViewType, Uint8ViewType>;
+  using View = ClipTableBase<IntViewType, Uint8ViewType>;
 
   /**
    * \brief Load clipping data into the arrays, moving data as needed.
@@ -150,12 +150,12 @@ struct ClipTable : public ClipTableBase<axom::Array<int>, axom::Array<unsigned c
    *
    * \return A view of the table data.
    */
-  ClipTableView view() const
+  View view() const
   {
-    ClipTableView v;
-    v.m_shapes = SuperClass::m_shapes.view();
-    v.m_offsets = SuperClass::m_offsets.view();
-    v.m_table = SuperClass::m_table.view(); 
+    View v;
+    v.m_shapes = m_shapes.view(); //SuperClass::m_shapes.view();
+    v.m_offsets = m_offsets.view(); //SuperClass::m_offsets.view();
+    v.m_table = m_table.view(); //SuperClass::m_table.view(); 
     return v;
   }
 
@@ -168,6 +168,8 @@ template <typename ExecSpace>
 class ClipTableManager
 {
 public:
+  using Table = ClipTable<ExecSpace>;
+
   /**
    * \brief Constructor
    */
@@ -184,7 +186,7 @@ public:
    *
    * \return A reference to the clipping table. 
    */
-  const ClipTable<ExecSpace> &operator[](size_t shape)
+  const Table &operator[](size_t shape)
   {
     const auto index = shapeToIndex(shape);
     assert(shape < ST_MAX);

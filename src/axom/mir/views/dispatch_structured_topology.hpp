@@ -7,6 +7,8 @@
 #define AXOM_MIR_DISPATCH_STRUCTURED_TOPOLOGY_HPP_
 
 #include "axom/mir/views/StructuredTopologyView.hpp"
+#include "axom/mir/views/StructuredIndexing.hpp"
+#include "axom/mir/views/StridedStructuredIndexing.hpp"
 #include "axom/mir/views/dispatch_utilities.hpp"
 #include "axom/mir/views/dispatch_uniform_topology.hpp"
 #include "axom/mir/views/dispatch_rectilinear_topology.hpp"
@@ -19,6 +21,35 @@ namespace mir
 {
 namespace views
 {
+
+/**
+ * \brief Fill an array from a Conduit node, filling the destination array if the values do not exist.
+ *
+ * \tparam ArrayType The array type to use.
+ *
+ * \param n The conduit node that contains the named array, if it exists.
+ * \param key The name of the node.
+ * \param[out] The array to be filled.
+ * \param fillValue the value to use if the array is not found.
+ */
+template <typename ArrayType>
+bool
+fillFromNode(const conduit::Node &n, const std::string &key, ArrayType &arr, int fillValue)
+{
+  bool found = false;
+  if((found = n.has_path(key)) == true)
+  {
+    const auto acc = n.fetch_existing(key).as_int_accessor();
+    for(int i = 0; i < arr.size(); i++)
+      arr[i] = acc[i];
+  }
+  else
+  {
+    for(int i = 0; i < arr.size(); i++)
+      arr[i] = fillValue;
+  }
+  return found;
+}
 
 /**
  * \brief Creates a topology view compatible with structured topologies and passes that view to the supplied function.
@@ -39,39 +70,94 @@ void dispatch_structured_topology(const conduit::Node &topo, FuncType &&func)
   int ndims = 1;
   ndims += topo.has_path("elements/dims/j") ? 1 : 0;
   ndims += topo.has_path("elements/dims/k") ? 1 : 0;
+  static const std::string offsetsKey("elements/offsets");
+  static const std::string stridesKey("elements/strides");
+
   switch(ndims)
   {
   case 3:
     if constexpr (dimension_selected(SelectedDimensions, 3))
     {
-      axom::StackArray<axom::IndexType, 3> dims;
-      dims[0] = topo.fetch_existing("elements/dims/i").as_int();
-      dims[1] = topo.fetch_existing("elements/dims/j").as_int();
-      dims[2] = topo.fetch_existing("elements/dims/k").as_int();
-      views::StructuredTopologyView<axom::IndexType, 3> topoView(dims);
       const std::string shape("hex");
-      func(shape, topoView);
+      axom::StackArray<axom::IndexType, 3> zoneDims;
+      zoneDims[0] = topo.fetch_existing("elements/dims/i").as_int();
+      zoneDims[1] = topo.fetch_existing("elements/dims/j").as_int();
+      zoneDims[2] = topo.fetch_existing("elements/dims/k").as_int();
+
+      if(topo.has_path(offsetsKey) || topo.has_path(stridesKey))
+      {
+        axom::StackArray<axom::IndexType, 3> offsets, strides;
+        fillFromNode(topo, offsetsKey, offsets, 0);
+        if(!fillFromNode(topo, stridesKey, strides, 1))
+        {
+          strides[1] = zoneDims[0];
+          strides[2] = zoneDims[0] * zoneDims[1];
+        }
+        
+        views::StridedStructuredIndexing<axom::IndexType, 3> zoneIndexing(zoneDims, offsets, strides);
+        views::StructuredTopologyView<views::StridedStructuredIndexing<axom::IndexType, 3>> topoView(zoneIndexing);
+        func(shape, topoView);
+      }
+      else
+      {
+        views::StructuredIndexing<axom::IndexType, 3> zoneIndexing(zoneDims);
+        views::StructuredTopologyView<views::StructuredIndexing<axom::IndexType, 3>> topoView(zoneIndexing);
+        func(shape, topoView);
+      }
     }
     break;
   case 2:
     if constexpr (dimension_selected(SelectedDimensions, 2))
     {
-      axom::StackArray<axom::IndexType, 2> dims;
-      dims[0] = topo.fetch_existing("elements/dims/i").as_int();
-      dims[1] = topo.fetch_existing("elements/dims/j").as_int();
-      views::StructuredTopologyView<axom::IndexType, 2> topoView(dims);
       const std::string shape("quad");
-      func(shape, topoView);
+      axom::StackArray<axom::IndexType, 2> zoneDims;
+      zoneDims[0] = topo.fetch_existing("elements/dims/i").as_int();
+      zoneDims[1] = topo.fetch_existing("elements/dims/j").as_int();
+
+      if(topo.has_path(offsetsKey) || topo.has_path(stridesKey))
+      {
+        axom::StackArray<axom::IndexType, 2> offsets, strides;
+        fillFromNode(topo, offsetsKey, offsets, 0);
+        if(!fillFromNode(topo, stridesKey, strides, 1))
+        {
+          strides[1] = zoneDims[0];
+        }
+        
+        views::StridedStructuredIndexing<axom::IndexType, 2> zoneIndexing(zoneDims, offsets, strides);
+        views::StructuredTopologyView<views::StridedStructuredIndexing<axom::IndexType, 2>> topoView(zoneIndexing);
+        func(shape, topoView);
+      }
+      else
+      {
+        views::StructuredIndexing<axom::IndexType, 2> zoneIndexing(zoneDims);
+        views::StructuredTopologyView<views::StructuredIndexing<axom::IndexType, 2>> topoView(zoneIndexing);
+        func(shape, topoView);
+      }
     }
     break;
   case 1:
     if constexpr (dimension_selected(SelectedDimensions, 1))
     {
-      axom::StackArray<axom::IndexType, 1> dims;
-      dims[0] = topo.fetch_existing("elements/dims/i").as_int();
-      views::StructuredTopologyView<axom::IndexType, 1> topoView(dims);
       const std::string shape("line");
-      func(shape, topoView);
+      axom::StackArray<axom::IndexType, 1> zoneDims;
+      zoneDims[0] = topo.fetch_existing("elements/dims/i").as_int();
+
+      if(topo.has_path(offsetsKey) || topo.has_path(stridesKey))
+      {
+        axom::StackArray<axom::IndexType, 1> offsets, strides;
+        fillFromNode(topo, offsetsKey, offsets, 0);
+        fillFromNode(topo, stridesKey, strides, 1);
+
+        views::StridedStructuredIndexing<axom::IndexType, 1> zoneIndexing(zoneDims, offsets, strides);
+        views::StructuredTopologyView<views::StridedStructuredIndexing<axom::IndexType, 1>> topoView(zoneIndexing);
+        func(shape, topoView);
+      }
+      else
+      {
+        views::StructuredIndexing<axom::IndexType, 1> zoneIndexing(zoneDims);
+        views::StructuredTopologyView<views::StructuredIndexing<axom::IndexType, 1>> topoView(zoneIndexing);
+        func(shape, topoView);
+      }
     }
   }
 }

@@ -27,6 +27,14 @@ namespace axom
 template <typename T, int N>
 struct StackArray
 {
+  using value_type = T;
+
+  /*!
+   * \brief Return size of the array.
+   */
+  AXOM_HOST_DEVICE
+  constexpr static int size() { return N; }
+
   /*!
    * \brief Accessor, returns a reference to the value at the given index.
    *
