@@ -694,7 +694,7 @@ public:
       RAJA::ReduceMin<ReducePolicy, double> minCoord(
         std::numeric_limits<double>::max());
       RAJA::ReduceMax<ReducePolicy, double> maxCoord(
-        std::numeric_limits<double>::min());
+        -std::numeric_limits<double>::max());
       RAJA::forall<LoopPolicy>(
         RAJA::RangeSegment(0, ptCount),
         AXOM_LAMBDA(RAJA::Index_type n) {
