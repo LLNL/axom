@@ -1550,6 +1550,12 @@ int main(int argc, char** argv)
       MPI_Allreduce(&inVal, &maxVal, 1, MPI_DOUBLE, MPI_MAX, MPI_COMM_WORLD);
       MPI_Allreduce(&inVal, &sumVal, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
     };
+  auto getIntMinMax =
+    [](int inVal, int& minVal, int& maxVal, int& sumVal) {
+      MPI_Allreduce(&inVal, &minVal, 1, MPI_INT, MPI_MIN, MPI_COMM_WORLD);
+      MPI_Allreduce(&inVal, &maxVal, 1, MPI_INT, MPI_MAX, MPI_COMM_WORLD);
+      MPI_Allreduce(&inVal, &sumVal, 1, MPI_INT, MPI_SUM, MPI_COMM_WORLD);
+    };
 
   // Output some timing stats
   {
@@ -1558,6 +1564,12 @@ int main(int argc, char** argv)
 
     double minQuery, maxQuery, sumQuery;
     getDoubleMinMax(queryTimer.elapsedTimeInSec(), minQuery, maxQuery, sumQuery);
+
+    double minFilterDist, maxFilterDist, sumFilterDist;
+    getDoubleMinMax(query.effectiveDistanceThreshold(), minFilterDist, maxFilterDist, sumFilterDist);
+
+    int minSearchCount, maxSearchCount, sumSearchCount;
+    getIntMinMax(int(query.searchCount()), minSearchCount, maxSearchCount, sumSearchCount);
 
     SLIC_INFO(axom::fmt::format(
       "Initialization with policy {} took {{avg:{}, min:{}, max:{}}} seconds",
@@ -1571,6 +1583,16 @@ int main(int argc, char** argv)
       sumQuery / num_ranks,
       minQuery,
       maxQuery));
+    SLIC_INFO(axom::fmt::format(
+      "Search counts {{avg:{}, min:{}, max:{}}}",
+      sumSearchCount / num_ranks,
+      minSearchCount,
+      maxSearchCount));
+    SLIC_INFO(axom::fmt::format(
+      "Effective distance threshold {{avg:{}, min:{}, max:{}}}",
+      sumFilterDist / num_ranks,
+      minFilterDist,
+      maxFilterDist));
   }
   slic::flushStreams();
   SLIC_INFO(axom::fmt::format("Updating closest points."));

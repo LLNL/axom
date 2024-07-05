@@ -542,6 +542,23 @@ public:
   virtual void computeClosestPoints(conduit::Node& queryMesh,
                                     const std::string& topologyName) const = 0;
 
+  /*!
+    @brief Return the number of searches done on the last query
+    mesh's local partition.
+  */
+  axom::IndexType searchCount() const
+  {
+    return m_searchCount;
+  }
+  /*!
+    @brief Return the effective distance threshold of the last query
+    partition.
+  */
+  double effectiveDistanceThreshold() const
+  {
+    return m_effectiveDistanceThreshold;
+  }
+
 protected:
   int m_allocatorID;
   bool m_isVerbose;
@@ -570,6 +587,14 @@ protected:
     /// MPI rank of closest element
     int rank {-1};
   };
+
+  //@{
+  //!@name Diagnostic data
+  //!@brief Number of searches conducted on the last query node.
+  mutable axom::IndexType m_searchCount = -1;
+  //!@brief Effective distance threshold of the last query partition.
+  mutable double m_effectiveDistanceThreshold = 0.0;
+  //@}
 };
 
 /*!
@@ -856,6 +881,13 @@ public:
     BoxArray allQueryBbs;
     gatherBoundingBoxes(myQueryBb, allQueryBbs);
 
+    /*
+      Note: The two m_nranks loops below can be moved to device for the cost of
+      copying the bounding box arrays to device.  Not sure if it's worthwhile,
+      because in general, we assume that m_nranks is small relative to the
+      number of points in the partitions.
+    */
+
     // Compute the min of the max distance between myQueryBb and each rank's object bounding box.
     double minMaxSqDist = std::numeric_limits<double>::max();
     for(int i = 0; i < m_nranks; ++i)
@@ -867,6 +899,7 @@ public:
     const double sqDistanceThreshold =
       std::min(m_sqUserDistanceThreshold, minMaxSqDist);
     xferNodes[m_rank]->fetch("sqDistanceThreshold") = sqDistanceThreshold;
+    m_effectiveDistanceThreshold = sqrt(sqDistanceThreshold);
 
     axom::Array<double> allSqDistanceThreshold(m_nranks);
     gatherPrimitiveValue(sqDistanceThreshold, allSqDistanceThreshold);
@@ -874,7 +907,8 @@ public:
     {
       conduit::Node& xferNode = *xferNodes[m_rank];
       computeLocalClosestPoints(xferNode);
-      xferNode["localSearchCount"].set_int32(1);
+      xferNode["searchCount"].set_int32(1);
+      m_searchCount = 1;
     }
 
     /*
@@ -961,13 +995,14 @@ public:
       if(homeRank == m_rank)
       {
         node_copy_xfer_to_query(xferNode, queryMesh, topologyName);
+        m_searchCount = xferNode["searchCount"].value();
         xferNodes.erase(m_rank);
       }
       else
       {
         computeLocalClosestPoints(xferNode);
-        auto tmpCount = xferNode["localSearchCount"].as_int32();
-        xferNode["localSearchCount"].set_int32(1 + tmpCount);
+        auto tmpCount = xferNode["searchCount"].as_int32();
+        xferNode["searchCount"].set_int32(1 + tmpCount);
 
         isendRequests.emplace_back(conduit::relay::mpi::Request());
         auto& isendRequest = isendRequests.back();

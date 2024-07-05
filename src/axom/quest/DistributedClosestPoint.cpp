@@ -320,5 +320,15 @@ void DistributedClosestPoint::verifyTopologyName(const conduit::Node& meshNode,
   }
 }
 
+axom::IndexType DistributedClosestPoint::searchCount() const
+{
+  return m_impl->searchCount();
+}
+
+double DistributedClosestPoint::effectiveDistanceThreshold() const
+{
+  return m_impl->effectiveDistanceThreshold();
+}
+
 }  // end namespace quest
 }  // end namespace axom
