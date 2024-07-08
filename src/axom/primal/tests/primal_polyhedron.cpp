@@ -835,7 +835,7 @@ TEST(primal_polyhedron, polyhedron_moments)
   using PolyhedronType = primal::Polyhedron<double, 3>;
   using TransformMatrix = axom::numerics::Matrix<double>;
 
-  constexpr double EPS = 1e-10;
+  double EPS = 1e-10;
 
   // Rolling volume and centroid
   double volume;
@@ -873,10 +873,10 @@ TEST(primal_polyhedron, polyhedron_moments)
   EXPECT_NEAR(0.25, centroid[2], EPS);
 
   // lambda to generate an affine transformation matrix for 3D points
-  auto generateTransformMatrix3D = [](const PointType& scale,
-                                      const PointType& translate,
-                                      const VectorType& axis,
-                                      double angle) {
+  auto generateTransformMatrix3D = [&EPS](const PointType& scale,
+                                          const PointType& translate,
+                                          const VectorType& axis,
+                                          double angle) {
     // create scaling matrix
     auto sc_matx = TransformMatrix::identity(4);
     {
@@ -948,8 +948,8 @@ TEST(primal_polyhedron, polyhedron_moments)
   };
 
   // lambda to transform the polyhedron
-  auto transformedPolyhedron = [transformPoint](const PolyhedronType& poly,
-                                                const TransformMatrix& matx) {
+  auto transformedPolyhedron = [&transformPoint](const PolyhedronType& poly,
+                                                 const TransformMatrix& matx) {
     PolyhedronType xformed;
     for(int i = 0; i < poly.numVertices(); ++i)
     {
