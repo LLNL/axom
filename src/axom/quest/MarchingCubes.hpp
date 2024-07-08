@@ -137,8 +137,6 @@ public:
 
     Some metadata from \a bpMesh may be cached.  Any change to it
     after setMesh() leads to undefined behavior.
-
-    @see clearMesh()
   */
   void setMesh(const conduit::Node &bpMesh,
                const std::string &topologyName,
@@ -275,19 +273,6 @@ public:
     facetDomainIds.swap(m_facetDomainIds);
   }
   //@}
-
-  /*!
-    @brief Clear the input mesh data.
-
-    The contour mesh is *not* cleared.  See clearOutput() for this.
-
-    After clearing, you have to call setMesh() as if it was a new
-    object.
-
-    @internal For good GPU performance, memory is not deallocated.  To
-    really deallocate memory, destruct this object and use another.
-  */
-  void clearMesh();
 
   /*!
     @brief Clear the computed contour mesh.

@@ -56,8 +56,6 @@ void MarchingCubes::setMesh(const conduit::Node& bpMesh,
     conduit::blueprint::mesh::is_multi_domain(bpMesh),
     "MarchingCubes class input mesh must be in multidomain format.");
 
-  clearMesh();
-
   m_topologyName = topologyName;
   m_maskFieldName = maskField;
 
@@ -155,18 +153,6 @@ axom::IndexType MarchingCubes::getContourNodeCount() const
   axom::IndexType contourNodeCount =
     !m_domainCount ? 0 : m_facetCount * m_singles[0]->spatialDimension();
   return contourNodeCount;
-}
-
-void MarchingCubes::clearMesh()
-{
-  for(int d = 0; d < m_singles.size(); ++d)
-  {
-    m_singles[d]->getImpl().clearDomain();
-  }
-  m_domainCount = 0;
-  m_facetNodeIds.clear();
-  m_facetNodeCoords.clear();
-  m_facetParentIds.clear();
 }
 
 void MarchingCubes::clearOutput()
