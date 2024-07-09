@@ -39,6 +39,10 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
   a new method, `Array::setDevicePreference()`.
 
 ### Changed
+- Primal: `Polyhedron::centroid()` function changed to return center of mass
+  of the polyhedron. `Polyhedron::vertexMean()` added to return average of
+  polyhedron's vertices. `Polyhedron::moments()` returns the volume and centroid
+  of the polyhedron, the 0th and 1st moments respectively.
 - `quest::ArrayIndexer` is now `axom::MDMapping`, adopting conventional terminology
   and moving out of `quest`.
 - `mint::structured_exec` is now `axom::nested_for_exec`, to support nested for loops
