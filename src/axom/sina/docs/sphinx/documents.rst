@@ -14,7 +14,7 @@ JSON file that conforms to the Sina schema. When serialized, these documents
 can be ingested into a Sina database and used with the Sina tool.
 
 ``Document`` objects follow a very basic JSON layout consisting of two entries:
-"records" and "relationships". Each of these entries will store a list of their
+``records`` and ``relationships``. Each of these entries will store a list of their
 respective objects. An example of an empty document is shown below:
 
 .. code:: json
@@ -24,8 +24,8 @@ respective objects. An example of an empty document is shown below:
         "relationships": []
     }
 
-The "records" list can contain ``Record`` objects and their inheritying types,
-such as ``Run`` objects. The "relationships" list can contain ``Relationship``
+The ``records`` list can contain ``Record`` objects and their inheritying types,
+such as ``Run`` objects. The ``relationships`` list can contain ``Relationship``
 objects. For more information on these objects, see `Records <./records>`_
 and `Relationships <./relationships>`_.
 
@@ -72,7 +72,7 @@ process. Below we will expand on this example to add a ``Relationship``:
         document.add(relationship);
 
         // Save the document directly to a file.
-        saveDocument(document, "MySinaData.json");
+        axom::sina::saveDocument(document, "MySinaData.json");
     }
 
 After executing the above code, the resulting ``MySinaData.json`` file will

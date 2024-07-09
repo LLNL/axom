@@ -26,7 +26,7 @@ another function to assemble the ``CurveSet`` object and add it to our ``Record`
    :language: cpp
 
 Once this code is compiled and executed a json file will be created. Here, we'll
-use `PyDV <https://lc.llnl.gov/weave/pydv/html/index.html>`_ to injest the Sina json
+use `PyDV <https://lc.llnl.gov/weave/pydv/html/index.html>`_ to ingest the Sina json
 file in order to view the position and velocity of the ball along the y-axis over
 time.
 
