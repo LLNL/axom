@@ -30,7 +30,7 @@ Dependencies between components are as follows:
   - Quest depends on Slam, Primal, Spin, and Mint
   - Klee depends on Sidre, Inlet and Primal
   - Multimat depends on Slic, and Slam
-- Sina only depends on Core
+  - Sina only depends on Core
 
 The figure below summarizes the dependencies between the modules.  Solid links
 indicate hard dependencies; dashed links indicate optional dependencies.
