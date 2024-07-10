@@ -1331,10 +1331,10 @@ int main(int argc, char** argv)
     params.policy == RuntimePolicy::omp ? "HOST"
                                         :
   #endif
-  #if defined(UMPIRE_ENABLE_UM)
-                                        "UM"
-  #elif defined(UMPIRE_ENABLE_DEVICE)
+  #if defined(UMPIRE_ENABLE_DEVICE)
                                         "DEVICE"
+  #elif defined(UMPIRE_ENABLE_UM)
+                                        "UM"
   #elif defined(UMPIRE_ENABLE_PINNED)
                                         "PINNED"
   #else
