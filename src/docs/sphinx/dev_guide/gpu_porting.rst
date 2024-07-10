@@ -121,7 +121,7 @@ Axom provides the ``axom::MemorySpace`` enum type to define values indicating
 the memory space where data in
 ``axom::Array`` and ``axom::ArrayView`` lives.
 
-``Dynamic`` allows you to define the location at runtime, with some caveats
+``Dynamic`` allows you to define the location at run time, with some caveats
 (see :ref:`Core Containers<core-containers>` for more details and examples).
 
 
