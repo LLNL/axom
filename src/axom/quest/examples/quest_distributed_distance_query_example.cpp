@@ -983,11 +983,6 @@ public:
       SLIC_ASSERT(queryPts.size() == cpCoords.size());
       SLIC_ASSERT(queryPts.size() == cpIndices.size());
 
-      if(params.isVerbose())
-      {
-        SLIC_INFO(axom::fmt::format("Closest points ({}):", cpCoords.size()));
-      }
-
       /*
         Allowable slack is half the arclength between 2 adjacent object
         points.  A query point on the object can correctly have that
@@ -999,7 +994,7 @@ public:
       const double longSpacing =
         2 * M_PI * params.circleRadius / params.longPointCount;
       const double latSpacing = params.circleRadius * M_PI / 180 *
-        (params.latRange[1] - params.latRange[0]) / params.latPointCount;
+        (params.latRange[1] - params.latRange[0]) / (params.latPointCount - 1);
       const double avgObjectRes = DIM == 2
         ? longSpacing
         : std::sqrt(longSpacing * longSpacing + latSpacing * latSpacing);
@@ -1572,13 +1567,13 @@ int main(int argc, char** argv)
     getIntMinMax(int(query.searchCount()), minSearchCount, maxSearchCount, sumSearchCount);
 
     SLIC_INFO(axom::fmt::format(
-      "Initialization with policy {} took {{avg:{}, min:{}, max:{}}} seconds",
+      "Initialization with policy {} took {{avg:{:.5f}, min:{:.5f}, max:{:.5f}}} seconds",
       axom::runtime_policy::s_policyToName.at(params.policy),
       sumInit / num_ranks,
       minInit,
       maxInit));
     SLIC_INFO(axom::fmt::format(
-      "Query with policy {} took {{avg:{}, min:{}, max:{}}} seconds",
+      "Query with policy {} took {{avg:{:.5f}, min:{:.5f}, max:{:.5f}}} seconds",
       axom::runtime_policy::s_policyToName.at(params.policy),
       sumQuery / num_ranks,
       minQuery,
@@ -1589,7 +1584,7 @@ int main(int argc, char** argv)
       minSearchCount,
       maxSearchCount));
     SLIC_INFO(axom::fmt::format(
-      "Effective distance threshold {{avg:{}, min:{}, max:{}}}",
+      "Effective distance threshold {{avg:{:.5f}, min:{:.5f}, max:{:.5f}}}",
       sumFilterDist / num_ranks,
       minFilterDist,
       maxFilterDist));
@@ -1642,6 +1637,7 @@ int main(int argc, char** argv)
 
   queryMeshWrapper.saveMesh(params.distanceFile);
 
+  axom::slic::flushStreams();
   if(errCount)
   {
     SLIC_INFO(axom::fmt::format(" Error exit: {} errors found.", errCount));
