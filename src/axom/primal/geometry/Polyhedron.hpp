@@ -374,15 +374,15 @@ public:
   }
 
   /*!
-   * \brief Computes the centroid as the average of the polyhedron's vertex
+   * \brief Computes the vertex mean as the average of the polyhedron's vertex
    *  positions
    *
-   * \return The centroid of the polyhedron's vertices
+   * \return The vertex mean of the polyhedron's vertices
    *
    * \pre  polyhedron.isValid() is true
    */
   AXOM_HOST_DEVICE
-  PointType centroid() const
+  PointType vertexMean() const
   {
     SLIC_ASSERT(isValid());
 
@@ -503,33 +503,43 @@ public:
   }
 
   /*!
-   * \brief Computes the signed volume of the polyhedron.
+   * \brief Computes the moments of the polyhedron. The 0th moment is the
+   *        volume of the polyhedron, the 1st moment is the centroid.
    *
-   * \return The signed volume of the polyhedron
+   * \param [out] volume The volume of the polyhedron (0th moment)
+   * \param [out] centroid The centroid of the polyhedron (1st moment)
+   * \param [in]  should_compute_centroid If true, computes the centroid
+   *              of the polyhedron. Default is true.
    *
    * \note Function is based off moments() in Mike Owen's PolyClipper.
    *
    * \pre polyhedron vertex neighbors are defined, and polyhedron is 3D
    *
    * \sa volume()
+   * \sa centroid()
    */
   AXOM_HOST_DEVICE
-  double signedVolume() const
+  void moments(double& volume,
+               PointType& centroid,
+               bool should_compute_centroid = true) const
   {
-    double retVol = 0.0;
+    volume = 0.0;
+
+    VectorType centroid_vector;
 
     if(!isValid() || hasDuplicateVertices())
     {
-      return retVol;
+      return;
     }
 
     // Computes the signed volume of tetrahedra formed from vertices of the
-    // Polyhedron faces and an arbitrary origin (the first vertex)
+    // Polyhedron faces and an arbitrary origin (the first vertex), as well
+    // as the centroid of the Polyhedron.
     else
     {
       SLIC_CHECK_MSG(
         hasNeighbors(),
-        "Polyhedron::signedVolume() is only valid with vertex neighbors.");
+        "Polyhedron::moments() is only valid with vertex neighbors.");
 
       // faces is an overestimation
       int faces[MAX_VERTS * MAX_VERTS];
@@ -548,15 +558,45 @@ public:
 
         for(int j = 1, k = 2; j < N - 1; ++j, ++k)
         {
-          retVol += VectorType::scalar_triple_product(
-            v0,
-            m_vertices[faces[i_offset + j]] - origin,
-            m_vertices[faces[i_offset + k]] - origin);
+          VectorType v1 = m_vertices[faces[i_offset + j]] - origin;
+          VectorType v2 = m_vertices[faces[i_offset + k]] - origin;
+          double curVol = VectorType::scalar_triple_product(v0, v1, v2);
+
+          volume += curVol;
+          if(should_compute_centroid)
+          {
+            centroid_vector += (v0 + v1 + v2) * curVol;
+          }
         }
       }
-    }
 
-    return retVol / 6.;
+      volume /= 6.;
+
+      if(should_compute_centroid)
+      {
+        centroid_vector /=
+          (volume != 0.0) ? (24.0 * volume) : axom::primal::PRIMAL_TINY;
+        centroid = centroid_vector + origin;
+      }
+    }
+  }
+
+  /*!
+   * \brief Computes the signed volume of the polyhedron.
+   *
+   * \return The signed volume of the polyhedron
+   *
+   * \pre polyhedron vertex neighbors are defined, and polyhedron is 3D
+   *
+   * \sa volume()
+   */
+  AXOM_HOST_DEVICE
+  double signedVolume() const
+  {
+    double volume;
+    PointType centroid;
+    moments(volume, centroid, false);
+    return volume;
   }
 
   /*!
@@ -565,6 +605,22 @@ public:
    */
   AXOM_HOST_DEVICE
   double volume() const { return axom::utilities::abs(signedVolume()); }
+
+  /*!
+   * \brief Computes the centroid as the center of mass of the polyhedron
+   *
+   * \return The centroid of the polyhedron
+   *
+   * \pre  polyhedron.isValid() is true
+   */
+  AXOM_HOST_DEVICE
+  PointType centroid() const
+  {
+    double volume;
+    PointType centroid;
+    moments(volume, centroid);
+    return centroid;
+  }
 
   /*!
    * \brief Simple formatted print of a polyhedron instance
