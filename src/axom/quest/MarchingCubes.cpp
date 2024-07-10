@@ -102,7 +102,7 @@ void MarchingCubes::setFunctionField(const std::string& fcnField)
   }
 }
 
-void MarchingCubes::computeIsocontour(double contourVal)
+void MarchingCubes::computeIsocontour(double contourVal, int maskVal)
 {
   AXOM_ANNOTATE_SCOPE("MarchingCubes::computeIsoContour");
 
@@ -113,6 +113,7 @@ void MarchingCubes::computeIsocontour(double contourVal)
   {
     auto& single = *m_singles[d];
     single.setContourValue(contourVal);
+    single.setMaskValue(maskVal);
     single.markCrossings();
     single.scanCrossings();
     m_facetIndexOffsets[d] = m_facetCount;

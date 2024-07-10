@@ -39,6 +39,9 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
   a new method, `Array::setDevicePreference()`.
 
 ### Changed
+- `MarchinCubes` masking now uses the mask field's integer values instead of
+  converting them to booleans.  The new behavior lets you select a value to mask for.
+  If you want to continue the boolean behavior, use only 0 or 1 in your mask field.
 - Primal: `Polyhedron::centroid()` function changed to return center of mass
   of the polyhedron. `Polyhedron::vertexMean()` added to return average of
   polyhedron's vertices. `Polyhedron::moments()` returns the volume and centroid

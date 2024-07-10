@@ -151,11 +151,13 @@ public:
   /*!
    \brief Computes the isocontour.
    \param [in] contourVal isocontour value
+   \param [in] maskVal mask value.  If a mask field is given in
+     setMesh(), compute only for cells whose mask matches this value.
 
    Each computeIsocontour call adds to previously computed contour
    mesh.
   */
-  void computeIsocontour(double contourVal = 0.0);
+  void computeIsocontour(double contourVal = 0.0, int maskVal = 1);
 
   //!@brief Get number of cells (facets) in the generated contour mesh.
   axom::IndexType getContourCellCount() const { return m_facetCount; }

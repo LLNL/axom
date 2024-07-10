@@ -104,6 +104,8 @@ public:
   int objectRepCount = 1;
   // Contour generation count for each MarchingCubes objects.
   int contourGenCount = 1;
+  // Number of masking cycles.
+  int maskCount = 1;
 
   std::string annotationMode {"none"};
 
@@ -203,6 +205,11 @@ public:
     app.add_option("--contourGenReps", contourGenCount)
       ->description(
         "Number of contour repetitions to run for each MarchingCubes object")
+      ->capture_default_str();
+
+    app.add_option("--maskCount", maskCount)
+      ->description(
+        "Split the zones up using this many masks (default to 1).")
       ->capture_default_str();
 
 #ifdef AXOM_USE_CALIPER
@@ -838,7 +845,7 @@ struct ContourTestBase
       auto& mc = *mcPtr;
 
       // Clear and set MarchingCubes object for a "new" mesh.
-      mc.setMesh(computationalMesh.asConduitNode(), "mesh");
+      mc.setMesh(computationalMesh.asConduitNode(), "mesh", "mask");
 
 #ifdef AXOM_USE_MPI
       MPI_Barrier(MPI_COMM_WORLD);
@@ -857,7 +864,10 @@ struct ContourTestBase
         for(const auto& strategy : m_testStrategies)
         {
           mc.setFunctionField(strategy->functionName());
-          mc.computeIsocontour(params.contourVal);
+          for (int iMask=0; iMask<params.maskCount; ++iMask)
+          {
+            mc.computeIsocontour(params.contourVal, iMask);
+          }
           m_strategyFacetPrefixSum.push_back(mc.getContourFacetCount());
         }
       }
@@ -903,7 +913,8 @@ struct ContourTestBase
 
     axom::mint::UnstructuredMesh<axom::mint::SINGLE_SHAPE> contourMesh(
       DIM,
-      DIM == 2 ? mint::CellType::SEGMENT : mint::CellType::TRIANGLE);
+      DIM == 2 ? mint::CellType::SEGMENT : mint::CellType::TRIANGLE,
+      meshGroup);
     axom::utilities::Timer extractTimer(false);
     extractTimer.start();
     mc.populateContourMesh(contourMesh, m_parentCellIdField, m_domainIdField);
@@ -1058,6 +1069,33 @@ struct ContourTestBase
           fieldView(i, j, k) = strat.valueAt(pt);
         }
       }
+    }
+  }
+
+  void addMaskField(BlueprintStructuredMesh& bpMesh)
+  {
+    std::string maskFieldName = "mask";
+    axom::StackArray<axom::IndexType, DIM> zeros;
+    for( int d = 0; d < DIM; ++d ) { zeros[d] = 0; }
+    for ( axom::IndexType domId=0; domId<bpMesh.domainCount(); ++domId )
+    {
+      auto domainView = bpMesh.getDomainView<DIM>(domId);
+      auto cellCount = domainView.getCellCount();
+      auto slowestDirs = domainView.getConstCoordsViews()[0].mapping().slowestDirs();
+      axom::StackArray<axom::IndexType, DIM> fastestDirs;
+      for ( int d = 0; d < DIM; ++d ) { fastestDirs[d] = slowestDirs[DIM - 1 - d]; }
+      domainView.createField(
+        maskFieldName,
+        "element",
+        conduit::DataType::c_int(cellCount),
+        zeros,
+        zeros,
+        fastestDirs);
+      auto maskView = domainView.template getFieldView<int>(maskFieldName);
+      int maskCount = params.maskCount;
+      axom::for_all<ExecSpace>(0, cellCount, AXOM_LAMBDA(axom::IndexType cellId) {
+          maskView.flatIndex(cellId) = (cellId % maskCount);
+      });
     }
   }
 
@@ -1700,6 +1738,8 @@ int testNdimInstance(BlueprintStructuredMesh& computationalMesh)
   }
 
   contourTest.computeNodalDistance(computationalMesh);
+
+  contourTest.addMaskField(computationalMesh);
 
   if(params.isVerbose())
   {

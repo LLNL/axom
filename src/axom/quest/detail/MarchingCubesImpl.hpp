@@ -150,6 +150,11 @@ public:
     m_contourVal = contourVal;
   }
 
+  void setMaskValue(int maskVal) override
+  {
+    m_maskVal = maskVal;
+  }
+
   /*!
     @brief Implementation of virtual markCrossings.
 
@@ -181,7 +186,7 @@ public:
   template <int TDIM = DIM>
   typename std::enable_if<TDIM == 2>::type markCrossings_dim()
   {
-    MarkCrossings_Util mcu(m_caseIds, m_fcnView, m_maskView, m_contourVal);
+    MarkCrossings_Util mcu(m_caseIds, m_fcnView, m_maskView, m_contourVal, m_maskVal);
 
     auto order = m_caseIdsMDMapper.getStrideOrder();
 #if defined(AXOM_USE_RAJA)
@@ -233,7 +238,7 @@ public:
   template <int TDIM = DIM>
   typename std::enable_if<TDIM == 3>::type markCrossings_dim()
   {
-    MarkCrossings_Util mcu(m_caseIds, m_fcnView, m_maskView, m_contourVal);
+    MarkCrossings_Util mcu(m_caseIds, m_fcnView, m_maskView, m_contourVal, m_maskVal);
 
     auto order = m_caseIdsMDMapper.getStrideOrder();
     // order ^= axom::ArrayStrideOrder::BOTH; // Pick wrong ordering to test behavior.
@@ -300,14 +305,17 @@ public:
     axom::ArrayView<const double, DIM, MemorySpace> fcnView;
     axom::ArrayView<const int, DIM, MemorySpace> maskView;
     double contourVal;
+    int maskVal;
     MarkCrossings_Util(axom::ArrayView<std::uint16_t, DIM, MemorySpace>& caseIds,
                        axom::ArrayView<const double, DIM, MemorySpace>& fcnView_,
                        axom::ArrayView<const int, DIM, MemorySpace>& maskView_,
-                       double contourVal_)
+                       double contourVal_,
+                       int maskVal_)
       : caseIdsView(caseIds)
       , fcnView(fcnView_)
       , maskView(maskView_)
       , contourVal(contourVal_)
+      , maskVal(maskVal_)
     { }
 
     //!@brief Compute the case index into cases2D or cases3D.
@@ -329,7 +337,7 @@ public:
     AXOM_HOST_DEVICE inline typename std::enable_if<TDIM == 2>::type
     computeCaseId(axom::IndexType i, axom::IndexType j) const
     {
-      const bool useZone = maskView.empty() || bool(maskView(i, j));
+      const bool useZone = maskView.empty() || (maskView(i, j) == maskVal);
       if(useZone)
       {
         // clang-format off
@@ -348,7 +356,7 @@ public:
     AXOM_HOST_DEVICE inline typename std::enable_if<TDIM == 3>::type
     computeCaseId(axom::IndexType i, axom::IndexType j, axom::IndexType k) const
     {
-      const bool useZone = maskView.empty() || bool(maskView(i, j, k));
+      const bool useZone = maskView.empty() || (maskView(i, j, k) == maskVal);
       if(useZone)
       {
         // clang-format off
@@ -986,6 +994,7 @@ private:
   static constexpr std::uint8_t CELL_CORNER_COUNT = (DIM == 3) ? 8 : 4;
 
   double m_contourVal = 0.0;
+  int m_maskVal = 1;
 
   axom::StackArray<axom::IndexType, DIM> emptyShape()
   {
