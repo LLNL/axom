@@ -671,6 +671,84 @@ void check_tet_tet_clip(double EPS)
   axom::setDefaultAllocator(current_allocator);
 }
 
+template <typename ExecPolicy>
+void check_polygon_polygon_clip(double EPS)
+{
+  // Will be clipping two triangles, max number of vertices for output polygon
+  // is 3 + 3 = 6
+  const int MAX_NUM_VERTS = 6;
+
+  constexpr bool CHECK_SIGN = true;
+
+  using PolygonStatic2D =
+    axom::primal::Polygon<double, 2, axom::primal::PolygonArray::Static, MAX_NUM_VERTS>;
+  using Point2D = axom::primal::Point<double, 2>;
+
+  // Get ids of necessary allocators
+  const int host_allocator = axom::execution_space<axom::SEQ_EXEC>::allocatorID();
+  const int kernel_allocator = axom::execution_space<ExecPolicy>::allocatorID();
+
+  axom::Array<PolygonStatic2D> subject_polygon_device(1, 1, kernel_allocator);
+  auto subject_polygon_view = subject_polygon_device.view();
+
+  axom::Array<PolygonStatic2D> clip_polygon_device(1, 1, kernel_allocator);
+  auto clip_polygon_view = clip_polygon_device.view();
+
+  axom::Array<PolygonStatic2D> output_polygon_device(1, 1, kernel_allocator);
+  auto output_polygon_view = output_polygon_device.view();
+
+  axom::for_all<ExecPolicy>(
+    1,
+    AXOM_LAMBDA(int i) {
+      subject_polygon_view[i] = PolygonStatic2D(
+        {Point2D({0.0, 0.0}), Point2D({1.0, 0.0}), Point2D({0.5, 1})});
+
+      clip_polygon_view[i] = PolygonStatic2D({Point2D({0.0, 2.0 / 3.0}),
+                                              Point2D({0.5, -1.0 / 3.0}),
+                                              Point2D({1.0, 2.0 / 3.0})});
+
+      output_polygon_view[i] =
+        axom::primal::clip(subject_polygon_view[i], clip_polygon_view[i], EPS);
+    });
+
+  // Copy output polygon back to host
+  axom::Array<PolygonStatic2D> output_polygon_host =
+    axom::Array<PolygonStatic2D>(output_polygon_device, host_allocator);
+
+  EXPECT_NEAR(0.3333, output_polygon_host[0].signedArea(), EPS);
+  EXPECT_EQ(output_polygon_host[0].numVertices(), 6);
+
+  // Test tryFixOrientation optional parameter using same polygons with
+  // negative volumes (clockwise ordering)
+  axom::for_all<ExecPolicy>(
+    1,
+    AXOM_LAMBDA(int i) {
+      subject_polygon_view[i].clear();
+      clip_polygon_view[i].clear();
+      output_polygon_view[i].clear();
+
+      subject_polygon_view[i].addVertex(Point2D({0.5, 1}));
+      subject_polygon_view[i].addVertex(Point2D({1.0, 0.0}));
+      subject_polygon_view[i].addVertex(Point2D({0.0, 0.0}));
+
+      clip_polygon_view[i].addVertex(Point2D({0.5, -1.0 / 3.0}));
+      clip_polygon_view[i].addVertex(Point2D({0.0, 2.0 / 3.0}));
+      clip_polygon_view[i].addVertex(Point2D({1.0, 2.0 / 3.0}));
+
+      output_polygon_view[i] = axom::primal::clip(subject_polygon_view[i],
+                                                  clip_polygon_view[i],
+                                                  EPS,
+                                                  CHECK_SIGN);
+    });
+
+  // Copy output polygon back to host
+  output_polygon_host =
+    axom::Array<PolygonStatic2D>(output_polygon_device, host_allocator);
+
+  EXPECT_NEAR(0.3333, output_polygon_host[0].signedArea(), EPS);
+  EXPECT_EQ(output_polygon_host[0].numVertices(), 6);
+}
+
 TEST(primal_clip, unit_poly_clip_vertices_sequential)
 {
   unit_check_poly_clip<axom::SEQ_EXEC>();
@@ -692,6 +770,12 @@ TEST(primal_clip, clip_tet_tet_sequential)
 {
   constexpr double EPS = 1e-4;
   check_tet_tet_clip<axom::SEQ_EXEC>(EPS);
+}
+
+TEST(primal_clip, clip_polygon_polygon_sequential)
+{
+  constexpr double EPS = 1e-4;
+  check_polygon_polygon_clip<axom::SEQ_EXEC>(EPS);
 }
 
   #ifdef AXOM_USE_OPENMP
@@ -716,6 +800,12 @@ TEST(primal_clip, clip_tet_tet_omp)
 {
   constexpr double EPS = 1e-4;
   check_tet_tet_clip<axom::OMP_EXEC>(EPS);
+}
+
+TEST(primal_clip, clip_polygon_polygon_omp)
+{
+  constexpr double EPS = 1e-4;
+  check_polygon_polygon_clip<axom::OMP_EXEC>(EPS);
 }
   #endif /* AXOM_USE_OPENMP */
 
@@ -742,6 +832,12 @@ TEST(primal_clip, clip_tet_tet_cuda)
   constexpr double EPS = 1e-4;
   check_tet_tet_clip<axom::CUDA_EXEC<256>>(EPS);
 }
+
+TEST(primal_clip, clip_polygon_polygon_cuda)
+{
+  constexpr double EPS = 1e-4;
+  check_polygon_polygon_clip<axom::CUDA_EXEC<256>>(EPS);
+}
   #endif /* AXOM_USE_CUDA */
 
   #if defined(AXOM_USE_HIP)
@@ -766,6 +862,12 @@ TEST(primal_clip, clip_tet_tet_hip)
 {
   constexpr double EPS = 1e-4;
   check_tet_tet_clip<axom::HIP_EXEC<256>>(EPS);
+}
+
+TEST(primal_clip, clip_polygon_polygon_hip)
+{
+  constexpr double EPS = 1e-4;
+  check_polygon_polygon_clip<axom::HIP_EXEC<256>>(EPS);
 }
   #endif /* AXOM_USE_HIP */
 
@@ -1641,6 +1743,215 @@ TEST(primal_clip, tet_plane_intersect_four_edges)
   PolyhedronType poly = axom::primal::clip(plane, tet, EPS, CHECK_SIGN);
 
   EXPECT_NEAR(tet.signedVolume() / 2.0, poly.signedVolume(), EPS);
+}
+
+TEST(primal_clip, empty_polygons)
+{
+  using Polygon2D = axom::primal::Polygon<double, 2>;
+
+  Polygon2D subjectPolygon;
+
+  Polygon2D clipPolygon;
+
+  Polygon2D poly = axom::primal::clip(subjectPolygon, clipPolygon);
+
+  EXPECT_EQ(poly.isValid(), false);
+}
+
+TEST(primal_clip, polygon_intersects_polygon)
+{
+  using Polygon2D = axom::primal::Polygon<double, 2>;
+  using PolygonStatic2D =
+    axom::primal::Polygon<double, 2, axom::primal::PolygonArray::Static>;
+  using Point2D = axom::primal::Point<double, 2>;
+  constexpr double EPS = 1e-10;
+  constexpr bool CHECK_SIGN = true;
+
+  // Expected counter-clockwise vertex ordering
+  {
+    Polygon2D subjectPolygon;
+    subjectPolygon.addVertex(Point2D {0, 0});
+    subjectPolygon.addVertex(Point2D {1, 0});
+    subjectPolygon.addVertex(Point2D {1, 1});
+    subjectPolygon.addVertex(Point2D {0, 1});
+
+    Polygon2D clipPolygon;
+    clipPolygon.addVertex(Point2D {0.5, -1});
+    clipPolygon.addVertex(Point2D {1.5, -1});
+    clipPolygon.addVertex(Point2D {1.5, 2});
+    clipPolygon.addVertex(Point2D {0.5, 2});
+
+    Polygon2D poly = axom::primal::clip(subjectPolygon, clipPolygon, EPS);
+
+    EXPECT_NEAR(subjectPolygon.signedArea(), 1.0, EPS);
+    EXPECT_NEAR(clipPolygon.signedArea(), 3.0, EPS);
+    EXPECT_NEAR(poly.signedArea(), 0.5, EPS);
+  }
+
+  // Same polygons with static arrays
+  {
+    PolygonStatic2D subjectPolygon;
+    subjectPolygon.addVertex(Point2D {0, 0});
+    subjectPolygon.addVertex(Point2D {1, 0});
+    subjectPolygon.addVertex(Point2D {1, 1});
+    subjectPolygon.addVertex(Point2D {0, 1});
+
+    PolygonStatic2D clipPolygon;
+    clipPolygon.addVertex(Point2D {0.5, -1});
+    clipPolygon.addVertex(Point2D {1.5, -1});
+    clipPolygon.addVertex(Point2D {1.5, 2});
+    clipPolygon.addVertex(Point2D {0.5, 2});
+
+    PolygonStatic2D poly = axom::primal::clip(subjectPolygon, clipPolygon, EPS);
+
+    EXPECT_NEAR(subjectPolygon.signedArea(), 1.0, EPS);
+    EXPECT_NEAR(clipPolygon.signedArea(), 3.0, EPS);
+    EXPECT_NEAR(poly.signedArea(), 0.5, EPS);
+  }
+
+  // Negative clockwise vertex ordering, use tryFixOrientation optional
+  // parameter to fix.
+  {
+    Polygon2D subjectPolygon;
+    subjectPolygon.addVertex(Point2D {0, 0});
+    subjectPolygon.addVertex(Point2D {0, 1});
+    subjectPolygon.addVertex(Point2D {1, 1});
+    subjectPolygon.addVertex(Point2D {1, 0});
+
+    Polygon2D clipPolygon;
+    clipPolygon.addVertex(Point2D {0.5, -1});
+    clipPolygon.addVertex(Point2D {0.5, 2});
+    clipPolygon.addVertex(Point2D {1.5, 2});
+    clipPolygon.addVertex(Point2D {1.5, -1});
+
+    Polygon2D poly_fix_orientation =
+      axom::primal::clip(subjectPolygon, clipPolygon, EPS, CHECK_SIGN);
+
+    // Negative areas
+    EXPECT_NEAR(subjectPolygon.signedArea(), -1.0, EPS);
+    EXPECT_NEAR(clipPolygon.signedArea(), -3.0, EPS);
+
+    // Positive area with tryFixOrientation flag enabled
+    EXPECT_NEAR(poly_fix_orientation.signedArea(), 0.5, EPS);
+  }
+
+  // Edge case with 3 consecutive vertices having the orientations
+  // ON_POSITIVE_SIDE, ON_BOUNDARY, ON_POSITIVE in respect to the
+  // last edge of the clip polygon. Prior to fix, resulted in the
+  // vertex on the boundary being added twice.
+  {
+    Polygon2D subjectPolygon;
+    subjectPolygon.addVertex(Point2D {0.0, 0.0});
+    subjectPolygon.addVertex(Point2D {1.0, 0.0});
+    subjectPolygon.addVertex(Point2D {1.0, 1.0});
+
+    Polygon2D clipPolygon;
+    clipPolygon.addVertex(Point2D {0.0, 0.0});
+    clipPolygon.addVertex(Point2D {1.0, 0.0});
+    clipPolygon.addVertex(Point2D {0.0, 1.0});
+
+    Polygon2D poly = axom::primal::clip(subjectPolygon, clipPolygon, EPS);
+
+    EXPECT_NEAR(poly.signedArea(), 0.25, EPS);
+    EXPECT_EQ(poly.numVertices(), 3);
+  }
+
+  // Non-clipping - polygons intersect at a line
+  {
+    Polygon2D subjectPolygon;
+    subjectPolygon.addVertex(Point2D {0, 0});
+    subjectPolygon.addVertex(Point2D {1, 0});
+    subjectPolygon.addVertex(Point2D {1, 1});
+    subjectPolygon.addVertex(Point2D {0, 1});
+
+    Polygon2D clipPolygon;
+    clipPolygon.addVertex(Point2D {-1, 0});
+    clipPolygon.addVertex(Point2D {0, 0});
+    clipPolygon.addVertex(Point2D {0, 1});
+    clipPolygon.addVertex(Point2D {-1, 1});
+
+    Polygon2D poly =
+      axom::primal::clip(subjectPolygon, clipPolygon, EPS, CHECK_SIGN);
+
+    EXPECT_EQ(poly.isValid(), false);
+    EXPECT_EQ(poly.numVertices(), 0);
+  }
+
+  // Non-clipping - polygons intersect at a point
+  {
+    Polygon2D subjectPolygon;
+    subjectPolygon.addVertex(Point2D {0, 0});
+    subjectPolygon.addVertex(Point2D {1, 0});
+    subjectPolygon.addVertex(Point2D {1, 1});
+    subjectPolygon.addVertex(Point2D {0, 1});
+
+    Polygon2D clipPolygon;
+    clipPolygon.addVertex(Point2D {-1, -1});
+    clipPolygon.addVertex(Point2D {0, -1});
+    clipPolygon.addVertex(Point2D {0, 0});
+    clipPolygon.addVertex(Point2D {-1, 0});
+
+    Polygon2D poly =
+      axom::primal::clip(subjectPolygon, clipPolygon, EPS, CHECK_SIGN);
+
+    EXPECT_EQ(poly.isValid(), false);
+    EXPECT_EQ(poly.numVertices(), 0);
+  }
+
+  // Rosetta Code example
+  {
+    Polygon2D subjectPolygon;
+    subjectPolygon.addVertex(Point2D {50, 150});
+    subjectPolygon.addVertex(Point2D {200, 50});
+    subjectPolygon.addVertex(Point2D {350, 150});
+    subjectPolygon.addVertex(Point2D {350, 300});
+    subjectPolygon.addVertex(Point2D {250, 300});
+    subjectPolygon.addVertex(Point2D {200, 250});
+    subjectPolygon.addVertex(Point2D {150, 350});
+    subjectPolygon.addVertex(Point2D {100, 250});
+    subjectPolygon.addVertex(Point2D {100, 200});
+
+    Polygon2D clipPolygon;
+    clipPolygon.addVertex(Point2D {100, 100});
+    clipPolygon.addVertex(Point2D {300, 100});
+    clipPolygon.addVertex(Point2D {300, 300});
+    clipPolygon.addVertex(Point2D {100, 300});
+
+    Polygon2D poly = axom::primal::clip(subjectPolygon, clipPolygon, EPS);
+    EXPECT_NEAR(poly.signedArea(), 37083.3333333333, EPS);
+    EXPECT_EQ(poly.numVertices(), 10);
+
+    // Check vertices
+    EXPECT_NEAR(poly[0][0], 100, EPS);
+    EXPECT_NEAR(poly[0][1], 116.6666666666, EPS);
+
+    EXPECT_NEAR(poly[1][0], 125, EPS);
+    EXPECT_NEAR(poly[1][1], 100, EPS);
+
+    EXPECT_NEAR(poly[2][0], 275, EPS);
+    EXPECT_NEAR(poly[2][1], 100, EPS);
+
+    EXPECT_NEAR(poly[3][0], 300, EPS);
+    EXPECT_NEAR(poly[3][1], 116.6666666666, EPS);
+
+    EXPECT_NEAR(poly[4][0], 300, EPS);
+    EXPECT_NEAR(poly[4][1], 300, EPS);
+
+    EXPECT_NEAR(poly[5][0], 250, EPS);
+    EXPECT_NEAR(poly[5][1], 300, EPS);
+
+    EXPECT_NEAR(poly[6][0], 200, EPS);
+    EXPECT_NEAR(poly[6][1], 250, EPS);
+
+    EXPECT_NEAR(poly[7][0], 175, EPS);
+    EXPECT_NEAR(poly[7][1], 300, EPS);
+
+    EXPECT_NEAR(poly[8][0], 125, EPS);
+    EXPECT_NEAR(poly[8][1], 300, EPS);
+
+    EXPECT_NEAR(poly[9][0], 100, EPS);
+    EXPECT_NEAR(poly[9][1], 250, EPS);
+  }
 }
 
 //------------------------------------------------------------------------------

@@ -570,9 +570,9 @@ AXOM_HOST_DEVICE bool intersect(const Plane<T, 3>& p,
 }
 
 /*!
- * \brief Determines if a 3D plane intersects a 3D segment.
- * \param [in] plane A 3D plane
- * \param [in] seg A 3D line segment
+ * \brief Determines if a plane intersects a segment.
+ * \param [in] plane A plane
+ * \param [in] seg A line segment
  * \param [out] t Intersection point of plane and seg, w.r.t. seg's
  *  parametrization
  * \note If there is an intersection, the intersection point pt is:
@@ -583,9 +583,9 @@ AXOM_HOST_DEVICE bool intersect(const Plane<T, 3>& p,
  * \note Uses method from pg 176 of 
  *       Real Time Collision Detection by Christer Ericson.
  */
-template <typename T>
-AXOM_HOST_DEVICE bool intersect(const Plane<T, 3>& plane,
-                                const Segment<T, 3>& seg,
+template <typename T, int DIM>
+AXOM_HOST_DEVICE bool intersect(const Plane<T, DIM>& plane,
+                                const Segment<T, DIM>& seg,
                                 T& t)
 {
   return detail::intersect_plane_seg(plane, seg, t);
