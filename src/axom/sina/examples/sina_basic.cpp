@@ -11,5 +11,5 @@ int main (void) {
     // Add the run to the document
     document.add(std::move(run));
     // Save the document directly to a file.
-    saveDocument(document, "MySinaData.json");
+    axom::sina::saveDocument(document, "MySinaData.json");
 }

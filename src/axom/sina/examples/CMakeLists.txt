@@ -11,8 +11,20 @@
 #------------------------------------------------------------------------------
 set(sina_example_sources
     sina_basic.cpp
+    sina_check_datum_type.cpp
+    sina_create_datum.cpp
     sina_curve_set.cpp
+    sina_document_assembly.cpp
+    sina_file_object_creation.cpp
+    sina_file_object_removal.cpp
+    sina_local_id_relationship.cpp
+    sina_query_record_for_files.cpp
+    sina_query_records_relationships.cpp
+    sina_relationship_assembly.cpp
+    sina_set_datum_units_tags.cpp
     sina_tutorial.cpp
+    sina_view_datum_types.cpp
+    sina_view_datum_values.cpp
 )
 
 set(sina_example_depends sina conduit::conduit)

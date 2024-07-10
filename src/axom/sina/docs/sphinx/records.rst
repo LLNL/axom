@@ -46,39 +46,26 @@ of doubles.
 Below showcases an example of creating an instance of ``Datum`` with an array of
 strings and adding it to a ``Record``:
 
-.. code:: cpp
-
-    #include "axom/sina.hpp"
-
-    int main(void) {
-        // Create the record
-        axom::sina::ID myID{"my_record", axom::sina::IDType::Local};
-        std::unique_ptr<axom::sina::Record> myRecord{new axom::sina::Record{myID, "my_type"}};
-
-        // Create the datum with an array of strings
-        std::vector<std::string> myTags{"input"};
-        axom::sina::Datum myDatum{12, myTags};
-
-        // Add the datum to the record
-        myRecord->add("my_scalar", std::move(myDatum));
-        std::cout << myRecord->toNode().to_json() << std::endl;
-    }
+.. literalinclude:: ../../examples/sina_create_datum.cpp
+   :language: cpp
 
 Once executed, this code will output:
 
 .. code:: json
 
     {
-        "local_id": "my_record",
-        "type": "my_type",
-        "data":
+        "data": 
         {
-            "my_scalar":
+            "my_scalar": 
             {
-                "tags": ["input"],
-                "value":12.0
+            "value": 
+            [
+                "input"
+            ]
             }
-        }
+        },
+        "type": "my_type",
+        "local_id": "my_record"
     }
 
 .. _datum-type-label:
@@ -97,27 +84,8 @@ are tracked in an enumeration called ``ValueType``. The enumeration is as follow
 
 Below is an example of this in action:
 
-.. code:: cpp
-
-    #include "axom/sina.hpp"
-
-    int main(void) {
-        // Define 3 different datums
-        axom::sina::Datum myDatum{12.34};
-        std::string value = "foobar";
-        axom::sina::Datum myOtherDatum{value};
-        std::vector<double> scalars = {1, 2, 20.0};
-        axom::sina::Datum myArrayDatum{scalars};
-
-        // Prints 0, corresponding to string
-        std::cout << static_cast<std::underlying_type<axom::sina::ValueType>::type>(myDatum.getType()) << std::endl;
-
-        // Prints 1, corresponding to scalar
-        std::cout << static_cast<std::underlying_type<axom::sina::ValueType>::type>(myOtherDatum.getType()) << std::endl;
-
-        // Prints 3, corresponding to scalar array
-        std::cout << static_cast<std::underlying_type<axom::sina::ValueType>::type>(myArrayDatum.getType()) << std::endl;
-    }
+.. literalinclude:: ../../examples/sina_check_datum_type.cpp
+   :language: cpp
 
 ++++++++++++++++++++++
 Setting Units and Tags
@@ -128,21 +96,8 @@ This can be accomplished with the ``setUnits()`` and ``setTags()`` methods respe
 
 Below is an example of this functionality:
 
-.. code:: cpp
-
-    #include "axom/sina.hpp"
-
-    int main(void) {
-        // Define 2 different datums
-        axom::sina::Datum myDatum{12.34};
-        std::vector<double> scalars = {1, 2, 20.0};
-        axom::sina::Datum myArrayDatum{scalars};
-
-        // Set the units for one datum and the tags for the other
-        myDatum.setUnits("km/s");
-        std::vector<std::string> tags = {"input", "core"};
-        myArrayDatum.setTags(tags);
-    }
+.. literalinclude:: ../../examples/sina_datum_units_tags.cpp
+   :language: cpp
 
 +++++++++++++++++++++++++++++++++++++
 Viewing Datum From an existing Record
@@ -154,35 +109,8 @@ This method will return an unordered map of ``Datum`` instances.
 
 Below is an example of this process:
 
-.. code:: cpp
-
-    #include "axom/sina.hpp"
-
-    int main(void) {
-        // Define 3 different datums
-        axom::sina::Datum myDatum{12.34};
-        std::string value = "foobar";
-        axom::sina::Datum myOtherDatum{value};
-        std::vector<double> scalars = {1, 2, 20.0};
-        axom::sina::Datum myArrayDatum{scalars};
-
-        // Create a record to store the datum
-        axom::sina::ID myID{"my_record", axom::sina::IDType::Local};
-        std::unique_ptr<axom::sina::Record> myRecord{new axom::sina::Record{myID, "my_type"}};
-
-        // Add the datum instances to the record
-        myRecord->add("datum1", std::move(myDatum));
-        myRecord->add("datum2", std::move(myOtherDatum));
-        myRecord->add("datum3", std::move(myArrayDatum));
-
-        // Query the datum
-        auto &data = myRecord->getData();
-
-        // Print the keys and type of datum
-        for (const auto& pair : data) {
-            std::cout << pair.first << " is type: " << static_cast<std::underlying_type<axom::sina::ValueType>::type>(pair.second.getType()) << std::endl;
-        }
-    }
+.. literalinclude:: ../../examples/sina_view_datum_types.cpp
+   :language: cpp
 
 Executing this code will print out:
 
@@ -197,39 +125,8 @@ datum1 is a scalar, datum2 is a string, and datum3 is an array of scalars.
 
 Using this knowledge we can modify our code to show us the current datum values:
 
-.. code:: cpp
-
-    #include "axom/sina.hpp"
-
-    int main(void) {
-        // Define 3 different datums
-        axom::sina::Datum myDatum{12.34};
-        std::string value = "foobar";
-        axom::sina::Datum myOtherDatum{value};
-        std::vector<double> scalars = {1, 2, 20.0};
-        axom::sina::Datum myArrayDatum{scalars};
-
-        // Create a record to store the datum
-        axom::sina::ID myID{"my_record", axom::sina::IDType::Local};
-        std::unique_ptr<axom::sina::Record> myRecord{new axom::sina::Record{myID, "my_type"}};
-
-        // Add the datum instances to the record
-        myRecord->add("datum1", std::move(myDatum));
-        myRecord->add("datum2", std::move(myOtherDatum));
-        myRecord->add("datum3", std::move(myArrayDatum));
-
-        // Query the datum
-        auto &data = myRecord->getData();
-
-        // Print the datum values
-        std::cout << "datum1: " << data.at("datum1").getScalar() << std::endl;
-        std::cout << "datum2: " << data.at("datum2").getValue() << std::endl;
-        std::cout << "datum3: ";
-        for (const auto& value : data.at("datum3").getScalarArray()) {
-            std::cout << value << " ";
-        }
-        std::cout << std::endl;
-    }
+.. literalinclude:: ../../examples/sina_view_datum_values.cpp
+   :language: cpp
 
 This will provide the following output:
 
@@ -251,27 +148,8 @@ Every ``File`` must have a URI, while mimetype and tags are optional.
 
 Below is an example showcasing how to create a file and add it to a record:
 
-.. code:: cpp
-
-    #include "axom/sina.hpp"
-
-    int main(void) {
-        // Create 2 different files
-        axom::sina::File myFile{"/path/to/file.png"};
-        myFile.setMimeType("image/png");
-        axom::sina::File myOtherFile{"/path/to/other/file.txt"};
-        myOtherFile.setTags({"these", "are", "tags"});
-
-        // Create a record to store the files
-        axom::sina::ID myID{"my_record", axom::sina::IDType::Local};
-        std::unique_ptr<axom::sina::Record> myRecord{new axom::sina::Record{myID, "my_type"}};
-
-        // Add the files to the record
-        myRecord->add(myFile);
-        myRecord->add(myOtherFile);
-
-        std::cout << myRecord->toNode().to_json() << std::endl;
-    }
+.. literalinclude:: ../../examples/sina_file_object_creation.cpp
+   :language: cpp
 
 This code will produce the following output:
 
@@ -282,7 +160,7 @@ This code will produce the following output:
         "local_id": "my_record",
         "files": 
         {
-            "/path/to/other/file.txt": 
+            "/path/to/other/file.txt":
             {
                 "tags": 
                 [
@@ -300,30 +178,8 @@ This code will produce the following output:
 
 Similarly, files can be removed from a ``Record`` with the ``remove()`` method:
 
-.. code:: cpp
-
-    #include "axom/sina.hpp"
-
-    int main(void) {
-        // Create 2 different files
-        axom::sina::File myFile{"/path/to/file.png"};
-        myFile.setMimeType("image/png");
-        axom::sina::File myOtherFile{"/path/to/other/file.txt"};
-        myOtherFile.setTags({"these", "are", "tags"});
-
-        // Create a record to store the files
-        axom::sina::ID myID{"my_record", axom::sina::IDType::Local};
-        std::unique_ptr<axom::sina::Record> myRecord{new axom::sina::Record{myID, "my_type"}};
-
-        // Add the files to the record
-        myRecord->add(myFile);
-        myRecord->add(myOtherFile);
-
-        // Remove a file from the record
-        myRecord->remove(myFile);
-
-        std::cout << std::cout << myRecord->toNode().to_json() << std::endl;
-    }
+.. literalinclude:: ../../examples/sina_file_object_removal.cpp
+   :language: cpp
 
 As we see from the output, the contents of ``myFile`` are no longer in the
 ``Record`` instance:
@@ -358,35 +214,8 @@ method which returns an unordered map of ``File`` instances.
 Below is an expansion of the previous example where we query the ``Record`` instance
 for files:
 
-.. code:: cpp
-
-    #include "axom/sina.hpp"
-
-    int main(void) {
-        // Create 2 different files
-        axom::sina::File myFile{"/path/to/file.png"};
-        myFile.setMimeType("image/png");
-        axom::sina::File myOtherFile{"/path/to/other/file.txt"};
-        myOtherFile.setTags({"these", "are", "tags"});
-
-        // Create a record to store the files
-        axom::sina::ID myID{"my_record", axom::sina::IDType::Local};
-        std::unique_ptr<axom::sina::Record> myRecord{new axom::sina::Record{myID, "my_type"}};
-
-        // Add the files to the record
-        myRecord->add(myFile);
-        myRecord->add(myOtherFile);
-
-        // Query the record for files
-        auto &files = myRecord->getFiles();
-        for (const auto& file : files) {
-            std::cout << "File with URI '" << file.getUri() << "' has mimetype '" << file.getMimeType() << "' and tags '";
-            for (const auto& tag : file.getTags()) {
-                std::cout << tag << " ";
-            }
-            std::cout << "'" << std::endl;
-        }
-    }
+.. literalinclude:: ../../examples/sina_query_record_for_files.cpp
+   :language: cpp
 
 The above code will output:
 

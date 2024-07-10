@@ -33,28 +33,17 @@ Instead, this should be phrased as "Carlos emails Dani".
 Below is an example showcasing how to construct a ``Relationship`` programmatically. Here,
 we assemble a ``Relationship`` showing that "Task_22 contains Run_1024":
 
-.. code:: cpp
-
-    #include "axom/sina.hpp"
-
-    int main(void) {
-        // Create IDs for both Task 22 and Run 1024
-        axom::sina::ID task22{"Task_22", sina::IDType::Global};
-        axom::sina::ID run1024{"Run_1024", sina::IDType::Global};
-
-        // Create the relationship and print it out
-        axom::sina::Relationship myRelationship{task22, "contains", run1024};
-        std::cout << myRelationship.toNode().to_json() << std::endl;
-    }
+.. literalinclude:: ../../examples/sina_relationship_assembly.cpp
+   :language: cpp
 
 If executed, the above code will output:
 
 .. code:: json
 
     {
-        "object": "Run_1024",
         "predicate": "contains",
-        "subject": "Task_22"
+        "subject": "Task_22",
+        "object": "Run_1024"
     }
 
 As with any other Sina ID, the subject or object may be either local (uniquely refer to
@@ -65,24 +54,8 @@ same global ID.
 
 Let's add on to our previous example to demonstrate this:
 
-.. code:: cpp
-
-    #include "axom/sina.hpp"
-
-    int main(void) {
-        // Create IDs for Task 22 and Run 1024
-        axom::sina::ID task22{"Task_22", sina::IDType::Global};
-        axom::sina::ID run1024{"Run_1024", sina::IDType::Global};
-
-        // Create the relationship and print it out
-        axom::sina::Relationship myRelationship{task22, "contains", run1024};
-        std::cout << myRelationship.toNode().to_json() << std::endl;
-
-        // Create a new ID with local scope and use it to create a Record and Relationship
-        axom::sina::ID myLocalID{"my_local_run", axom::sina::IDType::Local};
-        std::unique_ptr<axom::sina::Record> myRun{new axom::sina::Run{myLocalID, "My Sim Code", "1.2.3", "jdoe"}};
-        axom::sina::Relationship myRelationship{task22, "containts", myLocalID};
-    }
+.. literalinclude:: ../../examples/sina_local_id_relationship.cpp
+   :language: cpp
 
 In the above code, the "my_local_run" ID would be replaced by a global ID on ingestion.
 If this new global ID was, for example, "5Aed-BCds-23G1", then "my_local_run" would
