@@ -913,8 +913,7 @@ struct ContourTestBase
 
     axom::mint::UnstructuredMesh<axom::mint::SINGLE_SHAPE> contourMesh(
       DIM,
-      DIM == 2 ? mint::CellType::SEGMENT : mint::CellType::TRIANGLE,
-      meshGroup);
+      DIM == 2 ? mint::CellType::SEGMENT : mint::CellType::TRIANGLE);
     axom::utilities::Timer extractTimer(false);
     extractTimer.start();
     mc.populateContourMesh(contourMesh, m_parentCellIdField, m_domainIdField);
