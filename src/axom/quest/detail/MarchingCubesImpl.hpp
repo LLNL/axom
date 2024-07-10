@@ -150,10 +150,7 @@ public:
     m_contourVal = contourVal;
   }
 
-  void setMaskValue(int maskVal) override
-  {
-    m_maskVal = maskVal;
-  }
+  void setMaskValue(int maskVal) override { m_maskVal = maskVal; }
 
   /*!
     @brief Implementation of virtual markCrossings.

@@ -208,8 +208,7 @@ public:
       ->capture_default_str();
 
     app.add_option("--maskCount", maskCount)
-      ->description(
-        "Split the zones up using this many masks (default to 1).")
+      ->description("Split the zones up using this many masks (default to 1).")
       ->capture_default_str();
 
 #ifdef AXOM_USE_CALIPER
@@ -864,7 +863,7 @@ struct ContourTestBase
         for(const auto& strategy : m_testStrategies)
         {
           mc.setFunctionField(strategy->functionName());
-          for (int iMask=0; iMask<params.maskCount; ++iMask)
+          for(int iMask = 0; iMask < params.maskCount; ++iMask)
           {
             mc.computeIsocontour(params.contourVal, iMask);
           }
@@ -1075,26 +1074,35 @@ struct ContourTestBase
   {
     std::string maskFieldName = "mask";
     axom::StackArray<axom::IndexType, DIM> zeros;
-    for( int d = 0; d < DIM; ++d ) { zeros[d] = 0; }
-    for ( axom::IndexType domId=0; domId<bpMesh.domainCount(); ++domId )
+    for(int d = 0; d < DIM; ++d)
+    {
+      zeros[d] = 0;
+    }
+    for(axom::IndexType domId = 0; domId < bpMesh.domainCount(); ++domId)
     {
       auto domainView = bpMesh.getDomainView<DIM>(domId);
       auto cellCount = domainView.getCellCount();
-      auto slowestDirs = domainView.getConstCoordsViews()[0].mapping().slowestDirs();
+      auto slowestDirs =
+        domainView.getConstCoordsViews()[0].mapping().slowestDirs();
       axom::StackArray<axom::IndexType, DIM> fastestDirs;
-      for ( int d = 0; d < DIM; ++d ) { fastestDirs[d] = slowestDirs[DIM - 1 - d]; }
-      domainView.createField(
-        maskFieldName,
-        "element",
-        conduit::DataType::c_int(cellCount),
-        zeros,
-        zeros,
-        fastestDirs);
+      for(int d = 0; d < DIM; ++d)
+      {
+        fastestDirs[d] = slowestDirs[DIM - 1 - d];
+      }
+      domainView.createField(maskFieldName,
+                             "element",
+                             conduit::DataType::c_int(cellCount),
+                             zeros,
+                             zeros,
+                             fastestDirs);
       auto maskView = domainView.template getFieldView<int>(maskFieldName);
       int maskCount = params.maskCount;
-      axom::for_all<ExecSpace>(0, cellCount, AXOM_LAMBDA(axom::IndexType cellId) {
+      axom::for_all<ExecSpace>(
+        0,
+        cellCount,
+        AXOM_LAMBDA(axom::IndexType cellId) {
           maskView.flatIndex(cellId) = (cellId % maskCount);
-      });
+        });
     }
   }
 
