@@ -8,7 +8,7 @@
 
 #include "axom/sina/core/AdiakWriter.hpp"
 
-#ifdef AXOM_SINA_USE_ADIAK
+#ifdef AXOM_USE_ADIAK
 
 #include <stdexcept>
 #include <utility>
@@ -269,4 +269,4 @@ void adiakSinaCallback(const char *name, adiak_category_t, const char *subcatego
 }  // end sina namespace
 }  // end axom namespace
 
-#endif // AXOM_SINA_USE_ADIAK
+#endif // AXOM_USE_ADIAK

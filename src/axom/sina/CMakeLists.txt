@@ -9,21 +9,10 @@
 #------------------------------------------------------------------------------
 # Specify necessary dependencies
 #
-# Note: Sina also optionally depends on Adiak when AXOM_SINA_USE_ADIAK=ON
+# Note: Sina also optionally depends on Adiak when AXOM_USE_ADIAK=ON
 #------------------------------------------------------------------------------
 axom_component_requires(NAME       Sina
                         TPLS       Conduit )
-
-#------------------------------------------------------------------------------
-# Add Sina options
-#------------------------------------------------------------------------------
-cmake_dependent_option( AXOM_SINA_USE_ADIAK "Enables Adiak support in Sina" ON
-                       "AXOM_USE_ADIAK" OFF)
-
-#------------------------------------------------------------------------------
-# Generate Sina config
-#------------------------------------------------------------------------------
-axom_configure_file ( config.hpp.in ${PROJECT_BINARY_DIR}/include/axom/sina/config.hpp )
 
 #------------------------------------------------------------------------------
 # Specify the sina headers/sources
@@ -57,8 +46,8 @@ set(sina_sources
     )
 
 # Add Adiak header and source
-blt_list_append( TO sina_headers ELEMENTS core/AdiakWriter.hpp IF AXOM_SINA_USE_ADIAK )
-blt_list_append( TO sina_sources ELEMENTS core/AdiakWriter.cpp IF AXOM_SINA_USE_ADIAK )
+blt_list_append( TO sina_headers ELEMENTS core/AdiakWriter.hpp IF AXOM_USE_ADIAK )
+blt_list_append( TO sina_sources ELEMENTS core/AdiakWriter.cpp IF AXOM_USE_ADIAK )
 
 # Add fortran interface for Sina
 if (ENABLE_FORTRAN)
@@ -75,7 +64,7 @@ set(sina_depends
     conduit::conduit
     )
 
-blt_list_append( TO sina_depends ELEMENTS adiak::adiak IF AXOM_SINA_USE_ADIAK )
+blt_list_append( TO sina_depends ELEMENTS adiak::adiak IF AXOM_USE_ADIAK )
 
 axom_add_library(NAME       sina
                  SOURCES    ${sina_sources}
@@ -88,10 +77,6 @@ axom_write_unified_header(NAME    sina
 
 axom_install_component(NAME    sina
                        HEADERS ${sina_headers})
-
-install(FILES           ${PROJECT_BINARY_DIR}/include/axom/sina/config.hpp
-        DESTINATION     include/axom/sina
-        )
 
 #------------------------------------------------------------------------------
 # Add tests and examples

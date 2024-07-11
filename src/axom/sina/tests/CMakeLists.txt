@@ -75,8 +75,8 @@ if (ENABLE_GMOCK)
         )
 
     # Add tests using Adiak if necessary and Adiak dependency
-    blt_list_append( TO gmock_sina_tests ELEMENTS sina_AdiakWriter.cpp IF AXOM_SINA_USE_ADIAK)
-    blt_list_append( TO sina_gmock_depends_on ELEMENTS adiak::adiak IF AXOM_SINA_USE_ADIAK )
+    blt_list_append( TO gmock_sina_tests ELEMENTS sina_AdiakWriter.cpp IF AXOM_USE_ADIAK)
+    blt_list_append( TO sina_gmock_depends_on ELEMENTS adiak::adiak IF AXOM_USE_ADIAK )
 
     foreach(test ${gmock_sina_tests})
         get_filename_component( test_name ${test} NAME_WE )

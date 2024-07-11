@@ -9,8 +9,8 @@
 
 /// @file
 
-#include "axom/sina/config.hpp"
-#ifdef AXOM_SINA_USE_ADIAK
+#include "axom/config.hpp"
+#ifdef AXOM_USE_ADIAK
 
 #include <string>
 #include <type_traits>
@@ -50,7 +50,7 @@ void adiakSinaCallback(const char *name, adiak_category_t category, const char *
 }  // end sina namespace
 }  // end axom namespace
 
-#endif // AXOM_SINA_USE_ADIAK
+#endif // AXOM_USE_ADIAK
 
 #endif // SINA_ADIAK_HPP
 

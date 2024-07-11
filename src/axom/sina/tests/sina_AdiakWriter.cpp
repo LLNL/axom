@@ -6,7 +6,7 @@
 
 #include "axom/sina/core/AdiakWriter.hpp"
 
-#ifdef AXOM_SINA_USE_ADIAK
+#ifdef AXOM_USE_ADIAK
 
 #include <stdexcept>
 #include <string>
@@ -157,4 +157,4 @@ TEST_F(AdiakWriterTest, files_list){
 }  // end sina namespace
 }  // end axom namespace
 
-#endif // AXOM_SINA_USE_ADIAK
+#endif // AXOM_USE_ADIAK
