@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -25,7 +25,10 @@
 
 namespace axom
 {
-#if defined(AXOM_USE_CUDA) && defined(AXOM_DEVICE_CODE)
+#if defined(AXOM_USE_CUDA)
+// Note: cuda::std types work in host and device code as long as Axom is
+//       configured with CUDA enabled. No need to rely on two different
+//       header files in that case.
 template <typename T>
 using numeric_limits = cuda::std::numeric_limits<T>;
 #else
