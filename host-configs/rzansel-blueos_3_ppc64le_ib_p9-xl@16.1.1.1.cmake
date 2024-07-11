@@ -117,7 +117,7 @@ set(CAMP_DIR "${TPL_ROOT}/camp-2024.02.0-7jrihlzfbrasok3xa2tvoja54vlhrsr5" CACHE
 
 set(DEVTOOLS_ROOT "/collab/usr/gapps/axom/devtools/blueos_3_ppc64le_ib_p9/2023_10_17_10_41_04/._view/5gug4et2qymmckk7yvtub4qcapp3figm" CACHE PATH "")
 
-set(CLANGFORMAT_EXECUTABLE "/usr/tce/packages/clang/clang-10.0.0/bin/clang-format" CACHE PATH "")
+set(CLANGFORMAT_EXECUTABLE "/usr/tce/packages/clang/clang-14.0.5/bin/clang-format" CACHE PATH "")
 
 set(PYTHON_EXECUTABLE "${DEVTOOLS_ROOT}/python-3.10.10/bin/python3.10" CACHE PATH "")
 

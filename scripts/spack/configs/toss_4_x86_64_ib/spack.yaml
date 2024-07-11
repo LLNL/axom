@@ -72,6 +72,7 @@ spack:
         mpi: [mvapich2]
         gl: [opengl]
         glu: [openglu]
+        zlib-api: [zlib]
 
     openblas:
       buildable: false
@@ -178,6 +179,11 @@ spack:
       buildable: false
       externals:
       - spec: ghostscript@9.27
+        prefix: /usr
+    gmake:
+      buildable: false
+      externals:
+      - spec: gmake@4.2.1
         prefix: /usr
     graphviz:
       buildable: false
@@ -307,13 +313,12 @@ spack:
       externals:
       - spec: doxygen@1.9.6
         prefix: /collab/usr/gapps/axom/devtools/toss_4_x86_64_ib/latest/doxygen-1.9.6
-    # TODO: make installed clang 14.0.6 work
     llvm:
-      version: [10.0.0]
+      version: [14.0.6]
       buildable: false
       externals:
-      - spec: llvm+clang@10.0.0
-        prefix: /collab/usr/gapps/axom/devtools/toss_4_x86_64_ib/latest/llvm-10.0.0
+      - spec: llvm@14.0.6+clang+python
+        prefix: /usr/tce/packages/clang/clang-14.0.6
     py-shroud:
       version: [0.13.0]
       buildable: false

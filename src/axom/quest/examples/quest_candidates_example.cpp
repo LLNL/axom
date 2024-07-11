@@ -202,18 +202,18 @@ void Input::parse(int argc, char** argv, axom::CLI::App& app)
       : policy ==
 #endif
 #ifdef AXOM_RUNTIME_POLICY_USE_CUDA
-          RuntimePolicy::cuda
-        ? "cuda"
-        : policy ==
+        RuntimePolicy::cuda
+      ? "cuda"
+      : policy ==
 #endif
 #ifdef AXOM_RUNTIME_POLICY_USE_HIP
-            RuntimePolicy::hip
-          ? "hip"
-          : policy ==
+        RuntimePolicy::hip
+      ? "hip"
+      : policy ==
 #endif
-              RuntimePolicy::seq
-            ? "seq"
-            : "policy not valid"));
+        RuntimePolicy::seq
+      ? "seq"
+      : "policy not valid"));
 }
 
 const std::set<std::string> Input::s_validMethods({

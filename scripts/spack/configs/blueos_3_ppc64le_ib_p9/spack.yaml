@@ -350,11 +350,11 @@ spack:
       - spec: graphviz@7.1.0
         prefix: /collab/usr/gapps/axom/devtools/blueos_3_ppc64le_ib_p9/latest/graphviz-7.1.0
     llvm:
-      version: [10.0.0]
+      version: [14.0.5]
       buildable: false
       externals:
-      - spec: llvm@10.0.0+clang
-        prefix: /usr/tce/packages/clang/clang-10.0.0
+      - spec: llvm@14.0.5+clang+python
+        prefix: /usr/tce/packages/clang/clang-14.0.5
     python:
       version: [3.10.10]
       buildable: false

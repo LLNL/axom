@@ -124,9 +124,9 @@ public:
       ? MarchingCubesDataParallelism::hybridParallel
 #if defined(AXOM_USE_OPENMP) && defined(AXOM_USE_RAJA)
       : std::is_same<ExecSpace, axom::OMP_EXEC>::value
-        ? MarchingCubesDataParallelism::hybridParallel
+      ? MarchingCubesDataParallelism::hybridParallel
 #endif
-        : MarchingCubesDataParallelism::fullParallel;
+      : MarchingCubesDataParallelism::fullParallel;
 
     m_dataParallelism = dataPar;
 
