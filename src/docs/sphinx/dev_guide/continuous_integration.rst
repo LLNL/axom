@@ -11,7 +11,7 @@ Continuous Integration
 
 The Axom project uses two CI tools,
 `Azure Pipelines <https://azure.microsoft.com/en-us/services/devops/pipelines/>`_
-via Github and `GitLab CI <https://docs.gitlab.com/ee/ci/>`_ 
+via GitHub and `GitLab CI <https://docs.gitlab.com/ee/ci/>`_ 
 on the LLNL LC Collaboration Zone (CZ).
 
 .. _azure_pipelines-label:
@@ -20,12 +20,12 @@ on the LLNL LC Collaboration Zone (CZ).
 Azure Pipelines 
 ===============
 
-Every Pull Request created on Github is automatically run through a series of
+Every Pull Request created on GitHub is automatically run through a series of
 CI jobs to ensure that the Axom source builds and passes our unit tests.
 These configurations mimic the LC compilers and systems as closely as possible
 via Docker containers that have our third-party libraries pre-built on them.
 
-Axom's Github project is also configured to require pull requests to pass checks 
+Axom's GitHub project is also configured to require pull requests to pass checks 
 from our LC GitLab CI (as described below).
 
 
