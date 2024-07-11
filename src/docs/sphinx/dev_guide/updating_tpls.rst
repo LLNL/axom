@@ -124,7 +124,7 @@ the following:
 * ``.uberenv_config.json``: This file describes project specific configurations,
   such as, where to download the package manager, what git commit to use, and
   the top level package to install.
-* `Uberenv's Github repo <https://github.com/LLNL/uberenv>`_
+* `Uberenv's GitHub repo <https://github.com/LLNL/uberenv>`_
 * `Uberenv's documentation <https://uberenv.readthedocs.io/en/latest/>`_
 
 .. note::
@@ -337,7 +337,7 @@ other Axom developers to use during development, in Axom GitLab CI testing, etc.
              they are past a certain age and no longer needed.
 
 #. **Build new Docker images.**
-   We utilize Docker images that have pre-built TPLs in our Github CI checks.
+   We utilize Docker images that have pre-built TPLs in our GitHub CI checks.
    To build these, go to our
    `GitHub Actions <https://github.com/LLNL/axom/actions/workflows/docker_build_tpls.yml>`_
    page. Click on "Actions" and then on "Docker TPL build" in the "Workflows" menu.
@@ -365,5 +365,5 @@ other Axom developers to use during development, in Axom GitLab CI testing, etc.
 
 #. Make sure all changes in your branch are committed and pushed, and create
    a pull request for a merge to develop. If everything went well, all checks
-   on your Github PR should pass.
+   on your GitHub PR should pass.
  
