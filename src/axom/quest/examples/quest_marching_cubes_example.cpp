@@ -786,6 +786,9 @@ struct ContourTestBase
           axom::fmt::format("fields/{}/values", strategy->functionName()),
           s_allocatorId);
       }
+      computationalMesh.moveMeshDataToNewMemorySpace<int>(
+        axom::fmt::format("fields/{}/values", "mask"),
+        s_allocatorId);
     }
 
 #if defined(AXOM_USE_UMPIRE)
@@ -902,6 +905,9 @@ struct ContourTestBase
           axom::fmt::format("fields/{}/values", strategy->functionName()),
           axom::execution_space<axom::SEQ_EXEC>::allocatorID());
       }
+      computationalMesh.moveMeshDataToNewMemorySpace<int>(
+        axom::fmt::format("fields/{}/values", "mask"),
+        axom::execution_space<axom::SEQ_EXEC>::allocatorID());
     }
 
     // Put contour mesh in a mint object for error checking and output.
@@ -1101,7 +1107,7 @@ struct ContourTestBase
                              fastestDirs);
       auto maskView = domainView.template getFieldView<int>(maskFieldName);
       int maskCount = params.maskCount;
-      axom::for_all<ExecSpace>(
+      axom::for_all<axom::SEQ_EXEC>(
         0,
         cellCount,
         AXOM_LAMBDA(axom::IndexType cellId) {
