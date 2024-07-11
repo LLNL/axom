@@ -10,7 +10,6 @@
 
 #include <utility>
 
-#include "axom/sina/core/CppBridge.hpp"
 #include "axom/sina/core/ConduitUtil.hpp"
 
 namespace axom
@@ -47,7 +46,7 @@ conduit::Node Run::toNode() const {
 
 void addRunLoader(RecordLoader &loader) {
     loader.addTypeLoader(RUN_TYPE, [](conduit::Node const &value) {
-        return internal::make_unique<Run>(value);
+        return std::make_unique<Run>(value);
     });
 }
 

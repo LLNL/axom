@@ -30,7 +30,6 @@ axom_configure_file ( config.hpp.in ${PROJECT_BINARY_DIR}/include/axom/sina/conf
 #------------------------------------------------------------------------------
 set(sina_headers
     core/ConduitUtil.hpp
-    core/CppBridge.hpp
     core/Curve.hpp
     core/CurveSet.hpp
     core/DataHolder.hpp

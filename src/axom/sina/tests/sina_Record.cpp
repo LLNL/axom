@@ -11,7 +11,6 @@
 #include "gmock/gmock.h"
 
 #include "axom/sina/core/Record.hpp"
-#include "axom/sina/core/CppBridge.hpp"
 
 #include "axom/sina/tests/ConduitTestUtils.hpp"
 #include "axom/sina/tests/TestRecord.hpp"
@@ -434,13 +433,13 @@ TEST(RecordLoader, load_loaderPresent) {
 
     loader.addTypeLoader("TestInt",
             [](conduit::Node const &value) {
-                return internal::make_unique<TestRecord<int>>(value);
+                return std::make_unique<TestRecord<int>>(value);
             });
     EXPECT_TRUE(loader.canLoad("TestInt"));
 
     loader.addTypeLoader("TestString",
             [](conduit::Node const &value) {
-                return internal::make_unique<TestRecord<std::string>>(value);
+                return std::make_unique<TestRecord<std::string>>(value);
             });
     EXPECT_TRUE(loader.canLoad("TestString"));
 

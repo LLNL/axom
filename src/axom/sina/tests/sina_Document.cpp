@@ -13,7 +13,6 @@
 #include "gtest/gtest.h"
 #include "gmock/gmock.h"
 
-#include "axom/sina/core/CppBridge.hpp"
 #include "axom/sina/core/Document.hpp"
 #include "axom/sina/core/Run.hpp"
 
@@ -70,7 +69,7 @@ TEST(Document, create_fromNode_withRecords) {
 
     RecordLoader loader;
     loader.addTypeLoader("IntTestRecord", [](conduit::Node const &asNode) {
-        return internal::make_unique<TestRecord<int>>(asNode);
+        return std::make_unique<TestRecord<int>>(asNode);
     });
 
     Document document{documentAsNode, loader};
@@ -153,7 +152,7 @@ TEST(Document, toNode_records) {
 
     auto numRecords = sizeof(expectedIds) / sizeof(expectedIds[0]);
     for (std::size_t i = 0; i < numRecords; ++i) {
-        document.add(internal::make_unique<TestRecord<std::string>>(
+        document.add(std::make_unique<TestRecord<std::string>>(
                 expectedIds[i], TEST_RECORD_TYPE, expectedValues[i]));
     }
 
@@ -255,7 +254,7 @@ TEST(Document, saveDocument) {
     }
 
     Document document;
-    document.add(internal::make_unique<Record>(ID{"the id", IDType::Global},
+    document.add(std::make_unique<Record>(ID{"the id", IDType::Global},
             "the type"));
 
     saveDocument(document, tmpFile.getName());
@@ -277,7 +276,7 @@ TEST(Document, saveDocument) {
 
 TEST(Document, load_specifiedRecordLoader) {
     using RecordType = TestRecord<int>;
-    auto originalRecord = internal::make_unique<RecordType>(
+    auto originalRecord = std::make_unique<RecordType>(
             "the ID", "my type", 123);
     Document originalDocument;
     originalDocument.add(std::move(originalRecord));
@@ -290,7 +289,7 @@ TEST(Document, load_specifiedRecordLoader) {
 
     RecordLoader loader;
     loader.addTypeLoader("my type", [](conduit::Node const &asNode) {
-        return internal::make_unique<RecordType>(
+        return std::make_unique<RecordType>(
                 getRequiredString("id", asNode, "Test type"),
                 getRequiredString("type", asNode, "Test type"),
                 static_cast<int>(getRequiredField(TEST_RECORD_VALUE_KEY, asNode,
@@ -305,7 +304,7 @@ TEST(Document, load_specifiedRecordLoader) {
 }
 
 TEST(Document, load_defaultRecordLoaders) {
-    auto originalRun = internal::make_unique<axom::sina::Run>(
+    auto originalRun = std::make_unique<axom::sina::Run>(
             ID{"the ID", IDType::Global}, "the app", "1.2.3", "jdoe");
     Document originalDocument;
     originalDocument.add(std::move(originalRun));

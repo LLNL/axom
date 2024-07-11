@@ -20,7 +20,6 @@ extern "C" {
 #include "adiak_tool.h"
 }
 
-#include "axom/sina/core/CppBridge.hpp"
 #include "axom/sina/core/ConduitUtil.hpp"
 #include "axom/sina/core/Record.hpp"
 #include "axom/sina/core/Datum.hpp"

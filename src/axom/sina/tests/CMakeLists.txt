@@ -11,7 +11,6 @@
 # Add gtest C++ tests
 #------------------------------------------------------------------------------
 set(gtest_sina_tests
-    sina_CppBridge.cpp
     sina_File.cpp
    )
 
@@ -74,8 +73,6 @@ if (ENABLE_GMOCK)
         sina_Relationship.cpp
         sina_Run.cpp
         )
-
-    # set(sina_gmock_depends_on ${sina_gtests_depends_on} gmock)
 
     # Add tests using Adiak if necessary and Adiak dependency
     blt_list_append( TO gmock_sina_tests ELEMENTS sina_AdiakWriter.cpp IF AXOM_SINA_USE_ADIAK)

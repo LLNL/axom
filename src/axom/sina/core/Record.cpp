@@ -11,7 +11,6 @@
 #include <stdexcept>
 #include <utility>
 
-#include "axom/sina/core/CppBridge.hpp"
 #include "axom/sina/core/ConduitUtil.hpp"
 #include "axom/sina/core/DataHolder.hpp"
 #include "axom/sina/core/Run.hpp"
@@ -99,7 +98,7 @@ RecordLoader::load(conduit::Node const &recordAsNode) const {
     if (loaderIter != typeLoaders.end()) {
         return loaderIter->second(recordAsNode);
     }
-    return internal::make_unique<Record>(recordAsNode);
+    return std::make_unique<Record>(recordAsNode);
 }
 
 bool RecordLoader::canLoad(std::string const &type) const {
