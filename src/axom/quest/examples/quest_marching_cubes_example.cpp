@@ -208,8 +208,9 @@ public:
       ->capture_default_str();
 
     app.add_option("--maskCount", maskCount)
-      ->description("Split the zones up using this many masks (default to 1).")
-      ->capture_default_str();
+      ->description("Group the cells using this many masking groups to test masking (default to 1).")
+      ->capture_default_str()
+      ->check(axom::CLI::Range(1, std::numeric_limits<int>::max()));
 
 #ifdef AXOM_USE_CALIPER
     app.add_option("--caliper", annotationMode)

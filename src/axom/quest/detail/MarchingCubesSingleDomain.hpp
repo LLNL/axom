@@ -111,7 +111,7 @@ public:
   void setMaskValue(double maskVal)
   {
     m_maskVal = maskVal;
-    if(m_impl) m_impl->setMaskValue(m_maskVal);
+    if(m_impl) { m_impl->setMaskValue(m_maskVal); }
   }
 
   // Methods trivially delegated to implementation.
