@@ -29,43 +29,43 @@ axom_configure_file ( config.hpp.in ${PROJECT_BINARY_DIR}/include/axom/sina/conf
 # Specify the sina headers/sources
 #------------------------------------------------------------------------------
 set(sina_headers
-    include/ConduitUtil.hpp
-    include/CppBridge.hpp
-    include/Curve.hpp
-    include/CurveSet.hpp
-    include/DataHolder.hpp
-    include/Datum.hpp
-    include/Document.hpp
-    include/File.hpp
-    include/ID.hpp
-    include/Record.hpp
-    include/Relationship.hpp
-    include/Run.hpp
+    core/ConduitUtil.hpp
+    core/CppBridge.hpp
+    core/Curve.hpp
+    core/CurveSet.hpp
+    core/DataHolder.hpp
+    core/Datum.hpp
+    core/Document.hpp
+    core/File.hpp
+    core/ID.hpp
+    core/Record.hpp
+    core/Relationship.hpp
+    core/Run.hpp
     )
 
 set(sina_sources
-    src/ConduitUtil.cpp
-    src/Curve.cpp
-    src/CurveSet.cpp
-    src/DataHolder.cpp
-    src/Datum.cpp
-    src/Document.cpp
-    src/File.cpp
-    src/ID.cpp
-    src/Record.cpp
-    src/Relationship.cpp
-    src/Run.cpp
+    core/ConduitUtil.cpp
+    core/Curve.cpp
+    core/CurveSet.cpp
+    core/DataHolder.cpp
+    core/Datum.cpp
+    core/Document.cpp
+    core/File.cpp
+    core/ID.cpp
+    core/Record.cpp
+    core/Relationship.cpp
+    core/Run.cpp
     )
 
 # Add Adiak header and source
-blt_list_append( TO sina_headers ELEMENTS include/AdiakWriter.hpp IF AXOM_SINA_USE_ADIAK )
-blt_list_append( TO sina_sources ELEMENTS src/AdiakWriter.cpp IF AXOM_SINA_USE_ADIAK )
+blt_list_append( TO sina_headers ELEMENTS core/AdiakWriter.hpp IF AXOM_SINA_USE_ADIAK )
+blt_list_append( TO sina_sources ELEMENTS core/AdiakWriter.cpp IF AXOM_SINA_USE_ADIAK )
 
 # Add fortran interface for Sina
 if (ENABLE_FORTRAN)
-  blt_list_append( TO sina_headers ELEMENTS interface/include/sina_fortran_interface.h)
+  blt_list_append( TO sina_headers ELEMENTS interface/sina_fortran_interface.h)
   blt_list_append( TO sina_sources
-                   ELEMENTS interface/src/sina_fortran_interface.cpp interface/src/sina_fortran_interface.f90)
+                   ELEMENTS interface/sina_fortran_interface.cpp interface/sina_fortran_interface.f90)
 endif()
 
 #------------------------------------------------------------------------------

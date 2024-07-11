@@ -11,8 +11,8 @@
 # Add gtest C++ tests
 #------------------------------------------------------------------------------
 set(gtest_sina_tests
-    src/sina_CppBridge.cpp
-    src/sina_File.cpp
+    sina_CppBridge.cpp
+    sina_File.cpp
    )
 
 set(sina_gtests_depends_on gtest sina conduit::conduit)
@@ -40,12 +40,12 @@ if (ENABLE_GMOCK)
 
     # Define Sina test utility sources and headers
     set(sina_test_utils_sources
-        src/ConduitTestUtils.cpp
-        src/TestRecord.cpp
+        ConduitTestUtils.cpp
+        TestRecord.cpp
         )
     set(sina_test_utils_headers
-        include/ConduitTestUtils.hpp
-        include/TestRecord.hpp
+        ConduitTestUtils.hpp
+        TestRecord.hpp
         )
 
     set(sina_test_utils_depends_on gmock ${sina_gtests_depends_on})
@@ -63,22 +63,22 @@ if (ENABLE_GMOCK)
     #------------------------------------------------------------------------------
 
     set(gmock_sina_tests
-        src/sina_ConduitUtil.cpp
-        src/sina_Curve.cpp
-        src/sina_CurveSet.cpp
-        src/sina_DataHolder.cpp
-        src/sina_Datum.cpp
-        src/sina_Document.cpp
-        src/sina_ID.cpp
-        src/sina_Record.cpp
-        src/sina_Relationship.cpp
-        src/sina_Run.cpp
+        sina_ConduitUtil.cpp
+        sina_Curve.cpp
+        sina_CurveSet.cpp
+        sina_DataHolder.cpp
+        sina_Datum.cpp
+        sina_Document.cpp
+        sina_ID.cpp
+        sina_Record.cpp
+        sina_Relationship.cpp
+        sina_Run.cpp
         )
 
     # set(sina_gmock_depends_on ${sina_gtests_depends_on} gmock)
 
     # Add tests using Adiak if necessary and Adiak dependency
-    blt_list_append( TO gmock_sina_tests ELEMENTS src/sina_AdiakWriter.cpp IF AXOM_SINA_USE_ADIAK)
+    blt_list_append( TO gmock_sina_tests ELEMENTS sina_AdiakWriter.cpp IF AXOM_SINA_USE_ADIAK)
     blt_list_append( TO sina_gmock_depends_on ELEMENTS adiak::adiak IF AXOM_SINA_USE_ADIAK )
 
     foreach(test ${gmock_sina_tests})
@@ -102,7 +102,7 @@ endif()
 if (ENABLE_FORTRAN)
     find_package(PythonInterp REQUIRED)
     configure_file(${CMAKE_SOURCE_DIR}/axom/sina/tests/test_fortran_integration.py ${TEST_OUTPUT_DIRECTORY}/test_fortran_integration.py COPYONLY)
-    configure_file(${CMAKE_SOURCE_DIR}/axom/sina/interface/src/sina_schema.json ${TEST_OUTPUT_DIRECTORY}/sina_schema.json COPYONLY)
+    configure_file(${CMAKE_SOURCE_DIR}/axom/sina/interface/sina_schema.json ${TEST_OUTPUT_DIRECTORY}/sina_schema.json COPYONLY)
 
     axom_add_test( NAME     sina_fortran_integration_test
                    COMMAND  ${PYTHON_EXECUTABLE} ${TEST_OUTPUT_DIRECTORY}/test_fortran_integration.py -bd ${PROJECT_BINARY_DIR})
