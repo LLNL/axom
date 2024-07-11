@@ -208,7 +208,9 @@ public:
       ->capture_default_str();
 
     app.add_option("--maskCount", maskCount)
-      ->description("Group the cells using this many masking groups to test masking (default to 1).")
+      ->description(
+        "Group the cells using this many masking groups to test masking "
+        "(default to 1).")
       ->capture_default_str()
       ->check(axom::CLI::Range(1, std::numeric_limits<int>::max()));
 
@@ -866,7 +868,8 @@ struct ContourTestBase
           mc.setFunctionField(strategy->functionName());
           for(int iMask = 0; iMask < params.maskCount; ++iMask)
           {
-            mc.computeIsocontour(params.contourVal, iMask);
+            mc.setMaskValue(iMask);
+            mc.computeIsocontour(params.contourVal);
           }
           m_strategyFacetPrefixSum.push_back(mc.getContourFacetCount());
         }
