@@ -102,9 +102,9 @@ struct InletVector
    * \brief Retrieves the underlying Primal vector
    *******************************************************************************
    */
-  operator axom::primal::Vector3D &() { return vec; }
+  operator axom::primal::Vector3D&() { return vec; }
   /// \overload
-  operator const axom::primal::Vector3D &() const { return vec; }
+  operator const axom::primal::Vector3D&() const { return vec; }
 };
 
 /*!
