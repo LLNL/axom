@@ -1,4 +1,4 @@
-# Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
+# Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
 # other Axom Project Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
@@ -6,11 +6,13 @@
 ####
 # This is the shared configuration of jobs for quartz
 .on_quartz:
+  variables:
+    SCHEDULER_PARAMETERS: "--res=ci --exclusive=user --deadline=now+1hour -N1 -t ${ALLOC_TIME}"
   tags:
-    - shell
+    - batch
     - quartz
   rules:
-    - if: '$CI_COMMIT_BRANCH =~ /_qnone/ || $ON_RUBY == "OFF"' #run except if ...
+    - if: '$CI_COMMIT_BRANCH =~ /_qnone/ || $ON_QUARTZ == "OFF"' #run except if ...
       when: never
     - if: '$CI_JOB_NAME =~ /quartz_release/'
       when: always
@@ -19,47 +21,16 @@
     - module load cmake/3.19.2
 
 ####
-# In pre-build phase, allocate a node for builds
-quartz_allocate:
-  variables:
-    GIT_STRATEGY: none
-  extends: [.on_quartz, .src_workflow]
-  stage: allocate
-  script:
-    # Use when ellastic ci is on quartz or we go back to ruby
-    #- salloc --reservation=ci --qos=ci_ruby -N 1 -c 36 -t 60 --no-shell --job-name=${PROJECT_ALLOC_NAME}
-    - salloc -N 1 -c 36 -t 60 -p pdebug --no-shell --job-name=${PROJECT_ALLOC_NAME}
-  needs: []
-
-####
-# In post-build phase, deallocate resources
-# Note : make sure this is run even on build phase failure
-quartz_release:
-  variables:
-    GIT_STRATEGY: none
-  extends: [.on_quartz, .src_workflow]
-  stage: release
-  script:
-    - export JOBID=$(squeue -h --name=${PROJECT_ALLOC_NAME} --format=%A)
-    - if [[ -n "${JOBID}" ]]; then scancel ${JOBID}; fi
-
-####
 # Template
 .src_build_on_quartz:
-  stage: build
   variables:
-    # Use when ellastic ci is on quartz or we go back to ruby
-    # ALLOC_COMMAND: "srun --reservation=ci --qos=ci_ruby -t 60 -N 1 "
-    ALLOC_COMMAND: "srun -t 60 -N 1 -p pdebug"
+    ALLOC_TIME: "30"
   extends: [.src_build_script, .on_quartz, .src_workflow]
-  needs: [quartz_allocate]
+  needs: []
 
 .full_build_on_quartz:
-  stage: build
   variables:
-    # Use when ellastic ci is on quartz or we go back to ruby
-    # ALLOC_COMMAND: "srun --reservation=ci --qos=ci_ruby -t 60 -N 1 "
-    ALLOC_COMMAND: "srun -t 60 -N 1 -p pdebug"
+    ALLOC_TIME: "60"
   extends: [.full_build_script, .on_quartz, .full_workflow]
   needs: []
 

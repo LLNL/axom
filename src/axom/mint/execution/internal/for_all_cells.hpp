@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -22,7 +22,7 @@
 #include "axom/mint/mesh/CurvilinearMesh.hpp"   // for CurvilinearMesh
 #include "axom/mint/mesh/UnstructuredMesh.hpp"  // for UnstructuredMesh
 #include "axom/mint/execution/internal/helpers.hpp"
-#include "axom/mint/execution/internal/structured_exec.hpp"
+#include "axom/core/execution/nested_for_exec.hpp"
 
 #include "axom/core/StackArray.hpp"       // for axom::StackArray
 #include "axom/core/numerics/Matrix.hpp"  // for Matrix
@@ -71,7 +71,8 @@ inline void for_all_cells_impl(xargs::ij,
 
   RAJA::RangeSegment i_range(0, Ni);
   RAJA::RangeSegment j_range(0, Nj);
-  using exec_pol = typename structured_exec<ExecPolicy>::loop2d_policy;
+  using exec_pol =
+    typename axom::internal::nested_for_exec<ExecPolicy>::loop2d_policy;
 
   RAJA::kernel<exec_pol>(
     RAJA::make_tuple(i_range, j_range),
@@ -130,7 +131,8 @@ inline void for_all_cells_impl(xargs::ijk,
   RAJA::RangeSegment i_range(0, Ni);
   RAJA::RangeSegment j_range(0, Nj);
   RAJA::RangeSegment k_range(0, Nk);
-  using exec_pol = typename structured_exec<ExecPolicy>::loop3d_policy;
+  using exec_pol =
+    typename axom::internal::nested_for_exec<ExecPolicy>::loop3d_policy;
 
   RAJA::kernel<exec_pol>(
     RAJA::make_tuple(i_range, j_range, k_range),
@@ -186,6 +188,9 @@ inline void for_all_cells_impl(xargs::nodeids,
   const IndexType nodeJp = m.nodeJp();
   const IndexType nodeKp = m.nodeKp();
   const StackArray<IndexType, 8>& offsets = m.getCellNodeOffsetsArray();
+
+  // Note: gcc@10.3.1 emits a '-Warray-bounds' warning in callers of this function
+  // about the sizes of nodeIds and coords not matching due to the runtime switch on dimension
 
   if(dimension == 1)
   {
@@ -452,6 +457,9 @@ inline void for_all_cells_impl(xargs::coords,
 
   const double z0 = origin[2];
   const double dz = spacing[2];
+
+  // Note: gcc@10.3.1 emits a '-Warray-bounds' warning in callers of this function
+  // about the sizes of nodeIds and coords not matching due to the runtime switch on dimension
 
   if(dimension == 1)
   {

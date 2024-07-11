@@ -1,4 +1,4 @@
-# Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
+# Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
 # other Axom Project Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
@@ -13,7 +13,7 @@ message(STATUS "Configuring Axom version ${AXOM_VERSION_FULL}")
 ## Add a definition to the generated config file for each library dependency
 ## (optional and built-in) that we might need to know about in the code. We
 ## check for vars of the form <DEP>_FOUND or ENABLE_<DEP>
-set(TPL_DEPS C2C CAMP CLI11 CONDUIT CUDA FMT HIP HDF5 LUA MFEM MPI OPENMP RAJA SCR SOL SPARSEHASH UMPIRE )
+set(TPL_DEPS ADIAK C2C CALIPER CAMP CLI11 CONDUIT CUDA FMT HIP HDF5 LUA MFEM MPI OPENMP RAJA SCR SOL SPARSEHASH UMPIRE )
 foreach(dep ${TPL_DEPS})
     if( ${dep}_FOUND OR ENABLE_${dep} )
         set(AXOM_USE_${dep} TRUE  )
@@ -35,11 +35,9 @@ foreach(comp ${AXOM_COMPONENTS_ENABLED})
 endforeach()
 
 ## Add compile-time options to the config file
-## Check for options of the form AXOM_ENABLE_<OPTION> and sets
-## a corresponding AXOM_USE_<OPTION> accordingly to use when generating
-## the axom/config.hpp
-set(OPTIONS ANNOTATIONS MPI3)
-foreach(option ${OPTIONS})
+## Check for options of the form AXOM_ENABLE_<OPTION> and sets a corresponding 
+## AXOM_USE_<OPTION> accordingly to use when generating the axom/config.hpp
+foreach(option MPI3)
     if( AXOM_ENABLE_${option} )
       set(AXOM_USE_${option} TRUE)
     endif()
@@ -147,6 +145,8 @@ install(
     ${AXOM_INSTALL_CMAKE_MODULE_DIR}
 )
 
+# Install BLT files that recreate BLT targets in downstream projects
+blt_install_tpl_setups(DESTINATION ${AXOM_INSTALL_CMAKE_MODULE_DIR})
 
 #------------------------------------------------------------------------------
 # Create a list of exported targets so that other projects that include Axom
@@ -156,10 +156,7 @@ install(
 # Add it to a temporary list before creating the cache variable to use list(APPEND)
 set(_axom_exported_targets ${AXOM_COMPONENTS_ENABLED})
 
-blt_list_append(TO _axom_exported_targets ELEMENTS cuda cuda_runtime IF AXOM_ENABLE_CUDA)
-blt_list_append(TO _axom_exported_targets ELEMENTS hip hip_runtime IF AXOM_ENABLE_HIP)
-
-set(_optional_targets cli11 fmt hdf5 lua openmp sol sparsehash)
+set(_optional_targets cli11 fmt hdf5 lua sol sparsehash)
 foreach(_tar ${_optional_targets})
     string(TOUPPER ${_tar} _upper_tar)
     if(ENABLE_${_upper_tar} OR ${_upper_tar}_FOUND)

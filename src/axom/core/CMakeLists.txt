@@ -1,4 +1,4 @@
-# Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
+# Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
 # other Axom Project Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
@@ -21,18 +21,16 @@ axom_configure_file(
 set(core_headers
 
     ## utilities
-    utilities/AnnotationMacros.hpp
+    utilities/About.hpp
+    utilities/Annotations.hpp
     utilities/BitUtilities.hpp
+    utilities/CommandLineUtilities.hpp
     utilities/FileUtilities.hpp
+    utilities/RAII.hpp
     utilities/StringUtilities.hpp
     utilities/System.hpp
     utilities/Timer.hpp
     utilities/Utilities.hpp
-    utilities/About.hpp
-
-    utilities/nvtx/interface.hpp
-    utilities/nvtx/Macros.hpp
-    utilities/nvtx/Range.hpp
 
     ## numerics
     numerics/internal/matrix_norms.hpp
@@ -48,23 +46,33 @@ set(core_headers
     numerics/matvecops.hpp
     numerics/polynomial_solvers.hpp
 
+    ## detail
+    detail/FlatTable.hpp
+
     ## core
+    AnnotationMacros.hpp
     Array.hpp
     ArrayBase.hpp
     ArrayIteratorBase.hpp
     ArrayView.hpp
+    MDMapping.hpp
     IteratorBase.hpp
     Macros.hpp
     Map.hpp
+    FlatMap.hpp
     NumericLimits.hpp
     Path.hpp
+    RangeAdapter.hpp
     StackArray.hpp
+    StaticArray.hpp
     Types.hpp
     memory_management.hpp
 
     ## execution
     execution/execution_space.hpp
     execution/for_all.hpp
+    execution/nested_for_exec.hpp
+    execution/runtime_policy.hpp
     execution/synchronize.hpp
 
     execution/internal/seq_exec.hpp
@@ -75,14 +83,12 @@ set(core_headers
     )
 
 set(core_sources
+    utilities/Annotations.cpp
     utilities/FileUtilities.cpp
     utilities/StringUtilities.cpp
     utilities/System.cpp
     utilities/Utilities.cpp
     ${PROJECT_BINARY_DIR}/axom/core/utilities/About.cpp
-
-    utilities/nvtx/interface.cpp
-    utilities/nvtx/Range.cpp
 
     numerics/polynomial_solvers.cpp
 
@@ -95,10 +101,11 @@ set(core_sources
 #------------------------------------------------------------------------------
 
 set( core_depends fmt )
+blt_list_append( TO core_depends ELEMENTS adiak::adiak IF ADIAK_FOUND )
+blt_list_append( TO core_depends ELEMENTS caliper IF CALIPER_FOUND )
 blt_list_append( TO core_depends ELEMENTS camp IF CAMP_FOUND )
 blt_list_append( TO core_depends ELEMENTS umpire IF UMPIRE_FOUND )
 blt_list_append( TO core_depends ELEMENTS RAJA IF RAJA_FOUND )
-blt_list_append( TO core_depends ELEMENTS nvToolsExt IF AXOM_ENABLE_CUDA )
 blt_list_append( TO core_depends ELEMENTS mpi IF AXOM_ENABLE_MPI )
 
 # HACK: RAJA's dependencies are not getting added to core due to a bug in
@@ -117,6 +124,9 @@ axom_add_library(NAME        core
                  DEPENDS_ON  ${core_depends}
                  FOLDER      axom/core
                  )
+
+# Set file back to C++ due to nvcc compiler error
+set_source_files_properties(utilities/System.cpp PROPERTIES LANGUAGE CXX)
 
 # Basic includes that should be inherited to all Axom targets
 target_include_directories(core PUBLIC 

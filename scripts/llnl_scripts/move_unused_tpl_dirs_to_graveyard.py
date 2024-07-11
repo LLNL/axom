@@ -1,7 +1,7 @@
 #!/bin/sh
-"exec" "python" "-u" "-B" "$0" "$@"
+"exec" "python3" "-u" "-B" "$0" "$@"
 
-# Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
+# Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
 # other Axom Project Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
@@ -40,23 +40,25 @@ def main():
 
     summary_file ="tpl_dirs_summary.json"
     if not os.path.exists(summary_file):
-        print("Error: Summary file from find_unused_tpl_dirs.py did not exist: {0}", summary_file)
+        print(f"Error: Summary file from find_unused_tpl_dirs.py did not exist: {summary_file}")
         return False
 
     r = json.load(open(summary_file))
 
-    print ""
-    print "[# of referenced %d ]" % len(r["referenced"])
-    print "[# of found %d ]" % len(r["found"])
-    print "[# of active %d ]" % len(r["active"])
-    print "[# of unused %d ]" % len(r["unused"])
+    print("")
+    print("[# of referenced {}]".format(len(r["referenced"])))
+    print("[# of found {}]".format(len(r["found"])))
+    print("[# of active {}]".format(len(r["active"])))
+    print("[# of unused {}]".format(len(r["unused"])))
 
     success = True
     for d in r["unused"]:
-        cmd = "mv %s %s" % (d, graveyard_path(d)) 
-        res = sexe(cmd)
-        if res != 0:
-            success = False
+        if os.path.exists(d):
+            cmd = "mv %s %s" % (d, graveyard_path(d)) 
+            res = sexe(cmd)
+            if res != 0:
+                success = False
+
     return success
 
 

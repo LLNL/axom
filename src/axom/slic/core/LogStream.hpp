@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -88,6 +88,8 @@ public:
    * \param [in] line the line within the file at which the message is appended.
    * \param [in] filter_duplicates optional parameter that indicates whether
    * duplicate messages resulting from running in parallel will be filtered out.
+   * /param [in] tag_stream_only optional parameter that indicates whether the
+   * message will go only to streams bound to tagName.
    *
    * \note The following wildcards may be used to ignore a particular field:
    * <ul>
@@ -101,7 +103,8 @@ public:
                       const std::string& tagName,
                       const std::string& fileName,
                       int line,
-                      bool filter_duplicates) = 0;
+                      bool filter_duplicates,
+                      bool tag_stream_only) = 0;
 
   /*!
    * \brief Outputs the log stream on the current rank to the console.

@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -70,7 +70,7 @@ void findTriMeshIntersectionsBVH(
   std::vector<int>& degenerateIndices,
   double intersectionThreshold = 1E-8)
 {
-  AXOM_PERF_MARK_FUNCTION("findTriMeshIntersectionsBVH");
+  AXOM_ANNOTATE_SCOPE("findTriMeshIntersectionsBVH");
 
   SLIC_INFO("Running BVH intersection algorithm "
             << " in execution Space: "
@@ -122,7 +122,7 @@ void findTriMeshIntersectionsImplicitGrid(
   int spatialIndexResolution = 0,
   double intersectionThreshold = 1E-8)
 {
-  AXOM_PERF_MARK_FUNCTION("findTriMeshIntersectionsImplicitGrid");
+  AXOM_ANNOTATE_SCOPE("findTriMeshIntersectionsImplicitGrid");
 
   SLIC_INFO("Running ImplicitGrid intersection algorithm "
             << " in execution Space: "
@@ -175,7 +175,7 @@ void findTriMeshIntersectionsUniformGrid(
   int spatialIndexResolution = 0,
   double intersectionThreshold = 1E-8)
 {
-  AXOM_PERF_MARK_FUNCTION("findTriMeshIntersectionsUniformGrid");
+  AXOM_ANNOTATE_SCOPE("findTriMeshIntersectionsUniformGrid");
 
   SLIC_INFO("Running UniformGrid intersection algorithm "
             << " in execution Space: "

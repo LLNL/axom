@@ -1,6 +1,10 @@
-Checks:          '-*,readability-braces-around-statements'
+# Adds some checks to the code
+# the following might also be useful: 
+#    modernize-use-nullptr
+#    readability-static-definition-in-anonymous-namespace
+Checks:          '-*,readability-braces-around-statements,modernize-use-using'
 WarningsAsErrors: ''
-HeaderFilterRegex: '.*'
+HeaderFilterRegex: "^.*.hpp$|^.*.cpp$"
 AnalyzeTemporaryDtors: false
 FormatStyle: none
 CheckOptions:

@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -50,15 +50,6 @@ template <typename IntType, int VAL>
 struct StrideToSize<CompileTimeStride<IntType, IntType(VAL)>, IntType, VAL>
 {
   using SizeType = CompileTimeSize<IntType, IntType(VAL)>;
-};
-
-/**
- * \brief Specialization of StrideToSize trait for a StrideOne type
- */
-template <typename IntType>
-struct StrideToSize<StrideOne<IntType>, IntType>
-{
-  using SizeType = CompileTimeSize<IntType, StrideOne<IntType>::DEFAULT_VALUE>;
 };
 
 /**

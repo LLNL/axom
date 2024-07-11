@@ -1,4 +1,4 @@
-.. ## Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
+.. ## Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
 .. ## other Axom Project Developers. See the top-level LICENSE file for details.
 .. ##
 .. ## SPDX-License-Identifier: (BSD-3-Clause)
@@ -166,6 +166,24 @@ The :ref:`GenericOutputStream`,  takes two arguments in its constructor:
 
    Slic maintains ownership of all registered :ref:`LogStream` instances and
    will deallocate them when ``slic::finalize()`` is called.
+
+Step 5.1: Tagged Log Streams
+^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Slic has limited support for tags, where users can bind streams
+to user-defined tags. The bound streams only output messages with the
+given tag, disregarding the message's :ref:`logMessageLevel`. The tagged
+:ref:`LogStream` can be created by calling ``slic::addStreamToTag()``.
+
+The following code snippet uses the :ref:`GenericOutputStream` object to
+specify ``std::cout`` as the output destination for messages tagged with
+the custom tag ``myTag``.
+
+.. literalinclude:: ../../../examples/basic/logging.cpp
+   :start-after: SPHINX_SLIC_SET_TAGGED_STREAM_BEGIN
+   :end-before: SPHINX_SLIC_SET_TAGGED_STREAM_END
+   :language: C++
+   :linenos:
 
 Step 6: Log Messages
 ^^^^^^^^^^^^^^^^^^^^^

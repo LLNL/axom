@@ -1,4 +1,4 @@
-# Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
+# Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
 # other Axom Project Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
@@ -44,6 +44,15 @@ install(TARGETS              ${AXOM_COMPONENTS_ENABLED}
 install(EXPORT               axom-targets 
         NAMESPACE            axom::
         DESTINATION          lib/cmake)
+
+# Create alias targets for projects that include us as a subdirectory
+add_library(axom INTERFACE)
+target_link_libraries(axom INTERFACE ${AXOM_COMPONENTS_ENABLED})
+
+foreach(_comp ${AXOM_COMPONENTS_ENABLED})
+    add_library(axom::${_comp} ALIAS ${_comp})
+endforeach()
+
 
 #------------------------------------------------------------------------------
 # Generate export symbols

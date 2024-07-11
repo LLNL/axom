@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -1180,7 +1180,7 @@ TEST(sidre_view, view_offset_and_stride)
   //          string, scalar, empty, opaque
   Group* othersGroup = root->createGroup("others");
 
-  typedef std::vector<View*> ViewVec;
+  using ViewVec = std::vector<View*>;
   ViewVec views;
   std::uint8_t ui8 = 3;
   std::uint16_t ui16 = 4;
@@ -1720,6 +1720,8 @@ TEST(sidre_view, import_array_node)
 
   v4->importArrayNode(n_ints);
   EXPECT_TRUE(v4->isString());
+
+  delete ds;
 }
 
 //------------------------------------------------------------------------------
@@ -1820,6 +1822,8 @@ TEST(sidre_view, clear_view)
     view->clear();
     EXPECT_TRUE(checkViewValues(view, EMPTY, false, false, false, 0));
   }
+
+  delete ds;
 }
 
 //------------------------------------------------------------------------------

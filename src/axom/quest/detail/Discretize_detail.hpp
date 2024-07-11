@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -154,6 +154,8 @@ int discrSeg(const Point2D &a,
              axom::ArrayView<OctType> &out,
              int idx)
 {
+  int hostAllocID = axom::execution_space<axom::SEQ_EXEC>::allocatorID();
+
   // Assert input assumptions
   SLIC_ASSERT(b[0] - a[0] >= 0);
   SLIC_ASSERT(a[1] >= 0);
@@ -174,7 +176,11 @@ int discrSeg(const Point2D &a,
   // Establish a prism (in an octahedron record) with one triangular
   // end lying on the circle described by rotating point a around the
   // x-axis and the other lying on circle from rotating b.
-  out[idx + 0] = from_segment(a, b);
+  OctType *oct_from_seg = axom::allocate<OctType>(1, hostAllocID);
+  oct_from_seg[0] = from_segment(a, b);
+
+  axom::copy(out.data() + idx + 0, oct_from_seg, sizeof(OctType));
+  axom::deallocate(oct_from_seg);
 
   // curr_lvl indexes to the first prism in the level we're currently refining
   int curr_lvl = idx;

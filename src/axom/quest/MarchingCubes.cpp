@@ -1,101 +1,186 @@
-// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
+#include "axom/config.hpp"
+
+// Implementation requires Conduit.
+#ifndef AXOM_USE_CONDUIT
+  #error "MarchingCubes.cpp requires conduit"
+#endif
+#include "conduit_blueprint.hpp"
+
 #include "axom/core/execution/execution_space.hpp"
 #include "axom/quest/MarchingCubes.hpp"
+#include "axom/quest/detail/MarchingCubesSingleDomain.hpp"
 #include "axom/quest/detail/MarchingCubesImpl.hpp"
-#include "conduit_blueprint.hpp"
 #include "axom/fmt.hpp"
 
 namespace axom
 {
 namespace quest
 {
+const axom::StackArray<axom::IndexType, 2> twoZeros {0, 0};
+
 MarchingCubes::MarchingCubes(RuntimePolicy runtimePolicy,
-                             const conduit::Node& bpMesh,
-                             const std::string& topologyName,
-                             const std::string& maskField)
+                             int allocatorID,
+                             MarchingCubesDataParallelism dataParallelism)
   : m_runtimePolicy(runtimePolicy)
+  , m_allocatorID(allocatorID)
+  , m_dataParallelism(dataParallelism)
   , m_singles()
-  , m_topologyName(topologyName)
+  , m_topologyName()
+  , m_fcnFieldName()
   , m_fcnPath()
-  , m_maskPath(maskField.empty() ? std::string() : "fields/" + maskField)
+  , m_maskFieldName()
+  , m_maskPath()
+  , m_facetIndexOffsets(0, 0)
+  , m_facetCount(0)
+  , m_caseIdsFlat(0, 0, m_allocatorID)
+  , m_crossingFlags(0, 0, m_allocatorID)
+  , m_scannedFlags(0, 0, m_allocatorID)
+  , m_facetIncrs(0, 0, m_allocatorID)
+  , m_facetNodeIds(twoZeros, m_allocatorID)
+  , m_facetNodeCoords(twoZeros, m_allocatorID)
+  , m_facetParentIds(0, 0, m_allocatorID)
+  , m_facetDomainIds(0, 0, m_allocatorID)
+{ }
+
+// Set the object up for a blueprint mesh state.
+void MarchingCubes::setMesh(const conduit::Node& bpMesh,
+                            const std::string& topologyName,
+                            const std::string& maskField)
 {
-  const bool isMultidomain = conduit::blueprint::mesh::is_multi_domain(bpMesh);
   SLIC_ASSERT_MSG(
-    isMultidomain,
+    conduit::blueprint::mesh::is_multi_domain(bpMesh),
     "MarchingCubes class input mesh must be in multidomain format.");
 
-  m_singles.reserve(conduit::blueprint::mesh::number_of_domains(bpMesh));
-  for(auto& dom : bpMesh.children())
+  m_topologyName = topologyName;
+  m_maskFieldName = maskField;
+
+  /*
+    To avoid slow memory allocations (especially on GPUs) keep the
+    single-domain objects around and just re-initialize them.  Arrays
+    will be cleared, but not deallocated.  The actual number of
+    domains is m_domainCount, not m_singles.size().  To *really*
+    deallocate memory, deallocate the MarchingCubes object.
+  */
+  auto newDomainCount = conduit::blueprint::mesh::number_of_domains(bpMesh);
+
+  if(m_singles.size() < newDomainCount)
   {
-    m_singles.emplace_back(new MarchingCubesSingleDomain(m_runtimePolicy,
-                                                         dom,
-                                                         m_topologyName,
-                                                         maskField));
+    auto tmpSize = m_singles.size();
+    m_singles.resize(newDomainCount);
+    for(int d = tmpSize; d < newDomainCount; ++d)
+    {
+      m_singles[d].reset(
+        new detail::marching_cubes::MarchingCubesSingleDomain(*this));
+    }
   }
+
+  for(int d = 0; d < newDomainCount; ++d)
+  {
+    const auto& dom = bpMesh.child(d);
+    m_singles[d]->setDomain(dom, m_topologyName, maskField);
+  }
+  for(int d = newDomainCount; d < m_singles.size(); ++d)
+  {
+    m_singles[d]->getImpl().clearDomain();
+  }
+
+  m_domainCount = newDomainCount;
 }
 
 void MarchingCubes::setFunctionField(const std::string& fcnField)
 {
+  m_fcnFieldName = fcnField;
   m_fcnPath = "fields/" + fcnField;
-  for(auto& s : m_singles)
+  for(axom::IndexType d = 0; d < m_domainCount; ++d)
   {
-    s->setFunctionField(fcnField);
+    m_singles[d]->setFunctionField(fcnField);
   }
 }
 
 void MarchingCubes::computeIsocontour(double contourVal)
 {
-  SLIC_ASSERT_MSG(!m_fcnPath.empty(),
-                  "You must call setFunctionField before computeIsocontour.");
+  AXOM_ANNOTATE_SCOPE("MarchingCubes::computeIsoContour");
 
-  for(int dId = 0; dId < m_singles.size(); ++dId)
+  // Mark and scan domains while adding up their
+  // facet counts to get the total facet counts.
+  m_facetIndexOffsets.resize(m_singles.size());
+  for(axom::IndexType d = 0; d < m_domainCount; ++d)
   {
-    std::unique_ptr<MarchingCubesSingleDomain>& single = m_singles[dId];
-    single->computeIsocontour(contourVal);
+    auto& single = *m_singles[d];
+    single.setContourValue(contourVal);
+    single.markCrossings();
+    single.scanCrossings();
+    m_facetIndexOffsets[d] = m_facetCount;
+    m_facetCount += single.getContourCellCount();
   }
-}
 
-axom::IndexType MarchingCubes::getContourCellCount() const
-{
-  axom::IndexType contourCellCount = 0;
-  for(int dId = 0; dId < m_singles.size(); ++dId)
+  allocateOutputBuffers();
+
+  // Tell singles where to put contour data.
+  auto facetNodeIdsView = m_facetNodeIds.view();
+  auto facetNodeCoordsView = m_facetNodeCoords.view();
+  auto facetParentIdsView = m_facetParentIds.view();
+  for(axom::IndexType d = 0; d < m_domainCount; ++d)
   {
-    contourCellCount += m_singles[dId]->getContourCellCount();
+    m_singles[d]->getImpl().setOutputBuffers(facetNodeIdsView,
+                                             facetNodeCoordsView,
+                                             facetParentIdsView,
+                                             m_facetIndexOffsets[d]);
   }
-  return contourCellCount;
+
+  for(axom::IndexType d = 0; d < m_domainCount; ++d)
+  {
+    m_singles[d]->computeFacets();
+  }
+
+  for(axom::IndexType d = 0; d < m_domainCount; ++d)
+  {
+    const auto domainId = m_singles[d]->getDomainId(d);
+    const auto domainFacetCount =
+      (d < m_domainCount - 1 ? m_facetIndexOffsets[d + 1] : m_facetCount) -
+      m_facetIndexOffsets[d];
+    m_facetDomainIds.fill(domainId, domainFacetCount, m_facetIndexOffsets[d]);
+  }
 }
 
 axom::IndexType MarchingCubes::getContourNodeCount() const
 {
-  axom::IndexType contourNodeCount = 0;
-  for(int dId = 0; dId < m_singles.size(); ++dId)
-  {
-    contourNodeCount += m_singles[dId]->getContourNodeCount();
-  }
+  axom::IndexType contourNodeCount =
+    (m_domainCount > 0) ? m_facetCount * m_singles[0]->spatialDimension() : 0;
   return contourNodeCount;
+}
+
+void MarchingCubes::clearOutput()
+{
+  m_facetCount = 0;
+  m_facetNodeIds.clear();
+  m_facetNodeCoords.clear();
+  m_facetParentIds.clear();
+  m_facetDomainIds.clear();
 }
 
 void MarchingCubes::populateContourMesh(
   axom::mint::UnstructuredMesh<axom::mint::SINGLE_SHAPE>& mesh,
   const std::string& cellIdField,
-  const std::string& domainIdField)
+  const std::string& domainIdField) const
 {
+  AXOM_ANNOTATE_SCOPE("MarchingCubes::populateContourMesh");
   if(!cellIdField.empty() &&
      !mesh.hasField(cellIdField, axom::mint::CELL_CENTERED))
   {
-    mesh.createField<axom::IndexType>(cellIdField,
-                                      axom::mint::CELL_CENTERED,
-                                      mesh.getDimension());
+    // Create cellId field, currently the multidimensional index of the parent cell.
+    mesh.createField<axom::IndexType>(cellIdField, axom::mint::CELL_CENTERED);
   }
 
   if(!domainIdField.empty() &&
      !mesh.hasField(domainIdField, axom::mint::CELL_CENTERED))
   {
-    mesh.createField<axom::IndexType>(domainIdField, axom::mint::CELL_CENTERED);
+    mesh.createField<DomainIdType>(domainIdField, axom::mint::CELL_CENTERED);
   }
 
   // Reserve space once for all local domains.
@@ -104,154 +189,81 @@ void MarchingCubes::populateContourMesh(
   mesh.reserveCells(contourCellCount);
   mesh.reserveNodes(contourNodeCount);
 
-  // Populate mesh from single domains and add domain id if requested.
-  for(int dId = 0; dId < m_singles.size(); ++dId)
+  if(m_facetCount)
   {
-    std::unique_ptr<MarchingCubesSingleDomain>& single = m_singles[dId];
+    // Put nodes and cells into the mesh.
+    // If data is not in host memory, copy to temporary host memory first.
+    axom::MemorySpace internalMemorySpace =
+      axom::detail::getAllocatorSpace(m_allocatorID);
+    const bool hostAndInternalMemoriesAreSeparate =
+      internalMemorySpace != axom::MemorySpace::Dynamic
+#ifdef AXOM_USE_UMPIRE
+      && internalMemorySpace != axom::MemorySpace::Host
+#endif
+      ;
+    const int hostAllocatorId = hostAndInternalMemoriesAreSeparate
+      ?
+#ifdef AXOM_USE_UMPIRE
+      axom::detail::getAllocatorID<axom::MemorySpace::Host>()
+#else
+      axom::detail::getAllocatorID<axom::MemorySpace::Dynamic>()
+#endif
+      : m_allocatorID;
 
-    auto nPrev = mesh.getNumberOfCells();
-    single->populateContourMesh(mesh, cellIdField);
-    auto nNew = mesh.getNumberOfCells();
-
-    if(nNew > nPrev && !domainIdField.empty())
+    if(hostAndInternalMemoriesAreSeparate)
     {
+      axom::Array<double, 2> tmpfacetNodeCoords(m_facetNodeCoords,
+                                                hostAllocatorId);
+      axom::Array<axom::IndexType, 2> tmpfacetNodeIds(m_facetNodeIds,
+                                                      hostAllocatorId);
+      mesh.appendNodes(tmpfacetNodeCoords.data(), contourNodeCount);
+      mesh.appendCells(tmpfacetNodeIds.data(), contourCellCount);
+    }
+    else
+    {
+      mesh.appendNodes(m_facetNodeCoords.data(), contourNodeCount);
+      mesh.appendCells(m_facetNodeIds.data(), contourCellCount);
+    }
+
+    if(!cellIdField.empty())
+    {
+      // Put parent cell ids into the mesh.
+      axom::IndexType* cellIdPtr =
+        mesh.getFieldPtr<axom::IndexType>(cellIdField, axom::mint::CELL_CENTERED);
+      axom::copy(cellIdPtr,
+                 m_facetParentIds.data(),
+                 m_facetCount * sizeof(axom::IndexType));
+    }
+
+    if(!domainIdField.empty())
+    {
+      // Put parent domain ids into the mesh.
       auto* domainIdPtr =
-        mesh.getFieldPtr<axom::IndexType>(domainIdField,
-                                          axom::mint::CELL_CENTERED);
-      // TODO: Verify that UnstructuredMesh only supports host memory.
-      axom::detail::ArrayOps<axom::IndexType, MemorySpace::Dynamic>::fill(
-        domainIdPtr,
-        nPrev,
-        nNew - nPrev,
-        execution_space<axom::SEQ_EXEC>::allocatorID(),
-        dId);
+        mesh.getFieldPtr<DomainIdType>(domainIdField, axom::mint::CELL_CENTERED);
+      axom::copy(domainIdPtr,
+                 m_facetDomainIds.data(),
+                 m_facetCount * sizeof(axom::IndexType));
     }
   }
-  SLIC_ASSERT(mesh.getNumberOfNodes() == contourNodeCount);
-  SLIC_ASSERT(mesh.getNumberOfCells() == contourCellCount);
 }
 
-MarchingCubesSingleDomain::MarchingCubesSingleDomain(RuntimePolicy runtimePolicy,
-                                                     const conduit::Node& dom,
-                                                     const std::string& topologyName,
-                                                     const std::string& maskField)
-  : m_runtimePolicy(runtimePolicy)
-  , m_dom(nullptr)
-  , m_ndim(0)
-  , m_topologyName(topologyName)
-  , m_fcnPath()
-  , m_maskPath(maskField.empty() ? std::string() : "fields/" + maskField)
+void MarchingCubes::allocateOutputBuffers()
 {
-  SLIC_ASSERT_MSG(
-    isValidRuntimePolicy(runtimePolicy),
-    fmt::format("Policy '{}' is not a valid runtime policy", runtimePolicy));
-
-  setDomain(dom);
-  return;
-}
-
-void MarchingCubesSingleDomain::setDomain(const conduit::Node& dom)
-{
-  SLIC_ASSERT_MSG(
-    !conduit::blueprint::mesh::is_multi_domain(dom),
-    "MarchingCubesSingleDomain is single-domain only.  Try MarchingCubes.");
-  SLIC_ASSERT(
-    dom.fetch_existing("topologies/" + m_topologyName + "/type").as_string() ==
-    "structured");
-
-  const std::string coordsetPath = "coordsets/" +
-    dom.fetch_existing("topologies/" + m_topologyName + "/coordset").as_string();
-  SLIC_ASSERT(dom.has_path(coordsetPath));
-
-  if(!m_maskPath.empty())
+  AXOM_ANNOTATE_SCOPE("MarchingCubes::allocateOutputBuffers");
+  if(!m_singles.empty())
   {
-    SLIC_ASSERT(dom.has_path(m_maskPath + "/values"));
-  }
-
-  m_dom = &dom;
-
-  m_ndim = conduit::blueprint::mesh::coordset::dims(
-    dom.fetch_existing("coordsets/coords"));
-  SLIC_ASSERT(m_ndim >= 2 && m_ndim <= 3);
-
-  const conduit::Node& coordsValues =
-    dom.fetch_existing(coordsetPath + "/values");
-  bool isInterleaved = conduit::blueprint::mcarray::is_interleaved(coordsValues);
-  SLIC_ASSERT_MSG(
-    !isInterleaved,
-    "MarchingCubes currently requires contiguous coordinates layout.");
-}
-
-void MarchingCubesSingleDomain::setFunctionField(const std::string& fcnField)
-{
-  m_fcnPath = "fields/" + fcnField;
-  SLIC_ASSERT(m_dom->has_path(m_fcnPath));
-  SLIC_ASSERT(m_dom->fetch_existing(m_fcnPath + "/association").as_string() ==
-              "vertex");
-  SLIC_ASSERT(m_dom->has_path(m_fcnPath + "/values"));
-}
-
-void MarchingCubesSingleDomain::computeIsocontour(double contourVal)
-{
-  SLIC_ASSERT_MSG(!m_fcnPath.empty(),
-                  "You must call setFunctionField before computeIsocontour.");
-
-  allocateImpl();
-  const std::string coordsetPath = "coordsets/" +
-    m_dom->fetch_existing("topologies/" + m_topologyName + "/coordset").as_string();
-  m_impl->initialize(*m_dom, coordsetPath, m_fcnPath, m_maskPath);
-  m_impl->setContourValue(contourVal);
-  m_impl->markCrossings();
-  m_impl->scanCrossings();
-  m_impl->computeContour();
-}
-
-void MarchingCubesSingleDomain::allocateImpl()
-{
-  using namespace detail::marching_cubes;
-  if(m_runtimePolicy == RuntimePolicy::seq)
-  {
-    m_impl = m_ndim == 2
-      ? std::unique_ptr<ImplBase>(
-          new MarchingCubesImpl<2, axom::SEQ_EXEC, axom::SEQ_EXEC>)
-      : std::unique_ptr<ImplBase>(
-          new MarchingCubesImpl<3, axom::SEQ_EXEC, axom::SEQ_EXEC>);
-  }
-#ifdef _AXOM_MC_USE_OPENMP
-  else if(m_runtimePolicy == RuntimePolicy::omp)
-  {
-    m_impl = m_ndim == 2
-      ? std::unique_ptr<ImplBase>(
-          new MarchingCubesImpl<2, axom::OMP_EXEC, axom::SEQ_EXEC>)
-      : std::unique_ptr<ImplBase>(
-          new MarchingCubesImpl<3, axom::OMP_EXEC, axom::SEQ_EXEC>);
-  }
-#endif
-#ifdef _AXOM_MC_USE_CUDA
-  else if(m_runtimePolicy == RuntimePolicy::cuda)
-  {
-    m_impl = m_ndim == 2
-      ? std::unique_ptr<ImplBase>(
-          new MarchingCubesImpl<2, axom::CUDA_EXEC<256>, axom::CUDA_EXEC<1>>)
-      : std::unique_ptr<ImplBase>(
-          new MarchingCubesImpl<3, axom::CUDA_EXEC<256>, axom::CUDA_EXEC<1>>);
-  }
-#endif
-#ifdef _AXOM_MC_USE_HIP
-  else if(m_runtimePolicy == RuntimePolicy::hip)
-  {
-    m_impl = m_ndim == 2
-      ? std::unique_ptr<ImplBase>(
-          new MarchingCubesImpl<2, axom::HIP_EXEC<256>, axom::HIP_EXEC<1>>)
-      : std::unique_ptr<ImplBase>(
-          new MarchingCubesImpl<3, axom::HIP_EXEC<256>, axom::HIP_EXEC<1>>);
-  }
-#endif
-  else
-  {
-    SLIC_ERROR(axom::fmt::format(
-      "MarchingCubesSingleDomain has no implementation for runtime policy {}",
-      m_runtimePolicy));
+    int ndim = m_singles[0]->spatialDimension();
+    const auto nodeCount = m_facetCount * ndim;
+    m_facetNodeIds.resize(
+      axom::StackArray<axom::IndexType, 2> {m_facetCount, ndim},
+      0);
+    m_facetNodeCoords.resize(
+      axom::StackArray<axom::IndexType, 2> {nodeCount, ndim},
+      0.0);
+    m_facetParentIds.resize(axom::StackArray<axom::IndexType, 1> {m_facetCount},
+                            0);
+    m_facetDomainIds.resize(axom::StackArray<axom::IndexType, 1> {m_facetCount},
+                            0);
   }
 }
 

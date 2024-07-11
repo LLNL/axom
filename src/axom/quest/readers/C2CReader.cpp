@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -978,7 +978,11 @@ void C2CReader::getLinearMeshNonUniform(
   FILE* fthresh = fopen("threshold.curve", "wt");
   fprintf(fthresh, "# threshold\n");
 #endif
-  int contourCount = -1;
+
+  int contourCount {-1};
+
+  // clang complains about contourCount (-Wunused-but-set-variable); since we want keep it, let's mark it
+  AXOM_UNUSED_VAR(contourCount);
 
   // Iterate over the contours and linearize each of them.
   std::vector<Segment> S;
@@ -986,7 +990,7 @@ void C2CReader::getLinearMeshNonUniform(
   for(const auto& nurbs : m_nurbsData)
   {
     NURBSInterpolator interpolator(nurbs, m_vertexWeldThreshold);
-    contourCount++;
+    ++contourCount;
 #ifdef AXOM_DEBUG_WRITE_ERROR_CURVES
     fprintf(ferr, "# contour%d\n", contourCount);
 #endif

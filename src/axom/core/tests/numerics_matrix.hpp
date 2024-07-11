@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -244,6 +244,85 @@ TEST(numerics_matrix, is_square)
 
   axom::numerics::Matrix<double> A(MROWS, NCOLS);
   EXPECT_TRUE(A.isSquare());
+}
+
+//------------------------------------------------------------------------------
+TEST(numerics_matrix, equality)
+{
+  using Mtx = axom::numerics::Matrix<double>;
+  constexpr double val = 2.2;
+
+  {
+    Mtx a, b;
+    EXPECT_EQ(a, b);
+    EXPECT_EQ(b, a);
+  }
+
+  {
+    Mtx a, b(5, 7);
+    EXPECT_NE(a, b);
+
+    EXPECT_NE(b, a);
+  }
+
+  {
+    Mtx a(5, 7, val), b(5, 7, val);
+    EXPECT_EQ(a, b);
+    EXPECT_EQ(b, a);
+
+    a(3, 4) = 1;
+    EXPECT_NE(a, b);
+    EXPECT_NE(b, a);
+  }
+
+  {
+    Mtx a = Mtx::identity(3);
+    Mtx b = Mtx::identity(4);
+    EXPECT_NE(a, b);
+    EXPECT_NE(b, a);
+  }
+
+  {
+    Mtx a = Mtx::identity(3);
+    Mtx b = Mtx::identity(3);
+    EXPECT_EQ(a, b);
+    EXPECT_EQ(b, a);
+  }
+
+  {
+    Mtx a = Mtx::zeros(3, 3);
+    Mtx b = Mtx::ones(3, 3);
+    EXPECT_NE(a, b);
+    EXPECT_NE(b, a);
+  }
+
+  {
+    Mtx a = Mtx::identity(3);
+    Mtx b = Mtx::zeros(3, 3);
+    b(0, 0) = 1.;
+    b(1, 1) = 1.;
+    b(2, 2) = 1.;
+
+    EXPECT_EQ(a, b);
+    EXPECT_EQ(b, a);
+  }
+
+  {
+    Mtx a(7, 5);
+    Mtx b(5, 7);
+    EXPECT_NE(a, b);
+    EXPECT_NE(b, a);
+
+    a(3, 4) = val;
+    b(4, 3) = val;
+    EXPECT_NE(a, b);
+    EXPECT_NE(b, a);
+
+    Mtx a_tr(5, 7);
+    axom::numerics::matrix_transpose(a, a_tr);
+    EXPECT_EQ(a_tr, b);
+    EXPECT_EQ(b, a_tr);
+  }
 }
 
 //------------------------------------------------------------------------------

@@ -1,9 +1,10 @@
-// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
 #include "axom/config.hpp"
+#include "axom/core.hpp"
 #include "axom/slic.hpp"
 #include "axom/sidre.hpp"
 #include "axom/fmt.hpp"
@@ -22,7 +23,7 @@
 using axom::sidre::Group;
 using axom::sidre::MFEMSidreDataCollection;
 
-const double EPSILON = 1.0e-6;
+constexpr double EPSILON = 1.0e-6;
 
 std::string testName()
 {
@@ -38,9 +39,9 @@ TEST(sidre_datacollection, dc_alloc_no_mesh)
 TEST(sidre_datacollection, dc_alloc_owning_mesh)
 {
   // 1D mesh divided into 10 segments
-  auto mesh = mfem::Mesh::MakeCartesian1D(10);
-  bool owns_mesh = true;
-  MFEMSidreDataCollection sdc(testName(), &mesh, owns_mesh);
+  auto* mesh = new mfem::Mesh(mfem::Mesh::MakeCartesian1D(10));
+  const bool owns_mesh_data = true;
+  MFEMSidreDataCollection sdc(testName(), mesh, owns_mesh_data);
   EXPECT_TRUE(sdc.verifyMeshBlueprint());
 }
 
@@ -48,8 +49,8 @@ TEST(sidre_datacollection, dc_alloc_nonowning_mesh)
 {
   // 1D mesh divided into 10 segments
   auto mesh = mfem::Mesh::MakeCartesian1D(10);
-  bool owns_mesh = false;
-  MFEMSidreDataCollection sdc(testName(), &mesh, owns_mesh);
+  const bool owns_mesh_data = false;
+  MFEMSidreDataCollection sdc(testName(), &mesh, owns_mesh_data);
   EXPECT_TRUE(sdc.verifyMeshBlueprint());
 }
 
@@ -155,22 +156,24 @@ TEST(sidre_datacollection, dc_reload_gf)
 {
   const std::string field_name = "test_field";
   // 2D mesh divided into triangles
-  auto mesh = mfem::Mesh::MakeCartesian2D(10, 10, mfem::Element::TRIANGLE);
-  mfem::H1_FECollection fec(1, mesh.Dimension());
-  mfem::FiniteElementSpace fes(&mesh, &fec);
+  auto* mesh =
+    new mfem::Mesh(mfem::Mesh::MakeCartesian2D(10, 10, mfem::Element::TRIANGLE));
+  auto* fec = new mfem::H1_FECollection(1, mesh->Dimension());
+  auto* fes = new mfem::FiniteElementSpace(mesh, fec);
 
   // The mesh and field(s) must be owned by Sidre to properly manage data in case of
   // a simulated restart (save -> load)
-  bool owns_mesh = true;
-  MFEMSidreDataCollection sdc_writer(testName(), &mesh, owns_mesh);
-  mfem::GridFunction gf_write(&fes, nullptr);
+  const bool owns_mesh_data = true;
+  MFEMSidreDataCollection sdc_writer(testName(), mesh, owns_mesh_data);
+  auto* gf_write = new mfem::GridFunction(fes, nullptr);
+  gf_write->MakeOwner(fec);
 
   // Register to allocate storage internally, then write to it
-  sdc_writer.RegisterField(field_name, &gf_write);
+  sdc_writer.RegisterField(field_name, gf_write);
   EXPECT_TRUE(sdc_writer.HasField(field_name));
 
   mfem::ConstantCoefficient three_and_a_half(3.5);
-  gf_write.ProjectCoefficient(three_and_a_half);
+  gf_write->ProjectCoefficient(three_and_a_half);
 
   EXPECT_TRUE(sdc_writer.verifyMeshBlueprint());
 
@@ -192,7 +195,7 @@ TEST(sidre_datacollection, dc_reload_gf)
   EXPECT_TRUE(sdc_reader.HasField(field_name));
 
   // No need to reregister, it already exists
-  auto gf_read = sdc_reader.GetField(field_name);
+  auto* gf_read = sdc_reader.GetField(field_name);
 
   // Make sure the gridfunction was actually read in
   EXPECT_LT(gf_read->ComputeL2Error(three_and_a_half), EPSILON);
@@ -211,8 +214,11 @@ TEST(sidre_datacollection, dc_reload_gf_vdim)
 
   // The mesh and field(s) must be owned by Sidre to properly manage data in case of
   // a simulated restart (save -> load)
-  bool owns_mesh = true;
-  MFEMSidreDataCollection sdc_writer(testName(), &mesh, owns_mesh);
+  const bool owns_mesh_data = true;
+  MFEMSidreDataCollection sdc_writer(testName(), &mesh, owns_mesh_data);
+  // the following prevents mfem::DataCollection from deleting the mesh and gfs
+  // see 'dc_reload_gf' test for a case where the DataCollection also owns the mesh and gf data
+  sdc_writer.SetOwnData(false);
   mfem::GridFunction gf_write(&fes, nullptr);
 
   // Register to allocate storage internally, then write to it
@@ -260,8 +266,9 @@ TEST(sidre_datacollection, dc_reload_mesh)
 
   // The mesh and field(s) must be owned by Sidre to properly manage data in case of
   // a simulated restart (save -> load)
-  bool owns_mesh = true;
-  MFEMSidreDataCollection sdc_writer(testName(), &mesh, owns_mesh);
+  const bool owns_mesh_data = true;
+  MFEMSidreDataCollection sdc_writer(testName(), &mesh, owns_mesh_data);
+  sdc_writer.SetOwnData(false);
 #if defined(AXOM_USE_MPI) && defined(MFEM_USE_MPI)
   sdc_writer.SetComm(MPI_COMM_WORLD);
 #endif
@@ -317,8 +324,9 @@ TEST(sidre_datacollection, dc_reload_qf)
 
   // The mesh and field(s) must be owned by Sidre to properly manage data in case of
   // a simulated restart (save -> load)
-  bool owns_mesh = true;
-  MFEMSidreDataCollection sdc_writer(testName(), &mesh, owns_mesh);
+  const bool owns_mesh_data = true;
+  MFEMSidreDataCollection sdc_writer(testName(), &mesh, owns_mesh_data);
+  sdc_writer.SetOwnData(false);
 #if defined(AXOM_USE_MPI) && defined(MFEM_USE_MPI)
   sdc_writer.SetComm(MPI_COMM_WORLD);
 #endif
@@ -639,24 +647,49 @@ TEST(sidre_datacollection, create_material_dependent_field_multi_fraction)
 
 #if defined(AXOM_USE_MPI) && defined(MFEM_USE_MPI)
 
-TEST(sidre_datacollection, dc_alloc_owning_parmesh)
+TEST(sidre_datacollection, dc_alloc_parmesh)
 {
-  // 1D mesh divided into 10 segments
-  auto mesh = mfem::Mesh::MakeCartesian1D(10);
-  mfem::ParMesh parmesh(MPI_COMM_WORLD, mesh);
-  bool owns_mesh = true;
-  MFEMSidreDataCollection sdc(testName(), &parmesh, owns_mesh);
-  EXPECT_TRUE(sdc.verifyMeshBlueprint());
-}
+  // case 1: serial and parallel mesh are not pointers
+  {
+    constexpr bool owns_mesh_data = true;
 
-TEST(sidre_datacollection, dc_alloc_nonowning_parmesh)
-{
-  // 1D mesh divided into 10 segments
-  auto mesh = mfem::Mesh::MakeCartesian1D(10);
-  mfem::ParMesh parmesh(MPI_COMM_WORLD, mesh);
-  bool owns_mesh = false;
-  MFEMSidreDataCollection sdc(testName(), &parmesh, owns_mesh);
-  EXPECT_TRUE(sdc.verifyMeshBlueprint());
+    // 1D mesh divided into 10 segments
+    auto mesh = mfem::Mesh::MakeCartesian1D(10);
+    mfem::ParMesh parmesh(MPI_COMM_WORLD, mesh);
+    MFEMSidreDataCollection sdc(testName(), &parmesh, owns_mesh_data);
+
+    // Must set this to avoid mfem's DataCollection from deleting the parmesh
+    sdc.SetOwnData(false);
+
+    EXPECT_TRUE(sdc.verifyMeshBlueprint());
+  }
+
+  // case 2: serial and parallel meshes are pointers
+  // data collection owns and deletes parmesh
+  {
+    constexpr bool owns_mesh_data = true;
+
+    // 1D mesh divided into 10 segments
+    auto* mesh = new mfem::Mesh(mfem::Mesh::MakeCartesian1D(10));
+    auto* parmesh = new mfem::ParMesh(MPI_COMM_WORLD, *mesh);
+    delete mesh;
+
+    MFEMSidreDataCollection sdc(testName(), parmesh, owns_mesh_data);
+
+    EXPECT_TRUE(sdc.verifyMeshBlueprint());
+  }
+
+  // case 3: data collection doesn't own mesh/data
+  {
+    constexpr bool owns_mesh_data = false;
+
+    // 1D mesh divided into 10 segments
+    auto mesh = mfem::Mesh::MakeCartesian1D(10);
+    mfem::ParMesh parmesh(MPI_COMM_WORLD, mesh);
+
+    MFEMSidreDataCollection sdc(testName(), &parmesh, owns_mesh_data);
+    EXPECT_TRUE(sdc.verifyMeshBlueprint());
+  }
 }
 
 struct ParMeshGroupData
@@ -705,16 +738,13 @@ static std::vector<ParMeshGroupData> getGroupData(const mfem::ParMesh& parmesh)
 static void testParallelMeshReload(mfem::Mesh& base_mesh,
                                    const int part_method = 1)
 {
-  mfem::ParMesh parmesh(MPI_COMM_WORLD, base_mesh, nullptr, part_method);
-
-  // Use second-order elements to ensure that the nodal gridfunction gets set up properly as well
-  mfem::H1_FECollection fec(2, base_mesh.Dimension());
-  mfem::ParFiniteElementSpace parfes(&parmesh, &fec);
+  auto* parmesh =
+    new mfem::ParMesh(MPI_COMM_WORLD, base_mesh, nullptr, part_method);
 
   // The mesh must be owned by Sidre to properly manage data in case of
   // a simulated restart (save -> load)
-  const bool owns_mesh = true;
-  MFEMSidreDataCollection sdc_writer(testName(), &parmesh, owns_mesh);
+  const bool owns_mesh_data = true;
+  MFEMSidreDataCollection sdc_writer(testName(), parmesh, owns_mesh_data);
 
   // Save some basic info about the mesh
   const int n_verts = sdc_writer.GetMesh()->GetNV();
@@ -730,6 +760,8 @@ static void testParallelMeshReload(mfem::Mesh& base_mesh,
 
   // Group-specific info
   auto writer_group_data = getGroupData(*writer_pmesh);
+
+  EXPECT_TRUE(sdc_writer.verifyMeshBlueprint());
 
   sdc_writer.SetCycle(0);
   sdc_writer.Save();
@@ -772,7 +804,7 @@ static void testParallelMeshReload(mfem::Mesh& base_mesh,
 static void testParallelMeshReloadAllPartitionings(mfem::Mesh& base_mesh)
 {
   // MFEM supports partition methods [0, 5]
-  static constexpr int MAX_PART_METHOD = 5;
+  constexpr int MAX_PART_METHOD = 5;
   for(int part_method = 0; part_method <= MAX_PART_METHOD; part_method++)
   {
     testParallelMeshReload(base_mesh, part_method);
@@ -791,8 +823,9 @@ TEST(sidre_datacollection, dc_par_reload_gf)
 
   // The mesh must be owned by Sidre to properly manage data in case of
   // a simulated restart (save -> load)
-  bool owns_mesh = true;
-  MFEMSidreDataCollection sdc_writer(testName(), &parmesh, owns_mesh);
+  bool owns_mesh_data = true;
+  MFEMSidreDataCollection sdc_writer(testName(), &parmesh, owns_mesh_data);
+  sdc_writer.SetOwnData(false);
 
   // The mesh and field(s) must be owned by Sidre to properly manage data in case of
   // a simulated restart (save -> load)
@@ -848,8 +881,9 @@ TEST(sidre_datacollection, dc_par_reload_gf_ordering)
 
   // The mesh must be owned by Sidre to properly manage data in case of
   // a simulated restart (save -> load)
-  bool owns_mesh = true;
-  MFEMSidreDataCollection sdc_writer(testName(), &parmesh, owns_mesh);
+  bool owns_mesh_data = true;
+  MFEMSidreDataCollection sdc_writer(testName(), &parmesh, owns_mesh_data);
+  sdc_writer.SetOwnData(false);
 
   // The mesh and field(s) must be owned by Sidre to properly manage data in case of
   // a simulated restart (save -> load)
@@ -908,6 +942,7 @@ TEST(sidre_datacollection, dc_par_reload_multi_datastore)
   const std::string second_coll_name = testName() + "second";
   const std::string field_name = "test_field";
   const std::string useless_view_name = "useless_view";
+
   // 3D tet mesh
   auto mesh = mfem::Mesh::MakeCartesian3D(2, 2, 2, mfem::Element::TETRAHEDRON);
   mfem::ParMesh first_parmesh(MPI_COMM_WORLD, mesh);
@@ -937,18 +972,18 @@ TEST(sidre_datacollection, dc_par_reload_multi_datastore)
 
   // The mesh must be owned by Sidre to properly manage data in case of
   // a simulated restart (save -> load)
-  bool owns_mesh = true;
+  bool owns_mesh_data = true;
   MFEMSidreDataCollection first_sdc_writer(first_coll_name,
                                            first_bp_index_grp,
                                            first_domain_grp,
-                                           owns_mesh);
+                                           owns_mesh_data);
   first_sdc_writer.SetComm(MPI_COMM_WORLD);
   first_sdc_writer.SetMesh(&first_parmesh);
 
   MFEMSidreDataCollection second_sdc_writer(second_coll_name,
                                             second_bp_index_grp,
                                             second_domain_grp,
-                                            owns_mesh);
+                                            owns_mesh_data);
   second_sdc_writer.SetComm(MPI_COMM_WORLD);
   second_sdc_writer.SetMesh(&second_parmesh);
 
@@ -991,11 +1026,11 @@ TEST(sidre_datacollection, dc_par_reload_multi_datastore)
   MFEMSidreDataCollection first_sdc_reader(first_coll_name,
                                            first_bp_index_grp,
                                            first_domain_grp,
-                                           owns_mesh);
+                                           owns_mesh_data);
   MFEMSidreDataCollection second_sdc_reader(second_coll_name,
                                             second_bp_index_grp,
                                             second_domain_grp,
-                                            owns_mesh);
+                                            owns_mesh_data);
 
   // Needs to be set "manually" in order for everything to be loaded in properly
   first_sdc_reader.SetComm(MPI_COMM_WORLD);

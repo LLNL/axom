@@ -1,5 +1,5 @@
 [comment]: # (#################################################################)
-[comment]: # (Copyright 2017-2023, Lawrence Livermore National Security, LLC)
+[comment]: # (Copyright 2017-2024, Lawrence Livermore National Security, LLC)
 [comment]: # (and Axom Project Developers. See the top-level LICENSE file)
 [comment]: # (for details.)
 [comment]: #
@@ -7,7 +7,7 @@
 [comment]: # (#################################################################)
 
 
-# <img src="/share/axom/logo/axom_logo.png?raw=true" width="250" valign="middle" alt="Axom"/>
+# <img src="/share/axom/logo/axom_logo_transparent.png?raw=true" width="250" valign="middle" alt="Axom"/>
 
 [![Azure Pipelines Build Status](https://dev.azure.com/axom/axom/_apis/build/status/LLNL.axom?branchName=develop)](https://dev.azure.com/axom/axom/_build/latest?definitionId=1&branchName=develop)
 [![Documentation Status](https://readthedocs.org/projects/axom/badge/?version=develop)](https://axom.readthedocs.io/en/develop/?badge=develop)
@@ -56,7 +56,7 @@ Thanks to all of Axom's
 License
 -------
 
-Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC. 
+Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC. 
 Produced at the Lawrence Livermore National Laboratory.
 
 Copyrights and patents in the Axom project are retained by contributors.

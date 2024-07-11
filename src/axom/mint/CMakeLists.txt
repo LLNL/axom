@@ -1,4 +1,4 @@
-# Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
+# Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
 # other Axom Project Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
@@ -40,7 +40,6 @@ set( mint_headers
     execution/internal/for_all_nodes.hpp
     execution/internal/for_all_faces.hpp
     execution/internal/helpers.hpp
-    execution/internal/structured_exec.hpp
 
     ## FEM classes
     fem/FEBasis.hpp

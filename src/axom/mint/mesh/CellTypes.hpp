@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -108,7 +108,7 @@ constexpr int NUM_CELL_TYPES = static_cast<int>(CellType::NUM_CELL_TYPES);
  *
  * \brief Holds information associated with a given cell type.
  */
-typedef struct
+struct CellInfo
 {
   CellType cell_type;         /*!< cell type, e.g. mint::QUAD, mint::HEX */
   const char* name;           /*!< the name associated with the cell */
@@ -119,7 +119,7 @@ typedef struct
   int face_nodecount[MAX_CELL_FACES]; /*!< number of nodes for each of cell's faces */
   CellType face_types[MAX_CELL_FACES]; /*!< face type, e.g. mint::SEGMENT, mint::QUAD */
   IndexType face_nodes[MAX_ALL_FACES_NODES]; /*!< nodes for each of cell's faces */
-} CellInfo;
+};
 
 // This construct lets us pass literal arrays to function-like macros.
 // AR stands for ARray.

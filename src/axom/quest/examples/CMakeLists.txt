@@ -1,4 +1,4 @@
-# Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
+# Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
 # other Axom Project Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
@@ -22,6 +22,24 @@ axom_add_executable(
     FOLDER      axom/quest/examples
     )
 
+if(AXOM_ENABLE_TESTS AND AXOM_DATA_DIR AND CALIPER_FOUND)
+    set(_input_file "${AXOM_DATA_DIR}/quest/sphere_binary.stl")
+    
+    if(AXOM_ENABLE_MPI)     # this test requires MPI when available
+        set(_num_ranks 1)   # (but only 1 rank)
+    else()                  # but can otherwise be run without MPI
+        unset(_num_ranks)
+    endif()
+    
+    axom_add_test(
+        NAME    quest_containment_sphere_ex
+        COMMAND quest_containment_driver_ex
+                --input ${_input_file}
+                --caliper report
+        NUM_MPI_TASKS ${_num_ranks}
+    )
+endif()
+
 # BVH two pass example --------------------------------------------------------
 if (RAJA_FOUND AND UMPIRE_FOUND)
     axom_add_executable(
@@ -31,6 +49,65 @@ if (RAJA_FOUND AND UMPIRE_FOUND)
         DEPENDS_ON  ${quest_example_depends}
         FOLDER      axom/quest/examples
         )
+endif()
+
+# Read ProE example -----------------------------------------------------------
+axom_add_executable(
+    NAME        quest_proe_bbox_ex
+    SOURCES     quest_proe_bbox.cpp
+    OUTPUT_DIR  ${EXAMPLE_OUTPUT_DIRECTORY}
+    DEPENDS_ON  ${quest_example_depends}
+    FOLDER      axom/quest/examples
+    )
+
+# BVH silo example ------------------------------------------------------------
+if (CONDUIT_FOUND AND RAJA_FOUND AND UMPIRE_FOUND)
+    axom_add_executable(
+        NAME        quest_candidates_example_ex
+        SOURCES     quest_candidates_example.cpp
+        OUTPUT_DIR  ${EXAMPLE_OUTPUT_DIRECTORY}
+        DEPENDS_ON  ${quest_example_depends} conduit::conduit
+        FOLDER      axom/quest/examples
+        )
+
+    # Add unit tests
+    if(AXOM_ENABLE_TESTS AND AXOM_DATA_DIR)
+
+        # Run the candidates example with the different spatial indices
+        # and raja policies
+
+        # Use same file for input and query
+        set(input_file "${AXOM_DATA_DIR}/quest/ucart10.cycle_000000.root")
+        set(query_file "${AXOM_DATA_DIR}/quest/ucart10_shifted.cycle_000000.root")
+
+        set(_methods "bvh" "implicit")
+
+        set (_policies "seq")
+        blt_list_append(TO _policies ELEMENTS "omp" IF AXOM_ENABLE_OPENMP)
+        blt_list_append(TO _policies ELEMENTS "cuda" IF AXOM_ENABLE_CUDA)
+        blt_list_append(TO _policies ELEMENTS "hip" IF AXOM_ENABLE_HIP)
+
+
+        foreach(_method ${_methods})
+            foreach(_policy ${_policies})
+
+                set(_testname "quest_candidates_example_${_method}_${_policy}")
+                axom_add_test(
+                  NAME ${_testname}
+                  COMMAND quest_candidates_example_ex
+                          --infile ${input_file}
+                          --queryfile ${query_file}
+                          --method ${_method}
+                          --policy ${_policy}
+                )
+
+                # Match either one comma or none for portability
+                set_tests_properties(${_testname} PROPERTIES
+                    PASS_REGULAR_EXPRESSION  "Mesh had 6[,]?859 candidates pairs")
+            endforeach()
+        endforeach()
+    endif()
+
 endif()
 
 # Shaping example -------------------------------------------------------------
@@ -84,7 +161,7 @@ if(AXOM_ENABLE_MPI AND MFEM_FOUND AND MFEM_USE_MPI
                 NUM_MPI_TASKS ${_nranks})
             # background: 3500; balls: ~373; jacks: ~230; air ~2897
             set_tests_properties(${_testname} PROPERTIES 
-                PASS_REGULAR_EXPRESSION  "Volume of material 'air' is 2895.")
+                PASS_REGULAR_EXPRESSION  "Volume of material 'air' is 2,?895.")
 
             set(_testname quest_shaping_driver_ex_sampling_ball_impact)
             axom_add_test(
@@ -141,7 +218,7 @@ if(AXOM_ENABLE_MPI AND MFEM_FOUND AND MFEM_USE_MPI
         # bbox volume: 12^3 = 1728; sphere(r=5): ~523.6; sphere(r=2): 33.5
         # expected analytic volume when fully resolved: ~1237.9
         set_tests_properties(${_testname} PROPERTIES 
-            PASS_REGULAR_EXPRESSION  "Volume of material 'void' is 1239.")
+            PASS_REGULAR_EXPRESSION  "Volume of material 'void' is 1,?239.")
 
         set(_testname quest_shaping_driver_ex_sampling_plane)
         axom_add_test(
@@ -156,7 +233,7 @@ if(AXOM_ENABLE_MPI AND MFEM_FOUND AND MFEM_USE_MPI
         # expected volume when fully resolved: 182,209,421.5
         # actual value is accurate to about 1% at coarse resolution
         set_tests_properties(${_testname} PROPERTIES 
-            PASS_REGULAR_EXPRESSION  "Volume of material 'air' is 182227963")
+            PASS_REGULAR_EXPRESSION  "Volume of material 'air' is 182,?227,?963")
     endif()
 endif()
 
@@ -182,27 +259,40 @@ if(AXOM_ENABLE_MPI AND AXOM_ENABLE_SIDRE AND HDF5_FOUND)
         endif()
 
         # Non-zero empty-rank probability tests domain underloading case
-        set(_meshes "mdmesh.2x1" "mdmesh.2x3")
+        set(_meshes "mdmesh.2x1" "mdmesh.2x3" "mdmesh.2x2x1" "mdmeshg.2x2x1")
         # The mdmesh.* files were generated by these commands:
         # src/tools/gen-multidom-structured-mesh.py -ml=0,0 -mu=2,2 -ms=100,100 -dc=2,1 -o mdmesh.2x1
         # src/tools/gen-multidom-structured-mesh.py -ml=0,0 -mu=2,2 -ms=100,100 -dc=2,3 -o mdmesh.2x3
+        # src/tools/gen-multidom-structured-mesh.py -ml=0,0,0 -mu=2,2,2 -ms=20,20,15 -dc=2,2,1 -o mdmeshg.2x2x1 --strided
         foreach(_pol ${_policies})
             foreach(_mesh ${_meshes})
-                # Add test with data on all ranks
-                set(_test "quest_distributed_closest_point_run_2D_${_pol}_${_mesh}")
+                # Determine problem dimension by mesh filename.
+                # and set dimension-dependent arguments.
+                string(REGEX MATCH "\\.[0-9]+(x[0-9]+)+$" _sizes "${_mesh}")
+                string(REGEX MATCHALL "[0-9]+" _sizes ${_sizes})
+                list(LENGTH _sizes _ndim)
+
+                if(_ndim EQUAL 2)
+                  set(_center 0.7 0.9)
+                elseif(_ndim EQUAL 3)
+                  set(_center 0.7 0.9 0.5)
+                endif()
+
+                set(_test "quest_distributed_closest_point_run_${_ndim}D_${_pol}_${_mesh}")
                 axom_add_test(
                     NAME    ${_test}
                     COMMAND quest_distributed_distance_query_ex
                                 --mesh-file ${quest_data_dir}/${_mesh}.root
-                                --num-samples 500
-                                --center 1.2 1.5
-                                --radius 0.75
+                                --long-point-count 60
+                                --center ${_center}
+                                --radius 0.9
+                                --lat-point-count 30
                                 --obj-domain-count-range 0 2
                                 --dist-threshold .3
                                 --no-random-spacing
                                 --check-results
                                 --policy ${_pol}
-                                --object-file dcp_object_mesh_2d_${_pol}_${_mesh}
+                                --object-file dcp_object_mesh_${_ndim}d_${_pol}_${_mesh}
                                 --distance-file dcp_closest_point_2d_${_pol}_${_mesh}
                     NUM_MPI_TASKS ${_nranks})
                 if(${_pol} STREQUAL "omp")
@@ -218,6 +308,11 @@ if(AXOM_ENABLE_MPI AND AXOM_ENABLE_SIDRE AND HDF5_FOUND)
 endif()
 
 # Marching cubes example -------------------------------------------
+if(CONDUIT_FOUND AND AXOM_ENABLE_MPI)
+    list(APPEND quest_depends_on conduit::conduit
+                                 conduit::conduit_mpi)
+endif()
+
 if(CONDUIT_FOUND)
     axom_add_executable(
             NAME        quest_marching_cubes_ex
@@ -242,10 +337,12 @@ if(CONDUIT_FOUND)
         endif()
 
         # Non-zero empty-rank probability tests domain underloading case
-        set(_meshes "mdmesh.2x1" "mdmesh.2x3" "mdmesh.2x2x1")
+        set(_meshes "mdmesh.2x1" "mdmesh.2x3" "mdmesh.2x2x1" "mdmeshg.2x2x1")
         # The amc.* files were generated by these commands:
-        # src/tools/gen-multidom-structured-mesh.py -ml=0,0 -mu=2,2 -ms=20,20 -dc=2,2 -o amc_mesh.2x2
+        # src/tools/gen-multidom-structured-mesh.py -ml=0,0 -mu=2,2 -ms=100,100 -dc=2,1 -o mdmesh.2x1
+        # src/tools/gen-multidom-structured-mesh.py -ml=0,0 -mu=2,2 -ms=100,100 -dc=2,3 -o mdmesh.2x3
         # src/tools/gen-multidom-structured-mesh.py -ml=0,0,0 -mu=2,2,2 -ms=20,20,15 -dc=2,2,1 -o mdmesh.2x2x1
+        # src/tools/gen-multidom-structured-mesh.py -ml=0,0,0 -mu=2,2,2 -ms=20,20,15 -dc=2,2,1 -o mdmeshg.2x2x1 --strided
         foreach(_pol ${_policies})
             foreach(_mesh ${_meshes})
                 # Determine problem dimension by mesh filename.
@@ -257,9 +354,11 @@ if(CONDUIT_FOUND)
                 if(_ndim EQUAL 2)
                   set(_dir 1.0 0.4)
                   set(_center 1.0 0.4)
+                  set(_scale 3 3)
                 elseif(_ndim EQUAL 3)
                   set(_dir 1.0 0.4 1.2)
                   set(_center 1.0 0.4 1.2)
+                  set(_scale 3 3 1.5)
                 endif()
 
                 set(_test "quest_marching_cubes_run_${_ndim}D_${_pol}_${_mesh}")
@@ -271,6 +370,7 @@ if(CONDUIT_FOUND)
                                 --fields-file ${_test}.field
                                 --dir ${_dir}
                                 --center ${_center}
+                                --scale ${_scale}
                                 --contourVal 1.25
                                 --check-results
                                 --verbose
@@ -386,9 +486,12 @@ if (ENABLE_FORTRAN)
 
     set(quest_fortran_examples quest_signed_distance_interface)
     
-    # The inout Fortran example fails to compile with hipcc/amdflang in debug configurations
-    if("${CMAKE_Fortran_COMPILER}" MATCHES "amdflang$" AND
+    if("${AXOM_CONFIG_NAME}" STREQUAL "GNU-Debug-shared-mpi-openmp")
+        # The gcc-11 docker image does not work, turning off for now
+        set(_has_inout_fortran_example FALSE)
+    elseif("${CMAKE_Fortran_COMPILER}" MATCHES "amdflang$" AND
        CMAKE_BUILD_TYPE MATCHES "(Debug|RelWithDebInfo)")
+        # The inout Fortran example fails to compile with hipcc/amdflang in debug configurations
         set(_has_inout_fortran_example FALSE)
     else()
         set(_has_inout_fortran_example TRUE)

@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -791,6 +791,8 @@ TEST(C_sidre_group, rename_group)
   success = SIDRE_Group_rename(child3, "g_b");
   EXPECT_FALSE(success);
   EXPECT_TRUE(strcmp(SIDRE_Group_get_name(child3), "g_c") == 0);
+
+  SIDRE_DataStore_delete(ds);
 }
 
 //------------------------------------------------------------------------------
@@ -850,8 +852,8 @@ TEST(C_sidre_group, save_restore_complex)
   EXPECT_NEAR(SIDRE_View_get_data_double(d0_view), 3000.0, 1e-12);
 
   SIDRE_DataStore_print(ds2);
-
-  SIDRE_DataStore_delete(ds);
-  SIDRE_DataStore_delete(ds2);
 #endif
+
+  SIDRE_DataStore_delete(ds2);
+  SIDRE_DataStore_delete(ds);
 }

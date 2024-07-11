@@ -1,4 +1,4 @@
-# Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
+# Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
 # other Axom Project Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
@@ -15,11 +15,13 @@ endif()
 
 set(TPL_DEPS)
 
+include(CMakeFindDependencyMacro)
+
 #------------------------------------------------------------------------------
 # Create global variable to toggle between GPU targets
 #------------------------------------------------------------------------------
 if(AXOM_ENABLE_CUDA)
-    set(axom_device_depends cuda CACHE STRING "" FORCE)
+    set(axom_device_depends blt::cuda CACHE STRING "" FORCE)
 endif()
 if(AXOM_ENABLE_HIP)
     set(axom_device_depends blt::hip CACHE STRING "" FORCE)
@@ -32,36 +34,32 @@ if ((RAJA_DIR OR UMPIRE_DIR) AND NOT CAMP_DIR)
     message(FATAL_ERROR "CAMP_DIR is required if RAJA_DIR or UMPIRE_DIR is provided.")
 endif()
 
-# Note: Let Umpire find Camp via camp_DIR, don't find it ourselves
-set(camp_DIR ${CAMP_DIR})
+if(CAMP_DIR)
+    axom_assert_is_directory(DIR_VARIABLE CAMP_DIR)
+    find_dependency(camp REQUIRED PATHS "${CAMP_DIR}" NO_SYSTEM_ENVIRONMENT_PATH)
+    axom_assert_find_succeeded(PROJECT_NAME Camp
+                               TARGET       camp
+                               DIR_VARIABLE CAMP_DIR)
+    set(CAMP_FOUND TRUE)
+else()
+    set(CAMP_FOUND FALSE)
+endif()
 
 #------------------------------------------------------------------------------
 # UMPIRE
 #------------------------------------------------------------------------------
 if (UMPIRE_DIR)
-    if (NOT EXISTS "${UMPIRE_DIR}")
-        message(FATAL_ERROR "Given UMPIRE_DIR does not exist: ${UMPIRE_DIR}")
-    endif()
+    axom_assert_is_directory(DIR_VARIABLE UMPIRE_DIR)
+    find_dependency(umpire REQUIRED PATHS "${UMPIRE_DIR}" NO_SYSTEM_ENVIRONMENT_PATH)
+    axom_assert_find_succeeded(PROJECT_NAME Umpire
+                               TARGET       umpire
+                               DIR_VARIABLE UMPIRE_DIR)
+    set(UMPIRE_FOUND TRUE)
 
-    if (NOT IS_DIRECTORY "${UMPIRE_DIR}")
-        message(FATAL_ERROR "Given UMPIRE_DIR is not a directory: ${UMPIRE_DIR}")
-    endif()
-
-    find_package(umpire REQUIRED PATHS ${UMPIRE_DIR} )
-
-    message(STATUS "Checking for expected Umpire target 'umpire'")
-    if (NOT TARGET umpire)
-        message(FATAL_ERROR "Umpire failed to load: ${UMPIRE_DIR}")
-    else()
-        message(STATUS "Umpire loaded: ${UMPIRE_DIR}")
-        set_property(TARGET umpire
-                     APPEND PROPERTY INTERFACE_SYSTEM_INCLUDE_DIRECTORIES
-                    ${UMPIRE_INCLUDE_DIRS})
-        set(UMPIRE_FOUND TRUE CACHE BOOL "")
-    endif()
+    blt_convert_to_system_includes(TARGET umpire)
 else()
     message(STATUS "Umpire support is OFF")
-    set(UMPIRE_FOUND FALSE CACHE BOOL "")
+    set(UMPIRE_FOUND FALSE)
 endif()
 
 
@@ -69,45 +67,15 @@ endif()
 # RAJA
 #------------------------------------------------------------------------------
 if (RAJA_DIR)
-    if (NOT EXISTS "${RAJA_DIR}")
-        message(FATAL_ERROR "Given RAJA_DIR does not exist: ${RAJA_DIR}")
-    endif()
-
-    if (NOT IS_DIRECTORY "${RAJA_DIR}")
-        message(FATAL_ERROR "Given RAJA_DIR is not a directory: ${RAJA_DIR}")
-    endif()
-
-    find_package(RAJA REQUIRED PATHS ${RAJA_DIR} )
-
-    message(STATUS "Checking for expected RAJA target 'RAJA'")
-    if (NOT TARGET RAJA)
-        message(FATAL_ERROR "RAJA failed to load: ${RAJA_DIR}")
-    else()
-        message(STATUS "RAJA loaded: ${RAJA_DIR}")
-        set(RAJA_FOUND TRUE CACHE BOOL "")
-    endif()
-
-    # Suppress warnings from cub and cuda related to the (low) version
-    # of clang that XL compiler pretends to be.
-    if(C_COMPILER_FAMILY_IS_XL)
-        if(TARGET RAJA::cub)
-            blt_add_target_definitions(
-                TO RAJA::cub
-                SCOPE INTERFACE
-                TARGET_DEFINITIONS CUB_IGNORE_DEPRECATED_CPP_DIALECT)
-        endif()
-
-        if(TARGET cuda)
-            blt_add_target_definitions(
-                TO cuda
-                SCOPE INTERFACE
-                TARGET_DEFINITIONS THRUST_IGNORE_DEPRECATED_CPP_DIALECT)
-        endif()
-    endif()
-
+    axom_assert_is_directory(DIR_VARIABLE RAJA_DIR)
+    find_dependency(raja REQUIRED PATHS "${RAJA_DIR}" NO_SYSTEM_ENVIRONMENT_PATH)
+    axom_assert_find_succeeded(PROJECT_NAME RAJA
+                               TARGET       RAJA
+                               DIR_VARIABLE RAJA_DIR)
+    set(RAJA_FOUND TRUE)
 else()
     message(STATUS "RAJA support is OFF" )
-    set(RAJA_FOUND FALSE CACHE BOOL "")
+    set(RAJA_FOUND FALSE)
 endif()
 
 #------------------------------------------------------------------------------
@@ -116,16 +84,18 @@ endif()
 # Find Conduit first, then find HDF5 to fix "Could NOT find HDF5" issue with
 # newer CMake versions
 if (CONDUIT_DIR)
-    include(cmake/thirdparty/FindConduit.cmake)
+    axom_assert_is_directory(DIR_VARIABLE CONDUIT_DIR)
 
-    # Manually set includes as system includes
-    set_property(TARGET conduit::conduit
-                 APPEND PROPERTY INTERFACE_SYSTEM_INCLUDE_DIRECTORIES
-                 "${CONDUIT_INSTALL_PREFIX}/include/")
+    find_dependency(Conduit REQUIRED
+                    PATHS "${CONDUIT_DIR}"
+                          "${CONDUIT_DIR}/lib/cmake/conduit"
+                    NO_SYSTEM_ENVIRONMENT_PATH)
+    axom_assert_find_succeeded(PROJECT_NAME Conduit
+                               TARGET       conduit::conduit
+                               DIR_VARIABLE CONDUIT_DIR)
+    set(CONDUIT_FOUND TRUE)
 
-    set_property(TARGET conduit::conduit
-                 APPEND PROPERTY INTERFACE_SYSTEM_INCLUDE_DIRECTORIES
-                 "${CONDUIT_INSTALL_PREFIX}/include/conduit/")
+    blt_convert_to_system_includes(TARGET conduit::conduit)
 else()
     message(STATUS "Conduit support is OFF")
 endif()
@@ -134,7 +104,11 @@ endif()
 # HDF5
 #------------------------------------------------------------------------------
 if (HDF5_DIR)
+    axom_assert_is_directory(DIR_VARIABLE HDF5_DIR)
     include(cmake/thirdparty/SetupHDF5.cmake)
+    axom_assert_find_succeeded(PROJECT_NAME HDF5
+                               TARGET       hdf5
+                               DIR_VARIABLE HDF5_DIR)
     blt_list_append(TO TPL_DEPS ELEMENTS hdf5)
 else()
     message(STATUS "HDF5 support is OFF")
@@ -148,12 +122,19 @@ if (TARGET mfem)
     # Note - white238: I can't seem to get this to pass install testing due to mfem being included
     # in multiple export sets
     message(STATUS "MFEM support is ON, using existing mfem target")
+
     # Add it to this export set but don't prefix it with axom::
-    install(TARGETS              mfem
-            EXPORT               axom-targets
-            DESTINATION          lib)
-    set(MFEM_FOUND TRUE CACHE BOOL "" FORCE)
+    # NOTE: imported targets cannot be part of an export set
+    get_target_property(_is_imported mfem IMPORTED)
+    if(NOT "${_is_imported}")
+        install(TARGETS              mfem
+                EXPORT               axom-targets
+                DESTINATION          lib)
+    endif()
+
+    set(MFEM_FOUND TRUE)
 elseif (MFEM_DIR)
+    axom_assert_is_directory(DIR_VARIABLE MFEM_DIR)
     include(cmake/thirdparty/FindMFEM.cmake)
     # If the CMake build system was used, a CMake target for mfem already exists
     if (NOT TARGET mfem)
@@ -205,6 +186,55 @@ if(TARGET mfem)
 endif()
 
 #------------------------------------------------------------------------------
+# Adiak
+#------------------------------------------------------------------------------
+if(ADIAK_DIR)
+    axom_assert_is_directory(DIR_VARIABLE ADIAK_DIR)
+    find_dependency(adiak REQUIRED 
+                    PATHS "${ADIAK_DIR}"
+                          "${ADIAK_DIR}/lib/cmake/adiak"
+                    NO_SYSTEM_ENVIRONMENT_PATH)
+    axom_assert_find_succeeded(PROJECT_NAME Adiak
+                               TARGET       adiak::adiak
+                               DIR_VARIABLE ADIAK_DIR)
+
+    # Apply patch for adiak's missing `-ldl' for mpi when built statically
+    get_target_property(_target_type adiak::adiak TYPE)
+    if(MPI_FOUND AND ${_target_type} STREQUAL "STATIC_LIBRARY" AND TARGET adiak::mpi)
+        blt_patch_target(NAME adiak::mpi DEPENDS_ON dl)
+    endif()
+
+    set(ADIAK_FOUND TRUE)
+else()
+    message(STATUS "Adiak support is OFF")
+    set(ADIAK_FOUND FALSE)
+endif()
+
+#------------------------------------------------------------------------------
+# Caliper
+#------------------------------------------------------------------------------
+if(CALIPER_DIR)
+    # Extra handling for caliper's cuda dependencies
+    if(AXOM_ENABLE_CUDA)
+        find_package(CUDAToolkit REQUIRED)
+    endif()
+
+    axom_assert_is_directory(DIR_VARIABLE CALIPER_DIR)
+    find_dependency(caliper REQUIRED 
+                    PATHS "${CALIPER_DIR}" 
+                          "${CALIPER_DIR}/share/cmake/caliper"
+                    NO_SYSTEM_ENVIRONMENT_PATH)
+    axom_assert_find_succeeded(PROJECT_NAME Caliper
+                               TARGET       caliper
+                               DIR_VARIABLE CALIPER_DIR)
+
+    set(CALIPER_FOUND TRUE)
+else()
+    message(STATUS "Caliper support is OFF")
+    set(CALIPER_FOUND FALSE)
+endif()
+
+#------------------------------------------------------------------------------
 # Shroud - Generates C/Fortran/Python bindings
 #------------------------------------------------------------------------------
 if(EXISTS ${SHROUD_EXECUTABLE})
@@ -227,6 +257,8 @@ endif()
 # SCR
 #------------------------------------------------------------------------------
 if (SCR_DIR)
+    axom_assert_is_directory(DIR_VARIABLE SCR_DIR)
+
     include(cmake/thirdparty/FindSCR.cmake)
     blt_import_library( NAME       scr
                         INCLUDES   ${SCR_INCLUDE_DIRS}
@@ -234,6 +266,7 @@ if (SCR_DIR)
                         TREAT_INCLUDES_AS_SYSTEM ON
                         EXPORTABLE ON)
     blt_list_append(TO TPL_DEPS ELEMENTS scr)
+    set(SCR_FOUND TRUE)
 else()
     message(STATUS "SCR support is OFF")
 endif()
@@ -243,6 +276,7 @@ endif()
 # LUA
 #------------------------------------------------------------------------------
 if (LUA_DIR)
+    axom_assert_is_directory(DIR_VARIABLE LUA_DIR)
     include(cmake/thirdparty/FindLUA.cmake)
     if(NOT TARGET lua)
         blt_import_library( NAME        lua
@@ -255,7 +289,7 @@ if (LUA_DIR)
     blt_list_append(TO TPL_DEPS ELEMENTS lua)
 else()
     message(STATUS "LUA support is OFF")
-    set(LUA_FOUND OFF CACHE BOOL "")
+    set(LUA_FOUND FALSE)
 endif()
 
 
@@ -263,6 +297,7 @@ endif()
 # C2C
 #------------------------------------------------------------------------------
 if (C2C_DIR)
+    axom_assert_is_directory(DIR_VARIABLE C2C_DIR)
     include(cmake/thirdparty/FindC2C.cmake)
     blt_import_library(
         NAME          c2c
@@ -273,60 +308,18 @@ if (C2C_DIR)
     blt_list_append(TO TPL_DEPS ELEMENTS c2c)
 else()
     message(STATUS "c2c support is OFF")
-    set(C2C_FOUND OFF CACHE BOOL "")
+    set(C2C_FOUND FALSE)
 endif()
-
 
 #------------------------------------------------------------------------------
-# Remove exported OpenMP flags because they are not language agnostic
+# jsonschema - for Inlet testing purposes
 #------------------------------------------------------------------------------
-set(_props)
-if( ${CMAKE_VERSION} VERSION_GREATER_EQUAL "3.13.0" )
-    list(APPEND _props INTERFACE_LINK_OPTIONS)
-endif()
-list(APPEND _props INTERFACE_COMPILE_OPTIONS)
-
-foreach(_target RAJA camp umpire umpire_alloc conduit::conduit)
-    if(TARGET ${_target})
-        message(STATUS "Removing OpenMP Flags from target[${_target}]")
-
-        foreach(_prop ${_props})
-            get_target_property(_flags ${_target} ${_prop})
-            if ( _flags )
-                string( REPLACE "${OpenMP_CXX_FLAGS}" ""
-                        correct_flags "${_flags}" )
-                string( REPLACE "${OpenMP_Fortran_FLAGS}" ""
-                        correct_flags "${correct_flags}" )
-
-                set_target_properties( ${_target} PROPERTIES ${_prop} "${correct_flags}" )
-            endif()
-        endforeach()
-    endif()
-endforeach()
-
-# Newer versions of RAJA keeps its flags in a specific target
-if(TARGET RAJA)
-    get_target_property(_flags RAJA INTERFACE_LINK_LIBRARIES)
-    if ( _flags )
-        list(REMOVE_ITEM _flags "RAJA::openmp")
-        set_target_properties( RAJA PROPERTIES INTERFACE_LINK_LIBRARIES "${_flags}" )
-    endif()
-endif()
-
-# Clear Camp's openmp target until BLT handles this fully
-if (TARGET blt::openmp)
-    set_target_properties(blt::openmp PROPERTIES INTERFACE_COMPILE_OPTIONS "")
-    set_target_properties(blt::openmp PROPERTIES INTERFACE_LINK_OPTIONS "")
-endif()
+set(ENABLE_JSONSCHEMA ON) # required by blt_find_executable
+blt_find_executable(NAME jsonschema)
 
 #------------------------------------------------------------------------------
 # Targets that need to be exported but don't have a CMake config file
 #------------------------------------------------------------------------------
-blt_list_append(TO TPL_DEPS ELEMENTS cuda cuda_runtime IF AXOM_ENABLE_CUDA)
-blt_list_append(TO TPL_DEPS ELEMENTS blt_hip blt_hip_runtime IF AXOM_ENABLE_HIP)
-blt_list_append(TO TPL_DEPS ELEMENTS openmp IF AXOM_ENABLE_OPENMP)
-blt_list_append(TO TPL_DEPS ELEMENTS mpi IF AXOM_ENABLE_MPI)
-
 foreach(dep ${TPL_DEPS})
     # If the target is EXPORTABLE, add it to the export set
     get_target_property(_is_imported ${dep} IMPORTED)

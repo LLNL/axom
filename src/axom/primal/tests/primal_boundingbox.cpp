@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -14,7 +14,7 @@
 #include "axom/primal/geometry/Point.hpp"
 #include "axom/primal/geometry/BoundingBox.hpp"
 
-using namespace axom;
+namespace primal = axom::primal;
 
 //------------------------------------------------------------------------------
 template <typename ExecSpace>
@@ -40,7 +40,10 @@ void check_bb_policy()
       box[i].isValid();
     });
 
-  EXPECT_EQ(box[0], BoundingBoxType(PointType(0.0), PointType(10.0)));
+  BoundingBoxType box_host;
+  axom::copy(&box_host, box, sizeof(BoundingBoxType));
+
+  EXPECT_EQ(box_host, BoundingBoxType(PointType(0.0), PointType(10.0)));
 
   axom::deallocate(box);
 }
@@ -48,10 +51,10 @@ void check_bb_policy()
 //------------------------------------------------------------------------------
 TEST(primal_boundingBox, bb_default_constructor)
 {
-  static const int DIM = 2;
-  typedef double CoordType;
-  typedef primal::Point<CoordType, DIM> QPoint;
-  typedef primal::BoundingBox<CoordType, DIM> QBBox;
+  constexpr int DIM = 2;
+  using CoordType = double;
+  using QPoint = primal::Point<CoordType, DIM>;
+  using QBBox = primal::BoundingBox<CoordType, DIM>;
 
   QBBox bbox;
   EXPECT_FALSE(bbox.isValid()) << "Default constructed bounding box is invalid";
@@ -64,10 +67,10 @@ TEST(primal_boundingBox, bb_default_constructor)
 //------------------------------------------------------------------------------
 TEST(primal_boundingBox, bb_ctor_from_singlePt)
 {
-  static const int DIM = 3;
-  typedef double CoordType;
-  typedef primal::Point<CoordType, DIM> QPoint;
-  typedef primal::BoundingBox<CoordType, DIM> QBBox;
+  constexpr int DIM = 3;
+  using CoordType = double;
+  using QPoint = primal::Point<CoordType, DIM>;
+  using QBBox = primal::BoundingBox<CoordType, DIM>;
 
   QPoint pt1;
   QPoint pt2(2);
@@ -92,10 +95,10 @@ TEST(primal_boundingBox, bb_ctor_from_singlePt)
 //------------------------------------------------------------------------------
 TEST(primal_boundingBox, bb_ctor_from_twoPoints)
 {
-  static const int DIM = 3;
-  typedef double CoordType;
-  typedef primal::Point<CoordType, DIM> QPoint;
-  typedef primal::BoundingBox<CoordType, DIM> QBBox;
+  constexpr int DIM = 3;
+  using CoordType = double;
+  using QPoint = primal::Point<CoordType, DIM>;
+  using QBBox = primal::BoundingBox<CoordType, DIM>;
 
   QPoint pt1(1);
   QPoint pt2(3);
@@ -129,7 +132,6 @@ TEST(primal_boundingBox, bb_ctor_from_twoPoints)
   const int val = 10;
   QPoint pt101 = QPoint::make_point(val, 0, val);
   QPoint pt010 = QPoint::make_point(0, val, 0);
-  ;
   QPoint midPt2 = QPoint::midpoint(pt101, pt010);
 
   QBBox bbox3(pt101, pt010);
@@ -146,10 +148,10 @@ TEST(primal_boundingBox, bb_ctor_from_twoPoints)
 //------------------------------------------------------------------------------
 TEST(primal_boundingBox, bb_ctor_from_many_points)
 {
-  static const int DIM = 3;
-  typedef double CoordType;
-  typedef primal::Point<CoordType, DIM> QPoint;
-  typedef primal::BoundingBox<CoordType, DIM> QBBox;
+  constexpr int DIM = 3;
+  using CoordType = double;
+  using QPoint = primal::Point<CoordType, DIM>;
+  using QBBox = primal::BoundingBox<CoordType, DIM>;
 
   // test single point
   QPoint pt1(0.);
@@ -179,10 +181,10 @@ TEST(primal_boundingBox, bb_ctor_from_many_points)
 //------------------------------------------------------------------------------
 TEST(primal_boundingBox, bb_addPoint)
 {
-  static const int DIM = 3;
-  typedef double CoordType;
-  typedef primal::Point<CoordType, DIM> QPoint;
-  typedef primal::BoundingBox<CoordType, DIM> QBBox;
+  constexpr int DIM = 3;
+  using CoordType = double;
+  using QPoint = primal::Point<CoordType, DIM>;
+  using QBBox = primal::BoundingBox<CoordType, DIM>;
 
   QPoint pt1(1);
   QPoint pt2(3);
@@ -203,8 +205,7 @@ TEST(primal_boundingBox, bb_addPoint)
   bbox1.addPoint(pt10);
   EXPECT_TRUE(bbox1.contains(pt10));
 
-  // Testing that if we add a point, then points outside the bounds remain
-  // outside
+  // Testing that if we add a point, then points outside the bounds remain outside
   EXPECT_FALSE(bbox1.contains(pt30));
   bbox1.addPoint(pt20);  // note: adding 20, but testing 30
   EXPECT_FALSE(bbox1.contains(pt30));
@@ -213,10 +214,10 @@ TEST(primal_boundingBox, bb_addPoint)
 //------------------------------------------------------------------------------
 TEST(primal_boundingBox, bb_test_clear)
 {
-  static const int DIM = 3;
-  typedef double CoordType;
-  typedef primal::Point<CoordType, DIM> QPoint;
-  typedef primal::BoundingBox<CoordType, DIM> QBBox;
+  constexpr int DIM = 3;
+  using CoordType = double;
+  using QPoint = primal::Point<CoordType, DIM>;
+  using QBBox = primal::BoundingBox<CoordType, DIM>;
 
   QPoint pt1(1);
   QPoint pt2(3);
@@ -242,10 +243,10 @@ TEST(primal_boundingBox, bb_test_clear)
 //------------------------------------------------------------------------------
 TEST(primal_boundingBox, bb_copy_and_assignment)
 {
-  static const int DIM = 3;
-  typedef double CoordType;
-  typedef primal::Point<CoordType, DIM> QPoint;
-  typedef primal::BoundingBox<CoordType, DIM> QBBox;
+  constexpr int DIM = 3;
+  using CoordType = double;
+  using QPoint = primal::Point<CoordType, DIM>;
+  using QBBox = primal::BoundingBox<CoordType, DIM>;
 
   QPoint pt1(1);
   QPoint pt2(3);
@@ -261,8 +262,7 @@ TEST(primal_boundingBox, bb_copy_and_assignment)
   EXPECT_EQ(bbox1.getMax(), bbox2.getMax());
   EXPECT_TRUE(bbox2.contains(midPt));
 
-  QBBox bbox3(pt2);  // some initialization that we don't care
-                     // about
+  QBBox bbox3(pt2);  // some initialization that we don't care about
   EXPECT_TRUE(bbox3.isValid());
   EXPECT_FALSE(bbox3.contains(pt1));
   bbox3 = bbox1;  // assignment operation
@@ -284,10 +284,10 @@ TEST(primal_boundingBox, bb_copy_and_assignment)
 //------------------------------------------------------------------------------
 TEST(primal_boundingBox, bb_test_equality)
 {
-  static const int DIM = 3;
-  typedef double CoordType;
-  typedef primal::Point<CoordType, DIM> QPoint;
-  typedef primal::BoundingBox<CoordType, DIM> QBBox;
+  constexpr int DIM = 3;
+  using CoordType = double;
+  using QPoint = primal::Point<CoordType, DIM>;
+  using QBBox = primal::BoundingBox<CoordType, DIM>;
 
   QPoint pt1(1);
   QPoint pt2(3);
@@ -325,10 +325,10 @@ TEST(primal_boundingBox, bb_test_equality)
 //------------------------------------------------------------------------------
 TEST(primal_boundingBox, bb_add_box)
 {
-  static const int DIM = 3;
-  typedef double CoordType;
-  typedef primal::Point<CoordType, DIM> QPoint;
-  typedef primal::BoundingBox<CoordType, DIM> QBBox;
+  constexpr int DIM = 3;
+  using CoordType = double;
+  using QPoint = primal::Point<CoordType, DIM>;
+  using QBBox = primal::BoundingBox<CoordType, DIM>;
 
   //
   SLIC_INFO("Testing addBox() for two simple bounding boxes");
@@ -395,12 +395,12 @@ TEST(primal_boundingBox, bb_add_box)
 //------------------------------------------------------------------------------
 TEST(primal_boundingBox, bb_different_coord_types)
 {
-  static const int DIM = 3;
-  typedef primal::Point<double, DIM> PointD;
-  typedef primal::BoundingBox<double, DIM> BBoxD;
+  constexpr int DIM = 3;
+  using PointD = primal::Point<double, DIM>;
+  using BBoxD = primal::BoundingBox<double, DIM>;
 
-  typedef primal::Point<int, DIM> PointI;
-  typedef primal::BoundingBox<int, DIM> BBoxI;
+  using PointI = primal::Point<int, DIM>;
+  using BBoxI = primal::BoundingBox<int, DIM>;
 
   // checking that an integer point is in the double bounding box
   BBoxD dBox(PointD(1.), PointD(3.));
@@ -429,12 +429,73 @@ TEST(primal_boundingBox, bb_different_coord_types)
 }
 
 //------------------------------------------------------------------------------
+TEST(primal_boundingBox, bb_contains_bb)
+{
+  constexpr int DIM = 3;
+  constexpr double ONE_THIRD = 1. / 3.;
+  constexpr double TWO_THIRDS = 2. / 3.;
+
+  using PointD = primal::Point<double, DIM>;
+  using BBoxD = primal::BoundingBox<double, DIM>;
+
+  BBoxD unit_box;
+  unit_box.addPoint(PointD(0.));
+  unit_box.addPoint(PointD(1.));
+
+  const BBoxD empty_box;
+  const BBoxD empty_box2;
+
+  // check identity
+  {
+    EXPECT_TRUE(unit_box.contains(unit_box));
+  }
+
+  // check contains w/ empty boxes
+  {
+    EXPECT_TRUE(unit_box.contains(empty_box));
+    EXPECT_FALSE(empty_box.contains(unit_box));
+
+    EXPECT_TRUE(empty_box.contains(empty_box2));
+  }
+
+  // check full overlap
+  {
+    BBoxD other_box;
+    other_box.addPoint(PointD(ONE_THIRD));
+    other_box.addPoint(PointD(TWO_THIRDS));
+
+    EXPECT_TRUE(unit_box.contains(other_box));
+    EXPECT_FALSE(other_box.contains(unit_box));
+  }
+
+  // check full overlap, one point at boundary
+  {
+    BBoxD other_box;
+    other_box.addPoint(PointD(ONE_THIRD));
+    other_box.addPoint(PointD(1.));
+
+    EXPECT_TRUE(unit_box.contains(other_box));
+    EXPECT_FALSE(other_box.contains(unit_box));
+  }
+
+  // check partial overlap
+  {
+    BBoxD other_box;
+    other_box.addPoint(PointD(0.5));
+    other_box.addPoint(PointD(1.5));
+
+    EXPECT_FALSE(unit_box.contains(other_box));
+    EXPECT_FALSE(other_box.contains(unit_box));
+  }
+}
+
+//------------------------------------------------------------------------------
 TEST(primal_boundingBox, bb_expand)
 {
-  static const int DIM = 3;
-  typedef double CoordType;
-  typedef primal::Point<CoordType, DIM> QPoint;
-  typedef primal::BoundingBox<CoordType, DIM> QBBox;
+  constexpr int DIM = 3;
+  using CoordType = double;
+  using QPoint = primal::Point<CoordType, DIM>;
+  using QBBox = primal::BoundingBox<CoordType, DIM>;
 
   //
   SLIC_INFO("Testing bounding box inflate");
@@ -467,10 +528,10 @@ TEST(primal_boundingBox, bb_expand)
 //------------------------------------------------------------------------------
 TEST(primal_boundingBox, bb_scale)
 {
-  static const int DIM = 3;
-  typedef double CoordType;
-  typedef primal::Point<CoordType, DIM> QPoint;
-  typedef primal::BoundingBox<CoordType, DIM> QBBox;
+  constexpr int DIM = 3;
+  using CoordType = double;
+  using QPoint = primal::Point<CoordType, DIM>;
+  using QBBox = primal::BoundingBox<CoordType, DIM>;
 
   //
   SLIC_INFO("Testing bounding box scale");
@@ -515,11 +576,11 @@ TEST(primal_boundingBox, bb_scale)
 //------------------------------------------------------------------------------
 TEST(primal_boundingBox, bb_shift)
 {
-  static const int DIM = 3;
-  typedef double CoordType;
-  typedef primal::Point<CoordType, DIM> QPoint;
-  typedef primal::BoundingBox<CoordType, DIM> QBBox;
-  typedef primal::Vector<CoordType, DIM> QVec;
+  constexpr int DIM = 3;
+  using CoordType = double;
+  using QPoint = primal::Point<CoordType, DIM>;
+  using QBBox = primal::BoundingBox<CoordType, DIM>;
+  using QVec = primal::Vector<CoordType, DIM>;
 
   //
   SLIC_INFO("Testing bounding box shift");
@@ -545,9 +606,7 @@ TEST(primal_boundingBox, bb_shift)
 //------------------------------------------------------------------------------
 TEST(primal_boundingBox, highest_lowest_values)
 {
-  using namespace axom::primal;
-
-  static const int DIM = 3;
+  constexpr int DIM = 3;
 
   // Testing that our type trait for highest and lowest values
   // is doing the right thing in our CXX11 and pre-CXX11 compilers
@@ -576,27 +635,24 @@ TEST(primal_boundingBox, highest_lowest_values)
   EXPECT_EQ(maxU, std::numeric_limits<unsigned int>::max());
   EXPECT_EQ(minU, std::numeric_limits<unsigned int>::lowest());
 
-  // Testing that our default constructor for bounding boxes is properly
-  // setting the range.
+  // Testing that our default constructor for bounding boxes is properly setting the range.
 
-  // Note: The bounds are intentionally in the reverse order -- this is how we
-  // ensure
-  // that adding a point to an empty bounding box always updates the bounds
-  // properly
+  // Note: The bounds are intentionally in the reverse order -- this is how we ensure
+  // that adding a point to an empty bounding box always updates the bounds properly
 
-  typedef primal::BoundingBox<double, DIM> BBoxD;
+  using BBoxD = primal::BoundingBox<double, DIM>;
   EXPECT_TRUE(BBoxD().getMin()[0] > 0);
   EXPECT_TRUE(BBoxD().getMax()[0] < 0);
 
-  typedef primal::BoundingBox<float, DIM> BBoxF;
+  using BBoxF = primal::BoundingBox<float, DIM>;
   EXPECT_TRUE(BBoxF().getMin()[0] > 0);
   EXPECT_TRUE(BBoxF().getMax()[0] < 0);
 
-  typedef primal::BoundingBox<int, DIM> BBoxI;
+  using BBoxI = primal::BoundingBox<int, DIM>;
   EXPECT_TRUE(BBoxI().getMin()[0] > 0);
   EXPECT_TRUE(BBoxI().getMax()[0] < 0);
 
-  typedef primal::BoundingBox<unsigned int, DIM> BBoxU;
+  using BBoxU = primal::BoundingBox<unsigned int, DIM>;
   EXPECT_TRUE(BBoxU().getMin()[0] > 0);
   EXPECT_TRUE(BBoxU().getMax()[0] == 0);
 }
@@ -604,19 +660,19 @@ TEST(primal_boundingBox, highest_lowest_values)
 //------------------------------------------------------------------------------
 TEST(primal_boundingBox, bb_longest_dimension)
 {
-  typedef primal::Point<double, 2> PointType;
-  typedef primal::BoundingBox<double, 2> BoxType;
+  using PointType = primal::Point<double, 2>;
+  using BoxType = primal::BoundingBox<double, 2>;
 
-  BoxType bbox(PointType::zero(), PointType::make_point(5.0, 10.0));
-  int longest_dimension = bbox.getLongestDimension();
+  const BoxType bbox(PointType::zero(), PointType::make_point(5.0, 10.0));
+  const int longest_dimension = bbox.getLongestDimension();
   EXPECT_EQ(1, longest_dimension);
 }
 
 //------------------------------------------------------------------------------
 TEST(primal_boundingBox, bb_bisect)
 {
-  typedef primal::Point<double, 2> PointType;
-  typedef primal::BoundingBox<double, 2> BoxType;
+  using PointType = primal::Point<double, 2>;
+  using BoxType = primal::BoundingBox<double, 2>;
 
   BoxType bbox(PointType::zero(), PointType::ones());
 
@@ -642,8 +698,8 @@ TEST(primal_boundingBox, bb_bisect)
 //------------------------------------------------------------------------------
 TEST(primal_boundingBox, bb_get_centroid)
 {
-  typedef primal::Point<double, 2> PointType;
-  typedef primal::BoundingBox<double, 2> BoxType;
+  using PointType = primal::Point<double, 2>;
+  using BoxType = primal::BoundingBox<double, 2>;
 
   BoxType bbox(PointType::zero(), PointType::ones());
   PointType centroid = bbox.getCentroid();

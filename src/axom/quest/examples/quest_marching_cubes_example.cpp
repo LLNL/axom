@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -14,15 +14,24 @@
   for the function not varying linearly along mesh lines.
 */
 
-// Axom includes
 #include "axom/config.hpp"
+
+// Implementation requires Conduit.
+#ifndef AXOM_USE_CONDUIT
+  #error "MarchingCubesFullParallel.hpp requires conduit"
+#endif
+
+// Axom includes
 #include "axom/core.hpp"
 #include "axom/slic.hpp"
 #include "axom/primal.hpp"
 #include "axom/mint/mesh/UnstructuredMesh.hpp"
+#include "axom/core/MDMapping.hpp"
 #include "axom/quest/MarchingCubes.hpp"
+#include "axom/quest/MeshViewUtil.hpp"
 #include "axom/sidre.hpp"
 #include "axom/core/Types.hpp"
+#include "axom/core/numerics/floating_point_limits.hpp"
 
 #include "conduit_blueprint.hpp"
 #include "conduit_relay_io_blueprint.hpp"
@@ -47,11 +56,12 @@
 
 namespace quest = axom::quest;
 namespace slic = axom::slic;
-namespace mint = axom::mint;
 namespace sidre = axom::sidre;
 namespace primal = axom::primal;
 namespace mint = axom::mint;
 namespace numerics = axom::numerics;
+
+using RuntimePolicy = axom::runtime_policy::Policy;
 
 ///////////////////////////////////////////////////////////////
 // converts the input string into an 80 character string
@@ -70,43 +80,42 @@ public:
   std::string fieldsFile {"fields"};
 
   // Center of round contour function
-  bool usingRound {false};
   std::vector<double> fcnCenter;
 
+  // Scaling factor for gyroid function
+  std::vector<double> gyroidScale;
+
   // Parameters for planar contour function
-  bool usingPlanar {false};
   std::vector<double> inPlane;
   std::vector<double> perpDir;
 
   std::size_t ndim {0};
 
-  // TODO: Ensure that fcnCenter, inPlane and perpDir sizes match dimensionality.
-
   double contourVal {1.0};
 
   bool checkResults {false};
 
-  quest::MarchingCubesRuntimePolicy policy {
-    quest::MarchingCubesRuntimePolicy::seq};
+  RuntimePolicy policy {RuntimePolicy::seq};
+
+  quest::MarchingCubesDataParallelism dataParallelism =
+    quest::MarchingCubesDataParallelism::byPolicy;
+
+  // Distinct MarchingCubes objects count.
+  int objectRepCount = 1;
+  // Contour generation count for each MarchingCubes objects.
+  int contourGenCount = 1;
+
+  std::string annotationMode {"none"};
 
 private:
   bool _verboseOutput {false};
 
   // clang-format off
-  const std::map<std::string, quest::MarchingCubesRuntimePolicy> s_validPolicies
+  const std::map<std::string, quest::MarchingCubesDataParallelism> s_validImplChoices
   {
-      {"seq", quest::MarchingCubesRuntimePolicy::seq}
-#if defined(AXOM_USE_RAJA)
-  #ifdef AXOM_USE_OPENMP
-    , {"omp", quest::MarchingCubesRuntimePolicy::omp}
-  #endif
-  #if defined(AXOM_USE_CUDA) && defined(AXOM_USE_UMPIRE)
-    , {"cuda", quest::MarchingCubesRuntimePolicy::cuda}
-  #endif
-  #if defined(AXOM_USE_HIP) && defined(AXOM_USE_UMPIRE)
-    , {"hip", quest::MarchingCubesRuntimePolicy::hip}
-  #endif
-#endif
+    {"byPolicy", quest::MarchingCubesDataParallelism::byPolicy}
+    , {"hybridParallel", quest::MarchingCubesDataParallelism::hybridParallel}
+    , {"fullParallel", quest::MarchingCubesDataParallelism::fullParallel}
   };
   // clang-format on
 
@@ -118,7 +127,13 @@ public:
     app.add_option("-p, --policy", policy)
       ->description("Set runtime policy for point query method")
       ->capture_default_str()
-      ->transform(axom::CLI::CheckedTransformer(s_validPolicies));
+      ->transform(
+        axom::CLI::CheckedTransformer(axom::runtime_policy::s_nameToPolicy));
+
+    app.add_option("--dataParallelism", dataParallelism)
+      ->description("Set full or partial data-parallelism, or by-policy")
+      ->capture_default_str()
+      ->transform(axom::CLI::CheckedTransformer(s_validImplChoices));
 
     app.add_option("-m,--mesh-file", meshFile)
       ->description(
@@ -134,23 +149,39 @@ public:
       ->description("Enable/disable verbose output")
       ->capture_default_str();
 
-    auto* distFromPtOption = app.add_option_group(
+    auto* distanceFunctionOption =
+      app.add_option_group("distanceFunctionOption",
+                           "Options for specifying a distance function.");
+
+    auto* distFromPtOption = distanceFunctionOption->add_option_group(
       "distFromPtOption",
       "Options for setting up distance-from-point function");
     distFromPtOption->add_option("--center", fcnCenter)
       ->description("Center for distance-from-point function (x,y[,z])")
       ->expected(2, 3);
 
-    auto* distFromPlaneOption = app.add_option_group(
+    auto* gyroidOption = distanceFunctionOption->add_option_group(
+      "gyroidOption",
+      "Options for setting up gyroid function");
+    gyroidOption->add_option("--scale", gyroidScale)
+      ->description("Scaling factor for gyroid function (x,y[,z])")
+      ->expected(2, 3);
+
+    auto* distFromPlaneOption = distanceFunctionOption->add_option_group(
       "distFromPlaneOption",
       "Options for setting up distance-from-plane function");
+    auto* perpDirOption =
+      distFromPlaneOption->add_option("--dir", perpDir)
+        ->description(
+          "Positive direction for distance-from-plane function (x,y[,z])")
+        ->expected(2, 3);
     distFromPlaneOption->add_option("--inPlane", inPlane)
       ->description("In-plane point for distance-from-plane function (x,y[,z])")
-      ->expected(2, 3);
-    distFromPlaneOption->add_option("--dir", perpDir)
-      ->description(
-        "Positive direction for distance-from-plane function (x,y[,z])")
-      ->expected(2, 3);
+      ->expected(2, 3)
+      ->needs(perpDirOption);
+
+    // Require at least one distance function, and allow all three.
+    distanceFunctionOption->require_option(1, 3);
 
     app.add_option("--contourVal", contourVal)
       ->description("Contour value")
@@ -161,6 +192,28 @@ public:
         "Enable/disable checking results against analytical solution")
       ->capture_default_str();
 
+    //
+    // Number of repetitions to run
+    //
+
+    app.add_option("--objectReps", objectRepCount)
+      ->description("Number of MarchingCube object repetitions to run")
+      ->capture_default_str();
+
+    app.add_option("--contourGenReps", contourGenCount)
+      ->description(
+        "Number of contour repetitions to run for each MarchingCubes object")
+      ->capture_default_str();
+
+#ifdef AXOM_USE_CALIPER
+    app.add_option("--caliper", annotationMode)
+      ->description(
+        "caliper annotation mode. Valid options include 'none' and 'report'. "
+        "Use 'help' to see full list.")
+      ->capture_default_str()
+      ->check(axom::utilities::ValidCaliperMode);
+#endif
+
     app.get_formatter()->column_width(60);
 
     // could throw an exception
@@ -169,34 +222,38 @@ public:
     slic::setLoggingMsgLevel(_verboseOutput ? slic::message::Debug
                                             : slic::message::Info);
 
-    ndim = std::max(ndim, fcnCenter.size());
-    ndim = std::max(ndim, inPlane.size());
-    ndim = std::max(ndim, perpDir.size());
+    ndim = std::max(
+      {ndim, fcnCenter.size(), inPlane.size(), perpDir.size(), gyroidScale.size()});
     SLIC_ASSERT_MSG((fcnCenter.empty() || fcnCenter.size() == ndim) &&
                       (inPlane.empty() || inPlane.size() == ndim) &&
-                      (perpDir.empty() || perpDir.size() == ndim),
+                      (perpDir.empty() || perpDir.size() == ndim) &&
+                      (gyroidScale.empty() || gyroidScale.size() == ndim),
                     "fcnCenter, inPlane and perpDir must have consistent sizes "
                     "if specified.");
 
-    usingPlanar = !perpDir.empty();
-    usingRound = !fcnCenter.empty();
-    SLIC_ASSERT_MSG(
-      usingPlanar || usingRound,
-      "You must specify a planar scalar function or a round scalar"
-      " function or both.");
-
     // inPlane defaults to origin if omitted.
-    if(usingPlanar && inPlane.empty())
+    if(usingPlanar() && inPlane.empty())
     {
       inPlane.insert(inPlane.begin(), ndim, 0.0);
     }
   }
+
+  bool usingPlanar() { return !perpDir.empty(); }
+  bool usingRound() { return !fcnCenter.empty(); }
+  bool usingGyroid() { return !gyroidScale.empty(); }
 
   template <int DIM>
   axom::primal::Point<double, DIM> roundContourCenter() const
   {
     SLIC_ASSERT(fcnCenter.size() == DIM);
     return axom::primal::Point<double, DIM>(fcnCenter.data());
+  }
+
+  template <int DIM>
+  axom::primal::Point<double, DIM> gyroidScaleFactor() const
+  {
+    SLIC_ASSERT(gyroidScale.size() == DIM);
+    return axom::primal::Point<double, DIM>(gyroidScale.data());
   }
 
   template <int DIM>
@@ -214,66 +271,42 @@ public:
   }
 };
 
-//!@brief Our allocatorId, based on execution policy.
-static int allocatorId = axom::INVALID_ALLOCATOR_ID;  // Set in main.
-static int allocatorIdForPolicy(quest::MarchingCubesRuntimePolicy policy)
-{
-  //---------------------------------------------------------------------------
-  // Set default allocator for possibly testing on devices
-  //---------------------------------------------------------------------------
-  int aid = axom::INVALID_ALLOCATOR_ID;
-
-  // clang-format off
-  if(policy == axom::quest::MarchingCubesRuntimePolicy::seq)
-  {
-    aid = axom::execution_space<axom::SEQ_EXEC>::allocatorID();
-  }
-#if defined(AXOM_USE_RAJA)
-#ifdef _AXOM_MC_USE_OPENMP
-  else if(policy == axom::quest::MarchingCubesRuntimePolicy::omp)
-  {
-    aid = axom::execution_space<axom::OMP_EXEC>::allocatorID();
-  }
-#endif
-#ifdef _AXOM_MC_USE_CUDA
-  else if(policy == axom::quest::MarchingCubesRuntimePolicy::cuda)
-  {
-    aid = axom::execution_space<axom::CUDA_EXEC<256>>::allocatorID();
-  }
-#endif
-#ifdef _AXOM_MC_USE_HIP
-  else if(policy == axom::quest::MarchingCubesRuntimePolicy::hip)
-  {
-    aid = axom::execution_space<axom::HIP_EXEC<256>>::allocatorID();
-  }
-#endif
-#endif
-  // clang-format on
-
-  SLIC_ERROR_IF(
-    aid == axom::INVALID_ALLOCATOR_ID,
-    axom::fmt::format("Cannot find allocator id for policy '{}'", policy));
-  return aid;
-}
+//!@brief Our allocator id, based on execution policy.
+static int s_allocatorId = axom::INVALID_ALLOCATOR_ID;  // Set in main.
 
 //!@brief Put a conduit::Node array data into the specified memory space.
 template <typename T>
-void putConduitDataInNewMemorySpace(conduit::Node& node,
-                                    const std::string& path,
-                                    int allocId)
+void moveConduitDataToNewMemorySpace(conduit::Node& node,
+                                     const std::string& path,
+                                     int allocId)
 {
-  SLIC_ASSERT(node.has_path(path));
-  conduit::Node& dataNode = node[path];
+  conduit::Node& dataNode = node.fetch_existing(path);
   SLIC_ASSERT(!dataNode.dtype().is_empty() && !dataNode.dtype().is_object() &&
               !dataNode.dtype().is_list());
 
   std::size_t count = dataNode.dtype().number_of_elements();
-  // dataNode.print();
   T* oldPtr = static_cast<T*>(dataNode.data_ptr());
+  bool deleteOld = dataNode.is_data_external();
   T* newPtr = axom::allocate<T>(count, allocId);
   axom::copy(newPtr, oldPtr, count * sizeof(T));
   dataNode.set_external(newPtr, count);
-  dataNode.print();
+  if(deleteOld)
+  {
+    axom::deallocate(oldPtr);
+  }
+}
+
+void getIntMinMax(int inVal, int& minVal, int& maxVal, int& sumVal)
+{
+#ifdef AXOM_USE_MPI
+  MPI_Allreduce(&inVal, &minVal, 1, MPI_INT, MPI_MIN, MPI_COMM_WORLD);
+  MPI_Allreduce(&inVal, &maxVal, 1, MPI_INT, MPI_MAX, MPI_COMM_WORLD);
+  MPI_Allreduce(&inVal, &sumVal, 1, MPI_INT, MPI_SUM, MPI_COMM_WORLD);
+#else
+  minVal = inVal;
+  maxVal = inVal;
+  sumVal = inVal;
+#endif
 }
 
 Input params;
@@ -287,35 +320,18 @@ struct BlueprintStructuredMesh
 {
 public:
   explicit BlueprintStructuredMesh(const std::string& meshFile,
-                                   const std::string& coordset = "coords",
-                                   const std::string& topology = "mesh")
-    : _coordsetPath("coordsets/" + coordset)
-    , _topologyPath("topologies/" + topology)
+                                   const std::string& topologyName)
+    : _topologyName(topologyName)
+    , _topologyPath("topologies/" + topologyName)
   {
     readBlueprintMesh(meshFile);
     for(int d = 0; d < _mdMesh.number_of_children(); ++d)
     {
       auto dl = domainLengths(d);
-      SLIC_INFO(axom::fmt::format("dom[{}] size={}", d, dl));
+      SLIC_INFO_IF(params.isVerbose(),
+                   axom::fmt::format("dom[{}] size={}", d, dl));
     }
-    if(_ndims == 2)
-    {
-      checkMeshStorage<2>();
-    }
-    if(_ndims == 3)
-    {
-      checkMeshStorage<3>();
-    }
-
     _maxSpacing = maxSpacing();
-
-    putMeshDataInNewMemorySpace<double>(_coordsetPath + "/values/x", allocatorId);
-    putMeshDataInNewMemorySpace<double>(_coordsetPath + "/values/y", allocatorId);
-    if(_ndims == 3)
-    {
-      putMeshDataInNewMemorySpace<double>(_coordsetPath + "/values/z",
-                                          allocatorId);
-    }
   }
 
   /// Return the blueprint mesh in a conduit::Node
@@ -323,6 +339,9 @@ public:
 
   /// Get number of domains in the multidomain mesh
   axom::IndexType domainCount() const { return _domCount; }
+
+  //// Whether mesh is empty locally.
+  bool empty() const { return _domCount == 0; }
 
   /// Get domain group.
   conduit::Node& domain(axom::IndexType domainIdx)
@@ -335,6 +354,18 @@ public:
   {
     SLIC_ASSERT(domainIdx >= 0 && domainIdx < _domCount);
     return _mdMesh.child(domainIdx);
+  }
+
+  template <int DIM>
+  axom::quest::MeshViewUtil<DIM> getDomainView(axom::IndexType domainId)
+  {
+    return axom::quest::MeshViewUtil<DIM>(domain(domainId), _topologyName);
+  }
+
+  template <int DIM>
+  axom::quest::MeshViewUtil<DIM> getDomainView(axom::IndexType domainId) const
+  {
+    return axom::quest::MeshViewUtil<DIM>(domain(domainId), _topologyName);
   }
 
   /*!
@@ -464,7 +495,7 @@ public:
 
     double rval = 0.0;
 
-    const conduit::Node& cVals = dom.fetch_existing("coordsets/coords/values");
+    const conduit::Node& cVals = dom.fetch_existing(_coordsetPath + "/values");
     if(_ndims == 2)
     {
       axom::ArrayView<const double, 2> xs(cVals["x"].as_double_ptr(),
@@ -516,104 +547,6 @@ public:
 
   void printMeshInfo() const { _mdMesh.print(); }
 
-  template <int DIM>
-  axom::StackArray<axom::IndexType, DIM> getCellsShape(int domainNum)
-  {
-    auto domLengths = domainLengths(domainNum);
-    axom::StackArray<axom::IndexType, DIM> shape;
-    for(int i = 0; i < DIM; ++i)
-    {
-      shape[i] = domLengths[i];
-    }
-    return shape;
-  }
-
-  template <int DIM>
-  axom::StackArray<axom::IndexType, DIM> getNodesShape(int domainNum)
-  {
-    auto domLengths = domainLengths(domainNum);
-    axom::StackArray<axom::IndexType, DIM> shape;
-    for(int i = 0; i < DIM; ++i)
-    {
-      shape[i] = 1 + domLengths[i];
-    }
-    return shape;
-  }
-
-  template <int DIM>
-  axom::Array<axom::ArrayView<double, DIM>> get_coords_view(int domainNum)
-  {
-    axom::StackArray<axom::IndexType, DIM> shape = getNodesShape<DIM>(domainNum);
-    for(int d = 0; d < DIM / 2; ++d)
-    {
-      std::swap(shape[d], shape[DIM - 1 - d]);
-    }
-
-    conduit::Node& dom = _mdMesh[domainNum];
-    conduit::Node& coordsValues = dom.fetch_existing("coordsets/coords/values");
-    axom::Array<axom::ArrayView<double, DIM>> coordsViews(DIM);
-    for(int d = 0; d < DIM; ++d)
-    {
-      double* ptr = coordsValues[d].as_double_ptr();
-      coordsViews[d] = axom::ArrayView<double, DIM>(ptr, shape);
-    }
-    return coordsViews;
-  }
-
-  template <int DIM>
-  typename std::enable_if<DIM == 2>::type checkMeshStorage()
-  {
-    SLIC_ASSERT(dimension() == DIM);
-    for(int d = 0; d < _mdMesh.number_of_children(); ++d)
-    {
-      axom::Array<axom::ArrayView<double, DIM>> coordsViews =
-        get_coords_view<DIM>(d);
-      const axom::StackArray<axom::IndexType, DIM>& shape =
-        coordsViews[0].shape();
-
-      // Verify that i is slowest in m_coordsViews.
-      // It appears conduit stores column major and ArrayView computes offsets
-      // assuming row major.
-      int n = 0, errCount = 0;
-      for(int j = 0; j < shape[0]; ++j)
-      {
-        for(int i = 0; i < shape[1]; ++i)
-        {
-          errCount += (&coordsViews[0].data()[n++] != &coordsViews[0](j, i));
-        }
-      }
-      assert(errCount == 0);
-    }
-  }
-  template <int DIM>
-  typename std::enable_if<DIM == 3>::type checkMeshStorage()
-  {
-    SLIC_ASSERT(dimension() == DIM);
-    for(int d = 0; d < _mdMesh.number_of_children(); ++d)
-    {
-      axom::Array<axom::ArrayView<double, DIM>> coordsViews =
-        get_coords_view<DIM>(d);
-      const axom::StackArray<axom::IndexType, DIM>& shape =
-        coordsViews[0].shape();
-
-      // Verify that i is slowest in m_coordsViews.
-      // It appears conduit stores column major and ArrayView computes offsets
-      // assuming row major.
-      int n = 0, errCount = 0;
-      for(int k = 0; k < shape[0]; ++k)
-      {
-        for(int j = 0; j < shape[1]; ++j)
-        {
-          for(int i = 0; i < shape[2]; ++i)
-          {
-            errCount += (&coordsViews[0].data()[n++] != &coordsViews[0](k, j, i));
-          }
-        }
-      }
-      assert(errCount == 0);
-    }
-  }
-
   /*!
     @param[in] path Path to existing data in the blueprint mesh,
     relative to each domain in the mesh.
@@ -622,11 +555,12 @@ public:
     supports, i.e., not custom user data.
   */
   template <typename T>
-  void putMeshDataInNewMemorySpace(const std::string& path, int allocId)
+  void moveMeshDataToNewMemorySpace(const std::string& path, int allocId)
   {
+    AXOM_ANNOTATE_SCOPE("moveMeshDataToNewMemorySpace");
     for(auto& dom : _mdMesh.children())
     {
-      putConduitDataInNewMemorySpace<T>(dom, path, allocId);
+      moveConduitDataToNewMemorySpace<T>(dom, path, allocId);
     }
   }
 
@@ -634,12 +568,14 @@ private:
   int _ndims {-1};
   conduit::Node _mdMesh;
   axom::IndexType _domCount;
-  const std::string _coordsetPath;
+  bool _coordsAreStrided = false;
+  const std::string _topologyName;
   const std::string _topologyPath;
+  std::string _coordsetPath;
   double _maxSpacing = -1.0;
 
   /*!
-    @brief Read a blueprint mesh.
+    @brief Read a blueprint mesh into conduit::Node _mdMesh.
   */
   void readBlueprintMesh(const std::string& meshFilename)
   {
@@ -658,6 +594,15 @@ private:
 
     if(_domCount > 0)
     {
+      SLIC_ASSERT(_mdMesh[0].has_path(_topologyPath));
+      auto coordsetName =
+        _mdMesh[0].fetch_existing(_topologyPath + "/coordset").as_string();
+      _coordsetPath = axom::fmt::format("coordsets/{}", coordsetName);
+      SLIC_ASSERT(_mdMesh[0].has_path(_coordsetPath));
+
+      _coordsAreStrided = _mdMesh[0]
+                            .fetch_existing(_topologyPath + "/elements/dims")
+                            .has_child("strides");
       const conduit::Node coordsetNode = _mdMesh[0].fetch_existing(_coordsetPath);
       _ndims = conduit::blueprint::mesh::coordset::dims(coordsetNode);
     }
@@ -701,6 +646,8 @@ void printTimingStats(axom::utilities::Timer& t, const std::string& description)
 /// Write blueprint mesh to disk
 void saveMesh(const conduit::Node& mesh, const std::string& filename)
 {
+  AXOM_ANNOTATE_SCOPE("save mesh (conduit)");
+
 #ifdef AXOM_USE_MPI
   conduit::relay::mpi::io::blueprint::save_mesh(mesh,
                                                 filename,
@@ -714,6 +661,8 @@ void saveMesh(const conduit::Node& mesh, const std::string& filename)
 /// Write blueprint mesh to disk
 void saveMesh(const sidre::Group& mesh, const std::string& filename)
 {
+  AXOM_ANNOTATE_SCOPE("save mesh (sidre)");
+
   conduit::Node tmpMesh;
   mesh.createNativeLayout(tmpMesh);
   {
@@ -730,25 +679,7 @@ void saveMesh(const sidre::Group& mesh, const std::string& filename)
     }
     // info.print();
   }
-#ifdef AXOM_USE_MPI
-  conduit::relay::mpi::io::blueprint::save_mesh(tmpMesh,
-                                                filename,
-                                                "hdf5",
-                                                MPI_COMM_WORLD);
-#else
-  conduit::relay::io::blueprint::save_mesh(tmpMesh, filename, "hdf5");
-#endif
-}
-
-//!@brief Reverse the order of a StackArray.
-template <typename T, int DIM>
-void reverse(axom::StackArray<T, DIM>& a)
-{
-  for(int d = 0; d < DIM / 2; ++d)
-  {
-    std::swap(a[d], a[DIM - 1 - d]);
-  }
-  return;
+  saveMesh(tmpMesh, filename);
 }
 
 template <typename T, int DIM>
@@ -772,96 +703,225 @@ static void addToStackArray(axom::StackArray<T, DIM>& a, U b)
 }
 
 /*!
-  @brief Compute multidmensional index corresponding to flat index
-  in rectangular index space.
+  @brief Strategy pattern for supporting a variety of contour types.
 
-  The flatId corresponds to the multidimensional index through
-  an order that advances the first index fastest.
+  The strategy encapsulates the scalar functions and things related to
+  it.
 */
 template <int DIM>
-axom::StackArray<axom::IndexType, DIM> flatToMultidimIndex(
-  axom::IndexType flatId,
-  const axom::StackArray<axom::IndexType, DIM>& sizes)
+struct ContourTestStrategy
 {
-  axom::IndexType strides[DIM] = {1};
-  for(int d = 1; d < DIM; ++d)
-  {
-    strides[d] = strides[d - 1] * sizes[d - 1];
-  }
-  if(flatId >= strides[DIM - 1] * sizes[DIM - 1])
-  {
-    SLIC_ERROR("flatId is too big.");
-  }
+  using PointType = axom::primal::Point<double, DIM>;
 
-  axom::StackArray<axom::IndexType, DIM> rval;
-  for(int d = DIM - 1; d >= 0; --d)
-  {
-    rval[d] = flatId / strides[d];
-    flatId -= rval[d] * strides[d];
-  }
-  return rval;
-}
-
-template <int DIM, typename ExecSpace>
-struct ContourTestBase
-{
-  ContourTestBase()
-    : m_parentCellIdField("parentCellIds")
-    , m_domainIdField("domainIdField")
-  { }
-  virtual ~ContourTestBase() { }
-
-  //!@brief Return field name for storing nodal function.
-  virtual std::string name() const = 0;
+  //!@brief Return test name.
+  virtual std::string testName() const = 0;
 
   //!@brief Return field name for storing nodal function.
   virtual std::string functionName() const = 0;
 
-  //!@brief Return function value at a point.
-  virtual AXOM_HOST_DEVICE double value(
-    const axom::primal::Point<double, DIM>& pt) const = 0;
-
   //!@brief Return error tolerance for contour mesh accuracy check.
   virtual double errorTolerance() const = 0;
 
-  //!@brief Set nodal distances given nodal coordinates.
-  virtual void fillNodalValuesFromCoords(
-    axom::ArrayView<double, DIM> coordsViews[DIM],
-    axom::ArrayView<double, DIM>& fieldView) const = 0;
+  //!@brief Return the analytical value of the scalar field.
+  virtual double valueAt(const PointType& pt) const = 0;
+
+  virtual ~ContourTestStrategy() { }
+};
+
+template <int DIM, typename ExecSpace>
+struct ContourTestBase
+{
+  static constexpr auto MemorySpace =
+    axom::execution_space<ExecSpace>::memory_space;
+  using PointType = axom::primal::Point<double, DIM>;
+  // ContourTestBase(const std::shared_ptr<ContourTestStrategy<DIM>>& testStrategy)
+  ContourTestBase()
+    : m_testStrategies()
+    , m_parentCellIdField("parentCellIds")
+    , m_domainIdField("domainIdField")
+  { }
+  virtual ~ContourTestBase() { }
+
+  void addTestStrategy(const std::shared_ptr<ContourTestStrategy<DIM>>& testStrategy)
+  {
+    m_testStrategies.push_back(testStrategy);
+    SLIC_INFO(axom::fmt::format("Add test {}.", testStrategy->testName()));
+  }
+
+  axom::Array<std::shared_ptr<ContourTestStrategy<DIM>>> m_testStrategies;
+  //!@brief Prefix sum of facet counts from test strategies.
+  axom::Array<axom::IndexType> m_strategyFacetPrefixSum;
 
   const std::string m_parentCellIdField;
   const std::string m_domainIdField;
 
-  int runTest(BlueprintStructuredMesh& computationalMesh, quest::MarchingCubes& mc)
+  int runTest(BlueprintStructuredMesh& computationalMesh)
   {
-    SLIC_INFO(banner(axom::fmt::format("Testing {} contour.", name())));
+    AXOM_ANNOTATE_SCOPE("runTest");
 
-    mc.setFunctionField(functionName());
+    // Conduit data is in host memory, move to devices for testing.
+    if(s_allocatorId != axom::execution_space<axom::SEQ_EXEC>::allocatorID())
+    {
+      AXOM_ANNOTATE_SCOPE("move mesh to device memory");
 
-    axom::utilities::Timer computeTimer(false);
-#ifdef AXOM_USE_MPI
-    MPI_Barrier(MPI_COMM_WORLD);
+      const std::string axes[3] = {"x", "y", "z"};
+      for(int d = 0; d < DIM; ++d)
+      {
+        computationalMesh.moveMeshDataToNewMemorySpace<double>(
+          computationalMesh.coordsetPath() + "/values/" + axes[d],
+          s_allocatorId);
+      }
+      for(const auto& strategy : m_testStrategies)
+      {
+        computationalMesh.moveMeshDataToNewMemorySpace<double>(
+          axom::fmt::format("fields/{}/values", strategy->functionName()),
+          s_allocatorId);
+      }
+    }
+
+#if defined(AXOM_USE_UMPIRE)
+    /*
+      Make sure data is correctly on host or device.
+      We don't test with Unified memory because it's too forgiving.
+    */
+    if(!computationalMesh.empty())
+    {
+      AXOM_ANNOTATE_SCOPE("move mesh from unified memory");
+
+      std::string resourceName = "HOST";
+      umpire::ResourceManager& rm = umpire::ResourceManager::getInstance();
+      for(const auto& strategy : m_testStrategies)
+      {
+        const std::string dataPath =
+          axom::fmt::format("fields/{}/values", strategy->functionName());
+        void* dataPtr =
+          computationalMesh.domain(0).fetch_existing(dataPath).data_ptr();
+        bool dataFromUmpire = rm.hasAllocator(dataPtr);
+        if(dataFromUmpire)
+        {
+          umpire::Allocator allocator = rm.getAllocator(dataPtr);
+          resourceName = allocator.getName();
+        }
+        SLIC_INFO(
+          axom::fmt::format("Testing with policy {} and function data on {}",
+                            params.policy,
+                            resourceName));
+        if(params.policy == axom::runtime_policy::Policy::seq)
+        {
+          SLIC_ASSERT(resourceName == "HOST");
+        }
+  #if defined(AXOM_RUNTIME_POLICY_USE_OPENMP)
+        else if(params.policy == axom::runtime_policy::Policy::omp)
+        {
+          SLIC_ASSERT(resourceName == "HOST");
+        }
+  #endif
+        else
+        {
+          SLIC_ASSERT(resourceName == "DEVICE");
+        }
+      }
+    }
 #endif
-    computeTimer.start();
-    mc.computeIsocontour(params.contourVal);
-    computeTimer.stop();
-    printTimingStats(computeTimer, name() + " contour");
 
-    SLIC_INFO(axom::fmt::format("Surface mesh has locally {} cells, {} nodes.",
-                                mc.getContourCellCount(),
-                                mc.getContourNodeCount()));
+    std::unique_ptr<quest::MarchingCubes> mcPtr;
+    axom::utilities::Timer repsTimer(false);
+    repsTimer.start();
+    for(int j = 0; j < params.objectRepCount; ++j)
+    {
+      if(!mcPtr)
+      {
+        mcPtr = std::make_unique<quest::MarchingCubes>(params.policy,
+                                                       s_allocatorId,
+                                                       params.dataParallelism);
+      }
+      auto& mc = *mcPtr;
 
-    // Put mesh mesh in a mint object for error checking and output.
-    std::string sidreGroupName = name() + "_mesh";
+      // Clear and set MarchingCubes object for a "new" mesh.
+      mc.setMesh(computationalMesh.asConduitNode(), "mesh");
+
+#ifdef AXOM_USE_MPI
+      MPI_Barrier(MPI_COMM_WORLD);
+#endif
+      for(int i = 0; i < params.contourGenCount; ++i)
+      {
+        SLIC_DEBUG(axom::fmt::format(
+          "MarchingCubes object rep {} of {}, contour run {} of {}:",
+          j,
+          params.objectRepCount,
+          i,
+          params.contourGenCount));
+        mc.clearOutput();
+        m_strategyFacetPrefixSum.clear();
+        m_strategyFacetPrefixSum.push_back(0);
+        for(const auto& strategy : m_testStrategies)
+        {
+          mc.setFunctionField(strategy->functionName());
+          mc.computeIsocontour(params.contourVal);
+          m_strategyFacetPrefixSum.push_back(mc.getContourFacetCount());
+        }
+      }
+    }
+    repsTimer.stop();
+    SLIC_INFO(axom::fmt::format("Finished {} object reps x {} contour reps",
+                                params.objectRepCount,
+                                params.contourGenCount));
+    printTimingStats(repsTimer, "contour");
+
+    auto& mc = *mcPtr;
+    printRunStats(mc);
+
+    // Return conduit data to host memory.
+    if(s_allocatorId != axom::execution_space<axom::SEQ_EXEC>::allocatorID())
+    {
+      AXOM_ANNOTATE_SCOPE("copy mesh back to host memory");
+
+      const std::string axes[3] = {"x", "y", "z"};
+      for(int d = 0; d < DIM; ++d)
+      {
+        computationalMesh.moveMeshDataToNewMemorySpace<double>(
+          computationalMesh.coordsetPath() + "/values/" + axes[d],
+          axom::execution_space<axom::SEQ_EXEC>::allocatorID());
+      }
+      for(const auto& strategy : m_testStrategies)
+      {
+        computationalMesh.moveMeshDataToNewMemorySpace<double>(
+          axom::fmt::format("fields/{}/values", strategy->functionName()),
+          axom::execution_space<axom::SEQ_EXEC>::allocatorID());
+      }
+    }
+
+    // Put contour mesh in a mint object for error checking and output.
+    AXOM_ANNOTATE_BEGIN("error checking");
+
+    AXOM_ANNOTATE_BEGIN("convert to mint mesh");
+    std::string sidreGroupName = "contour_mesh";
     sidre::DataStore objectDS;
-    sidre::Group* meshGroup = objectDS.getRoot()->createGroup(sidreGroupName);
+    // While awaiting fix for PR #1271, don't use Sidre storage in contourMesh.
+    auto* meshGroup = objectDS.getRoot()->createGroup(sidreGroupName);
+    AXOM_UNUSED_VAR(meshGroup);  // variable is only referenced in debug configs
+
     axom::mint::UnstructuredMesh<axom::mint::SINGLE_SHAPE> contourMesh(
       DIM,
-      DIM == 2 ? mint::CellType::SEGMENT : mint::CellType::TRIANGLE,
-      meshGroup,
-      mc.getContourNodeCount(),
-      mc.getContourCellCount());
+      DIM == 2 ? mint::CellType::SEGMENT : mint::CellType::TRIANGLE);
+    axom::utilities::Timer extractTimer(false);
+    extractTimer.start();
     mc.populateContourMesh(contourMesh, m_parentCellIdField, m_domainIdField);
+    extractTimer.stop();
+    printTimingStats(extractTimer, "extract");
+
+    {
+      axom::Array<axom::IndexType, 2> facetNodeIds;
+      axom::Array<double, 2> facetNodeCoords;
+      axom::Array<axom::IndexType, 1> facetParentIds;
+      axom::Array<axom::IndexType> facetDomainIds;
+      mc.relinquishContourData(facetNodeIds,
+                               facetNodeCoords,
+                               facetParentIds,
+                               facetDomainIds);
+      SLIC_ASSERT(mc.getContourFacetCount() == 0);
+    }
+    AXOM_ANNOTATE_END("convert to mint mesh");
 
     int localErrCount = 0;
     if(params.checkResults)
@@ -875,62 +935,140 @@ struct ContourTestBase
         checkCellsContainingContour(computationalMesh, contourMesh);
     }
 
-    // Write contour mesh to file.
-    addRankOffsetToContourMeshDomainIds(computationalMesh.domainCount(),
-                                        contourMesh);
-    std::string outputName = name() + "_contour_mesh";
-    saveMesh(*meshGroup, outputName);
-    SLIC_INFO(axom::fmt::format("Wrote {} contour in {}", name(), outputName));
+    if(contourMesh.hasSidreGroup())
+    {
+      assert(contourMesh.getSidreGroup() == meshGroup);
+      // Write contour mesh to file.
+      std::string outputName = "contour_mesh";
+      saveMesh(*contourMesh.getSidreGroup(), outputName);
+      SLIC_INFO(axom::fmt::format("Wrote contour mesh to {}", outputName));
+    }
+    AXOM_ANNOTATE_END("error checking");
 
     objectDS.getRoot()->destroyGroupAndData(sidreGroupName);
 
     return localErrCount;
   }
 
-  void computeNodalDistance(BlueprintStructuredMesh& bpMesh)
+  void printRunStats(const quest::MarchingCubes& mc)
   {
+    {
+      int mn, mx, sum;
+      getIntMinMax(mc.getContourCellCount(), mn, mx, sum);
+      SLIC_INFO(axom::fmt::format(
+        "Contour mesh has {{min:{}, max:{}, sum:{}, avg:{}}} cells",
+        mn,
+        mx,
+        sum,
+        (double)sum / numRanks));
+    }
+    SLIC_INFO_IF(
+      params.isVerbose(),
+      axom::fmt::format("Contour mesh has locally {} cells, {} nodes.",
+                        mc.getContourCellCount(),
+                        mc.getContourNodeCount()));
+  }
+
+  void computeNodalDistance(BlueprintStructuredMesh& bpMesh,
+                            ContourTestStrategy<DIM>& strat)
+  {
+    AXOM_ANNOTATE_SCOPE("computeNodalDistance");
+
     SLIC_ASSERT(bpMesh.dimension() == DIM);
     for(int domId = 0; domId < bpMesh.domainCount(); ++domId)
     {
-      conduit::Node& dom = bpMesh.domain(domId);
-      // Access the coordinates
-      auto cellCounts = bpMesh.domainLengths(domId);
-      axom::StackArray<axom::IndexType, DIM> shape;
-      for(int i = 0; i < DIM; ++i)
-      {
-        shape[i] = 1 + cellCounts[i];
-      }
-      conduit::index_t pointCount = bpMesh.nodeCount(domId);
-      conduit::Node& coordsValues =
-        dom.fetch_existing("coordsets/coords/values");
-      double* coordsPtrs[DIM];
-      axom::ArrayView<double, DIM> coordsViews[DIM];
+      auto domainView = bpMesh.getDomainView<DIM>(domId);
+
+      // Create nodal function data with ghosts like node coords.
+      domainView.createField(
+        strat.functionName(),
+        "vertex",
+        conduit::DataType::float64(domainView.getCoordsCountWithGhosts()),
+        domainView.getCoordsStrides(),
+        domainView.getCoordsOffsets());
+    }
+
+    for(int domId = 0; domId < bpMesh.domainCount(); ++domId)
+    {
+      auto domainView = bpMesh.getDomainView<DIM>(domId);
+      const auto coordsViews = domainView.getConstCoordsViews(false);
+      axom::ArrayView<double, DIM> fieldView =
+        domainView.template getFieldView<double>(strat.functionName(), false);
       for(int d = 0; d < DIM; ++d)
       {
-        coordsPtrs[d] = coordsValues[d].as_double_ptr();
-        coordsViews[d] = axom::ArrayView<double, DIM>(coordsPtrs[d], shape);
+        SLIC_ASSERT(coordsViews[d].shape() == fieldView.shape());
       }
-
-      // Create the nodal function data.
-      conduit::Node& fieldNode = dom["fields"][functionName()];
-      fieldNode["association"] = "vertex";
-      fieldNode["topology"] = "mesh";
-      fieldNode["volume_dependent"] = "false";
-      fieldNode["values"].set(conduit::DataType::float64(pointCount));
-      putConduitDataInNewMemorySpace<double>(fieldNode, "values", allocatorId);
-      double* d = fieldNode["values"].value();
-      axom::ArrayView<double, DIM> fieldView(d, shape);
-
-      fillNodalValuesFromCoords(coordsViews, fieldView);
+      populateNodalDistance(coordsViews, fieldView, strat);
     }
   }
 
-  /*
-    TODO: Additional tests:
-     - surface points should lie on computational mesh edges.
-     - computational cells stradling contourVal should be
-       parents to at least 1 contour mesh cell.
-  */
+  template <int TDIM = DIM>
+  typename std::enable_if<TDIM == 2>::type populateNodalDistance(
+    const axom::StackArray<axom::ArrayView<const double, DIM>, DIM>& coordsViews,
+    axom::ArrayView<double, DIM>& fieldView,
+    ContourTestStrategy<DIM>& strat)
+  {
+    AXOM_ANNOTATE_SCOPE("populateNodalDistance 2D");
+
+    const auto& fieldShape = fieldView.shape();
+    for(int d = 0; d < DIM; ++d)
+    {
+      SLIC_ASSERT(coordsViews[d].shape() == fieldShape);
+    }
+
+    for(axom::IndexType j = 0; j < fieldShape[1]; ++j)
+    {
+      for(axom::IndexType i = 0; i < fieldShape[0]; ++i)
+      {
+        PointType pt;
+        for(int d = 0; d < DIM; ++d)
+        {
+          pt[d] = coordsViews[d](i, j);
+        }
+        fieldView(i, j) = strat.valueAt(pt);
+      }
+    }
+  }
+
+  template <int TDIM = DIM>
+  typename std::enable_if<TDIM == 3>::type populateNodalDistance(
+    const axom::StackArray<axom::ArrayView<const double, DIM>, DIM>& coordsViews,
+    axom::ArrayView<double, DIM>& fieldView,
+    ContourTestStrategy<DIM>& strat)
+  {
+    AXOM_ANNOTATE_SCOPE("populateNodalDistance 3D");
+
+    const auto& fieldShape = fieldView.shape();
+    for(int d = 0; d < DIM; ++d)
+    {
+      SLIC_ASSERT(coordsViews[d].shape() == fieldShape);
+    }
+
+    for(axom::IndexType k = 0; k < fieldShape[2]; ++k)
+    {
+      for(axom::IndexType j = 0; j < fieldShape[1]; ++j)
+      {
+        for(axom::IndexType i = 0; i < fieldShape[0]; ++i)
+        {
+          PointType pt;
+          for(int d = 0; d < DIM; ++d)
+          {
+            pt[d] = coordsViews[d](i, j, k);
+          }
+          fieldView(i, j, k) = strat.valueAt(pt);
+        }
+      }
+    }
+  }
+
+  void computeNodalDistance(BlueprintStructuredMesh& bpMesh)
+  {
+    for(auto& strategy : m_testStrategies)
+    {
+      computeNodalDistance(bpMesh, *strategy);
+    }
+  }
+
   /**
      Check for errors in the surface contour mesh.
      - analytical scalar value at surface points should be
@@ -941,6 +1079,7 @@ struct ContourTestBase
     double contourVal,
     const std::string& diffField = {})
   {
+    AXOM_ANNOTATE_SCOPE("checkContourSurface");
     double* diffPtr = nullptr;
     if(!diffField.empty())
     {
@@ -948,50 +1087,60 @@ struct ContourTestBase
         contourMesh.createField<double>(diffField, axom::mint::NODE_CENTERED);
     }
 
-    double tol = errorTolerance();
     int errCount = 0;
-    const axom::IndexType nodeCount = contourMesh.getNumberOfNodes();
-    axom::primal::Point<double, DIM> pt;
-    for(axom::IndexType i = 0; i < nodeCount; ++i)
+    for(axom::IndexType iStrat = 0; iStrat < m_testStrategies.size(); ++iStrat)
     {
-      contourMesh.getNode(i, pt.data());
-      double analyticalVal = value(pt);
-      double diff = std::abs(analyticalVal - contourVal);
-      if(diffPtr)
+      auto contourNodeBegin = DIM * m_strategyFacetPrefixSum[iStrat];
+      auto contourNodeEnd = DIM * m_strategyFacetPrefixSum[iStrat + 1];
+
+      auto& strategy = *m_testStrategies[iStrat];
+      double tol = strategy.errorTolerance();
+
+      PointType pt;
+      for(axom::IndexType iNode = contourNodeBegin; iNode < contourNodeEnd;
+          ++iNode)
       {
-        diffPtr[i] = diff;
+        contourMesh.getNode(iNode, pt.data());
+        double analyticalVal = strategy.valueAt(pt);
+        double diff = std::abs(analyticalVal - contourVal);
+        if(diffPtr)
+        {
+          diffPtr[iNode] = diff;
+        }
+        if(diff > tol)
+        {
+          ++errCount;
+          SLIC_INFO_IF(
+            params.isVerbose(),
+            axom::fmt::format(
+              "checkContourSurface: node {} at {} has dist {}, off by {}",
+              iNode,
+              pt,
+              analyticalVal,
+              diff));
+        }
       }
-      if(diff > tol)
-      {
-        ++errCount;
-        SLIC_INFO_IF(
-          params.isVerbose(),
-          axom::fmt::format(
-            "checkContourSurface: node {} at {} has dist {}, off by {}",
-            i,
-            pt,
-            analyticalVal,
-            diff));
-      }
+      SLIC_INFO_IF(
+        params.isVerbose(),
+        axom::fmt::format(
+          "checkContourSurface: found {} errors outside tolerance of {}",
+          errCount,
+          tol));
     }
-    SLIC_INFO_IF(
-      params.isVerbose(),
-      axom::fmt::format(
-        "checkContourSurface: found {} errors outside tolerance of {}",
-        errCount,
-        tol));
     return errCount;
   }
 
   //!@brief Get view of output domain id data.
-  axom::ArrayView<const axom::IndexType> getDomainIdView(
+  axom::ArrayView<const axom::quest::MarchingCubes::DomainIdType> getDomainIdView(
     axom::mint::UnstructuredMesh<axom::mint::SINGLE_SHAPE>& contourMesh) const
   {
     const auto* ptr =
-      contourMesh.getFieldPtr<axom::IndexType>(m_domainIdField,
-                                               axom::mint::CELL_CENTERED);
-    axom::ArrayView<const axom::IndexType> view(ptr,
-                                                contourMesh.getNumberOfCells());
+      contourMesh.getFieldPtr<axom::quest::MarchingCubes::DomainIdType>(
+        m_domainIdField,
+        axom::mint::CELL_CENTERED);
+    axom::ArrayView<const axom::quest::MarchingCubes::DomainIdType> view(
+      ptr,
+      contourMesh.getNumberOfCells());
     return view;
   }
 
@@ -1013,6 +1162,22 @@ struct ContourTestBase
     return view;
   }
 
+  axom::ArrayView<const axom::IndexType> get_parent_cell_id_view(
+    const axom::mint::UnstructuredMesh<axom::mint::SINGLE_SHAPE>& contourMesh) const
+  {
+    axom::IndexType numIdxComponents = -1;
+    const axom::IndexType* ptr =
+      contourMesh.getFieldPtr<axom::IndexType>(m_parentCellIdField,
+                                               axom::mint::CELL_CENTERED,
+                                               numIdxComponents);
+
+    SLIC_ASSERT(numIdxComponents == 1);
+
+    axom::ArrayView<const axom::IndexType> view((const axom::IndexType*)ptr,
+                                                contourMesh.getNumberOfCells());
+    return view;
+  }
+
   /**
      Check that generated cells fall within their parents.
   */
@@ -1020,84 +1185,134 @@ struct ContourTestBase
     BlueprintStructuredMesh& computationalMesh,
     axom::mint::UnstructuredMesh<axom::mint::SINGLE_SHAPE>& contourMesh)
   {
-    int errCount = 0;
-    const axom::IndexType cellCount = contourMesh.getNumberOfCells();
+    AXOM_ANNOTATE_SCOPE("checkContourCellLimits");
 
-    auto parentCellIdxView = get_parent_cell_idx_view(contourMesh);
+    int errCount = 0;
+
+    auto parentCellIdView = get_parent_cell_id_view(contourMesh);
     auto domainIdView = getDomainIdView(contourMesh);
 
     const axom::IndexType domainCount = computationalMesh.domainCount();
-    axom::Array<axom::ArrayView<const double, DIM>> coordsViews(domainCount * DIM);
-
-    // Get info about the computational domains available for look-up.
-    axom::Array<axom::StackArray<axom::IndexType, DIM>> domainLengths(domainCount);
-    for(axom::IndexType n = 0; n < domainCount; ++n)
+    axom::Array<typename axom::quest::MeshViewUtil<DIM>::ConstCoordsViewsType>
+      allCoordsViews(domainCount);
+    for(int iDomain = 0; iDomain < domainCount; ++iDomain)
     {
-      auto& domain = computationalMesh.domain(n);
-      axom::ArrayView<const double, DIM>* domainCoordsView =
-        &coordsViews[DIM * n];
-      getCoordsViews(domain, computationalMesh.coordsetPath(), domainCoordsView);
-
-      axom::Array<axom::IndexType> domLengths =
-        computationalMesh.domainLengths(n);
-      for(int d = 0; d < DIM; ++d)
-      {
-        domainLengths[n][d] = domLengths[d];
-      }
+      auto domainView = computationalMesh.getDomainView<DIM>(iDomain);
+      allCoordsViews[iDomain] = domainView.getConstCoordsViews(false);
     }
 
-    for(axom::IndexType cn = 0; cn < cellCount; ++cn)
+    std::map<axom::quest::MarchingCubes::DomainIdType,
+             axom::quest::MarchingCubes::DomainIdType>
+      domainIdToContiguousId;
+    for(int iDomain = 0; iDomain < domainCount; ++iDomain)
     {
-      axom::IndexType domainId = domainIdView[cn];
+      const auto& dom = computationalMesh.domain(iDomain);
+      axom::quest::MarchingCubes::DomainIdType domainId = iDomain;
+      if(dom.has_path("state/domain_id"))
+      {
+        domainId = dom.fetch_existing("state/domain_id").to_value();
+      }
+      domainIdToContiguousId[domainId] = iDomain;
+    }
 
-      axom::StackArray<axom::IndexType, DIM> parentCellIdx =
-        parentCellIdxView[cn];
-      reverse(parentCellIdx);  // ArrayView expects indices in reverse order.
-      // This should work but breaks gcc11 on 64-bit linux:
-      // axom::StackArray<axom::IndexType, DIM> upperIdx = parentCellIdx + 1;
-      axom::StackArray<axom::IndexType, DIM> upperIdx = parentCellIdx;
-      addToStackArray(upperIdx, 1);
+    // Indexers to translate between flat and multidim indices.
+    axom::Array<axom::MDMapping<DIM>> mappings(domainCount);
+    for(int d = 0; d < domainCount; ++d)
+    {
+      axom::StackArray<axom::IndexType, DIM> domShape;
+      computationalMesh.domainLengths(d, domShape);
+      mappings[d].initializeShape(
+        domShape,
+        axom::MDMapping<DIM>(allCoordsViews[d][0].strides()).slowestDirs());
+    }
 
-      axom::ArrayView<const double, DIM>* domainCoordsView =
-        &coordsViews[DIM * domainId];
-      axom::primal::Point<double, DIM> lower, upper;
+    auto elementGreaterThan = [](const axom::primal::Vector<double, DIM>& a,
+                                 double b) {
+      bool result(true);
       for(int d = 0; d < DIM; ++d)
       {
-        lower[d] = domainCoordsView[d][parentCellIdx];
-        upper[d] = domainCoordsView[d][upperIdx];
+        result &= a[d] < b;
       }
-      axom::primal::BoundingBox<double, DIM> parentCellBox(lower, upper);
-      double tol = errorTolerance();
-      axom::primal::BoundingBox<double, DIM> big(parentCellBox);
-      axom::primal::BoundingBox<double, DIM> small(parentCellBox);
-      big.expand(tol);
-      small.expand(-tol);
+      return result;
+    };
 
-      // WRONG: the node ids should increased by the number of nodes in all previous domains.
-      axom::IndexType* cellNodeIds = contourMesh.getCellNodeIDs(cn);
-      const axom::IndexType cellNodeCount = contourMesh.getNumberOfCellNodes(cn);
-
-      for(axom::IndexType nn = 0; nn < cellNodeCount; ++nn)
+    for(axom::IndexType iStrat = 0; iStrat < m_testStrategies.size(); ++iStrat)
+    {
+      auto contourCellBegin = m_strategyFacetPrefixSum[iStrat];
+      auto contourCellEnd = m_strategyFacetPrefixSum[iStrat + 1];
+      for(axom::IndexType iContourCell = contourCellBegin;
+          iContourCell < contourCellEnd;
+          ++iContourCell)
       {
-        axom::primal::Point<double, DIM> nodeCoords;
-        contourMesh.getNode(cellNodeIds[nn], nodeCoords.data());
+        axom::quest::MarchingCubes::DomainIdType domainId =
+          domainIdView[iContourCell];
+        axom::quest::MarchingCubes::DomainIdType contiguousIndex =
+          domainIdToContiguousId[domainId];
+        typename axom::quest::MeshViewUtil<DIM>::ConstCoordsViewsType& coordsViews =
+          allCoordsViews[contiguousIndex];
 
-        if(!big.contains(nodeCoords) || small.contains(nodeCoords))
+        axom::IndexType parentCellId = parentCellIdView[iContourCell];
+
+        axom::StackArray<axom::IndexType, DIM> parentCellIdx =
+          mappings[contiguousIndex].toMultiIndex(parentCellId);
+        axom::StackArray<axom::IndexType, DIM> upperIdx = parentCellIdx;
+        addToStackArray(upperIdx, 1);
+
+        PointType lower, upper;
+        for(int d = 0; d < DIM; ++d)
         {
-          ++errCount;
-          SLIC_INFO_IF(
-            params.isVerbose(),
-            axom::fmt::format("checkContourCellLimits: node {} at {} is not "
-                              "on parent cell boundary.",
-                              cellNodeIds[nn],
-                              nodeCoords));
+          lower[d] = coordsViews[d][parentCellIdx];
+          upper[d] = coordsViews[d][upperIdx];
+        }
+        axom::primal::BoundingBox<double, DIM> parentCellBox(lower, upper);
+        auto tol = axom::numerics::floating_point_limits<double>::epsilon();
+        axom::primal::BoundingBox<double, DIM> big(parentCellBox);
+        big.expand(tol);
+        axom::primal::BoundingBox<double, DIM> small(parentCellBox);
+        auto range = parentCellBox.range();
+        bool checkSmall = elementGreaterThan(range, tol);
+        if(checkSmall)
+        {
+          small.expand(-tol);
+        }
+
+        axom::IndexType* cellNodeIds = contourMesh.getCellNodeIDs(iContourCell);
+        const axom::IndexType cellNodeCount =
+          contourMesh.getNumberOfCellNodes(iContourCell);
+
+        for(axom::IndexType nn = 0; nn < cellNodeCount; ++nn)
+        {
+          PointType nodeCoords;
+          contourMesh.getNode(cellNodeIds[nn], nodeCoords.data());
+
+          if(!big.contains(nodeCoords))
+          {
+            ++errCount;
+            SLIC_INFO_IF(
+              params.isVerbose(),
+              axom::fmt::format("checkContourCellLimits: node {} at {} "
+                                "too far outside parent cell boundary.",
+                                cellNodeIds[nn],
+                                nodeCoords));
+          }
+
+          if(checkSmall && small.contains(nodeCoords))
+          {
+            ++errCount;
+            SLIC_INFO_IF(
+              params.isVerbose(),
+              axom::fmt::format("checkContourCellLimits: node {} at {} "
+                                "too far inside parent cell boundary.",
+                                cellNodeIds[nn],
+                                nodeCoords));
+          }
         }
       }
     }
 
     SLIC_INFO_IF(params.isVerbose(),
-                 axom::fmt::format("checkContourCellLimits: found {} nodes "
-                                   "not on parent cell boundary.",
+                 axom::fmt::format("checkContourCellLimits: found {} "
+                                   "nodes not on parent cell boundary.",
                                    errCount));
     return errCount;
   }
@@ -1110,319 +1325,292 @@ struct ContourTestBase
     BlueprintStructuredMesh& computationalMesh,
     axom::mint::UnstructuredMesh<axom::mint::SINGLE_SHAPE>& contourMesh)
   {
-    int errCount = 0;
-    const axom::IndexType cellCount = contourMesh.getNumberOfCells();
+    AXOM_ANNOTATE_SCOPE("checkCellsContainingContour");
 
-    auto parentCellIdxView = get_parent_cell_idx_view(contourMesh);
+    int errCount = 0;
+
+    auto parentCellIdView = get_parent_cell_id_view(contourMesh);
     auto domainIdView = getDomainIdView(contourMesh);
 
     const axom::IndexType domainCount = computationalMesh.domainCount();
 
-    // Nodal values of functions for each domain.
-    axom::Array<axom::ArrayView<const double, DIM>> fcnViews(domainCount);
-    // Whether computational cells have parts of the contour mesh.
-    axom::Array<axom::Array<bool, DIM>> hasContours(domainCount);
-
-    for(axom::IndexType domId = 0; domId < domainCount; ++domId)
+    //
+    // Compute mapping to look up domains from the domain id.
+    //
+    std::map<axom::IndexType, axom::IndexType> domainIdToContiguousId;
+    for(axom::quest::MarchingCubes::DomainIdType iDomain = 0;
+        iDomain < domainCount;
+        ++iDomain)
     {
-      axom::StackArray<axom::IndexType, DIM> domLengths;
-      computationalMesh.domainLengths(domId, domLengths);
-
-      axom::Array<bool, DIM>& hasContour = hasContours[domId];
-      hasContour.resize(domLengths, false);
-
-      // Add 1 to count nodes.  Reverse to match Conduit data.
-      reverse(domLengths);
-      // This should work but breaks gcc11 on 64-bit linux:
-      // domLengths = domLengths + 1;
-      addToStackArray(domLengths, 1);
-
-      conduit::Node& dom = computationalMesh.domain(domId);
-      double* fcnPtr =
-        dom.fetch_existing("fields/" + functionName() + "/values").as_double_ptr();
-      fcnViews[domId] = axom::ArrayView<const double, DIM>(fcnPtr, domLengths);
-    }
-    for(axom::IndexType cn = 0; cn < cellCount; ++cn)
-    {
-      axom::IndexType domainId = domainIdView[cn];
-      const axom::StackArray<axom::IndexType, DIM>& parentCellIdx =
-        parentCellIdxView[cn];
-      hasContours[domainId][parentCellIdx] = true;
-    }
-
-    // Verify that marked cells contain the contour value
-    // unmarked ones don't.
-    for(axom::IndexType domId = 0; domId < domainCount; ++domId)
-    {
-      axom::StackArray<axom::IndexType, DIM> domLengths;
-      computationalMesh.domainLengths(domId, domLengths);
-
-      axom::ArrayView<const double, DIM>& fcnView = fcnViews[domId];
-
-      const axom::IndexType cellCount = product(domLengths);
-      for(axom::IndexType cellId = 0; cellId < cellCount; ++cellId)
+      const auto& dom = computationalMesh.domain(iDomain);
+      axom::quest::MarchingCubes::DomainIdType domainId = iDomain;
+      if(dom.has_path("state/domain_id"))
       {
-        axom::StackArray<axom::IndexType, DIM> cellIdx =
-          flatToMultidimIndex(cellId, domLengths);
+        domainId = dom.fetch_existing("state/domain_id").to_value();
+      }
+      domainIdToContiguousId[domainId] = iDomain;
+    }
 
-        // Compute min and max function value in the cell.
-        double minFcnValue = std::numeric_limits<double>::max();
-        double maxFcnValue = std::numeric_limits<double>::min();
-        constexpr short int cornerCount =
-          (1 << DIM);  // Number of nodes in a cell.
-        for(short int cornerId = 0; cornerId < cornerCount; ++cornerId)
-        {
-          axom::StackArray<axom::IndexType, DIM> cornerIdx = cellIdx;
-          for(int d = 0; d < DIM; ++d)
-          {
-            if(cornerId & (1 << d))
-            {
-              ++cornerIdx[d];
-            }
-          }
+    /*
+      If strategy iStrat creates a contour through cell cellId of
+      domain contiguousDomainId, then set bit iStrat in hasContours:
+      hasContours[contiguousDomainId][cellId] & (1 < iStrat).
+    */
+    axom::Array<axom::ArrayView<const double, DIM, MemorySpace>> fcnViews(
+      domainCount);
+    axom::Array<axom::MDMapping<DIM>> cellIndexers(domainCount);
+    axom::Array<axom::Array<axom::IndexType>> hasContours(domainCount);
+    for(axom::IndexType domId = 0; domId < domainCount; ++domId)
+    {
+      axom::quest::MeshViewUtil<DIM> domainView =
+        computationalMesh.getDomainView<DIM>(domId);
 
-          reverse(cornerIdx);
-          double fcnValue = fcnView[cornerIdx];
-          minFcnValue = std::min(minFcnValue, fcnValue);
-          maxFcnValue = std::max(maxFcnValue, fcnValue);
-        }
+      const axom::IndexType cellCount = domainView.getCellCount();
 
-        const bool touchesContour =
-          (minFcnValue <= params.contourVal && maxFcnValue >= params.contourVal);
-        const bool hasCont = hasContours[domId][cellIdx];
-        if(touchesContour != hasCont)
-        {
-          ++errCount;
-          SLIC_INFO_IF(params.isVerbose(),
-                       axom::fmt::format(
-                         "checkCellsContainingContour: cell {}: hasContour "
-                         "({}) and touchesContour ({}) don't agree.",
-                         cellIdx,
-                         hasCont,
-                         touchesContour));
-        }
+      axom::Array<axom::IndexType>& hasContour = hasContours[domId];
+      hasContour.resize(cellCount, 0);
+    }
+
+    for(int iStrat = 0; iStrat < m_testStrategies.size(); ++iStrat)
+    {
+      auto contourCellBegin = m_strategyFacetPrefixSum[iStrat];
+      auto contourCellEnd = m_strategyFacetPrefixSum[iStrat + 1];
+      axom::IndexType bitFlag = (1 << iStrat);
+      for(axom::IndexType iContourCell = contourCellBegin;
+          iContourCell < contourCellEnd;
+          ++iContourCell)
+      {
+        axom::quest::MarchingCubes::DomainIdType domainId =
+          domainIdView[iContourCell];
+        axom::quest::MarchingCubes::DomainIdType contiguousId =
+          domainIdToContiguousId[domainId];
+        const axom::IndexType parentCellId = parentCellIdView[iContourCell];
+        hasContours[contiguousId][parentCellId] |= bitFlag;
       }
     }
 
+    // Verify that cells marked by hasContours touches the contour
+    // and other cells don't.
+    for(axom::IndexType domId = 0; domId < domainCount; ++domId)
+    {
+      auto domainView = computationalMesh.getDomainView<DIM>(domId);
+
+      axom::StackArray<axom::IndexType, DIM> domLengths;
+      computationalMesh.domainLengths(domId, domLengths);
+      assert(domLengths == domainView.getRealShape("element"));
+
+      const axom::IndexType parentCellCount = domainView.getCellCount();
+      // axom::Array<bool> hasContour(parentCellCount, parentCellCount);
+
+      for(axom::IndexType parentCellId = 0; parentCellId < parentCellCount;
+          ++parentCellId)
+      {
+        const axom::IndexType hasContourBits = hasContours[domId][parentCellId];
+
+        for(axom::IndexType iStrat = 0; iStrat < m_testStrategies.size(); ++iStrat)
+        {
+          auto& strategy = *m_testStrategies[iStrat];
+          const axom::IndexType iStratBit = (1 << iStrat);
+
+          const auto& fcnView = domainView.template getConstFieldView<double>(
+            strategy.functionName(),
+            false);
+
+          axom::MDMapping<DIM> cellMDMapper(
+            domLengths,
+            axom::MDMapping<DIM>(fcnView.strides()));
+
+          axom::StackArray<axom::IndexType, DIM> parentCellIdx =
+            cellMDMapper.toMultiIndex(parentCellId);
+
+          // Compute min and max function values in the cell.
+          double minFcnValue = std::numeric_limits<double>::max();
+          double maxFcnValue = std::numeric_limits<double>::min();
+          constexpr short int cornerCount =
+            (1 << DIM);  // Number of nodes in a cell.
+          for(short int cornerId = 0; cornerId < cornerCount; ++cornerId)
+          {
+            // Compute multidim index of current corner of parent cell.
+            axom::StackArray<axom::IndexType, DIM> cornerIdx = parentCellIdx;
+            for(int d = 0; d < DIM; ++d)
+            {
+              if(cornerId & (1 << d))
+              {
+                ++cornerIdx[d];
+              }
+            }
+
+            double fcnValue = fcnView[cornerIdx];
+            minFcnValue = std::min(minFcnValue, fcnValue);
+            maxFcnValue = std::max(maxFcnValue, fcnValue);
+          }
+
+          const bool hasContour = hasContourBits & iStratBit;
+
+          bool touchesContour = (minFcnValue <= params.contourVal &&
+                                 maxFcnValue >= params.contourVal);
+          // If the min or max values in the cell is close to params.contourVal
+          // touchesContour and hasCont can go either way.  So give it a pass.
+          if(minFcnValue == params.contourVal || maxFcnValue == params.contourVal)
+          {
+            touchesContour = hasContour;
+          }
+
+          if(touchesContour != hasContour)
+          {
+            ++errCount;
+            SLIC_INFO_IF(
+              params.isVerbose(),
+              axom::fmt::format(
+                "checkCellsContainingContour: cell {}: hasContour "
+                "({}) and touchesContour ({}) don't agree for strategy {}.",
+                parentCellIdx,
+                hasContour,
+                touchesContour,
+                strategy.testName()));
+          }
+        }
+      }
+    }
     SLIC_INFO_IF(params.isVerbose(),
                  axom::fmt::format("checkCellsContainingContour: found {} "
                                    "misrepresented computational cells.",
                                    errCount));
     return errCount;
   }
-
-  void getCoordsViews(conduit::Node& domain,
-                      const std::string& coordsetPath,
-                      axom::ArrayView<const double, DIM> coordsViews[DIM])
-  {
-    const conduit::Node& dimsNode =
-      domain.fetch_existing("topologies/mesh/elements/dims");
-    axom::StackArray<axom::IndexType, DIM> coordsViewShape;
-    for(int d = 0; d < DIM; ++d)
-    {
-      coordsViewShape[d] = 1 + dimsNode[DIM - 1 - d].as_int();
-    }
-
-    const conduit::Node& coordValues =
-      domain.fetch_existing(coordsetPath + "/values");
-    bool isInterleaved = conduit::blueprint::mcarray::is_interleaved(coordValues);
-    const int coordSp = isInterleaved ? DIM : 1;
-
-    for(int d = 0; d < DIM; ++d)
-    {
-      auto* coordsPtr = coordValues[d].as_double_ptr();
-      coordsViews[d] =
-        axom::ArrayView<const double, DIM>(coordsPtr, coordsViewShape, coordSp);
-    }
-  }
-
-  /**
-   * Change cp_domain data from a local index to a global domain index
-   * by adding rank offsets.
-   * This is an optional step to make domain ids globally unique.
-   */
-  void addRankOffsetToContourMeshDomainIds(
-    int localDomainCount,
-    axom::mint::UnstructuredMesh<axom::mint::SINGLE_SHAPE>& contourMesh)
-  {
-#ifdef AXOM_USE_MPI
-    axom::Array<axom::IndexType> starts(numRanks, numRanks);
-    {
-      axom::Array<axom::IndexType> indivDomainCounts(numRanks, numRanks);
-      indivDomainCounts.fill(-1);
-      MPI_Allgather(&localDomainCount,
-                    1,
-                    MPI_INT,
-                    indivDomainCounts.data(),
-                    1,
-                    MPI_INT,
-                    MPI_COMM_WORLD);
-      starts[0] = 0;
-      for(int i = 1; i < numRanks; ++i)
-      {
-        starts[i] = starts[i - 1] + indivDomainCounts[i - 1];
-      }
-    }
-
-    const std::string domainIdField = m_domainIdField;
-    auto* domainIdPtr =
-      contourMesh.getFieldPtr<axom::IndexType>(domainIdField,
-                                               axom::mint::CELL_CENTERED);
-    int cellCount = contourMesh.getNumberOfCells();
-
-    for(int i = 0; i < cellCount; ++i)
-    {
-      domainIdPtr[i] += starts[myRank];
-    }
-#endif
-  }
 };
 
-/*!
-  @brief Function providing distance from a point.
-*/
-template <int DIM, typename ExecSpace>
-struct RoundContourTest : public ContourTestBase<DIM, ExecSpace>
+template <int DIM>
+struct PlanarTestStrategy : public ContourTestStrategy<DIM>
 {
-  RoundContourTest(const axom::primal::Point<double, DIM>& pt)
-    : ContourTestBase<DIM, ExecSpace>()
-    , _sphere(pt, 0.0)
-    , _errTol(1e-3)
-  { }
-  virtual ~RoundContourTest() { }
-  const axom::primal::Sphere<double, DIM> _sphere;
-  double _errTol;
-
-  virtual std::string name() const override { return std::string("round"); }
-
-  virtual std::string functionName() const override
-  {
-    return std::string("dist_to_center");
-  }
-
-  AXOM_HOST_DEVICE double value(const axom::primal::Point<double, DIM>& pt) const override
-  {
-    return _sphere.computeSignedDistance(pt);
-  }
-
-  double errorTolerance() const override { return _errTol; }
-
-  void setToleranceByLongestEdge(const BlueprintStructuredMesh& bsm)
-  {
-    double maxSpacing = bsm.maxSpacing();
-    _errTol = 0.1 * maxSpacing;
-  }
-
-  void fillNodalValuesFromCoords(axom::ArrayView<double, DIM> coordsViews_[DIM],
-                                 axom::ArrayView<double, DIM>& fieldView) const override
-  {
-    const axom::IndexType pointCount = fieldView.size();
-
-    axom::ArrayView<double, DIM> coordsViews[DIM];
-    for(int d = 0; d < DIM; ++d)
-    {
-      coordsViews[d] = coordsViews_[d];
-    }
-
-    // Duplicate member data so devices don't have to use the this pointer.
-    const auto sphere = _sphere;
-
-    auto loopBody = AXOM_LAMBDA(int n)
-    {
-      axom::primal::Point<double, DIM> pt;
-      for(int d = 0; d < DIM; ++d)
-      {
-        pt[d] = coordsViews[d].flatIndex(n);
-      }
-      fieldView.flatIndex(n) = sphere.computeSignedDistance(pt);
-    };
-
-    axom::for_all<ExecSpace>(0, pointCount, loopBody);
-  }
-};
-
-/*!
-  @brief Function providing signed distance from a plane.
-*/
-template <int DIM, typename ExecSpace>
-struct PlanarContourTest : public ContourTestBase<DIM, ExecSpace>
-{
-  /*!
-    @brief Constructor.
-
-    @param inPlane [in] A point in the plane.
-    @param perpDir [in] Perpendicular direction on positive side.
-  */
-  PlanarContourTest(const axom::primal::Point<double, DIM>& inPlane,
-                    const axom::primal::Vector<double, DIM>& perpDir)
-    : ContourTestBase<DIM, ExecSpace>()
+  using PointType = axom::primal::Point<double, DIM>;
+  PlanarTestStrategy(const axom::primal::Vector<double, DIM>& perpDir,
+                     const PointType& inPlane)
+    : ContourTestStrategy<DIM>()
     , _plane(perpDir.unitVector(), inPlane)
+    , _errTol(axom::numerics::floating_point_limits<double>::epsilon())
   { }
-  virtual ~PlanarContourTest() { }
-  const axom::primal::Plane<double, DIM> _plane;
-
-  virtual std::string name() const override { return std::string("planar"); }
-
+  virtual std::string testName() const override
+  {
+    return std::string("planar");
+  }
   virtual std::string functionName() const override
   {
     return std::string("dist_to_plane");
   }
-
-  AXOM_HOST_DEVICE double value(const axom::primal::Point<double, DIM>& pt) const override
+  double errorTolerance() const override { return _errTol; }
+  virtual double valueAt(const PointType& pt) const override
   {
     return _plane.signedDistance(pt);
   }
-
-  double errorTolerance() const override { return 1e-15; }
-
-  void fillNodalValuesFromCoords(axom::ArrayView<double, DIM> coordsViews_[DIM],
-                                 axom::ArrayView<double, DIM>& fieldView) const override
-  {
-    const axom::IndexType pointCount = fieldView.size();
-
-    axom::ArrayView<double, DIM> coordsViews[DIM];
-    for(int d = 0; d < DIM; ++d)
-    {
-      coordsViews[d] = coordsViews_[d];
-    }
-
-    // Duplicate member data so devices don't have to use the this pointer.
-    const auto plane = _plane;
-
-    auto loopBody = AXOM_LAMBDA(int n)
-    {
-      axom::primal::Point<double, DIM> pt;
-      for(int d = 0; d < DIM; ++d)
-      {
-        pt[d] = coordsViews[d].flatIndex(n);
-      }
-      fieldView.flatIndex(n) = plane.signedDistance(pt);
-    };
-
-    axom::for_all<ExecSpace>(0, pointCount, loopBody);
-  }
+  const axom::primal::Plane<double, DIM> _plane;
+  double _errTol;
 };
 
-/// Utility function to transform blueprint node storage.
-void makeCoordsContiguous(conduit::Node& coordValues)
+template <int DIM>
+struct RoundTestStrategy : public ContourTestStrategy<DIM>
 {
-  bool isInterleaved = conduit::blueprint::mcarray::is_interleaved(coordValues);
-  if(isInterleaved)
+  using PointType = axom::primal::Point<double, DIM>;
+  RoundTestStrategy(const PointType& center)
+    : ContourTestStrategy<DIM>()
+    , _sphere(center, 0.0)
+    , _errTol(1e-3)
+  { }
+  virtual std::string testName() const override { return std::string("round"); }
+  virtual std::string functionName() const override
   {
-    conduit::Node oldValues = coordValues;
-    conduit::blueprint::mcarray::to_contiguous(oldValues, coordValues);
+    return std::string("dist_to_center");
   }
-}
+  double errorTolerance() const override { return _errTol; }
+  virtual double valueAt(const PointType& pt) const override
+  {
+    return _sphere.computeSignedDistance(pt);
+  }
+  void setToleranceByLongestEdge(const BlueprintStructuredMesh& bsm)
+  {
+    // Heuristic of appropriate error tolerance.
+    double maxSpacing = bsm.maxSpacing();
+    _errTol = 0.1 * maxSpacing;
+  }
+  const axom::primal::Sphere<double, DIM> _sphere;
+  double _errTol;
+};
 
-/// Utility function to transform blueprint node storage.
-void makeCoordsInterleaved(conduit::Node& coordValues)
+template <int DIM>
+struct GyroidTestStrategy : public ContourTestStrategy<DIM>
 {
-  bool isInterleaved = conduit::blueprint::mcarray::is_interleaved(coordValues);
-  if(!isInterleaved)
+  using PointType = axom::primal::Point<double, DIM>;
+  GyroidTestStrategy(const PointType& scale, double offset)
+    : ContourTestStrategy<DIM>()
+    , _scale(scale)
+    , _offset(offset)
+  { }
+  virtual std::string testName() const override
   {
-    conduit::Node oldValues = coordValues;
-    conduit::blueprint::mcarray::to_interleaved(oldValues, coordValues);
+    return std::string("gyroid");
   }
+  virtual std::string functionName() const override
+  {
+    return std::string("gyroid_fcn");
+  }
+  double errorTolerance() const override { return _errTol; }
+  virtual double valueAt(const PointType& pt) const override
+  {
+    if(DIM == 3)
+    {
+      return sin(pt[0] * _scale[0]) * cos(pt[1] * _scale[1]) +
+        sin(pt[1] * _scale[1]) * cos(pt[2] * _scale[2]) +
+        sin(pt[2] * _scale[2]) * cos(pt[0] * _scale[0]) + _offset;
+    }
+    else
+    {
+      // Use the 3D function, with z=0.
+      return sin(pt[0] * _scale[0]) * cos(pt[1] * _scale[1]) +
+        sin(pt[1] * _scale[1]) + _offset;
+    }
+  }
+  void setToleranceByLongestEdge(const BlueprintStructuredMesh& bsm)
+  {
+    // Heuristic of appropriate error tolerance.
+    double maxSpacing = bsm.maxSpacing();
+    axom::primal::Vector<double, DIM> v(_scale);
+    _errTol = 0.1 * v.norm() * maxSpacing;
+  }
+  const PointType _scale;
+  const double _offset;
+  double _errTol;
+};
+
+///
+int allocatorIdToTest(axom::runtime_policy::Policy policy)
+{
+#if defined(AXOM_USE_UMPIRE)
+  //---------------------------------------------------------------------------
+  // Memory resource.  For testing, choose device memory if appropriate.
+  //---------------------------------------------------------------------------
+  int allocatorID = policy == RuntimePolicy::seq
+    ? axom::detail::getAllocatorID<axom::MemorySpace::Host>()
+    :
+  #if defined(AXOM_RUNTIME_POLICY_USE_OPENMP)
+    policy == RuntimePolicy::omp
+    ? axom::detail::getAllocatorID<axom::MemorySpace::Host>()
+    :
+  #endif
+  #if defined(AXOM_RUNTIME_POLICY_USE_CUDA)
+    policy == RuntimePolicy::cuda
+    ? axom::detail::getAllocatorID<axom::MemorySpace::Device>()
+    :
+  #endif
+  #if defined(AXOM_RUNTIME_POLICY_USE_HIP)
+    policy == RuntimePolicy::hip
+    ? axom::detail::getAllocatorID<axom::MemorySpace::Device>()
+    :
+  #endif
+    axom::INVALID_ALLOCATOR_ID;
+#else
+  int allocatorID = axom::getDefaultAllocatorID();
+#endif
+  return allocatorID;
 }
 
 /// Utility function to initialize the logger
@@ -1476,50 +1664,53 @@ void finalizeLogger()
 template <int DIM, typename ExecSpace>
 int testNdimInstance(BlueprintStructuredMesh& computationalMesh)
 {
-  // Create marching cubes algorithm object and set some parameters
-  quest::MarchingCubes mc(params.policy,
-                          computationalMesh.asConduitNode(),
-                          "mesh");
-
   //---------------------------------------------------------------------------
   // params specify which tests to run.
   //---------------------------------------------------------------------------
 
-  std::shared_ptr<RoundContourTest<DIM, ExecSpace>> roundTest;
-  std::shared_ptr<PlanarContourTest<DIM, ExecSpace>> planarTest;
+  std::shared_ptr<PlanarTestStrategy<DIM>> planarStrat;
+  std::shared_ptr<RoundTestStrategy<DIM>> roundStrat;
+  std::shared_ptr<GyroidTestStrategy<DIM>> gyroidStrat;
 
-  if(params.usingRound)
+  ContourTestBase<DIM, ExecSpace> contourTest;
+
+  if(params.usingPlanar())
   {
-    roundTest = std::make_shared<RoundContourTest<DIM, ExecSpace>>(
-      params.roundContourCenter<DIM>());
-    roundTest->setToleranceByLongestEdge(computationalMesh);
-    roundTest->computeNodalDistance(computationalMesh);
+    planarStrat =
+      std::make_shared<PlanarTestStrategy<DIM>>(params.planeNormal<DIM>(),
+                                                params.inplanePoint<DIM>());
+    contourTest.addTestStrategy(planarStrat);
   }
-  if(params.usingPlanar)
+
+  if(params.usingRound())
   {
-    planarTest = std::make_shared<PlanarContourTest<DIM, ExecSpace>>(
-      params.inplanePoint<DIM>(),
-      params.planeNormal<DIM>());
-    planarTest->computeNodalDistance(computationalMesh);
+    roundStrat =
+      std::make_shared<RoundTestStrategy<DIM>>(params.roundContourCenter<DIM>());
+    roundStrat->setToleranceByLongestEdge(computationalMesh);
+    contourTest.addTestStrategy(roundStrat);
   }
-  computationalMesh.printMeshInfo();
+
+  if(params.usingGyroid())
+  {
+    gyroidStrat =
+      std::make_shared<GyroidTestStrategy<DIM>>(params.gyroidScaleFactor<DIM>(),
+                                                params.contourVal);
+    gyroidStrat->setToleranceByLongestEdge(computationalMesh);
+    contourTest.addTestStrategy(gyroidStrat);
+  }
+
+  contourTest.computeNodalDistance(computationalMesh);
+
+  if(params.isVerbose())
+  {
+    computationalMesh.printMeshInfo();
+  }
 
   // Write computational mesh with contour functions.
   saveMesh(computationalMesh.asConduitNode(), params.fieldsFile);
 
   int localErrCount = 0;
-
-  if(planarTest)
-  {
-    localErrCount += planarTest->runTest(computationalMesh, mc);
-  }
-  slic::flushStreams();
-
-  if(roundTest)
-  {
-    localErrCount += roundTest->runTest(computationalMesh, mc);
-  }
-  slic::flushStreams();
+  localErrCount += contourTest.runTest(computationalMesh);
 
   // Check results
 
@@ -1552,14 +1743,9 @@ int testNdimInstance(BlueprintStructuredMesh& computationalMesh)
 //------------------------------------------------------------------------------
 int main(int argc, char** argv)
 {
-#ifdef AXOM_USE_MPI
-  MPI_Init(&argc, &argv);
-  MPI_Comm_rank(MPI_COMM_WORLD, &myRank);
-  MPI_Comm_size(MPI_COMM_WORLD, &numRanks);
-#else
-  numRanks = 1;
-  myRank = 0;
-#endif
+  axom::utilities::raii::MPIWrapper mpi_raii_wrapper(argc, argv);
+  myRank = mpi_raii_wrapper.my_rank();
+  numRanks = mpi_raii_wrapper.num_ranks();
 
   initializeLogger();
   //slic::setAbortOnWarning(true);
@@ -1589,12 +1775,18 @@ int main(int argc, char** argv)
     exit(retval);
   }
 
-  allocatorId = allocatorIdForPolicy(params.policy);
+  axom::utilities::raii::AnnotationsWrapper annotation_raii_wrapper(
+    params.annotationMode);
+  AXOM_ANNOTATE_SCOPE("quest marching cubes example");
+
+  s_allocatorId = allocatorIdToTest(params.policy);
 
   //---------------------------------------------------------------------------
   // Load computational mesh.
   //---------------------------------------------------------------------------
-  BlueprintStructuredMesh computationalMesh(params.meshFile);
+  AXOM_ANNOTATE_BEGIN("load mesh");
+  BlueprintStructuredMesh computationalMesh(params.meshFile, "mesh");
+  AXOM_ANNOTATE_END("load mesh");
 
   SLIC_INFO_IF(
     params.isVerbose(),
@@ -1602,18 +1794,6 @@ int main(int argc, char** argv)
                       computationalMesh.cellCount(),
                       computationalMesh.domainCount()));
   slic::flushStreams();
-
-  auto getIntMinMax = [](int inVal, int& minVal, int& maxVal, int& sumVal) {
-#ifdef AXOM_USE_MPI
-    MPI_Allreduce(&inVal, &minVal, 1, MPI_INT, MPI_MIN, MPI_COMM_WORLD);
-    MPI_Allreduce(&inVal, &maxVal, 1, MPI_INT, MPI_MAX, MPI_COMM_WORLD);
-    MPI_Allreduce(&inVal, &sumVal, 1, MPI_INT, MPI_SUM, MPI_COMM_WORLD);
-#else
-    minVal = inVal;
-    maxVal = inVal;
-    sumVal = inVal;
-#endif
-  };
 
   // Output some global mesh size stats
   {
@@ -1643,7 +1823,7 @@ int main(int argc, char** argv)
   // Run test in the execution space set by command line.
   //---------------------------------------------------------------------------
   int errCount = 0;
-  if(params.policy == quest::MarchingCubesRuntimePolicy::seq)
+  if(params.policy == axom::runtime_policy::Policy::seq)
   {
     if(params.ndim == 2)
     {
@@ -1656,7 +1836,7 @@ int main(int argc, char** argv)
   }
 #if defined(AXOM_USE_RAJA)
   #ifdef AXOM_USE_OPENMP
-  else if(params.policy == quest::MarchingCubesRuntimePolicy::omp)
+  else if(params.policy == axom::runtime_policy::Policy::omp)
   {
     if(params.ndim == 2)
     {
@@ -1669,7 +1849,7 @@ int main(int argc, char** argv)
   }
   #endif
   #if defined(AXOM_USE_CUDA) && defined(AXOM_USE_UMPIRE)
-  else if(params.policy == quest::MarchingCubesRuntimePolicy::cuda)
+  else if(params.policy == axom::runtime_policy::Policy::cuda)
   {
     if(params.ndim == 2)
     {
@@ -1682,7 +1862,7 @@ int main(int argc, char** argv)
   }
   #endif
   #if defined(AXOM_USE_HIP) && defined(AXOM_USE_UMPIRE)
-  else if(params.policy == quest::MarchingCubesRuntimePolicy::hip)
+  else if(params.policy == axom::runtime_policy::Policy::hip)
   {
     if(params.ndim == 2)
     {
@@ -1697,9 +1877,6 @@ int main(int argc, char** argv)
 #endif
 
   finalizeLogger();
-#ifdef AXOM_USE_MPI
-  MPI_Finalize();
-#endif
 
   return errCount != 0;
 }

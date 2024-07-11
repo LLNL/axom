@@ -1,4 +1,4 @@
-# Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
+# Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
 # other Axom Project Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
@@ -259,6 +259,59 @@ macro(axom_add_test)
 endmacro(axom_add_test)
 
 
+#------------------------------------------------------------------------------
+# axom_assert_is_directory(DIR_VARIABLE <variable that holds the prefix>)
+#
+# Asserts that the given DIR_VARIABLE's value is a directory and exists.
+# Fails with a helpful message when it doesn't.
+#------------------------------------------------------------------------------
+macro(axom_assert_is_directory)
+
+    set(options)
+    set(singleValueArgs DIR_VARIABLE)
+    set(multiValueArgs)
+
+    # Parse the arguments to the macro
+    cmake_parse_arguments(arg
+         "${options}" "${singleValueArgs}" "${multiValueArgs}" ${ARGN})
+
+    if (NOT EXISTS "${${arg_DIR_VARIABLE}}")
+        message(FATAL_ERROR "Given ${arg_DIR_VARIABLE} does not exist: ${${arg_DIR_VARIABLE}}")
+    endif()
+
+    if (NOT IS_DIRECTORY "${${arg_DIR_VARIABLE}}")
+        message(FATAL_ERROR "Given ${arg_DIR_VARIABLE} is not a directory: ${${arg_DIR_VARIABLE}}")
+    endif()
+
+endmacro(axom_assert_is_directory)
+
+#------------------------------------------------------------------------------
+# axom_assert_find_succeeded(PROJECT_NAME <project name>
+#                             TARGET       <found target>
+#                             DIR_VARIABLE <variable that holds the prefix>)
+#
+# Asserts that the given PROJECT_NAME's TARGET exists.
+# Fails with a helpful message when it doesn't.
+#------------------------------------------------------------------------------
+macro(axom_assert_find_succeeded)
+
+    set(options)
+    set(singleValueArgs DIR_VARIABLE PROJECT_NAME TARGET)
+    set(multiValueArgs)
+
+    # Parse the arguments to the macro
+    cmake_parse_arguments(arg
+         "${options}" "${singleValueArgs}" "${multiValueArgs}" ${ARGN})
+
+    message(STATUS "Checking for expected ${arg_PROJECT_NAME} target '${arg_TARGET}'")
+    if (NOT TARGET ${arg_TARGET})
+        message(FATAL_ERROR "${arg_PROJECT_NAME} failed to load: ${${arg_DIR_VARIABLE}}")
+    else()
+        message(STATUS "${arg_PROJECT_NAME} loaded: ${${arg_DIR_VARIABLE}}")
+    endif()
+
+endmacro(axom_assert_find_succeeded)
+
 ##------------------------------------------------------------------------------
 ## convert_to_native_escaped_file_path( path output )
 ##
@@ -444,7 +497,7 @@ macro(axom_write_unified_header)
     set(_header ${PROJECT_BINARY_DIR}/include/axom/${_lcname}.hpp)
     set(_tmp_header ${_header}.tmp)
 
-    file(WRITE ${_tmp_header} "\/\/ Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
+    file(WRITE ${_tmp_header} "\/\/ Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
 \/\/ other Axom Project Developers. See the top-level LICENSE file for details.
 \/\/
 \/\/ SPDX-License-Identifier: (BSD-3-Clause)

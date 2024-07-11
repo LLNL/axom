@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -68,8 +68,10 @@ public:
   using BoundingBoxType = BoundingBox<T, NDIMS>;
   using OrientedBoundingBoxType = OrientedBoundingBox<T, NDIMS>;
 
-  AXOM_STATIC_ASSERT_MSG((NDIMS == 2) || (NDIMS == 3),
-                         "A Bezier Curve object may be defined in 2-D or 3-D");
+  AXOM_STATIC_ASSERT_MSG(
+    (NDIMS == 1) || (NDIMS == 2) || (NDIMS == 3),
+    "A Bezier Curve object may be defined in 1-, 2-, or 3-D");
+
   AXOM_STATIC_ASSERT_MSG(
     std::is_arithmetic<T>::value,
     "A Bezier Curve must be defined using an arithmetic type");
@@ -338,34 +340,8 @@ public:
     const int ord = getOrder();
     axom::Array<T> dCarray(ord + 1);
 
-    if(isRational())
-    {
-      axom::Array<T> dWarray(ord + 1);
-
-      // Run algorithm from Farin '83 on each dimension
-      for(int i = 0; i < NDIMS; ++i)
-      {
-        for(int p = 0; p <= ord; ++p)
-        {
-          dCarray[p] = m_controlPoints[p][i] * m_weights[p];
-          dWarray[p] = m_weights[p];
-        }
-
-        for(int p = 1; p <= ord; ++p)
-        {
-          const int end = ord - p;
-          for(int k = 0; k <= end; ++k)
-          {
-            dCarray[k] = lerp(dCarray[k], dCarray[k + 1], t);
-            dWarray[k] = lerp(dWarray[k], dWarray[k + 1], t);
-          }
-        }
-        ptval[i] = dCarray[0] / dWarray[0];
-      }
-
-      return ptval;
-    }
-    else  // If ordinary Bezier curve
+    // If not rational, we can do standard de Casteljau
+    if(!isRational())
     {
       // Run de Casteljau algorithm on each dimension
       for(int i = 0; i < NDIMS; ++i)
@@ -388,56 +364,53 @@ public:
 
       return ptval;
     }
+    // If rational, construct 4D homogeneous curve to evaluate
+    else
+    {
+      // Store BezierCurve of projective weights, (wx, wy, wz)
+      //  and BezierCurve of weights (w)
+      BezierCurve<T, NDIMS> projective(ord);
+      BezierCurve<T, 1> weights(ord);
+
+      for(int p = 0; p <= ord; ++p)
+      {
+        weights[p][0] = m_weights[p];
+
+        for(int i = 0; i < NDIMS; ++i)
+        {
+          projective[p][i] = m_controlPoints[p][i] * m_weights[p];
+        }
+      }
+
+      Point<T, NDIMS> P = projective.evaluate(t);
+      Point<T, 1> W = weights.evaluate(t);
+
+      for(int i = 0; i < NDIMS; ++i)
+      {
+        ptval[i] = P[i] / W[0];
+      }
+
+      return ptval;
+    }
   }
 
   /*!
-   * \brief Computes the tangent of  a Bezier curve at a particular parameter value \a t
+   * \brief Computes the 0th and 1st derivative of a Bezier curve
    *
-   * \param [in] t parameter value at which to compute tangent 
-   * \return p the tangent vector of the Bezier curve at t
-   *
-   * \note We typically find the tangent of the curve at \a t between 0 and 1
+   * \param [in] t Parameter value at which to compute tangent 
+   * \param [out] eval The value of the curve at \a t
+   * \param [out] Dt The tangent vector of the curve at \a t
    */
-  VectorType dt(T t) const
+  void evaluate_first_derivative(T t, PointType& eval, VectorType& Dt) const
   {
     using axom::utilities::lerp;
     VectorType val;
 
     const int ord = getOrder();
-    axom::Array<T> dCarray(ord + 1);
+    std::vector<T> dCarray(ord + 1);
 
-    if(isRational())
-    {
-      axom::Array<T> dWarray(ord + 1);
-
-      // Run algorithm from Farin '83 on each dimension
-      for(int i = 0; i < NDIMS; ++i)
-      {
-        for(int p = 0; p <= ord; ++p)
-        {
-          dCarray[p] = m_controlPoints[p][i] * m_weights[p];
-          dWarray[p] = m_weights[p];
-        }
-
-        // stop one step early and do calculation on last two values
-        for(int p = 1; p <= ord - 1; ++p)
-        {
-          const int end = ord - p;
-          for(int k = 0; k <= end; ++k)
-          {
-            dCarray[k] = lerp(dCarray[k], dCarray[k + 1], t);
-            dWarray[k] = lerp(dWarray[k], dWarray[k + 1], t);
-          }
-        }
-
-        val[i] = ord * (dWarray[0] * dCarray[1] - dWarray[1] * dCarray[0]);
-        dWarray[0] = lerp(dWarray[0], dWarray[1], t);
-        val[i] /= dWarray[0] * dWarray[0];
-      }
-
-      return val;
-    }
-    else
+    // If the curve is nonrational, we can use standard de Casteljau
+    if(!isRational())
     {
       // Run de Casteljau algorithm on each dimension
       for(int i = 0; i < NDIMS; ++i)
@@ -456,7 +429,321 @@ public:
             dCarray[k] = lerp(dCarray[k], dCarray[k + 1], t);
           }
         }
-        val[i] = ord * (dCarray[1] - dCarray[0]);
+
+        if(ord == 0)
+        {
+          eval[i] = dCarray[0];
+          Dt[i] = 0.0;
+        }
+        else
+        {
+          eval[i] = (1 - t) * dCarray[0] + t * dCarray[1];
+          Dt[i] = ord * (dCarray[1] - dCarray[0]);
+        }
+      }
+    }
+    // If rational, construct the 4D homogeneous surface,
+    //  which requires all first derivatives
+    else
+    {
+      // Store BezierPatch of projective weights, (wx, wy, wz)
+      //  and BezierPatch of weights (w)
+      BezierCurve<T, NDIMS> projective(ord);
+      BezierCurve<T, 1> weights(ord);
+
+      for(int p = 0; p <= ord; ++p)
+      {
+        weights[p][0] = m_weights[p];
+
+        for(int i = 0; i < NDIMS; ++i)
+        {
+          projective[p][i] = m_controlPoints[p][i] * m_weights[p];
+        }
+      }
+
+      Point<T, NDIMS> P;
+      Vector<T, NDIMS> P_t;
+
+      Point<T, 1> W;
+      Vector<T, 1> W_t;
+
+      projective.evaluate_first_derivative(t, P, P_t);
+      weights.evaluate_first_derivative(t, W, W_t);
+
+      for(int i = 0; i < NDIMS; ++i)
+      {
+        eval[i] = P[i] / W[0];
+        Dt[i] = (P_t[i] - eval[i] * W_t[0]) / W[0];
+      }
+    }
+  }
+
+  /*!
+   * \brief Computes the tangent of a Bezier curve at a particular parameter value \a t
+   *
+   * \param [in] t parameter value at which to compute tangent 
+   * \return p the tangent vector of the Bezier curve at t
+   *
+   * \note We typically find the tangent of the curve at \a t between 0 and 1
+   */
+  VectorType dt(T t) const
+  {
+    using axom::utilities::lerp;
+    VectorType val;
+
+    const int ord = getOrder();
+    axom::Array<T> dCarray(ord + 1);
+
+    // If the curve is nonrational, we can use standard de Casteljau
+    if(!isRational())
+    {
+      // Run de Casteljau algorithm on each dimension
+      for(int i = 0; i < NDIMS; ++i)
+      {
+        for(int p = 0; p <= ord; ++p)
+        {
+          dCarray[p] = m_controlPoints[p][i];
+        }
+
+        // stop one step early and take difference of last two values
+        for(int p = 1; p <= ord - 1; ++p)
+        {
+          const int end = ord - p;
+          for(int k = 0; k <= end; ++k)
+          {
+            dCarray[k] = lerp(dCarray[k], dCarray[k + 1], t);
+          }
+        }
+
+        if(ord == 0)
+        {
+          val[i] = 0.0;
+        }
+        else
+        {
+          val[i] = ord * (dCarray[1] - dCarray[0]);
+        }
+      }
+
+      return val;
+    }
+    // If rational, construct the 4D homogeneous surface,
+    //  which requires all first derivatives
+    else
+    {
+      // Store BezierPatch of projective weights, (wx, wy, wz)
+      //  and BezierPatch of weights (w)
+      BezierCurve<T, NDIMS> projective(ord);
+      BezierCurve<T, 1> weights(ord);
+
+      for(int p = 0; p <= ord; ++p)
+      {
+        weights[p][0] = m_weights[p];
+
+        for(int i = 0; i < NDIMS; ++i)
+        {
+          projective[p][i] = m_controlPoints[p][i] * m_weights[p];
+        }
+      }
+
+      Point<T, NDIMS> P;
+      Vector<T, NDIMS> P_t;
+
+      Point<T, 1> W;
+      Vector<T, 1> W_t;
+
+      projective.evaluate_first_derivative(t, P, P_t);
+      weights.evaluate_first_derivative(t, W, W_t);
+
+      for(int i = 0; i < NDIMS; ++i)
+      {
+        val[i] = (W[0] * P_t[i] - P[i] * W_t[0]) / (W[0] * W[0]);
+      }
+
+      return val;
+    }
+  }
+
+  /*!
+   * \brief Computes the 0th, 1st, and 2nd derivatives of a Bezier curve
+   *
+   * \param [in] t Parameter value at which to compute tangent 
+   * \param [out] eval The value of the curve at \a t
+   * \param [out] Dt The tangent vector of the curve at \a t
+   */
+  void evaluate_second_derivative(T t,
+                                  PointType& eval,
+                                  VectorType& Dt,
+                                  VectorType& DtDt) const
+  {
+    using axom::utilities::lerp;
+    VectorType val;
+
+    const int ord = getOrder();
+    std::vector<T> dCarray(ord + 1);
+
+    // If the curve is nonrational, we can use standard de Casteljau
+    if(!isRational())
+    {
+      // Run de Casteljau algorithm on each dimension
+      for(int i = 0; i < NDIMS; ++i)
+      {
+        for(int p = 0; p <= ord; ++p)
+        {
+          dCarray[p] = m_controlPoints[p][i];
+        }
+
+        // stop one step early and take difference of last two values
+        for(int p = 1; p <= ord - 2; ++p)
+        {
+          const int end = ord - p;
+          for(int k = 0; k <= end; ++k)
+          {
+            dCarray[k] = lerp(dCarray[k], dCarray[k + 1], t);
+          }
+        }
+
+        if(ord == 0)
+        {
+          eval[i] = dCarray[0];
+          Dt[i] = 0.0;
+          DtDt[i] = 0.0;
+        }
+        else if(ord == 1)
+        {
+          eval[i] = (1 - t) * dCarray[0] + t * dCarray[1];
+          Dt[i] = ord * (dCarray[1] - dCarray[0]);
+          DtDt[i] = 0.0;
+        }
+        else
+        {
+          eval[i] = (1 - t) * (1 - t) * dCarray[0] +
+            2 * (1 - t) * t * dCarray[1] + t * t * dCarray[2];
+          Dt[i] = ord *
+            ((1 - t) * (dCarray[1] - dCarray[0]) + t * (dCarray[2] - dCarray[1]));
+          DtDt[i] = ord * (ord - 1) * (dCarray[2] - 2 * dCarray[1] + dCarray[0]);
+        }
+      }
+    }
+    // If rational, construct the 4D homogeneous surface,
+    //  which requires all first derivatives
+    else
+    {
+      // Store BezierPatch of projective weights, (wx, wy, wz)
+      //  and BezierPatch of weights (w)
+      BezierCurve<T, NDIMS> projective(ord);
+      BezierCurve<T, 1> weights(ord);
+
+      for(int p = 0; p <= ord; ++p)
+      {
+        weights[p][0] = m_weights[p];
+
+        for(int i = 0; i < NDIMS; ++i)
+        {
+          projective[p][i] = m_controlPoints[p][i] * m_weights[p];
+        }
+      }
+
+      Point<T, NDIMS> P;
+      Vector<T, NDIMS> P_t, P_tt;
+
+      Point<T, 1> W;
+      Vector<T, 1> W_t, W_tt;
+
+      projective.evaluate_second_derivative(t, P, P_t, P_tt);
+      weights.evaluate_second_derivative(t, W, W_t, W_tt);
+
+      for(int i = 0; i < NDIMS; ++i)
+      {
+        eval[i] = P[i] / W[0];
+        Dt[i] = (P_t[i] - eval[i] * W_t[0]) / W[0];
+        DtDt[i] = (P_tt[i] - 2 * Dt[i] * W_t[0] - eval[i] * W_tt[0]) / W[0];
+      }
+    }
+  }
+
+  /*!
+   * \brief Computes the second derivative of a Bezier curve at a particular parameter value \a t
+   *
+   * \param [in] t parameter value at which to compute tangent 
+   * \return p the 2nd derivative vector of the Bezier curve at t
+   *
+   * \note We typically find the second derivative of the curve at \a t between 0 and 1
+   */
+  VectorType dtdt(T t) const
+  {
+    using axom::utilities::lerp;
+    VectorType val;
+
+    const int ord = getOrder();
+    std::vector<T> dCarray(ord + 1);
+
+    // If the curve is nonrational, we can use standard de Casteljau
+    if(!isRational())
+    {
+      // Run de Casteljau algorithm on each dimension
+      for(int i = 0; i < NDIMS; ++i)
+      {
+        for(int p = 0; p <= ord; ++p)
+        {
+          dCarray[p] = m_controlPoints[p][i];
+        }
+
+        // stop one step early and take difference of last two values
+        for(int p = 1; p <= ord - 2; ++p)
+        {
+          const int end = ord - p;
+          for(int k = 0; k <= end; ++k)
+          {
+            dCarray[k] = lerp(dCarray[k], dCarray[k + 1], t);
+          }
+        }
+
+        if(ord <= 1)
+        {
+          val[i] = 0.0;
+        }
+        else
+        {
+          val[i] = ord * (ord - 1) * (dCarray[2] - 2 * dCarray[1] + dCarray[0]);
+        }
+      }
+
+      return val;
+    }
+    // If rational, construct the 4D homogeneous surface,
+    //  which requires all first derivatives
+    else
+    {
+      // Store BezierPatch of projective weights, (wx, wy, wz)
+      //  and BezierPatch of weights (w)
+      BezierCurve<T, NDIMS> projective(ord);
+      BezierCurve<T, 1> weights(ord);
+
+      for(int p = 0; p <= ord; ++p)
+      {
+        weights[p][0] = m_weights[p];
+
+        for(int i = 0; i < NDIMS; ++i)
+        {
+          projective[p][i] = m_controlPoints[p][i] * m_weights[p];
+        }
+      }
+
+      Point<T, NDIMS> P;
+      Vector<T, NDIMS> P_t, P_tt;
+
+      Point<T, 1> W;
+      Vector<T, 1> W_t, W_tt;
+
+      projective.evaluate_second_derivative(t, P, P_t, P_tt);
+      weights.evaluate_second_derivative(t, W, W_t, W_tt);
+
+      for(int i = 0; i < NDIMS; ++i)
+      {
+        val[i] = W[0] * W[0] * P_tt[i] -
+          2 * (W[0] * P_t[i] - P[i] * W_t[0]) * W_t[0] - P[i] * W[0] * W_tt[0];
+        val[i] /= (W[0] * W[0] * W[0]);
       }
 
       return val;

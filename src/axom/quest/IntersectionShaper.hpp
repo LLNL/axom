@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -65,6 +65,29 @@
   #endif
 #endif
 // clang-format on
+
+namespace
+{
+#if defined(AXOM_USE_RAJA) && defined(AXOM_USE_UMPIRE)
+
+/*!
+   *
+   * \brief Helper function that returns the Umpire allocator id for device
+   *        (for CUDA/HIP policy, set to Unified)
+   * \return The Umpire allocator id for device
+   */
+
+template <typename ExecSpace>
+int getUmpireDeviceId()
+{
+  constexpr bool on_device = axom::execution_space<ExecSpace>::onDevice();
+  int allocator_id = on_device
+    ? axom::getUmpireResourceAllocatorID(umpire::resource::Unified)
+    : axom::execution_space<ExecSpace>::allocatorID();
+  return allocator_id;
+}
+#endif
+}  // namespace
 
 namespace axom
 {
@@ -162,7 +185,8 @@ private:
     m_hostData = hostPtr;
     m_numElements = nElem;
     m_needResult = _needResult;
-    int execSpaceAllocatorID = axom::execution_space<ExecSpace>::allocatorID();
+    int execSpaceAllocatorID = ::getUmpireDeviceId<ExecSpace>();
+
     auto dataSize = sizeof(double) * m_numElements;
     m_deviceData = axom::allocate<double>(dataSize, execSpaceAllocatorID);
     axom::copy(m_deviceData, m_hostData, dataSize);
@@ -294,14 +318,7 @@ public:
   using TetrahedronType = primal::Tetrahedron<double, 3>;
   using SegmentMesh = mint::UnstructuredMesh<mint::SINGLE_SHAPE>;
 
-  /// Choose runtime policy for RAJA
-  enum ExecPolicy
-  {
-    seq = 0,
-    omp = 1,
-    cuda = 2,
-    hip = 3
-  };
+  using RuntimePolicy = axom::runtime_policy::Policy;
 
   static constexpr int DEFAULT_CIRCLE_REFINEMENT_LEVEL {7};
   static constexpr double DEFAULT_REVOLVED_VOLUME {0.};
@@ -319,7 +336,7 @@ public:
 
   void setLevel(int level) { m_level = level; }
 
-  void setExecPolicy(int policy) { m_execPolicy = (ExecPolicy)policy; }
+  void setExecPolicy(RuntimePolicy policy) { m_execPolicy = policy; }
 
   /*!
    * \brief Set the name of the material used to account for free volume fractions.
@@ -468,7 +485,8 @@ public:
     SLIC_INFO(axom::fmt::format(
       "{:-^80}",
       axom::fmt::format(
-        " Checking contour with {} points for degenerate segments ",
+        axom::utilities::locale(),
+        " Checking contour with {:L} points for degenerate segments",
         pointcount)));
 
     // The mesh points are filtered like we want. We need only copy
@@ -494,7 +512,8 @@ public:
       "Discretization of contour has failed. Check that contour is valid");
 
     SLIC_INFO(
-      axom::fmt::format("Contour has been discretized into {} octahedra ",
+      axom::fmt::format(axom::utilities::locale(),
+                        "Contour has been discretized into {:L} octahedra ",
                         m_octcount));
 
     if(this->isVerbose())
@@ -584,7 +603,7 @@ public:
 
     // Determine new allocator (for CUDA/HIP policy, set to Unified)
     // Set new default to device
-    axom::setDefaultAllocator(axom::execution_space<ExecSpace>::allocatorID());
+    axom::setDefaultAllocator(::getUmpireDeviceId<ExecSpace>());
 
     const auto& shapeName = shape.getName();
     AXOM_UNUSED_VAR(shapeDimension);
@@ -630,7 +649,7 @@ public:
 
     // Determine new allocator (for CUDA/HIP policy, set to Unified)
     // Set new default to device
-    axom::setDefaultAllocator(axom::execution_space<ExecSpace>::allocatorID());
+    axom::setDefaultAllocator(::getUmpireDeviceId<ExecSpace>());
 
     SLIC_INFO(axom::fmt::format("{:-^80}",
                                 " Inserting shapes' bounding boxes into BVH "));
@@ -840,19 +859,20 @@ public:
 
     using TetHexArray = axom::StackArray<TetrahedronType, NUM_TETS_PER_HEX>;
 
-    AXOM_PERF_MARK_SECTION("init_tets",
-                           axom::for_all<ExecSpace>(
-                             NE,
-                             AXOM_LAMBDA(axom::IndexType i) {
-                               TetHexArray cur_tets;
-                               hexes_view[i].triangulate(cur_tets);
+    {
+      AXOM_ANNOTATE_SCOPE("init_tets");
+      axom::for_all<ExecSpace>(
+        NE,
+        AXOM_LAMBDA(axom::IndexType i) {
+          TetHexArray cur_tets;
+          hexes_view[i].triangulate(cur_tets);
 
-                               for(int j = 0; j < NUM_TETS_PER_HEX; j++)
-                               {
-                                 tets_from_hexes_view[i * NUM_TETS_PER_HEX + j] =
-                                   cur_tets[j];
-                               }
-                             }););
+          for(int j = 0; j < NUM_TETS_PER_HEX; j++)
+          {
+            tets_from_hexes_view[i * NUM_TETS_PER_HEX + j] = cur_tets[j];
+          }
+        });
+    }
 
     SLIC_INFO(
       axom::fmt::format("{:-^80}",
@@ -860,25 +880,27 @@ public:
 
     const auto offsets_v = offsets.view();
     const auto candidates_v = candidates.view();
-    AXOM_PERF_MARK_SECTION("init_candidates",
-                           axom::for_all<ExecSpace>(
-                             NE,
-                             AXOM_LAMBDA(axom::IndexType i) {
-                               for(int j = 0; j < counts_v[i]; j++)
-                               {
-                                 int shapeIdx = candidates_v[offsets_v[i] + j];
+    {
+      AXOM_ANNOTATE_SCOPE("init_candidates");
+      axom::for_all<ExecSpace>(
+        NE,
+        AXOM_LAMBDA(axom::IndexType i) {
+          for(int j = 0; j < counts_v[i]; j++)
+          {
+            int shapeIdx = candidates_v[offsets_v[i] + j];
 
-                                 for(int k = 0; k < NUM_TETS_PER_HEX; k++)
-                                 {
-                                   IndexType idx = RAJA::atomicAdd<ATOMIC_POL>(
-                                     &newTotalCandidates_view[0],
-                                     IndexType {1});
-                                   hex_indices[idx] = i;
-                                   shape_candidates[idx] = shapeIdx;
-                                   tet_indices[idx] = i * NUM_TETS_PER_HEX + k;
-                                 }
-                               }
-                             }););
+            for(int k = 0; k < NUM_TETS_PER_HEX; k++)
+            {
+              IndexType idx =
+                RAJA::atomicAdd<ATOMIC_POL>(&newTotalCandidates_view[0],
+                                            IndexType {1});
+              hex_indices[idx] = i;
+              shape_candidates[idx] = shapeIdx;
+              tet_indices[idx] = i * NUM_TETS_PER_HEX + k;
+            }
+          }
+        });
+    }
 
     // Overlap volume is the volume of clip(oct,tet)
     m_overlap_volumes = axom::Array<double>(NE, NE);
@@ -900,33 +922,34 @@ public:
     SLIC_INFO(
       axom::fmt::format("{:-^80}", " Calculating hexahedron element volume "));
 
-    AXOM_PERF_MARK_SECTION("hex_volume",
-                           axom::for_all<ExecSpace>(
-                             NE,
-                             AXOM_LAMBDA(axom::IndexType i) {
-                               hex_volumes_view[i] = hexes_view[i].volume();
-                             }););
-
+    {
+      AXOM_ANNOTATE_SCOPE("hex_volume");
+      axom::for_all<ExecSpace>(
+        NE,
+        AXOM_LAMBDA(axom::IndexType i) {
+          hex_volumes_view[i] = hexes_view[i].volume();
+        });
+    }
     SLIC_INFO(axom::fmt::format(
       "{:-^80}",
       " Calculating element overlap volume from each tet-shape pair "));
 
     constexpr double EPS = 1e-10;
-    constexpr bool checkSign = true;
+    constexpr bool tryFixOrientation = true;
 
-    AXOM_PERF_MARK_SECTION(
-      "tet_shape_volume",
+    {
+      AXOM_ANNOTATE_SCOPE("tet_shape_volume");
       axom::for_all<ExecSpace>(
         newTotalCandidates_view[0],
         AXOM_LAMBDA(axom::IndexType i) {
-          int index = hex_indices[i];
-          int shapeIndex = shape_candidates[i];
-          int tetIndex = tet_indices[i];
+          const int index = hex_indices[i];
+          const int shapeIndex = shape_candidates[i];
+          const int tetIndex = tet_indices[i];
 
-          PolyhedronType poly = primal::clip(shapes_view[shapeIndex],
-                                             tets_from_hexes_view[tetIndex],
-                                             EPS,
-                                             checkSign);
+          const PolyhedronType poly = primal::clip(shapes_view[shapeIndex],
+                                                   tets_from_hexes_view[tetIndex],
+                                                   EPS,
+                                                   tryFixOrientation);
 
           // Poly is valid
           if(poly.numVertices() >= 4)
@@ -934,7 +957,8 @@ public:
             RAJA::atomicAdd<ATOMIC_POL>(overlap_volumes_view.data() + index,
                                         poly.volume());
           }
-        }););
+        });
+    }
 
     RAJA::ReduceSum<REDUCE_POL, double> totalOverlap(0);
     RAJA::ReduceSum<REDUCE_POL, double> totalHex(0);
@@ -946,9 +970,11 @@ public:
         totalHex += hex_volumes_view[i];
       });
 
-    SLIC_INFO(axom::fmt::format("Total overlap volume with shape is {}",
+    SLIC_INFO(axom::fmt::format(axom::utilities::locale(),
+                                "Total overlap volume with shape is {:.3Lf}",
                                 this->allReduceSum(totalOverlap)));
-    SLIC_INFO(axom::fmt::format("Total mesh volume is {}",
+    SLIC_INFO(axom::fmt::format(axom::utilities::locale(),
+                                "Total mesh volume is {:.3Lf}",
                                 this->allReduceSum(totalHex)));
 
     // Deallocate no longer needed variables
@@ -1096,25 +1122,25 @@ public:
       cfgf = newVolFracGridFunction();
       this->getDC()->RegisterField(fieldName, cfgf);
 
-      AXOM_PERF_MARK_SECTION("compute_free", {
-        int dataSize = cfgf->Size();
-        GridFunctionView<ExecSpace> cfView(cfgf);
+      AXOM_ANNOTATE_SCOPE("compute_free");
+
+      int dataSize = cfgf->Size();
+      GridFunctionView<ExecSpace> cfView(cfgf);
+      axom::for_all<ExecSpace>(
+        dataSize,
+        AXOM_LAMBDA(axom::IndexType i) { cfView[i] = 1.; });
+
+      // Iterate over all materials and subtract off their VFs from cfgf.
+      for(auto& gf : m_vf_grid_functions)
+      {
+        GridFunctionView<ExecSpace> matVFView(gf, false);
         axom::for_all<ExecSpace>(
           dataSize,
-          AXOM_LAMBDA(axom::IndexType i) { cfView[i] = 1.; });
-
-        // Iterate over all materials and subtract off their VFs from cfgf.
-        for(auto& gf : m_vf_grid_functions)
-        {
-          GridFunctionView<ExecSpace> matVFView(gf, false);
-          axom::for_all<ExecSpace>(
-            dataSize,
-            AXOM_LAMBDA(axom::IndexType i) {
-              cfView[i] -= matVFView[i];
-              cfView[i] = (cfView[i] < 0.) ? 0. : cfView[i];
-            });
-        }
-      });
+          AXOM_LAMBDA(axom::IndexType i) {
+            cfView[i] -= matVFView[i];
+            cfView[i] = (cfView[i] < 0.) ? 0. : cfView[i];
+          });
+      }
     }
     return cfgf;
   }
@@ -1189,7 +1215,8 @@ public:
     SLIC_ASSERT(shapeVolFrac != nullptr);
 
     // Allocate some memory for the replacement rule data arrays.
-    int execSpaceAllocatorID = axom::execution_space<ExecSpace>::allocatorID();
+    int execSpaceAllocatorID = ::getUmpireDeviceId<ExecSpace>();
+
     Array<double> vf_subtract_array(dataSize, dataSize, execSpaceAllocatorID);
     Array<double> vf_writable_array(dataSize, dataSize, execSpaceAllocatorID);
     ArrayView<double> vf_subtract(vf_subtract_array);
@@ -1271,45 +1298,46 @@ public:
     if(!shape.getMaterialsReplaced().empty())
     {
       // Replaces - We'll sum up the VFs that we can replace in a zone.
-      AXOM_PERF_MARK_SECTION("compute_vf_writable", {
+      AXOM_ANNOTATE_SCOPE("compute_vf_writable");
+      axom::for_all<ExecSpace>(
+        dataSize,
+        AXOM_LAMBDA(axom::IndexType i) { vf_writable[i] = 0.; });
+      for(const auto& name : shape.getMaterialsReplaced())
+      {
+        auto mat = getMaterial(name);
+        GridFunctionView<ExecSpace> matVFView(mat.first, false);
         axom::for_all<ExecSpace>(
           dataSize,
-          AXOM_LAMBDA(axom::IndexType i) { vf_writable[i] = 0.; });
-        for(const auto& name : shape.getMaterialsReplaced())
-        {
-          auto mat = getMaterial(name);
-          GridFunctionView<ExecSpace> matVFView(mat.first, false);
-          axom::for_all<ExecSpace>(
-            dataSize,
-            AXOM_LAMBDA(axom::IndexType i) {
-              vf_writable[i] += matVFView[i];
-              vf_writable[i] = (vf_writable[i] > 1.) ? 1. : vf_writable[i];
-            });
-        }
-      });
+          AXOM_LAMBDA(axom::IndexType i) {
+            vf_writable[i] += matVFView[i];
+            vf_writable[i] = (vf_writable[i] > 1.) ? 1. : vf_writable[i];
+          });
+      }
     }
     else
     {
       // Does not replace. We can replace all except for listed mats.
-      AXOM_PERF_MARK_SECTION("compute_vf_writable", {
+      AXOM_ANNOTATE_SCOPE("compute_vf_writable");
+      axom::for_all<ExecSpace>(
+        dataSize,
+        AXOM_LAMBDA(axom::IndexType i) { vf_writable[i] = 1.; });
+
+      for(auto& gf : excludeVFs)
+      {
+        GridFunctionView<ExecSpace> matVFView(gf, false);
         axom::for_all<ExecSpace>(
           dataSize,
-          AXOM_LAMBDA(axom::IndexType i) { vf_writable[i] = 1.; });
-        for(auto& gf : excludeVFs)
-        {
-          GridFunctionView<ExecSpace> matVFView(gf, false);
-          axom::for_all<ExecSpace>(
-            dataSize,
-            AXOM_LAMBDA(axom::IndexType i) {
-              vf_writable[i] -= matVFView[i];
-              vf_writable[i] = (vf_writable[i] < 0.) ? 0. : vf_writable[i];
-            });
-        }
-      });
+          AXOM_LAMBDA(axom::IndexType i) {
+            vf_writable[i] -= matVFView[i];
+            vf_writable[i] = (vf_writable[i] < 0.) ? 0. : vf_writable[i];
+          });
+      }
     }
 
     // Compute the volume fractions for the current shape's material.
-    AXOM_PERF_MARK_SECTION("compute_vf", {
+    {
+      AXOM_ANNOTATE_SCOPE("compute_vf");
+
       GridFunctionView<ExecSpace> matVFView(matVF.first);
       GridFunctionView<ExecSpace> shapeVFView(shapeVolFrac);
 
@@ -1334,11 +1362,11 @@ public:
           // Store the max shape VF.
           shapeVFView[i] = vf;
         });
-    });
+    }
 
-    // Iterate over updateVFs to subtract off VFs we allocated to the
-    // current shape's material.
-    AXOM_PERF_MARK_SECTION("update_vf", {
+    // Iterate over updateVFs to subtract off VFs we allocated to the current shape's material.
+    {
+      AXOM_ANNOTATE_SCOPE("update_vf");
       for(auto& gf : updateVFs)
       {
         GridFunctionView<ExecSpace> matVFView(gf);
@@ -1355,7 +1383,7 @@ public:
             vf_subtract[i] -= s;
           });
       }
-    });
+    }
   }
 #endif
 
@@ -1365,37 +1393,38 @@ public:
    */
   void applyReplacementRules(const klee::Shape& shape) override
   {
+    AXOM_ANNOTATE_SCOPE("applyReplacementRules");
+
     switch(m_execPolicy)
     {
 #if defined(AXOM_USE_RAJA) && defined(AXOM_USE_UMPIRE)
-    case seq:
+    case RuntimePolicy::seq:
       applyReplacementRulesImpl<seq_exec>(shape);
       break;
   #if defined(AXOM_USE_OPENMP)
-    case omp:
+    case RuntimePolicy::omp:
       applyReplacementRulesImpl<omp_exec>(shape);
       break;
   #endif  // AXOM_USE_OPENMP
   #if defined(AXOM_USE_CUDA)
-    case cuda:
+    case RuntimePolicy::cuda:
       applyReplacementRulesImpl<cuda_exec>(shape);
       break;
   #endif  // AXOM_USE_CUDA
   #if defined(AXOM_USE_HIP)
-    case hip:
+    case RuntimePolicy::hip:
       applyReplacementRulesImpl<hip_exec>(shape);
       break;
   #endif  // AXOM_USE_HIP
 #endif    // AXOM_USE_RAJA && AXOM_USE_UMPIRE
-    default:
-      AXOM_UNUSED_VAR(shape);
-      SLIC_ERROR("Unhandled runtime policy case " << m_execPolicy);
-      break;
     }
+    AXOM_UNUSED_VAR(shape);
   }
 
   void finalizeShapeQuery() override
   {
+    AXOM_ANNOTATE_SCOPE("finalizeShapeQuery");
+
     // Implementation here -- destroy BVH tree and other shape-based data structures
     delete m_surfaceMesh;
 
@@ -1410,7 +1439,8 @@ public:
   void prepareShapeQuery(klee::Dimensions shapeDimension,
                          const klee::Shape& shape) override
   {
-    std::string shapeFormat = shape.getGeometry().getFormat();
+    AXOM_ANNOTATE_SCOPE("prepareShapeQuery");
+    const std::string shapeFormat = shape.getGeometry().getFormat();
 
     // Save m_percentError and m_level in case refineShape needs to change them
     // to meet the overall desired error tolerance for the volume.
@@ -1426,31 +1456,28 @@ public:
     switch(m_execPolicy)
     {
 #if defined(AXOM_USE_RAJA) && defined(AXOM_USE_UMPIRE)
-    case seq:
+    case RuntimePolicy::seq:
       prepareShapeQueryImpl<seq_exec>(shapeDimension, shape);
       break;
   #if defined(AXOM_USE_OPENMP)
-    case omp:
+    case RuntimePolicy::omp:
       prepareShapeQueryImpl<omp_exec>(shapeDimension, shape);
       break;
   #endif  // AXOM_USE_OPENMP
   #if defined(AXOM_USE_CUDA)
-    case cuda:
+    case RuntimePolicy::cuda:
       prepareShapeQueryImpl<cuda_exec>(shapeDimension, shape);
       break;
   #endif  // AXOM_USE_CUDA
   #if defined(AXOM_USE_HIP)
-    case hip:
+    case RuntimePolicy::hip:
       prepareShapeQueryImpl<hip_exec>(shapeDimension, shape);
       break;
   #endif  // AXOM_USE_HIP
 #endif    // AXOM_USE_RAJA && AXOM_USE_UMPIRE
-    default:
-      AXOM_UNUSED_VAR(shapeDimension);
-      AXOM_UNUSED_VAR(shape);
-      SLIC_ERROR("Unhandled runtime policy case " << m_execPolicy);
-      break;
     }
+    AXOM_UNUSED_VAR(shapeDimension);
+    AXOM_UNUSED_VAR(shape);
 
     // Restore m_percentError, m_level in case refineShape changed them.
     m_percentError = saved_percentError;
@@ -1461,7 +1488,8 @@ public:
   // (default is sequential)
   void runShapeQuery(const klee::Shape& shape) override
   {
-    std::string shapeFormat = shape.getGeometry().getFormat();
+    AXOM_ANNOTATE_SCOPE("runShapeQuery");
+    const std::string shapeFormat = shape.getGeometry().getFormat();
 
     // Testing separate workflow for Pro/E
     if(shapeFormat == "proe")
@@ -1469,29 +1497,25 @@ public:
       switch(m_execPolicy)
       {
 #if defined(AXOM_USE_RAJA) && defined(AXOM_USE_UMPIRE)
-      case seq:
+      case RuntimePolicy::seq:
         runShapeQueryImpl<seq_exec, TetrahedronType>(shape, m_tets, m_tetcount);
         break;
   #if defined(AXOM_USE_OPENMP)
-      case omp:
+      case RuntimePolicy::omp:
         runShapeQueryImpl<omp_exec, TetrahedronType>(shape, m_tets, m_tetcount);
         break;
   #endif  // AXOM_USE_OPENMP
   #if defined(AXOM_USE_CUDA)
-      case cuda:
+      case RuntimePolicy::cuda:
         runShapeQueryImpl<cuda_exec, TetrahedronType>(shape, m_tets, m_tetcount);
         break;
   #endif  // AXOM_USE_CUDA
   #if defined(AXOM_USE_HIP)
-      case hip:
+      case RuntimePolicy::hip:
         runShapeQueryImpl<hip_exec, TetrahedronType>(shape, m_tets, m_tetcount);
         break;
   #endif  // AXOM_USE_HIP
 #endif    // AXOM_USE_RAJA && AXOM_USE_UMPIRE
-      default:
-        AXOM_UNUSED_VAR(shape);
-        SLIC_ERROR("Unhandled runtime policy case " << m_execPolicy);
-        break;
       }
     }
     else if(shapeFormat == "c2c")
@@ -1499,29 +1523,25 @@ public:
       switch(m_execPolicy)
       {
 #if defined(AXOM_USE_RAJA) && defined(AXOM_USE_UMPIRE)
-      case seq:
+      case RuntimePolicy::seq:
         runShapeQueryImpl<seq_exec, OctahedronType>(shape, m_octs, m_octcount);
         break;
   #if defined(AXOM_USE_OPENMP)
-      case omp:
+      case RuntimePolicy::omp:
         runShapeQueryImpl<omp_exec, OctahedronType>(shape, m_octs, m_octcount);
         break;
   #endif  // AXOM_USE_OPENMP
   #if defined(AXOM_USE_CUDA)
-      case cuda:
+      case RuntimePolicy::cuda:
         runShapeQueryImpl<cuda_exec, OctahedronType>(shape, m_octs, m_octcount);
         break;
   #endif  // AXOM_USE_CUDA
   #if defined(AXOM_USE_HIP)
-      case hip:
+      case RuntimePolicy::hip:
         runShapeQueryImpl<hip_exec, OctahedronType>(shape, m_octs, m_octcount);
         break;
   #endif  // AXOM_USE_HIP
 #endif    // AXOM_USE_RAJA && AXOM_USE_UMPIRE
-      default:
-        AXOM_UNUSED_VAR(shape);
-        SLIC_ERROR("Unhandled runtime policy case " << m_execPolicy);
-        break;
       }
     }
     else
@@ -1625,7 +1645,9 @@ private:
 
     SLIC_INFO(axom::fmt::format(
       "{:-^80}",
-      axom::fmt::format(" Discretizing contour with {} points ", polyline_size)));
+      axom::fmt::format(axom::utilities::locale(),
+                        " Discretizing contour with {:L} points ",
+                        polyline_size)));
 
     // Flip point order
     if(flip)
@@ -1846,9 +1868,9 @@ private:
         dr = avg_pct < percentError;
         if(dr)
         {
-          SLIC_INFO(fmt::format("Dimishing returns triggered: {} < {}.",
-                                avg_pct,
-                                percentError));
+          SLIC_INFO(axom::fmt::format("Dimishing returns triggered: {} < {}.",
+                                      avg_pct,
+                                      percentError));
         }
       }
       return dr;
@@ -1890,32 +1912,32 @@ private:
         pct = 100. * (1. - currentVol / revolvedVolume);
 
         SLIC_INFO(
-          fmt::format("Refining... "
-                      "revolvedVolume = {}"
-                      ", currentVol = {}"
-                      ", pct = {}"
-                      ", level = {}"
-                      ", curvePercentError = {}",
-                      revolvedVolume,
-                      currentVol,
-                      pct,
-                      level,
-                      curvePercentError));
+          axom::fmt::format("Refining... "
+                            "revolvedVolume = {}"
+                            ", currentVol = {}"
+                            ", pct = {}"
+                            ", level = {}"
+                            ", curvePercentError = {}",
+                            revolvedVolume,
+                            currentVol,
+                            pct,
+                            level,
+                            curvePercentError));
 
         if(pct <= m_percentError)
         {
           SLIC_INFO(
-            fmt::format("Contour refinement complete. "
-                        "revolvedVolume = {}"
-                        ", currentVol = {}"
-                        ", pct = {}"
-                        ", level = {}"
-                        ", curvePercentError = {}",
-                        revolvedVolume,
-                        currentVol,
-                        pct,
-                        level,
-                        curvePercentError));
+            axom::fmt::format("Contour refinement complete. "
+                              "revolvedVolume = {}"
+                              ", currentVol = {}"
+                              ", pct = {}"
+                              ", level = {}"
+                              ", curvePercentError = {}",
+                              revolvedVolume,
+                              currentVol,
+                              pct,
+                              level,
+                              curvePercentError));
 
           circleLevel = level;
           refine = false;
@@ -1932,17 +1954,17 @@ private:
         refine = false;
 
         SLIC_INFO(
-          fmt::format("Stop refining due to diminishing returns. "
-                      "revolvedVolume = {}"
-                      ", currentVol = {}"
-                      ", pct = {}"
-                      ", level = {}"
-                      ", curvePercentError = {}",
-                      revolvedVolume,
-                      currentVol,
-                      pct,
-                      circleLevel,
-                      curvePercentError));
+          axom::fmt::format("Stop refining due to diminishing returns. "
+                            "revolvedVolume = {}"
+                            ", currentVol = {}"
+                            ", pct = {}"
+                            ", level = {}"
+                            ", curvePercentError = {}",
+                            revolvedVolume,
+                            currentVol,
+                            pct,
+                            circleLevel,
+                            curvePercentError));
 
         // NOTE: Trying to increase circleLevel at this point does not help.
       }
@@ -1966,9 +1988,9 @@ private:
           // a new m_surfaceMesh to be created.
           double rv = 0.;
           SLIC_INFO(
-            fmt::format("Reloading shape {} with curvePercentError = {}.",
-                        shape.getName(),
-                        curvePercentError));
+            axom::fmt::format("Reloading shape {} with curvePercentError = {}.",
+                              shape.getName(),
+                              curvePercentError));
           loadShapeInternal(shape, curvePercentError, rv);
 
           // Filter the mesh, store in m_surfaceMesh.
@@ -1979,7 +2001,7 @@ private:
         }
         else
         {
-          SLIC_INFO(fmt::format(
+          SLIC_INFO(axom::fmt::format(
             "Stopping refinement due to curvePercentError {} being too small.",
             ce));
           refine = false;
@@ -2009,7 +2031,7 @@ private:
   }
 
 private:
-  ExecPolicy m_execPolicy {seq};
+  RuntimePolicy m_execPolicy {RuntimePolicy::seq};
   int m_level {DEFAULT_CIRCLE_REFINEMENT_LEVEL};
   double m_revolvedVolume {DEFAULT_REVOLVED_VOLUME};
   int m_num_elements {0};

@@ -1,16 +1,14 @@
-// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
 #include "axom/slic/core/Logger.hpp"
-
 #include "axom/slic/core/LogStream.hpp"
-
-#include "axom/core/utilities/Utilities.hpp"  // for utilities::processAbort()
+#include "axom/core/utilities/Utilities.hpp"
 
 // C/C++ includes
-#include <iostream>  // for std::cout, std::cerr
+#include <iostream>
 
 namespace axom
 {
@@ -64,17 +62,17 @@ Logger::Logger(const std::string& name)
 //------------------------------------------------------------------------------
 Logger::~Logger()
 {
-  std::map<LogStream*, LogStream*>::iterator it = m_streamObjectsManager.begin();
-  for(; it != m_streamObjectsManager.end(); ++it)
+  for(auto& kv : m_streamObjectsManager)
   {
-    delete it->second;
-  }  // END for all logStreams
+    delete kv.second;
+  }
 
   for(int level = message::Error; level < message::Num_Levels; ++level)
   {
     m_logStreams[level].clear();
+  }
 
-  }  // END for all levels
+  m_taggedStreams.clear();
 }
 
 //------------------------------------------------------------------------------
@@ -144,7 +142,33 @@ void Logger::addStreamToMsgLevel(LogStream* ls,
 }
 
 //------------------------------------------------------------------------------
-void Logger::addStreamToAllMsgLevels(LogStream* ls)
+void Logger::addStreamToTag(LogStream* ls,
+                            const std::string& tag,
+                            bool pass_ownership)
+{
+  if(ls == nullptr)
+  {
+    std::cerr << "WARNING: supplied log stream is NULL!\n";
+    return;
+  }
+
+  if(m_taggedStreams.find(tag) == m_taggedStreams.end())
+  {
+    m_taggedStreams[tag] = std::vector<LogStream*> {ls};
+  }
+  else
+  {
+    m_taggedStreams[tag].push_back(ls);
+  }
+
+  if(pass_ownership)
+  {
+    m_streamObjectsManager[ls] = ls;
+  }
+}
+
+//------------------------------------------------------------------------------
+void Logger::addStreamToAllMsgLevels(LogStream* ls, bool pass_ownership)
 {
   if(ls == nullptr)
   {
@@ -154,15 +178,53 @@ void Logger::addStreamToAllMsgLevels(LogStream* ls)
 
   for(int level = message::Error; level < message::Num_Levels; ++level)
   {
-    this->addStreamToMsgLevel(ls, static_cast<message::Level>(level));
+    this->addStreamToMsgLevel(ls,
+                              static_cast<message::Level>(level),
+                              pass_ownership);
+  }
+}
 
-  }  // END for all levels
+//------------------------------------------------------------------------------
+void Logger::addStreamToAllTags(LogStream* ls, bool pass_ownership)
+{
+  if(ls == nullptr)
+  {
+    std::cerr << "WARNING: supplied log stream is NULL!\n";
+    return;
+  }
+
+  if(m_taggedStreams.empty())
+  {
+    std::cerr << "WARNING: no tags are available!\n";
+    if(pass_ownership)
+    {
+      m_streamObjectsManager[ls] = ls;
+    }
+
+    return;
+  }
+
+  for(auto& kv : m_taggedStreams)
+  {
+    this->addStreamToTag(ls, kv.first, pass_ownership);
+  }
 }
 
 //------------------------------------------------------------------------------
 int Logger::getNumStreamsAtMsgLevel(message::Level level)
 {
   return static_cast<int>(m_logStreams[level].size());
+}
+
+//------------------------------------------------------------------------------
+int Logger::getNumStreamsWithTag(const std::string& tag)
+{
+  if(m_taggedStreams.find(tag) == m_taggedStreams.end())
+  {
+    return 0;
+  }
+
+  return static_cast<int>(m_taggedStreams[tag].size());
 }
 
 //------------------------------------------------------------------------------
@@ -178,6 +240,24 @@ LogStream* Logger::getStream(message::Level level, int i)
 }
 
 //------------------------------------------------------------------------------
+LogStream* Logger::getStream(const std::string& tag, int i)
+{
+  if(m_taggedStreams.find(tag) == m_taggedStreams.end())
+  {
+    std::cerr << "ERROR: tag does not exist!\n";
+    return nullptr;
+  }
+
+  if(i < 0 || i >= static_cast<int>(m_taggedStreams[tag].size()))
+  {
+    std::cerr << "ERROR: stream index is out-of-bounds!\n";
+    return nullptr;
+  }
+
+  return m_taggedStreams[tag][i];
+}
+
+//------------------------------------------------------------------------------
 void Logger::logMessage(message::Level level,
                         const std::string& message,
                         bool filter_duplicates)
@@ -187,21 +267,24 @@ void Logger::logMessage(message::Level level,
                    MSG_IGNORE_TAG,
                    MSG_IGNORE_FILE,
                    MSG_IGNORE_LINE,
-                   filter_duplicates);
+                   filter_duplicates,
+                   false);
 }
 
 //------------------------------------------------------------------------------
 void Logger::logMessage(message::Level level,
                         const std::string& message,
                         const std::string& tagName,
-                        bool filter_duplicates)
+                        bool filter_duplicates,
+                        bool tag_stream_only)
 {
   this->logMessage(level,
                    message,
                    tagName,
                    MSG_IGNORE_FILE,
                    MSG_IGNORE_LINE,
-                   filter_duplicates);
+                   filter_duplicates,
+                   tag_stream_only);
 }
 
 //------------------------------------------------------------------------------
@@ -211,7 +294,13 @@ void Logger::logMessage(message::Level level,
                         int line,
                         bool filter_duplicates)
 {
-  this->logMessage(level, message, MSG_IGNORE_TAG, fileName, line, filter_duplicates);
+  this->logMessage(level,
+                   message,
+                   MSG_IGNORE_TAG,
+                   fileName,
+                   line,
+                   filter_duplicates,
+                   false);
 }
 
 //------------------------------------------------------------------------------
@@ -220,24 +309,63 @@ void Logger::logMessage(message::Level level,
                         const std::string& tagName,
                         const std::string& fileName,
                         int line,
-                        bool filter_duplicates)
+                        bool filter_duplicates,
+                        bool tag_stream_only)
 {
-  if(m_isEnabled[level] == false)
+  if(m_isEnabled[level] == false && tag_stream_only == false)
   {
     return;
   }
 
-  unsigned nstreams = static_cast<unsigned>(m_logStreams[level].size());
-  for(unsigned istream = 0; istream < nstreams; ++istream)
+  if(tag_stream_only == true && tagName == MSG_IGNORE_TAG)
   {
-    m_logStreams[level][istream]
-      ->append(level, message, tagName, fileName, line, filter_duplicates);
+    std::cerr << "ERROR: message for tagged streams does not have a tag!\n";
+    return;
+  }
+
+  if(tag_stream_only == true &&
+     m_taggedStreams.find(tagName) == m_taggedStreams.end())
+  {
+    std::cerr << "ERROR: tag does not exist!\n";
+    return;
+  }
+
+  // Message for message levels
+  if(tag_stream_only == false)
+  {
+    unsigned nstreams = static_cast<unsigned>(m_logStreams[level].size());
+    for(unsigned istream = 0; istream < nstreams; ++istream)
+    {
+      m_logStreams[level][istream]->append(level,
+                                           message,
+                                           tagName,
+                                           fileName,
+                                           line,
+                                           filter_duplicates,
+                                           tag_stream_only);
+    }
+  }
+
+  // Message for tagged streams
+  else
+  {
+    for(unsigned int i = 0; i < m_taggedStreams[tagName].size(); i++)
+    {
+      m_taggedStreams[tagName][i]->append(level,
+                                          message,
+                                          tagName,
+                                          fileName,
+                                          line,
+                                          filter_duplicates,
+                                          tag_stream_only);
+    }
   }
 }
 
 //------------------------------------------------------------------------------
 void Logger::outputLocalMessages()
 {
+  //Output for all message levels
   for(int level = message::Error; level < message::Num_Levels; ++level)
   {
     unsigned nstreams = static_cast<unsigned>(m_logStreams[level].size());
@@ -248,11 +376,23 @@ void Logger::outputLocalMessages()
     }  // END for all streams
 
   }  // END for all levels
+
+  // Output for all tagged streams
+  std::map<std::string, std::vector<LogStream*>>::iterator it;
+
+  for(it = m_taggedStreams.begin(); it != m_taggedStreams.end(); it++)
+  {
+    for(unsigned int i = 0; i < it->second.size(); i++)
+    {
+      it->second[i]->outputLocal();
+    }
+  }
 }
 
 //------------------------------------------------------------------------------
 void Logger::flushStreams()
 {
+  //Flush for all message levels
   for(int level = message::Error; level < message::Num_Levels; ++level)
   {
     unsigned nstreams = static_cast<unsigned>(m_logStreams[level].size());
@@ -263,11 +403,23 @@ void Logger::flushStreams()
     }  // END for all streams
 
   }  // END for all levels
+
+  // Flush for all tagged streams
+  std::map<std::string, std::vector<LogStream*>>::iterator it;
+
+  for(it = m_taggedStreams.begin(); it != m_taggedStreams.end(); it++)
+  {
+    for(unsigned int i = 0; i < it->second.size(); i++)
+    {
+      it->second[i]->flush();
+    }
+  }
 }
 
 //------------------------------------------------------------------------------
 void Logger::pushStreams()
 {
+  //Push for all message levels
   for(int level = message::Error; level < message::Num_Levels; ++level)
   {
     unsigned nstreams = static_cast<unsigned>(m_logStreams[level].size());
@@ -278,6 +430,17 @@ void Logger::pushStreams()
     }  // END for all streams
 
   }  // END for all levels
+
+  // Push for all tagged streams
+  std::map<std::string, std::vector<LogStream*>>::iterator it;
+
+  for(it = m_taggedStreams.begin(); it != m_taggedStreams.end(); it++)
+  {
+    for(unsigned int i = 0; i < it->second.size(); i++)
+    {
+      it->second[i]->push();
+    }
+  }
 }
 
 //------------------------------------------------------------------------------
@@ -361,16 +524,15 @@ bool Logger::activateLogger(const std::string& name)
 void Logger::finalize()
 {
   Loggermap& loggers = getLoggers();
-  for(Loggermap::iterator it = loggers.begin(); it != loggers.end(); ++it)
+  for(auto& kv : loggers)
   {
-    it->second->flushStreams();
+    kv.second->flushStreams();
   }
 
-  for(Loggermap::iterator it = loggers.begin(); it != loggers.end(); ++it)
+  for(auto& kv : loggers)
   {
-    delete it->second;
+    delete kv.second;
   }
-
   loggers.clear();
 
   getLogger() = nullptr;

@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -192,6 +192,23 @@ Domain::Domain(Int_t numRanks, Index_t colLoc,
 
 } // End constructor
 
+Domain::~Domain()
+{
+#ifdef AXOM_USE_MPI   
+  delete [] commDataSend;
+  delete [] commDataRecv;
+#endif
+
+  delete [] m_regElemSize;
+  delete [] m_regNumList;
+
+  for (Index_t i=0 ; i<numReg() ; ++i)
+  {
+    delete [] m_regElemlist[i];
+  }
+  delete [] m_regElemlist;
+
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 void
@@ -438,57 +455,48 @@ Domain::CreateRegionIndexSets(Int_t nr, Int_t balance)
       //Determine the relative weights of all the regions.  This is based off the -b flag.  Balance is the value passed into b.  
       for (Index_t i=0 ; i<numReg() ; ++i) {
          regElemSize(i) = 0;
-	 costDenominator += pow((i+1), balance);  //Total sum of all regions weights
-	 regBinEnd[i] = costDenominator;  //Chance of hitting a given region is (regBinEnd[i] - regBinEdn[i-1])/costDenominator
+         costDenominator += pow((i+1), balance);  //Total sum of all regions weights
+         regBinEnd[i] = costDenominator;  //Chance of hitting a given region is (regBinEnd[i] - regBinEdn[i-1])/costDenominator
       }
       //Until all elements are assigned
       while (nextIndex < numElem()) {
-	 //pick the region
-	 regionVar = rand() % costDenominator;
-	 Index_t i = 0;
+         //pick the region
+         regionVar = rand() % costDenominator;
+         Index_t i = 0;
          while(regionVar >= regBinEnd[i])
-	    i++;
+            i++;
          //rotate the regions based on MPI rank.  Rotation is Rank % NumRegions this makes each domain have a different region with 
          //the highest representation
-	 regionNum = ((i + myRank) % numReg()) + 1;
-	 // make sure we don't pick the same region twice in a row
+         regionNum = ((i + myRank) % numReg()) + 1;
+         // make sure we don't pick the same region twice in a row
          while(regionNum == lastReg) {
-	    regionVar = rand() % costDenominator;
-	    i = 0;
+            regionVar = rand() % costDenominator;
+            i = 0;
             while(regionVar >= regBinEnd[i])
-	       i++;
-	    regionNum = ((i + myRank) % numReg()) + 1;
+	            i++;
+	          regionNum = ((i + myRank) % numReg()) + 1;
          }
-	 //Pick the bin size of the region and determine the number of elements.
+         
+         //Pick the bin size of the region and determine the number of elements.
          binSize = rand() % 1000;
-	 if(binSize < 773) {
-	   elements = rand() % 15 + 1;
-	 }
-	 else if(binSize < 937) {
-	   elements = rand() % 16 + 16;
-	 }
-	 else if(binSize < 970) {
-	   elements = rand() % 32 + 32;
-	 }
-	 else if(binSize < 974) {
-	   elements = rand() % 64 + 64;
-	 } 
-	 else if(binSize < 978) {
-	   elements = rand() % 128 + 128;
-	 }
-	 else if(binSize < 981) {
-	   elements = rand() % 256 + 256;
-	 }
-	 else
-	    elements = rand() % 1537 + 512;
-	 runto = elements + nextIndex;
-	 //Store the elements.  If we hit the end before we run out of elements then just stop.
+         if(binSize < 773) { elements = rand() % 15 + 1; }
+         else if(binSize < 937) { elements = rand() % 16 + 16; }
+         else if(binSize < 970) { elements = rand() % 32 + 32; }
+         else if(binSize < 974) { elements = rand() % 64 + 64; } 
+         else if(binSize < 978) { elements = rand() % 128 + 128; }
+         else if(binSize < 981) { elements = rand() % 256 + 256; }
+         else { elements = rand() % 1537 + 512;}
+
+         runto = elements + nextIndex;
+         //Store the elements.  If we hit the end before we run out of elements then just stop.
          while (nextIndex < runto && nextIndex < numElem()) {
-	    this->regNumList(nextIndex) = regionNum;
-	    nextIndex++;
-	 }
-	 lastReg = regionNum;
+           this->regNumList(nextIndex) = regionNum;
+           nextIndex++;
+         }
+         lastReg = regionNum;
       } 
+
+      delete [] regBinEnd;
    }
    // Convert regNumList to region index sets
    // First, count size of each region 
@@ -507,6 +515,8 @@ Domain::CreateRegionIndexSets(Int_t nr, Int_t balance)
       Index_t regndx = regElemSize(r)++; // Note increment
       regElemlist(r,regndx) = i;
    }
+
+
    
 }
 

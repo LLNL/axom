@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -104,8 +104,6 @@ void generateIncrementingRelations(SetPosition stride, VecType* offsets)
 {
   VecType& offsetsVec = *offsets;
 
-  SetPosition curIdx = SetPosition();
-
   for(SetPosition i = 0; i < FROMSET_SIZE; ++i)
   {
     EXPECT_EQ(elementCardinality(i), stride);
@@ -113,7 +111,6 @@ void generateIncrementingRelations(SetPosition stride, VecType* offsets)
     for(SetPosition j = 0; j < elementCardinality(i); ++j)
     {
       offsetsVec.push_back(relationData(i, j));
-      ++curIdx;
     }
   }
 }

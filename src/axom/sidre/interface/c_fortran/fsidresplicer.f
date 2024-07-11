@@ -1,4 +1,4 @@
-! Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
+! Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
 ! other Axom Project Developers. See the top-level LICENSE file for details.
 !
 ! SPDX-License-Identifier: (BSD-3-Clause)
@@ -35,12 +35,6 @@ use, intrinsic :: iso_c_binding, only : C_SHORT, C_INT, C_INT32_T, C_INT64_T
 ! splicer begin module_top
 integer, parameter :: MAXNAMESIZE = 128
 
-#if defined(AXOM_USE_64BIT_INDEXTYPE) && !defined(AXOM_NO_INT64_T)
-integer, parameter :: SIDRE_IndexType = C_INT64_T
-#else
-integer, parameter :: SIDRE_IndexType = C_INT32_T
-#endif
-
 integer, parameter :: TypeID = C_SHORT
 integer, parameter :: TypeIDint = C_INT
 
@@ -63,26 +57,26 @@ integer(TypeID), parameter :: &
     SIDRE_ULONG_ID      = CONDUIT_ULONG_ID, &
     SIDRE_FLOAT_ID      = CONDUIT_FLOAT_ID, &
     SIDRE_DOUBLE_ID     = CONDUIT_DOUBLE_ID
-
-integer, parameter :: invalid_index = -1_SIDRE_IndexType
 ! splicer end module_top
 
 
 # SIDRE_create_fortran_allocatable_view is not in api.yaml since it is not in src/core and
 # only required for the fortran interface.
 
-! splicer begin additional_interfaces
-function SIDRE_create_array_view(group, name, lname, addr, type, rank, extents) &
-      result(rv) bind(C,name="SIDRE_create_array_view")
-    use iso_c_binding
-    import SIDRE_IndexType
-    type(C_PTR), value, intent(IN)     :: group
-    character(kind=C_CHAR), intent(IN) :: name(*)
-    integer(C_INT), value, intent(IN)  :: lname
-    type(C_PTR), value,     intent(IN) :: addr
-    integer(C_INT), value, intent(IN)  :: type
-    integer(C_INT), value, intent(IN)  :: rank
-    integer(SIDRE_IndexType), intent(IN)  :: extents(*)
-    type(C_PTR) rv
-end function SIDRE_create_array_view
-! splicer end additional_interfaces
+! splicer begin additional_declarations
+interface
+  function SIDRE_create_array_view(group, name, lname, addr, type, rank, extents) &
+        result(rv) bind(C,name="SIDRE_create_array_view")
+      use iso_c_binding
+      import SIDRE_IndexType
+      type(C_PTR), value, intent(IN)     :: group
+      character(kind=C_CHAR), intent(IN) :: name(*)
+      integer(C_INT), value, intent(IN)  :: lname
+      type(C_PTR), value,     intent(IN) :: addr
+      integer(C_INT), value, intent(IN)  :: type
+      integer(C_INT), value, intent(IN)  :: rank
+      integer(SIDRE_IndexType), intent(IN)  :: extents(*)
+      type(C_PTR) rv
+  end function SIDRE_create_array_view
+end interface
+! splicer end additional_declarations

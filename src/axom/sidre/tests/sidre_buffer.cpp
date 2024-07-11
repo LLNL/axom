@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -298,18 +298,18 @@ TEST(sidre_buffer, with_multiple_views)
   EXPECT_EQ(dbuff->getNumViews(), 2);
 
   // Detach buffer from first view will not detach from datastore.
-  dv1->attachBuffer(NULL);
+  dv1->attachBuffer(nullptr);
   EXPECT_FALSE(dv1->hasBuffer());
   EXPECT_EQ(ds->getNumBuffers(), 1u);
   EXPECT_EQ(dbuff->getNumViews(), 1);
 
   // Detach buffer from second view will detach from datastore.
-  dv2->attachBuffer(NULL);
+  dv2->attachBuffer(nullptr);
   EXPECT_FALSE(dv2->hasBuffer());
   EXPECT_EQ(ds->getNumBuffers(), 0u);
 
   // Buffer has been destroyed since there are no more attached views
-  EXPECT_TRUE(ds->getBuffer(idx) == NULL);
+  EXPECT_TRUE(ds->getBuffer(idx) == nullptr);
 
   delete ds;
 }

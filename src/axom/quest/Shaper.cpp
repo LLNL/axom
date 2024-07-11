@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -149,6 +149,8 @@ bool Shaper::isValidFormat(const std::string& format) const
 
 void Shaper::loadShape(const klee::Shape& shape)
 {
+  AXOM_ANNOTATE_SCOPE("loadShape");
+
   // Do not save the revolved volume in the default shaper.
   double revolved = 0.;
   loadShapeInternal(shape, m_percentError, revolved);
@@ -175,9 +177,9 @@ void Shaper::loadShapeInternal(const klee::Shape& shape,
   if(!shape.getGeometry().hasGeometry())
   {
     SLIC_DEBUG(
-      fmt::format("Current shape '{}' of material '{}' has no geometry",
-                  shape.getName(),
-                  shape.getMaterial()));
+      axom::fmt::format("Current shape '{}' of material '{}' has no geometry",
+                        shape.getName(),
+                        shape.getMaterial()));
     return;
   }
 
@@ -292,6 +294,8 @@ void Shaper::applyTransforms(const klee::Shape& shape)
 
 void Shaper::applyTransforms(const numerics::Matrix<double>& transformation)
 {
+  AXOM_ANNOTATE_SCOPE("applyTransforms");
+
   // Apply transformation to coordinates of each vertex in mesh
   if(!transformation.isIdentity())
   {

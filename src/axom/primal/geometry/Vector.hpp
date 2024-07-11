@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -126,7 +126,7 @@ AXOM_HOST_DEVICE Vector<T, NDIMS> operator*(const T scalar,
 /*!
  * \brief Scalar division of vector; Scalar on rhs.
  * \param [in] vec vector instance
- * \param [in]n scalar user-supplied scalar.
+ * \param [in] scalar user-supplied scalar.
  * \return C resulting vector, \f$ \ni: C_i = vec_i / scalar, \forall i\f$
  * \pre scalar != 0.0
  */
@@ -422,8 +422,8 @@ private:
 /// \name Pre-defined Vector types
 /// @{
 
-typedef Vector<double, 2> Vector2D;
-typedef Vector<double, 3> Vector3D;
+using Vector2D = Vector<double, 2>;
+using Vector3D = Vector<double, 3>;
 
 /// @}
 

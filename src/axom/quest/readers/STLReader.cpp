@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -74,7 +74,7 @@ bool STLReader::isAsciiFormat() const
 
   if(!utilities::isLittleEndian())
   {
-    numTris = utilities::swapEndian(numTris);
+    numTris = utilities::byteswap(numTris);
   }
 
   // Check if the size matches our expectation
@@ -166,7 +166,7 @@ int STLReader::readBinarySTL()
 
   if(!isLittleEndian)
   {
-    m_num_faces = utilities::swapEndian(m_num_faces);
+    m_num_faces = utilities::byteswap(m_num_faces);
   }
 
   m_num_nodes = m_num_faces * 3;
@@ -180,7 +180,7 @@ int STLReader::readBinarySTL()
     for(int j = 0; j < 9; ++j)
     {
       float coord = isLittleEndian ? tri.data.vert[j]
-                                   : utilities::swapEndian(tri.data.vert[j]);
+                                   : utilities::byteswap(tri.data.vert[j]);
 
       m_nodes.push_back(static_cast<double>(coord));
     }

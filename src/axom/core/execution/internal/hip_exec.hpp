@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -61,7 +61,7 @@ struct execution_space<HIP_EXEC<BLOCK_SIZE, SYNCHRONOUS>>
   static constexpr char* name() noexcept { return (char*)"[HIP_EXEC]"; }
   static int allocatorID() noexcept
   {
-    return axom::getUmpireResourceAllocatorID(umpire::resource::Unified);
+    return axom::getUmpireResourceAllocatorID(umpire::resource::Device);
   }
 };
 
@@ -88,7 +88,7 @@ struct execution_space<HIP_EXEC<BLOCK_SIZE, ASYNC>>
   static constexpr char* name() noexcept { return (char*)"[HIP_EXEC] (async)"; }
   static int allocatorID() noexcept
   {
-    return axom::getUmpireResourceAllocatorID(umpire::resource::Unified);
+    return axom::getUmpireResourceAllocatorID(umpire::resource::Device);
   }
 };
 }  // namespace axom

@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -311,8 +311,19 @@ void run_vectorized_sphere_test()
 {
   using PointType = primal::Point<double, 3>;
 
-  const int curr_allocator = axom::getDefaultAllocatorID();
-  axom::setDefaultAllocator(axom::execution_space<ExecSpace>::allocatorID());
+  int host_allocator = axom::execution_space<axom::SEQ_EXEC>::allocatorID();
+  int kernel_allocator = axom::execution_space<ExecSpace>::allocatorID();
+
+  //Use unified memory on device
+#if defined(AXOM_USE_GPU) && defined(AXOM_USE_UMPIRE)
+  if(axom::execution_space<ExecSpace>::onDevice())
+  {
+    kernel_allocator =
+      axom::getUmpireResourceAllocatorID(umpire::resource::Unified);
+  }
+#endif
+
+  axom::setDefaultAllocator(kernel_allocator);
 
   constexpr double l1norm_expected = 6.7051997372579715;
   constexpr double l2norm_expected = 2.5894400431865519;
@@ -360,13 +371,24 @@ void run_vectorized_sphere_test()
   double l2norm = 0.0;
   double linf = std::numeric_limits<double>::min();
 
-  PointType* queryPts = axom::allocate<PointType>(nnodes);
+  axom::Array<PointType> queryPts =
+    axom::Array<PointType>(nnodes, nnodes, host_allocator);
   for(int inode = 0; inode < nnodes; inode++)
   {
     umesh->getNode(inode, queryPts[inode].data());
   }
 
-  signed_distance.computeDistances(nnodes, queryPts, phi_computed);
+  // Copy query points to device
+  axom::Array<PointType> queryPtsDevice =
+    axom::Array<PointType>(queryPts, kernel_allocator);
+  double* phi_computed_device = axom::allocate<double>(nnodes, kernel_allocator);
+
+  signed_distance.computeDistances(nnodes,
+                                   queryPtsDevice.view(),
+                                   phi_computed_device);
+
+  // Copy output to host
+  axom::copy(phi_computed, phi_computed_device, nnodes * sizeof(double));
 
   for(int inode = 0; inode < nnodes; ++inode)
   {
@@ -399,12 +421,12 @@ void run_vectorized_sphere_test()
   EXPECT_NEAR(l2norm_expected, l2norm, TOL);
   EXPECT_NEAR(linf_expected, linf, TOL);
 
-  axom::deallocate(queryPts);
+  axom::deallocate(phi_computed_device);
 
   delete surface_mesh;
   delete umesh;
 
-  axom::setDefaultAllocator(curr_allocator);
+  axom::setDefaultAllocator(host_allocator);
 
   SLIC_INFO("Done.");
 }
@@ -454,8 +476,13 @@ TEST(quest_signed_distance, sphere_vec_device_custom_alloc)
 
   using PointType = primal::Point<double, 3>;
 
-  const int curr_allocator = axom::getDefaultAllocatorID();
-  axom::setDefaultAllocator(axom::execution_space<exec>::allocatorID());
+  const int host_allocator =
+    axom::getUmpireResourceAllocatorID(umpire::resource::Host);
+  constexpr bool on_device = axom::execution_space<exec>::onDevice();
+  const int kernel_allocator = on_device
+    ? axom::getUmpireResourceAllocatorID(umpire::resource::Unified)
+    : axom::execution_space<exec>::allocatorID();
+  axom::setDefaultAllocator(kernel_allocator);
 
   constexpr double l1norm_expected = 6.7051997372579715;
   constexpr double l2norm_expected = 2.5894400431865519;
@@ -527,13 +554,23 @@ TEST(quest_signed_distance, sphere_vec_device_custom_alloc)
   double l2norm = 0.0;
   double linf = std::numeric_limits<double>::min();
 
-  PointType* queryPts = axom::allocate<PointType>(nnodes);
+  axom::Array<PointType> queryPts =
+    axom::Array<PointType>(nnodes, nnodes, host_allocator);
   for(int inode = 0; inode < nnodes; inode++)
   {
     umesh->getNode(inode, queryPts[inode].data());
   }
 
-  signed_distance.computeDistances(nnodes, queryPts, phi_computed);
+  // Copy query points to device
+  axom::Array<PointType> queryPtsDevice(queryPts, kernel_allocator);
+  double* phi_computed_device = axom::allocate<double>(nnodes, kernel_allocator);
+
+  signed_distance.computeDistances(nnodes,
+                                   queryPtsDevice.view(),
+                                   phi_computed_device);
+
+  // Copy output to host
+  axom::copy(phi_computed, phi_computed_device, nnodes * sizeof(double));
 
   for(int inode = 0; inode < nnodes; ++inode)
   {
@@ -566,13 +603,12 @@ TEST(quest_signed_distance, sphere_vec_device_custom_alloc)
   EXPECT_NEAR(l2norm_expected, l2norm, TOL);
   EXPECT_NEAR(linf_expected, linf, TOL);
 
-  axom::deallocate(queryPts);
+  axom::deallocate(phi_computed_device);
 
   delete surface_mesh;
   delete umesh;
 
-  axom::setDefaultAllocator(curr_allocator);
-
+  axom::setDefaultAllocator(host_allocator);
   SLIC_INFO("Done.");
 }
 #endif  // defined(AXOM_USE_GPU) && defined(AXOM_USE_RAJA)

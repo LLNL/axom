@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -499,7 +499,7 @@ private:
   /// \name Reference Element Attributes
   /// @{
 
-  typedef void (*ShapeFunctionPtr)(const double* lc, double* phi);
+  using ShapeFunctionPtr = void (*)(const double* lc, double* phi);
   ShapeFunctionPtr m_shapeFunction;            /*! shape function functor */
   ShapeFunctionPtr m_shapeFunctionDerivatives; /*! derivatives functor */
 
@@ -517,7 +517,7 @@ private:
   DISABLE_MOVE_AND_ASSIGNMENT(FiniteElement);
 };
 
-} /* namespace mint */
+}  // namespace mint
 }  // namespace axom
 
 //------------------------------------------------------------------------------
@@ -534,8 +534,8 @@ void bind_basis(FiniteElement& fe)
   SLIC_ASSERT(fe.m_reference_center != nullptr);
   SLIC_ASSERT(fe.m_reference_coords != nullptr);
 
-  typedef mint::FEBasis<BasisType, CELLTYPE> FEBasisType;
-  typedef typename FEBasisType::ShapeFunctionType ShapeType;
+  using FEBasisType = mint::FEBasis<BasisType, CELLTYPE>;
+  using ShapeType = typename FEBasisType::ShapeFunctionType;
 
   if(CELLTYPE != fe.getCellType())
   {

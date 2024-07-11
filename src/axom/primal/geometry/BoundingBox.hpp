@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -255,6 +255,7 @@ public:
    * \note We are allowing the other bounding box to have a different coordinate
    *  type. This should work as long as the two Ts are comparable with
    *  operator<().
+   * \note If \a otherBB is empty, we return true
    */
   template <typename OtherType>
   bool contains(const BoundingBox<OtherType, NDIMS>& otherBB) const;
@@ -438,7 +439,9 @@ template <typename T, int NDIMS>
 template <typename OtherT>
 bool BoundingBox<T, NDIMS>::contains(const BoundingBox<OtherT, NDIMS>& otherBB) const
 {
-  return this->contains(otherBB.getMin()) && this->contains(otherBB.getMax());
+  return otherBB.isValid()
+    ? this->contains(otherBB.getMin()) && this->contains(otherBB.getMax())
+    : true;
 }
 
 //------------------------------------------------------------------------------

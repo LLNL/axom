@@ -1,4 +1,4 @@
-.. ## Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
+.. ## Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
 .. ## other Axom Project Developers. See the top-level LICENSE file for details.
 .. ##
 .. ## SPDX-License-Identifier: (BSD-3-Clause)
@@ -16,7 +16,7 @@ Software Development Cycles
 ======================================================
 
 The Axom team uses a sprint-based development process. We collect
-and track issues (bugs, feature requests, tasks, etc.) using ``Github``
+and track issues (bugs, feature requests, tasks, etc.) using ``GitHub``
 and define a set of development tasks (i.e., issues) to complete for each 
 sprint. While the team meets to discuss issues and plan which ones will be 
 worked in each sprint, developers of individual Axom components may plan and 
@@ -48,7 +48,7 @@ See :ref:`semver-label` for a description of semantic versioning.
 Branch Development
 ======================================================
 
-The Axom project has a ``Github`` project space and the team follows 
+The Axom project has a ``GitHub`` project space and the team follows 
 the **Gitflow** branching model for software development and reviews. Gitflow 
 is a common workflow centered around software releases. It makes clear which 
 branches correspond to which phases of development and those phases are 
@@ -66,10 +66,102 @@ Code Reviews and Acceptance
 Before any code is merged into one of our main Gitflow branches (i.e., develop 
 or main), it must be adequately tested, documented, and reviewed 
 for acceptance by other team members. The review process is initiated via 
-a *pull request* on the Axom Github project.
+a *pull request* on the Axom GitHub project.
 
 See :ref:`pullrequest-label` for a description of our review process and 
 how we use pull requests.
+
+
+======================================================
+Contributors and Project Access
+======================================================
+
+Axom maintains three levels of project access on it GitHub project:
+
+  * **Core team members.** Individuals on the core Axom team are frequent
+    Axom contributors and participate regularly in project meetings,
+    discussions, and other project activities. They are members of
+    the LLNL GitHub organization and the ``axom`` GitHub team. Their
+    project privileges include the ability to create branches in the repository,
+    push code changes to the Axom repo, make PRs, and merge them when they are
+    approved and all checks have passed.
+  * **Regular contributors.** Individuals, who are not on the core Axom team,
+    but are members of the LLNL GitHub organization and are involved in some
+    aspects of Axom development are considered regular contributors. They are
+    members of the ``axom-contrib`` GitHub team. Their project privileges
+    include the ability to create branches in the repository, push code changes
+    to the Axom repo, and make PRs. However, they may not merge PRs and must
+    coordinate with the core team to have their work included in the develop
+    branch. This is mainly due to the way GitHub structures its project
+    access levels.
+  * **Everyone else.** Anyone with a GitHub account is welcome to contribute
+    to Axom. Individuals outside of the two groups described above, and 
+    specifically not a member of LLNL GitHub organization, can make PRs
+    in the Axom project, but must do so from a branch on a *fork* of
+    the Axom repo. Thus, the process of reviewing and merging contributions
+    involves additional steps which we describe here.
+
+--------------------------
+Forking the repository
+--------------------------
+
+The requirement for individuals outside of the LLNL GitHub organization
+to contribute on a fork of the repo is due to policies enforced
+by the LLNL organization on GitHub (in which the Axom project resides) and the
+Livermore Computing (LC) organization (in which we run our GitLab CI testing).
+Fortunately, you may still contribute to Axom by `forking the Axom repo
+<https://github.com/LLNL/axom/fork>`_. Forking creates a copy of the Axom
+repository that you own. You can make changes on your local copy and push them
+to your fork on GitHub. When you are ready to have your Axom contribution
+reviewed and added to the Axom project, you may create a pull request in the 
+Axom project.
+
+--------------------------------------------------
+Accepting a pull request from a forked repository
+--------------------------------------------------
+
+Due to LLNL security policies, some Axom pull requests cannot be run through 
+all Axom CI checks. The Livermore Computing (LC) Center GitLab systems 
+restrict which GitHub PRs may run automatically through its CI test pipelines.
+For example, a PR made from branch on a forked repository will not trigger 
+GitLab CI checks. GitLab CI on LC platforms will be run only on PRs that are 
+made from branches in the GitHub Axom repository.
+
+.. note:: **The following process for accepting PR contributions from a fork
+          of the Axom repo must be executed by a member of the Axom team:**
+
+          To facilitate testing contributions in PRs from forked repositories,
+          we maintain a script to pull a PR branch from a forked repo into the
+          Axom repo. First, identify the number of the PR, which appears at
+          the top of a PR. Then, run a script from the top-level Axom
+          directory::
+
+            $ ./scripts/make_local_branch_from_fork_pr.sh -b <PR #>
+
+          If successful, this will create a branch in your local copy of the
+          Axom repo labeled ``pr-from-fork/<PR #>`` and you will be on that
+          local branch in your checkout space. To verify this, you can run
+          the following command after you run the script::
+
+            $ git branch
+
+          You will see the new branch in the listing of branches and the branch
+          you are on will be starred.
+
+          You can push the new branch to the Axom repo on GitHub::
+
+            $ git push git@github.com:LLNL/axom.git <branch-name>
+
+          and make a PR for the new branch. It is good practice to reference
+          the original PR in the description of the new PR to track the
+          original PR discussion and reviews.
+
+          All CI checks will be triggered to run on the new PR made in the
+          Axom repo. When everything passes and the PR is approved, it may
+          be merged. When it is merged, the original PR from the forked repo
+          will be closed and marked as merged unless it is referenced
+          elsewhere, such as in a GitHub issue. If this is the case, then the
+          original PR (from the forked repo) must be closed manually.
 
 
 ======================================================
@@ -100,7 +192,7 @@ The main interaction hub for Axom developers is the **Atlassian
 tool suite** on the Livermore Computing Collaboration Zone (CZ). These tools
 can be accessed through the `MyLC Portal <https://lc.llnl.gov>`_.
 Developer-level access to Axom project spaces in these tools requires 
-membership in the LC group 'axomdev'. If you are not in this group, and need 
+membership in the LC group 'axom'. If you are not in this group, and need 
 to be, please send an email request to 'axom-dev@llnl.gov'.
 
 The main tools we use are listed below. Please navigate the links
@@ -109,15 +201,15 @@ getting started with them.
 
 * **Confluence.**  We use the `Axom Confluence space <https://lc.llnl.gov/confluence/display/ASCT>`_ for team discussion (e.g., hashing out design ideas), maintaining meeting notes, etc.
 
-* **Github.** We use the `Axom Github project <https://github.com/LLNL/axom>`_ to manage our issues and Git repository which contains the Axom source code, build configurations, scripts, test suites, documentation, etc.
+* **GitHub.** We use the `Axom GitHub project <https://github.com/LLNL/axom>`_ to manage our issues and Git repository which contains the Axom source code, build configurations, scripts, test suites, documentation, etc.
 
-  * See :ref:`github-label` for more information about how we use Git and Github.
+  * See :ref:`github-label` for more information about how we use Git and GitHub.
 
-* **Gitlab.** We use Gitlab for continuous integration to ensure code quality on our LC systems.:  `Axom Gitlab project <https://lc.llnl.gov/gitlab/axom/axom>`_
+* **GitLab.** We use GitLab for continuous integration to ensure code quality on our LC systems.:  `Axom GitLab project <https://lc.llnl.gov/gitlab/axom/axom>`_
 
-  * See :ref:`gitlab-label` for more information about how we use Gitlab.
+  * See :ref:`gitlab-label` for more information about how we use GitLab.
 
 * **Azure Pipelines.** We use Azure Pipelines for continuous integration to ensure every code change passes a
   level of quality before being merged.:  `Azure Pipelines <https://azure.microsoft.com/en-us/services/devops/pipelines/>`_
 
-  * See :ref:`azure_pipelines-label` for more information about how we use Azire Pipelines.
+  * See :ref:`azure_pipelines-label` for more information about how we use Azure Pipelines.

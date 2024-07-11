@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -258,6 +258,20 @@ public:
    */
   AXOM_HOST_DEVICE
   double volume() const { return axom::utilities::abs(signedVolume()); }
+
+  /*!
+   * \brief Swaps the order of vertices if the signed volume of the
+   *        tetrahedron is negative. Signed volume will become positive.
+   * \sa signedVolume()
+   */
+  AXOM_HOST_DEVICE
+  void checkAndFixOrientation()
+  {
+    if(signedVolume() < 0)
+    {
+      axom::utilities::swap<PointType>(m_points[1], m_points[2]);
+    }
+  }
 
   /**
    * \brief Returns the circumsphere (circumscribing sphere) of the tetrahedron

@@ -1,4 +1,4 @@
-# Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
+# Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
 # other Axom Project Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
@@ -20,7 +20,11 @@
 #
 #------------------------------------------------------------------------------
 
-cmake_minimum_required(VERSION 3.14)
+if (ENABLE_HIP OR AXOM_ENABLE_HIP OR ENABLE_CUDA OR AXOM_ENABLE_CUDA)
+    cmake_minimum_required(VERSION 3.21)
+else()
+    cmake_minimum_required(VERSION 3.18)
+endif()
 
 project(using_with_cmake)
 
@@ -68,14 +72,6 @@ if(BLT_CMAKE_IMPLICIT_LINK_DIRECTORIES_EXCLUDE)
                      ${BLT_CMAKE_IMPLICIT_LINK_DIRECTORIES_EXCLUDE})
     list(REMOVE_ITEM CMAKE_CUDA_IMPLICIT_LINK_DIRECTORIES
                      ${BLT_CMAKE_IMPLICIT_LINK_DIRECTORIES_EXCLUDE})
-endif()
-
-# HACK: Define the `mpi` target as an alias to `axom::mpi` if/when necessary
-# Details: An axom dependency has a link dependency to `mpi`, but it might
-# not be a target. Need to mark axom::mpi as global to use it for an alias.
-if(NOT TARGET mpi AND TARGET axom::mpi)
-    set_target_properties(axom::mpi PROPERTIES IMPORTED_GLOBAL TRUE)
-    add_library(mpi ALIAS axom::mpi)
 endif()
 
 #------------------------------------------------------------------------------

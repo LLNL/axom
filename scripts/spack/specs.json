@@ -1,6 +1,6 @@
 {
     "__comment__":"##############################################################################",
-    "__comment__":"# Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and      ",
+    "__comment__":"# Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and      ",
     "__comment__":"# other Axom Project Developers. See the top-level LICENSE file for details.  ",
     "__comment__":"#                                                                             ",
     "__comment__":"# SPDX-License-Identifier: (BSD-3-Clause)                                     ",
@@ -13,34 +13,25 @@
     "__comment__":"#                                                                             ",
     "__comment__":"##############################################################################",
 
-    "toss_3_x86_64_ib":
-    [ "clang@9.0.0+devtools+mfem+c2c",
-      "clang@10.0.0+devtools+mfem+c2c+scr",
-      "gcc@8.3.1+devtools+mfem+c2c+scr",
-      "gcc@8.1.0~fortran+devtools~mfem+c2c+scr",
-      "intel@19.0.4~openmp+devtools+mfem+c2c" ],
-
     "toss_4_x86_64_ib":
-    [ "gcc@10.3.1+devtools+hdf5+mfem+c2c",
-      "clang@14.0.6+devtools+hdf5+mfem+c2c",
-      "intel@2022.1.0+devtools+hdf5+mfem+c2c" ],
+    [ "gcc@10.3.1+devtools+hdf5+mfem+c2c+scr+profiling",
+      "clang@14.0.6+devtools+hdf5+mfem+c2c+scr+profiling",
+      "intel@2022.1.0+devtools+hdf5+mfem+c2c+profiling" ],
 
     "__comment__":"# Use amdgpu_target=gfx90a for tioga/rzvernal; and gfx908 for rznevada",
     "__comment__":"# -Wno-int-conversion flag needed for building HDF5",
     "toss_4_x86_64_ib_cray":
-    [ "clang@14.0.0~openmp+rocm+mfem+c2c amdgpu_target=gfx90a ^hip@5.2.3 ^rocprim@5.2.3 ^hsa-rocr-dev@5.2.3 ^llvm-amdgpu@5.2.3  ^raja~openmp+rocm ^umpire~openmp+rocm",
-      "clang@15.0.0~openmp+rocm+mfem+c2c amdgpu_target=gfx90a ^hip@5.4.3 ^hsa-rocr-dev@5.4.3 ^llvm-amdgpu@5.4.3 ^rocprim@5.4.3 ^raja~openmp+rocm ^umpire~openmp+rocm ^hdf5 cflags=-Wno-int-conversion",
-      "cce@15.0.1~openmp+rocm+mfem+c2c amdgpu_target=gfx90a ^hip@5.4.3 ^hsa-rocr-dev@5.4.3 ^llvm-amdgpu@5.4.3 ^rocprim@5.4.3 ^raja~openmp+rocm ^umpire~openmp+rocm ^hdf5 cflags=-Wno-int-conversion",
-      "clang@16.0.0~openmp+rocm+mfem+c2c amdgpu_target=gfx90a ^hip@5.6.0 ^hsa-rocr-dev@5.6.0 ^llvm-amdgpu@5.6.0 ^rocprim@5.6.0 ^raja~openmp+rocm ^umpire~openmp+rocm ^hdf5 cflags=-Wno-int-conversion" ],
+    [ "clang@16.0.0~openmp+mfem+c2c+profiling+rocm amdgpu_target=gfx90a ^hip@5.6.0 ^hsa-rocr-dev@5.6.0 ^llvm-amdgpu@5.6.0 ^rocprim@5.6.0 ^raja~openmp+rocm ^umpire~openmp+rocm ^hdf5 cflags=-Wno-int-conversion",
+      "clang@17.0.0~openmp+mfem+c2c+profiling+rocm amdgpu_target=gfx90a ^hip@5.7.1 ^hsa-rocr-dev@5.7.1 ^llvm-amdgpu@5.7.1 ^rocprim@5.7.1 ^raja~openmp+rocm ^umpire~openmp+rocm ^hdf5 cflags=-Wno-int-conversion" ],
 
     "__comment__":"# Note: clang-ibm + raja+openmp causes runtime failures, turning it off until there is an alternative",
     "blueos_3_ppc64le_ib_p9":
-    [ "clang@10.0.1.1~openmp+devtools+mfem+c2c",
-      "clang@10.0.1.2~openmp+devtools+mfem+c2c+cuda cuda_arch=70",
-      "gcc@8.3.1.1+devtools~mfem+c2c",
-      "gcc@8.3.1.2+devtools~mfem+c2c+cuda cuda_arch=70",
-      "xl@16.1.1.1~openmp+devtools+mfem+c2c",
-      "xl@16.1.1.2~openmp+devtools+mfem+c2c+cuda cuda_arch=70" ],
+    [ "clang@10.0.1.1+devtools+mfem+c2c+profiling",
+      "clang@10.0.1.2+devtools+mfem+c2c+profiling+cuda cuda_arch=70",
+      "gcc@8.3.1.1+devtools~mfem+c2c+profiling",
+      "gcc@8.3.1.2+devtools~mfem+c2c+profiling+cuda cuda_arch=70",
+      "xl@16.1.1.1~openmp+devtools+mfem+c2c+profiling",
+      "xl@16.1.1.2~openmp+devtools+mfem+c2c+profiling+cuda cuda_arch=70" ],
 
     "darwin-x86_64":
     [ "clang@9.0.0+devtools+mfem" ]

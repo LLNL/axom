@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -278,8 +278,7 @@ const char* packMessages(const std::vector<Message*>& messages)
 
   int totalSize = 1;  // include size for null terminator
 
-  //Calculate total size of char array after all messages are
-  //  combined.
+  //Calculate total size of char array after all messages are combined.
   std::vector<std::string> packedMessages;
   std::vector<std::string> sizeStrings;
   int currSize = 0;

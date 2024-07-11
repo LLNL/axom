@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -233,7 +233,8 @@ using MCArrayView = ArrayView<T, 2>;
 template <typename T, int DIM, MemorySpace SPACE>
 template <typename... Args, typename Enable>
 ArrayView<T, DIM, SPACE>::ArrayView(T* data, Args... args)
-  : ArrayView(data, StackArray<IndexType, DIM> {static_cast<IndexType>(args)...})
+  : ArrayView(data,
+              StackArray<IndexType, DIM> {{static_cast<IndexType>(args)...}})
 {
   static_assert(sizeof...(Args) == DIM,
                 "Array size must match number of dimensions");
@@ -370,7 +371,7 @@ ArrayView<T, DIM, SPACE>::ArrayView(
   , m_allocator_id(static_cast<const OtherArrayType&>(other).getAllocatorID())
 {
   static_assert(
-    std::is_const<T>::value,
+    std::is_const<T>::value || detail::ArrayTraits<OtherArrayType>::is_view,
     "Cannot create an ArrayView of non-const type from a const Array");
 #ifdef AXOM_DEBUG
   // If it's not dynamic, the allocator ID from the argument array has to match the template param.

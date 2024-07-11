@@ -1,4 +1,4 @@
-.. ## Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
+.. ## Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
 .. ## other Axom Project Developers. See the top-level LICENSE file for details.
 .. ##
 .. ## SPDX-License-Identifier: (BSD-3-Clause)
@@ -56,7 +56,7 @@ release changes can be reviewed. Such changes include:
 
 #. Update the release notes in ``axom/RELEASE-NOTES.md`` by adding the
    release version number and release date in the heading, as well as,
-   the corresponding link to the version on Github.
+   the corresponding link to the version on GitHub.
 
 #. Update the mail map in ``axom/.mailmap`` by adding the names and emails
    of new contributors since the last release.
@@ -72,7 +72,7 @@ release changes can be reviewed. Such changes include:
    are reasonably small and re-run appropriate tests to ensure issues are
    resolved. If a major bug is discovered, and it requires significant
    code modifications to fix, do not fix it on the release branch.
-   `Create a new Github issue for it <https://github.com/LLNL/axom/issues/new>`_
+   `Create a new GitHub issue for it <https://github.com/LLNL/axom/issues/new>`_
    and note it in the ``known bugs`` section of the release notes.
 
 #. Make sure all documentation (source code, user guides, etc.) is
@@ -88,13 +88,15 @@ release changes can be reviewed. Such changes include:
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Merge the release candidate branch into the main branch once it is ready and
-approved. At this point, the release candidate branch can be deleted.
+approved. Do not "squash merge:" that will make the histories of main and
+release branches disagree, and we want to preserve the history. After
+merging, the release candidate branch can be deleted.
 
 
-4: Draft a Github Release
+4: Draft a GitHub Release
 ^^^^^^^^^^^^^^^^^^^^^^^^^
 
-`Draft a new Release on Github <https://github.com/LLNL/axom/releases/new>`_
+`Draft a new Release on GitHub <https://github.com/LLNL/axom/releases/new>`_
 
 #. Enter the desired tag version, e.g., v0.5.0
 
@@ -111,20 +113,21 @@ approved. At this point, the release candidate branch can be deleted.
 
 .. note::
 
-   Github will add a corresponding tarball and zip archives consisting of the
+   GitHub will add a corresponding tarball and zip archives consisting of the
    source files for each release. However, these files do not include any
    submodules. Consequently, a tarball that includes all of the submodules is
-   generated manually in a seperate step.
+   generated manually in a separate step.
 
 5: Make a Release Tarball
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 * Checkout the main branch locally and run ``axom/scripts/make_release_tarball.sh --with-data``
-  This will generate a two tarballs of the form ``Axom-v0.3.1.tar.gz`` and ``AxomData-v0.3.1.tar.gz``
-  each consistsing of the axom source and data respectively.
+  Run this script from the top level ``axom`` subdirectory. This will
+  generate a two tarballs of the form ``Axom-v0.3.1.tar.gz`` and ``AxomData-v0.3.1.tar.gz``
+  consisting of the axom source and data respectively.
 
 * Upload the tarballs for the corresponding release, by going to the
-  `Github Releases section <https://github.com/LLNL/axom/releases>`_ and ``Edit``
+  `GitHub Releases section <https://github.com/LLNL/axom/releases>`_ and ``Edit``
   the release created earlier.
 
 * Attach the tarball to the release.

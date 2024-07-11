@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -193,9 +193,11 @@ public:
                                   collection (can be nullptr)
       @param[in] owns_mesh_data   Does the SidreDC own the mesh vertices?
 
-      With this constructor, the MFEMSidreDataCollection owns the allocated
-         Sidre
-      DataStore.
+      With this constructor, the MFEMSidreDataCollection owns the allocated Sidre DataStore.
+
+      @note This constructor also sets \a own_data in the base \a mfem::DataCollection
+      class to the value of \a owns_mesh_data. If this is not desired, the former
+      can be reset by calling \a this->SetOwnData(<bool>)
    */
   explicit MFEMSidreDataCollection(const std::string& collection_name,
                                    mfem::Mesh* the_mesh = nullptr,
@@ -212,10 +214,13 @@ public:
                                   see the above schematic
       @param[in] owns_mesh_data   Does the SidreDC own the mesh vertices?
 
-      With this constructor, the MFEMSidreDataCollection does not own the Sidre
-      DataStore.
+      With this constructor, the MFEMSidreDataCollection does not own the Sidre DataStore.
+
       @note No mesh or fields are read from the given Groups. The mesh has
       to be set with SetMesh() and fields registered with RegisterField().
+
+      @note This constructor also sets \a own_data in the base \a mfem::DataCollection class
+      to false. If this is not desired, the former can be reset by calling \a this->SetOwnData(true)
    */
   MFEMSidreDataCollection(const std::string& collection_name,
                           Group* bp_index_grp,
@@ -528,29 +533,25 @@ public:
 
 private:
   // Used if the Sidre data collection is providing the datastore itself.
-  const bool m_owns_datastore;
+  const bool m_owns_datastore {false};
 
-  // TODO - Need to evaluate if this bool member can be combined with own_data
-  // in parent data collection class. m_owns_mesh_data indicates whether the
-  // Sidre dc owns the mesh element data and node positions gf. The DC base
-  // class own_data indicates if the dc owns the mesh object pointer itself and
-  // GF objects. Can we use one flag and just have DC own all objects vs none?
-  const bool m_owns_mesh_data;
+  // Note: m_owns_mesh_data indicates whether the Sidre dc owns
+  // the mesh element data and node positions gf. The DC base class \a own_data
+  // indicates if the dc owns the mesh object pointer itself and GF objects.
+  const bool m_owns_mesh_data {false};
 
-  // Name to be used for registering the mesh nodes in the
-  // MFEMSidreDataCollection.
+  // Name to be used for registering the mesh nodes in the MFEMSidreDataCollection.
   // This name is used by SetMesh() and can be overwritten by the method
-  // SetMeshNodesName().
-  // Default value: "mesh_nodes".
-  std::string m_meshNodesGFName;
+  // SetMeshNodesName(). Default value: "mesh_nodes".
+  std::string m_meshNodesGFName {"mesh_nodes"};
 
   // For Parallel IO, the user can specify a number of files less than or equal to the
   // number of processors.
-  int m_num_files;
+  int m_num_files {-1};
 
   // If the data collection owns the datastore, it will store a pointer to it.
   // Otherwise, this pointer is nullptr.
-  DataStore* m_datastore_ptr;
+  DataStore* m_datastore_ptr {nullptr};
 
 protected:
   Group* named_buffers_grp() const;
@@ -567,11 +568,11 @@ protected:
 private:
   // If the data collection does not own the datastore, it will need pointers
   // to the blueprint and blueprint index group to use.
-  Group* m_bp_grp;
-  Group* m_bp_index_grp;
+  Group* m_bp_grp {nullptr};
+  Group* m_bp_index_grp {nullptr};
 
   // This is stored for convenience.
-  Group* m_named_bufs_grp;
+  Group* m_named_bufs_grp {nullptr};
 
   // Used to retain ownership of components of reconstructed Meshes and GridFuncs
   // Instead of using flags to keep track of ownership between this class
@@ -718,9 +719,6 @@ private:
   /// Before saving the file, add any fields that look like materials to the
   /// blueprint index.
   void addMaterialSetToIndex();
-
-  // /// Verifies that the contents of the mesh blueprint data is valid.
-  // void verifyMeshBlueprint();
 
   // The names for the mesh and boundary topologies in the blueprint group,
   // and the suffix used to store their attributes (as fields)

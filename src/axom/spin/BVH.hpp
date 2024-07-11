@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -400,7 +400,7 @@ template <typename BoxIndexable>
 int BVH<NDIMS, ExecSpace, FloatType, Impl>::initialize(const BoxIndexable boxes,
                                                        IndexType numBoxes)
 {
-  AXOM_PERF_MARK_FUNCTION("BVH::initialize");
+  AXOM_ANNOTATE_SCOPE("BVH::initialize");
 
   using IterBase = typename IteratorTraits<BoxIndexable>::BaseType;
 
@@ -464,7 +464,7 @@ void BVH<NDIMS, ExecSpace, FloatType, Impl>::findPoints(
   IndexType numPts,
   PointIndexable pts) const
 {
-  AXOM_PERF_MARK_FUNCTION("BVH::findPoints");
+  AXOM_ANNOTATE_SCOPE("BVH::findPoints");
 
   using IterBase = typename IteratorTraits<PointIndexable>::BaseType;
 
@@ -498,7 +498,7 @@ void BVH<NDIMS, ExecSpace, FloatType, Impl>::findRays(
   IndexType numRays,
   RayIndexable rays) const
 {
-  AXOM_PERF_MARK_FUNCTION("BVH::findRays");
+  AXOM_ANNOTATE_SCOPE("BVH::findRays");
 
   using IterBase = typename IteratorTraits<RayIndexable>::BaseType;
 
@@ -535,7 +535,7 @@ void BVH<NDIMS, ExecSpace, FloatType, Impl>::findBoundingBoxes(
   IndexType numBoxes,
   BoxIndexable boxes) const
 {
-  AXOM_PERF_MARK_FUNCTION("BVH::findBoundingBoxes");
+  AXOM_ANNOTATE_SCOPE("BVH::findBoundingBoxes");
 
   using IterBase = typename IteratorTraits<BoxIndexable>::BaseType;
 

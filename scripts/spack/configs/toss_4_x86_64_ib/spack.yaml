@@ -1,4 +1,4 @@
-# Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
+# Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
 # Axom Project Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
@@ -72,6 +72,7 @@ spack:
         mpi: [mvapich2]
         gl: [opengl]
         glu: [openglu]
+        zlib-api: [zlib]
 
     openblas:
       buildable: false
@@ -95,11 +96,11 @@ spack:
     mvapich2:
       buildable: false
       externals:
-      - spec: mvapich2@2.3.6%clang@14.0.6 process_managers=slurm arch=linux-rhel8-ivybridge
+      - spec: mvapich2@2.3.6%clang@14.0.6~alloca~cuda~debug~hwloc_graphics~hwlocv2+regcache+wrapperrpath build_system=autotools ch3_rank_bits=32 fabrics=mrail file_systems=auto process_managers=slurm threads=multiple
         prefix: /usr/tce/packages/mvapich2/mvapich2-2.3.6-clang-14.0.6
-      - spec: mvapich2@2.3.6%gcc@10.3.1 process_managers=slurm arch=linux-rhel8-ivybridge
+      - spec: mvapich2@2.3.6%gcc@10.3.1~alloca~cuda~debug~hwloc_graphics~hwlocv2+regcache+wrapperrpath build_system=autotools ch3_rank_bits=32 fabrics=mrail file_systems=auto process_managers=slurm threads=multiple
         prefix: /usr/tce/packages/mvapich2/mvapich2-2.3.6-gcc-10.3.1
-      - spec: mvapich2@2.3.6%intel@2022.1.0 process_managers=slurm arch=linux-rhel8-ivybridge
+      - spec: mvapich2@2.3.6%intel@2022.1.0~alloca~cuda~debug~hwloc_graphics~hwlocv2+regcache+wrapperrpath build_system=autotools ch3_rank_bits=32 fabrics=mrail file_systems=auto process_managers=slurm threads=multiple
         prefix: /usr/tce/packages/mvapich2/mvapich2-2.3.6-intel-2022.1.0
 
     netlib-lapack:
@@ -178,6 +179,11 @@ spack:
       buildable: false
       externals:
       - spec: ghostscript@9.27
+        prefix: /usr
+    gmake:
+      buildable: false
+      externals:
+      - spec: gmake@4.2.1
         prefix: /usr
     graphviz:
       buildable: false
@@ -267,22 +273,26 @@ spack:
         prefix: /usr
 
     # Globally lock version of third party libraries
+    adiak:
+      require: "@0.4.0"
+    caliper:
+      require: "@2.10.0~kokkos"
     camp:
-      require: "@2023.06.0"
+      require: "@2024.02.0"
     conduit:
-      require: "@0.8.8~shared~test~examples~utilities"
+      require: "@0.9.1~shared~test~examples~utilities"
     hdf5:
       variants: ~shared~mpi
     hypre:
       version: [2.24.0]
     mfem:
-      require: "@4.5.2"
+      require: "@4.6.0"
     raja:
-      require: "@2023.06.0~shared~examples~exercises"
+      require: "@2024.02.0~shared~examples~exercises"
     scr:
       require: "@3.0.1~shared~tests~examples"
     umpire:
-      require: "@2023.06.0~shared~examples"
+      require: "@2024.02.0~shared~examples~werror"
 
   # Lock in versions of Devtools
     cmake:
@@ -298,24 +308,23 @@ spack:
       - spec: cppcheck@2.9
         prefix: /collab/usr/gapps/axom/devtools/toss_4_x86_64_ib/latest/cppcheck-2.9
     doxygen:
-      version: [1.8.14]
+      version: [1.9.6]
       buildable: false
       externals:
-      - spec: doxygen@1.8.14
-        prefix: /collab/usr/gapps/axom/devtools/toss_4_x86_64_ib/latest/doxygen-1.8.14
-    # TODO: make installed clang 14.0.6 work
+      - spec: doxygen@1.9.6
+        prefix: /collab/usr/gapps/axom/devtools/toss_4_x86_64_ib/latest/doxygen-1.9.6
     llvm:
-      version: [10.0.0]
+      version: [14.0.6]
       buildable: false
       externals:
-      - spec: llvm+clang@10.0.0
-        prefix: /collab/usr/gapps/axom/devtools/toss_4_x86_64_ib/latest/llvm-10.0.0
+      - spec: llvm@14.0.6+clang+python
+        prefix: /usr/tce/packages/clang/clang-14.0.6
     py-shroud:
-      version: [0.12.2]
+      version: [0.13.0]
       buildable: false
       externals:
-      - spec: py-shroud@0.12.2
-        prefix: /collab/usr/gapps/axom/devtools/toss_4_x86_64_ib/latest/python-3.10.10
+      - spec: py-shroud@0.13.0
+        prefix: /collab/usr/gapps/shroud/public/toss_4_x86_64_ib/shroud-0.13.0
     py-sphinx:
       version: [4.4.0]
       buildable: false

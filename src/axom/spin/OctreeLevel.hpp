@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -201,11 +201,21 @@ public:
    *   \a increment(), \a equal() \a update(), \a pt() and \a data()
    */
   template <typename OctreeLevel, typename IterHelper, typename DataType>
-  class BlockIterator : public std::iterator<std::forward_iterator_tag, DataType>
+  class BlockIterator
   {
   public:
     using GridPt = typename OctreeLevel::GridPt;
     using iter = BlockIterator<OctreeLevel, IterHelper, DataType>;
+
+    // In C++17, inheriting from std::iterator was deprecated.
+    // We provide these typedefs for class BlockIterator to avoid inheriting
+    // from std::iterator and causing warnings for those compiling to C++17
+    // or newer.
+    using value_type = DataType;
+    using difference_type = std::ptrdiff_t;
+    using pointer = DataType*;
+    using reference = DataType&;
+    using iterator_category = std::forward_iterator_tag;
 
     BlockIterator(OctreeLevel* octLevel, bool begin = false)
       : m_octLevel(octLevel)

@@ -1,4 +1,4 @@
-.. ## Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
+.. ## Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
 .. ## other Axom Project Developers. See the top-level LICENSE file for details.
 .. ##
 .. ## SPDX-License-Identifier: (BSD-3-Clause)
@@ -39,7 +39,8 @@ can be suppressed by passing a Boolean value of true as the
 ``preserve_contents`` argument to the ``load()`` method, resulting in the
 current group subtree being merged with the file contents.
 
-Usage of the ``save()`` and ``load()`` methods is shown in the following example.
+Usage of the ``save()`` and ``load()`` methods is shown in the following example,
+which omits error-checking and recovery for brevity and clarity.
 
 .. literalinclude:: ../../examples/sidre_createdatastore.cpp
    :start-after: _serial_io_save_start
@@ -54,6 +55,14 @@ but in an external data allocation.
 Overloads of the ``save()`` and ``load()`` methods that take HDF5 handles and 
 the ``loadExternalData()`` method are used to implement parallel I/O through 
 the Sidre ``IOManager`` class.
+
+The ``save()``, ``load()``, and ``loadExternalData()`` methods return
+a bool value indicating success or failure.  If no Conduit error
+occurred, the return value is true.  If an error occurred, the method
+returns false.  The error state and accumulated messages are stored in
+the ``DataStore`` object that owns the ``Group``.  In the course of
+recovering from the error, the user can clear the error flag and
+messages from the ``DataStore``.
 
 Please see `Sidre API Documentation <../../../../doxygen/html/sidretop.html>`_ 
 for more detailed description of these ``Group`` class methods and the Sidre 

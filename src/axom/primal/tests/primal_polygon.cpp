@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -7,8 +7,15 @@
 #include "axom/primal.hpp"
 #include "axom/slic.hpp"
 
+#include "axom/core/execution/execution_space.hpp"
+
 #include <math.h>
 #include "gtest/gtest.h"
+
+namespace
+{
+constexpr double EPS = 1e-8;
+}
 
 //------------------------------------------------------------------------------
 TEST(primal_polygon, empty)
@@ -244,43 +251,57 @@ TEST(primal_polygon, convexity)
   poly.addVertex(PointType {0, 1});
   EXPECT_TRUE(is_convex(poly));
 
-  // Duplicate points should not affect convexity
-  vertices = axom::Array<PointType>(
+  axom::Array<PointType> convex_verts = axom::Array<PointType>(
     {PointType {0, 0}, PointType {0, 1}, PointType {1, 1}, PointType {1, 0}});
+  axom::Array<PointType> concave_verts = axom::Array<PointType>(
+    {PointType {0, 0}, PointType {0, 1}, PointType {0.1, 0.1}, PointType {1, 0}});
+  axom::Array<PointType> nonsimple_verts = axom::Array<PointType>(
+    {PointType {0, 0}, PointType {1, 1}, PointType {0, 1}, PointType {1, 0}});
+
   poly.clear();
+
+  // Duplicate points and straight edges should not affect convexity
   for(int i = 0; i < 4; i++)
   {
     for(int j = 0; j < 3; j++)  // Duplicate each element 3 times
     {
-      poly.addVertex(vertices[i]);
+      poly.addVertex(convex_verts[i]);
     }
+
+    // Add midpoints between each duplicated vertex
+    poly.addVertex(
+      PointType::midpoint(convex_verts[i], convex_verts[(i + 1) % 4]));
   }
 
   EXPECT_TRUE(is_convex(poly));
 
   // Verify checks up to rotation of vertices
-  vertices = axom::Array<PointType>(
-    {PointType {0, 0}, PointType {1, 1}, PointType {1, 0}, PointType {0, 1}});
-
   for(int i = 0; i < 4; i++)
   {
     poly.clear();
     for(int j = 0; j < 4; j++)
     {
-      poly.addVertex(vertices[(j + i) % 4]);
+      poly.addVertex(concave_verts[(j + i) % 4]);
     }
     EXPECT_FALSE(is_convex(poly));
   }
 
-  vertices = axom::Array<PointType>(
-    {PointType {0, 0}, PointType {0, 1}, PointType {1, 1}, PointType {1, 0}});
+  for(int i = 0; i < 4; i++)
+  {
+    poly.clear();
+    for(int j = 0; j < 4; j++)
+    {
+      poly.addVertex(nonsimple_verts[(j + i) % 4]);
+    }
+    EXPECT_FALSE(is_convex(poly));
+  }
 
   for(int i = 0; i < 4; i++)
   {
     poly.clear();
     for(int j = 0; j < 4; j++)
     {
-      poly.addVertex(vertices[(j + i) % 4]);
+      poly.addVertex(convex_verts[(j + i) % 4]);
     }
     EXPECT_TRUE(is_convex(poly));
   }
@@ -339,7 +360,7 @@ TEST(primal_polygon, signed_area_2d)
 }
 
 //------------------------------------------------------------------------------
-TEST(primal_polygon, area_2d_3d)
+TEST(primal_polygon, area_2d_3d_axis_aligned)
 {
   using Polygon2D = axom::primal::Polygon<double, 2>;
   using Point2D = axom::primal::Point<double, 2>;
@@ -348,40 +369,260 @@ TEST(primal_polygon, area_2d_3d)
   using Point3D = axom::primal::Point<double, 3>;
 
   // test a simple right triangle
-  // use same xy-data in 2D and 3D
-  {
-    Polygon2D poly2D({Point2D {0, 0}, Point2D {1, 0}, Point2D {1, 1}});
-    EXPECT_DOUBLE_EQ(.5, poly2D.area());
+  Polygon2D poly2D({Point2D {0, 0}, Point2D {1, 0}, Point2D {1, 1}});
+  EXPECT_DOUBLE_EQ(.5, poly2D.area());
 
-    Polygon3D poly3Da({Point3D {0, 0, 0}, Point3D {1, 0, 0}, Point3D {1, 1, 0}});
-    EXPECT_DOUBLE_EQ(.5, poly3Da.area());
+  // in xy-plane
+  Polygon3D poly3Da({Point3D {0, 0, 0}, Point3D {1, 0, 0}, Point3D {1, 1, 0}});
+  EXPECT_DOUBLE_EQ(.5, poly3Da.area());
 
-    Polygon3D poly3Db({Point3D {0, 0, 1}, Point3D {1, 0, 1}, Point3D {1, 1, 1}});
-    EXPECT_DOUBLE_EQ(.5, poly3Db.area());
-  }
+  // in xz-plane
+  Polygon3D poly3Db({Point3D {0, 0, 0}, Point3D {1, 0, 0}, Point3D {1, 0, 1}});
+  EXPECT_DOUBLE_EQ(.5, poly3Db.area());
 
-  // test regular polygons
-  // use same xy-data in 2D and 3D
-  for(int nSides = 3; nSides < 10; ++nSides)
-  {
-    Polygon2D poly2D(nSides);
-    Polygon3D poly3D(nSides);
+  // in yz-plane
+  Polygon3D poly3Dc({Point3D {0, 0, 0}, Point3D {0, 1, 0}, Point3D {0, 1, 1}});
+  EXPECT_DOUBLE_EQ(.5, poly3Dc.area());
+}
 
-    // choose an arbitrary z_offset for 3D polygon
-    const double z_offset = 5.;
+//------------------------------------------------------------------------------
+TEST(primal_polygon, area_2d_3d_affine_transforms)
+{
+  using Polygon2D = axom::primal::Polygon<double, 2>;
+  using Point2D = axom::primal::Point<double, 2>;
+
+  using Polygon3D = axom::primal::Polygon<double, 3>;
+  using Point3D = axom::primal::Point<double, 3>;
+  using Vector3D = axom::primal::Vector<double, 3>;
+
+  using TransformMatrix = axom::numerics::Matrix<double>;
+
+  // lambda to generate a regular n-sided 2D polygon centered around origin
+  auto generateNSidedPolygon = [](int nSides) {
+    Polygon2D polygon(nSides);
 
     for(int i = 0; i < nSides; ++i)
     {
       const double angle = 2. * M_PI * i / nSides;
-      poly2D.addVertex(Point2D {cos(angle), sin(angle)});
-      poly3D.addVertex(Point3D {cos(angle), sin(angle), z_offset});
+      polygon.addVertex(Point2D {cos(angle), sin(angle)});
     }
 
-    const double expected_area = nSides / 2. * sin(2 * M_PI / nSides);
+    return polygon;
+  };
 
-    EXPECT_DOUBLE_EQ(expected_area, poly2D.area());
-    EXPECT_DOUBLE_EQ(expected_area, poly3D.area());
-    EXPECT_DOUBLE_EQ(poly2D.area(), poly3D.area());
+  // lambda to generate an affine transformation matrix for 2D points
+  auto generateTransformMatrix2D =
+    [](const Point2D& scale, const Point2D& translate, double rotation_angle) {
+      // create scaling matrix
+      auto sc_matx = TransformMatrix::identity(3);
+      {
+        sc_matx(0, 0) = scale[0];
+        sc_matx(1, 1) = scale[1];
+      }
+
+      // create rotation matrix
+      auto rot_matx = TransformMatrix::identity(3);
+      {
+        const double sinT = std::sin(rotation_angle);
+        const double cosT = std::cos(rotation_angle);
+
+        rot_matx(0, 0) = cosT;
+        rot_matx(0, 1) = -sinT;
+        rot_matx(1, 0) = sinT;
+        rot_matx(1, 1) = cosT;
+      }
+
+      // create translation matrix
+      auto tr_matx = TransformMatrix::identity(3);
+      {
+        tr_matx(0, 2) = translate[0];
+        tr_matx(1, 2) = translate[1];
+      }
+
+      // multiply them to get the final transform
+      TransformMatrix affine_matx1(3, 3);
+      matrix_multiply(rot_matx, sc_matx, affine_matx1);
+
+      TransformMatrix affine_matx2(3, 3);
+      matrix_multiply(tr_matx, affine_matx1, affine_matx2);
+
+      EXPECT_NEAR(scale[0] * scale[1], determinant(affine_matx2), EPS);
+      return affine_matx2;
+    };
+
+  // lambda to generate an affine transformation matrix for 2D points
+  auto generateTransformMatrix3D = [](const Point3D& scale,
+                                      const Point3D& translate,
+                                      const Vector3D& axis,
+                                      double angle) {
+    // create scaling matrix
+    auto sc_matx = TransformMatrix::identity(4);
+    {
+      sc_matx(0, 0) = scale[0];
+      sc_matx(1, 1) = scale[1];
+      sc_matx(2, 2) = scale[2];
+    }
+
+    // create rotation matrix
+    auto rot_matx = TransformMatrix::zeros(4, 4);
+    {
+      const double sinT = std::sin(angle);
+      const double cosT = std::cos(angle);
+
+      const auto unitAxis = axis.unitVector();
+      const double& ux = unitAxis[0];
+      const double& uy = unitAxis[1];
+      const double& uz = unitAxis[2];
+
+      rot_matx(0, 0) = cosT + ux * ux * (1 - cosT);
+      rot_matx(0, 1) = ux * uy * (1 - cosT) - uz * sinT;
+      rot_matx(0, 2) = ux * uz * (1 - cosT) + uy * sinT;
+      rot_matx(1, 0) = uy * ux * (1 - cosT) + uz * sinT;
+      rot_matx(1, 1) = cosT + uy * uy * (1 - cosT);
+      rot_matx(1, 2) = uy * uz * (1 - cosT) - ux * sinT;
+      rot_matx(2, 0) = uz * ux * (1 - cosT) - uy * sinT;
+      rot_matx(2, 1) = uz * uy * (1 - cosT) + ux * sinT;
+      rot_matx(2, 2) = cosT + uz * uz * (1 - cosT);
+      rot_matx(3, 3) = 1;
+    }
+
+    // create translation matrix
+    auto tr_matx = TransformMatrix::identity(4);
+    {
+      tr_matx(0, 3) = translate[0];
+      tr_matx(1, 3) = translate[1];
+      tr_matx(2, 3) = translate[2];
+    }
+
+    // multiply them to get the final transform
+    TransformMatrix affine_matx1(4, 4);
+    matrix_multiply(rot_matx, sc_matx, affine_matx1);
+    TransformMatrix affine_matx2(4, 4);
+    matrix_multiply(tr_matx, affine_matx1, affine_matx2);
+
+    EXPECT_NEAR(scale[0] * scale[1] * scale[2], determinant(affine_matx2), EPS);
+    return affine_matx2;
+  };
+
+  // lambda to transform a 2D polygon into 2D
+  auto transformedPolygon2d = [](const Polygon2D& poly,
+                                 const TransformMatrix& matx) {
+    Polygon2D xformed(poly.numVertices());
+    for(int i = 0; i < poly.numVertices(); ++i)
+    {
+      const double vec_in[3] = {poly[i][0], poly[i][1], 1.};
+      double vec_out[3] = {0., 0., 0.};
+      axom::numerics::matrix_vector_multiply(matx, vec_in, vec_out);
+      xformed.addVertex(Point2D {vec_out[0], vec_out[1]});
+    }
+    return xformed;
+  };
+
+  // lambda to transform a 2D polygon into 3D
+  auto transformedPolygon3d = [](const Polygon2D& poly,
+                                 const TransformMatrix& matx) {
+    Polygon3D xformed(poly.numVertices());
+    for(int i = 0; i < poly.numVertices(); ++i)
+    {
+      const double vec_in[4] = {poly[i][0], poly[i][1], 0., 1.};
+      double vec_out[4] = {0., 0., 0., 0.};
+      axom::numerics::matrix_vector_multiply(matx, vec_in, vec_out);
+      xformed.addVertex(Point3D {vec_out[0], vec_out[1], vec_out[2]});
+    }
+    return xformed;
+  };
+
+  const auto scales = axom::Array<double>({-3., -1., -.5, 0., 0.01, 1., 42.3});
+  const auto translations = axom::Array<double>({-.5, 0., 1., 42.3});
+  const auto angles = axom::Array<double>({-.57, 0., 2. / 3. * M_PI});
+  const auto axes = axom::Array<Vector3D>({
+    Vector3D {0., 0., 1.},
+    Vector3D {0., 1., 0.},
+    Vector3D {1., 0., 0.},
+    Vector3D {1., 0., 1.},
+    Vector3D {1., 1., 1.},
+    Vector3D {-2., -5., 0.},
+  });
+
+  for(int nSides = 3; nSides < 10; ++nSides)
+  {
+    Polygon2D polygon2d = generateNSidedPolygon(nSides);
+    const double unscaled_area = nSides / 2. * sin(2 * M_PI / nSides);
+    EXPECT_DOUBLE_EQ(unscaled_area, polygon2d.area());
+
+    // check area of 2D polygons after affine transforms
+    for(double sc_x : scales)
+    {
+      for(double sc_y : scales)
+      {
+        for(double tr_x : translations)
+        {
+          for(double tr_y : translations)
+          {
+            for(double theta : angles)
+            {
+              const auto sc = Point2D {sc_x, sc_y};
+              const auto tr = Point2D {tr_x, tr_y};
+              auto affine_matx = generateTransformMatrix2D(sc, tr, theta);
+              auto xformed_polygon = transformedPolygon2d(polygon2d, affine_matx);
+
+              const double expected_area =
+                unscaled_area * determinant(affine_matx);
+              EXPECT_NEAR(expected_area, xformed_polygon.signedArea(), EPS);
+
+              if(nSides == 3)
+              {
+                axom::primal::Triangle<double, 2> tri(xformed_polygon[0],
+                                                      xformed_polygon[1],
+                                                      xformed_polygon[2]);
+                EXPECT_NEAR(xformed_polygon.signedArea(), tri.signedArea(), EPS);
+              }
+            }
+          }
+        }
+      }
+    }
+
+    // check area of 3D polygons after affine transforms
+    for(double sc_x : scales)
+    {
+      for(double sc_y : scales)
+      {
+        for(double tr_x : translations)
+        {
+          for(double tr_y : translations)
+          {
+            for(double tr_z : translations)
+            {
+              for(const auto& axis : axes)
+              {
+                for(double theta : angles)
+                {
+                  const auto sc = Point3D {sc_x, sc_y, 1.};
+                  const auto tr = Point3D {tr_x, tr_y, tr_z};
+                  auto affine_matx =
+                    generateTransformMatrix3D(sc, tr, axis, theta);
+                  auto xformed_polygon =
+                    transformedPolygon3d(polygon2d, affine_matx);
+
+                  const auto expected_area = unscaled_area *
+                    axom::utilities::abs(determinant(affine_matx));
+                  EXPECT_NEAR(expected_area, xformed_polygon.area(), EPS);
+
+                  if(nSides == 3)
+                  {
+                    axom::primal::Triangle<double, 3> tri(xformed_polygon[0],
+                                                          xformed_polygon[1],
+                                                          xformed_polygon[2]);
+                    EXPECT_NEAR(xformed_polygon.area(), tri.area(), EPS);
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
   }
 }
 
@@ -478,6 +719,184 @@ TEST(primal_polygon, normal)
     }
   }
 }
+
+//------------------------------------------------------------------------------
+TEST(primal_polygon, reverseOrientation)
+{
+  using Polygon2D = axom::primal::Polygon<double, 2>;
+  using Point2D = axom::primal::Point<double, 2>;
+
+  // Test an odd number of vertices
+  {
+    Polygon2D poly({Point2D {0, 0}, Point2D {1, 0}, Point2D {1, 1}});
+    poly.reverseOrientation();
+
+    EXPECT_NEAR(poly[0][0], 1, EPS);
+    EXPECT_NEAR(poly[0][1], 1, EPS);
+
+    EXPECT_NEAR(poly[1][0], 1, EPS);
+    EXPECT_NEAR(poly[1][1], 0, EPS);
+
+    EXPECT_NEAR(poly[2][0], 0, EPS);
+    EXPECT_NEAR(poly[2][1], 0, EPS);
+  }
+
+  // Test an even number of vertices
+  {
+    Polygon2D poly(
+      {Point2D {0, 0}, Point2D {1, 0}, Point2D {1, 1}, Point2D {0, 1}});
+    poly.reverseOrientation();
+
+    EXPECT_NEAR(poly[0][0], 0, EPS);
+    EXPECT_NEAR(poly[0][1], 1, EPS);
+
+    EXPECT_NEAR(poly[1][0], 1, EPS);
+    EXPECT_NEAR(poly[1][1], 1, EPS);
+
+    EXPECT_NEAR(poly[2][0], 1, EPS);
+    EXPECT_NEAR(poly[2][1], 0, EPS);
+
+    EXPECT_NEAR(poly[3][0], 0, EPS);
+    EXPECT_NEAR(poly[3][1], 0, EPS);
+  }
+}
+
+template <typename ExecPolicy>
+void check_polygon_policy()
+{
+  const int NUM_VERTS_SQUARE = 4;
+
+  using Polygon3D =
+    axom::primal::Polygon<double, 3, axom::primal::PolygonArray::Static, NUM_VERTS_SQUARE>;
+  using Point3D = axom::primal::Point<double, 3>;
+  using Polygon2D =
+    axom::primal::Polygon<double, 2, axom::primal::PolygonArray::Static, NUM_VERTS_SQUARE>;
+  using Point2D = axom::primal::Point<double, 2>;
+  using Vector3D = axom::primal::Vector<double, 3>;
+
+  // Get ids of necessary allocators
+  const int host_allocator = axom::execution_space<axom::SEQ_EXEC>::allocatorID();
+  const int kernel_allocator = axom::execution_space<ExecPolicy>::allocatorID();
+
+  axom::Array<Polygon3D> poly_3d_device(1, 1, kernel_allocator);
+  auto poly_3d_view = poly_3d_device.view();
+  axom::Array<Polygon2D> poly_2d_device(1, 1, kernel_allocator);
+  auto poly_2d_view = poly_2d_device.view();
+
+  axom::Array<Point3D> vertex_mean_3d_device(1, 1, kernel_allocator);
+  auto vertex_mean_3d_view = vertex_mean_3d_device.view();
+  axom::Array<Point2D> vertex_mean_2d_device(1, 1, kernel_allocator);
+  auto vertex_mean_2d_view = vertex_mean_2d_device.view();
+
+  axom::Array<double> area_3d_device(1, 1, kernel_allocator);
+  auto area_3d_view = area_3d_device.view();
+  axom::Array<double> area_2d_device(1, 1, kernel_allocator);
+  auto area_2d_view = area_2d_device.view();
+
+  // 3d only
+  axom::Array<Vector3D> normal_3d_device(1, 1, kernel_allocator);
+  auto normal_3d_view = normal_3d_device.view();
+
+  axom::for_all<ExecPolicy>(
+    1,
+    AXOM_LAMBDA(int i) {
+      // Initialize to empty polygons
+      poly_3d_view[i] = Polygon3D();
+      poly_2d_view[i] = Polygon2D();
+      poly_3d_view[i].clear();
+      poly_2d_view[i].clear();
+
+      // Initialize to triangles
+      poly_3d_view[i] = Polygon3D({Point3D({0.0, 0.0, 0.0}),
+                                   Point3D({1.0, 0.0, 0.0}),
+                                   Point3D({1.0, 1.0, 0.0})});
+      poly_2d_view[i] = Polygon2D(
+        {Point2D({0.0, 0.0}), Point2D({1.0, 0.0}), Point2D({1.0, 1.0})});
+
+      // Add a vertex to make squares
+      (poly_3d_view[i]).addVertex(Point3D({0.0, 1.0, 0.0}));
+      (poly_2d_view[i]).addVertex(Point2D({0.0, 1.0}));
+
+      // Collect info about squares
+      vertex_mean_3d_view[i] = poly_3d_view[i].vertexMean();
+      vertex_mean_2d_view[i] = poly_2d_view[i].vertexMean();
+      area_3d_view[i] = poly_3d_view[i].area();
+      area_2d_view[i] = poly_2d_view[i].area();
+      normal_3d_view[i] = poly_3d_view[i].normal();
+
+      //Sanity check - functions are callable on device
+      poly_3d_view[i].numVertices();
+      poly_3d_view[i].isValid();
+      poly_2d_view[i].numVertices();
+      poly_2d_view[i].isValid();
+
+      poly_2d_view[i].reverseOrientation();
+      poly_2d_view[i].reverseOrientation();
+      poly_3d_view[i].reverseOrientation();
+      poly_3d_view[i].reverseOrientation();
+    });
+
+  // Copy polygons and data back to host
+  axom::Array<Polygon3D> poly_3d_host =
+    axom::Array<Polygon3D>(poly_3d_device, host_allocator);
+  axom::Array<Polygon2D> poly_2d_host =
+    axom::Array<Polygon2D>(poly_2d_device, host_allocator);
+  axom::Array<Point3D> vertex_mean_3d_host =
+    axom::Array<Point3D>(vertex_mean_3d_device, host_allocator);
+  axom::Array<Point2D> vertex_mean_2d_host =
+    axom::Array<Point2D>(vertex_mean_2d_device, host_allocator);
+  axom::Array<double> area_3d_host =
+    axom::Array<double>(area_3d_device, host_allocator);
+  axom::Array<double> area_2d_host =
+    axom::Array<double>(area_2d_device, host_allocator);
+  axom::Array<Vector3D> normal_3d_host =
+    axom::Array<Vector3D>(normal_3d_device, host_allocator);
+
+  // Verify values
+  EXPECT_EQ(poly_3d_host[0].numVertices(), NUM_VERTS_SQUARE);
+  EXPECT_EQ(poly_2d_host[0].numVertices(), NUM_VERTS_SQUARE);
+
+  EXPECT_EQ(vertex_mean_3d_host[0], Point3D({0.5, 0.5, 0}));
+  EXPECT_EQ(vertex_mean_2d_host[0], Point2D({0.5, 0.5}));
+
+  EXPECT_DOUBLE_EQ(area_3d_host[0], 1.0);
+  EXPECT_DOUBLE_EQ(area_2d_host[0], 1.0);
+
+  EXPECT_EQ(normal_3d_host[0], Vector3D(Point3D({0.0, 0.0, 2.0})));
+
+  EXPECT_TRUE(poly_3d_host[0].isValid());
+  EXPECT_TRUE(poly_2d_host[0].isValid());
+}
+
+//------------------------------------------------------------------------------
+TEST(primal_polygon, polygon_check_seq)
+{
+  check_polygon_policy<axom::SEQ_EXEC>();
+}
+
+#if defined(AXOM_USE_RAJA) && defined(AXOM_USE_UMPIRE)
+  #ifdef AXOM_USE_OPENMP
+TEST(primal_polygon, polygon_check_omp)
+{
+  check_polygon_policy<axom::OMP_EXEC>();
+}
+  #endif /* AXOM_USE_OPENMP */
+
+  #ifdef AXOM_USE_CUDA
+TEST(primal_polygon, polygon_check_cuda)
+{
+  check_polygon_policy<axom::CUDA_EXEC<256>>();
+}
+  #endif /* AXOM_USE_CUDA */
+
+  #ifdef AXOM_USE_HIP
+TEST(primal_clip, polygon_check_hip)
+{
+  check_polygon_policy<axom::HIP_EXEC<256>>();
+}
+  #endif /* AXOM_USE_HIP */
+
+#endif /* AXOM_USE_RAJA && AXOM_USE_UMPIRE */
 
 //------------------------------------------------------------------------------
 int main(int argc, char* argv[])

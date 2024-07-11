@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -27,6 +27,8 @@ void check_vector_policy()
     axom::allocate<VectorType>(1,
                                axom::execution_space<ExecSpace>::allocatorID());
 
+  VectorType vec_host;
+
   axom::for_all<ExecSpace>(
     1,
     AXOM_LAMBDA(int /*i*/) {
@@ -34,7 +36,9 @@ void check_vector_policy()
       vec[0].negate();
     });
 
-  EXPECT_EQ(vec[0], VectorType(1));
+  axom::copy(&vec_host, vec, sizeof(VectorType));
+
+  EXPECT_EQ(vec_host, VectorType(1));
   axom::deallocate(vec);
 }
 

@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -915,6 +915,33 @@ void check_device_2D(axom::Array<T, 2, SPACE>& v)
 //------------------------------------------------------------------------------
 // UNIT TESTS
 //------------------------------------------------------------------------------
+
+TEST(core_array, checkSlowestDirsConstructor)
+{
+  axom::Array<double, 1> a1({3}, {{0}});
+  EXPECT_TRUE(a1.size() == 3);
+  EXPECT_TRUE(a1.mapping().fastestStrideLength() == 1);
+  EXPECT_TRUE(a1.mapping().slowestDirs()[0] == 0);
+  EXPECT_TRUE(a1.mapping().strides()[0] == 1);
+
+  axom::Array<double, 2> a2({3, 4}, {1, 0});
+  EXPECT_TRUE(a2.size() == 12);
+  EXPECT_TRUE(a2.mapping().fastestStrideLength() == 1);
+  EXPECT_TRUE(a2.mapping().slowestDirs()[0] == 1);
+  EXPECT_TRUE(a2.mapping().slowestDirs()[1] == 0);
+  EXPECT_TRUE(a2.mapping().strides()[0] == 1);
+  EXPECT_TRUE(a2.mapping().strides()[1] == 3);
+
+  axom::Array<double, 3> a3({3, 4, 5}, {2, 0, 1});
+  EXPECT_TRUE(a3.size() == 60);
+  EXPECT_TRUE(a3.mapping().fastestStrideLength() == 1);
+  EXPECT_TRUE(a3.mapping().slowestDirs()[0] == 2);
+  EXPECT_TRUE(a3.mapping().slowestDirs()[1] == 0);
+  EXPECT_TRUE(a3.mapping().slowestDirs()[2] == 1);
+  EXPECT_TRUE(a3.mapping().strides()[0] == 4);
+  EXPECT_TRUE(a3.mapping().strides()[1] == 1);
+  EXPECT_TRUE(a3.mapping().strides()[2] == 12);
+}
 
 //------------------------------------------------------------------------------
 TEST(core_array, checkStorage)
@@ -2219,7 +2246,7 @@ void test_resize_with_stackarray(DataType value)
   const int K_DIMS = 7;
   axom::Array<DataType, 2> arr2;
 
-  axom::StackArray<axom::IndexType, 2> dims2 = {I_DIMS, J_DIMS};
+  axom::StackArray<axom::IndexType, 2> dims2 = {{I_DIMS, J_DIMS}};
   arr2.resize(dims2, value);
   EXPECT_EQ(arr2.size(), I_DIMS * J_DIMS);
   EXPECT_EQ(arr2.shape()[0], I_DIMS);
@@ -2234,7 +2261,7 @@ void test_resize_with_stackarray(DataType value)
 
   axom::Array<DataType, 3> arr3;
 
-  axom::StackArray<axom::IndexType, 3> dims3 = {I_DIMS, J_DIMS, K_DIMS};
+  axom::StackArray<axom::IndexType, 3> dims3 = {{I_DIMS, J_DIMS, K_DIMS}};
   arr3.resize(dims3, value);
   EXPECT_EQ(arr3.size(), I_DIMS * J_DIMS * K_DIMS);
   EXPECT_EQ(arr3.shape()[0], I_DIMS);
@@ -2256,4 +2283,206 @@ TEST(core_array, resize_stackarray)
 {
   test_resize_with_stackarray<bool>(false);
   test_resize_with_stackarray<int>(-1);
+}
+
+//------------------------------------------------------------------------------
+constexpr static int NONTRIVIAL_RELOC_MAGIC = 123;
+struct NonTriviallyRelocatable
+{
+  NonTriviallyRelocatable()
+    : m_member(NONTRIVIAL_RELOC_MAGIC)
+    , m_localMemberPointer(&m_member)
+  { }
+
+  NonTriviallyRelocatable(const NonTriviallyRelocatable& other)
+    : m_member(other.m_member)
+    , m_localMemberPointer(&m_member)
+  { }
+
+  NonTriviallyRelocatable& operator=(const NonTriviallyRelocatable& other)
+  {
+    if(this != &other)
+    {
+      m_member = other.m_member;
+    }
+    return *this;
+  }
+
+  ~NonTriviallyRelocatable() = default;
+
+  int m_member;
+  int* m_localMemberPointer;
+};
+
+TEST(core_array, reserve_nontrivial_reloc)
+{
+  const int NUM_ELEMS = 1024;
+  axom::Array<NonTriviallyRelocatable> array(NUM_ELEMS, NUM_ELEMS);
+
+  for(int i = 0; i < NUM_ELEMS; i++)
+  {
+    // Check initial values.
+    EXPECT_EQ(array[i].m_member, NONTRIVIAL_RELOC_MAGIC);
+    EXPECT_EQ(&(array[i].m_member), array[i].m_localMemberPointer);
+  }
+
+  // Reallocation should work for non-trivially relocatable types.
+  array.reserve(NUM_ELEMS * 4);
+
+  for(int i = 0; i < NUM_ELEMS; i++)
+  {
+    EXPECT_EQ(array[i].m_member, NONTRIVIAL_RELOC_MAGIC);
+    EXPECT_EQ(&(array[i].m_member), array[i].m_localMemberPointer);
+  }
+}
+
+TEST(core_array, reserve_nontrivial_reloc_2)
+{
+  const int NUM_ELEMS = 1024;
+  axom::Array<NonTriviallyRelocatable> array(NUM_ELEMS, NUM_ELEMS);
+
+  for(int i = 0; i < NUM_ELEMS; i++)
+  {
+    // Check initial values.
+    EXPECT_EQ(array[i].m_member, NONTRIVIAL_RELOC_MAGIC);
+    EXPECT_EQ(&(array[i].m_member), array[i].m_localMemberPointer);
+  }
+
+  EXPECT_EQ(array.capacity(), NUM_ELEMS);
+
+  // Emplace to trigger a resize.
+  array.emplace_back(NonTriviallyRelocatable {});
+  EXPECT_GE(array.capacity(), NUM_ELEMS);
+
+  for(int i = 0; i < NUM_ELEMS + 1; i++)
+  {
+    EXPECT_EQ(array[i].m_member, NONTRIVIAL_RELOC_MAGIC);
+    EXPECT_EQ(&(array[i].m_member), array[i].m_localMemberPointer);
+  }
+}
+
+#if defined(AXOM_USE_GPU) && defined(AXOM_USE_UMPIRE)
+TEST(core_array, reserve_nontrivial_reloc_um)
+{
+  const int NUM_ELEMS = 1024;
+  axom::Array<NonTriviallyRelocatable, 1, axom::MemorySpace::Unified> array(
+    NUM_ELEMS,
+    NUM_ELEMS);
+
+  for(int i = 0; i < NUM_ELEMS; i++)
+  {
+    // Check initial values.
+    EXPECT_EQ(array[i].m_member, NONTRIVIAL_RELOC_MAGIC);
+    EXPECT_EQ(&(array[i].m_member), array[i].m_localMemberPointer);
+  }
+
+  // Reallocation should work for non-trivially relocatable types.
+  array.reserve(NUM_ELEMS * 4);
+
+  for(int i = 0; i < NUM_ELEMS; i++)
+  {
+    EXPECT_EQ(array[i].m_member, NONTRIVIAL_RELOC_MAGIC);
+    EXPECT_EQ(&(array[i].m_member), array[i].m_localMemberPointer);
+  }
+}
+#endif
+
+// Regression test for a memory leak in axom::Array's copy/move/initialization
+template <typename T1, typename T2>
+auto make_arr_data(int SZ1, int SZ2)
+  -> std::pair<axom::Array<axom::Array<T1>>, axom::Array<axom::Array<T2>>>
+{
+  using Arr1 = axom::Array<axom::Array<T1>>;
+  using Arr2 = axom::Array<axom::Array<T2>>;
+
+  T1 val1 {};
+  T2 val2 {};
+
+  Arr1 arr1(SZ1, 2 * SZ1);
+  for(int i = 0; i < SZ1; ++i)
+  {
+    arr1[i].resize(i + 10);
+    arr1[i].shrink();
+    arr1[i].push_back(val1);
+  }
+
+  Arr2 arr2(SZ2, 2 * SZ2);
+  for(int i = 0; i < SZ2; ++i)
+  {
+    arr2[i].resize(i + 10);
+    arr2[i].shrink();
+    arr2[i].push_back(val2);
+  }
+  arr2.shrink();
+
+  return {std::move(arr1), std::move(arr2)};
+}
+
+TEST(core_array, regression_array_move)
+{
+  using T1 = int;
+  using Arr1 = axom::Array<axom::Array<T1>>;
+
+  using T2 = NonTriviallyRelocatable;
+  using Arr2 = axom::Array<axom::Array<T2>>;
+
+  using PArrArr = std::pair<Arr1, Arr2>;
+
+  constexpr int SZ1 = 20;
+  constexpr int SZ2 = 30;
+
+  {
+    PArrArr pr;
+    pr = make_arr_data<T1, T2>(SZ1, SZ2);
+
+    EXPECT_EQ(SZ1, pr.first.size());
+    EXPECT_EQ(2 * SZ1, pr.first.capacity());
+
+    EXPECT_EQ(SZ2, pr.second.size());
+    EXPECT_EQ(SZ2, pr.second.capacity());
+  }
+
+  {
+    auto pr = make_arr_data<T1, T2>(SZ1, SZ2);
+
+    EXPECT_EQ(SZ1, pr.first.size());
+    EXPECT_EQ(2 * SZ1, pr.first.capacity());
+
+    EXPECT_EQ(SZ2, pr.second.size());
+    EXPECT_EQ(SZ2, pr.second.capacity());
+  }
+
+  {
+    auto pr = make_arr_data<T1, T2>(SZ1, SZ2);
+    EXPECT_EQ(SZ1, pr.first.size());
+    EXPECT_EQ(2 * SZ1, pr.first.capacity());
+    EXPECT_EQ(SZ2, pr.second.size());
+    EXPECT_EQ(SZ2, pr.second.capacity());
+
+    pr = make_arr_data<T1, T2>(SZ2, SZ1);
+    EXPECT_EQ(SZ2, pr.first.size());
+    EXPECT_EQ(2 * SZ2, pr.first.capacity());
+    EXPECT_EQ(SZ1, pr.second.size());
+    EXPECT_EQ(SZ1, pr.second.capacity());
+  }
+
+  // lots of copy and move assignments and constructions
+  {
+    auto pr = make_arr_data<T1, T2>(SZ1, SZ2);
+    pr = make_arr_data<T1, T2>(5, 7);
+
+    auto pr2 = std::move(pr);
+    auto pr3 = pr2;
+
+    pr2 = make_arr_data<T1, T2>(13, 17);
+
+    auto pr4 {make_arr_data<T1, T2>(33, 44)};
+
+    auto pr5(std::move(pr4));
+
+    EXPECT_EQ(33, pr5.first.size());
+    EXPECT_EQ(66, pr5.first.capacity());
+    EXPECT_EQ(44, pr5.second.size());
+    EXPECT_EQ(44, pr5.second.capacity());
+  }
 }

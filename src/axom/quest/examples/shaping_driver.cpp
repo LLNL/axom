@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -59,14 +59,7 @@ enum class ShapingMethod : int
   Intersection
 };
 
-/// Choose runtime policy for RAJA
-enum RuntimePolicy
-{
-  seq = 0,
-  omp = 1,
-  cuda = 2,
-  hip = 3
-};
+using RuntimePolicy = axom::runtime_policy::Policy;
 
 /// Struct to parse and store the input parameters
 struct Input
@@ -84,13 +77,14 @@ public:
   klee::ShapeSet shapeSet;
 
   ShapingMethod shapingMethod {ShapingMethod::Sampling};
-  RuntimePolicy policy {seq};
+  RuntimePolicy policy {RuntimePolicy::seq};
   int quadratureOrder {5};
   int outputOrder {2};
   int samplesPerKnotSpan {25};
   int refinementLevel {7};
   double weldThresh {1e-9};
   double percentError {-1.};
+  std::string annotationMode {"none"};
 
   std::string backgroundMaterial;
 
@@ -98,23 +92,6 @@ public:
 
 private:
   bool m_verboseOutput {false};
-
-  // clang-format off
-  const std::map<std::string, RuntimePolicy> s_validPolicies{
-    #if defined(AXOM_USE_RAJA) && defined(AXOM_USE_UMPIRE)
-      {"seq", seq}
-      #ifdef AXOM_USE_OPENMP
-    , {"omp", omp}
-      #endif
-      #ifdef AXOM_USE_CUDA
-    , {"cuda", cuda}
-      #endif
-      #ifdef AXOM_USE_HIP
-    , {"hip", hip}
-      #endif
-    #endif
-  };
-  // clang-format on
 
 public:
   bool isVerbose() const { return m_verboseOutput; }
@@ -247,6 +224,15 @@ public:
       ->transform(
         axom::CLI::CheckedTransformer(methodMap, axom::CLI::ignore_case));
 
+#ifdef AXOM_USE_CALIPER
+    app.add_option("--caliper", annotationMode)
+      ->description(
+        "caliper annotation mode. Valid options include 'none' and 'report'. "
+        "Use 'help' to see full list.")
+      ->capture_default_str()
+      ->check(axom::utilities::ValidCaliperMode);
+#endif
+
     // use either an input mesh file or a simple inline Cartesian mesh
     {
       auto* mesh_file =
@@ -348,7 +334,8 @@ public:
 
       intersection_options->add_option("-p, --policy", policy, pol_sstr.str())
         ->capture_default_str()
-        ->transform(axom::CLI::CheckedTransformer(s_validPolicies));
+        ->transform(
+          axom::CLI::CheckedTransformer(axom::runtime_policy::s_nameToPolicy));
     }
     app.get_formatter()->column_width(50);
 
@@ -397,7 +384,8 @@ void printMeshInfo(mfem::Mesh* mesh, const std::string& prefixMessage = "")
     {
     case 2:
       SLIC_INFO(axom::fmt::format(
-        "{} mesh has {} elements and (approximate) bounding box {}",
+        axom::utilities::locale(),
+        "{} mesh has {:L} elements and (approximate) bounding box {}",
         prefixMessage,
         numElements,
         primal::BoundingBox<double, 2>(primal::Point<double, 2>(mins.GetData()),
@@ -405,7 +393,8 @@ void printMeshInfo(mfem::Mesh* mesh, const std::string& prefixMessage = "")
       break;
     case 3:
       SLIC_INFO(axom::fmt::format(
-        "{} mesh has {} elements and (approximate) bounding box {}",
+        axom::utilities::locale(),
+        "{} mesh has {:L} elements and (approximate) bounding box {}",
         prefixMessage,
         numElements,
         primal::BoundingBox<double, 3>(primal::Point<double, 3>(mins.GetData()),
@@ -463,15 +452,8 @@ void finalizeLogger()
 //------------------------------------------------------------------------------
 int main(int argc, char** argv)
 {
-#ifdef AXOM_USE_MPI
-  MPI_Init(&argc, &argv);
-  int my_rank, num_ranks;
-  MPI_Comm_rank(MPI_COMM_WORLD, &my_rank);
-  MPI_Comm_size(MPI_COMM_WORLD, &num_ranks);
-#else
-  int my_rank = 0;
-  int num_ranks = 1;
-#endif
+  axom::utilities::raii::MPIWrapper mpi_raii_wrapper(argc, argv);
+  const int my_rank = mpi_raii_wrapper.my_rank();
 
   initializeLogger();
 
@@ -501,12 +483,21 @@ int main(int argc, char** argv)
     exit(retval);
   }
 
+  axom::utilities::raii::AnnotationsWrapper annotations_raii_wrapper(
+    params.annotationMode);
+
+  AXOM_ANNOTATE_BEGIN("quest shaping example");
+  AXOM_ANNOTATE_BEGIN("init");
+
   //---------------------------------------------------------------------------
   // Load the klee shape file and extract some information
   //---------------------------------------------------------------------------
   try
   {
+    AXOM_ANNOTATE_SCOPE("read Klee shape set");
     params.shapeSet = klee::readShapeSet(params.shapeFile);
+
+    slic::flushStreams();
   }
   catch(klee::KleeError& error)
   {
@@ -540,6 +531,7 @@ int main(int argc, char** argv)
                 "the C2C library");
 #endif
 
+  AXOM_ANNOTATE_BEGIN("load mesh");
   //---------------------------------------------------------------------------
   // Load the computational mesh
   //---------------------------------------------------------------------------
@@ -560,11 +552,13 @@ int main(int argc, char** argv)
       : new mfem::Mesh(*originalMeshDC->GetMesh());
     shapingDC.SetMesh(shapingMesh);
   }
+  AXOM_ANNOTATE_END("load mesh");
   printMeshInfo(shapingDC.GetMesh(), "After loading");
 
   //---------------------------------------------------------------------------
   // Initialize the shaping query object
   //---------------------------------------------------------------------------
+  AXOM_ANNOTATE_BEGIN("setup shaping problem");
   quest::Shaper* shaper = nullptr;
   switch(params.shapingMethod)
   {
@@ -627,6 +621,7 @@ int main(int argc, char** argv)
   //---------------------------------------------------------------------------
   if(auto* samplingShaper = dynamic_cast<quest::SamplingShaper*>(shaper))
   {
+    AXOM_ANNOTATE_SCOPE("import initial volume fractions");
     std::map<std::string, mfem::GridFunction*> initial_grid_functions;
 
     // Generate a background material (w/ volume fractions set to 1) if user provided a name
@@ -657,17 +652,23 @@ int main(int argc, char** argv)
     // Project provided volume fraction grid functions as quadrature point data
     samplingShaper->importInitialVolumeFractions(initial_grid_functions);
   }
+  AXOM_ANNOTATE_END("setup shaping problem");
+  AXOM_ANNOTATE_END("init");
 
   //---------------------------------------------------------------------------
   // Process each of the shapes
   //---------------------------------------------------------------------------
   SLIC_INFO(axom::fmt::format("{:=^80}", "Sampling InOut fields for shapes"));
+  AXOM_ANNOTATE_BEGIN("shaping");
   for(const auto& shape : params.shapeSet.getShapes())
   {
-    std::string shapeFormat = shape.getGeometry().getFormat();
-    SLIC_INFO(
-      axom::fmt::format("{:-^80}",
-                        axom::fmt::format("Shape format is {}", shapeFormat)));
+    const std::string shapeFormat = shape.getGeometry().getFormat();
+    SLIC_INFO(axom::fmt::format(
+      "{:-^80}",
+      axom::fmt::format("Processing shape '{}' of material '{}' (format '{}')",
+                        shape.getName(),
+                        shape.getMaterial(),
+                        shapeFormat)));
 
     // Load the shape from file. This also applies any transformations.
     shaper->loadShape(shape);
@@ -689,10 +690,12 @@ int main(int argc, char** argv)
     shaper->finalizeShapeQuery();
     slic::flushStreams();
   }
+  AXOM_ANNOTATE_END("shaping");
 
   //---------------------------------------------------------------------------
   // After shaping in all shapes, generate/adjust the material volume fractions
   //---------------------------------------------------------------------------
+  AXOM_ANNOTATE_BEGIN("adjust");
   SLIC_INFO(
     axom::fmt::format("{:=^80}",
                       "Generating volume fraction fields for materials"));
@@ -717,14 +720,26 @@ int main(int argc, char** argv)
 
       const double volume = shaper->allReduceSum(*gf * vol_form);
 
-      SLIC_INFO(
-        axom::fmt::format("Volume of material '{}' is {}", mat_name, volume));
+      SLIC_INFO(axom::fmt::format(axom::utilities::locale(),
+                                  "Volume of material '{}' is {:.6Lf}",
+                                  mat_name,
+                                  volume));
     }
   }
+  AXOM_ANNOTATE_END("adjust");
 
   //---------------------------------------------------------------------------
   // Save meshes and fields
   //---------------------------------------------------------------------------
+  if(params.isVerbose())
+  {
+    if(auto* samplingShaper = dynamic_cast<quest::SamplingShaper*>(shaper))
+    {
+      SLIC_INFO(axom::fmt::format("{:-^80}", ""));
+      samplingShaper->printRegisteredFieldNames(" -- after shaping");
+    }
+  }
+
 #ifdef MFEM_USE_MPI
   shaper->getDC()->Save();
 #endif
@@ -734,10 +749,12 @@ int main(int argc, char** argv)
   //---------------------------------------------------------------------------
   // Cleanup and exit
   //---------------------------------------------------------------------------
+  SLIC_INFO(axom::fmt::format("{:-^80}", ""));
+  slic::flushStreams();
+
+  AXOM_ANNOTATE_END("quest shaping example");
+
   finalizeLogger();
-#ifdef AXOM_USE_MPI
-  MPI_Finalize();
-#endif
 
   return 0;
 }

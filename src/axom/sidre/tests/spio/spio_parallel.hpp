@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -19,12 +19,10 @@
 #include "gtest/gtest.h"
 
 // _parallel_io_headers_start
-#include "axom/config.hpp"  // for AXOM_USE_HDF5
+#include "axom/config.hpp"
 
 #include "conduit_blueprint.hpp"
-
 #include "conduit_relay.hpp"
-
 #ifdef AXOM_USE_HDF5
   #include "conduit_relay_io_hdf5.hpp"
 #endif
@@ -250,10 +248,7 @@ TEST(spio_parallel, write_read_write)
   MPI_Comm_size(MPI_COMM_WORLD, &num_ranks);
 
   const int num_files = numOutputFiles(num_ranks);
-
-  std::stringstream sstr;
-  sstr << "out_spio_WRW_" << num_ranks;
-  std::string filename = sstr.str();
+  const std::string filename = axom::fmt::format("out_spio_WRW_{}", num_ranks);
 
   // Initialize a datastore and dump to disk
   DataStore* ds = new DataStore();
@@ -280,6 +275,8 @@ TEST(spio_parallel, write_read_write)
   //      minor: Unable to open file
   IOManager writer_b(MPI_COMM_WORLD);
   writer_b.write(ds_r.getRoot(), num_files, filename, PROTOCOL);
+
+  delete ds;
 }
 
 //------------------------------------------------------------------------------
@@ -329,7 +326,7 @@ TEST(spio_parallel, external_writeread)
   /*
    * Contents of the DataStore written to files with IOManager.
    */
-  int num_files = num_output;
+  const int num_files = num_output;
   IOManager writer(MPI_COMM_WORLD);
 
   const std::string file_name = "out_spio_external_write_read";
