@@ -113,7 +113,7 @@ public:
    * \return d the dimension of the point.
    * \post d >= 1.
    */
-  static int dimension() { return NDIMS; };
+  constexpr static int dimension() { return NDIMS; };
 
   /// \name Overloaded [] operator methods
   ///@{
@@ -178,6 +178,54 @@ public:
   {
     return !(lhs == rhs);
   }
+
+  /*!
+   * \brief Add a point to the current point and return the result.
+   * \param[in] obj The point that will be added to the current point.
+   * \return The sum of the points.
+   */
+  AXOM_HOST_DEVICE
+  Point operator + (const Point &obj) const;
+
+  /*!
+   * \brief Subtract a point from the current point and return the result.
+   * \param[in] obj The point that will be subtracted from the current point.
+   * \return The sum of the points.
+   */
+  AXOM_HOST_DEVICE
+  Point operator - (const Point &obj) const;
+
+  /*!
+   * \brief Scale the current point by a scale factor and return the result.
+   * \param[in] scale The scale factor.
+   * \return The scaled point.
+   */
+  AXOM_HOST_DEVICE
+  Point operator * (const T scale) const;
+
+  /*!
+   * \brief Scale the current point by dividing by a scale factor and return the result.
+   * \param[in] divisor The divisor.
+   * \return The scaled point.
+   */
+  AXOM_HOST_DEVICE
+  Point operator / (const T divisor) const;
+
+  /*!
+   * \brief Add a point to the current point, changing its value.
+   * \param[in] obj The point that will be added to the current point.
+   * \return The sum of the points.
+   */
+  AXOM_HOST_DEVICE
+  Point operator += (const Point &obj);
+
+  /*!
+   * \brief Add a point to the current point, changing its value.
+   * \param[in] obj The point that will be added to the current point.
+   * \return The sum of the points.
+   */
+  AXOM_HOST_DEVICE
+  Point operator += (const Point &obj);
 
   /*!
    * \brief Simple formatted print of a point instance
@@ -318,6 +366,82 @@ std::ostream& Point<T, NDIMS>::print(std::ostream& os) const
   os << static_cast<typename NonChar<T>::type>(m_components[NDIMS - 1]) << ")";
 
   return os;
+}
+
+//------------------------------------------------------------------------------
+template <typename T, int NDIMS>
+AXOM_HOST_DEVICE inline Point<T, NDIMS>
+Point<T, NDIMS>::operator + (const Point<T, NDIMS>& obj) const
+{
+  PointType res;
+  for(int i = 0; i < NDIMS; ++i)
+  {
+    res[i] = m_components[i] + obj[i];
+  }
+  return res;
+}
+
+//------------------------------------------------------------------------------
+template <typename T, int NDIMS>
+AXOM_HOST_DEVICE inline Point<T, NDIMS>
+Point<T, NDIMS>::operator - (const Point<T, NDIMS>& obj) const
+{
+  PointType res;
+  for(int i = 0; i < NDIMS; ++i)
+  {
+    res[i] = m_components[i] - obj[i];
+  }
+  return res;
+}
+
+//------------------------------------------------------------------------------
+template <typename T, int NDIMS>
+AXOM_HOST_DEVICE inline Point<T, NDIMS>
+Point<T, NDIMS>::operator * (const T scale) const
+{
+  PointType res;
+  for(int i = 0; i < NDIMS; ++i)
+  {
+    res[i] = m_components[i] * scale;
+  }
+  return res;
+}
+
+//------------------------------------------------------------------------------
+template <typename T, int NDIMS>
+AXOM_HOST_DEVICE inline Point<T, NDIMS>
+Point<T, NDIMS>::operator / (const T divisor) const
+{
+  PointType res;
+  for(int i = 0; i < NDIMS; ++i)
+  {
+    res[i] = m_components[i] / divisor;
+  }
+  return res;
+}
+
+//------------------------------------------------------------------------------
+template <typename T, int NDIMS>
+AXOM_HOST_DEVICE inline Point<T, NDIMS>
+Point<T, NDIMS>::operator += (const Point<T, NDIMS>& obj)
+{
+  for(int i = 0; i < NDIMS; ++i)
+  {
+    m_components[i] += obj[i];
+  }
+  return *this;
+}
+
+//------------------------------------------------------------------------------
+template <typename T, int NDIMS>
+AXOM_HOST_DEVICE inline Point<T, NDIMS>
+Point<T, NDIMS>::operator -= (const Point<T, NDIMS>& obj)
+{
+  for(int i = 0; i < NDIMS; ++i)
+  {
+    m_components[i] -= obj[i];
+  }
+  return *this;
 }
 
 //------------------------------------------------------------------------------
