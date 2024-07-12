@@ -184,11 +184,11 @@ private:
    /  |  \       face 2: 1,2,3
   /   |   \      face 3: 2,0,3
 0*----|----* 2
-  \   |   /      edge 0: 0,2
-   \  |  /       edge 1: 2,1
-    \ | /        edge 2: 1,0
-     \|/         edge 3: 1,3
-      *          edge 4: 3,0
+  \   |   /      edge 0: 0,1
+   \  |  /       edge 1: 1,2
+    \ | /        edge 2: 2,0
+     \|/         edge 3: 0,3
+      *          edge 4: 1,3
        1         edge 5: 2,3
 
  */
@@ -212,7 +212,7 @@ struct TetTraits
   AXOM_HOST_DEVICE constexpr static IndexType zoneOffset(int zoneIndex) { return numberOfNodes() * zoneIndex; }
 
   AXOM_HOST_DEVICE constexpr static IndexType faces[][3] = {{0,2,1}, {0,1,3}, {1,2,3}, {2,0,3}};
-  AXOM_HOST_DEVICE constexpr static IndexType edges[][2] = {{0,2}, {2,1}, {1,0}, {1,3}, {3,0}, {2,3}};
+  AXOM_HOST_DEVICE constexpr static IndexType edges[][2] = {{0, 1}, {1, 2}, {2, 0},{0, 3}, {1, 3}, {2, 3}};
 };
 
 /*
@@ -337,7 +337,7 @@ struct HexTraits
 
   AXOM_HOST_DEVICE constexpr static IndexType faces[][4] = {
     {0, 3, 2, 1}, {0, 1, 5, 4}, {1, 2, 6, 5}, {2, 3, 7, 6}, {3, 0, 4, 7}, {4, 5, 6, 7}};
-  AXOM_HOST_DEVICE constexpr static IndexType edges[][2] = {{0,3}, {3,2}, {2,1}, {1,0}, {1,5}, {5,4}, {4,0}, {2,6}, {6,5}, {3,7}, {7,6}, {7,4}};
+  AXOM_HOST_DEVICE constexpr static IndexType edges[][2] = {{0, 1}, {1, 2}, {3, 2}, {3, 0}, {4, 5}, {5, 6}, {6, 7}, {7, 4}, {0, 4}, {1, 5}, {3, 7}, {2, 6}};
 };
 
 /**
@@ -355,6 +355,13 @@ struct Shape : public ShapeTraits
   {
     assert(m_ids.size() == ShapeTraits::numberOfNodes());
   }
+
+  /**
+   * \brief Get a specific id that makes up this shape.
+   *
+   * \return The i'th id that makes up this shape.
+   */
+  AXOM_HOST_DEVICE IndexType getId(size_t index) const { return m_ids[index]; }
 
   /**
    * \brief Get the ids that make up this shape.
