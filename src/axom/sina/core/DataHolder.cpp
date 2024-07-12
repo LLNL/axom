@@ -3,6 +3,15 @@
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
+/*!
+ ******************************************************************************
+ *
+ * \file DataHolder.cpp
+ *
+ * \brief   Implementation file for Sina DataHolder class
+ *
+ ******************************************************************************
+ */
 
 #include "axom/sina/core/DataHolder.hpp"
 

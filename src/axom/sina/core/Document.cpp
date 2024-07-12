@@ -4,7 +4,15 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 
 
-/// @file
+/*!
+ ******************************************************************************
+ *
+ * \file Document.cpp
+ *
+ * \brief   Implementation file for Sina Document class
+ *
+ ******************************************************************************
+ */
 
 #include "axom/sina/core/Document.hpp"
 

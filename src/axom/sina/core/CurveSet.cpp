@@ -3,6 +3,17 @@
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
+/*!
+ ******************************************************************************
+ *
+ * \file CurveSet.cpp
+ *
+ * \brief   Implementation file for Sina CurveSet class
+ *
+ * \sa Curve.hpp
+ *
+ ******************************************************************************
+ */
 
 #include "axom/sina/core/CurveSet.hpp"
 

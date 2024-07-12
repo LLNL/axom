@@ -3,8 +3,15 @@
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
-
-/// @file
+/*!
+ ******************************************************************************
+ *
+ * \file AdiakWriter.cpp
+ *
+ * \brief   Implementation file for the Adiak Sina callback function.
+ *
+ ******************************************************************************
+ */
 
 #include "axom/sina/core/AdiakWriter.hpp"
 

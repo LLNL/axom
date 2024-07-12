@@ -7,10 +7,14 @@
 #ifndef SINA_CURVE_HPP
 #define SINA_CURVE_HPP
 
-/**
- * @file
+/*!
+ ******************************************************************************
  *
- * Contains the definition of the Curve class. 
+ * \file Curve.hpp
+ *
+ * \brief   Implementation file for Sina Curve class
+ *
+ ******************************************************************************
  */
 
 #include <string>
@@ -29,84 +33,84 @@ namespace sina
 class Curve {
 public:
     /**
-     * Create a Curve with the given name and values
+     * \brief Create a Curve with the given name and values
      *
-     * @param name the name of the curve
-     * @param values the curve's values
+     * \param name the name of the curve
+     * \param values the curve's values
      */
     Curve(std::string name, std::vector<double> values);
 
     /**
-     * Create a Curve with the given name and values
+     * \brief Create a Curve with the given name and values
      *
-     * @param name the name of the curve
-     * @param values the curve's values
-     * @param numValues the number of values.
+     * \param name the name of the curve
+     * \param values the curve's values
+     * \param numValues the number of values.
      */
     Curve(std::string name, double const *values, std::size_t numValues);
 
     /**
-     * Create a Curve by deserializing a conduit node.
+     * \brief Create a Curve by deserializing a conduit node.
      *
-     * @param name the name of the curve
-     * @param curveAsNode the serialized version of a curve
+     * \param name the name of the curve
+     * \param curveAsNode the serialized version of a curve
      */
     Curve(std::string name, conduit::Node const &curveAsNode);
 
     /**
-     * Get the curve's name.
+     * \brief Get the curve's name.
      *
-     * @return the curve's name
+     * \return the curve's name
      */
     std::string const &getName() const {
         return name;
     }
 
     /**
-     * Get the values of the curve.
+     * \brief Get the values of the curve.
      *
-     * @return the curve's values
+     * \return the curve's values
      */
     std::vector<double> const &getValues() const {
         return values;
     }
 
     /**
-     * Set the units of the values.
+     * \brief Set the units of the values.
      *
-     * @param units the value's units
+     * \param units the value's units
      */
     void setUnits(std::string units);
 
     /**
-     * Get the units of the values.
+     * \brief Get the units of the values.
      *
-     * @return the value's units
+     * \return the value's units
      */
     std::string const &getUnits() const {
         return units;
     }
 
     /**
-     * Set the tags for this curve.
+     * \brief Set the tags for this curve.
      *
-     * @param tags the curve's tags
+     * \param tags the curve's tags
      */
     void setTags(std::vector<std::string> tags);
 
     /**
-     * Get the tags for this curve.
+     * \brief Get the tags for this curve.
      *
-     * @return the curve's tags
+     * \return the curve's tags
      */
     std::vector<std::string> const &getTags() const {
         return tags;
     }
 
     /**
-     * Convert this curve to a Conduit node.
+     * \brief Convert this curve to a Conduit node.
      *
-     * @return a Conduit representation of this curve
+     * \return a Conduit representation of this curve
      */
     conduit::Node toNode() const;
 

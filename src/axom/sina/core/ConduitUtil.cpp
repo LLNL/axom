@@ -4,6 +4,16 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 
 
+/*!
+ ******************************************************************************
+ *
+ * \file ConduitUtil.cpp
+ *
+ * \brief   Implementation file for Sina Conduit utility functions
+ *
+ ******************************************************************************
+ */
+
 #include "axom/sina/core/ConduitUtil.hpp"
 
 #include <iostream>

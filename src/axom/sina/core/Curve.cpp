@@ -3,6 +3,15 @@
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
+/*!
+ ******************************************************************************
+ *
+ * \file Curve.cpp
+ *
+ * \brief   Implementation file for Sina Curve class
+ *
+ ******************************************************************************
+ */
 
 #include "axom/sina/core/Curve.hpp"
 #include "axom/sina/core/ConduitUtil.hpp"

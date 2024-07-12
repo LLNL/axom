@@ -3,8 +3,15 @@
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
-
-/// @file
+/*!
+ ******************************************************************************
+ *
+ * \file Relationship.cpp
+ *
+ * \brief   Implementation file for Sina Relationship class
+ *
+ ******************************************************************************
+ */
 
 #include "axom/sina/core/Relationship.hpp"
 

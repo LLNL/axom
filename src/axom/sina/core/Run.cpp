@@ -3,8 +3,17 @@
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
-
-/// @file
+/*!
+ ******************************************************************************
+ *
+ * \file Run.cpp
+ *
+ * \brief   Implementation file for Sina Run class
+ *
+ * \sa Record.hpp
+ *
+ ******************************************************************************
+ */
 
 #include "axom/sina/core/Run.hpp"
 

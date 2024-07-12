@@ -4,7 +4,17 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 
 
-/// @file
+/*!
+ ******************************************************************************
+ *
+ * \file Record.cpp
+ *
+ * \brief   Implementation file for Sina Record class
+ *
+ * \sa DataHolder.hpp
+ *
+ ******************************************************************************
+ */
 
 #include "axom/sina/core/Record.hpp"
 

@@ -7,7 +7,17 @@
 #ifndef SINA_RECORD_HPP
 #define SINA_RECORD_HPP
 
-/// @file
+/*!
+ ******************************************************************************
+ *
+ * \file Record.hpp
+ *
+ * \brief   Implementation file for Sina Record class
+ *
+ * \sa DataHolder.hpp
+ *
+ ******************************************************************************
+ */
 
 #include <functional>
 #include <memory>
@@ -49,6 +59,8 @@ struct FileHashByURI {
 };
 
 /**
+ * \brief An object representing an entry in a Document's Record list
+ *
  * The Record class represents an entry in a Document's Record list. Records represent the data to be stored
  * (as opposed to the relationships between data)--natural scopes for Records include things like a single run
  * of an application, an msub job, a cluster of runs that has some metadata attached to the cluster (this Record
@@ -58,17 +70,17 @@ struct FileHashByURI {
  * File objects and a map of Datum objects.
  *
  * \code
- * axom::sina::ID myID{"my_record", axom::sina::IDType::Local};
- * std::unique_ptr<axom::sina::Record> myRecord{new axom::sina::Record{myID, "my_type"}};
- * std::vector<std::string> myTags{"input"};
- * axom::sina::Datum myDatum{12, myTags};
- * myRecord->add("my_scalar",std::move(myDatum));
- * std::cout << myRecord->toNode().to_json() << std::endl;
+ *   axom::sina::ID myID{"my_record", axom::sina::IDType::Local};
+ *   std::unique_ptr<axom::sina::Record> myRecord{new axom::sina::Record{myID, "my_type"}};
+ *   std::vector<std::string> myTags{"input"};
+ *   axom::sina::Datum myDatum{12, myTags};
+ *   myRecord->add("my_scalar",std::move(myDatum));
+ *   std::cout << myRecord->toNode().to_json() << std::endl;
  * \endcode
  *
  * The output would be:
  * \code{.json}
- * {"local_id":"my_record","type":"my_type","data":{"my_scalar":{"tags":["input"],"value":12.0}}}
+ *   {"local_id":"my_record","type":"my_type","data":{"my_scalar":{"tags":["input"],"value":12.0}}}
  * \endcode
  */
 class Record : public DataHolder {
@@ -79,17 +91,17 @@ public:
     using FileSet = std::unordered_set<File, FileHashByURI, FileEqualByURI>;
 
     /**
-     * Construct a new Record.
+     * \brief Construct a new Record.
      *
-     * @param id the ID of the record
-     * @param type the type of the record
+     * \param id the ID of the record
+     * \param type the type of the record
      */
     Record(ID id, std::string type);
 
     /**
-     * Construct a Record from its conduit Node representation.
+     * \brief Construct a Record from its conduit Node representation.
      *
-     * @param asNode the Record as a Node
+     * \param asNode the Record as a Node
      */
     explicit Record(conduit::Node const &asNode);
 
@@ -104,27 +116,27 @@ public:
     Record &operator=(Record const &) = delete;
 
     /**
-     * Get the Record's ID.
+     * \brief Get the Record's ID.
      *
-     * @return the ID
+     * \return the ID
      */
     ID const &getId() const noexcept {
         return id.getID();
     }
 
     /**
-     * Get the Record's type.
+     * \brief Get the Record's type.
      *
-     * @return the Record's type
+     * \return the Record's type
      */
     std::string const &getType() const noexcept {
         return type;
     }
 
     /**
-     * Remove a File from this record.
+     * \brief Remove a File from this record.
      *
-     * @param file the File to remove
+     * \param file the File to remove
      */
     void remove(File const& file);
 
@@ -132,31 +144,31 @@ public:
 
     using DataHolder::add;
     /**
-     * Add a File to this record.
+     * \brief Add a File to this record.
      *
-     * @param file the File to add
+     * \param file the File to add
      */
     void add(File file);
 
 
     /**
-     * Get the files associated with this record.
+     * \brief Get the files associated with this record.
      *
-     * @return the record's files
+     * \return the record's files
      */
     FileSet const &getFiles() const noexcept {
         return files;
     }
 
     /**
-     * Convert this record to its conduit Node representation.
+     * \brief Convert this record to its conduit Node representation.
      *
-     * @return the Node representation of this record.
+     * \return the Node representation of this record.
      */
     conduit::Node toNode() const override;
 
    /**
-    * Add another record to this one as library data.
+    * \brief Add another record to this one as library data.
     *
     * Useful for libraries that can run in standalone mode; the host
     * simply calls this method on the record the library produces.
@@ -172,13 +184,15 @@ private:
 
 
 /**
+ * \brief An object to convert Conduit Nodes into Records
+ *
  * A RecordLoader is used to convert conduit::Node instances which represent
  * Sina Records into instances of their corresponding axom::sina::Record
  * subclasses. For convenience, a RecordLoader capable of handling Records of all known
  * types can be created using createRecordLoaderWithAllKnownTypes:
  *
  * \code
- * axom::sina::Document myDocument = axom::sina::Document(jObj, axom::sina::createRecordLoaderWithAllKnownTypes());
+ *   axom::sina::Document myDocument = axom::sina::Document(jObj, axom::sina::createRecordLoaderWithAllKnownTypes());
  * \endcode
  */
 class RecordLoader {
@@ -191,26 +205,26 @@ public:
             conduit::Node const &)>;
 
     /**
-     * Add a function for loading records of the specified type.
+     * \brief Add a function for loading records of the specified type.
      *
-     * @param type the type of records this function can load
-     * @param loader the function which can load the records
+     * \param type the type of records this function can load
+     * \param loader the function which can load the records
      */
     void addTypeLoader(std::string const &type, TypeLoader loader);
 
     /**
-     * Load a axom::sina::Record from its conduit Node representation.
+     * \brief Load a Record from its conduit Node representation.
      *
-     * @param recordAsNode the Record as a Node
-     * @return the Record
+     * \param recordAsNode the Record as a Node
+     * \return the Record
      */
     std::unique_ptr<Record> load(conduit::Node const &recordAsNode) const;
 
     /**
-     * Check whether this loader can load records of the given type.
+     * \brief Check whether this loader can load records of the given type.
      *
-     * @param type the type of the records to check
-     * @return whether records of the given type can be loaded
+     * \param type the type of the records to check
+     * \return whether records of the given type can be loaded
      */
     bool canLoad(std::string const &type) const;
 
@@ -219,9 +233,9 @@ private:
 };
 
 /**
- * Create a RecordLoader which can load records of all known types.
+ * \brief Create a RecordLoader which can load records of all known types.
  *
- * @return the newly-created loader
+ * \return the newly-created loader
  */
 RecordLoader createRecordLoaderWithAllKnownTypes();
 

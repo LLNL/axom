@@ -3,10 +3,15 @@
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
-
-
-
-/// @file
+/*!
+ ******************************************************************************
+ *
+ * \file ID.cpp
+ *
+ * \brief   Implementation file for Sina ID class
+ *
+ ******************************************************************************
+ */
 
 #include "axom/sina/core/ID.hpp"
 

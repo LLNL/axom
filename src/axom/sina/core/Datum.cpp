@@ -4,7 +4,15 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 
 
-/// @file
+/*!
+ ******************************************************************************
+ *
+ * \file Datum.cpp
+ *
+ * \brief   Implementation file for Sina Datum class
+ *
+ ******************************************************************************
+ */
 
 #include "axom/sina/core/Datum.hpp"
 #include "conduit.hpp"

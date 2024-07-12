@@ -7,7 +7,15 @@
 #ifndef SINA_DATUM_HPP
 #define SINA_DATUM_HPP
 
-/// @file
+/*!
+ ******************************************************************************
+ *
+ * \file Datum.hpp
+ *
+ * \brief   Implementation file for Sina Datum class
+ *
+ ******************************************************************************
+ */
 
 #include <string>
 #include <type_traits>
@@ -32,6 +40,8 @@ enum class ValueType {
 };
 
 /**
+ * \brief An object to track a value associated with a Record
+ *
  * A Datum tracks the value and (optionally) tags and/or units of a
  * value associated with a Record, e.g. a scalar, a piece of metadata,
  * or an input parameter. In the Sina schema, a Datum always
@@ -43,148 +53,148 @@ enum class ValueType {
  * or an array of doubles.
  *
  * \code
- * axom::sina::Datum myDatum{12.34};
- * std::string value = "foobar";
- * axom::sina::Datum myOtherDatum{value};
- * std::vector<double> scalars = {1, 2, 20.0};
- * axom::sina::Datum myArrayDatum{scalars};
+ *   axom::sina::Datum myDatum{12.34};
+ *   std::string value = "foobar";
+ *   axom::sina::Datum myOtherDatum{value};
+ *   std::vector<double> scalars = {1, 2, 20.0};
+ *   axom::sina::Datum myArrayDatum{scalars};
  *
- * //prints 1, corresponding to Scalar
- * std::cout << static_cast<std::underlying_type<sina::ValueType>::type>(myDatum.getType()) << std::endl;
+ *   //prints 1, corresponding to Scalar
+ *   std::cout << static_cast<std::underlying_type<sina::ValueType>::type>(myDatum.getType()) << std::endl;
  *
- * //prints 0, corresponding to String
- * std::cout << static_cast<std::underlying_type<sina::ValueType>::type>(myOtherDatum.getType()) << std::endl;
+ *   //prints 0, corresponding to String
+ *   std::cout << static_cast<std::underlying_type<sina::ValueType>::type>(myOtherDatum.getType()) << std::endl;
  *
- * //prints 3, corresponding to ScalarArray
- * std::cout << static_cast<std::underlying_type<sina::ValueType>::type>(myArrayDatum.getType()) << std::endl;
+ *   //prints 3, corresponding to ScalarArray
+ *   std::cout << static_cast<std::underlying_type<sina::ValueType>::type>(myArrayDatum.getType()) << std::endl;
  *
- * myRecord->add(myDatum);
- * myOtherDatum.setUnits("km/s");
- * myRecord->add(myOtherDatum);
- * std::vector<std:string> tags = {"input", "core"};
- * myArrayDatum.setTags(tags);
- * myRecord->add(myArrayDatum);
+ *   myRecord->add(myDatum);
+ *   myOtherDatum.setUnits("km/s");
+ *   myRecord->add(myOtherDatum);
+ *   std::vector<std:string> tags = {"input", "core"};
+ *   myArrayDatum.setTags(tags);
+ *   myRecord->add(myArrayDatum);
  * \endcode
  */
 class Datum {
 public:
     /**
-     * Construct a new Datum.
+     * \brief Construct a new Datum.
      *
-     * @param value the string value of the datum
+     * \param value the string value of the datum
      */
     Datum(std::string value);
 
     /**
-     * Construct a new Datum.
+     * \brief Construct a new Datum.
      *
-     * @param value the double value of the datum
+     * \param value the double value of the datum
      */
     Datum(double value);
 
     /**
-     * Construct a new Datum.
+     * \brief Construct a new Datum.
      *
-     * @param value the string array value of the datum
+     * \param value the string array value of the datum
      */
     Datum(std::vector<std::string> value);
 
     /**
-     * Construct a new Datum.
+     * \brief Construct a new Datum.
      *
-     * @param value the scalar array value of the datum
+     * \param value the scalar array value of the datum
      */
     Datum(std::vector<double> value);
 
     /**
-     * Construct a Datum from its Node representation.
+     * \brief Construct a Datum from its Node representation.
      *
-     * @param asNode the Datum as conduit Node
+     * \param asNode the Datum as conduit Node
      */
     explicit Datum(conduit::Node const &asNode);
 
     /**
-     * Get the string value of the Datum.
+     * \brief Get the string value of the Datum.
      *
-     * @return the string value
+     * \return the string value
      */
     std::string const &getValue() const noexcept {
             return stringValue;
     }
 
     /**
-     * Get the scalar value of the Datum.
+     * \brief Get the scalar value of the Datum.
      *
-     * @return the scalar value
+     * \return the scalar value
      */
     double const &getScalar() const noexcept {
             return scalarValue;
     }
 
     /**
-     * Get the string array value of the Datum.
+     * \brief Get the string array value of the Datum.
      *
-     * @return the string vector value
+     * \return the string vector value
      */
     std::vector<std::string> const &getStringArray() const noexcept {
             return stringArrayValue;
     }
 
     /**
-     * Get the scalar array value of the Datum.
+     * \brief Get the scalar array value of the Datum.
      *
-     * @return the scalar vector value
+     * \return the scalar vector value
      */
     std::vector<double> const &getScalarArray() const noexcept {
             return scalarArrayValue;
     }
 
     /**
-     * Get the tags of the Datum
+     * \brief Get the tags of the Datum
      *
-     * @return the tags of the value
+     * \return the tags of the value
      */
     std::vector<std::string> const &getTags() const noexcept {
         return tags;
     }
 
     /**
-     * Set the tags of the Datum
+     * \brief Set the tags of the Datum
      *
-     * @param tags the tags of the value
+     * \param tags the tags of the value
      */
     void setTags(std::vector<std::string> tags);
 
     /**
-     * Get the units of the Datum
+     * \brief Get the units of the Datum
      *
-     * @return the units of the value
+     * \return the units of the value
      */
     std::string const &getUnits() const noexcept {
         return units;
     }
 
     /**
-     * Set the units of the Datum
+     * \brief Set the units of the Datum
      *
-     * @param units the units of the value
+     * \param units the units of the value
      */
     void setUnits(std::string units);
 
 
     /**
-     * Get the type of the Datum
+     * \brief Get the type of the Datum
      *
-     * @return the type of the value
+     * \return the type of the value
      */
     ValueType getType() const noexcept {
         return type;
     }
 
     /**
-     * Convert this Datum to its conduit Node representation.
+     * \brief Convert this Datum to its conduit Node representation.
      *
-     * @return the Node representation of this Datum.
+     * \return the Node representation of this Datum.
      */
     conduit::Node toNode() const;
 

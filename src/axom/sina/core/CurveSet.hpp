@@ -7,10 +7,16 @@
 #ifndef SINA_CURVESET_HPP
 #define SINA_CURVESET_HPP
 
-/**
- * @file
+/*!
+ ******************************************************************************
  *
- * Contains the definition of the CurveSet class. 
+ * \file CurveSet.hpp
+ *
+ * \brief   Implementation file for Sina CurveSet class
+ *
+ * \sa Curve.hpp
+ *
+ ******************************************************************************
  */
 
 #include <string>
@@ -26,13 +32,13 @@ namespace sina
 {
 
 /**
- * A CurveSet represents an entry in a record's "curve_set".
+ * \brief A CurveSet represents an entry in a record's "curve_set".
  *
  * A CurveSet consist of a set of independent and dependent curves. Each curve
  * is a list of numbers along with optional units and tags.
  *
- * \see Record
- * \see Curve
+ * \sa Record
+ * \sa Curve
  */
 class CurveSet {
 public:
@@ -42,65 +48,65 @@ public:
     using CurveMap = std::unordered_map<std::string, Curve>;
 
     /**
-     * Create a CurveSet with the given name
+     * \brief Create a CurveSet with the given name
      *
-     * @param name the name of the CurveSet
+     * \param name the name of the CurveSet
      */
     explicit CurveSet(std::string name);
 
     /**
-     * Create a CurveSet from the given Conduit node.
+     * \brief Create a CurveSet from the given Conduit node.
      *
-     * @param name the name of the CurveSet
-     * @param node the Conduit node representing the CurveSet
+     * \param name the name of the CurveSet
+     * \param node the Conduit node representing the CurveSet
      */
     CurveSet(std::string name, conduit::Node const &node);
 
     /**
-     * Get the name of the this CurveSet.
+     * \brief Get the name of the this CurveSet.
      *
-     * @return the curve set's name
+     * \return the curve set's name
      */
     std::string const & getName() const {
         return name;
     }
 
     /**
-     * Add an independent curve.
+     * \brief Add an independent curve.
      *
-     * @param curve the curve to add
+     * \param curve the curve to add
      */
     void addIndependentCurve(Curve curve);
 
     /**
-     * Add a dependent curve.
+     * \brief Add a dependent curve.
      *
-     * @param curve the curve to add
+     * \param curve the curve to add
      */
     void addDependentCurve(Curve curve);
 
     /**
-     * Get a map of all the independent curves.
+     * \brief Get a map of all the independent curves.
      *
-     * @return a map of all the independent curves
+     * \return a map of all the independent curves
      */
     CurveMap const &getIndependentCurves() const {
         return independentCurves;
     }
 
     /**
-     * Get a map of all the dependent curves.
+     * \brief Get a map of all the dependent curves.
      *
-     * @return a map of all the dependent curves
+     * \return a map of all the dependent curves
      */
     CurveMap const &getDependentCurves() const {
         return dependentCurves;
     }
 
     /**
-     * Convert his CurveSet to a Conduit node.
+     * \brief Convert his CurveSet to a Conduit node.
      *
-     * @return the Node representation of this CurveSet
+     * \return the Node representation of this CurveSet
      */
     conduit::Node toNode() const;
 
