@@ -8,6 +8,7 @@
 
 #include "axom/config.hpp"
 #include "axom/core/execution/runtime_policy.hpp"
+#include "axom/core/Types.hpp"
 
 #include "conduit_node.hpp"
 
@@ -172,6 +173,23 @@ public:
    */
   void computeClosestPoints(conduit::Node& query_node,
                             const std::string& topology);
+
+  /*!
+    @brief Return the number of searches done on the last query
+    mesh's local partition.
+
+    This count includes 1 by the owner rank plus however many remote
+    ranks searched the partition.
+  */
+  axom::IndexType searchCount() const;
+  /*!
+    @brief Return the effective distance threshold used for the
+    last query mesh's local partition.
+
+    Due to optimizations, this may be smaller than the value set
+    in setDistanceThreshold().
+  */
+  double effectiveDistanceThreshold() const;
 
 private:
   /*!

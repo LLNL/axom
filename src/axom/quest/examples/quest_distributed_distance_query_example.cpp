@@ -339,6 +339,9 @@ public:
     MPI_Allreduce(MPI_IN_PLACE, &m_dimension, 1, MPI_INT, MPI_MAX, MPI_COMM_WORLD);
     SLIC_ASSERT(m_dimension > 0);
 
+    // For debugging, create cell-centered owner-rank field.
+    m_dimension == 2 ? setCellOwnerRank<2>(mdMesh) : setCellOwnerRank<3>(mdMesh);
+
     if(domCount > 0)
     {
       // Put mdMesh into sidre Group.
@@ -426,6 +429,43 @@ public:
     for(int i = 0; i < SZ; ++i)
     {
       arr[i] = i;
+    }
+  }
+
+  /*!
+    @brief Set the cell-centered owner rank field.
+
+    @param mdMesh A multi-domain structured mesh.
+  */
+  template <int DIM>
+  void setCellOwnerRank(conduit::Node& mdMesh)
+  {
+    std::string fieldName = "owner_rank";
+    axom::StackArray<axom::IndexType, DIM> zeroPads;
+    axom::StackArray<axom::IndexType, DIM> strideOrder;
+    for(int d = 0; d < DIM; ++d)
+    {
+      zeroPads[d] = 0;
+      strideOrder[d] = DIM - d - 1;
+    }
+    for(conduit::Node& dom : mdMesh.children())
+    {
+      axom::quest::MeshViewUtil<DIM> domainView(dom, m_topologyName);
+      domainView.createField(fieldName,
+                             "element",
+                             conduit::DataType::uint32(),
+                             zeroPads,
+                             zeroPads,
+                             strideOrder);
+
+      auto ownerRankView =
+        domainView.template getFieldView<std::uint32_t>(fieldName);
+      axom::detail::ArrayOps<std::uint32_t, axom::MemorySpace::Dynamic>::fill(
+        ownerRankView.data(),
+        0,
+        ownerRankView.size(),
+        ownerRankView.getAllocatorID(),
+        m_rank);
     }
   }
 
@@ -943,11 +983,6 @@ public:
       SLIC_ASSERT(queryPts.size() == cpCoords.size());
       SLIC_ASSERT(queryPts.size() == cpIndices.size());
 
-      if(params.isVerbose())
-      {
-        SLIC_INFO(axom::fmt::format("Closest points ({}):", cpCoords.size()));
-      }
-
       /*
         Allowable slack is half the arclength between 2 adjacent object
         points.  A query point on the object can correctly have that
@@ -959,20 +994,51 @@ public:
       const double longSpacing =
         2 * M_PI * params.circleRadius / params.longPointCount;
       const double latSpacing = params.circleRadius * M_PI / 180 *
-        (params.latRange[1] - params.latRange[0]) / params.latPointCount;
+        (params.latRange[1] - params.latRange[0]) / (params.latPointCount - 1);
       const double avgObjectRes = DIM == 2
         ? longSpacing
         : std::sqrt(longSpacing * longSpacing + latSpacing * latSpacing);
       const double allowableSlack = avgObjectRes / 2;
 
       using IndexSet = slam::PositionSet<>;
+      const PointType circleCenter {params.circleCenter.data(), DIM};
+      double zNorth =
+        params.circleRadius * std::sin(params.latRange[1] * M_PI / 180);
+      double xyNorth =
+        params.circleRadius * std::cos(params.latRange[1] * M_PI / 180);
+      double zSouth =
+        params.circleRadius * std::sin(params.latRange[0] * M_PI / 180);
+      double xySouth =
+        params.circleRadius * std::cos(params.latRange[0] * M_PI / 180);
       for(auto i : IndexSet(queryPts.size()))
       {
         bool errf = false;
 
+        // Compute the analytical distance to sphere (or partial sphere
+        // if the latitude range doesn't go all the way to the poles).
         const auto& qPt = queryPts[i];
         const auto& cpCoord = cpCoords[i];
         double analyticalDist = std::fabs(sphere.computeSignedDistance(qPt));
+        if(DIM == 3 && params.latRange[0] > -90 && params.latRange[1] < 90)
+        {
+          // More complicated analytical distance for partial-sphere object.
+          axom::primal::Vector<double, DIM> cToQ {circleCenter, qPt};
+          double z = cToQ[2];
+          cToQ[2] = 0.0;
+          double xy = cToQ.norm();
+          double qPtLat = std::atan(z / xy) * 180 / M_PI;
+          if(qPtLat > params.latRange[1])
+          {
+            analyticalDist = std::sqrt((z - zNorth) * (z - zNorth) +
+                                       (xy - xyNorth) * (xy - xyNorth));
+          }
+          else if(qPtLat < params.latRange[0])
+          {
+            analyticalDist = std::sqrt((z - zSouth) * (z - zSouth) +
+                                       (xy - xySouth) * (xy - xySouth));
+          }
+        }
+
         const bool closestPointFound = (cpIndices[i] == -1);
         if(closestPointFound)
         {
@@ -1032,7 +1098,7 @@ public:
             {
               errf = true;
               SLIC_INFO(
-                axom::fmt::format("***Warning: Closest distance for {} (index "
+                axom::fmt::format("***Error: Closest distance for {} (index "
                                   "{}, cp {}) is {}, off by {}.",
                                   qPt,
                                   i,
@@ -1061,6 +1127,7 @@ private:
 
 /**
  * Generates points on a sphere, partitioned into multiple domains.
+ * The sphere's polar axis is in the z-direction.
  * Point spacing in the longitudinal direction can be random (default) or uniform.
  * 3D points cover the given latitude range.
  */
@@ -1478,6 +1545,12 @@ int main(int argc, char** argv)
       MPI_Allreduce(&inVal, &maxVal, 1, MPI_DOUBLE, MPI_MAX, MPI_COMM_WORLD);
       MPI_Allreduce(&inVal, &sumVal, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
     };
+  auto getIntMinMax =
+    [](int inVal, int& minVal, int& maxVal, int& sumVal) {
+      MPI_Allreduce(&inVal, &minVal, 1, MPI_INT, MPI_MIN, MPI_COMM_WORLD);
+      MPI_Allreduce(&inVal, &maxVal, 1, MPI_INT, MPI_MAX, MPI_COMM_WORLD);
+      MPI_Allreduce(&inVal, &sumVal, 1, MPI_INT, MPI_SUM, MPI_COMM_WORLD);
+    };
 
   // Output some timing stats
   {
@@ -1487,19 +1560,37 @@ int main(int argc, char** argv)
     double minQuery, maxQuery, sumQuery;
     getDoubleMinMax(queryTimer.elapsedTimeInSec(), minQuery, maxQuery, sumQuery);
 
+    double minFilterDist, maxFilterDist, sumFilterDist;
+    getDoubleMinMax(query.effectiveDistanceThreshold(), minFilterDist, maxFilterDist, sumFilterDist);
+
+    int minSearchCount, maxSearchCount, sumSearchCount;
+    getIntMinMax(int(query.searchCount()), minSearchCount, maxSearchCount, sumSearchCount);
+
     SLIC_INFO(axom::fmt::format(
-      "Initialization with policy {} took {{avg:{}, min:{}, max:{}}} seconds",
+      "Initialization with policy {} took {{avg:{:.5f}, min:{:.5f}, max:{:.5f}}} seconds",
       axom::runtime_policy::s_policyToName.at(params.policy),
       sumInit / num_ranks,
       minInit,
       maxInit));
     SLIC_INFO(axom::fmt::format(
-      "Query with policy {} took {{avg:{}, min:{}, max:{}}} seconds",
+      "Query with policy {} took {{avg:{:.5f}, min:{:.5f}, max:{:.5f}}} seconds",
       axom::runtime_policy::s_policyToName.at(params.policy),
       sumQuery / num_ranks,
       minQuery,
       maxQuery));
+    SLIC_INFO(axom::fmt::format(
+      "Search counts {{avg:{}, min:{}, max:{}}}",
+      sumSearchCount / num_ranks,
+      minSearchCount,
+      maxSearchCount));
+    SLIC_INFO(axom::fmt::format(
+      "Effective distance threshold {{avg:{:.5f}, min:{:.5f}, max:{:.5f}}}",
+      sumFilterDist / num_ranks,
+      minFilterDist,
+      maxFilterDist));
   }
+  slic::flushStreams();
+  SLIC_INFO(axom::fmt::format("Updating closest points."));
   slic::flushStreams();
   queryMeshWrapper.update_closest_points(queryMeshNode);
 
@@ -1507,6 +1598,8 @@ int main(int argc, char** argv)
   int localErrCount = 0;
   if(params.checkResults)
   {
+    SLIC_INFO(axom::fmt::format("Checking results."));
+    slic::flushStreams();
     if(spatialDim == 2)
     {
       primal::Point<double, 2> center(params.circleCenter.data());
@@ -1544,6 +1637,7 @@ int main(int argc, char** argv)
 
   queryMeshWrapper.saveMesh(params.distanceFile);
 
+  axom::slic::flushStreams();
   if(errCount)
   {
     SLIC_INFO(axom::fmt::format(" Error exit: {} errors found.", errCount));

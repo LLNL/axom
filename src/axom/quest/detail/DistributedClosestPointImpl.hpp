@@ -254,7 +254,7 @@ public:
     , m_mpiComm(MPI_COMM_NULL)
     , m_rank(-1)
     , m_nranks(-1)
-    , m_sqDistanceThreshold(std::numeric_limits<double>::max())
+    , m_sqUserDistanceThreshold(std::numeric_limits<double>::max())
   { }
 
   virtual ~DistributedClosestPointImpl() { }
@@ -303,7 +303,7 @@ public:
   {
     SLIC_ERROR_IF(sqThreshold < 0.0,
                   "Squared distance-threshold must be non-negative.");
-    m_sqDistanceThreshold = sqThreshold;
+    m_sqUserDistanceThreshold = sqThreshold;
   }
 
   /*!
@@ -542,6 +542,23 @@ public:
   virtual void computeClosestPoints(conduit::Node& queryMesh,
                                     const std::string& topologyName) const = 0;
 
+  /*!
+    @brief Return the number of searches done on the last query
+    mesh's local partition.
+  */
+  axom::IndexType searchCount() const
+  {
+    return m_searchCount;
+  }
+  /*!
+    @brief Return the effective distance threshold of the last query
+    partition.
+  */
+  double effectiveDistanceThreshold() const
+  {
+    return m_effectiveDistanceThreshold;
+  }
+
 protected:
   int m_allocatorID;
   bool m_isVerbose;
@@ -550,7 +567,8 @@ protected:
   int m_rank;
   int m_nranks;
 
-  double m_sqDistanceThreshold;
+  //!@brief Distance threshold specified by user.
+  double m_sqUserDistanceThreshold;
 
   bool m_outputRank = true;
   bool m_outputIndex = true;
@@ -569,6 +587,14 @@ protected:
     /// MPI rank of closest element
     int rank {-1};
   };
+
+  //@{
+  //!@name Diagnostic data
+  //!@brief Number of searches conducted on the last query node.
+  mutable axom::IndexType m_searchCount = -1;
+  //!@brief Effective distance threshold of the last query partition.
+  mutable double m_effectiveDistanceThreshold = 0.0;
+  //@}
 };
 
 /*!
@@ -639,7 +665,7 @@ public:
     }
 
     // Copy points to internal memory
-    PointArray coords(ptCount, ptCount);
+    m_objectPtCoords = PointArray(ptCount, ptCount, m_allocatorID);
     axom::Array<axom::IndexType> domIds(ptCount, ptCount);
     std::size_t copiedCount = 0;
     conduit::Node tmpValues;
@@ -673,7 +699,7 @@ public:
       const int N = internal::extractSize(copySrc);
       const std::size_t nBytes = sizeof(double) * DIM * N;
 
-      axom::copy(coords.data() + copiedCount,
+      axom::copy(m_objectPtCoords.data() + copiedCount,
                  copySrc.fetch_existing("x").data_ptr(),
                  nBytes);
       tmpValues.reset();
@@ -682,16 +708,41 @@ public:
 
       copiedCount += N;
     }
+
+    // Compute bounding box.
+#if defined(AXOM_USE_RAJA)
+    // Coordinates may be on device but should be compatible with ExecSpace.
+    axom::ArrayView<PointType> coordsView = m_objectPtCoords.view();
+    PointType minPt, maxPt;
+    for(int d = 0; d < DIM; ++d)
+    {
+      RAJA::ReduceMin<ReducePolicy, double> minCoord(
+        std::numeric_limits<double>::max());
+      RAJA::ReduceMax<ReducePolicy, double> maxCoord(
+        -std::numeric_limits<double>::max());
+      RAJA::forall<LoopPolicy>(
+        RAJA::RangeSegment(0, ptCount),
+        AXOM_LAMBDA(RAJA::Index_type n) {
+          minCoord.min(coordsView[n][d]);
+          maxCoord.max(coordsView[n][d]);
+        });
+      minPt[d] = minCoord.get();
+      maxPt[d] = maxCoord.get();
+    }
+    m_objectBb = BoxType(minPt, maxPt);
+#else
+    m_objectBb =
+      axom::primal::BoundingBox<double, DIM> {m_objectPtCoords.data(),
+                                              m_objectPtCoords.size()};
+#endif
+    gatherBoundingBoxes(m_objectBb, m_objectPartitionBbs);
+
     // copy computed data to ExecSpace
-    m_objectPtCoords = PointArray(coords, m_allocatorID);
     m_objectPtDomainIds = axom::Array<axom::IndexType>(domIds, m_allocatorID);
   }
 
   bool generateBVHTree() override
   {
-    // Delegates to generateBVHTreeImpl<> which uses
-    // the execution space templated bvh tree
-
     SLIC_ASSERT_MSG(!m_bvh, "BVH tree already initialized");
 
     // In case user changed the allocator after setObjectMesh,
@@ -703,18 +754,20 @@ public:
     }
 
     m_bvh = std::make_unique<BVHTreeType>();
-    return generateBVHTreeImpl(m_bvh.get());
-  }
+    const int npts = m_objectPtCoords.size();
+    axom::Array<BoxType> boxesArray(npts, npts, m_allocatorID);
+    auto boxesView = boxesArray.view();
+    auto pointsView = m_objectPtCoords.view();
 
-  /// Get local copy of all ranks BVH root bounding boxes.
-  void gatherBVHRoots()
-  {
-    SLIC_ASSERT_MSG(
-      m_bvh,
-      "BVH tree must be initialized before calling 'gatherBVHRoots");
+    axom::for_all<ExecSpace>(
+      npts,
+      AXOM_LAMBDA(axom::IndexType i) { boxesView[i] = BoxType {pointsView[i]}; });
 
-    BoxType local_bb = m_bvh->getBounds();
-    gatherBoundingBoxes(local_bb, m_objectPartitionBbs);
+    // Build bounding volume hierarchy
+    m_bvh->setAllocatorID(m_allocatorID);
+    int result = m_bvh->initialize(boxesView, npts);
+
+    return (result == spin::BVH_BUILD_OK);
   }
 
   /// Allgather one bounding box from each rank.
@@ -724,7 +777,6 @@ public:
     aabb.getMin().to_array(&sendbuf[0]);
     aabb.getMax().to_array(&sendbuf[DIM]);
     axom::Array<double> recvbuf(m_nranks * sendbuf.size());
-    // Note: Using axom::Array<double,2> may reduce clutter a tad.
     int errf = MPI_Allgather(sendbuf.data(),
                              2 * DIM,
                              mpi_traits<double>::type,
@@ -743,6 +795,22 @@ public:
       PointType upper(&recvbuf[i * 2 * DIM + DIM]);
       all_aabbs.emplace_back(BoxType(lower, upper, false));
     }
+  }
+
+  /// Allgather a primitive value.
+  template <typename T>
+  void gatherPrimitiveValue(const T& val, axom::Array<T>& allVals) const
+  {
+    allVals.resize(m_nranks);
+    int errf = MPI_Allgather(&val,
+                             1,
+                             mpi_traits<T>::type,
+                             allVals.data(),
+                             1,
+                             mpi_traits<T>::type,
+                             m_mpiComm);
+    SLIC_ASSERT(errf == MPI_SUCCESS);
+    AXOM_UNUSED_VAR(errf);
   }
 
   /// Compute bounding box for local part of a mesh.
@@ -776,6 +844,19 @@ public:
    * The worst case could incur nranks^2 sends.  To avoid excessive
    * buffer usage, we occasionally check the sends for completion,
    * using check_send_requests().
+   *
+   * To exclude fruitless searches and communication, we check the
+   * distance between object partition and query partition, using
+   * their bounding boxes.  If a query partition is too far from an
+   * object partition, we don't check that specific pair.
+   *
+   * TODO: The bounding box for a partition could be excessively big
+   * if the domains on that partition are spread out far, leading to
+   * some fruitless communications and checks.  Consider having one
+   * bounding box per domain instead of one per partition.  This goes
+   * for query mesh too.  One way simple to implement this is to have
+   * a xferNode for each query domain and a BVH for each object
+   * domain.
    */
   void computeClosestPoints(conduit::Node& queryMesh,
                             const std::string& topologyName) const override
@@ -800,23 +881,58 @@ public:
     BoxArray allQueryBbs;
     gatherBoundingBoxes(myQueryBb, allQueryBbs);
 
+    /*
+      Note: The two m_nranks loops below can be moved to device for the cost of
+      copying the bounding box arrays to device.  Not sure if it's worthwhile,
+      because in general, we assume that m_nranks is small relative to the
+      number of points in the partitions.
+    */
+
+    // Compute the min of the max distance between myQueryBb and each rank's object bounding box.
+    double minMaxSqDist = std::numeric_limits<double>::max();
+    for(int i = 0; i < m_nranks; ++i)
+    {
+      auto maxSqDist = maxSqDistBetweenBoxes(myQueryBb, m_objectPartitionBbs[i]);
+      minMaxSqDist = std::min(minMaxSqDist, maxSqDist);
+    }
+
+    const double sqDistanceThreshold =
+      std::min(m_sqUserDistanceThreshold, minMaxSqDist);
+    xferNodes[m_rank]->fetch("sqDistanceThreshold") = sqDistanceThreshold;
+    m_effectiveDistanceThreshold = sqrt(sqDistanceThreshold);
+
+    axom::Array<double> allSqDistanceThreshold(m_nranks);
+    gatherPrimitiveValue(sqDistanceThreshold, allSqDistanceThreshold);
+
     {
       conduit::Node& xferNode = *xferNodes[m_rank];
       computeLocalClosestPoints(xferNode);
+      xferNode["searchCount"].set_int32(1);
+      m_searchCount = 1;
     }
 
+    /*
+      Count number of remote query partitions to receive,
+      i.e., how many partitions close enough to myObjectBb.
+    */
     const auto& myObjectBb = m_objectPartitionBbs[m_rank];
     int remainingRecvs = 0;
-    for(int r = 0; r < m_nranks; ++r)
+    if(myObjectBb.isValid())
     {
-      if(r != m_rank)
+      for(int r = 0; r < m_nranks; ++r)
       {
-        const auto& otherQueryBb = allQueryBbs[r];
-        double sqDistance =
-          axom::primal::squared_distance(otherQueryBb, myObjectBb);
-        if(sqDistance <= m_sqDistanceThreshold)
+        if(r != m_rank)
         {
-          ++remainingRecvs;
+          const auto& otherQueryBb = allQueryBbs[r];
+          if(otherQueryBb.isValid())
+          {
+            double sqDistance =
+              axom::primal::squared_distance(otherQueryBb, myObjectBb);
+            if(sqDistance <= allSqDistanceThreshold[r])
+            {
+              ++remainingRecvs;
+            }
+          }
         }
       }
     }
@@ -879,10 +995,14 @@ public:
       if(homeRank == m_rank)
       {
         node_copy_xfer_to_query(xferNode, queryMesh, topologyName);
+        m_searchCount = xferNode["searchCount"].value();
+        xferNodes.erase(m_rank);
       }
       else
       {
         computeLocalClosestPoints(xferNode);
+        auto tmpCount = xferNode["searchCount"].as_int32();
+        xferNode["searchCount"].set_int32(1 + tmpCount);
 
         isendRequests.emplace_back(conduit::relay::mpi::Request());
         auto& isendRequest = isendRequests.back();
@@ -921,6 +1041,8 @@ private:
     int homeRank = xferNode.fetch_existing("homeRank").value();
     BoxType bb;
     get_bounding_box_from_conduit_node(bb, xferNode.fetch_existing("aabb"));
+    auto sqDistanceThreshold =
+      xferNode.fetch_existing("sqDistanceThreshold").as_double();
     for(int i = 1; i < m_nranks; ++i)
     {
       int maybeNextRecip = (m_rank + i) % m_nranks;
@@ -930,7 +1052,7 @@ private:
       }
       double sqDistance =
         primal::squared_distance(bb, m_objectPartitionBbs[maybeNextRecip]);
-      if(sqDistance <= m_sqDistanceThreshold)
+      if(sqDistance <= sqDistanceThreshold)
       {
         return maybeNextRecip;
       }
@@ -940,29 +1062,6 @@ private:
 
   // Note: following should be private, but nvcc complains about lambdas in private scope
 public:
-  /// Templated implementation of generateBVHTree function
-  bool generateBVHTreeImpl(BVHTreeType* bvh)
-  {
-    SLIC_ASSERT(bvh != nullptr);
-
-    const int npts = m_objectPtCoords.size();
-    axom::Array<BoxType> boxesArray(npts, npts, m_allocatorID);
-    auto boxesView = boxesArray.view();
-    auto pointsView = m_objectPtCoords.view();
-
-    axom::for_all<ExecSpace>(
-      npts,
-      AXOM_LAMBDA(axom::IndexType i) { boxesView[i] = BoxType {pointsView[i]}; });
-
-    // Build bounding volume hierarchy
-    bvh->setAllocatorID(m_allocatorID);
-    int result = bvh->initialize(boxesView, npts);
-
-    gatherBVHRoots();
-
-    return (result == spin::BVH_BUILD_OK);
-  }
-
   void computeLocalClosestPoints(conduit::Node& xferNode) const
   {
     using axom::primal::squared_distance;
@@ -1063,7 +1162,7 @@ public:
         const int rank = m_rank;
 
         double* sqDistThresh = axom::allocate<double>(1, m_allocatorID);
-        *sqDistThresh = m_sqDistanceThreshold;
+        *sqDistThresh = xferNode.fetch("sqDistanceThreshold").as_double();
 
         auto ptCoordsView = m_objectPtCoords.view();
         auto ptDomainIdsView = m_objectPtDomainIds.view();
@@ -1170,12 +1269,64 @@ private:
 
   axom::Array<axom::IndexType> m_objectPtDomainIds;
 
+  //!@brief Bounding box for m_objectPtCoords.
+  BoxType m_objectBb;
+
   /*!  @brief Object partition bounding boxes, one per rank.
     All are in physical space, not index space.
   */
   BoxArray m_objectPartitionBbs;
 
   std::unique_ptr<BVHTreeType> m_bvh;
+
+  /*!
+    @brief Compute maximum squared-distance possible between points in 2 boxes,
+    or std::numeric_limits<double>::max() if either box is invalid.
+  */
+  AXOM_HOST_DEVICE double maxSqDistBetweenBoxes(const BoxType& a,
+                                                const BoxType& b) const
+  {
+    if(!a.isValid() || !b.isValid())
+    {
+      return std::numeric_limits<double>::max();
+    }
+
+    double maxSqDist = 0.0;
+    /*
+      The following logic is necessary should one box nest inside the
+      other when projected onto one or more axis directions.
+
+      We look at the distance between each corner of box a and the
+      opposite corner of b.  The max distance is the max among those.
+      Opposite means that if we choose the lower corner in a, we must
+      compare with the upper corner in b.  And vice versa.
+    */
+    int numCorners = 1 << DIM;
+    for(int i = 0; i < numCorners; ++i)
+    {
+      PointType aCoords;  // i-th corner of a.
+      PointType bCoords;  // Corner of b opposite from i-th corner of a.
+      for(int d = 0; d < DIM; ++d)
+      {
+        bool upperA_lowerB = i & (1 << d);
+        if(upperA_lowerB)
+        {
+          aCoords[d] = a.getMin()[d];
+          bCoords[d] = b.getMax()[d];
+        }
+        else  // upperB_lowerA
+        {
+          bCoords[d] = b.getMin()[d];
+          aCoords[d] = a.getMax()[d];
+        }
+      }
+      primal::Vector<double, DIM> separation {aCoords, bCoords};
+      double sqDist = separation.squared_norm();
+      maxSqDist = std::max(maxSqDist, sqDist);
+    }
+    return maxSqDist;
+  }
+
 };  // DistributedClosestPointExec
 
 }  // namespace internal

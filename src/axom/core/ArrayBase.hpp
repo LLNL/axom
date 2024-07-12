@@ -387,15 +387,26 @@ protected:
     updateStrides();
   }
 
-  /// \brief Set the shape and stride
-  AXOM_HOST_DEVICE void setShapeAndStride(const StackArray<IndexType, DIM>& shape,
-                                          const StackArray<IndexType, DIM>& stride)
+  /*!
+    \brief Set the shape and stride
+
+    \param [in] shape
+    \param [in] stride
+    \param [in] orderPref Preference for resolving non-unique strides.
+      \a ROW means to advance left index first.  \a COLUMN means to advance
+      right index first.  Indexing is correct regardless of the
+      preference, but the index ordering is dependent on the choice.
+  */
+  AXOM_HOST_DEVICE void setShapeAndStride(
+    const StackArray<IndexType, DIM>& shape,
+    const StackArray<IndexType, DIM>& stride,
+    axom::ArrayStrideOrder orderPref = axom::ArrayStrideOrder::ROW)
   {
 #ifdef AXOM_DEBUG
     validateShapeAndStride(shape, stride);
 #endif
     m_shape = shape;
-    m_mapping.initializeStrides(stride);
+    m_mapping.initializeStrides(stride, orderPref);
     m_minStride = m_mapping.fastestStrideLength();
   }
 
