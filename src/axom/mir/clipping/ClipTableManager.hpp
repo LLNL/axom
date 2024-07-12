@@ -6,8 +6,7 @@
 #ifndef AXOM_MIR_CLIPPING_CLIP_TABLE_MANAGER_HPP_
 #define AXOM_MIR_CLIPPING_CLIP_TABLE_MANAGER_HPP_
 
-#include "axom/core/Array.hpp"
-#include "axom/core/ArrayView.hpp"
+#include "axom/core.hpp"
 #include "axom/mir/clipping/ClipCases.h"
 
 namespace axom
@@ -24,10 +23,11 @@ namespace clipping
  */
 class TableView
 {
+public:
   using IndexData = int;
   using TableData = unsigned char;
   using IndexView = axom::ArrayView<IndexData>;
-  using TableDataView = axom::ArrayView<TableDataType>;
+  using TableDataView = axom::ArrayView<TableData>;
   
   /**
    * \brief An iterator for shapes within a table case.
@@ -110,7 +110,7 @@ class TableView
      *        view so the caller can use the shape data.
      */
     AXOM_HOST_DEVICE
-    inline ShapeDataView operator*() const
+    inline TableDataView operator*() const
     {
       TableData *ptr = m_shapeStart + m_offset;
       const auto len = shapeLength(ptr);
@@ -179,12 +179,13 @@ class TableView
   AXOM_HOST_DEVICE
   iterator begin(size_t caseId) const
   {
-    assert(caseId < m_shapes.size());
+    assert(static_cast<IndexType>(caseId) < m_shapes.size());
     iterator it;
     it.m_shapeStart = const_cast<TableData *>(m_table.data() + m_offsets[caseId]);
     it.m_offset = 0;
     it.m_currentShape = 0;
     it.m_numShapes = m_shapes[caseId];
+    return it;
   }
 
   /**
@@ -196,12 +197,13 @@ class TableView
   AXOM_HOST_DEVICE
   iterator end(size_t caseId) const
   {
-    assert(caseId < m_shapes.size());
+    assert(static_cast<IndexType>(caseId) < m_shapes.size());
     iterator it;
     it.m_shapeStart = const_cast<TableData *>(m_table.data() + m_offsets[caseId]);
     it.m_offset = 0; // not checked in iterator::operator==
     it.m_currentShape = m_shapes[caseId];
     it.m_numShapes = m_shapes[caseId];
+    return it;
   }
 
 private:
@@ -250,7 +252,7 @@ class Table
    *
    * \return A view of the table data.
    */
-  TableView view() const
+  TableView view()
   {
     return TableView(m_shapes.view(), m_offsets.view(), m_table.view());
   }
@@ -268,14 +270,7 @@ template <typename ExecSpace>
 class ClipTableManager
 {
 public:
-  /**
-   * \brief Constructor
-   */
-  ClipTableManager()
-  {
-    for(size_t shape = ST_MIN; shape < ST_MAX; shape++)
-      m_tables[shapeToIndex(shape)] = ClipTable<ExecSpace>();
-  }
+  static constexpr int NumberOfTables = ST_MAX - ST_MIN;
 
   /**
    * \brief Return a reference to the clipping table, which is loaded on demand.
@@ -289,17 +284,18 @@ public:
     const auto index = shapeToIndex(shape);
     assert(shape < ST_MAX);
     assert(index >= 0);
-    load(shape, 0);
+    loadShape(shape);
     return m_tables[index];
   }
 
   /**
    * \brief Load tables based on dimension.
+   * \param dim The dimension of shapes to load.
    */
   void load(int dim)
   {
     for(const auto shape : shapes(dim))
-      load(shape, 0);
+      loadShape(shape);
   }
 
   /**
@@ -326,7 +322,7 @@ private:
    *
    * \return An index into the m_tables array.
    */
-  size_t shapeToIndex(size_t shape) const
+  constexpr static size_t shapeToIndex(size_t shape)
   {
     return shape - ST_MIN;
   }
@@ -336,7 +332,7 @@ private:
    *
    * \param shape The shape whose table will be loaded.
    */
-  void load(size_t shape)
+  void loadShape(size_t shape)
   {
     const auto index = shapeToIndex(shape);
     if(m_tables[index].size() == 0)
@@ -344,55 +340,55 @@ private:
       if(shape == ST_TRI)
       {
         m_tables[index].load(axom::mir::clipping::visit::numClipCasesTri,
-                                 axom::mir::clipping::visit::numClipShapesTri,
-                                 axom::mir::clipping::visit::startClipShapesTri,
-                                 axom::mir::clipping::visit::clipShapesTri,
-                                 axom::mir::clipping::visit::clipShapesTriSize);
+                             axom::mir::clipping::visit::numClipShapesTri,
+                             axom::mir::clipping::visit::startClipShapesTri,
+                             axom::mir::clipping::visit::clipShapesTri,
+                             axom::mir::clipping::visit::clipShapesTriSize);
       }
       else if(shape == ST_QUA)
       {
         m_tables[index].load(axom::mir::clipping::visit::numClipCasesQua,
-                                 axom::mir::clipping::visit::numClipShapesQua,
-                                 axom::mir::clipping::visit::startClipShapesQua,
-                                 axom::mir::clipping::visit::clipShapesQua,
-                                 axom::mir::clipping::visit::clipShapesQuaSize);
+                             axom::mir::clipping::visit::numClipShapesQua,
+                             axom::mir::clipping::visit::startClipShapesQua,
+                             axom::mir::clipping::visit::clipShapesQua,
+                             axom::mir::clipping::visit::clipShapesQuaSize);
       }
       else if(shape == ST_TET)
       {
         m_tables[index].load(axom::mir::clipping::visit::numClipCasesTet,
-                                 axom::mir::clipping::visit::numClipShapesTet,
-                                 axom::mir::clipping::visit::startClipShapesTet,
-                                 axom::mir::clipping::visit::clipShapesTet,
-                                 axom::mir::clipping::visit::clipShapesTetSize);
+                             axom::mir::clipping::visit::numClipShapesTet,
+                             axom::mir::clipping::visit::startClipShapesTet,
+                             axom::mir::clipping::visit::clipShapesTet,
+                             axom::mir::clipping::visit::clipShapesTetSize);
       }
       else if(shape == ST_PYR)
       {
         m_tables[index].load(axom::mir::clipping::visit::numClipCasesPyr,
-                                 axom::mir::clipping::visit::numClipShapesPyr,
-                                 axom::mir::clipping::visit::startClipShapesPyr,
-                                 axom::mir::clipping::visit::clipShapesPyr,
-                                 axom::mir::clipping::visit::clipShapesTetSize);
+                             axom::mir::clipping::visit::numClipShapesPyr,
+                             axom::mir::clipping::visit::startClipShapesPyr,
+                             axom::mir::clipping::visit::clipShapesPyr,
+                             axom::mir::clipping::visit::clipShapesTetSize);
       }
       else if(shape == ST_WDG)
       {
         m_tables[index].load(axom::mir::clipping::visit::numClipCasesWdg,
-                                 axom::mir::clipping::visit::numClipShapesWdg,
-                                 axom::mir::clipping::visit::startClipShapesWdg,
-                                 axom::mir::clipping::visit::clipShapesWdg,
-                                 axom::mir::clipping::visit::clipShapesWdgSize);
+                             axom::mir::clipping::visit::numClipShapesWdg,
+                             axom::mir::clipping::visit::startClipShapesWdg,
+                             axom::mir::clipping::visit::clipShapesWdg,
+                             axom::mir::clipping::visit::clipShapesWdgSize);
       }
       else if(shape == ST_HEX)
       {
         m_tables[index].load(axom::mir::clipping::visit::numClipCasesHex,
-                                 axom::mir::clipping::visit::numClipShapesHex,
-                                 axom::mir::clipping::visit::startClipShapesHex,
-                                 axom::mir::clipping::visit::clipShapesHex,
-                                 axom::mir::clipping::visit::clipShapesHexSize);
+                             axom::mir::clipping::visit::numClipShapesHex,
+                             axom::mir::clipping::visit::startClipShapesHex,
+                             axom::mir::clipping::visit::clipShapesHex,
+                             axom::mir::clipping::visit::clipShapesHexSize);
       }
     }
   }
 
-  Table<ExecSpace> m_tables[ST_MAX - ST_MIN];
+  axom::StackArray<Table<ExecSpace>, NumberOfTables> m_tables{};
 };
 
 } // end namespace clipping
