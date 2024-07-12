@@ -24,6 +24,44 @@ namespace utilities
 namespace blueprint
 {
 
+//------------------------------------------------------------------------------
+/**
+ * \brief This class provides a couple of type traits that let us map C++ types
+ *        to types / values useful in Conduit.
+ */
+template <typename T>
+struct cpp2conduit { static constexpr conduit::index_t type = conduit::DataType::EMPTY_ID; };
+
+template <>
+struct cpp2conduit<conduit::int8> { using type = conduit::int8; static constexpr conduit::index_t id = conduit::DataType::INT8_ID; };
+
+template <>
+struct cpp2conduit<conduit::int16> { using type = conduit::int16; static constexpr conduit::index_t id = conduit::DataType::INT16_ID; };
+
+template <>
+struct cpp2conduit<conduit::int32> { using type = conduit::int32; static constexpr conduit::index_t id = conduit::DataType::INT32_ID; };
+
+template <>
+struct cpp2conduit<conduit::int64> { using type = conduit::int64; static constexpr conduit::index_t id = conduit::DataType::INT64_ID; };
+
+template <>
+struct cpp2conduit<conduit::uint8> { using type = conduit::uint8; static constexpr conduit::index_t id = conduit::DataType::UINT8_ID; };
+
+template <>
+struct cpp2conduit<conduit::uint16> { using type = conduit::uint16; static constexpr conduit::index_t id = conduit::DataType::UINT16_ID; };
+
+template <>
+struct cpp2conduit<conduit::uint32> { using type = conduit::uint32; static constexpr conduit::index_t id = conduit::DataType::UINT32_ID; };
+
+template <>
+struct cpp2conduit<conduit::uint64> { using type = conduit::uint64; static constexpr conduit::index_t id = conduit::DataType::UINT64_ID; };
+
+template <>
+struct cpp2conduit<conduit::float32> { using type = conduit::float32; static constexpr conduit::index_t id = conduit::DataType::FLOAT32_ID; };
+
+template <>
+struct cpp2conduit<conduit::float64> { using type = conduit::float64; static constexpr conduit::index_t id = conduit::DataType::FLOAT64_ID; };
+
 // TODO: Add in a routine to migrate a Conduit node to a new memory space.
 // copy(const conduit::Node &src, conduit::Node &dest);
 
