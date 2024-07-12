@@ -46,6 +46,134 @@ struct accumulation_traits<long> { using type = double; };
 template <>
 struct accumulation_traits<unsigned long> { using type = double; };
 
+//-------------------------------------------------------------------------
+template <typename T>
+AXOM_HOST_DEVICE
+int32 bsearch(T value, const axom::ArrayView<T> &view)
+{
+  int32 index = -1;
+  int32 left = 0;
+  int32 right = view.size() - 1;
+  while(left <= right)
+  {
+    int32 m = (left + right) / 2;
+    if(view[m] < value)
+      left = m + 1;
+    else if(view[m] > value)
+      right = m - 1;
+    else
+    {
+      index = m;
+      break;
+    }
+  }
+
+  return index;
+}
+
+//------------------------------------------------------------------------------
+/// Based on a Jenkins hash, modified to include length and hash forwards and
+/// backwards to make int64 rather than int32.
+AXOM_HOST_DEVICE
+uint64 hash_bytes(const uint8 *data, uint32 length)
+{
+  uint32 hash = 0;
+
+  // Build the length into the hash.
+  const auto ldata = reinterpret_cast<const uint8 *>(&length);
+  for(int e = 0; e < 4; e++)
+  {
+    hash += ldata[e];
+    hash += hash << 10;
+    hash ^= hash >> 6;
+  }
+
+  uint32 hashr = hash;
+  for(uint32 i = 0; i < length; i++)
+  {
+    hash += data[i];
+    hash += hash << 10;
+    hash ^= hash >> 6;
+
+    hashr += data[length - 1 - i];
+    hashr += hashr << 10;
+    hashr ^= hashr >> 6;
+  }
+  hash += hash << 3;
+  hash ^= hash >> 11;
+  hash += hash << 15;
+
+  hashr += hashr << 3;
+  hashr ^= hashr >> 11;
+  hashr += hashr << 15;
+
+  return (static_cast<uint64>(hash) << 32) | hashr;
+}
+
+//------------------------------------------------------------------------------
+template <typename ValueType, typename IndexType>
+AXOM_HOST_DEVICE
+uint32
+sort_values(ValueType *v, IndexType n)
+{
+  for(IndexType i = 0; i < n-1; i++)
+  {
+    const IndexType m = n - i - 1;
+    for(IndexType j = 0; j < m; j++)
+    {
+      if(v[j] > v[j+1])
+      {
+        axom::utilities::swap(v[j], v[j+1]);
+      }
+    }
+  }
+}
+
+//------------------------------------------------------------------------------
+template <typename ValueType>
+uint64
+AXOM_HOST_DEVICE
+make_name_1(ValueType id)
+{
+  return hash_bytes(reinterpret_cast<uint8*>(&id), sizeof(ValueType));
+};
+
+//------------------------------------------------------------------------------
+template <typename ValueType>
+AXOM_HOST_DEVICE
+uint64
+make_name_2(ValueType id0, ValueType id1)
+{
+  ValueType data[2] = {id0, id1};
+  if(id1 < id0)
+  {
+    data[0] = id1;
+    data[1] = id0;
+  }
+  return hash_bytes(reinterpret_cast<uint8*>(data), 2 * sizeof(ValueType));
+};
+
+//-------------------------------------------------------------------------
+template <typename ViewType>
+uint64
+AXOM_HOST_DEVICE
+make_name_n(const ViewType &view, int32 start, int32 n)
+{
+  using value_type = typename ViewType::value_type;
+
+  if(n == 2)
+    return make_name_2(view[start], view[start + 1]);
+
+  value_type v[14]={0,0,0,0,0,0,0,0,0,0,0,0,0,0}; // pick largest number of blends.
+  for(int32 i = 0; i < n; i++)
+  {
+    v[i] = view[start + i];
+  }
+  sort_values(v, n);
+
+  return hash_bytes(reinterpret_cast<uint8*>(v), n * sizeof(value_type));
+}
+
 //------------------------------------------------------------------------------
 /**
  * \brief This function makes a unique array of values from an input list of keys.

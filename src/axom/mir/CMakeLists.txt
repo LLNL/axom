@@ -27,9 +27,15 @@ set(mir_headers
     MIRUtilities.hpp
     CellGenerator.hpp
 
-    MIRAlgorithm.hpp
+    blueprint_utilities.hpp
+    ClipField.hpp
+    CoordsetBlender.hpp
     EquiZAlgorithm.hpp
+    FieldBlender.hpp
+    FieldSlicer.hpp
+    MIRAlgorithm.hpp
     RecenterField.hpp
+    utilities.hpp
 
     views/dispatch_coordset.hpp
     views/dispatch_material.hpp

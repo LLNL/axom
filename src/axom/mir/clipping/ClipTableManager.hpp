@@ -18,17 +18,149 @@ namespace clipping
 {
 
 /**
- * \brief This struct contains data for a clipping table.
- *
- * \tparam ClipIndexContainerType The container for int clipping data.
- * \tparam ClipDataContainerType The container for uint8 clipping data.
+ * \accelerated
+ * \brief This class contains a view of table data and it provides an
+ *        iterator for traversing shapes in a case.
  */
-template <typename ClipIndexContainerType, typename ClipDataContainerType>
-struct ClipTableBase
+class TableView
 {
-  using ClipDataType = typename ClipDataContainerType::value_type;
+  using IndexData = int;
+  using TableData = unsigned char;
+  using IndexView = axom::ArrayView<IndexData>;
+  using TableDataView = axom::ArrayView<TableDataType>;
+  
+  /**
+   * \brief An iterator for shapes within a table case.
+   */
+  class iterator
+  {
+  public:
+    /**
+     * \brief Return the index of the iterator's current shape.
+     * \return The index of the iterator's current shape.
+     */
+    AXOM_HOST_DEVICE
+    inline int index() const { return m_currentShape; }
 
-  // Q: Do I need to explicitly provide a constructor to get it marked as AXOM_HOST_DEVICE?
+    /**
+     * \brief Return the number of shapes in the iterator's case.
+     * \return The number of shapes in the iterator's case.
+     */
+    AXOM_HOST_DEVICE
+    inline int size() const { return m_numShapes; }
+
+    /**
+     * \brief Increment the iterator, moving it to the next shape.
+     */
+    AXOM_HOST_DEVICE
+    inline void operator++()
+    {
+      if(m_currentShape < m_numShapes)
+      {
+        const TableData *ptr = m_shapeStart + m_offset;
+        m_offset += shapeLength(ptr);
+        m_currentShape++;
+      }
+    }
+
+    /**
+     * \brief Increment the iterator, moving it to the next shape.
+     */
+    AXOM_HOST_DEVICE
+    inline void operator++(int)
+    {
+      if(m_currentShape < m_numShapes)
+      {
+        const TableData *ptr = m_shapeStart + m_offset;
+        m_offset += shapeLength(ptr);
+        m_currentShape++;
+      }
+    }
+
+    /**
+     * \brief Compare 2 iterators for equality.
+     * \param it The iterator to be compared to this.
+     * \return true if the iterators are equal; false otherwise.
+     */
+    AXOM_HOST_DEVICE
+    inline bool operator == (const iterator &it) const
+    {
+      // Do not worry about m_offset
+      return m_shapeStart == it.m_shapeStart &&
+             m_currentShape == it.m_currentShape &&
+             m_numShapes == it.m_numShapes;
+    }
+
+    /**
+     * \brief Compare 2 iterators to see if not equal.
+     * \param it The iterator to be compared to this.
+     * \return true if the iterators are different; false otherwise.
+     */
+    AXOM_HOST_DEVICE
+    inline bool operator != (const iterator &it) const
+    {
+      // Do not worry about m_offset
+      return m_shapeStart != it.m_shapeStart ||
+             m_currentShape != it.m_currentShape ||
+             m_numShapes != it.m_numShapes;
+    }
+
+    /**
+     * \brief Dereference operator that wraps the current shape data in an array
+     *        view so the caller can use the shape data.
+     */
+    AXOM_HOST_DEVICE
+    inline ShapeDataView operator*() const
+    {
+      TableData *ptr = m_shapeStart + m_offset;
+      const auto len = shapeLength(ptr);
+      return TableDataView(ptr, len);
+    }
+  private:
+    friend class TableView;
+
+    /**
+     * \brief Given the input shape, return how many values to advance to get to the next shape.
+     *
+     * \param shape The shape type.
+     *
+     * \return The number of values to advance.
+     */
+    AXOM_HOST_DEVICE
+    size_t shapeLength(const TableData *caseData) const
+    {
+      size_t retval = 0;
+      const auto shape = caseData[0];
+      switch(shape)
+      {
+      case ST_PNT: retval = 4 + caseData[3]; break;
+      case ST_TRI: retval = 2 + 3; break;
+      case ST_QUA: retval = 2 + 4; break;
+      case ST_TET: retval = 2 + 4; break;
+      case ST_PYR: retval = 2 + 5; break;
+      case ST_WDG: retval = 2 + 6; break;
+      case ST_HEX: retval = 2 + 8; break;
+      }
+      return retval;
+    }
+
+    TableData *m_shapeStart{nullptr};
+    int m_offset{0};
+    int m_currentShape{0};
+    int m_numShapes{0};
+  };
+
+  /**
+   * \brief Constructor
+   *
+   * \param shapes  The number of shapes in each table case.
+   * \param offsets The offsets to each shape case in the \a table.
+   * \param table   The table data that contains all cases.
+   */
+  AXOM_HOST_DEVICE
+  TableView(const IndexView &shapes, const IndexView &offsets, const TableDataView &table) : m_shapes(shapes), m_offsets(offsets), m_table(table)
+  {
+  }
 
   /**
    * \brief Return the number of cases for the clipping table.
@@ -39,90 +171,58 @@ struct ClipTableBase
   size_t size() const { return m_shapes.size(); }
 
   /**
-   * \brief Return the number of shapes for a given clipping case.
+   * \brief Return the iterator for the beginning of a case.
    *
-   * \param caseId The index of the clipping case.
-   *
-   * \return The number of shapes in the clipping case.
+   * \param caseId The case whose begin iterator we want.
+   * \return The iterator at the begin of the case.
    */
   AXOM_HOST_DEVICE
-  size_t shapesForCase(size_t caseId) const
+  iterator begin(size_t caseId) const
   {
     assert(caseId < m_shapes.size());
-    return m_shapes[caseId];
+    iterator it;
+    it.m_shapeStart = const_cast<TableData *>(m_table.data() + m_offsets[caseId]);
+    it.m_offset = 0;
+    it.m_currentShape = 0;
+    it.m_numShapes = m_shapes[caseId];
   }
 
   /**
-   * \brief Return data for the requested shape in the clipping case.
+   * \brief Return the iterator for the end of a case.
    *
-   * \param index The index of the clipping case.
-   *
-   * \return A container that holds the shape data for the case, probably a view.
+   * \param caseId The case whose end iterator we want.
+   * \return The iterator at the end of the case.
    */
   AXOM_HOST_DEVICE
-  ClipDataContainerType getShape(size_t caseId, size_t shapeId) const
+  iterator end(size_t caseId) const
   {
     assert(caseId < m_shapes.size());
-    assert(shapeId < shapesForCase(caseId));
-
-    const auto *shapeStart = m_table.data() + m_offsets[caseId];
-    size_t shapeLen = 0;
-    for(size_t i = 0; i < shapeId; i++)
-    {
-      shapeLen = advance(*shapeStart);
-      shapeStart += shapeLen;
-    }
-    shapeLen = advance(*shapeStart);
-    return ClipDataContainerType(shapeStart, shapeLen);
+    iterator it;
+    it.m_shapeStart = const_cast<TableData *>(m_table.data() + m_offsets[caseId]);
+    it.m_offset = 0; // not checked in iterator::operator==
+    it.m_currentShape = m_shapes[caseId];
+    it.m_numShapes = m_shapes[caseId];
   }
 
-  /**
-   * \brief Given the input shape, return how many values to advance to get to the next shape.
-   *
-   * \param shape The shape type.
-   *
-   * \return The number of values to advance.
-   */
-  AXOM_HOST_DEVICE
-  size_t advance(ClipDataType shape) const
-  {
-    size_t retval = 0;
-    if(shape == ST_TRI)
-      retval = 2 + 3;
-    else if(shape == ST_QUA)
-      retval = 2 + 4;
-    else if(shape == ST_TET)
-      retval = 2 + 4;
-    else if(shape == ST_PYR)
-      retval = 2 + 5;
-    else if(shape == ST_WDG)
-      retval = 2 + 6;
-    else if(shape == ST_HEX)
-      retval = 2 + 8;
-    return retval;
-  }
-  
-  ClipIndexContainerType m_shapes;
-  ClipIndexContainerType m_offsets;
-  ClipDataContainerType  m_table;
+private:
+  IndexView m_shapes;    // The number of shapes in each case.
+  IndexView m_offsets;   // The offset to the case in the table.
+  TableDataView m_table; // The table data that contains the shapes.
 };
 
 /**
- * \brief This class contains data arrays for the clipping table and can produce a view for the data.
+ * \brief This class manages data table arrays and can produce a view for the data.
  */
 template <typename ExecSpace>
-struct ClipTable : public ClipTableBase<axom::Array<int>, axom::Array<unsigned char>>
+class Table
 {
-  using IntContainerType = axom::Array<int>;
-  using Uint8ContainerType = axom::Array<unsigned char>;
-  using IntViewType = axom::ArrayView<const int>;
-  using Uint8ViewType = axom::ArrayView<const unsigned char>;
-
-  using SuperClass = ClipTableBase<IntContainerType, Uint8ContainerType>;
-  using View = ClipTableBase<IntViewType, Uint8ViewType>;
+  using IndexData = int;
+  using TableData = unsigned char;
+  using IndexDataArray = axom::Array<IndexData>;
+  using TableDataArray = axom::Array<TableData>;
 
   /**
-   * \brief Load clipping data into the arrays, moving data as needed.
+   * \brief Load table data into the arrays, moving data as needed.
    *
    * \param n The number of cases in the clip table.
    * \param shapes The number of shapes produced by clipping cases.
@@ -130,19 +230,19 @@ struct ClipTable : public ClipTableBase<axom::Array<int>, axom::Array<unsigned c
    * \param table The clipping table data.
    * \param tableLen The size of the clipping table data.
    */
-  void load(size_t n, const int *shapes, const int *offsets, const unsigned char *table, size_t tableLen)
+  void load(size_t n, const IndexData *shapes, const IndexData *offsets, const TableData *table, size_t tableLen)
   {
     const int allocatorID = execution_space<ExecSpace>::allocatorID();
 
     // Allocate space.
-    SuperClass::m_shapes = IntContainerType(n, n, allocatorID);
-    SuperClass::m_offsets = IntContainerType(n, n, allocatorID);
-    SuperClass::m_table = Uint8ContainerType(tableLen, tableLen, allocatorID);
+    m_shapes = IndexDataArray(n, n, allocatorID);
+    m_offsets = IndexDataArray(n, n, allocatorID);
+    m_table = TableDataArray(tableLen, tableLen, allocatorID);
 
     // Copy data to the arrays.
-    axom::copy(SuperClass::m_shapes.data(), shapes, n * sizeof(int));
-    axom::copy(SuperClass::m_offsets.data(), offsets, n * sizeof(int));
-    axom::copy(SuperClass::m_table.data(), table, tableLen * sizeof(unsigned char));
+    axom::copy(m_shapes.data(), shapes, n * sizeof(int));
+    axom::copy(m_offsets.data(), offsets, n * sizeof(int));
+    axom::copy(m_table.data(), table, tableLen * sizeof(unsigned char));
   }
 
   /**
@@ -150,15 +250,15 @@ struct ClipTable : public ClipTableBase<axom::Array<int>, axom::Array<unsigned c
    *
    * \return A view of the table data.
    */
-  View view() const
+  TableView view() const
   {
-    View v;
-    v.m_shapes = m_shapes.view(); //SuperClass::m_shapes.view();
-    v.m_offsets = m_offsets.view(); //SuperClass::m_offsets.view();
-    v.m_table = m_table.view(); //SuperClass::m_table.view(); 
-    return v;
+    return TableView(m_shapes.view(), m_offsets.view(), m_table.view());
   }
 
+private:
+  IndexDataArray m_shapes;
+  IndexDataArray m_offsets;
+  TableDataArray m_table;
 };
 
 /**
@@ -168,15 +268,13 @@ template <typename ExecSpace>
 class ClipTableManager
 {
 public:
-  using Table = ClipTable<ExecSpace>;
-
   /**
    * \brief Constructor
    */
   ClipTableManager()
   {
     for(size_t shape = ST_MIN; shape < ST_MAX; shape++)
-      m_clipTables[shapeToIndex(shape)] = ClipTable<ExecSpace>();
+      m_tables[shapeToIndex(shape)] = ClipTable<ExecSpace>();
   }
 
   /**
@@ -186,13 +284,13 @@ public:
    *
    * \return A reference to the clipping table. 
    */
-  const Table &operator[](size_t shape)
+  const Table<ExecSpace> &operator[](size_t shape)
   {
     const auto index = shapeToIndex(shape);
     assert(shape < ST_MAX);
     assert(index >= 0);
     load(shape, 0);
-    return m_clipTables[index];
+    return m_tables[index];
   }
 
   /**
@@ -226,7 +324,7 @@ private:
    *
    * \param shape The shape type ST_XXX.
    *
-   * \return An index into the m_clipTables array.
+   * \return An index into the m_tables array.
    */
   size_t shapeToIndex(size_t shape) const
   {
@@ -238,14 +336,14 @@ private:
    *
    * \param shape The shape whose table will be loaded.
    */
-  void load(size_t shape, int)
+  void load(size_t shape)
   {
     const auto index = shapeToIndex(shape);
-    if(m_clipTables[index].size() == 0)
+    if(m_tables[index].size() == 0)
     {
       if(shape == ST_TRI)
       {
-        m_clipTables[index].load(axom::mir::clipping::visit::numClipCasesTri,
+        m_tables[index].load(axom::mir::clipping::visit::numClipCasesTri,
                                  axom::mir::clipping::visit::numClipShapesTri,
                                  axom::mir::clipping::visit::startClipShapesTri,
                                  axom::mir::clipping::visit::clipShapesTri,
@@ -253,7 +351,7 @@ private:
       }
       else if(shape == ST_QUA)
       {
-        m_clipTables[index].load(axom::mir::clipping::visit::numClipCasesQua,
+        m_tables[index].load(axom::mir::clipping::visit::numClipCasesQua,
                                  axom::mir::clipping::visit::numClipShapesQua,
                                  axom::mir::clipping::visit::startClipShapesQua,
                                  axom::mir::clipping::visit::clipShapesQua,
@@ -261,7 +359,7 @@ private:
       }
       else if(shape == ST_TET)
       {
-        m_clipTables[index].load(axom::mir::clipping::visit::numClipCasesTet,
+        m_tables[index].load(axom::mir::clipping::visit::numClipCasesTet,
                                  axom::mir::clipping::visit::numClipShapesTet,
                                  axom::mir::clipping::visit::startClipShapesTet,
                                  axom::mir::clipping::visit::clipShapesTet,
@@ -269,7 +367,7 @@ private:
       }
       else if(shape == ST_PYR)
       {
-        m_clipTables[index].load(axom::mir::clipping::visit::numClipCasesPyr,
+        m_tables[index].load(axom::mir::clipping::visit::numClipCasesPyr,
                                  axom::mir::clipping::visit::numClipShapesPyr,
                                  axom::mir::clipping::visit::startClipShapesPyr,
                                  axom::mir::clipping::visit::clipShapesPyr,
@@ -277,7 +375,7 @@ private:
       }
       else if(shape == ST_WDG)
       {
-        m_clipTables[index].load(axom::mir::clipping::visit::numClipCasesWdg,
+        m_tables[index].load(axom::mir::clipping::visit::numClipCasesWdg,
                                  axom::mir::clipping::visit::numClipShapesWdg,
                                  axom::mir::clipping::visit::startClipShapesWdg,
                                  axom::mir::clipping::visit::clipShapesWdg,
@@ -285,7 +383,7 @@ private:
       }
       else if(shape == ST_HEX)
       {
-        m_clipTables[index].load(axom::mir::clipping::visit::numClipCasesHex,
+        m_tables[index].load(axom::mir::clipping::visit::numClipCasesHex,
                                  axom::mir::clipping::visit::numClipShapesHex,
                                  axom::mir::clipping::visit::startClipShapesHex,
                                  axom::mir::clipping::visit::clipShapesHex,
@@ -294,7 +392,7 @@ private:
     }
   }
 
-  ClipTable<ExecSpace> m_clipTables[ST_MAX - ST_MIN];
+  Table<ExecSpace> m_tables[ST_MAX - ST_MIN];
 };
 
 } // end namespace clipping

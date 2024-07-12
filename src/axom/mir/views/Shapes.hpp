@@ -404,25 +404,25 @@ private:
 };
 
 // Make some concrete shape classes based on the shape traits.
-template <typename IndexT>
+template <typename IndexT = axom::IndexType>
 using LineShape = Shape<LineTraits<IndexT>>;
 
-template <typename IndexT>
+template <typename IndexT = axom::IndexType>
 using TriShape = Shape<TriTraits<IndexT>>;
 
-template <typename IndexT>
+template <typename IndexT = axom::IndexType>
 using QuadShape = Shape<QuadTraits<IndexT>>;
 
-template <typename IndexT>
+template <typename IndexT = axom::IndexType>
 using TetShape = Shape<TetTraits<IndexT>>;
 
-template <typename IndexT>
+template <typename IndexT = axom::IndexType>
 using PyramidShape = Shape<PyramidTraits<IndexT>>;
 
-template <typename IndexT>
+template <typename IndexT = axom::IndexType>
 using WedgeShape = Shape<WedgeTraits<IndexT>>;
 
-template <typename IndexT>
+template <typename IndexT = axom::IndexType>
 using HexShape = Shape<HexTraits<IndexT>>;
 
 } // end namespace views
