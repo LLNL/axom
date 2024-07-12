@@ -26,6 +26,27 @@ namespace mir
 namespace utilities
 {
 
+//------------------------------------------------------------------------------
+/**
+ * \brief This class and its specializations provide a type trait that lets us
+ *        determine the type that should be used to accumulate values when we
+ *        do floating point math.
+ *
+ * \note this belongs in algorithm utilities, maybe core.
+ */
+template <typename T>
+struct accumulation_traits { using type = float; };
+
+template <>
+struct accumulation_traits<double> { using type = double; };
+
+template <>
+struct accumulation_traits<long> { using type = double; };
+
+template <>
+struct accumulation_traits<unsigned long> { using type = double; };
+
+//------------------------------------------------------------------------------
 /**
  * \brief This function makes a unique array of values from an input list of keys.
  *
