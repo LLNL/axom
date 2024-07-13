@@ -213,7 +213,7 @@ template <typename FlagType, typename BitType>
 AXOM_HOST_DEVICE
 constexpr bool bitIsSet(FlagType flags, BitType bit)
 {
-  static_assert(bit >= 0 && (bit < (sizeof(BitType) << 3)), "bit must be in range");
+  assert(bit >= 0 && (static_cast<size_t>(bit) < (sizeof(BitType) << 3)));
   return (flags & (1 << bit)) > 0;
 }
 
@@ -232,7 +232,7 @@ template <typename FlagType, typename BitType>
 AXOM_HOST_DEVICE
 constexpr void setBit(FlagType &flags, BitType bit, bool value = true)
 {
-  static_assert(bit >= 0 && (bit < (sizeof(BitType) << 3)), "bit must be in range");
+  assert(bit >= 0 && (static_cast<size_t>(bit) < (sizeof(BitType) << 3)));
   constexpr auto mask = 1 << bit;
   flags = value ? (flags | mask) : (flags & ~mask);
 }

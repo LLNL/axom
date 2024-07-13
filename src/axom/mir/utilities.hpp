@@ -6,14 +6,17 @@
 #ifndef AXOM_MIR_UTILITIES_HPP_
 #define AXOM_MIR_UTILITIES_HPP_
 
-#include "axom/core/Array.hpp"
-#include "axom/core/ArrayView.hpp"
-#include "axom/core/memory_management.hpp"
+#include "axom/core.hpp"
+//#include "axom/core/Array.hpp"
+//#include "axom/core/ArrayView.hpp"
+//#include "axom/core/memory_management.hpp"
 
 #include <conduit/conduit.hpp>
 #include <conduit/conduit_blueprint.hpp>
 
 #include <RAJA/RAJA.hpp>
+
+#include <cstdint>
 
 /// This header is for device utility functions for MIR.
 
@@ -46,17 +49,26 @@ struct accumulation_traits<long> { using type = double; };
 template <>
 struct accumulation_traits<unsigned long> { using type = double; };
 
-//-------------------------------------------------------------------------
+//------------------------------------------------------------------------------
+/**
+ * \brief Use binary search to find the index of the \a value in the supplied
+ *        sorted view.
+ *
+ * \param[in] value The search value.
+ * \param[in] view The view that contains the sorted search data values.
+ *
+ * \return The index where value was located in view or -1 if not found.
+ */
 template <typename T>
 AXOM_HOST_DEVICE
-int32 bsearch(T value, const axom::ArrayView<T> &view)
+std::int32_t bsearch(T value, const axom::ArrayView<T> &view)
 {
-  int32 index = -1;
-  int32 left = 0;
-  int32 right = view.size() - 1;
+  std::int32_t index = -1;
+  std::int32_t left = 0;
+  std::int32_t right = view.size() - 1;
   while(left <= right)
   {
-    int32 m = (left + right) / 2;
+    std::int32_t m = (left + right) / 2;
     if(view[m] < value)
       left = m + 1;
     else if(view[m] > value)
@@ -72,15 +84,27 @@ int32 bsearch(T value, const axom::ArrayView<T> &view)
 }
 
 //------------------------------------------------------------------------------
-/// Based on a Jenkins hash, modified to include length and hash forwards and
-/// backwards to make int64 rather than int32.
+/**
+ * \brief Hash a stream of bytes into a uint64_t hash value.
+ *
+ * \param[in] data The bytes to be hashed.
+ * \param[in] length The number of bytes to be hashed.
+ *
+ * \return A uint64_t hash for the byte stream.
+ *
+ * \note The byte stream is hashed using a Jenkins-hash algorithm forwards and
+ *       backwards and the two results are merged into a uint64_t. The length is
+ *       also part of the hash to guard against a lot of repeated values in the
+ *       byte stream hashing to the same thing.
+ * \
+ */
 AXOM_HOST_DEVICE
-uint64 hash_bytes(const uint8 *data, uint32 length)
+std::uint64_t hash_bytes(const std::uint8_t *data, std::uint32_t length)
 {
-  uint32 hash = 0;
+  std::uint32_t hash = 0;
 
   // Build the length into the hash.
-  const auto ldata = reinterpret_cast<const uint8 *>(&length);
+  const auto ldata = reinterpret_cast<const std::uint8_t *>(&length);
   for(int e = 0; e < 4; e++)
   {
     hash += ldata[e];
@@ -88,8 +112,8 @@ uint64 hash_bytes(const uint8 *data, uint32 length)
     hash ^= hash >> 6;
   }
 
-  uint32 hashr = hash;
-  for(uint32 i = 0; i < length; i++)
+  std::uint32_t hashr = hash;
+  for(std::uint32_t i = 0; i < length; i++)
   {
     hash += data[i];
     hash += hash << 10;
@@ -107,16 +131,20 @@ uint64 hash_bytes(const uint8 *data, uint32 length)
   hashr ^= hashr >> 11;
   hashr += hashr << 15;
 
-  return (static_cast<uint64>(hash) << 32) | hashr;
+  return (static_cast<std::uint64_t>(hash) << 32) | hashr;
 }
 
 //------------------------------------------------------------------------------
+/**
+ * \brief A very basic sort for small arrays.
+ * \param[inout] v The values to be sorted in place.
+ * \param[in] n The number of values to be sorted.
+ */
 template <typename ValueType, typename IndexType>
 AXOM_HOST_DEVICE
-uint32
-sort_values(ValueType *v, IndexType n)
+void sort_values(ValueType *v, IndexType n)
 {
-  for(IndexType i = 0; i < n-1; i++)
+  for(IndexType i = 0; i < n - 1; i++)
   {
     const IndexType m = n - i - 1;
     for(IndexType j = 0; j < m; j++)
@@ -130,19 +158,30 @@ sort_values(ValueType *v, IndexType n)
 }
 
 //------------------------------------------------------------------------------
+/**
+ * \brief Make a hashed "name" for one id.
+ *
+ * \param[in] id The id we're hashing.
+ * \return A hashed name for the id.
+ */
 template <typename ValueType>
-uint64
 AXOM_HOST_DEVICE
-make_name_1(ValueType id)
+std::uint64_t make_name_1(ValueType id)
 {
-  return hash_bytes(reinterpret_cast<uint8*>(&id), sizeof(ValueType));
+  return hash_bytes(reinterpret_cast<std::uint8_t *>(&id), sizeof(ValueType));
 };
 
 //------------------------------------------------------------------------------
+/**
+ * \brief Make a hashed "name" for two ids.
+ *
+ * \param[in] id0 The first id we're hashing.
+ * \param[in] id1 The second id we're hashing.
+ * \return A hashed name for the ids.
+ */
 template <typename ValueType>
 AXOM_HOST_DEVICE
-uint64
-make_name_2(ValueType id0, ValueType id1)
+std::uint64_t make_name_2(ValueType id0, ValueType id1)
 {
   ValueType data[2] = {id0, id1};
   if(id1 < id0)
@@ -150,28 +189,38 @@ make_name_2(ValueType id0, ValueType id1)
     data[0] = id1;
     data[1] = id0;
   }
-  return hash_bytes(reinterpret_cast<uint8*>(data), 2 * sizeof(ValueType));
+  return hash_bytes(reinterpret_cast<std::uint8_t *>(data), 2 * sizeof(ValueType));
 };
 
-//-------------------------------------------------------------------------
-template <typename ViewType>
-uint64
+//------------------------------------------------------------------------------
+/**
+ * \brief Make a hashed "name" for multiple ids.
+ *
+ * \tparam MaxValues The largest expected number of values.
+ *
+ * \param[in] values The ids that are being hashed.
+ * \param[in] start The starting index for ids.
+ * \param[in] n The number if ids being hashed.
+ *
+ * \return A hashed name for the ids.
+ */
+template <typename ValueType, std::uint32_t MaxValues = 14>
 AXOM_HOST_DEVICE
-make_name_n(const ViewType &view, int32 start, int32 n)
+std::uint64_t make_name_n(const ValueType *values, std::uint32_t n)
 {
-  using value_type = typename ViewType::value_type;
-
+  assert(n < MaxValues);
   if(n == 2)
-    return make_name_2(view[start], view[start + 1]);
+    return make_name_2(values[0], values[1]);
 
-  value_type v[14]={0,0,0,0,0,0,0,0,0,0,0,0,0,0}; // pick largest number of blends.
-  for(int32 i = 0; i < n; i++)
+  // Make sure the values are sorted before hashing.
+  ValueType sorted[MaxValues];
+  for(std::uint32_t i = 0; i < n; i++)
   {
-    v[i] = view[start + i];
+    sorted[i] = values[i];
   }
-  sort_values(v, n);
+  sort_values(sorted, n);
 
-  return hash_bytes(reinterpret_cast<uint8*>(v), n * sizeof(value_type));
+  return hash_bytes(reinterpret_cast<std::uint8_t *>(sorted), n * sizeof(ValueType));
 }
 
 //------------------------------------------------------------------------------
@@ -181,7 +230,7 @@ make_name_n(const ViewType &view, int32 start, int32 n)
  * \tparam ExecSpace The execution space.
  * \tparam KeyType   The data type for the keys.
  *
- * \param keys_orig_view The input view that contains the input keys to be made unique.
+ * \param[in] keys_orig_view The input view that contains the input keys to be made unique.
  * \param[out] skeys     A sorted unique array of keys produced from keys_orig_view.
  * \param[out] sindices  An array of indices that indicate where in the original view the keys came from.
  *

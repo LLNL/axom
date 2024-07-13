@@ -8,7 +8,7 @@
 #include "axom/core.hpp"
 #include "axom/mir/FieldBlender.hpp" // for BlendData
 #include "axom/mir/blueprint_utilities.hpp" // for cpp2conduit
-#include "axom/primal/Point.hpp"
+#include "axom/primal/geometry/Point.hpp"
 
 #include <conduit/conduit.hpp>
 #include <conduit/conduit_blueprint_mesh_utils.hpp>
@@ -64,13 +64,13 @@ public:
     conduit::Node &n_values = n_output["values"];
 
     // Make output nodes using axis names from the input coordset. Make array views too.
-    const auto outputSize = blend.m_uniqueIndices.size();
+    const auto outputSize = blend.m_uniqueIndicesView.size();
     axom::StackArray<axom::ArrayView<value_type>, PointType::NDIMS> compViews;
     for(size_t i = 0; i < nComponents; i++)
     {
       // Use the view's value_type
-      n_output[axisName[i]].set(conduit::DataType(axom::mir::utilities::blueprint::cpp2conduit<value_type>::id, outputSize));
-      auto *comp_data = static_cast<value_type *>(n_output.fetch_existing(axisName[i]).data_ptr());
+      n_output[axes[i]].set(conduit::DataType(axom::mir::utilities::blueprint::cpp2conduit<value_type>::id, outputSize));
+      auto *comp_data = static_cast<value_type *>(n_output.fetch_existing(axes[i]).data_ptr());
       compViews[i] = axom::ArrayView<value_type>(comp_data, outputSize);
     }
 
@@ -83,8 +83,8 @@ public:
       const auto end   = start + blend.m_blendGroupSizesView[origBGIdx];
 
       // Blend points for this blend group.
-      PointType blend{};
-      for(int32 i = start; i < end; i++)
+      PointType blended{};
+      for(std::uint32_t i = start; i < end; i++)
       {
         const auto index = blend.m_blendIdsView[i];
         const auto weight = blend.m_blendCoeffView[i];

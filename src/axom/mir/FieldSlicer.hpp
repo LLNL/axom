@@ -24,7 +24,7 @@ namespace blueprint
  */
 struct SliceData
 {
-  axom::ArrayView<int32> m_indices;
+  axom::ArrayView<IndexType> m_indicesView;
 };
 
 /**
@@ -79,7 +79,7 @@ private:
   void sliceSingleComponent(const SliceData &slice, const conduit::Node &n_values, conduit::Node &n_output_values) const
   {
     const auto allocatorID = axom::execution_space<ExecSpace>::allocatorID();
-    const auto outputSize = slice.m_indices.size();
+    const auto outputSize = slice.m_indicesView.size();
     n_output_values.set_allocator(allocatorID);
     n_output_values.set(conduit::DataType(n_values.dtype().id(), outputSize));
 

@@ -152,6 +152,14 @@ public:
 
   /**
    * \brief Constructor
+   */
+  AXOM_HOST_DEVICE
+  TableView() : m_shapes(), m_offsets(), m_table()
+  {
+  }
+
+  /**
+   * \brief Constructor
    *
    * \param shapes  The number of shapes in each table case.
    * \param offsets The offsets to each shape case in the \a table.

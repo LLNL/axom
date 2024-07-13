@@ -7,6 +7,7 @@
 
 #include "axom/core.hpp"
 #include "axom/mir/views/NodeArrayView.hpp"
+#include "axom/mir/utilities.hpp"
 
 #include <conduit/conduit.hpp>
 
@@ -24,13 +25,15 @@ namespace blueprint
  */
 struct BlendData
 {
-  axom::ArrayView<uint64> m_blendNamesView;      // Contains unique hash ids for the sorted ids in each blend group.
-  axom::ArrayView<int32>  m_uniqueIndicesView;   // Contains the index into the original blend group data for a unique blend group.
+  using KeyType = std::uint64_t;
 
-  axom::ArrayView<int32>  m_blendGroupSizesView; // The number of ids/weights in each blend group.
-  axom::ArrayView<int32>  m_blendGroupStartView; // The starting offset for a blend group in the ids/weights.
-  axom::ArrayView<int32>  m_blendIdsView;        // Contains ids that make up the blend groups
-  axom::ArrayView<float>  m_blendCoeffView;      // Contains the weights that make up the blend groups.
+  axom::ArrayView<KeyType>   m_blendNamesView;      // Contains unique hash ids for the sorted ids in each blend group.
+  axom::ArrayView<IndexType> m_uniqueIndicesView;   // Contains the index into the original blend group data for a unique blend group.
+
+  axom::ArrayView<IndexType> m_blendGroupSizesView; // The number of ids/weights in each blend group.
+  axom::ArrayView<IndexType> m_blendGroupStartView; // The starting offset for a blend group in the ids/weights.
+  axom::ArrayView<IndexType> m_blendIdsView;        // Contains ids that make up the blend groups
+  axom::ArrayView<float>     m_blendCoeffView;      // Contains the weights that make up the blend groups.
 };
 
 /**
@@ -84,16 +87,16 @@ private:
   void blendSingleComponent(const BlendData &blend, const conduit::Node &n_values, conduit::Node &n_output_values) const
   {
     const auto allocatorID = axom::execution_space<ExecSpace>::allocatorID();
-    const auto outputSize = blend.m_uniqueIndices.size();
+    const auto outputSize = blend.m_uniqueIndicesView.size();
     n_output_values.set_allocator(allocatorID);
-    n_output_values.set(conduit::DataType(n_values.dtype().id(), outputSize);
+    n_output_values.set(conduit::DataType(n_values.dtype().id(), outputSize));
 
     views::Node_to_ArrayView_same(n_values, n_output_values, [&](auto compView, auto outView)
     {
       using value_type = typename decltype(compView)::value_type;
-      using accum_type = axom::mir::utilities::accumulation_traits<value_type>::type;
+      using accum_type = typename axom::mir::utilities::accumulation_traits<value_type>::type;
 
-      axom::for_all<ExecSpace>(nbg, AXOM_LAMBDA(auto bgid)
+      axom::for_all<ExecSpace>(outputSize, AXOM_LAMBDA(auto bgid)
       {
         // Original blendGroup index.
         const auto origBGIdx =  blend.m_uniqueIndicesView[bgid];
@@ -101,7 +104,7 @@ private:
         const auto end   = start + blend.m_blendGroupSizesView[origBGIdx];
 
         accum_type blended = 0;
-        for(int32 i = start; i < end; i++)
+        for(IndexType i = start; i < end; i++)
         {
           const auto index = blend.m_blendIdsView[i];
           const auto weight = blend.m_blendCoeffView[i];

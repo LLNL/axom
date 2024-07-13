@@ -113,8 +113,6 @@ struct FieldView
   }
 }
 
-#endif
-
 template <typename ExecSpace, typename TopologyView, typename CoordsetView>
 void
 EquiZAlgorithm<ExecSpace, TopologyView, CoordsetView>::execute(
@@ -224,7 +222,8 @@ void EquiZAlgorithm::executeImpl(const conduit::Node &topo,
       });
     });
   });
-#else
+#endif
+#if 0
   if(options.has_path("zones"))
   {
     const conduit::Node &n_zones = options.fetch_existing("zones");
@@ -255,12 +254,10 @@ void EquiZAlgorithm::executeImpl(const conduit::Node &topo,
 
               views::IndexNode_to_ArrayView_same(rel["zones"], rel["sizes"], rel["offsets"], [&](auto relZonesView, auto relSizesView, auto relOffsetsView)
               {
-#if 1
                 // We need to get views for the various shape types.
                 using TableView = typename axom::mir::clipping::ClipTableManager<ExecSpace>::Table::View; 
                 axom::StackArray<TableView, ST_MAX> tables;
                 tables[ST_TET] = clipManager[ST_TET].view();
-#endif
 
                 topoView. template for_selected_zones<ExecSpace>(zonesView, AXOM_LAMBDA(auto zoneIndex, const auto &zone)
                 {          
@@ -268,7 +265,6 @@ void EquiZAlgorithm::executeImpl(const conduit::Node &topo,
                 });
               });
             }
-
           }); // dispatch_matset
         }); // dispatch_coordset
       }); // dispatch_topology
