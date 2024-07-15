@@ -176,7 +176,6 @@ void find_collisions_broadphase(const mint::Mesh* mesh,
   // First pass: get number of bounding box collisions for each surface element
   axom::for_all<ExecSpace>(
     ncells,
-    AXOM_SUPPRESS_HD_WARN
     AXOM_LAMBDA(IndexType icell) {
       IndexType count = 0;
 
