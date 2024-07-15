@@ -149,6 +149,16 @@ public:
   void setFunctionField(const std::string &fcnField);
 
   /*!
+    @brief Set the mask value.
+    \param [in] maskVal mask value.  If a mask field is given in
+      setMesh(), compute only for cells whose mask matches this value.
+
+    The default vask value is 1 unless explicitly set by this method.
+    The mask value has no effect if a mask field is not specified.
+  */
+  void setMaskValue(int maskVal) { m_maskVal = maskVal; }
+
+  /*!
    \brief Computes the isocontour.
    \param [in] contourVal isocontour value
 
@@ -304,6 +314,8 @@ private:
   std::string m_fcnPath;
   std::string m_maskFieldName;
   std::string m_maskPath;
+
+  int m_maskVal = 1;
 
   //!@brief First facet index from each parent domain.
   axom::Array<axom::IndexType> m_facetIndexOffsets;
