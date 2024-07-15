@@ -560,7 +560,6 @@ public:
   }
 
 public:
-
   AXOM_HOST_DEVICE const BivariateSetType* set() const { return m_bset.get(); }
 
   const MapType* getMap() const { return &m_map; }

@@ -478,7 +478,6 @@ public:
   }
 
 public:
-
   AXOM_SUPPRESS_HD_WARN
   AXOM_HOST_DEVICE RangeIterator(PositionType pos, SubMap sMap)
     : IterBase(pos)
@@ -522,7 +521,6 @@ public:
   PositionType numComp() const { return m_mapIter.numComp(); }
 
 protected:
-
   /** Implementation of advance() as required by IteratorBase */
   AXOM_SUPPRESS_HD_WARN
   AXOM_HOST_DEVICE void advance(PositionType n)

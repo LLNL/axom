@@ -482,7 +482,7 @@ public:
   {
     return SizePolicyType::size();
   }
-  
+
   AXOM_SUPPRESS_HD_WARN
   AXOM_HOST_DEVICE inline bool empty() const { return SizePolicyType::empty(); }
 
