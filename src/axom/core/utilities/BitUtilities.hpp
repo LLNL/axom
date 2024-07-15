@@ -211,7 +211,7 @@ AXOM_HOST_DEVICE inline std::int32_t countl_zero(std::int32_t word) noexcept
  */
 template <typename FlagType, typename BitType>
 AXOM_HOST_DEVICE
-constexpr bool bitIsSet(FlagType flags, BitType bit)
+bool bitIsSet(FlagType flags, BitType bit)
 {
   assert(bit >= 0 && (static_cast<size_t>(bit) < (sizeof(BitType) << 3)));
   return (flags & (1 << bit)) > 0;
@@ -230,10 +230,10 @@ constexpr bool bitIsSet(FlagType flags, BitType bit)
  */
 template <typename FlagType, typename BitType>
 AXOM_HOST_DEVICE
-constexpr void setBit(FlagType &flags, BitType bit, bool value = true)
+void setBit(FlagType &flags, BitType bit, bool value = true)
 {
   assert(bit >= 0 && (static_cast<size_t>(bit) < (sizeof(BitType) << 3)));
-  constexpr auto mask = 1 << bit;
+  const auto mask = 1 << bit;
   flags = value ? (flags | mask) : (flags & ~mask);
 }
 
