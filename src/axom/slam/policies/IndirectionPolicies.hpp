@@ -34,6 +34,7 @@
 
 #include "axom/core/Macros.hpp"
 #include "axom/core/Array.hpp"
+#include "axom/core/NumericLimits.hpp"
 #include "axom/slic/interface/slic.hpp"
 
 namespace axom
@@ -301,7 +302,7 @@ struct CArrayIndirectionBase
 
   constexpr PositionType size() const
   {
-    return std::numeric_limits<PositionType>::max();
+    return axom::numeric_limits<PositionType>::max();
   }
 
 private:

@@ -6,6 +6,7 @@
 #include "axom/quest/interface/internal/QuestHelpers.hpp"
 
 #include "axom/core.hpp"
+#include "axom/core/NumericLimits.hpp"
 #include "axom/mint/mesh/UnstructuredMesh.hpp"
 
 // Quest includes
@@ -519,8 +520,8 @@ void compute_mesh_bounds(const mint::Mesh* mesh, double* lo, double* hi)
   // STEP 0: initialize lo,hi
   for(int i = 0; i < ndims; ++i)
   {
-    lo[i] = std::numeric_limits<double>::max();
-    hi[i] = std::numeric_limits<double>::lowest();
+    lo[i] = axom::numeric_limits<double>::max();
+    hi[i] = axom::numeric_limits<double>::lowest();
   }  // END for all dimensions
 
   // STEP 1: compute lo,hi
