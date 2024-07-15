@@ -14,6 +14,7 @@
 set(gtest_mir_tests
     mir_mesh.cpp
     mir_cell_clipper.cpp
+    mir_clipfield.cpp
     mir_utilities.cpp
     mir_views_indexing.cpp
     mir_cell_generator.cpp
