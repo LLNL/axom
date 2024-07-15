@@ -1609,6 +1609,7 @@ inline bool intervalsDisjoint(double d0, double d1, double d2, double r)
   return d1 < -r || d0 > r;
 }
 
+AXOM_SUPPRESS_HD_WARN
 template <typename T>
 AXOM_HOST_DEVICE bool intersect_plane_tet3d(const Plane<T, 3>& p,
                                             const Tetrahedron<T, 3>& tet,

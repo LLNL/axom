@@ -123,6 +123,7 @@ public:
    *         element, where `setIndex = i * numComp() + j`.
    * \pre    0 <= idx < size() * numComp()
    */
+  AXOM_SUPPRESS_HD_WARN
   AXOM_HOST_DEVICE DataRefType operator[](IndexType idx) const
   {
 #ifndef AXOM_DEVICE_CODE
@@ -170,6 +171,7 @@ public:
   /**
    * \brief Return the set element in the SuperMap at the given subset index
    */
+  AXOM_SUPPRESS_HD_WARN
   AXOM_HOST_DEVICE IndexType index(IndexType idx) const
   {
     return m_indicesHaveIndirection ? m_superMap->set()->at(m_subsetIdx[idx])
@@ -183,6 +185,7 @@ public:
   ///
 
   /** \brief returns the size of the SubMap  */
+  AXOM_SUPPRESS_HD_WARN
   AXOM_HOST_DEVICE axom::IndexType size() const { return m_subsetIdx.size(); }
 
   /** \brief returns the number of components (aka. stride) of the SubMap  */
@@ -475,6 +478,8 @@ public:
   }
 
 public:
+
+  AXOM_SUPPRESS_HD_WARN
   AXOM_HOST_DEVICE RangeIterator(PositionType pos, SubMap sMap)
     : IterBase(pos)
     , m_submap(sMap)
@@ -491,6 +496,8 @@ public:
   {
     return m_mapIter(comp_idx...);
   }
+
+  AXOM_SUPPRESS_HD_WARN
   template <typename... ComponentIndex>
   AXOM_HOST_DEVICE DataRefType value(ComponentIndex... comp_idx) const
   {
@@ -515,7 +522,9 @@ public:
   PositionType numComp() const { return m_mapIter.numComp(); }
 
 protected:
+
   /** Implementation of advance() as required by IteratorBase */
+  AXOM_SUPPRESS_HD_WARN
   AXOM_HOST_DEVICE void advance(PositionType n)
   {
     PositionType currIndex = m_mapIter.flatIndex();

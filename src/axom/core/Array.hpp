@@ -1440,6 +1440,7 @@ AXOM_HOST_DEVICE inline void Array<T, DIM, SPACE>::push_back(T&& value)
 }
 
 //------------------------------------------------------------------------------
+AXOM_SUPPRESS_HD_WARN
 template <typename T, int DIM, MemorySpace SPACE>
 template <typename... Args>
 AXOM_HOST_DEVICE inline void Array<T, DIM, SPACE>::emplace_back(Args&&... args)
