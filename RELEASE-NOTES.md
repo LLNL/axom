@@ -20,6 +20,11 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 ## [Unreleased] - Release date yyyy-mm-dd
 
 ### Added
+- Primal: Adds a `clip()` operator overload for clipping a 2D polygon against
+  another 2D polygon.
+- Primal: Adds `Polygon::reverseOrientation()` to reverse orientation of
+  a polygon in-place.
+- Adds `StaticArray`, a wrapper for `StackArray` with a size member variable.
 - Multidimenional `core::Array` supports column-major and arbitrary stride ordering,
   in addition to the default row-major ordering.
 - Adds new `PolygonArray` and `MAX_VERTS` template parameters to `primal::Polygon` for dynamic
@@ -39,6 +44,13 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
   a new method, `Array::setDevicePreference()`.
 
 ### Changed
+- `MarchingCubes` masking now uses the mask field's integer values instead of
+  converting them to booleans.  The new behavior lets you select a value to mask for.
+  If you want to continue the boolean behavior, use only 0 or 1 in your mask field.
+- Primal: `Polyhedron::centroid()` function changed to return center of mass
+  of the polyhedron. `Polyhedron::vertexMean()` added to return average of
+  polyhedron's vertices. `Polyhedron::moments()` returns the volume and centroid
+  of the polyhedron, the 0th and 1st moments respectively.
 - `quest::ArrayIndexer` is now `axom::MDMapping`, adopting conventional terminology
   and moving out of `quest`.
 - `mint::structured_exec` is now `axom::nested_for_exec`, to support nested for loops

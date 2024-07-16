@@ -137,8 +137,6 @@ public:
 
     Some metadata from \a bpMesh may be cached.  Any change to it
     after setMesh() leads to undefined behavior.
-
-    @see clearMesh()
   */
   void setMesh(const conduit::Node &bpMesh,
                const std::string &topologyName,
@@ -149,6 +147,16 @@ public:
     \param [in] fcnField Name of node-based scalar function values.
   */
   void setFunctionField(const std::string &fcnField);
+
+  /*!
+    @brief Set the mask value.
+    \param [in] maskVal mask value.  If a mask field is given in
+      setMesh(), compute only for cells whose mask matches this value.
+
+    The default vask value is 1 unless explicitly set by this method.
+    The mask value has no effect if a mask field is not specified.
+  */
+  void setMaskValue(int maskVal) { m_maskVal = maskVal; }
 
   /*!
    \brief Computes the isocontour.
@@ -277,19 +285,6 @@ public:
   //@}
 
   /*!
-    @brief Clear the input mesh data.
-
-    The contour mesh is *not* cleared.  See clearOutput() for this.
-
-    After clearing, you have to call setMesh() as if it was a new
-    object.
-
-    @internal For good GPU performance, memory is not deallocated.  To
-    really deallocate memory, destruct this object and use another.
-  */
-  void clearMesh();
-
-  /*!
     @brief Clear the computed contour mesh.
   */
   void clearOutput();
@@ -319,6 +314,8 @@ private:
   std::string m_fcnPath;
   std::string m_maskFieldName;
   std::string m_maskPath;
+
+  int m_maskVal = 1;
 
   //!@brief First facet index from each parent domain.
   axom::Array<axom::IndexType> m_facetIndexOffsets;

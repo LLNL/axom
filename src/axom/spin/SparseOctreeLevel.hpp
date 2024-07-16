@@ -404,9 +404,9 @@ public:
     const BroodType brood(pt);
     ConstMapIter blockIt = m_map.find(brood.base());
 
-    return (blockIt == m_map.end())
-      ? BlockNotInTree
-      : (blockIt->second[brood.offset()].isLeaf()) ? LeafBlock : InternalBlock;
+    return (blockIt == m_map.end())                ? BlockNotInTree
+      : (blockIt->second[brood.offset()].isLeaf()) ? LeafBlock
+                                                   : InternalBlock;
   }
 
 private:

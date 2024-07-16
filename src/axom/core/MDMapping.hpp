@@ -11,6 +11,7 @@
 
 #include <iostream>
 #include <sstream>
+#include <type_traits>
 
 namespace axom
 {
@@ -219,6 +220,7 @@ public:
     @param [i] strides Strides.  Values must be unique.
       If not unique, use one of the other initializers.
   */
+  AXOM_SUPPRESS_HD_WARN
   inline AXOM_HOST_DEVICE void initializeStrides(
     const axom::StackArray<T, DIM>& strides)
   {
@@ -253,6 +255,7 @@ public:
       ArrayStrideOrder::COLUMN, to use where strides
       are non-unique.
   */
+  AXOM_SUPPRESS_HD_WARN
   inline AXOM_HOST_DEVICE void initializeStrides(
     const axom::StackArray<T, DIM>& strides,
     ArrayStrideOrder orderPref)

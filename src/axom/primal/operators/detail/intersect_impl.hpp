@@ -1097,19 +1097,19 @@ AXOM_HOST_DEVICE bool intersect_plane_bbox(const Plane<T, 3>& p,
 }
 
 /*!
- * \brief Determines if a 3D plane intersects a 3D segment.
- * \param [in] b1 A 3D plane
- * \param [in] b2 A 3D segment
+ * \brief Determines if a plane intersects a segment.
+ * \param [in] plane A plane
+ * \param [in] seg A segment
  * \param [out] t Intersection point of plane and seg, w.r.t. 
  *   parametrization of seg
  * \return true iff plane intersects with segment, otherwise, false.
  */
-template <typename T>
-AXOM_HOST_DEVICE bool intersect_plane_seg(const Plane<T, 3>& plane,
-                                          const Segment<T, 3>& seg,
+template <typename T, int DIM>
+AXOM_HOST_DEVICE bool intersect_plane_seg(const Plane<T, DIM>& plane,
+                                          const Segment<T, DIM>& seg,
                                           T& t)
 {
-  using VectorType = Vector<T, 3>;
+  using VectorType = Vector<T, DIM>;
 
   VectorType ab(seg.source(), seg.target());
   VectorType normal = plane.getNormal();
@@ -1609,6 +1609,7 @@ inline bool intervalsDisjoint(double d0, double d1, double d2, double r)
   return d1 < -r || d0 > r;
 }
 
+AXOM_SUPPRESS_HD_WARN
 template <typename T>
 AXOM_HOST_DEVICE bool intersect_plane_tet3d(const Plane<T, 3>& p,
                                             const Tetrahedron<T, 3>& tet,
