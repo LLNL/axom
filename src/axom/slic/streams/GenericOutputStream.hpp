@@ -49,6 +49,11 @@ public:
    *   - "cerr" makes std::cerr the output stream
    *   - Any other input will construct a std::ofstream associated with input
    * \param [in] stream the string to control type of stream created
+   *
+   * \note The constructed std::ofstream will open and associate a file with
+   *       the stream the first time a message is appended. No file is created
+   *       if no message is appended to the stream. Use this constructor
+   *       to avoid empty file creation if the stream is not appended to.
    */
   GenericOutputStream(const std::string& stream);
 
@@ -71,6 +76,11 @@ public:
    * \param [in] stream the string to control type of stream created
    * \param [in] format the format string.
    * \see LogStream::setFormatString for the format string.
+   *
+   * \note The constructed std::ofstream will open and associate a file with
+   *       the stream the first time a message is appended. No file is created
+   *       if no message is appended to the stream. Use this constructor
+   *       to avoid empty file creation if the stream is not appended to.
    */
   GenericOutputStream(const std::string& stream, const std::string& format);
 
@@ -100,12 +110,17 @@ public:
 
 private:
   std::ostream* m_stream;
+  std::string m_file_name;
+  bool m_opened;
 
   /*!
    * \brief Default constructor.
    * \note Made private to prevent applications from using it.
    */
-  GenericOutputStream() : m_stream(static_cast<std::ostream*>(nullptr)) {};
+  GenericOutputStream()
+    : m_stream(static_cast<std::ostream*>(nullptr))
+    , m_file_name()
+    , m_opened(false) {};
 
   DISABLE_COPY_AND_ASSIGNMENT(GenericOutputStream);
   DISABLE_MOVE_AND_ASSIGNMENT(GenericOutputStream);

@@ -12,7 +12,11 @@ namespace axom
 {
 namespace slic
 {
-GenericOutputStream::GenericOutputStream(std::ostream* os) : m_stream(os) { }
+GenericOutputStream::GenericOutputStream(std::ostream* os)
+  : m_stream(os)
+  , m_file_name()
+  , m_opened(true)
+{ }
 
 //------------------------------------------------------------------------------
 GenericOutputStream::GenericOutputStream(const std::string& stream)
@@ -20,14 +24,20 @@ GenericOutputStream::GenericOutputStream(const std::string& stream)
   if(stream == "cout")
   {
     m_stream = &std::cout;
+    m_file_name = std::string();
+    m_opened = true;
   }
   else if(stream == "cerr")
   {
     m_stream = &std::cerr;
+    m_file_name = std::string();
+    m_opened = true;
   }
   else
   {
-    m_stream = new std::ofstream(stream);
+    m_stream = new std::ofstream();
+    m_file_name = stream;
+    m_opened = false;
   }
 }
 
@@ -35,6 +45,8 @@ GenericOutputStream::GenericOutputStream(const std::string& stream)
 GenericOutputStream::GenericOutputStream(std::ostream* os,
                                          const std::string& format)
   : m_stream(os)
+  , m_file_name()
+  , m_opened(true)
 {
   this->setFormatString(format);
 }
@@ -68,6 +80,16 @@ void GenericOutputStream::append(message::Level msgLevel,
   {
     std::cerr << "ERROR: NULL stream!\n";
     return;
+  }
+
+  if(!m_opened)
+  {
+    std::ofstream* ofs = dynamic_cast<std::ofstream*>(m_stream);
+    if(ofs != nullptr)
+    {
+      ofs->open(m_file_name);
+      m_opened = true;
+    }
   }
 
   (*m_stream) << this->getFormatedMessage(message::getLevelAsString(msgLevel),
