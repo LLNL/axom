@@ -415,6 +415,10 @@ void Node_to_ArrayView_single(const conduit::Node &n, FuncType &&func)
   {
     Node_to_ArrayView_single_float64<type_selected(Types, conduit::DataType::FLOAT64_ID)>(n, func);
   }
+  else
+  {
+    SLIC_ERROR("Unsupported data type " << n.dtype().name() << " on node " << n.path());
+  }
 }
 
 template <int Types = select_all_types(), typename FuncType>
@@ -459,6 +463,10 @@ void Node_to_ArrayView_single(conduit::Node &n, FuncType &&func)
   else if(n.dtype().is_float64())
   {
     Node_to_ArrayView_single_float64<type_selected(Types, conduit::DataType::FLOAT64_ID)>(n, func);
+  }
+  else
+  {
+    SLIC_ERROR("Unsupported data type " << n.dtype().name() << " on node " << n.path());
   }
 }
 
@@ -642,6 +650,10 @@ void Node_to_ArrayView_same_internal(FuncType &&func, Delimiter, const conduit::
   {
     Node_to_ArrayView_same_internal_float64<type_selected(Types, conduit::DataType::FLOAT64_ID)>(func, first, args...);
   }
+  else
+  {
+    SLIC_ERROR("Unsupported data type " << first.dtype().name() << " on node " << first.path());
+  }
 }
 
 template <int Types = select_all_types(), typename FuncType, typename... Args>
@@ -686,6 +698,10 @@ void Node_to_ArrayView_same_internal(FuncType &&func, Delimiter, conduit::Node &
   else if(first.dtype().is_float64())
   {
     Node_to_ArrayView_same_internal_float64<type_selected(Types, conduit::DataType::FLOAT64_ID)>(func, first, args...);
+  }
+  else
+  {
+    SLIC_ERROR("Unsupported data type " << first.dtype().name() << " on node " << first.path());
   }
 }
 
