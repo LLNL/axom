@@ -279,17 +279,22 @@ AXOM_HOST_DEVICE inline void GridFunctionView<hip_exec>::finalize()
 //---------------------------------------------------------------------------
 /**
  * \class
- * \brief Revolves contours and intersects the solid with the input mesh to
- *        produce volume fractions.
+ * \brief Intersects a solid, created by revolving a c2c contour or by
+ *        loading a Pro/E mesh, with an input mesh to produce volume fractions.
  *
- * The IntersectionShaper generates material volume fractions using an input
- * set of 2D contours and replacement rules. Each contour covers an area from
- * the curve down to the axis of revolution about which the area is revolved
- * to produce a volume that is intersected with the input mesh to produce
- * volume fractions. Contours are refined into smaller linear spans that are
- * revolved to produce a set of truncated cones, which are divided into a set
- * set of progressively refined octahedra that can be intersected with the
- * mesh.
+ * The IntersectionShaper generates material volume fractions:
+ *
+ * - For c2c, an input set of 2D contours and replacement rules. Each contour
+ *   covers an area from the curve down to the axis of revolution about which
+ *   the area is revolved to produce a volume. Contours are refined into smaller
+ *   linear spans that are revolved to produce a set of truncated cones, which
+ *   are divided into a set set of progressively refined octahedra that can be
+ *   intersected with the mesh. The octahedra are intersected with the input
+ *   mesh to produce volume fractions.
+ *
+ * - For Pro/E, an input mesh of 3D tetrahedra are loaded in.
+ *   Each tetrahedron has its own respective volume. The tetrahedra are
+ *   intersected with the input mesh to produce volume fractions.
  *
  * Volume fractions are represented as a GridFunction with a special prefix,
  * currently "vol_frac_", followed by a material name. Volume fractions
