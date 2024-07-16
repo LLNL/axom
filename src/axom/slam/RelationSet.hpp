@@ -179,6 +179,7 @@ public:
    *
    * \return pos2  The to-set index.
    */
+  AXOM_SUPPRESS_HD_WARN
   AXOM_HOST_DEVICE PositionType flatToSecondIndex(PositionType flatIndex) const
   {
     if(flatIndex < 0 || flatIndex > size())
@@ -221,6 +222,7 @@ public:
    */
   SubsetType getElements(PositionType s1) const { return (*m_relation)[s1]; }
 
+  AXOM_SUPPRESS_HD_WARN
   AXOM_HOST_DEVICE ElementType at(PositionType pos) const
   {
 #ifndef AXOM_DEVICE_CODE
@@ -280,6 +282,7 @@ public:
   //but still implemented due to the function being virtual
   //(and can be called from base ptr)
   // KW -- made this public to use from BivariateMap
+  AXOM_SUPPRESS_HD_WARN
   AXOM_HOST_DEVICE PositionType size() const
   {
     return PositionType(m_relation->relationData().size());

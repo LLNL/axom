@@ -39,6 +39,7 @@ public:
   using SetPosition = SetPositionType;
 
 public:
+  AXOM_HOST_DEVICE
   virtual ~MapBase() {};
 
   /**

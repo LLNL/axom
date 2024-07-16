@@ -64,6 +64,7 @@ private:
   {
     AXOM_HOST_DEVICE accessor(const IterType& base) : IterType(base) { }
 
+    AXOM_SUPPRESS_HD_WARN
     AXOM_HOST_DEVICE
     static void adv(IterType& instance, PosType n)
     {
@@ -126,6 +127,7 @@ public:
   /// \{
 
   /// Pre-increment operator
+  AXOM_SUPPRESS_HD_WARN
   AXOM_HOST_DEVICE
   IterType& operator++()
   {
