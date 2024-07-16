@@ -91,6 +91,7 @@ struct IndexedIndirection : public BasePolicy
     return buf[pos];
   }
 
+  AXOM_SUPPRESS_HD_WARN
   template <bool DeviceEnable = BasePolicy::DeviceAccessible>
   AXOM_HOST_DEVICE static inline std::enable_if_t<!DeviceEnable, IndirectionResult>
   getIndirection(IndirectionRefType buf, PositionType pos)
@@ -112,6 +113,7 @@ struct IndexedIndirection : public BasePolicy
     return buf[pos];
   }
 
+  AXOM_SUPPRESS_HD_WARN
   template <bool DeviceEnable = BasePolicy::DeviceAccessible>
   AXOM_HOST_DEVICE static inline std::enable_if_t<!DeviceEnable, ConstIndirectionResult>
   getConstIndirection(IndirectionConstRefType buf, PositionType pos)

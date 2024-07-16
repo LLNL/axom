@@ -387,6 +387,7 @@ ArrayView<T, DIM, SPACE>::ArrayView(
 }
 
 //------------------------------------------------------------------------------
+AXOM_SUPPRESS_HD_WARN
 template <typename T, int DIM, MemorySpace SPACE>
 AXOM_HOST_DEVICE ArrayView<T, DIM, SPACE> ArrayView<T, DIM, SPACE>::subspan(
   const StackArray<IndexType, DIM>& offsets,

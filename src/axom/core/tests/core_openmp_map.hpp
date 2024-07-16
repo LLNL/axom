@@ -29,23 +29,17 @@ template <typename Key, typename T, typename Hash, typename Policy>
 void test_storage(experimental::Map<Key, T, Hash, Policy> &test)
 {
   experimental::Map<Key, T, Hash, Policy> *test2 = &test;
-  axom::for_all<Policy>(
-    0,
-    test.max_size(),
-    AXOM_LAMBDA(IndexType idx) {
-      Key key = idx;
-      T value = key * 27;
-      auto ret_test = test2->insert(key, value);
-      EXPECT_EQ(true, ret_test.second);
-    });
+  axom::for_all<Policy>(0, test.max_size(), [=](IndexType idx) {
+    Key key = idx;
+    T value = key * 27;
+    auto ret_test = test2->insert(key, value);
+    EXPECT_EQ(true, ret_test.second);
+  });
   EXPECT_EQ(false, test.empty());
-  axom::for_all<Policy>(
-    0,
-    test.max_size(),
-    AXOM_LAMBDA(IndexType idx) {
-      Key key = idx;
-      EXPECT_EQ(key * 27, test2->find(key).value);
-    });
+  axom::for_all<Policy>(0, test.max_size(), [=](IndexType idx) {
+    Key key = idx;
+    EXPECT_EQ(key * 27, test2->find(key).value);
+  });
   //This should fail, since we're at capacity.
   auto ret = test.insert(test.max_size(), 900);
   EXPECT_EQ(false, ret.second);
@@ -55,57 +49,42 @@ template <typename Key, typename T, typename Hash, typename Policy>
 void test_subscript(experimental::Map<Key, T, Hash, Policy> &test)
 {
   experimental::Map<Key, T, Hash, Policy> *test2 = &test;
-  axom::for_all<Policy>(
-    0,
-    test.size(),
-    AXOM_LAMBDA(IndexType idx) {
-      Key key = idx;
-      EXPECT_EQ(key * 27, (*test2)[key]);
-    });
+  axom::for_all<Policy>(0, test.size(), [=](IndexType idx) {
+    Key key = idx;
+    EXPECT_EQ(key * 27, (*test2)[key]);
+  });
 }
 
 template <typename Key, typename T, typename Hash, typename Policy>
 void test_insert_assign(experimental::Map<Key, T, Hash, Policy> &test)
 {
   experimental::Map<Key, T, Hash, Policy> *test2 = &test;
-  axom::for_all<Policy>(
-    0,
-    test.max_size(),
-    AXOM_LAMBDA(IndexType idx) {
-      Key key = idx;
-      T value = key * 27;
-      auto ret_test = test2->insert_or_assign(key, value);
-      EXPECT_EQ(true, ret_test.second);
-    });
+  axom::for_all<Policy>(0, test.max_size(), [=](IndexType idx) {
+    Key key = idx;
+    T value = key * 27;
+    auto ret_test = test2->insert_or_assign(key, value);
+    EXPECT_EQ(true, ret_test.second);
+  });
 
   EXPECT_EQ(false, test.empty());
-  axom::for_all<Policy>(
-    0,
-    test.max_size(),
-    AXOM_LAMBDA(IndexType idx) {
-      Key key = idx;
-      EXPECT_EQ(key * 27, test2->find(key).value);
-    });
+  axom::for_all<Policy>(0, test.max_size(), [=](IndexType idx) {
+    Key key = idx;
+    EXPECT_EQ(key * 27, test2->find(key).value);
+  });
 
-  axom::for_all<Policy>(
-    0,
-    test.max_size(),
-    AXOM_LAMBDA(IndexType idx) {
-      Key key = idx;
-      T value = key * 28;
-      auto ret_test = test2->insert_or_assign(key, value);
-      EXPECT_EQ(false, ret_test.second);
-      EXPECT_EQ(ret_test.first->key, key);
-    });
+  axom::for_all<Policy>(0, test.max_size(), [=](IndexType idx) {
+    Key key = idx;
+    T value = key * 28;
+    auto ret_test = test2->insert_or_assign(key, value);
+    EXPECT_EQ(false, ret_test.second);
+    EXPECT_EQ(ret_test.first->key, key);
+  });
 
   EXPECT_EQ(test.size(), test.max_size());
-  axom::for_all<Policy>(
-    0,
-    test.max_size(),
-    AXOM_LAMBDA(IndexType idx) {
-      Key key = idx;
-      EXPECT_EQ(key * 28, test2->find(key).value);
-    });
+  axom::for_all<Policy>(0, test.max_size(), [=](IndexType idx) {
+    Key key = idx;
+    EXPECT_EQ(key * 28, test2->find(key).value);
+  });
 }
 
 template <typename Key, typename T, typename Hash, typename Policy>
@@ -114,15 +93,12 @@ void test_remove(experimental::Map<Key, T, Hash, Policy> &test)
   std::size_t to_erase = test.size();
   experimental::Map<Key, T, Hash, Policy> *test2 = &test;
 
-  axom::for_all<Policy>(
-    0,
-    to_erase,
-    AXOM_LAMBDA(IndexType idx) {
-      Key key = (Key)idx;
-      bool erased = test2->erase(key);
-      EXPECT_EQ(erased, true);
-      EXPECT_EQ(test2->find(key), test2->end());
-    });
+  axom::for_all<Policy>(0, to_erase, [=](IndexType idx) {
+    Key key = (Key)idx;
+    bool erased = test2->erase(key);
+    EXPECT_EQ(erased, true);
+    EXPECT_EQ(test2->find(key), test2->end());
+  });
   EXPECT_EQ(test.size(), 0);
   test.insert(0, 900);
   auto ret = test.find(0);
@@ -137,31 +113,22 @@ void test_rehash(experimental::Map<Key, T, Hash, Policy> &test, int num, int fac
   experimental::Map<Key, T, Hash, Policy> *test2 = &test;
   test.rehash(num, fact);
 
-  axom::for_all<Policy>(
-    0,
-    original_size,
-    AXOM_LAMBDA(IndexType idx) {
-      Key key = idx;
-      EXPECT_EQ(key * 27, test2->find(key).value);
-    });
+  axom::for_all<Policy>(0, original_size, [=](IndexType idx) {
+    Key key = idx;
+    EXPECT_EQ(key * 27, test2->find(key).value);
+  });
 
-  axom::for_all<Policy>(
-    original_size,
-    test.max_size(),
-    AXOM_LAMBDA(IndexType idx) {
-      Key key = idx;
-      T value = key * 27;
-      auto ret_test = test2->insert(key, value);
-      EXPECT_EQ(true, ret_test.second);
-    });
+  axom::for_all<Policy>(original_size, test.max_size(), [=](IndexType idx) {
+    Key key = idx;
+    T value = key * 27;
+    auto ret_test = test2->insert(key, value);
+    EXPECT_EQ(true, ret_test.second);
+  });
 
-  axom::for_all<Policy>(
-    original_size,
-    test.max_size(),
-    AXOM_LAMBDA(IndexType idx) {
-      Key key = idx;
-      EXPECT_EQ(key * 27, test2->find(key).value);
-    });
+  axom::for_all<Policy>(original_size, test.max_size(), [=](IndexType idx) {
+    Key key = idx;
+    EXPECT_EQ(key * 27, test2->find(key).value);
+  });
   auto ret = test.insert(test.max_size(), 900);
   EXPECT_EQ(false, ret.second);
 }

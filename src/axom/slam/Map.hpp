@@ -374,6 +374,7 @@ public:
    *
    * The total storage size for the map's values is `size() * numComp()`
    */
+  AXOM_SUPPRESS_HD_WARN
   AXOM_HOST_DEVICE SetPosition size() const
   {
     return !policies::EmptySetTraits<SetType>::isEmpty(m_set.get())
@@ -654,6 +655,7 @@ public:
 
   protected:
     /** Implementation of advance() as required by IteratorBase */
+    AXOM_SUPPRESS_HD_WARN
     AXOM_HOST_DEVICE void advance(PositionType n)
     {
       this->m_pos += n;
