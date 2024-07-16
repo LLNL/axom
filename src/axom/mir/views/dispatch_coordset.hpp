@@ -33,20 +33,21 @@ void dispatch_coordset(const conduit::Node &coordset, FuncType &&func)
 {
   const std::string cstype = coordset["type"].as_string();
   if(cstype == "uniform")
-  {   
+  {
+    const std::string keys[] = {"i", "j", "k"};  
     const conduit::Node &n_dims = coordset["dims"];
-    const conduit::index_t ndims = n_dims.dtype().number_of_elements();
+    const conduit::index_t ndims = n_dims.number_of_children();
     if(ndims == 2)
     {
       axom::StackArray<axom::IndexType, 2> dims;
       axom::StackArray<double, 2> origin{0., 0.}, spacing{1., 1.};
       for(int i = 0; i < ndims; i++)
       {
-        dims[i] = n_dims.as_int_accessor()[i];
+        dims[i] = n_dims.fetch_existing(keys[i]).to_int();
         if(coordset.has_child("origin"))
-          origin[i] = coordset["origin"].as_double_accessor()[i];
+          origin[i] = coordset["origin"][i].to_double();
         if(coordset.has_child("spacing"))
-          spacing[i] = coordset["spacing"].as_double_accessor()[i];
+          spacing[i] = coordset["spacing"][i].to_double();
       }
 
       UniformCoordsetView<double, 2> coordView(dims, origin, spacing);
@@ -58,11 +59,11 @@ void dispatch_coordset(const conduit::Node &coordset, FuncType &&func)
       axom::StackArray<double, 3> origin{0., 0., 0.}, spacing{1., 1., 1.};
       for(int i = 0; i < ndims; i++)
       {
-        dims[i] = n_dims.as_int_accessor()[i];
+        dims[i] = n_dims.fetch_existing(keys[i]).to_int();
         if(coordset.has_child("origin"))
-          origin[i] = coordset["origin"].as_double_accessor()[i];
+          origin[i] = coordset["origin"][i].to_double();
         if(coordset.has_child("spacing"))
-          spacing[i] = coordset["spacing"].as_double_accessor()[i];
+          spacing[i] = coordset["spacing"][i].to_double();
       }
 
       UniformCoordsetView<double, 3> coordView(dims, origin, spacing);

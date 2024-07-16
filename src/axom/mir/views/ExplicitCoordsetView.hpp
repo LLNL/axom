@@ -9,6 +9,8 @@
 #include "axom/core/ArrayView.hpp"
 #include "axom/primal/geometry/Point.hpp"
 
+#include <initializer_list>
+
 namespace axom
 {
 namespace mir
@@ -60,8 +62,8 @@ public:
   getPoint(IndexType vertex_index) const
   {
     assert(vertex_index < size());
-    return PointType(m_coordinates[0][vertex_index],
-                     m_coordinates[1][vertex_index]);
+    return PointType(std::initializer_list<value_type>{m_coordinates[0][vertex_index],
+                                                       m_coordinates[1][vertex_index]});
   }
 
   /**
@@ -127,9 +129,9 @@ public:
   PointType
   getPoint(IndexType vertex_index) const
   {
-    return PointType(m_coordinates[0][vertex_index],
-                     m_coordinates[1][vertex_index],
-                     m_coordinates[2][vertex_index]);
+    return PointType(std::initializer_list<value_type>{m_coordinates[0][vertex_index],
+                                                       m_coordinates[1][vertex_index],
+                                                       m_coordinates[2][vertex_index]});
   }
 
   /**

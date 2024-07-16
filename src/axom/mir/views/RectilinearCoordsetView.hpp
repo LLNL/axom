@@ -11,6 +11,8 @@
 #include "axom/primal/geometry/Point.hpp"
 #include "axom/mir/views/StructuredIndexing.hpp"
 
+#include <initializer_list>
+
 namespace axom
 {
 namespace mir
@@ -66,8 +68,8 @@ public:
   AXOM_HOST_DEVICE
   PointType getPoint(LogicalIndex vertex_index) const
   {
-    return PointType(m_coordinates[0][vertex_index[0]],
-                     m_coordinates[1][vertex_index[1]]);
+    return PointType(std::initializer_list<value_type>{m_coordinates[0][vertex_index[0]],
+                                                       m_coordinates[1][vertex_index[1]]});
   }
 
   /**
@@ -172,9 +174,9 @@ public:
   AXOM_HOST_DEVICE
   PointType getPoint(LogicalIndex vertex_index) const
   {
-    return PointType(m_coordinates[0][vertex_index[0]],
-                     m_coordinates[1][vertex_index[1]],
-                     m_coordinates[2][vertex_index[2]]);
+    return PointType(std::initializer_list<value_type>{m_coordinates[0][vertex_index[0]],
+                                                       m_coordinates[1][vertex_index[1]],
+                                                       m_coordinates[2][vertex_index[2]]});
   }
 
   /**

@@ -9,9 +9,40 @@
 #include "axom/mir.hpp"
 
 #include <conduit/conduit_relay_io_blueprint.hpp>
-
+#include <cmath>
 
 using seq_exec = axom::SEQ_EXEC;
+
+template <typename Dimensions>
+void braid(const std::string &type, const Dimensions &dims, conduit::Node &mesh)
+{
+  int d[3] = {0, 0, 0};
+  for(int i = 0; i < dims.size(); i++)
+    d[i] = dims[i];
+  conduit::blueprint::mesh::examples::braid(type, d[0], d[1], d[2], mesh);
+
+  // Make a new distance field.
+  const float dist = 6.5f;
+  const conduit::Node &n_coordset = mesh["coordsets"][0];
+  axom::mir::views::dispatch_coordset(n_coordset, [&](auto coordsetView)
+  {
+    mesh["fields/distance/topology"] = "mesh";
+    mesh["fields/distance/association"] = "vertex";
+    conduit::Node &n_values = mesh["fields/distance/values"];
+    const auto nnodes = coordsetView.size();
+    n_values.set(conduit::DataType::float32(nnodes));
+    float *valuesPtr = static_cast<float *>(n_values.data_ptr());
+    for(int index = 0; index < nnodes; index++)
+    {
+      const auto pt = coordsetView[index];
+      float norm2 = 0.f;
+      for(int i = 0; i < pt.DIMENSION; i++)
+        norm2 += pt[i] * pt[i];
+      valuesPtr[index] = sqrt(norm2) - dist;
+    }
+  });
+}
+
 
 TEST(mir_clipfield, uniform2d)
 {
@@ -23,7 +54,9 @@ TEST(mir_clipfield, uniform2d)
 
    // Create the data
    conduit::Node mesh;
-   conduit::blueprint::mesh::examples::braid("uniform", dims[0], dims[1], 0, mesh);
+   braid("uniform", dims, mesh);
+   conduit::relay::io::blueprint::save_mesh(mesh, "uniform2d_orig", "hdf5");
+   mesh.print();
    const conduit::Node &topo = mesh["topologies"][0];
    const conduit::Node &coordset = mesh["coordsets"][0];
 
@@ -36,7 +69,7 @@ TEST(mir_clipfield, uniform2d)
    // Clip the data
    conduit::Node clipmesh;
    axom::mir::clipping::ClipField<seq_exec, TopoView, CoordsetView> clipper(topoView, coordsetView);
-   clipper.execute(mesh, "radial", clipmesh);
+   clipper.execute(mesh, "distance", clipmesh);
    conduit::relay::io::blueprint::save_mesh(clipmesh, "uniform2d", "hdf5");
 
    // Load a clipped baseline file & compare.
