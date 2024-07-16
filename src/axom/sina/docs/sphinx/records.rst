@@ -14,7 +14,7 @@ study. Some examples for the natural scope of ``Record`` objects include things
 like:
 
     - a single run of an application
-    - a `Maestro<https://maestrowf.readthedocs.io/en/stable/>`_ step
+    - a `Maestro <https://maestrowf.readthedocs.io/en/stable/>`_ step
     - a cluster of runs that has some metadata attached to the cluster (this
       ``Record`` might have a "contains" :doc:`Relationship <relationships>` for all
       the runs within it)
