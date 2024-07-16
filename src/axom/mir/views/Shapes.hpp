@@ -89,7 +89,11 @@ struct TriTraits
   AXOM_HOST_DEVICE constexpr static IndexType zoneOffset(int zoneIndex) { return numberOfNodes() * zoneIndex; }
 
   AXOM_HOST_DEVICE constexpr static IndexType faces[][3] = {{0, 1, 2}};
-  AXOM_HOST_DEVICE constexpr static IndexType edges[][2] = {{0,1}, {1,2}, {2,0}};
+  AXOM_HOST_DEVICE constexpr static axom::StackArray<IndexType, 2> getEdge(int edgeIndex)
+  {
+    const axom::StackArray<IndexType, 2> edges[] = {{0,1}, {1,2}, {2,0}};
+    return edges[edgeIndex];
+  }
 };
 
 /*
@@ -122,7 +126,12 @@ struct QuadTraits
   AXOM_HOST_DEVICE constexpr static IndexType zoneOffset(int zoneIndex) { return numberOfNodes() * zoneIndex; }
 
   AXOM_HOST_DEVICE constexpr static IndexType faces[][4] = {{0, 1, 2, 3}};
-  AXOM_HOST_DEVICE constexpr static IndexType edges[][2] = {{0,1}, {1,2}, {2,3}, {3,0}};
+
+  AXOM_HOST_DEVICE constexpr static axom::StackArray<IndexType, 2> getEdge(int edgeIndex)
+  {
+    const axom::StackArray<IndexType, 2> edges[] = {{0,1}, {1,2}, {2,3}, {3,0}};
+    return edges[edgeIndex];
+  }
 };
 
 /*
@@ -171,6 +180,14 @@ struct PolygonShape
   {
     return m_ids;
   }
+
+  AXOM_HOST_DEVICE axom::StackArray<IndexType, 2> getEdge(int edgeIndex) const
+  {
+    const auto p0 = edgeIndex % m_ids.size();
+    const auto p1 = (edgeIndex + 1) % m_ids.size();
+    return axom::StackArray<IndexType, 2>{p0, p1};
+  }
+
 private:
   axom::ArrayView<IndexType> m_ids;
 };
@@ -212,7 +229,12 @@ struct TetTraits
   AXOM_HOST_DEVICE constexpr static IndexType zoneOffset(int zoneIndex) { return numberOfNodes() * zoneIndex; }
 
   AXOM_HOST_DEVICE constexpr static IndexType faces[][3] = {{0,2,1}, {0,1,3}, {1,2,3}, {2,0,3}};
-  AXOM_HOST_DEVICE constexpr static IndexType edges[][2] = {{0, 1}, {1, 2}, {2, 0},{0, 3}, {1, 3}, {2, 3}};
+
+  AXOM_HOST_DEVICE constexpr static axom::StackArray<IndexType, 2> getEdge(int edgeIndex)
+  {
+    const axom::StackArray<IndexType, 2> edges[] = {{0, 1}, {1, 2}, {2, 0},{0, 3}, {1, 3}, {2, 3}};
+    return edges[edgeIndex];
+  }
 };
 
 /*
@@ -253,7 +275,12 @@ struct PyramidTraits
   AXOM_HOST_DEVICE constexpr static IndexType zoneOffset(int zoneIndex) { return numberOfNodes() * zoneIndex; }
 
   AXOM_HOST_DEVICE constexpr static int faces[][4] = {{3,2,1,0}, {0,1,4,-1}, {1,2,4,-1}, {2,3,4,-1}, {3,0,4,-1}};
-  AXOM_HOST_DEVICE constexpr static IndexType edges[][2] = {{0,1}, {1,2}, {2,3}, {3,0}, {0,4}, {1,4}, {2,4}, {3,4}};
+
+  AXOM_HOST_DEVICE constexpr static axom::StackArray<IndexType, 2> getEdge(int edgeIndex)
+  {
+    const axom::StackArray<IndexType, 2> edges[] = {{0,1}, {1,2}, {2,3}, {3,0}, {0,4}, {1,4}, {2,4}, {3,4}};
+    return edges[edgeIndex];
+  }
 };
 
 /*
@@ -296,7 +323,12 @@ struct WedgeTraits
   AXOM_HOST_DEVICE constexpr static IndexType zoneOffset(int zoneIndex) { return numberOfNodes() * zoneIndex; }
 
   AXOM_HOST_DEVICE constexpr static int faces[][4] = {{0,2,1,-1}, {3,4,5,-1}, {0,1,4,3}, {1,2,5,4}, {2,0,3,5}};
-  AXOM_HOST_DEVICE constexpr static IndexType edges[][2] = {{0,1}, {1,2}, {2,0}, {3,4}, {4,5}, {5,3}, {0,3}, {1,4}, {2,3}};
+
+  AXOM_HOST_DEVICE constexpr static axom::StackArray<IndexType, 2> getEdge(int edgeIndex)
+  {
+    const axom::StackArray<IndexType, 2> edges[] = {{0,1}, {1,2}, {2,0}, {3,4}, {4,5}, {5,3}, {0,3}, {1,4}, {2,3}};
+    return edges[edgeIndex];
+  }
 };
 
 /*
@@ -337,7 +369,12 @@ struct HexTraits
 
   AXOM_HOST_DEVICE constexpr static IndexType faces[][4] = {
     {0, 3, 2, 1}, {0, 1, 5, 4}, {1, 2, 6, 5}, {2, 3, 7, 6}, {3, 0, 4, 7}, {4, 5, 6, 7}};
-  AXOM_HOST_DEVICE constexpr static IndexType edges[][2] = {{0, 1}, {1, 2}, {3, 2}, {3, 0}, {4, 5}, {5, 6}, {6, 7}, {7, 4}, {0, 4}, {1, 5}, {3, 7}, {2, 6}};
+
+  AXOM_HOST_DEVICE constexpr static axom::StackArray<IndexType, 2> getEdge(int edgeIndex)
+  {
+    const axom::StackArray<IndexType, 2> edges[] = {{0, 1}, {1, 2}, {3, 2}, {3, 0}, {4, 5}, {5, 6}, {6, 7}, {7, 4}, {0, 4}, {1, 5}, {3, 7}, {2, 6}};
+    return edges[edgeIndex];
+  }
 };
 
 /**

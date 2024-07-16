@@ -479,7 +479,7 @@ public:
                   // face point. We can store the 2 corner points in place
                   // of the edge point (along with some blending coeff).
                   const auto edgeIndex = ptid - EA;
-                  const auto edge = ZoneType::edges[edgeIndex];
+                  const auto edge = ZoneType::getEdge(edgeIndex);
                   const auto id0 = zone.getId(edge[0]);
                   const auto id1 = zone.getId(edge[1]);
 
@@ -535,7 +535,7 @@ public:
           if(axom::utilities::bitIsSet(ptused, pid))
           {
             const auto edgeIndex = pid - EA;
-            const auto edge = ZoneType::edges[edgeIndex];
+            const auto edge = ZoneType::getEdge(edgeIndex);
             const auto id0 = zone.getId(edge[0]);
             const auto id1 = zone.getId(edge[1]);
 
