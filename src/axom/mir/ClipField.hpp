@@ -26,16 +26,6 @@ namespace clipping
 {
 namespace details
 {
-template <typename KeyType, typename ValueType>
-std::map<ValueType, KeyType> reverse_map(const std::map<KeyType, ValueType> &m)
-{
-  std::map<ValueType, KeyType> output;
-  for(const auto& [key, value] : m)
-  {
-    output[value] = key;
-  }
-  return output;
-}
 
 std::map<std::string, int>
 shapeMap_NameValue(const conduit::Node &n_shape_map)
@@ -89,24 +79,24 @@ shapeMap_FromFlags(std::uint64_t shapes)
 }
 
 AXOM_HOST_DEVICE
-constexpr int getClipTableIndex(int dimension, int nnodes)
+int getClipTableIndex(int dimension, int nnodes)
 {
   return (dimension == 2) ? ((nnodes == 3) ? 0 : 1) : (nnodes - 2);
 }
 AXOM_HOST_DEVICE
-constexpr bool color0Selected(int selection)
+bool color0Selected(int selection)
 {
   return axom::utilities::bitIsSet(selection, 0);
 }
 
 AXOM_HOST_DEVICE
-constexpr bool color1Selected(int selection)
+bool color1Selected(int selection)
 {
   return axom::utilities::bitIsSet(selection, 1);
 }
 
 AXOM_HOST_DEVICE
-constexpr bool generatedPointIsSelected(unsigned char color, int selection)
+bool generatedPointIsSelected(unsigned char color, int selection)
 {
   return color == NOCOLOR ||
          (color0Selected(selection) && color == COLOR0) ||
@@ -114,7 +104,7 @@ constexpr bool generatedPointIsSelected(unsigned char color, int selection)
 }
 
 AXOM_HOST_DEVICE
-constexpr bool shapeIsSelected(unsigned char color, int selection)
+bool shapeIsSelected(unsigned char color, int selection)
 {
   return (color0Selected(selection) && color == COLOR0) ||
          (color1Selected(selection) && color == COLOR1);
@@ -188,9 +178,11 @@ private:
     }
   }
 public:
-  void execute(const TopologyView &topoView,
-               const CoordsetView &coordsetView,
-               const conduit::Node &n_input,
+  ClipField(const TopologyView &topoView, const CoordsetView &coordsetView) : m_topologyView(topoView), m_coordsetView(coordsetView)
+  {
+  }
+
+  void execute(const conduit::Node &n_input,
                const std::string &clipField,
                conduit::Node &n_output)
   {
@@ -201,17 +193,14 @@ public:
      const std::string &coordsetName = n_topo["coordset"].as_string();
      const conduit::Node &n_coordset = n_input.fetch_existing("coordsets/" + coordsetName);
      
-     execute(topoView, coordsetView,
-             n_topo, n_coordset, n_fields,
+     execute(n_topo, n_coordset, n_fields,
              clipField,
              n_output["topologies/" + topoName],
              n_output["coordsets/" + coordsetName],
              n_output["fields"]);
   }
 
-  void execute(const TopologyView &topoView, // I'd rather just pass the views to the method.
-               const CoordsetView &coordsetView,
-               const conduit::Node &n_topo,
+  void execute(const conduit::Node &n_topo,
                const conduit::Node &n_coordset,
                const conduit::Node &n_fields,
                const std::string &clipField,
@@ -234,9 +223,9 @@ public:
     int selection = -1; // All bits set.
 
     // Load clip table data and make views.
-    m_clipTables.load(topoView.dimension());
+    m_clipTables.load(m_topologyView.dimension());
     ClipTableViews clipTableViews;
-    createClipTableViews(clipTableViews, topoView.dimension());
+    createClipTableViews(clipTableViews, m_topologyView.dimension());
 
     // ----------------------------------------------------------------------
     //
@@ -250,7 +239,7 @@ public:
     RAJA::ReduceSum<reduce_policy, int> blendGroupLen_sum(0);
 
     // Allocate some memory
-    const auto nzones = topoView.numberOfZones();
+    const auto nzones = m_topologyView.numberOfZones();
     axom::Array<int> clipCases(nzones, nzones, allocatorID);      // The clip case for a zone.
     axom::Array<std::uint64_t> pointsUsed(nzones, nzones, allocatorID);   // Which points are used over all selected fragments in a zone
     axom::Array<int> blendGroups(nzones, nzones, allocatorID);    // Number of blend groups in a zone.
@@ -267,7 +256,7 @@ public:
 
     views::Node_to_ArrayView(n_clip_field, [&](auto clipFieldView)
     {
-      topoView.template for_all_zones<ExecSpace>(AXOM_LAMBDA(auto zoneIndex, const auto &zone)
+      m_topologyView.template for_all_zones<ExecSpace>(AXOM_LAMBDA(auto zoneIndex, const auto &zone)
       {
         // Get the clip case for the current zone.
         const auto clipcase = details::clip_case(zone, clipFieldView);
@@ -331,7 +320,7 @@ public:
               thisFragmentsNumIds += nIdsThisShape;
 
               // Mark the points in this fragment used.
-              for(size_t i = 2; i < caseData.size(); i++)
+              for(int i = 2; i < caseData.size(); i++)
               {
                 axom::utilities::setBit(ptused, caseData[i]);
               }
@@ -395,20 +384,20 @@ public:
     auto fragmentSizeOffsetsView = fragmentSizeOffsets.view();
 
     // Make offsets via scan.
-    RAJA::exclusive_scan<loop_policy>(RAJA::make_span(blendGroupsLenView, nzones),
-                                      RAJA::make_span(blendOffsetView, nzones),
+    RAJA::exclusive_scan<loop_policy>(RAJA::make_span(blendGroupsLenView.data(), nzones),
+                                      RAJA::make_span(blendOffsetView.data(), nzones),
                                       RAJA::operators::plus<int>{});
 
-    RAJA::exclusive_scan<loop_policy>(RAJA::make_span(blendGroupsView, nzones),
-                                      RAJA::make_span(blendGroupOffsetsView, nzones),
+    RAJA::exclusive_scan<loop_policy>(RAJA::make_span(blendGroupsView.data(), nzones),
+                                      RAJA::make_span(blendGroupOffsetsView.data(), nzones),
                                       RAJA::operators::plus<int>{});
 
-    RAJA::exclusive_scan<loop_policy>(RAJA::make_span(fragmentsView, nzones),
-                                      RAJA::make_span(fragmentOffsetsView, nzones),
+    RAJA::exclusive_scan<loop_policy>(RAJA::make_span(fragmentsView.data(), nzones),
+                                      RAJA::make_span(fragmentOffsetsView.data(), nzones),
                                       RAJA::operators::plus<int>{});
 
-    RAJA::exclusive_scan<loop_policy>(RAJA::make_span(fragmentsSizeView, nzones),
-                                      RAJA::make_span(fragmentSizeOffsetsView, nzones),
+    RAJA::exclusive_scan<loop_policy>(RAJA::make_span(fragmentsSizeView.data(), nzones),
+                                      RAJA::make_span(fragmentSizeOffsetsView.data(), nzones),
                                       RAJA::operators::plus<int>{});
 
     // ----------------------------------------------------------------------
@@ -437,9 +426,9 @@ public:
 
     views::Node_to_ArrayView(n_clip_field, [&](auto clipFieldView)
     {
-      topoView.template for_all_zones<ExecSpace>(AXOM_LAMBDA(auto zoneIndex, const auto &zone)
+      m_topologyView.template for_all_zones<ExecSpace>(AXOM_LAMBDA(auto zoneIndex, const auto &zone)
       {
-        using ZoneType = decltype(zone);
+        using ZoneType = typename std::remove_reference<decltype(zone)>::type;
 
         // Get the clip case for the current zone.
         const auto clipcase = clipCasesView[zoneIndex];
@@ -585,7 +574,7 @@ public:
     // blendNames/blendGroupOffsets/blendGroupSizes.
     axom::Array<KeyType> uNames;
     axom::Array<axom::IndexType> uIndices;
-    axom::mir::utilities::unique<ExecSpace>(blendNames, uNames, uIndices);
+    axom::mir::utilities::unique<ExecSpace, KeyType>(blendNames, uNames, uIndices);
 
     auto uNamesView = uNames.view();
     auto uIndicesView = uIndices.view();
@@ -644,27 +633,8 @@ public:
 
     RAJA::ReduceBitOr<reduce_policy, std::uint64_t> shapesUsed_reduce(0);
 
-    // Here we get the node ids from the unique blend names so we might be able to skip the zone iteration since that is more expensive than a normal axom::for_all.
-    // I'd have to store the clipTableIndex though.
-#if 0
-    AXOM_HOST_DEVICE
-    constexpr std::uint32_t encode_case(std::uint32_t clipcase, std::uint32_t clipTableIndex, std::uint32_t nFragments)
-    {
-      return (clipcase & 0xff) |
-             ((clipTableIndex & 0xff) << 8) |
-             ((nFragments & 0xff) << 16);
-    }
-    AXOM_HOST_DEVICE
-    constexpr void decode_case(std::uint32_t value, std::uint32_t &clipcase, std::uint32_t &clipTableIndex, std::uint32_t &nFragments)
-    {
-      clipcase = (value & 0xff);
-      clipTableIndex = (value >> 8) & 0xff;
-      nFragments = (value >> 16) & 0xff;
-    }
-    // Of course, I can't do an exclusive scan on the fragmentsView if it contains other stuff.
-
-#endif
-    topoView.template for_all_zones<ExecSpace>(AXOM_LAMBDA(auto zoneIndex, const auto &zone)
+    // Here we get the node ids from the unique blend names, de-duplicating points.
+    m_topologyView.template for_all_zones<ExecSpace>(AXOM_LAMBDA(auto zoneIndex, const auto &zone)
     {
       // If there are no fragments, return from lambda.
       if(fragmentsView[zoneIndex] == 0)
@@ -744,18 +714,18 @@ public:
     });
 
     // Make offsets
-    RAJA::exclusive_scan<loop_policy>(RAJA::make_span(sizesView, nzones),
-                                     RAJA::make_span(offsetsView, nzones),
-                                     RAJA::operators::plus<int>{});
+    RAJA::exclusive_scan<loop_policy>(RAJA::make_span(sizesView.data(), nzones),
+                                      RAJA::make_span(offsetsView.data(), nzones),
+                                      RAJA::operators::plus<ConnectivityType>{});
 
     // Add shape information to the connectivity.
     const auto shapesUsed = shapesUsed_reduce.get();
-    const auto shapeMap = shapeMap_ValueName(shapesUsed);
+    const auto shapeMap = details::shapeMap_FromFlags(shapesUsed);
     if(axom::utilities::countBits(shapesUsed) > 1)
     {
       n_newTopo["elements/shape"] = "mixed";
       conduit::Node &n_shape_map = n_newTopo["elements/shape_map"];
-      for(const auto it = shapeMap.cbegin(); it != shapeMap.cend(); it++)
+      for(auto it = shapeMap.cbegin(); it != shapeMap.cend(); it++)
          n_shape_map[it->first] = it->second;
     }
     else
@@ -770,7 +740,7 @@ public:
     // STAGE 6 - Make new coordset.
     //-----------------------------------------------------------------------
     
-    make_coordset(blend, coordsetView, n_coordset, n_newCoordset);
+    make_coordset(blend, n_coordset, n_newCoordset);
 
     //-----------------------------------------------------------------------
     // STAGE 7 - Make new fields.
@@ -828,11 +798,11 @@ public:
   } // end of execute
 
 private:
-  void make_coordset(const BlendData &blend, const CoordsetView &coordsetView, const conduit::Node &n_coordset, conduit::Node &n_newCoordset) const
+  void make_coordset(const BlendData &blend, const conduit::Node &n_coordset, conduit::Node &n_newCoordset) const
   {
     axom::mir::utilities::blueprint::CoordsetBlender<ExecSpace, CoordsetView> cb;
     n_newCoordset.reset();
-    cb.execute(blend, coordsetView, n_coordset, n_newCoordset);
+    cb.execute(blend, m_coordsetView, n_coordset, n_newCoordset);
   }
 
   void make_fields(const BlendData &blend, const SliceData &slice, const std::string &topoName, const conduit::Node &n_fields, conduit::Node &n_out_fields) const
@@ -846,7 +816,7 @@ private:
         if(association == "element")
         {
           axom::mir::utilities::blueprint::FieldSlicer<ExecSpace> s;
-          s.execute(blend, n_field, n_out_fields[n_field.name()]);
+          s.execute(slice, n_field, n_out_fields[n_field.name()]);
         }
         else if(association == "vertex")
         {
@@ -858,6 +828,8 @@ private:
   }
 
   // NOTE: I probably want to make the clip tables be a class member so I can reuse the object without having to reload the clip tables each time.
+  TopologyView m_topologyView;
+  CoordsetView m_coordsetView;
 };
 
 } // end namespace clipping

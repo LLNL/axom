@@ -226,10 +226,20 @@ private:
 template <typename ExecSpace>
 class Table
 {
+public:
   using IndexData = int;
   using TableData = unsigned char;
   using IndexDataArray = axom::Array<IndexData>;
   using TableDataArray = axom::Array<TableData>;
+
+  /**
+   * \brief Returns whether the table data have been loaded.
+   * \return True if the data have been loaded; false otherwise.
+   */
+  bool isLoaded() const
+  {
+    return m_shapes.size() > 0;
+  }
 
   /**
    * \brief Load table data into the arrays, moving data as needed.
@@ -287,7 +297,7 @@ public:
    *
    * \return A reference to the clipping table. 
    */
-  const Table<ExecSpace> &operator[](size_t shape)
+  Table<ExecSpace> &operator[](size_t shape)
   {
     const auto index = shapeToIndex(shape);
     assert(shape < ST_MAX);
@@ -343,7 +353,7 @@ private:
   void loadShape(size_t shape)
   {
     const auto index = shapeToIndex(shape);
-    if(m_tables[index].size() == 0)
+    if(!m_tables[index].isLoaded())
     {
       if(shape == ST_TRI)
       {

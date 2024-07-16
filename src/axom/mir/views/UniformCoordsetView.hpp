@@ -80,7 +80,7 @@ public:
   {
     PointType pt;
     for(int i = 0; i < NDIMS; i++)
-      pt.x[i] = m_origin[i] + vertex_index[i] * m_spacing[i];
+      pt[i] = m_origin[i] + vertex_index[i] * m_spacing[i];
     return pt;
   }
 

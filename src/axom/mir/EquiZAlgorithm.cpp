@@ -59,6 +59,7 @@ void EquiZAlgorithm::execute(const conduit::Node &topo,
                              conduit::Node &new_coordset,
                              conduit::Node &new_matset)
 {
+#if 0
 #if defined (AXOM_USE_RAJA) && defined (AXOM_USE_UMPIRE)
   switch(m_execPolicy)
   {
@@ -84,121 +85,8 @@ void EquiZAlgorithm::execute(const conduit::Node &topo,
     break;
   }
 #endif
-}
-
-//------------------------------------------------------------------------------
-#if 0
-// NOTE: it might be useful to combine some things for simpler templating.
-template <typename TopologyView, typename CoordsetView>
-struct DomainView
-{
-  TopologyView topoView;
-  CoordsetView coordsetView;
-};
-
-// Q: if we could make a FieldView, what would it look like?
-
-struct FieldView
-{
-  template <typename FuncType>
-  void for_each_field(conduit::Node &n_fields, FuncType &&func)
-  {
-    for(conduit::index_t i = 0; i < n_fields.number_of_children(); i++)
-    {
-      views::Node_to_ArrayView(n_fields[i], [&](auto arrayView)
-      {
-        func(n_fields[i], arrayView);
-      }
-    }
-  }
-}
-
-template <typename ExecSpace, typename TopologyView, typename CoordsetView>
-void
-EquiZAlgorithm<ExecSpace, TopologyView, CoordsetView>::execute(
-  const TopologyView &topoView,
-  const CoordsetView &coordsetView,
-  const conduit::Node &options)
-{
-}
-//----------------------------------------------------------------------------------------
 #endif
-
-#if 0
-/// Provide overloads of initialize_topology_view for every possible topology type.
-template <typename IndexT>
-void initialize_topology_view(const std::conduit::Node &topo, StructuredTopologyView<StridedStructuredIndexing<IndexT, 3>> &topoView)
-{
-  // Initialize the view from the Conduit node.
 }
-
-template <typename ExecSpace, typename TopologyView, typename CoordsetView, typename MatsetView>
-void
-EquiZAlgorithm<ExecSpace, TopologyView, CoordsetView, MatsetView>::execute(
-  const TopologyView &topoView,
-  const CoordsetView &coordsetView,
-  const MatsetView   &matsetView,
-  const conduit::Node &options)
-{
-  if(options.has_path("zones"))
-  {
-    const conduit::Node &n_zones = options.fetch_existing("zones");
-
-/// NOTE: since each inner dispatch could be a lot of code, should I just make a zones array for the case where zones is not provided?
-
-    // Operate on a list of zones.
-    views::IndexNode_to_ArrayView(n_zones, [&](auto zonesView)
-    {
-      MaterialInformation matinfo = materials(matset);
-      for(const auto &mat : matinfo)
-      {
-        const auto matID = mat.number;
-
-        // Going this way, the relation builder should take in the topoView to do its work.
-        axom::mir::utilities::NodeToZoneRelationBuilder<ExecSpace, TopologyView> nz;
-        nz.execute(topoView);
-
-        const auto relZonesView = nz.zones().view();
-        const auto relSizesView = nz.sizes().view();
-        const auto relOffsetsView = nz.offsets().view();
-
-        // Create the clipping tables for the topo dimension.
-        axom::mir::clipping::ClipTableManager<ExecSpace> clipManager;
-        clipManager.load(topoView.dimension());
-
-        // We need to get views for the various shape types.
-        axom::StackArray<ClipTableView, ST_MAX>
-
-        topoView. template for_selected_zones<ExecSpace>(zonesView, AXOM_LAMBDA(auto zoneIndex, const auto &zone)
-        {          
-                
-        });
-      }
-    });
-  }
-  else
-  {
-    // Operate on all zones.
-    
-    topoView. template for_all_zones<ExecSpace>(AXOM_LAMBDA(auto zoneIndex, const auto &zone)
-    {          
-
-    });
-  }
-}
-
-
-// I'm starting to want to just run EquiZ on a certain execution space with a certain input mesh rather than all of them...
-//
-// EquiZAlgorithm<cuda_exec, StructuredTopologyView<StridedStructuredIndexing<int, 3>>> mir;
-// mir.execute(topo, coordset, matset, options, new_topo, new_coordset, new_matset);
-//
-// But what about fields??
-//
-// mir.execute(mesh, options, output);
-// mir.execute(mesh, options, output["topologies/topo"], output["coordset/newcoords"], output["matsets/newmatset"]);
-// mir.execute(mesh, options, output["topologies/topo"], output["coordset/newcoords"], output["matsets/newmatset"], output["fields"]);
-#endif
 
 template <typename ExecSpace>
 void EquiZAlgorithm::executeImpl(const conduit::Node &topo,

@@ -3,9 +3,13 @@
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
+#include "gtest/gtest.h"
+
 #include "axom/core.hpp"
 #include "axom/mir.hpp"
+
 #include <conduit/conduit_relay_io_blueprint.hpp>
+
 
 using seq_exec = axom::SEQ_EXEC;
 
@@ -31,9 +35,9 @@ TEST(mir_clipfield, uniform2d)
 
    // Clip the data
    conduit::Node clipmesh;
-   ClipField<seq_exec, TopoView, CoordsetView> clipper;
-   clipper.execute(topoView, coordsetView, mesh, "radial", clipmesh;
-   conduit::blueprint::relay::io::blueprint::save_mesh(clipmesh, "uniform2d", "hdf5");
+   axom::mir::clipping::ClipField<seq_exec, TopoView, CoordsetView> clipper(topoView, coordsetView);
+   clipper.execute(mesh, "radial", clipmesh);
+   conduit::relay::io::blueprint::save_mesh(clipmesh, "uniform2d", "hdf5");
 
    // Load a clipped baseline file & compare.
 }

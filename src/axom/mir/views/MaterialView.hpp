@@ -35,19 +35,7 @@ struct Material
 
 using MaterialInformation = std::vector<Material>;
 
-MaterialInformation materials(const conduit::Node &matset)
-{
-  MaterialInformation info;
-  if(matset.has_child("material_map"))
-  {
-    const conduit::Node &mm = matset["material_map"];
-    for(conduit::index_t i = 0; i < mm.number_of_children(); i++)
-    {
-      info.push_back(Material{static_cast<int>(i), mm[i].name()});
-    }
-  }
-  return info;
-}
+MaterialInformation materials(const conduit::Node &matset);
 
 //---------------------------------------------------------------------------
 // Material views - These objects are meant to wrap Blueprint Matsets behind

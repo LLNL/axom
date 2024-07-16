@@ -99,40 +99,7 @@ std::int32_t bsearch(T value, const axom::ArrayView<T> &view)
  * \
  */
 AXOM_HOST_DEVICE
-std::uint64_t hash_bytes(const std::uint8_t *data, std::uint32_t length)
-{
-  std::uint32_t hash = 0;
-
-  // Build the length into the hash.
-  const auto ldata = reinterpret_cast<const std::uint8_t *>(&length);
-  for(int e = 0; e < 4; e++)
-  {
-    hash += ldata[e];
-    hash += hash << 10;
-    hash ^= hash >> 6;
-  }
-
-  std::uint32_t hashr = hash;
-  for(std::uint32_t i = 0; i < length; i++)
-  {
-    hash += data[i];
-    hash += hash << 10;
-    hash ^= hash >> 6;
-
-    hashr += data[length - 1 - i];
-    hashr += hashr << 10;
-    hashr ^= hashr >> 6;
-  }
-  hash += hash << 3;
-  hash ^= hash >> 11;
-  hash += hash << 15;
-
-  hashr += hashr << 3;
-  hashr ^= hashr >> 11;
-  hashr += hashr << 15;
-
-  return (static_cast<std::uint64_t>(hash) << 32) | hashr;
-}
+std::uint64_t hash_bytes(const std::uint8_t *data, std::uint32_t length);
 
 //------------------------------------------------------------------------------
 /**
@@ -240,7 +207,7 @@ std::uint64_t make_name_n(const ValueType *values, std::uint32_t n)
 template <typename ExecSpace, typename KeyType>
 void unique(const axom::ArrayView<KeyType> &keys_orig_view, axom::Array<KeyType> &skeys, axom::Array<axom::IndexType> &sindices)
 {
-  using for_policy = typename axom::execution_space<ExecSpace>::for_policy;
+  using loop_policy = typename axom::execution_space<ExecSpace>::loop_policy;
   using reduce_policy = typename axom::execution_space<ExecSpace>::reduce_policy;
   const int allocatorID = axom::execution_space<ExecSpace>::allocatorID();
 
@@ -257,8 +224,8 @@ void unique(const axom::ArrayView<KeyType> &keys_orig_view, axom::Array<KeyType>
   });
 
   // Sort the keys, indices in place.
-  RAJA::sort_pairs<for_policy>(RAJA::make_span(keys_view, n),
-                               RAJA::make_span(indices_view, n));
+  RAJA::sort_pairs<loop_policy>(RAJA::make_span(keys_view.data(), n),
+                                RAJA::make_span(indices_view.data(), n));
 
   // Make a mask array for where differences occur.
   axom::Array<axom::IndexType> mask(n, n, allocatorID);
@@ -275,9 +242,9 @@ void unique(const axom::ArrayView<KeyType> &keys_orig_view, axom::Array<KeyType>
   // Do a scan on the mask array to build an offset array.
   axom::Array<axom::IndexType> offsets(n, n, allocatorID);
   auto offsets_view = offsets.view();
-  RAJA::exclusive_scan<for_policy>(RAJA::make_span(mask_view, n),
-                                   RAJA::make_span(offsets_view, n),
-                                   RAJA::operators::plus<axom::IndexType>{});
+  RAJA::exclusive_scan<loop_policy>(RAJA::make_span(mask_view.data(), n),
+                                    RAJA::make_span(offsets_view.data(), n),
+                                    RAJA::operators::plus<axom::IndexType>{});
 
   // Allocate the output arrays.
   const axom::IndexType newsize = mask_sum.get();

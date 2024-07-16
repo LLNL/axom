@@ -78,6 +78,8 @@ set(mir_sources
     clipping/ClipCasesTet.cpp
     clipping/ClipCasesTri.cpp
     clipping/ClipCasesWdg.cpp
+    views/MaterialView.cpp
+    utilities.cpp
     )
 
 #------------------------------------------------------------------------------
