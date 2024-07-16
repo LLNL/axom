@@ -1,9 +1,0 @@
-#ifndef SINA_CONFIG_HPP_
-#define SINA_CONFIG_HPP_
-
-/// \file
-
-#cmakedefine AXOM_SINA_USE_ADIAK
-
-#endif // SINA_CONFIG_HPP_
-
