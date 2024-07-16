@@ -83,28 +83,28 @@ public:
      *
      * \param value the string value of the datum
      */
-    Datum(std::string value);
+    Datum(const std::string &value);
 
     /**
      * \brief Construct a new Datum.
      *
      * \param value the double value of the datum
      */
-    Datum(double value);
+    Datum(const double &value);
 
     /**
      * \brief Construct a new Datum.
      *
      * \param value the string array value of the datum
      */
-    Datum(std::vector<std::string> value);
+    Datum(const std::vector<std::string> &value);
 
     /**
      * \brief Construct a new Datum.
      *
      * \param value the scalar array value of the datum
      */
-    Datum(std::vector<double> value);
+    Datum(const std::vector<double> &value);
 
     /**
      * \brief Construct a Datum from its Node representation.
@@ -163,7 +163,7 @@ public:
      *
      * \param tags the tags of the value
      */
-    void setTags(std::vector<std::string> tags);
+    void setTags(const std::vector<std::string> &tags);
 
     /**
      * \brief Get the units of the Datum
@@ -179,7 +179,7 @@ public:
      *
      * \param units the units of the value
      */
-    void setUnits(std::string units);
+    void setUnits(const std::string &units);
 
 
     /**

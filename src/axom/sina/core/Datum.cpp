@@ -35,26 +35,26 @@ namespace axom
 namespace sina
 {
 
-Datum::Datum(std::string value_) :
-        stringValue{std::move(value_)}{
+Datum::Datum(const std::string &value_) :
+        stringValue{value_}{
     //Set type to String, as we know it uses strings
     type = ValueType::String;
 }
 
-Datum::Datum(double value_) :
-        scalarValue{std::move(value_)}{
+Datum::Datum(const double &value_) :
+        scalarValue{value_}{
     //Set type to Scalar, as we know it uses doubles
     type = ValueType::Scalar;
 }
 
-Datum::Datum(std::vector<std::string> value_) :
-        stringArrayValue{std::move(value_)}{
+Datum::Datum(const std::vector<std::string> &value_) :
+        stringArrayValue{value_}{
     //Set type to StringArray, as we know it uses an array of strings
     type = ValueType::StringArray;
 }
 
-Datum::Datum(std::vector<double> value_) :
-        scalarArrayValue{std::move(value_)}{
+Datum::Datum(const std::vector<double> &value_) :
+        scalarArrayValue{value_}{
     //Set type to ScalarArray, as we know it uses an array of doubles
     type = ValueType::ScalarArray;
 }
@@ -149,12 +149,12 @@ Datum::Datum(conduit::Node const &asNode) {
    }
 }
 
-void Datum::setUnits(std::string units_) {
-    units = std::move(units_);
+void Datum::setUnits(const std::string &units_) {
+    units = units_;
 }
 
-void Datum::setTags(std::vector<std::string> tags_){
-    tags = std::move(tags_);
+void Datum::setTags(const std::vector<std::string> &tags_){
+    tags = tags_;
 }
 
 conduit::Node Datum::toNode() const {
