@@ -46,33 +46,30 @@ void braid(const std::string &type, const Dimensions &dims, conduit::Node &mesh)
 
 TEST(mir_clipfield, uniform2d)
 {
-   using Indexing = axom::mir::views::StructuredIndexing<axom::IndexType, 2>;
-   using TopoView = axom::mir::views::StructuredTopologyView<Indexing>;
-   using CoordsetView = axom::mir::views::UniformCoordsetView<double, 2>;
+  using Indexing = axom::mir::views::StructuredIndexing<axom::IndexType, 2>;
+  using TopoView = axom::mir::views::StructuredTopologyView<Indexing>;
+  using CoordsetView = axom::mir::views::UniformCoordsetView<double, 2>;
 
-   axom::StackArray<axom::IndexType, 2> dims{10, 10};
+  axom::StackArray<axom::IndexType, 2> dims{10, 10};
+  axom::StackArray<axom::IndexType, 2> zoneDims{dims[0] - 1, dims[1] - 1};
 
-   // Create the data
-   conduit::Node mesh;
-   braid("uniform", dims, mesh);
-   conduit::relay::io::blueprint::save_mesh(mesh, "uniform2d_orig", "hdf5");
-   mesh.print();
-   const conduit::Node &topo = mesh["topologies"][0];
-   const conduit::Node &coordset = mesh["coordsets"][0];
+  // Create the data
+  conduit::Node mesh;
+  braid("uniform", dims, mesh);
+  conduit::relay::io::blueprint::save_mesh(mesh, "uniform2d_orig", "hdf5");
 
-   // Create views
-   axom::StackArray<double, 2> origin{0., 0.}, spacing{1., 1.};
-   CoordsetView coordsetView(dims, origin, spacing);
-   Indexing zoneIndexing(dims);
-   TopoView topoView(zoneIndexing);
+  // Create views
+  axom::StackArray<double, 2> origin{0., 0.}, spacing{1., 1.};
+  CoordsetView coordsetView(dims, origin, spacing);
+  TopoView topoView(Indexing{zoneDims});
 
-   // Clip the data
-   conduit::Node clipmesh;
-   axom::mir::clipping::ClipField<seq_exec, TopoView, CoordsetView> clipper(topoView, coordsetView);
-   clipper.execute(mesh, "distance", clipmesh);
-   conduit::relay::io::blueprint::save_mesh(clipmesh, "uniform2d", "hdf5");
+  // Clip the data
+  conduit::Node clipmesh;
+  axom::mir::clipping::ClipField<seq_exec, TopoView, CoordsetView> clipper(topoView, coordsetView);
+  clipper.execute(mesh, "distance", clipmesh);
+  conduit::relay::io::blueprint::save_mesh(clipmesh, "uniform2d", "hdf5");
 
-   // Load a clipped baseline file & compare.
+  // Load a clipped baseline file & compare.
 }
 
 

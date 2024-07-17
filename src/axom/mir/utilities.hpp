@@ -201,8 +201,6 @@ std::uint64_t make_name_n(const ValueType *values, std::uint32_t n)
  * \param[out] skeys     A sorted unique array of keys produced from keys_orig_view.
  * \param[out] sindices  An array of indices that indicate where in the original view the keys came from.
  *
- * \note This code is adapted from Ascent/DevilRay.
- *
  */
 template <typename ExecSpace, typename KeyType>
 void unique(const axom::ArrayView<KeyType> &keys_orig_view, axom::Array<KeyType> &skeys, axom::Array<axom::IndexType> &sindices)
@@ -233,8 +231,7 @@ void unique(const axom::ArrayView<KeyType> &keys_orig_view, axom::Array<KeyType>
   RAJA::ReduceSum<reduce_policy, axom::IndexType> mask_sum(0);
   axom::for_all<ExecSpace>(n, AXOM_LAMBDA(axom::IndexType i)
   {
-    const axom::IndexType different = (keys_view[i] != keys_view[i - 1]) ? 1 : 0;
-    const axom::IndexType m = (i >= 1) ? different : 1;
+    const axom::IndexType m = (i >= 1) ? ((keys_view[i] != keys_view[i - 1]) ? 1 : 0) : 1;
     mask_view[i] = m;
     mask_sum += m;
   });
@@ -264,6 +261,29 @@ void unique(const axom::ArrayView<KeyType> &keys_orig_view, axom::Array<KeyType>
     }
   });
 }
+
+// TODO: move to blueprint_utilities when it has a .cpp file.
+
+/**
+ * \brief This class uses RAII to register internal functions that make Conduit allocate
+ *        through Axom's allocate/deallocate functions using a specific allocator. This
+ *        permits Conduit to allocate through Axom's UMPIRE logic.
+ */
+class ConduitAllocateThroughAxom
+{
+public:
+  ConduitAllocateThroughAxom(int _allocatorID);
+  ~ConduitAllocateThroughAxom();
+
+  conduit::index_t getConduitAllocatorID() const;
+
+private:
+  static void *internal_allocate(size_t items, size_t item_size);
+  static void internal_free(void *ptr);
+
+  static conduit::index_t conduitAllocatorID;
+  static int              axomAllocatorID;
+};
 
 } // end namespace utilities
 } // end namespace mir

@@ -53,25 +53,25 @@ std::map<std::string, int>
 shapeMap_FromFlags(std::uint64_t shapes)
 {
   std::map<std::string, int> sm;
-#if 0
-  if((shapes & views::LineShape::id()) > 0)
-    sm["line"] = views::LineShape::id();
 
-  if((shapes & views::TriShape::id()) > 0)
-    sm["tri"] = views::TriShape::id();
+  if((shapes & views::LineShape<int>::id()) > 0)
+    sm["line"] = views::LineShape<int>::id();
 
-  if((shapes & views::QuadShape::id()) > 0)
-    sm["quad"] = views::QuadShape::id();
+  if((shapes & views::TriShape<int>::id()) > 0)
+    sm["tri"] = views::TriShape<int>::id();
 
-  if((shapes & views::TetShape::id()) > 0)
-    sm["tet"] = views::TetShape::id();
+  if((shapes & views::QuadShape<int>::id()) > 0)
+    sm["quad"] = views::QuadShape<int>::id();
 
-  if((shapes & views::PyramidShape::id()) > 0)
-    sm["pyramid"] = views::PyramidShape::id();
+  if((shapes & views::TetShape<int>::id()) > 0)
+    sm["tet"] = views::TetShape<int>::id();
 
-  if((shapes & views::WedgeShape::id()) > 0)
-    sm["wedge"] = views::WedgeShape::id();
-#endif
+  if((shapes & views::PyramidShape<int>::id()) > 0)
+    sm["pyramid"] = views::PyramidShape<int>::id();
+
+  if((shapes & views::WedgeShape<int>::id()) > 0)
+    sm["wedge"] = views::WedgeShape<int>::id();
+
   if((shapes & views::HexShape<int>::id()) > 0)
     sm["hex"] = views::HexShape<int>::id();
 
@@ -147,41 +147,28 @@ class ClipField
 public:
   using BlendData = axom::mir::utilities::blueprint::BlendData;
   using SliceData = axom::mir::utilities::blueprint::SliceData;
-/*
-  void execute(const conduit::Node &inputMesh, const std::string &clipField, conduit::Node &outputMesh)
-  {
-
- I was going to say that we could create the views here but there's a lot of dispatch code devoted to making typed array views, etc that would need to be done before we even know the types.
-
- I could include the dispatch_coordset method for example but then this class would have all the various instantiations of the algorithm rather than just the one we want.
-
-    CoordsetView csview;
-  }
- */
-private:
-  axom::mir::clipping::ClipTableManager<ExecSpace> m_clipTables{};
   using ClipTableViews = axom::StackArray<axom::mir::clipping::TableView, 6>;
 
-  void createClipTableViews(ClipTableViews &views, int dimension)
-  {
-    if(dimension == 2)
-    {
-      views[0] = m_clipTables[ST_TRI].view();
-      views[1] = m_clipTables[ST_QUA].view();
-    }
-    if(dimension == 2)
-    {
-      views[2] = m_clipTables[ST_TET].view();
-      views[3] = m_clipTables[ST_PYR].view();
-      views[4] = m_clipTables[ST_WDG].view();
-      views[5] = m_clipTables[ST_HEX].view();
-    }
-  }
-public:
-  ClipField(const TopologyView &topoView, const CoordsetView &coordsetView) : m_topologyView(topoView), m_coordsetView(coordsetView)
+  /**
+   * \brief Constructor
+   *
+   * \param topoView A topology view suitable for the supplied topology.
+   * \param coordsetView A coordset view suitable for the supplied coordset.
+   *
+   */
+  ClipField(const TopologyView &topoView, const CoordsetView &coordsetView) : m_topologyView(topoView), m_coordsetView(coordsetView), m_clipTables()
   {
   }
 
+  /**
+   * \brief Execute the clipping operation using the data stored in the specified \a clipField.
+   *
+   * \param[in] n_input The Conduit node that contains the topology, coordsets, and fields.
+   * \param[in] clipField The name of the field to use for clipping.
+   * \param[out] n_output A Conduit node that will hold the clipped output mesh. This should be a different node from \a n_input.
+   *
+   * \note The clipField field must currently be vertex-associated.
+   */
   void execute(const conduit::Node &n_input,
                const std::string &clipField,
                conduit::Node &n_output)
@@ -200,6 +187,19 @@ public:
              n_output["fields"]);
   }
 
+  /**
+   * \brief Execute the clipping operation using the data stored in the specified \a clipField.
+   *
+   * \param[in] n_topo The node that contains the input mesh topology.
+   * \param[in] n_coordset The node that contains the input mesh coordset.
+   * \param[in] n_fields The node that contains the input fields.
+   * \param[in] clipField The name of the field to use for clipping.
+   * \param[out] n_newTopo A node that will contain the new clipped topology.
+   * \param[out] n_newCoordset A node that will contain the new coordset for the clipped topology.
+   * \param[out] n_newFields A node that will contain the new fields for the clipped topology.
+   *
+   * \note The clipField field must currently be vertex-associated. Also, the output topology will be an unstructured topology with mixed shape types.
+   */
   void execute(const conduit::Node &n_topo,
                const conduit::Node &n_coordset,
                const conduit::Node &n_fields,
@@ -218,6 +218,8 @@ public:
 
     // Get the clip field.
     const conduit::Node &n_clip_field = n_fields.fetch_existing(clipField);
+    const conduit::Node &n_clip_field_values = n_clip_field["values"];
+    assert(n_clip_field["association"].as_string() == "vertex");
 
     // TODO: process options (or add some class members to hold attributes)
     int selection = -1; // All bits set.
@@ -254,7 +256,7 @@ public:
     auto fragmentsView = fragments.view();
     auto fragmentsSizeView = fragmentsSize.view();
 
-    views::Node_to_ArrayView(n_clip_field, [&](auto clipFieldView)
+    views::Node_to_ArrayView(n_clip_field_values, [&](auto clipFieldView)
     {
       m_topologyView.template for_all_zones<ExecSpace>(AXOM_LAMBDA(auto zoneIndex, const auto &zone)
       {
@@ -424,7 +426,7 @@ public:
     auto blendIdsView = blendIds.view();
     auto blendCoeffView = blendCoeff.view();
 
-    views::Node_to_ArrayView(n_clip_field, [&](auto clipFieldView)
+    views::Node_to_ArrayView(n_clip_field_values, [&](auto clipFieldView)
     {
       m_topologyView.template for_all_zones<ExecSpace>(AXOM_LAMBDA(auto zoneIndex, const auto &zone)
       {
@@ -604,27 +606,35 @@ public:
 
     n_newTopo.reset();
 
+std::cout << "allocatorID: " << allocatorID << std::endl;
+std::cout << "Conduit default allocator (probably not set): " << n_newTopo.allocator() << std::endl;
+std::cout << conduit::about() << std::endl;
+
+    // Get the ID of a Conduit allocator that will allocate through Axom with device allocator allocatorID.
+    utilities::ConduitAllocateThroughAxom c2a(allocatorID);
+    const int conduitAllocatorID = c2a.getConduitAllocatorID();
+
     // Allocate connectivity.
     conduit::Node &n_conn = n_newTopo["elements/connectivity"];
-    n_conn.set_allocator(allocatorID);
+    n_conn.set_allocator(conduitAllocatorID);
     n_conn.set(conduit::DataType(connTypeID, finalConnSize));
     auto connView = axom::ArrayView<ConnectivityType>(static_cast<ConnectivityType *>(n_conn.data_ptr()), finalConnSize);
 
     // Allocate shapes.
     conduit::Node &n_shapes = n_newTopo["elements/shapes"];
-    n_shapes.set_allocator(allocatorID);
+    n_shapes.set_allocator(conduitAllocatorID);
     n_shapes.set(conduit::DataType(connTypeID, finalNumZones));
     auto shapesView = axom::ArrayView<ConnectivityType>(static_cast<ConnectivityType *>(n_shapes.data_ptr()), finalNumZones);
 
     // Allocate sizes.
     conduit::Node &n_sizes = n_newTopo["elements/sizes"];
-    n_sizes.set_allocator(allocatorID);
+    n_sizes.set_allocator(conduitAllocatorID);
     n_sizes.set(conduit::DataType(connTypeID, finalNumZones));
     auto sizesView = axom::ArrayView<ConnectivityType>(static_cast<ConnectivityType *>(n_shapes.data_ptr()), finalNumZones);
 
     // Allocate offsets.
     conduit::Node &n_offsets = n_newTopo["elements/offsets"];
-    n_offsets.set_allocator(allocatorID);
+    n_offsets.set_allocator(conduitAllocatorID);
     n_offsets.set(conduit::DataType(connTypeID, finalNumZones));
     auto offsetsView = axom::ArrayView<ConnectivityType>(static_cast<ConnectivityType *>(n_offsets.data_ptr()), finalNumZones);
 
@@ -798,6 +808,22 @@ public:
   } // end of execute
 
 private:
+  void createClipTableViews(ClipTableViews &views, int dimension)
+  {
+    if(dimension == 2)
+    {
+      views[0] = m_clipTables[ST_TRI].view();
+      views[1] = m_clipTables[ST_QUA].view();
+    }
+    if(dimension == 2)
+    {
+      views[2] = m_clipTables[ST_TET].view();
+      views[3] = m_clipTables[ST_PYR].view();
+      views[4] = m_clipTables[ST_WDG].view();
+      views[5] = m_clipTables[ST_HEX].view();
+    }
+  }
+
   void make_coordset(const BlendData &blend, const conduit::Node &n_coordset, conduit::Node &n_newCoordset) const
   {
     axom::mir::utilities::blueprint::CoordsetBlender<ExecSpace, CoordsetView> cb;
@@ -830,6 +856,7 @@ private:
   // NOTE: I probably want to make the clip tables be a class member so I can reuse the object without having to reload the clip tables each time.
   TopologyView m_topologyView;
   CoordsetView m_coordsetView;
+  axom::mir::clipping::ClipTableManager<ExecSpace> m_clipTables;
 };
 
 } // end namespace clipping
