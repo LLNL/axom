@@ -129,6 +129,11 @@ if(AXOM_ENABLE_CUDA AND ${CMAKE_VERSION} VERSION_LESS 3.18.0)
     message(FATAL_ERROR "Axom requires CMake version 3.18.0+ when CUDA is enabled.")
 endif()
 
+# Add extra file extensions for code styling
+# Note: Add them also to axom_add_code_checks in src/cmake/AxomMacros.cmake
+# Configured C++ files
+list(APPEND BLT_C_FILE_EXTS ".cpp.in" ".hpp.in")
+
 axom_add_code_checks()
 
 #------------------------------------------------------------------------------
