@@ -31,10 +31,7 @@ macro(axom_add_code_checks)
     if ("${PROJECT_SOURCE_DIR}" STREQUAL "${CMAKE_SOURCE_DIR}")
         # Create file globbing expressions that only include directories that contain source
         set(_base_dirs "axom" "examples" "thirdparty/tests" "tools")
-
-        # Note: any extensions added here should also be added to BLT's lists
-        # in src/CMakeLists.txt
-        set(_ext_expressions "*.cpp" "*.hpp" "*.inl" "*.cpp.in" "*.hpp.in"
+        set(_ext_expressions "*.cpp" "*.hpp" "*.inl"
                              "*.cxx" "*.hxx" "*.cc" "*.c" "*.h" "*.hh"
                              "*.F" "*.f" "*.f90" "*.F90")
 

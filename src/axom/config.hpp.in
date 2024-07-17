@@ -16,12 +16,10 @@
 /*
  * Axom Version Information
  */
-// clang-format off
 #define AXOM_VERSION_MAJOR @AXOM_VERSION_MAJOR@
 #define AXOM_VERSION_MINOR @AXOM_VERSION_MINOR@
 #define AXOM_VERSION_PATCH @AXOM_VERSION_PATCH@
 #define AXOM_VERSION_FULL "@AXOM_VERSION_FULL@"
-// clang-format on
 /*NOTE: Do not add AXOM_GIT_SHA here.  This will force
  * full rebuild on all local changes. It is added in axom::getVersion()
  * and axom::about(), as well as accessible from axom::gitSha().
@@ -114,9 +112,7 @@
  * allow silently, and -1 to disallow.  Corresponds to cmake variable
  * AXOM_DEPRECATED_TYPES values of WARN, ALLOW and ERROR.
  */
-// clang-format off
 #cmakedefine AXOM_DEPRECATED_TYPES_N @AXOM_DEPRECATED_TYPES_N@
-// clang-format on
 
 /*
  * Compiler defines to configure the built-in fmt library
@@ -127,7 +123,6 @@
 /*
  * Compiler defines to configure the built-in sparsehash library
  */
-// clang-format off
 #cmakedefine SPARSEHASH_HASHFUN_HEADER @SPARSEHASH_HASHFUN_HEADER@
 #cmakedefine SPARSEHASH_HASHFUN_NAMESPACE @SPARSEHASH_HASHFUN_NAMESPACE@
 
@@ -135,6 +130,5 @@
  * Disable some MSVC warnings related to shared libraries, if applicable
  */
 @AXOM_MSVC_PRAGMAS@
-// clang-format on
 
 #endif /* AXOM_COMMON_CONFIG_HPP */
