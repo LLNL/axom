@@ -6,7 +6,7 @@
 ##------------------------------------------------------------------------------
 ## axom_add_code_checks()
 ##
-## Adds code checks for all cpp/hpp files recursively under the current directory.
+## Adds code checks for all source files recursively in the Axom repository.
 ## 
 ## This creates the following parent build targets:
 ##  check - Runs a non file changing style check and CppCheck
