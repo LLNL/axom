@@ -40,7 +40,7 @@
 #cmakedefine AXOM_NO_INT64_T
 
 #ifndef AXOM_NO_INT64_T
-  #cmakedefine AXOM_USE_64BIT_INDEXTYPE
+#cmakedefine AXOM_USE_64BIT_INDEXTYPE
 #endif
 
 /*
@@ -87,9 +87,9 @@
  * Windows GDI geometry classes (NOGDI).
  */
 #ifdef WIN32
-  #define _USE_MATH_DEFINES
-  #define NOGDI
-  #define NOMINMAX
+#define _USE_MATH_DEFINES
+#define NOGDI
+#define NOMINMAX
 #endif
 
 /*
