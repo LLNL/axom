@@ -113,6 +113,7 @@ private:
   std::ostream* m_stream;
   std::string m_file_name;
   bool m_opened;
+  bool m_isOstreamOwnedBySLIC;
 
   /*!
    * \brief Default constructor.
@@ -121,7 +122,8 @@ private:
   GenericOutputStream()
     : m_stream(static_cast<std::ostream*>(nullptr))
     , m_file_name()
-    , m_opened(false) {};
+    , m_opened(false)
+    , m_isOstreamOwnedBySLIC(false) {};
 
   DISABLE_COPY_AND_ASSIGNMENT(GenericOutputStream);
   DISABLE_MOVE_AND_ASSIGNMENT(GenericOutputStream);

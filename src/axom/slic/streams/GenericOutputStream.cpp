@@ -16,6 +16,7 @@ GenericOutputStream::GenericOutputStream(std::ostream* os)
   : m_stream(os)
   , m_file_name()
   , m_opened(true)
+  , m_isOstreamOwnedBySLIC(false)
 { }
 
 //------------------------------------------------------------------------------
@@ -26,18 +27,21 @@ GenericOutputStream::GenericOutputStream(const std::string& stream)
     m_stream = &std::cout;
     m_file_name = std::string();
     m_opened = true;
+    m_isOstreamOwnedBySLIC = false;
   }
   else if(stream == "cerr")
   {
     m_stream = &std::cerr;
     m_file_name = std::string();
     m_opened = true;
+    m_isOstreamOwnedBySLIC = false;
   }
   else
   {
     m_stream = new std::ofstream();
     m_file_name = stream;
     m_opened = false;
+    m_isOstreamOwnedBySLIC = true;
   }
 }
 
@@ -47,6 +51,7 @@ GenericOutputStream::GenericOutputStream(std::ostream* os,
   : m_stream(os)
   , m_file_name()
   , m_opened(true)
+  , m_isOstreamOwnedBySLIC(false)
 {
   this->setFormatString(format);
 }
@@ -65,7 +70,13 @@ GenericOutputStream::GenericOutputStream(const std::string& stream,
 }
 
 //------------------------------------------------------------------------------
-GenericOutputStream::~GenericOutputStream() { }
+GenericOutputStream::~GenericOutputStream()
+{
+  if(m_isOstreamOwnedBySLIC)
+  {
+    delete m_stream;
+  }
+}
 
 //------------------------------------------------------------------------------
 void GenericOutputStream::append(message::Level msgLevel,
