@@ -8,6 +8,7 @@
 #include "axom/core.hpp"
 #include "axom/mir/views/NodeArrayView.hpp"
 #include "axom/mir/utilities.hpp"
+#include "axom/mir/blueprint_utilities.hpp"
 
 #include <conduit/conduit.hpp>
 
@@ -88,7 +89,10 @@ private:
   {
     const auto allocatorID = axom::execution_space<ExecSpace>::allocatorID();
     const auto outputSize = blend.m_uniqueIndicesView.size();
-    n_output_values.set_allocator(allocatorID);
+
+    // Get the ID of a Conduit allocator that will allocate through Axom with device allocator allocatorID.
+    utilities::blueprint::ConduitAllocateThroughAxom c2a(allocatorID);
+    n_output_values.set_allocator(c2a.getConduitAllocatorID());
     n_output_values.set(conduit::DataType(n_values.dtype().id(), outputSize));
 
     views::Node_to_ArrayView_same(n_values, n_output_values, [&](auto compView, auto outView)

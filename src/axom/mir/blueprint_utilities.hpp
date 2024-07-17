@@ -62,6 +62,29 @@ struct cpp2conduit<conduit::float32> { using type = conduit::float32; static con
 template <>
 struct cpp2conduit<conduit::float64> { using type = conduit::float64; static constexpr conduit::index_t id = conduit::DataType::FLOAT64_ID; };
 
+//------------------------------------------------------------------------------
+/**
+ * \brief This class registers a Conduit allocator that can make Conduit allocate
+ *        through Axom's allocate/deallocate functions using a specific allocator. This
+ *        permits Conduit to allocate through Axom's UMPIRE logic.
+ */
+class ConduitAllocateThroughAxom
+{
+public:
+  ConduitAllocateThroughAxom(int _allocatorID);
+  ~ConduitAllocateThroughAxom();
+
+  conduit::index_t getConduitAllocatorID() const;
+
+private:
+  static void *internal_allocate(size_t items, size_t item_size);
+  static void internal_free(void *ptr);
+
+  static conduit::index_t conduitAllocatorID;
+  static int              axomAllocatorID;
+};
+
+//------------------------------------------------------------------------------
 // TODO: Add in a routine to migrate a Conduit node to a new memory space.
 // copy(const conduit::Node &src, conduit::Node &dest);
 

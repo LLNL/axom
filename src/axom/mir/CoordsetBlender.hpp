@@ -61,6 +61,9 @@ public:
     const auto nComponents = axes.size();
     assert(PointType::DIMENSION == nComponents);
 
+    // Get the ID of a Conduit allocator that will allocate through Axom with device allocator allocatorID.
+    utilities::blueprint::ConduitAllocateThroughAxom c2a(allocatorID);
+
     n_output.reset();
     n_output["type"] = "explicit";
     conduit::Node &n_values = n_output["values"];
@@ -71,8 +74,8 @@ public:
     for(size_t i = 0; i < nComponents; i++)
     {
       // Allocate data in the Conduit node and make a view.
-      conduit::Node &comp = n_output[axes[i]];
-      comp.set_allocator(allocatorID);
+      conduit::Node &comp = n_values[axes[i]];
+      comp.set_allocator(c2a.getConduitAllocatorID());
       comp.set(conduit::DataType(axom::mir::utilities::blueprint::cpp2conduit<value_type>::id, outputSize));
       auto *comp_data = static_cast<value_type *>(comp.data_ptr());
       compViews[i] = axom::ArrayView<value_type>(comp_data, outputSize);

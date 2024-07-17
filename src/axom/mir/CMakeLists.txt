@@ -70,6 +70,7 @@ set(mir_sources
     CellClipper.cpp
     CellGenerator.cpp
 
+    blueprint_utilities.cpp
     MIRAlgorithm.cpp
     EquiZAlgorithm.cpp
     clipping/ClipCasesHex.cpp

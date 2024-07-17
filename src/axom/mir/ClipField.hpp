@@ -605,13 +605,15 @@ public:
     const auto finalConnSize = fragment_nids_sum.get();
 
     n_newTopo.reset();
+    n_newTopo["type"] = "unstructured";
+    n_newTopo["coordset"] = n_newCoordset.name();
 
 std::cout << "allocatorID: " << allocatorID << std::endl;
 std::cout << "Conduit default allocator (probably not set): " << n_newTopo.allocator() << std::endl;
 std::cout << conduit::about() << std::endl;
 
     // Get the ID of a Conduit allocator that will allocate through Axom with device allocator allocatorID.
-    utilities::ConduitAllocateThroughAxom c2a(allocatorID);
+    utilities::blueprint::ConduitAllocateThroughAxom c2a(allocatorID);
     const int conduitAllocatorID = c2a.getConduitAllocatorID();
 
     // Allocate connectivity.
@@ -630,7 +632,7 @@ std::cout << conduit::about() << std::endl;
     conduit::Node &n_sizes = n_newTopo["elements/sizes"];
     n_sizes.set_allocator(conduitAllocatorID);
     n_sizes.set(conduit::DataType(connTypeID, finalNumZones));
-    auto sizesView = axom::ArrayView<ConnectivityType>(static_cast<ConnectivityType *>(n_shapes.data_ptr()), finalNumZones);
+    auto sizesView = axom::ArrayView<ConnectivityType>(static_cast<ConnectivityType *>(n_sizes.data_ptr()), finalNumZones);
 
     // Allocate offsets.
     conduit::Node &n_offsets = n_newTopo["elements/offsets"];
@@ -723,9 +725,26 @@ std::cout << conduit::about() << std::endl;
       shapesUsed_reduce |= shapesUsed;
     });
 
+    // We should have some data in there at this point...
+    n_newTopo.print();
+#if 0
+// This is where I left off. Totalview dies in the scan...
+
+/*
+elements: 
+  connectivity: [106, 97, 73, ..., 51, 13]
+  shapes: [16, 16, 16, ..., 16, 16]
+  sizes: [16540704, 0, 0, ..., 538976288, 538968189]
+  offsets: [4038, 0, 0, ..., 538976288, 1684930685]
+*/
+
+axom::exclusive_scan<ExecSpace>(sizesView, offsetsView, axom::operators::plus<ConnectivityType>{});
+
+#endif
+
     // Make offsets
-    RAJA::exclusive_scan<loop_policy>(RAJA::make_span(sizesView.data(), nzones),
-                                      RAJA::make_span(offsetsView.data(), nzones),
+    RAJA::exclusive_scan<loop_policy>(RAJA::make_span(sizesView.data(), finalNumZones),
+                                      RAJA::make_span(offsetsView.data(), finalNumZones),
                                       RAJA::operators::plus<ConnectivityType>{});
 
     // Add shape information to the connectivity.
@@ -733,6 +752,7 @@ std::cout << conduit::about() << std::endl;
     const auto shapeMap = details::shapeMap_FromFlags(shapesUsed);
     if(axom::utilities::countBits(shapesUsed) > 1)
     {
+std::cout << "multiple output types" << std::endl;
       n_newTopo["elements/shape"] = "mixed";
       conduit::Node &n_shape_map = n_newTopo["elements/shape_map"];
       for(auto it = shapeMap.cbegin(); it != shapeMap.cend(); it++)
@@ -740,23 +760,27 @@ std::cout << conduit::about() << std::endl;
     }
     else
     {
+std::cout << "single output type" << std::endl;
       n_shapes.reset();
       n_newTopo["elements"].remove("shapes");
 
       n_newTopo["elements/shape"] = shapeMap.begin()->first;
     }
+    n_newTopo.print();
 
     //-----------------------------------------------------------------------
     // STAGE 6 - Make new coordset.
     //-----------------------------------------------------------------------
     
     make_coordset(blend, n_coordset, n_newCoordset);
+    n_newCoordset.print();
 
     //-----------------------------------------------------------------------
     // STAGE 7 - Make new fields.
     //-----------------------------------------------------------------------
     axom::mir::utilities::blueprint::SliceData slice;
     make_fields(blend, slice, n_newTopo.name(), n_fields, n_newFields);
+    n_newFields.print();
 
     //-----------------------------------------------------------------------
     // STAGE 8 - make originalElements (this will later be optional)
@@ -773,7 +797,7 @@ std::cout << conduit::about() << std::endl;
         n_origElem["association"] = "element";
         n_origElem["topology"] = n_topo.name();
         conduit::Node &n_values = n_origElem["values"];
-        n_values.set_allocator(allocatorID);
+        n_values.set_allocator(conduitAllocatorID);
         n_values.set(conduit::DataType(n_orig_values.dtype().id(), finalNumZones));
         auto valuesView = axom::ArrayView<value_type>(static_cast<value_type *>(n_values.data_ptr()), finalNumZones);
         axom::for_all<ExecSpace>(nzones, AXOM_LAMBDA(auto zoneIndex)
@@ -792,7 +816,7 @@ std::cout << conduit::about() << std::endl;
       n_orig["association"] = "element";
       n_orig["topology"] = n_topo.name();
       conduit::Node &n_values = n_orig["values"];
-      n_values.set_allocator(allocatorID);
+      n_values.set_allocator(conduitAllocatorID);
       n_values.set(conduit::DataType(connTypeID, finalNumZones));
       auto valuesView = axom::ArrayView<ConnectivityType>(static_cast<ConnectivityType *>(n_values.data_ptr()), finalNumZones);
       axom::for_all<ExecSpace>(nzones, AXOM_LAMBDA(auto zoneIndex)
