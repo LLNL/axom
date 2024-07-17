@@ -56,7 +56,7 @@ git checkout $branch
 git submodule update --init --recursive
 
 mkdir build && cd build 
-cmake $CMAKE_ARGS ..
+cmake $CMAKE_ARGS ../src
 make style
 cd ..
 
