@@ -51,6 +51,38 @@ template <typename T>
 struct BitTraits;
 
 template <>
+struct BitTraits<std::int64_t>
+{
+  constexpr static int NUM_BYTES = 8;
+  constexpr static int BITS_PER_WORD = NUM_BYTES << 3;
+  constexpr static int LG_BITS_PER_WORD = 6;
+};
+
+template <>
+struct BitTraits<std::int32_t>
+{
+  constexpr static int NUM_BYTES = 4;
+  constexpr static int BITS_PER_WORD = NUM_BYTES << 3;
+  constexpr static int LG_BITS_PER_WORD = 5;
+};
+
+template <>
+struct BitTraits<std::int16_t>
+{
+  constexpr static int NUM_BYTES = 2;
+  constexpr static int BITS_PER_WORD = NUM_BYTES << 3;
+  constexpr static int LG_BITS_PER_WORD = 4;
+};
+
+template <>
+struct BitTraits<std::int8_t>
+{
+  constexpr static int NUM_BYTES = 1;
+  constexpr static int BITS_PER_WORD = NUM_BYTES << 3;
+  constexpr static int LG_BITS_PER_WORD = 3;
+};
+
+template <>
 struct BitTraits<std::uint64_t>
 {
   constexpr static int NUM_BYTES = 8;
@@ -213,7 +245,7 @@ template <typename FlagType, typename BitType>
 AXOM_HOST_DEVICE
 bool bitIsSet(FlagType flags, BitType bit)
 {
-  assert(bit >= 0 && (static_cast<size_t>(bit) < (sizeof(BitType) << 3)));
+  assert(bit >= 0 && (static_cast<int>(bit) < BitTraits<FlagType>::BITS_PER_WORD << 3));
   return (flags & (1 << bit)) > 0;
 }
 
@@ -232,7 +264,7 @@ template <typename FlagType, typename BitType>
 AXOM_HOST_DEVICE
 void setBit(FlagType &flags, BitType bit, bool value = true)
 {
-  assert(bit >= 0 && (static_cast<size_t>(bit) < (sizeof(BitType) << 3)));
+  assert(bit >= 0 && (static_cast<int>(bit) < BitTraits<FlagType>::BITS_PER_WORD << 3));
   const auto mask = 1 << bit;
   flags = value ? (flags | mask) : (flags & ~mask);
 }
