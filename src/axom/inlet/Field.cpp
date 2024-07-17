@@ -45,7 +45,8 @@ void Field::setDefaultValue(T value)
     if(m_docEnabled)
     {
       m_sidreGroup->createViewScalar("defaultValue", value);
-    }if(!m_sidreGroup->hasView("value"))
+    }
+    if(!m_sidreGroup->hasView("value"))
     {
       m_sidreGroup->createViewScalar("value", value);
     }
