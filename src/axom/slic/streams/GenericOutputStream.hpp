@@ -62,13 +62,14 @@ public:
    *  message formatting.
    * \param [in] os pointer to a user-supplied ostream instance.
    * \param [in] format the format string.
+   * \pre os != NULL
    * \see LogStream::setFormatString for the format string.
    */
   GenericOutputStream(std::ostream* os, const std::string& format);
 
   /*!
    * \brief Constructs a GenericOutputStream instance specified by the given
-   *  string  and message formatting.
+   *  string and message formatting.
    *  The string input determines the stream as follows:
    *   - "cout" makes std::cout the output stream
    *   - "cerr" makes std::cerr the output stream
