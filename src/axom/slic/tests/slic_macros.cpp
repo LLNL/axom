@@ -421,16 +421,43 @@ TEST(slic_macros, test_no_macros_file_output)
   // GenericOutputStream(std::string stream) and
   // GenericOutputStream(std::string stream, std::string format) constructors
   // do not create a a file if no macros are called
-  std::string dne_no_fmt = "file_dne_no_fmt.txt";
-  std::string dne_with_fmt = "file_dne_with_fmt.txt";
+  std::string no_fmt = "file_no_fmt.txt";
+  std::string with_fmt = "file_with_fmt.txt";
 
-  slic::addStreamToAllMsgLevels(new slic::GenericOutputStream(dne_no_fmt));
+  slic::addStreamToAllMsgLevels(new slic::GenericOutputStream(no_fmt));
+
+  slic::addStreamToAllMsgLevels(new slic::GenericOutputStream(with_fmt, msgfmt));
+
+  EXPECT_EQ(axom::utilities::filesystem::pathExists(no_fmt), false);
+  EXPECT_EQ(axom::utilities::filesystem::pathExists(with_fmt), false);
+
+  SLIC_INFO("Files opened after message is appended");
+
+  EXPECT_EQ(axom::utilities::filesystem::pathExists(no_fmt), true);
+  EXPECT_EQ(axom::utilities::filesystem::pathExists(with_fmt), true);
+
+  // GenericOutputStream(std::ostream* os) and
+  // GenericOutputStream(std::ostream* os, std::string format) constructors
+  // do create a file, even if no macros are called
+  std::string empty_no_fmt = "empty_no_fmt.txt";
+  std::string empty_with_fmt = "empty_with_fmt.txt";
+
+  std::ofstream* ofs_no_fmt = new std::ofstream(empty_no_fmt);
+  std::ofstream* ofs_with_fmt = new std::ofstream(empty_with_fmt);
+
+  slic::addStreamToAllMsgLevels(new slic::GenericOutputStream(ofs_no_fmt));
 
   slic::addStreamToAllMsgLevels(
-    new slic::GenericOutputStream(dne_with_fmt, msgfmt));
+    new slic::GenericOutputStream(ofs_with_fmt, msgfmt));
 
-  EXPECT_EQ(axom::utilities::filesystem::pathExists(dne_no_fmt), false);
-  EXPECT_EQ(axom::utilities::filesystem::pathExists(dne_with_fmt), false);
+  EXPECT_EQ(axom::utilities::filesystem::pathExists(empty_no_fmt), true);
+  EXPECT_EQ(axom::utilities::filesystem::pathExists(empty_with_fmt), true);
+
+  // Cleanup generated files
+  EXPECT_EQ(axom::utilities::filesystem::removeFile(no_fmt), 0);
+  EXPECT_EQ(axom::utilities::filesystem::removeFile(with_fmt), 0);
+  EXPECT_EQ(axom::utilities::filesystem::removeFile(empty_no_fmt), 0);
+  EXPECT_EQ(axom::utilities::filesystem::removeFile(empty_with_fmt), 0);
 }
 
 //------------------------------------------------------------------------------
