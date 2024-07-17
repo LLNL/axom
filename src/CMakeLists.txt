@@ -129,6 +129,8 @@ if(AXOM_ENABLE_CUDA AND ${CMAKE_VERSION} VERSION_LESS 3.18.0)
     message(FATAL_ERROR "Axom requires CMake version 3.18.0+ when CUDA is enabled.")
 endif()
 
+axom_add_code_checks()
+
 #------------------------------------------------------------------------------
 # Add source directories
 #------------------------------------------------------------------------------

@@ -146,9 +146,3 @@ endif()
 if(AXOM_ENABLE_EXAMPLES)
   add_subdirectory(examples)
 endif()
-
-#------------------------------------------------------------------------------
-# Add code checks
-#------------------------------------------------------------------------------
-axom_add_code_checks(PREFIX   sidre
-                     EXCLUDES sidre/examples/lulesh2)
