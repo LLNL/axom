@@ -3,7 +3,6 @@
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
-
 #ifndef SINA_FILE_HPP
 #define SINA_FILE_HPP
 
@@ -43,78 +42,73 @@ namespace sina
  *   myRecord->add(myOtherFile);
  * \endcode
  */
-class File {
+class File
+{
 public:
-    /**
+  /**
      * \brief Construct a new File.
      *
      * \param uri the location of the file
      */
-    explicit File(std::string uri);
+  explicit File(std::string uri);
 
-    /**
+  /**
      * \brief Construct a new File.
      *
      * \param uri the uri for a file
      * \param asNode the Node representation of the file's additional info
      */
-    File(std::string uri, conduit::Node const &asNode);
+  File(std::string uri, conduit::Node const &asNode);
 
-    /**
+  /**
      * \brief Get the File's URI.
      *
      * \return the URI
      */
-    std::string const &getUri() const noexcept {
-        return uri;
-    }
+  std::string const &getUri() const noexcept { return uri; }
 
-    /**
+  /**
      * \brief Get the File's MIME type.
      *
      * \return the MIME type
      */
-    std::string const &getMimeType() const noexcept {
-        return mimeType;
-    }
+  std::string const &getMimeType() const noexcept { return mimeType; }
 
-    /**
+  /**
      * \brief Get the File's tags.
      *
      * \return the tags
      */
-    std::vector<std::string> const &getTags() const noexcept {
-        return tags;
-    }
+  std::vector<std::string> const &getTags() const noexcept { return tags; }
 
-    /**
+  /**
      * \brief Set the File's MIME type.
      *
      * \param mimeType the MIME type
      */
-    void setMimeType(std::string mimeType);
+  void setMimeType(std::string mimeType);
 
-    /**
+  /**
      * \brief Set the File's tags.
      *
      * \param tags the File's tags
      */
-    void setTags(std::vector<std::string> tags);
+  void setTags(std::vector<std::string> tags);
 
-    /**
+  /**
      * \brief Convert this File to its conduit Node representation.
      *
      * \return the File in its Node representation
      */
-    conduit::Node toNode() const;
+  conduit::Node toNode() const;
 
 private:
-    std::string uri;
-    std::string mimeType;
-    std::vector<std::string> tags;
+  std::string uri;
+  std::string mimeType;
+  std::vector<std::string> tags;
 };
 
-}  // end sina namespace
-}  // end axom namespace
+}  // namespace sina
+}  // namespace axom
 
-#endif //SINA_FILE_HPP
+#endif  //SINA_FILE_HPP

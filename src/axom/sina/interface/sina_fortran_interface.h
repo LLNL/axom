@@ -3,14 +3,12 @@
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
-
-
 #include "axom/sina/core/Document.hpp"
 #include "axom/sina/core/Record.hpp"
 #include "axom/sina/core/Run.hpp"
 #include "axom/sina.hpp"
 
-extern "C" char* Get_File_Extension(char *);
+extern "C" char *Get_File_Extension(char *);
 extern "C" void create_document_and_run_(char *);
 extern "C" axom::sina::Record *Sina_Get_Run();
 extern "C" void sina_add_file_to_record_(char *);
@@ -27,4 +25,3 @@ extern "C" void sina_add_curve_double_(char *, char *, double *, int *, bool *);
 extern "C" void sina_add_curve_float_(char *, char *, float *, int *, bool *);
 extern "C" void sina_add_curve_int_(char *, char *, int *, int *, bool *);
 extern "C" void sina_add_curve_long_(char *, char *, long long int *, int *, bool *);
-

@@ -3,7 +3,6 @@
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
-
 #ifndef SINA_ADIAK_HPP
 #define SINA_ADIAK_HPP
 
@@ -20,15 +19,15 @@
 #include "axom/config.hpp"
 #ifdef AXOM_USE_ADIAK
 
-#include <string>
-#include <type_traits>
+  #include <string>
+  #include <type_traits>
 
-#include "axom/sina/core/ConduitUtil.hpp"
-#include "axom/sina/core/Record.hpp"
-#include "axom/sina/core/Run.hpp"
+  #include "axom/sina/core/ConduitUtil.hpp"
+  #include "axom/sina/core/Record.hpp"
+  #include "axom/sina/core/Run.hpp"
 
 extern "C" {
-#include "adiak_tool.h"
+  #include "adiak_tool.h"
 }
 
 namespace axom
@@ -53,12 +52,16 @@ namespace sina
  *            anything like a CurveSet. As a result, to do that, you must hold on to
  *            the Record object passed here as the opaque value and manipulate it directly.
  **/
-void adiakSinaCallback(const char *name, adiak_category_t category, const char *subcategory, adiak_value_t *value, adiak_datatype_t *t, void *opaque_value);
+void adiakSinaCallback(const char *name,
+                       adiak_category_t category,
+                       const char *subcategory,
+                       adiak_value_t *value,
+                       adiak_datatype_t *t,
+                       void *opaque_value);
 
-}  // end sina namespace
-}  // end axom namespace
+}  // namespace sina
+}  // namespace axom
 
-#endif // AXOM_USE_ADIAK
+#endif  // AXOM_USE_ADIAK
 
-#endif // SINA_ADIAK_HPP
-
+#endif  // SINA_ADIAK_HPP

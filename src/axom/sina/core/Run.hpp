@@ -3,7 +3,6 @@
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
-
 #ifndef SINA_RUN_HPP
 #define SINA_RUN_HPP
 
@@ -44,9 +43,10 @@ namespace sina
  * \endcode
  *
  */
-class Run : public Record {
+class Run : public Record
+{
 public:
-    /**
+  /**
      * \brief Create a new Run.
      *
      * \param id the run's ID
@@ -54,48 +54,45 @@ public:
      * \param version (optional) the version of the application
      * \param user (optional) the user who executed the run
      */
-    Run(ID id, std::string application, std::string version = "", std::string user = "");
+  Run(ID id,
+      std::string application,
+      std::string version = "",
+      std::string user = "");
 
-    /**
+  /**
      * \brief Create a Run from its representation as a conduit Node
      *
      * \param asNode the run as a Node
      */
-    explicit Run(conduit::Node const &asNode);
+  explicit Run(conduit::Node const &asNode);
 
-    /**
+  /**
      * \brief Get the application that was run.
      *
      * \return the application's name
      */
-    std::string const &getApplication() const {
-        return application;
-    }
+  std::string const &getApplication() const { return application; }
 
-    /**
+  /**
      * \brief Get the version of the application that was run.
      *
      * \return the application's version
      */
-    std::string const &getVersion() const {
-        return version;
-    }
+  std::string const &getVersion() const { return version; }
 
-    /**
+  /**
      * \brief Get the name of the user who ran the application.
      *
      * \return the user's name
      */
-    std::string const &getUser() const {
-        return user;
-    }
+  std::string const &getUser() const { return user; }
 
-    conduit::Node toNode() const override;
+  conduit::Node toNode() const override;
 
 private:
-    std::string application;
-    std::string version;
-    std::string user;
+  std::string application;
+  std::string version;
+  std::string user;
 };
 
 /**
@@ -106,8 +103,7 @@ private:
  */
 void addRunLoader(RecordLoader &loader);
 
-}  // end sina namespace
-}  // end axom namespace
+}  // namespace sina
+}  // namespace axom
 
-
-#endif //SINA_RUN_HPP
+#endif  //SINA_RUN_HPP

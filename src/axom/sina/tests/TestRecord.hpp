@@ -3,7 +3,6 @@
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
-
 #ifndef SINA_TESTRECORD_HPP
 #define SINA_TESTRECORD_HPP
 
@@ -25,63 +24,63 @@ char constexpr TEST_RECORD_VALUE_KEY[] = "testKey";
  *
  * @tparam T the type of the value to store
  */
-template<typename T>
-class TestRecord : public Record {
+template <typename T>
+class TestRecord : public Record
+{
 public:
-
-    /**
+  /**
      * Create a new TestRecord.
      *
      * @param id the ID of the record. It is always a global ID.
      * @param type the type of the record
      * @param value the value of the record
      */
-    TestRecord(std::string id, std::string type, T value);
+  TestRecord(std::string id, std::string type, T value);
 
-    /**
+  /**
      * Create a new TestRecord from its conduit Node representation.
      *
      * NOTE: This needs to be implemented explicitly for each type of value
      *
      * @param asValue the record in its Node representation
      */
-    explicit TestRecord(conduit::Node const &asValue);
+  explicit TestRecord(conduit::Node const &asValue);
 
-    /**
+  /**
      * Get the record's value.
      *
      * @return the record's value
      */
-    const T &getValue() const noexcept {
-        return value;
-    }
+  const T &getValue() const noexcept { return value; }
 
-    conduit::Node toNode() const override;
+  conduit::Node toNode() const override;
 
 private:
-    T value;
+  T value;
 };
 
-template<typename T>
-TestRecord<T>::TestRecord(std::string id, std::string type, T value_) :
-        Record{ID{std::move(id), IDType::Global}, std::move(type)},
-        value{std::move(value_)} {}
+template <typename T>
+TestRecord<T>::TestRecord(std::string id, std::string type, T value_)
+  : Record {ID {std::move(id), IDType::Global}, std::move(type)}
+  , value {std::move(value_)}
+{ }
 
-template<>
+template <>
 TestRecord<std::string>::TestRecord(conduit::Node const &asNode);
 
-template<>
+template <>
 TestRecord<int>::TestRecord(conduit::Node const &asJson);
 
-template<typename T>
-conduit::Node TestRecord<T>::toNode() const {
-    auto asJson = Record::toNode();
-    asJson[TEST_RECORD_VALUE_KEY] = value;
-    return asJson;
+template <typename T>
+conduit::Node TestRecord<T>::toNode() const
+{
+  auto asJson = Record::toNode();
+  asJson[TEST_RECORD_VALUE_KEY] = value;
+  return asJson;
 }
 
-}  // end testing namespace
-}  // end sina namespace
-}  // end axom namespace
+}  // namespace testing
+}  // namespace sina
+}  // namespace axom
 
-#endif //SINA_TESTRECORD_HPP
+#endif  //SINA_TESTRECORD_HPP

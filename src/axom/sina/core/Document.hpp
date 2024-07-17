@@ -3,7 +3,6 @@
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
-
 #ifndef SINA_DOCUMENT_HPP
 #define SINA_DOCUMENT_HPP
 
@@ -75,118 +74,119 @@ namespace sina
  * \endcode
  *
  */
-class Document {
+class Document
+{
 public:
-    /**
+  /**
      * A vector of pointers to Record objects.
      */
-    using RecordList = std::vector<std::unique_ptr<Record>>;
+  using RecordList = std::vector<std::unique_ptr<Record>>;
 
-    /**
+  /**
      * A vector of Relationship objects.
      */
-    using RelationshipList = std::vector<Relationship>;
+  using RelationshipList = std::vector<Relationship>;
 
-    /**
+  /**
      * Construct an empty Document.
      */
-    Document() = default;
+  Document() = default;
 
-    /**
+  /**
      * Disable copying Document objects. We must do this since we hold
      * pointers to polymorphic objects.
      */
-    Document(Document const &) = delete;
+  Document(Document const &) = delete;
 
-    /**
+  /**
      * Disabling copy assignment.
      */
-    Document &operator=(Document const &) = delete;
+  Document &operator=(Document const &) = delete;
 
-    /**
+  /**
      * Move constructor which should be handled by the compiler.
      */
-    Document(Document &&) = default;
+  Document(Document &&) = default;
 
-    /**
+  /**
      * Move assignment which should be handled by the compiler.
      */
-    Document &operator=(Document &&) = default;
+  Document &operator=(Document &&) = default;
 
-    /**
+  /**
      * \brief Create a Document from its Conduit Node representation
      *
      * \param asNode the Document as a Node
      * \param recordLoader an RecordLoader to use to load the different
      *                     types of records which may be in the document
      */
-    Document(conduit::Node const &asNode, RecordLoader const &recordLoader);
+  Document(conduit::Node const &asNode, RecordLoader const &recordLoader);
 
-    /**
+  /**
      * \brief Create a Document from a JSON string representation
      *
      * \param asJson the Document as a JSON string
      * \param recordLoader an RecordLoader to use to load the different
      *                     types of records which may be in the document
      */
-    Document(std::string const &asJson, RecordLoader const &recordLoader);
+  Document(std::string const &asJson, RecordLoader const &recordLoader);
 
-    /**
+  /**
      * \brief Add the given record to this document.
      *
      * \param record the record to add
      */
-    void add(std::unique_ptr<Record> record);
+  void add(std::unique_ptr<Record> record);
 
-    /**
+  /**
      * \brief Get the list of records currently in this document.
      *
      * \return the list of records
      */
-    RecordList const &getRecords() const noexcept {
-        return records;
-    }
+  RecordList const &getRecords() const noexcept { return records; }
 
-    /**
+  /**
      * \brief Add a relationship to this document
      *
      * \param relationship the relationship to add
      */
-    void add(Relationship relationship);
+  void add(Relationship relationship);
 
-    /**
+  /**
      * \brief Get the list of relationships in this document.
      *
      * \return the list of relationships
      */
-    RelationshipList const &getRelationships() const noexcept {
-        return relationships;
-    }
+  RelationshipList const &getRelationships() const noexcept
+  {
+    return relationships;
+  }
 
-
-    /**
+  /**
      * \brief Convert this document to a conduit Node.
      *
      * \return the contents of the document as a Node
      */
-    conduit::Node toNode() const;
+  conduit::Node toNode() const;
 
-    /**
+  /**
      * \brief Convert this document to a JSON string.
      *
      * \return the contents of the document as a JSON string
      */
-    std::string toJson(conduit::index_t indent=0, conduit::index_t depth=0,
-        const std::string &pad="", const std::string &eoe="") const;
+  std::string toJson(conduit::index_t indent = 0,
+                     conduit::index_t depth = 0,
+                     const std::string &pad = "",
+                     const std::string &eoe = "") const;
 
 private:
-    /**
+  /**
      * Constructor helper method, extracts info from a conduit Node.
      */
-    void createFromNode(conduit::Node const &asNode,
-          RecordLoader const &recordLoader);
-    RecordList records;
-    RelationshipList relationships;
+  void createFromNode(conduit::Node const &asNode,
+                      RecordLoader const &recordLoader);
+  RecordList records;
+  RelationshipList relationships;
 };
 
 /**
@@ -216,11 +216,9 @@ Document loadDocument(std::string const &path);
  *                     of records
  * \return the loaded Document
  */
-Document loadDocument(std::string const &path,
-        RecordLoader const &recordLoader);
+Document loadDocument(std::string const &path, RecordLoader const &recordLoader);
 
-}  // end sina namespace
-}  // end axom namespace
+}  // namespace sina
+}  // namespace axom
 
-
-#endif //SINA_DOCUMENT_HPP
+#endif  //SINA_DOCUMENT_HPP

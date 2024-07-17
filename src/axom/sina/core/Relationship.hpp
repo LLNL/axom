@@ -3,7 +3,6 @@
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
-
 #ifndef SINA_RELATIONSHIP_HPP
 #define SINA_RELATIONSHIP_HPP
 
@@ -81,9 +80,10 @@ namespace sina
  * for example, "5Aed-BCds-23G1", then "my_local_run" would automatically be replaced by "5Aed-BCds-23G1" in both
  * the Record and Relationship entries.
  */
-class Relationship {
+class Relationship
+{
 public:
-    /**
+  /**
      * \brief Create a new relationship.
      *
      * \param subject the subject of the relationship
@@ -91,56 +91,50 @@ public:
      *                  subject to the object
      * \param object the object of the relationship
      */
-    Relationship(ID subject, std::string predicate, ID object);
+  Relationship(ID subject, std::string predicate, ID object);
 
-    /**
+  /**
      * \brief Create a Relationship object from its representation as a conduit Node.
      *
      * \param asNode the relationship as a Node
      */
-    explicit Relationship(conduit::Node const &asNode);
+  explicit Relationship(conduit::Node const &asNode);
 
-    /**
+  /**
      * \brief Get the subject.
      *
      * \return the subject
      */
-    ID const &getSubject() const noexcept {
-        return subject.getID();
-    }
+  ID const &getSubject() const noexcept { return subject.getID(); }
 
-    /**
+  /**
      * \brief Get the object.
      *
      * \return the object
      */
-    ID const &getObject() const noexcept {
-        return object.getID();
-    }
+  ID const &getObject() const noexcept { return object.getID(); }
 
-    /**
+  /**
      * \brief Get the predicate.
      *
      * \return the predicate
      */
-    std::string const &getPredicate() const noexcept {
-        return predicate;
-    }
+  std::string const &getPredicate() const noexcept { return predicate; }
 
-    /**
+  /**
      * \brief Convert this Relationship to its Node representation.
      *
      * \return this relationship as a conduit Node
      */
-    conduit::Node toNode() const;
+  conduit::Node toNode() const;
 
 private:
-    internal::IDField subject;
-    internal::IDField object;
-    std::string predicate;
+  internal::IDField subject;
+  internal::IDField object;
+  std::string predicate;
 };
 
-}  // end sina namespace
-}  // end axom namespace
+}  // namespace sina
+}  // namespace axom
 
-#endif //SINA_RELATIONSHIP_HPP
+#endif  //SINA_RELATIONSHIP_HPP

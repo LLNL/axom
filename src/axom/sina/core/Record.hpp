@@ -3,7 +3,6 @@
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
-
 #ifndef SINA_RECORD_HPP
 #define SINA_RECORD_HPP
 
@@ -42,20 +41,24 @@ namespace sina
 /**
  * FileEqualByURI is used to store files in a Record.
  */
-struct FileEqualByURI {
-    bool operator()(const File &file1, const File &file2) const {
-        return file1.getUri() == file2.getUri();
-    }
+struct FileEqualByURI
+{
+  bool operator()(const File &file1, const File &file2) const
+  {
+    return file1.getUri() == file2.getUri();
+  }
 };
 
 /**
  * FileHashByURI is used to store files in a Record. Files are stored according
  * to the hash of their URI.
  */
-struct FileHashByURI {
-    size_t operator()(const File &file) const {
-        return std::hash<std::string>()(file.getUri());
-    }
+struct FileHashByURI
+{
+  size_t operator()(const File &file) const
+  {
+    return std::hash<std::string>()(file.getUri());
+  }
 };
 
 /**
@@ -83,105 +86,96 @@ struct FileHashByURI {
  *   {"local_id":"my_record","type":"my_type","data":{"my_scalar":{"tags":["input"],"value":12.0}}}
  * \endcode
  */
-class Record : public DataHolder {
+class Record : public DataHolder
+{
 public:
-    /**
+  /**
      * An unordered set of File objects.
      */
-    using FileSet = std::unordered_set<File, FileHashByURI, FileEqualByURI>;
+  using FileSet = std::unordered_set<File, FileHashByURI, FileEqualByURI>;
 
-    /**
+  /**
      * \brief Construct a new Record.
      *
      * \param id the ID of the record
      * \param type the type of the record
      */
-    Record(ID id, std::string type);
+  Record(ID id, std::string type);
 
-    /**
+  /**
      * \brief Construct a Record from its conduit Node representation.
      *
      * \param asNode the Record as a Node
      */
-    explicit Record(conduit::Node const &asNode);
+  explicit Record(conduit::Node const &asNode);
 
-    /**
+  /**
      * Disable the copy constructor.
      */
-    Record(Record const &) = delete;
+  Record(Record const &) = delete;
 
-    /**
+  /**
      * Disable copy assignment.
      */
-    Record &operator=(Record const &) = delete;
+  Record &operator=(Record const &) = delete;
 
-    /**
+  /**
      * \brief Get the Record's ID.
      *
      * \return the ID
      */
-    ID const &getId() const noexcept {
-        return id.getID();
-    }
+  ID const &getId() const noexcept { return id.getID(); }
 
-    /**
+  /**
      * \brief Get the Record's type.
      *
      * \return the Record's type
      */
-    std::string const &getType() const noexcept {
-        return type;
-    }
+  std::string const &getType() const noexcept { return type; }
 
-    /**
+  /**
      * \brief Remove a File from this record.
      *
      * \param file the File to remove
      */
-    void remove(File const& file);
+  void remove(File const &file);
 
-
-
-    using DataHolder::add;
-    /**
+  using DataHolder::add;
+  /**
      * \brief Add a File to this record.
      *
      * \param file the File to add
      */
-    void add(File file);
+  void add(File file);
 
-
-    /**
+  /**
      * \brief Get the files associated with this record.
      *
      * \return the record's files
      */
-    FileSet const &getFiles() const noexcept {
-        return files;
-    }
+  FileSet const &getFiles() const noexcept { return files; }
 
-    /**
+  /**
      * \brief Convert this record to its conduit Node representation.
      *
      * \return the Node representation of this record.
      */
-    conduit::Node toNode() const override;
+  conduit::Node toNode() const override;
 
-   /**
+  /**
     * \brief Add another record to this one as library data.
     *
     * Useful for libraries that can run in standalone mode; the host
     * simply calls this method on the record the library produces.
     * Merges file lists.
     */
-    void addRecordAsLibraryData(Record const &childRecord, std::string const &name);
+  void addRecordAsLibraryData(Record const &childRecord, std::string const &name);
 
 private:
-    internal::IDField id;
-    std::string type;
-    FileSet files;
+  internal::IDField id;
+  std::string type;
+  FileSet files;
 };
-
 
 /**
  * \brief An object to convert Conduit Nodes into Records
@@ -195,41 +189,42 @@ private:
  *   axom::sina::Document myDocument = axom::sina::Document(jObj, axom::sina::createRecordLoaderWithAllKnownTypes());
  * \endcode
  */
-class RecordLoader {
+class RecordLoader
+{
 public:
-    /**
+  /**
      * A TypeLoader is a function which converts records of a specific type
      * to their corresponding sub classes.
      */
-    using TypeLoader = std::function<std::unique_ptr<Record>(
-            conduit::Node const &)>;
+  using TypeLoader =
+    std::function<std::unique_ptr<Record>(conduit::Node const &)>;
 
-    /**
+  /**
      * \brief Add a function for loading records of the specified type.
      *
      * \param type the type of records this function can load
      * \param loader the function which can load the records
      */
-    void addTypeLoader(std::string const &type, TypeLoader loader);
+  void addTypeLoader(std::string const &type, TypeLoader loader);
 
-    /**
+  /**
      * \brief Load a Record from its conduit Node representation.
      *
      * \param recordAsNode the Record as a Node
      * \return the Record
      */
-    std::unique_ptr<Record> load(conduit::Node const &recordAsNode) const;
+  std::unique_ptr<Record> load(conduit::Node const &recordAsNode) const;
 
-    /**
+  /**
      * \brief Check whether this loader can load records of the given type.
      *
      * \param type the type of the records to check
      * \return whether records of the given type can be loaded
      */
-    bool canLoad(std::string const &type) const;
+  bool canLoad(std::string const &type) const;
 
 private:
-    std::unordered_map<std::string, TypeLoader> typeLoaders;
+  std::unordered_map<std::string, TypeLoader> typeLoaders;
 };
 
 /**
@@ -239,7 +234,7 @@ private:
  */
 RecordLoader createRecordLoaderWithAllKnownTypes();
 
-}  // end sina namespace
-}  // end axom namespace
+}  // namespace sina
+}  // namespace axom
 
-#endif //SINA_RECORD_HPP
+#endif  //SINA_RECORD_HPP

@@ -3,7 +3,6 @@
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
-
 #include "axom/sina/tests/TestRecord.hpp"
 
 namespace axom
@@ -13,17 +12,18 @@ namespace sina
 namespace testing
 {
 
-template<>
-TestRecord<std::string>::TestRecord(conduit::Node const &asNode) :
-        Record{asNode},
-        value{getRequiredString(TEST_RECORD_VALUE_KEY, asNode, "TestRecord")} {}
+template <>
+TestRecord<std::string>::TestRecord(conduit::Node const &asNode)
+  : Record {asNode}
+  , value {getRequiredString(TEST_RECORD_VALUE_KEY, asNode, "TestRecord")}
+{ }
 
-template<>
-TestRecord<int>::TestRecord(conduit::Node const &asNode) :
-        Record{asNode},
-        value{getRequiredField(TEST_RECORD_VALUE_KEY, asNode,
-              "TestRecord").as_int()} {}
+template <>
+TestRecord<int>::TestRecord(conduit::Node const &asNode)
+  : Record {asNode}
+  , value {getRequiredField(TEST_RECORD_VALUE_KEY, asNode, "TestRecord").as_int()}
+{ }
 
-}  // end testing namespace
-}  // end sina namespace
-}  // end axom namespace
+}  // namespace testing
+}  // namespace sina
+}  // namespace axom
