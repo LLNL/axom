@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "axom/core/Macros.hpp"
+#include "axom/core/utilities/StringUtilities.hpp"
 
 namespace axom
 {
@@ -48,6 +49,8 @@ SynchronizedStream::SynchronizedStream(std::ostream* stream, MPI_Comm comm)
   : m_comm(comm)
   , m_cache(new MessageCache())
   , m_stream(stream)
+  , m_file_name()
+  , m_opened(false)
 { }
 
 //------------------------------------------------------------------------------
@@ -57,8 +60,53 @@ SynchronizedStream::SynchronizedStream(std::ostream* stream,
   : m_comm(comm)
   , m_cache(new MessageCache)
   , m_stream(stream)
+  , m_file_name()
+  , m_opened(false)
 {
   this->setFormatString(format);
+}
+
+//------------------------------------------------------------------------------
+SynchronizedStream::SynchronizedStream(const std::string stream, MPI_Comm comm)
+{
+  if(stream == "cout")
+  {
+    m_comm = comm;
+    m_cache = new MessageCache();
+    m_stream = &std::cout;
+    m_file_name = std::string();
+    m_opened = true;
+  }
+  else if(stream == "cerr")
+  {
+    m_comm = comm;
+    m_cache = new MessageCache();
+    m_stream = &std::cerr;
+    m_file_name = std::string();
+    m_opened = true;
+  }
+  else
+  {
+    m_comm = comm;
+    m_cache = new MessageCache();
+    m_stream = new std::ofstream();
+    m_file_name = stream;
+    m_opened = false;
+  }
+}
+
+//------------------------------------------------------------------------------
+SynchronizedStream::SynchronizedStream(const std::string stream,
+                                       MPI_Comm comm,
+                                       const std::string& format)
+  : SynchronizedStream::SynchronizedStream(stream, comm)
+{
+  // Fix newline and tab characters if needed
+  std::string format_fixed = axom::utilities::string::replaceAllInstances(
+    axom::utilities::string::replaceAllInstances(format, "\\n", "\n"),
+    "\\t",
+    "\t");
+  this->setFormatString(format_fixed);
 }
 
 //------------------------------------------------------------------------------
@@ -81,6 +129,16 @@ void SynchronizedStream::append(message::Level msgLevel,
   {
     std::cerr << "ERROR: NULL cache!\n";
     return;
+  }
+
+  if(!m_opened)
+  {
+    std::ofstream* ofs = dynamic_cast<std::ofstream*>(m_stream);
+    if(ofs != nullptr)
+    {
+      ofs->open(m_file_name);
+      m_opened = true;
+    }
   }
 
   int rank = -1;

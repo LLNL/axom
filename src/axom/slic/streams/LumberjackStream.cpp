@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "axom/core/Macros.hpp"
+#include "axom/core/utilities/StringUtilities.hpp"
 
 #include "axom/lumberjack/BinaryTreeCommunicator.hpp"
 #include "axom/lumberjack/Lumberjack.hpp"
@@ -23,6 +24,8 @@ LumberjackStream::LumberjackStream(std::ostream* stream,
                                    int ranksLimit)
   : m_isLJOwnedBySLIC(false)
   , m_stream(stream)
+  , m_file_name()
+  , m_opened(true)
 {
   this->initializeLumberjack(comm, ranksLimit);
 }
@@ -34,6 +37,8 @@ LumberjackStream::LumberjackStream(std::ostream* stream,
                                    const std::string& format)
   : m_isLJOwnedBySLIC(false)
   , m_stream(stream)
+  , m_file_name()
+  , m_opened(true)
 {
   this->initializeLumberjack(comm, ranksLimit);
   this->setFormatString(format);
@@ -45,6 +50,8 @@ LumberjackStream::LumberjackStream(std::ostream* stream,
   : m_lj(lj)
   , m_isLJOwnedBySLIC(false)
   , m_stream(stream)
+  , m_file_name()
+  , m_opened(true)
 { }
 
 //------------------------------------------------------------------------------
@@ -54,8 +61,93 @@ LumberjackStream::LumberjackStream(std::ostream* stream,
   : m_lj(lj)
   , m_isLJOwnedBySLIC(false)
   , m_stream(stream)
+  , m_file_name()
+  , m_opened(true)
 {
   this->setFormatString(format);
+}
+
+//------------------------------------------------------------------------------
+LumberjackStream::LumberjackStream(const std::string stream,
+                                   MPI_Comm comm,
+                                   int ranksLimit)
+{
+  this->initializeLumberjack(comm, ranksLimit);
+
+  if(stream == "cout")
+  {
+    m_stream = &std::cout;
+    m_file_name = std::string();
+    m_opened = true;
+  }
+  else if(stream == "cerr")
+  {
+    m_stream = &std::cerr;
+    m_file_name = std::string();
+    m_opened = true;
+  }
+  else
+  {
+    m_stream = new std::ofstream();
+    m_file_name = stream;
+    m_opened = false;
+  }
+}
+
+//------------------------------------------------------------------------------
+LumberjackStream::LumberjackStream(const std::string stream,
+                                   MPI_Comm comm,
+                                   int ranksLimit,
+                                   const std::string& format)
+  : LumberjackStream::LumberjackStream(stream, comm, ranksLimit)
+{
+  // Fix newline and tab characters if needed
+  std::string format_fixed = axom::utilities::string::replaceAllInstances(
+    axom::utilities::string::replaceAllInstances(format, "\\n", "\n"),
+    "\\t",
+    "\t");
+  this->setFormatString(format_fixed);
+}
+
+//------------------------------------------------------------------------------
+LumberjackStream::LumberjackStream(const std::string stream,
+                                   axom::lumberjack::Lumberjack* lj)
+{
+  m_lj = lj;
+  m_isLJOwnedBySLIC = false;
+
+  if(stream == "cout")
+  {
+    m_stream = &std::cout;
+    m_file_name = std::string();
+    m_opened = true;
+  }
+  else if(stream == "cerr")
+  {
+    m_stream = &std::cerr;
+    m_file_name = std::string();
+    m_opened = true;
+  }
+  else
+  {
+    m_stream = new std::ofstream();
+    m_file_name = stream;
+    m_opened = false;
+  }
+}
+
+//------------------------------------------------------------------------------
+LumberjackStream::LumberjackStream(const std::string stream,
+                                   axom::lumberjack::Lumberjack* lj,
+                                   const std::string& format)
+  : LumberjackStream::LumberjackStream(stream, lj)
+{
+  // Fix newline and tab characters if needed
+  std::string format_fixed = axom::utilities::string::replaceAllInstances(
+    axom::utilities::string::replaceAllInstances(format, "\\n", "\n"),
+    "\\t",
+    "\t");
+  this->setFormatString(format_fixed);
 }
 
 //------------------------------------------------------------------------------
@@ -81,6 +173,16 @@ void LumberjackStream::append(message::Level msgLevel,
     std::cerr
       << "ERROR: NULL Lumberjack instance in LumberjackStream::append!\n";
     return;
+  }
+
+  if(!m_opened)
+  {
+    std::ofstream* ofs = dynamic_cast<std::ofstream*>(m_stream);
+    if(ofs != nullptr)
+    {
+      ofs->open(m_file_name);
+      m_opened = true;
+    }
   }
 
   m_lj->queueMessage(message, fileName, line, msgLevel, tagName);
