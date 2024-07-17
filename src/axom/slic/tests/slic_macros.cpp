@@ -5,6 +5,7 @@
 
 // axom includes
 #include "axom/config.hpp"
+#include "axom/core/utilities/FileUtilities.hpp"
 
 // slic includes
 #include "axom/slic/interface/slic.hpp"
@@ -410,6 +411,45 @@ TEST(slic_macros, test_tagged_macros)
 
   SLIC_INFO_TAGGED("this message should not be logged (tag DNE)!", "tag404");
   EXPECT_TRUE(slic::internal::is_stream_empty());
+}
+
+//------------------------------------------------------------------------------
+TEST(slic_macros, test_no_macros_file_output)
+{
+  std::string msgfmt = "[<LEVEL>]:;;<MESSAGE>;;\n@@<FILE>\n@@<LINE>";
+
+  // GenericOutputStream(std::string stream) and
+  // GenericOutputStream(std::string stream, std::string format) constructors
+  // do not create a a file if no macros are called
+  std::string dne_no_fmt = "file_dne_no_fmt.txt";
+  std::string dne_with_fmt = "file_dne_with_fmt.txt";
+
+  slic::addStreamToAllMsgLevels(new slic::GenericOutputStream(dne_no_fmt));
+
+  slic::addStreamToAllMsgLevels(
+    new slic::GenericOutputStream(dne_with_fmt, msgfmt));
+
+  EXPECT_EQ(axom::utilities::filesystem::pathExists(dne_no_fmt), false);
+  EXPECT_EQ(axom::utilities::filesystem::pathExists(dne_with_fmt), false);
+
+  // GenericOutputStream(std::ostream* os) and
+  // GenericOutputStream(std::ostream* os, std::string format) constructors
+  // do create a file, even if no macros are called
+  std::string empty_no_fmt = "empty_no_fmt.txt";
+  std::string empty_with_fmt = "empty_with_fmt.txt";
+
+  std::ofstream ofs_no_fmt(empty_no_fmt);
+  std::ofstream ofs_with_fmt(empty_with_fmt);
+
+  slic::addStreamToAllMsgLevels(new slic::GenericOutputStream(&ofs_no_fmt));
+
+  slic::addStreamToAllMsgLevels(
+    new slic::GenericOutputStream(&ofs_with_fmt, msgfmt));
+
+  EXPECT_EQ(axom::utilities::filesystem::pathExists(empty_no_fmt), true);
+  EXPECT_EQ(axom::utilities::filesystem::pathExists(empty_with_fmt), true);
+
+  slic::finalize();
 }
 
 //------------------------------------------------------------------------------
