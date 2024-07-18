@@ -68,6 +68,7 @@ TEST(mir_clipfield, uniform2d)
   axom::mir::clipping::ClipField<seq_exec, TopoView, CoordsetView> clipper(topoView, coordsetView);
   clipper.execute(mesh, "distance", clipmesh);
   conduit::relay::io::blueprint::save_mesh(clipmesh, "uniform2d", "hdf5");
+  conduit::relay::io::blueprint::save_mesh(clipmesh, "uniform2d_yaml", "yaml");
 
   // Load a clipped baseline file & compare.
 }
