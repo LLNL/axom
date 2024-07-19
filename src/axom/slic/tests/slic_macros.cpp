@@ -414,7 +414,7 @@ TEST(slic_macros, test_tagged_macros)
 }
 
 //------------------------------------------------------------------------------
-TEST(slic_macros, test_no_macros_file_output)
+TEST(slic_macros, test_macros_file_output)
 {
   std::string msgfmt = "<MESSAGE>";
 

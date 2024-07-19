@@ -165,6 +165,12 @@ private:
   /// @}
 
   /*!
+   * \brief Opens a file before flushing stream when SynchronizedStream
+   *        has ownership of ostream to a file (std::string constructor)
+   */
+  void openBeforeFlush();
+
+  /*!
    * \brief Default constructor. Made private to prevent applications from
    *  using it. Instead the constructor that passes the underlying MPI comm
    *  should be used.

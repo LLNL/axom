@@ -191,16 +191,6 @@ void LumberjackStream::append(message::Level msgLevel,
     return;
   }
 
-  if(!m_opened)
-  {
-    std::ofstream* ofs = dynamic_cast<std::ofstream*>(m_stream);
-    if(ofs != nullptr)
-    {
-      ofs->open(m_file_name);
-      m_opened = true;
-    }
-  }
-
   m_lj->queueMessage(message, fileName, line, msgLevel, tagName);
 }
 
@@ -262,6 +252,16 @@ void LumberjackStream::write(bool local)
       if(curr_message == nullptr)
       {
         continue;
+      }
+
+      if(m_isOstreamOwnedBySLIC && !m_opened)
+      {
+        std::ofstream* ofs = dynamic_cast<std::ofstream*>(m_stream);
+        if(ofs != nullptr)
+        {
+          ofs->open(m_file_name);
+          m_opened = true;
+        }
       }
 
       (*m_stream) << this->getFormatedMessage(

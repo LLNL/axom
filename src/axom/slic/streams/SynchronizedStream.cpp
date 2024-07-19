@@ -142,16 +142,6 @@ void SynchronizedStream::append(message::Level msgLevel,
     return;
   }
 
-  if(!m_opened)
-  {
-    std::ofstream* ofs = dynamic_cast<std::ofstream*>(m_stream);
-    if(ofs != nullptr)
-    {
-      ofs->open(m_file_name);
-      m_opened = true;
-    }
-  }
-
   int rank = -1;
   MPI_Comm_rank(m_comm, &rank);
 
@@ -164,6 +154,20 @@ void SynchronizedStream::append(message::Level msgLevel,
                              "1",
                              fileName,
                              line));
+}
+
+//------------------------------------------------------------------------------
+void SynchronizedStream::openBeforeFlush()
+{
+  if(m_isOstreamOwnedBySLIC && !m_opened && !m_cache->messages.empty())
+  {
+    std::ofstream* ofs = dynamic_cast<std::ofstream*>(m_stream);
+    if(ofs != nullptr)
+    {
+      ofs->open(m_file_name);
+      m_opened = true;
+    }
+  }
 }
 
 //------------------------------------------------------------------------------
@@ -180,6 +184,8 @@ void SynchronizedStream::outputLocal()
     std::cerr << "ERROR: NULL communicator!\n";
     return;
   }
+
+  openBeforeFlush();
 
   // print messages for this rank
   m_cache->printMessages(m_stream);
@@ -199,6 +205,8 @@ void SynchronizedStream::flush()
     std::cerr << "ERROR: NULL communicator!\n";
     return;
   }
+
+  openBeforeFlush();
 
   // Collective flush
   int rank = -1;
