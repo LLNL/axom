@@ -69,7 +69,7 @@ bool discretize(const SphereType& s,
  * This routine initializes an Array, \a out.
  */
 template <typename ExecSpace>
-bool discretize(axom::Array<Point2D>& polyline,
+bool discretize(const axom::Array<Point2D>& polyline,
                 int len,
                 int levels,
                 axom::Array<OctType>& out,
@@ -107,7 +107,7 @@ bool discretize(axom::Array<Point2D>& polyline,
  *  the caller is responsible for properly deallocating the mesh object that
  *  the return mesh pointer points to.
  */
-int mesh_from_discretized_polyline(axom::ArrayView<OctType>& octs,
+int mesh_from_discretized_polyline(const axom::ArrayView<OctType>& octs,
                                    int octcount,
                                    int segcount,
                                    mint::Mesh*& mesh);
