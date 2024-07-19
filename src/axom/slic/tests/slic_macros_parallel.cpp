@@ -1014,6 +1014,7 @@ TEST_P(SlicMacrosParallel, test_check_macros)
 TEST_P(SlicMacrosParallel, test_no_macros_file_output)
 {
   EXPECT_TRUE(slic::internal::are_all_streams_empty());
+
   std::string msgfmt = "[<LEVEL>]:;;<MESSAGE>;;\n@@<FILE>\n@@<LINE>";
 
   if(GetParam() == "Synchronized")
@@ -1022,19 +1023,27 @@ TEST_P(SlicMacrosParallel, test_no_macros_file_output)
     // SynchronizedStream(std::string stream, MPI_Comm comm, std::string format)
     // constructors do not create a a file if no macros are called
 
-    std::string dne_no_fmt =
-      "file_dne_rank_" + std::to_string(rank) + "_no_fmt.txt";
-    std::string dne_with_fmt =
-      "file_dne_rank_" + std::to_string(rank) + "_with_fmt.txt";
+    std::string no_fmt = "file_ss_rank_" + std::to_string(rank) + "_no_fmt.txt";
+    std::string with_fmt =
+      "file_ss_rank_" + std::to_string(rank) + "_with_fmt.txt";
 
     slic::addStreamToAllMsgLevels(
-      new slic::SynchronizedStream(dne_no_fmt, MPI_COMM_WORLD));
+      new slic::SynchronizedStream(no_fmt, MPI_COMM_WORLD));
 
     slic::addStreamToAllMsgLevels(
-      new slic::SynchronizedStream(dne_with_fmt, MPI_COMM_WORLD, msgfmt));
+      new slic::SynchronizedStream(with_fmt, MPI_COMM_WORLD, msgfmt));
 
-    EXPECT_EQ(axom::utilities::filesystem::pathExists(dne_no_fmt), false);
-    EXPECT_EQ(axom::utilities::filesystem::pathExists(dne_with_fmt), false);
+    EXPECT_EQ(axom::utilities::filesystem::pathExists(no_fmt), false);
+    EXPECT_EQ(axom::utilities::filesystem::pathExists(with_fmt), false);
+
+    SLIC_INFO("Files opened after message is appended");
+
+    EXPECT_EQ(axom::utilities::filesystem::pathExists(no_fmt), true);
+    EXPECT_EQ(axom::utilities::filesystem::pathExists(with_fmt), true);
+
+    // Cleanup generated files
+    EXPECT_EQ(axom::utilities::filesystem::removeFile(no_fmt), 0);
+    EXPECT_EQ(axom::utilities::filesystem::removeFile(with_fmt), 0);
   }
 
   else
@@ -1044,20 +1053,32 @@ TEST_P(SlicMacrosParallel, test_no_macros_file_output)
     //                  std::string format)
     // constructors do not create a a file if no macros are called
 
-    std::string dne_no_fmt =
-      "file_dne_rank_" + std::to_string(rank) + "_no_fmt.txt";
-    std::string dne_with_fmt =
-      "file_dne_rank_" + std::to_string(rank) + "_with_fmt.txt";
+    std::string no_fmt = "file_lj_rank_" + std::to_string(rank) + "_no_fmt.txt";
+    std::string with_fmt =
+      "file_lj_rank_" + std::to_string(rank) + "_with_fmt.txt";
 
     slic::addStreamToAllMsgLevels(
-      new slic::LumberjackStream(dne_no_fmt, MPI_COMM_WORLD, RLIMIT));
+      new slic::LumberjackStream(no_fmt, MPI_COMM_WORLD, RLIMIT));
 
     slic::addStreamToAllMsgLevels(
-      new slic::LumberjackStream(dne_with_fmt, MPI_COMM_WORLD, RLIMIT, msgfmt));
+      new slic::LumberjackStream(with_fmt, MPI_COMM_WORLD, RLIMIT, msgfmt));
 
-    EXPECT_EQ(axom::utilities::filesystem::pathExists(dne_no_fmt), false);
-    EXPECT_EQ(axom::utilities::filesystem::pathExists(dne_with_fmt), false);
+    EXPECT_EQ(axom::utilities::filesystem::pathExists(no_fmt), false);
+    EXPECT_EQ(axom::utilities::filesystem::pathExists(with_fmt), false);
+
+    SLIC_INFO("Files opened after message is appended");
+
+    EXPECT_EQ(axom::utilities::filesystem::pathExists(no_fmt), true);
+    EXPECT_EQ(axom::utilities::filesystem::pathExists(with_fmt), true);
+
+    // Cleanup generated files
+    EXPECT_EQ(axom::utilities::filesystem::removeFile(no_fmt), 0);
+    EXPECT_EQ(axom::utilities::filesystem::removeFile(with_fmt), 0);
   }
+
+  // Clear out ostringstreams for other tests
+  slic::flushStreams();
+  slic::internal::clear_streams();
 }
 
 //------------------------------------------------------------------------------

@@ -50,6 +50,7 @@ SynchronizedStream::SynchronizedStream(std::ostream* stream, MPI_Comm comm)
   , m_cache(new MessageCache())
   , m_stream(stream)
   , m_file_name()
+  , m_isOstreamOwnedBySLIC(false)
   , m_opened(false)
 { }
 
@@ -61,6 +62,7 @@ SynchronizedStream::SynchronizedStream(std::ostream* stream,
   , m_cache(new MessageCache)
   , m_stream(stream)
   , m_file_name()
+  , m_isOstreamOwnedBySLIC(false)
   , m_opened(false)
 {
   this->setFormatString(format);
@@ -75,6 +77,7 @@ SynchronizedStream::SynchronizedStream(const std::string stream, MPI_Comm comm)
     m_cache = new MessageCache();
     m_stream = &std::cout;
     m_file_name = std::string();
+    m_isOstreamOwnedBySLIC = false;
     m_opened = true;
   }
   else if(stream == "cerr")
@@ -83,6 +86,7 @@ SynchronizedStream::SynchronizedStream(const std::string stream, MPI_Comm comm)
     m_cache = new MessageCache();
     m_stream = &std::cerr;
     m_file_name = std::string();
+    m_isOstreamOwnedBySLIC = false;
     m_opened = true;
   }
   else
@@ -91,6 +95,7 @@ SynchronizedStream::SynchronizedStream(const std::string stream, MPI_Comm comm)
     m_cache = new MessageCache();
     m_stream = new std::ofstream();
     m_file_name = stream;
+    m_isOstreamOwnedBySLIC = true;
     m_opened = false;
   }
 }
@@ -114,6 +119,12 @@ SynchronizedStream::~SynchronizedStream()
 {
   delete m_cache;
   m_cache = static_cast<MessageCache*>(nullptr);
+
+  if(m_isOstreamOwnedBySLIC)
+  {
+    delete m_stream;
+    m_stream = static_cast<std::ostream*>(nullptr);
+  }
 }
 
 //------------------------------------------------------------------------------

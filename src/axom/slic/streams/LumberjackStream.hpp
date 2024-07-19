@@ -260,6 +260,7 @@ private:
   axom::lumberjack::Lumberjack* m_lj;
   axom::lumberjack::Communicator* m_ljComm;
   bool m_isLJOwnedBySLIC;
+  bool m_isOstreamOwnedBySLIC;
   std::ostream* m_stream;
   std::string m_file_name;
   bool m_opened;

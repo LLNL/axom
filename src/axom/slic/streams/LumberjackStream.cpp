@@ -23,6 +23,7 @@ LumberjackStream::LumberjackStream(std::ostream* stream,
                                    MPI_Comm comm,
                                    int ranksLimit)
   : m_isLJOwnedBySLIC(false)
+  , m_isOstreamOwnedBySLIC(false)
   , m_stream(stream)
   , m_file_name()
   , m_opened(true)
@@ -36,6 +37,7 @@ LumberjackStream::LumberjackStream(std::ostream* stream,
                                    int ranksLimit,
                                    const std::string& format)
   : m_isLJOwnedBySLIC(false)
+  , m_isOstreamOwnedBySLIC(false)
   , m_stream(stream)
   , m_file_name()
   , m_opened(true)
@@ -49,6 +51,7 @@ LumberjackStream::LumberjackStream(std::ostream* stream,
                                    axom::lumberjack::Lumberjack* lj)
   : m_lj(lj)
   , m_isLJOwnedBySLIC(false)
+  , m_isOstreamOwnedBySLIC(false)
   , m_stream(stream)
   , m_file_name()
   , m_opened(true)
@@ -60,6 +63,7 @@ LumberjackStream::LumberjackStream(std::ostream* stream,
                                    const std::string& format)
   : m_lj(lj)
   , m_isLJOwnedBySLIC(false)
+  , m_isOstreamOwnedBySLIC(false)
   , m_stream(stream)
   , m_file_name()
   , m_opened(true)
@@ -76,18 +80,21 @@ LumberjackStream::LumberjackStream(const std::string stream,
 
   if(stream == "cout")
   {
+    m_isOstreamOwnedBySLIC = false;
     m_stream = &std::cout;
     m_file_name = std::string();
     m_opened = true;
   }
   else if(stream == "cerr")
   {
+    m_isOstreamOwnedBySLIC = false;
     m_stream = &std::cerr;
     m_file_name = std::string();
     m_opened = true;
   }
   else
   {
+    m_isOstreamOwnedBySLIC = true;
     m_stream = new std::ofstream();
     m_file_name = stream;
     m_opened = false;
@@ -118,18 +125,21 @@ LumberjackStream::LumberjackStream(const std::string stream,
 
   if(stream == "cout")
   {
+    m_isOstreamOwnedBySLIC = false;
     m_stream = &std::cout;
     m_file_name = std::string();
     m_opened = true;
   }
   else if(stream == "cerr")
   {
+    m_isOstreamOwnedBySLIC = false;
     m_stream = &std::cerr;
     m_file_name = std::string();
     m_opened = true;
   }
   else
   {
+    m_isOstreamOwnedBySLIC = true;
     m_stream = new std::ofstream();
     m_file_name = stream;
     m_opened = false;
@@ -156,6 +166,12 @@ LumberjackStream::~LumberjackStream()
   if(m_isLJOwnedBySLIC)
   {
     this->finalizeLumberjack();
+  }
+
+  if(m_isOstreamOwnedBySLIC)
+  {
+    delete m_stream;
+    m_stream = static_cast<std::ostream*>(nullptr);
   }
 }
 

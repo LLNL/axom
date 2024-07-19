@@ -75,6 +75,7 @@ GenericOutputStream::~GenericOutputStream()
   if(m_isOstreamOwnedBySLIC)
   {
     delete m_stream;
+    m_stream = static_cast<std::ostream*>(nullptr);
   }
 }
 

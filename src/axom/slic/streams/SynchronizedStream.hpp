@@ -160,6 +160,7 @@ private:
   MessageCache* m_cache;
   std::ostream* m_stream;
   std::string m_file_name;
+  bool m_isOstreamOwnedBySLIC;
   bool m_opened;
   /// @}
 
