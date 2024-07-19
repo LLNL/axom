@@ -38,7 +38,7 @@ GenericOutputStream::GenericOutputStream(const std::string& stream)
   }
   else
   {
-    m_stream = new std::ofstream();
+    m_stream = new std::ostringstream();
     m_file_name = stream;
     m_opened = false;
     m_isOstreamOwnedBySLIC = true;
@@ -94,16 +94,6 @@ void GenericOutputStream::append(message::Level msgLevel,
     return;
   }
 
-  if(!m_opened)
-  {
-    std::ofstream* ofs = dynamic_cast<std::ofstream*>(m_stream);
-    if(ofs != nullptr)
-    {
-      ofs->open(m_file_name);
-      m_opened = true;
-    }
-  }
-
   (*m_stream) << this->getFormatedMessage(message::getLevelAsString(msgLevel),
                                           message,
                                           tagName,
@@ -114,10 +104,38 @@ void GenericOutputStream::append(message::Level msgLevel,
 }
 
 //------------------------------------------------------------------------------
-void GenericOutputStream::outputLocal() { m_stream->flush(); }
+void GenericOutputStream::openBeforeFlush()
+{
+  if(m_isOstreamOwnedBySLIC && !m_opened)
+  {
+    std::ostringstream* oss = dynamic_cast<std::ostringstream*>(m_stream);
+    if(oss != nullptr)
+    {
+      std::string buffer = oss->str();
+      if(!buffer.empty())
+      {
+        delete m_stream;
+        m_stream = new std::ofstream(m_file_name);
+        (*m_stream) << buffer;
+        m_opened = true;
+      }
+    }
+  }
+}
 
 //------------------------------------------------------------------------------
-void GenericOutputStream::flush() { m_stream->flush(); }
+void GenericOutputStream::outputLocal()
+{
+  openBeforeFlush();
+  m_stream->flush();
+}
+
+//------------------------------------------------------------------------------
+void GenericOutputStream::flush()
+{
+  openBeforeFlush();
+  m_stream->flush();
+}
 
 } /* namespace slic */
 

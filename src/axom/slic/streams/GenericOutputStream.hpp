@@ -125,6 +125,12 @@ private:
     , m_opened(false)
     , m_isOstreamOwnedBySLIC(false) {};
 
+  /*!
+   * \brief Opens a file before flushing stream when GenericOutputStream
+   *        has ownership of ostream to a file (std::string constructor)
+   */
+  void openBeforeFlush();
+
   DISABLE_COPY_AND_ASSIGNMENT(GenericOutputStream);
   DISABLE_MOVE_AND_ASSIGNMENT(GenericOutputStream);
 };

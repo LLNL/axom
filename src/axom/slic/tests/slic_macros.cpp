@@ -416,11 +416,11 @@ TEST(slic_macros, test_tagged_macros)
 //------------------------------------------------------------------------------
 TEST(slic_macros, test_no_macros_file_output)
 {
-  std::string msgfmt = "[<LEVEL>]:;;<MESSAGE>;;\n@@<FILE>\n@@<LINE>";
+  std::string msgfmt = "<MESSAGE>";
 
   // GenericOutputStream(std::string stream) and
   // GenericOutputStream(std::string stream, std::string format) constructors
-  // do not create a a file if no macros are called
+  // do not create a a file until macros called, then flushed
   std::string no_fmt = "file_no_fmt.txt";
   std::string with_fmt = "file_with_fmt.txt";
 
@@ -431,10 +431,41 @@ TEST(slic_macros, test_no_macros_file_output)
   EXPECT_EQ(axom::utilities::filesystem::pathExists(no_fmt), false);
   EXPECT_EQ(axom::utilities::filesystem::pathExists(with_fmt), false);
 
-  SLIC_INFO("Files opened after message is appended");
+  // streams flushed with no buffered messages, no files created
+  slic::flushStreams();
+
+  EXPECT_EQ(axom::utilities::filesystem::pathExists(no_fmt), false);
+  EXPECT_EQ(axom::utilities::filesystem::pathExists(with_fmt), false);
+
+  // message is buffered but not yet flushed, no files created
+  SLIC_INFO("Test");
+
+  EXPECT_EQ(axom::utilities::filesystem::pathExists(no_fmt), false);
+  EXPECT_EQ(axom::utilities::filesystem::pathExists(with_fmt), false);
+
+  // message has been buffered and now flushed, files are created
+  slic::flushStreams();
 
   EXPECT_EQ(axom::utilities::filesystem::pathExists(no_fmt), true);
   EXPECT_EQ(axom::utilities::filesystem::pathExists(with_fmt), true);
+
+  // Verify file contents
+  std::ifstream no_fmt_contents(no_fmt);
+  std::stringstream no_fmt_buffer;
+  no_fmt_buffer << no_fmt_contents.rdbuf();
+
+  std::string no_fmt_expected;
+  no_fmt_expected += "*****\n[INFO]\n\n Test \n\n ";
+  no_fmt_expected += __FILE__;
+  no_fmt_expected += "\n441\n****\n";
+
+  EXPECT_EQ(no_fmt_buffer.str(), no_fmt_expected);
+
+  std::ifstream with_fmt_contents(with_fmt);
+  std::stringstream with_fmt_buffer;
+  with_fmt_buffer << with_fmt_contents.rdbuf();
+
+  EXPECT_EQ(with_fmt_buffer.str(), "Test");
 
   // Cleanup generated files
   EXPECT_EQ(axom::utilities::filesystem::removeFile(no_fmt), 0);
