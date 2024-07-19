@@ -811,6 +811,15 @@ public:
     // STAGE 7 - Make new fields.
     //-----------------------------------------------------------------------
     axom::mir::utilities::blueprint::SliceData slice;
+    axom::Array<IndexType> sliceIndices(finalNumZones, finalNumZones, allocatorID);
+    auto sliceIndicesView = sliceIndices.view();
+    axom::for_all<ExecSpace>(nzones, AXOM_LAMBDA(auto zoneIndex)
+    {
+      const auto start = fragmentOffsetsView[zoneIndex];
+      for(int i = 0; i < fragmentsView[zoneIndex]; i++)
+        sliceIndicesView[start + i] = zoneIndex;
+    });
+    slice.m_indicesView = sliceIndicesView;
     makeFields(blend, slice, n_newTopo.name(), n_fields, n_newFields);
 
     //-----------------------------------------------------------------------
