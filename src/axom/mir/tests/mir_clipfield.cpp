@@ -43,6 +43,106 @@ void braid(const std::string &type, const Dimensions &dims, conduit::Node &mesh)
   });
 }
 
+TEST(mir_clipfield, options)
+{
+  int nzones = 6;
+
+  conduit::Node options;
+  axom::mir::clipping::ClipOptions<seq_exec> opts(nzones, options);
+
+  options["clipField"] = "distance";
+  EXPECT_EQ(opts.clipField(), options["clipField"].as_string());
+
+  EXPECT_EQ(opts.clipValue(), 0.);
+  options["clipValue"] = 2.5f;
+  EXPECT_EQ(opts.clipValue(), 2.5f);
+
+  EXPECT_EQ(opts.topologyName("default"), "default");
+  options["topologyName"] = "topo";
+  EXPECT_EQ(opts.topologyName("default"), "topo");
+
+  EXPECT_EQ(opts.coordsetName("default"), "default");
+  options["coordsetName"] = "coords";
+  EXPECT_EQ(opts.coordsetName("default"), "coords");
+
+  EXPECT_EQ(opts.colorField(), "color");
+  options["colorField"] = "custom_color";
+  EXPECT_EQ(opts.colorField(), "custom_color");
+
+  EXPECT_TRUE(opts.inside());
+  options["inside"] = 1;
+  EXPECT_TRUE(opts.inside());
+  options["inside"] = 0;
+  EXPECT_FALSE(opts.inside());
+
+  EXPECT_FALSE(opts.outside());
+  options["outside"] = 1;
+  EXPECT_TRUE(opts.outside());
+  options["outside"] = 0;
+  EXPECT_FALSE(opts.outside());
+
+  // The clip field has to be present
+  conduit::Node n_fields;
+  n_fields["distance/topology"] = "topo";
+  n_fields["distance/association"] = "vertex";
+  n_fields["distance/values"].set(std::vector<float>{0.,1.,2.,3.});
+
+  // There are currently no fields in the options. fields should just return the clip field.
+  auto fields = opts.fields(n_fields);
+  EXPECT_EQ(fields.size(), 1);
+  EXPECT_EQ(fields.begin()->first, "distance");
+  EXPECT_EQ(fields.begin()->second, "distance");
+
+  // Add an empty fields node so we select NO fields.
+  (void)options["fields"];
+  fields = opts.fields(n_fields);
+  EXPECT_EQ(fields.size(), 0);
+
+  // Add some fields
+  options["fields/distance"] = "distance";
+  options["fields/source"] = "destination";
+  options["fields/same"] = 1;
+  fields = opts.fields(n_fields);
+  EXPECT_EQ(fields.size(), 3);
+  int i = 0;
+  for(auto it = fields.begin(); it != fields.end(); it++, i++)
+  {
+    if(i == 0)
+    {
+      EXPECT_EQ(it->first, "distance");
+      EXPECT_EQ(it->second, "distance");
+    }
+    else if(i == 1)
+    {
+      EXPECT_EQ(it->first, "same");
+      EXPECT_EQ(it->second, "same");
+    }
+    else if(i == 2)
+    {
+      EXPECT_EQ(it->first, "source");
+      EXPECT_EQ(it->second, "destination");
+    }
+  }
+
+  // There are no "selectedZones" in the options. We should get nzones values from 0 onward.
+  auto selectedZonesView = opts.selectedZonesView();
+  EXPECT_EQ(selectedZonesView.size(), 6);
+  EXPECT_EQ(selectedZonesView[0], 0);
+  EXPECT_EQ(selectedZonesView[1], 1);
+  EXPECT_EQ(selectedZonesView[2], 2);
+  EXPECT_EQ(selectedZonesView[3], 3);
+  EXPECT_EQ(selectedZonesView[4], 4);
+  EXPECT_EQ(selectedZonesView[5], 5);
+
+  // Put some "selectedZones" in the options. 
+  opts.invalidateSelectedZones();
+  options["selectedZones"].set(std::vector<axom::IndexType>{5,4,3});
+  selectedZonesView = opts.selectedZonesView();
+  EXPECT_EQ(selectedZonesView.size(), 3);
+  EXPECT_EQ(selectedZonesView[0], 3);
+  EXPECT_EQ(selectedZonesView[1], 4);
+  EXPECT_EQ(selectedZonesView[2], 5);
+}
 
 TEST(mir_clipfield, uniform2d)
 {
@@ -66,7 +166,16 @@ TEST(mir_clipfield, uniform2d)
   // Clip the data
   conduit::Node clipmesh;
   axom::mir::clipping::ClipField<seq_exec, TopoView, CoordsetView> clipper(topoView, coordsetView);
-  clipper.execute(mesh, "distance", clipmesh);
+  conduit::Node options;
+  options["clipField"] = "distance";
+  options["inside"] = 1;
+  options["outside"] = 1;
+  options["topologyName"] = "cliptopo";
+  options["coordsetName"] = "clipcoords";
+  options["fields/braid"] = "new_braid";
+  options["fields/radial"] = "new_radial";
+
+  clipper.execute(mesh, options, clipmesh);
   conduit::relay::io::blueprint::save_mesh(clipmesh, "uniform2d", "hdf5");
   conduit::relay::io::blueprint::save_mesh(clipmesh, "uniform2d_yaml", "yaml");
 

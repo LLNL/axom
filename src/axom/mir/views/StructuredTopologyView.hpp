@@ -93,13 +93,13 @@ public:
       const IndexingPolicy zoneIndexing = m_indexing;
       const IndexingPolicy nodeIndexing = m_indexing.expand();
 
-      const auto jp = nodeIndexing.jStride();
-      const auto kp = nodeIndexing.kStride();
       axom::for_all<ExecSpace>(0, nzones, AXOM_LAMBDA(auto zoneIndex)
       {
         using ShapeType = HexShape<IndexType>;
 
         const auto logical = zoneIndexing.IndexToLogicalIndex(zoneIndex);
+        const auto jp = nodeIndexing.jStride();
+        const auto kp = nodeIndexing.kStride();
         IndexType data[8];
         data[0] = nodeIndexing.LogicalIndexToIndex(logical);
         data[1] = data[0] + 1;
@@ -119,13 +119,12 @@ public:
       const IndexingPolicy zoneIndexing = m_indexing;
       const IndexingPolicy nodeIndexing = m_indexing.expand();
 
-      const auto jp = nodeIndexing.jStride();
-
-      axom::for_all<ExecSpace>(0, nzones, AXOM_LAMBDA(int zoneIndex)
+      axom::for_all<ExecSpace>(0, nzones, AXOM_LAMBDA(auto zoneIndex)
       {
         using ShapeType = QuadShape<IndexType>;
 
         const auto logical = zoneIndexing.IndexToLogicalIndex(zoneIndex);
+        const auto jp = nodeIndexing.jStride();
         IndexType data[4];
         data[0] = nodeIndexing.LogicalIndexToIndex(logical);
         data[1] = data[0] + 1;
@@ -141,7 +140,7 @@ public:
       const IndexingPolicy zoneIndexing = m_indexing;
       const IndexingPolicy nodeIndexing = m_indexing.expand();
 
-      axom::for_all<ExecSpace>(0, nzones, AXOM_LAMBDA(int zoneIndex)
+      axom::for_all<ExecSpace>(0, nzones, AXOM_LAMBDA(auto zoneIndex)
       {
         using ShapeType = LineShape<IndexType>;
 
@@ -179,14 +178,14 @@ public:
       const IndexingPolicy zoneIndexing = m_indexing;
       const IndexingPolicy nodeIndexing = m_indexing.expand();
 
-      const auto jp = nodeIndexing.jStride();
-      const auto kp = nodeIndexing.kStride();
       axom::for_all<ExecSpace>(0, nSelectedZones, AXOM_LAMBDA(auto selectIndex)
       {
         using ShapeType = HexShape<IndexType>;
 
         const auto zoneIndex = idsView[selectIndex];
         const auto logical = zoneIndexing.IndexToLogicalIndex(zoneIndex);
+        const auto jp = nodeIndexing.jStride();
+        const auto kp = nodeIndexing.kStride();
         IndexType data[8];
         data[0] = nodeIndexing.LogicalIndexToIndex(logical);
         data[1] = data[0] + 1;
@@ -206,13 +205,13 @@ public:
       const IndexingPolicy zoneIndexing = m_indexing;
       const IndexingPolicy nodeIndexing = m_indexing.expand();
 
-      const auto jp = nodeIndexing.jStride();
       axom::for_all<ExecSpace>(0, nSelectedZones, AXOM_LAMBDA(auto selectIndex)
       {
         using ShapeType = QuadShape<IndexType>;
 
         const auto zoneIndex = idsView[selectIndex];
         const auto logical = zoneIndexing.IndexToLogicalIndex(zoneIndex);
+        const auto jp = nodeIndexing.jStride();
         IndexType data[4];
         data[0] = nodeIndexing.LogicalIndexToIndex(logical);
         data[1] = data[0] + 1;

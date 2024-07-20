@@ -67,6 +67,7 @@ struct cpp2conduit<conduit::float64> { using type = conduit::float64; static con
  * \brief This class registers a Conduit allocator that can make Conduit allocate
  *        through Axom's allocate/deallocate functions using a specific allocator. This
  *        permits Conduit to allocate through Axom's UMPIRE logic.
+ *
  */
 class ConduitAllocateThroughAxom
 {

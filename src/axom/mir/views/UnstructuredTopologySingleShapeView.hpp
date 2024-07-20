@@ -83,14 +83,14 @@ public:
   {
     const auto nzones = numberOfZones();
 
-    axom::ArrayView<IndexType> connectivity(m_connectivity);
+    axom::ArrayView<IndexType> connectivityView(m_connectivity);
     if constexpr (ShapeType::is_variable_size())
     {
       axom::ArrayView<IndexType> sizes(m_sizes);
       axom::ArrayView<IndexType> offsets(m_offsets);
       axom::for_all<ExecSpace>(0, nzones, AXOM_LAMBDA(int zoneIndex)
       {
-        const axom::ArrayView<IndexType> shapeData(connectivity.data() + offsets[zoneIndex], sizes[zoneIndex]);
+        const axom::ArrayView<IndexType> shapeData(connectivityView.data() + offsets[zoneIndex], sizes[zoneIndex]);
         const ShapeType shape(shapeData);
         func(zoneIndex, shape);
       });
@@ -99,7 +99,7 @@ public:
     {
       axom::for_all<ExecSpace>(0, nzones, AXOM_LAMBDA(int zoneIndex)
       {
-        const axom::ArrayView<IndexType> shapeData(connectivity.data() + ShapeType::zoneOffset(zoneIndex), ShapeType::numberOfNodes());
+        const axom::ArrayView<IndexType> shapeData(connectivityView.data() + ShapeType::zoneOffset(zoneIndex), ShapeType::numberOfNodes());
         const ShapeType shape(shapeData);
         func(zoneIndex, shape);
       });
@@ -120,7 +120,7 @@ public:
     const auto nSelectedZones = selectedIdsView.size();
 
     ViewType idsView(selectedIdsView);
-    axom::ArrayView<IndexType> connectivity(m_connectivity);
+    axom::ArrayView<IndexType> connectivityView(m_connectivity);
 
     if constexpr (ShapeType::is_variable_size())
     {
@@ -129,7 +129,7 @@ public:
       axom::for_all<ExecSpace>(0, nSelectedZones, AXOM_LAMBDA(int selectIndex)
       {
         const auto zoneIndex = idsView[selectIndex];
-        const axom::ArrayView<IndexType> shapeData(connectivity.data() + offsets[zoneIndex], sizes[zoneIndex]);
+        const axom::ArrayView<IndexType> shapeData(connectivityView.data() + offsets[zoneIndex], sizes[zoneIndex]);
         const ShapeType shape(shapeData);
         func(zoneIndex, shape);
       });
@@ -139,7 +139,7 @@ public:
       axom::for_all<ExecSpace>(0, nSelectedZones, AXOM_LAMBDA(int selectIndex)
       {
         const auto zoneIndex = idsView[selectIndex];
-        const axom::ArrayView<IndexType> shapeData(connectivity.data() + ShapeType::zoneOffset(zoneIndex), ShapeType::numberOfNodes());
+        const axom::ArrayView<IndexType> shapeData(connectivityView.data() + ShapeType::zoneOffset(zoneIndex), ShapeType::numberOfNodes());
         const ShapeType shape(shapeData);
         func(zoneIndex, shape);
       });

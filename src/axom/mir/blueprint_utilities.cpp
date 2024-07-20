@@ -42,13 +42,13 @@ conduit::index_t ConduitAllocateThroughAxom::getConduitAllocatorID() const
 void *ConduitAllocateThroughAxom::internal_allocate(size_t items, size_t item_size)
 {
   void *ptr = static_cast<void *>(axom::allocate<std::uint8_t>(items * item_size, axomAllocatorID));
-  std::cout << "Allocating for Conduit via axom: items=" << items << ", item_size=" << item_size << ", ptr=" << ptr << std::endl;
+  //std::cout << "Allocating for Conduit via axom: items=" << items << ", item_size=" << item_size << ", ptr=" << ptr << std::endl;
   return ptr;
 }
 
 void ConduitAllocateThroughAxom::internal_free(void *ptr)
 {
-  std::cout << "Dellocating for Conduit via axom: ptr=" << ptr << std::endl;
+  //std::cout << "Dellocating for Conduit via axom: ptr=" << ptr << std::endl;
   axom::deallocate(ptr);
 }
 

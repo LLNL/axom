@@ -18,6 +18,9 @@
 #include <conduit/conduit.hpp>
 #include <conduit/conduit_blueprint_mesh_utils.hpp>
 
+#include <map>
+#include <string>
+
 namespace axom
 {
 namespace mir
@@ -80,8 +83,9 @@ shapeMap_ValueName(const conduit::Node &n_shape_map)
  *
  * \return The Shape::id() value that matches the st_index, or 0 if there is no match.
  */
+template <typename IntegerType>
 AXOM_HOST_DEVICE
-int ST_Index_to_ShapeID(int st_index)
+int ST_Index_to_ShapeID(IntegerType st_index)
 {
   int shapeID = 0;
   switch(st_index)
@@ -167,11 +171,11 @@ bool shapeIsSelected(unsigned char color, int selection)
 }
 
 AXOM_HOST_DEVICE
-float computeT(float d0, float d1)
+float computeWeight(float d0, float d1, float clipValue)
 {
   const float delta = d1 - d0;
   const float abs_delta = (delta < 0) ? -delta : delta;
-  const float t = (abs_delta != 0.) ? (-d0 / delta) : 0.;
+  const float t = (abs_delta != 0.) ? ((clipValue - d0) / delta) : 0.;
   return t;
 }
 
@@ -181,22 +185,24 @@ float computeT(float d0, float d1)
  * \brief Use the ids for the provided zone and the values from the array view to determine a clip case.
  *
  * \tparam ZoneType A class that implements the Shape interface.
- * \tparam ArrayViewType The ArrayView type that contains the data.
+ * \tparam DataType The data type of the clip data.
  *
  * \param[in] zone The zone being clipped.
  * \param[in] view The view that can access the clipping distance field.
+ * \param[in] clipValue The value used for clipping.
  *
  * \return The index of the clipping case.
  */
 AXOM_HOST_DEVICE
-template <typename ZoneType, typename ArrayViewType>
-size_t clip_case(const ZoneType &zone, const ArrayViewType &view)
+template <typename ZoneType, typename DataType>
+size_t clip_case(const ZoneType &zone, const axom::ArrayView<DataType> &view, DataType clipValue)
 {
   size_t clipcase = 0;
   for(size_t i = 0; i < zone.numberOfNodes(); i++)
   {
     const auto id = zone.getId(i);
-    clipcase |= (view[id] > 0) ? (1 << i) : 0;
+    const auto value = view[id] - clipValue;
+    clipcase |= (value > 0) ? (1 << i) : 0;
   }
   return clipcase;
 }
@@ -204,8 +210,220 @@ size_t clip_case(const ZoneType &zone, const ArrayViewType &view)
 } // end namespace details
 
 /**
+ * \brief This class provides a kind of schema over the clipping options, as well
+ *        as default values, and some utilities functions.
+ */
+template <typename ExecSpace>
+class ClipOptions
+{
+public:
+  ClipOptions(axom::IndexType nzones, const conduit::Node &options) : m_nzones(nzones), m_options(options), m_selectedZones()
+  {
+  }
+
+  /**
+   * \brief Return a view that contains the list of selected zone ids for the mesh.
+   * \return A view that contains the list of selected zone ids for the mesh.
+   */
+  axom::ArrayView<axom::IndexType> selectedZonesView()
+  {
+    if(m_selectedZones.size() == 0)
+      buildSelectedZones();
+    return m_selectedZones.view();
+  }
+
+  /**
+   * \brief Invalidate the selected zones array (due to options changing) so we can rebuild it.
+   */
+  void invalidateSelectedZones()
+  {
+    m_selectedZones.clear();
+  }
+
+  /**
+   * \brief Return the name of the field used for clipping.
+   * \return The name of the field used for clipping.
+   */
+  std::string clipField() const
+  {
+    return m_options.fetch_existing("clipField").as_string();
+  }
+
+  /**
+   * \brief Return the clip value.
+   * \return The clip value.
+   */
+  float clipValue() const
+  {
+    return m_options.has_child("clipValue") ? m_options.fetch_existing("clipValue").to_float() : 0.f;
+  }
+
+  /**
+   * \brief Return the name of the new topology to be created.
+   * \param default_value The name to use if the option is not defined.
+   * \return The name of the new topology to be created.
+   */
+  std::string topologyName(const std::string &default_value = std::string()) const
+  {
+    std::string name(default_value);
+    if(m_options.has_child("topologyName"))
+      name = m_options.fetch_existing("topologyName").as_string();
+    return name;
+  }
+
+  /**
+   * \brief Return the name of the new coordset to be created.
+   * \param default_value The name to use if the option is not defined.
+   * \return The name of the new coordset to be created.
+   */
+  std::string coordsetName(const std::string &default_value = std::string()) const
+  {
+    std::string name(default_value);
+    if(m_options.has_child("coordsetName"))
+      name = m_options.fetch_existing("coordsetName").as_string();
+    return name;
+  }
+
+  /**
+   * \brief Return the name of the new color field to be created.
+   * \return The name of the new color field to be created.
+   */
+  std::string colorField() const
+  {
+    std::string name("color");
+    if(m_options.has_child("colorField"))
+      name = m_options.fetch_existing("colorField").as_string();
+    return name;
+  }
+
+  /**
+   * \brief Whether the "inside" of the clipping field is selected.
+   * \return 1 of the inside clipping is selected, false otherwise.
+   */
+  bool inside() const
+  {
+    return m_options.has_path("inside") ? (m_options.fetch_existing("inside").to_int() > 0) : true;
+  }
+
+  /**
+   * \brief Whether the "outside" of the clipping field is selected.
+   * \return 1 of the outside clipping is selected, false otherwise.
+   */
+  bool outside() const
+  {
+    return m_options.has_path("outside") ? (m_options.fetch_existing("outside").to_int() > 0) : false;
+  }
+
+  /**
+   * \brief Extract the names of the fields to process (and their output names) from the
+   *        options or \a n_fields if the options do not contain fields.
+   *
+   * \param n_fields The Conduit node that contains mesh fields.
+   *
+   * \return A map of the fields that will be processed, as well as their output name in the new fields.
+   */
+  std::map<std::string, std::string> fields(const conduit::Node &n_fields) const
+  {
+    std::map<std::string, std::string> f;
+    if(m_options.has_child("fields"))
+    {
+      const conduit::Node &n_opt_fields = m_options.fetch_existing("fields");
+      for(conduit::index_t i = 0; i < n_opt_fields.number_of_children(); i++)
+      {
+        if(n_opt_fields[i].dtype().is_string())
+          f[n_opt_fields[i].name()] = n_opt_fields[i].as_string();
+        else
+          f[n_opt_fields[i].name()] = n_opt_fields[i].name();
+      }
+    }
+    else
+    {
+      // No options were specified. Allow all fields with same topology as clipField.
+      const conduit::Node &n_clipField = n_fields.fetch_existing(clipField());
+      std::string topoName = n_clipField.fetch_existing("topology").as_string();
+      for(conduit::index_t i = 0; i < n_fields.number_of_children(); i++)
+      {
+        if(topoName == n_fields[i].fetch_existing("topology").as_string())
+          f[n_fields[i].name()] = n_fields[i].name();
+      }
+    }
+    return f;
+  }  
+
+private:
+  /**
+   * \brief The options may contain a "selectedZones" member that is a list of zones
+   *        that will be operated on. If such an array is present, copy and sort it.
+   *        If the zone list is not present, make an array that selects every zone.
+   */
+  void buildSelectedZones()
+  {
+    const auto allocatorID = axom::execution_space<ExecSpace>::allocatorID();
+
+    if(m_options.has_child("selectedZones"))
+    {
+      // Store the zone list in m_selectedZones.
+      int badValueCount = 0;
+      views::IndexNode_to_ArrayView(m_options["selectedZones"], [&](auto zonesView)
+      {
+        using loop_policy = typename axom::execution_space<ExecSpace>::loop_policy;
+        using reduce_policy = typename axom::execution_space<ExecSpace>::reduce_policy;
+        using value_type = typename decltype(zonesView)::value_type;
+
+        // It probably does not make sense to request more zones than we have in the mesh.
+        SLIC_ASSERT(zonesView.size() <= m_nzones);
+
+        m_selectedZones = axom::Array<axom::IndexType>(zonesView.size(), zonesView.size(), allocatorID);
+        auto szView = m_selectedZones.view();
+        axom::copy(szView.data(), zonesView.data(), zonesView.size() * sizeof(value_type));
+
+        // Check that the selected zone values are in range.
+        const auto nzones = m_nzones;
+        RAJA::ReduceSum<reduce_policy, int> errReduce(0);
+        axom::for_all<ExecSpace>(szView.size(), AXOM_LAMBDA(auto index)
+        {
+          const int err = (szView[index] < 0 || szView[index] >= nzones) ? 1 : 0;
+          errReduce += err;
+        });
+        badValueCount = errReduce.get();
+
+        // Make sure the selectedZones are sorted.
+        RAJA::sort<loop_policy>(RAJA::make_span(szView.data(), szView.size()));
+      });
+
+      if(badValueCount > 0)
+      {
+        SLIC_ERROR("Out of range selectedZones values.");
+      }
+    }
+    else
+    {
+      // Select all zones.
+      m_selectedZones = axom::Array<axom::IndexType>(m_nzones, m_nzones, allocatorID);
+      auto szView = m_selectedZones.view();
+      axom::for_all<ExecSpace>(m_nzones, AXOM_LAMBDA(auto zoneIndex)
+      {
+        szView[zoneIndex] = zoneIndex;
+      });
+    }
+  }
+
+private:
+  axom::IndexType m_nzones;                     // The number of zones in the associated topology.
+  const conduit::Node &m_options;               // A reference to the clipping options node.
+  axom::Array<axom::IndexType> m_selectedZones; // Storage for a list of selected zone ids.
+};
+
+
+
+
+/**
  * \accelerated
  * \brief This class clips a topology using a field and puts the new topology into a new Conduit node.
+ *
+ * \tparam ExecSpace    The execution space where the compute-heavy kernels run.
+ * \tparam TopologyView The topology view that can operate on the Blueprint topology.
+ * \tparam CoordsetView The coordset view that can operate on the Blueprint coordset.
  */
 template <typename ExecSpace, typename TopologyView, typename CoordsetView>
 class ClipField
@@ -230,26 +448,29 @@ public:
    * \brief Execute the clipping operation using the data stored in the specified \a clipField.
    *
    * \param[in] n_input The Conduit node that contains the topology, coordsets, and fields.
-   * \param[in] clipField The name of the field to use for clipping.
+   * \param[in] n_options A Conduit node that contains clipping options.
    * \param[out] n_output A Conduit node that will hold the clipped output mesh. This should be a different node from \a n_input.
    *
    * \note The clipField field must currently be vertex-associated.
    */
   void execute(const conduit::Node &n_input,
-               const std::string &clipField,
+               const conduit::Node &n_options,
                conduit::Node &n_output)
   {
+     ClipOptions<ExecSpace> opts(0, n_options);
+     const std::string clipFieldName = opts.clipField();
+
      const conduit::Node &n_fields = n_input.fetch_existing("fields");
-     const conduit::Node &n_clipField = n_fields.fetch_existing(clipField);
+     const conduit::Node &n_clipField = n_fields.fetch_existing(clipFieldName);
      const std::string &topoName = n_clipField["topology"].as_string();
      const conduit::Node &n_topo = n_input.fetch_existing("topologies/" + topoName);
      const std::string &coordsetName = n_topo["coordset"].as_string();
      const conduit::Node &n_coordset = n_input.fetch_existing("coordsets/" + coordsetName);
      
      execute(n_topo, n_coordset, n_fields,
-             clipField,
-             n_output["topologies/" + topoName],
-             n_output["coordsets/" + coordsetName],
+             n_options,
+             n_output["topologies/" + opts.topologyName(topoName)],
+             n_output["coordsets/" + opts.coordsetName(coordsetName)],
              n_output["fields"]);
   }
 
@@ -259,7 +480,7 @@ public:
    * \param[in] n_topo The node that contains the input mesh topology.
    * \param[in] n_coordset The node that contains the input mesh coordset.
    * \param[in] n_fields The node that contains the input fields.
-   * \param[in] clipField The name of the field to use for clipping.
+   * \param[in] n_options A Conduit node that contains clipping options.
    * \param[out] n_newTopo A node that will contain the new clipped topology.
    * \param[out] n_newCoordset A node that will contain the new coordset for the clipped topology.
    * \param[out] n_newFields A node that will contain the new fields for the clipped topology.
@@ -269,7 +490,7 @@ public:
   void execute(const conduit::Node &n_topo,
                const conduit::Node &n_coordset,
                const conduit::Node &n_fields,
-               const std::string &clipField,
+               const conduit::Node &n_options,
                conduit::Node &n_newTopo,
                conduit::Node &n_newCoordset,
                conduit::Node &n_newFields)
@@ -282,13 +503,22 @@ public:
     using ConnectivityType = typename TopologyView::IndexType;
     constexpr auto connTypeID = axom::mir::utilities::blueprint::cpp2conduit<ConnectivityType>::id;
 
-    // Get the clip field.
-    const conduit::Node &n_clip_field = n_fields.fetch_existing(clipField);
-    const conduit::Node &n_clip_field_values = n_clip_field["values"];
-    assert(n_clip_field["association"].as_string() == "vertex");
+    const auto nzones = m_topologyView.numberOfZones();
+    ClipOptions<ExecSpace> opts(nzones, n_options);
 
-    // TODO: process options (or add some class members to hold attributes)
-    int selection = -1; // All bits set.
+    // Get the clip field.
+    std::string clipFieldName = opts.clipField();
+    const conduit::Node &n_clip_field = n_fields.fetch_existing(opts.clipField());
+    const conduit::Node &n_clip_field_values = n_clip_field["values"];
+    SLIC_ASSERT(n_clip_field["association"].as_string() == "vertex");
+
+    // Determine which parts of the shapes will be kept.
+    int selection = 0;
+    if(opts.inside())
+      axom::utilities::setBit(selection, 0);
+    if(opts.outside())
+      axom::utilities::setBit(selection, 1);
+    SLIC_ASSERT(selection > 0);
 
     // Load clip table data and make views.
     m_clipTables.load(m_topologyView.dimension());
@@ -307,7 +537,6 @@ public:
     RAJA::ReduceSum<reduce_policy, int> blendGroupLen_sum(0);
 
     // Allocate some memory
-    const auto nzones = m_topologyView.numberOfZones();
     axom::Array<int> clipCases(nzones, nzones, allocatorID);      // The clip case for a zone.
     axom::Array<std::uint64_t> pointsUsed(nzones, nzones, allocatorID);   // Which points are used over all selected fragments in a zone
     axom::Array<int> blendGroups(nzones, nzones, allocatorID);    // Number of blend groups in a zone.
@@ -324,10 +553,13 @@ public:
 
     views::Node_to_ArrayView(n_clip_field_values, [&](auto clipFieldView)
     {
-      m_topologyView.template for_all_zones<ExecSpace>(AXOM_LAMBDA(auto zoneIndex, const auto &zone)
+      using clip_value_type = typename decltype(clipFieldView)::value_type;
+      const auto clipValue = static_cast<clip_value_type>(opts.clipValue());
+
+      m_topologyView.template for_selected_zones<ExecSpace>(opts.selectedZonesView(), AXOM_LAMBDA(auto zoneIndex, const auto &zone)
       {
         // Get the clip case for the current zone.
-        const auto clipcase = details::clip_case(zone, clipFieldView);
+        const auto clipcase = details::clip_case(zone, clipFieldView, clipValue);
         clipCasesView[zoneIndex] = clipcase;
 
         // Iterate over the shapes in this clip case to determine the number of blend groups.
@@ -494,7 +726,8 @@ public:
 
     views::Node_to_ArrayView(n_clip_field_values, [&](auto clipFieldView)
     {
-      m_topologyView.template for_all_zones<ExecSpace>(AXOM_LAMBDA(auto zoneIndex, const auto &zone)
+      const auto clipValue = opts.clipValue();
+      m_topologyView.template for_selected_zones<ExecSpace>(opts.selectedZonesView(), AXOM_LAMBDA(auto zoneIndex, const auto &zone)
       {
         using ZoneType = typename std::remove_reference<decltype(zone)>::type;
 
@@ -552,7 +785,7 @@ public:
                   const auto id1 = zone.getId(edge[1]);
 
                   // Figure out the blend for edge.
-                  const float t = details::computeT(clipFieldView[id0], clipFieldView[id1]);
+                  const float t = details::computeWeight(clipFieldView[id0], clipFieldView[id1], clipValue);
                 
                   blendIdsView[bgStart]   = id0;
                   blendIdsView[bgStart+1] = id1;
@@ -608,7 +841,7 @@ public:
             const auto id1 = zone.getId(edge[1]);
 
             // Figure out the blend for edge.
-            const float t = details::computeT(clipFieldView[id0], clipFieldView[id1]);
+            const float t = details::computeWeight(clipFieldView[id0], clipFieldView[id1], clipValue);
 
             // Store blend group info                
             blendIdsView[bgStart]   = id0;
@@ -645,7 +878,6 @@ public:
     axom::mir::utilities::unique<ExecSpace, KeyType>(blendNames, uNames, uIndices);
 
     auto uNamesView = uNames.view();
-    auto uIndicesView = uIndices.view();
 
     // Bundle up blend data.
     axom::mir::utilities::blueprint::BlendData blend;
@@ -696,10 +928,19 @@ public:
     n_offsets.set(conduit::DataType(connTypeID, finalNumZones));
     auto offsetsView = axom::ArrayView<ConnectivityType>(static_cast<ConnectivityType *>(n_offsets.data_ptr()), finalNumZones);
 
+    // Allocate a color variable to keep track of the "color" of the fragments.
+    conduit::Node &n_color = n_newFields[opts.colorField()];
+    n_color["topology"] = opts.topologyName(n_newTopo.name());
+    n_color["association"] = "element";
+    conduit::Node &n_color_values = n_color["values"];
+    n_color_values.set_allocator(conduitAllocatorID);
+    n_color_values.set(conduit::DataType::int32(finalNumZones));
+    auto colorView = axom::ArrayView<int>(static_cast<ConnectivityType *>(n_color_values.data_ptr()), finalNumZones);
+
     // Here we fill in the new connectivity, sizes, shapes.
     // We get the node ids from the unique blend names, de-duplicating points when making the new connectivity.
     RAJA::ReduceBitOr<reduce_policy, std::uint64_t> shapesUsed_reduce(0);
-    m_topologyView.template for_all_zones<ExecSpace>(AXOM_LAMBDA(auto zoneIndex, const auto &zone)
+    m_topologyView.template for_selected_zones<ExecSpace>(opts.selectedZonesView(), AXOM_LAMBDA(auto zoneIndex, const auto &zone)
     {
       // If there are no fragments, return from lambda.
       if(fragmentsView[zoneIndex] == 0)
@@ -769,6 +1010,8 @@ public:
             const auto shapeID = details::ST_Index_to_ShapeID(fragmentShape);
             sizesView[sizeIndex] = nIdsInFragment;
             shapesView[sizeIndex] = shapeID;
+            colorView[sizeIndex] = caseData[1] - COLOR0;
+
             sizeIndex++;
 
             // Record which shape type was used. (ids are powers of 2)
@@ -779,6 +1022,12 @@ public:
 
       shapesUsed_reduce |= shapesUsed;
     });
+
+    // If inside and outside are not selected, remove the color field since we should not need it.
+    if(!(opts.inside() && opts.outside()))
+    {
+      n_newFields.remove(opts.colorField());
+    }
 
     // Make offsets
     RAJA::exclusive_scan<loop_policy>(RAJA::make_span(sizesView.data(), finalNumZones),
@@ -820,7 +1069,7 @@ public:
         sliceIndicesView[start + i] = zoneIndex;
     });
     slice.m_indicesView = sliceIndicesView;
-    makeFields(blend, slice, n_newTopo.name(), n_fields, n_newFields);
+    makeFields(blend, slice, opts.topologyName(n_topo.name()), opts.fields(n_fields), n_fields, n_newFields);
 
     //-----------------------------------------------------------------------
     // STAGE 8 - make originalElements (this will later be optional)
@@ -835,7 +1084,7 @@ public:
         using value_type = typename decltype(origValuesView)::value_type;
         conduit::Node &n_origElem = n_newFields["originalElements"];       
         n_origElem["association"] = "element";
-        n_origElem["topology"] = n_topo.name();
+        n_origElem["topology"] = opts.topologyName(n_newTopo.name());
         conduit::Node &n_values = n_origElem["values"];
         n_values.set_allocator(conduitAllocatorID);
         n_values.set(conduit::DataType(n_orig_values.dtype().id(), finalNumZones));
@@ -854,7 +1103,7 @@ public:
       // Make a new node and populate originalElement.
       conduit::Node &n_orig = n_newFields["originalElements"];
       n_orig["association"] = "element";
-      n_orig["topology"] = n_topo.name();
+      n_orig["topology"] = opts.topologyName(n_newTopo.name());
       conduit::Node &n_values = n_orig["values"];
       n_values.set_allocator(conduitAllocatorID);
       n_values.set(conduit::DataType(connTypeID, finalNumZones));
@@ -913,28 +1162,33 @@ private:
    *
    * \param blend The BlendData that we need to construct the new vertex fields.
    * \param slice The SliceData we need to construct new element fields.
+   * \param topologyName The name of the new field's topology.
+   * \param fieldMap A map containing the names of the fields that we'll operate on.
    * \param n_fields The source fields.
-   * \param[out[ n_out_fields The node that will contain the new fields.
+   * \param[out] n_out_fields The node that will contain the new fields.
    */
-// TODO: pass in a map<string,string> of fields that we want to map to the new topology.
-  void makeFields(const BlendData &blend, const SliceData &slice, const std::string &topoName, const conduit::Node &n_fields, conduit::Node &n_out_fields) const
+  void makeFields(const BlendData &blend,
+                  const SliceData &slice,
+                  const std::string &topologyName,
+                  const std::map<std::string, std::string> &fieldMap,
+                  const conduit::Node &n_fields,
+                  conduit::Node &n_out_fields) const
   {
-    for(conduit::index_t i = 0; i < n_fields.number_of_children(); i++)
+    for(auto it = fieldMap.begin(); it != fieldMap.end(); it++)
     {
-      const conduit::Node &n_field = n_fields[i];
-      if(n_field["topology"].as_string() == topoName)
+      const conduit::Node &n_field = n_fields.fetch_existing(it->first);
+      const std::string association = n_field["association"].as_string();
+      if(association == "element")
       {
-        const std::string association = n_field["association"].as_string();
-        if(association == "element")
-        {
-          axom::mir::utilities::blueprint::FieldSlicer<ExecSpace> s;
-          s.execute(slice, n_field, n_out_fields[n_field.name()]);
-        }
-        else if(association == "vertex")
-        {
-          axom::mir::utilities::blueprint::FieldBlender<ExecSpace> b;
-          b.execute(blend, n_field, n_out_fields[n_field.name()]);
-        }
+        axom::mir::utilities::blueprint::FieldSlicer<ExecSpace> s;
+        s.execute(slice, n_field, n_out_fields[it->second]);
+        n_out_fields[it->second]["topology"] = topologyName;
+      }
+      else if(association == "vertex")
+      {
+        axom::mir::utilities::blueprint::FieldBlender<ExecSpace> b;
+        b.execute(blend, n_field, n_out_fields[it->second]);
+        n_out_fields[it->second]["topology"] = topologyName;
       }
     }
   }
