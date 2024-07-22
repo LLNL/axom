@@ -11,7 +11,31 @@
 #include <conduit/conduit_relay_io_blueprint.hpp>
 #include <cmath>
 
-using seq_exec = axom::SEQ_EXEC;
+// clang-format off
+#if defined (AXOM_USE_RAJA) && defined (AXOM_USE_UMPIRE)
+  using seq_exec = axom::SEQ_EXEC;
+
+  #if defined(AXOM_USE_OPENMP)
+    using omp_exec = axom::OMP_EXEC;
+  #else
+    using omp_exec = seq_exec;
+  #endif
+
+  #if defined(AXOM_USE_CUDA)
+    constexpr int CUDA_BLOCK_SIZE = 256;
+    using cuda_exec = axom::CUDA_EXEC<CUDA_BLOCK_SIZE>;
+  #else
+    using cuda_exec = seq_exec;
+  #endif
+
+  #if defined(AXOM_USE_HIP)
+    constexpr int HIP_BLOCK_SIZE = 64;
+    using hip_exec = axom::HIP_EXEC<HIP_BLOCK_SIZE>;
+  #else
+    using hip_exec = seq_exec;
+  #endif
+#endif
+// clang-format on
 
 template <typename Dimensions>
 void braid(const std::string &type, const Dimensions &dims, conduit::Node &mesh)
@@ -144,7 +168,8 @@ TEST(mir_clipfield, options)
   EXPECT_EQ(selectedZonesView[2], 5);
 }
 
-TEST(mir_clipfield, uniform2d)
+template <typename ExecSpace>
+void braid2d_clip_test(const std::string &type, const std::string &name)
 {
   using Indexing = axom::mir::views::StructuredIndexing<axom::IndexType, 2>;
   using TopoView = axom::mir::views::StructuredTopologyView<Indexing>;
@@ -154,18 +179,17 @@ TEST(mir_clipfield, uniform2d)
   axom::StackArray<axom::IndexType, 2> zoneDims{dims[0] - 1, dims[1] - 1};
 
   // Create the data
-  conduit::Node mesh;
-  braid("uniform", dims, mesh);
-  conduit::relay::io::blueprint::save_mesh(mesh, "uniform2d_orig", "hdf5");
+  conduit::Node hostMesh, deviceMesh;
+  braid(type, dims, hostMesh);
+  axom::mir::utilities::blueprint::copy<ExecSpace>(deviceMesh, hostMesh);
+  conduit::relay::io::blueprint::save_mesh(hostMesh, name + "_orig", "hdf5");
 
   // Create views
   axom::StackArray<double, 2> origin{0., 0.}, spacing{1., 1.};
   CoordsetView coordsetView(dims, origin, spacing);
   TopoView topoView(Indexing{zoneDims});
 
-  // Clip the data
-  conduit::Node clipmesh;
-  axom::mir::clipping::ClipField<seq_exec, TopoView, CoordsetView> clipper(topoView, coordsetView);
+  // Create options to control the clipping.
   conduit::Node options;
   options["clipField"] = "distance";
   options["inside"] = 1;
@@ -175,13 +199,50 @@ TEST(mir_clipfield, uniform2d)
   options["fields/braid"] = "new_braid";
   options["fields/radial"] = "new_radial";
 
-  clipper.execute(mesh, options, clipmesh);
-  conduit::relay::io::blueprint::save_mesh(clipmesh, "uniform2d", "hdf5");
-  conduit::relay::io::blueprint::save_mesh(clipmesh, "uniform2d_yaml", "yaml");
+#if 0
+  // Select the left half of zones
+  std::vector<int> sel;
+  for(int i = 0; i < topoView.numberOfZones(); i++)
+  {
+    if(i % zoneDims[0] < 5)
+      sel.push_back(i);
+  }
+  options["selectedZones"].set(sel);
+#endif
+
+  // Clip the data
+  conduit::Node deviceClipMesh;
+  axom::mir::clipping::ClipField<ExecSpace, TopoView, CoordsetView> clipper(topoView, coordsetView);
+  clipper.execute(deviceMesh, options, deviceClipMesh);
+  deviceClipMesh.print();
+
+  // Copy device->host
+  conduit::Node hostClipMesh;
+  axom::mir::utilities::blueprint::copy<seq_exec>(hostClipMesh, deviceClipMesh);
+
+  // Save data.
+  conduit::relay::io::blueprint::save_mesh(hostClipMesh, name, "hdf5");
+  conduit::relay::io::blueprint::save_mesh(hostClipMesh, name + "_yaml", "yaml");
 
   // Load a clipped baseline file & compare.
 }
 
+TEST(mir_clipfield, uniform2d)
+{
+  braid2d_clip_test<seq_exec>("uniform", "uniform2d");
+#if 0
+#if defined(AXOM_USE_OPENMP)
+  braid2d_clip_test<omp_exec>("uniform", "uniform2d_omp");
+#endif
+#if defined(AXOM_USE_CUDA)
+  braid2d_clip_test<cuda_exec>("uniform", "uniform2d_cuda");
+#endif
+#if defined(AXOM_USE_HIP)
+  braid2d_clip_test<hip_exec>("uniform", "uniform2d_hip");
+#endif
+
+#endif
+}
 
 //------------------------------------------------------------------------------
 
