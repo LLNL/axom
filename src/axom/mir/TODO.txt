@@ -29,3 +29,4 @@ Partial TODO list
 18. [lower priority] Revisit NodeArrayView and constness/references.
 19. [lower priority] Can ClipField be generalized a little into something like TopologyExtractor? Then use it to make other filters?
 20. [lower priority] ConduitAllocateThroughAxom uses statics. I'd prefer to template it on ExecSpace and make the allocator a member but Conduit's API does not let us pass a void* to the allocation callbacks.
+21. Check the edge definitions in pyr, wedge Shape types.

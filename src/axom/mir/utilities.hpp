@@ -262,29 +262,6 @@ void unique(const axom::ArrayView<KeyType> &keys_orig_view, axom::Array<KeyType>
   });
 }
 
-// TODO: move to blueprint_utilities when it has a .cpp file.
-
-/**
- * \brief This class uses RAII to register internal functions that make Conduit allocate
- *        through Axom's allocate/deallocate functions using a specific allocator. This
- *        permits Conduit to allocate through Axom's UMPIRE logic.
- */
-class ConduitAllocateThroughAxom
-{
-public:
-  ConduitAllocateThroughAxom(int _allocatorID);
-  ~ConduitAllocateThroughAxom();
-
-  conduit::index_t getConduitAllocatorID() const;
-
-private:
-  static void *internal_allocate(size_t items, size_t item_size);
-  static void internal_free(void *ptr);
-
-  static conduit::index_t conduitAllocatorID;
-  static int              axomAllocatorID;
-};
-
 } // end namespace utilities
 } // end namespace mir
 } // end namespace axom

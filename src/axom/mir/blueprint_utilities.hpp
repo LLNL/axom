@@ -11,9 +11,17 @@
 #include "axom/core/ArrayView.hpp"
 #include "axom/core/memory_management.hpp"
 #include "axom/mir/views/dispatch_structured_topology.hpp"
+#include "axom/mir/views/NodeArrayView.hpp"
 
 #include <conduit/conduit.hpp>
 #include <conduit/conduit_blueprint.hpp>
+
+#if defined(AXOM_USE_RAJA)
+  #include <RAJA/RAJA.hpp>
+#endif
+
+#include <limits>
+#include <utility>
 
 namespace axom
 {
@@ -86,16 +94,16 @@ private:
 };
 
 //------------------------------------------------------------------------------
-// TODO: Add in a routine to migrate a Conduit node to a new memory space.
-// copy(const conduit::Node &src, conduit::Node &dest);
-
 /**
  * \accelerated
  * \brief Make an unstructured representation of a structured topology.
  *
  * \tparam ExecSpace The execution space where the work will be done.
  *
- * \param
+ * \param topo The input topology to be turned into unstructured.
+ * \param coordset The topology's coordset. It will be referenced as an external node in the output \a mesh.
+ * \param topoName The name of the new topology to create.
+ * \param mesh     The node that will contain the new topology and coordset.
  *
  * \note There are blueprint methods for this sort of thing but this one is accelerated.
  */
@@ -105,6 +113,7 @@ to_unstructured(const conduit::Node &topo, const conduit::Node &coordset, const 
 {
   const std::string type = topo.fetch_existing("type").as_string();
   const auto allocatorID = axom::execution_space<ExecSpace>::allocatorID();
+  ConduitAllocateThroughAxom c2a(axom::execution_space<ExecSpace>::allocatorID());
 
   mesh["coordsets"][coordset.name()].set_external(coordset);
   conduit::Node &newtopo = mesh["topologies"][topoName];
@@ -120,9 +129,9 @@ to_unstructured(const conduit::Node &topo, const conduit::Node &coordset, const 
     conduit::Node &n_newconn = newtopo["elements/connectivity"];
     conduit::Node &n_newsizes = newtopo["elements/sizes"];
     conduit::Node &n_newoffsets = newtopo["elements/offsets"];
-    n_newconn.set_allocator(allocatorID);
-    n_newsizes.set_allocator(allocatorID);
-    n_newoffsets.set_allocator(allocatorID);
+    n_newconn.set_allocator(c2a.getConduitAllocatorID());
+    n_newsizes.set_allocator(c2a.getConduitAllocatorID());
+    n_newoffsets.set_allocator(c2a.getConduitAllocatorID());
 
     views::dispatch_structured_topologies(topo, coordset, [&](const std::string &shape, auto &topoView)
     {
@@ -142,9 +151,9 @@ to_unstructured(const conduit::Node &topo, const conduit::Node &coordset, const 
       n_newoffsets.set(conduit::DataType::index_t(nzones));
 
       // Make views for the mesh data.
-      axom::ArrayView<conduit::index_t> connView(reinterpret_cast<conduit::index_t *>(n_newconn.data_ptr()), connSize);
-      axom::ArrayView<conduit::index_t> sizesView(reinterpret_cast<conduit::index_t *>(n_newsizes.data_ptr()), nzones);
-      axom::ArrayView<conduit::index_t> offsetsView(reinterpret_cast<conduit::index_t *>(n_newoffsets.data_ptr()), nzones);
+      axom::ArrayView<conduit::index_t> connView(static_cast<conduit::index_t *>(n_newconn.data_ptr()), connSize);
+      axom::ArrayView<conduit::index_t> sizesView(static_cast<conduit::index_t *>(n_newsizes.data_ptr()), nzones);
+      axom::ArrayView<conduit::index_t> offsetsView(static_cast<conduit::index_t *>(n_newoffsets.data_ptr()), nzones);
 
       // Fill in the new connectivity.
       topoView. template for_all_zones<ExecSpace>(AXOM_LAMBDA(auto zoneIndex, const auto &zone)
@@ -160,188 +169,82 @@ to_unstructured(const conduit::Node &topo, const conduit::Node &coordset, const 
   }
 }
 
-#if 0
 /**
- \brief This method slices a Conduit field using a node that contains index value 
-        and stores the data in another node. The data in the nodes are assumed to
-        be in the memory space suitable for the ExecSpace.
-
- \tparam ExecSpace The execution space.
-
- \param[in] field The Blueprint field to be sliced.
- \param[in] indices A Conduit node that contains an array of index values into the field.
- \param[out] output A node that contains the new sliced field.
-        
+ * \brief Copies a Conduit tree in the \a src node to a new Conduit \a dest node,
+ *        making sure to allocate array data in the appropriate memory space for
+ *        the execution space.
  */
 template <typename ExecSpace>
-void
-sliceField(const conduit::Node &field, const conduit::Node &indices, conduit::Node &output)
+void copy(conduit::Node &dest, const conduit::Node &src)
 {
-  // Start making an output field.
-  output["topology"] = field["topology"].as_string();
-  output["association"] = field["association"].as_string();
-  conduit::Node &output_values = output["values"];
+  ConduitAllocateThroughAxom c2a(axom::execution_space<ExecSpace>::allocatorID());
 
-  const conduit::Node &field_values = field["values"];
-  const int allocatorID = axom::execution_space<ExecSpace>::allocatorID();
-  const axom::IndexType = indices.dtype().number_of_elements();
-
-  // Slice the field using the indices and store values in the output field.
-  if(field_values.number_of_children() > 0)
+  if(src.number_of_children() > 0)
   {
-    for(conduit::index_t i = 0; i < field_values.number_of_children(); i++)
+    for(conduit::index_t i = 0; i < src.number_of_children(); i++)
     {
-      const conduit::Node &componentNode = field_values[i];
-      const std::string componentName(componentNode.name());
-
-      // Allocate memory for the output view using the allocator for the ExecSpace.
-      conduit::Node &destNode = output_values[componentName];
-      destNode.set_allocator(allocatorID);
-      destNode.set(conduit::DataType(componentNode.dtype().id(), numIndices));
-
-      views::IndexNode_to_ArrayView(indices, [&](auto indicesView)
-      {
-        views::Node_to_ArrayView(componentNode, destNode, [&](auto fieldValuesView, auto destView)
-        {
-          axom::for_all<ExecSpace>(
-            numIndices,
-            AXOM_LAMBDA(axom::IndexType i) {
-              destView[i] = fieldValuesView[indicesView[i]];
-            });
-        });
-      });
+      copy<ExecSpace>(dest[src[i].name()], src[i]);
     }
   }
   else
   {
-    // Allocate memory for the output view using the allocator for the ExecSpace.
-    output_values.set_allocator(allocatorID);
-    output_values.set(conduit::DataType(field_values.dtype().id(), numIndices));
-
-    IndexNodeToArrayView(indices, [&](auto indicesView)
+    if(!src.dtype().is_string() && src.dtype().number_of_elements() > 1)
     {
-      NodeToArrayView(field_values, output_values, [&](auto fieldValuesView, auto destView)
+      // Allocate the node's memory in the right place.
+      dest.reset();
+      dest.set_allocator(c2a.getConduitAllocatorID());
+      dest.set(conduit::DataType(src.dtype().id(), src.dtype().number_of_elements()));
+
+      // Copy the data to the destination node. Axom uses Umpire to manage that.
+      if(src.is_compact())
+        axom::copy(dest.data_ptr(), src.data_ptr(), src.dtype().bytes_compact());
+      else
       {
-        axom::for_all<ExecSpace>(
-          numIndices,
-          AXOM_LAMBDA(axom::IndexType i) {
-            destView[i] = fieldValuesView[indicesView[i]];
-          });
-      });
-    });
-  }
-}
-
-template <typename ExecSpace>
-void
-blendField(const conduit::Node &field, const conduit::Node &indices, const conduit::Node &weights, const conduit::Node &sizes, const conduit::Node &offsets, conduit::Node &output)
-{
-  // Start making an output field.
-  output["topology"] = field["topology"].as_string();
-  output["association"] = "element";
-  conduit::Node &output_values = output["values"];
-
-  const conduit::Node &field_values = field["values"];
-  const auto n_sizes = static_cast<axom::IndexType>(sizes.dtype().number_of_elements());
-  int execSpaceAllocatorID = axom::execution_space<ExecSpace>::allocatorID();
-
-  // Slice the field using the indices and store values in the output field.
-  if(field_values.number_of_children() > 0)
-  {
-    for(conduit::index_t i = 0; i < field_values.number_of_children(); i++)
-    {
-      const conduit::Node &componentNode = field_values[i];
-      const std::string componentName(componentNode.name());
-
-      // Allocate memory for the output view using the allocator for the ExecSpace.
-      conduit::Node &destNode = output_values[componentName];
-      destNode.set_allocator(execSpaceAllocatorID);
-      destNode.set(conduit::DataType(componentNode.dtype().id(), n_sizes));
-
-      IndexNodeToArrayView(indices, sizes, offsets, [&](auto indicesView, auto sizesView, auto offsetsView)
-      {
-        NodeToArrayView(componentNode, weights, destNode, [&](auto fieldValuesView, auto weightsView, auto destView)
-        {
-          axom::for_all<ExecSpace>(
-           n_sizes,
-           AXOM_LAMBDA(axom::IndexType i) {
-             const auto offset = offsetsView[i];
-             const auto size = sizesView[i];
-             destView[i] = 0;
-             for(int j = 0; j < size; j++)
-             {
-               const auto idx = indicesView[offset + j];
-               destView[i] += fieldValuesView[idx] * weightsView[idx];
-             }
-           });
-        });
-      });
-    }
-  }
-  else
-  {
-    // Allocate memory for the output view using the allocator for the ExecSpace.
-    output_values.set_allocator(execSpaceAllocatorID);
-    output_values.set(conduit::DataType(field_values.dtype().id(), n_sizes));
-
-    IndexNodeToArrayView(indices, sizes, offsets, [&](auto indicesView, auto sizesView, auto offsetsView)
-    {
-      NodeToArrayView(field_values, weights, output_values, [&](auto fieldValuesView, auto weightsView, auto destView)
-      {
-        axom::for_all<ExecSpace>(
-          n_sizes,
-          AXOM_LAMBDA(axom::IndexType i) {
-            const auto offset = offsetsView[i];
-            const auto size = sizesView[i];
-            destView[i] = 0;
-            for(int j = 0; j < size; j++)
-            {
-              const auto idx = indicesView[offset + j];
-              destView[i] += fieldValuesView[idx] * weightsView[idx];
-            }
-         });
-      });
-    });
-  }
-}
-
-void conduit_move(const conduit::Node &src, conduit::Node &dest, int dest_allocator)
-{
-    if(src.number_of_children() > 0)
-    {
-        for(conduit::index_t i = 0; i < src.number_of_children()
-        {
-            conduit_move(src[i], dest[src[i].name()], allocator);
-        }
+        // NOTE: this assumes that src is on the host. Why would we have strided data on device?
+        conduit::Node tmp;
+        src.compact_to(tmp);
+        axom::copy(dest.data_ptr(), tmp.data_ptr(), tmp.dtype().bytes_compact());
+      }
     }
     else
     {
-        if(src.dtype().number_of_elements() > 1)
-        {
-            // Allocate the node's memory in the right place.
-            dest.reset();
-            dest.set_allocator(allocator);
-            dest.set(conduit::DataType(src.dtype().id(), src.dtype().number_of_elements()));
-
-            // Copy the data to the destination node. Axom uses Umpire to manage that.
-            if(src.is_compact())
-                axom::copy(dest.data_ptr(), src.data_ptr(), src.dtype().bytes_compact());
-            else
-            {
-                // NOTE: this assumes that src is on the host. Why would we have strided data on device?
-                conduit::Node tmp;
-                src.compact_to(tmp);
-                axom::copy(dest.data_ptr(), tmp.data_ptr(), tmp.dtype().bytes_compact());
-            }
-        }
-        else
-        {
-            // The node data fits in the node. It's on the host.
-            dest.set(src);
-        }
+      // The node data fits in the node. It's on the host.
+      dest.set(src);
     }
+  }
 }
-#endif
+
+/**
+ * \brief Get the min/max values for the data in a Conduit node.
+ *
+ * \param[in] n The Conduit node whose data we're checking.
+ *
+ * \return A pair containing the min,max values in the node.
+ */
+template <typename ExecSpace>
+std::pair<double, double> minmax(const conduit::Node &n)
+{
+  std::pair<double, double> retval{0., 0.};
+
+  axom::mir::views::Node_to_ArrayView(n, [&](auto nview)
+  {
+    using value_type = typename decltype(nview)::value_type;
+    using reduce_policy = typename axom::execution_space<ExecSpace>::reduce_policy;
+
+    RAJA::ReduceMin<reduce_policy, value_type> vmin(std::numeric_limits<value_type>::max());
+    RAJA::ReduceMax<reduce_policy, value_type> vmax(std::numeric_limits<value_type>::min());
+
+    axom::for_all<ExecSpace>(nview.size(), AXOM_LAMBDA(auto index)
+    {
+      vmin.min(nview[index]);
+      vmax.max(nview[index]);
+    });
+
+    retval = std::pair<double, double>{vmin.get(), vmax.get()};
+  });
+
+  return retval;
+}
 
 } // end namespace blueprint
 } // end namespace utilities

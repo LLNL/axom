@@ -9,6 +9,8 @@
 #include "axom/core/ArrayView.hpp"
 
 #include <conduit/conduit.hpp>
+#include <conduit/conduit_blueprint_mesh_utils.hpp>
+
 #include <iostream>
 
 /**
@@ -56,7 +58,12 @@ struct LineTraits
   AXOM_HOST_DEVICE constexpr static IndexType zoneOffset(int zoneIndex) { return numberOfNodes() * zoneIndex; }
 
   AXOM_HOST_DEVICE constexpr static IndexType faces[][2] = {{0, 1}};
-  AXOM_HOST_DEVICE constexpr static IndexType edges[][2] = {{0,1}};
+  AXOM_HOST_DEVICE constexpr static axom::StackArray<IndexType, 2> getEdge(int edgeIndex)
+  {
+    return axom::StackArray<IndexType, 2>{0,1};
+  }
+
+  AXOM_HOST_DEVICE constexpr static inline const char *name = "line";
 };
 
 /*
@@ -94,6 +101,8 @@ struct TriTraits
     const axom::StackArray<IndexType, 2> edges[] = {{0,1}, {1,2}, {2,0}};
     return edges[edgeIndex];
   }
+
+  AXOM_HOST_DEVICE constexpr static inline const char *name = "tri";
 };
 
 /*
@@ -132,6 +141,8 @@ struct QuadTraits
     const axom::StackArray<IndexType, 2> edges[] = {{0,1}, {1,2}, {2,3}, {3,0}};
     return edges[edgeIndex];
   }
+
+  AXOM_HOST_DEVICE constexpr static inline const char *name = "quad";
 };
 
 /*
@@ -188,6 +199,8 @@ struct PolygonShape
     return axom::StackArray<IndexType, 2>{p0, p1};
   }
 
+  AXOM_HOST_DEVICE constexpr static inline const char *name = "polygon";
+
 private:
   axom::ArrayView<IndexType> m_ids;
 };
@@ -235,6 +248,8 @@ struct TetTraits
     const axom::StackArray<IndexType, 2> edges[] = {{0, 1}, {1, 2}, {2, 0},{0, 3}, {1, 3}, {2, 3}};
     return edges[edgeIndex];
   }
+
+  AXOM_HOST_DEVICE constexpr static inline const char *name = "tet";
 };
 
 /*
@@ -281,6 +296,8 @@ struct PyramidTraits
     const axom::StackArray<IndexType, 2> edges[] = {{0,1}, {1,2}, {2,3}, {3,0}, {0,4}, {1,4}, {2,4}, {3,4}};
     return edges[edgeIndex];
   }
+
+  AXOM_HOST_DEVICE constexpr static inline const char *name = "pyramid";
 };
 
 /*
@@ -329,6 +346,8 @@ struct WedgeTraits
     const axom::StackArray<IndexType, 2> edges[] = {{0,1}, {1,2}, {2,0}, {3,4}, {4,5}, {5,3}, {0,3}, {1,4}, {2,3}};
     return edges[edgeIndex];
   }
+
+  AXOM_HOST_DEVICE constexpr static inline const char *name = "wedge";
 };
 
 /*
@@ -375,6 +394,8 @@ struct HexTraits
     const axom::StackArray<IndexType, 2> edges[] = {{0, 1}, {1, 2}, {3, 2}, {3, 0}, {4, 5}, {5, 6}, {6, 7}, {7, 4}, {0, 4}, {1, 5}, {3, 7}, {2, 6}};
     return edges[edgeIndex];
   }
+
+  AXOM_HOST_DEVICE constexpr static inline const char *name = "hex";
 };
 
 /**

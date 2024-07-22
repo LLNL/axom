@@ -16,8 +16,10 @@ set(gtest_mir_tests
     mir_cell_clipper.cpp
     mir_clipfield.cpp
     mir_utilities.cpp
+    mir_blueprint_utilities.cpp
     mir_views_indexing.cpp
     mir_cell_generator.cpp
+    mir_views.cpp
     )
 
 set(mir_tests_depends_on 
