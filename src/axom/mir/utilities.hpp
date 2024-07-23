@@ -96,10 +96,45 @@ std::int32_t bsearch(T value, const axom::ArrayView<T> &view)
  *       backwards and the two results are merged into a uint64_t. The length is
  *       also part of the hash to guard against a lot of repeated values in the
  *       byte stream hashing to the same thing.
- * \
+ *
+ * \note We make this function inline since it is not a template and we want to
+ *       use it in both host and device code.
  */
 AXOM_HOST_DEVICE
-std::uint64_t hash_bytes(const std::uint8_t *data, std::uint32_t length);
+inline std::uint64_t hash_bytes(const std::uint8_t *data, std::uint32_t length)
+{
+  std::uint32_t hash = 0;
+
+  // Build the length into the hash.
+  const auto ldata = reinterpret_cast<const std::uint8_t *>(&length);
+  for(int e = 0; e < 4; e++)
+  {
+    hash += ldata[e];
+    hash += hash << 10;
+    hash ^= hash >> 6;
+  }
+
+  std::uint32_t hashr = hash;
+  for(std::uint32_t i = 0; i < length; i++)
+  {
+    hash += data[i];
+    hash += hash << 10;
+    hash ^= hash >> 6;
+
+    hashr += data[length - 1 - i];
+    hashr += hashr << 10;
+    hashr ^= hashr >> 6;
+  }
+  hash += hash << 3;
+  hash ^= hash >> 11;
+  hash += hash << 15;
+
+  hashr += hashr << 3;
+  hashr ^= hashr >> 11;
+  hashr += hashr << 15;
+
+  return (static_cast<std::uint64_t>(hash) << 32) | hashr;
+}
 
 //------------------------------------------------------------------------------
 /**

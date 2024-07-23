@@ -193,8 +193,8 @@ float computeWeight(float d0, float d1, float clipValue)
  *
  * \return The index of the clipping case.
  */
-AXOM_HOST_DEVICE
 template <typename ZoneType, typename DataType>
+AXOM_HOST_DEVICE
 size_t clip_case(const ZoneType &zone, const axom::ArrayView<DataType> &view, DataType clipValue)
 {
   size_t clipcase = 0;

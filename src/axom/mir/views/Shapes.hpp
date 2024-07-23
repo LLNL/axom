@@ -63,7 +63,7 @@ struct LineTraits
     return axom::StackArray<IndexType, 2>{0,1};
   }
 
-  AXOM_HOST_DEVICE constexpr static inline const char *name = "line";
+  AXOM_HOST_DEVICE constexpr static const char *name() { return "line"; }
 };
 
 /*
@@ -102,7 +102,7 @@ struct TriTraits
     return edges[edgeIndex];
   }
 
-  AXOM_HOST_DEVICE constexpr static inline const char *name = "tri";
+  AXOM_HOST_DEVICE constexpr static const char *name() { return "tri"; }
 };
 
 /*
@@ -142,7 +142,7 @@ struct QuadTraits
     return edges[edgeIndex];
   }
 
-  AXOM_HOST_DEVICE constexpr static inline const char *name = "quad";
+  AXOM_HOST_DEVICE constexpr static inline const char *name() { return "quad"; }
 };
 
 /*
@@ -199,7 +199,7 @@ struct PolygonShape
     return axom::StackArray<IndexType, 2>{p0, p1};
   }
 
-  AXOM_HOST_DEVICE constexpr static inline const char *name = "polygon";
+  AXOM_HOST_DEVICE constexpr static const char *name() { return "polygon"; }
 
 private:
   axom::ArrayView<IndexType> m_ids;
@@ -249,7 +249,7 @@ struct TetTraits
     return edges[edgeIndex];
   }
 
-  AXOM_HOST_DEVICE constexpr static inline const char *name = "tet";
+  AXOM_HOST_DEVICE constexpr static inline const char *name() { return "tet"; }
 };
 
 /*
@@ -297,7 +297,7 @@ struct PyramidTraits
     return edges[edgeIndex];
   }
 
-  AXOM_HOST_DEVICE constexpr static inline const char *name = "pyramid";
+  AXOM_HOST_DEVICE constexpr static inline const char *name() { return "pyramid"; }
 };
 
 /*
@@ -347,7 +347,7 @@ struct WedgeTraits
     return edges[edgeIndex];
   }
 
-  AXOM_HOST_DEVICE constexpr static inline const char *name = "wedge";
+  AXOM_HOST_DEVICE constexpr static inline const char *name() { return "wedge"; }
 };
 
 /*
@@ -395,7 +395,7 @@ struct HexTraits
     return edges[edgeIndex];
   }
 
-  AXOM_HOST_DEVICE constexpr static inline const char *name = "hex";
+  AXOM_HOST_DEVICE constexpr static inline const char *name() { return "hex"; }
 };
 
 /**

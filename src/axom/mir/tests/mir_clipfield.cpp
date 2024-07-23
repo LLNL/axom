@@ -214,7 +214,6 @@ void braid2d_clip_test(const std::string &type, const std::string &name)
   conduit::Node deviceClipMesh;
   axom::mir::clipping::ClipField<ExecSpace, TopoView, CoordsetView> clipper(topoView, coordsetView);
   clipper.execute(deviceMesh, options, deviceClipMesh);
-  deviceClipMesh.print();
 
   // Copy device->host
   conduit::Node hostClipMesh;
@@ -237,10 +236,10 @@ TEST(mir_clipfield, uniform2d)
 #if defined(AXOM_USE_CUDA)
   braid2d_clip_test<cuda_exec>("uniform", "uniform2d_cuda");
 #endif
-#if defined(AXOM_USE_HIP)
-  braid2d_clip_test<hip_exec>("uniform", "uniform2d_hip");
 #endif
 
+#if defined(AXOM_USE_HIP)
+  braid2d_clip_test<hip_exec>("uniform", "uniform2d_hip");
 #endif
 }
 
