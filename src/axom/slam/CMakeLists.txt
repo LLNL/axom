@@ -112,14 +112,3 @@ endif()
 if (AXOM_ENABLE_EXAMPLES)
   add_subdirectory(examples)
 endif()
-
-
-#------------------------------------------------------------------------------
-# Add code checks
-#------------------------------------------------------------------------------
-axom_add_code_checks(
-        PREFIX slam
-        EXCLUDES
-            slam/examples/lulesh2.0.3
-            slam/examples/tinyHydro )
-
