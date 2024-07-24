@@ -164,6 +164,7 @@ public:
    * \brief Gets the underlying data of a BitSet.
    */
   AXOM_HOST_DEVICE const Word* data() const { return m_data.data(); }
+  AXOM_HOST_DEVICE Word* data() { return m_data.data(); }
 
 public:
   /// \name Bitset bitwise assignment operators
