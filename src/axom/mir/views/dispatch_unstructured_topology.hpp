@@ -8,6 +8,7 @@
 
 #include "axom/mir/views/UnstructuredTopologySingleShapeView.hpp"
 #include "axom/mir/views/UnstructuredTopologyPolyhedralView.hpp"
+#include "axom/mir/views/UnstructuredTopologyMixedShapeView.hpp"
 #include "axom/mir/views/NodeArrayView.hpp"
 #include "axom/mir/views/Shapes.hpp"
 
@@ -49,6 +50,36 @@ void dispatch_unstructured_polyhedral_topology(const conduit::Node &topo, FuncTy
 }
 
 /**
+ * \brief This function dispatches a Conduit mixed unstructured topology.
+ *
+ * \tparam FuncType The function/lambda type that will be invoked on the view.
+ *
+ * \param topo The node that contains the topology.
+ * \param func The function/lambda to call with the topology view.
+ *
+ * \note When this function makes the view, the view keeps a reference to
+ *       the shape_map within the topology so we can build our own shape map
+ *       later in the for_all_zones method.
+ */
+template <typename FuncType>
+void dispatch_unstructured_mixed_topology(const conduit::Node &topo, FuncType &&func)
+{
+  const std::string shape = topo["elements/shape"].as_string();
+  if(shape == "mixed")
+  {
+    IndexNode_to_ArrayView_same(
+      topo["elements/connectivity"], topo["elements/shapes"], topo["elements/sizes"], topo["elements/offsets"],
+      [&](auto connView, auto shapesView, auto sizesView, auto offsetsView)
+    {
+      using IndexType = typename decltype(connView)::value_type;
+
+      UnstructuredTopologyMixedShapeView<IndexType> ugView(topo, connView, shapesView, sizesView, offsetsView);
+      func(shape, ugView);
+    });
+  }
+}
+
+/**
  * \brief This function dispatches a Conduit topology to the right view type
  *        and passes that view to the supplied function/lambda.
  *
@@ -76,6 +107,7 @@ void dispatch_unstructured_topology(const conduit::Node &topo, FuncType &&func)
           eligible = false;
         }
       }
+
 #if 0
 // TODO: Can't use polygon with single shape view because its sizes are not known at compile time.
       if constexpr (ShapeTypes & PolygonShape::id())
@@ -98,7 +130,7 @@ void dispatch_unstructured_topology(const conduit::Node &topo, FuncType &&func)
       {
         if(eligible && shape == "mixed")
         {
-          // TODO: handle mixed zone types.
+          dispatch_unstructured_mixed_topology(topo, func);
           eligible = false;
         }
       }
@@ -161,8 +193,6 @@ void dispatch_unstructured_topology(const conduit::Node &topo, FuncType &&func)
             eligible = false;
           }
         }
-
-        // TODO: handle mixed shapes.
 
       });
   }

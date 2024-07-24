@@ -1,8 +1,8 @@
 Partial TODO list
 
 1. view tests
-(done)2. Conduit routine for moving data to the GPU
-3. Build/run on the GPU
+(done) 2. Conduit routine for moving data to the GPU
+(done) 3. Build/run on the GPU
 4. More ClipField tests (for other topologies) with baselines
    - Test with the various extraction options
    - Test setting the topo, coordset names

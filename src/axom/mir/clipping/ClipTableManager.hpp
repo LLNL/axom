@@ -326,10 +326,16 @@ public:
   std::vector<size_t> shapes(int dim) const
   {
     std::vector<size_t> s;
-    if(dim == 2)
-      s = std::vector<size_t>{ST_TRI, ST_QUA};
-    else if(dim == 3)
-      s = std::vector<size_t>{ST_TET, ST_PYR, ST_WDG, ST_HEX};
+    if(dim == -1 || dim == 2)
+    {
+      for(const auto value : std::vector<size_t>{ST_TRI, ST_QUA})
+        s.push_back(value);
+    }
+    if(dim == -1 || dim == 3)
+    {
+      for(const auto value : std::vector<size_t>{ST_TET, ST_PYR, ST_WDG, ST_HEX})
+        s.push_back(value);
+    }
     return s;
   }
 private:

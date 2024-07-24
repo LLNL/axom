@@ -137,10 +137,21 @@ shapeMap_FromFlags(std::uint64_t shapes)
   return sm;
 }
 
+template <typename IndexT>
 AXOM_HOST_DEVICE
-int getClipTableIndex(int dimension, int nnodes)
+IndexT getClipTableIndex(IndexT shapeId)
 {
-  return (dimension == 2) ? ((nnodes == 3) ? 0 : 1) : (nnodes - 2);
+  IndexT index = 0;
+  switch(shapeId)
+  {
+  case views::TriShape<IndexT>::id():     index = 0; break;
+  case views::QuadShape<IndexT>::id():    index = 1; break;
+  case views::TetShape<IndexT>::id():     index = 2; break;
+  case views::PyramidShape<IndexT>::id(): index = 3; break;
+  case views::WedgeShape<IndexT>::id():   index = 4; break;
+  case views::HexShape<IndexT>::id():     index = 5; break;
+  }
+  return index;
 }
 
 AXOM_HOST_DEVICE
@@ -563,7 +574,7 @@ public:
         clipCasesView[zoneIndex] = clipcase;
 
         // Iterate over the shapes in this clip case to determine the number of blend groups.
-        const auto clipTableIndex = details::getClipTableIndex(zone.dimension(), zone.numberOfNodes());
+        const auto clipTableIndex = details::getClipTableIndex(zone.id());
         const auto &ctView = clipTableViews[clipTableIndex];
 
         int thisBlendGroups = 0;    // The number of blend groups produced in this case.
@@ -735,7 +746,7 @@ public:
         const auto clipcase = clipCasesView[zoneIndex];
 
         // Iterate over the shapes in this clip case to determine the number of blend groups.
-        const auto clipTableIndex = details::getClipTableIndex(zone.dimension(), zone.numberOfNodes());
+        const auto clipTableIndex = details::getClipTableIndex(zone.id());
         const auto &ctView = clipTableViews[clipTableIndex];
 
         const std::uint64_t ptused = pointsUsedView[zoneIndex];
@@ -988,7 +999,7 @@ public:
 
       // Iterate over the selected fragments and emit connectivity for them.
       const auto clipcase = clipCasesView[zoneIndex];
-      const auto clipTableIndex = details::getClipTableIndex(zone.dimension(), zone.numberOfNodes());
+      const auto clipTableIndex = details::getClipTableIndex(zone.id());
       const auto ctView = clipTableViews[clipTableIndex];
       auto it = ctView.begin(clipcase);
       const auto end = ctView.end(clipcase);
@@ -1129,17 +1140,17 @@ private:
    */
   void createClipTableViews(ClipTableViews &views, int dimension)
   {
-    if(dimension == 2)
+    if(dimension == -1 || dimension == 2)
     {
-      views[0] = m_clipTables[ST_TRI].view();
-      views[1] = m_clipTables[ST_QUA].view();
+      views[details::getClipTableIndex(axom::mir::views::TriShape<IndexType>::id())] = m_clipTables[ST_TRI].view();
+      views[details::getClipTableIndex(axom::mir::views::QuadShape<IndexType>::id())] = m_clipTables[ST_QUA].view();
     }
-    else if(dimension == 3)
+    if(dimension == -1 || dimension == 3)
     {
-      views[2] = m_clipTables[ST_TET].view();
-      views[3] = m_clipTables[ST_PYR].view();
-      views[4] = m_clipTables[ST_WDG].view();
-      views[5] = m_clipTables[ST_HEX].view();
+      views[details::getClipTableIndex(axom::mir::views::TetShape<IndexType>::id())] = m_clipTables[ST_TET].view();
+      views[details::getClipTableIndex(axom::mir::views::PyramidShape<IndexType>::id())] = m_clipTables[ST_PYR].view();
+      views[details::getClipTableIndex(axom::mir::views::WedgeShape<IndexType>::id())] = m_clipTables[ST_WDG].view();
+      views[details::getClipTableIndex(axom::mir::views::HexShape<IndexType>::id())] = m_clipTables[ST_HEX].view();
     }
   }
 

@@ -55,6 +55,7 @@ set(mir_headers
     views/StructuredTopologyView.hpp
     views/UniformCoordsetView.hpp
     views/UnstructuredTopologyPolyhedralView.hpp
+    views/UnstructuredTopologyMixedShapeView.hpp
     views/UnstructuredTopologySingleShapeView.hpp
 
     clipping/ClipCases.h

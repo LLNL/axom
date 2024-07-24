@@ -142,7 +142,7 @@ struct QuadTraits
     return edges[edgeIndex];
   }
 
-  AXOM_HOST_DEVICE constexpr static inline const char *name() { return "quad"; }
+  AXOM_HOST_DEVICE constexpr static const char *name() { return "quad"; }
 };
 
 /*
@@ -249,7 +249,7 @@ struct TetTraits
     return edges[edgeIndex];
   }
 
-  AXOM_HOST_DEVICE constexpr static inline const char *name() { return "tet"; }
+  AXOM_HOST_DEVICE constexpr static const char *name() { return "tet"; }
 };
 
 /*
@@ -297,7 +297,7 @@ struct PyramidTraits
     return edges[edgeIndex];
   }
 
-  AXOM_HOST_DEVICE constexpr static inline const char *name() { return "pyramid"; }
+  AXOM_HOST_DEVICE constexpr static const char *name() { return "pyramid"; }
 };
 
 /*
@@ -347,7 +347,7 @@ struct WedgeTraits
     return edges[edgeIndex];
   }
 
-  AXOM_HOST_DEVICE constexpr static inline const char *name() { return "wedge"; }
+  AXOM_HOST_DEVICE constexpr static const char *name() { return "wedge"; }
 };
 
 /*
@@ -395,7 +395,7 @@ struct HexTraits
     return edges[edgeIndex];
   }
 
-  AXOM_HOST_DEVICE constexpr static inline const char *name() { return "hex"; }
+  AXOM_HOST_DEVICE constexpr static const char *name() { return "hex"; }
 };
 
 /**
@@ -411,7 +411,7 @@ struct Shape : public ShapeTraits
    */
   AXOM_HOST_DEVICE Shape(const axom::ArrayView<IndexType> &ids) : m_ids(ids), m_faceIds()
   {
-    assert(m_ids.size() == ShapeTraits::numberOfNodes());
+    SLIC_ASSERT(m_ids.size() == ShapeTraits::numberOfNodes());
   }
 
   /**
@@ -482,6 +482,207 @@ using WedgeShape = Shape<WedgeTraits<IndexT>>;
 
 template <typename IndexT = axom::IndexType>
 using HexShape = Shape<HexTraits<IndexT>>;
+
+
+/**
+ * \brief This is a shape that can act as any of the other shapes.
+ *
+ * \note This is a substitute for polymorphism so we can run on device.
+ */
+template <typename IndexT>
+struct VariableShape
+{
+  using IndexType = IndexT;
+
+  /**
+   * \brief Constructor
+   *
+   * \param shapeId The shape id that describes the points.
+   * \param ids The ids that describe the shape.
+   */
+  AXOM_HOST_DEVICE
+  VariableShape(int shapeId, const axom::ArrayView<IndexType> &ids) : m_shapeId(shapeId), m_ids(ids)
+  {
+  }
+
+  /**
+   * \brief Returns the shape id of the actual shape represented by the variable shape.
+   * \return The actual shape represented.
+   */
+  AXOM_HOST_DEVICE int id() const { return m_shapeId; }
+
+  AXOM_HOST_DEVICE constexpr static bool is_polyhedral() { return false; }
+  AXOM_HOST_DEVICE constexpr static bool is_variable_size() { return true; }
+
+  AXOM_HOST_DEVICE IndexType dimension() const
+  {
+    int dim = 2;
+    switch(m_shapeId)
+    {
+    case LineShape<IndexType>::id():    dim = LineShape<IndexType>::dimension(); break;
+    case TriShape<IndexType>::id():     dim = TriShape<IndexType>::dimension(); break;
+    case QuadShape<IndexType>::id():    dim = QuadShape<IndexType>::dimension(); break;
+    case PolygonShape<IndexType>::id(): dim = PolygonShape<IndexType>::dimension(); break;
+    case TetShape<IndexType>::id():     dim = TetShape<IndexType>::dimension(); break;
+    case PyramidShape<IndexType>::id(): dim = PyramidShape<IndexType>::dimension(); break;
+    case WedgeShape<IndexType>::id():   dim = WedgeShape<IndexType>::dimension(); break;
+    case HexShape<IndexType>::id():     dim = HexShape<IndexType>::dimension(); break;
+    }
+    return dim;
+  }
+
+  AXOM_HOST_DEVICE IndexType numberOfNodes() const
+  {
+    IndexType nnodes = 0;
+    switch(m_shapeId)
+    {
+    case LineShape<IndexType>::id():    nnodes = LineShape<IndexType>::numberOfNodes(); break;
+    case TriShape<IndexType>::id():     nnodes = TriShape<IndexType>::numberOfNodes(); break;
+    case QuadShape<IndexType>::id():    nnodes = QuadShape<IndexType>::numberOfNodes(); break;
+    case PolygonShape<IndexType>::id(): nnodes = PolygonShape<IndexType>::numberOfNodes(); break;
+    case TetShape<IndexType>::id():     nnodes = TetShape<IndexType>::numberOfNodes(); break;
+    case PyramidShape<IndexType>::id(): nnodes = PyramidShape<IndexType>::numberOfNodes(); break;
+    case WedgeShape<IndexType>::id():   nnodes = WedgeShape<IndexType>::numberOfNodes(); break;
+    case HexShape<IndexType>::id():     nnodes = HexShape<IndexType>::numberOfNodes(); break;
+    }
+    return nnodes;
+  }
+
+  AXOM_HOST_DEVICE IndexType numberOfNodesInFace(int faceIndex) const
+  {
+    IndexType nnodes = 0;
+    switch(m_shapeId)
+    {
+    case LineShape<IndexType>::id():    nnodes = LineShape<IndexType>::numberOfNodesInFace(faceIndex); break;
+    case TriShape<IndexType>::id():     nnodes = TriShape<IndexType>::numberOfNodesInFace(faceIndex); break;
+    case QuadShape<IndexType>::id():    nnodes = QuadShape<IndexType>::numberOfNodesInFace(faceIndex); break;
+    case PolygonShape<IndexType>::id(): nnodes = PolygonShape<IndexType>::numberOfNodesInFace(faceIndex); break;
+    case TetShape<IndexType>::id():     nnodes = TetShape<IndexType>::numberOfNodesInFace(faceIndex); break;
+    case PyramidShape<IndexType>::id(): nnodes = PyramidShape<IndexType>::numberOfNodesInFace(faceIndex); break;
+    case WedgeShape<IndexType>::id():   nnodes = WedgeShape<IndexType>::numberOfNodesInFace(faceIndex); break;
+    case HexShape<IndexType>::id():     nnodes = HexShape<IndexType>::numberOfNodesInFace(faceIndex); break;
+    }
+    return nnodes;
+  }
+
+  AXOM_HOST_DEVICE IndexType maxNodesInFace() const
+  {
+    IndexType nnodes = 0;
+    switch(m_shapeId)
+    {
+    case LineShape<IndexType>::id():    nnodes = LineShape<IndexType>::maxNodesInFace(); break;
+    case TriShape<IndexType>::id():     nnodes = TriShape<IndexType>::maxNodesInFace(); break;
+    case QuadShape<IndexType>::id():    nnodes = QuadShape<IndexType>::maxNodesInFace(); break;
+    case PolygonShape<IndexType>::id(): nnodes = PolygonShape<IndexType>::maxNodesInFace(); break;
+    case TetShape<IndexType>::id():     nnodes = TetShape<IndexType>::maxNodesInFace(); break;
+    case PyramidShape<IndexType>::id(): nnodes = PyramidShape<IndexType>::maxNodesInFace(); break;
+    case WedgeShape<IndexType>::id():   nnodes = WedgeShape<IndexType>::maxNodesInFace(); break;
+    case HexShape<IndexType>::id():     nnodes = HexShape<IndexType>::maxNodesInFace(); break;
+    }
+    return nnodes;
+  }
+
+  AXOM_HOST_DEVICE IndexType numberOfFaces() const
+  {
+    IndexType nfaces = 0;
+    switch(m_shapeId)
+    {
+    case LineShape<IndexType>::id():    nfaces = LineShape<IndexType>::numberOfFaces(); break;
+    case TriShape<IndexType>::id():     nfaces = TriShape<IndexType>::numberOfFaces(); break;
+    case QuadShape<IndexType>::id():    nfaces = QuadShape<IndexType>::numberOfFaces(); break;
+    case PolygonShape<IndexType>::id(): nfaces = PolygonShape<IndexType>::numberOfFaces(); break;
+    case TetShape<IndexType>::id():     nfaces = TetShape<IndexType>::numberOfFaces(); break;
+    case PyramidShape<IndexType>::id(): nfaces = PyramidShape<IndexType>::numberOfFaces(); break;
+    case WedgeShape<IndexType>::id():   nfaces = WedgeShape<IndexType>::numberOfFaces(); break;
+    case HexShape<IndexType>::id():     nfaces = HexShape<IndexType>::numberOfFaces(); break;
+    }
+    return nfaces;
+  }
+
+  AXOM_HOST_DEVICE IndexType numberOfEdges() const
+  {
+    IndexType nedges = 0;
+    switch(m_shapeId)
+    {
+    case LineShape<IndexType>::id():    nedges = LineShape<IndexType>::numberOfEdges(); break;
+    case TriShape<IndexType>::id():     nedges = TriShape<IndexType>::numberOfEdges(); break;
+    case QuadShape<IndexType>::id():    nedges = QuadShape<IndexType>::numberOfEdges(); break;
+    case PolygonShape<IndexType>::id(): nedges = PolygonShape<IndexType>::numberOfEdges(); break;
+    case TetShape<IndexType>::id():     nedges = TetShape<IndexType>::numberOfEdges(); break;
+    case PyramidShape<IndexType>::id(): nedges = PyramidShape<IndexType>::numberOfEdges(); break;
+    case WedgeShape<IndexType>::id():   nedges = WedgeShape<IndexType>::numberOfEdges(); break;
+    case HexShape<IndexType>::id():     nedges = HexShape<IndexType>::numberOfEdges(); break;
+    }
+    return nedges;
+  }
+
+  AXOM_HOST_DEVICE axom::StackArray<IndexType, 2> getEdge(int edgeIndex)
+  {
+    axom::StackArray<IndexType, 2> edge;
+    switch(m_shapeId)
+    {
+    case LineShape<IndexType>::id():    edge = LineShape<IndexType>::getEdge(edgeIndex); break;
+    case TriShape<IndexType>::id():     edge = TriShape<IndexType>::getEdge(edgeIndex); break;
+    case QuadShape<IndexType>::id():    edge = QuadShape<IndexType>::getEdge(edgeIndex); break;
+    case PolygonShape<IndexType>::id(): edge = PolygonShape<IndexType>::getEdge(edgeIndex); break;
+    case TetShape<IndexType>::id():     edge = TetShape<IndexType>::getEdge(edgeIndex); break;
+    case PyramidShape<IndexType>::id(): edge = PyramidShape<IndexType>::getEdge(edgeIndex); break;
+    case WedgeShape<IndexType>::id():   edge = WedgeShape<IndexType>::getEdge(edgeIndex); break;
+    case HexShape<IndexType>::id():     edge = HexShape<IndexType>::getEdge(edgeIndex); break;
+    }
+    return edge;
+  }
+
+  /**
+   * \brief Get a specific id that makes up this shape.
+   *
+   * \return The i'th id that makes up this shape.
+   */
+  AXOM_HOST_DEVICE IndexType getId(size_t index) const { return m_ids[index]; }
+
+  /**
+   * \brief Get the ids that make up this shape.
+   *
+   * \return A view containing the ids that make up this shape.
+   */
+  AXOM_HOST_DEVICE axom::ArrayView<IndexType> getIds() const { return m_ids; }
+
+  AXOM_HOST_DEVICE constexpr static const char *name() { return "mixed"; }
+private:
+  int m_shapeId;
+  axom::ArrayView<IndexType> m_ids;
+};
+
+/**
+ * \brief Given a shape name (matches Blueprint shape name), return the Shape id() value.
+ *
+ * \param name The shape name.
+ *
+ * \return The shape id that matches the name, or 0 if there is no match.
+ */
+template <typename IndexT>
+IndexT shapeNameToID(const std::string &name)
+{
+  IndexT id = 0;
+  if(name == LineShape<IndexT>::name())
+    id = LineShape<IndexT>::id();
+  else if(name == TriShape<IndexT>::name())
+    id = TriShape<IndexT>::id();
+  else if(name == QuadShape<IndexT>::name())
+    id = QuadShape<IndexT>::id();
+  else if(name == PolygonShape<IndexT>::name())
+    id = PolygonShape<IndexT>::id();
+  else if(name == TetShape<IndexT>::name())
+    id = TetShape<IndexT>::id();
+  else if(name == PyramidShape<IndexT>::name())
+    id = PyramidShape<IndexT>::id();
+  else if(name == WedgeShape<IndexT>::name())
+    id = WedgeShape<IndexT>::id();
+  else if(name == HexShape<IndexT>::name())
+    id = HexShape<IndexT>::id();
+  return id;
+}
+
 
 } // end namespace views
 } // end namespace mir
