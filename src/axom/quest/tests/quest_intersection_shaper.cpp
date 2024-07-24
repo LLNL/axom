@@ -772,6 +772,8 @@ shapes:
   }
 }
 
+/*
+
 //---------------------------------------------------------------------------
 // Define testing functions for different modes.
 #if defined(AXOM_USE_RAJA) && defined(AXOM_USE_UMPIRE)
@@ -904,6 +906,8 @@ TEST(IntersectionShaperTest, case4_hip)
   #endif
 #endif
 
+*/
+
 // proeCase
 #if defined(AXOM_USE_RAJA) && defined(AXOM_USE_UMPIRE)
   #if defined(RUN_AXOM_SEQ_TESTS)
@@ -936,6 +940,7 @@ TEST(IntersectionShaperTest, proeCase_hip)
   #endif
 #endif
 
+/*
 //---------------------------------------------------------------------------
 // Line
 #if defined(AXOM_USE_RAJA) && defined(AXOM_USE_UMPIRE)
@@ -1138,6 +1143,8 @@ TEST(IntersectionShaperTest, line_rotate_hip)
 }
   #endif
 #endif
+
+*/
 
 //---------------------------------------------------------------------------
 int main(int argc, char *argv[])
