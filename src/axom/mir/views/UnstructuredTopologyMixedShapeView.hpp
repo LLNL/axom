@@ -85,11 +85,12 @@ private:
  * \tparam IndexT The index type that will be used for connectivity, etc.
  * \tparam ShapeT The shape type.
  */
-template <typename IndexT>
+template <typename ConnT>
 class UnstructuredTopologyMixedShapeView
 {
 public:
-  using IndexType = IndexType;
+  using ConnectivityType = ConnT;
+  using ConnectivityView = axom::ArrayView<ConnectivityType>;
   using ShapeType = VariableShape<IndexType>;
 
   /**
@@ -102,10 +103,10 @@ public:
    * \param offsets The offset to each zone in the connectivity.
    */
   UnstructuredTopologyMixedShapeView(const conduit::Node &topo,
-                                     const axom::ArrayView<IndexType> &conn,
-                                     const axom::ArrayView<IndexType> &shapes,
-                                     const axom::ArrayView<IndexType> &sizes,
-                                     const axom::ArrayView<IndexType> &offsets) :
+                                     const ConnectivityView &conn,
+                                     const ConnectivityView &shapes,
+                                     const ConnectivityView &sizes,
+                                     const ConnectivityView &offsets) :
     m_topo(topo), m_connectivity(conn), m_shapes(shapes), m_sizes(sizes), m_offsets(offsets)
   {
     SLIC_ASSERT(m_shapes.size() != 0);
@@ -144,20 +145,19 @@ public:
   {
     const auto nzones = numberOfZones();
 
-    const axom::ArrayView<IndexType> connectivityView(m_connectivity);
-    const axom::ArrayView<IndexType> shapes(m_shapes);
-    const axom::ArrayView<IndexType> sizes(m_sizes);
-    const axom::ArrayView<IndexType> offsets(m_offsets);
-
     // Build a ShapeMap from the Conduit shape map.
     axom::Array<IndexType> values, ids;
     const auto allocatorID = axom::execution_space<ExecSpace>::allocatorID();
     buildShapeMap(values, ids, allocatorID);
     const ShapeMap<IndexType> shapeMap(values.view(), ids.view());
 
+    const ConnectivityView connectivityView(m_connectivity);
+    const ConnectivityView shapes(m_shapes);
+    const ConnectivityView sizes(m_sizes);
+    const ConnectivityView offsets(m_offsets);
     axom::for_all<ExecSpace>(0, nzones, AXOM_LAMBDA(auto zoneIndex)
     {
-      const axom::ArrayView<IndexType> shapeData(connectivityView.data() + offsets[zoneIndex], sizes[zoneIndex]);
+      const ConnectivityView shapeData(connectivityView.data() + offsets[zoneIndex], sizes[zoneIndex]);
       const auto shapeID = shapeMap[shapes[zoneIndex]];
       // TODO: SLIC_ASSERT(shapeID > 0);
       const ShapeType shape(shapeID, shapeData);
@@ -169,8 +169,10 @@ public:
    * \brief Execute a function for each zone in the mesh.
    *
    * \tparam ExecSpace The execution space for the function body.
+   * \tparam ViewType  A view type that contains zone indices.
    * \tparam FuncType  The type for the function/lambda to execute. It will accept a zone index and shape.
    *
+   * \param selectedIdsView A view that contains a list of zones to operate on.
    * \param func The function/lambda that will be executed for each zone in the mesh.
    */
   template <typename ExecSpace, typename ViewType, typename FuncType>
@@ -178,22 +180,20 @@ public:
   {
     const auto nSelectedZones = selectedIdsView.size();
 
-    const ViewType idsView(selectedIdsView);
-    const axom::ArrayView<IndexType> connectivityView(m_connectivity);
-    const axom::ArrayView<IndexType> shapes(m_shapes);
-    const axom::ArrayView<IndexType> sizes(m_sizes);
-    const axom::ArrayView<IndexType> offsets(m_offsets);
-
     // Build a ShapeMap from the Conduit shape map.
     axom::Array<IndexType> values, ids;
     const auto allocatorID = axom::execution_space<ExecSpace>::allocatorID();
     buildShapeMap(values, ids, allocatorID);
     const ShapeMap<IndexType> shapeMap(values.view(), ids.view());
 
+    const ConnectivityView connectivityView(m_connectivity);
+    const ConnectivityView shapes(m_shapes);
+    const ConnectivityView sizes(m_sizes);
+    const ConnectivityView offsets(m_offsets);
     axom::for_all<ExecSpace>(0, nSelectedZones, AXOM_LAMBDA(int selectIndex)
     {
-      const auto zoneIndex = idsView[selectIndex];
-      const axom::ArrayView<IndexType> shapeData(connectivityView.data() + offsets[zoneIndex], sizes[zoneIndex]);
+      const auto zoneIndex = selectedIdsView[selectIndex];
+      const ConnectivityView shapeData(connectivityView.data() + offsets[zoneIndex], sizes[zoneIndex]);
       const auto shapeID = shapeMap[shapes[zoneIndex]];
       // TODO: SLIC_ASSERT(shapeID > 0);
       const ShapeType shape(shapeID, shapeData);
@@ -217,7 +217,7 @@ private:
     for(conduit::index_t i = 0; i < m_shape_map.number_of_children(); i++)
     {
       const auto value = static_cast<IndexType>(m_shape_map[i].to_int());
-      sm[value] = axom::mir::views::shapeNameToID<IndexType>(m_shape_map[i].name());
+      sm[value] = axom::mir::views::shapeNameToID(m_shape_map[i].name());
     }
 
     // Store the map in 2 vectors so data are contiguous.

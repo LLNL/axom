@@ -31,19 +31,38 @@ namespace mir
 namespace views
 {
 
+/// Shape ids.
+enum
+{
+   Point_ShapeID = 0,
+   Line_ShapeID = 1,
+   Tri_ShapeID = 2,
+   Quad_ShapeID = 3,
+   Polygon_ShapeID = 4,
+   Tet_ShapeID = 5,
+   Pyramid_ShapeID = 6,
+   Wedge_ShapeID = 7,
+   Hex_ShapeID = 8,
+   Polyhedron_ShapeID = 9,
+   Mixed_ShapeID = 10,
+
+   Invalid_ShapeID = 20
+};
+
 // TODO: PointTraits
+
 
 /*
 
   0*-----------* 1
 
  */
-template <typename IndexT>
+//template <typename IndexT>
 struct LineTraits
 {
-  using IndexType = IndexT;
+//  using IndexType = IndexT;
 
-  AXOM_HOST_DEVICE constexpr static int  id() { return 1 << 2; }
+  AXOM_HOST_DEVICE constexpr static int  id() { return Line_ShapeID; }
   AXOM_HOST_DEVICE constexpr static bool is_polyhedral() { return false; }
   AXOM_HOST_DEVICE constexpr static bool is_variable_size() { return false; }
 
@@ -76,12 +95,12 @@ struct LineTraits
   0*-----* 1
 
  */
-template <typename IndexT>
+//template <typename IndexT>
 struct TriTraits
 {
-  using IndexType = IndexT;
+  //using IndexType = IndexT;
 
-  AXOM_HOST_DEVICE constexpr static int  id() { return 1 << 3; }
+  AXOM_HOST_DEVICE constexpr static int  id() { return Tri_ShapeID; }
   AXOM_HOST_DEVICE constexpr static bool is_polyhedral() { return false; }
   AXOM_HOST_DEVICE constexpr static bool is_variable_size() { return false; }
 
@@ -115,12 +134,12 @@ struct TriTraits
   0*-----------* 1
 
  */
-template <typename IndexT>
+//template <typename IndexT>
 struct QuadTraits
 {
-  using IndexType = IndexT;
+  //using IndexType = IndexT;
 
-  AXOM_HOST_DEVICE constexpr static int  id() { return 1 << 4; }
+  AXOM_HOST_DEVICE constexpr static int  id() { return Quad_ShapeID; }
   AXOM_HOST_DEVICE constexpr static bool is_polyhedral() { return false; }
   AXOM_HOST_DEVICE constexpr static bool is_variable_size() { return false; }
 
@@ -146,67 +165,6 @@ struct QuadTraits
 };
 
 /*
-  
-n-1 *-... * 2
-    |     |
-    |     |
-  0 *-----* 1
-
- */
-template <typename IndexT>
-struct PolygonShape
-{
-  using IndexType = IndexT;
-
-  AXOM_HOST_DEVICE constexpr static int  id() { return 1 << 5; }
-  AXOM_HOST_DEVICE constexpr static bool is_polyhedral() { return false; }
-  AXOM_HOST_DEVICE constexpr static bool is_variable_size() { return true; }
-
-  AXOM_HOST_DEVICE constexpr static IndexType dimension() { return 2; }
-
-  /**
-   * \brief Construct a shape.
-   */
-  AXOM_HOST_DEVICE PolygonShape(const axom::ArrayView<IndexType> &ids) : m_ids(ids)
-  {
-  }
-
-  AXOM_HOST_DEVICE constexpr static IndexType numberOfFaces() { return 1; }
-
-  /**
-   * \brief Get the ids that make up this shape.
-   *
-   * \return A view containing the ids that make up this shape.
-   */
-  AXOM_HOST_DEVICE axom::ArrayView<IndexType> getIds() const { return m_ids; }
-
-  /**
-   * \brief Get the ids for the requested face.
-   *
-   * \param faceIndex The index of the desired face.
-   *
-   * \return An array view (wrapping m_faceIds) that contains the ids for the face.
-   */
-  AXOM_HOST_DEVICE axom::ArrayView<IndexType> getFace(int /*faceIndex*/) const
-  {
-    return m_ids;
-  }
-
-  AXOM_HOST_DEVICE axom::StackArray<IndexType, 2> getEdge(int edgeIndex) const
-  {
-    const auto p0 = edgeIndex % m_ids.size();
-    const auto p1 = (edgeIndex + 1) % m_ids.size();
-    return axom::StackArray<IndexType, 2>{p0, p1};
-  }
-
-  AXOM_HOST_DEVICE constexpr static const char *name() { return "polygon"; }
-
-private:
-  axom::ArrayView<IndexType> m_ids;
-};
-
-
-/*
       3
       *
      /|\         face 0: 0,2,1
@@ -222,12 +180,12 @@ private:
        1         edge 5: 2,3
 
  */
-template <typename IndexT>
+//template <typename IndexT>
 struct TetTraits
 {
-  using IndexType = IndexT;
+  //using IndexType = IndexT;
 
-  AXOM_HOST_DEVICE constexpr static int  id() { return 1 << 6; }
+  AXOM_HOST_DEVICE constexpr static int  id() { return Tet_ShapeID; }
   AXOM_HOST_DEVICE constexpr static bool is_polyhedral() { return false; }
   AXOM_HOST_DEVICE constexpr static bool is_variable_size() { return false; }
 
@@ -270,12 +228,12 @@ struct TetTraits
                   edge 7: 3,4
 
  */
-template <typename IndexT>
+//template <typename IndexT>
 struct PyramidTraits
 {
-  using IndexType = IndexT;
+  //using IndexType = IndexT;
 
-  AXOM_HOST_DEVICE constexpr static int id() { return 1 << 7; }
+  AXOM_HOST_DEVICE constexpr static int id() { return Pyramid_ShapeID; }
   AXOM_HOST_DEVICE constexpr static bool is_polyhedral() { return false; }
   AXOM_HOST_DEVICE constexpr static bool is_variable_size() { return false; }
 
@@ -319,12 +277,12 @@ struct PyramidTraits
                 edge 8: 2,3
 
  */
-template <typename IndexT>
+//template <typename IndexT>
 struct WedgeTraits
 {
-  using IndexType = IndexT;
+  //using IndexType = IndexT;
 
-  AXOM_HOST_DEVICE constexpr static int  id() { return 1 << 8; }
+  AXOM_HOST_DEVICE constexpr static int  id() { return Wedge_ShapeID; }
 
   AXOM_HOST_DEVICE constexpr static bool is_polyhedral() { return false; }
   AXOM_HOST_DEVICE constexpr static bool is_variable_size() { return false; }
@@ -366,12 +324,12 @@ struct WedgeTraits
    4            5
 
  */
-template <typename IndexT>
+//template <typename IndexT>
 struct HexTraits
 {
-  using IndexType = IndexT;
+  //using IndexType = IndexT;
 
-  AXOM_HOST_DEVICE constexpr static int  id() { return 1 << 9; }
+  AXOM_HOST_DEVICE constexpr static int  id() { return Hex_ShapeID; }
 
   AXOM_HOST_DEVICE constexpr static bool is_polyhedral() { return false; }
   AXOM_HOST_DEVICE constexpr static bool is_variable_size() { return false; }
@@ -398,20 +356,85 @@ struct HexTraits
   AXOM_HOST_DEVICE constexpr static const char *name() { return "hex"; }
 };
 
-/**
- * \brief This class extends the ShapeTraits with object state so it can represent a zone.
+/*
+  
+n-1 *-... * 2
+    |     |
+    |     |
+  0 *-----* 1
+
  */
-template <typename ShapeTraits>
-struct Shape : public ShapeTraits
+struct PolygonTraits
 {
-  using IndexType = typename ShapeTraits::IndexType;
+  AXOM_HOST_DEVICE constexpr static int  id() { return Polygon_ShapeID; }
+  AXOM_HOST_DEVICE constexpr static bool is_polyhedral() { return false; }
+  AXOM_HOST_DEVICE constexpr static bool is_variable_size() { return true; }
+
+  AXOM_HOST_DEVICE constexpr static IndexType dimension() { return 2; }
+  AXOM_HOST_DEVICE constexpr static IndexType numberOfFaces() { return 1; }
+  AXOM_HOST_DEVICE constexpr static IndexType maxNodesInFace() { return 20; }
+  AXOM_HOST_DEVICE constexpr static const char *name() { return "polygon"; }
+
+};
+
+template <typename ConnType>
+struct PolygonShape : public PolygonTraits
+{
+  using ConnectivityType = ConnType;
+  using ConnectivityView = axom::ArrayView<ConnectivityType>;
 
   /**
    * \brief Construct a shape.
    */
-  AXOM_HOST_DEVICE Shape(const axom::ArrayView<IndexType> &ids) : m_ids(ids), m_faceIds()
+  AXOM_HOST_DEVICE PolygonShape(const ConnectivityView &ids) : m_idsView(ids)
   {
-    SLIC_ASSERT(m_ids.size() == ShapeTraits::numberOfNodes());
+  }
+
+  /**
+   * \brief Get the ids that make up this shape.
+   *
+   * \return A view containing the ids that make up this shape.
+   */
+  AXOM_HOST_DEVICE const ConnectivityView &getIds() const { return m_idsView; }
+
+  /**
+   * \brief Get the ids for the requested face.
+   *
+   * \param faceIndex The index of the desired face.
+   *
+   * \return An array view (wrapping m_faceIds) that contains the ids for the face.
+   */
+  AXOM_HOST_DEVICE ConnectivityView getFace(int /*faceIndex*/) const
+  {
+    return m_idsView;
+  }
+
+  AXOM_HOST_DEVICE axom::StackArray<IndexType, 2> getEdge(int edgeIndex) const
+  {
+    const auto p0 = edgeIndex % m_idsView.size();
+    const auto p1 = (edgeIndex + 1) % m_idsView.size();
+    return axom::StackArray<IndexType, 2>{p0, p1};
+  }
+
+private:
+  ConnectivityView m_idsView;
+};
+
+/**
+ * \brief This class extends the ShapeTraits with object state so it can represent a zone.
+ */
+template <typename ShapeTraits, typename ConnType>
+struct Shape : public ShapeTraits
+{
+  using ConnectivityType = ConnType;
+  using ConnectivityView = axom::ArrayView<ConnectivityType>;
+
+  /**
+   * \brief Construct a shape.
+   */
+  AXOM_HOST_DEVICE Shape(const ConnectivityView &ids) : m_idsView(ids), m_faceIds()
+  {
+    SLIC_ASSERT(m_idsView.size() == ShapeTraits::numberOfNodes());
   }
 
   /**
@@ -419,21 +442,21 @@ struct Shape : public ShapeTraits
    *
    * \return The i'th id that makes up this shape.
    */
-  AXOM_HOST_DEVICE IndexType getId(size_t index) const { return m_ids[index]; }
+  AXOM_HOST_DEVICE ConnectivityType getId(size_t index) const { return m_idsView[index]; }
 
   /**
    * \brief Get the ids that make up this shape.
    *
    * \return A view containing the ids that make up this shape.
    */
-  AXOM_HOST_DEVICE axom::ArrayView<IndexType> getIds() const { return m_ids; }
+  AXOM_HOST_DEVICE const ConnectivityView &getIds() const { return m_idsView; }
 
   /**
    * \brief Get the unique ids that make up this shape. For basic shapes, assume they are unique.
    *
    * \return A view containing the ids that make up this shape.
    */
-  AXOM_HOST_DEVICE axom::ArrayView<IndexType> getUniqueIds() const { return m_ids; }
+  AXOM_HOST_DEVICE ConnectivityView getUniqueIds() const { return m_idsView; }
 
   /**
    * \brief Get the ids for the requested face.
@@ -443,45 +466,45 @@ struct Shape : public ShapeTraits
    * \return An array view (wrapping m_faceIds) that contains the ids for the face.
    */
   AXOM_HOST_DEVICE
-  axom::ArrayView<IndexType>
+  ConnectivityView
   getFace(int faceIndex) const
   {
     if constexpr(ShapeTraits::dimension() == 2)
-      return m_ids;
+      return m_idsView;
     else
     {  
       const auto nnodes = ShapeTraits::numberOfNodesInFace(faceIndex);
       for(IndexType i = 0; i < nnodes; i++)
-        m_faceIds[i] = m_ids[ShapeTraits::faces[faceIndex][i]];
-      return axom::ArrayView<IndexType>(m_faceIds.m_data, nnodes);
+        m_faceIds[i] = m_idsView[ShapeTraits::faces[faceIndex][i]];
+      return ConnectivityView(m_faceIds.m_data, nnodes);
     }
   }
 private:
-  axom::ArrayView<IndexType> m_ids;
-  mutable axom::StackArray<IndexType, ShapeTraits::maxNodesInFace()> m_faceIds;
+  ConnectivityView m_idsView;
+  mutable axom::StackArray<ConnectivityType, ShapeTraits::maxNodesInFace()> m_faceIds;
 };
 
 // Make some concrete shape classes based on the shape traits.
-template <typename IndexT = axom::IndexType>
-using LineShape = Shape<LineTraits<IndexT>>;
+template <typename ConnectivityType>
+using LineShape = Shape<LineTraits, ConnectivityType>;
 
-template <typename IndexT = axom::IndexType>
-using TriShape = Shape<TriTraits<IndexT>>;
+template <typename ConnectivityType>
+using TriShape = Shape<TriTraits, ConnectivityType>;
 
-template <typename IndexT = axom::IndexType>
-using QuadShape = Shape<QuadTraits<IndexT>>;
+template <typename ConnectivityType>
+using QuadShape = Shape<QuadTraits, ConnectivityType>;
 
-template <typename IndexT = axom::IndexType>
-using TetShape = Shape<TetTraits<IndexT>>;
+template <typename ConnectivityType>
+using TetShape = Shape<TetTraits, ConnectivityType>;
 
-template <typename IndexT = axom::IndexType>
-using PyramidShape = Shape<PyramidTraits<IndexT>>;
+template <typename ConnectivityType>
+using PyramidShape = Shape<PyramidTraits, ConnectivityType>;
 
-template <typename IndexT = axom::IndexType>
-using WedgeShape = Shape<WedgeTraits<IndexT>>;
+template <typename ConnectivityType>
+using WedgeShape = Shape<WedgeTraits, ConnectivityType>;
 
-template <typename IndexT = axom::IndexType>
-using HexShape = Shape<HexTraits<IndexT>>;
+template <typename ConnectivityType>
+using HexShape = Shape<HexTraits, ConnectivityType>;
 
 
 /**
@@ -489,10 +512,11 @@ using HexShape = Shape<HexTraits<IndexT>>;
  *
  * \note This is a substitute for polymorphism so we can run on device.
  */
-template <typename IndexT>
+template <typename ConnType>
 struct VariableShape
 {
-  using IndexType = IndexT;
+  using ConnectivityType = ConnType;
+  using ConnectivityView = axom::ArrayView<ConnectivityType>;
 
   /**
    * \brief Constructor
@@ -501,8 +525,9 @@ struct VariableShape
    * \param ids The ids that describe the shape.
    */
   AXOM_HOST_DEVICE
-  VariableShape(int shapeId, const axom::ArrayView<IndexType> &ids) : m_shapeId(shapeId), m_ids(ids)
+  VariableShape(int shapeId, const ConnectivityView &ids) : m_shapeId(shapeId), m_idsView(ids)
   {
+    //SLIC_ASSERT(shapeId >= Point_ShapeID && shapeID <= Hex_ShapeID);
   }
 
   /**
@@ -516,24 +541,24 @@ struct VariableShape
 
   AXOM_HOST_DEVICE IndexType dimension() const
   {
-    int dim = 2;
+    IndexType dim = 2;
     switch(m_shapeId)
     {
-    case LineShape<IndexType>::id():    dim = LineShape<IndexType>::dimension(); break;
-    case TriShape<IndexType>::id():     dim = TriShape<IndexType>::dimension(); break;
-    case QuadShape<IndexType>::id():    dim = QuadShape<IndexType>::dimension(); break;
-    case PolygonShape<IndexType>::id(): dim = PolygonShape<IndexType>::dimension(); break;
-    case TetShape<IndexType>::id():     dim = TetShape<IndexType>::dimension(); break;
-    case PyramidShape<IndexType>::id(): dim = PyramidShape<IndexType>::dimension(); break;
-    case WedgeShape<IndexType>::id():   dim = WedgeShape<IndexType>::dimension(); break;
-    case HexShape<IndexType>::id():     dim = HexShape<IndexType>::dimension(); break;
+    case Line_ShapeID:    dim = LineTraits::dimension(); break;
+    case Tri_ShapeID:     dim = TriTraits::dimension(); break;
+    case Quad_ShapeID:    dim = QuadTraits::dimension(); break;
+    case Polygon_ShapeID: dim = 2; break;
+    case Tet_ShapeID:     dim = TetTraits::dimension(); break;
+    case Pyramid_ShapeID: dim = PyramidTraits::dimension(); break;
+    case Wedge_ShapeID:   dim = WedgeTraits::dimension(); break;
+    case Hex_ShapeID:     dim = HexTraits::dimension(); break;
     }
     return dim;
   }
 
   AXOM_HOST_DEVICE IndexType numberOfNodes() const
   {
-    return m_ids.size();
+    return m_idsView.size();
   }
 
   AXOM_HOST_DEVICE IndexType numberOfNodesInFace(int faceIndex) const
@@ -541,18 +566,14 @@ struct VariableShape
     IndexType nnodes = 0;
     switch(m_shapeId)
     {
-    case LineShape<IndexType>::id():    nnodes = LineShape<IndexType>::numberOfNodesInFace(faceIndex); break;
-    case TriShape<IndexType>::id():     nnodes = TriShape<IndexType>::numberOfNodesInFace(faceIndex); break;
-    case QuadShape<IndexType>::id():    nnodes = QuadShape<IndexType>::numberOfNodesInFace(faceIndex); break;
-    case PolygonShape<IndexType>::id():
-    {
-      nnodes = (faceIndex == 0) ? m_ids.size() : 0;
-      break;
-    }
-    case TetShape<IndexType>::id():     nnodes = TetShape<IndexType>::numberOfNodesInFace(faceIndex); break;
-    case PyramidShape<IndexType>::id(): nnodes = PyramidShape<IndexType>::numberOfNodesInFace(faceIndex); break;
-    case WedgeShape<IndexType>::id():   nnodes = WedgeShape<IndexType>::numberOfNodesInFace(faceIndex); break;
-    case HexShape<IndexType>::id():     nnodes = HexShape<IndexType>::numberOfNodesInFace(faceIndex); break;
+    case Line_ShapeID:    nnodes = LineTraits::numberOfNodesInFace(faceIndex); break;
+    case Tri_ShapeID:     nnodes = TriTraits::numberOfNodesInFace(faceIndex); break;
+    case Quad_ShapeID:    nnodes = QuadTraits::numberOfNodesInFace(faceIndex); break;
+    case Polygon_ShapeID: nnodes = (faceIndex == 0) ? m_idsView.size() : 0; break;
+    case Tet_ShapeID:     nnodes = TetTraits::numberOfNodesInFace(faceIndex); break;
+    case Pyramid_ShapeID: nnodes = PyramidTraits::numberOfNodesInFace(faceIndex); break;
+    case Wedge_ShapeID:   nnodes = WedgeTraits::numberOfNodesInFace(faceIndex); break;
+    case Hex_ShapeID:     nnodes = HexTraits::numberOfNodesInFace(faceIndex); break;
     }
     return nnodes;
   }
@@ -562,14 +583,14 @@ struct VariableShape
     IndexType nnodes = 0;
     switch(m_shapeId)
     {
-    case LineShape<IndexType>::id():    nnodes = LineShape<IndexType>::maxNodesInFace(); break;
-    case TriShape<IndexType>::id():     nnodes = TriShape<IndexType>::maxNodesInFace(); break;
-    case QuadShape<IndexType>::id():    nnodes = QuadShape<IndexType>::maxNodesInFace(); break;
-    case PolygonShape<IndexType>::id(): nnodes = PolygonShape<IndexType>::maxNodesInFace(); break;
-    case TetShape<IndexType>::id():     nnodes = TetShape<IndexType>::maxNodesInFace(); break;
-    case PyramidShape<IndexType>::id(): nnodes = PyramidShape<IndexType>::maxNodesInFace(); break;
-    case WedgeShape<IndexType>::id():   nnodes = WedgeShape<IndexType>::maxNodesInFace(); break;
-    case HexShape<IndexType>::id():     nnodes = HexShape<IndexType>::maxNodesInFace(); break;
+    case Line_ShapeID:    nnodes = LineTraits::maxNodesInFace(); break;
+    case Tri_ShapeID:     nnodes = TriTraits::maxNodesInFace(); break;
+    case Quad_ShapeID:    nnodes = QuadTraits::maxNodesInFace(); break;
+    case Polygon_ShapeID: nnodes = PolygonShape<int>::maxNodesInFace(); break;
+    case Tet_ShapeID:     nnodes = TetTraits::maxNodesInFace(); break;
+    case Pyramid_ShapeID: nnodes = PyramidTraits::maxNodesInFace(); break;
+    case Wedge_ShapeID:   nnodes = WedgeTraits::maxNodesInFace(); break;
+    case Hex_ShapeID:     nnodes = HexTraits::maxNodesInFace(); break;
     }
     return nnodes;
   }
@@ -579,14 +600,14 @@ struct VariableShape
     IndexType nfaces = 0;
     switch(m_shapeId)
     {
-    case LineShape<IndexType>::id():    nfaces = LineShape<IndexType>::numberOfFaces(); break;
-    case TriShape<IndexType>::id():     nfaces = TriShape<IndexType>::numberOfFaces(); break;
-    case QuadShape<IndexType>::id():    nfaces = QuadShape<IndexType>::numberOfFaces(); break;
-    case PolygonShape<IndexType>::id(): nfaces = PolygonShape<IndexType>::numberOfFaces(); break;
-    case TetShape<IndexType>::id():     nfaces = TetShape<IndexType>::numberOfFaces(); break;
-    case PyramidShape<IndexType>::id(): nfaces = PyramidShape<IndexType>::numberOfFaces(); break;
-    case WedgeShape<IndexType>::id():   nfaces = WedgeShape<IndexType>::numberOfFaces(); break;
-    case HexShape<IndexType>::id():     nfaces = HexShape<IndexType>::numberOfFaces(); break;
+    case Line_ShapeID:    nfaces = LineTraits::numberOfFaces(); break;
+    case Tri_ShapeID:     nfaces = TriTraits::numberOfFaces(); break;
+    case Quad_ShapeID:    nfaces = QuadTraits::numberOfFaces(); break;
+    case Polygon_ShapeID: nfaces = 1; break;
+    case Tet_ShapeID:     nfaces = TetTraits::numberOfFaces(); break;
+    case Pyramid_ShapeID: nfaces = PyramidTraits::numberOfFaces(); break;
+    case Wedge_ShapeID:   nfaces = WedgeTraits::numberOfFaces(); break;
+    case Hex_ShapeID:     nfaces = HexTraits::numberOfFaces(); break;
     }
     return nfaces;
   }
@@ -596,18 +617,14 @@ struct VariableShape
     IndexType nedges = 0;
     switch(m_shapeId)
     {
-    case LineShape<IndexType>::id():    nedges = LineShape<IndexType>::numberOfEdges(); break;
-    case TriShape<IndexType>::id():     nedges = TriShape<IndexType>::numberOfEdges(); break;
-    case QuadShape<IndexType>::id():    nedges = QuadShape<IndexType>::numberOfEdges(); break;
-    case PolygonShape<IndexType>::id():
-    {
-      nedges = m_ids.size();
-      break;
-    }
-    case TetShape<IndexType>::id():     nedges = TetShape<IndexType>::numberOfEdges(); break;
-    case PyramidShape<IndexType>::id(): nedges = PyramidShape<IndexType>::numberOfEdges(); break;
-    case WedgeShape<IndexType>::id():   nedges = WedgeShape<IndexType>::numberOfEdges(); break;
-    case HexShape<IndexType>::id():     nedges = HexShape<IndexType>::numberOfEdges(); break;
+    case Line_ShapeID:    nedges = LineTraits::numberOfEdges(); break;
+    case Tri_ShapeID:     nedges = TriTraits::numberOfEdges(); break;
+    case Quad_ShapeID:    nedges = QuadTraits::numberOfEdges(); break;
+    case Polygon_ShapeID: nedges = m_idsView.size(); break;
+    case Tet_ShapeID:     nedges = TetTraits::numberOfEdges(); break;
+    case Pyramid_ShapeID: nedges = PyramidTraits::numberOfEdges(); break;
+    case Wedge_ShapeID:   nedges = WedgeTraits::numberOfEdges(); break;
+    case Hex_ShapeID:     nedges = HexTraits::numberOfEdges(); break;
     }
     return nedges;
   }
@@ -617,19 +634,20 @@ struct VariableShape
     axom::StackArray<IndexType, 2> edge;
     switch(m_shapeId)
     {
-    case LineShape<IndexType>::id():    edge = LineShape<IndexType>::getEdge(edgeIndex); break;
-    case TriShape<IndexType>::id():     edge = TriShape<IndexType>::getEdge(edgeIndex); break;
-    case QuadShape<IndexType>::id():    edge = QuadShape<IndexType>::getEdge(edgeIndex); break;
-    case PolygonShape<IndexType>::id():
+    case Line_ShapeID:    edge = LineTraits::getEdge(edgeIndex); break;
+    case Tri_ShapeID:     edge = TriTraits::getEdge(edgeIndex); break;
+    case Quad_ShapeID:    edge = QuadTraits::getEdge(edgeIndex); break;
+    case Polygon_ShapeID:
     {
-      edge[0] = edgeIndex % m_ids.size();
-      edge[1] = (edgeIndex + 1) % m_ids.size();
+      const auto n = m_idsView.size();
+      edge[0] = edgeIndex % n;
+      edge[1] = (edgeIndex + 1) % n;
       break;
     }
-    case TetShape<IndexType>::id():     edge = TetShape<IndexType>::getEdge(edgeIndex); break;
-    case PyramidShape<IndexType>::id(): edge = PyramidShape<IndexType>::getEdge(edgeIndex); break;
-    case WedgeShape<IndexType>::id():   edge = WedgeShape<IndexType>::getEdge(edgeIndex); break;
-    case HexShape<IndexType>::id():     edge = HexShape<IndexType>::getEdge(edgeIndex); break;
+    case Tet_ShapeID:     edge = TetTraits::getEdge(edgeIndex); break;
+    case Pyramid_ShapeID: edge = PyramidTraits::getEdge(edgeIndex); break;
+    case Wedge_ShapeID:   edge = WedgeTraits::getEdge(edgeIndex); break;
+    case Hex_ShapeID:     edge = HexTraits::getEdge(edgeIndex); break;
     }
     return edge;
   }
@@ -639,19 +657,19 @@ struct VariableShape
    *
    * \return The i'th id that makes up this shape.
    */
-  AXOM_HOST_DEVICE IndexType getId(size_t index) const { return m_ids[index]; }
+  AXOM_HOST_DEVICE ConnectivityType getId(IndexType index) const { return m_idsView[index]; }
 
   /**
    * \brief Get the ids that make up this shape.
    *
    * \return A view containing the ids that make up this shape.
    */
-  AXOM_HOST_DEVICE axom::ArrayView<IndexType> getIds() const { return m_ids; }
+  AXOM_HOST_DEVICE const ConnectivityView &getIds() const { return m_idsView; }
 
   AXOM_HOST_DEVICE constexpr static const char *name() { return "mixed"; }
 private:
   int m_shapeId;
-  axom::ArrayView<IndexType> m_ids;
+  ConnectivityView m_idsView;
 };
 
 /**
@@ -661,26 +679,25 @@ private:
  *
  * \return The shape id that matches the name, or 0 if there is no match.
  */
-template <typename IndexT>
-IndexT shapeNameToID(const std::string &name)
+inline int shapeNameToID(const std::string &name)
 {
-  IndexT id = 0;
-  if(name == LineShape<IndexT>::name())
-    id = LineShape<IndexT>::id();
-  else if(name == TriShape<IndexT>::name())
-    id = TriShape<IndexT>::id();
-  else if(name == QuadShape<IndexT>::name())
-    id = QuadShape<IndexT>::id();
-  else if(name == PolygonShape<IndexT>::name())
-    id = PolygonShape<IndexT>::id();
-  else if(name == TetShape<IndexT>::name())
-    id = TetShape<IndexT>::id();
-  else if(name == PyramidShape<IndexT>::name())
-    id = PyramidShape<IndexT>::id();
-  else if(name == WedgeShape<IndexT>::name())
-    id = WedgeShape<IndexT>::id();
-  else if(name == HexShape<IndexT>::name())
-    id = HexShape<IndexT>::id();
+  int id = 0;
+  if(name == LineTraits::name())
+    id = Line_ShapeID;
+  else if(name == TriTraits::name())
+    id = Tri_ShapeID;
+  else if(name == QuadTraits::name())
+    id = Quad_ShapeID;
+  else if(name == PolygonTraits::name())
+    id = Polygon_ShapeID;
+  else if(name == TetTraits::name())
+    id = Tet_ShapeID;
+  else if(name == PyramidTraits::name())
+    id = Pyramid_ShapeID;
+  else if(name == WedgeTraits::name())
+    id = Wedge_ShapeID;
+  else if(name == HexTraits::name())
+    id = Hex_ShapeID;
   return id;
 }
 

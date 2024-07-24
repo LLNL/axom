@@ -15,21 +15,25 @@ namespace mir
 namespace views
 {
 
-template <typename IndexT>
+/**
+ * \brief This class implements a view for Blueprint polyhedral topologies.
+ */
+template <typename ConnType>
 class UnstructuredTopologyPolyhedralView
 {
 public:
-  using IndexType = IndexT;
+  using ConnectivityType = ConnType;
+  using ConnectivityView = axom::ArrayView<ConnectivityType>;
 
   struct PolyhedronData
   {
     AXOM_HOST_DEVICE
-    PolyhedronData(axom::ArrayView<IndexType> subelement_conn,
-              axom::ArrayView<IndexType> subelement_sizes,
-              axom::ArrayView<IndexType> subelement_offsets,
-              axom::ArrayView<IndexType> element_conn,
-              axom::ArrayView<IndexType> element_sizes,
-              axom::ArrayView<IndexType> element_offsets) :
+    PolyhedronData(const ConnectivityView &subelement_conn,
+                   const ConnectivityView &subelement_sizes,
+                   const ConnectivityView &subelement_offsets,
+                   const ConnectivityView &element_conn,
+                   const ConnectivityView &element_sizes,
+                   const ConnectivityView &element_offsets) :
       m_subelement_conn(subelement_conn), m_subelement_sizes(subelement_sizes), m_subelement_offsets(subelement_offsets),
       m_element_conn(element_conn), m_element_sizes(element_sizes), m_element_offsets(element_offsets)
     {
@@ -42,12 +46,12 @@ public:
     {
     }
 
-    axom::ArrayView<IndexType> m_subelement_conn;
-    axom::ArrayView<IndexType> m_subelement_sizes;
-    axom::ArrayView<IndexType> m_subelement_offsets;
-    axom::ArrayView<IndexType> m_element_conn;
-    axom::ArrayView<IndexType> m_element_sizes;
-    axom::ArrayView<IndexType> m_element_offsets;
+    ConnectivityView m_subelement_conn;
+    ConnectivityView m_subelement_sizes;
+    ConnectivityView m_subelement_offsets;
+    ConnectivityView m_element_conn;
+    ConnectivityView m_element_sizes;
+    ConnectivityView m_element_offsets;
   };
 
   // Can we provide a way to provide data about Zone i's shape?
@@ -81,7 +85,7 @@ public:
       return getFace(faceIndex).size();
     }
 
-    AXOM_HOST_DEVICE axom::ArrayView<IndexType> getIds() const
+    AXOM_HOST_DEVICE ConnectivityView getIds() const
     {
       axom::IndexType nnodes = 0;
       const auto nFaces = numberOfFaces();
@@ -99,10 +103,10 @@ public:
           }
         }
       }
-      return axom::ArrayView<IndexType>(m_ids.m_data, nnodes);
+      return ConnectivityView(m_ids.m_data, nnodes);
     }
 
-    AXOM_HOST_DEVICE axom::ArrayView<IndexType> getUniqueIds() const
+    AXOM_HOST_DEVICE ConnectivityView getUniqueIds() const
     {
       axom::IndexType nnodes = 0;
       const auto nFaces = numberOfFaces();
@@ -126,16 +130,16 @@ public:
       return axom::ArrayView<IndexType>(m_ids.m_data, nnodes);
     }
 
-    AXOM_HOST_DEVICE axom::ArrayView<IndexType> getFace(int faceIndex) const
+    AXOM_HOST_DEVICE ConnectivityView getFace(int faceIndex) const
     {
-      const axom::ArrayView<IndexType> element_face_ids(m_data.m_element_conn.data() + m_data.m_element_offsets[m_zoneIndex], m_data.m_element_sizes[m_zoneIndex]);
+      const ConnectivityView element_face_ids(m_data.m_element_conn.data() + m_data.m_element_offsets[m_zoneIndex], m_data.m_element_sizes[m_zoneIndex]);
       const auto faceId = element_face_ids[faceIndex];
 
-      return axom::ArrayView<IndexType>(m_data.m_subelement_conn.data() + m_data.m_subelement_offsets[faceId], m_data.m_subelement_sizes[faceId]);
+      return ConnectivityView(m_data.m_subelement_conn.data() + m_data.m_subelement_offsets[faceId], m_data.m_subelement_sizes[faceId]);
     }
 
   private:
-    AXOM_HOST_DEVICE bool find(const IndexType *arr, axom::IndexType n, IndexType value) const
+    AXOM_HOST_DEVICE bool find(const ConnectivityView *arr, axom::IndexType n, ConnectivityView value) const
     {
       bool found = false;
       for(axom::IndexType i = 0; i < n && !found; i++)
@@ -145,7 +149,7 @@ public:
 
     PolyhedronData m_data;
     IndexType m_zoneIndex {0};
-    mutable axom::StackArray<IndexType,MaximumNumberOfIds> m_ids;
+    mutable axom::StackArray<ConnectivityType, MaximumNumberOfIds> m_ids;
   };
   //----------------------------------------------------------------------------
 

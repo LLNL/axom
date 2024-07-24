@@ -27,6 +27,7 @@ public:
   using IndexingPolicy = IndexPolicy;
   using IndexType = typename IndexingPolicy::IndexType;
   using LogicalIndex = typename IndexingPolicy::LogicalIndex;
+  using ConnectivityType = IndexType;
 
   /**
    * \brief Return the number of dimensions.

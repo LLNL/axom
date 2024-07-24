@@ -242,7 +242,6 @@ NodeToZoneRelationBuilder<ExecSpace>::execute(const conduit::Node &topo, conduit
     {
       // Shapes are all the same size.
       const auto nodesPerShape = shape.indices;
-      const auto nzones = connSize / nodesPerShape;
 
       // Allocate Conduit arrays on the device in a data type that matches the connectivity.
       n_zones.set(conduit::DataType(intTypeId, connSize));

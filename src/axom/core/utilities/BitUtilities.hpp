@@ -243,7 +243,7 @@ AXOM_HOST_DEVICE inline std::int32_t countl_zero(std::int32_t word) noexcept
  */
 template <typename FlagType, typename BitType>
 AXOM_HOST_DEVICE
-bool bitIsSet(FlagType flags, BitType bit)
+constexpr bool bitIsSet(FlagType flags, BitType bit)
 {
   assert(bit >= 0 && (static_cast<int>(bit) < BitTraits<FlagType>::BITS_PER_WORD << 3));
   return (flags & (1 << bit)) > 0;
@@ -262,11 +262,29 @@ bool bitIsSet(FlagType flags, BitType bit)
  */
 template <typename FlagType, typename BitType>
 AXOM_HOST_DEVICE
-void setBit(FlagType &flags, BitType bit, bool value = true)
+constexpr void setBit(FlagType &flags, BitType bit, bool value = true)
 {
   assert(bit >= 0 && (static_cast<int>(bit) < BitTraits<FlagType>::BITS_PER_WORD << 3));
   const auto mask = 1 << bit;
   flags = value ? (flags | mask) : (flags & ~mask);
+}
+
+/*!
+ * \brief Set the bit in flags.
+ * \accelerated
+ *
+ * \tparam FlagType The integer type that contains the flags.
+ * \tparam BitType  The index type that stores the bit index.
+ *
+ * \param[inout] flags The flags whose bit we're setting.
+ * \param[in] bit   The bit we're setting.
+ */
+template <typename FlagType, typename BitType>
+AXOM_HOST_DEVICE
+constexpr void setBitOn(FlagType &flags, BitType bit)
+{
+  assert(bit >= 0 && (static_cast<int>(bit) < BitTraits<FlagType>::BITS_PER_WORD << 3));
+  flags |= (1 << bit);
 }
 
 /*!

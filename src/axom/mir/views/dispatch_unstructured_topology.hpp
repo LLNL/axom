@@ -6,6 +6,7 @@
 #ifndef AXOM_MIR_DISPATCH_UNSTRUCTURED_TOPOLOGY_HPP_
 #define AXOM_MIR_DISPATCH_UNSTRUCTURED_TOPOLOGY_HPP_
 
+#include "axom/core.hpp"
 #include "axom/mir/views/UnstructuredTopologySingleShapeView.hpp"
 #include "axom/mir/views/UnstructuredTopologyPolyhedralView.hpp"
 #include "axom/mir/views/UnstructuredTopologyMixedShapeView.hpp"
@@ -21,6 +22,7 @@ namespace mir
 namespace views
 {
 
+// Turn on all bits so all shapes will be enabled.
 constexpr int AnyShape = -1;
 
 /**
@@ -42,8 +44,8 @@ void dispatch_unstructured_polyhedral_topology(const conduit::Node &topo, FuncTy
       topo["elements/connectivity"], topo["elements/sizes"], topo["elements/offsets"],
       [&](auto seConnView, auto seSizesView, auto seOffsetsView, auto connView, auto sizesView, auto offsetsView)
     {
-      using IndexType = typename decltype(seConnView)::value_type;
-      UnstructuredTopologyPolyhedralView<IndexType> ugView(seConnView, seSizesView, seOffsetsView, connView, sizesView, offsetsView);
+      using ConnType = typename decltype(seConnView)::value_type;
+      UnstructuredTopologyPolyhedralView<ConnType> ugView(seConnView, seSizesView, seOffsetsView, connView, sizesView, offsetsView);
       func(shape, ugView);
     });
   }
@@ -71,9 +73,9 @@ void dispatch_unstructured_mixed_topology(const conduit::Node &topo, FuncType &&
       topo["elements/connectivity"], topo["elements/shapes"], topo["elements/sizes"], topo["elements/offsets"],
       [&](auto connView, auto shapesView, auto sizesView, auto offsetsView)
     {
-      using IndexType = typename decltype(connView)::value_type;
+      using ConnType = typename decltype(connView)::value_type;
 
-      UnstructuredTopologyMixedShapeView<IndexType> ugView(topo, connView, shapesView, sizesView, offsetsView);
+      UnstructuredTopologyMixedShapeView<ConnType> ugView(topo, connView, shapesView, sizesView, offsetsView);
       func(shape, ugView);
     });
   }
@@ -99,7 +101,7 @@ void dispatch_unstructured_topology(const conduit::Node &topo, FuncType &&func)
       bool eligible = true;
 
       // Conditionally add polyhedron support.
-      if constexpr (ShapeTypes & UnstructuredTopologyPolyhedralView<IndexType>::PolyhedronShape::id())
+      if constexpr (axom::utilities::bitIsSet(ShapeTypes, Polyhedron_ShapeID))
       {
         if(shape == "polyhedral")
         {
@@ -110,7 +112,7 @@ void dispatch_unstructured_topology(const conduit::Node &topo, FuncType &&func)
 
 #if 0
 // TODO: Can't use polygon with single shape view because its sizes are not known at compile time.
-      if constexpr (ShapeTypes & PolygonShape::id())
+      if constexpr (axom::utilities::bitIsSet(ShapeTypes, Polygon_ShapeID))
       {
         if(eligible && shape == "polygon")
         {
@@ -126,7 +128,7 @@ void dispatch_unstructured_topology(const conduit::Node &topo, FuncType &&func)
         }
       }
 #endif
-      if constexpr (ShapeTypes & AnyShape)
+      if constexpr (axom::utilities::bitIsSet(ShapeTypes, Mixed_ShapeID))
       {
         if(eligible && shape == "mixed")
         {
@@ -137,58 +139,58 @@ void dispatch_unstructured_topology(const conduit::Node &topo, FuncType &&func)
 
       IndexNode_to_ArrayView(topo["elements/connectivity"], [&](auto connView)
       {
-        using IndexType = typename decltype(connView)::value_type;
+        using ConnType = typename decltype(connView)::value_type;
         // TODO: points, lines
-        if constexpr (ShapeTypes & TriShape<IndexType>::id())
+        if constexpr (axom::utilities::bitIsSet(ShapeTypes, Tri_ShapeID))
         {
           if(eligible && shape == "tet")
           {
-            UnstructuredTopologySingleShapeView<TriShape<IndexType>> ugView(connView);
+            UnstructuredTopologySingleShapeView<TriShape<ConnType>> ugView(connView);
             func(shape, ugView);
             eligible = false;
           }
         }
-        if constexpr (ShapeTypes & QuadShape<IndexType>::id())
+        if constexpr (axom::utilities::bitIsSet(ShapeTypes, Quad_ShapeID))
         {
           if(eligible && shape == "tet")
           {
-            UnstructuredTopologySingleShapeView<QuadShape<IndexType>> ugView(connView);
+            UnstructuredTopologySingleShapeView<QuadShape<ConnType>> ugView(connView);
             func(shape, ugView);
             eligible = false;
           }
         }
-        if constexpr (ShapeTypes & TetShape<IndexType>::id())
+        if constexpr (axom::utilities::bitIsSet(ShapeTypes, Tet_ShapeID))
         {
           if(eligible && shape == "tet")
           {
-            UnstructuredTopologySingleShapeView<TetShape<IndexType>> ugView(connView);
+            UnstructuredTopologySingleShapeView<TetShape<ConnType>> ugView(connView);
             func(shape, ugView);
             eligible = false;
           }
         }
-        if constexpr (ShapeTypes & PyramidShape<IndexType>::id())
+        if constexpr (axom::utilities::bitIsSet(ShapeTypes, Pyramid_ShapeID))
         {
           if(eligible && shape == "pyramid")
           {
-            UnstructuredTopologySingleShapeView<PyramidShape<IndexType>> ugView(connView);
+            UnstructuredTopologySingleShapeView<PyramidShape<ConnType>> ugView(connView);
             func(shape, ugView);
             eligible = false;
           }
         }
-        if constexpr (ShapeTypes & WedgeShape<IndexType>::id())
+        if constexpr (axom::utilities::bitIsSet(ShapeTypes, Wedge_ShapeID))
         {
           if(eligible && shape == "wedge")
           {
-            UnstructuredTopologySingleShapeView<WedgeShape<IndexType>> ugView(connView);
+            UnstructuredTopologySingleShapeView<WedgeShape<ConnType>> ugView(connView);
             func(shape, ugView);
             eligible = false;
           }
         }
-        if constexpr (ShapeTypes & HexShape<IndexType>::id())
+        if constexpr (axom::utilities::bitIsSet(ShapeTypes, Hex_ShapeID))
         {
           if(eligible && shape == "hex")
           {
-            UnstructuredTopologySingleShapeView<HexShape<IndexType>> ugView(connView);
+            UnstructuredTopologySingleShapeView<HexShape<ConnType>> ugView(connView);
             func(shape, ugView);
             eligible = false;
           }

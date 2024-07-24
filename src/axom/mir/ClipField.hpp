@@ -90,13 +90,13 @@ int ST_Index_to_ShapeID(IntegerType st_index)
   int shapeID = 0;
   switch(st_index)
   {
-  case ST_LIN: shapeID = views::LineShape<int>::id(); break;
-  case ST_TRI: shapeID = views::TriShape<int>::id(); break;
-  case ST_QUA: shapeID = views::QuadShape<int>::id(); break;
-  case ST_TET: shapeID = views::TetShape<int>::id(); break;
-  case ST_PYR: shapeID = views::PyramidShape<int>::id(); break;
-  case ST_WDG: shapeID = views::WedgeShape<int>::id(); break;
-  case ST_HEX: shapeID = views::HexShape<int>::id(); break;
+  case ST_LIN: shapeID = views::Line_ShapeID; break;
+  case ST_TRI: shapeID = views::Tri_ShapeID; break;
+  case ST_QUA: shapeID = views::Quad_ShapeID; break;
+  case ST_TET: shapeID = views::Tet_ShapeID; break;
+  case ST_PYR: shapeID = views::Pyramid_ShapeID; break;
+  case ST_WDG: shapeID = views::Wedge_ShapeID; break;
+  case ST_HEX: shapeID = views::Hex_ShapeID; break;
   }
   return shapeID;
 }
@@ -113,43 +113,42 @@ shapeMap_FromFlags(std::uint64_t shapes)
 {
   std::map<std::string, int> sm;
 
-  if((shapes & views::LineShape<int>::id()) > 0)
-    sm["line"] = views::LineShape<int>::id();
+  if(axom::utilities::bitIsSet(shapes, views::Line_ShapeID))
+    sm["line"] = views::Line_ShapeID;
 
-  if((shapes & views::TriShape<int>::id()) > 0)
-    sm["tri"] = views::TriShape<int>::id();
+  if(axom::utilities::bitIsSet(shapes, views::Tri_ShapeID))
+    sm["tri"] = views::Tri_ShapeID;
 
-  if((shapes & views::QuadShape<int>::id()) > 0)
-    sm["quad"] = views::QuadShape<int>::id();
+  if(axom::utilities::bitIsSet(shapes, views::Quad_ShapeID))
+    sm["quad"] = views::Quad_ShapeID;
 
-  if((shapes & views::TetShape<int>::id()) > 0)
-    sm["tet"] = views::TetShape<int>::id();
+  if(axom::utilities::bitIsSet(shapes, views::Tet_ShapeID))
+    sm["tet"] = views::Tet_ShapeID;
 
-  if((shapes & views::PyramidShape<int>::id()) > 0)
-    sm["pyramid"] = views::PyramidShape<int>::id();
+  if(axom::utilities::bitIsSet(shapes, views::Pyramid_ShapeID))
+    sm["pyramid"] = views::Pyramid_ShapeID;
 
-  if((shapes & views::WedgeShape<int>::id()) > 0)
-    sm["wedge"] = views::WedgeShape<int>::id();
+  if(axom::utilities::bitIsSet(shapes, views::Wedge_ShapeID))
+    sm["wedge"] = views::Wedge_ShapeID;
 
-  if((shapes & views::HexShape<int>::id()) > 0)
-    sm["hex"] = views::HexShape<int>::id();
+  if(axom::utilities::bitIsSet(shapes, views::Hex_ShapeID))
+    sm["hex"] = views::Hex_ShapeID;
 
   return sm;
 }
 
-template <typename IndexT>
 AXOM_HOST_DEVICE
-IndexT getClipTableIndex(IndexT shapeId)
+int getClipTableIndex(int shapeId)
 {
-  IndexT index = 0;
+  int index = 0;
   switch(shapeId)
   {
-  case views::TriShape<IndexT>::id():     index = 0; break;
-  case views::QuadShape<IndexT>::id():    index = 1; break;
-  case views::TetShape<IndexT>::id():     index = 2; break;
-  case views::PyramidShape<IndexT>::id(): index = 3; break;
-  case views::WedgeShape<IndexT>::id():   index = 4; break;
-  case views::HexShape<IndexT>::id():     index = 5; break;
+  case views::Tri_ShapeID:     index = 0; break;
+  case views::Quad_ShapeID:    index = 1; break;
+  case views::Tet_ShapeID:     index = 2; break;
+  case views::Pyramid_ShapeID: index = 3; break;
+  case views::Wedge_ShapeID:   index = 4; break;
+  case views::Hex_ShapeID:     index = 5; break;
   }
   return index;
 }
@@ -208,10 +207,8 @@ template <typename ZoneType, typename DataType>
 AXOM_HOST_DEVICE
 size_t clip_case(const ZoneType &zone, const axom::ArrayView<DataType> &view, DataType clipValue)
 {
-  using ZoneIndex = typename ZoneType::IndexType;
-
   size_t clipcase = 0;
-  for(ZoneIndex i = 0; i < zone.numberOfNodes(); i++)
+  for(IndexType i = 0; i < zone.numberOfNodes(); i++)
   {
     const auto id = zone.getId(i);
     const auto value = view[id] - clipValue;
@@ -513,7 +510,7 @@ public:
     using reduce_policy = typename axom::execution_space<ExecSpace>::reduce_policy;
     const auto allocatorID = axom::execution_space<ExecSpace>::allocatorID();
 
-    using ConnectivityType = typename TopologyView::IndexType;
+    using ConnectivityType = typename TopologyView::ConnectivityType;
     constexpr auto connTypeID = axom::mir::utilities::blueprint::cpp2conduit<ConnectivityType>::id;
 
     const auto nzones = m_topologyView.numberOfZones();
@@ -1025,8 +1022,8 @@ public:
 
             sizeIndex++;
 
-            // Record which shape type was used. (ids are powers of 2)
-            shapesUsed |= shapeID;
+            // Record which shape type was used. Use a bit for each shape.
+            axom::utilities::setBitOn(shapesUsed, shapeID);
           }
         }
       }
