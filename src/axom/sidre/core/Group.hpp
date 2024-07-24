@@ -1295,7 +1295,7 @@ public:
    * \return pointer to the new copied Group object or nullptr if a Group
    * is not copied into this Group.
    */
-  Group* deepCopyGroup(Group* group, int allocID = INVALID_ALLOCATOR_ID);
+  Group* deepCopyGroup(Group* srcGroup, int allocID = INVALID_ALLOCATOR_ID);
 
   //@}
 
