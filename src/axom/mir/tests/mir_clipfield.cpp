@@ -190,11 +190,12 @@ void braid2d_clip_test(const std::string &type, const std::string &name)
   TopoView topoView(Indexing{zoneDims});
 
   // Create options to control the clipping.
+  const std::string clipTopoName("cliptopo");
   conduit::Node options;
   options["clipField"] = "distance";
   options["inside"] = 1;
   options["outside"] = 1;
-  options["topologyName"] = "cliptopo";
+  options["topologyName"] = clipTopoName;
   options["coordsetName"] = "clipcoords";
   options["fields/braid"] = "new_braid";
   options["fields/radial"] = "new_radial";
@@ -222,6 +223,46 @@ void braid2d_clip_test(const std::string &type, const std::string &name)
   // Save data.
   conduit::relay::io::blueprint::save_mesh(hostClipMesh, name, "hdf5");
   conduit::relay::io::blueprint::save_mesh(hostClipMesh, name + "_yaml", "yaml");
+
+  // Now, take the clipped mesh and clip it again using a mixed topology view.
+  using MixedTopoView = axom::mir::views::UnstructuredTopologyMixedShapeView<axom::IndexType>;
+  using ExpCoordsetView = axom::mir::views::ExplicitCoordsetView<double, 2>;
+  conduit::Node &n_x = deviceClipMesh.fetch_existing("coordsets/clipcoords/values/x");
+  conduit::Node &n_y = deviceClipMesh.fetch_existing("coordsets/clipcoords/values/y");
+  axom::ArrayView<double> xView(static_cast<double *>(n_x.data_ptr()), n_x.dtype().number_of_elements());
+  axom::ArrayView<double> yView(static_cast<double *>(n_y.data_ptr()), n_y.dtype().number_of_elements());
+  ExpCoordsetView mixedCoordsetView(xView, yView);
+
+  conduit::Node &n_device_topo = deviceClipMesh.fetch_existing("topologies/" + clipTopoName);
+  conduit::Node &n_conn = n_device_topo.fetch_existing("elements/connectivity");
+  conduit::Node &n_shapes = n_device_topo.fetch_existing("elements/shapes");
+  conduit::Node &n_sizes = n_device_topo.fetch_existing("elements/sizes");
+  conduit::Node &n_offsets = n_device_topo.fetch_existing("elements/offsets");
+  axom::ArrayView<axom::IndexType> connView(static_cast<axom::IndexType *>(n_conn.data_ptr()), n_conn.dtype().number_of_elements());
+  axom::ArrayView<axom::IndexType> shapesView(static_cast<axom::IndexType *>(n_shapes.data_ptr()), n_shapes.dtype().number_of_elements());
+  axom::ArrayView<axom::IndexType> sizesView(static_cast<axom::IndexType *>(n_sizes.data_ptr()), n_sizes.dtype().number_of_elements());
+  axom::ArrayView<axom::IndexType> offsetsView(static_cast<axom::IndexType *>(n_offsets.data_ptr()), n_offsets.dtype().number_of_elements());
+  MixedTopoView mixedTopoView(n_device_topo, connView, shapesView, sizesView, offsetsView);
+
+  // Clip the data
+  conduit::Node deviceClipMixedMesh; 
+  axom::mir::clipping::ClipField<ExecSpace, MixedTopoView, ExpCoordsetView> mixedClipper(mixedTopoView, mixedCoordsetView);
+  options["clipField"] = "new_braid";
+  options["clipValue"] = 1.;
+  options["fields"].reset();
+  options["fields/new_braid"] = "new_braid2";
+  options["fields/color"] = "new_color";
+  options["fields/new_radial"] = "new_radial2";
+
+  mixedClipper.execute(deviceClipMesh, options, deviceClipMixedMesh);
+
+  // Copy device->host
+  conduit::Node hostClipMixedMesh;
+  axom::mir::utilities::blueprint::copy<seq_exec>(hostClipMixedMesh, deviceClipMixedMesh);
+
+  // Save data.
+  conduit::relay::io::blueprint::save_mesh(hostClipMixedMesh, name + "_mixed", "hdf5");
+  conduit::relay::io::blueprint::save_mesh(hostClipMixedMesh, name + "_mixed_yaml", "yaml");
 
   // Load a clipped baseline file & compare.
 }

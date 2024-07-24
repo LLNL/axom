@@ -208,8 +208,10 @@ template <typename ZoneType, typename DataType>
 AXOM_HOST_DEVICE
 size_t clip_case(const ZoneType &zone, const axom::ArrayView<DataType> &view, DataType clipValue)
 {
+  using ZoneIndex = typename ZoneType::IndexType;
+
   size_t clipcase = 0;
-  for(size_t i = 0; i < zone.numberOfNodes(); i++)
+  for(ZoneIndex i = 0; i < zone.numberOfNodes(); i++)
   {
     const auto id = zone.getId(i);
     const auto value = view[id] - clipValue;
@@ -740,8 +742,6 @@ public:
       const auto clipValue = opts.clipValue();
       m_topologyView.template for_selected_zones<ExecSpace>(opts.selectedZonesView(), AXOM_LAMBDA(auto zoneIndex, const auto &zone)
       {
-        using ZoneType = typename std::remove_reference<decltype(zone)>::type;
-
         // Get the clip case for the current zone.
         const auto clipcase = clipCasesView[zoneIndex];
 
@@ -791,7 +791,7 @@ public:
                   // face point. We can store the 2 corner points in place
                   // of the edge point (along with some blending coeff).
                   const auto edgeIndex = ptid - EA;
-                  const auto edge = ZoneType::getEdge(edgeIndex);
+                  const auto edge = zone.getEdge(edgeIndex);
                   const auto id0 = zone.getId(edge[0]);
                   const auto id1 = zone.getId(edge[1]);
 
@@ -847,7 +847,7 @@ public:
           if(axom::utilities::bitIsSet(ptused, pid))
           {
             const auto edgeIndex = pid - EA;
-            const auto edge = ZoneType::getEdge(edgeIndex);
+            const auto edge = zone.getEdge(edgeIndex);
             const auto id0 = zone.getId(edge[0]);
             const auto id1 = zone.getId(edge[1]);
 

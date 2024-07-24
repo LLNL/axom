@@ -533,19 +533,7 @@ struct VariableShape
 
   AXOM_HOST_DEVICE IndexType numberOfNodes() const
   {
-    IndexType nnodes = 0;
-    switch(m_shapeId)
-    {
-    case LineShape<IndexType>::id():    nnodes = LineShape<IndexType>::numberOfNodes(); break;
-    case TriShape<IndexType>::id():     nnodes = TriShape<IndexType>::numberOfNodes(); break;
-    case QuadShape<IndexType>::id():    nnodes = QuadShape<IndexType>::numberOfNodes(); break;
-    case PolygonShape<IndexType>::id(): nnodes = PolygonShape<IndexType>::numberOfNodes(); break;
-    case TetShape<IndexType>::id():     nnodes = TetShape<IndexType>::numberOfNodes(); break;
-    case PyramidShape<IndexType>::id(): nnodes = PyramidShape<IndexType>::numberOfNodes(); break;
-    case WedgeShape<IndexType>::id():   nnodes = WedgeShape<IndexType>::numberOfNodes(); break;
-    case HexShape<IndexType>::id():     nnodes = HexShape<IndexType>::numberOfNodes(); break;
-    }
-    return nnodes;
+    return m_ids.size();
   }
 
   AXOM_HOST_DEVICE IndexType numberOfNodesInFace(int faceIndex) const
@@ -556,7 +544,11 @@ struct VariableShape
     case LineShape<IndexType>::id():    nnodes = LineShape<IndexType>::numberOfNodesInFace(faceIndex); break;
     case TriShape<IndexType>::id():     nnodes = TriShape<IndexType>::numberOfNodesInFace(faceIndex); break;
     case QuadShape<IndexType>::id():    nnodes = QuadShape<IndexType>::numberOfNodesInFace(faceIndex); break;
-    case PolygonShape<IndexType>::id(): nnodes = PolygonShape<IndexType>::numberOfNodesInFace(faceIndex); break;
+    case PolygonShape<IndexType>::id():
+    {
+      nnodes = (faceIndex == 0) ? m_ids.size() : 0;
+      break;
+    }
     case TetShape<IndexType>::id():     nnodes = TetShape<IndexType>::numberOfNodesInFace(faceIndex); break;
     case PyramidShape<IndexType>::id(): nnodes = PyramidShape<IndexType>::numberOfNodesInFace(faceIndex); break;
     case WedgeShape<IndexType>::id():   nnodes = WedgeShape<IndexType>::numberOfNodesInFace(faceIndex); break;
@@ -607,7 +599,11 @@ struct VariableShape
     case LineShape<IndexType>::id():    nedges = LineShape<IndexType>::numberOfEdges(); break;
     case TriShape<IndexType>::id():     nedges = TriShape<IndexType>::numberOfEdges(); break;
     case QuadShape<IndexType>::id():    nedges = QuadShape<IndexType>::numberOfEdges(); break;
-    case PolygonShape<IndexType>::id(): nedges = PolygonShape<IndexType>::numberOfEdges(); break;
+    case PolygonShape<IndexType>::id():
+    {
+      nedges = m_ids.size();
+      break;
+    }
     case TetShape<IndexType>::id():     nedges = TetShape<IndexType>::numberOfEdges(); break;
     case PyramidShape<IndexType>::id(): nedges = PyramidShape<IndexType>::numberOfEdges(); break;
     case WedgeShape<IndexType>::id():   nedges = WedgeShape<IndexType>::numberOfEdges(); break;
@@ -616,7 +612,7 @@ struct VariableShape
     return nedges;
   }
 
-  AXOM_HOST_DEVICE axom::StackArray<IndexType, 2> getEdge(int edgeIndex)
+  AXOM_HOST_DEVICE axom::StackArray<IndexType, 2> getEdge(int edgeIndex) const
   {
     axom::StackArray<IndexType, 2> edge;
     switch(m_shapeId)
@@ -624,7 +620,12 @@ struct VariableShape
     case LineShape<IndexType>::id():    edge = LineShape<IndexType>::getEdge(edgeIndex); break;
     case TriShape<IndexType>::id():     edge = TriShape<IndexType>::getEdge(edgeIndex); break;
     case QuadShape<IndexType>::id():    edge = QuadShape<IndexType>::getEdge(edgeIndex); break;
-    case PolygonShape<IndexType>::id(): edge = PolygonShape<IndexType>::getEdge(edgeIndex); break;
+    case PolygonShape<IndexType>::id():
+    {
+      edge[0] = edgeIndex % m_ids.size();
+      edge[1] = (edgeIndex + 1) % m_ids.size();
+      break;
+    }
     case TetShape<IndexType>::id():     edge = TetShape<IndexType>::getEdge(edgeIndex); break;
     case PyramidShape<IndexType>::id(): edge = PyramidShape<IndexType>::getEdge(edgeIndex); break;
     case WedgeShape<IndexType>::id():   edge = WedgeShape<IndexType>::getEdge(edgeIndex); break;

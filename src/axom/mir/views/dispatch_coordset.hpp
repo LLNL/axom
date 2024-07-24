@@ -99,7 +99,7 @@ void dispatch_coordset(const conduit::Node &coordset, FuncType &&func)
     {
       axom::mir::views::FloatNode_to_ArrayView_same(values[0], values[1], [&](auto xView, auto yView)
       {
-        ExplicitCoordsetView2<typename decltype(xView)::value_type> coordView(xView, yView);
+        ExplicitCoordsetView<typename decltype(xView)::value_type, 2> coordView(xView, yView);
         func(coordView);
       });
     }
@@ -107,7 +107,7 @@ void dispatch_coordset(const conduit::Node &coordset, FuncType &&func)
     {
       axom::mir::views::FloatNode_to_ArrayView_same(values[0], values[1], values[2], [&](auto xView, auto yView, auto zView)
       {
-        ExplicitCoordsetView3<typename decltype(xView)::value_type> coordView(xView, yView, zView);
+        ExplicitCoordsetView<typename decltype(xView)::value_type, 3> coordView(xView, yView, zView);
         func(coordView);
       });
     }

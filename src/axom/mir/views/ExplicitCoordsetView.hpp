@@ -19,10 +19,18 @@ namespace views
 {
 
 /**
- * \class This class provides a view for Conduit/Blueprint explicit coordsets.
+ * \brief This class provides a view for Conduit/Blueprint explicit coordsets.
+ */
+template <typename DataType, int NDIMS>
+class ExplicitCoordsetView
+{
+};
+
+/**
+ * \brief This class provides a view for Conduit/Blueprint 2d explicit coordsets.
  */
 template <typename DataType>
-class ExplicitCoordsetView2
+class ExplicitCoordsetView<DataType, 2>
 {
 public:
   using IndexType = axom::IndexType;
@@ -36,10 +44,10 @@ public:
    * \param y The second coordinate component.
    */
   AXOM_HOST_DEVICE
-  ExplicitCoordsetView2(const axom::ArrayView<DataType> &x,
-                        const axom::ArrayView<DataType> &y) : m_coordinates{x,y}
+  ExplicitCoordsetView(const axom::ArrayView<DataType> &x,
+                       const axom::ArrayView<DataType> &y) : m_coordinates{x,y}
   {
-    assert(x.size() == y.size());
+    SLIC_ASSERT(x.size() == y.size());
   }
 
   /**
@@ -61,7 +69,7 @@ public:
   PointType
   getPoint(IndexType vertex_index) const
   {
-    assert(vertex_index < size());
+    SLIC_ASSERT(vertex_index < size());
     return PointType(std::initializer_list<value_type>{m_coordinates[0][vertex_index],
                                                        m_coordinates[1][vertex_index]});
   }
@@ -85,10 +93,10 @@ private:
 };
 
 /**
- * \class This class provides a view for Conduit/Blueprint explicit coordsets.
+ * \brief This class provides a view for Conduit/Blueprint 3d explicit coordsets.
  */
 template <typename DataType>
-class ExplicitCoordsetView3
+class ExplicitCoordsetView<DataType, 3>
 {
 public:
   using IndexType = axom::IndexType;
@@ -103,11 +111,11 @@ public:
    * \param z The third coordinate component.
    */
   AXOM_HOST_DEVICE
-  ExplicitCoordsetView3(const axom::ArrayView<DataType> &x,
-                        const axom::ArrayView<DataType> &y,
-                        const axom::ArrayView<DataType> &z) : m_coordinates{x,y,z}
+  ExplicitCoordsetView(const axom::ArrayView<DataType> &x,
+                       const axom::ArrayView<DataType> &y,
+                       const axom::ArrayView<DataType> &z) : m_coordinates{x,y,z}
   {
-    assert(x.size() == y.size() && x.size() == z.size());
+    SLIC_ASSERT(x.size() == y.size() && x.size() == z.size());
   }
 
   /**
@@ -129,6 +137,7 @@ public:
   PointType
   getPoint(IndexType vertex_index) const
   {
+    SLIC_ASSERT(vertex_index < size());
     return PointType(std::initializer_list<value_type>{m_coordinates[0][vertex_index],
                                                        m_coordinates[1][vertex_index],
                                                        m_coordinates[2][vertex_index]});
