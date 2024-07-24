@@ -1053,11 +1053,11 @@ void View::deepCopyView(View* copy, int allocID) const
 
   if(isDescribed())
   {
-    copy->describe(m_schema.dtype());
     if(hasBuffer() || m_state == EXTERNAL)
     {
       copy->allocate(getTypeID(), getNumElements(), allocID);
     }
+    copy->describe(getTypeID(), getNumDimensions(), m_shape.data());
   }
 
   switch(m_state)
