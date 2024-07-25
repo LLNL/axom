@@ -48,10 +48,6 @@ constexpr const char* format = R"(
 \tFILE=<FILE>
 \tLINE=<LINE>
 )";
-  // std::string format = std::string("<MESSAGE>\n") +
-  //   std::string("\t<TIMESTAMP>\n") + std::string("\tLEVEL=<LEVEL>\n") +
-  //   std::string("\tRANKS=<RANK>\n") + std::string("\tFILE=<FILE>\n") +
-  //   std::string("\tLINE=<LINE>\n");
   slic::initialize();
 
   // Set SLIC logging level and Lumberjack Logging stream
