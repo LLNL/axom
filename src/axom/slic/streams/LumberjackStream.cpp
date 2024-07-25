@@ -141,7 +141,8 @@ void LumberjackStream::write(bool local)
   {
     for(const auto* curr_message : m_lj->getMessages())
     {
-      if (curr_message == nullptr) {
+      if(curr_message == nullptr)
+      {
         continue;
       }
 

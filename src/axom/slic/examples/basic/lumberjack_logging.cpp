@@ -39,7 +39,7 @@ int main(int argc, char** argv)
   MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 
   // Initialize SLIC
-constexpr const char* format = R"(
+  constexpr const char* format = R"(
 <MESSAGE>
 \t<TIMESTAMP>
 \tLEVEL=<LEVEL>
