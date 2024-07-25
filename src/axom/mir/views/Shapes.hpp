@@ -13,17 +13,6 @@
 
 #include <iostream>
 
-/**
- NOTES: I use the shapes for 2 things:
-        1. As type traits to help the topology views traverse connectivity
-        2. As a shape type that contains information for a given zone so we can do a few useful things with it.
-
- Q: I was going to ask whether a shape's getFace() should return a shape itself such as a tri/quad shape.
-    That won't work for zones like pyr, wdg that have faces with different shapes.
-
- Q: Is it worth templating the shape's index type?
- */
-
 namespace axom
 {
 namespace mir
@@ -31,7 +20,8 @@ namespace mir
 namespace views
 {
 
-/// Shape ids.
+// Shape ids. These are used to identify shapes. These are used as indices
+// in bit fields in some algorithms.
 enum
 {
    Point_ShapeID = 0,
@@ -57,11 +47,8 @@ enum
   0*-----------* 1
 
  */
-//template <typename IndexT>
 struct LineTraits
 {
-//  using IndexType = IndexT;
-
   AXOM_HOST_DEVICE constexpr static int  id() { return Line_ShapeID; }
   AXOM_HOST_DEVICE constexpr static bool is_polyhedral() { return false; }
   AXOM_HOST_DEVICE constexpr static bool is_variable_size() { return false; }
@@ -76,8 +63,9 @@ struct LineTraits
   AXOM_HOST_DEVICE constexpr static IndexType numberOfEdges() { return 1; }
   AXOM_HOST_DEVICE constexpr static IndexType zoneOffset(int zoneIndex) { return numberOfNodes() * zoneIndex; }
 
-  AXOM_HOST_DEVICE constexpr static IndexType faces[][2] = {{0, 1}};
-  AXOM_HOST_DEVICE constexpr static axom::StackArray<IndexType, 2> getEdge(int edgeIndex)
+  constexpr static IndexType faces[][2] = {{0, 1}};
+
+  AXOM_HOST_DEVICE constexpr static axom::StackArray<IndexType, 2> getEdge(int /*edgeIndex*/)
   {
     return axom::StackArray<IndexType, 2>{0,1};
   }
@@ -95,11 +83,8 @@ struct LineTraits
   0*-----* 1
 
  */
-//template <typename IndexT>
 struct TriTraits
 {
-  //using IndexType = IndexT;
-
   AXOM_HOST_DEVICE constexpr static int  id() { return Tri_ShapeID; }
   AXOM_HOST_DEVICE constexpr static bool is_polyhedral() { return false; }
   AXOM_HOST_DEVICE constexpr static bool is_variable_size() { return false; }
@@ -114,7 +99,8 @@ struct TriTraits
   AXOM_HOST_DEVICE constexpr static IndexType numberOfEdges() { return 3; }
   AXOM_HOST_DEVICE constexpr static IndexType zoneOffset(int zoneIndex) { return numberOfNodes() * zoneIndex; }
 
-  AXOM_HOST_DEVICE constexpr static IndexType faces[][3] = {{0, 1, 2}};
+  constexpr static IndexType faces[][3] = {{0, 1, 2}};
+
   AXOM_HOST_DEVICE constexpr static axom::StackArray<IndexType, 2> getEdge(int edgeIndex)
   {
     const axom::StackArray<IndexType, 2> edges[] = {{0,1}, {1,2}, {2,0}};
@@ -134,11 +120,8 @@ struct TriTraits
   0*-----------* 1
 
  */
-//template <typename IndexT>
 struct QuadTraits
 {
-  //using IndexType = IndexT;
-
   AXOM_HOST_DEVICE constexpr static int  id() { return Quad_ShapeID; }
   AXOM_HOST_DEVICE constexpr static bool is_polyhedral() { return false; }
   AXOM_HOST_DEVICE constexpr static bool is_variable_size() { return false; }
@@ -153,7 +136,7 @@ struct QuadTraits
   AXOM_HOST_DEVICE constexpr static IndexType numberOfEdges() { return 4; }
   AXOM_HOST_DEVICE constexpr static IndexType zoneOffset(int zoneIndex) { return numberOfNodes() * zoneIndex; }
 
-  AXOM_HOST_DEVICE constexpr static IndexType faces[][4] = {{0, 1, 2, 3}};
+  constexpr static IndexType faces[][4] = {{0, 1, 2, 3}};
 
   AXOM_HOST_DEVICE constexpr static axom::StackArray<IndexType, 2> getEdge(int edgeIndex)
   {
@@ -180,11 +163,8 @@ struct QuadTraits
        1         edge 5: 2,3
 
  */
-//template <typename IndexT>
 struct TetTraits
 {
-  //using IndexType = IndexT;
-
   AXOM_HOST_DEVICE constexpr static int  id() { return Tet_ShapeID; }
   AXOM_HOST_DEVICE constexpr static bool is_polyhedral() { return false; }
   AXOM_HOST_DEVICE constexpr static bool is_variable_size() { return false; }
@@ -199,7 +179,7 @@ struct TetTraits
   AXOM_HOST_DEVICE constexpr static IndexType numberOfEdges() { return 6; }
   AXOM_HOST_DEVICE constexpr static IndexType zoneOffset(int zoneIndex) { return numberOfNodes() * zoneIndex; }
 
-  AXOM_HOST_DEVICE constexpr static IndexType faces[][3] = {{0,2,1}, {0,1,3}, {1,2,3}, {2,0,3}};
+  constexpr static IndexType faces[][3] = {{0,2,1}, {0,1,3}, {1,2,3}, {2,0,3}};
 
   AXOM_HOST_DEVICE constexpr static axom::StackArray<IndexType, 2> getEdge(int edgeIndex)
   {
@@ -228,11 +208,8 @@ struct TetTraits
                   edge 7: 3,4
 
  */
-//template <typename IndexT>
 struct PyramidTraits
 {
-  //using IndexType = IndexT;
-
   AXOM_HOST_DEVICE constexpr static int id() { return Pyramid_ShapeID; }
   AXOM_HOST_DEVICE constexpr static bool is_polyhedral() { return false; }
   AXOM_HOST_DEVICE constexpr static bool is_variable_size() { return false; }
@@ -247,7 +224,7 @@ struct PyramidTraits
   AXOM_HOST_DEVICE constexpr static IndexType numberOfEdges() { return 8; }
   AXOM_HOST_DEVICE constexpr static IndexType zoneOffset(int zoneIndex) { return numberOfNodes() * zoneIndex; }
 
-  AXOM_HOST_DEVICE constexpr static int faces[][4] = {{3,2,1,0}, {0,1,4,-1}, {1,2,4,-1}, {2,3,4,-1}, {3,0,4,-1}};
+  constexpr static int faces[][4] = {{3,2,1,0}, {0,1,4,-1}, {1,2,4,-1}, {2,3,4,-1}, {3,0,4,-1}};
 
   AXOM_HOST_DEVICE constexpr static axom::StackArray<IndexType, 2> getEdge(int edgeIndex)
   {
@@ -277,11 +254,8 @@ struct PyramidTraits
                 edge 8: 2,3
 
  */
-//template <typename IndexT>
 struct WedgeTraits
 {
-  //using IndexType = IndexT;
-
   AXOM_HOST_DEVICE constexpr static int  id() { return Wedge_ShapeID; }
 
   AXOM_HOST_DEVICE constexpr static bool is_polyhedral() { return false; }
@@ -297,7 +271,7 @@ struct WedgeTraits
   AXOM_HOST_DEVICE constexpr static IndexType numberOfEdges() { return 9; }
   AXOM_HOST_DEVICE constexpr static IndexType zoneOffset(int zoneIndex) { return numberOfNodes() * zoneIndex; }
 
-  AXOM_HOST_DEVICE constexpr static int faces[][4] = {{0,2,1,-1}, {3,4,5,-1}, {0,1,4,3}, {1,2,5,4}, {2,0,3,5}};
+  constexpr static int faces[][4] = {{0,2,1,-1}, {3,4,5,-1}, {0,1,4,3}, {1,2,5,4}, {2,0,3,5}};
 
   AXOM_HOST_DEVICE constexpr static axom::StackArray<IndexType, 2> getEdge(int edgeIndex)
   {
@@ -324,11 +298,8 @@ struct WedgeTraits
    4            5
 
  */
-//template <typename IndexT>
 struct HexTraits
 {
-  //using IndexType = IndexT;
-
   AXOM_HOST_DEVICE constexpr static int  id() { return Hex_ShapeID; }
 
   AXOM_HOST_DEVICE constexpr static bool is_polyhedral() { return false; }
@@ -344,7 +315,7 @@ struct HexTraits
   AXOM_HOST_DEVICE constexpr static IndexType numberOfEdges() { return 12; }
   AXOM_HOST_DEVICE constexpr static IndexType zoneOffset(int zoneIndex) { return numberOfNodes() * zoneIndex; }
 
-  AXOM_HOST_DEVICE constexpr static IndexType faces[][4] = {
+  constexpr static IndexType faces[][4] = {
     {0, 3, 2, 1}, {0, 1, 5, 4}, {1, 2, 6, 5}, {2, 3, 7, 6}, {3, 0, 4, 7}, {4, 5, 6, 7}};
 
   AXOM_HOST_DEVICE constexpr static axom::StackArray<IndexType, 2> getEdge(int edgeIndex)
