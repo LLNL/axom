@@ -179,7 +179,7 @@ struct TetTraits
   AXOM_HOST_DEVICE constexpr static IndexType numberOfEdges() { return 6; }
   AXOM_HOST_DEVICE constexpr static IndexType zoneOffset(int zoneIndex) { return numberOfNodes() * zoneIndex; }
 
-  constexpr static IndexType faces[][3] = {{0,2,1}, {0,1,3}, {1,2,3}, {2,0,3}};
+  constexpr static IndexType faces[][3] = {{0,1,3}, {1,2,3}, {2,0,3}, {0,2,1}};
 
   AXOM_HOST_DEVICE constexpr static axom::StackArray<IndexType, 2> getEdge(int edgeIndex)
   {
@@ -283,19 +283,19 @@ struct WedgeTraits
 };
 
 /*
-      3*------------* 2   
+      4*------------* 7
       /|           /|     
      / |          / |
     /  |         /  |
-  7*------------*6  |
+  5*------------*6  |
    |   |        |   |
    |   |        |   |
-   |  0*--------|---* 1
+   |  0*--------|---* 3
    |  /         |  /
    | /          | /
    |/           |/
    *------------*
-   4            5
+   1            2
 
  */
 struct HexTraits
@@ -315,12 +315,11 @@ struct HexTraits
   AXOM_HOST_DEVICE constexpr static IndexType numberOfEdges() { return 12; }
   AXOM_HOST_DEVICE constexpr static IndexType zoneOffset(int zoneIndex) { return numberOfNodes() * zoneIndex; }
 
-  constexpr static IndexType faces[][4] = {
-    {0, 3, 2, 1}, {0, 1, 5, 4}, {1, 2, 6, 5}, {2, 3, 7, 6}, {3, 0, 4, 7}, {4, 5, 6, 7}};
+  constexpr static IndexType faces[][4] = {{3, 0, 4, 7}, {1, 2, 6, 5}, {0, 1, 5, 4}, {3, 7, 6, 2}, {0, 3, 2, 1}, {4, 5, 6, 7}};
 
   AXOM_HOST_DEVICE constexpr static axom::StackArray<IndexType, 2> getEdge(int edgeIndex)
   {
-    const axom::StackArray<IndexType, 2> edges[] = {{0, 1}, {1, 2}, {3, 2}, {3, 0}, {4, 5}, {5, 6}, {6, 7}, {7, 4}, {0, 4}, {1, 5}, {3, 7}, {2, 6}};
+    const axom::StackArray<IndexType, 2> edges[] = {{0, 1}, {1, 2}, {2, 3}, {3, 0}, {4, 5}, {5, 6}, {6, 7}, {7, 4}, {0, 4}, {1, 5}, {3, 7}, {2, 6}};
     return edges[edgeIndex];
   }
 
