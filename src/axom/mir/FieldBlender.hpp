@@ -26,10 +26,7 @@ namespace blueprint
  */
 struct BlendData
 {
-  using KeyType = std::uint64_t;
-
-  axom::ArrayView<KeyType>   m_blendNamesView;      // Contains unique hash ids for the sorted ids in each blend group.
-  axom::ArrayView<IndexType> m_uniqueIndicesView;   // Contains the index into the original blend group data for a unique blend group.
+  axom::ArrayView<IndexType> m_selectedIndicesView; // Contains indices of the selected blend groups.
 
   axom::ArrayView<IndexType> m_blendGroupSizesView; // The number of ids/weights in each blend group.
   axom::ArrayView<IndexType> m_blendGroupStartView; // The starting offset for a blend group in the ids/weights.
@@ -38,12 +35,51 @@ struct BlendData
 };
 
 /**
+ * \brief This policy can be used with FieldBlender to select all blend groups.
+ */
+struct SelectAllPolicy
+{
+  AXOM_HOST_DEVICE
+  static IndexType size(const BlendData &blend)
+  {
+    return blend.m_blendGroupSizesView.size();
+  }
+
+  AXOM_HOST_DEVICE
+  static IndexType selectedIndex(const BlendData &blend, IndexType index)
+  {
+    return index;
+  }
+};
+
+/**
+ * \brief This policy can be used with FieldBlender to select a subset of blend groups, according to m_selectedIndicesView.
+ */
+struct SelectThroughArrayView
+{
+  AXOM_HOST_DEVICE
+  static IndexType size(const BlendData &blend)
+  {
+    return blend.m_selectedIndicesView.size();
+  }
+
+  AXOM_HOST_DEVICE
+  static IndexType selectedIndex(const BlendData &blend, IndexType index)
+  {
+    return blend.m_selectedIndicesView[index];
+  }
+};
+
+/**
  * \accelerated
  * \class FieldBlender
  *
  * \brief This class uses BlendData to generate a new blended field from an input field.
+ *
+ * \tparam ExecSpace The execution space where the work will occur.
+ * \tparam SelectionPolicy The selection policy to use.
  */
-template <typename ExecSpace>
+template <typename ExecSpace, typename SelectionPolicy>
 class FieldBlender
 { 
 public:
@@ -88,7 +124,9 @@ private:
   void blendSingleComponent(const BlendData &blend, const conduit::Node &n_values, conduit::Node &n_output_values) const
   {
     const auto allocatorID = axom::execution_space<ExecSpace>::allocatorID();
-    const auto outputSize = blend.m_uniqueIndicesView.size();
+    // We're allowing selectedIndicesView to be used to select specific blend
+    // groups. If the user did not provide that, use all blend groups.
+    const auto outputSize = SelectionPolicy::size(blend);
 
     // Get the ID of a Conduit allocator that will allocate through Axom with device allocator allocatorID.
     utilities::blueprint::ConduitAllocateThroughAxom c2a(allocatorID);
@@ -102,10 +140,10 @@ private:
 
       axom::for_all<ExecSpace>(outputSize, AXOM_LAMBDA(auto bgid)
       {
-        // Original blendGroup index.
-        const auto origBGIdx =  blend.m_uniqueIndicesView[bgid];
-        const auto start = blend.m_blendGroupStartView[origBGIdx];
-        const auto end   = start + blend.m_blendGroupSizesView[origBGIdx];
+        // Get the index we want.
+        const auto selectedIndex = SelectionPolicy::selectedIndex(blend, bgid);
+        const auto start = blend.m_blendGroupStartView[selectedIndex];
+        const auto end   = start + blend.m_blendGroupSizesView[selectedIndex];
 
         accum_type blended = 0;
         for(IndexType i = start; i < end; i++)

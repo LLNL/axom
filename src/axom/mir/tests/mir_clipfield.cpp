@@ -267,20 +267,99 @@ void braid2d_clip_test(const std::string &type, const std::string &name)
   // Load a clipped baseline file & compare.
 }
 
+template <typename ExecSpace>
+void braid3d_clip_test(const std::string &type, const std::string &name)
+{
+  using HexShape = axom::mir::views::HexShape<int>;
+  using TopoView = axom::mir::views::UnstructuredTopologySingleShapeView<HexShape>;
+  using CoordsetView = axom::mir::views::ExplicitCoordsetView<double, 3>;
+
+  axom::StackArray<axom::IndexType, 3> dims{8,8,8};//10, 10, 10};
+  axom::StackArray<axom::IndexType, 3> zoneDims{dims[0] - 1, dims[1] - 1, dims[2] - 1};
+
+  // Create the data
+  conduit::Node hostMesh, deviceMesh;
+  braid(type, dims, hostMesh);
+  hostMesh.print();
+  axom::mir::utilities::blueprint::copy<ExecSpace>(deviceMesh, hostMesh);
+  conduit::relay::io::blueprint::save_mesh(hostMesh, name + "_orig", "hdf5");
+
+  // Create views
+  conduit::Node &n_x = deviceMesh.fetch_existing("coordsets/coords/values/x");
+  conduit::Node &n_y = deviceMesh.fetch_existing("coordsets/coords/values/y");
+  conduit::Node &n_z = deviceMesh.fetch_existing("coordsets/coords/values/z");
+  const axom::ArrayView<double> x(static_cast<double *>(n_x.data_ptr()), n_x.dtype().number_of_elements());
+  const axom::ArrayView<double> y(static_cast<double *>(n_y.data_ptr()), n_y.dtype().number_of_elements());
+  const axom::ArrayView<double> z(static_cast<double *>(n_z.data_ptr()), n_z.dtype().number_of_elements());
+  CoordsetView coordsetView(x, y, z);
+
+  conduit::Node &n_conn = deviceMesh.fetch_existing("topologies/mesh/elements/connectivity");
+  //conduit::Node &n_sizes = deviceMesh.fetch_existing("topologies/mesh/elements/sizes");
+  //conduit::Node &n_offsets = deviceMesh.fetch_existing("topologies/mesh/elements/offsets");
+  const axom::ArrayView<int> conn(static_cast<int *>(n_conn.data_ptr()), n_conn.dtype().number_of_elements());
+  //const axom::ArrayView<int> sizes(static_cast<int *>(n_sizes.data_ptr()), n_sizes.dtype().number_of_elements());
+  //const axom::ArrayView<int> offsets(static_cast<int *>(n_offsets.data_ptr()), n_offsets.dtype().number_of_elements()); 
+  TopoView topoView(conn); //, sizes, offsets);
+
+  // Create options to control the clipping.
+  const std::string clipTopoName("cliptopo");
+  conduit::Node options;
+  options["clipField"] = "distance";
+  options["inside"] = 1;
+  options["outside"] = 0;
+  //options["topologyName"] = clipTopoName;
+  //options["coordsetName"] = "clipcoords";
+  //options["fields/braid"] = "new_braid";
+  //options["fields/radial"] = "new_radial";
+
+  // Clip the data
+  conduit::Node deviceClipMesh;
+  axom::mir::clipping::ClipField<ExecSpace, TopoView, CoordsetView> clipper(topoView, coordsetView);
+  clipper.execute(deviceMesh, options, deviceClipMesh);
+
+  // Copy device->host
+  conduit::Node hostClipMesh;
+  axom::mir::utilities::blueprint::copy<seq_exec>(hostClipMesh, deviceClipMesh);
+
+  // Save data.
+  conduit::relay::io::blueprint::save_mesh(hostClipMesh, name, "hdf5");
+  conduit::relay::io::blueprint::save_mesh(hostClipMesh, name + "_yaml", "yaml");
+}
+
+#if 0
 TEST(mir_clipfield, uniform2d)
 {
   braid2d_clip_test<seq_exec>("uniform", "uniform2d");
-#if 0
-#if defined(AXOM_USE_OPENMP)
-  braid2d_clip_test<omp_exec>("uniform", "uniform2d_omp");
-#endif
+
+//#if defined(AXOM_USE_OPENMP)
+//  braid2d_clip_test<omp_exec>("uniform", "uniform2d_omp");
+//#endif
+
 #if defined(AXOM_USE_CUDA)
   braid2d_clip_test<cuda_exec>("uniform", "uniform2d_cuda");
-#endif
 #endif
 
 #if defined(AXOM_USE_HIP)
   braid2d_clip_test<hip_exec>("uniform", "uniform2d_hip");
+#endif
+}
+#endif
+
+TEST(mir_clipfield, hex3d)
+{
+  const std::string type("hexs");
+  braid3d_clip_test<seq_exec>(type, "hex");
+
+//#if defined(AXOM_USE_OPENMP)
+//  braid3d_clip_test<omp_exec>(type, "hex_omp");
+//#endif
+
+#if defined(AXOM_USE_CUDA)
+  braid3d_clip_test<cuda_exec>(type, "hex_cuda");
+#endif
+
+#if defined(AXOM_USE_HIP)
+  braid3d_clip_test<hip_exec>(type, "hex_hip");
 #endif
 }
 

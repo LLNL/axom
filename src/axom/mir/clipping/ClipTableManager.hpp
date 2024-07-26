@@ -116,6 +116,77 @@ public:
       const auto len = shapeLength(ptr);
       return TableDataView(ptr, len);
     }
+#if 1
+  private:
+    void printShape(std::ostream &os, TableData shape) const
+    {
+      switch(shape)
+      {
+      case ST_PNT: os << "ST_PNT"; break;
+      case ST_TRI: os << "ST_TRI"; break;
+      case ST_QUA: os << "ST_QUA"; break;
+      case ST_TET: os << "ST_TET"; break;
+      case ST_PYR: os << "ST_PYR"; break;
+      case ST_WDG: os << "ST_WDG"; break;
+      case ST_HEX: os << "ST_HEX"; break;
+      }
+    }
+    void printColor(std::ostream &os, TableData color) const
+    {
+      switch(color)
+      {
+      case COLOR0: os << "COLOR0"; break;
+      case COLOR1: os << "COLOR1"; break;
+      case NOCOLOR: os << "NOCOLOR"; break;
+      }
+    }
+    void printIds(std::ostream &os, const TableData *ids, int n) const
+    {     
+      for(int i = 0; i < n; i++)
+      {
+        if(ids[i] >= P0 && ids[i] <= P7)
+          os << "P" << static_cast<int>(ids[i]);
+        else if(ids[i] >= EA && ids[i] <= EL)
+        {
+          char c = 'A' + (ids[i] - EA);
+          os << "E" << c;
+        }
+        else if(ids[i] >= N0 && ids[i] <= N3)
+        {
+          os << "N" << static_cast<int>(ids[i] - N0);
+        }
+        os << " ";
+      }
+    }
+  public:
+    void print(std::ostream &os) const
+    {
+      TableData *ptr = m_shapeStart + m_offset;
+      printShape(os, ptr[0]);
+      os << " ";
+      int offset = 2;
+      if(ptr[0] == ST_PNT)
+      {
+        os << static_cast<int>(ptr[1]); // point number.
+        os << " ";
+
+        printColor(os, ptr[2]);
+        os << " ";
+
+        os << static_cast<int>(ptr[3]); // npts
+        os << " ";
+        offset = 4;
+      }
+      else
+      {
+        printColor(os, ptr[1]);
+        os << " ";
+      }
+
+      const auto n = shapeLength(ptr) - offset;
+      printIds(os, ptr + offset, n);
+    }
+#endif
   private:
     friend class TableView;
 

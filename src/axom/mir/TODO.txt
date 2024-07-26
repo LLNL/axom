@@ -8,8 +8,8 @@ Partial TODO list
    - Test setting the topo, coordset names
    - Test storing results in same Node, use names/fields map to change names
    - Make sure we can operate on a StridedStructured mesh
-5. Create UnstructuredTopologyMixedShapeView and dispatch
-6. Make sure ClipFilter can use the mixed topology view - it probably needs some changes
+(done)5. Create UnstructuredTopologyMixedShapeView and dispatch
+(done)6. Make sure ClipFilter can use the mixed topology view - it probably needs some changes
 7. Code cleanup pass in ClipFilter
    - Make sure array view data types are consistent, change to IndexType as needed.
    - Make sure views have "View" in the name.
@@ -29,4 +29,7 @@ Partial TODO list
 18. [lower priority] Revisit NodeArrayView and constness/references.
 19. [lower priority] Can ClipField be generalized a little into something like TopologyExtractor? Then use it to make other filters?
 20. [lower priority] ConduitAllocateThroughAxom uses statics. I'd prefer to template it on ExecSpace and make the allocator a member but Conduit's API does not let us pass a void* to the allocation callbacks.
-21. Check the edge definitions in pyr, wedge Shape types.
+(done)21. Check the edge definitions in pyr, wedge Shape types.
+22. Compile for all compute back-ends and make sure tests run/pass.
+    - Right now, OMP causes the compiler to crash when linking
+23. Make some timing tests so we can see how Clipfield/MIR do at various mesh sizes.

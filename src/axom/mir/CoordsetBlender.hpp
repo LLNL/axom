@@ -29,11 +29,12 @@ namespace blueprint
  *
  * \tparam ExecSpace The execution space for the algorithm.
  * \tparam CSVType The coordset view type.
+ * \tparam SelectionPolicy The selection policy to use.
  *
  * \brief This class uses BlendData to generate a new blended field from an input coordset.
  *        The output coordset will be explicit.
  */
-template <typename ExecSpace, typename CSVType>
+template <typename ExecSpace, typename CSVType, typename SelectionPolicy>
 class CoordsetBlender
 { 
 public:
@@ -59,7 +60,7 @@ public:
     const auto allocatorID = axom::execution_space<ExecSpace>::allocatorID();
     const auto axes = conduit::blueprint::mesh::utils::coordset::axes(n_input);
     const auto nComponents = axes.size();
-    assert(PointType::DIMENSION == nComponents);
+    SLIC_ASSERT(PointType::DIMENSION == nComponents);
 
     // Get the ID of a Conduit allocator that will allocate through Axom with device allocator allocatorID.
     utilities::blueprint::ConduitAllocateThroughAxom c2a(allocatorID);
@@ -69,7 +70,7 @@ public:
     conduit::Node &n_values = n_output["values"];
 
     // Make output nodes using axis names from the input coordset. Make array views too.
-    const auto outputSize = blend.m_uniqueIndicesView.size();
+    const auto outputSize = SelectionPolicy::size(blend);
     axom::StackArray<axom::ArrayView<value_type>, PointType::DIMENSION> compViews;
     for(size_t i = 0; i < nComponents; i++)
     {
@@ -84,21 +85,22 @@ public:
     // Iterate over each blend group.
     axom::for_all<ExecSpace>(outputSize, AXOM_LAMBDA(auto bgid)
     {
-      // Original blendGroup index.
-      const auto origBGIdx =  blend.m_uniqueIndicesView[bgid];
-      const auto start = blend.m_blendGroupStartView[origBGIdx];
-      const auto end   = start + blend.m_blendGroupSizesView[origBGIdx];
+      // Get the blend group index we want.
+      const auto selectedIndex = SelectionPolicy::selectedIndex(blend, bgid);
+      const auto start = blend.m_blendGroupStartView[selectedIndex];
+      const auto end   = start + blend.m_blendGroupSizesView[selectedIndex];
 
+std::cout << "blend" << bgid << ":\n  selectedIndex: " << selectedIndex << "\n  start: " << start << "\n  size: " << blend.m_blendGroupSizesView[selectedIndex] << "\n  end: " << end << "\n  ids: [";
       // Blend points for this blend group.
       VectorType blended{};
       for(IndexType i = start; i < end; i++)
       {
         const auto index = blend.m_blendIdsView[i];
         const auto weight = blend.m_blendCoeffView[i];
-
+std::cout << index << ", ";
         blended += (VectorType(view[index]) * static_cast<value_type>(weight));
       }
-
+std::cout << "]\n";
       // Store the point into the Conduit component arrays.
       for(int comp = 0; comp < PointType::DIMENSION; comp++)
       {
