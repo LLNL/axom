@@ -425,38 +425,386 @@ private:
   axom::Array<axom::IndexType> m_selectedZones; // Storage for a list of selected zone ids.
 };
 
-void print_blend_group(const IndexType *ids, const float *weights, int n, int bgStart, int bgOffset, std::uint64_t name)
+//------------------------------------------------------------------------------
+/**
+ * \brief This class encapsulates most of the logic for building blend groups.
+ *
+ * \note The class only contains views to data so it can be copied into lambdas.
+ */
+template <typename ExecSpace>
+class BlendGroupBuilder
 {
-const std::uint64_t k = 12990793018150977444;
+public:
+  using KeyType = std::uint64_t;
+private:
+  /**
+   * \brief This struct holds the views that represent data for blend groups.
+   */
+  struct State
+  {
+    IndexType                  m_nzones;
 
-std::cout << "        -\n";
-std::cout << "          n: " << n << std::endl;
-std::cout << "          bgStart: " << bgStart << std::endl;
-std::cout << "          bgOffset: " << bgOffset << std::endl;
-std::cout << "          ids: [";
-for(int bi = 0; bi < n; bi++)
-{
-  if(bi > 0) std::cout << ", ";
-  std::cout << ids[bi];
-}
-std::cout << "]";
-if(name == k)
-{
-std::cout << " MATCH!!!";
-}
+    axom::ArrayView<IndexType> m_blendGroupsView;       // Number of blend groups in each zone.
+    axom::ArrayView<IndexType> m_blendGroupsLenView;    // total size of blend group data for each zone.
+    axom::ArrayView<IndexType> m_blendOffsetView;       // The offset of each zone's blend groups.
+    axom::ArrayView<IndexType> m_blendGroupOffsetsView; // Start of each zone's blend group data.
 
-std::cout << "\n";
-std::cout << "          weights: [";
-for(int bi = 0; bi < n; bi++)
-{
-  if(bi > 0) std::cout << ", ";
-  std::cout << weights[bi];
-}
-std::cout << "]\n";
-std::cout << "          name: " << name;
-std::cout << "\n";
-}
+    axom::ArrayView<KeyType>   m_blendNamesView;      // Blend group names
+    axom::ArrayView<IndexType> m_blendGroupSizesView; // Size of individual blend group.
+    axom::ArrayView<IndexType> m_blendGroupStartView; // Start of individual blend group's data in m_blendIdsView/m_blendCoeffView.
+    axom::ArrayView<IndexType> m_blendIdsView;        // blend group ids.
+    axom::ArrayView<float>     m_blendCoeffView;      // blend group weights.
 
+    axom::ArrayView<KeyType>   m_blendUniqueNamesView;   // Unique names of blend groups.
+    axom::ArrayView<IndexType> m_blendUniqueIndicesView; // Indices of the unique names in blend group definitions.
+  };
+
+public:
+  /**
+   * \brief Set the number of zones.
+   *
+   * \param blendGroupsView The view that holds the number of blend groups for each zone.
+   * \param blendGroupsLenView The view that holds the size of the blend group data for each zone.
+   */
+  void setBlendGroupSizes(const axom::ArrayView<IndexType> &blendGroupsView,
+                          const axom::ArrayView<IndexType> &blendGroupsLenView)
+  {
+    m_state.m_nzones = blendGroupsView.size();
+    m_state.m_blendGroupsView = blendGroupsView;
+    m_state.m_blendGroupsLenView = blendGroupsLenView;
+  }
+
+  /**
+   * \brief Compute the total sizes of blend group storage.
+   *
+   * \param[out] bgSum The total number of blend groups for all zones.
+   * \param[out] bgLenSum The total size of blend group data for all zones.
+   */
+  void computeBlendGroupSizes(IndexType &bgSum, IndexType &bgLenSum)
+  {
+    using reduce_policy = typename axom::execution_space<ExecSpace>::reduce_policy;
+    RAJA::ReduceSum<reduce_policy, IndexType> blendGroups_sum(0);
+    RAJA::ReduceSum<reduce_policy, IndexType> blendGroupLen_sum(0);
+    axom::for_all<ExecSpace>(m_state.m_nzones, AXOM_LAMBDA(auto zoneIndex)
+    {
+      blendGroups_sum += m_state.m_blendGroupsView[zoneIndex];
+      blendGroupLen_sum += m_state.m_blendGroupsLenView[zoneIndex];
+    });
+    bgSum = blendGroups_sum.get();
+    bgLenSum = blendGroupLen_sum.get();
+  }
+
+  /**
+   * \brief Set the views for the blend group offsets and then fill them using a scan.
+   *
+   * \param blendOffsetView The offsets to each blend group for views sized: view[blendGroupSum].
+   * \param blendGroupOffsetsView The offsets to each zone's blend groups data.
+   */
+  void setBlendGroupOffsets(const axom::ArrayView<IndexType> &blendOffsetView,
+                            const axom::ArrayView<IndexType> &blendGroupOffsetsView)
+  {
+    m_state.m_blendOffsetView = blendOffsetView;
+    m_state.m_blendGroupOffsetsView = blendGroupOffsetsView;
+  }
+
+  /**
+   * brief Compute the blend group offsets that make it easier to store data.
+   */
+  void computeBlendGroupOffsets()
+  {
+    using loop_policy = typename axom::execution_space<ExecSpace>::loop_policy;
+    // Fill in offsets via scan.
+    RAJA::exclusive_scan<loop_policy>(RAJA::make_span(m_state.m_blendGroupsLenView.data(), m_state.m_nzones),
+                                      RAJA::make_span(m_state.m_blendOffsetView.data(), m_state.m_nzones),
+                                      RAJA::operators::plus<IndexType>{});
+    RAJA::exclusive_scan<loop_policy>(RAJA::make_span(m_state.m_blendGroupsView.data(), m_state.m_nzones),
+                                      RAJA::make_span(m_state.m_blendGroupOffsetsView.data(), m_state.m_nzones),
+                                      RAJA::operators::plus<IndexType>{});
+  }
+
+  /**
+   * \brief Set the views that we'll use for blend groups.
+   */
+  void setBlendViews(const axom::ArrayView<KeyType> &blendNames,
+                     const axom::ArrayView<IndexType> &blendGroupSizes,
+                     const axom::ArrayView<IndexType> &blendGroupStart,
+                     const axom::ArrayView<IndexType> &blendIds,
+                     const axom::ArrayView<float> &blendCoeff)
+  {
+    m_state.m_blendNamesView = blendNames;
+    m_state.m_blendGroupSizesView = blendGroupSizes;
+    m_state.m_blendGroupStartView = blendGroupStart;
+    m_state.m_blendIdsView = blendIds;
+    m_state.m_blendCoeffView = blendCoeff;
+  }
+
+  /**
+   * \brief Set the unique names and ids views. These are used in mapping blend groups to unique blend groups.
+   *
+   * \param uniqueNames A view containing unique, sorted blend group names.
+   * \param uniqueIndices A view containing the original blend group index for each unique name.
+   */
+  void setUniqueNames(const axom::ArrayView<KeyType> &uniqueNames, const axom::ArrayView<IndexType> &uniqueIndices)
+  {
+    m_state.m_blendUniqueNamesView = uniqueNames;
+    m_state.m_blendUniqueIndicesView = uniqueIndices;
+  }
+
+  /**
+   * \brief Get the blend names view.
+   * \return The blend names view.
+   */
+  const axom::ArrayView<KeyType> &blendNames() const { return m_state.m_blendNamesView; }
+
+  /**
+   * \brief This class helps us manage blend group creation and usage for blend groups within a single zone.
+   */
+  class zone_blend_groups
+  {
+  public:
+    /**
+     * \brief Return the number of blend groups for this zone.
+     * \return The number of blend groups for this zone.
+     */
+    AXOM_HOST_DEVICE
+    IndexType size() const
+    {
+      return m_state->m_blendGroupsView[m_zoneIndex];
+    }
+
+    /**
+     * \brief Set the number of blend groups and total size of the blend groups for a zone.
+     *
+     * \param zoneIndex The index of the zone we're initializing.
+     * \param nBlendGroups The number of blend groups in this zone.
+     * \param blendGroupSize The size of all of the blend groups in this zone.
+     */
+    AXOM_HOST_DEVICE
+    void setSize(IndexType nBlendGroups, IndexType blendGroupsSize)
+    {
+      m_state->m_blendGroupsView[m_zoneIndex] = nBlendGroups;
+      m_state->m_blendGroupsLenView[m_zoneIndex] = blendGroupsSize;
+    }
+
+    /**
+     * \brief Start creating a new blend group within the allocated space for this zone.
+     */
+    AXOM_HOST_DEVICE
+    void beginGroup()
+    {
+      m_currentDataOffset = m_startOffset;
+    }
+
+    /**
+     * \brief Add a new blend point in the current blend group.
+     *
+     * \param id The node id that will be used for blending.
+     * \param weight The weight that will be used for blending.
+     */
+    AXOM_HOST_DEVICE
+    void add(IndexType id, float weight)
+    {
+      m_state->m_blendIdsView[m_currentDataOffset] = id;
+      m_state->m_blendCoeffView[m_currentDataOffset] = weight;
+      m_currentDataOffset++;
+    }
+
+    /**
+     * \brief End the current blend group, storing its name, size, etc.
+     */
+    AXOM_HOST_DEVICE
+    void endGroup()
+    {
+      IndexType numIds = m_currentDataOffset - m_startOffset;
+
+      // Store where this blendGroup starts in the blendIds,blendCoeff.
+      m_state->m_blendGroupStartView[m_blendGroupId] = m_startOffset;
+
+      // Save the size for this blend group.
+      m_state->m_blendGroupSizesView[m_blendGroupId] = numIds;
+
+      // Store "name" of blend group.
+      KeyType blendName;
+      if(numIds == 1)
+      {
+        blendName = axom::mir::utilities::make_name_1(m_state->m_blendIdsView[m_startOffset]);
+      }
+      else if(numIds == 2)
+      {
+        blendName = axom::mir::utilities::make_name_2(m_state->m_blendIdsView[m_startOffset], m_state->m_blendIdsView[m_startOffset + 1]);
+      }
+      else
+      {
+        blendName = axom::mir::utilities::make_name_n(m_state->m_blendIdsView.data() + m_startOffset, numIds);
+      }
+      m_state->m_blendNamesView[m_blendGroupId] = blendName;
+
+#if 1
+      print(std::cout);
+#endif
+
+      m_blendGroupId++;
+      m_startOffset = m_currentDataOffset;
+    }
+
+    /**
+     * \brief Return the name of the current blend group.
+     * \return The name of the current blend group.
+     */
+    AXOM_HOST_DEVICE
+    KeyType name() const
+    {
+      return m_state->m_blendNamesView[m_blendGroupId];
+    }
+
+    /**
+     * \brief Return index of the current blend group in the unique blend groups.
+     * \return The unique index of the current blend group.
+     */
+    AXOM_HOST_DEVICE
+    IndexType uniqueBlendGroupIndex() const
+    {
+#define AXOM_CLIPFIELD_MAKE_POINTS_UNIQUE
+#ifdef AXOM_CLIPFIELD_MAKE_POINTS_UNIQUE
+      return axom::mir::utilities::bsearch(name(), m_state->m_blendUniqueNamesView);
+#else
+      return m_blendGroupId;
+#endif
+    }
+
+    /**
+     * \brief Advance to the next blend group.
+     */
+    AXOM_HOST_DEVICE
+    void operator++() { m_blendGroupId++; }
+
+    /**
+     * \brief Advance to the next blend group.
+     */
+    AXOM_HOST_DEVICE
+    void operator++(int) { m_blendGroupId++; }
+
+#if !defined(AXOM_DEVICE_CODE)
+    /**
+     * \brief Print the current blend group to a stream.
+     * \param os The stream to which the blend group will print.
+     */
+    void print(std::ostream &os) const
+    {
+      const auto n = m_state->m_blendGroupSizesView[m_blendGroupId];
+      const auto offset = m_state->m_blendGroupStartView[m_blendGroupId];
+      os << "-\n";
+      os << " zoneIndex: " << m_zoneIndex << std::endl;
+      os << " blendGroupId: " << m_blendGroupId << std::endl;
+      os << " size: " << n << std::endl;
+      os << " offset: " << offset << std::endl;
+
+      const IndexType *ids = m_state->m_blendIdsView.data() + offset;
+      os << " ids: [";
+      for(int bi = 0; bi < n; bi++)
+      {
+        if(bi > 0) os << ", ";
+        os << ids[bi];
+      }
+      os << "]";
+      os << "\n";
+      const float *weights = m_state->m_blendCoeffView.data() + offset;
+      os << " weights: [";
+      for(int bi = 0; bi < n; bi++)
+      {
+        if(bi > 0) os << ", ";
+        os << weights[bi];
+      }
+      os << "]\n";
+      os << " name: " << m_state->m_blendNamesView[m_blendGroupId];
+      os << "\n";
+    }
+#endif
+
+    /**
+     * \brief Return the current blend group's ids.
+     * \return The current blend group's ids.
+     * \note This method should not be used if blend groups are still being constructed.
+     */
+    axom::ArrayView<IndexType> ids() const
+    {
+      const auto n = m_state->m_blendGroupSizesView[m_blendGroupId];
+      const auto offset = m_state->m_blendGroupStartView[m_blendGroupId];
+      return axom::ArrayView<IndexType>(m_state->m_blendIdsView.data() + offset, n);
+    }
+
+    /**
+     * \brief Return the current blend group's ids.
+     * \return The current blend group's ids.
+     * \note This method should not be used if blend groups are still being constructed.
+     */
+    axom::ArrayView<float> weights() const
+    {
+      const auto n = m_state->m_blendGroupSizesView[m_blendGroupId];
+      const auto offset = m_state->m_blendGroupStartView[m_blendGroupId];
+      return axom::ArrayView<float>(m_state->m_blendCoeffsView.data() + offset, n);
+    }
+
+  private:
+    friend class BlendGroupBuilder;
+
+    IndexType m_zoneIndex;         // The zone that owns this set of blend groups.
+    IndexType m_blendGroupId;      // The global blend group index within this current zone.
+    IndexType m_startOffset;       // The data offset for the first ids/weights in this blend group.
+    IndexType m_currentDataOffset; // The current data offset.
+    State *m_state;                // Pointer to the main state.
+  };
+
+  /**
+   * \brief Return a zone_blend_groups object for the current zone so we can add blend groups.
+   *
+   * \param zoneIndex The zone whose blend groups we want to edit.
+   *
+   * \note This method must be marked const because we can call it from an AXOM_LAMBDA.
+   *       we pass a non-const State reference to the zone_blend_groups that we construct
+   *       so we can write into the blend group data.
+   */
+  AXOM_HOST_DEVICE
+  zone_blend_groups blendGroupsForZone(IndexType zoneIndex) const
+  {
+    zone_blend_groups groups;
+    // The zone that owns this set of blend groups.
+    groups.m_zoneIndex = zoneIndex;
+
+    // Global blend group id for the first blend group in this zone.
+    groups.m_blendGroupId = m_state.m_blendGroupOffsetsView[zoneIndex];
+    // Global start
+    groups.m_startOffset = groups.m_currentDataOffset = m_state.m_blendOffsetView[zoneIndex];
+
+    groups.m_state = const_cast<State *>(&m_state);
+    return groups;
+  }
+
+  /**
+   * \brief Make a BlendData object from the views in this object.
+   *
+   * \return A BlendData object suitable for making new fields and coordsets.
+   */
+  axom::mir::utilities::blueprint::BlendData
+  makeBlendData() const
+  {
+    axom::mir::utilities::blueprint::BlendData blend;
+
+#ifdef AXOM_CLIPFIELD_MAKE_POINTS_UNIQUE
+    blend.m_selectedIndicesView = m_state.m_blendUniqueIndicesView; // We'll use these to select just the unique indices
+#endif
+    blend.m_blendGroupSizesView = m_state.m_blendGroupSizesView;
+    blend.m_blendGroupStartView = m_state.m_blendGroupStartView;
+    blend.m_blendIdsView = m_state.m_blendIdsView;
+    blend.m_blendCoeffView = m_state.m_blendCoeffView;
+
+    return blend;
+  }
+
+private:
+  State m_state;
+};
+//------------------------------------------------------------------------------
 
 /**
  * \accelerated
@@ -537,6 +885,7 @@ public:
                conduit::Node &n_newFields)
   {
     using KeyType = std::uint64_t;
+    using BitSet = std::uint64_t;
     using loop_policy = typename axom::execution_space<ExecSpace>::loop_policy;
     using reduce_policy = typename axom::execution_space<ExecSpace>::reduce_policy;
     const auto allocatorID = axom::execution_space<ExecSpace>::allocatorID();
@@ -572,25 +921,32 @@ public:
     //          determine sizes.
     //
     // ----------------------------------------------------------------------
-    RAJA::ReduceSum<reduce_policy, int> fragment_sum(0);
-    RAJA::ReduceSum<reduce_policy, int> fragment_nids_sum(0);
-    RAJA::ReduceSum<reduce_policy, int> blendGroups_sum(0);
-    RAJA::ReduceSum<reduce_policy, int> blendGroupLen_sum(0);
 
     // Allocate some memory
     axom::Array<int> clipCases(nzones, nzones, allocatorID);      // The clip case for a zone.
-    axom::Array<std::uint64_t> pointsUsed(nzones, nzones, allocatorID);   // Which points are used over all selected fragments in a zone
-    axom::Array<int> blendGroups(nzones, nzones, allocatorID);    // Number of blend groups in a zone.
-    axom::Array<int> blendGroupsLen(nzones, nzones, allocatorID); // Length of the blend groups in a zone.
-    axom::Array<int> fragments(nzones, nzones, allocatorID);      // The number of fragments (child zones) produced for a zone.
-    axom::Array<int> fragmentsSize(nzones, nzones, allocatorID);  // The connectivity size for all selected fragments in a zone.
-
+    axom::Array<BitSet> pointsUsed(nzones, nzones, allocatorID);   // Which points are used over all selected fragments in a zone
     auto clipCasesView = clipCases.view();
     auto pointsUsedView = pointsUsed.view();
-    auto blendGroupsView = blendGroups.view();
-    auto blendGroupsLenView = blendGroupsLen.view();
+
+    axom::Array<int> fragments(nzones, nzones, allocatorID);      // The number of fragments (child zones) produced for a zone.
+    axom::Array<int> fragmentsSize(nzones, nzones, allocatorID);  // The connectivity size for all selected fragments in a zone.
+    axom::Array<int> fragmentOffsets(nzones, nzones, allocatorID);
+    axom::Array<int> fragmentSizeOffsets(nzones, nzones, allocatorID);
     auto fragmentsView = fragments.view();
     auto fragmentsSizeView = fragmentsSize.view();
+    auto fragmentOffsetsView = fragmentOffsets.view();
+    auto fragmentSizeOffsetsView = fragmentSizeOffsets.view();
+
+    axom::Array<IndexType> blendGroups(nzones, nzones, allocatorID);       // Number of blend groups in a zone.
+    axom::Array<IndexType> blendGroupsLen(nzones, nzones, allocatorID);    // Length of the blend groups in a zone.
+    axom::Array<IndexType> blendOffset(nzones, nzones, allocatorID);       // Start of zone's blend group indices
+    axom::Array<IndexType> blendGroupOffsets(nzones, nzones, allocatorID); // Start of zone's blend group offsets in definitions.
+
+    // Make an object to help manage building the blend groups.
+    BlendGroupBuilder<ExecSpace> builder;
+    builder.setBlendGroupSizes(blendGroups.view(), blendGroupsLen.view());
+    auto blendGroupsView = blendGroups.view();
+    auto blendGroupsLenView = blendGroupsLen.view();
 
     views::Node_to_ArrayView(n_clip_field_values, [&](auto clipFieldView)
     {
@@ -611,7 +967,7 @@ public:
         int thisBlendGroupLen = 0;  // The total length of the blend groups.
         int thisFragments = 0;      // The number of zone fragments produced in this case.
         int thisFragmentsNumIds = 0;// The number of points used to make all the fragment zones.
-        std::uint64_t ptused = 0;   // A bitset indicating which ST_XX nodes are used.
+        BitSet ptused = 0;   // A bitset indicating which ST_XX nodes are used.
 
         auto it = ctView.begin(clipcase);
         const auto end = ctView.end(clipcase);
@@ -689,49 +1045,24 @@ public:
         }
 
         // Save the results.
-        blendGroupsView[zoneIndex] = thisBlendGroups;
-        blendGroupsLenView[zoneIndex] = thisBlendGroupLen;
         fragmentsView[zoneIndex] = thisFragments;
         fragmentsSizeView[zoneIndex] = thisFragmentsNumIds;
 
-        // Sum up the sizes overall.
-        fragment_sum += thisFragments;
-        fragment_nids_sum += thisFragmentsNumIds;
-        blendGroups_sum += thisBlendGroups;
-        blendGroupLen_sum += thisBlendGroupLen;
+        // Set blend group sizes for this zone.
+        blendGroupsView[zoneIndex] = thisBlendGroups;
+        blendGroupsLenView[zoneIndex] = thisBlendGroupLen;
       });
     });
 
-// TODO: change int to topoView::IndexType
-
-    // ----------------------------------------------------------------------
-    //
-    // Stage 2: Do some scans to fill out blendOffset and blendGroupOffsets,
-    //          which is where we fill in the real data.
-    //
-    // blendOffset : Starting offset for blending data like blendIds, blendCoeff.
-    // blendGroupOffset : Starting offset for blendNames, blendGroupSizes.
-    // fragmentOffsets : Where an zone's fragments begin in the output.
-    // ----------------------------------------------------------------------
-    axom::Array<int> blendOffset(nzones, nzones, allocatorID);
-    axom::Array<int> blendGroupOffsets(nzones, nzones, allocatorID);
-    axom::Array<int> fragmentOffsets(nzones, nzones, allocatorID);
-    axom::Array<int> fragmentSizeOffsets(nzones, nzones, allocatorID);
-
-    auto blendOffsetView = blendOffset.view();
-    auto blendGroupOffsetsView = blendGroupOffsets.view();
-    auto fragmentOffsetsView = fragmentOffsets.view();
-    auto fragmentSizeOffsetsView = fragmentSizeOffsets.view();
-
+    // Sum up the sizes.
+    RAJA::ReduceSum<reduce_policy, int> fragment_sum(0);
+    RAJA::ReduceSum<reduce_policy, int> fragment_nids_sum(0);
+    axom::for_all<ExecSpace>(nzones, AXOM_LAMBDA(auto zoneIndex)
+    {
+      fragment_sum += fragmentsView[zoneIndex];
+      fragment_nids_sum += fragmentsSizeView[zoneIndex];
+    });
     // Make offsets via scan.
-    RAJA::exclusive_scan<loop_policy>(RAJA::make_span(blendGroupsLenView.data(), nzones),
-                                      RAJA::make_span(blendOffsetView.data(), nzones),
-                                      RAJA::operators::plus<int>{});
-
-    RAJA::exclusive_scan<loop_policy>(RAJA::make_span(blendGroupsView.data(), nzones),
-                                      RAJA::make_span(blendGroupOffsetsView.data(), nzones),
-                                      RAJA::operators::plus<int>{});
-
     RAJA::exclusive_scan<loop_policy>(RAJA::make_span(fragmentsView.data(), nzones),
                                       RAJA::make_span(fragmentOffsetsView.data(), nzones),
                                       RAJA::operators::plus<int>{});
@@ -742,6 +1073,24 @@ public:
 
     // ----------------------------------------------------------------------
     //
+    // Stage 2: Do some scans to fill out blendOffset and blendGroupOffsets,
+    //          which is where we fill in the real data.
+    //
+    // blendOffset : Starting offset for blending data like blendIds, blendCoeff.
+    // blendGroupOffset : Starting offset for blendNames, blendGroupSizes.
+    // fragmentOffsets : Where an zone's fragments begin in the output.
+    // ----------------------------------------------------------------------
+
+    IndexType blendGroupsSize = 0, blendGroupLenSize = 0;
+    builder.computeBlendGroupSizes(blendGroupsSize, blendGroupLenSize);
+
+    builder.setBlendGroupOffsets(blendOffset.view(), blendGroupOffsets.view());
+    builder.computeBlendGroupOffsets();
+
+
+
+    // ----------------------------------------------------------------------
+    //
     // Stage 3: Iterate over the zones/cases again and fill in the blend
     //          groups that get produced: blendNames, blendGroupSizes,
     //          blendCoeff, blendIds. These are used to produce the new points.
@@ -749,20 +1098,13 @@ public:
     //          NOTE: blendGroupStart is a scan of blendGroupSizes.
     //
     // ----------------------------------------------------------------------
-    const auto blendGroupsSize = blendGroups_sum.get();
-    const auto blendGroupLenSize = blendGroupLen_sum.get();
-
     axom::Array<KeyType> blendNames(blendGroupsSize, blendGroupsSize, allocatorID);
     axom::Array<IndexType> blendGroupSizes(blendGroupsSize, blendGroupsSize, allocatorID);
     axom::Array<IndexType> blendGroupStart(blendGroupsSize, blendGroupsSize, allocatorID);
     axom::Array<IndexType> blendIds(blendGroupLenSize, blendGroupLenSize, allocatorID);
     axom::Array<float> blendCoeff(blendGroupLenSize, blendGroupLenSize, allocatorID);
 
-    auto blendNamesView = blendNames.view();
-    auto blendGroupSizesView = blendGroupSizes.view();
-    auto blendGroupStartView = blendGroupStart.view();
-    auto blendIdsView = blendIds.view();
-    auto blendCoeffView = blendCoeff.view();
+    builder.setBlendViews(blendNames.view(), blendGroupSizes.view(), blendGroupStart.view(), blendIds.view(), blendCoeff.view());
 
     views::Node_to_ArrayView(n_clip_field_values, [&](auto clipFieldView)
     {
@@ -780,11 +1122,10 @@ std::cout << "clipping:\n";
         const auto &ctView = clipTableViews[clipTableIndex];
 
         // These are the points used in this zone's fragments.
-        const std::uint64_t ptused = pointsUsedView[zoneIndex];
+        const BitSet ptused = pointsUsedView[zoneIndex];
 
-        // Starting offset of where we store this zone's blend groups.
-        std::uint32_t bgStart = blendOffsetView[zoneIndex];
-        std::uint32_t bgOffset = blendGroupOffsetsView[zoneIndex];
+        // Get the blend groups for this zone.
+        auto groups = builder.blendGroupsForZone(zoneIndex);
 #if 1
 std::cout << "  -\n";
 std::cout << "    zone: " << zoneIndex << std::endl;
@@ -792,6 +1133,7 @@ std::cout << "    clipcase: " << clipcase << std::endl;
 std::cout << "    fragments:\n";
 int fi = 0;
 #endif
+
         auto it = ctView.begin(clipcase);
         const auto end = ctView.end(clipcase);
         for(; it != end; it++)
@@ -812,8 +1154,8 @@ std::cout << "\"" << std::endl;
 // TODO: put the ability to select on color back in... 0, 1, or both
               const int nIds = static_cast<int>(fragment[3]);
               const auto one_over_n = 1.f / static_cast<float>(nIds);
-              const auto start = bgStart;
 
+              groups.beginGroup();
               for(int ni = 0; ni < nIds; ni++)
               {
                 const auto ptid = fragment[4 + ni];
@@ -822,10 +1164,7 @@ std::cout << "\"" << std::endl;
                 if(ptid <= P7)
                 {
                   // corner point.
-                  blendIdsView[bgStart] = zone.getId(ptid);
-                  blendCoeffView[bgStart] = one_over_n;
-
-                  bgStart++;
+                  groups.add(zone.getId(ptid), one_over_n);
                 }
                 else if(ptid >= EA && ptid <= EL)
                 {
@@ -841,29 +1180,11 @@ std::cout << "\"" << std::endl;
                   // Figure out the blend for edge.
                   const float t = details::computeWeight(clipFieldView[id0], clipFieldView[id1], clipValue);
 
-                  blendIdsView[bgStart]   = id0;
-                  blendIdsView[bgStart+1] = id1;
-                  blendCoeffView[bgStart] = one_over_n * (1.f - t);
-                  blendCoeffView[bgStart+1] = one_over_n * t;
-
-                  bgStart += 2;
+                  groups.add(id0, one_over_n * (1.f - t));
+                  groups.add(id1, one_over_n * t);
                 }
               }
-
-              // Store how many points make up this blend group. Note that the
-              // size will not necessarily be equal to npts if edges were involved.
-              std::uint32_t nblended = bgStart - start;
-              blendGroupSizesView[bgOffset] = nblended;
-
-              // Store "name" of blend group.
-              const auto blendName = axom::mir::utilities::make_name_n(blendIdsView.data() + start, nblended);
-              blendNamesView[bgOffset] = blendName;
-
-#if 1
-              print_blend_group(blendIdsView.data() + start, blendCoeffView.data() + start, nblended, start, bgOffset, blendName);
-#endif
-
-              bgOffset++;
+              groups.endGroup();
             }
           }
         }
@@ -873,24 +1194,9 @@ std::cout << "\"" << std::endl;
         {
           if(axom::utilities::bitIsSet(ptused, pid))
           {
-            // Store blend group info
-            blendIdsView[bgStart] = zone.getId(pid);
-            blendCoeffView[bgStart] = 1.;
-
-            // Store how many points make up this blend group.
-            blendGroupSizesView[bgOffset] = 1;
-
-            // Store where this blendGroup starts in the blendIds,blendCoeff.
-            blendGroupStartView[bgOffset] = bgStart;
-
-            // Store "name" of blend group.
-            blendNamesView[bgOffset] = axom::mir::utilities::make_name_1(zone.getId(pid));
-
-#if 1
-            print_blend_group(blendIdsView.data() + bgStart, blendCoeffView.data() + bgStart, 1, bgStart, bgOffset, blendNamesView[bgOffset]);
-#endif
-            bgStart++;
-            bgOffset++;
+            groups.beginGroup();
+            groups.add(zone.getId(pid), 1.f);
+            groups.endGroup();
           }
         }
 
@@ -907,27 +1213,10 @@ std::cout << "\"" << std::endl;
             // Figure out the blend for edge.
             const float t = details::computeWeight(clipFieldView[id0], clipFieldView[id1], clipValue);
 
-            // Store blend group info                
-            blendIdsView[bgStart]   = id0;
-            blendIdsView[bgStart+1] = id1;
-            blendCoeffView[bgStart] = (1. - t);
-            blendCoeffView[bgStart+1] = t;
-
-            // Store how many points make up this blend group.
-            blendGroupSizesView[bgOffset] = 2;
-
-            // Store where this blendGroup starts in the blendIds,blendCoeff.
-            blendGroupStartView[bgOffset] = bgStart;
-
-            // Store "name" of blend group.
-            blendNamesView[bgOffset] = axom::mir::utilities::make_name_2(id0, id1);
-
-#if 1
-            print_blend_group(blendIdsView.data() + bgStart, blendCoeffView.data() + bgStart, 2, bgStart, bgOffset, blendNamesView[bgOffset]);
-#endif
-
-            bgStart += 2;
-            bgOffset++;
+            groups.beginGroup();
+            groups.add(id0, 1.f - t);
+            groups.add(id1, t);
+            groups.endGroup();
           }
         }
       });
@@ -944,16 +1233,11 @@ std::cout << "\"" << std::endl;
     // blendNames/blendGroupOffsets/blendGroupSizes.
     axom::Array<KeyType> uNames;
     axom::Array<axom::IndexType> uIndices;
-    axom::mir::utilities::unique<ExecSpace, KeyType>(blendNames, uNames, uIndices);
-    const auto uNamesView = uNames.view();
+    axom::mir::utilities::unique<ExecSpace, KeyType>(builder.blendNames(), uNames, uIndices);
+    builder.setUniqueNames(uNames.view(), uIndices.view());   
 
     // Bundle up blend data.
-    axom::mir::utilities::blueprint::BlendData blend;
-    blend.m_selectedIndicesView = uIndices.view(); // We'll use these to select just the unique indices
-    blend.m_blendGroupSizesView = blendGroupSizes.view();
-    blend.m_blendGroupStartView = blendGroupStart.view();
-    blend.m_blendIdsView = blendIds.view();
-    blend.m_blendCoeffView = blendCoeff.view();
+    axom::mir::utilities::blueprint::BlendData blend = builder.makeBlendData();
 
     // ----------------------------------------------------------------------
     //
@@ -1006,44 +1290,45 @@ std::cout << "\"" << std::endl;
 
     // Here we fill in the new connectivity, sizes, shapes.
     // We get the node ids from the unique blend names, de-duplicating points when making the new connectivity.
-    RAJA::ReduceBitOr<reduce_policy, std::uint64_t> shapesUsed_reduce(0);
+    RAJA::ReduceBitOr<reduce_policy, BitSet> shapesUsed_reduce(0);
     m_topologyView.template for_selected_zones<ExecSpace>(opts.selectedZonesView(), AXOM_LAMBDA(auto zoneIndex, const auto &zone)
     {
       // If there are no fragments, return from lambda.
       if(fragmentsView[zoneIndex] == 0)
         return;
 
+
       // Seek to the start of the blend groups for this zone.
-      std::uint32_t bgStart = blendGroupOffsetsView[zoneIndex];
+      auto groups = builder.blendGroupsForZone(zoneIndex);
 
       // Go through the points in the order they would have been added as blend
       // groups, get their blendName, and then overall index of that blendName
       // in uNames, the unique list of new dof names. That will be their index
       // in the final points.
-      const std::uint64_t ptused = pointsUsedView[zoneIndex];
+      const BitSet ptused = pointsUsedView[zoneIndex];
       ConnectivityType point_2_new[N3 + 1];
       for(unsigned char pid = N0; pid <= N3; pid++)
       {
         if(axom::utilities::bitIsSet(ptused, pid))
         {
-          const auto name = blendNamesView[bgStart++];
-          point_2_new[pid] = axom::mir::utilities::bsearch(name, uNamesView);
+          point_2_new[pid] = groups.uniqueBlendGroupIndex();
+          groups++;
         }
       }
       for(unsigned char pid = P0; pid <= P7; pid++)
       {
         if(axom::utilities::bitIsSet(ptused, pid))
         {
-          const auto name = blendNamesView[bgStart++];
-          point_2_new[pid] = axom::mir::utilities::bsearch(name, uNamesView);
+          point_2_new[pid] = groups.uniqueBlendGroupIndex();
+          groups++;
         }
       }
       for(unsigned char pid = EA; pid <= EL; pid++)
       {
         if(axom::utilities::bitIsSet(ptused, pid))
         {
-          const auto name = blendNamesView[bgStart++];
-          point_2_new[pid] = axom::mir::utilities::bsearch(name, uNamesView);
+          point_2_new[pid] = groups.uniqueBlendGroupIndex();
+          groups++;
         }
       }
 
@@ -1051,7 +1336,7 @@ std::cout << "\"" << std::endl;
       int outputIndex = fragmentSizeOffsetsView[zoneIndex];
       // This is where the output fragment sizes/shapes start for this zone.
       int sizeIndex = fragmentOffsetsView[zoneIndex];
-      std::uint64_t shapesUsed = 0;
+      BitSet shapesUsed = 0;
 
       // Iterate over the selected fragments and emit connectivity for them.
       const auto clipcase = clipCasesView[zoneIndex];

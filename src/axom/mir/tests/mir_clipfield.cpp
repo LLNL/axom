@@ -67,6 +67,83 @@ void braid(const std::string &type, const Dimensions &dims, conduit::Node &mesh)
   });
 }
 
+int conduit_to_vtk_cell(int shape_value)
+{
+  int vtktype = 0;
+  if(shape_value == axom::mir::views::Tri_ShapeID)
+      vtktype = 5; // VTK_TRIANGLE
+  else if(shape_value == axom::mir::views::Quad_ShapeID)
+      vtktype = 9; // VTK_QUAD
+  else if(shape_value == axom::mir::views::Polygon_ShapeID)
+      vtktype = 7; // VTK_POLYGON
+  else if(shape_value == axom::mir::views::Tet_ShapeID)
+      vtktype = 10; // VTK_TETRA
+  else if(shape_value == axom::mir::views::Pyramid_ShapeID)
+      vtktype = 14; // VTK_PYRAMID
+  else if(shape_value == axom::mir::views::Wedge_ShapeID)
+      vtktype = 13; // VTK_WEDGE
+  else if(shape_value == axom::mir::views::Hex_ShapeID)
+      vtktype = 12; // VTK_HEXAHEDRON
+
+  return vtktype;
+}
+
+void
+conduit_save_vtk(const conduit::Node &node, const std::string &path)
+{
+    FILE *file = fopen(path.c_str(), "wt");
+
+    // Write the VTK file header
+    fprintf(file, "# vtk DataFile Version 3.0\n");
+    fprintf(file, "Unstructured Grid Example\n");
+    fprintf(file, "ASCII\n");
+    fprintf(file, "DATASET UNSTRUCTURED_GRID\n");
+
+    // Write the points
+    const conduit::Node &points = node["coordsets/coords/values"];
+    const conduit::Node &x = points["x"];
+    const conduit::Node &y = points["y"];
+    const conduit::Node &z = points["z"];
+    size_t num_points = x.dtype().number_of_elements();
+
+    fprintf(file, "POINTS %zu float\n", num_points);
+    for (size_t i = 0; i < num_points; ++i) {
+        fprintf(file, "%f %f %f\n", x.as_float64_array()[i], y.as_float64_array()[i], z.as_float64_array()[i]);
+    }
+
+    // Write the cells
+    const conduit::Node &topologies = node["topologies"];
+    const conduit::Node &topo = topologies[0];
+    const conduit::Node &elements = topo["elements"];
+    const conduit::Node &connectivity = elements["connectivity"];
+    size_t num_cells = elements["sizes"].dtype().number_of_elements();
+    size_t total_num_indices = connectivity.dtype().number_of_elements();
+
+    fprintf(file, "CELLS %zu %zu\n", num_cells, total_num_indices + num_cells);
+    size_t index = 0;
+    for (size_t i = 0; i < num_cells; ++i) {
+        size_t cell_size = elements["sizes"].as_int32_array()[i];
+        fprintf(file, "%zu", cell_size);
+        for (size_t j = 0; j < cell_size; ++j) {
+            fprintf(file, " %d", connectivity.as_int32_array()[index++]);
+        }
+        fprintf(file, "\n");
+    }
+
+    // Write the cell types
+    const conduit::Node &shapes = elements["shapes"];
+    fprintf(file, "CELL_TYPES %zu\n", num_cells);
+    for (size_t i = 0; i < num_cells; ++i) {
+        const auto type = conduit_to_vtk_cell(shapes.as_int32_array()[i]);
+        fprintf(file, "%d\n", type);
+    }
+
+    // Close the file
+    fclose(file);
+}
+
+
+
 TEST(mir_clipfield, options)
 {
   int nzones = 6;
@@ -166,6 +243,95 @@ TEST(mir_clipfield, options)
   EXPECT_EQ(selectedZonesView[0], 3);
   EXPECT_EQ(selectedZonesView[1], 4);
   EXPECT_EQ(selectedZonesView[2], 5);
+}
+
+TEST(mir_clipfield, blend_group_builder)
+{
+  using IndexType = axom::IndexType;
+  using KeyType = std::uint64_t;
+
+  /*
+
+  We'll make 2 quads
+
+  3      4      5
+  *--8---*------*
+  |      |      |
+  |  6   9      |
+  |      |      |
+  *--7---*------*
+  0      1      2
+
+  */
+  axom::Array<IndexType> blendGroups{{8, 5}};
+  axom::Array<IndexType> blendGroupsLen{{/*zone 0*/ 4+1+1+1+1+2+2+2, /*zone 1*/ 1+1+1+1+2}};
+  axom::Array<IndexType> blendGroupOffsets{{0, 8}};
+  axom::Array<IndexType> blendOffsets{{0, blendGroupsLen[0]}};
+
+  axom::Array<KeyType>   blendNames{{/*zone 0*/ 6,0,1,3,4,7,8,9, /*zone 1*/ 1,2,4,5,9}};
+  axom::Array<IndexType> blendGroupSizes{{/*zone 0*/4,1,1,1,1,2,2,2, /*zone 1*/1,1,1,1,2}};
+  axom::Array<IndexType> blendGroupStart{{/*zone 0*/0,4,5,6,7,8,10,12, /*zone 1*/ 13, 14, 15, 16, 18}};
+  axom::Array<IndexType> blendIds{{/*zone 0*/
+                                   0,1,2,3,   // 6 (bgname) // 0 (bgindex)
+                                   0,         // 0          // 1
+                                   1,         // 1          // 2
+                                   3,         // 3          // 3
+                                   4,         // 4          // 4
+                                   0,1,       // 7          // 5
+                                   3,4,       // 8          // 6
+                                   1,4,       // 9          // 7
+                                   /*zone 1*/
+                                   1,         // 1          // 8
+                                   2,         // 2          // 9
+                                   4,         // 4          // 10
+                                   5,         // 5          // 11
+                                   1,4        // 9          // 12
+                                 }};
+  axom::Array<float> blendCoeff{{/*zone 0*/
+                                   0.25, 0.25, 0.25, 0.25,
+                                   1.,
+                                   1.,
+                                   1.,
+                                   1.,
+                                   0.5, 0.5,
+                                   0.5, 0.5,
+                                   0.5, 0.5,
+                                   /*zone 1*/
+                                   1.,
+                                   1.,
+                                   1.,
+                                   1.,
+                                   0.5, 0.5
+                                 }};
+  axom::Array<KeyType>   blendUniqueNames{{0,1,2,3,4,5,6,7,8,9}};
+  axom::Array<KeyType>   blendUniqueIndices{{1,2,9,3,4,11,0,5,6,7}};
+
+  axom::mir::clipping::BlendGroupBuilder<seq_exec> builder;
+  builder.setBlendGroupSizes(blendGroups.view(), blendGroupsLen.view());
+  builder.setBlendGroupOffsets(blendOffsets.view(), blendGroupOffsets.view());
+  builder.setBlendViews(blendNames.view(), blendGroupSizes.view(), blendGroupStart.view(), blendIds.view(), blendCoeff.view());
+
+  std::cout << "-------- zone 0 --------" << std::endl;
+  auto z0 = builder.blendGroupsForZone(0);
+  EXPECT_EQ(z0.size(), 8);
+  IndexType index = 0;
+  for(IndexType i = 0; i < z0.size(); i++, index++)
+  {
+    z0.print(std::cout);
+    EXPECT_EQ(z0.ids().size(), blendGroupSizes[index]);
+
+    z0++;
+  }
+
+  std::cout << "-------- zone 1 --------" << std::endl;
+  auto z1 = builder.blendGroupsForZone(1);
+  EXPECT_EQ(z1.size(), 5);
+  for(IndexType i = 0; i < z1.size(); i++, index++)
+  {
+    z1.print(std::cout);
+    EXPECT_EQ(z1.ids().size(), blendGroupSizes[index]);
+    z1++;
+  }
 }
 
 template <typename ExecSpace>
@@ -324,6 +490,7 @@ void braid3d_clip_test(const std::string &type, const std::string &name)
   // Save data.
   conduit::relay::io::blueprint::save_mesh(hostClipMesh, name, "hdf5");
   conduit::relay::io::blueprint::save_mesh(hostClipMesh, name + "_yaml", "yaml");
+  conduit_save_vtk(hostClipMesh, name + ".vtk");
 }
 
 #if 0
@@ -345,6 +512,7 @@ TEST(mir_clipfield, uniform2d)
 }
 #endif
 
+#if 1
 TEST(mir_clipfield, hex3d)
 {
   const std::string type("hexs");
@@ -362,6 +530,7 @@ TEST(mir_clipfield, hex3d)
   braid3d_clip_test<hip_exec>(type, "hex_hip");
 #endif
 }
+#endif
 
 //------------------------------------------------------------------------------
 
