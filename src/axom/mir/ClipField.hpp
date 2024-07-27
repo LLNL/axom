@@ -962,7 +962,7 @@ public:
         // Iterate over the shapes in this clip case to determine the number of blend groups.
         const auto clipTableIndex = details::getClipTableIndex(zone.id());
         const auto &ctView = clipTableViews[clipTableIndex];
-
+std::cout << "clipcase=" << clipcase << ", clipTableIndex=" << clipTableIndex << std::endl;
         int thisBlendGroups = 0;    // The number of blend groups produced in this case.
         int thisBlendGroupLen = 0;  // The total length of the blend groups.
         int thisFragments = 0;      // The number of zone fragments produced in this case.
@@ -976,6 +976,12 @@ public:
           // Get the current shape in the clip case.
           const auto fragment = *it;
 
+// ERROR!
+if(fragment.size() == 0)
+{
+std::cout << "zoneIndex=" << zoneIndex << "fragment.size=" << fragment.size() << std::endl;
+it.print(std::cout);
+}
           if(fragment[0] == ST_PNT)
           {
             if(details::generatedPointIsSelected(fragment[2], selection))

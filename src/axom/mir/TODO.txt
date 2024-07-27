@@ -4,10 +4,27 @@ Partial TODO list
 (done) 2. Conduit routine for moving data to the GPU
 (done) 3. Build/run on the GPU
 4. More ClipField tests (for other topologies) with baselines
+   - uniform2d (done)
+   - uniform3d
+   - rectilinear2d
+   - rectilinear3d
+   - structured2d
+   - structured3d
+   - stridedstructured2d
+   - stridedstructured3d
+   - unstructured2d
+     - tri
+     - quad
+     - mixed
+   - unstructured3d
+     - tet (done)
+     - pyramid - crashes
+     - wedge
+     - hex - bad nodes
+     - mixed
    - Test with the various extraction options
    - Test setting the topo, coordset names
    - Test storing results in same Node, use names/fields map to change names
-   - Make sure we can operate on a StridedStructured mesh
 (done)5. Create UnstructuredTopologyMixedShapeView and dispatch
 (done)6. Make sure ClipFilter can use the mixed topology view - it probably needs some changes
 7. Code cleanup pass in ClipFilter
