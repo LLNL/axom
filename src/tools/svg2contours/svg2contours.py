@@ -298,6 +298,11 @@ def parse_args():
     )
 
     parser.add_argument(
+        "-r", "--reverse", dest="reverse_paths", default=False, action="store_true", 
+        help="reverses paths (can be helpful during coordinate system transformation from y-axis pointing down to up)"
+    )
+
+    parser.add_argument(
         "-v", "--verbose", dest="verbose", default=False, action="store_true", help="verbose output flag"
     )
 
@@ -339,6 +344,8 @@ def main():
         attrib = p_idx + 1
 
         reverse_paths = True if np.linalg.det(coordinate_transform) < 0 else False
+        if opts["reverse_paths"]:
+            reverse_paths = not reverse_paths
 
         if not all(map(is_path_segment, p)):
             continue
