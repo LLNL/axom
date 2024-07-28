@@ -42,6 +42,8 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 - Improves support for `axom::Array` allocated in unified and pinned memory on GPU platforms.
   Use of GPU-based operations for Arrays allocated in a unified memory space is controlled with
   a new method, `Array::setDevicePreference()`.
+- Adds `svg2contours` script to convert paths in an SVG file to an MFEM NURBS mesh
+- Quest: Adds an example to query winding numbers on an MFEM NURBS mesh
 
 ### Changed
 - `MarchingCubes` masking now uses the mask field's integer values instead of
