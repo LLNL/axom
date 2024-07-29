@@ -462,7 +462,7 @@ private:
                              axom::mir::clipping::visit::numClipShapesPyr,
                              axom::mir::clipping::visit::startClipShapesPyr,
                              axom::mir::clipping::visit::clipShapesPyr,
-                             axom::mir::clipping::visit::clipShapesTetSize);
+                             axom::mir::clipping::visit::clipShapesPyrSize);
       }
       else if(shape == ST_WDG)
       {
