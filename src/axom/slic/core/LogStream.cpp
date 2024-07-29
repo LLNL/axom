@@ -69,6 +69,7 @@ std::string LogStream::getFormatedMessage(const std::string& msgLevel,
                                           const std::string& message,
                                           const std::string& tagName,
                                           const std::string& rank,
+                                          const std::string& rank_count,
                                           const std::string& fileName,
                                           int line)
 {
@@ -79,6 +80,7 @@ std::string LogStream::getFormatedMessage(const std::string& msgLevel,
   this->replaceKey(msg, "<TAG>", tagName);
   this->replaceKey(msg, "<FILE>", fileName);
   this->replaceKey(msg, "<RANK>", rank);
+  this->replaceKey(msg, "<RANK_COUNT>", rank_count);
 
   if(line != MSG_IGNORE_LINE)
   {

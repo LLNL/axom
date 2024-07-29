@@ -65,6 +65,8 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
   external `fmt` and axom's vendored copy.
 - Turn off CMake finding dependencies on system paths.
 - `axom::Array`: trivially-copyable types with a non-trivial constructor are now initialized on the GPU.
+- SLIC no longer outputs the rank count in the `RANK` format string in parallel loggers. You can access
+  the rank count via new format option `RANK_COUNT`.
 
 ### Removed
 - Removes config option `AXOM_ENABLE_ANNOTATIONS`. Annotations are now provided by `caliper` 
