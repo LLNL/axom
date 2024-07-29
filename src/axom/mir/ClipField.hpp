@@ -639,10 +639,6 @@ public:
       }
       m_state->m_blendNamesView[m_blendGroupId] = blendName;
 
-#if 1
-      print(std::cout);
-#endif
-
       m_blendGroupId++;
       m_startOffset = m_currentDataOffset;
     }
@@ -664,12 +660,7 @@ public:
     AXOM_HOST_DEVICE
     IndexType uniqueBlendGroupIndex() const
     {
-#define AXOM_CLIPFIELD_MAKE_POINTS_UNIQUE
-#ifdef AXOM_CLIPFIELD_MAKE_POINTS_UNIQUE
       return axom::mir::utilities::bsearch(name(), m_state->m_blendUniqueNamesView);
-#else
-      return m_blendGroupId;
-#endif
     }
 
     /**
@@ -790,9 +781,7 @@ public:
   {
     axom::mir::utilities::blueprint::BlendData blend;
 
-#ifdef AXOM_CLIPFIELD_MAKE_POINTS_UNIQUE
     blend.m_selectedIndicesView = m_state.m_blendUniqueIndicesView; // We'll use these to select just the unique indices
-#endif
     blend.m_blendGroupSizesView = m_state.m_blendGroupSizesView;
     blend.m_blendGroupStartView = m_state.m_blendGroupStartView;
     blend.m_blendIdsView = m_state.m_blendIdsView;
@@ -917,14 +906,12 @@ public:
 
     // ----------------------------------------------------------------------
     //
-    // Stage 1: Iterate over zones and their respective fragments to
-    //          determine sizes.
+    // Stage 1: Allocate some memory
     //
     // ----------------------------------------------------------------------
 
-    // Allocate some memory
     axom::Array<int> clipCases(nzones, nzones, allocatorID);      // The clip case for a zone.
-    axom::Array<BitSet> pointsUsed(nzones, nzones, allocatorID);   // Which points are used over all selected fragments in a zone
+    axom::Array<BitSet> pointsUsed(nzones, nzones, allocatorID);  // Which points are used over all selected fragments in a zone
     auto clipCasesView = clipCases.view();
     auto pointsUsedView = pointsUsed.view();
 
@@ -945,9 +932,16 @@ public:
     // Make an object to help manage building the blend groups.
     BlendGroupBuilder<ExecSpace> builder;
     builder.setBlendGroupSizes(blendGroups.view(), blendGroupsLen.view());
+
+    // ----------------------------------------------------------------------
+    //
+    // Stage 2: Iterate over zones and their respective fragments to
+    //          determine sizes for fragments and blend groups.
+    //
+    // ----------------------------------------------------------------------
+
     auto blendGroupsView = blendGroups.view();
     auto blendGroupsLenView = blendGroupsLen.view();
-
     views::Node_to_ArrayView(n_clip_field_values, [&](auto clipFieldView)
     {
       using clip_value_type = typename decltype(clipFieldView)::value_type;
@@ -962,7 +956,7 @@ public:
         // Iterate over the shapes in this clip case to determine the number of blend groups.
         const auto clipTableIndex = details::getClipTableIndex(zone.id());
         const auto &ctView = clipTableViews[clipTableIndex];
-std::cout << "clipcase=" << clipcase << ", clipTableIndex=" << clipTableIndex << std::endl;
+
         int thisBlendGroups = 0;    // The number of blend groups produced in this case.
         int thisBlendGroupLen = 0;  // The total length of the blend groups.
         int thisFragments = 0;      // The number of zone fragments produced in this case.
@@ -976,33 +970,25 @@ std::cout << "clipcase=" << clipcase << ", clipTableIndex=" << clipTableIndex <<
           // Get the current shape in the clip case.
           const auto fragment = *it;
 
-// ERROR!
-if(fragment.size() == 0)
-{
-std::cout << "zoneIndex=" << zoneIndex << "fragment.size=" << fragment.size() << std::endl;
-it.print(std::cout);
-}
           if(fragment[0] == ST_PNT)
           {
             if(details::generatedPointIsSelected(fragment[2], selection))
             {
-              const size_t nIds = fragment[3];
-              for(size_t ni = 4; ni < nIds; ni++)
+              const int nIds = static_cast<int>(fragment[3]);
+
+              for(int ni = 0; ni < nIds; ni++)
               {
-                const auto pid = fragment[ni];
+                const auto pid = fragment[4 + ni];
 
                 // Increase the blend size to include this center point.
                 if(pid <= P7)
                 {
-                   // corner point.
+                   // corner point
                    thisBlendGroupLen++;
                 }
                 else if(pid >= EA && pid <= EL)
                 {
-                  // edge points are derived from 2 corner points. If
-                  // those appear here then we're probably creating a
-                  // face point. We can store the 2 corner points in place
-                  // of the edge point (along with some blending coeff).
+                  // edge point
                   thisBlendGroupLen += 2;
                 }
               }
@@ -1038,6 +1024,7 @@ it.print(std::cout);
         for(IndexType pid = P0; pid <= P7; pid++)
         {
           const int incr = axom::utilities::bitIsSet(ptused, pid) ? 1 : 0;
+
           thisBlendGroupLen += incr; // {p0}
           thisBlendGroups += incr;
         }
@@ -1046,6 +1033,7 @@ it.print(std::cout);
         for(IndexType pid = EA; pid <= EL; pid++)
         {
           const int incr = axom::utilities::bitIsSet(ptused, pid) ? 1 : 0;
+
           thisBlendGroupLen += 2 * incr; // {p0 p1}
           thisBlendGroups += incr;
         }
@@ -1060,7 +1048,12 @@ it.print(std::cout);
       });
     });
 
-    // Sum up the sizes.
+    // ----------------------------------------------------------------------
+    //
+    // Stage 3: Sum up fragment sizes, make some offsets.
+    //
+    // ----------------------------------------------------------------------
+
     RAJA::ReduceSum<reduce_policy, int> fragment_sum(0);
     RAJA::ReduceSum<reduce_policy, int> fragment_nids_sum(0);
     axom::for_all<ExecSpace>(nzones, AXOM_LAMBDA(auto zoneIndex)
@@ -1068,7 +1061,6 @@ it.print(std::cout);
       fragment_sum += fragmentsView[zoneIndex];
       fragment_nids_sum += fragmentsSizeView[zoneIndex];
     });
-    // Make offsets via scan.
     RAJA::exclusive_scan<loop_policy>(RAJA::make_span(fragmentsView.data(), nzones),
                                       RAJA::make_span(fragmentOffsetsView.data(), nzones),
                                       RAJA::operators::plus<int>{});
@@ -1079,12 +1071,8 @@ it.print(std::cout);
 
     // ----------------------------------------------------------------------
     //
-    // Stage 2: Do some scans to fill out blendOffset and blendGroupOffsets,
-    //          which is where we fill in the real data.
+    // Stage 4: Compute total blend group sizes and offsets.
     //
-    // blendOffset : Starting offset for blending data like blendIds, blendCoeff.
-    // blendGroupOffset : Starting offset for blendNames, blendGroupSizes.
-    // fragmentOffsets : Where an zone's fragments begin in the output.
     // ----------------------------------------------------------------------
 
     IndexType blendGroupsSize = 0, blendGroupLenSize = 0;
@@ -1093,15 +1081,11 @@ it.print(std::cout);
     builder.setBlendGroupOffsets(blendOffset.view(), blendGroupOffsets.view());
     builder.computeBlendGroupOffsets();
 
-
-
     // ----------------------------------------------------------------------
     //
-    // Stage 3: Iterate over the zones/cases again and fill in the blend
+    // Stage 5: Iterate over the zones/cases again and fill in the blend
     //          groups that get produced: blendNames, blendGroupSizes,
     //          blendCoeff, blendIds. These are used to produce the new points.
-    //
-    //          NOTE: blendGroupStart is a scan of blendGroupSizes.
     //
     // ----------------------------------------------------------------------
     axom::Array<KeyType> blendNames(blendGroupsSize, blendGroupsSize, allocatorID);
@@ -1115,9 +1099,7 @@ it.print(std::cout);
     views::Node_to_ArrayView(n_clip_field_values, [&](auto clipFieldView)
     {
       const auto clipValue = opts.clipValue();
-#if 1
-std::cout << "clipping:\n";
-#endif
+
       m_topologyView.template for_selected_zones<ExecSpace>(opts.selectedZonesView(), AXOM_LAMBDA(auto zoneIndex, const auto &zone)
       {
         // Get the clip case for the current zone.
@@ -1132,13 +1114,6 @@ std::cout << "clipping:\n";
 
         // Get the blend groups for this zone.
         auto groups = builder.blendGroupsForZone(zoneIndex);
-#if 1
-std::cout << "  -\n";
-std::cout << "    zone: " << zoneIndex << std::endl;
-std::cout << "    clipcase: " << clipcase << std::endl;
-std::cout << "    fragments:\n";
-int fi = 0;
-#endif
 
         auto it = ctView.begin(clipcase);
         const auto end = ctView.end(clipcase);
@@ -1146,18 +1121,11 @@ int fi = 0;
         {
           // Get the current shape in the clip case.
           const auto fragment = *it;
-#if 1
-std::cout << "      f" << fi << ": \"";
-fi++;
-it.print(std::cout);
-std::cout << "\"" << std::endl;
-#endif
 
           if(fragment[0] == ST_PNT)
           {
             if(details::generatedPointIsSelected(fragment[2], selection))
             {
-// TODO: put the ability to select on color back in... 0, 1, or both
               const int nIds = static_cast<int>(fragment[3]);
               const auto one_over_n = 1.f / static_cast<float>(nIds);
 
@@ -1174,10 +1142,7 @@ std::cout << "\"" << std::endl;
                 }
                 else if(ptid >= EA && ptid <= EL)
                 {
-                  // edge points are derived from 2 corner points. If
-                  // those appear here then we're probably creating a
-                  // face point. We can store the 2 corner points in place
-                  // of the edge point (along with some blending coeff).
+                  // edge point.
                   const auto edgeIndex = ptid - EA;
                   const auto edge = zone.getEdge(edgeIndex);
                   const auto id0 = zone.getId(edge[0]);
@@ -1185,7 +1150,6 @@ std::cout << "\"" << std::endl;
 
                   // Figure out the blend for edge.
                   const float t = details::computeWeight(clipFieldView[id0], clipFieldView[id1], clipValue);
-
                   groups.add(id0, one_over_n * (1.f - t));
                   groups.add(id1, one_over_n * t);
                 }
@@ -1230,13 +1194,9 @@ std::cout << "\"" << std::endl;
 
     // ----------------------------------------------------------------------
     //
-    // Stage 4 - Make the blend groups unique based on their blendName.
+    // Stage 6 - Make the blend groups unique based on their blendName.
     //
     // ----------------------------------------------------------------------
-    // At this point, we have created the blend group data. We can now use the
-    // blendNames to make unique blend groups. uNames contains a sorted list of
-    // the unique blend group names while uIndices is their original index in
-    // blendNames/blendGroupOffsets/blendGroupSizes.
     axom::Array<KeyType> uNames;
     axom::Array<axom::IndexType> uIndices;
     axom::mir::utilities::unique<ExecSpace, KeyType>(builder.blendNames(), uNames, uIndices);
@@ -1247,7 +1207,7 @@ std::cout << "\"" << std::endl;
 
     // ----------------------------------------------------------------------
     //
-    // Stage 5 - Make new connectivity.
+    // Stage 7 - Make new connectivity.
     //
     // ----------------------------------------------------------------------
     const auto finalNumZones = fragment_sum.get();
@@ -1409,24 +1369,17 @@ std::cout << "\"" << std::endl;
       n_newTopo["elements/shape"] = shapeMap.begin()->first;
     }
 
-#if 1
-    // Save blend group.
-    conduit::Node bg;
-    bg["selectedIndicesView"].set_external(blend.m_selectedIndicesView.data(), blend.m_selectedIndicesView.size());
-    bg["blendGroupSizesView"].set_external(blend.m_blendGroupSizesView.data(), blend.m_blendGroupSizesView.size());
-    bg["blendGroupStartView"].set_external(blend.m_blendGroupStartView.data(), blend.m_blendGroupStartView.size());
-    bg["blendIdsView"].set_external(blend.m_blendIdsView.data(), blend.m_blendIdsView.size());
-    bg["blendCoeffView"].set_external(blend.m_blendCoeffView.data(), blend.m_blendCoeffView.size());
-    conduit::relay::io::save(bg, "blend.yaml", "yaml");
-#endif
-
     //-----------------------------------------------------------------------
-    // STAGE 6 - Make new coordset.
+    //
+    // STAGE 8 - Make new coordset.
+    //
     //-----------------------------------------------------------------------   
     makeCoordset(blend, n_coordset, n_newCoordset);
 
     //-----------------------------------------------------------------------
-    // STAGE 7 - Make new fields.
+    //
+    // STAGE 9 - Make new fields.
+    //
     //-----------------------------------------------------------------------
     axom::mir::utilities::blueprint::SliceData slice;
     axom::Array<IndexType> sliceIndices(finalNumZones, finalNumZones, allocatorID);
@@ -1441,7 +1394,9 @@ std::cout << "\"" << std::endl;
     makeFields(blend, slice, opts.topologyName(n_topo.name()), opts.fields(n_fields), n_fields, n_newFields);
 
     //-----------------------------------------------------------------------
-    // STAGE 8 - make originalElements (this will later be optional)
+    //
+    // STAGE 10 - make originalElements (this will later be optional)
+    //
     //-----------------------------------------------------------------------
     if(n_fields.has_child("originalElements"))
     {
