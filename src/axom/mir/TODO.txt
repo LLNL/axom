@@ -18,9 +18,9 @@ Partial TODO list
      - mixed
    - unstructured3d
      - tet (done)
-     - pyramid - crashes
-     - wedge
-     - hex - bad nodes
+     - pyramid (done)
+     - wedge (done)
+     - hex (done)
      - mixed
    - Test with the various extraction options
    - Test setting the topo, coordset names

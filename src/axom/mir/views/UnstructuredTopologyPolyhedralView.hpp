@@ -60,7 +60,7 @@ public:
     constexpr static IndexType MaximumNumberOfIds = 20 * 3;
 
     AXOM_HOST_DEVICE constexpr static bool is_polyhedral() { return true; }
-    AXOM_HOST_DEVICE constexpr static int id() { return 1 << 10; }
+    AXOM_HOST_DEVICE constexpr static int id() { return Polyhedron_ShapeID; }
 
     AXOM_HOST_DEVICE PolyhedronShape(const PolyhedronData &obj, axom::IndexType zi) : m_data(obj), m_zoneIndex(zi), m_ids()
     {

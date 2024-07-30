@@ -830,15 +830,15 @@ TEST(mir_clipfield, tet)
   braid3d_clip_test<seq_exec, ShapeType>(type, "tet");
 
 //#if defined(AXOM_USE_OPENMP)
-//  braid3d_clip_test<omp_exec>(type, "tet_omp");
+//  braid3d_clip_test<omp_exec, ShapeType>(type, "tet_omp");
 //#endif
 
 #if defined(AXOM_USE_CUDA)
-  braid3d_clip_test<cuda_exec>(type, "tet_cuda");
+  braid3d_clip_test<cuda_exec, ShapeType>(type, "tet_cuda");
 #endif
 
 #if defined(AXOM_USE_HIP)
-  braid3d_clip_test<hip_exec>(type, "tet_hip");
+  braid3d_clip_test<hip_exec, ShapeType>(type, "tet_hip");
 #endif
 }
 
@@ -850,15 +850,15 @@ TEST(mir_clipfield, pyramid)
   braid3d_clip_test<seq_exec, ShapeType>(type, "pyr");
 
 //#if defined(AXOM_USE_OPENMP)
-//  braid3d_clip_test<omp_exec>(type, "pyr_omp");
+//  braid3d_clip_test<omp_exec, ShapeType>(type, "pyr_omp");
 //#endif
 
 #if defined(AXOM_USE_CUDA)
-  braid3d_clip_test<cuda_exec>(type, "pyr_cuda");
+  braid3d_clip_test<cuda_exec, ShapeType>(type, "pyr_cuda");
 #endif
 
 #if defined(AXOM_USE_HIP)
-  braid3d_clip_test<hip_exec>(type, "pyr_hip");
+  braid3d_clip_test<hip_exec, ShapeType>(type, "pyr_hip");
 #endif
 }
 
@@ -870,15 +870,15 @@ TEST(mir_clipfield, wedge)
   braid3d_clip_test<seq_exec, ShapeType>(type, "wdg");
 
 //#if defined(AXOM_USE_OPENMP)
-//  braid3d_clip_test<omp_exec>(type, "wdg_omp");
+//  braid3d_clip_test<omp_exec, ShapeType>(type, "wdg_omp");
 //#endif
 
 #if defined(AXOM_USE_CUDA)
-  braid3d_clip_test<cuda_exec>(type, "wdg_cuda");
+  braid3d_clip_test<cuda_exec, ShapeType>(type, "wdg_cuda");
 #endif
 
 #if defined(AXOM_USE_HIP)
-  braid3d_clip_test<hip_exec>(type, "wdg_hip");
+  braid3d_clip_test<hip_exec, ShapeType>(type, "wdg_hip");
 #endif
 }
 
@@ -889,16 +889,16 @@ TEST(mir_clipfield, hex)
   const std::string type("hexs");
   braid3d_clip_test<seq_exec, ShapeType>(type, "hex");
 
-//#if defined(AXOM_USE_OPENMP)
-//  braid3d_clip_test<omp_exec>(type, "hex_omp");
-//#endif
+#if defined(AXOM_USE_OPENMP)
+  braid3d_clip_test<omp_exec, ShapeType>(type, "hex_omp");
+#endif
 
 #if defined(AXOM_USE_CUDA)
-  braid3d_clip_test<cuda_exec>(type, "hex_cuda");
+  braid3d_clip_test<cuda_exec, ShapeType>(type, "hex_cuda");
 #endif
 
 #if defined(AXOM_USE_HIP)
-  braid3d_clip_test<hip_exec>(type, "hex_hip");
+  braid3d_clip_test<hip_exec, ShapeType>(type, "hex_hip");
 #endif
 }
 //------------------------------------------------------------------------------

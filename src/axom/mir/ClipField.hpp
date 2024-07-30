@@ -831,6 +831,12 @@ public:
   using SliceData = axom::mir::utilities::blueprint::SliceData;
   using ClipTableViews = axom::StackArray<axom::mir::clipping::TableView, 6>;
 
+  using KeyType = std::uint64_t;
+  using BitSet = std::uint64_t;
+  using loop_policy = typename axom::execution_space<ExecSpace>::loop_policy;
+  using reduce_policy = typename axom::execution_space<ExecSpace>::reduce_policy;
+  using ConnectivityType = typename TopologyView::ConnectivityType;
+
   /**
    * \brief Constructor
    *
@@ -893,13 +899,8 @@ public:
                conduit::Node &n_newCoordset,
                conduit::Node &n_newFields)
   {
-    using KeyType = std::uint64_t;
-    using BitSet = std::uint64_t;
-    using loop_policy = typename axom::execution_space<ExecSpace>::loop_policy;
-    using reduce_policy = typename axom::execution_space<ExecSpace>::reduce_policy;
     const auto allocatorID = axom::execution_space<ExecSpace>::allocatorID();
 
-    using ConnectivityType = typename TopologyView::ConnectivityType;
     constexpr auto connTypeID = axom::mir::utilities::blueprint::cpp2conduit<ConnectivityType>::id;
 
     const auto nzones = m_topologyView.numberOfZones();
@@ -935,10 +936,10 @@ public:
     auto clipCasesView = clipCases.view();
     auto pointsUsedView = pointsUsed.view();
 
-    axom::Array<int> fragments(nzones, nzones, allocatorID);      // The number of fragments (child zones) produced for a zone.
-    axom::Array<int> fragmentsSize(nzones, nzones, allocatorID);  // The connectivity size for all selected fragments in a zone.
-    axom::Array<int> fragmentOffsets(nzones, nzones, allocatorID);
-    axom::Array<int> fragmentSizeOffsets(nzones, nzones, allocatorID);
+    axom::Array<IndexType> fragments(nzones, nzones, allocatorID);      // The number of fragments (child zones) produced for a zone.
+    axom::Array<IndexType> fragmentsSize(nzones, nzones, allocatorID);  // The connectivity size for all selected fragments in a zone.
+    axom::Array<IndexType> fragmentOffsets(nzones, nzones, allocatorID);
+    axom::Array<IndexType> fragmentSizeOffsets(nzones, nzones, allocatorID);
     auto fragmentsView = fragments.view();
     auto fragmentsSizeView = fragmentsSize.view();
     auto fragmentOffsetsView = fragmentOffsets.view();
@@ -1073,21 +1074,10 @@ public:
     // Stage 3: Sum up fragment sizes, make some offsets.
     //
     // ----------------------------------------------------------------------
+    IndexType finalNumZones = 0, finalConnSize = 0;
+    computeFragmentSizesAndOffsets(fragmentsView, fragmentOffsetsView, fragmentsSizeView, fragmentSizeOffsetsView,
+                                   finalNumZones, finalConnSize);
 
-    RAJA::ReduceSum<reduce_policy, int> fragment_sum(0);
-    RAJA::ReduceSum<reduce_policy, int> fragment_nids_sum(0);
-    axom::for_all<ExecSpace>(nzones, AXOM_LAMBDA(auto zoneIndex)
-    {
-      fragment_sum += fragmentsView[zoneIndex];
-      fragment_nids_sum += fragmentsSizeView[zoneIndex];
-    });
-    RAJA::exclusive_scan<loop_policy>(RAJA::make_span(fragmentsView.data(), nzones),
-                                      RAJA::make_span(fragmentOffsetsView.data(), nzones),
-                                      RAJA::operators::plus<int>{});
-
-    RAJA::exclusive_scan<loop_policy>(RAJA::make_span(fragmentsSizeView.data(), nzones),
-                                      RAJA::make_span(fragmentSizeOffsetsView.data(), nzones),
-                                      RAJA::operators::plus<int>{});
 
     // ----------------------------------------------------------------------
     //
@@ -1231,9 +1221,6 @@ public:
     // Stage 7 - Make new connectivity.
     //
     // ----------------------------------------------------------------------
-    const auto finalNumZones = fragment_sum.get();
-    const auto finalConnSize = fragment_nids_sum.get();
-
     n_newTopo.reset();
     n_newTopo["type"] = "unstructured";
     n_newTopo["coordset"] = n_newCoordset.name();
@@ -1486,6 +1473,53 @@ private:
       views[details::getClipTableIndex(axom::mir::views::WedgeShape<IndexType>::id())] = m_clipTables[ST_WDG].view();
       views[details::getClipTableIndex(axom::mir::views::HexShape<IndexType>::id())] = m_clipTables[ST_HEX].view();
     }
+  }
+
+  /**
+   * \brief Compute the total number of fragments and their size as well as corresponding offsets.
+   *
+   * \param[in] fragmentsView The number of fragments in each zone.
+   * \param[in] fragmentOffsetsView The offset to the start of each zone's fragments.
+   * \param[in] fragmentsSizeView The size of each zone's fragment connectivity.
+   * \param[in] fragmentSizeOffsetsView The offset to the start of each zone's fragment connectivity.
+   * \param[out] fragmentSum The sum of the elements in \a fragmentsView.
+   * \param[out] fragmentNIdsSum The sum of the elements in \a fragmentsSizeView.
+   *
+   */
+  void computeFragmentSizesAndOffsets(const axom::ArrayView<IndexType> &fragmentsView,
+                                      const axom::ArrayView<IndexType> &fragmentOffsetsView,
+                                      const axom::ArrayView<IndexType> &fragmentsSizeView,
+                                      const axom::ArrayView<IndexType> &fragmentSizeOffsetsView,
+                                      IndexType &fragmentSum,
+                                      IndexType &fragmentNIdsSum) const
+  {
+#if 1
+    // If we're building for OpenMP, use sequential policies for now to avoid compiler crash.
+    using safe_loop_policy = typename std::conditional<std::is_same<loop_policy, axom::execution_space<axom::OMP_EXEC>::loop_policy>::value, axom::execution_space<axom::SEQ_EXEC>::loop_policy, loop_policy>::type;
+    using safe_reduce_policy = typename std::conditional<std::is_same<reduce_policy, axom::execution_space<axom::OMP_EXEC>::reduce_policy>::value, axom::execution_space<axom::SEQ_EXEC>::reduce_policy, reduce_policy>::type;
+#else
+    using safe_loop_policy = loop_policy;
+    using safe_reduce_policy = reduce_policy;
+#endif
+
+    const auto nzones = fragmentsView.size();
+    RAJA::ReduceSum<safe_reduce_policy, IndexType> fragment_sum(0);
+    RAJA::ReduceSum<safe_reduce_policy, IndexType> fragment_nids_sum(0);
+    axom::for_all<ExecSpace>(nzones, AXOM_LAMBDA(auto zoneIndex)
+    {
+      fragment_sum += fragmentsView[zoneIndex];
+      fragment_nids_sum += fragmentsSizeView[zoneIndex];
+    });
+    fragmentSum = fragment_sum.get();
+    fragmentNIdsSum = fragment_nids_sum.get();
+
+    RAJA::exclusive_scan<safe_loop_policy>(RAJA::make_span(fragmentsView.data(), nzones),
+                                      RAJA::make_span(fragmentOffsetsView.data(), nzones),
+                                      RAJA::operators::plus<IndexType>{});
+
+    RAJA::exclusive_scan<safe_loop_policy>(RAJA::make_span(fragmentsSizeView.data(), nzones),
+                                      RAJA::make_span(fragmentSizeOffsetsView.data(), nzones),
+                                      RAJA::operators::plus<IndexType>{});
   }
 
   /**
