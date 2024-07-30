@@ -403,18 +403,7 @@ public:
     }
 
     // Copy tets to device
-    // m_tets = axom::Array<TetrahedronType>(tets_host, kernel_allocator);
-    m_tets =
-      axom::Array<TetrahedronType>(m_tetcount, m_tetcount, kernel_allocator);
-    axom::copy(m_tets.data(),
-               tets_host.data(),
-               m_tetcount * sizeof(TetrahedronType));
-
-    // OctType *oct_from_seg = axom::allocate<OctType>(1, hostAllocID);
-    // oct_from_seg[0] = from_segment(a, b);
-
-    // axom::copy(out.data() + idx + 0, oct_from_seg, sizeof(OctType));
-    // axom::deallocate(oct_from_seg);
+    m_tets = axom::Array<TetrahedronType>(tets_host, kernel_allocator);
 
     if(this->isVerbose())
     {
@@ -844,6 +833,8 @@ public:
         totalCandidates += counts_device_view[i];
       });
 
+    printf("!!!!!!!!!!!! Total candidates is %d\n", totalCandidates.get());
+
     // Initialize hexahedron indices and shape candidates
     // axom::IndexType* hex_indices =
     //   axom::allocate<axom::IndexType>(totalCandidates.get() * NUM_TETS_PER_HEX);
@@ -976,6 +967,18 @@ public:
       axom::Array<IndexType> newTotalCandidates_calc_host =
         axom::Array<IndexType>(newTotalCandidates_device, host_allocator);
 
+      axom::Array<IndexType> c_host(1, 1, host_allocator);
+      c_host[0] = 0;
+      axom::Array<IndexType> c_device =
+        axom::Array<IndexType>(c_host, kernel_allocator);
+      auto mycounter = c_device.view();
+
+      axom::Array<double> jank_vol_host(1, 1, host_allocator);
+      jank_vol_host[0] = 0;
+      axom::Array<double> jank_vol_device =
+        axom::Array<double>(jank_vol_host, kernel_allocator);
+      auto jank_vol_view = jank_vol_device.view();
+
       AXOM_ANNOTATE_SCOPE("tet_shape_volume");
       axom::for_all<ExecSpace>(
         newTotalCandidates_calc_host[0],
@@ -993,14 +996,19 @@ public:
           // Poly is valid
           if(poly.numVertices() >= 4)
           {
+            // RAJA::atomicAdd<ATOMIC_POL>(mycounter.data(),
+            //                 IndexType {1});
+            double temp = poly.volume();
+            RAJA::atomicAdd<ATOMIC_POL>(jank_vol_view.data(), temp);
             RAJA::atomicAdd<ATOMIC_POL>(overlap_volumes_device_view.data() + index,
-                                        poly.volume());
+                                        temp);
 
-            int dog = 0;
-            for(int cat = 0; cat < 10000; cat++)
-            {
-              dog += cat;
-            }
+            // int dog = 0;
+            // for(int cat = 0; cat < 10000; cat++)
+            // {
+            //   dog += cat;
+            // }
+
             // printf("Ith iteration %d does clip!\n"
             //        "\tPolyhedron is \t(%f, %f, %f), \n\t\t\t(%f, %f, %f), \n\t\t\t(%f, %f, %f), \n\t\t\t(%f, %f, %f)\n"
             //        "\tTet is \t(%f, %f, %f), \n\t\t(%f, %f, %f), \n\t\t(%f, %f, %f), \n\t\t(%f, %f, %f)\n\n",
@@ -1032,6 +1040,14 @@ public:
             // );
           }
         });
+
+      axom::Array<IndexType> c_host_2 =
+        axom::Array<IndexType>(c_device, host_allocator);
+      printf("!!!!!!!!!!!! My clip counter is  %d\n", c_host_2[0]);
+
+      axom::Array<double> j_vol_2 =
+        axom::Array<double>(jank_vol_device, host_allocator);
+      printf("!!!!!!!!!!!! My jank total volume is  %f\n", j_vol_2[0]);
     }
 
     RAJA::ReduceSum<REDUCE_POL, double> totalOverlap(0);
