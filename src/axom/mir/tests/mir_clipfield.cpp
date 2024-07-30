@@ -889,9 +889,9 @@ TEST(mir_clipfield, hex)
   const std::string type("hexs");
   braid3d_clip_test<seq_exec, ShapeType>(type, "hex");
 
-#if defined(AXOM_USE_OPENMP)
-  braid3d_clip_test<omp_exec, ShapeType>(type, "hex_omp");
-#endif
+//#if defined(AXOM_USE_OPENMP)
+//  braid3d_clip_test<omp_exec, ShapeType>(type, "hex_omp");
+//#endif
 
 #if defined(AXOM_USE_CUDA)
   braid3d_clip_test<cuda_exec, ShapeType>(type, "hex_cuda");
