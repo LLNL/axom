@@ -763,9 +763,8 @@ void braid3d_clip_test(const std::string &type, const std::string &name)
   using TopoView = axom::mir::views::UnstructuredTopologySingleShapeView<ShapeType>;
   using CoordsetView = axom::mir::views::ExplicitCoordsetView<double, 3>;
 
-  axom::StackArray<axom::IndexType, 3> dims{10, 10, 10};
-
   // Create the data
+  const axom::StackArray<axom::IndexType, 3> dims{10, 10, 10};
   conduit::Node hostMesh, deviceMesh;
   braid(type, dims, hostMesh);
   axom::mir::utilities::blueprint::copy<ExecSpace>(deviceMesh, hostMesh);
@@ -783,18 +782,13 @@ void braid3d_clip_test(const std::string &type, const std::string &name)
 
   conduit::Node &n_conn = deviceMesh.fetch_existing("topologies/mesh/elements/connectivity");
   const axom::ArrayView<int> conn(static_cast<int *>(n_conn.data_ptr()), n_conn.dtype().number_of_elements());
-  TopoView topoView(conn); //, sizes, offsets);
+  TopoView topoView(conn);
 
   // Create options to control the clipping.
-  const std::string clipTopoName("cliptopo");
   conduit::Node options;
   options["clipField"] = "distance";
   options["inside"] = 1;
   options["outside"] = 0;
-  //options["topologyName"] = clipTopoName;
-  //options["coordsetName"] = "clipcoords";
-  //options["fields/braid"] = "new_braid";
-  //options["fields/radial"] = "new_radial";
 
   // Clip the data
   conduit::Node deviceClipMesh;
@@ -825,26 +819,6 @@ TEST(mir_clipfield, uniform2d)
 
 #if defined(AXOM_USE_HIP)
   braid2d_clip_test<hip_exec>("uniform", "uniform2d_hip");
-#endif
-}
-
-TEST(mir_clipfield, hex)
-{
-  using ShapeType = axom::mir::views::HexShape<int>;
-
-  const std::string type("hexs");
-  braid3d_clip_test<seq_exec, ShapeType>(type, "hex");
-
-//#if defined(AXOM_USE_OPENMP)
-//  braid3d_clip_test<omp_exec>(type, "hex_omp");
-//#endif
-
-#if defined(AXOM_USE_CUDA)
-  braid3d_clip_test<cuda_exec>(type, "hex_cuda");
-#endif
-
-#if defined(AXOM_USE_HIP)
-  braid3d_clip_test<hip_exec>(type, "hex_hip");
 #endif
 }
 
@@ -908,6 +882,25 @@ TEST(mir_clipfield, wedge)
 #endif
 }
 
+TEST(mir_clipfield, hex)
+{
+  using ShapeType = axom::mir::views::HexShape<int>;
+
+  const std::string type("hexs");
+  braid3d_clip_test<seq_exec, ShapeType>(type, "hex");
+
+//#if defined(AXOM_USE_OPENMP)
+//  braid3d_clip_test<omp_exec>(type, "hex_omp");
+//#endif
+
+#if defined(AXOM_USE_CUDA)
+  braid3d_clip_test<cuda_exec>(type, "hex_cuda");
+#endif
+
+#if defined(AXOM_USE_HIP)
+  braid3d_clip_test<hip_exec>(type, "hex_hip");
+#endif
+}
 //------------------------------------------------------------------------------
 
 int main(int argc, char* argv[])

@@ -182,14 +182,11 @@ bool shapeIsSelected(unsigned char color, int selection)
 }
 
 AXOM_HOST_DEVICE
-float computeWeight(float d0, float d1, float clipValue)
+inline float computeWeight(float d0, float d1, float clipValue)
 {
-  const float delta = d1 - d0;
-  const float abs_delta = (delta < 0) ? -delta : delta;
-  const float t = (abs_delta != 0.) ? ((clipValue - d0) / delta) : 0.;
-  return t;
+  constexpr float tiny = 1.e-09;
+  return axom::utilities::clampVal(axom::utilities::abs(clipValue - d0) / (axom::utilities::abs(d1 - d0) + tiny), 0.f, 1.f);
 }
-
 
 // TODO: Could we make ZoneType be a concept?
 /**
@@ -638,9 +635,32 @@ public:
         blendName = axom::mir::utilities::make_name_n(m_state->m_blendIdsView.data() + m_startOffset, numIds);
       }
       m_state->m_blendNamesView[m_blendGroupId] = blendName;
-
+#if defined(AXOM_DEBUG) && !defined(AXOM_DEVICE_CODE)
+      const float w = weightSum();
+      constexpr float EPS = 1.e-5;
+      if(w < (1. - EPS) || w > (1. + EPS))
+      {
+        SLIC_ERROR(fmt::format("Invalid blend group weights w={}.", w));
+        print(std::cout);
+      }
+#endif
       m_blendGroupId++;
       m_startOffset = m_currentDataOffset;
+    }
+
+    /**
+     * \brief Return the sum of the weights for the current blend group.
+     * \note The blendGroup must have finished construction.
+     * \return The sum of weights, which should be about 1.
+     */
+    AXOM_HOST_DEVICE float weightSum() const
+    {
+      const auto numIds = m_state->m_blendGroupSizesView[m_blendGroupId];
+      const auto start = m_state->m_blendGroupStartView[m_blendGroupId];
+      float w = 0.f;
+      for(IndexType i = 0; i < numIds; i++)
+        w += m_state->m_blendCoeffView[start + i];
+      return w;
     }
 
     /**
@@ -1150,6 +1170,7 @@ public:
 
                   // Figure out the blend for edge.
                   const float t = details::computeWeight(clipFieldView[id0], clipFieldView[id1], clipValue);
+
                   groups.add(id0, one_over_n * (1.f - t));
                   groups.add(id1, one_over_n * t);
                 }
