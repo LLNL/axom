@@ -570,7 +570,7 @@ public:
      * \return The number of blend groups for this zone.
      */
     AXOM_HOST_DEVICE
-    IndexType size() const
+    inline IndexType size() const
     {
       return m_state->m_blendGroupsView[m_zoneIndex];
     }
@@ -583,7 +583,7 @@ public:
      * \param blendGroupSize The size of all of the blend groups in this zone.
      */
     AXOM_HOST_DEVICE
-    void setSize(IndexType nBlendGroups, IndexType blendGroupsSize)
+    inline void setSize(IndexType nBlendGroups, IndexType blendGroupsSize)
     {
       m_state->m_blendGroupsView[m_zoneIndex] = nBlendGroups;
       m_state->m_blendGroupsLenView[m_zoneIndex] = blendGroupsSize;
@@ -593,7 +593,7 @@ public:
      * \brief Start creating a new blend group within the allocated space for this zone.
      */
     AXOM_HOST_DEVICE
-    void beginGroup()
+    inline void beginGroup()
     {
       m_currentDataOffset = m_startOffset;
     }
@@ -605,7 +605,7 @@ public:
      * \param weight The weight that will be used for blending.
      */
     AXOM_HOST_DEVICE
-    void add(IndexType id, float weight)
+    inline void add(IndexType id, float weight)
     {
       m_state->m_blendIdsView[m_currentDataOffset] = id;
       m_state->m_blendCoeffView[m_currentDataOffset] = weight;
@@ -616,7 +616,7 @@ public:
      * \brief End the current blend group, storing its name, size, etc.
      */
     AXOM_HOST_DEVICE
-    void endGroup()
+    inline void endGroup()
     {
       IndexType numIds = m_currentDataOffset - m_startOffset;
 
@@ -659,7 +659,8 @@ public:
      * \note The blendGroup must have finished construction.
      * \return The sum of weights, which should be about 1.
      */
-    AXOM_HOST_DEVICE float weightSum() const
+    AXOM_HOST_DEVICE
+    inline float weightSum() const
     {
       const auto numIds = m_state->m_blendGroupSizesView[m_blendGroupId];
       const auto start = m_state->m_blendGroupStartView[m_blendGroupId];
@@ -674,7 +675,7 @@ public:
      * \return The name of the current blend group.
      */
     AXOM_HOST_DEVICE
-    KeyType name() const
+    inline KeyType name() const
     {
       return m_state->m_blendNamesView[m_blendGroupId];
     }
@@ -684,7 +685,7 @@ public:
      * \return The unique index of the current blend group.
      */
     AXOM_HOST_DEVICE
-    IndexType uniqueBlendGroupIndex() const
+    inline IndexType uniqueBlendGroupIndex() const
     {
       return axom::mir::utilities::bsearch(name(), m_state->m_blendUniqueNamesView);
     }
@@ -693,13 +694,13 @@ public:
      * \brief Advance to the next blend group.
      */
     AXOM_HOST_DEVICE
-    void operator++() { m_blendGroupId++; }
+    inline void operator++() { m_blendGroupId++; }
 
     /**
      * \brief Advance to the next blend group.
      */
     AXOM_HOST_DEVICE
-    void operator++(int) { m_blendGroupId++; }
+    inline void operator++(int) { m_blendGroupId++; }
 
 #if !defined(AXOM_DEVICE_CODE)
     /**
@@ -948,8 +949,9 @@ public:
     builder.setBlendGroupSizes(blendGroups.view(), blendGroupsLen.view());
 
     // Compute sizes and offsets
-    computeSizes(clipTableViews, zoneData, fragmentData, builder, opts, n_clip_field_values);
-    computeFragmentSizesAndOffsets(fragmentData);
+    computeSizes(clipTableViews, builder, zoneData, fragmentData, opts, n_clip_field_values);
+    computeFragmentSizes(fragmentData);
+    computeFragmentOffsets(fragmentData);
 
     IndexType blendGroupsSize = 0, blendGroupLenSize = 0;
     builder.computeBlendGroupSizes(blendGroupsSize, blendGroupLenSize);
@@ -1022,9 +1024,9 @@ private:
   {
     int selection = 0;
     if(opts.inside())
-      axom::utilities::setBit(selection, 0);
+      axom::utilities::setBitOn(selection, 0);
     if(opts.outside())
-      axom::utilities::setBit(selection, 1);
+      axom::utilities::setBitOn(selection, 1);
     SLIC_ASSERT(selection > 0);
     return selection;
   }
@@ -1055,9 +1057,16 @@ private:
    * \brief Iterate over zones and their respective fragments to determine sizes
    *        for fragments and blend groups.
    *
-   * \note Objects that we need to capture into kernels are passed by value (they only contain views anyway).
+   * \param[in] clipTableViews An object that holds views of the clipping table data.
+   * \param[in] builder This object holds views to blend group data and helps with building/access.
+   * \param[in] zoneData This object holds views to per-zone data.
+   * \param[in] fragmentData This object holds views to per-fragment data.
+   * \param[inout] opts Clipping options.
+   * \param[in] n_clip_field_values The node that contains clipping field values.
+   *
+   * \note Objects that we need to capture into kernels are passed by value (they only contain views anyway). Data can be modified through the views.
    */
-  void computeSizes(ClipTableViews clipTableViews, ZoneData zoneData, FragmentData fragmentData, BlendGroupBuilder<ExecSpace> builder, ClipOptions<ExecSpace> &opts, const conduit::Node &n_clip_field_values) const
+  void computeSizes(ClipTableViews clipTableViews, BlendGroupBuilder<ExecSpace> builder, ZoneData zoneData, FragmentData fragmentData, ClipOptions<ExecSpace> &opts, const conduit::Node &n_clip_field_values) const
   {
     views::Node_to_ArrayView(n_clip_field_values, [&](auto clipFieldView)
     {
@@ -1171,31 +1180,16 @@ private:
   }
 
   /**
-   * \brief Compute the total number of fragments and their size as well as corresponding offsets.
+   * \brief Compute the total number of fragments and their size.
    *
-   * \param[in] fragmentsView The number of fragments in each zone.
-   * \param[in] fragmentOffsetsView The offset to the start of each zone's fragments.
-   * \param[in] fragmentsSizeView The size of each zone's fragment connectivity.
-   * \param[in] fragmentSizeOffsetsView The offset to the start of each zone's fragment connectivity.
-   * \param[out] fragmentSum The sum of the elements in \a fragmentsView.
-   * \param[out] fragmentNIdsSum The sum of the elements in \a fragmentsSizeView.
-   *
+   * \param[inout] fragmentData The object that contains data about the zone fragments.
    */
-  void computeFragmentSizesAndOffsets(FragmentData &fragmentData) const
+  void computeFragmentSizes(FragmentData &fragmentData) const
   {
-#if 1
-    // If we're building for OpenMP, use sequential policies for now to avoid compiler crash.
-    using safe_loop_policy = typename std::conditional<std::is_same<loop_policy, axom::execution_space<axom::OMP_EXEC>::loop_policy>::value, axom::execution_space<axom::SEQ_EXEC>::loop_policy, loop_policy>::type;
-    using safe_reduce_policy = typename std::conditional<std::is_same<reduce_policy, axom::execution_space<axom::OMP_EXEC>::reduce_policy>::value, axom::execution_space<axom::SEQ_EXEC>::reduce_policy, reduce_policy>::type;
-#else
-    using safe_loop_policy = loop_policy;
-    using safe_reduce_policy = reduce_policy;
-#endif
-
     const auto nzones = m_topologyView.numberOfZones();
 
     // Sum the number of fragments.
-    RAJA::ReduceSum<safe_reduce_policy, IndexType> fragment_sum(0);
+    RAJA::ReduceSum<reduce_policy, IndexType> fragment_sum(0);
     const auto fragmentsView = fragmentData.m_fragmentsView;
     axom::for_all<ExecSpace>(nzones, AXOM_LAMBDA(auto zoneIndex)
     {
@@ -1204,28 +1198,54 @@ private:
     fragmentData.m_finalNumZones = fragment_sum.get();
 
     // Sum the fragment connectivity sizes.
-    RAJA::ReduceSum<safe_reduce_policy, IndexType> fragment_nids_sum(0);
+    RAJA::ReduceSum<reduce_policy, IndexType> fragment_nids_sum(0);
     const auto fragmentsSizeView = fragmentData.m_fragmentsSizeView;
     axom::for_all<ExecSpace>(nzones, AXOM_LAMBDA(auto zoneIndex)
     {
       fragment_nids_sum += fragmentsSizeView[zoneIndex];
     });
     fragmentData.m_finalConnSize = fragment_nids_sum.get();
+  }
 
-    // Compute offsets
-    RAJA::exclusive_scan<safe_loop_policy>(RAJA::make_span(fragmentData.m_fragmentsView.data(), nzones),
-                                           RAJA::make_span(fragmentData.m_fragmentOffsetsView.data(), nzones),
-                                           RAJA::operators::plus<IndexType>{});
+  /**
+   * \brief Compute fragment offsets.
+   *
+   * \param[inout] fragmentData The object that contains data about the zone fragments.
+   */
+  void computeFragmentOffsets(FragmentData &fragmentData) const
+  {
+    const auto nzones = m_topologyView.numberOfZones();
+#if 0
+    // NOTE: I was trying to work aroung a RAJA runtime error with OpenMP. No good.
 
-    RAJA::exclusive_scan<safe_loop_policy>(RAJA::make_span(fragmentData.m_fragmentsSizeView.data(), nzones),
-                                           RAJA::make_span(fragmentData.m_fragmentSizeOffsetsView.data(), nzones),
-                                           RAJA::operators::plus<IndexType>{});
+    // Copy sizes into offsets
+    axom::copy(fragmentData.m_fragmentOffsetsView.data(), fragmentData.m_fragmentsView.data(), nzones * sizeof(IndexType));
+    axom::copy(fragmentData.m_fragmentSizeOffsetsView.data(), fragmentData.m_fragmentsSizeView.data(), nzones * sizeof(IndexType));
+    // Make offsets in place.
+    RAJA::exclusive_scan_inplace<loop_policy>(RAJA::make_span(fragmentData.m_fragmentOffsetsView.data(), nzones));
+    RAJA::exclusive_scan_inplace<loop_policy>(RAJA::make_span(fragmentData.m_fragmentSizeOffsetsView.data(), nzones));
+
+#else
+    RAJA::exclusive_scan<loop_policy>(RAJA::make_span(fragmentData.m_fragmentsView.data(), nzones),
+                                      RAJA::make_span(fragmentData.m_fragmentOffsetsView.data(), nzones),
+                                      RAJA::operators::plus<IndexType>{});
+
+    RAJA::exclusive_scan<loop_policy>(RAJA::make_span(fragmentData.m_fragmentsSizeView.data(), nzones),
+                                      RAJA::make_span(fragmentData.m_fragmentSizeOffsetsView.data(), nzones),
+                                      RAJA::operators::plus<IndexType>{});
+#endif
   }
 
   /**
    * \brief Fill in the data for the blend group views.
    *
-   * \note Objects that we need to capture into kernels are passed by value (they only contain views anyway).
+   * \param[in] clipTableViews An object that holds views of the clipping table data.
+   * \param[in] builder This object holds views to blend group data and helps with building/access.
+   * \param[in] zoneData This object holds views to per-zone data.
+   * \param[inout] opts Clipping options.
+   * \param[in] n_clip_field_values The node that contains clipping field values.
+   *
+   * \note Objects that we need to capture into kernels are passed by value (they only contain views anyway). Data can be modified through the views.
    */
   void makeBlendGroups(ClipTableViews clipTableViews, BlendGroupBuilder<ExecSpace> builder, ZoneData zoneData, ClipOptions<ExecSpace> &opts, const conduit::Node &n_clip_field_values) const
   {
@@ -1330,12 +1350,22 @@ private:
 
   /**
    * \brief Make connectivity for the clipped mesh.
-   * \note Objects that we need to capture into kernels are passed by value (they only contain views anyway).
+   *
+   * \param[in] clipTableViews An object that holds views of the clipping table data.
+   * \param[in] builder This object holds views to blend group data and helps with building/access.
+   * \param[in] zoneData This object holds views to per-zone data.
+   * \param[in] fragmentData This object holds views to per-fragment data.
+   * \param[inout] opts Clipping options.
+   * \param[out] n_newTopo The node that will contain the new topology.
+   * \param[out] n_newCoordset The node that will contain the new coordset.
+   * \param[out] n_newFields The node that will contain the new fields.
+   *
+   * \note Objects that we need to capture into kernels are passed by value (they only contain views anyway). Data can be modified through the views.
    */
   void makeConnectivity(ClipTableViews clipTableViews, BlendGroupBuilder<ExecSpace> builder, ZoneData zoneData, FragmentData fragmentData, ClipOptions<ExecSpace> &opts, conduit::Node &n_newTopo, conduit::Node &n_newCoordset, conduit::Node &n_newFields) const
   {
-    const auto allocatorID = axom::execution_space<ExecSpace>::allocatorID();
     constexpr auto connTypeID = axom::mir::utilities::blueprint::cpp2conduit<ConnectivityType>::id;
+    const auto allocatorID = axom::execution_space<ExecSpace>::allocatorID();
     const auto selection = getSelection(opts);
 
     n_newTopo.reset();
@@ -1544,7 +1574,18 @@ private:
     }
   }
 
-  void makeOriginalElements(FragmentData fragmentData, ClipOptions<ExecSpace> &opts, const conduit::Node &n_fields, conduit::Node &n_newTopo, conduit::Node &n_newFields) const
+  /**
+   * \brief Make an originalElements field so we can know each output zone's original zone number in the input mesh.
+   *
+   * \param[in] fragmentData This object holds views to per-fragment data.
+   * \param[in] opts Clipping options.
+   * \param[in[ n_fields The node that contains the input mesh's fields.
+   * \param[out] n_newTopo The node that will contain the new topology.
+   * \param[out] n_newFields The node that will contain the new fields.
+   *
+   * \note Objects that we need to capture into kernels are passed by value (they only contain views anyway). Data can be modified through the views.
+   */
+  void makeOriginalElements(FragmentData fragmentData, const ClipOptions<ExecSpace> &opts, const conduit::Node &n_fields, conduit::Node &n_newTopo, conduit::Node &n_newFields) const
   {
     constexpr auto connTypeID = axom::mir::utilities::blueprint::cpp2conduit<ConnectivityType>::id;
 
