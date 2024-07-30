@@ -65,9 +65,8 @@ std::vector<std::string> case3 {"shaping/case3/case3_012.yaml",
 std::vector<std::string> case4 {"shaping/case4/case4.yaml",
                                 "shaping/case4/case4_overwrite.yaml"};
 
-// std::vector<std::string> proeCase {"shaping/proeCase/proeCase1.yaml",
-//                                    "shaping/proeCase/proeCase2.yaml"};
-std::vector<std::string> proeCase {"shaping/proeCase/proeCase1.yaml"};
+std::vector<std::string> proeCase {"shaping/proeCase/proeCase1.yaml",
+                                   "shaping/proeCase/proeCase2.yaml"};
 
 namespace klee = axom::klee;
 namespace primal = axom::primal;
@@ -773,8 +772,6 @@ shapes:
   }
 }
 
-/*
-
 //---------------------------------------------------------------------------
 // Define testing functions for different modes.
 #if defined(AXOM_USE_RAJA) && defined(AXOM_USE_UMPIRE)
@@ -907,8 +904,6 @@ TEST(IntersectionShaperTest, case4_hip)
   #endif
 #endif
 
-*/
-
 // proeCase
 #if defined(AXOM_USE_RAJA) && defined(AXOM_USE_UMPIRE)
   #if defined(RUN_AXOM_SEQ_TESTS)
@@ -941,7 +936,6 @@ TEST(IntersectionShaperTest, proeCase_hip)
   #endif
 #endif
 
-/*
 //---------------------------------------------------------------------------
 // Line
 #if defined(AXOM_USE_RAJA) && defined(AXOM_USE_UMPIRE)
@@ -1144,8 +1138,6 @@ TEST(IntersectionShaperTest, line_rotate_hip)
 }
   #endif
 #endif
-
-*/
 
 //---------------------------------------------------------------------------
 int main(int argc, char *argv[])

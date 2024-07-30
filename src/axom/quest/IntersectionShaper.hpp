@@ -486,7 +486,7 @@ public:
     int polyline_size = pointcount;
 
     // Generate the Octahedra
-    // (octahedra will be on device)
+    // (octahedra m_octs will be on device)
     const bool disc_status = axom::quest::discretize<ExecSpace>(polyline,
                                                                 polyline_size,
                                                                 m_level,
@@ -591,9 +591,6 @@ public:
         "Running intersection-based shaper in execution Space: {}",
         axom::execution_space<ExecSpace>::name())));
 
-    // TODO
-    // axom::setDefaultAllocator(::getUmpireDeviceId<ExecSpace>());
-
     const auto& shapeName = shape.getName();
     AXOM_UNUSED_VAR(shapeDimension);
     AXOM_UNUSED_VAR(shapeName);
@@ -616,8 +613,6 @@ public:
       SLIC_ERROR(
         axom::fmt::format("The shape format {} is unsupported", shapeFormat));
     }
-    // TODO
-    // axom::setDefaultAllocator(current_allocator);
   }
 #endif
 
@@ -637,8 +632,6 @@ public:
     constexpr int NUM_TETS_PER_HEX = 24;
     constexpr double ZERO_THRESHOLD = 1.e-10;
 
-    // TODO
-    // axom::setDefaultAllocator(::getUmpireDeviceId<ExecSpace>());
     SLIC_INFO(axom::fmt::format("{:-^80}",
                                 " Inserting shapes' bounding boxes into BVH "));
 
@@ -709,7 +702,6 @@ public:
       NE * NUM_VERTS_PER_HEX * NUM_COMPS_PER_VERT,
       NE * NUM_VERTS_PER_HEX * NUM_COMPS_PER_VERT,
       host_allocator);
-    // axom::ArrayView<double> verts_view = vertCoords.view();
 
     for(int i = 0; i < NE; i++)
     {
@@ -815,7 +807,6 @@ public:
       "{:-^80}",
       " Finding shape candidates for each hexahedral element "));
 
-    // TODO have all this stuff on device?
     axom::Array<IndexType> offsets(NE, NE, kernel_allocator);
     axom::Array<IndexType> counts(NE, NE, kernel_allocator);
     axom::Array<IndexType> candidates;
@@ -833,14 +824,7 @@ public:
         totalCandidates += counts_device_view[i];
       });
 
-    printf("!!!!!!!!!!!! Total candidates is %d\n", totalCandidates.get());
-
     // Initialize hexahedron indices and shape candidates
-    // axom::IndexType* hex_indices =
-    //   axom::allocate<axom::IndexType>(totalCandidates.get() * NUM_TETS_PER_HEX);
-    // axom::IndexType* shape_candidates =
-    //   axom::allocate<axom::IndexType>(totalCandidates.get() * NUM_TETS_PER_HEX);
-
     axom::Array<IndexType> hex_indices_device(
       totalCandidates.get() * NUM_TETS_PER_HEX,
       totalCandidates.get() * NUM_TETS_PER_HEX,
@@ -861,8 +845,6 @@ public:
       tets_from_hexes_device.view();
 
     // Index into 'tets'
-    // axom::IndexType* tet_indices =
-    //   axom::allocate<axom::IndexType>(totalCandidates.get() * NUM_TETS_PER_HEX);
     axom::Array<IndexType> tet_indices_device(
       totalCandidates.get() * NUM_TETS_PER_HEX,
       totalCandidates.get() * NUM_TETS_PER_HEX,
@@ -967,18 +949,6 @@ public:
       axom::Array<IndexType> newTotalCandidates_calc_host =
         axom::Array<IndexType>(newTotalCandidates_device, host_allocator);
 
-      axom::Array<IndexType> c_host(1, 1, host_allocator);
-      c_host[0] = 0;
-      axom::Array<IndexType> c_device =
-        axom::Array<IndexType>(c_host, kernel_allocator);
-      auto mycounter = c_device.view();
-
-      axom::Array<double> jank_vol_host(1, 1, host_allocator);
-      jank_vol_host[0] = 0;
-      axom::Array<double> jank_vol_device =
-        axom::Array<double>(jank_vol_host, kernel_allocator);
-      auto jank_vol_view = jank_vol_device.view();
-
       AXOM_ANNOTATE_SCOPE("tet_shape_volume");
       axom::for_all<ExecSpace>(
         newTotalCandidates_calc_host[0],
@@ -996,58 +966,13 @@ public:
           // Poly is valid
           if(poly.numVertices() >= 4)
           {
-            // RAJA::atomicAdd<ATOMIC_POL>(mycounter.data(),
-            //                 IndexType {1});
-            double temp = poly.volume();
-            RAJA::atomicAdd<ATOMIC_POL>(jank_vol_view.data(), temp);
+            // Workaround - intermediate volume variable needed for
+            // CUDA Pro/E test case correctness
+            double volume = poly.volume();
             RAJA::atomicAdd<ATOMIC_POL>(overlap_volumes_device_view.data() + index,
-                                        temp);
-
-            // int dog = 0;
-            // for(int cat = 0; cat < 10000; cat++)
-            // {
-            //   dog += cat;
-            // }
-
-            // printf("Ith iteration %d does clip!\n"
-            //        "\tPolyhedron is \t(%f, %f, %f), \n\t\t\t(%f, %f, %f), \n\t\t\t(%f, %f, %f), \n\t\t\t(%f, %f, %f)\n"
-            //        "\tTet is \t(%f, %f, %f), \n\t\t(%f, %f, %f), \n\t\t(%f, %f, %f), \n\t\t(%f, %f, %f)\n\n",
-            //        i,
-            //   shapes_device_view[shapeIndex][0][0],
-            //   shapes_device_view[shapeIndex][0][1],
-            //   shapes_device_view[shapeIndex][0][2],
-            //   shapes_device_view[shapeIndex][1][0],
-            //   shapes_device_view[shapeIndex][1][1],
-            //   shapes_device_view[shapeIndex][1][2],
-            //   shapes_device_view[shapeIndex][2][0],
-            //   shapes_device_view[shapeIndex][2][1],
-            //   shapes_device_view[shapeIndex][2][2],
-            //   shapes_device_view[shapeIndex][3][0],
-            //   shapes_device_view[shapeIndex][3][1],
-            //   shapes_device_view[shapeIndex][3][2],
-            //   tets_from_hexes_device_view[tetIndex][0][0],
-            //   tets_from_hexes_device_view[tetIndex][0][1],
-            //   tets_from_hexes_device_view[tetIndex][0][2],
-            //   tets_from_hexes_device_view[tetIndex][1][0],
-            //   tets_from_hexes_device_view[tetIndex][1][1],
-            //   tets_from_hexes_device_view[tetIndex][1][2],
-            //   tets_from_hexes_device_view[tetIndex][2][0],
-            //   tets_from_hexes_device_view[tetIndex][2][1],
-            //   tets_from_hexes_device_view[tetIndex][2][2],
-            //   tets_from_hexes_device_view[tetIndex][3][0],
-            //   tets_from_hexes_device_view[tetIndex][3][1],
-            //   tets_from_hexes_device_view[tetIndex][3][2]
-            // );
+                                        volume);
           }
         });
-
-      axom::Array<IndexType> c_host_2 =
-        axom::Array<IndexType>(c_device, host_allocator);
-      printf("!!!!!!!!!!!! My clip counter is  %d\n", c_host_2[0]);
-
-      axom::Array<double> j_vol_2 =
-        axom::Array<double>(jank_vol_device, host_allocator);
-      printf("!!!!!!!!!!!! My jank total volume is  %f\n", j_vol_2[0]);
     }
 
     RAJA::ReduceSum<REDUCE_POL, double> totalOverlap(0);
@@ -1066,14 +991,6 @@ public:
     SLIC_INFO(axom::fmt::format(axom::utilities::locale(),
                                 "Total mesh volume is {:.3Lf}",
                                 this->allReduceSum(totalHex)));
-
-    // Deallocate no longer needed variables
-    // axom::deallocate(hex_indices);
-    // axom::deallocate(shape_candidates);
-    // axom::deallocate(tet_indices);
-
-    // TODO
-    // axom::setDefaultAllocator(current_allocator);
   }  // end of runShapeQuery() function
 #endif
 
@@ -1306,8 +1223,6 @@ public:
     SLIC_ASSERT(shapeVolFrac != nullptr);
 
     // Allocate some memory for the replacement rule data arrays.
-    // TODO
-    // int execSpaceAllocatorID = ::getUmpireDeviceId<ExecSpace>();
     int execSpaceAllocatorID = axom::execution_space<ExecSpace>::allocatorID();
 
     Array<double> vf_subtract_array(dataSize, dataSize, execSpaceAllocatorID);
