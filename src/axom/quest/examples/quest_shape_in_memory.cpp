@@ -772,6 +772,12 @@ int main(int argc, char** argv)
   AXOM_ANNOTATE_END("load mesh");
   printMeshInfo(shapingDC.GetMesh(), "After loading");
 
+  const axom::IndexType cellCount = shapingMesh->GetNE();
+
+  // TODO Port to GPUs.  Shaper should be data-parallel, but data may not be on devices yet.
+  using ExecSpace = typename axom::SEQ_EXEC;
+  using ReducePolicy = typename axom::execution_space<ExecSpace>::reduce_policy;
+
   //---------------------------------------------------------------------------
   // Initialize the shaping query object
   //---------------------------------------------------------------------------
@@ -928,32 +934,6 @@ std::cout<< "Vol of tet mesh is " << vol << std::endl;
   shaper->adjustVolumeFractions();
 
   //---------------------------------------------------------------------------
-  // Correctness test: shape volume in shapingMesh should match volume of the shape mesh.
-  //---------------------------------------------------------------------------
-  for(const auto& shape : shapeSet.getShapes())
-  {
-    axom::klee::Geometry::SimplexMesh shapeMesh(shape.getGeometry().getBlueprintMesh(),
-                                                shape.getGeometry().getBlueprintTopology());
-    double shapeMeshVol = volumeOfTetMesh(shapeMesh);
-
-    const std::string& materialName = shape.getMaterial();
-    double shapeVol = sumMaterialVolumes<axom::SEQ_EXEC>( &shapingDC, materialName );
-    double diff = shapeVol - shapeMeshVol;
-
-    bool err = !axom::utilities::isNearlyEqual(shapeVol, shapeMeshVol);
-
-    SLIC_INFO(axom::fmt::format(
-                "{:-^80}",
-                axom::fmt::format("Material '{}' in shape '{}' has volume {}, diff of {}, {}.",
-                                  materialName,
-                                  shape.getName(),
-                                  shapeVol,
-                                  diff,
-                                  (err ? "ERROR" : "OK") )));
-  }
-  slic::flushStreams();
-
-  //---------------------------------------------------------------------------
   // Compute and print volumes of each material's volume fraction
   //---------------------------------------------------------------------------
   using axom::utilities::string::startsWith;
@@ -978,6 +958,91 @@ std::cout<< "Vol of tet mesh is " << vol << std::endl;
     }
   }
   AXOM_ANNOTATE_END("adjust");
+
+  int failCounts = 0;
+
+  auto* volFracGroups = shapingDC.GetBPGroup()->getGroup("matsets/material/volume_fractions");
+
+  //---------------------------------------------------------------------------
+  // Correctness test: volume fractions should be in [0,1].
+  //---------------------------------------------------------------------------
+  RAJA::ReduceSum<ReducePolicy, axom::IndexType> rangeViolationCount(0);
+  for (axom::sidre::Group& materialGroup : volFracGroups->groups())
+  {
+    axom::sidre::View* values = materialGroup.getView("value");
+    double* volFracData = values->getArray();
+    axom::ArrayView<double> volFracDataView(volFracData, cellCount);
+    axom::for_all<ExecSpace>(cellCount,
+                             AXOM_LAMBDA(axom::IndexType i) {
+                               bool bad = volFracDataView[i] < 0.0 || volFracDataView[i] > 1.0;
+                               rangeViolationCount += bad; });
+  }
+
+  failCounts += (rangeViolationCount.get() != 0);
+
+  SLIC_INFO(axom::fmt::format(
+              "{:-^80}",
+              axom::fmt::format("Count of volume fractions outside of [0,1]: {}.",
+                                rangeViolationCount.get())));
+  slic::flushStreams();
+
+  //---------------------------------------------------------------------------
+  // Correctness test: volume fractions in each cell should sum to 1.0.
+  //---------------------------------------------------------------------------
+  axom::Array<double> volSums(cellCount);
+  volSums.fill(0.0);
+  axom::ArrayView<double> volSumsView = volSums.view();
+  for (axom::sidre::Group& materialGroup : volFracGroups->groups())
+  {
+    axom::sidre::View* values = materialGroup.getView("value");
+    double* volFracData = values->getArray();
+    axom::ArrayView<double> volFracDataView(volFracData, cellCount);
+    axom::for_all<ExecSpace>(cellCount,
+                             AXOM_LAMBDA(axom::IndexType i) {
+                               volSumsView[i] += volFracDataView[i]; });
+  }
+  RAJA::ReduceSum<ReducePolicy, axom::IndexType> nonUnitSums(0);
+  axom::for_all<ExecSpace>(
+    cellCount,
+    AXOM_LAMBDA(axom::IndexType i) {
+      bool bad = !axom::utilities::isNearlyEqual(volSums[i], 0.0);
+      nonUnitSums += bad;
+    });
+
+  failCounts += (nonUnitSums.get() != 0);
+
+  SLIC_INFO(axom::fmt::format(
+              "{:-^80}",
+              axom::fmt::format("Count non-unit volume fraction sums: {}.",
+                                nonUnitSums.get())));
+  slic::flushStreams();
+
+  //---------------------------------------------------------------------------
+  // Correctness test: shape volume in shapingMesh should match volume of the shape mesh.
+  //---------------------------------------------------------------------------
+  for(const auto& shape : shapeSet.getShapes())
+  {
+    axom::klee::Geometry::SimplexMesh shapeMesh(shape.getGeometry().getBlueprintMesh(),
+                                                shape.getGeometry().getBlueprintTopology());
+    double shapeMeshVol = volumeOfTetMesh(shapeMesh);
+
+    const std::string& materialName = shape.getMaterial();
+    double shapeVol = sumMaterialVolumes<axom::SEQ_EXEC>( &shapingDC, materialName );
+    double diff = shapeVol - shapeMeshVol;
+
+    bool err = !axom::utilities::isNearlyEqual(shapeVol, shapeMeshVol);
+    failCounts += err;
+
+    SLIC_INFO(axom::fmt::format(
+                "{:-^80}",
+                axom::fmt::format("Material '{}' in shape '{}' has volume {}, diff of {}, {}.",
+                                  materialName,
+                                  shape.getName(),
+                                  shapeVol,
+                                  diff,
+                                  (err ? "ERROR" : "OK") )));
+  }
+  slic::flushStreams();
 
   //---------------------------------------------------------------------------
   // Save meshes and fields
@@ -1011,5 +1076,5 @@ std::cout<< "Vol of tet mesh is " << vol << std::endl;
 
   finalizeLogger();
 
-  return 0;
+  return failCounts;
 }
