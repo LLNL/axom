@@ -339,8 +339,6 @@ public:
    */
   BitsetType getCandidates(const SpacePoint& pt) const
   {
-    int host_allocatorId = axom::execution_space<axom::SEQ_EXEC>::allocatorID();
-
     if(!m_initialized || !m_bb.contains(pt))
     {
       return BitsetType(0);
@@ -351,77 +349,13 @@ public:
     // Note: Need to clamp the upper range of the gridCell
     //       to handle points on the upper boundaries of the bbox
     //       This is valid since we've already ensured that pt is in the bbox.
+    IndexType idx = axom::utilities::clampUpper(gridCell[0], highestBin(0));
+    BitsetType res = m_binData[0][idx];
 
-    axom::Array<int> bin_size_device(1, 1, m_allocatorId);
-    auto bin_size_view = bin_size_device.view();
-
-    axom::Array<const std::uint64_t*> bin_data_device(NDIMS, NDIMS, m_allocatorId);
-    auto bin_data_view = bin_data_device.view();
-
-    axom::Array<int> indices_host(NDIMS, NDIMS, host_allocatorId);
-
-    // Bypass HIP host-side memory access error
-    const BitsetType* binData[NDIMS];
-
-    for(int i = 0; i < NDIMS; i++)
+    for(int i = 1; i < NDIMS; ++i)
     {
-      indices_host[i] = axom::utilities::clampUpper(gridCell[i], highestBin(i));
-      binData[i] = m_binData[i].data().data();
-    }
-    axom::Array<int> indices_device =
-      axom::Array<int>(indices_host, m_allocatorId);
-    auto indices_view = indices_device.view();
-
-// Workaround for device execution policy,
-// where BitSet::size() is on the host for HIP,
-// but is on the device for CUDA due to Address Translation Services
-#if defined(AXOM_USE_HIP)
-    axom::Array<int> binSizeFix_host(1, 1, host_allocatorId);
-    binSizeFix_host[0] = m_binData[0][indices_host[0]].size();
-    axom::Array<int> binSizeFix_device =
-      axom::Array<int>(binSizeFix_host, m_allocatorId);
-    auto binSizeFix_view = binSizeFix_device.view();
-#endif
-
-    for_all<ExecSpace>(
-      NDIMS,
-      AXOM_LAMBDA(IndexType i) {
-#if defined(AXOM_USE_HIP)
-        bin_size_view[0] = binSizeFix_view[0];
-#else
-        bin_size_view[0] = m_binData[0][indices_view[0]].size();
-#endif
-
-        bin_data_view[i] = binData[i][indices_view[i]].data();
-      });
-
-    axom::Array<int> bin_size_host =
-      axom::Array<int>(bin_size_device, host_allocatorId);
-    axom::Array<const std::uint64_t*> bin_data_host =
-      axom::Array<const std::uint64_t*>(bin_data_device, host_allocatorId);
-
-    BitsetType res(bin_size_host[0], host_allocatorId);
-
-    for(int i = 0; i < NDIMS; i++)
-    {
-      BitsetType dim_set(bin_size_host[0], host_allocatorId);
-      axom::copy(
-        dim_set.data(),
-        bin_data_host[i],
-        (dim_set.size() == 0) ? sizeof(std::uint64_t)
-                              : sizeof(std::uint64_t) *
-            (1 +
-             (dim_set.size() - 1) /
-               axom::utilities::BitTraits<std::uint64_t>::BITS_PER_WORD));
-
-      if(i == 0)
-      {
-        res |= dim_set;
-      }
-      else
-      {
-        res &= dim_set;
-      }
+      idx = axom::utilities::clampUpper(gridCell[i], highestBin(i));
+      res &= m_binData[i][idx];
     }
 
     return res;

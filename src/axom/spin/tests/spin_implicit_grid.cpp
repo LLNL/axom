@@ -792,6 +792,16 @@ TYPED_TEST(ImplicitGridExecTest, get_candidates_box_vectorized)
 
   int hostAllocID = axom::execution_space<axom::SEQ_EXEC>::allocatorID();
   int kernelAllocID = axom::execution_space<ExecSpace>::allocatorID();
+  int unifiedAllocID = axom::execution_space<ExecSpace>::allocatorID();
+
+#if defined(AXOM_USE_GPU) && defined(AXOM_USE_UMPIRE)
+  if(axom::execution_space<ExecSpace>::onDevice())
+  {
+    kernelAllocID = axom::getUmpireResourceAllocatorID(umpire::resource::Device);
+    unifiedAllocID =
+      axom::getUmpireResourceAllocatorID(umpire::resource::Unified);
+  }
+#endif
 
   // Note: A 10 x 10 x 10 implicit grid in the unit cube.
   //       Grid cells have a spacing of .1 along each dimension
@@ -799,9 +809,9 @@ TYPED_TEST(ImplicitGridExecTest, get_candidates_box_vectorized)
   BBox bbox(SpacePt(0.), SpacePt(1.));
   const int maxElts = 30;
 
-  // Initialize Implicit Grid on device.
+  // Initialize Implicit Grid in unified memory.
   // getCandidates() function not yet __host __device__ decorated
-  GridT grid(bbox, &res, maxElts, kernelAllocID);
+  GridT grid(bbox, &res, maxElts, unifiedAllocID);
   const int i_max = DIM >= 1 ? grid.gridResolution()[0] : 1;
   const int j_max = DIM >= 2 ? grid.gridResolution()[1] : 1;
   const int k_max = DIM >= 3 ? grid.gridResolution()[2] : 1;
@@ -842,8 +852,8 @@ TYPED_TEST(ImplicitGridExecTest, get_candidates_box_vectorized)
       }
     }
 
-    // Copy boxes to device memory
-    axom::Array<BBox> BBoxesDevice = axom::Array<BBox>(BBoxes, kernelAllocID);
+    // Copy boxes to unified memory (for getCandidates() call)
+    axom::Array<BBox> BBoxesDevice = axom::Array<BBox>(BBoxes, unifiedAllocID);
 
     grid.insert(10 * DIM, BBoxesDevice.data(), 0);
     // Check that each grid cell contains DIM objects
@@ -854,7 +864,9 @@ TYPED_TEST(ImplicitGridExecTest, get_candidates_box_vectorized)
         for(int k = 0; k < k_max; ++k)
         {
           queryPt[0] = SpacePt {i * .1 + .05, j * .1 + .05, k * .1 + .05};
-          EXPECT_EQ(DIM, grid.getCandidates(queryPt[0]).count());
+          axom::Array<SpacePt> queryPtDevice =
+            axom::Array<SpacePt>(queryPt, unifiedAllocID);
+          EXPECT_EQ(DIM, grid.getCandidates(queryPtDevice[0]).count());
         }
       }
     }
