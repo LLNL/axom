@@ -113,21 +113,23 @@ public:
    * \tparam ExecSpace The execution space for the function body.
    * \tparam FuncType  The type for the function/lambda to execute. It will accept a zone index and shape.
    *
+   * \param selectedIdsView A view containing selected zone ids.
    * \param func The function/lambda that will be executed for each zone in the mesh.
    */
   template <typename ExecSpace, typename ViewType, typename FuncType>
-  void for_selected_zones(const ViewType &selectedIdsView, const FuncType &&func) const
+  void for_selected_zones(const ViewType &selectedIdsView, FuncType &&func) const
   {
     const auto nSelectedZones = selectedIdsView.size();
 
     ConnectivityView connectivityView(m_connectivity);
+    const ViewType localSelectedIdsView(selectedIdsView);
     if constexpr (ShapeType::is_variable_size())
     {
       ConnectivityView sizesView(m_sizes);
       ConnectivityView offsetsView(m_offsets);
       axom::for_all<ExecSpace>(0, nSelectedZones, AXOM_LAMBDA(auto selectIndex)
       {
-        const auto zoneIndex = selectedIdsView[selectIndex];
+        const auto zoneIndex = localSelectedIdsView[selectIndex];
         const ConnectivityView shapeDataView(connectivityView.data() + offsetsView[zoneIndex], sizesView[zoneIndex]);
         const ShapeType shape(shapeDataView);
         func(zoneIndex, shape);
@@ -137,7 +139,7 @@ public:
     {
       axom::for_all<ExecSpace>(0, nSelectedZones, AXOM_LAMBDA(auto selectIndex)
       {
-        const auto zoneIndex = selectedIdsView[selectIndex];
+        const auto zoneIndex = localSelectedIdsView[selectIndex];
         const ConnectivityView shapeData(connectivityView.data() + ShapeType::zoneOffset(zoneIndex), ShapeType::numberOfNodes());
         const ShapeType shape(shapeData);
         func(zoneIndex, shape);

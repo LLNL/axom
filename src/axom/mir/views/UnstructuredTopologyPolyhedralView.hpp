@@ -192,7 +192,7 @@ public:
   }
 
   template <typename ExecSpace, typename ViewType, typename FuncType>
-  void for_selected_zones(const ViewType &selectedIdsView, const FuncType &&func) const
+  void for_selected_zones(const ViewType &selectedIdsView, FuncType &&func) const
   {
     const auto nSelectedZones = selectedIdsView.size();
 

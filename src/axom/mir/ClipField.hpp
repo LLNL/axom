@@ -22,6 +22,51 @@
 #include <map>
 #include <string>
 
+#define AXOM_CLIPFIELD_SCAN_WORKAROUND
+
+#if defined(AXOM_CLIPFIELD_SCAN_WORKAROUND)
+// NOTE: Longer term, we should hide more RAJA functionality behind axom wrappers
+//       so we can write serial versions for when RAJA is not enabled.
+namespace axom
+{
+template <typename ExecSpace, typename ArrayViewType>
+struct scans
+{
+  inline void exclusive_scan(const ArrayViewType &input, ArrayViewType &output)
+  {
+    using loop_policy = typename axom::execution_space<ExecSpace>::loop_policy;
+    assert(input.size() == output.size());
+    RAJA::exclusive_scan<loop_policy>(RAJA::make_span(input.data(), input.size()),
+                                      RAJA::make_span(output.data(), output.size()));
+  }
+};
+
+// Workaround for OpenMP
+template <typename ArrayViewType>
+struct scans<axom::OMP_EXEC, ArrayViewType>
+{
+  inline void exclusive_scan(const ArrayViewType &input, ArrayViewType &output)
+  {
+    assert(input.size() == output.size());
+    // RAJA is not working in OpenMP. Do serial.
+    output[0] = 0;
+    for(IndexType i = 1; i < input.size(); i++)
+    {
+      output[i] = output[i - 1] + input[i - 1];
+    }
+  }
+};
+
+template <typename ExecSpace, typename ArrayViewType>
+inline void exclusive_scan(const ArrayViewType &input, ArrayViewType &output)
+{
+  scans<ExecSpace, ArrayViewType> s;
+  s.exclusive_scan(input, output);
+}
+
+} // end namespace axom
+#endif
+
 namespace axom
 {
 namespace mir
@@ -31,30 +76,12 @@ namespace clipping
 namespace details
 {
 
-#if 0
-// NOTE: Longer term, we should hide more RAJA functionality behind axom wrappers
-//       so we can write serial versions for when RAJA is not enabled.
-namespace axom
-{
-namespace operators
-{
-template <typename DataType>
-using plus = RAJA::operators::plus<DataType>;
-} // end namespace operators
-} // end namespace axom
-
-template <typename ExecSpace, typename ArrayViewType, typename OperatorType>
-void exclusive_scan(ArrayViewType &input, ArrayViewType &output, OperatorType &op)
-{
-  assert(input.size() == output.size());
-  using loop_policy = typename axom::execution_space<ExecSpace>::loop_policy;
-  RAJA::exclusive_scan<loop_policy>(RAJA::make_span(input.data(), input.size()),
-                                    RAJA::make_span(output.data(), output.size()),
-                                    op);
-}
-
-#endif
-
+/**
+ * \brief Turns a Conduit "shape_map" node into an easier STL-representation.
+ *
+ * \param n_shape_map The node that contains the shape_map.
+ * \return An STL-representation of the shape_map.
+ */
 std::map<std::string, int>
 shapeMap_NameValue(const conduit::Node &n_shape_map)
 {
@@ -66,6 +93,12 @@ shapeMap_NameValue(const conduit::Node &n_shape_map)
   return sm;
 }
 
+/**
+ * \brief Turns a Conduit "shape_map" node into an easier STL-representation.
+ *
+ * \param n_shape_map The node that contains the shape_map.
+ * \return An STL-representation of the shape_map.
+ */
 std::map<int, std::string>
 shapeMap_ValueName(const conduit::Node &n_shape_map)
 {
@@ -138,6 +171,11 @@ shapeMap_FromFlags(std::uint64_t shapes)
   return sm;
 }
 
+/**
+ * \brief Returns a clip table index for the input shapeId.
+ * \param shapeId A shapeID (e.g. Tet_ShapeID)
+ * \return The clip table index for the shape.
+ */
 AXOM_HOST_DEVICE
 int getClipTableIndex(int shapeId)
 {
@@ -181,6 +219,15 @@ bool shapeIsSelected(unsigned char color, int selection)
          (color1Selected(selection) && color == COLOR1);
 }
 
+/**
+ * \brief Compute a parametric value for where clipValues occurs in [d0,d1], clamped to [0,1].
+ *
+ * \param d0 The first data value.
+ * \param d1 The second data value.
+ * \param clipValue The data value we're looking for.
+ *
+ * \return A parametric position t [0,1] where we locate \a clipValues in [d0,d1].
+ */
 AXOM_HOST_DEVICE
 inline float computeWeight(float d0, float d1, float clipValue)
 {
@@ -515,6 +562,10 @@ public:
    */
   void computeBlendGroupOffsets()
   {
+#if defined(AXOM_CLIPFIELD_SCAN_WORKAROUND)
+    axom::exclusive_scan<ExecSpace>(m_state.m_blendGroupsLenView, m_state.m_blendOffsetView);
+    axom::exclusive_scan<ExecSpace>(m_state.m_blendGroupsView, m_state.m_blendGroupOffsetsView);
+#else
     using loop_policy = typename axom::execution_space<ExecSpace>::loop_policy;
     // Fill in offsets via scan.
     RAJA::exclusive_scan<loop_policy>(RAJA::make_span(m_state.m_blendGroupsLenView.data(), m_state.m_nzones),
@@ -523,6 +574,7 @@ public:
     RAJA::exclusive_scan<loop_policy>(RAJA::make_span(m_state.m_blendGroupsView.data(), m_state.m_nzones),
                                       RAJA::make_span(m_state.m_blendGroupOffsetsView.data(), m_state.m_nzones),
                                       RAJA::operators::plus<IndexType>{});
+#endif
   }
 
   /**
@@ -1214,18 +1266,26 @@ private:
    */
   void computeFragmentOffsets(FragmentData &fragmentData) const
   {
-    const auto nzones = m_topologyView.numberOfZones();
+#if defined(AXOM_CLIPFIELD_SCAN_WORKAROUND)
+    // NOTE: I was trying to work aroung a RAJA runtime error with OpenMP. No good.
+    axom::exclusive_scan<ExecSpace>(fragmentData.m_fragmentsView, fragmentData.m_fragmentOffsetsView);
+    axom::exclusive_scan<ExecSpace>(fragmentData.m_fragmentsSizeView, fragmentData.m_fragmentSizeOffsetsView);
+#endif
 #if 0
     // NOTE: I was trying to work aroung a RAJA runtime error with OpenMP. No good.
 
     // Copy sizes into offsets
+    const auto nzones = m_topologyView.numberOfZones();
     axom::copy(fragmentData.m_fragmentOffsetsView.data(), fragmentData.m_fragmentsView.data(), nzones * sizeof(IndexType));
     axom::copy(fragmentData.m_fragmentSizeOffsetsView.data(), fragmentData.m_fragmentsSizeView.data(), nzones * sizeof(IndexType));
     // Make offsets in place.
     RAJA::exclusive_scan_inplace<loop_policy>(RAJA::make_span(fragmentData.m_fragmentOffsetsView.data(), nzones));
     RAJA::exclusive_scan_inplace<loop_policy>(RAJA::make_span(fragmentData.m_fragmentSizeOffsetsView.data(), nzones));
 
-#else
+#endif
+#if 0
+    // Original code.
+    const auto nzones = m_topologyView.numberOfZones();
     RAJA::exclusive_scan<loop_policy>(RAJA::make_span(fragmentData.m_fragmentsView.data(), nzones),
                                       RAJA::make_span(fragmentData.m_fragmentOffsetsView.data(), nzones),
                                       RAJA::operators::plus<IndexType>{});
@@ -1502,10 +1562,13 @@ private:
     }
 
     // Make offsets
+#if defined(AXOM_CLIPFIELD_SCAN_WORKAROUND)
+    axom::exclusive_scan<ExecSpace>(sizesView, offsetsView);
+#else
     RAJA::exclusive_scan<loop_policy>(RAJA::make_span(sizesView.data(), fragmentData.m_finalNumZones),
                                       RAJA::make_span(offsetsView.data(), fragmentData.m_finalNumZones),
                                       RAJA::operators::plus<ConnectivityType>{});
-
+#endif
     // Add shape information to the connectivity.
     const auto shapesUsed = shapesUsed_reduce.get();
     const auto shapeMap = details::shapeMap_FromFlags(shapesUsed);
