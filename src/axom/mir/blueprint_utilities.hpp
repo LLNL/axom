@@ -77,20 +77,34 @@ struct cpp2conduit<conduit::float64> { using type = conduit::float64; static con
  *        permits Conduit to allocate through Axom's UMPIRE logic.
  *
  */
+template <typename ExecSpace>
 class ConduitAllocateThroughAxom
 {
 public:
-  ConduitAllocateThroughAxom(int _allocatorID);
-  ~ConduitAllocateThroughAxom();
-
-  conduit::index_t getConduitAllocatorID() const;
+  static conduit::index_t getConduitAllocatorID()
+  {
+    static conduit::index_t conduitAllocatorID = -1;
+    if(conduitAllocatorID == -1)
+    {
+      conduitAllocatorID = conduit::utils::register_allocator(internal_allocate, internal_free);
+    }
+    return conduitAllocatorID;
+  }
 
 private:
-  static void *internal_allocate(size_t items, size_t item_size);
-  static void internal_free(void *ptr);
+  static void *internal_allocate(size_t items, size_t item_size)
+  {
+    const auto axomAllocatorID = axom::execution_space<ExecSpace>::allocatorID();
+    void *ptr = static_cast<void *>(axom::allocate<std::uint8_t>(items * item_size, axomAllocatorID));
+    std::cout << axom::execution_space<ExecSpace>::name() << ": Allocated for Conduit via axom: items=" << items << ", item_size=" << item_size << ", ptr=" << ptr << std::endl;
+    return ptr;
+  }
 
-  static conduit::index_t conduitAllocatorID;
-  static int              axomAllocatorID;
+  static void internal_free(void *ptr)
+  {
+    std::cout << axom::execution_space<ExecSpace>::name() << ": Dellocating for Conduit via axom: ptr=" << ptr << std::endl;
+    axom::deallocate(ptr);
+  }
 };
 
 //------------------------------------------------------------------------------
@@ -112,8 +126,7 @@ void
 to_unstructured(const conduit::Node &topo, const conduit::Node &coordset, const std::string &topoName, conduit::Node &mesh)
 {
   const std::string type = topo.fetch_existing("type").as_string();
-  const auto allocatorID = axom::execution_space<ExecSpace>::allocatorID();
-  ConduitAllocateThroughAxom c2a(axom::execution_space<ExecSpace>::allocatorID());
+  ConduitAllocateThroughAxom<ExecSpace> c2a;
 
   mesh["coordsets"][coordset.name()].set_external(coordset);
   conduit::Node &newtopo = mesh["topologies"][topoName];
@@ -177,7 +190,7 @@ to_unstructured(const conduit::Node &topo, const conduit::Node &coordset, const 
 template <typename ExecSpace>
 void copy(conduit::Node &dest, const conduit::Node &src)
 {
-  ConduitAllocateThroughAxom c2a(axom::execution_space<ExecSpace>::allocatorID());
+  ConduitAllocateThroughAxom<ExecSpace> c2a;
 
   if(src.number_of_children() > 0)
   {

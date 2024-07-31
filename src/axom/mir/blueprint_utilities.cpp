@@ -13,7 +13,7 @@ namespace utilities
 {
 namespace blueprint
 {
-
+#if 0
 conduit::index_t ConduitAllocateThroughAxom::conduitAllocatorID = -1;
 int ConduitAllocateThroughAxom::axomAllocatorID = 0;
 
@@ -51,6 +51,7 @@ void ConduitAllocateThroughAxom::internal_free(void *ptr)
   //std::cout << "Dellocating for Conduit via axom: ptr=" << ptr << std::endl;
   axom::deallocate(ptr);
 }
+#endif
 
 } // end namespace blueprint
 } // end namespace utilities

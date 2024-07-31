@@ -41,8 +41,7 @@
 template <typename ExecSpace>
 void test_conduit_allocate()
 {
-  const auto allocatorID = axom::execution_space<seq_exec>::allocatorID();
-  axom::mir::utilities::blueprint::ConduitAllocateThroughAxom c2a(allocatorID);
+  axom::mir::utilities::blueprint::ConduitAllocateThroughAxom<ExecSpace> c2a;
   EXPECT_TRUE(c2a.getConduitAllocatorID() > 0);
 
   constexpr int nValues = 100;

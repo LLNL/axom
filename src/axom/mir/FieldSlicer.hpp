@@ -79,11 +79,10 @@ private:
    */
   void sliceSingleComponent(const SliceData &slice, const conduit::Node &n_values, conduit::Node &n_output_values) const
   {
-    const auto allocatorID = axom::execution_space<ExecSpace>::allocatorID();
     const auto outputSize = slice.m_indicesView.size();
 
     // Get the ID of a Conduit allocator that will allocate through Axom with device allocator allocatorID.
-    utilities::blueprint::ConduitAllocateThroughAxom c2a(allocatorID);
+    utilities::blueprint::ConduitAllocateThroughAxom<ExecSpace> c2a;
     n_output_values.set_allocator(c2a.getConduitAllocatorID());
     n_output_values.set(conduit::DataType(n_values.dtype().id(), outputSize));
 

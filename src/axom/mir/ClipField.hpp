@@ -537,10 +537,12 @@ public:
     using reduce_policy = typename axom::execution_space<ExecSpace>::reduce_policy;
     RAJA::ReduceSum<reduce_policy, IndexType> blendGroups_sum(0);
     RAJA::ReduceSum<reduce_policy, IndexType> blendGroupLen_sum(0);
+    const auto localBlendGroupsView = m_state.m_blendGroupsView;
+    const auto localBlendGroupsLenView = m_state.m_blendGroupsLenView;
     axom::for_all<ExecSpace>(m_state.m_nzones, AXOM_LAMBDA(auto zoneIndex)
     {
-      blendGroups_sum += m_state.m_blendGroupsView[zoneIndex];
-      blendGroupLen_sum += m_state.m_blendGroupsLenView[zoneIndex];
+      blendGroups_sum += localBlendGroupsView[zoneIndex];
+      blendGroupLen_sum += localBlendGroupsLenView[zoneIndex];
     });
     bgSum = blendGroups_sum.get();
     bgLenSum = blendGroupLen_sum.get();
@@ -1442,7 +1444,6 @@ std::cout << "makeBlendGroups: end\n";
 std::cout << "makeConnectivity: start\n";
 
     constexpr auto connTypeID = axom::mir::utilities::blueprint::cpp2conduit<ConnectivityType>::id;
-    const auto allocatorID = axom::execution_space<ExecSpace>::allocatorID();
     const auto selection = getSelection(opts);
 
     n_newTopo.reset();
@@ -1450,7 +1451,7 @@ std::cout << "makeConnectivity: start\n";
     n_newTopo["coordset"] = n_newCoordset.name();
 
     // Get the ID of a Conduit allocator that will allocate through Axom with device allocator allocatorID.
-    utilities::blueprint::ConduitAllocateThroughAxom c2a(allocatorID);
+    utilities::blueprint::ConduitAllocateThroughAxom<ExecSpace> c2a;
     const int conduitAllocatorID = c2a.getConduitAllocatorID();
 
     // Allocate connectivity.
@@ -1677,8 +1678,7 @@ std::cout << "makeOriginalElements: start\n";
 
     constexpr auto connTypeID = axom::mir::utilities::blueprint::cpp2conduit<ConnectivityType>::id;
 
-    const auto allocatorID = axom::execution_space<ExecSpace>::allocatorID();
-    utilities::blueprint::ConduitAllocateThroughAxom c2a(allocatorID);
+    utilities::blueprint::ConduitAllocateThroughAxom<ExecSpace> c2a;
     const int conduitAllocatorID = c2a.getConduitAllocatorID();
 
     const auto nzones = m_topologyView.numberOfZones();

@@ -123,13 +123,12 @@ private:
    */
   void blendSingleComponent(const BlendData &blend, const conduit::Node &n_values, conduit::Node &n_output_values) const
   {
-    const auto allocatorID = axom::execution_space<ExecSpace>::allocatorID();
     // We're allowing selectedIndicesView to be used to select specific blend
     // groups. If the user did not provide that, use all blend groups.
     const auto outputSize = SelectionPolicy::size(blend);
 
     // Get the ID of a Conduit allocator that will allocate through Axom with device allocator allocatorID.
-    utilities::blueprint::ConduitAllocateThroughAxom c2a(allocatorID);
+    utilities::blueprint::ConduitAllocateThroughAxom<ExecSpace> c2a;
     n_output_values.set_allocator(c2a.getConduitAllocatorID());
     n_output_values.set(conduit::DataType(n_values.dtype().id(), outputSize));
 

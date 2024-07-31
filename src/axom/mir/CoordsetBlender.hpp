@@ -57,13 +57,12 @@ public:
     using PointType = typename CoordsetViewType::PointType;
     using VectorType = axom::primal::Vector<value_type, PointType::DIMENSION>;
 
-    const auto allocatorID = axom::execution_space<ExecSpace>::allocatorID();
     const auto axes = conduit::blueprint::mesh::utils::coordset::axes(n_input);
     const auto nComponents = axes.size();
     SLIC_ASSERT(PointType::DIMENSION == nComponents);
 
     // Get the ID of a Conduit allocator that will allocate through Axom with device allocator allocatorID.
-    utilities::blueprint::ConduitAllocateThroughAxom c2a(allocatorID);
+    utilities::blueprint::ConduitAllocateThroughAxom<ExecSpace> c2a;
 
     n_output.reset();
     n_output["type"] = "explicit";
