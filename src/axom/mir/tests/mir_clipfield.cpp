@@ -531,12 +531,14 @@ void make_one_wdg(conduit::Node &hostMesh)
 template <typename ExecSpace, typename ShapeType>
 void test_one_shape(conduit::Node &hostMesh, const std::string &name)
 {
+std::cout << "test_one_shape: 0\n";
   using TopoView = axom::mir::views::UnstructuredTopologySingleShapeView<ShapeType>;
   using CoordsetView = axom::mir::views::ExplicitCoordsetView<float, 3>;
 
   // Copy mesh to device
   conduit::Node deviceMesh;
   axom::mir::utilities::blueprint::copy<seq_exec>(deviceMesh, hostMesh);
+std::cout << "test_one_shape: 1\n";
 
   // Make views for the device mesh.
   conduit::Node &n_x = deviceMesh.fetch_existing("coordsets/coords/values/x");
@@ -546,10 +548,12 @@ void test_one_shape(conduit::Node &hostMesh, const std::string &name)
   axom::ArrayView<float> yView(static_cast<float *>(n_y.data_ptr()), n_y.dtype().number_of_elements());
   axom::ArrayView<float> zView(static_cast<float *>(n_z.data_ptr()), n_z.dtype().number_of_elements());
   CoordsetView coordsetView(xView, yView, zView);
+std::cout << "test_one_shape: 2\n";
 
   conduit::Node &n_conn = deviceMesh.fetch_existing("topologies/topo/elements/connectivity");
   axom::ArrayView<int> connView(static_cast<int *>(n_conn.data_ptr()), n_conn.dtype().number_of_elements());
   TopoView topoView(connView);
+std::cout << "test_one_shape: 3\n";
 
   // Clip the data
   conduit::Node deviceClipMesh, options; 
@@ -559,14 +563,17 @@ void test_one_shape(conduit::Node &hostMesh, const std::string &name)
   options["inside"] = 1;
   options["outside"] = 1;
   clipper.execute(deviceMesh, options, deviceClipMesh);
+std::cout << "test_one_shape: 4\n";
 
   // Copy device->host
   conduit::Node hostClipMesh;
   axom::mir::utilities::blueprint::copy<seq_exec>(hostClipMesh, deviceClipMesh);
+std::cout << "test_one_shape: 5\n";
 
   // Save data.
   conduit::relay::io::blueprint::save_mesh(hostClipMesh, name, "hdf5");
   conduit::relay::io::blueprint::save_mesh(hostClipMesh, name, "yaml");
+std::cout << "test_one_shape: 6\n";
 }
 
 TEST(mir_clipfield, onetet)

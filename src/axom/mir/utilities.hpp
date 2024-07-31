@@ -210,7 +210,6 @@ template <typename ValueType, std::uint32_t MaxValues = 14>
 AXOM_HOST_DEVICE
 std::uint64_t make_name_n(const ValueType *values, std::uint32_t n)
 {
-if(n >= 14) std::cout << "make_name_n: " << n << std::endl;
   assert(n <= MaxValues);
   if(n == 2)
     return make_name_2(values[0], values[1]);
