@@ -197,7 +197,7 @@ static void stridesAndOffsetsToShapes(const axom::StackArray<IType, DIM>& realSh
    This class recognizes potential ghost (a.k.a. phony, image) data
    layers around the domain.  Some methods and paramenters names refer
    to the data with ghosts, while others refer to the data without
-   hosts (a.k.a. real data).
+   ghosts (a.k.a. real data).
 
    TODO: Figure out if there's a better place for this utility.
    It's only in axom/quest because the initial need was there.

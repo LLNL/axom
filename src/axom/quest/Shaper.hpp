@@ -108,8 +108,8 @@ public:
 
 protected:
   /*!
-   * \brief Loads the shape from file into m_surfaceMesh and computes a revolvedVolume
-   *        for the shape.
+   * \brief Loads the shape from file into m_surfaceMesh and, if its a C2D
+   *        contour, computes a revolvedVolume for the shape.
    * \param shape The shape.
    * \param percentError A percent error to use when refining the shape. If it
    *                     positive then Axom will try to refine dynamically

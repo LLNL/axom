@@ -396,9 +396,9 @@ public:
 
 #if defined(AXOM_USE_RAJA) && defined(AXOM_USE_UMPIRE)
 
-  // Prepares the ProE mesh cells for the spatial index
+  // Prepares the tet mesh mesh cells for the spatial index
   template <typename ExecSpace>
-  void prepareProECells()
+  void prepareTetCells()
   {
     // Number of tets in mesh
     m_tetcount = m_surfaceMesh->getNumberOfCells();
@@ -609,8 +609,6 @@ public:
     AXOM_UNUSED_VAR(shapeDimension);
     AXOM_UNUSED_VAR(shapeName);
 
-    SLIC_INFO(axom::fmt::format("Current shape is {}", shapeName));
-
     std::string shapeFormat = shape.getGeometry().getFormat();
 
     if(shapeFormat == "c2c")
@@ -620,8 +618,14 @@ public:
 
     else if(shapeFormat == "proe")
     {
-      prepareProECells<ExecSpace>();
+      prepareTetCells<ExecSpace>();
     }
+
+    else if(shapeFormat == "memory-blueprint")
+    {
+      prepareTetCells<ExecSpace>();
+    }
+
     else
     {
       SLIC_ERROR(
@@ -983,7 +987,7 @@ public:
     axom::deallocate(tet_indices);
 
     axom::setDefaultAllocator(current_allocator);
-  }  // end of runShapeQuery() function
+  }  // end of runShapeQueryImpl() function
 #endif
 
 #if defined(AXOM_USE_RAJA) && defined(AXOM_USE_UMPIRE)
@@ -1492,7 +1496,7 @@ public:
     const std::string shapeFormat = shape.getGeometry().getFormat();
 
     // Testing separate workflow for Pro/E
-    if(shapeFormat == "proe")
+    if(shapeFormat == "proe" || shapeFormat == "memory-blueprint")
     {
       switch(m_execPolicy)
       {

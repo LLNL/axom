@@ -237,6 +237,31 @@ if(AXOM_ENABLE_MPI AND MFEM_FOUND AND MFEM_USE_MPI
     endif()
 endif()
 
+# Shaping in-memory example ------------------------------------------------------
+if(AXOM_ENABLE_MPI AND MFEM_FOUND AND MFEM_USE_MPI
+                   AND AXOM_ENABLE_SIDRE AND AXOM_ENABLE_MFEM_SIDRE_DATACOLLECTION
+                   AND AXOM_ENABLE_KLEE)
+    axom_add_executable(
+        NAME        quest_shape_in_memory_ex
+        SOURCES     quest_shape_in_memory.cpp
+        OUTPUT_DIR  ${EXAMPLE_OUTPUT_DIRECTORY}
+        DEPENDS_ON  ${quest_example_depends} mfem
+        FOLDER      axom/quest/examples
+        )
+
+    if(AXOM_ENABLE_TESTS AND AXOM_DATA_DIR)
+        # 3D shaping tests.  No 2D shaping in this feature, at least for now.
+        set(_nranks 1)
+        set(_testname quest_shape_in_memory_3d)
+        axom_add_test(
+            NAME ${_testname}
+            COMMAND  quest_shape_in_memory_ex
+                        --method intersection
+                        inline_mesh --min -1 -1 -1 --max 5 5 5 --res 20 20 20 -d 3
+            NUM_MPI_TASKS ${_nranks})
+    endif()
+endif()
+
 # Distributed closest point example -------------------------------------------
 if(AXOM_ENABLE_MPI AND AXOM_ENABLE_SIDRE AND HDF5_FOUND)
     axom_add_executable(

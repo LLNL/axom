@@ -144,7 +144,7 @@ void Shaper::setRefinementType(Shaper::RefinementType t)
 bool Shaper::isValidFormat(const std::string& format) const
 {
   return (format == "stl" || format == "proe" || format == "c2c" ||
-          format == "none");
+          format == "memory-blueprint" || format == "none");
 }
 
 void Shaper::loadShape(const klee::Shape& shape)
@@ -173,6 +173,30 @@ void Shaper::loadShapeInternal(const klee::Shape& shape,
   SLIC_ASSERT_MSG(
     this->isValidFormat(file_format),
     axom::fmt::format("Shape has unsupported format: '{}", file_format));
+
+  const std::string& shapeFormat = shape.getGeometry().getFormat();
+
+  if (shapeFormat == "memory-blueprint")
+  {
+    // TODO: For readability, move most of this into a function.
+    // Put the in-memory geometry in m_surfaceMesh.
+    axom::sidre::Group* inputGroup = shape.getGeometry().getBlueprintMesh();
+    axom::sidre::Group* rootGroup = inputGroup->getDataStore()->getRoot();
+
+    std::string modName = inputGroup->getName() + "_modified";
+    while (rootGroup->hasGroup(modName)) { modName = modName + "-"; }
+
+    axom::sidre::Group* modGroup = rootGroup->createGroup(modName);
+    int allocID = inputGroup->getDefaultAllocatorID();
+    modGroup->deepCopyGroup(inputGroup, allocID);
+
+    m_surfaceMesh = axom::mint::getMesh(modGroup->getGroup(inputGroup->getName()),
+                                        shape.getGeometry().getBlueprintTopology());
+
+    // Transform the coordinates of the linearized mesh.
+    applyTransforms(shape);
+    return;
+  }
 
   if(!shape.getGeometry().hasGeometry())
   {
