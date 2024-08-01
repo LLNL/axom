@@ -7,6 +7,7 @@
 #------------------------------------------------------------------------------
 
 set( primal_tests
+    primal_2d_paper_figure_data.cpp
     primal_bezier_curve.cpp
     primal_bezier_intersect.cpp
     primal_bezier_patch.cpp

@@ -119,7 +119,7 @@ Polygon<T, 3> clip(const Triangle<T, 3>& tri, const BoundingBox<T, 3>& bbox)
  *
  * \return A polygon of the subject polygon clipped against the clip polygon.
  *
- * \note Function is based off the Sutherlandâ€“Hodgman algorithm.
+ * \note Function is based off the Sutherland–Hodgman algorithm.
  *
  * \warning Polygons with static array types must have enough vertices
  *          preallocated for the output polygon. It is mandatory that

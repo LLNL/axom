@@ -19,6 +19,7 @@
 
 #include "axom/primal/operators/intersect.hpp"
 #include "axom/primal/operators/detail/intersect_impl.hpp"
+#include "axom/primal/operators/detail/intersect_ray_impl.hpp"
 
 #include <vector>
 
@@ -68,7 +69,19 @@ bool intersect_bezier_curves(const BezierCurve<T, 2> &c1,
                              double s_offset,
                              double s_scale,
                              double t_offset,
-                             double t_scale);
+                             double t_scale,
+                             int &nevals);
+
+template <typename T>
+bool intersect_ray_bezier(const BezierCurve<T, 2> &c,
+                          const BezierCurve<T, 2> &r,
+                          std::vector<T> &cp,
+                          std::vector<T> &rp,
+                          double sq_tol,
+                          int order,
+                          double c_offset,
+                          double c_scale,
+                          int &nevals);
 
 /*!
  * \brief Tests intersection of two line segments defined by
@@ -118,7 +131,8 @@ bool intersect_bezier_curves(const BezierCurve<T, 2> &c1,
                              double s_offset,
                              double s_scale,
                              double t_offset,
-                             double t_scale)
+                             double t_scale,
+                             int &nevals)
 {
   using BCurve = BezierCurve<T, 2>;
 
@@ -148,7 +162,7 @@ bool intersect_bezier_curves(const BezierCurve<T, 2> &c1,
     BCurve c3(order1);
     BCurve c4(order1);
     c1.split(splitVal, c3, c4);
-
+    nevals += 1;
     s_scale *= scaleFac;
 
     // Note: we want to find all intersections, so don't short-circuit
@@ -162,7 +176,8 @@ bool intersect_bezier_curves(const BezierCurve<T, 2> &c1,
                                t_offset,
                                t_scale,
                                s_offset,
-                               s_scale))
+                               s_scale,
+                               nevals))
     {
       foundIntersection = true;
     }
@@ -176,7 +191,75 @@ bool intersect_bezier_curves(const BezierCurve<T, 2> &c1,
                                t_offset,
                                t_scale,
                                s_offset + s_scale,
-                               s_scale))
+                               s_scale,
+                               nevals))
+    {
+      foundIntersection = true;
+    }
+  }
+
+  return foundIntersection;
+}
+
+template <typename T>
+bool intersect_ray_bezier(const BezierCurve<T, 2> &c,
+                          const Ray<T, 2> &r,
+                          std::vector<T> &cp,
+                          std::vector<T> &rp,
+                          double sq_tol,
+                          int order,
+                          double c_offset,
+                          double c_scale,
+                          int &nevals)
+{
+  using BCurve = BezierCurve<T, 2>;
+
+  // Check bounding boxe to short-circuit the intersection
+  T r0, s0, c0;
+  Point<T, 2> ip;
+  if(!intersect(r, c.boundingBox(), ip))
+  {
+    return false;
+  }
+
+  bool foundIntersection = false;
+  //desmos_print(c);
+  if(c.isLinear(sq_tol))
+  {
+    Segment<T, 2> seg(c[0], c[order]);
+
+    if(intersect(r, seg, r0, s0) && s0 <= 1.0 - 1e-8)
+    {
+      rp.push_back(r0);
+      cp.push_back(c_offset + c_scale * s0);
+      foundIntersection = true;
+    }
+  }
+  else
+  {
+    constexpr double splitVal = 0.5;
+    constexpr double scaleFac = 0.5;
+
+    BCurve c1(order);
+    BCurve c2(order);
+    c.split(splitVal, c1, c2);
+    nevals += 1;
+    c_scale *= scaleFac;
+
+    // Note: we want to find all intersections, so don't short-circuit
+    if(intersect_ray_bezier(c1, r, cp, rp, sq_tol, order, c_offset, c_scale, nevals))
+    {
+      foundIntersection = true;
+    }
+    if(intersect_ray_bezier(c2,
+                            r,
+                            cp,
+                            rp,
+                            sq_tol,
+                            order,
+                            c_offset + c_scale,
+                            c_scale,
+                            nevals))
     {
       foundIntersection = true;
     }

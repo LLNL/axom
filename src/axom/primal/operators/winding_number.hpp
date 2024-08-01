@@ -109,16 +109,19 @@ int winding_number(const Point<T, 2>& q,
 template <typename T>
 int winding_number(const Point<T, 2>& R,
                    const Polygon<T, 2>& P,
+                   bool& isOnEdge,
                    bool includeBoundary = false,
                    double EPS = 1e-8)
 {
   const int nverts = P.numVertices();
+  isOnEdge = false;
 
   // If the query is a vertex, return a value interpreted
   //  as "inside" by evenodd or nonzero protocols
   if(axom::utilities::isNearlyEqual(P[0][0], R[0], EPS) &&
      axom::utilities::isNearlyEqual(P[0][1], R[1], EPS))
   {
+    isOnEdge = true;
     return includeBoundary;
   }
 
@@ -131,10 +134,12 @@ int winding_number(const Point<T, 2>& R,
     {
       if(axom::utilities::isNearlyEqual(P[j][0], R[0], EPS))
       {
+        isOnEdge = true;
         return includeBoundary;  // On vertex
       }
       else if(P[i][1] == R[1] && ((P[j][0] > R[0]) == (P[i][0] < R[0])))
       {
+        isOnEdge = true;
         return includeBoundary;  // On horizontal edge
       }
     }
@@ -158,6 +163,7 @@ int winding_number(const Point<T, 2>& R,
           // On edge
           if(axom::utilities::isNearlyEqual(det, 0.0, EPS))
           {
+            isOnEdge = true;
             return includeBoundary;
           }
 
@@ -180,6 +186,7 @@ int winding_number(const Point<T, 2>& R,
           // On edge
           if(axom::utilities::isNearlyEqual(det, 0.0, EPS))
           {
+            isOnEdge = true;
             return includeBoundary;
           }
 
@@ -194,6 +201,21 @@ int winding_number(const Point<T, 2>& R,
   }
 
   return winding_num;
+}
+
+/*!
+ * \brief Computes the solid angle winding number for a 2D polygon
+ *
+ * Overload function without additional returning parameter
+ */
+template <typename T>
+int winding_number(const Point<T, 2>& R,
+                   const Polygon<T, 2>& P,
+                   bool includeBoundary = false,
+                   double EPS = 1e-8)
+{
+  bool isOnEdge = false;
+  return winding_number(R, P, isOnEdge, includeBoundary, EPS);
 }
 
 /*!
@@ -212,10 +234,218 @@ int winding_number(const Point<T, 2>& R,
 template <typename T>
 double winding_number(const Point<T, 2>& q,
                       const BezierCurve<T, 2>& c,
+                      int& nevals,
                       double edge_tol = 1e-8,
                       double EPS = 1e-8)
 {
-  return detail::curve_winding_number_recursive(q, c, false, edge_tol, EPS);
+  return detail::curve_winding_number_recursive(q, c, false, nevals, edge_tol);
+  const int ord = c.getOrder();
+  if(ord <= 0) return 0.0;
+  Polygon<T, 2> approxogon(2);
+  approxogon.addVertex(c[0]);
+
+  int dummy_int = 0;
+
+  double wn = 0.0;
+  //std::cout << "------------" << std::endl;
+  detail::winding_number_adaptive_linear(q,
+                                         c,
+                                         false,
+                                         dummy_int,
+                                         edge_tol,
+                                         edge_tol,
+                                         approxogon,
+                                         wn);
+  //std::cout << "------------" << std::endl;
+  approxogon.addVertex(c[ord]);
+
+  //std::cout << approxogon.numVertices() << std::endl;
+
+  return wn + detail::approxogon_winding_number(q, approxogon, edge_tol);
+}
+
+template <typename T>
+double winding_number_quad(const Point<T, 2>& q,
+                           const BezierCurve<T, 2>& c,
+                           int npts)
+{
+  static mfem::IntegrationRules my_IntRules(0, mfem::Quadrature1D::GaussLegendre);
+  const mfem::IntegrationRule& quad =
+    my_IntRules.Get(mfem::Geometry::SEGMENT, 2 * npts - 1);
+
+  double quad_result = 0.0;
+  for(int k = 0; k < quad.GetNPoints(); ++k)
+  {
+    Point<T, 2> x_quad = c.evaluate(quad.IntPoint(k).x);
+    Vector<T, 2> dx_quad = c.dt(quad.IntPoint(k).x);
+
+    double query_dist = squared_distance(x_quad, q);
+    // clang-format off
+    double query_orient = axom::numerics::determinant(x_quad[0] - q[0], dx_quad[0],
+                                                      x_quad[1] - q[1], dx_quad[1]);
+    // clang-format on
+
+    quad_result += quad.IntPoint(k).weight * query_orient / query_dist;
+  }
+
+  return 0.5 * M_1_PI * quad_result;
+}
+
+template <typename T>
+double winding_number_clipping(const Point<T, 2>& q,
+                               const BezierCurve<T, 2>& c,
+                               int& nevals,
+                               double edge_tol = 1e-8,
+                               double EPS = 1e-8)
+{
+  const int ord = c.getOrder();
+  Segment<double, 2> closure(c[ord], c[0]);
+  int inter = 0;
+
+  BoundingBox<T, 2> bb = c.boundingBox();
+  if(bb.contains(q))
+  {
+    // Check the 4 edges of the bounding box to find the closest
+    double edge_dist = bb.getMax()[0] - q[0];
+    Vector<double, 2> direction {1.0, 0.0};
+
+    if(bb.getMax()[1] - q[1] < edge_dist)
+    {
+      direction = Vector<T, 2> {0.0, 1.0};
+      edge_dist = bb.getMax()[1] - q[1];
+    }
+    if(q[0] - bb.getMin()[0] < edge_dist)
+    {
+      direction = Vector<T, 2> {-1.0, 0.0};
+      edge_dist = q[0] - bb.getMin()[0];
+    }
+    if(q[1] - bb.getMin()[1] < edge_dist)
+    {
+      direction = Vector<T, 2> {0.0, -1.0};
+    }
+
+    Ray<T, 2> ray(q, direction);
+    inter = detail::ray_casting_bezier_clipping(c, ray, nevals, edge_tol);
+    double u, tmp;
+    if(intersect(ray, closure, u, tmp, 0.0))
+    {
+      Vector<T, 2> e1 = ray.direction().unitVector();
+      Vector<T, 2> e2 = Vector<T, 2> {-e1[1], e1[0]};
+
+      double alpha = Vector<T, 2>(ray.origin(), c[ord]).dot(e2);
+
+      (alpha < 0) ? inter++ : inter--;
+    }
+  }
+  // If not contained in the bounding box, just do a return
+
+  return inter - winding_number(q, closure, edge_tol);
+}
+
+template <typename T>
+double winding_number_bisection(const Point<T, 2>& q,
+                                const BezierCurve<T, 2>& c,
+                                int& nevals,
+                                double edge_tol = 1e-8,
+                                double EPS = 1e-8)
+{
+  const int ord = c.getOrder();
+  Segment<double, 2> closure(c[ord], c[0]);
+  int crossing_num = 0;
+  int inter = 0;
+
+  BoundingBox<T, 2> bb = c.boundingBox();
+  if(bb.contains(q))
+  {
+    // Check the 4 edges of the bounding box to find the closest
+    double edge_dist = bb.getMax()[0] - q[0];
+    Vector<double, 2> direction {1.0, 0.0};
+
+    if(bb.getMax()[1] - q[1] < edge_dist)
+    {
+      direction = Vector<T, 2> {0.0, 1.0};
+      edge_dist = bb.getMax()[1] - q[1];
+    }
+    if(q[0] - bb.getMin()[0] < edge_dist)
+    {
+      direction = Vector<T, 2> {-1.0, 0.0};
+      edge_dist = q[0] - bb.getMin()[0];
+    }
+    if(q[1] - bb.getMin()[1] < edge_dist)
+    {
+      direction = Vector<T, 2> {0.0, -1.0};
+    }
+
+    Ray<T, 2> ray(q, direction);
+    std::vector<double> cp;
+    std::vector<double> rp;
+    intersect(c, ray, cp, rp, nevals, edge_tol);
+
+    for(auto c0 : cp)
+    {
+      Vector<T, 2> e1 = ray.direction().unitVector();
+      Vector<T, 2> e2 = c.dt(c0);
+
+      double determinant =
+        axom::numerics::determinant(e1[0], e2[0], e1[1], e2[1]);
+
+      (determinant > 0) ? crossing_num++ : crossing_num--;
+    }
+
+    double u, tmp;
+    if(intersect(ray, closure, u, tmp, edge_tol))
+    {
+      Vector<T, 2> e1 = ray.direction().unitVector();
+      Vector<T, 2> e2 = Vector<T, 2> {-e1[1], e1[0]};
+
+      double alpha = Vector<T, 2>(q, c[ord]).dot(e2);
+
+      (alpha < 0) ? crossing_num++ : crossing_num--;
+    }
+  }
+  // If not contained in the bounding box, just do a return
+
+  return crossing_num - winding_number(q, closure, edge_tol);
+}
+
+/// Compute the number of intersections that a ray makes with an array of Bezier curves
+template <typename T>
+int crossing_number(const Point<T, 2>& q,
+                    const axom::Array<BezierCurve<T, 2>>& cs,
+                    const BoundingBox<T, 2>& bb,
+                    double edge_tol = 1e-8,
+                    double EPS = 1e-8)
+{
+  int nevals = 0;
+  int inter = 0;
+
+  double edge_dist = bb.getMax()[0] - q[0];
+  Vector<double, 2> direction {1.0, 0.0};
+
+  // Uncomment this to get a reasonably fast method
+  if(bb.getMax()[1] - q[1] < edge_dist)
+  {
+    direction = Vector<T, 2> {0.0, 1.0};
+    edge_dist = bb.getMax()[1] - q[1];
+  }
+  if(q[0] - bb.getMin()[0] < edge_dist)
+  {
+    direction = Vector<T, 2> {-1.0, 0.0};
+    edge_dist = q[0] - bb.getMin()[0];
+  }
+  if(q[1] - bb.getMin()[1] < edge_dist)
+  {
+    direction = Vector<T, 2> {0.0, -1.0};
+  }
+
+  // Get a ray extending in a random direction
+  Ray<T, 2> ray(q, direction);
+  for(auto& c : cs)
+  {
+    inter += detail::ray_casting_bezier_clipping(c, ray, nevals, edge_tol);
+  }
+
+  return inter;
 }
 
 /*!
@@ -246,6 +476,126 @@ double winding_number(const Point<T, 2>& q,
   return ret_val;
 }
 
+template <typename T>
+double winding_number_approxogon_memoized(
+  Point<T, 2> q,
+  const axom::Array<std::vector<std::vector<detail::BezierCurveMemo<T>>>>& array_memos,
+  axom::Array<
+    axom::FlatMap<std::pair<int, int>, detail::BezierCurveMemo<T>, detail::PairHash>>&
+    hash_memos,
+  Polygon<T, 2>& temp_approxogon,
+  std::stack<std::pair<int, int>>& curve_stack,
+  double edge_tol = 1e-8,
+  double linear_tol = 1e-8)
+{
+  double wn = 0;
+
+  for(int ci = 0; ci < array_memos.size(); ++ci)
+  {
+    auto& the_curve = array_memos[ci][0][0].curve;
+
+    if(!the_curve.boundingBox().contains(q))
+    {
+      wn += detail::linear_winding_number(q,
+                                          the_curve[0],
+                                          the_curve[the_curve.getOrder()],
+                                          edge_tol);
+    }
+    else
+    {
+      //temp_approxogon.addVertex(the_curve[0]);
+      detail::winding_number_adaptive_linear_memoized(q,
+                                                      array_memos[ci],
+                                                      hash_memos[ci],
+                                                      edge_tol,
+                                                      linear_tol,
+                                                      temp_approxogon,
+                                                      curve_stack,
+                                                      wn);
+
+      temp_approxogon.addVertex(the_curve[the_curve.getOrder()]);
+
+      wn += detail::approxogon_winding_number(q, temp_approxogon, edge_tol);
+
+      //desmos_print(c);
+      //desmos_print(q);
+      //desmos_print(temp_approxogon);
+
+      temp_approxogon.clear();
+      //int xx = 0;
+    }
+  }
+
+  return wn;
+}
+
+template <typename T>
+double winding_number_approxogon(const Point<T, 2>& q,
+                                 const axom::Array<BezierCurve<T, 2>>& carray,
+                                 Polygon<T, 2>& temp_approxogon,
+                                 int& num_evals,
+                                 int& max_depth,
+                                 double edge_tol = 1e-8,
+                                 double linear_tol = 1e-8)
+{
+  double wn = 0;
+
+  for(int i = 0; i < carray.size(); i++)
+  {
+    // Check exterior bounding box
+    if(!carray[i].boundingBox().contains(q))
+    {
+      wn += detail::linear_winding_number(q,
+                                          carray[i][0],
+                                          carray[i][carray[i].getOrder()],
+                                          edge_tol);
+    }
+    else
+    {
+      //wn += detail::curve_winding_number_recursive(q,
+      //                                             carray[i],
+      //                                             false,
+      //                                             dummy_val,
+      //                                             edge_tol);
+      temp_approxogon.addVertex(carray[i][0]);
+      detail::winding_number_adaptive_linear(q,
+                                             carray[i],
+                                             false,
+                                             num_evals,
+                                             edge_tol,
+                                             linear_tol,
+                                             temp_approxogon,
+                                             wn);
+      temp_approxogon.addVertex(carray[i][carray[i].getOrder()]);
+      max_depth =
+        axom::utilities::max(max_depth, temp_approxogon.numVertices() - 2);
+      wn += detail::approxogon_winding_number(q, temp_approxogon, edge_tol);
+      temp_approxogon.clear();
+    }
+  }
+
+  return wn;
+}
+
+template <typename T>
+double winding_number(const Point<T, 2>& q,
+                      const axom::Array<BezierCurve<T, 2>>& carray,
+                      double edge_tol = 1e-8,
+                      double EPS = 1e-8)
+{
+  double ret_val = 0.0;
+  int dummy_val = 0;
+  for(int i = 0; i < carray.size(); i++)
+  {
+    ret_val += detail::curve_winding_number_recursive(q,
+                                                      carray[i],
+                                                      false,
+                                                      dummy_val,
+                                                      edge_tol);
+  }
+
+  return ret_val;
+}
 //@}
 
 //@{
