@@ -12,14 +12,13 @@ namespace mir
 {
 namespace views
 {
-
-template <typename ... Dimensions>
+template <typename... Dimensions>
 constexpr int encode_dimensions(Dimensions... dims)
 {
   return (... | dims);
 }
 
-template <typename ... Dimensions>
+template <typename... Dimensions>
 constexpr int select_dimensions(Dimensions... dims)
 {
   return encode_dimensions((1 << dims)...);
@@ -30,8 +29,8 @@ constexpr bool dimension_selected(int encoded_dims, int dim)
   return encoded_dims & (1 << dim);
 }
 
-} // end namespace views
-} // end namespace mir
-} // end namespace axom
+}  // end namespace views
+}  // end namespace mir
+}  // end namespace axom
 
 #endif

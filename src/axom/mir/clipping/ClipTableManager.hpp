@@ -15,7 +15,6 @@ namespace mir
 {
 namespace clipping
 {
-
 /**
  * \accelerated
  * \brief This class contains a view of table data and it provides an
@@ -28,7 +27,7 @@ public:
   using TableData = unsigned char;
   using IndexView = axom::ArrayView<IndexData>;
   using TableDataView = axom::ArrayView<TableData>;
-  
+
   /**
    * \brief An iterator for shapes within a table case.
    */
@@ -83,12 +82,11 @@ public:
      * \return true if the iterators are equal; false otherwise.
      */
     AXOM_HOST_DEVICE
-    inline bool operator == (const iterator &it) const
+    inline bool operator==(const iterator &it) const
     {
       // Do not worry about m_offset
       return m_shapeStart == it.m_shapeStart &&
-             m_currentShape == it.m_currentShape &&
-             m_numShapes == it.m_numShapes;
+        m_currentShape == it.m_currentShape && m_numShapes == it.m_numShapes;
     }
 
     /**
@@ -97,12 +95,11 @@ public:
      * \return true if the iterators are different; false otherwise.
      */
     AXOM_HOST_DEVICE
-    inline bool operator != (const iterator &it) const
+    inline bool operator!=(const iterator &it) const
     {
       // Do not worry about m_offset
       return m_shapeStart != it.m_shapeStart ||
-             m_currentShape != it.m_currentShape ||
-             m_numShapes != it.m_numShapes;
+        m_currentShape != it.m_currentShape || m_numShapes != it.m_numShapes;
     }
 
     /**
@@ -122,26 +119,46 @@ public:
     {
       switch(shape)
       {
-      case ST_PNT: os << "ST_PNT"; break;
-      case ST_TRI: os << "ST_TRI"; break;
-      case ST_QUA: os << "ST_QUA"; break;
-      case ST_TET: os << "ST_TET"; break;
-      case ST_PYR: os << "ST_PYR"; break;
-      case ST_WDG: os << "ST_WDG"; break;
-      case ST_HEX: os << "ST_HEX"; break;
+      case ST_PNT:
+        os << "ST_PNT";
+        break;
+      case ST_TRI:
+        os << "ST_TRI";
+        break;
+      case ST_QUA:
+        os << "ST_QUA";
+        break;
+      case ST_TET:
+        os << "ST_TET";
+        break;
+      case ST_PYR:
+        os << "ST_PYR";
+        break;
+      case ST_WDG:
+        os << "ST_WDG";
+        break;
+      case ST_HEX:
+        os << "ST_HEX";
+        break;
       }
     }
     void printColor(std::ostream &os, TableData color) const
     {
       switch(color)
       {
-      case COLOR0: os << "COLOR0"; break;
-      case COLOR1: os << "COLOR1"; break;
-      case NOCOLOR: os << "NOCOLOR"; break;
+      case COLOR0:
+        os << "COLOR0";
+        break;
+      case COLOR1:
+        os << "COLOR1";
+        break;
+      case NOCOLOR:
+        os << "NOCOLOR";
+        break;
       }
     }
     void printIds(std::ostream &os, const TableData *ids, int n) const
-    {     
+    {
       for(int i = 0; i < n; i++)
       {
         if(ids[i] >= P0 && ids[i] <= P7)
@@ -158,6 +175,7 @@ public:
         os << " ";
       }
     }
+
   public:
     void print(std::ostream &os) const
     {
@@ -167,13 +185,13 @@ public:
       int offset = 2;
       if(ptr[0] == ST_PNT)
       {
-        os << static_cast<int>(ptr[1]); // point number.
+        os << static_cast<int>(ptr[1]);  // point number.
         os << " ";
 
         printColor(os, ptr[2]);
         os << " ";
 
-        os << static_cast<int>(ptr[3]); // npts
+        os << static_cast<int>(ptr[3]);  // npts
         os << " ";
         offset = 4;
       }
@@ -204,30 +222,42 @@ public:
       const auto shape = caseData[0];
       switch(shape)
       {
-      case ST_PNT: retval = 4 + caseData[3]; break;
-      case ST_TRI: retval = 2 + 3; break;
-      case ST_QUA: retval = 2 + 4; break;
-      case ST_TET: retval = 2 + 4; break;
-      case ST_PYR: retval = 2 + 5; break;
-      case ST_WDG: retval = 2 + 6; break;
-      case ST_HEX: retval = 2 + 8; break;
+      case ST_PNT:
+        retval = 4 + caseData[3];
+        break;
+      case ST_TRI:
+        retval = 2 + 3;
+        break;
+      case ST_QUA:
+        retval = 2 + 4;
+        break;
+      case ST_TET:
+        retval = 2 + 4;
+        break;
+      case ST_PYR:
+        retval = 2 + 5;
+        break;
+      case ST_WDG:
+        retval = 2 + 6;
+        break;
+      case ST_HEX:
+        retval = 2 + 8;
+        break;
       }
       return retval;
     }
 
-    TableData *m_shapeStart{nullptr};
-    int m_offset{0};
-    int m_currentShape{0};
-    int m_numShapes{0};
+    TableData *m_shapeStart {nullptr};
+    int m_offset {0};
+    int m_currentShape {0};
+    int m_numShapes {0};
   };
 
   /**
    * \brief Constructor
    */
   AXOM_HOST_DEVICE
-  TableView() : m_shapes(), m_offsets(), m_table()
-  {
-  }
+  TableView() : m_shapes(), m_offsets(), m_table() { }
 
   /**
    * \brief Constructor
@@ -237,9 +267,13 @@ public:
    * \param table   The table data that contains all cases.
    */
   AXOM_HOST_DEVICE
-  TableView(const IndexView &shapes, const IndexView &offsets, const TableDataView &table) : m_shapes(shapes), m_offsets(offsets), m_table(table)
-  {
-  }
+  TableView(const IndexView &shapes,
+            const IndexView &offsets,
+            const TableDataView &table)
+    : m_shapes(shapes)
+    , m_offsets(offsets)
+    , m_table(table)
+  { }
 
   /**
    * \brief Return the number of cases for the clipping table.
@@ -279,16 +313,16 @@ public:
     assert(static_cast<IndexType>(caseId) < m_shapes.size());
     iterator it;
     it.m_shapeStart = const_cast<TableData *>(m_table.data() + m_offsets[caseId]);
-    it.m_offset = 0; // not checked in iterator::operator==
+    it.m_offset = 0;  // not checked in iterator::operator==
     it.m_currentShape = m_shapes[caseId];
     it.m_numShapes = m_shapes[caseId];
     return it;
   }
 
 private:
-  IndexView m_shapes;    // The number of shapes in each case.
-  IndexView m_offsets;   // The offset to the case in the table.
-  TableDataView m_table; // The table data that contains the shapes.
+  IndexView m_shapes;     // The number of shapes in each case.
+  IndexView m_offsets;    // The offset to the case in the table.
+  TableDataView m_table;  // The table data that contains the shapes.
 };
 
 /**
@@ -307,10 +341,7 @@ public:
    * \brief Returns whether the table data have been loaded.
    * \return True if the data have been loaded; false otherwise.
    */
-  bool isLoaded() const
-  {
-    return m_shapes.size() > 0;
-  }
+  bool isLoaded() const { return m_shapes.size() > 0; }
 
   /**
    * \brief Load table data into the arrays, moving data as needed.
@@ -321,7 +352,11 @@ public:
    * \param table The clipping table data.
    * \param tableLen The size of the clipping table data.
    */
-  void load(size_t n, const IndexData *shapes, const IndexData *offsets, const TableData *table, size_t tableLen)
+  void load(size_t n,
+            const IndexData *shapes,
+            const IndexData *offsets,
+            const TableData *table,
+            size_t tableLen)
   {
     const int allocatorID = execution_space<ExecSpace>::allocatorID();
 
@@ -383,8 +418,7 @@ public:
    */
   void load(int dim)
   {
-    for(const auto shape : shapes(dim))
-      loadShape(shape);
+    for(const auto shape : shapes(dim)) loadShape(shape);
   }
 
   /**
@@ -399,16 +433,17 @@ public:
     std::vector<size_t> s;
     if(dim == -1 || dim == 2)
     {
-      for(const auto value : std::vector<size_t>{ST_TRI, ST_QUA})
+      for(const auto value : std::vector<size_t> {ST_TRI, ST_QUA})
         s.push_back(value);
     }
     if(dim == -1 || dim == 3)
     {
-      for(const auto value : std::vector<size_t>{ST_TET, ST_PYR, ST_WDG, ST_HEX})
+      for(const auto value : std::vector<size_t> {ST_TET, ST_PYR, ST_WDG, ST_HEX})
         s.push_back(value);
     }
     return s;
   }
+
 private:
   /**
    * \brief Turn a shape into an table index.
@@ -417,10 +452,7 @@ private:
    *
    * \return An index into the m_tables array.
    */
-  constexpr static size_t shapeToIndex(size_t shape)
-  {
-    return shape - ST_MIN;
-  }
+  constexpr static size_t shapeToIndex(size_t shape) { return shape - ST_MIN; }
 
   /**
    * \brief Load the clipping table for a shape.
@@ -483,11 +515,11 @@ private:
     }
   }
 
-  axom::StackArray<Table<ExecSpace>, NumberOfTables> m_tables{};
+  axom::StackArray<Table<ExecSpace>, NumberOfTables> m_tables {};
 };
 
-} // end namespace clipping
-} // end namespace mir
-} // end namespace axom
+}  // end namespace clipping
+}  // end namespace mir
+}  // end namespace axom
 
 #endif

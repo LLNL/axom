@@ -19,15 +19,15 @@ namespace axom
 {
 namespace mir
 {
-  extern const int quadClipTable[16][19];
-  extern const int triangleClipTable[8][10];
-  
-  extern const std::vector<std::vector<int> > triangleClipTableVec;
-  extern const std::vector<std::vector<int> > quadClipTableVec;
-  extern const std::vector<std::vector<int> > tetrahedronClipTableVec;
-  extern const std::vector<std::vector<int> > pyramidClipTableVec;
-  extern const std::vector<std::vector<int> > triangularPrismClipTableVec;
-  extern const std::vector<std::vector<int> > hexahedronClipTableVec;
-}
-}
+extern const int quadClipTable[16][19];
+extern const int triangleClipTable[8][10];
+
+extern const std::vector<std::vector<int>> triangleClipTableVec;
+extern const std::vector<std::vector<int>> quadClipTableVec;
+extern const std::vector<std::vector<int>> tetrahedronClipTableVec;
+extern const std::vector<std::vector<int>> pyramidClipTableVec;
+extern const std::vector<std::vector<int>> triangularPrismClipTableVec;
+extern const std::vector<std::vector<int>> hexahedronClipTableVec;
+}  // namespace mir
+}  // namespace axom
 #endif

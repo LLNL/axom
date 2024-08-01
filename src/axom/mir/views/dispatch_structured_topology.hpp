@@ -21,7 +21,6 @@ namespace mir
 {
 namespace views
 {
-
 /**
  * \brief Fill an array from a Conduit node, filling the destination array if the values do not exist.
  *
@@ -33,20 +32,20 @@ namespace views
  * \param fillValue the value to use if the array is not found.
  */
 template <typename ArrayType>
-bool
-fillFromNode(const conduit::Node &n, const std::string &key, ArrayType &arr, int fillValue)
+bool fillFromNode(const conduit::Node &n,
+                  const std::string &key,
+                  ArrayType &arr,
+                  int fillValue)
 {
   bool found = false;
   if((found = n.has_path(key)) == true)
   {
     const auto acc = n.fetch_existing(key).as_int_accessor();
-    for(int i = 0; i < arr.size(); i++)
-      arr[i] = acc[i];
+    for(int i = 0; i < arr.size(); i++) arr[i] = acc[i];
   }
   else
   {
-    for(int i = 0; i < arr.size(); i++)
-      arr[i] = fillValue;
+    for(int i = 0; i < arr.size(); i++) arr[i] = fillValue;
   }
   return found;
 }
@@ -61,7 +60,7 @@ fillFromNode(const conduit::Node &n, const std::string &key, ArrayType &arr, int
  * \param coordset The coordset node that contains the topology dimensions.
  * \param func     The function to invoke using the view. It should accept a string with the shape name and an auto parameter for the view.
  */
-template <int SelectedDimensions = select_dimensions(1,2,3), typename FuncType>
+template <int SelectedDimensions = select_dimensions(1, 2, 3), typename FuncType>
 void dispatch_structured_topology(const conduit::Node &topo, FuncType &&func)
 {
   // TODO: add strided structured variant
@@ -76,7 +75,7 @@ void dispatch_structured_topology(const conduit::Node &topo, FuncType &&func)
   switch(ndims)
   {
   case 3:
-    if constexpr (dimension_selected(SelectedDimensions, 3))
+    if constexpr(dimension_selected(SelectedDimensions, 3))
     {
       const std::string shape("hex");
       axom::StackArray<axom::IndexType, 3> zoneDims;
@@ -93,21 +92,27 @@ void dispatch_structured_topology(const conduit::Node &topo, FuncType &&func)
           strides[1] = zoneDims[0];
           strides[2] = zoneDims[0] * zoneDims[1];
         }
-        
-        views::StridedStructuredIndexing<axom::IndexType, 3> zoneIndexing(zoneDims, offsets, strides);
-        views::StructuredTopologyView<views::StridedStructuredIndexing<axom::IndexType, 3>> topoView(zoneIndexing);
+
+        views::StridedStructuredIndexing<axom::IndexType, 3> zoneIndexing(
+          zoneDims,
+          offsets,
+          strides);
+        views::StructuredTopologyView<
+          views::StridedStructuredIndexing<axom::IndexType, 3>>
+          topoView(zoneIndexing);
         func(shape, topoView);
       }
       else
       {
         views::StructuredIndexing<axom::IndexType, 3> zoneIndexing(zoneDims);
-        views::StructuredTopologyView<views::StructuredIndexing<axom::IndexType, 3>> topoView(zoneIndexing);
+        views::StructuredTopologyView<views::StructuredIndexing<axom::IndexType, 3>>
+          topoView(zoneIndexing);
         func(shape, topoView);
       }
     }
     break;
   case 2:
-    if constexpr (dimension_selected(SelectedDimensions, 2))
+    if constexpr(dimension_selected(SelectedDimensions, 2))
     {
       const std::string shape("quad");
       axom::StackArray<axom::IndexType, 2> zoneDims;
@@ -122,21 +127,27 @@ void dispatch_structured_topology(const conduit::Node &topo, FuncType &&func)
         {
           strides[1] = zoneDims[0];
         }
-        
-        views::StridedStructuredIndexing<axom::IndexType, 2> zoneIndexing(zoneDims, offsets, strides);
-        views::StructuredTopologyView<views::StridedStructuredIndexing<axom::IndexType, 2>> topoView(zoneIndexing);
+
+        views::StridedStructuredIndexing<axom::IndexType, 2> zoneIndexing(
+          zoneDims,
+          offsets,
+          strides);
+        views::StructuredTopologyView<
+          views::StridedStructuredIndexing<axom::IndexType, 2>>
+          topoView(zoneIndexing);
         func(shape, topoView);
       }
       else
       {
         views::StructuredIndexing<axom::IndexType, 2> zoneIndexing(zoneDims);
-        views::StructuredTopologyView<views::StructuredIndexing<axom::IndexType, 2>> topoView(zoneIndexing);
+        views::StructuredTopologyView<views::StructuredIndexing<axom::IndexType, 2>>
+          topoView(zoneIndexing);
         func(shape, topoView);
       }
     }
     break;
   case 1:
-    if constexpr (dimension_selected(SelectedDimensions, 1))
+    if constexpr(dimension_selected(SelectedDimensions, 1))
     {
       const std::string shape("line");
       axom::StackArray<axom::IndexType, 1> zoneDims;
@@ -148,14 +159,20 @@ void dispatch_structured_topology(const conduit::Node &topo, FuncType &&func)
         fillFromNode(topo, offsetsKey, offsets, 0);
         fillFromNode(topo, stridesKey, strides, 1);
 
-        views::StridedStructuredIndexing<axom::IndexType, 1> zoneIndexing(zoneDims, offsets, strides);
-        views::StructuredTopologyView<views::StridedStructuredIndexing<axom::IndexType, 1>> topoView(zoneIndexing);
+        views::StridedStructuredIndexing<axom::IndexType, 1> zoneIndexing(
+          zoneDims,
+          offsets,
+          strides);
+        views::StructuredTopologyView<
+          views::StridedStructuredIndexing<axom::IndexType, 1>>
+          topoView(zoneIndexing);
         func(shape, topoView);
       }
       else
       {
         views::StructuredIndexing<axom::IndexType, 1> zoneIndexing(zoneDims);
-        views::StructuredTopologyView<views::StructuredIndexing<axom::IndexType, 1>> topoView(zoneIndexing);
+        views::StructuredTopologyView<views::StructuredIndexing<axom::IndexType, 1>>
+          topoView(zoneIndexing);
         func(shape, topoView);
       }
     }
@@ -173,8 +190,10 @@ void dispatch_structured_topology(const conduit::Node &topo, FuncType &&func)
  * \param func     The function to invoke using the view. It should accept a string with the shape name and an auto parameter for the view.
 
  */
-template <int SelectedDimensions = select_dimensions(1,2,3), typename FuncType>
-void dispatch_structured_topologies(const conduit::Node &topo, const conduit::Node &coordset, FuncType &&func)
+template <int SelectedDimensions = select_dimensions(1, 2, 3), typename FuncType>
+void dispatch_structured_topologies(const conduit::Node &topo,
+                                    const conduit::Node &coordset,
+                                    FuncType &&func)
 {
   const std::string type = topo["type"].as_string();
   if(type == "uniform")
@@ -185,8 +204,8 @@ void dispatch_structured_topologies(const conduit::Node &topo, const conduit::No
     dispatch_structured_topology<SelectedDimensions>(topo, func);
 }
 
-} // end namespace views
-} // end namespace mir
-} // end namespace axom
+}  // end namespace views
+}  // end namespace mir
+}  // end namespace axom
 
 #endif

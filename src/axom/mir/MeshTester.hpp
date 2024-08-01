@@ -26,64 +26,63 @@ namespace axom
 {
 namespace mir
 {
-  /**
+/**
    * \class MeshTester
    * 
    * \brief A class used to generate MIRMeshs with specific properties so
    *        that the reconstruction output can be validated visually.
    * 
    */
-  class MeshTester
-  {
+class MeshTester
+{
 public:
-     template<typename T>
-     using Vec = std::vector<T>;
+  template <typename T>
+  using Vec = std::vector<T>;
 
-     using IndexVec = Vec<mir::PosType>;
-     using VolFracVec = Vec<axom::float64>;
-     using VolumeFractions = Vec<VolFracVec>;
+  using IndexVec = Vec<mir::PosType>;
+  using VolFracVec = Vec<axom::float64>;
+  using VolumeFractions = Vec<VolFracVec>;
 
-
-    public:
-      /**
+public:
+  /**
       * \brief Default constructor. 
       */
-      MeshTester() = default;
+  MeshTester() = default;
 
-      /**
+  /**
        * \brief Default destructor.
        */
-      ~MeshTester() = default;
+  ~MeshTester() = default;
 
-    public:
-      /**
+public:
+  /**
        * \brief Initializes an MIRMesh based on the example from Meredith 2004 paper.
        * 
        * \note The mesh is a 3x3 uniform grid of quads with 2 materials.
        * 
        * \return  The generated mesh.
        */
-      mir::MIRMesh  initTestCaseOne();
+  mir::MIRMesh initTestCaseOne();
 
-      /**
+  /**
        * \brief Initializes an MIRMesh based on the example from Meredith and Childs 2010 paper.
        * 
        * \note The mesh is a 3x3 uniform grid of quads with 3 materials.
        * 
        * \return  The generated mesh.
        */
-      mir::MIRMesh  initTestCaseTwo();
+  mir::MIRMesh initTestCaseTwo();
 
-      /**
+  /**
        * \brief Initializes an MIRMesh used for testing triangle clipping cases.
        * 
        * \note The mesh is a set of four triangles with 2 materials
        * 
        * \return  The generated mesh.
        */
-      mir::MIRMesh  initTestCaseThree();
+  mir::MIRMesh initTestCaseThree();
 
-      /**
+  /**
        * \brief Intializes a mesh used for testing a single circle of one materials surrounded by another.
        * 
        * \note The mesh is a 3x3 uniform grid with 2 materials and has a single circle in the center composed
@@ -91,9 +90,9 @@ public:
        * 
        * \return  The generated mesh.
        */
-      mir::MIRMesh  initTestCaseFour();
+  mir::MIRMesh initTestCaseFour();
 
-      /**
+  /**
        * \brief Initializes a mesh to be used for testing a set of concentric circles centered in a uniform 2D grid.
        * 
        * \param gridSize  The number of elements in the width and the height of the uniform grid.
@@ -103,9 +102,9 @@ public:
        * 
        * \return  The generated mesh.
        */
-      mir::MIRMesh  initTestCaseFive(int gridSize, int numCircles);
+  mir::MIRMesh initTestCaseFive(int gridSize, int numCircles);
 
-      /**
+  /**
        * \brief Initializes a mesh to be used for testing a set of concentric spheres centered in a uniform 3D grid.
        * 
        * \param gridSize  The number of elements in the width and the height of the uniform grid.
@@ -115,9 +114,9 @@ public:
        * 
        * \return  The generated mesh.
        */
-      mir::MIRMesh  initTestCaseSix(int gridSize, int numSpheres);
+  mir::MIRMesh initTestCaseSix(int gridSize, int numSpheres);
 
-      /**
+  /**
        * \brief Initializes a mesh composed of a uniform grid with a circle of material in it.
        * 
        * \param gridSize  The number of elements in the width and height of the uniform grid.
@@ -126,11 +125,11 @@ public:
        * 
        * \return  The generated mesh.
        */
-      mir::MIRMesh  createUniformGridTestCaseMesh(int gridSize,
-                                                  const mir::Point2& circleCenter,
-                                                  axom::float64 circleRadius);
-      
-      /**
+  mir::MIRMesh createUniformGridTestCaseMesh(int gridSize,
+                                             const mir::Point2& circleCenter,
+                                             axom::float64 circleRadius);
+
+  /**
        * \brief Initializes a mesh to be used for validating the results of quad clipping.
        * 
        * \note The mesh is a 3x3 uniform grid with 2 materials and element volume fraction such
@@ -138,24 +137,24 @@ public:
        * 
        * \return  The generated mesh.
        */
-      mir::MIRMesh  initQuadClippingTestMesh();
+  mir::MIRMesh initQuadClippingTestMesh();
 
-    private:
-      /**
+private:
+  /**
        * \brief Generates a 2D uniform grid of n x n elements.
        * 
        * \param gridSize  The number of elements in the width and height of the uniform grid.
        */
-      mir::CellData  generateGrid(int gridSize);
+  mir::CellData generateGrid(int gridSize);
 
-      /**
+  /**
        * \brief Generates a 3D uniform grid of n x n x n elements.
        * 
        * \param gridSize  The number of elements in the width, height, and depth of the uniform grid.
        */
-      mir::CellData  generateGrid3D(int gridSize);
+  mir::CellData generateGrid3D(int gridSize);
 
-      /**
+  /**
        * \brief Calculates the percent overlap between the given circle and quad.
        * 
        * \param gridSize  The size of the uniform grid which will be sampled over to check for overlap.
@@ -168,16 +167,15 @@ public:
        * 
        * /return The percent value overlap of the circle and the quad between [0, 1].
        */
-      axom::float64  calculatePercentOverlapMonteCarlo(
-            int gridSize,
-            const mir::Point2& circleCenter,
-            axom::float64 circleRadius,
-            const mir::Point2& quadP0,
-            const mir::Point2& quadP1,
-            const mir::Point2& quadP2,
-            const mir::Point2& quadP3);
-      
-      /**
+  axom::float64 calculatePercentOverlapMonteCarlo(int gridSize,
+                                                  const mir::Point2& circleCenter,
+                                                  axom::float64 circleRadius,
+                                                  const mir::Point2& quadP0,
+                                                  const mir::Point2& quadP1,
+                                                  const mir::Point2& quadP2,
+                                                  const mir::Point2& quadP3);
+
+  /**
        * \brief Calculates the number of corners of the quad that are within the circle.
        * 
        * \param circleCenter The center point of the circle.
@@ -189,15 +187,14 @@ public:
        * 
        * \return The number of corners of the quad that are within the circle.
        */
-      int  circleQuadCornersOverlaps(const mir::Point2& circleCenter,
-                                     axom::float64 circleRadius,
-                                     const mir::Point2& quadP0,
-                                     const mir::Point2& quadP1,
-                                     const mir::Point2& quadP2,
-                                     const mir::Point2& quadP3);
-
-  };
-}
-}
+  int circleQuadCornersOverlaps(const mir::Point2& circleCenter,
+                                axom::float64 circleRadius,
+                                const mir::Point2& quadP0,
+                                const mir::Point2& quadP1,
+                                const mir::Point2& quadP2,
+                                const mir::Point2& quadP3);
+};
+}  // namespace mir
+}  // namespace axom
 
 #endif

@@ -17,7 +17,6 @@ namespace mir
 {
 namespace views
 {
-
 /**
  * \brief Given a Conduit/Blueprint coordset, create an appropriate view and
  *        call the supplied function, passing the coordset view to it.
@@ -34,13 +33,13 @@ void dispatch_coordset(const conduit::Node &coordset, FuncType &&func)
   const std::string cstype = coordset["type"].as_string();
   if(cstype == "uniform")
   {
-    const std::string keys[] = {"i", "j", "k"};  
+    const std::string keys[] = {"i", "j", "k"};
     const conduit::Node &n_dims = coordset["dims"];
     const conduit::index_t ndims = n_dims.number_of_children();
     if(ndims == 2)
     {
       axom::StackArray<axom::IndexType, 2> dims;
-      axom::StackArray<double, 2> origin{0., 0.}, spacing{1., 1.};
+      axom::StackArray<double, 2> origin {0., 0.}, spacing {1., 1.};
       for(int i = 0; i < ndims; i++)
       {
         dims[i] = n_dims.fetch_existing(keys[i]).to_int();
@@ -56,7 +55,7 @@ void dispatch_coordset(const conduit::Node &coordset, FuncType &&func)
     else if(ndims == 3)
     {
       axom::StackArray<axom::IndexType, 3> dims;
-      axom::StackArray<double, 3> origin{0., 0., 0.}, spacing{1., 1., 1.};
+      axom::StackArray<double, 3> origin {0., 0., 0.}, spacing {1., 1., 1.};
       for(int i = 0; i < ndims; i++)
       {
         dims[i] = n_dims.fetch_existing(keys[i]).to_int();
@@ -68,26 +67,36 @@ void dispatch_coordset(const conduit::Node &coordset, FuncType &&func)
 
       UniformCoordsetView<double, 3> coordView(dims, origin, spacing);
       func(coordView);
-    }   
+    }
   }
   else if(cstype == "rectilinear")
   {
     const conduit::Node &values = coordset["values"];
     if(values.number_of_children() == 2)
     {
-      axom::mir::views::FloatNode_to_ArrayView_same(values[0], values[1], [&](auto xView, auto yView)
-      {
-        RectilinearCoordsetView2<typename decltype(xView)::value_type> coordView(xView, yView);
-        func(coordView);
-      });
+      axom::mir::views::FloatNode_to_ArrayView_same(
+        values[0],
+        values[1],
+        [&](auto xView, auto yView) {
+          RectilinearCoordsetView2<typename decltype(xView)::value_type> coordView(
+            xView,
+            yView);
+          func(coordView);
+        });
     }
     else if(values.number_of_children() == 3)
     {
-      axom::mir::views::FloatNode_to_ArrayView_same(values[0], values[1], values[2], [&](auto xView, auto yView, auto zView)
-      {
-        RectilinearCoordsetView3<typename decltype(xView)::value_type> coordView(xView, yView, zView);
-        func(coordView);
-      });
+      axom::mir::views::FloatNode_to_ArrayView_same(
+        values[0],
+        values[1],
+        values[2],
+        [&](auto xView, auto yView, auto zView) {
+          RectilinearCoordsetView3<typename decltype(xView)::value_type> coordView(
+            xView,
+            yView,
+            zView);
+          func(coordView);
+        });
     }
   }
   else if(cstype == "explicit")
@@ -97,25 +106,35 @@ void dispatch_coordset(const conduit::Node &coordset, FuncType &&func)
     const conduit::Node &values = coordset["values"];
     if(values.number_of_children() == 2)
     {
-      axom::mir::views::FloatNode_to_ArrayView_same(values[0], values[1], [&](auto xView, auto yView)
-      {
-        ExplicitCoordsetView<typename decltype(xView)::value_type, 2> coordView(xView, yView);
-        func(coordView);
-      });
+      axom::mir::views::FloatNode_to_ArrayView_same(
+        values[0],
+        values[1],
+        [&](auto xView, auto yView) {
+          ExplicitCoordsetView<typename decltype(xView)::value_type, 2> coordView(
+            xView,
+            yView);
+          func(coordView);
+        });
     }
     else if(values.number_of_children() == 3)
     {
-      axom::mir::views::FloatNode_to_ArrayView_same(values[0], values[1], values[2], [&](auto xView, auto yView, auto zView)
-      {
-        ExplicitCoordsetView<typename decltype(xView)::value_type, 3> coordView(xView, yView, zView);
-        func(coordView);
-      });
+      axom::mir::views::FloatNode_to_ArrayView_same(
+        values[0],
+        values[1],
+        values[2],
+        [&](auto xView, auto yView, auto zView) {
+          ExplicitCoordsetView<typename decltype(xView)::value_type, 3> coordView(
+            xView,
+            yView,
+            zView);
+          func(coordView);
+        });
     }
   }
 }
 
-} // end namespace views
-} // end namespace mir
-} // end namespace axom
+}  // end namespace views
+}  // end namespace mir
+}  // end namespace axom
 
 #endif

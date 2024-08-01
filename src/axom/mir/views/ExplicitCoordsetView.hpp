@@ -17,14 +17,12 @@ namespace mir
 {
 namespace views
 {
-
 /**
  * \brief This class provides a view for Conduit/Blueprint explicit coordsets.
  */
 template <typename DataType, int NDIMS>
 class ExplicitCoordsetView
-{
-};
+{ };
 
 /**
  * \brief This class provides a view for Conduit/Blueprint 2d explicit coordsets.
@@ -45,7 +43,8 @@ public:
    */
   AXOM_HOST_DEVICE
   ExplicitCoordsetView(const axom::ArrayView<DataType> &x,
-                       const axom::ArrayView<DataType> &y) : m_coordinates{x,y}
+                       const axom::ArrayView<DataType> &y)
+    : m_coordinates {x, y}
   {
     SLIC_ASSERT(x.size() == y.size());
   }
@@ -66,12 +65,12 @@ public:
    * \return A point that corresponds to \a vertex_index.
    */
   AXOM_HOST_DEVICE
-  PointType
-  getPoint(IndexType vertex_index) const
+  PointType getPoint(IndexType vertex_index) const
   {
     SLIC_ASSERT(vertex_index < size());
-    return PointType(std::initializer_list<value_type>{m_coordinates[0][vertex_index],
-                                                       m_coordinates[1][vertex_index]});
+    return PointType(
+      std::initializer_list<value_type> {m_coordinates[0][vertex_index],
+                                         m_coordinates[1][vertex_index]});
   }
 
   /**
@@ -82,8 +81,7 @@ public:
    * \return A point that corresponds to \a vertex_index.
    */
   AXOM_HOST_DEVICE
-  PointType
-  operator[](IndexType vertex_index) const
+  PointType operator[](IndexType vertex_index) const
   {
     return getPoint(vertex_index);
   }
@@ -113,7 +111,8 @@ public:
   AXOM_HOST_DEVICE
   ExplicitCoordsetView(const axom::ArrayView<DataType> &x,
                        const axom::ArrayView<DataType> &y,
-                       const axom::ArrayView<DataType> &z) : m_coordinates{x,y,z}
+                       const axom::ArrayView<DataType> &z)
+    : m_coordinates {x, y, z}
   {
     SLIC_ASSERT(x.size() == y.size() && x.size() == z.size());
   }
@@ -134,13 +133,13 @@ public:
    * \return A point that corresponds to \a vertex_index.
    */
   AXOM_HOST_DEVICE
-  PointType
-  getPoint(IndexType vertex_index) const
+  PointType getPoint(IndexType vertex_index) const
   {
     SLIC_ASSERT(vertex_index < size());
-    return PointType(std::initializer_list<value_type>{m_coordinates[0][vertex_index],
-                                                       m_coordinates[1][vertex_index],
-                                                       m_coordinates[2][vertex_index]});
+    return PointType(
+      std::initializer_list<value_type> {m_coordinates[0][vertex_index],
+                                         m_coordinates[1][vertex_index],
+                                         m_coordinates[2][vertex_index]});
   }
 
   /**
@@ -151,8 +150,7 @@ public:
    * \return A point that corresponds to \a vertex_index.
    */
   AXOM_HOST_DEVICE
-  PointType
-  operator[](IndexType vertex_index) const
+  PointType operator[](IndexType vertex_index) const
   {
     return getPoint(vertex_index);
   }
@@ -161,9 +159,8 @@ private:
   axom::ArrayView<DataType> m_coordinates[3];
 };
 
-
-} // end namespace views
-} // end namespace mir
-} // end namespace axom
+}  // end namespace views
+}  // end namespace mir
+}  // end namespace axom
 
 #endif

@@ -25,35 +25,35 @@ namespace axom
 {
 namespace mir
 {
-
-  /**
+/**
    * \struct CellTopologyData
    * 
    * \brief Struct for collecting data that specifies a mesh or cell's connectivity/topology.
    */
-  struct CellTopologyData
-  {
-      std::vector<PosType> m_evInds;
-      std::vector<PosType> m_evBegins;
-      std::vector<PosType> m_veInds;
-      std::vector<PosType> m_veBegins;
-  };
+struct CellTopologyData
+{
+  std::vector<PosType> m_evInds;
+  std::vector<PosType> m_evBegins;
+  std::vector<PosType> m_veInds;
+  std::vector<PosType> m_veBegins;
+};
 
-  /**
+/**
    * \struct CellMapData
    * 
    * \brief Struct for collecting the data that will populate a mesh's map data structures.
    */
-  struct CellMapData
-  {
-      std::vector<mir::Point2> m_vertexPositions;                               // Data that goes into MIRMesh's vertexPositions PointMap
-      std::vector<std::vector<axom::float64> > m_vertexVolumeFractions;         // Data that goes into MIRMesh's materialVolumeFractionsVertex ScalarMap
-      std::vector<int> m_elementDominantMaterials;                              // Data that goes into MIRMesh's elementDominantColors IntMap
-      std::vector<int> m_elementParents;                                        // Data that goes into MIRMesh's elementParentIDs IntMap
-      std::vector<mir::Shape> m_shapeTypes;                                     // Data that goes into MIRMesh's shapeType IntMap
-  };
+struct CellMapData
+{
+  std::vector<mir::Point2> m_vertexPositions;  // Data that goes into MIRMesh's vertexPositions PointMap
+  std::vector<std::vector<axom::float64>>
+    m_vertexVolumeFractions;  // Data that goes into MIRMesh's materialVolumeFractionsVertex ScalarMap
+  std::vector<int> m_elementDominantMaterials;  // Data that goes into MIRMesh's elementDominantColors IntMap
+  std::vector<int> m_elementParents;  // Data that goes into MIRMesh's elementParentIDs IntMap
+  std::vector<mir::Shape> m_shapeTypes;  // Data that goes into MIRMesh's shapeType IntMap
+};
 
-  /**
+/**
    * \class CellData
    * 
    * \brief The CellData class represents an arbitrary number of cells that are 
@@ -64,34 +64,34 @@ namespace mir
    *         data while processing a mesh, and to be used as input to the MIRMesh class
    *         to fully initialize it.
    */
-  class CellData
-  {
-    public:
-      /**
+class CellData
+{
+public:
+  /**
       * \brief Default constructor.
       */
-      CellData();
+  CellData();
 
-      /**
+  /**
        * \brief Default destructor.
        */
-      ~CellData() = default;
+  ~CellData() = default;
 
-      /**
+  /**
        * \brief Merges the cell data from the given cell into this cell.
        * 
        * \param cellToMerge  The cell whose data will be taken and merged in.
        */
-      void mergeCell(const CellData& cellToMerge);
+  void mergeCell(const CellData& cellToMerge);
 
-    public:
-      int m_numVerts;
-      int m_numElems;
+public:
+  int m_numVerts;
+  int m_numElems;
 
-      CellTopologyData m_topology;
-      CellMapData m_mapData;
-  };
-}
-}
+  CellTopologyData m_topology;
+  CellMapData m_mapData;
+};
+}  // namespace mir
+}  // namespace axom
 
 #endif

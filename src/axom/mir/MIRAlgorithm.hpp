@@ -3,7 +3,6 @@
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
-
 #ifndef AXOM_MIR_ALGORITHM_HPP_
 #define AXOM_MIR_ALGORITHM_HPP_
 
@@ -18,20 +17,18 @@
 
 namespace axom
 {
-
 namespace mir
 {
-
 /**
  \brief Base class for Material Interface Reconstruction (MIR) algorithms.
  */
 class MIRAlgorithm
 {
 public:
-   MIRAlgorithm() = default;
-   virtual ~MIRAlgorithm() = default;
+  MIRAlgorithm() = default;
+  virtual ~MIRAlgorithm() = default;
 
-   /**
+  /**
     \brief Perform material interface reconstruction on the meshes supplied in the
            root node. Root can either be a mesh domain or a node that contains multiple
            domains.
@@ -63,11 +60,12 @@ options:
     \param[out] output A node that will contain the new entities.
 
     */
-   virtual void execute(const conduit::Node &root,
-                        const conduit::Node &options,
-                        conduit::Node &output);
+  virtual void execute(const conduit::Node &root,
+                       const conduit::Node &options,
+                       conduit::Node &output);
+
 protected:
-   /**
+  /**
     \brief Perform material interface reconstruction on a single domain. Derived classes
            must implement this method and any device-specific coding gets handled under it.
 
@@ -79,32 +77,39 @@ protected:
     \param[out] new_coordset A Conduit node that will contain the new coordset.
     
     */
-   virtual void execute(const conduit::Node &topo,
-                        const conduit::Node &coordset,
-                        const conduit::Node &matset,
-                        const conduit::Node &options,
-                        conduit::Node &new_topo,
-                        conduit::Node &new_coordset,
-                        conduit::Node &new_matset) = 0;
+  virtual void execute(const conduit::Node &topo,
+                       const conduit::Node &coordset,
+                       const conduit::Node &matset,
+                       const conduit::Node &options,
+                       conduit::Node &new_topo,
+                       conduit::Node &new_coordset,
+                       conduit::Node &new_matset) = 0;
 
-   // Utility methods for derived types.
-   void copyState(const conduit::Node &mesh, conduit::Node &destMesh) const;
-   std::string topologyName(const conduit::Node &mesh, const conduit::Node &options) const;
-   std::string newTopologyName(const conduit::Node &mesh, const conduit::Node &options) const;
+  // Utility methods for derived types.
+  void copyState(const conduit::Node &mesh, conduit::Node &destMesh) const;
+  std::string topologyName(const conduit::Node &mesh,
+                           const conduit::Node &options) const;
+  std::string newTopologyName(const conduit::Node &mesh,
+                              const conduit::Node &options) const;
 
-   std::string newCoordsetName(const conduit::Node &mesh, const conduit::Node &options) const;
+  std::string newCoordsetName(const conduit::Node &mesh,
+                              const conduit::Node &options) const;
 
-   std::string matsetName(const conduit::Node &mesh, const conduit::Node &options) const;
-   std::string newMatsetName(const conduit::Node &mesh, const conduit::Node &options) const;
+  std::string matsetName(const conduit::Node &mesh,
+                         const conduit::Node &options) const;
+  std::string newMatsetName(const conduit::Node &mesh,
+                            const conduit::Node &options) const;
 
-   std::vector<std::string> fieldNames(const conduit::Node &mesh, const conduit::Node &options) const;
+  std::vector<std::string> fieldNames(const conduit::Node &mesh,
+                                      const conduit::Node &options) const;
 
-   const conduit::Node &topology(const conduit::Node &input, const conduit::Node &options) const;
-   const conduit::Node &matset(const conduit::Node &input, const conduit::Node &options) const;
+  const conduit::Node &topology(const conduit::Node &input,
+                                const conduit::Node &options) const;
+  const conduit::Node &matset(const conduit::Node &input,
+                              const conduit::Node &options) const;
 
-
-   // TODO: method for mapping element field to new topo
-   // TODO: method for mapping vertex field to new topo
+  // TODO: method for mapping element field to new topo
+  // TODO: method for mapping vertex field to new topo
 };
 
 #if 0
@@ -139,7 +144,7 @@ protected:
 };
 #endif
 
-} // end namespace mir
-} // end namespace axom
+}  // end namespace mir
+}  // end namespace axom
 
 #endif

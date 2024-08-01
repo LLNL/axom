@@ -126,12 +126,11 @@ inline T log2(T val)
  * \param [in] t The interpolation parameter.
  * \return The interpolated value
  */
-template < typename T >
-inline AXOM_HOST_DEVICE
-T lerp( T v0, T v1, T t)
+template <typename T>
+inline AXOM_HOST_DEVICE T lerp(T v0, T v1, T t)
 {
   constexpr T one = T(1);
-  return (one-t)*v0 + t*v1;
+  return (one - t) * v0 + t * v1;
 }
 
 /*!

@@ -21,7 +21,6 @@ namespace mir
 {
 namespace views
 {
-
 /**
  * \brief This object contains information about the materials as provided by a Conduit node.
  *
@@ -30,7 +29,7 @@ namespace views
 struct Material
 {
   int number;
-  std::string name; 
+  std::string name;
 };
 
 using MaterialInformation = std::vector<Material>;
@@ -86,10 +85,7 @@ public:
   }
 
   AXOM_HOST_DEVICE
-  size_t getNumberOfZones() const
-  {
-    return m_sizes.size();
-  }
+  size_t getNumberOfZones() const { return m_sizes.size(); }
 
   AXOM_HOST_DEVICE
   size_t getNumberOfMaterials(ZoneIndex zi) const
@@ -127,8 +123,7 @@ public:
     {
       const auto idx = m_indices[offset + i];
 
-      if(m_material_ids[idx] == mat)
-        return true;
+      if(m_material_ids[idx] == mat) return true;
     }
     return false;
   }
@@ -161,7 +156,6 @@ private:
   axom::ArrayView<IndexType> m_indices;
 };
 
-
 /**
 
 matsets:
@@ -192,7 +186,8 @@ public:
 
   constexpr static size_t MaxMaterials = MAXMATERIALS;
 
-  void add(const axom::ArrayView<ZoneIndex> &ids, const axom::ArrayView<FloatType> &vfs)
+  void add(const axom::ArrayView<ZoneIndex> &ids,
+           const axom::ArrayView<FloatType> &vfs)
   {
     assert(m_size + 1 < MaxMaterials);
 
@@ -206,7 +201,7 @@ public:
   {
     size_t nzones = 0;
     for(int i = 0; i < m_size; i++)
-       nzones = axom::utilities::max(nzones, m_indices[i].size());
+      nzones = axom::utilities::max(nzones, m_indices[i].size());
     return nzones;
   }
 
@@ -219,8 +214,7 @@ public:
       if(zi < m_indices[i].size())
       {
         const auto idx = m_indices[zi];
-        if(m_values[i][idx] > 0.)
-          nmats++;
+        if(m_values[i][idx] > 0.) nmats++;
       }
     }
 
@@ -252,7 +246,7 @@ public:
   {
     assert(mat < m_size);
     assert(zi < m_indices[mat].size());
-    
+
     const auto idx = m_indices[mat][zi];
     return m_values[mat][zi] > 0.;
   }
@@ -262,15 +256,16 @@ public:
   {
     assert(mat < m_size);
     assert(zi < m_indices[mat].size());
-    
+
     const auto idx = m_indices[mat][zi];
     vf = m_values[mat][zi];
     return vf > 0.;
   }
+
 private:
-  axom::StackArray<axom::ArrayView<FloatType>, MAXMATERIALS> m_values{};
-  axom::StackArray<axom::ArrayView<ZoneIndex>, MAXMATERIALS> m_indices{};
-  size_t m_size{0};
+  axom::StackArray<axom::ArrayView<FloatType>, MAXMATERIALS> m_values {};
+  axom::StackArray<axom::ArrayView<ZoneIndex>, MAXMATERIALS> m_indices {};
+  size_t m_size {0};
 };
 
 /**
@@ -366,8 +361,9 @@ public:
     }
     return contains;
   }
+
 private:
-  axom::StaticArray<axom::ArrayView<FloatType>, MAXMATERIALS> m_volume_fractions{};
+  axom::StaticArray<axom::ArrayView<FloatType>, MAXMATERIALS> m_volume_fractions {};
 };
 
 /**
@@ -400,7 +396,8 @@ public:
 
   constexpr static size_t MaxMaterials = MAXMATERIALS;
 
-  void add(const axom::ArrayView<ZoneIndex> &ids, const axom::ArrayView<FloatType> &vfs)
+  void add(const axom::ArrayView<ZoneIndex> &ids,
+           const axom::ArrayView<FloatType> &vfs)
   {
     assert(m_size + 1 < MaxMaterials);
 
@@ -540,10 +537,10 @@ public:
   }
 
 private:
-  StackArray<axom::ArrayView<IndexType>, MAXMATERIALS> m_element_ids{};
-  StackArray<axom::ArrayView<FloatType>, MAXMATERIALS> m_volume_fractions{};
-  size_t m_size{0};
-  size_t m_nzones{0};
+  StackArray<axom::ArrayView<IndexType>, MAXMATERIALS> m_element_ids {};
+  StackArray<axom::ArrayView<FloatType>, MAXMATERIALS> m_volume_fractions {};
+  size_t m_size {0};
+  size_t m_nzones {0};
 };
 
 #if 0
@@ -706,8 +703,8 @@ axom::Array<int> selectMixedZones(const UnibufferMaterialView &view)
 }
 #endif
 
-} // end namespace views
-} // end namespace mir
-} // end namespace axom
+}  // end namespace views
+}  // end namespace mir
+}  // end namespace axom
 
 #endif

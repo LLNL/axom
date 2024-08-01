@@ -53,7 +53,7 @@ void ConduitAllocateThroughAxom::internal_free(void *ptr)
 }
 #endif
 
-} // end namespace blueprint
-} // end namespace utilities
-} // end namespace mir
-} // end namespace axom
+}  // end namespace blueprint
+}  // end namespace utilities
+}  // end namespace mir
+}  // end namespace axom

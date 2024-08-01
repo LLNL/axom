@@ -15,7 +15,6 @@ namespace mir
 {
 namespace views
 {
-
 /**
  * \brief Given a shape value, we can get the Shape::id() that is used internally.
  */
@@ -28,9 +27,7 @@ public:
   /**
    * \brief Constructor
    */
-  AXOM_HOST_DEVICE ShapeMap() : m_shape_values(), m_shape_ids()
-  {
-  }
+  AXOM_HOST_DEVICE ShapeMap() : m_shape_values(), m_shape_ids() { }
 
   /**
    * \brief Constructor
@@ -38,27 +35,23 @@ public:
    * \param shape_values A view of sorted values used in the Conduit data.
    * \param shape_ids A view of shape ids that correspond to the values from Conduit.
    */
-  AXOM_HOST_DEVICE ShapeMap(const axom::ArrayView<IndexType> &shape_values, const axom::ArrayView<IndexType> &shape_ids) : m_shape_values(shape_values), m_shape_ids(shape_ids)
-  {
-  }
+  AXOM_HOST_DEVICE ShapeMap(const axom::ArrayView<IndexType> &shape_values,
+                            const axom::ArrayView<IndexType> &shape_ids)
+    : m_shape_values(shape_values)
+    , m_shape_ids(shape_ids)
+  { }
 
   /**
    * \brief Return the size of the shape map.
    * \return The number of entries in the shape map.
    */
-  AXOM_HOST_DEVICE IndexType size() const
-  {
-    return m_shape_values.size();
-  }
+  AXOM_HOST_DEVICE IndexType size() const { return m_shape_values.size(); }
 
   /**
    * \brief Return whether the shape map is empty.
    * \return True if the map is empty; False otherwise.
    */
-  AXOM_HOST_DEVICE bool empty() const
-  {
-    return m_shape_values.empty();
-  }
+  AXOM_HOST_DEVICE bool empty() const { return m_shape_values.empty(); }
 
   /**
    * \brief Given a shape value (as in the Conduit shapes array), return the shape id.
@@ -77,7 +70,6 @@ private:
   axom::ArrayView<IndexType> m_shape_values;
   axom::ArrayView<IndexType> m_shape_ids;
 };
-
 
 /**
  * \brief This class provides a view for Conduit/Blueprint mixed shape unstructured grids.
@@ -106,13 +98,18 @@ public:
                                      const ConnectivityView &conn,
                                      const ConnectivityView &shapes,
                                      const ConnectivityView &sizes,
-                                     const ConnectivityView &offsets) :
-    m_topo(topo), m_connectivity(conn), m_shapes(shapes), m_sizes(sizes), m_offsets(offsets)
+                                     const ConnectivityView &offsets)
+    : m_topo(topo)
+    , m_connectivity(conn)
+    , m_shapes(shapes)
+    , m_sizes(sizes)
+    , m_offsets(offsets)
   {
     SLIC_ASSERT(m_shapes.size() != 0);
     SLIC_ASSERT(m_sizes.size() != 0);
     SLIC_ASSERT(m_offsets.size() != 0);
-    SLIC_ASSERT(m_offsets.size() == m_sizes.size() && m_offsets.size() == m_shapes.size());
+    SLIC_ASSERT(m_offsets.size() == m_sizes.size() &&
+                m_offsets.size() == m_shapes.size());
   }
 
   /**
@@ -127,10 +124,7 @@ public:
    *
    * \return The number of zones.
    */
-  IndexType numberOfZones() const
-  {
-    return m_sizes.size();
-  }
+  IndexType numberOfZones() const { return m_sizes.size(); }
 
   /**
    * \brief Execute a function for each zone in the mesh.
@@ -155,14 +149,18 @@ public:
     const ConnectivityView shapes(m_shapes);
     const ConnectivityView sizes(m_sizes);
     const ConnectivityView offsets(m_offsets);
-    axom::for_all<ExecSpace>(0, nzones, AXOM_LAMBDA(auto zoneIndex)
-    {
-      const ConnectivityView shapeData(connectivityView.data() + offsets[zoneIndex], sizes[zoneIndex]);
-      const auto shapeID = shapeMap[shapes[zoneIndex]];
-      // TODO: SLIC_ASSERT(shapeID > 0);
-      const ShapeType shape(shapeID, shapeData);
-      func(zoneIndex, shape);
-    });
+    axom::for_all<ExecSpace>(
+      0,
+      nzones,
+      AXOM_LAMBDA(auto zoneIndex) {
+        const ConnectivityView shapeData(
+          connectivityView.data() + offsets[zoneIndex],
+          sizes[zoneIndex]);
+        const auto shapeID = shapeMap[shapes[zoneIndex]];
+        // TODO: SLIC_ASSERT(shapeID > 0);
+        const ShapeType shape(shapeID, shapeData);
+        func(zoneIndex, shape);
+      });
   }
 
   /**
@@ -190,15 +188,19 @@ public:
     const ConnectivityView shapes(m_shapes);
     const ConnectivityView sizes(m_sizes);
     const ConnectivityView offsets(m_offsets);
-    axom::for_all<ExecSpace>(0, nSelectedZones, AXOM_LAMBDA(int selectIndex)
-    {
-      const auto zoneIndex = selectedIdsView[selectIndex];
-      const ConnectivityView shapeData(connectivityView.data() + offsets[zoneIndex], sizes[zoneIndex]);
-      const auto shapeID = shapeMap[shapes[zoneIndex]];
-      // TODO: SLIC_ASSERT(shapeID > 0);
-      const ShapeType shape(shapeID, shapeData);
-      func(zoneIndex, shape);
-    });
+    axom::for_all<ExecSpace>(
+      0,
+      nSelectedZones,
+      AXOM_LAMBDA(int selectIndex) {
+        const auto zoneIndex = selectedIdsView[selectIndex];
+        const ConnectivityView shapeData(
+          connectivityView.data() + offsets[zoneIndex],
+          sizes[zoneIndex]);
+        const auto shapeID = shapeMap[shapes[zoneIndex]];
+        // TODO: SLIC_ASSERT(shapeID > 0);
+        const ShapeType shape(shapeID, shapeData);
+        func(zoneIndex, shape);
+      });
   }
 
 private:
@@ -209,11 +211,14 @@ private:
    * \param[out] ids The Shape ids that correspond to the shape values.
    * \param allocatorID The allocator to use when creating the arrays.
    */
-  void buildShapeMap(axom::Array<IndexType> &values, axom::Array<IndexType> &ids, int allocatorID) const
+  void buildShapeMap(axom::Array<IndexType> &values,
+                     axom::Array<IndexType> &ids,
+                     int allocatorID) const
   {
     // Make the map from the Conduit shape_map. Use std::map to sort the key values.
     std::map<IndexType, IndexType> sm;
-    const conduit::Node &m_shape_map = m_topo.fetch_existing("elements/shape_map");
+    const conduit::Node &m_shape_map =
+      m_topo.fetch_existing("elements/shape_map");
     for(conduit::index_t i = 0; i < m_shape_map.number_of_children(); i++)
     {
       const auto value = static_cast<IndexType>(m_shape_map[i].to_int());
@@ -238,15 +243,15 @@ private:
     axom::copy(ids.data(), idsvec.data(), n * sizeof(IndexType));
   }
 
-  const conduit::Node &      m_topo;
+  const conduit::Node &m_topo;
   axom::ArrayView<IndexType> m_connectivity;
   axom::ArrayView<IndexType> m_shapes;
   axom::ArrayView<IndexType> m_sizes;
   axom::ArrayView<IndexType> m_offsets;
 };
 
-} // end namespace views
-} // end namespace mir
-} // end namespace axom
+}  // end namespace views
+}  // end namespace mir
+}  // end namespace axom
 
 #endif

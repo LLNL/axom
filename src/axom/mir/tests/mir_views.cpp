@@ -8,7 +8,6 @@
 #include "axom/core.hpp"
 #include "axom/mir.hpp"
 
-
 TEST(mir_views, shape2conduitName)
 {
   EXPECT_EQ(axom::mir::views::LineShape<int>::name(), "line");
@@ -35,9 +34,9 @@ TEST(mir_views, shape2conduitName)
 
 TEST(mir_views, explicit_coordsetview)
 {
-  axom::Array<float> x{{0., 1., 2., 3., 4., 5.}};
-  axom::Array<float> y{{10., 11., 12., 13., 14., 15.}};
-  axom::Array<float> z{{20., 21., 22., 23., 24., 25.}};
+  axom::Array<float> x {{0., 1., 2., 3., 4., 5.}};
+  axom::Array<float> y {{10., 11., 12., 13., 14., 15.}};
+  axom::Array<float> z {{20., 21., 22., 23., 24., 25.}};
 
   axom::mir::views::ExplicitCoordsetView<float, 2> view2d(x.view(), y.view());
   EXPECT_EQ(view2d.size(), 6);
@@ -48,7 +47,9 @@ TEST(mir_views, explicit_coordsetview)
     EXPECT_EQ(view2d[i], P);
   }
 
-  axom::mir::views::ExplicitCoordsetView<float, 3> view3d(x.view(), y.view(), z.view());
+  axom::mir::views::ExplicitCoordsetView<float, 3> view3d(x.view(),
+                                                          y.view(),
+                                                          z.view());
   EXPECT_EQ(view3d.size(), 6);
   for(axom::IndexType i = 0; i < view3d.size(); i++)
   {

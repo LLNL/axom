@@ -17,7 +17,6 @@ namespace mir
 {
 namespace views
 {
-
 /**
  * \brief Dispatch a Conduit node containing a matset to a function as the appropriate type of matset view.
  *
@@ -27,26 +26,27 @@ namespace views
  * \param func   The function/lambda that will operate on the matset view.
  */
 template <typename FuncType>
-void
-dispatch_material(const conduit::Node &matset, FuncType &&func)
+void dispatch_material(const conduit::Node &matset, FuncType &&func)
 {
   constexpr static size_t MaxMaterials = 20;
 
   if(conduit::blueprint::mesh::matset::is_uni_buffer(matset))
   {
-     IndexNode_to_ArrayView_same(matset["material_ids"],matset["sizes"],matset["offsets"],matset["indices"],
-       [&](auto material_ids, auto sizes, auto offsets, auto indices)
-       {
-          FloatNode_to_ArrayView(matset["volume_fractions"], [&](auto volume_fractions)
-          {
-            using IndexType = typename decltype(material_ids)::value_type;
-            using FloatType = typename decltype(volume_fractions)::value_type;
+    IndexNode_to_ArrayView_same(
+      matset["material_ids"],
+      matset["sizes"],
+      matset["offsets"],
+      matset["indices"],
+      [&](auto material_ids, auto sizes, auto offsets, auto indices) {
+        FloatNode_to_ArrayView(matset["volume_fractions"], [&](auto volume_fractions) {
+          using IndexType = typename decltype(material_ids)::value_type;
+          using FloatType = typename decltype(volume_fractions)::value_type;
 
-            UnibufferMaterialView<IndexType, FloatType, MaxMaterials> matsetView;
-            matsetView.set(material_ids, volume_fractions, sizes, offsets, indices);
-            func(matsetView);
-          });
-       });
+          UnibufferMaterialView<IndexType, FloatType, MaxMaterials> matsetView;
+          matsetView.set(material_ids, volume_fractions, sizes, offsets, indices);
+          func(matsetView);
+        });
+      });
   }
 #if 0
   else if(conduit::blueprint::mesh::matset::is_multi_buffer(matset))
@@ -142,8 +142,8 @@ dispatch_material(const conduit::Node &matset, FuncType &&func)
 #endif
 }
 
-} // end namespace views
-} // end namespace mir
-} // end namespace axom
+}  // end namespace views
+}  // end namespace mir
+}  // end namespace axom
 
 #endif

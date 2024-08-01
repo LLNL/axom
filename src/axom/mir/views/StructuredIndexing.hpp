@@ -16,7 +16,6 @@ namespace mir
 {
 namespace views
 {
-
 /**
  * \brief This class encapsulates a structured mesh size and contains methods to
  *        help with indexing into it.
@@ -38,14 +37,10 @@ public:
    * \param dims The dimensions we're indexing.
    */
   AXOM_HOST_DEVICE
-  StructuredIndexing() : m_dimensions()
-  {
-  }
+  StructuredIndexing() : m_dimensions() { }
 
   AXOM_HOST_DEVICE
-  StructuredIndexing(const LogicalIndex &dims) : m_dimensions(dims)
-  {
-  }
+  StructuredIndexing(const LogicalIndex &dims) : m_dimensions(dims) { }
 
   /**
    * \brief Return the number of points in the coordset.
@@ -55,10 +50,9 @@ public:
   AXOM_HOST_DEVICE
   IndexType size() const
   {
-     IndexType sz = 1;
-     for(int i = 0; i < NDIMS; i++)
-       sz *= m_dimensions[i];
-     return sz;
+    IndexType sz = 1;
+    for(int i = 0; i < NDIMS; i++) sz *= m_dimensions[i];
+    return sz;
   }
 
   /**
@@ -75,9 +69,7 @@ public:
    * \return The j stride to move up a row.
    */
   template <size_t _ndims = NDIMS>
-  AXOM_HOST_DEVICE
-  typename std::enable_if<_ndims >= 2, IndexType>::type
-  jStride() const
+  AXOM_HOST_DEVICE typename std::enable_if<_ndims >= 2, IndexType>::type jStride() const
   {
     return m_dimensions[0];
   }
@@ -88,9 +80,7 @@ public:
    * \return The k stride to move forward a "page".
    */
   template <size_t _ndims = NDIMS>
-  AXOM_HOST_DEVICE
-  typename std::enable_if<_ndims == 3, IndexType>::type
-  kStride() const
+  AXOM_HOST_DEVICE typename std::enable_if<_ndims == 3, IndexType>::type kStride() const
   {
     return m_dimensions[0] * m_dimensions[1];
   }
@@ -105,8 +95,7 @@ public:
   /// @{
 
   template <size_t _ndims = NDIMS>
-  AXOM_HOST_DEVICE
-  typename std::enable_if<_ndims == 1, LogicalIndex>::type
+  AXOM_HOST_DEVICE typename std::enable_if<_ndims == 1, LogicalIndex>::type
   IndexToLogicalIndex(IndexType index) const
   {
     LogicalIndex logical;
@@ -115,8 +104,7 @@ public:
   }
 
   template <size_t _ndims = NDIMS>
-  AXOM_HOST_DEVICE
-  typename std::enable_if<_ndims == 2, LogicalIndex>::type
+  AXOM_HOST_DEVICE typename std::enable_if<_ndims == 2, LogicalIndex>::type
   IndexToLogicalIndex(IndexType index) const
   {
     LogicalIndex logical;
@@ -127,8 +115,7 @@ public:
   }
 
   template <size_t _ndims = NDIMS>
-  AXOM_HOST_DEVICE
-  typename std::enable_if<_ndims == 3, LogicalIndex>::type
+  AXOM_HOST_DEVICE typename std::enable_if<_ndims == 3, LogicalIndex>::type
   IndexToLogicalIndex(IndexType index) const
   {
     LogicalIndex logical;
@@ -151,27 +138,25 @@ public:
    */
   /// @{
   template <size_t _ndims = NDIMS>
-  AXOM_HOST_DEVICE
-  typename std::enable_if<_ndims == 1, IndexType>::type
+  AXOM_HOST_DEVICE typename std::enable_if<_ndims == 1, IndexType>::type
   LogicalIndexToIndex(const LogicalIndex &logical) const
   {
     return logical[0];
   }
 
   template <size_t _ndims = NDIMS>
-  AXOM_HOST_DEVICE
-  typename std::enable_if<_ndims == 2, IndexType>::type
+  AXOM_HOST_DEVICE typename std::enable_if<_ndims == 2, IndexType>::type
   LogicalIndexToIndex(const LogicalIndex &logical) const
   {
     return logical[1] * m_dimensions[0] + logical[0];
   }
 
   template <size_t _ndims = NDIMS>
-  AXOM_HOST_DEVICE
-  typename std::enable_if<_ndims == 3, IndexType>::type
+  AXOM_HOST_DEVICE typename std::enable_if<_ndims == 3, IndexType>::type
   LogicalIndexToIndex(const LogicalIndex &logical) const
   {
-    return (logical[2] * m_dimensions[1] * m_dimensions[0]) + (logical[1] * m_dimensions[0]) + logical[0];
+    return (logical[2] * m_dimensions[1] * m_dimensions[0]) +
+      (logical[1] * m_dimensions[0]) + logical[0];
   }
 
   /// @}
@@ -216,16 +201,16 @@ public:
   StructuredIndexing expand() const
   {
     StructuredIndexing retval(*this);
-    for(int i = 0; i < dimensions(); i++)
-      retval.m_dimensions[i]++;
+    for(int i = 0; i < dimensions(); i++) retval.m_dimensions[i]++;
     return retval;
   }
+
 private:
-  LogicalIndex m_dimensions{};
+  LogicalIndex m_dimensions {};
 };
 
-} // end namespace views
-} // end namespace mir
-} // end namespace axom
+}  // end namespace views
+}  // end namespace mir
+}  // end namespace axom
 
 #endif

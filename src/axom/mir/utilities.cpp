@@ -10,8 +10,6 @@ namespace axom
 namespace mir
 {
 namespace utilities
-{
-
-} // end namespace utilities
-} // end namespace mir
-} // end namespace axom
+{ }  // end namespace utilities
+}  // end namespace mir
+}  // end namespace axom

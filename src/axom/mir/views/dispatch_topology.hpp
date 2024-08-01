@@ -20,7 +20,6 @@ namespace mir
 {
 namespace views
 {
-
 /**
  * \brief Creates a topology view and passes that view to the supplied function.
  *
@@ -31,8 +30,10 @@ namespace views
  * \param coordset The coordset node that contains the topology dimensions.
  * \param func     The function to invoke using the view. It should accept a string with the shape name and an auto parameter for the view.
  */
-template <int SelectedDimensions = select_dimensions(1,2,3), typename FuncType>
-void dispatch_topology(const conduit::Node &topo, const conduit::Node &coordset, FuncType &&func)
+template <int SelectedDimensions = select_dimensions(1, 2, 3), typename FuncType>
+void dispatch_topology(const conduit::Node &topo,
+                       const conduit::Node &coordset,
+                       FuncType &&func)
 {
   const auto type = topo.fetch_existing("type").as_string();
 
@@ -46,8 +47,8 @@ void dispatch_topology(const conduit::Node &topo, const conduit::Node &coordset,
     dispatch_unstructured_topology(topo, func);
 }
 
-} // end namespace views
-} // end namespace mir
-} // end namespace axom
+}  // end namespace views
+}  // end namespace mir
+}  // end namespace axom
 
 #endif

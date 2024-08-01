@@ -11,15 +11,13 @@
 #include "axom/slic.hpp"
 #include "axom/mir.hpp"
 
-
-TEST(mir,smoke)
+TEST(mir, smoke)
 {
   SLIC_INFO("Running smoke test for MIR component");
-  
-  EXPECT_TRUE(  true );
-  EXPECT_EQ(  0,  0 );
-}
 
+  EXPECT_TRUE(true);
+  EXPECT_EQ(0, 0);
+}
 
 //----------------------------------------------------------------------
 
@@ -34,5 +32,4 @@ int main(int argc, char* argv[])
   return result;
 }
 
-
-#endif //  MIR_SMOKE_H_
+#endif  //  MIR_SMOKE_H_

@@ -19,7 +19,6 @@ namespace mir
 {
 namespace views
 {
-
 /// NOTE: The rectilinear coordset views could be combined into a single RectilinearCoordset
 ///       view that is templated on NDIMS but the resulting SFINAE would just overcomplicate it.
 
@@ -43,9 +42,10 @@ public:
    */
   AXOM_HOST_DEVICE
   RectilinearCoordsetView2(const axom::ArrayView<DataType> &x,
-                           const axom::ArrayView<DataType> &y) : m_coordinates{x, y}, m_indexing(LogicalIndex{{x.size(), y.size()}})
-  {
-  }
+                           const axom::ArrayView<DataType> &y)
+    : m_coordinates {x, y}
+    , m_indexing(LogicalIndex {{x.size(), y.size()}})
+  { }
 
   /**
    * \brief Return the number of points in the coordset.
@@ -53,10 +53,7 @@ public:
    * \return The number of points in the coordset.
    */
   AXOM_HOST_DEVICE
-  IndexType size() const
-  {
-    return m_indexing.size();
-  }
+  IndexType size() const { return m_indexing.size(); }
 
   /**
    * \brief Return the requested point from the coordset.
@@ -68,8 +65,9 @@ public:
   AXOM_HOST_DEVICE
   PointType getPoint(LogicalIndex vertex_index) const
   {
-    return PointType(std::initializer_list<value_type>{m_coordinates[0][vertex_index[0]],
-                                                       m_coordinates[1][vertex_index[1]]});
+    return PointType(
+      std::initializer_list<value_type> {m_coordinates[0][vertex_index[0]],
+                                         m_coordinates[1][vertex_index[1]]});
   }
 
   /**
@@ -93,8 +91,7 @@ public:
    * \return A point that corresponds to \a vertex_index.
    */
   AXOM_HOST_DEVICE
-  PointType
-  operator[](LogicalIndex vertex_index) const
+  PointType operator[](LogicalIndex vertex_index) const
   {
     return getPoint(vertex_index);
   }
@@ -107,14 +104,13 @@ public:
    * \return A point that corresponds to \a vertex_index.
    */
   AXOM_HOST_DEVICE
-  PointType
-  operator[](IndexType vertex_index) const
+  PointType operator[](IndexType vertex_index) const
   {
     return getPoint(m_indexing.IndexToLogicalIndex(vertex_index));
   }
 
 private:
-  axom::ArrayView<DataType>        m_coordinates[2];
+  axom::ArrayView<DataType> m_coordinates[2];
   StructuredIndexing<IndexType, 2> m_indexing;
 };
 
@@ -140,9 +136,10 @@ public:
   AXOM_HOST_DEVICE
   RectilinearCoordsetView3(const axom::ArrayView<DataType> &x,
                            const axom::ArrayView<DataType> &y,
-                           const axom::ArrayView<DataType> &z) : m_coordinates{x, y, z},  m_indexing(LogicalIndex{{x.size(), y.size(), z.size()}})
-  {
-  }
+                           const axom::ArrayView<DataType> &z)
+    : m_coordinates {x, y, z}
+    , m_indexing(LogicalIndex {{x.size(), y.size(), z.size()}})
+  { }
 
   /**
    * \brief Return the number of nodes in the coordset.
@@ -152,16 +149,10 @@ public:
   /// @{
 
   AXOM_HOST_DEVICE
-  IndexType size() const
-  {
-    return m_indexing.size();
-  }
+  IndexType size() const { return m_indexing.size(); }
 
   AXOM_HOST_DEVICE
-  IndexType numberOfNodes() const
-  {
-    return m_indexing.size();
-  }
+  IndexType numberOfNodes() const { return m_indexing.size(); }
   /// @}
 
   /**
@@ -174,9 +165,10 @@ public:
   AXOM_HOST_DEVICE
   PointType getPoint(LogicalIndex vertex_index) const
   {
-    return PointType(std::initializer_list<value_type>{m_coordinates[0][vertex_index[0]],
-                                                       m_coordinates[1][vertex_index[1]],
-                                                       m_coordinates[2][vertex_index[2]]});
+    return PointType(
+      std::initializer_list<value_type> {m_coordinates[0][vertex_index[0]],
+                                         m_coordinates[1][vertex_index[1]],
+                                         m_coordinates[2][vertex_index[2]]});
   }
 
   /**
@@ -200,8 +192,7 @@ public:
    * \return A point that corresponds to \a vertex_index.
    */
   AXOM_HOST_DEVICE
-  PointType
-  operator[](LogicalIndex vertex_index) const
+  PointType operator[](LogicalIndex vertex_index) const
   {
     return getPoint(vertex_index);
   }
@@ -214,19 +205,18 @@ public:
    * \return A point that corresponds to \a vertex_index.
    */
   AXOM_HOST_DEVICE
-  PointType
-  operator[](IndexType vertex_index) const
+  PointType operator[](IndexType vertex_index) const
   {
     return getPoint(m_indexing.IndexToLogicalIndex(vertex_index));
   }
 
 private:
-  axom::ArrayView<DataType>        m_coordinates[3];
+  axom::ArrayView<DataType> m_coordinates[3];
   StructuredIndexing<IndexType, 3> m_indexing;
 };
 
-} // end namespace views
-} // end namespace mir
-} // end namespace axom
+}  // end namespace views
+}  // end namespace mir
+}  // end namespace axom
 
 #endif

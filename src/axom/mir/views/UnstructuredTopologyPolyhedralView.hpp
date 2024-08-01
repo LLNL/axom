@@ -14,7 +14,6 @@ namespace mir
 {
 namespace views
 {
-
 /**
  * \brief This class implements a view for Blueprint polyhedral topologies.
  */
@@ -33,18 +32,24 @@ public:
                    const ConnectivityView &subelement_offsets,
                    const ConnectivityView &element_conn,
                    const ConnectivityView &element_sizes,
-                   const ConnectivityView &element_offsets) :
-      m_subelement_conn(subelement_conn), m_subelement_sizes(subelement_sizes), m_subelement_offsets(subelement_offsets),
-      m_element_conn(element_conn), m_element_sizes(element_sizes), m_element_offsets(element_offsets)
-    {
-    }
+                   const ConnectivityView &element_offsets)
+      : m_subelement_conn(subelement_conn)
+      , m_subelement_sizes(subelement_sizes)
+      , m_subelement_offsets(subelement_offsets)
+      , m_element_conn(element_conn)
+      , m_element_sizes(element_sizes)
+      , m_element_offsets(element_offsets)
+    { }
 
     AXOM_HOST_DEVICE
-    PolyhedronData(const PolyhedronData &obj) :
-      m_subelement_conn(obj.m_subelement_conn), m_subelement_sizes(obj.m_subelement_sizes), m_subelement_offsets(obj.m_subelement_offsets),
-      m_element_conn(obj.m_element_conn), m_element_sizes(obj.m_element_sizes), m_element_offsets(obj.m_element_offsets)
-    {
-    }
+    PolyhedronData(const PolyhedronData &obj)
+      : m_subelement_conn(obj.m_subelement_conn)
+      , m_subelement_sizes(obj.m_subelement_sizes)
+      , m_subelement_offsets(obj.m_subelement_offsets)
+      , m_element_conn(obj.m_element_conn)
+      , m_element_sizes(obj.m_element_sizes)
+      , m_element_offsets(obj.m_element_offsets)
+    { }
 
     ConnectivityView m_subelement_conn;
     ConnectivityView m_subelement_sizes;
@@ -62,17 +67,18 @@ public:
     AXOM_HOST_DEVICE constexpr static bool is_polyhedral() { return true; }
     AXOM_HOST_DEVICE constexpr static int id() { return Polyhedron_ShapeID; }
 
-    AXOM_HOST_DEVICE PolyhedronShape(const PolyhedronData &obj, axom::IndexType zi) : m_data(obj), m_zoneIndex(zi), m_ids()
-    {
-    }
+    AXOM_HOST_DEVICE PolyhedronShape(const PolyhedronData &obj, axom::IndexType zi)
+      : m_data(obj)
+      , m_zoneIndex(zi)
+      , m_ids()
+    { }
 
     /// This implementation does not return unique number of nodes.
     AXOM_HOST_DEVICE IndexType numberOfNodes() const
     {
       axom::IndexType nnodes = 0;
       const auto nFaces = numberOfFaces();
-      for(axom::IndexType f = 0; f < nFaces; f++)
-        nnodes += getFace(f).size();
+      for(axom::IndexType f = 0; f < nFaces; f++) nnodes += getFace(f).size();
     }
 
     AXOM_HOST_DEVICE IndexType numberOfFaces() const
@@ -132,18 +138,23 @@ public:
 
     AXOM_HOST_DEVICE ConnectivityView getFace(int faceIndex) const
     {
-      const ConnectivityView element_face_ids(m_data.m_element_conn.data() + m_data.m_element_offsets[m_zoneIndex], m_data.m_element_sizes[m_zoneIndex]);
+      const ConnectivityView element_face_ids(
+        m_data.m_element_conn.data() + m_data.m_element_offsets[m_zoneIndex],
+        m_data.m_element_sizes[m_zoneIndex]);
       const auto faceId = element_face_ids[faceIndex];
 
-      return ConnectivityView(m_data.m_subelement_conn.data() + m_data.m_subelement_offsets[faceId], m_data.m_subelement_sizes[faceId]);
+      return ConnectivityView(
+        m_data.m_subelement_conn.data() + m_data.m_subelement_offsets[faceId],
+        m_data.m_subelement_sizes[faceId]);
     }
 
   private:
-    AXOM_HOST_DEVICE bool find(const ConnectivityView *arr, axom::IndexType n, ConnectivityView value) const
+    AXOM_HOST_DEVICE bool find(const ConnectivityView *arr,
+                               axom::IndexType n,
+                               ConnectivityView value) const
     {
       bool found = false;
-      for(axom::IndexType i = 0; i < n && !found; i++)
-        found = arr[i] == value;
+      for(axom::IndexType i = 0; i < n && !found; i++) found = arr[i] == value;
       return found;
     }
 
@@ -155,21 +166,22 @@ public:
 
   using ShapeType = PolyhedronShape;
 
-  UnstructuredTopologyPolyhedralView(const axom::ArrayView<IndexType> &subelement_conn,
-                                     const axom::ArrayView<IndexType> &subelement_sizes,
-                                     const axom::ArrayView<IndexType> &subelement_offsets,
-                                     const axom::ArrayView<IndexType> &element_conn,
-                                     const axom::ArrayView<IndexType> &element_sizes,
-                                     const axom::ArrayView<IndexType> &element_offsets) :
-    m_data(subelement_conn, subelement_sizes, subelement_offsets,
-           element_conn, element_sizes, element_offsets)
-  {
-  }
+  UnstructuredTopologyPolyhedralView(
+    const axom::ArrayView<IndexType> &subelement_conn,
+    const axom::ArrayView<IndexType> &subelement_sizes,
+    const axom::ArrayView<IndexType> &subelement_offsets,
+    const axom::ArrayView<IndexType> &element_conn,
+    const axom::ArrayView<IndexType> &element_sizes,
+    const axom::ArrayView<IndexType> &element_offsets)
+    : m_data(subelement_conn,
+             subelement_sizes,
+             subelement_offsets,
+             element_conn,
+             element_sizes,
+             element_offsets)
+  { }
 
-  IndexType numberOfZones() const
-  {
-    return m_data.m_element_sizes.size();
-  }
+  IndexType numberOfZones() const { return m_data.m_element_sizes.size(); }
 
   /**
    * \brief Return the dimension of the shape.
@@ -184,11 +196,13 @@ public:
     const auto nzones = numberOfZones();
 
     const PolyhedronData sd(m_data);
-    axom::for_all<ExecSpace>(0, nzones, AXOM_LAMBDA(int zoneIndex)
-    {
-      const PolyhedronShape shape(sd, zoneIndex);
-      func(zoneIndex, shape);
-    });
+    axom::for_all<ExecSpace>(
+      0,
+      nzones,
+      AXOM_LAMBDA(int zoneIndex) {
+        const PolyhedronShape shape(sd, zoneIndex);
+        func(zoneIndex, shape);
+      });
   }
 
   template <typename ExecSpace, typename ViewType, typename FuncType>
@@ -198,20 +212,22 @@ public:
 
     ViewType idsView(selectedIdsView);
     const PolyhedronData sd(m_data);
-    axom::for_all<ExecSpace>(0, nSelectedZones, AXOM_LAMBDA(int selectIndex)
-    {
-      const auto zoneIndex = idsView[selectIndex];
-      const PolyhedronShape shape(sd, zoneIndex);
-      func(zoneIndex, shape);
-    });
+    axom::for_all<ExecSpace>(
+      0,
+      nSelectedZones,
+      AXOM_LAMBDA(int selectIndex) {
+        const auto zoneIndex = idsView[selectIndex];
+        const PolyhedronShape shape(sd, zoneIndex);
+        func(zoneIndex, shape);
+      });
   }
 
 private:
   PolyhedronData m_data;
 };
 
-} // end namespace views
-} // end namespace mir
-} // end namespace axom
+}  // end namespace views
+}  // end namespace mir
+}  // end namespace axom
 
 #endif

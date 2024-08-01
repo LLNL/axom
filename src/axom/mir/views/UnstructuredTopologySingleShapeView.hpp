@@ -14,7 +14,6 @@ namespace mir
 {
 namespace views
 {
-
 /**
  * \brief This class provides a view for Conduit/Blueprint single shape unstructured grids.
  *
@@ -34,9 +33,11 @@ public:
    *
    * \param conn The mesh connectivity.
    */
-  UnstructuredTopologySingleShapeView(const ConnectivityView &conn) : m_connectivityView(conn), m_sizesView(), m_offsetsView()
-  {
-  }
+  UnstructuredTopologySingleShapeView(const ConnectivityView &conn)
+    : m_connectivityView(conn)
+    , m_sizesView()
+    , m_offsetsView()
+  { }
 
   /**
    * \brief Constructor
@@ -47,7 +48,10 @@ public:
    */
   UnstructuredTopologySingleShapeView(const ConnectivityView &conn,
                                       const ConnectivityView &sizes,
-                                      const ConnectivityView &offsets) : m_connectivityView(conn), m_sizesView(sizes), m_offsetsView(offsets)
+                                      const ConnectivityView &offsets)
+    : m_connectivityView(conn)
+    , m_sizesView(sizes)
+    , m_offsetsView(offsets)
   {
     SLIC_ASSERT(m_sizesView.size() != 0);
     SLIC_ASSERT(m_offsetsView.size() != 0);
@@ -68,7 +72,9 @@ public:
    */
   IndexType numberOfZones() const
   {
-    return (m_sizesView.size() != 0) ? m_sizesView.size() : (m_connectivityView.size() / ShapeType::numberOfNodes());
+    return (m_sizesView.size() != 0)
+      ? m_sizesView.size()
+      : (m_connectivityView.size() / ShapeType::numberOfNodes());
   }
 
   /**
@@ -85,25 +91,33 @@ public:
     const auto nzones = numberOfZones();
 
     ConnectivityView connectivityView(m_connectivityView);
-    if constexpr (ShapeType::is_variable_size())
+    if constexpr(ShapeType::is_variable_size())
     {
       ConnectivityView sizesView(m_sizesView);
       ConnectivityView offsetsView(m_offsetsView);
-      axom::for_all<ExecSpace>(0, nzones, AXOM_LAMBDA(auto zoneIndex)
-      {
-        const ConnectivityView shapeDataView(connectivityView.data() + offsetsView[zoneIndex], sizesView[zoneIndex]);
-        const ShapeType shape(shapeDataView);
-        func(zoneIndex, shape);
-      });
+      axom::for_all<ExecSpace>(
+        0,
+        nzones,
+        AXOM_LAMBDA(auto zoneIndex) {
+          const ConnectivityView shapeDataView(
+            connectivityView.data() + offsetsView[zoneIndex],
+            sizesView[zoneIndex]);
+          const ShapeType shape(shapeDataView);
+          func(zoneIndex, shape);
+        });
     }
     else
     {
-      axom::for_all<ExecSpace>(0, nzones, AXOM_LAMBDA(auto zoneIndex)
-      {
-        const ConnectivityView shapeDataView(connectivityView.data() + ShapeType::zoneOffset(zoneIndex), ShapeType::numberOfNodes());
-        const ShapeType shape(shapeDataView);
-        func(zoneIndex, shape);
-      });
+      axom::for_all<ExecSpace>(
+        0,
+        nzones,
+        AXOM_LAMBDA(auto zoneIndex) {
+          const ConnectivityView shapeDataView(
+            connectivityView.data() + ShapeType::zoneOffset(zoneIndex),
+            ShapeType::numberOfNodes());
+          const ShapeType shape(shapeDataView);
+          func(zoneIndex, shape);
+        });
     }
   }
 
@@ -123,27 +137,35 @@ public:
 
     ConnectivityView connectivityView(m_connectivityView);
     const ViewType localSelectedIdsView(selectedIdsView);
-    if constexpr (ShapeType::is_variable_size())
+    if constexpr(ShapeType::is_variable_size())
     {
       ConnectivityView sizesView(m_sizesView);
       ConnectivityView offsetsView(m_offsetsView);
-      axom::for_all<ExecSpace>(0, nSelectedZones, AXOM_LAMBDA(auto selectIndex)
-      {
-        const auto zoneIndex = localSelectedIdsView[selectIndex];
-        const ConnectivityView shapeIdsView(connectivityView.data() + offsetsView[zoneIndex], sizesView[zoneIndex]);
-        const ShapeType shape(shapeIdsView);
-        func(zoneIndex, shape);
-      });
+      axom::for_all<ExecSpace>(
+        0,
+        nSelectedZones,
+        AXOM_LAMBDA(auto selectIndex) {
+          const auto zoneIndex = localSelectedIdsView[selectIndex];
+          const ConnectivityView shapeIdsView(
+            connectivityView.data() + offsetsView[zoneIndex],
+            sizesView[zoneIndex]);
+          const ShapeType shape(shapeIdsView);
+          func(zoneIndex, shape);
+        });
     }
     else
     {
-      axom::for_all<ExecSpace>(0, nSelectedZones, AXOM_LAMBDA(auto selectIndex)
-      {
-        const auto zoneIndex = localSelectedIdsView[selectIndex];
-        const ConnectivityView shapeIdsView(connectivityView.data() + ShapeType::zoneOffset(zoneIndex), ShapeType::numberOfNodes());
-        const ShapeType shape(shapeIdsView);
-        func(zoneIndex, shape);
-      });
+      axom::for_all<ExecSpace>(
+        0,
+        nSelectedZones,
+        AXOM_LAMBDA(auto selectIndex) {
+          const auto zoneIndex = localSelectedIdsView[selectIndex];
+          const ConnectivityView shapeIdsView(
+            connectivityView.data() + ShapeType::zoneOffset(zoneIndex),
+            ShapeType::numberOfNodes());
+          const ShapeType shape(shapeIdsView);
+          func(zoneIndex, shape);
+        });
     }
   }
 
@@ -153,8 +175,8 @@ private:
   ConnectivityView m_offsetsView;
 };
 
-} // end namespace views
-} // end namespace mir
-} // end namespace axom
+}  // end namespace views
+}  // end namespace mir
+}  // end namespace axom
 
 #endif

@@ -30,42 +30,39 @@ namespace axom
 {
 namespace mir
 {
-
 //--------------------------------------------------------------------------------
 
-  /**
+/**
    * \class CellGenerator
    * 
    * \brief A class that generates that uses the clipping information to generate
    *        the data needed in order to produce a clean, reconstructed mesh.
    */
-  class CellGenerator
-  {
-    public:
-
-      /**
+class CellGenerator
+{
+public:
+  /**
        * \brief Default constructor.
        */
-      CellGenerator();
+  CellGenerator();
 
-      /**
+  /**
        * \brief Default destructor.
        */
-      ~CellGenerator();
+  ~CellGenerator();
 
-      /**
+  /**
        * \brief Generates the topology of the new elements resulting from a split.
        * 
        * \param newElements  An ordered map of the generated elements' IDs to a list of the vertex IDs in the local frame of the output element.
        * \param newVertices  An order map of the vertex IDs in the local frame of the output element to the generated elements' IDs it is associated with.
        * \param out_cellData  Container to store the topology data of the generated elements.
        */
-      void  generateTopologyData(const std::map<int, std::vector<int> >& newElements, 
-                                 const std::map<int, std::vector<int> >& newVertices, 
-                                 CellData& out_cellData);
+  void generateTopologyData(const std::map<int, std::vector<int>>& newElements,
+                            const std::map<int, std::vector<int>>& newVertices,
+                            CellData& out_cellData);
 
-
-      /**
+  /**
        * \brief Generates the vertex positions values for each of the new vertices of the generated element.
        * 
        * \param  shapeType  The shape type of the element.
@@ -76,14 +73,13 @@ namespace mir
        * 
        * \note  New vertex positions are interpolated from the original vertex positions.
        */
-      void  generateVertexPositions(const mir::Shape shapeType, 
-                                    const std::map<int, std::vector<int>>& newVertices, 
-                                    const std::vector<mir::Point2>& vertexPositions, 
-                                    axom::float64* tValues, 
-                                    CellData& out_cellData);
+  void generateVertexPositions(const mir::Shape shapeType,
+                               const std::map<int, std::vector<int>>& newVertices,
+                               const std::vector<mir::Point2>& vertexPositions,
+                               axom::float64* tValues,
+                               CellData& out_cellData);
 
-
-      /**
+  /**
        * \brief Generates the vertex volume fractions for each of the new vertices of the generated element.
        * 
        * \param  shapeType  The shape type of the element.
@@ -94,13 +90,14 @@ namespace mir
        * 
        * \note  New vertex positions are interpolated from the original vertex volume fractions.
        */
-      void  generateVertexVolumeFractions(const mir::Shape shapeType, 
-                                          const std::map<int, std::vector<int>>& newVertices, 
-                                          const std::vector<std::vector<axom::float64> >& vertexVF, 
-                                          axom::float64* tValues, 
-                                          CellData& out_cellData);
+  void generateVertexVolumeFractions(
+    const mir::Shape shapeType,
+    const std::map<int, std::vector<int>>& newVertices,
+    const std::vector<std::vector<axom::float64>>& vertexVF,
+    axom::float64* tValues,
+    CellData& out_cellData);
 
-      /**
+  /**
        * \brief Determines the more dominant material of the two given for the given element.
        * 
        * \param shapeType  An enumerator denoting the element's shape.
@@ -117,16 +114,17 @@ namespace mir
        * 
        * \note It is assumed that the given cell is one that results from splitting its parent cell.
        */
-      int  determineCleanCellMaterial(const Shape shapeType, 
-                                      const std::vector<int>& vertexIDs, 
-                                      const int matOne, 
-                                      const int matTwo, 
-                                      const std::vector<std::vector<axom::float64> >& vertexVF);
-  };
+  int determineCleanCellMaterial(
+    const Shape shapeType,
+    const std::vector<int>& vertexIDs,
+    const int matOne,
+    const int matTwo,
+    const std::vector<std::vector<axom::float64>>& vertexVF);
+};
 
 //--------------------------------------------------------------------------------
 
-}
-}
+}  // namespace mir
+}  // namespace axom
 
 #endif

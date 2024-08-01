@@ -19,7 +19,6 @@ namespace utilities
 {
 namespace blueprint
 {
-
 /**
  * \brief Contains the indices to be sliced out of a Blueprint field.
  */
@@ -47,7 +46,9 @@ public:
    *
    * \note We assume for now that n_input != n_output.
    */
-  void execute(const SliceData &slice, const conduit::Node &n_input, conduit::Node &n_output)
+  void execute(const SliceData &slice,
+               const conduit::Node &n_input,
+               conduit::Node &n_output)
   {
     n_output.reset();
     n_output["association"] = n_input["association"];
@@ -69,6 +70,7 @@ public:
       sliceSingleComponent(slice, n_input_values, n_output_values);
     }
   }
+
 private:
   /**
    * \brief Slice data for a single field component.
@@ -77,7 +79,9 @@ private:
    * \param n_values The input values that we're slicing.
    * \param n_output_values The output node that will contain the new field.
    */
-  void sliceSingleComponent(const SliceData &slice, const conduit::Node &n_values, conduit::Node &n_output_values) const
+  void sliceSingleComponent(const SliceData &slice,
+                            const conduit::Node &n_values,
+                            conduit::Node &n_output_values) const
   {
     const auto outputSize = slice.m_indicesView.size();
 
@@ -86,20 +90,23 @@ private:
     n_output_values.set_allocator(c2a.getConduitAllocatorID());
     n_output_values.set(conduit::DataType(n_values.dtype().id(), outputSize));
 
-    views::Node_to_ArrayView_same(n_values, n_output_values, [&](auto valuesView, auto outputView)
-    {
-      const SliceData deviceSlice(slice);
-      axom::for_all<ExecSpace>(outputSize, AXOM_LAMBDA(auto index)
-      {
-        outputView[index] = valuesView[deviceSlice.m_indicesView[index]];
+    views::Node_to_ArrayView_same(
+      n_values,
+      n_output_values,
+      [&](auto valuesView, auto outputView) {
+        const SliceData deviceSlice(slice);
+        axom::for_all<ExecSpace>(
+          outputSize,
+          AXOM_LAMBDA(auto index) {
+            outputView[index] = valuesView[deviceSlice.m_indicesView[index]];
+          });
       });
-    });
   }
 };
 
-} // end namespace blueprint
-} // end namespace utilities
-} // end namespace mir
-} // end namespace axom
+}  // end namespace blueprint
+}  // end namespace utilities
+}  // end namespace mir
+}  // end namespace axom
 
 #endif

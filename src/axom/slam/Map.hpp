@@ -846,11 +846,9 @@ bool Map<T, S, IndPol, StrPol, IfacePol>::isValid(bool verboseOutput) const
     std::stringstream sstr;
 
     sstr << "\n*** Detailed results of isValid on the map.\n";
-    sstr << "Map was NOT valid.\n"
-           << sstr.str()
-           << std::endl;
+    sstr << "Map was NOT valid.\n" << sstr.str() << std::endl;
 
-    SLIC_DEBUG( sstr.str() );
+    SLIC_DEBUG(sstr.str());
   }
 
   return bValid;
@@ -865,7 +863,7 @@ void Map<T, S, IndPol, StrPol, IfacePol>::print() const
   {
     std::stringstream sstr;
 
-    if (!m_set.get())
+    if(!m_set.get())
     {
       sstr << "** map is empty.";
     }
@@ -886,13 +884,12 @@ void Map<T, S, IndPol, StrPol, IfacePol>::print() const
       }
     }
 
-    SLIC_INFO( sstr.str() );
+    SLIC_INFO(sstr.str());
   }
   else
   {
-     SLIC_INFO("Map was not valid.");
+    SLIC_INFO("Map was not valid.");
   }
-
 }
 
 }  // end namespace slam

@@ -28,7 +28,6 @@ namespace mir
 {
 namespace utilities
 {
-
 //------------------------------------------------------------------------------
 /**
  * \brief This class and its specializations provide a type trait that lets us
@@ -38,16 +37,28 @@ namespace utilities
  * \note this belongs in algorithm utilities, maybe core.
  */
 template <typename T>
-struct accumulation_traits { using type = float; };
+struct accumulation_traits
+{
+  using type = float;
+};
 
 template <>
-struct accumulation_traits<double> { using type = double; };
+struct accumulation_traits<double>
+{
+  using type = double;
+};
 
 template <>
-struct accumulation_traits<long> { using type = double; };
+struct accumulation_traits<long>
+{
+  using type = double;
+};
 
 template <>
-struct accumulation_traits<unsigned long> { using type = double; };
+struct accumulation_traits<unsigned long>
+{
+  using type = double;
+};
 
 //------------------------------------------------------------------------------
 /**
@@ -60,8 +71,7 @@ struct accumulation_traits<unsigned long> { using type = double; };
  * \return The index where value was located in view or -1 if not found.
  */
 template <typename T>
-AXOM_HOST_DEVICE
-std::int32_t bsearch(T value, const axom::ArrayView<T> &view)
+AXOM_HOST_DEVICE std::int32_t bsearch(T value, const axom::ArrayView<T> &view)
 {
   std::int32_t index = -1;
   std::int32_t left = 0;
@@ -143,17 +153,16 @@ inline std::uint64_t hash_bytes(const std::uint8_t *data, std::uint32_t length)
  * \param[in] n The number of values to be sorted.
  */
 template <typename ValueType, typename IndexType>
-AXOM_HOST_DEVICE
-void sort_values(ValueType *v, IndexType n)
+AXOM_HOST_DEVICE void sort_values(ValueType *v, IndexType n)
 {
   for(IndexType i = 0; i < n - 1; i++)
   {
     const IndexType m = n - i - 1;
     for(IndexType j = 0; j < m; j++)
     {
-      if(v[j] > v[j+1])
+      if(v[j] > v[j + 1])
       {
-        axom::utilities::swap(v[j], v[j+1]);
+        axom::utilities::swap(v[j], v[j + 1]);
       }
     }
   }
@@ -167,8 +176,7 @@ void sort_values(ValueType *v, IndexType n)
  * \return A hashed name for the id.
  */
 template <typename ValueType>
-AXOM_HOST_DEVICE
-std::uint64_t make_name_1(ValueType id)
+AXOM_HOST_DEVICE std::uint64_t make_name_1(ValueType id)
 {
   return hash_bytes(reinterpret_cast<std::uint8_t *>(&id), sizeof(ValueType));
 };
@@ -182,8 +190,7 @@ std::uint64_t make_name_1(ValueType id)
  * \return A hashed name for the ids.
  */
 template <typename ValueType>
-AXOM_HOST_DEVICE
-std::uint64_t make_name_2(ValueType id0, ValueType id1)
+AXOM_HOST_DEVICE std::uint64_t make_name_2(ValueType id0, ValueType id1)
 {
   ValueType data[2] = {id0, id1};
   if(id1 < id0)
@@ -191,7 +198,8 @@ std::uint64_t make_name_2(ValueType id0, ValueType id1)
     data[0] = id1;
     data[1] = id0;
   }
-  return hash_bytes(reinterpret_cast<std::uint8_t *>(data), 2 * sizeof(ValueType));
+  return hash_bytes(reinterpret_cast<std::uint8_t *>(data),
+                    2 * sizeof(ValueType));
 };
 
 //------------------------------------------------------------------------------
@@ -207,12 +215,11 @@ std::uint64_t make_name_2(ValueType id0, ValueType id1)
  * \return A hashed name for the ids.
  */
 template <typename ValueType, std::uint32_t MaxValues = 14>
-AXOM_HOST_DEVICE
-std::uint64_t make_name_n(const ValueType *values, std::uint32_t n)
+AXOM_HOST_DEVICE std::uint64_t make_name_n(const ValueType *values,
+                                           std::uint32_t n)
 {
   assert(n <= MaxValues);
-  if(n == 2)
-    return make_name_2(values[0], values[1]);
+  if(n == 2) return make_name_2(values[0], values[1]);
 
   // Make sure the values are sorted before hashing.
   ValueType sorted[MaxValues];
@@ -222,7 +229,8 @@ std::uint64_t make_name_n(const ValueType *values, std::uint32_t n)
   }
   sort_values(sorted, n);
 
-  return hash_bytes(reinterpret_cast<std::uint8_t *>(sorted), n * sizeof(ValueType));
+  return hash_bytes(reinterpret_cast<std::uint8_t *>(sorted),
+                    n * sizeof(ValueType));
 }
 
 //------------------------------------------------------------------------------
@@ -238,7 +246,9 @@ std::uint64_t make_name_n(const ValueType *values, std::uint32_t n)
  *
  */
 template <typename ExecSpace, typename KeyType>
-void unique(const axom::ArrayView<KeyType> &keys_orig_view, axom::Array<KeyType> &skeys, axom::Array<axom::IndexType> &sindices)
+void unique(const axom::ArrayView<KeyType> &keys_orig_view,
+            axom::Array<KeyType> &skeys,
+            axom::Array<axom::IndexType> &sindices)
 {
   using loop_policy = typename axom::execution_space<ExecSpace>::loop_policy;
   using reduce_policy = typename axom::execution_space<ExecSpace>::reduce_policy;
@@ -250,11 +260,12 @@ void unique(const axom::ArrayView<KeyType> &keys_orig_view, axom::Array<KeyType>
   axom::Array<axom::IndexType> indices(n, n, allocatorID);
   auto keys_view = keys.view();
   auto indices_view = indices.view();
-  axom::for_all<ExecSpace>(n, AXOM_LAMBDA(axom::IndexType i)
-  {
-    keys_view[i] = keys_orig_view[i];
-    indices_view[i] = i;
-  });
+  axom::for_all<ExecSpace>(
+    n,
+    AXOM_LAMBDA(axom::IndexType i) {
+      keys_view[i] = keys_orig_view[i];
+      indices_view[i] = i;
+    });
 
   // Sort the keys, indices in place.
   RAJA::sort_pairs<loop_policy>(RAJA::make_span(keys_view.data(), n),
@@ -264,19 +275,21 @@ void unique(const axom::ArrayView<KeyType> &keys_orig_view, axom::Array<KeyType>
   axom::Array<axom::IndexType> mask(n, n, allocatorID);
   auto mask_view = mask.view();
   RAJA::ReduceSum<reduce_policy, axom::IndexType> mask_sum(0);
-  axom::for_all<ExecSpace>(n, AXOM_LAMBDA(axom::IndexType i)
-  {
-    const axom::IndexType m = (i >= 1) ? ((keys_view[i] != keys_view[i - 1]) ? 1 : 0) : 1;
-    mask_view[i] = m;
-    mask_sum += m;
-  });
+  axom::for_all<ExecSpace>(
+    n,
+    AXOM_LAMBDA(axom::IndexType i) {
+      const axom::IndexType m =
+        (i >= 1) ? ((keys_view[i] != keys_view[i - 1]) ? 1 : 0) : 1;
+      mask_view[i] = m;
+      mask_sum += m;
+    });
 
   // Do a scan on the mask array to build an offset array.
   axom::Array<axom::IndexType> offsets(n, n, allocatorID);
   auto offsets_view = offsets.view();
   RAJA::exclusive_scan<loop_policy>(RAJA::make_span(mask_view.data(), n),
                                     RAJA::make_span(offsets_view.data(), n),
-                                    RAJA::operators::plus<axom::IndexType>{});
+                                    RAJA::operators::plus<axom::IndexType> {});
 
   // Allocate the output arrays.
   const axom::IndexType newsize = mask_sum.get();
@@ -287,18 +300,19 @@ void unique(const axom::ArrayView<KeyType> &keys_orig_view, axom::Array<KeyType>
   // offset in the new array.
   auto skeys_view = skeys.view();
   auto sindices_view = sindices.view();
-  axom::for_all<ExecSpace>(n, AXOM_LAMBDA(axom::IndexType i)
-  {
-    if(mask_view[i])
-    {
-      skeys_view[offsets_view[i]] = keys_view[i];
-      sindices_view[offsets_view[i]] = indices_view[i];
-    }
-  });
+  axom::for_all<ExecSpace>(
+    n,
+    AXOM_LAMBDA(axom::IndexType i) {
+      if(mask_view[i])
+      {
+        skeys_view[offsets_view[i]] = keys_view[i];
+        sindices_view[offsets_view[i]] = indices_view[i];
+      }
+    });
 }
 
-} // end namespace utilities
-} // end namespace mir
-} // end namespace axom
+}  // end namespace utilities
+}  // end namespace mir
+}  // end namespace axom
 
 #endif

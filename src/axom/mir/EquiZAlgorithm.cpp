@@ -54,7 +54,6 @@ namespace axom
 {
 namespace mir
 {
-
 void EquiZAlgorithm::execute(const conduit::Node &topo,
                              const conduit::Node &coordset,
                              const conduit::Node &matset,
@@ -64,31 +63,31 @@ void EquiZAlgorithm::execute(const conduit::Node &topo,
                              conduit::Node &new_matset)
 {
 #if 0
-#if defined (AXOM_USE_RAJA) && defined (AXOM_USE_UMPIRE)
+  #if defined(AXOM_USE_RAJA) && defined(AXOM_USE_UMPIRE)
   switch(m_execPolicy)
   {
-  #if defined(AXOM_USE_OPENMP)
+    #if defined(AXOM_USE_OPENMP)
   case RuntimePolicy::omp:
     executeImpl<omp_exec>(topo, coordset, matset, options, new_topo, new_coordset, new_matset);
     break;
-  #endif
-  #if defined(AXOM_USE_CUDA)
+    #endif
+    #if defined(AXOM_USE_CUDA)
   case RuntimePolicy::cuda:
     executeImpl<cuda_exec>(topo, coordset, matset, options, new_topo, new_coordset, new_matset);
     break;
-  #endif
-  #if defined(AXOM_USE_HIP)
+    #endif
+    #if defined(AXOM_USE_HIP)
   case RuntimePolicy::hip:
     executeImpl<hip_exec>(topo, coordset, matset, options, new_topo, new_coordset, new_matset);
     break;
-  #endif
+    #endif
   default:
     // Falls through
   case RuntimePolicy::seq:
     executeImpl<seq_exec>(topo, coordset, matset, options, new_topo, new_coordset, new_matset);
     break;
   }
-#endif
+  #endif
 #endif
 }
 
@@ -183,5 +182,5 @@ void EquiZAlgorithm::executeImpl(const conduit::Node &topo,
 #endif
 }
 
-} // namespace mir
-} // namespace axom
+}  // namespace mir
+}  // namespace axom

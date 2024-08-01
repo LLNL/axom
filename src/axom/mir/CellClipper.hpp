@@ -29,30 +29,29 @@ namespace axom
 {
 namespace mir
 {
-
 //--------------------------------------------------------------------------------
 
-  /**
+/**
    * \class CellClipper
    * 
    * \brief A class that contains the functionality for taking an input cell
    *        and determining how it should be clipped.
    * 
    */
-  class CellClipper
-  {
-    public:
-      /**
+class CellClipper
+{
+public:
+  /**
        * \brief Default constructor.
        */
-      CellClipper();
+  CellClipper();
 
-      /**
+  /**
        * \brief Default destructor.
        */
-      ~CellClipper();
+  ~CellClipper();
 
-      /**
+  /**
        * \brief Computes the elements, vertices, and t values resulting from splitting the element with the given vertex volume fractions.
        * 
        * \param shapeType  The shape type of the element.
@@ -62,13 +61,13 @@ namespace mir
        * \param  tValues  An array of t values where each of the midpoint vertices are for the newly generated elements.
        * 
        */
-      void  computeClippingPoints(const mir::Shape shapeType, 
-                                  const std::vector<std::vector<axom::float64> >& vertexVF,
-                                  std::map<int, std::vector<int> >& newElements, 
-                                  std::map<int, std::vector<int> >& newVertices, 
-                                  axom::float64* tValues);
+  void computeClippingPoints(const mir::Shape shapeType,
+                             const std::vector<std::vector<axom::float64>>& vertexVF,
+                             std::map<int, std::vector<int>>& newElements,
+                             std::map<int, std::vector<int>>& newVertices,
+                             axom::float64* tValues);
 
-      /**
+  /**
        * \brief  Determines the index into the clipping table of the given shape based on the volume fractions at its vertices.
        * 
        * \param shapeType  The shape type of the element.
@@ -77,12 +76,11 @@ namespace mir
        * 
        * \return The index into the clipping table.
        */
-      unsigned int  determineClippingCase(const mir::Shape shapeType, 
-                                          const std::vector<axom::float64>& matOneVF, 
-                                          const std::vector<axom::float64>& matTwoVF);
+  unsigned int determineClippingCase(const mir::Shape shapeType,
+                                     const std::vector<axom::float64>& matOneVF,
+                                     const std::vector<axom::float64>& matTwoVF);
 
-
-      /**
+  /**
        * \brief Computes the t value as a percent from vertex one to vertex two based on the materials given.
        * 
        * \param vfMatOneVertexOne  The volume fraction of material one present at vertex one.
@@ -95,26 +93,25 @@ namespace mir
        * \note  When one material's volume fractions dominates the other material's, then the edge should not be clipped and this function will return 0.0.
        * \note  When one of the materials is the NULL_MAT (and has vf = -1.0), these values are set to 0 in order to interpolate properly.
        */
-      axom::float64  computeTValueOnEdge(axom::float64 vfMatOneVertexOne, 
-                                         axom::float64 vfMatTwoVertexOne, 
-                                         axom::float64 vfMatOneVertexTwo, 
-                                         axom::float64 vfMatTwoVertexTwo);
+  axom::float64 computeTValueOnEdge(axom::float64 vfMatOneVertexOne,
+                                    axom::float64 vfMatTwoVertexOne,
+                                    axom::float64 vfMatOneVertexTwo,
+                                    axom::float64 vfMatTwoVertexTwo);
 
-    private:
-      /**
+private:
+  /**
       * \brief Returns a reference to the appropriate clipping table to use for the shape type.
       * 
       * \param The shape type of the element.
       * 
       * \return A reference to the clipping table. 
       */
-      const std::vector<std::vector<int> >&  getClipTable(const mir::Shape shapeType);
-
-  };
+  const std::vector<std::vector<int>>& getClipTable(const mir::Shape shapeType);
+};
 
 //--------------------------------------------------------------------------------
 
-}
-}
+}  // namespace mir
+}  // namespace axom
 
 #endif

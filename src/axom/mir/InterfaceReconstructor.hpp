@@ -32,8 +32,7 @@ namespace axom
 {
 namespace mir
 {
-
-  /**
+/**
    * \class InterfaceReconstructor
    * 
    * \brief A class that contains the functionality for taking an input mesh
@@ -45,33 +44,29 @@ namespace mir
    *         a zoo-based algorithm described in Meredith 2004, and the other 
    *         is the iterative version described in Meredith and Childs 2010.
    */
-  class InterfaceReconstructor
-  {
-    public:
-
-      /**
+class InterfaceReconstructor
+{
+public:
+  /**
        * \brief Default constructor.
        */
-      InterfaceReconstructor();
+  InterfaceReconstructor();
 
-
-      /**
+  /**
        * \brief Default destructor.
        */
-      ~InterfaceReconstructor();
+  ~InterfaceReconstructor();
 
-
-      /**
+  /**
        * \brief  Performs material interface reconstruction using the zoo-based algorithm.
        * 
        * \param inputMesh  The mesh composed of mixed cells.
        * \param outputMesh The mesh composed of clean cells. 
        */
-      void computeReconstructedInterface(mir::MIRMesh& inputMesh, 
-                                         mir::MIRMesh& outputMesh);
+  void computeReconstructedInterface(mir::MIRMesh& inputMesh,
+                                     mir::MIRMesh& outputMesh);
 
-
-      /**
+  /**
        * \brief Performs material interface reconstruction using an iterative version of the zoo-based algorithm.
        * 
        * \param inputMesh  The mesh made up of mixed cells.
@@ -79,12 +74,12 @@ namespace mir
        * \param percent  The percent of the difference to use when modifying the original element volume fractions.
        * \param outputMesh  The mesh composed of clean cells.
        */
-      void computeReconstructedInterfaceIterative(mir::MIRMesh& inputMesh, 
-                                                  const int numIterations, 
-                                                  const axom::float64 percent,
-                                                  mir::MIRMesh& outputMesh);
+  void computeReconstructedInterfaceIterative(mir::MIRMesh& inputMesh,
+                                              const int numIterations,
+                                              const axom::float64 percent,
+                                              mir::MIRMesh& outputMesh);
 
-      /**
+  /**
        * \brief Generates a set of clean cells by splitting the element with the two given materials.
        * 
        * \param  shapeType  The shape type of the element to be split.
@@ -95,19 +90,20 @@ namespace mir
        * \param  originalElementVertexVF  The original vertex volume fractions associated with the vertices of the element to be split.
        * \param  originalElementVertexPositions  The original vertex positions associated with the vertices of the element to be split.
        * \param out_cellData  Container to store the data of the generated elements.
-       */ 
-      void generateCleanCells(mir::Shape shapeType,
-                              const int parentElementID,
-                              const int matOne,
-                              const int matTwo,
-                              const std::vector<int>& elementVertices,
-                              const std::vector<std::vector<axom::float64> >& originalElementVertexVF,
-                              const std::vector<mir::Point2>& originalElementVertexPositions,
-                              CellData& out_cellData);
+       */
+  void generateCleanCells(
+    mir::Shape shapeType,
+    const int parentElementID,
+    const int matOne,
+    const int matTwo,
+    const std::vector<int>& elementVertices,
+    const std::vector<std::vector<axom::float64>>& originalElementVertexVF,
+    const std::vector<mir::Point2>& originalElementVertexPositions,
+    CellData& out_cellData);
 
-      private:
-        mir::MIRMesh m_originalMesh;
-  };
-}
-}
+private:
+  mir::MIRMesh m_originalMesh;
+};
+}  // namespace mir
+}  // namespace axom
 #endif

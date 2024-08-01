@@ -12,10 +12,8 @@
 
 namespace axom
 {
-
 namespace mir
 {
-
 void MIRAlgorithm::execute(const conduit::Node &root,
                            const conduit::Node &options,
                            conduit::Node &output)
@@ -35,7 +33,8 @@ void MIRAlgorithm::execute(const conduit::Node &root,
       conduit::Node &newDomain = output.append();
       const conduit::Node &topologies = dom.fetch_existing("topologies");
       const conduit::Node &topo = topologies.fetch_existing(topoName);
-      const conduit::Node *cset = conduit::blueprint::mesh::utils::find_reference_node(topo, "coordset");
+      const conduit::Node *cset =
+        conduit::blueprint::mesh::utils::find_reference_node(topo, "coordset");
       const conduit::Node &mset = matset(dom, options);
 
       conduit::Node &newTopo = newDomain["topologies/" + newTopoName];
@@ -57,7 +56,8 @@ void MIRAlgorithm::execute(const conduit::Node &root,
 
     const conduit::Node &topologies = dom.fetch_existing("topologies");
     const conduit::Node &topo = topologies.fetch_existing(topoName);
-    const conduit::Node *cset = conduit::blueprint::mesh::utils::find_reference_node(topo, "coordset");
+    const conduit::Node *cset =
+      conduit::blueprint::mesh::utils::find_reference_node(topo, "coordset");
     const conduit::Node &mset = matset(root, options);
 
     conduit::Node &newTopo = output["topologies/" + newTopoName];
@@ -68,15 +68,14 @@ void MIRAlgorithm::execute(const conduit::Node &root,
   }
 }
 
-void
-MIRAlgorithm::copyState(const conduit::Node &mesh, conduit::Node &destMesh) const
+void MIRAlgorithm::copyState(const conduit::Node &mesh,
+                             conduit::Node &destMesh) const
 {
-  if(mesh.has_path("state"))
-    destMesh["state"].set(mesh["state"]);
+  if(mesh.has_path("state")) destMesh["state"].set(mesh["state"]);
 }
 
-std::string
-MIRAlgorithm::topologyName(const conduit::Node &mesh, const conduit::Node &options) const
+std::string MIRAlgorithm::topologyName(const conduit::Node &mesh,
+                                       const conduit::Node &options) const
 {
   std::string topoName;
   if(options.has_path("topology"))
@@ -89,8 +88,8 @@ MIRAlgorithm::topologyName(const conduit::Node &mesh, const conduit::Node &optio
   return topoName;
 }
 
-std::string
-MIRAlgorithm::newTopologyName(const conduit::Node &mesh, const conduit::Node &options) const
+std::string MIRAlgorithm::newTopologyName(const conduit::Node &mesh,
+                                          const conduit::Node &options) const
 {
   std::string topoName;
   if(options.has_path("new_topology"))
@@ -100,8 +99,8 @@ MIRAlgorithm::newTopologyName(const conduit::Node &mesh, const conduit::Node &op
   return topoName;
 }
 
-std::string
-MIRAlgorithm::newCoordsetName(const conduit::Node &mesh, const conduit::Node &options) const
+std::string MIRAlgorithm::newCoordsetName(const conduit::Node &mesh,
+                                          const conduit::Node &options) const
 {
   std::string csetName;
   if(options.has_path("new_coordset"))
@@ -117,8 +116,8 @@ MIRAlgorithm::newCoordsetName(const conduit::Node &mesh, const conduit::Node &op
   return csetName;
 }
 
-std::string
-MIRAlgorithm::matsetName(const conduit::Node &mesh, const conduit::Node &options) const
+std::string MIRAlgorithm::matsetName(const conduit::Node &mesh,
+                                     const conduit::Node &options) const
 {
   std::string matName;
   if(options.has_path("matset"))
@@ -131,8 +130,8 @@ MIRAlgorithm::matsetName(const conduit::Node &mesh, const conduit::Node &options
   return matName;
 }
 
-std::string
-MIRAlgorithm::newMatsetName(const conduit::Node &mesh, const conduit::Node &options) const
+std::string MIRAlgorithm::newMatsetName(const conduit::Node &mesh,
+                                        const conduit::Node &options) const
 {
   std::string matName;
   if(options.has_path("new_matset"))
@@ -142,14 +141,16 @@ MIRAlgorithm::newMatsetName(const conduit::Node &mesh, const conduit::Node &opti
   return matName;
 }
 
-const conduit::Node &MIRAlgorithm::topology(const conduit::Node &mesh, const conduit::Node &options) const
+const conduit::Node &MIRAlgorithm::topology(const conduit::Node &mesh,
+                                            const conduit::Node &options) const
 {
   const std::string topoName = topologyName(mesh, options);
   const conduit::Node &topologies = mesh.fetch_existing("topologies");
   return topologies.fetch_existing(topoName);
 }
 
-const conduit::Node &MIRAlgorithm::matset(const conduit::Node &mesh, const conduit::Node &options) const
+const conduit::Node &MIRAlgorithm::matset(const conduit::Node &mesh,
+                                          const conduit::Node &options) const
 {
   const std::string matName = matsetName(mesh, options);
 #if 0
@@ -169,8 +170,8 @@ const conduit::Node &MIRAlgorithm::matset(const conduit::Node &mesh, const condu
 #endif
 }
 
-std::vector<std::string>
-MIRAlgorithm::fieldNames(const conduit::Node &mesh, const conduit::Node &options) const
+std::vector<std::string> MIRAlgorithm::fieldNames(const conduit::Node &mesh,
+                                                  const conduit::Node &options) const
 {
   std::vector<std::string> names;
   if(options.has_path("fields"))
@@ -183,8 +184,7 @@ MIRAlgorithm::fieldNames(const conduit::Node &mesh, const conduit::Node &options
     }
     else
     {
-      if(fields.dtype().is_char8_str())
-        names.push_back(fields.as_string());
+      if(fields.dtype().is_char8_str()) names.push_back(fields.as_string());
     }
   }
   else if(mesh.has_child("fields"))
@@ -196,5 +196,5 @@ MIRAlgorithm::fieldNames(const conduit::Node &mesh, const conduit::Node &options
   return names;
 }
 
-} // namespace mir
-} // namespace axom
+}  // namespace mir
+}  // namespace axom

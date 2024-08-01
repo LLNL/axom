@@ -16,7 +16,6 @@ namespace axom
 {
 namespace mir
 {
-
 /**
  * \brief This struct contains the type that should be used to accumulate values of type T.
  */
@@ -39,7 +38,6 @@ template <typename ExecSpace>
 class RecenterField
 {
 public:
-
   /**
    * \brief Convert the input field to a different association type using the o2mrelation and store the new field in the output field.
    *
@@ -47,15 +45,20 @@ public:
    * \param relation    The node that contains an o2mrelation with nodes to zones.
    * \param outField[out] The node that will contain the new field.
    */
-  static void execute(const conduit::Node &field, const conduit::Node &relation, conduit::Node &outField);
+  static void execute(const conduit::Node &field,
+                      const conduit::Node &relation,
+                      conduit::Node &outField);
 };
 
 template <typename ExecSpace>
-void
-RecenterField<ExecSpace>::execute(const conduit::Node &field, const conduit::Node &relation, conduit::Node &outField)
+void RecenterField<ExecSpace>::execute(const conduit::Node &field,
+                                       const conduit::Node &relation,
+                                       conduit::Node &outField)
 {
-  auto handleComponent = [](const conduit::Node &relation, const conduit::Node &n_comp, conduit::Node &n_out, int allocatorID)
-  {
+  auto handleComponent = [](const conduit::Node &relation,
+                            const conduit::Node &n_comp,
+                            conduit::Node &n_out,
+                            int allocatorID) {
     // Get the data field for the o2m relation.
     const auto data_paths = conduit::blueprint::o2mrelation::data_paths(relation);
 
@@ -63,34 +66,40 @@ RecenterField<ExecSpace>::execute(const conduit::Node &field, const conduit::Nod
     const conduit::Node &n_relvalues = relation[data_paths[0]];
     const conduit::Node &n_sizes = relation["sizes"];
     const conduit::Node &n_offsets = relation["offsets"];
-    views::IndexNode_to_ArrayView_same(n_relvalues, n_sizes, n_offsets, [&](auto relView, auto sizesView, auto offsetsView)
-    {
-      const auto relSize = sizesView.size();
+    views::IndexNode_to_ArrayView_same(
+      n_relvalues,
+      n_sizes,
+      n_offsets,
+      [&](auto relView, auto sizesView, auto offsetsView) {
+        const auto relSize = sizesView.size();
 
-      // Allocate data for n_out (same type as n_comp).
-      n_out.set_allocator(allocatorID);
-      n_out.set(n_comp.dtype().id(), relSize);
+        // Allocate data for n_out (same type as n_comp).
+        n_out.set_allocator(allocatorID);
+        n_out.set(n_comp.dtype().id(), relSize);
 
-      views::Node_to_ArrayView_same(n_comp, n_out, [&](auto compView, auto outView)
-      {
-        using Precision = typename decltype(compView)::value_type;
-        using AccumType = typename accumulate_traits<Precision>::value_type;
-        axom::for_all<ExecSpace>(relSize, AXOM_LAMBDA(int relIndex)
-        {
-          const auto n = sizesView[relIndex];
-          const auto offset = offsetsView[relIndex];
+        views::Node_to_ArrayView_same(
+          n_comp,
+          n_out,
+          [&](auto compView, auto outView) {
+            using Precision = typename decltype(compView)::value_type;
+            using AccumType = typename accumulate_traits<Precision>::value_type;
+            axom::for_all<ExecSpace>(
+              relSize,
+              AXOM_LAMBDA(int relIndex) {
+                const auto n = sizesView[relIndex];
+                const auto offset = offsetsView[relIndex];
 
-          AccumType sum = 0;
-          for(int i = 0; i < n; i++)
-          {
-            const auto id = relView[offset + i];
-            sum += static_cast<AccumType>(compView[id]);
-          }
+                AccumType sum = 0;
+                for(int i = 0; i < n; i++)
+                {
+                  const auto id = relView[offset + i];
+                  sum += static_cast<AccumType>(compView[id]);
+                }
 
-          outView[relIndex] = static_cast<Precision>(sum / n);
-        });
+                outView[relIndex] = static_cast<Precision>(sum / n);
+              });
+          });
       });
-    });
   };
 
   const std::string association = field.fetch_existing("association").as_string();
@@ -107,7 +116,10 @@ RecenterField<ExecSpace>::execute(const conduit::Node &field, const conduit::Nod
     for(conduit::index_t c = 0; c < n_values.number_of_children(); c++)
     {
       const conduit::Node &n_comp = n_values[c];
-      handleComponent(relation, n_comp, outField["values"][n_comp.name()], allocatorID);
+      handleComponent(relation,
+                      n_comp,
+                      outField["values"][n_comp.name()],
+                      allocatorID);
     }
   }
   else
@@ -116,7 +128,7 @@ RecenterField<ExecSpace>::execute(const conduit::Node &field, const conduit::Nod
   }
 }
 
-} // end namespace mir
-} // end namespace axom
+}  // end namespace mir
+}  // end namespace axom
 
 #endif

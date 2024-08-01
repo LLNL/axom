@@ -18,7 +18,6 @@ namespace mir
 {
 namespace views
 {
-
 /**
  * \brief Creates a topology view compatible with rectilinear topologies and passes that view to the supplied function.
  *
@@ -29,41 +28,52 @@ namespace views
  * \param coordset The coordset node that contains the topology dimensions.
  * \param func     The function to invoke using the view.
  */
-template <int SelectedDimensions = select_dimensions(1,2,3), typename FuncType>
-void dispatch_rectilinear_topology(const conduit::Node & AXOM_UNUSED_PARAM(topo), const conduit::Node &coordset, FuncType &&func)
+template <int SelectedDimensions = select_dimensions(1, 2, 3), typename FuncType>
+void dispatch_rectilinear_topology(const conduit::Node &AXOM_UNUSED_PARAM(topo),
+                                   const conduit::Node &coordset,
+                                   FuncType &&func)
 {
   const auto axes = conduit::blueprint::mesh::utils::coordset::axes(coordset);
   switch(axes.size())
   {
   case 3:
-    if constexpr (dimension_selected(SelectedDimensions, 3))
+    if constexpr(dimension_selected(SelectedDimensions, 3))
     {
       axom::StackArray<axom::IndexType, 3> zoneDims;
-      zoneDims[0] = coordset.fetch_existing(axes[0]).dtype().number_of_elements() - 1;
-      zoneDims[1] = coordset.fetch_existing(axes[1]).dtype().number_of_elements() - 1;
-      zoneDims[2] = coordset.fetch_existing(axes[2]).dtype().number_of_elements() - 1;
-      views::StructuredTopologyView<views::StructuredIndexing<axom::IndexType, 3>> topoView(zoneDims);
+      zoneDims[0] =
+        coordset.fetch_existing(axes[0]).dtype().number_of_elements() - 1;
+      zoneDims[1] =
+        coordset.fetch_existing(axes[1]).dtype().number_of_elements() - 1;
+      zoneDims[2] =
+        coordset.fetch_existing(axes[2]).dtype().number_of_elements() - 1;
+      views::StructuredTopologyView<views::StructuredIndexing<axom::IndexType, 3>>
+        topoView(zoneDims);
       const std::string shape("hex");
       func(shape, topoView);
     }
     break;
   case 2:
-    if constexpr (dimension_selected(SelectedDimensions, 2))
+    if constexpr(dimension_selected(SelectedDimensions, 2))
     {
       axom::StackArray<axom::IndexType, 2> zoneDims;
-      zoneDims[0] = coordset.fetch_existing(axes[0]).dtype().number_of_elements() - 1;
-      zoneDims[1] = coordset.fetch_existing(axes[1]).dtype().number_of_elements() - 1;
-      views::StructuredTopologyView<views::StructuredIndexing<axom::IndexType, 2>> topoView(zoneDims);
+      zoneDims[0] =
+        coordset.fetch_existing(axes[0]).dtype().number_of_elements() - 1;
+      zoneDims[1] =
+        coordset.fetch_existing(axes[1]).dtype().number_of_elements() - 1;
+      views::StructuredTopologyView<views::StructuredIndexing<axom::IndexType, 2>>
+        topoView(zoneDims);
       const std::string shape("quad");
       func(shape, topoView);
     }
     break;
   case 1:
-    if constexpr (dimension_selected(SelectedDimensions, 1))
+    if constexpr(dimension_selected(SelectedDimensions, 1))
     {
       axom::StackArray<axom::IndexType, 1> zoneDims;
-      zoneDims[0] = coordset.fetch_existing(axes[0]).dtype().number_of_elements() - 1;
-      views::StructuredTopologyView<views::StructuredIndexing<axom::IndexType, 1>> topoView(zoneDims);
+      zoneDims[0] =
+        coordset.fetch_existing(axes[0]).dtype().number_of_elements() - 1;
+      views::StructuredTopologyView<views::StructuredIndexing<axom::IndexType, 1>>
+        topoView(zoneDims);
       const std::string shape("line");
       func(shape, topoView);
     }
@@ -73,8 +83,8 @@ void dispatch_rectilinear_topology(const conduit::Node & AXOM_UNUSED_PARAM(topo)
   }
 }
 
-} // end namespace views
-} // end namespace mir
-} // end namespace axom
+}  // end namespace views
+}  // end namespace mir
+}  // end namespace axom
 
 #endif

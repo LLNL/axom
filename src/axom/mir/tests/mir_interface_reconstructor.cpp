@@ -26,5 +26,4 @@ int main(int argc, char* argv[])
   return result;
 }
 
-
-#endif //  MIR_INTERFACE_RECONSTRUCTOR_TEST_H_
+#endif  //  MIR_INTERFACE_RECONSTRUCTOR_TEST_H_

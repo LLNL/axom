@@ -31,44 +31,86 @@ namespace utilities
 {
 namespace blueprint
 {
-
 //------------------------------------------------------------------------------
 /**
  * \brief This class provides a couple of type traits that let us map C++ types
  *        to types / values useful in Conduit.
  */
 template <typename T>
-struct cpp2conduit { static constexpr conduit::index_t type = conduit::DataType::EMPTY_ID; };
+struct cpp2conduit
+{
+  static constexpr conduit::index_t type = conduit::DataType::EMPTY_ID;
+};
 
 template <>
-struct cpp2conduit<conduit::int8> { using type = conduit::int8; static constexpr conduit::index_t id = conduit::DataType::INT8_ID; };
+struct cpp2conduit<conduit::int8>
+{
+  using type = conduit::int8;
+  static constexpr conduit::index_t id = conduit::DataType::INT8_ID;
+};
 
 template <>
-struct cpp2conduit<conduit::int16> { using type = conduit::int16; static constexpr conduit::index_t id = conduit::DataType::INT16_ID; };
+struct cpp2conduit<conduit::int16>
+{
+  using type = conduit::int16;
+  static constexpr conduit::index_t id = conduit::DataType::INT16_ID;
+};
 
 template <>
-struct cpp2conduit<conduit::int32> { using type = conduit::int32; static constexpr conduit::index_t id = conduit::DataType::INT32_ID; };
+struct cpp2conduit<conduit::int32>
+{
+  using type = conduit::int32;
+  static constexpr conduit::index_t id = conduit::DataType::INT32_ID;
+};
 
 template <>
-struct cpp2conduit<conduit::int64> { using type = conduit::int64; static constexpr conduit::index_t id = conduit::DataType::INT64_ID; };
+struct cpp2conduit<conduit::int64>
+{
+  using type = conduit::int64;
+  static constexpr conduit::index_t id = conduit::DataType::INT64_ID;
+};
 
 template <>
-struct cpp2conduit<conduit::uint8> { using type = conduit::uint8; static constexpr conduit::index_t id = conduit::DataType::UINT8_ID; };
+struct cpp2conduit<conduit::uint8>
+{
+  using type = conduit::uint8;
+  static constexpr conduit::index_t id = conduit::DataType::UINT8_ID;
+};
 
 template <>
-struct cpp2conduit<conduit::uint16> { using type = conduit::uint16; static constexpr conduit::index_t id = conduit::DataType::UINT16_ID; };
+struct cpp2conduit<conduit::uint16>
+{
+  using type = conduit::uint16;
+  static constexpr conduit::index_t id = conduit::DataType::UINT16_ID;
+};
 
 template <>
-struct cpp2conduit<conduit::uint32> { using type = conduit::uint32; static constexpr conduit::index_t id = conduit::DataType::UINT32_ID; };
+struct cpp2conduit<conduit::uint32>
+{
+  using type = conduit::uint32;
+  static constexpr conduit::index_t id = conduit::DataType::UINT32_ID;
+};
 
 template <>
-struct cpp2conduit<conduit::uint64> { using type = conduit::uint64; static constexpr conduit::index_t id = conduit::DataType::UINT64_ID; };
+struct cpp2conduit<conduit::uint64>
+{
+  using type = conduit::uint64;
+  static constexpr conduit::index_t id = conduit::DataType::UINT64_ID;
+};
 
 template <>
-struct cpp2conduit<conduit::float32> { using type = conduit::float32; static constexpr conduit::index_t id = conduit::DataType::FLOAT32_ID; };
+struct cpp2conduit<conduit::float32>
+{
+  using type = conduit::float32;
+  static constexpr conduit::index_t id = conduit::DataType::FLOAT32_ID;
+};
 
 template <>
-struct cpp2conduit<conduit::float64> { using type = conduit::float64; static constexpr conduit::index_t id = conduit::DataType::FLOAT64_ID; };
+struct cpp2conduit<conduit::float64>
+{
+  using type = conduit::float64;
+  static constexpr conduit::index_t id = conduit::DataType::FLOAT64_ID;
+};
 
 //------------------------------------------------------------------------------
 /**
@@ -86,7 +128,8 @@ public:
     static conduit::index_t conduitAllocatorID = -1;
     if(conduitAllocatorID == -1)
     {
-      conduitAllocatorID = conduit::utils::register_allocator(internal_allocate, internal_free);
+      conduitAllocatorID =
+        conduit::utils::register_allocator(internal_allocate, internal_free);
     }
     return conduitAllocatorID;
   }
@@ -95,7 +138,8 @@ private:
   static void *internal_allocate(size_t items, size_t item_size)
   {
     const auto axomAllocatorID = axom::execution_space<ExecSpace>::allocatorID();
-    void *ptr = static_cast<void *>(axom::allocate<std::uint8_t>(items * item_size, axomAllocatorID));
+    void *ptr = static_cast<void *>(
+      axom::allocate<std::uint8_t>(items * item_size, axomAllocatorID));
     //std::cout << axom::execution_space<ExecSpace>::name() << ": Allocated for Conduit via axom: items=" << items << ", item_size=" << item_size << ", ptr=" << ptr << std::endl;
     return ptr;
   }
@@ -122,8 +166,10 @@ private:
  * \note There are blueprint methods for this sort of thing but this one is accelerated.
  */
 template <typename ExecSpace>
-void
-to_unstructured(const conduit::Node &topo, const conduit::Node &coordset, const std::string &topoName, conduit::Node &mesh)
+void to_unstructured(const conduit::Node &topo,
+                     const conduit::Node &coordset,
+                     const std::string &topoName,
+                     conduit::Node &mesh)
 {
   const std::string type = topo.fetch_existing("type").as_string();
   ConduitAllocateThroughAxom<ExecSpace> c2a;
@@ -146,39 +192,48 @@ to_unstructured(const conduit::Node &topo, const conduit::Node &coordset, const 
     n_newsizes.set_allocator(c2a.getConduitAllocatorID());
     n_newoffsets.set_allocator(c2a.getConduitAllocatorID());
 
-    views::dispatch_structured_topologies(topo, coordset, [&](const std::string &shape, auto &topoView)
-    {
-      int ptsPerZone = 2;
-      if(shape == "quad")
-        ptsPerZone = 4;
-      else if(shape == "hex")
-        ptsPerZone = 8;
+    views::dispatch_structured_topologies(
+      topo,
+      coordset,
+      [&](const std::string &shape, auto &topoView) {
+        int ptsPerZone = 2;
+        if(shape == "quad")
+          ptsPerZone = 4;
+        else if(shape == "hex")
+          ptsPerZone = 8;
 
-      newtopo["elements/shape"] = shape;
+        newtopo["elements/shape"] = shape;
 
-      // Allocate new mesh data.
-      const auto nzones = topoView.numberOfZones();
-      const auto connSize = nzones * ptsPerZone;
-      n_newconn.set(conduit::DataType::index_t(connSize));
-      n_newsizes.set(conduit::DataType::index_t(nzones));
-      n_newoffsets.set(conduit::DataType::index_t(nzones));
+        // Allocate new mesh data.
+        const auto nzones = topoView.numberOfZones();
+        const auto connSize = nzones * ptsPerZone;
+        n_newconn.set(conduit::DataType::index_t(connSize));
+        n_newsizes.set(conduit::DataType::index_t(nzones));
+        n_newoffsets.set(conduit::DataType::index_t(nzones));
 
-      // Make views for the mesh data.
-      axom::ArrayView<conduit::index_t> connView(static_cast<conduit::index_t *>(n_newconn.data_ptr()), connSize);
-      axom::ArrayView<conduit::index_t> sizesView(static_cast<conduit::index_t *>(n_newsizes.data_ptr()), nzones);
-      axom::ArrayView<conduit::index_t> offsetsView(static_cast<conduit::index_t *>(n_newoffsets.data_ptr()), nzones);
+        // Make views for the mesh data.
+        axom::ArrayView<conduit::index_t> connView(
+          static_cast<conduit::index_t *>(n_newconn.data_ptr()),
+          connSize);
+        axom::ArrayView<conduit::index_t> sizesView(
+          static_cast<conduit::index_t *>(n_newsizes.data_ptr()),
+          nzones);
+        axom::ArrayView<conduit::index_t> offsetsView(
+          static_cast<conduit::index_t *>(n_newoffsets.data_ptr()),
+          nzones);
 
-      // Fill in the new connectivity.
-      topoView. template for_all_zones<ExecSpace>(AXOM_LAMBDA(auto zoneIndex, const auto &zone)
-      {
-        const auto start = zoneIndex * ptsPerZone;
-        for(int i = 0; i < ptsPerZone; i++)
-          connView[start + i] = static_cast<conduit::index_t>(zone.getIds()[i]);
+        // Fill in the new connectivity.
+        topoView.template for_all_zones<ExecSpace>(
+          AXOM_LAMBDA(auto zoneIndex, const auto &zone) {
+            const auto start = zoneIndex * ptsPerZone;
+            for(int i = 0; i < ptsPerZone; i++)
+              connView[start + i] =
+                static_cast<conduit::index_t>(zone.getIds()[i]);
 
-        sizesView[zoneIndex] = ptsPerZone;
-        offsetsView[zoneIndex] = start;
+            sizesView[zoneIndex] = ptsPerZone;
+            offsetsView[zoneIndex] = start;
+          });
       });
-    });
   }
 }
 
@@ -206,7 +261,8 @@ void copy(conduit::Node &dest, const conduit::Node &src)
       // Allocate the node's memory in the right place.
       dest.reset();
       dest.set_allocator(c2a.getConduitAllocatorID());
-      dest.set(conduit::DataType(src.dtype().id(), src.dtype().number_of_elements()));
+      dest.set(
+        conduit::DataType(src.dtype().id(), src.dtype().number_of_elements()));
 
       // Copy the data to the destination node. Axom uses Umpire to manage that.
       if(src.is_compact())
@@ -237,31 +293,34 @@ void copy(conduit::Node &dest, const conduit::Node &src)
 template <typename ExecSpace>
 std::pair<double, double> minmax(const conduit::Node &n)
 {
-  std::pair<double, double> retval{0., 0.};
+  std::pair<double, double> retval {0., 0.};
 
-  axom::mir::views::Node_to_ArrayView(n, [&](auto nview)
-  {
+  axom::mir::views::Node_to_ArrayView(n, [&](auto nview) {
     using value_type = typename decltype(nview)::value_type;
-    using reduce_policy = typename axom::execution_space<ExecSpace>::reduce_policy;
+    using reduce_policy =
+      typename axom::execution_space<ExecSpace>::reduce_policy;
 
-    RAJA::ReduceMin<reduce_policy, value_type> vmin(std::numeric_limits<value_type>::max());
-    RAJA::ReduceMax<reduce_policy, value_type> vmax(std::numeric_limits<value_type>::min());
+    RAJA::ReduceMin<reduce_policy, value_type> vmin(
+      std::numeric_limits<value_type>::max());
+    RAJA::ReduceMax<reduce_policy, value_type> vmax(
+      std::numeric_limits<value_type>::min());
 
-    axom::for_all<ExecSpace>(nview.size(), AXOM_LAMBDA(auto index)
-    {
-      vmin.min(nview[index]);
-      vmax.max(nview[index]);
-    });
+    axom::for_all<ExecSpace>(
+      nview.size(),
+      AXOM_LAMBDA(auto index) {
+        vmin.min(nview[index]);
+        vmax.max(nview[index]);
+      });
 
-    retval = std::pair<double, double>{vmin.get(), vmax.get()};
+    retval = std::pair<double, double> {vmin.get(), vmax.get()};
   });
 
   return retval;
 }
 
-} // end namespace blueprint
-} // end namespace utilities
-} // end namespace mir
-} // end namespace axom
+}  // end namespace blueprint
+}  // end namespace utilities
+}  // end namespace mir
+}  // end namespace axom
 
 #endif

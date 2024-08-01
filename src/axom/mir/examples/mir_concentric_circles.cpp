@@ -16,17 +16,17 @@ namespace mir = axom::mir;
 
 std::string usageString()
 {
-   return "Args are <grid size> <number of circles> <output file path>";
+  return "Args are <grid size> <number of circles> <output file path>";
 }
 
-int main( int argc, char** argv )
+int main(int argc, char **argv)
 {
-   axom::slic::SimpleLogger logger;  // create & initialize test logger
-   axom::slic::setLoggingMsgLevel( axom::slic::message::Info );
-  
-  if (argc != 4)
+  axom::slic::SimpleLogger logger;  // create & initialize test logger
+  axom::slic::setLoggingMsgLevel(axom::slic::message::Info);
+
+  if(argc != 4)
   {
-    SLIC_WARNING("Incorrect number of args. " << usageString() );
+    SLIC_WARNING("Incorrect number of args. " << usageString());
     return 1;
   }
 
@@ -48,24 +48,24 @@ int main( int argc, char** argv )
     timer.start();
     mir::InterfaceReconstructor reconstructor;
     mir::MIRMesh processedMesh;
-    reconstructor.computeReconstructedInterface(testMesh, processedMesh); 
+    reconstructor.computeReconstructedInterface(testMesh, processedMesh);
     timer.stop();
     SLIC_INFO("Material interface reconstruction time: "
-          << timer.elapsedTimeInMilliSec() << " ms.");
+              << timer.elapsedTimeInMilliSec() << " ms.");
 
     // Output results
     processedMesh.writeMeshToFile(outputFilePath, "outputConcentricCircles.vtk");
-    
+
     return 0;
   }
-  catch (std::invalid_argument const &e)
+  catch(std::invalid_argument const &e)
   {
-    SLIC_WARNING("Bad input. " << usageString() );
+    SLIC_WARNING("Bad input. " << usageString());
     return 1;
   }
-  catch (std::out_of_range const &e)
+  catch(std::out_of_range const &e)
   {
-    SLIC_WARNING("Integer overflow. " << usageString() );
+    SLIC_WARNING("Integer overflow. " << usageString());
     return 1;
   }
 }
