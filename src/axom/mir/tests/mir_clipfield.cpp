@@ -59,7 +59,6 @@ void add_distance(conduit::Node &mesh, float dist = 6.5f)
   });
 }
 
-
 template <typename Dimensions>
 void braid(const std::string &type, const Dimensions &dims, conduit::Node &mesh)
 {
