@@ -29,7 +29,8 @@ namespace axom
 template <typename ExecSpace, typename ContiguousMemoryContainer>
 struct scans
 {
-  inline void exclusive_scan(const ContiguousMemoryContainer &input, ContiguousMemoryContainer &output)
+  inline void exclusive_scan(const ContiguousMemoryContainer &input,
+                             ContiguousMemoryContainer &output)
   {
     using loop_policy = typename axom::execution_space<ExecSpace>::loop_policy;
     assert(input.size() == output.size());
@@ -40,7 +41,8 @@ struct scans
 };
 
 template <typename ExecSpace, typename ContiguousMemoryContainer>
-inline void exclusive_scan(const ContiguousMemoryContainer &input, ContiguousMemoryContainer &output)
+inline void exclusive_scan(const ContiguousMemoryContainer &input,
+                           ContiguousMemoryContainer &output)
 {
   scans<ExecSpace, ContiguousMemoryContainer> s;
   s.exclusive_scan(input, output);
@@ -509,7 +511,7 @@ public:
   AXOM_HOST_DEVICE
   inline static KeyType makeName(const IndexType *ids, IndexType numIds)
   {
-    KeyType name{};
+    KeyType name {};
     if(numIds == 1)
     {
       name = axom::mir::utilities::make_name_1(ids[0]);
@@ -737,9 +739,9 @@ public:
       m_state->m_blendGroupSizesView[m_blendGroupId] = numIds;
 
       // Store "name" of blend group.
-      KeyType blendName = NamingPolicy::makeName(
-          m_state->m_blendIdsView.data() + m_startOffset,
-          numIds);
+      KeyType blendName =
+        NamingPolicy::makeName(m_state->m_blendIdsView.data() + m_startOffset,
+                               numIds);
 
       m_state->m_blendNamesView[m_blendGroupId] = blendName;
 #if defined(AXOM_DEBUG) && !defined(AXOM_DEVICE_CODE)
@@ -937,7 +939,10 @@ private:
  * \tparam CoordsetView The coordset view that can operate on the Blueprint coordset.
  * \tparam NamingPolicy The policy for making names from arrays of ids.
  */
-template <typename ExecSpace, typename TopologyView, typename CoordsetView, typename NamingPolicy = HashNaming>
+template <typename ExecSpace,
+          typename TopologyView,
+          typename CoordsetView,
+          typename NamingPolicy = HashNaming>
 class ClipField
 {
 public:
