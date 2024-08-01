@@ -38,15 +38,9 @@
 #endif
 // clang-format on
 
-template <typename Dimensions>
-void braid(const std::string &type, const Dimensions &dims, conduit::Node &mesh)
+void add_distance(conduit::Node &mesh, float dist = 6.5f)
 {
-  int d[3] = {0, 0, 0};
-  for(int i = 0; i < dims.size(); i++) d[i] = dims[i];
-  conduit::blueprint::mesh::examples::braid(type, d[0], d[1], d[2], mesh);
-
   // Make a new distance field.
-  const float dist = 6.5f;
   const conduit::Node &n_coordset = mesh["coordsets"][0];
   axom::mir::views::dispatch_coordset(n_coordset, [&](auto coordsetView) {
     mesh["fields/distance/topology"] = "mesh";
@@ -63,6 +57,89 @@ void braid(const std::string &type, const Dimensions &dims, conduit::Node &mesh)
       valuesPtr[index] = sqrt(norm2) - dist;
     }
   });
+}
+
+
+template <typename Dimensions>
+void braid(const std::string &type, const Dimensions &dims, conduit::Node &mesh)
+{
+  int d[3] = {0, 0, 0};
+  for(int i = 0; i < dims.size(); i++) d[i] = dims[i];
+  conduit::blueprint::mesh::examples::braid(type, d[0], d[1], d[2], mesh);
+
+  add_distance(mesh);
+}
+
+void mixed3d(conduit::Node &mesh)
+{
+  // clang-format off
+  const std::vector<int> conn{{
+    // tets
+    0,6,1,3,
+    3,6,1,9,
+    6,7,1,9,
+    3,9,1,4,
+    9,7,1,4,
+    9,7,4,10,
+    // pyramids
+    1,7,8,2,4,
+    11,8,7,10,4,
+    2,8,11,5,4,
+    // wedges
+    6,7,9,12,13,15,
+    9,7,10,15,13,16,
+    // hex
+    7,13,14,8,10,16,17,11
+  }};
+  const std::vector<int> shapes{{
+    0,0,0,0,0,0,
+    1,1,1,
+    2,2,
+    3
+  }};
+  const std::vector<int> sizes{{
+    4,4,4,4,4,4,
+    5,5,5,
+    6,6,
+    8
+  }};
+  const std::vector<int> offsets{{
+    0,4,8,12,16,20,
+    24,29,34,
+    39,45,
+    51
+  }};
+  constexpr float LOW = -10.f;
+  constexpr float MID = 0.f;
+  constexpr float HIGH = 10.f;
+  const std::vector<float> x{{
+    LOW, MID, HIGH, LOW, MID, HIGH, LOW, MID, HIGH, LOW, MID, HIGH, LOW, MID, HIGH, LOW, MID, HIGH
+  }};
+  const std::vector<float> y{{
+    LOW, LOW, LOW, MID, MID, MID, LOW, LOW, LOW, MID, MID, MID, LOW, LOW, LOW, MID, MID, MID
+  }};
+  const std::vector<float> z{{
+    LOW, LOW, LOW, LOW, LOW, LOW, MID, MID, MID, MID, MID, MID, HIGH, HIGH, HIGH, HIGH, HIGH, HIGH
+  }};
+  // clang-format off
+
+  mesh["coordsets/coords/type"] = "explicit";
+  mesh["coordsets/coords/values/x"].set(x);
+  mesh["coordsets/coords/values/y"].set(y);
+  mesh["coordsets/coords/values/z"].set(z);
+  mesh["topologies/mesh/type"] = "unstructured";
+  mesh["topologies/mesh/coordset"] = "coords";
+  mesh["topologies/mesh/elements/shape"] = "mixed";
+  mesh["topologies/mesh/elements/connectivity"].set(conn);
+  mesh["topologies/mesh/elements/shapes"].set(shapes);
+  mesh["topologies/mesh/elements/sizes"].set(sizes);
+  mesh["topologies/mesh/elements/offsets"].set(offsets);
+  mesh["topologies/mesh/elements/shape_map/tet"] = 0;
+  mesh["topologies/mesh/elements/shape_map/pyramid"] = 1;
+  mesh["topologies/mesh/elements/shape_map/wedge"] = 2;
+  mesh["topologies/mesh/elements/shape_map/hex"] = 3;
+
+  add_distance(mesh, 0.f);
 }
 
 int conduit_to_vtk_cell(int shape_value)
@@ -104,14 +181,17 @@ void conduit_save_vtk(const conduit::Node &node, const std::string &path)
   size_t num_points = x.dtype().number_of_elements();
 
   fprintf(file, "POINTS %zu float\n", num_points);
-  for(size_t i = 0; i < num_points; ++i)
+  axom::mir::views::FloatNode_to_ArrayView(x, y, z, [&](auto xView, auto yView, auto zView)
   {
-    fprintf(file,
-            "%f %f %f\n",
-            x.as_float64_array()[i],
-            y.as_float64_array()[i],
-            z.as_float64_array()[i]);
-  }
+    for(size_t i = 0; i < num_points; ++i)
+    {
+      fprintf(file,
+              "%f %f %f\n",
+              static_cast<float>(xView[i]),
+              static_cast<float>(yView[i]),
+              static_cast<float>(zView[i]));
+    }
+  });
 
   // Write the cells
   const conduit::Node &topologies = node["topologies"];
@@ -135,12 +215,23 @@ void conduit_save_vtk(const conduit::Node &node, const std::string &path)
   }
 
   // Write the cell types
-  const conduit::Node &shapes = elements["shapes"];
   fprintf(file, "CELL_TYPES %zu\n", num_cells);
-  for(size_t i = 0; i < num_cells; ++i)
+  if(elements.has_child("shapes"))
   {
-    const auto type = conduit_to_vtk_cell(shapes.as_int32_array()[i]);
-    fprintf(file, "%d\n", type);
+    const conduit::Node &shapes = elements["shapes"];
+    for(size_t i = 0; i < num_cells; ++i)
+    {
+      const auto type = conduit_to_vtk_cell(shapes.as_int32_array()[i]);
+      fprintf(file, "%d\n", type);
+    }
+  }
+  else
+  {
+    const auto type = conduit_to_vtk_cell(axom::mir::views::shapeNameToID(elements["shape"].as_string()));
+    for(size_t i = 0; i < num_cells; ++i)
+    {
+      fprintf(file, "%d\n", type);
+    }
   }
 
   // Close the file
@@ -901,15 +992,117 @@ TEST(mir_clipfield, hex)
   braid3d_clip_test_exec<axom::mir::views::HexShape<int>>("hexs", "hex");
 }
 
-//------------------------------------------------------------------------------
+template <typename ExecSpace>
+void braid3d_mixed_clip_test(const std::string &name)
+{
+  using CoordType = float;
+  using ConnType = int;
+  using TopoView = axom::mir::views::UnstructuredTopologyMixedShapeView<ConnType>;
+  using CoordsetView = axom::mir::views::ExplicitCoordsetView<CoordType, 3>;
 
+  // Create the data
+  conduit::Node hostMesh, deviceMesh;
+  mixed3d(hostMesh);
+  axom::mir::utilities::blueprint::copy<ExecSpace>(deviceMesh, hostMesh);
+  conduit::relay::io::blueprint::save_mesh(hostMesh, name + "_orig", "hdf5");
+  conduit::relay::io::blueprint::save_mesh(hostMesh,
+                                           name + "_orig_yaml",
+                                           "yaml");
+
+  // Create views
+  conduit::Node &n_x = deviceMesh.fetch_existing("coordsets/coords/values/x");
+  conduit::Node &n_y = deviceMesh.fetch_existing("coordsets/coords/values/y");
+  conduit::Node &n_z = deviceMesh.fetch_existing("coordsets/coords/values/z");
+  const axom::ArrayView<CoordType> x(static_cast<CoordType *>(n_x.data_ptr()),
+                                  n_x.dtype().number_of_elements());
+  const axom::ArrayView<CoordType> y(static_cast<CoordType *>(n_y.data_ptr()),
+                                  n_y.dtype().number_of_elements());
+  const axom::ArrayView<CoordType> z(static_cast<CoordType *>(n_z.data_ptr()),
+                                  n_z.dtype().number_of_elements());
+  CoordsetView coordsetView(x, y, z);
+
+  conduit::Node &n_device_topo = deviceMesh.fetch_existing("topologies/mesh");
+  conduit::Node &n_conn = n_device_topo.fetch_existing("elements/connectivity");
+  conduit::Node &n_shapes = n_device_topo.fetch_existing("elements/shapes");
+  conduit::Node &n_sizes = n_device_topo.fetch_existing("elements/sizes");
+  conduit::Node &n_offsets = n_device_topo.fetch_existing("elements/offsets");
+  axom::ArrayView<ConnType> connView(
+    static_cast<ConnType *>(n_conn.data_ptr()),
+    n_conn.dtype().number_of_elements());
+  axom::ArrayView<ConnType> shapesView(
+    static_cast<ConnType *>(n_shapes.data_ptr()),
+    n_shapes.dtype().number_of_elements());
+  axom::ArrayView<ConnType> sizesView(
+    static_cast<ConnType *>(n_sizes.data_ptr()),
+    n_sizes.dtype().number_of_elements());
+  axom::ArrayView<ConnType> offsetsView(
+    static_cast<ConnType *>(n_offsets.data_ptr()),
+    n_offsets.dtype().number_of_elements());
+  TopoView topoView(n_device_topo,
+                    connView,
+                    shapesView,
+                    sizesView,
+                    offsetsView);
+
+  // Create options to control the clipping.
+  conduit::Node options;
+  options["clipField"] = "distance";
+  options["clipValue"] = 12.f;
+  options["inside"] = 1;
+  options["outside"] = 0;
+
+  // Clip the data
+  conduit::Node deviceClipMesh;
+  axom::mir::clipping::ClipField<ExecSpace, TopoView, CoordsetView> clipper(
+    topoView,
+    coordsetView);
+  clipper.execute(deviceMesh, options, deviceClipMesh);
+
+  // Copy device->host
+  conduit::Node hostClipMesh;
+  axom::mir::utilities::blueprint::copy<seq_exec>(hostClipMesh, deviceClipMesh);
+
+  // Save data.
+  conduit::relay::io::blueprint::save_mesh(hostClipMesh, name, "hdf5");
+  conduit::relay::io::blueprint::save_mesh(hostClipMesh, name + "_yaml", "yaml");
+  conduit_save_vtk(hostClipMesh, name + ".vtk");
+}
+
+TEST(mir_clipfield, mixed)
+{
+  const std::string name("mixed");
+  braid3d_mixed_clip_test<seq_exec>(name);
+
+#if defined(AXOM_USE_OPENMP)
+  braid3d_mixed_clip_test<omp_exec>(name + "_omp");
+#endif
+
+#if defined(AXOM_USE_CUDA) && defined(__CUDACC__)
+  braid3d_mixed_clip_test<cuda_exec>(name + "_cuda");
+#endif
+
+#if defined(AXOM_USE_HIP)
+  braid3d_mixed_clip_test<hip_exec>(name + "_hip");
+#endif
+}
+
+//------------------------------------------------------------------------------
+void conduit_debug_err_handler(const std::string &s1, const std::string &s2, int i1)
+{
+   std::cout << "s1=" << s1 << ", s2=" << s2 << ", i1=" << i1 << std::endl;
+   // This is on purpose.
+   while (1)
+      ;
+}
+
+//------------------------------------------------------------------------------
 int main(int argc, char *argv[])
 {
   int result = 0;
   ::testing::InitGoogleTest(&argc, argv);
 
   axom::slic::SimpleLogger logger;  // create & initialize test logger,
-
+  conduit::utils::set_error_handler(conduit_debug_err_handler);
   result = RUN_ALL_TESTS();
   return result;
 }

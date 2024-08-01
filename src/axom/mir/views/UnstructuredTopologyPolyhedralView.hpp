@@ -78,7 +78,11 @@ public:
     {
       axom::IndexType nnodes = 0;
       const auto nFaces = numberOfFaces();
-      for(axom::IndexType f = 0; f < nFaces; f++) nnodes += getFace(f).size();
+      for(axom::IndexType f = 0; f < nFaces; f++)
+      {
+        nnodes += getFace(f).size();
+      }
+      return nnodes;
     }
 
     AXOM_HOST_DEVICE IndexType numberOfFaces() const

@@ -76,6 +76,8 @@ private:
  *
  * \tparam IndexT The index type that will be used for connectivity, etc.
  * \tparam ShapeT The shape type.
+ *
+ * \note This view does not support topologies that also contain polyhedral elements.
  */
 template <typename ConnT>
 class UnstructuredTopologyMixedShapeView
@@ -83,7 +85,7 @@ class UnstructuredTopologyMixedShapeView
 public:
   using ConnectivityType = ConnT;
   using ConnectivityView = axom::ArrayView<ConnectivityType>;
-  using ShapeType = VariableShape<IndexType>;
+  using ShapeType = VariableShape<ConnectivityType>;
 
   /**
    * \brief Constructor
@@ -184,15 +186,17 @@ public:
     buildShapeMap(values, ids, allocatorID);
     const ShapeMap<IndexType> shapeMap(values.view(), ids.view());
 
+    // Make views that can be captured.
     const ConnectivityView connectivityView(m_connectivity);
     const ConnectivityView shapes(m_shapes);
     const ConnectivityView sizes(m_sizes);
     const ConnectivityView offsets(m_offsets);
+    const ViewType deviceSelectedIdsView(selectedIdsView);
     axom::for_all<ExecSpace>(
       0,
       nSelectedZones,
       AXOM_LAMBDA(int selectIndex) {
-        const auto zoneIndex = selectedIdsView[selectIndex];
+        const auto zoneIndex = deviceSelectedIdsView[selectIndex];
         const ConnectivityView shapeData(
           connectivityView.data() + offsets[zoneIndex],
           sizes[zoneIndex]);
