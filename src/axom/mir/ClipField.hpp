@@ -58,7 +58,6 @@ namespace clipping
 {
 namespace details
 {
-
 /**
  * \brief Given an "ST_index" (e.g. ST_TET from clipping definitions), return an appropriate ShapeID value.
  *

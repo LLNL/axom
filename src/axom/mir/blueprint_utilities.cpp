@@ -16,7 +16,6 @@ namespace utilities
 {
 namespace blueprint
 {
-
 /**
  * \brief Turns a ShapeID to a VTK cell type value.
  *
@@ -46,7 +45,8 @@ static int ShapeID_to_vtk_cell(int shape_value)
   return vtktype;
 }
 
-static void save_unstructured_vtk(const conduit::Node &mesh, const std::string &path)
+static void save_unstructured_vtk(const conduit::Node &mesh,
+                                  const std::string &path)
 {
   FILE *file = fopen(path.c_str(), "wt");
   if(file == nullptr)
@@ -67,8 +67,7 @@ static void save_unstructured_vtk(const conduit::Node &mesh, const std::string &
   const auto x = points["x"].as_double_accessor();
   const auto y = points["y"].as_double_accessor();
   size_t num_points = 0;
-  views::dispatch_coordset(coordset, [&](auto coordsetView)
-  {
+  views::dispatch_coordset(coordset, [&](auto coordsetView) {
     num_points = coordsetView.size();
     fprintf(file, "POINTS %zu float\n", num_points);
 
@@ -132,7 +131,8 @@ static void save_unstructured_vtk(const conduit::Node &mesh, const std::string &
   }
   else
   {
-    const auto type = ShapeID_to_vtk_cell(axom::mir::views::shapeNameToID(elements["shape"].as_string()));
+    const auto type = ShapeID_to_vtk_cell(
+      axom::mir::views::shapeNameToID(elements["shape"].as_string()));
     for(size_t i = 0; i < num_cells; ++i)
     {
       fprintf(file, "%d\n", type);
