@@ -82,19 +82,20 @@ public:
     }
 
     // Iterate over each blend group.
+    const BlendData blendDevice(blend);
     axom::for_all<ExecSpace>(outputSize, AXOM_LAMBDA(auto bgid)
     {
       // Get the blend group index we want.
-      const auto selectedIndex = SelectionPolicy::selectedIndex(blend, bgid);
-      const auto start = blend.m_blendGroupStartView[selectedIndex];
-      const auto end   = start + blend.m_blendGroupSizesView[selectedIndex];
+      const auto selectedIndex = SelectionPolicy::selectedIndex(blendDevice, bgid);
+      const auto start = blendDevice.m_blendGroupStartView[selectedIndex];
+      const auto end   = start + blendDevice.m_blendGroupSizesView[selectedIndex];
 
       // Blend points for this blend group.
       VectorType blended{};
       for(IndexType i = start; i < end; i++)
       {
-        const auto index = blend.m_blendIdsView[i];
-        const auto weight = blend.m_blendCoeffView[i];
+        const auto index = blendDevice.m_blendIdsView[i];
+        const auto weight = blendDevice.m_blendCoeffView[i];
         blended += (VectorType(view[index]) * static_cast<value_type>(weight));
       }
 

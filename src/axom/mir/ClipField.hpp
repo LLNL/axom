@@ -397,7 +397,7 @@ public:
     {
       // No options were specified. Allow all fields with same topology as clipField.
       const conduit::Node &n_clipField = n_fields.fetch_existing(clipField());
-      std::string topoName = n_clipField.fetch_existing("topology").as_string();
+      const std::string topoName = n_clipField.fetch_existing("topology").as_string();
       for(conduit::index_t i = 0; i < n_fields.number_of_children(); i++)
       {
         if(topoName == n_fields[i].fetch_existing("topology").as_string())

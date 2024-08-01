@@ -812,6 +812,25 @@ void braid3d_clip_test(const std::string &type, const std::string &name)
   conduit_save_vtk(hostClipMesh, name + ".vtk");
 }
 
+/// Execute the braid3d test for a single shape on multiple ExecSpaces
+template <typename ShapeType>
+void braid3d_clip_test_exec(const std::string &type, const std::string &name)
+{
+  braid3d_clip_test<seq_exec, ShapeType>(type, name);
+
+#if defined(AXOM_USE_OPENMP)
+  braid3d_clip_test<omp_exec, ShapeType>(type, name + "_omp");
+#endif
+
+#if defined(AXOM_USE_CUDA)
+  braid3d_clip_test<cuda_exec, ShapeType>(type, name + "_cuda");
+#endif
+
+#if defined(AXOM_USE_HIP)
+  braid3d_clip_test<hip_exec, ShapeType>(type, name + "_hip");
+#endif
+}
+
 TEST(mir_clipfield, uniform2d)
 {
   braid2d_clip_test<seq_exec>("uniform", "uniform2d");
@@ -831,83 +850,24 @@ TEST(mir_clipfield, uniform2d)
 
 TEST(mir_clipfield, tet)
 {
-  using ShapeType = axom::mir::views::TetShape<int>;
-
-  const std::string type("tets");
-  braid3d_clip_test<seq_exec, ShapeType>(type, "tet");
-
-//#if defined(AXOM_USE_OPENMP)
-//  braid3d_clip_test<omp_exec, ShapeType>(type, "tet_omp");
-//#endif
-
-#if defined(AXOM_USE_CUDA)
-  braid3d_clip_test<cuda_exec, ShapeType>(type, "tet_cuda");
-#endif
-
-#if defined(AXOM_USE_HIP)
-  braid3d_clip_test<hip_exec, ShapeType>(type, "tet_hip");
-#endif
+  braid3d_clip_test_exec<axom::mir::views::TetShape<int>>("tets", "tet");
 }
 
 TEST(mir_clipfield, pyramid)
 {
-  using ShapeType = axom::mir::views::PyramidShape<int>;
-
-  const std::string type("pyramids");
-  braid3d_clip_test<seq_exec, ShapeType>(type, "pyr");
-
-//#if defined(AXOM_USE_OPENMP)
-//  braid3d_clip_test<omp_exec, ShapeType>(type, "pyr_omp");
-//#endif
-
-#if defined(AXOM_USE_CUDA)
-  braid3d_clip_test<cuda_exec, ShapeType>(type, "pyr_cuda");
-#endif
-
-#if defined(AXOM_USE_HIP)
-  braid3d_clip_test<hip_exec, ShapeType>(type, "pyr_hip");
-#endif
+  braid3d_clip_test_exec<axom::mir::views::PyramidShape<int>>("pyramids", "pyr");
 }
 
 TEST(mir_clipfield, wedge)
 {
-  using ShapeType = axom::mir::views::WedgeShape<int>;
-
-  const std::string type("wedges");
-  braid3d_clip_test<seq_exec, ShapeType>(type, "wdg");
-
-//#if defined(AXOM_USE_OPENMP)
-//  braid3d_clip_test<omp_exec, ShapeType>(type, "wdg_omp");
-//#endif
-
-#if defined(AXOM_USE_CUDA)
-  braid3d_clip_test<cuda_exec, ShapeType>(type, "wdg_cuda");
-#endif
-
-#if defined(AXOM_USE_HIP)
-  braid3d_clip_test<hip_exec, ShapeType>(type, "wdg_hip");
-#endif
+  braid3d_clip_test_exec<axom::mir::views::WedgeShape<int>>("wedges", "wdg");
 }
 
 TEST(mir_clipfield, hex)
 {
-  using ShapeType = axom::mir::views::HexShape<int>;
-
-  const std::string type("hexs");
-  braid3d_clip_test<seq_exec, ShapeType>(type, "hex");
-
-//#if defined(AXOM_USE_OPENMP)
-//  braid3d_clip_test<omp_exec, ShapeType>(type, "hex_omp");
-//#endif
-
-#if defined(AXOM_USE_CUDA)
-  braid3d_clip_test<cuda_exec, ShapeType>(type, "hex_cuda");
-#endif
-
-#if defined(AXOM_USE_HIP)
-  braid3d_clip_test<hip_exec, ShapeType>(type, "hex_hip");
-#endif
+  braid3d_clip_test_exec<axom::mir::views::HexShape<int>>("hexs", "hex");
 }
+
 //------------------------------------------------------------------------------
 
 int main(int argc, char* argv[])

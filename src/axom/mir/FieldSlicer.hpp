@@ -88,9 +88,10 @@ private:
 
     views::Node_to_ArrayView_same(n_values, n_output_values, [&](auto valuesView, auto outputView)
     {
+      const SliceData deviceSlice(slice);
       axom::for_all<ExecSpace>(outputSize, AXOM_LAMBDA(auto index)
       {
-        outputView[index] = valuesView[slice.m_indicesView[index]];
+        outputView[index] = valuesView[deviceSlice.m_indicesView[index]];
       });
     });
   }

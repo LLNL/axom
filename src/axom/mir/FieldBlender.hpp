@@ -137,18 +137,19 @@ private:
       using value_type = typename decltype(compView)::value_type;
       using accum_type = typename axom::mir::utilities::accumulation_traits<value_type>::type;
 
+      const BlendData deviceBlend(blend);
       axom::for_all<ExecSpace>(outputSize, AXOM_LAMBDA(auto bgid)
       {
         // Get the index we want.
-        const auto selectedIndex = SelectionPolicy::selectedIndex(blend, bgid);
-        const auto start = blend.m_blendGroupStartView[selectedIndex];
-        const auto end   = start + blend.m_blendGroupSizesView[selectedIndex];
+        const auto selectedIndex = SelectionPolicy::selectedIndex(deviceBlend, bgid);
+        const auto start = deviceBlend.m_blendGroupStartView[selectedIndex];
+        const auto end   = start + deviceBlend.m_blendGroupSizesView[selectedIndex];
 
         accum_type blended = 0;
         for(IndexType i = start; i < end; i++)
         {
-          const auto index = blend.m_blendIdsView[i];
-          const auto weight = blend.m_blendCoeffView[i];
+          const auto index = deviceBlend.m_blendIdsView[i];
+          const auto weight = deviceBlend.m_blendCoeffView[i];
           blended += static_cast<accum_type>(compView[index]) * weight;
         }
         outView[bgid] = static_cast<value_type>(blended);
