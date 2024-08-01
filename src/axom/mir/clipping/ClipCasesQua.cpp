@@ -5,6 +5,7 @@
 #include "ClipCases.h"
 //---------------------------------------------------------------------------
 // Axom modifications
+// clang-format off
 namespace axom {
 namespace mir {
 namespace clipping {
@@ -100,4 +101,5 @@ const size_t clipShapesQuaSize = sizeof(clipShapesQua) / sizeof(unsigned char);
 } // namespace clipping
 } // namespace mir
 } // namespace axom
+// clang-format on
 //---------------------------------------------------------------------------

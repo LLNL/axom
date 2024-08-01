@@ -6,6 +6,7 @@
 #define AXOM_VISIT_CLIP_CASES_H
 //---------------------------------------------------------------------------
 // Axom modifications
+// clang-format off
 //#include <visit_vtk_light_exports.h>
 #define VISIT_VTK_LIGHT_API
 #include <cstdlib>
@@ -171,6 +172,7 @@ extern const size_t clipShapesHexSize;
 } // namespace clipping
 } // namespace mir
 } // namespace axom
+// clang-format on
 //---------------------------------------------------------------------------
 
 #endif
