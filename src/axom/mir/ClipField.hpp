@@ -22,9 +22,6 @@
 #include <map>
 #include <string>
 
-#define AXOM_CLIPFIELD_SCAN_WORKAROUND
-
-#if defined(AXOM_CLIPFIELD_SCAN_WORKAROUND)
 // NOTE: Longer term, we should hide more RAJA functionality behind axom wrappers
 //       so we can write serial versions for when RAJA is not enabled.
 namespace axom
@@ -41,24 +38,6 @@ struct scans
   }
 };
 
-#if defined(AXOM_USE_OPENMP)
-// Workaround for OpenMP
-template <typename ArrayViewType>
-struct scans<axom::OMP_EXEC, ArrayViewType>
-{
-  inline void exclusive_scan(const ArrayViewType &input, ArrayViewType &output)
-  {
-    assert(input.size() == output.size());
-    // RAJA is not working in OpenMP. Do serial.
-    output[0] = 0;
-    for(IndexType i = 1; i < input.size(); i++)
-    {
-      output[i] = output[i - 1] + input[i - 1];
-    }
-  }
-};
-#endif
-
 template <typename ExecSpace, typename ArrayViewType>
 inline void exclusive_scan(const ArrayViewType &input, ArrayViewType &output)
 {
@@ -67,7 +46,6 @@ inline void exclusive_scan(const ArrayViewType &input, ArrayViewType &output)
 }
 
 } // end namespace axom
-#endif
 
 namespace axom
 {
@@ -568,19 +546,8 @@ public:
    */
   void computeBlendGroupOffsets()
   {
-#if defined(AXOM_CLIPFIELD_SCAN_WORKAROUND)
     axom::exclusive_scan<ExecSpace>(m_state.m_blendGroupsLenView, m_state.m_blendOffsetView);
     axom::exclusive_scan<ExecSpace>(m_state.m_blendGroupsView, m_state.m_blendGroupOffsetsView);
-#else
-    using loop_policy = typename axom::execution_space<ExecSpace>::loop_policy;
-    // Fill in offsets via scan.
-    RAJA::exclusive_scan<loop_policy>(RAJA::make_span(m_state.m_blendGroupsLenView.data(), m_state.m_nzones),
-                                      RAJA::make_span(m_state.m_blendOffsetView.data(), m_state.m_nzones),
-                                      RAJA::operators::plus<IndexType>{});
-    RAJA::exclusive_scan<loop_policy>(RAJA::make_span(m_state.m_blendGroupsView.data(), m_state.m_nzones),
-                                      RAJA::make_span(m_state.m_blendGroupOffsetsView.data(), m_state.m_nzones),
-                                      RAJA::operators::plus<IndexType>{});
-#endif
   }
 
   /**
@@ -1272,34 +1239,8 @@ private:
    */
   void computeFragmentOffsets(FragmentData &fragmentData) const
   {
-#if defined(AXOM_CLIPFIELD_SCAN_WORKAROUND)
-    // NOTE: I was trying to work aroung a RAJA runtime error with OpenMP. No good.
     axom::exclusive_scan<ExecSpace>(fragmentData.m_fragmentsView, fragmentData.m_fragmentOffsetsView);
     axom::exclusive_scan<ExecSpace>(fragmentData.m_fragmentsSizeView, fragmentData.m_fragmentSizeOffsetsView);
-#endif
-#if 0
-    // NOTE: I was trying to work aroung a RAJA runtime error with OpenMP. No good.
-
-    // Copy sizes into offsets
-    const auto nzones = m_topologyView.numberOfZones();
-    axom::copy(fragmentData.m_fragmentOffsetsView.data(), fragmentData.m_fragmentsView.data(), nzones * sizeof(IndexType));
-    axom::copy(fragmentData.m_fragmentSizeOffsetsView.data(), fragmentData.m_fragmentsSizeView.data(), nzones * sizeof(IndexType));
-    // Make offsets in place.
-    RAJA::exclusive_scan_inplace<loop_policy>(RAJA::make_span(fragmentData.m_fragmentOffsetsView.data(), nzones));
-    RAJA::exclusive_scan_inplace<loop_policy>(RAJA::make_span(fragmentData.m_fragmentSizeOffsetsView.data(), nzones));
-
-#endif
-#if 0
-    // Original code.
-    const auto nzones = m_topologyView.numberOfZones();
-    RAJA::exclusive_scan<loop_policy>(RAJA::make_span(fragmentData.m_fragmentsView.data(), nzones),
-                                      RAJA::make_span(fragmentData.m_fragmentOffsetsView.data(), nzones),
-                                      RAJA::operators::plus<IndexType>{});
-
-    RAJA::exclusive_scan<loop_policy>(RAJA::make_span(fragmentData.m_fragmentsSizeView.data(), nzones),
-                                      RAJA::make_span(fragmentData.m_fragmentSizeOffsetsView.data(), nzones),
-                                      RAJA::operators::plus<IndexType>{});
-#endif
   }
 
   /**
@@ -1567,13 +1508,8 @@ private:
     }
 
     // Make offsets
-#if defined(AXOM_CLIPFIELD_SCAN_WORKAROUND)
     axom::exclusive_scan<ExecSpace>(sizesView, offsetsView);
-#else
-    RAJA::exclusive_scan<loop_policy>(RAJA::make_span(sizesView.data(), fragmentData.m_finalNumZones),
-                                      RAJA::make_span(offsetsView.data(), fragmentData.m_finalNumZones),
-                                      RAJA::operators::plus<ConnectivityType>{});
-#endif
+
     // Add shape information to the connectivity.
     const auto shapesUsed = shapesUsed_reduce.get();
     const auto shapeMap = details::shapeMap_FromFlags(shapesUsed);
