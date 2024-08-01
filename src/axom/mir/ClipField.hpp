@@ -26,10 +26,10 @@
 //       so we can write serial versions for when RAJA is not enabled.
 namespace axom
 {
-template <typename ExecSpace, typename ArrayViewType>
+template <typename ExecSpace, typename ContiguousMemoryContainer>
 struct scans
 {
-  inline void exclusive_scan(const ArrayViewType &input, ArrayViewType &output)
+  inline void exclusive_scan(const ContiguousMemoryContainer &input, ContiguousMemoryContainer &output)
   {
     using loop_policy = typename axom::execution_space<ExecSpace>::loop_policy;
     assert(input.size() == output.size());
@@ -39,10 +39,10 @@ struct scans
   }
 };
 
-template <typename ExecSpace, typename ArrayViewType>
-inline void exclusive_scan(const ArrayViewType &input, ArrayViewType &output)
+template <typename ExecSpace, typename ContiguousMemoryContainer>
+inline void exclusive_scan(const ContiguousMemoryContainer &input, ContiguousMemoryContainer &output)
 {
-  scans<ExecSpace, ArrayViewType> s;
+  scans<ExecSpace, ContiguousMemoryContainer> s;
   s.exclusive_scan(input, output);
 }
 
@@ -89,11 +89,11 @@ std::map<int, std::string> shapeMap_ValueName(const conduit::Node &n_shape_map)
 }
 
 /**
- * \brief Given an "ST_index" (e.g. ST_TET from clipping definitions), return an appropriate Shape::id() value.
+ * \brief Given an "ST_index" (e.g. ST_TET from clipping definitions), return an appropriate ShapeID value.
  *
- * \param st_index The value we want to translate into a Shape::id() value.
+ * \param st_index The value we want to translate into a ShapeID value.
  *
- * \return The Shape::id() value that matches the st_index, or 0 if there is no match.
+ * \return The ShapeID value that matches the st_index, or 0 if there is no match.
  */
 template <typename IntegerType>
 AXOM_HOST_DEVICE int ST_Index_to_ShapeID(IntegerType st_index)
@@ -129,9 +129,9 @@ AXOM_HOST_DEVICE int ST_Index_to_ShapeID(IntegerType st_index)
 /**
  * \brief Given a flag that includes bitwise-or'd shape ids, make a map that indicates which Conduit shapes are used.
  *
- * \param shapes This is a bitwise-or of various Shape::id() values.
+ * \param shapes This is a bitwise-or of various (1 << ShapeID) values.
  *
- * \return A map of Conduit shape name to Shape::id() value.
+ * \return A map of Conduit shape name to ShapeID value.
  */
 std::map<std::string, int> shapeMap_FromFlags(std::uint64_t shapes)
 {
@@ -487,35 +487,80 @@ private:
 
 //------------------------------------------------------------------------------
 /**
- * \brief This class encapsulates most of the logic for building blend groups.
- *
- * \note The class only contains views to data so it can be copied into lambdas.
+ * \brief This class implements a naming policy that uses some hashing functions
+ *        to produce a "name" for an array of ids.
  */
-template <typename ExecSpace>
-class BlendGroupBuilder
+class HashNaming
 {
 public:
   using KeyType = std::uint64_t;
+
+  /**
+   * \brief Make a name from an array of ids.
+   *
+   * \param ids The array of ids.
+   * \param numIds The number of ids in the array.
+   *
+   * \return The name that describes the array of ids.
+   *
+   * \note Different make_name_* functions are used because we can skip most
+   *       sorting for 1,2 element arrays.
+   */
+  AXOM_HOST_DEVICE
+  inline static KeyType makeName(const IndexType *ids, IndexType numIds)
+  {
+    KeyType name{};
+    if(numIds == 1)
+    {
+      name = axom::mir::utilities::make_name_1(ids[0]);
+    }
+    else if(numIds == 2)
+    {
+      name = axom::mir::utilities::make_name_2(ids[0], ids[1]);
+    }
+    else
+    {
+      name = axom::mir::utilities::make_name_n(ids, numIds);
+    }
+    return name;
+  }
+};
+
+//------------------------------------------------------------------------------
+/**
+ * \brief This class encapsulates most of the logic for building blend groups.
+ *
+ * \tparam ExecSpace The execution space where the algorithm will run.
+ * \tparam NamingPolicy The naming policy used to create names from node ids.
+ *
+ * \note The class only contains views to data so it can be copied into lambdas.
+ */
+template <typename ExecSpace, typename NamingPolicy = HashNaming>
+class BlendGroupBuilder
+{
+public:
+  using KeyType = typename NamingPolicy::KeyType;
 
   /**
    * \brief This struct holds the views that represent data for blend groups.
    */
   struct State
   {
-    IndexType m_nzones;
     // clang-format off
+    IndexType m_nzones;
+
     axom::ArrayView<IndexType> m_blendGroupsView;        // Number of blend groups in each zone.
     axom::ArrayView<IndexType> m_blendGroupsLenView;     // total size of blend group data for each zone.
     axom::ArrayView<IndexType> m_blendOffsetView;        // The offset of each zone's blend groups.
     axom::ArrayView<IndexType> m_blendGroupOffsetsView;  // Start of each zone's blend group data.
 
-    axom::ArrayView<KeyType> m_blendNamesView;           // Blend group names
+    axom::ArrayView<KeyType>   m_blendNamesView;         // Blend group names
     axom::ArrayView<IndexType> m_blendGroupSizesView;    // Size of individual blend group.
     axom::ArrayView<IndexType> m_blendGroupStartView;    // Start of individual blend group's data in m_blendIdsView/m_blendCoeffView.
     axom::ArrayView<IndexType> m_blendIdsView;           // blend group ids.
-    axom::ArrayView<float> m_blendCoeffView;             // blend group weights.
+    axom::ArrayView<float>     m_blendCoeffView;         // blend group weights.
 
-    axom::ArrayView<KeyType> m_blendUniqueNamesView;     // Unique names of blend groups.
+    axom::ArrayView<KeyType>   m_blendUniqueNamesView;   // Unique names of blend groups.
     axom::ArrayView<IndexType> m_blendUniqueIndicesView; // Indices of the unique names in blend group definitions.
     // clang-format on
   };
@@ -692,24 +737,10 @@ public:
       m_state->m_blendGroupSizesView[m_blendGroupId] = numIds;
 
       // Store "name" of blend group.
-      KeyType blendName;
-      if(numIds == 1)
-      {
-        blendName = axom::mir::utilities::make_name_1(
-          m_state->m_blendIdsView[m_startOffset]);
-      }
-      else if(numIds == 2)
-      {
-        blendName = axom::mir::utilities::make_name_2(
-          m_state->m_blendIdsView[m_startOffset],
-          m_state->m_blendIdsView[m_startOffset + 1]);
-      }
-      else
-      {
-        blendName = axom::mir::utilities::make_name_n(
+      KeyType blendName = NamingPolicy::makeName(
           m_state->m_blendIdsView.data() + m_startOffset,
           numIds);
-      }
+
       m_state->m_blendNamesView[m_blendGroupId] = blendName;
 #if defined(AXOM_DEBUG) && !defined(AXOM_DEVICE_CODE)
       const float w = weightSum();
@@ -894,6 +925,7 @@ public:
 private:
   State m_state;
 };
+
 //------------------------------------------------------------------------------
 
 /**
@@ -903,8 +935,9 @@ private:
  * \tparam ExecSpace    The execution space where the compute-heavy kernels run.
  * \tparam TopologyView The topology view that can operate on the Blueprint topology.
  * \tparam CoordsetView The coordset view that can operate on the Blueprint coordset.
+ * \tparam NamingPolicy The policy for making names from arrays of ids.
  */
-template <typename ExecSpace, typename TopologyView, typename CoordsetView>
+template <typename ExecSpace, typename TopologyView, typename CoordsetView, typename NamingPolicy = HashNaming>
 class ClipField
 {
 public:
@@ -912,11 +945,12 @@ public:
   using SliceData = axom::mir::utilities::blueprint::SliceData;
   using ClipTableViews = axom::StackArray<axom::mir::clipping::TableView, 6>;
 
-  using KeyType = std::uint64_t;
   using BitSet = std::uint64_t;
+  using KeyType = typename NamingPolicy::KeyType;
   using loop_policy = typename axom::execution_space<ExecSpace>::loop_policy;
   using reduce_policy = typename axom::execution_space<ExecSpace>::reduce_policy;
   using ConnectivityType = typename TopologyView::ConnectivityType;
+  using BlendGroupBuilderType = BlendGroupBuilder<ExecSpace, NamingPolicy>;
 
   /**
    * \brief Constructor
@@ -1048,7 +1082,7 @@ public:
       allocatorID);  // Start of zone's blend group offsets in definitions.
 
     // Make an object to help manage building the blend groups.
-    BlendGroupBuilder<ExecSpace> builder;
+    BlendGroupBuilderType builder;
     builder.setBlendGroupSizes(blendGroups.view(), blendGroupsLen.view());
 
     // Compute sizes and offsets
@@ -1208,7 +1242,7 @@ private:
    * \note Objects that we need to capture into kernels are passed by value (they only contain views anyway). Data can be modified through the views.
    */
   void computeSizes(ClipTableViews clipTableViews,
-                    BlendGroupBuilder<ExecSpace> builder,
+                    BlendGroupBuilderType builder,
                     ZoneData zoneData,
                     FragmentData fragmentData,
                     ClipOptions<ExecSpace> &opts,
@@ -1382,7 +1416,7 @@ private:
    * \note Objects that we need to capture into kernels are passed by value (they only contain views anyway). Data can be modified through the views.
    */
   void makeBlendGroups(ClipTableViews clipTableViews,
-                       BlendGroupBuilder<ExecSpace> builder,
+                       BlendGroupBuilderType builder,
                        ZoneData zoneData,
                        ClipOptions<ExecSpace> &opts,
                        const conduit::Node &n_clip_field_values) const
@@ -1505,7 +1539,7 @@ private:
    * \note Objects that we need to capture into kernels are passed by value (they only contain views anyway). Data can be modified through the views.
    */
   void makeConnectivity(ClipTableViews clipTableViews,
-                        BlendGroupBuilder<ExecSpace> builder,
+                        BlendGroupBuilderType builder,
                         ZoneData zoneData,
                         FragmentData fragmentData,
                         ClipOptions<ExecSpace> &opts,
