@@ -71,6 +71,9 @@ public:
   std::string meshFile;
   std::string outputFile;
 
+  // Shape transformation parameters
+  std::vector<double> scaleFactors;
+
   // Inline mesh parameters
   std::vector<double> boxMins;
   std::vector<double> boxMaxs;
@@ -228,6 +231,11 @@ public:
       ->check(axom::utilities::ValidCaliperMode);
 #endif
 
+    app.add_option("--scale", scaleFactors)
+      ->description("Scale factor to apply to shape (x,y[,z])")
+      ->expected(2, 3)
+      ->check(axom::CLI::PositiveNumber);
+
     // use either an input mesh file or a simple inline Cartesian mesh
     {
       auto* mesh_file =
@@ -341,6 +349,7 @@ public:
                                              : slic::message::Info);
   }
 }; // struct Input
+Input params;
 
 /**
  * \brief Print some info about the mesh
@@ -511,10 +520,23 @@ axom::klee::ShapeSet create3DShapeSet(sidre::DataStore& ds)
   axom::klee::TransformableGeometryProperties prop{
     axom::klee::Dimensions::Three,
     axom::klee::LengthUnit::unspecified};
-  axom::klee::Geometry tetGeom(prop, tetMesh.getSidreGroup(), topo, nullptr);
 
+  SLIC_ASSERT( params.scaleFactors.empty() || params.scaleFactors.size() == 3 );
+  std::shared_ptr<axom::klee::Scale> scaleOp;
+  if (!params.scaleFactors.empty())
+  {
+    scaleOp =
+      std::make_shared<axom::klee::Scale>(params.scaleFactors[0],
+                                          params.scaleFactors[1],
+                                          params.scaleFactors[2],
+                                          prop);
+  }
+
+  axom::klee::Geometry tetGeom(prop, tetMesh.getSidreGroup(), topo, scaleOp);
+
+  axom::klee::Geometry tetMeshGeometry( prop, tetMesh.getSidreGroup(), topo, {scaleOp} );
   std::vector<axom::klee::Shape> shapes;
-  axom::klee::Shape tetShape( "tet", "AL", {}, {}, axom::klee::Geometry{prop, tetMesh.getSidreGroup(), topo, nullptr} );
+  axom::klee::Shape tetShape( "tet", "AL", {}, {}, tetMeshGeometry );
   shapes.push_back(tetShape);
 
   axom::klee::ShapeSet shapeSet;
@@ -688,7 +710,6 @@ int main(int argc, char** argv)
   //---------------------------------------------------------------------------
   // Set up and parse command line arguments
   //---------------------------------------------------------------------------
-  Input params;
   axom::CLI::App app {"Driver for Klee shaping query"};
 
   try
@@ -1025,6 +1046,10 @@ std::cout<< "Vol of tet mesh is " << vol << std::endl;
     axom::klee::Geometry::SimplexMesh shapeMesh(shape.getGeometry().getBlueprintMesh(),
                                                 shape.getGeometry().getBlueprintTopology());
     double shapeMeshVol = volumeOfTetMesh(shapeMesh);
+    for ( auto s : params.scaleFactors )
+    {
+       shapeMeshVol *= s;
+    }
 
     const std::string& materialName = shape.getMaterial();
     double shapeVol = sumMaterialVolumes<axom::SEQ_EXEC>( &shapingDC, materialName );

@@ -257,6 +257,7 @@ if(AXOM_ENABLE_MPI AND MFEM_FOUND AND MFEM_USE_MPI
             NAME ${_testname}
             COMMAND  quest_shape_in_memory_ex
                         --method intersection
+                        --scale 0.75 0.75 0.75
                         inline_mesh --min -1 -1 -1 --max 5 5 5 --res 20 20 20 -d 3
             NUM_MPI_TASKS ${_nranks})
     endif()
