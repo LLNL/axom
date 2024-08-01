@@ -8,7 +8,7 @@
 
 #include "axom/sina/core/Curve.hpp"
 #include "axom/sina/core/ConduitUtil.hpp"
-#include "axom/sina/tests/ConduitTestUtils.hpp"
+#include "axom/sina/tests/SinaMatchers.hpp"
 
 namespace axom
 {
@@ -100,10 +100,10 @@ TEST(Curve, createFromNode_optionalFields)
 TEST(Curve, toNode_requiredOnly)
 {
   Curve const curve {"theName", {1, 2, 3, 4}};
-  auto expected = (R"({
+  std::string expected = (R"({
         "value": [1.0, 2.0, 3.0, 4.0]
     })");
-  EXPECT_THAT(curve.toNode(), MatchesJson(expected));
+  EXPECT_THAT(curve.toNode(), MatchesJsonMatcher(expected));
 }
 
 TEST(Curve, toNode_optionalFields)
@@ -111,12 +111,12 @@ TEST(Curve, toNode_optionalFields)
   Curve curve {"theName", {1, 2, 3, 4}};
   curve.setUnits("cm");
   curve.setTags({"t1", "t2", "t3"});
-  auto expected = R"({
+  std::string expected = R"({
         "value": [1.0, 2.0, 3.0, 4.0],
         "units": "cm",
         "tags": ["t1", "t2", "t3"]
     })";
-  EXPECT_THAT(curve.toNode(), MatchesJson(expected));
+  EXPECT_THAT(curve.toNode(), MatchesJsonMatcher(expected));
 }
 
 }  // namespace

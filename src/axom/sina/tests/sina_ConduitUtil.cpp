@@ -9,7 +9,7 @@
 #include "gmock/gmock.h"
 
 #include "axom/sina/core/ConduitUtil.hpp"
-#include "axom/sina/tests/ConduitTestUtils.hpp"
+#include "axom/sina/tests/SinaMatchers.hpp"
 
 namespace axom
 {

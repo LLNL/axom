@@ -39,11 +39,11 @@ if (ENABLE_GMOCK)
 
     # Define Sina test utility sources and headers
     set(sina_test_utils_sources
-        ConduitTestUtils.cpp
+        SinaMatchers.cpp
         TestRecord.cpp
         )
     set(sina_test_utils_headers
-        ConduitTestUtils.hpp
+        SinaMatchers.hpp
         TestRecord.hpp
         )
 
@@ -74,6 +74,8 @@ if (ENABLE_GMOCK)
         sina_Run.cpp
         )
 
+    set(sina_gmock_depends_on sina_test_utils)
+
     # Add tests using Adiak if necessary and Adiak dependency
     blt_list_append( TO gmock_sina_tests ELEMENTS sina_AdiakWriter.cpp IF AXOM_USE_ADIAK)
     blt_list_append( TO sina_gmock_depends_on ELEMENTS adiak::adiak IF AXOM_USE_ADIAK )
@@ -83,7 +85,7 @@ if (ENABLE_GMOCK)
         axom_add_executable(NAME ${test_name}_test
                             SOURCES ${test}
                             OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
-                            DEPENDS_ON sina_test_utils
+                            DEPENDS_ON ${sina_gmock_depends_on}
                             FOLDER axom/sina/tests
                             )
 

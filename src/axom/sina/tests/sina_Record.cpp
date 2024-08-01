@@ -11,7 +11,7 @@
 
 #include "axom/sina/core/Record.hpp"
 
-#include "axom/sina/tests/ConduitTestUtils.hpp"
+#include "axom/sina/tests/SinaMatchers.hpp"
 #include "axom/sina/tests/TestRecord.hpp"
 
 namespace axom
@@ -430,7 +430,7 @@ TEST(Record, toNode_curveSets)
   CurveSet cs {"myCurveSet/with/slash"};
   cs.addIndependentCurve(Curve {"myCurve", {1, 2, 3}});
   record.add(cs);
-  auto expected = R"({
+  std::string expected = R"({
         "local_id": "the id",
         "type": "my type",
         "curve_sets": {
@@ -444,7 +444,7 @@ TEST(Record, toNode_curveSets)
             }
         }
     })";
-  EXPECT_THAT(record.toNode(), MatchesJson(expected));
+  EXPECT_THAT(record.toNode(), MatchesJsonMatcher(expected));
 }
 
 TEST(RecordLoader, load_missingLoader)

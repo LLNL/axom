@@ -10,8 +10,7 @@
 #include "gmock/gmock.h"
 
 #include "axom/sina/core/DataHolder.hpp"
-
-#include "axom/sina/tests/ConduitTestUtils.hpp"
+#include "axom/sina/tests/SinaMatchers.hpp"
 
 namespace axom
 {
@@ -257,7 +256,7 @@ TEST(DataHolder, toNode_curveSets)
   CurveSet cs {"myCurveSet/with/slash"};
   cs.addIndependentCurve(Curve {"myCurve", {1, 2, 3}});
   dh.add(cs);
-  auto expected = R"({
+  std::string expected = R"({
         "curve_sets": {
             "myCurveSet/with/slash": {
                 "independent": {
@@ -269,7 +268,7 @@ TEST(DataHolder, toNode_curveSets)
             }
         }
     })";
-  EXPECT_THAT(dh.toNode(), MatchesJson(expected));
+  EXPECT_THAT(dh.toNode(), MatchesJsonMatcher(expected));
 }
 
 TEST(DataHolder, toNode_libraryData)
@@ -279,7 +278,7 @@ TEST(DataHolder, toNode_libraryData)
   outer->add("scal", Datum {"goodbye!"});
   auto inner = outer->addLibraryData("inner");
   inner->add("str", Datum {"hello!"});
-  auto expected = R"({
+  std::string expected = R"({
         "library_data": {
             "outer": {
                 "library_data": {
@@ -291,7 +290,7 @@ TEST(DataHolder, toNode_libraryData)
             }
         }
     })";
-  EXPECT_THAT(dh.toNode(), MatchesJson(expected));
+  EXPECT_THAT(dh.toNode(), MatchesJsonMatcher(expected));
 }
 
 TEST(DataHolder, toNode_userDefined)

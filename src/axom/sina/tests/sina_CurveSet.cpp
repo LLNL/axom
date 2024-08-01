@@ -7,7 +7,7 @@
 #include "gmock/gmock.h"
 
 #include "axom/sina/core/CurveSet.hpp"
-#include "axom/sina/tests/ConduitTestUtils.hpp"
+#include "axom/sina/tests/SinaMatchers.hpp"
 
 #include <utility>
 #include <unordered_map>
@@ -175,11 +175,11 @@ TEST(CurveSet, createFromNode_curveSetsDefined)
 TEST(CurveSet, toNode_empty)
 {
   CurveSet curveSet {"theName"};
-  auto expected = R"({
+  std::string expected = R"({
         "independent": {},
         "dependent": {}
     })";
-  EXPECT_THAT(curveSet.toNode(), MatchesJson(expected));
+  EXPECT_THAT(curveSet.toNode(), MatchesJsonMatcher(expected));
 }
 
 TEST(CurveSet, toNode_withCurves)
@@ -189,7 +189,7 @@ TEST(CurveSet, toNode_withCurves)
   curveSet.addIndependentCurve(Curve {"i2/with/slash", {4, 5, 6}});
   curveSet.addDependentCurve(Curve {"d1", {10, 20, 30}});
   curveSet.addDependentCurve(Curve {"d2/with/slash", {40, 50, 60}});
-  auto expected = R"({
+  std::string expected = R"({
         "independent": {
             "i1": {
                 "value": [1.0, 2.0, 3.0]
@@ -207,7 +207,7 @@ TEST(CurveSet, toNode_withCurves)
             }
         }
     })";
-  EXPECT_THAT(curveSet.toNode(), MatchesJson(expected));
+  EXPECT_THAT(curveSet.toNode(), MatchesJsonMatcher(expected));
 }
 
 }  // namespace
