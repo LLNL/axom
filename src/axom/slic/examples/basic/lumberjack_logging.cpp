@@ -39,10 +39,15 @@ int main(int argc, char** argv)
   MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 
   // Initialize SLIC
-  std::string format = std::string("<MESSAGE>\n") +
-    std::string("\t<TIMESTAMP>\n") + std::string("\tLEVEL=<LEVEL>\n") +
-    std::string("\tRANKS=<RANK>\n") + std::string("\tFILE=<FILE>\n") +
-    std::string("\tLINE=<LINE>\n");
+  constexpr const char* format = R"(
+<MESSAGE>
+\t<TIMESTAMP>
+\tLEVEL=<LEVEL>
+\tRANKS=<RANK>
+\tRANK_COUNT=<RANK_COUNT>
+\tFILE=<FILE>
+\tLINE=<LINE>
+)";
   slic::initialize();
 
   // Set SLIC logging level and Lumberjack Logging stream

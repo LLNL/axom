@@ -92,6 +92,7 @@ void SynchronizedStream::append(message::Level msgLevel,
                              message,
                              tagName,
                              std::to_string(rank),
+                             "1",
                              fileName,
                              line));
 }

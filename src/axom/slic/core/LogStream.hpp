@@ -58,7 +58,8 @@ public:
    *    <li> <TAG> user-supplied tag </li>
    *    <li> <FILE> with the filename </li>
    *    <li> <LINE> with the line number </li>
-   *    <li> <LINE> with the MPI rank </li>
+   *    <li> <RANK> with the MPI rank(s) </li>
+   *    <li> <RANK_COUNT> with the number of MPI ranks </li>
    *    <li> <TIMESTAMP> date/time the message is logged </li>
    *  </ul>
    *
@@ -73,6 +74,7 @@ public:
    *         std::string( "* FILE=<FILE>\n" ) +
    *         std::string( "* LINE=<LINE>\n" ) +
    *         std::string( "* RANK=<RANK>\n" ) +
+   *         std::string( "* RANK_COUNT=<RANK_COUNT>\n" ) +
    *         std::string( "***********************************\n" );
    * \endcode
    */
@@ -151,6 +153,8 @@ protected:
    * \param [in] tagName user-supplied tag, may be MSG_IGNORE_TAG
    * \param [in] fileName filename where this message is logged, may be
    *  MSG_IGNORE_FILE to ignore this field.
+   * \param [in] rank The MPI rank(s) that emitted this message
+   * \param [in] rank_count the number of MPI ranks that emitted this message
    * \param [in] line the line number within the file where the message is
    *  logged. Likewise, may be set to MSG_IGNORE_LINE to ignore this field.
    *
@@ -161,6 +165,7 @@ protected:
                                  const std::string& message,
                                  const std::string& tagName,
                                  const std::string& rank,
+                                 const std::string& rank_count,
                                  const std::string& fileName,
                                  int line);
 

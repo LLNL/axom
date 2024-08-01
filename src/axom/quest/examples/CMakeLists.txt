@@ -532,3 +532,15 @@ if (ENABLE_FORTRAN)
         endif()
     endif()
 endif()
+
+# Quest winding number example ------------------------------------------------
+
+if( MFEM_FOUND)
+    axom_add_executable(
+        NAME        quest_winding_number_ex
+        SOURCES     quest_winding_number.cpp
+        OUTPUT_DIR  ${EXAMPLE_OUTPUT_DIRECTORY}
+        DEPENDS_ON  axom mfem cli11 fmt
+        FOLDER      axom/quest/examples
+        )
+endif()

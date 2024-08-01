@@ -173,8 +173,3 @@ if( AXOM_ENABLE_SIDRE AND AXOM_ENABLE_PRIMAL AND
             )
 
 endif()
-
-#------------------------------------------------------------------------------
-# Add code checks
-#------------------------------------------------------------------------------
-axom_add_code_checks(PREFIX tools)

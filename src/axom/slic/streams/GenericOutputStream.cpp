@@ -74,6 +74,7 @@ void GenericOutputStream::append(message::Level msgLevel,
                                           message,
                                           tagName,
                                           "",
+                                          "",
                                           fileName,
                                           line);
 }
