@@ -159,102 +159,6 @@ void mixed3d(conduit::Node &mesh)
   add_distance(mesh, 0.f);
 }
 
-int conduit_to_vtk_cell(int shape_value)
-{
-  int vtktype = 0;
-  if(shape_value == axom::mir::views::Tri_ShapeID)
-    vtktype = 5;  // VTK_TRIANGLE
-  else if(shape_value == axom::mir::views::Quad_ShapeID)
-    vtktype = 9;  // VTK_QUAD
-  else if(shape_value == axom::mir::views::Polygon_ShapeID)
-    vtktype = 7;  // VTK_POLYGON
-  else if(shape_value == axom::mir::views::Tet_ShapeID)
-    vtktype = 10;  // VTK_TETRA
-  else if(shape_value == axom::mir::views::Pyramid_ShapeID)
-    vtktype = 14;  // VTK_PYRAMID
-  else if(shape_value == axom::mir::views::Wedge_ShapeID)
-    vtktype = 13;  // VTK_WEDGE
-  else if(shape_value == axom::mir::views::Hex_ShapeID)
-    vtktype = 12;  // VTK_HEXAHEDRON
-
-  return vtktype;
-}
-
-void conduit_save_vtk(const conduit::Node &node, const std::string &path)
-{
-  FILE *file = fopen(path.c_str(), "wt");
-
-  // Write the VTK file header
-  fprintf(file, "# vtk DataFile Version 3.0\n");
-  fprintf(file, "Unstructured Grid Example\n");
-  fprintf(file, "ASCII\n");
-  fprintf(file, "DATASET UNSTRUCTURED_GRID\n");
-
-  // Write the points
-  const conduit::Node &points = node["coordsets/coords/values"];
-  const conduit::Node &x = points["x"];
-  const conduit::Node &y = points["y"];
-  const conduit::Node &z = points["z"];
-  size_t num_points = x.dtype().number_of_elements();
-
-  fprintf(file, "POINTS %zu float\n", num_points);
-  axom::mir::views::FloatNode_to_ArrayView(x, y, z, [&](auto xView, auto yView, auto zView)
-  {
-    for(size_t i = 0; i < num_points; ++i)
-    {
-      fprintf(file,
-              "%f %f %f\n",
-              static_cast<float>(xView[i]),
-              static_cast<float>(yView[i]),
-              static_cast<float>(zView[i]));
-    }
-  });
-
-  // Write the cells
-  const conduit::Node &topologies = node["topologies"];
-  const conduit::Node &topo = topologies[0];
-  const conduit::Node &elements = topo["elements"];
-  const conduit::Node &connectivity = elements["connectivity"];
-  size_t num_cells = elements["sizes"].dtype().number_of_elements();
-  size_t total_num_indices = connectivity.dtype().number_of_elements();
-
-  fprintf(file, "CELLS %zu %zu\n", num_cells, total_num_indices + num_cells);
-  size_t index = 0;
-  for(size_t i = 0; i < num_cells; ++i)
-  {
-    size_t cell_size = elements["sizes"].as_int32_array()[i];
-    fprintf(file, "%zu", cell_size);
-    for(size_t j = 0; j < cell_size; ++j)
-    {
-      fprintf(file, " %d", connectivity.as_int32_array()[index++]);
-    }
-    fprintf(file, "\n");
-  }
-
-  // Write the cell types
-  fprintf(file, "CELL_TYPES %zu\n", num_cells);
-  if(elements.has_child("shapes"))
-  {
-    const conduit::Node &shapes = elements["shapes"];
-    for(size_t i = 0; i < num_cells; ++i)
-    {
-      const auto type = conduit_to_vtk_cell(shapes.as_int32_array()[i]);
-      fprintf(file, "%d\n", type);
-    }
-  }
-  else
-  {
-    const auto type = conduit_to_vtk_cell(axom::mir::views::shapeNameToID(elements["shape"].as_string()));
-    for(size_t i = 0; i < num_cells; ++i)
-    {
-      fprintf(file, "%d\n", type);
-    }
-  }
-
-  // Close the file
-  fclose(file);
-}
-
 TEST(mir_clipfield, options)
 {
   int nzones = 6;
@@ -789,7 +693,9 @@ void braid2d_clip_test(const std::string &type, const std::string &name)
   conduit::Node hostMesh, deviceMesh;
   braid(type, dims, hostMesh);
   axom::mir::utilities::blueprint::copy<ExecSpace>(deviceMesh, hostMesh);
+#if defined(AXOM_TESTING_SAVE_VISUALIZATION)
   conduit::relay::io::blueprint::save_mesh(hostMesh, name + "_orig", "hdf5");
+#endif
 
   // Create views
   axom::StackArray<double, 2> origin {0., 0.}, spacing {1., 1.};
@@ -925,6 +831,127 @@ TEST(mir_clipfield, uniform2d)
 #endif
 }
 
+//------------------------------------------------------------------------------
+template <int NDIMS>
+struct make_rectilinear_coordset {};
+
+template <>
+struct make_rectilinear_coordset<2>
+{
+  static axom::mir::views::RectilinearCoordsetView2<double> create(conduit::Node &coordset)
+  {
+    conduit::Node &x = coordset["values/x"];
+    conduit::Node &y = coordset["values/y"];
+    axom::ArrayView<double> xView(static_cast<double *>(x.data_ptr()), x.dtype().number_of_elements());
+    axom::ArrayView<double> yView(static_cast<double *>(y.data_ptr()), y.dtype().number_of_elements());
+    return axom::mir::views::RectilinearCoordsetView2<double>(xView, yView);
+  }
+};
+template <>
+struct make_rectilinear_coordset<3>
+{
+  static axom::mir::views::RectilinearCoordsetView3<double> create(conduit::Node &coordset)
+  {
+    conduit::Node &x = coordset["values/x"];
+    conduit::Node &y = coordset["values/y"];
+    conduit::Node &z = coordset["values/z"];
+    axom::ArrayView<double> xView(static_cast<double *>(x.data_ptr()), x.dtype().number_of_elements());
+    axom::ArrayView<double> yView(static_cast<double *>(y.data_ptr()), y.dtype().number_of_elements());
+    axom::ArrayView<double> zView(static_cast<double *>(z.data_ptr()), z.dtype().number_of_elements());
+    return axom::mir::views::RectilinearCoordsetView3<double>(xView, yView, zView);
+  }
+};
+
+template <typename ExecSpace, int NDIMS>
+void braid_rectilinear_clip_test(const std::string &name)
+{
+  using Indexing = axom::mir::views::StructuredIndexing<axom::IndexType, NDIMS>;
+  using TopoView = axom::mir::views::StructuredTopologyView<Indexing>;
+
+  axom::StackArray<axom::IndexType, NDIMS> dims, zoneDims;
+  for(int i = 0; i < NDIMS; i++)
+  {
+    dims[i] = 10;
+    zoneDims[i] = dims[i] - 1;
+  }
+
+  // Create the data
+  conduit::Node hostMesh, deviceMesh;
+  braid("rectilinear", dims, hostMesh);
+  axom::mir::utilities::blueprint::copy<ExecSpace>(deviceMesh, hostMesh);
+#if defined(AXOM_TESTING_SAVE_VISUALIZATION)
+  conduit::relay::io::blueprint::save_mesh(hostMesh, name + "_orig", "hdf5");
+#endif
+
+  // Create views
+  auto coordsetView = make_rectilinear_coordset<NDIMS>::create(hostMesh["coordsets/coords"]);
+  using CoordsetView = decltype(coordsetView);
+  TopoView topoView(Indexing {zoneDims});
+
+  // Create options to control the clipping.
+  conduit::Node options;
+  options["clipField"] = "distance";
+  options["inside"] = 1;
+  options["outside"] = 1;
+
+  // Clip the data
+  conduit::Node deviceClipMesh;
+  axom::mir::clipping::ClipField<ExecSpace, TopoView, CoordsetView> clipper(
+    topoView,
+    coordsetView);
+  clipper.execute(deviceMesh, options, deviceClipMesh);
+
+  // Copy device->host
+  conduit::Node hostClipMesh;
+  axom::mir::utilities::blueprint::copy<seq_exec>(hostClipMesh, deviceClipMesh);
+
+  // Handle baseline comparison.
+  {
+    std::string baselineName(yamlRoot(name));
+    const auto paths = baselinePaths<ExecSpace>();
+#if defined(AXOM_TESTING_GENERATE_BASELINES)
+    saveBaseline(paths, baselineName, hostClipMesh);
+#else
+    EXPECT_TRUE(compareBaseline(paths, baselineName, hostClipMesh));
+#endif
+  }
+}
+
+
+TEST(mir_clipfield, rectilinear2d)
+{
+  braid_rectilinear_clip_test<seq_exec, 2>("rectilinear2d");
+
+#if defined(AXOM_USE_OPENMP)
+  braid_rectilinear_clip_test<omp_exec, 2>("rectilinear2d");
+#endif
+
+#if defined(AXOM_USE_CUDA) && defined(__CUDACC__)
+  braid_rectilinear_clip_test<cuda_exec, 2>("rectilinear2d");
+#endif
+
+#if defined(AXOM_USE_HIP)
+  braid_rectilinear_clip_test<hip_exec, 2>("rectilinear2d");
+#endif
+}
+
+TEST(mir_clipfield, rectilinear3d)
+{
+  braid_rectilinear_clip_test<seq_exec, 3>("rectilinear3d");
+
+#if defined(AXOM_USE_OPENMP)
+  braid_rectilinear_clip_test<omp_exec, 3>("rectilinear3d");
+#endif
+
+#if defined(AXOM_USE_CUDA) && defined(__CUDACC__)
+  braid_rectilinear_clip_test<cuda_exec, 3>("rectilinear3d");
+#endif
+
+#if defined(AXOM_USE_HIP)
+  braid_rectilinear_clip_test<hip_exec, 3>("rectilinear3d");
+#endif
+}
+
 template <typename ExecSpace, typename ShapeType>
 void braid3d_clip_test(const std::string &type, const std::string &name)
 {
@@ -937,10 +964,9 @@ void braid3d_clip_test(const std::string &type, const std::string &name)
   conduit::Node hostMesh, deviceMesh;
   braid(type, dims, hostMesh);
   axom::mir::utilities::blueprint::copy<ExecSpace>(deviceMesh, hostMesh);
+#if defined(AXOM_TESTING_SAVE_VISUALIZATION)
   conduit::relay::io::blueprint::save_mesh(hostMesh, name + "_orig", "hdf5");
-  conduit::relay::io::blueprint::save_mesh(hostMesh,
-                                           name + "_orig_yaml",
-                                           "yaml");
+#endif
 
   // Create views
   conduit::Node &n_x = deviceMesh.fetch_existing("coordsets/coords/values/x");
@@ -1038,10 +1064,9 @@ void braid3d_mixed_clip_test(const std::string &name)
   conduit::Node hostMesh, deviceMesh;
   mixed3d(hostMesh);
   axom::mir::utilities::blueprint::copy<ExecSpace>(deviceMesh, hostMesh);
+#if defined(AXOM_TESTING_SAVE_VISUALIZATION)
   conduit::relay::io::blueprint::save_mesh(hostMesh, name + "_orig", "hdf5");
-  conduit::relay::io::blueprint::save_mesh(hostMesh,
-                                           name + "_orig_yaml",
-                                           "yaml");
+#endif
 
   // Create views
   conduit::Node &n_x = deviceMesh.fetch_existing("coordsets/coords/values/x");

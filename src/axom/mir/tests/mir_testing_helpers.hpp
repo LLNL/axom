@@ -155,6 +155,7 @@ std::vector<std::string> baselinePaths()
 bool compareBaseline(const std::vector<std::string> &baselinePaths, const std::string &baselineName, const conduit::Node &current, double tolerance = 1.e-10)
 {
   bool success = false;
+  int count = 0;
   for(const auto &path : baselinePaths)
   {
     try
@@ -167,6 +168,7 @@ bool compareBaseline(const std::vector<std::string> &baselinePaths, const std::s
         // Compare the baseline to the current DC.
         SLIC_INFO(axom::fmt::format("Comparing to baseline {}", filename));
         success = compareConduit(baselineNode, current, tolerance, info);
+        count++;
         if(!success)
         {
           info.print();
@@ -180,6 +182,10 @@ bool compareBaseline(const std::vector<std::string> &baselinePaths, const std::s
       SLIC_INFO(
         axom::fmt::format("Could not load {} from {}!", baselineName, path));
     }
+  }
+  if(!success && count == 0)
+  {
+    SLIC_INFO(fmt::format("No baselines found for {}", baselineName));
   }
   return success;
 }
