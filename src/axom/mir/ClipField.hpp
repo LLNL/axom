@@ -58,37 +58,6 @@ namespace clipping
 {
 namespace details
 {
-/**
- * \brief Turns a Conduit "shape_map" node into an easier STL-representation.
- *
- * \param n_shape_map The node that contains the shape_map.
- * \return An STL-representation of the shape_map.
- */
-std::map<std::string, int> shapeMap_NameValue(const conduit::Node &n_shape_map)
-{
-  std::map<std::string, int> sm;
-  for(conduit::index_t i = 0; i < n_shape_map.number_of_children(); i++)
-  {
-    sm[n_shape_map[i].name()] = n_shape_map[i].to_int();
-  }
-  return sm;
-}
-
-/**
- * \brief Turns a Conduit "shape_map" node into an easier STL-representation.
- *
- * \param n_shape_map The node that contains the shape_map.
- * \return An STL-representation of the shape_map.
- */
-std::map<int, std::string> shapeMap_ValueName(const conduit::Node &n_shape_map)
-{
-  std::map<int, std::string> sm;
-  for(conduit::index_t i = 0; i < n_shape_map.number_of_children(); i++)
-  {
-    sm[n_shape_map[i].to_int()] = n_shape_map[i].name();
-  }
-  return sm;
-}
 
 /**
  * \brief Given an "ST_index" (e.g. ST_TET from clipping definitions), return an appropriate ShapeID value.
@@ -98,7 +67,7 @@ std::map<int, std::string> shapeMap_ValueName(const conduit::Node &n_shape_map)
  * \return The ShapeID value that matches the st_index, or 0 if there is no match.
  */
 template <typename IntegerType>
-AXOM_HOST_DEVICE int ST_Index_to_ShapeID(IntegerType st_index)
+inline AXOM_HOST_DEVICE int ST_Index_to_ShapeID(IntegerType st_index)
 {
   int shapeID = 0;
   switch(st_index)
@@ -129,47 +98,12 @@ AXOM_HOST_DEVICE int ST_Index_to_ShapeID(IntegerType st_index)
 }
 
 /**
- * \brief Given a flag that includes bitwise-or'd shape ids, make a map that indicates which Conduit shapes are used.
- *
- * \param shapes This is a bitwise-or of various (1 << ShapeID) values.
- *
- * \return A map of Conduit shape name to ShapeID value.
- */
-std::map<std::string, int> shapeMap_FromFlags(std::uint64_t shapes)
-{
-  std::map<std::string, int> sm;
-
-  if(axom::utilities::bitIsSet(shapes, views::Line_ShapeID))
-    sm["line"] = views::Line_ShapeID;
-
-  if(axom::utilities::bitIsSet(shapes, views::Tri_ShapeID))
-    sm["tri"] = views::Tri_ShapeID;
-
-  if(axom::utilities::bitIsSet(shapes, views::Quad_ShapeID))
-    sm["quad"] = views::Quad_ShapeID;
-
-  if(axom::utilities::bitIsSet(shapes, views::Tet_ShapeID))
-    sm["tet"] = views::Tet_ShapeID;
-
-  if(axom::utilities::bitIsSet(shapes, views::Pyramid_ShapeID))
-    sm["pyramid"] = views::Pyramid_ShapeID;
-
-  if(axom::utilities::bitIsSet(shapes, views::Wedge_ShapeID))
-    sm["wedge"] = views::Wedge_ShapeID;
-
-  if(axom::utilities::bitIsSet(shapes, views::Hex_ShapeID))
-    sm["hex"] = views::Hex_ShapeID;
-
-  return sm;
-}
-
-/**
  * \brief Returns a clip table index for the input shapeId.
  * \param shapeId A shapeID (e.g. Tet_ShapeID)
  * \return The clip table index for the shape.
  */
 AXOM_HOST_DEVICE
-int getClipTableIndex(int shapeId)
+inline int getClipTableIndex(int shapeId)
 {
   int index = 0;
   switch(shapeId)
@@ -197,26 +131,26 @@ int getClipTableIndex(int shapeId)
 }
 
 AXOM_HOST_DEVICE
-bool color0Selected(int selection)
+inline bool color0Selected(int selection)
 {
   return axom::utilities::bitIsSet(selection, 0);
 }
 
 AXOM_HOST_DEVICE
-bool color1Selected(int selection)
+inline bool color1Selected(int selection)
 {
   return axom::utilities::bitIsSet(selection, 1);
 }
 
 AXOM_HOST_DEVICE
-bool generatedPointIsSelected(unsigned char color, int selection)
+inline bool generatedPointIsSelected(unsigned char color, int selection)
 {
   return color == NOCOLOR || (color0Selected(selection) && color == COLOR0) ||
     (color1Selected(selection) && color == COLOR1);
 }
 
 AXOM_HOST_DEVICE
-bool shapeIsSelected(unsigned char color, int selection)
+inline bool shapeIsSelected(unsigned char color, int selection)
 {
   return (color0Selected(selection) && color == COLOR0) ||
     (color1Selected(selection) && color == COLOR1);
@@ -1703,7 +1637,7 @@ private:
 
     // Add shape information to the connectivity.
     const auto shapesUsed = shapesUsed_reduce.get();
-    const auto shapeMap = details::shapeMap_FromFlags(shapesUsed);
+    const auto shapeMap = shapeMap_FromFlags(shapesUsed);
     if(axom::utilities::countBits(shapesUsed) > 1)
     {
       n_newTopo["elements/shape"] = "mixed";
@@ -1851,6 +1785,47 @@ private:
             valuesView[sizeIndex + i] = zoneIndex;
         });
     }
+  }
+
+  /**
+   * \brief Given a flag that includes bitwise-or'd shape ids, make a map that indicates which Conduit shapes are used.
+   *
+   * \param shapes This is a bitwise-or of various (1 << ShapeID) values.
+   *
+   * \return A map of Conduit shape name to ShapeID value.
+   */
+  std::map<std::string, int> shapeMap_FromFlags(std::uint64_t shapes) const
+  {
+    std::map<std::string, int> sm;
+
+    if(axom::utilities::bitIsSet(shapes, views::Line_ShapeID))
+      sm["line"] = views::Line_ShapeID;
+
+    if(axom::utilities::bitIsSet(shapes, views::Tri_ShapeID))
+      sm["tri"] = views::Tri_ShapeID;
+
+    if(axom::utilities::bitIsSet(shapes, views::Quad_ShapeID))
+      sm["quad"] = views::Quad_ShapeID;
+
+    if(axom::utilities::bitIsSet(shapes, views::Polygon_ShapeID))
+      sm["polygon"] = views::Polygon_ShapeID;
+
+    if(axom::utilities::bitIsSet(shapes, views::Tet_ShapeID))
+      sm["tet"] = views::Tet_ShapeID;
+
+    if(axom::utilities::bitIsSet(shapes, views::Pyramid_ShapeID))
+      sm["pyramid"] = views::Pyramid_ShapeID;
+
+    if(axom::utilities::bitIsSet(shapes, views::Wedge_ShapeID))
+      sm["wedge"] = views::Wedge_ShapeID;
+
+    if(axom::utilities::bitIsSet(shapes, views::Hex_ShapeID))
+      sm["hex"] = views::Hex_ShapeID;
+
+    if(axom::utilities::bitIsSet(shapes, views::Polyhedron_ShapeID))
+      sm["polyhedron"] = views::Polyhedron_ShapeID;
+
+    return sm;
   }
 
 private:
