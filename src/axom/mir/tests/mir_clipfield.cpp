@@ -22,7 +22,7 @@
     using omp_exec = seq_exec;
   #endif
 
-  #if defined(AXOM_USE_CUDA)
+  #if defined(AXOM_USE_CUDA) && defined(__CUDACC__)
     constexpr int CUDA_BLOCK_SIZE = 256;
     using cuda_exec = axom::CUDA_EXEC<CUDA_BLOCK_SIZE>;
   #else
@@ -529,16 +529,14 @@ void make_one_wdg(conduit::Node &hostMesh)
 }
 
 template <typename ExecSpace, typename ShapeType>
-void test_one_shape(conduit::Node &hostMesh, const std::string &name)
+void test_one_shape(const conduit::Node &hostMesh, const std::string &name)
 {
-std::cout << "test_one_shape: 0\n";
   using TopoView = axom::mir::views::UnstructuredTopologySingleShapeView<ShapeType>;
   using CoordsetView = axom::mir::views::ExplicitCoordsetView<float, 3>;
 
   // Copy mesh to device
   conduit::Node deviceMesh;
-  axom::mir::utilities::blueprint::copy<seq_exec>(deviceMesh, hostMesh);
-std::cout << "test_one_shape: 1\n";
+  axom::mir::utilities::blueprint::copy<ExecSpace>(deviceMesh, hostMesh);
 
   // Make views for the device mesh.
   conduit::Node &n_x = deviceMesh.fetch_existing("coordsets/coords/values/x");
@@ -548,12 +546,10 @@ std::cout << "test_one_shape: 1\n";
   axom::ArrayView<float> yView(static_cast<float *>(n_y.data_ptr()), n_y.dtype().number_of_elements());
   axom::ArrayView<float> zView(static_cast<float *>(n_z.data_ptr()), n_z.dtype().number_of_elements());
   CoordsetView coordsetView(xView, yView, zView);
-std::cout << "test_one_shape: 2\n";
 
   conduit::Node &n_conn = deviceMesh.fetch_existing("topologies/topo/elements/connectivity");
   axom::ArrayView<int> connView(static_cast<int *>(n_conn.data_ptr()), n_conn.dtype().number_of_elements());
   TopoView topoView(connView);
-std::cout << "test_one_shape: 3\n";
 
   // Clip the data
   conduit::Node deviceClipMesh, options; 
@@ -563,105 +559,61 @@ std::cout << "test_one_shape: 3\n";
   options["inside"] = 1;
   options["outside"] = 1;
   clipper.execute(deviceMesh, options, deviceClipMesh);
-std::cout << "test_one_shape: 4\n";
 
   // Copy device->host
   conduit::Node hostClipMesh;
   axom::mir::utilities::blueprint::copy<seq_exec>(hostClipMesh, deviceClipMesh);
-std::cout << "test_one_shape: 5\n";
 
   // Save data.
   conduit::relay::io::blueprint::save_mesh(hostClipMesh, name, "hdf5");
   conduit::relay::io::blueprint::save_mesh(hostClipMesh, name, "yaml");
-std::cout << "test_one_shape: 6\n";
 }
 
-TEST(mir_clipfield, onetet)
+template <typename ShapeType>
+void test_one_shape_exec(const conduit::Node &hostMesh, const std::string &name)
 {
-  using TetShape = axom::mir::views::TetShape<int>;
+  test_one_shape<seq_exec, ShapeType>(hostMesh, name);
 
-  conduit::Node hostMesh;
-  make_one_tet(hostMesh);
+#if defined(AXOM_USE_OPENMP)
+  test_one_shape<omp_exec, ShapeType>(hostMesh, name + "_omp");
+#endif
 
-  test_one_shape<seq_exec, TetShape>(hostMesh, "one_tet");
-
-//#if defined(AXOM_USE_OPENMP)
-//  test_one_shape<omp_exec, TetShape>(hostMesh, "one_tet_omp");
-//#endif
-
-#if defined(AXOM_USE_CUDA)
-  test_one_shape<cuda_exec, TetShape>(hostMesh, "one_tet_cuda");
+#if defined(AXOM_USE_CUDA) && defined(__CUDACC__)
+  test_one_shape<cuda_exec, ShapeType>(hostMesh, name + "_cuda");
 #endif
 
 #if defined(AXOM_USE_HIP)
-  test_one_shape<hip_exec, TetShape>(hostMesh, "one_tet_hip");
+  test_one_shape<hip_exec, ShapeType>(hostMesh, name + "_hip");
 #endif
+}
+
+
+TEST(mir_clipfield, onetet)
+{
+  conduit::Node hostMesh;
+  make_one_tet(hostMesh);
+  test_one_shape_exec<axom::mir::views::TetShape<int> >(hostMesh, "one_tet");
 }
 
 TEST(mir_clipfield, onepyr)
 {
-  using PyramidShape = axom::mir::views::PyramidShape<int>;
-
   conduit::Node hostMesh;
   make_one_pyr(hostMesh);
-
-  test_one_shape<seq_exec, PyramidShape>(hostMesh, "one_pyr");
-
-//#if defined(AXOM_USE_OPENMP)
-//  test_one_shape<omp_exec, PyramidShape>(hostMesh, "one_pyr_omp");
-//#endif
-
-#if defined(AXOM_USE_CUDA)
-  test_one_shape<cuda_exec, PyramidShape>(hostMesh, "one_pyr_cuda");
-#endif
-
-#if defined(AXOM_USE_HIP)
-  test_one_shape<hip_exec, PyramidShape>(hostMesh, "one_pyr_hip");
-#endif
+  test_one_shape_exec<axom::mir::views::PyramidShape<int> >(hostMesh, "one_pyr");
 }
 
 TEST(mir_clipfield, onewdg)
 {
-  using WedgeShape = axom::mir::views::WedgeShape<int>;
-
   conduit::Node hostMesh;
   make_one_wdg(hostMesh);
-
-  test_one_shape<seq_exec, WedgeShape>(hostMesh, "one_wdg");
-
-//#if defined(AXOM_USE_OPENMP)
-//  test_one_shape<omp_exec, WedgeShape>(hostMesh, "one_wdg_omp");
-//#endif
-
-#if defined(AXOM_USE_CUDA)
-  test_one_shape<cuda_exec, WedgeShape>(hostMesh, "one_wdg_cuda");
-#endif
-
-#if defined(AXOM_USE_HIP)
-  test_one_shape<hip_exec, WedgeShape>(hostMesh, "one_wdg_hip");
-#endif
+  test_one_shape_exec<axom::mir::views::WedgeShape<int> >(hostMesh, "one_wdg");
 }
 
 TEST(mir_clipfield, onehex)
 {
-  using HexShape = axom::mir::views::HexShape<int>;
-
   conduit::Node hostMesh;
   make_one_hex(hostMesh);
-
-  test_one_shape<seq_exec, HexShape>(hostMesh, "one_hex");
-
-//#if defined(AXOM_USE_OPENMP)
-//  test_one_shape<omp_exec, HexShape>(hostMesh, "one_hex_omp");
-//#endif
-
-#if defined(AXOM_USE_CUDA)
-  test_one_shape<cuda_exec, HexShape>(hostMesh, "one_hex_cuda");
-#endif
-
-#if defined(AXOM_USE_HIP)
-  test_one_shape<hip_exec, HexShape>(hostMesh, "one_hex_hip");
-#endif
+  test_one_shape_exec<axom::mir::views::HexShape<int> >(hostMesh, "one_hex");
 }
 
 //------------------------------------------------------------------------------
@@ -822,7 +774,7 @@ void braid3d_clip_test_exec(const std::string &type, const std::string &name)
   braid3d_clip_test<omp_exec, ShapeType>(type, name + "_omp");
 #endif
 
-#if defined(AXOM_USE_CUDA)
+#if defined(AXOM_USE_CUDA) && defined(__CUDACC__)
   braid3d_clip_test<cuda_exec, ShapeType>(type, name + "_cuda");
 #endif
 
@@ -839,7 +791,7 @@ TEST(mir_clipfield, uniform2d)
 //  braid2d_clip_test<omp_exec>("uniform", "uniform2d_omp");
 //#endif
 
-#if defined(AXOM_USE_CUDA)
+#if defined(AXOM_USE_CUDA) && defined(__CUDACC__)
   braid2d_clip_test<cuda_exec>("uniform", "uniform2d_cuda");
 #endif
 

@@ -425,14 +425,16 @@ private:
       {
         using loop_policy = typename axom::execution_space<ExecSpace>::loop_policy;
         using reduce_policy = typename axom::execution_space<ExecSpace>::reduce_policy;
-        using value_type = typename decltype(zonesView)::value_type;
 
         // It probably does not make sense to request more zones than we have in the mesh.
         SLIC_ASSERT(zonesView.size() <= m_nzones);
 
         m_selectedZones = axom::Array<axom::IndexType>(zonesView.size(), zonesView.size(), allocatorID);
         auto szView = m_selectedZones.view();
-        axom::copy(szView.data(), zonesView.data(), zonesView.size() * sizeof(value_type));
+        axom::for_all<ExecSpace>(szView.size(), AXOM_LAMBDA(auto index)
+        {
+          szView[index] = zonesView[index];
+        });
 
         // Check that the selected zone values are in range.
         const auto nzones = m_nzones;
@@ -1132,7 +1134,7 @@ private:
 
       auto blendGroupsView = builder.state().m_blendGroupsView;
       auto blendGroupsLenView = builder.state().m_blendGroupsLenView;
-std::cout << "computeSizes: start\n";
+
       m_topologyView.template for_selected_zones<ExecSpace>(opts.selectedZonesView(), AXOM_LAMBDA(auto zoneIndex, const auto &zone)
       {
         // Get the clip case for the current zone.
@@ -1233,7 +1235,6 @@ std::cout << "computeSizes: start\n";
         blendGroupsLenView[zoneIndex] = thisBlendGroupLen;
       });
     });
-std::cout << "computeSizes: end\n";
   }
 
   /**
@@ -1243,8 +1244,6 @@ std::cout << "computeSizes: end\n";
    */
   void computeFragmentSizes(FragmentData &fragmentData) const
   {
-std::cout << "computeFragmentSizes: start\n";
-
     const auto nzones = m_topologyView.numberOfZones();
 
     // Sum the number of fragments.
@@ -1264,9 +1263,6 @@ std::cout << "computeFragmentSizes: start\n";
       fragment_nids_sum += fragmentsSizeView[zoneIndex];
     });
     fragmentData.m_finalConnSize = fragment_nids_sum.get();
-
-std::cout << "computeFragmentSizes: end\n";
-
   }
 
   /**
@@ -1276,8 +1272,6 @@ std::cout << "computeFragmentSizes: end\n";
    */
   void computeFragmentOffsets(FragmentData &fragmentData) const
   {
-std::cout << "computeFragmentOffsets: start\n";
-
 #if defined(AXOM_CLIPFIELD_SCAN_WORKAROUND)
     // NOTE: I was trying to work aroung a RAJA runtime error with OpenMP. No good.
     axom::exclusive_scan<ExecSpace>(fragmentData.m_fragmentsView, fragmentData.m_fragmentOffsetsView);
@@ -1306,7 +1300,6 @@ std::cout << "computeFragmentOffsets: start\n";
                                       RAJA::make_span(fragmentData.m_fragmentSizeOffsetsView.data(), nzones),
                                       RAJA::operators::plus<IndexType>{});
 #endif
-std::cout << "computeFragmentOffsets: end\n";
   }
 
   /**
@@ -1322,8 +1315,6 @@ std::cout << "computeFragmentOffsets: end\n";
    */
   void makeBlendGroups(ClipTableViews clipTableViews, BlendGroupBuilder<ExecSpace> builder, ZoneData zoneData, ClipOptions<ExecSpace> &opts, const conduit::Node &n_clip_field_values) const
   {
-std::cout << "makeBlendGroups: start\n";
-
     views::Node_to_ArrayView(n_clip_field_values, [&](auto clipFieldView)
     {
       const auto clipValue = opts.clipValue();
@@ -1421,8 +1412,6 @@ std::cout << "makeBlendGroups: start\n";
         }
       });
     });
-std::cout << "makeBlendGroups: end\n";
-
   }
 
   /**
@@ -1441,8 +1430,6 @@ std::cout << "makeBlendGroups: end\n";
    */
   void makeConnectivity(ClipTableViews clipTableViews, BlendGroupBuilder<ExecSpace> builder, ZoneData zoneData, FragmentData fragmentData, ClipOptions<ExecSpace> &opts, conduit::Node &n_newTopo, conduit::Node &n_newCoordset, conduit::Node &n_newFields) const
   {
-std::cout << "makeConnectivity: start\n";
-
     constexpr auto connTypeID = axom::mir::utilities::blueprint::cpp2conduit<ConnectivityType>::id;
     const auto selection = getSelection(opts);
 
@@ -1603,8 +1590,6 @@ std::cout << "makeConnectivity: start\n";
       n_newTopo["elements"].remove("shapes");
       n_newTopo["elements/shape"] = shapeMap.begin()->first;
     }
-std::cout << "makeConnectivity: end\n";
-
   }
 
   /**
@@ -1616,11 +1601,9 @@ std::cout << "makeConnectivity: end\n";
    */
   void makeCoordset(const BlendData &blend, const conduit::Node &n_coordset, conduit::Node &n_newCoordset) const
   {
-std::cout << "makeCoordset: start\n";
     axom::mir::utilities::blueprint::CoordsetBlender<ExecSpace, CoordsetView, axom::mir::utilities::blueprint::SelectThroughArrayView> cb;
     n_newCoordset.reset();
     cb.execute(blend, m_coordsetView, n_coordset, n_newCoordset);
-std::cout << "makeCoordset: end\n";
   }
 
   /**
@@ -1640,7 +1623,6 @@ std::cout << "makeCoordset: end\n";
                   const conduit::Node &n_fields,
                   conduit::Node &n_out_fields) const
   {
-std::cout << "makeFields: start\n";
     for(auto it = fieldMap.begin(); it != fieldMap.end(); it++)
     {
       const conduit::Node &n_field = n_fields.fetch_existing(it->first);
@@ -1658,7 +1640,6 @@ std::cout << "makeFields: start\n";
         n_out_fields[it->second]["topology"] = topologyName;
       }
     }
-std::cout << "makeFields: end\n";
   }
 
   /**
@@ -1674,8 +1655,6 @@ std::cout << "makeFields: end\n";
    */
   void makeOriginalElements(FragmentData fragmentData, const ClipOptions<ExecSpace> &opts, const conduit::Node &n_fields, conduit::Node &n_newTopo, conduit::Node &n_newFields) const
   {
-std::cout << "makeOriginalElements: start\n";
-
     constexpr auto connTypeID = axom::mir::utilities::blueprint::cpp2conduit<ConnectivityType>::id;
 
     utilities::blueprint::ConduitAllocateThroughAxom<ExecSpace> c2a;
@@ -1725,8 +1704,6 @@ std::cout << "makeOriginalElements: start\n";
           valuesView[sizeIndex + i] = zoneIndex;
       });
     }
-std::cout << "makeOriginalElements: end\n";
-
   }
 
 private:

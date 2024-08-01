@@ -3,6 +3,8 @@
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
+#include "axom/config.hpp"
+#include "axom/core.hpp"
 #include "axom/mir/EquiZAlgorithm.hpp"
 #include "axom/core/ArrayView.hpp"
 #include "axom/mir/views/StructuredTopologyView.hpp"
@@ -20,6 +22,7 @@
   #include "RAJA/RAJA.hpp"
 #endif
 
+#if 0
 // clang-format off
 #if defined (AXOM_USE_RAJA) && defined (AXOM_USE_UMPIRE)
   using seq_exec = axom::SEQ_EXEC;
@@ -45,6 +48,7 @@
   #endif
 #endif
 // clang-format on
+#endif
 
 namespace axom
 {

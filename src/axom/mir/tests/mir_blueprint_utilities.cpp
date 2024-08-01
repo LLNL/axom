@@ -11,6 +11,11 @@
 
 #include <iostream>
 
+// RAJA
+#if defined(AXOM_USE_RAJA)
+  #include "RAJA/RAJA.hpp"
+#endif
+
 // clang-format off
 #if defined (AXOM_USE_RAJA) && defined (AXOM_USE_UMPIRE)
   using seq_exec = axom::SEQ_EXEC;
@@ -21,7 +26,7 @@
     using omp_exec = seq_exec;
   #endif
 
-  #if defined(AXOM_USE_CUDA)
+  #if defined(AXOM_USE_CUDA) && defined(__CUDACC__)
     constexpr int CUDA_BLOCK_SIZE = 256;
     using cuda_exec = axom::CUDA_EXEC<CUDA_BLOCK_SIZE>;
   #else
@@ -65,7 +70,7 @@ TEST(mir_blueprint_utilities, allocate)
 #if defined(AXOM_USE_OPENMP)
   test_conduit_allocate<omp_exec>();
 #endif
-#if defined(AXOM_USE_CUDA)
+#if defined(AXOM_USE_CUDA) && defined(__CUDACC__)
   test_conduit_allocate<cuda_exec>();
 #endif
 #if defined(AXOM_USE_HIP)
@@ -115,7 +120,7 @@ TEST(mir_blueprint_utilities, copy)
 #if defined(AXOM_USE_OPENMP)
   test_copy_braid<omp_exec>(mesh);
 #endif
-#if defined(AXOM_USE_CUDA)
+#if defined(AXOM_USE_CUDA) && defined(__CUDACC__)
   test_copy_braid<cuda_exec>(mesh);
 #endif
 #if defined(AXOM_USE_HIP)
