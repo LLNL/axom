@@ -30,10 +30,12 @@ class UniformCoordsetView
 public:
   using LogicalIndex = axom::StackArray<axom::IndexType, NDIMS>;
   using ExtentsType = axom::StackArray<double, NDIMS>;
-  ;
+
   using IndexType = axom::IndexType;
   using value_type = DataType;
   using PointType = axom::primal::Point<DataType, NDIMS>;
+
+  constexpr static int dimension() { return NDIMS; }
 
   /**
    * \brief Constructor

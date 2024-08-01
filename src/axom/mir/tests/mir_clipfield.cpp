@@ -38,6 +38,24 @@
 #endif
 // clang-format on
 
+//------------------------------------------------------------------------------
+
+// Uncomment to generate baselines
+//#define AXOM_TESTING_GENERATE_BASELINES
+
+// Uncomment to save visualization files for debugging (when making baselines)
+//#define AXOM_TESTING_SAVE_VISUALIZATION
+
+// Include after seq_exec is defined.
+#include "axom/mir/tests/mir_testing_helpers.hpp"
+
+std::string baselineDirectory()
+{
+  return pjoin(pjoin(pjoin(dataDirectory(), "mir"), "regression"),
+               "mir_clipfield");
+}
+//------------------------------------------------------------------------------
+
 void add_distance(conduit::Node &mesh, float dist = 6.5f)
 {
   // Make a new distance field.
@@ -700,9 +718,14 @@ void test_one_shape(const conduit::Node &hostMesh, const std::string &name)
   conduit::Node hostClipMesh;
   axom::mir::utilities::blueprint::copy<seq_exec>(hostClipMesh, deviceClipMesh);
 
-  // Save data.
-  conduit::relay::io::blueprint::save_mesh(hostClipMesh, name, "hdf5");
-  conduit::relay::io::blueprint::save_mesh(hostClipMesh, name, "yaml");
+  // Handle baseline comparison.
+  std::string baselineName(yamlRoot(name));
+  const auto paths = baselinePaths<ExecSpace>();
+#if defined(AXOM_TESTING_GENERATE_BASELINES)
+  saveBaseline(paths, baselineName, hostClipMesh);
+#else
+  EXPECT_TRUE(compareBaseline(paths, baselineName, hostClipMesh));
+#endif
 }
 
 template <typename ShapeType>
@@ -711,15 +734,15 @@ void test_one_shape_exec(const conduit::Node &hostMesh, const std::string &name)
   test_one_shape<seq_exec, ShapeType>(hostMesh, name);
 
 #if defined(AXOM_USE_OPENMP)
-  test_one_shape<omp_exec, ShapeType>(hostMesh, name + "_omp");
+  test_one_shape<omp_exec, ShapeType>(hostMesh, name);
 #endif
 
 #if defined(AXOM_USE_CUDA) && defined(__CUDACC__)
-  test_one_shape<cuda_exec, ShapeType>(hostMesh, name + "_cuda");
+  test_one_shape<cuda_exec, ShapeType>(hostMesh, name);
 #endif
 
 #if defined(AXOM_USE_HIP)
-  test_one_shape<hip_exec, ShapeType>(hostMesh, name + "_hip");
+  test_one_shape<hip_exec, ShapeType>(hostMesh, name);
 #endif
 }
 
@@ -806,9 +829,16 @@ void braid2d_clip_test(const std::string &type, const std::string &name)
   conduit::Node hostClipMesh;
   axom::mir::utilities::blueprint::copy<seq_exec>(hostClipMesh, deviceClipMesh);
 
-  // Save data.
-  conduit::relay::io::blueprint::save_mesh(hostClipMesh, name, "hdf5");
-  conduit::relay::io::blueprint::save_mesh(hostClipMesh, name + "_yaml", "yaml");
+  // Handle baseline comparison.
+  {
+    std::string baselineName(yamlRoot(name));
+    const auto paths = baselinePaths<ExecSpace>();
+#if defined(AXOM_TESTING_GENERATE_BASELINES)
+    saveBaseline(paths, baselineName, hostClipMesh);
+#else
+    EXPECT_TRUE(compareBaseline(paths, baselineName, hostClipMesh));
+#endif
+  }
 
   // Now, take the clipped mesh and clip it again using a mixed topology view.
   using MixedTopoView =
@@ -866,15 +896,33 @@ void braid2d_clip_test(const std::string &type, const std::string &name)
   axom::mir::utilities::blueprint::copy<seq_exec>(hostClipMixedMesh,
                                                   deviceClipMixedMesh);
 
-  // Save data.
-  conduit::relay::io::blueprint::save_mesh(hostClipMixedMesh,
-                                           name + "_mixed",
-                                           "hdf5");
-  conduit::relay::io::blueprint::save_mesh(hostClipMixedMesh,
-                                           name + "_mixed_yaml",
-                                           "yaml");
+  // Handle baseline comparison.
+  {
+    std::string baselineName(yamlRoot(name + "_mixed"));
+    const auto paths = baselinePaths<ExecSpace>();
+#if defined(AXOM_TESTING_GENERATE_BASELINES)
+    saveBaseline(paths, baselineName, hostClipMixedMesh);
+#else
+    EXPECT_TRUE(compareBaseline(paths, baselineName, hostClipMixedMesh));
+#endif
+  }
+}
 
-  // Load a clipped baseline file & compare.
+TEST(mir_clipfield, uniform2d)
+{
+  braid2d_clip_test<seq_exec>("uniform", "uniform2d");
+
+#if defined(AXOM_USE_OPENMP)
+  braid2d_clip_test<omp_exec>("uniform", "uniform2d");
+#endif
+
+#if defined(AXOM_USE_CUDA) && defined(__CUDACC__)
+  braid2d_clip_test<cuda_exec>("uniform", "uniform2d");
+#endif
+
+#if defined(AXOM_USE_HIP)
+  braid2d_clip_test<hip_exec>("uniform", "uniform2d");
+#endif
 }
 
 template <typename ExecSpace, typename ShapeType>
@@ -929,10 +977,14 @@ void braid3d_clip_test(const std::string &type, const std::string &name)
   conduit::Node hostClipMesh;
   axom::mir::utilities::blueprint::copy<seq_exec>(hostClipMesh, deviceClipMesh);
 
-  // Save data.
-  conduit::relay::io::blueprint::save_mesh(hostClipMesh, name, "hdf5");
-  conduit::relay::io::blueprint::save_mesh(hostClipMesh, name + "_yaml", "yaml");
-  conduit_save_vtk(hostClipMesh, name + ".vtk");
+  // Handle baseline comparison.
+  std::string baselineName(yamlRoot(name));
+  const auto paths = baselinePaths<ExecSpace>();
+#if defined(AXOM_TESTING_GENERATE_BASELINES)
+  saveBaseline(paths, baselineName, hostClipMesh);
+#else
+  EXPECT_TRUE(compareBaseline(paths, baselineName, hostClipMesh));
+#endif
 }
 
 /// Execute the braid3d test for a single shape on multiple ExecSpaces
@@ -942,32 +994,15 @@ void braid3d_clip_test_exec(const std::string &type, const std::string &name)
   braid3d_clip_test<seq_exec, ShapeType>(type, name);
 
 #if defined(AXOM_USE_OPENMP)
-  braid3d_clip_test<omp_exec, ShapeType>(type, name + "_omp");
+  braid3d_clip_test<omp_exec, ShapeType>(type, name);
 #endif
 
 #if defined(AXOM_USE_CUDA) && defined(__CUDACC__)
-  braid3d_clip_test<cuda_exec, ShapeType>(type, name + "_cuda");
+  braid3d_clip_test<cuda_exec, ShapeType>(type, name);
 #endif
 
 #if defined(AXOM_USE_HIP)
-  braid3d_clip_test<hip_exec, ShapeType>(type, name + "_hip");
-#endif
-}
-
-TEST(mir_clipfield, uniform2d)
-{
-  braid2d_clip_test<seq_exec>("uniform", "uniform2d");
-
-  //#if defined(AXOM_USE_OPENMP)
-  //  braid2d_clip_test<omp_exec>("uniform", "uniform2d_omp");
-  //#endif
-
-#if defined(AXOM_USE_CUDA) && defined(__CUDACC__)
-  braid2d_clip_test<cuda_exec>("uniform", "uniform2d_cuda");
-#endif
-
-#if defined(AXOM_USE_HIP)
-  braid2d_clip_test<hip_exec>("uniform", "uniform2d_hip");
+  braid3d_clip_test<hip_exec, ShapeType>(type, name);
 #endif
 }
 
@@ -1061,10 +1096,14 @@ void braid3d_mixed_clip_test(const std::string &name)
   conduit::Node hostClipMesh;
   axom::mir::utilities::blueprint::copy<seq_exec>(hostClipMesh, deviceClipMesh);
 
-  // Save data.
-  conduit::relay::io::blueprint::save_mesh(hostClipMesh, name, "hdf5");
-  conduit::relay::io::blueprint::save_mesh(hostClipMesh, name + "_yaml", "yaml");
-  conduit_save_vtk(hostClipMesh, name + ".vtk");
+  // Handle baseline comparison.
+  std::string baselineName(yamlRoot(name));
+  const auto paths = baselinePaths<ExecSpace>();
+#if defined(AXOM_TESTING_GENERATE_BASELINES)
+  saveBaseline(paths, baselineName, hostClipMesh);
+#else
+  EXPECT_TRUE(compareBaseline(paths, baselineName, hostClipMesh));
+#endif
 }
 
 TEST(mir_clipfield, mixed)
@@ -1073,19 +1112,20 @@ TEST(mir_clipfield, mixed)
   braid3d_mixed_clip_test<seq_exec>(name);
 
 #if defined(AXOM_USE_OPENMP)
-  braid3d_mixed_clip_test<omp_exec>(name + "_omp");
+  braid3d_mixed_clip_test<omp_exec>(name);
 #endif
 
 #if defined(AXOM_USE_CUDA) && defined(__CUDACC__)
-  braid3d_mixed_clip_test<cuda_exec>(name + "_cuda");
+  braid3d_mixed_clip_test<cuda_exec>(name);
 #endif
 
 #if defined(AXOM_USE_HIP)
-  braid3d_mixed_clip_test<hip_exec>(name + "_hip");
+  braid3d_mixed_clip_test<hip_exec>(name);
 #endif
 }
 
 //------------------------------------------------------------------------------
+#if defined(DEBUGGING_TEST_CASES)
 void conduit_debug_err_handler(const std::string &s1, const std::string &s2, int i1)
 {
    std::cout << "s1=" << s1 << ", s2=" << s2 << ", i1=" << i1 << std::endl;
@@ -1093,6 +1133,7 @@ void conduit_debug_err_handler(const std::string &s1, const std::string &s2, int
    while (1)
       ;
 }
+#endif
 
 //------------------------------------------------------------------------------
 int main(int argc, char *argv[])
@@ -1101,7 +1142,9 @@ int main(int argc, char *argv[])
   ::testing::InitGoogleTest(&argc, argv);
 
   axom::slic::SimpleLogger logger;  // create & initialize test logger,
+#if defined(DEBUGGING_TEST_CASES)
   conduit::utils::set_error_handler(conduit_debug_err_handler);
+#endif
   result = RUN_ALL_TESTS();
   return result;
 }
