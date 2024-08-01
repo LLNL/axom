@@ -1180,15 +1180,15 @@ AXOM_TYPED_TEST(core_array_for_all, device_insert)
       {
   #pragma omp critical
         {
-          arr_v[0].emplaceBackDevice(3 * idx + 5);
+          arr_v[0].emplace_back_device(3 * idx + 5);
         }
       }
       else
       {
-        arr_v[0].emplaceBackDevice(3 * idx + 5);
+        arr_v[0].emplace_back_device(3 * idx + 5);
       }
 #else
-      arr_v[0].emplaceBackDevice(3 * idx + 5);
+      arr_v[0].emplace_back_device(3 * idx + 5);
 #endif
     });
 
