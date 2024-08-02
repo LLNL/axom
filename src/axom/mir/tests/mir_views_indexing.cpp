@@ -12,15 +12,29 @@
 //----------------------------------------------------------------------
 TEST(mir_views_indexing, strided_structured_indexing_2d)
 {
+  /*
+
+   x---x---x---x---x---x---x
+   |   |   |   |   |   |   |
+   x---x---*---*---*---*---x   *=real node, x=ignored node, O=origin
+   |   |   |   |   |   |   |
+   x---x---*---*---*---*---x
+   |   |   |   |   |   |   |
+   x---x---O---*---*---*---x
+   |   |   |   |   |   |   |
+   x---x---x---x---x---x---x
+   |   |   |   |   |   |   |
+   x---x---x---x---x---x---x
+
+   */
   using Indexing2D = axom::mir::views::StridedStructuredIndexing<int, 2>;
-  using LogicalIndex =
-    typename axom::mir::views::StridedStructuredIndexing<int, 2>::LogicalIndex;
-  LogicalIndex dims {4, 3};  // window size in 4*3 elements in 6*5 overall
+  using LogicalIndex = typename Indexing2D::LogicalIndex;
+  LogicalIndex dims {4, 3};  // window size in 4*3 elements in 7,6 overall
   LogicalIndex origin {2, 2};
   LogicalIndex stride {1, 6};
   Indexing2D indexing(dims, origin, stride);
 
-  EXPECT_EQ(indexing.dimensions(), 2);
+  EXPECT_EQ(indexing.dimension(), 2);
   EXPECT_EQ(indexing.size(), dims[0] * dims[1]);
 
   const LogicalIndex logical0_0 {0, 0};
@@ -62,7 +76,7 @@ TEST(mir_views_indexing, strided_structured_indexing_3d)
   LogicalIndex stride {1, 6, 30};
   Indexing3D indexing(dims, origin, stride);
 
-  EXPECT_EQ(indexing.dimensions(), 3);
+  EXPECT_EQ(indexing.dimension(), 3);
   EXPECT_EQ(indexing.size(), dims[0] * dims[1] * dims[2]);
 
   const LogicalIndex logical0_0_0 {0, 0, 0};

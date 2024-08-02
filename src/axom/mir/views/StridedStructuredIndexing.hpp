@@ -30,7 +30,7 @@ public:
   using IndexType = IndexT;
   using LogicalIndex = axom::StackArray<axom::IndexType, NDIMS>;
 
-  AXOM_HOST_DEVICE constexpr static int dimensions() { return NDIMS; }
+  AXOM_HOST_DEVICE constexpr static int dimension() { return NDIMS; }
 
   /**
    * \brief constructor
@@ -114,7 +114,7 @@ public:
    */
   /// @{
 
-  template <size_t _ndims = NDIMS>
+  template <int _ndims = NDIMS>
   AXOM_HOST_DEVICE typename std::enable_if<_ndims == 1, LogicalIndex>::type
   IndexToLogicalIndex(IndexType index) const
   {
@@ -123,7 +123,7 @@ public:
     return logical;
   }
 
-  template <size_t _ndims = NDIMS>
+  template <int _ndims = NDIMS>
   AXOM_HOST_DEVICE typename std::enable_if<_ndims == 2, LogicalIndex>::type
   IndexToLogicalIndex(IndexType index) const
   {
@@ -133,7 +133,7 @@ public:
     return logical;
   }
 
-  template <size_t _ndims = NDIMS>
+  template <int _ndims = NDIMS>
   AXOM_HOST_DEVICE typename std::enable_if<_ndims == 3, LogicalIndex>::type
   IndexToLogicalIndex(IndexType index) const
   {
@@ -154,14 +154,14 @@ public:
    * \return The index that corresponds to the \a logical index.
    */
   /// @{
-  template <size_t _ndims = NDIMS>
+  template <int _ndims = NDIMS>
   AXOM_HOST_DEVICE typename std::enable_if<_ndims == 1, IndexType>::type
   LogicalIndexToIndex(const LogicalIndex &logical) const
   {
     return ((m_offsets[0] + logical[0]) * m_strides[0]);
   }
 
-  template <size_t _ndims = NDIMS>
+  template <int _ndims = NDIMS>
   AXOM_HOST_DEVICE typename std::enable_if<_ndims == 2, IndexType>::type
   LogicalIndexToIndex(const LogicalIndex &logical) const
   {
@@ -169,7 +169,7 @@ public:
       ((m_offsets[1] + logical[1]) * m_strides[1]);
   }
 
-  template <size_t _ndims = NDIMS>
+  template <int _ndims = NDIMS>
   AXOM_HOST_DEVICE typename std::enable_if<_ndims == 3, IndexType>::type
   LogicalIndexToIndex(const LogicalIndex &logical) const
   {
@@ -191,7 +191,7 @@ public:
   bool contains(const LogicalIndex &logical) const
   {
     bool retval = true;
-    for(int i = 0; i < dimensions(); i++)
+    for(int i = 0; i < dimension(); i++)
     {
       retval &= (logical[i] >= 0 && logical[i] < m_dimensions[i]);
     }
@@ -220,7 +220,7 @@ public:
   StridedStructuredIndexing expand() const
   {
     StridedStructuredIndexing retval(*this);
-    for(int i = 0; i < dimensions(); i++) retval.m_dimensions[i]++;
+    for(int i = 0; i < dimension(); i++) retval.m_dimensions[i]++;
 
     return retval;
   }
@@ -231,7 +231,7 @@ public:
    * \return An expanded StridedStructuredIndexing.
    */
   /// @{
-  template <size_t _ndims = NDIMS>
+  template <int _ndims = NDIMS>
   AXOM_HOST_DEVICE
     typename std::enable_if<_ndims == 1, StridedStructuredIndexing>::type
     expand() const
@@ -241,7 +241,7 @@ public:
     return retval;
   }
 
-  template <size_t _ndims = NDIMS>
+  template <int _ndims = NDIMS>
   AXOM_HOST_DEVICE
     typename std::enable_if<_ndims == 2, StridedStructuredIndexing>::type
     expand() const
@@ -253,7 +253,7 @@ public:
     return retval;
   }
 
-  template <size_t _ndims = NDIMS>
+  template <int _ndims = NDIMS>
   AXOM_HOST_DEVICE
     typename std::enable_if<_ndims == 3, StridedStructuredIndexing>::type
     expand() const

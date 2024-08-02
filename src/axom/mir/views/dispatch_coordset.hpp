@@ -19,6 +19,57 @@ namespace views
 {
 
 /**
+ * \brief Base template for creating a rectilinear coordset view.
+ */
+template <typename DataType, int NDIMS>
+struct make_rectilinear_coordset {};
+
+/**
+ * \brief Partial specialization for creating 2D rectilinear coordset view.
+ */
+template <typename DataType>
+struct make_rectilinear_coordset<DataType, 3>
+{
+  using CoordsetView = axom::mir::views::RectilinearCoordsetView3<DataType>;
+
+  /**
+   * \brief Create the coordset view and initialize it from the coordset.
+   * \param topo The node containing the coordset.
+   * \return The coordset view.
+   */
+  static CoordsetView view(const conduit::Node &coordset)
+  {
+    const conduit::Node &values = coordset.fetch_existing("values");
+    axom::ArrayView<DataType> xView(static_cast<DataType *>(const_cast<void*>(values[0].data_ptr())), values[0].dtype().number_of_elements());
+    axom::ArrayView<DataType> yView(static_cast<DataType *>(const_cast<void*>(values[1].data_ptr())), values[1].dtype().number_of_elements());
+    axom::ArrayView<DataType> zView(static_cast<DataType *>(const_cast<void*>(values[2].data_ptr())), values[2].dtype().number_of_elements());
+    return CoordsetView(xView, yView, zView);
+  }
+};
+
+/**
+ * \brief Partial specialization for creating 2D rectilinear coordset view.
+ */
+template <typename DataType>
+struct make_rectilinear_coordset<DataType, 2>
+{
+  using CoordsetView = axom::mir::views::RectilinearCoordsetView2<DataType>;
+
+  /**
+   * \brief Create the coordset view and initialize it from the coordset.
+   * \param topo The node containing the coordset.
+   * \return The coordset view.
+   */
+  static CoordsetView view(const conduit::Node &coordset)
+  {
+    const conduit::Node &values = coordset.fetch_existing("values");
+    axom::ArrayView<DataType> xView(static_cast<DataType *>(const_cast<void*>(values[0].data_ptr())), values[0].dtype().number_of_elements());
+    axom::ArrayView<DataType> yView(static_cast<DataType *>(const_cast<void*>(values[1].data_ptr())), values[1].dtype().number_of_elements());
+    return CoordsetView(xView, yView);
+  }
+};
+
+/**
  * \brief Dispatch an uniform coordset to a function.
  *
  * \tparam FuncType The type of the function / lambda to invoke. It is expected

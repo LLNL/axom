@@ -42,10 +42,10 @@
 //------------------------------------------------------------------------------
 
 // Uncomment to generate baselines
-#define AXOM_TESTING_GENERATE_BASELINES
+//#define AXOM_TESTING_GENERATE_BASELINES
 
 // Uncomment to save visualization files for debugging (when making baselines)
-#define AXOM_TESTING_SAVE_VISUALIZATION
+//#define AXOM_TESTING_SAVE_VISUALIZATION
 
 // Include after seq_exec is defined.
 #include "axom/mir/tests/mir_testing_helpers.hpp"
@@ -644,37 +644,6 @@ TEST(mir_clipfield, uniform2d)
 #endif
 }
 
-//------------------------------------------------------------------------------
-template <int NDIMS>
-struct make_rectilinear_coordset {};
-
-template <>
-struct make_rectilinear_coordset<2>
-{
-  static axom::mir::views::RectilinearCoordsetView2<double> create(conduit::Node &coordset)
-  {
-    conduit::Node &x = coordset["values/x"];
-    conduit::Node &y = coordset["values/y"];
-    axom::ArrayView<double> xView(static_cast<double *>(x.data_ptr()), x.dtype().number_of_elements());
-    axom::ArrayView<double> yView(static_cast<double *>(y.data_ptr()), y.dtype().number_of_elements());
-    return axom::mir::views::RectilinearCoordsetView2<double>(xView, yView);
-  }
-};
-template <>
-struct make_rectilinear_coordset<3>
-{
-  static axom::mir::views::RectilinearCoordsetView3<double> create(conduit::Node &coordset)
-  {
-    conduit::Node &x = coordset["values/x"];
-    conduit::Node &y = coordset["values/y"];
-    conduit::Node &z = coordset["values/z"];
-    axom::ArrayView<double> xView(static_cast<double *>(x.data_ptr()), x.dtype().number_of_elements());
-    axom::ArrayView<double> yView(static_cast<double *>(y.data_ptr()), y.dtype().number_of_elements());
-    axom::ArrayView<double> zView(static_cast<double *>(z.data_ptr()), z.dtype().number_of_elements());
-    return axom::mir::views::RectilinearCoordsetView3<double>(xView, yView, zView);
-  }
-};
-
 template <typename ExecSpace, int NDIMS>
 void braid_rectilinear_clip_test(const std::string &name)
 {
@@ -697,7 +666,7 @@ void braid_rectilinear_clip_test(const std::string &name)
 #endif
 
   // Create views
-  auto coordsetView = make_rectilinear_coordset<NDIMS>::create(hostMesh["coordsets/coords"]);
+  auto coordsetView = axom::mir::views::make_rectilinear_coordset<double, NDIMS>::view(hostMesh["coordsets/coords"]);
   using CoordsetView = decltype(coordsetView);
   TopoView topoView(Indexing {zoneDims});
 

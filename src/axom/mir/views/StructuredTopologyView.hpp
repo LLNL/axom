@@ -34,7 +34,7 @@ public:
    * \return The number of dimensions.
    */
   AXOM_HOST_DEVICE
-  constexpr static int dimension() { return IndexingPolicy::dimensions(); }
+  constexpr static int dimension() { return IndexingPolicy::dimension(); }
 
   /**
    * \brief Constructor
@@ -86,7 +86,7 @@ public:
     // Q: Should we make a for_all() that iterates over multiple ranges?
     // Q: Should the logical index be passed to the lambda?
 
-    if constexpr(IndexingPolicy::dimensions() == 3)
+    if constexpr(IndexingPolicy::dimension() == 3)
     {
       const IndexingPolicy zoneIndexing = m_indexing;
       const IndexingPolicy nodeIndexing = m_indexing.expand();
@@ -114,7 +114,7 @@ public:
           func(zoneIndex, shape);
         });
     }
-    else if constexpr(IndexingPolicy::dimensions() == 2)
+    else if constexpr(IndexingPolicy::dimension() == 2)
     {
       const IndexingPolicy zoneIndexing = m_indexing;
       const IndexingPolicy nodeIndexing = m_indexing.expand();
@@ -137,7 +137,7 @@ public:
           func(zoneIndex, shape);
         });
     }
-    else if constexpr(IndexingPolicy::dimensions() == 1)
+    else if constexpr(IndexingPolicy::dimension() == 1)
     {
       const IndexingPolicy zoneIndexing = m_indexing;
       const IndexingPolicy nodeIndexing = m_indexing.expand();
@@ -178,7 +178,7 @@ public:
     // Q: Should we make a for_all() that iterates over multiple ranges?
     // Q: Should the logical index be passed to the lambda?
 
-    if constexpr(IndexingPolicy::dimensions() == 3)
+    if constexpr(IndexingPolicy::dimension() == 3)
     {
       const IndexingPolicy zoneIndexing = m_indexing;
       const IndexingPolicy nodeIndexing = m_indexing.expand();
@@ -207,7 +207,7 @@ public:
           func(zoneIndex, shape);
         });
     }
-    else if constexpr(IndexingPolicy::dimensions() == 2)
+    else if constexpr(IndexingPolicy::dimension() == 2)
     {
       const IndexingPolicy zoneIndexing = m_indexing;
       const IndexingPolicy nodeIndexing = m_indexing.expand();
@@ -231,7 +231,7 @@ public:
           func(zoneIndex, shape);
         });
     }
-    else if constexpr(IndexingPolicy::dimensions() == 1)
+    else if constexpr(IndexingPolicy::dimension() == 1)
     {
       const IndexingPolicy zoneIndexing = m_indexing;
       const IndexingPolicy nodeIndexing = m_indexing.expand();

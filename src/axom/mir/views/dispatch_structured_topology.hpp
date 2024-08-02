@@ -51,6 +51,208 @@ bool fillFromNode(const conduit::Node &n,
 }
 
 /**
+ * \brief Base template for strided structured topology creation
+ */
+template <int NDIMS>
+struct make_strided_structured {};
+
+/**
+ * \brief Create a 3D structured topology view with strided structured indexing.
+ */
+template <>
+struct make_strided_structured<3>
+{
+  using Indexing = views::StridedStructuredIndexing<axom::IndexType, 3>;
+  using LogicalIndex = typename Indexing::LogicalIndex;
+  using TopoView = views::StructuredTopologyView<Indexing>;
+
+  /**
+   * \brief Create the topology view and initialize it from the topology.
+   * \param topo The node containing the topology.
+   * \return The topology view.
+   */
+  static TopoView view(const conduit::Node &topo)
+  {
+  const std::string offsetsKey("elements/offsets");
+  const std::string stridesKey("elements/strides");
+
+      LogicalIndex zoneDims;
+      zoneDims[0] = topo.fetch_existing("elements/dims/i").as_int();
+      zoneDims[1] = topo.fetch_existing("elements/dims/j").as_int();
+      zoneDims[2] = topo.fetch_existing("elements/dims/k").as_int();
+
+      LogicalIndex offsets, strides;
+      fillFromNode(topo, offsetsKey, offsets, 0);
+      if(!fillFromNode(topo, stridesKey, strides, 1))
+      {
+        strides[1] = zoneDims[0];
+        strides[2] = zoneDims[0] * zoneDims[1];
+      }
+
+      Indexing zoneIndexing(zoneDims, offsets, strides);
+    return TopoView(zoneIndexing);
+  }
+};
+
+/**
+ * \brief Create a 2D structured topology view with strided structured indexing.
+ */
+template <>
+struct make_strided_structured<2>
+{
+  using Indexing = views::StridedStructuredIndexing<axom::IndexType, 2>;
+  using LogicalIndex = typename Indexing::LogicalIndex;
+  using TopoView = views::StructuredTopologyView<Indexing>;
+
+  /**
+   * \brief Create the topology view and initialize it from the topology.
+   * \param topo The node containing the topology.
+   * \return The topology view.
+   */
+  static TopoView view(const conduit::Node &topo)
+  {
+  const std::string offsetsKey("elements/offsets");
+  const std::string stridesKey("elements/strides");
+    LogicalIndex zoneDims;
+      zoneDims[0] = topo.fetch_existing("elements/dims/i").as_int();
+      zoneDims[1] = topo.fetch_existing("elements/dims/j").as_int();
+
+        LogicalIndex offsets, strides;
+        fillFromNode(topo, offsetsKey, offsets, 0);
+        if(!fillFromNode(topo, stridesKey, strides, 1))
+        {
+          strides[1] = zoneDims[0];
+        }
+
+        Indexing zoneIndexing(
+          zoneDims,
+          offsets,
+          strides);
+    return TopoView(zoneIndexing);
+
+  }
+};
+
+/**
+ * \brief Create a 1D structured topology view with strided structured indexing.
+ */
+template <>
+struct make_strided_structured<1>
+{
+  using Indexing = views::StridedStructuredIndexing<axom::IndexType, 1>;
+  using LogicalIndex = typename Indexing::LogicalIndex;
+  using TopoView = views::StructuredTopologyView<Indexing>;
+
+  /**
+   * \brief Create the topology view and initialize it from the topology.
+   * \param topo The node containing the topology.
+   * \return The topology view.
+   */
+  static TopoView view(const conduit::Node &topo)
+  {
+  const std::string offsetsKey("elements/offsets");
+  const std::string stridesKey("elements/strides");
+
+      LogicalIndex zoneDims;
+      zoneDims[0] = topo.fetch_existing("elements/dims/i").as_int();
+
+        LogicalIndex offsets, strides;
+        fillFromNode(topo, offsetsKey, offsets, 0);
+        fillFromNode(topo, stridesKey, strides, 1);
+
+        Indexing zoneIndexing(
+          zoneDims,
+          offsets,
+          strides);
+        return TopoView(zoneIndexing);
+  }
+};
+
+/**
+ * \brief Base template for structured topology creation
+ */
+template <int NDIMS>
+struct make_structured {};
+
+/**
+ * \brief Create a 3D structured topology view with normal structured indexing.
+ */
+template <>
+struct make_structured<3>
+{
+  using Indexing = views::StructuredIndexing<axom::IndexType, 3>;
+  using LogicalIndex = typename Indexing::LogicalIndex;
+  using TopoView = views::StructuredTopologyView<Indexing>;
+
+  /**
+   * \brief Create the topology view and initialize it from the topology.
+   * \param topo The node containing the topology.
+   * \return The topology view.
+   */
+  static TopoView view(const conduit::Node &topo)
+  {
+      LogicalIndex zoneDims;
+      zoneDims[0] = topo.fetch_existing("elements/dims/i").as_int();
+      zoneDims[1] = topo.fetch_existing("elements/dims/j").as_int();
+      zoneDims[2] = topo.fetch_existing("elements/dims/k").as_int();
+
+      Indexing zoneIndexing(zoneDims);
+    return TopoView(zoneIndexing);
+  }
+};
+
+/**
+ * \brief Create a 2D structured topology view with normal structured indexing.
+ */
+template <>
+struct make_structured<2>
+{
+  using Indexing = views::StructuredIndexing<axom::IndexType, 2>;
+  using LogicalIndex = typename Indexing::LogicalIndex;
+  using TopoView = views::StructuredTopologyView<Indexing>;
+
+  /**
+   * \brief Create the topology view and initialize it from the topology.
+   * \param topo The node containing the topology.
+   * \return The topology view.
+   */
+  static TopoView view(const conduit::Node &topo)
+  {
+      LogicalIndex zoneDims;
+      zoneDims[0] = topo.fetch_existing("elements/dims/i").as_int();
+      zoneDims[1] = topo.fetch_existing("elements/dims/j").as_int();
+
+      Indexing zoneIndexing(zoneDims);
+    return TopoView(zoneIndexing);
+  }
+};
+
+/**
+ * \brief Create a 1D structured topology view with normal structured indexing.
+ */
+template <>
+struct make_structured<1>
+{
+  using Indexing = views::StructuredIndexing<axom::IndexType, 1>;
+  using LogicalIndex = typename Indexing::LogicalIndex;
+  using TopoView = views::StructuredTopologyView<Indexing>;
+
+  /**
+   * \brief Create the topology view and initialize it from the topology.
+   * \param topo The node containing the topology.
+   * \return The topology view.
+   */
+  static TopoView view(const conduit::Node &topo)
+  {
+      LogicalIndex zoneDims;
+      zoneDims[0] = topo.fetch_existing("elements/dims/i").as_int();
+
+      Indexing zoneIndexing(zoneDims);
+    return TopoView(zoneIndexing);
+  }
+};
+
+/**
  * \brief Creates a topology view compatible with structured topologies and passes that view to the supplied function.
  *
  * \tparam FuncType The function/lambda type to invoke on the view.
@@ -63,14 +265,11 @@ bool fillFromNode(const conduit::Node &n,
 template <int SelectedDimensions = select_dimensions(1, 2, 3), typename FuncType>
 void dispatch_structured_topology(const conduit::Node &topo, FuncType &&func)
 {
-  // TODO: add strided structured variant
-  //StructuredTopologyView<StructuredIndexing<axom::IndexType, 3>> topoView(StructuredIndexing<axom::IndexType, 3>(dims));
-  //StructuredTopologyView<StridedStructuredIndexing<axom::IndexType, 3>> topoView(StridedStructuredIndexing<axom::IndexType, 3>(dims, offset, stride));
   int ndims = 1;
   ndims += topo.has_path("elements/dims/j") ? 1 : 0;
   ndims += topo.has_path("elements/dims/k") ? 1 : 0;
-  static const std::string offsetsKey("elements/offsets");
-  static const std::string stridesKey("elements/strides");
+  const std::string offsetsKey("elements/offsets");
+  const std::string stridesKey("elements/strides");
 
   switch(ndims)
   {
@@ -78,35 +277,14 @@ void dispatch_structured_topology(const conduit::Node &topo, FuncType &&func)
     if constexpr(dimension_selected(SelectedDimensions, 3))
     {
       const std::string shape("hex");
-      axom::StackArray<axom::IndexType, 3> zoneDims;
-      zoneDims[0] = topo.fetch_existing("elements/dims/i").as_int();
-      zoneDims[1] = topo.fetch_existing("elements/dims/j").as_int();
-      zoneDims[2] = topo.fetch_existing("elements/dims/k").as_int();
-
       if(topo.has_path(offsetsKey) || topo.has_path(stridesKey))
       {
-        axom::StackArray<axom::IndexType, 3> offsets, strides;
-        fillFromNode(topo, offsetsKey, offsets, 0);
-        if(!fillFromNode(topo, stridesKey, strides, 1))
-        {
-          strides[1] = zoneDims[0];
-          strides[2] = zoneDims[0] * zoneDims[1];
-        }
-
-        views::StridedStructuredIndexing<axom::IndexType, 3> zoneIndexing(
-          zoneDims,
-          offsets,
-          strides);
-        views::StructuredTopologyView<
-          views::StridedStructuredIndexing<axom::IndexType, 3>>
-          topoView(zoneIndexing);
+        auto topoView = make_strided_structured<3>::view(topo);
         func(shape, topoView);
       }
       else
       {
-        views::StructuredIndexing<axom::IndexType, 3> zoneIndexing(zoneDims);
-        views::StructuredTopologyView<views::StructuredIndexing<axom::IndexType, 3>>
-          topoView(zoneIndexing);
+        auto topoView = make_structured<3>::view(topo);
         func(shape, topoView);
       }
     }
@@ -115,33 +293,14 @@ void dispatch_structured_topology(const conduit::Node &topo, FuncType &&func)
     if constexpr(dimension_selected(SelectedDimensions, 2))
     {
       const std::string shape("quad");
-      axom::StackArray<axom::IndexType, 2> zoneDims;
-      zoneDims[0] = topo.fetch_existing("elements/dims/i").as_int();
-      zoneDims[1] = topo.fetch_existing("elements/dims/j").as_int();
-
       if(topo.has_path(offsetsKey) || topo.has_path(stridesKey))
       {
-        axom::StackArray<axom::IndexType, 2> offsets, strides;
-        fillFromNode(topo, offsetsKey, offsets, 0);
-        if(!fillFromNode(topo, stridesKey, strides, 1))
-        {
-          strides[1] = zoneDims[0];
-        }
-
-        views::StridedStructuredIndexing<axom::IndexType, 2> zoneIndexing(
-          zoneDims,
-          offsets,
-          strides);
-        views::StructuredTopologyView<
-          views::StridedStructuredIndexing<axom::IndexType, 2>>
-          topoView(zoneIndexing);
+        auto topoView = make_strided_structured<2>::view(topo);
         func(shape, topoView);
       }
       else
       {
-        views::StructuredIndexing<axom::IndexType, 2> zoneIndexing(zoneDims);
-        views::StructuredTopologyView<views::StructuredIndexing<axom::IndexType, 2>>
-          topoView(zoneIndexing);
+        auto topoView = make_structured<2>::view(topo);
         func(shape, topoView);
       }
     }
@@ -150,29 +309,14 @@ void dispatch_structured_topology(const conduit::Node &topo, FuncType &&func)
     if constexpr(dimension_selected(SelectedDimensions, 1))
     {
       const std::string shape("line");
-      axom::StackArray<axom::IndexType, 1> zoneDims;
-      zoneDims[0] = topo.fetch_existing("elements/dims/i").as_int();
-
       if(topo.has_path(offsetsKey) || topo.has_path(stridesKey))
       {
-        axom::StackArray<axom::IndexType, 1> offsets, strides;
-        fillFromNode(topo, offsetsKey, offsets, 0);
-        fillFromNode(topo, stridesKey, strides, 1);
-
-        views::StridedStructuredIndexing<axom::IndexType, 1> zoneIndexing(
-          zoneDims,
-          offsets,
-          strides);
-        views::StructuredTopologyView<
-          views::StridedStructuredIndexing<axom::IndexType, 1>>
-          topoView(zoneIndexing);
+        auto topoView = make_strided_structured<1>::view(topo);
         func(shape, topoView);
       }
       else
       {
-        views::StructuredIndexing<axom::IndexType, 1> zoneIndexing(zoneDims);
-        views::StructuredTopologyView<views::StructuredIndexing<axom::IndexType, 1>>
-          topoView(zoneIndexing);
+        auto topoView = make_structured<1>::view(topo);
         func(shape, topoView);
       }
     }
