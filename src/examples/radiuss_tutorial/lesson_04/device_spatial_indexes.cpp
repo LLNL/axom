@@ -139,7 +139,7 @@ void Input::parse(int argc, char** argv, axom::CLI::App& app)
 #ifdef AXOM_USE_OPENMP
       "\nSet to 'raja_omp' or 2 to use the RAJA openmp policy."
 #endif
-#ifdef AXOM_USE_OPENMP
+#ifdef AXOM_USE_CUDA
       "\nSet to 'raja_cuda' or 3 to use the RAJA cuda policy."
 #endif
       )
@@ -469,19 +469,20 @@ axom::Array<IndexPair> findIntersectionsBVH(const TriangleMesh& triMesh,
 
   SLIC_INFO_IF(
     verboseOutput,
-    axom::fmt::format(axom::utilities::locale(),
-                      R"(Stats for self-intersection query
+    axom::fmt::format(
+      axom::utilities::locale(),
+      R"(Stats for self-intersection query
     -- Number of mesh triangles {:L}
     -- Total possible candidates {:L}
     -- Candidates from BVH query {:L}
     -- Potential candidates after filtering {:L}
     -- Actual intersections {:L}
     )",
-                      triMesh.numTriangles(),
-                      triMesh.numTriangles() * (triMesh.numTriangles() - 1) / 2.,
-                      candidates_d.size(),
-                      numCandidates,
-                      numIntersections));
+      triMesh.numTriangles(),
+      [](std::int64_t sz) { return sz * (sz - 1) / 2.; }(triMesh.numTriangles()),
+      candidates_d.size(),
+      numCandidates,
+      numIntersections));
 
   // copy results back to host and into return vector
   IndexArray intersect_h[2] = {

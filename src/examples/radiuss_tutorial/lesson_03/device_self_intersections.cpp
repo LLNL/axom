@@ -142,7 +142,7 @@ void Input::parse(int argc, char** argv, axom::CLI::App& app)
 #ifdef AXOM_USE_OPENMP
       "\nSet to 'raja_omp' or 2 to use the RAJA openmp policy."
 #endif
-#ifdef AXOM_USE_OPENMP
+#ifdef AXOM_USE_CUDA
       "\nSet to 'raja_cuda' or 3 to use the RAJA cuda policy."
 #endif
       )
