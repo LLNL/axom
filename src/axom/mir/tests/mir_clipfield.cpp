@@ -7,6 +7,7 @@
 
 #include "axom/core.hpp"
 #include "axom/mir.hpp"
+#include "axom/mir/tests/mir_testing_data_helpers.hpp"
 
 #include <conduit/conduit_relay_io_blueprint.hpp>
 #include <cmath>
@@ -41,10 +42,10 @@
 //------------------------------------------------------------------------------
 
 // Uncomment to generate baselines
-//#define AXOM_TESTING_GENERATE_BASELINES
+#define AXOM_TESTING_GENERATE_BASELINES
 
 // Uncomment to save visualization files for debugging (when making baselines)
-//#define AXOM_TESTING_SAVE_VISUALIZATION
+#define AXOM_TESTING_SAVE_VISUALIZATION
 
 // Include after seq_exec is defined.
 #include "axom/mir/tests/mir_testing_helpers.hpp"
@@ -55,109 +56,6 @@ std::string baselineDirectory()
                "mir_clipfield");
 }
 //------------------------------------------------------------------------------
-
-void add_distance(conduit::Node &mesh, float dist = 6.5f)
-{
-  // Make a new distance field.
-  const conduit::Node &n_coordset = mesh["coordsets"][0];
-  axom::mir::views::dispatch_coordset(n_coordset, [&](auto coordsetView) {
-    mesh["fields/distance/topology"] = "mesh";
-    mesh["fields/distance/association"] = "vertex";
-    conduit::Node &n_values = mesh["fields/distance/values"];
-    const auto nnodes = coordsetView.size();
-    n_values.set(conduit::DataType::float32(nnodes));
-    float *valuesPtr = static_cast<float *>(n_values.data_ptr());
-    for(int index = 0; index < nnodes; index++)
-    {
-      const auto pt = coordsetView[index];
-      float norm2 = 0.f;
-      for(int i = 0; i < pt.DIMENSION; i++) norm2 += pt[i] * pt[i];
-      valuesPtr[index] = sqrt(norm2) - dist;
-    }
-  });
-}
-
-template <typename Dimensions>
-void braid(const std::string &type, const Dimensions &dims, conduit::Node &mesh)
-{
-  int d[3] = {0, 0, 0};
-  for(int i = 0; i < dims.size(); i++) d[i] = dims[i];
-  conduit::blueprint::mesh::examples::braid(type, d[0], d[1], d[2], mesh);
-
-  add_distance(mesh);
-}
-
-void mixed3d(conduit::Node &mesh)
-{
-  // clang-format off
-  const std::vector<int> conn{{
-    // tets
-    0,6,1,3,
-    3,6,1,9,
-    6,7,1,9,
-    3,9,1,4,
-    9,7,1,4,
-    9,7,4,10,
-    // pyramids
-    1,7,8,2,4,
-    11,8,7,10,4,
-    2,8,11,5,4,
-    // wedges
-    6,7,9,12,13,15,
-    9,7,10,15,13,16,
-    // hex
-    7,13,14,8,10,16,17,11
-  }};
-  const std::vector<int> shapes{{
-    0,0,0,0,0,0,
-    1,1,1,
-    2,2,
-    3
-  }};
-  const std::vector<int> sizes{{
-    4,4,4,4,4,4,
-    5,5,5,
-    6,6,
-    8
-  }};
-  const std::vector<int> offsets{{
-    0,4,8,12,16,20,
-    24,29,34,
-    39,45,
-    51
-  }};
-  constexpr float LOW = -10.f;
-  constexpr float MID = 0.f;
-  constexpr float HIGH = 10.f;
-  const std::vector<float> x{{
-    LOW, MID, HIGH, LOW, MID, HIGH, LOW, MID, HIGH, LOW, MID, HIGH, LOW, MID, HIGH, LOW, MID, HIGH
-  }};
-  const std::vector<float> y{{
-    LOW, LOW, LOW, MID, MID, MID, LOW, LOW, LOW, MID, MID, MID, LOW, LOW, LOW, MID, MID, MID
-  }};
-  const std::vector<float> z{{
-    LOW, LOW, LOW, LOW, LOW, LOW, MID, MID, MID, MID, MID, MID, HIGH, HIGH, HIGH, HIGH, HIGH, HIGH
-  }};
-  // clang-format off
-
-  mesh["coordsets/coords/type"] = "explicit";
-  mesh["coordsets/coords/values/x"].set(x);
-  mesh["coordsets/coords/values/y"].set(y);
-  mesh["coordsets/coords/values/z"].set(z);
-  mesh["topologies/mesh/type"] = "unstructured";
-  mesh["topologies/mesh/coordset"] = "coords";
-  mesh["topologies/mesh/elements/shape"] = "mixed";
-  mesh["topologies/mesh/elements/connectivity"].set(conn);
-  mesh["topologies/mesh/elements/shapes"].set(shapes);
-  mesh["topologies/mesh/elements/sizes"].set(sizes);
-  mesh["topologies/mesh/elements/offsets"].set(offsets);
-  mesh["topologies/mesh/elements/shape_map/tet"] = 0;
-  mesh["topologies/mesh/elements/shape_map/pyramid"] = 1;
-  mesh["topologies/mesh/elements/shape_map/wedge"] = 2;
-  mesh["topologies/mesh/elements/shape_map/hex"] = 3;
-
-  add_distance(mesh, 0.f);
-}
 
 TEST(mir_clipfield, options)
 {
@@ -492,91 +390,6 @@ TEST(mir_clipfield, make_name)
     }
   }
 }
-//------------------------------------------------------------------------------
-
-void make_one_hex(conduit::Node &hostMesh)
-{
-  hostMesh["coordsets/coords/type"] = "explicit";
-  hostMesh["coordsets/coords/values/x"].set(
-    std::vector<float> {{0., 1., 1., 0., 0., 1., 1., 0.}});
-  hostMesh["coordsets/coords/values/y"].set(
-    std::vector<float> {{0., 0., 1., 1., 0., 0., 1., 1.}});
-  hostMesh["coordsets/coords/values/z"].set(
-    std::vector<float> {{0., 0., 0., 0., 1., 1., 1., 1.}});
-  hostMesh["topologies/topo/type"] = "unstructured";
-  hostMesh["topologies/topo/coordset"] = "coords";
-  hostMesh["topologies/topo/elements/shape"] = "hex";
-  hostMesh["topologies/topo/elements/connectivity"].set(
-    std::vector<int> {{0, 1, 2, 3, 4, 5, 6, 7}});
-  hostMesh["topologies/topo/elements/sizes"].set(std::vector<int> {8});
-  hostMesh["topologies/topo/elements/offsets"].set(std::vector<int> {0});
-  hostMesh["fields/distance/topology"] = "topo";
-  hostMesh["fields/distance/association"] = "vertex";
-  hostMesh["fields/distance/values"].set(
-    std::vector<float> {{1., -1., -1., -1., -1., -1., -1., -1.}});
-}
-
-void make_one_tet(conduit::Node &hostMesh)
-{
-  hostMesh["coordsets/coords/type"] = "explicit";
-  hostMesh["coordsets/coords/values/x"].set(std::vector<float> {{0., 0., 1., 0.}});
-  hostMesh["coordsets/coords/values/y"].set(std::vector<float> {{0., 0., 0., 1.}});
-  hostMesh["coordsets/coords/values/z"].set(std::vector<float> {{0., 1., 0., 0.}});
-  hostMesh["topologies/topo/type"] = "unstructured";
-  hostMesh["topologies/topo/coordset"] = "coords";
-  hostMesh["topologies/topo/elements/shape"] = "tet";
-  hostMesh["topologies/topo/elements/connectivity"].set(
-    std::vector<int> {{0, 1, 2, 3}});
-  hostMesh["topologies/topo/elements/sizes"].set(std::vector<int> {4});
-  hostMesh["topologies/topo/elements/offsets"].set(std::vector<int> {0});
-  hostMesh["fields/distance/topology"] = "topo";
-  hostMesh["fields/distance/association"] = "vertex";
-  hostMesh["fields/distance/values"].set(std::vector<float> {{-1., -1., -1., 1.}});
-}
-
-void make_one_pyr(conduit::Node &hostMesh)
-{
-  hostMesh["coordsets/coords/type"] = "explicit";
-  hostMesh["coordsets/coords/values/x"].set(
-    std::vector<float> {{0., 0., 1., 1., 0.5}});
-  hostMesh["coordsets/coords/values/y"].set(
-    std::vector<float> {{0., 0., 0., 0., 1.}});
-  hostMesh["coordsets/coords/values/z"].set(
-    std::vector<float> {{0., 1., 1., 0., 0.5}});
-  hostMesh["topologies/topo/type"] = "unstructured";
-  hostMesh["topologies/topo/coordset"] = "coords";
-  hostMesh["topologies/topo/elements/shape"] = "pyramid";
-  hostMesh["topologies/topo/elements/connectivity"].set(
-    std::vector<int> {{0, 1, 2, 3, 4}});
-  hostMesh["topologies/topo/elements/sizes"].set(std::vector<int> {5});
-  hostMesh["topologies/topo/elements/offsets"].set(std::vector<int> {0});
-  hostMesh["fields/distance/topology"] = "topo";
-  hostMesh["fields/distance/association"] = "vertex";
-  hostMesh["fields/distance/values"].set(
-    std::vector<float> {{1., 1., -1., -1., -1.}});
-}
-
-void make_one_wdg(conduit::Node &hostMesh)
-{
-  hostMesh["coordsets/coords/type"] = "explicit";
-  hostMesh["coordsets/coords/values/x"].set(
-    std::vector<float> {{0., 0., 1., 0., 0., 1}});
-  hostMesh["coordsets/coords/values/y"].set(
-    std::vector<float> {{0., 0., 0., 1., 1., 1.}});
-  hostMesh["coordsets/coords/values/z"].set(
-    std::vector<float> {{0., 1., 0., 0., 1., 0.}});
-  hostMesh["topologies/topo/type"] = "unstructured";
-  hostMesh["topologies/topo/coordset"] = "coords";
-  hostMesh["topologies/topo/elements/shape"] = "wedge";
-  hostMesh["topologies/topo/elements/connectivity"].set(
-    std::vector<int> {{0, 1, 2, 3, 4, 5}});
-  hostMesh["topologies/topo/elements/sizes"].set(std::vector<int> {6});
-  hostMesh["topologies/topo/elements/offsets"].set(std::vector<int> {0});
-  hostMesh["fields/distance/topology"] = "topo";
-  hostMesh["fields/distance/association"] = "vertex";
-  hostMesh["fields/distance/values"].set(
-    std::vector<float> {{1., 1., -1., -1., -1., -1.}});
-}
 
 template <typename ExecSpace, typename ShapeType>
 void test_one_shape(const conduit::Node &hostMesh, const std::string &name)
@@ -653,28 +466,28 @@ void test_one_shape_exec(const conduit::Node &hostMesh, const std::string &name)
 TEST(mir_clipfield, onetet)
 {
   conduit::Node hostMesh;
-  make_one_tet(hostMesh);
+  axom::mir::testing::data::make_one_tet(hostMesh);
   test_one_shape_exec<axom::mir::views::TetShape<int>>(hostMesh, "one_tet");
 }
 
 TEST(mir_clipfield, onepyr)
 {
   conduit::Node hostMesh;
-  make_one_pyr(hostMesh);
+  axom::mir::testing::data::make_one_pyr(hostMesh);
   test_one_shape_exec<axom::mir::views::PyramidShape<int>>(hostMesh, "one_pyr");
 }
 
 TEST(mir_clipfield, onewdg)
 {
   conduit::Node hostMesh;
-  make_one_wdg(hostMesh);
+  axom::mir::testing::data::make_one_wdg(hostMesh);
   test_one_shape_exec<axom::mir::views::WedgeShape<int>>(hostMesh, "one_wdg");
 }
 
 TEST(mir_clipfield, onehex)
 {
   conduit::Node hostMesh;
-  make_one_hex(hostMesh);
+  axom::mir::testing::data::make_one_hex(hostMesh);
   test_one_shape_exec<axom::mir::views::HexShape<int>>(hostMesh, "one_hex");
 }
 
@@ -691,7 +504,7 @@ void braid2d_clip_test(const std::string &type, const std::string &name)
 
   // Create the data
   conduit::Node hostMesh, deviceMesh;
-  braid(type, dims, hostMesh);
+  axom::mir::testing::data::braid(type, dims, hostMesh);
   axom::mir::utilities::blueprint::copy<ExecSpace>(deviceMesh, hostMesh);
 #if defined(AXOM_TESTING_SAVE_VISUALIZATION)
   conduit::relay::io::blueprint::save_mesh(hostMesh, name + "_orig", "hdf5");
@@ -877,7 +690,7 @@ void braid_rectilinear_clip_test(const std::string &name)
 
   // Create the data
   conduit::Node hostMesh, deviceMesh;
-  braid("rectilinear", dims, hostMesh);
+  axom::mir::testing::data::braid("rectilinear", dims, hostMesh);
   axom::mir::utilities::blueprint::copy<ExecSpace>(deviceMesh, hostMesh);
 #if defined(AXOM_TESTING_SAVE_VISUALIZATION)
   conduit::relay::io::blueprint::save_mesh(hostMesh, name + "_orig", "hdf5");
@@ -952,6 +765,78 @@ TEST(mir_clipfield, rectilinear3d)
 #endif
 }
 
+//------------------------------------------------------------------------------
+template <typename ExecSpace, int NDIMS>
+void strided_structured_clip_test(const std::string &name)
+{
+  using Indexing = axom::mir::views::StridedStructuredIndexing<axom::IndexType, NDIMS>;
+  using TopoView = axom::mir::views::StructuredTopologyView<Indexing>;
+  using CoordsetView = axom::mir::views::ExplicitCoordsetView<double, NDIMS>;
+
+  // Create the data
+  conduit::Node hostMesh, deviceMesh;
+  axom::mir::testing::data::strided_structured<NDIMS>(hostMesh);
+  hostMesh.print();
+
+  axom::mir::utilities::blueprint::copy<ExecSpace>(deviceMesh, hostMesh);
+#if defined(AXOM_TESTING_SAVE_VISUALIZATION)
+  conduit::relay::io::blueprint::save_mesh(hostMesh, name + "_orig", "hdf5");
+#endif
+
+#if 0
+  // Create views
+  axom::StackArray<double, 2> origin {0., 0.}, spacing {1., 1.};
+  CoordsetView coordsetView(dims, origin, spacing);
+  TopoView topoView(Indexing {zoneDims});
+
+  // Create options to control the clipping.
+  conduit::Node options;
+  options["clipField"] = "vert_vals";
+  options["clipValue"] = 6.5;
+  options["inside"] = 1;
+  options["outside"] = 1;
+
+  // Clip the data
+  conduit::Node deviceClipMesh;
+  axom::mir::clipping::ClipField<ExecSpace, TopoView, CoordsetView> clipper(
+    topoView,
+    coordsetView);
+  clipper.execute(deviceMesh, options, deviceClipMesh);
+
+  // Copy device->host
+  conduit::Node hostClipMesh;
+  axom::mir::utilities::blueprint::copy<seq_exec>(hostClipMesh, deviceClipMesh);
+
+  // Handle baseline comparison.
+  {
+    std::string baselineName(yamlRoot(name));
+    const auto paths = baselinePaths<ExecSpace>();
+#if defined(AXOM_TESTING_GENERATE_BASELINES)
+    saveBaseline(paths, baselineName, hostClipMesh);
+#else
+    EXPECT_TRUE(compareBaseline(paths, baselineName, hostClipMesh));
+#endif
+  }
+#endif
+}
+
+TEST(mir_clipfield, strided_structured_2d)
+{
+  strided_structured_clip_test<seq_exec, 2>("strided_structured_2d");
+
+//#if defined(AXOM_USE_OPENMP)
+//  strided_structured_clip_test<omp_exec, 2>("strided_structured_2d");
+//#endif
+
+#if defined(AXOM_USE_CUDA) && defined(__CUDACC__)
+  strided_structured_clip_test<cuda_exec, 2>("strided_structured_2d");
+#endif
+
+#if defined(AXOM_USE_HIP)
+  strided_structured_clip_test<hip_exec, 2>("strided_structured_2d");
+#endif
+}
+
 template <typename ExecSpace, typename ShapeType>
 void braid3d_clip_test(const std::string &type, const std::string &name)
 {
@@ -962,7 +847,7 @@ void braid3d_clip_test(const std::string &type, const std::string &name)
   // Create the data
   const axom::StackArray<axom::IndexType, 3> dims {10, 10, 10};
   conduit::Node hostMesh, deviceMesh;
-  braid(type, dims, hostMesh);
+  axom::mir::testing::data::braid(type, dims, hostMesh);
   axom::mir::utilities::blueprint::copy<ExecSpace>(deviceMesh, hostMesh);
 #if defined(AXOM_TESTING_SAVE_VISUALIZATION)
   conduit::relay::io::blueprint::save_mesh(hostMesh, name + "_orig", "hdf5");
@@ -1062,7 +947,7 @@ void braid3d_mixed_clip_test(const std::string &name)
 
   // Create the data
   conduit::Node hostMesh, deviceMesh;
-  mixed3d(hostMesh);
+  axom::mir::testing::data::mixed3d(hostMesh);
   axom::mir::utilities::blueprint::copy<ExecSpace>(deviceMesh, hostMesh);
 #if defined(AXOM_TESTING_SAVE_VISUALIZATION)
   conduit::relay::io::blueprint::save_mesh(hostMesh, name + "_orig", "hdf5");

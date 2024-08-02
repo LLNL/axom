@@ -7,6 +7,7 @@
 
 #include "axom/core.hpp"
 #include "axom/mir.hpp"
+#include "axom/mir/tests/mir_testing_data_helpers.hpp"
 
 TEST(mir_views, shape2conduitName)
 {
@@ -57,6 +58,34 @@ TEST(mir_views, explicit_coordsetview)
     EXPECT_EQ(view3d.getPoint(i), P);
     EXPECT_EQ(view3d[i], P);
   }
+}
+
+TEST(mir_views, strided_structured)
+{
+  conduit::Node hostMesh;
+  axom::mir::testing::data::strided_structured<2>(hostMesh);
+  hostMesh.print();
+
+  axom::mir::views::dispatch_explicit_coordset(hostMesh["coordsets/coords"], [&](auto coordsetView)
+  {
+std::cout << "We got a coordset view\n";
+    axom::mir::views::dispatch_structured_topology<axom::mir::views::select_dimensions(2)>(hostMesh["topologies/mesh"], [&](const std::string &shape, auto topoView)
+    {
+std::cout << "We got a topo view\n";
+      topoView.template for_all_zones<axom::SEQ_EXEC>(AXOM_LAMBDA(auto zoneIndex, const auto &zone)
+      {
+        const auto ids = zone.getIds();
+        std::cout << "zone " << zoneIndex << ": {";
+        for(axom::IndexType i = 0; i < ids.size(); i++)
+        {
+          if(i > 0)
+            std::cout << ", ";
+          std::cout << ids[i];
+        }
+        std::cout << "}\n";
+      });
+    });
+  });
 }
 
 //------------------------------------------------------------------------------
