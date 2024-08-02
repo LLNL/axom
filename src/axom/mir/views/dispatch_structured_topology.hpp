@@ -54,7 +54,8 @@ bool fillFromNode(const conduit::Node &n,
  * \brief Base template for strided structured topology creation
  */
 template <int NDIMS>
-struct make_strided_structured {};
+struct make_strided_structured
+{ };
 
 /**
  * \brief Create a 3D structured topology view with strided structured indexing.
@@ -73,23 +74,23 @@ struct make_strided_structured<3>
    */
   static TopoView view(const conduit::Node &topo)
   {
-  const std::string offsetsKey("elements/offsets");
-  const std::string stridesKey("elements/strides");
+    const std::string offsetsKey("elements/offsets");
+    const std::string stridesKey("elements/strides");
 
-      LogicalIndex zoneDims;
-      zoneDims[0] = topo.fetch_existing("elements/dims/i").as_int();
-      zoneDims[1] = topo.fetch_existing("elements/dims/j").as_int();
-      zoneDims[2] = topo.fetch_existing("elements/dims/k").as_int();
+    LogicalIndex zoneDims;
+    zoneDims[0] = topo.fetch_existing("elements/dims/i").as_int();
+    zoneDims[1] = topo.fetch_existing("elements/dims/j").as_int();
+    zoneDims[2] = topo.fetch_existing("elements/dims/k").as_int();
 
-      LogicalIndex offsets, strides;
-      fillFromNode(topo, offsetsKey, offsets, 0);
-      if(!fillFromNode(topo, stridesKey, strides, 1))
-      {
-        strides[1] = zoneDims[0];
-        strides[2] = zoneDims[0] * zoneDims[1];
-      }
+    LogicalIndex offsets, strides;
+    fillFromNode(topo, offsetsKey, offsets, 0);
+    if(!fillFromNode(topo, stridesKey, strides, 1))
+    {
+      strides[1] = zoneDims[0];
+      strides[2] = zoneDims[0] * zoneDims[1];
+    }
 
-      Indexing zoneIndexing(zoneDims, offsets, strides);
+    Indexing zoneIndexing(zoneDims, offsets, strides);
     return TopoView(zoneIndexing);
   }
 };
@@ -111,25 +112,21 @@ struct make_strided_structured<2>
    */
   static TopoView view(const conduit::Node &topo)
   {
-  const std::string offsetsKey("elements/offsets");
-  const std::string stridesKey("elements/strides");
+    const std::string offsetsKey("elements/offsets");
+    const std::string stridesKey("elements/strides");
     LogicalIndex zoneDims;
-      zoneDims[0] = topo.fetch_existing("elements/dims/i").as_int();
-      zoneDims[1] = topo.fetch_existing("elements/dims/j").as_int();
+    zoneDims[0] = topo.fetch_existing("elements/dims/i").as_int();
+    zoneDims[1] = topo.fetch_existing("elements/dims/j").as_int();
 
-        LogicalIndex offsets, strides;
-        fillFromNode(topo, offsetsKey, offsets, 0);
-        if(!fillFromNode(topo, stridesKey, strides, 1))
-        {
-          strides[1] = zoneDims[0];
-        }
+    LogicalIndex offsets, strides;
+    fillFromNode(topo, offsetsKey, offsets, 0);
+    if(!fillFromNode(topo, stridesKey, strides, 1))
+    {
+      strides[1] = zoneDims[0];
+    }
 
-        Indexing zoneIndexing(
-          zoneDims,
-          offsets,
-          strides);
+    Indexing zoneIndexing(zoneDims, offsets, strides);
     return TopoView(zoneIndexing);
-
   }
 };
 
@@ -150,21 +147,18 @@ struct make_strided_structured<1>
    */
   static TopoView view(const conduit::Node &topo)
   {
-  const std::string offsetsKey("elements/offsets");
-  const std::string stridesKey("elements/strides");
+    const std::string offsetsKey("elements/offsets");
+    const std::string stridesKey("elements/strides");
 
-      LogicalIndex zoneDims;
-      zoneDims[0] = topo.fetch_existing("elements/dims/i").as_int();
+    LogicalIndex zoneDims;
+    zoneDims[0] = topo.fetch_existing("elements/dims/i").as_int();
 
-        LogicalIndex offsets, strides;
-        fillFromNode(topo, offsetsKey, offsets, 0);
-        fillFromNode(topo, stridesKey, strides, 1);
+    LogicalIndex offsets, strides;
+    fillFromNode(topo, offsetsKey, offsets, 0);
+    fillFromNode(topo, stridesKey, strides, 1);
 
-        Indexing zoneIndexing(
-          zoneDims,
-          offsets,
-          strides);
-        return TopoView(zoneIndexing);
+    Indexing zoneIndexing(zoneDims, offsets, strides);
+    return TopoView(zoneIndexing);
   }
 };
 
@@ -172,7 +166,8 @@ struct make_strided_structured<1>
  * \brief Base template for structured topology creation
  */
 template <int NDIMS>
-struct make_structured {};
+struct make_structured
+{ };
 
 /**
  * \brief Create a 3D structured topology view with normal structured indexing.
@@ -191,12 +186,12 @@ struct make_structured<3>
    */
   static TopoView view(const conduit::Node &topo)
   {
-      LogicalIndex zoneDims;
-      zoneDims[0] = topo.fetch_existing("elements/dims/i").as_int();
-      zoneDims[1] = topo.fetch_existing("elements/dims/j").as_int();
-      zoneDims[2] = topo.fetch_existing("elements/dims/k").as_int();
+    LogicalIndex zoneDims;
+    zoneDims[0] = topo.fetch_existing("elements/dims/i").as_int();
+    zoneDims[1] = topo.fetch_existing("elements/dims/j").as_int();
+    zoneDims[2] = topo.fetch_existing("elements/dims/k").as_int();
 
-      Indexing zoneIndexing(zoneDims);
+    Indexing zoneIndexing(zoneDims);
     return TopoView(zoneIndexing);
   }
 };
@@ -218,11 +213,11 @@ struct make_structured<2>
    */
   static TopoView view(const conduit::Node &topo)
   {
-      LogicalIndex zoneDims;
-      zoneDims[0] = topo.fetch_existing("elements/dims/i").as_int();
-      zoneDims[1] = topo.fetch_existing("elements/dims/j").as_int();
+    LogicalIndex zoneDims;
+    zoneDims[0] = topo.fetch_existing("elements/dims/i").as_int();
+    zoneDims[1] = topo.fetch_existing("elements/dims/j").as_int();
 
-      Indexing zoneIndexing(zoneDims);
+    Indexing zoneIndexing(zoneDims);
     return TopoView(zoneIndexing);
   }
 };
@@ -244,10 +239,10 @@ struct make_structured<1>
    */
   static TopoView view(const conduit::Node &topo)
   {
-      LogicalIndex zoneDims;
-      zoneDims[0] = topo.fetch_existing("elements/dims/i").as_int();
+    LogicalIndex zoneDims;
+    zoneDims[0] = topo.fetch_existing("elements/dims/i").as_int();
 
-      Indexing zoneIndexing(zoneDims);
+    Indexing zoneIndexing(zoneDims);
     return TopoView(zoneIndexing);
   }
 };

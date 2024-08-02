@@ -666,7 +666,9 @@ void braid_rectilinear_clip_test(const std::string &name)
 #endif
 
   // Create views
-  auto coordsetView = axom::mir::views::make_rectilinear_coordset<double, NDIMS>::view(hostMesh["coordsets/coords"]);
+  auto coordsetView =
+    axom::mir::views::make_rectilinear_coordset<double, NDIMS>::view(
+      hostMesh["coordsets/coords"]);
   using CoordsetView = decltype(coordsetView);
   TopoView topoView(Indexing {zoneDims});
 
@@ -698,7 +700,6 @@ void braid_rectilinear_clip_test(const std::string &name)
 #endif
   }
 }
-
 
 TEST(mir_clipfield, rectilinear2d)
 {
@@ -738,7 +739,8 @@ TEST(mir_clipfield, rectilinear3d)
 template <typename ExecSpace, int NDIMS>
 void strided_structured_clip_test(const std::string &name)
 {
-  using Indexing = axom::mir::views::StridedStructuredIndexing<axom::IndexType, NDIMS>;
+  using Indexing =
+    axom::mir::views::StridedStructuredIndexing<axom::IndexType, NDIMS>;
   using TopoView = axom::mir::views::StructuredTopologyView<Indexing>;
   using CoordsetView = axom::mir::views::ExplicitCoordsetView<double, NDIMS>;
 
@@ -780,11 +782,11 @@ void strided_structured_clip_test(const std::string &name)
   {
     std::string baselineName(yamlRoot(name));
     const auto paths = baselinePaths<ExecSpace>();
-#if defined(AXOM_TESTING_GENERATE_BASELINES)
+  #if defined(AXOM_TESTING_GENERATE_BASELINES)
     saveBaseline(paths, baselineName, hostClipMesh);
-#else
+  #else
     EXPECT_TRUE(compareBaseline(paths, baselineName, hostClipMesh));
-#endif
+  #endif
   }
 #endif
 }
@@ -793,9 +795,9 @@ TEST(mir_clipfield, strided_structured_2d)
 {
   strided_structured_clip_test<seq_exec, 2>("strided_structured_2d");
 
-//#if defined(AXOM_USE_OPENMP)
-//  strided_structured_clip_test<omp_exec, 2>("strided_structured_2d");
-//#endif
+  //#if defined(AXOM_USE_OPENMP)
+  //  strided_structured_clip_test<omp_exec, 2>("strided_structured_2d");
+  //#endif
 
 #if defined(AXOM_USE_CUDA) && defined(__CUDACC__)
   strided_structured_clip_test<cuda_exec, 2>("strided_structured_2d");
@@ -927,11 +929,11 @@ void braid3d_mixed_clip_test(const std::string &name)
   conduit::Node &n_y = deviceMesh.fetch_existing("coordsets/coords/values/y");
   conduit::Node &n_z = deviceMesh.fetch_existing("coordsets/coords/values/z");
   const axom::ArrayView<CoordType> x(static_cast<CoordType *>(n_x.data_ptr()),
-                                  n_x.dtype().number_of_elements());
+                                     n_x.dtype().number_of_elements());
   const axom::ArrayView<CoordType> y(static_cast<CoordType *>(n_y.data_ptr()),
-                                  n_y.dtype().number_of_elements());
+                                     n_y.dtype().number_of_elements());
   const axom::ArrayView<CoordType> z(static_cast<CoordType *>(n_z.data_ptr()),
-                                  n_z.dtype().number_of_elements());
+                                     n_z.dtype().number_of_elements());
   CoordsetView coordsetView(x, y, z);
 
   conduit::Node &n_device_topo = deviceMesh.fetch_existing("topologies/mesh");
@@ -939,23 +941,17 @@ void braid3d_mixed_clip_test(const std::string &name)
   conduit::Node &n_shapes = n_device_topo.fetch_existing("elements/shapes");
   conduit::Node &n_sizes = n_device_topo.fetch_existing("elements/sizes");
   conduit::Node &n_offsets = n_device_topo.fetch_existing("elements/offsets");
-  axom::ArrayView<ConnType> connView(
-    static_cast<ConnType *>(n_conn.data_ptr()),
-    n_conn.dtype().number_of_elements());
+  axom::ArrayView<ConnType> connView(static_cast<ConnType *>(n_conn.data_ptr()),
+                                     n_conn.dtype().number_of_elements());
   axom::ArrayView<ConnType> shapesView(
     static_cast<ConnType *>(n_shapes.data_ptr()),
     n_shapes.dtype().number_of_elements());
-  axom::ArrayView<ConnType> sizesView(
-    static_cast<ConnType *>(n_sizes.data_ptr()),
-    n_sizes.dtype().number_of_elements());
+  axom::ArrayView<ConnType> sizesView(static_cast<ConnType *>(n_sizes.data_ptr()),
+                                      n_sizes.dtype().number_of_elements());
   axom::ArrayView<ConnType> offsetsView(
     static_cast<ConnType *>(n_offsets.data_ptr()),
     n_offsets.dtype().number_of_elements());
-  TopoView topoView(n_device_topo,
-                    connView,
-                    shapesView,
-                    sizesView,
-                    offsetsView);
+  TopoView topoView(n_device_topo, connView, shapesView, sizesView, offsetsView);
 
   // Create options to control the clipping.
   conduit::Node options;
@@ -1007,10 +1003,10 @@ TEST(mir_clipfield, mixed)
 #if defined(DEBUGGING_TEST_CASES)
 void conduit_debug_err_handler(const std::string &s1, const std::string &s2, int i1)
 {
-   std::cout << "s1=" << s1 << ", s2=" << s2 << ", i1=" << i1 << std::endl;
-   // This is on purpose.
-   while (1)
-      ;
+  std::cout << "s1=" << s1 << ", s2=" << s2 << ", i1=" << i1 << std::endl;
+  // This is on purpose.
+  while(1)
+    ;
 }
 #endif
 
