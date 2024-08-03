@@ -87,7 +87,3 @@ foreach(_lesson lesson_00 lesson_01 lesson_02 lesson_03 lesson_04)
             DESTINATION examples/axom/radiuss_tutorial)
 endforeach()
 
-#------------------------------------------------------------------------------
-# Add code checks for example files
-#------------------------------------------------------------------------------
-axom_add_code_checks(PREFIX examples)

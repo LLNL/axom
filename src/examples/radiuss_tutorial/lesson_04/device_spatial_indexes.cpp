@@ -166,9 +166,9 @@ void Input::parse(int argc, char** argv, axom::CLI::App& app)
     (weldThreshold <= 0.),
     intersectionThreshold,
     verboseOutput,
-    policy == RuntimePolicy::raja_omp
-      ? "raja_omp"
-      : (policy == RuntimePolicy::raja_cuda) ? "raja_cuda" : "raja_seq"));
+    policy == RuntimePolicy::raja_omp        ? "raja_omp"
+      : (policy == RuntimePolicy::raja_cuda) ? "raja_cuda"
+                                             : "raja_seq"));
 }
 
 const std::map<std::string, RuntimePolicy> Input::s_validPolicies(
