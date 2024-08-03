@@ -194,6 +194,12 @@ public:
    */
   static constexpr int dimension() { return 3; }
 
+  /**
+   * \brief Return whether the view supports strided structured indexing.
+   * \return false
+   */
+  static constexpr bool supports_strided_structured_indexing() { return false; }
+
   template <typename ExecSpace, typename FuncType>
   void for_all_zones(FuncType &&func) const
   {

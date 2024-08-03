@@ -32,6 +32,12 @@ public:
   AXOM_HOST_DEVICE constexpr static int dimension() { return NDIMS; }
 
   /**
+   * \brief Return whether the view supports strided structured indexing.
+   * \return false
+   */
+  AXOM_HOST_DEVICE static constexpr bool supports_strided_structured_indexing() { return false; }
+
+  /**
    * \brief constructor
    *
    * \param dims The dimensions we're indexing.
@@ -83,6 +89,72 @@ public:
   AXOM_HOST_DEVICE typename std::enable_if<_ndims == 3, IndexType>::type kStride() const
   {
     return m_dimensions[0] * m_dimensions[1];
+  }
+
+  /**
+   * \brief Turn a global logical index into an index.
+   * \param global The global logical index to convert.
+   * \return The global index.
+   */
+  AXOM_HOST_DEVICE
+  inline IndexType GlobalToGlobal(const LogicalIndex &global) const
+  {
+    return LogicalIndexToIndex(global);
+  }
+
+  /**
+   * \brief Turn a global index into a global logical index.
+   * \param global The global index to convert.
+   * \return The global logical index.
+   */
+  AXOM_HOST_DEVICE
+  inline LogicalIndex GlobalToGlobal(IndexType global) const
+  {
+    return IndexToLogicalIndex(global);
+  }
+
+  /**
+   * \brief Turn global logical index to local logical index. no-op.
+   * \param index The index to convert.
+   * \return Same as the input in this case.
+   */
+  AXOM_HOST_DEVICE
+  inline LogicalIndex GlobalToLocal(const LogicalIndex &index) const
+  {
+    return index;
+  }
+
+  /**
+   * \brief Turn global index to local index. no-op.
+   * \param index The index to convert.
+   * \return Same as the input in this case.
+   */
+  AXOM_HOST_DEVICE
+  inline IndexType GlobalToLocal(IndexType index) const
+  {
+    return index;
+  }
+
+  /**
+   * \brief Turn local logical index to global logical index. no-op.
+   * \param index The index to convert.
+   * \return Same as the input in this case.
+   */
+  AXOM_HOST_DEVICE
+  inline LogicalIndex LocalToGlobal(const LogicalIndex &index) const
+  {
+    return index;
+  }
+
+  /**
+   * \brief Turn local index to global index. no-op.
+   * \param index The index to convert.
+   * \return Same as the input in this case.
+   */
+  AXOM_HOST_DEVICE
+  inline IndexType LocalToGlobal(IndexType index) const
+  {
+    return index;
   }
 
   /**
@@ -201,7 +273,10 @@ public:
   StructuredIndexing expand() const
   {
     StructuredIndexing retval(*this);
-    for(int i = 0; i < dimension(); i++) retval.m_dimensions[i]++;
+    for(int i = 0; i < dimension(); i++)
+    {
+      retval.m_dimensions[i]++;
+    }
     return retval;
   }
 

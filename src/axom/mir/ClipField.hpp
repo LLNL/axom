@@ -1701,11 +1701,38 @@ private:
       }
       else if(association == "vertex")
       {
-        axom::mir::utilities::blueprint::FieldBlender<
-          ExecSpace,
-          axom::mir::utilities::blueprint::SelectThroughArrayView>
-          b;
-        b.execute(blend, n_field, n_out_fields[it->second]);
+        bool handled = false;
+        // If we have fields that look like strided structured, try and support that
+        // if the topology view supports it.
+        if(n_field.has_path("offsets") || n_field.has_path("strides"))
+        {
+          if constexpr (TopologyView::supports_strided_structured_indexing())
+          {
+            // Make node indexing that the field blender can use.
+            using Indexing = typename TopologyView::IndexingPolicy;
+            using IndexerType = axom::mir::utilities::blueprint::MapNodesThroughIndexing<Indexing>;
+            IndexerType indexing;
+            indexing.m_indexing = m_topologyView.indexing().expand();
+
+            // Blend the field.
+            axom::mir::utilities::blueprint::FieldBlender<
+              ExecSpace,
+              axom::mir::utilities::blueprint::SelectThroughArrayView,
+              IndexerType>
+              b(indexing);
+            b.execute(blend, n_field, n_out_fields[it->second]);
+            handled = true;
+          }
+        }
+        if(!handled)
+        {
+          axom::mir::utilities::blueprint::FieldBlender<
+            ExecSpace,
+            axom::mir::utilities::blueprint::SelectThroughArrayView>
+            b;
+          b.execute(blend, n_field, n_out_fields[it->second]);
+        }
+
         n_out_fields[it->second]["topology"] = topologyName;
       }
     }

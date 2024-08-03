@@ -37,6 +37,12 @@ public:
   constexpr static int dimension() { return IndexingPolicy::dimension(); }
 
   /**
+   * \brief Return whether the indexing supports strided structured indexing.
+   * \return True if the indexing supports strided structured indexing, false otherwise.
+   */
+  constexpr static bool supports_strided_structured_indexing() { return IndexingPolicy::supports_strided_structured_indexing(); }
+
+  /**
    * \brief Constructor
    *
    * \param indexing The indexing policy for the topology (num zones in each dimension).
@@ -65,10 +71,19 @@ public:
    *
    * \return The mesh logical dimensions.
    */
+  AXOM_HOST_DEVICE
   const LogicalIndex &logicalDimensions() const
   {
     return m_indexing.logicalDimensions();
   }
+
+  /**
+   * \brief Return indexing object.
+   *
+   * \return The indexing object.
+   */
+  AXOM_HOST_DEVICE
+  const IndexingPolicy &indexing() const { return m_indexing; }
 
   /**
    * \brief Execute a function for each zone in the mesh using axom::for_all.
@@ -97,11 +112,11 @@ public:
         AXOM_LAMBDA(auto zoneIndex) {
           using ShapeType = HexShape<IndexType>;
 
-          const auto logical = zoneIndexing.IndexToLogicalIndex(zoneIndex);
+          const auto localLogical = zoneIndexing.IndexToLogicalIndex(zoneIndex);
           const auto jp = nodeIndexing.jStride();
           const auto kp = nodeIndexing.kStride();
           IndexType data[8];
-          data[0] = nodeIndexing.LogicalIndexToIndex(logical);
+          data[0] = nodeIndexing.GlobalToGlobal(nodeIndexing.LocalToGlobal(localLogical));
           data[1] = data[0] + 1;
           data[2] = data[1] + jp;
           data[3] = data[2] - 1;
@@ -125,10 +140,10 @@ public:
         AXOM_LAMBDA(auto zoneIndex) {
           using ShapeType = QuadShape<IndexType>;
 
-          const auto logical = zoneIndexing.IndexToLogicalIndex(zoneIndex);
+          const auto localLogical = zoneIndexing.IndexToLogicalIndex(zoneIndex);
           const auto jp = nodeIndexing.jStride();
           IndexType data[4];
-          data[0] = nodeIndexing.LogicalIndexToIndex(logical);
+          data[0] = nodeIndexing.GlobalToGlobal(nodeIndexing.LocalToGlobal(localLogical));
           data[1] = data[0] + 1;
           data[2] = data[1] + jp;
           data[3] = data[2] - 1;
@@ -148,9 +163,9 @@ public:
         AXOM_LAMBDA(auto zoneIndex) {
           using ShapeType = LineShape<IndexType>;
 
-          const auto logical = zoneIndexing.IndexToLogicalIndex(zoneIndex);
+          const auto localLogical = zoneIndexing.IndexToLogicalIndex(zoneIndex);
           IndexType data[2];
-          data[0] = nodeIndexing.LogicalIndexToIndex(logical);
+          data[0] = nodeIndexing.GlobalToGlobal(nodeIndexing.LocalToGlobal(localLogical));
           data[1] = data[0] + 1;
 
           const ShapeType shape(axom::ArrayView<IndexType>(data, 2));
@@ -190,11 +205,11 @@ public:
           using ShapeType = HexShape<IndexType>;
 
           const auto zoneIndex = idsView[selectIndex];
-          const auto logical = zoneIndexing.IndexToLogicalIndex(zoneIndex);
+          const auto localLogical = zoneIndexing.IndexToLogicalIndex(zoneIndex);
           const auto jp = nodeIndexing.jStride();
           const auto kp = nodeIndexing.kStride();
           IndexType data[8];
-          data[0] = nodeIndexing.LogicalIndexToIndex(logical);
+          data[0] = nodeIndexing.GlobalToGlobal(nodeIndexing.LocalToGlobal(localLogical));
           data[1] = data[0] + 1;
           data[2] = data[1] + jp;
           data[3] = data[2] - 1;
@@ -219,10 +234,10 @@ public:
           using ShapeType = QuadShape<IndexType>;
 
           const auto zoneIndex = idsView[selectIndex];
-          const auto logical = zoneIndexing.IndexToLogicalIndex(zoneIndex);
+          const auto localLogical = zoneIndexing.IndexToLogicalIndex(zoneIndex);
           const auto jp = nodeIndexing.jStride();
           IndexType data[4];
-          data[0] = nodeIndexing.LogicalIndexToIndex(logical);
+          data[0] = nodeIndexing.GlobalToGlobal(nodeIndexing.LocalToGlobal(localLogical));
           data[1] = data[0] + 1;
           data[2] = data[1] + jp;
           data[3] = data[2] - 1;
@@ -243,9 +258,9 @@ public:
           using ShapeType = LineShape<IndexType>;
 
           const auto zoneIndex = idsView[selectIndex];
-          const auto logical = zoneIndexing.IndexToLogicalIndex(zoneIndex);
+          const auto localLogical = zoneIndexing.IndexToLogicalIndex(zoneIndex);
           IndexType data[2];
-          data[0] = nodeIndexing.LogicalIndexToIndex(logical);
+          data[0] = nodeIndexing.GlobalToGlobal(nodeIndexing.LocalToGlobal(localLogical));
           data[1] = data[0] + 1;
 
           const ShapeType shape(axom::ArrayView<IndexType>(data, 2));

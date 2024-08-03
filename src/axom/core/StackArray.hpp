@@ -10,6 +10,8 @@
 #include "axom/core/Macros.hpp"  // for axom macros
 #include "axom/core/Types.hpp"   // for axom types
 
+#include <iostream>
+
 namespace axom
 {
 /*!
@@ -141,6 +143,28 @@ AXOM_HOST_DEVICE bool operator<(const StackArray<T, N>& lhs,
     }
   }
   return false;
+}
+
+/**
+ * \brief Print the StackArray to a stream.
+ * \param os The stream to use.
+ * \param obj The StackArray to print.
+ * \return The input stream.
+ */
+template <typename T, int N>
+std::ostream& operator<<(std::ostream& os, const StackArray<T, N>& obj)
+{
+  os << "(";
+  for(int i = 0; i < N; i++)
+  {
+    if(i > 0)
+    {
+      os << ", ";
+    }
+    os << obj.m_data[i];
+  }
+  os << ")";
+  return os;
 }
 
 } /* namespace axom */

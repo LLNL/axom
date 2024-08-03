@@ -70,6 +70,30 @@ struct SelectThroughArrayView
   }
 };
 
+/// Does no node index mapping.
+struct NoMapping
+{
+  AXOM_HOST_DEVICE
+  inline axom::IndexType operator [](axom::IndexType index) const
+  {
+    return index;
+  }
+};
+
+/// Maps node indices to their local indexing used in vertex fields.
+template <typename Indexing>
+struct MapNodesThroughIndexing
+{
+  AXOM_HOST_DEVICE
+  inline axom::IndexType operator [](axom::IndexType index) const
+  {
+    return m_indexing.GlobalToLocal(index);
+  }
+
+  Indexing m_indexing{};
+};
+
+
 /**
  * \accelerated
  * \class FieldBlender
@@ -78,11 +102,20 @@ struct SelectThroughArrayView
  *
  * \tparam ExecSpace The execution space where the work will occur.
  * \tparam SelectionPolicy The selection policy to use.
+ * \tparam NodeIndexingPolicy How/if changes in node indexing occur when accessing nodes.
  */
-template <typename ExecSpace, typename SelectionPolicy>
+template <typename ExecSpace, typename SelectionPolicy, typename NodeIndexingPolicy = NoMapping>
 class FieldBlender
 {
 public:
+  /// Constructor
+  FieldBlender() : m_nodeIndexing()
+  { }
+
+  /// Constructor
+  FieldBlender(const NodeIndexingPolicy &indexing) : m_nodeIndexing(indexing)
+  { }
+
   /**
    * \brief Create a new blended field from the \a n_input field and place it in \a n_output.
    *
@@ -116,6 +149,7 @@ public:
   }
 
 private:
+
   /**
    * \brief Blend data for a single field component.
    *
@@ -144,7 +178,10 @@ private:
         using accum_type =
           typename axom::mir::utilities::accumulation_traits<value_type>::type;
 
+        // Make capturable objects for the lambda.
         const BlendData deviceBlend(blend);
+        const NodeIndexingPolicy nodeIndexing(m_nodeIndexing);
+
         axom::for_all<ExecSpace>(
           outputSize,
           AXOM_LAMBDA(auto bgid) {
@@ -158,7 +195,8 @@ private:
             accum_type blended = 0;
             for(IndexType i = start; i < end; i++)
             {
-              const auto index = deviceBlend.m_blendIdsView[i];
+              // Get the index that we're using, potentially mapping the node value.
+              const auto index = nodeIndexing[deviceBlend.m_blendIdsView[i]];
               const auto weight = deviceBlend.m_blendCoeffView[i];
               blended += static_cast<accum_type>(compView[index]) * weight;
             }
@@ -166,6 +204,9 @@ private:
           });
       });
   }
+
+private:
+  NodeIndexingPolicy m_nodeIndexing {};
 };
 
 }  // end namespace blueprint

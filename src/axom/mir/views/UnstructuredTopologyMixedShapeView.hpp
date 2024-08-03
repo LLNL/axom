@@ -122,6 +122,12 @@ public:
   static constexpr int dimension() { return -1; }
 
   /**
+   * \brief Return whether the view supports strided structured indexing.
+   * \return false
+   */
+  static constexpr bool supports_strided_structured_indexing() { return false; }
+
+  /**
    * \brief Return the number of zones.
    *
    * \return The number of zones.

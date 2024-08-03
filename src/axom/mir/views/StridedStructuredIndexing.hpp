@@ -22,6 +22,26 @@ namespace views
  * \brief This class encapsulates data for strided structured indexing and provides methods for creating/manipulating indices.
  *
  * \tparam NDIMS The number of dimensions.
+ *
+ *
+ * Strided structured indexing lets us index part of a larger overall indexing space.
+ * We can index it using indices local to the selected window and the class provides a
+ * mechanism to return indices in the overall indexing space.
+ *
+ * Example:
+ *
+ *   x---x---x---x---x---x---x
+ *   |   |   |   |   |   |   |
+ *   x---x---*---*---*---*---x   *=real node, x=ignored node, O=origin node 16
+ *   |   |   |   |   |   |   |
+ *   x---x---*---*---*---*---x   dims={4,3}
+ *   |   |   |   |   |   |   |   origin={2,2}
+ *   x---x---O---*---*---*---x   stride={1,7}
+ *   |   |   |   |   |   |   |
+ *   x---x---x---x---x---x---x
+ *   |   |   |   |   |   |   |
+ *   x---x---x---x---x---x---x
+ *
  */
 template <typename IndexT, int NDIMS = 3>
 class StridedStructuredIndexing
@@ -31,6 +51,12 @@ public:
   using LogicalIndex = axom::StackArray<axom::IndexType, NDIMS>;
 
   AXOM_HOST_DEVICE constexpr static int dimension() { return NDIMS; }
+
+  /**
+   * \brief Return whether the view supports strided structured indexing.
+   * \return true
+   */
+  AXOM_HOST_DEVICE static constexpr bool supports_strided_structured_indexing() { return true; }
 
   /**
    * \brief constructor
@@ -106,11 +132,121 @@ public:
   }
 
   /**
-   * \brief Turn an index into a logical index.
+   * \brief Turn a global logical index into an index.
+   * \param global The global logical index to convert.
+   * \return The global index.
+   */
+  AXOM_HOST_DEVICE
+  IndexType GlobalToGlobal(const LogicalIndex &global) const
+  {
+    IndexType gl{};
+    for(int i = 0; i < NDIMS; i++)
+    {
+      gl += global[i] * m_strides[i];
+    }
+    return gl;
+  }
+
+  /**
+   * \brief Turn a global index into a global logical index.
+   *
+   * \param global The index to convert.
+   *
+   * \return The local index that corresponds to the \a local.
+   */
+  /// @{
+  template <int _ndims = NDIMS>
+  AXOM_HOST_DEVICE typename std::enable_if<_ndims == 1, LogicalIndex>::type
+  GlobalToGlobal(IndexType global) const
+  {
+    LogicalIndex gl;
+    gl[0] = global;
+    return global;
+  }
+
+  template <int _ndims = NDIMS>
+  AXOM_HOST_DEVICE typename std::enable_if<_ndims == 2, LogicalIndex>::type
+  GlobalToGlobal(IndexType global) const
+  {
+    LogicalIndex gl;
+    gl[0] = global % m_strides[1];
+    gl[1] = global / m_strides[1];
+    return gl;
+  }
+
+  template <int _ndims = NDIMS>
+  AXOM_HOST_DEVICE typename std::enable_if<_ndims == 3, LogicalIndex>::type
+  GlobalToGlobal(IndexType global) const
+  {
+    LogicalIndex gl;
+    gl[0] = global % m_strides[1];
+    gl[1] = (global % m_strides[2]) / m_strides[1];
+    gl[2] = global / m_strides[2];
+    return gl;
+  }
+  /// @}
+
+  /**
+   * \brief Convert global logical index to a local one.
+   * \param local The local logical index.
+   * \return local logical index.
+   */
+  AXOM_HOST_DEVICE
+  LogicalIndex GlobalToLocal(const LogicalIndex &global) const
+  {
+    LogicalIndex local(global);
+    for(int i = 0; i < NDIMS; i++)
+    {
+      local[i] -= m_offsets[i];
+    }
+    return local;
+  }
+
+  /**
+   * \brief Turn a global index into a local index.
+   *
+   * \param global The index to convert.
+   *
+   * \return The local index that corresponds to the \a local.
+   */
+  IndexType GlobalToLocal(IndexType global) const
+  {
+    return LogicalIndexToIndex(GlobalToLocal(GlobalToGlobal(global)));
+  }
+
+  /**
+   * \brief Convert local logical index to a global one.
+   * \param local The local logical index.
+   * \return global logical index.
+   */
+  AXOM_HOST_DEVICE
+  LogicalIndex LocalToGlobal(const LogicalIndex &local) const
+  {
+    LogicalIndex global(local);
+    for(int i = 0; i < NDIMS; i++)
+    {
+      global[i] += m_offsets[i];
+    }
+    return global;
+  }
+
+  /**
+   * \brief Convert local logical index to a global one.
+   * \param local The local logical index.
+   * \return local logical index.
+   */
+  AXOM_HOST_DEVICE
+  IndexType LocalToGlobal(IndexType local) const
+  {
+    return GlobalToGlobal(LocalToGlobal(IndexToLogicalIndex(local)));
+  }
+
+  /**
+   * \brief Turn a local index into a local logical index.
    *
    * \param index The index to convert.
    *
-   * \return The logical index that corresponds to the \a index.
+   * \return The local logical index that corresponds to the \a index.
    */
   /// @{
 
@@ -119,7 +255,7 @@ public:
   IndexToLogicalIndex(IndexType index) const
   {
     LogicalIndex logical;
-    logical[0] = index - m_offsets[0];
+    logical[0] = index;
     return logical;
   }
 
@@ -128,8 +264,9 @@ public:
   IndexToLogicalIndex(IndexType index) const
   {
     LogicalIndex logical;
-    logical[0] = index % m_strides[1] - m_offsets[0];
-    logical[1] = index / m_strides[1] - m_offsets[1];
+    const auto nx = m_dimensions[0];
+    logical[0] = index % nx;
+    logical[1] = index / nx;
     return logical;
   }
 
@@ -138,47 +275,35 @@ public:
   IndexToLogicalIndex(IndexType index) const
   {
     LogicalIndex logical;
-    logical[0] = (index % m_strides[1]) - m_offsets[0];
-    logical[1] = ((index % m_strides[2]) / m_strides[1]) - m_offsets[1];
-    logical[2] = (index / m_strides[2]) - m_offsets[2];
+    const auto nx = m_dimensions[0];
+    const auto nxy = nx * m_dimensions[1];
+    logical[0] = index % nx;
+    logical[1] = (index % nxy) / nx;
+    logical[2] = index / nxy;
     return logical;
   }
-
   /// @}
 
+
   /**
-   * \brief Turn a logical index into a flat index.
+   * \brief Turn a local logical index into a local flat index.
    *
    * \param logical The logical indexto convert to a flat index.
    *
    * \return The index that corresponds to the \a logical index.
    */
-  /// @{
-  template <int _ndims = NDIMS>
-  AXOM_HOST_DEVICE typename std::enable_if<_ndims == 1, IndexType>::type
-  LogicalIndexToIndex(const LogicalIndex &logical) const
+  AXOM_HOST_DEVICE
+  IndexType LogicalIndexToIndex(const LogicalIndex &logical) const
   {
-    return ((m_offsets[0] + logical[0]) * m_strides[0]);
+    IndexType index {};
+    IndexType stride {1};
+    for(int i = 0; i < NDIMS; i++)
+    {
+      index += logical[i] * stride;
+      stride *= m_dimensions[i];
+    }
+    return index;
   }
-
-  template <int _ndims = NDIMS>
-  AXOM_HOST_DEVICE typename std::enable_if<_ndims == 2, IndexType>::type
-  LogicalIndexToIndex(const LogicalIndex &logical) const
-  {
-    return ((m_offsets[0] + logical[0]) * m_strides[0]) +
-      ((m_offsets[1] + logical[1]) * m_strides[1]);
-  }
-
-  template <int _ndims = NDIMS>
-  AXOM_HOST_DEVICE typename std::enable_if<_ndims == 3, IndexType>::type
-  LogicalIndexToIndex(const LogicalIndex &logical) const
-  {
-    return ((m_offsets[0] + logical[0]) * m_strides[0]) +
-      ((m_offsets[1] + logical[1]) * m_strides[1]) +
-      ((m_offsets[2] + logical[2]) * m_strides[2]);
-  }
-
-  /// @}
 
   /**
    * \brief Determines whether the indexing contains the supplied logical index.
@@ -209,20 +334,6 @@ public:
   bool contains(const IndexType index) const
   {
     return contains(IndexToLogicalIndex(index));
-  }
-
-  /**
-   * \brief Expand the current StridedStructuredIndexing by one in each dimension.
-   *
-   * \return An expanded StridedStructuredIndexing.
-   */
-  AXOM_HOST_DEVICE
-  StridedStructuredIndexing expand() const
-  {
-    StridedStructuredIndexing retval(*this);
-    for(int i = 0; i < dimension(); i++) retval.m_dimensions[i]++;
-
-    return retval;
   }
 
   /**

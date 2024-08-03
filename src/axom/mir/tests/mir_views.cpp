@@ -7,7 +7,10 @@
 
 #include "axom/core.hpp"
 #include "axom/mir.hpp"
+#include "axom/primal.hpp"
 #include "axom/mir/tests/mir_testing_data_helpers.hpp"
+
+#include <cmath>
 
 TEST(mir_views, shape2conduitName)
 {
@@ -64,27 +67,61 @@ TEST(mir_views, strided_structured)
 {
   conduit::Node hostMesh;
   axom::mir::testing::data::strided_structured<2>(hostMesh);
-  hostMesh.print();
+//  hostMesh.print();
+
+  // These are the expected zone ids for this strided structured mesh.
+  const axom::Array<int> expectedZones{{
+    16, 17, 24, 23,
+    17, 18, 25, 24,
+    18, 19, 26, 25,
+    23, 24, 31, 30,
+    24, 25, 32, 31,
+    25, 26, 33, 32
+  }};
+  auto expectedZonesView = expectedZones.view();
 
   axom::mir::views::dispatch_explicit_coordset(
     hostMesh["coordsets/coords"],
     [&](auto coordsetView) {
-      std::cout << "We got a coordset view\n";
+
       axom::mir::views::dispatch_structured_topology<
         axom::mir::views::select_dimensions(2)>(
         hostMesh["topologies/mesh"],
         [&](const std::string &shape, auto topoView) {
-          std::cout << "We got a topo view\n";
+
+          // Traverse the zones in the mesh and check the zone ids.
           topoView.template for_all_zones<axom::SEQ_EXEC>(
             AXOM_LAMBDA(auto zoneIndex, const auto &zone) {
+
+              // Check zone ids.
               const auto ids = zone.getIds();
-              std::cout << "zone " << zoneIndex << ": {";
               for(axom::IndexType i = 0; i < ids.size(); i++)
               {
-                if(i > 0) std::cout << ", ";
-                std::cout << ids[i];
+                EXPECT_EQ(expectedZonesView[zoneIndex * 4 + i], ids[i]);
               }
-              std::cout << "}\n";
+
+              // Check coordinates
+              const auto nodeIndexing = topoView.indexing().expand();
+              for(axom::IndexType i = 0; i < ids.size(); i++)
+              {
+                // Get coordinate from coordsetView.
+                const auto pt = coordsetView[ids[i]];
+
+                // Get the logical local id for the id.
+                const auto index = nodeIndexing.GlobalToLocal(ids[i]);
+                const auto logical = nodeIndexing.IndexToLogicalIndex(index);
+
+                // Expected coordinate
+                double x = (3. + 1. / 3.) * static_cast<double>(logical[0] - 1);
+                const double yvals[] = {-2, 2, 6};
+                double y = yvals[logical[1]];
+
+                const double dx = pt[0] - x;
+                const double dy = pt[1] - y;
+                double d = sqrt(dx*dx + dy*dy);
+
+                EXPECT_TRUE(d < 1.e-10);
+              }
             });
         });
     });

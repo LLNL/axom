@@ -42,10 +42,10 @@
 //------------------------------------------------------------------------------
 
 // Uncomment to generate baselines
-//#define AXOM_TESTING_GENERATE_BASELINES
+#define AXOM_TESTING_GENERATE_BASELINES
 
 // Uncomment to save visualization files for debugging (when making baselines)
-//#define AXOM_TESTING_SAVE_VISUALIZATION
+#define AXOM_TESTING_SAVE_VISUALIZATION
 
 // Include after seq_exec is defined.
 #include "axom/mir/tests/mir_testing_helpers.hpp"
@@ -754,29 +754,31 @@ void strided_structured_clip_test(const std::string &name)
   conduit::relay::io::blueprint::save_mesh(hostMesh, name + "_orig", "hdf5");
 #endif
 
-#if 0
-  // Create views
-  axom::StackArray<double, 2> origin {0., 0.}, spacing {1., 1.};
-  CoordsetView coordsetView(dims, origin, spacing);
-  TopoView topoView(Indexing {zoneDims});
+  conduit::Node options, deviceClipMesh, hostClipMesh;
 
   // Create options to control the clipping.
-  conduit::Node options;
   options["clipField"] = "vert_vals";
   options["clipValue"] = 6.5;
   options["inside"] = 1;
   options["outside"] = 1;
 
-  // Clip the data
-  conduit::Node deviceClipMesh;
-  axom::mir::clipping::ClipField<ExecSpace, TopoView, CoordsetView> clipper(
-    topoView,
-    coordsetView);
-  clipper.execute(deviceMesh, options, deviceClipMesh);
+  // Create views
+  axom::mir::views::dispatch_explicit_coordset(deviceMesh["coordsets/coords"], [&](auto coordsetView)
+  {
+    auto topoView = axom::mir::views::make_strided_structured<2>::view(deviceMesh["topologies/mesh"]);
 
-  // Copy device->host
-  conduit::Node hostClipMesh;
-  axom::mir::utilities::blueprint::copy<seq_exec>(hostClipMesh, deviceClipMesh);
+    using CoordsetView = decltype(coordsetView);
+    using TopoView = decltype(topoView);
+
+    // Clip the data
+    axom::mir::clipping::ClipField<ExecSpace, TopoView, CoordsetView> clipper(
+      topoView,
+      coordsetView);
+    clipper.execute(deviceMesh, options, deviceClipMesh);
+
+    // Copy device->host
+    axom::mir::utilities::blueprint::copy<seq_exec>(hostClipMesh, deviceClipMesh);
+  });
 
   // Handle baseline comparison.
   {
@@ -788,7 +790,6 @@ void strided_structured_clip_test(const std::string &name)
     EXPECT_TRUE(compareBaseline(paths, baselineName, hostClipMesh));
   #endif
   }
-#endif
 }
 
 TEST(mir_clipfield, strided_structured_2d)

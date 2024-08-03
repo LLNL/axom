@@ -25,7 +25,7 @@ struct make_rectilinear_coordset
 { };
 
 /**
- * \brief Partial specialization for creating 2D rectilinear coordset view.
+ * \brief Partial specialization for creating 3D rectilinear coordset view.
  */
 template <typename DataType>
 struct make_rectilinear_coordset<DataType, 3>
