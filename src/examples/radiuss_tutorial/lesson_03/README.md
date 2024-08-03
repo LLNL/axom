@@ -64,6 +64,8 @@ We expose this as a new  command-line argument ``--policy`` (with shortcut ``-p`
 
 > :clapper: Show this in the code if the audience is interested in the details
 
+> :memo:  Since this is a common pattern in code that uses axom, we have defined a similar ``Policy`` enumeration in the ``axom::runtime_policy`` namespace, as well as maps to convert these to/from strings. See ``axom/core/execution/runtime_policy.hpp`` for the definition and its use in several of the quest example applications in ``axom/src/axom/quest/examples/``.
+
 ## Calling our find intersections algorithm
 
 Since the execution space is templated, and we would to expose a runtime choice to our application users, we add a switch statement to ``main()`` to call the desired implementation:
@@ -109,8 +111,6 @@ Since the execution space is templated, and we would to expose a runtime choice 
 
 Our algorithm requires memory to be allocated in the correct space for each kernel. As such, we distinguish between "host" and "kernel" memory allocators. The latter might be a ``host`` memory allocator, e.g. for sequential and OpenMP execution spaces. It might also be ``unified`` or ``device`` memory if run on GPUs.
 
-> :warning:  Axom's default memory allocator on devices is currently set to "unified" memory. In this example, we will use ``device`` memory for GPU-based execution spaces and explicitly move data to/from the device.
-
 We get the integer ID for the ``host_allocator`` and ``kernel_allocator`` as follows:
 ```cpp
   constexpr bool on_device = axom::execution_space<ExecSpace>::onDevice();
@@ -153,7 +153,7 @@ We begin our algorithm with a slightly different approach to handling degenerate
 We are now ready to discuss the ``axom::Array`` class, and its counterpart, ``axom::ArrayView``. 
 
 ``axom::Array`` is a drop-in replacement for ``std::vector`` which can be used with device code. In contrast to ``std::vector``, it:
-* supports Umpire-allocators for its memory allocations
+* supports Umpire allocators for its memory allocations
 * has functions that are host/device decorated for execution within GPU kernels
 * does not require its members to be initialized on copy. This can be useful, e.g. when allocating memory that will be initialized immediately in a kernel.
 * supports compile-time (non-ragged) multidimensional indexing <i>*[Not demonstrated in this tutorial]</i>
@@ -182,7 +182,7 @@ We perform this test in parallel and use a reduction variable to atomically incr
   RAJA::RangeSegment row_range(0, validCount);
   RAJA::RangeSegment col_range(0, validCount);
 
-  using KERNEL_POL = typename axom::mint::internal::structured_exec<ExecSpace>::loop2d_policy;
+  using KERNEL_POL = typename axom::internal::nested_for_exec<ExecSpace>::loop2d_policy;
   using REDUCE_POL = typename axom::execution_space<ExecSpace>::reduce_policy;
   using ATOMIC_POL = typename axom::execution_space<ExecSpace>::atomic_policy;
 

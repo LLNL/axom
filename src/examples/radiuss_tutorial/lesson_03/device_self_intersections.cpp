@@ -396,7 +396,7 @@ axom::Array<IndexPair> naiveFindIntersections(const TriangleMesh& triMesh,
   RAJA::RangeSegment col_range(0, validCount);
 
   using KERNEL_POL =
-    typename axom::mint::internal::structured_exec<ExecSpace>::loop2d_policy;
+    typename axom::internal::nested_for_exec<ExecSpace>::loop2d_policy;
   using REDUCE_POL = typename axom::execution_space<ExecSpace>::reduce_policy;
   using ATOMIC_POL = typename axom::execution_space<ExecSpace>::atomic_policy;
 

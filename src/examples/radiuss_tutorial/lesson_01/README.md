@@ -54,7 +54,7 @@ The constructor calls ``slic::initialize()``, sets the logging level to ``slic::
 
 > :bulb: If your application requires MPI-based logging, consider using the ``LumberjackStream`` log streams from Axom's [lumberjack component](https://axom.readthedocs.io/en/develop/axom/lumberjack/docs/sphinx/index.html) when setting up your logger.
 
-> :memo:  `slic` has an internal formatter that understands the following keywords: `<TIMESTAMP>`, `<LEVEL>`, `<MESSAGE>`, `<FILE>`, `<LINE>`, `<RANK>`. Our `BasicLogger` only uses `<LEVEL>` and `<MESSAGE>`
+> :memo:  `slic` has an internal formatter that understands the following keywords: `<LEVEL>`, `<MESSAGE>`, `<TAG>`, `<FILE>`, `<LINE>`, `<RANK>`, `<RANK_COUNT>` and `<TIMESTAMP>`. Our `BasicLogger` only uses `<LEVEL>` and `<MESSAGE>`.
 
 We now add a `BasicLogger` instance to the application with
 ```cpp
@@ -169,9 +169,15 @@ struct TriangleMesh
 };
 ```
 This class uses three internal types:
-* ``axom::Array``: A drop-in replacement for ``std::vector`` which supports usage on host (i.e. CPU) and device (i.e. GPU) execution spaces
-* ``axom::primal::Point``: A geometric primitive representing a point in space
-* ``axom::primal::Triangle``: A geometric primitive representing a triangle defined by three ``axom::primal::Point`` instances
+
+  ``axom::Array``
+  : A drop-in replacement for ``std::vector`` which supports usage on host (i.e. CPU) and device (i.e. GPU) execution spaces
+
+  ``axom::primal::Point``
+  : A geometric primitive representing a point in space
+
+  ``axom::primal::Triangle``
+  : A geometric primitive representing a triangle defined by three ``axom::primal::Point`` instances
 
 We will discuss these in more depth in subsequent lessons.
 

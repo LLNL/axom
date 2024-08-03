@@ -84,15 +84,15 @@ std::cout << axom::fmt::format("Version: {}", axom::getVersion()) << "\n\n";
 This includes the major, minor and patch version of Axom as well as the git SHA (when available).
 The above command might produce something like:
 ```
-Version: v0.8.1-749340203
+Version: v0.9.0-f5b5b5d66
 ```
 
 The version is also available as compiler defines in ``axom/config.hpp``. The following corresponds to the above version:
 ```cpp
 #define AXOM_VERSION_MAJOR 0
-#define AXOM_VERSION_MINOR 8
-#define AXOM_VERSION_PATCH 1
-#define AXOM_VERSION_FULL  "v0.8.1"
+#define AXOM_VERSION_MINOR 9
+#define AXOM_VERSION_PATCH 0
+#define AXOM_VERSION_FULL  "v0.9.0"
 ```
 
 ## Checking details about the Axom configuration
@@ -114,22 +114,18 @@ We can run the application using:
 Its output should look something like:
 ```
 Axom information:
-
-AXOM_VERSION_FULL: v0.8.1
-AXOM_VERSION_MAJOR: 0
-AXOM_VERSION_MINOR: 8
-AXOM_VERSION_PATCH: 1
-AXOM_GIT_SHA: 749340203
+  AXOM_VERSION_FULL: v0.9.0
+  AXOM_VERSION_MAJOR: 0
+  AXOM_VERSION_MINOR: 9
+  AXOM_VERSION_PATCH: 0
+  AXOM_GIT_SHA: f5b5b5d66
 Compiler Settings: 
-   C++ Standard: c++14
-   MPI support: ENABLED
-   OpenMP support: ENABLED
-   CUDA support: DISABLED
-   HIP support: DISABLED
-Available components: 
- { core; inlet; klee; lumberjack; mint; primal; quest; sidre; slam; slic; spin; }
-Active Dependencies: 
- { CLI11; conduit; fmt; hdf5; lua; mfem; mpi; sol; sparsehash; raja; umpire; }
+  C++ Standard: c++14
+  Size of axom::IndexType: 4
+Active programming models: { mpi;openmp }
+Available components: { core;inlet;klee;lumberjack;mint;primal;quest;sidre;slam;slic;spin }
+Active built-in dependencies: { CLI11;fmt;sol;sparsehash }
+Active external dependencies: { adiak;caliper;conduit;hdf5;lua;mfem;raja;umpire }
 ```
 
 > :clapper: Run the example for this lesson

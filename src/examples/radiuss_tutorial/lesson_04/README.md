@@ -175,7 +175,7 @@ The following uses ``car.stl``, a mesh with nearly 2 million triangles.
 ```
 
 ```shell
->./bin/lesson_04_device_spatial_indexes -i car.stl --policy raja_omp -c
+>./bin/lesson_04_device_spatial_indexes -i car.stl --policy raja_omp -v
 
 [lesson_04: INFO] Loading the mesh took 0.992 seconds. 
 [lesson_04: INFO] Vertex welding took 1.17 seconds. 
