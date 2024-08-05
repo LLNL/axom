@@ -320,6 +320,7 @@ def build_and_test_host_config(test_root, host_config,
     should_test_installed_cmake_example = True
     should_test_installed_blt_example = True
     should_test_installed_make_example = False
+    should_test_installed_tutorial = True
 
     if should_test_installed_cmake_example:
         install_example_dir = pjoin(install_dir, "examples", "axom", "using-with-cmake")
@@ -378,6 +379,34 @@ def build_and_test_host_config(test_root, host_config,
             print("[ERROR: Installed 'using-with-blt' example for host-config: %s failed]\n\n" % host_config)
             return res
 
+    if should_test_installed_tutorial:
+        # Notes: Might require loading module for more recent cmake than the system default for some platforms
+        install_example_dir = pjoin(install_dir, "examples", "axom", "radiuss_tutorial")
+        install_example_output_file = pjoin(build_dir,"output.log.install_example.radiuss_tutorial.txt")
+        print("[testing installed 'radiuss_tutorial' example]")
+        print("[log file: %s]" % install_example_output_file)
+
+        example_commands = [
+            "cd {0}".format(install_example_dir),
+            "rm -rf build",
+            "mkdir build",
+            "cd build",
+            """echo "[Configuring 'radiuss_tutorial']" """,
+            "cmake -C ../host-config.cmake -DCMAKE_BUILD_TYPE={0} ..".format(build_type),
+            """echo "[Building 'radiuss_tutorial']" """,
+            "make -j16",
+            """echo "[Running lessons for radiuss_tutorial]" """,
+            "ctest -j16",
+            """echo "[Done]" """
+        ]
+
+        res = sexe(" && ".join(example_commands),
+                output_file = install_example_output_file,
+                echo=True)
+
+        if res != 0:
+            print("[ERROR: Installed 'radiuss_tutorial' for host-config: %s failed]\n\n" % host_config)
+            return res
 
     print("[SUCCESS: Build, test, and install for host-config: %s complete]\n" % host_config)
 
