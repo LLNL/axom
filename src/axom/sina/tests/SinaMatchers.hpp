@@ -2,6 +2,7 @@
 // other Axom Project Developers. See the top-level COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
+
 #ifndef AXOM_SINAMATCHERS_HPP
 #define AXOM_SINAMATCHERS_HPP
 
@@ -19,27 +20,30 @@ namespace testing
 {
 
 // Function to parse JSON value
-conduit::Node parseJsonValue(const std::string &valueAsString);
+conduit::Node parseJsonValue(const std::string& valueAsString);
 
 // Matcher class
-class MatchesJson {
+class MatchesJson
+{
 public:
-    explicit MatchesJson(const std::string &expectedJsonString);
+  explicit MatchesJson(const std::string& expectedJsonString);
 
-    bool MatchAndExplain(const conduit::Node& node, ::testing::MatchResultListener* listener) const;
+  bool MatchAndExplain(const conduit::Node& node,
+                       ::testing::MatchResultListener* listener) const;
 
-    void DescribeTo(std::ostream* os) const;
+  void DescribeTo(std::ostream* os) const;
 
-    void DescribeNegationTo(std::ostream* os) const;
+  void DescribeNegationTo(std::ostream* os) const;
 
 private:
-    const std::string expectedJsonString_;
+  const std::string expectedJsonString_;
 };
 
 // Helper function to create the matcher
-inline ::testing::PolymorphicMatcher<MatchesJson> MatchesJsonMatcher(const std::string &expectedJsonString)
+inline ::testing::PolymorphicMatcher<MatchesJson> MatchesJsonMatcher(
+  const std::string& expectedJsonString)
 {
-    return ::testing::MakePolymorphicMatcher(MatchesJson(expectedJsonString));
+  return ::testing::MakePolymorphicMatcher(MatchesJson(expectedJsonString));
 }
 
 }  // namespace testing

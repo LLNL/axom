@@ -2,6 +2,7 @@
 // other Axom Project Developers. See the top-level COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
+
 #include "axom/sina/tests/SinaMatchers.hpp"
 #include <string>
 
@@ -12,7 +13,7 @@ namespace sina
 namespace testing
 {
 
-conduit::Node parseJsonValue(const std::string &valueAsString)
+conduit::Node parseJsonValue(const std::string& valueAsString)
 {
   // If we just try to do node.parse(valueAsString, "json"), then passing
   // in strings does not work. We need to create a document with a key
@@ -26,11 +27,12 @@ conduit::Node parseJsonValue(const std::string &valueAsString)
 }
 
 // Define the MatchesJson class
-MatchesJson::MatchesJson(const std::string &expectedJsonString)
+MatchesJson::MatchesJson(const std::string& expectedJsonString)
   : expectedJsonString_(expectedJsonString)
 { }
 
-bool MatchesJson::MatchAndExplain(const conduit::Node& node, ::testing::MatchResultListener* listener) const
+bool MatchesJson::MatchAndExplain(const conduit::Node& node,
+                                  ::testing::MatchResultListener* listener) const
 {
   conduit::Node expected = parseJsonValue(expectedJsonString_);
   *listener << "Given node is " << node.to_json_default();
