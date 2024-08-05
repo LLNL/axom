@@ -540,6 +540,7 @@ int main(int argc, char** argv)
   //---------------------------------------------------------------------------
   // Set up DataCollection for shaping
   //---------------------------------------------------------------------------
+  // _load_mesh_start
   mfem::Mesh* shapingMesh = nullptr;
   constexpr bool dc_owns_data = true;
   sidre::MFEMSidreDataCollection shapingDC("shaping", shapingMesh, dc_owns_data);
@@ -552,6 +553,7 @@ int main(int argc, char** argv)
       : new mfem::Mesh(*originalMeshDC->GetMesh());
     shapingDC.SetMesh(shapingMesh);
   }
+  // _load_mesh_end
   AXOM_ANNOTATE_END("load mesh");
   printMeshInfo(shapingDC.GetMesh(), "After loading");
 
@@ -619,6 +621,7 @@ int main(int argc, char** argv)
   //---------------------------------------------------------------------------
   // Project initial volume fractions, if applicable
   //---------------------------------------------------------------------------
+  // _import_volume_fractions_start
   if(auto* samplingShaper = dynamic_cast<quest::SamplingShaper*>(shaper))
   {
     AXOM_ANNOTATE_SCOPE("import initial volume fractions");
@@ -651,7 +654,9 @@ int main(int argc, char** argv)
 
     // Project provided volume fraction grid functions as quadrature point data
     samplingShaper->importInitialVolumeFractions(initial_grid_functions);
+
   }
+  // _import_volume_fractions_end
   AXOM_ANNOTATE_END("setup shaping problem");
   AXOM_ANNOTATE_END("init");
 
@@ -660,6 +665,7 @@ int main(int argc, char** argv)
   //---------------------------------------------------------------------------
   SLIC_INFO(axom::fmt::format("{:=^80}", "Sampling InOut fields for shapes"));
   AXOM_ANNOTATE_BEGIN("shaping");
+  // _shaping_pipeline_begin
   for(const auto& shape : params.shapeSet.getShapes())
   {
     const std::string shapeFormat = shape.getGeometry().getFormat();
@@ -690,6 +696,7 @@ int main(int argc, char** argv)
     shaper->finalizeShapeQuery();
     slic::flushStreams();
   }
+  // _shaping_pipeline_end
   AXOM_ANNOTATE_END("shaping");
 
   //---------------------------------------------------------------------------
