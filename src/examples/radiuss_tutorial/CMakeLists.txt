@@ -16,7 +16,7 @@
 #  cd build
 #  cmake -C ../host-config.cmake ..
 #  make
-#  ./bin/example
+#  ./bin/lesson_*
 #
 #------------------------------------------------------------------------------
 
@@ -80,6 +80,57 @@ if(umpire_FOUND AND RAJA_FOUND)
                        SOURCES    lesson_04/device_spatial_indexes.cpp
                        DEPENDS_ON ${tutorial_deps})
 endif()
+
+#------------------------------------------------------------------------------
+# Optionally, add tests to run the tutorial lessons
+#------------------------------------------------------------------------------
+if(ENABLE_TESTS)
+    blt_add_test(NAME    lesson_00_check_axom_configuration
+                 COMMAND lesson_00_check_axom_configuration)
+
+    set(_sphere_mesh "${AXOM_DATA_DIR}/quest/sphere_binary.stl")
+    set(_plane_problem_mesh "${AXOM_DATA_DIR}/quest/plane_simp_problems.stl")
+
+    if(EXISTS ${_sphere_mesh})
+        blt_add_test(
+            NAME    lesson_01_load_stl_mesh_sphere
+            COMMAND lesson_01_load_stl_mesh -i ${_sphere_mesh})
+
+        blt_add_test(
+            NAME    lesson_02_naive_self_intersections_sphere
+            COMMAND lesson_02_naive_self_intersections -i ${_sphere_mesh} --use-bounding-boxes)
+    endif()
+
+    set (_policies "seq")
+    blt_list_append(TO _policies ELEMENTS "omp"  IF ENABLE_OPENMP)
+    blt_list_append(TO _policies ELEMENTS "cuda" IF ENABLE_CUDA)
+    blt_list_append(TO _policies ELEMENTS "hip"  IF ENABLE_HIP)
+
+    # the plane_mesh can take too long on lesson 3 in Debug configs, so only use it in Release configs
+    set(_lesson_03_mesh_name "sphere")
+    set(_lesson_03_mesh_path ${_sphere_mesh})
+    if(${CMAKE_BUILD_TYPE} MATCHES "^[Rr]elease")
+        set(_lesson_03_mesh_name "plane")
+        set(_lesson_03_mesh_path ${_plane_problem_mesh})
+    endif()
+    if(TARGET lesson_03_device_self_intersections AND EXISTS ${_lesson_03_mesh_path})
+        foreach(_pol ${_policies})
+            blt_add_test(
+                NAME    lesson_03_device_self_intersections_${_lesson_03_mesh_name}_${_pol}
+                COMMAND lesson_03_device_self_intersections -i ${_lesson_03_mesh_path} --use-bounding-boxes -p ${_pol})
+        endforeach()
+    endif()
+
+    if(TARGET lesson_04_device_spatial_indexes AND EXISTS ${_plane_problem_mesh})
+        foreach(_pol ${_policies})
+            blt_add_test(
+                NAME    lesson_04_device_spatial_indexes_plane_${_pol}
+                COMMAND lesson_04_device_spatial_indexes -i ${_plane_problem_mesh} -p ${_pol})
+        endforeach()
+    endif()
+
+endif()
+
 
 #------------------------------------------------------------------------------
 # Optionally, print out information about imported targets
