@@ -51,9 +51,10 @@ find_dependency(axom REQUIRED
 #------------------------------------------------------------------------------
 # Set up target executables for the tutorial
 #------------------------------------------------------------------------------
-
 set(tutorial_deps axom axom::fmt axom::cli11)
-blt_list_append(TO tutorial_deps ELEMENTS cuda IF CUDA_FOUND)
+blt_list_append(TO tutorial_deps ELEMENTS blt::openmp IF ENABLE_OPENMP)
+blt_list_append(TO tutorial_deps ELEMENTS blt::cuda IF ENABLE_CUDA)
+blt_list_append(TO tutorial_deps ELEMENTS blt::hip IF ENABLE_HIP)
 
 blt_add_executable(NAME       lesson_00_check_axom_configuration 
                    SOURCES    lesson_00/check_axom_configuration.cpp
@@ -68,7 +69,7 @@ blt_add_executable(NAME       lesson_02_naive_self_intersections
                    DEPENDS_ON ${tutorial_deps})
 
 if(umpire_FOUND AND RAJA_FOUND)
-    blt_list_append(TO tutorial_deps ELEMENTS RAJA IF RAJA_FOUND)
+    blt_list_append(TO tutorial_deps ELEMENTS RAJA   IF RAJA_FOUND)
     blt_list_append(TO tutorial_deps ELEMENTS umpire IF umpire_FOUND)
 
     blt_add_executable(NAME       lesson_03_device_self_intersections
@@ -84,8 +85,6 @@ endif()
 # Optionally, print out information about imported targets
 #------------------------------------------------------------------------------
 if(EXAMPLE_VERBOSE_OUTPUT)
-    foreach(_target axom axom::cli11 axom::fmt axom::sparsehash conduit::conduit umpire RAJA)
-        blt_print_target_properties(TARGET ${_target})  
-    endforeach()
+    blt_print_target_properties(TARGET axom CHILDREN TRUE)  
 endif()
 

@@ -39,22 +39,7 @@
 #include <memory>
 #include <array>
 
-using seq_exec = axom::SEQ_EXEC;
-
-// clang-format off
-#if defined(AXOM_USE_OPENMP)
-  using omp_exec = axom::OMP_EXEC;
-#else
-  using omp_exec = seq_exec;
-#endif
-
-#if defined(AXOM_USE_CUDA)
-  constexpr int BLK_SZ = 256;
-  using cuda_exec = axom::CUDA_EXEC<BLK_SZ>;
-#else
-  using cuda_exec = seq_exec;
-#endif
-// clang-format on
+using RuntimePolicy = axom::runtime_policy::Policy;
 
 //-----------------------------------------------------------------------------
 /// Basic RAII utility class for initializing and finalizing slic logger
@@ -90,12 +75,6 @@ struct BasicLogger
 //-----------------------------------------------------------------------------
 /// Struct to help with parsing and storing command line args
 //-----------------------------------------------------------------------------
-enum class RuntimePolicy
-{
-  raja_seq = 1,
-  raja_omp = 2,
-  raja_cuda = 3
-};
 
 struct Input
 {
@@ -105,7 +84,7 @@ struct Input
   bool verboseOutput {false};
   double weldThreshold {1e-6};
   double intersectionThreshold {1e-08};
-  RuntimePolicy policy {RuntimePolicy::raja_seq};
+  RuntimePolicy policy {RuntimePolicy::seq};
 
   void parse(int argc, char** argv, axom::CLI::App& app);
   bool isVerbose() const { return verboseOutput; }
@@ -132,19 +111,24 @@ void Input::parse(int argc, char** argv, axom::CLI::App& app)
     ->description("Threshold to use when testing for intersecting triangles")
     ->capture_default_str();
 
-  app.add_option("-p, --policy", policy)
-    ->description(
-      "Execution policy."
-      "\nSet to 'raja_seq' or 1 to use the RAJA sequential policy."
+  std::stringstream pol_sstr;
+  pol_sstr << "Set runtime policy for intersection-based sampling method.";
+  pol_sstr << "\nSet to 'seq' or 0 to use the RAJA sequential policy.";
 #ifdef AXOM_USE_OPENMP
-      "\nSet to 'raja_omp' or 2 to use the RAJA openmp policy."
+  pol_sstr << "\nSet to 'omp' or 1 to use the RAJA OpenMP policy.";
 #endif
 #ifdef AXOM_USE_CUDA
-      "\nSet to 'raja_cuda' or 3 to use the RAJA cuda policy."
+  pol_sstr << "\nSet to 'cuda' or 2 to use the RAJA CUDA policy.";
 #endif
-      )
+#ifdef AXOM_USE_HIP
+  pol_sstr << "\nSet to 'hip' or 3 to use the RAJA HIP policy.";
+#endif
+
+  app.add_option("-p, --policy", policy)
+    ->description(pol_sstr.str())
     ->capture_default_str()
-    ->transform(axom::CLI::CheckedTransformer(Input::s_validPolicies));
+    ->transform(
+      axom::CLI::CheckedTransformer(axom::runtime_policy::s_nameToPolicy));
 
   app.get_formatter()->column_width(40);
 
@@ -166,22 +150,8 @@ void Input::parse(int argc, char** argv, axom::CLI::App& app)
     (weldThreshold <= 0.),
     intersectionThreshold,
     verboseOutput,
-    policy == RuntimePolicy::raja_omp        ? "raja_omp"
-      : (policy == RuntimePolicy::raja_cuda) ? "raja_cuda"
-                                             : "raja_seq"));
+    axom::runtime_policy::policyToName(policy)));
 }
-
-const std::map<std::string, RuntimePolicy> Input::s_validPolicies(
-  {{"raja_seq", RuntimePolicy::raja_seq}
-#ifdef AXOM_USE_OPENMP
-   ,
-   {"raja_omp", RuntimePolicy::raja_omp}
-#endif
-#ifdef AXOM_USE_CUDA
-   ,
-   {"raja_cuda", RuntimePolicy::raja_cuda}
-#endif
-  });
 
 //-----------------------------------------------------------------------------
 /// Basic triangle mesh to be used in our application
@@ -533,27 +503,35 @@ int main(int argc, char** argv)
   axom::utilities::Timer timer(true);
   switch(params.policy)
   {
-  case RuntimePolicy::raja_omp:
 #ifdef AXOM_USE_OPENMP
+  case RuntimePolicy::omp:
     intersectionPairs =
-      findIntersectionsBVH<omp_exec>(mesh,
-                                     params.intersectionThreshold,
-                                     params.isVerbose());
-#endif
+      findIntersectionsBVH<axom::OMP_EXEC>(mesh,
+                                           params.intersectionThreshold,
+                                           params.isVerbose());
     break;
-  case RuntimePolicy::raja_cuda:
+#endif
 #ifdef AXOM_USE_CUDA
+  case RuntimePolicy::cuda:
     intersectionPairs =
-      findIntersectionsBVH<cuda_exec>(mesh,
-                                      params.intersectionThreshold,
-                                      params.isVerbose());
-#endif
+      findIntersectionsBVH<axom::CUDA_EXEC<256>>(mesh,
+                                                 params.intersectionThreshold,
+                                                 params.isVerbose());
     break;
-  default:  // RuntimePolicy::raja_seq
+#endif
+#ifdef AXOM_USE_HIP
+  case RuntimePolicy::hip:
     intersectionPairs =
-      findIntersectionsBVH<seq_exec>(mesh,
-                                     params.intersectionThreshold,
-                                     params.isVerbose());
+      findIntersectionsBVH<axom::HIP_EXEC<256>>(mesh,
+                                                params.intersectionThreshold,
+                                                params.isVerbose());
+    break;
+#endif
+  default:  // RuntimePolicy::seq
+    intersectionPairs =
+      findIntersectionsBVH<axom::SEQ_EXEC>(mesh,
+                                           params.intersectionThreshold,
+                                           params.isVerbose());
     break;
   }
   timer.stop();
