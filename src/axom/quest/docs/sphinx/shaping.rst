@@ -14,7 +14,7 @@ Shaping is used when it is not feasible or practical to directly build features
 into the mesh.
 
 .. figure:: figs/shaping_overview.png
-   :width: 600px
+   :width: 800px
 
    Shaping permits details to be added into meshes.
 
@@ -24,6 +24,7 @@ a material name, a file path that contains the shape geometry, replacement rules
 and transforms that can be applied to the shape geometry. Axom\'s Quest component
 contains shaping infrastructure that takes the shapes from Klee and generates the
 volume fractions for the shapes on a target mesh.
+
 
 .. _shaping-pipeline:
 

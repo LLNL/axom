@@ -62,7 +62,7 @@ Doxygen generated API documentation can be found here: `API documentation <../..
    point_in_cell
    all_nearest_neighbors
    isosurface_detection
-   shaping_pipeline
+   shaping
 
 
 
