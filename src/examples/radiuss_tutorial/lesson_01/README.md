@@ -48,7 +48,7 @@ struct BasicLogger
 };
 ```
 
-The constructor calls ``slic::initialize()``, sets the logging level to ``slic::message::Debug`` and then creates log streams for the different message levels. The destructor finalizes the slic component with `slic::finalize()`.
+The constructor calls ``slic::initialize()``, sets the logging level to ``slic::message::Debug`` and then creates log streams for the different message levels. The destructor cleans up SLIC's memory with `slic::finalize()`.
 
 > :memo: Axom provides a similar basic wrapper in the ``slic::SimpleLogger`` class.
 
