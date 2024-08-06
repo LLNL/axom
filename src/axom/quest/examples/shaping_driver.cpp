@@ -656,7 +656,6 @@ int main(int argc, char** argv)
 
     // Project provided volume fraction grid functions as quadrature point data
     samplingShaper->importInitialVolumeFractions(initial_grid_functions);
-
   }
   // _import_volume_fractions_end
   AXOM_ANNOTATE_END("setup shaping problem");
