@@ -13,6 +13,8 @@
 //-----------------------------------------------------------------------------
 
 #include "axom/config.hpp"
+#include "../patch/hip_patch.hpp"
+
 #include "axom/core.hpp"
 #include "axom/slic.hpp"
 

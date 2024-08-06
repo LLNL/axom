@@ -10,6 +10,9 @@
 /// This example loads an STL mesh and checks pairs of triangles for self-intersections
 //-----------------------------------------------------------------------------
 
+#include "axom/config.hpp"
+#include "../patch/hip_patch.hpp"
+
 #include "axom/core.hpp"
 #include "axom/slic.hpp"
 #include "axom/mint.hpp"

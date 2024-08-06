@@ -11,6 +11,9 @@
 /// It uses slic for logging and CLI11 to parse command line parameters.
 //-----------------------------------------------------------------------------
 
+#include "axom/config.hpp"
+#include "../patch/hip_patch.hpp"
+
 #include "axom/core.hpp"
 #include "axom/slic.hpp"
 #include "axom/mint.hpp"
