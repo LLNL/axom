@@ -44,11 +44,10 @@ namespace views
  *
  */
 template <typename IndexT, int NDIMS = 3>
-class StridedStructuredIndexing
+struct StridedStructuredIndexing
 {
-public:
   using IndexType = IndexT;
-  using LogicalIndex = axom::StackArray<axom::IndexType, NDIMS>;
+  using LogicalIndex = axom::StackArray<IndexType, NDIMS>;
 
   AXOM_HOST_DEVICE constexpr static int dimension() { return NDIMS; }
 
@@ -382,7 +381,6 @@ public:
 
   /// @}
 
-private:
   LogicalIndex m_dimensions {};
   LogicalIndex m_offsets {};
   LogicalIndex m_strides {};

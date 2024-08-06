@@ -153,6 +153,77 @@ private:
 };
 
 //------------------------------------------------------------------------------
+
+/**
+ * \brief Returns the input index (no changes).
+ */
+struct DirectIndexing
+{
+  void update(const conduit::Node &)
+  {
+  }
+
+  /**
+   * \brief Return the input index (no changes).
+   * \param index The input index.
+   * \return The input index.
+   */
+  AXOM_HOST_DEVICE
+  inline axom::IndexType operator [](axom::IndexType index) const
+  {
+    return index;
+  }
+};
+
+/**
+ * \brief Maps a local index to a global index through an indexing object (used for strided structured grids).
+ * \tparam Indexing A StridedStructuredIndexing of some dimension.
+ */
+template <typename Indexing>
+struct LocalToGlobalIndexing
+{
+  /**
+   * \brief Update the indexing offsets/strides from a Conduit node.
+   * \param field The Conduit node for a field.
+   */
+  void update(const conduit::Node &field)
+  {
+    fillFromNode(field, "offsets", m_indexing.m_offsets);
+    fillFromNode(field, "strides", m_indexing.m_strides);
+  }
+
+  /**
+   * \brief Transforms the index from local to global through an indexing object.
+   * \param index The local index
+   * \return The global index for the field.
+   */
+  AXOM_HOST_DEVICE
+  inline axom::IndexType operator [](axom::IndexType index) const
+  {
+    return m_indexing.LocalToGlobal(index);
+  }
+
+  template <typename ArrayType>
+  static bool fillFromNode(const conduit::Node &n,
+                           const std::string &key,
+                           ArrayType &arr)
+  {
+    bool found = false;
+    if((found = n.has_path(key)) == true)
+    {
+      const auto acc = n.fetch_existing(key).as_int_accessor();
+      for(int i = 0; i < arr.size(); i++)
+      {
+        arr[i] = acc[i];
+      }
+    }
+    return found;
+  }
+
+  Indexing m_indexing{};
+};
+
+//------------------------------------------------------------------------------
 /**
  * \accelerated
  * \brief Make an unstructured representation of a structured topology.

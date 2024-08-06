@@ -13,7 +13,8 @@
 #include "axom/mir/CoordsetBlender.hpp"
 #include "axom/mir/FieldSlicer.hpp"
 #include "axom/mir/blueprint_utilities.hpp"
-#include "axom/mir/utilities.hpp"  // for cpp2conduit
+#include "axom/mir/utilities.hpp"
+#include "axom/mir/views/view_traits.hpp"
 
 #include <conduit/conduit.hpp>
 #include <conduit/conduit_blueprint_mesh_utils.hpp>
@@ -212,6 +213,12 @@ template <typename ExecSpace>
 class ClipOptions
 {
 public:
+  /**
+   * \brief Constructor
+   *
+   * \param nzones The total number of zones in the associated topology.
+   * \param options The node that contains the clipping options.
+   */
   ClipOptions(axom::IndexType nzones, const conduit::Node &options)
     : m_nzones(nzones)
     , m_options(options)
@@ -221,6 +228,8 @@ public:
   /**
    * \brief Return a view that contains the list of selected zone ids for the mesh.
    * \return A view that contains the list of selected zone ids for the mesh.
+   *
+   * \note The data for the view is generated if it has not yet been built.
    */
   axom::ArrayView<axom::IndexType> selectedZonesView()
   {
@@ -355,6 +364,10 @@ private:
    * \brief The options may contain a "selectedZones" member that is a list of zones
    *        that will be operated on. If such an array is present, copy and sort it.
    *        If the zone list is not present, make an array that selects every zone.
+   *
+   * \note selectedZones should contain local zone numbers, which in the case of
+   *       strided-structured indexing are the [0..n) zone numbers that exist only
+   *       within the selected window.
    */
   void buildSelectedZones()
   {
@@ -959,8 +972,10 @@ public:
                conduit::Node &n_newFields)
   {
     const auto allocatorID = axom::execution_space<ExecSpace>::allocatorID();
-    const auto nzones = m_topologyView.numberOfZones();
-    ClipOptions<ExecSpace> opts(nzones, n_options);
+
+    // Make the selected zones and get the size.
+    ClipOptions<ExecSpace> opts(m_topologyView.numberOfZones(), n_options);
+    const auto nzones = opts.selectedZonesView().size();
 
     // Get the clip field.
     std::string clipFieldName = opts.clipField();
@@ -1086,13 +1101,18 @@ public:
                                         fragmentData.m_finalNumZones,
                                         allocatorID);
     auto sliceIndicesView = sliceIndices.view();
+
+    // Fill in sliceIndicesView.
+    const auto selectedZonesView = opts.selectedZonesView();
     axom::for_all<ExecSpace>(
       nzones,
-      AXOM_LAMBDA(auto zoneIndex) {
-        const auto start = fragmentData.m_fragmentOffsetsView[zoneIndex];
-        for(int i = 0; i < fragmentData.m_fragmentsView[zoneIndex]; i++)
+      AXOM_LAMBDA(auto index) {
+        const auto zoneIndex = selectedZonesView[index];
+        const auto start = fragmentData.m_fragmentOffsetsView[index];
+        for(int i = 0; i < fragmentData.m_fragmentsView[index]; i++)
           sliceIndicesView[start + i] = zoneIndex;
       });
+
     slice.m_indicesView = sliceIndicesView;
     makeFields(blend,
                slice,
@@ -1695,35 +1715,60 @@ private:
       const std::string association = n_field["association"].as_string();
       if(association == "element")
       {
-        axom::mir::utilities::blueprint::FieldSlicer<ExecSpace> s;
-        s.execute(slice, n_field, n_out_fields[it->second]);
+        bool handled = false;
+        // Conditionally support strided-structured.
+        if constexpr (axom::mir::views::view_traits<TopologyView>::supports_strided_structured())
+        {
+          if(n_field.has_path("offsets") && n_field.has_path("strides"))
+          {
+            using Indexing = typename TopologyView::IndexingPolicy;
+            using IndexingPolicy = axom::mir::utilities::blueprint::LocalToGlobalIndexing<Indexing>;
+            IndexingPolicy indexing;
+            indexing.m_indexing = m_topologyView.indexing();
+
+            axom::mir::utilities::blueprint::FieldSlicer<ExecSpace, IndexingPolicy> s(indexing);
+            s.execute(slice, n_field, n_out_fields[it->second]);
+            handled = true;
+          }
+        }
+        if(!handled)
+        {
+          axom::mir::utilities::blueprint::FieldSlicer<ExecSpace> s;
+          s.execute(slice, n_field, n_out_fields[it->second]);
+        }
+
         n_out_fields[it->second]["topology"] = topologyName;
       }
       else if(association == "vertex")
       {
         bool handled = false;
-        // If we have fields that look like strided structured, try and support that
-        // if the topology view supports it.
-        if(n_field.has_path("offsets") || n_field.has_path("strides"))
+#if 0
+        // Node indices in the blend groups are global indices. This means that, provided the
+        // field's offsets/strides match the topology's (and why would they not?), we can skip
+        // strided structured support for now.
+
+        // Conditionally support strided-structured.
+        if constexpr (axom::mir::views::view_traits<TopologyView>::supports_strided_structured())
         {
-          if constexpr (TopologyView::supports_strided_structured_indexing())
+          if(n_field.has_path("offsets") && n_field.has_path("strides"))
           {
             // Make node indexing that the field blender can use.
             using Indexing = typename TopologyView::IndexingPolicy;
-            using IndexerType = axom::mir::utilities::blueprint::MapNodesThroughIndexing<Indexing>;
-            IndexerType indexing;
+            using IndexingPolicy = axom::mir::utilities::blueprint::GlobalToLocalIndexing<Indexing>;
+            IndexingPolicy indexing;
             indexing.m_indexing = m_topologyView.indexing().expand();
 
             // Blend the field.
             axom::mir::utilities::blueprint::FieldBlender<
               ExecSpace,
               axom::mir::utilities::blueprint::SelectThroughArrayView,
-              IndexerType>
+              IndexingPolicy>
               b(indexing);
             b.execute(blend, n_field, n_out_fields[it->second]);
             handled = true;
           }
         }
+#endif
         if(!handled)
         {
           axom::mir::utilities::blueprint::FieldBlender<

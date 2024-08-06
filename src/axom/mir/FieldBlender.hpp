@@ -70,30 +70,6 @@ struct SelectThroughArrayView
   }
 };
 
-/// Does no node index mapping.
-struct NoMapping
-{
-  AXOM_HOST_DEVICE
-  inline axom::IndexType operator [](axom::IndexType index) const
-  {
-    return index;
-  }
-};
-
-/// Maps node indices to their local indexing used in vertex fields.
-template <typename Indexing>
-struct MapNodesThroughIndexing
-{
-  AXOM_HOST_DEVICE
-  inline axom::IndexType operator [](axom::IndexType index) const
-  {
-    return m_indexing.GlobalToLocal(index);
-  }
-
-  Indexing m_indexing{};
-};
-
-
 /**
  * \accelerated
  * \class FieldBlender
@@ -102,18 +78,21 @@ struct MapNodesThroughIndexing
  *
  * \tparam ExecSpace The execution space where the work will occur.
  * \tparam SelectionPolicy The selection policy to use.
- * \tparam NodeIndexingPolicy How/if changes in node indexing occur when accessing nodes.
+ * \tparam IndexingPolicy A class that provides operator[] that can transform node indices.
  */
-template <typename ExecSpace, typename SelectionPolicy, typename NodeIndexingPolicy = NoMapping>
+template <typename ExecSpace, typename SelectionPolicy, typename IndexingPolicy = DirectIndexing>
 class FieldBlender
 {
 public:
   /// Constructor
-  FieldBlender() : m_nodeIndexing()
+  FieldBlender() : m_indexing()
   { }
 
-  /// Constructor
-  FieldBlender(const NodeIndexingPolicy &indexing) : m_nodeIndexing(indexing)
+  /**
+   * \brief Constructor
+   * \param indexing An object used to transform node indices.
+   */
+  FieldBlender(const IndexingPolicy &indexing) : m_indexing(indexing)
   { }
 
   /**
@@ -139,12 +118,12 @@ public:
       {
         const conduit::Node &n_comp = n_input_values[i];
         conduit::Node &n_out_comp = n_output_values[n_comp.name()];
-        blendSingleComponent(blend, n_comp, n_out_comp);
+        blendSingleComponent(blend, n_input, n_comp, n_out_comp);
       }
     }
     else
     {
-      blendSingleComponent(blend, n_input_values, n_output_values);
+      blendSingleComponent(blend, n_input, n_input_values, n_output_values);
     }
   }
 
@@ -154,10 +133,12 @@ private:
    * \brief Blend data for a single field component.
    *
    * \param blend The BlendData that will be used to make the new field.
+   * \param n_input The node that contains the field.
    * \param n_values The input values that we're blending.
    * \param n_output_values The output node that will contain the new field.
    */
   void blendSingleComponent(const BlendData &blend,
+                            const conduit::Node &n_input,
                             const conduit::Node &n_values,
                             conduit::Node &n_output_values) const
   {
@@ -165,7 +146,7 @@ private:
     // groups. If the user did not provide that, use all blend groups.
     const auto outputSize = SelectionPolicy::size(blend);
 
-    // Get the ID of a Conduit allocator that will allocate through Axom with device allocator allocatorID.
+    // Allocate Conduit data through Axom.
     utilities::blueprint::ConduitAllocateThroughAxom<ExecSpace> c2a;
     n_output_values.set_allocator(c2a.getConduitAllocatorID());
     n_output_values.set(conduit::DataType(n_values.dtype().id(), outputSize));
@@ -178,9 +159,11 @@ private:
         using accum_type =
           typename axom::mir::utilities::accumulation_traits<value_type>::type;
 
-        // Make capturable objects for the lambda.
+        // Let the indexing object update itself from the node strides/offsets.
+        IndexingPolicy deviceIndexing(m_indexing);
+        deviceIndexing.update(n_input);
+
         const BlendData deviceBlend(blend);
-        const NodeIndexingPolicy nodeIndexing(m_nodeIndexing);
 
         axom::for_all<ExecSpace>(
           outputSize,
@@ -195,10 +178,10 @@ private:
             accum_type blended = 0;
             for(IndexType i = start; i < end; i++)
             {
-              // Get the index that we're using, potentially mapping the node value.
-              const auto index = nodeIndexing[deviceBlend.m_blendIdsView[i]];
+              const auto index = deviceBlend.m_blendIdsView[i];
               const auto weight = deviceBlend.m_blendCoeffView[i];
-              blended += static_cast<accum_type>(compView[index]) * weight;
+              const auto transformedIndex = deviceIndexing[index];
+              blended += static_cast<accum_type>(compView[transformedIndex]) * weight;
             }
             outView[bgid] = static_cast<value_type>(blended);
           });
@@ -206,7 +189,7 @@ private:
   }
 
 private:
-  NodeIndexingPolicy m_nodeIndexing {};
+  IndexingPolicy m_indexing {};
 };
 
 }  // end namespace blueprint

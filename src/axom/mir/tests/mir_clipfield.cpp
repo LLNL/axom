@@ -752,6 +752,7 @@ void strided_structured_clip_test(const std::string &name)
   axom::mir::utilities::blueprint::copy<ExecSpace>(deviceMesh, hostMesh);
 #if defined(AXOM_TESTING_SAVE_VISUALIZATION)
   conduit::relay::io::blueprint::save_mesh(hostMesh, name + "_orig", "hdf5");
+  conduit::relay::io::blueprint::save_mesh(hostMesh, name + "_orig_yaml", "yaml");
 #endif
 
   conduit::Node options, deviceClipMesh, hostClipMesh;

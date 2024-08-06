@@ -21,6 +21,8 @@ namespace mir
 {
 namespace views
 {
+
+//------------------------------------------------------------------------------
 /**
  * \brief Fill an array from a Conduit node, filling the destination array if the values do not exist.
  *
@@ -169,7 +171,7 @@ struct make_strided_structured<1>
   using TopoView = views::StructuredTopologyView<Indexing>;
 
   /**
-   * \brief Create the indxing and initialize it from the topology.
+   * \brief Create the indexing and initialize it from the topology.
    * \param topo The node containing the topology.
    * \return The indexing.
    */
@@ -217,19 +219,28 @@ struct make_structured<3>
   using TopoView = views::StructuredTopologyView<Indexing>;
 
   /**
-   * \brief Create the topology view and initialize it from the topology.
+   * \brief Create the indexing and initialize it from the topology.
    * \param topo The node containing the topology.
-   * \return The topology view.
+   * \return The indexing.
    */
-  static TopoView view(const conduit::Node &topo)
+  static Indexing indexing(const conduit::Node &topo)
   {
     LogicalIndex zoneDims;
     zoneDims[0] = topo.fetch_existing("elements/dims/i").as_int();
     zoneDims[1] = topo.fetch_existing("elements/dims/j").as_int();
     zoneDims[2] = topo.fetch_existing("elements/dims/k").as_int();
 
-    Indexing zoneIndexing(zoneDims);
-    return TopoView(zoneIndexing);
+    return Indexing(zoneDims);
+  }
+
+  /**
+   * \brief Create the topology view and initialize it from the topology.
+   * \param topo The node containing the topology.
+   * \return The topology view.
+   */
+  static TopoView view(const conduit::Node &topo)
+  {
+    return TopoView(indexing(topo));
   }
 };
 
@@ -244,18 +255,26 @@ struct make_structured<2>
   using TopoView = views::StructuredTopologyView<Indexing>;
 
   /**
+   * \brief Create the indexing and initialize it from the topology.
+   * \param topo The node containing the topology.
+   * \return The indexing.
+   */
+  static Indexing indexing(const conduit::Node &topo)
+  {
+    LogicalIndex zoneDims;
+    zoneDims[0] = topo.fetch_existing("elements/dims/i").as_int();
+    zoneDims[1] = topo.fetch_existing("elements/dims/j").as_int();
+    return Indexing(zoneDims);
+  }
+
+  /**
    * \brief Create the topology view and initialize it from the topology.
    * \param topo The node containing the topology.
    * \return The topology view.
    */
   static TopoView view(const conduit::Node &topo)
   {
-    LogicalIndex zoneDims;
-    zoneDims[0] = topo.fetch_existing("elements/dims/i").as_int();
-    zoneDims[1] = topo.fetch_existing("elements/dims/j").as_int();
-
-    Indexing zoneIndexing(zoneDims);
-    return TopoView(zoneIndexing);
+    return TopoView(indexing(topo));
   }
 };
 
@@ -270,17 +289,26 @@ struct make_structured<1>
   using TopoView = views::StructuredTopologyView<Indexing>;
 
   /**
+   * \brief Create the indexing and initialize it from the topology.
+   * \param topo The node containing the topology.
+   * \return The indexing.
+   */
+  static Indexing indexing(const conduit::Node &topo)
+  {
+    LogicalIndex zoneDims;
+    zoneDims[0] = topo.fetch_existing("elements/dims/i").as_int();
+
+    return Indexing(zoneDims);
+  }
+
+  /**
    * \brief Create the topology view and initialize it from the topology.
    * \param topo The node containing the topology.
    * \return The topology view.
    */
   static TopoView view(const conduit::Node &topo)
   {
-    LogicalIndex zoneDims;
-    zoneDims[0] = topo.fetch_existing("elements/dims/i").as_int();
-
-    Indexing zoneIndexing(zoneDims);
-    return TopoView(zoneIndexing);
+    return TopoView(indexing(topo));
   }
 };
 
