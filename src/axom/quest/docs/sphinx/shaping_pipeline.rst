@@ -3,7 +3,7 @@
 .. ##
 .. ## SPDX-License-Identifier: (BSD-3-Clause)
 
-.. pipeline:
+.. _shaping-overview:
 
 Shaping Overview
 ================
@@ -24,6 +24,8 @@ a material name, a file path that contains the shape geometry, replacement rules
 and transforms that can be applied to the shape geometry. Axom\'s Quest component
 contains shaping infrastructure that takes the shapes from Klee and generates the
 volume fractions for the shapes on a target mesh.
+
+.. _shaping-pipeline:
 
 Shaping Pipeline
 =================
@@ -110,3 +112,99 @@ shaper so it is ready to process the next shape.
    :start-after: _shaping_pipeline_begin
    :end-before: _shaping_pipeline_end
    :language: C++
+
+
+.. _sampling-shaper:
+
+Sampling Shaper
+---------------
+
+Quest provides a *SamplingShaper* class that takes input shapes and turns them into volume fraction
+grid functions on the target mesh using sampling-based in/out tests. The SamplingShaper works by
+iterating over each zone in the target mesh and at various points within that zone *(typically
+quadrature points)*, determining whether that point is inside or outside of a shape. These in/out
+test results are used to determine the volume overlap of the shape and the zone.
+
+* RZ contour shapes
+* Shapes containing geometry from STL, ProE files
+* 2D/3D target meshes
+* Can output high order volume fraction grid functions
+* Executes on the CPU
+
+.. figure:: figs/sampling.png
+   :width: 300px
+
+   Sampling shaper tests whether points in a zone are in/out for a shape.
+
+
+Accuracy
+^^^^^^^^
+
+The SamplingShaper relies on a winding number-based in/out test to compare a point against
+a shape. Ultimately, each shape is descretized into a number of smaller line segments so the algorithm
+can walk around the edges to determine the in/out value. For highly-curved shape edges, more 
+accuracy can be achieved by subdividing edges into more line segments.
+The *setSamplesPerKnotSpan()* method sets the number of sample points within each spline
+knot span (smaller intervals that make up the curved edge)and determines how many line segments are produced.
+Additionally, the number of sample points
+taken within the zone influences the accuracy of the result. The quadrature order determines the
+number of samples within a zone. The volume fraction order determines the order
+of the output volume fraction field. The shaper will convert the sampled points at the quadrature order
+to the volume fraction order when making the volume fraction grid functions.
+
+.. code-block:: c++
+
+  shaper->setSamplesPerKnotSpan(25);
+  shaper->setQuadratureOrder(5);
+  shaper->setVolumeFractionOrder(2);
+
+
+Point Projection
+^^^^^^^^^^^^^^^^
+
+The SamplingShaper can use a point projection lambda function during in/out tests to transform the
+sampling point. One use case for this is to transform a 3D point from the target mesh back into a 2D
+point, allowing for revolved shaping using 2D shapes. The *setPointProjector()*
+function sets a point transformation function for the shaper.
+
+.. literalinclude:: ../../examples/shaping_driver.cpp
+   :start-after: _point_projection_begin
+   :end-before: _point_projection_end
+   :language: C++
+
+
+.. _intersection-shaper:
+
+Intersection Shaper
+--------------------
+
+The IntersectionShaper takes a set of 2-dimensional RZ contours and revolves them into 3D to do actual
+geometric intersections of the revolved geometry with the target mesh zones. Contour shapes are linearized
+into line segments and then revolved into truncated cones, which are approximated using a number of
+octahedra. The number of octahedra is determined by a level parameter that indicates how many times the
+shape has been refined to produce octahedra, each time more accurately covering volume of the truncated
+cone. The shaper intersects each octahedron with the zones of the target mesh to determine the volume
+fraction overlap.
+
+* Revolves RZ contour shapes
+* 3D target meshes
+* Executes on CPU and GPU
+
+.. figure:: figs/intersection.png
+   :width: 400px
+
+   Intersection shaper creates revolved geometry for a shape and determines volume intersection with target mesh zones.
+
+Accuracy
+^^^^^^^^^
+
+The IntersectionShaper works by default in the same manner as the SamplingShaper in how it discretizes
+shapes into line segments. However, the IntersectionShaper can also set a percent error value that causes
+the algorithm to re-refine the shape into line segments dynamically or increase the level of cone refinement until
+the percentage of volume difference converges to less than a supplied error tolerance.
+
+.. code-block:: c++
+
+    shaper->setPercentError(0.02);
+    shaper->setRefinementType(quest::Shaper::RefinementDynamic);
+

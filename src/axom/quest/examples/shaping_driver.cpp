@@ -597,12 +597,14 @@ int main(int argc, char** argv)
     // register a point projector
     if(shapingDC.GetMesh()->Dimension() == 3 && shapeDim == klee::Dimensions::Two)
     {
+      // _point_projection_begin
       samplingShaper->setPointProjector([](primal::Point<double, 3> pt) {
         const double& x = pt[0];
         const double& y = pt[1];
         const double& z = pt[2];
         return primal::Point<double, 2> {z, sqrt(x * x + y * y)};
       });
+      // _point_projection_end
     }
   }
 

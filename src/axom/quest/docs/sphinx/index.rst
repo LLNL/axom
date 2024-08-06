@@ -40,9 +40,10 @@ on a ``mint::Mesh``.
 
   - Shaping
 
-   - :ref:`Shaping pipeline <pipeline>`: how to set up shaping.
-   - :ref:`Sampling shaping`
-   - :ref:`Intersection shaping`
+   - :ref:`Shaping Overview<shaping-overview>`
+   - How to set up a :ref:`Shaping Pipeline<_shaping-pipeline>`
+   - Using the :ref:`Sampling Shaper<_sampling-shaper>`
+   - Using the :ref:`Intersection Shaper<_intersection-shaper>`
 
 API Documentation
 -----------------
@@ -62,7 +63,6 @@ Doxygen generated API documentation can be found here: `API documentation <../..
    all_nearest_neighbors
    isosurface_detection
    shaping_pipeline
-   sampling_shaping
-   intersection_shaping
+
 
 
