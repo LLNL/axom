@@ -78,6 +78,58 @@ void split(const Octahedron<Tp, NDIMS>& oct,
   out.push_back(Tet(oct[Q], oct[S], oct[U], C));
 };
 
+/*!
+ * \brief Splits an Octahedron into eight Tetrahedrons
+ *
+ * \tparam Tp the coordinate type, such double or float
+ * \tparam NDIMS the number of spatial dimensions (must be 3).
+ * \param [in] oct The Octahedron to split
+ * \param [out] out C array of 8 Tetrahedron objects; the fragments of
+ *              oct are appended to out.
+ *
+ * \pre NDIMS == 3
+ *
+ * The tets are produced by putting a vertex at the centroid of the oct
+ * and drawing an edge from each vertex to the centroid.
+ */
+template <typename Tp, int NDIMS = 3>
+AXOM_HOST_DEVICE void split(const Octahedron<Tp, NDIMS>& oct,
+                            Tetrahedron<Tp, NDIMS>* outPtr)
+{
+  // Implemented for three dimensions
+  SLIC_ASSERT(NDIMS == 3);
+
+  // Type aliases
+  using NumArray = NumericArray<Tp, NDIMS>;
+  using Oct = Octahedron<Tp, NDIMS>;
+  using Tet = Tetrahedron<Tp, NDIMS>;
+
+  // Step 1: Find the centroid
+  NumArray c;  // ctor fills with 0
+  for(int i = 0; i < Oct::NUM_VERTS; ++i)
+  {
+    c += oct[i].array();
+  }
+  c = c / static_cast<double>(Oct::NUM_VERTS);
+  typename Oct::PointType C(c);
+
+  // Step 2: Now store the new tets.  The documentation for the Octahedron class
+  // shows how the points are arranged to imply the faces.
+
+  // clang-format off
+  enum OctVerts {P, Q, R, S, T, U};
+  // clang-format on
+
+  outPtr[0] = Tet(oct[P], oct[R], oct[Q], C);
+  outPtr[1] = Tet(oct[Q], oct[R], oct[S], C);
+  outPtr[2] = Tet(oct[R], oct[T], oct[S], C);
+  outPtr[3] = Tet(oct[S], oct[T], oct[U], C);
+  outPtr[4] = Tet(oct[T], oct[P], oct[U], C);
+  outPtr[5] = Tet(oct[U], oct[P], oct[Q], C);
+  outPtr[6] = Tet(oct[P], oct[T], oct[R], C);
+  outPtr[7] = Tet(oct[Q], oct[S], oct[U], C);
+};
+
 }  // namespace primal
 }  // namespace axom
 

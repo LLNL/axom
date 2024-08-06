@@ -23,6 +23,8 @@
 #include "axom/fmt.hpp"
 #include "axom/CLI11.hpp"
 
+#include "conduit_relay_io_blueprint.hpp"
+
 // NOTE: The shaping driver requires Axom to be configured with mfem as well as
 // the AXOM_ENABLE_MFEM_SIDRE_DATACOLLECTION CMake option
 #ifndef AXOM_USE_MFEM
@@ -71,6 +73,9 @@ public:
   std::string meshFile;
   std::string outputFile;
 
+  std::vector<double> sphereCenter {1.0, 1.0, 1.0};
+  double sphereRadius {1.0};
+
   // Shape transformation parameters
   std::vector<double> scaleFactors;
 
@@ -80,8 +85,10 @@ public:
   std::vector<int> boxResolution;
   int boxDim {-1};
 
-  std::string shapeFile;
-  // klee::ShapeSet shapeSet;
+  // The shape to run.
+  std::string shape {"tet"};
+  // The shapes this example is set up to run.
+  const std::set<std::string> availableShapes {"tet", "sphere"};
 
   ShapingMethod shapingMethod {ShapingMethod::Sampling};
   RuntimePolicy policy {RuntimePolicy::seq};
@@ -222,6 +229,10 @@ public:
       ->transform(
         axom::CLI::CheckedTransformer(methodMap, axom::CLI::ignore_case));
 
+    app.add_option("-s,--shape", shape)
+      ->description("The shape to run")
+      ->check(axom::CLI::IsMember(availableShapes));
+
 #ifdef AXOM_USE_CALIPER
     app.add_option("--caliper", annotationMode)
       ->description(
@@ -230,6 +241,14 @@ public:
       ->capture_default_str()
       ->check(axom::utilities::ValidCaliperMode);
 #endif
+
+    app.add_option("--sphereCenter", sphereCenter)
+      ->description("Center of sphere (x,y[,z])")
+      ->expected(2, 3);
+
+    app.add_option("--sphereRadius", sphereRadius)
+      ->description("Radius of sphere")
+      ->expected(2, 3);
 
     app.add_option("--scale", scaleFactors)
       ->description("Scale factor to apply to shape (x,y[,z])")
@@ -357,7 +376,7 @@ Input params;
  * \note In MPI-based configurations, this is a collective call, but
  * only prints on rank 0
  */
-void printMeshInfo(mfem::Mesh* mesh, const std::string& prefixMessage = "")
+void printMfemMeshInfo(mfem::Mesh* mesh, const std::string& prefixMessage = "")
 {
   namespace primal = axom::primal;
 
@@ -461,7 +480,7 @@ axom::klee::ShapeSet create2DShapeSet(sidre::DataStore& ds)
   AXOM_UNUSED_VAR(meshGroup);  // variable is only referenced in debug configs
   const std::string topo = "mesh";
   const std::string coordset = "coords";
-  axom::klee::Geometry::SimplexMesh triangleMesh(
+  axom::mint::UnstructuredMesh<axom::mint::SINGLE_SHAPE> triangleMesh(
     2, axom::mint::CellType::TRIANGLE, meshGroup, topo, coordset );
 
   double lll = 2.0;
@@ -492,14 +511,40 @@ axom::klee::ShapeSet create2DShapeSet(sidre::DataStore& ds)
   return shapeSet;
 }
 
-axom::klee::ShapeSet create3DShapeSet(sidre::DataStore& ds)
+axom::klee::Shape createShape_Sphere()
+{
+  axom::primal::Sphere<double, 3> sphere{params.sphereCenter.data(), params.sphereRadius};
+
+  axom::klee::TransformableGeometryProperties prop{
+    axom::klee::Dimensions::Three,
+    axom::klee::LengthUnit::unspecified};
+
+  SLIC_ASSERT( params.scaleFactors.empty() || params.scaleFactors.size() == 3 );
+  std::shared_ptr<axom::klee::Scale> scaleOp;
+  if (!params.scaleFactors.empty())
+  {
+    scaleOp =
+      std::make_shared<axom::klee::Scale>(params.scaleFactors[0],
+                                          params.scaleFactors[1],
+                                          params.scaleFactors[2],
+                                          prop);
+  }
+
+  const axom::IndexType generationCount = params.refinementLevel;
+  axom::klee::Geometry sphereGeometry(prop, sphere, generationCount, scaleOp);
+  axom::klee::Shape sphereShape( "sphere", "AU", {}, {}, sphereGeometry );
+
+  return sphereShape;
+}
+
+axom::klee::Shape createShape_TetMesh(sidre::DataStore& ds)
 {
   // Shape a single tetrahedron.
   sidre::Group *meshGroup = ds.getRoot()->createGroup("tetMesh");
   AXOM_UNUSED_VAR(meshGroup);  // variable is only referenced in debug configs
   const std::string topo = "mesh";
   const std::string coordset = "coords";
-  axom::klee::Geometry::SimplexMesh tetMesh(
+  axom::mint::UnstructuredMesh<axom::mint::SINGLE_SHAPE> tetMesh(
     3, axom::mint::CellType::TET, meshGroup, topo, coordset );
 
   double lll = 4.0;
@@ -532,21 +577,23 @@ axom::klee::ShapeSet create3DShapeSet(sidre::DataStore& ds)
                                           prop);
   }
 
-  axom::klee::Geometry tetGeom(prop, tetMesh.getSidreGroup(), topo, scaleOp);
-
   axom::klee::Geometry tetMeshGeometry( prop, tetMesh.getSidreGroup(), topo, {scaleOp} );
-  std::vector<axom::klee::Shape> shapes;
   axom::klee::Shape tetShape( "tet", "AL", {}, {}, tetMeshGeometry );
-  shapes.push_back(tetShape);
 
+  return tetShape;
+}
+
+//!@brief Create a ShapeSet with a single shape.
+axom::klee::ShapeSet createShapeSet(const axom::klee::Shape& shape)
+{
   axom::klee::ShapeSet shapeSet;
-  shapeSet.setShapes(shapes);
+  shapeSet.setShapes(std::vector<axom::klee::Shape>{shape});
   shapeSet.setDimensions(axom::klee::Dimensions::Three);
 
   return shapeSet;
 }
 
-double volumeOfTetMesh(const axom::klee::Geometry::SimplexMesh& tetMesh)
+double volumeOfTetMesh(const axom::mint::UnstructuredMesh<axom::mint::SINGLE_SHAPE>& tetMesh)
 {
   using TetType = axom::primal::Tetrahedron<double, 3>;
 {std::ofstream os("tets.js"); tetMesh.getSidreGroup()->print(os);}
@@ -750,8 +797,41 @@ int main(int argc, char** argv)
     shapeSet = create2DShapeSet(ds);
     break;
   case 3:
-    shapeSet = create3DShapeSet(ds);
+    if (params.shape == "tet")
+    {
+      shapeSet = createShapeSet( createShape_TetMesh(ds) );
+    }
+    else if (params.shape == "sphere")
+    {
+      shapeSet = createShapeSet( createShape_Sphere() );
+    }
     break;
+  }
+
+  // Save the discrete shapes for viz and testing.
+  auto* shapeMeshGroup = ds.getRoot()->createGroup("shapeMeshGroup");
+  std::vector<std::shared_ptr<axom::mint::Mesh>> discreteShapeMeshes;
+  for(const auto& shape : shapeSet.getShapes())
+  {
+    axom::quest::DiscreteShape dShape(shape, "", shapeMeshGroup);
+    auto dMesh =
+      std::dynamic_pointer_cast<axom::mint::UnstructuredMesh<axom::mint::SINGLE_SHAPE>>(
+        dShape.createMeshRepresentation());
+    SLIC_INFO(axom::fmt::format(
+                "{:-^80}",
+                axom::fmt::format("Shape '{}' discrete geometry has {} cells",
+                                  shape.getName(),
+                                  dMesh->getNumberOfCells())));
+
+    discreteShapeMeshes.push_back(dMesh);
+
+    if (!params.outputFile.empty())
+    {
+      std::string shapeFileName = params.outputFile + "." + shape.getName();
+      conduit::Node tmpNode, info;
+      dMesh->getSidreGroup()->createNativeLayout(tmpNode);
+      conduit::relay::io::blueprint::save_mesh(tmpNode, shapeFileName, "hdf5");
+    }
   }
 
   const klee::Dimensions shapeDim = shapeSet.getDimensions();
@@ -791,7 +871,7 @@ int main(int argc, char** argv)
     shapingDC.SetMesh(shapingMesh);
   }
   AXOM_ANNOTATE_END("load mesh");
-  printMeshInfo(shapingDC.GetMesh(), "After loading");
+  printMfemMeshInfo(shapingDC.GetMesh(), "After loading");
 
   const axom::IndexType cellCount = shapingMesh->GetNE();
 
@@ -821,7 +901,7 @@ int main(int argc, char** argv)
   if(params.percentError > 0.)
   {
     shaper->setPercentError(params.percentError);
-    shaper->setRefinementType(quest::Shaper::RefinementDynamic);
+    shaper->setRefinementType(quest::DiscreteShape::RefinementDynamic);
   }
 
   // Associate any fields that begin with "vol_frac" with "material" so when
@@ -922,15 +1002,12 @@ int main(int argc, char** argv)
     slic::flushStreams();
 
     // Query the mesh against this shape
-// { std::ofstream tmpos{"mfem.before.js"}; shaper->getDC()->GetBPGroup()->print(tmpos); }
     shaper->runShapeQuery(shape);
     slic::flushStreams();
-// { std::ofstream tmpos{"mfem.afterquery.js"}; shaper->getDC()->GetBPGroup()->print(tmpos); }
 
     // Apply the replacement rules for this shape against the existing materials
     shaper->applyReplacementRules(shape);
     slic::flushStreams();
-// { std::ofstream tmpos{"mfem.afterreplace.js"}; shaper->getDC()->GetBPGroup()->print(tmpos); }
 
     // Finalize data structures associated with this shape and spatial index
     shaper->finalizeShapeQuery();
@@ -938,12 +1015,6 @@ int main(int argc, char** argv)
   }
   AXOM_ANNOTATE_END("shaping");
 
-{
-axom::klee::Geometry::SimplexMesh shapeMesh(shapeSet.getShapes()[0].getGeometry().getBlueprintMesh(),
-                                            shapeSet.getShapes()[0].getGeometry().getBlueprintTopology());
-double vol = volumeOfTetMesh(shapeMesh);
-std::cout<< "Vol of tet mesh is " << vol << std::endl;
-}
   //---------------------------------------------------------------------------
   // After shaping in all shapes, generate/adjust the material volume fractions
   //---------------------------------------------------------------------------
@@ -1041,14 +1112,25 @@ std::cout<< "Vol of tet mesh is " << vol << std::endl;
   //---------------------------------------------------------------------------
   // Correctness test: shape volume in shapingMesh should match volume of the shape mesh.
   //---------------------------------------------------------------------------
+  auto* meshVerificationGroup = ds.getRoot()->createGroup("meshVerification");
   for(const auto& shape : shapeSet.getShapes())
   {
-    axom::klee::Geometry::SimplexMesh shapeMesh(shape.getGeometry().getBlueprintMesh(),
-                                                shape.getGeometry().getBlueprintTopology());
-    double shapeMeshVol = volumeOfTetMesh(shapeMesh);
-    for ( auto s : params.scaleFactors )
+    axom::quest::DiscreteShape dShape(shape, "", meshVerificationGroup);
+    auto shapeMesh =
+      std::dynamic_pointer_cast<axom::mint::UnstructuredMesh<axom::mint::SINGLE_SHAPE>>(
+        dShape.createMeshRepresentation());
+    double shapeMeshVol = volumeOfTetMesh(*shapeMesh);
+    SLIC_INFO(axom::fmt::format(
+                "{:-^80}",
+                axom::fmt::format("Shape '{}' discrete geometry has {} cells",
+                                  shape.getName(),
+                                  shapeMesh->getNumberOfCells())));
+    if (!params.outputFile.empty())
     {
-       shapeMeshVol *= s;
+      std::string shapeFileName = params.outputFile + "." + shape.getName();
+      conduit::Node tmpNode, info;
+      shapeMesh->getSidreGroup()->createNativeLayout(tmpNode);
+      conduit::relay::io::blueprint::save_mesh(tmpNode, shapeFileName, "hdf5");
     }
 
     const std::string& materialName = shape.getMaterial();
@@ -1060,14 +1142,16 @@ std::cout<< "Vol of tet mesh is " << vol << std::endl;
 
     SLIC_INFO(axom::fmt::format(
                 "{:-^80}",
-                axom::fmt::format("Material '{}' in shape '{}' has volume {}, diff of {}, {}.",
+                axom::fmt::format("Material '{}' in shape '{}' has volume {} vs {}, diff of {}, {}.",
                                   materialName,
                                   shape.getName(),
                                   shapeVol,
+                                  shapeMeshVol,
                                   diff,
                                   (err ? "ERROR" : "OK") )));
   }
   slic::flushStreams();
+  ds.getRoot()->destroyGroupAndData("meshVerification");
 
   //---------------------------------------------------------------------------
   // Save meshes and fields

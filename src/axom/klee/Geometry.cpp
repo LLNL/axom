@@ -4,7 +4,6 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 
 #include "axom/klee/Geometry.hpp"
-#include "axom/mint/mesh/Mesh.hpp"
 
 #include "axom/klee/GeometryOperators.hpp"
 
@@ -27,24 +26,48 @@ Geometry::Geometry(const TransformableGeometryProperties &startProperties,
   : m_startProperties(startProperties)
   , m_format(std::move(format))
   , m_path(std::move(path))
+  , m_generationCount(0)
   , m_operator(std::move(operator_))
 { }
 
 Geometry::Geometry(const TransformableGeometryProperties &startProperties,
-                   axom::sidre::Group* simplexMesh,
+                   axom::sidre::Group* meshGroup,
                    const std::string& topology,
                    std::shared_ptr<GeometryOperator const> operator_)
   : m_startProperties(startProperties)
   , m_format("memory-blueprint")
   , m_path()
-  , m_simplexMesh(simplexMesh)
+  , m_meshGroup(meshGroup)
   , m_topology(topology)
+  , m_generationCount(0)
   , m_operator(std::move(operator_))
 {
-  // axom::mint::Mesh* mintMesh = axom::mint::getMesh(simplexMesh, topo);
-  // SLIC_ASSERT(mintMesh->isUnstructured());
-  // SLIC_ASSERT(!mintMesh->hasMixedCellTypes());
-  // m_simplexMesh.reset(dynamic_cast<SimplexMesh*>(mintMesh));
+}
+
+Geometry::Geometry(const TransformableGeometryProperties &startProperties,
+                   const axom::primal::Sphere<double, 3>& sphere,
+                   axom::IndexType generationCount,
+                   std::shared_ptr<GeometryOperator const> operator_)
+  : m_startProperties(startProperties)
+  , m_format("sphere3D")
+  , m_path()
+  , m_meshGroup(nullptr)
+  , m_topology()
+  , m_sphere(sphere)
+  , m_generationCount(generationCount)
+  , m_operator(std::move(operator_))
+{
+}
+
+bool Geometry::hasGeometry() const
+{
+  bool isInMemory = m_format == "memory-blueprint" || m_format == "sphere3D"
+    || m_format == "cone3D" || m_format == "cylinder3D";
+  if (isInMemory)
+  {
+    return true;
+  }
+  return !m_path.empty();
 }
 
 TransformableGeometryProperties Geometry::getEndProperties() const
@@ -54,6 +77,22 @@ TransformableGeometryProperties Geometry::getEndProperties() const
     return m_operator->getEndProperties();
   }
   return m_startProperties;
+}
+
+axom::sidre::Group* Geometry::getBlueprintMesh() const
+{
+  SLIC_ASSERT_MSG(m_meshGroup,
+                  axom::fmt::format("The Geometry format '{}' is not specified "
+                  "as a blueprint mesh and/or has not been converted into one.", m_format));
+  return m_meshGroup;
+}
+
+const std::string& Geometry::getBlueprintTopology() const
+{
+  SLIC_ASSERT_MSG(m_meshGroup,
+                  axom::fmt::format("The Geometry format '{}' is not specified "
+                  "as a blueprint mesh and/or has not been converted into one.", m_format));
+  return m_topology;
 }
 
 }  // namespace klee

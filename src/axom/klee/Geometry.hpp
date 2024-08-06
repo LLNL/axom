@@ -11,7 +11,8 @@
 
 #include "axom/klee/Dimensions.hpp"
 #include "axom/klee/Units.hpp"
-#include "axom/mint/mesh/UnstructuredMesh.hpp"
+#include "axom/primal.hpp"
+#include "axom/sidre.hpp"
 
 namespace axom
 {
@@ -55,9 +56,6 @@ inline bool operator!=(const TransformableGeometryProperties &lhs,
 class Geometry
 {
 public:
-  //!@brief Type for geometry represented by a simplex mesh.
-  using SimplexMesh = axom::mint::UnstructuredMesh<axom::mint::SINGLE_SHAPE>;
-
   /**
    * Create a new Geometry object based on a file representation.
    *
@@ -73,24 +71,51 @@ public:
            std::shared_ptr<GeometryOperator const> operator_);
 
   /**
-   * Create a new Geometry object based on a bluieprint tetrahedra mesh.
+   * Create a new Geometry object based on a blueprint tetrahedral mesh.
    *
    * \param startProperties the transformable properties before any
    * operators are applied
-   * \param simplexMesh a simplex geometry in blueprint format.
+   * \param meshGroup a simplex geometry in blueprint format.
    *   The elements should be segments, triangles or tetrahedra.
-   * \param topology The \c simplexMesh topology to use.
+   * \param topology The \c meshGroup topology to use.
    * \param operator_ a possibly null operator to apply to the geometry.
    *
    * \internal TODO: Is this the simplex requirement overly restrictive?
    */
   Geometry(const TransformableGeometryProperties &startProperties,
-           axom::sidre::Group *simplexMesh,
+           axom::sidre::Group *meshGroup,
            const std::string& topology,
            std::shared_ptr<GeometryOperator const> operator_);
 
   /**
+   * Create a new sphere Geometry object.
+   *
+   * \param startProperties the transformable properties before any
+   * operators are applied
+   * \param sphere Analytical sphere specifications
+   * \param generationCount Number of generations to use for
+   *        discretizing the sphere.
+   * \param operator_ a possibly null operator to apply to the geometry.
+   *
+   * \internal TODO: Is this the simplex requirement overly restrictive?
+   */
+  Geometry(const TransformableGeometryProperties &startProperties,
+           const axom::primal::Sphere<double, 3>& sphere,
+           axom::IndexType generationCount,
+           std::shared_ptr<GeometryOperator const> operator_);
+
+  /**
    * Get the format in which the geometry is specified.
+   *
+   * Values are:
+   * - "c2c" = C2C file
+   * - "proe" = ProE file
+   * - "memory-blueprint" = Blueprint tetrahedral mesh in memory
+   * - "memory-xy" = discretized 2D, non-negative function as an
+   *   array of points in memory
+   * - "sphere3D" = 3D sphere, as \c primal::Sphere<double,3>
+   * - "cone3D" = 3D cone, as \c primal::Cone<double,3>
+   *   "cylinder3D" = 3D cylinder, as \c primal::Cylinder<double,3>
    *
    * \return the format of the shape
    */
@@ -104,18 +129,29 @@ public:
    */
   const std::string &getPath() const { return m_path; }
 
-  axom::sidre::Group* getBlueprintMesh() const { return m_simplexMesh; }
+  /**
+   * @brief Return the blueprint mesh, for formats that are specified
+   * by a blueprint mesh or have been converted to a blueprint mesh.
+   */
+  axom::sidre::Group* getBlueprintMesh() const;
 
-  const std::string& getBlueprintTopology() const { return m_topology; }
+  /**
+   * @brief Return the blueprint mesh topology, for formats that are specified
+   * by a blueprint mesh or have been converted to a blueprint mesh.
+   */
+  const std::string& getBlueprintTopology() const;
 
-  /// Predicate that returns true when the shape has an associated geometry
-  /* This seems a poorly named function and probably should be renamed
-     to isFromFile.  Especially true in light of my adding memor-based
-     geometry.  Maybe this method was orginally from the Shape class.
-     But note that Kenny intentionally renamed it from hasPath(),
-     to "better match how it will be used.".  Ask Kenny.
+  /*! @brief Predicate that returns true when the shape has an associated geometry
+
+    A false means that this is set up to determine volume fractions without
+    computing on the geometry.
+
+    TODO: We should just create a new format to represent getting
+    volume fractions without geometries.  Or move this logic into
+    Shape, because it's confusing to have a Geometry that has no
+    geometry.
   */
-  bool hasGeometry() const { return !m_path.empty(); }
+  bool hasGeometry() const;
 
   /**
    * Get a GeometryOperator to apply to this geometry. Can be null.
@@ -145,21 +181,59 @@ public:
    */
   TransformableGeometryProperties getEndProperties() const;
 
+  /**
+   @brief Return the number of generations for discretization of
+   analytical curves.
+
+   This number is unused for geometries that are specified in discrete
+   form.
+  */
+  axom::IndexType getGenerationCount() const
+  {
+    return m_generationCount;
+  }
+
+  /**
+   @brief Return the sphere geometry, when the Geometry
+   represents an alalytical sphere.
+  */
+  const axom::primal::Sphere<double, 3>& getSphere() const
+  {
+    return m_sphere;
+  }
+
 private:
   TransformableGeometryProperties m_startProperties;
 
-  //!@brief Geometry file format, if it's file-based.
+  //!@brief Geometry file format.
   std::string m_format;
 
   //!@brief Geometry file path, if it's file-based.
   std::string m_path;
 
-  //!@brief Geometry blueprint simplex mesh, if it's in memory.
-  axom::sidre::Group* m_simplexMesh;
-  // std::shared_ptr<SimplexMesh> m_simplexMesh;
+  //!@brief Geometry blueprint simplex mesh, when/if it's in memory.
+  axom::sidre::Group* m_meshGroup;
 
   //!@brief Topology of the blueprint simplex mesh, if it's in memory.
   std::string m_topology;
+
+  //!@brief The analytical sphere, if used.
+  axom::primal::Sphere<double, 3> m_sphere;
+
+#if 0
+  //!@brief The analytical cylinder, if used.
+  axom::primal::Sphere<double, 3> m_cylinder;
+
+  //!@brief The analytical cone, if used.
+  axom::primal::Sphere<double, 3> m_cone;
+
+  //!@brief The discrete 2D curve, if used.
+  axom::Array<primal::Point<double, 2> m_discreteFunction;
+#endif
+
+  //!@brief Generations of refinement for discretizing analytical shapes
+  // and surfaces of revolutions.
+  axom::IndexType m_generationCount = 0;
 
   std::shared_ptr<const GeometryOperator> m_operator;
 };

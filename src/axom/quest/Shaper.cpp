@@ -7,7 +7,9 @@
 
 #include "axom/config.hpp"
 #include "axom/core.hpp"
+#include "axom/primal/operators/split.hpp"
 #include "axom/quest/interface/internal/QuestHelpers.hpp"
+#include "axom/quest/DiscreteShape.hpp"
 
 #include "axom/fmt.hpp"
 
@@ -21,6 +23,7 @@ namespace axom
 {
 namespace quest
 {
+#if 1
 namespace internal
 {
 /*!
@@ -75,6 +78,7 @@ private:
 };
 
 }  // end namespace internal
+#endif
 
 // These were needed for linking - but why? They are constexpr.
 constexpr int Shaper::DEFAULT_SAMPLES_PER_KNOT_SPAN;
@@ -130,7 +134,7 @@ void Shaper::setPercentError(double percent)
                     percent));
   if(percent <= MINIMUM_PERCENT_ERROR)
   {
-    m_refinementType = RefinementUniformSegments;
+    m_refinementType = DiscreteShape::RefinementUniformSegments;
   }
   m_percentError =
     clampVal(percent, MINIMUM_PERCENT_ERROR, MAXIMUM_PERCENT_ERROR);
@@ -144,7 +148,8 @@ void Shaper::setRefinementType(Shaper::RefinementType t)
 bool Shaper::isValidFormat(const std::string& format) const
 {
   return (format == "stl" || format == "proe" || format == "c2c" ||
-          format == "memory-blueprint" || format == "none");
+          format == "memory-blueprint" || format == "sphere3D" ||
+          format == "none");
 }
 
 void Shaper::loadShape(const klee::Shape& shape)
@@ -169,34 +174,30 @@ void Shaper::loadShapeInternal(const klee::Shape& shape,
     "{:-^80}",
     axom::fmt::format(" Loading shape '{}' ", shape.getName())));
 
-  const std::string& file_format = shape.getGeometry().getFormat();
+  const axom::klee::Geometry& geometry = shape.getGeometry();
+  const std::string& geometryFormat = geometry.getFormat();
   SLIC_ASSERT_MSG(
-    this->isValidFormat(file_format),
-    axom::fmt::format("Shape has unsupported format: '{}", file_format));
+    this->isValidFormat(geometryFormat),
+    axom::fmt::format("Shape has unsupported format: '{}", geometryFormat));
 
-  const std::string& shapeFormat = shape.getGeometry().getFormat();
-
-  if (shapeFormat == "memory-blueprint")
+#if 1
+    // Code for discretizing shapes has been factored into DiscreteShape class.
+    DiscreteShape discreteShape(shape, m_shapeSet.getPath());
+    discreteShape.setVertexWeldThreshold(m_vertexWeldThreshold);
+    discreteShape.setRefinementType(m_refinementType);
+    discreteShape.setPercentError(percentError);
+    m_surfaceMesh = discreteShape.createMeshRepresentation();
+    revolvedVolume = discreteShape.getRevolvedVolume();
+#else
+  if (geometryFormat == "memory-blueprint" || geometryFormat == "sphere3D")
   {
-    // TODO: For readability, move most of this into a function.
-    // Put the in-memory geometry in m_surfaceMesh.
-    axom::sidre::Group* inputGroup = shape.getGeometry().getBlueprintMesh();
-    axom::sidre::Group* rootGroup = inputGroup->getDataStore()->getRoot();
-
-    std::string modName = inputGroup->getName() + "_modified";
-    while (rootGroup->hasGroup(modName)) { modName = modName + "-"; }
-
-    axom::sidre::Group* modGroup = rootGroup->createGroup(modName);
-    int allocID = inputGroup->getDefaultAllocatorID();
-    modGroup->deepCopyGroup(inputGroup, allocID);
-
-    m_surfaceMesh = axom::mint::getMesh(modGroup->getGroup(inputGroup->getName()),
-                                        shape.getGeometry().getBlueprintTopology());
-
-    // Transform the coordinates of the linearized mesh.
-    applyTransforms(shape);
-    return;
+    // Code for discretizing shapes has been factored into DiscreteShape class.
+    DiscreteShape discreteShape(shape);
+    m_surfaceMesh = discreteShape.getMeshRepresentation();
   }
+
+  // We handled all the non-file formats.  The rest are file formats.
+  const std::string& file_format = geometryFormat;
 
   if(!shape.getGeometry().hasGeometry())
   {
@@ -219,7 +220,9 @@ void Shaper::loadShapeInternal(const klee::Shape& shape,
       file_format == "stl",
       axom::fmt::format(" '{}' format requires .stl file type", file_format));
 
-    quest::internal::read_stl_mesh(shapePath, m_surfaceMesh, m_comm);
+    axom::mint::Mesh* surfaceMesh = nullptr;
+    quest::internal::read_stl_mesh(shapePath, surfaceMesh, m_comm);
+    m_surfaceMesh.reset(surfaceMesh);
     // Transform the coordinates of the linearized mesh.
     applyTransforms(shape);
   }
@@ -229,7 +232,9 @@ void Shaper::loadShapeInternal(const klee::Shape& shape,
       file_format == "proe",
       axom::fmt::format(" '{}' format requires .proe file type", file_format));
 
-    quest::internal::read_pro_e_mesh(shapePath, m_surfaceMesh, m_comm);
+    axom::mint::Mesh* surfaceMesh = nullptr;
+    quest::internal::read_pro_e_mesh(shapePath, surfaceMesh, m_comm);
+    m_surfaceMesh.reset(surfaceMesh);
   }
 #ifdef AXOM_USE_C2C
   else if(endsWith(shapePath, ".contour"))
@@ -244,14 +249,15 @@ void Shaper::loadShapeInternal(const klee::Shape& shape,
 
     // Pass in the transform so any transformations can figure into
     // computing the revolved volume.
-    if(m_refinementType == RefinementDynamic &&
+    axom::mint::Mesh* surfaceMesh = nullptr;
+    if(m_refinementType == DiscreteShape::RefinementDynamic &&
        percentError > MINIMUM_PERCENT_ERROR)
     {
       quest::internal::read_c2c_mesh_non_uniform(shapePath,
                                                  transform,
                                                  percentError,
                                                  m_vertexWeldThreshold,
-                                                 m_surfaceMesh,
+                                                 surfaceMesh,
                                                  revolvedVolume,  // output arg
                                                  m_comm);
     }
@@ -261,10 +267,11 @@ void Shaper::loadShapeInternal(const klee::Shape& shape,
                                              transform,
                                              m_samplesPerKnotSpan,
                                              m_vertexWeldThreshold,
-                                             m_surfaceMesh,
+                                             surfaceMesh,
                                              revolvedVolume,  // output arg
                                              m_comm);
     }
+    m_surfaceMesh.reset(surfaceMesh);
 
     // Transform the coordinates of the linearized mesh.
     applyTransforms(transform);
@@ -278,8 +285,10 @@ void Shaper::loadShapeInternal(const klee::Shape& shape,
                         shapePath,
                         file_format));
   }
+#endif
 }
 
+#if 1
 numerics::Matrix<double> Shaper::getTransforms(const klee::Shape& shape) const
 {
   const auto identity4x4 = numerics::Matrix<double>::identity(4);
@@ -360,6 +369,7 @@ void Shaper::applyTransforms(const numerics::Matrix<double>& transformation)
     }
   }
 }
+#endif
 
 // ----------------------------------------------------------------------------
 

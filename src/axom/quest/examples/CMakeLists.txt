@@ -252,14 +252,17 @@ if(AXOM_ENABLE_MPI AND MFEM_FOUND AND MFEM_USE_MPI
     if(AXOM_ENABLE_TESTS AND AXOM_DATA_DIR)
         # 3D shaping tests.  No 2D shaping in this feature, at least for now.
         set(_nranks 1)
-        set(_testname quest_shape_in_memory_3d)
-        axom_add_test(
+        set(_testshapes "tet" "sphere")
+        foreach(_testshape ${_testshapes})
+          set(_testname "quest_shape_in_memory_${_testshape}")
+          axom_add_test(
             NAME ${_testname}
-            COMMAND  quest_shape_in_memory_ex
-                        --method intersection
-                        --scale 0.75 0.75 0.75
-                        inline_mesh --min -1 -1 -1 --max 5 5 5 --res 20 20 20 -d 3
+            COMMAND quest_shape_in_memory_ex
+                       --method intersection --refinements 2
+                       --scale 0.75 0.75 0.75
+                       inline_mesh --min -1 -1 -1 --max 5 5 5 --res 20 20 20 -d 3
             NUM_MPI_TASKS ${_nranks})
+        endforeach()
     endif()
 endif()
 

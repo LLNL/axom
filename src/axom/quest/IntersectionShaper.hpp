@@ -372,7 +372,7 @@ public:
    */
   double getApproximateRevolvedVolume() const
   {
-    return volume(m_surfaceMesh, m_level);
+    return volume(m_surfaceMesh.get(), m_level);
   }
 
   virtual void loadShape(const klee::Shape& shape) override
@@ -384,9 +384,8 @@ public:
     if(shape.getGeometry().getFormat() == "c2c")
     {
       SegmentMesh* newm =
-        filterMesh(dynamic_cast<const SegmentMesh*>(m_surfaceMesh));
-      delete m_surfaceMesh;
-      m_surfaceMesh = newm;
+        filterMesh(dynamic_cast<const SegmentMesh*>(m_surfaceMesh.get()));
+      m_surfaceMesh.reset(newm);
     }
   }
 
@@ -464,7 +463,7 @@ public:
         num_degenerate.get()));
 
       // Dump tet mesh as a vtk mesh
-      axom::mint::write_vtk(m_surfaceMesh, "proe_tet.vtk");
+      axom::mint::write_vtk(m_surfaceMesh.get(), "proe_tet.vtk");
 
     }  // end of verbose output for contour
   }
@@ -621,7 +620,7 @@ public:
       prepareTetCells<ExecSpace>();
     }
 
-    else if(shapeFormat == "memory-blueprint")
+    else if(shapeFormat == "memory-blueprint" || shapeFormat == "sphere3D")
     {
       prepareTetCells<ExecSpace>();
     }
@@ -1430,9 +1429,7 @@ public:
     AXOM_ANNOTATE_SCOPE("finalizeShapeQuery");
 
     // Implementation here -- destroy BVH tree and other shape-based data structures
-    delete m_surfaceMesh;
-
-    m_surfaceMesh = nullptr;
+    m_surfaceMesh.reset();
   }
 
   //@}
@@ -1496,7 +1493,7 @@ public:
     const std::string shapeFormat = shape.getGeometry().getFormat();
 
     // Testing separate workflow for Pro/E
-    if(shapeFormat == "proe" || shapeFormat == "memory-blueprint")
+    if(shapeFormat == "proe" || shapeFormat == "memory-blueprint" || shapeFormat == "sphere3D")
     {
       switch(m_execPolicy)
       {
@@ -1824,7 +1821,7 @@ private:
   {
     // If we are not refining dynamically, return.
     if(m_percentError <= MINIMUM_PERCENT_ERROR ||
-       m_refinementType != RefinementDynamic)
+       m_refinementType != DiscreteShape::RefinementDynamic)
     {
       return;
     }
@@ -1912,7 +1909,7 @@ private:
       for(int level = m_level; level < MAX_LEVELS; level++)
       {
         // Compute the revolved volume of the surface mesh at level.
-        currentVol = volume(m_surfaceMesh, level);
+        currentVol = volume(m_surfaceMesh.get(), level);
         pct = 100. * (1. - currentVol / revolvedVolume);
 
         SLIC_INFO(
@@ -1985,8 +1982,7 @@ private:
           curvePercentError = ce;
 
           // Free the previous surface mesh.
-          delete m_surfaceMesh;
-          m_surfaceMesh = nullptr;
+          m_surfaceMesh.reset();
 
           // Reload the shape using new curvePercentError. This will cause
           // a new m_surfaceMesh to be created.
@@ -1999,9 +1995,8 @@ private:
 
           // Filter the mesh, store in m_surfaceMesh.
           SegmentMesh* newm =
-            filterMesh(dynamic_cast<const SegmentMesh*>(m_surfaceMesh));
-          delete m_surfaceMesh;
-          m_surfaceMesh = newm;
+            filterMesh(dynamic_cast<const SegmentMesh*>(m_surfaceMesh.get()));
+          m_surfaceMesh.reset(newm);
         }
         else
         {
