@@ -118,12 +118,12 @@ public:
       {
         const conduit::Node &n_comp = n_input_values[i];
         conduit::Node &n_out_comp = n_output_values[n_comp.name()];
-        blendSingleComponent(blend, n_input, n_comp, n_out_comp);
+        blendSingleComponent(blend, n_comp, n_out_comp);
       }
     }
     else
     {
-      blendSingleComponent(blend, n_input, n_input_values, n_output_values);
+      blendSingleComponent(blend, n_input_values, n_output_values);
     }
   }
 
@@ -133,12 +133,10 @@ private:
    * \brief Blend data for a single field component.
    *
    * \param blend The BlendData that will be used to make the new field.
-   * \param n_input The node that contains the field.
    * \param n_values The input values that we're blending.
    * \param n_output_values The output node that will contain the new field.
    */
   void blendSingleComponent(const BlendData &blend,
-                            const conduit::Node &n_input,
                             const conduit::Node &n_values,
                             conduit::Node &n_output_values) const
   {
@@ -159,12 +157,8 @@ private:
         using accum_type =
           typename axom::mir::utilities::accumulation_traits<value_type>::type;
 
-        // Let the indexing object update itself from the node strides/offsets.
         IndexingPolicy deviceIndexing(m_indexing);
-        deviceIndexing.update(n_input);
-
         const BlendData deviceBlend(blend);
-
         axom::for_all<ExecSpace>(
           outputSize,
           AXOM_LAMBDA(auto bgid) {

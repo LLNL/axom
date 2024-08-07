@@ -153,16 +153,29 @@ private:
 };
 
 //------------------------------------------------------------------------------
+template <typename ArrayType>
+bool fillFromNode(const conduit::Node &n,
+                  const std::string &key,
+                  ArrayType &arr)
+{
+  bool found = false;
+  if((found = n.has_path(key)) == true)
+  {
+    const auto acc = n.fetch_existing(key).as_int_accessor();
+    for(int i = 0; i < arr.size(); i++)
+    {
+      arr[i] = acc[i];
+    }
+  }
+  return found;
+}
+//------------------------------------------------------------------------------
 
 /**
  * \brief Returns the input index (no changes).
  */
 struct DirectIndexing
 {
-  void update(const conduit::Node &)
-  {
-  }
-
   /**
    * \brief Return the input index (no changes).
    * \param index The input index.
@@ -175,12 +188,13 @@ struct DirectIndexing
   }
 };
 
+//------------------------------------------------------------------------------
 /**
- * \brief Maps a local index to a global index through an indexing object (used for strided structured grids).
+ * \brief Help turn slice data zone indices into strided structured element field indices.
  * \tparam Indexing A StridedStructuredIndexing of some dimension.
  */
 template <typename Indexing>
-struct LocalToGlobalIndexing
+struct SSElementFieldIndexing
 {
   /**
    * \brief Update the indexing offsets/strides from a Conduit node.
@@ -203,24 +217,48 @@ struct LocalToGlobalIndexing
     return m_indexing.LocalToGlobal(index);
   }
 
-  template <typename ArrayType>
-  static bool fillFromNode(const conduit::Node &n,
-                           const std::string &key,
-                           ArrayType &arr)
+  Indexing m_indexing{};
+};
+
+//------------------------------------------------------------------------------
+/**
+ * \brief Help turn blend group node indices (global) into vertex field indices.
+ * \tparam Indexing A StridedStructuredIndexing of some dimension.
+ */
+template <typename Indexing>
+struct SSVertexFieldIndexing
+{
+  /**
+   * \brief Update the indexing offsets/strides from a Conduit node.
+   * \param field The Conduit node for a field.
+   */
+  void update(const conduit::Node &field)
   {
-    bool found = false;
-    if((found = n.has_path(key)) == true)
-    {
-      const auto acc = n.fetch_existing(key).as_int_accessor();
-      for(int i = 0; i < arr.size(); i++)
-      {
-        arr[i] = acc[i];
-      }
-    }
-    return found;
+    fillFromNode(field, "offsets", m_fieldIndexing.m_offsets);
+    fillFromNode(field, "strides", m_fieldIndexing.m_strides);
   }
 
-  Indexing m_indexing{};
+  /**
+   * \brief Transforms the index from local to global through an indexing object.
+   * \param index The global index
+   * \return The global index for the field.
+   */
+  AXOM_HOST_DEVICE
+  inline axom::IndexType operator [](axom::IndexType index) const
+  {
+    // Make the global index into a global logical in the topo.
+    const auto topoGlobalLogical = m_topoIndexing.GlobalToGlobal(index);
+    // Make the global logical into a local logical in the topo.
+    const auto topoLocalLogical = m_topoIndexing.GlobalToLocal(topoGlobalLogical);
+    // Make the global logical index in the field.
+    const auto fieldGlobalLogical = m_fieldIndexing.LocalToGlobal(topoLocalLogical);
+    // Make the global index in the field.
+    const auto fieldGlobalIndex = m_fieldIndexing.GlobalToGlobal(fieldGlobalLogical);
+    return fieldGlobalIndex;
+  }
+
+  Indexing m_topoIndexing {};
+  Indexing m_fieldIndexing {};
 };
 
 //------------------------------------------------------------------------------

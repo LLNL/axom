@@ -1722,9 +1722,10 @@ private:
           if(n_field.has_path("offsets") && n_field.has_path("strides"))
           {
             using Indexing = typename TopologyView::IndexingPolicy;
-            using IndexingPolicy = axom::mir::utilities::blueprint::LocalToGlobalIndexing<Indexing>;
+            using IndexingPolicy = axom::mir::utilities::blueprint::SSElementFieldIndexing<Indexing>;
             IndexingPolicy indexing;
             indexing.m_indexing = m_topologyView.indexing();
+            indexing.update(n_field);
 
             axom::mir::utilities::blueprint::FieldSlicer<ExecSpace, IndexingPolicy> s(indexing);
             s.execute(slice, n_field, n_out_fields[it->second]);
@@ -1742,10 +1743,11 @@ private:
       else if(association == "vertex")
       {
         bool handled = false;
-#if 0
+
         // Node indices in the blend groups are global indices. This means that, provided the
         // field's offsets/strides match the topology's (and why would they not?), we can skip
-        // strided structured support for now.
+        // strided structured support for now. Enable this code if the field offsets/strides
+        // do not match the topo's offsets/strides.
 
         // Conditionally support strided-structured.
         if constexpr (axom::mir::views::view_traits<TopologyView>::supports_strided_structured())
@@ -1754,23 +1756,32 @@ private:
           {
             // Make node indexing that the field blender can use.
             using Indexing = typename TopologyView::IndexingPolicy;
-            using IndexingPolicy = axom::mir::utilities::blueprint::GlobalToLocalIndexing<Indexing>;
+            using IndexingPolicy = axom::mir::utilities::blueprint::SSVertexFieldIndexing<Indexing>;
             IndexingPolicy indexing;
-            indexing.m_indexing = m_topologyView.indexing().expand();
+            indexing.m_topoIndexing = m_topologyView.indexing().expand();
+            indexing.m_fieldIndexing = m_topologyView.indexing().expand();
+            indexing.update(n_field);
 
-            // Blend the field.
-            axom::mir::utilities::blueprint::FieldBlender<
-              ExecSpace,
-              axom::mir::utilities::blueprint::SelectThroughArrayView,
-              IndexingPolicy>
-              b(indexing);
-            b.execute(blend, n_field, n_out_fields[it->second]);
-            handled = true;
+            // If the topo and field offsets/strides are different then we need to go through
+            // SSVertexFieldIndexing. Otherwise, we can let the normal case further below
+            // handle the field.
+            if(indexing.m_topoIndexing.m_offsets != indexing.m_fieldIndexing.m_offsets ||
+               indexing.m_topoIndexing.m_strides != indexing.m_fieldIndexing.m_strides)
+            {
+              // Blend the field.
+              axom::mir::utilities::blueprint::FieldBlender<
+                ExecSpace,
+                axom::mir::utilities::blueprint::SelectThroughArrayView,
+                IndexingPolicy>
+                b(indexing);
+              b.execute(blend, n_field, n_out_fields[it->second]);
+              handled = true;
+            }
           }
         }
-#endif
         if(!handled)
         {
+          // Blend the field.
           axom::mir::utilities::blueprint::FieldBlender<
             ExecSpace,
             axom::mir::utilities::blueprint::SelectThroughArrayView>
@@ -1795,7 +1806,7 @@ private:
    * \note Objects that we need to capture into kernels are passed by value (they only contain views anyway). Data can be modified through the views.
    */
   void makeOriginalElements(FragmentData fragmentData,
-                            const ClipOptions<ExecSpace> &opts,
+                            ClipOptions<ExecSpace> &opts,
                             const conduit::Node &n_fields,
                             conduit::Node &n_newTopo,
                             conduit::Node &n_newFields) const
@@ -1806,7 +1817,8 @@ private:
     utilities::blueprint::ConduitAllocateThroughAxom<ExecSpace> c2a;
     const int conduitAllocatorID = c2a.getConduitAllocatorID();
 
-    const auto nzones = m_topologyView.numberOfZones();
+    const auto selectedZonesView = opts.selectedZonesView();
+    const auto nzones = selectedZonesView.size();
 
     if(n_fields.has_child("originalElements"))
     {
@@ -1827,9 +1839,10 @@ private:
           fragmentData.m_finalNumZones);
         axom::for_all<ExecSpace>(
           nzones,
-          AXOM_LAMBDA(auto zoneIndex) {
-            int sizeIndex = fragmentData.m_fragmentOffsetsView[zoneIndex];
-            int nFragments = fragmentData.m_fragmentsView[zoneIndex];
+          AXOM_LAMBDA(auto index) {
+            const int sizeIndex = fragmentData.m_fragmentOffsetsView[index];
+            const int nFragments = fragmentData.m_fragmentsView[index];
+            const auto zoneIndex = selectedZonesView[index];
             for(int i = 0; i < nFragments; i++)
               valuesView[sizeIndex + i] = origValuesView[zoneIndex];
           });
@@ -1849,9 +1862,10 @@ private:
         fragmentData.m_finalNumZones);
       axom::for_all<ExecSpace>(
         nzones,
-        AXOM_LAMBDA(auto zoneIndex) {
-          int sizeIndex = fragmentData.m_fragmentOffsetsView[zoneIndex];
-          int nFragments = fragmentData.m_fragmentsView[zoneIndex];
+        AXOM_LAMBDA(auto index) {
+          const int sizeIndex = fragmentData.m_fragmentOffsetsView[index];
+          const int nFragments = fragmentData.m_fragmentsView[index];
+          const auto zoneIndex = selectedZonesView[index];
           for(int i = 0; i < nFragments; i++)
             valuesView[sizeIndex + i] = zoneIndex;
         });
