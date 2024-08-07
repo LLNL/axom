@@ -248,10 +248,10 @@ private:
   }
 
   const conduit::Node &m_topo;
-  axom::ArrayView<IndexType> m_connectivity;
-  axom::ArrayView<IndexType> m_shapes;
-  axom::ArrayView<IndexType> m_sizes;
-  axom::ArrayView<IndexType> m_offsets;
+  ConnectivityView m_connectivity;
+  ConnectivityView m_shapes;
+  ConnectivityView m_sizes;
+  ConnectivityView m_offsets;
 };
 
 }  // end namespace views
