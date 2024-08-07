@@ -255,10 +255,10 @@ public:
    * \brief Return the clip value.
    * \return The clip value.
    */
-  float clipValue() const
+  double clipValue() const
   {
     return m_options.has_child("clipValue")
-      ? m_options.fetch_existing("clipValue").to_float()
+      ? m_options.fetch_existing("clipValue").to_double()
       : 0.f;
   }
 
@@ -971,17 +971,39 @@ public:
                conduit::Node &n_newCoordset,
                conduit::Node &n_newFields)
   {
+    namespace bputils = axom::mir::utilities::blueprint;
     const auto allocatorID = axom::execution_space<ExecSpace>::allocatorID();
 
     // Make the selected zones and get the size.
     ClipOptions<ExecSpace> opts(m_topologyView.numberOfZones(), n_options);
     const auto nzones = opts.selectedZonesView().size();
 
-    // Get the clip field.
+    // Get the clip field. Make sure it is double. That lets us make less code down the line.
     std::string clipFieldName = opts.clipField();
     const conduit::Node &n_clip_field = n_fields.fetch_existing(opts.clipField());
     const conduit::Node &n_clip_field_values = n_clip_field["values"];
     SLIC_ASSERT(n_clip_field["association"].as_string() == "vertex");
+    axom::Array<double> clipFieldData;
+    axom::ArrayView<double> clipFieldView;
+    if(n_clip_field_values.dtype().is_float64())
+    {
+      // Make a view.
+      clipFieldView = bputils::make_array_view<double>(n_clip_field_values);
+    }
+    else
+    {
+      // Convert to double.
+      const IndexType n = static_cast<IndexType>(n_clip_field_values.dtype().number_of_elements());
+      clipFieldData = axom::Array<double>(n, n, allocatorID);
+      clipFieldView = clipFieldData.view();
+      views::Node_to_ArrayView(n_clip_field_values, [&](auto clipFieldViewSrc)
+      {
+        axom::for_all<ExecSpace>(n, AXOM_LAMBDA(auto index)
+        {
+          clipFieldView[index] = static_cast<double>(clipFieldViewSrc[index]);
+        });
+      });
+    }
 
     // Load clip table data and make views.
     m_clipTables.load(m_topologyView.dimension());
@@ -1044,7 +1066,7 @@ public:
                  zoneData,
                  fragmentData,
                  opts,
-                 n_clip_field_values);
+                 clipFieldView);
     computeFragmentSizes(fragmentData, opts);
     computeFragmentOffsets(fragmentData);
 
@@ -1074,7 +1096,7 @@ public:
                           blendGroupStart.view(),
                           blendIds.view(),
                           blendCoeff.view());
-    makeBlendGroups(clipTableViews, builder, zoneData, opts, n_clip_field_values);
+    makeBlendGroups(clipTableViews, builder, zoneData, opts, clipFieldView);
 
     // Make the blend groups unique
     axom::Array<KeyType> uNames;
@@ -1083,7 +1105,7 @@ public:
                                                      uNames,
                                                      uIndices);
     builder.setUniqueNames(uNames.view(), uIndices.view());
-    axom::mir::utilities::blueprint::BlendData blend = builder.makeBlendData();
+    bputils::BlendData blend = builder.makeBlendData();
 
     // Make the clipped mesh
     makeConnectivity(clipTableViews,
@@ -1096,7 +1118,7 @@ public:
                      n_newFields);
     makeCoordset(blend, n_coordset, n_newCoordset);
 
-    axom::mir::utilities::blueprint::SliceData slice;
+    bputils::SliceData slice;
     axom::Array<IndexType> sliceIndices(fragmentData.m_finalNumZones,
                                         fragmentData.m_finalNumZones,
                                         allocatorID);
@@ -1195,7 +1217,7 @@ private:
    * \param[in] zoneData This object holds views to per-zone data.
    * \param[in] fragmentData This object holds views to per-fragment data.
    * \param[inout] opts Clipping options.
-   * \param[in] n_clip_field_values The node that contains clipping field values.
+   * \param[in] clipFieldView The view that contains clipping field values.
    *
    * \note Objects that we need to capture into kernels are passed by value (they only contain views anyway). Data can be modified through the views.
    */
@@ -1204,11 +1226,9 @@ private:
                     ZoneData zoneData,
                     FragmentData fragmentData,
                     ClipOptions<ExecSpace> &opts,
-                    const conduit::Node &n_clip_field_values) const
+                    const axom::ArrayView<double> &clipFieldView) const
   {
-    views::Node_to_ArrayView(n_clip_field_values, [&](auto clipFieldView) {
-      using clip_value_type = typename decltype(clipFieldView)::value_type;
-      const auto clipValue = static_cast<clip_value_type>(opts.clipValue());
+      const auto clipValue = opts.clipValue();
       const auto selection = getSelection(opts);
 
       auto blendGroupsView = builder.state().m_blendGroupsView;
@@ -1318,7 +1338,6 @@ private:
           blendGroupsView[szIndex] = thisBlendGroups;
           blendGroupsLenView[szIndex] = thisBlendGroupLen;
         });
-    });
   }
 
   /**
@@ -1370,7 +1389,7 @@ private:
    * \param[in] builder This object holds views to blend group data and helps with building/access.
    * \param[in] zoneData This object holds views to per-zone data.
    * \param[inout] opts Clipping options.
-   * \param[in] n_clip_field_values The node that contains clipping field values.
+   * \param[in] clipFieldView The view that contains clipping field values.
    *
    * \note Objects that we need to capture into kernels are passed by value (they only contain views anyway). Data can be modified through the views.
    */
@@ -1378,9 +1397,8 @@ private:
                        BlendGroupBuilderType builder,
                        ZoneData zoneData,
                        ClipOptions<ExecSpace> &opts,
-                       const conduit::Node &n_clip_field_values) const
+                       const axom::ArrayView<double> &clipFieldView) const
   {
-    views::Node_to_ArrayView(n_clip_field_values, [&](auto clipFieldView) {
       const auto clipValue = opts.clipValue();
       const auto selection = getSelection(opts);
 
@@ -1480,7 +1498,6 @@ private:
             }
           }
         });
-    });
   }
 
   /**
@@ -1506,8 +1523,9 @@ private:
                         conduit::Node &n_newCoordset,
                         conduit::Node &n_newFields) const
   {
+    namespace bputils = axom::mir::utilities::blueprint;
     constexpr auto connTypeID =
-      axom::mir::utilities::blueprint::cpp2conduit<ConnectivityType>::id;
+      bputils::cpp2conduit<ConnectivityType>::id;
     const auto selection = getSelection(opts);
 
     n_newTopo.reset();
@@ -1522,33 +1540,25 @@ private:
     conduit::Node &n_conn = n_newTopo["elements/connectivity"];
     n_conn.set_allocator(conduitAllocatorID);
     n_conn.set(conduit::DataType(connTypeID, fragmentData.m_finalConnSize));
-    auto connView = axom::ArrayView<ConnectivityType>(
-      static_cast<ConnectivityType *>(n_conn.data_ptr()),
-      fragmentData.m_finalConnSize);
+    auto connView = bputils::make_array_view<ConnectivityType>(n_conn);
 
     // Allocate shapes.
     conduit::Node &n_shapes = n_newTopo["elements/shapes"];
     n_shapes.set_allocator(conduitAllocatorID);
     n_shapes.set(conduit::DataType(connTypeID, fragmentData.m_finalNumZones));
-    auto shapesView = axom::ArrayView<ConnectivityType>(
-      static_cast<ConnectivityType *>(n_shapes.data_ptr()),
-      fragmentData.m_finalNumZones);
+    auto shapesView = bputils::make_array_view<ConnectivityType>(n_shapes);
 
     // Allocate sizes.
     conduit::Node &n_sizes = n_newTopo["elements/sizes"];
     n_sizes.set_allocator(conduitAllocatorID);
     n_sizes.set(conduit::DataType(connTypeID, fragmentData.m_finalNumZones));
-    auto sizesView = axom::ArrayView<ConnectivityType>(
-      static_cast<ConnectivityType *>(n_sizes.data_ptr()),
-      fragmentData.m_finalNumZones);
+    auto sizesView = bputils::make_array_view<ConnectivityType>(n_sizes);
 
     // Allocate offsets.
     conduit::Node &n_offsets = n_newTopo["elements/offsets"];
     n_offsets.set_allocator(conduitAllocatorID);
     n_offsets.set(conduit::DataType(connTypeID, fragmentData.m_finalNumZones));
-    auto offsetsView = axom::ArrayView<ConnectivityType>(
-      static_cast<ConnectivityType *>(n_offsets.data_ptr()),
-      fragmentData.m_finalNumZones);
+    auto offsetsView = bputils::make_array_view<ConnectivityType>(n_offsets);
 
     // Allocate a color variable to keep track of the "color" of the fragments.
     conduit::Node &n_color = n_newFields[opts.colorField()];
@@ -1557,9 +1567,7 @@ private:
     conduit::Node &n_color_values = n_color["values"];
     n_color_values.set_allocator(conduitAllocatorID);
     n_color_values.set(conduit::DataType::int32(fragmentData.m_finalNumZones));
-    auto colorView = axom::ArrayView<int>(
-      static_cast<int *>(n_color_values.data_ptr()),
-      fragmentData.m_finalNumZones);
+    auto colorView = bputils::make_array_view<int>(n_color_values);
 
     // Here we fill in the new connectivity, sizes, shapes.
     // We get the node ids from the unique blend names, de-duplicating points when making the new connectivity.
@@ -1819,8 +1827,9 @@ private:
                             conduit::Node &n_newTopo,
                             conduit::Node &n_newFields) const
   {
+    namespace bputils = axom::mir::utilities::blueprint;
     constexpr auto connTypeID =
-      axom::mir::utilities::blueprint::cpp2conduit<ConnectivityType>::id;
+      bputils::cpp2conduit<ConnectivityType>::id;
 
     utilities::blueprint::ConduitAllocateThroughAxom<ExecSpace> c2a;
     const int conduitAllocatorID = c2a.getConduitAllocatorID();
@@ -1842,9 +1851,7 @@ private:
         n_values.set_allocator(conduitAllocatorID);
         n_values.set(conduit::DataType(n_orig_values.dtype().id(),
                                        fragmentData.m_finalNumZones));
-        auto valuesView = axom::ArrayView<value_type>(
-          static_cast<value_type *>(n_values.data_ptr()),
-          fragmentData.m_finalNumZones);
+        auto valuesView = bputils::make_array_view<value_type>(n_values);
         axom::for_all<ExecSpace>(
           nzones,
           AXOM_LAMBDA(auto index) {
@@ -1865,9 +1872,7 @@ private:
       conduit::Node &n_values = n_orig["values"];
       n_values.set_allocator(conduitAllocatorID);
       n_values.set(conduit::DataType(connTypeID, fragmentData.m_finalNumZones));
-      auto valuesView = axom::ArrayView<ConnectivityType>(
-        static_cast<ConnectivityType *>(n_values.data_ptr()),
-        fragmentData.m_finalNumZones);
+      auto valuesView = bputils::make_array_view<ConnectivityType>(n_values);
       axom::for_all<ExecSpace>(
         nzones,
         AXOM_LAMBDA(auto index) {

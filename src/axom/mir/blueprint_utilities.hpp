@@ -114,6 +114,23 @@ struct cpp2conduit<conduit::float64>
 };
 
 //------------------------------------------------------------------------------
+
+/**
+ * \brief Make an axom::ArrayView from a Conduit node.
+ */
+template <typename T>
+inline axom::ArrayView<T> make_array_view(conduit::Node &n)
+{
+  return axom::ArrayView<T>(static_cast<T *>(n.data_ptr()), n.dtype().number_of_elements());
+}
+
+template <typename T>
+inline axom::ArrayView<T> make_array_view(const conduit::Node &n)
+{
+  return axom::ArrayView<T>(static_cast<T *>(const_cast<void *>(n.data_ptr())), n.dtype().number_of_elements());
+}
+
+//------------------------------------------------------------------------------
 /**
  * \brief This class registers a Conduit allocator that can make Conduit allocate
  *        through Axom's allocate/deallocate functions using a specific allocator. This
