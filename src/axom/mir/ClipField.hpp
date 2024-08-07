@@ -1216,7 +1216,7 @@ private:
 
       m_topologyView.template for_selected_zones<ExecSpace>(
         opts.selectedZonesView(),
-        AXOM_LAMBDA(auto szIndex, auto zoneIndex, const auto &zone) {
+        AXOM_LAMBDA(auto szIndex, auto /*zoneIndex*/, const auto &zone) {
           // Get the clip case for the current zone.
           const auto clipcase =
             details::clip_case(zone, clipFieldView, clipValue);
@@ -1386,7 +1386,7 @@ private:
 
       m_topologyView.template for_selected_zones<ExecSpace>(
         opts.selectedZonesView(),
-        AXOM_LAMBDA(auto szIndex, auto zoneIndex, const auto &zone) {
+        AXOM_LAMBDA(auto szIndex, auto /*zoneIndex*/, const auto &zone) {
           // Get the clip case for the current zone.
           const auto clipcase = zoneData.m_clipCasesView[szIndex];
 
@@ -1558,7 +1558,7 @@ private:
     n_color_values.set_allocator(conduitAllocatorID);
     n_color_values.set(conduit::DataType::int32(fragmentData.m_finalNumZones));
     auto colorView = axom::ArrayView<int>(
-      static_cast<ConnectivityType *>(n_color_values.data_ptr()),
+      static_cast<int *>(n_color_values.data_ptr()),
       fragmentData.m_finalNumZones);
 
     // Here we fill in the new connectivity, sizes, shapes.
@@ -1566,7 +1566,7 @@ private:
     RAJA::ReduceBitOr<reduce_policy, BitSet> shapesUsed_reduce(0);
     m_topologyView.template for_selected_zones<ExecSpace>(
       opts.selectedZonesView(),
-      AXOM_LAMBDA(auto szIndex, auto zoneIndex, const auto &zone) {
+      AXOM_LAMBDA(auto szIndex, auto /*zoneIndex*/, const auto &zone) {
         // If there are no fragments, return from lambda.
         if(fragmentData.m_fragmentsView[szIndex] == 0) return;
 
