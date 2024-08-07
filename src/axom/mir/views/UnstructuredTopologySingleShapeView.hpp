@@ -66,12 +66,6 @@ public:
   static constexpr int dimension() { return ShapeT::dimension(); }
 
   /**
-   * \brief Return whether the view supports strided structured indexing.
-   * \return false
-   */
-  static constexpr bool supports_strided_structured_indexing() { return false; }
-
-  /**
    * \brief Return the number of zones.
    *
    * \return The number of zones.
@@ -156,7 +150,7 @@ public:
             connectivityView.data() + offsetsView[zoneIndex],
             sizesView[zoneIndex]);
           const ShapeType shape(shapeIdsView);
-          func(zoneIndex, shape);
+          func(selectIndex, zoneIndex, shape);
         });
     }
     else
@@ -170,7 +164,7 @@ public:
             connectivityView.data() + ShapeType::zoneOffset(zoneIndex),
             ShapeType::numberOfNodes());
           const ShapeType shape(shapeIdsView);
-          func(zoneIndex, shape);
+          func(selectIndex, zoneIndex, shape);
         });
     }
   }

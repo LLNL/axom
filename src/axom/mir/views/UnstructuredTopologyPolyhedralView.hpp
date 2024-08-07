@@ -194,12 +194,6 @@ public:
    */
   static constexpr int dimension() { return 3; }
 
-  /**
-   * \brief Return whether the view supports strided structured indexing.
-   * \return false
-   */
-  static constexpr bool supports_strided_structured_indexing() { return false; }
-
   template <typename ExecSpace, typename FuncType>
   void for_all_zones(FuncType &&func) const
   {
@@ -225,10 +219,10 @@ public:
     axom::for_all<ExecSpace>(
       0,
       nSelectedZones,
-      AXOM_LAMBDA(int selectIndex) {
+      AXOM_LAMBDA(auto selectIndex) {
         const auto zoneIndex = idsView[selectIndex];
         const PolyhedronShape shape(sd, zoneIndex);
-        func(zoneIndex, shape);
+        func(selectIndex, zoneIndex, shape);
       });
   }
 

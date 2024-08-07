@@ -122,12 +122,6 @@ public:
   static constexpr int dimension() { return -1; }
 
   /**
-   * \brief Return whether the view supports strided structured indexing.
-   * \return false
-   */
-  static constexpr bool supports_strided_structured_indexing() { return false; }
-
-  /**
    * \brief Return the number of zones.
    *
    * \return The number of zones.
@@ -201,7 +195,7 @@ public:
     axom::for_all<ExecSpace>(
       0,
       nSelectedZones,
-      AXOM_LAMBDA(int selectIndex) {
+      AXOM_LAMBDA(auto selectIndex) {
         const auto zoneIndex = deviceSelectedIdsView[selectIndex];
         const ConnectivityView shapeData(
           connectivityView.data() + offsets[zoneIndex],
@@ -209,7 +203,7 @@ public:
         const auto shapeID = shapeMap[shapes[zoneIndex]];
         // TODO: SLIC_ASSERT(shapeID > 0);
         const ShapeType shape(shapeID, shapeData);
-        func(zoneIndex, shape);
+        func(selectIndex, zoneIndex, shape);
       });
   }
 

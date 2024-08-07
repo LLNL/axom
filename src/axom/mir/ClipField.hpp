@@ -1045,7 +1045,7 @@ public:
                  fragmentData,
                  opts,
                  n_clip_field_values);
-    computeFragmentSizes(fragmentData);
+    computeFragmentSizes(fragmentData, opts);
     computeFragmentOffsets(fragmentData);
 
     IndexType blendGroupsSize = 0, blendGroupLenSize = 0;
@@ -1216,11 +1216,11 @@ private:
 
       m_topologyView.template for_selected_zones<ExecSpace>(
         opts.selectedZonesView(),
-        AXOM_LAMBDA(auto zoneIndex, const auto &zone) {
+        AXOM_LAMBDA(auto szIndex, auto zoneIndex, const auto &zone) {
           // Get the clip case for the current zone.
           const auto clipcase =
             details::clip_case(zone, clipFieldView, clipValue);
-          zoneData.m_clipCasesView[zoneIndex] = clipcase;
+          zoneData.m_clipCasesView[szIndex] = clipcase;
 
           // Iterate over the shapes in this clip case to determine the number of blend groups.
           const auto clipTableIndex = details::getClipTableIndex(zone.id());
@@ -1290,7 +1290,7 @@ private:
           }
 
           // Save the flags for the points that were used in this zone
-          zoneData.m_pointsUsedView[zoneIndex] = ptused;
+          zoneData.m_pointsUsedView[szIndex] = ptused;
 
           // Count which points in the original cell are used.
           for(IndexType pid = P0; pid <= P7; pid++)
@@ -1311,12 +1311,12 @@ private:
           }
 
           // Save the results.
-          fragmentData.m_fragmentsView[zoneIndex] = thisFragments;
-          fragmentData.m_fragmentsSizeView[zoneIndex] = thisFragmentsNumIds;
+          fragmentData.m_fragmentsView[szIndex] = thisFragments;
+          fragmentData.m_fragmentsSizeView[szIndex] = thisFragmentsNumIds;
 
           // Set blend group sizes for this zone.
-          blendGroupsView[zoneIndex] = thisBlendGroups;
-          blendGroupsLenView[zoneIndex] = thisBlendGroupLen;
+          blendGroupsView[szIndex] = thisBlendGroups;
+          blendGroupsLenView[szIndex] = thisBlendGroupLen;
         });
     });
   }
@@ -1326,16 +1326,16 @@ private:
    *
    * \param[inout] fragmentData The object that contains data about the zone fragments.
    */
-  void computeFragmentSizes(FragmentData &fragmentData) const
+  void computeFragmentSizes(FragmentData &fragmentData, ClipOptions<ExecSpace> &opts) const
   {
-    const auto nzones = m_topologyView.numberOfZones();
+    const auto nzones = opts.selectedZonesView().size();
 
     // Sum the number of fragments.
     RAJA::ReduceSum<reduce_policy, IndexType> fragment_sum(0);
     const auto fragmentsView = fragmentData.m_fragmentsView;
     axom::for_all<ExecSpace>(
       nzones,
-      AXOM_LAMBDA(auto zoneIndex) { fragment_sum += fragmentsView[zoneIndex]; });
+      AXOM_LAMBDA(auto szIndex) { fragment_sum += fragmentsView[szIndex]; });
     fragmentData.m_finalNumZones = fragment_sum.get();
 
     // Sum the fragment connectivity sizes.
@@ -1343,8 +1343,8 @@ private:
     const auto fragmentsSizeView = fragmentData.m_fragmentsSizeView;
     axom::for_all<ExecSpace>(
       nzones,
-      AXOM_LAMBDA(auto zoneIndex) {
-        fragment_nids_sum += fragmentsSizeView[zoneIndex];
+      AXOM_LAMBDA(auto szIndex) {
+        fragment_nids_sum += fragmentsSizeView[szIndex];
       });
     fragmentData.m_finalConnSize = fragment_nids_sum.get();
   }
@@ -1385,19 +1385,19 @@ private:
 
       m_topologyView.template for_selected_zones<ExecSpace>(
         opts.selectedZonesView(),
-        AXOM_LAMBDA(auto zoneIndex, const auto &zone) {
+        AXOM_LAMBDA(auto szIndex, auto zoneIndex, const auto &zone) {
           // Get the clip case for the current zone.
-          const auto clipcase = zoneData.m_clipCasesView[zoneIndex];
+          const auto clipcase = zoneData.m_clipCasesView[szIndex];
 
           // Iterate over the shapes in this clip case to determine the number of blend groups.
           const auto clipTableIndex = details::getClipTableIndex(zone.id());
           const auto &ctView = clipTableViews[clipTableIndex];
 
           // These are the points used in this zone's fragments.
-          const BitSet ptused = zoneData.m_pointsUsedView[zoneIndex];
+          const BitSet ptused = zoneData.m_pointsUsedView[szIndex];
 
           // Get the blend groups for this zone.
-          auto groups = builder.blendGroupsForZone(zoneIndex);
+          auto groups = builder.blendGroupsForZone(szIndex);
 
           auto it = ctView.begin(clipcase);
           const auto end = ctView.end(clipcase);
@@ -1565,18 +1565,18 @@ private:
     RAJA::ReduceBitOr<reduce_policy, BitSet> shapesUsed_reduce(0);
     m_topologyView.template for_selected_zones<ExecSpace>(
       opts.selectedZonesView(),
-      AXOM_LAMBDA(auto zoneIndex, const auto &zone) {
+      AXOM_LAMBDA(auto szIndex, auto zoneIndex, const auto &zone) {
         // If there are no fragments, return from lambda.
-        if(fragmentData.m_fragmentsView[zoneIndex] == 0) return;
+        if(fragmentData.m_fragmentsView[szIndex] == 0) return;
 
         // Seek to the start of the blend groups for this zone.
-        auto groups = builder.blendGroupsForZone(zoneIndex);
+        auto groups = builder.blendGroupsForZone(szIndex);
 
         // Go through the points in the order they would have been added as blend
         // groups, get their blendName, and then overall index of that blendName
         // in uNames, the unique list of new dof names. That will be their index
         // in the final points.
-        const BitSet ptused = zoneData.m_pointsUsedView[zoneIndex];
+        const BitSet ptused = zoneData.m_pointsUsedView[szIndex];
         ConnectivityType point_2_new[N3 + 1];
         for(unsigned char pid = N0; pid <= N3; pid++)
         {
@@ -1604,13 +1604,13 @@ private:
         }
 
         // This is where the output fragment connectivity start for this zone
-        int outputIndex = fragmentData.m_fragmentSizeOffsetsView[zoneIndex];
+        int outputIndex = fragmentData.m_fragmentSizeOffsetsView[szIndex];
         // This is where the output fragment sizes/shapes start for this zone.
-        int sizeIndex = fragmentData.m_fragmentOffsetsView[zoneIndex];
+        int sizeIndex = fragmentData.m_fragmentOffsetsView[szIndex];
         BitSet shapesUsed = 0;
 
         // Iterate over the selected fragments and emit connectivity for them.
-        const auto clipcase = zoneData.m_clipCasesView[zoneIndex];
+        const auto clipcase = zoneData.m_clipCasesView[szIndex];
         const auto clipTableIndex = details::getClipTableIndex(zone.id());
         const auto ctView = clipTableViews[clipTableIndex];
         auto it = ctView.begin(clipcase);

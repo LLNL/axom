@@ -70,9 +70,14 @@ TEST(mir_views, strided_structured)
   //  hostMesh.print();
 
   // These are the expected zone ids for this strided structured mesh.
-  const axom::Array<int> expectedZones {{16, 17, 24, 23, 17, 18, 25, 24,
-                                         18, 19, 26, 25, 23, 24, 31, 30,
-                                         24, 25, 32, 31, 25, 26, 33, 32}};
+  // clang-format off
+  const axom::Array<int> expectedZones {{16, 17, 24, 23,
+                                         17, 18, 25, 24,
+                                         18, 19, 26, 25,
+                                         23, 24, 31, 30,
+                                         24, 25, 32, 31,
+                                         25, 26, 33, 32}};
+  // clang-format on
   auto expectedZonesView = expectedZones.view();
 
   axom::mir::views::dispatch_explicit_coordset(

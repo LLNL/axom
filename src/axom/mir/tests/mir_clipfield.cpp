@@ -737,7 +737,7 @@ TEST(mir_clipfield, rectilinear3d)
 
 //------------------------------------------------------------------------------
 template <typename ExecSpace, int NDIMS>
-void strided_structured_clip_test(const std::string &name)
+void strided_structured_clip_test(const std::string &name, const conduit::Node &options)
 {
   using Indexing =
     axom::mir::views::StridedStructuredIndexing<axom::IndexType, NDIMS>;
@@ -757,13 +757,7 @@ void strided_structured_clip_test(const std::string &name)
                                            "yaml");
 #endif
 
-  conduit::Node options, deviceClipMesh, hostClipMesh;
-
-  // Create options to control the clipping.
-  options["clipField"] = "vert_vals";
-  options["clipValue"] = 6.5;
-  options["inside"] = 1;
-  options["outside"] = 1;
+  conduit::Node deviceClipMesh, hostClipMesh;
 
   // Create views
   axom::mir::views::dispatch_explicit_coordset(
@@ -798,21 +792,36 @@ void strided_structured_clip_test(const std::string &name)
   }
 }
 
-TEST(mir_clipfield, strided_structured_2d)
+void strided_structured_clip_test_exec(const std::string &name, const conduit::Node &options)
 {
-  strided_structured_clip_test<seq_exec, 2>("strided_structured_2d");
+  strided_structured_clip_test<seq_exec, 2>(name, options);
 
-  //#if defined(AXOM_USE_OPENMP)
-  //  strided_structured_clip_test<omp_exec, 2>("strided_structured_2d");
-  //#endif
+#if defined(AXOM_USE_OPENMP)
+  strided_structured_clip_test<omp_exec, 2>(name, options);
+#endif
 
 #if defined(AXOM_USE_CUDA) && defined(__CUDACC__)
-  strided_structured_clip_test<cuda_exec, 2>("strided_structured_2d");
+  strided_structured_clip_test<cuda_exec, 2>(name, options);
 #endif
 
 #if defined(AXOM_USE_HIP)
-  strided_structured_clip_test<hip_exec, 2>("strided_structured_2d");
+  strided_structured_clip_test<hip_exec, 2>(name, options);
 #endif
+}
+
+TEST(mir_clipfield, strided_structured_2d)
+{
+  // Create options to control the clipping.
+  conduit::Node options;
+  options["clipField"] = "vert_vals";
+  options["clipValue"] = 6.5;
+  options["inside"] = 1;
+  options["outside"] = 1;
+  strided_structured_clip_test_exec("strided_structured_2d", options);
+
+  // Clip strided structure on some selected zones.
+  options["selectedZones"].set(std::vector<int>{{0,2,3,5}});
+  strided_structured_clip_test_exec("strided_structured_2d_sel", options);
 }
 
 template <typename ExecSpace, typename ShapeType>

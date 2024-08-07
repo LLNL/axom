@@ -37,15 +37,6 @@ public:
   constexpr static int dimension() { return IndexingPolicy::dimension(); }
 
   /**
-   * \brief Return whether the indexing supports strided structured indexing.
-   * \return True if the indexing supports strided structured indexing, false otherwise.
-   */
-  constexpr static bool supports_strided_structured_indexing()
-  {
-    return IndexingPolicy::supports_strided_structured_indexing();
-  }
-
-  /**
    * \brief Constructor
    *
    * \param indexing The indexing policy for the topology (num zones in each dimension).
@@ -226,7 +217,7 @@ public:
           data[7] = data[3] + kp;
 
           const ShapeType shape(axom::ArrayView<IndexType>(data, 8));
-          func(zoneIndex, shape);
+          func(selectIndex, zoneIndex, shape);
         });
     }
     else if constexpr(IndexingPolicy::dimension() == 2)
@@ -251,7 +242,7 @@ public:
           data[3] = data[2] - 1;
 
           const ShapeType shape(axom::ArrayView<IndexType>(data, 4));
-          func(zoneIndex, shape);
+          func(selectIndex, zoneIndex, shape);
         });
     }
     else if constexpr(IndexingPolicy::dimension() == 1)
@@ -273,7 +264,7 @@ public:
           data[1] = data[0] + 1;
 
           const ShapeType shape(axom::ArrayView<IndexType>(data, 2));
-          func(zoneIndex, shape);
+          func(selectIndex, zoneIndex, shape);
         });
     }
   }
