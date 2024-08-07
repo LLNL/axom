@@ -42,10 +42,10 @@
 //------------------------------------------------------------------------------
 
 // Uncomment to generate baselines
-#define AXOM_TESTING_GENERATE_BASELINES
+//#define AXOM_TESTING_GENERATE_BASELINES
 
 // Uncomment to save visualization files for debugging (when making baselines)
-#define AXOM_TESTING_SAVE_VISUALIZATION
+//#define AXOM_TESTING_SAVE_VISUALIZATION
 
 // Include after seq_exec is defined.
 #include "axom/mir/tests/mir_testing_helpers.hpp"
@@ -740,15 +740,10 @@ template <typename ExecSpace, int NDIMS>
 void strided_structured_clip_test(const std::string &name,
                                   const conduit::Node &options)
 {
-  using Indexing =
-    axom::mir::views::StridedStructuredIndexing<axom::IndexType, NDIMS>;
-  using TopoView = axom::mir::views::StructuredTopologyView<Indexing>;
-  using CoordsetView = axom::mir::views::ExplicitCoordsetView<double, NDIMS>;
-
   // Create the data
   conduit::Node hostMesh, deviceMesh;
   axom::mir::testing::data::strided_structured<NDIMS>(hostMesh);
-  hostMesh.print();
+  //hostMesh.print();
 
   axom::mir::utilities::blueprint::copy<ExecSpace>(deviceMesh, hostMesh);
 #if defined(AXOM_TESTING_SAVE_VISUALIZATION)

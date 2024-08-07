@@ -29,6 +29,9 @@ set(mir_headers
 
     blueprint_utilities.hpp
     ClipField.hpp
+    ClipFieldFilterDevice.hpp
+    ClipFieldFilter.hpp
+
     CoordsetBlender.hpp
     EquiZAlgorithm.hpp
     FieldBlender.hpp
@@ -71,6 +74,7 @@ set(mir_sources
     CellClipper.cpp
     CellGenerator.cpp
 
+    ClipFieldFilter.cpp
     blueprint_utilities.cpp
     MIRAlgorithm.cpp
     EquiZAlgorithm.cpp
