@@ -1326,7 +1326,8 @@ private:
    *
    * \param[inout] fragmentData The object that contains data about the zone fragments.
    */
-  void computeFragmentSizes(FragmentData &fragmentData, ClipOptions<ExecSpace> &opts) const
+  void computeFragmentSizes(FragmentData &fragmentData,
+                            ClipOptions<ExecSpace> &opts) const
   {
     const auto nzones = opts.selectedZonesView().size();
 

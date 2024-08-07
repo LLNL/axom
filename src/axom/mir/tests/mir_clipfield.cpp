@@ -737,7 +737,8 @@ TEST(mir_clipfield, rectilinear3d)
 
 //------------------------------------------------------------------------------
 template <typename ExecSpace, int NDIMS>
-void strided_structured_clip_test(const std::string &name, const conduit::Node &options)
+void strided_structured_clip_test(const std::string &name,
+                                  const conduit::Node &options)
 {
   using Indexing =
     axom::mir::views::StridedStructuredIndexing<axom::IndexType, NDIMS>;
@@ -792,7 +793,8 @@ void strided_structured_clip_test(const std::string &name, const conduit::Node &
   }
 }
 
-void strided_structured_clip_test_exec(const std::string &name, const conduit::Node &options)
+void strided_structured_clip_test_exec(const std::string &name,
+                                       const conduit::Node &options)
 {
   strided_structured_clip_test<seq_exec, 2>(name, options);
 
@@ -820,7 +822,7 @@ TEST(mir_clipfield, strided_structured_2d)
   strided_structured_clip_test_exec("strided_structured_2d", options);
 
   // Clip strided structure on some selected zones.
-  options["selectedZones"].set(std::vector<int>{{0,2,3,5}});
+  options["selectedZones"].set(std::vector<int> {{0, 2, 3, 5}});
   strided_structured_clip_test_exec("strided_structured_2d_sel", options);
 }
 
