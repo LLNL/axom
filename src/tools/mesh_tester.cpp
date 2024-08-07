@@ -330,7 +330,7 @@ bool checkTT(Triangle3& t1, Triangle3& t2, double EPS)
     return false;
   }
 
-  const bool includeBoundaries = false;  // only check internal intersections
+  constexpr bool includeBoundaries = false;  // only check internal intersections
   if(primal::intersect(t1, t2, includeBoundaries, EPS))
   {
     return true;
