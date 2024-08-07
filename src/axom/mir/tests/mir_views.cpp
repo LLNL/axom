@@ -67,32 +67,24 @@ TEST(mir_views, strided_structured)
 {
   conduit::Node hostMesh;
   axom::mir::testing::data::strided_structured<2>(hostMesh);
-//  hostMesh.print();
+  //  hostMesh.print();
 
   // These are the expected zone ids for this strided structured mesh.
-  const axom::Array<int> expectedZones{{
-    16, 17, 24, 23,
-    17, 18, 25, 24,
-    18, 19, 26, 25,
-    23, 24, 31, 30,
-    24, 25, 32, 31,
-    25, 26, 33, 32
-  }};
+  const axom::Array<int> expectedZones {{16, 17, 24, 23, 17, 18, 25, 24,
+                                         18, 19, 26, 25, 23, 24, 31, 30,
+                                         24, 25, 32, 31, 25, 26, 33, 32}};
   auto expectedZonesView = expectedZones.view();
 
   axom::mir::views::dispatch_explicit_coordset(
     hostMesh["coordsets/coords"],
     [&](auto coordsetView) {
-
       axom::mir::views::dispatch_structured_topology<
         axom::mir::views::select_dimensions(2)>(
         hostMesh["topologies/mesh"],
         [&](const std::string &shape, auto topoView) {
-
           // Traverse the zones in the mesh and check the zone ids.
           topoView.template for_all_zones<axom::SEQ_EXEC>(
             AXOM_LAMBDA(auto zoneIndex, const auto &zone) {
-
               // Check zone ids.
               const auto ids = zone.getIds();
               for(axom::IndexType i = 0; i < ids.size(); i++)
@@ -118,7 +110,7 @@ TEST(mir_views, strided_structured)
 
                 const double dx = pt[0] - x;
                 const double dy = pt[1] - y;
-                double d = sqrt(dx*dx + dy*dy);
+                double d = sqrt(dx * dx + dy * dy);
 
                 EXPECT_TRUE(d < 1.e-10);
               }

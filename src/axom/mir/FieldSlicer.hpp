@@ -42,17 +42,13 @@ class FieldSlicer
 {
 public:
   /// Constructor
-  FieldSlicer() : m_indexing()
-  {
-  }
+  FieldSlicer() : m_indexing() { }
 
   /**
    * \brief Constructor
    * \param indexing An object used to transform node indices.
    */
-  FieldSlicer(const IndexingPolicy &indexing) : m_indexing(indexing)
-  {
-  }
+  FieldSlicer(const IndexingPolicy &indexing) : m_indexing(indexing) { }
 
   /**
    * \brief Execute the slice on the \a n_input field and store the new sliced field in \a n_output.
@@ -111,7 +107,6 @@ private:
       n_values,
       n_output_values,
       [&](auto valuesView, auto outputView) {
-
         IndexingPolicy deviceIndexing(m_indexing);
         SliceData deviceSlice(slice);
         axom::for_all<ExecSpace>(

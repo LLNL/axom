@@ -69,8 +69,8 @@ TEST(mir_views_indexing, strided_structured_indexing_2d)
       EXPECT_EQ(logical, logical2);
 
       // If we're in a valid region for the local window, try some other things.
-      if(i >= origin[0] && i < origin[0] + dims[0] &&
-         j >= origin[1] && j < origin[1] + dims[1])
+      if(i >= origin[0] && i < origin[0] + dims[0] && j >= origin[1] &&
+         j < origin[1] + dims[1])
       {
         const auto logicalLocal = indexing.GlobalToLocal(logical);
         const auto flatLocal = indexing.GlobalToLocal(flat);
@@ -81,11 +81,11 @@ TEST(mir_views_indexing, strided_structured_indexing_2d)
         // Logical local back to logical global
         EXPECT_EQ(logical, indexing.LocalToGlobal(logicalLocal));
       }
-     }
+    }
   }
 
   // Check whether these local points exist.
-  EXPECT_TRUE(indexing.contains(LogicalIndex{0,0}));
+  EXPECT_TRUE(indexing.contains(LogicalIndex {0, 0}));
   EXPECT_TRUE(indexing.contains(LogicalIndex {dims[0] - 1, dims[1] - 1}));
   EXPECT_FALSE(indexing.contains(LogicalIndex {4, 0}));
   EXPECT_FALSE(indexing.contains(LogicalIndex {4, 3}));
@@ -111,7 +111,7 @@ TEST(mir_views_indexing, strided_structured_indexing_3d)
 
   const LogicalIndex logical2_2_2 {2, 2, 2};
   const auto index2_2_2 = indexing.LogicalIndexToIndex(logical2_2_2);
-  EXPECT_EQ(index2_2_2, 2 + 2*dims[0] + 2*dims[0]*dims[1]);
+  EXPECT_EQ(index2_2_2, 2 + 2 * dims[0] + 2 * dims[0] * dims[1]);
 
   LogicalIndex logical = indexing.IndexToLogicalIndex(index2_2_2);
   EXPECT_TRUE(logical == logical2_2_2);

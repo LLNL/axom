@@ -21,7 +21,6 @@ namespace mir
 {
 namespace views
 {
-
 //------------------------------------------------------------------------------
 /**
  * \brief Fill an array from a Conduit node, filling the destination array if the values do not exist.
@@ -34,9 +33,7 @@ namespace views
  * \param fillValue the value to use if the array is not found.
  */
 template <typename ArrayType>
-bool fillFromNode(const conduit::Node &n,
-                  const std::string &key,
-                  ArrayType &arr)
+bool fillFromNode(const conduit::Node &n, const std::string &key, ArrayType &arr)
 {
   bool found = false;
   if((found = n.has_path(key)) == true)
@@ -83,7 +80,7 @@ struct make_strided_structured<3>
     zoneDims[1] = topo.fetch_existing("elements/dims/j").as_int();
     zoneDims[2] = topo.fetch_existing("elements/dims/k").as_int();
 
-    LogicalIndex offsets{{0, 0, 0}}, strides{{1, 1, 1}};
+    LogicalIndex offsets {{0, 0, 0}}, strides {{1, 1, 1}};
     fillFromNode(topo, offsetsKey, offsets);
     if(fillFromNode(topo, stridesKey, strides))
     {
@@ -134,7 +131,7 @@ struct make_strided_structured<2>
     zoneDims[0] = topo.fetch_existing("elements/dims/i").as_int();
     zoneDims[1] = topo.fetch_existing("elements/dims/j").as_int();
 
-    LogicalIndex offsets{{0, 0}}, strides{{1, 1}};
+    LogicalIndex offsets {{0, 0}}, strides {{1, 1}};
     fillFromNode(topo, offsetsKey, offsets);
     if(fillFromNode(topo, stridesKey, strides))
     {
@@ -183,7 +180,7 @@ struct make_strided_structured<1>
     LogicalIndex zoneDims;
     zoneDims[0] = topo.fetch_existing("elements/dims/i").as_int();
 
-    LogicalIndex offsets{0}, strides{1};
+    LogicalIndex offsets {0}, strides {1};
     fillFromNode(topo, offsetsKey, offsets);
     fillFromNode(topo, stridesKey, strides);
 

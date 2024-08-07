@@ -40,7 +40,10 @@ public:
    * \brief Return whether the indexing supports strided structured indexing.
    * \return True if the indexing supports strided structured indexing, false otherwise.
    */
-  constexpr static bool supports_strided_structured_indexing() { return IndexingPolicy::supports_strided_structured_indexing(); }
+  constexpr static bool supports_strided_structured_indexing()
+  {
+    return IndexingPolicy::supports_strided_structured_indexing();
+  }
 
   /**
    * \brief Constructor
@@ -116,7 +119,8 @@ public:
           const auto jp = nodeIndexing.jStride();
           const auto kp = nodeIndexing.kStride();
           IndexType data[8];
-          data[0] = nodeIndexing.GlobalToGlobal(nodeIndexing.LocalToGlobal(localLogical));
+          data[0] =
+            nodeIndexing.GlobalToGlobal(nodeIndexing.LocalToGlobal(localLogical));
           data[1] = data[0] + 1;
           data[2] = data[1] + jp;
           data[3] = data[2] - 1;
@@ -143,7 +147,8 @@ public:
           const auto localLogical = zoneIndexing.IndexToLogicalIndex(zoneIndex);
           const auto jp = nodeIndexing.jStride();
           IndexType data[4];
-          data[0] = nodeIndexing.GlobalToGlobal(nodeIndexing.LocalToGlobal(localLogical));
+          data[0] =
+            nodeIndexing.GlobalToGlobal(nodeIndexing.LocalToGlobal(localLogical));
           data[1] = data[0] + 1;
           data[2] = data[1] + jp;
           data[3] = data[2] - 1;
@@ -165,7 +170,8 @@ public:
 
           const auto localLogical = zoneIndexing.IndexToLogicalIndex(zoneIndex);
           IndexType data[2];
-          data[0] = nodeIndexing.GlobalToGlobal(nodeIndexing.LocalToGlobal(localLogical));
+          data[0] =
+            nodeIndexing.GlobalToGlobal(nodeIndexing.LocalToGlobal(localLogical));
           data[1] = data[0] + 1;
 
           const ShapeType shape(axom::ArrayView<IndexType>(data, 2));
@@ -209,7 +215,8 @@ public:
           const auto jp = nodeIndexing.jStride();
           const auto kp = nodeIndexing.kStride();
           IndexType data[8];
-          data[0] = nodeIndexing.GlobalToGlobal(nodeIndexing.LocalToGlobal(localLogical));
+          data[0] =
+            nodeIndexing.GlobalToGlobal(nodeIndexing.LocalToGlobal(localLogical));
           data[1] = data[0] + 1;
           data[2] = data[1] + jp;
           data[3] = data[2] - 1;
@@ -237,7 +244,8 @@ public:
           const auto localLogical = zoneIndexing.IndexToLogicalIndex(zoneIndex);
           const auto jp = nodeIndexing.jStride();
           IndexType data[4];
-          data[0] = nodeIndexing.GlobalToGlobal(nodeIndexing.LocalToGlobal(localLogical));
+          data[0] =
+            nodeIndexing.GlobalToGlobal(nodeIndexing.LocalToGlobal(localLogical));
           data[1] = data[0] + 1;
           data[2] = data[1] + jp;
           data[3] = data[2] - 1;
@@ -260,7 +268,8 @@ public:
           const auto zoneIndex = idsView[selectIndex];
           const auto localLogical = zoneIndexing.IndexToLogicalIndex(zoneIndex);
           IndexType data[2];
-          data[0] = nodeIndexing.GlobalToGlobal(nodeIndexing.LocalToGlobal(localLogical));
+          data[0] =
+            nodeIndexing.GlobalToGlobal(nodeIndexing.LocalToGlobal(localLogical));
           data[1] = data[0] + 1;
 
           const ShapeType shape(axom::ArrayView<IndexType>(data, 2));

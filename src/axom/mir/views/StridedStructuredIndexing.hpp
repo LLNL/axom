@@ -55,7 +55,10 @@ struct StridedStructuredIndexing
    * \brief Return whether the view supports strided structured indexing.
    * \return true
    */
-  AXOM_HOST_DEVICE static constexpr bool supports_strided_structured_indexing() { return true; }
+  AXOM_HOST_DEVICE static constexpr bool supports_strided_structured_indexing()
+  {
+    return true;
+  }
 
   /**
    * \brief constructor
@@ -138,7 +141,7 @@ struct StridedStructuredIndexing
   AXOM_HOST_DEVICE
   IndexType GlobalToGlobal(const LogicalIndex &global) const
   {
-    IndexType gl{};
+    IndexType gl {};
     for(int i = 0; i < NDIMS; i++)
     {
       gl += global[i] * m_strides[i];
@@ -282,7 +285,6 @@ struct StridedStructuredIndexing
     return logical;
   }
   /// @}
-
 
   /**
    * \brief Turn a local logical index into a local flat index.

@@ -752,7 +752,9 @@ void strided_structured_clip_test(const std::string &name)
   axom::mir::utilities::blueprint::copy<ExecSpace>(deviceMesh, hostMesh);
 #if defined(AXOM_TESTING_SAVE_VISUALIZATION)
   conduit::relay::io::blueprint::save_mesh(hostMesh, name + "_orig", "hdf5");
-  conduit::relay::io::blueprint::save_mesh(hostMesh, name + "_orig_yaml", "yaml");
+  conduit::relay::io::blueprint::save_mesh(hostMesh,
+                                           name + "_orig_yaml",
+                                           "yaml");
 #endif
 
   conduit::Node options, deviceClipMesh, hostClipMesh;
@@ -764,32 +766,35 @@ void strided_structured_clip_test(const std::string &name)
   options["outside"] = 1;
 
   // Create views
-  axom::mir::views::dispatch_explicit_coordset(deviceMesh["coordsets/coords"], [&](auto coordsetView)
-  {
-    auto topoView = axom::mir::views::make_strided_structured<2>::view(deviceMesh["topologies/mesh"]);
+  axom::mir::views::dispatch_explicit_coordset(
+    deviceMesh["coordsets/coords"],
+    [&](auto coordsetView) {
+      auto topoView = axom::mir::views::make_strided_structured<2>::view(
+        deviceMesh["topologies/mesh"]);
 
-    using CoordsetView = decltype(coordsetView);
-    using TopoView = decltype(topoView);
+      using CoordsetView = decltype(coordsetView);
+      using TopoView = decltype(topoView);
 
-    // Clip the data
-    axom::mir::clipping::ClipField<ExecSpace, TopoView, CoordsetView> clipper(
-      topoView,
-      coordsetView);
-    clipper.execute(deviceMesh, options, deviceClipMesh);
+      // Clip the data
+      axom::mir::clipping::ClipField<ExecSpace, TopoView, CoordsetView> clipper(
+        topoView,
+        coordsetView);
+      clipper.execute(deviceMesh, options, deviceClipMesh);
 
-    // Copy device->host
-    axom::mir::utilities::blueprint::copy<seq_exec>(hostClipMesh, deviceClipMesh);
-  });
+      // Copy device->host
+      axom::mir::utilities::blueprint::copy<seq_exec>(hostClipMesh,
+                                                      deviceClipMesh);
+    });
 
   // Handle baseline comparison.
   {
     std::string baselineName(yamlRoot(name));
     const auto paths = baselinePaths<ExecSpace>();
-  #if defined(AXOM_TESTING_GENERATE_BASELINES)
+#if defined(AXOM_TESTING_GENERATE_BASELINES)
     saveBaseline(paths, baselineName, hostClipMesh);
-  #else
+#else
     EXPECT_TRUE(compareBaseline(paths, baselineName, hostClipMesh));
-  #endif
+#endif
   }
 }
 

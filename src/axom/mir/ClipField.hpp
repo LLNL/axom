@@ -1717,17 +1717,20 @@ private:
       {
         bool handled = false;
         // Conditionally support strided-structured.
-        if constexpr (axom::mir::views::view_traits<TopologyView>::supports_strided_structured())
+        if constexpr(axom::mir::views::view_traits<
+                       TopologyView>::supports_strided_structured())
         {
           if(n_field.has_path("offsets") && n_field.has_path("strides"))
           {
             using Indexing = typename TopologyView::IndexingPolicy;
-            using IndexingPolicy = axom::mir::utilities::blueprint::SSElementFieldIndexing<Indexing>;
+            using IndexingPolicy =
+              axom::mir::utilities::blueprint::SSElementFieldIndexing<Indexing>;
             IndexingPolicy indexing;
             indexing.m_indexing = m_topologyView.indexing();
             indexing.update(n_field);
 
-            axom::mir::utilities::blueprint::FieldSlicer<ExecSpace, IndexingPolicy> s(indexing);
+            axom::mir::utilities::blueprint::FieldSlicer<ExecSpace, IndexingPolicy> s(
+              indexing);
             s.execute(slice, n_field, n_out_fields[it->second]);
             handled = true;
           }
@@ -1750,13 +1753,15 @@ private:
         // do not match the topo's offsets/strides.
 
         // Conditionally support strided-structured.
-        if constexpr (axom::mir::views::view_traits<TopologyView>::supports_strided_structured())
+        if constexpr(axom::mir::views::view_traits<
+                       TopologyView>::supports_strided_structured())
         {
           if(n_field.has_path("offsets") && n_field.has_path("strides"))
           {
             // Make node indexing that the field blender can use.
             using Indexing = typename TopologyView::IndexingPolicy;
-            using IndexingPolicy = axom::mir::utilities::blueprint::SSVertexFieldIndexing<Indexing>;
+            using IndexingPolicy =
+              axom::mir::utilities::blueprint::SSVertexFieldIndexing<Indexing>;
             IndexingPolicy indexing;
             indexing.m_topoIndexing = m_topologyView.indexing().expand();
             indexing.m_fieldIndexing = m_topologyView.indexing().expand();
@@ -1765,8 +1770,10 @@ private:
             // If the topo and field offsets/strides are different then we need to go through
             // SSVertexFieldIndexing. Otherwise, we can let the normal case further below
             // handle the field.
-            if(indexing.m_topoIndexing.m_offsets != indexing.m_fieldIndexing.m_offsets ||
-               indexing.m_topoIndexing.m_strides != indexing.m_fieldIndexing.m_strides)
+            if(indexing.m_topoIndexing.m_offsets !=
+                 indexing.m_fieldIndexing.m_offsets ||
+               indexing.m_topoIndexing.m_strides !=
+                 indexing.m_fieldIndexing.m_strides)
             {
               // Blend the field.
               axom::mir::utilities::blueprint::FieldBlender<

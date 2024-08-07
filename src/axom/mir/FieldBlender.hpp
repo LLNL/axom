@@ -85,15 +85,13 @@ class FieldBlender
 {
 public:
   /// Constructor
-  FieldBlender() : m_indexing()
-  { }
+  FieldBlender() : m_indexing() { }
 
   /**
    * \brief Constructor
    * \param indexing An object used to transform node indices.
    */
-  FieldBlender(const IndexingPolicy &indexing) : m_indexing(indexing)
-  { }
+  FieldBlender(const IndexingPolicy &indexing) : m_indexing(indexing) { }
 
   /**
    * \brief Create a new blended field from the \a n_input field and place it in \a n_output.
@@ -128,7 +126,6 @@ public:
   }
 
 private:
-
   /**
    * \brief Blend data for a single field component.
    *
@@ -175,7 +172,8 @@ private:
               const auto index = deviceBlend.m_blendIdsView[i];
               const auto weight = deviceBlend.m_blendCoeffView[i];
               const auto transformedIndex = deviceIndexing[index];
-              blended += static_cast<accum_type>(compView[transformedIndex]) * weight;
+              blended +=
+                static_cast<accum_type>(compView[transformedIndex]) * weight;
             }
             outView[bgid] = static_cast<value_type>(blended);
           });

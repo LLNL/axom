@@ -35,7 +35,10 @@ public:
    * \brief Return whether the view supports strided structured indexing.
    * \return false
    */
-  AXOM_HOST_DEVICE static constexpr bool supports_strided_structured_indexing() { return false; }
+  AXOM_HOST_DEVICE static constexpr bool supports_strided_structured_indexing()
+  {
+    return false;
+  }
 
   /**
    * \brief constructor
@@ -130,10 +133,7 @@ public:
    * \return Same as the input in this case.
    */
   AXOM_HOST_DEVICE
-  inline IndexType GlobalToLocal(IndexType index) const
-  {
-    return index;
-  }
+  inline IndexType GlobalToLocal(IndexType index) const { return index; }
 
   /**
    * \brief Turn local logical index to global logical index. no-op.
@@ -152,10 +152,7 @@ public:
    * \return Same as the input in this case.
    */
   AXOM_HOST_DEVICE
-  inline IndexType LocalToGlobal(IndexType index) const
-  {
-    return index;
-  }
+  inline IndexType LocalToGlobal(IndexType index) const { return index; }
 
   /**
    * \brief Turn an index into a logical index.

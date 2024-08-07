@@ -154,9 +154,7 @@ private:
 
 //------------------------------------------------------------------------------
 template <typename ArrayType>
-bool fillFromNode(const conduit::Node &n,
-                  const std::string &key,
-                  ArrayType &arr)
+bool fillFromNode(const conduit::Node &n, const std::string &key, ArrayType &arr)
 {
   bool found = false;
   if((found = n.has_path(key)) == true)
@@ -182,7 +180,7 @@ struct DirectIndexing
    * \return The input index.
    */
   AXOM_HOST_DEVICE
-  inline axom::IndexType operator [](axom::IndexType index) const
+  inline axom::IndexType operator[](axom::IndexType index) const
   {
     return index;
   }
@@ -212,12 +210,12 @@ struct SSElementFieldIndexing
    * \return The global index for the field.
    */
   AXOM_HOST_DEVICE
-  inline axom::IndexType operator [](axom::IndexType index) const
+  inline axom::IndexType operator[](axom::IndexType index) const
   {
     return m_indexing.LocalToGlobal(index);
   }
 
-  Indexing m_indexing{};
+  Indexing m_indexing {};
 };
 
 //------------------------------------------------------------------------------
@@ -244,16 +242,18 @@ struct SSVertexFieldIndexing
    * \return The global index for the field.
    */
   AXOM_HOST_DEVICE
-  inline axom::IndexType operator [](axom::IndexType index) const
+  inline axom::IndexType operator[](axom::IndexType index) const
   {
     // Make the global index into a global logical in the topo.
     const auto topoGlobalLogical = m_topoIndexing.GlobalToGlobal(index);
     // Make the global logical into a local logical in the topo.
     const auto topoLocalLogical = m_topoIndexing.GlobalToLocal(topoGlobalLogical);
     // Make the global logical index in the field.
-    const auto fieldGlobalLogical = m_fieldIndexing.LocalToGlobal(topoLocalLogical);
+    const auto fieldGlobalLogical =
+      m_fieldIndexing.LocalToGlobal(topoLocalLogical);
     // Make the global index in the field.
-    const auto fieldGlobalIndex = m_fieldIndexing.GlobalToGlobal(fieldGlobalLogical);
+    const auto fieldGlobalIndex =
+      m_fieldIndexing.GlobalToGlobal(fieldGlobalLogical);
     return fieldGlobalIndex;
   }
 
