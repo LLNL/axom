@@ -3,8 +3,8 @@
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
-#ifndef AXOM_MIR_UNIFORm_coordinates_VIEW_HPP_
-#define AXOM_MIR_UNIFORm_coordinates_VIEW_HPP_
+#ifndef AXOM_MIR_RECTILINEAR_COORDSET_VIEW_HPP_
+#define AXOM_MIR_RECTILINEAR_COORDSET_VIEW_HPP_
 
 #include "axom/core/StackArray.hpp"
 #include "axom/core/ArrayView.hpp"
