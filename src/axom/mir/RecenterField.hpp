@@ -8,6 +8,7 @@
 
 #include "axom/core.hpp"
 #include "axom/mir/views/NodeArrayView.hpp"
+#include "axom/mir/utilities.hpp"
 
 #include <conduit/conduit.hpp>
 #include <conduit/conduit_blueprint.hpp>
@@ -16,23 +17,11 @@ namespace axom
 {
 namespace mir
 {
-/**
- * \brief This struct contains the type that should be used to accumulate values of type T.
- */
-template <typename T>
-struct accumulate_traits
-{
-  using value_type = double;
-};
-
-template <>
-struct accumulate_traits<float>
-{
-  using value_type = float;
-};
 
 /**
  * \brief Convert a field with one association type to a field of another association type using an o2mrelation.
+ *
+ * \tparam ExecSpace The execution space where the algorithm runs.
  */
 template <typename ExecSpace>
 class RecenterField
@@ -45,65 +34,29 @@ public:
    * \param relation    The node that contains an o2mrelation with nodes to zones.
    * \param outField[out] The node that will contain the new field.
    */
-  static void execute(const conduit::Node &field,
-                      const conduit::Node &relation,
-                      conduit::Node &outField);
+  void execute(const conduit::Node &field,
+               const conduit::Node &relation,
+               conduit::Node &outField) const;
+
+private:
+  /**
+   * \brief Recenter a single field component.
+   *
+   * \param relation    The node that contains an o2mrelation with nodes to zones.
+   * \param n_comp      The input component.
+   * \param n_out[out] The node that will contain the new field.
+   */
+  void recenterSingleComponent(const conduit::Node &n_comp,
+                               const conduit::Node &relation,
+                               conduit::Node &n_out) const;
 };
 
 template <typename ExecSpace>
 void RecenterField<ExecSpace>::execute(const conduit::Node &field,
                                        const conduit::Node &relation,
-                                       conduit::Node &outField)
+                                       conduit::Node &outField) const
 {
-  auto handleComponent = [](const conduit::Node &relation,
-                            const conduit::Node &n_comp,
-                            conduit::Node &n_out,
-                            int allocatorID) {
-    // Get the data field for the o2m relation.
-    const auto data_paths = conduit::blueprint::o2mrelation::data_paths(relation);
-
-    // Use the o2mrelation to average data from n_comp to the n_out.
-    const conduit::Node &n_relvalues = relation[data_paths[0]];
-    const conduit::Node &n_sizes = relation["sizes"];
-    const conduit::Node &n_offsets = relation["offsets"];
-    views::IndexNode_to_ArrayView_same(
-      n_relvalues,
-      n_sizes,
-      n_offsets,
-      [&](auto relView, auto sizesView, auto offsetsView) {
-        const auto relSize = sizesView.size();
-
-        // Allocate data for n_out (same type as n_comp).
-        n_out.set_allocator(allocatorID);
-        n_out.set(n_comp.dtype().id(), relSize);
-
-        views::Node_to_ArrayView_same(
-          n_comp,
-          n_out,
-          [&](auto compView, auto outView) {
-            using Precision = typename decltype(compView)::value_type;
-            using AccumType = typename accumulate_traits<Precision>::value_type;
-            axom::for_all<ExecSpace>(
-              relSize,
-              AXOM_LAMBDA(int relIndex) {
-                const auto n = sizesView[relIndex];
-                const auto offset = offsetsView[relIndex];
-
-                AccumType sum = 0;
-                for(int i = 0; i < n; i++)
-                {
-                  const auto id = relView[offset + i];
-                  sum += static_cast<AccumType>(compView[id]);
-                }
-
-                outView[relIndex] = static_cast<Precision>(sum / n);
-              });
-          });
-      });
-  };
-
   const std::string association = field.fetch_existing("association").as_string();
-  const auto allocatorID = axom::execution_space<ExecSpace>::allocatorID();
 
   // Assume that we're flipping the association.
   outField["association"] = (association == "element") ? "vertex" : "element";
@@ -116,16 +69,65 @@ void RecenterField<ExecSpace>::execute(const conduit::Node &field,
     for(conduit::index_t c = 0; c < n_values.number_of_children(); c++)
     {
       const conduit::Node &n_comp = n_values[c];
-      handleComponent(relation,
-                      n_comp,
-                      outField["values"][n_comp.name()],
-                      allocatorID);
+      recenterSingleComponent(relation,
+                              outField["values"][n_comp.name()],
+                              n_comp);
     }
   }
   else
   {
-    handleComponent(relation, n_values, outField["values"], allocatorID);
+    recenterSingleComponent(relation, outField["values"], n_values);
   }
+}
+
+template <typename ExecSpace>
+void RecenterField<ExecSpace>::recenterSingleComponent(
+  const conduit::Node &n_comp,
+  const conduit::Node &relation,
+  conduit::Node &n_out) const
+{
+  // Get the data field for the o2m relation.
+  const auto data_paths = conduit::blueprint::o2mrelation::data_paths(relation);
+
+  // Use the o2mrelation to average data from n_comp to the n_out.
+  const conduit::Node &n_relvalues = relation[data_paths[0]];
+  const conduit::Node &n_sizes = relation["sizes"];
+  const conduit::Node &n_offsets = relation["offsets"];
+  views::IndexNode_to_ArrayView_same(
+    n_relvalues,
+    n_sizes,
+    n_offsets,
+    [&](auto relView, auto sizesView, auto offsetsView) {
+      const auto relSize = sizesView.size();
+
+      // Allocate Conduit data through Axom.
+      utilities::blueprint::ConduitAllocateThroughAxom<ExecSpace> c2a;
+      n_out.set_allocator(c2a.getConduitAllocatorID());
+      n_out.set(n_comp.dtype().id(), relSize);
+
+      views::Node_to_ArrayView_same(
+        n_comp,
+        n_out,
+        [&](auto compView, auto outView) {
+          using Precision = typename decltype(compView)::value_type;
+          using AccumType = typename axom::mir::utilities::accumulation_traits<Precision>::value_type;
+          axom::for_all<ExecSpace>(
+            relSize,
+            AXOM_LAMBDA(int relIndex) {
+              const auto n = sizesView[relIndex];
+              const auto offset = offsetsView[relIndex];
+
+              AccumType sum = 0;
+              for(int i = 0; i < n; i++)
+              {
+                const auto id = relView[offset + i];
+                sum += static_cast<AccumType>(compView[id]);
+              }
+
+              outView[relIndex] = static_cast<Precision>(sum / n);
+            });
+        });
+    });
 }
 
 }  // end namespace mir
