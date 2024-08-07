@@ -116,11 +116,12 @@ program example
   name = make_cstring('u_double_w_tag')
   tag = make_cstring('new_fancy_tag')
   call sina_add(name, double_val, units, tag)
-  
-  deallocate(tag)
+
   print *, "Adding char"
   name = make_cstring('u_char')
   call sina_add(name, trim(char_val)//char(0), units, tag)
+
+  deallocate(tag)
  
   name = make_cstring('my_curveset')
   call sina_add_curveset(name)

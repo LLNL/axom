@@ -9,7 +9,7 @@ module sina_functions
   end interface
   
   interface
-    
+
     subroutine sina_add_file(file_nm, mime_type) 
       character(*) file_nm  
       character(*) mime_type
@@ -114,5 +114,5 @@ module sina_functions
     end subroutine sina_add_curve_long
     
   end interface
-  
+
 end module 

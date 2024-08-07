@@ -54,6 +54,10 @@ if (ENABLE_FORTRAN)
   blt_list_append( TO sina_headers ELEMENTS interface/sina_fortran_interface.h)
   blt_list_append( TO sina_sources
                    ELEMENTS interface/sina_fortran_interface.cpp interface/sina_fortran_interface.f90)
+
+  if(CMAKE_Fortran_COMPILER_ID STREQUAL "XL")
+    set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -qextname")
+  endif()
 endif()
 
 #------------------------------------------------------------------------------
