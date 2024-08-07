@@ -17,7 +17,6 @@ namespace axom
 {
 namespace mir
 {
-
 /**
  * \brief Convert a field with one association type to a field of another association type using an o2mrelation.
  *
@@ -69,9 +68,7 @@ void RecenterField<ExecSpace>::execute(const conduit::Node &field,
     for(conduit::index_t c = 0; c < n_values.number_of_children(); c++)
     {
       const conduit::Node &n_comp = n_values[c];
-      recenterSingleComponent(relation,
-                              outField["values"][n_comp.name()],
-                              n_comp);
+      recenterSingleComponent(relation, outField["values"][n_comp.name()], n_comp);
     }
   }
   else
@@ -105,28 +102,26 @@ void RecenterField<ExecSpace>::recenterSingleComponent(
       n_out.set_allocator(c2a.getConduitAllocatorID());
       n_out.set(n_comp.dtype().id(), relSize);
 
-      views::Node_to_ArrayView_same(
-        n_comp,
-        n_out,
-        [&](auto compView, auto outView) {
-          using Precision = typename decltype(compView)::value_type;
-          using AccumType = typename axom::mir::utilities::accumulation_traits<Precision>::value_type;
-          axom::for_all<ExecSpace>(
-            relSize,
-            AXOM_LAMBDA(int relIndex) {
-              const auto n = sizesView[relIndex];
-              const auto offset = offsetsView[relIndex];
+      views::Node_to_ArrayView_same(n_comp, n_out, [&](auto compView, auto outView) {
+        using Precision = typename decltype(compView)::value_type;
+        using AccumType =
+          typename axom::mir::utilities::accumulation_traits<Precision>::value_type;
+        axom::for_all<ExecSpace>(
+          relSize,
+          AXOM_LAMBDA(int relIndex) {
+            const auto n = sizesView[relIndex];
+            const auto offset = offsetsView[relIndex];
 
-              AccumType sum = 0;
-              for(int i = 0; i < n; i++)
-              {
-                const auto id = relView[offset + i];
-                sum += static_cast<AccumType>(compView[id]);
-              }
+            AccumType sum = 0;
+            for(int i = 0; i < n; i++)
+            {
+              const auto id = relView[offset + i];
+              sum += static_cast<AccumType>(compView[id]);
+            }
 
-              outView[relIndex] = static_cast<Precision>(sum / n);
-            });
-        });
+            outView[relIndex] = static_cast<Precision>(sum / n);
+          });
+      });
     });
 }
 

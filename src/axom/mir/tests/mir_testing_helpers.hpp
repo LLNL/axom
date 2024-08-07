@@ -17,20 +17,32 @@
 // Define better names for the execution spaces. This header needs to be included
 // after the ExecSpace types are defined.
 template <typename ExecSpace>
-struct execution_name { static std::string name() { return "seq"; } };
+struct execution_name
+{
+  static std::string name() { return "seq"; }
+};
 
-#if defined (AXOM_USE_RAJA) && defined (AXOM_USE_UMPIRE)
+#if defined(AXOM_USE_RAJA) && defined(AXOM_USE_UMPIRE)
   #if defined(AXOM_USE_OPENMP)
-    template <>
-    struct execution_name<omp_exec> { static std::string name() { return "omp"; } };
+template <>
+struct execution_name<omp_exec>
+{
+  static std::string name() { return "omp"; }
+};
   #endif
   #if defined(AXOM_USE_CUDA) && defined(__CUDACC__)
-    template <>
-    struct execution_name<cuda_exec> { static std::string name() { return "cuda"; } };
+template <>
+struct execution_name<cuda_exec>
+{
+  static std::string name() { return "cuda"; }
+};
   #endif
   #if defined(AXOM_USE_HIP)
-    template <>
-    struct execution_name<hip_exec> { static std::string name() { return "hip"; } };
+template <>
+struct execution_name<hip_exec>
+{
+  static std::string name() { return "hip"; }
+};
   #endif
 #endif
 
@@ -120,7 +132,9 @@ void saveBaseline(const std::string &filename, const conduit::Node &n)
 #endif
 }
 
-void saveBaseline(const std::vector<std::string> &baselinePaths, const std::string &baselineName, const conduit::Node &n)
+void saveBaseline(const std::vector<std::string> &baselinePaths,
+                  const std::string &baselineName,
+                  const conduit::Node &n)
 {
   for(const auto &path : baselinePaths)
   {
@@ -152,7 +166,10 @@ std::vector<std::string> baselinePaths()
   return paths;
 }
 
-bool compareBaseline(const std::vector<std::string> &baselinePaths, const std::string &baselineName, const conduit::Node &current, double tolerance = 1.e-10)
+bool compareBaseline(const std::vector<std::string> &baselinePaths,
+                     const std::string &baselineName,
+                     const conduit::Node &current,
+                     double tolerance = 1.e-10)
 {
   bool success = false;
   int count = 0;

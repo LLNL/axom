@@ -14,7 +14,6 @@ namespace mir
 {
 namespace clipping
 {
-
 /**
  * \brief This class runs a ClipField algorithm.
  *
@@ -23,8 +22,7 @@ class ClipFieldFilter
 {
 public:
   /// Constructor
-  ClipFieldFilter() : m_runtime(axom::runtime_policy::Policy::seq)
-  { }
+  ClipFieldFilter() : m_runtime(axom::runtime_policy::Policy::seq) { }
 
   /**
    * \brief Set the runtime policy.

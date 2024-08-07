@@ -19,7 +19,6 @@ namespace testing
 {
 namespace data
 {
-
 //------------------------------------------------------------------------------
 
 void add_distance(conduit::Node &mesh, float dist = 6.5f)

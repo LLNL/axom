@@ -31,7 +31,9 @@ namespace views
  * \param coordset The coordset node that contains the topology dimensions.
  * \param func     The function to invoke using the view. It should accept a string with the shape name and an auto parameter for the view.
  */
-template <int SelectedDimensions = select_dimensions(1, 2, 3), int ShapeTypes = AnyShape, typename FuncType>
+template <int SelectedDimensions = select_dimensions(1, 2, 3),
+          int ShapeTypes = AnyShape,
+          typename FuncType>
 void dispatch_topology(const conduit::Node &topo,
                        const conduit::Node &coordset,
                        FuncType &&func)

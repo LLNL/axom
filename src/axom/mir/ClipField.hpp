@@ -993,15 +993,16 @@ public:
     else
     {
       // Convert to double.
-      const IndexType n = static_cast<IndexType>(n_clip_field_values.dtype().number_of_elements());
+      const IndexType n =
+        static_cast<IndexType>(n_clip_field_values.dtype().number_of_elements());
       clipFieldData = axom::Array<double>(n, n, allocatorID);
       clipFieldView = clipFieldData.view();
-      views::Node_to_ArrayView(n_clip_field_values, [&](auto clipFieldViewSrc)
-      {
-        axom::for_all<ExecSpace>(n, AXOM_LAMBDA(auto index)
-        {
-          clipFieldView[index] = static_cast<double>(clipFieldViewSrc[index]);
-        });
+      views::Node_to_ArrayView(n_clip_field_values, [&](auto clipFieldViewSrc) {
+        axom::for_all<ExecSpace>(
+          n,
+          AXOM_LAMBDA(auto index) {
+            clipFieldView[index] = static_cast<double>(clipFieldViewSrc[index]);
+          });
       });
     }
 
@@ -1061,12 +1062,7 @@ public:
     builder.setBlendGroupSizes(blendGroups.view(), blendGroupsLen.view());
 
     // Compute sizes and offsets
-    computeSizes(clipTableViews,
-                 builder,
-                 zoneData,
-                 fragmentData,
-                 opts,
-                 clipFieldView);
+    computeSizes(clipTableViews, builder, zoneData, fragmentData, opts, clipFieldView);
     computeFragmentSizes(fragmentData, opts);
     computeFragmentOffsets(fragmentData);
 
@@ -1228,116 +1224,115 @@ private:
                     ClipOptions<ExecSpace> &opts,
                     const axom::ArrayView<double> &clipFieldView) const
   {
-      const auto clipValue = opts.clipValue();
-      const auto selection = getSelection(opts);
+    const auto clipValue = opts.clipValue();
+    const auto selection = getSelection(opts);
 
-      auto blendGroupsView = builder.state().m_blendGroupsView;
-      auto blendGroupsLenView = builder.state().m_blendGroupsLenView;
+    auto blendGroupsView = builder.state().m_blendGroupsView;
+    auto blendGroupsLenView = builder.state().m_blendGroupsLenView;
 
-      m_topologyView.template for_selected_zones<ExecSpace>(
-        opts.selectedZonesView(),
-        AXOM_LAMBDA(auto szIndex, auto /*zoneIndex*/, const auto &zone) {
-          // Get the clip case for the current zone.
-          const auto clipcase =
-            details::clip_case(zone, clipFieldView, clipValue);
-          zoneData.m_clipCasesView[szIndex] = clipcase;
+    m_topologyView.template for_selected_zones<ExecSpace>(
+      opts.selectedZonesView(),
+      AXOM_LAMBDA(auto szIndex, auto /*zoneIndex*/, const auto &zone) {
+        // Get the clip case for the current zone.
+        const auto clipcase = details::clip_case(zone, clipFieldView, clipValue);
+        zoneData.m_clipCasesView[szIndex] = clipcase;
 
-          // Iterate over the shapes in this clip case to determine the number of blend groups.
-          const auto clipTableIndex = details::getClipTableIndex(zone.id());
-          const auto &ctView = clipTableViews[clipTableIndex];
+        // Iterate over the shapes in this clip case to determine the number of blend groups.
+        const auto clipTableIndex = details::getClipTableIndex(zone.id());
+        const auto &ctView = clipTableViews[clipTableIndex];
 
-          int thisBlendGroups =
-            0;  // The number of blend groups produced in this case.
-          int thisBlendGroupLen = 0;  // The total length of the blend groups.
-          int thisFragments =
-            0;  // The number of zone fragments produced in this case.
-          int thisFragmentsNumIds =
-            0;  // The number of points used to make all the fragment zones.
-          BitSet ptused = 0;  // A bitset indicating which ST_XX nodes are used.
+        int thisBlendGroups =
+          0;  // The number of blend groups produced in this case.
+        int thisBlendGroupLen = 0;  // The total length of the blend groups.
+        int thisFragments =
+          0;  // The number of zone fragments produced in this case.
+        int thisFragmentsNumIds =
+          0;  // The number of points used to make all the fragment zones.
+        BitSet ptused = 0;  // A bitset indicating which ST_XX nodes are used.
 
-          auto it = ctView.begin(clipcase);
-          const auto end = ctView.end(clipcase);
-          for(; it != end; it++)
+        auto it = ctView.begin(clipcase);
+        const auto end = ctView.end(clipcase);
+        for(; it != end; it++)
+        {
+          // Get the current shape in the clip case.
+          const auto fragment = *it;
+
+          if(fragment[0] == ST_PNT)
           {
-            // Get the current shape in the clip case.
-            const auto fragment = *it;
-
-            if(fragment[0] == ST_PNT)
+            if(details::generatedPointIsSelected(fragment[2], selection))
             {
-              if(details::generatedPointIsSelected(fragment[2], selection))
+              const int nIds = static_cast<int>(fragment[3]);
+
+              for(int ni = 0; ni < nIds; ni++)
               {
-                const int nIds = static_cast<int>(fragment[3]);
+                const auto pid = fragment[4 + ni];
 
-                for(int ni = 0; ni < nIds; ni++)
+                // Increase the blend size to include this center point.
+                if(pid <= P7)
                 {
-                  const auto pid = fragment[4 + ni];
-
-                  // Increase the blend size to include this center point.
-                  if(pid <= P7)
-                  {
-                    // corner point
-                    thisBlendGroupLen++;
-                  }
-                  else if(pid >= EA && pid <= EL)
-                  {
-                    // edge point
-                    thisBlendGroupLen += 2;
-                  }
+                  // corner point
+                  thisBlendGroupLen++;
                 }
-
-                // This center or face point counts as a blend group.
-                thisBlendGroups++;
-
-                // Mark the point used.
-                axom::utilities::setBitOn(ptused, N0 + fragment[1]);
-              }
-            }
-            else
-            {
-              if(details::shapeIsSelected(fragment[1], selection))
-              {
-                thisFragments++;
-                const int nIdsThisFragment = fragment.size() - 2;
-                thisFragmentsNumIds += nIdsThisFragment;
-
-                // Mark the points this fragment used.
-                for(int i = 2; i < fragment.size(); i++)
+                else if(pid >= EA && pid <= EL)
                 {
-                  axom::utilities::setBitOn(ptused, fragment[i]);
+                  // edge point
+                  thisBlendGroupLen += 2;
                 }
               }
+
+              // This center or face point counts as a blend group.
+              thisBlendGroups++;
+
+              // Mark the point used.
+              axom::utilities::setBitOn(ptused, N0 + fragment[1]);
             }
           }
-
-          // Save the flags for the points that were used in this zone
-          zoneData.m_pointsUsedView[szIndex] = ptused;
-
-          // Count which points in the original cell are used.
-          for(IndexType pid = P0; pid <= P7; pid++)
+          else
           {
-            const int incr = axom::utilities::bitIsSet(ptused, pid) ? 1 : 0;
+            if(details::shapeIsSelected(fragment[1], selection))
+            {
+              thisFragments++;
+              const int nIdsThisFragment = fragment.size() - 2;
+              thisFragmentsNumIds += nIdsThisFragment;
 
-            thisBlendGroupLen += incr;  // {p0}
-            thisBlendGroups += incr;
+              // Mark the points this fragment used.
+              for(int i = 2; i < fragment.size(); i++)
+              {
+                axom::utilities::setBitOn(ptused, fragment[i]);
+              }
+            }
           }
+        }
 
-          // Count edges that are used.
-          for(IndexType pid = EA; pid <= EL; pid++)
-          {
-            const int incr = axom::utilities::bitIsSet(ptused, pid) ? 1 : 0;
+        // Save the flags for the points that were used in this zone
+        zoneData.m_pointsUsedView[szIndex] = ptused;
 
-            thisBlendGroupLen += 2 * incr;  // {p0 p1}
-            thisBlendGroups += incr;
-          }
+        // Count which points in the original cell are used.
+        for(IndexType pid = P0; pid <= P7; pid++)
+        {
+          const int incr = axom::utilities::bitIsSet(ptused, pid) ? 1 : 0;
 
-          // Save the results.
-          fragmentData.m_fragmentsView[szIndex] = thisFragments;
-          fragmentData.m_fragmentsSizeView[szIndex] = thisFragmentsNumIds;
+          thisBlendGroupLen += incr;  // {p0}
+          thisBlendGroups += incr;
+        }
 
-          // Set blend group sizes for this zone.
-          blendGroupsView[szIndex] = thisBlendGroups;
-          blendGroupsLenView[szIndex] = thisBlendGroupLen;
-        });
+        // Count edges that are used.
+        for(IndexType pid = EA; pid <= EL; pid++)
+        {
+          const int incr = axom::utilities::bitIsSet(ptused, pid) ? 1 : 0;
+
+          thisBlendGroupLen += 2 * incr;  // {p0 p1}
+          thisBlendGroups += incr;
+        }
+
+        // Save the results.
+        fragmentData.m_fragmentsView[szIndex] = thisFragments;
+        fragmentData.m_fragmentsSizeView[szIndex] = thisFragmentsNumIds;
+
+        // Set blend group sizes for this zone.
+        blendGroupsView[szIndex] = thisBlendGroups;
+        blendGroupsLenView[szIndex] = thisBlendGroupLen;
+      });
   }
 
   /**
@@ -1399,105 +1394,105 @@ private:
                        ClipOptions<ExecSpace> &opts,
                        const axom::ArrayView<double> &clipFieldView) const
   {
-      const auto clipValue = opts.clipValue();
-      const auto selection = getSelection(opts);
+    const auto clipValue = opts.clipValue();
+    const auto selection = getSelection(opts);
 
-      m_topologyView.template for_selected_zones<ExecSpace>(
-        opts.selectedZonesView(),
-        AXOM_LAMBDA(auto szIndex, auto /*zoneIndex*/, const auto &zone) {
-          // Get the clip case for the current zone.
-          const auto clipcase = zoneData.m_clipCasesView[szIndex];
+    m_topologyView.template for_selected_zones<ExecSpace>(
+      opts.selectedZonesView(),
+      AXOM_LAMBDA(auto szIndex, auto /*zoneIndex*/, const auto &zone) {
+        // Get the clip case for the current zone.
+        const auto clipcase = zoneData.m_clipCasesView[szIndex];
 
-          // Iterate over the shapes in this clip case to determine the number of blend groups.
-          const auto clipTableIndex = details::getClipTableIndex(zone.id());
-          const auto &ctView = clipTableViews[clipTableIndex];
+        // Iterate over the shapes in this clip case to determine the number of blend groups.
+        const auto clipTableIndex = details::getClipTableIndex(zone.id());
+        const auto &ctView = clipTableViews[clipTableIndex];
 
-          // These are the points used in this zone's fragments.
-          const BitSet ptused = zoneData.m_pointsUsedView[szIndex];
+        // These are the points used in this zone's fragments.
+        const BitSet ptused = zoneData.m_pointsUsedView[szIndex];
 
-          // Get the blend groups for this zone.
-          auto groups = builder.blendGroupsForZone(szIndex);
+        // Get the blend groups for this zone.
+        auto groups = builder.blendGroupsForZone(szIndex);
 
-          auto it = ctView.begin(clipcase);
-          const auto end = ctView.end(clipcase);
-          for(; it != end; it++)
+        auto it = ctView.begin(clipcase);
+        const auto end = ctView.end(clipcase);
+        for(; it != end; it++)
+        {
+          // Get the current shape in the clip case.
+          const auto fragment = *it;
+
+          if(fragment[0] == ST_PNT)
           {
-            // Get the current shape in the clip case.
-            const auto fragment = *it;
-
-            if(fragment[0] == ST_PNT)
+            if(details::generatedPointIsSelected(fragment[2], selection))
             {
-              if(details::generatedPointIsSelected(fragment[2], selection))
+              const int nIds = static_cast<int>(fragment[3]);
+              const auto one_over_n = 1.f / static_cast<float>(nIds);
+
+              groups.beginGroup();
+              for(int ni = 0; ni < nIds; ni++)
               {
-                const int nIds = static_cast<int>(fragment[3]);
-                const auto one_over_n = 1.f / static_cast<float>(nIds);
+                const auto ptid = fragment[4 + ni];
 
-                groups.beginGroup();
-                for(int ni = 0; ni < nIds; ni++)
+                // Add the point to the blend group.
+                if(ptid <= P7)
                 {
-                  const auto ptid = fragment[4 + ni];
-
-                  // Add the point to the blend group.
-                  if(ptid <= P7)
-                  {
-                    // corner point.
-                    groups.add(zone.getId(ptid), one_over_n);
-                  }
-                  else if(ptid >= EA && ptid <= EL)
-                  {
-                    // edge point.
-                    const auto edgeIndex = ptid - EA;
-                    const auto edge = zone.getEdge(edgeIndex);
-                    const auto id0 = zone.getId(edge[0]);
-                    const auto id1 = zone.getId(edge[1]);
-
-                    // Figure out the blend for edge.
-                    const float t = details::computeWeight(clipFieldView[id0],
-                                                           clipFieldView[id1],
-                                                           clipValue);
-
-                    groups.add(id0, one_over_n * (1.f - t));
-                    groups.add(id1, one_over_n * t);
-                  }
+                  // corner point.
+                  groups.add(zone.getId(ptid), one_over_n);
                 }
-                groups.endGroup();
+                else if(ptid >= EA && ptid <= EL)
+                {
+                  // edge point.
+                  const auto edgeIndex = ptid - EA;
+                  const auto edge = zone.getEdge(edgeIndex);
+                  const auto id0 = zone.getId(edge[0]);
+                  const auto id1 = zone.getId(edge[1]);
+
+                  // Figure out the blend for edge.
+                  const float t = details::computeWeight(clipFieldView[id0],
+                                                         clipFieldView[id1],
+                                                         clipValue);
+
+                  groups.add(id0, one_over_n * (1.f - t));
+                  groups.add(id1, one_over_n * t);
+                }
               }
-            }
-          }
-
-          // Add blend group for each original point that was used.
-          for(IndexType pid = P0; pid <= P7; pid++)
-          {
-            if(axom::utilities::bitIsSet(ptused, pid))
-            {
-              groups.beginGroup();
-              groups.add(zone.getId(pid), 1.f);
               groups.endGroup();
             }
           }
+        }
 
-          // Add blend group for each edge point that was used.
-          for(IndexType pid = EA; pid <= EL; pid++)
+        // Add blend group for each original point that was used.
+        for(IndexType pid = P0; pid <= P7; pid++)
+        {
+          if(axom::utilities::bitIsSet(ptused, pid))
           {
-            if(axom::utilities::bitIsSet(ptused, pid))
-            {
-              const auto edgeIndex = pid - EA;
-              const auto edge = zone.getEdge(edgeIndex);
-              const auto id0 = zone.getId(edge[0]);
-              const auto id1 = zone.getId(edge[1]);
-
-              // Figure out the blend for edge.
-              const float t = details::computeWeight(clipFieldView[id0],
-                                                     clipFieldView[id1],
-                                                     clipValue);
-
-              groups.beginGroup();
-              groups.add(id0, 1.f - t);
-              groups.add(id1, t);
-              groups.endGroup();
-            }
+            groups.beginGroup();
+            groups.add(zone.getId(pid), 1.f);
+            groups.endGroup();
           }
-        });
+        }
+
+        // Add blend group for each edge point that was used.
+        for(IndexType pid = EA; pid <= EL; pid++)
+        {
+          if(axom::utilities::bitIsSet(ptused, pid))
+          {
+            const auto edgeIndex = pid - EA;
+            const auto edge = zone.getEdge(edgeIndex);
+            const auto id0 = zone.getId(edge[0]);
+            const auto id1 = zone.getId(edge[1]);
+
+            // Figure out the blend for edge.
+            const float t = details::computeWeight(clipFieldView[id0],
+                                                   clipFieldView[id1],
+                                                   clipValue);
+
+            groups.beginGroup();
+            groups.add(id0, 1.f - t);
+            groups.add(id1, t);
+            groups.endGroup();
+          }
+        }
+      });
   }
 
   /**
@@ -1524,8 +1519,7 @@ private:
                         conduit::Node &n_newFields) const
   {
     namespace bputils = axom::mir::utilities::blueprint;
-    constexpr auto connTypeID =
-      bputils::cpp2conduit<ConnectivityType>::id;
+    constexpr auto connTypeID = bputils::cpp2conduit<ConnectivityType>::id;
     const auto selection = getSelection(opts);
 
     n_newTopo.reset();
@@ -1828,8 +1822,7 @@ private:
                             conduit::Node &n_newFields) const
   {
     namespace bputils = axom::mir::utilities::blueprint;
-    constexpr auto connTypeID =
-      bputils::cpp2conduit<ConnectivityType>::id;
+    constexpr auto connTypeID = bputils::cpp2conduit<ConnectivityType>::id;
 
     utilities::blueprint::ConduitAllocateThroughAxom<ExecSpace> c2a;
     const int conduitAllocatorID = c2a.getConduitAllocatorID();

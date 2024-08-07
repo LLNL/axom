@@ -16,7 +16,6 @@ namespace mir
 {
 namespace clipping
 {
-
 /**
  * \brief This class instantiates ClipField so it runs on specific device but
  *        can operate on a variety of Blueprint topologies/coordsets/types.
@@ -28,8 +27,7 @@ class ClipFieldFilterDevice
 {
 public:
   /// Constructor
-  ClipFieldFilterDevice()
-  { }
+  ClipFieldFilterDevice() { }
 
   /**
    * \brief Execute the clipping operation using the specified options.
@@ -102,19 +100,27 @@ public:
                conduit::Node &n_newCoordset,
                conduit::Node &n_newFields)
   {
-    axom::mir::views::dispatch_coordset(n_coordset, [&](auto coordsetView)
-    {
+    axom::mir::views::dispatch_coordset(n_coordset, [&](auto coordsetView) {
       // We dispatch to 2D/3D topologies with supported shapes.
-      constexpr int dims = axom::mir::views::select_dimensions(2,3);
+      constexpr int dims = axom::mir::views::select_dimensions(2, 3);
       constexpr int shapes = supported_shapes();
-      axom::mir::views::dispatch_topology<dims, shapes>(n_topo, n_coordset, [&](const std::string &/*shape*/, auto topologyView)
-      {
-        using TopologyView = decltype(topologyView);
-        using CoordsetView = decltype(coordsetView);
+      axom::mir::views::dispatch_topology<dims, shapes>(
+        n_topo,
+        n_coordset,
+        [&](const std::string & /*shape*/, auto topologyView) {
+          using TopologyView = decltype(topologyView);
+          using CoordsetView = decltype(coordsetView);
 
-        ClipField<ExecSpace, TopologyView, CoordsetView> clipper(topologyView, coordsetView);
-        clipper.execute(n_topo, n_coordset, n_fields, n_options, n_newTopo, n_newCoordset, n_newFields);
-      });
+          ClipField<ExecSpace, TopologyView, CoordsetView> clipper(topologyView,
+                                                                   coordsetView);
+          clipper.execute(n_topo,
+                          n_coordset,
+                          n_fields,
+                          n_options,
+                          n_newTopo,
+                          n_newCoordset,
+                          n_newFields);
+        });
     });
   }
 };

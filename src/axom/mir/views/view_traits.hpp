@@ -14,7 +14,6 @@ namespace mir
 {
 namespace views
 {
-
 /// General traits for topology views.
 template <typename TopologyView>
 struct view_traits
