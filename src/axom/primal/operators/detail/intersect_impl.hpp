@@ -22,11 +22,11 @@
 #include "axom/primal/geometry/OrientedBoundingBox.hpp"
 #include "axom/primal/geometry/Plane.hpp"
 #include "axom/primal/geometry/Point.hpp"
-#include "axom/primal/geometry/Polygon.hpp"
 #include "axom/primal/geometry/Ray.hpp"
 #include "axom/primal/geometry/Line.hpp"
 #include "axom/primal/geometry/Segment.hpp"
 #include "axom/primal/geometry/Triangle.hpp"
+#include "axom/primal/geometry/Polygon.hpp"
 #include "axom/primal/geometry/Tetrahedron.hpp"
 
 namespace axom
@@ -161,6 +161,8 @@ AXOM_HOST_DEVICE bool intersect_tri3D_tri3D(const Triangle<T, 3>& t1,
                                             bool includeBoundary,
                                             double EPS)
 {
+  using Vector3 = primal::Vector<T, 3>;
+
   SLIC_CHECK_MSG(!t1.degenerate(),
                  "\n\n WARNING \n\n Triangle " << t1 << " is degenerate");
   SLIC_CHECK_MSG(!t2.degenerate(),
@@ -875,6 +877,7 @@ bool intersect_tri_segment(const Triangle<T, 3>& tri,
                            T& t,
                            Point<double, 3>& p)
 {
+  using Vector3 = Vector<T, 3>;
   Ray<T, 3> r(S.source(), Vector3(S.source(), S.target()));
 
   //Ray-triangle intersection does not check endpoints, so we explicitly check
@@ -1098,19 +1101,19 @@ AXOM_HOST_DEVICE bool intersect_plane_bbox(const Plane<T, 3>& p,
 }
 
 /*!
- * \brief Determines if a plane intersects a segment.
- * \param [in] plane A plane
- * \param [in] seg A segment
+ * \brief Determines if a 3D plane intersects a 3D segment.
+ * \param [in] b1 A 3D plane
+ * \param [in] b2 A 3D segment
  * \param [out] t Intersection point of plane and seg, w.r.t. 
  *   parametrization of seg
  * \return true iff plane intersects with segment, otherwise, false.
  */
-template <typename T, int DIM>
-AXOM_HOST_DEVICE bool intersect_plane_seg(const Plane<T, DIM>& plane,
-                                          const Segment<T, DIM>& seg,
+template <typename T>
+AXOM_HOST_DEVICE bool intersect_plane_seg(const Plane<T, 3>& plane,
+                                          const Segment<T, 3>& seg,
                                           T& t)
 {
-  using VectorType = Vector<T, DIM>;
+  using VectorType = Vector<T, 3>;
 
   VectorType ab(seg.source(), seg.target());
   VectorType normal = plane.getNormal();
@@ -1610,7 +1613,6 @@ inline bool intervalsDisjoint(double d0, double d1, double d2, double r)
   return d1 < -r || d0 > r;
 }
 
-AXOM_SUPPRESS_HD_WARN
 template <typename T>
 AXOM_HOST_DEVICE bool intersect_plane_tet3d(const Plane<T, 3>& p,
                                             const Tetrahedron<T, 3>& tet,

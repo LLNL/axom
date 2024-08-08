@@ -927,6 +927,60 @@ double winding_number(const Point<T, 3>& query,
 
   return wn;
 }
+
+template <typename T>
+double just_the_stokes(const Point<T, 3>& query,
+                      const BezierPatch<T, 3>& bPatch,
+                      const double edge_tol = 1e-8,
+                      const double quad_tol = 1e-8,
+                      const double EPS = 1e-8,
+                      const int depth = 0)
+{
+  const int ord_u = bPatch.getOrder_u();
+  const int ord_v = bPatch.getOrder_v();
+  const bool patchIsRational = bPatch.isRational();
+  const double edge_tol_sq = edge_tol * edge_tol;
+
+  // Fix the number of quadrature nodes arbitrarily, but high enough
+  //  to `catch` near singularities for refinement
+  constexpr int quad_npts = 30;
+
+  /* 
+   * To use Stokes theorem, we need to identify a separating plane between
+   * `query` and the surface, guaranteed through a bounding box.
+   * If it does, need to do geometric refinement: Splitting and rotating the curve
+   * until we can guarantee this.
+   */
+  CurvedPolygon<T, 3> boundingPoly(4);
+
+  // Define vector fields whose curl gives us the winding number
+  detail::SingularityAxis field_direction;
+
+  field_direction = detail::SingularityAxis::z;
+
+  //  Add the relevant bounding curves to the patch.
+  boundingPoly[0] = bPatch.isocurve_u(0);
+  boundingPoly[0].reverseOrientation();
+
+  boundingPoly[1] = bPatch.isocurve_v(1);
+  boundingPoly[1].reverseOrientation();
+
+  boundingPoly[2] = bPatch.isocurve_u(1);
+  boundingPoly[3] = bPatch.isocurve_v(0);
+
+  // Iterate over the edges of the bounding curved polygon, add up the results
+  double wn = 0;
+  for(int n = 0; n < 4; ++n)
+  {
+    wn += detail::stokes_winding_number(query,
+                                        boundingPoly[n],
+                                        field_direction,
+                                        quad_npts,
+                                        quad_tol);
+  }
+
+  return wn;
+}
 #endif
 
 //@}
