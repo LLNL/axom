@@ -26,7 +26,7 @@ Geometry::Geometry(const TransformableGeometryProperties &startProperties,
   : m_startProperties(startProperties)
   , m_format(std::move(format))
   , m_path(std::move(path))
-  , m_generationCount(0)
+  , m_levelOfRefinement(0)
   , m_operator(std::move(operator_))
 { }
 
@@ -39,14 +39,14 @@ Geometry::Geometry(const TransformableGeometryProperties &startProperties,
   , m_path()
   , m_meshGroup(meshGroup)
   , m_topology(topology)
-  , m_generationCount(0)
+  , m_levelOfRefinement(0)
   , m_operator(std::move(operator_))
 {
 }
 
 Geometry::Geometry(const TransformableGeometryProperties &startProperties,
                    const axom::primal::Sphere<double, 3>& sphere,
-                   axom::IndexType generationCount,
+                   axom::IndexType levelOfRefinement,
                    std::shared_ptr<GeometryOperator const> operator_)
   : m_startProperties(startProperties)
   , m_format("sphere3D")
@@ -54,7 +54,7 @@ Geometry::Geometry(const TransformableGeometryProperties &startProperties,
   , m_meshGroup(nullptr)
   , m_topology()
   , m_sphere(sphere)
-  , m_generationCount(generationCount)
+  , m_levelOfRefinement(levelOfRefinement)
   , m_operator(std::move(operator_))
 {
 }

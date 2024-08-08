@@ -93,7 +93,7 @@ public:
    * \param startProperties the transformable properties before any
    * operators are applied
    * \param sphere Analytical sphere specifications
-   * \param generationCount Number of generations to use for
+   * \param levelOfRefinement Number of refinement levels to use for
    *        discretizing the sphere.
    * \param operator_ a possibly null operator to apply to the geometry.
    *
@@ -101,7 +101,7 @@ public:
    */
   Geometry(const TransformableGeometryProperties &startProperties,
            const axom::primal::Sphere<double, 3>& sphere,
-           axom::IndexType generationCount,
+           axom::IndexType levelOfRefinement,
            std::shared_ptr<GeometryOperator const> operator_);
 
   /**
@@ -188,9 +188,9 @@ public:
    This number is unused for geometries that are specified in discrete
    form.
   */
-  axom::IndexType getGenerationCount() const
+  axom::IndexType getLevelOfRefinement() const
   {
-    return m_generationCount;
+    return m_levelOfRefinement;
   }
 
   /**
@@ -231,9 +231,9 @@ private:
   axom::Array<primal::Point<double, 2> m_discreteFunction;
 #endif
 
-  //!@brief Generations of refinement for discretizing analytical shapes
+  //!@brief Level of refinement for discretizing analytical shapes
   // and surfaces of revolutions.
-  axom::IndexType m_generationCount = 0;
+  axom::IndexType m_levelOfRefinement = 0;
 
   std::shared_ptr<const GeometryOperator> m_operator;
 };

@@ -530,8 +530,8 @@ axom::klee::Shape createShape_Sphere()
                                           prop);
   }
 
-  const axom::IndexType generationCount = params.refinementLevel;
-  axom::klee::Geometry sphereGeometry(prop, sphere, generationCount, scaleOp);
+  const axom::IndexType levelOfRefinement = params.refinementLevel;
+  axom::klee::Geometry sphereGeometry(prop, sphere, levelOfRefinement, scaleOp);
   axom::klee::Shape sphereShape( "sphere", "AU", {}, {}, sphereGeometry );
 
   return sphereShape;

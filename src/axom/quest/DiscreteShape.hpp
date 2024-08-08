@@ -123,22 +123,31 @@ public:
 
 private:
   const axom::klee::Shape& m_shape;
+
   /*!
     \brief Discrete mesh representation.
 
     This is either an internally generated mesh representing a
-    discretized analytical shape or a modifiable copy of m_geometry
-    (if the Geometry is specified as a discrete mesh).
+    discretized analytical shape or a modifiable copy of the
+    discrete input geometry for geometries specified as a
+    discrete mesh.
   */
   std::shared_ptr<axom::mint::Mesh> m_meshRep;
-  std::string m_prefixPath;
+
+  //!@brief Sidre store for m_meshRep.
   axom::sidre::Group* m_sidreGroup {nullptr};
 
+  //!@brief Prefix for disc files with relative path.
+  std::string m_prefixPath;
+
+  //@{
+  //!@name Various parameters for discretization.
   RefinementType m_refinementType;
   double m_percentError {MINIMUM_PERCENT_ERROR};
   int m_samplesPerKnotSpan {DEFAULT_SAMPLES_PER_KNOT_SPAN};
   double m_vertexWeldThreshold {DEFAULT_VERTEX_WELD_THRESHOLD};
   double m_revolvedVolume {0.0};
+  //@}
 
 #if defined(AXOM_USE_MPI)
   MPI_Comm m_comm {MPI_COMM_WORLD};

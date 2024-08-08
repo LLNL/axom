@@ -89,17 +89,6 @@ DiscreteShape::DiscreteShape(const axom::klee::Shape &shape,
   setParentGroup(parentGroup);
 }
 
-void DiscreteShape::setParentGroup(axom::sidre::Group* parentGroup)
-{
-  if (parentGroup)
-  {
-    std::ostringstream os;
-    os << this;
-    std::string myGroupName = os.str();
-    m_sidreGroup = parentGroup->createGroup(myGroupName);
-  }
-}
-
 void DiscreteShape::clearInternalData()
 {
   m_meshRep.reset();
@@ -152,7 +141,7 @@ std::shared_ptr<mint::Mesh> DiscreteShape::createMeshRepresentation()
     using TetType = axom::primal::Tetrahedron<double, 3>;
     axom::Array<OctType> octs;
     int octCount = 0;
-    axom::quest::discretize(sphere, geometry.getGenerationCount(), octs, octCount);
+    axom::quest::discretize(sphere, geometry.getLevelOfRefinement(), octs, octCount);
 
     constexpr int TETS_PER_OCT = 8;
     constexpr int NODES_PER_TET = 4;
@@ -439,6 +428,17 @@ std::string DiscreteShape::resolvePath() const
   std::string dir;
   utilities::filesystem::getDirName(dir, m_prefixPath);
   return utilities::filesystem::joinPath(dir, geomPath);
+}
+
+void DiscreteShape::setParentGroup(axom::sidre::Group* parentGroup)
+{
+  if (parentGroup)
+  {
+    std::ostringstream os;
+    os << this;
+    std::string myGroupName = os.str();
+    m_sidreGroup = parentGroup->createGroup(myGroupName);
+  }
 }
 
 }  // namespace klee
