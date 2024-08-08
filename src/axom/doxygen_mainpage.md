@@ -14,7 +14,7 @@ Axom provides libraries that address common computer science needs.  It grew fro
 * @subpage primaltop provides an API for geometric primitives and computational geometry tests.
 * @subpage questtop provides an API to query point distance and position relative to meshes.
 * @subpage sidretop provides a data store with hierarchical structure.
-* @subpage sinatop provides an API to convert data to a common file format.
+* @subpage sinatop ([S]imulation [In]sight and [A]nalysis) unified output library collects data directly within codes, outputting them to a common file output format co-designed with application developers and users.
 * @subpage slamtop provides an API to construct and process meshes.
 * @subpage slictop provides infrastructure for logging application messages.
 * @subpage spintop provides spatial acceleration data structures, also known as spatial indexes.
