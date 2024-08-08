@@ -166,8 +166,7 @@ inline bool shapeIsSelected(unsigned char color, int selection)
  * \return A parametric position t [0,1] where we locate \a clipValues in [d0,d1].
  */
 template <typename T>
-AXOM_HOST_DEVICE
-inline T computeWeight(T d0, T d1, T clipValue)
+AXOM_HOST_DEVICE inline T computeWeight(T d0, T d1, T clipValue)
 {
   constexpr T tiny = 1.e-09;
   return axom::utilities::clampVal(axom::utilities::abs(clipValue - d0) /
@@ -990,7 +989,8 @@ public:
     if(n_clip_field_values.dtype().is_float32())
     {
       // Make a view.
-      clipFieldView = bputils::make_array_view<ClipFieldType>(n_clip_field_values);
+      clipFieldView =
+        bputils::make_array_view<ClipFieldType>(n_clip_field_values);
     }
     else
     {
@@ -1003,7 +1003,8 @@ public:
         axom::for_all<ExecSpace>(
           n,
           AXOM_LAMBDA(auto index) {
-            clipFieldView[index] = static_cast<ClipFieldType>(clipFieldViewSrc[index]);
+            clipFieldView[index] =
+              static_cast<ClipFieldType>(clipFieldViewSrc[index]);
           });
       });
     }

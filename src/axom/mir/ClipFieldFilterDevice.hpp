@@ -115,18 +115,19 @@ public:
       axom::mir::views::dispatch_topology<dims, shapes>(
         n_topo,
         [&](const std::string & /*shape*/, auto topologyView) {
-
           using TopologyView = decltype(topologyView);
           using CoordsetView = decltype(coordsetView);
 
           // Don't allow 3D topologies with 2D coordsets.
           constexpr int RuntimeDimension = -1;
-          if constexpr ((TopologyView::dimension() == 2) ||
-                        (TopologyView::dimension() == 3 && CoordsetView::dimension() == 3) ||
-                        (TopologyView::dimension() == RuntimeDimension))
+          if constexpr((TopologyView::dimension() == 2) ||
+                       (TopologyView::dimension() == 3 &&
+                        CoordsetView::dimension() == 3) ||
+                       (TopologyView::dimension() == RuntimeDimension))
           {
-            ClipField<ExecSpace, TopologyView, CoordsetView> clipper(topologyView,
-                                                                     coordsetView);
+            ClipField<ExecSpace, TopologyView, CoordsetView> clipper(
+              topologyView,
+              coordsetView);
             clipper.execute(n_topo,
                             n_coordset,
                             n_fields,

@@ -18,14 +18,14 @@ namespace mir
 {
 namespace views
 {
-
 template <int NDIMS>
-struct make_rectilinear {};
+struct make_rectilinear
+{ };
 
 /**
  * \brief Create a 3D structured topology view with normal structured indexing.
  */
-template<>
+template <>
 struct make_rectilinear<3>
 {
   using Indexing = views::StructuredIndexing<axom::IndexType, 3>;
@@ -39,16 +39,17 @@ struct make_rectilinear<3>
    */
   static Indexing indexing(const conduit::Node &topo)
   {
-    const conduit::Node *coordset = conduit::blueprint::mesh::utils::find_reference_node(topo, "coordset");
+    const conduit::Node *coordset =
+      conduit::blueprint::mesh::utils::find_reference_node(topo, "coordset");
     SLIC_ASSERT(coordset != nullptr);
     const auto axes = conduit::blueprint::mesh::utils::coordset::axes(*coordset);
     LogicalIndex zoneDims;
     zoneDims[0] =
-        coordset->fetch_existing(axes[0]).dtype().number_of_elements() - 1;
+      coordset->fetch_existing(axes[0]).dtype().number_of_elements() - 1;
     zoneDims[1] =
-        coordset->fetch_existing(axes[1]).dtype().number_of_elements() - 1;
+      coordset->fetch_existing(axes[1]).dtype().number_of_elements() - 1;
     zoneDims[2] =
-        coordset->fetch_existing(axes[2]).dtype().number_of_elements() - 1;
+      coordset->fetch_existing(axes[2]).dtype().number_of_elements() - 1;
     return Indexing(zoneDims);
   }
 
@@ -66,7 +67,7 @@ struct make_rectilinear<3>
 /**
  * \brief Create a 2D structured topology view with normal structured indexing.
  */
-template<>
+template <>
 struct make_rectilinear<2>
 {
   using Indexing = views::StructuredIndexing<axom::IndexType, 2>;
@@ -80,14 +81,15 @@ struct make_rectilinear<2>
    */
   static Indexing indexing(const conduit::Node &topo)
   {
-    const conduit::Node *coordset = conduit::blueprint::mesh::utils::find_reference_node(topo, "coordset");
+    const conduit::Node *coordset =
+      conduit::blueprint::mesh::utils::find_reference_node(topo, "coordset");
     SLIC_ASSERT(coordset != nullptr);
     const auto axes = conduit::blueprint::mesh::utils::coordset::axes(*coordset);
     LogicalIndex zoneDims;
     zoneDims[0] =
-        coordset->fetch_existing(axes[0]).dtype().number_of_elements() - 1;
+      coordset->fetch_existing(axes[0]).dtype().number_of_elements() - 1;
     zoneDims[1] =
-        coordset->fetch_existing(axes[1]).dtype().number_of_elements() - 1;
+      coordset->fetch_existing(axes[1]).dtype().number_of_elements() - 1;
     return Indexing(zoneDims);
   }
 
@@ -105,7 +107,7 @@ struct make_rectilinear<2>
 /**
  * \brief Create a 1D structured topology view with normal structured indexing.
  */
-template<>
+template <>
 struct make_rectilinear<1>
 {
   using Indexing = views::StructuredIndexing<axom::IndexType, 1>;
@@ -119,12 +121,13 @@ struct make_rectilinear<1>
    */
   static Indexing indexing(const conduit::Node &topo)
   {
-    const conduit::Node *coordset = conduit::blueprint::mesh::utils::find_reference_node(topo, "coordset");
+    const conduit::Node *coordset =
+      conduit::blueprint::mesh::utils::find_reference_node(topo, "coordset");
     SLIC_ASSERT(coordset != nullptr);
     const auto axes = conduit::blueprint::mesh::utils::coordset::axes(*coordset);
     LogicalIndex zoneDims;
     zoneDims[0] =
-        coordset->fetch_existing(axes[0]).dtype().number_of_elements() - 1;
+      coordset->fetch_existing(axes[0]).dtype().number_of_elements() - 1;
     return Indexing(zoneDims);
   }
 
@@ -149,10 +152,10 @@ struct make_rectilinear<1>
  * \param func     The function to invoke using the view.
  */
 template <int SelectedDimensions = select_dimensions(1, 2, 3), typename FuncType>
-void dispatch_rectilinear_topology(const conduit::Node &topo,
-                                   FuncType &&func)
+void dispatch_rectilinear_topology(const conduit::Node &topo, FuncType &&func)
 {
-  const conduit::Node *coordset = conduit::blueprint::mesh::utils::find_reference_node(topo, "coordset");
+  const conduit::Node *coordset =
+    conduit::blueprint::mesh::utils::find_reference_node(topo, "coordset");
   SLIC_ASSERT(coordset != nullptr);
   const auto axes = conduit::blueprint::mesh::utils::coordset::axes(*coordset);
   switch(axes.size())

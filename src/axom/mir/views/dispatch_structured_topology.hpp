@@ -391,8 +391,7 @@ void dispatch_structured_topology(const conduit::Node &topo, FuncType &&func)
  * \note We try to initialize the topoView for each dimension and share the dispatch.
  */
 template <int SelectedDimensions = select_dimensions(1, 2, 3), typename FuncType>
-void dispatch_structured_topologies(const conduit::Node &topo,
-                                    FuncType &&func)
+void dispatch_structured_topologies(const conduit::Node &topo, FuncType &&func)
 {
   const std::string offsetsKey("offsets"), stridesKey("strides");
   const std::string type = topo.fetch_existing("type").as_string();
@@ -403,8 +402,9 @@ void dispatch_structured_topologies(const conduit::Node &topo,
     if constexpr(dimension_selected(SelectedDimensions, 3))
     {
       const std::string shape("hex");
-      
-      if(type == "structured" && topo.has_path(offsetsKey) && topo.has_path(stridesKey))
+
+      if(type == "structured" && topo.has_path(offsetsKey) &&
+         topo.has_path(stridesKey))
       {
         auto topoView = make_strided_structured<3>::view(topo);
         func(shape, topoView);
@@ -427,7 +427,8 @@ void dispatch_structured_topologies(const conduit::Node &topo,
     if constexpr(dimension_selected(SelectedDimensions, 2))
     {
       const std::string shape("quad");
-      if(type == "structured" && topo.has_path(offsetsKey) && topo.has_path(stridesKey))
+      if(type == "structured" && topo.has_path(offsetsKey) &&
+         topo.has_path(stridesKey))
       {
         auto topoView = make_strided_structured<2>::view(topo);
         func(shape, topoView);

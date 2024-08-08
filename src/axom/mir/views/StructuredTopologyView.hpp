@@ -40,8 +40,7 @@ public:
    * \brief Constructor
    */
   AXOM_HOST_DEVICE
-  StructuredTopologyView() : m_indexing()
-  { }
+  StructuredTopologyView() : m_indexing() { }
 
   /**
    * \brief Constructor
