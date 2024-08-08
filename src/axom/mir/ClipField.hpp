@@ -15,6 +15,7 @@
 #include "axom/mir/blueprint_utilities.hpp"
 #include "axom/mir/utilities.hpp"
 #include "axom/mir/views/view_traits.hpp"
+#include "axom/mir/ClipOptions.hpp"
 
 #include <conduit/conduit.hpp>
 #include <conduit/conduit_blueprint_mesh_utils.hpp>
@@ -204,234 +205,6 @@ AXOM_HOST_DEVICE size_t clip_case(const ZoneType &zone,
 }
 
 }  // end namespace details
-
-/**
- * \brief This class provides a kind of schema over the clipping options, as well
- *        as default values, and some utilities functions.
- */
-template <typename ExecSpace>
-class ClipOptions
-{
-public:
-  /**
-   * \brief Constructor
-   *
-   * \param nzones The total number of zones in the associated topology.
-   * \param options The node that contains the clipping options.
-   */
-  ClipOptions(axom::IndexType nzones, const conduit::Node &options)
-    : m_nzones(nzones)
-    , m_options(options)
-    , m_selectedZones()
-  { }
-
-  /**
-   * \brief Return a view that contains the list of selected zone ids for the mesh.
-   * \return A view that contains the list of selected zone ids for the mesh.
-   *
-   * \note The data for the view is generated if it has not yet been built.
-   */
-  axom::ArrayView<axom::IndexType> selectedZonesView()
-  {
-    if(m_selectedZones.size() == 0) buildSelectedZones();
-    return m_selectedZones.view();
-  }
-
-  /**
-   * \brief Invalidate the selected zones array (due to options changing) so we can rebuild it.
-   */
-  void invalidateSelectedZones() { m_selectedZones.clear(); }
-
-  /**
-   * \brief Return the name of the field used for clipping.
-   * \return The name of the field used for clipping.
-   */
-  std::string clipField() const
-  {
-    return m_options.fetch_existing("clipField").as_string();
-  }
-
-  /**
-   * \brief Return the clip value.
-   * \return The clip value.
-   */
-  float clipValue() const
-  {
-    return m_options.has_child("clipValue")
-      ? m_options.fetch_existing("clipValue").to_float()
-      : 0.f;
-  }
-
-  /**
-   * \brief Return the name of the new topology to be created.
-   * \param default_value The name to use if the option is not defined.
-   * \return The name of the new topology to be created.
-   */
-  std::string topologyName(const std::string &default_value = std::string()) const
-  {
-    std::string name(default_value);
-    if(m_options.has_child("topologyName"))
-      name = m_options.fetch_existing("topologyName").as_string();
-    return name;
-  }
-
-  /**
-   * \brief Return the name of the new coordset to be created.
-   * \param default_value The name to use if the option is not defined.
-   * \return The name of the new coordset to be created.
-   */
-  std::string coordsetName(const std::string &default_value = std::string()) const
-  {
-    std::string name(default_value);
-    if(m_options.has_child("coordsetName"))
-      name = m_options.fetch_existing("coordsetName").as_string();
-    return name;
-  }
-
-  /**
-   * \brief Return the name of the new color field to be created.
-   * \return The name of the new color field to be created.
-   */
-  std::string colorField() const
-  {
-    std::string name("color");
-    if(m_options.has_child("colorField"))
-      name = m_options.fetch_existing("colorField").as_string();
-    return name;
-  }
-
-  /**
-   * \brief Whether the "inside" of the clipping field is selected.
-   * \return 1 of the inside clipping is selected, false otherwise.
-   */
-  bool inside() const
-  {
-    return m_options.has_path("inside")
-      ? (m_options.fetch_existing("inside").to_int() > 0)
-      : true;
-  }
-
-  /**
-   * \brief Whether the "outside" of the clipping field is selected.
-   * \return 1 of the outside clipping is selected, false otherwise.
-   */
-  bool outside() const
-  {
-    return m_options.has_path("outside")
-      ? (m_options.fetch_existing("outside").to_int() > 0)
-      : false;
-  }
-
-  /**
-   * \brief Extract the names of the fields to process (and their output names) from the
-   *        options or \a n_fields if the options do not contain fields.
-   *
-   * \param n_fields The Conduit node that contains mesh fields.
-   *
-   * \return A map of the fields that will be processed, as well as their output name in the new fields.
-   */
-  std::map<std::string, std::string> fields(const conduit::Node &n_fields) const
-  {
-    std::map<std::string, std::string> f;
-    if(m_options.has_child("fields"))
-    {
-      const conduit::Node &n_opt_fields = m_options.fetch_existing("fields");
-      for(conduit::index_t i = 0; i < n_opt_fields.number_of_children(); i++)
-      {
-        if(n_opt_fields[i].dtype().is_string())
-          f[n_opt_fields[i].name()] = n_opt_fields[i].as_string();
-        else
-          f[n_opt_fields[i].name()] = n_opt_fields[i].name();
-      }
-    }
-    else
-    {
-      // No options were specified. Allow all fields with same topology as clipField.
-      const conduit::Node &n_clipField = n_fields.fetch_existing(clipField());
-      const std::string topoName =
-        n_clipField.fetch_existing("topology").as_string();
-      for(conduit::index_t i = 0; i < n_fields.number_of_children(); i++)
-      {
-        if(topoName == n_fields[i].fetch_existing("topology").as_string())
-          f[n_fields[i].name()] = n_fields[i].name();
-      }
-    }
-    return f;
-  }
-
-private:
-  /**
-   * \brief The options may contain a "selectedZones" member that is a list of zones
-   *        that will be operated on. If such an array is present, copy and sort it.
-   *        If the zone list is not present, make an array that selects every zone.
-   *
-   * \note selectedZones should contain local zone numbers, which in the case of
-   *       strided-structured indexing are the [0..n) zone numbers that exist only
-   *       within the selected window.
-   */
-  void buildSelectedZones()
-  {
-    const auto allocatorID = axom::execution_space<ExecSpace>::allocatorID();
-
-    if(m_options.has_child("selectedZones"))
-    {
-      // Store the zone list in m_selectedZones.
-      int badValueCount = 0;
-      views::IndexNode_to_ArrayView(m_options["selectedZones"], [&](auto zonesView) {
-        using loop_policy =
-          typename axom::execution_space<ExecSpace>::loop_policy;
-        using reduce_policy =
-          typename axom::execution_space<ExecSpace>::reduce_policy;
-
-        // It probably does not make sense to request more zones than we have in the mesh.
-        SLIC_ASSERT(zonesView.size() <= m_nzones);
-
-        m_selectedZones = axom::Array<axom::IndexType>(zonesView.size(),
-                                                       zonesView.size(),
-                                                       allocatorID);
-        auto szView = m_selectedZones.view();
-        axom::for_all<ExecSpace>(
-          szView.size(),
-          AXOM_LAMBDA(auto index) { szView[index] = zonesView[index]; });
-
-        // Check that the selected zone values are in range.
-        const auto nzones = m_nzones;
-        RAJA::ReduceSum<reduce_policy, int> errReduce(0);
-        axom::for_all<ExecSpace>(
-          szView.size(),
-          AXOM_LAMBDA(auto index) {
-            const int err =
-              (szView[index] < 0 || szView[index] >= nzones) ? 1 : 0;
-            errReduce += err;
-          });
-        badValueCount = errReduce.get();
-
-        // Make sure the selectedZones are sorted.
-        RAJA::sort<loop_policy>(RAJA::make_span(szView.data(), szView.size()));
-      });
-
-      if(badValueCount > 0)
-      {
-        SLIC_ERROR("Out of range selectedZones values.");
-      }
-    }
-    else
-    {
-      // Select all zones.
-      m_selectedZones =
-        axom::Array<axom::IndexType>(m_nzones, m_nzones, allocatorID);
-      auto szView = m_selectedZones.view();
-      axom::for_all<ExecSpace>(
-        m_nzones,
-        AXOM_LAMBDA(auto zoneIndex) { szView[zoneIndex] = zoneIndex; });
-    }
-  }
-
-private:
-  axom::IndexType m_nzones;  // The number of zones in the associated topology.
-  const conduit::Node &m_options;  // A reference to the clipping options node.
-  axom::Array<axom::IndexType> m_selectedZones;  // Storage for a list of selected zone ids.
-};
 
 //------------------------------------------------------------------------------
 /**
@@ -1134,11 +907,26 @@ public:
           sliceIndicesView[start + i] = zoneIndex;
       });
 
+    // Get the fields that we want to process.
+    std::map<std::string, std::string> fieldsToProcess;
+    if(!opts.fields(fieldsToProcess))
+    {
+      // Fields were not present in the options. Select all fields that have the same topology as opts.clipField().
+      const std::string clipTopology = n_fields.fetch_existing(opts.clipField() + "/topology").as_string();
+      for(conduit::index_t i = 0; i < n_fields.number_of_children(); i++)
+      {
+        if(n_fields[i].fetch_existing("topology").as_string() == clipTopology)
+        {
+          fieldsToProcess[n_fields[i].name()] = n_fields[i].name();
+        }
+      }
+    }
+
     slice.m_indicesView = sliceIndicesView;
     makeFields(blend,
                slice,
                opts.topologyName(n_topo.name()),
-               opts.fields(n_fields),
+               fieldsToProcess,
                n_fields,
                n_newFields);
     makeOriginalElements(fragmentData, opts, n_fields, n_newTopo, n_newFields);

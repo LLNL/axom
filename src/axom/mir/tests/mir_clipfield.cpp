@@ -102,21 +102,23 @@ TEST(mir_clipfield, options)
   n_fields["distance/values"].set(std::vector<float> {0., 1., 2., 3.});
 
   // There are currently no fields in the options. fields should just return the clip field.
-  auto fields = opts.fields(n_fields);
-  EXPECT_EQ(fields.size(), 1);
-  EXPECT_EQ(fields.begin()->first, "distance");
-  EXPECT_EQ(fields.begin()->second, "distance");
+  std::map<std::string, std::string> fields;
+  auto have_fields = opts.fields(fields);
+  EXPECT_FALSE(have_fields);
+  EXPECT_EQ(fields.size(), 0);
 
   // Add an empty fields node so we select NO fields.
   (void)options["fields"];
-  fields = opts.fields(n_fields);
+  have_fields = opts.fields(fields);
+  EXPECT_TRUE(have_fields);
   EXPECT_EQ(fields.size(), 0);
 
   // Add some fields
   options["fields/distance"] = "distance";
   options["fields/source"] = "destination";
   options["fields/same"] = 1;
-  fields = opts.fields(n_fields);
+  have_fields = opts.fields(fields);
+  EXPECT_TRUE(have_fields);
   EXPECT_EQ(fields.size(), 3);
   int i = 0;
   for(auto it = fields.begin(); it != fields.end(); it++, i++)
