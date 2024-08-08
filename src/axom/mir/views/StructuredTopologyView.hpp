@@ -38,6 +38,13 @@ public:
 
   /**
    * \brief Constructor
+   */
+  AXOM_HOST_DEVICE
+  StructuredTopologyView() : m_indexing()
+  { }
+
+  /**
+   * \brief Constructor
    *
    * \param indexing The indexing policy for the topology (num zones in each dimension).
    */
@@ -70,6 +77,14 @@ public:
   {
     return m_indexing.logicalDimensions();
   }
+
+  /**
+   * \brief Return indexing object.
+   *
+   * \return The indexing object.
+   */
+  AXOM_HOST_DEVICE
+  IndexingPolicy &indexing() { return m_indexing; }
 
   /**
    * \brief Return indexing object.

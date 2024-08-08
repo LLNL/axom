@@ -316,7 +316,6 @@ struct make_structured<1>
  * \tparam SelectedDimensions  An integer whose bits indicate which dimensions are set. dimension
  *
  * \param topo     The node that contains the rectilinear topology.
- * \param coordset The coordset node that contains the topology dimensions.
  * \param func     The function to invoke using the view. It should accept a string with the shape name and an auto parameter for the view.
  */
 template <int SelectedDimensions = select_dimensions(1, 2, 3), typename FuncType>
@@ -387,22 +386,81 @@ void dispatch_structured_topology(const conduit::Node &topo, FuncType &&func)
  * \tparam SelectedDimensions  An integer whose bits indicate which dimensions are set. dimension
  *
  * \param topo     The node that contains the topology.
- * \param coordset The coordset node that contains the topology dimensions.
  * \param func     The function to invoke using the view. It should accept a string with the shape name and an auto parameter for the view.
-
+ *
+ * \note We try to initialize the topoView for each dimension and share the dispatch.
  */
 template <int SelectedDimensions = select_dimensions(1, 2, 3), typename FuncType>
 void dispatch_structured_topologies(const conduit::Node &topo,
-                                    const conduit::Node &coordset,
                                     FuncType &&func)
 {
-  const std::string type = topo["type"].as_string();
-  if(type == "uniform")
-    dispatch_uniform_topology<SelectedDimensions>(topo, coordset, func);
-  else if(type == "rectilinear")
-    dispatch_rectilinear_topology<SelectedDimensions>(topo, coordset, func);
-  else if(type == "structured")
-    dispatch_structured_topology<SelectedDimensions>(topo, func);
+  const std::string offsetsKey("offsets"), stridesKey("strides");
+  const std::string type = topo.fetch_existing("type").as_string();
+  auto ndims = conduit::blueprint::mesh::utils::topology::dims(topo);
+  switch(ndims)
+  {
+  case 3:
+    if constexpr(dimension_selected(SelectedDimensions, 3))
+    {
+      const std::string shape("hex");
+      
+      if(type == "structured" && topo.has_path(offsetsKey) && topo.has_path(stridesKey))
+      {
+        auto topoView = make_strided_structured<3>::view(topo);
+        func(shape, topoView);
+      }
+      else
+      {
+        // Make these topology types share the same func dispatch.
+        StructuredTopologyView<StructuredIndexing<axom::IndexType, 3>> topoView;
+        if(type == "uniform")
+          topoView = make_uniform<3>::view(topo);
+        else if(type == "rectilinear")
+          topoView = make_rectilinear<3>::view(topo);
+        else if(type == "structured")
+          topoView = make_structured<3>::view(topo);
+        func(shape, topoView);
+      }
+    }
+    break;
+  case 2:
+    if constexpr(dimension_selected(SelectedDimensions, 2))
+    {
+      const std::string shape("quad");
+      if(type == "structured" && topo.has_path(offsetsKey) && topo.has_path(stridesKey))
+      {
+        auto topoView = make_strided_structured<2>::view(topo);
+        func(shape, topoView);
+      }
+      else
+      {
+        // Make these topology types share the same func dispatch.
+        StructuredTopologyView<StructuredIndexing<axom::IndexType, 2>> topoView;
+        if(type == "uniform")
+          topoView = make_uniform<2>::view(topo);
+        else if(type == "rectilinear")
+          topoView = make_rectilinear<2>::view(topo);
+        else if(type == "structured")
+          topoView = make_structured<2>::view(topo);
+        func(shape, topoView);
+      }
+    }
+    break;
+  case 1:
+    if constexpr(dimension_selected(SelectedDimensions, 1))
+    {
+      const std::string shape("line");
+      // Make these topology types share the same func dispatch.
+      StructuredTopologyView<StructuredIndexing<axom::IndexType, 1>> topoView;
+      if(type == "uniform")
+        topoView = make_uniform<1>::view(topo);
+      else if(type == "rectilinear")
+        topoView = make_rectilinear<1>::view(topo);
+      else if(type == "structured")
+        topoView = make_structured<1>::view(topo);
+      func(shape, topoView);
+    }
+  }
 }
 
 }  // end namespace views

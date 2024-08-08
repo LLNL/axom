@@ -165,14 +165,15 @@ inline bool shapeIsSelected(unsigned char color, int selection)
  *
  * \return A parametric position t [0,1] where we locate \a clipValues in [d0,d1].
  */
+template <typename T>
 AXOM_HOST_DEVICE
-inline float computeWeight(float d0, float d1, float clipValue)
+inline T computeWeight(T d0, T d1, T clipValue)
 {
-  constexpr float tiny = 1.e-09;
+  constexpr T tiny = 1.e-09;
   return axom::utilities::clampVal(axom::utilities::abs(clipValue - d0) /
                                      (axom::utilities::abs(d1 - d0) + tiny),
-                                   0.f,
-                                   1.f);
+                                   T(0),
+                                   T(1));
 }
 
 // TODO: Could we make ZoneType be a concept?
@@ -255,10 +256,10 @@ public:
    * \brief Return the clip value.
    * \return The clip value.
    */
-  double clipValue() const
+  float clipValue() const
   {
     return m_options.has_child("clipValue")
-      ? m_options.fetch_existing("clipValue").to_double()
+      ? m_options.fetch_existing("clipValue").to_float()
       : 0.f;
   }
 
@@ -902,6 +903,7 @@ public:
   using reduce_policy = typename axom::execution_space<ExecSpace>::reduce_policy;
   using ConnectivityType = typename TopologyView::ConnectivityType;
   using BlendGroupBuilderType = BlendGroupBuilder<ExecSpace, NamingPolicy>;
+  using ClipFieldType = float;
 
   /**
    * \brief Constructor
@@ -983,25 +985,25 @@ public:
     const conduit::Node &n_clip_field = n_fields.fetch_existing(opts.clipField());
     const conduit::Node &n_clip_field_values = n_clip_field["values"];
     SLIC_ASSERT(n_clip_field["association"].as_string() == "vertex");
-    axom::Array<double> clipFieldData;
-    axom::ArrayView<double> clipFieldView;
-    if(n_clip_field_values.dtype().is_float64())
+    axom::Array<ClipFieldType> clipFieldData;
+    axom::ArrayView<ClipFieldType> clipFieldView;
+    if(n_clip_field_values.dtype().is_float32())
     {
       // Make a view.
-      clipFieldView = bputils::make_array_view<double>(n_clip_field_values);
+      clipFieldView = bputils::make_array_view<ClipFieldType>(n_clip_field_values);
     }
     else
     {
       // Convert to double.
       const IndexType n =
         static_cast<IndexType>(n_clip_field_values.dtype().number_of_elements());
-      clipFieldData = axom::Array<double>(n, n, allocatorID);
+      clipFieldData = axom::Array<ClipFieldType>(n, n, allocatorID);
       clipFieldView = clipFieldData.view();
       views::Node_to_ArrayView(n_clip_field_values, [&](auto clipFieldViewSrc) {
         axom::for_all<ExecSpace>(
           n,
           AXOM_LAMBDA(auto index) {
-            clipFieldView[index] = static_cast<double>(clipFieldViewSrc[index]);
+            clipFieldView[index] = static_cast<ClipFieldType>(clipFieldViewSrc[index]);
           });
       });
     }
@@ -1222,9 +1224,9 @@ private:
                     ZoneData zoneData,
                     FragmentData fragmentData,
                     ClipOptions<ExecSpace> &opts,
-                    const axom::ArrayView<double> &clipFieldView) const
+                    const axom::ArrayView<ClipFieldType> &clipFieldView) const
   {
-    const auto clipValue = opts.clipValue();
+    const auto clipValue = static_cast<ClipFieldType>(opts.clipValue());
     const auto selection = getSelection(opts);
 
     auto blendGroupsView = builder.state().m_blendGroupsView;
@@ -1392,9 +1394,9 @@ private:
                        BlendGroupBuilderType builder,
                        ZoneData zoneData,
                        ClipOptions<ExecSpace> &opts,
-                       const axom::ArrayView<double> &clipFieldView) const
+                       const axom::ArrayView<ClipFieldType> &clipFieldView) const
   {
-    const auto clipValue = opts.clipValue();
+    const auto clipValue = static_cast<ClipFieldType>(opts.clipValue());
     const auto selection = getSelection(opts);
 
     m_topologyView.template for_selected_zones<ExecSpace>(
@@ -1447,9 +1449,9 @@ private:
                   const auto id1 = zone.getId(edge[1]);
 
                   // Figure out the blend for edge.
-                  const float t = details::computeWeight(clipFieldView[id0],
-                                                         clipFieldView[id1],
-                                                         clipValue);
+                  const auto t = details::computeWeight(clipFieldView[id0],
+                                                        clipFieldView[id1],
+                                                        clipValue);
 
                   groups.add(id0, one_over_n * (1.f - t));
                   groups.add(id1, one_over_n * t);
@@ -1482,9 +1484,9 @@ private:
             const auto id1 = zone.getId(edge[1]);
 
             // Figure out the blend for edge.
-            const float t = details::computeWeight(clipFieldView[id0],
-                                                   clipFieldView[id1],
-                                                   clipValue);
+            const auto t = details::computeWeight(clipFieldView[id0],
+                                                  clipFieldView[id1],
+                                                  clipValue);
 
             groups.beginGroup();
             groups.add(id0, 1.f - t);

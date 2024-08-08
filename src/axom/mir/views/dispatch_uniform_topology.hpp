@@ -8,7 +8,9 @@
 
 #include "axom/mir/views/StructuredTopologyView.hpp"
 #include "axom/mir/views/dispatch_utilities.hpp"
+
 #include <conduit/conduit.hpp>
+#include <conduit/conduit_blueprint_mesh_utils.hpp>
 
 namespace axom
 {
@@ -16,33 +18,148 @@ namespace mir
 {
 namespace views
 {
+
+/**
+ * \brief Base template for uniform topology creation
+ */
+template <int NDIMS>
+struct make_uniform
+{ };
+
+/**
+ * \brief Create a 3D structured topology view with normal structured indexing.
+ */
+template <>
+struct make_uniform<3>
+{
+  using Indexing = views::StructuredIndexing<axom::IndexType, 3>;
+  using LogicalIndex = typename Indexing::LogicalIndex;
+  using TopoView = views::StructuredTopologyView<Indexing>;
+
+  /**
+   * \brief Create the indexing and initialize it from the topology.
+   * \param topo The node containing the topology.
+   * \return The indexing.
+   */
+  static Indexing indexing(const conduit::Node &topo)
+  {
+    const conduit::Node *coordset = conduit::blueprint::mesh::utils::find_reference_node(topo, "coordset");
+    SLIC_ASSERT(coordset != nullptr);
+    const conduit::Node &n_dims = coordset->fetch_existing("dims");
+    LogicalIndex zoneDims;
+    zoneDims[0] = n_dims.as_int_accessor()[0] - 1;
+    zoneDims[1] = n_dims.as_int_accessor()[1] - 1;
+    zoneDims[2] = n_dims.as_int_accessor()[2] - 1;
+    return Indexing(zoneDims);
+  }
+
+  /**
+   * \brief Create the topology view and initialize it from the topology.
+   * \param topo The node containing the topology.
+   * \return The topology view.
+   */
+  static TopoView view(const conduit::Node &topo)
+  {
+    return TopoView(indexing(topo));
+  }
+};
+
+/**
+ * \brief Create a 2D structured topology view with normal structured indexing.
+ */
+template <>
+struct make_uniform<2>
+{
+  using Indexing = views::StructuredIndexing<axom::IndexType, 2>;
+  using LogicalIndex = typename Indexing::LogicalIndex;
+  using TopoView = views::StructuredTopologyView<Indexing>;
+
+  /**
+   * \brief Create the indexing and initialize it from the topology.
+   * \param topo The node containing the topology.
+   * \return The indexing.
+   */
+  static Indexing indexing(const conduit::Node &topo)
+  {
+    const conduit::Node *coordset = conduit::blueprint::mesh::utils::find_reference_node(topo, "coordset");
+    SLIC_ASSERT(coordset != nullptr);
+    const conduit::Node &n_dims = coordset->fetch_existing("dims");
+    LogicalIndex zoneDims;
+    zoneDims[0] = n_dims.as_int_accessor()[0] - 1;
+    zoneDims[1] = n_dims.as_int_accessor()[1] - 1;
+    return Indexing(zoneDims);
+  }
+
+  /**
+   * \brief Create the topology view and initialize it from the topology.
+   * \param topo The node containing the topology.
+   * \return The topology view.
+   */
+  static TopoView view(const conduit::Node &topo)
+  {
+    return TopoView(indexing(topo));
+  }
+};
+
+/**
+ * \brief Create a 1D structured topology view with normal structured indexing.
+ */
+template <>
+struct make_uniform<1>
+{
+  using Indexing = views::StructuredIndexing<axom::IndexType, 1>;
+  using LogicalIndex = typename Indexing::LogicalIndex;
+  using TopoView = views::StructuredTopologyView<Indexing>;
+
+  /**
+   * \brief Create the indexing and initialize it from the topology.
+   * \param topo The node containing the topology.
+   * \return The indexing.
+   */
+  static Indexing indexing(const conduit::Node &topo)
+  {
+    const conduit::Node *coordset = conduit::blueprint::mesh::utils::find_reference_node(topo, "coordset");
+    SLIC_ASSERT(coordset != nullptr);
+    const conduit::Node &n_dims = coordset->fetch_existing("dims");
+    LogicalIndex zoneDims;
+    zoneDims[0] = n_dims.as_int_accessor()[0] - 1;
+    return Indexing(zoneDims);
+  }
+
+  /**
+   * \brief Create the topology view and initialize it from the topology.
+   * \param topo The node containing the topology.
+   * \return The topology view.
+   */
+  static TopoView view(const conduit::Node &topo)
+  {
+    return TopoView(indexing(topo));
+  }
+};
+
 /**
  * \brief Creates a topology view compatible with uniform topologies and passes that view to the supplied function.
  *
  * \tparam FuncType            The function/lambda type to invoke on the view.
  * \tparam SelectedDimensions  An integer whose bits indicate which dimensions are set.
  *
- * \param coordset The coordset node that contains the topology dimensions.
- * \param func     The function to invoke using the view.
+ * \param topo The node that contains the topology.
+ * \param func The function to invoke using the view.
  */
 template <int SelectedDimensions = select_dimensions(1, 2, 3), typename FuncType>
-void dispatch_uniform_topology(const conduit::Node &AXOM_UNUSED_PARAM(topo),
-                               const conduit::Node &coordset,
+void dispatch_uniform_topology(const conduit::Node &topo,
                                FuncType &&func)
 {
-  const conduit::Node &n_dims = coordset["dims"];
+  const conduit::Node *coordset = conduit::blueprint::mesh::utils::find_reference_node(topo, "coordset");
+  SLIC_ASSERT(coordset != nullptr);
+  const conduit::Node &n_dims = coordset->fetch_existing("dims");
   switch(n_dims.dtype().number_of_elements())
   {
   default:
   case 3:
     if constexpr(dimension_selected(SelectedDimensions, 3))
     {
-      axom::StackArray<axom::IndexType, 3> zoneDims;
-      zoneDims[0] = n_dims.as_int_accessor()[0] - 1;
-      zoneDims[1] = n_dims.as_int_accessor()[1] - 1;
-      zoneDims[2] = n_dims.as_int_accessor()[2] - 1;
-      views::StructuredTopologyView<views::StructuredIndexing<axom::IndexType, 3>>
-        topoView(zoneDims);
+      auto topoView = make_uniform<3>::view(topo);
       const std::string shape("hex");
       func(shape, topoView);
     }
@@ -50,11 +167,7 @@ void dispatch_uniform_topology(const conduit::Node &AXOM_UNUSED_PARAM(topo),
   case 2:
     if constexpr(dimension_selected(SelectedDimensions, 2))
     {
-      axom::StackArray<axom::IndexType, 2> zoneDims;
-      zoneDims[0] = n_dims.as_int_accessor()[0] - 1;
-      zoneDims[1] = n_dims.as_int_accessor()[1] - 1;
-      views::StructuredTopologyView<views::StructuredIndexing<axom::IndexType, 2>>
-        topoView(zoneDims);
+      auto topoView = make_uniform<2>::view(topo);
       const std::string shape("quad");
       func(shape, topoView);
     }
@@ -62,10 +175,7 @@ void dispatch_uniform_topology(const conduit::Node &AXOM_UNUSED_PARAM(topo),
   case 1:
     if constexpr(dimension_selected(SelectedDimensions, 3))
     {
-      axom::StackArray<axom::IndexType, 1> zoneDims;
-      zoneDims[0] = n_dims.as_int_accessor()[0] - 1;
-      views::StructuredTopologyView<views::StructuredIndexing<axom::IndexType, 1>>
-        topoView(zoneDims);
+      auto topoView = make_uniform<1>::view(topo);
       const std::string shape("line");
       func(shape, topoView);
     }

@@ -28,26 +28,25 @@ namespace views
  * \tparam ShapeTypes A bitset containing the shape types that will be supported for unstructured.
  *
  * \param topo     The node that contains the rectilinear topology.
- * \param coordset The coordset node that contains the topology dimensions.
  * \param func     The function to invoke using the view. It should accept a string with the shape name and an auto parameter for the view.
  */
 template <int SelectedDimensions = select_dimensions(1, 2, 3),
           int ShapeTypes = AnyShape,
           typename FuncType>
 void dispatch_topology(const conduit::Node &topo,
-                       const conduit::Node &coordset,
                        FuncType &&func)
 {
   const auto type = topo.fetch_existing("type").as_string();
 
-  if(type == "uniform")
-    dispatch_uniform_topology<SelectedDimensions>(topo, coordset, func);
-  else if(type == "rectilinear")
-    dispatch_rectilinear_topology<SelectedDimensions>(topo, coordset, func);
-  else if(type == "structured")
-    dispatch_structured_topology<SelectedDimensions>(topo, func);
-  else if(type == "unstructured")
+  if(type == "unstructured")
+  {
     dispatch_unstructured_topology<ShapeTypes>(topo, func);
+  }
+  else if(type == "uniform" || type == "rectilinear" || type == "structured")
+  {
+    // Dispatch the structured topologies together because we can be smarter about the views.
+    dispatch_structured_topologies<SelectedDimensions>(topo, func);
+  }
 }
 
 }  // end namespace views

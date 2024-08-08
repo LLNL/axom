@@ -18,6 +18,127 @@ namespace mir
 {
 namespace views
 {
+
+template <int NDIMS>
+struct make_rectilinear {};
+
+/**
+ * \brief Create a 3D structured topology view with normal structured indexing.
+ */
+template<>
+struct make_rectilinear<3>
+{
+  using Indexing = views::StructuredIndexing<axom::IndexType, 3>;
+  using LogicalIndex = typename Indexing::LogicalIndex;
+  using TopoView = views::StructuredTopologyView<Indexing>;
+
+  /**
+   * \brief Create the indexing and initialize it from the topo.
+   * \param topo The node containing the topology.
+   * \return The indexing.
+   */
+  static Indexing indexing(const conduit::Node &topo)
+  {
+    const conduit::Node *coordset = conduit::blueprint::mesh::utils::find_reference_node(topo, "coordset");
+    SLIC_ASSERT(coordset != nullptr);
+    const auto axes = conduit::blueprint::mesh::utils::coordset::axes(*coordset);
+    LogicalIndex zoneDims;
+    zoneDims[0] =
+        coordset->fetch_existing(axes[0]).dtype().number_of_elements() - 1;
+    zoneDims[1] =
+        coordset->fetch_existing(axes[1]).dtype().number_of_elements() - 1;
+    zoneDims[2] =
+        coordset->fetch_existing(axes[2]).dtype().number_of_elements() - 1;
+    return Indexing(zoneDims);
+  }
+
+  /**
+   * \brief Create the topology view and initialize it from the topo.
+   * \param topo The node containing the topology.
+   * \return The topology view.
+   */
+  static TopoView view(const conduit::Node &topo)
+  {
+    return TopoView(indexing(topo));
+  }
+};
+
+/**
+ * \brief Create a 2D structured topology view with normal structured indexing.
+ */
+template<>
+struct make_rectilinear<2>
+{
+  using Indexing = views::StructuredIndexing<axom::IndexType, 2>;
+  using LogicalIndex = typename Indexing::LogicalIndex;
+  using TopoView = views::StructuredTopologyView<Indexing>;
+
+  /**
+   * \brief Create the indexing and initialize it from the topology.
+   * \param topo The node containing the topology.
+   * \return The indexing.
+   */
+  static Indexing indexing(const conduit::Node &topo)
+  {
+    const conduit::Node *coordset = conduit::blueprint::mesh::utils::find_reference_node(topo, "coordset");
+    SLIC_ASSERT(coordset != nullptr);
+    const auto axes = conduit::blueprint::mesh::utils::coordset::axes(*coordset);
+    LogicalIndex zoneDims;
+    zoneDims[0] =
+        coordset->fetch_existing(axes[0]).dtype().number_of_elements() - 1;
+    zoneDims[1] =
+        coordset->fetch_existing(axes[1]).dtype().number_of_elements() - 1;
+    return Indexing(zoneDims);
+  }
+
+  /**
+   * \brief Create the topology view and initialize it from the topology.
+   * \param topo The node containing the topology.
+   * \return The topology view.
+   */
+  static TopoView view(const conduit::Node &topo)
+  {
+    return TopoView(indexing(topo));
+  }
+};
+
+/**
+ * \brief Create a 1D structured topology view with normal structured indexing.
+ */
+template<>
+struct make_rectilinear<1>
+{
+  using Indexing = views::StructuredIndexing<axom::IndexType, 1>;
+  using LogicalIndex = typename Indexing::LogicalIndex;
+  using TopoView = views::StructuredTopologyView<Indexing>;
+
+  /**
+   * \brief Create the indexing and initialize it from the topology.
+   * \param topo The node containing the topology.
+   * \return The indexing.
+   */
+  static Indexing indexing(const conduit::Node &topo)
+  {
+    const conduit::Node *coordset = conduit::blueprint::mesh::utils::find_reference_node(topo, "coordset");
+    SLIC_ASSERT(coordset != nullptr);
+    const auto axes = conduit::blueprint::mesh::utils::coordset::axes(*coordset);
+    LogicalIndex zoneDims;
+    zoneDims[0] =
+        coordset->fetch_existing(axes[0]).dtype().number_of_elements() - 1;
+    return Indexing(zoneDims);
+  }
+
+  /**
+   * \brief Create the topology view and initialize it from the topology.
+   * \param topo The node containing the topology.
+   * \return The topology view.
+   */
+  static TopoView view(const conduit::Node &topo)
+  {
+    return TopoView(indexing(topo));
+  }
+};
+
 /**
  * \brief Creates a topology view compatible with rectilinear topologies and passes that view to the supplied function.
  *
@@ -25,29 +146,21 @@ namespace views
  * \tparam SelectedDimensions  An integer whose bits indicate which dimensions are set.
  *
  * \param topo     The node that contains the rectilinear topology.
- * \param coordset The coordset node that contains the topology dimensions.
  * \param func     The function to invoke using the view.
  */
 template <int SelectedDimensions = select_dimensions(1, 2, 3), typename FuncType>
-void dispatch_rectilinear_topology(const conduit::Node &AXOM_UNUSED_PARAM(topo),
-                                   const conduit::Node &coordset,
+void dispatch_rectilinear_topology(const conduit::Node &topo,
                                    FuncType &&func)
 {
-  const auto axes = conduit::blueprint::mesh::utils::coordset::axes(coordset);
+  const conduit::Node *coordset = conduit::blueprint::mesh::utils::find_reference_node(topo, "coordset");
+  SLIC_ASSERT(coordset != nullptr);
+  const auto axes = conduit::blueprint::mesh::utils::coordset::axes(*coordset);
   switch(axes.size())
   {
   case 3:
     if constexpr(dimension_selected(SelectedDimensions, 3))
     {
-      axom::StackArray<axom::IndexType, 3> zoneDims;
-      zoneDims[0] =
-        coordset.fetch_existing(axes[0]).dtype().number_of_elements() - 1;
-      zoneDims[1] =
-        coordset.fetch_existing(axes[1]).dtype().number_of_elements() - 1;
-      zoneDims[2] =
-        coordset.fetch_existing(axes[2]).dtype().number_of_elements() - 1;
-      views::StructuredTopologyView<views::StructuredIndexing<axom::IndexType, 3>>
-        topoView(zoneDims);
+      auto topoView = make_rectilinear<3>::view(topo);
       const std::string shape("hex");
       func(shape, topoView);
     }
@@ -55,13 +168,7 @@ void dispatch_rectilinear_topology(const conduit::Node &AXOM_UNUSED_PARAM(topo),
   case 2:
     if constexpr(dimension_selected(SelectedDimensions, 2))
     {
-      axom::StackArray<axom::IndexType, 2> zoneDims;
-      zoneDims[0] =
-        coordset.fetch_existing(axes[0]).dtype().number_of_elements() - 1;
-      zoneDims[1] =
-        coordset.fetch_existing(axes[1]).dtype().number_of_elements() - 1;
-      views::StructuredTopologyView<views::StructuredIndexing<axom::IndexType, 2>>
-        topoView(zoneDims);
+      auto topoView = make_rectilinear<2>::view(topo);
       const std::string shape("quad");
       func(shape, topoView);
     }
@@ -69,11 +176,7 @@ void dispatch_rectilinear_topology(const conduit::Node &AXOM_UNUSED_PARAM(topo),
   case 1:
     if constexpr(dimension_selected(SelectedDimensions, 1))
     {
-      axom::StackArray<axom::IndexType, 1> zoneDims;
-      zoneDims[0] =
-        coordset.fetch_existing(axes[0]).dtype().number_of_elements() - 1;
-      views::StructuredTopologyView<views::StructuredIndexing<axom::IndexType, 1>>
-        topoView(zoneDims);
+      auto topoView = make_rectilinear<1>::view(topo);
       const std::string shape("line");
       func(shape, topoView);
     }
