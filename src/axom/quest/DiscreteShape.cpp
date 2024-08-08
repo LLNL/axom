@@ -103,12 +103,13 @@ std::shared_ptr<mint::Mesh> DiscreteShape::createMeshRepresentation()
 {
   if (m_meshRep) { return m_meshRep; }
 
+  using TetMesh = axom::mint::UnstructuredMesh<axom::mint::Topology::SINGLE_SHAPE>;
+
   const axom::klee::Geometry& geometry = m_shape.getGeometry();
   const auto& geometryFormat = geometry.getFormat();
 
   if (geometryFormat == "memory-blueprint")
   {
-    // TODO: For readability, move most of this into a function.
     // Put the in-memory geometry in m_meshRep.
     axom::sidre::Group* inputGroup = geometry.getBlueprintMesh();
     axom::sidre::Group* rootGroup = inputGroup->getDataStore()->getRoot();
@@ -171,11 +172,10 @@ std::shared_ptr<mint::Mesh> DiscreteShape::createMeshRepresentation()
         }
       });
 
-    // TODO: Set this up with sidre::Group to have data on device.
-    axom::mint::UnstructuredMesh<axom::mint::Topology::SINGLE_SHAPE>* tetMesh = nullptr;
+    TetMesh* tetMesh = nullptr;
     if (m_sidreGroup != nullptr)
     {
-      tetMesh = new axom::mint::UnstructuredMesh<axom::mint::Topology::SINGLE_SHAPE>(
+      tetMesh = new TetMesh(
         3,
         axom::mint::CellType::TET,
         m_sidreGroup,
@@ -184,7 +184,7 @@ std::shared_ptr<mint::Mesh> DiscreteShape::createMeshRepresentation()
     }
     else
     {
-      tetMesh = new axom::mint::UnstructuredMesh<axom::mint::Topology::SINGLE_SHAPE>(
+      tetMesh = new TetMesh(
         3,
         axom::mint::CellType::TET,
         nodeCount,
@@ -194,6 +194,60 @@ std::shared_ptr<mint::Mesh> DiscreteShape::createMeshRepresentation()
     tetMesh->appendCells(connectivity.data(), tetCount);
     m_meshRep.reset(tetMesh);
 
+    applyTransforms();
+  }
+  if (geometryFormat == "vor3D")
+  {
+    // Construct the tet m_meshRep from the volume-of-revolution.
+    auto& vorGeom = m_shape.getGeometry();
+    const auto& discreteFcn = vorGeom.getDiscreteFunction();
+
+    // Generate the Octahedra
+    axom::Array<OctType> octs;
+    int octCount = 0;
+    axom::ArrayView<Point2D> polyline((Point2D*)discreteFcn.data(),
+                                      discreteFcn.shape()[0]);
+    const bool good = axom::quest::discretize<axom::SEQ_EXEC>(
+      polyline,
+      int(polyline.size()),
+      m_shape.getGeometry().getLevelOfRefinement(),
+      octs,
+      octCount);
+    SLIC_ASSERT(good);
+
+    // Dump discretized octs as a tet mesh
+    axom::mint::Mesh* mesh;
+    axom::quest::mesh_from_discretized_polyline(
+      octs.view(),
+      octCount,
+      polyline.size() - 1,
+      mesh);
+
+    if (m_sidreGroup)
+    {
+      auto* tetMesh = static_cast<TetMesh*>(mesh);
+      // Don't directly use tetMesh, because we want the data in Sidre.
+      axom::mint::UnstructuredMesh<axom::mint::SINGLE_SHAPE>*
+        siMesh = new axom::mint::UnstructuredMesh<axom::mint::SINGLE_SHAPE>(
+          tetMesh->getDimension(),
+          tetMesh->getCellType(),
+          m_sidreGroup,
+          tetMesh->getTopologyName(),
+          tetMesh->getCoordsetName(),
+          tetMesh->getNumberOfNodes(),
+          tetMesh->getNumberOfCells());
+      siMesh->appendNodes( tetMesh->getCoordinateArray(0)
+                         , tetMesh->getCoordinateArray(1)
+                         , tetMesh->getCoordinateArray(2)
+                         , tetMesh->getNumberOfNodes() );
+      siMesh->appendCells( tetMesh->getCellNodesArray()
+                         , tetMesh->getNumberOfCells() );
+      m_meshRep.reset(siMesh);
+    } else {
+      m_meshRep.reset(mesh);
+    }
+
+    // Transform the coordinates of the linearized mesh.
     applyTransforms();
   }
 

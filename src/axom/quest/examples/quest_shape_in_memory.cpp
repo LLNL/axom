@@ -86,9 +86,9 @@ public:
   int boxDim {-1};
 
   // The shape to run.
-  std::string shape {"tet"};
+  std::string testShape {"tetmesh"};
   // The shapes this example is set up to run.
-  const std::set<std::string> availableShapes {"tet", "sphere"};
+  const std::set<std::string> availableShapes {"tetmesh", "sphere", "cyl", "cone", "vor"};
 
   ShapingMethod shapingMethod {ShapingMethod::Sampling};
   RuntimePolicy policy {RuntimePolicy::seq};
@@ -198,7 +198,7 @@ public:
 
   void parse(int argc, char** argv, axom::CLI::App& app)
   {
-    app.add_option("-o,--output-file", outputFile)
+    app.add_option("-o,--outputFile", outputFile)
       ->description("Path to output file(s)");
 
     app.add_flag("-v,--verbose,!--no-verbose", m_verboseOutput)
@@ -229,7 +229,7 @@ public:
       ->transform(
         axom::CLI::CheckedTransformer(methodMap, axom::CLI::ignore_case));
 
-    app.add_option("-s,--shape", shape)
+    app.add_option("-s,--testShape", testShape)
       ->description("The shape to run")
       ->check(axom::CLI::IsMember(availableShapes));
 
@@ -578,9 +578,92 @@ axom::klee::Shape createShape_TetMesh(sidre::DataStore& ds)
   }
 
   axom::klee::Geometry tetMeshGeometry( prop, tetMesh.getSidreGroup(), topo, {scaleOp} );
-  axom::klee::Shape tetShape( "tet", "AL", {}, {}, tetMeshGeometry );
+  axom::klee::Shape tetShape( "tetmesh", "TETMESH", {}, {}, tetMeshGeometry );
 
   return tetShape;
+}
+
+axom::klee::Geometry createGeometry_Vor(
+  axom::primal::Point<double, 3>& vorBase,
+  axom::primal::Vector<double, 3>& vorDirection,
+  axom::Array<double, 2>& discreteFunction )
+{
+  axom::klee::TransformableGeometryProperties prop{
+    axom::klee::Dimensions::Three,
+    axom::klee::LengthUnit::unspecified};
+
+  SLIC_ASSERT( params.scaleFactors.empty() || params.scaleFactors.size() == 3 );
+  std::shared_ptr<axom::klee::Scale> scaleOp;
+  if (!params.scaleFactors.empty())
+  {
+    scaleOp =
+      std::make_shared<axom::klee::Scale>(params.scaleFactors[0],
+                                          params.scaleFactors[1],
+                                          params.scaleFactors[2],
+                                          prop);
+  }
+
+  const axom::IndexType levelOfRefinement = params.refinementLevel;
+  axom::klee::Geometry vorGeometry(prop, discreteFunction,
+                                   vorBase, vorDirection,
+                                   levelOfRefinement, scaleOp);
+  return vorGeometry;
+}
+
+axom::klee::Shape createShape_Vor()
+{
+  axom::primal::Point<double, 3> vorBase{0.0, 0.0, 0.0};
+  axom::primal::Vector<double, 3> vorDirection{1.0, 0.0, 0.0};
+  axom::Array<double, 2> discreteFunction({3, 2}, axom::ArrayStrideOrder::ROW);
+  discreteFunction[0][0] = 0.0;
+  discreteFunction[0][1] = 1.0;
+  discreteFunction[1][0] = 0.5;
+  discreteFunction[1][1] = 0.8;
+  discreteFunction[2][0] = 1.0;
+  discreteFunction[2][1] = 1.0;
+
+  axom::klee::Geometry vorGeometry = createGeometry_Vor(
+    vorBase, vorDirection, discreteFunction);
+
+  axom::klee::Shape vorShape( "vor", "VOR", {}, {}, vorGeometry );
+
+  return vorShape;
+}
+
+axom::klee::Shape createShape_Cylinder()
+{
+  axom::primal::Point<double, 3> vorBase{0.0, 0.0, 0.0};
+  axom::primal::Vector<double, 3> vorDirection{1.0, 0.0, 0.0};
+  axom::Array<double, 2> discreteFunction({2, 2}, axom::ArrayStrideOrder::ROW);
+  discreteFunction[0][0] = 0.0;
+  discreteFunction[0][1] = 1.0;
+  discreteFunction[1][0] = 1.0;
+  discreteFunction[1][1] = 1.0;
+
+  axom::klee::Geometry vorGeometry = createGeometry_Vor(
+    vorBase, vorDirection, discreteFunction);
+
+  axom::klee::Shape vorShape( "cyl", "CYL", {}, {}, vorGeometry );
+
+  return vorShape;
+}
+
+axom::klee::Shape createShape_Cone()
+{
+  axom::primal::Point<double, 3> vorBase{0.0, 0.0, 0.0};
+  axom::primal::Vector<double, 3> vorDirection{1.0, 0.0, 0.0};
+  axom::Array<double, 2> discreteFunction({2, 2}, axom::ArrayStrideOrder::ROW);
+  discreteFunction[0][0] = 0.0;
+  discreteFunction[0][1] = 0.5;
+  discreteFunction[1][0] = 1.0;
+  discreteFunction[1][1] = 1.1;
+
+  axom::klee::Geometry vorGeometry = createGeometry_Vor(
+    vorBase, vorDirection, discreteFunction);
+
+  axom::klee::Shape vorShape( "cone", "CONE", {}, {}, vorGeometry );
+
+  return vorShape;
 }
 
 //!@brief Create a ShapeSet with a single shape.
@@ -797,13 +880,25 @@ int main(int argc, char** argv)
     shapeSet = create2DShapeSet(ds);
     break;
   case 3:
-    if (params.shape == "tet")
+    if (params.testShape == "tetmesh")
     {
       shapeSet = createShapeSet( createShape_TetMesh(ds) );
     }
-    else if (params.shape == "sphere")
+    else if (params.testShape == "sphere")
     {
       shapeSet = createShapeSet( createShape_Sphere() );
+    }
+    else if (params.testShape == "cyl")
+    {
+      shapeSet = createShapeSet( createShape_Cylinder() );
+    }
+    else if (params.testShape == "cone")
+    {
+      shapeSet = createShapeSet( createShape_Cone() );
+    }
+    else if (params.testShape == "vor")
+    {
+      shapeSet = createShapeSet( createShape_Vor() );
     }
     break;
   }
@@ -1127,7 +1222,7 @@ int main(int argc, char** argv)
                                   shapeMesh->getNumberOfCells())));
     if (!params.outputFile.empty())
     {
-      std::string shapeFileName = params.outputFile + "." + shape.getName();
+      std::string shapeFileName = params.outputFile + ".shape";
       conduit::Node tmpNode, info;
       shapeMesh->getSidreGroup()->createNativeLayout(tmpNode);
       conduit::relay::io::blueprint::save_mesh(tmpNode, shapeFileName, "hdf5");
@@ -1168,8 +1263,9 @@ int main(int argc, char** argv)
 #ifdef MFEM_USE_MPI
   if (!params.outputFile.empty())
   {
-    shaper->getDC()->Save(params.outputFile, sidre::Group::getDefaultIOProtocol());
-    SLIC_INFO(axom::fmt::format("{:=^80}", "Wrote output mesh " + params.outputFile));
+    std::string fileName = params.outputFile + ".volfracs";
+    shaper->getDC()->Save(fileName, sidre::Group::getDefaultIOProtocol());
+    SLIC_INFO(axom::fmt::format("{:=^80}", "Wrote output mesh " + fileName));
   }
 #endif
 

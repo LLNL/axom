@@ -317,6 +317,7 @@ public:
   using Point3D = primal::Point<double, 3>;
   using TetrahedronType = primal::Tetrahedron<double, 3>;
   using SegmentMesh = mint::UnstructuredMesh<mint::SINGLE_SHAPE>;
+  using TetMesh = mint::UnstructuredMesh<mint::SINGLE_SHAPE>;
 
   using RuntimePolicy = axom::runtime_policy::Policy;
 
@@ -610,21 +611,15 @@ public:
 
     std::string shapeFormat = shape.getGeometry().getFormat();
 
+    // C2C mesh is not discretized into tets, but all others are.
     if(shapeFormat == "c2c")
     {
       prepareC2CCells<ExecSpace>();
     }
-
-    else if(shapeFormat == "proe")
+    else if(surfaceMeshIsTet())
     {
       prepareTetCells<ExecSpace>();
     }
-
-    else if(shapeFormat == "memory-blueprint" || shapeFormat == "sphere3D")
-    {
-      prepareTetCells<ExecSpace>();
-    }
-
     else
     {
       SLIC_ERROR(
@@ -1492,8 +1487,8 @@ public:
     AXOM_ANNOTATE_SCOPE("runShapeQuery");
     const std::string shapeFormat = shape.getGeometry().getFormat();
 
-    // Testing separate workflow for Pro/E
-    if(shapeFormat == "proe" || shapeFormat == "memory-blueprint" || shapeFormat == "sphere3D")
+    // C2C mesh is not discretized into tets, but all others are.
+    if(surfaceMeshIsTet())
     {
       switch(m_execPolicy)
       {
@@ -2027,6 +2022,14 @@ private:
     volFrac->MakeOwner(coll);
 
     return volFrac;
+  }
+
+  bool surfaceMeshIsTet() const {
+    bool isTet = m_surfaceMesh != nullptr &&
+      m_surfaceMesh->getDimension() == 3 &&
+      !m_surfaceMesh->hasMixedCellTypes() &&
+      m_surfaceMesh->getCellType() == mint::TET;
+    return isTet;
   }
 
 private:

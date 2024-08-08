@@ -56,8 +56,12 @@ inline bool operator!=(const TransformableGeometryProperties &lhs,
 class Geometry
 {
 public:
+  using Point3D = axom::primal::Point<double, 3>;
+  using Vector3D = axom::primal::Vector<double, 3>;
+  using Sphere3D = axom::primal::Sphere<double, 3>;
+
   /**
-   * Create a new Geometry object based on a file representation.
+   * Create a Geometry object based on a file representation.
    *
    * \param startProperties the transformable properties before any
    * operators are applied
@@ -71,7 +75,7 @@ public:
            std::shared_ptr<GeometryOperator const> operator_);
 
   /**
-   * Create a new Geometry object based on a blueprint tetrahedral mesh.
+   * Create a Geometry object based on a blueprint tetrahedral mesh.
    *
    * \param startProperties the transformable properties before any
    * operators are applied
@@ -88,7 +92,7 @@ public:
            std::shared_ptr<GeometryOperator const> operator_);
 
   /**
-   * Create a new sphere Geometry object.
+   * Create a sphere Geometry object.
    *
    * \param startProperties the transformable properties before any
    * operators are applied
@@ -105,15 +109,41 @@ public:
            std::shared_ptr<GeometryOperator const> operator_);
 
   /**
+   * Create a volume-of-revolution (VOR) Geometry object.
+   *
+   * \param startProperties the transformable properties before any
+   * operators are applied
+   * \param discreteFunction Discrete function describing the surface
+   *        of revolution.
+   * \param vorBase Coordinates of the base of the VOR.
+   * \param vorDirection VOR axis, in the direction of increasing z.
+   * \param levelOfRefinement Number of refinement levels to use for
+   *        discretizing the sphere.
+   * \param operator_ a possibly null operator to apply to the geometry.
+   *
+   * The \c discreteFunction should be an Nx2 array, interpreted as
+   * (z,r) pairs, where z is the axial distance and r is the radius.
+   * The \c vorBase coordinates corresponds to z=0.
+   * \c vorAxis should point in the direction of increasing z.
+   *
+   * \internal TODO: Is this the simplex requirement overly restrictive?
+   */
+  Geometry(const TransformableGeometryProperties &startProperties,
+           const axom::Array<double, 2>& discreteFunction,
+           const Point3D& vorBase,
+           const Vector3D& vorDirection,
+           axom::IndexType levelOfRefinement,
+           std::shared_ptr<GeometryOperator const> operator_);
+
+  /**
    * Get the format in which the geometry is specified.
    *
    * Values are:
    * - "c2c" = C2C file
    * - "proe" = ProE file
    * - "memory-blueprint" = Blueprint tetrahedral mesh in memory
-   * - "memory-xy" = discretized 2D, non-negative function as an
-   *   array of points in memory
    * - "sphere3D" = 3D sphere, as \c primal::Sphere<double,3>
+   * - "vor3D" = 3D volume of revolution.
    * - "cone3D" = 3D cone, as \c primal::Cone<double,3>
    *   "cylinder3D" = 3D cylinder, as \c primal::Cylinder<double,3>
    *
@@ -202,6 +232,14 @@ public:
     return m_sphere;
   }
 
+  /**
+   @brief Get the discrete function.
+  */
+  axom::ArrayView<const double, 2> getDiscreteFunction() const
+  {
+    return m_discreteFunction.view();
+  }
+
 private:
   TransformableGeometryProperties m_startProperties;
 
@@ -217,23 +255,19 @@ private:
   //!@brief Topology of the blueprint simplex mesh, if it's in memory.
   std::string m_topology;
 
-  //!@brief The analytical sphere, if used.
-  axom::primal::Sphere<double, 3> m_sphere;
-
-#if 0
-  //!@brief The analytical cylinder, if used.
-  axom::primal::Sphere<double, 3> m_cylinder;
-
-  //!@brief The analytical cone, if used.
-  axom::primal::Sphere<double, 3> m_cone;
-
-  //!@brief The discrete 2D curve, if used.
-  axom::Array<primal::Point<double, 2> m_discreteFunction;
-#endif
-
   //!@brief Level of refinement for discretizing analytical shapes
   // and surfaces of revolutions.
   axom::IndexType m_levelOfRefinement = 0;
+
+  //!@brief The analytical sphere, if used.
+  Sphere3D m_sphere;
+
+  /*!
+    @brief The discrete 2D function, as an Nx2 array, if used.
+  */
+  axom::Array<double, 2> m_discreteFunction;
+  Point3D m_vorBase;
+  Vector3D m_vorDirection;
 
   std::shared_ptr<const GeometryOperator> m_operator;
 };

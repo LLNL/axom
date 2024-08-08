@@ -45,7 +45,7 @@ Geometry::Geometry(const TransformableGeometryProperties &startProperties,
 }
 
 Geometry::Geometry(const TransformableGeometryProperties &startProperties,
-                   const axom::primal::Sphere<double, 3>& sphere,
+                   const Sphere3D& sphere,
                    axom::IndexType levelOfRefinement,
                    std::shared_ptr<GeometryOperator const> operator_)
   : m_startProperties(startProperties)
@@ -53,8 +53,28 @@ Geometry::Geometry(const TransformableGeometryProperties &startProperties,
   , m_path()
   , m_meshGroup(nullptr)
   , m_topology()
-  , m_sphere(sphere)
   , m_levelOfRefinement(levelOfRefinement)
+  , m_sphere(sphere)
+  , m_operator(std::move(operator_))
+{
+}
+
+Geometry::Geometry(const TransformableGeometryProperties &startProperties,
+                   const axom::Array<double, 2>& discreteFunction,
+                   const Point3D& vorBase,
+                   const Vector3D& vorDirection,
+                   axom::IndexType levelOfRefinement,
+                   std::shared_ptr<GeometryOperator const> operator_)
+  : m_startProperties(startProperties)
+  , m_format("vor3D")
+  , m_path()
+  , m_meshGroup(nullptr)
+  , m_topology()
+  , m_levelOfRefinement(levelOfRefinement)
+  , m_sphere()
+  , m_discreteFunction(discreteFunction)
+  , m_vorBase(vorBase)
+  , m_vorDirection(vorDirection)
   , m_operator(std::move(operator_))
 {
 }
