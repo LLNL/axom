@@ -18,7 +18,6 @@
 
 #include <cstdint>
 
-
 // NOTE: Longer term, we should hide more RAJA functionality behind axom wrappers
 //       so we can write serial versions for when RAJA is not enabled.
 namespace axom

@@ -445,7 +445,8 @@ public:
     if(!opts.fields(fieldsToProcess))
     {
       // Fields were not present in the options. Select all fields that have the same topology as opts.clipField().
-      const std::string clipTopology = n_fields.fetch_existing(opts.clipField() + "/topology").as_string();
+      const std::string clipTopology =
+        n_fields.fetch_existing(opts.clipField() + "/topology").as_string();
       for(conduit::index_t i = 0; i < n_fields.number_of_children(); i++)
       {
         if(n_fields[i].fetch_existing("topology").as_string() == clipTopology)
