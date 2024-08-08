@@ -18,6 +18,35 @@
 
 #include <cstdint>
 
+
+// NOTE: Longer term, we should hide more RAJA functionality behind axom wrappers
+//       so we can write serial versions for when RAJA is not enabled.
+namespace axom
+{
+template <typename ExecSpace, typename ContiguousMemoryContainer>
+struct scans
+{
+  inline void exclusive_scan(const ContiguousMemoryContainer &input,
+                             ContiguousMemoryContainer &output)
+  {
+    using loop_policy = typename axom::execution_space<ExecSpace>::loop_policy;
+    assert(input.size() == output.size());
+    RAJA::exclusive_scan<loop_policy>(
+      RAJA::make_span(input.data(), input.size()),
+      RAJA::make_span(output.data(), output.size()));
+  }
+};
+
+template <typename ExecSpace, typename ContiguousMemoryContainer>
+inline void exclusive_scan(const ContiguousMemoryContainer &input,
+                           ContiguousMemoryContainer &output)
+{
+  scans<ExecSpace, ContiguousMemoryContainer> s;
+  s.exclusive_scan(input, output);
+}
+
+}  // end namespace axom
+
 /// This header is for device utility functions for MIR.
 
 // Q: does this belong in core with a better name?
@@ -232,6 +261,47 @@ AXOM_HOST_DEVICE std::uint64_t make_name_n(const ValueType *values,
   return hash_bytes(reinterpret_cast<std::uint8_t *>(sorted),
                     n * sizeof(ValueType));
 }
+
+//------------------------------------------------------------------------------
+/**
+ * \brief This class implements a naming policy that uses some hashing functions
+ *        to produce a "name" for an array of ids.
+ */
+class HashNaming
+{
+public:
+  using KeyType = std::uint64_t;
+
+  /**
+   * \brief Make a name from an array of ids.
+   *
+   * \param ids The array of ids.
+   * \param numIds The number of ids in the array.
+   *
+   * \return The name that describes the array of ids.
+   *
+   * \note Different make_name_* functions are used because we can skip most
+   *       sorting for 1,2 element arrays.
+   */
+  AXOM_HOST_DEVICE
+  inline static KeyType makeName(const IndexType *ids, IndexType numIds)
+  {
+    KeyType name {};
+    if(numIds == 1)
+    {
+      name = axom::mir::utilities::make_name_1(ids[0]);
+    }
+    else if(numIds == 2)
+    {
+      name = axom::mir::utilities::make_name_2(ids[0], ids[1]);
+    }
+    else
+    {
+      name = axom::mir::utilities::make_name_n(ids, numIds);
+    }
+    return name;
+  }
+};
 
 //------------------------------------------------------------------------------
 /**
