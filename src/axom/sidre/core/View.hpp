@@ -368,6 +368,18 @@ public:
                  int allocID = INVALID_ALLOCATOR_ID);
 
   /*!
+   * \brief Allocate data for view given type and shape.
+   *
+   * \note The allocate() method (above) describes conditions where View
+   *       allocation is allowed.  If the conditions are not met,
+   *       type is NO_TYPE_ID, or ndims < 0, or any element of shape < 0,
+   *       this method does nothing.
+   *
+   * \return pointer to this View object.
+   */
+  View* allocate(TypeID type, int ndims, const IndexType* shape, int allocID);
+
+  /*!
    * \brief Allocate data for view described by a Conduit data type object.
    *
    * \note The allocate() method describes conditions where view

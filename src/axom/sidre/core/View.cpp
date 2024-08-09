@@ -117,6 +117,47 @@ View* View::allocate(TypeID type, IndexType num_elems, int allocID)
 /*
  *************************************************************************
  *
+ * Allocate data for view with type and shape.
+ *
+ *************************************************************************
+ */
+View* View::allocate(TypeID type, int ndims, const IndexType* shape, int allocID)
+{
+  allocID = getValidAllocatorID(allocID);
+
+  SLIC_CHECK_MSG(
+    ndims > 0,
+    SIDRE_VIEW_LOG_PREPEND << "Could not allocate: ndim is non-positive.");
+
+  SLIC_CHECK_MSG(type != NO_TYPE_ID,
+                 SIDRE_VIEW_LOG_PREPEND
+                   << "Could not allocate: Data type was 'NO_TYPE_ID'.");
+
+  IndexType num_elems = 1;
+  for(int d = 0; d < ndims; ++d)
+  {
+    SLIC_CHECK_MSG(
+      shape[d] > 0,
+      SIDRE_VIEW_LOG_PREPEND << "Could not allocate: shape is non-positive.");
+    num_elems *= shape[d];
+    if(num_elems <= 0)
+    {
+      break;
+    }
+  }
+
+  if(ndims > 0 && num_elems > 0 && type != NO_TYPE_ID)
+  {
+    describe(type, ndims, shape);
+    allocate(allocID);
+  }
+
+  return this;
+}
+
+/*
+ *************************************************************************
+ *
  * Allocate data for view described by a Conduit data type object.
  *
  *************************************************************************
@@ -1055,9 +1096,12 @@ void View::deepCopyView(View* copy, int allocID) const
   {
     if(hasBuffer() || m_state == EXTERNAL)
     {
-      copy->allocate(getTypeID(), getNumElements(), allocID);
+      copy->allocate(getTypeID(), getNumDimensions(), m_shape.data(), allocID);
     }
-    copy->describe(getTypeID(), getNumDimensions(), m_shape.data());
+    else
+    {
+      copy->describe(getTypeID(), getNumDimensions(), m_shape.data());
+    }
   }
 
   switch(m_state)
