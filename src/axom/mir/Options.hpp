@@ -8,17 +8,19 @@
 #include "axom/core.hpp"
 
 #include <conduit/conduit.hpp>
+#include <string>
 
 namespace axom
 {
 namespace mir
 {
 
+// IDEA: maybe use inlet for this stuff.
+
 /**
  * \brief This class provides a kind of schema over options, as well
  *        as default values, and some utilities functions.
  */
-template <typename ExecSpace>
 class Options
 {
 public:
@@ -28,36 +30,14 @@ public:
    * \param nzones The total number of zones in the associated topology.
    * \param options The node that contains the clipping options.
    */
-  Options(axom::IndexType nzones, const conduit::Node &options)
-    : m_nzones(nzones)
-    , m_options(options)
-    , m_selectedZones()
+  Options(const conduit::Node &options)
+    :m_options(options)
   { }
 
   /**
-   * \brief Return a view that contains the list of selected zone ids for the mesh.
-   * \return A view that contains the list of selected zone ids for the mesh.
-   *
-   * \note The data for the view is generated if it has not yet been built.
-   */
-  axom::ArrayView<axom::IndexType> selectedZonesView()
-  {
-    if(m_selectedZones.size() == 0)
-    {
-      buildSelectedZones();
-    }
-    return m_selectedZones.view();
-  }
-
-  /**
-   * \brief Invalidate the selected zones array (due to options changing) so we can rebuild it.
-   */
-  void invalidateSelectedZones() { m_selectedZones.clear(); }
-
-  /**
-   * \brief Return the name of the new topology to be created.
+   * \brief Return the name of the topology to make in the output.
    * \param default_value The name to use if the option is not defined.
-   * \return The name of the new topology to be created.
+   * \return The name of the topology to make in the output.
    */
   std::string topologyName(const std::string &default_value = std::string()) const
   {
@@ -68,9 +48,9 @@ public:
   }
 
   /**
-   * \brief Return the name of the new coordset to be created.
+   * \brief Return the name of the coordset to make in the output.
    * \param default_value The name to use if the option is not defined.
-   * \return The name of the new coordset to be created.
+   * \return The name of the coordset to make in the output.
    */
   std::string coordsetName(const std::string &default_value = std::string()) const
   {
@@ -106,77 +86,7 @@ public:
   }
 
 protected:
-  /**
-   * \brief The options may contain a "selectedZones" member that is a list of zones
-   *        that will be operated on. If such an array is present, copy and sort it.
-   *        If the zone list is not present, make an array that selects every zone.
-   *
-   * \note selectedZones should contain local zone numbers, which in the case of
-   *       strided-structured indexing are the [0..n) zone numbers that exist only
-   *       within the selected window.
-   */
-  void buildSelectedZones()
-  {
-    const auto allocatorID = axom::execution_space<ExecSpace>::allocatorID();
-
-    if(m_options.has_child("selectedZones"))
-    {
-      // Store the zone list in m_selectedZones.
-      int badValueCount = 0;
-      views::IndexNode_to_ArrayView(m_options["selectedZones"], [&](auto zonesView) {
-        using loop_policy =
-          typename axom::execution_space<ExecSpace>::loop_policy;
-        using reduce_policy =
-          typename axom::execution_space<ExecSpace>::reduce_policy;
-
-        // It probably does not make sense to request more zones than we have in the mesh.
-        SLIC_ASSERT(zonesView.size() <= m_nzones);
-
-        m_selectedZones = axom::Array<axom::IndexType>(zonesView.size(),
-                                                       zonesView.size(),
-                                                       allocatorID);
-        auto szView = m_selectedZones.view();
-        axom::for_all<ExecSpace>(
-          szView.size(),
-          AXOM_LAMBDA(auto index) { szView[index] = zonesView[index]; });
-
-        // Check that the selected zone values are in range.
-        const auto nzones = m_nzones;
-        RAJA::ReduceSum<reduce_policy, int> errReduce(0);
-        axom::for_all<ExecSpace>(
-          szView.size(),
-          AXOM_LAMBDA(auto index) {
-            const int err =
-              (szView[index] < 0 || szView[index] >= nzones) ? 1 : 0;
-            errReduce += err;
-          });
-        badValueCount = errReduce.get();
-
-        // Make sure the selectedZones are sorted.
-        RAJA::sort<loop_policy>(RAJA::make_span(szView.data(), szView.size()));
-      });
-
-      if(badValueCount > 0)
-      {
-        SLIC_ERROR("Out of range selectedZones values.");
-      }
-    }
-    else
-    {
-      // Select all zones.
-      m_selectedZones =
-        axom::Array<axom::IndexType>(m_nzones, m_nzones, allocatorID);
-      auto szView = m_selectedZones.view();
-      axom::for_all<ExecSpace>(
-        m_nzones,
-        AXOM_LAMBDA(auto zoneIndex) { szView[zoneIndex] = zoneIndex; });
-    }
-  }
-
-protected:
-  axom::IndexType m_nzones;  // The number of zones in the associated topology.
-  const conduit::Node &m_options;  // A reference to the clipping options node.
-  axom::Array<axom::IndexType> m_selectedZones;  // Storage for a list of selected zone ids.
+  const conduit::Node &m_options;  // A reference to the options node.
 };
 }  // end namespace mir
 }  // end namespace axom

@@ -18,17 +18,15 @@ namespace clipping
  * \brief This class provides a kind of schema over the clipping options, as well
  *        as default values, and some utilities functions.
  */
-template <typename ExecSpace>
-class ClipOptions : public axom::mir::Options<ExecSpace>
+class ClipOptions : public axom::mir::Options
 {
 public:
   /**
    * \brief Constructor
    *
-   * \param nzones The total number of zones in the associated topology.
    * \param options The node that contains the clipping options.
    */
-  ClipOptions(axom::IndexType nzones, const conduit::Node &options) : axom::mir::Options<ExecSpace>(nzones, options)
+  ClipOptions(const conduit::Node &options) : axom::mir::Options(options)
   { }
 
   /**

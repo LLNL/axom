@@ -59,13 +59,14 @@ matsets:
     indices: [1, 4, 6, 3, 2]
 
  */
-template <typename IndexT, typename FloatType, size_t MAXMATERIALS>
+template <typename IndexT, typename FloatT, size_t MAXMATERIALS>
 class UnibufferMaterialView
 {
 public:
   using MaterialIndex = IndexT;
   using ZoneIndex = IndexT;
   using IndexType = IndexT;
+  using FloatType = FloatT;
   using IDList = StaticArray<MaterialIndex, MAXMATERIALS>;
   using VFList = StaticArray<FloatType, MAXMATERIALS>;
 
@@ -175,12 +176,14 @@ matsets:
 
 // NOTE: I'm not sure I 100% get this one.
 
-template <typename IndexT, typename FloatType, size_t MAXMATERIALS>
+template <typename IndexT, typename FloatT, size_t MAXMATERIALS>
 class MultiBufferMaterialView
 {
 public:
   using MaterialIndex = IndexT;
   using ZoneIndex = IndexT;
+  using IndexType = IndexT;
+  using FloatType = FloatT;
   using IDList = StaticArray<IndexType, MAXMATERIALS>;
   using VFList = StaticArray<FloatType, MAXMATERIALS>;
 
@@ -281,12 +284,14 @@ matsets:
       b: 1
       c: 2
  */
-template <typename IndexT, typename FloatType, size_t MAXMATERIALS>
+template <typename IndexT, typename FloatT, size_t MAXMATERIALS>
 class ElementDominantMaterialView
 {
 public:
   using MaterialIndex = IndexT;
   using ZoneIndex = IndexT;
+  using IndexType = IndexT;
+  using FloatType = FloatT;
   using IDList = StaticArray<IndexType, MAXMATERIALS>;
   using VFList = StaticArray<FloatType, MAXMATERIALS>;
 
@@ -385,12 +390,14 @@ matsets:
  */
 /// NOTES: This matset type does not seem so GPU friendly since there is some work to do for some of the queries.
 
-template <typename IndexT, typename FloatType, size_t MAXMATERIALS>
+template <typename IndexT, typename FloatT, size_t MAXMATERIALS>
 class MaterialDominantMaterialView
 {
 public:
   using MaterialIndex = IndexT;
   using ZoneIndex = IndexT;
+  using IndexType = IndexT;
+  using FloatType = FloatT;
   using IDList = StaticArray<IndexType, MAXMATERIALS>;
   using VFList = StaticArray<FloatType, MAXMATERIALS>;
 

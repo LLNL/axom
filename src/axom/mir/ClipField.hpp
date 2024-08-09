@@ -18,6 +18,7 @@
 #include "axom/mir/ClipOptions.hpp"
 #include "axom/mir/BlendGroupBuilder.hpp"
 #include "axom/mir/utilities.hpp"
+#include "axom/mir/SelectedZones.hpp"
 
 #include <conduit/conduit.hpp>
 #include <conduit/conduit_blueprint_mesh_utils.hpp>
@@ -236,9 +237,10 @@ public:
                const conduit::Node &n_options,
                conduit::Node &n_output)
   {
-    ClipOptions<ExecSpace> opts(0, n_options);
+    ClipOptions opts(n_options);
     const std::string clipFieldName = opts.clipField();
 
+    // Get clipField's topo/coordset.
     const conduit::Node &n_fields = n_input.fetch_existing("fields");
     const conduit::Node &n_clipField = n_fields.fetch_existing(clipFieldName);
     const std::string &topoName = n_clipField["topology"].as_string();
@@ -282,8 +284,9 @@ public:
     const auto allocatorID = axom::execution_space<ExecSpace>::allocatorID();
 
     // Make the selected zones and get the size.
-    ClipOptions<ExecSpace> opts(m_topologyView.numberOfZones(), n_options);
-    const auto nzones = opts.selectedZonesView().size();
+    ClipOptions opts(n_options);
+    axom::mir::SelectedZones<ExecSpace> selectedZones(m_topologyView.numberOfZones(), n_options);
+    const auto nzones = selectedZones.view().size();
 
     // Get the clip field. Make sure it is double. That lets us make less code down the line.
     std::string clipFieldName = opts.clipField();
@@ -371,8 +374,8 @@ public:
     builder.setBlendGroupSizes(blendGroups.view(), blendGroupsLen.view());
 
     // Compute sizes and offsets
-    computeSizes(clipTableViews, builder, zoneData, fragmentData, opts, clipFieldView);
-    computeFragmentSizes(fragmentData, opts);
+    computeSizes(clipTableViews, builder, zoneData, fragmentData, opts, selectedZones, clipFieldView);
+    computeFragmentSizes(fragmentData, selectedZones);
     computeFragmentOffsets(fragmentData);
 
     IndexType blendGroupsSize = 0, blendGroupLenSize = 0;
@@ -401,7 +404,7 @@ public:
                           blendGroupStart.view(),
                           blendIds.view(),
                           blendCoeff.view());
-    makeBlendGroups(clipTableViews, builder, zoneData, opts, clipFieldView);
+    makeBlendGroups(clipTableViews, builder, zoneData, opts, selectedZones, clipFieldView);
 
     // Make the blend groups unique
     axom::Array<KeyType> uNames;
@@ -418,6 +421,7 @@ public:
                      zoneData,
                      fragmentData,
                      opts,
+                     selectedZones,
                      n_newTopo,
                      n_newCoordset,
                      n_newFields);
@@ -430,7 +434,7 @@ public:
     auto sliceIndicesView = sliceIndices.view();
 
     // Fill in sliceIndicesView.
-    const auto selectedZonesView = opts.selectedZonesView();
+    const auto selectedZonesView = selectedZones.view();
     axom::for_all<ExecSpace>(
       nzones,
       AXOM_LAMBDA(auto index) {
@@ -463,7 +467,7 @@ public:
                fieldsToProcess,
                n_fields,
                n_newFields);
-    makeOriginalElements(fragmentData, opts, n_fields, n_newTopo, n_newFields);
+    makeOriginalElements(fragmentData, opts, selectedZones, n_fields, n_newTopo, n_newFields);
   }
 
 private:
@@ -492,7 +496,7 @@ private:
   /**
    * \brief Make a bitset that indicates the parts of the selection that are selected.
    */
-  int getSelection(const ClipOptions<ExecSpace> &opts) const
+  int getSelection(const ClipOptions &opts) const
   {
     int selection = 0;
     if(opts.inside()) axom::utilities::setBitOn(selection, 0);
@@ -546,7 +550,8 @@ private:
                     BlendGroupBuilderType builder,
                     ZoneData zoneData,
                     FragmentData fragmentData,
-                    ClipOptions<ExecSpace> &opts,
+                    const ClipOptions &opts,
+                    const SelectedZones<ExecSpace> &selectedZones,
                     const axom::ArrayView<ClipFieldType> &clipFieldView) const
   {
     const auto clipValue = static_cast<ClipFieldType>(opts.clipValue());
@@ -556,7 +561,7 @@ private:
     auto blendGroupsLenView = builder.state().m_blendGroupsLenView;
 
     m_topologyView.template for_selected_zones<ExecSpace>(
-      opts.selectedZonesView(),
+      selectedZones.view(),
       AXOM_LAMBDA(auto szIndex, auto /*zoneIndex*/, const auto &zone) {
         // Get the clip case for the current zone.
         const auto clipcase = details::clip_case(zone, clipFieldView, clipValue);
@@ -666,9 +671,9 @@ private:
    * \param[inout] fragmentData The object that contains data about the zone fragments.
    */
   void computeFragmentSizes(FragmentData &fragmentData,
-                            ClipOptions<ExecSpace> &opts) const
+                            const SelectedZones<ExecSpace> &selectedZones) const
   {
-    const auto nzones = opts.selectedZonesView().size();
+    const auto nzones = selectedZones.view().size();
 
     // Sum the number of fragments.
     RAJA::ReduceSum<reduce_policy, IndexType> fragment_sum(0);
@@ -716,14 +721,15 @@ private:
   void makeBlendGroups(ClipTableViews clipTableViews,
                        BlendGroupBuilderType builder,
                        ZoneData zoneData,
-                       ClipOptions<ExecSpace> &opts,
+                       const ClipOptions &opts,
+                       const SelectedZones<ExecSpace> &selectedZones,
                        const axom::ArrayView<ClipFieldType> &clipFieldView) const
   {
     const auto clipValue = static_cast<ClipFieldType>(opts.clipValue());
     const auto selection = getSelection(opts);
 
     m_topologyView.template for_selected_zones<ExecSpace>(
-      opts.selectedZonesView(),
+      selectedZones.view(),
       AXOM_LAMBDA(auto szIndex, auto /*zoneIndex*/, const auto &zone) {
         // Get the clip case for the current zone.
         const auto clipcase = zoneData.m_clipCasesView[szIndex];
@@ -827,7 +833,8 @@ private:
    * \param[in] builder This object holds views to blend group data and helps with building/access.
    * \param[in] zoneData This object holds views to per-zone data.
    * \param[in] fragmentData This object holds views to per-fragment data.
-   * \param[inout] opts Clipping options.
+   * \param[in] opts Clipping options.
+   * \param[in] selectedZones The selected zones.
    * \param[out] n_newTopo The node that will contain the new topology.
    * \param[out] n_newCoordset The node that will contain the new coordset.
    * \param[out] n_newFields The node that will contain the new fields.
@@ -838,7 +845,8 @@ private:
                         BlendGroupBuilderType builder,
                         ZoneData zoneData,
                         FragmentData fragmentData,
-                        ClipOptions<ExecSpace> &opts,
+                        const ClipOptions &opts,
+                        const SelectedZones<ExecSpace> &selectedZones,
                         conduit::Node &n_newTopo,
                         conduit::Node &n_newCoordset,
                         conduit::Node &n_newFields) const
@@ -892,7 +900,7 @@ private:
     // We get the node ids from the unique blend names, de-duplicating points when making the new connectivity.
     RAJA::ReduceBitOr<reduce_policy, BitSet> shapesUsed_reduce(0);
     m_topologyView.template for_selected_zones<ExecSpace>(
-      opts.selectedZonesView(),
+      selectedZones.view(),
       AXOM_LAMBDA(auto szIndex, auto /*zoneIndex*/, const auto &zone) {
         // If there are no fragments, return from lambda.
         if(fragmentData.m_fragmentsView[szIndex] == 0) return;
@@ -1134,14 +1142,16 @@ private:
    *
    * \param[in] fragmentData This object holds views to per-fragment data.
    * \param[in] opts Clipping options.
-   * \param[in[ n_fields The node that contains the input mesh's fields.
+   * \param[in] selectedZones The selected zones.
+   * \param[in] n_fields The node that contains the input mesh's fields.
    * \param[out] n_newTopo The node that will contain the new topology.
    * \param[out] n_newFields The node that will contain the new fields.
    *
    * \note Objects that we need to capture into kernels are passed by value (they only contain views anyway). Data can be modified through the views.
    */
   void makeOriginalElements(FragmentData fragmentData,
-                            ClipOptions<ExecSpace> &opts,
+                            const ClipOptions &opts,
+                            const SelectedZones<ExecSpace> &selectedZones,
                             const conduit::Node &n_fields,
                             conduit::Node &n_newTopo,
                             conduit::Node &n_newFields) const
@@ -1152,7 +1162,7 @@ private:
     utilities::blueprint::ConduitAllocateThroughAxom<ExecSpace> c2a;
     const int conduitAllocatorID = c2a.getConduitAllocatorID();
 
-    const auto selectedZonesView = opts.selectedZonesView();
+    const auto selectedZonesView = selectedZones.view();
     const auto nzones = selectedZonesView.size();
 
     if(n_fields.has_child("originalElements"))

@@ -62,7 +62,7 @@ TEST(mir_clipfield, options)
   int nzones = 6;
 
   conduit::Node options;
-  axom::mir::clipping::ClipOptions<seq_exec> opts(nzones, options);
+  axom::mir::clipping::ClipOptions opts(options);
 
   options["clipField"] = "distance";
   EXPECT_EQ(opts.clipField(), options["clipField"].as_string());
@@ -141,7 +141,8 @@ TEST(mir_clipfield, options)
   }
 
   // There are no "selectedZones" in the options. We should get nzones values from 0 onward.
-  auto selectedZonesView = opts.selectedZonesView();
+  axom::mir::SelectedZones<seq_exec> selectedZones(nzones, options);
+  auto selectedZonesView = selectedZones.view();
   EXPECT_EQ(selectedZonesView.size(), 6);
   EXPECT_EQ(selectedZonesView[0], 0);
   EXPECT_EQ(selectedZonesView[1], 1);
@@ -151,9 +152,9 @@ TEST(mir_clipfield, options)
   EXPECT_EQ(selectedZonesView[5], 5);
 
   // Put some "selectedZones" in the options.
-  opts.invalidateSelectedZones();
   options["selectedZones"].set(std::vector<axom::IndexType> {5, 4, 3});
-  selectedZonesView = opts.selectedZonesView();
+  axom::mir::SelectedZones<seq_exec> selectedZones2(nzones, options);
+  selectedZonesView = selectedZones2.view();
   EXPECT_EQ(selectedZonesView.size(), 3);
   EXPECT_EQ(selectedZonesView[0], 3);
   EXPECT_EQ(selectedZonesView[1], 4);

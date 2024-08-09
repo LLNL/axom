@@ -4,7 +4,7 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 
 #include "axom/mir/MIRAlgorithm.hpp"
-#include "axom/core/ArrayView.hpp"
+#include "axom/mir/MIROptions.hpp"
 #include "axom/slic.hpp"
 
 #include <conduit_blueprint_mesh.hpp>
@@ -14,187 +14,82 @@ namespace axom
 {
 namespace mir
 {
-void MIRAlgorithm::execute(const conduit::Node &root,
-                           const conduit::Node &options,
-                           conduit::Node &output)
+
+void MIRAlgorithm::execute(const conduit::Node &n_input,
+                           const conduit::Node &n_options,
+                           conduit::Node &n_output)
 {
-  auto domains = conduit::blueprint::mesh::domains(root);
+  const auto domains = conduit::blueprint::mesh::domains(n_input);
   if(domains.size() > 1)
   {
     // Handle multiple domains
     for(const auto &dom_ptr : domains)
     {
-      const conduit::Node &dom = *dom_ptr;
-      const std::string topoName = topologyName(dom, options);
-      const std::string newTopoName = newTopologyName(dom, options);
-      const std::string newCSName = newCoordsetName(dom, options);
-      const std::string newMatName = newMatsetName(dom, options);
+      const conduit::Node &n_domain = *dom_ptr;
+      conduit::Node &n_newDomain = n_output.append();
 
-      conduit::Node &newDomain = output.append();
-      const conduit::Node &topologies = dom.fetch_existing("topologies");
-      const conduit::Node &topo = topologies.fetch_existing(topoName);
-      const conduit::Node *cset =
-        conduit::blueprint::mesh::utils::find_reference_node(topo, "coordset");
-      const conduit::Node &mset = matset(dom, options);
-
-      conduit::Node &newTopo = newDomain["topologies/" + newTopoName];
-      conduit::Node &newCoordset = newDomain["coordsets/" + newCSName];
-      conduit::Node &newMatset = newDomain["matsets/" + newMatName];
-      copyState(dom, newDomain);
-      execute(topo, *cset, mset, options, newTopo, newCoordset, newMatset);
+      executeSetup(n_domain, n_options, n_newDomain);
     }
   }
   else if(domains.size() > 0)
   {
     // Handle single domain
-    const conduit::Node &dom = *domains[0];
-
-    const std::string topoName = topologyName(dom, options);
-    const std::string newTopoName = newTopologyName(dom, options);
-    const std::string newCSName = newCoordsetName(dom, options);
-    const std::string newMatName = newMatsetName(dom, options);
-
-    const conduit::Node &topologies = dom.fetch_existing("topologies");
-    const conduit::Node &topo = topologies.fetch_existing(topoName);
-    const conduit::Node *cset =
-      conduit::blueprint::mesh::utils::find_reference_node(topo, "coordset");
-    const conduit::Node &mset = matset(root, options);
-
-    conduit::Node &newTopo = output["topologies/" + newTopoName];
-    conduit::Node &newCoordset = output["coordsets/" + newCSName];
-    conduit::Node &newMatset = output["matsets/" + newMatName];
-    copyState(dom, output);
-    execute(topo, *cset, mset, options, newTopo, newCoordset, newMatset);
+    const conduit::Node &n_domain = *domains[0];
+    executeSetup(n_domain, n_options, n_output);
   }
 }
 
-void MIRAlgorithm::copyState(const conduit::Node &mesh,
-                             conduit::Node &destMesh) const
+void MIRAlgorithm::executeSetup(const conduit::Node &n_domain, const conduit::Node &n_options,
+   conduit::Node &n_newDomain)
 {
-  if(mesh.has_path("state")) destMesh["state"].set(mesh["state"]);
-}
+  MIROptions options(n_options);
 
-std::string MIRAlgorithm::topologyName(const conduit::Node &mesh,
-                                       const conduit::Node &options) const
-{
-  std::string topoName;
-  if(options.has_path("topology"))
-    topoName = options.fetch_existing("topology").as_string();
-  else if(mesh.has_path("topologies"))
+  // Get the matset that we'll operate on.
+  const std::string matset = options.matset();
+
+  // Which topology is that matset defined on?
+  const conduit::Node &n_matsets = n_domain.fetch_existing("matsets");
+  const conduit::Node &n_matset = n_matsets.fetch_existing(matset);
+  const conduit::Node *n_topo =
+      conduit::blueprint::mesh::utils::find_reference_node(n_matset, "topology");
+  SLIC_ASSERT(n_topo != nullptr);
+
+  // Which coordset is used by that topology?
+  const conduit::Node *n_coordset =
+      conduit::blueprint::mesh::utils::find_reference_node(*n_topo, "coordset");
+  SLIC_ASSERT(n_coordset != nullptr);
+
+  // Get the names of the output items.
+  const std::string newTopoName = options.topologyName(n_topo->name());
+  const std::string newCoordsetName = options.coordsetName(n_coordset->name());
+  const std::string newMatsetName = options.matsetName(matset);
+
+  // Make some new nodes in the output.
+  conduit::Node &newTopo = n_newDomain["topologies/" + newTopoName];
+  conduit::Node &newCoordset = n_newDomain["coordsets/" + newCoordsetName];
+  conduit::Node &newMatset = n_newDomain["matsets/" + newMatsetName];
+
+  // Execute the algorithm on the domain.
+  if(n_domain.has_path("state"))
+    copyState(n_domain["state"], n_newDomain["state"]);
+  if(n_domain.has_path("fields"))
   {
-    const conduit::Node &topologies = mesh.fetch_existing("topologies");
-    topoName = topologies[0].name();
+    conduit::Node &newFields = n_newDomain["fields"];
+    executeDomain(*n_topo, *n_coordset, n_domain["fields"], n_matset, n_options, newTopo, newCoordset, newFields, newMatset);
   }
-  return topoName;
-}
-
-std::string MIRAlgorithm::newTopologyName(const conduit::Node &mesh,
-                                          const conduit::Node &options) const
-{
-  std::string topoName;
-  if(options.has_path("new_topology"))
-    topoName = options.fetch_existing("new_topology").as_string();
-  else
-    topoName = topologyName(mesh, options);
-  return topoName;
-}
-
-std::string MIRAlgorithm::newCoordsetName(const conduit::Node &mesh,
-                                          const conduit::Node &options) const
-{
-  std::string csetName;
-  if(options.has_path("new_coordset"))
-    csetName = options.fetch_existing("new_coordset").as_string();
   else
   {
-    std::string topoName = topologyName(mesh, options);
-    const conduit::Node &topologies = mesh.fetch_existing("topologies");
-    const conduit::Node &topo = topologies.fetch_existing(topoName);
-    csetName = topo.fetch_existing("coordset").as_string();
+    conduit::Node n_fields, newFields;
+    executeDomain(*n_topo, *n_coordset, n_fields, n_matset, n_options, newTopo, newCoordset, newFields, newMatset);
   }
-
-  return csetName;
 }
 
-std::string MIRAlgorithm::matsetName(const conduit::Node &mesh,
-                                     const conduit::Node &options) const
+void MIRAlgorithm::copyState(const conduit::Node &srcState, conduit::Node &destState) const
 {
-  std::string matName;
-  if(options.has_path("matset"))
-    matName = options.fetch_existing("matset").as_string();
-  else if(mesh.has_path("matsets"))
-  {
-    const conduit::Node &matsets = mesh.fetch_existing("matsets");
-    matName = matsets[0].name();
-  }
-  return matName;
+  for(conduit::index_t i = 0; i < srcState.number_of_children(); i++)
+    destState[srcState[i].name()].set(srcState[i]);
 }
 
-std::string MIRAlgorithm::newMatsetName(const conduit::Node &mesh,
-                                        const conduit::Node &options) const
-{
-  std::string matName;
-  if(options.has_path("new_matset"))
-    matName = options.fetch_existing("new_matset").as_string();
-  else
-    matName = matsetName(mesh, options);
-  return matName;
-}
-
-const conduit::Node &MIRAlgorithm::topology(const conduit::Node &mesh,
-                                            const conduit::Node &options) const
-{
-  const std::string topoName = topologyName(mesh, options);
-  const conduit::Node &topologies = mesh.fetch_existing("topologies");
-  return topologies.fetch_existing(topoName);
-}
-
-const conduit::Node &MIRAlgorithm::matset(const conduit::Node &mesh,
-                                          const conduit::Node &options) const
-{
-  const std::string matName = matsetName(mesh, options);
-#if 0
-  const conduit::Node &matsets = mesh.fetch_existing("matsets");
-  for(conduit::index_t i = 0; i < matsets.number_of_children(); i++)
-  {
-    const conduit::Node &matset = matsets[i];
-    if(matset["topology"].as_string() == topoName)
-      return matset;
-  }
-  // We did not find one. TODO: throw exception.
-  // return first to eliminate compiler warning.
-  return matsets[0];
-#else
-  const conduit::Node &matsets = mesh.fetch_existing("matsets");
-  return matsets.fetch_existing(matName);
-#endif
-}
-
-std::vector<std::string> MIRAlgorithm::fieldNames(const conduit::Node &mesh,
-                                                  const conduit::Node &options) const
-{
-  std::vector<std::string> names;
-  if(options.has_path("fields"))
-  {
-    const conduit::Node &fields = options["fields"];
-    if(fields.number_of_children() > 0)
-    {
-      for(conduit::index_t i = 0; i < fields.number_of_children(); i++)
-        names.push_back(fields[i].name());
-    }
-    else
-    {
-      if(fields.dtype().is_char8_str()) names.push_back(fields.as_string());
-    }
-  }
-  else if(mesh.has_child("fields"))
-  {
-    const conduit::Node &fields = mesh.fetch_existing("fields");
-    for(conduit::index_t i = 0; i < fields.number_of_children(); i++)
-      names.push_back(fields[i].name());
-  }
-  return names;
-}
 
 }  // namespace mir
 }  // namespace axom

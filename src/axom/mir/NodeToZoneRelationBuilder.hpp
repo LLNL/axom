@@ -6,11 +6,7 @@
 #ifndef AXOM_MIR_NODE_TO_ZONE_RELATION_BUILDER_HPP_
 #define AXOM_MIR_NODE_TO_ZONE_RELATION_BUILDER_HPP_
 
-#include "axom/core/memory_management.hpp"
-#include "axom/core/execution/execution_space.hpp"
-#include "axom/core/execution/for_all.hpp"
-#include "axom/core/Array.hpp"
-#include "axom/core/ArrayView.hpp"
+#include "axom/core.hpp"
 #include "axom/mir/utilities.hpp"
 #include "axom/mir/blueprint_utilities.hpp"
 #include "axom/mir/views/dispatch_unstructured_topology.hpp"
@@ -25,8 +21,7 @@ namespace axom
 {
 namespace mir
 {
-namespace utilities
-{
+
 /**
  * \brief Build an o2m relation that lets us look up the zones for a node.
  */
@@ -87,23 +82,19 @@ void NodeToZoneRelationBuilder<ExecSpace>::buildRelation(const ViewType &nodes_v
   axom::for_all<ExecSpace>(
     n,
     AXOM_LAMBDA(axom::IndexType i) {
-      const axom::IndexType different =
-        (keys_view[i] != keys_view[i - 1]) ? 1 : 0;
-      const axom::IndexType m = (i >= 1) ? different : 1;
-      mask_view[i] = m;
+      mask_view[i] = (i >= 1) ? ((keys_view[i] != keys_view[i - 1]) ? 1 : 0) : 1;
     });
 
   // Do a scan on the mask array to build an offset array.
   axom::Array<axom::IndexType> dest_offsets(n, n, allocatorID);
   auto dest_offsets_view = dest_offsets.view();
-  RAJA::exclusive_scan<loop_policy>(RAJA::make_span(mask_view, n),
-                                    RAJA::make_span(dest_offsets_view, n),
-                                    RAJA::operators::plus<axom::IndexType> {});
+  axom::exclusive_scan<ExecSpace>(mask_view, dest_offsets_view);
 
   // Build the offsets to each node's zone ids.
   axom::for_all<ExecSpace>(
     offsets_view.size(),
     AXOM_LAMBDA(axom::IndexType i) { offsets_view[i] = 0; });
+
   axom::for_all<ExecSpace>(
     n,
     AXOM_LAMBDA(axom::IndexType i) {
@@ -123,12 +114,17 @@ void NodeToZoneRelationBuilder<ExecSpace>::execute(const conduit::Node &topo,
   const std::string type = topo.fetch_existing("type").as_string();
   const auto allocatorID = axom::execution_space<ExecSpace>::allocatorID();
 
+  // Get the ID of a Conduit allocator that will allocate through Axom with device allocator allocatorID.
+  utilities::blueprint::ConduitAllocateThroughAxom<ExecSpace> c2a;
+  const int conduitAllocatorID = c2a.getConduitAllocatorID();
+
+
   conduit::Node &n_zones = relation["zones"];
   conduit::Node &n_sizes = relation["sizes"];
   conduit::Node &n_offsets = relation["offsets"];
-  n_zones.set_allocator(allocatorID);
-  n_sizes.set_allocator(allocatorID);
-  n_offsets.set_allocator(allocatorID);
+  n_zones.set_allocator(conduitAllocatorID);
+  n_sizes.set_allocator(conduitAllocatorID);
+  n_offsets.set_allocator(conduitAllocatorID);
 
   const conduit::Node *coordset =
     conduit::blueprint::mesh::utils::find_reference_node(topo, "coordset");
@@ -164,15 +160,12 @@ void NodeToZoneRelationBuilder<ExecSpace>::execute(const conduit::Node &topo,
         // Do a scan on the size array to build an offset array.
         axom::Array<axom::IndexType> offsets(nzones, nzones, allocatorID);
         auto offsets_view = offsets.view();
-        RAJA::exclusive_scan<loop_policy>(
-          RAJA::make_span(sizes_view, nzones),
-          RAJA::make_span(offsets_view, nzones),
-          RAJA::operators::plus<axom::IndexType> {});
+        axom::exclusive_scan<ExecSpace>(sizes_view, offsets_view);
         sizes.clear();
 
         // Allocate Conduit arrays on the device in a data type that matches the connectivity.
         conduit::Node n_conn;
-        n_conn.set_allocator(allocatorID);
+        n_conn.set_allocator(conduitAllocatorID);
         n_conn.set(conduit::DataType(intTypeId, connSize));
 
         n_zones.set(conduit::DataType(intTypeId, connSize));
@@ -313,7 +306,6 @@ void NodeToZoneRelationBuilder<ExecSpace>::execute(const conduit::Node &topo,
   }
 }
 
-}  // end namespace utilities
 }  // end namespace mir
 }  // end namespace axom
 

@@ -42,7 +42,7 @@ public:
                const conduit::Node &n_options,
                conduit::Node &n_output)
   {
-    ClipOptions<ExecSpace> opts(0, n_options);
+    ClipOptions opts(n_options);
     const std::string clipFieldName = opts.clipField();
 
     const conduit::Node &n_fields = n_input.fetch_existing("fields");

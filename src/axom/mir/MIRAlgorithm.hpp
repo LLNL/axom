@@ -33,9 +33,9 @@ public:
            root node. Root can either be a mesh domain or a node that contains multiple
            domains.
 
-    \param[in] root The root node that contains either a mesh or list of mesh
-                    domains that contain a topology and matset to be used for MIR.
-    \param[in] options A node that contains options that help govern MIR execution.
+    \param[in] n_input The root node that contains either a mesh or list of mesh
+                       domains that contain a topology and matset to be used for MIR.
+    \param[in] n_options A node that contains options that help govern MIR execution.
 
 options:
   topology: main
@@ -57,92 +57,58 @@ options:
     "zones" is a list of zone indices from the topology that need to be reconstructed. If not present then all zones will be considered.
     "mapping" indicates whether we should include an original_element_numbers field on the new topology to indicate where each new zone came from in the original topology.
 
-    \param[out] output A node that will contain the new entities.
+    \param[out] n_output A node that will contain the new entities.
 
     */
-  virtual void execute(const conduit::Node &root,
-                       const conduit::Node &options,
-                       conduit::Node &output);
+  virtual void execute(const conduit::Node &n_input,
+                       const conduit::Node &n_options,
+                       conduit::Node &n_output);
 
 protected:
   /**
-    \brief Perform material interface reconstruction on a single domain. Derived classes
-           must implement this method and any device-specific coding gets handled under it.
+   * \brief Set up the new domain from the old one and invoke executeDomain.
+   *
+   * \param n_domain The input domain.
+   * \param n_options The MIR options.
+   * \param n_newDomain The output domain.
+   */
+  void executeSetup(const conduit::Node &n_domain,
+                    const conduit::Node &n_options,
+                    conduit::Node &n_newDomain);
 
-    \param[in] topo The Conduit node containing the topology that will be used for MIR.
-    \param[in] coordset The Conduit node containing the topology's coordset.
-    \param[in] options The Conduit node containing the options that help govern MIR execution.
+  /**
+   * \brief Perform material interface reconstruction on a single domain. Derived classes
+   *        must implement this method and any device-specific coding gets handled under it.
+   *
+   * \param[in] n_topo The Conduit node containing the topology that will be used for MIR.
+   * \param[in] n_coordset The Conduit node containing the coordset.
+   * \param[in] n_fields The Conduit node containing the fields.
+   * \param[in] n_matset The Conduit node containing the matset.
+   * \param[in] options The Conduit node containing the options that help govern MIR execution.
+   *
+   * \param[out] n_newTopo A node that will contain the new clipped topology.
+   * \param[out] n_newCoordset A node that will contain the new coordset for the clipped topology.
+   * \param[out] n_newFields A node that will contain the new fields for the clipped topology.
+   * \param[out] n_newMatset A Conduit node that will contain the new matset.
+   * 
+   */
+  virtual void executeDomain(const conduit::Node &n_topo,
+                             const conduit::Node &n_coordset,
+                             const conduit::Node &n_fields,
+                             const conduit::Node &n_matset,
+                             const conduit::Node &n_options,
+                             conduit::Node &n_newTopo,
+                             conduit::Node &n_newCoordset,
+                             conduit::Node &n_newFields,
+                             conduit::Node &n_newMatset) = 0;
 
-    \param[out] new_topo A Conduit node that will contain the new topology.
-    \param[out] new_coordset A Conduit node that will contain the new coordset.
-    
-    */
-  virtual void execute(const conduit::Node &topo,
-                       const conduit::Node &coordset,
-                       const conduit::Node &matset,
-                       const conduit::Node &options,
-                       conduit::Node &new_topo,
-                       conduit::Node &new_coordset,
-                       conduit::Node &new_matset) = 0;
-
-  // Utility methods for derived types.
-  void copyState(const conduit::Node &mesh, conduit::Node &destMesh) const;
-  std::string topologyName(const conduit::Node &mesh,
-                           const conduit::Node &options) const;
-  std::string newTopologyName(const conduit::Node &mesh,
-                              const conduit::Node &options) const;
-
-  std::string newCoordsetName(const conduit::Node &mesh,
-                              const conduit::Node &options) const;
-
-  std::string matsetName(const conduit::Node &mesh,
-                         const conduit::Node &options) const;
-  std::string newMatsetName(const conduit::Node &mesh,
-                            const conduit::Node &options) const;
-
-  std::vector<std::string> fieldNames(const conduit::Node &mesh,
-                                      const conduit::Node &options) const;
-
-  const conduit::Node &topology(const conduit::Node &input,
-                                const conduit::Node &options) const;
-  const conduit::Node &matset(const conduit::Node &input,
-                              const conduit::Node &options) const;
-
-  // TODO: method for mapping element field to new topo
-  // TODO: method for mapping vertex field to new topo
+  /**
+   * \brief Copy state from the src domain to the destination domain.
+   * \param srcState The node that contains the state in the source domain.
+   * \param destState The node that contains the state in the destination domain.
+   */
+  void copyState(const conduit::Node &srcState, conduit::Node &destState) const;
 };
-
-#if 0
-class ElviraMIRAlgorithm : public MIRAlgorithm
-{
-public:
-  using RuntimePolicy = axom::runtime_policy::Policy;
-
-  ElviraMIRAlgorithm() = default;
-  virtual ~ElviraMIRAlgorithm() = default;
-
-  void setExecPolicy(RuntimePolicy policy) { m_execPolicy = policy; }
-
-protected:
-   /// Implement the Elvira MIR algorithm on a single domain.
-   virtual void execute(const conduit::Node &topo,
-                        const conduit::Node &coordset,
-                        const conduit::Node &options,
-                        conduit::Node &new_topo,
-                        conduit::Node &new_coordset) override;
-
-   
-   /// Implement the Elvira MIR algorithm on a single domain for a given ExecSpace.
-   template <typename ExecSpace>
-   void executeImpl(const conduit::Node &topo,
-                    const conduit::Node &coordset,
-                    const conduit::Node &options,
-                    conduit::Node &new_topo,
-                    conduit::Node &new_coordset);
-
-   RuntimePolicy m_execPolicy{RuntimePolicy::seq};
-};
-#endif
 
 }  // end namespace mir
 }  // end namespace axom
