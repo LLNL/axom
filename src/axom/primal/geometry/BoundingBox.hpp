@@ -449,18 +449,19 @@ template <typename OtherType>
 AXOM_HOST_DEVICE bool BoundingBox<T, NDIMS>::intersectsWith(
   const BoundingBox<OtherType, NDIMS>& otherBB) const
 {
-  bool status = true;
-
   // AABBs cannot intersect if they are separated along any dimension
   for(int i = 0; i < NDIMS; ++i)
   {
-    status &= detail::intersect_bbox_bbox(m_min[i],
-                                          m_max[i],
-                                          otherBB.m_min[i],
-                                          otherBB.m_max[i]);
-  }  // END for all dimensions
+    if(!detail::intersect_bbox_bbox(m_min[i],
+                                    m_max[i],
+                                    otherBB.m_min[i],
+                                    otherBB.m_max[i]))
+    {
+      return false;
+    }
+  }
 
-  return status;
+  return true;
 }
 
 //------------------------------------------------------------------------------
