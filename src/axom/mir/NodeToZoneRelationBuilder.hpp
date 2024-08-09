@@ -109,7 +109,6 @@ template <typename ExecSpace>
 void NodeToZoneRelationBuilder<ExecSpace>::execute(const conduit::Node &topo,
                                                    conduit::Node &relation)
 {
-  using loop_policy = typename axom::execution_space<ExecSpace>::loop_policy;
   using reduce_policy = typename axom::execution_space<ExecSpace>::reduce_policy;
   const std::string type = topo.fetch_existing("type").as_string();
   const auto allocatorID = axom::execution_space<ExecSpace>::allocatorID();

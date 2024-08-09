@@ -86,24 +86,24 @@ public:
   }
 
   AXOM_HOST_DEVICE
-  axom::IndexType numberOfZones() const { return m_sizes.size(); }
+  inline axom::IndexType numberOfZones() const { return m_sizes.size(); }
 
   AXOM_HOST_DEVICE
-  axom::IndexType numberOfMaterials(ZoneIndex zi) const
+  inline axom::IndexType numberOfMaterials(ZoneIndex zi) const
   {
-    assert(zi < m_sizes.size());
+    assert(zi < numberOfZones());
     return m_sizes[zi];
   }
 
   AXOM_HOST_DEVICE
   void zoneMaterials(ZoneIndex zi, IDList &ids, VFList &vfs) const
   {
-    assert(zi < m_sizes.size());
+    assert(zi < numberOfZones());
 
     ids.clear();
     vfs.clear();
 
-    const auto sz = static_cast<axom::IndexType>(m_sizes[zi]);
+    const auto sz = numberOfMaterials(zi);
     const auto offset = m_offsets[zi];
     for(axom::IndexType i = 0; i < sz; i++)
     {
@@ -117,8 +117,8 @@ public:
   AXOM_HOST_DEVICE
   bool zoneContainsMaterial(ZoneIndex zi, MaterialIndex mat) const
   {
-    assert(zi < m_sizes.size());
-    const auto sz = static_cast<axom::IndexType>(m_sizes[zi]);
+    assert(zi < numberOfZones());
+    const auto sz = numberOfMaterials(zi);
     const auto offset = m_offsets[zi];
     for(axom::IndexType i = 0; i < sz; i++)
     {
@@ -132,8 +132,8 @@ public:
   AXOM_HOST_DEVICE
   bool zoneContainsMaterial(ZoneIndex zi, MaterialIndex mat, FloatType &vf) const
   {
-    assert(zi < m_sizes.size());
-    const auto sz = static_cast<axom::IndexType>(m_sizes[zi]);
+    assert(zi < numberOfZones());
+    const auto sz = numberOfMaterials(zi);
     const auto offset = m_offsets[zi];
     for(axom::IndexType i = 0; i < sz; i++)
     {
