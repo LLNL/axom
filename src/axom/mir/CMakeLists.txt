@@ -39,7 +39,11 @@ set(mir_headers
     MIRAlgorithm.hpp
     RecenterField.hpp
     utilities.hpp
-
+    NodeToZoneRelationBuilder.hpp
+    SelectedZones.hpp
+    MIROptions.hpp
+    Options.hpp
+    ClipOptions.hpp
     views/dispatch_coordset.hpp
     views/dispatch_material.hpp
     views/dispatch_rectilinear_topology.hpp

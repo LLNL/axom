@@ -12,6 +12,50 @@
 
 #include <cmath>
 
+// clang-format off
+#if defined (AXOM_USE_RAJA) && defined (AXOM_USE_UMPIRE)
+  using seq_exec = axom::SEQ_EXEC;
+
+  #if defined(AXOM_USE_OPENMP)
+    using omp_exec = axom::OMP_EXEC;
+  #else
+    using omp_exec = seq_exec;
+  #endif
+
+  #if defined(AXOM_USE_CUDA) && defined(__CUDACC__)
+    constexpr int CUDA_BLOCK_SIZE = 256;
+    using cuda_exec = axom::CUDA_EXEC<CUDA_BLOCK_SIZE>;
+  #else
+    using cuda_exec = seq_exec;
+  #endif
+
+  #if defined(AXOM_USE_HIP)
+    constexpr int HIP_BLOCK_SIZE = 64;
+    using hip_exec = axom::HIP_EXEC<HIP_BLOCK_SIZE>;
+  #else
+    using hip_exec = seq_exec;
+  #endif
+#endif
+// clang-format on
+
+//------------------------------------------------------------------------------
+
+// Uncomment to generate baselines
+#define AXOM_TESTING_GENERATE_BASELINES
+
+// Uncomment to save visualization files for debugging (when making baselines)
+#define AXOM_TESTING_SAVE_VISUALIZATION
+
+// Include after seq_exec is defined.
+#include "axom/mir/tests/mir_testing_helpers.hpp"
+
+std::string baselineDirectory()
+{
+  return pjoin(pjoin(pjoin(dataDirectory(), "mir"), "regression"),
+               "mir_views");
+}
+//------------------------------------------------------------------------------
+
 TEST(mir_views, shape2conduitName)
 {
   EXPECT_EQ(axom::mir::views::LineShape<int>::name(), "line");
@@ -122,6 +166,104 @@ TEST(mir_views, strided_structured)
             });
         });
     });
+}
+
+//------------------------------------------------------------------------------
+template <typename ExecSpace>
+void braid2d_mat_test(const std::string &type, const std::string &mattype, const std::string &name)
+{
+  using Indexing = axom::mir::views::StructuredIndexing<axom::IndexType, 2>;
+  using TopoView = axom::mir::views::StructuredTopologyView<Indexing>;
+  using CoordsetView = axom::mir::views::UniformCoordsetView<double, 2>;
+  const int allocatorID = axom::execution_space<ExecSpace>::allocatorID();
+
+  axom::StackArray<axom::IndexType, 2> dims {10, 10};
+  axom::StackArray<axom::IndexType, 2> zoneDims {dims[0] - 1, dims[1] - 1};
+
+  // Create the data
+  conduit::Node hostMesh, deviceMesh;
+  axom::mir::testing::data::braid(type, dims, hostMesh);
+  axom::mir::testing::data::make_matset(mattype, "mesh", zoneDims, hostMesh);
+  axom::mir::utilities::blueprint::copy<ExecSpace>(deviceMesh, hostMesh);
+#if defined(AXOM_TESTING_SAVE_VISUALIZATION)
+  conduit::relay::io::blueprint::save_mesh(hostMesh, name + "_orig", "hdf5");
+  conduit::relay::io::blueprint::save_mesh(hostMesh, name + "_orig_yaml", "yaml");
+#endif
+
+  using MatsetView = axom::mir::views::UnibufferMaterialView<int, float, 3>;
+  MatsetView matsetView;
+  matsetView.set(axom::mir::utilities::blueprint::make_array_view<int>(deviceMesh["matsets/mat/material_ids"]),
+                 axom::mir::utilities::blueprint::make_array_view<float>(deviceMesh["matsets/mat/volume_fractions"]),
+                 axom::mir::utilities::blueprint::make_array_view<int>(deviceMesh["matsets/mat/sizes"]),
+                 axom::mir::utilities::blueprint::make_array_view<int>(deviceMesh["matsets/mat/offsets"]),
+                 axom::mir::utilities::blueprint::make_array_view<int>(deviceMesh["matsets/mat/indices"]));
+
+  constexpr int MATA = 0;
+  constexpr int MATB = 1;
+  constexpr int MATC = 2;
+  const int matids[] = {0, 36, 40};
+  // clang-format off
+  const int results[] = {/*contains mat*/ 0, 1, 0, /*mats in zone*/ 1, /*mats in zone*/ MATB, -1, -1,
+                         /*contains mat*/ 1, 1, 0, /*mats in zone*/ 2, /*mats in zone*/ MATA, MATB, -1,
+                         /*contains mat*/ 1, 1, 1, /*mats in zone*/ 3, /*mats in zone*/ MATA, MATB, MATC};
+  // clang-format on
+  constexpr int nZones = sizeof(matids) / sizeof(int);
+
+  // Get matids into matidsView for device.
+  axom::Array<int> matidsArray(nZones, nZones, allocatorID);
+  axom::copy(matidsArray.data(), matids, sizeof(int) * nZones);
+  auto matidsView = matidsArray.view();
+
+  // Allocate results array on device.
+  constexpr int nResults = sizeof(results) / sizeof(int);
+  axom::Array<int> resultsArrayDevice(nResults, nResults, allocatorID);
+  auto resultsView = resultsArrayDevice.view();
+
+  // host-safe tests.
+  EXPECT_EQ(matsetView.numberOfZones(), zoneDims[0] * zoneDims[1]);
+  EXPECT_EQ(matsetView.numberOfMaterials(), 3);
+
+  // Fill in resultsView on the device.
+  constexpr int nResultsPerZone = nResults / nZones;
+  axom::for_all<ExecSpace>(3, AXOM_LAMBDA(auto index)
+  {
+    resultsView[nResultsPerZone * index + 0] = matsetView.zoneContainsMaterial(matidsView[index], MATA) ? 1 : 0;
+    resultsView[nResultsPerZone * index + 1] = matsetView.zoneContainsMaterial(matidsView[index], MATB) ? 1 : 0;
+    resultsView[nResultsPerZone * index + 2] = matsetView.zoneContainsMaterial(matidsView[index], MATC) ? 1 : 0;
+    resultsView[nResultsPerZone * index + 3] = matsetView.numberOfMaterials(matidsView[index]);
+
+    MatsetView::IDList ids;
+    MatsetView::VFList vfs;
+    matsetView.zoneMaterials(matidsView[index], ids, vfs);
+    for(int i = 0; i < 3; i++)
+    {
+      resultsView[nResultsPerZone * index + 4 + i] = (i < ids.size()) ? ids[i] : -1;
+    }
+  });
+  // Get containsView data to the host and compare results
+  std::vector<int> resultsHost(nResults);
+  axom::copy(resultsHost.data(), resultsView.data(), sizeof(int) * nResults);
+  for(int i = 0; i < nResults; i++)
+  {
+    EXPECT_EQ(results[i], resultsHost[i]);
+  }
+}
+
+TEST(mir_views, matset_unibuffer)
+{
+  braid2d_mat_test<seq_exec>("uniform", "unibuffer", "uniform2d_unibuffer");
+
+#if defined(AXOM_USE_OPENMP)
+  braid2d_mat_test<omp_exec>("uniform", "unibuffer", "uniform2d_unibuffer");
+#endif
+
+#if defined(AXOM_USE_CUDA) && defined(__CUDACC__)
+  braid2d_mat_test<cuda_exec>("uniform", "unibuffer", "uniform2d_unibuffer");
+#endif
+
+#if defined(AXOM_USE_HIP)
+  braid2d_mat_test<hip_exec>("uniform", "unibuffer", "uniform2d_unibuffer");
+#endif
 }
 
 //------------------------------------------------------------------------------

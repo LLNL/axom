@@ -100,6 +100,7 @@ public:
                conduit::Node &n_newCoordset,
                conduit::Node &n_newFields)
   {
+#if 0
     // NOTE - there are 2 dispatches here so we can get coordset and topology views.
     //        This instantiates the lambda that creates the ClipField object for
     //        the various view types so we can handle most Blueprint topologies.
@@ -138,6 +139,7 @@ public:
           }
         });
     });
+#endif
   }
 };
 

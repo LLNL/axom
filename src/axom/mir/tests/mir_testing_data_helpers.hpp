@@ -52,6 +52,162 @@ void braid(const std::string &type, const Dimensions &dims, conduit::Node &mesh)
   add_distance(mesh);
 }
 
+void make_unibuffer(const std::vector<float> &vfA,
+                    const std::vector<float> &vfB,
+                    const std::vector<float> &vfC,
+                    conduit::Node &matset)
+{
+  std::vector<int> material_ids;
+  std::vector<float> volume_fractions;
+  std::vector<int> sizes(vfA.size(), 0);
+  std::vector<int> offsets(vfA.size(), 0);
+  std::vector<int> indices;
+
+  int offset = 0;
+  for(size_t i = 0; i < vfA.size(); i++)
+  {
+    if(vfA[i] > 0.)
+    {
+      indices.push_back(static_cast<int>(indices.size()));
+      material_ids.push_back(0);
+      volume_fractions.push_back(vfA[i]);
+      sizes[i]++;
+    }
+    if(vfB[i] > 0.)
+    {
+      indices.push_back(static_cast<int>(indices.size()));
+      material_ids.push_back(1);
+      volume_fractions.push_back(vfB[i]);
+      sizes[i]++;
+    }
+    if(vfC[i] > 0.)
+    {
+      indices.push_back(static_cast<int>(indices.size()));
+      material_ids.push_back(2);
+      volume_fractions.push_back(vfC[i]);
+      sizes[i]++;
+    }
+
+    offsets[i] = offset;
+    offset += sizes[i];
+  }
+
+  matset["material_ids"].set(material_ids);
+  matset["volume_fractions"].set(volume_fractions);
+  matset["sizes"].set(sizes);
+  matset["offsets"].set(offsets);
+  matset["indices"].set(indices);
+}
+
+
+template <typename Dimensions>
+void make_matset(const std::string &type, const std::string &topoName,
+  const Dimensions &dims, conduit::Node &mesh)
+{
+  constexpr int sampling = 10;
+  int midx = sampling * dims[0] / 2;
+  int midy = sampling * dims[1] / 2;
+
+  int ksize = 0;
+  int nelements = 1;
+  for(int i = 0; i < dims.size(); i++)
+  {
+    nelements *= dims[i];
+    ksize = (i == 0) ? 1 : (ksize * dims[i]);
+  }
+  std::vector<int> matA(nelements);
+  std::vector<int> matB(nelements);
+  std::vector<int> matC(nelements);
+
+  int nk = (dims.size() == 3) ? dims[2] : 1;
+  for(int k = 0; k < nk; k++)
+  {
+    for(int j = 0; j < sampling * dims[1]; j++)
+    {
+      const int jele = j / sampling;
+      for(int i = 0; i < sampling * dims[0]; i++)
+      {
+        const int iele = i / sampling;
+
+        bool gt1 = j >= midy;
+        bool gt2 = j >= ((3./2.)*(i - midx) + midy);
+        bool gt3 = j >= ((-2./5.)*(i - midx) + midy);
+
+        int index = k * ksize + jele * dims[0] + iele;
+
+        if(gt1 && gt2)
+          matA[index]++;
+        else if(!gt1 && !gt3)
+          matB[index]++;
+        else
+          matC[index]++;
+      }
+    }
+  }
+
+  std::vector<float> vfA(nelements);
+  std::vector<float> vfB(nelements);
+  std::vector<float> vfC(nelements);
+  constexpr float s2 = static_cast<float>(sampling * sampling);
+  for(int k = 0; k < nk; k++)
+  {
+    for(int j = 0; j < sampling * dims[1]; j++)
+    {
+      const int jele = j / sampling;
+      for(int i = 0; i < sampling * dims[0]; i++)
+      {
+        const int iele = i / sampling;
+        int index = k * ksize + jele * dims[0] + iele;
+
+        vfA[index] = static_cast<float>(matA[index]) / s2;
+        vfB[index] = static_cast<float>(matB[index]) / s2;
+        vfC[index] = static_cast<float>(matC[index]) / s2;
+      }
+    }
+  }
+  matA.clear();
+  matB.clear();
+  matC.clear();
+
+#if 1
+  // Debugging. Add the vfs as fields.
+  mesh["fields/vfA/topology"] = topoName;
+  mesh["fields/vfA/association"] = "element";
+  mesh["fields/vfA/values"].set(vfA);
+
+  mesh["fields/vfB/topology"] = topoName;
+  mesh["fields/vfB/association"] = "element";
+  mesh["fields/vfB/values"].set(vfB);
+
+  mesh["fields/vfC/topology"] = topoName;
+  mesh["fields/vfC/association"] = "element";
+  mesh["fields/vfC/values"].set(vfC);
+#endif
+
+  conduit::Node &matset = mesh["matsets/mat"];
+  matset["topology"] = topoName;
+  matset["material_map/A"] = 0;
+  matset["material_map/B"] = 1;
+  matset["material_map/C"] = 2;
+
+  // produce different material types.
+  if(type == "unibuffer")
+  {
+    make_unibuffer(vfA, vfB, vfC, matset);
+  }
+  // TODO: write these other cases.
+  else if(type == "multibuffer")
+  {
+  }
+  else if(type == "element_dominant")
+  {
+  }
+  else if(type == "material_dominant")
+  {
+  }
+}
+
+
 void mixed3d(conduit::Node &mesh)
 {
   // clang-format off

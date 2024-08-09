@@ -5,18 +5,20 @@
 #ifndef AXOM_MIR_EQUIZ_ALGORITHM_HPP_
 #define AXOM_MIR_EQUIZ_ALGORITHM_HPP_
 
-#if 0
 #include "axom/config.hpp"
 #include "axom/core.hpp"
-#include "axom/mir/MIRAlgorithm.hpp"
+#include "axom/mir.hpp"
 
 #include <conduit/conduit.hpp>
+#include <conduit/conduit_relay_io_blueprint.hpp>
+
+#include <string>
 
 namespace axom
 {
 namespace mir
 {
-
+#if 0
 /**
  * \brief Populate a new field
  */
@@ -26,7 +28,7 @@ struct MatsetToField
   using MaterialIndex = typename MatsetView::MaterialIndex;
   using FloatType = typename MatsetView::FloatType;
   
-  void execute(const MatsetView &matsetView, axom::ArrayView<FloatType> &vfValues)
+  void execute(const MatsetView &matsetView, MaterialIndex mat, axom::ArrayView<FloatType> &vfValues)
   {
     const auto nzones = vfValues.size();
     axom::for_all<ExecSpace>(nzones, AXOM_LAMBDA(auto zoneIndex)
@@ -45,7 +47,7 @@ struct MatsetToField
  * \brief Implements Meredith's Equi-Z algorithm on the GPU using Blueprint inputs/outputs.
  */
 template <typename ExecSpace, typename TopologyView, typename CoordsetView, typename MatsetView>
-class EquiZAlgorithm : public MIRAlgorithm
+class EquiZAlgorithm : public axom::mir::MIRAlgorithm
 {
 public:
 
@@ -58,30 +60,37 @@ public:
 
 protected:
   virtual void executeDomain(const conduit::Node &n_topo,
+                             const conduit::Node &n_coordset,
+                             const conduit::Node &n_fields,
+                             const conduit::Node &n_matset,
+                             const conduit::Node &n_options,
+                             conduit::Node &n_newTopo,
+                             conduit::Node &n_newCoordset,
+                             conduit::Node &n_newFields,
+                             conduit::Node &n_newMatset)
   {
-    namespace bputils = axom::mir::utilities::blueprint;
-    using FloatType = typename MatsetView::FloatType;
-    constexpr auto floatTypeID = bputils::cpp2conduit<FloatType>::id;
-
-    const std:string zoneCenteredField("__equiz__zoneMatField");
-    const std:string nodeCenteredField("__equiz__nodeMatField");
-
-    // Get the ID of a Conduit allocator that will allocate through Axom with device allocator allocatorID.
-    utilities::blueprint::ConduitAllocateThroughAxom<ExecSpace> c2a;
+    conduit::Node n_options_copy(n_options);
 
     // Iterate over the materials 
-    const auto matInfo = materials(n_matset);
+    const auto matInfo = axom::mir::views::materials(n_matset);
     conduit::Node n_InputTopo, n_InputCoordset, n_InputFields, n_InputMatset;
     for(size_t i = 0; i < matInfo.size(); i++)
     {
       if(i == 0)
       {
         // The first time through, we can use the supplied views.
-        this->template iteration<TopologyView, CoordsetView, MatsetView>(
+        // clangformat-off
+        iteration(
           m_topologyView, m_coordsetView, m_matsetView,
+          matInfo[i],
           n_topo, n_coordset, n_fields, n_matset,
-          n_options,
+          n_options_copy,
           n_newTopo, n_newCoordset, n_newFields, n_newMatset);
+        // clangformat-on
+
+        // In these iterations, we do not want to pass selectedZones through
+        // since they are only valid on the current input topology.
+        n_options_copy.remove("selectedZones");
       }
       else
       {
@@ -96,41 +105,73 @@ protected:
         {
           // The data are now an unstructured view, probably a mixed shape view.
           // Dispatch to an appropriate topo view
+          // clangformat-off
           views::dispatch_explicit_coordset(n_InputCoordset, [&](auto coordsetView)
           {
             using ICoordSetView = decltype(coordsetView);
-            views::dispatch_unstructured_mixed_topology(n_InputTopo, [&](auto topoView)
+            views::dispatch_unstructured_mixed_topology(n_InputTopo, [&](auto topologyView)
             {
-              using ITopologyView = decltype(topoView);
-              this->template iteration<ITopologyView, ICoordsetView, MatsetView>(
+              using ITopologyView = decltype(topologyView);
+
+              // Assume we made this type out of the first iteration.
+              axom::mir::views::UnibufferMaterialView<int, float, 10> matsetView;
+              matsetView.set(
+                axom::mir::utilities::blueprint::make_array_view<int>(n_matset["material_ids"]),
+                axom::mir::utilities::blueprint::make_array_view<float>(n_matset["volume_fractions"]),
+                axom::mir::utilities::blueprint::make_array_view<int>(n_matset["sizes"]),
+                axom::mir::utilities::blueprint::make_array_view<int>(n_matset["offsets"]),
+                axom::mir::utilities::blueprint::make_array_view<int>(n_matset["indices"]));
+
+//              this->template iteration<ITopologyView, ICoordsetView, MatsetView>(
+// See if the compiler will infer the right args.
+              iteration(
                 topologyView, coordsetView, matsetView,
+                matInfo[i],
                 n_topo, n_coordset, n_fields, n_matset,
-                n_options,
+                n_options_copy,
                 n_newTopo, n_newCoordset, n_newFields, n_newMatset);
             });
           });
+          // clangformat-on
         }
       }
+
+      // TODO: we need to build the new matset.
     }
   }
 
   /**
    * \brief Perform one round of material clipping.
    */
-  template <typename ITopoView, typename ICoordsetView, typename IMatsetView>
+  template <typename ITopologyView, typename ICoordsetView, typename IMatsetView>
   void iteration(const ITopoView &topoView,
                  const ICoordsetView &coordsetView,
                  const IMatsetView &matsetView,
+
+                 const axom::mir::views::Material &currentMat,
+
                  const conduit::Node &n_topo,
                  const conduit::Node &n_coordset,
                  const conduit::Node &n_fields,
                  const conduit::Node &n_matset,
+
                  const conduit::Node &n_options,
+
                  conduit::Node &n_newTopo,
                  conduit::Node &n_newCoordset,
                  conduit::Node &n_newFields,
                  conduit::Node &n_newMatset)
   {
+    namespace bputils = axom::mir::utilities::blueprint;
+    using FloatType = typename MatsetView::FloatType;
+    constexpr auto floatTypeID = bputils::cpp2conduit<FloatType>::id;
+
+    // Get the ID of a Conduit allocator that will allocate through Axom with device allocator allocatorID.
+    utilities::blueprint::ConduitAllocateThroughAxom<ExecSpace> c2a;
+
+    const std::string zoneCenteredField("__equiz__zoneMatField");
+    const std::string nodeCenteredField("__equiz__nodeMatField");
+
     const auto nzones = topoView.numberOfZones();
 
     // Make a node to zone relation.
@@ -160,7 +201,7 @@ protected:
 
     // Recenter the field to nodal using the node to zone relation.
     conduit::Node &nodeMatField = tmpFields[nodeCenteredField];
-    RecenterField<ExecSpace> recenter;
+    axom::mir::RecenterField<ExecSpace> recenter;
     recenter.execute(zoneMatField, relation, nodeMatField);
 
 /**
@@ -169,27 +210,39 @@ protected:
         that lets that behavior be customizable so I can override it here.
  */
 
-    conduit::Node clippedMesh;
-    conduit::Node &clipTopo = clippedMesh[n_newTopo.path()];
-    conduit::Node &clipCoordset = clippedMesh[n_newCoordset.path()];
-    conduit::Node &clipFields = clippedMesh["fields"];
-
     // Now, clip the topology using the nodal field.
-    conduit::Node options, clippedMesh;
+    conduit::Node options;
     options["inside"] = 1;
     options["outside"] = 1;
     options["clipField"] = nodeCenteredField;
     options["clipValue"] = 0.5;
-    ClipField<ExecSpace, ITopologyView, ICoordsetView> clipper(topoView, coordsetView);
-    clipper.execute(n_topo, n_coordset, tmpFields, options, 
+    axom::mir::clipping::ClipField<ExecSpace, ITopologyView, ICoordsetView> clipper(topoView, coordsetView);
+    clipper.execute(n_topo, n_coordset, tmpFields, options, n_newTopo, n_newCoordset, n_newFields);
     // Q: Would it be better here to just use ClipFieldFilterDevice? We don't need all that flexibility but it might be better for linking since it would have been created already for ClipFieldFilter.
 
-    
-  }
-}
-//------------------------------------------------------------------------------
+#if 1
+    conduit::Node mesh;
+    mesh[n_newTopo.path()].set_external(n_newTopo);
+    mesh[n_newCoordset.path()].set_external(n_newCoordset);
+    mesh[n_newFields.path()].set_external(n_newFields);
+    mesh[n_newMatset.path()].set_external(n_newMatset);
+    std::stringstream ss;
+    ss << "debug_equiz_" << currentMat.number;
+    conduit::relay::io::blueprint::save_mesh(mesh, ss.str(), "hdf5");
+#endif
 
+    n_newFields.remove(zoneCenteredField);
+    n_newFields.remove(nodeCenteredField);
+  }
+
+private:
+  TopologyView m_topologyView;
+  CoordsetView m_coordsetView;
+  MatsetView m_matsetView;
+};
+//------------------------------------------------------------------------------
+#endif
 }  // end namespace mir
 }  // end namespace axom
-#endif
+
 #endif

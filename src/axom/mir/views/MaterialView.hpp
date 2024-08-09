@@ -7,7 +7,7 @@
 #define AXOM_MIR_VIEWS_MATERIAL_VIEW_HPP_
 
 #include "axom/core.hpp"
-#include "axom/mir/views/Shapes.hpp"
+//#include "axom/mir/views/Shapes.hpp"
 
 #include <conduit/conduit.hpp>
 
@@ -59,7 +59,7 @@ matsets:
     indices: [1, 4, 6, 3, 2]
 
  */
-template <typename IndexT, typename FloatT, size_t MAXMATERIALS>
+template <typename IndexT, typename FloatT, axom::IndexType MAXMATERIALS>
 class UnibufferMaterialView
 {
 public:
@@ -70,7 +70,7 @@ public:
   using IDList = StaticArray<MaterialIndex, MAXMATERIALS>;
   using VFList = StaticArray<FloatType, MAXMATERIALS>;
 
-  constexpr static size_t MaxMaterials = MAXMATERIALS;
+  constexpr static axom::IndexType MaxMaterials = MAXMATERIALS;
 
   void set(const axom::ArrayView<IndexType> &material_ids,
            const axom::ArrayView<FloatType> &volume_fractions,
@@ -86,26 +86,26 @@ public:
   }
 
   AXOM_HOST_DEVICE
-  size_t getNumberOfZones() const { return m_sizes.size(); }
+  axom::IndexType numberOfZones() const { return m_sizes.size(); }
 
   AXOM_HOST_DEVICE
-  size_t getNumberOfMaterials(ZoneIndex zi) const
+  axom::IndexType numberOfMaterials(ZoneIndex zi) const
   {
     assert(zi < m_sizes.size());
     return m_sizes[zi];
   }
 
   AXOM_HOST_DEVICE
-  void getZoneMaterials(ZoneIndex zi, IDList &ids, VFList &vfs) const
+  void zoneMaterials(ZoneIndex zi, IDList &ids, VFList &vfs) const
   {
     assert(zi < m_sizes.size());
 
     ids.clear();
     vfs.clear();
 
-    const auto sz = m_sizes[zi];
+    const auto sz = static_cast<axom::IndexType>(m_sizes[zi]);
     const auto offset = m_offsets[zi];
-    for(size_t i = 0; i < sz; i++)
+    for(axom::IndexType i = 0; i < sz; i++)
     {
       const auto idx = m_indices[offset + i];
 
@@ -118,9 +118,9 @@ public:
   bool zoneContainsMaterial(ZoneIndex zi, MaterialIndex mat) const
   {
     assert(zi < m_sizes.size());
-    const auto sz = m_sizes[zi];
+    const auto sz = static_cast<axom::IndexType>(m_sizes[zi]);
     const auto offset = m_offsets[zi];
-    for(size_t i = 0; i < sz; i++)
+    for(axom::IndexType i = 0; i < sz; i++)
     {
       const auto idx = m_indices[offset + i];
 
@@ -133,9 +133,9 @@ public:
   bool zoneContainsMaterial(ZoneIndex zi, MaterialIndex mat, FloatType &vf) const
   {
     assert(zi < m_sizes.size());
-    const auto sz = m_sizes[zi];
+    const auto sz = static_cast<axom::IndexType>(m_sizes[zi]);
     const auto offset = m_offsets[zi];
-    for(size_t i = 0; i < sz; i++)
+    for(axom::IndexType i = 0; i < sz; i++)
     {
       const auto idx = m_indices[offset + i];
 
@@ -176,7 +176,7 @@ matsets:
 
 // NOTE: I'm not sure I 100% get this one.
 
-template <typename IndexT, typename FloatT, size_t MAXMATERIALS>
+template <typename IndexT, typename FloatT, axom::IndexType MAXMATERIALS>
 class MultiBufferMaterialView
 {
 public:
@@ -187,7 +187,7 @@ public:
   using IDList = StaticArray<IndexType, MAXMATERIALS>;
   using VFList = StaticArray<FloatType, MAXMATERIALS>;
 
-  constexpr static size_t MaxMaterials = MAXMATERIALS;
+  constexpr static axom::IndexType MaxMaterials = MAXMATERIALS;
 
   void add(const axom::ArrayView<ZoneIndex> &ids,
            const axom::ArrayView<FloatType> &vfs)
@@ -200,19 +200,19 @@ public:
   }
 
   AXOM_HOST_DEVICE
-  size_t getNumberOfZones() const
+  axom::IndexType numberOfZones() const
   {
-    size_t nzones = 0;
+    axom::IndexType nzones = 0;
     for(int i = 0; i < m_size; i++)
       nzones = axom::utilities::max(nzones, m_indices[i].size());
     return nzones;
   }
 
   AXOM_HOST_DEVICE
-  size_t getNumberOfMaterials(ZoneIndex zi) const
+  axom::IndexType numberOfMaterials(ZoneIndex zi) const
   {
-    size_t nmats = 0;
-    for(size_t i = 0; i < m_size; i++)
+    axom::IndexType nmats = 0;
+    for(axom::IndexType i = 0; i < m_size; i++)
     {
       if(zi < m_indices[i].size())
       {
@@ -225,12 +225,12 @@ public:
   }
 
   AXOM_HOST_DEVICE
-  void getZoneMaterials(ZoneIndex zi, IDList &ids, VFList &vfs) const
+  void zoneMaterials(ZoneIndex zi, IDList &ids, VFList &vfs) const
   {
     ids.clear();
     vfs.clear();
 
-    for(size_t i = 0; i < m_size; i++)
+    for(axom::IndexType i = 0; i < m_size; i++)
     {
       if(zi < m_indices[i].size())
       {
@@ -268,7 +268,7 @@ public:
 private:
   axom::StackArray<axom::ArrayView<FloatType>, MAXMATERIALS> m_values {};
   axom::StackArray<axom::ArrayView<ZoneIndex>, MAXMATERIALS> m_indices {};
-  size_t m_size {0};
+  axom::IndexType m_size {0};
 };
 
 /**
@@ -284,7 +284,7 @@ matsets:
       b: 1
       c: 2
  */
-template <typename IndexT, typename FloatT, size_t MAXMATERIALS>
+template <typename IndexT, typename FloatT, axom::IndexType MAXMATERIALS>
 class ElementDominantMaterialView
 {
 public:
@@ -295,7 +295,7 @@ public:
   using IDList = StaticArray<IndexType, MAXMATERIALS>;
   using VFList = StaticArray<FloatType, MAXMATERIALS>;
 
-  constexpr static size_t MaxMaterials = MAXMATERIALS;
+  constexpr static axom::IndexType MaxMaterials = MAXMATERIALS;
 
   void add(const axom::ArrayView<FloatType> &vfs)
   {
@@ -303,26 +303,26 @@ public:
   }
 
   AXOM_HOST_DEVICE
-  size_t getNumberOfZones() const
+  axom::IndexType numberOfZones() const
   {
     return (m_volume_fractions.size() > 0) ? m_volume_fractions[0].size() : 0;
   }
 
   AXOM_HOST_DEVICE
-  size_t getNumberOfMaterials(ZoneIndex zi) const
+  axom::IndexType numberOfMaterials(ZoneIndex zi) const
   {
-    size_t nmats = 0;
+    axom::IndexType nmats = 0;
     if(m_volume_fractions.size() > 0)
     {
       assert(zi < m_volume_fractions[0].size());
-      for(size_t i = 0; i < m_volume_fractions.size(); i++)
+      for(axom::IndexType i = 0; i < m_volume_fractions.size(); i++)
         nmats += m_volume_fractions[i][zi] > 0. ? 1 : 0;
     }
     return nmats;
   }
 
   AXOM_HOST_DEVICE
-  void getZoneMaterials(ZoneIndex zi, IDList &ids, VFList &vfs) const
+  void zoneMaterials(ZoneIndex zi, IDList &ids, VFList &vfs) const
   {
     ids.clear();
     vfs.clear();
@@ -330,7 +330,7 @@ public:
     if(m_volume_fractions.size() > 0)
     {
       assert(zi < m_volume_fractions[0].size());
-      for(size_t i = 0; i < m_volume_fractions.size(); i++)
+      for(axom::IndexType i = 0; i < m_volume_fractions.size(); i++)
       {
         if(m_volume_fractions[i][zi] > 0)
         {
@@ -390,7 +390,7 @@ matsets:
  */
 /// NOTES: This matset type does not seem so GPU friendly since there is some work to do for some of the queries.
 
-template <typename IndexT, typename FloatT, size_t MAXMATERIALS>
+template <typename IndexT, typename FloatT, axom::IndexType MAXMATERIALS>
 class MaterialDominantMaterialView
 {
 public:
@@ -401,7 +401,7 @@ public:
   using IDList = StaticArray<IndexType, MAXMATERIALS>;
   using VFList = StaticArray<FloatType, MAXMATERIALS>;
 
-  constexpr static size_t MaxMaterials = MAXMATERIALS;
+  constexpr static axom::IndexType MaxMaterials = MAXMATERIALS;
 
   void add(const axom::ArrayView<ZoneIndex> &ids,
            const axom::ArrayView<FloatType> &vfs)
@@ -414,14 +414,14 @@ public:
   }
 
   AXOM_HOST_DEVICE
-  size_t getNumberOfZones()
+  axom::IndexType numberOfZones()
   {
     if(m_nzones == 0)
     {
-      for(size_t mi = 0; mi < m_size; mi++)
+      for(axom::IndexType mi = 0; mi < m_size; mi++)
       {
         const auto sz = m_element_ids[mi].size();
-        for(size_t i = 0; i < sz; i++)
+        for(axom::IndexType i = 0; i < sz; i++)
           m_nzones = axom::utilities::max(m_nzones, m_element_ids[mi][i]);
 #if 0
         // host-only
@@ -439,14 +439,14 @@ public:
   }
 
   AXOM_HOST_DEVICE
-  size_t getNumberOfMaterials(ZoneIndex zi) const
+  axom::IndexType numberOfMaterials(ZoneIndex zi) const
   {
-    size_t nmats = 0;
-    for(size_t mi = 0; mi < m_size; mi++)
+    axom::IndexType nmats = 0;
+    for(axom::IndexType mi = 0; mi < m_size; mi++)
     {
       const auto sz = m_element_ids[mi].size();
 #if 1
-      for(size_t i = 0; i < sz; i++)
+      for(axom::IndexType i = 0; i < sz; i++)
       {
         if(m_element_ids[mi][i] == zi)
         {
@@ -468,16 +468,16 @@ public:
   }
 
   AXOM_HOST_DEVICE
-  void getZoneMaterials(ZoneIndex zi, IDList &ids, VFList &vfs) const
+  void zoneMaterials(ZoneIndex zi, IDList &ids, VFList &vfs) const
   {
     ids.clear();
     vfs.clear();
 
-    for(size_t mi = 0; mi < m_size; mi++)
+    for(axom::IndexType mi = 0; mi < m_size; mi++)
     {
       const auto sz = m_element_ids[mi].size();
 #if 1
-      for(size_t i = 0; i < sz; i++)
+      for(axom::IndexType i = 0; i < sz; i++)
       {
         if(m_element_ids[mi][i] == zi)
         {
@@ -510,7 +510,7 @@ public:
     bool found = false;
 #if 1
     const auto element_ids = m_element_ids[mat];
-    for(size_t i = 0; i < element_ids.size(); i++)
+    for(axom::IndexType i = 0; i < element_ids.size(); i++)
     {
       if(element_ids[i] == zi)
       {
@@ -530,7 +530,7 @@ public:
     bool found = false;
 #if 1
     const auto element_ids = m_element_ids[mat];
-    for(size_t i = 0; i < element_ids.size(); i++)
+    for(axom::IndexType i = 0; i < element_ids.size(); i++)
     {
       if(element_ids[i] == zi)
       {
@@ -546,8 +546,8 @@ public:
 private:
   StackArray<axom::ArrayView<IndexType>, MAXMATERIALS> m_element_ids {};
   StackArray<axom::ArrayView<FloatType>, MAXMATERIALS> m_volume_fractions {};
-  size_t m_size {0};
-  size_t m_nzones {0};
+  axom::IndexType m_size {0};
+  axom::IndexType m_nzones {0};
 };
 
 #if 0
@@ -558,7 +558,7 @@ private:
 /**
  */
 template <typename ExecSpace>
-axom::Array<int> makeMatsPerZone(const MaterialDominantMaterialView &view, size_t nzones)
+axom::Array<int> makeMatsPerZone(const MaterialDominantMaterialView &view, axom::IndexType nzones)
 {
   // Figure out the number of materials per zone.
   axom::Array<int> matsPerZone(nzones, nzones, axom::getAllocatorID<ExecSpace>());
@@ -567,7 +567,7 @@ axom::Array<int> makeMatsPerZone(const MaterialDominantMaterialView &view, size_
   {
     matsPerZone_view[i] = 0;
   });
-  for(size_t mi = 0; mi < m_size; mi++)
+  for(axom::IndexType mi = 0; mi < m_size; mi++)
   {
     auto element_ids_view = m_element_ids[mi].view();
     axom::forall<ExecSpace>(0, nzones, AXOM_LAMBDA(int i)
@@ -582,7 +582,7 @@ axom::Array<int> makeMatsPerZone(const MaterialDominantMaterialView &view, size_
 template <typename ExecSpace, typename Predicate>
 axom::Array<int> selectZones(const MaterialDominantMaterialView &view, Predicate &&pred)
 {
-  const auto nzones = view.getNumberOfZones();
+  const auto nzones = view.numberOfZones();
 
   // Figure out the number of materials per zone.
   axom::Array<int> matsPerZone = makeMatsPerZone<ExecSpace>(view, nzones);
@@ -594,7 +594,7 @@ axom::Array<int> selectZones(const MaterialDominantMaterialView &view, Predicate
   {
     num_selected += pred(matsPerZone_view[i]) ? 1 : 0;
   });
-  size_t outsize = num_selected.get();
+  axom::IndexType outsize = num_selected.get();
   
   // Make an offset array that records where each thread can write its data.
   axom::Array<int, 1, ExecSpace> offsets(nzones);
@@ -648,10 +648,10 @@ axom::Array<int> selectZones(const UnibufferMaterialView &view, MaterialIndex ma
 
        Then we could write the algorithm so we do RAJA things but we could make a reducer object for the serial non-RAJA case that does nothing.
  */
-  const size_t nzones = view.getNumberOfZones();
+  const axom::IndexType nzones = view.numberOfZones();
 
   using REDUCE_POL = typename axom::execution_space<ExecSpace>::reduce_policy;
-  RAJA::ReduceSum<REDUCE_POL, size_t> num_selected(0);
+  RAJA::ReduceSum<REDUCE_POL, axom::IndexType> num_selected(0);
   axom::Array<int, 1, ExecutionPolicy> zones(nzones);
   auto zones_view = zones.view();
   axom::forall<ExecSpace>(0, zones.size(), AXOM_LAMBDA(int zi)
@@ -660,7 +660,7 @@ axom::Array<int> selectZones(const UnibufferMaterialView &view, MaterialIndex ma
     zones_view[zi] = haveMat;
     num_selected += haveMat;
   });
-  size_t outsize = num_selected.get();
+  axom::IndexType outsize = num_selected.get();
   
   // Make an offset array that records where each thread can write its data.
   axom::Array<int, 1, ExecSpace> offsets(nzones);
@@ -694,7 +694,7 @@ axom::Array<int> selectCleanZones(const UnibufferMaterialView &view)
 {
   auto zoneIsClean = [](const UnibufferMaterialView &deviceView, MaterialIndex /*mat*/, int zi)
   {
-    return view.getNumberOfMaterials(zi) == 1;
+    return view.numberOfMaterials(zi) == 1;
   };
   return selectZones<ExecSpace>(view, 0, zoneIsClean);
 }
@@ -704,7 +704,7 @@ axom::Array<int> selectMixedZones(const UnibufferMaterialView &view)
 {
   auto zoneIsMixed = [](const UnibufferMaterialView &deviceView, MaterialIndex /*mat*/, int zi)
   {
-    return view.getNumberOfMaterials(zi) > 1;
+    return view.numberOfMaterials(zi) > 1;
   };
   return selectZones<ExecSpace>(view, 0, zoneIsClean);
 }
