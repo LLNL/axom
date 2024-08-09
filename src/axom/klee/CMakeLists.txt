@@ -61,9 +61,3 @@ axom_install_component( NAME    klee
 if (AXOM_ENABLE_TESTS AND ENABLE_GMOCK)
   add_subdirectory(tests)
 endif()
-
-#------------------------------------------------------------------------------
-# Add code checks
-#------------------------------------------------------------------------------
-axom_add_code_checks(PREFIX klee)
-

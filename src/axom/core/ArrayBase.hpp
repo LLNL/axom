@@ -158,6 +158,7 @@ public:
   constexpr static int Dims = DIM;
 
   //! @brief Construct row-major, unitnitialized array.
+  AXOM_SUPPRESS_HD_WARN
   AXOM_HOST_DEVICE ArrayBase() : m_shape(), m_mapping(ArrayStrideOrder::ROW)
   {
     updateStrides();
@@ -170,6 +171,7 @@ public:
    * \param [in] min_stride The minimum stride between two consecutive
    *  elements in row-major order.
    */
+  AXOM_SUPPRESS_HD_WARN
   AXOM_HOST_DEVICE ArrayBase(const StackArray<IndexType, DIM>& shape,
                              int min_stride = 1)
     : m_shape {shape}
@@ -188,6 +190,7 @@ public:
    * The object is constructed with the given shape,
    * not the partial shape information in \c mapping.
    */
+  AXOM_SUPPRESS_HD_WARN
   AXOM_HOST_DEVICE ArrayBase(const StackArray<IndexType, DIM>& shape,
                              const MDMapping<DIM>& mapping)
     : m_shape {shape}
@@ -388,6 +391,7 @@ protected:
   }
 
   /// \brief Set the shape and stride
+  AXOM_SUPPRESS_HD_WARN
   AXOM_HOST_DEVICE void setShapeAndStride(const StackArray<IndexType, DIM>& shape,
                                           const StackArray<IndexType, DIM>& stride)
   {
@@ -631,6 +635,7 @@ public:
   }
 
   /// \brief Returns the multidimensional mapping for the Array
+  AXOM_SUPPRESS_HD_WARN
   AXOM_HOST_DEVICE MDMapping<1> mapping() const
   {
     return MDMapping<1> {{m_stride}};

@@ -336,6 +336,7 @@ public:
     return sumOfBinSizes;
   }
 
+  AXOM_SUPPRESS_HD_WARN
   template <typename Func>
   AXOM_HOST_DEVICE void visitCandidates(const BoxType& bbox, Func&& evalFn) const
   {

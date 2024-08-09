@@ -213,7 +213,9 @@ public:
   {
     return getSize<FirstSetType>(m_set1);
   }
+
   /** \brief Size of the second set.   */
+  AXOM_SUPPRESS_HD_WARN
   AXOM_HOST_DEVICE inline PositionType secondSetSize() const
   {
     return getSize<SecondSetType>(m_set2);
@@ -221,6 +223,7 @@ public:
 
   /** \brief Returns pointer to the first set.   */
   const FirstSetType* getFirstSet() const { return m_set1; }
+
   /** \brief Returns pointer to the second set.   */
   const SecondSetType* getSecondSet() const { return m_set2; }
 
@@ -253,6 +256,7 @@ public:
 private:
   virtual void verifyPosition(PositionType s1, PositionType s2) const = 0;
 
+  AXOM_SUPPRESS_HD_WARN
   template <typename SetType>
   AXOM_HOST_DEVICE
     typename std::enable_if<std::is_abstract<SetType>::value, PositionType>::type
@@ -371,6 +375,7 @@ public:
     return PositionType();
   }
 
+  AXOM_SUPPRESS_HD_WARN
   AXOM_HOST_DEVICE PositionType findElementFlatIndex(PositionType s1,
                                                      PositionType s2) const override
   {
@@ -393,6 +398,7 @@ public:
     return PositionType();
   }
 
+  AXOM_SUPPRESS_HD_WARN
   AXOM_HOST_DEVICE RangeSetType elementRangeSet(PositionType) const override
   {
     return RangeSetType();

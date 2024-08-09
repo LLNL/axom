@@ -6,8 +6,8 @@
 #ifndef MINT_CONFIG_HPP_
 #define MINT_CONFIG_HPP_
 
-#include "axom/config.hpp"// for compile-time definitions
-#include "axom/core/Types.hpp" // for fixed-width types
+#include "axom/config.hpp"      // for compile-time definitions
+#include "axom/core/Types.hpp"  // for fixed-width types
 
 #cmakedefine AXOM_MINT_USE_SIDRE
 
@@ -21,7 +21,5 @@ using int64 = std::int64_t;
 
 } /* end namespace mint */
 } /* end namespace axom */
-
-
 
 #endif /* MINT_CONFIG_HPP_ */
