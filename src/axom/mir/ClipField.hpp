@@ -285,7 +285,9 @@ public:
 
     // Make the selected zones and get the size.
     ClipOptions opts(n_options);
-    axom::mir::SelectedZones<ExecSpace> selectedZones(m_topologyView.numberOfZones(), n_options);
+    axom::mir::SelectedZones<ExecSpace> selectedZones(
+      m_topologyView.numberOfZones(),
+      n_options);
     const auto nzones = selectedZones.view().size();
 
     // Get the clip field. Make sure it is double. That lets us make less code down the line.
@@ -374,7 +376,13 @@ public:
     builder.setBlendGroupSizes(blendGroups.view(), blendGroupsLen.view());
 
     // Compute sizes and offsets
-    computeSizes(clipTableViews, builder, zoneData, fragmentData, opts, selectedZones, clipFieldView);
+    computeSizes(clipTableViews,
+                 builder,
+                 zoneData,
+                 fragmentData,
+                 opts,
+                 selectedZones,
+                 clipFieldView);
     computeFragmentSizes(fragmentData, selectedZones);
     computeFragmentOffsets(fragmentData);
 
@@ -404,7 +412,12 @@ public:
                           blendGroupStart.view(),
                           blendIds.view(),
                           blendCoeff.view());
-    makeBlendGroups(clipTableViews, builder, zoneData, opts, selectedZones, clipFieldView);
+    makeBlendGroups(clipTableViews,
+                    builder,
+                    zoneData,
+                    opts,
+                    selectedZones,
+                    clipFieldView);
 
     // Make the blend groups unique
     axom::Array<KeyType> uNames;
@@ -467,7 +480,12 @@ public:
                fieldsToProcess,
                n_fields,
                n_newFields);
-    makeOriginalElements(fragmentData, opts, selectedZones, n_fields, n_newTopo, n_newFields);
+    makeOriginalElements(fragmentData,
+                         opts,
+                         selectedZones,
+                         n_fields,
+                         n_newTopo,
+                         n_newFields);
   }
 
 private:

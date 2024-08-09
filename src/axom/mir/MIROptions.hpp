@@ -11,7 +11,6 @@ namespace axom
 {
 namespace mir
 {
-
 /**
  * \brief This class provides a kind of schema over the MIR options, as well
  *        as default values, and some utilities functions.
@@ -24,8 +23,7 @@ public:
    *
    * \param options The node that contains the clipping options.
    */
-  MIROptions(const conduit::Node &options) : axom::mir::Options(options)
-  { }
+  MIROptions(const conduit::Node &options) : axom::mir::Options(options) { }
 
   /**
    * \brief Get the name of the matset on which we'll operate.

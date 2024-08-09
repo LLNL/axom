@@ -13,7 +13,6 @@ namespace mir
 {
 namespace clipping
 {
-
 /**
  * \brief This class provides a kind of schema over the clipping options, as well
  *        as default values, and some utilities functions.
@@ -26,8 +25,7 @@ public:
    *
    * \param options The node that contains the clipping options.
    */
-  ClipOptions(const conduit::Node &options) : axom::mir::Options(options)
-  { }
+  ClipOptions(const conduit::Node &options) : axom::mir::Options(options) { }
 
   /**
    * \brief Return the name of the field used for clipping.
@@ -82,6 +80,7 @@ public:
       ? (options().fetch_existing("outside").to_int() > 0)
       : false;
   }
+
 private:
   /// Access the base class' options.
   const conduit::Node &options() const { return this->m_options; }

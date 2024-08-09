@@ -14,7 +14,6 @@ namespace axom
 {
 namespace mir
 {
-
 // IDEA: maybe use inlet for this stuff.
 
 /**
@@ -30,9 +29,7 @@ public:
    * \param nzones The total number of zones in the associated topology.
    * \param options The node that contains the clipping options.
    */
-  Options(const conduit::Node &options)
-    :m_options(options)
-  { }
+  Options(const conduit::Node &options) : m_options(options) { }
 
   /**
    * \brief Return the name of the topology to make in the output.

@@ -8,8 +8,5 @@
 namespace axom
 {
 namespace mir
-{
-
-
-}  // namespace mir
+{ }  // namespace mir
 }  // namespace axom

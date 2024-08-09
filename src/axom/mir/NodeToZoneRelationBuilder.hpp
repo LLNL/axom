@@ -21,7 +21,6 @@ namespace axom
 {
 namespace mir
 {
-
 /**
  * \brief Build an o2m relation that lets us look up the zones for a node.
  */
@@ -116,7 +115,6 @@ void NodeToZoneRelationBuilder<ExecSpace>::execute(const conduit::Node &topo,
   // Get the ID of a Conduit allocator that will allocate through Axom with device allocator allocatorID.
   utilities::blueprint::ConduitAllocateThroughAxom<ExecSpace> c2a;
   const int conduitAllocatorID = c2a.getConduitAllocatorID();
-
 
   conduit::Node &n_zones = relation["zones"];
   conduit::Node &n_sizes = relation["sizes"];

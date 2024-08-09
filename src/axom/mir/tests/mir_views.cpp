@@ -51,8 +51,7 @@
 
 std::string baselineDirectory()
 {
-  return pjoin(pjoin(pjoin(dataDirectory(), "mir"), "regression"),
-               "mir_views");
+  return pjoin(pjoin(pjoin(dataDirectory(), "mir"), "regression"), "mir_views");
 }
 //------------------------------------------------------------------------------
 
@@ -197,22 +196,28 @@ void test_matsetview(MatsetView matsetView, int allocatorID)
 
   // Fill in resultsView on the device.
   constexpr int nResultsPerZone = nResults / nZones;
-  axom::for_all<ExecSpace>(3, AXOM_LAMBDA(auto index)
-  {
-    resultsView[nResultsPerZone * index + 0] = matsetView.zoneContainsMaterial(matidsView[index], MATA) ? 1 : 0;
-    resultsView[nResultsPerZone * index + 1] = matsetView.zoneContainsMaterial(matidsView[index], MATB) ? 1 : 0;
-    resultsView[nResultsPerZone * index + 2] = matsetView.zoneContainsMaterial(matidsView[index], MATC) ? 1 : 0;
-    resultsView[nResultsPerZone * index + 3] = matsetView.numberOfMaterials(matidsView[index]);
+  axom::for_all<ExecSpace>(
+    3,
+    AXOM_LAMBDA(auto index) {
+      resultsView[nResultsPerZone * index + 0] =
+        matsetView.zoneContainsMaterial(matidsView[index], MATA) ? 1 : 0;
+      resultsView[nResultsPerZone * index + 1] =
+        matsetView.zoneContainsMaterial(matidsView[index], MATB) ? 1 : 0;
+      resultsView[nResultsPerZone * index + 2] =
+        matsetView.zoneContainsMaterial(matidsView[index], MATC) ? 1 : 0;
+      resultsView[nResultsPerZone * index + 3] =
+        matsetView.numberOfMaterials(matidsView[index]);
 
-    typename MatsetView::IDList ids {};
-    typename MatsetView::VFList vfs {};
-    matsetView.zoneMaterials(matidsView[index], ids, vfs);
-    resultsView[nResultsPerZone * index + 4] = ids.size();
-    for(axom::IndexType i = 0; i < 3; i++)
-    {
-      resultsView[nResultsPerZone * index + 5 + i] = (i < ids.size()) ? ids[i] : -1;
-    }
-  });
+      typename MatsetView::IDList ids {};
+      typename MatsetView::VFList vfs {};
+      matsetView.zoneMaterials(matidsView[index], ids, vfs);
+      resultsView[nResultsPerZone * index + 4] = ids.size();
+      for(axom::IndexType i = 0; i < 3; i++)
+      {
+        resultsView[nResultsPerZone * index + 5 + i] =
+          (i < ids.size()) ? ids[i] : -1;
+      }
+    });
   // Get containsView data to the host and compare results
   std::vector<int> resultsHost(nResults);
   axom::copy(resultsHost.data(), resultsView.data(), sizeof(int) * nResults);
@@ -224,7 +229,9 @@ void test_matsetview(MatsetView matsetView, int allocatorID)
 
 //------------------------------------------------------------------------------
 template <typename ExecSpace>
-void braid2d_mat_test(const std::string &type, const std::string &mattype, const std::string &name)
+void braid2d_mat_test(const std::string &type,
+                      const std::string &mattype,
+                      const std::string &name)
 {
   namespace bputils = axom::mir::utilities::blueprint;
   const int allocatorID = axom::execution_space<ExecSpace>::allocatorID();

@@ -220,7 +220,7 @@ protected:
     clipper.execute(n_topo, n_coordset, tmpFields, options, n_newTopo, n_newCoordset, n_newFields);
     // Q: Would it be better here to just use ClipFieldFilterDevice? We don't need all that flexibility but it might be better for linking since it would have been created already for ClipFieldFilter.
 
-#if 1
+  #if 1
     conduit::Node mesh;
     mesh[n_newTopo.path()].set_external(n_newTopo);
     mesh[n_newCoordset.path()].set_external(n_newCoordset);
@@ -229,7 +229,7 @@ protected:
     std::stringstream ss;
     ss << "debug_equiz_" << currentMat.number;
     conduit::relay::io::blueprint::save_mesh(mesh, ss.str(), "hdf5");
-#endif
+  #endif
 
     n_newFields.remove(zoneCenteredField);
     n_newFields.remove(nodeCenteredField);

@@ -99,10 +99,11 @@ void make_unibuffer(const std::vector<float> &vfA,
   matset["indices"].set(indices);
 }
 
-
 template <typename Dimensions>
-void make_matset(const std::string &type, const std::string &topoName,
-  const Dimensions &dims, conduit::Node &mesh)
+void make_matset(const std::string &type,
+                 const std::string &topoName,
+                 const Dimensions &dims,
+                 conduit::Node &mesh)
 {
   constexpr int sampling = 10;
   int midx = sampling * dims[0] / 2;
@@ -130,8 +131,8 @@ void make_matset(const std::string &type, const std::string &topoName,
         const int iele = i / sampling;
 
         bool gt1 = j >= midy;
-        bool gt2 = j >= ((3./2.)*(i - midx) + midy);
-        bool gt3 = j >= ((-2./5.)*(i - midx) + midy);
+        bool gt2 = j >= ((3. / 2.) * (i - midx) + midy);
+        bool gt3 = j >= ((-2. / 5.) * (i - midx) + midy);
 
         int index = k * ksize + jele * dims[0] + iele;
 
@@ -197,16 +198,12 @@ void make_matset(const std::string &type, const std::string &topoName,
   }
   // TODO: write these other cases.
   else if(type == "multibuffer")
-  {
-  }
+  { }
   else if(type == "element_dominant")
-  {
-  }
+  { }
   else if(type == "material_dominant")
-  {
-  }
+  { }
 }
-
 
 void mixed3d(conduit::Node &mesh)
 {

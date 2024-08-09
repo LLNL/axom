@@ -13,7 +13,6 @@ namespace axom
 {
 namespace mir
 {
-
 /**
  * \brief This class provides a kind of schema over options, as well
  *        as default values, and some utilities functions.
@@ -28,8 +27,9 @@ public:
    * \param nzones The total number of zones in the associated topology.
    * \param options The node that contains the clipping options.
    */
-  SelectedZones(axom::IndexType nzones, const conduit::Node &options) : m_selectedZones(),
-    m_selectedZonesView()
+  SelectedZones(axom::IndexType nzones, const conduit::Node &options)
+    : m_selectedZones()
+    , m_selectedZonesView()
   {
     buildSelectedZones(nzones, options);
   }
@@ -101,8 +101,7 @@ protected:
     else
     {
       // Select all zones.
-      m_selectedZones =
-        axom::Array<axom::IndexType>(nzones, nzones, allocatorID);
+      m_selectedZones = axom::Array<axom::IndexType>(nzones, nzones, allocatorID);
       auto szView = m_selectedZonesView = m_selectedZones.view();
       axom::for_all<ExecSpace>(
         nzones,

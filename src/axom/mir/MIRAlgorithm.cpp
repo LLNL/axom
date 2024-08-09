@@ -14,7 +14,6 @@ namespace axom
 {
 namespace mir
 {
-
 void MIRAlgorithm::execute(const conduit::Node &n_input,
                            const conduit::Node &n_options,
                            conduit::Node &n_output)
@@ -39,8 +38,9 @@ void MIRAlgorithm::execute(const conduit::Node &n_input,
   }
 }
 
-void MIRAlgorithm::executeSetup(const conduit::Node &n_domain, const conduit::Node &n_options,
-   conduit::Node &n_newDomain)
+void MIRAlgorithm::executeSetup(const conduit::Node &n_domain,
+                                const conduit::Node &n_options,
+                                conduit::Node &n_newDomain)
 {
   MIROptions options(n_options);
 
@@ -51,12 +51,12 @@ void MIRAlgorithm::executeSetup(const conduit::Node &n_domain, const conduit::No
   const conduit::Node &n_matsets = n_domain.fetch_existing("matsets");
   const conduit::Node &n_matset = n_matsets.fetch_existing(matset);
   const conduit::Node *n_topo =
-      conduit::blueprint::mesh::utils::find_reference_node(n_matset, "topology");
+    conduit::blueprint::mesh::utils::find_reference_node(n_matset, "topology");
   SLIC_ASSERT(n_topo != nullptr);
 
   // Which coordset is used by that topology?
   const conduit::Node *n_coordset =
-      conduit::blueprint::mesh::utils::find_reference_node(*n_topo, "coordset");
+    conduit::blueprint::mesh::utils::find_reference_node(*n_topo, "coordset");
   SLIC_ASSERT(n_coordset != nullptr);
 
   // Get the names of the output items.
@@ -75,21 +75,37 @@ void MIRAlgorithm::executeSetup(const conduit::Node &n_domain, const conduit::No
   if(n_domain.has_path("fields"))
   {
     conduit::Node &newFields = n_newDomain["fields"];
-    executeDomain(*n_topo, *n_coordset, n_domain["fields"], n_matset, n_options, newTopo, newCoordset, newFields, newMatset);
+    executeDomain(*n_topo,
+                  *n_coordset,
+                  n_domain["fields"],
+                  n_matset,
+                  n_options,
+                  newTopo,
+                  newCoordset,
+                  newFields,
+                  newMatset);
   }
   else
   {
     conduit::Node n_fields, newFields;
-    executeDomain(*n_topo, *n_coordset, n_fields, n_matset, n_options, newTopo, newCoordset, newFields, newMatset);
+    executeDomain(*n_topo,
+                  *n_coordset,
+                  n_fields,
+                  n_matset,
+                  n_options,
+                  newTopo,
+                  newCoordset,
+                  newFields,
+                  newMatset);
   }
 }
 
-void MIRAlgorithm::copyState(const conduit::Node &srcState, conduit::Node &destState) const
+void MIRAlgorithm::copyState(const conduit::Node &srcState,
+                             conduit::Node &destState) const
 {
   for(conduit::index_t i = 0; i < srcState.number_of_children(); i++)
     destState[srcState[i].name()].set(srcState[i]);
 }
-
 
 }  // namespace mir
 }  // namespace axom

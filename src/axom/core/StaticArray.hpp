@@ -24,15 +24,18 @@ class StaticArray : public StackArray<T, N>
 {
 public:
   AXOM_HOST_DEVICE
-  constexpr size_t capacity() const { return static_cast<size_t>(N); }
+  constexpr axom::IndexType capacity() const
+  {
+    return static_cast<axom::IndexType>(N);
+  }
 
   AXOM_HOST_DEVICE
-  size_t size() const { return m_size; }
+  axom::IndexType size() const { return m_size; }
 
   AXOM_HOST_DEVICE
   void push_back(const T &e)
   {
-    if(m_size + 1 < capacity()) StackArray<T, N>::m_data[m_size++] = e;
+    if(m_size + 1 <= capacity()) this->m_data[m_size++] = e;
   }
 
   AXOM_HOST_DEVICE
@@ -47,11 +50,11 @@ public:
   AXOM_HOST_DEVICE
   void fill(const T &e)
   {
-    for(size_t i = 0; i < capacity(); i++) StackArray<T, N>::m_data[i] = e;
+    for(size_t i = 0; i < capacity(); i++) this->m_data[i] = e;
   }
 
 private:
-  size_t m_size {0};
+  axom::IndexType m_size {0};
 };
 
 } /* namespace axom */

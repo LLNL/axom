@@ -14,7 +14,6 @@ namespace mir
 {
 namespace clipping
 {
-
 /**
  * \brief This class encapsulates the logic for building blend groups.
  *
