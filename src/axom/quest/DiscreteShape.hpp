@@ -141,7 +141,7 @@ private:
   std::string m_prefixPath;
 
   //@{
-  //!@name Various parameters for discretization.
+  //!@name Various parameters for discretization of analytical shapes.
   RefinementType m_refinementType;
   double m_percentError {MINIMUM_PERCENT_ERROR};
   int m_samplesPerKnotSpan {DEFAULT_SAMPLES_PER_KNOT_SPAN};

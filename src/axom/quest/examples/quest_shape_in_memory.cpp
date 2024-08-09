@@ -57,7 +57,7 @@ using VolFracSampling = quest::shaping::VolFracSampling;
 
 //------------------------------------------------------------------------------
 
-/// Struct to help choose if our shaping method: sampling or intersection for now
+/// Struct to help choose our shaping method: sampling or intersection for now
 enum class ShapingMethod : int
 {
   Sampling,

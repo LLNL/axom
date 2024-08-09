@@ -148,6 +148,9 @@ public:
    *   "cylinder3D" = 3D cylinder, as \c primal::Cylinder<double,3>
    *
    * \return the format of the shape
+   *
+   * TODO: Depending on the specified geometry, some members are not
+   * used.  It may clarify make each supported geometry a subclass.
    */
   const std::string &getFormat() const { return m_format; }
 
@@ -212,8 +215,8 @@ public:
   TransformableGeometryProperties getEndProperties() const;
 
   /**
-   @brief Return the number of generations for discretization of
-   analytical curves.
+   @brief Return the number of levels of refinement for discretization
+   of analytical curves.
 
    This number is unused for geometries that are specified in discrete
    form.
@@ -233,7 +236,7 @@ public:
   }
 
   /**
-   @brief Get the discrete function.
+   @brief Get the discrete function used in volumes of revolution.
   */
   axom::ArrayView<const double, 2> getDiscreteFunction() const
   {
@@ -262,11 +265,11 @@ private:
   //!@brief The analytical sphere, if used.
   Sphere3D m_sphere;
 
-  /*!
-    @brief The discrete 2D function, as an Nx2 array, if used.
-  */
+  //! @brief The discrete 2D function, as an Nx2 array, if used.
   axom::Array<double, 2> m_discreteFunction;
+  //!@brief The base of the VOR axis, corresponding to z=0.
   Point3D m_vorBase;
+  //!@brief VOR axis in the direction of increasing z.
   Vector3D m_vorDirection;
 
   std::shared_ptr<const GeometryOperator> m_operator;
