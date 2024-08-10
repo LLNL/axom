@@ -215,6 +215,23 @@ std::shared_ptr<mint::Mesh> DiscreteShape::createMeshRepresentation()
       octCount);
     SLIC_ASSERT(good);
 
+    // Rotate to the VOR axis direction and translate to the base location.
+    numerics::Matrix<double> rotate = vorAxisRotMatrix(vorGeom.getVorDirection());
+    const auto& translate = vorGeom.getVorBaseCoords();
+    auto octsView = octs.view();
+    axom::for_all<axom::SEQ_EXEC>(
+      octCount,
+      AXOM_LAMBDA(axom::IndexType iOct) {
+        auto& oct = octsView[iOct];
+        for ( int iVert = 0; iVert < OctType::NUM_VERTS; ++iVert )
+        {
+          auto& newCoords = oct[iVert];
+          auto oldCoords = newCoords;
+          numerics::matrix_vector_multiply(rotate, oldCoords.data(), newCoords.data());
+          newCoords.array() += translate.array();
+        }
+      });
+
     // Dump discretized octs as a tet mesh
     axom::mint::Mesh* mesh;
     axom::quest::mesh_from_discretized_polyline(
@@ -225,8 +242,8 @@ std::shared_ptr<mint::Mesh> DiscreteShape::createMeshRepresentation()
 
     if (m_sidreGroup)
     {
+      // If using sidre, copy the tetMesh into sidre.
       auto* tetMesh = static_cast<TetMesh*>(mesh);
-      // Don't directly use tetMesh, because we want the data in Sidre.
       axom::mint::UnstructuredMesh<axom::mint::SINGLE_SHAPE>*
         siMesh = new axom::mint::UnstructuredMesh<axom::mint::SINGLE_SHAPE>(
           tetMesh->getDimension(),
@@ -243,6 +260,8 @@ std::shared_ptr<mint::Mesh> DiscreteShape::createMeshRepresentation()
       siMesh->appendCells( tetMesh->getCellNodesArray()
                          , tetMesh->getNumberOfCells() );
       m_meshRep.reset(siMesh);
+      delete mesh;
+      mesh = nullptr;
     } else {
       m_meshRep.reset(mesh);
     }
@@ -421,6 +440,48 @@ numerics::Matrix<double> DiscreteShape::getTransforms() const
     }
   }
   return transformation;
+}
+
+// Return a 3x3 matrix that rotate coordinates from the x-axis to the given direction.
+numerics::Matrix<double> DiscreteShape::vorAxisRotMatrix(const Vector3D& dir)
+{
+  // Note that the rotation matrix is not unique.
+  static const Vector3D x {1.0, 0.0, 0.0};
+  Vector3D a = dir.unitVector();
+  Vector3D u; // Rotation vector, the cross product of x and a.
+  numerics::cross_product( x.data(), a.data(), u.data() );
+  double sinT = u.norm();
+  double cosT = numerics::dot_product( x.data(), a.data(), 3 );
+  double ccosT = 1 - cosT;
+
+  // Degenerate case with angle near 0 or pi.
+  if (utilities::isNearlyEqual(sinT, 0.0))
+  {
+    if (cosT > 0)
+    {
+      return numerics::Matrix<double>::identity(3);
+    }
+    else
+    {
+      // Give u a tiny component in any non-x direction
+      // so we can rotate around it.
+      u[1] = 1e-8;
+    }
+  }
+
+  u = u.unitVector();
+  numerics::Matrix<double> rot(3, 3, 0.0);
+  rot(0, 0) = u[0]*u[0] * ccosT + cosT;
+  rot(0, 1) = u[0]*u[1] * ccosT - u[2]*sinT;
+  rot(0, 2) = u[0]*u[2] * ccosT + u[1]*sinT;
+  rot(1, 0) = u[1]*u[0] * ccosT + u[2]*sinT;
+  rot(1, 1) = u[1]*u[1] * ccosT + cosT;
+  rot(1, 2) = u[1]*u[2] * ccosT - u[0]*sinT;
+  rot(2, 0) = u[0]*u[2] * ccosT - u[1]*sinT;
+  rot(2, 1) = u[1]*u[2] * ccosT + u[0]*sinT;
+  rot(2, 2) = u[2]*u[2] * ccosT + cosT;
+
+  return rot;
 }
 
 void DiscreteShape::setSamplesPerKnotSpan(int nSamples)

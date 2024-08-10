@@ -261,7 +261,7 @@ if(AXOM_ENABLE_MPI AND MFEM_FOUND AND MFEM_USE_MPI
                        --testShape ${_testshape}
                        --method intersection --refinements 2
                        --scale 0.75 0.75 0.75
-                       inline_mesh --min -2 -2 -2 --max 4 4 4 --res 20 20 20 -d 3
+                       inline_mesh --min -3 -3 -3 --max 3 3 3 --res 20 20 20 -d 3
             NUM_MPI_TASKS ${_nranks})
         endforeach()
     endif()

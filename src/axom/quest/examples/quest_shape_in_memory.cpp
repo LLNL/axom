@@ -73,8 +73,11 @@ public:
   std::string meshFile;
   std::string outputFile;
 
-  std::vector<double> sphereCenter {1.0, 1.0, 1.0};
-  double sphereRadius {1.0};
+  std::vector<double> center {0.0, 0.0, 0.0};
+  double radius {1.0};
+  double radius2 {0.3};
+  double length {2.0};
+  std::vector<double> direction {0.0, 0.0, 1.0};
 
   // Shape transformation parameters
   std::vector<double> scaleFactors;
@@ -242,13 +245,25 @@ public:
       ->check(axom::utilities::ValidCaliperMode);
 #endif
 
-    app.add_option("--sphereCenter", sphereCenter)
-      ->description("Center of sphere (x,y[,z])")
+    app.add_option("--center", center)
+      ->description("Center of sphere or base of cone/cyl/VOR (x,y[,z]) shape")
       ->expected(2, 3);
 
-    app.add_option("--sphereRadius", sphereRadius)
-      ->description("Radius of sphere")
+    app.add_option("--radius", radius)
+      ->description("Radius of sphere or cylinder shape")
+      ->check(axom::CLI::PositiveNumber);
+
+    app.add_option("--length", length)
+      ->description("Length of cone/cyl/VOR shape")
+      ->check(axom::CLI::PositiveNumber);
+
+    app.add_option("--dir", direction)
+      ->description("Direction of axis of cone/cyl/VOR (x,y[,z]) shape")
       ->expected(2, 3);
+
+    app.add_option("--radius2", radius2)
+      ->description("Second radius of cone shape")
+      ->check(axom::CLI::PositiveNumber);
 
     app.add_option("--scale", scaleFactors)
       ->description("Scale factor to apply to shape (x,y[,z])")
@@ -513,7 +528,7 @@ axom::klee::ShapeSet create2DShapeSet(sidre::DataStore& ds)
 
 axom::klee::Shape createShape_Sphere()
 {
-  axom::primal::Sphere<double, 3> sphere{params.sphereCenter.data(), params.sphereRadius};
+  axom::primal::Sphere<double, 3> sphere{params.center.data(), params.radius};
 
   axom::klee::TransformableGeometryProperties prop{
     axom::klee::Dimensions::Three,
@@ -612,14 +627,14 @@ axom::klee::Geometry createGeometry_Vor(
 
 axom::klee::Shape createShape_Vor()
 {
-  axom::primal::Point<double, 3> vorBase{0.0, 0.0, 0.0};
-  axom::primal::Vector<double, 3> vorDirection{1.0, 0.0, 0.0};
+  Point3D vorBase {params.center.data()};
+  axom::primal::Vector<double, 3> vorDirection{params.direction.data()};
   axom::Array<double, 2> discreteFunction({3, 2}, axom::ArrayStrideOrder::ROW);
   discreteFunction[0][0] = 0.0;
   discreteFunction[0][1] = 1.0;
-  discreteFunction[1][0] = 0.5;
+  discreteFunction[1][0] = 0.5*params.length;
   discreteFunction[1][1] = 0.8;
-  discreteFunction[2][0] = 1.0;
+  discreteFunction[2][0] = params.length;
   discreteFunction[2][1] = 1.0;
 
   axom::klee::Geometry vorGeometry = createGeometry_Vor(
@@ -632,13 +647,15 @@ axom::klee::Shape createShape_Vor()
 
 axom::klee::Shape createShape_Cylinder()
 {
-  axom::primal::Point<double, 3> vorBase{0.0, 0.0, 0.0};
-  axom::primal::Vector<double, 3> vorDirection{1.0, 0.0, 0.0};
+  Point3D vorBase {params.center.data()};
+  axom::primal::Vector<double, 3> vorDirection{params.direction.data()};
   axom::Array<double, 2> discreteFunction({2, 2}, axom::ArrayStrideOrder::ROW);
+  double radius = params.radius;
+  double height = params.length;
   discreteFunction[0][0] = 0.0;
-  discreteFunction[0][1] = 1.0;
-  discreteFunction[1][0] = 1.0;
-  discreteFunction[1][1] = 1.0;
+  discreteFunction[0][1] = radius;
+  discreteFunction[1][0] = height;
+  discreteFunction[1][1] = radius;
 
   axom::klee::Geometry vorGeometry = createGeometry_Vor(
     vorBase, vorDirection, discreteFunction);
@@ -650,13 +667,16 @@ axom::klee::Shape createShape_Cylinder()
 
 axom::klee::Shape createShape_Cone()
 {
-  axom::primal::Point<double, 3> vorBase{0.0, 0.0, 0.0};
-  axom::primal::Vector<double, 3> vorDirection{1.0, 0.0, 0.0};
+  Point3D vorBase {params.center.data()};
+  axom::primal::Vector<double, 3> vorDirection{params.direction.data()};
   axom::Array<double, 2> discreteFunction({2, 2}, axom::ArrayStrideOrder::ROW);
+  double baseRadius = params.radius;
+  double topRadius = params.radius2;
+  double height = params.length;
   discreteFunction[0][0] = 0.0;
-  discreteFunction[0][1] = 0.5;
-  discreteFunction[1][0] = 1.0;
-  discreteFunction[1][1] = 1.1;
+  discreteFunction[0][1] = baseRadius;
+  discreteFunction[1][0] = height;
+  discreteFunction[1][1] = topRadius;
 
   axom::klee::Geometry vorGeometry = createGeometry_Vor(
     vorBase, vorDirection, discreteFunction);
@@ -922,7 +942,7 @@ int main(int argc, char** argv)
 
     if (!params.outputFile.empty())
     {
-      std::string shapeFileName = params.outputFile + "." + shape.getName();
+      std::string shapeFileName = params.outputFile + ".shape";
       conduit::Node tmpNode, info;
       dMesh->getSidreGroup()->createNativeLayout(tmpNode);
       conduit::relay::io::blueprint::save_mesh(tmpNode, shapeFileName, "hdf5");
@@ -1220,13 +1240,6 @@ int main(int argc, char** argv)
                 axom::fmt::format("Shape '{}' discrete geometry has {} cells",
                                   shape.getName(),
                                   shapeMesh->getNumberOfCells())));
-    if (!params.outputFile.empty())
-    {
-      std::string shapeFileName = params.outputFile + ".shape";
-      conduit::Node tmpNode, info;
-      shapeMesh->getSidreGroup()->createNativeLayout(tmpNode);
-      conduit::relay::io::blueprint::save_mesh(tmpNode, shapeFileName, "hdf5");
-    }
 
     const std::string& materialName = shape.getMaterial();
     double shapeVol = sumMaterialVolumes<axom::SEQ_EXEC>( &shapingDC, materialName );

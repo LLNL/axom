@@ -34,6 +34,7 @@ public:
   using RefinementType = enum { RefinementUniformSegments, RefinementDynamic };
 
   using Point3D = axom::primal::Point<double, 3>;
+  using Vector3D = axom::primal::Vector<double, 3>;
   using TetType = axom::primal::Tetrahedron<double, 3>;
   using OctType = axom::primal::Octahedron<double, 3>;
 
@@ -163,6 +164,9 @@ private:
     @brief Set the parent group for this object to store data.
   */
   void setParentGroup(axom::sidre::Group* parentGroup);
+
+  //!@brief Return a 3x3 matrix that rotate coordinates from the x-axis to the given direction.
+  numerics::Matrix<double> vorAxisRotMatrix(const Vector3D& dir);
 
   void clearInternalData();
 };

@@ -174,6 +174,16 @@ public:
    */
   const std::string& getBlueprintTopology() const;
 
+  /**
+     @brief Return the VOR axis direction.
+  */
+  const Vector3D getVorDirection() const { return m_vorDirection; }
+
+  /**
+     @brief Return the 3D coordinates of the VOR base.
+  */
+  const Point3D getVorBaseCoords() const { return m_vorBase; }
+
   /*! @brief Predicate that returns true when the shape has an associated geometry
 
     A false means that this is set up to determine volume fractions without
