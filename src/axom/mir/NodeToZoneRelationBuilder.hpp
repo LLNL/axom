@@ -58,7 +58,7 @@ private:
     using loop_policy = typename axom::execution_space<ExecSpace>::loop_policy;
     using value_type = typename ViewType::value_type;
     const int allocatorID = axom::execution_space<ExecSpace>::allocatorID();
-    
+
     // Make a copy of the nodes that we'll use as keys.
     const auto n = nodes_view.size();
     axom::Array<value_type> keys(n, n, allocatorID);
@@ -77,7 +77,8 @@ private:
     axom::for_all<ExecSpace>(
       n,
       AXOM_LAMBDA(axom::IndexType i) {
-        mask_view[i] = (i >= 1) ? ((keys_view[i] != keys_view[i - 1]) ? 1 : 0) : 1;
+        mask_view[i] =
+          (i >= 1) ? ((keys_view[i] != keys_view[i - 1]) ? 1 : 0) : 1;
       });
 
     // Do a scan on the mask array to build an offset array.
@@ -101,7 +102,6 @@ private:
   }
 };
 
-
 template <typename ExecSpace>
 void NodeToZoneRelationBuilder<ExecSpace>::execute(const conduit::Node &topo,
                                                    conduit::Node &relation)
@@ -119,7 +119,8 @@ void NodeToZoneRelationBuilder<ExecSpace>::execute(const conduit::Node &topo,
   n_sizes.set_allocator(conduitAllocatorID);
   n_offsets.set_allocator(conduitAllocatorID);
 
-  const conduit::Node *coordset = conduit::blueprint::mesh::utils::find_reference_node(topo, "coordset");
+  const conduit::Node *coordset =
+    conduit::blueprint::mesh::utils::find_reference_node(topo, "coordset");
   SLIC_ASSERT(coordset != nullptr);
 
   if(type == "unstructured")
@@ -240,7 +241,9 @@ void NodeToZoneRelationBuilder<ExecSpace>::execute(const conduit::Node &topo,
         [&](auto connectivityView, auto zonesView, auto sizesView, auto offsetsView) {
           // Make the relation, outputting into the zonesView and offsetsView.
           using ViewType = decltype(connectivityView);
-          this->template buildRelation<ViewType>(connectivityView, zonesView, offsetsView);
+          this->template buildRelation<ViewType>(connectivityView,
+                                                 zonesView,
+                                                 offsetsView);
 
           // Compute sizes from offsets.
           axom::for_all<ExecSpace>(
@@ -277,7 +280,9 @@ void NodeToZoneRelationBuilder<ExecSpace>::execute(const conduit::Node &topo,
             });
           // Make the relation, outputting into the zonesView and offsetsView.
           using ViewType = decltype(connectivityView);
-          this->template buildRelation<ViewType>(connectivityView, zonesView, offsetsView);
+          this->template buildRelation<ViewType>(connectivityView,
+                                                 zonesView,
+                                                 offsetsView);
 
           // Compute sizes from offsets.
           axom::for_all<ExecSpace>(
@@ -301,8 +306,7 @@ void NodeToZoneRelationBuilder<ExecSpace>::execute(const conduit::Node &topo,
                                                                 mesh);
 
     // Recurse using the unstructured mesh.
-    execute(mesh.fetch_existing("topologies/newtopo"),
-            relation);
+    execute(mesh.fetch_existing("topologies/newtopo"), relation);
   }
 }
 

@@ -45,12 +45,9 @@ struct make_rectilinear<3>
     const auto axes = conduit::blueprint::mesh::utils::coordset::axes(*coordset);
     const conduit::Node &values = coordset->fetch_existing("values");
     LogicalIndex zoneDims;
-    zoneDims[0] =
-      values.fetch_existing(axes[0]).dtype().number_of_elements() - 1;
-    zoneDims[1] =
-      values.fetch_existing(axes[1]).dtype().number_of_elements() - 1;
-    zoneDims[2] =
-      values.fetch_existing(axes[2]).dtype().number_of_elements() - 1;
+    zoneDims[0] = values.fetch_existing(axes[0]).dtype().number_of_elements() - 1;
+    zoneDims[1] = values.fetch_existing(axes[1]).dtype().number_of_elements() - 1;
+    zoneDims[2] = values.fetch_existing(axes[2]).dtype().number_of_elements() - 1;
     return Indexing(zoneDims);
   }
 
@@ -88,10 +85,8 @@ struct make_rectilinear<2>
     const auto axes = conduit::blueprint::mesh::utils::coordset::axes(*coordset);
     const conduit::Node &values = coordset->fetch_existing("values");
     LogicalIndex zoneDims;
-    zoneDims[0] =
-      values.fetch_existing(axes[0]).dtype().number_of_elements() - 1;
-    zoneDims[1] =
-      values.fetch_existing(axes[1]).dtype().number_of_elements() - 1;
+    zoneDims[0] = values.fetch_existing(axes[0]).dtype().number_of_elements() - 1;
+    zoneDims[1] = values.fetch_existing(axes[1]).dtype().number_of_elements() - 1;
     return Indexing(zoneDims);
   }
 
@@ -129,8 +124,7 @@ struct make_rectilinear<1>
     const auto axes = conduit::blueprint::mesh::utils::coordset::axes(*coordset);
     const conduit::Node &values = coordset->fetch_existing("values");
     LogicalIndex zoneDims;
-    zoneDims[0] =
-      values.fetch_existing(axes[0]).dtype().number_of_elements() - 1;
+    zoneDims[0] = values.fetch_existing(axes[0]).dtype().number_of_elements() - 1;
     return Indexing(zoneDims);
   }
 

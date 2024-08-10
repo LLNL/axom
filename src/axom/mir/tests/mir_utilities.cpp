@@ -153,11 +153,14 @@ void test_node_to_zone_relation_builder(const conduit::Node &hostMesh)
   // clang-format on
 
   // Compare answers.
-  const auto zonesView = bputils::make_array_view<IndexT>(hostRelation["zones"]);
-  const auto sizesView = bputils::make_array_view<IndexT>(hostRelation["sizes"]);
-  const auto offsetsView = bputils::make_array_view<IndexT>(hostRelation["offsets"]);
-  EXPECT_EQ(sizesView.size(), sizeof(sizes)/sizeof(int));
-  EXPECT_EQ(offsetsView.size(), sizeof(offsets)/sizeof(int));
+  const auto zonesView =
+    bputils::make_array_view<IndexT>(hostRelation["zones"]);
+  const auto sizesView =
+    bputils::make_array_view<IndexT>(hostRelation["sizes"]);
+  const auto offsetsView =
+    bputils::make_array_view<IndexT>(hostRelation["offsets"]);
+  EXPECT_EQ(sizesView.size(), sizeof(sizes) / sizeof(int));
+  EXPECT_EQ(offsetsView.size(), sizeof(offsets) / sizeof(int));
   for(axom::IndexType i = 0; i < sizesView.size(); i++)
   {
     EXPECT_EQ(sizes[i], sizesView[i]);
@@ -179,7 +182,7 @@ void test_node_to_zone_relation_builder(const conduit::Node &hostMesh)
 
 TEST(mir_utilities, node_to_zone_relation_builder_unstructured)
 {
-   /*
+  /*
     8---9--10--11
     |   |   |   |
     4---5---6---7
@@ -187,7 +190,7 @@ TEST(mir_utilities, node_to_zone_relation_builder_unstructured)
     0---1---2---3
     */
   conduit::Node mesh;
-  axom::StackArray<int, 2> dims{{4, 3}};
+  axom::StackArray<int, 2> dims {{4, 3}};
   axom::mir::testing::data::braid("quads", dims, mesh);
 
   test_node_to_zone_relation_builder<seq_exec>(mesh);
@@ -206,7 +209,7 @@ TEST(mir_utilities, node_to_zone_relation_builder_unstructured)
 
 TEST(mir_utilities, node_to_zone_relation_builder_rectilinear)
 {
-   /*
+  /*
     8---9--10--11
     |   |   |   |
     4---5---6---7
@@ -214,7 +217,7 @@ TEST(mir_utilities, node_to_zone_relation_builder_rectilinear)
     0---1---2---3
     */
   conduit::Node mesh;
-  axom::StackArray<int, 2> dims{{4, 3}};
+  axom::StackArray<int, 2> dims {{4, 3}};
   axom::mir::testing::data::braid("rectilinear", dims, mesh);
   //mesh.print();
 
@@ -232,7 +235,7 @@ TEST(mir_utilities, node_to_zone_relation_builder_rectilinear)
 #endif
 }
 
-int main(int argc, char* argv[])
+int main(int argc, char *argv[])
 {
   int result = 0;
   ::testing::InitGoogleTest(&argc, argv);
