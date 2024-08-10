@@ -321,9 +321,8 @@ void to_unstructured(const conduit::Node &topo,
     n_newsizes.set_allocator(c2a.getConduitAllocatorID());
     n_newoffsets.set_allocator(c2a.getConduitAllocatorID());
 
-    views::dispatch_structured_topologies(
+    axom::mir::views::dispatch_structured_topologies(
       topo,
-      coordset,
       [&](const std::string &shape, auto &topoView) {
         int ptsPerZone = 2;
         if(shape == "quad")
@@ -341,15 +340,9 @@ void to_unstructured(const conduit::Node &topo,
         n_newoffsets.set(conduit::DataType::index_t(nzones));
 
         // Make views for the mesh data.
-        axom::ArrayView<conduit::index_t> connView(
-          static_cast<conduit::index_t *>(n_newconn.data_ptr()),
-          connSize);
-        axom::ArrayView<conduit::index_t> sizesView(
-          static_cast<conduit::index_t *>(n_newsizes.data_ptr()),
-          nzones);
-        axom::ArrayView<conduit::index_t> offsetsView(
-          static_cast<conduit::index_t *>(n_newoffsets.data_ptr()),
-          nzones);
+        auto connView = make_array_view<conduit::index_t>(n_newconn);
+        auto sizesView = make_array_view<conduit::index_t>(n_newsizes);
+        auto offsetsView = make_array_view<conduit::index_t>(n_newoffsets);
 
         // Fill in the new connectivity.
         topoView.template for_all_zones<ExecSpace>(

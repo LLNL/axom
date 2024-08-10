@@ -23,6 +23,8 @@ namespace mir
 {
 /**
  * \brief Build an o2m relation that lets us look up the zones for a node.
+ *
+ * \note The zone list for each point is not sorted.
  */
 template <typename ExecSpace>
 class NodeToZoneRelationBuilder
@@ -49,68 +51,62 @@ private:
   template <typename ViewType>
   void buildRelation(const ViewType &nodes_view,
                      ViewType &zones_view,
-                     ViewType &offsets_view) const;
+                     ViewType &offsets_view) const
+  {
+    assert(nodes_view.size() == zones_view.size());
+
+    using loop_policy = typename axom::execution_space<ExecSpace>::loop_policy;
+    using value_type = typename ViewType::value_type;
+    const int allocatorID = axom::execution_space<ExecSpace>::allocatorID();
+    
+    // Make a copy of the nodes that we'll use as keys.
+    const auto n = nodes_view.size();
+    axom::Array<value_type> keys(n, n, allocatorID);
+    auto keys_view = keys.view();
+    axom::for_all<ExecSpace>(
+      n,
+      AXOM_LAMBDA(axom::IndexType i) { keys_view[i] = nodes_view[i]; });
+
+    // Sort the keys, zones in place. This sorts the zones_view which we want for output.
+    RAJA::sort_pairs<loop_policy>(RAJA::make_span(keys_view.data(), n),
+                                  RAJA::make_span(zones_view.data(), n));
+
+    // Make a mask array for where differences occur.
+    axom::Array<axom::IndexType> mask(n, n, allocatorID);
+    auto mask_view = mask.view();
+    axom::for_all<ExecSpace>(
+      n,
+      AXOM_LAMBDA(axom::IndexType i) {
+        mask_view[i] = (i >= 1) ? ((keys_view[i] != keys_view[i - 1]) ? 1 : 0) : 1;
+      });
+
+    // Do a scan on the mask array to build an offset array.
+    axom::Array<axom::IndexType> dest_offsets(n, n, allocatorID);
+    auto dest_offsets_view = dest_offsets.view();
+    axom::exclusive_scan<ExecSpace>(mask_view, dest_offsets_view);
+
+    // Build the offsets to each node's zone ids.
+    axom::for_all<ExecSpace>(
+      offsets_view.size(),
+      AXOM_LAMBDA(axom::IndexType i) { offsets_view[i] = 0; });
+
+    axom::for_all<ExecSpace>(
+      n,
+      AXOM_LAMBDA(axom::IndexType i) {
+        if(mask_view[i])
+        {
+          offsets_view[dest_offsets_view[i]] = i;
+        }
+      });
+  }
 };
 
-template <typename ExecSpace>
-template <typename ViewType>
-void NodeToZoneRelationBuilder<ExecSpace>::buildRelation(const ViewType &nodes_view,
-                                                         ViewType &zones_view,
-                                                         ViewType &offsets_view) const
-{
-  assert(nodes_view.size() == zones_view.size());
-
-  using loop_policy = typename axom::execution_space<ExecSpace>::loop_policy;
-  const int allocatorID = axom::execution_space<ExecSpace>::allocatorID();
-
-  // Make a copy of the nodes that we'll use as keys.
-  const auto n = nodes_view.size();
-  axom::Array<axom::IndexType> keys(n, n, allocatorID);
-  auto keys_view = keys.view();
-  axom::for_all<ExecSpace>(
-    n,
-    AXOM_LAMBDA(axom::IndexType i) { keys_view[i] = nodes_view[i]; });
-
-  // Sort the keys, zones in place. This sorts the zones_view which we want for output.
-  RAJA::sort_pairs<loop_policy>(RAJA::make_span(keys_view, n),
-                                RAJA::make_span(zones_view, n));
-
-  // Make a mask array for where differences occur.
-  axom::Array<axom::IndexType> mask(n, n, allocatorID);
-  auto mask_view = mask.view();
-  axom::for_all<ExecSpace>(
-    n,
-    AXOM_LAMBDA(axom::IndexType i) {
-      mask_view[i] = (i >= 1) ? ((keys_view[i] != keys_view[i - 1]) ? 1 : 0) : 1;
-    });
-
-  // Do a scan on the mask array to build an offset array.
-  axom::Array<axom::IndexType> dest_offsets(n, n, allocatorID);
-  auto dest_offsets_view = dest_offsets.view();
-  axom::exclusive_scan<ExecSpace>(mask_view, dest_offsets_view);
-
-  // Build the offsets to each node's zone ids.
-  axom::for_all<ExecSpace>(
-    offsets_view.size(),
-    AXOM_LAMBDA(axom::IndexType i) { offsets_view[i] = 0; });
-
-  axom::for_all<ExecSpace>(
-    n,
-    AXOM_LAMBDA(axom::IndexType i) {
-      if(mask_view[i])
-      {
-        offsets_view[dest_offsets_view[i]] = i;
-      }
-    });
-}
 
 template <typename ExecSpace>
 void NodeToZoneRelationBuilder<ExecSpace>::execute(const conduit::Node &topo,
                                                    conduit::Node &relation)
 {
-  using reduce_policy = typename axom::execution_space<ExecSpace>::reduce_policy;
   const std::string type = topo.fetch_existing("type").as_string();
-  const auto allocatorID = axom::execution_space<ExecSpace>::allocatorID();
 
   // Get the ID of a Conduit allocator that will allocate through Axom with device allocator allocatorID.
   utilities::blueprint::ConduitAllocateThroughAxom<ExecSpace> c2a;
@@ -123,8 +119,8 @@ void NodeToZoneRelationBuilder<ExecSpace>::execute(const conduit::Node &topo,
   n_sizes.set_allocator(conduitAllocatorID);
   n_offsets.set_allocator(conduitAllocatorID);
 
-  const conduit::Node *coordset =
-    conduit::blueprint::mesh::utils::find_reference_node(topo, "coordset");
+  const conduit::Node *coordset = conduit::blueprint::mesh::utils::find_reference_node(topo, "coordset");
+  SLIC_ASSERT(coordset != nullptr);
 
   if(type == "unstructured")
   {
@@ -139,7 +135,12 @@ void NodeToZoneRelationBuilder<ExecSpace>::execute(const conduit::Node &topo,
 
     if(shape.is_polyhedral())
     {
-      views::dispatch_unstructured_polyhedral_topology(topo, [&](auto topoView) {
+#if 0
+// DEBUG THIS LATER
+      using reduce_policy = typename axom::execution_space<ExecSpace>::reduce_policy;
+      const auto allocatorID = axom::execution_space<ExecSpace>::allocatorID();
+
+      views::dispatch_unstructured_polyhedral_topology(topo, [&](auto AXOM_UNUSED_PARAM(shape), auto topoView) {
         const auto nzones = topoView.numberOfZones();
         axom::Array<axom::IndexType> sizes(nzones, nzones, allocatorID);
         auto sizes_view = sizes.view();
@@ -189,7 +190,7 @@ void NodeToZoneRelationBuilder<ExecSpace>::execute(const conduit::Node &topo,
 
             // Make the relation, outputting into the zonesView and offsetsView.
             using ViewType = decltype(connectivityView);
-            buildRelation<ViewType>(connectivityView, zonesView, offsetsView);
+            this->template buildRelation<ViewType>(connectivityView, zonesView, offsetsView);
 
             // Compute sizes from offsets.
             axom::for_all<ExecSpace>(
@@ -201,6 +202,7 @@ void NodeToZoneRelationBuilder<ExecSpace>::execute(const conduit::Node &topo,
               });
           });
       });
+#endif
     }
     else if(shape.is_polygonal())
     {
@@ -238,7 +240,7 @@ void NodeToZoneRelationBuilder<ExecSpace>::execute(const conduit::Node &topo,
         [&](auto connectivityView, auto zonesView, auto sizesView, auto offsetsView) {
           // Make the relation, outputting into the zonesView and offsetsView.
           using ViewType = decltype(connectivityView);
-          buildRelation<ViewType>(connectivityView, zonesView, offsetsView);
+          this->template buildRelation<ViewType>(connectivityView, zonesView, offsetsView);
 
           // Compute sizes from offsets.
           axom::for_all<ExecSpace>(
@@ -274,8 +276,8 @@ void NodeToZoneRelationBuilder<ExecSpace>::execute(const conduit::Node &topo,
               zonesView[index] = index / nodesPerShape;
             });
           // Make the relation, outputting into the zonesView and offsetsView.
-          //        using ViewType = decltype(connectivityView);
-          buildRelation<ExecSpace>(connectivityView, zonesView, offsetsView);
+          using ViewType = decltype(connectivityView);
+          this->template buildRelation<ViewType>(connectivityView, zonesView, offsetsView);
 
           // Compute sizes from offsets.
           axom::for_all<ExecSpace>(
@@ -299,7 +301,8 @@ void NodeToZoneRelationBuilder<ExecSpace>::execute(const conduit::Node &topo,
                                                                 mesh);
 
     // Recurse using the unstructured mesh.
-    execute(mesh["newtopo"], relation);
+    execute(mesh.fetch_existing("topologies/newtopo"),
+            relation);
   }
 }
 

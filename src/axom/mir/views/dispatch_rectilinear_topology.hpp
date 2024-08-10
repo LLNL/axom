@@ -43,13 +43,14 @@ struct make_rectilinear<3>
       conduit::blueprint::mesh::utils::find_reference_node(topo, "coordset");
     SLIC_ASSERT(coordset != nullptr);
     const auto axes = conduit::blueprint::mesh::utils::coordset::axes(*coordset);
+    const conduit::Node &values = coordset->fetch_existing("values");
     LogicalIndex zoneDims;
     zoneDims[0] =
-      coordset->fetch_existing(axes[0]).dtype().number_of_elements() - 1;
+      values.fetch_existing(axes[0]).dtype().number_of_elements() - 1;
     zoneDims[1] =
-      coordset->fetch_existing(axes[1]).dtype().number_of_elements() - 1;
+      values.fetch_existing(axes[1]).dtype().number_of_elements() - 1;
     zoneDims[2] =
-      coordset->fetch_existing(axes[2]).dtype().number_of_elements() - 1;
+      values.fetch_existing(axes[2]).dtype().number_of_elements() - 1;
     return Indexing(zoneDims);
   }
 
@@ -85,11 +86,12 @@ struct make_rectilinear<2>
       conduit::blueprint::mesh::utils::find_reference_node(topo, "coordset");
     SLIC_ASSERT(coordset != nullptr);
     const auto axes = conduit::blueprint::mesh::utils::coordset::axes(*coordset);
+    const conduit::Node &values = coordset->fetch_existing("values");
     LogicalIndex zoneDims;
     zoneDims[0] =
-      coordset->fetch_existing(axes[0]).dtype().number_of_elements() - 1;
+      values.fetch_existing(axes[0]).dtype().number_of_elements() - 1;
     zoneDims[1] =
-      coordset->fetch_existing(axes[1]).dtype().number_of_elements() - 1;
+      values.fetch_existing(axes[1]).dtype().number_of_elements() - 1;
     return Indexing(zoneDims);
   }
 
@@ -125,9 +127,10 @@ struct make_rectilinear<1>
       conduit::blueprint::mesh::utils::find_reference_node(topo, "coordset");
     SLIC_ASSERT(coordset != nullptr);
     const auto axes = conduit::blueprint::mesh::utils::coordset::axes(*coordset);
+    const conduit::Node &values = coordset->fetch_existing("values");
     LogicalIndex zoneDims;
     zoneDims[0] =
-      coordset->fetch_existing(axes[0]).dtype().number_of_elements() - 1;
+      values.fetch_existing(axes[0]).dtype().number_of_elements() - 1;
     return Indexing(zoneDims);
   }
 

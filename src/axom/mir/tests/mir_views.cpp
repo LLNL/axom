@@ -12,32 +12,6 @@
 
 #include <cmath>
 
-// clang-format off
-#if defined (AXOM_USE_RAJA) && defined (AXOM_USE_UMPIRE)
-  using seq_exec = axom::SEQ_EXEC;
-
-  #if defined(AXOM_USE_OPENMP)
-    using omp_exec = axom::OMP_EXEC;
-  #else
-    using omp_exec = seq_exec;
-  #endif
-
-  #if defined(AXOM_USE_CUDA) && defined(__CUDACC__)
-    constexpr int CUDA_BLOCK_SIZE = 256;
-    using cuda_exec = axom::CUDA_EXEC<CUDA_BLOCK_SIZE>;
-  #else
-    using cuda_exec = seq_exec;
-  #endif
-
-  #if defined(AXOM_USE_HIP)
-    constexpr int HIP_BLOCK_SIZE = 64;
-    using hip_exec = axom::HIP_EXEC<HIP_BLOCK_SIZE>;
-  #else
-    using hip_exec = seq_exec;
-  #endif
-#endif
-// clang-format on
-
 //------------------------------------------------------------------------------
 
 // Uncomment to generate baselines
@@ -46,7 +20,6 @@
 // Uncomment to save visualization files for debugging (when making baselines)
 //#define AXOM_TESTING_SAVE_VISUALIZATION
 
-// Include after seq_exec is defined.
 #include "axom/mir/tests/mir_testing_helpers.hpp"
 
 std::string baselineDirectory()
@@ -175,19 +148,19 @@ void test_matsetview(MatsetView matsetView, int allocatorID)
   constexpr int MATA = 0;
   constexpr int MATB = 1;
   constexpr int MATC = 2;
-  const int matids[] = {0, 36, 40};
+  const int zoneids[] = {0, 36, 40};
 
   // clang-format off
   const int results[] = {/*contains mat*/ 0, 1, 0, /*mats in zone*/ 1, /*ids.size*/ 1, /*mats in zone*/ MATB, -1, -1,
                          /*contains mat*/ 1, 1, 0, /*mats in zone*/ 2, /*ids.size*/ 2, /*mats in zone*/ MATA, MATB, -1,
                          /*contains mat*/ 1, 1, 1, /*mats in zone*/ 3, /*ids.size*/ 3, /*mats in zone*/ MATA, MATB, MATC};
   // clang-format on
-  constexpr int nZones = sizeof(matids) / sizeof(int);
+  constexpr int nZones = sizeof(zoneids) / sizeof(int);
 
-  // Get matids into matidsView for device.
-  axom::Array<int> matidsArray(nZones, nZones, allocatorID);
-  axom::copy(matidsArray.data(), matids, sizeof(int) * nZones);
-  auto matidsView = matidsArray.view();
+  // Get zoneids into zoneidsView for device.
+  axom::Array<int> zoneidsArray(nZones, nZones, allocatorID);
+  axom::copy(zoneidsArray.data(), zoneids, sizeof(int) * nZones);
+  auto zoneidsView = zoneidsArray.view();
 
   // Allocate results array on device.
   constexpr int nResults = sizeof(results) / sizeof(int);
@@ -200,17 +173,17 @@ void test_matsetview(MatsetView matsetView, int allocatorID)
     3,
     AXOM_LAMBDA(auto index) {
       resultsView[nResultsPerZone * index + 0] =
-        matsetView.zoneContainsMaterial(matidsView[index], MATA) ? 1 : 0;
+        matsetView.zoneContainsMaterial(zoneidsView[index], MATA) ? 1 : 0;
       resultsView[nResultsPerZone * index + 1] =
-        matsetView.zoneContainsMaterial(matidsView[index], MATB) ? 1 : 0;
+        matsetView.zoneContainsMaterial(zoneidsView[index], MATB) ? 1 : 0;
       resultsView[nResultsPerZone * index + 2] =
-        matsetView.zoneContainsMaterial(matidsView[index], MATC) ? 1 : 0;
+        matsetView.zoneContainsMaterial(zoneidsView[index], MATC) ? 1 : 0;
       resultsView[nResultsPerZone * index + 3] =
-        matsetView.numberOfMaterials(matidsView[index]);
+        matsetView.numberOfMaterials(zoneidsView[index]);
 
       typename MatsetView::IDList ids {};
       typename MatsetView::VFList vfs {};
-      matsetView.zoneMaterials(matidsView[index], ids, vfs);
+      matsetView.zoneMaterials(zoneidsView[index], ids, vfs);
       resultsView[nResultsPerZone * index + 4] = ids.size();
       for(axom::IndexType i = 0; i < 3; i++)
       {

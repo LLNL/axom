@@ -13,32 +13,6 @@
 #include <cmath>
 #include <cstdlib>
 
-// clang-format off
-#if defined (AXOM_USE_RAJA) && defined (AXOM_USE_UMPIRE)
-  using seq_exec = axom::SEQ_EXEC;
-
-  #if defined(AXOM_USE_OPENMP)
-    using omp_exec = axom::OMP_EXEC;
-  #else
-    using omp_exec = seq_exec;
-  #endif
-
-  #if defined(AXOM_USE_CUDA) && defined(__CUDACC__)
-    constexpr int CUDA_BLOCK_SIZE = 256;
-    using cuda_exec = axom::CUDA_EXEC<CUDA_BLOCK_SIZE>;
-  #else
-    using cuda_exec = seq_exec;
-  #endif
-
-  #if defined(AXOM_USE_HIP)
-    constexpr int HIP_BLOCK_SIZE = 64;
-    using hip_exec = axom::HIP_EXEC<HIP_BLOCK_SIZE>;
-  #else
-    using hip_exec = seq_exec;
-  #endif
-#endif
-// clang-format on
-
 //------------------------------------------------------------------------------
 
 // Uncomment to generate baselines
@@ -47,7 +21,6 @@
 // Uncomment to save visualization files for debugging (when making baselines)
 //#define AXOM_TESTING_SAVE_VISUALIZATION
 
-// Include after seq_exec is defined.
 #include "axom/mir/tests/mir_testing_helpers.hpp"
 
 std::string baselineDirectory()
