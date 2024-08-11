@@ -305,7 +305,7 @@ private:
   GeometricBoundingBox m_bbox;
   mint::Mesh* m_surfaceMesh {nullptr};
   InOutOctreeType* m_octree {nullptr};
-}; // class InOutSampler
+};  // class InOutSampler
 
 }  // end namespace shaping
 
@@ -412,13 +412,15 @@ public:
     switch(shapeDimension)
     {
     case klee::Dimensions::Two:
-      m_inoutSampler2D = new shaping::InOutSampler<2>(shapeName, m_surfaceMesh.get());
+      m_inoutSampler2D =
+        new shaping::InOutSampler<2>(shapeName, m_surfaceMesh.get());
       m_inoutSampler2D->computeBounds();
       m_inoutSampler2D->initSpatialIndex(this->m_vertexWeldThreshold);
       break;
 
     case klee::Dimensions::Three:
-      m_inoutSampler3D = new shaping::InOutSampler<3>(shapeName, m_surfaceMesh.get());
+      m_inoutSampler3D =
+        new shaping::InOutSampler<3>(shapeName, m_surfaceMesh.get());
       m_inoutSampler3D->computeBounds();
       m_inoutSampler3D->initSpatialIndex(this->m_vertexWeldThreshold);
       break;

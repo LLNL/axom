@@ -91,7 +91,12 @@ public:
   // The shape to run.
   std::string testShape {"tetmesh"};
   // The shapes this example is set up to run.
-  const std::set<std::string> availableShapes {"tetmesh", "sphere", "cyl", "cone", "vor"};
+  const std::set<std::string> availableShapes {"tetmesh",
+                                               "sphere",
+                                               "cyl",
+                                               "cone",
+                                               "vor",
+                                               "hex"};
 
   ShapingMethod shapingMethod {ShapingMethod::Sampling};
   RuntimePolicy policy {RuntimePolicy::seq};
@@ -382,7 +387,7 @@ public:
     slic::setLoggingMsgLevel(m_verboseOutput ? slic::message::Debug
                                              : slic::message::Info);
   }
-}; // struct Input
+};  // struct Input
 Input params;
 
 /**
@@ -491,33 +496,50 @@ void finalizeLogger()
 // Single triangle ShapeSet.
 axom::klee::ShapeSet create2DShapeSet(sidre::DataStore& ds)
 {
-  sidre::Group *meshGroup = ds.getRoot()->createGroup("triangleMesh");
+  sidre::Group* meshGroup = ds.getRoot()->createGroup("triangleMesh");
   AXOM_UNUSED_VAR(meshGroup);  // variable is only referenced in debug configs
   const std::string topo = "mesh";
   const std::string coordset = "coords";
   axom::mint::UnstructuredMesh<axom::mint::SINGLE_SHAPE> triangleMesh(
-    2, axom::mint::CellType::TRIANGLE, meshGroup, topo, coordset );
+    2,
+    axom::mint::CellType::TRIANGLE,
+    meshGroup,
+    topo,
+    coordset);
 
   double lll = 2.0;
 
   // Insert tet at origin.
-  triangleMesh.appendNode( 0.0, 0.0 );
-  triangleMesh.appendNode( lll, 0.0 );
-  triangleMesh.appendNode( 0.0, lll );
-  axom::IndexType conn[3] = { 0, 1, 2 };
-  triangleMesh.appendCell( conn );
+  triangleMesh.appendNode(0.0, 0.0);
+  triangleMesh.appendNode(lll, 0.0);
+  triangleMesh.appendNode(0.0, lll);
+  axom::IndexType conn[3] = {0, 1, 2};
+  triangleMesh.appendCell(conn);
 
   meshGroup->print();
   SLIC_ASSERT(axom::mint::blueprint::isValidRootGroup(meshGroup));
 
-  axom::klee::TransformableGeometryProperties prop{
+  axom::klee::TransformableGeometryProperties prop {
     axom::klee::Dimensions::Two,
     axom::klee::LengthUnit::unspecified};
-  axom::klee::Geometry triangleGeom(prop, triangleMesh.getSidreGroup(), topo, nullptr);
+  axom::klee::Geometry triangleGeom(prop,
+                                    triangleMesh.getSidreGroup(),
+                                    topo,
+                                    nullptr);
 
   std::vector<axom::klee::Shape> shapes;
-  axom::klee::Shape triangleShape( "triangle", "AL", {}, {}, axom::klee::Geometry{prop, triangleMesh.getSidreGroup(), topo, nullptr} );
-  shapes.push_back(axom::klee::Shape{"triangle", "AL", {}, {}, axom::klee::Geometry{prop, triangleMesh.getSidreGroup(), topo, nullptr}});
+  axom::klee::Shape triangleShape(
+    "triangle",
+    "AL",
+    {},
+    {},
+    axom::klee::Geometry {prop, triangleMesh.getSidreGroup(), topo, nullptr});
+  shapes.push_back(axom::klee::Shape {
+    "triangle",
+    "AL",
+    {},
+    {},
+    axom::klee::Geometry {prop, triangleMesh.getSidreGroup(), topo, nullptr}});
 
   axom::klee::ShapeSet shapeSet;
   shapeSet.setShapes(shapes);
@@ -528,26 +550,25 @@ axom::klee::ShapeSet create2DShapeSet(sidre::DataStore& ds)
 
 axom::klee::Shape createShape_Sphere()
 {
-  axom::primal::Sphere<double, 3> sphere{params.center.data(), params.radius};
+  axom::primal::Sphere<double, 3> sphere {params.center.data(), params.radius};
 
-  axom::klee::TransformableGeometryProperties prop{
+  axom::klee::TransformableGeometryProperties prop {
     axom::klee::Dimensions::Three,
     axom::klee::LengthUnit::unspecified};
 
-  SLIC_ASSERT( params.scaleFactors.empty() || params.scaleFactors.size() == 3 );
+  SLIC_ASSERT(params.scaleFactors.empty() || params.scaleFactors.size() == 3);
   std::shared_ptr<axom::klee::Scale> scaleOp;
-  if (!params.scaleFactors.empty())
+  if(!params.scaleFactors.empty())
   {
-    scaleOp =
-      std::make_shared<axom::klee::Scale>(params.scaleFactors[0],
-                                          params.scaleFactors[1],
-                                          params.scaleFactors[2],
-                                          prop);
+    scaleOp = std::make_shared<axom::klee::Scale>(params.scaleFactors[0],
+                                                  params.scaleFactors[1],
+                                                  params.scaleFactors[2],
+                                                  prop);
   }
 
   const axom::IndexType levelOfRefinement = params.refinementLevel;
   axom::klee::Geometry sphereGeometry(prop, sphere, levelOfRefinement, scaleOp);
-  axom::klee::Shape sphereShape( "sphere", "AU", {}, {}, sphereGeometry );
+  axom::klee::Shape sphereShape("sphere", "AU", {}, {}, sphereGeometry);
 
   return sphereShape;
 }
@@ -555,92 +576,99 @@ axom::klee::Shape createShape_Sphere()
 axom::klee::Shape createShape_TetMesh(sidre::DataStore& ds)
 {
   // Shape a single tetrahedron.
-  sidre::Group *meshGroup = ds.getRoot()->createGroup("tetMesh");
+  sidre::Group* meshGroup = ds.getRoot()->createGroup("tetMesh");
   AXOM_UNUSED_VAR(meshGroup);  // variable is only referenced in debug configs
   const std::string topo = "mesh";
   const std::string coordset = "coords";
   axom::mint::UnstructuredMesh<axom::mint::SINGLE_SHAPE> tetMesh(
-    3, axom::mint::CellType::TET, meshGroup, topo, coordset );
+    3,
+    axom::mint::CellType::TET,
+    meshGroup,
+    topo,
+    coordset);
 
   double lll = 4.0;
 
   // Insert tet at origin.
-  tetMesh.appendNode( 0.0, 0.0, 0.0 );
-  tetMesh.appendNode( lll, 0.0, 0.0 );
-  tetMesh.appendNode( 0.0, lll, 0.0 );
-  tetMesh.appendNode( 0.0, 0.0, lll );
-  tetMesh.appendNode( lll, lll, 0.0 );
-  axom::IndexType conn0[4] = { 0, 1, 2, 3 };
-  tetMesh.appendCell( conn0 );
-  axom::IndexType conn1[4] = { 4, 1, 2, 3 };
-  tetMesh.appendCell( conn1 );
+  tetMesh.appendNode(0.0, 0.0, 0.0);
+  tetMesh.appendNode(lll, 0.0, 0.0);
+  tetMesh.appendNode(0.0, lll, 0.0);
+  tetMesh.appendNode(0.0, 0.0, lll);
+  tetMesh.appendNode(lll, lll, 0.0);
+  axom::IndexType conn0[4] = {0, 1, 2, 3};
+  tetMesh.appendCell(conn0);
+  axom::IndexType conn1[4] = {4, 1, 2, 3};
+  tetMesh.appendCell(conn1);
 
   SLIC_ASSERT(axom::mint::blueprint::isValidRootGroup(meshGroup));
 
-  axom::klee::TransformableGeometryProperties prop{
+  axom::klee::TransformableGeometryProperties prop {
     axom::klee::Dimensions::Three,
     axom::klee::LengthUnit::unspecified};
 
-  SLIC_ASSERT( params.scaleFactors.empty() || params.scaleFactors.size() == 3 );
+  SLIC_ASSERT(params.scaleFactors.empty() || params.scaleFactors.size() == 3);
   std::shared_ptr<axom::klee::Scale> scaleOp;
-  if (!params.scaleFactors.empty())
+  if(!params.scaleFactors.empty())
   {
-    scaleOp =
-      std::make_shared<axom::klee::Scale>(params.scaleFactors[0],
-                                          params.scaleFactors[1],
-                                          params.scaleFactors[2],
-                                          prop);
+    scaleOp = std::make_shared<axom::klee::Scale>(params.scaleFactors[0],
+                                                  params.scaleFactors[1],
+                                                  params.scaleFactors[2],
+                                                  prop);
   }
 
-  axom::klee::Geometry tetMeshGeometry( prop, tetMesh.getSidreGroup(), topo, {scaleOp} );
-  axom::klee::Shape tetShape( "tetmesh", "TETMESH", {}, {}, tetMeshGeometry );
+  axom::klee::Geometry tetMeshGeometry(prop,
+                                       tetMesh.getSidreGroup(),
+                                       topo,
+                                       {scaleOp});
+  axom::klee::Shape tetShape("tetmesh", "TETMESH", {}, {}, tetMeshGeometry);
 
   return tetShape;
 }
 
-axom::klee::Geometry createGeometry_Vor(
-  axom::primal::Point<double, 3>& vorBase,
-  axom::primal::Vector<double, 3>& vorDirection,
-  axom::Array<double, 2>& discreteFunction )
+axom::klee::Geometry createGeometry_Vor(axom::primal::Point<double, 3>& vorBase,
+                                        axom::primal::Vector<double, 3>& vorDirection,
+                                        axom::Array<double, 2>& discreteFunction)
 {
-  axom::klee::TransformableGeometryProperties prop{
+  axom::klee::TransformableGeometryProperties prop {
     axom::klee::Dimensions::Three,
     axom::klee::LengthUnit::unspecified};
 
-  SLIC_ASSERT( params.scaleFactors.empty() || params.scaleFactors.size() == 3 );
+  SLIC_ASSERT(params.scaleFactors.empty() || params.scaleFactors.size() == 3);
   std::shared_ptr<axom::klee::Scale> scaleOp;
-  if (!params.scaleFactors.empty())
+  if(!params.scaleFactors.empty())
   {
-    scaleOp =
-      std::make_shared<axom::klee::Scale>(params.scaleFactors[0],
-                                          params.scaleFactors[1],
-                                          params.scaleFactors[2],
-                                          prop);
+    scaleOp = std::make_shared<axom::klee::Scale>(params.scaleFactors[0],
+                                                  params.scaleFactors[1],
+                                                  params.scaleFactors[2],
+                                                  prop);
   }
 
   const axom::IndexType levelOfRefinement = params.refinementLevel;
-  axom::klee::Geometry vorGeometry(prop, discreteFunction,
-                                   vorBase, vorDirection,
-                                   levelOfRefinement, scaleOp);
+  axom::klee::Geometry vorGeometry(prop,
+                                   discreteFunction,
+                                   vorBase,
+                                   vorDirection,
+                                   levelOfRefinement,
+                                   scaleOp);
   return vorGeometry;
 }
 
 axom::klee::Shape createShape_Vor()
 {
   Point3D vorBase {params.center.data()};
-  axom::primal::Vector<double, 3> vorDirection{params.direction.data()};
+  axom::primal::Vector<double, 3> vorDirection {params.direction.data()};
   axom::Array<double, 2> discreteFunction({3, 2}, axom::ArrayStrideOrder::ROW);
   discreteFunction[0][0] = 0.0;
   discreteFunction[0][1] = 1.0;
-  discreteFunction[1][0] = 0.5*params.length;
+  discreteFunction[1][0] = 0.5 * params.length;
   discreteFunction[1][1] = 0.8;
   discreteFunction[2][0] = params.length;
   discreteFunction[2][1] = 1.0;
 
-  axom::klee::Geometry vorGeometry = createGeometry_Vor(
-    vorBase, vorDirection, discreteFunction);
+  axom::klee::Geometry vorGeometry =
+    createGeometry_Vor(vorBase, vorDirection, discreteFunction);
 
-  axom::klee::Shape vorShape( "vor", "VOR", {}, {}, vorGeometry );
+  axom::klee::Shape vorShape("vor", "VOR", {}, {}, vorGeometry);
 
   return vorShape;
 }
@@ -648,7 +676,7 @@ axom::klee::Shape createShape_Vor()
 axom::klee::Shape createShape_Cylinder()
 {
   Point3D vorBase {params.center.data()};
-  axom::primal::Vector<double, 3> vorDirection{params.direction.data()};
+  axom::primal::Vector<double, 3> vorDirection {params.direction.data()};
   axom::Array<double, 2> discreteFunction({2, 2}, axom::ArrayStrideOrder::ROW);
   double radius = params.radius;
   double height = params.length;
@@ -657,10 +685,10 @@ axom::klee::Shape createShape_Cylinder()
   discreteFunction[1][0] = height;
   discreteFunction[1][1] = radius;
 
-  axom::klee::Geometry vorGeometry = createGeometry_Vor(
-    vorBase, vorDirection, discreteFunction);
+  axom::klee::Geometry vorGeometry =
+    createGeometry_Vor(vorBase, vorDirection, discreteFunction);
 
-  axom::klee::Shape vorShape( "cyl", "CYL", {}, {}, vorGeometry );
+  axom::klee::Shape vorShape("cyl", "CYL", {}, {}, vorGeometry);
 
   return vorShape;
 }
@@ -668,7 +696,7 @@ axom::klee::Shape createShape_Cylinder()
 axom::klee::Shape createShape_Cone()
 {
   Point3D vorBase {params.center.data()};
-  axom::primal::Vector<double, 3> vorDirection{params.direction.data()};
+  axom::primal::Vector<double, 3> vorDirection {params.direction.data()};
   axom::Array<double, 2> discreteFunction({2, 2}, axom::ArrayStrideOrder::ROW);
   double baseRadius = params.radius;
   double topRadius = params.radius2;
@@ -678,40 +706,77 @@ axom::klee::Shape createShape_Cone()
   discreteFunction[1][0] = height;
   discreteFunction[1][1] = topRadius;
 
-  axom::klee::Geometry vorGeometry = createGeometry_Vor(
-    vorBase, vorDirection, discreteFunction);
+  axom::klee::Geometry vorGeometry =
+    createGeometry_Vor(vorBase, vorDirection, discreteFunction);
 
-  axom::klee::Shape vorShape( "cone", "CONE", {}, {}, vorGeometry );
+  axom::klee::Shape vorShape("cone", "CONE", {}, {}, vorGeometry);
 
   return vorShape;
+}
+
+axom::klee::Shape createShape_Hex()
+{
+  axom::klee::TransformableGeometryProperties prop {
+    axom::klee::Dimensions::Three,
+    axom::klee::LengthUnit::unspecified};
+
+  SLIC_ASSERT(params.scaleFactors.empty() || params.scaleFactors.size() == 3);
+  std::shared_ptr<axom::klee::Scale> scaleOp;
+  if(!params.scaleFactors.empty())
+  {
+    scaleOp = std::make_shared<axom::klee::Scale>(params.scaleFactors[0],
+                                                  params.scaleFactors[1],
+                                                  params.scaleFactors[2],
+                                                  prop);
+  }
+
+  const double len = params.length;
+  const Point3D p {0.0, 0.0, 0.0};
+  const Point3D q {len, 0.0, 0.0};
+  const Point3D r {len, 1.0, 0.0};
+  const Point3D s {0.0, 1.0, 0.0};
+  const Point3D t {0.0, 0.0, 1.0};
+  const Point3D u {len, 0.0, 1.0};
+  const Point3D v {len, 1.0, 1.0};
+  const Point3D w {0.0, 1.0, 1.0};
+  const primal::Hexahedron<double, 3> hex {p, q, r, s, t, u, v, w};
+
+  axom::klee::Geometry hexGeometry(prop, hex, scaleOp);
+  axom::klee::Shape hexShape("hex", "HEX", {}, {}, hexGeometry);
+
+  return hexShape;
 }
 
 //!@brief Create a ShapeSet with a single shape.
 axom::klee::ShapeSet createShapeSet(const axom::klee::Shape& shape)
 {
   axom::klee::ShapeSet shapeSet;
-  shapeSet.setShapes(std::vector<axom::klee::Shape>{shape});
+  shapeSet.setShapes(std::vector<axom::klee::Shape> {shape});
   shapeSet.setDimensions(axom::klee::Dimensions::Three);
 
   return shapeSet;
 }
 
-double volumeOfTetMesh(const axom::mint::UnstructuredMesh<axom::mint::SINGLE_SHAPE>& tetMesh)
+double volumeOfTetMesh(
+  const axom::mint::UnstructuredMesh<axom::mint::SINGLE_SHAPE>& tetMesh)
 {
   using TetType = axom::primal::Tetrahedron<double, 3>;
-{std::ofstream os("tets.js"); tetMesh.getSidreGroup()->print(os);}
-  axom::StackArray<axom::IndexType, 1> nodesShape{tetMesh.getNumberOfNodes()};
+  {
+    std::ofstream os("tets.js");
+    tetMesh.getSidreGroup()->print(os);
+  }
+  axom::StackArray<axom::IndexType, 1> nodesShape {tetMesh.getNumberOfNodes()};
   axom::ArrayView<const double> x(tetMesh.getCoordinateArray(0), nodesShape);
   axom::ArrayView<const double> y(tetMesh.getCoordinateArray(1), nodesShape);
   axom::ArrayView<const double> z(tetMesh.getCoordinateArray(2), nodesShape);
   const axom::IndexType cellCount = tetMesh.getNumberOfCells();
   axom::Array<double> tetVolumes(cellCount, cellCount);
   double meshVolume = 0.0;
-  for ( axom::IndexType ic = 0; ic < cellCount; ++ic )
+  for(axom::IndexType ic = 0; ic < cellCount; ++ic)
   {
     const axom::IndexType* nodeIds = tetMesh.getCellNodeIDs(ic);
     TetType tet;
-    for ( int j = 0; j < 4; ++j )
+    for(int j = 0; j < 4; ++j)
     {
       auto cornerNodeId = nodeIds[j];
       tet[j][0] = x[cornerNodeId];
@@ -732,14 +797,15 @@ double volumeOfTetMesh(const axom::mint::UnstructuredMesh<axom::mint::SINGLE_SHA
   Most of this is lifted from IntersectionShaper::runShapeQueryImpl.
 */
 template <typename ExecSpace>
-axom::sidre::View* getElementVolumes( sidre::MFEMSidreDataCollection* dc,
-                                      const std::string& volFieldName = std::string("elementVolumes") )
+axom::sidre::View* getElementVolumes(
+  sidre::MFEMSidreDataCollection* dc,
+  const std::string& volFieldName = std::string("elementVolumes"))
 {
   using HexahedronType = axom::primal::Hexahedron<double, 3>;
   axom::setDefaultAllocator(::getUmpireDeviceId<ExecSpace>());
 
   axom::sidre::View* volSidreView = dc->GetNamedBuffer(volFieldName);
-  if (volSidreView == nullptr)
+  if(volSidreView == nullptr)
   {
     mfem::Mesh* mesh = dc->GetMesh();
     const axom::IndexType cellCount = mesh->GetNE();
@@ -774,13 +840,14 @@ axom::sidre::View* getElementVolumes( sidre::MFEMSidreDataCollection* dc,
 
     // Set vertex coords to zero if within threshold.
     // (I don't know why we do this.  I'm following examples.)
-    axom::ArrayView<double> flatCoordsView((double*)vertCoords.data(),
-                                           vertCoords.size()*Point3D::dimension());
+    axom::ArrayView<double> flatCoordsView(
+      (double*)vertCoords.data(),
+      vertCoords.size() * Point3D::dimension());
     assert(flatCoordsView.size() == cellCount * NUM_VERTS_PER_HEX * 3);
     axom::for_all<ExecSpace>(
-      cellCount*3,
+      cellCount * 3,
       AXOM_LAMBDA(axom::IndexType i) {
-        if ( axom::utilities::isNearlyEqual(flatCoordsView[i], 0.0, ZERO_THRESHOLD) )
+        if(axom::utilities::isNearlyEqual(flatCoordsView[i], 0.0, ZERO_THRESHOLD))
         {
           flatCoordsView[i] = 0.0;
         }
@@ -804,7 +871,8 @@ axom::sidre::View* getElementVolumes( sidre::MFEMSidreDataCollection* dc,
 
     // Allocate and populate cell volumes.
     volSidreView = dc->AllocNamedBuffer(volFieldName, cellCount);
-    axom::ArrayView<double> volView( volSidreView->getData(), volSidreView->getNumElements() );
+    axom::ArrayView<double> volView(volSidreView->getData(),
+                                    volSidreView->getNumElements());
     axom::for_all<ExecSpace>(
       cellCount,
       AXOM_LAMBDA(axom::IndexType cellIdx) {
@@ -818,19 +886,21 @@ axom::sidre::View* getElementVolumes( sidre::MFEMSidreDataCollection* dc,
 /*!
   @brief Return global sum of volume of the given material.
 */
-template<typename ExecSpace>
-double sumMaterialVolumes( sidre::MFEMSidreDataCollection* dc,
-                           const std::string& material )
+template <typename ExecSpace>
+double sumMaterialVolumes(sidre::MFEMSidreDataCollection* dc,
+                          const std::string& material)
 {
   mfem::Mesh* mesh = dc->GetMesh();
   int const cellCount = mesh->GetNE();
 
   // Get cell volumes from dc.
   axom::sidre::View* elementVols = getElementVolumes<ExecSpace>(dc);
-  axom::ArrayView<double> elementVolsView(elementVols->getData(), elementVols->getNumElements());
+  axom::ArrayView<double> elementVolsView(elementVols->getData(),
+                                          elementVols->getNumElements());
 
   // Get material volume fractions
-  const std::string materialFieldName = axom::fmt::format("vol_frac_{}", material);
+  const std::string materialFieldName =
+    axom::fmt::format("vol_frac_{}", material);
   mfem::GridFunction* volFracGf = dc->GetField(materialFieldName);
   axom::quest::GridFunctionView<ExecSpace> volFracView(volFracGf);
 
@@ -895,30 +965,35 @@ int main(int argc, char** argv)
   // Create simple ShapeSet for the example.
   //---------------------------------------------------------------------------
   axom::klee::ShapeSet shapeSet;
-  switch (params.boxDim) {
+  switch(params.boxDim)
+  {
   case 2:
     shapeSet = create2DShapeSet(ds);
     break;
   case 3:
-    if (params.testShape == "tetmesh")
+    if(params.testShape == "tetmesh")
     {
-      shapeSet = createShapeSet( createShape_TetMesh(ds) );
+      shapeSet = createShapeSet(createShape_TetMesh(ds));
     }
-    else if (params.testShape == "sphere")
+    else if(params.testShape == "hex")
     {
-      shapeSet = createShapeSet( createShape_Sphere() );
+      shapeSet = createShapeSet(createShape_Hex());
     }
-    else if (params.testShape == "cyl")
+    else if(params.testShape == "sphere")
     {
-      shapeSet = createShapeSet( createShape_Cylinder() );
+      shapeSet = createShapeSet(createShape_Sphere());
     }
-    else if (params.testShape == "cone")
+    else if(params.testShape == "cyl")
     {
-      shapeSet = createShapeSet( createShape_Cone() );
+      shapeSet = createShapeSet(createShape_Cylinder());
     }
-    else if (params.testShape == "vor")
+    else if(params.testShape == "cone")
     {
-      shapeSet = createShapeSet( createShape_Vor() );
+      shapeSet = createShapeSet(createShape_Cone());
+    }
+    else if(params.testShape == "vor")
+    {
+      shapeSet = createShapeSet(createShape_Vor());
     }
     break;
   }
@@ -933,14 +1008,14 @@ int main(int argc, char** argv)
       std::dynamic_pointer_cast<axom::mint::UnstructuredMesh<axom::mint::SINGLE_SHAPE>>(
         dShape.createMeshRepresentation());
     SLIC_INFO(axom::fmt::format(
-                "{:-^80}",
-                axom::fmt::format("Shape '{}' discrete geometry has {} cells",
-                                  shape.getName(),
-                                  dMesh->getNumberOfCells())));
+      "{:-^80}",
+      axom::fmt::format("Shape '{}' discrete geometry has {} cells",
+                        shape.getName(),
+                        dMesh->getNumberOfCells())));
 
     discreteShapeMeshes.push_back(dMesh);
 
-    if (!params.outputFile.empty())
+    if(!params.outputFile.empty())
     {
       std::string shapeFileName = params.outputFile + ".shape";
       conduit::Node tmpNode, info;
@@ -979,7 +1054,8 @@ int main(int argc, char** argv)
     shapingDC.SetMeshNodesName("positions");
 
     // With MPI, loadComputationalMesh returns a parallel mesh.
-    mfem::ParMesh* parallelMesh = dynamic_cast<mfem::ParMesh*>(originalMeshDC->GetMesh());
+    mfem::ParMesh* parallelMesh =
+      dynamic_cast<mfem::ParMesh*>(originalMeshDC->GetMesh());
     shapingMesh = (parallelMesh != nullptr)
       ? new mfem::ParMesh(*parallelMesh)
       : new mfem::Mesh(*originalMeshDC->GetMesh());
@@ -1168,29 +1244,32 @@ int main(int argc, char** argv)
 
   int failCounts = 0;
 
-  auto* volFracGroups = shapingDC.GetBPGroup()->getGroup("matsets/material/volume_fractions");
+  auto* volFracGroups =
+    shapingDC.GetBPGroup()->getGroup("matsets/material/volume_fractions");
 
   //---------------------------------------------------------------------------
   // Correctness test: volume fractions should be in [0,1].
   //---------------------------------------------------------------------------
   RAJA::ReduceSum<ReducePolicy, axom::IndexType> rangeViolationCount(0);
-  for (axom::sidre::Group& materialGroup : volFracGroups->groups())
+  for(axom::sidre::Group& materialGroup : volFracGroups->groups())
   {
     axom::sidre::View* values = materialGroup.getView("value");
     double* volFracData = values->getArray();
     axom::ArrayView<double> volFracDataView(volFracData, cellCount);
-    axom::for_all<ExecSpace>(cellCount,
-                             AXOM_LAMBDA(axom::IndexType i) {
-                               bool bad = volFracDataView[i] < 0.0 || volFracDataView[i] > 1.0;
-                               rangeViolationCount += bad; });
+    axom::for_all<ExecSpace>(
+      cellCount,
+      AXOM_LAMBDA(axom::IndexType i) {
+        bool bad = volFracDataView[i] < 0.0 || volFracDataView[i] > 1.0;
+        rangeViolationCount += bad;
+      });
   }
 
   failCounts += (rangeViolationCount.get() != 0);
 
   SLIC_INFO(axom::fmt::format(
-              "{:-^80}",
-              axom::fmt::format("Count of volume fractions outside of [0,1]: {}.",
-                                rangeViolationCount.get())));
+    "{:-^80}",
+    axom::fmt::format("Count of volume fractions outside of [0,1]: {}.",
+                      rangeViolationCount.get())));
   slic::flushStreams();
 
   //---------------------------------------------------------------------------
@@ -1199,14 +1278,14 @@ int main(int argc, char** argv)
   axom::Array<double> volSums(cellCount);
   volSums.fill(0.0);
   axom::ArrayView<double> volSumsView = volSums.view();
-  for (axom::sidre::Group& materialGroup : volFracGroups->groups())
+  for(axom::sidre::Group& materialGroup : volFracGroups->groups())
   {
     axom::sidre::View* values = materialGroup.getView("value");
     double* volFracData = values->getArray();
     axom::ArrayView<double> volFracDataView(volFracData, cellCount);
-    axom::for_all<ExecSpace>(cellCount,
-                             AXOM_LAMBDA(axom::IndexType i) {
-                               volSumsView[i] += volFracDataView[i]; });
+    axom::for_all<ExecSpace>(
+      cellCount,
+      AXOM_LAMBDA(axom::IndexType i) { volSumsView[i] += volFracDataView[i]; });
   }
   RAJA::ReduceSum<ReducePolicy, axom::IndexType> nonUnitSums(0);
   axom::for_all<ExecSpace>(
@@ -1219,9 +1298,9 @@ int main(int argc, char** argv)
   failCounts += (nonUnitSums.get() != 0);
 
   SLIC_INFO(axom::fmt::format(
-              "{:-^80}",
-              axom::fmt::format("Count non-unit volume fraction sums: {}.",
-                                nonUnitSums.get())));
+    "{:-^80}",
+    axom::fmt::format("Count non-unit volume fraction sums: {}.",
+                      nonUnitSums.get())));
   slic::flushStreams();
 
   //---------------------------------------------------------------------------
@@ -1236,27 +1315,29 @@ int main(int argc, char** argv)
         dShape.createMeshRepresentation());
     double shapeMeshVol = volumeOfTetMesh(*shapeMesh);
     SLIC_INFO(axom::fmt::format(
-                "{:-^80}",
-                axom::fmt::format("Shape '{}' discrete geometry has {} cells",
-                                  shape.getName(),
-                                  shapeMesh->getNumberOfCells())));
+      "{:-^80}",
+      axom::fmt::format("Shape '{}' discrete geometry has {} cells",
+                        shape.getName(),
+                        shapeMesh->getNumberOfCells())));
 
     const std::string& materialName = shape.getMaterial();
-    double shapeVol = sumMaterialVolumes<axom::SEQ_EXEC>( &shapingDC, materialName );
+    double shapeVol =
+      sumMaterialVolumes<axom::SEQ_EXEC>(&shapingDC, materialName);
     double diff = shapeVol - shapeMeshVol;
 
     bool err = !axom::utilities::isNearlyEqual(shapeVol, shapeMeshVol);
     failCounts += err;
 
     SLIC_INFO(axom::fmt::format(
-                "{:-^80}",
-                axom::fmt::format("Material '{}' in shape '{}' has volume {} vs {}, diff of {}, {}.",
-                                  materialName,
-                                  shape.getName(),
-                                  shapeVol,
-                                  shapeMeshVol,
-                                  diff,
-                                  (err ? "ERROR" : "OK") )));
+      "{:-^80}",
+      axom::fmt::format(
+        "Material '{}' in shape '{}' has volume {} vs {}, diff of {}, {}.",
+        materialName,
+        shape.getName(),
+        shapeVol,
+        shapeMeshVol,
+        diff,
+        (err ? "ERROR" : "OK"))));
   }
   slic::flushStreams();
   ds.getRoot()->destroyGroupAndData("meshVerification");
@@ -1274,7 +1355,7 @@ int main(int argc, char** argv)
   }
 
 #ifdef MFEM_USE_MPI
-  if (!params.outputFile.empty())
+  if(!params.outputFile.empty())
   {
     std::string fileName = params.outputFile + ".volfracs";
     shaper->getDC()->Save(fileName, sidre::Group::getDefaultIOProtocol());

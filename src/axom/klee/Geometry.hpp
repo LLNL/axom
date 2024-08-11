@@ -59,6 +59,7 @@ public:
   using Point3D = axom::primal::Point<double, 3>;
   using Vector3D = axom::primal::Vector<double, 3>;
   using Sphere3D = axom::primal::Sphere<double, 3>;
+  using Hex3D = axom::primal::Hexahedron<double, 3>;
 
   /**
    * Create a Geometry object based on a file representation.
@@ -88,7 +89,19 @@ public:
    */
   Geometry(const TransformableGeometryProperties &startProperties,
            axom::sidre::Group *meshGroup,
-           const std::string& topology,
+           const std::string &topology,
+           std::shared_ptr<GeometryOperator const> operator_);
+
+  /**
+   * Create a hexahedron Geometry object.
+   *
+   * \param startProperties the transformable properties before any
+   * operators are applied
+   * \param hex Hexahedron
+   * \param operator_ a possibly null operator to apply to the geometry.
+   */
+  Geometry(const TransformableGeometryProperties &startProperties,
+           const axom::primal::Hexahedron<double, 3> &hex,
            std::shared_ptr<GeometryOperator const> operator_);
 
   /**
@@ -104,7 +117,7 @@ public:
    * \internal TODO: Is this the simplex requirement overly restrictive?
    */
   Geometry(const TransformableGeometryProperties &startProperties,
-           const axom::primal::Sphere<double, 3>& sphere,
+           const axom::primal::Sphere<double, 3> &sphere,
            axom::IndexType levelOfRefinement,
            std::shared_ptr<GeometryOperator const> operator_);
 
@@ -129,9 +142,9 @@ public:
    * \internal TODO: Is this the simplex requirement overly restrictive?
    */
   Geometry(const TransformableGeometryProperties &startProperties,
-           const axom::Array<double, 2>& discreteFunction,
-           const Point3D& vorBase,
-           const Vector3D& vorDirection,
+           const axom::Array<double, 2> &discreteFunction,
+           const Point3D &vorBase,
+           const Vector3D &vorDirection,
            axom::IndexType levelOfRefinement,
            std::shared_ptr<GeometryOperator const> operator_);
 
@@ -146,6 +159,7 @@ public:
    * - "vor3D" = 3D volume of revolution.
    * - "cone3D" = 3D cone, as \c primal::Cone<double,3>
    *   "cylinder3D" = 3D cylinder, as \c primal::Cylinder<double,3>
+   * - "hex3D" = 3D hexahedron (8 points)
    *
    * \return the format of the shape
    *
@@ -166,13 +180,13 @@ public:
    * @brief Return the blueprint mesh, for formats that are specified
    * by a blueprint mesh or have been converted to a blueprint mesh.
    */
-  axom::sidre::Group* getBlueprintMesh() const;
+  axom::sidre::Group *getBlueprintMesh() const;
 
   /**
    * @brief Return the blueprint mesh topology, for formats that are specified
    * by a blueprint mesh or have been converted to a blueprint mesh.
    */
-  const std::string& getBlueprintTopology() const;
+  const std::string &getBlueprintTopology() const;
 
   /**
      @brief Return the VOR axis direction.
@@ -231,19 +245,19 @@ public:
    This number is unused for geometries that are specified in discrete
    form.
   */
-  axom::IndexType getLevelOfRefinement() const
-  {
-    return m_levelOfRefinement;
-  }
+  axom::IndexType getLevelOfRefinement() const { return m_levelOfRefinement; }
+
+  /**
+   @brief Return the hex geometry, when the Geometry
+   represents a hexahedron.
+  */
+  const axom::primal::Hexahedron<double, 3> &getHex() const { return m_hex; }
 
   /**
    @brief Return the sphere geometry, when the Geometry
    represents an alalytical sphere.
   */
-  const axom::primal::Sphere<double, 3>& getSphere() const
-  {
-    return m_sphere;
-  }
+  const axom::primal::Sphere<double, 3> &getSphere() const { return m_sphere; }
 
   /**
    @brief Get the discrete function used in volumes of revolution.
@@ -263,10 +277,13 @@ private:
   std::string m_path;
 
   //!@brief Geometry blueprint simplex mesh, when/if it's in memory.
-  axom::sidre::Group* m_meshGroup;
+  axom::sidre::Group *m_meshGroup;
 
   //!@brief Topology of the blueprint simplex mesh, if it's in memory.
   std::string m_topology;
+
+  //!@brief The hexahedron, if used.
+  Hex3D m_hex;
 
   //!@brief Level of refinement for discretizing analytical shapes
   // and surfaces of revolutions.

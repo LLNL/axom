@@ -13,7 +13,7 @@
 #include "axom/mint/mesh/Mesh.hpp"
 
 #if defined(AXOM_USE_MPI)
-#include "mpi.h"
+  #include "mpi.h"
 #endif
 
 namespace axom
@@ -29,7 +29,6 @@ namespace quest
 class DiscreteShape
 {
 public:
-
   /// Refinement type.
   using RefinementType = enum { RefinementUniformSegments, RefinementDynamic };
 
@@ -37,6 +36,7 @@ public:
   using Vector3D = axom::primal::Vector<double, 3>;
   using TetType = axom::primal::Tetrahedron<double, 3>;
   using OctType = axom::primal::Octahedron<double, 3>;
+  using HexType = axom::primal::Hexahedron<double, 3>;
 
   static constexpr int DEFAULT_SAMPLES_PER_KNOT_SPAN {25};
   static constexpr double MINIMUM_PERCENT_ERROR {0.};
@@ -91,17 +91,14 @@ public:
   /**
    @brief Set the MPI communicator used when reading C2C files.
    */
-  void setMPICommunicator(MPI_Comm comm)
-  {
-    m_comm = comm;
-  }
+  void setMPICommunicator(MPI_Comm comm) { m_comm = comm; }
 #endif
 
   /*!
     Get the name of this shape.
     \return the shape's name
   */
-  const axom::klee::Shape &getShape() const { return m_shape; }
+  const axom::klee::Shape& getShape() const { return m_shape; }
 
   /*!
     \brief Get the discrete mesh representation.
@@ -171,7 +168,7 @@ private:
   void clearInternalData();
 };
 
-}  // namespace klee
+}  // namespace quest
 }  // namespace axom
 
 #endif

@@ -79,7 +79,7 @@ constexpr double DiscreteShape::MINIMUM_PERCENT_ERROR;
 constexpr double DiscreteShape::MAXIMUM_PERCENT_ERROR;
 constexpr double DiscreteShape::DEFAULT_VERTEX_WELD_THRESHOLD;
 
-DiscreteShape::DiscreteShape(const axom::klee::Shape &shape,
+DiscreteShape::DiscreteShape(const axom::klee::Shape& shape,
                              const std::string& prefixPath,
                              axom::sidre::Group* parentGroup)
   : m_shape(shape)
@@ -92,7 +92,7 @@ DiscreteShape::DiscreteShape(const axom::klee::Shape &shape,
 void DiscreteShape::clearInternalData()
 {
   m_meshRep.reset();
-  if (m_sidreGroup)
+  if(m_sidreGroup)
   {
     m_sidreGroup->getParent()->destroyGroupAndData(m_sidreGroup->getIndex());
     m_sidreGroup = nullptr;
@@ -101,33 +101,91 @@ void DiscreteShape::clearInternalData()
 
 std::shared_ptr<mint::Mesh> DiscreteShape::createMeshRepresentation()
 {
-  if (m_meshRep) { return m_meshRep; }
+  if(m_meshRep)
+  {
+    return m_meshRep;
+  }
 
-  using TetMesh = axom::mint::UnstructuredMesh<axom::mint::Topology::SINGLE_SHAPE>;
+  using TetMesh =
+    axom::mint::UnstructuredMesh<axom::mint::Topology::SINGLE_SHAPE>;
 
   const axom::klee::Geometry& geometry = m_shape.getGeometry();
   const auto& geometryFormat = geometry.getFormat();
 
-  if (geometryFormat == "memory-blueprint")
+  if(geometryFormat == "memory-blueprint")
   {
     // Put the in-memory geometry in m_meshRep.
     axom::sidre::Group* inputGroup = geometry.getBlueprintMesh();
     axom::sidre::Group* rootGroup = inputGroup->getDataStore()->getRoot();
 
     std::string modName = inputGroup->getName() + "_modified";
-    while (rootGroup->hasGroup(modName)) { modName = modName + "-"; }
+    while(rootGroup->hasGroup(modName))
+    {
+      modName = modName + "-";
+    }
 
     axom::sidre::Group* modGroup = rootGroup->createGroup(modName);
     int allocID = inputGroup->getDefaultAllocatorID();
     modGroup->deepCopyGroup(inputGroup, allocID);
 
-    m_meshRep.reset(axom::mint::getMesh(modGroup->getGroup(inputGroup->getName()),
-                                        m_shape.getGeometry().getBlueprintTopology()));
+    m_meshRep.reset(
+      axom::mint::getMesh(modGroup->getGroup(inputGroup->getName()),
+                          m_shape.getGeometry().getBlueprintTopology()));
 
     // Transform the coordinates of the linearized mesh.
     applyTransforms();
   }
-  else if ( geometryFormat == "sphere3D" )
+  else if(geometryFormat == "hex3D")
+  {
+    const auto& hex = geometry.getHex();
+    axom::StackArray<TetType, HexType::NUM_TRIANGULATE> tets;
+    hex.triangulate(tets);
+
+    const axom::IndexType tetCount = HexType::NUM_TRIANGULATE;
+    const axom::IndexType nodeCount = HexType::NUM_TRIANGULATE * 4;
+    axom::Array<double, 2> nodeCoords(nodeCount, 3);
+    auto nodeCoordsView = nodeCoords.view();
+    axom::Array<axom::IndexType, 2> connectivity(tetCount, 4);
+    auto connectivityView = connectivity.view();
+    // NOTE: This is not much computation, so just run on host.
+    axom::for_all<axom::SEQ_EXEC>(
+      tetCount,
+      AXOM_LAMBDA(axom::IndexType iTet) {
+        const auto& tet = tets[iTet];
+        for(int i = 0; i < 4; ++i)
+        {
+          axom::IndexType iNode = iTet * 4 + i;
+          const auto& coords = tet[i];
+          nodeCoordsView[iNode][0] = coords[0];
+          nodeCoordsView[iNode][1] = coords[1];
+          nodeCoordsView[iNode][2] = coords[2];
+          connectivityView[iTet][i] = iNode;
+        }
+      });
+
+    TetMesh* tetMesh = nullptr;
+    if(m_sidreGroup != nullptr)
+    {
+      tetMesh = new TetMesh(3,
+                            axom::mint::CellType::TET,
+                            m_sidreGroup,
+                            nodeCoords.shape()[0],
+                            connectivity.shape()[0]);
+    }
+    else
+    {
+      tetMesh = new TetMesh(3,
+                            axom::mint::CellType::TET,
+                            nodeCoords.shape()[0],
+                            connectivity.shape()[0]);
+    }
+    tetMesh->appendNodes((double*)nodeCoords.data(), nodeCoords.shape()[0]);
+    tetMesh->appendCells(connectivity.data(), connectivity.shape()[0]);
+    m_meshRep.reset(tetMesh);
+
+    applyTransforms();
+  }
+  else if(geometryFormat == "sphere3D")
   {
     /*
       Discretize the sphere into m_meshRep and apply transforms:
@@ -139,7 +197,6 @@ std::shared_ptr<mint::Mesh> DiscreteShape::createMeshRepresentation()
       is a problem.
     */
     const auto& sphere = geometry.getSphere();
-    using TetType = axom::primal::Tetrahedron<double, 3>;
     axom::Array<OctType> octs;
     int octCount = 0;
     axom::quest::discretize(sphere, geometry.getLevelOfRefinement(), octs, octCount);
@@ -151,7 +208,7 @@ std::shared_ptr<mint::Mesh> DiscreteShape::createMeshRepresentation()
 
     axom::Array<Point3D> nodeCoords(nodeCount, nodeCount);
     axom::Array<axom::IndexType, 2> connectivity(
-      axom::StackArray<axom::IndexType, 2>{tetCount, NODES_PER_TET});
+      axom::StackArray<axom::IndexType, 2> {tetCount, NODES_PER_TET});
 
     auto nodeCoordsView = nodeCoords.view();
     auto connectivityView = connectivity.view();
@@ -160,12 +217,12 @@ std::shared_ptr<mint::Mesh> DiscreteShape::createMeshRepresentation()
       AXOM_LAMBDA(axom::IndexType octIdx) {
         TetType tetsInOct[TETS_PER_OCT];
         axom::primal::split(octs[octIdx], tetsInOct);
-        for ( int iTet = 0; iTet < TETS_PER_OCT; ++iTet )
+        for(int iTet = 0; iTet < TETS_PER_OCT; ++iTet)
         {
-          axom::IndexType tetIdx = octIdx*TETS_PER_OCT + iTet;
-          for ( int iNode = 0; iNode < NODES_PER_TET; ++iNode )
+          axom::IndexType tetIdx = octIdx * TETS_PER_OCT + iTet;
+          for(int iNode = 0; iNode < NODES_PER_TET; ++iNode)
           {
-            axom::IndexType nodeIdx = tetIdx*NODES_PER_TET + iNode;
+            axom::IndexType nodeIdx = tetIdx * NODES_PER_TET + iNode;
             nodeCoordsView[nodeIdx] = tetsInOct[iTet][iNode];
             connectivityView[tetIdx][iNode] = nodeIdx;
           }
@@ -173,22 +230,14 @@ std::shared_ptr<mint::Mesh> DiscreteShape::createMeshRepresentation()
       });
 
     TetMesh* tetMesh = nullptr;
-    if (m_sidreGroup != nullptr)
+    if(m_sidreGroup != nullptr)
     {
-      tetMesh = new TetMesh(
-        3,
-        axom::mint::CellType::TET,
-        m_sidreGroup,
-        nodeCount,
-        tetCount);
+      tetMesh =
+        new TetMesh(3, axom::mint::CellType::TET, m_sidreGroup, nodeCount, tetCount);
     }
     else
     {
-      tetMesh = new TetMesh(
-        3,
-        axom::mint::CellType::TET,
-        nodeCount,
-        tetCount);
+      tetMesh = new TetMesh(3, axom::mint::CellType::TET, nodeCount, tetCount);
     }
     tetMesh->appendNodes((double*)nodeCoords.data(), nodeCount);
     tetMesh->appendCells(connectivity.data(), tetCount);
@@ -196,7 +245,7 @@ std::shared_ptr<mint::Mesh> DiscreteShape::createMeshRepresentation()
 
     applyTransforms();
   }
-  if (geometryFormat == "vor3D")
+  if(geometryFormat == "vor3D")
   {
     // Construct the tet m_meshRep from the volume-of-revolution.
     auto& vorGeom = m_shape.getGeometry();
@@ -223,29 +272,30 @@ std::shared_ptr<mint::Mesh> DiscreteShape::createMeshRepresentation()
       octCount,
       AXOM_LAMBDA(axom::IndexType iOct) {
         auto& oct = octsView[iOct];
-        for ( int iVert = 0; iVert < OctType::NUM_VERTS; ++iVert )
+        for(int iVert = 0; iVert < OctType::NUM_VERTS; ++iVert)
         {
           auto& newCoords = oct[iVert];
           auto oldCoords = newCoords;
-          numerics::matrix_vector_multiply(rotate, oldCoords.data(), newCoords.data());
+          numerics::matrix_vector_multiply(rotate,
+                                           oldCoords.data(),
+                                           newCoords.data());
           newCoords.array() += translate.array();
         }
       });
 
     // Dump discretized octs as a tet mesh
     axom::mint::Mesh* mesh;
-    axom::quest::mesh_from_discretized_polyline(
-      octs.view(),
-      octCount,
-      polyline.size() - 1,
-      mesh);
+    axom::quest::mesh_from_discretized_polyline(octs.view(),
+                                                octCount,
+                                                polyline.size() - 1,
+                                                mesh);
 
-    if (m_sidreGroup)
+    if(m_sidreGroup)
     {
       // If using sidre, copy the tetMesh into sidre.
       auto* tetMesh = static_cast<TetMesh*>(mesh);
-      axom::mint::UnstructuredMesh<axom::mint::SINGLE_SHAPE>*
-        siMesh = new axom::mint::UnstructuredMesh<axom::mint::SINGLE_SHAPE>(
+      axom::mint::UnstructuredMesh<axom::mint::SINGLE_SHAPE>* siMesh =
+        new axom::mint::UnstructuredMesh<axom::mint::SINGLE_SHAPE>(
           tetMesh->getDimension(),
           tetMesh->getCellType(),
           m_sidreGroup,
@@ -253,16 +303,18 @@ std::shared_ptr<mint::Mesh> DiscreteShape::createMeshRepresentation()
           tetMesh->getCoordsetName(),
           tetMesh->getNumberOfNodes(),
           tetMesh->getNumberOfCells());
-      siMesh->appendNodes( tetMesh->getCoordinateArray(0)
-                         , tetMesh->getCoordinateArray(1)
-                         , tetMesh->getCoordinateArray(2)
-                         , tetMesh->getNumberOfNodes() );
-      siMesh->appendCells( tetMesh->getCellNodesArray()
-                         , tetMesh->getNumberOfCells() );
+      siMesh->appendNodes(tetMesh->getCoordinateArray(0),
+                          tetMesh->getCoordinateArray(1),
+                          tetMesh->getCoordinateArray(2),
+                          tetMesh->getNumberOfNodes());
+      siMesh->appendCells(tetMesh->getCellNodesArray(),
+                          tetMesh->getNumberOfCells());
       m_meshRep.reset(siMesh);
       delete mesh;
       mesh = nullptr;
-    } else {
+    }
+    else
+    {
       m_meshRep.reset(mesh);
     }
 
@@ -270,7 +322,7 @@ std::shared_ptr<mint::Mesh> DiscreteShape::createMeshRepresentation()
     applyTransforms();
   }
 
-  if (m_meshRep)
+  if(m_meshRep)
   {
     return m_meshRep;
   }
@@ -380,9 +432,8 @@ void DiscreteShape::applyTransforms()
     const int numSurfaceVertices = m_meshRep->getNumberOfNodes();
     double* x = m_meshRep->getCoordinateArray(mint::X_COORDINATE);
     double* y = m_meshRep->getCoordinateArray(mint::Y_COORDINATE);
-    double* z = spaceDim > 2
-      ? m_meshRep->getCoordinateArray(mint::Z_COORDINATE)
-      : nullptr;
+    double* z = spaceDim > 2 ? m_meshRep->getCoordinateArray(mint::Z_COORDINATE)
+                             : nullptr;
 
     double xformed[4];
     for(int i = 0; i < numSurfaceVertices; ++i)
@@ -404,7 +455,8 @@ numerics::Matrix<double> DiscreteShape::getTransforms() const
   const auto identity4x4 = numerics::Matrix<double>::identity(4);
   numerics::Matrix<double> transformation(identity4x4);
   auto& geometryOperator = m_shape.getGeometry().getGeometryOperator();
-  if (geometryOperator) {
+  if(geometryOperator)
+  {
     auto composite =
       std::dynamic_pointer_cast<const klee::CompositeOperator>(geometryOperator);
     if(composite)
@@ -433,7 +485,7 @@ numerics::Matrix<double> DiscreteShape::getTransforms() const
     {
       internal::AffineMatrixVisitor visitor;
       geometryOperator->accept(visitor);
-      if (visitor.isValid())
+      if(visitor.isValid())
       {
         transformation = visitor.getMatrix();
       }
@@ -448,16 +500,16 @@ numerics::Matrix<double> DiscreteShape::vorAxisRotMatrix(const Vector3D& dir)
   // Note that the rotation matrix is not unique.
   static const Vector3D x {1.0, 0.0, 0.0};
   Vector3D a = dir.unitVector();
-  Vector3D u; // Rotation vector, the cross product of x and a.
-  numerics::cross_product( x.data(), a.data(), u.data() );
+  Vector3D u;  // Rotation vector, the cross product of x and a.
+  numerics::cross_product(x.data(), a.data(), u.data());
   double sinT = u.norm();
-  double cosT = numerics::dot_product( x.data(), a.data(), 3 );
+  double cosT = numerics::dot_product(x.data(), a.data(), 3);
   double ccosT = 1 - cosT;
 
   // Degenerate case with angle near 0 or pi.
-  if (utilities::isNearlyEqual(sinT, 0.0))
+  if(utilities::isNearlyEqual(sinT, 0.0))
   {
-    if (cosT > 0)
+    if(cosT > 0)
     {
       return numerics::Matrix<double>::identity(3);
     }
@@ -471,15 +523,15 @@ numerics::Matrix<double> DiscreteShape::vorAxisRotMatrix(const Vector3D& dir)
 
   u = u.unitVector();
   numerics::Matrix<double> rot(3, 3, 0.0);
-  rot(0, 0) = u[0]*u[0] * ccosT + cosT;
-  rot(0, 1) = u[0]*u[1] * ccosT - u[2]*sinT;
-  rot(0, 2) = u[0]*u[2] * ccosT + u[1]*sinT;
-  rot(1, 0) = u[1]*u[0] * ccosT + u[2]*sinT;
-  rot(1, 1) = u[1]*u[1] * ccosT + cosT;
-  rot(1, 2) = u[1]*u[2] * ccosT - u[0]*sinT;
-  rot(2, 0) = u[0]*u[2] * ccosT - u[1]*sinT;
-  rot(2, 1) = u[1]*u[2] * ccosT + u[0]*sinT;
-  rot(2, 2) = u[2]*u[2] * ccosT + cosT;
+  rot(0, 0) = u[0] * u[0] * ccosT + cosT;
+  rot(0, 1) = u[0] * u[1] * ccosT - u[2] * sinT;
+  rot(0, 2) = u[0] * u[2] * ccosT + u[1] * sinT;
+  rot(1, 0) = u[1] * u[0] * ccosT + u[2] * sinT;
+  rot(1, 1) = u[1] * u[1] * ccosT + cosT;
+  rot(1, 2) = u[1] * u[2] * ccosT - u[0] * sinT;
+  rot(2, 0) = u[2] * u[0] * ccosT - u[1] * sinT;
+  rot(2, 1) = u[2] * u[1] * ccosT + u[0] * sinT;
+  rot(2, 2) = u[2] * u[2] * ccosT + cosT;
 
   return rot;
 }
@@ -547,7 +599,7 @@ std::string DiscreteShape::resolvePath() const
 
 void DiscreteShape::setParentGroup(axom::sidre::Group* parentGroup)
 {
-  if (parentGroup)
+  if(parentGroup)
   {
     std::ostringstream os;
     os << this;
@@ -556,5 +608,5 @@ void DiscreteShape::setParentGroup(axom::sidre::Group* parentGroup)
   }
 }
 
-}  // namespace klee
+}  // namespace quest
 }  // namespace axom

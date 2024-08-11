@@ -2024,10 +2024,10 @@ private:
     return volFrac;
   }
 
-  bool surfaceMeshIsTet() const {
+  bool surfaceMeshIsTet() const
+  {
     bool isTet = m_surfaceMesh != nullptr &&
-      m_surfaceMesh->getDimension() == 3 &&
-      !m_surfaceMesh->hasMixedCellTypes() &&
+      m_surfaceMesh->getDimension() == 3 && !m_surfaceMesh->hasMixedCellTypes() &&
       m_surfaceMesh->getCellType() == mint::TET;
     return isTet;
   }

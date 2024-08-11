@@ -13,13 +13,13 @@ namespace axom
 {
 namespace klee
 {
-bool operator==(const TransformableGeometryProperties &lhs,
-                const TransformableGeometryProperties &rhs)
+bool operator==(const TransformableGeometryProperties& lhs,
+                const TransformableGeometryProperties& rhs)
 {
   return lhs.dimensions == rhs.dimensions && lhs.units == rhs.units;
 }
 
-Geometry::Geometry(const TransformableGeometryProperties &startProperties,
+Geometry::Geometry(const TransformableGeometryProperties& startProperties,
                    std::string format,
                    std::string path,
                    std::shared_ptr<GeometryOperator const> operator_)
@@ -30,7 +30,7 @@ Geometry::Geometry(const TransformableGeometryProperties &startProperties,
   , m_operator(std::move(operator_))
 { }
 
-Geometry::Geometry(const TransformableGeometryProperties &startProperties,
+Geometry::Geometry(const TransformableGeometryProperties& startProperties,
                    axom::sidre::Group* meshGroup,
                    const std::string& topology,
                    std::shared_ptr<GeometryOperator const> operator_)
@@ -41,10 +41,22 @@ Geometry::Geometry(const TransformableGeometryProperties &startProperties,
   , m_topology(topology)
   , m_levelOfRefinement(0)
   , m_operator(std::move(operator_))
-{
-}
+{ }
 
-Geometry::Geometry(const TransformableGeometryProperties &startProperties,
+Geometry::Geometry(const TransformableGeometryProperties& startProperties,
+                   const axom::primal::Hexahedron<double, 3>& hex,
+                   std::shared_ptr<GeometryOperator const> operator_)
+  : m_startProperties(startProperties)
+  , m_format("hex3D")
+  , m_path()
+  , m_meshGroup(nullptr)
+  , m_topology()
+  , m_hex(hex)
+  , m_levelOfRefinement(0)
+  , m_operator(std::move(operator_))
+{ }
+
+Geometry::Geometry(const TransformableGeometryProperties& startProperties,
                    const Sphere3D& sphere,
                    axom::IndexType levelOfRefinement,
                    std::shared_ptr<GeometryOperator const> operator_)
@@ -56,10 +68,9 @@ Geometry::Geometry(const TransformableGeometryProperties &startProperties,
   , m_levelOfRefinement(levelOfRefinement)
   , m_sphere(sphere)
   , m_operator(std::move(operator_))
-{
-}
+{ }
 
-Geometry::Geometry(const TransformableGeometryProperties &startProperties,
+Geometry::Geometry(const TransformableGeometryProperties& startProperties,
                    const axom::Array<double, 2>& discreteFunction,
                    const Point3D& vorBase,
                    const Vector3D& vorDirection,
@@ -76,14 +87,13 @@ Geometry::Geometry(const TransformableGeometryProperties &startProperties,
   , m_vorBase(vorBase)
   , m_vorDirection(vorDirection)
   , m_operator(std::move(operator_))
-{
-}
+{ }
 
 bool Geometry::hasGeometry() const
 {
-  bool isInMemory = m_format == "memory-blueprint" || m_format == "sphere3D"
-    || m_format == "cone3D" || m_format == "cylinder3D";
-  if (isInMemory)
+  bool isInMemory = m_format == "memory-blueprint" || m_format == "sphere3D" ||
+    m_format == "cone3D" || m_format == "cylinder3D";
+  if(isInMemory)
   {
     return true;
   }
@@ -101,17 +111,23 @@ TransformableGeometryProperties Geometry::getEndProperties() const
 
 axom::sidre::Group* Geometry::getBlueprintMesh() const
 {
-  SLIC_ASSERT_MSG(m_meshGroup,
-                  axom::fmt::format("The Geometry format '{}' is not specified "
-                  "as a blueprint mesh and/or has not been converted into one.", m_format));
+  SLIC_ASSERT_MSG(
+    m_meshGroup,
+    axom::fmt::format(
+      "The Geometry format '{}' is not specified "
+      "as a blueprint mesh and/or has not been converted into one.",
+      m_format));
   return m_meshGroup;
 }
 
 const std::string& Geometry::getBlueprintTopology() const
 {
-  SLIC_ASSERT_MSG(m_meshGroup,
-                  axom::fmt::format("The Geometry format '{}' is not specified "
-                  "as a blueprint mesh and/or has not been converted into one.", m_format));
+  SLIC_ASSERT_MSG(
+    m_meshGroup,
+    axom::fmt::format(
+      "The Geometry format '{}' is not specified "
+      "as a blueprint mesh and/or has not been converted into one.",
+      m_format));
   return m_topology;
 }
 

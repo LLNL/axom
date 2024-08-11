@@ -248,7 +248,7 @@ public:
    * \note Assumes tets is pre-allocated
    */
   AXOM_HOST_DEVICE
-  void triangulate(axom::StackArray<TetrahedronType, NUM_TRIANGULATE>& tets)
+  void triangulate(axom::StackArray<TetrahedronType, NUM_TRIANGULATE>& tets) const
   {
     // Hex center (hc)
     PointType hc = vertexMean();
