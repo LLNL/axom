@@ -152,7 +152,7 @@ private:
       [&](auto compView, auto outView) {
         using value_type = typename decltype(compView)::value_type;
         using accum_type =
-          typename axom::mir::utilities::accumulation_traits<value_type>::type;
+          typename axom::mir::utilities::accumulation_traits<value_type>::value_type;
 
         IndexingPolicy deviceIndexing(m_indexing);
         const BlendData deviceBlend(blend);

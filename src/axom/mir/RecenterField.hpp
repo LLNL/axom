@@ -72,12 +72,12 @@ void RecenterField<ExecSpace>::execute(const conduit::Node &field,
     for(conduit::index_t c = 0; c < n_values.number_of_children(); c++)
     {
       const conduit::Node &n_comp = n_values[c];
-      recenterSingleComponent(relation, outField["values"][n_comp.name()], n_comp);
+      recenterSingleComponent(n_comp, relation, outField["values"][n_comp.name()]);
     }
   }
   else
   {
-    recenterSingleComponent(relation, outField["values"], n_values);
+    recenterSingleComponent(n_values, relation, outField["values"]);
   }
 }
 
@@ -104,7 +104,7 @@ void RecenterField<ExecSpace>::recenterSingleComponent(
       // Allocate Conduit data through Axom.
       utilities::blueprint::ConduitAllocateThroughAxom<ExecSpace> c2a;
       n_out.set_allocator(c2a.getConduitAllocatorID());
-      n_out.set(n_comp.dtype().id(), relSize);
+      n_out.set(conduit::DataType(n_comp.dtype().id(), relSize));
 
       views::Node_to_ArrayView_same(n_comp, n_out, [&](auto compView, auto outView) {
         using Precision = typename decltype(compView)::value_type;
@@ -112,12 +112,12 @@ void RecenterField<ExecSpace>::recenterSingleComponent(
           typename axom::mir::utilities::accumulation_traits<Precision>::value_type;
         axom::for_all<ExecSpace>(
           relSize,
-          AXOM_LAMBDA(int relIndex) {
-            const auto n = sizesView[relIndex];
+          AXOM_LAMBDA(auto relIndex) {
+            const auto n = static_cast<axom::IndexType>(sizesView[relIndex]);
             const auto offset = offsetsView[relIndex];
 
-            AccumType sum = 0;
-            for(int i = 0; i < n; i++)
+            AccumType sum {};
+            for(axom::IndexType i = 0; i < n; i++)
             {
               const auto id = relView[offset + i];
               sum += static_cast<AccumType>(compView[id]);

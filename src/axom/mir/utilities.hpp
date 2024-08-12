@@ -67,25 +67,25 @@ namespace utilities
 template <typename T>
 struct accumulation_traits
 {
-  using type = float;
+  using value_type = float;
 };
 
 template <>
 struct accumulation_traits<double>
 {
-  using type = double;
+  using value_type = double;
 };
 
 template <>
 struct accumulation_traits<long>
 {
-  using type = double;
+  using value_type = double;
 };
 
 template <>
 struct accumulation_traits<unsigned long>
 {
-  using type = double;
+  using value_type = double;
 };
 
 //------------------------------------------------------------------------------

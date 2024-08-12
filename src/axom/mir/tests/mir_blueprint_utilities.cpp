@@ -359,7 +359,78 @@ TEST(mir_blueprint_utilities, node_to_zone_relation_builder_polyhedral)
 }
 
 //------------------------------------------------------------------------------
+template <typename ExecSpace>
+void test_recenter_field(const conduit::Node &hostMesh)
+{
+  // host -> device
+  conduit::Node deviceMesh;
+  axom::mir::utilities::blueprint::copy<ExecSpace>(deviceMesh, hostMesh);
+  conduit::Node &deviceTopo = deviceMesh["topologies/mesh"];
 
+  // Make a node to zone relation on the device.
+  conduit::Node deviceRelation;
+  axom::mir::utilities::blueprint::NodeToZoneRelationBuilder<ExecSpace> n2z;
+  n2z.execute(deviceTopo, deviceRelation);
+
+  // Recenter a field zonal->nodal on the device
+  axom::mir::utilities::blueprint::RecenterField<ExecSpace> r;
+  r.execute(deviceMesh["fields/easy_zonal"], deviceRelation, deviceMesh["fields/z2n"]);
+
+  // Recenter a field nodal->zonal on the device. (The elements are an o2m relation)
+  r.execute(deviceMesh["fields/z2n"], deviceMesh["topologies/mesh/elements"], deviceMesh["fields/n2z"]);
+
+  // device -> host
+  conduit::Node hostResultMesh;
+  axom::mir::utilities::blueprint::copy<seq_exec>(hostResultMesh, deviceMesh);
+#if 0
+  // Print the results.
+  printNode(hostResultMesh);
+#endif
+  const float n2z_result[] = {1., 2., 4., 5., 4., 5., 7., 8., 7., 8., 10., 11.};
+  for(size_t i = 0; i < (sizeof(n2z_result) / sizeof(float)); i++)
+  {
+    EXPECT_EQ(n2z_result[i], hostResultMesh["fields/z2n/values"].as_float_accessor()[i]);
+  }
+  const float z2n_result[] = {3., 4.5, 6., 6., 7.5, 9.};
+  for(size_t i = 0; i < (sizeof(z2n_result) / sizeof(float)); i++)
+  {
+    EXPECT_EQ(z2n_result[i], hostResultMesh["fields/n2z/values"].as_float_accessor()[i]);
+  }
+}
+
+TEST(mir_blueprint_utilities, recenterfield)
+{
+  /*
+    8---9--10--11
+    |   |   |   |
+    4---5---6---7
+    |   |   |   |
+    0---1---2---3
+    */
+  conduit::Node mesh;
+  axom::StackArray<int, 2> dims {{4, 3}};
+  axom::mir::testing::data::braid("quads", dims, mesh);
+  mesh["topologies/mesh/elements/sizes"].set(std::vector<int>{{4, 4, 4, 4, 4, 4}});
+  mesh["topologies/mesh/elements/offsets"].set(std::vector<int>{{0, 4, 8, 12, 16, 20}});
+  mesh["fields/easy_zonal/topology"] = "mesh";
+  mesh["fields/easy_zonal/association"] = "element";
+  mesh["fields/easy_zonal/values"].set(std::vector<float>{{1,3,5,7,9,11}});
+
+  test_recenter_field<seq_exec>(mesh);
+#if defined(AXOM_USE_OPENMP)
+  test_recenter_field<omp_exec>(mesh);
+#endif
+
+#if defined(AXOM_USE_CUDA) && defined(__CUDACC__)
+  test_recenter_field<cuda_exec>(mesh);
+#endif
+
+#if defined(AXOM_USE_HIP)
+  test_recenter_field<hip_exec>(mesh);
+#endif
+}
+
+//------------------------------------------------------------------------------
 int main(int argc, char *argv[])
 {
   int result = 0;
