@@ -136,8 +136,6 @@ void NodeToZoneRelationBuilder<ExecSpace>::execute(const conduit::Node &topo,
 
     if(shape.is_polyhedral())
     {
-#if 0
-// DEBUG THIS LATER
       using reduce_policy = typename axom::execution_space<ExecSpace>::reduce_policy;
       const auto allocatorID = axom::execution_space<ExecSpace>::allocatorID();
 
@@ -203,7 +201,6 @@ void NodeToZoneRelationBuilder<ExecSpace>::execute(const conduit::Node &topo,
               });
           });
       });
-#endif
     }
     else if(shape.is_polygonal())
     {

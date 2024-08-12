@@ -125,7 +125,7 @@ public:
         const auto faceIds = getFace(f);
         for(axom::IndexType i = 0; i < faceIds.size(); i++)
         {
-          if(!find(m_ids, nnodes))
+          if(!find(m_ids.m_data, nnodes, faceIds[i]))
           {
             if(nnodes < MaximumNumberOfIds)
               m_ids[nnodes++] = faceIds[i];
@@ -137,7 +137,7 @@ public:
           }
         }
       }
-      return axom::ArrayView<IndexType>(m_ids.m_data, nnodes);
+      return ConnectivityView(m_ids.m_data, nnodes);
     }
 
     AXOM_HOST_DEVICE ConnectivityView getFace(int faceIndex) const
@@ -153,12 +153,13 @@ public:
     }
 
   private:
-    AXOM_HOST_DEVICE bool find(const ConnectivityView *arr,
-                               axom::IndexType n,
-                               ConnectivityView value) const
+    AXOM_HOST_DEVICE bool find(const ConnectivityType *arr, axom::IndexType n, ConnectivityType value) const
     {
       bool found = false;
-      for(axom::IndexType i = 0; i < n && !found; i++) found = arr[i] == value;
+      for(axom::IndexType i = 0; i < n && !found; i++)
+      {
+        found = arr[i] == value;
+      }
       return found;
     }
 
@@ -171,12 +172,12 @@ public:
   using ShapeType = PolyhedronShape;
 
   UnstructuredTopologyPolyhedralView(
-    const axom::ArrayView<IndexType> &subelement_conn,
-    const axom::ArrayView<IndexType> &subelement_sizes,
-    const axom::ArrayView<IndexType> &subelement_offsets,
-    const axom::ArrayView<IndexType> &element_conn,
-    const axom::ArrayView<IndexType> &element_sizes,
-    const axom::ArrayView<IndexType> &element_offsets)
+    const ConnectivityView &subelement_conn,
+    const ConnectivityView &subelement_sizes,
+    const ConnectivityView &subelement_offsets,
+    const ConnectivityView &element_conn,
+    const ConnectivityView &element_sizes,
+    const ConnectivityView &element_offsets)
     : m_data(subelement_conn,
              subelement_sizes,
              subelement_offsets,
