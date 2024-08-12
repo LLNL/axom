@@ -15,6 +15,15 @@ axom_component_requires(NAME       Sina
                         TPLS       Conduit )
 
 #------------------------------------------------------------------------------
+# Set sina version
+#------------------------------------------------------------------------------
+set(SINA_VERSION_MAJOR 1)
+set(SINA_VERSION_MINOR 14)
+set(SINA_VERSION_PATCH 0)
+axom_configure_file ( config.hpp.in
+                      ${PROJECT_BINARY_DIR}/include/axom/sina/config.hpp )
+
+#------------------------------------------------------------------------------
 # Specify the sina headers/sources
 #------------------------------------------------------------------------------
 set(sina_headers
