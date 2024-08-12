@@ -1407,49 +1407,49 @@ Group* Group::copyGroup(Group* group)
 /*
  *************************************************************************
  *
- * Create a deep copy of given Group and make it a child of this Group.
+ * Create a deep copy of given Group and make the copy a child of this Group.
  *
  * The deep copy of a Group will copy the group hierarchy and deep copy
  * all Views within the hierarchy.
  *
  *************************************************************************
  */
-Group* Group::deepCopyGroup(Group* group, int allocID)
+Group* Group::deepCopyGroup(Group* srcGroup, int allocID)
 {
   allocID = getValidAllocatorID(allocID);
 
-  if(group == nullptr || hasChildGroup(group->getName()))
+  if(srcGroup == nullptr || hasChildGroup(srcGroup->getName()))
   {
     SLIC_CHECK_MSG(
-      group != nullptr,
+      srcGroup != nullptr,
       SIDRE_GROUP_LOG_PREPEND << "Null pointer provided, no Group to copy.");
 
-    if(group != nullptr)
+    if(srcGroup != nullptr)
     {
-      SLIC_CHECK_MSG(!hasChildGroup(group->getName()),
+      SLIC_CHECK_MSG(!hasChildGroup(srcGroup->getName()),
                      SIDRE_GROUP_LOG_PREPEND
                        << "Invalid copy operation. Group already has "
-                       << "a child named '" << group->getName() << "'.");
+                       << "a child named '" << srcGroup->getName() << "'.");
     }
 
     return nullptr;
   }
 
-  Group* res = createGroup(group->getName());
+  Group* dstGroup = createGroup(srcGroup->getName());
 
   // copy child Groups to new Group
-  for(auto& grp : group->groups())
+  for(auto& grp : srcGroup->groups())
   {
-    res->deepCopyGroup(&grp, allocID);
+    dstGroup->deepCopyGroup(&grp, allocID);
   }
 
   // copy Views to new Group
-  for(auto& view : group->views())
+  for(auto& view : srcGroup->views())
   {
-    res->deepCopyView(&view, allocID);
+    dstGroup->deepCopyView(&view, allocID);
   }
 
-  return res;
+  return dstGroup;
 }
 
 /*
