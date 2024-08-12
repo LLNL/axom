@@ -160,7 +160,7 @@ void test_node_to_zone_relation_builder(const conduit::Node &hostMesh)
 
   // Run the algorithm on the device
   conduit::Node deviceRelation;
-  axom::mir::NodeToZoneRelationBuilder<ExecSpace> n2z;
+  axom::mir::utilities::blueprint::NodeToZoneRelationBuilder<ExecSpace> n2z;
   n2z.execute(deviceTopo, deviceRelation);
 
   // device -> host
@@ -262,7 +262,7 @@ void test_node_to_zone_relation_builder_polyhedral(const conduit::Node &hostMesh
 
   // Run the algorithm on the device
   conduit::Node deviceRelation;
-  axom::mir::NodeToZoneRelationBuilder<ExecSpace> n2z;
+  axom::mir::utilities::blueprint::NodeToZoneRelationBuilder<ExecSpace> n2z;
   n2z.execute(deviceTopo, deviceRelation);
 
   // device -> host

@@ -176,7 +176,7 @@ protected:
 
     // Make a node to zone relation.
     conduit::Node relation;
-    axom::mir::NodeToZoneRelationBuilder<ExecSpace> builder;
+    axom::mir::utilities::blueprint::NodeToZoneRelationBuilder<ExecSpace> builder;
     builder.execute(n_topo, relation); // <----------------------- Should this algorithm take a topo view?
 
     // Make a shallow copy of the fields that we can modify.

@@ -21,6 +21,10 @@ namespace axom
 {
 namespace mir
 {
+namespace utilities
+{
+namespace blueprint
+{
 /**
  * \brief Build an o2m relation that lets us look up the zones for a node.
  *
@@ -307,6 +311,8 @@ void NodeToZoneRelationBuilder<ExecSpace>::execute(const conduit::Node &topo,
   }
 }
 
+}  // end namespace blueprint
+}  // end namespace utilities
 }  // end namespace mir
 }  // end namespace axom
 

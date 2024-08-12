@@ -17,6 +17,10 @@ namespace axom
 {
 namespace mir
 {
+namespace utilities
+{
+namespace blueprint
+{
 /**
  * \brief Convert a field with one association type to a field of another association type using an o2mrelation.
  *
@@ -125,6 +129,8 @@ void RecenterField<ExecSpace>::recenterSingleComponent(
     });
 }
 
+}  // end namespace blueprint
+}  // end namespace utilities
 }  // end namespace mir
 }  // end namespace axom
 
