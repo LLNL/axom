@@ -153,7 +153,9 @@ public:
     }
 
   private:
-    AXOM_HOST_DEVICE bool find(const ConnectivityType *arr, axom::IndexType n, ConnectivityType value) const
+    AXOM_HOST_DEVICE bool find(const ConnectivityType *arr,
+                               axom::IndexType n,
+                               ConnectivityType value) const
     {
       bool found = false;
       for(axom::IndexType i = 0; i < n && !found; i++)
@@ -171,13 +173,12 @@ public:
 
   using ShapeType = PolyhedronShape;
 
-  UnstructuredTopologyPolyhedralView(
-    const ConnectivityView &subelement_conn,
-    const ConnectivityView &subelement_sizes,
-    const ConnectivityView &subelement_offsets,
-    const ConnectivityView &element_conn,
-    const ConnectivityView &element_sizes,
-    const ConnectivityView &element_offsets)
+  UnstructuredTopologyPolyhedralView(const ConnectivityView &subelement_conn,
+                                     const ConnectivityView &subelement_sizes,
+                                     const ConnectivityView &subelement_offsets,
+                                     const ConnectivityView &element_conn,
+                                     const ConnectivityView &element_sizes,
+                                     const ConnectivityView &element_offsets)
     : m_data(subelement_conn,
              subelement_sizes,
              subelement_offsets,

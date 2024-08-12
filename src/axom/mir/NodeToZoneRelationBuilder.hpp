@@ -140,71 +140,79 @@ void NodeToZoneRelationBuilder<ExecSpace>::execute(const conduit::Node &topo,
 
     if(shape.is_polyhedral())
     {
-      using reduce_policy = typename axom::execution_space<ExecSpace>::reduce_policy;
+      using reduce_policy =
+        typename axom::execution_space<ExecSpace>::reduce_policy;
       const auto allocatorID = axom::execution_space<ExecSpace>::allocatorID();
 
-      views::dispatch_unstructured_polyhedral_topology(topo, [&](auto AXOM_UNUSED_PARAM(shape), auto topoView) {
-        const auto nzones = topoView.numberOfZones();
-        axom::Array<axom::IndexType> sizes(nzones, nzones, allocatorID);
-        auto sizes_view = sizes.view();
+      views::dispatch_unstructured_polyhedral_topology(
+        topo,
+        [&](auto AXOM_UNUSED_PARAM(shape), auto topoView) {
+          const auto nzones = topoView.numberOfZones();
+          axom::Array<axom::IndexType> sizes(nzones, nzones, allocatorID);
+          auto sizes_view = sizes.view();
 
-        // Run through the topology once to do a count of each zone's unique node ids.
-        RAJA::ReduceSum<reduce_policy, axom::IndexType> count(0);
-        topoView.template for_all_zones<ExecSpace>(
-          AXOM_LAMBDA(auto zoneIndex, const auto &zone) {
-            const auto uniqueIds = zone.getUniqueIds();
-            sizes_view[zoneIndex] = uniqueIds.size();
-            count += uniqueIds.size();
-          });
-        const auto connSize = count.get();
+          // Run through the topology once to do a count of each zone's unique node ids.
+          RAJA::ReduceSum<reduce_policy, axom::IndexType> count(0);
+          topoView.template for_all_zones<ExecSpace>(
+            AXOM_LAMBDA(auto zoneIndex, const auto &zone) {
+              const auto uniqueIds = zone.getUniqueIds();
+              sizes_view[zoneIndex] = uniqueIds.size();
+              count += uniqueIds.size();
+            });
+          const auto connSize = count.get();
 
-        // Do a scan on the size array to build an offset array.
-        axom::Array<axom::IndexType> offsets(nzones, nzones, allocatorID);
-        auto offsets_view = offsets.view();
-        axom::exclusive_scan<ExecSpace>(sizes_view, offsets_view);
-        sizes.clear();
+          // Do a scan on the size array to build an offset array.
+          axom::Array<axom::IndexType> offsets(nzones, nzones, allocatorID);
+          auto offsets_view = offsets.view();
+          axom::exclusive_scan<ExecSpace>(sizes_view, offsets_view);
+          sizes.clear();
 
-        // Allocate Conduit arrays on the device in a data type that matches the connectivity.
-        conduit::Node n_conn;
-        n_conn.set_allocator(conduitAllocatorID);
-        n_conn.set(conduit::DataType(intTypeId, connSize));
+          // Allocate Conduit arrays on the device in a data type that matches the connectivity.
+          conduit::Node n_conn;
+          n_conn.set_allocator(conduitAllocatorID);
+          n_conn.set(conduit::DataType(intTypeId, connSize));
 
-        n_zones.set(conduit::DataType(intTypeId, connSize));
-        n_sizes.set(conduit::DataType(intTypeId, nnodes));
-        n_offsets.set(conduit::DataType(intTypeId, nnodes));
+          n_zones.set(conduit::DataType(intTypeId, connSize));
+          n_sizes.set(conduit::DataType(intTypeId, nnodes));
+          n_offsets.set(conduit::DataType(intTypeId, nnodes));
 
-        views::IndexNode_to_ArrayView_same(
-          n_conn,
-          n_zones,
-          n_sizes,
-          n_offsets,
-          [&](auto connectivityView, auto zonesView, auto sizesView, auto offsetsView) {
-            // Run through the data one more time to build the nodes and zones arrays.
-            topoView.template for_all_zones<ExecSpace>(
-              AXOM_LAMBDA(auto zoneIndex, const auto &zone) {
-                const auto uniqueIds = zone.getUniqueIds();
-                auto destIdx = offsets_view[zoneIndex];
-                for(axom::IndexType i = 0; i < uniqueIds.size(); i++, destIdx++)
-                {
-                  connectivityView[destIdx] = uniqueIds[i];
-                  zonesView[destIdx] = zoneIndex;
-                }
-              });
+          views::IndexNode_to_ArrayView_same(
+            n_conn,
+            n_zones,
+            n_sizes,
+            n_offsets,
+            [&](auto connectivityView,
+                auto zonesView,
+                auto sizesView,
+                auto offsetsView) {
+              // Run through the data one more time to build the nodes and zones arrays.
+              topoView.template for_all_zones<ExecSpace>(
+                AXOM_LAMBDA(auto zoneIndex, const auto &zone) {
+                  const auto uniqueIds = zone.getUniqueIds();
+                  auto destIdx = offsets_view[zoneIndex];
+                  for(axom::IndexType i = 0; i < uniqueIds.size(); i++, destIdx++)
+                  {
+                    connectivityView[destIdx] = uniqueIds[i];
+                    zonesView[destIdx] = zoneIndex;
+                  }
+                });
 
-            // Make the relation, outputting into the zonesView and offsetsView.
-            using ViewType = decltype(connectivityView);
-            this->template buildRelation<ViewType>(connectivityView, zonesView, offsetsView);
+              // Make the relation, outputting into the zonesView and offsetsView.
+              using ViewType = decltype(connectivityView);
+              this->template buildRelation<ViewType>(connectivityView,
+                                                     zonesView,
+                                                     offsetsView);
 
-            // Compute sizes from offsets.
-            axom::for_all<ExecSpace>(
-              offsetsView.size(),
-              AXOM_LAMBDA(auto i) {
-                sizesView[i] = (i < offsetsView.size() - 1)
-                  ? (offsetsView[i + 1] - offsetsView[i])
-                  : (connSize - offsetsView[i]);
-              });
-          });
-      });
+              // Compute sizes from offsets.
+              axom::for_all<ExecSpace>(
+                offsetsView.size(),
+                AXOM_LAMBDA(auto i) {
+                  sizesView[i] = (i < offsetsView.size() - 1)
+                    ? (offsetsView[i + 1] - offsetsView[i])
+                    : (connSize - offsetsView[i]);
+                });
+            });
+        });
     }
     else if(shape.is_polygonal())
     {

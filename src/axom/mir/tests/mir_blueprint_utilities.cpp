@@ -197,10 +197,11 @@ void test_node_to_zone_relation_builder(const conduit::Node &hostMesh)
   // clang-format on
 
   // Compare answers.
-  compareRelation<IndexT>(hostRelation,
-                          axom::ArrayView<const int>(zones, sizeof(zones) / sizeof(int)),
-                          axom::ArrayView<const int>(sizes, sizeof(sizes) / sizeof(int)),
-                          axom::ArrayView<const int>(offsets, sizeof(offsets) / sizeof(int)));
+  compareRelation<IndexT>(
+    hostRelation,
+    axom::ArrayView<const int>(zones, sizeof(zones) / sizeof(int)),
+    axom::ArrayView<const int>(sizes, sizeof(sizes) / sizeof(int)),
+    axom::ArrayView<const int>(offsets, sizeof(offsets) / sizeof(int)));
 }
 
 TEST(mir_blueprint_utilities, node_to_zone_relation_builder_unstructured)
@@ -321,10 +322,11 @@ void test_node_to_zone_relation_builder_polyhedral(const conduit::Node &hostMesh
   // clang-format on
 
   // Compare answers.
-  compareRelation<IndexT>(hostRelation,
-                          axom::ArrayView<const int>(zones, sizeof(zones) / sizeof(int)),
-                          axom::ArrayView<const int>(sizes, sizeof(sizes) / sizeof(int)),
-                          axom::ArrayView<const int>(offsets, sizeof(offsets) / sizeof(int)));
+  compareRelation<IndexT>(
+    hostRelation,
+    axom::ArrayView<const int>(zones, sizeof(zones) / sizeof(int)),
+    axom::ArrayView<const int>(sizes, sizeof(sizes) / sizeof(int)),
+    axom::ArrayView<const int>(offsets, sizeof(offsets) / sizeof(int)));
 }
 
 TEST(mir_blueprint_utilities, node_to_zone_relation_builder_polyhedral)
@@ -332,15 +334,15 @@ TEST(mir_blueprint_utilities, node_to_zone_relation_builder_polyhedral)
   conduit::Node mesh;
   conduit::blueprint::mesh::examples::basic("polyhedra", 3, 3, 3, mesh);
   // Make sure all the types are the same.
-  conduit::blueprint::mesh::utils::convert(mesh, conduit::DataType::int32(),
-    std::vector<std::string>{{
-      "topologies/mesh/elements/connectivity",
-      "topologies/mesh/elements/sizes",
-      "topologies/mesh/elements/offsets",
-      "topologies/mesh/subelements/connectivity",
-      "topologies/mesh/subelements/sizes",
-      "topologies/mesh/subelements/offsets"
-      }});
+  conduit::blueprint::mesh::utils::convert(
+    mesh,
+    conduit::DataType::int32(),
+    std::vector<std::string> {{"topologies/mesh/elements/connectivity",
+                               "topologies/mesh/elements/sizes",
+                               "topologies/mesh/elements/offsets",
+                               "topologies/mesh/subelements/connectivity",
+                               "topologies/mesh/subelements/sizes",
+                               "topologies/mesh/subelements/offsets"}});
   //printNode(mesh);
 
   test_node_to_zone_relation_builder_polyhedral<seq_exec, conduit::int32>(mesh);
@@ -374,10 +376,14 @@ void test_recenter_field(const conduit::Node &hostMesh)
 
   // Recenter a field zonal->nodal on the device
   axom::mir::utilities::blueprint::RecenterField<ExecSpace> r;
-  r.execute(deviceMesh["fields/easy_zonal"], deviceRelation, deviceMesh["fields/z2n"]);
+  r.execute(deviceMesh["fields/easy_zonal"],
+            deviceRelation,
+            deviceMesh["fields/z2n"]);
 
   // Recenter a field nodal->zonal on the device. (The elements are an o2m relation)
-  r.execute(deviceMesh["fields/z2n"], deviceMesh["topologies/mesh/elements"], deviceMesh["fields/n2z"]);
+  r.execute(deviceMesh["fields/z2n"],
+            deviceMesh["topologies/mesh/elements"],
+            deviceMesh["fields/n2z"]);
 
   // device -> host
   conduit::Node hostResultMesh;
@@ -389,12 +395,14 @@ void test_recenter_field(const conduit::Node &hostMesh)
   const float n2z_result[] = {1., 2., 4., 5., 4., 5., 7., 8., 7., 8., 10., 11.};
   for(size_t i = 0; i < (sizeof(n2z_result) / sizeof(float)); i++)
   {
-    EXPECT_EQ(n2z_result[i], hostResultMesh["fields/z2n/values"].as_float_accessor()[i]);
+    EXPECT_EQ(n2z_result[i],
+              hostResultMesh["fields/z2n/values"].as_float_accessor()[i]);
   }
   const float z2n_result[] = {3., 4.5, 6., 6., 7.5, 9.};
   for(size_t i = 0; i < (sizeof(z2n_result) / sizeof(float)); i++)
   {
-    EXPECT_EQ(z2n_result[i], hostResultMesh["fields/n2z/values"].as_float_accessor()[i]);
+    EXPECT_EQ(z2n_result[i],
+              hostResultMesh["fields/n2z/values"].as_float_accessor()[i]);
   }
 }
 
@@ -410,11 +418,13 @@ TEST(mir_blueprint_utilities, recenterfield)
   conduit::Node mesh;
   axom::StackArray<int, 2> dims {{4, 3}};
   axom::mir::testing::data::braid("quads", dims, mesh);
-  mesh["topologies/mesh/elements/sizes"].set(std::vector<int>{{4, 4, 4, 4, 4, 4}});
-  mesh["topologies/mesh/elements/offsets"].set(std::vector<int>{{0, 4, 8, 12, 16, 20}});
+  mesh["topologies/mesh/elements/sizes"].set(
+    std::vector<int> {{4, 4, 4, 4, 4, 4}});
+  mesh["topologies/mesh/elements/offsets"].set(
+    std::vector<int> {{0, 4, 8, 12, 16, 20}});
   mesh["fields/easy_zonal/topology"] = "mesh";
   mesh["fields/easy_zonal/association"] = "element";
-  mesh["fields/easy_zonal/values"].set(std::vector<float>{{1,3,5,7,9,11}});
+  mesh["fields/easy_zonal/values"].set(std::vector<float> {{1, 3, 5, 7, 9, 11}});
 
   test_recenter_field<seq_exec>(mesh);
 #if defined(AXOM_USE_OPENMP)
