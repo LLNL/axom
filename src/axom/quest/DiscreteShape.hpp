@@ -51,6 +51,10 @@ public:
       with a relative path.
     @param parentGroup Group under which to put the discrete mesh.
       If null, don't use sidre.
+
+    Refinement type is set to DiscreteShape::RefinementUniformSegments
+    and percent erro is set to 0.  See setPercentError() and
+    setRefinementType().
   */
   DiscreteShape(const axom::klee::Shape& shape,
                 const std::string& prefixPath = {},

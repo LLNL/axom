@@ -84,6 +84,9 @@ DiscreteShape::DiscreteShape(const axom::klee::Shape& shape,
                              axom::sidre::Group* parentGroup)
   : m_shape(shape)
   , m_sidreGroup(nullptr)
+  , m_refinementType(DiscreteShape::RefinementUniformSegments)
+  , m_percentError(
+      utilities::clampVal(0.0, MINIMUM_PERCENT_ERROR, MAXIMUM_PERCENT_ERROR))
 {
   setPrefixPath(prefixPath);
   setParentGroup(parentGroup);
@@ -330,7 +333,7 @@ std::shared_ptr<mint::Mesh> DiscreteShape::createMeshRepresentation()
   if(!m_shape.getGeometry().hasGeometry())
   {
     // If shape has no geometry, there's nothing to discretize.
-    SLIC_WARNING(
+    SLIC_DEBUG(
       axom::fmt::format("Current shape '{}' of material '{}' has no geometry",
                         m_shape.getName(),
                         m_shape.getMaterial()));

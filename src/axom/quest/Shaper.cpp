@@ -126,7 +126,10 @@ void Shaper::loadShapeInternal(const klee::Shape& shape,
   DiscreteShape discreteShape(shape, m_shapeSet.getPath());
   discreteShape.setVertexWeldThreshold(m_vertexWeldThreshold);
   discreteShape.setRefinementType(m_refinementType);
-  discreteShape.setPercentError(percentError);
+  if(percentError > 0)
+  {
+    discreteShape.setPercentError(percentError);
+  }
   m_surfaceMesh = discreteShape.createMeshRepresentation();
   revolvedVolume = discreteShape.getRevolvedVolume();
 }
