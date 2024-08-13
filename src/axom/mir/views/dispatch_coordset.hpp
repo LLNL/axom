@@ -101,9 +101,9 @@ struct make_uniform_coordset<3>
     {
       dims[i] = n_dims.fetch_existing(keys[i]).to_int();
       if(coordset.has_child("origin"))
-        origin[i] = coordset["origin"][keys[i]].to_double();
+        origin[i] = coordset["origin"][i].to_double();
       if(coordset.has_child("spacing"))
-        spacing[i] = coordset["spacing"][keys[i]].to_double();
+        spacing[i] = coordset["spacing"][i].to_double();
     }
     return CoordsetView(dims, origin, spacing);
   }
@@ -132,9 +132,9 @@ struct make_uniform_coordset<2>
     {
       dims[i] = n_dims.fetch_existing(keys[i]).to_int();
       if(coordset.has_child("origin"))
-        origin[i] = coordset["origin"][keys[i]].to_double();
+        origin[i] = coordset["origin"][i].to_double();
       if(coordset.has_child("spacing"))
-        spacing[i] = coordset["spacing"][keys[i]].to_double();
+        spacing[i] = coordset["spacing"][i].to_double();
     }
     return CoordsetView(dims, origin, spacing);
   }

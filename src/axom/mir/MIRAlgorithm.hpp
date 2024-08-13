@@ -84,7 +84,7 @@ protected:
    * \param[in] n_coordset The Conduit node containing the coordset.
    * \param[in] n_fields The Conduit node containing the fields.
    * \param[in] n_matset The Conduit node containing the matset.
-   * \param[in] options The Conduit node containing the options that help govern MIR execution.
+   * \param[in] n_options The Conduit node containing the options that help govern MIR execution.
    *
    * \param[out] n_newTopo A node that will contain the new clipped topology.
    * \param[out] n_newCoordset A node that will contain the new coordset for the clipped topology.

@@ -12,6 +12,8 @@
 
 //------------------------------------------------------------------------------
 
+#define DEBUGGING_TEST_CASES
+
 // Uncomment to generate baselines
 //#define AXOM_TESTING_GENERATE_BASELINES
 
@@ -52,7 +54,6 @@ TEST(mir_equiz, materialinformation)
   EXPECT_EQ(mi[2].name, "c");
 }
 
-#if 0
 //------------------------------------------------------------------------------
 template <typename ExecSpace>
 void braid2d_mat_test(const std::string &type,
@@ -60,7 +61,6 @@ void braid2d_mat_test(const std::string &type,
                       const std::string &name)
 {
   namespace bputils = axom::mir::utilities::blueprint;
-  const int allocatorID = axom::execution_space<ExecSpace>::allocatorID();
 
   axom::StackArray<axom::IndexType, 2> dims {10, 10};
   axom::StackArray<axom::IndexType, 2> zoneDims {dims[0] - 1, dims[1] - 1};
@@ -75,7 +75,7 @@ void braid2d_mat_test(const std::string &type,
 #endif
 
   // Make views.
-  auto coordsetView = axom::mir::views::make_uniform_coordset<2>(deviceMesh["coordsets/coords"]);
+  auto coordsetView = axom::mir::views::make_uniform_coordset<2>::view(deviceMesh["coordsets/coords"]);
   auto topologyView = axom::mir::views::make_uniform<2>::view(deviceMesh["topologies/mesh"]);
   using CoordsetView = decltype(coordsetView);
   using TopologyView = decltype(topologyView);
@@ -139,14 +139,26 @@ TEST(mir_equiz, equiz_uniform_unibuffer)
 }
 
 //------------------------------------------------------------------------------
+#if defined(DEBUGGING_TEST_CASES)
+void conduit_debug_err_handler(const std::string &s1, const std::string &s2, int i1)
+{
+  std::cout << "s1=" << s1 << ", s2=" << s2 << ", i1=" << i1 << std::endl;
+  // This is on purpose.
+  while(1)
+    ;
+}
 #endif
+//------------------------------------------------------------------------------
+
 int main(int argc, char *argv[])
 {
   int result = 0;
   ::testing::InitGoogleTest(&argc, argv);
 
   axom::slic::SimpleLogger logger;  // create & initialize test logger,
-
+#if defined(DEBUGGING_TEST_CASES)
+  conduit::utils::set_error_handler(conduit_debug_err_handler);
+#endif
   result = RUN_ALL_TESTS();
   return result;
 }

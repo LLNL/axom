@@ -9,6 +9,12 @@
 #include "axom/core.hpp"
 #include "axom/mir.hpp"
 
+// Include these directly for now.
+#include "axom/mir/views/MaterialView.hpp"
+#include "axom/mir/MIRAlgorithm.hpp"
+#include "axom/mir/RecenterField.hpp"
+#include "axom/mir/NodeToZoneRelationBuilder.hpp"
+
 #include <conduit/conduit.hpp>
 #include <conduit/conduit_relay_io_blueprint.hpp>
 
@@ -43,7 +49,7 @@ struct MatsetToField
     });
   }
 };
-#if 0
+
 /**
  * \accelerated
  * \brief Implements Meredith's Equi-Z algorithm on the GPU using Blueprint inputs/outputs.
@@ -52,15 +58,37 @@ template <typename ExecSpace, typename TopologyView, typename CoordsetView, type
 class EquiZAlgorithm : public axom::mir::MIRAlgorithm
 {
 public:
-#if 0
+  /**
+   * \brief Constructor
+   *
+   * \param topoView The topology view to use for the input data.
+   * \param coordsetView The coordset view to use for the input data.
+   * \param matsetView The matset view to use for the input data.
+   */
   EquiZAlgorithm(const TopologyView &topoView, const CoordsetView &coordsetView, const MatsetView &matsetView) :
     m_topologyView(topoView), m_coordsetView(coordsetView), m_matsetView(matsetView)
   {
   }
 
+  /// Destructor
   virtual ~EquiZAlgorithm() = default;
 
 protected:
+ /**
+   * \brief Perform material interface reconstruction on a single domain.
+   *
+   * \param[in] n_topo The Conduit node containing the topology that will be used for MIR.
+   * \param[in] n_coordset The Conduit node containing the coordset.
+   * \param[in] n_fields The Conduit node containing the fields.
+   * \param[in] n_matset The Conduit node containing the matset.
+   * \param[in] n_options The Conduit node containing the options that help govern MIR execution.
+   *
+   * \param[out] n_newTopo A node that will contain the new clipped topology.
+   * \param[out] n_newCoordset A node that will contain the new coordset for the clipped topology.
+   * \param[out] n_newFields A node that will contain the new fields for the clipped topology.
+   * \param[out] n_newMatset A Conduit node that will contain the new matset.
+   * 
+   */
   virtual void executeDomain(const conduit::Node &n_topo,
                              const conduit::Node &n_coordset,
                              const conduit::Node &n_fields,
@@ -69,7 +97,7 @@ protected:
                              conduit::Node &n_newTopo,
                              conduit::Node &n_newCoordset,
                              conduit::Node &n_newFields,
-                             conduit::Node &n_newMatset)
+                             conduit::Node &n_newMatset) override
   {
     namespace bputils = axom::mir::utilities::blueprint;
 
@@ -116,7 +144,7 @@ protected:
           views::dispatch_explicit_coordset(n_InputCoordset, [&](auto coordsetView)
           {
             using ICoordsetView = decltype(coordsetView);
-            views::dispatch_unstructured_mixed_topology(n_InputTopo, [&](auto topologyView)
+            views::dispatch_unstructured_mixed_topology(n_InputTopo, [&](const auto &AXOM_UNUSED_PARAM(shape), auto topologyView)
             {
               using ITopologyView = decltype(topologyView);
 
@@ -130,17 +158,20 @@ protected:
                 bputils::make_array_view<int>(n_matset["offsets"]),
                 bputils::make_array_view<int>(n_matset["indices"]));
              
-//              this->template iteration<ITopologyView, ICoordsetView, MatsetView>(
-// See if the compiler will infer the right args.
+              //
               iteration<ITopologyView, ICoordsetView, IMatsetView>(
                 topologyView, coordsetView, matsetView,
                 matInfo[i],
-                n_topo, n_coordset, n_fields, n_matset,
+                n_InputTopo, n_InputCoordset, n_InputFields, n_InputMatset,
                 n_options_copy,
                 n_newTopo, n_newCoordset, n_newFields, n_newMatset);
             });
           });
           // clangformat-on
+        }
+        else
+        {
+          // NOTE: what if the topo output was all clean after the 1st round?
         }
       }
 
@@ -253,6 +284,9 @@ protected:
     mesh[n_newCoordset.path()].set_external(n_newCoordset);
     mesh[n_newFields.path()].set_external(n_newFields);
     mesh[n_newMatset.path()].set_external(n_newMatset);
+
+    mesh.print();
+
     std::stringstream ss;
     ss << "debug_equiz_" << currentMat.number;
     conduit::relay::io::blueprint::save_mesh(mesh, ss.str(), "hdf5");
@@ -269,6 +303,16 @@ protected:
     n_newFields.remove("originalElements");
   }
 
+  /**
+   * \brief Make a new matset for the output dataset.
+   *
+   * \param curentMatsetView The view for the current matset.
+   * \param currentMat The current material information.
+   * \param colorView A view for the color field, which says how the dataset was clipped.
+   * \param originalElementsView A view for the field that contains the original element number.
+   * \param n_matset The input matset (pre-MIR).
+   * \param n_newMatset The output matset.
+   */
   template <typename IMatsetView>
   void makeNewMatset(// by value
                      const IMatsetView currentMatsetView,
@@ -393,9 +437,8 @@ private:
   TopologyView m_topologyView;
   CoordsetView m_coordsetView;
   MatsetView m_matsetView;
-#endif
 };
-#endif
+
 }  // end namespace mir
 }  // end namespace axom
 
