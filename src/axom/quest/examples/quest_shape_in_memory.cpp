@@ -819,24 +819,23 @@ axom::sidre::View* getElementVolumes(
     auto vertCoordsView = vertCoords.view();
 
     // This runs only only on host, because the mfem::Mesh only uses host memory, I think.
-    axom::for_all<axom::SEQ_EXEC>(
-      cellCount,
-      AXOM_LAMBDA(axom::IndexType cellIdx) {
-        // Get the indices of this element's vertices
-        mfem::Array<int> verts;
-        mesh->GetElementVertices(cellIdx, verts);
-        SLIC_ASSERT(verts.Size() == NUM_VERTS_PER_HEX);
+    for(axom::IndexType cellIdx = 0; cellIdx < cellCount; ++cellIdx)
+    {
+      // Get the indices of this element's vertices
+      mfem::Array<int> verts;
+      mesh->GetElementVertices(cellIdx, verts);
+      SLIC_ASSERT(verts.Size() == NUM_VERTS_PER_HEX);
 
-        // Get the coordinates for the vertices
-        for(int j = 0; j < NUM_VERTS_PER_HEX; ++j)
+      // Get the coordinates for the vertices
+      for(int j = 0; j < NUM_VERTS_PER_HEX; ++j)
+      {
+        int vertIdx = cellIdx * NUM_VERTS_PER_HEX + j;
+        for(int k = 0; k < NUM_COMPS_PER_VERT; k++)
         {
-          int vertIdx = cellIdx * NUM_VERTS_PER_HEX + j;
-          for(int k = 0; k < NUM_COMPS_PER_VERT; k++)
-          {
-            vertCoordsView[vertIdx][k] = (mesh->GetVertex(verts[j]))[k];
-          }
+          vertCoordsView[vertIdx][k] = (mesh->GetVertex(verts[j]))[k];
         }
-      });
+      }
+    }
 
     // Set vertex coords to zero if within threshold.
     // (I don't know why we do this.  I'm following examples.)
