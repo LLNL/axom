@@ -18,14 +18,6 @@
 
 namespace mir = axom::mir;
 
-void printNode(const conduit::Node &n)
-{
-  conduit::Node options;
-  options["num_children_threshold"] = 1000;
-  options["num_elements_threshold"] = 1000;
-  n.to_summary_string_stream(std::cout, options);
-}
-
 template <typename ExecSpace>
 void test_conduit_allocate()
 {

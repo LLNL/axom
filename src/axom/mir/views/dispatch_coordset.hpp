@@ -39,16 +39,11 @@ struct make_rectilinear_coordset<DataType, 3>
    */
   static CoordsetView view(const conduit::Node &coordset)
   {
+    namespace bputils = axom::mir::utilities::blueprint;
     const conduit::Node &values = coordset.fetch_existing("values");
-    axom::ArrayView<DataType> xView(
-      static_cast<DataType *>(const_cast<void *>(values[0].data_ptr())),
-      values[0].dtype().number_of_elements());
-    axom::ArrayView<DataType> yView(
-      static_cast<DataType *>(const_cast<void *>(values[1].data_ptr())),
-      values[1].dtype().number_of_elements());
-    axom::ArrayView<DataType> zView(
-      static_cast<DataType *>(const_cast<void *>(values[2].data_ptr())),
-      values[2].dtype().number_of_elements());
+    auto xView = bputils::make_array_view<DataType>(values[0]);
+    auto yView = bputils::make_array_view<DataType>(values[1]);
+    auto zView = bputils::make_array_view<DataType>(values[2]);
     return CoordsetView(xView, yView, zView);
   }
 };
@@ -68,14 +63,80 @@ struct make_rectilinear_coordset<DataType, 2>
    */
   static CoordsetView view(const conduit::Node &coordset)
   {
+    namespace bputils = axom::mir::utilities::blueprint;
     const conduit::Node &values = coordset.fetch_existing("values");
-    axom::ArrayView<DataType> xView(
-      static_cast<DataType *>(const_cast<void *>(values[0].data_ptr())),
-      values[0].dtype().number_of_elements());
-    axom::ArrayView<DataType> yView(
-      static_cast<DataType *>(const_cast<void *>(values[1].data_ptr())),
-      values[1].dtype().number_of_elements());
+    auto xView = bputils::make_array_view<DataType>(values[0]);
+    auto yView = bputils::make_array_view<DataType>(values[1]);
     return CoordsetView(xView, yView);
+  }
+};
+
+/**
+ * \brief Base template for creating a rectilinear coordset view.
+ */
+template <int NDIMS>
+struct make_uniform_coordset
+{ };
+
+/**
+ * \brief Partial specialization for creating 3D uniform coordset view.
+ */
+template <>
+struct make_uniform_coordset<3>
+{
+  using CoordsetView = axom::mir::views::UniformCoordsetView<double, 3>;
+
+  /**
+   * \brief Create the coordset view and initialize it from the coordset.
+   * \param topo The node containing the coordset.
+   * \return The coordset view.
+   */
+  static CoordsetView view(const conduit::Node &coordset)
+  {
+    const std::string keys[] = {"i", "j", "k"};
+    const conduit::Node &n_dims = coordset["dims"];
+    axom::StackArray<axom::IndexType, 3> dims;
+    axom::StackArray<double, 3> origin {0., 0., 0.}, spacing {1., 1., 1.};
+    for(int i = 0; i < 3; i++)
+    {
+      dims[i] = n_dims.fetch_existing(keys[i]).to_int();
+      if(coordset.has_child("origin"))
+        origin[i] = coordset["origin"][keys[i]].to_double();
+      if(coordset.has_child("spacing"))
+        spacing[i] = coordset["spacing"][keys[i]].to_double();
+    }
+    return CoordsetView(dims, origin, spacing);
+  }
+};
+
+/**
+ * \brief Partial specialization for creating 2D rectilinear coordset view.
+ */
+template <>
+struct make_uniform_coordset<2>
+{
+  using CoordsetView = axom::mir::views::UniformCoordsetView<double, 2>;
+
+  /**
+   * \brief Create the coordset view and initialize it from the coordset.
+   * \param topo The node containing the coordset.
+   * \return The coordset view.
+   */
+  static CoordsetView view(const conduit::Node &coordset)
+  {
+    const std::string keys[] = {"i", "j"};
+    const conduit::Node &n_dims = coordset["dims"];
+    axom::StackArray<axom::IndexType, 2> dims;
+    axom::StackArray<double, 2> origin {0., 0.}, spacing {1., 1.};
+    for(int i = 0; i < 2; i++)
+    {
+      dims[i] = n_dims.fetch_existing(keys[i]).to_int();
+      if(coordset.has_child("origin"))
+        origin[i] = coordset["origin"][keys[i]].to_double();
+      if(coordset.has_child("spacing"))
+        spacing[i] = coordset["spacing"][keys[i]].to_double();
+    }
+    return CoordsetView(dims, origin, spacing);
   }
 };
 
@@ -91,40 +152,17 @@ struct make_rectilinear_coordset<DataType, 2>
 template <typename FuncType>
 void dispatch_uniform_coordset(const conduit::Node &coordset, FuncType &&func)
 {
-  const std::string keys[] = {"i", "j", "k"};
   const conduit::Node &n_dims = coordset["dims"];
   const conduit::index_t ndims = n_dims.number_of_children();
   if(ndims == 2)
   {
-    axom::StackArray<axom::IndexType, 2> dims;
-    axom::StackArray<double, 2> origin {0., 0.}, spacing {1., 1.};
-    for(int i = 0; i < ndims; i++)
-    {
-      dims[i] = n_dims.fetch_existing(keys[i]).to_int();
-      if(coordset.has_child("origin"))
-        origin[i] = coordset["origin"][i].to_double();
-      if(coordset.has_child("spacing"))
-        spacing[i] = coordset["spacing"][i].to_double();
-    }
-
-    UniformCoordsetView<double, 2> coordView(dims, origin, spacing);
-    func(coordView);
+    auto coordsetView = make_uniform_coordset<2>::view(coordset);
+    func(coordsetView);
   }
   else if(ndims == 3)
   {
-    axom::StackArray<axom::IndexType, 3> dims;
-    axom::StackArray<double, 3> origin {0., 0., 0.}, spacing {1., 1., 1.};
-    for(int i = 0; i < ndims; i++)
-    {
-      dims[i] = n_dims.fetch_existing(keys[i]).to_int();
-      if(coordset.has_child("origin"))
-        origin[i] = coordset["origin"][i].to_double();
-      if(coordset.has_child("spacing"))
-        spacing[i] = coordset["spacing"][i].to_double();
-    }
-
-    UniformCoordsetView<double, 3> coordView(dims, origin, spacing);
-    func(coordView);
+    auto coordsetView = make_uniform_coordset<3>::view(coordset);
+    func(coordsetView);
   }
 }
 

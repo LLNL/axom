@@ -60,6 +60,18 @@ public:
   }
 
   /**
+   * \brief Return the name of the new original elements field to be created.
+   * \return The name of the new original elements to be created.
+   */
+  std::string originalElementsField() const
+  {
+    std::string name("originalElements");
+    if(options().has_child("originalElementsField"))
+      name = options().fetch_existing("originalElementsField").as_string();
+    return name;
+  }
+
+  /**
    * \brief Whether the "inside" of the clipping field is selected.
    * \return 1 of the inside clipping is selected, false otherwise.
    */

@@ -65,9 +65,11 @@ void MIRAlgorithm::executeSetup(const conduit::Node &n_domain,
   const std::string newMatsetName = options.matsetName(matset);
 
   // Make some new nodes in the output.
-  conduit::Node &newTopo = n_newDomain["topologies/" + newTopoName];
   conduit::Node &newCoordset = n_newDomain["coordsets/" + newCoordsetName];
+  conduit::Node &newTopo = n_newDomain["topologies/" + newTopoName];
+  newTopo["coordset"] = newCoordsetName;
   conduit::Node &newMatset = n_newDomain["matsets/" + newMatsetName];
+  newMatset["topology"] = newTopoName;
 
   // Execute the algorithm on the domain.
   if(n_domain.has_path("state"))

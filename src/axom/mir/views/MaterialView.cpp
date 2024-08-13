@@ -19,7 +19,7 @@ MaterialInformation materials(const conduit::Node &matset)
     const conduit::Node &mm = matset["material_map"];
     for(conduit::index_t i = 0; i < mm.number_of_children(); i++)
     {
-      info.push_back(Material {static_cast<int>(i), mm[i].name()});
+      info.push_back(Material {mm[i].to_int(), mm[i].name()});
     }
   }
   return info;

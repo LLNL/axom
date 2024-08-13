@@ -234,4 +234,12 @@ bool compareBaseline(const std::vector<std::string> &baselinePaths,
   return success;
 }
 
+void printNode(const conduit::Node &n)
+{
+  conduit::Node options;
+  options["num_children_threshold"] = 10000;
+  options["num_elements_threshold"] = 10000;
+  n.to_summary_string_stream(std::cout, options);
+}
+
 #endif

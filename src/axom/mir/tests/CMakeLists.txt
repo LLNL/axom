@@ -20,6 +20,7 @@ set(gtest_mir_tests
     mir_views_indexing.cpp
     mir_cell_generator.cpp
     mir_views.cpp
+    mir_equiz.cpp
     )
 
 set(mir_tests_depends_on 

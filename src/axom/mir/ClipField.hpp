@@ -1182,15 +1182,16 @@ private:
 
     const auto selectedZonesView = selectedZones.view();
     const auto nzones = selectedZonesView.size();
+    const std::string originalElements(opts.originalElementsField());
 
-    if(n_fields.has_child("originalElements"))
+    if(n_fields.has_child(originalElements))
     {
       // originalElements already exists. We need to map it forward.
-      const conduit::Node &n_orig = n_fields["originalElements"];
+      const conduit::Node &n_orig = n_fields[originalElements];
       const conduit::Node &n_orig_values = n_orig["values"];
       views::IndexNode_to_ArrayView(n_orig_values, [&](auto origValuesView) {
         using value_type = typename decltype(origValuesView)::value_type;
-        conduit::Node &n_origElem = n_newFields["originalElements"];
+        conduit::Node &n_origElem = n_newFields[originalElements];
         n_origElem["association"] = "element";
         n_origElem["topology"] = opts.topologyName(n_newTopo.name());
         conduit::Node &n_values = n_origElem["values"];
@@ -1212,7 +1213,7 @@ private:
     else
     {
       // Make a new node and populate originalElement.
-      conduit::Node &n_orig = n_newFields["originalElements"];
+      conduit::Node &n_orig = n_newFields[originalElements];
       n_orig["association"] = "element";
       n_orig["topology"] = opts.topologyName(n_newTopo.name());
       conduit::Node &n_values = n_orig["values"];

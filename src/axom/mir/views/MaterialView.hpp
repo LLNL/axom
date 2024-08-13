@@ -34,6 +34,13 @@ struct Material
 
 using MaterialInformation = std::vector<Material>;
 
+/**
+ * \brief Return a vector of Material from a matset (this is the material_map)
+ *
+ * \param matset The Conduit node that contains the matset.
+ *
+ * \return A vector of Material that contains the materials in the material_map.
+ */
 MaterialInformation materials(const conduit::Node &matset);
 
 //---------------------------------------------------------------------------
