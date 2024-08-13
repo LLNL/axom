@@ -1,0 +1,36 @@
+# This script can be run with the following command:
+# docker build --build-arg branch=<your branch here, defaults to develop> -t "han12/axom-tutorial:8-13-24-no-aws" - < dockerfile_aws_backup
+
+FROM axom/tpls:clang-14_latest
+ARG branch=develop
+ARG USER=axom
+ENV HOME /home/${USER}
+
+WORKDIR ${HOME}
+USER ${USER}
+
+# Remove unused directory
+RUN rm -rf ${HOME}/export_hostconfig
+
+# Clone axom at axom_repo directory
+RUN git clone --recursive --branch $branch https://github.com/LLNL/axom.git axom_repo
+
+# Make sure the new hostconfig works with a release build
+# Note: having high job slots causes build log to disappear and job to fail
+# Omit testing step, hangs at slam_lulesh unit test (same behavior for azure pipeline images, as well)
+RUN cd ${HOME}/axom_repo && python3 config-build.py -hc ${HOME}/axom_repo/host-configs/docker/clang@14.0.0.cmake \
+                                                    -bp ${HOME}/axom_repo/build-release \
+                                                    -ip ${HOME}/axom_repo/install-release \
+                                                    -bt Release \
+                         && cd ${HOME}/axom_repo/build-release \
+                         && make -j4 install
+
+# Larger STL meshes for testing (optional)
+# Note: These meshes are large, copied from local directory instead of
+#        downloaded from Github.
+ COPY boxedSphere.stl car.stl porsche.stl ${HOME}/axom_repo/data/quest
+
+
+# Create symlinks for easy access to tutorial material (optional)
+ RUN ln -s ${HOME}/axom_repo/install-release/examples/axom/radiuss_tutorial/ ${HOME}/radiuss_tutorial \
+ && ln -s ${HOME}/axom_repo/data/quest ${HOME}/radiuss_tutorial/stl_meshes
