@@ -80,14 +80,15 @@ public:
    *
    * \note Does not take ownership of the surface mesh
    */
-  InOutSampler(const std::string& shapeName, mint::Mesh* surfaceMesh)
+  InOutSampler(const std::string& shapeName,
+               std::shared_ptr<mint::Mesh> surfaceMesh)
     : m_shapeName(shapeName)
     , m_surfaceMesh(surfaceMesh)
   { }
 
   ~InOutSampler() { delete m_octree; }
 
-  mint::Mesh* getSurfaceMesh() const { return m_surfaceMesh; }
+  std::shared_ptr<mint::Mesh> getSurfaceMesh() const { return m_surfaceMesh; }
 
   /// Computes the bounding box of the surface mesh
   void computeBounds()
@@ -303,7 +304,7 @@ private:
   std::string m_shapeName;
 
   GeometricBoundingBox m_bbox;
-  mint::Mesh* m_surfaceMesh {nullptr};
+  std::shared_ptr<mint::Mesh> m_surfaceMesh {nullptr};
   InOutOctreeType* m_octree {nullptr};
 };  // class InOutSampler
 
@@ -412,15 +413,13 @@ public:
     switch(shapeDimension)
     {
     case klee::Dimensions::Two:
-      m_inoutSampler2D =
-        new shaping::InOutSampler<2>(shapeName, m_surfaceMesh.get());
+      m_inoutSampler2D = new shaping::InOutSampler<2>(shapeName, m_surfaceMesh);
       m_inoutSampler2D->computeBounds();
       m_inoutSampler2D->initSpatialIndex(this->m_vertexWeldThreshold);
       break;
 
     case klee::Dimensions::Three:
-      m_inoutSampler3D =
-        new shaping::InOutSampler<3>(shapeName, m_surfaceMesh.get());
+      m_inoutSampler3D = new shaping::InOutSampler<3>(shapeName, m_surfaceMesh);
       m_inoutSampler3D->computeBounds();
       m_inoutSampler3D->initSpatialIndex(this->m_vertexWeldThreshold);
       break;
