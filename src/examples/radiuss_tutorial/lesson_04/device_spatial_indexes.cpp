@@ -87,6 +87,7 @@ struct Input
   double weldThreshold {1e-6};
   double intersectionThreshold {1e-08};
   RuntimePolicy policy {RuntimePolicy::seq};
+  std::string annotationMode {"none"};
 
   void parse(int argc, char** argv, axom::CLI::App& app);
   bool isVerbose() const { return verboseOutput; }
@@ -131,6 +132,15 @@ void Input::parse(int argc, char** argv, axom::CLI::App& app)
     ->capture_default_str()
     ->transform(
       axom::CLI::CheckedTransformer(axom::runtime_policy::s_nameToPolicy));
+
+#ifdef AXOM_USE_CALIPER
+  app.add_option("--caliper", annotationMode)
+    ->description(
+      "caliper annotation mode. Valid options include 'none' and 'report'. "
+      "Use 'help' to see full list.")
+    ->capture_default_str()
+    ->check(axom::utilities::ValidCaliperMode);
+#endif
 
   app.get_formatter()->column_width(40);
 
@@ -197,10 +207,12 @@ TriangleMesh makeTriangleMesh(const std::string& stl_mesh_path,
   {
     axom::utilities::Timer timer(true);
 
+    AXOM_ANNOTATE_BEGIN("read mesh");
     auto reader = std::make_unique<axom::quest::STLReader>();
     reader->setFileName(stl_mesh_path);
     reader->read();
     reader->getMesh(surface_mesh);
+    AXOM_ANNOTATE_END("read mesh");
 
     timer.stop();
     SLIC_INFO(axom::fmt::format("Loading the mesh took {:4.3} seconds.",
@@ -211,7 +223,9 @@ TriangleMesh makeTriangleMesh(const std::string& stl_mesh_path,
   if(weldThreshold > 0.)
   {
     axom::utilities::Timer timer(true);
+    AXOM_ANNOTATE_BEGIN("weld");
     axom::quest::weldTriMeshVertices(&surface_mesh, weldThreshold);
+    AXOM_ANNOTATE_END("weld");
     timer.stop();
 
     SLIC_INFO(axom::fmt::format("Vertex welding took {:4.3} seconds.",
@@ -227,6 +241,8 @@ TriangleMesh makeTriangleMesh(const std::string& stl_mesh_path,
   const int numCells = surface_mesh->getNumberOfCells();
   triMesh.m_triangles.reserve(numCells);
   {
+    AXOM_ANNOTATE_SCOPE("create triangles");
+
     TriangleMesh::Triangle tri;
     std::array<axom::IndexType, 3> triCell;
     for(int i = 0; i < numCells; ++i)
@@ -244,6 +260,7 @@ TriangleMesh makeTriangleMesh(const std::string& stl_mesh_path,
   surface_mesh = nullptr;
 
   // compute and store triangle bounding boxes and mesh bounding box
+  AXOM_ANNOTATE_BEGIN("compute bounding boxes");
   triMesh.m_triangleBoundingBoxes.reserve(numCells);
   for(const auto& tri : triMesh.triangles())
   {
@@ -251,6 +268,7 @@ TriangleMesh makeTriangleMesh(const std::string& stl_mesh_path,
       axom::primal::compute_bounding_box(tri));
     triMesh.m_meshBoundingBox.addBox(triMesh.m_triangleBoundingBoxes.back());
   }
+  AXOM_ANNOTATE_END("compute bounding boxes");
 
   SLIC_INFO(
     axom::fmt::format("Mesh bounding box is {}.", triMesh.meshBoundingBox()));
@@ -267,6 +285,7 @@ axom::Array<IndexPair> findIntersectionsBVH(const TriangleMesh& triMesh,
 {
   SLIC_INFO("Running naive intersection algorithm in execution Space: "
             << axom::execution_space<ExecSpace>::name());
+  AXOM_ANNOTATE_SCOPE("findIntersectionsBVH");
 
   using TriangleArray = axom::Array<typename TriangleMesh::Triangle>;
   using BBoxArray = axom::Array<typename TriangleMesh::BoundingBox>;
@@ -343,6 +362,7 @@ axom::Array<IndexPair> findIntersectionsBVH(const TriangleMesh& triMesh,
   axom::IndexType numCandidates {};
   timer.start();
   {
+    AXOM_ANNOTATE_SCOPE("filtering");
     const int totalTriangles = triMesh.numTriangles();
 
     IndexArray numValidCandidates_d(1, 1, kernel_allocator);
@@ -400,6 +420,7 @@ axom::Array<IndexPair> findIntersectionsBVH(const TriangleMesh& triMesh,
   axom::IndexType numIntersections {};
   timer.start();
   {
+    AXOM_ANNOTATE_SCOPE("intersections");
     auto intersect1_v = intersect_d[0].view();
     auto intersect2_v = intersect_d[1].view();
 
@@ -457,6 +478,7 @@ axom::Array<IndexPair> findIntersectionsBVH(const TriangleMesh& triMesh,
       numIntersections));
 
   // copy results back to host and into return vector
+  AXOM_ANNOTATE_BEGIN("copying back");
   IndexArray intersect_h[2] = {
     on_device ? IndexArray(intersect_d[0], host_allocator) : IndexArray(),
     on_device ? IndexArray(intersect_d[1], host_allocator) : IndexArray()};
@@ -469,6 +491,7 @@ axom::Array<IndexPair> findIntersectionsBVH(const TriangleMesh& triMesh,
     intersectionPairs.emplace_back(
       std::make_pair(intersect1_h_v[idx], intersect2_h_v[idx]));
   }
+  AXOM_ANNOTATE_END("copying back");
 
   return intersectionPairs;
 }
@@ -496,9 +519,17 @@ int main(int argc, char** argv)
   axom::slic::setLoggingMsgLevel(params.isVerbose() ? axom::slic::message::Debug
                                                     : axom::slic::message::Info);
 
+  // Initialize the annotations
+  axom::utilities::raii::AnnotationsWrapper annotations_raii_wrapper(
+    params.annotationMode);
+
+  AXOM_ANNOTATE_SCOPE("lesson_04");
+
   // Load STL mesh into local TriangleMesh struct
   SLIC_INFO(axom::fmt::format("Reading file: '{}'...\n", params.mesh_file));
+  AXOM_ANNOTATE_BEGIN("loading STL");
   TriangleMesh mesh = makeTriangleMesh(params.mesh_file, params.weldThreshold);
+  AXOM_ANNOTATE_END("loading STL");
 
   // Check for self-intersections; results are returned as an array of index pairs
   axom::Array<IndexPair> intersectionPairs;
