@@ -7,6 +7,7 @@
 #define QUEST_SCATTERED_INTERPOLATION_H_
 
 #include "axom/core.hpp"
+#include "axom/core/NumericLimits.hpp"
 #include "axom/slic.hpp"
 #include "axom/sidre.hpp"
 #include "axom/spin.hpp"
@@ -19,7 +20,6 @@
 #include "conduit_blueprint.hpp"
 
 #include <cmath>
-#include <limits>
 
 namespace
 {
@@ -500,7 +500,7 @@ public:
     conduit::Node& input_mesh,
     const std::string& input_field_name,
     const std::string& output_field_name,
-    const double INVALID_VALUE = std::numeric_limits<double>::quiet_NaN())
+    const double INVALID_VALUE = axom::numeric_limits<double>::quiet_NaN())
   {
     constexpr auto INVALID_INDEX = DelaunayTriangulation::INVALID_INDEX;
 

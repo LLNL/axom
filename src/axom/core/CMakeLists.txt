@@ -60,6 +60,7 @@ set(core_headers
     Macros.hpp
     Map.hpp
     FlatMap.hpp
+    NumericLimits.hpp
     Path.hpp
     RangeAdapter.hpp
     StackArray.hpp

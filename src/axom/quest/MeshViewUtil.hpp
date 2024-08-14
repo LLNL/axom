@@ -12,6 +12,7 @@
 #ifdef AXOM_USE_CONDUIT
 
   #include "axom/core.hpp"
+  #include "axom/core/NumericLimits.hpp"
   #include "axom/fmt.hpp"
   #include "conduit_blueprint.hpp"
   #include "conduit_blueprint_mcarray.hpp"
@@ -21,7 +22,6 @@
   #endif
 
   #include <memory>
-  #include <limits>
   #include <cstdlib>
   #include <cmath>
   #include <vector>
@@ -33,7 +33,7 @@ namespace quest
 namespace internal
 {
 template <typename T, int DIM>
-inline axom::StackArray<T, DIM> makeStackArray(T v = std::numeric_limits<T>::max())
+inline axom::StackArray<T, DIM> makeStackArray(T v = axom::numeric_limits<T>::max())
 {
   axom::StackArray<T, DIM> rval;
   for(int d = 0; d < DIM; ++d)
@@ -818,7 +818,7 @@ private:
   MdIndices conduitIndicesToStackArray(
     const conduit::Node& node,
     const std::string& path,
-    axom::IndexType defaultVal = std::numeric_limits<axom::IndexType>::max()) const
+    axom::IndexType defaultVal = axom::numeric_limits<axom::IndexType>::max()) const
   {
     if(node.has_path(path))
     {
