@@ -1121,6 +1121,10 @@ int main(int argc, char** argv)
   if(auto* intersectionShaper = dynamic_cast<quest::IntersectionShaper*>(shaper))
   {
     intersectionShaper->setLevel(params.refinementLevel);
+    SLIC_INFO(axom::fmt::format(
+      "{:-^80}",
+      axom::fmt::format("Setting IntersectionShaper policy to '{}'",
+                        axom::runtime_policy::policyToName(params.policy))));
     intersectionShaper->setExecPolicy(params.policy);
 
     if(!params.backgroundMaterial.empty())

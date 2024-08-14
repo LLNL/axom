@@ -252,17 +252,30 @@ if(AXOM_ENABLE_MPI AND MFEM_FOUND AND MFEM_USE_MPI
     if(AXOM_ENABLE_TESTS AND AXOM_DATA_DIR)
         # 3D shaping tests.  No 2D shaping in this feature, at least for now.
         set(_nranks 1)
+
+        # Run the in-memory shaping example on with each enabled policy
+        set(_policies "seq")
+        if(RAJA_FOUND)
+            blt_list_append(TO _policies ELEMENTS "omp"  IF AXOM_ENABLE_OPENMP)
+            blt_list_append(TO _policies ELEMENTS "cuda" IF AXOM_ENABLE_CUDA)
+            blt_list_append(TO _policies ELEMENTS "hip"  IF AXOM_ENABLE_HIP)
+        endif()
+
         set(_testshapes "tetmesh" "hex" "sphere" "cyl" "cone" "vor")
-        foreach(_testshape ${_testshapes})
-          set(_testname "quest_shape_in_memory_${_testshape}")
-          axom_add_test(
-            NAME ${_testname}
-            COMMAND quest_shape_in_memory_ex
-                       --testShape ${_testshape}
-                       --method intersection --refinements 2
-                       --scale 0.75 0.75 0.75
-                       inline_mesh --min -3 -3 -3 --max 3 3 3 --res 20 20 20 -d 3
-            NUM_MPI_TASKS ${_nranks})
+
+        foreach(_policy ${_policies})
+            foreach(_testshape ${_testshapes})
+              set(_testname "quest_shape_in_memory_${_policy}_${_testshape}")
+              axom_add_test(
+                NAME ${_testname}
+                COMMAND quest_shape_in_memory_ex
+                           --policy ${_policy}
+                           --testShape ${_testshape}
+                           --method intersection --refinements 2
+                           --scale 0.75 0.75 0.75
+                           inline_mesh --min -3 -3 -3 --max 3 3 3 --res 20 20 20 -d 3
+                NUM_MPI_TASKS ${_nranks})
+            endforeach()
         endforeach()
     endif()
 endif()
