@@ -154,12 +154,13 @@ void test_node_to_zone_relation_builder(const conduit::Node &hostMesh)
   // host -> device
   conduit::Node deviceMesh;
   axom::mir::utilities::blueprint::copy<ExecSpace>(deviceMesh, hostMesh);
-  conduit::Node &deviceTopo = deviceMesh["topologies/mesh"];
+  const conduit::Node &deviceTopo = deviceMesh["topologies/mesh"];
+  const conduit::Node &deviceCoordset = deviceMesh["coordsets/coords"];
 
   // Run the algorithm on the device
   conduit::Node deviceRelation;
   axom::mir::utilities::blueprint::NodeToZoneRelationBuilder<ExecSpace> n2z;
-  n2z.execute(deviceTopo, deviceRelation);
+  n2z.execute(deviceTopo, deviceCoordset, deviceRelation);
 
   // device -> host
   conduit::Node hostRelation;
@@ -257,12 +258,13 @@ void test_node_to_zone_relation_builder_polyhedral(const conduit::Node &hostMesh
   // host -> device
   conduit::Node deviceMesh;
   axom::mir::utilities::blueprint::copy<ExecSpace>(deviceMesh, hostMesh);
-  conduit::Node &deviceTopo = deviceMesh["topologies/mesh"];
+  const conduit::Node &deviceTopo = deviceMesh["topologies/mesh"];
+  const conduit::Node &deviceCoordset = deviceMesh["coordsets/coords"];
 
   // Run the algorithm on the device
   conduit::Node deviceRelation;
   axom::mir::utilities::blueprint::NodeToZoneRelationBuilder<ExecSpace> n2z;
-  n2z.execute(deviceTopo, deviceRelation);
+  n2z.execute(deviceTopo, deviceCoordset, deviceRelation);
 
   // device -> host
   conduit::Node hostRelation;
@@ -359,12 +361,13 @@ void test_recenter_field(const conduit::Node &hostMesh)
   // host -> device
   conduit::Node deviceMesh;
   axom::mir::utilities::blueprint::copy<ExecSpace>(deviceMesh, hostMesh);
-  conduit::Node &deviceTopo = deviceMesh["topologies/mesh"];
+  const conduit::Node &deviceTopo = deviceMesh["topologies/mesh"];
+  const conduit::Node &deviceCoordset = deviceMesh["coordsets/coords"];
 
   // Make a node to zone relation on the device.
   conduit::Node deviceRelation;
   axom::mir::utilities::blueprint::NodeToZoneRelationBuilder<ExecSpace> n2z;
-  n2z.execute(deviceTopo, deviceRelation);
+  n2z.execute(deviceTopo, deviceCoordset, deviceRelation);
 
   // Recenter a field zonal->nodal on the device
   axom::mir::utilities::blueprint::RecenterField<ExecSpace> r;

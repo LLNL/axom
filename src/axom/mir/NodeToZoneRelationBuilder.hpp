@@ -38,9 +38,10 @@ public:
    * \brief Build a node to zone relation and store the resulting O2M relation in the \a relation conduit node.
    *
    * \param topo The topology for which we're building the O2M relation.
+   * \param coordset The topology's coordset.
    * \param[out] The node that will contain the O2M relation.
    */
-  void execute(const conduit::Node &topo, conduit::Node &relation);
+  void execute(const conduit::Node &topo, const conduit::Node &coordset, conduit::Node &relation);
 
 private:
   /**
@@ -108,6 +109,7 @@ private:
 
 template <typename ExecSpace>
 void NodeToZoneRelationBuilder<ExecSpace>::execute(const conduit::Node &topo,
+                                                   const conduit::Node &coordset,
                                                    conduit::Node &relation)
 {
   const std::string type = topo.fetch_existing("type").as_string();
@@ -123,20 +125,17 @@ void NodeToZoneRelationBuilder<ExecSpace>::execute(const conduit::Node &topo,
   n_sizes.set_allocator(conduitAllocatorID);
   n_offsets.set_allocator(conduitAllocatorID);
 
-  const conduit::Node *coordset =
-    conduit::blueprint::mesh::utils::find_reference_node(topo, "coordset");
-  SLIC_ASSERT(coordset != nullptr);
-
   if(type == "unstructured")
   {
     conduit::blueprint::mesh::utils::ShapeType shape(topo);
     const conduit::Node &n_connectivity = topo["elements/connectivity"];
+    const std::string shapeType = topo["elements/shape"].as_string();
     const auto intTypeId = n_connectivity.dtype().id();
     const auto connSize = n_connectivity.dtype().number_of_elements();
 
     // Use the coordset to get the number of nodes. Conduit should be able to do this using only metadata.
     const auto nnodes =
-      conduit::blueprint::mesh::utils::coordset::length(*coordset);
+      conduit::blueprint::mesh::utils::coordset::length(coordset);
 
     if(shape.is_polyhedral())
     {
@@ -214,7 +213,7 @@ void NodeToZoneRelationBuilder<ExecSpace>::execute(const conduit::Node &topo,
             });
         });
     }
-    else if(shape.is_polygonal())
+    else if(shape.is_polygonal() || shapeType == "mixed")
     {
       const conduit::Node &n_topo_sizes = topo["elements/sizes"];
       const conduit::Node &n_topo_offsets = topo["elements/offsets"];
@@ -310,12 +309,12 @@ void NodeToZoneRelationBuilder<ExecSpace>::execute(const conduit::Node &topo,
 
     conduit::Node mesh;
     axom::mir::utilities::blueprint::to_unstructured<ExecSpace>(topo,
-                                                                *coordset,
+                                                                coordset,
                                                                 "newtopo",
                                                                 mesh);
 
     // Recurse using the unstructured mesh.
-    execute(mesh.fetch_existing("topologies/newtopo"), relation);
+    execute(mesh.fetch_existing("topologies/newtopo"), coordset, relation);
   }
 }
 
