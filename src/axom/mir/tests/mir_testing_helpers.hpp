@@ -216,6 +216,11 @@ bool compareBaseline(const std::vector<std::string> &baselinePaths,
         if(!success)
         {
           info.print();
+#if 1
+          std::string errFile(filename + "_err");
+          conduit::relay::io::blueprint::save_mesh(current, errFile, "hdf5");
+          conduit::relay::io::blueprint::save_mesh(current, errFile + "_yaml", "yaml");
+#endif
         }
         // We found a baseline so we can exit
         break;

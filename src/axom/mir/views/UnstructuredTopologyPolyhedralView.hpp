@@ -104,11 +104,13 @@ public:
         const auto faceIds = getFace(f);
         for(axom::IndexType i = 0; i < faceIds.size(); i++)
         {
-          if(nnodes < MaximumNumberOfIds)
+          if(nnodes + 1 <= MaximumNumberOfIds)
             m_ids[nnodes++] = faceIds[i];
           else
           {
+#if !defined(AXOM_DEVICE_CODE)
             SLIC_ERROR("m_ids is not large enough to hold all node ids.");
+#endif
             break;
           }
         }
@@ -127,11 +129,13 @@ public:
         {
           if(!find(m_ids.m_data, nnodes, faceIds[i]))
           {
-            if(nnodes < MaximumNumberOfIds)
+            if(nnodes + 1 <= MaximumNumberOfIds)
               m_ids[nnodes++] = faceIds[i];
             else
             {
+#if !defined(AXOM_DEVICE_CODE)
               SLIC_ERROR("m_ids is not large enough to hold all node ids.");
+#endif
               break;
             }
           }

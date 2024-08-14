@@ -205,116 +205,6 @@ public:
   View m_view {};
 };
 
-
-template <typename ConnectivityType>
-class FieldIntersector
-{
-public:
-  using ClipFieldType = float;
-  using ConnectivityView = axom::ArrayView<ConnectivityType>;
-
-  /**
-   * \brief This is a view class for FieldIntersector that can be used in device code.
-   */
-  struct View
-  {
-    /**
-     * \brief Given a zone index and the node ids that comprise the zone, return
-     *        the appropriate clip case, taking into account the clip field and
-     *        clip value.
-     *
-     * \param zoneIndex The zone index.
-     * \param nodeIds A view containing node ids for the zone.
-     */
-    AXOM_HOST_DEVICE
-    axom::IndexType determineClipCase(axom::IndexType AXOM_UNUSED_PARAM(zoneIndex), const ConnectivityView &nodeIds) const
-    {
-      size_t clipcase = 0;
-      for(IndexType i = 0; i < nodeIds.size(); i++)
-      {
-        const auto id = nodeIds[i];
-        const auto value = m_clipFieldView[id] - m_clipValue;
-        clipcase |= (value > 0) ? (1 << i) : 0;
-      }
-      return clipcase;
-    }
-
-    /**
-     * \brief Compute the weight of a clip value along an edge (id0, id1) using the clip field and value.
-     *
-     * \param id0 The mesh node at the start of the edge.
-     * \param id1 The mesh node at the end of the edge.
-     */
-    AXOM_HOST_DEVICE
-    ClipFieldType computeWeight(axom::IndexType AXOM_UNUSED_PARAM(zoneIndex), ConnectivityType id0, ConnectivityType id1) const
-    {
-      const ClipFieldType d0 = m_clipFieldView[id0];
-      const ClipFieldType d1 = m_clipFieldView[id1];
-      constexpr ClipFieldType tiny = 1.e-09;
-      return axom::utilities::clampVal(axom::utilities::abs(m_clipValue - d0) /
-                                       (axom::utilities::abs(d1 - d0) + tiny),
-                                     ClipFieldType(0),
-                                     ClipFieldType(1));
-    }
-
-    axom::ArrayView<ClipFieldType> m_clipFieldView {};
-    ClipFieldType m_clipValue {};
-  };
-
-  /**
-   * \brief Initialize the object from options.
-   * \param n_options The node that contains the options.
-   * \param n_fields The node that contains fields.
-   * \param allocatorID The allocator ID to use when allocating memory.
-   */
-  void initialize(const conduit::Node &n_options, const conduit::Node &n_fields, int allocatorID)
-  {
-    // Get the clip field and value.
-    ClipOptions opts(n_options);
-    std::string clipFieldName = opts.clipField();
-    m_view.m_clipValue = opts.clipValue();
-
-    // Make sure the clipField is the right data type and store access to it in the view.
-    const conduit
-    const conduit::Node &n_clip_field = n_fields.fetch_existing(opts.clipField());
-    const conduit::Node &n_clip_field_values = n_clip_field["values"];
-    SLIC_ASSERT(n_clip_field["association"].as_string() == "vertex");
-    if(n_clip_field_values.dtype().is_float32())
-    {
-      // Make a view.
-      m_view.m_clipFieldView =
-        bputils::make_array_view<ClipFieldType>(n_clip_field_values);
-    }
-    else
-    {
-      // Convert to ClipFieldType.
-      const IndexType n =
-        static_cast<IndexType>(n_clip_field_values.dtype().number_of_elements());
-      m_clipFieldData = axom::Array<ClipFieldType>(n, n, allocatorID);
-      auto clipFieldView = clipFieldData.view();
-      m_view.m_clipFieldView = clipFieldView;
-      views::Node_to_ArrayView(n_clip_field_values, [&](auto clipFieldViewSrc) {
-        axom::for_all<ExecSpace>(
-          n,
-          AXOM_LAMBDA(auto index) {
-            clipFieldView[index] =
-              static_cast<ClipFieldType>(clipFieldViewSrc[index]);
-          });
-      });
-    }
-  }
-
-  View view() const
-  {
-    return m_view;
-  }
-
-private:
-  axom::Array<float> m_clipFieldData {};
-  View m_view {};
-}
-
-
 #endif
 
 /**
@@ -683,7 +573,9 @@ std::cout << "makeNewMatset: nzones=" << nzones << std::endl;
 //          nmatsThisZone--;
 //        }
       }
+#if !defined(AXOM_DEVICE_CODE)
 std::cout << "\tzone " << zoneIndex << ": color=" << colorView[zoneIndex] << ", nmats=" << nmatsThisZone << std::endl;
+#endif
 
       sizesView[zoneIndex] = nmatsThisZone;
       sum += nmatsThisZone;
@@ -722,7 +614,9 @@ std::cout << "arraySize=" << arraySize << std::endl;
       auto offset = offsetsView[zoneIndex];
       if(colorView[zoneIndex] == COLOR0)
       {
+#if !defined(AXOM_DEVICE_CODE)
 std::cout << "\tzone " << zoneIndex << ": offset=" << offset << ", id=" << currentMatNumber << ", vf=1\n";
+#endif
         matidsView[offset] = currentMatNumber;
         vfView[offset] = 1;
       }
@@ -749,8 +643,9 @@ std::cout << "\tzone " << zoneIndex << ": offset=" << offset << ", id=" << curre
             matidsView[offset] = ids[i];
             vfView[offset] = vfs[i] / vfTotal;
 
-std::cout << "\tzone " << zoneIndex << ": origElem=" << origIndex << ", offset=" << offset << ", id=" << ids[i] << ", vf=" << vfView[offset] << "\n";
-
+#if !defined(AXOM_DEVICE_CODE)
+//std::cout << "\tzone " << zoneIndex << ": origElem=" << origIndex << ", offset=" << offset << ", id=" << ids[i] << ", vf=" << vfView[offset] << "\n";
+#endif
             offset++;
           }
         }

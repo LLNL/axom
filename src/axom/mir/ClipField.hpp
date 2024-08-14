@@ -132,57 +132,128 @@ inline bool shapeIsSelected(unsigned char color, int selection)
     (color1Selected(selection) && color == COLOR1);
 }
 
-/**
- * \brief Compute a parametric value for where clipValues occurs in [d0,d1], clamped to [0,1].
- *
- * \param d0 The first data value.
- * \param d1 The second data value.
- * \param clipValue The data value we're looking for.
- *
- * \return A parametric position t [0,1] where we locate \a clipValues in [d0,d1].
- */
-template <typename T>
-AXOM_HOST_DEVICE inline T computeWeight(T d0, T d1, T clipValue)
-{
-  constexpr T tiny = 1.e-09;
-  return axom::utilities::clampVal(axom::utilities::abs(clipValue - d0) /
-                                     (axom::utilities::abs(d1 - d0) + tiny),
-                                   T(0),
-                                   T(1));
-}
-
-// TODO: Could we make ZoneType be a concept?
-/**
- * \brief Use the ids for the provided zone and the values from the array view to determine a clip case.
- *
- * \tparam ZoneType A class that implements the Shape interface.
- * \tparam DataType The data type of the clip data.
- *
- * \param[in] zone The zone being clipped.
- * \param[in] view The view that can access the clipping distance field.
- * \param[in] clipValue The value used for clipping.
- *
- * \return The index of the clipping case.
- */
-template <typename ZoneType, typename DataType>
-AXOM_HOST_DEVICE size_t clip_case(const ZoneType &zone,
-                                  const axom::ArrayView<DataType> &view,
-                                  DataType clipValue)
-{
-  size_t clipcase = 0;
-  for(IndexType i = 0; i < zone.numberOfNodes(); i++)
-  {
-    const auto id = zone.getId(i);
-    const auto value = view[id] - clipValue;
-    clipcase |= (value > 0) ? (1 << i) : 0;
-  }
-  return clipcase;
-}
-
 }  // end namespace details
 
 //------------------------------------------------------------------------------
+/**
+ * \brief This class helps ClipField determine intersection cases and weights
+ *        using a field designated by the options.
+ */
+template <typename ExecSpace, typename ConnectivityType>
+class FieldIntersector
+{
+public:
+  using ClipFieldType = float;
+  using ConnectivityView = axom::ArrayView<ConnectivityType>;
 
+  /**
+   * \brief This is a view class for FieldIntersector that can be used in device code.
+   */
+  struct View
+  {
+    /**
+     * \brief Given a zone index and the node ids that comprise the zone, return
+     *        the appropriate clip case, taking into account the clip field and
+     *        clip value.
+     *
+     * \param zoneIndex The zone index.
+     * \param nodeIds A view containing node ids for the zone.
+     */
+    AXOM_HOST_DEVICE
+    axom::IndexType determineClipCase(axom::IndexType AXOM_UNUSED_PARAM(zoneIndex), const ConnectivityView &nodeIds) const
+    {
+      size_t clipcase = 0;
+      for(IndexType i = 0; i < nodeIds.size(); i++)
+      {
+        const auto id = nodeIds[i];
+        const auto value = m_clipFieldView[id] - m_clipValue;
+        clipcase |= (value > 0) ? (1 << i) : 0;
+      }
+      return clipcase;
+    }
+
+    /**
+     * \brief Compute the weight of a clip value along an edge (id0, id1) using the clip field and value.
+     *
+     * \param id0 The mesh node at the start of the edge.
+     * \param id1 The mesh node at the end of the edge.
+     *
+     * \return A parametric position t [0,1] where we locate \a clipValues in [d0,d1].
+     */
+    AXOM_HOST_DEVICE
+    ClipFieldType computeWeight(axom::IndexType AXOM_UNUSED_PARAM(zoneIndex), ConnectivityType id0, ConnectivityType id1) const
+    {
+      const ClipFieldType d0 = m_clipFieldView[id0];
+      const ClipFieldType d1 = m_clipFieldView[id1];
+      constexpr ClipFieldType tiny = 1.e-09;
+      return axom::utilities::clampVal(axom::utilities::abs(m_clipValue - d0) /
+                                       (axom::utilities::abs(d1 - d0) + tiny),
+                                     ClipFieldType(0),
+                                     ClipFieldType(1));
+    }
+
+    axom::ArrayView<ClipFieldType> m_clipFieldView {};
+    ClipFieldType m_clipValue {};
+  };
+
+  /**
+   * \brief Initialize the object from options.
+   * \param n_options The node that contains the options.
+   * \param n_fields The node that contains fields.
+   */
+  void initialize(const conduit::Node &n_options, const conduit::Node &n_fields)
+  {
+    namespace bputils = axom::mir::utilities::blueprint;
+    const int allocatorID = axom::execution_space<ExecSpace>::allocatorID();
+
+    // Get the clip field and value.
+    ClipOptions opts(n_options);
+    std::string clipFieldName = opts.clipField();
+    m_view.m_clipValue = opts.clipValue();
+
+    // Make sure the clipField is the right data type and store access to it in the view.
+    const conduit::Node &n_clip_field = n_fields.fetch_existing(opts.clipField());
+    const conduit::Node &n_clip_field_values = n_clip_field["values"];
+    SLIC_ASSERT(n_clip_field["association"].as_string() == "vertex");
+    if(n_clip_field_values.dtype().is_float32())
+    {
+      // Make a view.
+      m_view.m_clipFieldView =
+        bputils::make_array_view<ClipFieldType>(n_clip_field_values);
+    }
+    else
+    {
+      // Convert to ClipFieldType.
+      const IndexType n =
+        static_cast<IndexType>(n_clip_field_values.dtype().number_of_elements());
+      m_clipFieldData = axom::Array<ClipFieldType>(n, n, allocatorID);
+      auto clipFieldView = m_view.m_clipFieldView = m_clipFieldData.view();
+      views::Node_to_ArrayView(n_clip_field_values, [&](auto clipFieldViewSrc) {
+        axom::for_all<ExecSpace>(
+          n,
+          AXOM_LAMBDA(auto index) {
+            clipFieldView[index] =
+              static_cast<ClipFieldType>(clipFieldViewSrc[index]);
+          });
+      });
+    }
+  }
+
+  /**
+   * \brief Return a new instance of the view.
+   * \return A new instance of the view.
+   */
+  View view() const
+  {
+    return m_view;
+  }
+
+private:
+  axom::Array<float> m_clipFieldData {};
+  View m_view {};
+};
+
+//------------------------------------------------------------------------------
 /**
  * \accelerated
  * \brief This class clips a topology using a field and puts the new topology into a new Conduit node.
@@ -190,11 +261,13 @@ AXOM_HOST_DEVICE size_t clip_case(const ZoneType &zone,
  * \tparam ExecSpace    The execution space where the compute-heavy kernels run.
  * \tparam TopologyView The topology view that can operate on the Blueprint topology.
  * \tparam CoordsetView The coordset view that can operate on the Blueprint coordset.
+ * \tparam IntersectPolicy The intersector policy that can helps with cases and weights.
  * \tparam NamingPolicy The policy for making names from arrays of ids.
  */
 template <typename ExecSpace,
           typename TopologyView,
           typename CoordsetView,
+          typename IntersectPolicy = axom::mir::clipping::FieldIntersector<ExecSpace, typename TopologyView::ConnectivityType>,
           typename NamingPolicy = axom::mir::utilities::HashNaming>
 class ClipField
 {
@@ -202,6 +275,7 @@ public:
   using BlendData = axom::mir::utilities::blueprint::BlendData;
   using SliceData = axom::mir::utilities::blueprint::SliceData;
   using ClipTableViews = axom::StackArray<axom::mir::clipping::TableView, 6>;
+  using Intersector = IntersectPolicy;
 
   using BitSet = std::uint64_t;
   using KeyType = typename NamingPolicy::KeyType;
@@ -218,9 +292,10 @@ public:
    * \param coordsetView A coordset view suitable for the supplied coordset.
    *
    */
-  ClipField(const TopologyView &topoView, const CoordsetView &coordsetView)
+  ClipField(const TopologyView &topoView, const CoordsetView &coordsetView, const Intersector &intersector = Intersector())
     : m_topologyView(topoView)
     , m_coordsetView(coordsetView)
+    , m_intersector(intersector)
     , m_clipTables()
   { }
 
@@ -290,35 +365,8 @@ public:
       n_options);
     const auto nzones = selectedZones.view().size();
 
-    // Get the clip field. Make sure it is double. That lets us make less code down the line.
-    std::string clipFieldName = opts.clipField();
-    const conduit::Node &n_clip_field = n_fields.fetch_existing(opts.clipField());
-    const conduit::Node &n_clip_field_values = n_clip_field["values"];
-    SLIC_ASSERT(n_clip_field["association"].as_string() == "vertex");
-    axom::Array<ClipFieldType> clipFieldData;
-    axom::ArrayView<ClipFieldType> clipFieldView;
-    if(n_clip_field_values.dtype().is_float32())
-    {
-      // Make a view.
-      clipFieldView =
-        bputils::make_array_view<ClipFieldType>(n_clip_field_values);
-    }
-    else
-    {
-      // Convert to double.
-      const IndexType n =
-        static_cast<IndexType>(n_clip_field_values.dtype().number_of_elements());
-      clipFieldData = axom::Array<ClipFieldType>(n, n, allocatorID);
-      clipFieldView = clipFieldData.view();
-      views::Node_to_ArrayView(n_clip_field_values, [&](auto clipFieldViewSrc) {
-        axom::for_all<ExecSpace>(
-          n,
-          AXOM_LAMBDA(auto index) {
-            clipFieldView[index] =
-              static_cast<ClipFieldType>(clipFieldViewSrc[index]);
-          });
-      });
-    }
+    // Give the intersector a chance to further initialize.
+    m_intersector.initialize(n_options, n_fields);
 
     // Load clip table data and make views.
     m_clipTables.load(m_topologyView.dimension());
@@ -381,8 +429,7 @@ public:
                  zoneData,
                  fragmentData,
                  opts,
-                 selectedZones,
-                 clipFieldView);
+                 selectedZones);
     computeFragmentSizes(fragmentData, selectedZones);
     computeFragmentOffsets(fragmentData);
 
@@ -416,8 +463,7 @@ public:
                     builder,
                     zoneData,
                     opts,
-                    selectedZones,
-                    clipFieldView);
+                    selectedZones);
 
     // Make the blend groups unique
     axom::Array<KeyType> uNames;
@@ -560,7 +606,6 @@ private:
    * \param[in] zoneData This object holds views to per-zone data.
    * \param[in] fragmentData This object holds views to per-fragment data.
    * \param[inout] opts Clipping options.
-   * \param[in] clipFieldView The view that contains clipping field values.
    *
    * \note Objects that we need to capture into kernels are passed by value (they only contain views anyway). Data can be modified through the views.
    */
@@ -569,20 +614,19 @@ private:
                     ZoneData zoneData,
                     FragmentData fragmentData,
                     const ClipOptions &opts,
-                    const SelectedZones<ExecSpace> &selectedZones,
-                    const axom::ArrayView<ClipFieldType> &clipFieldView) const
+                    const SelectedZones<ExecSpace> &selectedZones) const
   {
-    const auto clipValue = static_cast<ClipFieldType>(opts.clipValue());
     const auto selection = getSelection(opts);
 
     auto blendGroupsView = builder.state().m_blendGroupsView;
     auto blendGroupsLenView = builder.state().m_blendGroupsLenView;
 
+    const auto deviceIntersector = m_intersector.view();
     m_topologyView.template for_selected_zones<ExecSpace>(
       selectedZones.view(),
-      AXOM_LAMBDA(auto szIndex, auto /*zoneIndex*/, const auto &zone) {
+      AXOM_LAMBDA(auto szIndex, auto zoneIndex, const auto &zone) {
         // Get the clip case for the current zone.
-        const auto clipcase = details::clip_case(zone, clipFieldView, clipValue);
+        const auto clipcase = deviceIntersector.determineClipCase(zoneIndex, zone.getIds());
         zoneData.m_clipCasesView[szIndex] = clipcase;
 
         // Iterate over the shapes in this clip case to determine the number of blend groups.
@@ -732,7 +776,6 @@ private:
    * \param[in] builder This object holds views to blend group data and helps with building/access.
    * \param[in] zoneData This object holds views to per-zone data.
    * \param[inout] opts Clipping options.
-   * \param[in] clipFieldView The view that contains clipping field values.
    *
    * \note Objects that we need to capture into kernels are passed by value (they only contain views anyway). Data can be modified through the views.
    */
@@ -740,15 +783,15 @@ private:
                        BlendGroupBuilderType builder,
                        ZoneData zoneData,
                        const ClipOptions &opts,
-                       const SelectedZones<ExecSpace> &selectedZones,
-                       const axom::ArrayView<ClipFieldType> &clipFieldView) const
+                       const SelectedZones<ExecSpace> &selectedZones) const
   {
     const auto clipValue = static_cast<ClipFieldType>(opts.clipValue());
     const auto selection = getSelection(opts);
 
+    const auto deviceIntersector = m_intersector.view();
     m_topologyView.template for_selected_zones<ExecSpace>(
       selectedZones.view(),
-      AXOM_LAMBDA(auto szIndex, auto /*zoneIndex*/, const auto &zone) {
+      AXOM_LAMBDA(auto szIndex, auto zoneIndex, const auto &zone) {
         // Get the clip case for the current zone.
         const auto clipcase = zoneData.m_clipCasesView[szIndex];
 
@@ -796,9 +839,7 @@ private:
                   const auto id1 = zone.getId(edge[1]);
 
                   // Figure out the blend for edge.
-                  const auto t = details::computeWeight(clipFieldView[id0],
-                                                        clipFieldView[id1],
-                                                        clipValue);
+                  const auto t = deviceIntersector.computeWeight(zoneIndex, id0, id1);
 
                   groups.add(id0, one_over_n * (1.f - t));
                   groups.add(id1, one_over_n * t);
@@ -831,9 +872,7 @@ private:
             const auto id1 = zone.getId(edge[1]);
 
             // Figure out the blend for edge.
-            const auto t = details::computeWeight(clipFieldView[id0],
-                                                  clipFieldView[id1],
-                                                  clipValue);
+            const auto t = deviceIntersector.computeWeight(zoneIndex, id0, id1);
 
             groups.beginGroup();
             groups.add(id0, 1.f - t);
@@ -1276,6 +1315,7 @@ private:
 private:
   TopologyView m_topologyView;
   CoordsetView m_coordsetView;
+  Intersector  m_intersector;
   axom::mir::clipping::ClipTableManager<ExecSpace> m_clipTables;
 };
 
