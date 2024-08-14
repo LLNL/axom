@@ -163,7 +163,7 @@ public:
     axom::IndexType determineClipCase(axom::IndexType AXOM_UNUSED_PARAM(zoneIndex),
                                       const ConnectivityView &nodeIds) const
     {
-      size_t clipcase = 0;
+      axom::IndexType clipcase = 0;
       for(IndexType i = 0; i < nodeIds.size(); i++)
       {
         const auto id = nodeIds[i];
@@ -243,6 +243,21 @@ public:
   }
 
   /**
+   * \brief Determine the name of the topology on which to operate.
+   * \param n_input The input mesh node.
+   * \param n_options The clipping options.
+   * \return The name of the toplogy on which to operate.
+   */
+  std::string getTopologyName(const conduit::Node &n_input, const conduit::Node &n_options) const
+  {
+    // Get the clipField's topo name.
+    ClipOptions opts(n_options);
+    const conduit::Node &n_fields = n_input.fetch_existing("fields");
+    const conduit::Node &n_clipField = n_fields.fetch_existing(opts.clipField());
+    return n_clipField["topology"].as_string();
+  }
+
+  /**
    * \brief Return a new instance of the view.
    * \return A new instance of the view.
    */
@@ -315,18 +330,15 @@ public:
                const conduit::Node &n_options,
                conduit::Node &n_output)
   {
+    // Get the topo/coordset names in the input.
     ClipOptions opts(n_options);
-    const std::string clipFieldName = opts.clipField();
-
-    // Get clipField's topo/coordset.
-    const conduit::Node &n_fields = n_input.fetch_existing("fields");
-    const conduit::Node &n_clipField = n_fields.fetch_existing(clipFieldName);
-    const std::string &topoName = n_clipField["topology"].as_string();
+    const std::string topoName = m_intersector.getTopologyName(n_input, n_options);
     const conduit::Node &n_topo =
       n_input.fetch_existing("topologies/" + topoName);
-    const std::string &coordsetName = n_topo["coordset"].as_string();
+    const std::string coordsetName = n_topo["coordset"].as_string();
     const conduit::Node &n_coordset =
       n_input.fetch_existing("coordsets/" + coordsetName);
+    const conduit::Node &n_fields = n_input.fetch_existing("fields");
 
     execute(n_topo,
             n_coordset,
@@ -501,13 +513,13 @@ public:
     std::map<std::string, std::string> fieldsToProcess;
     if(!opts.fields(fieldsToProcess))
     {
-      // Fields were not present in the options. Select all fields that have the same topology as opts.clipField().
-      const std::string clipTopology =
-        n_fields.fetch_existing(opts.clipField() + "/topology").as_string();
+std::cout << "  fields to process:\n";
+      // Fields were not present in the options. Select all fields that have the same topology as n_topo.
       for(conduit::index_t i = 0; i < n_fields.number_of_children(); i++)
       {
-        if(n_fields[i].fetch_existing("topology").as_string() == clipTopology)
+        if(n_fields[i].fetch_existing("topology").as_string() == n_topo.name())
         {
+std::cout << "  " << n_fields[i].name() << std::endl;
           fieldsToProcess[n_fields[i].name()] = n_fields[i].name();
         }
       }

@@ -156,6 +156,32 @@ public:
     return false;
   }
 
+  /**
+   * \brief Return the dominant material ids for the zone (highest volume fraction material).
+   * \param zi The zone index.
+   * \return The material id with the highest volume fraction.
+   */
+  AXOM_HOST_DEVICE
+  int dominantMaterial(ZoneIndex zi) const
+  {
+    assert(zi < numberOfZones());
+    const auto sz = numberOfMaterials(zi);
+    const auto offset = m_offsets[zi];
+    FloatType maxVF = -1;
+    int mat {};
+    for(axom::IndexType i = 0; i < sz; i++)
+    {
+      const auto idx = m_indices[offset + i];
+      const auto vf = m_volume_fractions[idx];
+      if(vf > maxVF)
+      {
+        mat = m_material_ids[idx];
+        maxVF = vf;
+      }
+    }
+    return mat;
+  }
+
 private:
   axom::ArrayView<IndexType> m_material_ids;
   axom::ArrayView<FloatType> m_volume_fractions;
@@ -272,6 +298,20 @@ public:
     return vf > 0.;
   }
 
+  /**
+   * \brief Return the dominant material ids for the zone (highest volume fraction material).
+   * \param zi The zone index.
+   * \return The material id with the highest volume fraction.
+   */
+  AXOM_HOST_DEVICE
+  int dominantMaterial(ZoneIndex zi) const
+  {
+    assert(zi < numberOfZones());
+    FloatType maxVF = -1;
+    int mat {};
+    // TODO: write me
+    return mat;
+  }
 private:
   axom::StackArray<axom::ArrayView<FloatType>, MAXMATERIALS> m_values {};
   axom::StackArray<axom::ArrayView<ZoneIndex>, MAXMATERIALS> m_indices {};
@@ -374,6 +414,20 @@ public:
     return contains;
   }
 
+  /**
+   * \brief Return the dominant material ids for the zone (highest volume fraction material).
+   * \param zi The zone index.
+   * \return The material id with the highest volume fraction.
+   */
+  AXOM_HOST_DEVICE
+  int dominantMaterial(ZoneIndex zi) const
+  {
+    assert(zi < numberOfZones());
+    FloatType maxVF = -1;
+    int mat {};
+    // TODO: write me
+    return mat;
+  }
 private:
   axom::StaticArray<axom::ArrayView<FloatType>, MAXMATERIALS> m_volume_fractions {};
 };
@@ -550,6 +604,20 @@ public:
     return found;
   }
 
+  /**
+   * \brief Return the dominant material ids for the zone (highest volume fraction material).
+   * \param zi The zone index.
+   * \return The material id with the highest volume fraction.
+   */
+  AXOM_HOST_DEVICE
+  int dominantMaterial(ZoneIndex zi) const
+  {
+    assert(zi < numberOfZones());
+    FloatType maxVF = -1;
+    int mat {};
+    // TODO: write me
+    return mat;
+  }
 private:
   StackArray<axom::ArrayView<IndexType>, MAXMATERIALS> m_element_ids {};
   StackArray<axom::ArrayView<FloatType>, MAXMATERIALS> m_volume_fractions {};
