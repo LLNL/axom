@@ -75,8 +75,10 @@ void braid2d_mat_test(const std::string &type,
 #endif
 
   // Make views.
-  auto coordsetView = axom::mir::views::make_uniform_coordset<2>::view(deviceMesh["coordsets/coords"]);
-  auto topologyView = axom::mir::views::make_uniform<2>::view(deviceMesh["topologies/mesh"]);
+  auto coordsetView = axom::mir::views::make_uniform_coordset<2>::view(
+    deviceMesh["coordsets/coords"]);
+  auto topologyView =
+    axom::mir::views::make_uniform<2>::view(deviceMesh["topologies/mesh"]);
   using CoordsetView = decltype(coordsetView);
   using TopologyView = decltype(topologyView);
 
@@ -93,8 +95,9 @@ void braid2d_mat_test(const std::string &type,
                    bputils::make_array_view<int>(deviceMesh["matsets/mat/offsets"]),
                    bputils::make_array_view<int>(deviceMesh["matsets/mat/indices"]));
     // clang-format on
-   
-    using MIR = axom::mir::EquiZAlgorithm<ExecSpace, TopologyView, CoordsetView, MatsetView>;
+
+    using MIR =
+      axom::mir::EquiZAlgorithm<ExecSpace, TopologyView, CoordsetView, MatsetView>;
     MIR m(topologyView, coordsetView, matsetView);
     conduit::Node options, deviceMIRMesh;
     options["matset"] = "mat";

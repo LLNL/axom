@@ -41,7 +41,9 @@ public:
    * \param coordset The topology's coordset.
    * \param[out] The node that will contain the O2M relation.
    */
-  void execute(const conduit::Node &topo, const conduit::Node &coordset, conduit::Node &relation);
+  void execute(const conduit::Node &topo,
+               const conduit::Node &coordset,
+               conduit::Node &relation);
 
 private:
   /**

@@ -160,7 +160,8 @@ public:
      * \param nodeIds A view containing node ids for the zone.
      */
     AXOM_HOST_DEVICE
-    axom::IndexType determineClipCase(axom::IndexType AXOM_UNUSED_PARAM(zoneIndex), const ConnectivityView &nodeIds) const
+    axom::IndexType determineClipCase(axom::IndexType AXOM_UNUSED_PARAM(zoneIndex),
+                                      const ConnectivityView &nodeIds) const
     {
       size_t clipcase = 0;
       for(IndexType i = 0; i < nodeIds.size(); i++)
@@ -181,15 +182,17 @@ public:
      * \return A parametric position t [0,1] where we locate \a clipValues in [d0,d1].
      */
     AXOM_HOST_DEVICE
-    ClipFieldType computeWeight(axom::IndexType AXOM_UNUSED_PARAM(zoneIndex), ConnectivityType id0, ConnectivityType id1) const
+    ClipFieldType computeWeight(axom::IndexType AXOM_UNUSED_PARAM(zoneIndex),
+                                ConnectivityType id0,
+                                ConnectivityType id1) const
     {
       const ClipFieldType d0 = m_clipFieldView[id0];
       const ClipFieldType d1 = m_clipFieldView[id1];
       constexpr ClipFieldType tiny = 1.e-09;
       return axom::utilities::clampVal(axom::utilities::abs(m_clipValue - d0) /
-                                       (axom::utilities::abs(d1 - d0) + tiny),
-                                     ClipFieldType(0),
-                                     ClipFieldType(1));
+                                         (axom::utilities::abs(d1 - d0) + tiny),
+                                       ClipFieldType(0),
+                                       ClipFieldType(1));
     }
 
     axom::ArrayView<ClipFieldType> m_clipFieldView {};
@@ -243,10 +246,7 @@ public:
    * \brief Return a new instance of the view.
    * \return A new instance of the view.
    */
-  View view() const
-  {
-    return m_view;
-  }
+  View view() const { return m_view; }
 
 private:
   axom::Array<float> m_clipFieldData {};
@@ -267,7 +267,8 @@ private:
 template <typename ExecSpace,
           typename TopologyView,
           typename CoordsetView,
-          typename IntersectPolicy = axom::mir::clipping::FieldIntersector<ExecSpace, typename TopologyView::ConnectivityType>,
+          typename IntersectPolicy = axom::mir::clipping::
+            FieldIntersector<ExecSpace, typename TopologyView::ConnectivityType>,
           typename NamingPolicy = axom::mir::utilities::HashNaming>
 class ClipField
 {
@@ -292,7 +293,9 @@ public:
    * \param coordsetView A coordset view suitable for the supplied coordset.
    *
    */
-  ClipField(const TopologyView &topoView, const CoordsetView &coordsetView, const Intersector &intersector = Intersector())
+  ClipField(const TopologyView &topoView,
+            const CoordsetView &coordsetView,
+            const Intersector &intersector = Intersector())
     : m_topologyView(topoView)
     , m_coordsetView(coordsetView)
     , m_intersector(intersector)
@@ -424,12 +427,7 @@ public:
     builder.setBlendGroupSizes(blendGroups.view(), blendGroupsLen.view());
 
     // Compute sizes and offsets
-    computeSizes(clipTableViews,
-                 builder,
-                 zoneData,
-                 fragmentData,
-                 opts,
-                 selectedZones);
+    computeSizes(clipTableViews, builder, zoneData, fragmentData, opts, selectedZones);
     computeFragmentSizes(fragmentData, selectedZones);
     computeFragmentOffsets(fragmentData);
 
@@ -459,11 +457,7 @@ public:
                           blendGroupStart.view(),
                           blendIds.view(),
                           blendCoeff.view());
-    makeBlendGroups(clipTableViews,
-                    builder,
-                    zoneData,
-                    opts,
-                    selectedZones);
+    makeBlendGroups(clipTableViews, builder, zoneData, opts, selectedZones);
 
     // Make the blend groups unique
     axom::Array<KeyType> uNames;
@@ -626,7 +620,8 @@ private:
       selectedZones.view(),
       AXOM_LAMBDA(auto szIndex, auto zoneIndex, const auto &zone) {
         // Get the clip case for the current zone.
-        const auto clipcase = deviceIntersector.determineClipCase(zoneIndex, zone.getIds());
+        const auto clipcase =
+          deviceIntersector.determineClipCase(zoneIndex, zone.getIds());
         zoneData.m_clipCasesView[szIndex] = clipcase;
 
         // Iterate over the shapes in this clip case to determine the number of blend groups.
@@ -839,7 +834,8 @@ private:
                   const auto id1 = zone.getId(edge[1]);
 
                   // Figure out the blend for edge.
-                  const auto t = deviceIntersector.computeWeight(zoneIndex, id0, id1);
+                  const auto t =
+                    deviceIntersector.computeWeight(zoneIndex, id0, id1);
 
                   groups.add(id0, one_over_n * (1.f - t));
                   groups.add(id1, one_over_n * t);
@@ -1315,7 +1311,7 @@ private:
 private:
   TopologyView m_topologyView;
   CoordsetView m_coordsetView;
-  Intersector  m_intersector;
+  Intersector m_intersector;
   axom::mir::clipping::ClipTableManager<ExecSpace> m_clipTables;
 };
 
