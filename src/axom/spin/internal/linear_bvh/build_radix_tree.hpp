@@ -13,6 +13,7 @@
 #include "axom/core/AnnotationMacros.hpp"
 #include "axom/core/utilities/Utilities.hpp"
 #include "axom/core/utilities/BitUtilities.hpp"
+#include "axom/core/NumericLimits.hpp"
 
 #include "axom/slic/interface/slic.hpp"
 
@@ -117,8 +118,8 @@ primal::BoundingBox<FloatType, NDIMS> reduce(
 
   primal::Point<FloatType, NDIMS> min_pt, max_pt;
 
-  FloatType infinity = std::numeric_limits<FloatType>::max();
-  FloatType neg_infinity = std::numeric_limits<FloatType>::lowest();
+  FloatType infinity = axom::numeric_limits<FloatType>::max();
+  FloatType neg_infinity = axom::numeric_limits<FloatType>::lowest();
 
   for(int dim = 0; dim < NDIMS; dim++)
   {
