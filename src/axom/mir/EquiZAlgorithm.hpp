@@ -53,6 +53,23 @@ struct MatsetToField
 };
 
 #if 1
+AXOM_HOST_DEVICE
+inline bool zoneMatters(int zoneIndex)
+{
+   const int zones[] = {26,
+33,34,35,
+36,37,38,39,40,41,
+49,50,
+59,60,
+69,
+78,79};
+  for(size_t i = 0; i < sizeof(zones)/sizeof(int); i++)
+  {
+    if(zones[i] == zoneIndex)
+      return true;
+  }
+  return false;
+}
 
 template <typename IntType>
 struct RelationView
@@ -95,7 +112,7 @@ public:
     axom::IndexType determineClipCase(axom::IndexType zoneIndex, const ConnectivityView &nodeIds) const
     {
       VFList vf1, vf2;
-      const auto dominantMaterial = m_matsetView.dominantMaterial(zoneIndex);
+      const auto dominantMaterial = m_matsetView.backgroundMaterial(zoneIndex, m_currentMaterial); //dominantMaterial(zoneIndex);
       getVolumeFractionsAtNodes(dominantMaterial, m_currentMaterial, nodeIds, vf1, vf2);
 
       axom::IndexType clipcase = 0;
@@ -104,7 +121,7 @@ public:
       {
         clipcase |= (vf2[i] > vf1[i]) ? (1 << i) : 0;
       }
-#if 1
+#if 0
 std::cout << "clipcase: zoneIndex=" << zoneIndex
           << ", dominantMaterial=" << dominantMaterial
           << ", m_currentMaterial=" << m_currentMaterial
@@ -141,7 +158,8 @@ std::cout << "}, clipcase=" << clipcase << std::endl;
       ConnectivityType nodeIds[2] = {id0, id1};
       ConnectivityView nodeIdsView(nodeIds, 2);
       VFList vf1, vf2;
-      const auto dominantMaterial = m_matsetView.dominantMaterial(zoneIndex);
+//      const auto dominantMaterial = m_matsetView.dominantMaterial(zoneIndex);
+      const auto dominantMaterial = m_matsetView.backgroundMaterial(zoneIndex, m_currentMaterial); //dominantMaterial(zoneIndex);
       getVolumeFractionsAtNodes(dominantMaterial, m_currentMaterial, nodeIdsView, vf1, vf2);
 
       //vf1[0] = axom::utilities::max(vf1[0], 0.f);
@@ -168,7 +186,7 @@ std::cout << "}, clipcase=" << clipcase << std::endl;
     AXOM_HOST_DEVICE
     void getVolumeFractionAtNodes(int materialNumber, const ConnectivityView &nodeIds, VFList &vfs) const
     {
-std::cout << "{\ngetVolumeFractionAtNodes: mat=" << materialNumber << std::endl;
+//std::cout << "{\ngetVolumeFractionAtNodes: mat=" << materialNumber << std::endl;
       for(axom::IndexType i = 0; i < nodeIds.size(); i++)
       {
         const auto nid = nodeIds[i];
@@ -177,7 +195,7 @@ std::cout << "{\ngetVolumeFractionAtNodes: mat=" << materialNumber << std::endl;
         auto size = m_relationView.m_sizesView[nid];
         using SizeType = decltype(size);
         const auto offset = m_relationView.m_offsetsView[nid];
-std::cout << "\tnid=" << nid << ", size=" << size << ", offset=" << offset << std::endl;
+//std::cout << "\tnid=" << nid << ", size=" << size << ", offset=" << offset << std::endl;
         float vfSum{};
         for(SizeType j = 0; j < size; j++)
         {
@@ -185,13 +203,13 @@ std::cout << "\tnid=" << nid << ", size=" << size << ", offset=" << offset << st
           float vf{};
           m_matsetView.zoneContainsMaterial(zoneIndex, materialNumber, vf);
           vfSum += vf;
-std::cout <<"\t\tzoneIndex=" << zoneIndex << ", vf=" << vf << ", vfSum=" << vfSum << std::endl;
+//std::cout <<"\t\tzoneIndex=" << zoneIndex << ", vf=" << vf << ", vfSum=" << vfSum << std::endl;
         }
         const float nodeVF = vfSum / static_cast<float>(size);
-std::cout << "\tnodeVF=" << nodeVF << std::endl; 
+//std::cout << "\tnodeVF=" << nodeVF << std::endl; 
         vfs.push_back(nodeVF);
       }
-std::cout << "}" << std::endl;
+//std::cout << "}" << std::endl;
     }
 
     AXOM_HOST_DEVICE
@@ -331,9 +349,16 @@ protected:
     bputils::copy<ExecSpace>(n_options_copy, n_options);
     n_options_copy["topology"] = n_topo.name();
 
+    // Make some nodes that will contain the inputs to subsequent iterations.
+    // Store them under a single node so the nodes will have names.
+    conduit::Node n_Input;
+    conduit::Node &n_InputTopo = n_Input[n_topo.path()];
+    conduit::Node &n_InputCoordset = n_Input[n_coordset.path()];
+    conduit::Node &n_InputFields = n_Input[n_fields.path()];
+    conduit::Node &n_InputMatset = n_Input[n_matset.path()];
+
     // Iterate over the materials
     const auto matInfo = axom::mir::views::materials(n_matset);
-    conduit::Node n_InputTopo, n_InputCoordset, n_InputFields, n_InputMatset;
     for(size_t i = 0; i < matInfo.size(); i++)
     {
       if(i == 0)
@@ -350,7 +375,6 @@ protected:
       std::cout << "-------------------------------------------------------------------" << std::endl;
 #endif
         // The first time through, we can use the supplied views.
-        // clangformat-off
         iteration<TopologyView, CoordsetView, MatsetView>(m_topologyView,
                                                           m_coordsetView,
                                                           m_matsetView,
@@ -364,7 +388,6 @@ protected:
                                                           n_newCoordset,
                                                           n_newFields,
                                                           n_newMatset);
-        // clangformat-on
 
         // In later iterations, we do not want to pass selectedZones through
         // since they are only valid on the current input topology. Also, if they
@@ -409,7 +432,6 @@ protected:
                   bputils::make_array_view<int>(n_InputMatset["indices"]));
 
                 // Do the next iteration.
-                // clangformat-off
                 iteration<ITopologyView, ICoordsetView, IMatsetView>(
                   topologyView,
                   coordsetView,
@@ -424,7 +446,6 @@ protected:
                   n_newCoordset,
                   n_newFields,
                   n_newMatset);
-                // clangformat-on
               });
           });
           // clangformat-on
@@ -627,27 +648,29 @@ protected:
       nzones,
       AXOM_LAMBDA(auto zoneIndex) {
         axom::IndexType nmatsThisZone = 0;
-        if(colorView[zoneIndex] == COLOR0)
-        {
-          nmatsThisZone = 1;
-        }
-        else
-        {
-          // These were the unselected parts of the zone after clipping.
-          // When we make the new material, this set of zones remove the current material.
-          const auto origIndex = originalElementsView[zoneIndex];
-          nmatsThisZone = currentMatsetView.numberOfMaterials(origIndex);
 
-          // If the original zone was mixed and it contains the current material,
-          // subtract 1 since we will not include the current material.
-          if(nmatsThisZone > 1 && currentMatsetView.zoneContainsMaterial(origIndex, currentMatNumber))
+        const auto origIndex = originalElementsView[zoneIndex];
+        nmatsThisZone = currentMatsetView.numberOfMaterials(origIndex);
+        //int dominantMatNumber = currentMatsetView.dominantMaterial(origIndex);
+        const auto dominantMatNumber = m_matsetView.backgroundMaterial(origIndex, currentMatNumber);
+
+        if(dominantMatNumber != currentMatNumber && nmatsThisZone > 1)
+        {
+          int matToRemove = (colorView[zoneIndex] == 0) ? currentMatNumber : dominantMatNumber;
+          if(currentMatsetView.zoneContainsMaterial(origIndex, matToRemove))
           {
             nmatsThisZone--;
           }
         }
 #if !defined(AXOM_DEVICE_CODE)
-        std::cout << "\tzone " << zoneIndex << ": color=" << colorView[zoneIndex]
-                  << ", nmats=" << nmatsThisZone << std::endl;
+        if(zoneMatters(origIndex))
+        {
+          std::cout << "\tzone " << zoneIndex
+                    << ": origElem=" << origIndex
+                    << ", color=" << colorView[zoneIndex]
+                    << ", dominant=" << dominantMatNumber
+                    << ", nmats=" << nmatsThisZone << std::endl;
+        }
 #endif
 
         sizesView[zoneIndex] = nmatsThisZone;
@@ -685,6 +708,79 @@ protected:
       nzones,
       AXOM_LAMBDA(auto zoneIndex) {
         auto offset = offsetsView[zoneIndex];
+
+        const auto origIndex = originalElementsView[zoneIndex];
+        //int dominantMatNumber = currentMatsetView.dominantMaterial(origIndex);
+        const auto dominantMatNumber = m_matsetView.backgroundMaterial(origIndex, currentMatNumber);
+
+        // Get the material ids and volume fractions from the original material's zone.
+        typename IMatsetView::IDList ids {};
+        typename IMatsetView::VFList vfs {};
+        currentMatsetView.zoneMaterials(origIndex, ids, vfs);
+
+        if(dominantMatNumber != currentMatNumber && ids.size() > 1)
+        {
+          int matToRemove = (colorView[zoneIndex] == 0) ? currentMatNumber : dominantMatNumber;
+          // Copy it through without colorToRemove.
+          FloatType vfTotal {};
+          for(axom::IndexType i = 0; i < ids.size(); i++)
+          {
+            vfTotal += (ids[i] != matToRemove) ? vfs[i] : 0;
+          }
+          for(axom::IndexType i = 0; i < ids.size(); i++)
+          {
+            if(ids[i] != matToRemove)
+            {
+              matidsView[offset] = ids[i];
+              vfView[offset] = vfs[i] / vfTotal;
+
+#if !defined(AXOM_DEVICE_CODE)
+              if(zoneMatters(origIndex))
+              {
+std::cout << "\tzone " << zoneIndex
+          << ": origElem=" << origIndex
+          << ", color=" << colorView[zoneIndex]
+          << ", current=" << currentMatNumber
+          << ", dominant=" << dominantMatNumber
+          << ", ids.size=" << ids.size()
+          << ", offset=" << offset
+          << ", id=" << ids[i]
+          << ", vf=" << vfView[offset]
+          << ", matToRemove=" << matToRemove
+          << std::endl;
+              }
+#endif
+              offset++;
+            }
+          }
+        }
+        else
+        {
+          // Copy it through.
+          for(axom::IndexType i = 0; i < ids.size(); i++)
+          {
+            matidsView[offset] = ids[i];
+            vfView[offset] = vfs[i];
+
+#if !defined(AXOM_DEVICE_CODE)
+              if(zoneMatters(origIndex))
+              {
+std::cout << "\tzone " << zoneIndex
+          << ": origElem=" << origIndex
+          << ", color=" << colorView[zoneIndex]
+          << ", dominant=" << dominantMatNumber
+          << ", offset=" << offset
+          << ", id=" << ids[i]
+          << ", vf=" << vfView[offset]
+          << " (pass through)"
+          << std::endl;
+              }
+#endif
+            offset++;
+          }
+        }
+
+/****
         if(colorView[zoneIndex] == COLOR0)
         {
 #if !defined(AXOM_DEVICE_CODE)
@@ -733,6 +829,7 @@ std::cout << "\tzone " << zoneIndex << ": origElem=" << origIndex << ", offset="
             vfView[offset] = 1;
           }
         }
+****/
       });
   }
 
