@@ -54,8 +54,13 @@ public:
    *
    * \return The number of points in the coordset.
    */
+  /// @{
   AXOM_HOST_DEVICE
   IndexType size() const { return m_indexing.size(); }
+
+  AXOM_HOST_DEVICE
+  IndexType numberOfNodes() const { return m_indexing.size(); }
+  /// @}
 
   /**
    * \brief Return the requested point from the coordset.

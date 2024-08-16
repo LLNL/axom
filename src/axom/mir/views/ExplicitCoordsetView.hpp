@@ -52,12 +52,17 @@ public:
   }
 
   /**
-   * \brief Return the number of points in the coordset.
+   * \brief Return the number of nodes in the coordset.
    *
-   * \return The number of points in the coordset.
+   * \return The number of nodes in the coordset.
    */
+  /// @{
   AXOM_HOST_DEVICE
   IndexType size() const { return m_coordinates[0].size(); }
+
+  AXOM_HOST_DEVICE
+  IndexType numberOfNodes() const { return m_coordinates[0].size(); }
+  /// @}
 
   /**
    * \brief Return the requested point from the coordset.
@@ -122,12 +127,17 @@ public:
   }
 
   /**
-   * \brief Return the number of points in the coordset.
+   * \brief Return the number of nodes in the coordset.
    *
-   * \return The number of points in the coordset.
+   * \return The number of nodes in the coordset.
    */
+  /// @{
   AXOM_HOST_DEVICE
   IndexType size() const { return m_coordinates[0].size(); }
+
+  AXOM_HOST_DEVICE
+  IndexType numberOfNodes() const { return m_coordinates[0].size(); }
+  /// @}
 
   /**
    * \brief Return the requested point from the coordset.

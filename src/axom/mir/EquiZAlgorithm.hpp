@@ -28,10 +28,19 @@ namespace axom
 {
 namespace mir
 {
+using MaterialIDArray = axom::Array<int>;
+using MaterialIDView = axom::ArrayView<int>;
+using MaterialVF = float;
+using MaterialVFArray = axom::Array<MaterialVF>;
+using MaterialVFView = axom::ArrayView<MaterialVF>;
+
+constexpr static int NULL_MATERIAL = -1;
+constexpr static MaterialVF NULL_MATERIAL_VF = 0.f;
+
 /**
  * \brief Populate values for a new field based on a material's volume fraction.
  */
-template <typename ExecSpace, typename MatsetView>
+template <typename ExecSpace, typename MatsetView, typename OriginalElementsView>
 struct MatsetToField
 {
   using MaterialIndex = typename MatsetView::MaterialIndex;
@@ -39,15 +48,31 @@ struct MatsetToField
 
   void execute(const MatsetView &matsetView,
                MaterialIndex mat,
-               axom::ArrayView<FloatType> &vfValues)
+               MaterialVFView vfView)
   {
-    const auto nzones = vfValues.size();
+    const auto nzones = vfView.size();
     axom::for_all<ExecSpace>(
       nzones,
       AXOM_LAMBDA(auto zoneIndex) {
         FloatType vf {};
         matsetView.zoneContainsMaterial(zoneIndex, mat, vf);
-        vfValues[zoneIndex] = vf;
+        vfView[zoneIndex] = static_cast<MaterialVF>(vf);
+      });
+  }
+
+  void execute(const MatsetView &matsetView,
+               MaterialIndex mat,
+               OriginalElementsView origElementsView,
+               MaterialVFView vfView)
+  {
+    const auto nzones = vfView.size();
+    axom::for_all<ExecSpace>(
+      nzones,
+      AXOM_LAMBDA(auto zoneIndex) {
+        FloatType vf {};
+        const auto origIndex = origElementsView[zoneIndex];
+        matsetView.zoneContainsMaterial(origIndex, mat, vf);
+        vfView[zoneIndex] = static_cast<MaterialVF>(vf);
       });
   }
 };
@@ -80,18 +105,21 @@ struct RelationView
 };
 
 /**
+ * \brief This class is an intersection policy compatible with ClipField. It
+ *        helps determine clip cases and weights using material-aware logic.
+ *
  * \tparam MAXELEMENTS the max number of nodes in any zone we'll encounter.
  */
-template <typename ConnectivityT, typename MatsetViewType, typename RelationViewType, int MAXELEMENTS = 8>
-class MatsetIntersector
+template <typename ConnectivityT, typename RelationViewType, int MAXELEMENTS = 8>
+class MaterialIntersector
 {
 public:
   using ConnectivityType = ConnectivityT;
   using ConnectivityView = axom::ArrayView<ConnectivityType>;
-  using MatsetView = MatsetViewType;
   using RelationView = RelationViewType;
 
-  MatsetIntersector(const MatsetView &mv, const RelationView &rv) : m_view(mv, rv)
+  MaterialIntersector(const RelationView &rv, const MaterialIDView &zoneMatIds, const MaterialVFView &zoneVFs, const MaterialVFView &nodalCurrentVF) : 
+    m_view(rv, zoneMatIds, zoneVFs, nodalCurrentVF)
   { }
 
   /**
@@ -99,49 +127,39 @@ public:
    */
   struct View
   {
-    using FloatType = typename MatsetView::FloatType;
-    using VFList = StaticArray<typename MatsetView::FloatType, MAXELEMENTS>;
-//    constexpr static ConnectivityType NULL_MAT = -1;
+    using VFList = StaticArray<float, MAXELEMENTS>;
 
+    /// Constructor
     View() = default;
 
-    View(const MatsetView &mv, const RelationView &rv) : m_matsetView(mv), m_relationView(rv)
+    /// Constructor
+    View(const RelationView &rv, const MaterialIDView &zoneMatIds, const MaterialVFView &zoneVFs, const MaterialVFView &nodalCurrentVF) :
+      m_relationView(rv), m_zoneMaterialIDView(zoneMatIds), m_zoneMaterialVFView(zoneVFs),
+      m_nodalCurrentMaterialVFView(nodalCurrentVF)
     { }
 
+    /**
+     * \brief Determine the clipping case, taking into account the zone's material
+     *        and the current material being added.
+     *
+     * \param zoneIndex The zone index in the zoneMaterialView field.
+     * \param nodeIds A view containing node ids for the current zone.
+     *
+     * \return The clip case number for the zone.
+     */
     AXOM_HOST_DEVICE
-    axom::IndexType determineClipCase(axom::IndexType zoneIndex, const ConnectivityView &nodeIds) const
+    axom::IndexType determineClipCase(axom::IndexType zoneIndex, const ConnectivityView &nodeIdsView) const
     {
       VFList vf1, vf2;
-      const auto dominantMaterial = m_matsetView.backgroundMaterial(zoneIndex, m_currentMaterial); //dominantMaterial(zoneIndex);
-      getVolumeFractionsAtNodes(dominantMaterial, m_currentMaterial, nodeIds, vf1, vf2);
+      getVolumeFractionsAtNodes(m_zoneMaterialIDView[zoneIndex], nodeIdsView, vf1);
+      getVolumeFractionsCurrent(nodeIdsView, vf2);
 
       axom::IndexType clipcase = 0;
-      const auto n = nodeIds.size();
+      const auto n = nodeIdsView.size();
       for(IndexType i = 0; i < n; i++)
       {
         clipcase |= (vf2[i] > vf1[i]) ? (1 << i) : 0;
       }
-#if 0
-std::cout << "clipcase: zoneIndex=" << zoneIndex
-          << ", dominantMaterial=" << dominantMaterial
-          << ", m_currentMaterial=" << m_currentMaterial
-          << ", nodeIds={";
-      for(IndexType i = 0; i < n; i++)
-      {
-        std::cout << nodeIds[i] << ", ";
-      }
-std::cout << "}, vf1={";
-      for(IndexType i = 0; i < vf1.size(); i++)
-      {
-        std::cout << vf1[i] << ", ";
-      }
-std::cout << "}, vf2={";
-      for(IndexType i = 0; i < vf2.size(); i++)
-      {
-        std::cout << vf2[i] << ", ";
-      }
-std::cout << "}, clipcase=" << clipcase << std::endl;
-#endif
       return clipcase;
     }
 
@@ -158,14 +176,8 @@ std::cout << "}, clipcase=" << clipcase << std::endl;
       ConnectivityType nodeIds[2] = {id0, id1};
       ConnectivityView nodeIdsView(nodeIds, 2);
       VFList vf1, vf2;
-//      const auto dominantMaterial = m_matsetView.dominantMaterial(zoneIndex);
-      const auto dominantMaterial = m_matsetView.backgroundMaterial(zoneIndex, m_currentMaterial); //dominantMaterial(zoneIndex);
-      getVolumeFractionsAtNodes(dominantMaterial, m_currentMaterial, nodeIdsView, vf1, vf2);
-
-      //vf1[0] = axom::utilities::max(vf1[0], 0.f);
-      //vf1[1] = axom::utilities::max(vf1[1], 0.f);
-      //vf2[0] = axom::utilities::max(vf2[0], 0.f);
-      //vf2[1] = axom::utilities::max(vf2[1], 0.f);
+      getVolumeFractionsAtNodes(m_zoneMaterialIDView[zoneIndex], nodeIdsView, vf1);
+      getVolumeFractionsCurrent(nodeIdsView, vf2);
 
       float numerator = vf2[0] - vf1[0];
       float denominator = -vf1[0] + vf1[1] + vf2[0] - vf2[1];
@@ -182,11 +194,14 @@ std::cout << "}, clipcase=" << clipcase << std::endl;
 
     /**
      * \brief Return node-averaged volume fractions for the specified material at the given node ids.
+     *
+     * \param materialNumber The material number for which we want nodal volume fractions.
+     * \param nodeIds A view containing the node ids where we want nodal volume fractions.
+     * \param[out] vfs A list of output volume fractions.
      */
     AXOM_HOST_DEVICE
-    void getVolumeFractionAtNodes(int materialNumber, const ConnectivityView &nodeIds, VFList &vfs) const
+    void getVolumeFractionsAtNodes(int materialNumber, const ConnectivityView &nodeIds, VFList &vfs) const
     {
-//std::cout << "{\ngetVolumeFractionAtNodes: mat=" << materialNumber << std::endl;
       for(axom::IndexType i = 0; i < nodeIds.size(); i++)
       {
         const auto nid = nodeIds[i];
@@ -195,55 +210,35 @@ std::cout << "}, clipcase=" << clipcase << std::endl;
         auto size = m_relationView.m_sizesView[nid];
         using SizeType = decltype(size);
         const auto offset = m_relationView.m_offsetsView[nid];
-//std::cout << "\tnid=" << nid << ", size=" << size << ", offset=" << offset << std::endl;
-        float vfSum{};
+
+        MaterialVF vfSum{};
         for(SizeType j = 0; j < size; j++)
         {
           const auto zoneIndex = m_relationView.m_zonesView[offset + j];
-          float vf{};
-          m_matsetView.zoneContainsMaterial(zoneIndex, materialNumber, vf);
-          vfSum += vf;
-//std::cout <<"\t\tzoneIndex=" << zoneIndex << ", vf=" << vf << ", vfSum=" << vfSum << std::endl;
+          vfSum += (m_zoneMaterialIDView[zoneIndex] == materialNumber) ? m_zoneMaterialVFView[zoneIndex] : 0.f;
         }
-        const float nodeVF = vfSum / static_cast<float>(size);
-//std::cout << "\tnodeVF=" << nodeVF << std::endl; 
+
+        const MaterialVF nodeVF = vfSum / static_cast<MaterialVF>(size);
         vfs.push_back(nodeVF);
       }
-//std::cout << "}" << std::endl;
     }
 
     AXOM_HOST_DEVICE
-    void getVolumeFractionsAtNodes(int mat1, int mat2, const ConnectivityView &nodeIds, VFList &vf1, VFList &vf2) const
+    void getVolumeFractionsCurrent(const ConnectivityView &nodeIds, VFList &vfs) const
     {
-#if 1
-      getVolumeFractionAtNodes(mat1, nodeIds, vf1);
-      getVolumeFractionAtNodes(mat2, nodeIds, vf2);
-#else
-      if(mat1 == NULL_MAT) // Q: do we need this?
+      for(axom::IndexType i = 0; i < nodeIds.size(); i++)
       {
-        for(axom::IndexType i = 0; i < nodeIds.size(); i++)
-          vf1.push_back(-1);
+        vfs.push_back(m_nodalCurrentMaterialVFView[nodeIds[i]]);
       }
-      else
-      {
-        getVolumeFractionAtNodes(mat1, nodeIds, vf1);
-      }
-
-      if(mat2 == NULL_MAT)
-      {
-        for(axom::IndexType i = 0; i < nodeIds.size(); i++)
-          vf1.push_back(-1);
-      }
-      else
-      {
-        getVolumeFractionAtNodes(mat2, nodeIds, vf2);
-      }
-#endif
     }
 
-    MatsetView m_matsetView {};
     RelationView m_relationView {};
-    int          m_currentMaterial {0};
+
+    MaterialIDView m_zoneMaterialIDView {};         //!< Zonal field of material ids added so far.
+    MaterialVFView m_zoneMaterialVFView {};         //!< Zonal vf for the zone inherited from the material
+
+    MaterialVFView m_nodalCurrentMaterialVFView {}; //!< Nodal field with current material VFs
+    int            m_currentMaterial {0};           //!< Id of the current material
   };
 
   /**
@@ -266,7 +261,6 @@ std::cout << "}, clipcase=" << clipcase << std::endl;
    */
   std::string getTopologyName(const conduit::Node &AXOM_UNUSED_PARAM(n_input), const conduit::Node &n_options) const
   {
-std::cout << "MIR getTopologyName: " << n_options["topology"].as_string() << std::endl;
     return n_options["topology"].as_string();
   }
 
@@ -357,6 +351,19 @@ protected:
     conduit::Node &n_InputFields = n_Input[n_fields.path()];
     conduit::Node &n_InputMatset = n_Input[n_matset.path()];
 
+    // Make "empty" material data, kind of unofficial fields on the input mesh.
+    const int allocatorID = axom::execution_space<ExecSpace>::allocatorID();
+    const auto nzones = m_topologyView.numberOfZones();
+    axom::Array<int> zoneMaterialID(nzones, nzones, allocatorID);
+    axom::Array<MaterialVF> zoneMaterialVF(nzones, nzones, allocatorID);
+    auto zoneMaterialIDView = zoneMaterialID.view();
+    auto zoneMaterialVFView = zoneMaterialVF.view();
+    axom::for_all<ExecSpace>(nzones, AXOM_LAMBDA(auto zoneIndex)
+    {
+      zoneMaterialIDView[zoneIndex] = NULL_MATERIAL;
+      zoneMaterialVFView[zoneIndex] = NULL_MATERIAL_VF;
+    });
+
     // Iterate over the materials
     const auto matInfo = axom::mir::views::materials(n_matset);
     for(size_t i = 0; i < matInfo.size(); i++)
@@ -364,30 +371,33 @@ protected:
       if(i == 0)
       {
 #if 1
-      // Print input mesh.
-      std::cout << "-------------------------------------------------------------------" << std::endl;
-      conduit::Node mesh;
-      mesh[n_topo.path()].set_external(n_topo);
-      mesh[n_coordset.path()].set_external(n_coordset);
-      mesh[n_fields.path()].set_external(n_fields);
-      mesh[n_matset.path()].set_external(n_matset);
-      printNode(mesh);
-      std::cout << "-------------------------------------------------------------------" << std::endl;
+        // Print input mesh.
+        std::cout << "-------------------------------------------------------------------" << std::endl;
+        conduit::Node mesh;
+        mesh[n_topo.path()].set_external(n_topo);
+        mesh[n_coordset.path()].set_external(n_coordset);
+        mesh[n_fields.path()].set_external(n_fields);
+        mesh[n_matset.path()].set_external(n_matset);
+        printNode(mesh);
+        std::cout << "-------------------------------------------------------------------" << std::endl;
 #endif
         // The first time through, we can use the supplied views.
-        iteration<TopologyView, CoordsetView, MatsetView>(m_topologyView,
-                                                          m_coordsetView,
-                                                          m_matsetView,
-                                                          matInfo[i],
-                                                          n_topo,
-                                                          n_coordset,
-                                                          n_fields,
-                                                          n_matset,
-                                                          n_options_copy,
-                                                          n_newTopo,
-                                                          n_newCoordset,
-                                                          n_newFields,
-                                                          n_newMatset);
+        iteration<TopologyView, CoordsetView>(m_topologyView,
+                                              m_coordsetView,
+
+                                              zoneMaterialID,
+                                              zoneMaterialVF,
+                                              matInfo[i],
+
+                                              n_topo,
+                                              n_coordset,
+                                              n_fields,
+
+                                              n_options_copy,
+
+                                              n_newTopo,
+                                              n_newCoordset,
+                                              n_newFields);
 
         // In later iterations, we do not want to pass selectedZones through
         // since they are only valid on the current input topology. Also, if they
@@ -405,59 +415,42 @@ protected:
         n_InputFields.move(n_newFields);
         n_InputMatset.move(n_newMatset);
 
-        const auto shape =
-          n_InputTopo.fetch_existing("elements/shape").as_string();
-        if(shape == "mixed")
-        {
-          // The data are now an unstructured view, probably a mixed shape view.
-          // Dispatch to an appropriate topo view
-          // clangformat-off
-          views::dispatch_explicit_coordset(n_InputCoordset, [&](auto coordsetView) {
-            using ICoordsetView = decltype(coordsetView);
-            views::dispatch_unstructured_mixed_topology(
-              n_InputTopo,
-              [&](const auto &AXOM_UNUSED_PARAM(shape), auto topologyView) {
-                using ITopologyView = decltype(topologyView);
+        // The data are now an unstructured view, probably a mixed shape view.
+        // Dispatch to an appropriate topo view
+        // clangformat-off
+        views::dispatch_explicit_coordset(n_InputCoordset, [&](auto coordsetView) {
+          using ICoordsetView = decltype(coordsetView);
+          using ConnectivityType = typename TopologyView::ConnectivityType;
+          views::typed_dispatch_unstructured_topology<ConnectivityType, views::view_traits<TopologyView>::selected_shapes()>(
+            n_InputTopo,
+            [&](const auto &AXOM_UNUSED_PARAM(shape), auto topologyView) {
+              using ITopologyView = decltype(topologyView);
 
-                // The output of the first iteration was a unibuffer matset.
-                using IMatsetView =
-                  axom::mir::views::UnibufferMaterialView<int, float, 10>;
-                IMatsetView matsetView;
-                matsetView.set(
-                  bputils::make_array_view<int>(n_InputMatset["material_ids"]),
-                  bputils::make_array_view<float>(
-                    n_InputMatset["volume_fractions"]),
-                  bputils::make_array_view<int>(n_InputMatset["sizes"]),
-                  bputils::make_array_view<int>(n_InputMatset["offsets"]),
-                  bputils::make_array_view<int>(n_InputMatset["indices"]));
+              // Do the next iteration.
+              iteration<ITopologyView, ICoordsetView>(
+                topologyView,
+                coordsetView,
 
-                // Do the next iteration.
-                iteration<ITopologyView, ICoordsetView, IMatsetView>(
-                  topologyView,
-                  coordsetView,
-                  matsetView,
-                  matInfo[i],
-                  n_InputTopo,
-                  n_InputCoordset,
-                  n_InputFields,
-                  n_InputMatset,
-                  n_options_copy,
-                  n_newTopo,
-                  n_newCoordset,
-                  n_newFields,
-                  n_newMatset);
-              });
-          });
-          // clangformat-on
-        }
-        else
-        {
-          // NOTE: what if the topo output was all clean after the 1st round?
-        }
+                zoneMaterialID,
+                zoneMaterialVF,
+                matInfo[i],
+
+                n_InputTopo,
+                n_InputCoordset,
+                n_InputFields,
+
+                n_options_copy,
+                n_newTopo,
+                n_newCoordset,
+                n_newFields);
+            });
+        });
+        // clangformat-on
       }
-
-      // TODO: we need to build the new matset.
     }
+
+    // TODO: we need to build the new matset.
+
   }
 
   /**
@@ -465,26 +458,25 @@ protected:
    *
    * \tparam ITopologyView The topology view type for the intermediate topology.
    * \tparam ICoordsetView The topology view type for the intermediate coordset.
-   * \tparam IMatsetView The topology view type for the intermediate matset.
    */
-  template <typename ITopologyView, typename ICoordsetView, typename IMatsetView>
+  template <typename ITopologyView, typename ICoordsetView>
   void iteration(const ITopologyView &topoView,
                  const ICoordsetView &coordsetView,
-                 const IMatsetView &matsetView,
+
+                 MaterialIDArray &zoneMaterialID,
+                 MaterialVFArray &zoneMaterialVF,
 
                  const axom::mir::views::Material &currentMat,
 
                  const conduit::Node &n_topo,
                  const conduit::Node &n_coordset,
                  const conduit::Node &n_fields,
-                 const conduit::Node &n_matset,
 
                  const conduit::Node &n_options,
 
                  conduit::Node &n_newTopo,
                  conduit::Node &n_newCoordset,
-                 conduit::Node &n_newFields,
-                 conduit::Node &n_newMatset)
+                 conduit::Node &n_newFields)
   {
     namespace bputils = axom::mir::utilities::blueprint;
     namespace bpmeshutils = conduit::blueprint::mesh::utils;
@@ -492,24 +484,103 @@ protected:
                  "--------------------------------\n";
 
     const std::string colorField("__equiz__colors");
+    const std::string nodalFieldName("__equiz__nodal_current_material");
+    const std::string zonalFieldName("__equiz__zonal_current_material");
+
+    const int allocatorID = axom::execution_space<ExecSpace>::allocatorID();
+    // Get the ID of a Conduit allocator that will allocate through Axom with device allocator allocatorID.
+    utilities::blueprint::ConduitAllocateThroughAxom<ExecSpace> c2a;
 
     // Make a node to zone relation.
     conduit::Node relation;
     {
       bputils::NodeToZoneRelationBuilder<ExecSpace> rb;
       rb.execute(n_topo, n_coordset, relation);
-      std::cout << "\nnodeToZoneRelation = \n";
       printNode(relation);
       std::cout.flush();
     }
 
-    // Make a shallow copy of the fields that we can modify.
-    conduit::Node tmpFields;
+    const auto nzones = topoView.numberOfZones();
+    const auto nnodes = coordsetView.numberOfNodes();
+
+    //--------------------------------------------------------------------------
+    //
+    // Make input fields we can modify
+    //
+    //--------------------------------------------------------------------------
+    conduit::Node n_inputFields;
     for(conduit::index_t i = 0; i < n_fields.number_of_children(); i++)
     {
-      tmpFields[n_fields[i].name()].set_external(n_fields[i]);
+      n_inputFields[n_fields[i].name()].set_external(n_fields[i]);
+    }
+    
+    //--------------------------------------------------------------------------
+    //
+    // Make a zonal field on the input mesh for the current material, pulling
+    // out its VFs from the original matsetView.
+    //
+    // NOTE: The fields are free-floating because we just are making array views
+    //       using that data.
+    //--------------------------------------------------------------------------
+    conduit::Node &n_zonalField = n_inputFields[zonalFieldName];
+    n_zonalField["topology"] = n_topo.name();
+    n_zonalField["association"] = "element";
+    n_zonalField["values"].set_allocator(c2a.getConduitAllocatorID());
+    n_zonalField["values"].set(conduit::DataType(bputils::cpp2conduit<MaterialVF>::id, nzones));
+    auto currentZonalMaterialVFView = bputils::make_array_view<MaterialVF>(n_zonalField["values"]);
+
+    using ConnectivityType = typename ITopologyView::ConnectivityType;
+    using OriginalElementsView = axom::ArrayView<ConnectivityType>;
+
+    {
+      MatsetToField<ExecSpace, MatsetView, OriginalElementsView> m2f;
+      if(n_fields.has_path("originalElements"))
+      {
+        auto originalElementsView = bputils::make_array_view<ConnectivityType>(n_fields["originalElements/values"]);
+        m2f.execute(m_matsetView, currentMat.number, originalElementsView, currentZonalMaterialVFView);
+      }
+      else
+      {
+        m2f.execute(m_matsetView, currentMat.number, currentZonalMaterialVFView);
+      }
     }
 
+    // Make a nodal field for the current material by recentering.
+    conduit::Node &n_nodalField = n_inputFields[nodalFieldName];
+    {
+      n_nodalField["topology"] = n_topo.name();
+      n_nodalField["association"] = "vertex";
+      n_nodalField["values"].set_allocator(c2a.getConduitAllocatorID());
+      n_nodalField["values"].set(conduit::DataType(bputils::cpp2conduit<MaterialVF>::id, nnodes));
+      bputils::RecenterField<ExecSpace> z2n;
+      z2n.execute(n_zonalField, relation, n_nodalField);
+    }
+    auto currentNodalMaterialVFView = bputils::make_array_view<MaterialVF>(n_nodalField["values"]);
+
+#if 1
+    //--------------------------------------------------------------------------
+    //
+    // Save the iteration inputs.
+    //
+    //--------------------------------------------------------------------------
+    conduit::Node n_mesh_input;
+    n_mesh_input[n_topo.path()].set_external(n_topo);
+    n_mesh_input[n_coordset.path()].set_external(n_coordset);
+    n_mesh_input[n_fields.path()].set_external(n_inputFields);
+
+    // save
+    std::stringstream ss1;
+    ss1 << "debug_equiz_input." << currentMat.number;
+    conduit::relay::io::blueprint::save_mesh(n_mesh_input, ss1.str(), "hdf5");
+#endif
+
+    //--------------------------------------------------------------------------
+    //
+    // Invoke clipping with a material intersector.
+    //
+    //--------------------------------------------------------------------------
+    const auto zoneMaterialIDView = zoneMaterialID.view();
+    const auto zoneMaterialVFView = zoneMaterialVF.view();
     axom::mir::views::IndexNode_to_ArrayView_same(relation["zones"], relation["sizes"], relation["offsets"],
       [&](auto zonesView, auto sizesView, auto offsetsView)
     {
@@ -521,10 +592,9 @@ protected:
       rv.m_sizesView = sizesView;
       rv.m_offsetsView = offsetsView;
 
-      // Make a matset intersector.
-      using ConnectivityType = typename ITopologyView::ConnectivityType;
-      using IntersectorType = MatsetIntersector<ConnectivityType, IMatsetView, RelationViewType>;
-      IntersectorType intersector(matsetView, rv);
+      // Make a material intersector.
+      using IntersectorType = MaterialIntersector<ConnectivityType, RelationViewType>;
+      IntersectorType intersector(rv, zoneMaterialIDView, zoneMaterialVFView, currentNodalMaterialVFView);
 
       // Make clip options.
       conduit::Node options;
@@ -547,296 +617,99 @@ protected:
         ClipperType clipper(topoView, coordsetView, intersector);
         clipper.execute(n_topo,
                         n_coordset,
-                        tmpFields,
+                        n_inputFields,
                         options,
                         n_newTopo,
                         n_newCoordset,
                         n_newFields);
       }
-
-      // Make a new matset.
-      auto colorView =
-        bputils::make_array_view<int>(n_newFields[colorField + "/values"]);
-      auto origElemView =
-        bputils::make_array_view<ConnectivityType>(n_newFields["originalElements/values"]);
-      makeNewMatset<IMatsetView, ConnectivityType>(matsetView,
-                                 currentMat,
-                                 colorView,
-                                 origElemView,
-                                 n_matset,
-                                 n_newMatset);
-
-      // Save clip results.
-      conduit::Node mesh;
-      mesh[n_newTopo.path()].set_external(n_newTopo);
-      mesh[n_newCoordset.path()].set_external(n_newCoordset);
-      mesh[n_newFields.path()].set_external(n_newFields);
-      mesh[n_newMatset.path()].set_external(n_newMatset);
-#if 1
-      printNode(mesh);
-      std::cout << "------------------------ end of iteration "
-                   "--------------------------------\n";
-      std::cout.flush();
-
-      std::stringstream ss;
-      ss << "debug_equiz_" << currentMat.number;
-      conduit::relay::io::blueprint::save_mesh(mesh, ss.str(), "hdf5");
-#endif
-
-      n_newFields.remove("originalElements");
-
     });
-  }
 
-  /**
-   * \brief Make a new matset for the output dataset.
-   *
-   * \param curentMatsetView The view for the current matset.
-   * \param currentMat The current material information.
-   * \param colorView A view for the color field, which says how the dataset was clipped.
-   * \param originalElementsView A view for the field that contains the original element number.
-   * \param n_matset The input matset (pre-MIR).
-   * \param n_newMatset The output matset.
-   */
-  template <typename IMatsetView, typename ConnectivityType>
-  void makeNewMatset(  // by value
-    const IMatsetView currentMatsetView,
-    const axom::mir::views::Material currentMat,
-    const axom::ArrayView<int> colorView,
-    const axom::ArrayView<ConnectivityType> originalElementsView,
-    // by reference
-    const conduit::Node &n_matset,
-    conduit::Node &n_newMatset)
-  {
-    namespace bputils = axom::mir::utilities::blueprint;
-    using reduce_policy =
-      typename axom::execution_space<ExecSpace>::reduce_policy;
-    using IntType = typename IMatsetView::IndexType;
-    using FloatType = typename IMatsetView::FloatType;
-    const int intTypeID = bputils::cpp2conduit<IntType>::id;
-    const int floatTypeID = bputils::cpp2conduit<FloatType>::id;
+    //--------------------------------------------------------------------------
+    //
+    // Updated zoneMaterialID and zoneMaterialVF based on color.
+    //
+    //--------------------------------------------------------------------------
+    const auto originalElementsView = bputils::make_array_view<ConnectivityType>(n_newFields.fetch_existing("originalElements/values"));
+    const auto colorView = bputils::make_array_view<ConnectivityType>(n_newFields.fetch_existing(colorField + "/values"));
+    const auto nzonesNew = originalElementsView.size();
 
-    // Copy the material map to the new matset.
-    if(n_matset.has_child("material_map"))
-    {
-      bputils::copy<ExecSpace>(n_newMatset["material_map"],
-                               n_matset.fetch_existing("material_map"));
-    }
-    if(n_matset.has_child("topology"))
-    {
-      n_newMatset["topology"].set(n_matset.fetch_existing("topology"));
-    }
-
-    // Get the ID of a Conduit allocator that will allocate through Axom with device allocator allocatorID.
-    utilities::blueprint::ConduitAllocateThroughAxom<ExecSpace> c2a;
-
-    // Make sizes, offsets for the new matset.
-    const auto nzones = colorView.size();
-    conduit::Node &n_sizes = n_newMatset["sizes"];
-    conduit::Node &n_offsets = n_newMatset["offsets"];
-    n_sizes.set_allocator(c2a.getConduitAllocatorID());
-    n_offsets.set_allocator(c2a.getConduitAllocatorID());
-    n_sizes.set(conduit::DataType(intTypeID, nzones));
-    n_offsets.set(conduit::DataType(intTypeID, nzones));
-
-    // Count how many slots are needed for the new material. Make sizes.
-    RAJA::ReduceSum<reduce_policy, axom::IndexType> sum(0);
-    auto sizesView = bputils::make_array_view<IntType>(n_sizes);
-    std::cout << "makeNewMatset: nzones=" << nzones << ", currentMatNumber=" << currentMat.number << std::endl;
+    // Allocate new material ID/VF arrays.
+    MaterialIDArray newZoneMaterialID(nzonesNew, nzonesNew, allocatorID);
+    MaterialVFArray newZoneMaterialVF(nzonesNew, nzonesNew, allocatorID);
+    auto newZoneMaterialIDView = newZoneMaterialID.view();
+    auto newZoneMaterialVFView = newZoneMaterialVF.view();
     const int currentMatNumber = currentMat.number;
-    axom::for_all<ExecSpace>(
-      nzones,
-      AXOM_LAMBDA(auto zoneIndex) {
-        axom::IndexType nmatsThisZone = 0;
+    axom::for_all<ExecSpace>(nzonesNew, AXOM_LAMBDA(auto zoneIndex)
+    {
+      const auto origIndex = originalElementsView[zoneIndex];
+      if(colorView[zoneIndex] == 1)
+      {
+        // Color 1 - This zone should be the current material. We can grab its
+        //           volume fraction from the original matset.
+        newZoneMaterialIDView[zoneIndex] = currentMatNumber;
+        typename MatsetView::FloatType vf;
+        m_matsetView.zoneContainsMaterial(origIndex, currentMatNumber, vf);
+        newZoneMaterialVFView[zoneIndex] = static_cast<MaterialVF>(vf);
+      }
+      else
+      {
+        // Color 0 - This zone was not the current material. Pass through what was there before.
+        newZoneMaterialIDView[zoneIndex] = zoneMaterialIDView[origIndex];
+        newZoneMaterialVFView[zoneIndex] = zoneMaterialVFView[origIndex];
+      }
+    });
+    // Pass the new data arrays out.
+    zoneMaterialID.swap(newZoneMaterialID);
+    zoneMaterialVF.swap(newZoneMaterialVF);
 
-        const auto origIndex = originalElementsView[zoneIndex];
-        nmatsThisZone = currentMatsetView.numberOfMaterials(origIndex);
-        //int dominantMatNumber = currentMatsetView.dominantMaterial(origIndex);
-        const auto dominantMatNumber = m_matsetView.backgroundMaterial(origIndex, currentMatNumber);
+#if 1
+    //--------------------------------------------------------------------------
+    //
+    // Save the clip results.
+    //
+    //--------------------------------------------------------------------------
 
-        if(dominantMatNumber != currentMatNumber && nmatsThisZone > 1)
-        {
-          int matToRemove = (colorView[zoneIndex] == 0) ? currentMatNumber : dominantMatNumber;
-          if(currentMatsetView.zoneContainsMaterial(origIndex, matToRemove))
-          {
-            nmatsThisZone--;
-          }
-        }
-#if !defined(AXOM_DEVICE_CODE)
-        if(zoneMatters(origIndex))
-        {
-          std::cout << "\tzone " << zoneIndex
-                    << ": origElem=" << origIndex
-                    << ", color=" << colorView[zoneIndex]
-                    << ", dominant=" << dominantMatNumber
-                    << ", nmats=" << nmatsThisZone << std::endl;
-        }
+#define SAVE_ZONE_MATERIALS
+#ifdef SAVE_ZONE_MATERIALS
+    // Attach the updated arrays to the new fields so we can look at them.
+    n_newFields["zoneMaterialID/association"] = "element";
+    n_newFields["zoneMaterialID/topology"] = n_topo.name();
+    n_newFields["zoneMaterialID/values"].set_external(zoneMaterialID.data(), zoneMaterialID.size());
+
+    n_newFields["zoneMaterialVF/association"] = "element";
+    n_newFields["zoneMaterialVF/topology"] = n_topo.name();
+    n_newFields["zoneMaterialVF/values"].set_external(zoneMaterialVF.data(), zoneMaterialVF.size());
+#endif
+    conduit::Node mesh;
+    mesh[n_newTopo.path()].set_external(n_newTopo);
+    mesh[n_newCoordset.path()].set_external(n_newCoordset);
+    mesh[n_newFields.path()].set_external(n_newFields);
+
+    // print
+    printNode(mesh);
+    std::cout.flush();
+
+    // save
+    std::stringstream ss;
+    ss << "debug_equiz_output." << currentMat.number;
+    conduit::relay::io::blueprint::save_mesh(mesh, ss.str(), "hdf5");
+
+#ifdef SAVE_ZONE_MATERIALS
+    n_newFields.remove("zoneMaterialID");
+    n_newFields.remove("zoneMaterialVF");
+#endif
 #endif
 
-        sizesView[zoneIndex] = nmatsThisZone;
-        sum += nmatsThisZone;
-      });
+    std::cout << "------------------------ end of iteration "
+                 "--------------------------------\n";
 
-    // Make offsets.
-    auto offsetsView = bputils::make_array_view<IntType>(n_offsets);
-    axom::exclusive_scan<ExecSpace>(sizesView, offsetsView);
-
-    // Make new matset data.
-    const auto arraySize = sum.get();
-    std::cout << "arraySize=" << arraySize << std::endl;
-    conduit::Node &n_material_ids = n_newMatset["material_ids"];
-    conduit::Node &n_volume_fractions = n_newMatset["volume_fractions"];
-    conduit::Node &n_indices = n_newMatset["indices"];
-    n_material_ids.set_allocator(c2a.getConduitAllocatorID());
-    n_volume_fractions.set_allocator(c2a.getConduitAllocatorID());
-    n_indices.set_allocator(c2a.getConduitAllocatorID());
-    n_material_ids.set(conduit::DataType(intTypeID, arraySize));
-    n_volume_fractions.set(conduit::DataType(floatTypeID, arraySize));
-    n_indices.set(conduit::DataType(intTypeID, arraySize));
-
-    auto matidsView = bputils::make_array_view<IntType>(n_material_ids);
-    auto vfView = bputils::make_array_view<FloatType>(n_volume_fractions);
-    auto indicesView = bputils::make_array_view<IntType>(n_indices);
-
-    // Fill in the indices used.
-    axom::for_all<ExecSpace>(
-      arraySize,
-      AXOM_LAMBDA(auto index) { indicesView[index] = index; });
-
-    // Fill in the material data.
-    axom::for_all<ExecSpace>(
-      nzones,
-      AXOM_LAMBDA(auto zoneIndex) {
-        auto offset = offsetsView[zoneIndex];
-
-        const auto origIndex = originalElementsView[zoneIndex];
-        //int dominantMatNumber = currentMatsetView.dominantMaterial(origIndex);
-        const auto dominantMatNumber = m_matsetView.backgroundMaterial(origIndex, currentMatNumber);
-
-        // Get the material ids and volume fractions from the original material's zone.
-        typename IMatsetView::IDList ids {};
-        typename IMatsetView::VFList vfs {};
-        currentMatsetView.zoneMaterials(origIndex, ids, vfs);
-
-        if(dominantMatNumber != currentMatNumber && ids.size() > 1)
-        {
-          int matToRemove = (colorView[zoneIndex] == 0) ? currentMatNumber : dominantMatNumber;
-          // Copy it through without colorToRemove.
-          FloatType vfTotal {};
-          for(axom::IndexType i = 0; i < ids.size(); i++)
-          {
-            vfTotal += (ids[i] != matToRemove) ? vfs[i] : 0;
-          }
-          for(axom::IndexType i = 0; i < ids.size(); i++)
-          {
-            if(ids[i] != matToRemove)
-            {
-              matidsView[offset] = ids[i];
-              vfView[offset] = vfs[i] / vfTotal;
-
-#if !defined(AXOM_DEVICE_CODE)
-              if(zoneMatters(origIndex))
-              {
-std::cout << "\tzone " << zoneIndex
-          << ": origElem=" << origIndex
-          << ", color=" << colorView[zoneIndex]
-          << ", current=" << currentMatNumber
-          << ", dominant=" << dominantMatNumber
-          << ", ids.size=" << ids.size()
-          << ", offset=" << offset
-          << ", id=" << ids[i]
-          << ", vf=" << vfView[offset]
-          << ", matToRemove=" << matToRemove
-          << std::endl;
-              }
-#endif
-              offset++;
-            }
-          }
-        }
-        else
-        {
-          // Copy it through.
-          for(axom::IndexType i = 0; i < ids.size(); i++)
-          {
-            matidsView[offset] = ids[i];
-            vfView[offset] = vfs[i];
-
-#if !defined(AXOM_DEVICE_CODE)
-              if(zoneMatters(origIndex))
-              {
-std::cout << "\tzone " << zoneIndex
-          << ": origElem=" << origIndex
-          << ", color=" << colorView[zoneIndex]
-          << ", dominant=" << dominantMatNumber
-          << ", offset=" << offset
-          << ", id=" << ids[i]
-          << ", vf=" << vfView[offset]
-          << " (pass through)"
-          << std::endl;
-              }
-#endif
-            offset++;
-          }
-        }
-
-/****
-        if(colorView[zoneIndex] == COLOR0)
-        {
-#if !defined(AXOM_DEVICE_CODE)
-          std::cout << "\tzone " << zoneIndex << ": offset=" << offset
-                    << ", id=" << currentMatNumber << ", vf=1" << std::endl;
-#endif
-          matidsView[offset] = currentMatNumber;
-          vfView[offset] = 1;
-        }
-        else
-        {
-          // Get the material ids and volume fractions from the original material's zone.
-          const auto origIndex = originalElementsView[zoneIndex];
-          typename IMatsetView::IDList ids {};
-          typename IMatsetView::VFList vfs {};
-          currentMatsetView.zoneMaterials(origIndex, ids, vfs);
-
-          if(ids.size() > 1)
-          {
-            // The original zone was mixed. Filter out currentMatNumber
-
-            FloatType vfTotal {};
-            for(axom::IndexType i = 0; i < ids.size(); i++)
-            {
-              vfTotal += (ids[i] != currentMatNumber) ? vfs[i] : 0;
-            }
-
-            // Fill in the new materials.
-            for(axom::IndexType i = 0; i < ids.size(); i++)
-            {
-              if(ids[i] != currentMatNumber)
-              {
-                matidsView[offset] = ids[i];
-                vfView[offset] = vfs[i] / vfTotal;
-
-#if !defined(AXOM_DEVICE_CODE)
-std::cout << "\tzone " << zoneIndex << ": origElem=" << origIndex << ", offset=" << offset << ", id=" << ids[i] << ", vf=" << vfView[offset] << std::endl;
-#endif
-                offset++;
-              }
-            }
-          }
-          else
-          {
-            matidsView[offset] = ids[0];
-            vfView[offset] = 1;
-          }
-        }
-****/
-      });
   }
 
 private:
   TopologyView m_topologyView;
   CoordsetView m_coordsetView;
-  MatsetView m_matsetView;
+  MatsetView   m_matsetView;
 };
 
 }  // end namespace mir

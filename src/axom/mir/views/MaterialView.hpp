@@ -182,6 +182,41 @@ public:
     return mat;
   }
 
+  /**
+   * \brief Return a background material with high VF that is not the supplied material.
+   * \param zi The zone index.
+   * \return The material id with the highest volume fraction.
+   */
+  AXOM_HOST_DEVICE
+  MaterialIndex backgroundMaterial(ZoneIndex zi, MaterialIndex currentMat) const
+  {
+    assert(zi < numberOfZones());
+    const auto sz = numberOfMaterials(zi);
+    const auto offset = m_offsets[zi];
+    MaterialIndex mat{};
+    if(sz == 1)
+    {
+      // There is only one material so return that.
+      const auto idx = m_indices[offset];
+      mat = m_material_ids[idx];
+    }
+    else
+    {
+      // There are multiple materials. Return the largest VF that is not owned by currentMat.
+      FloatType maxVF = -1;
+      for(axom::IndexType i = 0; i < sz; i++)
+      {
+        const auto idx = m_indices[offset + i];
+        const auto vf = m_volume_fractions[idx];
+        if(m_material_ids[idx] != currentMat && vf > maxVF)
+        {
+          mat = m_material_ids[idx];
+          maxVF = vf;
+        }
+      }
+    }
+    return mat;
+  }
 private:
   axom::ArrayView<IndexType> m_material_ids;
   axom::ArrayView<FloatType> m_volume_fractions;
