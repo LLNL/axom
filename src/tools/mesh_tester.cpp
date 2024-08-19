@@ -410,17 +410,7 @@ std::vector<std::pair<int, int>> naiveIntersectionAlgorithm(
 
   // Get allocator
   const int current_allocator = axom::getDefaultAllocatorID();
-
-  // Use unified memory if on device
   int allocatorID = axom::execution_space<ExecSpace>::allocatorID();
-  #if defined(AXOM_USE_GPU) && defined(AXOM_USE_UMPIRE)
-  if(axom::execution_space<ExecSpace>::onDevice())
-  {
-    allocatorID = axom::getUmpireResourceAllocatorID(umpire::resource::Unified);
-  }
-  #endif
-
-  axom::setDefaultAllocator(allocatorID);
 
   std::vector<std::pair<int, int>> retval;
 
@@ -494,7 +484,7 @@ std::vector<std::pair<int, int>> naiveIntersectionAlgorithm(
   axom::deallocate(intersections);
   axom::deallocate(counter);
 
-  axom::setDefaultAllocator(current_allocator);
+  // axom::setDefaultAllocator(current_allocator);
 
   return retval;
 }
@@ -626,26 +616,6 @@ int main(int argc, char** argv)
   {
     return app.exit(e);
   }
-
-#ifdef AXOM_USE_CUDA
-  if(params.policy == raja_cuda)
-  {
-    // Use unified memory on device
-    int unified_id =
-      axom::getUmpireResourceAllocatorID(umpire::resource::Unified);
-    axom::setDefaultAllocator(unified_id);
-  }
-#endif
-
-#if defined(AXOM_USE_HIP) && defined(NDEBUG)
-  if(params.policy == raja_hip)
-  {
-    // Use unified memory on device
-    int unified_id =
-      axom::getUmpireResourceAllocatorID(umpire::resource::Unified);
-    axom::setDefaultAllocator(unified_id);
-  }
-#endif
 
   // _read_stl_file_start
   // Read file

@@ -370,18 +370,49 @@ inline void for_all_nodes_impl(xargs::xyz, const Mesh& m, KernelType&& kernel)
   SLIC_ERROR_IF(m.getMeshType() == STRUCTURED_RECTILINEAR_MESH,
                 "Not valid for RectilinearMesh.");
 
-  const double* x = m.getCoordinateArray(X_COORDINATE);
-  const double* y = m.getCoordinateArray(Y_COORDINATE);
-  const double* z = m.getCoordinateArray(Z_COORDINATE);
-  SLIC_ASSERT(x != nullptr);
-  SLIC_ASSERT(y != nullptr);
-  SLIC_ASSERT(z != nullptr);
+  constexpr bool on_device = axom::execution_space<ExecPolicy>::onDevice();
+  const int device_allocator = axom::execution_space<ExecPolicy>::allocatorID();
+  IndexType coordinate_size = m.getNumberOfNodes();
+
+  // extract coordinate values into an axom::Array
+  auto x_vals_h =
+    axom::ArrayView<const double>(m.getCoordinateArray(X_COORDINATE),
+                                  coordinate_size);
+  auto y_vals_h =
+    axom::ArrayView<const double>(m.getCoordinateArray(Y_COORDINATE),
+                                  coordinate_size);
+  auto z_vals_h =
+    axom::ArrayView<const double>(m.getCoordinateArray(Z_COORDINATE),
+                                  coordinate_size);
+
+  // const double* x = m.getCoordinateArray(X_COORDINATE);
+  // const double* y = m.getCoordinateArray(Y_COORDINATE);
+  // const double* z = m.getCoordinateArray(Z_COORDINATE);
+  SLIC_ASSERT(x_vals_h.data() != nullptr);
+  SLIC_ASSERT(y_vals_h.data() != nullptr);
+  SLIC_ASSERT(z_vals_h.data() != nullptr);
+
+  // Move xyz values onto device
+  axom::Array<double> x_vals_d = on_device
+    ? axom::Array<double>(x_vals_h, device_allocator)
+    : axom::Array<double>();
+  auto x_vals_view = on_device ? x_vals_d.view() : x_vals_h;
+
+  axom::Array<double> y_vals_d = on_device
+    ? axom::Array<double>(y_vals_h, device_allocator)
+    : axom::Array<double>();
+  auto y_vals_view = on_device ? y_vals_d.view() : y_vals_h;
+
+  axom::Array<double> z_vals_d = on_device
+    ? axom::Array<double>(z_vals_h, device_allocator)
+    : axom::Array<double>();
+  auto z_vals_view = on_device ? z_vals_d.view() : z_vals_h;
 
   for_all_nodes_impl<ExecPolicy>(
     xargs::index(),
     m,
     AXOM_LAMBDA(IndexType nodeID) {
-      kernel(nodeID, x[nodeID], y[nodeID], z[nodeID]);
+      kernel(nodeID, x_vals_view[nodeID], y_vals_view[nodeID], z_vals_view[nodeID]);
     });
 }
 

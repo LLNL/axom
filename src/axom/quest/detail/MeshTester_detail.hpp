@@ -160,6 +160,8 @@ protected:
 template <typename ExecSpace, typename FloatType>
 void CandidateFinderBase<ExecSpace, FloatType>::initialize()
 {
+  int allocatorID = axom::execution_space<ExecSpace>::allocatorID();
+
   const int ncells = m_surfaceMesh->getNumberOfCells();
 
   m_tris.resize(ncells);
@@ -186,7 +188,7 @@ void CandidateFinderBase<ExecSpace, FloatType>::initialize()
 
       for(IndexType inode = 0; inode < 3; ++inode)
       {
-        const double* node = coords.getColumn(inode);
+        double* node = coords.getColumn(inode);
         tri[inode] = PointType {node[mint::X_COORDINATE],
                                 node[mint::Y_COORDINATE],
                                 node[mint::Z_COORDINATE]};
