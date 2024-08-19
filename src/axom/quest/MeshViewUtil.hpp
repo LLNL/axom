@@ -14,6 +14,7 @@
   #include "axom/core.hpp"
   #include "axom/core/NumericLimits.hpp"
   #include "axom/fmt.hpp"
+  #include "axom/slic.hpp"
   #include "conduit_blueprint.hpp"
   #include "conduit_blueprint_mcarray.hpp"
   #ifdef AXOM_USE_MPI
