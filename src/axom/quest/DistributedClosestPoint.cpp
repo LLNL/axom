@@ -4,7 +4,6 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 
 #include "axom/config.hpp"
-#include "axom/slic.hpp"
 #include "axom/core/memory_management.hpp"
 #include "axom/core/execution/execution_space.hpp"
 #include "axom/core/execution/runtime_policy.hpp"
