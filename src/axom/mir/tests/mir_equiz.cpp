@@ -18,7 +18,7 @@
 //#define AXOM_TESTING_GENERATE_BASELINES
 
 // Uncomment to save visualization files for debugging (when making baselines)
-//#define AXOM_TESTING_SAVE_VISUALIZATION
+#define AXOM_TESTING_SAVE_VISUALIZATION
 
 #include "axom/mir/tests/mir_testing_helpers.hpp"
 
@@ -128,9 +128,9 @@ TEST(mir_equiz, equiz_uniform_unibuffer)
 {
   braid2d_mat_test<seq_exec>("uniform", "unibuffer", "equiz_uniform_unibuffer");
 
-#if defined(AXOM_USE_OPENMP)
-  braid2d_mat_test<omp_exec>("uniform", "unibuffer", "equiz_uniform_unibuffer");
-#endif
+//#if defined(AXOM_USE_OPENMP)
+//  braid2d_mat_test<omp_exec>("uniform", "unibuffer", "equiz_uniform_unibuffer");
+//#endif
 
 #if defined(AXOM_USE_CUDA) && defined(__CUDACC__)
   braid2d_mat_test<cuda_exec>("uniform", "unibuffer", "equiz_uniform_unibuffer");

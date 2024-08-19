@@ -149,10 +149,12 @@ public:
       if(m_material_ids[idx] == mat)
       {
         vf = m_volume_fractions[idx];
+std::cout << "zoneContainsMaterial: zi=" << zi << ", mat=" << mat << ", vf=" << vf << " -> true\n";
         return true;
       }
     }
     vf = 0;
+std::cout << "zoneContainsMaterial: zi=" << zi << ", mat=" << mat << ", vf=" << vf << " -> false\n";
     return false;
   }
 
