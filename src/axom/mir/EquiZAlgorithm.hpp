@@ -27,6 +27,11 @@
 
 #define AXOM_DEBUG_EQUIZ
 
+// This enables a tweak to the algorithm that tries to skip the first iteration
+// by incorporating the first material's ids into the zonalMaterialID field. It
+// could be faster but it might not be as robust.
+// #define AXOM_EQUIZ_SKIP_FIRST_ITERATION
+
 namespace axom
 {
 namespace mir
@@ -39,7 +44,7 @@ using MaterialVFArray = axom::Array<MaterialVF>;
 using MaterialVFView = axom::ArrayView<MaterialVF>;
 
 constexpr static int NULL_MATERIAL = -1;
-constexpr static MaterialVF NULL_MATERIAL_VF = 0.f;
+constexpr static MaterialVF NULL_MATERIAL_VF = -1.f;
 
 #if 0
 AXOM_HOST_DEVICE
@@ -112,11 +117,10 @@ public:
       for(IndexType i = 0; i < n; i++)
       {
         const auto nid = nodeIdsView[i];
-        MaterialVF vf1 = (backgroundIndex != INVALID_INDEX)
-          ? m_matvfViews[backgroundIndex][nid]
-          : 0.;
-        MaterialVF vf2 =
-          (currentIndex != INVALID_INDEX) ? m_matvfViews[currentIndex][nid] : 0.;
+        // clangformat-off
+        MaterialVF vf1 = (backgroundIndex != INVALID_INDEX) ? m_matvfViews[backgroundIndex][nid] : NULL_MATERIAL_VF;
+        MaterialVF vf2 = (currentIndex != INVALID_INDEX) ? m_matvfViews[currentIndex][nid] : 0;
+        // clangformat-on
 
         clipcase |= (vf2 > vf1) ? (1 << i) : 0;
       }
@@ -144,16 +148,12 @@ public:
 
       // Get the volume fractions for mat1, mat2 at the edge endpoints id0, id1.
       MaterialVF vf1[2], vf2[2];
-      vf1[0] = (backgroundIndex != INVALID_INDEX)
-        ? m_matvfViews[backgroundIndex][id0]
-        : 0.;
-      vf1[1] = (backgroundIndex != INVALID_INDEX)
-        ? m_matvfViews[backgroundIndex][id1]
-        : 0.;
-      vf2[0] =
-        (currentIndex != INVALID_INDEX) ? m_matvfViews[currentIndex][id0] : 0.;
-      vf2[1] =
-        (currentIndex != INVALID_INDEX) ? m_matvfViews[currentIndex][id1] : 0.;
+      // clangformat-off
+      vf1[0] = (backgroundIndex != INVALID_INDEX) ? m_matvfViews[backgroundIndex][id0] : NULL_MATERIAL_VF;
+      vf1[1] = (backgroundIndex != INVALID_INDEX) ? m_matvfViews[backgroundIndex][id1] : NULL_MATERIAL_VF;
+      vf2[0] = (currentIndex != INVALID_INDEX) ? m_matvfViews[currentIndex][id0] : 0;
+      vf2[1] = (currentIndex != INVALID_INDEX) ? m_matvfViews[currentIndex][id1] : 0;
+      // clangformat-on
 
       float numerator = vf2[0] - vf1[0];
       float denominator = -vf1[0] + vf1[1] + vf2[0] - vf2[1];
@@ -336,6 +336,7 @@ protected:
                              conduit::Node &n_newMatset) override
   {
     namespace bputils = axom::mir::utilities::blueprint;
+    axom::utilities::Timer t0(true);
 
     // Copy the options.
     conduit::Node n_options_copy;
@@ -384,33 +385,21 @@ protected:
 
     //--------------------------------------------------------------------------
     //
-    // Iterate over mixed materials. Note the first material was already accounted
-    // for in the working fields so start at 1.
+    // Iterate over mixed materials.
     //
     //--------------------------------------------------------------------------
-    for(size_t i = 1; i < mixedMats.size(); i++)
-    {
-      if(i == 1)
-      {
-#if defined(AXOM_DEBUG_EQUIZ)
-        // Print input mesh.
-        conduit::Node mesh;
-        mesh[n_topo.path()].set_external(n_topo);
-        mesh[n_coordset.path()].set_external(n_coordset);
-        mesh[n_InputFields.path()].set_external(n_InputFields);
-        mesh[n_matset.path()].set_external(n_matset);
-
-        std::cout << "---------------------------------------------------------"
-                     "----------"
-                  << std::endl;
-        printNode(mesh);
-        std::cout << "---------------------------------------------------------"
-                     "----------"
-                  << std::endl;
+#if defined(AXOM_EQUIZ_SKIP_FIRST_ITERATION)
+    constexpr int first = 1;
+#else
+    constexpr int first = 0;
 #endif
-
+    for(size_t i = first; i < mixedMats.size(); i++)
+    {
+      if(i == first)
+      {
         // The first time through, we can use the supplied views.
-        iteration<TopologyView, CoordsetView>(m_topologyView,
+        iteration<TopologyView, CoordsetView>(i,
+                                              m_topologyView,
                                               m_coordsetView,
 
                                               allMats,
@@ -462,7 +451,8 @@ protected:
               using ITopologyView = decltype(topologyView);
 
               // Do the next iteration.
-              iteration<ITopologyView, ICoordsetView>(topologyView,
+              iteration<ITopologyView, ICoordsetView>(i,
+                                                      topologyView,
                                                       coordsetView,
 
                                                       allMats,
@@ -487,6 +477,7 @@ protected:
     buildNewMatset(n_matset, n_newFields, n_newMatset);
 
     // Cleanup.
+    axom::utilities::Timer t1(true);
     for(const auto &mat : allMats)
     {
       const std::string nodalMatName(nodalFieldName(mat.number));
@@ -503,6 +494,8 @@ protected:
 #endif
     }
     n_newFields.remove(zonalMaterialIDName());
+    SLIC_INFO(
+      axom::fmt::format("\t Cleanup took {:.6Lf} seconds ", t1.elapsed()));
 
 #if defined(AXOM_DEBUG_EQUIZ)
     //--------------------------------------------------------------------------
@@ -518,8 +511,11 @@ protected:
     conduit::relay::io::blueprint::save_mesh(n_output,
                                              "debug_equiz_output",
                                              "hdf5");
-    printNode(n_output);
+    //printNode(n_output);
 #endif
+
+    SLIC_INFO(
+      axom::fmt::format("EquiZAlgorithm took {:.6Lf} seconds ", t0.elapsed()));
   }
 
   /**
@@ -535,6 +531,8 @@ protected:
                          axom::mir::views::MaterialInformation &cleanMats,
                          axom::mir::views::MaterialInformation &mixedMats) const
   {
+    axom::utilities::Timer timer(true);
+
     cleanMats.clear();
     mixedMats.clear();
     allMats = axom::mir::views::materials(n_matset);
@@ -544,6 +542,9 @@ protected:
     //       this.
 
     mixedMats = allMats;
+
+    SLIC_INFO(
+      axom::fmt::format("\t Classifying materials took {:.6Lf} seconds ", timer.elapsed()));
   }
 
   /**
@@ -588,14 +589,19 @@ protected:
                            conduit::Node &n_fields,
                            const axom::mir::views::MaterialInformation &mixedMats) const
   {
+    axom::utilities::Timer t0(true);
+
     namespace bputils = axom::mir::utilities::blueprint;
     // Make a node to zone relation so we know for each node, which zones it touches.
     conduit::Node relation;
     {
+      axom::utilities::Timer t1(true);
       bputils::NodeToZoneRelationBuilder<ExecSpace> rb;
       rb.execute(n_topo, n_coordset, relation);
-      printNode(relation);
-      std::cout.flush();
+      //printNode(relation);
+      //std::cout.flush();
+      SLIC_INFO(
+        axom::fmt::format("\t\t Making node-to-zone relation took {:.6Lf} seconds ", t1.elapsed()));
     }
 
     // Get the ID of a Conduit allocator that will allocate through Axom with device allocator allocatorID.
@@ -643,6 +649,9 @@ protected:
       n_fields.remove(zonalName);
 #endif
     }
+
+    SLIC_INFO(
+      axom::fmt::format("\t Making node-centered volume fractions took {:.6Lf} seconds ", t0.elapsed()));
   }
 
   /**
@@ -657,9 +666,15 @@ protected:
   void makeWorkingFields(const conduit::Node &n_topo,
                          conduit::Node &n_fields,
                          const axom::mir::views::MaterialInformation &cleanMats,
-                         const axom::mir::views::MaterialInformation &mixedMats) const
+#if defined(AXOM_EQUIZ_SKIP_FIRST_ITERATION)
+                         const axom::mir::views::MaterialInformation &mixedMats
+#else
+                         const axom::mir::views::MaterialInformation &AXOM_UNUSED_PARAM(mixedMats)
+#endif
+                        ) const
   {
     namespace bputils = axom::mir::utilities::blueprint;
+    axom::utilities::Timer t0(true);
 
     // Get the ID of a Conduit allocator that will allocate through Axom with device allocator allocatorID.
     bputils::ConduitAllocateThroughAxom<ExecSpace> c2a;
@@ -699,7 +714,7 @@ protected:
           }
         });
     }
-
+#if defined(AXOM_EQUIZ_SKIP_FIRST_ITERATION)
     // Fill in the mixed zones for the first mixed material.
     if(!mixedMats.empty())
     {
@@ -726,6 +741,10 @@ protected:
           }
         });
     }
+#endif
+
+    SLIC_INFO(
+      axom::fmt::format("\t Making working fields took {:.6Lf} seconds ", t0.elapsed()));
   }
 
   /**
@@ -734,6 +753,7 @@ protected:
    * \tparam ITopologyView The topology view type for the intermediate topology.
    * \tparam ICoordsetView The topology view type for the intermediate coordset.
    *
+   * \param iter The iteration number.
    * \param topoView The topology view for the intermediate input topology.
    * \param coordsetView The coordset view for the intermediate input coordset.
    * \param allMats A vector of Material information (all materials).
@@ -750,7 +770,8 @@ protected:
    *       decisions with that data.
    */
   template <typename ITopologyView, typename ICoordsetView>
-  void iteration(const ITopologyView &topoView,
+  void iteration(int iter,
+                 const ITopologyView &topoView,
                  const ICoordsetView &coordsetView,
 
                  const axom::mir::views::MaterialInformation &allMats,
@@ -768,26 +789,31 @@ protected:
   {
     namespace bputils = axom::mir::utilities::blueprint;
     namespace bpmeshutils = conduit::blueprint::mesh::utils;
+    axom::utilities::Timer t0(true);
 
     const std::string colorField("__equiz__colors");
 
 #if defined(AXOM_DEBUG_EQUIZ)
-    std::cout << "------------------------ iteration start"
-                 "--------------------------------\n";
     //--------------------------------------------------------------------------
     //
     // Save the iteration inputs.
     //
     //--------------------------------------------------------------------------
-    conduit::Node n_mesh_input;
-    n_mesh_input[n_topo.path()].set_external(n_topo);
-    n_mesh_input[n_coordset.path()].set_external(n_coordset);
-    n_mesh_input[n_fields.path()].set_external(n_fields);
+    {
+      axom::utilities::Timer t1(true);
+      conduit::Node n_mesh_input;
+      n_mesh_input[n_topo.path()].set_external(n_topo);
+      n_mesh_input[n_coordset.path()].set_external(n_coordset);
+      n_mesh_input[n_fields.path()].set_external(n_fields);
 
-    // save
-    std::stringstream ss1;
-    ss1 << "debug_equiz_input_iter." << currentMat.number;
-    conduit::relay::io::blueprint::save_mesh(n_mesh_input, ss1.str(), "hdf5");
+      // save
+      std::stringstream ss1;
+      ss1 << "debug_equiz_input_iter." << iter;
+      conduit::relay::io::blueprint::save_mesh(n_mesh_input, ss1.str(), "hdf5");
+
+      SLIC_INFO(
+        axom::fmt::format("\t\t Saving output {} took {:.6Lf} seconds ", iter, t1.elapsed()));
+    }
 #endif
 
     //--------------------------------------------------------------------------
@@ -795,49 +821,54 @@ protected:
     // Make material intersector.
     //
     //--------------------------------------------------------------------------
-    const std::string matFieldName = nodalFieldName(currentMat.number);
-
-    // Make a material intersector.
     using ConnectivityType = typename ITopologyView::ConnectivityType;
     using IntersectorType =
       detail::MaterialIntersector<ConnectivityType, MatsetView::MaxMaterials>;
 
+//    const std::string matFieldName = nodalFieldName(currentMat.number);
+
     IntersectorType intersector;
-    // Populate intersector, including making a number:index map
-    axom::Array<int> matNumber, matIndex;
-    const int nmats = static_cast<int>(allMats.size());
-    for(int index = 0; index < nmats; index++)
-    {
-      // Add a matvf view to the intersector.
-      const std::string matFieldName = nodalFieldName(allMats[index].number);
-      auto matVFView = bputils::make_array_view<MaterialVF>(
-        n_fields.fetch_existing(matFieldName + "/values"));
-      intersector.addMaterial(matVFView);
-
-      matNumber.push_back(allMats[index].number);
-      matIndex.push_back(index);
-    }
-    // Sort indices by matNumber.
-    std::sort(matIndex.begin(), matIndex.end(), [&](auto idx1, auto idx2) {
-      return matNumber[idx1] < matNumber[idx2];
-    });
-    std::sort(matNumber.begin(), matNumber.end());
-
-    // Store the number:index map into the intersector. The number:index map lets us
-    // ask for the field index for a material number, allowing scattered material
-    // numbers to be used in the matset.
     int allocatorID = axom::execution_space<ExecSpace>::allocatorID();
+    const int nmats = static_cast<int>(allMats.size());
     axom::Array<int> matNumberDevice(nmats, nmats, allocatorID),
       matIndexDevice(nmats, nmats, allocatorID);
-    axom::copy(matNumberDevice.data(), matNumber.data(), sizeof(int) * nmats);
-    axom::copy(matIndexDevice.data(), matIndex.data(), sizeof(int) * nmats);
-    intersector.setMaterialNumbers(matNumberDevice.view());
-    intersector.setMaterialIndices(matIndexDevice.view());
+    {
+      axom::utilities::Timer t2(true);
+      // Populate intersector, including making a number:index map
+      axom::Array<int> matNumber, matIndex;
+      for(int index = 0; index < nmats; index++)
+      {
+        // Add a matvf view to the intersector.
+        const std::string matFieldName = nodalFieldName(allMats[index].number);
+        auto matVFView = bputils::make_array_view<MaterialVF>(
+          n_fields.fetch_existing(matFieldName + "/values"));
+        intersector.addMaterial(matVFView);
 
-    // Store the current zone material ids and current material number into the intersector.
-    intersector.setZoneMaterialID(bputils::make_array_view<MaterialID>(
-      n_fields.fetch_existing(zonalMaterialIDName() + "/values")));
-    intersector.setCurrentMaterial(currentMat.number);
+        matNumber.push_back(allMats[index].number);
+        matIndex.push_back(index);
+      }
+      // Sort indices by matNumber.
+      std::sort(matIndex.begin(), matIndex.end(), [&](auto idx1, auto idx2) {
+        return matNumber[idx1] < matNumber[idx2];
+      });
+      std::sort(matNumber.begin(), matNumber.end());
+
+      // Store the number:index map into the intersector. The number:index map lets us
+      // ask for the field index for a material number, allowing scattered material
+      // numbers to be used in the matset.
+      axom::copy(matNumberDevice.data(), matNumber.data(), sizeof(int) * nmats);
+      axom::copy(matIndexDevice.data(), matIndex.data(), sizeof(int) * nmats);
+      intersector.setMaterialNumbers(matNumberDevice.view());
+      intersector.setMaterialIndices(matIndexDevice.view());
+
+      // Store the current zone material ids and current material number into the intersector.
+      intersector.setZoneMaterialID(bputils::make_array_view<MaterialID>(
+        n_fields.fetch_existing(zonalMaterialIDName() + "/values")));
+      intersector.setCurrentMaterial(currentMat.number);
+
+      SLIC_INFO(
+        axom::fmt::format("\t\t Intersector setup took {:.6Lf} seconds ", t2.elapsed()));
+    }
 
     //--------------------------------------------------------------------------
     //
@@ -862,6 +893,8 @@ protected:
     //
     //--------------------------------------------------------------------------
     {
+      axom::utilities::Timer t3(true);
+
       using ClipperType =
         axom::mir::clipping::ClipField<ExecSpace, ITopologyView, ICoordsetView, IntersectorType>;
       ClipperType clipper(topoView, coordsetView, intersector);
@@ -872,6 +905,9 @@ protected:
                       n_newTopo,
                       n_newCoordset,
                       n_newFields);
+
+      SLIC_INFO(
+        axom::fmt::format("\t\t Clipper took {:.6Lf} seconds ", t3.elapsed()));
     }
 
     //--------------------------------------------------------------------------
@@ -879,25 +915,32 @@ protected:
     // Update zoneMaterialID based on color field.
     //
     //--------------------------------------------------------------------------
-    const auto colorView = bputils::make_array_view<ConnectivityType>(
-      n_newFields.fetch_existing(colorField + "/values"));
-    const auto nzonesNew = colorView.size();
+    {
+      axom::utilities::Timer t4(true);
 
-    // Get zonalMAterialID field so we can make adjustments.
-    conduit::Node &n_zonalMaterialID =
-      n_newFields.fetch_existing(zonalMaterialIDName() + "/values");
-    auto zonalMaterialID =
-      bputils::make_array_view<MaterialID>(n_zonalMaterialID);
-    const int currentMatNumber = currentMat.number;
-    axom::for_all<ExecSpace>(
-      nzonesNew,
-      AXOM_LAMBDA(auto zoneIndex) {
-        // Color the part we want with the current material.
-        if(colorView[zoneIndex] == 1)
-        {
-          zonalMaterialID[zoneIndex] = currentMatNumber;
-        }
-      });
+      const auto colorView = bputils::make_array_view<ConnectivityType>(
+        n_newFields.fetch_existing(colorField + "/values"));
+      const auto nzonesNew = colorView.size();
+
+      // Get zonalMAterialID field so we can make adjustments.
+      conduit::Node &n_zonalMaterialID =
+        n_newFields.fetch_existing(zonalMaterialIDName() + "/values");
+      auto zonalMaterialID =
+        bputils::make_array_view<MaterialID>(n_zonalMaterialID);
+      const int currentMatNumber = currentMat.number;
+      axom::for_all<ExecSpace>(
+        nzonesNew,
+        AXOM_LAMBDA(auto zoneIndex) {
+          // Color the part we want with the current material.
+          if(colorView[zoneIndex] == 1)
+          {
+            zonalMaterialID[zoneIndex] = currentMatNumber;
+          }
+        });
+
+      SLIC_INFO(
+        axom::fmt::format("\t\t Updating zonalMaterialID took {:.6Lf} seconds ", t4.elapsed()));
+    }
 
 #if defined(AXOM_DEBUG_EQUIZ)
     //--------------------------------------------------------------------------
@@ -905,26 +948,32 @@ protected:
     // Save the clip results.
     //
     //--------------------------------------------------------------------------
-    conduit::Node mesh;
-    mesh[n_newTopo.path()].set_external(n_newTopo);
-    mesh[n_newCoordset.path()].set_external(n_newCoordset);
-    mesh[n_newFields.path()].set_external(n_newFields);
+    {
+      axom::utilities::Timer t5(true);
+      conduit::Node mesh;
+      mesh[n_newTopo.path()].set_external(n_newTopo);
+      mesh[n_newCoordset.path()].set_external(n_newCoordset);
+      mesh[n_newFields.path()].set_external(n_newFields);
 
-    // print
-    printNode(mesh);
-    std::cout.flush();
+      // print
+      //printNode(mesh);
+      //std::cout.flush();
 
-    // save
-    std::stringstream ss;
-    ss << "debug_equiz_output_iter." << currentMat.number;
-    conduit::relay::io::blueprint::save_mesh(mesh, ss.str(), "hdf5");
+      // save
+      std::stringstream ss;
+      ss << "debug_equiz_output_iter." << iter;
+      conduit::relay::io::blueprint::save_mesh(mesh, ss.str(), "hdf5");
 
-    std::cout << "------------------------ iteration end"
-                 "--------------------------------\n";
+      SLIC_INFO(
+        axom::fmt::format("\t\t Saving output {} took {:.6Lf} seconds ", iter, t5.elapsed()));
+    }
 #endif
 
     // We do not want the color field to survive into the next iteration.
     n_newFields.remove(colorField);
+
+    SLIC_INFO(
+      axom::fmt::format("\t Iteration {} took {:.6Lf} seconds ", iter, t0.elapsed()));
   }
 
   /**
@@ -939,6 +988,7 @@ protected:
                       conduit::Node &n_newMatset) const
   {
     namespace bputils = axom::mir::utilities::blueprint;
+    axom::utilities::Timer t0(true);
 
     // Get the zonalMaterialID field that has our new material ids.
     conduit::Node &n_zonalMaterialID =
@@ -1000,6 +1050,9 @@ protected:
         offsets_view[zoneIndex] = static_cast<MIntType>(zoneIndex);
         indices_view[zoneIndex] = static_cast<MIntType>(zoneIndex);
       });
+
+    SLIC_INFO(
+      axom::fmt::format("\t Making new matset took {:.6Lf} seconds ", t0.elapsed()));
   }
 
 private:
