@@ -55,6 +55,7 @@ void braid(const std::string &type, const Dimensions &dims, conduit::Node &mesh)
 void make_unibuffer(const std::vector<float> &vfA,
                     const std::vector<float> &vfB,
                     const std::vector<float> &vfC,
+                    const std::vector<int> &matnos,
                     conduit::Node &matset)
 {
   std::vector<int> material_ids;
@@ -69,21 +70,21 @@ void make_unibuffer(const std::vector<float> &vfA,
     if(vfA[i] > 0.)
     {
       indices.push_back(static_cast<int>(indices.size()));
-      material_ids.push_back(0);
+      material_ids.push_back(matnos[0]);
       volume_fractions.push_back(vfA[i]);
       sizes[i]++;
     }
     if(vfB[i] > 0.)
     {
       indices.push_back(static_cast<int>(indices.size()));
-      material_ids.push_back(1);
+      material_ids.push_back(matnos[1]);
       volume_fractions.push_back(vfB[i]);
       sizes[i]++;
     }
     if(vfC[i] > 0.)
     {
       indices.push_back(static_cast<int>(indices.size()));
-      material_ids.push_back(2);
+      material_ids.push_back(matnos[2]);
       volume_fractions.push_back(vfC[i]);
       sizes[i]++;
     }
@@ -185,16 +186,17 @@ void make_matset(const std::string &type,
   mesh["fields/vfC/values"].set(vfC);
 #endif
 
+  const std::vector<int> matnos{{22,66,33}};
   conduit::Node &matset = mesh["matsets/mat"];
   matset["topology"] = topoName;
-  matset["material_map/A"] = 0;
-  matset["material_map/B"] = 1;
-  matset["material_map/C"] = 2;
+  matset["material_map/A"] = matnos[0];
+  matset["material_map/B"] = matnos[1];
+  matset["material_map/C"] = matnos[2];
 
   // produce different material types.
   if(type == "unibuffer")
   {
-    make_unibuffer(vfA, vfB, vfC, matset);
+    make_unibuffer(vfA, vfB, vfC, matnos, matset);
   }
   // TODO: write these other cases.
   else if(type == "multibuffer")

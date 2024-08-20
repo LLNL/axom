@@ -513,13 +513,11 @@ public:
     std::map<std::string, std::string> fieldsToProcess;
     if(!opts.fields(fieldsToProcess))
     {
-std::cout << "  fields to process:\n";
       // Fields were not present in the options. Select all fields that have the same topology as n_topo.
       for(conduit::index_t i = 0; i < n_fields.number_of_children(); i++)
       {
         if(n_fields[i].fetch_existing("topology").as_string() == n_topo.name())
         {
-std::cout << "  " << n_fields[i].name() << std::endl;
           fieldsToProcess[n_fields[i].name()] = n_fields[i].name();
         }
       }

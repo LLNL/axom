@@ -149,76 +149,13 @@ public:
       if(m_material_ids[idx] == mat)
       {
         vf = m_volume_fractions[idx];
-std::cout << "zoneContainsMaterial: zi=" << zi << ", mat=" << mat << ", vf=" << vf << " -> true\n";
         return true;
       }
     }
     vf = 0;
-std::cout << "zoneContainsMaterial: zi=" << zi << ", mat=" << mat << ", vf=" << vf << " -> false\n";
     return false;
   }
 
-  /**
-   * \brief Return the dominant material ids for the zone (highest volume fraction material).
-   * \param zi The zone index.
-   * \return The material id with the highest volume fraction.
-   */
-  AXOM_HOST_DEVICE
-  int dominantMaterial(ZoneIndex zi) const
-  {
-    assert(zi < numberOfZones());
-    const auto sz = numberOfMaterials(zi);
-    const auto offset = m_offsets[zi];
-    FloatType maxVF = -1;
-    int mat {};
-    for(axom::IndexType i = 0; i < sz; i++)
-    {
-      const auto idx = m_indices[offset + i];
-      const auto vf = m_volume_fractions[idx];
-      if(vf > maxVF)
-      {
-        mat = m_material_ids[idx];
-        maxVF = vf;
-      }
-    }
-    return mat;
-  }
-
-  /**
-   * \brief Return a background material with high VF that is not the supplied material.
-   * \param zi The zone index.
-   * \return The material id with the highest volume fraction.
-   */
-  AXOM_HOST_DEVICE
-  MaterialIndex backgroundMaterial(ZoneIndex zi, MaterialIndex currentMat) const
-  {
-    assert(zi < numberOfZones());
-    const auto sz = numberOfMaterials(zi);
-    const auto offset = m_offsets[zi];
-    MaterialIndex mat{};
-    if(sz == 1)
-    {
-      // There is only one material so return that.
-      const auto idx = m_indices[offset];
-      mat = m_material_ids[idx];
-    }
-    else
-    {
-      // There are multiple materials. Return the largest VF that is not owned by currentMat.
-      FloatType maxVF = -1;
-      for(axom::IndexType i = 0; i < sz; i++)
-      {
-        const auto idx = m_indices[offset + i];
-        const auto vf = m_volume_fractions[idx];
-        if(m_material_ids[idx] != currentMat && vf > maxVF)
-        {
-          mat = m_material_ids[idx];
-          maxVF = vf;
-        }
-      }
-    }
-    return mat;
-  }
 private:
   axom::ArrayView<IndexType> m_material_ids;
   axom::ArrayView<FloatType> m_volume_fractions;
@@ -335,20 +272,6 @@ public:
     return vf > 0.;
   }
 
-  /**
-   * \brief Return the dominant material ids for the zone (highest volume fraction material).
-   * \param zi The zone index.
-   * \return The material id with the highest volume fraction.
-   */
-  AXOM_HOST_DEVICE
-  int dominantMaterial(ZoneIndex zi) const
-  {
-    assert(zi < numberOfZones());
-    FloatType maxVF = -1;
-    int mat {};
-    // TODO: write me
-    return mat;
-  }
 private:
   axom::StackArray<axom::ArrayView<FloatType>, MAXMATERIALS> m_values {};
   axom::StackArray<axom::ArrayView<ZoneIndex>, MAXMATERIALS> m_indices {};
@@ -451,20 +374,6 @@ public:
     return contains;
   }
 
-  /**
-   * \brief Return the dominant material ids for the zone (highest volume fraction material).
-   * \param zi The zone index.
-   * \return The material id with the highest volume fraction.
-   */
-  AXOM_HOST_DEVICE
-  int dominantMaterial(ZoneIndex zi) const
-  {
-    assert(zi < numberOfZones());
-    FloatType maxVF = -1;
-    int mat {};
-    // TODO: write me
-    return mat;
-  }
 private:
   axom::StaticArray<axom::ArrayView<FloatType>, MAXMATERIALS> m_volume_fractions {};
 };
@@ -641,20 +550,6 @@ public:
     return found;
   }
 
-  /**
-   * \brief Return the dominant material ids for the zone (highest volume fraction material).
-   * \param zi The zone index.
-   * \return The material id with the highest volume fraction.
-   */
-  AXOM_HOST_DEVICE
-  int dominantMaterial(ZoneIndex zi) const
-  {
-    assert(zi < numberOfZones());
-    FloatType maxVF = -1;
-    int mat {};
-    // TODO: write me
-    return mat;
-  }
 private:
   StackArray<axom::ArrayView<IndexType>, MAXMATERIALS> m_element_ids {};
   StackArray<axom::ArrayView<FloatType>, MAXMATERIALS> m_volume_fractions {};
