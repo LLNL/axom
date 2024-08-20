@@ -173,21 +173,23 @@ int main(int argc, char *argv[])
   // Define command line options.
   bool handler = true;
   axom::CLI::App app;
-  app.add_option("--handler", handler)->description("Install a custom error handler that loops forever.");
+  app.add_option("--handler", handler)
+    ->description("Install a custom error handler that loops forever.");
 #if defined(AXOM_USE_CALIPER)
   std::string annotationMode("report");
   app.add_option("--caliper", annotationMode)
-      ->description(
-        "caliper annotation mode. Valid options include 'none' and 'report'. "
-        "Use 'help' to see full list.")
-      ->capture_default_str()
-      ->check(axom::utilities::ValidCaliperMode);
+    ->description(
+      "caliper annotation mode. Valid options include 'none' and 'report'. "
+      "Use 'help' to see full list.")
+    ->capture_default_str()
+    ->check(axom::utilities::ValidCaliperMode);
 #endif
   // Parse command line options.
   app.parse(argc, argv);
 
 #if defined(AXOM_USE_CALIPER)
-  axom::utilities::raii::AnnotationsWrapper annotations_raii_wrapper(annotationMode);
+  axom::utilities::raii::AnnotationsWrapper annotations_raii_wrapper(
+    annotationMode);
 #endif
 
   axom::slic::SimpleLogger logger;  // create & initialize test logger,

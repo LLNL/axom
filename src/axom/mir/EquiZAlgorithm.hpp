@@ -121,10 +121,10 @@ public:
       for(IndexType i = 0; i < n; i++)
       {
         const auto nid = nodeIdsView[i];
-        // clangformat-off
+        // clang-format off
         MaterialVF vf1 = (backgroundIndex != INVALID_INDEX) ? m_matvfViews[backgroundIndex][nid] : NULL_MATERIAL_VF;
         MaterialVF vf2 = (currentIndex != INVALID_INDEX) ? m_matvfViews[currentIndex][nid] : 0;
-        // clangformat-on
+        // clang-format on
 
         clipcase |= (vf2 > vf1) ? (1 << i) : 0;
       }
@@ -152,12 +152,12 @@ public:
 
       // Get the volume fractions for mat1, mat2 at the edge endpoints id0, id1.
       MaterialVF vf1[2], vf2[2];
-      // clangformat-off
+      // clang-format off
       vf1[0] = (backgroundIndex != INVALID_INDEX) ? m_matvfViews[backgroundIndex][id0] : NULL_MATERIAL_VF;
       vf1[1] = (backgroundIndex != INVALID_INDEX) ? m_matvfViews[backgroundIndex][id1] : NULL_MATERIAL_VF;
       vf2[0] = (currentIndex != INVALID_INDEX) ? m_matvfViews[currentIndex][id0] : 0;
       vf2[1] = (currentIndex != INVALID_INDEX) ? m_matvfViews[currentIndex][id1] : 0;
-      // clangformat-on
+      // clang-format on
 
       float numerator = vf2[0] - vf1[0];
       float denominator = -vf1[0] + vf1[1] + vf2[0] - vf2[1];
@@ -441,7 +441,7 @@ protected:
 
         // The data are now an unstructured view, probably a mixed shape view.
         // Dispatch to an appropriate topo view.
-        // clangformat-off
+        // clang-format off
         views::dispatch_explicit_coordset(n_InputCoordset, [&](auto coordsetView) {
           using ICoordsetView = decltype(coordsetView);
           using ConnectivityType = typename TopologyView::ConnectivityType;
@@ -473,7 +473,7 @@ protected:
                                                       n_newFields);
             });
         });
-        // clangformat-on
+        // clang-format on
       }
     }
 
@@ -515,7 +515,7 @@ protected:
     conduit::relay::io::blueprint::save_mesh(n_output,
                                              "debug_equiz_output",
                                              "hdf5");
-    //printNode(n_output);
+      //printNode(n_output);
 #endif
   }
 
@@ -661,9 +661,10 @@ protected:
 #if defined(AXOM_EQUIZ_SKIP_FIRST_ITERATION)
                          const axom::mir::views::MaterialInformation &mixedMats
 #else
-                         const axom::mir::views::MaterialInformation &AXOM_UNUSED_PARAM(mixedMats)
+                         const axom::mir::views::MaterialInformation
+                           &AXOM_UNUSED_PARAM(mixedMats)
 #endif
-                        ) const
+  ) const
   {
     namespace bputils = axom::mir::utilities::blueprint;
     AXOM_ANNOTATE_SCOPE("makeWorkingFields");

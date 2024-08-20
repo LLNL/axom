@@ -171,8 +171,7 @@ void saveBaseline(const std::string &filename, const conduit::Node &n)
   }
   catch(...)
   {
-    SLIC_INFO(
-      axom::fmt::format("Could not save baseline to {}!", file_with_ext));
+    SLIC_INFO(axom::fmt::format("Could not save baseline to {}!", file_with_ext));
 
     printNode(n);
 
