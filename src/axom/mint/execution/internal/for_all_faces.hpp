@@ -993,7 +993,7 @@ inline void for_all_faces_impl(xargs::coords,
           coords[3 * i + 2] = z[nodeID];
         }
 
-        numerics::Matrix<double> coordsMatrix(dimension, 4, coords, NO_COPY);
+        numerics::Matrix<double> coordsMatrix(dimension, numNodes, coords, NO_COPY);
         kernel(faceID, coordsMatrix, nodeIDs);
       });
   }

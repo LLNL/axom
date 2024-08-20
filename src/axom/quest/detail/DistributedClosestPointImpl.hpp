@@ -8,10 +8,11 @@
 
 #include "axom/config.hpp"
 #include "axom/core.hpp"
+#include "axom/core/NumericLimits.hpp"
+#include "axom/core/execution/runtime_policy.hpp"
 #include "axom/slic.hpp"
 #include "axom/primal.hpp"
 #include "axom/spin.hpp"
-#include "axom/core/execution/runtime_policy.hpp"
 
 #include "axom/fmt.hpp"
 
@@ -22,7 +23,6 @@
 #include "conduit_relay_io.hpp"
 
 #include <memory>
-#include <limits>
 #include <cstdlib>
 #include <cmath>
 #include <list>
@@ -254,7 +254,7 @@ public:
     , m_mpiComm(MPI_COMM_NULL)
     , m_rank(-1)
     , m_nranks(-1)
-    , m_sqDistanceThreshold(std::numeric_limits<double>::max())
+    , m_sqDistanceThreshold(axom::numeric_limits<double>::max())
   { }
 
   virtual ~DistributedClosestPointImpl() { }
@@ -1042,9 +1042,9 @@ public:
         cp_rank.fill(-1);
         cp_idx.fill(-1);
         cp_domidx.fill(-1);
-        const PointType nowhere(std::numeric_limits<double>::signaling_NaN());
+        const PointType nowhere(axom::numeric_limits<double>::signaling_NaN());
         cp_pos.fill(nowhere);
-        cp_dist.fill(std::numeric_limits<double>::signaling_NaN());
+        cp_dist.fill(axom::numeric_limits<double>::signaling_NaN());
       }
       auto query_inds = cp_idx.view();
       auto query_doms = cp_domidx.view();

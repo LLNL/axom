@@ -207,5 +207,3 @@ endif()
 if (AXOM_ENABLE_TESTS)
     add_subdirectory(tests)
 endif()
-
-axom_add_code_checks(PREFIX quest)

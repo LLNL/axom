@@ -14,6 +14,7 @@
 
 #include "axom/config.hpp"
 #include "axom/core.hpp"
+#include "axom/core/NumericLimits.hpp"
 #include "axom/mint.hpp"
 #include "axom/primal.hpp"
 #include "axom/spin.hpp"
@@ -195,7 +196,7 @@ public:
 
     // compute minimal local mesh size
     mfem::Vector h0(fespace->GetNDofs());
-    h0 = std::numeric_limits<double>::infinity();
+    h0 = axom::numeric_limits<double>::infinity();
     {
       mfem::Array<int> dofs;
       for(int i = 0; i < fespace->GetNE(); i++)

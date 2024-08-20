@@ -6,6 +6,7 @@
 #include "axom/quest/readers/STLReader.hpp"
 #include "axom/mint/mesh/UnstructuredMesh.hpp"
 #include "axom/slic.hpp"
+#include "axom/core/NumericLimits.hpp"
 
 // gtest includes
 #include "gtest/gtest.h"
@@ -14,7 +15,6 @@
 #include <cstdio>
 #include <string>
 #include <fstream>
-#include <limits>
 
 // namespace aliases
 namespace mint = axom::mint;
@@ -133,13 +133,13 @@ TEST(quest_stl_reader, read_stl)
   {
     EXPECT_NEAR(x[inode],
                 x_expected[inode],
-                std::numeric_limits<double>::epsilon());
+                axom::numeric_limits<double>::epsilon());
     EXPECT_NEAR(y[inode],
                 y_expected[inode],
-                std::numeric_limits<double>::epsilon());
+                axom::numeric_limits<double>::epsilon());
     EXPECT_NEAR(z[inode],
                 z_expected[inode],
-                std::numeric_limits<double>::epsilon());
+                axom::numeric_limits<double>::epsilon());
   }  // END for all nodes
 
   // STEP 4: remove temporary STL file
@@ -192,13 +192,13 @@ TEST(quest_stl_reader, read_stl_external)
   {
     EXPECT_NEAR(x[inode],
                 x_expected[inode],
-                std::numeric_limits<double>::epsilon());
+                axom::numeric_limits<double>::epsilon());
     EXPECT_NEAR(y[inode],
                 y_expected[inode],
-                std::numeric_limits<double>::epsilon());
+                axom::numeric_limits<double>::epsilon());
     EXPECT_NEAR(z[inode],
                 z_expected[inode],
-                std::numeric_limits<double>::epsilon());
+                axom::numeric_limits<double>::epsilon());
   }  // END for all nodes
 
   // STEP 4: remove temporary STL file
