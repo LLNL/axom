@@ -73,12 +73,17 @@ void typed_dispatch_unstructured_polyhedral_topology(const conduit::Node &topo,
   const std::string shape = topo["elements/shape"].as_string();
   if(shape == "polyhedral")
   {
-    auto seConnView = bputils::make_array_view<ConnType>(topo["subelements/connectivity"]);
-    auto seSizesView = bputils::make_array_view<ConnType>(topo["subelements/sizes"]);
-    auto seOffsetsView = bputils::make_array_view<ConnType>(topo["subelements/offsets"]);
-    auto connView = bputils::make_array_view<ConnType>(topo["elements/connectivity"]);
+    auto seConnView =
+      bputils::make_array_view<ConnType>(topo["subelements/connectivity"]);
+    auto seSizesView =
+      bputils::make_array_view<ConnType>(topo["subelements/sizes"]);
+    auto seOffsetsView =
+      bputils::make_array_view<ConnType>(topo["subelements/offsets"]);
+    auto connView =
+      bputils::make_array_view<ConnType>(topo["elements/connectivity"]);
     auto sizesView = bputils::make_array_view<ConnType>(topo["elements/sizes"]);
-    auto offsetsView = bputils::make_array_view<ConnType>(topo["elements/offsets"]);
+    auto offsetsView =
+      bputils::make_array_view<ConnType>(topo["elements/offsets"]);
 
     UnstructuredTopologyPolyhedralView<ConnType> ugView(seConnView,
                                                         seSizesView,
@@ -135,10 +140,13 @@ void typed_dispatch_unstructured_mixed_topology(const conduit::Node &topo,
   const std::string shape = topo["elements/shape"].as_string();
   if(shape == "mixed")
   {
-    auto connView = bputils::make_array_view<ConnType>(topo["elements/connectivity"]);
-    auto shapesView = bputils::make_array_view<ConnType>(topo["elements/shapes"]);
+    auto connView =
+      bputils::make_array_view<ConnType>(topo["elements/connectivity"]);
+    auto shapesView =
+      bputils::make_array_view<ConnType>(topo["elements/shapes"]);
     auto sizesView = bputils::make_array_view<ConnType>(topo["elements/sizes"]);
-    auto offsetsView = bputils::make_array_view<ConnType>(topo["elements/offsets"]);
+    auto offsetsView =
+      bputils::make_array_view<ConnType>(topo["elements/offsets"]);
 
     UnstructuredTopologyMixedShapeView<ConnType> ugView(topo,
                                                         connView,
@@ -172,14 +180,16 @@ constexpr int select_shapes(Args... args)
  * \param func The function/lambda to call with the topology view.
  */
 template <typename ConnType, int ShapeTypes = AnyShape, typename FuncType>
-void typed_dispatch_unstructured_topology(const conduit::Node &topo, FuncType &&func)
+void typed_dispatch_unstructured_topology(const conduit::Node &topo,
+                                          FuncType &&func)
 {
   namespace bputils = axom::mir::utilities::blueprint;
   const std::string type = topo["type"].as_string();
   if(type == "unstructured")
   {
     const std::string shape = topo["elements/shape"].as_string();
-    const auto connView = bputils::make_array_view<ConnType>(topo["elements/connectivity"]);
+    const auto connView =
+      bputils::make_array_view<ConnType>(topo["elements/connectivity"]);
     bool eligible = true;
 
     // Conditionally add polyhedron support.
@@ -218,8 +228,7 @@ void typed_dispatch_unstructured_topology(const conduit::Node &topo, FuncType &&
     {
       if(eligible && shape == "quad")
       {
-        UnstructuredTopologySingleShapeView<QuadShape<ConnType>> ugView(
-          connView);
+        UnstructuredTopologySingleShapeView<QuadShape<ConnType>> ugView(connView);
         func(shape, ugView);
         eligible = false;
       }
@@ -247,8 +256,7 @@ void typed_dispatch_unstructured_topology(const conduit::Node &topo, FuncType &&
     {
       if(eligible && shape == "wedge")
       {
-        UnstructuredTopologySingleShapeView<WedgeShape<ConnType>> ugView(
-          connView);
+        UnstructuredTopologySingleShapeView<WedgeShape<ConnType>> ugView(connView);
         func(shape, ugView);
         eligible = false;
       }
@@ -270,11 +278,10 @@ template <int ShapeTypes = AnyShape, typename FuncType>
 void dispatch_unstructured_topology(const conduit::Node &topo, FuncType &&func)
 {
   IndexNode_to_ArrayView(topo["elements/connectivity"], [&](auto connView) {
-      using ConnType = typename decltype(connView)::value_type;
-      typed_dispatch_unstructured_topology<ConnType, ShapeTypes>(topo, func);
+    using ConnType = typename decltype(connView)::value_type;
+    typed_dispatch_unstructured_topology<ConnType, ShapeTypes>(topo, func);
   });
 }
-
 
 }  // end namespace views
 }  // end namespace mir

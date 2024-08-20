@@ -186,7 +186,7 @@ void make_matset(const std::string &type,
   mesh["fields/vfC/values"].set(vfC);
 #endif
 
-  const std::vector<int> matnos{{22,66,33}};
+  const std::vector<int> matnos {{22, 66, 33}};
   conduit::Node &matset = mesh["matsets/mat"];
   matset["topology"] = topoName;
   matset["material_map/A"] = matnos[0];

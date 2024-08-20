@@ -248,7 +248,8 @@ public:
    * \param n_options The clipping options.
    * \return The name of the toplogy on which to operate.
    */
-  std::string getTopologyName(const conduit::Node &n_input, const conduit::Node &n_options) const
+  std::string getTopologyName(const conduit::Node &n_input,
+                              const conduit::Node &n_options) const
   {
     // Get the clipField's topo name.
     ClipOptions opts(n_options);
@@ -332,7 +333,8 @@ public:
   {
     // Get the topo/coordset names in the input.
     ClipOptions opts(n_options);
-    const std::string topoName = m_intersector.getTopologyName(n_input, n_options);
+    const std::string topoName =
+      m_intersector.getTopologyName(n_input, n_options);
     const conduit::Node &n_topo =
       n_input.fetch_existing("topologies/" + topoName);
     const std::string coordsetName = n_topo["coordset"].as_string();

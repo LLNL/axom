@@ -128,9 +128,9 @@ TEST(mir_equiz, equiz_uniform_unibuffer)
 {
   braid2d_mat_test<seq_exec>("uniform", "unibuffer", "equiz_uniform_unibuffer");
 
-//#if defined(AXOM_USE_OPENMP)
-//  braid2d_mat_test<omp_exec>("uniform", "unibuffer", "equiz_uniform_unibuffer");
-//#endif
+  //#if defined(AXOM_USE_OPENMP)
+  //  braid2d_mat_test<omp_exec>("uniform", "unibuffer", "equiz_uniform_unibuffer");
+  //#endif
 
 #if defined(AXOM_USE_CUDA) && defined(__CUDACC__)
   braid2d_mat_test<cuda_exec>("uniform", "unibuffer", "equiz_uniform_unibuffer");

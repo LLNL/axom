@@ -42,7 +42,10 @@ template <typename TopologyView>
 struct view_traits
 {
   static constexpr bool supports_strided_structured() { return false; }
-  static constexpr int selected_shapes() { return shapes_for_dimension(TopologyView::dimension()); }
+  static constexpr int selected_shapes()
+  {
+    return shapes_for_dimension(TopologyView::dimension());
+  }
 };
 
 /// If StructuredTopologyView was instantiated with StridedStructuredIndexing
