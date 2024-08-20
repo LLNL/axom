@@ -111,6 +111,14 @@ std::string yamlRoot(const std::string &filepath)
   return retval;
 }
 
+void printNode(const conduit::Node &n)
+{
+  conduit::Node options;
+  options["num_children_threshold"] = 10000;
+  options["num_elements_threshold"] = 10000;
+  n.to_summary_string_stream(std::cout, options);
+}
+
 bool compareConduit(const conduit::Node &n1,
                     const conduit::Node &n2,
                     double tolerance,
@@ -150,13 +158,31 @@ bool compareConduit(const conduit::Node &n1,
 void saveBaseline(const std::string &filename, const conduit::Node &n)
 {
   std::string file_with_ext(filename + ".yaml");
-  SLIC_INFO(axom::fmt::format("Save baseline {}", file_with_ext));
-  conduit::relay::io::save(n, file_with_ext, "yaml");
+  try
+  {
+    SLIC_INFO(axom::fmt::format("Save baseline {}", file_with_ext));
+    conduit::relay::io::save(n, file_with_ext, "yaml");
+
 #if defined(AXOM_TESTING_SAVE_VISUALIZATION)
-  SLIC_INFO(axom::fmt::format("Save visualization files..."));
-  conduit::relay::io::blueprint::save_mesh(n, filename + "_hdf5", "hdf5");
-  axom::mir::utilities::blueprint::save_vtk(n, filename + "_vtk.vtk");
+    SLIC_INFO(axom::fmt::format("Save visualization files..."));
+    conduit::relay::io::blueprint::save_mesh(n, filename + "_hdf5", "hdf5");
+    axom::mir::utilities::blueprint::save_vtk(n, filename + "_vtk.vtk");
 #endif
+  }
+  catch(...)
+  {
+    SLIC_INFO(
+      axom::fmt::format("Could not save baseline to {}!", file_with_ext));
+
+    printNode(n);
+
+    // Check the data for errors.
+    conduit::Node info;
+    if(!conduit::blueprint::mesh::verify(n, info))
+    {
+      printNode(info);
+    }
+  }
 }
 
 void saveBaseline(const std::vector<std::string> &baselinePaths,
@@ -239,14 +265,6 @@ bool compareBaseline(const std::vector<std::string> &baselinePaths,
     SLIC_INFO(fmt::format("No baselines found for {}", baselineName));
   }
   return success;
-}
-
-void printNode(const conduit::Node &n)
-{
-  conduit::Node options;
-  options["num_children_threshold"] = 10000;
-  options["num_elements_threshold"] = 10000;
-  n.to_summary_string_stream(std::cout, options);
 }
 
 #endif

@@ -15,7 +15,7 @@
 #define DEBUGGING_TEST_CASES
 
 // Uncomment to generate baselines
-//#define AXOM_TESTING_GENERATE_BASELINES
+#define AXOM_TESTING_GENERATE_BASELINES
 
 // Uncomment to save visualization files for debugging (when making baselines)
 #define AXOM_TESTING_SAVE_VISUALIZATION
@@ -83,7 +83,6 @@ void braid2d_mat_test(const std::string &type,
   using TopologyView = decltype(topologyView);
 
   conduit::Node deviceMIRMesh;
-
   if(mattype == "unibuffer")
   {
     // clang-format off
@@ -99,7 +98,7 @@ void braid2d_mat_test(const std::string &type,
     using MIR =
       axom::mir::EquiZAlgorithm<ExecSpace, TopologyView, CoordsetView, MatsetView>;
     MIR m(topologyView, coordsetView, matsetView);
-    conduit::Node options, deviceMIRMesh;
+    conduit::Node options;
     options["matset"] = "mat";
     m.execute(deviceMesh, options, deviceMIRMesh);
   }
@@ -109,7 +108,6 @@ void braid2d_mat_test(const std::string &type,
   axom::mir::utilities::blueprint::copy<seq_exec>(hostMIRMesh, deviceMIRMesh);
 
 #if defined(AXOM_TESTING_SAVE_VISUALIZATION)
-  printNode(hostMIRMesh);
   conduit::relay::io::blueprint::save_mesh(hostMIRMesh, name, "hdf5");
 #endif
   // Handle baseline comparison.
@@ -124,22 +122,36 @@ void braid2d_mat_test(const std::string &type,
   }
 }
 
-TEST(mir_equiz, equiz_uniform_unibuffer)
+//------------------------------------------------------------------------------
+TEST(mir_equiz, equiz_uniform_unibuffer_seq)
 {
+  AXOM_ANNOTATE_SCOPE("equiz_uniform_unibuffer_seq");
   braid2d_mat_test<seq_exec>("uniform", "unibuffer", "equiz_uniform_unibuffer");
+}
 
-  //#if defined(AXOM_USE_OPENMP)
-  //  braid2d_mat_test<omp_exec>("uniform", "unibuffer", "equiz_uniform_unibuffer");
-  //#endif
+#if defined(AXOM_USE_OPENMP)
+TEST(mir_equiz, equiz_uniform_unibuffer_omp)
+{
+  AXOM_ANNOTATE_SCOPE("equiz_uniform_unibuffer_omp");
+  braid2d_mat_test<omp_exec>("uniform", "unibuffer", "equiz_uniform_unibuffer");
+}
+#endif
 
 #if defined(AXOM_USE_CUDA) && defined(__CUDACC__)
+TEST(mir_equiz, equiz_uniform_unibuffer_cuda)
+{
+  AXOM_ANNOTATE_SCOPE("equiz_uniform_unibuffer_cuda");
   braid2d_mat_test<cuda_exec>("uniform", "unibuffer", "equiz_uniform_unibuffer");
+}
 #endif
 
 #if defined(AXOM_USE_HIP)
+TEST(mir_equiz, equiz_uniform_unibuffer_hip)
+{
+  AXOM_ANNOTATE_SCOPE("equiz_uniform_unibuffer_hip");
   braid2d_mat_test<hip_exec>("uniform", "unibuffer", "equiz_uniform_unibuffer");
-#endif
 }
+#endif
 
 //------------------------------------------------------------------------------
 #if defined(DEBUGGING_TEST_CASES)
@@ -158,9 +170,32 @@ int main(int argc, char *argv[])
   int result = 0;
   ::testing::InitGoogleTest(&argc, argv);
 
+  // Define command line options.
+  bool handler = true;
+  axom::CLI::App app;
+  app.add_option("--handler", handler)->description("Install a custom error handler that loops forever.");
+#if defined(AXOM_USE_CALIPER)
+  std::string annotationMode("report");
+  app.add_option("--caliper", annotationMode)
+      ->description(
+        "caliper annotation mode. Valid options include 'none' and 'report'. "
+        "Use 'help' to see full list.")
+      ->capture_default_str()
+      ->check(axom::utilities::ValidCaliperMode);
+#endif
+  // Parse command line options.
+  app.parse(argc, argv);
+
+#if defined(AXOM_USE_CALIPER)
+  axom::utilities::raii::AnnotationsWrapper annotations_raii_wrapper(annotationMode);
+#endif
+
   axom::slic::SimpleLogger logger;  // create & initialize test logger,
 #if defined(DEBUGGING_TEST_CASES)
-  conduit::utils::set_error_handler(conduit_debug_err_handler);
+  if(handler)
+  {
+    conduit::utils::set_error_handler(conduit_debug_err_handler);
+  }
 #endif
   result = RUN_ALL_TESTS();
   return result;
