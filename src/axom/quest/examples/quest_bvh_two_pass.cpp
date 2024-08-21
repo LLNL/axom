@@ -123,6 +123,8 @@ void find_collisions_broadphase(const mint::Mesh* mesh,
   const auto v_aabbs = aabbs.view();
 
   // Initialize the bounding box for each cell
+  axom::utilities::Timer timer(true);
+
   mint::for_all_cells<ExecSpace, mint::xargs::coords>(
     mesh,
     AXOM_LAMBDA(IndexType cellIdx,
@@ -138,6 +140,7 @@ void find_collisions_broadphase(const mint::Mesh* mesh,
         PointType vtx {node[mint::X_COORDINATE],
                        node[mint::Y_COORDINATE],
                        node[mint::Z_COORDINATE]};
+        // PointType vtx {0, 1, 2};
         aabb.addPoint(vtx);
       }  // END for all cells nodes
 
@@ -272,6 +275,7 @@ void find_collisions_narrowphase(const mint::Mesh* mesh,
   const auto v_triangles = triangles.view();
 
   // Create an array with our surface mesh's triangles
+  axom::utilities::Timer timer(true);
   mint::for_all_cells<ExecSpace, mint::xargs::coords>(
     mesh,
     AXOM_LAMBDA(IndexType cellIdx,
@@ -390,21 +394,6 @@ int main(int argc, char** argv)
     finalize_logger();
     return retval;
   }
-#ifdef AXOM_USE_CUDA
-  if(args.exec_space == ExecPolicy::CUDA)
-  {
-    using GPUExec = axom::CUDA_EXEC<256>;
-    axom::setDefaultAllocator(axom::execution_space<GPUExec>::allocatorID());
-  }
-#endif
-#ifdef AXOM_USE_HIP
-  if(args.exec_space == ExecPolicy::HIP)
-  {
-    using GPUExec = axom::HIP_EXEC<256>;
-    axom::setDefaultAllocator(axom::execution_space<GPUExec>::allocatorID());
-  }
-#endif
-
   std::unique_ptr<UMesh> surface_mesh;
 
   // Read file

@@ -264,14 +264,26 @@ inline void for_all_cells_impl(xargs::nodeids,
                                const UnstructuredMesh<SINGLE_SHAPE>& m,
                                KernelType&& kernel)
 {
-  const IndexType* cell_connectivity = m.getCellNodesArray();
+  constexpr bool on_device = axom::execution_space<ExecPolicy>::onDevice();
+  const int device_allocator = axom::execution_space<ExecPolicy>::allocatorID();
+
+  auto cell_connectivity_h =
+    axom::ArrayView<const IndexType>(m.getCellNodesArray(), m.getCellNodesSize());
+
+  // Move cell connectivity onto device
+  axom::Array<IndexType> cell_connectivity_d = on_device
+    ? axom::Array<IndexType>(cell_connectivity_h, device_allocator)
+    : axom::Array<IndexType>();
+  auto cell_connectivity_view =
+    on_device ? cell_connectivity_d.view() : cell_connectivity_h;
+
   const IndexType stride = m.getNumberOfCellNodes();
 
   for_all_cells_impl<ExecPolicy>(
     xargs::index(),
     m,
     AXOM_LAMBDA(IndexType cellID) {
-      kernel(cellID, &cell_connectivity[cellID * stride], stride);
+      kernel(cellID, &cell_connectivity_view[cellID * stride], stride);
     });
 }
 
@@ -694,8 +706,36 @@ inline void for_all_cells_impl(xargs::coords,
   else
   {
     SLIC_ASSERT(dimension == 3);
-    const double* y = m.getCoordinateArray(Y_COORDINATE);
-    const double* z = m.getCoordinateArray(Z_COORDINATE);
+
+    constexpr bool on_device = axom::execution_space<ExecPolicy>::onDevice();
+    const int device_allocator = axom::execution_space<ExecPolicy>::allocatorID();
+    IndexType coordinate_size = m.getNumberOfNodes();
+
+    // extract coordinate values into an axom::Array
+    auto x_vals_h = axom::ArrayView<const double>(x, coordinate_size);
+    auto y_vals_h =
+      axom::ArrayView<const double>(m.getCoordinateArray(Y_COORDINATE),
+                                    coordinate_size);
+    auto z_vals_h =
+      axom::ArrayView<const double>(m.getCoordinateArray(Z_COORDINATE),
+                                    coordinate_size);
+
+    // Move xyz values onto device
+    axom::Array<double> x_vals_d = on_device
+      ? axom::Array<double>(x_vals_h, device_allocator)
+      : axom::Array<double>();
+    auto x_vals_view = on_device ? x_vals_d.view() : x_vals_h;
+
+    axom::Array<double> y_vals_d = on_device
+      ? axom::Array<double>(y_vals_h, device_allocator)
+      : axom::Array<double>();
+    auto y_vals_view = on_device ? y_vals_d.view() : y_vals_h;
+
+    axom::Array<double> z_vals_d = on_device
+      ? axom::Array<double>(z_vals_h, device_allocator)
+      : axom::Array<double>();
+    auto z_vals_view = on_device ? z_vals_d.view() : z_vals_h;
+
     for_all_cells_impl<ExecPolicy>(
       xargs::nodeids(),
       m,
@@ -704,9 +744,9 @@ inline void for_all_cells_impl(xargs::coords,
         for(int i = 0; i < numNodes; ++i)
         {
           const IndexType nodeID = nodeIDs[i];
-          coords[3 * i] = x[nodeID];
-          coords[3 * i + 1] = y[nodeID];
-          coords[3 * i + 2] = z[nodeID];
+          coords[3 * i] = x_vals_view[nodeID];
+          coords[3 * i + 1] = y_vals_view[nodeID];
+          coords[3 * i + 2] = z_vals_view[nodeID];
         }
 
         numerics::Matrix<double> coordsMatrix(dimension, numNodes, coords, NO_COPY);
