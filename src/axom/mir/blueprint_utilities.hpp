@@ -349,9 +349,9 @@ void to_unstructured(const conduit::Node &topo,
           AXOM_LAMBDA(auto zoneIndex, const auto &zone) {
             const auto start = zoneIndex * ptsPerZone;
             for(int i = 0; i < ptsPerZone; i++)
-              connView[start + i] =
-                static_cast<conduit::index_t>(zone.getIds()[i]);
-
+            {
+              connView[start + i] = static_cast<conduit::index_t>(zone.getIds()[i]);
+            }
             sizesView[zoneIndex] = ptsPerZone;
             offsetsView[zoneIndex] = start;
           });

@@ -32,6 +32,7 @@ set(mir_headers
     ClipFieldFilterDevice.hpp
     ClipFieldFilter.hpp
 
+    BlendGroupBuilder.hpp
     CoordsetBlender.hpp
     EquiZAlgorithm.hpp
     FieldBlender.hpp
@@ -64,6 +65,7 @@ set(mir_headers
     views/UnstructuredTopologyPolyhedralView.hpp
     views/UnstructuredTopologyMixedShapeView.hpp
     views/UnstructuredTopologySingleShapeView.hpp
+    views/view_traits.hpp
 
     clipping/ClipCases.h
     clipping/ClipTableManager.hpp

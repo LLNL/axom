@@ -7,9 +7,8 @@
 #define AXOM_MIR_EXPLICIT_COORDSET_VIEW_HPP_
 
 #include "axom/core/ArrayView.hpp"
+#include "axom/slic.hpp"
 #include "axom/primal/geometry/Point.hpp"
-
-#include <initializer_list>
 
 namespace axom
 {
@@ -48,7 +47,7 @@ public:
                        const axom::ArrayView<DataType> &y)
     : m_coordinates {x, y}
   {
-    SLIC_ASSERT(x.size() == y.size());
+    SLIC_ASSERT_MSG(x.size() == y.size(), "Coordinate size mismatch.");
   }
 
   /**
@@ -74,10 +73,14 @@ public:
   AXOM_HOST_DEVICE
   PointType getPoint(IndexType vertex_index) const
   {
-    SLIC_ASSERT(vertex_index < size());
-    return PointType(
-      std::initializer_list<value_type> {m_coordinates[0][vertex_index],
-                                         m_coordinates[1][vertex_index]});
+#if defined(AXOM_DEVICE_CODE)
+    assert(vertex_index < size());
+#else
+    SLIC_ASSERT_MSG(vertex_index < size(), axom::fmt::format("Vertex {} not in range [0, {}).", vertex_index, size()));
+#endif
+    const DataType X[3] = {m_coordinates[0][vertex_index],
+                           m_coordinates[1][vertex_index]};
+    return PointType(X);
   }
 
   /**
@@ -123,7 +126,7 @@ public:
                        const axom::ArrayView<DataType> &z)
     : m_coordinates {x, y, z}
   {
-    SLIC_ASSERT(x.size() == y.size() && x.size() == z.size());
+    SLIC_ASSERT_MSG(x.size() == y.size() && x.size() == z.size(), "Coordinate size mismatch.");
   }
 
   /**
@@ -149,11 +152,15 @@ public:
   AXOM_HOST_DEVICE
   PointType getPoint(IndexType vertex_index) const
   {
-    SLIC_ASSERT(vertex_index < size());
-    return PointType(
-      std::initializer_list<value_type> {m_coordinates[0][vertex_index],
-                                         m_coordinates[1][vertex_index],
-                                         m_coordinates[2][vertex_index]});
+#if defined(AXOM_DEVICE_CODE)
+    assert(vertex_index < size());
+#else
+    SLIC_ASSERT_MSG(vertex_index < size(), axom::fmt::format("Vertex {} not in range [0, {}).", vertex_index, size()));
+#endif
+    const DataType X[3] = {m_coordinates[0][vertex_index],
+                           m_coordinates[1][vertex_index],
+                           m_coordinates[2][vertex_index]};
+    return PointType(X);
   }
 
   /**

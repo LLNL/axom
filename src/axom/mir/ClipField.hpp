@@ -374,6 +374,7 @@ public:
   {
     namespace bputils = axom::mir::utilities::blueprint;
     const auto allocatorID = axom::execution_space<ExecSpace>::allocatorID();
+    AXOM_ANNOTATE_SCOPE("ClipField");
 
     // Make the selected zones and get the size.
     ClipOptions opts(n_options);
@@ -622,6 +623,7 @@ private:
                     const ClipOptions &opts,
                     const SelectedZones<ExecSpace> &selectedZones) const
   {
+    AXOM_ANNOTATE_SCOPE("computeSizes");
     const auto selection = getSelection(opts);
 
     auto blendGroupsView = builder.state().m_blendGroupsView;
@@ -742,6 +744,7 @@ private:
   void computeFragmentSizes(FragmentData &fragmentData,
                             const SelectedZones<ExecSpace> &selectedZones) const
   {
+    AXOM_ANNOTATE_SCOPE("computeFragmentSizes");
     const auto nzones = selectedZones.view().size();
 
     // Sum the number of fragments.
@@ -770,6 +773,7 @@ private:
    */
   void computeFragmentOffsets(FragmentData &fragmentData) const
   {
+    AXOM_ANNOTATE_SCOPE("computeFragmentOffsets");
     axom::exclusive_scan<ExecSpace>(fragmentData.m_fragmentsView,
                                     fragmentData.m_fragmentOffsetsView);
     axom::exclusive_scan<ExecSpace>(fragmentData.m_fragmentsSizeView,
@@ -792,6 +796,7 @@ private:
                        const ClipOptions &opts,
                        const SelectedZones<ExecSpace> &selectedZones) const
   {
+    AXOM_ANNOTATE_SCOPE("makeBlendGroups");
     const auto clipValue = static_cast<ClipFieldType>(opts.clipValue());
     const auto selection = getSelection(opts);
 
@@ -916,6 +921,7 @@ private:
                         conduit::Node &n_newCoordset,
                         conduit::Node &n_newFields) const
   {
+    AXOM_ANNOTATE_SCOPE("makeConnectivity");
     namespace bputils = axom::mir::utilities::blueprint;
     constexpr auto connTypeID = bputils::cpp2conduit<ConnectivityType>::id;
     const auto selection = getSelection(opts);
@@ -1084,6 +1090,7 @@ private:
                     const conduit::Node &n_coordset,
                     conduit::Node &n_newCoordset) const
   {
+    AXOM_ANNOTATE_SCOPE("makeCoordset");
     axom::mir::utilities::blueprint::CoordsetBlender<
       ExecSpace,
       CoordsetView,
@@ -1110,6 +1117,7 @@ private:
                   const conduit::Node &n_fields,
                   conduit::Node &n_out_fields) const
   {
+    AXOM_ANNOTATE_SCOPE("makeFields");
     for(auto it = fieldMap.begin(); it != fieldMap.end(); it++)
     {
       const conduit::Node &n_field = n_fields.fetch_existing(it->first);
@@ -1221,6 +1229,7 @@ private:
                             conduit::Node &n_newTopo,
                             conduit::Node &n_newFields) const
   {
+    AXOM_ANNOTATE_SCOPE("makeOriginalElements");
     namespace bputils = axom::mir::utilities::blueprint;
     constexpr auto connTypeID = bputils::cpp2conduit<ConnectivityType>::id;
 
