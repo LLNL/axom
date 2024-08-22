@@ -8,6 +8,7 @@
 #include "axom/config.hpp"
 #include "axom/core.hpp"
 #include "axom/mir.hpp"
+#include "axom/slic.hpp"
 
 // Include these directly for now.
 #include "axom/mir/views/MaterialView.hpp"
@@ -121,6 +122,11 @@ public:
       for(IndexType i = 0; i < n; i++)
       {
         const auto nid = nodeIdsView[i];
+#if defined(AXOM_DEVICE_CODE)
+        assert(nid >= 0 && nid < m_matvfViews[0].size());
+#else
+        SLIC_ASSERT_MSG(nid >= 0 && nid < m_matvfViews[0].size(), axom::fmt::format("Node id {} is not in range [0, {}).", nid, m_matvfViews[0].size()));
+#endif
         // clang-format off
         MaterialVF vf1 = (backgroundIndex != INVALID_INDEX) ? m_matvfViews[backgroundIndex][nid] : NULL_MATERIAL_VF;
         MaterialVF vf2 = (currentIndex != INVALID_INDEX) ? m_matvfViews[currentIndex][nid] : 0;
@@ -148,7 +154,15 @@ public:
       if(zoneMatID != NULL_MATERIAL)
         backgroundIndex = matNumberToIndex(zoneMatID);
       // Determine the matvf view index for the current material.
+
       int currentIndex = matNumberToIndex(m_currentMaterial);
+#if defined(AXOM_DEVICE_CODE)
+      assert(id0 >= 0 && id0 < m_matvfViews[0].size());
+      assert(id1 >= 0 && id1 < m_matvfViews[0].size());
+#else
+      SLIC_ASSERT_MSG(id0 >= 0 && id0 < m_matvfViews[0].size(), axom::fmt::format("Node id {} is not in range [0, {}).", id0, m_matvfViews[0].size()));
+      SLIC_ASSERT_MSG(id1 >= 0 && id1 < m_matvfViews[0].size(), axom::fmt::format("Node id {} is not in range [0, {}).", id1, m_matvfViews[0].size()));
+#endif
 
       // Get the volume fractions for mat1, mat2 at the edge endpoints id0, id1.
       MaterialVF vf1[2], vf2[2];
@@ -867,6 +881,11 @@ protected:
       options["selectedZones"].set_external(
         n_options.fetch_existing("selectedZones"));
     }
+    if(n_options.has_child("fields"))
+    {
+      // Pass along fields, if present.
+      options["fields"].set_external(n_options.fetch_existing("fields"));
+    }
     options["topology"] = n_options["topology"];
 
     //--------------------------------------------------------------------------
@@ -875,8 +894,6 @@ protected:
     //
     //--------------------------------------------------------------------------
     {
-      AXOM_ANNOTATE_SCOPE("Clipping");
-
       using ClipperType =
         axom::mir::clipping::ClipField<ExecSpace, ITopologyView, ICoordsetView, IntersectorType>;
       ClipperType clipper(topoView, coordsetView, intersector);

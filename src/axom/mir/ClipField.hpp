@@ -218,7 +218,7 @@ public:
     const conduit::Node &n_clip_field = n_fields.fetch_existing(opts.clipField());
     const conduit::Node &n_clip_field_values = n_clip_field["values"];
     SLIC_ASSERT(n_clip_field["association"].as_string() == "vertex");
-    if(n_clip_field_values.dtype().is_float32())
+    if(n_clip_field_values.dtype().id() == bputils::cpp2conduit<ClipFieldType>::id)
     {
       // Make a view.
       m_view.m_clipFieldView =
@@ -265,7 +265,7 @@ public:
   View view() const { return m_view; }
 
 private:
-  axom::Array<float> m_clipFieldData {};
+  axom::Array<ClipFieldType> m_clipFieldData {};
   View m_view {};
 };
 
@@ -484,7 +484,7 @@ public:
     bputils::BlendData blend = builder.makeBlendData();
 
     // Make the clipped mesh
-    makeConnectivity(clipTableViews,
+    makeTopology(clipTableViews,
                      builder,
                      zoneData,
                      fragmentData,
@@ -797,7 +797,6 @@ private:
                        const SelectedZones<ExecSpace> &selectedZones) const
   {
     AXOM_ANNOTATE_SCOPE("makeBlendGroups");
-    const auto clipValue = static_cast<ClipFieldType>(opts.clipValue());
     const auto selection = getSelection(opts);
 
     const auto deviceIntersector = m_intersector.view();
@@ -897,7 +896,7 @@ private:
   }
 
   /**
-   * \brief Make connectivity for the clipped mesh.
+   * \brief Make the clipped mesh topology.
    *
    * \param[in] clipTableViews An object that holds views of the clipping table data.
    * \param[in] builder This object holds views to blend group data and helps with building/access.
@@ -911,7 +910,7 @@ private:
    *
    * \note Objects that we need to capture into kernels are passed by value (they only contain views anyway). Data can be modified through the views.
    */
-  void makeConnectivity(ClipTableViews clipTableViews,
+  void makeTopology(ClipTableViews clipTableViews,
                         BlendGroupBuilderType builder,
                         ZoneData zoneData,
                         FragmentData fragmentData,
@@ -921,7 +920,7 @@ private:
                         conduit::Node &n_newCoordset,
                         conduit::Node &n_newFields) const
   {
-    AXOM_ANNOTATE_SCOPE("makeConnectivity");
+    AXOM_ANNOTATE_SCOPE("makeTopology");
     namespace bputils = axom::mir::utilities::blueprint;
     constexpr auto connTypeID = bputils::cpp2conduit<ConnectivityType>::id;
     const auto selection = getSelection(opts);

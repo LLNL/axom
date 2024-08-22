@@ -40,7 +40,7 @@ namespace blueprint
 template <typename T>
 struct cpp2conduit
 {
-  static constexpr conduit::index_t type = conduit::DataType::EMPTY_ID;
+  static constexpr conduit::index_t id = conduit::DataType::EMPTY_ID;
 };
 
 template <>
@@ -117,7 +117,14 @@ struct cpp2conduit<conduit::float64>
 
 /**
  * \brief Make an axom::ArrayView from a Conduit node.
+ *
+ * \tparam T The type for the array view elements.
+ *
+ * \param n The conduit node for which we want an array view.
+ *
+ * \return An axom::ArrayView that wraps the data in the Conduit node.
  */
+/// @{
 template <typename T>
 inline axom::ArrayView<T> make_array_view(conduit::Node &n)
 {
@@ -131,18 +138,25 @@ inline axom::ArrayView<T> make_array_view(const conduit::Node &n)
   return axom::ArrayView<T>(static_cast<T *>(const_cast<void *>(n.data_ptr())),
                             n.dtype().number_of_elements());
 }
+/// @}
 
 //------------------------------------------------------------------------------
 /**
  * \brief This class registers a Conduit allocator that can make Conduit allocate
- *        through Axom's allocate/deallocate functions using a specific allocator. This
- *        permits Conduit to allocate through Axom's UMPIRE logic.
+ *        through Axom's allocate/deallocate functions using a specific allocator.
+ *        This permits Conduit to allocate through Axom's UMPIRE logic.
  *
+ * \tparam ExecSpace The execution space.
  */
 template <typename ExecSpace>
 class ConduitAllocateThroughAxom
 {
 public:
+  /**
+   * \brief Get the Conduit allocator ID for this ExecSpace.
+   *
+   * \return The Conduit allocator ID for this ExecSpace.
+   */
   static conduit::index_t getConduitAllocatorID()
   {
     static conduit::index_t conduitAllocatorID = -1;
@@ -155,6 +169,14 @@ public:
   }
 
 private:
+  /**
+   * \brief A function we register with Conduit to allocate memory.
+   *
+   * \param items The number of items to allocate.
+   * \param item_size The size of each item in bytes.
+   *
+   * \brief A block of newly allocated memory large enough for the requested items.
+   */
   static void *internal_allocate(size_t items, size_t item_size)
   {
     const auto axomAllocatorID = axom::execution_space<ExecSpace>::allocatorID();
@@ -164,6 +186,9 @@ private:
     return ptr;
   }
 
+  /**
+   * \brief A deallocation function we register with Conduit.
+   */
   static void internal_free(void *ptr)
   {
     //std::cout << axom::execution_space<ExecSpace>::name() << ": Dellocating for Conduit via axom: ptr=" << ptr << std::endl;
@@ -172,6 +197,15 @@ private:
 };
 
 //------------------------------------------------------------------------------
+/**
+ * \brief Fill an array with int values from a Conduit node.
+ *
+ * \tparam ArrayType The array type being filled.
+ *
+ * \param n The node that contains the data.
+ * \param key The name of the node that contains the data in \a n.
+ * \param[out] arr The array being filled.
+ */
 template <typename ArrayType>
 bool fillFromNode(const conduit::Node &n, const std::string &key, ArrayType &arr)
 {
@@ -363,6 +397,11 @@ void to_unstructured(const conduit::Node &topo,
  * \brief Copies a Conduit tree in the \a src node to a new Conduit \a dest node,
  *        making sure to allocate array data in the appropriate memory space for
  *        the execution space.
+ *
+ * \tparam The destination execution space (e.g. axom::SEQ_EXEC).
+ *
+ * \param dest The conduit node that will receive the copied data.
+ * \param src The source data to be copied.
  */
 template <typename ExecSpace>
 void copy(conduit::Node &dest, const conduit::Node &src)
@@ -391,7 +430,7 @@ void copy(conduit::Node &dest, const conduit::Node &src)
         axom::copy(dest.data_ptr(), src.data_ptr(), src.dtype().bytes_compact());
       else
       {
-        // NOTE: this assumes that src is on the host. Why would we have strided data on device?
+        // NOTE: This assumes that src is on the host.
         conduit::Node tmp;
         src.compact_to(tmp);
         axom::copy(dest.data_ptr(), tmp.data_ptr(), tmp.dtype().bytes_compact());
