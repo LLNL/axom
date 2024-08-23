@@ -141,13 +141,13 @@ void printHost(const std::string &name, const ViewType &deviceView)
   int nn = deviceView.size();
   value_type *host = new value_type[nn];
   axom::copy(host, deviceView.data(), sizeof(value_type) * nn);
-  std::cout << name << "[" << nn<< "] = {";
+  std::cout << name << "[" << nn << "] = {";
   for(int ii = 0; ii < nn; ii++)
   {
     std::cout << ", " << host[ii];
   }
   std::cout << "}" << std::endl;
-  delete [] host;
+  delete[] host;
 }
 #endif
 
@@ -504,14 +504,14 @@ public:
 
     // Make the clipped mesh
     makeTopology(clipTableViews,
-                     builder,
-                     zoneData,
-                     fragmentData,
-                     opts,
-                     selectedZones,
-                     n_newTopo,
-                     n_newCoordset,
-                     n_newFields);
+                 builder,
+                 zoneData,
+                 fragmentData,
+                 opts,
+                 selectedZones,
+                 n_newTopo,
+                 n_newCoordset,
+                 n_newFields);
     makeCoordset(blend, n_coordset, n_newCoordset);
 
     bputils::SliceData slice;
@@ -755,14 +755,20 @@ private:
       });
 
 #if defined(AXOM_DEBUG_CLIP_FIELD)
-    std::cout << "------------------------ computeSizes ------------------------" << std::endl;
-    detail::printHost("fragmentData.m_fragmentsView", fragmentData.m_fragmentsView);
-    detail::printHost("fragmentData.m_fragmentsSizeView", fragmentData.m_fragmentsSizeView);
+    std::cout
+      << "------------------------ computeSizes ------------------------"
+      << std::endl;
+    detail::printHost("fragmentData.m_fragmentsView",
+                      fragmentData.m_fragmentsView);
+    detail::printHost("fragmentData.m_fragmentsSizeView",
+                      fragmentData.m_fragmentsSizeView);
     detail::printHost("blendGroupsView", blendGroupsView);
     detail::printHost("blendGroupsLenView", blendGroupsLenView);
     detail::printHost("zoneData.m_pointsUsedView", zoneData.m_pointsUsedView);
     detail::printHost("zoneData.m_clipCasesView", zoneData.m_clipCasesView);
-    std::cout << "--------------------------------------------------------------" << std::endl;
+    std::cout
+      << "--------------------------------------------------------------"
+      << std::endl;
 #endif
   }
 
@@ -810,10 +816,16 @@ private:
                                     fragmentData.m_fragmentSizeOffsetsView);
 
 #if defined(AXOM_DEBUG_CLIP_FIELD)
-    std::cout << "------------------------ computeFragmentOffsets ------------------------" << std::endl;
-    detail::printHost("fragmentData.m_fragmentOffsetsView", fragmentData.m_fragmentOffsetsView);
-    detail::printHost("fragmentData.m_fragmentSizeOffsetsView", fragmentData.m_fragmentSizeOffsetsView);
-    std::cout << "------------------------------------------------------------------------" << std::endl;
+    std::cout << "------------------------ computeFragmentOffsets "
+                 "------------------------"
+              << std::endl;
+    detail::printHost("fragmentData.m_fragmentOffsetsView",
+                      fragmentData.m_fragmentOffsetsView);
+    detail::printHost("fragmentData.m_fragmentSizeOffsetsView",
+                      fragmentData.m_fragmentSizeOffsetsView);
+    std::cout << "-------------------------------------------------------------"
+                 "-----------"
+              << std::endl;
 #endif
   }
 
@@ -948,14 +960,14 @@ private:
    * \note Objects that we need to capture into kernels are passed by value (they only contain views anyway). Data can be modified through the views.
    */
   void makeTopology(ClipTableViews clipTableViews,
-                        BlendGroupBuilderType builder,
-                        ZoneData zoneData,
-                        FragmentData fragmentData,
-                        const ClipOptions &opts,
-                        const SelectedZones<ExecSpace> &selectedZones,
-                        conduit::Node &n_newTopo,
-                        conduit::Node &n_newCoordset,
-                        conduit::Node &n_newFields) const
+                    BlendGroupBuilderType builder,
+                    ZoneData zoneData,
+                    FragmentData fragmentData,
+                    const ClipOptions &opts,
+                    const SelectedZones<ExecSpace> &selectedZones,
+                    conduit::Node &n_newTopo,
+                    conduit::Node &n_newCoordset,
+                    conduit::Node &n_newFields) const
   {
     AXOM_ANNOTATE_SCOPE("makeTopology");
     namespace bputils = axom::mir::utilities::blueprint;
@@ -1005,17 +1017,17 @@ private:
 
 #if defined(AXOM_DEBUG_CLIP_FIELD)
     // Initialize the values beforehand. For debugging.
-    axom::for_all<ExecSpace>(connView.size(), AXOM_LAMBDA(auto index)
-    {
-      connView[index] = -1;
-    });
-    axom::for_all<ExecSpace>(shapesView.size(), AXOM_LAMBDA(auto index)
-    {
-      shapesView[index] = -2;
-      sizesView[index] = -3;
-      offsetsView[index] = -4;
-      colorView[index] = -5;
-    });
+    axom::for_all<ExecSpace>(
+      connView.size(),
+      AXOM_LAMBDA(auto index) { connView[index] = -1; });
+    axom::for_all<ExecSpace>(
+      shapesView.size(),
+      AXOM_LAMBDA(auto index) {
+        shapesView[index] = -2;
+        sizesView[index] = -3;
+        offsetsView[index] = -4;
+        colorView[index] = -5;
+      });
 #endif
 
     // Here we fill in the new connectivity, sizes, shapes.
@@ -1105,15 +1117,18 @@ private:
 
     // Reduce outside of the for_selected_zones loop.
     RAJA::ReduceBitOr<reduce_policy, BitSet> shapesUsed_reduce(0);
-    axom::for_all<ExecSpace>(shapesView.size(), AXOM_LAMBDA(auto index)
-    {
-      BitSet shapeBit {};
-      axom::utilities::setBitOn(shapeBit, shapesView[index]);
-      shapesUsed_reduce |= shapeBit;
-    });
+    axom::for_all<ExecSpace>(
+      shapesView.size(),
+      AXOM_LAMBDA(auto index) {
+        BitSet shapeBit {};
+        axom::utilities::setBitOn(shapeBit, shapesView[index]);
+        shapesUsed_reduce |= shapeBit;
+      });
 
 #if defined(AXOM_DEBUG_CLIP_FIELD)
-    std::cout << "------------------------ makeTopology ------------------------" << std::endl;
+    std::cout
+      << "------------------------ makeTopology ------------------------"
+      << std::endl;
     detail::printHost("selectedZones", selectedZones.view());
     detail::printHost("m_fragmentsView", fragmentData.m_fragmentsView);
     detail::printHost("zoneData.m_clipCasesView", zoneData.m_clipCasesView);
@@ -1122,7 +1137,9 @@ private:
     detail::printHost("sizes", sizesView);
     detail::printHost("shapes", shapesView);
     detail::printHost("color", colorView);
-    std::cout << "--------------------------------------------------------------" << std::endl;
+    std::cout
+      << "--------------------------------------------------------------"
+      << std::endl;
 #endif
 
     // If inside and outside are not selected, remove the color field since we should not need it.
@@ -1135,7 +1152,9 @@ private:
     axom::exclusive_scan<ExecSpace>(sizesView, offsetsView);
 #if defined(AXOM_DEBUG_CLIP_FIELD)
     detail::printHost("offsets", offsetsView);
-    std::cout << "--------------------------------------------------------------" << std::endl;
+    std::cout
+      << "--------------------------------------------------------------"
+      << std::endl;
 #endif
 
     // Add shape information to the connectivity.
