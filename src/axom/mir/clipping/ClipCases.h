@@ -6,6 +6,7 @@
 #define AXOM_VISIT_CLIP_CASES_H
 //---------------------------------------------------------------------------
 // Axom modifications
+// NOTE: The values for EA-EL and N0-N3 were reduced.
 // clang-format off
 //#include <visit_vtk_light_exports.h>
 #define VISIT_VTK_LIGHT_API
@@ -50,25 +51,25 @@ namespace visit {
 
 // Edges of original cell (up to 12, for the hex)
 // Note: we assume these values are contiguous and monotonic.
-#define EA     20
-#define EB     21
-#define EC     22
-#define ED     23
-#define EE     24
-#define EF     25
-#define EG     26
-#define EH     27
-#define EI     28
-#define EJ     29
-#define EK     30
-#define EL     31
+#define EA     8
+#define EB     9
+#define EC     10
+#define ED     11
+#define EE     12
+#define EF     13
+#define EG     14
+#define EH     15
+#define EI     16
+#define EJ     17
+#define EK     18
+#define EL     19
 
 // New interpolated points (ST_PNT outputs)
 // Note: we assume these values are contiguous and monotonic.
-#define N0     40
-#define N1     41
-#define N2     42
-#define N3     43
+#define N0     20
+#define N1     21
+#define N2     22
+#define N3     23
 
 // Shapes
 #define ST_TET 100

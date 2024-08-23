@@ -19,6 +19,7 @@
 #include "axom/mir/BlendGroupBuilder.hpp"
 #include "axom/mir/utilities.hpp"
 #include "axom/mir/SelectedZones.hpp"
+#include "axom/slic.hpp"
 
 #include <conduit/conduit.hpp>
 #include <conduit/conduit_blueprint_mesh_utils.hpp>
@@ -43,9 +44,9 @@ namespace details
  * \return The ShapeID value that matches the st_index, or 0 if there is no match.
  */
 template <typename IntegerType>
-inline AXOM_HOST_DEVICE int ST_Index_to_ShapeID(IntegerType st_index)
+inline AXOM_HOST_DEVICE IntegerType ST_Index_to_ShapeID(IntegerType st_index)
 {
-  int shapeID = 0;
+  IntegerType shapeID = 0;
   switch(st_index)
   {
   case ST_LIN:
@@ -131,6 +132,24 @@ inline bool shapeIsSelected(unsigned char color, int selection)
   return (color0Selected(selection) && color == COLOR0) ||
     (color1Selected(selection) && color == COLOR1);
 }
+
+#if defined(AXOM_DEBUG_CLIP_FIELD)
+template <typename ViewType>
+void printHost(const std::string &name, const ViewType &deviceView)
+{
+  using value_type = typename ViewType::value_type;
+  int nn = deviceView.size();
+  value_type *host = new value_type[nn];
+  axom::copy(host, deviceView.data(), sizeof(value_type) * nn);
+  std::cout << name << "[" << nn<< "] = {";
+  for(int ii = 0; ii < nn; ii++)
+  {
+    std::cout << ", " << host[ii];
+  }
+  std::cout << "}" << std::endl;
+  delete [] host;
+}
+#endif
 
 }  // end namespace details
 
@@ -734,6 +753,17 @@ private:
         blendGroupsView[szIndex] = thisBlendGroups;
         blendGroupsLenView[szIndex] = thisBlendGroupLen;
       });
+
+#if defined(AXOM_DEBUG_CLIP_FIELD)
+    std::cout << "------------------------ computeSizes ------------------------" << std::endl;
+    detail::printHost("fragmentData.m_fragmentsView", fragmentData.m_fragmentsView);
+    detail::printHost("fragmentData.m_fragmentsSizeView", fragmentData.m_fragmentsSizeView);
+    detail::printHost("blendGroupsView", blendGroupsView);
+    detail::printHost("blendGroupsLenView", blendGroupsLenView);
+    detail::printHost("zoneData.m_pointsUsedView", zoneData.m_pointsUsedView);
+    detail::printHost("zoneData.m_clipCasesView", zoneData.m_clipCasesView);
+    std::cout << "--------------------------------------------------------------" << std::endl;
+#endif
   }
 
   /**
@@ -778,6 +808,13 @@ private:
                                     fragmentData.m_fragmentOffsetsView);
     axom::exclusive_scan<ExecSpace>(fragmentData.m_fragmentsSizeView,
                                     fragmentData.m_fragmentSizeOffsetsView);
+
+#if defined(AXOM_DEBUG_CLIP_FIELD)
+    std::cout << "------------------------ computeFragmentOffsets ------------------------" << std::endl;
+    detail::printHost("fragmentData.m_fragmentOffsetsView", fragmentData.m_fragmentOffsetsView);
+    detail::printHost("fragmentData.m_fragmentSizeOffsetsView", fragmentData.m_fragmentSizeOffsetsView);
+    std::cout << "------------------------------------------------------------------------" << std::endl;
+#endif
   }
 
   /**
@@ -966,9 +1003,29 @@ private:
     n_color_values.set(conduit::DataType::int32(fragmentData.m_finalNumZones));
     auto colorView = bputils::make_array_view<int>(n_color_values);
 
+#if defined(AXOM_DEBUG_CLIP_FIELD)
+    // Initialize the values beforehand. For debugging.
+    axom::for_all<ExecSpace>(connView.size(), AXOM_LAMBDA(auto index)
+    {
+      connView[index] = -1;
+    });
+    axom::for_all<ExecSpace>(shapesView.size(), AXOM_LAMBDA(auto index)
+    {
+      shapesView[index] = -2;
+      sizesView[index] = -3;
+      offsetsView[index] = -4;
+      colorView[index] = -5;
+    });
+#endif
+
     // Here we fill in the new connectivity, sizes, shapes.
     // We get the node ids from the unique blend names, de-duplicating points when making the new connectivity.
-    RAJA::ReduceBitOr<reduce_policy, BitSet> shapesUsed_reduce(0);
+    //
+    // NOTE: During development, I ran into problems with this kernel not executing
+    //       due to point_2_new being too large. The solution was to reduce the values
+    //       for EA-EL, N0-N3 to shrink the array to the point where it can fit in
+    //       memory available to the thread.
+    //
     m_topologyView.template for_selected_zones<ExecSpace>(
       selectedZones.view(),
       AXOM_LAMBDA(auto szIndex, auto /*zoneIndex*/, const auto &zone) {
@@ -984,7 +1041,7 @@ private:
         // in the final points.
         const BitSet ptused = zoneData.m_pointsUsedView[szIndex];
         ConnectivityType point_2_new[N3 + 1];
-        for(unsigned char pid = N0; pid <= N3; pid++)
+        for(int pid = N0; pid <= N3; pid++)
         {
           if(axom::utilities::bitIsSet(ptused, pid))
           {
@@ -992,7 +1049,7 @@ private:
             groups++;
           }
         }
-        for(unsigned char pid = P0; pid <= P7; pid++)
+        for(int pid = P0; pid <= P7; pid++)
         {
           if(axom::utilities::bitIsSet(ptused, pid))
           {
@@ -1000,7 +1057,7 @@ private:
             groups++;
           }
         }
-        for(unsigned char pid = EA; pid <= EL; pid++)
+        for(int pid = EA; pid <= EL; pid++)
         {
           if(axom::utilities::bitIsSet(ptused, pid))
           {
@@ -1041,15 +1098,32 @@ private:
               shapesView[sizeIndex] = shapeID;
               colorView[sizeIndex] = fragment[1] - COLOR0;
               sizeIndex++;
-
-              // Record which shape type was used. Use a bit for each shape.
-              axom::utilities::setBitOn(shapesUsed, shapeID);
             }
           }
         }
-
-        shapesUsed_reduce |= shapesUsed;
       });
+
+    // Reduce outside of the for_selected_zones loop.
+    RAJA::ReduceBitOr<reduce_policy, BitSet> shapesUsed_reduce(0);
+    axom::for_all<ExecSpace>(shapesView.size(), AXOM_LAMBDA(auto index)
+    {
+      BitSet shapeBit {};
+      axom::utilities::setBitOn(shapeBit, shapesView[index]);
+      shapesUsed_reduce |= shapeBit;
+    });
+
+#if defined(AXOM_DEBUG_CLIP_FIELD)
+    std::cout << "------------------------ makeTopology ------------------------" << std::endl;
+    detail::printHost("selectedZones", selectedZones.view());
+    detail::printHost("m_fragmentsView", fragmentData.m_fragmentsView);
+    detail::printHost("zoneData.m_clipCasesView", zoneData.m_clipCasesView);
+    detail::printHost("zoneData.m_pointsUsedView", zoneData.m_pointsUsedView);
+    detail::printHost("conn", connView);
+    detail::printHost("sizes", sizesView);
+    detail::printHost("shapes", shapesView);
+    detail::printHost("color", colorView);
+    std::cout << "--------------------------------------------------------------" << std::endl;
+#endif
 
     // If inside and outside are not selected, remove the color field since we should not need it.
     if(!(opts.inside() && opts.outside()))
@@ -1059,10 +1133,16 @@ private:
 
     // Make offsets
     axom::exclusive_scan<ExecSpace>(sizesView, offsetsView);
+#if defined(AXOM_DEBUG_CLIP_FIELD)
+    detail::printHost("offsets", offsetsView);
+    std::cout << "--------------------------------------------------------------" << std::endl;
+#endif
 
     // Add shape information to the connectivity.
-    const auto shapesUsed = shapesUsed_reduce.get();
+    const BitSet shapesUsed = shapesUsed_reduce.get();
+    SLIC_ASSERT_MSG(shapesUsed != 0, "No shapes were produced!");
     const auto shapeMap = shapeMap_FromFlags(shapesUsed);
+    SLIC_ASSERT_MSG(shapeMap.empty() == false, "The shape map is empty!");
     if(axom::utilities::countBits(shapesUsed) > 1)
     {
       n_newTopo["elements/shape"] = "mixed";
@@ -1072,7 +1152,6 @@ private:
     }
     else
     {
-      n_shapes.reset();
       n_newTopo["elements"].remove("shapes");
       n_newTopo["elements/shape"] = shapeMap.begin()->first;
     }
