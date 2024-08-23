@@ -313,7 +313,7 @@ public:
   using ClipTableViews = axom::StackArray<axom::mir::clipping::TableView, 6>;
   using Intersector = IntersectPolicy;
 
-  using BitSet = std::uint64_t;
+  using BitSet = std::uint32_t;
   using KeyType = typename NamingPolicy::KeyType;
   using loop_policy = typename axom::execution_space<ExecSpace>::loop_policy;
   using reduce_policy = typename axom::execution_space<ExecSpace>::reduce_policy;
@@ -403,7 +403,10 @@ public:
     const auto nzones = selectedZones.view().size();
 
     // Give the intersector a chance to further initialize.
-    m_intersector.initialize(n_options, n_fields);
+    {
+      AXOM_ANNOTATE_SCOPE("Initialize intersector");
+      m_intersector.initialize(n_options, n_fields);
+    }
 
     // Load clip table data and make views.
     m_clipTables.load(m_topologyView.dimension());
@@ -411,6 +414,7 @@ public:
     createClipTableViews(clipTableViews, m_topologyView.dimension());
 
     // Allocate some memory and store views in ZoneData, FragmentData.
+    AXOM_ANNOTATE_BEGIN("allocation");
     axom::Array<int> clipCases(nzones,
                                nzones,
                                allocatorID);  // The clip case for a zone.
@@ -455,6 +459,7 @@ public:
       nzones,
       nzones,
       allocatorID);  // Start of zone's blend group offsets in definitions.
+    AXOM_ANNOTATE_END("allocation");
 
     // Make an object to help manage building the blend groups.
     BlendGroupBuilderType builder;
@@ -471,6 +476,7 @@ public:
     builder.computeBlendGroupOffsets();
 
     // Allocate memory for blend groups.
+    AXOM_ANNOTATE_BEGIN("allocation2");
     axom::Array<KeyType> blendNames(blendGroupsSize, blendGroupsSize, allocatorID);
     axom::Array<IndexType> blendGroupSizes(blendGroupsSize,
                                            blendGroupsSize,
@@ -491,15 +497,19 @@ public:
                           blendGroupStart.view(),
                           blendIds.view(),
                           blendCoeff.view());
+    AXOM_ANNOTATE_END("allocation2");
     makeBlendGroups(clipTableViews, builder, zoneData, opts, selectedZones);
 
     // Make the blend groups unique
     axom::Array<KeyType> uNames;
     axom::Array<axom::IndexType> uIndices;
-    axom::mir::utilities::unique<ExecSpace, KeyType>(builder.blendNames(),
-                                                     uNames,
-                                                     uIndices);
-    builder.setUniqueNames(uNames.view(), uIndices.view());
+    {
+      AXOM_ANNOTATE_SCOPE("unique");
+      axom::mir::utilities::unique<ExecSpace, KeyType>(builder.blendNames(),
+                                                       uNames,
+                                                       uIndices);
+      builder.setUniqueNames(uNames.view(), uIndices.view());
+    }
     bputils::BlendData blend = builder.makeBlendData();
 
     // Make the clipped mesh
@@ -514,25 +524,9 @@ public:
                  n_newFields);
     makeCoordset(blend, n_coordset, n_newCoordset);
 
-    bputils::SliceData slice;
-    axom::Array<IndexType> sliceIndices(fragmentData.m_finalNumZones,
-                                        fragmentData.m_finalNumZones,
-                                        allocatorID);
-    auto sliceIndicesView = sliceIndices.view();
-
-    // Fill in sliceIndicesView.
-    const auto selectedZonesView = selectedZones.view();
-    axom::for_all<ExecSpace>(
-      nzones,
-      AXOM_LAMBDA(auto index) {
-        const auto zoneIndex = selectedZonesView[index];
-        const auto start = fragmentData.m_fragmentOffsetsView[index];
-        for(int i = 0; i < fragmentData.m_fragmentsView[index]; i++)
-          sliceIndicesView[start + i] = zoneIndex;
-      });
-
     // Get the fields that we want to process.
     std::map<std::string, std::string> fieldsToProcess;
+    int numElementFields = 0;
     if(!opts.fields(fieldsToProcess))
     {
       // Fields were not present in the options. Select all fields that have the same topology as n_topo.
@@ -540,12 +534,37 @@ public:
       {
         if(n_fields[i].fetch_existing("topology").as_string() == n_topo.name())
         {
+          numElementFields += (n_fields[i].fetch_existing("association").as_string() == "element") ? 1 : 0;
+
           fieldsToProcess[n_fields[i].name()] = n_fields[i].name();
         }
       }
     }
 
-    slice.m_indicesView = sliceIndicesView;
+    // Make slice indices if we have element fields.
+    bputils::SliceData slice;
+    axom::Array<IndexType> sliceIndices;
+    if(numElementFields > 0)
+    {
+      AXOM_ANNOTATE_SCOPE("sliceIndices");
+      sliceIndices = axom::Array<IndexType>(fragmentData.m_finalNumZones,
+                                            fragmentData.m_finalNumZones,
+                                            allocatorID);
+      auto sliceIndicesView = sliceIndices.view();
+
+      // Fill in sliceIndicesView.
+      const auto selectedZonesView = selectedZones.view();
+      axom::for_all<ExecSpace>(
+        nzones,
+        AXOM_LAMBDA(auto index) {
+          const auto zoneIndex = selectedZonesView[index];
+          const auto start = fragmentData.m_fragmentOffsetsView[index];
+          for(int i = 0; i < fragmentData.m_fragmentsView[index]; i++)
+            sliceIndicesView[start + i] = zoneIndex;
+        });
+      slice.m_indicesView = sliceIndicesView;
+    }
+
     makeFields(blend,
                slice,
                opts.topologyName(n_topo.name()),
@@ -603,6 +622,7 @@ private:
    */
   void createClipTableViews(ClipTableViews &views, int dimension)
   {
+    AXOM_ANNOTATE_SCOPE("createClipTableViews");
     if(dimension == -1 || dimension == 2)
     {
       views[details::getClipTableIndex(views::Tri_ShapeID)] =
@@ -1040,7 +1060,7 @@ private:
     //
     m_topologyView.template for_selected_zones<ExecSpace>(
       selectedZones.view(),
-      AXOM_LAMBDA(auto szIndex, auto /*zoneIndex*/, const auto &zone) {
+      AXOM_LAMBDA(auto szIndex, auto AXOM_UNUSED_PARAM(zoneIndex), const auto &zone) {
         // If there are no fragments, return from lambda.
         if(fragmentData.m_fragmentsView[szIndex] == 0) return;
 
@@ -1053,7 +1073,7 @@ private:
         // in the final points.
         const BitSet ptused = zoneData.m_pointsUsedView[szIndex];
         ConnectivityType point_2_new[N3 + 1];
-        for(int pid = N0; pid <= N3; pid++)
+        for(BitSet pid = N0; pid <= N3; pid++)
         {
           if(axom::utilities::bitIsSet(ptused, pid))
           {
@@ -1061,7 +1081,7 @@ private:
             groups++;
           }
         }
-        for(int pid = P0; pid <= P7; pid++)
+        for(BitSet pid = P0; pid <= P7; pid++)
         {
           if(axom::utilities::bitIsSet(ptused, pid))
           {
@@ -1069,7 +1089,7 @@ private:
             groups++;
           }
         }
-        for(int pid = EA; pid <= EL; pid++)
+        for(BitSet pid = EA; pid <= EL; pid++)
         {
           if(axom::utilities::bitIsSet(ptused, pid))
           {
@@ -1191,7 +1211,7 @@ private:
     axom::mir::utilities::blueprint::CoordsetBlender<
       ExecSpace,
       CoordsetView,
-      axom::mir::utilities::blueprint::SelectThroughArrayView>
+      axom::mir::utilities::blueprint::SelectSubsetPolicy>
       cb;
     n_newCoordset.reset();
     cb.execute(blend, m_coordsetView, n_coordset, n_newCoordset);
@@ -1284,7 +1304,7 @@ private:
               // Blend the field.
               axom::mir::utilities::blueprint::FieldBlender<
                 ExecSpace,
-                axom::mir::utilities::blueprint::SelectThroughArrayView,
+                axom::mir::utilities::blueprint::SelectSubsetPolicy,
                 IndexingPolicy>
                 b(indexing);
               b.execute(blend, n_field, n_out_fields[it->second]);
@@ -1297,7 +1317,7 @@ private:
           // Blend the field.
           axom::mir::utilities::blueprint::FieldBlender<
             ExecSpace,
-            axom::mir::utilities::blueprint::SelectThroughArrayView>
+            axom::mir::utilities::blueprint::SelectSubsetPolicy>
             b;
           b.execute(blend, n_field, n_out_fields[it->second]);
         }

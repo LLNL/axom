@@ -40,13 +40,13 @@ struct BlendData
 struct SelectAllPolicy
 {
   AXOM_HOST_DEVICE
-  static IndexType size(const BlendData &blend)
+  static inline IndexType size(const BlendData &blend)
   {
     return blend.m_blendGroupSizesView.size();
   }
 
   AXOM_HOST_DEVICE
-  static IndexType selectedIndex(const BlendData & /*blend*/, IndexType index)
+  static inline IndexType selectedIndex(const BlendData & /*blend*/, IndexType index)
   {
     return index;
   }
@@ -55,16 +55,16 @@ struct SelectAllPolicy
 /**
  * \brief This policy can be used with FieldBlender to select a subset of blend groups, according to m_selectedIndicesView.
  */
-struct SelectThroughArrayView
+struct SelectSubsetPolicy
 {
   AXOM_HOST_DEVICE
-  static IndexType size(const BlendData &blend)
+  static inline IndexType size(const BlendData &blend)
   {
     return blend.m_selectedIndicesView.size();
   }
 
   AXOM_HOST_DEVICE
-  static IndexType selectedIndex(const BlendData &blend, IndexType index)
+  static inline IndexType selectedIndex(const BlendData &blend, IndexType index)
   {
     return blend.m_selectedIndicesView[index];
   }

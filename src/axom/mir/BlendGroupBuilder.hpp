@@ -81,6 +81,7 @@ public:
    */
   void computeBlendGroupSizes(IndexType &bgSum, IndexType &bgLenSum)
   {
+    AXOM_ANNOTATE_SCOPE("computeBlendGroupSizes");
     using reduce_policy =
       typename axom::execution_space<ExecSpace>::reduce_policy;
     RAJA::ReduceSum<reduce_policy, IndexType> blendGroups_sum(0);
@@ -115,6 +116,7 @@ public:
    */
   void computeBlendGroupOffsets()
   {
+    AXOM_ANNOTATE_SCOPE("computeBlendGroupOffsets");
     axom::exclusive_scan<ExecSpace>(m_state.m_blendGroupsLenView,
                                     m_state.m_blendOffsetView);
     axom::exclusive_scan<ExecSpace>(m_state.m_blendGroupsView,

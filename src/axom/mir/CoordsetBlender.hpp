@@ -10,6 +10,7 @@
 #include "axom/mir/blueprint_utilities.hpp"  // for cpp2conduit
 #include "axom/primal/geometry/Point.hpp"
 #include "axom/primal/geometry/Vector.hpp"
+#include "axom/slic.hpp"
 
 #include <conduit/conduit.hpp>
 #include <conduit/conduit_blueprint_mesh_utils.hpp>
