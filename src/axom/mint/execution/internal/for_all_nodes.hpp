@@ -385,9 +385,6 @@ inline void for_all_nodes_impl(xargs::xyz, const Mesh& m, KernelType&& kernel)
     axom::ArrayView<const double>(m.getCoordinateArray(Z_COORDINATE),
                                   coordinate_size);
 
-  // const double* x = m.getCoordinateArray(X_COORDINATE);
-  // const double* y = m.getCoordinateArray(Y_COORDINATE);
-  // const double* z = m.getCoordinateArray(Z_COORDINATE);
   SLIC_ASSERT(x_vals_h.data() != nullptr);
   SLIC_ASSERT(y_vals_h.data() != nullptr);
   SLIC_ASSERT(z_vals_h.data() != nullptr);

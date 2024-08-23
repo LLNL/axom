@@ -188,7 +188,7 @@ void CandidateFinderBase<ExecSpace, FloatType>::initialize()
 
       for(IndexType inode = 0; inode < 3; ++inode)
       {
-        double* node = coords.getColumn(inode);
+        const double* node = coords.getColumn(inode);
         tri[inode] = PointType {node[mint::X_COORDINATE],
                                 node[mint::Y_COORDINATE],
                                 node[mint::Z_COORDINATE]};

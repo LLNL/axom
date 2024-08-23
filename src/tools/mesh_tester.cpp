@@ -484,8 +484,6 @@ std::vector<std::pair<int, int>> naiveIntersectionAlgorithm(
   axom::deallocate(intersections);
   axom::deallocate(counter);
 
-  // axom::setDefaultAllocator(current_allocator);
-
   return retval;
 }
 #endif  // defined(AXOM_USE_RAJA)
