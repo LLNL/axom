@@ -250,6 +250,11 @@ public:
    */
   virtual void write(bool local = false);
 
+  /*!
+   * \brief Getter method to access the m_stream member
+   */
+  std::ostream* getStream() { return m_stream; }
+
 private:
   void initializeLumberjack(MPI_Comm comm, int ranksLimit);
   void finalizeLumberjack();
