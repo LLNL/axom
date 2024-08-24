@@ -1102,7 +1102,6 @@ private:
         int outputIndex = fragmentData.m_fragmentSizeOffsetsView[szIndex];
         // This is where the output fragment sizes/shapes start for this zone.
         int sizeIndex = fragmentData.m_fragmentOffsetsView[szIndex];
-        BitSet shapesUsed = 0;
 
         // Iterate over the selected fragments and emit connectivity for them.
         const auto clipcase = zoneData.m_clipCasesView[szIndex];

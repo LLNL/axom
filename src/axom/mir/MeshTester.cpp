@@ -4,14 +4,86 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 
 #include "MeshTester.hpp"
+#include <axom/mir.hpp>
 
 namespace numerics = axom::numerics;
 namespace slam = axom::slam;
+namespace bputils = axom::mir::utilities::blueprint;
 
 namespace axom
 {
 namespace mir
 {
+
+//--------------------------------------------------------------------------------
+  /**
+       * \brief Calculates the percent overlap between the given circle and quad.
+       * 
+       * \param gridSize  The size of the uniform grid which will be sampled over to check for overlap.
+       * \param circleCenter  The center point of the circle.
+       * \param circleRadius  The radius of the circle.
+       * \param quadP0  The upper left vertex of the quad.
+       * \param quadP1  The lower left vertex of the quad.
+       * \param quadP2  The lower right vertex of the quad.
+       * \param quadP3  The upper right vertex of the quad.
+       * 
+       * /return The percent value overlap of the circle and the quad between [0, 1].
+       */
+
+template <typename PointType>
+static axom::float64 calculatePercentOverlapMonteCarlo(
+  int gridSize,
+  const PointType& circleCenter,
+  axom::float64 circleRadius,
+  const PointType& quadP0,
+  const PointType& quadP1,
+  const PointType& quadP2,
+  const PointType& quadP3)
+{
+  // Check if any of the quad's corners are within the circle
+  auto d0Sq = primal::squared_distance(quadP0, circleCenter);
+  auto d1Sq = primal::squared_distance(quadP1, circleCenter);
+  auto d2Sq = primal::squared_distance(quadP2, circleCenter);
+  auto d3Sq = primal::squared_distance(quadP3, circleCenter);
+  auto dRSq = circleRadius * circleRadius;
+
+  int inFlags = ((d0Sq < dRSq) ? 1 << 0 : 0) + ((d1Sq < dRSq) ? 1 << 1 : 0) +
+    ((d2Sq < dRSq) ? 1 << 2 : 0) + ((d3Sq < dRSq) ? 1 << 3 : 0);
+  const int allFlags = 15;
+  const int noFlags = 0;
+
+  if(inFlags == allFlags)
+  {
+    // The entire quad overlaps the circle
+    return 1.;
+  }
+  else if(inFlags == noFlags)
+  {
+    return 0.;
+  }
+  else
+  {
+    // Some of the quad overlaps the circle, so run the Monte Carlo sampling to determine how much
+    axom::float64 delta_x = axom::utilities::abs(quadP2[0] - quadP1[0]) /
+      static_cast<double>(gridSize - 1);
+    axom::float64 delta_y = axom::utilities::abs(quadP0[1] - quadP1[1]) /
+      static_cast<double>(gridSize - 1);
+    int countOverlap = 0;
+    for(int y = 0; y < gridSize; ++y)
+    {
+      for(int x = 0; x < gridSize; ++x)
+      {
+        PointType samplePoint =
+          PointType::make_point(delta_x * x + quadP1[0],
+                                  delta_y * y + quadP1[1]);
+        if(primal::squared_distance(samplePoint, circleCenter) < dRSq)
+          ++countOverlap;
+      }
+    }
+    return countOverlap / static_cast<double>(gridSize * gridSize);
+  }
+}
+
 //--------------------------------------------------------------------------------
 
 MIRMesh MeshTester::initTestCaseOne()
@@ -103,6 +175,77 @@ MIRMesh MeshTester::initTestCaseOne()
   testMesh.initializeMesh(verts, elems, numMaterials, topoData, mapData, volFracs);
 
   return testMesh;
+}
+
+//--------------------------------------------------------------------------------
+void MeshTester::mesh3x3(conduit::Node &mesh)
+{
+  // clang-format off
+  mesh["coordsets/coords/type"] = "explicit";
+  mesh["coordsets/coords/values/x"].set(std::vector<float>{{
+    0., 1., 2., 3., 0., 1., 2., 3., 0., 1., 2., 3., 0., 1., 2., 3.
+  }});
+  mesh["coordsets/coords/values/y"].set(std::vector<float>{{
+    0., 0., 0., 0., 1., 1., 1., 1., 2., 2., 2., 2., 3., 3., 3., 3.
+  }});
+
+  mesh["topologies/mesh/type"] = "unstructured";
+  mesh["topologies/mesh/coordset"] = "coords";
+  mesh["topologies/mesh/elements/shape"] = "quad";
+  mesh["topologies/mesh/elements/connectivity"].set(std::vector<int>{{
+    0,1,5,4, 1,2,6,5, 2,3,7,6, 4,5,9,8, 5,6,10,9, 6,7,11,10, 8,9,13,12, 9,10,14,13, 10,11,15,14
+  }});
+  mesh["topologies/mesh/elements/sizes"].set(std::vector<int>{{
+    4,4,4,4, 4,4,4,4, 4,4,4,4, 4,4,4,4
+  }});
+  mesh["topologies/mesh/elements/offsets"].set(std::vector<int>{{
+    0, 4, 8, 12, 16, 20, 24, 28, 32, 36, 40, 44, 48, 52, 56, 60
+  }});
+  // clang-format on
+}
+
+//--------------------------------------------------------------------------------
+void MeshTester::initTestCaseOne(conduit::Node &mesh)
+{
+  mesh3x3(mesh);
+
+  // clang-format off
+  mesh["matsets/mat/topology"] = "mesh";
+  mesh["matsets/mat/material_map/green"] = 0;
+  mesh["matsets/mat/material_map/blue"] = 1;
+  mesh["matsets/mat/material_ids"].set(std::vector<int>{{
+   0,
+   0,
+   0,
+   0,
+   0, 1,
+   0, 1,
+   0, 1,
+   1,
+   1
+  }});
+  mesh["matsets/mat/volume_fractions"].set(std::vector<float>{{
+   1.,
+   1.,
+   1.,
+   1.,
+   0.5, 0.5,
+   0.2, 0.8,
+   0.2, 0.8,
+   1.,
+   1.
+  }});
+  mesh["matsets/mat/sizes"].set(std::vector<int>{{
+    1, 1, 1, 1, 2, 2, 2, 1, 1
+  }});
+  mesh["matsets/mat/offsets"].set(std::vector<int>{{
+    //0, 1, 2, 3, 5, 7, 9, 10, 11
+    0, 1, 2, 3, 4, 6, 8, 10, 11
+  }});
+  mesh["matsets/mat/indices"].set(std::vector<int>{{
+    0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11
+  }});
+  // clang-format on
 }
 
 //--------------------------------------------------------------------------------
@@ -200,6 +343,53 @@ mir::MIRMesh MeshTester::initTestCaseTwo()
 }
 
 //--------------------------------------------------------------------------------
+void MeshTester::initTestCaseTwo(conduit::Node &mesh)
+{
+  mesh3x3(mesh);
+
+  // clang-format off
+  constexpr int BLUE = 0;
+  constexpr int RED = 1;
+  constexpr int ORANGE = 2;
+  mesh["matsets/mat/topology"] = "mesh";
+  mesh["matsets/mat/material_map/blue"] = BLUE;
+  mesh["matsets/mat/material_map/red"] = RED;
+  mesh["matsets/mat/material_map/orange"] = ORANGE;
+  mesh["matsets/mat/material_ids"].set(std::vector<int>{{
+   BLUE,
+   BLUE,
+   BLUE,
+   BLUE,
+   BLUE, RED, ORANGE,
+   BLUE, RED,
+   BLUE, ORANGE,
+   RED, ORANGE,
+   RED
+  }});
+  mesh["matsets/mat/volume_fractions"].set(std::vector<float>{{
+   1.,
+   1.,
+   1.,
+   1.,
+   0.5, 0.3, 0.2,
+   0.2, 0.8,
+   0.2, 0.8,
+   0.3, 0.7,
+   1.
+  }});
+  mesh["matsets/mat/sizes"].set(std::vector<int>{{
+    1, 1, 1, 1, 3, 2, 2, 2, 1
+  }});
+  mesh["matsets/mat/offsets"].set(std::vector<int>{{
+    0, 1, 2, 3, 4, 7, 9, 11, 13
+  }});
+  mesh["matsets/mat/indices"].set(std::vector<int>{{
+    0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13
+  }});
+  // clang-format on
+}
+
+//--------------------------------------------------------------------------------
 
 mir::MIRMesh MeshTester::initTestCaseThree()
 {
@@ -275,6 +465,55 @@ mir::MIRMesh MeshTester::initTestCaseThree()
   testMesh.initializeMesh(verts, elems, numMaterials, topoData, mapData, volFracs);
 
   return testMesh;
+}
+
+void MeshTester::initTestCaseThree(conduit::Node &mesh)
+{
+  // clang-format off
+  mesh["coordsets/coords/type"] = "explicit";
+  mesh["coordsets/coords/values/x"].set(std::vector<float>{{
+    1., 0.5, 1.5, 0., 1., 2.,
+  }});
+  mesh["coordsets/coords/values/y"].set(std::vector<float>{{
+    2., 1., 1., 0., 0., 0.
+  }});
+
+  mesh["topologies/mesh/type"] = "unstructured";
+  mesh["topologies/mesh/coordset"] = "coords";
+  mesh["topologies/mesh/elements/shape"] = "tri";
+  mesh["topologies/mesh/elements/connectivity"].set(std::vector<int>{{
+    0,1,2, 1,3,4, 1,4,2, 2,4,5
+  }});
+  mesh["topologies/mesh/elements/sizes"].set(std::vector<int>{{3,3,3,3}});
+  mesh["topologies/mesh/elements/offsets"].set(std::vector<int>{{0,3,6,9}});
+
+  constexpr int BLUE = 0;
+  constexpr int RED = 1;
+  mesh["matsets/mat/topology"] = "mesh";
+  mesh["matsets/mat/material_map/blue"] = BLUE;
+  mesh["matsets/mat/material_map/red"] = RED;
+  mesh["matsets/mat/material_ids"].set(std::vector<int>{{
+   RED,
+   BLUE, RED,
+   BLUE, RED,
+   BLUE, RED
+  }});
+  mesh["matsets/mat/volume_fractions"].set(std::vector<float>{{
+   1.,
+   0.5, 0.5,
+   0.8, 0.2,
+   0.5, 0.5
+  }});
+  mesh["matsets/mat/sizes"].set(std::vector<int>{{
+    1, 2, 2, 2
+  }});
+  mesh["matsets/mat/offsets"].set(std::vector<int>{{
+    0, 1, 3, 5
+  }});
+  mesh["matsets/mat/indices"].set(std::vector<int>{{
+    0, 1, 2, 3, 4, 5, 6
+  }});
+  // clang-format on
 }
 
 //--------------------------------------------------------------------------------
@@ -396,6 +635,92 @@ mir::MIRMesh MeshTester::initTestCaseFour()
 
 //--------------------------------------------------------------------------------
 
+template <typename TopoView, typename CoordsetView>
+static void addCircleMaterial(const TopoView &topoView,
+     const CoordsetView &coordsetView, conduit::Node &mesh, const mir::Point2 &circleCenter, axom::float64 circleRadius, int numSamples)
+{
+  constexpr int GREEN = 0;
+  constexpr int BLUE = 1;
+
+  int numElements = topoView.numberOfZones();
+  std::vector<float> volFracs[2];
+  volFracs[GREEN].resize(numElements);
+  volFracs[BLUE].resize(numElements);
+
+  // Generate the element volume fractions for the circle
+  axom::ArrayView<float> greenView(volFracs[GREEN].data(), numElements);
+  axom::ArrayView<float> blueView(volFracs[BLUE].data(), numElements);
+  typename CoordsetView::PointType center;
+  center[0] = circleCenter[0];
+  center[1] = circleCenter[1];
+  topoView.template for_all_zones<axom::SEQ_EXEC>(AXOM_LAMBDA(auto zoneIndex, const auto &zone)
+  {
+    auto vf = calculatePercentOverlapMonteCarlo(numSamples,
+                                                center,
+                                                circleRadius,
+                                                coordsetView[zone.getId(0)],
+                                                coordsetView[zone.getId(1)],
+                                                coordsetView[zone.getId(2)],
+                                                coordsetView[zone.getId(3)]);
+    greenView[zoneIndex] = vf;
+    blueView[zoneIndex] = 1.0 - vf;
+  });
+
+  // Figure out the material buffers from the volume fractions.
+  std::vector<int> material_ids, sizes, offsets, indices;
+  std::vector<int> volume_fractions;
+  for(int i = 0; i < numElements; ++i)
+  {
+    int nmats = 0;
+    offsets.push_back(indices.size());
+    if(volFracs[GREEN][i] > 0.)
+    {
+      material_ids.push_back(GREEN);
+      volume_fractions.push_back(volFracs[GREEN][i]);
+      indices.push_back(indices.size());
+      nmats++;
+    }
+    if(volFracs[BLUE][i] > 0.)
+    {
+      material_ids.push_back(BLUE);
+      volume_fractions.push_back(volFracs[BLUE][i]);
+      indices.push_back(indices.size());
+      nmats++;
+    }
+    sizes.push_back(nmats);
+  }
+
+  mesh["matsets/mat/topology"] = "mesh";
+  mesh["matsets/mat/material_map/green"] = GREEN;
+  mesh["matsets/mat/material_map/blue"] = BLUE;
+  mesh["matsets/mat/material_ids"].set(material_ids);
+  mesh["matsets/mat/volume_fractions"].set(volume_fractions);
+  mesh["matsets/mat/sizes"].set(sizes);
+  mesh["matsets/mat/offsets"].set(offsets);
+  mesh["matsets/mat/indices"].set(indices);
+}
+
+//--------------------------------------------------------------------------------
+void MeshTester::initTestCaseFour(conduit::Node &mesh)
+{
+  mesh3x3(mesh);
+
+  // Make views
+  using CoordsetView = axom::mir::views::ExplicitCoordsetView<float, 2>;
+  CoordsetView coordsetView(bputils::make_array_view<float>(mesh["coordsets/coords/values/x"]),
+                            bputils::make_array_view<float>(mesh["coordsets/coords/values/y"]));
+  using TopoView = axom::mir::views::UnstructuredTopologySingleShapeView<axom::mir::views::QuadShape<int>>;
+  TopoView topoView(bputils::make_array_view<int>(mesh["topologies/mesh/elements/connectivity"]));
+
+  // Add material
+  const auto circleCenter = mir::Point2::make_point(1.5, 1.5);
+  const axom::float64 circleRadius = 1.25;
+  const int numSamples = 100;
+  addCircleMaterial<TopoView, CoordsetView>(topoView, coordsetView, mesh, circleCenter, circleRadius, numSamples);
+}
+
+//--------------------------------------------------------------------------------
+
 mir::MIRMesh MeshTester::createUniformGridTestCaseMesh(
   int gridSize,
   const mir::Point2& circleCenter,
@@ -461,58 +786,24 @@ mir::MIRMesh MeshTester::createUniformGridTestCaseMesh(
 }
 
 //--------------------------------------------------------------------------------
-
-axom::float64 MeshTester::calculatePercentOverlapMonteCarlo(
+void MeshTester::createUniformGridTestCaseMesh(
   int gridSize,
   const mir::Point2& circleCenter,
-  axom::float64 circleRadius,
-  const mir::Point2& quadP0,
-  const mir::Point2& quadP1,
-  const mir::Point2& quadP2,
-  const mir::Point2& quadP3)
+  axom::float64 circleRadius, conduit::Node &mesh)
 {
-  // Check if any of the quad's corners are within the circle
-  auto d0Sq = primal::squared_distance(quadP0, circleCenter);
-  auto d1Sq = primal::squared_distance(quadP1, circleCenter);
-  auto d2Sq = primal::squared_distance(quadP2, circleCenter);
-  auto d3Sq = primal::squared_distance(quadP3, circleCenter);
-  auto dRSq = circleRadius * circleRadius;
+  // Generate the mesh
+  generateGrid(gridSize, mesh);
 
-  int inFlags = ((d0Sq < dRSq) ? 1 << 0 : 0) + ((d1Sq < dRSq) ? 1 << 1 : 0) +
-    ((d2Sq < dRSq) ? 1 << 2 : 0) + ((d3Sq < dRSq) ? 1 << 3 : 0);
-  const int allFlags = 15;
-  const int noFlags = 0;
+  // Make views
+  using CoordsetView = axom::mir::views::ExplicitCoordsetView<float, 2>;
+  CoordsetView coordsetView(bputils::make_array_view<float>(mesh["coordsets/coords/values/x"]),
+                            bputils::make_array_view<float>(mesh["coordsets/coords/values/y"]));
+  using TopoView = axom::mir::views::UnstructuredTopologySingleShapeView<axom::mir::views::QuadShape<int>>;
+  TopoView topoView(bputils::make_array_view<int>(mesh["topologies/mesh/elements/connectivity"]));
 
-  if(inFlags == allFlags)
-  {
-    // The entire quad overlaps the circle
-    return 1.;
-  }
-  else if(inFlags == noFlags)
-  {
-    return 0.;
-  }
-  else
-  {
-    // Some of the quad overlaps the circle, so run the Monte Carlo sampling to determine how much
-    axom::float64 delta_x = axom::utilities::abs(quadP2[0] - quadP1[0]) /
-      static_cast<double>(gridSize - 1);
-    axom::float64 delta_y = axom::utilities::abs(quadP0[1] - quadP1[1]) /
-      static_cast<double>(gridSize - 1);
-    int countOverlap = 0;
-    for(int y = 0; y < gridSize; ++y)
-    {
-      for(int x = 0; x < gridSize; ++x)
-      {
-        mir::Point2 samplePoint =
-          mir::Point2::make_point(delta_x * x + quadP1[0],
-                                  delta_y * y + quadP1[1]);
-        if(primal::squared_distance(samplePoint, circleCenter) < dRSq)
-          ++countOverlap;
-      }
-    }
-    return countOverlap / static_cast<double>(gridSize * gridSize);
-  }
+  // Add material
+  int numSamples = 100;
+  addCircleMaterial<TopoView, CoordsetView>(topoView, coordsetView, mesh, circleCenter, circleRadius, numSamples);
 }
 
 //--------------------------------------------------------------------------------
@@ -630,6 +921,113 @@ mir::CellData MeshTester::generateGrid(int gridSize)
   return data;
 }
 
+void MeshTester::generateGrid(int gridSize, conduit::Node &mesh)
+{
+  int nx = gridSize + 1;
+  int ny = gridSize + 1;
+  int nzones = gridSize * gridSize;
+  int nnodes = nx * ny;
+
+  std::vector<float> xc, yc;
+  xc.reserve(nnodes);
+  yc.reserve(nnodes);
+  for(int j = 0; j < ny; j++)
+  {
+    for(int i = 0; i < nx; i++)
+    {
+      xc.push_back(i);
+      yc.push_back(j);
+    }
+  }
+
+  std::vector<int> conn, sizes, offsets;
+  conn.reserve(nzones * 4);
+  sizes.reserve(nzones);
+  offsets.reserve(nzones);
+  for(int j = 0; j < gridSize; j++)
+  {
+    for(int i = 0; i < gridSize; i++)
+    {
+      offsets.push_back(offsets.size());
+      sizes.push_back(4);
+      conn.push_back(j * nx + i);
+      conn.push_back(j * nx + i + 1);
+      conn.push_back((j + 1) * nx + i + 1);
+      conn.push_back((j + 1) * nx + i);
+    }
+  }
+
+  mesh["coordsets/coords/type"] = "explicit";
+  mesh["coordsets/coords/values/x"].set(xc);
+  mesh["coordsets/coords/values/y"].set(yc);
+  mesh["topologies/mesh/type"] = "unstructured";
+  mesh["topologies/mesh/coordset"] = "coords";
+  mesh["topologies/mesh/elements/shape"] = "quad";
+  mesh["topologies/mesh/elements/connectivity"].set(conn);
+  mesh["topologies/mesh/elements/sizes"].set(sizes);
+  mesh["topologies/mesh/elements/offsets"].set(offsets);
+}
+
+void MeshTester::generateGrid3D(int gridSize, conduit::Node &mesh)
+{
+  int nx = gridSize + 1;
+  int ny = gridSize + 1;
+  int nz = gridSize + 1;
+  int nzones = gridSize * gridSize * gridSize;
+  int nnodes = nx * ny * nz;
+
+  std::vector<float> xc, yc, zc;
+  xc.reserve(nnodes);
+  yc.reserve(nnodes);
+  zc.reserve(nnodes);
+  for(int k = 0; k < nz; k++)
+  {
+    for(int j = 0; j < ny; j++)
+    {
+      for(int i = 0; i < nx; i++)
+      {
+        xc.push_back(i);
+        yc.push_back(j);
+        zc.push_back(k);
+      }
+    }
+  }
+
+  std::vector<int> conn, sizes, offsets;
+  conn.reserve(nzones * 8);
+  sizes.reserve(nzones);
+  offsets.reserve(nzones);
+  for(int k = 0; k < gridSize; k++)
+  {
+    for(int j = 0; j < gridSize; j++)
+    {
+      for(int i = 0; i < gridSize; i++)
+      {
+        offsets.push_back(offsets.size());
+        sizes.push_back(8);
+        conn.push_back((k * nx * ny) + (j * nx) + i);
+        conn.push_back((k * nx * ny) + (j * nx) + i + 1);
+        conn.push_back((k * nx * ny) + ((j + 1) * nx) + i + 1);
+        conn.push_back((k * nx * ny) + ((j + 1) * nx) + i);
+        conn.push_back(((k + 1) * nx * ny) + (j * nx) + i);
+        conn.push_back(((k + 1) * nx * ny) + (j * nx) + i + 1);
+        conn.push_back(((k + 1) * nx * ny) + ((j + 1) * nx) + i + 1);
+        conn.push_back(((k + 1) * nx * ny) + ((j + 1) * nx) + i);
+      }
+    }
+  }
+
+  mesh["coordsets/coords/type"] = "explicit";
+  mesh["coordsets/coords/values/x"].set(xc);
+  mesh["coordsets/coords/values/y"].set(yc);
+  mesh["coordsets/coords/values/z"].set(zc);
+  mesh["topologies/mesh/type"] = "unstructured";
+  mesh["topologies/mesh/coordset"] = "coords";
+  mesh["topologies/mesh/elements/shape"] = "hex";
+  mesh["topologies/mesh/elements/connectivity"].set(conn);
+  mesh["topologies/mesh/elements/sizes"].set(sizes);
+  mesh["topologies/mesh/elements/offsets"].set(offsets);
+}
 //--------------------------------------------------------------------------------
 
 mir::MIRMesh MeshTester::initTestCaseFive(int gridSize, int numCircles)
@@ -774,6 +1172,159 @@ mir::MIRMesh MeshTester::initTestCaseFive(int gridSize, int numCircles)
   return testMesh;
 }
 
+template <typename TopoView, typename CoordsetView>
+void addConcentricCircleMaterial(const TopoView &topoView, const CoordsetView &coordsetView,
+  const mir::Point2 &circleCenter, std::vector<axom::float64> &circleRadii, int numSamples, conduit::Node &mesh)
+{
+
+  // Generate the element volume fractions with concentric circles
+  int numMaterials = circleRadii.size() + 1;
+  int defaultMaterialID =
+    numMaterials - 1;  // default material is always the last index
+
+  // Initialize all material volume fractions to 0
+  std::vector<std::vector<axom::float64>> materialVolumeFractionsData(numMaterials);
+  constexpr int MAXMATERIALS = 100;
+  axom::StackArray<axom::ArrayView<axom::float64>, MAXMATERIALS> matvfViews;
+  for(int i = 0; i < numMaterials; ++i)
+  {
+    const auto len = topoView.numberOfZones();
+    materialVolumeFractionsData[i].resize(len, 0.);
+    matvfViews[i] = axom::ArrayView<axom::float64>(materialVolumeFractionsData[i].data(), len);
+  }
+  auto circleRadiiView = axom::ArrayView<axom::float64>(circleRadii.data(), circleRadii.size());
+  const int numCircles = circleRadii.size();
+
+  // Use the uniform sampling method to generate volume fractions for each material
+  // Note: Assumes that the cell is a parallelogram. This could be modified via biliear interpolation
+  topoView. template for_all_zones<axom::SEQ_EXEC>(AXOM_LAMBDA(auto eID, const auto &zone)
+  {
+    auto v0 = coordsetView[zone.getId(0)];
+    auto v1 = coordsetView[zone.getId(1)];
+    auto v2 = coordsetView[zone.getId(2)];
+
+    // Run the uniform sampling to determine how much of the current cell is composed of each material
+    int materialCount[numMaterials];
+    for(int i = 0; i < numMaterials; ++i) materialCount[i] = 0;
+
+    axom::float64 delta_x =
+      axom::utilities::abs(v1[0] - v0[0]) / (axom::float64)(numSamples - 1);
+    axom::float64 delta_y =
+      axom::utilities::abs(v2[1] - v1[1]) / (axom::float64)(numSamples - 1);
+
+    for(int y = 0; y < numSamples; ++y)
+    {
+      for(int x = 0; x < numSamples; ++x)
+      {
+        mir::Point2 samplePoint =
+          mir::Point2::make_point(delta_x * x + v0[0], delta_y * y + v0[1]);
+        bool isPointSampled = false;
+        for(int cID = 0; cID < numCircles && !isPointSampled; ++cID)
+        {
+          const auto r = circleRadiiView[cID];
+          if(primal::squared_distance(samplePoint, circleCenter) < r * r)
+          {
+            materialCount[cID]++;
+            isPointSampled = true;
+          }
+        }
+        if(!isPointSampled)
+        {
+          // The point was not within any of the circles, so increment the count for the default material
+          materialCount[defaultMaterialID]++;
+        }
+      }
+    }
+
+    // Assign the element volume fractions based on the count of the samples in each circle
+    for(int matID = 0; matID < numMaterials; ++matID)
+    {
+      matvfViews[matID][eID] =
+        materialCount[matID] / (axom::float64)(numSamples * numSamples);
+    }
+  });
+
+  // Figure out the material buffers from the volume fractions.
+  std::vector<int> material_ids, sizes, offsets, indices;
+  std::vector<float> volume_fractions;
+  const axom::IndexType numElements = topoView.numberOfZones();
+  std::vector<float> sums(numMaterials, 0.);
+  for(axom::IndexType i = 0; i < numElements; ++i)
+  {
+    int nmats = 0;
+    offsets.push_back(indices.size());
+    for(int mat = 0; mat < numMaterials; mat++)
+    {
+      if(materialVolumeFractionsData[mat][i] > 0.)
+      {
+        material_ids.push_back(mat);
+        volume_fractions.push_back(materialVolumeFractionsData[mat][i]);
+        indices.push_back(indices.size());
+        nmats++;
+
+        // Keep a total of the VFs for each material.
+        sums[mat] += materialVolumeFractionsData[mat][i];
+      }
+    }
+    sizes.push_back(nmats);
+  }
+
+  // Add the material
+  mesh["matsets/mat/topology"] = "mesh";
+  for(int mat = 0; mat < numMaterials; mat++)
+  {
+    if(sums[mat] > 0.)
+    {
+      std::stringstream ss;
+      ss << "matsets/mat/material_map/mat" << mat;
+      mesh[ss.str()] = mat;
+    }
+  }
+  mesh["matsets/mat/material_ids"].set(material_ids);
+  mesh["matsets/mat/volume_fractions"].set(volume_fractions);
+  mesh["matsets/mat/sizes"].set(sizes);
+  mesh["matsets/mat/offsets"].set(offsets);
+  mesh["matsets/mat/indices"].set(indices);
+}
+
+void MeshTester::initTestCaseFive(int gridSize, int numCircles, conduit::Node &mesh)
+{
+  // Generate the mesh topology
+  generateGrid(gridSize, mesh);
+
+  mir::Point2 circleCenter = mir::Point2::make_point(
+    gridSize / 2.0,
+    gridSize / 2.0);  // all circles are centered around the same point
+
+  // Initialize the radii of the circles
+  std::vector<axom::float64> circleRadii;
+  axom::float64 maxRadius =
+    gridSize / 2.4;  // Note: The choice of divisor is arbitrary
+  axom::float64 minRadius =
+    gridSize / 8;  // Note: The choice of divisor is arbitrary
+
+  axom::float64 radiusDelta;
+  if(numCircles <= 1)
+    radiusDelta = (maxRadius - minRadius);
+  else
+    radiusDelta = (maxRadius - minRadius) / (double)(numCircles - 1);
+
+  for(int i = 0; i < numCircles; ++i)
+  {
+    circleRadii.push_back(minRadius + (i * radiusDelta));
+  }
+
+  // Make views
+  using CoordsetView = axom::mir::views::ExplicitCoordsetView<float, 2>;
+  CoordsetView coordsetView(bputils::make_array_view<float>(mesh["coordsets/coords/values/x"]),
+                            bputils::make_array_view<float>(mesh["coordsets/coords/values/y"]));
+  using TopoView = axom::mir::views::UnstructuredTopologySingleShapeView<axom::mir::views::QuadShape<int>>;
+  TopoView topoView(bputils::make_array_view<int>(mesh["topologies/mesh/elements/connectivity"]));
+
+  // Add the material
+  addConcentricCircleMaterial<TopoView, CoordsetView>(topoView, coordsetView, circleCenter, circleRadii, 100, mesh);
+}
+
 //--------------------------------------------------------------------------------
 
 int MeshTester::circleQuadCornersOverlaps(const mir::Point2& circleCenter,
@@ -846,6 +1397,49 @@ mir::MIRMesh MeshTester::initQuadClippingTestMesh()
   return testMesh;
 }
 
+void MeshTester::initQuadClippingTestMesh(conduit::Node &mesh)
+{
+  // Generate the mesh topology
+  constexpr int gridSize = 3;
+  generateGrid(gridSize, mesh);
+
+  // clang-format off
+  mesh["matsets/mat/topology"] = "mesh";
+  mesh["matsets/mat/material_map/green"] = 0;
+  mesh["matsets/mat/material_map/blue"] = 1;
+  mesh["matsets/mat/material_ids"].set(std::vector<int>{{
+   0,
+   0,
+   0,
+   0, 1,
+   0, 1,
+   0, 1,
+   1,
+   1,
+   1
+  }});
+  mesh["matsets/mat/volume_fractions"].set(std::vector<float>{{
+   1.,
+   1.,
+   1.,
+   0.5, 0.5,
+   0.5, 0.5,
+   0.5, 0.5,
+   1.,
+   1.,
+   1.
+  }});
+  mesh["matsets/mat/sizes"].set(std::vector<int>{{
+    1, 1, 1, 2, 2, 2, 1, 1, 1
+  }});
+  mesh["matsets/mat/offsets"].set(std::vector<int>{{
+    0, 1, 2, 3, 5, 7, 9, 10, 11
+  }});
+  mesh["matsets/mat/indices"].set(std::vector<int>{{
+    0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11
+  }});
+  // clang-format on
+}
 //--------------------------------------------------------------------------------
 
 mir::MIRMesh MeshTester::initTestCaseSix(int gridSize, int numSpheres)

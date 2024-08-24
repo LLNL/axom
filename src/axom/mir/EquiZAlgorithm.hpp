@@ -26,7 +26,7 @@
 #endif
 
 // Uncomment to save inputs and outputs.
-// #define AXOM_DEBUG_EQUIZ
+#define AXOM_DEBUG_EQUIZ
 
 // This enables a tweak to the algorithm that tries to skip the first iteration
 // by incorporating the first material's ids into the zonalMaterialID field. It

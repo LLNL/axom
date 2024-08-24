@@ -22,6 +22,8 @@
 #include <algorithm>
 #include <vector>
 
+#include <conduit.hpp>
+
 namespace axom
 {
 namespace mir
@@ -63,6 +65,7 @@ public:
        * \return  The generated mesh.
        */
   mir::MIRMesh initTestCaseOne();
+  void initTestCaseOne(conduit::Node &mesh);
 
   /**
        * \brief Initializes an MIRMesh based on the example from Meredith and Childs 2010 paper.
@@ -72,6 +75,7 @@ public:
        * \return  The generated mesh.
        */
   mir::MIRMesh initTestCaseTwo();
+  void initTestCaseTwo(conduit::Node &mesh);
 
   /**
        * \brief Initializes an MIRMesh used for testing triangle clipping cases.
@@ -81,6 +85,7 @@ public:
        * \return  The generated mesh.
        */
   mir::MIRMesh initTestCaseThree();
+  void initTestCaseThree(conduit::Node &mesh);
 
   /**
        * \brief Intializes a mesh used for testing a single circle of one materials surrounded by another.
@@ -91,6 +96,7 @@ public:
        * \return  The generated mesh.
        */
   mir::MIRMesh initTestCaseFour();
+  void initTestCaseFour(conduit::Node &mesh);
 
   /**
        * \brief Initializes a mesh to be used for testing a set of concentric circles centered in a uniform 2D grid.
@@ -103,6 +109,7 @@ public:
        * \return  The generated mesh.
        */
   mir::MIRMesh initTestCaseFive(int gridSize, int numCircles);
+  void initTestCaseFive(int gridSize, int numCircles, conduit::Node &mesh);
 
   /**
        * \brief Initializes a mesh to be used for testing a set of concentric spheres centered in a uniform 3D grid.
@@ -128,7 +135,10 @@ public:
   mir::MIRMesh createUniformGridTestCaseMesh(int gridSize,
                                              const mir::Point2& circleCenter,
                                              axom::float64 circleRadius);
-
+  void createUniformGridTestCaseMesh(int gridSize,
+                                     const mir::Point2& circleCenter,
+                                     axom::float64 circleRadius,
+                                     conduit::Node &mesh);
   /**
        * \brief Initializes a mesh to be used for validating the results of quad clipping.
        * 
@@ -138,14 +148,22 @@ public:
        * \return  The generated mesh.
        */
   mir::MIRMesh initQuadClippingTestMesh();
+  void initQuadClippingTestMesh(conduit::Node &mesh);
 
 private:
+  /**
+   * \brief make a 3x3 mesh of quads.
+   * \param mesh A conduit node that will contain the new mesh.
+   */
+  void mesh3x3(conduit::Node &mesh);
+
   /**
        * \brief Generates a 2D uniform grid of n x n elements.
        * 
        * \param gridSize  The number of elements in the width and height of the uniform grid.
        */
   mir::CellData generateGrid(int gridSize);
+  void generateGrid(int gridSize, conduit::Node &mesh);
 
   /**
        * \brief Generates a 3D uniform grid of n x n x n elements.
@@ -153,27 +171,7 @@ private:
        * \param gridSize  The number of elements in the width, height, and depth of the uniform grid.
        */
   mir::CellData generateGrid3D(int gridSize);
-
-  /**
-       * \brief Calculates the percent overlap between the given circle and quad.
-       * 
-       * \param gridSize  The size of the uniform grid which will be sampled over to check for overlap.
-       * \param circleCenter  The center point of the circle.
-       * \param circleRadius  The radius of the circle.
-       * \param quadP0  The upper left vertex of the quad.
-       * \param quadP1  The lower left vertex of the quad.
-       * \param quadP2  The lower right vertex of the quad.
-       * \param quadP3  The upper right vertex of the quad.
-       * 
-       * /return The percent value overlap of the circle and the quad between [0, 1].
-       */
-  axom::float64 calculatePercentOverlapMonteCarlo(int gridSize,
-                                                  const mir::Point2& circleCenter,
-                                                  axom::float64 circleRadius,
-                                                  const mir::Point2& quadP0,
-                                                  const mir::Point2& quadP1,
-                                                  const mir::Point2& quadP2,
-                                                  const mir::Point2& quadP3);
+  void generateGrid3D(int gridSize, conduit::Node &mesh);
 
   /**
        * \brief Calculates the number of corners of the quad that are within the circle.

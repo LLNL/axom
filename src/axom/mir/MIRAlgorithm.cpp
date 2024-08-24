@@ -89,7 +89,11 @@ void MIRAlgorithm::executeSetup(const conduit::Node &n_domain,
   }
   else
   {
-    conduit::Node n_fields, newFields;
+    // There are no input fields, but make sure n_fields has a name.
+    conduit::Node tmp;
+    conduit::Node &n_fields = tmp["fields"];
+    // MIR is likely to output some created fields.
+    conduit::Node &newFields = n_newDomain["fields"];
     executeDomain(*n_topo,
                   *n_coordset,
                   n_fields,
