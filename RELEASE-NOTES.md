@@ -46,6 +46,8 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 - Quest: Adds an example to query winding numbers on an MFEM NURBS mesh
 
 ### Changed
+- `axom::CLI::ExitCodes::Success` has been changed to `axom::CLI::ExitCodes::CLI11_Success`
+  to avoid conflict when X11 `#define`s `Success`.
 - `MarchingCubes` masking now uses the mask field's integer values instead of
   converting them to booleans.  The new behavior lets you select a value to mask for.
   If you want to continue the boolean behavior, use only 0 or 1 in your mask field.
