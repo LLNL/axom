@@ -151,11 +151,6 @@ public:
    */
   virtual void flush();
 
-  /*!
-   * \brief Getter method to access the m_stream member
-   */
-  std::ostream* getStream() { return m_stream; }
-
 private:
   /// Forward declarations
   struct MessageCache;

@@ -111,11 +111,6 @@ public:
    */
   virtual void flush();
 
-  /*!
-   * \brief Getter method to access the m_stream member
-   */
-  std::ostream* getStream() { return m_stream; }
-
 private:
   std::ostream* m_stream;
   std::string m_file_name;
