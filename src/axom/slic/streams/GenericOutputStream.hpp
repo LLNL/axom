@@ -51,9 +51,10 @@ public:
    * \param [in] stream the string to control type of stream created
    *
    * \note The constructed std::ofstream will open and associate a file with
-   *       the stream the first time a message is appended. No file is created
-   *       if no message is appended to the stream. Use this constructor
-   *       to avoid empty file creation if the stream is not appended to.
+   *       the stream the first time GenericOutputStream is flushed with at
+   *       least one buffered message. Use this constructor
+   *       to avoid empty file creation if GenericOutputStream is not appended
+   *       to.
    */
   GenericOutputStream(const std::string& stream);
 
@@ -79,9 +80,10 @@ public:
    * \see LogStream::setFormatString for the format string.
    *
    * \note The constructed std::ofstream will open and associate a file with
-   *       the stream the first time a message is appended. No file is created
-   *       if no message is appended to the stream. Use this constructor
-   *       to avoid empty file creation if the stream is not appended to.
+   *       the stream the first time GenericOutputStream is flushed with at
+   *       least one buffered message. Use this constructor
+   *       to avoid empty file creation if GenericOutputStream is not appended
+   *       to.
    */
   GenericOutputStream(const std::string& stream, const std::string& format);
 

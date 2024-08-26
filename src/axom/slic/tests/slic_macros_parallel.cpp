@@ -1102,7 +1102,7 @@ TEST_P(SlicMacrosParallel, test_macros_file_output)
   }
 
   // In case of an abort, outputLocal() is called.
-  // Expect non-output Lumberjack ranks to create files in if possible
+  // Expect non-output Lumberjack ranks to create files if possible
   // (cannot guarantee all ranks will output before non-collective MPI Abort)
   SLIC_INFO("Test outputLocalMessages()");
   slic::outputLocalMessages();
