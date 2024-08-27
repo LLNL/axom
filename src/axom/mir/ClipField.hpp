@@ -527,16 +527,29 @@ public:
     // Get the fields that we want to process.
     std::map<std::string, std::string> fieldsToProcess;
     int numElementFields = 0;
-    if(!opts.fields(fieldsToProcess))
+    if(opts.fields(fieldsToProcess))
+    {
+      // Fields were present in the options. Count the element fields.
+      for(auto it = fieldsToProcess.begin(); it != fieldsToProcess.end(); it++)
+      {
+        const conduit::Node &n_field = n_fields.fetch_existing(it->first);
+        if(n_field.fetch_existing("topology").as_string() == n_topo.name())
+        {
+          numElementFields += (n_field.fetch_existing("association").as_string() == "element") ? 1 : 0;
+        }
+      }
+    }
+    else
     {
       // Fields were not present in the options. Select all fields that have the same topology as n_topo.
       for(conduit::index_t i = 0; i < n_fields.number_of_children(); i++)
       {
-        if(n_fields[i].fetch_existing("topology").as_string() == n_topo.name())
+        const conduit::Node &n_field = n_fields[i];
+        if(n_field.fetch_existing("topology").as_string() == n_topo.name())
         {
-          numElementFields += (n_fields[i].fetch_existing("association").as_string() == "element") ? 1 : 0;
+          numElementFields += (n_field.fetch_existing("association").as_string() == "element") ? 1 : 0;
 
-          fieldsToProcess[n_fields[i].name()] = n_fields[i].name();
+          fieldsToProcess[n_field.name()] = n_field.name();
         }
       }
     }
@@ -955,9 +968,24 @@ private:
             // Figure out the blend for edge.
             const auto t = deviceIntersector.computeWeight(zoneIndex, id0, id1);
 
+            // Close to the endpoints, just count the edge blend group
+            // as an endpoint to ensure better blend group matching later.
+            constexpr decltype(t) LOWER = 1.e-4;
+            constexpr decltype(t) UPPER = 1. - LOWER;
             groups.beginGroup();
-            groups.add(id0, 1.f - t);
-            groups.add(id1, t);
+            if(t < LOWER)
+            {
+              groups.add(id0, 1.f);
+            }
+            else if(t > UPPER)
+            {
+              groups.add(id1, 1.f);
+            }
+            else
+            {
+              groups.add(id0, 1.f - t);
+              groups.add(id1, t);
+            }
             groups.endGroup();
           }
         }
@@ -1135,14 +1163,18 @@ private:
       });
 
     // Reduce outside of the for_selected_zones loop.
-    RAJA::ReduceBitOr<reduce_policy, BitSet> shapesUsed_reduce(0);
-    axom::for_all<ExecSpace>(
-      shapesView.size(),
-      AXOM_LAMBDA(auto index) {
-        BitSet shapeBit {};
-        axom::utilities::setBitOn(shapeBit, shapesView[index]);
-        shapesUsed_reduce |= shapeBit;
-      });
+    BitSet shapesUsed {};
+    {
+      RAJA::ReduceBitOr<reduce_policy, BitSet> shapesUsed_reduce(0);
+      axom::for_all<ExecSpace>(
+        shapesView.size(),
+        AXOM_LAMBDA(auto index) {
+          BitSet shapeBit {};
+          axom::utilities::setBitOn(shapeBit, shapesView[index]);
+          shapesUsed_reduce |= shapeBit;
+        });
+      shapesUsed = shapesUsed_reduce.get();
+    }
 
 #if defined(AXOM_DEBUG_CLIP_FIELD)
     std::cout
@@ -1176,8 +1208,50 @@ private:
       << std::endl;
 #endif
 
+#if 1
+    // Handle some quad->tri degeneracies
+    if(axom::utilities::bitIsSet(shapesUsed, views::Quad_ShapeID))
+    {
+      const axom::IndexType numOutputZones = shapesView.size();
+      RAJA::ReduceBitOr<reduce_policy, BitSet> shapesUsed_reduce(0);
+      axom::for_all<ExecSpace>(
+        numOutputZones,
+        AXOM_LAMBDA(auto index) {
+          if(shapesView[index] == views::Quad_ShapeID)
+          {
+            const auto offset = offsetsView[index];
+            ConnectivityType pts[4];
+            int npts = 0;
+            for(int current = 0; current < 4; current++)
+            {
+              int next = (current + 1) % 4;
+              ConnectivityType curNode = connView[offset + current];
+              ConnectivityType nextNode = connView[offset + next];
+              if(curNode != nextNode)
+                pts[npts++] = curNode;
+            }
+
+            if(npts == 3)
+            {
+              shapesView[index] = views::Tri_ShapeID;
+              sizesView[index] = 3;
+              connView[offset] = pts[0];
+              connView[offset + 1] = pts[1];
+              connView[offset + 2] = pts[2];
+              connView[offset + 3] = pts[2]; // Repeat the last point (it won't be used though).
+            }
+          }
+
+          BitSet shapeBit {};
+          axom::utilities::setBitOn(shapeBit, shapesView[index]);
+          shapesUsed_reduce |= shapeBit;
+        });
+      // We redid shapesUsed reduction in case triangles appeared.
+      shapesUsed = shapesUsed_reduce.get();
+    }
+#endif
+
     // Add shape information to the connectivity.
-    const BitSet shapesUsed = shapesUsed_reduce.get();
     SLIC_ASSERT_MSG(shapesUsed != 0, "No shapes were produced!");
     const auto shapeMap = shapeMap_FromFlags(shapesUsed);
     SLIC_ASSERT_MSG(shapeMap.empty() == false, "The shape map is empty!");
