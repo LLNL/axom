@@ -14,9 +14,8 @@ namespace axom
 {
 namespace mir
 {
-
 //--------------------------------------------------------------------------------
-  /**
+/**
        * \brief Calculates the percent overlap between the given circle and quad.
        * 
        * \param gridSize  The size of the uniform grid which will be sampled over to check for overlap.
@@ -31,14 +30,13 @@ namespace mir
        */
 
 template <typename PointType>
-static axom::float64 calculatePercentOverlapMonteCarlo(
-  int gridSize,
-  const PointType& circleCenter,
-  axom::float64 circleRadius,
-  const PointType& quadP0,
-  const PointType& quadP1,
-  const PointType& quadP2,
-  const PointType& quadP3)
+static axom::float64 calculatePercentOverlapMonteCarlo(int gridSize,
+                                                       const PointType& circleCenter,
+                                                       axom::float64 circleRadius,
+                                                       const PointType& quadP0,
+                                                       const PointType& quadP1,
+                                                       const PointType& quadP2,
+                                                       const PointType& quadP3)
 {
   // Check if any of the quad's corners are within the circle
   auto d0Sq = primal::squared_distance(quadP0, circleCenter);
@@ -73,9 +71,8 @@ static axom::float64 calculatePercentOverlapMonteCarlo(
     {
       for(int x = 0; x < gridSize; ++x)
       {
-        PointType samplePoint =
-          PointType::make_point(delta_x * x + quadP1[0],
-                                  delta_y * y + quadP1[1]);
+        PointType samplePoint = PointType::make_point(delta_x * x + quadP1[0],
+                                                      delta_y * y + quadP1[1]);
         if(primal::squared_distance(samplePoint, circleCenter) < dRSq)
           ++countOverlap;
       }
@@ -178,7 +175,7 @@ MIRMesh MeshTester::initTestCaseOne()
 }
 
 //--------------------------------------------------------------------------------
-void MeshTester::mesh3x3(conduit::Node &mesh)
+void MeshTester::mesh3x3(conduit::Node& mesh)
 {
   // clang-format off
   mesh["coordsets/coords/type"] = "explicit";
@@ -205,7 +202,7 @@ void MeshTester::mesh3x3(conduit::Node &mesh)
 }
 
 //--------------------------------------------------------------------------------
-void MeshTester::initTestCaseOne(conduit::Node &mesh)
+void MeshTester::initTestCaseOne(conduit::Node& mesh)
 {
   mesh3x3(mesh);
 
@@ -343,7 +340,7 @@ mir::MIRMesh MeshTester::initTestCaseTwo()
 }
 
 //--------------------------------------------------------------------------------
-void MeshTester::initTestCaseTwo(conduit::Node &mesh)
+void MeshTester::initTestCaseTwo(conduit::Node& mesh)
 {
   mesh3x3(mesh);
 
@@ -467,7 +464,7 @@ mir::MIRMesh MeshTester::initTestCaseThree()
   return testMesh;
 }
 
-void MeshTester::initTestCaseThree(conduit::Node &mesh)
+void MeshTester::initTestCaseThree(conduit::Node& mesh)
 {
   // clang-format off
   mesh["coordsets/coords/type"] = "explicit";
@@ -636,8 +633,12 @@ mir::MIRMesh MeshTester::initTestCaseFour()
 //--------------------------------------------------------------------------------
 
 template <typename TopoView, typename CoordsetView>
-static void addCircleMaterial(const TopoView &topoView,
-     const CoordsetView &coordsetView, conduit::Node &mesh, const mir::Point2 &circleCenter, axom::float64 circleRadius, int numSamples)
+static void addCircleMaterial(const TopoView& topoView,
+                              const CoordsetView& coordsetView,
+                              conduit::Node& mesh,
+                              const mir::Point2& circleCenter,
+                              axom::float64 circleRadius,
+                              int numSamples)
 {
   constexpr int GREEN = 0;
   constexpr int BLUE = 1;
@@ -653,18 +654,18 @@ static void addCircleMaterial(const TopoView &topoView,
   typename CoordsetView::PointType center;
   center[0] = circleCenter[0];
   center[1] = circleCenter[1];
-  topoView.template for_all_zones<axom::SEQ_EXEC>(AXOM_LAMBDA(auto zoneIndex, const auto &zone)
-  {
-    auto vf = calculatePercentOverlapMonteCarlo(numSamples,
-                                                center,
-                                                circleRadius,
-                                                coordsetView[zone.getId(0)],
-                                                coordsetView[zone.getId(1)],
-                                                coordsetView[zone.getId(2)],
-                                                coordsetView[zone.getId(3)]);
-    greenView[zoneIndex] = vf;
-    blueView[zoneIndex] = 1.0 - vf;
-  });
+  topoView.template for_all_zones<axom::SEQ_EXEC>(
+    AXOM_LAMBDA(auto zoneIndex, const auto& zone) {
+      auto vf = calculatePercentOverlapMonteCarlo(numSamples,
+                                                  center,
+                                                  circleRadius,
+                                                  coordsetView[zone.getId(0)],
+                                                  coordsetView[zone.getId(1)],
+                                                  coordsetView[zone.getId(2)],
+                                                  coordsetView[zone.getId(3)]);
+      greenView[zoneIndex] = vf;
+      blueView[zoneIndex] = 1.0 - vf;
+    });
 
   // Figure out the material buffers from the volume fractions.
   std::vector<int> material_ids, sizes, offsets, indices;
@@ -701,22 +702,30 @@ static void addCircleMaterial(const TopoView &topoView,
 }
 
 //--------------------------------------------------------------------------------
-void MeshTester::initTestCaseFour(conduit::Node &mesh)
+void MeshTester::initTestCaseFour(conduit::Node& mesh)
 {
   mesh3x3(mesh);
 
   // Make views
   using CoordsetView = axom::mir::views::ExplicitCoordsetView<float, 2>;
-  CoordsetView coordsetView(bputils::make_array_view<float>(mesh["coordsets/coords/values/x"]),
-                            bputils::make_array_view<float>(mesh["coordsets/coords/values/y"]));
-  using TopoView = axom::mir::views::UnstructuredTopologySingleShapeView<axom::mir::views::QuadShape<int>>;
-  TopoView topoView(bputils::make_array_view<int>(mesh["topologies/mesh/elements/connectivity"]));
+  CoordsetView coordsetView(
+    bputils::make_array_view<float>(mesh["coordsets/coords/values/x"]),
+    bputils::make_array_view<float>(mesh["coordsets/coords/values/y"]));
+  using TopoView = axom::mir::views::UnstructuredTopologySingleShapeView<
+    axom::mir::views::QuadShape<int>>;
+  TopoView topoView(bputils::make_array_view<int>(
+    mesh["topologies/mesh/elements/connectivity"]));
 
   // Add material
   const auto circleCenter = mir::Point2::make_point(1.5, 1.5);
   const axom::float64 circleRadius = 1.25;
   const int numSamples = 100;
-  addCircleMaterial<TopoView, CoordsetView>(topoView, coordsetView, mesh, circleCenter, circleRadius, numSamples);
+  addCircleMaterial<TopoView, CoordsetView>(topoView,
+                                            coordsetView,
+                                            mesh,
+                                            circleCenter,
+                                            circleRadius,
+                                            numSamples);
 }
 
 //--------------------------------------------------------------------------------
@@ -786,24 +795,32 @@ mir::MIRMesh MeshTester::createUniformGridTestCaseMesh(
 }
 
 //--------------------------------------------------------------------------------
-void MeshTester::createUniformGridTestCaseMesh(
-  int gridSize,
-  const mir::Point2& circleCenter,
-  axom::float64 circleRadius, conduit::Node &mesh)
+void MeshTester::createUniformGridTestCaseMesh(int gridSize,
+                                               const mir::Point2& circleCenter,
+                                               axom::float64 circleRadius,
+                                               conduit::Node& mesh)
 {
   // Generate the mesh
   generateGrid(gridSize, mesh);
 
   // Make views
   using CoordsetView = axom::mir::views::ExplicitCoordsetView<float, 2>;
-  CoordsetView coordsetView(bputils::make_array_view<float>(mesh["coordsets/coords/values/x"]),
-                            bputils::make_array_view<float>(mesh["coordsets/coords/values/y"]));
-  using TopoView = axom::mir::views::UnstructuredTopologySingleShapeView<axom::mir::views::QuadShape<int>>;
-  TopoView topoView(bputils::make_array_view<int>(mesh["topologies/mesh/elements/connectivity"]));
+  CoordsetView coordsetView(
+    bputils::make_array_view<float>(mesh["coordsets/coords/values/x"]),
+    bputils::make_array_view<float>(mesh["coordsets/coords/values/y"]));
+  using TopoView = axom::mir::views::UnstructuredTopologySingleShapeView<
+    axom::mir::views::QuadShape<int>>;
+  TopoView topoView(bputils::make_array_view<int>(
+    mesh["topologies/mesh/elements/connectivity"]));
 
   // Add material
   int numSamples = 100;
-  addCircleMaterial<TopoView, CoordsetView>(topoView, coordsetView, mesh, circleCenter, circleRadius, numSamples);
+  addCircleMaterial<TopoView, CoordsetView>(topoView,
+                                            coordsetView,
+                                            mesh,
+                                            circleCenter,
+                                            circleRadius,
+                                            numSamples);
 }
 
 //--------------------------------------------------------------------------------
@@ -921,7 +938,7 @@ mir::CellData MeshTester::generateGrid(int gridSize)
   return data;
 }
 
-void MeshTester::generateGrid(int gridSize, conduit::Node &mesh)
+void MeshTester::generateGrid(int gridSize, conduit::Node& mesh)
 {
   int nx = gridSize + 1;
   int ny = gridSize + 1;
@@ -968,7 +985,7 @@ void MeshTester::generateGrid(int gridSize, conduit::Node &mesh)
   mesh["topologies/mesh/elements/offsets"].set(offsets);
 }
 
-void MeshTester::generateGrid3D(int gridSize, conduit::Node &mesh)
+void MeshTester::generateGrid3D(int gridSize, conduit::Node& mesh)
 {
   int nx = gridSize + 1;
   int ny = gridSize + 1;
@@ -1173,76 +1190,82 @@ mir::MIRMesh MeshTester::initTestCaseFive(int gridSize, int numCircles)
 }
 
 template <typename TopoView, typename CoordsetView>
-void addConcentricCircleMaterial(const TopoView &topoView, const CoordsetView &coordsetView,
-  const mir::Point2 &circleCenter, std::vector<axom::float64> &circleRadii, int numSamples, conduit::Node &mesh)
+void addConcentricCircleMaterial(const TopoView& topoView,
+                                 const CoordsetView& coordsetView,
+                                 const mir::Point2& circleCenter,
+                                 std::vector<axom::float64>& circleRadii,
+                                 int numSamples,
+                                 conduit::Node& mesh)
 {
-
   // Generate the element volume fractions with concentric circles
   int numMaterials = circleRadii.size() + 1;
   int defaultMaterialID =
     numMaterials - 1;  // default material is always the last index
 
   // Initialize all material volume fractions to 0
-  std::vector<std::vector<axom::float64>> materialVolumeFractionsData(numMaterials);
+  std::vector<std::vector<axom::float64>> materialVolumeFractionsData(
+    numMaterials);
   constexpr int MAXMATERIALS = 100;
   axom::StackArray<axom::ArrayView<axom::float64>, MAXMATERIALS> matvfViews;
   for(int i = 0; i < numMaterials; ++i)
   {
     const auto len = topoView.numberOfZones();
     materialVolumeFractionsData[i].resize(len, 0.);
-    matvfViews[i] = axom::ArrayView<axom::float64>(materialVolumeFractionsData[i].data(), len);
+    matvfViews[i] =
+      axom::ArrayView<axom::float64>(materialVolumeFractionsData[i].data(), len);
   }
-  auto circleRadiiView = axom::ArrayView<axom::float64>(circleRadii.data(), circleRadii.size());
+  auto circleRadiiView =
+    axom::ArrayView<axom::float64>(circleRadii.data(), circleRadii.size());
   const int numCircles = circleRadii.size();
 
   // Use the uniform sampling method to generate volume fractions for each material
   // Note: Assumes that the cell is a parallelogram. This could be modified via biliear interpolation
-  topoView. template for_all_zones<axom::SEQ_EXEC>(AXOM_LAMBDA(auto eID, const auto &zone)
-  {
-    auto v0 = coordsetView[zone.getId(0)];
-    auto v1 = coordsetView[zone.getId(1)];
-    auto v2 = coordsetView[zone.getId(2)];
+  topoView.template for_all_zones<axom::SEQ_EXEC>(
+    AXOM_LAMBDA(auto eID, const auto& zone) {
+      auto v0 = coordsetView[zone.getId(0)];
+      auto v1 = coordsetView[zone.getId(1)];
+      auto v2 = coordsetView[zone.getId(2)];
 
-    // Run the uniform sampling to determine how much of the current cell is composed of each material
-    int materialCount[numMaterials];
-    for(int i = 0; i < numMaterials; ++i) materialCount[i] = 0;
+      // Run the uniform sampling to determine how much of the current cell is composed of each material
+      int materialCount[numMaterials];
+      for(int i = 0; i < numMaterials; ++i) materialCount[i] = 0;
 
-    axom::float64 delta_x =
-      axom::utilities::abs(v1[0] - v0[0]) / (axom::float64)(numSamples - 1);
-    axom::float64 delta_y =
-      axom::utilities::abs(v2[1] - v1[1]) / (axom::float64)(numSamples - 1);
+      axom::float64 delta_x =
+        axom::utilities::abs(v1[0] - v0[0]) / (axom::float64)(numSamples - 1);
+      axom::float64 delta_y =
+        axom::utilities::abs(v2[1] - v1[1]) / (axom::float64)(numSamples - 1);
 
-    for(int y = 0; y < numSamples; ++y)
-    {
-      for(int x = 0; x < numSamples; ++x)
+      for(int y = 0; y < numSamples; ++y)
       {
-        mir::Point2 samplePoint =
-          mir::Point2::make_point(delta_x * x + v0[0], delta_y * y + v0[1]);
-        bool isPointSampled = false;
-        for(int cID = 0; cID < numCircles && !isPointSampled; ++cID)
+        for(int x = 0; x < numSamples; ++x)
         {
-          const auto r = circleRadiiView[cID];
-          if(primal::squared_distance(samplePoint, circleCenter) < r * r)
+          mir::Point2 samplePoint =
+            mir::Point2::make_point(delta_x * x + v0[0], delta_y * y + v0[1]);
+          bool isPointSampled = false;
+          for(int cID = 0; cID < numCircles && !isPointSampled; ++cID)
           {
-            materialCount[cID]++;
-            isPointSampled = true;
+            const auto r = circleRadiiView[cID];
+            if(primal::squared_distance(samplePoint, circleCenter) < r * r)
+            {
+              materialCount[cID]++;
+              isPointSampled = true;
+            }
+          }
+          if(!isPointSampled)
+          {
+            // The point was not within any of the circles, so increment the count for the default material
+            materialCount[defaultMaterialID]++;
           }
         }
-        if(!isPointSampled)
-        {
-          // The point was not within any of the circles, so increment the count for the default material
-          materialCount[defaultMaterialID]++;
-        }
       }
-    }
 
-    // Assign the element volume fractions based on the count of the samples in each circle
-    for(int matID = 0; matID < numMaterials; ++matID)
-    {
-      matvfViews[matID][eID] =
-        materialCount[matID] / (axom::float64)(numSamples * numSamples);
-    }
-  });
+      // Assign the element volume fractions based on the count of the samples in each circle
+      for(int matID = 0; matID < numMaterials; ++matID)
+      {
+        matvfViews[matID][eID] =
+          materialCount[matID] / (axom::float64)(numSamples * numSamples);
+      }
+    });
 
   // Figure out the material buffers from the volume fractions.
   std::vector<int> material_ids, sizes, offsets, indices;
@@ -1287,7 +1310,7 @@ void addConcentricCircleMaterial(const TopoView &topoView, const CoordsetView &c
   mesh["matsets/mat/indices"].set(indices);
 }
 
-void MeshTester::initTestCaseFive(int gridSize, int numCircles, conduit::Node &mesh)
+void MeshTester::initTestCaseFive(int gridSize, int numCircles, conduit::Node& mesh)
 {
   // Generate the mesh topology
   generateGrid(gridSize, mesh);
@@ -1316,13 +1339,21 @@ void MeshTester::initTestCaseFive(int gridSize, int numCircles, conduit::Node &m
 
   // Make views
   using CoordsetView = axom::mir::views::ExplicitCoordsetView<float, 2>;
-  CoordsetView coordsetView(bputils::make_array_view<float>(mesh["coordsets/coords/values/x"]),
-                            bputils::make_array_view<float>(mesh["coordsets/coords/values/y"]));
-  using TopoView = axom::mir::views::UnstructuredTopologySingleShapeView<axom::mir::views::QuadShape<int>>;
-  TopoView topoView(bputils::make_array_view<int>(mesh["topologies/mesh/elements/connectivity"]));
+  CoordsetView coordsetView(
+    bputils::make_array_view<float>(mesh["coordsets/coords/values/x"]),
+    bputils::make_array_view<float>(mesh["coordsets/coords/values/y"]));
+  using TopoView = axom::mir::views::UnstructuredTopologySingleShapeView<
+    axom::mir::views::QuadShape<int>>;
+  TopoView topoView(bputils::make_array_view<int>(
+    mesh["topologies/mesh/elements/connectivity"]));
 
   // Add the material
-  addConcentricCircleMaterial<TopoView, CoordsetView>(topoView, coordsetView, circleCenter, circleRadii, 100, mesh);
+  addConcentricCircleMaterial<TopoView, CoordsetView>(topoView,
+                                                      coordsetView,
+                                                      circleCenter,
+                                                      circleRadii,
+                                                      100,
+                                                      mesh);
 }
 
 //--------------------------------------------------------------------------------
@@ -1397,7 +1428,7 @@ mir::MIRMesh MeshTester::initQuadClippingTestMesh()
   return testMesh;
 }
 
-void MeshTester::initQuadClippingTestMesh(conduit::Node &mesh)
+void MeshTester::initQuadClippingTestMesh(conduit::Node& mesh)
 {
   // Generate the mesh topology
   constexpr int gridSize = 3;

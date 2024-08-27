@@ -535,7 +535,9 @@ public:
         const conduit::Node &n_field = n_fields.fetch_existing(it->first);
         if(n_field.fetch_existing("topology").as_string() == n_topo.name())
         {
-          numElementFields += (n_field.fetch_existing("association").as_string() == "element") ? 1 : 0;
+          numElementFields +=
+            (n_field.fetch_existing("association").as_string() == "element") ? 1
+                                                                             : 0;
         }
       }
     }
@@ -547,7 +549,9 @@ public:
         const conduit::Node &n_field = n_fields[i];
         if(n_field.fetch_existing("topology").as_string() == n_topo.name())
         {
-          numElementFields += (n_field.fetch_existing("association").as_string() == "element") ? 1 : 0;
+          numElementFields +=
+            (n_field.fetch_existing("association").as_string() == "element") ? 1
+                                                                             : 0;
 
           fieldsToProcess[n_field.name()] = n_field.name();
         }
@@ -1227,8 +1231,7 @@ private:
               int next = (current + 1) % 4;
               ConnectivityType curNode = connView[offset + current];
               ConnectivityType nextNode = connView[offset + next];
-              if(curNode != nextNode)
-                pts[npts++] = curNode;
+              if(curNode != nextNode) pts[npts++] = curNode;
             }
 
             if(npts == 3)
@@ -1238,7 +1241,8 @@ private:
               connView[offset] = pts[0];
               connView[offset + 1] = pts[1];
               connView[offset + 2] = pts[2];
-              connView[offset + 3] = pts[2]; // Repeat the last point (it won't be used though).
+              connView[offset + 3] =
+                pts[2];  // Repeat the last point (it won't be used though).
             }
           }
 
@@ -1281,11 +1285,9 @@ private:
                     conduit::Node &n_newCoordset) const
   {
     AXOM_ANNOTATE_SCOPE("makeCoordset");
-    axom::mir::utilities::blueprint::CoordsetBlender<
-      ExecSpace,
-      CoordsetView,
-      axom::mir::utilities::blueprint::SelectSubsetPolicy>
-      cb;
+    axom::mir::utilities::blueprint::
+      CoordsetBlender<ExecSpace, CoordsetView, axom::mir::utilities::blueprint::SelectSubsetPolicy>
+        cb;
     n_newCoordset.reset();
     cb.execute(blend, m_coordsetView, n_coordset, n_newCoordset);
   }

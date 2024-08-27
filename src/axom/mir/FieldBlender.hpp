@@ -46,7 +46,8 @@ struct SelectAllPolicy
   }
 
   AXOM_HOST_DEVICE
-  static inline IndexType selectedIndex(const BlendData & /*blend*/, IndexType index)
+  static inline IndexType selectedIndex(const BlendData & /*blend*/,
+                                        IndexType index)
   {
     return index;
   }

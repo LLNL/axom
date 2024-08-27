@@ -27,7 +27,7 @@ std::string usageString()
 
 void conduit_debug_err_handler(const std::string &s1, const std::string &s2, int i1)
 {
-//  SLIC_ERROR(axom::fmt::format("Error from Conduit: s1={}, s2={}, i1={}", s1, s2, i1));
+  //  SLIC_ERROR(axom::fmt::format("Error from Conduit: s1={}, s2={}, i1={}", s1, s2, i1));
   // This is on purpose.
   while(1)
     ;
@@ -71,29 +71,38 @@ int main(int argc, char **argv)
 
     // Make views (we know beforehand which types to make)
     using CoordsetView = axom::mir::views::ExplicitCoordsetView<float, 2>;
-    CoordsetView coordsetView(bputils::make_array_view<float>(mesh["coordsets/coords/values/x"]),
-                              bputils::make_array_view<float>(mesh["coordsets/coords/values/y"]));
+    CoordsetView coordsetView(
+      bputils::make_array_view<float>(mesh["coordsets/coords/values/x"]),
+      bputils::make_array_view<float>(mesh["coordsets/coords/values/y"]));
 
-    using TopoView = axom::mir::views::UnstructuredTopologySingleShapeView<axom::mir::views::QuadShape<int>>;
-    TopoView topoView(bputils::make_array_view<int>(mesh["topologies/mesh/elements/connectivity"]));
+    using TopoView = axom::mir::views::UnstructuredTopologySingleShapeView<
+      axom::mir::views::QuadShape<int>>;
+    TopoView topoView(bputils::make_array_view<int>(
+      mesh["topologies/mesh/elements/connectivity"]));
 
     constexpr int MAXMATERIALS = 20;
     auto materialInfo = axom::mir::views::materials(mesh["matsets/mat"]);
     if(materialInfo.size() >= MAXMATERIALS)
     {
-      SLIC_WARNING(axom::fmt::format("To use more than {} materials, recompile with larger MAXMATERIALS value.", MAXMATERIALS));
+      SLIC_WARNING(
+        axom::fmt::format("To use more than {} materials, recompile with "
+                          "larger MAXMATERIALS value.",
+                          MAXMATERIALS));
       return -4;
     }
-    using MatsetView = axom::mir::views::UnibufferMaterialView<int, float, MAXMATERIALS>;
+    using MatsetView =
+      axom::mir::views::UnibufferMaterialView<int, float, MAXMATERIALS>;
     MatsetView matsetView;
-    matsetView.set(bputils::make_array_view<int>(mesh["matsets/mat/material_ids"]),
-                   bputils::make_array_view<float>(mesh["matsets/mat/volume_fractions"]),
-                   bputils::make_array_view<int>(mesh["matsets/mat/sizes"]),
-                   bputils::make_array_view<int>(mesh["matsets/mat/offsets"]),
-                   bputils::make_array_view<int>(mesh["matsets/mat/indices"]));
-   
+    matsetView.set(
+      bputils::make_array_view<int>(mesh["matsets/mat/material_ids"]),
+      bputils::make_array_view<float>(mesh["matsets/mat/volume_fractions"]),
+      bputils::make_array_view<int>(mesh["matsets/mat/sizes"]),
+      bputils::make_array_view<int>(mesh["matsets/mat/offsets"]),
+      bputils::make_array_view<int>(mesh["matsets/mat/indices"]));
+
     // Begin material interface reconstruction
-    using MIR = axom::mir::EquiZAlgorithm<axom::SEQ_EXEC, TopoView, CoordsetView, MatsetView>;
+    using MIR =
+      axom::mir::EquiZAlgorithm<axom::SEQ_EXEC, TopoView, CoordsetView, MatsetView>;
     timer.start();
     conduit::Node options, processedMesh;
     MIR m(topoView, coordsetView, matsetView);
@@ -104,7 +113,9 @@ int main(int argc, char **argv)
               << timer.elapsedTimeInMilliSec() << " ms.");
 
     // Output results
-    conduit::relay::io::blueprint::save_mesh(processedMesh, outputFilePath, "hdf5");
+    conduit::relay::io::blueprint::save_mesh(processedMesh,
+                                             outputFilePath,
+                                             "hdf5");
 
     retval = 0;
   }

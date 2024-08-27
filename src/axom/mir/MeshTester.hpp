@@ -133,10 +133,10 @@ public:
        * \return  The generated mesh.
        */
   mir::MIRMesh createUniformGridTestCaseMesh(int gridSize,
-                                             const mir::Point2& circleCenter,
+                                             const mir::Point2 &circleCenter,
                                              axom::float64 circleRadius);
   void createUniformGridTestCaseMesh(int gridSize,
-                                     const mir::Point2& circleCenter,
+                                     const mir::Point2 &circleCenter,
                                      axom::float64 circleRadius,
                                      conduit::Node &mesh);
   /**
@@ -185,12 +185,12 @@ private:
        * 
        * \return The number of corners of the quad that are within the circle.
        */
-  int circleQuadCornersOverlaps(const mir::Point2& circleCenter,
+  int circleQuadCornersOverlaps(const mir::Point2 &circleCenter,
                                 axom::float64 circleRadius,
-                                const mir::Point2& quadP0,
-                                const mir::Point2& quadP1,
-                                const mir::Point2& quadP2,
-                                const mir::Point2& quadP3);
+                                const mir::Point2 &quadP0,
+                                const mir::Point2 &quadP1,
+                                const mir::Point2 &quadP2,
+                                const mir::Point2 &quadP3);
 };
 }  // namespace mir
 }  // namespace axom
