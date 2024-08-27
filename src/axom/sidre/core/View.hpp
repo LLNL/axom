@@ -375,7 +375,7 @@ public:
    *       type is NO_TYPE_ID, or ndims < 0, or shape is nullptr,
    *       or any element of shape < 0, this method does nothing.
    *
-   * If shape is NULL, this is a no-op.
+   * If shape is nullptr, this is a no-op.
    *
    * \return pointer to this View object.
    */
@@ -446,7 +446,7 @@ public:
    * If data view already has a buffer, or it is an external view,
    * a scalar view, or a string view, this method does nothing.
    *
-   * If data view already has a buffer and buff is NULL, the attached
+   * If data view already has a buffer and buff is nullptr, the attached
    * buffer will be detached. After the view is detached from the
    * buffer, if the buffer has no views attached to it, then it will
    * be destroyed.
@@ -731,7 +731,7 @@ public:
    * Data is undescribed (i.e., view is opaque) until an apply methods
    * is called on the view.
    *
-   * If external_ptr is NULL, the view will be EMPTY.
+   * If external_ptr is nullptr, the view will be EMPTY.
    * Any existing description is unchanged.
    *
    * \return pointer to this View object.
@@ -741,7 +741,7 @@ public:
   /*!
    * \brief Set view to hold described external data.
    *
-   * If external_ptr is NULL, the view will be EMPTY.
+   * If external_ptr is nullptr, the view will be EMPTY.
    *
    * \return pointer to this View object.
    */
@@ -755,9 +755,9 @@ public:
   /*!
    * \brief Set view to hold described external data.
    *
-   * If external_ptr is NULL, the view will be EMPTY.
+   * If external_ptr is nullptr, the view will be EMPTY.
    *
-   * If shape is NULL, this is a no-op.
+   * If shape is nullptr, this is a no-op.
    *
    * \return pointer to this View object.
    */
@@ -1386,7 +1386,7 @@ private:
   /*!
    * \brief Set the shape to be a ndims dimensions with shape.
    *
-   * If shape is NULL, this is a no-op.
+   * If shape is nullptr, this is a no-op.
    */
   void describeShape(int ndims, const IndexType* shape);
 
