@@ -108,11 +108,8 @@ public:
    *             message
    * \pre stream != NULL
    *
-   * \note The constructed std::ofstream will open and associate a file with
-   *       the stream the first time LumberjackStream is flushed with at
-   *       least one buffered message. Use this constructor
-   *       to avoid empty file creation if LumberjackStream is not appended
-   *       to.
+   * \note This constructor avoids creating an empty file if this
+   *       LumberjackStream never flushes a message.
    */
   LumberjackStream(std::string stream, MPI_Comm comm, int ranksLimit);
 
@@ -131,11 +128,8 @@ public:
    * \pre stream != NULL
    * \see LogStream::setFormatString for the format string.
    *
-   * \note The constructed std::ofstream will open and associate a file with
-   *       the stream the first time LumberjackStream is flushed with at
-   *       least one buffered message. Use this constructor
-   *       to avoid empty file creation if LumberjackStream is not appended
-   *       to.
+   * \note This constructor avoids creating an empty file if this
+   *       LumberjackStream never flushes a message.
    */
   LumberjackStream(std::string stream,
                    MPI_Comm comm,
@@ -153,11 +147,8 @@ public:
    * \param [in] lj Lumberjack communicator
    * \pre stream != NULL
    *
-   * \note The constructed std::ofstream will open and associate a file with
-   *       the stream the first time LumberjackStream is flushed with at
-   *       least one buffered message. Use this constructor
-   *       to avoid empty file creation if LumberjackStream is not appended
-   *       to.
+   * \note This constructor avoids creating an empty file if this
+   *       LumberjackStream never flushes a message.
    */
   LumberjackStream(std::string stream, axom::lumberjack::Lumberjack* lj);
 
@@ -174,11 +165,8 @@ public:
    * \pre stream != NULL
    * \see LogStream::setFormatString for the format string.
    *
-   * \note The constructed std::ofstream will open and associate a file with
-   *       the stream the first time LumberjackStream is flushed with at
-   *       least one buffered message. Use this constructor
-   *       to avoid empty file creation if LumberjackStream is not appended
-   *       to.
+   * \note This constructor avoids creating an empty file if this
+   *       LumberjackStream never flushes a message.
    */
   LumberjackStream(std::string stream,
                    axom::lumberjack::Lumberjack* lj,

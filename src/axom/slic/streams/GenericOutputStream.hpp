@@ -50,11 +50,8 @@ public:
    *   - Any other input will construct a std::ofstream associated with input
    * \param [in] stream the string to control type of stream created
    *
-   * \note The constructed std::ofstream will open and associate a file with
-   *       the stream the first time GenericOutputStream is flushed with at
-   *       least one buffered message. Use this constructor
-   *       to avoid empty file creation if GenericOutputStream is not appended
-   *       to.
+   * \note This constructor avoids creating an empty file if this
+   *       GenericOutputStream never flushes a message.
    */
   GenericOutputStream(const std::string& stream);
 
@@ -79,11 +76,8 @@ public:
    * \param [in] format the format string.
    * \see LogStream::setFormatString for the format string.
    *
-   * \note The constructed std::ofstream will open and associate a file with
-   *       the stream the first time GenericOutputStream is flushed with at
-   *       least one buffered message. Use this constructor
-   *       to avoid empty file creation if GenericOutputStream is not appended
-   *       to.
+   * \note This constructor avoids creating an empty file if this
+   *       GenericOutputStream never flushes a message.
    */
   GenericOutputStream(const std::string& stream, const std::string& format);
 

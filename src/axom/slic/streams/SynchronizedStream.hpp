@@ -78,11 +78,8 @@ public:
    * \pre stream != NULL
    * \see LogStream::setFormatString for the format string.
    *
-   * \note The constructed std::ofstream will open and associate a file with
-   *       the stream the first time SynchronizedStream is flushed with at
-   *       least one buffered message. Use this constructor
-   *       to avoid empty file creation if SynchronizedStream is not appended
-   *       to.
+   * \note This constructor avoids creating an empty file if this
+   *       SynchronizedStream never flushes a message.
    */
   SynchronizedStream(std::string stream, MPI_Comm comm);
 
@@ -99,11 +96,8 @@ public:
    * \pre stream != NULL
    * \see LogStream::setFormatString for the format string.
    *
-   * \note The constructed std::ofstream will open and associate a file with
-   *       the stream the first time SynchronizedStream is flushed with at
-   *       least one buffered message. Use this constructor
-   *       to avoid empty file creation if SynchronizedStream is not appended
-   *       to.
+   * \note This constructor avoids creating an empty file if this
+   *       SynchronizedStream never flushes a message.
    */
   SynchronizedStream(std::string stream, MPI_Comm comm, const std::string& format);
 
