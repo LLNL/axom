@@ -160,8 +160,6 @@ protected:
 template <typename ExecSpace, typename FloatType>
 void CandidateFinderBase<ExecSpace, FloatType>::initialize()
 {
-  int allocatorID = axom::execution_space<ExecSpace>::allocatorID();
-
   const int ncells = m_surfaceMesh->getNumberOfCells();
 
   m_tris.resize(ncells);
