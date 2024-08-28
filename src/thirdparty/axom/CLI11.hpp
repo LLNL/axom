@@ -552,7 +552,7 @@ namespace CLI {
 /// These codes are part of every error in CLI. They can be obtained from e using e.exit_code or as a quick shortcut,
 /// int values from e.get_error_code().
 enum class ExitCodes {
-    CLI11_Success = 0,
+  CLI11_Success = 0 /* Formerly Success, changed to work around X11 #defining Success */,
     IncorrectConstruction = 100,
     BadNameString,
     OptionAlreadyAdded,
