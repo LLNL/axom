@@ -665,7 +665,7 @@ inline void for_all_cells_impl(xargs::coords,
   {
     SLIC_ASSERT(dimension == 3);
 
-    // Extract xy coordinate values into an axom::ArrayView
+    // Extract yz coordinate values into an axom::ArrayView
     auto y_vals_h =
       axom::ArrayView<const double>(m.getCoordinateArray(Y_COORDINATE),
                                     m.getNodeResolution(Y_COORDINATE));
@@ -673,7 +673,7 @@ inline void for_all_cells_impl(xargs::coords,
       axom::ArrayView<const double>(m.getCoordinateArray(Z_COORDINATE),
                                     m.getNodeResolution(Z_COORDINATE));
 
-    // Move xy values onto device
+    // Move yz values onto device
     axom::Array<double> y_vals_d = on_device
       ? axom::Array<double>(y_vals_h, device_allocator)
       : axom::Array<double>();

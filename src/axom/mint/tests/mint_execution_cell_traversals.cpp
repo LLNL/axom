@@ -424,10 +424,6 @@ void check_for_all_cell_faces(int dimension)
   EXPECT_TRUE(test_mesh != nullptr);
 
   const IndexType numCells = test_mesh->getNumberOfCells();
-  // IndexType* cellFaces =
-  //   test_mesh->template createField<IndexType>("cellFaces",
-  //                                              CELL_CENTERED,
-  //                                              MAX_CELL_FACES);
   axom::Array<IndexType> cell_faces_d(numCells * MAX_CELL_FACES,
                                       numCells * MAX_CELL_FACES,
                                       device_allocator);
