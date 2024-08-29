@@ -27,6 +27,7 @@ set(core_headers
     utilities/CommandLineUtilities.hpp
     utilities/FileUtilities.hpp
     utilities/RAII.hpp
+    utilities/Sorting.hpp
     utilities/StringUtilities.hpp
     utilities/System.hpp
     utilities/Timer.hpp
