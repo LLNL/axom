@@ -53,8 +53,6 @@ public:
     , m_sizesView(sizes)
     , m_offsetsView(offsets)
   {
-    SLIC_ASSERT(m_sizesView.size() != 0);
-    SLIC_ASSERT(m_offsetsView.size() != 0);
     SLIC_ASSERT(m_offsetsView.size() == m_sizesView.size());
   }
 
@@ -99,23 +97,31 @@ public:
         0,
         nzones,
         AXOM_LAMBDA(auto zoneIndex) {
-          const ConnectivityView shapeDataView(
+          const ConnectivityView shapeIdsView(
             connectivityView.data() + offsetsView[zoneIndex],
             sizesView[zoneIndex]);
-          const ShapeType shape(shapeDataView);
+          const ShapeType shape(shapeIdsView);
           func(zoneIndex, shape);
         });
     }
     else
     {
+      ConnectivityView sizesView(m_sizesView);
+      ConnectivityView offsetsView(m_offsetsView);
       axom::for_all<ExecSpace>(
         0,
         nzones,
         AXOM_LAMBDA(auto zoneIndex) {
-          const ConnectivityView shapeDataView(
-            connectivityView.data() + ShapeType::zoneOffset(zoneIndex),
-            ShapeType::numberOfNodes());
-          const ShapeType shape(shapeDataView);
+          ConnectivityView shapeIdsView {};
+          if(sizesView.empty())
+          {
+            shapeIdsView = ConnectivityView(connectivityView.data() + ShapeType::zoneOffset(zoneIndex), ShapeType::numberOfNodes());
+          }
+          else
+          {
+            shapeIdsView = ConnectivityView(connectivityView.data() + offsetsView[zoneIndex], sizesView[zoneIndex]);
+          }
+          const ShapeType shape(shapeIdsView);
           func(zoneIndex, shape);
         });
     }
@@ -155,14 +161,22 @@ public:
     }
     else
     {
+      ConnectivityView sizesView(m_sizesView);
+      ConnectivityView offsetsView(m_offsetsView);
       axom::for_all<ExecSpace>(
         0,
         nSelectedZones,
         AXOM_LAMBDA(auto selectIndex) {
           const auto zoneIndex = localSelectedIdsView[selectIndex];
-          const ConnectivityView shapeIdsView(
-            connectivityView.data() + ShapeType::zoneOffset(zoneIndex),
-            ShapeType::numberOfNodes());
+          ConnectivityView shapeIdsView {};
+          if(sizesView.empty())
+          {
+            shapeIdsView = ConnectivityView(connectivityView.data() + ShapeType::zoneOffset(zoneIndex), ShapeType::numberOfNodes());
+          }
+          else
+          {
+            shapeIdsView = ConnectivityView(connectivityView.data() + offsetsView[zoneIndex], sizesView[zoneIndex]);
+          }
           const ShapeType shape(shapeIdsView);
           func(selectIndex, zoneIndex, shape);
         });

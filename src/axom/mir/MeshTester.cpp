@@ -965,7 +965,7 @@ void MeshTester::generateGrid(int gridSize, conduit::Node& mesh)
   {
     for(int i = 0; i < gridSize; i++)
     {
-      offsets.push_back(offsets.size());
+      offsets.push_back(offsets.size() * 4);
       sizes.push_back(4);
       conn.push_back(j * nx + i);
       conn.push_back(j * nx + i + 1);
@@ -1020,7 +1020,7 @@ void MeshTester::generateGrid3D(int gridSize, conduit::Node& mesh)
     {
       for(int i = 0; i < gridSize; i++)
       {
-        offsets.push_back(offsets.size());
+        offsets.push_back(offsets.size() * 8);
         sizes.push_back(8);
         conn.push_back((k * nx * ny) + (j * nx) + i);
         conn.push_back((k * nx * ny) + (j * nx) + i + 1);

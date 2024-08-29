@@ -26,7 +26,7 @@
 #endif
 
 // Uncomment to save inputs and outputs.
-#define AXOM_DEBUG_EQUIZ
+// #define AXOM_DEBUG_EQUIZ
 
 // This enables a tweak to the algorithm that tries to skip the first iteration
 // by incorporating the first material's ids into the zonalMaterialID field. It
@@ -50,26 +50,6 @@ using MaterialVFView = axom::ArrayView<MaterialVF>;
 
 constexpr static int NULL_MATERIAL = -1;
 constexpr static MaterialVF NULL_MATERIAL_VF = -1.f;
-
-#if 0
-AXOM_HOST_DEVICE
-inline bool zoneMatters(int zoneIndex)
-{
-   const int zones[] = {26,
-33,34,35,
-36,37,38,39,40,41,
-49,50,
-59,60,
-69,
-78,79};
-  for(size_t i = 0; i < sizeof(zones)/sizeof(int); i++)
-  {
-    if(zones[i] == zoneIndex)
-      return true;
-  }
-  return false;
-}
-#endif
 
 namespace detail
 {
@@ -114,8 +94,6 @@ public:
       int zoneMatID = m_zoneMatNumberView[zoneIndex];
       if(zoneMatID != NULL_MATERIAL)
         backgroundIndex = matNumberToIndex(zoneMatID);
-      // Determine the matvf view index for the current material.
-      int currentIndex = matNumberToIndex(m_currentMaterial);
 
       axom::IndexType clipcase = 0;
       const auto n = nodeIdsView.size();
@@ -132,7 +110,7 @@ public:
 #endif
         // clang-format off
         MaterialVF vf1 = (backgroundIndex != INVALID_INDEX) ? m_matvfViews[backgroundIndex][nid] : NULL_MATERIAL_VF;
-        MaterialVF vf2 = (currentIndex != INVALID_INDEX) ? m_matvfViews[currentIndex][nid] : 0;
+        MaterialVF vf2 = (m_currentMaterialIndex != INVALID_INDEX) ? m_matvfViews[m_currentMaterialIndex][nid] : 0;
         // clang-format on
 
         clipcase |= (vf2 > vf1) ? (1 << i) : 0;
@@ -158,7 +136,6 @@ public:
         backgroundIndex = matNumberToIndex(zoneMatID);
       // Determine the matvf view index for the current material.
 
-      int currentIndex = matNumberToIndex(m_currentMaterial);
 #if defined(AXOM_DEVICE_CODE)
       assert(id0 >= 0 && id0 < m_matvfViews[0].size());
       assert(id1 >= 0 && id1 < m_matvfViews[0].size());
@@ -178,8 +155,8 @@ public:
       // clang-format off
       vf1[0] = (backgroundIndex != INVALID_INDEX) ? m_matvfViews[backgroundIndex][id0] : NULL_MATERIAL_VF;
       vf1[1] = (backgroundIndex != INVALID_INDEX) ? m_matvfViews[backgroundIndex][id1] : NULL_MATERIAL_VF;
-      vf2[0] = (currentIndex != INVALID_INDEX) ? m_matvfViews[currentIndex][id0] : 0;
-      vf2[1] = (currentIndex != INVALID_INDEX) ? m_matvfViews[currentIndex][id1] : 0;
+      vf2[0] = (m_currentMaterialIndex != INVALID_INDEX) ? m_matvfViews[m_currentMaterialIndex][id0] : 0;
+      vf2[1] = (m_currentMaterialIndex != INVALID_INDEX) ? m_matvfViews[m_currentMaterialIndex][id1] : 0;
       // clang-format on
 
       float numerator = vf2[0] - vf1[0];
@@ -204,7 +181,7 @@ public:
      * \return The m_matNumbersView index on success; INVALID_INDEX on failure.
      */
     AXOM_HOST_DEVICE
-    int matNumberToIndex(int matNumber) const
+    inline int matNumberToIndex(int matNumber) const
     {
       auto index = axom::mir::utilities::bsearch(matNumber, m_matNumbersView);
       return (index != -1) ? m_matIndicesView[index] : INVALID_INDEX;
@@ -232,7 +209,11 @@ public:
       m_zoneMatNumberView = zoneMatsView;
     }
 
-    void setCurrentMaterial(int matNumber) { m_currentMaterial = matNumber; }
+    void setCurrentMaterial(int matNumber, int matNumberIndex)
+    {
+      m_currentMaterial = matNumber;
+      m_currentMaterialIndex = matNumberIndex;
+    }
 
     axom::StaticArray<MaterialVFView, MAXMATERIALS>
       m_matvfViews {};  //!< Array of volume fraction views
@@ -240,6 +221,7 @@ public:
     axom::ArrayView<int> m_matIndicesView {};  //!< Array of indices into m_matvfViews for the material numbers.
     axom::ArrayView<int> m_zoneMatNumberView {};  //!< Contains the current material number that owns each zone.
     int m_currentMaterial {};  //!< The current material.
+    int m_currentMaterialIndex {}; //!< The current material's index in the m_matvfViews.
   };
 
   /**
@@ -282,9 +264,9 @@ public:
     m_view.setZoneMaterialID(zoneMatsView);
   }
 
-  void setCurrentMaterial(int matNumber)
+  void setCurrentMaterial(int matNumber, int matNumberIndex)
   {
-    m_view.setCurrentMaterial(matNumber);
+    m_view.setCurrentMaterial(matNumber, matNumberIndex);
   }
 
   /**
@@ -860,6 +842,16 @@ protected:
         return matNumber[idx1] < matNumber[idx2];
       });
       std::sort(matNumber.begin(), matNumber.end());
+      // Get the current material's index in the number:index map.
+      int currentMatIndex = 0;
+      for(axom::IndexType i = 0; i < matNumber.size(); i++)
+      {
+        if(matNumber[i] == currentMat.number)
+        {
+          currentMatIndex = matIndex[i];
+          break;
+        }
+      }
 
       // Store the number:index map into the intersector. The number:index map lets us
       // ask for the field index for a material number, allowing scattered material
@@ -868,11 +860,11 @@ protected:
       axom::copy(matIndexDevice.data(), matIndex.data(), sizeof(int) * nmats);
       intersector.setMaterialNumbers(matNumberDevice.view());
       intersector.setMaterialIndices(matIndexDevice.view());
+      intersector.setCurrentMaterial(currentMat.number, currentMatIndex);
 
       // Store the current zone material ids and current material number into the intersector.
       intersector.setZoneMaterialID(bputils::make_array_view<MaterialID>(
         n_fields.fetch_existing(zonalMaterialIDName() + "/values")));
-      intersector.setCurrentMaterial(currentMat.number);
     }
 
     //--------------------------------------------------------------------------
@@ -923,11 +915,11 @@ protected:
     {
       AXOM_ANNOTATE_SCOPE("Update zonalMaterialID");
 
-      const auto colorView = bputils::make_array_view<ConnectivityType>(
+      const auto colorView = bputils::make_array_view<int>(
         n_newFields.fetch_existing(colorField + "/values"));
       const auto nzonesNew = colorView.size();
 
-      // Get zonalMAterialID field so we can make adjustments.
+      // Get zonalMaterialID field so we can make adjustments.
       conduit::Node &n_zonalMaterialID =
         n_newFields.fetch_existing(zonalMaterialIDName() + "/values");
       auto zonalMaterialID =
