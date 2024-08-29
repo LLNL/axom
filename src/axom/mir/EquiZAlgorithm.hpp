@@ -598,6 +598,7 @@ protected:
     // Make a node to zone relation so we know for each node, which zones it touches.
     conduit::Node relation;
     {
+      AXOM_ANNOTATE_SCOPE("relation");
       bputils::NodeToZoneRelationBuilder<ExecSpace> rb;
       rb.execute(n_topo, n_coordset, relation);
       //printNode(relation);
@@ -610,44 +611,57 @@ protected:
     // Make nodal VFs for each mixed material.
     const auto nzones = m_topologyView.numberOfZones();
     const auto nnodes = m_coordsetView.numberOfNodes();
-    for(const auto &mat : mixedMats)
     {
-      const int matNumber = mat.number;
-      const std::string zonalName = zonalFieldName(matNumber);
-      conduit::Node &n_zonalField = n_fields[zonalName];
-      n_zonalField["topology"] = n_topo.name();
-      n_zonalField["association"] = "element";
-      n_zonalField["values"].set_allocator(c2a.getConduitAllocatorID());
-      n_zonalField["values"].set(
-        conduit::DataType(bputils::cpp2conduit<MaterialVF>::id, nzones));
-      auto zonalFieldView =
-        bputils::make_array_view<MaterialVF>(n_zonalField["values"]);
+      AXOM_ANNOTATE_SCOPE("zonal");
+      for(const auto &mat : mixedMats)
+      {
+        const int matNumber = mat.number;
+        const std::string zonalName = zonalFieldName(matNumber);
+        conduit::Node &n_zonalField = n_fields[zonalName];
+        n_zonalField["topology"] = n_topo.name();
+        n_zonalField["association"] = "element";
+        n_zonalField["values"].set_allocator(c2a.getConduitAllocatorID());
+        n_zonalField["values"].set(
+          conduit::DataType(bputils::cpp2conduit<MaterialVF>::id, nzones));
+        auto zonalFieldView =
+          bputils::make_array_view<MaterialVF>(n_zonalField["values"]);
 
-      // Fill the zonal field from the matset.
-      MatsetView deviceMatsetView(m_matsetView);
-      axom::for_all<ExecSpace>(
-        m_topologyView.numberOfZones(),
-        AXOM_LAMBDA(auto zoneIndex) {
-          typename MatsetView::FloatType vf {};
-          deviceMatsetView.zoneContainsMaterial(zoneIndex, matNumber, vf);
-          zonalFieldView[zoneIndex] = static_cast<MaterialVF>(vf);
-        });
+        // Fill the zonal field from the matset.
+        MatsetView deviceMatsetView(m_matsetView);
+        axom::for_all<ExecSpace>(
+          m_topologyView.numberOfZones(),
+          AXOM_LAMBDA(auto zoneIndex) {
+            typename MatsetView::FloatType vf {};
+            deviceMatsetView.zoneContainsMaterial(zoneIndex, matNumber, vf);
+            zonalFieldView[zoneIndex] = static_cast<MaterialVF>(vf);
+          });
+      }
+    }
 
-      // Make a nodal field for the current material by recentering.
-      const std::string nodalName = nodalFieldName(matNumber);
-      conduit::Node &n_nodalField = n_fields[nodalName];
-      n_nodalField["topology"] = n_topo.name();
-      n_nodalField["association"] = "vertex";
-      n_nodalField["values"].set_allocator(c2a.getConduitAllocatorID());
-      n_nodalField["values"].set(
-        conduit::DataType(bputils::cpp2conduit<MaterialVF>::id, nnodes));
-      bputils::RecenterField<ExecSpace> z2n;
-      z2n.execute(n_zonalField, relation, n_nodalField);
+    {
+      AXOM_ANNOTATE_SCOPE("recenter");
+      for(const auto &mat : mixedMats)
+      {
+        const int matNumber = mat.number;
+        const std::string zonalName = zonalFieldName(matNumber);
+        conduit::Node &n_zonalField = n_fields[zonalName];
+
+        // Make a nodal field for the current material by recentering.
+        const std::string nodalName = nodalFieldName(matNumber);
+        conduit::Node &n_nodalField = n_fields[nodalName];
+        n_nodalField["topology"] = n_topo.name();
+        n_nodalField["association"] = "vertex";
+        n_nodalField["values"].set_allocator(c2a.getConduitAllocatorID());
+        n_nodalField["values"].set(
+          conduit::DataType(bputils::cpp2conduit<MaterialVF>::id, nnodes));
+        bputils::RecenterField<ExecSpace> z2n;
+        z2n.execute(n_zonalField, relation, n_nodalField);
 
 #if !defined(AXOM_DEBUG_EQUIZ)
-      // Remove the zonal field that we don't normally need (unless we're debugging).
-      n_fields.remove(zonalName);
+        // Remove the zonal field that we don't normally need (unless we're debugging).
+        n_fields.remove(zonalName);
 #endif
+      }
     }
   }
 
