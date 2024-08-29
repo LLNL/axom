@@ -134,7 +134,7 @@ public:
       int zoneMatID = m_zoneMatNumberView[zoneIndex];
       if(zoneMatID != NULL_MATERIAL)
         backgroundIndex = matNumberToIndex(zoneMatID);
-      // Determine the matvf view index for the current material.
+        // Determine the matvf view index for the current material.
 
 #if defined(AXOM_DEVICE_CODE)
       assert(id0 >= 0 && id0 < m_matvfViews[0].size());
@@ -221,7 +221,7 @@ public:
     axom::ArrayView<int> m_matIndicesView {};  //!< Array of indices into m_matvfViews for the material numbers.
     axom::ArrayView<int> m_zoneMatNumberView {};  //!< Contains the current material number that owns each zone.
     int m_currentMaterial {};  //!< The current material.
-    int m_currentMaterialIndex {}; //!< The current material's index in the m_matvfViews.
+    int m_currentMaterialIndex {};  //!< The current material's index in the m_matvfViews.
   };
 
   /**

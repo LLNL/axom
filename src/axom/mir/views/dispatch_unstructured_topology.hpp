@@ -218,15 +218,20 @@ void typed_dispatch_unstructured_topology(const conduit::Node &topo,
     // Make sizes / offsets views if the values are present.
     axom::ArrayView<ConnType> sizesView, offsetsView;
     if(topo.has_path("elements/sizes"))
-      sizesView = bputils::make_array_view<ConnType>(topo.fetch_existing("elements/sizes"));
+      sizesView = bputils::make_array_view<ConnType>(
+        topo.fetch_existing("elements/sizes"));
     if(topo.has_path("elements/offsets"))
-      offsetsView = bputils::make_array_view<ConnType>(topo.fetch_existing("elements/offsets"));
+      offsetsView = bputils::make_array_view<ConnType>(
+        topo.fetch_existing("elements/offsets"));
 
     if constexpr(axom::utilities::bitIsSet(ShapeTypes, Tri_ShapeID))
     {
       if(eligible && shape == "tri")
       {
-        UnstructuredTopologySingleShapeView<TriShape<ConnType>> ugView(connView, sizesView, offsetsView);
+        UnstructuredTopologySingleShapeView<TriShape<ConnType>> ugView(
+          connView,
+          sizesView,
+          offsetsView);
         func(shape, ugView);
         eligible = false;
       }
@@ -235,7 +240,10 @@ void typed_dispatch_unstructured_topology(const conduit::Node &topo,
     {
       if(eligible && shape == "quad")
       {
-        UnstructuredTopologySingleShapeView<QuadShape<ConnType>> ugView(connView, sizesView, offsetsView);
+        UnstructuredTopologySingleShapeView<QuadShape<ConnType>> ugView(
+          connView,
+          sizesView,
+          offsetsView);
         func(shape, ugView);
         eligible = false;
       }
@@ -244,7 +252,10 @@ void typed_dispatch_unstructured_topology(const conduit::Node &topo,
     {
       if(eligible && shape == "tet")
       {
-        UnstructuredTopologySingleShapeView<TetShape<ConnType>> ugView(connView, sizesView, offsetsView);
+        UnstructuredTopologySingleShapeView<TetShape<ConnType>> ugView(
+          connView,
+          sizesView,
+          offsetsView);
         func(shape, ugView);
         eligible = false;
       }
@@ -254,7 +265,9 @@ void typed_dispatch_unstructured_topology(const conduit::Node &topo,
       if(eligible && shape == "pyramid")
       {
         UnstructuredTopologySingleShapeView<PyramidShape<ConnType>> ugView(
-          connView, sizesView, offsetsView);
+          connView,
+          sizesView,
+          offsetsView);
         func(shape, ugView);
         eligible = false;
       }
@@ -263,7 +276,10 @@ void typed_dispatch_unstructured_topology(const conduit::Node &topo,
     {
       if(eligible && shape == "wedge")
       {
-        UnstructuredTopologySingleShapeView<WedgeShape<ConnType>> ugView(connView, sizesView, offsetsView);
+        UnstructuredTopologySingleShapeView<WedgeShape<ConnType>> ugView(
+          connView,
+          sizesView,
+          offsetsView);
         func(shape, ugView);
         eligible = false;
       }
@@ -272,7 +288,10 @@ void typed_dispatch_unstructured_topology(const conduit::Node &topo,
     {
       if(eligible && shape == "hex")
       {
-        UnstructuredTopologySingleShapeView<HexShape<ConnType>> ugView(connView, sizesView, offsetsView);
+        UnstructuredTopologySingleShapeView<HexShape<ConnType>> ugView(
+          connView,
+          sizesView,
+          offsetsView);
         func(shape, ugView);
         eligible = false;
       }

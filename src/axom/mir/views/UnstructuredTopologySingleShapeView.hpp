@@ -115,11 +115,15 @@ public:
           ConnectivityView shapeIdsView {};
           if(sizesView.empty())
           {
-            shapeIdsView = ConnectivityView(connectivityView.data() + ShapeType::zoneOffset(zoneIndex), ShapeType::numberOfNodes());
+            shapeIdsView = ConnectivityView(
+              connectivityView.data() + ShapeType::zoneOffset(zoneIndex),
+              ShapeType::numberOfNodes());
           }
           else
           {
-            shapeIdsView = ConnectivityView(connectivityView.data() + offsetsView[zoneIndex], sizesView[zoneIndex]);
+            shapeIdsView =
+              ConnectivityView(connectivityView.data() + offsetsView[zoneIndex],
+                               sizesView[zoneIndex]);
           }
           const ShapeType shape(shapeIdsView);
           func(zoneIndex, shape);
@@ -171,11 +175,15 @@ public:
           ConnectivityView shapeIdsView {};
           if(sizesView.empty())
           {
-            shapeIdsView = ConnectivityView(connectivityView.data() + ShapeType::zoneOffset(zoneIndex), ShapeType::numberOfNodes());
+            shapeIdsView = ConnectivityView(
+              connectivityView.data() + ShapeType::zoneOffset(zoneIndex),
+              ShapeType::numberOfNodes());
           }
           else
           {
-            shapeIdsView = ConnectivityView(connectivityView.data() + offsetsView[zoneIndex], sizesView[zoneIndex]);
+            shapeIdsView =
+              ConnectivityView(connectivityView.data() + offsetsView[zoneIndex],
+                               sizesView[zoneIndex]);
           }
           const ShapeType shape(shapeIdsView);
           func(selectIndex, zoneIndex, shape);

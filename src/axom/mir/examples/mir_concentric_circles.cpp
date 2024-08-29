@@ -21,7 +21,8 @@ using RuntimePolicy = axom::runtime_policy::Policy;
 //--------------------------------------------------------------------------------
 void conduit_debug_err_handler(const std::string &s1, const std::string &s2, int i1)
 {
-  SLIC_ERROR(axom::fmt::format("Error from Conduit: s1={}, s2={}, i1={}", s1, s2, i1));
+  SLIC_ERROR(
+    axom::fmt::format("Error from Conduit: s1={}, s2={}, i1={}", s1, s2, i1));
   // This is on purpose.
   //while(1)
   //  ;
@@ -38,11 +39,14 @@ void printNode(const conduit::Node &n)
 
 //--------------------------------------------------------------------------------
 template <typename ExecSpace>
-int runMIR(const conduit::Node &hostMesh, const conduit::Node &options, conduit::Node &hostResult)
+int runMIR(const conduit::Node &hostMesh,
+           const conduit::Node &options,
+           conduit::Node &hostResult)
 {
   using namespace axom::mir::views;
   AXOM_ANNOTATE_SCOPE("runMIR");
-  SLIC_INFO(axom::fmt::format("Using policy {}", axom::execution_space<ExecSpace>::name()));
+  SLIC_INFO(axom::fmt::format("Using policy {}",
+                              axom::execution_space<ExecSpace>::name()));
 
   // Check materials.
   constexpr int MAXMATERIALS = 20;
@@ -67,7 +71,8 @@ int runMIR(const conduit::Node &hostMesh, const conduit::Node &options, conduit:
     bputils::make_array_view<float>(deviceMesh["coordsets/coords/values/y"]));
 
   using TopoView = UnstructuredTopologySingleShapeView<QuadShape<int>>;
-  TopoView topoView(bputils::make_array_view<int>(deviceMesh["topologies/mesh/elements/connectivity"]));
+  TopoView topoView(bputils::make_array_view<int>(
+    deviceMesh["topologies/mesh/elements/connectivity"]));
 
   using MatsetView = UnibufferMaterialView<int, float, MAXMATERIALS>;
   MatsetView matsetView;
@@ -78,7 +83,8 @@ int runMIR(const conduit::Node &hostMesh, const conduit::Node &options, conduit:
     bputils::make_array_view<int>(deviceMesh["matsets/mat/offsets"]),
     bputils::make_array_view<int>(deviceMesh["matsets/mat/indices"]));
 
-  using MIR = axom::mir::EquiZAlgorithm<ExecSpace, TopoView, CoordsetView, MatsetView>;
+  using MIR =
+    axom::mir::EquiZAlgorithm<ExecSpace, TopoView, CoordsetView, MatsetView>;
   MIR m(topoView, coordsetView, matsetView);
   conduit::Node deviceResult;
   m.execute(deviceMesh, options, deviceResult);
@@ -90,77 +96,77 @@ int runMIR(const conduit::Node &hostMesh, const conduit::Node &options, conduit:
 }
 
 //--------------------------------------------------------------------------------
-int runMIR(RuntimePolicy policy, int gridSize, int numCircles, const std::string &outputFilePath)
+int runMIR(RuntimePolicy policy,
+           int gridSize,
+           int numCircles,
+           const std::string &outputFilePath)
 {
-    // Initialize a mesh for testing MIR
-    auto timer = axom::utilities::Timer(true);
-    mir::MeshTester tester;
-    conduit::Node mesh;
-    {
-      AXOM_ANNOTATE_SCOPE("generate");
-      tester.initTestCaseFive(gridSize, numCircles, mesh);
-      // printNode(mesh);
-    }
-    timer.stop();
-    SLIC_INFO("Mesh init time: " << timer.elapsedTimeInMilliSec() << " ms.");
+  // Initialize a mesh for testing MIR
+  auto timer = axom::utilities::Timer(true);
+  mir::MeshTester tester;
+  conduit::Node mesh;
+  {
+    AXOM_ANNOTATE_SCOPE("generate");
+    tester.initTestCaseFive(gridSize, numCircles, mesh);
+    // printNode(mesh);
+  }
+  timer.stop();
+  SLIC_INFO("Mesh init time: " << timer.elapsedTimeInMilliSec() << " ms.");
 
-    // Output initial mesh.
-    {
-      AXOM_ANNOTATE_SCOPE("save_input");
-      conduit::relay::io::blueprint::save_mesh(mesh, "concentric_circles", "hdf5");
-    }
+  // Output initial mesh.
+  {
+    AXOM_ANNOTATE_SCOPE("save_input");
+    conduit::relay::io::blueprint::save_mesh(mesh, "concentric_circles", "hdf5");
+  }
 
+  // Begin material interface reconstruction
+  timer.start();
+  conduit::Node options, resultMesh;
+  options["matset"] = "mat";
 
-    // Begin material interface reconstruction
-    timer.start();
-    conduit::Node options, resultMesh;
-    options["matset"] = "mat";
-
-    int retval = 0;
-    if(policy == RuntimePolicy::seq)
-    {
-      retval = runMIR<axom::SEQ_EXEC>(mesh, options, resultMesh);
-    }
+  int retval = 0;
+  if(policy == RuntimePolicy::seq)
+  {
+    retval = runMIR<axom::SEQ_EXEC>(mesh, options, resultMesh);
+  }
 #if defined(AXOM_USE_RAJA) && defined(AXOM_USE_UMPIRE)
-#if defined(AXOM_USE_OPENMP)
-    else if(policy == RuntimePolicy::omp)
-    {
-      retval = runMIR<axom::OMP_EXEC>(mesh, options, resultMesh);
-    }
+  #if defined(AXOM_USE_OPENMP)
+  else if(policy == RuntimePolicy::omp)
+  {
+    retval = runMIR<axom::OMP_EXEC>(mesh, options, resultMesh);
+  }
+  #endif
+  #if defined(AXOM_USE_CUDA)
+  else if(policy == RuntimePolicy::cuda)
+  {
+    constexpr int CUDA_BLOCK_SIZE = 256;
+    using cuda_exec = axom::CUDA_EXEC<CUDA_BLOCK_SIZE>;
+    retval = runMIR<cuda_exec>(mesh, options, resultMesh);
+  }
+  #endif
+  #if defined(AXOM_USE_HIP)
+  else if(policy == RuntimePolicy::hip)
+  {
+    constexpr int HIP_BLOCK_SIZE = 64;
+    using hip_exec = axom::HIP_EXEC<HIP_BLOCK_SIZE>;
+    retval = runMIR<hip_exec>(mesh, options, resultMesh);
+  }
+  #endif
 #endif
-#if defined(AXOM_USE_CUDA)
-    else if(policy == RuntimePolicy::cuda)
-    {
-      constexpr int CUDA_BLOCK_SIZE = 256;
-      using cuda_exec = axom::CUDA_EXEC<CUDA_BLOCK_SIZE>;
-      retval = runMIR<cuda_exec>(mesh, options, resultMesh);
-    }
-#endif
-#if defined(AXOM_USE_HIP)
-    else if(policy == RuntimePolicy::hip)
-    {
-      constexpr int HIP_BLOCK_SIZE = 64;
-      using hip_exec = axom::HIP_EXEC<HIP_BLOCK_SIZE>;
-      retval = runMIR<hip_exec>(mesh, options, resultMesh);
-    }
-#endif
-#endif
-    else
-    {
-      retval = -1;
-      SLIC_ERROR("Unhandled policy.");
-    }
-    timer.stop();
-    SLIC_INFO("Material interface reconstruction time: "
-              << timer.elapsedTimeInMilliSec() << " ms.");
+  else
+  {
+    retval = -1;
+    SLIC_ERROR("Unhandled policy.");
+  }
+  timer.stop();
+  SLIC_INFO("Material interface reconstruction time: "
+            << timer.elapsedTimeInMilliSec() << " ms.");
 
-    // Output results
-    {
-      AXOM_ANNOTATE_SCOPE("save_output");
-      conduit::relay::io::blueprint::save_mesh(resultMesh,
-                                               outputFilePath,
-                                               "hdf5");
-    }
+  // Output results
+  {
+    AXOM_ANNOTATE_SCOPE("save_output");
+    conduit::relay::io::blueprint::save_mesh(resultMesh, outputFilePath, "hdf5");
+  }
 
   return retval;
 }
@@ -168,34 +174,34 @@ int runMIR(RuntimePolicy policy, int gridSize, int numCircles, const std::string
 //--------------------------------------------------------------------------------
 int runMIROld(int gridSize, int numCircles, const std::string &outputFilePath)
 {
-    // Initialize a mesh for testing MIR
-    auto timer = axom::utilities::Timer(true);
-    mir::MeshTester tester;
-    mir::MIRMesh mesh;
-    {
-      AXOM_ANNOTATE_SCOPE("generate");
-      mesh = tester.initTestCaseFive(gridSize, numCircles);
-    }
-    timer.stop();
-    SLIC_INFO("Mesh init time: " << timer.elapsedTimeInMilliSec() << " ms.");
+  // Initialize a mesh for testing MIR
+  auto timer = axom::utilities::Timer(true);
+  mir::MeshTester tester;
+  mir::MIRMesh mesh;
+  {
+    AXOM_ANNOTATE_SCOPE("generate");
+    mesh = tester.initTestCaseFive(gridSize, numCircles);
+  }
+  timer.stop();
+  SLIC_INFO("Mesh init time: " << timer.elapsedTimeInMilliSec() << " ms.");
 
-    // Begin material interface reconstruction
-    timer.start();
-    mir::MIRMesh outputMesh;
-    {
-      AXOM_ANNOTATE_SCOPE("runMIR");
-      mir::InterfaceReconstructor m;
-      m.computeReconstructedInterface(mesh, outputMesh);
-    }
-    timer.stop();
-    SLIC_INFO("Material interface reconstruction time: "
-              << timer.elapsedTimeInMilliSec() << " ms.");
+  // Begin material interface reconstruction
+  timer.start();
+  mir::MIRMesh outputMesh;
+  {
+    AXOM_ANNOTATE_SCOPE("runMIR");
+    mir::InterfaceReconstructor m;
+    m.computeReconstructedInterface(mesh, outputMesh);
+  }
+  timer.stop();
+  SLIC_INFO("Material interface reconstruction time: "
+            << timer.elapsedTimeInMilliSec() << " ms.");
 
-    // Output results
-    {
-      AXOM_ANNOTATE_SCOPE("save_output");
-      outputMesh.writeMeshToFile(".", outputFilePath + ".vtk");
-    }
+  // Output results
+  {
+    AXOM_ANNOTATE_SCOPE("save_output");
+    outputMesh.writeMeshToFile(".", outputFilePath + ".vtk");
+  }
 
   return 0;
 }
@@ -263,7 +269,8 @@ int main(int argc, char **argv)
     conduit::utils::set_error_handler(conduit_debug_err_handler);
   }
 #if defined(AXOM_USE_CALIPER)
-  axom::utilities::raii::AnnotationsWrapper annotations_raii_wrapper(annotationMode);
+  axom::utilities::raii::AnnotationsWrapper annotations_raii_wrapper(
+    annotationMode);
 #endif
 
   int retval = 0;

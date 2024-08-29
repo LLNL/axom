@@ -826,9 +826,9 @@ private:
       << "------------------------ computeSizes ------------------------"
       << std::endl;
     details::printHost("fragmentData.m_fragmentsView",
-                      fragmentData.m_fragmentsView);
+                       fragmentData.m_fragmentsView);
     details::printHost("fragmentData.m_fragmentsSizeView",
-                      fragmentData.m_fragmentsSizeView);
+                       fragmentData.m_fragmentsSizeView);
     details::printHost("blendGroupsView", blendGroupsView);
     details::printHost("blendGroupsLenView", blendGroupsLenView);
     details::printHost("zoneData.m_pointsUsedView", zoneData.m_pointsUsedView);
@@ -887,9 +887,9 @@ private:
                  "------------------------"
               << std::endl;
     details::printHost("fragmentData.m_fragmentOffsetsView",
-                      fragmentData.m_fragmentOffsetsView);
+                       fragmentData.m_fragmentOffsetsView);
     details::printHost("fragmentData.m_fragmentSizeOffsetsView",
-                      fragmentData.m_fragmentSizeOffsetsView);
+                       fragmentData.m_fragmentSizeOffsetsView);
     std::cout << "-------------------------------------------------------------"
                  "-----------"
               << std::endl;
@@ -1131,7 +1131,9 @@ private:
       AXOM_ANNOTATE_SCOPE("build");
       m_topologyView.template for_selected_zones<ExecSpace>(
         selectedZones.view(),
-        AXOM_LAMBDA(auto szIndex, auto AXOM_UNUSED_PARAM(zoneIndex), const auto &zone) {
+        AXOM_LAMBDA(auto szIndex,
+                    auto AXOM_UNUSED_PARAM(zoneIndex),
+                    const auto &zone) {
           // If there are no fragments, return from lambda.
           if(fragmentData.m_fragmentsView[szIndex] == 0) return;
 
@@ -1204,7 +1206,9 @@ private:
                 const auto nIdsThisFragment = fragmentSize - 2;
 #if defined(AXOM_CLIP_FILTER_DEGENERATES)
                 // Check for degenerate
-                int nUniqueIds = details::unique_count<ConnectivityType, 8>(connView.data() + connStart, nIdsThisFragment);
+                int nUniqueIds = details::unique_count<ConnectivityType, 8>(
+                  connView.data() + connStart,
+                  nIdsThisFragment);
                 bool thisFragmentDegenerate = nUniqueIds < (nIdsThisFragment - 1);
                 degenerates |= thisFragmentDegenerate;
 
@@ -1224,11 +1228,13 @@ private:
                   fragmentData.m_fragmentsView[szIndex] -= 1;
                 }
                 // Mark empty size.
-                sizesView[sizeIndex] = thisFragmentDegenerate ? 0 : nIdsThisFragment;
+                sizesView[sizeIndex] =
+                  thisFragmentDegenerate ? 0 : nIdsThisFragment;
 #else
                 sizesView[sizeIndex] = nIdsThisFragment;
 #endif
-                shapesView[sizeIndex] = details::ST_Index_to_ShapeID(fragmentShape);
+                shapesView[sizeIndex] =
+                  details::ST_Index_to_ShapeID(fragmentShape);
                 colorView[sizeIndex] = fragment[1] - COLOR0;
                 sizeIndex++;
               }
@@ -1239,17 +1245,17 @@ private:
           // Reduce overall whether there are degenerates.
           degenerates_reduce |= degenerates;
 #endif
-      });
+        });
 
 #if defined(AXOM_DEBUG_CLIP_FIELD)
       std::cout
         << "------------------------ makeTopology ------------------------"
         << std::endl;
       std::cout << "degenerates_reduce=" << degenerates_reduce.get() << std::endl;
-//      details::printHost("selectedZones", selectedZones.view());
+      //      details::printHost("selectedZones", selectedZones.view());
       details::printHost("m_fragmentsView", fragmentData.m_fragmentsView);
-//      details::printHost("zoneData.m_clipCasesView", zoneData.m_clipCasesView);
-//      details::printHost("zoneData.m_pointsUsedView", zoneData.m_pointsUsedView);
+      //      details::printHost("zoneData.m_clipCasesView", zoneData.m_clipCasesView);
+      //      details::printHost("zoneData.m_pointsUsedView", zoneData.m_pointsUsedView);
       details::printHost("conn", connView);
       details::printHost("sizes", sizesView);
       details::printHost("offsets", offsetsView);
@@ -1271,47 +1277,56 @@ private:
       // There were degenerates so the expected number of fragments per zone (m_fragmentsView)
       // was adjusted down. That means redoing the offsets. These need to be up
       // to date to handle zonal fields later.
-      axom::exclusive_scan<ExecSpace>(fragmentData.m_fragmentsView, fragmentData.m_fragmentOffsetsView);
+      axom::exclusive_scan<ExecSpace>(fragmentData.m_fragmentsView,
+                                      fragmentData.m_fragmentOffsetsView);
 
       // Use sizesView to make a mask that has 1's where size > 0.
       axom::IndexType nz = fragmentData.m_finalNumZones;
-      axom::Array<int> mask(nz, nz, axom::execution_space<ExecSpace>::allocatorID());
-      axom::Array<int> maskOffsets(nz, nz, axom::execution_space<ExecSpace>::allocatorID());
+      axom::Array<int> mask(nz,
+                            nz,
+                            axom::execution_space<ExecSpace>::allocatorID());
+      axom::Array<int> maskOffsets(
+        nz,
+        nz,
+        axom::execution_space<ExecSpace>::allocatorID());
       auto maskView = mask.view();
       auto maskOffsetsView = maskOffsets.view();
       RAJA::ReduceSum<reduce_policy, axom::IndexType> mask_reduce(0);
-      axom::for_all<ExecSpace>(nz, AXOM_LAMBDA(auto index)
-      {
-        const int ival = (sizesView[index] > 0) ? 1 : 0;
-        maskView[index] = ival;
-        mask_reduce += ival;
-      });
+      axom::for_all<ExecSpace>(
+        nz,
+        AXOM_LAMBDA(auto index) {
+          const int ival = (sizesView[index] > 0) ? 1 : 0;
+          maskView[index] = ival;
+          mask_reduce += ival;
+        });
       const axom::IndexType filteredZoneCount = mask_reduce.get();
 
       // Make offsets
       axom::exclusive_scan<ExecSpace>(maskView, maskOffsetsView);
 
       // Replace data in the input Conduit node with a denser version using the mask.
-      auto filter = [&](conduit::Node &n_src, const auto srcView, axom::IndexType newSize)
-      {
-        using value_type = typename decltype(srcView)::value_type;
-        conduit::Node n_values;
-        n_values.set_allocator(conduitAllocatorID);
-        n_values.set(conduit::DataType(bputils::cpp2conduit<value_type>::id, newSize));
-        auto valuesView = bputils::make_array_view<value_type>(n_values);
-        const auto nValues = maskView.size();
-        axom::for_all<ExecSpace>(nValues, AXOM_LAMBDA(auto index)
-        {
-          if(maskView[index] > 0)
-          {
-            const auto destIndex = maskOffsetsView[index];
-            valuesView[destIndex] = srcView[index];
-          }
-        });
+      auto filter =
+        [&](conduit::Node &n_src, const auto srcView, axom::IndexType newSize) {
+          using value_type = typename decltype(srcView)::value_type;
+          conduit::Node n_values;
+          n_values.set_allocator(conduitAllocatorID);
+          n_values.set(
+            conduit::DataType(bputils::cpp2conduit<value_type>::id, newSize));
+          auto valuesView = bputils::make_array_view<value_type>(n_values);
+          const auto nValues = maskView.size();
+          axom::for_all<ExecSpace>(
+            nValues,
+            AXOM_LAMBDA(auto index) {
+              if(maskView[index] > 0)
+              {
+                const auto destIndex = maskOffsetsView[index];
+                valuesView[destIndex] = srcView[index];
+              }
+            });
 
-        n_src.swap(n_values);
-        return bputils::make_array_view<value_type>(n_src);
-      };
+          n_src.swap(n_values);
+          return bputils::make_array_view<value_type>(n_src);
+        };
 
       // Filter sizes, shapes, color using the mask
       sizesView = filter(n_sizes, sizesView, filteredZoneCount);
