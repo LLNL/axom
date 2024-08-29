@@ -44,7 +44,6 @@ int runMIR(const conduit::Node &hostMesh,
            conduit::Node &hostResult)
 {
   using namespace axom::mir::views;
-  AXOM_ANNOTATE_SCOPE("runMIR");
   SLIC_INFO(axom::fmt::format("Using policy {}",
                               axom::execution_space<ExecSpace>::name()));
 
@@ -64,6 +63,7 @@ int runMIR(const conduit::Node &hostMesh,
   conduit::Node deviceMesh;
   bputils::copy<ExecSpace>(deviceMesh, hostMesh);
 
+  AXOM_ANNOTATE_BEGIN("runMIR");
   // Make views (we know beforehand which types to make)
   using CoordsetView = ExplicitCoordsetView<float, 2>;
   CoordsetView coordsetView(
@@ -88,6 +88,8 @@ int runMIR(const conduit::Node &hostMesh,
   MIR m(topoView, coordsetView, matsetView);
   conduit::Node deviceResult;
   m.execute(deviceMesh, options, deviceResult);
+
+  AXOM_ANNOTATE_END("runMIR");
 
   // device->host
   bputils::copy<axom::SEQ_EXEC>(hostResult, deviceResult);
