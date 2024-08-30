@@ -12,7 +12,6 @@ namespace axom
 {
 namespace utilities
 {
-
 /**
  * \brief This is a template suitable for sorting small arrays on device.
  *
@@ -51,7 +50,7 @@ private:
   {
     int v = N;
     int i = 0;
-    while (v > 0)
+    while(v > 0)
     {
       i++;
       v /= 2;
@@ -68,8 +67,7 @@ private:
   AXOM_HOST_DEVICE
   static void qsort(T *values, int n)
   {
-    if(n <= 1)
-       return;
+    if(n <= 1) return;
     int stack[stack_size()][2];
     int stack_count = 1;
     stack[0][0] = 0;
@@ -118,7 +116,7 @@ private:
         axom::utilities::swap(values[i], values[j]);
       }
     }
-    axom::utilities::swap(values[i+1], values[high]);
+    axom::utilities::swap(values[i + 1], values[high]);
     return i + 1;
   }
 
@@ -151,8 +149,7 @@ private:
  * param b The second value.
  */
 template <typename T>
-AXOM_HOST_DEVICE
-inline void ifswap(T& a, T& b)
+AXOM_HOST_DEVICE inline void ifswap(T &a, T &b)
 {
   if(b < a)
   {
@@ -194,7 +191,7 @@ struct Sorting<T, 4>
    * \param[inout] values The array to be sorted.
    */
   AXOM_HOST_DEVICE
-  inline static void sort(T* values)
+  inline static void sort(T *values)
   {
     ifswap(values[0], values[1]);
     ifswap(values[2], values[3]);
@@ -205,7 +202,7 @@ struct Sorting<T, 4>
   }
 };
 
-} // end namespace utilities
-} // end namespace axom
+}  // end namespace utilities
+}  // end namespace axom
 
 #endif

@@ -218,7 +218,8 @@ TEST(mir_clipfield, blend_group_builder)
   axom::Array<KeyType> blendUniqueNames {{0, 1, 2, 3, 4, 5, 6, 7, 8, 9}};
   axom::Array<KeyType> blendUniqueIndices {{1, 2, 9, 3, 4, 11, 0, 5, 6, 7}};
 
-  using NamingPolicyView = typename axom::mir::utilities::HashNaming<axom::IndexType>::View;
+  using NamingPolicyView =
+    typename axom::mir::utilities::HashNaming<axom::IndexType>::View;
 
   axom::mir::clipping::BlendGroupBuilder<seq_exec, NamingPolicyView> builder;
   builder.setBlendGroupSizes(blendGroups.view(), blendGroupsLen.view());

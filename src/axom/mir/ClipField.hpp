@@ -334,7 +334,7 @@ template <typename ExecSpace,
           typename CoordsetView,
           typename IntersectPolicy = axom::mir::clipping::
             FieldIntersector<ExecSpace, typename TopologyView::ConnectivityType>,
-          typename NamingPolicy = axom::mir::utilities::HashNaming<axom::IndexType> >
+          typename NamingPolicy = axom::mir::utilities::HashNaming<axom::IndexType>>
 class ClipField
 {
 public:
@@ -348,7 +348,8 @@ public:
   using loop_policy = typename axom::execution_space<ExecSpace>::loop_policy;
   using reduce_policy = typename axom::execution_space<ExecSpace>::reduce_policy;
   using ConnectivityType = typename TopologyView::ConnectivityType;
-  using BlendGroupBuilderType = BlendGroupBuilder<ExecSpace, typename NamingPolicy::View>;
+  using BlendGroupBuilderType =
+    BlendGroupBuilder<ExecSpace, typename NamingPolicy::View>;
   using ClipFieldType = float;
 
   /**
@@ -373,10 +374,7 @@ public:
    *
    * \param naming A new naming policy object. 
    */
-  void setNamingPolicy(NamingPolicy &naming)
-  {
-    m_naming = naming;
-  }
+  void setNamingPolicy(NamingPolicy &naming) { m_naming = naming; }
 
   /**
    * \brief Execute the clipping operation using the data stored in the specified \a clipField.
@@ -538,10 +536,10 @@ public:
 
     // Make the blend groups.
     builder.setBlendViews(blendNames.view(),
-                            blendGroupSizes.view(),
-                            blendGroupStart.view(),
-                            blendIds.view(),
-                            blendCoeff.view());
+                          blendGroupSizes.view(),
+                          blendGroupStart.view(),
+                          blendIds.view(),
+                          blendCoeff.view());
     AXOM_ANNOTATE_END("allocation2");
     makeBlendGroups(clipTableViews, builder, zoneData, opts, selectedZones);
 

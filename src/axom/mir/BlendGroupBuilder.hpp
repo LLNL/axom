@@ -67,7 +67,7 @@ public:
    */
   void setNamingPolicy(const NamingPolicyView &view)
   {
-     m_state.m_namingView = view;
+    m_state.m_namingView = view;
   }
 
   /**
@@ -237,7 +237,9 @@ public:
       m_state->m_blendGroupSizesView[m_blendGroupId] = numIds;
 
       // Store "name" of blend group.
-      KeyType blendName = m_state->m_namingView.makeName(m_state->m_blendIdsView.data() + m_startOffset, numIds);
+      KeyType blendName = m_state->m_namingView.makeName(
+        m_state->m_blendIdsView.data() + m_startOffset,
+        numIds);
 
       m_state->m_blendNamesView[m_blendGroupId] = blendName;
 #if defined(AXOM_DEBUG) && !defined(AXOM_DEVICE_CODE)
