@@ -58,10 +58,10 @@ Once executed, this code will output:
         {
             "my_scalar": 
             {
-            "value": 
-            [
-                "input"
-            ]
+                "value": 
+                [
+                    "input"
+                ]
             }
         },
         "type": "my_type",
@@ -96,7 +96,7 @@ This can be accomplished with the ``setUnits()`` and ``setTags()`` methods respe
 
 Below is an example of this functionality:
 
-.. literalinclude:: ../../examples/sina_datum_units_tags.cpp
+.. literalinclude:: ../../examples/sina_set_datum_units_tags.cpp
    :language: cpp
 
 +++++++++++++++++++++++++++++++++++++
