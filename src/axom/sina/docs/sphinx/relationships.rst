@@ -25,10 +25,9 @@ examples:
     - Carlos sends an email to Dani
     - local_task_12 runs before local_run_14
 
-Note that a ``Relationship`` is described in the active voice. **Avoiding the passive
-voice in predicates is recommended**, as this keeps the "direction" of the relationship
-constant. An example of a passively-voiced ``Relationship`` is "Dani is emailed by Carlos".
-Instead, this should be phrased as "Carlos emails Dani".
+A ``Relationship`` should be described in the active voice. **Using active voice in predicates
+is recommended** to maintain a clear direction in the relationship. For example, instead of the
+passive construction "Dani is emailed by Carlos," use the active form "Carlos emails Dani."
 
 Below is an example showcasing how to construct a ``Relationship`` programmatically. Here,
 we assemble a ``Relationship`` showing that "Task_22 contains Run_1024":

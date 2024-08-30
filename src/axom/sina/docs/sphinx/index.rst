@@ -7,9 +7,9 @@
 Sina C++ User Guide
 ===================
 
-The Sina C++ library can read and write JSON files in the Sina schema. It
-can be used by simulation applications to summarize run data to be ingested
-into a database using the Sina tool suite.
+The Sina ([S]imulation [In]sight and [A]nalysis) C++ library can read and write
+JSON files in the Sina schema. It can be used by simulation applications to summarize
+run data to be ingested into a database using the Sina tool suite.
 
 The top-level object in the Sina schema is the :doc:`Document <documents>`.
 It contains lists of :doc:`Record <records>` and :doc:`Relationship <relationships>`
