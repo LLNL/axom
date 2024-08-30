@@ -11,7 +11,7 @@
  *
  * \file ID.hpp
  *
- * \brief   Implementation file for Sina ID class
+ * \brief   Header file for Sina ID class
  *
  * The Sina schema allows records to have either a local ID or a global ID.
  * When a global ID is specified, that will be used in the database. When a
