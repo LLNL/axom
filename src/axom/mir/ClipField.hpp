@@ -334,7 +334,7 @@ template <typename ExecSpace,
           typename CoordsetView,
           typename IntersectPolicy = axom::mir::clipping::
             FieldIntersector<ExecSpace, typename TopologyView::ConnectivityType>,
-          typename NamingPolicy = axom::mir::utilities::HashNaming>
+          typename NamingPolicy = axom::mir::utilities::HashNaming<axom::IndexType> >
 class ClipField
 {
 public:
@@ -348,7 +348,7 @@ public:
   using loop_policy = typename axom::execution_space<ExecSpace>::loop_policy;
   using reduce_policy = typename axom::execution_space<ExecSpace>::reduce_policy;
   using ConnectivityType = typename TopologyView::ConnectivityType;
-  using BlendGroupBuilderType = BlendGroupBuilder<ExecSpace, NamingPolicy>;
+  using BlendGroupBuilderType = BlendGroupBuilder<ExecSpace, typename NamingPolicy::View>;
   using ClipFieldType = float;
 
   /**
@@ -365,7 +365,18 @@ public:
     , m_coordsetView(coordsetView)
     , m_intersector(intersector)
     , m_clipTables()
+    , m_naming()
   { }
+
+  /**
+   * \brief Allow the user to pass in a NamingPolicy to use when making blend group names.
+   *
+   * \param naming A new naming policy object. 
+   */
+  void setNamingPolicy(NamingPolicy &naming)
+  {
+    m_naming = naming;
+  }
 
   /**
    * \brief Execute the clipping operation using the data stored in the specified \a clipField.
@@ -491,8 +502,12 @@ public:
       allocatorID);  // Start of zone's blend group offsets in definitions.
     AXOM_ANNOTATE_END("allocation");
 
+    // Make sure the naming policy knows the number of nodes.
+    m_naming.setMaxId(m_coordsetView.numberOfNodes());
+
     // Make an object to help manage building the blend groups.
     BlendGroupBuilderType builder;
+    builder.setNamingPolicy(m_naming.view());
     builder.setBlendGroupSizes(blendGroups.view(), blendGroupsLen.view());
 
     // Compute sizes and offsets
@@ -523,10 +538,10 @@ public:
 
     // Make the blend groups.
     builder.setBlendViews(blendNames.view(),
-                          blendGroupSizes.view(),
-                          blendGroupStart.view(),
-                          blendIds.view(),
-                          blendCoeff.view());
+                            blendGroupSizes.view(),
+                            blendGroupStart.view(),
+                            blendIds.view(),
+                            blendCoeff.view());
     AXOM_ANNOTATE_END("allocation2");
     makeBlendGroups(clipTableViews, builder, zoneData, opts, selectedZones);
 
@@ -1689,10 +1704,11 @@ private:
   }
 
 private:
-  TopologyView m_topologyView;
-  CoordsetView m_coordsetView;
-  Intersector m_intersector;
-  axom::mir::clipping::ClipTableManager<ExecSpace> m_clipTables;
+  TopologyView m_topologyView {};
+  CoordsetView m_coordsetView {};
+  Intersector m_intersector {};
+  axom::mir::clipping::ClipTableManager<ExecSpace> m_clipTables {};
+  NamingPolicy m_naming {};
 };
 
 }  // end namespace clipping

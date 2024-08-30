@@ -18,15 +18,15 @@ namespace clipping
  * \brief This class encapsulates the logic for building blend groups.
  *
  * \tparam ExecSpace The execution space where the algorithm will run.
- * \tparam NamingPolicy The naming policy used to create names from node ids.
+ * \tparam NamingPolicyView The type of a view that can access functionality in the naming policy that is used to make nodeids.
  *
  * \note The class only contains views to data so it can be copied into lambdas.
  */
-template <typename ExecSpace, typename NamingPolicy = axom::mir::utilities::HashNaming>
+template <typename ExecSpace, typename NamingPolicyView>
 class BlendGroupBuilder
 {
 public:
-  using KeyType = typename NamingPolicy::KeyType;
+  using KeyType = typename NamingPolicyView::KeyType;
 
   /**
    * \brief This struct holds the views that represent data for blend groups.
@@ -34,21 +34,22 @@ public:
   struct State
   {
     // clang-format off
-    IndexType m_nzones;
+    IndexType m_nzones {};
+    NamingPolicyView m_namingView {};
 
-    axom::ArrayView<IndexType> m_blendGroupsView;        // Number of blend groups in each zone.
-    axom::ArrayView<IndexType> m_blendGroupsLenView;     // total size of blend group data for each zone.
-    axom::ArrayView<IndexType> m_blendOffsetView;        // The offset of each zone's blend groups.
-    axom::ArrayView<IndexType> m_blendGroupOffsetsView;  // Start of each zone's blend group data.
+    axom::ArrayView<IndexType> m_blendGroupsView {};        // Number of blend groups in each zone.
+    axom::ArrayView<IndexType> m_blendGroupsLenView {};     // total size of blend group data for each zone.
+    axom::ArrayView<IndexType> m_blendOffsetView {};        // The offset of each zone's blend groups.
+    axom::ArrayView<IndexType> m_blendGroupOffsetsView {};  // Start of each zone's blend group data.
 
-    axom::ArrayView<KeyType>   m_blendNamesView;         // Blend group names
-    axom::ArrayView<IndexType> m_blendGroupSizesView;    // Size of individual blend group.
-    axom::ArrayView<IndexType> m_blendGroupStartView;    // Start of individual blend group's data in m_blendIdsView/m_blendCoeffView.
-    axom::ArrayView<IndexType> m_blendIdsView;           // blend group ids.
-    axom::ArrayView<float>     m_blendCoeffView;         // blend group weights.
+    axom::ArrayView<KeyType>   m_blendNamesView {};         // Blend group names
+    axom::ArrayView<IndexType> m_blendGroupSizesView {};    // Size of individual blend group.
+    axom::ArrayView<IndexType> m_blendGroupStartView {};    // Start of individual blend group's data in m_blendIdsView/m_blendCoeffView.
+    axom::ArrayView<IndexType> m_blendIdsView {};           // blend group ids.
+    axom::ArrayView<float>     m_blendCoeffView {};         // blend group weights.
 
-    axom::ArrayView<KeyType>   m_blendUniqueNamesView;   // Unique names of blend groups.
-    axom::ArrayView<IndexType> m_blendUniqueIndicesView; // Indices of the unique names in blend group definitions.
+    axom::ArrayView<KeyType>   m_blendUniqueNamesView {};   // Unique names of blend groups.
+    axom::ArrayView<IndexType> m_blendUniqueIndicesView {}; // Indices of the unique names in blend group definitions.
     // clang-format on
   };
 
@@ -58,6 +59,16 @@ public:
    */
   State &state() { return m_state; }
   const State &state() const { return m_state; }
+
+  /**
+   * \brief Provide a hint to the naming policy view so it can do narrowing.
+   *
+   * \param nnodes The number of nodes in the input mesh.
+   */
+  void setNamingPolicy(const NamingPolicyView &view)
+  {
+     m_state.m_namingView = view;
+  }
 
   /**
    * \brief Set the number of zones.
@@ -226,9 +237,7 @@ public:
       m_state->m_blendGroupSizesView[m_blendGroupId] = numIds;
 
       // Store "name" of blend group.
-      KeyType blendName =
-        NamingPolicy::makeName(m_state->m_blendIdsView.data() + m_startOffset,
-                               numIds);
+      KeyType blendName = m_state->m_namingView.makeName(m_state->m_blendIdsView.data() + m_startOffset, numIds);
 
       m_state->m_blendNamesView[m_blendGroupId] = blendName;
 #if defined(AXOM_DEBUG) && !defined(AXOM_DEVICE_CODE)

@@ -108,7 +108,7 @@ private:
   AXOM_HOST_DEVICE
   static int partition(T *values, int low, int high)
   {
-    int pivot = values[high];
+    const T pivot = values[high];
     int i = low - 1;
     for(int j = low; j < high; j++)
     {
