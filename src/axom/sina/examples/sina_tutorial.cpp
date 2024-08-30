@@ -11,7 +11,7 @@
 namespace
 {
 
-//! [create record]
+//! [begin create record]
 void createRecord()
 {
   axom::sina::ID id {"some_record_id", axom::sina::IDType::Local};
@@ -22,9 +22,9 @@ void createRecord()
   axom::sina::Document doc;
   doc.add(std::move(record));
 }
-//! [create record]
+//! [end create record]
 
-//! [create run]
+//! [begin create run]
 void createRun()
 {
   axom::sina::ID id {"some_run_id", axom::sina::IDType::Local};
@@ -35,9 +35,9 @@ void createRun()
   axom::sina::Document doc;
   doc.add(std::move(run));
 }
-//! [create run]
+//! [end create run]
 
-//! [adding data]
+//! [begin adding data]
 void addData(axom::sina::Record &record)
 {
   // Add a scalar named "my_scalar" with the value 123.456
@@ -54,9 +54,9 @@ void addData(axom::sina::Record &record)
   std::vector<std::string> stringList = {"hi", "hello", "howdy"};
   record.add("my_string_list", axom::sina::Datum {stringList});
 }
-//! [adding data]
+//! [end adding data]
 
-//! [curve sets]
+//! [begin curve sets]
 void addCurveSets(axom::sina::Record &record)
 {
   axom::sina::CurveSet timePlots {"time_plots"};
@@ -75,10 +75,9 @@ void addCurveSets(axom::sina::Record &record)
   // Associate the curve sets with the record
   record.add(timePlots);
 }
+//! [end curve sets]
 
-//! [curve sets]
-
-//! [file add_and_remove]
+//! [begin file add_and_remove]
 void addAndRemoveFileToRecord(axom::sina::Record &run)
 {
   axom::sina::File my_file {"some/path.txt"};
@@ -87,35 +86,34 @@ void addAndRemoveFileToRecord(axom::sina::Record &run)
   // Removes the file from the record's file list
   run.remove(my_file);
 }
+//! [end file add_and_remove]
 
-//! [file add_and_remove]
-
-//! [relationships]
+//! [begin relationships]
 void associateRunToStudy(axom::sina::Document &doc,
                          axom::sina::Record const &uqStudy,
                          axom::sina::Record const &run)
 {
   doc.add(axom::sina::Relationship {uqStudy.getId(), "contains", run.getId()});
 }
-//! [relationships]
+//! [end relationships]
 
-//! [library data foo]
+//! [begin library data foo]
 void foo_collectData(axom::sina::DataHolder &fooData)
 {
   fooData.add("temperature", axom::sina::Datum {500});
   fooData.add("energy", axom::sina::Datum {1.2e10});
 }
-//! [library data foo]
+//! [end library data foo]
 
-//! [library data bar]
+//! [begin library data bar]
 void bar_gatherData(axom::sina::DataHolder &barData)
 {
   barData.add("temperature", axom::sina::Datum {400});
   barData.add("mass", axom::sina::Datum {15});
 }
-//! [library data bar]
+//! [end library data bar]
 
-//! [library data host]
+//! [begin library data host]
 void gatherAllData(axom::sina::Record &record)
 {
   auto fooData = record.addLibraryData("foo");
@@ -126,23 +124,23 @@ void gatherAllData(axom::sina::Record &record)
 
   record.add("temperature", axom::sina::Datum {450});
 }
-//! [library data host]
+//! [end library data host]
 
-//! [io write]
+//! [begin io write]
 void save(axom::sina::Document const &doc)
 {
   axom::sina::saveDocument(doc, "my_output.json");
 }
-//! [io write]
+//! [end io write]
 
-//! [io read]
+//! [begin io read]
 void load()
 {
   axom::sina::Document doc = axom::sina::loadDocument("my_output.json");
 }
-//! [io read]
+//! [end io read]
 
-//! [user defined]
+//! [begin user defined]
 void addUserDefined(axom::sina::Record &record)
 {
   conduit::Node &userDefined = record.getUserDefinedContent();
@@ -154,7 +152,7 @@ void addUserDefined(axom::sina::Record &record)
   subNode["sub_2"] = 20;
   userDefined["sub_structure"] = subNode;
 }
-//! [user defined]
+//! [end user defined]
 
 }  // namespace
 
@@ -175,9 +173,6 @@ int main()
   addCurveSets(run);
   addAndRemoveFileToRecord(run);
   addUserDefined(run);
-  // TODO
-  // - Add Record to doc
-  // - Check output file to see if record shows up
   save(doc);
   load();
 }
