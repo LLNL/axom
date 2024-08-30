@@ -44,6 +44,19 @@ Geometry::Geometry(const TransformableGeometryProperties& startProperties,
 { }
 
 Geometry::Geometry(const TransformableGeometryProperties& startProperties,
+                   const axom::primal::Tetrahedron<double, 3>& tet,
+                   std::shared_ptr<GeometryOperator const> operator_)
+  : m_startProperties(startProperties)
+  , m_format("tet3D")
+  , m_path()
+  , m_meshGroup(nullptr)
+  , m_topology()
+  , m_tet(tet)
+  , m_levelOfRefinement(0)
+  , m_operator(std::move(operator_))
+{ }
+
+Geometry::Geometry(const TransformableGeometryProperties& startProperties,
                    const axom::primal::Hexahedron<double, 3>& hex,
                    std::shared_ptr<GeometryOperator const> operator_)
   : m_startProperties(startProperties)
@@ -92,6 +105,7 @@ Geometry::Geometry(const TransformableGeometryProperties& startProperties,
 bool Geometry::hasGeometry() const
 {
   bool isInMemory = m_format == "memory-blueprint" || m_format == "sphere3D" ||
+    m_format == "tet3D" || m_format == "hex3D" ||
     m_format == "cone3D" || m_format == "cylinder3D";
   if(isInMemory)
   {

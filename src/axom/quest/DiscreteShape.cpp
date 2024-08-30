@@ -138,6 +138,46 @@ std::shared_ptr<mint::Mesh> DiscreteShape::createMeshRepresentation()
     // Transform the coordinates of the linearized mesh.
     applyTransforms();
   }
+  else if(geometryFormat == "tet3D")
+  {
+    const auto& tet = geometry.getTet();
+
+    const axom::IndexType tetCount = 1;
+    const axom::IndexType nodeCount = 4;
+    axom::Array<double, 2> nodeCoords(nodeCount, 3);
+    axom::Array<axom::IndexType, 2> connectivity(tetCount, 4);
+
+    for(int iNode = 0; iNode < 4; ++iNode)
+    {
+      const auto& coords = tet[iNode];
+      nodeCoords[iNode][0] = coords[0];
+      nodeCoords[iNode][1] = coords[1];
+      nodeCoords[iNode][2] = coords[2];
+      connectivity[0][iNode] = iNode;
+    }
+
+    TetMesh* tetMesh = nullptr;
+    if(m_sidreGroup != nullptr)
+    {
+      tetMesh = new TetMesh(3,
+                            axom::mint::CellType::TET,
+                            m_sidreGroup,
+                            nodeCoords.shape()[0],
+                            connectivity.shape()[0]);
+    }
+    else
+    {
+      tetMesh = new TetMesh(3,
+                            axom::mint::CellType::TET,
+                            nodeCoords.shape()[0],
+                            connectivity.shape()[0]);
+    }
+    tetMesh->appendNodes((double*)nodeCoords.data(), nodeCoords.shape()[0]);
+    tetMesh->appendCells(connectivity.data(), connectivity.shape()[0]);
+    m_meshRep.reset(tetMesh);
+
+    applyTransforms();
+  }
   else if(geometryFormat == "hex3D")
   {
     const auto& hex = geometry.getHex();

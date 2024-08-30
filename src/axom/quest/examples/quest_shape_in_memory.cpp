@@ -96,6 +96,7 @@ public:
                                                "cyl",
                                                "cone",
                                                "vor",
+                                               "tet",
                                                "hex"};
 
   ShapingMethod shapingMethod {ShapingMethod::Sampling};
@@ -714,6 +715,35 @@ axom::klee::Shape createShape_Cone()
   return vorShape;
 }
 
+axom::klee::Shape createShape_Tet()
+{
+  axom::klee::TransformableGeometryProperties prop {
+    axom::klee::Dimensions::Three,
+    axom::klee::LengthUnit::unspecified};
+
+  SLIC_ASSERT(params.scaleFactors.empty() || params.scaleFactors.size() == 3);
+  std::shared_ptr<axom::klee::Scale> scaleOp;
+  if(!params.scaleFactors.empty())
+  {
+    scaleOp = std::make_shared<axom::klee::Scale>(params.scaleFactors[0],
+                                                  params.scaleFactors[1],
+                                                  params.scaleFactors[2],
+                                                  prop);
+  }
+
+  const double len = params.length;
+  const Point3D a {0.0, 0.0, 0.0};
+  const Point3D b {len, 0.0, 0.0};
+  const Point3D c {len, 1.0, 0.0};
+  const Point3D d {0.0, 1.0, 0.0};
+  const primal::Tetrahedron<double, 3> tet {a, b, c, d};
+
+  axom::klee::Geometry tetGeometry(prop, tet, scaleOp);
+  axom::klee::Shape tetShape("tet", "TET", {}, {}, tetGeometry);
+
+  return tetShape;
+}
+
 axom::klee::Shape createShape_Hex()
 {
   axom::klee::TransformableGeometryProperties prop {
@@ -973,6 +1003,10 @@ int main(int argc, char** argv)
     if(params.testShape == "tetmesh")
     {
       shapeSet = createShapeSet(createShape_TetMesh(ds));
+    }
+    else if(params.testShape == "tet")
+    {
+      shapeSet = createShapeSet(createShape_Tet());
     }
     else if(params.testShape == "hex")
     {

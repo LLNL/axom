@@ -59,6 +59,7 @@ public:
   using Point3D = axom::primal::Point<double, 3>;
   using Vector3D = axom::primal::Vector<double, 3>;
   using Sphere3D = axom::primal::Sphere<double, 3>;
+  using Tet3D = axom::primal::Tetrahedron<double, 3>;
   using Hex3D = axom::primal::Hexahedron<double, 3>;
 
   /**
@@ -90,6 +91,18 @@ public:
   Geometry(const TransformableGeometryProperties &startProperties,
            axom::sidre::Group *meshGroup,
            const std::string &topology,
+           std::shared_ptr<GeometryOperator const> operator_);
+
+  /**
+   * Create a tetrahedron Geometry object.
+   *
+   * \param startProperties the transformable properties before any
+   * operators are applied
+   * \param tet Tetrahedron
+   * \param operator_ a possibly null operator to apply to the geometry.
+   */
+  Geometry(const TransformableGeometryProperties &startProperties,
+           const axom::primal::Tetrahedron<double, 3> &tet,
            std::shared_ptr<GeometryOperator const> operator_);
 
   /**
@@ -155,6 +168,7 @@ public:
    * - "c2c" = C2C file
    * - "proe" = ProE file
    * - "memory-blueprint" = Blueprint tetrahedral mesh in memory
+   * - "tet3D" = 3D tetrahedron (4 points)
    * - "sphere3D" = 3D sphere, as \c primal::Sphere<double,3>
    * - "vor3D" = 3D volume of revolution.
    * - "cone3D" = 3D cone, as \c primal::Cone<double,3>
@@ -248,6 +262,12 @@ public:
   axom::IndexType getLevelOfRefinement() const { return m_levelOfRefinement; }
 
   /**
+   @brief Return the tet geometry, when the Geometry
+   represents a tetrahedron.
+  */
+  const axom::primal::Tetrahedron<double, 3> &getTet() const { return m_tet; }
+
+  /**
    @brief Return the hex geometry, when the Geometry
    represents a hexahedron.
   */
@@ -281,6 +301,9 @@ private:
 
   //!@brief Topology of the blueprint simplex mesh, if it's in memory.
   std::string m_topology;
+
+  //!@brief The tetrahedron, if used.
+  Tet3D m_tet;
 
   //!@brief The hexahedron, if used.
   Hex3D m_hex;
