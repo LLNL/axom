@@ -375,6 +375,8 @@ public:
    *       type is NO_TYPE_ID, or ndims < 0, or shape is nullptr,
    *       or any element of shape < 0, this method does nothing.
    *
+   * If shape is nullptr, this is a no-op.
+   *
    * \return pointer to this View object.
    */
   View* allocate(TypeID type, int ndims, const IndexType* shape, int allocID);
@@ -444,7 +446,7 @@ public:
    * If data view already has a buffer, or it is an external view,
    * a scalar view, or a string view, this method does nothing.
    *
-   * If data view already has a buffer and buff is NULL, the attached
+   * If data view already has a buffer and buff is nullptr, the attached
    * buffer will be detached. After the view is detached from the
    * buffer, if the buffer has no views attached to it, then it will
    * be destroyed.
@@ -468,10 +470,19 @@ public:
   /*!
    * \brief Describe the data view and attach Buffer object.
    *
+   * If shape is nullptr, this is a no-op.
+   *
    * \return pointer to this View object.
    */
   View* attachBuffer(TypeID type, int ndims, const IndexType* shape, Buffer* buff)
   {
+    SLIC_CHECK_MSG(shape != nullptr,
+                   SIDRE_VIEW_LOG_PREPEND
+                     << "Could not allocate: specified shape is nullptr.");
+    if(shape == nullptr)
+    {
+      return this;
+    }
     describe(type, ndims, shape);
     attachBuffer(buff);
     return this;
@@ -720,7 +731,7 @@ public:
    * Data is undescribed (i.e., view is opaque) until an apply methods
    * is called on the view.
    *
-   * If external_ptr is NULL, the view will be EMPTY.
+   * If external_ptr is nullptr, the view will be EMPTY.
    * Any existing description is unchanged.
    *
    * \return pointer to this View object.
@@ -730,7 +741,7 @@ public:
   /*!
    * \brief Set view to hold described external data.
    *
-   * If external_ptr is NULL, the view will be EMPTY.
+   * If external_ptr is nullptr, the view will be EMPTY.
    *
    * \return pointer to this View object.
    */
@@ -744,7 +755,9 @@ public:
   /*!
    * \brief Set view to hold described external data.
    *
-   * If external_ptr is NULL, the view will be EMPTY.
+   * If external_ptr is nullptr, the view will be EMPTY.
+   *
+   * If shape is nullptr, this is a no-op.
    *
    * \return pointer to this View object.
    */
@@ -753,6 +766,15 @@ public:
                            const IndexType* shape,
                            void* external_ptr)
   {
+    SLIC_CHECK_MSG(
+      shape != nullptr,
+      SIDRE_VIEW_LOG_PREPEND
+        << "Could not set external data ptr: specified shape is nullptr.");
+    if(shape == nullptr)
+    {
+      return this;
+    }
+
     describe(type, ndims, shape);
     setExternalDataPtr(external_ptr);
     return this;
@@ -1333,13 +1355,14 @@ private:
    * \brief Describe a data view with given type, number of dimensions, and
    *        number of elements per dimension.
    *
-   *
    * \attention If view has been previously described, this operation will
    *            re-describe the view. To have the new description take effect,
    *            the apply() method must be called.
    *
    * If given type of NO_TYPE_ID, or number of dimensions or total
    * number of elements < 0, or view is opaque, method does nothing.
+   *
+   * If shape is nullptr, this is a no-op.
    */
   void describe(TypeID type, int ndims, const IndexType* shape);
 
@@ -1362,6 +1385,8 @@ private:
 
   /*!
    * \brief Set the shape to be a ndims dimensions with shape.
+   *
+   * If shape is nullptr, this is a no-op.
    */
   void describeShape(int ndims, const IndexType* shape);
 
