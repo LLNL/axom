@@ -99,10 +99,21 @@ endif()
 # Add fortran integration test
 #------------------------------------------------------------------------------
 if (ENABLE_FORTRAN)
-    find_package(PythonInterp REQUIRED)
-    configure_file(${CMAKE_SOURCE_DIR}/axom/sina/tests/test_fortran_integration.py ${TEST_OUTPUT_DIRECTORY}/test_fortran_integration.py COPYONLY)
-    configure_file(${CMAKE_SOURCE_DIR}/axom/sina/interface/sina_schema.json ${TEST_OUTPUT_DIRECTORY}/sina_schema.json COPYONLY)
+    find_package(Python REQUIRED COMPONENTS Interpreter)
+    if (Python_FOUND)
+        configure_file(
+            ${CMAKE_SOURCE_DIR}/axom/sina/tests/test_fortran_integration.py
+            ${TEST_OUTPUT_DIRECTORY}/test_fortran_integration.py
+            COPYONLY
+        )
+        configure_file(
+            ${CMAKE_SOURCE_DIR}/axom/sina/interface/sina_schema.json
+            ${TEST_OUTPUT_DIRECTORY}/sina_schema.json
+            COPYONLY
+        )
 
-    axom_add_test( NAME     sina_fortran_integration_test
-                   COMMAND  ${PYTHON_EXECUTABLE} ${TEST_OUTPUT_DIRECTORY}/test_fortran_integration.py -bd ${PROJECT_BINARY_DIR})
+        axom_add_test( NAME     sina_fortran_integration_test
+                    COMMAND  ${PYTHON_EXECUTABLE} ${TEST_OUTPUT_DIRECTORY}/test_fortran_integration.py -bd ${PROJECT_BINARY_DIR}
+        )
+    endif()
 endif()
