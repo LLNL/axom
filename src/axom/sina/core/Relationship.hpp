@@ -11,7 +11,7 @@
  *
  * \file Relationship.hpp
  *
- * \brief   Implementation file for Sina Relationship class
+ * \brief   Header file for Sina Relationship class
  *
  ******************************************************************************
  */

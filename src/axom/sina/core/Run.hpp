@@ -11,7 +11,7 @@
  *
  * \file Run.hpp
  *
- * \brief   Implementation file for Sina Run class
+ * \brief   Header file for Sina Run class
  *
  * \sa Record.hpp
  *

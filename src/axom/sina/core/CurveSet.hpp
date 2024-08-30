@@ -11,7 +11,7 @@
  *
  * \file CurveSet.hpp
  *
- * \brief   Implementation file for Sina CurveSet class
+ * \brief   Header file for Sina CurveSet class
  *
  * \sa Curve.hpp
  *

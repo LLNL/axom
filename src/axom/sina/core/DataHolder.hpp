@@ -11,7 +11,7 @@
  *
  * \file DataHolder.hpp
  *
- * \brief   Implementation file for Sina DataHolder class
+ * \brief   Header file for Sina DataHolder class
  *
  ******************************************************************************
  */
