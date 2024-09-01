@@ -228,6 +228,80 @@ std::shared_ptr<mint::Mesh> DiscreteShape::createMeshRepresentation()
 
     applyTransforms();
   }
+  else if(geometryFormat == "plane3D")
+  {
+    const auto& plane = geometry.getPlane();
+    // Generate a big bounding hex on the positive side of the plane.
+    axom::primal::Hexahedron<double, 3> boundingHex;
+    const double len = 1e6; // Big enough to contain anticipated mesh.
+                            // We should compute based on the mesh.
+    boundingHex[0] = Point3D{0.0, -len, -len};
+    boundingHex[1] = Point3D{len, -len, -len};
+    boundingHex[2] = Point3D{len,  len, -len};
+    boundingHex[3] = Point3D{0.0,  len, -len};
+    boundingHex[4] = Point3D{0.0, -len,  len};
+    boundingHex[5] = Point3D{len, -len,  len};
+    boundingHex[6] = Point3D{len,  len,  len};
+    boundingHex[7] = Point3D{0.0,  len,  len};
+    numerics::Matrix<double> rotate = vorAxisRotMatrix(plane.getNormal());
+    const auto translate = plane.getNormal() * plane.getOffset();
+    for (int i = 0; i < 8; ++ i )
+    {
+      Point3D newCoords;
+      numerics::matrix_vector_multiply(rotate,
+                                       boundingHex[i].data(),
+                                       newCoords.data());
+      newCoords.array() += translate.array();
+      boundingHex[i].array() = newCoords.array();
+    }
+
+    axom::StackArray<TetType, HexType::NUM_TRIANGULATE> tets;
+    boundingHex.triangulate(tets);
+
+    const axom::IndexType tetCount = HexType::NUM_TRIANGULATE;
+    const axom::IndexType nodeCount = HexType::NUM_TRIANGULATE * 4;
+    axom::Array<double, 2> nodeCoords(nodeCount, 3);
+    auto nodeCoordsView = nodeCoords.view();
+    axom::Array<axom::IndexType, 2> connectivity(tetCount, 4);
+    auto connectivityView = connectivity.view();
+    // NOTE: This is not much computation, so just run on host.
+    axom::for_all<axom::SEQ_EXEC>(
+      tetCount,
+      AXOM_LAMBDA(axom::IndexType iTet) {
+        const auto& tet = tets[iTet];
+        for(int i = 0; i < 4; ++i)
+        {
+          axom::IndexType iNode = iTet * 4 + i;
+          const auto& coords = tet[i];
+          nodeCoordsView[iNode][0] = coords[0];
+          nodeCoordsView[iNode][1] = coords[1];
+          nodeCoordsView[iNode][2] = coords[2];
+          connectivityView[iTet][i] = iNode;
+        }
+      });
+
+    TetMesh* tetMesh = nullptr;
+    if(m_sidreGroup != nullptr)
+    {
+      tetMesh = new TetMesh(3,
+                            axom::mint::CellType::TET,
+                            m_sidreGroup,
+                            nodeCoords.shape()[0],
+                            connectivity.shape()[0]);
+    }
+    else
+    {
+      tetMesh = new TetMesh(3,
+                            axom::mint::CellType::TET,
+                            nodeCoords.shape()[0],
+                            connectivity.shape()[0]);
+    }
+    tetMesh->appendNodes((double*)nodeCoords.data(), nodeCoords.shape()[0]);
+    tetMesh->appendCells(connectivity.data(), connectivity.shape()[0]);
+    m_meshRep.reset(tetMesh);
+
+    applyTransforms();
+  }
   else if(geometryFormat == "sphere3D")
   {
     /*

@@ -97,7 +97,8 @@ public:
                                                "cone",
                                                "vor",
                                                "tet",
-                                               "hex"};
+                                               "hex",
+                                               "plane"};
 
   ShapingMethod shapingMethod {ShapingMethod::Sampling};
   RuntimePolicy policy {RuntimePolicy::seq};
@@ -117,6 +118,16 @@ private:
 
 public:
   bool isVerbose() const { return m_verboseOutput; }
+
+  /// @brief Return volume of input box mesh
+  double boxMeshVolume() const
+  {
+    primal::Vector<double, 3> x{boxMaxs[0] - boxMins[0], 0, 0};
+    primal::Vector<double, 3> y{0, boxMaxs[1] - boxMins[1], 0};
+    primal::Vector<double, 3> z{0, 0, boxMaxs[2] - boxMins[2]};
+    double volume = primal::Vector<double, 3>::scalar_triple_product(x, y, z);
+    return volume;
+  }
 
   /// Generate an mfem Cartesian mesh, scaled to the bounding box range
   mfem::Mesh* createBoxMesh()
@@ -777,6 +788,35 @@ axom::klee::Shape createShape_Hex()
   return hexShape;
 }
 
+axom::klee::Shape createShape_Plane()
+{
+  axom::klee::TransformableGeometryProperties prop {
+    axom::klee::Dimensions::Three,
+    axom::klee::LengthUnit::unspecified};
+
+  SLIC_ASSERT(params.scaleFactors.empty() || params.scaleFactors.size() == 3);
+  std::shared_ptr<axom::klee::Scale> scaleOp;
+  if(!params.scaleFactors.empty())
+  {
+    scaleOp = std::make_shared<axom::klee::Scale>(params.scaleFactors[0],
+                                                  params.scaleFactors[1],
+                                                  params.scaleFactors[2],
+                                                  prop);
+  }
+
+  // Create a plane crossing center of mesh.  No matter the normal,
+  // it cuts the mesh in half.
+  Point3D center{0.5*(primal::NumericArray<double, 3>(params.boxMins.data()) +
+                      primal::NumericArray<double, 3>(params.boxMaxs.data()))};
+  primal::Vector<double, 3> normal{1.0, 0.0, 0.0};
+  const primal::Plane<double, 3> plane {normal, center, true};
+
+  axom::klee::Geometry planeGeometry(prop, plane, scaleOp);
+  axom::klee::Shape planeShape("plane", "PLANE", {}, {}, planeGeometry);
+
+  return planeShape;
+}
+
 //!@brief Create a ShapeSet with a single shape.
 axom::klee::ShapeSet createShapeSet(const axom::klee::Shape& shape)
 {
@@ -791,7 +831,7 @@ double volumeOfTetMesh(
   const axom::mint::UnstructuredMesh<axom::mint::SINGLE_SHAPE>& tetMesh)
 {
   using TetType = axom::primal::Tetrahedron<double, 3>;
-  {
+  if(0) {
     std::ofstream os("tets.js");
     tetMesh.getSidreGroup()->print(os);
   }
@@ -1027,6 +1067,10 @@ int main(int argc, char** argv)
     else if(params.testShape == "vor")
     {
       shapeSet = createShapeSet(createShape_Vor());
+    }
+    else if(params.testShape == "plane")
+    {
+      shapeSet = createShapeSet(createShape_Plane());
     }
     break;
   }
@@ -1341,7 +1385,8 @@ int main(int argc, char** argv)
   slic::flushStreams();
 
   //---------------------------------------------------------------------------
-  // Correctness test: shape volume in shapingMesh should match volume of the shape mesh.
+  // Correctness test: shape volume in shapingMesh should match volume of the
+  // shape mesh for closes shape.
   //---------------------------------------------------------------------------
   auto* meshVerificationGroup = ds.getRoot()->createGroup("meshVerification");
   for(const auto& shape : shapeSet.getShapes())
@@ -1360,9 +1405,10 @@ int main(int argc, char** argv)
     const std::string& materialName = shape.getMaterial();
     double shapeVol =
       sumMaterialVolumes<axom::SEQ_EXEC>(&shapingDC, materialName);
-    double diff = shapeVol - shapeMeshVol;
+    double correctShapeVol = params.testShape == "plane" ? params.boxMeshVolume()/2 : shapeMeshVol;
+    double diff = shapeVol - correctShapeVol;
 
-    bool err = !axom::utilities::isNearlyEqual(shapeVol, shapeMeshVol);
+    bool err = !axom::utilities::isNearlyEqual(shapeVol, correctShapeVol);
     failCounts += err;
 
     SLIC_INFO(axom::fmt::format(
@@ -1372,7 +1418,7 @@ int main(int argc, char** argv)
         materialName,
         shape.getName(),
         shapeVol,
-        shapeMeshVol,
+        correctShapeVol,
         diff,
         (err ? "ERROR" : "OK"))));
   }

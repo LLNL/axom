@@ -61,6 +61,7 @@ public:
   using Sphere3D = axom::primal::Sphere<double, 3>;
   using Tet3D = axom::primal::Tetrahedron<double, 3>;
   using Hex3D = axom::primal::Hexahedron<double, 3>;
+  using Plane3D = axom::primal::Plane<double, 3>;
 
   /**
    * Create a Geometry object based on a file representation.
@@ -162,6 +163,21 @@ public:
            std::shared_ptr<GeometryOperator const> operator_);
 
   /**
+   * Create a planar Geometry object.
+   *
+   * \param startProperties the transformable properties before any
+   * operators are applied
+   * \param tet Tetrahedron
+   * \param operator_ a possibly null operator to apply to the geometry.
+   *
+   * The space on the positive normal side of the plane is considered
+   * "inside the shape".
+   */
+  Geometry(const TransformableGeometryProperties &startProperties,
+           const axom::primal::Plane<double, 3> &plane,
+           std::shared_ptr<GeometryOperator const> operator_);
+
+  /**
    * Get the format in which the geometry is specified.
    *
    * Values are:
@@ -174,6 +190,7 @@ public:
    * - "cone3D" = 3D cone, as \c primal::Cone<double,3>
    *   "cylinder3D" = 3D cylinder, as \c primal::Cylinder<double,3>
    * - "hex3D" = 3D hexahedron (8 points)
+   * - "plane3D" = 3D plane
    *
    * \return the format of the shape
    *
@@ -280,6 +297,12 @@ public:
   const axom::primal::Sphere<double, 3> &getSphere() const { return m_sphere; }
 
   /**
+   @brief Return the plane geometry, when the Geometry
+   represents a plane.
+  */
+  const axom::primal::Plane<double, 3> &getPlane() const { return m_plane; }
+
+  /**
    @brief Get the discrete function used in volumes of revolution.
   */
   axom::ArrayView<const double, 2> getDiscreteFunction() const
@@ -307,6 +330,9 @@ private:
 
   //!@brief The hexahedron, if used.
   Hex3D m_hex;
+
+  //!@brief The plane, if used.
+  Plane3D m_plane;
 
   //!@brief Level of refinement for discretizing analytical shapes
   // and surfaces of revolutions.

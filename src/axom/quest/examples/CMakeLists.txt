@@ -261,7 +261,7 @@ if(AXOM_ENABLE_MPI AND MFEM_FOUND AND MFEM_USE_MPI
             blt_list_append(TO _policies ELEMENTS "hip"  IF AXOM_ENABLE_HIP)
         endif()
 
-        set(_testshapes "tetmesh" "tet" "hex" "sphere" "cyl" "cone" "vor")
+        set(_testshapes "tetmesh" "tet" "hex" "sphere" "cyl" "cone" "vor" "plane")
 
         foreach(_policy ${_policies})
             foreach(_testshape ${_testshapes})

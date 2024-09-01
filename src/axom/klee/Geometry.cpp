@@ -102,10 +102,23 @@ Geometry::Geometry(const TransformableGeometryProperties& startProperties,
   , m_operator(std::move(operator_))
 { }
 
+Geometry::Geometry(const TransformableGeometryProperties& startProperties,
+                   const axom::primal::Plane<double, 3>& plane,
+                   std::shared_ptr<GeometryOperator const> operator_)
+  : m_startProperties(startProperties)
+  , m_format("plane3D")
+  , m_path()
+  , m_meshGroup(nullptr)
+  , m_topology()
+  , m_plane(plane)
+  , m_levelOfRefinement(0)
+  , m_operator(std::move(operator_))
+{ }
+
 bool Geometry::hasGeometry() const
 {
   bool isInMemory = m_format == "memory-blueprint" || m_format == "sphere3D" ||
-    m_format == "tet3D" || m_format == "hex3D" ||
+    m_format == "tet3D" || m_format == "hex3D" || m_format == "plane3D" ||
     m_format == "cone3D" || m_format == "cylinder3D";
   if(isInMemory)
   {
