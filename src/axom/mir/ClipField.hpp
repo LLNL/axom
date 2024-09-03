@@ -548,9 +548,9 @@ public:
     axom::Array<axom::IndexType> uIndices;
     {
       AXOM_ANNOTATE_SCOPE("unique");
-      axom::mir::utilities::unique<ExecSpace, KeyType>(builder.blendNames(),
-                                                       uNames,
-                                                       uIndices);
+      axom::mir::utilities::Unique<ExecSpace, KeyType>::execute(builder.blendNames(),
+                                                                uNames,
+                                                                uIndices);
       builder.setUniqueNames(uNames.view(), uIndices.view());
     }
     bputils::BlendData blend = builder.makeBlendData();
@@ -1209,40 +1209,49 @@ private:
               {
                 // Output the nodes used in this zone.
                 const int fragmentSize = fragment.size();
-#if defined(AXOM_CLIP_FILTER_DEGENERATES)
-                int connStart = outputIndex;
-#endif
+//#if defined(AXOM_CLIP_FILTER_DEGENERATES)
+//                int connStart = outputIndex;
+//#endif
                 offsetsView[sizeIndex] = outputIndex;
                 for(int i = 2; i < fragmentSize; i++)
                   connView[outputIndex++] = point_2_new[fragment[i]];
 
                 const auto nIdsThisFragment = fragmentSize - 2;
 #if defined(AXOM_CLIP_FILTER_DEGENERATES)
-                // Check for degenerate
-                int nUniqueIds = details::unique_count<ConnectivityType, 8>(
-                  connView.data() + connStart,
-                  nIdsThisFragment);
-                bool thisFragmentDegenerate = nUniqueIds < (nIdsThisFragment - 1);
-                degenerates |= thisFragmentDegenerate;
-
-                // Rewind the outputIndex so we don't emit it in the connectivity.
-                if(thisFragmentDegenerate)
+                if constexpr (TopologyView::dimension() == 2)
                 {
-                  //std::cout << "degenerate " << szIndex << " {";
-                  //for(int i = 0; i < nIdsThisFragment; i++)
-                  //{
-                  //   std::cout << connView[connStart + i] << ", ";
-                  //}
-                  //std::cout << std::endl;
+                  int connStart = outputIndex - nIdsThisFragment;
 
-                  outputIndex = connStart;
+                  // Check for degenerate
+                  int nUniqueIds = details::unique_count<ConnectivityType, 8>(
+                    connView.data() + connStart,
+                    nIdsThisFragment);
+                  bool thisFragmentDegenerate = nUniqueIds < (nIdsThisFragment - 1);
+                  degenerates |= thisFragmentDegenerate;
 
-                  // There is one less fragment than we're expecting in the output.
-                  fragmentData.m_fragmentsView[szIndex] -= 1;
+                  // Rewind the outputIndex so we don't emit it in the connectivity.
+                  if(thisFragmentDegenerate)
+                  {
+                    //std::cout << "degenerate " << szIndex << " {";
+                    //for(int i = 0; i < nIdsThisFragment; i++)
+                    //{
+                    //   std::cout << connView[connStart + i] << ", ";
+                    //}
+                    //std::cout << std::endl;
+
+                    outputIndex = connStart;
+
+                    // There is one less fragment than we're expecting in the output.
+                    fragmentData.m_fragmentsView[szIndex] -= 1;
+                  }
+                  // Mark empty size.
+                  sizesView[sizeIndex] =
+                    thisFragmentDegenerate ? 0 : nIdsThisFragment;
                 }
-                // Mark empty size.
-                sizesView[sizeIndex] =
-                  thisFragmentDegenerate ? 0 : nIdsThisFragment;
+                else
+                {
+                  sizesView[sizeIndex] = nIdsThisFragment;
+                }
 #else
                 sizesView[sizeIndex] = nIdsThisFragment;
 #endif
@@ -1281,74 +1290,77 @@ private:
     }
 
 #if defined(AXOM_CLIP_FILTER_DEGENERATES)
-    // We get into this block when degenerate zones were detected where
-    // all of their nodes are the same. We need to filter those out.
-    if(degenerates_reduce.get())
+    if constexpr (TopologyView::dimension() == 2)
     {
-      AXOM_ANNOTATE_SCOPE("degenerates");
+      // We get into this block when degenerate zones were detected where
+      // all of their nodes are the same. We need to filter those out.
+      if(degenerates_reduce.get())
+      {
+        AXOM_ANNOTATE_SCOPE("degenerates");
 
-      // There were degenerates so the expected number of fragments per zone (m_fragmentsView)
-      // was adjusted down. That means redoing the offsets. These need to be up
-      // to date to handle zonal fields later.
-      axom::exclusive_scan<ExecSpace>(fragmentData.m_fragmentsView,
-                                      fragmentData.m_fragmentOffsetsView);
+        // There were degenerates so the expected number of fragments per zone (m_fragmentsView)
+        // was adjusted down. That means redoing the offsets. These need to be up
+        // to date to handle zonal fields later.
+        axom::exclusive_scan<ExecSpace>(fragmentData.m_fragmentsView,
+                                        fragmentData.m_fragmentOffsetsView);
 
-      // Use sizesView to make a mask that has 1's where size > 0.
-      axom::IndexType nz = fragmentData.m_finalNumZones;
-      axom::Array<int> mask(nz,
-                            nz,
-                            axom::execution_space<ExecSpace>::allocatorID());
-      axom::Array<int> maskOffsets(
-        nz,
-        nz,
-        axom::execution_space<ExecSpace>::allocatorID());
-      auto maskView = mask.view();
-      auto maskOffsetsView = maskOffsets.view();
-      RAJA::ReduceSum<reduce_policy, axom::IndexType> mask_reduce(0);
-      axom::for_all<ExecSpace>(
-        nz,
-        AXOM_LAMBDA(auto index) {
-          const int ival = (sizesView[index] > 0) ? 1 : 0;
-          maskView[index] = ival;
-          mask_reduce += ival;
-        });
-      const axom::IndexType filteredZoneCount = mask_reduce.get();
+        // Use sizesView to make a mask that has 1's where size > 0.
+        axom::IndexType nz = fragmentData.m_finalNumZones;
+        axom::Array<int> mask(nz,
+                              nz,
+                              axom::execution_space<ExecSpace>::allocatorID());
+        axom::Array<int> maskOffsets(
+          nz,
+          nz,
+          axom::execution_space<ExecSpace>::allocatorID());
+        auto maskView = mask.view();
+        auto maskOffsetsView = maskOffsets.view();
+        RAJA::ReduceSum<reduce_policy, axom::IndexType> mask_reduce(0);
+        axom::for_all<ExecSpace>(
+          nz,
+          AXOM_LAMBDA(auto index) {
+            const int ival = (sizesView[index] > 0) ? 1 : 0;
+            maskView[index] = ival;
+            mask_reduce += ival;
+          });
+        const axom::IndexType filteredZoneCount = mask_reduce.get();
 
-      // Make offsets
-      axom::exclusive_scan<ExecSpace>(maskView, maskOffsetsView);
+        // Make offsets
+        axom::exclusive_scan<ExecSpace>(maskView, maskOffsetsView);
 
-      // Replace data in the input Conduit node with a denser version using the mask.
-      auto filter =
-        [&](conduit::Node &n_src, const auto srcView, axom::IndexType newSize) {
-          using value_type = typename decltype(srcView)::value_type;
-          conduit::Node n_values;
-          n_values.set_allocator(conduitAllocatorID);
-          n_values.set(
-            conduit::DataType(bputils::cpp2conduit<value_type>::id, newSize));
-          auto valuesView = bputils::make_array_view<value_type>(n_values);
-          const auto nValues = maskView.size();
-          axom::for_all<ExecSpace>(
-            nValues,
-            AXOM_LAMBDA(auto index) {
-              if(maskView[index] > 0)
-              {
-                const auto destIndex = maskOffsetsView[index];
-                valuesView[destIndex] = srcView[index];
-              }
-            });
+        // Replace data in the input Conduit node with a denser version using the mask.
+        auto filter =
+          [&](conduit::Node &n_src, const auto srcView, axom::IndexType newSize) {
+            using value_type = typename decltype(srcView)::value_type;
+            conduit::Node n_values;
+            n_values.set_allocator(conduitAllocatorID);
+            n_values.set(
+              conduit::DataType(bputils::cpp2conduit<value_type>::id, newSize));
+            auto valuesView = bputils::make_array_view<value_type>(n_values);
+            const auto nValues = maskView.size();
+            axom::for_all<ExecSpace>(
+              nValues,
+              AXOM_LAMBDA(auto index) {
+                if(maskView[index] > 0)
+                {
+                  const auto destIndex = maskOffsetsView[index];
+                  valuesView[destIndex] = srcView[index];
+                }
+              });
 
-          n_src.swap(n_values);
-          return bputils::make_array_view<value_type>(n_src);
-        };
+            n_src.swap(n_values);
+            return bputils::make_array_view<value_type>(n_src);
+          };
 
-      // Filter sizes, shapes, color using the mask
-      sizesView = filter(n_sizes, sizesView, filteredZoneCount);
-      offsetsView = filter(n_offsets, offsetsView, filteredZoneCount);
-      shapesView = filter(n_shapes, shapesView, filteredZoneCount);
-      colorView = filter(n_color_values, colorView, filteredZoneCount);
+        // Filter sizes, shapes, color using the mask
+        sizesView = filter(n_sizes, sizesView, filteredZoneCount);
+        offsetsView = filter(n_offsets, offsetsView, filteredZoneCount);
+        shapesView = filter(n_shapes, shapesView, filteredZoneCount);
+        colorView = filter(n_color_values, colorView, filteredZoneCount);
 
-      // Record the filtered size.
-      fragmentData.m_finalNumZones = filteredZoneCount;
+        // Record the filtered size.
+        fragmentData.m_finalNumZones = filteredZoneCount;
+      }
     }
 #endif
 
@@ -1393,45 +1405,48 @@ private:
 
 #if 1
     // Handle some quad->tri degeneracies
-    if(axom::utilities::bitIsSet(shapesUsed, views::Quad_ShapeID))
+    if constexpr (TopologyView::dimension() == 2)
     {
-      AXOM_ANNOTATE_SCOPE("quadtri");
-      const axom::IndexType numOutputZones = shapesView.size();
-      RAJA::ReduceBitOr<reduce_policy, BitSet> shapesUsed_reduce(0);
-      axom::for_all<ExecSpace>(
-        numOutputZones,
-        AXOM_LAMBDA(auto index) {
-          if(shapesView[index] == views::Quad_ShapeID)
-          {
-            const auto offset = offsetsView[index];
-            ConnectivityType pts[4];
-            int npts = 0;
-            for(int current = 0; current < 4; current++)
+      if(axom::utilities::bitIsSet(shapesUsed, views::Quad_ShapeID))
+      {
+        AXOM_ANNOTATE_SCOPE("quadtri");
+        const axom::IndexType numOutputZones = shapesView.size();
+        RAJA::ReduceBitOr<reduce_policy, BitSet> shapesUsed_reduce(0);
+        axom::for_all<ExecSpace>(
+          numOutputZones,
+          AXOM_LAMBDA(auto index) {
+            if(shapesView[index] == views::Quad_ShapeID)
             {
-              int next = (current + 1) % 4;
-              ConnectivityType curNode = connView[offset + current];
-              ConnectivityType nextNode = connView[offset + next];
-              if(curNode != nextNode) pts[npts++] = curNode;
+              const auto offset = offsetsView[index];
+              ConnectivityType pts[4];
+              int npts = 0;
+              for(int current = 0; current < 4; current++)
+              {
+                int next = (current + 1) % 4;
+                ConnectivityType curNode = connView[offset + current];
+                ConnectivityType nextNode = connView[offset + next];
+                if(curNode != nextNode) pts[npts++] = curNode;
+              }
+
+              if(npts == 3)
+              {
+                shapesView[index] = views::Tri_ShapeID;
+                sizesView[index] = 3;
+                connView[offset] = pts[0];
+                connView[offset + 1] = pts[1];
+                connView[offset + 2] = pts[2];
+                connView[offset + 3] =
+                  pts[2];  // Repeat the last point (it won't be used though).
+              }
             }
 
-            if(npts == 3)
-            {
-              shapesView[index] = views::Tri_ShapeID;
-              sizesView[index] = 3;
-              connView[offset] = pts[0];
-              connView[offset + 1] = pts[1];
-              connView[offset + 2] = pts[2];
-              connView[offset + 3] =
-                pts[2];  // Repeat the last point (it won't be used though).
-            }
-          }
-
-          BitSet shapeBit {};
-          axom::utilities::setBitOn(shapeBit, shapesView[index]);
-          shapesUsed_reduce |= shapeBit;
-        });
-      // We redid shapesUsed reduction in case triangles appeared.
-      shapesUsed = shapesUsed_reduce.get();
+            BitSet shapeBit {};
+            axom::utilities::setBitOn(shapeBit, shapesView[index]);
+            shapesUsed_reduce |= shapeBit;
+          });
+        // We redid shapesUsed reduction in case triangles appeared.
+        shapesUsed = shapesUsed_reduce.get();
+      }
     }
 #endif
 

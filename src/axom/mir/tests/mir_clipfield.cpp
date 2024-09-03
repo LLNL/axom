@@ -311,7 +311,7 @@ TEST(mir_clipfield, sort_values)
     for(int trial = 1; trial <= n; trial++)
     {
       auto values = makeUnsortedArray(n);
-      axom::mir::utilities::sort_values(values.data(), values.size());
+      axom::utilities::Sorting<int, 15>::sort(values.data(), values.size());
       EXPECT_TRUE(increasing(values));
     }
   }
@@ -331,7 +331,7 @@ TEST(mir_clipfield, unique)
                          4, 5, 9, 8, 5, 6, 10, 9, 6, 7, 11, 10}};
   axom::Array<int> uIds, uIndices;
 
-  axom::mir::utilities::unique<seq_exec>(ids.view(), uIds, uIndices);
+  axom::mir::utilities::Unique<seq_exec, int>::execute(ids.view(), uIds, uIndices);
   EXPECT_EQ(uIds.size(), 12);
   EXPECT_EQ(uIndices.size(), 12);
   for(axom::IndexType i = 0; i < uIds.size(); i++)
@@ -344,30 +344,21 @@ TEST(mir_clipfield, unique)
 //------------------------------------------------------------------------------
 TEST(mir_clipfield, make_name)
 {
+  axom::mir::utilities::HashNaming<int> naming;
+
   for(int n = 1; n < 14; n++)
   {
     // Make a set of scrambled ids.
     auto values = makeRandomArray(n);
-    std::uint64_t name = 0, name2 = 0;
     // Compute the name for that list of ids.
-    if(n == 1)
-      name = axom::mir::utilities::make_name_1(values[0]);
-    else if(n == 2)
-      name = axom::mir::utilities::make_name_2(values[0], values[1]);
-    else
-      name = axom::mir::utilities::make_name_n(values.data(), values.size());
+    auto name = naming.makeName(values.data(), n);
 
     for(int trial = 0; trial < 1000; trial++)
     {
       // Scramble the id list.
       auto values2 = permute(values);
       // Compute the name for that list of ids.
-      if(n == 1)
-        name2 = axom::mir::utilities::make_name_1(values2[0]);
-      else if(n == 2)
-        name2 = axom::mir::utilities::make_name_2(values2[0], values2[1]);
-      else
-        name2 = axom::mir::utilities::make_name_n(values2.data(), values2.size());
+      auto name2 = naming.makeName(values2.data(), n);
 
       // The names for the 2 scrambled lists of numbers should be the same.
       EXPECT_EQ(name, name2);

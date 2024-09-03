@@ -17,6 +17,9 @@
 
 #include <RAJA/RAJA.hpp>
 
+#include <map>
+#include <vector>
+
 namespace axom
 {
 namespace mir
@@ -25,27 +28,8 @@ namespace utilities
 {
 namespace blueprint
 {
-/**
- * \brief Build an o2m relation that lets us look up the zones for a node.
- *
- * \note The zone list for each point is not sorted.
- */
-template <typename ExecSpace>
-class NodeToZoneRelationBuilder
+namespace details
 {
-public:
-  /**
-   * \brief Build a node to zone relation and store the resulting O2M relation in the \a relation conduit node.
-   *
-   * \param topo The topology for which we're building the O2M relation.
-   * \param coordset The topology's coordset.
-   * \param[out] The node that will contain the O2M relation.
-   */
-  void execute(const conduit::Node &topo,
-               const conduit::Node &coordset,
-               conduit::Node &relation);
-
-private:
   /**
    * \brief Given views that contain the nodes and zones, sort the zones using the
    *        node numbers to produce a list of zones for each node and an offsets array
@@ -55,11 +39,14 @@ private:
    * \param[inout[ zones_view   A view (same size as \a nodes_view) that contains the zone number of each node.
    * \param[out]   offsets_view A view that we fill with offsets so offsets_view[i] points to the start of the i'th list in \a zones_view.
    */
-  template <typename ViewType>
-  void buildRelation(const ViewType &nodes_view,
-                     ViewType &zones_view,
-                     ViewType &offsets_view) const
+template <typename ExecSpace, typename ViewType>
+struct FillZonesAndOffsets
+{
+  static void execute(const ViewType &nodes_view,
+                      ViewType &zones_view,
+                      ViewType &offsets_view)
   {
+    AXOM_ANNOTATE_SCOPE("FillZonesAndOffsets");
     assert(nodes_view.size() == zones_view.size());
 
     using loop_policy = typename axom::execution_space<ExecSpace>::loop_policy;
@@ -109,10 +96,59 @@ private:
   }
 };
 
+/// Partial specialization for axom::SEQ_EXEC.
+template <typename ViewType>
+struct FillZonesAndOffsets<axom::SEQ_EXEC, ViewType>
+{
+  static void execute(const ViewType &nodes_view,
+                      ViewType &zones_view,
+                      ViewType &offsets_view)
+  {
+    AXOM_ANNOTATE_SCOPE("FillZonesAndOffsets");
+    assert(nodes_view.size() == zones_view.size());
+    using value_type = typename ViewType::value_type;
+
+    std::map<value_type, std::vector<value_type>> n2z;
+    const auto n = nodes_view.size();
+    for(axom::IndexType index = 0; index < n; index++)
+    {
+      n2z[nodes_view[index]].push_back(zones_view[index]);
+    }
+
+    // Flatten the map to fill zones_view and make offsets
+    axom::IndexType offset = 0, zi = 0, oi = 0;
+    for(auto it = n2z.begin(); it != n2z.end(); it++)
+    {
+      offsets_view[oi++] = offset;
+      const auto n = it->second.size();
+      for(size_t i = 0; i < n; i++)
+         zones_view[zi++] = it->second[i];
+      offset += n;
+    }
+  }
+};
+
+} // end namespace details
+
+/**
+ * \brief Build an o2m relation that lets us look up the zones for a node.
+ *
+ * \note The zone list for each point is not sorted.
+ */
 template <typename ExecSpace>
-void NodeToZoneRelationBuilder<ExecSpace>::execute(const conduit::Node &topo,
-                                                   const conduit::Node &coordset,
-                                                   conduit::Node &relation)
+class NodeToZoneRelationBuilder
+{
+public:
+  /**
+   * \brief Build a node to zone relation and store the resulting O2M relation in the \a relation conduit node.
+   *
+   * \param topo The topology for which we're building the O2M relation.
+   * \param coordset The topology's coordset.
+   * \param[out] The node that will contain the O2M relation.
+   */
+  void execute(const conduit::Node &topo,
+               const conduit::Node &coordset,
+               conduit::Node &relation)
 {
   const std::string type = topo.fetch_existing("type").as_string();
 
@@ -200,9 +236,9 @@ void NodeToZoneRelationBuilder<ExecSpace>::execute(const conduit::Node &topo,
 
               // Make the relation, outputting into the zonesView and offsetsView.
               using ViewType = decltype(connectivityView);
-              this->template buildRelation<ViewType>(connectivityView,
-                                                     zonesView,
-                                                     offsetsView);
+              details::FillZonesAndOffsets<ExecSpace, ViewType>::execute(connectivityView,
+                                                                         zonesView,
+                                                                         offsetsView);
 
               // Compute sizes from offsets.
               axom::for_all<ExecSpace>(
@@ -251,9 +287,9 @@ void NodeToZoneRelationBuilder<ExecSpace>::execute(const conduit::Node &topo,
         [&](auto connectivityView, auto zonesView, auto sizesView, auto offsetsView) {
           // Make the relation, outputting into the zonesView and offsetsView.
           using ViewType = decltype(connectivityView);
-          this->template buildRelation<ViewType>(connectivityView,
-                                                 zonesView,
-                                                 offsetsView);
+          details::FillZonesAndOffsets<ExecSpace, ViewType>::execute(connectivityView,
+                                                                     zonesView,
+                                                                     offsetsView);
 
           // Compute sizes from offsets.
           axom::for_all<ExecSpace>(
@@ -290,9 +326,9 @@ void NodeToZoneRelationBuilder<ExecSpace>::execute(const conduit::Node &topo,
             });
           // Make the relation, outputting into the zonesView and offsetsView.
           using ViewType = decltype(connectivityView);
-          this->template buildRelation<ViewType>(connectivityView,
-                                                 zonesView,
-                                                 offsetsView);
+          details::FillZonesAndOffsets<ExecSpace, ViewType>::execute(connectivityView,
+                                                                     zonesView,
+                                                                     offsetsView);
 
           // Compute sizes from offsets.
           axom::for_all<ExecSpace>(
@@ -319,6 +355,7 @@ void NodeToZoneRelationBuilder<ExecSpace>::execute(const conduit::Node &topo,
     execute(mesh.fetch_existing("topologies/newtopo"), coordset, relation);
   }
 }
+};
 
 }  // end namespace blueprint
 }  // end namespace utilities

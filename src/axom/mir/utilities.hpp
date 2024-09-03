@@ -176,133 +176,9 @@ inline std::uint64_t hash_bytes(const std::uint8_t *data, std::uint32_t length)
 
 //------------------------------------------------------------------------------
 /**
- * \brief A very basic sort for small arrays.
- * \param[inout] v The values to be sorted in place.
- * \param[in] n The number of values to be sorted.
- */
-template <typename ValueType, typename IndexType>
-AXOM_HOST_DEVICE void sort_values(ValueType *v, IndexType n)
-{
-  for(IndexType i = 0; i < n - 1; i++)
-  {
-    const IndexType m = n - i - 1;
-    for(IndexType j = 0; j < m; j++)
-    {
-      if(v[j] > v[j + 1])
-      {
-        axom::utilities::swap(v[j], v[j + 1]);
-      }
-    }
-  }
-}
-
-//------------------------------------------------------------------------------
-/**
- * \brief Make a hashed "name" for one id.
- *
- * \param[in] id The id we're hashing.
- * \return A hashed name for the id.
- */
-template <typename ValueType>
-AXOM_HOST_DEVICE std::uint64_t make_name_1(ValueType id)
-{
-  return hash_bytes(reinterpret_cast<std::uint8_t *>(&id), sizeof(ValueType));
-};
-
-//------------------------------------------------------------------------------
-/**
- * \brief Make a hashed "name" for two ids.
- *
- * \param[in] id0 The first id we're hashing.
- * \param[in] id1 The second id we're hashing.
- * \return A hashed name for the ids.
- */
-template <typename ValueType>
-AXOM_HOST_DEVICE std::uint64_t make_name_2(ValueType id0, ValueType id1)
-{
-  ValueType data[2] = {id0, id1};
-  if(id1 < id0)
-  {
-    data[0] = id1;
-    data[1] = id0;
-  }
-  return hash_bytes(reinterpret_cast<std::uint8_t *>(data),
-                    2 * sizeof(ValueType));
-};
-
-//------------------------------------------------------------------------------
-/**
- * \brief Make a hashed "name" for multiple ids.
- *
- * \tparam MaxValues The largest expected number of values.
- *
- * \param[in] values The ids that are being hashed.
- * \param[in] start The starting index for ids.
- * \param[in] n The number if ids being hashed.
- *
- * \return A hashed name for the ids.
- */
-template <typename ValueType, std::uint32_t MaxValues = 14>
-AXOM_HOST_DEVICE std::uint64_t make_name_n(const ValueType *values,
-                                           std::uint32_t n)
-{
-  assert(n <= MaxValues);
-  if(n == 2) return make_name_2(values[0], values[1]);
-
-  // Make sure the values are sorted before hashing.
-  ValueType sorted[MaxValues];
-  for(std::uint32_t i = 0; i < n; i++)
-  {
-    sorted[i] = values[i];
-  }
-  sort_values(sorted, n);
-
-  return hash_bytes(reinterpret_cast<std::uint8_t *>(sorted),
-                    n * sizeof(ValueType));
-}
-
-//------------------------------------------------------------------------------
-#if 0
-/**
  * \brief This class implements a naming policy that uses some hashing functions
  *        to produce a "name" for an array of ids.
  */
-class HashNaming
-{
-public:
-  using KeyType = std::uint64_t;
-
-  /**
-   * \brief Make a name from an array of ids.
-   *
-   * \param ids The array of ids.
-   * \param numIds The number of ids in the array.
-   *
-   * \return The name that describes the array of ids.
-   *
-   * \note Different make_name_* functions are used because we can skip most
-   *       sorting for 1,2 element arrays.
-   */
-  AXOM_HOST_DEVICE
-  inline static KeyType makeName(const IndexType *ids, IndexType numIds)
-  {
-    KeyType name {};
-    if(numIds == 1)
-    {
-      name = axom::mir::utilities::make_name_1(ids[0]);
-    }
-    else if(numIds == 2)
-    {
-      name = axom::mir::utilities::make_name_2(ids[0], ids[1]);
-    }
-    else
-    {
-      name = axom::mir::utilities::make_name_n(ids, numIds);
-    }
-    return name;
-  }
-};
-#else
 template <typename IndexT, int MAXIDS = 14>
 class HashNaming
 {
@@ -325,28 +201,49 @@ public:
   constexpr static KeyType Max31Bit = (KeyType(1) << 31) - 1;
   constexpr static KeyType Max32Bit = (KeyType(1) << 32) - 1;
 
+  /**
+   * \brief A view for making names, suitable for use in device code.
+   */
   class View
   {
   public:
     using KeyType = HashNaming::KeyType;
 
+    /**
+     * \brief Make a name from an array of ids.
+     *
+     * \param p The array of ids.
+     * \param n The number of ids in the array.
+     *
+     * \return The name that describes the array of ids.
+     *
+     * \note Different make_name_* functions are used because we can skip most
+     *       sorting for 1,2 element arrays. Also, there is a small benefit
+     *       to some of the other shortcuts for smaller arrays.
+     */
     AXOM_HOST_DEVICE
     KeyType makeName(const IndexType *p, int n) const
     {
-      KeyType retval {};
+      KeyType name {};
       if(n == 1)
-        retval = make_name_1(p[0]);
+        name = make_name_1(p[0]);
       else if(n == 2)
-        retval = make_name_2(p[0], p[1]);
+        name = make_name_2(p[0], p[1]);
       else
-        retval = make_name_n(p, n);
-      return retval;
+        name = make_name_n(p, n);
+      return name;
     }
 
+    /// Set the max number of nodes, which can be useful for packing/narrowing.
     AXOM_HOST_DEVICE
     void setMaxId(IndexType m) { m_maxId = static_cast<KeyType>(m); }
 
   private:
+    /**
+     * \brief Encode a single id as a name.
+     * \param p0 The id to encode.
+     * \return A name that encodes the id.
+     */
     AXOM_HOST_DEVICE
     inline KeyType make_name_1(IndexType p0) const
     {
@@ -356,6 +253,12 @@ public:
       return KeyIDSingle | k0;
     }
 
+    /**
+     * \brief Encode 2 ids as a name.
+     * \param p0 The first id to encode.
+     * \param p1 The second id to encode.
+     * \return A name that encodes the ids.
+     */
     AXOM_HOST_DEVICE
     inline KeyType make_name_2(IndexType p0, IndexType p1) const
     {
@@ -366,6 +269,12 @@ public:
       return KeyIDPair | (k0 << 31) | k1;
     }
 
+    /**
+     * \brief Encode multiple ids as a name.
+     * \param p The ids to encode.
+     * \param n The number of ids.
+     * \return A name that encodes the ids.
+     */
     AXOM_HOST_DEVICE
     KeyType make_name_n(const IndexType *p, int n) const
     {
@@ -413,7 +322,7 @@ public:
         void *ptr = static_cast<void *>(sorted);
         KeyType k0 =
           axom::mir::utilities::hash_bytes(static_cast<std::uint8_t *>(ptr),
-                                           n << 1);
+                                           n * sizeof(std::uint16_t));
         retval = KeyIDHash | (k0 & PayloadMask);
       }
       else if(m_maxId < Max32Bit)
@@ -427,7 +336,7 @@ public:
         void *ptr = static_cast<void *>(sorted);
         KeyType k0 =
           axom::mir::utilities::hash_bytes(static_cast<std::uint8_t *>(ptr),
-                                           n << 2);
+                                           n * sizeof(std::uint32_t));
         retval = KeyIDHash | (k0 & PayloadMask);
       }
       else
@@ -446,20 +355,31 @@ public:
       return retval;
     }
 
-    KeyType m_maxId {};
+    KeyType m_maxId {std::numeric_limits<KeyType>::max()};
   };
 
   // Host-callable methods
 
+  /// Make a name from the array of ids.
   KeyType makeName(const IndexType *p, int n) const
   {
     return m_view.makeName(p, n);
   }
 
+  /**
+   * \brief Set the max number of nodes, which can help with id packing/narrowing.
+   * \param n The number of nodes.
+   */
   void setMaxId(IndexType n) { m_view.setMaxId(n); }
 
+  /// Return a view that can be used on device.
   View view() { return m_view; }
 
+  /**
+   * \brief Turn name into a string.
+   * \param key The name.
+   * \return A string that represents the name.
+   */
   static std::string toString(KeyType key)
   {
     std::stringstream ss;
@@ -506,8 +426,6 @@ public:
   View m_view {};
 };
 
-#endif
-
 //------------------------------------------------------------------------------
 /**
  * \brief This function makes a unique array of values from an input list of keys.
@@ -521,70 +439,105 @@ public:
  *
  */
 template <typename ExecSpace, typename KeyType>
-void unique(const axom::ArrayView<KeyType> &keys_orig_view,
+struct Unique
+{
+  static void execute(const axom::ArrayView<KeyType> &keys_orig_view,
             axom::Array<KeyType> &skeys,
             axom::Array<axom::IndexType> &sindices)
+  {
+    using loop_policy = typename axom::execution_space<ExecSpace>::loop_policy;
+    using reduce_policy = typename axom::execution_space<ExecSpace>::reduce_policy;
+    const int allocatorID = axom::execution_space<ExecSpace>::allocatorID();
+
+    // Make a copy of the keys and make original indices.
+    const auto n = keys_orig_view.size();
+    axom::Array<KeyType> keys(n, n, allocatorID);
+    axom::Array<axom::IndexType> indices(n, n, allocatorID);
+    auto keys_view = keys.view();
+    auto indices_view = indices.view();
+    axom::for_all<ExecSpace>(
+      n,
+      AXOM_LAMBDA(axom::IndexType i) {
+        keys_view[i] = keys_orig_view[i];
+        indices_view[i] = i;
+      });
+
+    // Sort the keys, indices in place.
+    RAJA::sort_pairs<loop_policy>(RAJA::make_span(keys_view.data(), n),
+                                  RAJA::make_span(indices_view.data(), n));
+
+    // Make a mask array for where differences occur.
+    axom::Array<axom::IndexType> mask(n, n, allocatorID);
+    auto mask_view = mask.view();
+    RAJA::ReduceSum<reduce_policy, axom::IndexType> mask_sum(0);
+    axom::for_all<ExecSpace>(
+      n,
+      AXOM_LAMBDA(axom::IndexType i) {
+        const axom::IndexType m =
+          (i >= 1) ? ((keys_view[i] != keys_view[i - 1]) ? 1 : 0) : 1;
+        mask_view[i] = m;
+        mask_sum += m;
+      });
+
+    // Do a scan on the mask array to build an offset array.
+    axom::Array<axom::IndexType> offsets(n, n, allocatorID);
+    auto offsets_view = offsets.view();
+    RAJA::exclusive_scan<loop_policy>(RAJA::make_span(mask_view.data(), n),
+                                      RAJA::make_span(offsets_view.data(), n),
+                                      RAJA::operators::plus<axom::IndexType> {});
+
+    // Allocate the output arrays.
+    const axom::IndexType newsize = mask_sum.get();
+    skeys = axom::Array<KeyType>(newsize, newsize, allocatorID);
+    sindices = axom::Array<axom::IndexType>(newsize, newsize, allocatorID);
+
+    // Iterate over the mask/offsets to store values at the right
+    // offset in the new array.
+    auto skeys_view = skeys.view();
+    auto sindices_view = sindices.view();
+    axom::for_all<ExecSpace>(
+      n,
+      AXOM_LAMBDA(axom::IndexType i) {
+        if(mask_view[i])
+        {
+          skeys_view[offsets_view[i]] = keys_view[i];
+          sindices_view[offsets_view[i]] = indices_view[i];
+        }
+      });
+  }
+};
+
+template <typename KeyType>
+struct Unique<axom::SEQ_EXEC, KeyType>
 {
-  using loop_policy = typename axom::execution_space<ExecSpace>::loop_policy;
-  using reduce_policy = typename axom::execution_space<ExecSpace>::reduce_policy;
-  const int allocatorID = axom::execution_space<ExecSpace>::allocatorID();
-
-  // Make a copy of the keys and make original indices.
-  const auto n = keys_orig_view.size();
-  axom::Array<KeyType> keys(n, n, allocatorID);
-  axom::Array<axom::IndexType> indices(n, n, allocatorID);
-  auto keys_view = keys.view();
-  auto indices_view = indices.view();
-  axom::for_all<ExecSpace>(
-    n,
-    AXOM_LAMBDA(axom::IndexType i) {
-      keys_view[i] = keys_orig_view[i];
-      indices_view[i] = i;
-    });
-
-  // Sort the keys, indices in place.
-  RAJA::sort_pairs<loop_policy>(RAJA::make_span(keys_view.data(), n),
-                                RAJA::make_span(indices_view.data(), n));
-
-  // Make a mask array for where differences occur.
-  axom::Array<axom::IndexType> mask(n, n, allocatorID);
-  auto mask_view = mask.view();
-  RAJA::ReduceSum<reduce_policy, axom::IndexType> mask_sum(0);
-  axom::for_all<ExecSpace>(
-    n,
-    AXOM_LAMBDA(axom::IndexType i) {
-      const axom::IndexType m =
-        (i >= 1) ? ((keys_view[i] != keys_view[i - 1]) ? 1 : 0) : 1;
-      mask_view[i] = m;
-      mask_sum += m;
-    });
-
-  // Do a scan on the mask array to build an offset array.
-  axom::Array<axom::IndexType> offsets(n, n, allocatorID);
-  auto offsets_view = offsets.view();
-  RAJA::exclusive_scan<loop_policy>(RAJA::make_span(mask_view.data(), n),
-                                    RAJA::make_span(offsets_view.data(), n),
-                                    RAJA::operators::plus<axom::IndexType> {});
-
-  // Allocate the output arrays.
-  const axom::IndexType newsize = mask_sum.get();
-  skeys = axom::Array<KeyType>(newsize, newsize, allocatorID);
-  sindices = axom::Array<axom::IndexType>(newsize, newsize, allocatorID);
-
-  // Iterate over the mask/offsets to store values at the right
-  // offset in the new array.
-  auto skeys_view = skeys.view();
-  auto sindices_view = sindices.view();
-  axom::for_all<ExecSpace>(
-    n,
-    AXOM_LAMBDA(axom::IndexType i) {
-      if(mask_view[i])
+  static void execute(const axom::ArrayView<KeyType> &keys_orig_view,
+            axom::Array<KeyType> &skeys,
+            axom::Array<axom::IndexType> &sindices)
+  {
+    std::map<KeyType, axom::IndexType> unique;
+    const axom::IndexType n = keys_orig_view.size();
+    axom::IndexType index = 0;
+    for(; index < n; index++)
+    {
+      const auto k = keys_orig_view[index];
+      //if(unique.find(k) == unique.end())
       {
-        skeys_view[offsets_view[i]] = keys_view[i];
-        sindices_view[offsets_view[i]] = indices_view[i];
+        unique[k] = index;
       }
-    });
-}
+    }
+    // Allocate the output arrays.
+    const axom::IndexType newsize = unique.size();
+    const int allocatorID = axom::execution_space<axom::SEQ_EXEC>::allocatorID();
+    skeys = axom::Array<KeyType>(newsize, newsize, allocatorID);
+    sindices = axom::Array<axom::IndexType>(newsize, newsize, allocatorID);
+    index = 0;
+    for(auto it = unique.begin(); it != unique.end(); it++, index++)
+    {
+      skeys[index] = it->first;
+      sindices[index] = it->second;
+    }
+  }
+};
 
 }  // end namespace utilities
 }  // end namespace mir
