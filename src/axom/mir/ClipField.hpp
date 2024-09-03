@@ -548,9 +548,10 @@ public:
     axom::Array<axom::IndexType> uIndices;
     {
       AXOM_ANNOTATE_SCOPE("unique");
-      axom::mir::utilities::Unique<ExecSpace, KeyType>::execute(builder.blendNames(),
-                                                                uNames,
-                                                                uIndices);
+      axom::mir::utilities::Unique<ExecSpace, KeyType>::execute(
+        builder.blendNames(),
+        uNames,
+        uIndices);
       builder.setUniqueNames(uNames.view(), uIndices.view());
     }
     bputils::BlendData blend = builder.makeBlendData();
@@ -1209,16 +1210,16 @@ private:
               {
                 // Output the nodes used in this zone.
                 const int fragmentSize = fragment.size();
-//#if defined(AXOM_CLIP_FILTER_DEGENERATES)
-//                int connStart = outputIndex;
-//#endif
+                //#if defined(AXOM_CLIP_FILTER_DEGENERATES)
+                //                int connStart = outputIndex;
+                //#endif
                 offsetsView[sizeIndex] = outputIndex;
                 for(int i = 2; i < fragmentSize; i++)
                   connView[outputIndex++] = point_2_new[fragment[i]];
 
                 const auto nIdsThisFragment = fragmentSize - 2;
 #if defined(AXOM_CLIP_FILTER_DEGENERATES)
-                if constexpr (TopologyView::dimension() == 2)
+                if constexpr(TopologyView::dimension() == 2)
                 {
                   int connStart = outputIndex - nIdsThisFragment;
 
@@ -1226,7 +1227,8 @@ private:
                   int nUniqueIds = details::unique_count<ConnectivityType, 8>(
                     connView.data() + connStart,
                     nIdsThisFragment);
-                  bool thisFragmentDegenerate = nUniqueIds < (nIdsThisFragment - 1);
+                  bool thisFragmentDegenerate =
+                    nUniqueIds < (nIdsThisFragment - 1);
                   degenerates |= thisFragmentDegenerate;
 
                   // Rewind the outputIndex so we don't emit it in the connectivity.
@@ -1290,7 +1292,7 @@ private:
     }
 
 #if defined(AXOM_CLIP_FILTER_DEGENERATES)
-    if constexpr (TopologyView::dimension() == 2)
+    if constexpr(TopologyView::dimension() == 2)
     {
       // We get into this block when degenerate zones were detected where
       // all of their nodes are the same. We need to filter those out.
@@ -1405,7 +1407,7 @@ private:
 
 #if 1
     // Handle some quad->tri degeneracies
-    if constexpr (TopologyView::dimension() == 2)
+    if constexpr(TopologyView::dimension() == 2)
     {
       if(axom::utilities::bitIsSet(shapesUsed, views::Quad_ShapeID))
       {

@@ -442,11 +442,12 @@ template <typename ExecSpace, typename KeyType>
 struct Unique
 {
   static void execute(const axom::ArrayView<KeyType> &keys_orig_view,
-            axom::Array<KeyType> &skeys,
-            axom::Array<axom::IndexType> &sindices)
+                      axom::Array<KeyType> &skeys,
+                      axom::Array<axom::IndexType> &sindices)
   {
     using loop_policy = typename axom::execution_space<ExecSpace>::loop_policy;
-    using reduce_policy = typename axom::execution_space<ExecSpace>::reduce_policy;
+    using reduce_policy =
+      typename axom::execution_space<ExecSpace>::reduce_policy;
     const int allocatorID = axom::execution_space<ExecSpace>::allocatorID();
 
     // Make a copy of the keys and make original indices.
@@ -511,8 +512,8 @@ template <typename KeyType>
 struct Unique<axom::SEQ_EXEC, KeyType>
 {
   static void execute(const axom::ArrayView<KeyType> &keys_orig_view,
-            axom::Array<KeyType> &skeys,
-            axom::Array<axom::IndexType> &sindices)
+                      axom::Array<KeyType> &skeys,
+                      axom::Array<axom::IndexType> &sindices)
   {
     std::map<KeyType, axom::IndexType> unique;
     const axom::IndexType n = keys_orig_view.size();

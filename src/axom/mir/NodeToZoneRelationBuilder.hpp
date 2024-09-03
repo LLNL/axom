@@ -30,7 +30,7 @@ namespace blueprint
 {
 namespace details
 {
-  /**
+/**
    * \brief Given views that contain the nodes and zones, sort the zones using the
    *        node numbers to produce a list of zones for each node and an offsets array
    *        that points to the start of each list of zones.
@@ -121,14 +121,13 @@ struct FillZonesAndOffsets<axom::SEQ_EXEC, ViewType>
     {
       offsets_view[oi++] = offset;
       const auto n = it->second.size();
-      for(size_t i = 0; i < n; i++)
-         zones_view[zi++] = it->second[i];
+      for(size_t i = 0; i < n; i++) zones_view[zi++] = it->second[i];
       offset += n;
     }
   }
 };
 
-} // end namespace details
+}  // end namespace details
 
 /**
  * \brief Build an o2m relation that lets us look up the zones for a node.
@@ -149,212 +148,216 @@ public:
   void execute(const conduit::Node &topo,
                const conduit::Node &coordset,
                conduit::Node &relation)
-{
-  const std::string type = topo.fetch_existing("type").as_string();
-
-  // Get the ID of a Conduit allocator that will allocate through Axom with device allocator allocatorID.
-  utilities::blueprint::ConduitAllocateThroughAxom<ExecSpace> c2a;
-  const int conduitAllocatorID = c2a.getConduitAllocatorID();
-
-  conduit::Node &n_zones = relation["zones"];
-  conduit::Node &n_sizes = relation["sizes"];
-  conduit::Node &n_offsets = relation["offsets"];
-  n_zones.set_allocator(conduitAllocatorID);
-  n_sizes.set_allocator(conduitAllocatorID);
-  n_offsets.set_allocator(conduitAllocatorID);
-
-  if(type == "unstructured")
   {
-    conduit::blueprint::mesh::utils::ShapeType shape(topo);
-    const conduit::Node &n_connectivity = topo["elements/connectivity"];
-    const std::string shapeType = topo["elements/shape"].as_string();
-    const auto intTypeId = n_connectivity.dtype().id();
-    const auto connSize = n_connectivity.dtype().number_of_elements();
+    const std::string type = topo.fetch_existing("type").as_string();
 
-    // Use the coordset to get the number of nodes. Conduit should be able to do this using only metadata.
-    const auto nnodes =
-      conduit::blueprint::mesh::utils::coordset::length(coordset);
+    // Get the ID of a Conduit allocator that will allocate through Axom with device allocator allocatorID.
+    utilities::blueprint::ConduitAllocateThroughAxom<ExecSpace> c2a;
+    const int conduitAllocatorID = c2a.getConduitAllocatorID();
 
-    if(shape.is_polyhedral())
+    conduit::Node &n_zones = relation["zones"];
+    conduit::Node &n_sizes = relation["sizes"];
+    conduit::Node &n_offsets = relation["offsets"];
+    n_zones.set_allocator(conduitAllocatorID);
+    n_sizes.set_allocator(conduitAllocatorID);
+    n_offsets.set_allocator(conduitAllocatorID);
+
+    if(type == "unstructured")
     {
-      using reduce_policy =
-        typename axom::execution_space<ExecSpace>::reduce_policy;
-      const auto allocatorID = axom::execution_space<ExecSpace>::allocatorID();
+      conduit::blueprint::mesh::utils::ShapeType shape(topo);
+      const conduit::Node &n_connectivity = topo["elements/connectivity"];
+      const std::string shapeType = topo["elements/shape"].as_string();
+      const auto intTypeId = n_connectivity.dtype().id();
+      const auto connSize = n_connectivity.dtype().number_of_elements();
 
-      views::dispatch_unstructured_polyhedral_topology(
-        topo,
-        [&](auto AXOM_UNUSED_PARAM(shape), auto topoView) {
-          const auto nzones = topoView.numberOfZones();
-          axom::Array<axom::IndexType> sizes(nzones, nzones, allocatorID);
-          auto sizes_view = sizes.view();
+      // Use the coordset to get the number of nodes. Conduit should be able to do this using only metadata.
+      const auto nnodes =
+        conduit::blueprint::mesh::utils::coordset::length(coordset);
 
-          // Run through the topology once to do a count of each zone's unique node ids.
-          RAJA::ReduceSum<reduce_policy, axom::IndexType> count(0);
-          topoView.template for_all_zones<ExecSpace>(
-            AXOM_LAMBDA(auto zoneIndex, const auto &zone) {
-              const auto uniqueIds = zone.getUniqueIds();
-              sizes_view[zoneIndex] = uniqueIds.size();
-              count += uniqueIds.size();
-            });
-          const auto connSize = count.get();
+      if(shape.is_polyhedral())
+      {
+        using reduce_policy =
+          typename axom::execution_space<ExecSpace>::reduce_policy;
+        const auto allocatorID = axom::execution_space<ExecSpace>::allocatorID();
 
-          // Do a scan on the size array to build an offset array.
-          axom::Array<axom::IndexType> offsets(nzones, nzones, allocatorID);
-          auto offsets_view = offsets.view();
-          axom::exclusive_scan<ExecSpace>(sizes_view, offsets_view);
-          sizes.clear();
+        views::dispatch_unstructured_polyhedral_topology(
+          topo,
+          [&](auto AXOM_UNUSED_PARAM(shape), auto topoView) {
+            const auto nzones = topoView.numberOfZones();
+            axom::Array<axom::IndexType> sizes(nzones, nzones, allocatorID);
+            auto sizes_view = sizes.view();
 
-          // Allocate Conduit arrays on the device in a data type that matches the connectivity.
-          conduit::Node n_conn;
-          n_conn.set_allocator(conduitAllocatorID);
-          n_conn.set(conduit::DataType(intTypeId, connSize));
+            // Run through the topology once to do a count of each zone's unique node ids.
+            RAJA::ReduceSum<reduce_policy, axom::IndexType> count(0);
+            topoView.template for_all_zones<ExecSpace>(
+              AXOM_LAMBDA(auto zoneIndex, const auto &zone) {
+                const auto uniqueIds = zone.getUniqueIds();
+                sizes_view[zoneIndex] = uniqueIds.size();
+                count += uniqueIds.size();
+              });
+            const auto connSize = count.get();
 
-          n_zones.set(conduit::DataType(intTypeId, connSize));
-          n_sizes.set(conduit::DataType(intTypeId, nnodes));
-          n_offsets.set(conduit::DataType(intTypeId, nnodes));
+            // Do a scan on the size array to build an offset array.
+            axom::Array<axom::IndexType> offsets(nzones, nzones, allocatorID);
+            auto offsets_view = offsets.view();
+            axom::exclusive_scan<ExecSpace>(sizes_view, offsets_view);
+            sizes.clear();
 
-          views::IndexNode_to_ArrayView_same(
-            n_conn,
-            n_zones,
-            n_sizes,
-            n_offsets,
-            [&](auto connectivityView,
-                auto zonesView,
-                auto sizesView,
-                auto offsetsView) {
-              // Run through the data one more time to build the nodes and zones arrays.
-              topoView.template for_all_zones<ExecSpace>(
-                AXOM_LAMBDA(auto zoneIndex, const auto &zone) {
-                  const auto uniqueIds = zone.getUniqueIds();
-                  auto destIdx = offsets_view[zoneIndex];
-                  for(axom::IndexType i = 0; i < uniqueIds.size(); i++, destIdx++)
-                  {
-                    connectivityView[destIdx] = uniqueIds[i];
-                    zonesView[destIdx] = zoneIndex;
-                  }
-                });
+            // Allocate Conduit arrays on the device in a data type that matches the connectivity.
+            conduit::Node n_conn;
+            n_conn.set_allocator(conduitAllocatorID);
+            n_conn.set(conduit::DataType(intTypeId, connSize));
 
-              // Make the relation, outputting into the zonesView and offsetsView.
-              using ViewType = decltype(connectivityView);
-              details::FillZonesAndOffsets<ExecSpace, ViewType>::execute(connectivityView,
-                                                                         zonesView,
-                                                                         offsetsView);
+            n_zones.set(conduit::DataType(intTypeId, connSize));
+            n_sizes.set(conduit::DataType(intTypeId, nnodes));
+            n_offsets.set(conduit::DataType(intTypeId, nnodes));
 
-              // Compute sizes from offsets.
-              axom::for_all<ExecSpace>(
-                offsetsView.size(),
-                AXOM_LAMBDA(auto i) {
-                  sizesView[i] = (i < offsetsView.size() - 1)
-                    ? (offsetsView[i + 1] - offsetsView[i])
-                    : (connSize - offsetsView[i]);
-                });
-            });
-        });
-    }
-    else if(shape.is_polygonal() || shapeType == "mixed")
-    {
-      const conduit::Node &n_topo_sizes = topo["elements/sizes"];
-      const conduit::Node &n_topo_offsets = topo["elements/offsets"];
+            views::IndexNode_to_ArrayView_same(
+              n_conn,
+              n_zones,
+              n_sizes,
+              n_offsets,
+              [&](auto connectivityView,
+                  auto zonesView,
+                  auto sizesView,
+                  auto offsetsView) {
+                // Run through the data one more time to build the nodes and zones arrays.
+                topoView.template for_all_zones<ExecSpace>(
+                  AXOM_LAMBDA(auto zoneIndex, const auto &zone) {
+                    const auto uniqueIds = zone.getUniqueIds();
+                    auto destIdx = offsets_view[zoneIndex];
+                    for(axom::IndexType i = 0; i < uniqueIds.size();
+                        i++, destIdx++)
+                    {
+                      connectivityView[destIdx] = uniqueIds[i];
+                      zonesView[destIdx] = zoneIndex;
+                    }
+                  });
 
-      const auto nzones = n_topo_sizes.dtype().number_of_elements();
+                // Make the relation, outputting into the zonesView and offsetsView.
+                using ViewType = decltype(connectivityView);
+                details::FillZonesAndOffsets<ExecSpace, ViewType>::execute(
+                  connectivityView,
+                  zonesView,
+                  offsetsView);
 
-      // Allocate Conduit arrays on the device in a data type that matches the connectivity.
-      n_zones.set(conduit::DataType(intTypeId, connSize));
-      n_sizes.set(conduit::DataType(intTypeId, nnodes));
-      n_offsets.set(conduit::DataType(intTypeId, nnodes));
+                // Compute sizes from offsets.
+                axom::for_all<ExecSpace>(
+                  offsetsView.size(),
+                  AXOM_LAMBDA(auto i) {
+                    sizesView[i] = (i < offsetsView.size() - 1)
+                      ? (offsetsView[i + 1] - offsetsView[i])
+                      : (connSize - offsetsView[i]);
+                  });
+              });
+          });
+      }
+      else if(shape.is_polygonal() || shapeType == "mixed")
+      {
+        const conduit::Node &n_topo_sizes = topo["elements/sizes"];
+        const conduit::Node &n_topo_offsets = topo["elements/offsets"];
 
-      // Make zones for each node
-      views::IndexNode_to_ArrayView_same(
-        n_zones,
-        n_topo_sizes,
-        n_topo_offsets,
-        [&](auto zonesView, auto sizesView, auto offsetsView) {
-          using DataType = typename decltype(zonesView)::value_type;
-          axom::for_all<ExecSpace>(
-            0,
-            nzones,
-            AXOM_LAMBDA(axom::IndexType zoneIndex) {
-              for(DataType i = 0; i < sizesView[zoneIndex]; i++)
-                zonesView[offsetsView[zoneIndex] + i] = zoneIndex;
-            });
-        });
+        const auto nzones = n_topo_sizes.dtype().number_of_elements();
 
-      views::IndexNode_to_ArrayView_same(
-        n_connectivity,
-        n_zones,
-        n_sizes,
-        n_offsets,
-        [&](auto connectivityView, auto zonesView, auto sizesView, auto offsetsView) {
-          // Make the relation, outputting into the zonesView and offsetsView.
-          using ViewType = decltype(connectivityView);
-          details::FillZonesAndOffsets<ExecSpace, ViewType>::execute(connectivityView,
-                                                                     zonesView,
-                                                                     offsetsView);
+        // Allocate Conduit arrays on the device in a data type that matches the connectivity.
+        n_zones.set(conduit::DataType(intTypeId, connSize));
+        n_sizes.set(conduit::DataType(intTypeId, nnodes));
+        n_offsets.set(conduit::DataType(intTypeId, nnodes));
 
-          // Compute sizes from offsets.
-          axom::for_all<ExecSpace>(
-            offsetsView.size(),
-            AXOM_LAMBDA(auto i) {
-              sizesView[i] = (i < offsetsView.size() - 1)
-                ? (offsetsView[i + 1] - offsetsView[i])
-                : (connSize - offsetsView[i]);
-            });
-        });
+        // Make zones for each node
+        views::IndexNode_to_ArrayView_same(
+          n_zones,
+          n_topo_sizes,
+          n_topo_offsets,
+          [&](auto zonesView, auto sizesView, auto offsetsView) {
+            using DataType = typename decltype(zonesView)::value_type;
+            axom::for_all<ExecSpace>(
+              0,
+              nzones,
+              AXOM_LAMBDA(axom::IndexType zoneIndex) {
+                for(DataType i = 0; i < sizesView[zoneIndex]; i++)
+                  zonesView[offsetsView[zoneIndex] + i] = zoneIndex;
+              });
+          });
+
+        views::IndexNode_to_ArrayView_same(
+          n_connectivity,
+          n_zones,
+          n_sizes,
+          n_offsets,
+          [&](auto connectivityView, auto zonesView, auto sizesView, auto offsetsView) {
+            // Make the relation, outputting into the zonesView and offsetsView.
+            using ViewType = decltype(connectivityView);
+            details::FillZonesAndOffsets<ExecSpace, ViewType>::execute(
+              connectivityView,
+              zonesView,
+              offsetsView);
+
+            // Compute sizes from offsets.
+            axom::for_all<ExecSpace>(
+              offsetsView.size(),
+              AXOM_LAMBDA(auto i) {
+                sizesView[i] = (i < offsetsView.size() - 1)
+                  ? (offsetsView[i + 1] - offsetsView[i])
+                  : (connSize - offsetsView[i]);
+              });
+          });
+      }
+      else
+      {
+        // Shapes are all the same size.
+        const auto nodesPerShape = shape.indices;
+
+        // Allocate Conduit arrays on the device in a data type that matches the connectivity.
+        n_zones.set(conduit::DataType(intTypeId, connSize));
+        n_sizes.set(conduit::DataType(intTypeId, nnodes));
+        n_offsets.set(conduit::DataType(intTypeId, nnodes));
+
+        views::IndexNode_to_ArrayView_same(
+          n_connectivity,
+          n_zones,
+          n_sizes,
+          n_offsets,
+          [&](auto connectivityView, auto zonesView, auto sizesView, auto offsetsView) {
+            // Make zones for each node
+            axom::for_all<ExecSpace>(
+              0,
+              connSize,
+              AXOM_LAMBDA(axom::IndexType index) {
+                zonesView[index] = index / nodesPerShape;
+              });
+            // Make the relation, outputting into the zonesView and offsetsView.
+            using ViewType = decltype(connectivityView);
+            details::FillZonesAndOffsets<ExecSpace, ViewType>::execute(
+              connectivityView,
+              zonesView,
+              offsetsView);
+
+            // Compute sizes from offsets.
+            axom::for_all<ExecSpace>(
+              offsetsView.size(),
+              AXOM_LAMBDA(auto i) {
+                sizesView[i] = (i < offsetsView.size() - 1)
+                  ? (offsetsView[i + 1] - offsetsView[i])
+                  : (connSize - offsetsView[i]);
+              });
+          });
+      }
     }
     else
     {
-      // Shapes are all the same size.
-      const auto nodesPerShape = shape.indices;
+      // These are all structured topos of some sort. Make an unstructured representation and recurse.
 
-      // Allocate Conduit arrays on the device in a data type that matches the connectivity.
-      n_zones.set(conduit::DataType(intTypeId, connSize));
-      n_sizes.set(conduit::DataType(intTypeId, nnodes));
-      n_offsets.set(conduit::DataType(intTypeId, nnodes));
+      conduit::Node mesh;
+      axom::mir::utilities::blueprint::to_unstructured<ExecSpace>(topo,
+                                                                  coordset,
+                                                                  "newtopo",
+                                                                  mesh);
 
-      views::IndexNode_to_ArrayView_same(
-        n_connectivity,
-        n_zones,
-        n_sizes,
-        n_offsets,
-        [&](auto connectivityView, auto zonesView, auto sizesView, auto offsetsView) {
-          // Make zones for each node
-          axom::for_all<ExecSpace>(
-            0,
-            connSize,
-            AXOM_LAMBDA(axom::IndexType index) {
-              zonesView[index] = index / nodesPerShape;
-            });
-          // Make the relation, outputting into the zonesView and offsetsView.
-          using ViewType = decltype(connectivityView);
-          details::FillZonesAndOffsets<ExecSpace, ViewType>::execute(connectivityView,
-                                                                     zonesView,
-                                                                     offsetsView);
-
-          // Compute sizes from offsets.
-          axom::for_all<ExecSpace>(
-            offsetsView.size(),
-            AXOM_LAMBDA(auto i) {
-              sizesView[i] = (i < offsetsView.size() - 1)
-                ? (offsetsView[i + 1] - offsetsView[i])
-                : (connSize - offsetsView[i]);
-            });
-        });
+      // Recurse using the unstructured mesh.
+      execute(mesh.fetch_existing("topologies/newtopo"), coordset, relation);
     }
   }
-  else
-  {
-    // These are all structured topos of some sort. Make an unstructured representation and recurse.
-
-    conduit::Node mesh;
-    axom::mir::utilities::blueprint::to_unstructured<ExecSpace>(topo,
-                                                                coordset,
-                                                                "newtopo",
-                                                                mesh);
-
-    // Recurse using the unstructured mesh.
-    execute(mesh.fetch_existing("topologies/newtopo"), coordset, relation);
-  }
-}
 };
 
 }  // end namespace blueprint
