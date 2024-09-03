@@ -943,6 +943,10 @@ void exportScalarFieldToVTK(const std::string& filename,
 
         double scalarValue = scalarField(query);
 
+        // Print the query if scalarValue is nan
+        if( scalarValue != scalarValue )
+          std::cout << std::setprecision(20) << query << std::endl;
+        
         //for(int n = 0; n < patches.size(); ++n)
           //scalarValue +=
             //winding_number(query, patches[n], edge_tol, quad_tol, EPS);
