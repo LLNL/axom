@@ -12,6 +12,7 @@
 #define AXOM_SPIN_OCTREE_BASE__HPP_
 
 #include "axom/config.hpp"
+#include "axom/core/NumericLimits.hpp"
 #include "axom/slic.hpp"
 #include "axom/slam.hpp"
 #include "axom/primal.hpp"
@@ -140,7 +141,7 @@ public:
   using GridVec = primal::Vector<CoordType, DIM>;
 
   using MAX_LEVEL_SIZE =
-    slam::policies::CompileTimeSize<CoordType, std::numeric_limits<CoordType>::digits>;
+    slam::policies::CompileTimeSize<CoordType, axom::numeric_limits<CoordType>::digits>;
   using OctreeLevels = slam::OrderedSet<CoordType, CoordType, MAX_LEVEL_SIZE>;
 
   using OctreeLevelType = OctreeLevel<DIM, BlockDataType>;

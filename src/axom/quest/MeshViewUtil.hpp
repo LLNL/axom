@@ -12,7 +12,9 @@
 #ifdef AXOM_USE_CONDUIT
 
   #include "axom/core.hpp"
+  #include "axom/core/NumericLimits.hpp"
   #include "axom/fmt.hpp"
+  #include "axom/slic.hpp"
   #include "conduit_blueprint.hpp"
   #include "conduit_blueprint_mcarray.hpp"
   #ifdef AXOM_USE_MPI
@@ -21,7 +23,6 @@
   #endif
 
   #include <memory>
-  #include <limits>
   #include <cstdlib>
   #include <cmath>
   #include <vector>
@@ -33,7 +34,7 @@ namespace quest
 namespace internal
 {
 template <typename T, int DIM>
-inline axom::StackArray<T, DIM> makeStackArray(T v = std::numeric_limits<T>::max())
+inline axom::StackArray<T, DIM> makeStackArray(T v = axom::numeric_limits<T>::max())
 {
   axom::StackArray<T, DIM> rval;
   for(int d = 0; d < DIM; ++d)
@@ -605,14 +606,7 @@ public:
       }
     }
 
-    MdIndices offsets = conduitIndicesToStackArray(fieldNode, "offsets");
-    if(!fieldNode.has_child("offsets"))
-    {
-      for(int d = 0; d < DIM; ++d)
-      {
-        offsets[d] = 0;
-      }
-    }
+    MdIndices offsets = conduitIndicesToStackArray(fieldNode, "offsets", 0);
 
     MdIndices loPads, hiPads, paddedShape, strideOrder;
     axom::quest::internal::stridesAndOffsetsToShapes(realShape,
@@ -629,7 +623,6 @@ public:
 
     if(withGhosts == false)
     {
-      MdIndices offsets = conduitIndicesToStackArray(fieldNode, "offsets", 0);
       auto rval1 = rval;
       rval = rval1.subspan(offsets, realShape);
     }
@@ -818,7 +811,7 @@ private:
   MdIndices conduitIndicesToStackArray(
     const conduit::Node& node,
     const std::string& path,
-    axom::IndexType defaultVal = std::numeric_limits<axom::IndexType>::max()) const
+    axom::IndexType defaultVal = axom::numeric_limits<axom::IndexType>::max()) const
   {
     if(node.has_path(path))
     {

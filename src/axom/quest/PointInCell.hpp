@@ -8,6 +8,7 @@
 
 #include "axom/config.hpp"
 #include "axom/core/Macros.hpp"
+#include "axom/slic.hpp"
 
 #include "axom/primal/geometry/Point.hpp"
 

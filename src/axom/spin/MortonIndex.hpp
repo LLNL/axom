@@ -20,10 +20,10 @@
 #include "axom/config.hpp"
 #include "axom/core/Types.hpp"
 #include "axom/core/Macros.hpp"  // defines AXOM_STATIC_ASSERT
+#include "axom/core/NumericLimits.hpp"
 #include "axom/primal/geometry/Point.hpp"
 
 #include <type_traits>
-#include <limits>  // for numeric_limits
 
 namespace
 {
@@ -257,10 +257,10 @@ struct Mortonizer<CoordType, MortonIndexType, 2>
     NDIM = 2,
 
     /*! The number of bits in a CoordType  */
-    COORD_BITS = std::numeric_limits<CoordType>::digits,
+    COORD_BITS = axom::numeric_limits<CoordType>::digits,
 
     /*! The number of bits in a MortonIndex  */
-    MORTON_BITS = std::numeric_limits<MortonIndexType>::digits,
+    MORTON_BITS = axom::numeric_limits<MortonIndexType>::digits,
 
     /*! The number of representable Morton bits per dimension */
     MB_PER_DIM = MORTON_BITS / NDIM,
@@ -399,10 +399,10 @@ struct Mortonizer<CoordType, MortonIndexType, 3>
     NDIM = 3,
 
     /*! The number of bits in a CoordType  */
-    COORD_BITS = std::numeric_limits<CoordType>::digits,
+    COORD_BITS = axom::numeric_limits<CoordType>::digits,
 
     /*! The number of bits in a MortonIndex  */
-    MORTON_BITS = std::numeric_limits<MortonIndexType>::digits,
+    MORTON_BITS = axom::numeric_limits<MortonIndexType>::digits,
 
     /*! The number of representable morton bits per dimension */
     MB_PER_DIM = MORTON_BITS / NDIM,

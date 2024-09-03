@@ -7,6 +7,7 @@
 
 #include "axom/config.hpp"
 #include "axom/core/Types.hpp"
+#include "axom/core/NumericLimits.hpp"
 #include "axom/core/utilities/Utilities.hpp"
 #include "axom/core/utilities/BitUtilities.hpp"
 
@@ -22,7 +23,7 @@ T random_int()
 {
   static_assert(std::is_integral<T>::value, "T must be an integral type");
 
-  constexpr T max_int = std::numeric_limits<T>::max();
+  constexpr T max_int = axom::numeric_limits<T>::max();
   constexpr double max_d = static_cast<double>(max_int);
 
   const auto val = axom::utilities::random_real(0., max_d);

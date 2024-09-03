@@ -625,13 +625,34 @@ public:
    * \param [in] value the value to be added to the back.
    *
    * \note Reallocation is done if the new size will exceed the capacity.
-   * \note If used in a device kernel, the number of push_backs must not exceed
-   *  the capacity, since device-side reallocations aren't supported.
-   * \note Array must be allocated in unified memory if calling on the device.
-   * 
+   *
    * \pre DIM == 1
    */
-  AXOM_HOST_DEVICE void push_back(const T& value);
+  void push_back(const T& value);
+
+  /*!
+   * \brief Push a value to the back of the array.
+   *
+   * \param [in] value the value to move to the back.
+   *
+   * \note Reallocation is done if the new size will exceed the capacity.
+   *
+   * \pre DIM == 1
+   */
+  void push_back(T&& value);
+
+  /*!
+   * \brief Inserts new element at the end of the Array.
+   *
+   * \param [in] args the arguments to forward to constructor of the element.
+   *
+   * \note Reallocation is done if the new size will exceed the capacity.
+   * \note The size increases by 1.
+   *
+   * \pre DIM == 1
+   */
+  template <typename... Args>
+  void emplace_back(Args&&... args);
 
   /*!
    * \brief Push a value to the back of the array.
@@ -642,10 +663,13 @@ public:
    * \note If used in a device kernel, the number of push_backs must not exceed
    *  the capacity, since device-side reallocations aren't supported.
    * \note Array must be allocated in unified memory if calling on the device.
-   * 
+   *
    * \pre DIM == 1
    */
-  AXOM_HOST_DEVICE void push_back(T&& value);
+  /// @{
+  AXOM_HOST_DEVICE void push_back_device(const T& value);
+  AXOM_HOST_DEVICE void push_back_device(T&& value);
+  /// @}
 
   /*!
    * \brief Inserts new element at the end of the Array.
@@ -657,11 +681,11 @@ public:
    * \note If used in a device kernel, the number of push_backs must not exceed
    *  the capacity, since device-side reallocations aren't supported.
    * \note Array must be allocated in unified memory if calling on the device.
-   * 
+   *
    * \pre DIM == 1
    */
   template <typename... Args>
-  AXOM_HOST_DEVICE void emplace_back(Args&&... args);
+  AXOM_HOST_DEVICE void emplace_back_device(Args&&... args);
 
   /// @}
 
@@ -1425,7 +1449,7 @@ inline typename Array<T, DIM, SPACE>::ArrayIterator Array<T, DIM, SPACE>::emplac
 
 //------------------------------------------------------------------------------
 template <typename T, int DIM, MemorySpace SPACE>
-AXOM_HOST_DEVICE inline void Array<T, DIM, SPACE>::push_back(const T& value)
+inline void Array<T, DIM, SPACE>::push_back(const T& value)
 {
   static_assert(DIM == 1, "push_back is only supported for 1D arrays");
   emplace_back(value);
@@ -1433,7 +1457,7 @@ AXOM_HOST_DEVICE inline void Array<T, DIM, SPACE>::push_back(const T& value)
 
 //------------------------------------------------------------------------------
 template <typename T, int DIM, MemorySpace SPACE>
-AXOM_HOST_DEVICE inline void Array<T, DIM, SPACE>::push_back(T&& value)
+inline void Array<T, DIM, SPACE>::push_back(T&& value)
 {
   static_assert(DIM == 1, "push_back is only supported for 1D arrays");
   emplace_back(std::move(value));
@@ -1442,8 +1466,33 @@ AXOM_HOST_DEVICE inline void Array<T, DIM, SPACE>::push_back(T&& value)
 //------------------------------------------------------------------------------
 AXOM_SUPPRESS_HD_WARN
 template <typename T, int DIM, MemorySpace SPACE>
+AXOM_HOST_DEVICE inline void Array<T, DIM, SPACE>::push_back_device(const T& value)
+{
+  static_assert(DIM == 1, "push_back_device is only supported for 1D arrays");
+  emplace_back_device(value);
+}
+
+//------------------------------------------------------------------------------
+template <typename T, int DIM, MemorySpace SPACE>
+AXOM_HOST_DEVICE inline void Array<T, DIM, SPACE>::push_back_device(T&& value)
+{
+  static_assert(DIM == 1, "push_back_device is only supported for 1D arrays");
+  emplace_back_device(std::move(value));
+}
+
+//------------------------------------------------------------------------------
+template <typename T, int DIM, MemorySpace SPACE>
 template <typename... Args>
-AXOM_HOST_DEVICE inline void Array<T, DIM, SPACE>::emplace_back(Args&&... args)
+inline void Array<T, DIM, SPACE>::emplace_back(Args&&... args)
+{
+  static_assert(DIM == 1, "emplace_back is only supported for 1D arrays");
+  emplace(size(), std::forward<Args>(args)...);
+}
+
+//------------------------------------------------------------------------------
+template <typename T, int DIM, MemorySpace SPACE>
+template <typename... Args>
+AXOM_HOST_DEVICE inline void Array<T, DIM, SPACE>::emplace_back_device(Args&&... args)
 {
   static_assert(DIM == 1, "emplace_back is only supported for 1D arrays");
 #ifdef AXOM_DEVICE_CODE
@@ -1685,7 +1734,12 @@ template <typename T, int DIM, MemorySpace SPACE>
 inline void Array<T, DIM, SPACE>::dynamicRealloc(IndexType new_num_elements)
 {
   assert(m_resize_ratio >= 1.0);
-  IndexType new_capacity = new_num_elements * m_resize_ratio + 0.5;
+
+  // Using resize strategy from LLVM libc++ (vector::__recommend()):
+  //   new_capacity = max(capacity() * resize_ratio, new_num_elements)
+  IndexType new_capacity =
+    axom::utilities::max<IndexType>(this->capacity() * m_resize_ratio + 0.5,
+                                    new_num_elements);
   const IndexType block_size = this->blockSize();
   const IndexType remainder = new_capacity % block_size;
   if(remainder != 0)

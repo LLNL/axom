@@ -5,6 +5,8 @@
 
 #include "axom/config.hpp"
 
+#include "axom/core/NumericLimits.hpp"
+
 #include "axom/slic.hpp"
 
 #include "axom/quest/readers/PProEReader.hpp"
@@ -106,13 +108,13 @@ TEST(quest_pro_e_reader_parallel, read_file)
   {
     EXPECT_NEAR(x[inode],
                 x_expected[inode],
-                std::numeric_limits<double>::epsilon());
+                axom::numeric_limits<double>::epsilon());
     EXPECT_NEAR(y[inode],
                 y_expected[inode],
-                std::numeric_limits<double>::epsilon());
+                axom::numeric_limits<double>::epsilon());
     EXPECT_NEAR(z[inode],
                 z_expected[inode],
-                std::numeric_limits<double>::epsilon());
+                axom::numeric_limits<double>::epsilon());
   }  // END for all nodes
 
   // // STEP 4: remove temporary Pro/E file
@@ -173,13 +175,13 @@ TEST(quest_pro_e_reader_parallel, read_file_bbox)
   {
     EXPECT_NEAR(x[inode],
                 x_expected[inode],
-                std::numeric_limits<double>::epsilon());
+                axom::numeric_limits<double>::epsilon());
     EXPECT_NEAR(y[inode],
                 y_expected[inode],
-                std::numeric_limits<double>::epsilon());
+                axom::numeric_limits<double>::epsilon());
     EXPECT_NEAR(z[inode],
                 z_expected[inode],
-                std::numeric_limits<double>::epsilon());
+                axom::numeric_limits<double>::epsilon());
   }  // END for all nodes
 
   // // STEP 4: remove temporary Pro/E file
@@ -240,13 +242,13 @@ TEST(quest_pro_e_reader_parallel, read_file_bbox_incl)
   {
     EXPECT_NEAR(x[inode],
                 x_expected[inode],
-                std::numeric_limits<double>::epsilon());
+                axom::numeric_limits<double>::epsilon());
     EXPECT_NEAR(y[inode],
                 y_expected[inode],
-                std::numeric_limits<double>::epsilon());
+                axom::numeric_limits<double>::epsilon());
     EXPECT_NEAR(z[inode],
                 z_expected[inode],
-                std::numeric_limits<double>::epsilon());
+                axom::numeric_limits<double>::epsilon());
   }  // END for all nodes
 
   // // STEP 4: remove temporary Pro/E file

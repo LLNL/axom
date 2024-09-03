@@ -1828,6 +1828,30 @@ TEST(sidre_view, clear_view)
 
 //------------------------------------------------------------------------------
 
+TEST(sidre_view, deep_copy_shape)
+{
+  DataStore* ds = new DataStore();
+  Group* root = ds->getRoot();
+  Group* groupA = root->createGroup("groupA");
+  Group* groupB = root->createGroup("groupB");
+
+  {
+    const IndexType shapeA[3] = {3, 2, 5};
+    View* viewA = groupA->createViewWithShape("array3d", INT_ID, 3, shapeA);
+    View* viewB = groupB->deepCopyView(viewA);
+    IndexType shapeB[3] = {-1, -1, -1};
+    viewB->getShape(3, shapeB);
+    EXPECT_EQ(viewB->getNumDimensions(), 3);
+    EXPECT_EQ(shapeB[0], shapeA[0]);
+    EXPECT_EQ(shapeB[1], shapeA[1]);
+    EXPECT_EQ(shapeB[2], shapeA[2]);
+  }
+
+  delete ds;
+}
+
+//------------------------------------------------------------------------------
+
 #ifdef AXOM_USE_UMPIRE
 
 class UmpireTest : public ::testing::TestWithParam<int>

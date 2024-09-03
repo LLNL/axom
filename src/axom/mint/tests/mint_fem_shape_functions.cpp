@@ -5,6 +5,7 @@
 
 #include "gtest/gtest.h"
 
+#include "axom/core/NumericLimits.hpp"
 #include "axom/mint/fem/shape_functions/Lagrange.hpp"
 #include "axom/mint/fem/shape_functions/ShapeFunction.hpp"
 #include "axom/mint/fem/FEBasis.hpp"
@@ -12,9 +13,6 @@
 #include "axom/mint/mesh/CellTypes.hpp"
 
 #include "axom/slic.hpp"
-
-// C/C++ includes
-#include <limits>
 
 using namespace axom;
 using mint::Lagrange;
@@ -32,7 +30,7 @@ namespace
  * \tparam CELLTYPE the corresponding cell type, e.g., MINT_QUAD
  */
 template <int BasisType, mint::CellType CELLTYPE>
-void reference_element(double TOL = std::numeric_limits<double>::epsilon())
+void reference_element(double TOL = axom::numeric_limits<double>::epsilon())
 {
   using FEMType = typename mint::FEBasis<BasisType, CELLTYPE>;
   using ShapeFunctionType = typename FEMType::ShapeFunctionType;

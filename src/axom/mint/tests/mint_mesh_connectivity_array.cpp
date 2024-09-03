@@ -41,8 +41,9 @@ IndexType calc_ID_capacity(const ConnectivityArray<NO_INDIRECTION>& connec,
   if(new_n_IDs > connec.getIDCapacity())
   {
     IndexType stride = connec.getNumberOfValuesForID();
-    IndexType newCapacity =
-      static_cast<IndexType>(new_n_IDs * stride * connec.getResizeRatio() + 0.5);
+    IndexType newCapacity = axom::utilities::max<IndexType>(
+      connec.getValueCapacity() * connec.getResizeRatio() + 0.5,
+      new_n_IDs * stride);
     IndexType remainder = newCapacity % stride;
     if(remainder != 0)
     {
@@ -67,7 +68,9 @@ IndexType calc_ID_capacity(const ConnectivityArray<TYPED_INDIRECTION>& connec,
   IndexType new_n_IDs = connec.getNumberOfIDs() + increase;
   if(new_n_IDs > connec.getIDCapacity())
   {
-    return static_cast<IndexType>(new_n_IDs * connec.getResizeRatio() + 0.5);
+    return axom::utilities::max<IndexType>(
+      connec.getIDCapacity() * connec.getResizeRatio() + 0.5,
+      new_n_IDs);
   }
 
   return connec.getIDCapacity();
@@ -101,7 +104,9 @@ IndexType calc_value_capacity(const ConnectivityArray<TYPE>& connec,
   IndexType new_n_values = connec.getNumberOfValues() + increase;
   if(new_n_values > connec.getValueCapacity())
   {
-    return static_cast<IndexType>(new_n_values * connec.getResizeRatio() + 0.5);
+    return axom::utilities::max<IndexType>(
+      connec.getValueCapacity() * connec.getResizeRatio() + 0.5,
+      new_n_values);
   }
 
   return connec.getValueCapacity();

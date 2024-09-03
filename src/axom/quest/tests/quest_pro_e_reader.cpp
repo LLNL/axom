@@ -4,6 +4,7 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 
 #include "axom/core/utilities/FileUtilities.hpp"
+#include "axom/core/NumericLimits.hpp"
 #include "axom/mint/utils/vtk_utils.hpp"  // for write_vtk
 #include "axom/quest/readers/ProEReader.hpp"
 #include "axom/slic.hpp"
@@ -132,13 +133,13 @@ TEST(quest_pro_e_reader, read_pro_e)
   {
     EXPECT_NEAR(x[inode],
                 x_expected[inode],
-                std::numeric_limits<double>::epsilon());
+                axom::numeric_limits<double>::epsilon());
     EXPECT_NEAR(y[inode],
                 y_expected[inode],
-                std::numeric_limits<double>::epsilon());
+                axom::numeric_limits<double>::epsilon());
     EXPECT_NEAR(z[inode],
                 z_expected[inode],
-                std::numeric_limits<double>::epsilon());
+                axom::numeric_limits<double>::epsilon());
   }  // END for all nodes
 
   // STEP 4: remove temporary Pro/E file
@@ -186,13 +187,13 @@ TEST(quest_pro_e_reader, read_pro_e_invbbox)
   {
     EXPECT_NEAR(x[inode],
                 x_expected[inode],
-                std::numeric_limits<double>::epsilon());
+                axom::numeric_limits<double>::epsilon());
     EXPECT_NEAR(y[inode],
                 y_expected[inode],
-                std::numeric_limits<double>::epsilon());
+                axom::numeric_limits<double>::epsilon());
     EXPECT_NEAR(z[inode],
                 z_expected[inode],
-                std::numeric_limits<double>::epsilon());
+                axom::numeric_limits<double>::epsilon());
   }  // END for all nodes
 
   // STEP 4: remove temporary Pro/E file
@@ -242,13 +243,13 @@ TEST(quest_pro_e_reader, read_pro_e_bbox_all)
   {
     EXPECT_NEAR(x[inode],
                 x_expected[inode],
-                std::numeric_limits<double>::epsilon());
+                axom::numeric_limits<double>::epsilon());
     EXPECT_NEAR(y[inode],
                 y_expected[inode],
-                std::numeric_limits<double>::epsilon());
+                axom::numeric_limits<double>::epsilon());
     EXPECT_NEAR(z[inode],
                 z_expected[inode],
-                std::numeric_limits<double>::epsilon());
+                axom::numeric_limits<double>::epsilon());
   }  // END for all nodes
 
   // STEP 4: remove temporary Pro/E file
@@ -299,13 +300,13 @@ TEST(quest_pro_e_reader, read_pro_e_bbox_some)
   {
     EXPECT_NEAR(x[inode],
                 x_expected[inode],
-                std::numeric_limits<double>::epsilon());
+                axom::numeric_limits<double>::epsilon());
     EXPECT_NEAR(y[inode],
                 y_expected[inode],
-                std::numeric_limits<double>::epsilon());
+                axom::numeric_limits<double>::epsilon());
     EXPECT_NEAR(z[inode],
                 z_expected[inode],
-                std::numeric_limits<double>::epsilon());
+                axom::numeric_limits<double>::epsilon());
   }  // END for all nodes
 
   // STEP 4: remove temporary Pro/E file
@@ -356,13 +357,13 @@ TEST(quest_pro_e_reader, read_pro_e_bbox_some_incl)
   {
     EXPECT_NEAR(x[inode],
                 x_expected[inode],
-                std::numeric_limits<double>::epsilon());
+                axom::numeric_limits<double>::epsilon());
     EXPECT_NEAR(y[inode],
                 y_expected[inode],
-                std::numeric_limits<double>::epsilon());
+                axom::numeric_limits<double>::epsilon());
     EXPECT_NEAR(z[inode],
                 z_expected[inode],
-                std::numeric_limits<double>::epsilon());
+                axom::numeric_limits<double>::epsilon());
   }  // END for all nodes
 
   // STEP 4: remove temporary Pro/E file
@@ -415,13 +416,13 @@ TEST(quest_pro_e_reader, read_pro_e_external)
   {
     EXPECT_NEAR(x[inode],
                 x_expected[inode],
-                std::numeric_limits<double>::epsilon());
+                axom::numeric_limits<double>::epsilon());
     EXPECT_NEAR(y[inode],
                 y_expected[inode],
-                std::numeric_limits<double>::epsilon());
+                axom::numeric_limits<double>::epsilon());
     EXPECT_NEAR(z[inode],
                 z_expected[inode],
-                std::numeric_limits<double>::epsilon());
+                axom::numeric_limits<double>::epsilon());
   }  // END for all nodes
 
   // STEP 4: remove temporary Pro/E file
@@ -434,7 +435,7 @@ TEST(quest_pro_e_reader, cup_pro_e)
 {
   constexpr int NUM_NODES = 171;
   constexpr int NUM_TETS = 574;
-  constexpr double EPS = std::numeric_limits<double>::epsilon();
+  constexpr double EPS = axom::numeric_limits<double>::epsilon();
 
   // STEP 0: Get Pro/E cup example file for testing
   namespace fs = axom::utilities::filesystem;

@@ -10,6 +10,7 @@
 #include "axom/config.hpp"
 #include "axom/core.hpp"
 #include "axom/primal.hpp"
+#include "axom/slic.hpp"
 #include "axom/spin.hpp"
 #include "axom/mint.hpp"
 

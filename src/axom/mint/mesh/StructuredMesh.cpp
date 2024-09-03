@@ -7,7 +7,7 @@
 #include "axom/mint/mesh/blueprint.hpp"
 
 #include <cstring> /* for memcpy() */
-#include <limits>  /* for std::numeric_limits< IndexType >::max */
+#include "axom/core/NumericLimits.hpp"
 
 namespace axom
 {
@@ -169,9 +169,9 @@ void StructuredMesh::structuredInit()
 
   /* Initialize the node meta data. */
   m_node_jp = (m_ndims > 1) ? getNodeResolution(0)
-                            : std::numeric_limits<IndexType>::max();
+                            : axom::numeric_limits<IndexType>::max();
   m_node_kp = (m_ndims > 2) ? m_node_jp * getNodeResolution(1)
-                            : std::numeric_limits<IndexType>::max();
+                            : axom::numeric_limits<IndexType>::max();
 
   /* Initialize the cell meta data */
   for(int dim = 0; dim < m_ndims; ++dim)
@@ -180,9 +180,9 @@ void StructuredMesh::structuredInit()
   }
 
   m_cell_jp = (m_ndims > 1) ? getCellResolution(0)
-                            : std::numeric_limits<IndexType>::max();
+                            : axom::numeric_limits<IndexType>::max();
   m_cell_kp = (m_ndims > 2) ? m_cell_jp * getCellResolution(1)
-                            : std::numeric_limits<IndexType>::max();
+                            : axom::numeric_limits<IndexType>::max();
 
   /* Build the cell to node offsets. */
   m_cell_node_offsets[0] = 0;

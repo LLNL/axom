@@ -47,5 +47,7 @@ TEST(numerics_floating_point_limits, consistency_with_standard_numeric_limits)
 {
   check_type_limits<float>("float");
   check_type_limits<double>("double");
+#if !defined(AXOM_DEVICE_CODE)
   check_type_limits<long double>("long double");
+#endif
 }

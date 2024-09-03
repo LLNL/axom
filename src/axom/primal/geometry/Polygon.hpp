@@ -193,8 +193,25 @@ public:
    * \sa axom::StaticArray::push_back() for behavior when array type is static
    *     and the list of vertices is full.
    */
-  AXOM_HOST_DEVICE
-  void addVertex(const PointType& pt) { m_vertices.push_back(pt); }
+  /// @{
+  template <PolygonArray P_ARRAY_TYPE = ARRAY_TYPE,
+            std::enable_if_t<P_ARRAY_TYPE == PolygonArray::Static, int> = 0>
+  AXOM_HOST_DEVICE void addVertex(const PointType& pt)
+  {
+    m_vertices.push_back(pt);
+  }
+
+  template <PolygonArray P_ARRAY_TYPE = ARRAY_TYPE,
+            std::enable_if_t<P_ARRAY_TYPE == PolygonArray::Dynamic, int> = 0>
+  AXOM_HOST_DEVICE void addVertex(const PointType& pt)
+  {
+#ifdef AXOM_DEVICE_CODE
+    m_vertices.push_back_device(pt);
+#else
+    m_vertices.push_back(pt);
+#endif
+  }
+  /// @}
 
   /// Clears the list of vertices (dynamic array specialization).
   /// Specializations are necessary to remove __host__ __device__ warning for

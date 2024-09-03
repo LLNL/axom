@@ -5,13 +5,14 @@
 
 #include "gtest/gtest.h"
 
+#include "axom/core/NumericLimits.hpp"
+
 #include "axom/spin/MortonIndex.hpp"
 
 #include "axom/primal/geometry/Point.hpp"
 #include "axom/slic.hpp"
 
 #include <cstdlib>
-#include <limits>
 
 // Uncomment the line below for true randomized points
 #ifndef MORTON_TESTER_SHOULD_SEED
@@ -36,7 +37,7 @@ CoordType randomInt(CoordType beg, CoordType end)
 
   if(range == 0)
   {
-    range = std::numeric_limits<CoordType>::max();
+    range = axom::numeric_limits<CoordType>::max();
   }
 
   return (std::rand() % range) + beg;
@@ -65,7 +66,7 @@ TEST(spin_morton, test_max_set_bit)
   axom::spin::Mortonizer<CoordType, MortonIndexType, 2> morton2;
   EXPECT_EQ(morton2.maxSetBit(0), 0);
 
-  int maxBit = std::numeric_limits<CoordType>::digits;
+  int maxBit = axom::numeric_limits<CoordType>::digits;
   for(int i = 0; i <= maxBit; ++i)
   {
     int val = 1 << i;
@@ -135,7 +136,7 @@ void testMortonizer()
   int maxBits =
     axom::spin::Mortonizer<CoordType, MortonIndexType, DIM>::maxBitsPerCoord();
   SLIC_INFO(
-    "\tMax bits per dimension: " << std::numeric_limits<CoordType>::digits);
+    "\tMax bits per dimension: " << axom::numeric_limits<CoordType>::digits);
   SLIC_INFO("\tMax unique bits per dimension: " << maxBits);
 
   int maxIter = std::min(1 << (maxBits - 1), MAX_ITER);

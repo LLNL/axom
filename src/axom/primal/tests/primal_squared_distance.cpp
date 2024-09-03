@@ -6,6 +6,7 @@
 #include "gtest/gtest.h"
 
 #include "axom/config.hpp"
+#include "axom/core/NumericLimits.hpp"
 #include "axom/slic.hpp"
 #include "axom/primal.hpp"
 
@@ -201,7 +202,7 @@ TEST(primal_squared_distance, point_to_bbox)
           EXPECT_NEAR(sqsum, primal::squared_distance(pt, cube), EPS);
         }
 
-        EXPECT_EQ(std::numeric_limits<double>::max(),
+        EXPECT_EQ(axom::numeric_limits<double>::max(),
                   squared_distance(pt, empty));
       }
     }
@@ -233,9 +234,9 @@ TEST(primal_squared_distance, bbox_to_bbox)
 
   // check that squared distances for empty/invalid boxes is max double
   const QBBox empty;
-  EXPECT_EQ(std::numeric_limits<double>::max(), squared_distance(middle, empty));
-  EXPECT_EQ(std::numeric_limits<double>::max(), squared_distance(empty, middle));
-  EXPECT_EQ(std::numeric_limits<double>::max(), squared_distance(empty, empty));
+  EXPECT_EQ(axom::numeric_limits<double>::max(), squared_distance(middle, empty));
+  EXPECT_EQ(axom::numeric_limits<double>::max(), squared_distance(empty, middle));
+  EXPECT_EQ(axom::numeric_limits<double>::max(), squared_distance(empty, empty));
 }
 
 //----------------------------------------------------------------------

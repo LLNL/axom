@@ -4,10 +4,10 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 
 #include "axom/config.hpp"
-#include "axom/slic.hpp"
 #include "axom/core/memory_management.hpp"
 #include "axom/core/execution/execution_space.hpp"
 #include "axom/core/execution/runtime_policy.hpp"
+#include "axom/core/NumericLimits.hpp"
 #include "axom/quest/DistributedClosestPoint.hpp"
 #include "axom/quest/detail/DistributedClosestPointImpl.hpp"
 
@@ -17,7 +17,6 @@
 #include "conduit_blueprint_mpi.hpp"
 #include "conduit_relay_mpi.hpp"
 
-#include <limits>
 #include <cstdlib>
 
 #ifndef AXOM_USE_MPI
@@ -33,7 +32,7 @@ DistributedClosestPoint::DistributedClosestPoint()
   : m_mpiComm(MPI_COMM_WORLD)
   , m_mpiCommIsPrivate(false)
   , m_allocatorID(axom::INVALID_ALLOCATOR_ID)
-  , m_sqDistanceThreshold(std::numeric_limits<double>::max())
+  , m_sqDistanceThreshold(axom::numeric_limits<double>::max())
 {
   setDefaultAllocatorID();
   setMpiCommunicator(MPI_COMM_WORLD);

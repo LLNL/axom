@@ -13,6 +13,7 @@
 #define AXOM_QUEST_INOUT_OCTREE__HPP_
 
 #include "axom/core.hpp"
+#include "axom/core/NumericLimits.hpp"
 #include "axom/slic.hpp"
 #include "axom/slam.hpp"
 #include "axom/primal.hpp"
@@ -28,7 +29,6 @@
 
 #include <vector>
 #include <iterator>
-#include <limits>
 #include <sstream>
 #include <unordered_map>
 
@@ -1203,7 +1203,7 @@ typename std::enable_if<TDIM == 3, bool>::type InOutOctree<DIM>::withinGrayBlock
     /// intersection. Note: We have to check all triangles to ensure that
     /// there is not a closer triangle than tri along this direction.
     CellIndex tIdx = MeshWrapper<DIM>::NO_CELL;
-    double minRayParam = std::numeric_limits<double>::infinity();
+    double minRayParam = axom::numeric_limits<double>::infinity();
     SpaceRay ray(queryPt, SpaceVector(queryPt, triPt));
 
     QUEST_OCTREE_DEBUG_LOG_IF(
@@ -1320,8 +1320,8 @@ typename std::enable_if<TDIM == 2, bool>::type InOutOctree<DIM>::withinGrayBlock
     // Using a ray from query pt to point on this segment
     // Find closest intersection to surface within cell inside this bounding box
     CellIndex tIdx = MeshWrapper<DIM>::NO_CELL;
-    double minRayParam = std::numeric_limits<double>::infinity();
-    double minSegParam = std::numeric_limits<double>::infinity();
+    double minRayParam = axom::numeric_limits<double>::infinity();
+    double minSegParam = axom::numeric_limits<double>::infinity();
     SpaceRay ray(queryPt, SpaceVector(queryPt, segmentPt));
 
     QUEST_OCTREE_DEBUG_LOG_IF(

@@ -8,6 +8,7 @@
 
 #include "axom/config.hpp"
 #include "axom/core/execution/runtime_policy.hpp"
+#include "axom/slic.hpp"
 
 #include "conduit_node.hpp"
 

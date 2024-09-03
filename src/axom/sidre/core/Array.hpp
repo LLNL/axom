@@ -571,7 +571,9 @@ inline void Array<T, DIM>::dynamicRealloc(axom::IndexType new_num_elements)
                 "Resize ratio of " << this->m_resize_ratio
                                    << " doesn't support dynamic resizing");
 
-  IndexType new_capacity = new_num_elements * this->m_resize_ratio + 0.5;
+  IndexType new_capacity = axom::utilities::max<IndexType>(
+    this->capacity() * this->getResizeRatio() + 0.5,
+    new_num_elements);
   const IndexType block_size = this->blockSize();
   const IndexType remainder = new_capacity % block_size;
   if(remainder != 0)

@@ -552,7 +552,7 @@ namespace CLI {
 /// These codes are part of every error in CLI. They can be obtained from e using e.exit_code or as a quick shortcut,
 /// int values from e.get_error_code().
 enum class ExitCodes {
-    Success = 0,
+    CLI11_Success = 0 /* Formerly Success, changed to work around X11 #defining Success */,
     IncorrectConstruction = 100,
     BadNameString,
     OptionAlreadyAdded,
@@ -576,7 +576,7 @@ enum class ExitCodes {
 /// @defgroup error_group Errors
 /// @brief Errors thrown by CLI11
 ///
-/// These are the errors that can be thrown. Some of them, like axom::CLI::Success, are not really errors.
+/// These are the errors that can be thrown. Some of them, like axom::CLI::CLI11_Success, are not really errors.
 /// @{
 
 /// All errors derive from this one
@@ -667,22 +667,22 @@ class ParseError : public Error {
 // Not really "errors"
 
 /// This is a successful completion on parsing, supposed to exit
-class Success : public ParseError {
-    CLI11_ERROR_DEF(ParseError, Success)
-    Success() : Success("Successfully completed, should be caught and quit", ExitCodes::Success) {}
+class CLI11_Success : public ParseError {
+    CLI11_ERROR_DEF(ParseError, CLI11_Success)
+    CLI11_Success() : CLI11_Success("Successfully completed, should be caught and quit", ExitCodes::CLI11_Success) {}
 };
 
 /// -h or --help on command line
 class CallForHelp : public ParseError {
     CLI11_ERROR_DEF(ParseError, CallForHelp)
-    CallForHelp() : CallForHelp("This should be caught in your main function, see examples", ExitCodes::Success) {}
+    CallForHelp() : CallForHelp("This should be caught in your main function, see examples", ExitCodes::CLI11_Success) {}
 };
 
 /// Usually something like --help-all on command line
 class CallForAllHelp : public ParseError {
     CLI11_ERROR_DEF(ParseError, CallForAllHelp)
     CallForAllHelp()
-        : CallForAllHelp("This should be caught in your main function, see examples", ExitCodes::Success) {}
+        : CallForAllHelp("This should be caught in your main function, see examples", ExitCodes::CLI11_Success) {}
 };
 
 /// Does not output a diagnostic in CLI11_PARSE, but allows to return from main() with a specific error code.
@@ -5933,7 +5933,7 @@ class App {
             return e.get_exit_code();
         }
 
-        if(e.get_exit_code() != static_cast<int>(ExitCodes::Success)) {
+        if(e.get_exit_code() != static_cast<int>(ExitCodes::CLI11_Success)) {
             if(failure_message_)
                 err << failure_message_(this, e) << std::flush;
         }

@@ -11,6 +11,7 @@
 #include "axom/core/Macros.hpp"
 #include "axom/core/Types.hpp"
 #include "axom/core/utilities/Utilities.hpp"
+#include "axom/slic.hpp"
 
 // primal includes
 #include "axom/spin/BVH.hpp"
