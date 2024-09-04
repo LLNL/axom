@@ -49,6 +49,33 @@ if (RAJA_FOUND AND UMPIRE_FOUND)
         DEPENDS_ON  ${quest_example_depends}
         FOLDER      axom/quest/examples
         )
+
+    # Add unit tests
+    if(AXOM_ENABLE_TESTS AND AXOM_DATA_DIR)
+
+        # Run the quest_bvh_two_pass example with different raja policies
+
+        set(input_file "${AXOM_DATA_DIR}/quest/unit_cube.stl")
+
+        set (_policies "seq")
+        blt_list_append(TO _policies ELEMENTS "omp" IF AXOM_ENABLE_OPENMP)
+        blt_list_append(TO _policies ELEMENTS "cuda" IF AXOM_ENABLE_CUDA)
+        blt_list_append(TO _policies ELEMENTS "hip" IF AXOM_ENABLE_HIP)
+
+        foreach(_policy ${_policies})
+
+            set(_testname "quest_bvh_two_pass_example_${_policy}")
+            axom_add_test(
+              NAME ${_testname}
+              COMMAND quest_bvh_two_pass_ex
+                      --file ${input_file}
+                      --exec_space ${_policy}
+            )
+
+            set_tests_properties(${_testname} PROPERTIES
+                PASS_REGULAR_EXPRESSION  "Found 4 actual collisions")
+        endforeach()
+    endif()
 endif()
 
 # Read ProE example -----------------------------------------------------------
