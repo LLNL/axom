@@ -452,10 +452,10 @@ void copy(conduit::Node &dest, const conduit::Node &src)
  *
  * \return A pair containing the min,max values in the node.
  */
-template <typename ExecSpace>
-std::pair<double, double> minmax(const conduit::Node &n)
+template <typename ExecSpace, typename ReturnType>
+std::pair<ReturnType, ReturnType> minmax(const conduit::Node &n)
 {
-  std::pair<double, double> retval {0., 0.};
+  std::pair<ReturnType, ReturnType> retval;
 
   axom::mir::views::Node_to_ArrayView(n, [&](auto nview) {
     using value_type = typename decltype(nview)::value_type;
@@ -474,7 +474,7 @@ std::pair<double, double> minmax(const conduit::Node &n)
         vmax.max(nview[index]);
       });
 
-    retval = std::pair<double, double> {vmin.get(), vmax.get()};
+    retval = std::pair<ReturnType, ReturnType> {static_cast<ReturnType>(vmin.get()), static_cast<ReturnType>(vmax.get())};
   });
 
   return retval;

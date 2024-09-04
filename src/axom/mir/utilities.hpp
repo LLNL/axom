@@ -508,6 +508,8 @@ struct Unique
   }
 };
 
+//------------------------------------------------------------------------------
+/// Partial specialization for SEQ_EXEC.
 template <typename KeyType>
 struct Unique<axom::SEQ_EXEC, KeyType>
 {
@@ -521,10 +523,7 @@ struct Unique<axom::SEQ_EXEC, KeyType>
     for(; index < n; index++)
     {
       const auto k = keys_orig_view[index];
-      //if(unique.find(k) == unique.end())
-      {
-        unique[k] = index;
-      }
+      unique[k] = index;
     }
     // Allocate the output arrays.
     const axom::IndexType newsize = unique.size();
