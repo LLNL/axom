@@ -113,7 +113,7 @@ if (ENABLE_FORTRAN)
         )
 
         axom_add_test( NAME     sina_fortran_integration_test
-                    COMMAND  ${PYTHON_EXECUTABLE} ${TEST_OUTPUT_DIRECTORY}/test_fortran_integration.py -bd ${PROJECT_BINARY_DIR}
+                    COMMAND  ${Python_EXECUTABLE} ${TEST_OUTPUT_DIRECTORY}/test_fortran_integration.py -bd ${PROJECT_BINARY_DIR}
         )
     endif()
 endif()
