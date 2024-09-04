@@ -69,21 +69,16 @@ void DistributedClosestPoint::setDefaultAllocatorID()
 #ifdef __CUDACC__
   #ifdef AXOM_RUNTIME_POLICY_USE_CUDA
   case RuntimePolicy::cuda:
-
-    // Use unified memory
     defaultAllocatorID =
-      axom::getUmpireResourceAllocatorID(umpire::resource::Unified);
+      axom::execution_space<axom::CUDA_EXEC<256>>::allocatorID();
     break;
   #endif
 #endif
 
 #ifdef AXOM_RUNTIME_POLICY_USE_HIP
   case RuntimePolicy::hip:
-
-    // Use unified memory
     defaultAllocatorID =
-      axom::getUmpireResourceAllocatorID(umpire::resource::Unified);
-
+      axom::execution_space<axom::HIP_EXEC<256>>::allocatorID();
     break;
 #endif
   }
