@@ -58,8 +58,6 @@ set( primal_headers
     operators/split.hpp
     operators/winding_number.hpp
 
-    operators/printers.hpp
-
     operators/detail/clip_impl.hpp
     operators/detail/compute_moments_impl.hpp
     operators/detail/fuzzy_comparators.hpp
