@@ -586,6 +586,68 @@ bool intersect(const BezierCurve<T, 2>& c,
                                       scale);
 }
 
+/*!
+ * \brief Tests if Bezier Patch \a p and ray \a r intersect.
+ * \return status true iff \a p intersects \a r, otherwise false.
+ *
+ * \param [in] p the BezierCurve, parametrized in [0,1) x [0,1)
+ * \param [in] r the Ray, parametrized in [0,inf)
+ * \param [out] up vector of parameter space intersection points for 1st coordinate of \a p
+ * \param [out] vp vector of parameter space intersection points for 2nd coordinate of \a p
+ * \param [out] rp vector of parameter space intersection points for \a r
+ * \param [in] tol tolerance parameter for determining if a patch can
+ * be approximated by a planar segment.
+ * \return True if the patch and line intersect, false otherwise. Intersection
+ * parameters are stored in \a up, \a vp and \a rp
+ *
+ * Finds all intersection points between the patch and the ray.
+ *
+ * \note This function assumes three dimensional patches and rays.
+ *
+ * \note This function assumes that the patches are in general position.
+ * Specifically, we assume that all intersections are at points and that
+ * the patches don't overlap.
+ *
+ * \note This function assumes the all intersections have multiplicity
+ * one, i.e. there are no points at which the patches and their derivatives
+ * both intersect. Thus, the function does not find tangencies.
+ *
+ * \note This function assumes that the patches are half-open, i.e. they
+ * contain their first endpoints, but not their last endpoints. Thus, the
+ * curves do not intersect at \f$ (u, v)==(u, 1) \f$ or at \f$ (u, v)==(1, v)\f$.
+ */
+template <typename T>
+bool intersect(const BezierPatch<T, 3>& p,
+               const Ray<T, 3>& r,
+               std::vector<T>& up,
+               std::vector<T>& vp,
+               std::vector<T>& rp,
+               int& nevals,
+               double tol = 1E-8)
+{
+  const double u_offset = 0.;
+  const double u_scale = 1.;
+
+  const double v_offset = 0.;
+  const double v_scale = 1.;
+
+  // for efficiency, linearity check actually uses a squared tolerance
+  const double sq_tol = tol * tol;
+
+  return detail::intersect_ray_patch(p,
+                                     r,
+                                     up,
+                                     vp,
+                                     rp,
+                                     sq_tol,
+                                     p.getOrder_u(),
+                                     p.getOrder_v(),
+                                     u_offset,
+                                     u_scale,
+                                     v_offset,
+                                     v_scale,
+                                     nevals);
+}
 /// @}
 
 /// \name Plane Intersection Routines
