@@ -164,19 +164,28 @@ private:
             const auto selectedIndex =
               SelectionPolicy::selectedIndex(deviceBlend, bgid);
             const auto start = deviceBlend.m_blendGroupStartView[selectedIndex];
-            const auto end =
-              start + deviceBlend.m_blendGroupSizesView[selectedIndex];
+            const auto nValues = deviceBlend.m_blendGroupSizesView[selectedIndex];
 
-            accum_type blended = 0;
-            for(IndexType i = start; i < end; i++)
+            if(nValues == 1)
             {
-              const auto index = deviceBlend.m_blendIdsView[i];
-              const auto weight = deviceBlend.m_blendCoeffView[i];
+              const auto index = deviceBlend.m_blendIdsView[start];
               const auto transformedIndex = deviceIndexing[index];
-              blended +=
-                static_cast<accum_type>(compView[transformedIndex]) * weight;
+              outView[bgid] = compView[transformedIndex];
             }
-            outView[bgid] = static_cast<value_type>(blended);
+            else
+            {
+              const auto end = start + nValues;
+              accum_type blended = 0;
+              for(IndexType i = start; i < end; i++)
+              {
+                const auto index = deviceBlend.m_blendIdsView[i];
+                const auto weight = deviceBlend.m_blendCoeffView[i];
+                const auto transformedIndex = deviceIndexing[index];
+                blended +=
+                  static_cast<accum_type>(compView[transformedIndex]) * weight;
+              }
+              outView[bgid] = static_cast<value_type>(blended);
+            }
           });
       });
   }

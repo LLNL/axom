@@ -88,6 +88,7 @@ public:
 
     // Iterate over each blend group.
     const BlendData blendDevice(blend);
+    const CoordsetViewType viewDevice(view);
     axom::for_all<ExecSpace>(
       outputSize,
       AXOM_LAMBDA(auto bgid) {
@@ -95,15 +96,25 @@ public:
         const auto selectedIndex =
           SelectionPolicy::selectedIndex(blendDevice, bgid);
         const auto start = blendDevice.m_blendGroupStartView[selectedIndex];
-        const auto end = start + blendDevice.m_blendGroupSizesView[selectedIndex];
+        const auto nValues = blendDevice.m_blendGroupSizesView[selectedIndex];
 
-        // Blend points for this blend group.
         VectorType blended {};
-        for(IndexType i = start; i < end; i++)
+        if(nValues == 1)
         {
-          const auto index = blendDevice.m_blendIdsView[i];
-          const auto weight = blendDevice.m_blendCoeffView[i];
-          blended += (VectorType(view[index]) * static_cast<value_type>(weight));
+          const auto index = blendDevice.m_blendIdsView[start];
+          blended = VectorType(viewDevice[index]);
+        }
+        else
+        {
+          const auto end = start + blendDevice.m_blendGroupSizesView[selectedIndex];
+
+          // Blend points for this blend group.
+          for(IndexType i = start; i < end; i++)
+          {
+            const auto index = blendDevice.m_blendIdsView[i];
+            const auto weight = blendDevice.m_blendCoeffView[i];
+            blended += (VectorType(viewDevice[index]) * static_cast<value_type>(weight));
+          }
         }
 
         // Store the point into the Conduit component arrays.
