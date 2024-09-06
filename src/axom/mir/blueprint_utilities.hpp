@@ -474,7 +474,9 @@ std::pair<ReturnType, ReturnType> minmax(const conduit::Node &n)
         vmax.max(nview[index]);
       });
 
-    retval = std::pair<ReturnType, ReturnType> {static_cast<ReturnType>(vmin.get()), static_cast<ReturnType>(vmax.get())};
+    retval =
+      std::pair<ReturnType, ReturnType> {static_cast<ReturnType>(vmin.get()),
+                                         static_cast<ReturnType>(vmax.get())};
   });
 
   return retval;

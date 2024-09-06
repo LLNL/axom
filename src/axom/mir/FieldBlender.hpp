@@ -33,14 +33,16 @@ namespace blueprint
  */
 struct BlendData
 {
-  axom::ArrayView<IndexType> m_originalIdsView;      // Contains indices of original node ids to be preserved.
+  axom::ArrayView<IndexType>
+    m_originalIdsView;  // Contains indices of original node ids to be preserved.
 
   axom::ArrayView<IndexType> m_selectedIndicesView;  // Contains indices of the selected blend groups.
 
   axom::ArrayView<IndexType> m_blendGroupSizesView;  // The number of ids/weights in each blend group.
-  axom::ArrayView<IndexType> m_blendGroupStartView;  // The starting offset for a blend group in the ids/weights.
-  axom::ArrayView<IndexType> m_blendIdsView;         // Contains ids that make up the blend groups
-  axom::ArrayView<float>     m_blendCoeffView;       // Contains the weights that make up the blend groups.
+  axom::ArrayView<IndexType>
+    m_blendGroupStartView;  // The starting offset for a blend group in the ids/weights.
+  axom::ArrayView<IndexType> m_blendIdsView;  // Contains ids that make up the blend groups
+  axom::ArrayView<float> m_blendCoeffView;  // Contains the weights that make up the blend groups.
 };
 
 /**
@@ -173,9 +175,9 @@ private:
         axom::for_all<ExecSpace>(
           origSize,
           AXOM_LAMBDA(auto index) {
-           const auto srcIndex = deviceBlend.m_originalIdsView[index];
-           outView[index] = compView[srcIndex];
-        });
+            const auto srcIndex = deviceBlend.m_originalIdsView[index];
+            outView[index] = compView[srcIndex];
+          });
 
         // Append blended values to the end of the array.
         axom::for_all<ExecSpace>(

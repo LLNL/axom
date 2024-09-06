@@ -99,7 +99,6 @@ void RecenterField<ExecSpace>::recenterSingleComponent(
     n_sizes,
     n_offsets,
     [&](auto relView, auto sizesView, auto offsetsView) {
-
       // Allocate Conduit data through Axom.
       const auto relSize = sizesView.size();
       utilities::blueprint::ConduitAllocateThroughAxom<ExecSpace> c2a;

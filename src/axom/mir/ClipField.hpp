@@ -36,11 +36,8 @@
 #define AXOM_CLIP_FILTER_DEGENERATES
 
 // Enable code to reduce the number of blend groups by NOT emitting 1-node
-// blend groups and instead using a node lookup field for those. This does
-// seem to have some issues producing the same node id for edge blend groups
-// and original nodes.
-//#define AXOM_REDUCE_BLEND_GROUPS
-//#define AXOM_REDUCE_BLEND_GROUPS_DEBUGGING
+// blend groups and instead using a node lookup field for those.
+#define AXOM_REDUCE_BLEND_GROUPS
 
 namespace axom
 {
@@ -529,7 +526,13 @@ public:
     builder.setBlendGroupSizes(blendGroups.view(), blendGroupsLen.view());
 
     // Compute sizes and offsets
-    computeSizes(clipTableViews, builder, zoneData, nodeData, fragmentData, opts, selectedZones);
+    computeSizes(clipTableViews,
+                 builder,
+                 zoneData,
+                 nodeData,
+                 fragmentData,
+                 opts,
+                 selectedZones);
     computeFragmentSizes(fragmentData, selectedZones);
     computeFragmentOffsets(fragmentData);
 
@@ -623,7 +626,7 @@ public:
 // NOTE TO SELF: This is new code that I'm trying out to remove single-node
 //               blend groups from the selected unique blend groups. It's not
 //               quite working yet.
-#if 0//defined(AXOM_REDUCE_BLEND_GROUPS)
+#if defined(AXOM_REDUCE_BLEND_GROUPS)
       // Filter the unique names/indices to remove single node blend groups.
       builder.filterUnique(newUniqueNames, newUniqueIndices);
       uNames.clear();
@@ -750,7 +753,7 @@ private:
    */
   struct NodeData
   {
-    axom::ArrayView<int>       m_nodeUsedView {};
+    axom::ArrayView<int> m_nodeUsedView {};
     axom::ArrayView<IndexType> m_oldNodeToNewNodeView {};
     axom::ArrayView<IndexType> m_originalIdsView {};
   };
@@ -824,10 +827,9 @@ private:
     auto blendGroupsLenView = builder.state().m_blendGroupsLenView;
 
     // Initialize nodeUsed data for nodes.
-    axom::for_all<ExecSpace>(nodeData.m_nodeUsedView.size(), AXOM_LAMBDA(auto index)
-    {
-      nodeData.m_nodeUsedView[index] = 0;
-    });
+    axom::for_all<ExecSpace>(
+      nodeData.m_nodeUsedView.size(),
+      AXOM_LAMBDA(auto index) { nodeData.m_nodeUsedView[index] = 0; });
 
     const auto deviceIntersector = m_intersector.view();
     m_topologyView.template for_selected_zones<ExecSpace>(
@@ -1038,10 +1040,9 @@ private:
     // Count the number of original nodes we'll use directly.
     RAJA::ReduceSum<reduce_policy, int> nUsed_reducer(0);
     const auto nodeUsedView = nodeData.m_nodeUsedView;
-    axom::for_all<ExecSpace>(nodeUsedView.size(), AXOM_LAMBDA(auto index)
-    {
-      nUsed_reducer += nodeUsedView[index];
-    });
+    axom::for_all<ExecSpace>(
+      nodeUsedView.size(),
+      AXOM_LAMBDA(auto index) { nUsed_reducer += nodeUsedView[index]; });
     return nUsed_reducer.get();
   }
 
@@ -1062,31 +1063,30 @@ private:
     axom::exclusive_scan<ExecSpace>(nodeData.m_nodeUsedView, nodeOffsetsView);
 
     // Make the compact node list and oldToNew map.
-    axom::for_all<ExecSpace>(nnodes, AXOM_LAMBDA(auto index)
-    {
-      IndexType newId = 0;
-      if(nodeData.m_nodeUsedView[index] > 0)
-      {
-        nodeData.m_originalIdsView[nodeOffsetsView[index]] = index;
-        newId = index;
-      }
-      nodeData.m_oldNodeToNewNodeView[index] = newId;
-    });
+    axom::for_all<ExecSpace>(
+      nnodes,
+      AXOM_LAMBDA(auto index) {
+        IndexType newId = 0;
+        if(nodeData.m_nodeUsedView[index] > 0)
+        {
+          nodeData.m_originalIdsView[nodeOffsetsView[index]] = index;
+          newId = index;
+        }
+        nodeData.m_oldNodeToNewNodeView[index] = newId;
+      });
 
-#if defined(AXOM_DEBUG_CLIP_FIELD)
+  #if defined(AXOM_DEBUG_CLIP_FIELD)
     std::cout << "---------------------------- createNodeMaps "
                  "----------------------------"
               << std::endl;
-    details::printHost("nodeData.m_nodeUsedView",
-                       nodeData.m_nodeUsedView);
-    details::printHost("nodeData.m_originalIdsView",
-                       nodeData.m_originalIdsView);
+    details::printHost("nodeData.m_nodeUsedView", nodeData.m_nodeUsedView);
+    details::printHost("nodeData.m_originalIdsView", nodeData.m_originalIdsView);
     details::printHost("nodeData.m_oldNodeToNewNodeView",
                        nodeData.m_oldNodeToNewNodeView);
     std::cout << "-------------------------------------------------------------"
                  "-----------"
               << std::endl;
-#endif
+  #endif
   }
 #endif
 
@@ -1337,9 +1337,7 @@ private:
 
           // Seek to the start of the blend groups for this zone.
           auto groups = builder.blendGroupsForZone(szIndex);
-#if defined(AXOM_REDUCE_BLEND_GROUPS_DEBUGGING)
-std::cout << "zone " << szIndex << std::endl;
-#endif
+
           // Go through the points in the order they would have been added as blend
           // groups, get their blendName, and then overall index of that blendName
           // in uNames, the unique list of new dof names. That will be their index
@@ -1351,9 +1349,6 @@ std::cout << "zone " << szIndex << std::endl;
             if(axom::utilities::bitIsSet(ptused, pid))
             {
               point_2_new[pid] = origSize + groups.uniqueBlendGroupIndex();
-#if defined(AXOM_REDUCE_BLEND_GROUPS_DEBUGGING)
-std::cout << "\tpoint N" << (pid - N0) << " -> " << point_2_new[pid] << std::endl;
-#endif
               groups++;
             }
           }
@@ -1366,9 +1361,6 @@ std::cout << "\tpoint N" << (pid - N0) << " -> " << point_2_new[pid] << std::end
             {
               const auto nodeId = zone.getId(pid);
               point_2_new[pid] = nodeData.m_oldNodeToNewNodeView[nodeId];
-#if defined(AXOM_REDUCE_BLEND_GROUPS_DEBUGGING)
-std::cout << "\tpoint P" << pid << " -> " << point_2_new[pid] << std::endl;
-#endif
             }
           }
 #else
@@ -1392,16 +1384,10 @@ std::cout << "\tpoint P" << pid << " -> " << point_2_new[pid] << std::endl;
               {
                 const auto nodeId = groups.id(0);
                 point_2_new[pid] = nodeData.m_oldNodeToNewNodeView[nodeId];
-#if defined(AXOM_REDUCE_BLEND_GROUPS_DEBUGGING)
-std::cout << "\tpoint E" << static_cast<char>(('A' + (pid - EA))) << " -> " << point_2_new[pid] << " (size=1)" << std::endl;
-#endif
               }
               else
               {
                 point_2_new[pid] = origSize + groups.uniqueBlendGroupIndex();
-#if defined(AXOM_REDUCE_BLEND_GROUPS_DEBUGGING)
-std::cout << "\tpoint E" << static_cast<char>(('A' + (pid - EA))) << " -> " << point_2_new[pid] << " (size>1)" << std::endl;
-#endif
               }
 #else
               point_2_new[pid] = origSize + groups.uniqueBlendGroupIndex();
@@ -1438,12 +1424,6 @@ std::cout << "\tpoint E" << static_cast<char>(('A' + (pid - EA))) << " -> " << p
                 offsetsView[sizeIndex] = outputIndex;
                 for(int i = 2; i < fragmentSize; i++)
                   connView[outputIndex++] = point_2_new[fragment[i]];
-#if defined(AXOM_REDUCE_BLEND_GROUPS_DEBUGGING)
-                std::cout << "fragment: ";
-                for(int i = 2; i < fragmentSize; i++)
-                  std::cout << point_2_new[fragment[i]] << ", ";
-                std::cout << std::endl;
-#endif
 
                 const auto nIdsThisFragment = fragmentSize - 2;
 #if defined(AXOM_CLIP_FILTER_DEGENERATES)

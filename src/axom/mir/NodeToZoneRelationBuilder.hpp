@@ -74,8 +74,7 @@ struct BuildRelation
     axom::for_all<ExecSpace>(
       n,
       AXOM_LAMBDA(axom::IndexType i) {
-        maskView[i] =
-          (i >= 1) ? ((keysView[i] != keysView[i - 1]) ? 1 : 0) : 1;
+        maskView[i] = (i >= 1) ? ((keysView[i] != keysView[i - 1]) ? 1 : 0) : 1;
       });
 
     // Do a scan on the mask array to build an offset array.
@@ -104,7 +103,7 @@ struct BuildRelation
         sizesView[i] = (i < offsetsView.size() - 1)
           ? (offsetsView[i + 1] - offsetsView[i])
           : (totalSize - offsetsView[i]);
-        });
+      });
   }
 };
 
@@ -125,34 +124,36 @@ struct BuildRelation<axom::SEQ_EXEC, ViewType>
 
     // Count how many times a node is used.
     const auto nnodes = offsetsView.size();
-    axom::for_all<ExecSpace>(nnodes, AXOM_LAMBDA(auto index)
-    {
-      sizesView[index] = 0;
-    });
-    axom::for_all<ExecSpace>(nodesView.size(), AXOM_LAMBDA(auto index)
-    {
-      sizesView[nodesView[index]]++; // Works only because ExecSpace=SEQ_EXEC.
-    });
+    axom::for_all<ExecSpace>(
+      nnodes,
+      AXOM_LAMBDA(auto index) { sizesView[index] = 0; });
+    axom::for_all<ExecSpace>(
+      nodesView.size(),
+      AXOM_LAMBDA(auto index) {
+        sizesView[nodesView[index]]++;  // Works only because ExecSpace=SEQ_EXEC.
+      });
     // Make offsets
     axom::exclusive_scan<ExecSpace>(sizesView, offsetsView);
 
-    axom::for_all<ExecSpace>(nnodes, AXOM_LAMBDA(auto index)
-    {
-      sizesView[index] = 0;
-    });
+    axom::for_all<ExecSpace>(
+      nnodes,
+      AXOM_LAMBDA(auto index) { sizesView[index] = 0; });
 
     axom::Array<value_type> zcopy(zonesView.size(), zonesView.size(), allocatorID);
-    axom::copy(zcopy.data(), zonesView.data(), zonesView.size() * sizeof(value_type));
+    axom::copy(zcopy.data(),
+               zonesView.data(),
+               zonesView.size() * sizeof(value_type));
     auto zcopyView = zcopy.view();
 
     // Fill in zonesView, sizesView with each node's zones.
-    axom::for_all<ExecSpace>(nodesView.size(), AXOM_LAMBDA(auto index)
-    {
-      const auto ni = nodesView[index];
-      const auto destOffset = offsetsView[ni] + sizesView[ni];
-      zonesView[destOffset] = zcopyView[index];
-      sizesView[ni]++; // Works only because ExecSpace=SEQ_EXEC.
-    });
+    axom::for_all<ExecSpace>(
+      nodesView.size(),
+      AXOM_LAMBDA(auto index) {
+        const auto ni = nodesView[index];
+        const auto destOffset = offsetsView[ni] + sizesView[ni];
+        zonesView[destOffset] = zcopyView[index];
+        sizesView[ni]++;  // Works only because ExecSpace=SEQ_EXEC.
+      });
   }
 };
 
@@ -309,11 +310,10 @@ public:
           [&](auto connectivityView, auto zonesView, auto sizesView, auto offsetsView) {
             // Make the relation.
             using ViewType = decltype(connectivityView);
-            details::BuildRelation<ExecSpace, ViewType>::execute(
-              connectivityView,
-              zonesView,
-              sizesView,
-              offsetsView);
+            details::BuildRelation<ExecSpace, ViewType>::execute(connectivityView,
+                                                                 zonesView,
+                                                                 sizesView,
+                                                                 offsetsView);
           });
       }
       else
@@ -341,11 +341,10 @@ public:
               });
             // Make the relation.
             using ViewType = decltype(connectivityView);
-            details::BuildRelation<ExecSpace, ViewType>::execute(
-              connectivityView,
-              zonesView,
-              sizesView,
-              offsetsView);
+            details::BuildRelation<ExecSpace, ViewType>::execute(connectivityView,
+                                                                 zonesView,
+                                                                 sizesView,
+                                                                 offsetsView);
           });
       }
     }

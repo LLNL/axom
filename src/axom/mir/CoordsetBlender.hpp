@@ -105,7 +105,7 @@ public:
         {
           compViews[comp][index] = pt[comp];
         }
-    });
+      });
 
     // Append blended values to the end of the array.
     axom::for_all<ExecSpace>(
@@ -126,14 +126,15 @@ public:
         }
         else
         {
-          const auto end = start + deviceBlend.m_blendGroupSizesView[selectedIndex];
-
+          const auto end =
+            start + deviceBlend.m_blendGroupSizesView[selectedIndex];
           // Blend points for this blend group.
           for(IndexType i = start; i < end; i++)
           {
             const auto index = deviceBlend.m_blendIdsView[i];
             const auto weight = deviceBlend.m_blendCoeffView[i];
-            blended += (VectorType(deviceView[index]) * static_cast<value_type>(weight));
+            blended +=
+              (VectorType(deviceView[index]) * static_cast<value_type>(weight));
           }
         }
 

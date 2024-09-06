@@ -183,7 +183,7 @@ public:
      * \return The number of blend groups for this zone.
      */
     AXOM_HOST_DEVICE
-    inline IndexType size() const
+    inline IndexType numGroups() const
     {
       return m_state->m_blendGroupsView[m_zoneIndex];
     }
@@ -196,7 +196,7 @@ public:
      * \param blendGroupSize The size of all of the blend groups in this zone.
      */
     AXOM_HOST_DEVICE
-    inline void setSize(IndexType nBlendGroups, IndexType blendGroupsSize)
+    inline void setNumGroups(IndexType nBlendGroups, IndexType blendGroupsSize)
     {
       m_state->m_blendGroupsView[m_zoneIndex] = nBlendGroups;
       m_state->m_blendGroupsLenView[m_zoneIndex] = blendGroupsSize;
@@ -269,6 +269,17 @@ public:
       for(IndexType i = 0; i < numIds; i++)
         w += m_state->m_blendCoeffView[start + i];
       return w;
+    }
+
+    /**
+     * \brief Return the size for the current blend group.
+     * \note The blendGroup must have finished construction.
+     * \return The size of the current blend group.
+     */
+    AXOM_HOST_DEVICE
+    inline IndexType size() const
+    {
+      return m_state->m_blendGroupSizesView[m_blendGroupId];
     }
 
     /**
@@ -434,12 +445,13 @@ public:
    * \param[out] newSelectedIndices An array that will contain the data for the
    *                                new selected indices, if we need to make it.
    */
-  void filterUnique(axom::Array<KeyType> &newUniqueNames, axom::Array<axom::IndexType> &newUniqueIndices)
+  void filterUnique(axom::Array<KeyType> &newUniqueNames,
+                    axom::Array<axom::IndexType> &newUniqueIndices)
   {
     AXOM_ANNOTATE_SCOPE("filterUnique");
-    using reduce_policy = typename axom::execution_space<ExecSpace>::reduce_policy;
+    using reduce_policy =
+      typename axom::execution_space<ExecSpace>::reduce_policy;
     const auto nIndices = m_state.m_blendUniqueIndicesView.size();
-std::cout << "filterUnique: nIndices=" << nIndices << std::endl;
 
     if(nIndices > 0)
     {
@@ -450,45 +462,45 @@ std::cout << "filterUnique: nIndices=" << nIndices << std::endl;
       auto maskView = mask.view();
       RAJA::ReduceSum<reduce_policy, int> mask_reduce(0);
       State deviceState(m_state);
-      axom::for_all<ExecSpace>(nIndices, AXOM_LAMBDA(auto index)
-      {
-        const auto uniqueIndex = deviceState.m_blendUniqueIndicesView[index];
-        const int m = (deviceState.m_blendGroupSizesView[uniqueIndex] > 1) ? 1 : 0;
-if(m == 0)
-{
-std::cout << "(" << uniqueIndex << ", " << deviceState.m_blendGroupSizesView[uniqueIndex] << ", " << m << "), ";
-}
-        maskView[index] = m;
-        mask_reduce += m;
-      });
-std::cout << std::endl;
+      axom::for_all<ExecSpace>(
+        nIndices,
+        AXOM_LAMBDA(auto index) {
+          const auto uniqueIndex = deviceState.m_blendUniqueIndicesView[index];
+          const int m =
+            (deviceState.m_blendGroupSizesView[uniqueIndex] > 1) ? 1 : 0;
+          maskView[index] = m;
+          mask_reduce += m;
+        });
       // If we need to filter, do it.
       const int mask_count = mask_reduce.get();
-std::cout << "mask_count = " << mask_count << std::endl;
+
       if(mask_count < nIndices)
       {
-std::cout << "Making new selected indices" << std::endl;
-
         // Make offsets.
         axom::Array<int> offset(nIndices, nIndices, allocatorID);
         auto offsetView = offset.view();
         axom::exclusive_scan<ExecSpace>(maskView, offsetView);
 
         // Make new unique data where we compress out blend groups that had 1 node.
-        newUniqueNames = axom::Array<KeyType>(mask_count, mask_count, allocatorID);
-        newUniqueIndices = axom::Array<IndexType>(mask_count, mask_count, allocatorID);
+        newUniqueNames =
+          axom::Array<KeyType>(mask_count, mask_count, allocatorID);
+        newUniqueIndices =
+          axom::Array<IndexType>(mask_count, mask_count, allocatorID);
 
         auto newUniqueNamesView = newUniqueNames.view();
         auto newUniqueIndicesView = newUniqueIndices.view();
-        axom::for_all<ExecSpace>(nIndices, AXOM_LAMBDA(auto index)
-        {
-          if(maskView[index] > 0)
-          {
-            const auto offset = offsetView[index];
-            newUniqueNamesView[offset] = deviceState.m_blendUniqueNamesView[index];
-            newUniqueIndicesView[offset] = deviceState.m_blendUniqueIndicesView[index];
-          }
-        });
+        axom::for_all<ExecSpace>(
+          nIndices,
+          AXOM_LAMBDA(auto index) {
+            if(maskView[index] > 0)
+            {
+              const auto offset = offsetView[index];
+              newUniqueNamesView[offset] =
+                deviceState.m_blendUniqueNamesView[index];
+              newUniqueIndicesView[offset] =
+                deviceState.m_blendUniqueIndicesView[index];
+            }
+          });
 
         // Replace the unique names/indices.
         m_state.m_blendUniqueNamesView = newUniqueNamesView;

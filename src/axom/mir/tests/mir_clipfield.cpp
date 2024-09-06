@@ -232,9 +232,9 @@ TEST(mir_clipfield, blend_group_builder)
 
   //std::cout << "-------- zone 0 --------" << std::endl;
   auto z0 = builder.blendGroupsForZone(0);
-  EXPECT_EQ(z0.size(), 8);
+  EXPECT_EQ(z0.numGroups(), 8);
   IndexType index = 0;
-  for(IndexType i = 0; i < z0.size(); i++, index++)
+  for(IndexType i = 0; i < z0.numGroups(); i++, index++)
   {
     //z0.print(std::cout);
     EXPECT_EQ(z0.ids().size(), blendGroupSizes[index]);
@@ -244,8 +244,8 @@ TEST(mir_clipfield, blend_group_builder)
 
   //std::cout << "-------- zone 1 --------" << std::endl;
   auto z1 = builder.blendGroupsForZone(1);
-  EXPECT_EQ(z1.size(), 5);
-  for(IndexType i = 0; i < z1.size(); i++, index++)
+  EXPECT_EQ(z1.numGroups(), 5);
+  for(IndexType i = 0; i < z1.numGroups(); i++, index++)
   {
     //z1.print(std::cout);
     EXPECT_EQ(z1.ids().size(), blendGroupSizes[index]);
