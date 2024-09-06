@@ -258,20 +258,21 @@ double winding_number(const Point<T, 2>& q,
   // Need to keep a running total of the GWN to account for
   //  the winding number of coincident points
   double gwn = 0.0;
+  bool isCoincident = false;
   detail::construct_approximating_polygon(q,
                                           c,
                                           false,
                                           edge_tol,
                                           EPS,
                                           approximating_polygon,
-                                          gwn);
+                                          gwn, isCoincident);
 
   // The last vertex of the polygon is the t=1 point of the curve
   approximating_polygon.addVertex(c[ord]);
 
   int n = approximating_polygon.numVertices();
 
-  bool isOnEdge;
+  bool isOnEdge = false;
   double closed_curve_wn =
     winding_number(q, approximating_polygon, isOnEdge, false, PRIMAL_TINY);
   
@@ -280,9 +281,10 @@ double winding_number(const Point<T, 2>& q,
                                                     approximating_polygon[0],
                                                     edge_tol);
 
-  // If the point is on the edge of the approximating polygon (rare), then winding_number<polygon>
+  // If the point is on the boundary of the approximating polygon (rare), 
+  //  or coincident with the curve, then winding_number<polygon>
   //  doesn't return the right half-integer. Have to go edge-by-edge
-  if(isOnEdge)
+  if(isCoincident || isOnEdge)
   {
     closed_curve_wn = closure_wn;
     for(int i = 1; i < n; ++i)

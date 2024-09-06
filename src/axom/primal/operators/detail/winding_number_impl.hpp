@@ -140,10 +140,10 @@ double convex_endpoint_winding_number(const Point<T, 2>& q,
   }
   Vector<T, 2> V2(q, c[idx]);
 
-  std::cout << std::setprecision(16) << std::endl;
-  std::cout << c << std::endl;
-  std::cout << V1 << std::endl;
-  std::cout << V2 << std::endl;
+  // std::cout << std::setprecision(16);
+  // std::cout << c << std::endl;
+  // std::cout << V1 << std::endl;
+  // std::cout << V2 << std::endl;
 
   // clang-format off
   // Measures the signed area of the triangle spanned by V1 and V2
@@ -432,7 +432,8 @@ void construct_approximating_polygon(const Point<T, 2>& q,
                                     double edge_tol,
                                     double EPS,
                                     Polygon<T, 2>& approximating_polygon,
-                                    double& endpoint_gwn)
+                                    double& endpoint_gwn,
+                                    bool& isCoincident)
 {
   const int ord = c.getOrder();
 
@@ -480,6 +481,7 @@ void construct_approximating_polygon(const Point<T, 2>& q,
 
       // and use the direct formula for the endpoint
       endpoint_gwn += convex_endpoint_winding_number(q, c, edge_tol);
+      isCoincident = true;
 
       // approxogon.addVertex(c[ord]);
       //desmos_print(c);
@@ -492,9 +494,9 @@ void construct_approximating_polygon(const Point<T, 2>& q,
   c.split(0.5, c1, c2);
 
   // clang-format off
-  construct_approximating_polygon(q, c1, isConvexControlPolygon, edge_tol, EPS, approximating_polygon, endpoint_gwn);
+  construct_approximating_polygon(q, c1, isConvexControlPolygon, edge_tol, EPS, approximating_polygon, endpoint_gwn, isCoincident);
   approximating_polygon.addVertex(c2[0]);
-  construct_approximating_polygon(q, c2, isConvexControlPolygon, edge_tol, EPS, approximating_polygon, endpoint_gwn);
+  construct_approximating_polygon(q, c2, isConvexControlPolygon, edge_tol, EPS, approximating_polygon, endpoint_gwn, isCoincident);
   // clang-format on
 
   return;
