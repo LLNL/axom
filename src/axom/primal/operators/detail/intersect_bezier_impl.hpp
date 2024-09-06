@@ -19,7 +19,6 @@
 
 #include "axom/primal/operators/intersect.hpp"
 #include "axom/primal/operators/detail/intersect_impl.hpp"
-#include "axom/primal/operators/detail/intersect_ray_impl.hpp"
 
 #include <vector>
 
@@ -149,6 +148,7 @@ bool intersect_bezier_curves(const BezierCurve<T, 2> &c1,
     BCurve c3(order1);
     BCurve c4(order1);
     c1.split(splitVal, c3, c4);
+
     s_scale *= scaleFac;
 
     // Note: we want to find all intersections, so don't short-circuit
@@ -162,8 +162,7 @@ bool intersect_bezier_curves(const BezierCurve<T, 2> &c1,
                                t_offset,
                                t_scale,
                                s_offset,
-                               s_scale,
-                               nevals))
+                               s_scale))
     {
       foundIntersection = true;
     }
