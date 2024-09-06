@@ -104,7 +104,6 @@ double convex_endpoint_winding_number(const Point<T, 2>& q,
                                       const BezierCurve<T, 2>& c,
                                       double edge_tol)
 {
-  
   const int ord = c.getOrder();
   if(ord == 1)
   {
@@ -139,11 +138,6 @@ double convex_endpoint_winding_number(const Point<T, 2>& q,
     }
   }
   Vector<T, 2> V2(q, c[idx]);
-
-  // std::cout << std::setprecision(16);
-  // std::cout << c << std::endl;
-  // std::cout << V1 << std::endl;
-  // std::cout << V2 << std::endl;
 
   // clang-format off
   // Measures the signed area of the triangle spanned by V1 and V2
@@ -185,219 +179,6 @@ double convex_endpoint_winding_number(const Point<T, 2>& q,
 }
 
 /*!
- * \brief Recursively compute the winding number for a query point with respect
- *        to a single Bezier curve.
- *
- * \param [in] q The query point at which to compute winding number
- * \param [in] c The BezierCurve object along which to compute the winding number
- * \param [in] isConvexControlPolygon Boolean flag if the input Bezier curve 
-                                      is already convex
- * \param [in] edge_tol The physical distance level at which objects are 
- *                      considered indistinguishable
- * \param [in] EPS Miscellaneous numerical tolerance for nonphysical distances, used in
- *   isLinear, isNearlyZero, in_polygon, is_convex
- * 
- * Use a recursive algorithm that checks if the query point is exterior to
- * some convex shape containing the Bezier curve, in which case we have a direct 
- * formula for the winding number. If not, we bisect our curve and run the algorithm on 
- * each half. Use the proximity of the query point to endpoints and approximate
- * linearity of the Bezier curve as base cases.
- * 
- * \return double The winding number.
- */
-template <typename T>
-double curve_winding_number_recursive(const Point<T, 2>& q,
-                                      const BezierCurve<T, 2>& c,
-                                      bool isConvexControlPolygon,
-                                      int& nevals,
-                                      double edge_tol = 1e-8)
-{
-  const int ord = c.getOrder();
-  if(ord <= 0)
-  {
-    return 0.0;  // Catch degenerate cases
-  }
-
-  // If q is outside a convex shape that contains the entire curve, the winding
-  //   number for the shape connected at the endpoints with straight lines is zero.
-  //   We then subtract the contribution of this line segment.
-
-  // Simplest convex shape containing c is its bounding box
-  BoundingBox<T, 2> bBox(c.boundingBox());
-  if(!bBox.contains(q))
-  {
-    return 0.0 - linear_winding_number(q, c[ord], c[0], edge_tol);
-  }
-
-  // Use linearity as base case for recursion.
-  if(c.isLinear(edge_tol))
-  {
-    return linear_winding_number(q, c[0], c[ord], edge_tol);
-  }
-
-  // Check if our control polygon is convex.
-  //  If so, all subsequent control polygons will be convex as well
-  Polygon<T, 2> controlPolygon(c.getControlPoints());
-  const bool includeBoundary = true;
-  const bool useNonzeroRule = true;
-
-  if(!isConvexControlPolygon)
-  {
-    isConvexControlPolygon = is_convex(controlPolygon, PRIMAL_TINY);
-  }
-  else  // Formulas for winding number only work if shape is convex
-  {
-    // Bezier curves are always contained in their convex control polygon
-    if(!in_polygon(q, controlPolygon, includeBoundary, useNonzeroRule, PRIMAL_TINY))
-    {
-      return 0.0 - linear_winding_number(q, c[ord], c[0], edge_tol);
-    }
-
-    // If the query point is at either endpoint, use direct formula
-    if((squared_distance(q, c[0]) <= edge_tol * edge_tol) ||
-       (squared_distance(q, c[ord]) <= edge_tol * edge_tol))
-    {
-      return convex_endpoint_winding_number(q, c, edge_tol);
-    }
-  }
-
-  // Recursively split curve until query is outside some known convex region
-  BezierCurve<T, 2> c1, c2;
-  c.split(0.5, c1, c2);
-  nevals += 1;
-
-  return curve_winding_number_recursive(q,
-                                        c1,
-                                        isConvexControlPolygon,
-                                        nevals,
-                                        edge_tol) +
-    curve_winding_number_recursive(q, c2, isConvexControlPolygon, nevals, edge_tol);
-}
-
-// template <typename T>
-// struct BezierCurveMemo
-// {
-  // bool isConvexControlPolygon;
-  // BezierCurve<T, 2> curve;
-// };
-
-// struct PairHash
-// {
-  // using result_type = std::size_t;
-// 
-  // size_t operator()(const std::pair<int, int>& p) const
-  // {
-    // Combine hashes of the two integers
-    // size_t hash1 = std::hash<int>()(p.first);
-    // size_t hash2 = std::hash<int>()(p.second);
-    // return hash1 ^ (hash2 << 1);  // Simple combining function
-  // }
-// };
-
-//bool operator==(const std::pair<int, int>& lhs, const std::pair<int, int>& rhs)
-//{
-//  return lhs.first == rhs.first && lhs.second == rhs.second;
-//}
-
-// template <typename T>
-// void winding_number_adaptive_linear_memoized(
-//   Point<T, 2> q,
-//   const std::vector<std::vector<BezierCurveMemo<T>>>& array_memo,
-//   axom::FlatMap<std::pair<int, int>, BezierCurveMemo<T>, PairHash>& hash_memo,
-//   double edge_tol,
-//   double linear_tol,
-//   Polygon<T, 2>& approxogon,
-//   std::stack<std::pair<int, int>>& curve_stack,
-//   double& end_wn)
-// {
-//   constexpr int LEVEL = 3;
-//   const int ord = array_memo[0][0].curve.getOrder();
-
-//   //std::stack<std::pair<int, int>> curve_stack;
-//   curve_stack.push(std::make_pair(0, 0));
-
-//   while(!curve_stack.empty())
-//   {
-//     std::pair<int, int> the_pair = curve_stack.top();
-//     curve_stack.pop();
-
-//     //std::cout << the_pair.first << std::endl;
-
-//     //std::cout << the_pair.first << " " << the_pair.second << std::endl;
-//     BezierCurveMemo<T> curve_memo;
-//     if(the_pair.first < LEVEL)
-//       curve_memo = array_memo[the_pair.first][the_pair.second];
-//     else
-//       curve_memo = hash_memo[the_pair];
-
-//     //if(curve_memo.isLinear)
-//     //{
-//     //  approxogon.addVertex(curve_memo.curve[0]);
-//     //  continue;
-//     //}
-
-//     BoundingBox<T, 2> bBox(curve_memo.curve.boundingBox());
-//     if(!bBox.contains(q))
-//     {
-//       approxogon.addVertex(curve_memo.curve[0]);
-//       continue;
-//     }
-
-//     if(curve_memo.isConvexControlPolygon)
-//     {
-//       constexpr bool includeBoundary = true;
-//       constexpr bool useNonzeroRule = true;
-
-//       if(!in_polygon(q,
-//                      Polygon<T, 2>(curve_memo.curve.getControlPoints()),
-//                      includeBoundary,
-//                      useNonzeroRule,
-//                      PRIMAL_TINY))
-//       {
-//         approxogon.addVertex(curve_memo.curve[0]);
-
-//         continue;
-//       }
-
-//       if((squared_distance(q, curve_memo.curve[0]) <= edge_tol * edge_tol) ||
-//          (squared_distance(q, curve_memo.curve[ord]) <= edge_tol * edge_tol))
-//       {
-//         end_wn += approxogon_winding_number(q, approxogon, edge_tol);
-//         approxogon.clear();
-
-//         end_wn += convex_endpoint_winding_number(q, curve_memo.curve, edge_tol);
-//         approxogon.addVertex(curve_memo.curve[ord]);
-//         continue;
-//       }
-//     }
-
-//     auto ref1 = std::make_pair(the_pair.first + 1, 2 * the_pair.second);
-//     auto ref2 = std::make_pair(the_pair.first + 1, 2 * the_pair.second + 1);
-
-//     if(the_pair.first >= LEVEL - 1 && hash_memo.find(ref1) == hash_memo.end())
-//     {
-//       BezierCurve<T, 2> c1, c2;
-//       curve_memo.curve.split(0.5, c1, c2);
-
-//       hash_memo[ref1] = {
-//         //c1.isLinear(linear_tol),
-//         curve_memo.isConvexControlPolygon ||
-//           is_convex(Polygon<T, 2>(c1.getControlPoints()), PRIMAL_TINY),
-//         c1};
-
-//       hash_memo[ref2] = {
-//         //c2.isLinear(linear_tol),
-//         curve_memo.isConvexControlPolygon ||
-//           is_convex(Polygon<T, 2>(c2.getControlPoints()), PRIMAL_TINY),
-//         c2};
-//     }
-
-//     curve_stack.push(ref2);
-//     curve_stack.push(ref1);
-//   }
-// }
-
-/*!
  * \brief Recursively construct a polygon with the same *integer* winding number 
  *        as the closed original Bezier curve at a given query point.
  *
@@ -427,13 +208,13 @@ double curve_winding_number_recursive(const Point<T, 2>& q,
  */
 template <typename T>
 void construct_approximating_polygon(const Point<T, 2>& q,
-                                    const BezierCurve<T, 2>& c,
-                                    bool isConvexControlPolygon,
-                                    double edge_tol,
-                                    double EPS,
-                                    Polygon<T, 2>& approximating_polygon,
-                                    double& endpoint_gwn,
-                                    bool& isCoincident)
+                                     const BezierCurve<T, 2>& c,
+                                     bool isConvexControlPolygon,
+                                     double edge_tol,
+                                     double EPS,
+                                     Polygon<T, 2>& approximating_polygon,
+                                     double& endpoint_gwn,
+                                     bool& isCoincident)
 {
   const int ord = c.getOrder();
 
@@ -473,18 +254,10 @@ void construct_approximating_polygon(const Point<T, 2>& q,
     if(squared_distance(q, c[0]) <= edge_tol * edge_tol ||
        squared_distance(q, c[ord]) <= edge_tol * edge_tol)
     {
-      // ...we can use a direct formula...
-      // endpoint_gwn += approxogon_winding_number(q, approximating_polygon, edge_tol);
-
-      // ...but need to reconstru...
-      // approxogon.clear();
-
-      // and use the direct formula for the endpoint
+      // ...we can use a direct formula for the GWN at the endpoint
       endpoint_gwn += convex_endpoint_winding_number(q, c, edge_tol);
       isCoincident = true;
 
-      // approxogon.addVertex(c[ord]);
-      //desmos_print(c);
       return;
     }
   }
@@ -493,11 +266,23 @@ void construct_approximating_polygon(const Point<T, 2>& q,
   BezierCurve<T, 2> c1, c2;
   c.split(0.5, c1, c2);
 
-  // clang-format off
-  construct_approximating_polygon(q, c1, isConvexControlPolygon, edge_tol, EPS, approximating_polygon, endpoint_gwn, isCoincident);
+  construct_approximating_polygon(q,
+                                  c1,
+                                  isConvexControlPolygon,
+                                  edge_tol,
+                                  EPS,
+                                  approximating_polygon,
+                                  endpoint_gwn,
+                                  isCoincident);
   approximating_polygon.addVertex(c2[0]);
-  construct_approximating_polygon(q, c2, isConvexControlPolygon, edge_tol, EPS, approximating_polygon, endpoint_gwn, isCoincident);
-  // clang-format on
+  construct_approximating_polygon(q,
+                                  c2,
+                                  isConvexControlPolygon,
+                                  edge_tol,
+                                  EPS,
+                                  approximating_polygon,
+                                  endpoint_gwn,
+                                  isCoincident);
 
   return;
 }

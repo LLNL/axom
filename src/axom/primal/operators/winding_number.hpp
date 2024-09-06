@@ -270,19 +270,20 @@ double winding_number(const Point<T, 2>& q,
   // The last vertex of the polygon is the t=1 point of the curve
   approximating_polygon.addVertex(c[ord]);
 
-  int n = approximating_polygon.numVertices();
-
+  // Compute the integer winding numberof the closed curve
   bool isOnEdge = false;
   double closed_curve_wn =
-    winding_number(q, approximating_polygon, isOnEdge, false, PRIMAL_TINY);
+    winding_number(q, approximating_polygon, isOnEdge, false, edge_tol);
   
+  // Compute the fractional value of the closed curve
+  int n = approximating_polygon.numVertices();
   double closure_wn = detail::linear_winding_number(q,
                                                     approximating_polygon[n - 1],
                                                     approximating_polygon[0],
                                                     edge_tol);
 
-  // If the point is on the boundary of the approximating polygon (rare), 
-  //  or coincident with the curve, then winding_number<polygon>
+  // If the point is on the boundary of the approximating polygon, 
+  //  or coincident with the curve (rare), then winding_number<polygon>
   //  doesn't return the right half-integer. Have to go edge-by-edge
   if(isCoincident || isOnEdge)
   {
@@ -325,107 +326,6 @@ double winding_number(const Point<T, 2>& q,
 
   return ret_val;
 }
-
-// template <typename T>
-// double winding_number_approxogon_memoized(
-//   Point<T, 2> q,
-//   const axom::Array<std::vector<std::vector<detail::BezierCurveMemo<T>>>>& array_memos,
-//   axom::Array<
-//     axom::FlatMap<std::pair<int, int>, detail::BezierCurveMemo<T>, detail::PairHash>>&
-//     hash_memos,
-//   Polygon<T, 2>& temp_approxogon,
-//   std::stack<std::pair<int, int>>& curve_stack,
-//   double edge_tol = 1e-8,
-//   double linear_tol = 1e-8)
-// {
-//   double wn = 0;
-
-//   for(int ci = 0; ci < array_memos.size(); ++ci)
-//   {
-//     auto& the_curve = array_memos[ci][0][0].curve;
-
-//     if(!the_curve.boundingBox().contains(q))
-//     {
-//       wn += detail::linear_winding_number(q,
-//                                           the_curve[0],
-//                                           the_curve[the_curve.getOrder()],
-//                                           edge_tol);
-//     }
-//     else
-//     {
-//       //temp_approxogon.addVertex(the_curve[0]);
-//       detail::winding_number_adaptive_linear_memoized(q,
-//                                                       array_memos[ci],
-//                                                       hash_memos[ci],
-//                                                       edge_tol,
-//                                                       linear_tol,
-//                                                       temp_approxogon,
-//                                                       curve_stack,
-//                                                       wn);
-
-//       temp_approxogon.addVertex(the_curve[the_curve.getOrder()]);
-
-//       wn += detail::approxogon_winding_number(q, temp_approxogon, edge_tol);
-
-//       //desmos_print(c);
-//       //desmos_print(q);
-//       //desmos_print(temp_approxogon);
-
-//       temp_approxogon.clear();
-//       //int xx = 0;
-//     }
-//   }
-
-//   return wn;
-// }
-
-// template <typename T>
-// double winding_number_approxogon(const Point<T, 2>& q,
-//                                  const axom::Array<BezierCurve<T, 2>>& carray,
-//                                  Polygon<T, 2>& temp_approxogon,
-//                                  int& num_evals,
-//                                  int& max_depth,
-//                                  double edge_tol = 1e-8,
-//                                  double linear_tol = 1e-8)
-// {
-//   double wn = 0;
-
-//   for(int i = 0; i < carray.size(); i++)
-//   {
-//     // Check exterior bounding box
-//     if(!carray[i].boundingBox().contains(q))
-//     {
-//       wn += detail::linear_winding_number(q,
-//                                           carray[i][0],
-//                                           carray[i][carray[i].getOrder()],
-//                                           edge_tol);
-//     }
-//     else
-//     {
-//       //wn += detail::curve_winding_number_recursive(q,
-//       //                                             carray[i],
-//       //                                             false,
-//       //                                             dummy_val,
-//       //                                             edge_tol);
-//       temp_approxogon.addVertex(carray[i][0]);
-//       detail::winding_number_adaptive_linear(q,
-//                                              carray[i],
-//                                              false,
-//                                              num_evals,
-//                                              edge_tol,
-//                                              linear_tol,
-//                                              temp_approxogon,
-//                                              wn);
-//       temp_approxogon.addVertex(carray[i][carray[i].getOrder()]);
-//       max_depth =
-//         axom::utilities::max(max_depth, temp_approxogon.numVertices() - 2);
-//       wn += detail::approxogon_winding_number(q, temp_approxogon, edge_tol);
-//       temp_approxogon.clear();
-//     }
-//   }
-
-//   return wn;
-// }
 
 template <typename T>
 double winding_number(const Point<T, 2>& q,
