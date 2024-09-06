@@ -20,6 +20,15 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 ## [Unreleased] - Release date yyyy-mm-dd
 
 ### Added
+
+### Changed
+
+### Removed
+
+
+## [Version 0.10.0] - Release date 2024-09-xx
+
+### Added
 - Primal: Adds a `clip()` operator overload for clipping a 2D polygon against
   another 2D polygon.
 - Primal: Adds `Polygon::reverseOrientation()` to reverse orientation of
