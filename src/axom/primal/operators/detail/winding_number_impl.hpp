@@ -19,9 +19,6 @@
 
 // C++ includes
 #include <math.h>
-#include <unordered_map>
-#include <utility>
-#include <stack>
 
 // MFEM includes
 #ifdef AXOM_USE_MFEM
@@ -102,7 +99,8 @@ double linear_winding_number(const Point<T, 2>& q,
 template <typename T>
 double convex_endpoint_winding_number(const Point<T, 2>& q,
                                       const BezierCurve<T, 2>& c,
-                                      double edge_tol)
+                                      double edge_tol,
+                                      double EPS)
 {
   const int ord = c.getOrder();
   if(ord == 1)
@@ -113,7 +111,7 @@ double convex_endpoint_winding_number(const Point<T, 2>& q,
   double edge_tol_sq = edge_tol * edge_tol;
 
   // Verify that the shape is convex, and that the query point is at an endpoint
-  SLIC_ASSERT(is_convex(Polygon<T, 2>(c.getControlPoints()), PRIMAL_TINY));
+  SLIC_ASSERT(is_convex(Polygon<T, 2>(c.getControlPoints()), EPS));
   SLIC_ASSERT((squared_distance(q, c[0]) <= edge_tol_sq) ||
               (squared_distance(q, c[ord]) <= edge_tol_sq));
 
@@ -147,7 +145,7 @@ double convex_endpoint_winding_number(const Point<T, 2>& q,
 
   // This means the bounding vectors are anti-parallel.
   //  Parallel tangents can't happen with nontrivial convex control polygons
-  if((ord > 3) && axom::utilities::isNearlyEqual(tri_area, 0.0, PRIMAL_TINY))
+  if((ord > 3) && axom::utilities::isNearlyEqual(tri_area, 0.0, EPS))
   {
     for(int i = 1; i < ord; ++i)
     {
@@ -160,7 +158,7 @@ double convex_endpoint_winding_number(const Point<T, 2>& q,
       // clang-format on
 
       // Because we are convex, a single non-collinear vertex tells us the orientation
-      if(!axom::utilities::isNearlyEqual(tri_area, 0.0, PRIMAL_TINY))
+      if(!axom::utilities::isNearlyEqual(tri_area, 0.0, EPS))
       {
         return (tri_area > 0) ? 0.5 : -0.5;
       }
@@ -255,7 +253,7 @@ void construct_approximating_polygon(const Point<T, 2>& q,
        squared_distance(q, c[ord]) <= edge_tol * edge_tol)
     {
       // ...we can use a direct formula for the GWN at the endpoint
-      endpoint_gwn += convex_endpoint_winding_number(q, c, edge_tol);
+      endpoint_gwn += convex_endpoint_winding_number(q, c, edge_tol, EPS);
       isCoincident = true;
 
       return;
