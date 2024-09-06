@@ -21,17 +21,26 @@ namespace utilities
 namespace blueprint
 {
 /**
- * \brief This class contains views of blend data.
+ * \brief This class contains views of blend data. Blend data lets is make new
+ *        nodal fields and coordsets. The field data are sampled using m_originalIdsView
+ *        which is a compact list of the original node ids that we want to preserve
+ *        without any blending. This stream is followed by a second stream of data
+ *        made using the field and the blend groups. Each blend group has
+ *        m_blendGroupSizesView[i] elements, starts at m_blendGroupStartView[i] and 
+ *        uses values from the m_blendIdsView, m_blendCoeffView members to blend the
+ *        data values.
+ *
  */
 struct BlendData
 {
+  axom::ArrayView<IndexType> m_originalIdsView;      // Contains indices of original node ids to be preserved.
+
   axom::ArrayView<IndexType> m_selectedIndicesView;  // Contains indices of the selected blend groups.
 
   axom::ArrayView<IndexType> m_blendGroupSizesView;  // The number of ids/weights in each blend group.
-  axom::ArrayView<IndexType>
-    m_blendGroupStartView;  // The starting offset for a blend group in the ids/weights.
-  axom::ArrayView<IndexType> m_blendIdsView;  // Contains ids that make up the blend groups
-  axom::ArrayView<float> m_blendCoeffView;  // Contains the weights that make up the blend groups.
+  axom::ArrayView<IndexType> m_blendGroupStartView;  // The starting offset for a blend group in the ids/weights.
+  axom::ArrayView<IndexType> m_blendIdsView;         // Contains ids that make up the blend groups
+  axom::ArrayView<float>     m_blendCoeffView;       // Contains the weights that make up the blend groups.
 };
 
 /**
@@ -140,7 +149,9 @@ private:
   {
     // We're allowing selectedIndicesView to be used to select specific blend
     // groups. If the user did not provide that, use all blend groups.
-    const auto outputSize = SelectionPolicy::size(blend);
+    const auto origSize = blend.m_originalIdsView.size();
+    const auto blendSize = SelectionPolicy::size(blend);
+    const auto outputSize = origSize + blendSize;
 
     // Allocate Conduit data through Axom.
     utilities::blueprint::ConduitAllocateThroughAxom<ExecSpace> c2a;
@@ -155,22 +166,32 @@ private:
         using accum_type =
           typename axom::mir::utilities::accumulation_traits<value_type>::value_type;
 
-        IndexingPolicy deviceIndexing(m_indexing);
+        const IndexingPolicy deviceIndexing(m_indexing);
         const BlendData deviceBlend(blend);
+
+        // Copy over some original values to the start of the array.
         axom::for_all<ExecSpace>(
-          outputSize,
+          origSize,
+          AXOM_LAMBDA(auto index) {
+           const auto srcIndex = deviceBlend.m_originalIdsView[index];
+           outView[index] = compView[srcIndex];
+        });
+
+        // Append blended values to the end of the array.
+        axom::for_all<ExecSpace>(
+          blendSize,
           AXOM_LAMBDA(auto bgid) {
-            // Get the index we want.
+            // Get the blend group index we want.
             const auto selectedIndex =
               SelectionPolicy::selectedIndex(deviceBlend, bgid);
             const auto start = deviceBlend.m_blendGroupStartView[selectedIndex];
             const auto nValues = deviceBlend.m_blendGroupSizesView[selectedIndex];
-
+            const auto destIndex = origSize + bgid;
             if(nValues == 1)
             {
               const auto index = deviceBlend.m_blendIdsView[start];
-              const auto transformedIndex = deviceIndexing[index];
-              outView[bgid] = compView[transformedIndex];
+              const auto srcIndex = deviceIndexing[index];
+              outView[destIndex] = compView[srcIndex];
             }
             else
             {
@@ -180,11 +201,10 @@ private:
               {
                 const auto index = deviceBlend.m_blendIdsView[i];
                 const auto weight = deviceBlend.m_blendCoeffView[i];
-                const auto transformedIndex = deviceIndexing[index];
-                blended +=
-                  static_cast<accum_type>(compView[transformedIndex]) * weight;
+                const auto srcIndex = deviceIndexing[index];
+                blended += static_cast<accum_type>(compView[srcIndex]) * weight;
               }
-              outView[bgid] = static_cast<value_type>(blended);
+              outView[destIndex] = static_cast<value_type>(blended);
             }
           });
       });

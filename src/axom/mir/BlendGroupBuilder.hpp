@@ -272,6 +272,30 @@ public:
     }
 
     /**
+     * \brief Return the index'th weight in the blend group.
+     * \note The blendGroup must have finished construction.
+     * \return The index'th weight.
+     */
+    AXOM_HOST_DEVICE
+    inline float weight(int index) const
+    {
+      const auto start = m_state->m_blendGroupStartView[m_blendGroupId];
+      return m_state->m_blendCoeffView[start + index];
+    }
+
+    /**
+     * \brief Return the index'th weight in the blend group.
+     * \note The blendGroup must have finished construction.
+     * \return The index'th weight.
+     */
+    AXOM_HOST_DEVICE
+    inline IndexType id(int index) const
+    {
+      const auto start = m_state->m_blendGroupStartView[m_blendGroupId];
+      return m_state->m_blendIdsView[start + index];
+    }
+
+    /**
      * \brief Return the name of the current blend group.
      * \return The name of the current blend group.
      */
@@ -401,6 +425,76 @@ public:
 
     groups.m_state = const_cast<State *>(&m_state);
     return groups;
+  }
+
+  /**
+   * \brief Filter out single node blend groups from the unique.
+   *
+   * \param blend The BlendData that describes the blend groups.
+   * \param[out] newSelectedIndices An array that will contain the data for the
+   *                                new selected indices, if we need to make it.
+   */
+  void filterUnique(axom::Array<KeyType> &newUniqueNames, axom::Array<axom::IndexType> &newUniqueIndices)
+  {
+    AXOM_ANNOTATE_SCOPE("filterUnique");
+    using reduce_policy = typename axom::execution_space<ExecSpace>::reduce_policy;
+    const auto nIndices = m_state.m_blendUniqueIndicesView.size();
+std::cout << "filterUnique: nIndices=" << nIndices << std::endl;
+
+    if(nIndices > 0)
+    {
+      const int allocatorID = axom::execution_space<ExecSpace>::allocatorID();
+
+      // Make a mask of selected indices have more than one id in their blend group.
+      axom::Array<int> mask(nIndices, nIndices, allocatorID);
+      auto maskView = mask.view();
+      RAJA::ReduceSum<reduce_policy, int> mask_reduce(0);
+      State deviceState(m_state);
+      axom::for_all<ExecSpace>(nIndices, AXOM_LAMBDA(auto index)
+      {
+        const auto uniqueIndex = deviceState.m_blendUniqueIndicesView[index];
+        const int m = (deviceState.m_blendGroupSizesView[uniqueIndex] > 1) ? 1 : 0;
+if(m == 0)
+{
+std::cout << "(" << uniqueIndex << ", " << deviceState.m_blendGroupSizesView[uniqueIndex] << ", " << m << "), ";
+}
+        maskView[index] = m;
+        mask_reduce += m;
+      });
+std::cout << std::endl;
+      // If we need to filter, do it.
+      const int mask_count = mask_reduce.get();
+std::cout << "mask_count = " << mask_count << std::endl;
+      if(mask_count < nIndices)
+      {
+std::cout << "Making new selected indices" << std::endl;
+
+        // Make offsets.
+        axom::Array<int> offset(nIndices, nIndices, allocatorID);
+        auto offsetView = offset.view();
+        axom::exclusive_scan<ExecSpace>(maskView, offsetView);
+
+        // Make new unique data where we compress out blend groups that had 1 node.
+        newUniqueNames = axom::Array<KeyType>(mask_count, mask_count, allocatorID);
+        newUniqueIndices = axom::Array<IndexType>(mask_count, mask_count, allocatorID);
+
+        auto newUniqueNamesView = newUniqueNames.view();
+        auto newUniqueIndicesView = newUniqueIndices.view();
+        axom::for_all<ExecSpace>(nIndices, AXOM_LAMBDA(auto index)
+        {
+          if(maskView[index] > 0)
+          {
+            const auto offset = offsetView[index];
+            newUniqueNamesView[offset] = deviceState.m_blendUniqueNamesView[index];
+            newUniqueIndicesView[offset] = deviceState.m_blendUniqueIndicesView[index];
+          }
+        });
+
+        // Replace the unique names/indices.
+        m_state.m_blendUniqueNamesView = newUniqueNamesView;
+        m_state.m_blendUniqueIndicesView = newUniqueIndicesView;
+      }
+    }
   }
 
   /**

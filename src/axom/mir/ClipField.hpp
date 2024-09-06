@@ -24,12 +24,23 @@
 #include <conduit/conduit.hpp>
 #include <conduit/conduit_blueprint_mesh_utils.hpp>
 #include <conduit/conduit_relay_io.hpp>
+#include <conduit/conduit_relay_io_blueprint.hpp>
 
 #include <map>
 #include <string>
 
+// Enable code to save some debugging output files.
 //#define AXOM_DEBUG_CLIP_FIELD
+
+// Filter out degenerate zones in 2D.
 #define AXOM_CLIP_FILTER_DEGENERATES
+
+// Enable code to reduce the number of blend groups by NOT emitting 1-node
+// blend groups and instead using a node lookup field for those. This does
+// seem to have some issues producing the same node id for edge blend groups
+// and original nodes.
+//#define AXOM_REDUCE_BLEND_GROUPS
+//#define AXOM_REDUCE_BLEND_GROUPS_DEBUGGING
 
 namespace axom
 {
@@ -465,6 +476,15 @@ public:
     zoneData.m_clipCasesView = clipCases.view();
     zoneData.m_pointsUsedView = pointsUsed.view();
 
+    // Allocate some memory and store views in NodeData.
+    NodeData nodeData;
+#if defined(AXOM_REDUCE_BLEND_GROUPS)
+    const auto nnodes = m_coordsetView.numberOfNodes();
+    axom::Array<int> nodeUsed(nnodes, nnodes, allocatorID);
+    nodeData.m_nodeUsedView = nodeUsed.view();
+#endif
+
+    // Allocate some memory and store views in FragmentData.
     axom::Array<IndexType> fragments(
       nzones,
       nzones,
@@ -509,10 +529,52 @@ public:
     builder.setBlendGroupSizes(blendGroups.view(), blendGroupsLen.view());
 
     // Compute sizes and offsets
-    computeSizes(clipTableViews, builder, zoneData, fragmentData, opts, selectedZones);
+    computeSizes(clipTableViews, builder, zoneData, nodeData, fragmentData, opts, selectedZones);
     computeFragmentSizes(fragmentData, selectedZones);
     computeFragmentOffsets(fragmentData);
 
+    // Compute original node count that we're preserving, make node maps.
+#if defined(AXOM_REDUCE_BLEND_GROUPS)
+    const int compactSize = countOriginalNodes(nodeData);
+    axom::Array<IndexType> compactNodes(compactSize, compactSize, allocatorID);
+    axom::Array<IndexType> oldNodeToNewNode(nnodes, nnodes, allocatorID);
+    nodeData.m_originalIdsView = compactNodes.view();
+    nodeData.m_oldNodeToNewNodeView = oldNodeToNewNode.view();
+    createNodeMaps(nodeData);
+#endif
+#if 0
+    conduit::Node tmpMesh;
+    tmpMesh[n_coordset.path()].set_external(n_coordset);
+    tmpMesh[n_topo.path()].set_external(n_topo);
+    tmpMesh["fields/nodeUsed/topology"] = n_topo.name();
+    tmpMesh["fields/nodeUsed/association"] = "vertex";
+    tmpMesh["fields/nodeUsed/values"].set_external(nodeData.m_nodeUsedView.data(), nodeData.m_nodeUsedView.size());
+
+    tmpMesh["fields/oldNodeToNewNode/topology"] = n_topo.name();
+    tmpMesh["fields/oldNodeToNewNode/association"] = "vertex";
+    tmpMesh["fields/oldNodeToNewNode/values"].set_external(nodeData.m_oldNodeToNewNodeView.data(), nodeData.m_oldNodeToNewNodeView.size());
+
+    // Make filename
+    int count = 0;
+    std::string path;
+    do
+    {
+      std::stringstream ss;
+      ss << "clipfield." << count;
+      path = ss.str();
+      count++;
+    } while(axom::utilities::filesystem::pathExists(path + ".root"));
+
+    // Save data.
+    conduit::relay::io::blueprint::save_mesh(tmpMesh, path, "hdf5");
+    tmpMesh.print();
+#endif
+#if defined(AXOM_REDUCE_BLEND_GROUPS)
+    nodeUsed.clear();
+    nodeData.m_nodeUsedView = axom::ArrayView<int>();
+#endif
+
+    // Further initialize the blend group builder.
     IndexType blendGroupsSize = 0, blendGroupLenSize = 0;
     builder.computeBlendGroupSizes(blendGroupsSize, blendGroupLenSize);
     builder.setBlendGroupOffsets(blendOffset.view(), blendGroupOffsets.view());
@@ -546,6 +608,10 @@ public:
     // Make the blend groups unique
     axom::Array<KeyType> uNames;
     axom::Array<axom::IndexType> uIndices;
+#if defined(AXOM_REDUCE_BLEND_GROUPS)
+    axom::Array<KeyType> newUniqueNames;
+    axom::Array<axom::IndexType> newUniqueIndices;
+#endif
     {
       AXOM_ANNOTATE_SCOPE("unique");
       axom::mir::utilities::Unique<ExecSpace, KeyType>::execute(
@@ -553,19 +619,35 @@ public:
         uNames,
         uIndices);
       builder.setUniqueNames(uNames.view(), uIndices.view());
+
+// NOTE TO SELF: This is new code that I'm trying out to remove single-node
+//               blend groups from the selected unique blend groups. It's not
+//               quite working yet.
+#if 0//defined(AXOM_REDUCE_BLEND_GROUPS)
+      // Filter the unique names/indices to remove single node blend groups.
+      builder.filterUnique(newUniqueNames, newUniqueIndices);
+      uNames.clear();
+      uIndices.clear();
+#endif
     }
+
+    // Make BlendData.
     bputils::BlendData blend = builder.makeBlendData();
+    blend.m_originalIdsView = nodeData.m_originalIdsView;
 
     // Make the clipped mesh
     makeTopology(clipTableViews,
                  builder,
                  zoneData,
+                 nodeData,
                  fragmentData,
                  opts,
                  selectedZones,
                  n_newTopo,
                  n_newCoordset,
                  n_newFields);
+
+    // Make the coordset
     makeCoordset(blend, n_coordset, n_newCoordset);
 
     // Get the fields that we want to process.
@@ -664,6 +746,16 @@ private:
   };
 
   /**
+   * \brief Contains some per-node data that we want to hold onto between methods.
+   */
+  struct NodeData
+  {
+    axom::ArrayView<int>       m_nodeUsedView {};
+    axom::ArrayView<IndexType> m_oldNodeToNewNodeView {};
+    axom::ArrayView<IndexType> m_originalIdsView {};
+  };
+
+  /**
    * \brief Make a bitset that indicates the parts of the selection that are selected.
    */
   int getSelection(const ClipOptions &opts) const
@@ -711,6 +803,7 @@ private:
    * \param[in] clipTableViews An object that holds views of the clipping table data.
    * \param[in] builder This object holds views to blend group data and helps with building/access.
    * \param[in] zoneData This object holds views to per-zone data.
+   * \param[in] nodeData This object holds views to per-node data.
    * \param[in] fragmentData This object holds views to per-fragment data.
    * \param[inout] opts Clipping options.
    *
@@ -719,6 +812,7 @@ private:
   void computeSizes(ClipTableViews clipTableViews,
                     BlendGroupBuilderType builder,
                     ZoneData zoneData,
+                    NodeData nodeData,
                     FragmentData fragmentData,
                     const ClipOptions &opts,
                     const SelectedZones<ExecSpace> &selectedZones) const
@@ -728,6 +822,12 @@ private:
 
     auto blendGroupsView = builder.state().m_blendGroupsView;
     auto blendGroupsLenView = builder.state().m_blendGroupsLenView;
+
+    // Initialize nodeUsed data for nodes.
+    axom::for_all<ExecSpace>(nodeData.m_nodeUsedView.size(), AXOM_LAMBDA(auto index)
+    {
+      nodeData.m_nodeUsedView[index] = 0;
+    });
 
     const auto deviceIntersector = m_intersector.view();
     m_topologyView.template for_selected_zones<ExecSpace>(
@@ -808,6 +908,20 @@ private:
         // Save the flags for the points that were used in this zone
         zoneData.m_pointsUsedView[szIndex] = ptused;
 
+#if defined(AXOM_REDUCE_BLEND_GROUPS)
+        // NOTE: We are not going to emit blend groups for P0..P7 points.
+
+        // If the zone uses a node, set that node in nodeUsedView.
+        for(IndexType pid = P0; pid <= P7; pid++)
+        {
+          if(axom::utilities::bitIsSet(ptused, pid))
+          {
+            const auto nodeId = zone.getId(pid);
+            // NOTE: Multiple threads may write to this node but they all write the same value.
+            nodeData.m_nodeUsedView[nodeId] = 1;
+          }
+        }
+#else
         // Count which points in the original cell are used.
         for(IndexType pid = P0; pid <= P7; pid++)
         {
@@ -816,6 +930,7 @@ private:
           thisBlendGroupLen += incr;  // {p0}
           thisBlendGroups += incr;
         }
+#endif
 
         // Count edges that are used.
         for(IndexType pid = EA; pid <= EL; pid++)
@@ -910,6 +1025,71 @@ private:
 #endif
   }
 
+#if defined(AXOM_REDUCE_BLEND_GROUPS)
+  /**
+   * \brief Counts the number of original nodes used by the selected fragments.
+   *
+   * \param nodeData The node data (passed by value on purpose)
+   * \return The number of original nodes used by selected fragments.
+   */
+  int countOriginalNodes(NodeData nodeData) const
+  {
+    AXOM_ANNOTATE_SCOPE("countOriginalNodes");
+    // Count the number of original nodes we'll use directly.
+    RAJA::ReduceSum<reduce_policy, int> nUsed_reducer(0);
+    const auto nodeUsedView = nodeData.m_nodeUsedView;
+    axom::for_all<ExecSpace>(nodeUsedView.size(), AXOM_LAMBDA(auto index)
+    {
+      nUsed_reducer += nodeUsedView[index];
+    });
+    return nUsed_reducer.get();
+  }
+
+  /**
+   * \brief Creates the node lists/maps.
+   *
+   * \param nodeData The node data that contains views where the node data is stored.
+   */
+  void createNodeMaps(NodeData nodeData) const
+  {
+    AXOM_ANNOTATE_SCOPE("createNodeMaps");
+    const int allocatorID = axom::execution_space<ExecSpace>::allocatorID();
+
+    // Make offsets into a compact array.
+    const auto nnodes = nodeData.m_nodeUsedView.size();
+    axom::Array<int> nodeOffsets(nnodes, nnodes, allocatorID);
+    auto nodeOffsetsView = nodeOffsets.view();
+    axom::exclusive_scan<ExecSpace>(nodeData.m_nodeUsedView, nodeOffsetsView);
+
+    // Make the compact node list and oldToNew map.
+    axom::for_all<ExecSpace>(nnodes, AXOM_LAMBDA(auto index)
+    {
+      IndexType newId = 0;
+      if(nodeData.m_nodeUsedView[index] > 0)
+      {
+        nodeData.m_originalIdsView[nodeOffsetsView[index]] = index;
+        newId = index;
+      }
+      nodeData.m_oldNodeToNewNodeView[index] = newId;
+    });
+
+#if defined(AXOM_DEBUG_CLIP_FIELD)
+    std::cout << "---------------------------- createNodeMaps "
+                 "----------------------------"
+              << std::endl;
+    details::printHost("nodeData.m_nodeUsedView",
+                       nodeData.m_nodeUsedView);
+    details::printHost("nodeData.m_originalIdsView",
+                       nodeData.m_originalIdsView);
+    details::printHost("nodeData.m_oldNodeToNewNodeView",
+                       nodeData.m_oldNodeToNewNodeView);
+    std::cout << "-------------------------------------------------------------"
+                 "-----------"
+              << std::endl;
+#endif
+  }
+#endif
+
   /**
    * \brief Fill in the data for the blend group views.
    *
@@ -991,8 +1171,9 @@ private:
             }
           }
         }
-
+#if !defined(AXOM_REDUCE_BLEND_GROUPS)
         // Add blend group for each original point that was used.
+        // NOTE - this can add a lot of blend groups with 1 node.
         for(IndexType pid = P0; pid <= P7; pid++)
         {
           if(axom::utilities::bitIsSet(ptused, pid))
@@ -1002,7 +1183,7 @@ private:
             groups.endGroup();
           }
         }
-
+#endif
         // Add blend group for each edge point that was used.
         for(IndexType pid = EA; pid <= EL; pid++)
         {
@@ -1046,6 +1227,7 @@ private:
    * \param[in] clipTableViews An object that holds views of the clipping table data.
    * \param[in] builder This object holds views to blend group data and helps with building/access.
    * \param[in] zoneData This object holds views to per-zone data.
+   * \param[in] nodeData This object holds views to per-node data.
    * \param[in] fragmentData This object holds views to per-fragment data.
    * \param[in] opts Clipping options.
    * \param[in] selectedZones The selected zones.
@@ -1058,6 +1240,7 @@ private:
   void makeTopology(ClipTableViews clipTableViews,
                     BlendGroupBuilderType builder,
                     ZoneData zoneData,
+                    NodeData nodeData,
                     FragmentData fragmentData,
                     const ClipOptions &opts,
                     const SelectedZones<ExecSpace> &selectedZones,
@@ -1143,6 +1326,7 @@ private:
 #endif
     {
       AXOM_ANNOTATE_SCOPE("build");
+      const auto origSize = nodeData.m_originalIdsView.size();
       m_topologyView.template for_selected_zones<ExecSpace>(
         selectedZones.view(),
         AXOM_LAMBDA(auto szIndex,
@@ -1153,7 +1337,9 @@ private:
 
           // Seek to the start of the blend groups for this zone.
           auto groups = builder.blendGroupsForZone(szIndex);
-
+#if defined(AXOM_REDUCE_BLEND_GROUPS_DEBUGGING)
+std::cout << "zone " << szIndex << std::endl;
+#endif
           // Go through the points in the order they would have been added as blend
           // groups, get their blendName, and then overall index of that blendName
           // in uNames, the unique list of new dof names. That will be their index
@@ -1164,23 +1350,62 @@ private:
           {
             if(axom::utilities::bitIsSet(ptused, pid))
             {
-              point_2_new[pid] = groups.uniqueBlendGroupIndex();
+              point_2_new[pid] = origSize + groups.uniqueBlendGroupIndex();
+#if defined(AXOM_REDUCE_BLEND_GROUPS_DEBUGGING)
+std::cout << "\tpoint N" << (pid - N0) << " -> " << point_2_new[pid] << std::endl;
+#endif
               groups++;
             }
           }
+#if defined(AXOM_REDUCE_BLEND_GROUPS)
+          // For single nodes, we did not make a blend group. We look up the new
+          // node id from nodeData.m_oldNodeToNewNodeView.
           for(BitSet pid = P0; pid <= P7; pid++)
           {
             if(axom::utilities::bitIsSet(ptused, pid))
             {
-              point_2_new[pid] = groups.uniqueBlendGroupIndex();
+              const auto nodeId = zone.getId(pid);
+              point_2_new[pid] = nodeData.m_oldNodeToNewNodeView[nodeId];
+#if defined(AXOM_REDUCE_BLEND_GROUPS_DEBUGGING)
+std::cout << "\tpoint P" << pid << " -> " << point_2_new[pid] << std::endl;
+#endif
+            }
+          }
+#else
+          for(BitSet pid = P0; pid <= P7; pid++)
+          {
+            if(axom::utilities::bitIsSet(ptused, pid))
+            {
+              point_2_new[pid] = origSize + groups.uniqueBlendGroupIndex();
               groups++;
             }
           }
+#endif
           for(BitSet pid = EA; pid <= EL; pid++)
           {
             if(axom::utilities::bitIsSet(ptused, pid))
             {
-              point_2_new[pid] = groups.uniqueBlendGroupIndex();
+#if defined(AXOM_REDUCE_BLEND_GROUPS)
+              // There is a chance that the edge blend group was emitted with a
+              // single node if the edge was really close to a corner node.
+              if(groups.size() == 1)
+              {
+                const auto nodeId = groups.id(0);
+                point_2_new[pid] = nodeData.m_oldNodeToNewNodeView[nodeId];
+#if defined(AXOM_REDUCE_BLEND_GROUPS_DEBUGGING)
+std::cout << "\tpoint E" << static_cast<char>(('A' + (pid - EA))) << " -> " << point_2_new[pid] << " (size=1)" << std::endl;
+#endif
+              }
+              else
+              {
+                point_2_new[pid] = origSize + groups.uniqueBlendGroupIndex();
+#if defined(AXOM_REDUCE_BLEND_GROUPS_DEBUGGING)
+std::cout << "\tpoint E" << static_cast<char>(('A' + (pid - EA))) << " -> " << point_2_new[pid] << " (size>1)" << std::endl;
+#endif
+              }
+#else
+              point_2_new[pid] = origSize + groups.uniqueBlendGroupIndex();
+#endif
               groups++;
             }
           }
@@ -1210,12 +1435,15 @@ private:
               {
                 // Output the nodes used in this zone.
                 const int fragmentSize = fragment.size();
-                //#if defined(AXOM_CLIP_FILTER_DEGENERATES)
-                //                int connStart = outputIndex;
-                //#endif
                 offsetsView[sizeIndex] = outputIndex;
                 for(int i = 2; i < fragmentSize; i++)
                   connView[outputIndex++] = point_2_new[fragment[i]];
+#if defined(AXOM_REDUCE_BLEND_GROUPS_DEBUGGING)
+                std::cout << "fragment: ";
+                for(int i = 2; i < fragmentSize; i++)
+                  std::cout << point_2_new[fragment[i]] << ", ";
+                std::cout << std::endl;
+#endif
 
                 const auto nIdsThisFragment = fragmentSize - 2;
 #if defined(AXOM_CLIP_FILTER_DEGENERATES)
