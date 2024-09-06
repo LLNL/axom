@@ -536,60 +536,6 @@ bool intersect(const BezierCurve<T, 2>& c1,
                                          nevals);
 }
 
-/*!
- * \brief Tests if Bezier Curve \a c and ray \a r intersect.
- * \return status true iff \a c intersects \a r, otherwise false.
- *
- * \param [in] c the BezierCurve, parametrized in [0,1)
- * \param [in] r the Ray, parametrized in [0,inf)
- * \param [out] cp vector of parameter space intersection points for \a c
- * \param [out] rp vector of parameter space intersection points for \a r
- * \param [in] tol tolerance parameter for determining if a curve can
- * be approximated by a line segment.
- * \return True if the curve and line intersect, false otherwise. Intersection
- * parameters are stored in \a sp and \a tp
- *
- * Finds all intersection points between the curve and the ray.
- *
- * \note This function assumes two dimensional curves and rays in a plane.
- *
- * \note This function assumes that the curves are in general position.
- * Specifically, we assume that all intersections are at points and that
- * the curves don't overlap.
- *
- * \note This function assumes the all intersections have multiplicity
- * one, i.e. there are no points at which the curves and their derivatives
- * both intersect. Thus, the function does not find tangencies.
- *
- * \note This function assumes that the curves are half-open, i.e. they
- * contain their first endpoint, but not their last endpoint. Thus, the
- * curves do not intersect at \f$ s==1 \f$ or at \f$ t==1 \f$.
- */
-template <typename T>
-bool intersect(const BezierCurve<T, 2>& c,
-               const Ray<T, 2>& r,
-               std::vector<T>& cp,
-               std::vector<T>& rp,
-               int& nevals,
-               double tol = 1E-8)
-{
-  const double offset = 0.;
-  const double scale = 1.;
-
-  // for efficiency, linearity check actually uses a squared tolerance
-  const double sq_tol = tol * tol;
-
-  return detail::intersect_ray_bezier(c,
-                                      r,
-                                      cp,
-                                      rp,
-                                      sq_tol,
-                                      c.getOrder(),
-                                      offset,
-                                      scale,
-                                      nevals);
-}
-
 /// @}
 
 /// \name Plane Intersection Routines
