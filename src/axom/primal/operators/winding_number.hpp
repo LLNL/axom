@@ -265,7 +265,8 @@ double winding_number(const Point<T, 2>& q,
                                           edge_tol,
                                           EPS,
                                           approximating_polygon,
-                                          gwn, isCoincident);
+                                          gwn,
+                                          isCoincident);
 
   // The last vertex of the polygon is the t=1 point of the curve
   approximating_polygon.addVertex(c[ord]);
@@ -274,7 +275,7 @@ double winding_number(const Point<T, 2>& q,
   bool isOnEdge = false;
   double closed_curve_wn =
     winding_number(q, approximating_polygon, isOnEdge, false, edge_tol);
-  
+
   // Compute the fractional value of the closed curve
   int n = approximating_polygon.numVertices();
   double closure_wn = detail::linear_winding_number(q,
@@ -282,7 +283,7 @@ double winding_number(const Point<T, 2>& q,
                                                     approximating_polygon[0],
                                                     edge_tol);
 
-  // If the point is on the boundary of the approximating polygon, 
+  // If the point is on the boundary of the approximating polygon,
   //  or coincident with the curve (rare), then winding_number<polygon>
   //  doesn't return the right half-integer. Have to go edge-by-edge
   if(isCoincident || isOnEdge)
@@ -290,10 +291,11 @@ double winding_number(const Point<T, 2>& q,
     closed_curve_wn = closure_wn;
     for(int i = 1; i < n; ++i)
     {
-      closed_curve_wn += detail::linear_winding_number(q,
-                                                       approximating_polygon[i - 1],
-                                                       approximating_polygon[i],
-                                                       edge_tol);
+      closed_curve_wn +=
+        detail::linear_winding_number(q,
+                                      approximating_polygon[i - 1],
+                                      approximating_polygon[i],
+                                      edge_tol);
     }
   }
 
@@ -321,7 +323,7 @@ double winding_number(const Point<T, 2>& q,
   double ret_val = 0.0;
   for(int i = 0; i < cpoly.numEdges(); i++)
   {
-    ret_val += winding_number(q, cpoly[i], edge_tol, EPS );
+    ret_val += winding_number(q, cpoly[i], edge_tol, EPS);
   }
 
   return ret_val;
