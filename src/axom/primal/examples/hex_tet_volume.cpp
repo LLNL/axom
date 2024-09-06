@@ -129,19 +129,17 @@ void check_intersection_volumes(const Input& params)
       "Running intersection volume check in execution space: {}",
       axom::execution_space<ExecSpace>::name())));
 
-  // Save current/default allocator
-  const int current_allocator = axom::getDefaultAllocatorID();
-
-  // Set new default allocator
-  axom::setDefaultAllocator(axom::execution_space<ExecSpace>::allocatorID());
+  // Get allocators
+  constexpr bool on_device = axom::execution_space<ExecSpace>::onDevice();
+  const int host_allocator = axom::execution_space<axom::SEQ_EXEC>::allocatorID();
+  const int device_allocator = axom::execution_space<ExecSpace>::allocatorID();
 
   // Generate hexahedra subdividing the unit cube with corner points
   // (-1,-1,-1) and (1,1,1)
   int const HEX_RESOLUTION = params.hexResolution;
   int hex_index = 0;
   int const NUM_HEXES = HEX_RESOLUTION * HEX_RESOLUTION * HEX_RESOLUTION;
-  axom::Array<HexahedronType> hexes(NUM_HEXES, NUM_HEXES);
-  const axom::ArrayView<HexahedronType> hexes_view(hexes);
+  axom::Array<HexahedronType> hexes_h(NUM_HEXES, NUM_HEXES, host_allocator);
 
   SLIC_INFO(axom::fmt::format(
     "{:-^80}",
@@ -162,10 +160,10 @@ void check_intersection_volumes(const Input& params)
       for(int k = 0; k < HEX_RESOLUTION; k++)
       {
         double edge_length = 2.0 / HEX_RESOLUTION;
-        hexes_view[hex_index] = generateCube(PointType {edge_length * i - 1,
-                                                        edge_length * j - 1,
-                                                        edge_length * k - 1},
-                                             edge_length);
+        hexes_h[hex_index] = generateCube(PointType {edge_length * i - 1,
+                                                     edge_length * j - 1,
+                                                     edge_length * k - 1},
+                                          edge_length);
         hex_index++;
       }
     }
@@ -175,8 +173,7 @@ void check_intersection_volumes(const Input& params)
   int const TET_RESOLUTION = params.tetResolution;
   int tet_index = 0;
   int const NUM_TETS = 4 * std::pow(2, TET_RESOLUTION);
-  axom::Array<TetrahedronType> tets(NUM_TETS, NUM_TETS);
-  const axom::ArrayView<TetrahedronType> tets_view(tets);
+  axom::Array<TetrahedronType> tets_h(NUM_TETS, NUM_TETS, host_allocator);
   double step_size = 1.0 / std::pow(2, TET_RESOLUTION);
 
   SLIC_INFO(axom::fmt::format(
@@ -211,16 +208,26 @@ void check_intersection_volumes(const Input& params)
         double x2 = axom::utilities::lerp<double>(-1.0, 1.0, step_size * (i + 1));
         double z2 = std::sqrt(1 - (x2 * x2)) * z_sign;
 
-        tets_view[tet_index] = TetrahedronType(PointType {x1, 0, z1},
-                                               PointType::zero(),
-                                               PointType {x2, 0, z2},
-                                               PointType {0, pole_sign, 0});
+        tets_h[tet_index] = TetrahedronType(PointType {x1, 0, z1},
+                                            PointType::zero(),
+                                            PointType {x2, 0, z2},
+                                            PointType {0, pole_sign, 0});
         tet_index++;
       }
     }
   }
 
   // Calculate expected sum of all tetrahedra volume
+  axom::Array<HexahedronType> hexes_d = on_device
+    ? axom::Array<HexahedronType>(hexes_h, device_allocator)
+    : axom::Array<HexahedronType>();
+  auto hexes_view = on_device ? hexes_d.view() : hexes_h.view();
+
+  axom::Array<TetrahedronType> tets_d = on_device
+    ? axom::Array<TetrahedronType>(tets_h, device_allocator)
+    : axom::Array<TetrahedronType>();
+  auto tets_view = on_device ? tets_d.view() : tets_h.view();
+
   using REDUCE_POL = typename axom::execution_space<ExecSpace>::reduce_policy;
 
   RAJA::ReduceSum<REDUCE_POL, double> total_tet_vol(0.0);
@@ -276,9 +283,6 @@ void check_intersection_volumes(const Input& params)
     "{:-^80}",
     axom::fmt::format("Difference between sums is {}",
                       std::abs(total_intersect_vol.get() - total_tet_vol.get()))));
-
-  // Reset default allocator
-  axom::setDefaultAllocator(current_allocator);
 }
 
 int main(int argc, char** argv)

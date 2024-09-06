@@ -168,7 +168,7 @@ The :ref:`GenericOutputStream`,  takes two arguments in its constructor:
    will deallocate them when ``slic::finalize()`` is called.
 
 Step 5.1: Tagged Log Streams
-^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Slic has limited support for tags, where users can bind streams
 to user-defined tags. The bound streams only output messages with the

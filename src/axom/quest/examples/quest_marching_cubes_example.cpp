@@ -23,6 +23,7 @@
 
 // Axom includes
 #include "axom/core.hpp"
+#include "axom/core/NumericLimits.hpp"
 #include "axom/slic.hpp"
 #include "axom/primal.hpp"
 #include "axom/mint/mesh/UnstructuredMesh.hpp"
@@ -49,7 +50,6 @@
 
 // C/C++ includes
 #include <string>
-#include <limits>
 #include <map>
 #include <vector>
 #include <cmath>
@@ -1479,8 +1479,8 @@ struct ContourTestBase
             cellMDMapper.toMultiIndex(parentCellId);
 
           // Compute min and max function values in the cell.
-          double minFcnValue = std::numeric_limits<double>::max();
-          double maxFcnValue = std::numeric_limits<double>::min();
+          double minFcnValue = axom::numeric_limits<double>::max();
+          double maxFcnValue = axom::numeric_limits<double>::min();
           constexpr short int cornerCount =
             (1 << DIM);  // Number of nodes in a cell.
           for(short int cornerId = 0; cornerId < cornerCount; ++cornerId)
