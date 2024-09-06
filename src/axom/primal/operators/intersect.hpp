@@ -513,7 +513,6 @@ bool intersect(const BezierCurve<T, 2>& c1,
                const BezierCurve<T, 2>& c2,
                std::vector<T>& sp,
                std::vector<T>& tp,
-               int& nevals,
                double tol = 1E-8)
 {
   const double offset = 0.;
@@ -532,8 +531,7 @@ bool intersect(const BezierCurve<T, 2>& c1,
                                          offset,
                                          scale,
                                          offset,
-                                         scale,
-                                         nevals);
+                                         scale);
 }
 
 /// @}
