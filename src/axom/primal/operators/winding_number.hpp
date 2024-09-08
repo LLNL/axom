@@ -251,6 +251,12 @@ double winding_number(const Point<T, 2>& q,
   const int ord = c.getOrder();
   if(ord <= 0) return 0.0;
 
+  // Early return is possible for must points + curves
+  if(!c.boundingBox().contains(q))
+  {
+    return 0.0 - detail::linear_winding_number(q, c[0], c[ord], edge_tol);
+  }
+
   // The first vertex of the polygon is the t=0 point of the curve
   Polygon<T, 2> approximating_polygon(1);
   approximating_polygon.addVertex(c[0]);
@@ -336,10 +342,9 @@ double winding_number(const Point<T, 2>& q,
                       double EPS = 1e-8)
 {
   double ret_val = 0.0;
-  int dummy_val = 0;
   for(int i = 0; i < carray.size(); i++)
   {
-    ret_val += winding_number(q, carray[i], false, dummy_val, edge_tol);
+    ret_val += winding_number(q, carray[i], false, edge_tol);
   }
 
   return ret_val;
