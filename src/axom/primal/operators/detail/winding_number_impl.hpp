@@ -15,7 +15,6 @@
 #include "axom/primal/operators/in_polygon.hpp"
 #include "axom/primal/operators/is_convex.hpp"
 #include "axom/primal/operators/squared_distance.hpp"
-#include "axom/primal/operators/intersect.hpp"
 
 // C++ includes
 #include <math.h>
@@ -236,14 +235,14 @@ void construct_approximating_polygon(const Point<T, 2>& q,
 
   if(!isConvexControlPolygon)
   {
-    isConvexControlPolygon = is_convex(controlPolygon, PRIMAL_TINY);
+    isConvexControlPolygon = is_convex(controlPolygon, EPS);
   }
 
   // Formulas for winding number only work if shape is convex
   if(isConvexControlPolygon)
   {
     // Bezier curves are always contained in their convex control polygon
-    if(!in_polygon(q, controlPolygon, includeBoundary, useNonzeroRule, PRIMAL_TINY))
+    if(!in_polygon(q, controlPolygon, includeBoundary, useNonzeroRule, EPS))
     {
       return;
     }

@@ -254,7 +254,7 @@ double winding_number(const Point<T, 2>& q,
   // Early return is possible for must points + curves
   if(!c.boundingBox().contains(q))
   {
-    return 0.0 - detail::linear_winding_number(q, c[0], c[ord], edge_tol);
+    return detail::linear_winding_number(q, c[0], c[ord], edge_tol);
   }
 
   // The first vertex of the polygon is the t=0 point of the curve
