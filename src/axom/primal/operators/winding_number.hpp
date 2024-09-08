@@ -339,11 +339,7 @@ double winding_number(const Point<T, 2>& q,
   int dummy_val = 0;
   for(int i = 0; i < carray.size(); i++)
   {
-    ret_val += detail::curve_winding_number_recursive(q,
-                                                      carray[i],
-                                                      false,
-                                                      dummy_val,
-                                                      edge_tol);
+    ret_val += winding_number(q, carray[i], false, dummy_val, edge_tol);
   }
 
   return ret_val;
