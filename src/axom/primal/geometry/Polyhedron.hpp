@@ -21,6 +21,8 @@
 #include "axom/primal/geometry/Tetrahedron.hpp"
 #include "axom/primal/geometry/Vector.hpp"
 
+#include "axom/primal/operators/is_convex.hpp"
+
 #include <ostream>
 
 namespace axom
@@ -753,6 +755,9 @@ public:
    *       The Polyhedron's vertex neighbors are created assuming this vertex
    *       ordering.
    *
+   *
+   * \warning Hexahedron should be convex.
+   *
    * \warning tryFixOrientation flag does not guarantee the Polyhedron's vertex order
    *          will be valid. It is the responsiblity of the caller to pass
    *          a Hexahedron with a valid vertex order. Otherwise, if the
@@ -768,6 +773,8 @@ public:
   static Polyhedron from_primitive(const Hexahedron<T, NDIMS>& hex,
                                    bool tryFixOrientation = false)
   {
+    SLIC_ASSERT(axom::primal::is_convex(hex));
+
     // Initialize our polyhedron to return
     Polyhedron<T, NDIMS> poly;
 
