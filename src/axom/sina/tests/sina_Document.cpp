@@ -16,6 +16,9 @@
 #include "axom/sina/core/Run.hpp"
 
 #include "axom/sina/tests/TestRecord.hpp"
+#include "conduit.hpp"
+#include "conduit_relay.hpp"
+#include "conduit_relay_io.hpp"
 
 namespace axom
 {
@@ -283,7 +286,7 @@ NamedTempFile::NamedTempFile()
 
 NamedTempFile::~NamedTempFile() { std::remove(fileName.data()); }
 
-TEST(Document, saveDocument)
+TEST(Document, saveDocument_json)
 {
   NamedTempFile tmpFile;
 
@@ -297,6 +300,9 @@ TEST(Document, saveDocument)
   Document document;
   document.add(
     std::make_unique<Record>(ID {"the id", IDType::Global}, "the type"));
+
+  std::istringstream input("json");
+  std::cin.rdbuf(input.rdbuf());
 
   saveDocument(document, tmpFile.getName());
 
@@ -313,6 +319,38 @@ TEST(Document, saveDocument)
   auto &readRecord = readContents[EXPECTED_RECORDS_KEY][0];
   EXPECT_EQ("the id", readRecord["id"].as_string());
   EXPECT_EQ("the type", readRecord["type"].as_string());
+}
+
+TEST(Document, saveDocument_hdf5)
+{
+    NamedTempFile tmpFile;
+
+    // First, write some random stuff to the temp file to make sure it is
+    // overwritten.
+    {
+        std::ofstream fout {tmpFile.getName()};
+        fout << "Initial contents";
+    }
+
+    Document document;
+    document.add(
+        std::make_unique<Record>(ID {"the id", IDType::Global}, "the type"));
+
+    // Simulate manual input by redirecting stdin to automatically provide "hdf5"
+    std::istringstream input("hdf5");
+    std::cin.rdbuf(input.rdbuf());
+
+    saveDocument(document, tmpFile.getName(), 1);
+
+    // Load the HDF5 file and verify its contents
+    conduit::Node readContents;
+    conduit::relay::io::load(tmpFile.getName(), "hdf5", readContents);
+
+    ASSERT_TRUE(readContents[EXPECTED_RECORDS_KEY].dtype().is_list());
+    EXPECT_EQ(1, readContents[EXPECTED_RECORDS_KEY].number_of_children());
+    auto &readRecord = readContents[EXPECTED_RECORDS_KEY][0];
+    EXPECT_EQ("the id", readRecord["id"].as_string());
+    EXPECT_EQ("the type", readRecord["type"].as_string());
 }
 
 TEST(Document, load_specifiedRecordLoader)

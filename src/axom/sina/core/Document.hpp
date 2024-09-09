@@ -170,6 +170,13 @@ public:
   conduit::Node toNode() const;
 
   /**
+   *  \brief Dump this document as an HDF5 File
+   * 
+   *  \return None
+   */
+  void toHDF5(const std::string &filename) const;
+
+  /**
      * \brief Convert this document to a JSON string.
      *
      * \return the contents of the document as a JSON string
@@ -197,7 +204,7 @@ private:
  * \param fileName the location to which to save the file
  * \throws std::ios::failure if there are any IO errors
  */
-void saveDocument(Document const &document, std::string const &fileName);
+void saveDocument(Document const &document, std::string const &fileName, int protocol = 0);
 
 /**
  * \brief Load a document from the given path. Only records which this library

@@ -17,6 +17,7 @@ axom_component_requires(NAME       Sina
 #------------------------------------------------------------------------------
 # Specify the sina headers/sources
 #------------------------------------------------------------------------------
+
 set(sina_headers
     core/ConduitUtil.hpp
     core/Curve.hpp
