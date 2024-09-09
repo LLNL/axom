@@ -31,7 +31,7 @@ namespace primal
 namespace detail
 {
 /*
- * \brief Compute the winding number with respect to a line segment
+ * \brief Compute the generalized winding number with respect to a line segment
  *
  * \param [in] q The query point to test
  * \param [in] c0 The initial point of the line segment
@@ -42,7 +42,7 @@ namespace detail
  * is the signed angle subtended by the query point to each endpoint.
  * Colinear points return 0 for their winding number.
  *
- * \return double The winding number
+ * \return double The GWN
  */
 template <typename T>
 double linear_winding_number(const Point<T, 2>& q,
