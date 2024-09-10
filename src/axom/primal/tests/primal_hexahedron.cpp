@@ -308,6 +308,54 @@ TEST_F(HexahedronTest, equals)
   EXPECT_TRUE(hex1.equals(hex1));
 }
 
+TEST_F(HexahedronTest, hasPlanarFaces)
+{
+  using QPoint = HexahedronTest::QPoint;
+  using QHex = HexahedronTest::Hex;
+
+  // Access the test data
+  const QPoint* pt0 = this->qData0;
+  const QPoint* pt1 = this->qData1;
+  const QPoint* pt2 = this->qData2;
+  const QPoint* pt3 = this->qData3;
+
+  const QPoint non_planar_pt1 {0, -1, 0};
+  const QPoint non_planar_pt2 {-0.5, -0.5, -0.5};
+  const QPoint non_planar_pt3 {1.25, 1.25, 1.25};
+
+  // Initialize hexahedrons
+  QHex hex0(pt0[0], pt0[1], pt0[2], pt0[3], pt0[4], pt0[5], pt0[6], pt0[7]);
+  QHex hex1(pt1[0], pt1[1], pt1[2], pt1[3], pt1[4], pt1[5], pt1[6], pt1[7]);
+  QHex hex2(pt2[0], pt2[1], pt2[2], pt2[3], pt2[4], pt2[5], pt2[6], pt2[7]);
+  QHex hex3(pt3[0], pt3[1], pt3[2], pt3[3], pt3[4], pt3[5], pt3[6], pt3[7]);
+
+  // Hexahedron with one nonplanar side
+  QHex hex4(non_planar_pt1, pt0[1], pt0[2], pt0[3], pt0[4], pt0[5], pt0[6], pt0[7]);
+
+  // Hexahedron with three nonplanar sides
+  QHex hex5(non_planar_pt2, pt0[1], pt0[2], pt0[3], pt0[4], pt0[5], pt0[6], pt0[7]);
+
+  // Hexahedron with all nonplanar sides
+  QHex hex6(non_planar_pt2,
+            pt0[1],
+            pt0[2],
+            pt0[3],
+            pt0[4],
+            pt0[5],
+            non_planar_pt3,
+            pt0[7]);
+
+  // Check planarity
+  EXPECT_TRUE(hex0.hasPlanarFaces());
+  EXPECT_TRUE(hex1.hasPlanarFaces());
+  EXPECT_TRUE(hex2.hasPlanarFaces());
+  EXPECT_TRUE(hex3.hasPlanarFaces());
+
+  EXPECT_FALSE(hex4.hasPlanarFaces());
+  EXPECT_FALSE(hex5.hasPlanarFaces());
+  EXPECT_FALSE(hex6.hasPlanarFaces());
+}
+
 //----------------------------------------------------------------------
 //----------------------------------------------------------------------
 
