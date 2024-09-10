@@ -183,6 +183,8 @@ AXOM_HOST_DEVICE Polygon<T, 2, ARRAY_TYPE, MAX_VERTS> clip(
  *
  * \note Function is based off clipPolyhedron() in Mike Owen's PolyClipper.
  *
+ * \warning Hexahedron should have planar faces.
+ *
  * \warning tryFixOrientation flag does not guarantee the shapes' vertex orders
  *          will be valid. It is the responsiblity of the caller to pass
  *          shapes with a valid vertex order. Otherwise, if the shapes have
@@ -229,6 +231,8 @@ AXOM_HOST_DEVICE Polyhedron<T, 3> clip(const Hexahedron<T, 3>& hex,
  * \return A polyhedron of the hexahedron clipped against the tetrahedron.
  *
  * \note Function is based off clipPolyhedron() in Mike Owen's PolyClipper.
+ *
+ * \warning Hexahedron should have planar faces.
  *
  * \warning tryFixOrientation flag does not guarantee the shapes' vertex orders
  *          will be valid. It is the responsiblity of the caller to pass

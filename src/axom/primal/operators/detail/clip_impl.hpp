@@ -508,6 +508,8 @@ AXOM_HOST_DEVICE Polyhedron<T, NDIMS> clipHexahedron(
   using PlaneType = Plane<T, NDIMS>;
   using PolyhedronType = Polyhedron<T, NDIMS>;
 
+  SLIC_ASSERT(hex.hasPlanarFaces());
+
   // Initialize our polyhedron to return
   PolyhedronType poly = PolyhedronType::from_primitive(hex, tryFixOrientation);
 
