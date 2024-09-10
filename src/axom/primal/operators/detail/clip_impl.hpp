@@ -27,7 +27,6 @@
 #include "axom/primal/geometry/Tetrahedron.hpp"
 
 #include "axom/primal/operators/intersect.hpp"
-#include "axom/primal/operators/is_convex.hpp"
 #include "axom/primal/operators/orientation.hpp"
 
 namespace axom
@@ -506,8 +505,6 @@ AXOM_HOST_DEVICE Polyhedron<T, NDIMS> clipHexahedron(
   double eps,
   bool tryFixOrientation)
 {
-  SLIC_ASSERT(axom::primal::is_convex(hex));
-
   using PlaneType = Plane<T, NDIMS>;
   using PolyhedronType = Polyhedron<T, NDIMS>;
 
