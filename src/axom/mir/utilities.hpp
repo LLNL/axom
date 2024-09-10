@@ -247,7 +247,7 @@ public:
     AXOM_HOST_DEVICE
     inline KeyType make_name_1(IndexType p0) const
     {
-      assert(p0 < PayloadMask);
+      assert(static_cast<KeyType>(p0) < PayloadMask);
       // Store p0 in the key as a 62-bit integer
       KeyType k0 = (static_cast<KeyType>(p0) & PayloadMask);
       return KeyIDSingle | k0;
@@ -262,7 +262,7 @@ public:
     AXOM_HOST_DEVICE
     inline KeyType make_name_2(IndexType p0, IndexType p1) const
     {
-      assert(p0 <= Max31Bit && p1 <= Max31Bit);
+      assert(static_cast<KeyType>(p0) <= Max31Bit && static_cast<KeyType>(p1) <= Max31Bit);
       // Store p0 and p1 both in the 64-bit key as 31-bit integers
       KeyType k0 = (static_cast<KeyType>(std::min(p0, p1)) & Max31Bit);
       KeyType k1 = (static_cast<KeyType>(std::max(p0, p1)) & Max31Bit);
@@ -315,7 +315,10 @@ public:
       {
         // Narrow to 16-bit, sort
         std::uint16_t sorted[MAXIDS];
-        for(int i = 0; i < n; i++) sorted[i] = static_cast<std::uint16_t>(p[i]);
+        for(int i = 0; i < n; i++)
+        {
+          sorted[i] = static_cast<std::uint16_t>(p[i]);
+        }
         axom::utilities::Sorting<std::uint16_t, MAXIDS>::sort(sorted, n);
 
         // Make a hash from the narrowed ids
@@ -329,7 +332,10 @@ public:
       {
         // Narrow to 32-bit, sort
         std::uint32_t sorted[MAXIDS];
-        for(int i = 0; i < n; i++) sorted[i] = static_cast<std::uint32_t>(p[i]);
+        for(int i = 0; i < n; i++)
+        {
+          sorted[i] = static_cast<std::uint32_t>(p[i]);
+        }
         axom::utilities::Sorting<std::uint32_t, MAXIDS>::sort(sorted, n);
 
         // Make a hash from the narrowed ids
@@ -342,7 +348,10 @@ public:
       else
       {
         IndexType sorted[MAXIDS];
-        for(int i = 0; i < n; i++) sorted[i] = p[i];
+        for(int i = 0; i < n; i++)
+        {
+          sorted[i] = p[i];
+        }
         axom::utilities::Sorting<IndexType, MAXIDS>::sort(sorted, n);
 
         // Make a hash from the ids

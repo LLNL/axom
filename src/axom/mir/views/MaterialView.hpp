@@ -85,6 +85,9 @@ public:
            const axom::ArrayView<IndexType> &offsets,
            const axom::ArrayView<IndexType> &indices)
   {
+    assert(material_ids.size() == volume_fractions.size());
+    assert(sizes.size() == offsets.size());
+
     m_material_ids = material_ids;
     m_volume_fractions = volume_fractions;
     m_sizes = sizes;

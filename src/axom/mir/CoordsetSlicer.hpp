@@ -52,9 +52,26 @@ public:
     using PointType = typename CoordsetView::PointType;
     namespace bputils = axom::mir::utilities::blueprint;
 
-    const auto axes = conduit::blueprint::mesh::utils::coordset::axes(n_input);
+    // Get the axis names for the output coordset. For uniform, prefer x,y,z
+    // instead of i,j,k since we're making an explicit coordset.
+    std::vector<std::string> axes;
+    if(n_input["type"].as_string() == "uniform")
+    {
+      if(n_input.has_path("dims/i"))
+        axes.push_back("x");
+      if(n_input.has_path("dims/j"))
+        axes.push_back("y");
+      if(n_input.has_path("dims/k"))
+        axes.push_back("z");
+    }
+    else
+    {
+      axes = conduit::blueprint::mesh::utils::coordset::axes(n_input);
+    }
+
     const auto nComponents = axes.size();
     SLIC_ASSERT(PointType::DIMENSION == nComponents);
+    SLIC_ASSERT(slice.m_indicesView.size() > 0);
 
     // Get the ID of a Conduit allocator that will allocate through Axom with device allocator allocatorID.
     bputils::ConduitAllocateThroughAxom<ExecSpace> c2a;
@@ -64,7 +81,7 @@ public:
     conduit::Node &n_values = n_output["values"];
 
     // Determine output size.
-    const auto outputSize = slice.m_indicesView;
+    const auto outputSize = slice.m_indicesView.size();
 
     // Make output nodes using axis names from the input coordset. Make array views too.
     axom::StackArray<axom::ArrayView<value_type>, PointType::DIMENSION> compViews;
@@ -76,8 +93,7 @@ public:
       comp.set(conduit::DataType(
         bputils::cpp2conduit<value_type>::id,
         outputSize));
-      auto *comp_data = static_cast<value_type *>(comp.data_ptr());
-      compViews[i] = axom::ArrayView<value_type>(comp_data, outputSize);
+      compViews[i] = bputils::make_array_view<value_type>(comp);
     }
 
     // Select the nodes we want in the output.

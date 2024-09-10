@@ -32,7 +32,7 @@ class MatsetSlicer
   using reduce_policy = typename axom::execution_space<ExecSpace>::reduce_policy;
 public:
   using SelectedZonesView = axom::ArrayView<axom::IndexType>;
-#pragma message "***** We are building MatsetSlicer"
+
   /**
    * \brief Slice the input matset and output a new matset.
    *
@@ -49,16 +49,25 @@ public:
     using MatsetIndex = typename MatsetView::IndexType;
     using MatsetFloat = typename MatsetView::FloatType;
     namespace bputils = axom::mir::utilities::blueprint;
+    SLIC_ASSERT(selectedZonesView.size() > 0);
+
+    // Copy the material_map if it exists.
+    const char *keys[] = {"topology", "material_map"};
+    for(int i = 0; i < 2; i++)
+    {
+      if(n_matset.has_child(keys[i]))
+        n_newMatset[keys[i]] = n_matset.fetch_existing(keys[i]);
+    }
 
     bputils::ConduitAllocateThroughAxom<ExecSpace> c2a;
 
     // Allocate sizes/offsets.
-    conduit::Node n_sizes = n_newMatset["sizes"];
+    conduit::Node &n_sizes = n_newMatset["sizes"];
     n_sizes.set_allocator(c2a.getConduitAllocatorID());
     n_sizes.set(conduit::DataType(cpp2conduit<MatsetIndex>::id, selectedZonesView.size()));
     auto sizesView = bputils::make_array_view<MatsetIndex>(n_sizes);
 
-    conduit::Node n_offsets = n_newMatset["offsets"];
+    conduit::Node &n_offsets = n_newMatset["offsets"];
     n_offsets.set_allocator(c2a.getConduitAllocatorID());
     n_offsets.set(conduit::DataType(cpp2conduit<MatsetIndex>::id, selectedZonesView.size()));
     auto offsetsView = bputils::make_array_view<MatsetIndex>(n_offsets);
@@ -77,18 +86,19 @@ public:
 
     // Allocate data for the rest of the matset.
     const auto totalSize = size_reduce.get();
+    SLIC_ASSERT(totalSize > 0);
 
-    conduit::Node n_indices = n_newMatset["indices"];
+    conduit::Node &n_indices = n_newMatset["indices"];
     n_indices.set_allocator(c2a.getConduitAllocatorID());
     n_indices.set(conduit::DataType(cpp2conduit<MatsetIndex>::id, totalSize));
     auto indicesView = bputils::make_array_view<MatsetIndex>(n_indices);
 
-    conduit::Node n_material_ids = n_newMatset["material_ids"];
+    conduit::Node &n_material_ids = n_newMatset["material_ids"];
     n_material_ids.set_allocator(c2a.getConduitAllocatorID());
     n_material_ids.set(conduit::DataType(cpp2conduit<MatsetIndex>::id, totalSize));
     auto materialIdsView = bputils::make_array_view<MatsetIndex>(n_material_ids);
 
-    conduit::Node n_volume_fractions = n_newMatset["volume_fractions"];
+    conduit::Node &n_volume_fractions = n_newMatset["volume_fractions"];
     n_volume_fractions.set_allocator(c2a.getConduitAllocatorID());
     n_volume_fractions.set(conduit::DataType(cpp2conduit<MatsetFloat>::id, totalSize));
     auto volumeFractionsView = bputils::make_array_view<MatsetFloat>(n_volume_fractions);
@@ -111,13 +121,6 @@ public:
         indicesView[destIndex] = destIndex;
       }
     });
-
-    // Copy the material_map if it exists.
-    for(const auto &key : std::vector<std::string>{{"topology", "material_map"}})
-    {
-      if(n_matset.has_child(key))
-        n_newMatset[key] = n_matset.fetch_existing(key);
-    }
   }
 };
 

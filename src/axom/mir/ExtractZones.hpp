@@ -19,13 +19,12 @@ namespace blueprint
 {
 
 /**
- * \brief Make a new topology using a
+ * \brief Make a new topology and coordset by extracting certain zones from the input mesh.
  *
  * \tparam ExecSpace The execution space where the algorithm will run.
  * \tparam TopologyView The topology view type on which the algorithm will run.
- * \tparam MatsetView The matset view type on which the algorithm will run.
  */
-template <typename ExecSpace, typename TopologyView, typename CoordsetView, typename MatsetView>
+template <typename ExecSpace, typename TopologyView, typename CoordsetView>
 class ExtractZones
 {
   using ConnectivityType = typename TopologyView::ConnectivityType;
@@ -40,15 +39,21 @@ public:
    * \param coordsetView The input coordset view.
    * \param matsetView The input matset view.
    */
-  ExtractZones(const TopologyView &topoView, const CoordsetView &coordsetView, const MatsetView &matsetView) :
-    m_topologyView(topoView), m_coordsetView(coordsetView), m_matsetView(matsetView)
+  ExtractZones(const TopologyView &topoView, const CoordsetView &coordsetView) :
+    m_topologyView(topoView), m_coordsetView(coordsetView)
   {
   }
 
   /**
    * \brief Select zones from the input mesh by id and output them in the output mesh.
    *
-   * \param
+   * \param selectedZonesView A view that contains the selected zone ids.
+   * \param n_input The input mesh.
+   * \param n_options The input options.
+   * \param[out] n_output The output mesh.
+   *
+   * \note The \a n_options node contains a "topology" string that is selects the
+   *       name of the topology to extract.
    */
   void execute(const SelectedZonesView &selectedZonesView,
                const conduit::Node &n_input,
@@ -91,7 +96,7 @@ public:
 
     // Make an array of original node ids that we can use to "slice" the nodal data.
     axom::Array<ConnectivityType> old2new(nnodes, nnodes, allocatorID);
-    axom::Array<ConnectivityType> nodeSlice(newNumNodes, newNumNodes, allocatorID);
+    axom::Array<axom::IndexType> nodeSlice(newNumNodes, newNumNodes, allocatorID);
     auto old2newView = old2new.view();
     auto nodeSliceView = nodeSlice.view();
     axom::for_all<ExecSpace>(nnodes, AXOM_LAMBDA(auto index)
@@ -106,15 +111,15 @@ public:
     const std::string topoName = topologyName(n_input, n_options);
     const conduit::Node &n_topo = n_topologies.fetch_existing(topoName);
 
-    const conduit::Node &n_newTopo = n_output["topologies/" + topoName];
+    conduit::Node &n_newTopo = n_output["topologies/" + topoName];
     const auto newConnSize = connsize_reduce.get();
     makeTopology(selectedZonesView, newConnSize, old2newView, n_topo, n_newTopo);
 
     // Make a new coordset.
     SliceData nSlice;
     nSlice.m_indicesView = nodeSliceView;
-    const std::string coordsetName = n_topo["coordset"].as_string();
-    const conduit::Node &n_coordset = n_input["coordsets/" + coordsetName];
+    const std::string coordsetName = n_topo.fetch_existing("coordset").as_string();
+    const conduit::Node &n_coordset = n_input.fetch_existing("coordsets/" + coordsetName);
     conduit::Node &n_newCoordset = n_output["coordsets/" + coordsetName];
     makeCoordset(nSlice, n_coordset, n_newCoordset);
 
@@ -127,18 +132,9 @@ public:
       zSlice.m_indicesView = selectedZonesView;
       makeFields(nSlice, zSlice, n_fields, n_newFields);
     }
-
-    // Make new matset.
-    std::string mname = matsetName(n_input, topoName);
-    if(!mname.empty())
-    {
-      const conduit::Node &n_matset = n_input.fetch_existing("matsets/" + mname);
-      conduit::Node &n_newMatset = n_output["matsets/" + mname];   
-      makeMatset(selectedZonesView, n_matset, n_newMatset);
-    }
   }
 
-private:
+protected:
   /**
    * \brief Make the output topology for just the selected zones.
    *
@@ -326,6 +322,69 @@ private:
     return shape;
   }
 
+private:
+  TopologyView m_topologyView;
+  CoordsetView m_coordsetView;
+};
+
+/**
+ * \brief Make a new topology and coordset by extracting certain zones from the input mesh.
+ *
+ * \tparam ExecSpace The execution space where the algorithm will run.
+ * \tparam TopologyView The topology view type on which the algorithm will run.
+ * \tparam MatsetView The matset view type on which the algorithm will run.
+ */
+template <typename ExecSpace, typename TopologyView, typename CoordsetView, typename MatsetView>
+class ExtractZonesAndMatset : public ExtractZones<ExecSpace, TopologyView, CoordsetView>
+{
+public:
+  using SelectedZonesView = axom::ArrayView<axom::IndexType>;
+
+  /**
+   * \brief Constructor
+   *
+   * \param topoView The input topology view.
+   * \param coordsetView The input coordset view.
+   * \param matsetView The input matset view.
+   */
+  ExtractZonesAndMatset(const TopologyView &topoView, const CoordsetView &coordsetView, const MatsetView &matsetView) :
+    ExtractZones<ExecSpace, TopologyView, CoordsetView>(topoView, coordsetView), m_matsetView(matsetView)
+  {
+  }
+
+  /**
+   * \brief Select zones from the input mesh by id and output them in the output mesh.
+   *
+   * \param selectedZonesView A view that contains the selected zone ids.
+   * \param n_input The input mesh.
+   * \param n_options The input options.
+   * \param[out] n_output The output mesh.
+   *
+   * \note The \a n_options node contains a "topology" string that is selects the
+   *       name of the topology to extract.
+   */
+  void execute(const SelectedZonesView &selectedZonesView,
+               const conduit::Node &n_input,
+               const conduit::Node &n_options,
+               conduit::Node &n_output) const
+  {
+    AXOM_ANNOTATE_SCOPE("ExtractZonesAndMatset");
+
+    // Call base class to handle mesh/coordset/fields
+    ExtractZones<ExecSpace, TopologyView, CoordsetView>::execute(selectedZonesView, n_input, n_options, n_output);
+
+    // Make new matset.
+    const std::string topoName = ExtractZones<ExecSpace, TopologyView, CoordsetView>::topologyName(n_input, n_options);
+    std::string mname = matsetName(n_input, topoName);
+    if(!mname.empty())
+    {
+      const conduit::Node &n_matset = n_input.fetch_existing("matsets/" + mname);
+      conduit::Node &n_newMatset = n_output["matsets/" + mname];   
+      makeMatset(selectedZonesView, n_matset, n_newMatset);
+    }
+  }
+
+private:
   /**
    * \brief Return the matset for the named topology.
    *
@@ -371,11 +430,10 @@ private:
 #endif
   }
 
-private:
-  TopologyView m_topologyView;
-  CoordsetView m_coordsetView;
   MatsetView   m_matsetView;
 };
+
+
 
 } // end namespace blueprint
 } // end namespace utilities
