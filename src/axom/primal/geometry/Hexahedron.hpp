@@ -320,7 +320,7 @@ public:
  * \return True if hexahedron has planar faces, false otherwise
  */
   AXOM_HOST_DEVICE
-  bool hasPlanarFaces(double eps = 1.e-12)
+  bool hasPlanarFaces(double eps = 1.e-12) const
   {
     const int NUM_FACES = 6;
 
