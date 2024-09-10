@@ -8,6 +8,7 @@
 
 #include "axom/core/StackArray.hpp"
 
+#include "axom/primal/geometry/Plane.hpp"
 #include "axom/primal/geometry/Point.hpp"
 #include "axom/primal/geometry/Tetrahedron.hpp"
 #include "axom/primal/geometry/Vector.hpp"
@@ -56,6 +57,7 @@ template <typename T, int NDIMS = 3>
 class Hexahedron
 {
 public:
+  using PlaneType = Plane<T, NDIMS>;
   using PointType = Point<T, NDIMS>;
   using VectorType = Vector<T, NDIMS>;
   using TetrahedronType = Tetrahedron<T, NDIMS>;
@@ -308,6 +310,34 @@ public:
     tets[21] = TetrahedronType(hc, m_points[4], m_points[5], fm6);
     tets[22] = TetrahedronType(hc, m_points[5], m_points[6], fm6);
     tets[23] = TetrahedronType(hc, m_points[6], m_points[7], fm6);
+  }
+
+  /*!
+ * \brief Determines if a hexahedron has planar faces
+ *
+ * \param [in] eps The tolerance
+ *
+ * \return True if hexahedron has planar faces, false otherwise
+ */
+  AXOM_HOST_DEVICE
+  bool hasPlanarFaces(double eps = 1.e-12)
+  {
+    const int NUM_FACES = 6;
+
+    PlaneType faces[NUM_FACES];
+    faces[0] = make_plane(m_points[0], m_points[1], m_points[2]);
+    faces[1] = make_plane(m_points[0], m_points[1], m_points[4]);
+    faces[2] = make_plane(m_points[0], m_points[3], m_points[4]);
+    faces[3] = make_plane(m_points[1], m_points[2], m_points[5]);
+    faces[4] = make_plane(m_points[2], m_points[3], m_points[6]);
+    faces[5] = make_plane(m_points[4], m_points[5], m_points[6]);
+
+    return (faces[0].getOrientation(m_points[3], eps) == primal::ON_BOUNDARY) &&
+      (faces[1].getOrientation(m_points[5], eps) == primal::ON_BOUNDARY) &&
+      (faces[2].getOrientation(m_points[7], eps) == primal::ON_BOUNDARY) &&
+      (faces[3].getOrientation(m_points[6], eps) == primal::ON_BOUNDARY) &&
+      (faces[4].getOrientation(m_points[7], eps) == primal::ON_BOUNDARY) &&
+      (faces[5].getOrientation(m_points[7], eps) == primal::ON_BOUNDARY);
   }
 
   /*!
