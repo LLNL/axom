@@ -21,7 +21,6 @@ set( primal_tests
     primal_in_sphere.cpp
     primal_intersect.cpp
     primal_intersect_impl.cpp
-    primal_is_convex.cpp
     primal_numeric_array.cpp
     primal_orientation.cpp
     primal_orientedboundingbox.cpp
