@@ -436,6 +436,88 @@ TEST(mir_blueprint_utilities, recenterfield)
 }
 
 //------------------------------------------------------------------------------
+template <typename ExecSpace>
+void test_matset_slice(const conduit::Node &hostMatset)
+{
+  namespace bputils = axom::mir::utilities::blueprint;
+
+  // host->device
+  conduit::Node deviceMatset;
+  bputils::copy<ExecSpace>(deviceMatset, hostMatset);
+
+  axom::Array<int> ids{{1,3,5}};
+  axom::Array<int> selectedZones(3, 3, axom::execution_space<ExecSpace>::allocatorID());
+  axom::copy(selectedZones.data(), ids.data(), 3 * sizeof(int));
+
+  using MatsetView = axom::mir::views::UnibufferMaterialView<int, double, 3>;
+  MatsetView matsetView;
+  matsetView.set(
+    bputils::make_array_view<int>(deviceMatset["material_ids"]),
+    bputils::make_array_view<double>(deviceMatset["volume_fractions"]),
+    bputils::make_array_view<int>(deviceMatset["sizes"]),
+    bputils::make_array_view<int>(deviceMatset["offsets"]),
+    bputils::make_array_view<int>(deviceMatset["indices"]));
+
+  // Slice it.
+  bputils::MatsetSlicer<ExecSpace, MatsetView> slicer;
+  conduit::Node newDeviceMatset;
+  slicer.execute(matsetView, selectedZones.view(), deviceMatset, newDeviceMatset);
+
+  // device->host
+  conduit::Node newHostMatset;
+  bputils::copy<ExecSpace>(newHostMatset, newDeviceMatset);
+
+  newHostMatset.print();
+
+  // TODO: checks
+}
+
+TEST(mir_blueprint_utilities, matsetslice)
+{
+  /*
+    8-------9------10------11
+    |  2/1  | 1/0.1 | 2/0.8 |
+    |       | 2/0.5 | 3/0.2 |
+    |       | 3/0.4 |       |
+    4-------5-------6-------7
+    |       | 1/0.5 | 1/0.2 |
+    |  1/1  | 2/0.5 | 2/0.8 |
+    |       |       |       |
+    0-------1-------2-------3
+    */
+  const char *matsetData = R"xx(
+topology: mesh
+material_map:
+  a: 1
+  b: 2
+  c: 3
+material_ids: [1, 1,2, 1,2, 2, 1,2,3, 2,3]
+volume_fractions: [1., 0.5,0.5, 0.2,0.8, 1., 0.1,0.5,0.4, 0.8,0.2]
+indices: [0, 1, 2, 3, 4, 5, 6, 7, 8]
+sizes: [1, 2, 2, 1, 3, 2]
+offsets: [0, 1, 3, 5, 6, 9]
+)xx";
+
+  conduit::Node matset;
+  matset.parse(matsetData);
+
+  
+
+  test_matset_slice<seq_exec>(matset);
+#if defined(AXOM_USE_OPENMP)
+  test_matset_slice<omp_exec>(matset);
+#endif
+
+#if defined(AXOM_USE_CUDA) && defined(__CUDACC__)
+  test_matset_slice<cuda_exec>(matset);
+#endif
+
+#if defined(AXOM_USE_HIP)
+  test_matset_slice<hip_exec>(matset);
+#endif
+}
+
+//------------------------------------------------------------------------------
 int main(int argc, char *argv[])
 {
   int result = 0;

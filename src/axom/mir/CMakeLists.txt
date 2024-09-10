@@ -34,9 +34,12 @@ set(mir_headers
 
     BlendGroupBuilder.hpp
     CoordsetBlender.hpp
+    CoordsetSlicer.hpp
     EquiZAlgorithm.hpp
+    ExtractZones.hpp
     FieldBlender.hpp
     FieldSlicer.hpp
+    MatsetSlicer.hpp
     MIRAlgorithm.hpp
     RecenterField.hpp
     utilities.hpp
@@ -45,6 +48,7 @@ set(mir_headers
     MIROptions.hpp
     Options.hpp
     ClipOptions.hpp
+    ZoneListBuilder.hpp
     views/dispatch_coordset.hpp
     views/dispatch_material.hpp
     views/dispatch_rectilinear_topology.hpp
