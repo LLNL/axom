@@ -1040,7 +1040,23 @@ struct test_zonelistbuilder
     EXPECT_TRUE(compare_views(cleanResult.view(), bputils::make_array_view<axom::IndexType>(hostData["clean"])));
     EXPECT_TRUE(compare_views(mixedResult.view(), bputils::make_array_view<axom::IndexType>(hostData["mixed"])));
 
-    //printNode(hostData);
+    // Try selecting a subset of the zones.
+    axom::Array<axom::IndexType> ids{{2,3,6,7,8,9,10,11,12,13,14}};
+    axom::Array<axom::IndexType> selectedZones(ids.size(), ids.size(), axom::execution_space<ExecSpace>::allocatorID());
+    axom::copy(selectedZones.data(), ids.data(), ids.size() * sizeof(axom::IndexType));
+    zlb.execute(coordsetView.numberOfNodes(), selectedZones.view(), clean, mixed);
+
+    deviceData["clean"].set_external(clean.data(), clean.size());
+    deviceData["mixed"].set_external(mixed.data(), mixed.size());
+
+    // device->host
+    bputils::copy<ExecSpace>(hostData, deviceData);
+
+    // Compare expected
+    const axom::Array<axom::IndexType> cleanResult2{{2, 3, 8, 12}};
+    const axom::Array<axom::IndexType> mixedResult2{{6, 7, 9, 10, 11, 13, 14}};
+    EXPECT_TRUE(compare_views(cleanResult2.view(), bputils::make_array_view<axom::IndexType>(hostData["clean"])));
+    EXPECT_TRUE(compare_views(mixedResult2.view(), bputils::make_array_view<axom::IndexType>(hostData["mixed"])));
   }
 
   static void create(conduit::Node &hostMesh)
