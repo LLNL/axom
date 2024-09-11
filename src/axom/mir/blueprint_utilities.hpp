@@ -40,7 +40,6 @@ namespace blueprint
 template <typename T>
 struct cpp2conduit
 {
-  static constexpr conduit::index_t id = conduit::DataType::EMPTY_ID;
 };
 
 template <>
@@ -48,6 +47,7 @@ struct cpp2conduit<conduit::int8>
 {
   using type = conduit::int8;
   static constexpr conduit::index_t id = conduit::DataType::INT8_ID;
+  static const char *name;
 };
 
 template <>
@@ -55,6 +55,7 @@ struct cpp2conduit<conduit::int16>
 {
   using type = conduit::int16;
   static constexpr conduit::index_t id = conduit::DataType::INT16_ID;
+  static const char *name;
 };
 
 template <>
@@ -62,6 +63,7 @@ struct cpp2conduit<conduit::int32>
 {
   using type = conduit::int32;
   static constexpr conduit::index_t id = conduit::DataType::INT32_ID;
+  static const char *name;
 };
 
 template <>
@@ -69,6 +71,7 @@ struct cpp2conduit<conduit::int64>
 {
   using type = conduit::int64;
   static constexpr conduit::index_t id = conduit::DataType::INT64_ID;
+  static const char *name;
 };
 
 template <>
@@ -76,6 +79,7 @@ struct cpp2conduit<conduit::uint8>
 {
   using type = conduit::uint8;
   static constexpr conduit::index_t id = conduit::DataType::UINT8_ID;
+  static const char *name;
 };
 
 template <>
@@ -83,6 +87,7 @@ struct cpp2conduit<conduit::uint16>
 {
   using type = conduit::uint16;
   static constexpr conduit::index_t id = conduit::DataType::UINT16_ID;
+  static const char *name;
 };
 
 template <>
@@ -90,6 +95,7 @@ struct cpp2conduit<conduit::uint32>
 {
   using type = conduit::uint32;
   static constexpr conduit::index_t id = conduit::DataType::UINT32_ID;
+  static const char *name;
 };
 
 template <>
@@ -97,6 +103,7 @@ struct cpp2conduit<conduit::uint64>
 {
   using type = conduit::uint64;
   static constexpr conduit::index_t id = conduit::DataType::UINT64_ID;
+  static const char *name;
 };
 
 template <>
@@ -104,6 +111,7 @@ struct cpp2conduit<conduit::float32>
 {
   using type = conduit::float32;
   static constexpr conduit::index_t id = conduit::DataType::FLOAT32_ID;
+  static const char *name;
 };
 
 template <>
@@ -111,6 +119,7 @@ struct cpp2conduit<conduit::float64>
 {
   using type = conduit::float64;
   static constexpr conduit::index_t id = conduit::DataType::FLOAT64_ID;
+  static const char *name;
 };
 
 //------------------------------------------------------------------------------
@@ -128,6 +137,7 @@ struct cpp2conduit<conduit::float64>
 template <typename T>
 inline axom::ArrayView<T> make_array_view(conduit::Node &n)
 {
+  SLIC_ASSERT_MSG(cpp2conduit<T>::id == n.dtype().id(), axom::fmt::format("Cannot create ArrayView<{}> for Conduit {} data.", cpp2conduit<T>::name, n.dtype().name()));
   return axom::ArrayView<T>(static_cast<T *>(n.data_ptr()),
                             n.dtype().number_of_elements());
 }
@@ -135,6 +145,7 @@ inline axom::ArrayView<T> make_array_view(conduit::Node &n)
 template <typename T>
 inline axom::ArrayView<T> make_array_view(const conduit::Node &n)
 {
+  SLIC_ASSERT_MSG(cpp2conduit<T>::id == n.dtype().id(), axom::fmt::format("Cannot create ArrayView<{}> for Conduit {} data.", cpp2conduit<T>::name, n.dtype().name()));
   return axom::ArrayView<T>(static_cast<T *>(const_cast<void *>(n.data_ptr())),
                             n.dtype().number_of_elements());
 }
@@ -455,6 +466,7 @@ void copy(conduit::Node &dest, const conduit::Node &src)
 template <typename ExecSpace, typename ReturnType>
 std::pair<ReturnType, ReturnType> minmax(const conduit::Node &n)
 {
+  SLIC_ASSERT(n.dtype().number_of_elements() > 0);
   std::pair<ReturnType, ReturnType> retval;
 
   axom::mir::views::Node_to_ArrayView(n, [&](auto nview) {

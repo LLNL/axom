@@ -8,6 +8,7 @@
 
 #include <axom/core.hpp>
 #include <axom/mir.hpp>
+#include <axom/mir/MatsetSlicer.hpp> // Needed to get MatsetSlicer
 
 namespace axom
 {
@@ -67,8 +68,9 @@ public:
     // We need to figure out which nodes to keep.
     const auto nnodes = m_coordsetView.numberOfNodes();
     axom::Array<int> mask(nnodes, nnodes, allocatorID);
-    mask.fill(0);
     auto maskView = mask.view();
+    mask.fill(0);
+
     // Mark all the selected zones' nodes as 1. Multiple threads may write 1 to the same node.
     RAJA::ReduceSum<reduce_policy, int> connsize_reduce(0);
     m_topologyView.template for_selected_zones<ExecSpace>(selectedZonesView, AXOM_LAMBDA(auto AXOM_UNUSED_PARAM(szIndex), auto AXOM_UNUSED_PARAM(zoneIndex), const auto &zone)
@@ -76,7 +78,8 @@ public:
       const int nids = zone.numberOfNodes();
       for(int i = 0; i < nids; i++)
       {
-        maskView[zone.getId(i)] = 1;
+        const auto nodeId = zone.getId(i);
+        maskView[nodeId] = 1;
       }
       connsize_reduce += nids;
     });
@@ -101,8 +104,11 @@ public:
     auto nodeSliceView = nodeSlice.view();
     axom::for_all<ExecSpace>(nnodes, AXOM_LAMBDA(auto index)
     {
-      nodeSliceView[maskOffsetsView[index]] = index;
-      old2newView[index] = (maskView[index] > 0) ? maskOffsetsView[index] : 0;
+      if(maskView[index] > 0)
+      {
+        nodeSliceView[maskOffsetsView[index]] = index;
+        old2newView[index] = maskOffsetsView[index];
+      }
     });
     AXOM_ANNOTATE_END("nodeMap");
 
@@ -421,11 +427,9 @@ private:
    */
   void makeMatset(const SelectedZonesView &selectedZonesView, const conduit::Node &n_matset, conduit::Node &n_newMatset) const
   {
-#if 0
+#if 1
     AXOM_ANNOTATE_SCOPE("makeMatset");
-    namespace bputils = axom::mir::utilities::blueprint;
-    using MatSlicer = bputils::MatsetSlicer<ExecSpace, MatsetView>;
-    MatSlicer ms;
+    MatsetSlicer<ExecSpace, MatsetView> ms;
     ms.execute(m_matsetView, selectedZonesView, n_matset, n_newMatset);
 #endif
   }
