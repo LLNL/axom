@@ -111,8 +111,8 @@ template <typename T>
 int winding_number(const Point<T, 2>& R,
                    const Polygon<T, 2>& P,
                    bool& isOnEdge,
-                   bool includeBoundary = false,
-                   double EPS = 1e-8)
+                   bool includeBoundary,
+                   double EPS)
 {
   const int nverts = P.numVertices();
   isOnEdge = false;
@@ -123,7 +123,7 @@ int winding_number(const Point<T, 2>& R,
      axom::utilities::isNearlyEqual(P[0][1], R[1], EPS))
   {
     isOnEdge = true;
-    return includeBoundary;
+    return includeBoundary ? 1 : 0;  // On vertex
   }
 
   int winding_num = 0;
@@ -136,12 +136,12 @@ int winding_number(const Point<T, 2>& R,
       if(axom::utilities::isNearlyEqual(P[j][0], R[0], EPS))
       {
         isOnEdge = true;
-        return includeBoundary;  // On vertex
+        return includeBoundary ? 1 : 0;  // On vertex
       }
       else if(P[i][1] == R[1] && ((P[j][0] > R[0]) == (P[i][0] < R[0])))
       {
         isOnEdge = true;
-        return includeBoundary;  // On horizontal edge
+        return includeBoundary ? 1 : 0;  // On horizontal edge
       }
     }
 
@@ -165,7 +165,7 @@ int winding_number(const Point<T, 2>& R,
           if(axom::utilities::isNearlyEqual(det, 0.0, EPS))
           {
             isOnEdge = true;
-            return includeBoundary;
+            return includeBoundary ? 1 : 0;  // On horizontal edge
           }
 
           // Check if edge intersects horitonal ray to the right of R
@@ -188,7 +188,7 @@ int winding_number(const Point<T, 2>& R,
           if(axom::utilities::isNearlyEqual(det, 0.0, EPS))
           {
             isOnEdge = true;
-            return includeBoundary;
+            return includeBoundary ? 1 : 0;  // On horizontal edge
           }
 
           // Check if edge intersects horitonal ray to the right of R
