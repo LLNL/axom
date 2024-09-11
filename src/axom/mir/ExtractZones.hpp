@@ -427,11 +427,9 @@ private:
    */
   void makeMatset(const SelectedZonesView &selectedZonesView, const conduit::Node &n_matset, conduit::Node &n_newMatset) const
   {
-#if 1
     AXOM_ANNOTATE_SCOPE("makeMatset");
     MatsetSlicer<ExecSpace, MatsetView> ms;
     ms.execute(m_matsetView, selectedZonesView, n_matset, n_newMatset);
-#endif
   }
 
   MatsetView   m_matsetView;

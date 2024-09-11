@@ -993,6 +993,132 @@ TEST(mir_blueprint_utilities, extractzones_hip)
 #endif
 
 //------------------------------------------------------------------------------
+template <typename ExecSpace>
+struct test_zonelistbuilder
+{
+  static void test()
+  {
+    conduit::Node hostMesh;
+    create(hostMesh);
+
+    // host->device
+    conduit::Node deviceMesh;
+    bputils::copy<ExecSpace>(deviceMesh, hostMesh);
+
+    // Wrap the data in views.
+    auto coordsetView = axom::mir::views::make_rectilinear_coordset<conduit::float64, 2>::view(deviceMesh["coordsets/coords"]);
+
+    auto topologyView = axom::mir::views::make_rectilinear<2>::view(deviceMesh["topologies/mesh"]);
+    using TopologyView = decltype(topologyView);
+
+    // Do the material too.
+    using MatsetView = axom::mir::views::UnibufferMaterialView<conduit::int64, conduit::float64, 2>;
+    MatsetView matsetView;
+    matsetView.set(
+      bputils::make_array_view<conduit::int64>(deviceMesh["matsets/mat1/material_ids"]),
+      bputils::make_array_view<conduit::float64>(deviceMesh["matsets/mat1/volume_fractions"]),
+      bputils::make_array_view<conduit::int64>(deviceMesh["matsets/mat1/sizes"]),
+      bputils::make_array_view<conduit::int64>(deviceMesh["matsets/mat1/offsets"]),
+      bputils::make_array_view<conduit::int64>(deviceMesh["matsets/mat1/indices"]));
+
+    // Determine the list of clean and mixed zones (taking into account #mats at the nodes)
+    bputils::ZoneListBuilder<ExecSpace, TopologyView, MatsetView> zlb(topologyView, matsetView);
+    axom::Array<axom::IndexType> clean, mixed;
+    zlb.execute(coordsetView.numberOfNodes(), clean, mixed);
+
+    conduit::Node deviceData;
+    deviceData["clean"].set_external(clean.data(), clean.size());
+    deviceData["mixed"].set_external(mixed.data(), mixed.size());
+
+    // device->host
+    conduit::Node hostData;
+    bputils::copy<ExecSpace>(hostData, deviceData);
+
+    // Compare expected
+    const axom::Array<axom::IndexType> cleanResult{{0, 1, 2, 3, 4, 8, 12}};
+    const axom::Array<axom::IndexType> mixedResult{{5, 6, 7, 9, 10, 11, 13, 14, 15}};
+    EXPECT_TRUE(compare_views(cleanResult.view(), bputils::make_array_view<axom::IndexType>(hostData["clean"])));
+    EXPECT_TRUE(compare_views(mixedResult.view(), bputils::make_array_view<axom::IndexType>(hostData["mixed"])));
+
+    //printNode(hostData);
+  }
+
+  static void create(conduit::Node &hostMesh)
+  {
+    /*
+    20------21-------22-------23-------24
+    |  1/1  |  1/1   |  1/.5  |  2/1.  |    1/1 = mat#1, vf=1.0
+    |       |        |  2/.5  |        |
+    |z12    |z13     |z14     |z15     |
+    15------16-------17-------18-------19
+    |  1/1  |  1/1   |  1/0.7 |  1/.5  |
+    |       |        |  2/0.3 |  2/.5  |
+    |z8     |z9      |z10     |z11     |
+    10------11-------12-------13-------14
+    |  1/1  |  1/1   |  1/1   |  1/1   |
+    |       |        |        |        |
+    |z4     |z5      |z6      |z7      |
+    5-------6--------7--------8--------9
+    |  1/1  |  1/1   |  1/1   |  1/1   |
+    |       |        |        |        |
+    |z0     |z1      |z2      |z3      |
+    0-------1--------2--------3--------4
+    */
+    const char *yaml = R"xx(
+coordsets:
+  coords:
+    type: rectilinear
+    values:
+      x: [0., 1., 2., 3., 4.]
+      y: [0., 1., 2., 3., 4.]
+topologies:
+  mesh:
+    type: rectilinear
+    coordset: coords
+matsets:
+  mat1:
+    topology: mesh
+    material_map:
+      a: 1
+      b: 2
+    material_ids: [1, 1, 1, 1,    1, 1, 1, 1,   1, 1, 1, 2, 1, 2,   1, 1, 1, 2, 2]
+    volume_fractions: [1., 1., 1., 1.,    1., 1., 1., 1.,   1., 1., 0.7, 0.3, .5, 0.5,   1., 1., 0.5, 0.5, 1.]
+    indices: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18]
+    sizes: [1, 1, 1, 1,   1, 1, 1, 1,   1, 1, 2, 2,   1, 1, 2, 1]
+    offsets: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 12, 14, 15, 16, 18]
+)xx";
+
+    hostMesh.parse(yaml); 
+  }
+};
+
+TEST(mir_blueprint_utilities, zonelistbuilder_seq)
+{
+  test_zonelistbuilder<seq_exec>::test();
+}
+
+#if defined(AXOM_USE_OPENMP)
+TEST(mir_blueprint_utilities, zonelistbuilder_omp)
+{
+  test_zonelistbuilder<omp_exec>::test();
+}
+#endif
+
+#if defined(AXOM_USE_CUDA) && defined(__CUDACC__)
+TEST(mir_blueprint_utilities, zonelistbuilder_cuda)
+{
+  test_zonelistbuilder<cuda_exec>::test();
+}
+#endif
+
+#if defined(AXOM_USE_HIP)
+TEST(mir_blueprint_utilities, zonelistbuilder_hip)
+{
+  test_zonelistbuilder<hip_exec>::test();
+}
+#endif
+
+//------------------------------------------------------------------------------
 int main(int argc, char *argv[])
 {
   int result = 0;
