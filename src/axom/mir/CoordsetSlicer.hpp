@@ -18,7 +18,6 @@ namespace utilities
 {
 namespace blueprint
 {
-
 /**
  * \accelerated
  * \class CoordsetSlicer
@@ -33,7 +32,9 @@ class CoordsetSlicer
 {
 public:
   /// Constructor
-  CoordsetSlicer(const CoordsetView &coordsetView) : m_coordsetView(coordsetView) { }
+  CoordsetSlicer(const CoordsetView &coordsetView)
+    : m_coordsetView(coordsetView)
+  { }
 
   /**
    * \brief Execute the slice on the \a n_input coordset and store the new sliced coordset in \a n_output.
@@ -57,12 +58,9 @@ public:
     std::vector<std::string> axes;
     if(n_input["type"].as_string() == "uniform")
     {
-      if(n_input.has_path("dims/i"))
-        axes.push_back("x");
-      if(n_input.has_path("dims/j"))
-        axes.push_back("y");
-      if(n_input.has_path("dims/k"))
-        axes.push_back("z");
+      if(n_input.has_path("dims/i")) axes.push_back("x");
+      if(n_input.has_path("dims/j")) axes.push_back("y");
+      if(n_input.has_path("dims/k")) axes.push_back("z");
     }
     else
     {
@@ -90,9 +88,8 @@ public:
       // Allocate data in the Conduit node and make a view.
       conduit::Node &comp = n_values[axes[i]];
       comp.set_allocator(c2a.getConduitAllocatorID());
-      comp.set(conduit::DataType(
-        bputils::cpp2conduit<value_type>::id,
-        outputSize));
+      comp.set(
+        conduit::DataType(bputils::cpp2conduit<value_type>::id, outputSize));
       compViews[i] = bputils::make_array_view<value_type>(comp);
     }
 
@@ -112,6 +109,7 @@ public:
         }
       });
   }
+
 private:
   CoordsetView m_coordsetView;
 };

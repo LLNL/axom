@@ -16,7 +16,6 @@ namespace utilities
 {
 namespace blueprint
 {
-
 // Static data. These originally appeared as constexpr members in the header file
 // but there were linker errors despite constexpr.
 const char *cpp2conduit<conduit::int8>::name = "int8";

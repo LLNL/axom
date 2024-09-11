@@ -125,28 +125,16 @@ struct test_copy_braid
   }
 };
 
-TEST(mir_blueprint_utilities, copy_seq)
-{
-  test_copy_braid<seq_exec>::test();
-}
+TEST(mir_blueprint_utilities, copy_seq) { test_copy_braid<seq_exec>::test(); }
 
 #if defined(AXOM_USE_OPENMP)
-TEST(mir_blueprint_utilities, copy_omp)
-{
-  test_copy_braid<omp_exec>::test();
-}
+TEST(mir_blueprint_utilities, copy_omp) { test_copy_braid<omp_exec>::test(); }
 #endif
 #if defined(AXOM_USE_CUDA) && defined(__CUDACC__)
-TEST(mir_blueprint_utilities, copy_cuda)
-{
-  test_copy_braid<cuda_exec>::test();
-}
+TEST(mir_blueprint_utilities, copy_cuda) { test_copy_braid<cuda_exec>::test(); }
 #endif
 #if defined(AXOM_USE_HIP)
-TEST(mir_blueprint_utilities, copy_hip)
-{
-  test_copy_braid<hip_exec>::test();
-}
+TEST(mir_blueprint_utilities, copy_hip) { test_copy_braid<hip_exec>::test(); }
 #endif
 
 //------------------------------------------------------------------------------
@@ -505,7 +493,7 @@ bool compare_views(const Container1 &a, const Container2 &b)
     eq &= a[i] == b[i];
   }
   return eq;
-} 
+}
 
 template <typename ExecSpace>
 struct test_matset_slice
@@ -519,15 +507,20 @@ struct test_matset_slice
     conduit::Node deviceMatset;
     bputils::copy<ExecSpace>(deviceMatset, hostMatset);
 
-    axom::Array<int> ids{{1,3,5}};
-    axom::Array<int> selectedZones(3, 3, axom::execution_space<ExecSpace>::allocatorID());
+    axom::Array<int> ids {{1, 3, 5}};
+    axom::Array<int> selectedZones(
+      3,
+      3,
+      axom::execution_space<ExecSpace>::allocatorID());
     axom::copy(selectedZones.data(), ids.data(), 3 * sizeof(int));
 
-    using MatsetView = axom::mir::views::UnibufferMaterialView<conduit::int64, conduit::float64, 3>;
+    using MatsetView =
+      axom::mir::views::UnibufferMaterialView<conduit::int64, conduit::float64, 3>;
     MatsetView matsetView;
     matsetView.set(
       bputils::make_array_view<conduit::int64>(deviceMatset["material_ids"]),
-      bputils::make_array_view<conduit::float64>(deviceMatset["volume_fractions"]),
+      bputils::make_array_view<conduit::float64>(
+        deviceMatset["volume_fractions"]),
       bputils::make_array_view<conduit::int64>(deviceMatset["sizes"]),
       bputils::make_array_view<conduit::int64>(deviceMatset["offsets"]),
       bputils::make_array_view<conduit::int64>(deviceMatset["indices"]));
@@ -542,17 +535,28 @@ struct test_matset_slice
     bputils::copy<ExecSpace>(newHostMatset, newDeviceMatset);
 
     // Expected answers.
-    const axom::Array<conduit::int64> sizes{{2, 1, 2}};
-    const axom::Array<conduit::int64> offsets{{0, 2, 3}};
-    const axom::Array<conduit::int64> indices{{0, 1, 2, 3, 4}};
-    const axom::Array<conduit::int64> material_ids{{1, 2, 2, 2, 3}};
-    const axom::Array<conduit::float64> volume_fractions{{0.5, 0.5, 1.0, 0.8, 0.2}};
+    const axom::Array<conduit::int64> sizes {{2, 1, 2}};
+    const axom::Array<conduit::int64> offsets {{0, 2, 3}};
+    const axom::Array<conduit::int64> indices {{0, 1, 2, 3, 4}};
+    const axom::Array<conduit::int64> material_ids {{1, 2, 2, 2, 3}};
+    const axom::Array<conduit::float64> volume_fractions {
+      {0.5, 0.5, 1.0, 0.8, 0.2}};
 
-    EXPECT_TRUE(compare_views(sizes.view(), bputils::make_array_view<conduit::int64>(newHostMatset["sizes"])));
-    EXPECT_TRUE(compare_views(offsets.view(), bputils::make_array_view<conduit::int64>(newHostMatset["offsets"])));
-    EXPECT_TRUE(compare_views(indices.view(), bputils::make_array_view<conduit::int64>(newHostMatset["indices"])));
-    EXPECT_TRUE(compare_views(material_ids.view(), bputils::make_array_view<conduit::int64>(newHostMatset["material_ids"])));
-    EXPECT_TRUE(compare_views(volume_fractions.view(), bputils::make_array_view<conduit::float64>(newHostMatset["volume_fractions"])));
+    EXPECT_TRUE(compare_views(
+      sizes.view(),
+      bputils::make_array_view<conduit::int64>(newHostMatset["sizes"])));
+    EXPECT_TRUE(compare_views(
+      offsets.view(),
+      bputils::make_array_view<conduit::int64>(newHostMatset["offsets"])));
+    EXPECT_TRUE(compare_views(
+      indices.view(),
+      bputils::make_array_view<conduit::int64>(newHostMatset["indices"])));
+    EXPECT_TRUE(compare_views(
+      material_ids.view(),
+      bputils::make_array_view<conduit::int64>(newHostMatset["material_ids"])));
+    EXPECT_TRUE(compare_views(volume_fractions.view(),
+                              bputils::make_array_view<conduit::float64>(
+                                newHostMatset["volume_fractions"])));
   }
 
   static void create(conduit::Node &matset)
@@ -581,7 +585,7 @@ sizes: [1, 2, 2, 1, 3, 2]
 offsets: [0, 1, 3, 5, 6, 9]
 )xx";
 
-    matset.parse(yaml); 
+    matset.parse(yaml);
   }
 };
 
@@ -611,15 +615,17 @@ TEST(mir_blueprint_utilities, matsetslice_hip)
 }
 #endif
 
-
 //------------------------------------------------------------------------------
 template <typename ExecSpace, typename Func>
 void test_coordsetslicer(const conduit::Node &hostCoordset, Func &&makeView)
 {
-  axom::Array<axom::IndexType> ids{{0,1,2,4,5,6}};
+  axom::Array<axom::IndexType> ids {{0, 1, 2, 4, 5, 6}};
 
   const auto nnodes = ids.size();
-  axom::Array<axom::IndexType> selectedNodes(nnodes, nnodes, axom::execution_space<ExecSpace>::allocatorID());
+  axom::Array<axom::IndexType> selectedNodes(
+    nnodes,
+    nnodes,
+    axom::execution_space<ExecSpace>::allocatorID());
   axom::copy(selectedNodes.data(), ids.data(), nnodes * sizeof(axom::IndexType));
 
   bputils::SliceData slice;
@@ -643,10 +649,14 @@ void test_coordsetslicer(const conduit::Node &hostCoordset, Func &&makeView)
   bputils::copy<ExecSpace>(newHostCoordset, newDeviceCoordset);
 
   // We get an explicit coordset out of the slicer.
-  const axom::Array<conduit::float64> x{{0., 1., 2., 0., 1., 2.}};
-  const axom::Array<conduit::float64> y{{0., 0., 0., 1., 1., 1.}};
-  EXPECT_TRUE(compare_views(x.view(), bputils::make_array_view<conduit::float64>(newHostCoordset["values/x"])));
-  EXPECT_TRUE(compare_views(y.view(), bputils::make_array_view<conduit::float64>(newHostCoordset["values/y"])));
+  const axom::Array<conduit::float64> x {{0., 1., 2., 0., 1., 2.}};
+  const axom::Array<conduit::float64> y {{0., 0., 0., 1., 1., 1.}};
+  EXPECT_TRUE(compare_views(
+    x.view(),
+    bputils::make_array_view<conduit::float64>(newHostCoordset["values/x"])));
+  EXPECT_TRUE(compare_views(
+    y.view(),
+    bputils::make_array_view<conduit::float64>(newHostCoordset["values/y"])));
 }
 
 //------------------------------------------------------------------------------
@@ -672,9 +682,9 @@ values:
     conduit::Node coordset;
     coordset.parse(yaml);
 
-    auto makeView = [](const conduit::Node &deviceCoordset)
-    {
-      return axom::mir::views::make_explicit_coordset<conduit::float64, 2>::view(deviceCoordset);
+    auto makeView = [](const conduit::Node &deviceCoordset) {
+      return axom::mir::views::make_explicit_coordset<conduit::float64, 2>::view(
+        deviceCoordset);
     };
 
     test_coordsetslicer<seq_exec>(coordset, makeView);
@@ -730,9 +740,9 @@ values:
     conduit::Node coordset;
     coordset.parse(yaml);
 
-    auto makeView = [](const conduit::Node &deviceCoordset)
-    {
-      return axom::mir::views::make_rectilinear_coordset<conduit::float64, 2>::view(deviceCoordset);
+    auto makeView = [](const conduit::Node &deviceCoordset) {
+      return axom::mir::views::make_rectilinear_coordset<conduit::float64, 2>::view(
+        deviceCoordset);
     };
     test_coordsetslicer<ExecSpace>(coordset, makeView);
   }
@@ -787,8 +797,7 @@ dims:
     conduit::Node coordset;
     coordset.parse(yaml);
 
-    auto makeView = [](const conduit::Node &deviceCoordset)
-    {
+    auto makeView = [](const conduit::Node &deviceCoordset) {
       return axom::mir::views::make_uniform_coordset<2>::view(deviceCoordset);
     };
     test_coordsetslicer<ExecSpace>(coordset, makeView);
@@ -834,22 +843,34 @@ struct test_extractzones
     conduit::Node deviceMesh;
     bputils::copy<ExecSpace>(deviceMesh, hostMesh);
 
-    axom::Array<axom::IndexType> ids{{1,3,5}};
+    axom::Array<axom::IndexType> ids {{1, 3, 5}};
     const auto nzones = ids.size();
-    axom::Array<axom::IndexType> selectedZones(nzones, nzones, axom::execution_space<ExecSpace>::allocatorID());
+    axom::Array<axom::IndexType> selectedZones(
+      nzones,
+      nzones,
+      axom::execution_space<ExecSpace>::allocatorID());
     axom::copy(selectedZones.data(), ids.data(), nzones * sizeof(axom::IndexType));
 
     // Wrap the data in views.
-    auto coordsetView = axom::mir::views::make_explicit_coordset<conduit::float64, 2>::view(deviceMesh["coordsets/coords"]);
+    auto coordsetView =
+      axom::mir::views::make_explicit_coordset<conduit::float64, 2>::view(
+        deviceMesh["coordsets/coords"]);
     using CoordsetView = decltype(coordsetView);
 
-    using TopologyView = axom::mir::views::UnstructuredTopologySingleShapeView<axom::mir::views::QuadShape<conduit::int64>>;
-    TopologyView topoView(bputils::make_array_view<conduit::int64>(deviceMesh["topologies/mesh/elements/connectivity"]),
-                          bputils::make_array_view<conduit::int64>(deviceMesh["topologies/mesh/elements/sizes"]),
-                          bputils::make_array_view<conduit::int64>(deviceMesh["topologies/mesh/elements/offsets"]));
+    using TopologyView = axom::mir::views::UnstructuredTopologySingleShapeView<
+      axom::mir::views::QuadShape<conduit::int64>>;
+    TopologyView topoView(
+      bputils::make_array_view<conduit::int64>(
+        deviceMesh["topologies/mesh/elements/connectivity"]),
+      bputils::make_array_view<conduit::int64>(
+        deviceMesh["topologies/mesh/elements/sizes"]),
+      bputils::make_array_view<conduit::int64>(
+        deviceMesh["topologies/mesh/elements/offsets"]));
 
     // Pull out selected zones
-    bputils::ExtractZones<ExecSpace, TopologyView, CoordsetView> extract(topoView, coordsetView);
+    bputils::ExtractZones<ExecSpace, TopologyView, CoordsetView> extract(
+      topoView,
+      coordsetView);
     conduit::Node options, newDeviceMesh;
     options["topology"] = "mesh";
     extract.execute(selectedZones.view(), deviceMesh, options, newDeviceMesh);
@@ -861,34 +882,61 @@ struct test_extractzones
     //printNode(newHostMesh);
 
     // Check some of the key arrays
-    const axom::Array<conduit::int64> connectivity{{0, 1, 4, 3, 2, 3, 7, 6, 4, 5, 9, 8}};
-    const axom::Array<conduit::int64> sizes{{4, 4, 4}};
-    const axom::Array<conduit::int64> offsets{{0, 4, 8}};
-    const axom::Array<conduit::float64> x{{1.0, 2.0, 0.0, 1.0, 2.0, 3.0, 0.0, 1.0, 2.0, 3.0}};
-    const axom::Array<conduit::float64> y{{0.0, 0.0, 1.0, 1.0, 1.0, 1.0, 2.0, 2.0, 2.0, 2.0}};
-    const axom::Array<conduit::float64> zonal{{1.0, 3.0, 5.0}};
-    const axom::Array<conduit::float64> nodal{{1.0, 2.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0}};
+    const axom::Array<conduit::int64> connectivity {
+      {0, 1, 4, 3, 2, 3, 7, 6, 4, 5, 9, 8}};
+    const axom::Array<conduit::int64> sizes {{4, 4, 4}};
+    const axom::Array<conduit::int64> offsets {{0, 4, 8}};
+    const axom::Array<conduit::float64> x {
+      {1.0, 2.0, 0.0, 1.0, 2.0, 3.0, 0.0, 1.0, 2.0, 3.0}};
+    const axom::Array<conduit::float64> y {
+      {0.0, 0.0, 1.0, 1.0, 1.0, 1.0, 2.0, 2.0, 2.0, 2.0}};
+    const axom::Array<conduit::float64> zonal {{1.0, 3.0, 5.0}};
+    const axom::Array<conduit::float64> nodal {
+      {1.0, 2.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0}};
 
-    EXPECT_TRUE(compare_views(connectivity.view(), bputils::make_array_view<conduit::int64>(newHostMesh["topologies/mesh/elements/connectivity"])));
-    EXPECT_TRUE(compare_views(sizes.view(), bputils::make_array_view<conduit::int64>(newHostMesh["topologies/mesh/elements/sizes"])));
-    EXPECT_TRUE(compare_views(offsets.view(), bputils::make_array_view<conduit::int64>(newHostMesh["topologies/mesh/elements/offsets"])));
-    EXPECT_TRUE(compare_views(x.view(), bputils::make_array_view<conduit::float64>(newHostMesh["coordsets/coords/values/x"])));
-    EXPECT_TRUE(compare_views(y.view(), bputils::make_array_view<conduit::float64>(newHostMesh["coordsets/coords/values/y"])));
-    EXPECT_TRUE(compare_views(zonal.view(), bputils::make_array_view<conduit::float64>(newHostMesh["fields/zonal/values"])));
-    EXPECT_TRUE(compare_views(nodal.view(), bputils::make_array_view<conduit::float64>(newHostMesh["fields/nodal/values"])));
+    EXPECT_TRUE(
+      compare_views(connectivity.view(),
+                    bputils::make_array_view<conduit::int64>(
+                      newHostMesh["topologies/mesh/elements/connectivity"])));
+    EXPECT_TRUE(
+      compare_views(sizes.view(),
+                    bputils::make_array_view<conduit::int64>(
+                      newHostMesh["topologies/mesh/elements/sizes"])));
+    EXPECT_TRUE(
+      compare_views(offsets.view(),
+                    bputils::make_array_view<conduit::int64>(
+                      newHostMesh["topologies/mesh/elements/offsets"])));
+    EXPECT_TRUE(compare_views(x.view(),
+                              bputils::make_array_view<conduit::float64>(
+                                newHostMesh["coordsets/coords/values/x"])));
+    EXPECT_TRUE(compare_views(y.view(),
+                              bputils::make_array_view<conduit::float64>(
+                                newHostMesh["coordsets/coords/values/y"])));
+    EXPECT_TRUE(compare_views(zonal.view(),
+                              bputils::make_array_view<conduit::float64>(
+                                newHostMesh["fields/zonal/values"])));
+    EXPECT_TRUE(compare_views(nodal.view(),
+                              bputils::make_array_view<conduit::float64>(
+                                newHostMesh["fields/nodal/values"])));
 
     // Do the material too.
-    using MatsetView = axom::mir::views::UnibufferMaterialView<conduit::int64, conduit::float64, 3>;
+    using MatsetView =
+      axom::mir::views::UnibufferMaterialView<conduit::int64, conduit::float64, 3>;
     MatsetView matsetView;
-    matsetView.set(
-      bputils::make_array_view<conduit::int64>(deviceMesh["matsets/mat1/material_ids"]),
-      bputils::make_array_view<conduit::float64>(deviceMesh["matsets/mat1/volume_fractions"]),
-      bputils::make_array_view<conduit::int64>(deviceMesh["matsets/mat1/sizes"]),
-      bputils::make_array_view<conduit::int64>(deviceMesh["matsets/mat1/offsets"]),
-      bputils::make_array_view<conduit::int64>(deviceMesh["matsets/mat1/indices"]));
+    matsetView.set(bputils::make_array_view<conduit::int64>(
+                     deviceMesh["matsets/mat1/material_ids"]),
+                   bputils::make_array_view<conduit::float64>(
+                     deviceMesh["matsets/mat1/volume_fractions"]),
+                   bputils::make_array_view<conduit::int64>(
+                     deviceMesh["matsets/mat1/sizes"]),
+                   bputils::make_array_view<conduit::int64>(
+                     deviceMesh["matsets/mat1/offsets"]),
+                   bputils::make_array_view<conduit::int64>(
+                     deviceMesh["matsets/mat1/indices"]));
 
     // Pull out selected zones
-    bputils::ExtractZonesAndMatset<ExecSpace, TopologyView, CoordsetView, MatsetView> extractM(topoView, coordsetView, matsetView);
+    bputils::ExtractZonesAndMatset<ExecSpace, TopologyView, CoordsetView, MatsetView>
+      extractM(topoView, coordsetView, matsetView);
     newDeviceMesh.reset();
     extractM.execute(selectedZones.view(), deviceMesh, options, newDeviceMesh);
 
@@ -897,17 +945,28 @@ struct test_extractzones
     bputils::copy<ExecSpace>(newHostMesh, newDeviceMesh);
 
     // Check some of the key arrays in the sliced material
-    const axom::Array<conduit::int64> mat_sizes{{2, 1, 2}};
-    const axom::Array<conduit::int64> mat_offsets{{0, 2, 3}};
-    const axom::Array<conduit::int64> mat_indices{{0, 1, 2, 3, 4}};
-    const axom::Array<conduit::int64> mat_material_ids{{1, 2, 2, 2, 3}};
-    const axom::Array<conduit::float64> mat_volume_fractions{{0.5, 0.5, 1.0, 0.8, 0.2}};
+    const axom::Array<conduit::int64> mat_sizes {{2, 1, 2}};
+    const axom::Array<conduit::int64> mat_offsets {{0, 2, 3}};
+    const axom::Array<conduit::int64> mat_indices {{0, 1, 2, 3, 4}};
+    const axom::Array<conduit::int64> mat_material_ids {{1, 2, 2, 2, 3}};
+    const axom::Array<conduit::float64> mat_volume_fractions {
+      {0.5, 0.5, 1.0, 0.8, 0.2}};
 
-    EXPECT_TRUE(compare_views(mat_sizes.view(), bputils::make_array_view<conduit::int64>(newHostMesh["matsets/mat1/sizes"])));
-    EXPECT_TRUE(compare_views(mat_offsets.view(), bputils::make_array_view<conduit::int64>(newHostMesh["matsets/mat1/offsets"])));
-    EXPECT_TRUE(compare_views(mat_indices.view(), bputils::make_array_view<conduit::int64>(newHostMesh["matsets/mat1/indices"])));
-    EXPECT_TRUE(compare_views(mat_material_ids.view(), bputils::make_array_view<conduit::int64>(newHostMesh["matsets/mat1/material_ids"])));
-    EXPECT_TRUE(compare_views(mat_volume_fractions.view(), bputils::make_array_view<conduit::float64>(newHostMesh["matsets/mat1/volume_fractions"])));
+    EXPECT_TRUE(compare_views(mat_sizes.view(),
+                              bputils::make_array_view<conduit::int64>(
+                                newHostMesh["matsets/mat1/sizes"])));
+    EXPECT_TRUE(compare_views(mat_offsets.view(),
+                              bputils::make_array_view<conduit::int64>(
+                                newHostMesh["matsets/mat1/offsets"])));
+    EXPECT_TRUE(compare_views(mat_indices.view(),
+                              bputils::make_array_view<conduit::int64>(
+                                newHostMesh["matsets/mat1/indices"])));
+    EXPECT_TRUE(compare_views(mat_material_ids.view(),
+                              bputils::make_array_view<conduit::int64>(
+                                newHostMesh["matsets/mat1/material_ids"])));
+    EXPECT_TRUE(compare_views(mat_volume_fractions.view(),
+                              bputils::make_array_view<conduit::float64>(
+                                newHostMesh["matsets/mat1/volume_fractions"])));
   }
 
   static void create(conduit::Node &hostMesh)
@@ -962,7 +1021,7 @@ matsets:
     offsets: [0, 1, 3, 5, 6, 9]
 )xx";
 
-    hostMesh.parse(yaml); 
+    hostMesh.parse(yaml);
   }
 };
 
@@ -1006,23 +1065,33 @@ struct test_zonelistbuilder
     bputils::copy<ExecSpace>(deviceMesh, hostMesh);
 
     // Wrap the data in views.
-    auto coordsetView = axom::mir::views::make_rectilinear_coordset<conduit::float64, 2>::view(deviceMesh["coordsets/coords"]);
+    auto coordsetView =
+      axom::mir::views::make_rectilinear_coordset<conduit::float64, 2>::view(
+        deviceMesh["coordsets/coords"]);
 
-    auto topologyView = axom::mir::views::make_rectilinear<2>::view(deviceMesh["topologies/mesh"]);
+    auto topologyView = axom::mir::views::make_rectilinear<2>::view(
+      deviceMesh["topologies/mesh"]);
     using TopologyView = decltype(topologyView);
 
     // Do the material too.
-    using MatsetView = axom::mir::views::UnibufferMaterialView<conduit::int64, conduit::float64, 2>;
+    using MatsetView =
+      axom::mir::views::UnibufferMaterialView<conduit::int64, conduit::float64, 2>;
     MatsetView matsetView;
-    matsetView.set(
-      bputils::make_array_view<conduit::int64>(deviceMesh["matsets/mat1/material_ids"]),
-      bputils::make_array_view<conduit::float64>(deviceMesh["matsets/mat1/volume_fractions"]),
-      bputils::make_array_view<conduit::int64>(deviceMesh["matsets/mat1/sizes"]),
-      bputils::make_array_view<conduit::int64>(deviceMesh["matsets/mat1/offsets"]),
-      bputils::make_array_view<conduit::int64>(deviceMesh["matsets/mat1/indices"]));
+    matsetView.set(bputils::make_array_view<conduit::int64>(
+                     deviceMesh["matsets/mat1/material_ids"]),
+                   bputils::make_array_view<conduit::float64>(
+                     deviceMesh["matsets/mat1/volume_fractions"]),
+                   bputils::make_array_view<conduit::int64>(
+                     deviceMesh["matsets/mat1/sizes"]),
+                   bputils::make_array_view<conduit::int64>(
+                     deviceMesh["matsets/mat1/offsets"]),
+                   bputils::make_array_view<conduit::int64>(
+                     deviceMesh["matsets/mat1/indices"]));
 
     // Determine the list of clean and mixed zones (taking into account #mats at the nodes)
-    bputils::ZoneListBuilder<ExecSpace, TopologyView, MatsetView> zlb(topologyView, matsetView);
+    bputils::ZoneListBuilder<ExecSpace, TopologyView, MatsetView> zlb(
+      topologyView,
+      matsetView);
     axom::Array<axom::IndexType> clean, mixed;
     zlb.execute(coordsetView.numberOfNodes(), clean, mixed);
 
@@ -1035,15 +1104,25 @@ struct test_zonelistbuilder
     bputils::copy<ExecSpace>(hostData, deviceData);
 
     // Compare expected
-    const axom::Array<axom::IndexType> cleanResult{{0, 1, 2, 3, 4, 8, 12}};
-    const axom::Array<axom::IndexType> mixedResult{{5, 6, 7, 9, 10, 11, 13, 14, 15}};
-    EXPECT_TRUE(compare_views(cleanResult.view(), bputils::make_array_view<axom::IndexType>(hostData["clean"])));
-    EXPECT_TRUE(compare_views(mixedResult.view(), bputils::make_array_view<axom::IndexType>(hostData["mixed"])));
+    const axom::Array<axom::IndexType> cleanResult {{0, 1, 2, 3, 4, 8, 12}};
+    const axom::Array<axom::IndexType> mixedResult {
+      {5, 6, 7, 9, 10, 11, 13, 14, 15}};
+    EXPECT_TRUE(compare_views(
+      cleanResult.view(),
+      bputils::make_array_view<axom::IndexType>(hostData["clean"])));
+    EXPECT_TRUE(compare_views(
+      mixedResult.view(),
+      bputils::make_array_view<axom::IndexType>(hostData["mixed"])));
 
     // Try selecting a subset of the zones.
-    axom::Array<axom::IndexType> ids{{2,3,6,7,8,9,10,11,12,13,14}};
-    axom::Array<axom::IndexType> selectedZones(ids.size(), ids.size(), axom::execution_space<ExecSpace>::allocatorID());
-    axom::copy(selectedZones.data(), ids.data(), ids.size() * sizeof(axom::IndexType));
+    axom::Array<axom::IndexType> ids {{2, 3, 6, 7, 8, 9, 10, 11, 12, 13, 14}};
+    axom::Array<axom::IndexType> selectedZones(
+      ids.size(),
+      ids.size(),
+      axom::execution_space<ExecSpace>::allocatorID());
+    axom::copy(selectedZones.data(),
+               ids.data(),
+               ids.size() * sizeof(axom::IndexType));
     zlb.execute(coordsetView.numberOfNodes(), selectedZones.view(), clean, mixed);
 
     deviceData["clean"].set_external(clean.data(), clean.size());
@@ -1053,10 +1132,14 @@ struct test_zonelistbuilder
     bputils::copy<ExecSpace>(hostData, deviceData);
 
     // Compare expected
-    const axom::Array<axom::IndexType> cleanResult2{{2, 3, 8, 12}};
-    const axom::Array<axom::IndexType> mixedResult2{{6, 7, 9, 10, 11, 13, 14}};
-    EXPECT_TRUE(compare_views(cleanResult2.view(), bputils::make_array_view<axom::IndexType>(hostData["clean"])));
-    EXPECT_TRUE(compare_views(mixedResult2.view(), bputils::make_array_view<axom::IndexType>(hostData["mixed"])));
+    const axom::Array<axom::IndexType> cleanResult2 {{2, 3, 8, 12}};
+    const axom::Array<axom::IndexType> mixedResult2 {{6, 7, 9, 10, 11, 13, 14}};
+    EXPECT_TRUE(compare_views(
+      cleanResult2.view(),
+      bputils::make_array_view<axom::IndexType>(hostData["clean"])));
+    EXPECT_TRUE(compare_views(
+      mixedResult2.view(),
+      bputils::make_array_view<axom::IndexType>(hostData["mixed"])));
   }
 
   static void create(conduit::Node &hostMesh)
@@ -1104,7 +1187,7 @@ matsets:
     offsets: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 12, 14, 15, 16, 18]
 )xx";
 
-    hostMesh.parse(yaml); 
+    hostMesh.parse(yaml);
   }
 };
 

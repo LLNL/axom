@@ -39,8 +39,7 @@ namespace blueprint
  */
 template <typename T>
 struct cpp2conduit
-{
-};
+{ };
 
 template <>
 struct cpp2conduit<conduit::int8>
@@ -137,7 +136,11 @@ struct cpp2conduit<conduit::float64>
 template <typename T>
 inline axom::ArrayView<T> make_array_view(conduit::Node &n)
 {
-  SLIC_ASSERT_MSG(cpp2conduit<T>::id == n.dtype().id(), axom::fmt::format("Cannot create ArrayView<{}> for Conduit {} data.", cpp2conduit<T>::name, n.dtype().name()));
+  SLIC_ASSERT_MSG(
+    cpp2conduit<T>::id == n.dtype().id(),
+    axom::fmt::format("Cannot create ArrayView<{}> for Conduit {} data.",
+                      cpp2conduit<T>::name,
+                      n.dtype().name()));
   return axom::ArrayView<T>(static_cast<T *>(n.data_ptr()),
                             n.dtype().number_of_elements());
 }
@@ -145,7 +148,11 @@ inline axom::ArrayView<T> make_array_view(conduit::Node &n)
 template <typename T>
 inline axom::ArrayView<T> make_array_view(const conduit::Node &n)
 {
-  SLIC_ASSERT_MSG(cpp2conduit<T>::id == n.dtype().id(), axom::fmt::format("Cannot create ArrayView<{}> for Conduit {} data.", cpp2conduit<T>::name, n.dtype().name()));
+  SLIC_ASSERT_MSG(
+    cpp2conduit<T>::id == n.dtype().id(),
+    axom::fmt::format("Cannot create ArrayView<{}> for Conduit {} data.",
+                      cpp2conduit<T>::name,
+                      n.dtype().name()));
   return axom::ArrayView<T>(static_cast<T *>(const_cast<void *>(n.data_ptr())),
                             n.dtype().number_of_elements());
 }

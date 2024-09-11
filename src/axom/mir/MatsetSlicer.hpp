@@ -19,7 +19,6 @@ namespace utilities
 {
 namespace blueprint
 {
-
 /**
  * \brief Slices the input matset view and outputs a new matset (unibuffer flavor).
  *
@@ -30,6 +29,7 @@ template <typename ExecSpace, typename MatsetView>
 class MatsetSlicer
 {
   using reduce_policy = typename axom::execution_space<ExecSpace>::reduce_policy;
+
 public:
   using SelectedZonesView = axom::ArrayView<axom::IndexType>;
 
@@ -64,24 +64,29 @@ public:
     // Allocate sizes/offsets.
     conduit::Node &n_sizes = n_newMatset["sizes"];
     n_sizes.set_allocator(c2a.getConduitAllocatorID());
-    n_sizes.set(conduit::DataType(cpp2conduit<MatsetIndex>::id, selectedZonesView.size()));
+    n_sizes.set(conduit::DataType(cpp2conduit<MatsetIndex>::id,
+                                  selectedZonesView.size()));
     auto sizesView = bputils::make_array_view<MatsetIndex>(n_sizes);
 
     conduit::Node &n_offsets = n_newMatset["offsets"];
     n_offsets.set_allocator(c2a.getConduitAllocatorID());
-    n_offsets.set(conduit::DataType(cpp2conduit<MatsetIndex>::id, selectedZonesView.size()));
+    n_offsets.set(conduit::DataType(cpp2conduit<MatsetIndex>::id,
+                                    selectedZonesView.size()));
     auto offsetsView = bputils::make_array_view<MatsetIndex>(n_offsets);
 
     // Figure out overall size of the matset zones we're keeping.
     MatsetView deviceMatsetView(matsetView);
     RAJA::ReduceSum<reduce_policy, typename MatsetView::IndexType> size_reduce(0);
-    const axom::ArrayView<axom::IndexType> deviceSelectedZonesView(selectedZonesView);
-    axom::for_all<ExecSpace>(selectedZonesView.size(), AXOM_LAMBDA(auto index)
-    {
-      const auto nmats = deviceMatsetView.numberOfMaterials(deviceSelectedZonesView[index]);
-      sizesView[index] = nmats;
-      size_reduce += nmats;
-    });
+    const axom::ArrayView<axom::IndexType> deviceSelectedZonesView(
+      selectedZonesView);
+    axom::for_all<ExecSpace>(
+      selectedZonesView.size(),
+      AXOM_LAMBDA(auto index) {
+        const auto nmats =
+          deviceMatsetView.numberOfMaterials(deviceSelectedZonesView[index]);
+        sizesView[index] = nmats;
+        size_reduce += nmats;
+      });
     axom::exclusive_scan<ExecSpace>(sizesView, offsetsView);
 
     // Allocate data for the rest of the matset.
@@ -100,33 +105,36 @@ public:
 
     conduit::Node &n_volume_fractions = n_newMatset["volume_fractions"];
     n_volume_fractions.set_allocator(c2a.getConduitAllocatorID());
-    n_volume_fractions.set(conduit::DataType(cpp2conduit<MatsetFloat>::id, totalSize));
-    auto volumeFractionsView = bputils::make_array_view<MatsetFloat>(n_volume_fractions);
+    n_volume_fractions.set(
+      conduit::DataType(cpp2conduit<MatsetFloat>::id, totalSize));
+    auto volumeFractionsView =
+      bputils::make_array_view<MatsetFloat>(n_volume_fractions);
 
     // Fill in the matset data with the zones we're keeping.
-    axom::for_all<ExecSpace>(selectedZonesView.size(), AXOM_LAMBDA(auto index)
-    {
-      const auto size = static_cast<int>(sizesView[index]);
-      const auto offset = offsetsView[index];
+    axom::for_all<ExecSpace>(
+      selectedZonesView.size(),
+      AXOM_LAMBDA(auto index) {
+        const auto size = static_cast<int>(sizesView[index]);
+        const auto offset = offsetsView[index];
 
-      typename MatsetView::IDList ids;
-      typename MatsetView::VFList vfs;
-      deviceMatsetView.zoneMaterials(deviceSelectedZonesView[index], ids, vfs);
+        typename MatsetView::IDList ids;
+        typename MatsetView::VFList vfs;
+        deviceMatsetView.zoneMaterials(deviceSelectedZonesView[index], ids, vfs);
 
-      for(int i = 0; i < size; i++)
-      {
-        const auto destIndex = offset + i;
-        materialIdsView[destIndex] = ids[i];
-        volumeFractionsView[destIndex] = vfs[i];
-        indicesView[destIndex] = destIndex;
-      }
-    });
+        for(int i = 0; i < size; i++)
+        {
+          const auto destIndex = offset + i;
+          materialIdsView[destIndex] = ids[i];
+          volumeFractionsView[destIndex] = vfs[i];
+          indicesView[destIndex] = destIndex;
+        }
+      });
   }
 };
 
-} // end namespace blueprint
-} // end namespace utilities
-} // end namespace mir
-} // end namespace axom
+}  // end namespace blueprint
+}  // end namespace utilities
+}  // end namespace mir
+}  // end namespace axom
 
 #endif
