@@ -30,7 +30,7 @@
 #include <string>
 
 // Enable code to save some debugging output files.
-//#define AXOM_DEBUG_CLIP_FIELD
+// #define AXOM_DEBUG_CLIP_FIELD
 
 // Filter out degenerate zones in 2D.
 #define AXOM_CLIP_FILTER_DEGENERATES
@@ -442,6 +442,11 @@ public:
     const auto allocatorID = axom::execution_space<ExecSpace>::allocatorID();
     AXOM_ANNOTATE_SCOPE("ClipField");
 
+    // Reset the output nodes just in case they've been reused.
+    n_newTopo.reset();
+    n_newCoordset.reset();
+    n_newFields.reset();
+
     // Make the selected zones and get the size.
     ClipOptions opts(n_options);
     axom::mir::SelectedZones<ExecSpace> selectedZones(
@@ -717,6 +722,7 @@ public:
                fieldsToProcess,
                n_fields,
                n_newFields);
+
     makeOriginalElements(fragmentData,
                          opts,
                          selectedZones,
@@ -1070,7 +1076,7 @@ private:
         if(nodeData.m_nodeUsedView[index] > 0)
         {
           nodeData.m_originalIdsView[nodeOffsetsView[index]] = index;
-          newId = index;
+          newId = nodeOffsetsView[index];
         }
         nodeData.m_oldNodeToNewNodeView[index] = newId;
       });
