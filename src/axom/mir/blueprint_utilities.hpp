@@ -426,7 +426,7 @@ template <typename ExecSpace>
 void copy(conduit::Node &dest, const conduit::Node &src)
 {
   ConduitAllocateThroughAxom<ExecSpace> c2a;
-
+  dest.reset();
   if(src.number_of_children() > 0)
   {
     for(conduit::index_t i = 0; i < src.number_of_children(); i++)
