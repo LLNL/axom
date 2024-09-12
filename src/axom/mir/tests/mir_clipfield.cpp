@@ -21,7 +21,7 @@ namespace bputils = axom::mir::utilities::blueprint;
 //#define DEBUGGING_TEST_CASES
 
 // Uncomment to generate baselines
-//#define AXOM_TESTING_GENERATE_BASELINES
+// #define AXOM_TESTING_GENERATE_BASELINES
 
 // Uncomment to save visualization files for debugging (when making baselines)
 //#define AXOM_TESTING_SAVE_VISUALIZATION
@@ -34,7 +34,6 @@ std::string baselineDirectory()
                "mir_clipfield");
 }
 //------------------------------------------------------------------------------
-
 TEST(mir_clipfield, options)
 {
   int nzones = 6;
@@ -317,29 +316,67 @@ TEST(mir_clipfield, sort_values)
   }
 }
 //------------------------------------------------------------------------------
-TEST(mir_clipfield, unique)
+template <typename ExecSpace>
+struct test_unique
 {
-  /*
-  8---9---10--11
-  |   |   |   |
-  4---5---6---7
-  |   |   |   |
-  0---1---2---3
-
- */
-  axom::Array<int> ids {{0, 1, 5, 4, 1, 2, 6,  5, 2, 3, 7,  6,
-                         4, 5, 9, 8, 5, 6, 10, 9, 6, 7, 11, 10}};
-  axom::Array<int> uIds, uIndices;
-
-  axom::mir::utilities::Unique<seq_exec, int>::execute(ids.view(), uIds, uIndices);
-  EXPECT_EQ(uIds.size(), 12);
-  EXPECT_EQ(uIndices.size(), 12);
-  for(axom::IndexType i = 0; i < uIds.size(); i++)
+  static void test()
   {
-    EXPECT_EQ(uIds[i], i);
-    EXPECT_EQ(uIds[i], ids[uIndices[i]]);
+    /*
+    8---9---10--11
+    |   |   |   |
+    4---5---6---7
+    |   |   |   |
+    0---1---2---3
+    */
+    const int allocatorID = axom::execution_space<ExecSpace>::allocatorID();
+    axom::Array<int> ids {{0, 1, 5, 4, 1, 2, 6,  5, 2, 3, 7,  6,
+                           4, 5, 9, 8, 5, 6, 10, 9, 6, 7, 11, 10}};
+    // host->device
+    axom::Array<int> deviceIds(ids.size(), ids.size(), allocatorID);
+    axom::copy(deviceIds.data(), ids.data(), sizeof(int) * ids.size());
+
+    // Make unique ids.
+    axom::Array<int> uIds, uIndices;
+    axom::mir::utilities::Unique<seq_exec, int>::execute(ids.view(), uIds, uIndices);
+
+    // device->host
+    axom::Array<int> hostuIds(uIds.size()), hostuIndices(uIndices.size());
+    axom::copy(hostuIds.data(), uIds.data(), sizeof(int) * uIds.size());
+    axom::copy(hostuIndices.data(), uIndices.data(), sizeof(int) * uIndices.size());
+
+    // compare results
+    EXPECT_EQ(hostuIds.size(), 12);
+    EXPECT_EQ(hostuIndices.size(), 12);
+    for(axom::IndexType i = 0; i < hostuIds.size(); i++)
+    {
+      EXPECT_EQ(hostuIds[i], i);
+      EXPECT_EQ(hostuIds[i], ids[hostuIndices[i]]);
+    }
   }
+};
+
+TEST(mir_clipfield, unique_seq)
+{
+  test_unique<seq_exec>::test();
 }
+#if defined(AXOM_USE_OPENMP)
+TEST(mir_clipfield, unique_omp)
+{
+  test_unique<omp_exec>::test();
+}
+#endif
+#if defined(AXOM_USE_CUDA) && defined(__CUDACC__)
+TEST(mir_clipfield, unique_cuda)
+{
+  test_unique<cuda_exec>::test();
+}
+#endif
+#if defined(AXOM_USE_HIP)
+TEST(mir_clipfield, unique_hip)
+{
+  test_unique<hip_exec>::test();
+}
+#endif
 
 //------------------------------------------------------------------------------
 TEST(mir_clipfield, make_name)
@@ -366,6 +403,7 @@ TEST(mir_clipfield, make_name)
   }
 }
 
+//------------------------------------------------------------------------------
 template <typename ExecSpace, typename ShapeType>
 void test_one_shape(const conduit::Node &hostMesh, const std::string &name)
 {
@@ -641,6 +679,7 @@ TEST(mir_clipfield, uniform2d)
 #endif
 }
 
+//------------------------------------------------------------------------------
 template <typename ExecSpace, int NDIMS>
 void braid_rectilinear_clip_test(const std::string &name)
 {
@@ -818,6 +857,7 @@ TEST(mir_clipfield, strided_structured_2d)
   strided_structured_clip_test_exec("strided_structured_2d_sel", options);
 }
 
+//------------------------------------------------------------------------------
 template <typename ExecSpace, typename ShapeType>
 void braid3d_clip_test(const std::string &type, const std::string &name)
 {
@@ -918,6 +958,7 @@ TEST(mir_clipfield, hex)
   braid3d_clip_test_exec<axom::mir::views::HexShape<int>>("hexs", "hex");
 }
 
+//------------------------------------------------------------------------------
 template <typename ExecSpace>
 void braid3d_mixed_clip_test(const std::string &name)
 {
@@ -991,26 +1032,31 @@ void braid3d_mixed_clip_test(const std::string &name)
 #endif
 }
 
-TEST(mir_clipfield, mixed)
+TEST(mir_clipfield, mixed_seq)
 {
-  const std::string name("mixed");
-  braid3d_mixed_clip_test<seq_exec>(name);
-
-#if defined(AXOM_USE_OPENMP)
-  braid3d_mixed_clip_test<omp_exec>(name);
-#endif
-
-#if defined(AXOM_USE_CUDA) && defined(__CUDACC__)
-  braid3d_mixed_clip_test<cuda_exec>(name);
-#endif
-
-#if defined(AXOM_USE_HIP)
-  braid3d_mixed_clip_test<hip_exec>(name);
-#endif
+  braid3d_mixed_clip_test<seq_exec>("mixed");
 }
+#if defined(AXOM_USE_OPENMP)
+TEST(mir_clipfield, mixed_omp)
+{
+  braid3d_mixed_clip_test<omp_exec>("mixed");
+}
+#endif
+#if defined(AXOM_USE_CUDA) && defined(__CUDACC__)
+TEST(mir_clipfield, mixed_cuda)
+{
+  braid3d_mixed_clip_test<cuda_exec>("mixed");
+}
+#endif
+#if defined(AXOM_USE_HIP)
+TEST(mir_clipfield, mixed_hip)
+{
+  braid3d_mixed_clip_test<hip_exec>("mixed");
+}
+#endif
 
 //------------------------------------------------------------------------------
-
+#if 0
 template <typename Container1, typename Container2>
 void compare_values(const Container1 &c1, const Container2 &c2)
 {
@@ -1119,6 +1165,138 @@ TEST(mir_clipfield, pointmerging)
   point_merge_test<hip_exec>();
 #endif
 }
+#endif
+//------------------------------------------------------------------------------
+
+template <typename ExecSpace>
+struct test_selectedzones
+{
+  static void test()
+  {
+    conduit::Node hostMesh;
+    create(hostMesh);
+
+    // host->device
+    conduit::Node deviceMesh;
+    bputils::copy<ExecSpace>(deviceMesh, hostMesh);
+
+    // Wrap the data in views.
+    auto coordsetView =
+      axom::mir::views::make_rectilinear_coordset<conduit::float64, 2>::view(
+        deviceMesh["coordsets/coords"]);
+    using CoordsetView = decltype(coordsetView);
+
+    auto topologyView = axom::mir::views::make_rectilinear<2>::view(
+      deviceMesh["topologies/mesh"]);
+    using TopologyView = decltype(topologyView);
+
+    conduit::Node hostOptions;
+    hostOptions["selectedZones"].set(std::vector<axom::IndexType>{{1,3,4,5,7}});
+    hostOptions["inside"] = 1;
+    hostOptions["outside"] = 1;
+    hostOptions["clipField"] = "zero";
+
+    conduit::Node deviceOptions, deviceResult;
+    bputils::copy<ExecSpace>(deviceOptions, hostOptions);
+
+    axom::mir::clipping::ClipField<ExecSpace, TopologyView, CoordsetView> clip(topologyView, coordsetView);
+    clip.execute(deviceMesh, deviceOptions, deviceResult);
+
+    // device->host
+    conduit::Node hostResult;
+    bputils::copy<seq_exec>(hostResult, deviceResult);
+    //printNode(hostResult);
+
+    // Handle baseline comparison.
+    const auto paths = baselinePaths<ExecSpace>();
+    std::string baselineName(yamlRoot("selectedzones1"));
+#if defined(AXOM_TESTING_GENERATE_BASELINES)
+    saveBaseline(paths, baselineName, hostResult);
+#else
+    EXPECT_TRUE(compareBaseline(paths, baselineName, hostResult));
+#endif
+
+    //---------------------
+    // Try a different clip
+    hostOptions["outside"] = 0;
+    hostOptions["clipField"] = "radial";
+    hostOptions["clipValue"] = 3.2;
+    bputils::copy<ExecSpace>(deviceOptions, hostOptions);
+    deviceResult.reset();
+    clip.execute(deviceMesh, deviceOptions, deviceResult);
+
+    // device->host
+    bputils::copy<seq_exec>(hostResult, deviceResult);
+    //printNode(hostResult);
+
+    baselineName = yamlRoot("selectedzones2");
+#if defined(AXOM_TESTING_GENERATE_BASELINES)
+    saveBaseline(paths, baselineName, hostResult);
+#else
+    EXPECT_TRUE(compareBaseline(paths, baselineName, hostResult));
+#endif
+
+  }
+
+  static void create(conduit::Node &mesh)
+  {
+    /*
+      12--13--14--15
+      |   | x |   |
+      8---9--10---11
+      | x | x | x |   x=selected zones
+      4---5---6---7
+      |   | x |   |
+      0---1---2---3
+      */
+    const char *yaml = R"xx(
+coordsets:
+  coords:
+    type: rectilinear
+    values:
+      x: [0., 1., 2., 3.]
+      y: [0., 1., 2., 3.]
+topologies:
+  mesh:
+    type: rectilinear
+    coordset: coords
+fields:
+  zero:
+    topology: mesh
+    association: vertex
+    values: [0., 0., 0., 0.,  0., 0., 0., 0.,  0., 0., 0., 0.,  0., 0., 0., 0.]
+  radial:
+    topology: mesh
+    association: vertex
+    values: [0.0, 1.0, 2.0, 3.0, 1.0, 1.414, 2.236, 3.162, 2.0, 2.236, 2.828, 3.605, 3.0, 3.162, 3.605, 4.242]
+)xx";
+
+    mesh.parse(yaml);
+  }
+};
+
+TEST(mir_clipfield, selectedzones_seq)
+{
+  test_selectedzones<seq_exec>::test();
+}
+#if defined(AXOM_USE_OPENMP)
+TEST(mir_clipfield, selectedzones_omp)
+{
+  test_selectedzones<omp_exec>::test();
+}
+#endif
+#if defined(AXOM_USE_CUDA) && defined(__CUDACC__)
+TEST(mir_clipfield, selectedzones_cuda)
+{
+  test_selectedzones<cuda_exec>::test();
+}
+#endif
+#if defined(AXOM_USE_HIP)
+TEST(mir_clipfield, selectedzones_hip)
+{
+  test_selectedzones<hip_exec>::test();
+}
+#endif
 
 //------------------------------------------------------------------------------
 #if defined(DEBUGGING_TEST_CASES)
