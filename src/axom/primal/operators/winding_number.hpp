@@ -6,8 +6,8 @@
 /*!
  * \file winding_number.hpp
  *
- * \brief Consists of methods to compute winding numbers for points 
- *        with respect to various geometric objects.
+ * \brief Consists of methods to compute the generalized winding number (GWN) 
+ *        for points with respect to various geometric objects.
  */
 
 #ifndef AXOM_PRIMAL_WINDING_NUMBER_HPP_
@@ -46,13 +46,13 @@ namespace primal
 //! @name Winding number operations between 2D points and primitives
 
 /*
- * \brief Compute the winding number with respect to a 2D line segment
+ * \brief Compute the GWN for a 2D point wrt a 2D line segment
  *
  * \param [in] q The query point to test
  * \param [in] s The line segment
  * \param [in] edge_tol The tolerance at which a point is on the line
  *
- * \return double The generalized winding number
+ * \return The GWN
  */
 template <typename T>
 double winding_number(const Point<T, 2>& q,
@@ -63,7 +63,7 @@ double winding_number(const Point<T, 2>& q,
 }
 
 /*
- * \brief Compute the winding number with respect to a 2D triangle
+ * \brief Compute the winding number for a 2D point wrt a 2D triangle
  *
  * \param [in] q The query point to test
  * \param [in] tri The triangle
@@ -72,7 +72,7 @@ double winding_number(const Point<T, 2>& q,
  *
  * The triangle is assumed to be closed, so the winding number is an integer
  * 
- * \return int The integer winding number
+ * \return The integer winding number
  */
 template <typename T>
 int winding_number(const Point<T, 2>& q,
@@ -88,11 +88,12 @@ int winding_number(const Point<T, 2>& q,
 }
 
 /*!
- * \brief Computes the winding number for a point and a 2D polygon
+ * \brief Computes the winding number for a 2D point wrt a 2D polygon
  *
  * \param [in] R The query point to test
  * \param [in] P The Polygon object to test for containment
- * \param [in] includeBoundary If true, points on the boundary are considered interior.
+ * \param [in] includeBoundary If true, points on the boundary are considered interior
+ * \param [in] isOnEdge An optional return parameter if the point is on the boundary
  * \param [in] EPS The tolerance level for collinearity
  * 
  * Uses an adapted ray-casting approach that counts quarter-rotation
@@ -205,9 +206,17 @@ int winding_number(const Point<T, 2>& R,
 }
 
 /*!
- * \brief Computes the solid angle winding number for a 2D polygon
+ * \brief Computes the winding number for a 2D point wrt a 2D polygon
  *
- * Overload function without additional returning parameter
+ * \param [in] R The query point to test
+ * \param [in] P The Polygon object to test for containment
+ * \param [in] includeBoundary If true, points on the boundary are considered interior
+ * \param [in] EPS The tolerance level for collinearity
+ * 
+ * Computes the integer winding number for a polygon without an additional
+ *  return parameter for whether the point is on the boundary.
+ * 
+ * \return The integer winding number
  */
 template <typename T>
 int winding_number(const Point<T, 2>& R,
@@ -220,7 +229,7 @@ int winding_number(const Point<T, 2>& R,
 }
 
 /*!
- * \brief Computes the generalized winding number (GWN) for a single 2D Bezier curve
+ * \brief Computes the GWN for a 2D point wrt a 2D Bezier curve
  *
  * \param [in] query The query point to test
  * \param [in] c The Bezier curve object 
@@ -240,7 +249,7 @@ int winding_number(const Point<T, 2>& R,
  *  Robust Containment Queries over Collections of Rational Parametric Curves via Generalized Winding Numbers. 
  *  ACM Trans. Graph. 43, 4, Article 38 (July 2024)
  * 
- * \return double the generalized winding number.
+ * \return The GWN.
  */
 template <typename T>
 double winding_number(const Point<T, 2>& q,
@@ -277,14 +286,14 @@ double winding_number(const Point<T, 2>& q,
   // The last vertex of the polygon is the t=1 point of the curve
   approximating_polygon.addVertex(c[ord]);
 
-  // Compute the integer winding numberof the closed curve
+  // Compute the integer winding number of the closed curve
   bool isOnEdge = false;
   double closed_curve_wn =
     winding_number(q, approximating_polygon, isOnEdge, false, edge_tol);
 
   // Compute the fractional value of the closed curve
-  int n = approximating_polygon.numVertices();
-  double closure_wn = detail::linear_winding_number(q,
+  const int n = approximating_polygon.numVertices();
+  const double closure_wn = detail::linear_winding_number(q,
                                                     approximating_polygon[n - 1],
                                                     approximating_polygon[0],
                                                     edge_tol);
@@ -309,16 +318,16 @@ double winding_number(const Point<T, 2>& q,
 }
 
 /*!
- * \brief Computes the generalized winding number for a 2D curved polygon
+ * \brief Computes the GWN for a 2D point wrt to a 2D curved polygon
  *
  * \param [in] query The query point to test
  * \param [in] cpoly The CurvedPolygon object
  * \param [in] edge_tol The physical distance level at which objects are considered indistinguishable
  * \param [in] EPS Miscellaneous numerical tolerance level for nonphysical distances
  *
- * Computes the winding number by summing the winding number for each curve
+ * Computes the GWN for the curved polygon by summing the GWN for each curved edge
  * 
- * \return double the generalized winding number.
+ * \return The GWN.
  */
 template <typename T>
 double winding_number(const Point<T, 2>& q,
@@ -335,6 +344,18 @@ double winding_number(const Point<T, 2>& q,
   return ret_val;
 }
 
+/*!
+ * \brief Computes the GWN for a 2D point wrt to a collection of 2D Bezier curves
+ *
+ * \param [in] query The query point to test
+ * \param [in] cpoly The CurvedPolygon object
+ * \param [in] edge_tol The physical distance level at which objects are considered indistinguishable
+ * \param [in] EPS Miscellaneous numerical tolerance level for nonphysical distances
+ *
+ * Sums the GWN at `query` for each curved edge
+ * 
+ * \return The GWN.
+ */
 template <typename T>
 double winding_number(const Point<T, 2>& q,
                       const axom::Array<BezierCurve<T, 2>>& carray,
@@ -355,7 +376,7 @@ double winding_number(const Point<T, 2>& q,
 //! @name Winding number operations between 3D points and primitives
 
 /*!
- * \brief Computes the solid angle winding number for a 3D triangle
+ * \brief Computes the GWN for a 3D point wrt a 3D triangle
  *
  * \param [in] query The query point to test
  * \param [in] tri The 3D Triangle object
@@ -363,12 +384,12 @@ double winding_number(const Point<T, 2>& q,
  * \param [in] edge_tol The physical distance level at which objects are considered indistinguishable
  * \param [in] EPS Miscellaneous numerical tolerance level for nonphysical distances
  *
- * Computes the winding number using the formula from 
+ * Computes the GWN as the solid angle modulo 4pi using the formula from 
  *  Oosterom, Strackee, "The Solid Angle of a Plane Triangle" 
  *  IEEE Transactions on Biomedical Engineering, Vol BME-30, No. 2, February 1983
  * with extra adjustments if the triangle takes up a full octant
  * 
- * \return double the generalized winding number.
+ * \return The GWN.
  */
 template <typename T>
 double winding_number(const Point<T, 3>& q,
@@ -405,7 +426,7 @@ double winding_number(const Point<T, 3>& q,
     return 0;
   }
 
-  const double denom = a_norm * b_norm * c_norm  //
+  const double denom = a_norm * b_norm * c_norm
     + a_norm * b.dot(c) + b_norm * a.dot(c) + c_norm * a.dot(b);
 
   // Handle direct cases where argument to atan is undefined
@@ -427,9 +448,16 @@ double winding_number(const Point<T, 3>& q,
 }
 
 /*!
- * \brief Computes the solid angle winding number for a 3D triangle
+ * \brief Computes the GWN for a 3D point wrt a 3D triangle
  *
- * Overload function without additional returning parameter
+ * \param [in] query The query point to test
+ * \param [in] tri The 3D Triangle object
+ * \param [in] edge_tol The physical distance level at which objects are considered indistinguishable
+ * \param [in] EPS Miscellaneous numerical tolerance level for nonphysical distances
+ *
+ * Computes the GWN for the triangle without an additional return parameter
+ * 
+ * \return The GWN.
  */
 template <typename T>
 double winding_number(const Point<T, 3>& q,
@@ -442,7 +470,7 @@ double winding_number(const Point<T, 3>& q,
 }
 
 /*!
- * \brief Computes the solid angle winding number for a 3D planar polygon
+ * \brief Computes the GWN for a 3D point wrt a 3D planar polygon
  *
  * \param [in] query The query point to test
  * \param [in] poly The Polygon object
@@ -453,9 +481,9 @@ double winding_number(const Point<T, 3>& q,
  * 
  * \pre Assumes the polygon is planar. Otherwise, a meaningless value is returned.
  * 
- * Triangulates the polygon and computes the triangular solid angle for each part
+ * Triangulates the polygon and computes the triangular GWN for each component
  * 
- * \return double the generalized winding number.
+ * \return The GWN.
  */
 template <typename T>
 double winding_number(const Point<T, 3>& q,
@@ -484,9 +512,19 @@ double winding_number(const Point<T, 3>& q,
 }
 
 /*!
- * \brief Computes the solid angle winding number for a 3D planar polygon
+ * \brief Computes the GWN for a 3D point wrt a 3D planar polygon
  *
- * Overload function without additional returning parameter
+ * \param [in] query The query point to test
+ * \param [in] poly The Polygon object
+ * \param [in] edge_tol The physical distance level at which objects are 
+ *                      considered indistinguishable
+ * \param [in] EPS Miscellaneous numerical tolerance level for nonphysical distances
+ * 
+ * \pre Assumes the polygon is planar. Otherwise, a meaningless value is returned.
+ * 
+ * Computes the GWN for the polygon without an additional return parameter
+ * 
+ * \return The GWN.
  */
 template <typename T>
 double winding_number(const Point<T, 3>& q,
@@ -499,7 +537,7 @@ double winding_number(const Point<T, 3>& q,
 }
 
 /*!
- * \brief Computes the solid angle winding number for a 3D convex polyhedron
+ * \brief Computes the winding number for a 3D point wrt a 3D convex polyhedron
  *
  * \param [in] query The query point to test
  * \param [in] poly The Polyhedron object
@@ -510,9 +548,10 @@ double winding_number(const Point<T, 3>& q,
  * 
  * \pre Expects the polyhedron to be convex and closed so that the returned value is an integer.
  * 
- * Computes the faces of the polyhedron and computes the winding number for each.
- *
- * \return int The integer winding number.
+ * Computes the faces of the polyhedron and computes the GWN for each.
+ * The sum is then rounded to the nearest integer, as the shape is assumed to be closed.
+ * 
+ * \return The integer winding number.
  */
 template <typename T>
 int winding_number(const Point<T, 3>& query,
@@ -556,7 +595,7 @@ int winding_number(const Point<T, 3>& query,
 #ifdef AXOM_USE_MFEM
 
 /*
- * \brief Computes the solid angle winding number for a Bezier patch
+ * \brief Computes the GWN for a 3D point wrt a 3D Bezier patch
  *
  * \param [in] query The query point to test
  * \param [in] bPatch The Bezier patch object
@@ -571,7 +610,7 @@ int winding_number(const Point<T, 3>& query,
  * \note Warning: This algorithm is only tested to high accuracy for queries within
  *  1e-5 of the surface. Otherwise, it will return less accurate results.
  * 
- * \return double The generalized winding number.
+ * \return The GWN.
  */
 template <typename T>
 double winding_number(const Point<T, 3>& query,

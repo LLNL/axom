@@ -31,18 +31,18 @@ namespace primal
 namespace detail
 {
 /*
- * \brief Compute the generalized winding number with respect to a line segment
+ * \brief Compute the GWN at a 2D point wrt a 2D line segment
  *
  * \param [in] q The query point to test
  * \param [in] c0 The initial point of the line segment
  * \param [in] c1 The terminal point of the line segment
  * \param [in] edge_tol The tolerance at which a point is on the line
  *
- * The winding number for a point with respect to a straight line
+ * The GWN for a 2D point with respect to a 2D straight line
  * is the signed angle subtended by the query point to each endpoint.
- * Colinear points return 0 for their winding number.
+ * Colinear points return 0 for their GWN.
  *
- * \return double The GWN
+ * \return The GWN
  */
 template <typename T>
 double linear_winding_number(const Point<T, 2>& q,
@@ -75,8 +75,8 @@ double linear_winding_number(const Point<T, 2>& q,
 }
 
 /*!
- * \brief Directly compute the winding number at either endpoint of a 
- *        Bezier curve with a convex control polygon
+ * \brief Compute the GWN at either endpoint of a 
+ *        2D Bezier curve with a convex control polygon
  *
  * \param [in] q The query point
  * \param [in] c The BezierCurve object to compute the winding number along
@@ -86,14 +86,19 @@ double linear_winding_number(const Point<T, 2>& q,
  * \pre Control polygon for c must be convex
  * \pre The query point must be on one of the endpoints
  *
- * The winding number for a Bezier curve with a convex control polygon is
+ * The GWN for a Bezier curve with a convex control polygon is
  * given by the signed angle between the tangent vector at that endpoint and
  * the vector in the direction of the other endpoint. 
+ * 
+ * See Algorithm 2 in
+ *  Jacob Spainhour, David Gunderman, and Kenneth Weiss. 2024. 
+ *  Robust Containment Queries over Collections of Rational Parametric Curves via Generalized Winding Numbers. 
+ *  ACM Trans. Graph. 43, 4, Article 38 (July 2024)
  * 
  * The query can be located on both endpoints if it is closed, in which case
  * the angle is that between the tangent lines at both endpoints
  * 
- * \return double The winding number
+ * \return The GWN
  */
 template <typename T>
 double convex_endpoint_winding_number(const Point<T, 2>& q,
@@ -295,7 +300,8 @@ enum class SingularityAxis
 
 #ifdef AXOM_USE_MFEM
 /*!
- * \brief Evaluates an "anti-curl" of the winding number along a curve
+ * \brief Evaluates the integral of the "anti-curl" of the GWN integrand
+ *        (via Stokes' theorem) at a point wrt to a 3D Bezier curve
  *
  * \param [in] query The query point to test
  * \param [in] curve The BezierCurve object
@@ -311,7 +317,7 @@ enum class SingularityAxis
  * \note This is only meant to be used for `winding_number<BezierPatch>()`,
  *  and the result does not make sense outside of that context.
  *
- * \return double One component of the winding number
+ * \return The value of the integral
  */
 template <typename T>
 double stokes_winding_number(const Point<T, 3>& query,
@@ -400,7 +406,8 @@ double stokes_winding_number(const Point<T, 3>& query,
 
 #ifdef AXOM_USE_MFEM
 /*!
- * \brief Recursively evaluates an "anti-curl" of the winding number on subcurves
+ * \brief Accurately evaluates the integral of the "anti-curl" of the GWN integrand
+ *        (via Stokes' theorem) at a point wrt to a 3D Bezier curve via recursion
  *
  * \param [in] query The query point to test
  * \param [in] curve The BezierCurve object
@@ -417,7 +424,7 @@ double stokes_winding_number(const Point<T, 3>& query,
  * \note This is only meant to be used for `winding_number<BezierPatch>()`,
  *  and the result does not make sense outside of that context.
  * 
- * \return double One component of the winding number
+ * \return The value of the integral
  */
 template <typename T>
 double stokes_winding_number_adaptive(const Point<T, 3>& query,
