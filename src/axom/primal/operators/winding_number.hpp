@@ -128,7 +128,7 @@ int winding_number(const Point<T, 2>& R,
     if(squared_distance(R, Segment<T, 2>(P[i], P[j])) <= edge_tol_2)
     {
       isOnEdge = true;
-      return includeBoundary ? 1 : 0; 
+      return includeBoundary ? 1 : 0;
     }
 
     // Check if edge crosses horizontal line
