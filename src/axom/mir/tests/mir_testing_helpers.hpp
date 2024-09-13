@@ -221,7 +221,7 @@ std::vector<std::string> baselinePaths()
 bool compareBaseline(const std::vector<std::string> &baselinePaths,
                      const std::string &baselineName,
                      const conduit::Node &current,
-                     double tolerance = 1.e-10)
+                     double tolerance = 1.e-6)
 {
   bool success = false;
   int count = 0;

@@ -21,7 +21,7 @@ namespace bputils = axom::mir::utilities::blueprint;
 //#define DEBUGGING_TEST_CASES
 
 // Uncomment to generate baselines
-// #define AXOM_TESTING_GENERATE_BASELINES
+//#define AXOM_TESTING_GENERATE_BASELINES
 
 // Uncomment to save visualization files for debugging (when making baselines)
 //#define AXOM_TESTING_SAVE_VISUALIZATION
@@ -413,7 +413,7 @@ void test_one_shape(const conduit::Node &hostMesh, const std::string &name)
 
   // Copy mesh to device
   conduit::Node deviceMesh;
-  axom::mir::utilities::blueprint::copy<ExecSpace>(deviceMesh, hostMesh);
+  bputils::copy<ExecSpace>(deviceMesh, hostMesh);
 
   // Make views for the device mesh.
   conduit::Node &n_x = deviceMesh.fetch_existing("coordsets/coords/values/x");
@@ -446,7 +446,7 @@ void test_one_shape(const conduit::Node &hostMesh, const std::string &name)
 
   // Copy device->host
   conduit::Node hostClipMesh;
-  axom::mir::utilities::blueprint::copy<seq_exec>(hostClipMesh, deviceClipMesh);
+  bputils::copy<seq_exec>(hostClipMesh, deviceClipMesh);
 
   // Handle baseline comparison.
   std::string baselineName(yamlRoot(name));
@@ -518,7 +518,7 @@ void braid2d_clip_test(const std::string &type, const std::string &name)
   // Create the data
   conduit::Node hostMesh, deviceMesh;
   axom::mir::testing::data::braid(type, dims, hostMesh);
-  axom::mir::utilities::blueprint::copy<ExecSpace>(deviceMesh, hostMesh);
+  bputils::copy<ExecSpace>(deviceMesh, hostMesh);
 #if defined(AXOM_TESTING_SAVE_VISUALIZATION)
   conduit::relay::io::blueprint::save_mesh(hostMesh, name + "_orig", "hdf5");
 #endif
@@ -557,7 +557,7 @@ void braid2d_clip_test(const std::string &type, const std::string &name)
 
   // Copy device->host
   conduit::Node hostClipMesh;
-  axom::mir::utilities::blueprint::copy<seq_exec>(hostClipMesh, deviceClipMesh);
+  bputils::copy<seq_exec>(hostClipMesh, deviceClipMesh);
 
 #if defined(DEBUGGING_TEST_CASES)
   std::cout << "---------------------------------- clipped uniform "
@@ -638,7 +638,7 @@ void braid2d_clip_test(const std::string &type, const std::string &name)
 
   // Copy device->host
   conduit::Node hostClipMixedMesh;
-  axom::mir::utilities::blueprint::copy<seq_exec>(hostClipMixedMesh,
+  bputils::copy<seq_exec>(hostClipMixedMesh,
                                                   deviceClipMixedMesh);
 #if defined(DEBUGGING_TEST_CASES)
   std::cout << "---------------------------------- clipped mixed "
@@ -696,15 +696,17 @@ void braid_rectilinear_clip_test(const std::string &name)
   // Create the data
   conduit::Node hostMesh, deviceMesh;
   axom::mir::testing::data::braid("rectilinear", dims, hostMesh);
-  axom::mir::utilities::blueprint::copy<ExecSpace>(deviceMesh, hostMesh);
 #if defined(AXOM_TESTING_SAVE_VISUALIZATION)
   conduit::relay::io::blueprint::save_mesh(hostMesh, name + "_orig", "hdf5");
 #endif
 
+  // host->device
+  bputils::copy<ExecSpace>(deviceMesh, hostMesh);
+
   // Create views
   auto coordsetView =
     axom::mir::views::make_rectilinear_coordset<double, NDIMS>::view(
-      hostMesh["coordsets/coords"]);
+      deviceMesh["coordsets/coords"]);
   using CoordsetView = decltype(coordsetView);
   TopoView topoView(Indexing {zoneDims});
 
@@ -723,7 +725,7 @@ void braid_rectilinear_clip_test(const std::string &name)
 
   // Copy device->host
   conduit::Node hostClipMesh;
-  axom::mir::utilities::blueprint::copy<seq_exec>(hostClipMesh, deviceClipMesh);
+  bputils::copy<seq_exec>(hostClipMesh, deviceClipMesh);
 
   // Handle baseline comparison.
   {
@@ -780,8 +782,6 @@ void strided_structured_clip_test(const std::string &name,
   conduit::Node hostMesh, deviceMesh;
   axom::mir::testing::data::strided_structured<NDIMS>(hostMesh);
   //hostMesh.print();
-
-  axom::mir::utilities::blueprint::copy<ExecSpace>(deviceMesh, hostMesh);
 #if defined(AXOM_TESTING_SAVE_VISUALIZATION)
   conduit::relay::io::blueprint::save_mesh(hostMesh, name + "_orig", "hdf5");
   conduit::relay::io::blueprint::save_mesh(hostMesh,
@@ -789,7 +789,11 @@ void strided_structured_clip_test(const std::string &name,
                                            "yaml");
 #endif
 
-  conduit::Node deviceClipMesh, hostClipMesh;
+  conduit::Node deviceOptions, deviceClipMesh, hostClipMesh;
+
+  // host->device
+  bputils::copy<ExecSpace>(deviceMesh, hostMesh);
+  bputils::copy<ExecSpace>(deviceOptions, options);
 
   // Create views
   axom::mir::views::dispatch_explicit_coordset(
@@ -805,10 +809,10 @@ void strided_structured_clip_test(const std::string &name,
       axom::mir::clipping::ClipField<ExecSpace, TopoView, CoordsetView> clipper(
         topoView,
         coordsetView);
-      clipper.execute(deviceMesh, options, deviceClipMesh);
+      clipper.execute(deviceMesh, deviceOptions, deviceClipMesh);
 
-      // Copy device->host
-      axom::mir::utilities::blueprint::copy<seq_exec>(hostClipMesh,
+      // device->host
+      bputils::copy<seq_exec>(hostClipMesh,
                                                       deviceClipMesh);
     });
 
@@ -869,7 +873,7 @@ void braid3d_clip_test(const std::string &type, const std::string &name)
   const axom::StackArray<axom::IndexType, 3> dims {10, 10, 10};
   conduit::Node hostMesh, deviceMesh;
   axom::mir::testing::data::braid(type, dims, hostMesh);
-  axom::mir::utilities::blueprint::copy<ExecSpace>(deviceMesh, hostMesh);
+  bputils::copy<ExecSpace>(deviceMesh, hostMesh);
 #if defined(AXOM_TESTING_SAVE_VISUALIZATION)
   conduit::relay::io::blueprint::save_mesh(hostMesh, name + "_orig", "hdf5");
 #endif
@@ -907,7 +911,7 @@ void braid3d_clip_test(const std::string &type, const std::string &name)
 
   // Copy device->host
   conduit::Node hostClipMesh;
-  axom::mir::utilities::blueprint::copy<seq_exec>(hostClipMesh, deviceClipMesh);
+  bputils::copy<seq_exec>(hostClipMesh, deviceClipMesh);
 
   // Handle baseline comparison.
   std::string baselineName(yamlRoot(name));
@@ -970,7 +974,7 @@ void braid3d_mixed_clip_test(const std::string &name)
   // Create the data
   conduit::Node hostMesh, deviceMesh;
   axom::mir::testing::data::mixed3d(hostMesh);
-  axom::mir::utilities::blueprint::copy<ExecSpace>(deviceMesh, hostMesh);
+  bputils::copy<ExecSpace>(deviceMesh, hostMesh);
 #if defined(AXOM_TESTING_SAVE_VISUALIZATION)
   conduit::relay::io::blueprint::save_mesh(hostMesh, name + "_orig", "hdf5");
 #endif
@@ -1020,7 +1024,7 @@ void braid3d_mixed_clip_test(const std::string &name)
 
   // Copy device->host
   conduit::Node hostClipMesh;
-  axom::mir::utilities::blueprint::copy<seq_exec>(hostClipMesh, deviceClipMesh);
+  bputils::copy<seq_exec>(hostClipMesh, deviceClipMesh);
 
   // Handle baseline comparison.
   std::string baselineName(yamlRoot(name));
@@ -1056,7 +1060,6 @@ TEST(mir_clipfield, mixed_hip)
 #endif
 
 //------------------------------------------------------------------------------
-#if 0
 template <typename Container1, typename Container2>
 void compare_values(const Container1 &c1, const Container2 &c2)
 {
@@ -1068,104 +1071,118 @@ void compare_values(const Container1 &c1, const Container2 &c2)
 }
 
 template <typename ExecSpace>
-void point_merge_test()
+struct point_merge_test
 {
-  conduit::Node hostMesh;
-  hostMesh["coordsets/coords/type"] = "explicit";
-  hostMesh["coordsets/coords/values/x"].set(
-    std::vector<float> {{0., 1., 2., 0., 1., 2., 0., 1., 2.}});
-  hostMesh["coordsets/coords/values/y"].set(
-    std::vector<float> {{0., 0., 0., 1., 1., 1., 2., 2., 2.}});
-  hostMesh["topologies/mesh/type"] = "unstructured";
-  hostMesh["topologies/mesh/coordset"] = "coords";
-  hostMesh["topologies/mesh/elements/shape"] = "quad";
-  hostMesh["topologies/mesh/elements/connectivity"].set(
-    std::vector<int> {{0, 1, 4, 3, 1, 2, 5, 4, 3, 4, 7, 6, 4, 5, 8, 7}});
-  hostMesh["topologies/mesh/elements/sizes"].set(std::vector<int> {{4, 4, 4, 4}});
-  hostMesh["topologies/mesh/elements/offsets"].set(
-    std::vector<int> {{0, 4, 8, 12}});
-  hostMesh["fields/clip/topology"] = "mesh";
-  hostMesh["fields/clip/association"] = "vertex";
-  hostMesh["fields/clip/values"].set(
-    std::vector<float> {{1., 1., 0.5, 1., 1., 0., 0.5, 0., 0.5}});
-
-  conduit::Node deviceMesh;
-  axom::mir::utilities::blueprint::copy<ExecSpace>(deviceMesh, hostMesh);
-
-  // Set up views for the mesh.
-  using CoordsetView = axom::mir::views::ExplicitCoordsetView<float, 2>;
-  CoordsetView coordsetView(
-    bputils::make_array_view<float>(
-      deviceMesh.fetch_existing("coordsets/coords/values/x")),
-    bputils::make_array_view<float>(
-      deviceMesh.fetch_existing("coordsets/coords/values/y")));
-
-  using TopologyView = axom::mir::views::UnstructuredTopologySingleShapeView<
-    axom::mir::views::QuadShape<int>>;
-  TopologyView topologyView(bputils::make_array_view<int>(
-    deviceMesh.fetch_existing("topologies/mesh/elements/connectivity")));
-
-  // Clip
-  conduit::Node options, deviceClipMesh;
-  options["clipField"] = "clip";
-  options["clipValue"] = 0.5;
-  using Clip =
-    axom::mir::clipping::ClipField<axom::SEQ_EXEC, TopologyView, CoordsetView>;
-  Clip clip(topologyView, coordsetView);
-  clip.execute(deviceMesh, options, deviceClipMesh);
-
-  conduit::Node hostClipMesh;
-  axom::mir::utilities::blueprint::copy<axom::SEQ_EXEC>(hostClipMesh,
-                                                        deviceClipMesh);
-  //printNode(hostClipMesh);
-
-  // Check that the points were merged when making the new mesh.
-  std::vector<float> x {{2.0, 1.0, 2.0, 0.0, 1.5, 2.0, 1.0}};
-  std::vector<float> y {{1.0, 1.5, 2.0, 2.0, 1.0, 0.0, 2.0}};
-  EXPECT_EQ(x.size(), 7);
-  EXPECT_EQ(y.size(), 7);
-  for(size_t i = 0; i < x.size(); i++)
+  static void create(conduit::Node &hostMesh)
   {
-    EXPECT_FLOAT_EQ(
-      hostClipMesh["coordsets/coords/values/x"].as_float_accessor()[i],
-      x[i]);
-    EXPECT_FLOAT_EQ(
-      hostClipMesh["coordsets/coords/values/y"].as_float_accessor()[i],
-      y[i]);
+    hostMesh["coordsets/coords/type"] = "explicit";
+    hostMesh["coordsets/coords/values/x"].set(
+      std::vector<float> {{0., 1., 2., 0., 1., 2., 0., 1., 2.}});
+    hostMesh["coordsets/coords/values/y"].set(
+      std::vector<float> {{0., 0., 0., 1., 1., 1., 2., 2., 2.}});
+    hostMesh["topologies/mesh/type"] = "unstructured";
+    hostMesh["topologies/mesh/coordset"] = "coords";
+    hostMesh["topologies/mesh/elements/shape"] = "quad";
+    hostMesh["topologies/mesh/elements/connectivity"].set(
+      std::vector<int> {{0, 1, 4, 3, 1, 2, 5, 4, 3, 4, 7, 6, 4, 5, 8, 7}});
+    hostMesh["topologies/mesh/elements/sizes"].set(std::vector<int> {{4, 4, 4, 4}});
+    hostMesh["topologies/mesh/elements/offsets"].set(
+      std::vector<int> {{0, 4, 8, 12}});
+    hostMesh["fields/clip/topology"] = "mesh";
+    hostMesh["fields/clip/association"] = "vertex";
+    hostMesh["fields/clip/values"].set(
+      std::vector<float> {{1., 1., 0.5, 1., 1., 0., 0.5, 0., 0.5}});
   }
 
-  // Check that the degenerate quads were turned into triangles.
-  std::vector<int> shapes {{2, 2, 3, 2}};
-  std::vector<int> sizes {{3, 3, 4, 3}};
-  std::vector<int> offsets {{0, 4, 8, 12}};
-  compare_values(
-    shapes,
-    hostClipMesh["topologies/mesh/elements/shapes"].as_int_accessor());
-  compare_values(
-    sizes,
-    hostClipMesh["topologies/mesh/elements/sizes"].as_int_accessor());
-  compare_values(
-    offsets,
-    hostClipMesh["topologies/mesh/elements/offsets"].as_int_accessor());
-}
+  static void test()
+  {
+    conduit::Node hostMesh;
+    create(hostMesh);
 
-TEST(mir_clipfield, pointmerging)
+    conduit::Node deviceMesh;
+    bputils::copy<ExecSpace>(deviceMesh, hostMesh);
+
+    // Set up views for the mesh.
+    using CoordsetView = axom::mir::views::ExplicitCoordsetView<float, 2>;
+    CoordsetView coordsetView(
+      bputils::make_array_view<float>(
+        deviceMesh.fetch_existing("coordsets/coords/values/x")),
+      bputils::make_array_view<float>(
+        deviceMesh.fetch_existing("coordsets/coords/values/y")));
+
+    using TopologyView = axom::mir::views::UnstructuredTopologySingleShapeView<
+      axom::mir::views::QuadShape<int>>;
+    TopologyView topologyView(bputils::make_array_view<int>(
+      deviceMesh.fetch_existing("topologies/mesh/elements/connectivity")));
+
+    // Clip
+    conduit::Node options, deviceClipMesh;
+    options["clipField"] = "clip";
+    options["clipValue"] = 0.5;
+    using Clip =
+      axom::mir::clipping::ClipField<axom::SEQ_EXEC, TopologyView, CoordsetView>;
+    Clip clip(topologyView, coordsetView);
+    clip.execute(deviceMesh, options, deviceClipMesh);
+
+    conduit::Node hostClipMesh;
+    bputils::copy<axom::SEQ_EXEC>(hostClipMesh,
+                                                          deviceClipMesh);
+    //printNode(hostClipMesh);
+
+    // Check that the points were merged when making the new mesh.
+    std::vector<float> x {{2.0, 2.0, 0.0, 1.0, 2.0, 1.5, 1.0}};
+    std::vector<float> y {{0.0, 1.0, 2.0, 2.0, 2.0, 1.0, 1.5}};
+    EXPECT_EQ(x.size(), 7);
+    EXPECT_EQ(y.size(), 7);
+    for(size_t i = 0; i < x.size(); i++)
+    {
+      EXPECT_FLOAT_EQ(
+        hostClipMesh["coordsets/coords/values/x"].as_float_accessor()[i],
+        x[i]);
+      EXPECT_FLOAT_EQ(
+        hostClipMesh["coordsets/coords/values/y"].as_float_accessor()[i],
+        y[i]);
+    }
+
+    // Check that the degenerate quads were turned into triangles.
+    std::vector<int> shapes {{2, 2, 3, 2}};
+    std::vector<int> sizes {{3, 3, 4, 3}};
+    std::vector<int> offsets {{0, 4, 8, 12}};
+    compare_values(
+      shapes,
+      hostClipMesh["topologies/mesh/elements/shapes"].as_int_accessor());
+    compare_values(
+      sizes,
+      hostClipMesh["topologies/mesh/elements/sizes"].as_int_accessor());
+    compare_values(
+      offsets,
+      hostClipMesh["topologies/mesh/elements/offsets"].as_int_accessor());
+  }
+};
+
+TEST(mir_clipfield, pointmerging_seq)
 {
-  point_merge_test<seq_exec>();
-
+  point_merge_test<seq_exec>::test();
+}
 #if defined(AXOM_USE_OPENMP)
-  point_merge_test<omp_exec>();
-#endif
-
-#if defined(AXOM_USE_CUDA) && defined(__CUDACC__)
-  point_merge_test<cuda_exec>();
-#endif
-
-#if defined(AXOM_USE_HIP)
-  point_merge_test<hip_exec>();
-#endif
+TEST(mir_clipfield, pointmerging_omp)
+{
+  point_merge_test<omp_exec>::test();
 }
 #endif
+#if defined(AXOM_USE_CUDA) && defined(__CUDACC__)
+TEST(mir_clipfield, pointmerging_cuda)
+{
+  point_merge_test<cuda_exec>::test();
+}
+#endif
+#if defined(AXOM_USE_HIP)
+TEST(mir_clipfield, pointmerging_hip)
+{
+  point_merge_test<hip_exec>::test();
+}
+#endif
+
 //------------------------------------------------------------------------------
 
 template <typename ExecSpace>
