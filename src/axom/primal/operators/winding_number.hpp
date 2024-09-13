@@ -293,10 +293,11 @@ double winding_number(const Point<T, 2>& q,
 
   // Compute the fractional value of the closed curve
   const int n = approximating_polygon.numVertices();
-  const double closure_wn = detail::linear_winding_number(q,
-                                                    approximating_polygon[n - 1],
-                                                    approximating_polygon[0],
-                                                    edge_tol);
+  const double closure_wn =
+    detail::linear_winding_number(q,
+                                  approximating_polygon[n - 1],
+                                  approximating_polygon[0],
+                                  edge_tol);
 
   // If the point is on the boundary of the approximating polygon,
   //  or coincident with the curve (rare), then winding_number<polygon>
@@ -426,8 +427,8 @@ double winding_number(const Point<T, 3>& q,
     return 0;
   }
 
-  const double denom = a_norm * b_norm * c_norm
-    + a_norm * b.dot(c) + b_norm * a.dot(c) + c_norm * a.dot(b);
+  const double denom = a_norm * b_norm * c_norm + a_norm * b.dot(c) +
+    b_norm * a.dot(c) + c_norm * a.dot(b);
 
   // Handle direct cases where argument to atan is undefined
   if(axom::utilities::isNearlyEqual(denom, 0.0, EPS))
