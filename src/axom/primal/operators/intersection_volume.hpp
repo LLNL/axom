@@ -39,6 +39,8 @@ namespace primal
  *
  * \return Intersection volume between the hexahedron and tetrahedron
  *
+ * \warning Hexahedron should have planar faces for optimal performance.
+ *
  * \warning tryFixOrientation flag does not guarantee the shapes' vertex orders
  *          will be valid. It is the responsiblity of the caller to pass
  *          shapes with a valid vertex order. Otherwise, if the shapes have
@@ -56,7 +58,25 @@ AXOM_HOST_DEVICE T intersection_volume(const Hexahedron<T, 3>& hex,
                                        double eps = 1.e-10,
                                        bool tryFixOrientation = false)
 {
-  return clip(hex, tet, eps, tryFixOrientation).volume();
+  if(hex.hasPlanarFaces())
+  {
+    return clip(hex, tet, eps, tryFixOrientation).volume();
+  }
+  // Split non-planar hex into 24 tetrahedra and sum the tet-tet intersection
+  // volumes
+  else
+  {
+    T retVol = 0;
+    const int NUM_TETS_PER_HEX = 24;
+    axom::StackArray<Tetrahedron<T, 3>, NUM_TETS_PER_HEX> tets_from_hex;
+    hex.triangulate(tets_from_hex);
+    for(int i = 0; i < NUM_TETS_PER_HEX; i++)
+    {
+      retVol +=
+        intersection_volume(tets_from_hex[i], tet, eps, tryFixOrientation);
+    }
+    return retVol;
+  }
 }
 
 /*!
@@ -72,6 +92,8 @@ AXOM_HOST_DEVICE T intersection_volume(const Hexahedron<T, 3>& hex,
  *             Defaults to false.
  *
  * \return Intersection volume between the tetrahedron and hexahedron
+ *
+ * \warning Hexahedron should have planar faces for optimal performance.
  *
  * \warning tryFixOrientation flag does not guarantee the shapes' vertex orders
  *          will be valid. It is the responsiblity of the caller to pass

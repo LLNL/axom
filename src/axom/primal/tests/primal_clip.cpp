@@ -1078,6 +1078,64 @@ TEST(primal_clip, hex_tet_negative_tet_vol)
             fixedPoly.volume());
 }
 
+// Hexahedra with non-planar faces clipped by the tetrahedron
+TEST(primal_clip, hex_tet_non_planar)
+{
+  using namespace Primal3D;
+  constexpr double EPS = 1e-4;
+
+  TetrahedronType tet(PointType {-5, 0, -1},
+                      PointType {0, -5, -1},
+                      PointType {0, 5, -1},
+                      PointType {0, 0, 5});
+
+  // First point results in non-planar face
+  {
+    HexahedronType hex(PointType {-2, 0, 0},
+                       PointType {1, 0, 0},
+                       PointType {1, 1, 0},
+                       PointType {-1, 1, 0},
+                       PointType {-1, 0, 1},
+                       PointType {1, 0, 1},
+                       PointType {1, 1, 1},
+                       PointType {-1, 1, 1});
+
+    EXPECT_FALSE(hex.hasPlanarFaces());
+
+    // Assert failure in debug mode from non-planar hex faces
+    // PolyhedronType polyhedron = axom::primal::clip(hex, tet);
+
+    EXPECT_NEAR(2.25, hex.volume(), EPS);
+
+    // Expected result should be 1.25, removing a unit cube from the hex
+    EXPECT_NEAR(1.25, axom::primal::intersection_volume<double>(hex, tet), EPS);
+    EXPECT_NEAR(1.25, axom::primal::intersection_volume<double>(tet, hex), EPS);
+  }
+
+  // First and second-to-last point result in all non-planar faces
+  {
+    HexahedronType hex(PointType {-2, -0.5, -0.5},
+                       PointType {1, 0, 0},
+                       PointType {1, 1, 0},
+                       PointType {-1, 1, 0},
+                       PointType {-1, 0, 1},
+                       PointType {1, 0, 1},
+                       PointType {2, 1.5, 1.5},
+                       PointType {-1, 1, 1});
+
+    EXPECT_FALSE(hex.hasPlanarFaces());
+
+    // Assert failure in debug mode from non-planar hex faces
+    // PolyhedronType polyhedron = axom::primal::clip(hex, tet);
+
+    EXPECT_NEAR(3.5, hex.volume(), EPS);
+
+    // Expected result should be half of the hexahedron volume
+    EXPECT_NEAR(1.75, axom::primal::intersection_volume<double>(hex, tet), EPS);
+    EXPECT_NEAR(1.75, axom::primal::intersection_volume<double>(tet, hex), EPS);
+  }
+}
+
 // Tetrahedron does not clip octahedron.
 TEST(primal_clip, oct_tet_clip_nonintersect)
 {
