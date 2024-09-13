@@ -301,8 +301,10 @@ double winding_number(const Point<T, 2>& q,
 
   // If the point is on the boundary of the approximating polygon,
   //  or coincident with the curve (rare), then winding_number<polygon>
-  //  doesn't return the right half-integer. Have to go edge-by-edge
-  if(isCoincident || isOnEdge)
+  //  doesn't return the right half-integer. Have to go edge-by-edge.
+  // Do an extra check for the result of linear_winding_number to 
+  //  account for differing tolerances between the two methods.
+  if(isCoincident || isOnEdge || axom::utilities::isNearlyEqual(closure_wn, 0.0, EPS))
   {
     closed_curve_wn = closure_wn;
     for(int i = 1; i < n; ++i)

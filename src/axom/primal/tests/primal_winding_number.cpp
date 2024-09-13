@@ -166,6 +166,12 @@ TEST(primal_winding_number, closure_edge_cases)
               0.0,
               abs_tol);
 
+  // Tests a potential issue where the query point is treated as being
+  //  on the closure, but not on the edge of the approximating polygon.
+  EXPECT_NEAR(winding_number(Point2D({0, 1e-8}), quartic),
+              0.500000031830989,
+              abs_tol);
+
   // Flip the curve vertically
   quartic[2] = Point2D({0.0, -1.0});
   EXPECT_NEAR(winding_number(Point2D({0, 0}), quartic, edge_tol, EPS),
