@@ -94,7 +94,7 @@ int winding_number(const Point<T, 2>& q,
  * \param [in] P The Polygon object to test for containment
  * \param [in] includeBoundary If true, points on the boundary are considered interior
  * \param [in] isOnEdge An optional return parameter if the point is on the boundary
- * \param [in] EPS The tolerance level for collinearity
+ * \param [in] edge_tol The distance at wich a point is considered on the boundary
  * 
  * Uses an adapted ray-casting approach that counts quarter-rotation
  * of vertices around the query point. Current policy is to return 1 on edges
@@ -113,37 +113,22 @@ int winding_number(const Point<T, 2>& R,
                    const Polygon<T, 2>& P,
                    bool& isOnEdge,
                    bool includeBoundary,
-                   double EPS)
+                   double edge_tol)
 {
   const int nverts = P.numVertices();
+  const double edge_tol_2 = edge_tol * edge_tol;
   isOnEdge = false;
-
-  // If the query is a vertex, return a value interpreted
-  //  as "inside" by evenodd or nonzero protocols
-  if(axom::utilities::isNearlyEqual(P[0][0], R[0], EPS) &&
-     axom::utilities::isNearlyEqual(P[0][1], R[1], EPS))
-  {
-    isOnEdge = true;
-    return includeBoundary ? 1 : 0;  // On vertex
-  }
 
   int winding_num = 0;
   for(int i = 0; i < nverts; i++)
   {
     int j = (i == nverts - 1) ? 0 : i + 1;
 
-    if(axom::utilities::isNearlyEqual(P[j][1], R[1], EPS))
+    // Check if the point is on the edge up to some tolerance
+    if(squared_distance(R, Segment<T, 2>(P[i], P[j])) <= edge_tol_2)
     {
-      if(axom::utilities::isNearlyEqual(P[j][0], R[0], EPS))
-      {
-        isOnEdge = true;
-        return includeBoundary ? 1 : 0;  // On vertex
-      }
-      else if(P[i][1] == R[1] && ((P[j][0] > R[0]) == (P[i][0] < R[0])))
-      {
-        isOnEdge = true;
-        return includeBoundary ? 1 : 0;  // On horizontal edge
-      }
+      isOnEdge = true;
+      return includeBoundary ? 1 : 0; 
     }
 
     // Check if edge crosses horizontal line
@@ -162,13 +147,6 @@ int winding_number(const Point<T, 2>& R,
                                                    P[i][1] - R[1], P[j][1] - R[1]);
           // clang-format on
 
-          // On edge
-          if(axom::utilities::isNearlyEqual(det, 0.0, EPS))
-          {
-            isOnEdge = true;
-            return includeBoundary ? 1 : 0;  // On horizontal edge
-          }
-
           // Check if edge intersects horitonal ray to the right of R
           if((det > 0) == (P[j][1] > P[i][1]))
           {
@@ -184,13 +162,6 @@ int winding_number(const Point<T, 2>& R,
           double det = axom::numerics::determinant(P[i][0] - R[0], P[j][0] - R[0],
                                                    P[i][1] - R[1], P[j][1] - R[1]);
           // clang-format on
-
-          // On edge
-          if(axom::utilities::isNearlyEqual(det, 0.0, EPS))
-          {
-            isOnEdge = true;
-            return includeBoundary ? 1 : 0;  // On horizontal edge
-          }
 
           // Check if edge intersects horitonal ray to the right of R
           if((det > 0) == (P[j][1] > P[i][1]))
@@ -211,7 +182,7 @@ int winding_number(const Point<T, 2>& R,
  * \param [in] R The query point to test
  * \param [in] P The Polygon object to test for containment
  * \param [in] includeBoundary If true, points on the boundary are considered interior
- * \param [in] EPS The tolerance level for collinearity
+ * \param [in] edge_tol The distance at wich a point is considered on the boundary
  * 
  * Computes the integer winding number for a polygon without an additional
  *  return parameter for whether the point is on the boundary.
@@ -222,10 +193,10 @@ template <typename T>
 int winding_number(const Point<T, 2>& R,
                    const Polygon<T, 2>& P,
                    bool includeBoundary = false,
-                   double EPS = 1e-8)
+                   double edge_tol = 1e-8)
 {
   bool isOnEdge = false;
-  return winding_number(R, P, isOnEdge, includeBoundary, EPS);
+  return winding_number(R, P, isOnEdge, includeBoundary, edge_tol);
 }
 
 /*!
@@ -302,9 +273,7 @@ double winding_number(const Point<T, 2>& q,
   // If the point is on the boundary of the approximating polygon,
   //  or coincident with the curve (rare), then winding_number<polygon>
   //  doesn't return the right half-integer. Have to go edge-by-edge.
-  // Do an extra check for the result of linear_winding_number to 
-  //  account for differing tolerances between the two methods.
-  if(isCoincident || isOnEdge || axom::utilities::isNearlyEqual(closure_wn, 0.0, EPS))
+  if(isCoincident || isOnEdge)
   {
     closed_curve_wn = closure_wn;
     for(int i = 1; i < n; ++i)

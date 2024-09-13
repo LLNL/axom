@@ -191,7 +191,7 @@ double convex_endpoint_winding_number(const Point<T, 2>& q,
  * \param [in] edge_tol The physical distance level at which objects are 
  *                      considered indistinguishable
  * \param [in] EPS Miscellaneous numerical tolerance for nonphysical distances, used in
- *   isLinear, isNearlyZero, in_polygon, is_convex
+ *   isLinear, isNearlyZero, is_convex
  * \param [out] approximating_polygon The Polygon that, by termination of recursion,
  *   has the same integer winding number as the original closed curve
  * \param [out] endpoint_gwn A running sum for the exact GWN if the point is at the 
@@ -247,7 +247,7 @@ void construct_approximating_polygon(const Point<T, 2>& q,
   if(isConvexControlPolygon)
   {
     // Bezier curves are always contained in their convex control polygon
-    if(!in_polygon(q, controlPolygon, includeBoundary, useNonzeroRule, EPS))
+    if(!in_polygon(q, controlPolygon, includeBoundary, useNonzeroRule, edge_tol))
     {
       return;
     }

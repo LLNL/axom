@@ -168,9 +168,16 @@ TEST(primal_winding_number, closure_edge_cases)
 
   // Tests a potential issue where the query point is treated as being
   //  on the closure, but not on the edge of the approximating polygon.
-  EXPECT_NEAR(winding_number(Point2D({0, 1e-8}), quartic),
-              0.500000031830989,
-              abs_tol);
+  for(int i = 2; i < 15; ++i)
+  {
+    // In all cases, the winding number should be *near* 0.5.
+    //  If the tolerances don't match, we would get an "off-by-0.5" error
+
+    double diff = std::pow( 10, -i );
+    EXPECT_NEAR(winding_number(Point2D({0, diff}), quartic, 0.5 * diff, EPS), 0.5, 0.1);
+    EXPECT_NEAR(winding_number(Point2D({0, diff}), quartic, 1.0 * diff, EPS), 0.5, 0.1);
+    EXPECT_NEAR(winding_number(Point2D({0, diff}), quartic, 2.0 * diff, EPS), 0.5, 0.1);
+  }
 
   // Flip the curve vertically
   quartic[2] = Point2D({0.0, -1.0});
