@@ -94,7 +94,7 @@ int winding_number(const Point<T, 2>& q,
  * \param [in] P The Polygon object to test for containment
  * \param [in] includeBoundary If true, points on the boundary are considered interior
  * \param [in] isOnEdge An optional return parameter if the point is on the boundary
- * \param [in] edge_tol The distance at wich a point is considered on the boundary
+ * \param [in] edge_tol The distance at which a point is considered on the boundary
  * 
  * Uses an adapted ray-casting approach that counts quarter-rotation
  * of vertices around the query point. Current policy is to return 1 on edges
@@ -182,7 +182,7 @@ int winding_number(const Point<T, 2>& R,
  * \param [in] R The query point to test
  * \param [in] P The Polygon object to test for containment
  * \param [in] includeBoundary If true, points on the boundary are considered interior
- * \param [in] edge_tol The distance at wich a point is considered on the boundary
+ * \param [in] edge_tol The distance at which a point is considered on the boundary
  * 
  * Computes the integer winding number for a polygon without an additional
  *  return parameter for whether the point is on the boundary.
@@ -232,7 +232,7 @@ double winding_number(const Point<T, 2>& q,
   if(ord <= 0) return 0.0;
 
   // Early return is possible for must points + curves
-  if(!c.boundingBox().contains(q))
+  if(!c.boundingBox().expand(edge_tol).contains(q))
   {
     return detail::linear_winding_number(q, c[0], c[ord], edge_tol);
   }

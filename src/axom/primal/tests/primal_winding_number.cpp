@@ -183,6 +183,16 @@ TEST(primal_winding_number, closure_edge_cases)
     EXPECT_NEAR(winding_number(Point2D({0, diff}), quartic, 2.0 * diff, EPS),
                 0.5,
                 0.1);
+
+    EXPECT_NEAR(winding_number(Point2D({0, -diff}), quartic, 0.5 * diff, EPS),
+                0.5,
+                0.1);
+    EXPECT_NEAR(winding_number(Point2D({0, -diff}), quartic, 1.0 * diff, EPS),
+                0.5,
+                0.1);
+    EXPECT_NEAR(winding_number(Point2D({0, -diff}), quartic, 2.0 * diff, EPS),
+                0.5,
+                0.1);
   }
 
   // Flip the curve vertically

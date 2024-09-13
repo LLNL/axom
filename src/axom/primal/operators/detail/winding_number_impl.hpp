@@ -221,7 +221,7 @@ void construct_approximating_polygon(const Point<T, 2>& q,
   const int ord = c.getOrder();
 
   // Simplest convex shape containing c is its bounding box
-  if(!c.boundingBox().contains(q))
+  if(!c.boundingBox().expand(edge_tol).contains(q))
   {
     return;
   }
