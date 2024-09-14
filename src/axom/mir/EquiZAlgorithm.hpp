@@ -15,6 +15,8 @@
 #include "axom/mir/MIRAlgorithm.hpp"
 #include "axom/mir/RecenterField.hpp"
 #include "axom/mir/NodeToZoneRelationBuilder.hpp"
+#include "axom/mir/ZoneListBuilder.hpp"
+#include "axom/mir/ExtractZones.hpp"
 
 #include <conduit/conduit.hpp>
 
@@ -26,7 +28,7 @@
 #endif
 
 // Uncomment to save inputs and outputs.
-// #define AXOM_DEBUG_EQUIZ
+#define AXOM_DEBUG_EQUIZ
 
 // This enables a tweak to the algorithm that tries to skip the first iteration
 // by incorporating the first material's ids into the zonalMaterialID field. It
@@ -280,6 +282,370 @@ private:
   View m_view {};
 };
 
+/**
+ * \brief Merge multiple unstructured Blueprint meshes
+ *
+ * \note The input meshes must currently contain a single coordset/topology/matset.
+ */
+template <typename ExecSpace>
+class MergeMeshes
+{
+public:
+  struct MeshInput
+  {
+    conduit::Node                   *m_input{nullptr};
+    axom::ArrayView<axom::IndexType> m_nodeMapView{};
+    axom::ArrayView<axom::IndexType> m_nodeSliceView{};
+  };
+
+  void execute(const std::vector<MeshInput> &inputs, conduit::Node &output) const
+  {
+    AXOM_ANNOTATE_SCOPE("MergeMeshes");
+    SLIC_ASSERT(validInputs(inputs));
+
+    if(inputs.size() == 1)
+    {
+      singleInput(inputs, output);
+    }
+    else if(inputs.size() > 1)
+    {
+      mergeInputs(inputs, output);
+    }
+  }
+private:
+  bool validInputs(const std::vector<MeshInput> &inputs) const
+  {
+    for(size_t i = 0; i < inputs.size(); i++)
+    {
+      if(inputs[i].m_input == nullptr)
+        return false;
+
+      const char *keys[] = {"coordsets", "topologies", "matsets"};
+      for(int k = 0; k < 3; k++)
+      {
+        if(inputs[i].m_input->has_path(keys[k]))
+        {
+          const conduit::Node &n = inputs[i].m_input->fetch_existing(keys[k]);
+          if(n.number_of_children() > 1)
+            return false;
+        }
+      }
+
+      inputs[i].m_input->fetch_existing("topologies");
+    }
+    return true;
+  }
+
+  void singleInput(const std::vector<MeshInput> &inputs, conduit::Node &output) const
+  {
+    namespace bputils = axom::mir::utilities::blueprint;
+    bputils::copy<ExecSpace>(output, *(inputs[0].m_input));
+  }
+
+  void mergeInputs(const std::vector<MeshInput> &inputs, conduit::Node &output) const
+  {
+    mergeCoordset(inputs, output);
+    mergeTopology(inputs, output);
+    //mergeFields(inputs, output);
+    //mergeMatset(inputs, output);
+  }
+
+  void mergeCoordset(const std::vector<MeshInput> &inputs, conduit::Node &output) const
+  {
+    namespace bputils = axom::mir::utilities::blueprint;
+    AXOM_ANNOTATE_SCOPE("mergeCoordset");
+    const axom::IndexType totalNodes = countNodes(inputs);
+    conduit::Node &n_newCoordsets = output["coordsets"];
+    conduit::Node *n_newValuesPtr = nullptr;
+    int nComps = 2;
+
+    axom::IndexType offsets[3] = {0, 0, 0};
+    const axom::IndexType n = static_cast<axom::IndexType>(inputs.size());
+    for(axom::IndexType i = 0; i < n; i++)
+    {
+      const conduit::Node &coordsets = inputs[i].m_input->fetch_existing("coordsets");
+      const conduit::Node &n_srcCoordset = coordsets[0];
+      const conduit::Node &n_srcValues = n_srcCoordset.fetch_existing("values");
+
+      const auto type = n_srcCoordset.fetch_existing("type").as_string();
+      SLIC_ASSERT(type == "explicit");
+
+      // Make all of the components the first time.
+      if(i == 0)
+      {
+        bputils::ConduitAllocateThroughAxom<ExecSpace> c2a;
+
+        conduit::Node &n_newCoordset = n_newCoordsets[n_srcCoordset.name()];
+        n_newCoordset["type"] = "explicit";
+        conduit::Node &n_newValues = n_newCoordset["values"];
+        n_newValuesPtr = n_newCoordset.fetch_ptr("values");
+
+        nComps = n_srcValues.number_of_children();
+        for(int c = 0; c < nComps; c++)
+        {
+          const conduit::Node &n_srcComp = n_srcValues[c];
+          conduit::Node &n_comp = n_newValues[n_srcComp.name()];
+          n_comp.set_allocator(c2a.getConduitAllocatorID());
+          n_comp.set(conduit::DataType(n_srcComp.dtype().id(), totalNodes));
+        }
+      }
+
+      // Copy this input's coordinates into the new coordset.
+      axom::mir::views::FloatNode_to_ArrayView(n_srcValues[0], [&](auto comp0)
+      {
+        using FloatType = typename decltype(comp0)::value_type;
+        for(int c = 0; c < nComps; c++)
+        {
+          axom::IndexType size = 0, offset = offsets[c];
+
+          const conduit::Node &n_srcComp = n_srcValues[c];
+          conduit::Node &n_comp = n_newValuesPtr->child(c);
+          auto srcCompView = bputils::make_array_view<FloatType>(n_srcComp);
+          auto compView = bputils::make_array_view<FloatType>(n_comp);
+
+          const auto nodeSliceView = inputs[i].m_nodeSliceView;
+          if(nodeSliceView.size() > 0)
+          {
+            // Pull out specific nodes from the input.
+            axom::for_all<ExecSpace>(nodeSliceView.size(), AXOM_LAMBDA(auto index)
+            {
+              const auto sliceIndex = nodeSliceView[index];
+              compView[offset + index] = srcCompView[sliceIndex];
+            });
+            size = nodeSliceView.size();
+          }
+          else
+          {
+            // Pull out all nodes from the input.
+            axom::for_all<ExecSpace>(srcCompView.size(), AXOM_LAMBDA(auto index)
+            {
+              compView[offset + index] = srcCompView[index];
+            });
+            size = srcCompView.size();
+          }
+
+          offsets[c] += size;
+        }
+      });
+    }
+  }
+
+  axom::IndexType countNodes(const std::vector<MeshInput> &inputs) const
+  {
+    axom::IndexType nodeTotal = 0;
+    axom::IndexType n = static_cast<axom::IndexType>(inputs.size());
+    for(axom::IndexType i = 0; i < n; i++)
+    {
+      const conduit::Node &coordsets = inputs[i].m_input->fetch_existing("coordsets");
+      const conduit::Node &coordset = coordsets[0];
+      const auto type = coordset.fetch_existing("type").as_string();
+
+      axom::IndexType nnodes = 0;
+      if(inputs[i].m_nodeSliceView.size() > 0)
+        nnodes = inputs[i].m_nodeSliceView.size();
+      else
+        nnodes = conduit::blueprint::mesh::utils::coordset::length(coordset);
+
+      nodeTotal += nnodes;
+    }
+    return nodeTotal;
+  }
+
+  void countZones(const std::vector<MeshInput> &inputs, axom::IndexType &totalConnLength, axom::IndexType &totalZones) const
+  {
+    totalConnLength = 0;
+    totalZones = 0;
+    axom::IndexType n = static_cast<axom::IndexType>(inputs.size());
+    for(axom::IndexType i = 0; i < n; i++)
+    {
+      const conduit::Node &n_topologies = inputs[i].m_input->fetch_existing("topologies");
+      const conduit::Node &n_topo = n_topologies[0];
+      const auto type = n_topo.fetch_existing("type").as_string();
+      SLIC_ASSERT(type == "unstructured");
+
+      const conduit::Node &n_conn = n_topo.fetch_existing("elements/connectivity");
+      totalConnLength += n_conn.dtype().number_of_elements();
+
+      const conduit::Node &n_size = n_topo.fetch_existing("elements/sizes");
+      totalZones += n_size.dtype().number_of_elements();
+    }
+  }
+
+  void mergeTopology(const std::vector<MeshInput> &inputs, conduit::Node &output) const
+  {
+    namespace bputils = axom::mir::utilities::blueprint;
+    AXOM_ANNOTATE_SCOPE("mergeTopology");
+    axom::IndexType totalConnLen = 0, totalZones = 0;
+    countZones(inputs, totalConnLen, totalZones);  
+    conduit::Node &n_newTopologies = output["topologies"];
+
+    // Check whether there are mixed shapes.
+    std::map<std::string, int> shape_map;
+    const axom::IndexType n = static_cast<axom::IndexType>(inputs.size());
+    for(axom::IndexType i = 0; i < n; i++)
+    {
+      const conduit::Node &n_topologies = inputs[i].m_input->fetch_existing("topologies");
+      const conduit::Node &n_srcTopo = n_topologies[0];
+      const auto type = n_srcTopo.fetch_existing("type").as_string();
+      const auto shape = n_srcTopo.fetch_existing("elements/shape").as_string();
+      SLIC_ASSERT(type == "unstructured");
+      if(shape == "mixed")
+      {
+        const conduit::Node &n_shape_map = n_srcTopo.fetch_existing("elements/shape_map");
+        for(int s = 0; s < n_shape_map.number_of_children(); s++)
+        {
+          const std::string sname = n_shape_map[i].name();
+          const auto id = axom::mir::views::shapeNameToID(sname);
+          SLIC_ASSERT(id == n_shape_map[i].to_int());
+          shape_map[sname] = id;
+        }
+      }
+      else
+      {
+        shape_map[shape] = axom::mir::views::shapeNameToID(shape);
+      }
+    }
+
+    conduit::Node *n_newTopoPtr = nullptr;
+    axom::IndexType connOffset = 0, sizesOffset = 0, shapesOffset = 0;
+    for(axom::IndexType i = 0; i < n; i++)
+    {
+      const conduit::Node &n_topologies = inputs[i].m_input->fetch_existing("topologies");
+      const conduit::Node &n_srcTopo = n_topologies[0];
+
+      const std::string srcShape = n_srcTopo.fetch_existing("elements/shape").as_string();
+      const conduit::Node &n_srcConn = n_srcTopo.fetch_existing("elements/connectivity");
+      const conduit::Node &n_srcSizes = n_srcTopo.fetch_existing("elements/sizes");
+
+      // Make all of the elements the first time.
+      if(i == 0)
+      {
+        bputils::ConduitAllocateThroughAxom<ExecSpace> c2a;
+
+        conduit::Node &n_newTopo = n_newTopologies[n_srcTopo.name()];
+        n_newTopoPtr = n_newTopologies.fetch_ptr(n_srcTopo.name());
+        n_newTopo["type"] = "unstructured";
+        n_newTopo["coordset"] = n_srcTopo["coordset"].as_string();
+
+        conduit::Node &n_newConn = n_newTopo["elements/connectivity"];
+        n_newConn.set_allocator(c2a.getConduitAllocatorID());
+        n_newConn.set(conduit::DataType(n_srcConn.dtype().id(), totalConnLen));
+
+        conduit::Node &n_newSizes = n_newTopo["elements/sizes"];
+        n_newSizes.set_allocator(c2a.getConduitAllocatorID());
+        n_newSizes.set(conduit::DataType(n_srcSizes.dtype().id(), totalZones));
+
+        conduit::Node &n_newOffsets = n_newTopo["elements/offsets"];
+        n_newOffsets.set_allocator(c2a.getConduitAllocatorID());
+        n_newOffsets.set(conduit::DataType(n_srcConn.dtype().id(), totalZones));
+
+        if(shape_map.size() > 1)
+        {
+          // Build a new shape map in the new topology.
+          conduit::Node &n_shape_map = n_newTopo["shape_map"];
+          for(auto it = shape_map.begin(); it != shape_map.end(); it++)
+            n_shape_map[it->first] = it->second;
+
+          conduit::Node &n_newShapes = n_newTopo["elements/shapes"];
+          n_newShapes.set_allocator(c2a.getConduitAllocatorID());
+          n_newShapes.set(conduit::DataType(n_srcConn.dtype().id(), totalZones));
+        }
+      }
+
+      // Copy this input's connectivity into the new topology.
+      axom::mir::views::IndexNode_to_ArrayView(n_srcConn, [&](auto srcConnView)
+      {
+        using ConnType = typename decltype(srcConnView)::value_type;
+        conduit::Node &n_newConn = n_newTopoPtr->fetch_existing("elements/connectivity");
+        auto connView = bputils::make_array_view<ConnType>(n_newConn);
+
+        if(inputs[i].m_nodeMapView.size() > 0)
+        {
+          // Copy all zones from the input but map the nodes to new values.
+          const auto nodeMapView = inputs[i].m_nodeMapView;
+          axom::for_all<ExecSpace>(srcConnView.size(), AXOM_LAMBDA(auto index)
+          {
+            const auto nodeId = srcConnView[index];
+            const auto newNodeId = nodeMapView[nodeId];
+            connView[connOffset + index] = newNodeId;
+          });
+        }
+        else
+        {
+          // Copy all zones from the input.
+          axom::for_all<ExecSpace>(srcConnView.size(), AXOM_LAMBDA(auto index)
+          {
+            connView[connOffset + index] = srcConnView[index];
+          });
+        }
+        connOffset += srcConnView.size();
+      });
+
+      // Copy this input's sizes into the new topology.
+      axom::mir::views::IndexNode_to_ArrayView(n_srcSizes, [&](auto srcSizesView)
+      {
+        using ConnType = typename decltype(srcSizesView)::value_type;
+        conduit::Node &n_newSizes = n_newTopoPtr->fetch_existing("elements/sizes");
+        auto sizesView = bputils::make_array_view<ConnType>(n_newSizes);
+
+        // Copy all sizes from the input.
+        axom::for_all<ExecSpace>(srcSizesView.size(), AXOM_LAMBDA(auto index)
+        {
+          sizesView[sizesOffset + index] = srcSizesView[index];
+        });
+
+        sizesOffset += srcSizesView.size();
+      });
+
+      // Copy shape information if it exists.
+      if(n_srcTopo.has_path("elements/shapes"))
+      {
+        const conduit::Node &n_srcShapes = n_srcTopo.fetch_existing("elements/shapes");
+
+        axom::mir::views::IndexNode_to_ArrayView(n_srcShapes, [&](auto srcShapesView)
+        {
+          using ConnType = typename decltype(srcShapesView)::value_type;
+          conduit::Node &n_newShapes = n_newTopoPtr->fetch_existing("elements/sizes");
+          auto shapesView = bputils::make_array_view<ConnType>(n_newShapes);
+
+          // Copy all sizes from the input.
+          axom::for_all<ExecSpace>(srcShapesView.size(), AXOM_LAMBDA(auto index)
+          {
+            shapesView[shapesOffset + index] = srcShapesView[index];
+          });
+
+          shapesOffset += srcShapesView.size();
+        });
+      }
+      else
+      {
+        // Fill in shape information.
+        conduit::Node &n_newShapes = n_newTopoPtr->fetch_existing("elements/sizes");
+        axom::mir::views::IndexNode_to_ArrayView(n_newShapes, [&](auto shapesView)
+        {
+          const int shapeId = axom::mir::views::shapeNameToID(srcShape);
+          axom::for_all<ExecSpace>(shapesView.size(), AXOM_LAMBDA(auto index)
+          {
+            shapesView[shapesOffset + index] = shapeId;
+          });
+          shapesOffset += shapesView.size();
+        });
+      }
+    }
+
+    // Make new offsets from the sizes.
+    conduit::Node &n_newSizes = n_newTopoPtr->fetch_existing("elements/sizes");
+    axom::mir::views::IndexNode_to_ArrayView(n_newSizes, [&](auto sizesView)
+    {
+      using ConnType = typename decltype(sizesView)::value_type;
+      conduit::Node &n_newOffsets = n_newTopoPtr->fetch_existing("elements/offsets");
+      auto offsetsView = bputils::make_array_view<ConnType>(n_newOffsets);
+      axom::exclusive_scan<ExecSpace>(sizesView, offsetsView);
+    });
+  }
+};
+
+
 }  // end namespace detail
 
 /**
@@ -368,6 +734,244 @@ protected:
                                              "hdf5");
 #endif
 
+#if 1
+    // Come up with lists of clean/mixed zones.
+    axom::Array<axom::IndexType> cleanZones, mixedZones;
+    bputils::ZoneListBuilder<ExecSpace, TopologyView, MatsetView> zlb(m_topologyView, m_matsetView);
+    if(n_options.has_child("selectedZones"))
+    {
+      auto selectedZonesView = bputils::make_array_view<axom::IndexType>(n_options.fetch_existing("selectedZones"));
+      zlb.execute(m_coordsetView.numberOfNodes(), selectedZonesView, cleanZones, mixedZones);
+    }
+    else
+    {
+      zlb.execute(m_coordsetView.numberOfNodes(), cleanZones, mixedZones);
+    }
+    SLIC_ASSERT((cleanZones.size() + mixedZones.size()) == m_topologyView.numberOfZones());
+std::cout << "cleanZones.size: " << cleanZones.size() << std::endl;
+std::cout << "mixedZones.size: " << mixedZones.size() << std::endl;
+
+    if(cleanZones.size() > 0 && mixedZones.size() > 0)
+    {
+      // Bundle the inputs so we can make the clean mesh
+      conduit::Node n_ezInput;
+      n_ezInput[n_topo.path()].set_external(n_topo);
+      n_ezInput[n_coordset.path()].set_external(n_coordset);
+      n_ezInput[n_fields.path()].set_external(n_fields);
+      n_ezInput[n_matset.path()].set_external(n_matset);
+
+std::cout << "Making clean mesh" << std::endl;
+      // Make the clean mesh.
+      bputils::ExtractZonesAndMatset<ExecSpace, TopologyView, CoordsetView, MatsetView> ez(m_topologyView, m_coordsetView, m_matsetView);
+      conduit::Node n_ezopts, n_cleanOutput;
+      n_ezopts["topology"] = n_topo.name();
+      ez.execute(cleanZones, n_ezInput, n_ezopts, n_cleanOutput);
+
+      // Get the number of nodes in the clean mesh.
+      const conduit::Node &n_cleanCoordset = n_cleanOutput[n_coordset.path()];
+      axom::IndexType numCleanNodes = n_cleanCoordset["values/x"].dtype().number_of_elements();
+
+#if 1
+std::cout << "Saving clean mesh" << std::endl;
+      bputils::ConduitAllocateThroughAxom<ExecSpace> c2a;
+
+      AXOM_ANNOTATE_BEGIN("saveClean");
+      conduit::relay::io::blueprint::save_mesh(n_cleanOutput, "clean", "hdf5");
+      AXOM_ANNOTATE_END("saveClean");
+
+      // Add a field to the original nodes.
+      AXOM_ANNOTATE_BEGIN("origNodes");
+      // Gather the inputs into a single root but replace the fields with
+      // a new node to which we can add additional fields.
+      conduit::Node n_root;
+      n_root[n_coordset.path()].set_external(n_coordset);
+      n_root[n_topo.path()].set_external(n_topo);
+      n_root[n_matset.path()].set_external(n_matset);
+      conduit::Node &n_root_coordset = n_root[n_coordset.path()];
+      conduit::Node &n_root_topo = n_root[n_topo.path()];
+      conduit::Node &n_root_matset = n_root[n_matset.path()];
+      // Link in original fields.
+      conduit::Node &n_root_fields = n_root["fields"];
+      for(conduit::index_t i = 0; i < n_fields.number_of_children(); i++)
+      {
+        n_root_fields[n_fields[i].name()].set_external(n_fields[i]);
+      }
+      // Add a new field.
+      conduit::Node &n_orig_nodes = n_root_fields["__equiz_original_node"];
+      n_orig_nodes["topology"] = n_topo.name();
+      n_orig_nodes["association"] = "vertex";
+      n_orig_nodes["values"].set_allocator(c2a.getConduitAllocatorID());
+      n_orig_nodes["values"].set(conduit::DataType::float32(m_coordsetView.numberOfNodes()));
+      auto origNodesView = bputils::make_array_view<float>(n_orig_nodes["values"]);
+      axom::for_all<ExecSpace>(m_coordsetView.numberOfNodes(), AXOM_LAMBDA(auto index)
+      {
+        origNodesView[index] = static_cast<float>(index);
+      });
+//printNode(n_root);
+      // If there are fields in the options, make sure the new field is handled too.
+      if(n_options_copy.has_child("fields"))
+        n_options_copy["fields/__equiz_original_node"] = "__equiz_original_node";
+      AXOM_ANNOTATE_END("origNodes");
+
+//std::cout << "Making mixed mesh" << std::endl;
+//      // Make a mixed mesh.
+//      conduit::Node n_mixedOutput;
+//      n_ezopts["topology"] = n_topo.name();
+//      ez.execute(mixedZones, n_ezInput, n_ezopts, n_mixedOutput);
+//std::cout << "Saving mixed mesh" << std::endl;
+//      conduit::relay::io::blueprint::save_mesh(n_mixedOutput, "mixed", "hdf5");
+
+#endif
+
+std::cout << "Process mixed zones..." << std::endl;
+
+      // Process the mixed part of the mesh. We select just the mixed zones.
+      n_options_copy["selectedZones"].set_external(mixedZones.data(), mixedZones.size());
+      n_options_copy["newNodesField"] = "__equiz_new_nodes";
+printNode(n_options_copy);
+      processMixedZones(n_root_topo, n_root_coordset, n_root_fields, n_root_matset,
+                        n_options_copy,
+                        n_newTopo, n_newCoordset, n_newFields, n_newMatset);
+#if 1
+      // Look over the nodes in the output and find the new ones.
+      SLIC_ASSERT(n_newFields.has_child("__equiz_original_node"));
+      AXOM_ANNOTATE_BEGIN("identifyOriginalNodes");
+      const conduit::Node &n_output_orig_nodes = n_newFields["__equiz_original_node/values"];
+      auto numOutputNodes = n_output_orig_nodes.dtype().number_of_elements();
+std::cout << "numOutputNodes: " << numOutputNodes << std::endl;
+      auto outputOrigNodesView = bputils::make_array_view<float>(n_output_orig_nodes);
+
+      const conduit::Node &n_new_nodes_values = n_newFields["__equiz_new_nodes/values"];
+      auto newNodesView = bputils::make_array_view<float>(n_new_nodes_values);
+
+      // Make mask/offset for which nodes we need to keep from the mixed output.
+      const int allocatorID = axom::execution_space<ExecSpace>::allocatorID();
+      axom::Array<int> mask(numOutputNodes, numOutputNodes, allocatorID);
+      axom::Array<int> maskOffset(numOutputNodes, numOutputNodes, allocatorID);
+      auto maskView = mask.view();
+      auto maskOffsetsView = mask.view();
+      using reduce_policy = typename axom::execution_space<ExecSpace>::reduce_policy;
+      RAJA::ReduceSum<reduce_policy, int> mask_reduce(0);
+      axom::for_all<ExecSpace>(numOutputNodes, AXOM_LAMBDA(auto index)
+      {
+        const int ival = (newNodesView[index] > 0.f) ? 1 : 0;
+        maskView[index] = ival;
+        mask_reduce += ival;
+      });
+      axom::exclusive_scan<ExecSpace>(maskView, maskOffsetsView);
+      const auto numNewNodes = mask_reduce.get();
+
+      // Make a list of indices that we need to slice out of the node arrays.
+      axom::Array<axom::IndexType> nodeSlice(numNewNodes, numNewNodes, allocatorID);
+      auto nodeSliceView = nodeSlice.view();
+      axom::for_all<ExecSpace>(numOutputNodes, AXOM_LAMBDA(auto index)
+      {
+        if(maskView[index] > 0)
+        {
+          nodeSliceView[maskOffsetsView[index]] = index;
+        }
+      });
+
+      // Make a node map for mapping mixed connectivity into combined node numbering.
+      axom::Array<axom::IndexType> nodeMap(numOutputNodes, numOutputNodes, allocatorID);
+      auto nodeMapView = nodeMap.view();
+      axom::for_all<ExecSpace>(numOutputNodes, AXOM_LAMBDA(auto index)
+      {
+        if(maskView[index] == 0)
+        {
+          nodeMapView[index] = static_cast<axom::IndexType>(outputOrigNodesView[index]);
+        }
+        else
+        {
+          nodeMapView[index] = numCleanNodes + maskOffsetsView[index];
+        }
+      });
+
+std::cout << "Nodes that are unique to mixed output: " << numNewNodes << std::endl;
+      AXOM_ANNOTATE_END("identifyOriginalNodes");
+
+      //--------------------------------------------------------------------------
+      //
+      // Save the MIR output with the mask.
+      //
+      //--------------------------------------------------------------------------
+      conduit::Node n_tmpMask;
+      n_tmpMask[n_topo.path()].set_external(n_newTopo);
+      n_tmpMask[n_coordset.path()].set_external(n_newCoordset);
+      n_tmpMask[n_fields.path()].set_external(n_newFields);
+      n_tmpMask[n_matset.path()].set_external(n_newMatset);
+//      printNode(n_tmpMask);
+      conduit::relay::io::blueprint::save_mesh(n_tmpMask,
+                                               "debug_equiz_mask",
+                                               "hdf5");
+
+//      n_newFields.remove("__equiz_original_node");
+//      n_newFields.remove("__equiz_mask");
+
+#if 1
+      conduit::Node n_merged;
+      {
+        AXOM_ANNOTATE_SCOPE("merge");
+        // Merge the clean and mixed.
+        using MeshInput = typename detail::MergeMeshes<ExecSpace>::MeshInput;
+        std::vector<MeshInput> inputs;
+        MeshInput i0;
+        i0.m_input = &n_cleanOutput;
+        inputs.push_back(i0);
+
+        MeshInput i1;
+        i1.m_input = &n_tmpMask;
+        i1.m_nodeMapView = nodeMapView;
+        i1.m_nodeSliceView = nodeSliceView;
+        inputs.push_back(i1);
+
+        detail::MergeMeshes<ExecSpace> mm;
+        mm.execute(inputs, n_merged);
+      }
+      printNode(n_merged);
+      conduit::relay::io::blueprint::save_mesh(n_merged,
+                                               "debug_equiz_merged",
+                                               "hdf5");
+#endif
+
+    
+#endif
+      // Merge the 2 parts together.
+    }
+    else if(cleanZones.size() == 0 && mixedZones.size() > 0)
+    {
+std::cout << "All zones are mixed..." << std::endl;
+       // Only mixed zones.
+      processMixedZones(n_topo, n_coordset, n_fields, n_matset,
+                        n_options_copy,
+                        n_newTopo, n_newCoordset, n_newFields, n_newMatset);
+    }
+    else if(cleanZones.size() > 0 && mixedZones.size() == 0)
+    {
+std::cout << "All zones are clean..." << std::endl;
+      // There were no mixed zones. We can copy the input to the output.
+
+      // Add an originalZones array.
+    }
+#else
+std::cout << "Normal handling" << std::endl;
+    // Handle all zones.
+    processMixedZones(n_topo, n_coordset, n_fields, n_matset,
+                      n_options_copy,
+                      n_newTopo, n_newCoordset, n_newFields, n_newMatset);
+#endif
+  }
+
+  void processMixedZones(const conduit::Node &n_topo,
+                         const conduit::Node &n_coordset,
+                         const conduit::Node &n_fields,
+                         const conduit::Node &n_matset,
+                         conduit::Node &n_options,
+                         conduit::Node &n_newTopo,
+                         conduit::Node &n_newCoordset,
+                         conduit::Node &n_newFields,
+                         conduit::Node &n_newMatset) const
+  {
     // Make some nodes that will contain the inputs to subsequent iterations.
     // Store them under a single node so the nodes will have names.
     conduit::Node n_Input;
@@ -418,7 +1022,7 @@ protected:
                                               n_coordset,
                                               n_InputFields,
 
-                                              n_options_copy,
+                                              n_options,
 
                                               n_newTopo,
                                               n_newCoordset,
@@ -427,9 +1031,9 @@ protected:
         // In later iterations, we do not want to pass selectedZones through
         // since they are only valid on the current input topology. Also, if they
         // were passed then the new topology only has those selected zones.
-        if(n_options_copy.has_child("selectedZones"))
+        if(n_options.has_child("selectedZones"))
         {
-          n_options_copy.remove("selectedZones");
+          n_options.remove("selectedZones");
         }
       }
       else
@@ -471,7 +1075,7 @@ protected:
                                                       n_InputCoordset,
                                                       n_InputFields,
 
-                                                      n_options_copy,
+                                                      n_options,
 
                                                       n_newTopo,
                                                       n_newCoordset,
@@ -611,6 +1215,8 @@ protected:
     // Make nodal VFs for each mixed material.
     const auto nzones = m_topologyView.numberOfZones();
     const auto nnodes = m_coordsetView.numberOfNodes();
+std::cout << "makeNodeCenteredVFs: nzones=" << nzones << std::endl;
+std::cout << "makeNodeCenteredVFs: nnodes=" << nnodes << std::endl;
     {
       AXOM_ANNOTATE_SCOPE("zonal");
       for(const auto &mat : mixedMats)
@@ -794,7 +1400,7 @@ protected:
 
                  conduit::Node &n_newTopo,
                  conduit::Node &n_newCoordset,
-                 conduit::Node &n_newFields)
+                 conduit::Node &n_newFields) const
   {
     namespace bputils = axom::mir::utilities::blueprint;
     namespace bpmeshutils = conduit::blueprint::mesh::utils;
@@ -900,6 +1506,11 @@ protected:
     {
       // Pass along fields, if present.
       options["fields"].set_external(n_options.fetch_existing("fields"));
+    }
+    if(n_options.has_child("newNodesField"))
+    {
+      // Pass along newNodesField, if present.
+      options["newNodesField"] = n_options.fetch_existing("newNodesField").as_string();
     }
     options["topology"] = n_options["topology"];
 

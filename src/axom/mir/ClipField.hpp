@@ -691,6 +691,11 @@ public:
         }
       }
     }
+    const std::string newNodes = opts.newNodesField();
+    if(!newNodes.empty() && n_fields.has_child(newNodes))
+    {
+      fieldsToProcess[newNodes] = newNodes;
+    }
 
     // Make slice indices if we have element fields.
     bputils::SliceData slice;
@@ -729,6 +734,8 @@ public:
                          n_fields,
                          n_newTopo,
                          n_newFields);
+
+    markNewNodes(blend, newNodes, opts.topologyName(n_topo.name()), n_newFields);
   }
 
 private:
@@ -1930,6 +1937,64 @@ private:
       sm["polyhedron"] = views::Polyhedron_ShapeID;
 
     return sm;
+  }
+
+  /**
+   * \brief If we're making a field that marks the new nodes that were created as
+   *        a result of clipping, update those nodes now.
+   *
+   * \param blend The blend data used to create nodal fields.
+   * \param newNodes The name of the new nodes field.
+   * \param topoName The name of the output topology.
+   * \param[inout] n_newFields The fields node for the output mesh.
+   */
+  void markNewNodes(const BlendData &blend, const std::string &newNodes, const std::string &topoName, conduit::Node &n_newFields) const
+  {
+    namespace bputils = axom::mir::utilities::blueprint;
+    AXOM_ANNOTATE_SCOPE("markNewNodes");
+    if(!newNodes.empty())
+    {
+      const auto origSize = blend.m_originalIdsView.size();
+      const auto blendSize = blend.m_selectedIndicesView.size();
+      const auto outputSize = origSize + blendSize;
+
+      if(n_newFields.has_child(newNodes))
+      {
+        // Update the field. The field would have gone through field blending.
+        // We can mark the new nodes with fresh values. This comes up in
+        // applications that call Clip multiple times.
+
+        conduit::Node &n_new_nodes = n_newFields.fetch_existing(newNodes);
+        conduit::Node &n_new_nodes_values = n_new_nodes["values"];
+        auto valuesView = bputils::make_array_view<float>(n_new_nodes_values);
+
+        // Update values for the blend groups only.
+        axom::for_all<ExecSpace>(blendSize, AXOM_LAMBDA(auto bgid)
+        {
+          valuesView[origSize + bgid] = 1.f;
+        }); 
+      }
+      else
+      {
+        // Make the field for the first time.
+        // Allocate Conduit data through Axom.
+        bputils::ConduitAllocateThroughAxom<ExecSpace> c2a;
+        conduit::Node &n_new_nodes = n_newFields[newNodes];
+        n_new_nodes["topology"] = topoName;
+        n_new_nodes["association"] = "vertex";
+        conduit::Node &n_new_nodes_values = n_new_nodes["values"];
+        n_new_nodes_values.set_allocator(c2a.getConduitAllocatorID());
+        n_new_nodes_values.set(conduit::DataType::float32(outputSize));
+        auto valuesView = bputils::make_array_view<float>(n_new_nodes_values);
+
+        // Fill in values. Everything below origSize is an original node.
+        // Everything above is a blended node.
+        axom::for_all<ExecSpace>(outputSize, AXOM_LAMBDA(auto index)
+        {
+          valuesView[index] = (index < origSize) ? 0.f : 1.f;
+        });       
+      }
+    }
   }
 
 private:

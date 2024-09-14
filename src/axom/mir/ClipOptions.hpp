@@ -72,6 +72,19 @@ public:
   }
 
   /**
+   * \brief Return the name of the new nodes field to be created. If the name
+   *        is not set then it will not be created.
+   * \return The name of the new field to be created.
+   */
+  std::string newNodesField() const
+  {
+    std::string name;
+    if(options().has_child("newNodesField"))
+      name = options().fetch_existing("newNodesField").as_string();
+    return name;
+  }
+
+  /**
    * \brief Whether the "inside" of the clipping field is selected.
    * \return 1 of the inside clipping is selected, false otherwise.
    */
