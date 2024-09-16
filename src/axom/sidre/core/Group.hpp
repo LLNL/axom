@@ -150,16 +150,6 @@ public:
   char getPathDelimiter() const { return s_path_delimiter; }
 
   /*!
-   * \brief static method to get valid protocols for Group I/O methods.
-   *
-   * Only protocols that work for both input and output are returned.
-   */
-  static const std::vector<std::string>& getValidIOProtocols()
-  {
-    return s_io_protocols;
-  }
-
-  /*!
    * \brief static method to get the default I/O protocol.
    */
   static std::string getDefaultIOProtocol()
@@ -1928,9 +1918,6 @@ private:
 #ifdef AXOM_USE_UMPIRE
   int m_default_allocator_id;
 #endif
-
-  // Collection of the valid I/O protocols for save and load.
-  AXOM_SIDRE_EXPORT static const std::vector<std::string> s_io_protocols;
 };
 
 } /* end namespace sidre */

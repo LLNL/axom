@@ -1806,7 +1806,7 @@ TEST(sidre_group, save_restore_empty_datastore)
   const std::string file_path_base("sidre_empty_datastore_");
   DataStore* ds1 = new DataStore();
 
-  const std::vector<std::string>& protocols = Group::getValidIOProtocols();
+  const std::vector<std::string>& protocols = ds1->getValidIOProtocols();
   for(const auto& protocol : protocols)
   {
     const std::string file_path = file_path_base + protocol;
@@ -1914,7 +1914,7 @@ TEST(sidre_group, save_root_restore_as_child)
   }
 
   // Save the DataStore's root
-  const std::vector<std::string>& protocols = Group::getValidIOProtocols();
+  const std::vector<std::string>& protocols = ds->getValidIOProtocols();
   for(const auto& protocol : protocols)
   {
     const std::string file_path = file_path_base + protocol;
@@ -1997,7 +1997,7 @@ TEST(sidre_group, save_child_restore_as_root)
   }
 
   // Save the Group in question (child1) into an archive
-  const std::vector<std::string>& protocols = Group::getValidIOProtocols();
+  const std::vector<std::string>& protocols = ds->getValidIOProtocols();
   for(const auto& protocol : protocols)
   {
     const std::string file_path = file_path_base + protocol;
@@ -2048,7 +2048,7 @@ TEST(sidre_group, save_restore_api)
   // No group provided, defaults to root group
   EXPECT_TRUE(root1->save("sidre_save_fulltree_conduit", "json"));
 
-  const std::vector<std::string>& protocols = Group::getValidIOProtocols();
+  const std::vector<std::string>& protocols = ds1->getValidIOProtocols();
   for(const auto& protocol : protocols)
   {
     const std::string file_path = file_path_base + protocol;
@@ -2160,7 +2160,7 @@ TEST(sidre_group, save_restore_scalars_and_strings)
   root1->createViewScalar<double>("d0", 10.0);
   root1->createViewString("s0", "I am a string");
 
-  const std::vector<std::string>& protocols = Group::getValidIOProtocols();
+  const std::vector<std::string>& protocols = ds1->getValidIOProtocols();
   for(const auto& protocol : protocols)
   {
     //      if ( protocol == "conduit_hdf5")
@@ -2259,7 +2259,7 @@ TEST(sidre_group, save_restore_name_change)
   EXPECT_FALSE(child1->hasView("s0"));
   EXPECT_TRUE(child1->hasView("s0_renamed"));
 
-  const std::vector<std::string>& protocols = Group::getValidIOProtocols();
+  const std::vector<std::string>& protocols = ds1->getValidIOProtocols();
   for(const auto& protocol : protocols)
   {
     //      if ( protocol == "conduit_hdf5")
@@ -2338,7 +2338,7 @@ TEST(sidre_group, save_restore_external_data)
   root1->createView("external_undescribed")->setExternalDataPtr(foo4);
   root1->createViewWithShape("int2d", INT_ID, 2, shape, int2d1);
 
-  const std::vector<std::string>& protocols = Group::getValidIOProtocols();
+  std::vector<std::string> protocols = ds1->getValidIOProtocols();
   for(const auto& protocol : protocols)
   {
     const std::string file_path = file_path_base + protocol;
@@ -2571,7 +2571,7 @@ TEST(sidre_group, save_restore_buffer)
 
   save_restore_buffer_association("original datastore", ds1);
 
-  const std::vector<std::string>& protocols = Group::getValidIOProtocols();
+  const std::vector<std::string>& protocols = ds1->getValidIOProtocols();
   for(const auto& protocol : protocols)
   {
     const std::string file_path = file_path_base + protocol;
@@ -2633,7 +2633,7 @@ TEST(sidre_group, save_restore_other)
     }
   }
 
-  const std::vector<std::string>& protocols = Group::getValidIOProtocols();
+  std::vector<std::string> protocols = ds1->getValidIOProtocols();
   for(const auto& protocol : protocols)
   {
     const std::string file_path = file_path_base + protocol;
@@ -2719,7 +2719,7 @@ TEST(sidre_group, save_restore_complex)
     data_ptr[i] = i;
   }
 
-  const std::vector<std::string>& protocols = Group::getValidIOProtocols();
+  const std::vector<std::string>& protocols = ds1->getValidIOProtocols();
   for(const auto& protocol : protocols)
   {
     const std::string file_path = file_path_base + protocol;
@@ -2860,7 +2860,7 @@ TEST(sidre_group, save_load_all_protocols)
   //
   // test all protocols
   //
-  const std::vector<std::string>& protocols = Group::getValidIOProtocols();
+  const std::vector<std::string>& protocols = ds.getValidIOProtocols();
   for(const auto& protocol : protocols)
   {
     SLIC_INFO("Testing protocol: " << protocol);
@@ -2942,7 +2942,7 @@ TEST(sidre_group, fail_save_all_protocols)
   //
   // test all protocols
   //
-  const std::vector<std::string>& protocols = Group::getValidIOProtocols();
+  const std::vector<std::string>& protocols = ds.getValidIOProtocols();
   for(const auto& protocol : protocols)
   {
     SLIC_INFO("Testing fail to save or load protocol: " << protocol);
@@ -2997,7 +2997,7 @@ TEST(sidre_group, save_load_preserve_contents)
     data_ptr[i] = (conduit::int64)i;
   }
 
-  const std::vector<std::string>& protocols = Group::getValidIOProtocols();
+  const std::vector<std::string>& protocols = ds.getValidIOProtocols();
   std::string groupname;
   for(const auto& protocol : protocols)
   {

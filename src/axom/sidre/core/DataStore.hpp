@@ -501,6 +501,30 @@ public:
                               const std::string& index_path);
 #endif
 
+  /*!
+   * \brief Get valid protocols for I/O of objects in DataStore.
+   *
+   * Only protocols that work for both input and output are returned.
+   */
+  const std::vector<std::string>& getValidIOProtocols()
+  {
+    if(m_io_protocols.empty())
+    {
+      m_io_protocols = {
+#ifdef AXOM_USE_HDF5
+        "sidre_hdf5",
+        "conduit_hdf5",
+#endif
+        "sidre_json",
+        "sidre_conduit_json",
+        "conduit_bin",
+        "conduit_json",
+        "json"};
+    }
+
+    return m_io_protocols;
+  }
+
   //----------------
 
   /*!
@@ -555,6 +579,9 @@ private:
 
   /// Flag indicating whether SLIC logging environment was initialized in ctor.
   bool m_need_to_finalize_slic;
+
+  /// The valid I/O protocols for objects in the DataStore.
+  std::vector<std::string> m_io_protocols;
 
   /// Details of the most recent Conduit error.  Length > 0 indicates an error occurred.
   mutable std::string m_conduit_errors;
