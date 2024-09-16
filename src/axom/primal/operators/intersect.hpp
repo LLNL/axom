@@ -33,6 +33,7 @@
 #include "axom/primal/operators/detail/intersect_ray_impl.hpp"
 #include "axom/primal/operators/detail/intersect_bounding_box_impl.hpp"
 #include "axom/primal/operators/detail/intersect_bezier_impl.hpp"
+#include "axom/primal/operators/detail/intersect_patch_impl.hpp"
 
 namespace axom
 {
@@ -594,7 +595,6 @@ bool intersect(const BezierCurve<T, 2>& c,
  * \param [in] r the Ray, parametrized in [0,inf)
  * \param [out] up vector of parameter space intersection points for 1st coordinate of \a p
  * \param [out] vp vector of parameter space intersection points for 2nd coordinate of \a p
- * \param [out] rp vector of parameter space intersection points for \a r
  * \param [in] tol tolerance parameter for determining if a patch can
  * be approximated by a planar segment.
  * \return True if the patch and line intersect, false otherwise. Intersection
@@ -621,8 +621,6 @@ bool intersect(const BezierPatch<T, 3>& p,
                const Ray<T, 3>& r,
                std::vector<T>& up,
                std::vector<T>& vp,
-               std::vector<T>& rp,
-               int& nevals,
                double tol = 1E-8)
 {
   const double u_offset = 0.;
@@ -634,19 +632,17 @@ bool intersect(const BezierPatch<T, 3>& p,
   // for efficiency, linearity check actually uses a squared tolerance
   const double sq_tol = tol * tol;
 
-  return detail::intersect_ray_patch(p,
+  return detail::intersect_ray_patch_approximate(p,
                                      r,
                                      up,
                                      vp,
-                                     rp,
                                      sq_tol,
                                      p.getOrder_u(),
                                      p.getOrder_v(),
                                      u_offset,
                                      u_scale,
                                      v_offset,
-                                     v_scale,
-                                     nevals);
+                                     v_scale);
 }
 /// @}
 
