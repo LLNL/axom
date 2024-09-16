@@ -113,6 +113,15 @@ TEST(primal_3d_paper_figure_data, plotting_demo)
     }
   }
 
+  double the_wn = winding_number_casting(Point3D {0.1, 0.1},
+                                         sphere_faces[1],
+                                         edge_tol,
+                                         quad_tol,
+                                         EPS);
+  std::cout << the_wn << std::endl;
+
+  return;
+
   BBox bbox;
   for(int i = 0; i < 5; ++i)
   {
@@ -131,7 +140,7 @@ TEST(primal_3d_paper_figure_data, plotting_demo)
   auto wn_accurate = [&patches, &edge_tol, &quad_tol, &EPS](const Point3D& query) {
     double wn = 0.0;
     for(const auto& patch : patches)
-      wn += winding_number(query, patch, edge_tol, quad_tol, EPS);
+      wn += winding_number_casting(query, patch, edge_tol, quad_tol, EPS);
     return wn;
   };
 
@@ -144,7 +153,136 @@ TEST(primal_3d_paper_figure_data, plotting_demo)
 
   // clang-format off
   exportScalarFieldToVTK(data_dir + "/sphere_field.vtk", wn_accurate, bbox, 50, 50, 50);
-  exportScalarFieldToVTK(data_dir + "/sphere_field_stokes.vtk", wn_stokes, bbox, 50, 50, 50);
+  // exportScalarFieldToVTK(data_dir + "/sphere_field_stokes.vtk", wn_stokes, bbox, 50, 50, 50);
+  // clang-format on
+
+  exportSurfaceToSTL(data_dir + "/sphere_face.stl", patches);
+}
+
+TEST(primal_3d_paper_figure_data, rotating_patch)
+{
+  //   return;
+
+  std::string data_dir =
+    "C:\\Users\\Fireh\\Code\\winding_number_code\\figures_3d\\rotating_patch";
+
+  constexpr double quad_tol = 1e-5;
+  constexpr double EPS = 1e-10;
+  constexpr double edge_tol = 1e-6;
+
+  double rt2 = sqrt(2), rt3 = sqrt(3), rt6 = sqrt(6);
+
+  // clang-format off
+  axom::Array<Point3D> node_data = {
+    Point3D {4*(1-rt3),     4*(1-rt3),     4*(1-rt3)}, Point3D {rt2*(rt3-4),            -rt2, rt2*(rt3-4)}, Point3D {4*(1-2*rt3)/3,   0, 4*(1-2*rt3)/3}, Point3D {rt2*(rt3-4),           rt2,   rt2*(rt3-4)}, Point3D {4*(1-rt3),     4*(rt3-1),     4*(1-rt3)},
+    Point3D {     -rt2, rt2*(rt3 - 4), rt2*(rt3 - 4)}, Point3D {(2-3*rt3)/2,     (2-3*rt3)/2,  -(rt3+6)/2}, Point3D {rt2*(2*rt3-7)/3, 0,      -5*rt6/3}, Point3D {(2-3*rt3)/2,   (3*rt3-2)/2,    -(rt3+6)/2}, Point3D {     -rt2,   rt2*(4-rt3),   rt2*(rt3-4)},
+    Point3D {        0, 4*(1-2*rt3)/3, 4*(1-2*rt3)/3}, Point3D {          0, rt2*(2*rt3-7)/3,    -5*rt6/3}, Point3D {0,               0,   4*(rt3-5)/3}, Point3D {          0, rt2*(7-2*rt3)/3,    -5*rt6/3}, Point3D {        0, 4*(2*rt3-1)/3, 4*(1-2*rt3)/3},
+    Point3D {      rt2, rt2*(rt3 - 4), rt2*(rt3 - 4)}, Point3D {(3*rt3-2)/2,     (2-3*rt3)/2,  -(rt3+6)/2}, Point3D {rt2*(7-2*rt3)/3, 0,      -5*rt6/3}, Point3D {(3*rt3-2)/2,   (3*rt3-2)/2,    -(rt3+6)/2}, Point3D {      rt2,   rt2*(4-rt3),   rt2*(rt3-4)},
+    Point3D {4*(rt3-1),     4*(1-rt3),     4*(1-rt3)}, Point3D {rt2*(4-rt3),            -rt2, rt2*(rt3-4)}, Point3D {4*(2*rt3-1)/3,   0, 4*(1-2*rt3)/3}, Point3D {rt2*(4-rt3),           rt2,   rt2*(rt3-4)}, Point3D {4*(rt3-1),     4*(rt3-1),     4*(1-rt3)}};
+
+  axom::Array<double> weight_data = {
+         4*(3-rt3), rt2*(3*rt3-2),   4*(5-rt3)/3, rt2*(3*rt3-2),     4*(3-rt3),
+     rt2*(3*rt3-2),     (rt3+6)/2, rt2*(rt3+6)/3,     (rt3+6)/2, rt2*(3*rt3-2),
+       4*(5-rt3)/3, rt2*(rt3+6)/3, 4*(5*rt3-1)/9, rt2*(rt3+6)/3,   4*(5-rt3)/3,
+     rt2*(3*rt3-2),     (rt3+6)/2, rt2*(rt3+6)/3,     (rt3+6)/2, rt2*(3*rt3-2),
+         4*(3-rt3), rt2*(3*rt3-2),   4*(5-rt3)/3, rt2*(3*rt3-2),     4*(3-rt3)};
+  // clang-format on
+
+  BPatch sphere_face;
+  sphere_face.setOrder(4, 4);
+  sphere_face.makeRational();
+
+  for(int i = 0; i < 5; ++i)
+  {
+    for(int j = 0; j < 5; ++j)
+    {
+      const int idx = 5 * i + j;
+      sphere_face.setWeight(i, j, weight_data[idx]);
+
+      // Set up each face by rotating one of the patch faces
+      sphere_face(i, j)[0] = -node_data[idx][0];
+      sphere_face(i, j)[1] = -node_data[idx][1];
+      sphere_face(i, j)[2] = -node_data[idx][2];
+      sphere_face(i, j).array() /= weight_data[idx];
+    }
+  }
+
+  auto the_wn =
+    winding_number_casting_split(Point3D {0.63494712, -0.427279, 1.5401849},
+                                 sphere_face,
+                                 edge_tol,
+                                 quad_tol,
+                                 EPS);
+
+  std::cout << "----------------" << std::endl;
+  std::cout << the_wn.first << std::endl;
+  std::cout << the_wn.second << std::endl;
+  std::cout << the_wn.first + the_wn.second << std::endl;
+  std::cout << "----------------" << std::endl;
+
+  auto true_wn = winding_number(Point3D {0.63494712, -0.427279, 1.5401849},
+                                sphere_face,
+                                edge_tol,
+                                quad_tol,
+                                EPS);
+
+  std::cout << true_wn << std::endl;
+  std::cout << true_wn << " - " << the_wn.first + the_wn.second << " = " << true_wn - (the_wn.first + the_wn.second) << std::endl;
+  return;
+
+  BBox bbox;
+  for(int i = 0; i < 5; ++i)
+  {
+    for(int j = 0; j < 5; ++j)
+    {
+      bbox.addPoint(sphere_face(i, j));
+    }
+  }
+
+  // Make the bounding box a cube with the same centroid
+  int max_dim = bbox.getLongestDimension();
+  double max_len = bbox.getMax()[max_dim] - bbox.getMin()[max_dim];
+
+  primal::Point<double, 3> centroid = bbox.getCentroid();
+
+  primal::Point<double, 3> new_min {centroid[0] - max_len / 2.0,
+                                    centroid[1] - max_len / 2.0,
+                                    centroid[2] - max_len / 2.0};
+  primal::Point<double, 3> new_max {centroid[0] + max_len / 2.0,
+                                    centroid[1] + max_len / 2.0,
+                                    centroid[2] + max_len / 2.0};
+
+  bbox.addPoint(new_min);
+  bbox.addPoint(new_max);
+  bbox.scale(1.1);
+
+  std::cout << bbox << std::endl;
+  axom::Array<BPatch> patches;
+  patches.push_back(sphere_face);
+
+  auto wn_ground_truth =
+    [&patches, &edge_tol, &quad_tol, &EPS](const Point3D& query) {
+      double wn = 0.0;
+      for(const auto& patch : patches)
+        wn += winding_number(query, patch, edge_tol, quad_tol, EPS);
+      return wn;
+    };
+
+  auto wn_casting = [&patches, &edge_tol, &quad_tol, &EPS](const Point3D& query) {
+    std::pair<double, double> wn_split = {0.0, 0.0};
+    for(const auto& patch : patches)
+    {
+      auto val =
+        winding_number_casting_split(query, patch, edge_tol, quad_tol, EPS);
+      wn_split.first += val.first;
+      wn_split.second += val.second;
+    }
+    return wn_split;
+  };
+
+  // clang-format off
+  exportScalarFieldToVTK(data_dir + "/sphere_field.vtk", wn_ground_truth, bbox, 100, 100, 100);
+  exportSplitScalarFieldToVTK(data_dir + "/sphere_field_casting_z.vtk", wn_casting, bbox, 100, 100, 100);
   // clang-format on
 
   exportSurfaceToSTL(data_dir + "/sphere_face.stl", patches);
@@ -379,7 +517,7 @@ TEST(primal_3d_paper_figure_data, vase_shape)
                        50);
   }
 
-    for(int i = 0; i < trim_patches.size(); ++i)
+  for(int i = 0; i < trim_patches.size(); ++i)
   {
     axom::Array<BPatch> single_patch;
     single_patch.push_back(trim_patches[i]);
@@ -388,7 +526,6 @@ TEST(primal_3d_paper_figure_data, vase_shape)
                        50,
                        50);
   }
-
 
   exportSurfaceToSTL(data_dir + "/vase_shape.stl", patches, 50, 50);
   exportSurfaceToSTL(data_dir + "/trim_shape.stl", trim_patches, 50, 50);
@@ -401,10 +538,7 @@ TEST(primal_3d_paper_figure_data, vase_shape)
 
 TEST(primal_3d_paper_figure_data, two_teapots)
 {
-  // return;
-  
-  std::cout << "THIS IS SOME DIFFERENT CODE :D :D :D" << std::endl;
-  
+  return;
 
   std::string data_dir =
     "C:\\Users\\Fireh\\Code\\winding_number_code\\figures_3d\\teapot_shape\\";

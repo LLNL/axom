@@ -793,10 +793,11 @@ void simple_grid_test(axom::Array<BezierCurve<T, 2>>& curves,
     double x = bb.getMin()[0] + xi * (bb.getMax()[0] - bb.getMin()[0]) / npts_x;
 
     //std::cout << x << std::endl;
-    printLoadingBar((x - bb.getMin()[0]) / (bb.getMax()[0] - bb.getMin()[0]) * 100, 100);
+    printLoadingBar((x - bb.getMin()[0]) / (bb.getMax()[0] - bb.getMin()[0]) * 100,
+                    100);
     for(int yi = 0; yi < npts_y; ++yi)
-	  {
-			double y = bb.getMin()[1] + yi * (bb.getMax()[1] - bb.getMin()[1]) / npts_y;
+    {
+      double y = bb.getMin()[1] + yi * (bb.getMax()[1] - bb.getMin()[1]) / npts_y;
       primal::Point<double, 2> query({x, y});
 
       int nevals = 0;
@@ -913,12 +914,11 @@ void exportScalarFieldToVTK(const std::string& filename,
   file << "ASCII\n";
   file << "DATASET STRUCTURED_POINTS\n";
   file << "DIMENSIONS " << xSteps << " " << ySteps << " " << zSteps << "\n";
-  file << "ORIGIN " << bbox.getMin()[0] << " " << bbox.getMin()[1]<< " "
+  file << "ORIGIN " << bbox.getMin()[0] << " " << bbox.getMin()[1] << " "
        << bbox.getMin()[2] << "\n";
   file << "SPACING " << (bbox.getMax()[0] - bbox.getMin()[0]) / (xSteps - 1)
        << " " << (bbox.getMax()[1] - bbox.getMin()[1]) / (ySteps - 1) << " "
-       << (bbox.getMax()[2] - bbox.getMin()[2]) / (zSteps - 1)
-       << "\n";
+       << (bbox.getMax()[2] - bbox.getMin()[2]) / (zSteps - 1) << "\n";
   file << "POINT_DATA " << xSteps * ySteps * zSteps << "\n";
   file << "SCALARS scalars float\n";
   file << "LOOKUP_TABLE default\n";
@@ -926,7 +926,7 @@ void exportScalarFieldToVTK(const std::string& filename,
   // Write scalar field data
   for(int k = 0; k < zSteps; ++k)
   {
-    printLoadingBar( k, zSteps );
+    printLoadingBar(k, zSteps);
 
     for(int j = 0; j < ySteps; ++j)
     {
@@ -938,22 +938,113 @@ void exportScalarFieldToVTK(const std::string& filename,
           j * (bbox.getMax()[1] - bbox.getMin()[1]) / (ySteps - 1);
         double z = bbox.getMin()[2] +
           k * (bbox.getMax()[2] - bbox.getMin()[2]) / (zSteps - 1);
-        
+
         auto query = Point3D({x, y, z});
 
         double scalarValue = scalarField(query);
 
         // Print the query if scalarValue is nan
-        if( scalarValue != scalarValue )
+        if(scalarValue != scalarValue)
           std::cout << std::setprecision(20) << query << std::endl;
-        
+
         //for(int n = 0; n < patches.size(); ++n)
-          //scalarValue +=
-            //winding_number(query, patches[n], edge_tol, quad_tol, EPS);
-        
+        //scalarValue +=
+        //winding_number(query, patches[n], edge_tol, quad_tol, EPS);
+
         file << scalarValue << "\n";
       }
     }
+  }
+
+  file.close();
+}
+
+void exportSplitScalarFieldToVTK(
+  const std::string& filename,
+  std::function<std::pair<double, double>(Point3D)> scalarField,
+  primal::BoundingBox<double, 3> bbox,
+  int xSteps,
+  int ySteps,
+  int zSteps)
+{
+  // Arrays to store the scalar fields
+  std::vector<double> scalarField1;
+  std::vector<double> scalarField2;
+  std::vector<double> scalarField3;
+
+  // Reserve space for the arrays
+  int totalPoints = xSteps * ySteps * zSteps;
+  scalarField1.reserve(totalPoints);
+  scalarField2.reserve(totalPoints);
+  scalarField3.reserve(totalPoints);
+
+  for(int k = 0; k < zSteps; ++k)
+  {
+    printLoadingBar(k, zSteps);
+
+    for(int j = 0; j < ySteps; ++j)
+    {
+      for(int i = 0; i < xSteps; ++i)
+      {
+        double x = bbox.getMin()[0] +
+          i * (bbox.getMax()[0] - bbox.getMin()[0]) / (xSteps - 1);
+        double y = bbox.getMin()[1] +
+          j * (bbox.getMax()[1] - bbox.getMin()[1]) / (ySteps - 1);
+        double z = bbox.getMin()[2] +
+          k * (bbox.getMax()[2] - bbox.getMin()[2]) / (zSteps - 1);
+
+        auto query = Point3D({x, y, z});
+
+        auto splitScalarValue = scalarField(query);
+
+        scalarField1.push_back(splitScalarValue.first);
+        scalarField2.push_back(splitScalarValue.second);
+        scalarField3.push_back(splitScalarValue.first + splitScalarValue.second);
+      }
+    }
+  }
+
+  std::ofstream file(filename);
+
+  if(!file.is_open())
+  {
+    std::cerr << "Failed to open file: " << filename << std::endl;
+    return;
+  }
+
+  // Write VTK header
+  file << "# vtk DataFile Version 3.0\n";
+  file << "Scalar field data\n";
+  file << "ASCII\n";
+  file << "DATASET STRUCTURED_POINTS\n";
+  file << "DIMENSIONS " << xSteps << " " << ySteps << " " << zSteps << "\n";
+  file << "ORIGIN " << bbox.getMin()[0] << " " << bbox.getMin()[1] << " "
+       << bbox.getMin()[2] << "\n";
+  file << "SPACING " << (bbox.getMax()[0] - bbox.getMin()[0]) / (xSteps - 1)
+       << " " << (bbox.getMax()[1] - bbox.getMin()[1]) / (ySteps - 1) << " "
+       << (bbox.getMax()[2] - bbox.getMin()[2]) / (zSteps - 1) << "\n";
+  file << "POINT_DATA " << xSteps * ySteps * zSteps << "\n";
+
+  // Write scalar field data
+  file << "SCALARS Stokes double 1\n";
+  file << "LOOKUP_TABLE default\n";
+  for(int i = 0; i < totalPoints; ++i)
+  {
+    file << scalarField1[i] << "\n";
+  }
+
+  file << "SCALARS JumpCondition double 1\n";
+  file << "LOOKUP_TABLE default\n";
+  for(int i = 0; i < totalPoints; ++i)
+  {
+    file << scalarField2[i] << "\n";
+  }
+
+  file << "SCALARS GWN double 1\n";
+  file << "LOOKUP_TABLE default\n";
+  for(int i = 0; i < totalPoints; ++i)
+  {
+    file << scalarField3[i] << "\n";
   }
 
   file.close();
