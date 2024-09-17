@@ -130,14 +130,14 @@ TEST(primal_OBBox, obb_ctor_from_point_array)
   using QVector = primal::Vector<CoordType, DIM>;
   using QOBBox = primal::OrientedBoundingBox<CoordType, DIM>;
 
-  QPoint pt1;      // origin
-  QPoint pt2( {1.0, 0.0, 0.0} );
-  QPoint pt3( {0.0, 1.0, 0.0} );
-  QPoint pt4( {0.0, 0.0, 1.0} );
-  QPoint pt5( {1.0, 1.0, 0.0} );
-  QPoint pt6( {1.0, 0.0, 1.0} );
-  QPoint pt7( {0.0, 1.0, 1.0} );
-  QPoint pt8( {1.0, 1.0, 1.0} );
+  QPoint pt1;  // origin
+  QPoint pt2({1.0, 0.0, 0.0});
+  QPoint pt3({0.0, 1.0, 0.0});
+  QPoint pt4({0.0, 0.0, 1.0});
+  QPoint pt5({1.0, 1.0, 0.0});
+  QPoint pt6({1.0, 0.0, 1.0});
+  QPoint pt7({0.0, 1.0, 1.0});
+  QPoint pt8({1.0, 1.0, 1.0});
 
   QPoint pts[] = {pt1, pt2, pt3, pt4, pt5, pt6, pt7, pt8};
 
