@@ -62,6 +62,7 @@ public:
                conduit::Node &n_output) const
   {
     AXOM_ANNOTATE_SCOPE("ExtractZones");
+    namespace bputils = axom::mir::utilities::blueprint;
     const int allocatorID = axom::execution_space<ExecSpace>::allocatorID();
 
     AXOM_ANNOTATE_BEGIN("nodeMap");
@@ -134,14 +135,29 @@ public:
     conduit::Node &n_newCoordset = n_output["coordsets/" + coordsetName];
     makeCoordset(nSlice, n_coordset, n_newCoordset);
 
-    // Make new fields.
+    // Make new fields. If originalZones are present, they'll be sliced there.
+    bool makeOriginalZones = true;
     if(n_input.has_child("fields"))
     {
       const conduit::Node &n_fields = n_input.fetch_existing("fields");
       conduit::Node &n_newFields = n_output["fields"];
       SliceData zSlice;
       zSlice.m_indicesView = selectedZonesView;
+      makeOriginalZones = !n_fields.has_child("originalZones");
       makeFields(nSlice, zSlice, n_fields, n_newFields);
+    }
+
+    // Make originalElements.
+    if(makeOriginalZones)
+    {
+      bputils::ConduitAllocateThroughAxom<ExecSpace> c2a;
+
+      conduit::Node &n_origZones = n_output["fields/originalElements"];
+      n_origZones["topology"] = topoName;
+      n_origZones["association"] = "element";
+      n_origZones["values"].set_allocator(c2a.getConduitAllocatorID());
+      n_origZones["values"].set(conduit::DataType(cpp2conduit<axom::IndexType>::id, selectedZonesView.size()));
+      axom::copy(n_origZones["values"].data_ptr(), selectedZonesView.data(), sizeof(axom::IndexType) * selectedZonesView.size());
     }
   }
 

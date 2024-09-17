@@ -40,6 +40,7 @@ set(mir_headers
     FieldBlender.hpp
     FieldSlicer.hpp
     MatsetSlicer.hpp
+    MergeMeshes.hpp
     MIRAlgorithm.hpp
     RecenterField.hpp
     utilities.hpp
