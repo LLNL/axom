@@ -116,6 +116,7 @@ struct Input
   int resolution {0};
   bool verboseOutput {false};
   RuntimePolicy policy {RuntimePolicy::seq};
+  std::string annotationMode {"none"};
 
   void parse(int argc, char** argv, axom::CLI::App& app);
   bool isVerbose() const { return verboseOutput; }
@@ -174,6 +175,15 @@ void Input::parse(int argc, char** argv, axom::CLI::App& app)
       "Set to 'implicit' to use the implicit grid spatial index.")
     ->capture_default_str()
     ->check(axom::CLI::IsMember {Input::s_validMethods});
+
+#ifdef AXOM_USE_CALIPER
+  app.add_option("--caliper", annotationMode)
+    ->description(
+      "caliper annotation mode. Valid options include 'none' and 'report'. "
+      "Use 'help' to see full list.")
+    ->capture_default_str()
+    ->check(axom::utilities::ValidCaliperMode);
+#endif
 
   app.get_formatter()->column_width(40);
 
@@ -252,6 +262,8 @@ template <typename ExecSpace>
 HexMesh loadBlueprintHexMesh(const std::string& mesh_path,
                              bool verboseOutput = false)
 {
+  AXOM_ANNOTATE_SCOPE("load Blueprint hexahedron mesh");
+
   using HexArray = axom::Array<typename HexMesh::Hexahedron>;
   using BBoxArray = axom::Array<typename HexMesh::BoundingBox>;
   constexpr bool on_device = axom::execution_space<ExecSpace>::onDevice();
@@ -434,6 +446,7 @@ template <typename ExecSpace>
 axom::Array<IndexPair> findCandidatesBVH(const HexMesh& insertMesh,
                                          const HexMesh& queryMesh)
 {
+  AXOM_ANNOTATE_BEGIN("initializing BVH");
   axom::utilities::Timer timer;
   timer.start();
 
@@ -463,8 +476,10 @@ axom::Array<IndexPair> findCandidatesBVH(const HexMesh& insertMesh,
   timer.stop();
   SLIC_INFO(axom::fmt::format("0: Initializing BVH took {:4.3} seconds.",
                               timer.elapsedTimeInSec()));
+  AXOM_ANNOTATE_END("initializing BVH");
 
   // Search for candidate bounding boxes of hexes to query;
+  AXOM_ANNOTATE_BEGIN("query candidates");
   timer.start();
   IndexArray offsets_d(query_bbox_v.size(), query_bbox_v.size(), kernel_allocator);
   IndexArray counts_d(query_bbox_v.size(), query_bbox_v.size(), kernel_allocator);
@@ -482,6 +497,9 @@ axom::Array<IndexPair> findCandidatesBVH(const HexMesh& insertMesh,
   SLIC_INFO(axom::fmt::format(
     "1: Querying candidate bounding boxes took {:4.3} seconds.",
     timer.elapsedTimeInSec()));
+  AXOM_ANNOTATE_END("query candidates");
+
+  AXOM_ANNOTATE_BEGIN("write candidate pairs");
   timer.start();
 
   // Initialize candidate pairs on device.
@@ -512,9 +530,12 @@ axom::Array<IndexPair> findCandidatesBVH(const HexMesh& insertMesh,
   SLIC_INFO(axom::fmt::format(
     "2: Initializing candidate pairs (on device) took {:4.3} seconds.",
     timer.elapsedTimeInSec()));
-  timer.start();
+  AXOM_ANNOTATE_END("write candidate pairs");
 
   // copy pairs back to host and into return array
+  AXOM_ANNOTATE_BEGIN("copy pairs to host");
+  timer.start();
+
   IndexArray candidates_h[2] = {
     on_device ? IndexArray(firstPair_d, host_allocator) : IndexArray(),
     on_device ? IndexArray(secondPair_d, host_allocator) : IndexArray()};
@@ -544,6 +565,7 @@ axom::Array<IndexPair> findCandidatesBVH(const HexMesh& insertMesh,
                               queryMesh.numHexes(),
                               1.0 * insertMesh.numHexes() * queryMesh.numHexes(),
                               candidatePairs.size()));
+  AXOM_ANNOTATE_END("copy pairs to host");
 
   return candidatePairs;
 }  // end of findCandidatesBVH for Blueprint Meshes
@@ -553,6 +575,7 @@ axom::Array<IndexPair> findCandidatesImplicit(const HexMesh& insertMesh,
                                               const HexMesh& queryMesh,
                                               int resolution)
 {
+  AXOM_ANNOTATE_BEGIN("initializing implicit grid");
   axom::utilities::Timer timer;
   timer.start();
 
@@ -596,7 +619,9 @@ axom::Array<IndexPair> findCandidatesImplicit(const HexMesh& insertMesh,
   SLIC_INFO(
     axom::fmt::format("0: Initializing Implicit Grid took {:4.3} seconds.",
                       timer.elapsedTimeInSec()));
+  AXOM_ANNOTATE_END("initializing implicit grid");
 
+  AXOM_ANNOTATE_BEGIN("query candidates");
   timer.start();
   IndexArray offsets_d(query_bbox_v.size(), query_bbox_v.size(), kernel_allocator);
   IndexArray counts_d(query_bbox_v.size(), query_bbox_v.size(), kernel_allocator);
@@ -641,6 +666,9 @@ axom::Array<IndexPair> findCandidatesImplicit(const HexMesh& insertMesh,
   SLIC_INFO(axom::fmt::format(
     "1: Querying candidate bounding boxes took {:4.3} seconds.",
     timer.elapsedTimeInSec()));
+  AXOM_ANNOTATE_END("query candidates");
+
+  AXOM_ANNOTATE_BEGIN("write candidate pairs");
   timer.start();
 
 // Generate offsets from the counts
@@ -692,8 +720,10 @@ axom::Array<IndexPair> findCandidatesImplicit(const HexMesh& insertMesh,
   SLIC_INFO(axom::fmt::format(
     "2: Initializing candidate pairs (on device) took {:4.3} seconds.",
     timer.elapsedTimeInSec()));
+  AXOM_ANNOTATE_END("write candidate pairs");
 
   // copy results back to host and into return vector
+  AXOM_ANNOTATE_BEGIN("copy pairs to host");
   timer.start();
 
   IndexArray candidates_h[2] = {
@@ -726,6 +756,7 @@ axom::Array<IndexPair> findCandidatesImplicit(const HexMesh& insertMesh,
                               queryMesh.numHexes(),
                               1.0 * insertMesh.numHexes() * queryMesh.numHexes(),
                               candidatePairs.size()));
+  AXOM_ANNOTATE_END("copy pairs to host");
 
   return candidatePairs;
 }
@@ -749,6 +780,11 @@ int main(int argc, char** argv)
     }
   }
 
+  axom::utilities::raii::AnnotationsWrapper annotation_raii_wrapper(
+    params.annotationMode);
+  AXOM_ANNOTATE_SCOPE("quest candidates example");
+
+  AXOM_ANNOTATE_BEGIN("load Blueprint meshes");
   axom::utilities::Timer timer(true);
 
   // Update the logging level based on verbosity flag
@@ -823,7 +859,9 @@ int main(int argc, char** argv)
 
   SLIC_INFO(axom::fmt::format("Reading in Blueprint files took {:4.3} seconds.",
                               timer.elapsedTimeInSec()));
+  AXOM_ANNOTATE_END("load Blueprint meshes");
 
+  AXOM_ANNOTATE_BEGIN("find candidates");
   // Check for candidates; results are returned as an array of index pairs
   axom::Array<IndexPair> candidatePairs;
   timer.start();
@@ -922,6 +960,7 @@ int main(int argc, char** argv)
            << std::endl;
     }
   }
+  AXOM_ANNOTATE_END("find candidates");
 
   return 0;
 }
