@@ -122,6 +122,42 @@ TEST(primal_OBBox, obb_ctor_from_data)
 }
 
 //------------------------------------------------------------------------------
+TEST(primal_OBBox, obb_ctor_from_point_array)
+{
+    constexpr int DIM = 3;
+    using CoordType = double;
+    using QPoint = primal::Point<CoordType, DIM>;
+    using QVector = primal::Vector<CoordType, DIM>;
+    using QOBBox = primal::OrientedBoundingBox<CoordType, DIM>;
+    
+    QPoint pt0( {0.0, 0.0, 0.0} );
+    QPoint pt1( {1.0, 0.0, 0.0} );
+    QPoint pt2( {0.0, 1.0, 0.0} );
+    QPoint pt3( {0.0, 0.0, 1.0} );
+
+    QPoint pts[4] = {pt0, pt1, pt2, pt3};
+
+    for(int i = 0; i < 1e6; ++i)
+    { 
+        srand(4000000 + i);
+
+        QOBBox obbox1(pts, 4);
+    
+        // check containments
+        EXPECT_TRUE(obbox1.isValid());
+        EXPECT_TRUE(obbox1.contains(pt0));
+        EXPECT_TRUE(obbox1.contains(pt1));
+        EXPECT_TRUE(obbox1.contains(pt2));
+        EXPECT_TRUE(obbox1.contains(pt3));
+
+        // check settings
+        EXPECT_NEAR( obbox1.getCentroid()[0], 0.25, 1.e-6 );
+        EXPECT_NEAR( obbox1.getCentroid()[1], 0.25, 1.e-6 );
+        EXPECT_NEAR( obbox1.getCentroid()[2], 0.25, 1.e-6 );
+    }
+}
+
+//------------------------------------------------------------------------------
 TEST(primal_OBBox, obb_test_clear)
 {
   constexpr int DIM = 3;
