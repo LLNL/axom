@@ -130,32 +130,18 @@ TEST(primal_OBBox, obb_ctor_from_point_array)
   using QVector = primal::Vector<CoordType, DIM>;
   using QOBBox = primal::OrientedBoundingBox<CoordType, DIM>;
 
-  QPoint pts[5 * 5 * 5];
+  srand(17382);
 
-  // Orthonomal axes
-  QVector v1({-0.87097929, -0.2000536, -0.44874674});
-  QVector v2({0.35391955, 0.37804987, -0.85546434});
-  QVector v3({-0.34078737, 0.90391197, 0.25847073});
+  // Data pulled from the relevant winding_number test
+  QPoint array[25] = {
+    QPoint {0.57735, 0.57735, 0.57735}, QPoint {0.709587, 0.312876, 0.709587}, QPoint {0.754021, 0, 0.754021}, QPoint {0.709587, -0.312876, 0.709587}, QPoint {0.57735, -0.57735, 0.57735},
+    QPoint {0.312876, 0.709587, 0.709587}, QPoint {0.413364, 0.413364, 1}, QPoint {0.457304, 0, 1.12005}, QPoint {0.413364, -0.413364, 1}, QPoint {0.312876, -0.709587, 0.709587},
+    QPoint {0, 0.754021, 0.754021}, QPoint {0, 0.457304, 1.12005}, QPoint {0, 0, 1.27983}, QPoint {0, -0.457304, 1.12005}, QPoint {0, -0.754021, 0.754021},
+    QPoint {-0.312876, 0.709587, 0.709587}, QPoint {-0.413364, 0.413364, 1}, QPoint {-0.457304, 0, 1.12005}, QPoint {-0.413364, -0.413364, 1}, QPoint {-0.312876, -0.709587, 0.709587},
+    QPoint {-0.57735, 0.57735, 0.57735}, QPoint {-0.709587, 0.312876, 0.709587}, QPoint {-0.754021, 0, 0.754021}, QPoint {-0.709587, -0.312876, 0.709587}, QPoint {-0.57735, -0.57735, 0.57735}
+  };
 
-  // Create a 5x5x5 grid of points
-  for(int i = 0; i < 5; ++i)
-  {
-    for(int j = 0; j < 5; ++j)
-    {
-      for(int k = 0; k < 5; ++k)
-      {
-        auto new_vec = double(i) * v1 + double(j) * v2 + double(k) * v3;
-        pts[i + 5 * j + 25 * k] = QPoint( new_vec.array() );
-      }
-    }
-  }
-
-  for(int i = 0; i < 1e6; ++i)
-  {
-    // srand(i);
-
-    QOBBox obbox1(pts, 5 * 5 * 5);
-  }
+  primal::OrientedBoundingBox<double, 3> obb( array, 25 );
 }
 
 //------------------------------------------------------------------------------
