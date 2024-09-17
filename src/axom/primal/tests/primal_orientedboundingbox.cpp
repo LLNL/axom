@@ -130,18 +130,28 @@ TEST(primal_OBBox, obb_ctor_from_point_array)
   using QVector = primal::Vector<CoordType, DIM>;
   using QOBBox = primal::OrientedBoundingBox<CoordType, DIM>;
 
-  srand(17382);
+  QPoint pt1;      // origin
+  QPoint pt2( {1.0, 0.0, 0.0} );
+  QPoint pt3( {0.0, 1.0, 0.0} );
+  QPoint pt4( {0.0, 0.0, 1.0} );
+  QPoint pt5( {1.0, 1.0, 0.0} );
+  QPoint pt6( {1.0, 0.0, 1.0} );
+  QPoint pt7( {0.0, 1.0, 1.0} );
+  QPoint pt8( {1.0, 1.0, 1.0} );
 
-  // Data pulled from the relevant winding_number test
-  QPoint array[25] = {
-    QPoint {0.57735, 0.57735, 0.57735}, QPoint {0.709587, 0.312876, 0.709587}, QPoint {0.754021, 0, 0.754021}, QPoint {0.709587, -0.312876, 0.709587}, QPoint {0.57735, -0.57735, 0.57735},
-    QPoint {0.312876, 0.709587, 0.709587}, QPoint {0.413364, 0.413364, 1}, QPoint {0.457304, 0, 1.12005}, QPoint {0.413364, -0.413364, 1}, QPoint {0.312876, -0.709587, 0.709587},
-    QPoint {0, 0.754021, 0.754021}, QPoint {0, 0.457304, 1.12005}, QPoint {0, 0, 1.27983}, QPoint {0, -0.457304, 1.12005}, QPoint {0, -0.754021, 0.754021},
-    QPoint {-0.312876, 0.709587, 0.709587}, QPoint {-0.413364, 0.413364, 1}, QPoint {-0.457304, 0, 1.12005}, QPoint {-0.413364, -0.413364, 1}, QPoint {-0.312876, -0.709587, 0.709587},
-    QPoint {-0.57735, 0.57735, 0.57735}, QPoint {-0.709587, 0.312876, 0.709587}, QPoint {-0.754021, 0, 0.754021}, QPoint {-0.709587, -0.312876, 0.709587}, QPoint {-0.57735, -0.57735, 0.57735}
-  };
+  QPoint pts[] = {pt1, pt2, pt3, pt4, pt5, pt6, pt7, pt8};
 
-  primal::OrientedBoundingBox<double, 3> obb( array, 25 );
+  QOBBox obbox1(pts, 8);
+
+  // check containments
+  EXPECT_TRUE(obbox1.isValid());
+  for(int i = 0; i < 8; i++)
+  {
+    EXPECT_TRUE(obbox1.contains(pts[i]));
+  }
+
+  // check settings
+  EXPECT_TRUE(obbox1.getCentroid() == QPoint(0.5));
 }
 
 //------------------------------------------------------------------------------
