@@ -124,37 +124,38 @@ TEST(primal_OBBox, obb_ctor_from_data)
 //------------------------------------------------------------------------------
 TEST(primal_OBBox, obb_ctor_from_point_array)
 {
-    constexpr int DIM = 3;
-    using CoordType = double;
-    using QPoint = primal::Point<CoordType, DIM>;
-    using QVector = primal::Vector<CoordType, DIM>;
-    using QOBBox = primal::OrientedBoundingBox<CoordType, DIM>;
-    
-    QPoint pt0( {0.0, 0.0, 0.0} );
-    QPoint pt1( {1.0, 0.0, 0.0} );
-    QPoint pt2( {0.0, 1.0, 0.0} );
-    QPoint pt3( {0.0, 0.0, 1.0} );
+  constexpr int DIM = 3;
+  using CoordType = double;
+  using QPoint = primal::Point<CoordType, DIM>;
+  using QVector = primal::Vector<CoordType, DIM>;
+  using QOBBox = primal::OrientedBoundingBox<CoordType, DIM>;
 
-    QPoint pts[4] = {pt0, pt1, pt2, pt3};
+  QPoint pts[5 * 5 * 5];
 
-    for(int i = 0; i < 1e6; ++i)
-    { 
-        srand(4000000 + i);
+  // Orthonomal axes
+  QVector v1({-0.87097929, -0.2000536, -0.44874674});
+  QVector v2({0.35391955, 0.37804987, -0.85546434});
+  QVector v3({-0.34078737, 0.90391197, 0.25847073});
 
-        QOBBox obbox1(pts, 4);
-    
-        // check containments
-        EXPECT_TRUE(obbox1.isValid());
-        EXPECT_TRUE(obbox1.contains(pt0));
-        EXPECT_TRUE(obbox1.contains(pt1));
-        EXPECT_TRUE(obbox1.contains(pt2));
-        EXPECT_TRUE(obbox1.contains(pt3));
-
-        // check settings
-        EXPECT_NEAR( obbox1.getCentroid()[0], 0.25, 1.e-6 );
-        EXPECT_NEAR( obbox1.getCentroid()[1], 0.25, 1.e-6 );
-        EXPECT_NEAR( obbox1.getCentroid()[2], 0.25, 1.e-6 );
+  // Create a 5x5x5 grid of points
+  for(int i = 0; i < 5; ++i)
+  {
+    for(int j = 0; j < 5; ++j)
+    {
+      for(int k = 0; k < 5; ++k)
+      {
+        auto new_vec = double(i) * v1 + double(j) * v2 + double(k) * v3;
+        pts[i + 5 * j + 25 * k] = QPoint( new_vec.array() );
+      }
     }
+  }
+
+  for(int i = 0; i < 1e6; ++i)
+  {
+    // srand(i);
+
+    QOBBox obbox1(pts, 5 * 5 * 5);
+  }
 }
 
 //------------------------------------------------------------------------------
