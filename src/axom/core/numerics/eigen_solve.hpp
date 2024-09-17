@@ -119,9 +119,12 @@ int eigen_solve(Matrix<T>& A, int k, T* u, T* lambdas, int numIterations)
 
     bool res = normalize<T>(vec, N);
 
-    if(!res)  // something went wrong
+    // something went wrong, likely because `vec` is 
+    //  in the span of the previous eigenvectors. Try again!
+    if(!res)  
     {
-      return 0;
+      i--;
+      continue;
     }
 
     // 3: run depth iterations of power method; note that a loop invariant
