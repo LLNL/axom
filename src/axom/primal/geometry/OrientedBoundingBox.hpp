@@ -424,12 +424,7 @@ OrientedBoundingBox<T, NDIMS>::OrientedBoundingBox(const PointType* pts, int n)
   T u[NDIMS * NDIMS];
   T lambdas[NDIMS];
 
-  int eigen_res = 0;
-  while( !eigen_res )
-  {
-    eigen_res = numerics::eigen_solve<T>(covar, NDIMS, u, lambdas);
-  } 
-  
+  int eigen_res = numerics::eigen_solve<T>(covar, NDIMS, u, lambdas);
   AXOM_UNUSED_VAR(eigen_res);
   SLIC_ASSERT(eigen_res);
 
