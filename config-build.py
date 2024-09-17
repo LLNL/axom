@@ -85,6 +85,10 @@ def parse_arguments():
     )
 
     parser.add_argument(
+        "-n", "--ninja", action="store_true", help="Create a Ninja project."
+    )
+
+    parser.add_argument(
         "-x", "--xcode", action="store_true", help="Create an xcode project."
     )
 
@@ -269,6 +273,9 @@ def create_cmake_command_line(
 
     if args.eclipse:
         cmakeline += ' -G "Eclipse CDT4 - Unix Makefiles"'
+
+    if args.ninja:
+        cmakeline += ' -G "Ninja"'
 
     if args.xcode:
         cmakeline += ' -G "Xcode"'
