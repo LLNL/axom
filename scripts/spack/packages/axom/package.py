@@ -197,7 +197,7 @@ class Axom(CachedCMakePackage, CudaPackage, ROCmPackage):
         depends_on("py-sphinx")
         depends_on("py-shroud")
         depends_on("py-jsonschema")
-        depends_on("llvm+clang@14.0.6", type="build")
+        depends_on("llvm+clang@14", type="build")
 
     # -----------------------------------------------------------------------
     # Conflicts
