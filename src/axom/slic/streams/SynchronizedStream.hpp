@@ -17,6 +17,7 @@
 
 // C/C++ includes
 #include <iostream>  // for std::ostream
+#include <fstream>   // for ofstream
 
 // MPI
 #include <mpi.h>  // For MPI
@@ -43,10 +44,62 @@ namespace slic
 class SynchronizedStream : public LogStream
 {
 public:
+  /*!
+   * \brief Constructs a SynchronizedStream instance with the given stream
+   *  and MPI communicator.
+   * \param [in] os pointer to a user-supplied ostream instance.
+   * \param [in] comm MPI communicator
+   * \pre stream != NULL
+   */
   SynchronizedStream(std::ostream* stream, MPI_Comm comm);
+
+  /*!
+   * \brief Constructs a SynchronizedStream instance with the given stream,
+   *  MPI communicator, and message formatting.
+   * \param [in] os pointer to a user-supplied ostream instance.
+   * \param [in] comm MPI communicator
+   * \param [in] format the format string.
+   * \pre stream != NULL
+   * \see LogStream::setFormatString for the format string.
+   */
   SynchronizedStream(std::ostream* stream,
                      MPI_Comm comm,
                      const std::string& format);
+
+  /*!
+   * \brief Constructs a SynchronizedStream instance specified by the given
+   *  string, and MPI communicator.
+   *  The string input determines the stream as follows:
+   *   - "cout" makes std::cout the output stream
+   *   - "cerr" makes std::cerr the output stream
+   *   - Any other input will construct a std::ofstream associated with input
+   * \param [in] stream the string to control type of stream created
+   * \param [in] comm MPI communicator
+   * \pre stream != NULL
+   * \see LogStream::setFormatString for the format string.
+   *
+   * \note This constructor avoids creating an empty file if this
+   *       SynchronizedStream never flushes a message.
+   */
+  SynchronizedStream(std::string stream, MPI_Comm comm);
+
+  /*!
+   * \brief Constructs a SynchronizedStream instance specified by the given
+   *  string, MPI communicator, and message formatting.
+   *  The string input determines the stream as follows:
+   *   - "cout" makes std::cout the output stream
+   *   - "cerr" makes std::cerr the output stream
+   *   - Any other input will construct a std::ofstream associated with input
+   * \param [in] stream the string to control type of stream created
+   * \param [in] comm MPI communicator
+   * \param [in] format the format string.
+   * \pre stream != NULL
+   * \see LogStream::setFormatString for the format string.
+   *
+   * \note This constructor avoids creating an empty file if this
+   *       SynchronizedStream never flushes a message.
+   */
+  SynchronizedStream(std::string stream, MPI_Comm comm, const std::string& format);
 
   virtual ~SynchronizedStream();
 
@@ -102,7 +155,16 @@ private:
   MPI_Comm m_comm;
   MessageCache* m_cache;
   std::ostream* m_stream;
+  std::string m_file_name;
+  bool m_isOstreamOwnedBySLIC;
+  bool m_opened;
   /// @}
+
+  /*!
+   * \brief Opens a file before flushing stream when SynchronizedStream
+   *        has ownership of ostream to a file (std::string constructor)
+   */
+  void openBeforeFlush();
 
   /*!
    * \brief Default constructor. Made private to prevent applications from
@@ -112,7 +174,9 @@ private:
   SynchronizedStream()
     : m_comm(MPI_COMM_NULL)
     , m_cache(static_cast<MessageCache*>(nullptr))
-    , m_stream(static_cast<std::ostream*>(nullptr)) {};
+    , m_stream(static_cast<std::ostream*>(nullptr))
+    , m_file_name()
+    , m_opened(false) {};
 
   DISABLE_COPY_AND_ASSIGNMENT(SynchronizedStream);
   DISABLE_MOVE_AND_ASSIGNMENT(SynchronizedStream);

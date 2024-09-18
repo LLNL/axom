@@ -6,6 +6,7 @@
 #include "axom/config.hpp"
 
 #include "axom/core/utilities/Utilities.hpp"
+#include "axom/core/utilities/FileUtilities.hpp"
 
 #include "axom/slic/interface/slic.hpp"
 #include "axom/slic/interface/slic_macros.hpp"
@@ -154,8 +155,6 @@ public:
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
     MPI_Comm_size(MPI_COMM_WORLD, &nranks);
 
-    const int RLIMIT = 8;
-
     // initialize slic
     slic::initialize();
     slic::setLoggingMsgLevel(slic::message::Debug);
@@ -203,6 +202,7 @@ public:
 
   int rank;
   int nranks;
+  const int RLIMIT = 8;
 };
 
 //------------------------------------------------------------------------------
@@ -1008,6 +1008,162 @@ TEST_P(SlicMacrosParallel, test_check_macros)
   AXOM_UNUSED_VAR(val);
   EXPECT_TRUE(slic::internal::are_all_streams_empty());
 #endif
+}
+
+//------------------------------------------------------------------------------
+TEST_P(SlicMacrosParallel, test_macros_file_output)
+{
+  EXPECT_TRUE(slic::internal::are_all_streams_empty());
+
+  std::string msgfmt = "<MESSAGE>";
+  std::string no_fmt;
+  std::string with_fmt;
+
+  if(GetParam() == "Synchronized")
+  {
+    // SynchronizedStream(std::string stream, MPI_Comm comm) and
+    // SynchronizedStream(std::string stream, MPI_Comm comm, std::string format)
+    // constructors do not create a a file until macros called, then flushed
+
+    no_fmt = "file_ss_rank_" + std::to_string(rank) + "_no_fmt.txt";
+    with_fmt = "file_ss_rank_" + std::to_string(rank) + "_with_fmt.txt";
+
+    slic::addStreamToAllMsgLevels(
+      new slic::SynchronizedStream(no_fmt, MPI_COMM_WORLD));
+
+    slic::addStreamToAllMsgLevels(
+      new slic::SynchronizedStream(with_fmt, MPI_COMM_WORLD, msgfmt));
+  }
+
+  else
+  {
+    // LumberjackStream(std::string stream, MPI_Comm comm, int ranksLimit) and
+    // LumberjackStream(std::string stream, MPI_Comm comm, int ranksLimit,
+    //                  std::string format)
+    // constructors do not create a a file until macros called, then flushed
+
+    no_fmt = "file_lj_rank_" + std::to_string(rank) + "_no_fmt.txt";
+    with_fmt = "file_lj_rank_" + std::to_string(rank) + "_with_fmt.txt";
+
+    slic::addStreamToAllMsgLevels(
+      new slic::LumberjackStream(no_fmt, MPI_COMM_WORLD, RLIMIT));
+
+    slic::addStreamToAllMsgLevels(
+      new slic::LumberjackStream(with_fmt, MPI_COMM_WORLD, RLIMIT, msgfmt));
+  }
+
+  EXPECT_FALSE(axom::utilities::filesystem::pathExists(no_fmt));
+  EXPECT_FALSE(axom::utilities::filesystem::pathExists(with_fmt));
+
+  // streams flushed with no buffered messages, no files created
+  slic::flushStreams();
+
+  EXPECT_FALSE(axom::utilities::filesystem::pathExists(no_fmt));
+  EXPECT_FALSE(axom::utilities::filesystem::pathExists(with_fmt));
+
+  // message is buffered but not yet flushed, no files created
+  SLIC_INFO("Test");
+
+  EXPECT_FALSE(axom::utilities::filesystem::pathExists(no_fmt));
+  EXPECT_FALSE(axom::utilities::filesystem::pathExists(with_fmt));
+
+  // message has been buffered and now flushed, files are created
+  slic::flushStreams();
+
+  if(GetParam() == "Synchronized" || (GetParam() == "Lumberjack" && rank == 0))
+  {
+    EXPECT_TRUE(axom::utilities::filesystem::pathExists(no_fmt));
+    EXPECT_TRUE(axom::utilities::filesystem::pathExists(with_fmt));
+
+    // Verify file contents
+    std::ifstream no_fmt_contents(no_fmt);
+    std::stringstream no_fmt_buffer;
+    no_fmt_buffer << no_fmt_contents.rdbuf();
+
+    std::string no_fmt_expected;
+    no_fmt_expected += "*****\n[INFO]\n\n Test \n\n ";
+    no_fmt_expected += __FILE__;
+    no_fmt_expected += "\n1065\n****\n";
+
+    EXPECT_EQ(no_fmt_buffer.str(), no_fmt_expected);
+
+    std::ifstream with_fmt_contents(with_fmt);
+    std::stringstream with_fmt_buffer;
+    with_fmt_buffer << with_fmt_contents.rdbuf();
+
+    EXPECT_EQ(with_fmt_buffer.str(), "Test");
+  }
+
+  else
+  {
+    // Expect non-output Lumberjack ranks to not create files
+    EXPECT_FALSE(axom::utilities::filesystem::pathExists(no_fmt));
+    EXPECT_FALSE(axom::utilities::filesystem::pathExists(with_fmt));
+  }
+
+  // In case of an abort, outputLocal() is called.
+  // Expect non-output Lumberjack ranks to create files if possible
+  // (cannot guarantee all ranks will output before non-collective MPI Abort)
+  SLIC_INFO("Test outputLocalMessages()");
+  slic::outputLocalMessages();
+
+  EXPECT_TRUE(axom::utilities::filesystem::pathExists(no_fmt));
+  EXPECT_TRUE(axom::utilities::filesystem::pathExists(with_fmt));
+
+  if(GetParam() == "Synchronized" || (GetParam() == "Lumberjack" && rank == 0))
+  {
+    // Verify file contents
+    std::ifstream no_fmt_output(no_fmt);
+    std::stringstream no_fmt_out_buf;
+    no_fmt_out_buf << no_fmt_output.rdbuf();
+
+    std::string no_fmt_output_expected;
+    no_fmt_output_expected += "*****\n[INFO]\n\n Test \n\n ";
+    no_fmt_output_expected += __FILE__;
+    no_fmt_output_expected += "\n1065\n****\n";
+    no_fmt_output_expected +=
+      "*****\n[INFO]\n\n Test outputLocalMessages() \n\n ";
+    no_fmt_output_expected += __FILE__;
+    no_fmt_output_expected += "\n1107\n****\n";
+
+    EXPECT_EQ(no_fmt_out_buf.str(), no_fmt_output_expected);
+
+    std::ifstream with_fmt_output(with_fmt);
+    std::stringstream with_fmt_out_buf;
+    with_fmt_out_buf << with_fmt_output.rdbuf();
+
+    EXPECT_EQ(with_fmt_out_buf.str(), "TestTest outputLocalMessages()");
+  }
+
+  else
+  {
+    // Verify file contents
+    std::ifstream no_fmt_output(no_fmt);
+    std::stringstream no_fmt_out_buf;
+    no_fmt_out_buf << no_fmt_output.rdbuf();
+
+    std::string no_fmt_output_expected;
+    no_fmt_output_expected +=
+      "*****\n[INFO]\n\n Test outputLocalMessages() \n\n ";
+    no_fmt_output_expected += __FILE__;
+    no_fmt_output_expected += "\n1107\n****\n";
+
+    EXPECT_EQ(no_fmt_out_buf.str(), no_fmt_output_expected);
+
+    std::ifstream with_fmt_output(with_fmt);
+    std::stringstream with_fmt_out_buf;
+    with_fmt_out_buf << with_fmt_output.rdbuf();
+
+    EXPECT_EQ(with_fmt_out_buf.str(), "Test outputLocalMessages()");
+  }
+
+  // Cleanup generated files
+  EXPECT_EQ(axom::utilities::filesystem::removeFile(no_fmt), 0);
+  EXPECT_EQ(axom::utilities::filesystem::removeFile(with_fmt), 0);
+
+  // Clear out ostringstreams for other tests
+  slic::flushStreams();
+  slic::internal::clear_streams();
 }
 
 //------------------------------------------------------------------------------
