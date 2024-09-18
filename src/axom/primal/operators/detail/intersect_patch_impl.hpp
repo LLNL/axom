@@ -65,7 +65,7 @@ bool intersect_ray_patch_approximate(const BezierPatch<T, 3> &p,
 
   // Check bounding box to short-circuit the intersection
   Point<T, 3> ip;
-  if(!intersect(r, p.boundingBox(), ip))
+  if(!intersect(r, p.boundingBox().scale(1.1), ip))
   {
     return false;
   }
