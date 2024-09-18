@@ -46,6 +46,7 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 - Quest: Adds an example to query winding numbers on an MFEM NURBS mesh
 
 ### Changed
+- `numerics::eigen_solve()` has been corrected to avoid an early return with error state.
 - `axom::CLI::ExitCodes::Success` has been changed to `axom::CLI::ExitCodes::CLI11_Success`
   to avoid conflict when X11 `#define`s `Success`.
 - `MarchingCubes` masking now uses the mask field's integer values instead of
