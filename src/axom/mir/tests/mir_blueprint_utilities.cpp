@@ -526,9 +526,11 @@ struct test_matset_slice
       bputils::make_array_view<conduit::int64>(deviceMatset["indices"]));
 
     // Slice it.
-    bputils::MatsetSlicer<ExecSpace, MatsetView> slicer;
+    bputils::MatsetSlicer<ExecSpace, MatsetView> slicer(matsetView);
     conduit::Node newDeviceMatset;
-    slicer.execute(matsetView, selectedZones.view(), deviceMatset, newDeviceMatset);
+    bputils::SliceData slice;
+    slice.m_indicesView = selectedZones.view();
+    slicer.execute(slice, deviceMatset, newDeviceMatset);
 
     // device->host
     conduit::Node newHostMatset;

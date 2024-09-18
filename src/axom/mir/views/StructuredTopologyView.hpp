@@ -33,13 +33,11 @@ public:
    *
    * \return The number of dimensions.
    */
-  AXOM_HOST_DEVICE
   constexpr static int dimension() { return IndexingPolicy::dimension(); }
 
   /**
    * \brief Constructor
    */
-  AXOM_HOST_DEVICE
   StructuredTopologyView() : m_indexing() { }
 
   /**
@@ -47,7 +45,6 @@ public:
    *
    * \param indexing The indexing policy for the topology (num zones in each dimension).
    */
-  AXOM_HOST_DEVICE
   StructuredTopologyView(const IndexingPolicy &indexing) : m_indexing(indexing)
   { }
 
@@ -56,7 +53,6 @@ public:
    *
    * \return The number of zones.
    */
-  AXOM_HOST_DEVICE
   IndexType size() const { return m_indexing.size(); }
 
   /**
@@ -64,14 +60,26 @@ public:
    *
    * \return The number of zones.
    */
-  AXOM_HOST_DEVICE IndexType numberOfZones() const { return size(); }
+  IndexType numberOfZones() const { return size(); }
+
+  /**
+   * \brief Return the size of the connectivity.
+   *
+   * \return The size of the connectivity.
+   */
+  IndexType connectivitySize() const
+  {
+    IndexType nodesPerElem = 1;
+    for(int d = 0; d < dimension(); d++)
+      nodesPerElem *= 2;
+    return numberOfZones() * nodesPerElem;
+  }
 
   /**
    * \brief Return the mesh logical dimensions.
    *
    * \return The mesh logical dimensions.
    */
-  AXOM_HOST_DEVICE
   const LogicalIndex &logicalDimensions() const
   {
     return m_indexing.logicalDimensions();
@@ -82,7 +90,6 @@ public:
    *
    * \return The indexing object.
    */
-  AXOM_HOST_DEVICE
   IndexingPolicy &indexing() { return m_indexing; }
 
   /**
@@ -90,7 +97,6 @@ public:
    *
    * \return The indexing object.
    */
-  AXOM_HOST_DEVICE
   const IndexingPolicy &indexing() const { return m_indexing; }
 
   /**
@@ -102,7 +108,7 @@ public:
    * \param func The function/lambda that will be executed for each zone in the mesh.
    */
   template <typename ExecSpace, typename FuncType>
-  AXOM_HOST void for_all_zones(FuncType &&func) const
+  void for_all_zones(FuncType &&func) const
   {
     const auto nzones = numberOfZones();
 

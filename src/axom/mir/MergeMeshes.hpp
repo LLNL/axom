@@ -275,7 +275,9 @@ private:
     axom::IndexType nodeTotal = 0;
     for(size_t i = 0; i < inputs.size(); i++)
     {
-      nodeTotal += countNodes(inputs, i);
+      const auto nnodes = countNodes(inputs, i);
+std::cout << "countNodes " << i << ": nnodes=" << nnodes << std::endl;
+      nodeTotal += nnodes;
     }
     return nodeTotal;
   }
@@ -293,10 +295,13 @@ private:
       SLIC_ASSERT(type == "unstructured");
 
       const conduit::Node &n_conn = n_topo.fetch_existing("elements/connectivity");
-      totalConnLength += n_conn.dtype().number_of_elements();
+      const auto connLength = n_conn.dtype().number_of_elements();
+      totalConnLength += connLength;
 
       const conduit::Node &n_size = n_topo.fetch_existing("elements/sizes");
-      totalZones += n_size.dtype().number_of_elements();
+      const auto nzones = n_size.dtype().number_of_elements();
+      totalZones += nzones;
+std::cout << "countZones " << i << ": connLength=" << connLength << ", totalZones=" << totalZones << std::endl;
     }
   }
 
@@ -393,7 +398,7 @@ private:
         using ConnType = typename decltype(srcConnView)::value_type;
         conduit::Node &n_newConn = n_newTopoPtr->fetch_existing("elements/connectivity");
         auto connView = bputils::make_array_view<ConnType>(n_newConn);
-
+std::cout << "-------------- input " << i << " ----------------" << std::endl;
         if(inputs[i].m_nodeMapView.size() > 0)
         {
           // Copy all zones from the input but map the nodes to new values.
@@ -404,14 +409,23 @@ private:
           {
             const auto nodeId = srcConnView[index];
             const auto newNodeId = nodeMapView[nodeId];
+
+std::cout << index << ":A nodeId=" << nodeId << ", newNodeId=" << newNodeId << " -> " << (connOffset + index) << std::endl;
+
             connView[connOffset + index] = newNodeId;
           });
+std::cout << "coordOffset=" << coordOffset << std::endl;
         }
         else
         {
           // Copy all zones from the input. Map the nodes to the new values.
           axom::for_all<ExecSpace>(srcConnView.size(), AXOM_LAMBDA(auto index)
           {
+
+std::cout << index << ":B srcConnView=" << srcConnView[index]
+          << ", newNodeId=" << (coordOffset + srcConnView[index])
+          << " -> " << (connOffset + index) << std::endl;
+
             connView[connOffset + index] = coordOffset + srcConnView[index];
           });
         }

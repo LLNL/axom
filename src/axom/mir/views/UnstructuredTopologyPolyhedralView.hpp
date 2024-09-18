@@ -24,8 +24,12 @@ public:
   using ConnectivityType = ConnType;
   using ConnectivityView = axom::ArrayView<ConnectivityType>;
 
+  /**
+   * \brief This struct contains views that hold polyhedral connectivity.
+   */
   struct PolyhedronData
   {
+    /// Constructor
     AXOM_HOST_DEVICE
     PolyhedronData(const ConnectivityView &subelement_conn,
                    const ConnectivityView &subelement_sizes,
@@ -41,6 +45,7 @@ public:
       , m_element_offsets(element_offsets)
     { }
 
+    /// Constructor
     AXOM_HOST_DEVICE
     PolyhedronData(const PolyhedronData &obj)
       : m_subelement_conn(obj.m_subelement_conn)
@@ -59,7 +64,9 @@ public:
     ConnectivityView m_element_offsets;
   };
 
-  // Can we provide a way to provide data about Zone i's shape?
+  /**
+   * \brief This struct provides data about Zone i's shape.
+   */
   struct PolyhedronShape
   {
     constexpr static IndexType MaximumNumberOfIds = 20 * 3;
@@ -67,6 +74,7 @@ public:
     AXOM_HOST_DEVICE constexpr static bool is_polyhedral() { return true; }
     AXOM_HOST_DEVICE constexpr static int id() { return Polyhedron_ShapeID; }
 
+    /// Constructor.
     AXOM_HOST_DEVICE PolyhedronShape(const PolyhedronData &obj, axom::IndexType zi)
       : m_data(obj)
       , m_zoneIndex(zi)
@@ -177,6 +185,9 @@ public:
 
   using ShapeType = PolyhedronShape;
 
+  /**
+   * \brief Constructor.
+   */
   UnstructuredTopologyPolyhedralView(const ConnectivityView &subelement_conn,
                                      const ConnectivityView &subelement_sizes,
                                      const ConnectivityView &subelement_offsets,
@@ -191,7 +202,22 @@ public:
              element_offsets)
   { }
 
+  /**
+   * \brief Return the number of zones in the mesh.
+   *
+   * \return The number of zones.
+   */
   IndexType numberOfZones() const { return m_data.m_element_sizes.size(); }
+
+  /**
+   * \brief Return the size of the connectivity.
+   *
+   * \return The size of the connectivity.
+   */
+  IndexType connectivitySize() const
+  {
+    return m_data.element_conn.size();
+  }
 
   /**
    * \brief Return the dimension of the shape.
@@ -200,6 +226,14 @@ public:
    */
   static constexpr int dimension() { return 3; }
 
+  /**
+   * \brief Execute a function for each zone in the mesh.
+   *
+   * \tparam ExecSpace The execution space for the function body.
+   * \tparam FuncType  The type for the function/lambda to execute. It will accept a zone index and shape.
+   *
+   * \param func The function/lambda that will be executed for each zone in the mesh.
+   */
   template <typename ExecSpace, typename FuncType>
   void for_all_zones(FuncType &&func) const
   {
@@ -215,6 +249,16 @@ public:
       });
   }
 
+  /**
+   * \brief Execute a function for each zone in the mesh.
+   *
+   * \tparam ExecSpace The execution space for the function body.
+   * \tparam ViewType  A view type that contains zone indices.
+   * \tparam FuncType  The type for the function/lambda to execute. It will accept a zone index and shape.
+   *
+   * \param selectedIdsView A view that contains a list of zones to operate on.
+   * \param func The function/lambda that will be executed for each zone in the mesh.
+   */
   template <typename ExecSpace, typename ViewType, typename FuncType>
   void for_selected_zones(const ViewType &selectedIdsView, FuncType &&func) const
   {

@@ -17,6 +17,9 @@ namespace views
 {
 /**
  * \brief Given a shape value, we can get the Shape::id() that is used internally.
+ *
+ * \note If the view was to renumber the shapes array to use the Shape::id() values
+ *       then operator[] could return its input value and skip bsearch.
  */
 template <typename IndexT>
 class ShapeMap
@@ -129,6 +132,16 @@ public:
   IndexType numberOfZones() const { return m_sizes.size(); }
 
   /**
+   * \brief Return the size of the connectivity.
+   *
+   * \return The size of the connectivity.
+   */
+  IndexType connectivitySize() const
+  {
+    return m_connectivity.size();
+  }
+
+  /**
    * \brief Execute a function for each zone in the mesh.
    *
    * \tparam ExecSpace The execution space for the function body.
@@ -159,7 +172,11 @@ public:
           connectivityView.data() + offsets[zoneIndex],
           sizes[zoneIndex]);
         const auto shapeID = shapeMap[shapes[zoneIndex]];
-        // TODO: SLIC_ASSERT(shapeID > 0);
+#if defined(AXOM_DEVICE_CODE)
+        assert(shapeID > 0);
+#else
+        SLIC_ASSERT(shapeID > 0);
+#endif
         const ShapeType shape(shapeID, shapeData);
         func(zoneIndex, shape);
       });
@@ -201,7 +218,11 @@ public:
           connectivityView.data() + offsets[zoneIndex],
           sizes[zoneIndex]);
         const auto shapeID = shapeMap[shapes[zoneIndex]];
-        // TODO: SLIC_ASSERT(shapeID > 0);
+#if defined(AXOM_DEVICE_CODE)
+        assert(shapeID > 0);
+#else
+        SLIC_ASSERT(shapeID > 0);
+#endif
         const ShapeType shape(shapeID, shapeData);
         func(selectIndex, zoneIndex, shape);
       });

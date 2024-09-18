@@ -34,21 +34,27 @@ public:
   using SelectedZonesView = axom::ArrayView<axom::IndexType>;
 
   /**
+   * \brief Constructor.
+   */
+  MatsetSlicer(const MatsetView &matsetView) : m_matsetView(matsetView)
+  { }
+
+  /**
    * \brief Slice the input matset and output a new matset.
    *
    * \param matsetView A view that wraps the input matset.
-   * \param selectedZonesView A view that contains the zone ids that we're extracting from the matset.
+   * \param slice Slice data that contains the zone ids that we're extracting from the matset.
    * \param n_matset The input matset.
    * \param[out] n_newMatset The output matset.
    */
-  static void execute(const MatsetView &matsetView,
-                      const SelectedZonesView &selectedZonesView,
-                      const conduit::Node &n_matset,
-                      conduit::Node &n_newMatset)
+  void execute(const SliceData &slice,
+               const conduit::Node &n_matset,
+               conduit::Node &n_newMatset)
   {
     using MatsetIndex = typename MatsetView::IndexType;
     using MatsetFloat = typename MatsetView::FloatType;
     namespace bputils = axom::mir::utilities::blueprint;
+    const axom::ArrayView<axom::IndexType> &selectedZonesView = slice.m_indicesView;
     SLIC_ASSERT(selectedZonesView.size() > 0);
 
     // Copy the material_map if it exists.
@@ -75,7 +81,7 @@ public:
     auto offsetsView = bputils::make_array_view<MatsetIndex>(n_offsets);
 
     // Figure out overall size of the matset zones we're keeping.
-    MatsetView deviceMatsetView(matsetView);
+    MatsetView deviceMatsetView(m_matsetView);
     RAJA::ReduceSum<reduce_policy, typename MatsetView::IndexType> size_reduce(0);
     const axom::ArrayView<axom::IndexType> deviceSelectedZonesView(
       selectedZonesView);
@@ -130,6 +136,9 @@ public:
         }
       });
   }
+
+private:
+  MatsetView m_matsetView;
 };
 
 }  // end namespace blueprint

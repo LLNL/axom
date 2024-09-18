@@ -402,12 +402,13 @@ std::cout << "Making clean mesh" << std::endl;
       bputils::ExtractZonesAndMatset<ExecSpace, TopologyView, CoordsetView, MatsetView> ez(m_topologyView, m_coordsetView, m_matsetView);
       conduit::Node n_ezopts, n_cleanOutput;
       n_ezopts["topology"] = n_topo.name();
+      n_ezopts["compact"] = 0;
       ez.execute(cleanZones, n_ezInput, n_ezopts, n_cleanOutput);
 
       // Get the number of nodes in the clean mesh.
       const conduit::Node &n_cleanCoordset = n_cleanOutput[n_coordset.path()];
       axom::IndexType numCleanNodes = n_cleanCoordset["values/x"].dtype().number_of_elements();
-
+std::cout << "numCleanNodes: " << numCleanNodes << std::endl;
 #if 1
 std::cout << "Saving clean mesh" << std::endl;
       bputils::ConduitAllocateThroughAxom<ExecSpace> c2a;
@@ -486,18 +487,23 @@ std::cout << "numOutputNodes: " << numOutputNodes << std::endl;
       axom::Array<int> mask(numOutputNodes, numOutputNodes, allocatorID);
       axom::Array<int> maskOffset(numOutputNodes, numOutputNodes, allocatorID);
       auto maskView = mask.view();
-      auto maskOffsetsView = mask.view();
+      auto maskOffsetsView = maskOffset.view();
       using reduce_policy = typename axom::execution_space<ExecSpace>::reduce_policy;
       RAJA::ReduceSum<reduce_policy, int> mask_reduce(0);
       axom::for_all<ExecSpace>(numOutputNodes, AXOM_LAMBDA(auto index)
       {
         const int ival = (newNodesView[index] > 0.f) ? 1 : 0;
         maskView[index] = ival;
+if(ival > 0)
+{
+  std::cout << "maskView[" << index << "] = " << maskView[index] << std::endl;
+}
         mask_reduce += ival;
       });
+
       axom::exclusive_scan<ExecSpace>(maskView, maskOffsetsView);
       const auto numNewNodes = mask_reduce.get();
-
+std::cout << "numNewNodes: " << numNewNodes << std::endl;
       // Make a list of indices that we need to slice out of the node arrays.
       axom::Array<axom::IndexType> nodeSlice(numNewNodes, numNewNodes, allocatorID);
       auto nodeSliceView = nodeSlice.view();
@@ -506,6 +512,7 @@ std::cout << "numOutputNodes: " << numOutputNodes << std::endl;
         if(maskView[index] > 0)
         {
           nodeSliceView[maskOffsetsView[index]] = index;
+std::cout << "nodeSliceView[" << maskOffsetsView[index] << "] = " << index << std::endl;
         }
       });
 
@@ -517,13 +524,38 @@ std::cout << "numOutputNodes: " << numOutputNodes << std::endl;
         if(maskView[index] == 0)
         {
           nodeMapView[index] = static_cast<axom::IndexType>(outputOrigNodesView[index]);
+std::cout << "nodeMapView[" <<index << "] = " << nodeMapView[index] << std::endl;
         }
         else
         {
-          nodeMapView[index] = numCleanNodes + maskOffsetsView[index];
-        }
-      });
 
+// These are wrong!
+          nodeMapView[index] = numCleanNodes + maskOffsetsView[index];
+std::cout << "nodeMapView[" <<index << "] = " << nodeMapView[index] << ", numCleanNodes=" << numCleanNodes << ", maskOffsetsView=" << maskOffsetsView[index] << std::endl;
+        }
+
+      });
+#if 1
+      // Expose the fields so we can look at them.
+      n_newFields["mask/topology"] = "mesh";
+      n_newFields["mask/association"] = "vertex";
+      #if 1
+        std::vector<float> fmask(mask.size());
+        for(int i = 0; i < mask.size(); i++)
+          fmask[i] = mask[i];
+        n_newFields["mask/values"].set(fmask);
+      #else
+        n_newFields["mask/values"].set_external(mask.data(), mask.size());
+      #endif
+
+      n_newFields["maskOffset/topology"] = "mesh";
+      n_newFields["maskOffset/association"] = "vertex";
+      n_newFields["maskOffset/values"].set_external(maskOffsetsView.data(), maskOffsetsView.size());
+
+      n_newFields["nodeMap/topology"] = "mesh";
+      n_newFields["nodeMap/association"] = "vertex";
+      n_newFields["nodeMap/values"].set_external(nodeMapView.data(), nodeMapView.size());
+#endif
 std::cout << "Nodes that are unique to mixed output: " << numNewNodes << std::endl;
       AXOM_ANNOTATE_END("identifyOriginalNodes");
 
