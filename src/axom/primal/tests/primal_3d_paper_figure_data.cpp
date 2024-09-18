@@ -113,7 +113,7 @@ TEST(primal_3d_paper_figure_data, plotting_demo)
     }
   }
 
-  double the_wn = winding_number_casting(Point3D {0.1, 0.1},
+  double the_wn = winding_number_casting(Point3D {0.1, 0.1, 0.0},
                                          sphere_faces[1],
                                          edge_tol,
                                          quad_tol,
@@ -141,13 +141,6 @@ TEST(primal_3d_paper_figure_data, plotting_demo)
     double wn = 0.0;
     for(const auto& patch : patches)
       wn += winding_number_casting(query, patch, edge_tol, quad_tol, EPS);
-    return wn;
-  };
-
-  auto wn_stokes = [&patches, &edge_tol, &quad_tol, &EPS](const Point3D& query) {
-    double wn = 0.0;
-    for(const auto& patch : patches)
-      wn += just_the_stokes(query, patch, edge_tol, quad_tol, EPS);
     return wn;
   };
 
@@ -203,31 +196,19 @@ TEST(primal_3d_paper_figure_data, rotating_patch)
       sphere_face(i, j)[0] = -node_data[idx][0];
       sphere_face(i, j)[1] = -node_data[idx][1];
       sphere_face(i, j)[2] = -node_data[idx][2];
+      
       sphere_face(i, j).array() /= weight_data[idx];
     }
   }
 
-  auto the_wn =
-    winding_number_casting_split(Point3D {0.63494712, -0.427279, 1.5401849},
-                                 sphere_face,
-                                 edge_tol,
-                                 quad_tol,
-                                 EPS);
+  auto wn_split = winding_number_casting_split(Point3D {-0.829423, 0.009247, 0.0991689},
+                                               sphere_face,
+                                               edge_tol,
+                                               quad_tol,
+                                               EPS);
 
-  std::cout << "----------------" << std::endl;
-  std::cout << the_wn.first << std::endl;
-  std::cout << the_wn.second << std::endl;
-  std::cout << the_wn.first + the_wn.second << std::endl;
-  std::cout << "----------------" << std::endl;
+  std::cout << wn_split.first << " " << wn_split.second << std::endl;
 
-  auto true_wn = winding_number(Point3D {0.63494712, -0.427279, 1.5401849},
-                                sphere_face,
-                                edge_tol,
-                                quad_tol,
-                                EPS);
-
-  std::cout << true_wn << std::endl;
-  std::cout << true_wn << " - " << the_wn.first + the_wn.second << " = " << true_wn - (the_wn.first + the_wn.second) << std::endl;
   return;
 
   BBox bbox;
@@ -281,8 +262,8 @@ TEST(primal_3d_paper_figure_data, rotating_patch)
   };
 
   // clang-format off
-  exportScalarFieldToVTK(data_dir + "/sphere_field.vtk", wn_ground_truth, bbox, 100, 100, 100);
-  exportSplitScalarFieldToVTK(data_dir + "/sphere_field_casting_z.vtk", wn_casting, bbox, 100, 100, 100);
+  // exportScalarFieldToVTK(data_dir + "/sphere_field.vtk", wn_ground_truth, bbox, 100, 100, 100);
+  exportSplitScalarFieldToVTK(data_dir + "/sphere_field_casting_x.vtk", wn_casting, bbox, 100, 100, 100);
   // clang-format on
 
   exportSurfaceToSTL(data_dir + "/sphere_face.stl", patches);
