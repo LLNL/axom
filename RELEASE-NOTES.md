@@ -35,6 +35,9 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 - Updates to [Umpire version 2024.07.0][https://github.com/LLNL/Umpire/releases/tag/v2024.07.0]
 
 ### Added
+- SLIC constructors added to streams that take in a `std::string`. If string is
+  interpreted as a file name, the file is not opened until SLIC flushes and the
+  stream has at least one message logged.
 - Primal: Adds a `clip()` operator overload for clipping a 2D polygon against
   another 2D polygon.
 - Primal: Adds `Polygon::reverseOrientation()` to reverse orientation of
