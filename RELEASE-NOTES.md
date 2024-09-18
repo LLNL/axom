@@ -28,6 +28,12 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 
 ## [Version 0.10.0] - Release date 2024-09-xx
 
+### Changed
+- Updates to [Conduit version 0.9.2][https://github.com/LLNL/conduit/releases/tag/v0.9.2]
+- Updates to [RAJA version 2024.07.0][https://github.com/LLNL/RAJA/releases/tag/v2024.07.0]
+- Updates to [camp version 2024.07.0][https://github.com/LLNL/camp/releases/tag/v2024.07.0]
+- Updates to [Umpire version 2024.07.0][https://github.com/LLNL/Umpire/releases/tag/v2024.07.0]
+
 ### Added
 - Primal: Adds a `clip()` operator overload for clipping a 2D polygon against
   another 2D polygon.
