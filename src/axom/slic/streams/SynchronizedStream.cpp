@@ -70,11 +70,11 @@ SynchronizedStream::SynchronizedStream(std::ostream* stream,
 
 //------------------------------------------------------------------------------
 SynchronizedStream::SynchronizedStream(const std::string stream, MPI_Comm comm)
+  : m_comm(comm)
+  , m_cache(new MessageCache)
 {
   if(stream == "cout")
   {
-    m_comm = comm;
-    m_cache = new MessageCache();
     m_stream = &std::cout;
     m_file_name = std::string();
     m_isOstreamOwnedBySLIC = false;
@@ -82,8 +82,6 @@ SynchronizedStream::SynchronizedStream(const std::string stream, MPI_Comm comm)
   }
   else if(stream == "cerr")
   {
-    m_comm = comm;
-    m_cache = new MessageCache();
     m_stream = &std::cerr;
     m_file_name = std::string();
     m_isOstreamOwnedBySLIC = false;
@@ -91,8 +89,6 @@ SynchronizedStream::SynchronizedStream(const std::string stream, MPI_Comm comm)
   }
   else
   {
-    m_comm = comm;
-    m_cache = new MessageCache();
     m_stream = new std::ofstream();
     m_file_name = stream;
     m_isOstreamOwnedBySLIC = true;

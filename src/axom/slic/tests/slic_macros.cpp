@@ -428,26 +428,26 @@ TEST(slic_macros, test_macros_file_output)
 
   slic::addStreamToAllMsgLevels(new slic::GenericOutputStream(with_fmt, msgfmt));
 
-  EXPECT_EQ(axom::utilities::filesystem::pathExists(no_fmt), false);
-  EXPECT_EQ(axom::utilities::filesystem::pathExists(with_fmt), false);
+  EXPECT_FALSE(axom::utilities::filesystem::pathExists(no_fmt));
+  EXPECT_FALSE(axom::utilities::filesystem::pathExists(with_fmt));
 
   // streams flushed with no buffered messages, no files created
   slic::flushStreams();
 
-  EXPECT_EQ(axom::utilities::filesystem::pathExists(no_fmt), false);
-  EXPECT_EQ(axom::utilities::filesystem::pathExists(with_fmt), false);
+  EXPECT_FALSE(axom::utilities::filesystem::pathExists(no_fmt));
+  EXPECT_FALSE(axom::utilities::filesystem::pathExists(with_fmt));
 
   // message is buffered but not yet flushed, no files created
   SLIC_INFO("Test");
 
-  EXPECT_EQ(axom::utilities::filesystem::pathExists(no_fmt), false);
-  EXPECT_EQ(axom::utilities::filesystem::pathExists(with_fmt), false);
+  EXPECT_FALSE(axom::utilities::filesystem::pathExists(no_fmt));
+  EXPECT_FALSE(axom::utilities::filesystem::pathExists(with_fmt));
 
   // message has been buffered and now flushed, files are created
   slic::flushStreams();
 
-  EXPECT_EQ(axom::utilities::filesystem::pathExists(no_fmt), true);
-  EXPECT_EQ(axom::utilities::filesystem::pathExists(with_fmt), true);
+  EXPECT_TRUE(axom::utilities::filesystem::pathExists(no_fmt));
+  EXPECT_TRUE(axom::utilities::filesystem::pathExists(with_fmt));
 
   // Verify file contents
   std::ifstream no_fmt_contents(no_fmt);

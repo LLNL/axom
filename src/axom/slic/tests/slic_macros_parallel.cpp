@@ -1052,28 +1052,28 @@ TEST_P(SlicMacrosParallel, test_macros_file_output)
       new slic::LumberjackStream(with_fmt, MPI_COMM_WORLD, RLIMIT, msgfmt));
   }
 
-  EXPECT_EQ(axom::utilities::filesystem::pathExists(no_fmt), false);
-  EXPECT_EQ(axom::utilities::filesystem::pathExists(with_fmt), false);
+  EXPECT_FALSE(axom::utilities::filesystem::pathExists(no_fmt));
+  EXPECT_FALSE(axom::utilities::filesystem::pathExists(with_fmt));
 
   // streams flushed with no buffered messages, no files created
   slic::flushStreams();
 
-  EXPECT_EQ(axom::utilities::filesystem::pathExists(no_fmt), false);
-  EXPECT_EQ(axom::utilities::filesystem::pathExists(with_fmt), false);
+  EXPECT_FALSE(axom::utilities::filesystem::pathExists(no_fmt));
+  EXPECT_FALSE(axom::utilities::filesystem::pathExists(with_fmt));
 
   // message is buffered but not yet flushed, no files created
   SLIC_INFO("Test");
 
-  EXPECT_EQ(axom::utilities::filesystem::pathExists(no_fmt), false);
-  EXPECT_EQ(axom::utilities::filesystem::pathExists(with_fmt), false);
+  EXPECT_FALSE(axom::utilities::filesystem::pathExists(no_fmt));
+  EXPECT_FALSE(axom::utilities::filesystem::pathExists(with_fmt));
 
   // message has been buffered and now flushed, files are created
   slic::flushStreams();
 
   if(GetParam() == "Synchronized" || (GetParam() == "Lumberjack" && rank == 0))
   {
-    EXPECT_EQ(axom::utilities::filesystem::pathExists(no_fmt), true);
-    EXPECT_EQ(axom::utilities::filesystem::pathExists(with_fmt), true);
+    EXPECT_TRUE(axom::utilities::filesystem::pathExists(no_fmt));
+    EXPECT_TRUE(axom::utilities::filesystem::pathExists(with_fmt));
 
     // Verify file contents
     std::ifstream no_fmt_contents(no_fmt);
@@ -1097,8 +1097,8 @@ TEST_P(SlicMacrosParallel, test_macros_file_output)
   else
   {
     // Expect non-output Lumberjack ranks to not create files
-    EXPECT_EQ(axom::utilities::filesystem::pathExists(no_fmt), false);
-    EXPECT_EQ(axom::utilities::filesystem::pathExists(with_fmt), false);
+    EXPECT_FALSE(axom::utilities::filesystem::pathExists(no_fmt));
+    EXPECT_FALSE(axom::utilities::filesystem::pathExists(with_fmt));
   }
 
   // In case of an abort, outputLocal() is called.
@@ -1107,8 +1107,8 @@ TEST_P(SlicMacrosParallel, test_macros_file_output)
   SLIC_INFO("Test outputLocalMessages()");
   slic::outputLocalMessages();
 
-  EXPECT_EQ(axom::utilities::filesystem::pathExists(no_fmt), true);
-  EXPECT_EQ(axom::utilities::filesystem::pathExists(with_fmt), true);
+  EXPECT_TRUE(axom::utilities::filesystem::pathExists(no_fmt));
+  EXPECT_TRUE(axom::utilities::filesystem::pathExists(with_fmt));
 
   if(GetParam() == "Synchronized" || (GetParam() == "Lumberjack" && rank == 0))
   {

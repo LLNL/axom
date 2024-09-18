@@ -111,6 +111,8 @@ void GenericOutputStream::openBeforeFlush()
     std::ostringstream* oss = dynamic_cast<std::ostringstream*>(m_stream);
     if(oss != nullptr)
     {
+      // Converting stream from ostringstream to ofstream and
+      // writing ostringstream's string buffer to ofstream
       std::string buffer = oss->str();
       if(!buffer.empty())
       {
