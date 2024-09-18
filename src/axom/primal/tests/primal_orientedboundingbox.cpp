@@ -173,8 +173,6 @@ TEST(primal_OBBox, obb_ctor_from_point_array)
   QPoint pts_2d[] = {pt1, pt2, pt3, pt5};
   QOBBox obbox2(pts_2d, 4);
 
-  std::cout << obbox2 << std::endl;
-  
   EXPECT_TRUE(obbox2.isValid());
   EXPECT_TRUE(obbox2.contains(pt1));
   EXPECT_TRUE(obbox2.contains(pt2));
