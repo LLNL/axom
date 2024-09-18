@@ -935,215 +935,9 @@ double winding_number_casting(const Point<T, 3>& query,
                               const double quad_tol = 1e-8,
                               const double EPS = 1e-8)
 {
-  const int ord_u = bPatch.getOrder_u();
-  const int ord_v = bPatch.getOrder_v();
-  const bool patchIsRational = bPatch.isRational();
-  const double edge_tol_sq = edge_tol * edge_tol;
-
-  // Fix the number of quadrature nodes arbitrarily, but high enough
-  //  to `catch` near singularities for refinement
-  constexpr int quad_npts = 30;
-  double wn = 0.0;
-
-  /* 
-   * To use Stokes theorem, we need to identify either a line containing the
-   * query that does not intersect the surface, or one that intersects the *interior*
-   * of the surface a known number of times.
-   */
-  CurvedPolygon<T, 3> boundingPoly(4);
-
-  // Define orientation of the vector field whose curl gives us the winding number
-  detail::SingularityAxis field_direction;
-
-  // Check an axis-aligned bounding box (most surfaces satisfy this condition)
-  BoundingBox<T, 3> bBox(bPatch.boundingBox().expand(edge_tol));
-  const bool exterior_x =
-    bBox.getMin()[0] > query[0] || query[0] > bBox.getMax()[0];
-  const bool exterior_y =
-    bBox.getMin()[1] > query[1] || query[1] > bBox.getMax()[1];
-  const bool exterior_z =
-    bBox.getMin()[2] > query[2] || query[2] > bBox.getMax()[2];
-
-  if(exterior_y || exterior_z)
-  {
-    field_direction = detail::SingularityAxis::x;
-  }
-  else if(exterior_x || exterior_z)
-  {
-    field_direction = detail::SingularityAxis::y;
-  }
-  else if(exterior_x || exterior_y)
-  {
-    field_direction = detail::SingularityAxis::z;
-  }
-  else
-  {
-    // Otherwise, do ray casting and a rotation
-    field_direction = detail::SingularityAxis::rotated;
-
-    // Lambda to generate a 3D rotation matrix from an angle and axis
-    // Formulation from https://en.wikipedia.org/wiki/Rotation_matrix#Axis_and_angle
-    auto angleAxisRotMatrix =
-      [](double theta, const Vector<T, 3>& axis) -> numerics::Matrix<T> {
-      const auto unitized = axis.unitVector();
-      const double x = unitized[0], y = unitized[1], z = unitized[2];
-      const double c = cos(theta), s = sin(theta), C = 1 - c;
-
-      auto matx = numerics::Matrix<T>::zeros(3, 3);
-
-      matx(0, 0) = x * x * C + c;
-      matx(0, 1) = x * y * C - z * s;
-      matx(0, 2) = x * z * C + y * s;
-
-      matx(1, 0) = y * x * C + z * s;
-      matx(1, 1) = y * y * C + c;
-      matx(1, 2) = y * z * C - x * s;
-
-      matx(2, 0) = z * x * C - y * s;
-      matx(2, 1) = z * y * C + x * s;
-      matx(2, 2) = z * z * C + c;
-
-      return matx;
-    };
-
-    // Lambda to rotate the input point using the provided rotation matrix
-    auto rotate_point = [&query](const numerics::Matrix<T>& matx,
-                                 const Point<T, 3> input) -> Point<T, 3> {
-      Vector<T, 3> shifted(query, input);
-      Vector<T, 3> rotated;
-      numerics::matrix_vector_multiply(matx, shifted.data(), rotated.data());
-      return Point<T, 3>(
-        {rotated[0] + query[0], rotated[1] + query[1], rotated[2] + query[2]});
-    };
-
-    //double theta = axom::utilities::random_real(0.0, 2 * M_PI);
-    //double u = axom::utilities::random_real(-1.0, 1.0);
-    //Vector<T, 3> cast_direction {sin(theta) * sqrt(1 - u * u),
-    //                             cos(theta) * sqrt(1 - u * u),
-    //                             u};
-    Vector<T, 3> cast_direction {1.0, 0.0, 0.0};
-
-    Ray<T, 3> cast_ray(query, cast_direction);
-
-    std::vector<T> up, vp;
-    intersect(bPatch, cast_ray, up, vp);
-
-    // axom::Array<Point<T, 2>> intersections =
-    //   detail::ray_casting_patch_clipping(bPatch, cast_ray);
-
-    // If the ray doesn't intersect the surface, then we can dodge it
-    if(up.size() == 0)
-    {
-      wn += 0.0;
-    }
-    // Otherwise, we need to adjust for the contribution of a small removed
-    // disk, depending on the orientation
-    else
-    {
-      for(int i = 0; i < up.size(); ++i)
-      {
-        Vector<T, 3> the_direction(query, bPatch.evaluate(up[i], vp[i]));
-        Vector<T, 3> the_normal = bPatch.normal(up[i], vp[i]);
-
-        // Do a dot product between the normal and the cast direction
-        double surf_orientation = the_normal.dot(the_direction);
-        double cast_orientation = cast_direction.dot(the_direction);
-        if(surf_orientation == 0)
-        {
-          //   std::cout << "WOOP WOOP" << std::endl;
-          wn = 0.0;
-        }
-        else if(surf_orientation * cast_orientation < 0)
-        {
-          wn -= 0.5;
-        }
-        else
-        {
-          wn += 0.5;
-        }
-      }
-    }
-
-    Vector<T, 3> axis = {cast_direction[1], -cast_direction[0], 0.0};
-    double ang = acos(axom::utilities::clampVal(cast_direction[2], -1.0, 1.0));
-
-    numerics::Matrix<T> rotator = angleAxisRotMatrix(ang, axis);
-
-    // Collect rotated curves into the curved Polygon
-    // Set up the (0, v) and (1, v) isocurves, rotated
-    boundingPoly[0].setOrder(ord_v);
-    boundingPoly[2].setOrder(ord_v);
-    if(patchIsRational)
-    {
-      boundingPoly[0].makeRational();
-      boundingPoly[2].makeRational();
-    }
-    for(int q = 0; q <= ord_v; ++q)
-    {
-      boundingPoly[0][q] = rotate_point(rotator, bPatch(ord_u, q));
-      boundingPoly[2][q] = rotate_point(rotator, bPatch(0, ord_v - q));
-
-      if(patchIsRational)
-      {
-        boundingPoly[0].setWeight(q, bPatch.getWeight(ord_u, q));
-        boundingPoly[2].setWeight(q, bPatch.getWeight(0, ord_v - q));
-      }
-    }
-
-    // Set up the (u, 0) and (u, 1) isocurves
-    boundingPoly[1].setOrder(ord_u);
-    boundingPoly[3].setOrder(ord_u);
-    if(patchIsRational)
-    {
-      boundingPoly[1].makeRational();
-      boundingPoly[3].makeRational();
-    }
-    for(int p = 0; p <= ord_u; ++p)
-    {
-      boundingPoly[1][p] = rotate_point(rotator, bPatch(ord_u - p, ord_v));
-      boundingPoly[3][p] = rotate_point(rotator, bPatch(p, 0));
-
-      if(patchIsRational)
-      {
-        boundingPoly[1].setWeight(p, bPatch.getWeight(ord_u - p, ord_v));
-        boundingPoly[3].setWeight(p, bPatch.getWeight(p, 0));
-      }
-    }
-
-    BezierPatch<T, 3> rotated_patch(bPatch);
-    for(int i = 0; i <= ord_u; ++i)
-    {
-      for(int j = 0; j <= ord_v; ++j)
-      {
-        rotated_patch(i, j) = rotate_point(rotator, bPatch(i, j));
-      }
-    }
-  }
-
-  // Set up the polygon if we don't need to do any rotation or splitting.
-  if(field_direction != detail::SingularityAxis::rotated)
-  {
-    boundingPoly[0] = bPatch.isocurve_u(0);
-    boundingPoly[0].reverseOrientation();
-
-    boundingPoly[1] = bPatch.isocurve_v(1);
-    boundingPoly[1].reverseOrientation();
-
-    boundingPoly[2] = bPatch.isocurve_u(1);
-    boundingPoly[3] = bPatch.isocurve_v(0);
-  }
-
-  // Iterate over the edges of the bounding curved polygon, add up the results
-  for(int n = 0; n < 4; ++n)
-  {
-    wn += detail::stokes_winding_number(query,
-                                        boundingPoly[n],
-                                        field_direction,
-                                        quad_npts,
-                                        quad_tol);
-  }
-
-  return wn;
+  auto wn_split =
+    winding_number_casting_split(query, bPatch, edge_tol, quad_tol, EPS);
+  return wn_split.first + wn_split.second;
 }
 
 template <typename T>
@@ -1173,257 +967,205 @@ std::pair<double, double> winding_number_casting_split(
    */
   CurvedPolygon<T, 3> boundingPoly(4);
 
-  // Define orientation of the vector field whose curl gives us the winding number
-  detail::SingularityAxis field_direction;
+  // Lambda to generate a 3D rotation matrix from an angle and axis
+  // Formulation from https://en.wikipedia.org/wiki/Rotation_matrix#Axis_and_angle
+  auto angleAxisRotMatrix = [](double theta,
+                               const Vector<T, 3>& axis) -> numerics::Matrix<T> {
+    const auto unitized = axis.unitVector();
+    const double x = unitized[0], y = unitized[1], z = unitized[2];
+    const double c = cos(theta), s = sin(theta), C = 1 - c;
 
-  // Check an axis-aligned bounding box (most surfaces satisfy this condition)
-  BoundingBox<T, 3> bBox(bPatch.boundingBox().expand(edge_tol));
-  const bool exterior_x =
-    bBox.getMin()[0] > query[0] || query[0] > bBox.getMax()[0];
-  const bool exterior_y =
-    bBox.getMin()[1] > query[1] || query[1] > bBox.getMax()[1];
-  const bool exterior_z =
-    bBox.getMin()[2] > query[2] || query[2] > bBox.getMax()[2];
+    auto matx = numerics::Matrix<T>::zeros(3, 3);
 
-  if(exterior_y || exterior_z)
+    matx(0, 0) = x * x * C + c;
+    matx(0, 1) = x * y * C - z * s;
+    matx(0, 2) = x * z * C + y * s;
+
+    matx(1, 0) = y * x * C + z * s;
+    matx(1, 1) = y * y * C + c;
+    matx(1, 2) = y * z * C - x * s;
+
+    matx(2, 0) = z * x * C - y * s;
+    matx(2, 1) = z * y * C + x * s;
+    matx(2, 2) = z * z * C + c;
+
+    return matx;
+  };
+
+  // Lambda to rotate the input point using the provided rotation matrix
+  auto rotate_point = [&query](const numerics::Matrix<T>& matx,
+                               const Point<T, 3> input) -> Point<T, 3> {
+    Vector<T, 3> shifted(query, input);
+    Vector<T, 3> rotated;
+    numerics::matrix_vector_multiply(matx, shifted.data(), rotated.data());
+    return Point<T, 3>(
+      {rotated[0] + query[0], rotated[1] + query[1], rotated[2] + query[2]});
+  };
+
+  // Rotation matrix for the patch
+  numerics::Matrix<T> rotator;
+
+  // OrientedBoundingBox<T, 3> oBox(bPatch.orientedBoundingBox().expand(edge_tol));
+  if(false)  // !oBox.contains(query)) // Only do casting for debugging
   {
-    field_direction = detail::SingularityAxis::x;
-  }
-  else if(exterior_x || exterior_z)
-  {
-    field_direction = detail::SingularityAxis::y;
-  }
-  else if(exterior_x || exterior_y)
-  {
-    field_direction = detail::SingularityAxis::z;
-  }
+    /* The following steps rotate the patch until the OBB is /not/ 
+       directly above or below the query point */
 
-  if(true)
-  {
-    // Otherwise, do ray casting and a rotation
-    field_direction = detail::SingularityAxis::rotated;
+    // Find vector from query to the bounding box
+    // Point<T, 3> closest = closest_point(query, oBox);
+    Point<T, 3> closest = query;
+    Vector<T, 3> v0 = Vector<T, 3>(query, closest).unitVector();
 
-    // Lambda to generate a 3D rotation matrix from an angle and axis
-    // Formulation from https://en.wikipedia.org/wiki/Rotation_matrix#Axis_and_angle
-    auto angleAxisRotMatrix =
-      [](double theta, const Vector<T, 3>& axis) -> numerics::Matrix<T> {
-      const auto unitized = axis.unitVector();
-      const double x = unitized[0], y = unitized[1], z = unitized[2];
-      const double c = cos(theta), s = sin(theta), C = 1 - c;
-
-      auto matx = numerics::Matrix<T>::zeros(3, 3);
-
-      matx(0, 0) = x * x * C + c;
-      matx(0, 1) = x * y * C - z * s;
-      matx(0, 2) = x * z * C + y * s;
-
-      matx(1, 0) = y * x * C + z * s;
-      matx(1, 1) = y * y * C + c;
-      matx(1, 2) = y * z * C - x * s;
-
-      matx(2, 0) = z * x * C - y * s;
-      matx(2, 1) = z * y * C + x * s;
-      matx(2, 2) = z * z * C + c;
-
-      return matx;
-    };
-
-    // Lambda to rotate the input point using the provided rotation matrix
-    auto rotate_point = [&query](const numerics::Matrix<T>& matx,
-                                 const Point<T, 3> input) -> Point<T, 3> {
-      Vector<T, 3> shifted(query, input);
-      Vector<T, 3> rotated;
-      numerics::matrix_vector_multiply(matx, shifted.data(), rotated.data());
-      return Point<T, 3>(
-        {rotated[0] + query[0], rotated[1] + query[1], rotated[2] + query[2]});
-    };
-
-    //double theta = axom::utilities::random_real(0.0, 2 * M_PI);
-    //double u = axom::utilities::random_real(-1.0, 1.0);
-    //Vector<T, 3> cast_direction {sin(theta) * sqrt(1 - u * u),
-    //                             cos(theta) * sqrt(1 - u * u),
-    //                             u};
-
-    // Cast a ray in either direction
-    Vector<T, 3> cast_direction {0.0, 0.0, 1.0};
-    double directions[2] = {1, -1};
-
-    for(double dir : directions)
+    // Find the direction of a ray perpendicular to that
+    Vector<T, 3> v1;
+    if(axom::utilities::isNearlyEqual(v0[0], v0[1], EPS))
     {
-      std::vector<T> up, vp;
-      Ray<T, 3> cast_ray(query, dir * cast_direction);
-      intersect(bPatch, cast_ray, up, vp);
+      v1 = Vector<T, 3>({v0[2], v0[2], -v0[0] - v0[1]}).unitVector();
+    }
+    else
+    {
+      v1 = Vector<T, 3>({-v0[1] - v0[2], v0[0], v0[0]}).unitVector();
+    }
 
-      // If the ray doesn't intersect the surface, then we can dodge it
-      if(up.size() == 0)
+    // Rotate v0 around v1 until it is perpendicular to the plane spanned by k and v1
+    double ang = (v0[2] < 0 ? 1.0 : -1.0) *
+      acos(axom::utilities::clampVal(
+        -(v0[0] * v1[1] - v0[1] * v1[0]) / sqrt(v1[0] * v1[0] + v1[1] * v1[1]),
+        -1.0,
+        1.0));
+    auto rotator = angleAxisRotMatrix(ang, v1);
+  }
+  else
+  {
+    /* The following steps cast a ray and count /interior/ intersections with 
+       the patch. If the intersection is tangent or on a boundary, try again */
+
+    // Initial cast with a z-aligned field (i.e., no rotation)
+    Vector<T, 3> cast_direction {1.0, 0.0, 0.0};
+
+    while(true)
+    {
+      // Pick a ray and cast it in both directions
+      double directions[2] = {1, -1};
+
+      for(double dir : directions)
       {
-        wn_split.second += 0.0;
-      }
-      // Otherwise, we need to adjust for the contribution of a small removed
-      // disk, depending on the orientation
-      else
-      {
-        for(int i = 0; i < up.size(); ++i)
+        std::vector<T> up, vp;
+        Ray<T, 3> cast_ray(query, dir * cast_direction);
+        intersect(bPatch, cast_ray, up, vp);
+
+        // If the ray doesn't intersect the surface, then we can dodge it
+        if(up.size() == 0)
         {
-          Vector<T, 3> the_direction(query, bPatch.evaluate(up[i], vp[i]));
-          Vector<T, 3> the_normal = bPatch.normal(up[i], vp[i]);
+          wn_split.second += 0.0;
+        }
+        // Otherwise, we need to adjust for the contribution of a small removed
+        // disk, depending on the orientation
+        else
+        {
+          for(int i = 0; i < up.size(); ++i)
+          {
+            Vector<T, 3> the_direction(query, bPatch.evaluate(up[i], vp[i]));
+            Vector<T, 3> the_normal = bPatch.normal(up[i], vp[i]);
 
-          // Do a dot product between the normal and the cast direction
-          double surf_orientation = the_normal.dot(the_direction);
-          double cast_orientation = cast_direction.dot(the_direction);
-          if(surf_orientation == 0)
-          {
-            // Indicates tangency at the point of intersection.
-            //  Would need to repeat the casting with a different ray
-            wn_split.second += 0.0;
-          }
-          else if(surf_orientation * cast_orientation < 0)
-          {
-            wn_split.second -= dir * 0.5;
-          }
-          else
-          {
-            wn_split.second += dir * 0.5;
+            // Do a dot product between the normal and the cast direction
+            double surf_orientation = the_normal.dot(the_direction);
+            double cast_orientation = cast_direction.dot(the_direction);
+
+            if(surf_orientation == 0 || up[i] < 1e-2 || up[i] > 1 - 1e-2 ||
+               vp[i] < 1e-2 || vp[i] > 1 - 1e-2)
+            {
+              // For debugging purposes, do none of this
+
+              // Indicates tangency or boundary at the point of intersection.
+              //  Rare, but requires a new ray to be cast
+
+              // double theta = axom::utilities::random_real(0.0, 2 * M_PI);
+              // double u = axom::utilities::random_real(-1.0, 1.0);
+              // cast_direction = Vector<T, 3> {sin(theta) * sqrt(1 - u * u),
+              //  cos(theta) * sqrt(1 - u * u),
+              //  u};
+              // continue;  // with the new cast direction
+            }
+            else if(surf_orientation * cast_orientation < 0)
+            {
+              wn_split.second -= dir * 0.5;
+            }
+            else
+            {
+              wn_split.second += dir * 0.5;
+            }
           }
         }
       }
-    }
 
-    Vector<T, 3> axis = {cast_direction[1], -cast_direction[0], 0.0};
-    double ang = acos(axom::utilities::clampVal(cast_direction[2], -1.0, 1.0));
+      // Define a rotation such that the cast ray is vertical
+      Vector<T, 3> axis = {cast_direction[1], -cast_direction[0], 0.0};
+      double ang = acos(axom::utilities::clampVal(cast_direction[2], -1.0, 1.0));
 
-    numerics::Matrix<T> rotator = angleAxisRotMatrix(ang, axis);
+      rotator = angleAxisRotMatrix(ang, axis);
 
-    // Collect rotated curves into the curved Polygon
-    // Set up the (0, v) and (1, v) isocurves, rotated
-    boundingPoly[0].setOrder(ord_v);
-    boundingPoly[2].setOrder(ord_v);
-    if(patchIsRational)
-    {
-      boundingPoly[0].makeRational();
-      boundingPoly[2].makeRational();
-    }
-    for(int q = 0; q <= ord_v; ++q)
-    {
-      boundingPoly[0][q] = rotate_point(rotator, bPatch(ord_u, q));
-      boundingPoly[2][q] = rotate_point(rotator, bPatch(0, ord_v - q));
-
-      if(patchIsRational)
-      {
-        boundingPoly[0].setWeight(q, bPatch.getWeight(ord_u, q));
-        boundingPoly[2].setWeight(q, bPatch.getWeight(0, ord_v - q));
-      }
-    }
-
-    // Set up the (u, 0) and (u, 1) isocurves
-    boundingPoly[1].setOrder(ord_u);
-    boundingPoly[3].setOrder(ord_u);
-    if(patchIsRational)
-    {
-      boundingPoly[1].makeRational();
-      boundingPoly[3].makeRational();
-    }
-    for(int p = 0; p <= ord_u; ++p)
-    {
-      boundingPoly[1][p] = rotate_point(rotator, bPatch(ord_u - p, ord_v));
-      boundingPoly[3][p] = rotate_point(rotator, bPatch(p, 0));
-
-      if(patchIsRational)
-      {
-        boundingPoly[1].setWeight(p, bPatch.getWeight(ord_u - p, ord_v));
-        boundingPoly[3].setWeight(p, bPatch.getWeight(p, 0));
-      }
-    }
-
-    BezierPatch<T, 3> rotated_patch(bPatch);
-    for(int i = 0; i <= ord_u; ++i)
-    {
-      for(int j = 0; j <= ord_v; ++j)
-      {
-        rotated_patch(i, j) = rotate_point(rotator, bPatch(i, j));
-      }
+      break;
     }
   }
 
-  // Set up the polygon if we don't need to do any rotation or splitting.
-  if(field_direction != detail::SingularityAxis::rotated)
+  /* With the rotation defined, 
+      collect rotated curves into the curved Polygon */
+
+  // Set up the (0, v) and (1, v) isocurves, rotated
+  boundingPoly[0].setOrder(ord_v);
+  boundingPoly[2].setOrder(ord_v);
+  if(patchIsRational)
   {
-    boundingPoly[0] = bPatch.isocurve_u(0);
-    boundingPoly[0].reverseOrientation();
+    boundingPoly[0].makeRational();
+    boundingPoly[2].makeRational();
+  }
+  for(int q = 0; q <= ord_v; ++q)
+  {
+    boundingPoly[0][q] = rotate_point(rotator, bPatch(ord_u, q));
+    boundingPoly[2][q] = rotate_point(rotator, bPatch(0, ord_v - q));
 
-    boundingPoly[1] = bPatch.isocurve_v(1);
-    boundingPoly[1].reverseOrientation();
+    if(patchIsRational)
+    {
+      boundingPoly[0].setWeight(q, bPatch.getWeight(ord_u, q));
+      boundingPoly[2].setWeight(q, bPatch.getWeight(0, ord_v - q));
+    }
+  }
 
-    boundingPoly[2] = bPatch.isocurve_u(1);
-    boundingPoly[3] = bPatch.isocurve_v(0);
+  // Set up the (u, 0) and (u, 1) isocurves
+  boundingPoly[1].setOrder(ord_u);
+  boundingPoly[3].setOrder(ord_u);
+  if(patchIsRational)
+  {
+    boundingPoly[1].makeRational();
+    boundingPoly[3].makeRational();
+  }
+  for(int p = 0; p <= ord_u; ++p)
+  {
+    boundingPoly[1][p] = rotate_point(rotator, bPatch(ord_u - p, ord_v));
+    boundingPoly[3][p] = rotate_point(rotator, bPatch(p, 0));
+
+    if(patchIsRational)
+    {
+      boundingPoly[1].setWeight(p, bPatch.getWeight(ord_u - p, ord_v));
+      boundingPoly[3].setWeight(p, bPatch.getWeight(p, 0));
+    }
   }
 
   // Iterate over the edges of the bounding curved polygon, add up the results
   for(int n = 0; n < 4; ++n)
   {
-    wn_split.first += detail::stokes_winding_number(query,
-                                                    boundingPoly[n],
-                                                    field_direction,
-                                                    quad_npts,
-                                                    quad_tol);
+    wn_split.first +=
+      detail::stokes_winding_number(query,
+                                    boundingPoly[n],
+                                    detail::SingularityAxis::rotated,
+                                    quad_npts,
+                                    quad_tol);
   }
 
   return wn_split;
 }
 
-template <typename T>
-double just_the_stokes(const Point<T, 3>& query,
-                       const BezierPatch<T, 3>& bPatch,
-                       const double edge_tol = 1e-8,
-                       const double quad_tol = 1e-8,
-                       const double EPS = 1e-8,
-                       const int depth = 0)
-{
-  const int ord_u = bPatch.getOrder_u();
-  const int ord_v = bPatch.getOrder_v();
-  const bool patchIsRational = bPatch.isRational();
-  const double edge_tol_sq = edge_tol * edge_tol;
-
-  // Fix the number of quadrature nodes arbitrarily, but high enough
-  //  to `catch` near singularities for refinement
-  constexpr int quad_npts = 30;
-
-  /* 
-   * To use Stokes theorem, we need to identify a separating plane between
-   * `query` and the surface, guaranteed through a bounding box.
-   * If it does, need to do geometric refinement: Splitting and rotating the curve
-   * until we can guarantee this.
-   */
-  CurvedPolygon<T, 3> boundingPoly(4);
-
-  // Define vector fields whose curl gives us the winding number
-  detail::SingularityAxis field_direction;
-
-  field_direction = detail::SingularityAxis::z;
-
-  //  Add the relevant bounding curves to the patch.
-  boundingPoly[0] = bPatch.isocurve_u(0);
-  boundingPoly[0].reverseOrientation();
-
-  boundingPoly[1] = bPatch.isocurve_v(1);
-  boundingPoly[1].reverseOrientation();
-
-  boundingPoly[2] = bPatch.isocurve_u(1);
-  boundingPoly[3] = bPatch.isocurve_v(0);
-
-  // Iterate over the edges of the bounding curved polygon, add up the results
-  double wn = 0;
-  for(int n = 0; n < 4; ++n)
-  {
-    wn += detail::stokes_winding_number(query,
-                                        boundingPoly[n],
-                                        field_direction,
-                                        quad_npts,
-                                        quad_tol);
-  }
-
-  return wn;
-}
 #endif
 
 //@}
