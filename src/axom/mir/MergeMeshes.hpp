@@ -74,6 +74,17 @@ public:
   }
 private:
   /**
+   * \brief This struct contains information used when merging fields.
+   */
+  struct FieldInformation
+  {
+    std::string topology;
+    std::string association;
+    int         dtype;
+    std::vector<std::string> components;
+  };
+
+  /**
    * \brief Check that the mesh inputs are valid and meet constraints. There must
    *        be 1 coordset/topology/matset. The coordset must be explicit and the
    *        topology must be unstructured and for now, non-polyhedral.
@@ -163,7 +174,7 @@ private:
   {
     mergeCoordset(inputs, output);
     mergeTopology(inputs, output);
-    //mergeFields(inputs, output);
+    mergeFields(inputs, output);
     //mergeMatset(inputs, output);
   }
 
@@ -279,6 +290,16 @@ private:
       nodeTotal += nnodes;
     }
     return nodeTotal;
+  }
+
+  axom::IndexType countZones(const std::vector<MeshInput> &inputs, size_t index) const
+  {
+    const conduit::Node &n_topologies = inputs[index].m_input->fetch_existing("topologies");
+    const conduit::Node &n_topo = n_topologies[0];
+
+    const conduit::Node &n_size = n_topo.fetch_existing("elements/sizes");
+    axom::IndexType nzones = n_size.dtype().number_of_elements();
+    return nzones;
   }
 
   void countZones(const std::vector<MeshInput> &inputs, axom::IndexType &totalConnLength, axom::IndexType &totalZones) const
@@ -486,6 +507,187 @@ private:
       auto offsetsView = bputils::make_array_view<ConnType>(n_newOffsets);
       axom::exclusive_scan<ExecSpace>(sizesView, offsetsView);
     });
+  }
+
+  void mergeFields(const std::vector<MeshInput> &inputs, conduit::Node &output) const
+  {
+    namespace bputils = axom::mir::utilities::blueprint;
+    AXOM_ANNOTATE_SCOPE("mergeFields");
+    axom::IndexType totalNodes = countNodes(inputs);
+    axom::IndexType totalConnLen = 0, totalZones = 0;
+    countZones(inputs, totalConnLen, totalZones);
+    const axom::IndexType n = static_cast<axom::IndexType>(inputs.size());
+
+    // Determine whether any inputs have fields.
+    bool hasFields = false;
+    for(axom::IndexType i = 0; i < n; i++)
+    {
+      hasFields |= inputs[i].m_input->has_child("fields");
+    }
+
+    if(hasFields)
+    {
+      // Make field information in case some inputs do not have the field.
+      std::map<std::string, FieldInformation> fieldInfo;
+      for(axom::IndexType i = 0; i < n; i++)
+      {
+        if(inputs[i].m_input->has_child("fields"))
+        {
+          const conduit::Node &n_fields = inputs[i].m_input->fetch_existing("fields");
+          for(conduit::index_t c = 0; c < n_fields.number_of_children(); c++)
+          {
+            const conduit::Node &n_field = n_fields[c];
+            const conduit::Node &n_values = n_field.fetch_existing("values");
+            FieldInformation fi;
+            fi.topology = n_field.fetch_existing("topology").as_string();
+            fi.association = n_field.fetch_existing("association").as_string();
+            if(n_values.number_of_children() > 0)
+            {
+              for(conduit::index_t comp = 0; comp < n_values.number_of_children(); comp++)
+              {
+                fi.components.push_back(n_values[comp].name());
+                fi.dtype = n_values[comp].dtype().id();
+              }
+            }
+            else
+            {
+              fi.dtype = n_values.dtype().id();
+            }
+            fieldInfo[n_field.name()] = fi;
+          }
+        }
+      }
+
+      // Make new fields
+      bputils::ConduitAllocateThroughAxom<ExecSpace> c2a;
+      conduit::Node &n_newFields = output["fields"];
+      for(auto it = fieldInfo.begin(); it != fieldInfo.end(); it++)
+      {
+        conduit::Node &n_newField = n_newFields[it->first];
+        n_newField["association"] = it->second.association;
+        n_newField["topology"] = it->second.topology;
+        conduit::Node &n_values = n_newField["values"];
+        if(it->second.components.empty())
+        {
+          // Scalar
+          conduit::Node &n_values = n_newField["values"];
+          n_values.set_allocator(c2a.getConduitAllocatorID());
+          const std::string srcPath("fields/" + it->first + "/values");
+          if(it->second.association == "element")
+          {
+            n_values.set(conduit::DataType(it->second.dtype, totalZones));
+            copyZonal(inputs, n_values, srcPath);
+          }
+          else if(it->second.association == "vertex")
+          {
+            n_values.set(conduit::DataType(it->second.dtype, totalNodes));
+            copyNodal(inputs, n_values, srcPath);
+          }
+        }
+        else
+        {
+          // Vector
+          for(size_t ci = 0; ci < it->second.components.size(); ci++)
+          {
+            conduit::Node &n_comp = n_values[it->second.components[ci]];
+            n_comp.set_allocator(c2a.getConduitAllocatorID());
+            const std::string srcPath("fields/" + it->first + "/values/" + it->second.components[ci]);
+            if(it->second.association == "element")
+            {
+              n_comp.set(conduit::DataType(it->second.dtype, totalZones));
+              copyZonal(inputs, n_comp, srcPath);
+            }
+            else if(it->second.association == "vertex")
+            {
+              n_comp.set(conduit::DataType(it->second.dtype, totalNodes));
+              copyNodal(inputs, n_comp, srcPath);
+            }
+          }
+        }
+      }
+    }
+  }
+
+  void copyZonal(const std::vector<MeshInput> &inputs, conduit::Node &n_values, const std::string &srcPath) const
+  {
+    axom::IndexType offset = 0;
+    for(size_t i = 0; i < inputs.size(); i++)
+    {
+      const auto nzones = countZones(inputs, i);
+
+      if(inputs[i].m_input->has_path(srcPath))
+      {
+        const conduit::Node &n_src_values = inputs[i].m_input->fetch_existing(srcPath);
+        axom::mir::views::Node_to_ArrayView(n_src_values, [&](auto srcView)
+        {
+          axom::mir::views::Node_to_ArrayView(n_values, [&](auto destView)
+          {
+            axom::for_all<ExecSpace>(nzones, AXOM_LAMBDA(auto index)
+            {
+              destView[offset + index] = srcView[index];
+            });
+          });
+        });
+      }
+      else
+      {
+        axom::mir::views::Node_to_ArrayView(n_values, [&](auto destView)
+        {
+          axom::for_all<ExecSpace>(nzones, AXOM_LAMBDA(auto index)
+          {
+            destView[offset + index] = 0;
+          });
+        });
+      }
+      offset += nzones;
+    }
+  }
+
+  void copyNodal(const std::vector<MeshInput> &inputs, conduit::Node &n_values, const std::string &srcPath) const
+  {
+    axom::IndexType offset = 0;
+    for(size_t i = 0; i < inputs.size(); i++)
+    {
+      const auto nnodes = countNodes(inputs, i);
+
+      if(inputs[i].m_input->has_path(srcPath))
+      {
+        const conduit::Node &n_src_values = inputs[i].m_input->fetch_existing(srcPath);
+        axom::mir::views::Node_to_ArrayView(n_src_values, [&](auto srcView)
+        {
+          axom::mir::views::Node_to_ArrayView(n_values, [&](auto destView)
+          {
+            if(inputs[i].m_nodeSliceView.empty())
+            {
+              axom::for_all<ExecSpace>(nnodes, AXOM_LAMBDA(auto index)
+              {
+                destView[offset + index] = srcView[index];
+              });
+            }
+            else
+            {
+              auto nodeSliceView(inputs[i].m_nodeSliceView);
+              axom::for_all<ExecSpace>(nnodes, AXOM_LAMBDA(auto index)
+              {
+                const auto nodeId = nodeSliceView[index];
+                destView[offset + index] = srcView[nodeId];
+              });
+            }
+          });
+        });
+      }
+      else
+      {
+        axom::mir::views::Node_to_ArrayView(n_values, [&](auto destView)
+        {
+          axom::for_all<ExecSpace>(nnodes, AXOM_LAMBDA(auto index)
+          {
+            destView[offset + index] = 0;
+          });
+        });
+      }
+      offset += nnodes;
+    }
   }
 };
 
