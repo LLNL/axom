@@ -628,9 +628,6 @@ public:
         uIndices);
       builder.setUniqueNames(uNames.view(), uIndices.view());
 
-// NOTE TO SELF: This is new code that I'm trying out to remove single-node
-//               blend groups from the selected unique blend groups. It's not
-//               quite working yet.
 #if defined(AXOM_REDUCE_BLEND_GROUPS)
       // Filter the unique names/indices to remove single node blend groups.
       builder.filterUnique(newUniqueNames, newUniqueIndices);
@@ -1957,6 +1954,9 @@ private:
       const auto origSize = blend.m_originalIdsView.size();
       const auto blendSize = blend.m_selectedIndicesView.size();
       const auto outputSize = origSize + blendSize;
+      using Precision = int;
+      constexpr Precision one = 1;
+      constexpr Precision zero = 0;
 
       if(n_newFields.has_child(newNodes))
       {
@@ -1966,12 +1966,12 @@ private:
 
         conduit::Node &n_new_nodes = n_newFields.fetch_existing(newNodes);
         conduit::Node &n_new_nodes_values = n_new_nodes["values"];
-        auto valuesView = bputils::make_array_view<float>(n_new_nodes_values);
+        auto valuesView = bputils::make_array_view<Precision>(n_new_nodes_values);
 
         // Update values for the blend groups only.
         axom::for_all<ExecSpace>(blendSize, AXOM_LAMBDA(auto bgid)
         {
-          valuesView[origSize + bgid] = 1.f;
+          valuesView[origSize + bgid] = one;
         }); 
       }
       else
@@ -1984,14 +1984,14 @@ private:
         n_new_nodes["association"] = "vertex";
         conduit::Node &n_new_nodes_values = n_new_nodes["values"];
         n_new_nodes_values.set_allocator(c2a.getConduitAllocatorID());
-        n_new_nodes_values.set(conduit::DataType::float32(outputSize));
-        auto valuesView = bputils::make_array_view<float>(n_new_nodes_values);
+        n_new_nodes_values.set(conduit::DataType(bputils::cpp2conduit<Precision>::id, outputSize));
+        auto valuesView = bputils::make_array_view<Precision>(n_new_nodes_values);
 
         // Fill in values. Everything below origSize is an original node.
         // Everything above is a blended node.
         axom::for_all<ExecSpace>(outputSize, AXOM_LAMBDA(auto index)
         {
-          valuesView[index] = (index < origSize) ? 0.f : 1.f;
+          valuesView[index] = (index < origSize) ? zero : one;
         });       
       }
     }
