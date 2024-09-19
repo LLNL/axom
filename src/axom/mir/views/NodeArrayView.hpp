@@ -251,7 +251,7 @@ std::enable_if_t<Enabled, void> Node_to_ArrayView_single_uint8(conduit::Node &n,
                                                                FuncType &&func)
 {
   const auto size = n.dtype().number_of_elements();
-  axom::ArrayView<const conduit::uint8> view(n.as_uint8_ptr(), size);
+  axom::ArrayView<conduit::uint8> view(n.as_uint8_ptr(), size);
   func(view);
 }
 
@@ -288,7 +288,7 @@ std::enable_if_t<Enabled, void> Node_to_ArrayView_single_uint16(conduit::Node &n
                                                                 FuncType &&func)
 {
   const auto size = n.dtype().number_of_elements();
-  axom::ArrayView<const conduit::uint16> view(n.as_uint16_ptr(), size);
+  axom::ArrayView<conduit::uint16> view(n.as_uint16_ptr(), size);
   func(view);
 }
 
