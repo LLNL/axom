@@ -52,6 +52,91 @@ TEST(mir_views, shape2conduitName)
   EXPECT_EQ(axom::mir::views::HexShape<long>::name(), "hex");
 }
 
+//------------------------------------------------------------------------------
+template <typename ExecSpace>
+struct test_node_to_arrayview
+{
+  static int constexpr sum(int n)
+  {
+    int s = 0;
+    for(int i = 0; i < n; i++)
+      s += i;
+    return s;
+  }
+
+  static void test()
+  {
+    using reduce_policy = typename axom::execution_space<ExecSpace>::reduce_policy;
+
+    std::vector<int> dtypes{conduit::DataType::INT8_ID,
+                            conduit::DataType::INT16_ID,
+                            conduit::DataType::INT32_ID,
+                            conduit::DataType::INT64_ID,
+                            conduit::DataType::UINT8_ID,
+                            conduit::DataType::UINT16_ID,
+                            conduit::DataType::UINT32_ID,
+                            conduit::DataType::UINT64_ID,
+                            conduit::DataType::FLOAT32_ID,
+                            conduit::DataType::FLOAT64_ID};
+    constexpr int n = 16;
+    axom::mir::utilities::blueprint::ConduitAllocateThroughAxom<ExecSpace> c2a;
+    for(int dtype : dtypes)
+    {
+      // Make a node and fill it with data.
+      conduit::Node n_data;
+      n_data.set_allocator(c2a.getConduitAllocatorID());
+      n_data.set(conduit::DataType(dtype, n));
+
+      int sumValues = 0;
+      axom::mir::views::Node_to_ArrayView(n_data, [&](auto dataView)
+      {
+        std::cout << axom::mir::views::array_view_traits<decltype(dataView)>::name() << std::endl;
+        using value_type = typename decltype(dataView)::value_type;
+
+        // Make sure we can store values in dataView
+        axom::for_all<ExecSpace>(n, AXOM_LAMBDA(auto index)
+        {
+          dataView[index] = static_cast<value_type>(index);
+        });
+
+        // Read the values and sum them.
+        RAJA::ReduceSum<reduce_policy, value_type> sumValues_reduce(0);
+        axom::for_all<ExecSpace>(n, AXOM_LAMBDA(auto index)
+        {
+          sumValues_reduce += dataView[index];
+        });
+        sumValues = static_cast<int>(sumValues_reduce.get());
+      });
+
+      EXPECT_EQ(sumValues, sum(n));
+    }
+  }
+};
+
+TEST(mir_views, node_to_arrayview_seq)
+{
+  test_node_to_arrayview<seq_exec>::test();
+}
+#if defined(AXOM_USE_OPENMP)
+TEST(mir_views, node_to_arrayview_omp)
+{
+  test_node_to_arrayview<omp_exec>::test();
+}
+#endif
+#if defined(AXOM_USE_CUDA) && defined(__CUDACC__)
+TEST(mir_views, node_to_arrayview_cuda)
+{
+  test_node_to_arrayview<cuda_exec>::test();
+}
+#endif
+#if defined(AXOM_USE_HIP)
+TEST(mir_views, node_to_arrayview_hip)
+{
+  test_node_to_arrayview<hip_exec>::test();
+}
+#endif
+
+//------------------------------------------------------------------------------
 TEST(mir_views, explicit_coordsetview)
 {
   axom::Array<float> x {{0., 1., 2., 3., 4., 5.}};
