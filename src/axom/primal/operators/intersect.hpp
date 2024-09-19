@@ -749,7 +749,10 @@ AXOM_HOST_DEVICE bool intersect(const Plane<T, 3>& p,
  * \return true iff the ray intersects the bilinear patch, otherwise false.
  */
 template <typename T>
-AXOM_HOST_DEVICE bool intersect(const BezierPatch<T, 3>& patch,
+AXOM_HOST_DEVICE bool intersect(const Point<T, 3>& p0,
+                                const Point<T, 3>& p1,
+                                const Point<T, 3>& p2,
+                                const Point<T, 3>& p3,
                                 const Ray<T, 3>& ray,
                                 std::vector<T>& u,
                                 std::vector<T>& v,
