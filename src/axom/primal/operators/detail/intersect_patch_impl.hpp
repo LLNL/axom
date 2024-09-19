@@ -34,32 +34,32 @@ namespace detail
 //---------------------------- FUNCTION DECLARATIONS ---------------------------
 
 template <typename T>
-bool intersect_ray_patch_approximate(const BezierPatch<T, 3> &p,
-                                     const Ray<T, 3> &r,
-                                     std::vector<T> &up,
-                                     std::vector<T> &vp,
-                                     double sq_tol,
-                                     int order_u,
-                                     int order_v,
-                                     double u_offset,
-                                     double u_scale,
-                                     double v_offset,
-                                     double v_scale);
+bool intersect_ray_patch(const BezierPatch<T, 3> &p,
+                         const Ray<T, 3> &r,
+                         std::vector<T> &up,
+                         std::vector<T> &vp,
+                         double sq_tol,
+                         int order_u,
+                         int order_v,
+                         double u_offset,
+                         double u_scale,
+                         double v_offset,
+                         double v_scale);
 
 //------------------------------ IMPLEMENTATIONS ------------------------------
 
 template <typename T>
-bool intersect_ray_patch_approximate(const BezierPatch<T, 3> &p,
-                                     const Ray<T, 3> &r,
-                                     std::vector<T> &up,
-                                     std::vector<T> &vp,
-                                     double sq_tol,
-                                     int order_u,
-                                     int order_v,
-                                     double u_offset,
-                                     double u_scale,
-                                     double v_offset,
-                                     double v_scale)
+bool intersect_ray_patch(const BezierPatch<T, 3> &p,
+                         const Ray<T, 3> &r,
+                         std::vector<T> &up,
+                         std::vector<T> &vp,
+                         double sq_tol,
+                         int order_u,
+                         int order_v,
+                         double u_offset,
+                         double u_scale,
+                         double v_offset,
+                         double v_scale)
 {
   using BPatch = BezierPatch<T, 3>;
 
@@ -71,8 +71,7 @@ bool intersect_ray_patch_approximate(const BezierPatch<T, 3> &p,
   }
 
   bool foundIntersection = false;
-
-  if(p.isPlanar(sq_tol))
+  if(false)
   {
     // For the purposes of computing the winding number,
     //  we don't need the exact parameters of the intersection.
@@ -107,7 +106,7 @@ bool intersect_ray_patch_approximate(const BezierPatch<T, 3> &p,
                      n1[2] * p(order_u, 0)[2],
                    e2 + n2[0] * p(order_u, 0)[0] + n2[1] * p(order_u, 0)[1] +
                      n2[2] * p(order_u, 0)[2]}));
-    poly.addVertex( Point<T, 2>(
+    poly.addVertex(Point<T, 2>(
       {e1 + n1[0] * p(order_u, order_v)[0] + n1[1] * p(order_u, order_v)[1] +
          n1[2] * p(order_u, order_v)[2],
        e2 + n2[0] * p(order_u, order_v)[0] + n2[1] * p(order_u, order_v)[1] +
@@ -118,19 +117,19 @@ bool intersect_ray_patch_approximate(const BezierPatch<T, 3> &p,
                    e2 + n2[0] * p(0, order_v)[0] + n2[1] * p(0, order_v)[1] +
                      n2[2] * p(0, order_v)[2]}));
 
-    if( p.isRational() )
+    if(p.isRational())
     {
-        poly[0][0] *= p.getWeight(0, 0);
-        poly[0][1] *= p.getWeight(0, 0);
+      poly[0][0] *= p.getWeight(0, 0);
+      poly[0][1] *= p.getWeight(0, 0);
 
-        poly[1][0] *= p.getWeight(order_u, 0);
-        poly[1][1] *= p.getWeight(order_u, 0);
+      poly[1][0] *= p.getWeight(order_u, 0);
+      poly[1][1] *= p.getWeight(order_u, 0);
 
-        poly[2][0] *= p.getWeight(order_u, order_v);
-        poly[2][1] *= p.getWeight(order_u, order_v);
+      poly[2][0] *= p.getWeight(order_u, order_v);
+      poly[2][1] *= p.getWeight(order_u, order_v);
 
-        poly[3][0] *= p.getWeight(0, order_v);
-        poly[3][1] *= p.getWeight(0, order_v);
+      poly[3][0] *= p.getWeight(0, order_v);
+      poly[3][1] *= p.getWeight(0, order_v);
     }
 
     if(in_polygon(Point<T, 2>({0.0, 0.0}), poly))
@@ -138,6 +137,33 @@ bool intersect_ray_patch_approximate(const BezierPatch<T, 3> &p,
       up.push_back(u_offset + 0.5 * u_scale);
       vp.push_back(v_offset + 0.5 * v_scale);
       foundIntersection = true;
+    }
+  }
+  else if(p.isBilinear(1e-4))
+  {
+    std::vector<T> u, v, t;
+    foundIntersection = detail::intersect_bilinear_patch_ray(p(0, 0),
+                                                             p(order_u, 0),
+                                                             p(order_u, order_v),
+                                                             p(0, order_v),
+                                                             r,
+                                                             u,
+                                                             v,
+                                                             t);
+
+    for(size_t i = 0; i < u.size(); ++i)
+    {
+      if(axom::utilities::isNearlyEqual(u[i], 1.0, 1e-8) && u_scale != 1.0)
+      {
+        continue;
+      }
+      if(axom::utilities::isNearlyEqual(v[i], 1.0, 1e-8) && v_scale != 1.0)
+      {
+        continue;
+      }
+
+      up.push_back(u_offset + u[i] * u_scale);
+      vp.push_back(v_offset + v[i] * v_scale);
     }
   }
   else
@@ -153,59 +179,59 @@ bool intersect_ray_patch_approximate(const BezierPatch<T, 3> &p,
     v_scale *= scaleFac;
 
     // Note: we want to find all intersections, so don't short-circuit
-    if(intersect_ray_patch_approximate(p1,
-                                       r,
-                                       up,
-                                       vp,
-                                       sq_tol,
-                                       order_u,
-                                       order_v,
-                                       u_offset,
-                                       u_scale,
-                                       v_offset,
-                                       v_scale))
+    if(intersect_ray_patch(p1,
+                           r,
+                           up,
+                           vp,
+                           sq_tol,
+                           order_u,
+                           order_v,
+                           u_offset,
+                           u_scale,
+                           v_offset,
+                           v_scale))
     {
       foundIntersection = true;
     }
-    if(intersect_ray_patch_approximate(p2,
-                                       r,
-                                       up,
-                                       vp,
-                                       sq_tol,
-                                       order_u,
-                                       order_v,
-                                       u_offset + u_scale,
-                                       u_scale,
-                                       v_offset,
-                                       v_scale))
+    if(intersect_ray_patch(p2,
+                           r,
+                           up,
+                           vp,
+                           sq_tol,
+                           order_u,
+                           order_v,
+                           u_offset + u_scale,
+                           u_scale,
+                           v_offset,
+                           v_scale))
     {
       foundIntersection = true;
     }
-    if(intersect_ray_patch_approximate(p3,
-                                       r,
-                                       up,
-                                       vp,
-                                       sq_tol,
-                                       order_u,
-                                       order_v,
-                                       u_offset,
-                                       u_scale,
-                                       v_offset + v_scale,
-                                       v_scale))
+    if(intersect_ray_patch(p3,
+                           r,
+                           up,
+                           vp,
+                           sq_tol,
+                           order_u,
+                           order_v,
+                           u_offset,
+                           u_scale,
+                           v_offset + v_scale,
+                           v_scale))
     {
       foundIntersection = true;
     }
-    if(intersect_ray_patch_approximate(p4,
-                                       r,
-                                       up,
-                                       vp,
-                                       sq_tol,
-                                       order_u,
-                                       order_v,
-                                       u_offset + u_scale,
-                                       u_scale,
-                                       v_offset + v_scale,
-                                       v_scale))
+    if(intersect_ray_patch(p4,
+                           r,
+                           up,
+                           vp,
+                           sq_tol,
+                           order_u,
+                           order_v,
+                           u_offset + u_scale,
+                           u_scale,
+                           v_offset + v_scale,
+                           v_scale))
     {
       foundIntersection = true;
     }

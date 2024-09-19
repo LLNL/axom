@@ -1710,14 +1710,14 @@ inline bool intersect_bilinear_patch_ray(const Point3& p0,
                                          const Point3& p2,
                                          const Point3& p3,
                                          const Ray<double, 3>& ray,
-                                         axom::Array<double>& u,
-                                         axom::Array<double>& v,
-                                         axom::Array<double>& t)
+                                         std::vector<double>& u,
+                                         std::vector<double>& v,
+                                         std::vector<double>& t)
 {
   Vector3 q00(p0), q10(p1), q11(p2), q01(p3);
   Vector3 e10(p0, p1), e11(p1, p2), e00(p0, p3);
 
-  Vector3 qn = Vector3::cross_product(e11, q01 - q11);
+  Vector3 qn = Vector3::cross_product(q10 - q00, q01 - q11);
 
   q00.array() -= ray.origin().array();
   q10.array() -= ray.origin().array();

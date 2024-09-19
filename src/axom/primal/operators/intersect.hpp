@@ -625,17 +625,17 @@ bool intersect(const BezierPatch<T, 3>& p,
   // for efficiency, linearity check actually uses a squared tolerance
   const double sq_tol = tol * tol;
 
-  return detail::intersect_ray_patch_approximate(p,
-                                                 r,
-                                                 up,
-                                                 vp,
-                                                 sq_tol,
-                                                 p.getOrder_u(),
-                                                 p.getOrder_v(),
-                                                 u_offset,
-                                                 u_scale,
-                                                 v_offset,
-                                                 v_scale);
+  return detail::intersect_ray_patch(p,
+                                     r,
+                                     up,
+                                     vp,
+                                     sq_tol,
+                                     p.getOrder_u(),
+                                     p.getOrder_v(),
+                                     u_offset,
+                                     u_scale,
+                                     v_offset,
+                                     v_scale);
 }
 /// @}
 
@@ -731,17 +731,16 @@ AXOM_HOST_DEVICE bool intersect(const Plane<T, 3>& p,
  * \return true iff the ray intersects the bilinear patch, otherwise false.
  */
 template <typename T>
-AXOM_HOST_DEVICE bool intersect(const BezierPatch<T, 3>& patch,
+AXOM_HOST_DEVICE bool intersect(const Point<T, 3>& p0,
+                                const Point<T, 3>& p1,
+                                const Point<T, 3>& p2,
+                                const Point<T, 3>& p3,
                                 const Ray<T, 3>& ray,
                                 std::vector<T>& u,
                                 std::vector<T>& v,
                                 std::vector<T>& t)
 {
-  const int order_u = patch.getOrder_u();
-  const int order_v = patch.getOrder_v();
-  return detail::intersect_bilinear_patch_ray(patch(0, 0), patch(order_u, 0),
-                                              patch(order_u, order_v), patch(0, order_v),
-                                              ray, u, v, t);
+  return detail::intersect_bilinear_patch_ray(p0, p1, p2, p3 ray, u, v, t);
 }
 
 /// @}
