@@ -733,6 +733,35 @@ AXOM_HOST_DEVICE bool intersect(const Plane<T, 3>& p,
   return detail::intersect_plane_tet3d(p, tet, intersection);
 }
 
+/*! \brief Determines if a ray intersects a bilinear patch.
+ * \param [in] patch The bilinear (bezier) patch to intersect with the ray.
+ * \param [in] ray The ray to intersect with the bilinear patch.
+ * \param [out] u The u parameter(s) of the intersection point.
+ * \param [out] v The v parameter(s) of the intersection point.
+ * \param [out] t The t parameter(s) of the intersection point.
+ * \param [in] EPS The tolerance for intersection.
+ *
+ * Implements GARP algorithm from Chapter 8 of Ray Tracing Gems (2019)
+ * 
+ * \note Assumes the patch is linear in either axis, but will work for any
+ *  order patch using its corners.
+ * 
+ * \return true iff the ray intersects the bilinear patch, otherwise false.
+ */
+template <typename T>
+AXOM_HOST_DEVICE bool intersect(const BezierPatch<T, 3>& patch,
+                                const Ray<T, 3>& ray,
+                                std::vector<T>& u,
+                                std::vector<T>& v,
+                                std::vector<T>& t)
+{
+  const int order_u = patch.getOrder_u();
+  const int order_v = patch.getOrder_v();
+  return detail::intersect_bilinear_patch_ray(patch(0, 0), patch(order_u, 0),
+                                              patch(order_u, order_v), patch(0, order_v),
+                                              ray, u, v, t);
+}
+
 /// @}
 
 /*! \brief Determines if a ray intersects a Bezier patch.
