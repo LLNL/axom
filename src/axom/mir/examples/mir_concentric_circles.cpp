@@ -3,6 +3,7 @@
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
+#include "axom/config.hpp"
 #include "axom/core.hpp"  // for axom macros
 #include "axom/slic.hpp"
 #include "axom/mir.hpp"  // for Mir classes & functions

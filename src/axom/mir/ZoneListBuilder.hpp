@@ -68,6 +68,7 @@ public:
     AXOM_ANNOTATE_SCOPE("ZoneListBuilder");
     const int allocatorID = axom::execution_space<ExecSpace>::allocatorID();
 
+    AXOM_ANNOTATE_BEGIN("nMatsPerNode");
     axom::Array<int> nMatsPerNode(nnodes, nnodes, allocatorID);
     nMatsPerNode.fill(0);
     auto nMatsPerNodeView = nMatsPerNode.view();
@@ -86,8 +87,10 @@ public:
           RAJA::atomicMax<atomic_policy>(nodePtr, nmats);
         }
       });
+    AXOM_ANNOTATE_END("nMatsPerNode");
 
     // Now, mark all zones that have 1 mat per node as clean.
+    AXOM_ANNOTATE_BEGIN("mask");
     const auto nzones = m_topologyView.numberOfZones();
     axom::Array<int> mask(nzones, nzones, allocatorID);
     auto maskView = mask.view();
@@ -106,15 +109,19 @@ public:
         maskView[zoneIndex] = ival;
         mask_reduce += ival;
       });
+    AXOM_ANNOTATE_END("mask");
 
     const int nClean = mask_reduce.get();
     if(nClean > 0)
     {
+      AXOM_ANNOTATE_BEGIN("offsets");
       axom::Array<int> maskOffsets(nzones, nzones, allocatorID);
       auto maskOffsetsView = maskOffsets.view();
       axom::exclusive_scan<ExecSpace>(maskView, maskOffsetsView);
+      AXOM_ANNOTATE_END("offsets");
 
       // Make the output cleanIndices array.
+      AXOM_ANNOTATE_BEGIN("cleanIndices");
       cleanIndices = axom::Array<axom::IndexType>(nClean, nClean, allocatorID);
       auto cleanIndicesView = cleanIndices.view();
       axom::for_all<ExecSpace>(
@@ -125,8 +132,10 @@ public:
             cleanIndicesView[maskOffsetsView[index]] = index;
           }
         });
+      AXOM_ANNOTATE_END("cleanIndices");
 
       // Make the mixedIndices array.
+      AXOM_ANNOTATE_BEGIN("mixedIndices");
       axom::for_all<ExecSpace>(
         nzones,
         AXOM_LAMBDA(auto index) {
@@ -144,9 +153,11 @@ public:
             mixedIndicesView[maskOffsetsView[index]] = index;
           }
         });
+      AXOM_ANNOTATE_END("mixedIndices");
     }
     else
     {
+      AXOM_ANNOTATE_SCOPE("mixedIndices");
       cleanIndices = axom::Array<axom::IndexType>();
 
       // There were no clean, so it must all be mixed.
@@ -187,6 +198,7 @@ public:
 
     const int allocatorID = axom::execution_space<ExecSpace>::allocatorID();
 
+    AXOM_ANNOTATE_BEGIN("nMatsPerNode");
     axom::Array<int> nMatsPerNode(nnodes, nnodes, allocatorID);
     nMatsPerNode.fill(0);
     auto nMatsPerNodeView = nMatsPerNode.view();
@@ -206,8 +218,10 @@ public:
           RAJA::atomicMax<atomic_policy>(nodePtr, nmats);
         }
       });
+    AXOM_ANNOTATE_END("nMatsPerNode");
 
     // Now, mark all selected zones that have 1 mat per node as clean.
+    AXOM_ANNOTATE_BEGIN("mask");
     const auto nzones = selectedZonesView.size();
     axom::Array<int> mask(nzones, nzones, allocatorID);
     auto maskView = mask.view();
@@ -227,15 +241,19 @@ public:
         maskView[szIndex] = ival;
         mask_reduce += ival;
       });
+    AXOM_ANNOTATE_END("mask");
 
     const int nClean = mask_reduce.get();
     if(nClean > 0)
     {
+      AXOM_ANNOTATE_BEGIN("offsets");
       axom::Array<int> maskOffsets(nzones, nzones, allocatorID);
       auto maskOffsetsView = maskOffsets.view();
       axom::exclusive_scan<ExecSpace>(maskView, maskOffsetsView);
+      AXOM_ANNOTATE_END("offsets");
 
       // Make the output cleanIndices array.
+      AXOM_ANNOTATE_BEGIN("cleanIndices");
       cleanIndices = axom::Array<axom::IndexType>(nClean, nClean, allocatorID);
       auto cleanIndicesView = cleanIndices.view();
       axom::for_all<ExecSpace>(
@@ -246,8 +264,10 @@ public:
             cleanIndicesView[maskOffsetsView[index]] = selectedZonesView[index];
           }
         });
+      AXOM_ANNOTATE_END("cleanIndices");
 
       // Make the mixedIndices array.
+      AXOM_ANNOTATE_BEGIN("mixedIndices");
       axom::for_all<ExecSpace>(
         nzones,
         AXOM_LAMBDA(auto index) {
@@ -265,9 +285,11 @@ public:
             mixedIndicesView[maskOffsetsView[index]] = selectedZonesView[index];
           }
         });
+      AXOM_ANNOTATE_END("mixedIndices");
     }
     else
     {
+      AXOM_ANNOTATE_SCOPE("mixedIndices");
       cleanIndices = axom::Array<axom::IndexType>();
 
       // There were no clean, so it must all be mixed.

@@ -37,6 +37,7 @@ public:
                        domains that contain a topology and matset to be used for MIR.
     \param[in] n_options A node that contains options that help govern MIR execution.
 
+\code{.yaml}
 options:
   topology: main
   matset: matset
@@ -46,9 +47,9 @@ options:
   fields:
     - temperature
     - pressure
-  zones: [0,1,6,9]
+  selectedZones: [0,1,6,9]
   mapping: 0
-
+\endcode
     The "topology" option specifies which topology we'll reconstruct. It must have an associated matset.
     "new_topology" is the name of the topology that will be created in the output node.
     "new_coordset" is the name of the new coordset that will be created in the output node. If it is not provided then the name of the topology's coordset will be used.  
