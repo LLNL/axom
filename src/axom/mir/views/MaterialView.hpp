@@ -101,14 +101,14 @@ public:
   AXOM_HOST_DEVICE
   inline axom::IndexType numberOfMaterials(ZoneIndex zi) const
   {
-    assert(zi < numberOfZones());
+    assert(zi < static_cast<ZoneIndex>(numberOfZones()));
     return m_sizes[zi];
   }
 
   AXOM_HOST_DEVICE
   void zoneMaterials(ZoneIndex zi, IDList &ids, VFList &vfs) const
   {
-    assert(zi < numberOfZones());
+    assert(zi < static_cast<ZoneIndex>(numberOfZones()));
 
     ids.clear();
     vfs.clear();
@@ -127,7 +127,7 @@ public:
   AXOM_HOST_DEVICE
   bool zoneContainsMaterial(ZoneIndex zi, MaterialIndex mat) const
   {
-    assert(zi < numberOfZones());
+    assert(zi < static_cast<ZoneIndex>(numberOfZones()));
     const auto sz = numberOfMaterials(zi);
     const auto offset = m_offsets[zi];
     for(axom::IndexType i = 0; i < sz; i++)
@@ -142,7 +142,7 @@ public:
   AXOM_HOST_DEVICE
   bool zoneContainsMaterial(ZoneIndex zi, MaterialIndex mat, FloatType &vf) const
   {
-    assert(zi < numberOfZones());
+    assert(zi < static_cast<ZoneIndex>(numberOfZones()));
     const auto sz = numberOfMaterials(zi);
     const auto offset = m_offsets[zi];
     for(axom::IndexType i = 0; i < sz; i++)
@@ -183,9 +183,6 @@ matsets:
       a: 0
       b: 1
  */
-
-// NOTE: I'm not sure I 100% get this one.
-
 template <typename IndexT, typename FloatT, axom::IndexType MAXMATERIALS>
 class MultiBufferMaterialView
 {
@@ -433,16 +430,6 @@ public:
         const auto sz = m_element_ids[mi].size();
         for(axom::IndexType i = 0; i < sz; i++)
           m_nzones = axom::utilities::max(m_nzones, m_element_ids[mi][i]);
-#if 0
-        // host-only
-        // Eh, do this.
-        RAJA::ReduceMax rm(0);
-        axom::forall<ExecSpace>(0, sz, AXOM_LAMBDA(int i)
-        {
-          rm.max(m_element_ids[mi][i]);
-        }
-        m_nzones = axom::utilties::max(m_nzones, rm.get());
-#endif
       }
     }
     return m_nzones;
@@ -455,7 +442,6 @@ public:
     for(axom::IndexType mi = 0; mi < m_size; mi++)
     {
       const auto sz = m_element_ids[mi].size();
-#if 1
       for(axom::IndexType i = 0; i < sz; i++)
       {
         if(m_element_ids[mi][i] == zi)
@@ -464,15 +450,6 @@ public:
           break;
         }
       }
-#else
-      // host-only
-      RAJA::ReduceMax rm(0);
-      axom::forall<ExecSpace>(0, sz, AXOM_LAMBDA(int i)
-      {
-        rm.max((m_element_ids[mi][i] == zi) ? 1 : 0);
-      }
-      m_nzones += rm.get();
-#endif
     }
     return nmats;
   }
@@ -486,7 +463,6 @@ public:
     for(axom::IndexType mi = 0; mi < m_size; mi++)
     {
       const auto sz = m_element_ids[mi].size();
-#if 1
       for(axom::IndexType i = 0; i < sz; i++)
       {
         if(m_element_ids[mi][i] == zi)
@@ -496,19 +472,6 @@ public:
           break;
         }
       }
-#else
-      RAJA::ReduceMax rm(-1);
-      axom::forall<ExecSpace>(0, sz, AXOM_LAMBDA(int i)
-      {
-        rm.max((m_element_ids[mi][i] == zi) ? i : -1);
-      }
-      const auto index = rm.get();
-      if(index != -1)
-      {
-        ids.push_back(mi);
-        vfs.push_back(m_volume_fractions[mi][index]);
-      }
-#endif
     }
   }
 
@@ -518,7 +481,6 @@ public:
     assert(mat < m_element_ids.size());
 
     bool found = false;
-#if 1
     const auto element_ids = m_element_ids[mat];
     for(axom::IndexType i = 0; i < element_ids.size(); i++)
     {
@@ -528,7 +490,6 @@ public:
         break;
       }
     }
-#endif
     return found;
   }
 
@@ -538,7 +499,6 @@ public:
     assert(mat < m_element_ids.size());
 
     bool found = false;
-#if 1
     const auto element_ids = m_element_ids[mat];
     for(axom::IndexType i = 0; i < element_ids.size(); i++)
     {
@@ -549,7 +509,6 @@ public:
         break;
       }
     }
-#endif
     return found;
   }
 

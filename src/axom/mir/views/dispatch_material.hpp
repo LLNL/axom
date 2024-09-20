@@ -25,11 +25,9 @@ namespace views
  * \param matset The node that contains the matset.
  * \param func   The function/lambda that will operate on the matset view.
  */
-template <typename FuncType>
+template <typename FuncType, size_t MAXMATERIALS = 20>
 void dispatch_material(const conduit::Node &matset, FuncType &&func)
 {
-  constexpr static size_t MaxMaterials = 20;
-
   if(conduit::blueprint::mesh::matset::is_uni_buffer(matset))
   {
     IndexNode_to_ArrayView_same(
@@ -42,7 +40,7 @@ void dispatch_material(const conduit::Node &matset, FuncType &&func)
           using IndexType = typename decltype(material_ids)::value_type;
           using FloatType = typename decltype(volume_fractions)::value_type;
 
-          UnibufferMaterialView<IndexType, FloatType, MaxMaterials> matsetView;
+          UnibufferMaterialView<IndexType, FloatType, MAXMATERIALS> matsetView;
           matsetView.set(material_ids, volume_fractions, sizes, offsets, indices);
           func(matsetView);
         });
@@ -63,7 +61,7 @@ void dispatch_material(const conduit::Node &matset, FuncType &&func)
         using FloatView = decltype(firstValues);
         using FloatElement = typename FloatView::value_type;
 
-        MultiBufferMaterialView<IntElement, FloatElement, MaxMaterials> matsetView;
+        MultiBufferMaterialView<IntElement, FloatElement, MAXMATERIALS> matsetView;
 
         for(conduit::index_t i = 0; i < volume_fractions.number_of_children(); i++)
         {
@@ -91,7 +89,7 @@ void dispatch_material(const conduit::Node &matset, FuncType &&func)
       using FloatView = decltype(firstValues);
       using FloatElement = typename FloatView::value_type;
 
-      ElementDominantMaterialView<axom::IndexType, FloatElement, MaxMaterials> matsetView;
+      ElementDominantMaterialView<axom::IndexType, FloatElement, MAXMATERIALS> matsetView;
 
       for(conduit::index_t i = 0; i < volume_fractions.number_of_children(); i++)
       {
@@ -120,7 +118,7 @@ void dispatch_material(const conduit::Node &matset, FuncType &&func)
         using FloatView = decltype(firstValues);
         using FloatElement = typename FloatView::value_type;
 
-        MaterialDominantMaterialView<IntElement, FloatElement, MaxMaterials> matsetView;
+        MaterialDominantMaterialView<IntElement, FloatElement, MAXMATERIALS> matsetView;
 
         for(conduit::index_t i = 0; i < volume_fractions.number_of_children(); i++)
         {

@@ -32,7 +32,7 @@
 #define AXOM_EQUIZ_SPLIT_PROCESSING
 
 // Uncomment to save inputs and outputs.
-#define AXOM_EQUIZ_DEBUG
+// #define AXOM_EQUIZ_DEBUG
 
 // This enables a tweak to the algorithm that tries to skip the first iteration
 // by incorporating the first material's ids into the zonalMaterialID field. It
