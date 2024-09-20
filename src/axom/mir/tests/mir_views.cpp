@@ -59,25 +59,25 @@ struct test_node_to_arrayview
   static int constexpr sum(int n)
   {
     int s = 0;
-    for(int i = 0; i < n; i++)
-      s += i;
+    for(int i = 0; i < n; i++) s += i;
     return s;
   }
 
   static void test()
   {
-    using reduce_policy = typename axom::execution_space<ExecSpace>::reduce_policy;
+    using reduce_policy =
+      typename axom::execution_space<ExecSpace>::reduce_policy;
 
-    std::vector<int> dtypes{conduit::DataType::INT8_ID,
-                            conduit::DataType::INT16_ID,
-                            conduit::DataType::INT32_ID,
-                            conduit::DataType::INT64_ID,
-                            conduit::DataType::UINT8_ID,
-                            conduit::DataType::UINT16_ID,
-                            conduit::DataType::UINT32_ID,
-                            conduit::DataType::UINT64_ID,
-                            conduit::DataType::FLOAT32_ID,
-                            conduit::DataType::FLOAT64_ID};
+    std::vector<int> dtypes {conduit::DataType::INT8_ID,
+                             conduit::DataType::INT16_ID,
+                             conduit::DataType::INT32_ID,
+                             conduit::DataType::INT64_ID,
+                             conduit::DataType::UINT8_ID,
+                             conduit::DataType::UINT16_ID,
+                             conduit::DataType::UINT32_ID,
+                             conduit::DataType::UINT64_ID,
+                             conduit::DataType::FLOAT32_ID,
+                             conduit::DataType::FLOAT64_ID};
     constexpr int n = 16;
     axom::mir::utilities::blueprint::ConduitAllocateThroughAxom<ExecSpace> c2a;
     for(int dtype : dtypes)
@@ -88,23 +88,23 @@ struct test_node_to_arrayview
       n_data.set(conduit::DataType(dtype, n));
 
       int sumValues = 0;
-      axom::mir::views::Node_to_ArrayView(n_data, [&](auto dataView)
-      {
-        std::cout << axom::mir::views::array_view_traits<decltype(dataView)>::name() << std::endl;
+      axom::mir::views::Node_to_ArrayView(n_data, [&](auto dataView) {
+        std::cout << axom::mir::views::array_view_traits<decltype(dataView)>::name()
+                  << std::endl;
         using value_type = typename decltype(dataView)::value_type;
 
         // Make sure we can store values in dataView
-        axom::for_all<ExecSpace>(n, AXOM_LAMBDA(auto index)
-        {
-          dataView[index] = static_cast<value_type>(index);
-        });
+        axom::for_all<ExecSpace>(
+          n,
+          AXOM_LAMBDA(auto index) {
+            dataView[index] = static_cast<value_type>(index);
+          });
 
         // Read the values and sum them.
         RAJA::ReduceSum<reduce_policy, value_type> sumValues_reduce(0);
-        axom::for_all<ExecSpace>(n, AXOM_LAMBDA(auto index)
-        {
-          sumValues_reduce += dataView[index];
-        });
+        axom::for_all<ExecSpace>(
+          n,
+          AXOM_LAMBDA(auto index) { sumValues_reduce += dataView[index]; });
         sumValues = static_cast<int>(sumValues_reduce.get());
       });
 

@@ -36,8 +36,7 @@ public:
   /**
    * \brief Constructor.
    */
-  MatsetSlicer(const MatsetView &matsetView) : m_matsetView(matsetView)
-  { }
+  MatsetSlicer(const MatsetView &matsetView) : m_matsetView(matsetView) { }
 
   /**
    * \brief Slice the input matset and output a new matset.
@@ -54,7 +53,8 @@ public:
     using MatsetIndex = typename MatsetView::IndexType;
     using MatsetFloat = typename MatsetView::FloatType;
     namespace bputils = axom::mir::utilities::blueprint;
-    const axom::ArrayView<axom::IndexType> &selectedZonesView = slice.m_indicesView;
+    const axom::ArrayView<axom::IndexType> &selectedZonesView =
+      slice.m_indicesView;
     SLIC_ASSERT(selectedZonesView.size() > 0);
 
     // Copy the material_map if it exists.

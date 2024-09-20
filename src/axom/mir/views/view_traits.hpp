@@ -76,33 +76,32 @@ struct view_traits<StructuredTopologyView<StridedStructuredIndexing<IndexT, 1>>>
  */
 template <typename T>
 struct array_view_traits
-{
-};
+{ };
 
 /**
  * \brief This macro defines some template specializations that help us access
  *        ArrayView<> names. This can be helpful when the ArrayView comes into
  *        a lambda as an auto argument.
  */
-#define AXOM_MAKE_TRAIT(TYPE)\
-template <>\
-struct array_view_traits<axom::ArrayView<TYPE>>\
-{\
-   using value_type = TYPE;\
-   static constexpr const char * name()\
-   {\
-     return "axom::ArrayView<" #TYPE ">";\
-   }\
-};\
-template <>\
-struct array_view_traits<axom::ArrayView<const TYPE>>\
-{\
-   using value_type = const TYPE;\
-   static constexpr const char * name()\
-   {\
-     return "axom::ArrayView<const " #TYPE ">";\
-   }\
-};
+#define AXOM_MAKE_TRAIT(TYPE)                           \
+  template <>                                           \
+  struct array_view_traits<axom::ArrayView<TYPE>>       \
+  {                                                     \
+    using value_type = TYPE;                            \
+    static constexpr const char* name()                 \
+    {                                                   \
+      return "axom::ArrayView<" #TYPE ">";              \
+    }                                                   \
+  };                                                    \
+  template <>                                           \
+  struct array_view_traits<axom::ArrayView<const TYPE>> \
+  {                                                     \
+    using value_type = const TYPE;                      \
+    static constexpr const char* name()                 \
+    {                                                   \
+      return "axom::ArrayView<const " #TYPE ">";        \
+    }                                                   \
+  };
 
 AXOM_MAKE_TRAIT(signed char)
 AXOM_MAKE_TRAIT(char)

@@ -1235,7 +1235,7 @@ struct test_mergemeshes
 
     inputs[1].m_input = deviceMesh.fetch_ptr("domain0001");
     // The node names for input 1 in the final merged mesh.
-    const axom::IndexType nodeMap[] = {1,2,5,6,9,10,13,14,16,17};
+    const axom::IndexType nodeMap[] = {1, 2, 5, 6, 9, 10, 13, 14, 16, 17};
     // The 2 nodes in input 1 that do not appear in input 0
     const axom::IndexType nodeSlice[] = {8, 9};
     const int allocatorID = axom::execution_space<ExecSpace>::allocatorID();
@@ -1356,7 +1356,6 @@ topologies:
 )xx";
     mesh.parse(yaml);
   }
-
 };
 
 TEST(mir_blueprint_utilities, mergemeshes_seq)

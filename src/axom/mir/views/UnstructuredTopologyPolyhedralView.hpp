@@ -214,10 +214,7 @@ public:
    *
    * \return The size of the connectivity.
    */
-  IndexType connectivitySize() const
-  {
-    return m_data.element_conn.size();
-  }
+  IndexType connectivitySize() const { return m_data.element_conn.size(); }
 
   /**
    * \brief Return the dimension of the shape.

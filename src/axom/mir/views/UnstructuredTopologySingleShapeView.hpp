@@ -80,10 +80,7 @@ public:
    *
    * \return The size of the connectivity.
    */
-  IndexType connectivitySize() const
-  {
-    return m_connectivityView.size();
-  }
+  IndexType connectivitySize() const { return m_connectivityView.size(); }
 
   /**
    * \brief Execute a function for each zone in the mesh.

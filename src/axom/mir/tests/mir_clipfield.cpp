@@ -337,12 +337,16 @@ struct test_unique
 
     // Make unique ids.
     axom::Array<int> uIds, uIndices;
-    axom::mir::utilities::Unique<seq_exec, int>::execute(ids.view(), uIds, uIndices);
+    axom::mir::utilities::Unique<seq_exec, int>::execute(ids.view(),
+                                                         uIds,
+                                                         uIndices);
 
     // device->host
     axom::Array<int> hostuIds(uIds.size()), hostuIndices(uIndices.size());
     axom::copy(hostuIds.data(), uIds.data(), sizeof(int) * uIds.size());
-    axom::copy(hostuIndices.data(), uIndices.data(), sizeof(int) * uIndices.size());
+    axom::copy(hostuIndices.data(),
+               uIndices.data(),
+               sizeof(int) * uIndices.size());
 
     // compare results
     EXPECT_EQ(hostuIds.size(), 12);
@@ -355,27 +359,15 @@ struct test_unique
   }
 };
 
-TEST(mir_clipfield, unique_seq)
-{
-  test_unique<seq_exec>::test();
-}
+TEST(mir_clipfield, unique_seq) { test_unique<seq_exec>::test(); }
 #if defined(AXOM_USE_OPENMP)
-TEST(mir_clipfield, unique_omp)
-{
-  test_unique<omp_exec>::test();
-}
+TEST(mir_clipfield, unique_omp) { test_unique<omp_exec>::test(); }
 #endif
 #if defined(AXOM_USE_CUDA) && defined(__CUDACC__)
-TEST(mir_clipfield, unique_cuda)
-{
-  test_unique<cuda_exec>::test();
-}
+TEST(mir_clipfield, unique_cuda) { test_unique<cuda_exec>::test(); }
 #endif
 #if defined(AXOM_USE_HIP)
-TEST(mir_clipfield, unique_hip)
-{
-  test_unique<hip_exec>::test();
-}
+TEST(mir_clipfield, unique_hip) { test_unique<hip_exec>::test(); }
 #endif
 
 //------------------------------------------------------------------------------
@@ -638,8 +630,7 @@ void braid2d_clip_test(const std::string &type, const std::string &name)
 
   // Copy device->host
   conduit::Node hostClipMixedMesh;
-  bputils::copy<seq_exec>(hostClipMixedMesh,
-                                                  deviceClipMixedMesh);
+  bputils::copy<seq_exec>(hostClipMixedMesh, deviceClipMixedMesh);
 #if defined(DEBUGGING_TEST_CASES)
   std::cout << "---------------------------------- clipped mixed "
                "----------------------------------"
@@ -812,8 +803,7 @@ void strided_structured_clip_test(const std::string &name,
       clipper.execute(deviceMesh, deviceOptions, deviceClipMesh);
 
       // device->host
-      bputils::copy<seq_exec>(hostClipMesh,
-                                                      deviceClipMesh);
+      bputils::copy<seq_exec>(hostClipMesh, deviceClipMesh);
     });
 
   // Handle baseline comparison.
@@ -1036,27 +1026,15 @@ void braid3d_mixed_clip_test(const std::string &name)
 #endif
 }
 
-TEST(mir_clipfield, mixed_seq)
-{
-  braid3d_mixed_clip_test<seq_exec>("mixed");
-}
+TEST(mir_clipfield, mixed_seq) { braid3d_mixed_clip_test<seq_exec>("mixed"); }
 #if defined(AXOM_USE_OPENMP)
-TEST(mir_clipfield, mixed_omp)
-{
-  braid3d_mixed_clip_test<omp_exec>("mixed");
-}
+TEST(mir_clipfield, mixed_omp) { braid3d_mixed_clip_test<omp_exec>("mixed"); }
 #endif
 #if defined(AXOM_USE_CUDA) && defined(__CUDACC__)
-TEST(mir_clipfield, mixed_cuda)
-{
-  braid3d_mixed_clip_test<cuda_exec>("mixed");
-}
+TEST(mir_clipfield, mixed_cuda) { braid3d_mixed_clip_test<cuda_exec>("mixed"); }
 #endif
 #if defined(AXOM_USE_HIP)
-TEST(mir_clipfield, mixed_hip)
-{
-  braid3d_mixed_clip_test<hip_exec>("mixed");
-}
+TEST(mir_clipfield, mixed_hip) { braid3d_mixed_clip_test<hip_exec>("mixed"); }
 #endif
 
 //------------------------------------------------------------------------------
@@ -1085,7 +1063,8 @@ struct point_merge_test
     hostMesh["topologies/mesh/elements/shape"] = "quad";
     hostMesh["topologies/mesh/elements/connectivity"].set(
       std::vector<int> {{0, 1, 4, 3, 1, 2, 5, 4, 3, 4, 7, 6, 4, 5, 8, 7}});
-    hostMesh["topologies/mesh/elements/sizes"].set(std::vector<int> {{4, 4, 4, 4}});
+    hostMesh["topologies/mesh/elements/sizes"].set(
+      std::vector<int> {{4, 4, 4, 4}});
     hostMesh["topologies/mesh/elements/offsets"].set(
       std::vector<int> {{0, 4, 8, 12}});
     hostMesh["fields/clip/topology"] = "mesh";
@@ -1125,8 +1104,7 @@ struct point_merge_test
     clip.execute(deviceMesh, options, deviceClipMesh);
 
     conduit::Node hostClipMesh;
-    bputils::copy<axom::SEQ_EXEC>(hostClipMesh,
-                                                          deviceClipMesh);
+    bputils::copy<axom::SEQ_EXEC>(hostClipMesh, deviceClipMesh);
     //printNode(hostClipMesh);
 
     // Check that the points were merged when making the new mesh.
@@ -1160,27 +1138,15 @@ struct point_merge_test
   }
 };
 
-TEST(mir_clipfield, pointmerging_seq)
-{
-  point_merge_test<seq_exec>::test();
-}
+TEST(mir_clipfield, pointmerging_seq) { point_merge_test<seq_exec>::test(); }
 #if defined(AXOM_USE_OPENMP)
-TEST(mir_clipfield, pointmerging_omp)
-{
-  point_merge_test<omp_exec>::test();
-}
+TEST(mir_clipfield, pointmerging_omp) { point_merge_test<omp_exec>::test(); }
 #endif
 #if defined(AXOM_USE_CUDA) && defined(__CUDACC__)
-TEST(mir_clipfield, pointmerging_cuda)
-{
-  point_merge_test<cuda_exec>::test();
-}
+TEST(mir_clipfield, pointmerging_cuda) { point_merge_test<cuda_exec>::test(); }
 #endif
 #if defined(AXOM_USE_HIP)
-TEST(mir_clipfield, pointmerging_hip)
-{
-  point_merge_test<hip_exec>::test();
-}
+TEST(mir_clipfield, pointmerging_hip) { point_merge_test<hip_exec>::test(); }
 #endif
 
 //------------------------------------------------------------------------------
@@ -1208,7 +1174,8 @@ struct test_selectedzones
     using TopologyView = decltype(topologyView);
 
     conduit::Node hostOptions;
-    hostOptions["selectedZones"].set(std::vector<axom::IndexType>{{1,3,4,5,7}});
+    hostOptions["selectedZones"].set(
+      std::vector<axom::IndexType> {{1, 3, 4, 5, 7}});
     hostOptions["inside"] = 1;
     hostOptions["outside"] = 1;
     hostOptions["clipField"] = "zero";
@@ -1216,7 +1183,9 @@ struct test_selectedzones
     conduit::Node deviceOptions, deviceResult;
     bputils::copy<ExecSpace>(deviceOptions, hostOptions);
 
-    axom::mir::clipping::ClipField<ExecSpace, TopologyView, CoordsetView> clip(topologyView, coordsetView);
+    axom::mir::clipping::ClipField<ExecSpace, TopologyView, CoordsetView> clip(
+      topologyView,
+      coordsetView);
     clip.execute(deviceMesh, deviceOptions, deviceResult);
 
     // device->host
@@ -1252,7 +1221,6 @@ struct test_selectedzones
 #else
     EXPECT_TRUE(compareBaseline(paths, baselineName, hostResult));
 #endif
-
   }
 
   static void create(conduit::Node &mesh)
@@ -1292,15 +1260,9 @@ fields:
   }
 };
 
-TEST(mir_clipfield, selectedzones_seq)
-{
-  test_selectedzones<seq_exec>::test();
-}
+TEST(mir_clipfield, selectedzones_seq) { test_selectedzones<seq_exec>::test(); }
 #if defined(AXOM_USE_OPENMP)
-TEST(mir_clipfield, selectedzones_omp)
-{
-  test_selectedzones<omp_exec>::test();
-}
+TEST(mir_clipfield, selectedzones_omp) { test_selectedzones<omp_exec>::test(); }
 #endif
 #if defined(AXOM_USE_CUDA) && defined(__CUDACC__)
 TEST(mir_clipfield, selectedzones_cuda)
@@ -1309,10 +1271,7 @@ TEST(mir_clipfield, selectedzones_cuda)
 }
 #endif
 #if defined(AXOM_USE_HIP)
-TEST(mir_clipfield, selectedzones_hip)
-{
-  test_selectedzones<hip_exec>::test();
-}
+TEST(mir_clipfield, selectedzones_hip) { test_selectedzones<hip_exec>::test(); }
 #endif
 
 //------------------------------------------------------------------------------

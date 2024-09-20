@@ -70,8 +70,7 @@ public:
   IndexType connectivitySize() const
   {
     IndexType nodesPerElem = 1;
-    for(int d = 0; d < dimension(); d++)
-      nodesPerElem *= 2;
+    for(int d = 0; d < dimension(); d++) nodesPerElem *= 2;
     return numberOfZones() * nodesPerElem;
   }
 

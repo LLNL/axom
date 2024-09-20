@@ -100,7 +100,13 @@ public:
     const std::string topoName = topologyName(n_input, n_options);
     const conduit::Node &n_topo = n_topologies.fetch_existing(topoName);
     conduit::Node &n_newTopo = n_output["topologies/" + topoName];
-    makeTopology(selectedZonesView, dataSizes, extra, old2new.view(), n_topo, n_options, n_newTopo);
+    makeTopology(selectedZonesView,
+                 dataSizes,
+                 extra,
+                 old2new.view(),
+                 n_topo,
+                 n_options,
+                 n_newTopo);
 
     // Make a new coordset.
     SliceData nSlice;
@@ -133,8 +139,11 @@ public:
       n_origZones["topology"] = topoName;
       n_origZones["association"] = "element";
       n_origZones["values"].set_allocator(c2a.getConduitAllocatorID());
-      n_origZones["values"].set(conduit::DataType(cpp2conduit<axom::IndexType>::id, selectedZonesView.size()));
-      axom::copy(n_origZones["values"].data_ptr(), selectedZonesView.data(), sizeof(axom::IndexType) * selectedZonesView.size());
+      n_origZones["values"].set(conduit::DataType(cpp2conduit<axom::IndexType>::id,
+                                                  selectedZonesView.size()));
+      axom::copy(n_origZones["values"].data_ptr(),
+                 selectedZonesView.data(),
+                 sizeof(axom::IndexType) * selectedZonesView.size());
     }
   }
 
@@ -144,9 +153,9 @@ protected:
    */
   struct Sizes
   {
-    axom::IndexType nodes{0};
-    axom::IndexType zones{0};
-    axom::IndexType connectivity{0};
+    axom::IndexType nodes {0};
+    axom::IndexType zones {0};
+    axom::IndexType connectivity {0};
   };
 
   /**
@@ -156,8 +165,10 @@ protected:
    * \param extra A Sizes object containing any extra size that needs to be allocated.
    *
    * \return An array view containing the zone slice.
-   */  
-  axom::ArrayView<axom::IndexType> zoneSliceView(const SelectedZonesView &selectedZonesView, const Sizes &extra)
+   */
+  axom::ArrayView<axom::IndexType> zoneSliceView(
+    const SelectedZonesView &selectedZonesView,
+    const Sizes &extra)
   {
     axom::ArrayView<axom::IndexType> view;
     if(extra.zones > 0)
@@ -169,13 +180,13 @@ protected:
         const auto n = selectedZonesView.size() + extra.zones;
         m_zoneSlice = axom::Array<axom::IndexType>(n, n, allocatorID);
         view = m_zoneSlice.view();
-        axom::copy(view.data(), selectedZonesView.data(), sizeof(axom::IndexType) * selectedZonesView.size());
-        axom::for_all<ExecSpace>(selectedZonesView.size(),
-                                 n,
-                                 AXOM_LAMBDA(auto index)
-                                 {
-                                   view[index] = 0;
-                                 });
+        axom::copy(view.data(),
+                   selectedZonesView.data(),
+                   sizeof(axom::IndexType) * selectedZonesView.size());
+        axom::for_all<ExecSpace>(
+          selectedZonesView.size(),
+          n,
+          AXOM_LAMBDA(auto index) { view[index] = 0; });
       }
       view = m_zoneSlice.view();
     }
@@ -242,9 +253,7 @@ protected:
       selectedZonesView,
       AXOM_LAMBDA(auto AXOM_UNUSED_PARAM(szIndex),
                   auto AXOM_UNUSED_PARAM(zoneIndex),
-                  const auto &zone) {
-        connsize_reduce += zone.numberOfNodes();
-      });
+                  const auto &zone) { connsize_reduce += zone.numberOfNodes(); });
     const auto newConnSize = connsize_reduce.get();
 
     Sizes sizes {};
@@ -252,13 +261,15 @@ protected:
     sizes.zones = selectedZonesView.size();
     sizes.connectivity = newConnSize;
 
-    nodeSlice = axom::Array<axom::IndexType>(sizes.nodes + extra.nodes, sizes.nodes + extra.nodes, allocatorID);
+    nodeSlice = axom::Array<axom::IndexType>(sizes.nodes + extra.nodes,
+                                             sizes.nodes + extra.nodes,
+                                             allocatorID);
     auto nodeSliceView = nodeSlice.view();
     axom::for_all<ExecSpace>(
       sizes.nodes + extra.nodes,
-        AXOM_LAMBDA(auto index) {
-          nodeSliceView[index] = (index < sizes.nodes) ? index : 0;
-        });
+      AXOM_LAMBDA(auto index) {
+        nodeSliceView[index] = (index < sizes.nodes) ? index : 0;
+      });
 
     return sizes;
   }
@@ -321,7 +332,9 @@ protected:
 
     // Make an array of original node ids that we can use to "slice" the nodal data.
     old2new = axom::Array<ConnectivityType>(nnodes, nnodes, allocatorID);
-    nodeSlice = axom::Array<axom::IndexType>(newNumNodes + extra.nodes, newNumNodes + extra.nodes, allocatorID);
+    nodeSlice = axom::Array<axom::IndexType>(newNumNodes + extra.nodes,
+                                             newNumNodes + extra.nodes,
+                                             allocatorID);
     auto old2newView = old2new.view();
     auto nodeSliceView = nodeSlice.view();
     axom::for_all<ExecSpace>(
@@ -338,9 +351,7 @@ protected:
       axom::for_all<ExecSpace>(
         nnodes,
         nnodes + extra.nodes,
-        AXOM_LAMBDA(auto index) {
-          nodeSliceView[index] = 0;
-        });
+        AXOM_LAMBDA(auto index) { nodeSliceView[index] = 0; });
     }
 
     Sizes sizes {};
@@ -363,7 +374,7 @@ protected:
    */
   void makeTopology(const SelectedZonesView &selectedZonesView,
                     const Sizes &dataSizes,
-                    const Sizes &extra,                    
+                    const Sizes &extra,
                     const axom::ArrayView<ConnectivityType> &old2newView,
                     const conduit::Node &n_topo,
                     const conduit::Node &n_options,
@@ -389,8 +400,8 @@ protected:
 
       conduit::Node &n_conn = n_newTopo["elements/connectivity"];
       n_conn.set_allocator(c2a.getConduitAllocatorID());
-      n_conn.set(
-        conduit::DataType(cpp2conduit<ConnectivityType>::id, dataSizes.connectivity + extra.connectivity));
+      n_conn.set(conduit::DataType(cpp2conduit<ConnectivityType>::id,
+                                   dataSizes.connectivity + extra.connectivity));
       auto connView = bputils::make_array_view<ConnectivityType>(n_conn);
 
       conduit::Node &n_sizes = n_newTopo["elements/sizes"];
@@ -415,10 +426,10 @@ protected:
         });
       if(extra.zones > 0)
       {
-        axom::for_all<ExecSpace>(dataSizes.zones, dataSizes.zones + extra.zones, AXOM_LAMBDA(auto index)
-        {
-          sizesView[index] = 0;
-        });
+        axom::for_all<ExecSpace>(
+          dataSizes.zones,
+          dataSizes.zones + extra.zones,
+          AXOM_LAMBDA(auto index) { sizesView[index] = 0; });
       }
       axom::exclusive_scan<ExecSpace>(sizesView, offsetsView);
 
@@ -459,10 +470,10 @@ protected:
       }
       if(extra.connectivity > 0)
       {
-        axom::for_all<ExecSpace>(dataSizes.connectivity, dataSizes.connectivity + extra.connectivity, AXOM_LAMBDA(auto index)
-        {
-          connView[index] = 0;
-        });
+        axom::for_all<ExecSpace>(
+          dataSizes.connectivity,
+          dataSizes.connectivity + extra.connectivity,
+          AXOM_LAMBDA(auto index) { connView[index] = 0; });
       }
 
       // Handle shapes, if present.
@@ -487,10 +498,10 @@ protected:
           });
         if(extra.zones > 0)
         {
-          axom::for_all<ExecSpace>(dataSizes.zones, dataSizes.zones + extra.zones, AXOM_LAMBDA(auto index)
-          {
-            newShapesView[index] = 0;
-          });
+          axom::for_all<ExecSpace>(
+            dataSizes.zones,
+            dataSizes.zones + extra.zones,
+            AXOM_LAMBDA(auto index) { newShapesView[index] = 0; });
         }
       }
     }

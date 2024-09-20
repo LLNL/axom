@@ -296,6 +296,7 @@ template <typename ExecSpace, typename TopologyView, typename CoordsetView, type
 class EquiZAlgorithm : public axom::mir::MIRAlgorithm
 {
   using reduce_policy = typename axom::execution_space<ExecSpace>::reduce_policy;
+
 public:
   using ConnectivityType = typename TopologyView::ConnectivityType;
 
@@ -377,18 +378,27 @@ protected:
 #if defined(AXOM_EQUIZ_SPLIT_PROCESSING)
     // Come up with lists of clean/mixed zones.
     axom::Array<axom::IndexType> cleanZones, mixedZones;
-    bputils::ZoneListBuilder<ExecSpace, TopologyView, MatsetView> zlb(m_topologyView, m_matsetView);
+    bputils::ZoneListBuilder<ExecSpace, TopologyView, MatsetView> zlb(
+      m_topologyView,
+      m_matsetView);
     if(n_options.has_child("selectedZones"))
     {
-      auto selectedZonesView = bputils::make_array_view<axom::IndexType>(n_options.fetch_existing("selectedZones"));
-      zlb.execute(m_coordsetView.numberOfNodes(), selectedZonesView, cleanZones, mixedZones);
+      auto selectedZonesView = bputils::make_array_view<axom::IndexType>(
+        n_options.fetch_existing("selectedZones"));
+      zlb.execute(m_coordsetView.numberOfNodes(),
+                  selectedZonesView,
+                  cleanZones,
+                  mixedZones);
     }
     else
     {
       zlb.execute(m_coordsetView.numberOfNodes(), cleanZones, mixedZones);
     }
-    SLIC_ASSERT((cleanZones.size() + mixedZones.size()) == m_topologyView.numberOfZones());
-    SLIC_INFO(axom::fmt::format("cleanZones: {}, mixedZones: {}", cleanZones.size(), mixedZones.size()));
+    SLIC_ASSERT((cleanZones.size() + mixedZones.size()) ==
+                m_topologyView.numberOfZones());
+    SLIC_INFO(axom::fmt::format("cleanZones: {}, mixedZones: {}",
+                                cleanZones.size(),
+                                mixedZones.size()));
 
     if(cleanZones.size() > 0 && mixedZones.size() > 0)
     {
@@ -412,17 +422,28 @@ protected:
       makeCleanOutput(n_root, n_topo.name(), cleanZones.view(), n_cleanOutput);
 
       // Add a original nodes field.
-      addOriginal(n_root_fields[originalNodesFieldName()], n_topo.name(), "vertex", m_coordsetView.numberOfNodes());
+      addOriginal(n_root_fields[originalNodesFieldName()],
+                  n_topo.name(),
+                  "vertex",
+                  m_coordsetView.numberOfNodes());
       // If there are fields in the options, make sure the new field is handled too.
       if(n_options_copy.has_child("fields"))
-        n_options_copy["fields/" + originalNodesFieldName()] = originalNodesFieldName();
+        n_options_copy["fields/" + originalNodesFieldName()] =
+          originalNodesFieldName();
 
       // Process the mixed part of the mesh. We select just the mixed zones.
-      n_options_copy["selectedZones"].set_external(mixedZones.data(), mixedZones.size());
+      n_options_copy["selectedZones"].set_external(mixedZones.data(),
+                                                   mixedZones.size());
       n_options_copy["newNodesField"] = newNodesFieldName();
-      processMixedZones(n_root_topo, n_root_coordset, n_root_fields, n_root_matset,
+      processMixedZones(n_root_topo,
+                        n_root_coordset,
+                        n_root_fields,
+                        n_root_matset,
                         n_options_copy,
-                        n_newTopo, n_newCoordset, n_newFields, n_newMatset);
+                        n_newTopo,
+                        n_newCoordset,
+                        n_newFields,
+                        n_newMatset);
 
       // Make node map and slice info for merging.
       axom::Array<axom::IndexType> nodeMap, nodeSlice;
@@ -434,12 +455,12 @@ protected:
       n_mirOutput[n_coordset.path()].set_external(n_newCoordset);
       n_mirOutput[n_fields.path()].set_external(n_newFields);
       n_mirOutput[n_matset.path()].set_external(n_newMatset);
-#if defined(AXOM_EQUIZ_DEBUG)
+  #if defined(AXOM_EQUIZ_DEBUG)
       printNode(n_mirOutput);
       conduit::relay::io::blueprint::save_mesh(n_mirOutput,
                                                "debug_equiz_mir",
                                                "hdf5");
-#endif
+  #endif
 
       // Merge clean and MIR output.
       std::vector<bputils::MeshInput> inputs(2);
@@ -454,7 +475,7 @@ protected:
       bputils::MergeMeshes<ExecSpace> mm;
       mm.execute(inputs, mmOpts, n_merged);
 
-#if defined(AXOM_EQUIZ_DEBUG)
+  #if defined(AXOM_EQUIZ_DEBUG)
       std::cout << "--- clean ---\n";
       printNode(n_cleanOutput);
       std::cout << "--- MIR ---\n";
@@ -465,8 +486,8 @@ protected:
       printNode(n_merged);
       conduit::relay::io::blueprint::save_mesh(n_merged,
                                                "debug_equiz_merged",
-                                               "hdf5");   
-#endif
+                                               "hdf5");
+  #endif
 
       // Move the merged output into the output variables.
       n_newCoordset.move(n_merged[n_coordset.path()]);
@@ -477,9 +498,15 @@ protected:
     else if(cleanZones.size() == 0 && mixedZones.size() > 0)
     {
       // Only mixed zones.
-      processMixedZones(n_topo, n_coordset, n_fields, n_matset,
+      processMixedZones(n_topo,
+                        n_coordset,
+                        n_fields,
+                        n_matset,
                         n_options_copy,
-                        n_newTopo, n_newCoordset, n_newFields, n_newMatset);
+                        n_newTopo,
+                        n_newCoordset,
+                        n_newFields,
+                        n_newMatset);
     }
     else if(cleanZones.size() > 0 && mixedZones.size() == 0)
     {
@@ -493,13 +520,22 @@ protected:
       }
 
       // Add an originalElements array.
-      addOriginal(n_newFields["originalElements"], n_topo.name(), "element", m_topologyView.numberOfZones());
+      addOriginal(n_newFields["originalElements"],
+                  n_topo.name(),
+                  "element",
+                  m_topologyView.numberOfZones());
     }
 #else
     // Handle all zones via MIR.
-    processMixedZones(n_topo, n_coordset, n_fields, n_matset,
+    processMixedZones(n_topo,
+                      n_coordset,
+                      n_fields,
+                      n_matset,
                       n_options_copy,
-                      n_newTopo, n_newCoordset, n_newFields, n_newMatset);
+                      n_newTopo,
+                      n_newCoordset,
+                      n_newFields,
+                      n_newMatset);
 #endif
   }
 
@@ -516,7 +552,10 @@ protected:
    *       of which nodes are original nodes in the output. Blended nodes may not have good values
    *       but there is a mask field that can identify those nodes.
    */
-  void addOriginal(conduit::Node &n_field, const std::string &topoName, const std::string &association, axom::IndexType nvalues) const
+  void addOriginal(conduit::Node &n_field,
+                   const std::string &topoName,
+                   const std::string &association,
+                   axom::IndexType nvalues) const
   {
     AXOM_ANNOTATE_SCOPE("addOriginal");
     namespace bputils = axom::mir::utilities::blueprint;
@@ -526,12 +565,14 @@ protected:
     n_field["topology"] = topoName;
     n_field["association"] = association;
     n_field["values"].set_allocator(c2a.getConduitAllocatorID());
-    n_field["values"].set(conduit::DataType(bputils::cpp2conduit<ConnectivityType>::id, nvalues));
+    n_field["values"].set(
+      conduit::DataType(bputils::cpp2conduit<ConnectivityType>::id, nvalues));
     auto view = bputils::make_array_view<ConnectivityType>(n_field["values"]);
-    axom::for_all<ExecSpace>(nvalues, AXOM_LAMBDA(auto index)
-    {
-      view[index] = static_cast<ConnectivityType>(index);
-    });
+    axom::for_all<ExecSpace>(
+      nvalues,
+      AXOM_LAMBDA(auto index) {
+        view[index] = static_cast<ConnectivityType>(index);
+      });
   }
 
   /**
@@ -546,23 +587,26 @@ protected:
    *
    * \return The number of nodes in the clean mesh output.
    */
-  void makeCleanOutput(const conduit::Node &n_root, const std::string &topoName,
-     const axom::ArrayView<axom::IndexType> &cleanZones, conduit::Node &n_cleanOutput) const
+  void makeCleanOutput(const conduit::Node &n_root,
+                       const std::string &topoName,
+                       const axom::ArrayView<axom::IndexType> &cleanZones,
+                       conduit::Node &n_cleanOutput) const
   {
     AXOM_ANNOTATE_SCOPE("makeCleanOutput");
     namespace bputils = axom::mir::utilities::blueprint;
 
     // Make the clean mesh. Set compact=0 so it does not change the number of nodes.
-    bputils::ExtractZonesAndMatset<ExecSpace, TopologyView, CoordsetView, MatsetView> ez(m_topologyView, m_coordsetView, m_matsetView);
+    bputils::ExtractZonesAndMatset<ExecSpace, TopologyView, CoordsetView, MatsetView>
+      ez(m_topologyView, m_coordsetView, m_matsetView);
     conduit::Node n_ezopts;
     n_ezopts["topology"] = topoName;
     n_ezopts["compact"] = 0;
     ez.execute(cleanZones, n_root, n_ezopts, n_cleanOutput);
-#if defined(AXOM_EQUIZ_DEBUG)
+  #if defined(AXOM_EQUIZ_DEBUG)
     AXOM_ANNOTATE_BEGIN("saveClean");
     conduit::relay::io::blueprint::save_mesh(n_cleanOutput, "clean", "hdf5");
     AXOM_ANNOTATE_END("saveClean");
-#endif
+  #endif
   }
 
   /**
@@ -573,7 +617,9 @@ protected:
    * \param[out] nodeMap An array used to map node ids from the MIR output to their node ids in the merged mesh.
    * \param[out] nodeSlice An array that identifies new blended node ids in the MIR output so they can be appended into coordsets and fields during merge.
    */
-  void createNodeMapAndSlice(conduit::Node &n_newFields, axom::Array<axom::IndexType> &nodeMap, axom::Array<axom::IndexType> &nodeSlice) const
+  void createNodeMapAndSlice(conduit::Node &n_newFields,
+                             axom::Array<axom::IndexType> &nodeMap,
+                             axom::Array<axom::IndexType> &nodeSlice) const
   {
     namespace bputils = axom::mir::utilities::blueprint;
     AXOM_ANNOTATE_SCOPE("createNodeMapAndSlice");
@@ -583,12 +629,15 @@ protected:
     const axom::IndexType numCleanNodes = m_coordsetView.numberOfNodes();
 
     // These are the original node ids.
-    const conduit::Node &n_output_orig_nodes = n_newFields[originalNodesFieldName() + "/values"];
+    const conduit::Node &n_output_orig_nodes =
+      n_newFields[originalNodesFieldName() + "/values"];
     auto numOutputNodes = n_output_orig_nodes.dtype().number_of_elements();
-    auto outputOrigNodesView = bputils::make_array_view<ConnectivityType>(n_output_orig_nodes);
+    auto outputOrigNodesView =
+      bputils::make_array_view<ConnectivityType>(n_output_orig_nodes);
 
     // __equiz_new_nodes is the int mask field that identifies new nodes created from blending.
-    const conduit::Node &n_new_nodes_values = n_newFields[newNodesFieldName() + "/values"];
+    const conduit::Node &n_new_nodes_values =
+      n_newFields[newNodesFieldName() + "/values"];
     const auto maskView = bputils::make_array_view<int>(n_new_nodes_values);
 
     // Count new nodes created from blending.
@@ -596,40 +645,44 @@ protected:
     axom::Array<int> maskOffset(numOutputNodes, numOutputNodes, allocatorID);
     auto maskOffsetsView = maskOffset.view();
     RAJA::ReduceSum<reduce_policy, int> mask_reduce(0);
-    axom::for_all<ExecSpace>(numOutputNodes, AXOM_LAMBDA(auto index)
-    {
-      mask_reduce += maskView[index];
-    });
+    axom::for_all<ExecSpace>(
+      numOutputNodes,
+      AXOM_LAMBDA(auto index) { mask_reduce += maskView[index]; });
     const auto numNewNodes = mask_reduce.get();
 
     // Make offsets.
     axom::exclusive_scan<ExecSpace>(maskView, maskOffsetsView);
 
     // Make a list of indices that we need to slice out of the node arrays.
-    nodeSlice = axom::Array<axom::IndexType>(numNewNodes, numNewNodes, allocatorID);
+    nodeSlice =
+      axom::Array<axom::IndexType>(numNewNodes, numNewNodes, allocatorID);
     auto nodeSliceView = nodeSlice.view();
-    axom::for_all<ExecSpace>(numOutputNodes, AXOM_LAMBDA(auto index)
-    {
-      if(maskView[index] > 0)
-      {
-        nodeSliceView[maskOffsetsView[index]] = index;
-      }
-    });
+    axom::for_all<ExecSpace>(
+      numOutputNodes,
+      AXOM_LAMBDA(auto index) {
+        if(maskView[index] > 0)
+        {
+          nodeSliceView[maskOffsetsView[index]] = index;
+        }
+      });
 
     // Make a node map for mapping mixed connectivity into combined node numbering.
-    nodeMap = axom::Array<axom::IndexType>(numOutputNodes, numOutputNodes, allocatorID);
+    nodeMap =
+      axom::Array<axom::IndexType>(numOutputNodes, numOutputNodes, allocatorID);
     auto nodeMapView = nodeMap.view();
-    axom::for_all<ExecSpace>(numOutputNodes, AXOM_LAMBDA(auto index)
-    {
-      if(maskView[index] == 0)
-      {
-        nodeMapView[index] = static_cast<axom::IndexType>(outputOrigNodesView[index]);
-      }
-      else
-      {
-        nodeMapView[index] = numCleanNodes + maskOffsetsView[index];
-      }
-    });
+    axom::for_all<ExecSpace>(
+      numOutputNodes,
+      AXOM_LAMBDA(auto index) {
+        if(maskView[index] == 0)
+        {
+          nodeMapView[index] =
+            static_cast<axom::IndexType>(outputOrigNodesView[index]);
+        }
+        else
+        {
+          nodeMapView[index] = numCleanNodes + maskOffsetsView[index];
+        }
+      });
 
     // Remove fields that are no longer needed.
     n_newFields.remove(originalNodesFieldName());
@@ -878,19 +931,13 @@ protected:
    * \brief Return the name of the original nodes field.
    * \return The name of the original nodes field.
    */
-  std::string originalNodesFieldName() const
-  {
-    return "__equiz_original_node";
-  }
+  std::string originalNodesFieldName() const { return "__equiz_original_node"; }
 
   /**
    * \brief Return the name of the new nodes field that identifies blended nodes in the MIR output.
    * \return The name of the new nodes field.
    */
-  std::string newNodesFieldName() const
-  {
-    return "__equiz_new_nodes";
-  }
+  std::string newNodesFieldName() const { return "__equiz_new_nodes"; }
 
   /**
    * \brief Makes node-cenetered volume fractions for the materials in the matset
@@ -1218,7 +1265,8 @@ protected:
     if(n_options.has_child("newNodesField"))
     {
       // Pass along newNodesField, if present.
-      options["newNodesField"] = n_options.fetch_existing("newNodesField").as_string();
+      options["newNodesField"] =
+        n_options.fetch_existing("newNodesField").as_string();
     }
     options["topology"] = n_options["topology"];
 

@@ -1945,7 +1945,10 @@ private:
    * \param topoName The name of the output topology.
    * \param[inout] n_newFields The fields node for the output mesh.
    */
-  void markNewNodes(const BlendData &blend, const std::string &newNodes, const std::string &topoName, conduit::Node &n_newFields) const
+  void markNewNodes(const BlendData &blend,
+                    const std::string &newNodes,
+                    const std::string &topoName,
+                    conduit::Node &n_newFields) const
   {
     namespace bputils = axom::mir::utilities::blueprint;
     AXOM_ANNOTATE_SCOPE("markNewNodes");
@@ -1969,10 +1972,9 @@ private:
         auto valuesView = bputils::make_array_view<Precision>(n_new_nodes_values);
 
         // Update values for the blend groups only.
-        axom::for_all<ExecSpace>(blendSize, AXOM_LAMBDA(auto bgid)
-        {
-          valuesView[origSize + bgid] = one;
-        }); 
+        axom::for_all<ExecSpace>(
+          blendSize,
+          AXOM_LAMBDA(auto bgid) { valuesView[origSize + bgid] = one; });
       }
       else
       {
@@ -1984,15 +1986,17 @@ private:
         n_new_nodes["association"] = "vertex";
         conduit::Node &n_new_nodes_values = n_new_nodes["values"];
         n_new_nodes_values.set_allocator(c2a.getConduitAllocatorID());
-        n_new_nodes_values.set(conduit::DataType(bputils::cpp2conduit<Precision>::id, outputSize));
+        n_new_nodes_values.set(
+          conduit::DataType(bputils::cpp2conduit<Precision>::id, outputSize));
         auto valuesView = bputils::make_array_view<Precision>(n_new_nodes_values);
 
         // Fill in values. Everything below origSize is an original node.
         // Everything above is a blended node.
-        axom::for_all<ExecSpace>(outputSize, AXOM_LAMBDA(auto index)
-        {
-          valuesView[index] = (index < origSize) ? zero : one;
-        });       
+        axom::for_all<ExecSpace>(
+          outputSize,
+          AXOM_LAMBDA(auto index) {
+            valuesView[index] = (index < origSize) ? zero : one;
+          });
       }
     }
   }
