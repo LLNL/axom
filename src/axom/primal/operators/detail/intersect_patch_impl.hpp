@@ -158,14 +158,15 @@ bool intersect_line_patch(const Line<T, 3> &line,
   else if(p.isBilinear(1e-4))
   {
     std::vector<T> u, v, t;
-    foundIntersection = detail::intersect_bilinear_patch_ray(p(0, 0),
-                                                             p(order_u, 0),
-                                                             p(order_u, order_v),
-                                                             p(0, order_v),
-                                                             r,
-                                                             u,
-                                                             v,
-                                                             t);
+    foundIntersection =
+      detail::intersect_bilinear_patch_line(patch(0, 0),
+                                            patch(order_u, 0),
+                                            patch(order_u, order_v),
+                                            patch(0, order_v),
+                                            line,
+                                            u,
+                                            v,
+                                            t);
 
     for(size_t i = 0; i < u.size(); ++i)
     {
@@ -180,6 +181,7 @@ bool intersect_line_patch(const Line<T, 3> &line,
 
       up.push_back(u_offset + u[i] * u_scale);
       vp.push_back(v_offset + v[i] * v_scale);
+      tp.push_back(t[i]);
     }
   }
   else

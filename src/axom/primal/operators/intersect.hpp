@@ -733,12 +733,12 @@ AXOM_HOST_DEVICE bool intersect(const Plane<T, 3>& p,
   return detail::intersect_plane_tet3d(p, tet, intersection);
 }
 
-/*! \brief Determines if a ray intersects a bilinear patch.
+/*! \brief Determines if a line intersects a bilinear patch.
  * \param [in] patch The bilinear (bezier) patch to intersect with the ray.
- * \param [in] ray The ray to intersect with the bilinear patch.
- * \param [out] u The u parameter(s) of the intersection point.
- * \param [out] v The v parameter(s) of the intersection point.
- * \param [out] t The t parameter(s) of the intersection point.
+ * \param [in] line The line to intersect with the bilinear patch.
+ * \param [out] u The u patch parameter(s) of the intersection point.
+ * \param [out] v The v patch parameter(s) of the intersection point.
+ * \param [out] t The line parameter(s) of the intersection point.
  * \param [in] EPS The tolerance for intersection.
  *
  * Implements GARP algorithm from Chapter 8 of Ray Tracing Gems (2019)
@@ -753,7 +753,7 @@ AXOM_HOST_DEVICE bool intersect(const Point<T, 3>& p0,
                                 const Point<T, 3>& p1,
                                 const Point<T, 3>& p2,
                                 const Point<T, 3>& p3,
-                                const Ray<T, 3>& ray,
+                                const Line<T, 3>& line,
                                 std::vector<T>& u,
                                 std::vector<T>& v,
                                 std::vector<T>& t)
