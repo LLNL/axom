@@ -518,7 +518,7 @@ protected:
    */
   void addOriginal(conduit::Node &n_field, const std::string &topoName, const std::string &association, axom::IndexType nvalues) const
   {
-    AXOM_ANNOTATE_BEGIN("addOriginal");
+    AXOM_ANNOTATE_SCOPE("addOriginal");
     namespace bputils = axom::mir::utilities::blueprint;
     bputils::ConduitAllocateThroughAxom<ExecSpace> c2a;
 

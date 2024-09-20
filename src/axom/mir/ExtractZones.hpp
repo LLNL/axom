@@ -81,8 +81,6 @@ public:
     AXOM_ANNOTATE_SCOPE("ExtractZones");
     namespace bputils = axom::mir::utilities::blueprint;
 
-    AXOM_ANNOTATE_BEGIN("nodeMap");
-
     // Determine the dataSizes and map/slice information for nodes.
     axom::Array<ConnectivityType> old2new;
     axom::Array<axom::IndexType> nodeSlice;
