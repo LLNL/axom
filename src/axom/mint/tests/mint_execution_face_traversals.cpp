@@ -28,6 +28,7 @@ namespace mint
 //------------------------------------------------------------------------------
 namespace
 {
+
 template <typename ExecPolicy, int MeshType, int Topology = SINGLE_SHAPE>
 void check_for_all_faces(int dimension)
 {
@@ -35,6 +36,10 @@ void check_for_all_faces(int dimension)
   SLIC_INFO("dimension=" << dimension
                          << ", policy=" << execution_space<ExecPolicy>::name()
                          << ", mesh_type=" << mesh_name);
+
+  // Get ids of necessary allocators
+  const int host_allocator = axom::execution_space<axom::SEQ_EXEC>::allocatorID();
+  const int device_allocator = axom::execution_space<ExecPolicy>::allocatorID();
 
   const IndexType Ni = 20;
   const IndexType Nj = (dimension >= 2) ? Ni : -1;
@@ -51,16 +56,27 @@ void check_for_all_faces(int dimension)
 
   const IndexType numFaces = test_mesh->getNumberOfFaces();
 
-  IndexType* field =
-    test_mesh->template createField<IndexType>("f1", FACE_CENTERED);
+  axom::Array<IndexType> field_d(numFaces, numFaces, device_allocator);
+
+  auto field_v = field_d.view();
 
   for_all_faces<ExecPolicy>(
     test_mesh,
-    AXOM_LAMBDA(IndexType faceID) { field[faceID] = faceID; });
+    AXOM_LAMBDA(IndexType faceID) { field_v[faceID] = faceID; });
+
+  // Copy field back to host
+  axom::Array<IndexType> field_h =
+    axom::Array<IndexType>(field_d, host_allocator);
+
+  // Create mesh field from buffer
+  IndexType* f1_field =
+    test_mesh->template createField<IndexType>("f1",
+                                               FACE_CENTERED,
+                                               field_h.data());
 
   for(IndexType faceID = 0; faceID < numFaces; ++faceID)
   {
-    EXPECT_EQ(field[faceID], faceID);
+    EXPECT_EQ(f1_field[faceID], faceID);
   }
 
   delete test_mesh;
@@ -76,6 +92,10 @@ void check_for_all_face_nodes(int dimension)
                          << ", policy=" << execution_space<ExecPolicy>::name()
                          << ", mesh_type=" << mesh_name);
 
+  // Get ids of necessary allocators
+  const int host_allocator = axom::execution_space<axom::SEQ_EXEC>::allocatorID();
+  const int device_allocator = axom::execution_space<ExecPolicy>::allocatorID();
+
   const IndexType Ni = 20;
   const IndexType Nj = (dimension >= 2) ? Ni : -1;
   const IndexType Nk = (dimension == 3) ? Ni : -1;
@@ -90,18 +110,28 @@ void check_for_all_face_nodes(int dimension)
   EXPECT_TRUE(test_mesh != nullptr);
 
   const IndexType numFaces = test_mesh->getNumberOfFaces();
-  IndexType* conn = test_mesh->template createField<IndexType>("f1",
-                                                               FACE_CENTERED,
-                                                               MAX_FACE_NODES);
+
+  axom::Array<IndexType> conn_d(numFaces * MAX_FACE_NODES,
+                                numFaces * MAX_FACE_NODES,
+                                device_allocator);
+
+  auto conn_v = conn_d.view();
 
   for_all_faces<ExecPolicy, xargs::nodeids>(
     test_mesh,
     AXOM_LAMBDA(IndexType faceID, const IndexType* nodes, IndexType N) {
       for(int i = 0; i < N; ++i)
       {
-        conn[faceID * MAX_FACE_NODES + i] = nodes[i];
+        conn_v[faceID * MAX_FACE_NODES + i] = nodes[i];
       }  // END for all face nodes
     });
+
+  // Copy field back to host
+  axom::Array<IndexType> conn_h = axom::Array<IndexType>(conn_d, host_allocator);
+
+  // Create mesh field from buffer
+  IndexType* conn_field =
+    test_mesh->template createField<IndexType>("f1", FACE_CENTERED, conn_h.data());
 
   IndexType faceNodes[MAX_FACE_NODES];
   for(IndexType faceID = 0; faceID < numFaces; ++faceID)
@@ -109,7 +139,7 @@ void check_for_all_face_nodes(int dimension)
     const IndexType N = test_mesh->getFaceNodeIDs(faceID, faceNodes);
     for(int i = 0; i < N; ++i)
     {
-      EXPECT_EQ(conn[faceID * MAX_FACE_NODES + i], faceNodes[i]);
+      EXPECT_EQ(conn_field[faceID * MAX_FACE_NODES + i], faceNodes[i]);
     }
   }  // END for all cells
 
@@ -127,6 +157,10 @@ void check_for_all_face_coords(int dimension)
                          << ", policy=" << execution_space<ExecPolicy>::name()
                          << ", mesh_type=" << mesh_name);
 
+  // Get ids of necessary allocators
+  const int host_allocator = axom::execution_space<axom::SEQ_EXEC>::allocatorID();
+  const int device_allocator = axom::execution_space<ExecPolicy>::allocatorID();
+
   const IndexType Ni = 20;
   const IndexType Nj = (dimension >= 2) ? Ni : -1;
   const IndexType Nk = (dimension == 3) ? Ni : -1;
@@ -141,13 +175,15 @@ void check_for_all_face_coords(int dimension)
   EXPECT_TRUE(test_mesh != nullptr);
 
   const IndexType numFaces = test_mesh->getNumberOfFaces();
-  IndexType* conn = test_mesh->template createField<IndexType>("conn",
-                                                               FACE_CENTERED,
-                                                               MAX_FACE_NODES);
-  double* coords =
-    test_mesh->template createField<double>("coords",
-                                            FACE_CENTERED,
-                                            dimension * MAX_FACE_NODES);
+  axom::Array<IndexType> conn_d(numFaces * MAX_FACE_NODES,
+                                numFaces * MAX_FACE_NODES,
+                                device_allocator);
+  axom::Array<double> coords_d(numFaces * dimension * MAX_FACE_NODES,
+                               numFaces * dimension * MAX_FACE_NODES,
+                               device_allocator);
+
+  auto conn_v = conn_d.view();
+  auto coords_v = coords_d.view();
 
   for_all_faces<ExecPolicy, xargs::coords>(
     test_mesh,
@@ -157,15 +193,31 @@ void check_for_all_face_coords(int dimension)
       const IndexType numNodes = coordsMatrix.getNumColumns();
       for(int i = 0; i < numNodes; ++i)
       {
-        conn[faceID * MAX_FACE_NODES + i] = nodes[i];
+        conn_v[faceID * MAX_FACE_NODES + i] = nodes[i];
 
         for(int dim = 0; dim < dimension; ++dim)
         {
-          coords[faceID * dimension * MAX_FACE_NODES + i * dimension + dim] =
+          coords_v[faceID * dimension * MAX_FACE_NODES + i * dimension + dim] =
             coordsMatrix(dim, i);
         }
       }  // END for all face nodes
     });
+
+  // Copy data back to host
+  axom::Array<IndexType> conn_h = axom::Array<IndexType>(conn_d, host_allocator);
+  axom::Array<double> coords_h = axom::Array<double>(coords_d, host_allocator);
+
+  // Create mesh fields from buffers
+  IndexType* conn_field =
+    test_mesh->template createField<IndexType>("conn",
+                                               FACE_CENTERED,
+                                               conn_h.data(),
+                                               MAX_FACE_NODES);
+  double* coords_field =
+    test_mesh->template createField<double>("coords",
+                                            FACE_CENTERED,
+                                            coords_h.data(),
+                                            dimension * MAX_FACE_NODES);
 
   double nodeCoords[3];
   IndexType faceNodes[MAX_FACE_NODES];
@@ -174,13 +226,13 @@ void check_for_all_face_coords(int dimension)
     const IndexType numNodes = test_mesh->getFaceNodeIDs(faceID, faceNodes);
     for(int i = 0; i < numNodes; ++i)
     {
-      EXPECT_EQ(conn[faceID * MAX_FACE_NODES + i], faceNodes[i]);
+      EXPECT_EQ(conn_field[faceID * MAX_FACE_NODES + i], faceNodes[i]);
 
       for(int dim = 0; dim < dimension; ++dim)
       {
         test_mesh->getNode(faceNodes[i], nodeCoords);
         EXPECT_NEAR(
-          coords[faceID * dimension * MAX_FACE_NODES + i * dimension + dim],
+          coords_field[faceID * dimension * MAX_FACE_NODES + i * dimension + dim],
           nodeCoords[dim],
           1e-8);
       }
@@ -201,6 +253,10 @@ void check_for_all_face_cells(int dimension)
                          << ", policy=" << execution_space<ExecPolicy>::name()
                          << ", mesh_type=" << mesh_name);
 
+  // Get ids of necessary allocators
+  const int host_allocator = axom::execution_space<axom::SEQ_EXEC>::allocatorID();
+  const int device_allocator = axom::execution_space<ExecPolicy>::allocatorID();
+
   const IndexType Ni = 20;
   const IndexType Nj = (dimension >= 2) ? Ni : -1;
   const IndexType Nk = (dimension == 3) ? Ni : -1;
@@ -215,23 +271,35 @@ void check_for_all_face_cells(int dimension)
   EXPECT_TRUE(test_mesh != nullptr);
 
   const IndexType numFaces = test_mesh->getNumberOfFaces();
-  IndexType* faceCells =
-    test_mesh->template createField<IndexType>("f1", FACE_CENTERED, 2);
+  axom::Array<IndexType> face_cells_d(numFaces * 2, numFaces * 2, device_allocator);
+
+  auto face_cells_v = face_cells_d.view();
 
   for_all_faces<ExecPolicy, xargs::cellids>(
     test_mesh,
     AXOM_LAMBDA(IndexType faceID, IndexType cellIDOne, IndexType cellIDTwo) {
-      faceCells[2 * faceID + 0] = cellIDOne;
-      faceCells[2 * faceID + 1] = cellIDTwo;
+      face_cells_v[2 * faceID + 0] = cellIDOne;
+      face_cells_v[2 * faceID + 1] = cellIDTwo;
     });
+
+  // Copy field back to host
+  axom::Array<IndexType> face_cells_h =
+    axom::Array<IndexType>(face_cells_d, host_allocator);
+
+  // Create mesh field from buffer
+  IndexType* face_cells_field =
+    test_mesh->template createField<IndexType>("f1",
+                                               FACE_CENTERED,
+                                               face_cells_h.data(),
+                                               2);
 
   for(IndexType faceID = 0; faceID < numFaces; ++faceID)
   {
     IndexType cellIDOne, cellIDTwo;
     test_mesh->getFaceCellIDs(faceID, cellIDOne, cellIDTwo);
 
-    EXPECT_EQ(faceCells[2 * faceID + 0], cellIDOne);
-    EXPECT_EQ(faceCells[2 * faceID + 1], cellIDTwo);
+    EXPECT_EQ(face_cells_field[2 * faceID + 0], cellIDOne);
+    EXPECT_EQ(face_cells_field[2 * faceID + 1], cellIDTwo);
   }
 
   /* clean up */
@@ -273,17 +341,12 @@ AXOM_CUDA_TEST(mint_execution_face_traversals, for_all_face_nodeids)
 
     using cuda_exec = axom::CUDA_EXEC<512>;
 
-    const int exec_space_id = axom::execution_space<cuda_exec>::allocatorID();
-    const int prev_allocator = axom::getDefaultAllocatorID();
-    axom::setDefaultAllocator(exec_space_id);
-
     check_for_all_face_nodes<cuda_exec, STRUCTURED_UNIFORM_MESH>(dim);
     check_for_all_face_nodes<cuda_exec, STRUCTURED_CURVILINEAR_MESH>(dim);
     check_for_all_face_nodes<cuda_exec, STRUCTURED_RECTILINEAR_MESH>(dim);
     check_for_all_face_nodes<cuda_exec, UNSTRUCTURED_MESH, SINGLE_SHAPE>(dim);
     check_for_all_face_nodes<cuda_exec, UNSTRUCTURED_MESH, MIXED_SHAPE>(dim);
 
-    setDefaultAllocator(prev_allocator);
 #endif
 
 #if defined(AXOM_USE_RAJA) && defined(AXOM_USE_HIP) && \
@@ -291,17 +354,12 @@ AXOM_CUDA_TEST(mint_execution_face_traversals, for_all_face_nodeids)
 
     using hip_exec = axom::HIP_EXEC<512>;
 
-    const int exec_space_id = axom::execution_space<hip_exec>::allocatorID();
-    const int prev_allocator = axom::getDefaultAllocatorID();
-    axom::setDefaultAllocator(exec_space_id);
-
     check_for_all_face_nodes<hip_exec, STRUCTURED_UNIFORM_MESH>(dim);
     check_for_all_face_nodes<hip_exec, STRUCTURED_CURVILINEAR_MESH>(dim);
     check_for_all_face_nodes<hip_exec, STRUCTURED_RECTILINEAR_MESH>(dim);
     check_for_all_face_nodes<hip_exec, UNSTRUCTURED_MESH, SINGLE_SHAPE>(dim);
     check_for_all_face_nodes<hip_exec, UNSTRUCTURED_MESH, MIXED_SHAPE>(dim);
 
-    setDefaultAllocator(prev_allocator);
 #endif
 
   }  // END for all dimensions
@@ -335,17 +393,12 @@ AXOM_CUDA_TEST(mint_execution_face_traversals, for_all_face_coords)
 
     using cuda_exec = axom::CUDA_EXEC<512>;
 
-    const int exec_space_id = axom::execution_space<cuda_exec>::allocatorID();
-    const int prev_allocator = axom::getDefaultAllocatorID();
-    axom::setDefaultAllocator(exec_space_id);
-
     check_for_all_face_coords<cuda_exec, STRUCTURED_UNIFORM_MESH>(dim);
     check_for_all_face_coords<cuda_exec, STRUCTURED_CURVILINEAR_MESH>(dim);
     check_for_all_face_coords<cuda_exec, STRUCTURED_RECTILINEAR_MESH>(dim);
     check_for_all_face_coords<cuda_exec, UNSTRUCTURED_MESH, SINGLE_SHAPE>(dim);
     check_for_all_face_coords<cuda_exec, UNSTRUCTURED_MESH, MIXED_SHAPE>(dim);
 
-    setDefaultAllocator(prev_allocator);
 #endif
 
 #if defined(AXOM_USE_RAJA) && defined(AXOM_USE_HIP) && \
@@ -353,17 +406,12 @@ AXOM_CUDA_TEST(mint_execution_face_traversals, for_all_face_coords)
 
     using hip_exec = axom::HIP_EXEC<512>;
 
-    const int exec_space_id = axom::execution_space<hip_exec>::allocatorID();
-    const int prev_allocator = axom::getDefaultAllocatorID();
-    axom::setDefaultAllocator(exec_space_id);
-
     check_for_all_face_coords<hip_exec, STRUCTURED_UNIFORM_MESH>(dim);
     check_for_all_face_coords<hip_exec, STRUCTURED_CURVILINEAR_MESH>(dim);
     check_for_all_face_coords<hip_exec, STRUCTURED_RECTILINEAR_MESH>(dim);
     check_for_all_face_coords<hip_exec, UNSTRUCTURED_MESH, SINGLE_SHAPE>(dim);
     check_for_all_face_coords<hip_exec, UNSTRUCTURED_MESH, MIXED_SHAPE>(dim);
 
-    setDefaultAllocator(prev_allocator);
 #endif
 
   }  // END for all dimensions
@@ -397,17 +445,12 @@ AXOM_CUDA_TEST(mint_execution_face_traversals, for_all_face_cellids)
 
     using cuda_exec = axom::CUDA_EXEC<512>;
 
-    const int exec_space_id = axom::execution_space<cuda_exec>::allocatorID();
-    const int prev_allocator = axom::getDefaultAllocatorID();
-    axom::setDefaultAllocator(exec_space_id);
-
     check_for_all_face_cells<cuda_exec, STRUCTURED_UNIFORM_MESH>(dim);
     check_for_all_face_cells<cuda_exec, STRUCTURED_CURVILINEAR_MESH>(dim);
     check_for_all_face_cells<cuda_exec, STRUCTURED_RECTILINEAR_MESH>(dim);
     check_for_all_face_nodes<cuda_exec, UNSTRUCTURED_MESH, SINGLE_SHAPE>(dim);
     check_for_all_face_nodes<cuda_exec, UNSTRUCTURED_MESH, MIXED_SHAPE>(dim);
 
-    setDefaultAllocator(prev_allocator);
 #endif
 
 #if defined(AXOM_USE_RAJA) && defined(AXOM_USE_HIP) && \
@@ -415,17 +458,12 @@ AXOM_CUDA_TEST(mint_execution_face_traversals, for_all_face_cellids)
 
     using hip_exec = axom::HIP_EXEC<512>;
 
-    const int exec_space_id = axom::execution_space<hip_exec>::allocatorID();
-    const int prev_allocator = axom::getDefaultAllocatorID();
-    axom::setDefaultAllocator(exec_space_id);
-
     check_for_all_face_cells<hip_exec, STRUCTURED_UNIFORM_MESH>(dim);
     check_for_all_face_cells<hip_exec, STRUCTURED_CURVILINEAR_MESH>(dim);
     check_for_all_face_cells<hip_exec, STRUCTURED_RECTILINEAR_MESH>(dim);
     check_for_all_face_nodes<hip_exec, UNSTRUCTURED_MESH, SINGLE_SHAPE>(dim);
     check_for_all_face_nodes<hip_exec, UNSTRUCTURED_MESH, MIXED_SHAPE>(dim);
 
-    setDefaultAllocator(prev_allocator);
 #endif
 
   }  // END for all dimensions
@@ -460,17 +498,12 @@ AXOM_CUDA_TEST(mint_execution_face_traversals, for_all_faces_index)
 
     using cuda_exec = axom::CUDA_EXEC<512>;
 
-    const int exec_space_id = axom::execution_space<cuda_exec>::allocatorID();
-    const int prev_allocator = axom::getDefaultAllocatorID();
-    axom::setDefaultAllocator(exec_space_id);
-
     check_for_all_faces<cuda_exec, STRUCTURED_UNIFORM_MESH>(dim);
     check_for_all_faces<cuda_exec, STRUCTURED_CURVILINEAR_MESH>(dim);
     check_for_all_faces<cuda_exec, STRUCTURED_RECTILINEAR_MESH>(dim);
     check_for_all_faces<cuda_exec, UNSTRUCTURED_MESH, SINGLE_SHAPE>(dim);
     check_for_all_faces<cuda_exec, UNSTRUCTURED_MESH, MIXED_SHAPE>(dim);
 
-    setDefaultAllocator(prev_allocator);
 #endif
 
 #if defined(AXOM_USE_RAJA) && defined(AXOM_USE_HIP) && \
@@ -478,17 +511,12 @@ AXOM_CUDA_TEST(mint_execution_face_traversals, for_all_faces_index)
 
     using hip_exec = axom::HIP_EXEC<512>;
 
-    const int exec_space_id = axom::execution_space<hip_exec>::allocatorID();
-    const int prev_allocator = axom::getDefaultAllocatorID();
-    axom::setDefaultAllocator(exec_space_id);
-
     check_for_all_faces<hip_exec, STRUCTURED_UNIFORM_MESH>(dim);
     check_for_all_faces<hip_exec, STRUCTURED_CURVILINEAR_MESH>(dim);
     check_for_all_faces<hip_exec, STRUCTURED_RECTILINEAR_MESH>(dim);
     check_for_all_faces<hip_exec, UNSTRUCTURED_MESH, SINGLE_SHAPE>(dim);
     check_for_all_faces<hip_exec, UNSTRUCTURED_MESH, MIXED_SHAPE>(dim);
 
-    setDefaultAllocator(prev_allocator);
 #endif
 
   }  // END for all dimensions

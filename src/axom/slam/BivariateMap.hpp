@@ -327,6 +327,7 @@ public:
     return ConstSubMapType(this, s, hasInd);
   }
 
+  AXOM_SUPPRESS_HD_WARN
   AXOM_HOST_DEVICE SubMapType operator()(SetPosition firstIdx)
   {
 #ifndef AXOM_DEVICE_CODE
@@ -480,31 +481,44 @@ protected:
 
 public:
   /** BivariateMap iterator functions */
+  AXOM_SUPPRESS_HD_WARN
   AXOM_HOST_DEVICE iterator begin() { return iterator(this, 0); }
+
+  AXOM_SUPPRESS_HD_WARN
   AXOM_HOST_DEVICE iterator end()
   {
     return iterator(this, totalSize() * numComp());
   }
+
   AXOM_HOST_DEVICE const_iterator begin() const
   {
     return const_iterator(this, 0);
   }
+
   AXOM_HOST_DEVICE const_iterator end() const
   {
     return const_iterator(this, totalSize() * numComp());
   }
+
+  AXOM_SUPPRESS_HD_WARN
   AXOM_HOST_DEVICE range_iterator set_begin()
   {
     return range_iterator(this, 0);
   }
+
+  AXOM_SUPPRESS_HD_WARN
   AXOM_HOST_DEVICE range_iterator set_end()
   {
     return range_iterator(this, totalSize());
   }
+
+  AXOM_SUPPRESS_HD_WARN
   AXOM_HOST_DEVICE const_range_iterator set_begin() const
   {
     return const_range_iterator(this, 0);
   }
+
+  AXOM_SUPPRESS_HD_WARN
   AXOM_HOST_DEVICE const_range_iterator set_end() const
   {
     return const_range_iterator(this, totalSize());
@@ -512,27 +526,34 @@ public:
 
   /** Iterator via Submap */
   AXOM_HOST_DEVICE SubMapIterator begin(int i) { return (*this)(i).begin(); }
+
   AXOM_HOST_DEVICE SubMapIterator end(int i) { return (*this)(i).end(); }
+
   AXOM_HOST_DEVICE ConstSubMapIterator begin(int i) const
   {
     return (*this)(i).begin();
   }
+
   AXOM_HOST_DEVICE ConstSubMapIterator end(int i) const
   {
     return (*this)(i).end();
   }
+
   AXOM_HOST_DEVICE SubMapRangeIterator set_begin(int i)
   {
     return (*this)(i).set_begin();
   }
+
   AXOM_HOST_DEVICE SubMapRangeIterator set_end(int i)
   {
     return (*this)(i).set_end();
   }
+
   AXOM_HOST_DEVICE ConstSubMapRangeIterator set_begin(int i) const
   {
     return (*this)(i).set_begin();
   }
+
   AXOM_HOST_DEVICE ConstSubMapRangeIterator set_end(int i) const
   {
     return (*this)(i).set_end();
@@ -540,7 +561,9 @@ public:
 
 public:
   AXOM_HOST_DEVICE const BivariateSetType* set() const { return m_bset.get(); }
+
   const MapType* getMap() const { return &m_map; }
+
   MapType* getMap() { return &m_map; }
 
   bool isValid(bool verboseOutput = false) const
@@ -553,18 +576,23 @@ public:
   ///
 
   /** \brief Returns the BivariateSet size. */
+  AXOM_SUPPRESS_HD_WARN
   AXOM_HOST_DEVICE SetPosition size() const { return set()->size(); }
+
   /** \brief Returns the BivariateSet size. */
   SetPosition totalSize() const { return set()->size(); }
 
   SetPosition firstSetSize() const { return set()->firstSetSize(); }
+
   AXOM_HOST_DEVICE SetPosition secondSetSize() const
   {
     return set()->secondSetSize();
   }
+
   /** \brief Returns the number of the BivariateSet ordered pairs with
    *         the given first set index. */
   SetPosition size(SetPosition s) const { return set()->size(s); }
+
   /** \brief Return the number of components of the map  */
   SetPosition numComp() const { return StrPol::stride(); }
 
@@ -663,6 +691,7 @@ public:
   /**
      * \brief Returns the current map element pointed to by the iterator.
      */
+  AXOM_SUPPRESS_HD_WARN
   AXOM_HOST_DEVICE DataRefType operator*() const
   {
     return m_map->flatValue(m_bsetIterator.flatIndex(), compIndex());
@@ -685,9 +714,11 @@ public:
   PositionType compIndex() const { return this->m_pos % numComp(); }
 
   /** \brief Returns the number of components per element in the map. */
+  AXOM_SUPPRESS_HD_WARN
   AXOM_HOST_DEVICE PositionType numComp() const { return m_map->numComp(); }
 
 protected:
+  AXOM_SUPPRESS_HD_WARN
   AXOM_HOST_DEVICE void advance(IndexType n)
   {
     this->m_pos += n;
@@ -763,6 +794,7 @@ public:
    * \pre `sizeof(compIdx) == StridePolicy::NumDims`
    * \pre `0 <= compIdx[idim] < shape()[idim]`
    */
+  AXOM_SUPPRESS_HD_WARN
   template <typename... ComponentIndex>
   AXOM_HOST_DEVICE DataRefType operator()(ComponentIndex... comp_idx) const
   {
@@ -802,6 +834,7 @@ public:
   PositionType numComp() const { return m_map->numComp(); }
 
 protected:
+  AXOM_SUPPRESS_HD_WARN
   AXOM_HOST_DEVICE void advance(IndexType n)
   {
     this->m_pos += n;

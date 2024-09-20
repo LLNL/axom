@@ -13,19 +13,17 @@
  *       since it might be included from a C file
  */
 
-
 /*
  * Axom Version Information
  */
 #define AXOM_VERSION_MAJOR @AXOM_VERSION_MAJOR@
 #define AXOM_VERSION_MINOR @AXOM_VERSION_MINOR@
 #define AXOM_VERSION_PATCH @AXOM_VERSION_PATCH@
-#define AXOM_VERSION_FULL  "@AXOM_VERSION_FULL@"
+#define AXOM_VERSION_FULL "@AXOM_VERSION_FULL@"
 /*NOTE: Do not add AXOM_GIT_SHA here.  This will force
  * full rebuild on all local changes. It is added in axom::getVersion()
  * and axom::about(), as well as accessible from axom::gitSha().
  */
-
 
 /*
  * Axom source location
@@ -33,7 +31,6 @@
 #define AXOM_SRC_DIR "@AXOM_SRC_DIR@"
 #define AXOM_BIN_DIR "@AXOM_BIN_DIR@"
 #cmakedefine AXOM_DATA_DIR "@AXOM_DATA_DIR@"
-
 
 /*
  * Platform specific definitions
@@ -45,7 +42,6 @@
 #ifndef AXOM_NO_INT64_T
 #cmakedefine AXOM_USE_64BIT_INDEXTYPE
 #endif
-
 
 /*
  * Compiler tests
@@ -61,7 +57,6 @@
 #cmakedefine AXOM_USE_MPI3
 #cmakedefine AXOM_USE_MPIF_HEADER
 #cmakedefine AXOM_USE_OPENMP
-
 
 /*
  * Compiler defines for libraries (built-in and third party)
@@ -97,7 +92,6 @@
 #define NOMINMAX
 #endif
 
-
 /*
  * Compiler defines for Axom components
  */
@@ -121,7 +115,6 @@
  */
 #cmakedefine AXOM_DEPRECATED_TYPES_N @AXOM_DEPRECATED_TYPES_N@
 
-
 /*
  * Compiler defines to configure the built-in fmt library
  */
@@ -134,11 +127,9 @@
 #cmakedefine SPARSEHASH_HASHFUN_HEADER @SPARSEHASH_HASHFUN_HEADER@
 #cmakedefine SPARSEHASH_HASHFUN_NAMESPACE @SPARSEHASH_HASHFUN_NAMESPACE@
 
-
 /*
  * Disable some MSVC warnings related to shared libraries, if applicable
  */
 @AXOM_MSVC_PRAGMAS@
 
-
-#endif  /* AXOM_COMMON_CONFIG_HPP */
+#endif /* AXOM_COMMON_CONFIG_HPP */

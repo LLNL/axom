@@ -390,21 +390,6 @@ int main(int argc, char** argv)
     finalize_logger();
     return retval;
   }
-#ifdef AXOM_USE_CUDA
-  if(args.exec_space == ExecPolicy::CUDA)
-  {
-    using GPUExec = axom::CUDA_EXEC<256>;
-    axom::setDefaultAllocator(axom::execution_space<GPUExec>::allocatorID());
-  }
-#endif
-#ifdef AXOM_USE_HIP
-  if(args.exec_space == ExecPolicy::HIP)
-  {
-    using GPUExec = axom::HIP_EXEC<256>;
-    axom::setDefaultAllocator(axom::execution_space<GPUExec>::allocatorID());
-  }
-#endif
-
   std::unique_ptr<UMesh> surface_mesh;
 
   // Read file

@@ -11,6 +11,7 @@
 // Axom includes
 #include "axom/config.hpp"
 #include "axom/core.hpp"
+#include "axom/core/NumericLimits.hpp"
 #include "axom/slic.hpp"
 #include "axom/primal.hpp"
 #include "axom/sidre.hpp"
@@ -35,7 +36,6 @@
 
 // C/C++ includes
 #include <string>
-#include <limits>
 #include <map>
 #include <vector>
 #include <cmath>
@@ -79,7 +79,7 @@ public:
 
   RuntimePolicy policy {RuntimePolicy::seq};
 
-  double distThreshold {std::numeric_limits<double>::max()};
+  double distThreshold {axom::numeric_limits<double>::max()};
 
   bool checkResults {false};
 
@@ -767,7 +767,7 @@ public:
   void saveMesh(const std::string& filename = "object_mesh")
   {
     SLIC_INFO(
-      banner(axom::fmt::format("Saving particle mesh '{}' to disk", filename)));
+      banner(axom::fmt::format("Saving object mesh '{}' to disk", filename)));
 
     m_objectMesh.saveMesh(filename);
   }
@@ -1195,8 +1195,8 @@ void computeDistancesAndDirections(BlueprintParticleMesh& queryMesh,
   using PointType = primal::Point<double, DIM>;
   using IndexSet = slam::PositionSet<>;
 
-  PointType nowhere(std::numeric_limits<double>::signaling_NaN());
-  const double nodist = std::numeric_limits<double>::signaling_NaN();
+  PointType nowhere(axom::numeric_limits<double>::signaling_NaN());
+  const double nodist = axom::numeric_limits<double>::signaling_NaN();
 
   queryMesh.registerNodalScalarField<double>(distanceField);
   queryMesh.registerNodalVectorField<double>(directionField);
@@ -1325,20 +1325,20 @@ int main(int argc, char** argv)
   //---------------------------------------------------------------------------
   // Memory resource.  For testing, choose device memory if appropriate.
   //---------------------------------------------------------------------------
-  const std::string umpireResourceName = params.policy == RuntimePolicy::seq
-    ? "HOST"
-    :
+  const std::string umpireResourceName =
+    params.policy == RuntimePolicy::seq ? "HOST" :
   #if defined(AXOM_RUNTIME_POLICY_USE_OPENMP)
-    params.policy == RuntimePolicy::omp ? "HOST" :
+    params.policy == RuntimePolicy::omp ? "HOST"
+                                        :
   #endif
   #if defined(UMPIRE_ENABLE_DEVICE)
                                         "DEVICE"
   #elif defined(UMPIRE_ENABLE_UM)
-    "UM"
+                                        "UM"
   #elif defined(UMPIRE_ENABLE_PINNED)
-    "PINNED"
+                                        "PINNED"
   #else
-    "HOST"
+                                        "HOST"
   #endif
     ;
   auto& rm = umpire::ResourceManager::getInstance();
@@ -1489,13 +1489,13 @@ int main(int argc, char** argv)
 
     SLIC_INFO(axom::fmt::format(
       "Initialization with policy {} took {{avg:{}, min:{}, max:{}}} seconds",
-      params.policy,
+      axom::runtime_policy::s_policyToName.at(params.policy),
       sumInit / num_ranks,
       minInit,
       maxInit));
     SLIC_INFO(axom::fmt::format(
       "Query with policy {} took {{avg:{}, min:{}, max:{}}} seconds",
-      params.policy,
+      axom::runtime_policy::s_policyToName.at(params.policy),
       sumQuery / num_ranks,
       minQuery,
       maxQuery));

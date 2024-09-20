@@ -2178,47 +2178,93 @@ TEST(primal_intersect, plane_bb_test_intersection)
 TEST(primal_intersect, plane_seg_test_intersection)
 {
   double t1, t2, t3;
-  const int DIM = 3;
-  using PointType = primal::Point<double, DIM>;
-  using PlaneType = primal::Plane<double, DIM>;
-  using SegmentType = primal::Segment<double, DIM>;
-  using VectorType = primal::Vector<double, DIM>;
+  using Point3D = primal::Point<double, 3>;
+  using Plane3D = primal::Plane<double, 3>;
+  using Segment3D = primal::Segment<double, 3>;
+  using Vector3D = primal::Vector<double, 3>;
 
-  // Line segment goes from (0,0,0) to (1,1,1)
-  PointType A(0.);
-  PointType B(1.);
-  SegmentType s(A, B);
+  using Point2D = primal::Point<double, 2>;
+  using Plane2D = primal::Plane<double, 2>;
+  using Segment2D = primal::Segment<double, 2>;
+  using Vector2D = primal::Vector<double, 2>;
 
-  // Line segment parallel to plane (non-intersect)
-  PointType A_p {-1, -1, 0};
-  PointType B_p {1, -1, 0};
-  SegmentType s_p(A_p, B_p);
+  // 3D Tests
+  {
+    // Line segment goes from (0,0,0) to (1,1,1)
+    Point3D A(0.);
+    Point3D B(1.);
+    Segment3D s(A, B);
 
-  // intersect A
-  VectorType normal1 {0.0, 1.0, 0.0};
-  double offset1 = 0.0;
-  PlaneType p1(normal1, offset1);
+    // Line segment parallel to plane (non-intersect)
+    Point3D A_p {-1, -1, 0};
+    Point3D B_p {1, -1, 0};
+    Segment3D s_p(A_p, B_p);
 
-  // intersect midpoint
-  VectorType normal2 {0.0, 1.0, 0.0};
-  double offset2 = 0.5;
-  PlaneType p2(normal2, offset2);
+    // intersect A
+    Vector3D normal1 {0.0, 1.0, 0.0};
+    double offset1 = 0.0;
+    Plane3D p1(normal1, offset1);
 
-  // intersect B
-  VectorType normal3 {0.0, 1.0, 0.0};
-  double offset3 = 1.0;
-  PlaneType p3(normal3, offset3);
+    // intersect midpoint
+    Vector3D normal2 {0.0, 1.0, 0.0};
+    double offset2 = 0.5;
+    Plane3D p2(normal2, offset2);
 
-  EXPECT_TRUE(axom::primal::intersect(p1, s, t1));
-  EXPECT_EQ(s.at(t1), PointType({0.0, 0.0, 0.0}));
+    // intersect B
+    Vector3D normal3 {0.0, 1.0, 0.0};
+    double offset3 = 1.0;
+    Plane3D p3(normal3, offset3);
 
-  EXPECT_TRUE(axom::primal::intersect(p2, s, t2));
-  EXPECT_EQ(s.at(t2), PointType({0.5, 0.5, 0.5}));
+    EXPECT_TRUE(axom::primal::intersect(p1, s, t1));
+    EXPECT_EQ(s.at(t1), Point3D({0.0, 0.0, 0.0}));
 
-  EXPECT_TRUE(axom::primal::intersect(p3, s, t3));
-  EXPECT_EQ(s.at(t3), PointType({1.0, 1.0, 1.0}));
+    EXPECT_TRUE(axom::primal::intersect(p2, s, t2));
+    EXPECT_EQ(s.at(t2), Point3D({0.5, 0.5, 0.5}));
 
-  EXPECT_FALSE(axom::primal::intersect(p1, s_p, t1));
+    EXPECT_TRUE(axom::primal::intersect(p3, s, t3));
+    EXPECT_EQ(s.at(t3), Point3D({1.0, 1.0, 1.0}));
+
+    EXPECT_FALSE(axom::primal::intersect(p1, s_p, t1));
+  }
+
+  // 2D Tests
+  {
+    // Line segment goes from (0,0) to (1,1)
+    Point2D A(0.);
+    Point2D B(1.);
+    Segment2D s(A, B);
+
+    // Line segment parallel to plane (non-intersect)
+    Point2D A_p {-1, -1};
+    Point2D B_p {1, -1};
+    Segment2D s_p(A_p, B_p);
+
+    // intersect A
+    Vector2D normal1 {0.0, 1.0};
+    double offset1 = 0.0;
+    Plane2D p1(normal1, offset1);
+
+    // intersect midpoint
+    Vector2D normal2 {0.0, 1.0};
+    double offset2 = 0.5;
+    Plane2D p2(normal2, offset2);
+
+    // intersect B
+    Vector2D normal3 {0.0, 1.0};
+    double offset3 = 1.0;
+    Plane2D p3(normal3, offset3);
+
+    EXPECT_TRUE(axom::primal::intersect(p1, s, t1));
+    EXPECT_EQ(s.at(t1), Point2D({0.0, 0.0}));
+
+    EXPECT_TRUE(axom::primal::intersect(p2, s, t2));
+    EXPECT_EQ(s.at(t2), Point2D({0.5, 0.5}));
+
+    EXPECT_TRUE(axom::primal::intersect(p3, s, t3));
+    EXPECT_EQ(s.at(t3), Point2D({1.0, 1.0}));
+
+    EXPECT_FALSE(axom::primal::intersect(p1, s_p, t1));
+  }
 }
 
 //------------------------------------------------------------------------------

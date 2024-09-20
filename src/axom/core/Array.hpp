@@ -7,6 +7,7 @@
 #define AXOM_ARRAY_HPP_
 
 #include "axom/config.hpp"
+#include "axom/core/MDMapping.hpp"
 #include "axom/core/Macros.hpp"
 #include "axom/core/utilities/Utilities.hpp"
 #include "axom/core/Types.hpp"
@@ -60,10 +61,13 @@ struct ArrayTraits<Array<T, DIM, SPACE>>
  *
  *  The Array class mirrors std::vector, with future support for GPUs
  *  in-development.  The class's multidimensional array functionality roughly
-    mirrors the multidimensional array support provided by numpy's ndarray.
- * 
+ *  mirrors the multidimensional array support provided by numpy's ndarray.
+ *
  *  \see https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html
- * 
+ *
+ *  Some interfaces accomodate data ordering specifications.
+ *  Unless otherwise specified, data storage defaults to row-major.
+ *
  *  This class is meant to be a drop-in replacement for std::vector.
  *  However, it differs in its memory management and construction semantics.
  *  Specifically, we do not require axom::Array to initialize/construct
@@ -159,6 +163,31 @@ public:
         int allocator_id = axom::detail::getAllocatorID<SPACE>());
 
   Array(const axom::StackArray<axom::IndexType, DIM>& shape,
+        int allocator_id = axom::detail::getAllocatorID<SPACE>());
+
+  /*!
+    \brief Construct Array with row- or column-major data ordering.
+
+    \pre rowOrColumn must be either ArrayStrideOrder::ROW or
+    ArrayStrideOrder::COLUMN (or, if DIM is 1, ArrayStrideOrder::BOTH).
+  */
+  Array(const axom::StackArray<axom::IndexType, DIM>& shape,
+        axom::ArrayStrideOrder rowOrColumn,
+        int allocator_id = axom::detail::getAllocatorID<SPACE>());
+
+  /*!
+    \brief Construct Array with data ordering specifications.
+
+    Example of 3D Array where j is slowest and i is fastest:
+        Array<3, int> ar(
+          shape,
+          axom::StackArray<axom::IndexType, DIM>{2, 0, 1});
+
+    \pre slowestDirs must be a permutation of [0 ... DIM-1]
+  */
+  template <typename DirType = axom::IndexType>
+  Array(const axom::StackArray<axom::IndexType, DIM>& shape,
+        const axom::StackArray<DirType, DIM>& slowestDirs,
         int allocator_id = axom::detail::getAllocatorID<SPACE>());
 
   /*!
@@ -268,12 +297,11 @@ public:
       {
         srcSpace = axom::detail::getAllocatorSpace(other.m_allocator_id);
       }
-      OpHelper::fill_range(m_data,
-                           0,
-                           other.size(),
-                           m_allocator_id,
-                           other.data(),
-                           srcSpace);
+      OpHelper {m_allocator_id, m_executeOnGPU}.fill_range(m_data,
+                                                           0,
+                                                           other.size(),
+                                                           other.data(),
+                                                           srcSpace);
       updateNumElements(other.size());
     }
 
@@ -597,13 +625,34 @@ public:
    * \param [in] value the value to be added to the back.
    *
    * \note Reallocation is done if the new size will exceed the capacity.
-   * \note If used in a device kernel, the number of push_backs must not exceed
-   *  the capacity, since device-side reallocations aren't supported.
-   * \note Array must be allocated in unified memory if calling on the device.
-   * 
+   *
    * \pre DIM == 1
    */
-  AXOM_HOST_DEVICE void push_back(const T& value);
+  void push_back(const T& value);
+
+  /*!
+   * \brief Push a value to the back of the array.
+   *
+   * \param [in] value the value to move to the back.
+   *
+   * \note Reallocation is done if the new size will exceed the capacity.
+   *
+   * \pre DIM == 1
+   */
+  void push_back(T&& value);
+
+  /*!
+   * \brief Inserts new element at the end of the Array.
+   *
+   * \param [in] args the arguments to forward to constructor of the element.
+   *
+   * \note Reallocation is done if the new size will exceed the capacity.
+   * \note The size increases by 1.
+   *
+   * \pre DIM == 1
+   */
+  template <typename... Args>
+  void emplace_back(Args&&... args);
 
   /*!
    * \brief Push a value to the back of the array.
@@ -614,10 +663,13 @@ public:
    * \note If used in a device kernel, the number of push_backs must not exceed
    *  the capacity, since device-side reallocations aren't supported.
    * \note Array must be allocated in unified memory if calling on the device.
-   * 
+   *
    * \pre DIM == 1
    */
-  AXOM_HOST_DEVICE void push_back(T&& value);
+  /// @{
+  AXOM_HOST_DEVICE void push_back_device(const T& value);
+  AXOM_HOST_DEVICE void push_back_device(T&& value);
+  /// @}
 
   /*!
    * \brief Inserts new element at the end of the Array.
@@ -629,11 +681,11 @@ public:
    * \note If used in a device kernel, the number of push_backs must not exceed
    *  the capacity, since device-side reallocations aren't supported.
    * \note Array must be allocated in unified memory if calling on the device.
-   * 
+   *
    * \pre DIM == 1
    */
   template <typename... Args>
-  AXOM_HOST_DEVICE void emplace_back(Args&&... args);
+  AXOM_HOST_DEVICE void emplace_back_device(Args&&... args);
 
   /// @}
 
@@ -793,6 +845,16 @@ public:
   int getAllocatorID() const { return m_allocator_id; }
 
   /*!
+   * \brief Sets the preferred space where operations on this array should be
+   *  performed.
+   *
+   *  This option only has an effect for memory which is both accessible on the
+   *  CPU and the GPU. For CUDA this is the Unified and Pinned memory spaces,
+   *  while for HIP this is the Unified, Pinned, and Device memory spaces.
+   */
+  void setDevicePreference(bool on_device) { m_executeOnGPU = on_device; }
+
+  /*!
    * \brief Returns a view of the array
    * \sa ArrayView
    */
@@ -905,6 +967,7 @@ protected:
   IndexType m_capacity = 0;
   double m_resize_ratio = DEFAULT_RESIZE_RATIO;
   int m_allocator_id;
+  bool m_executeOnGPU;
 };
 
 /// \brief Helper alias for multi-component arrays
@@ -926,6 +989,38 @@ template <typename T, int DIM, MemorySpace SPACE>
 Array<T, DIM, SPACE>::Array(const axom::StackArray<axom::IndexType, DIM>& shape,
                             int allocator_id)
   : ArrayBase<T, DIM, Array<T, DIM, SPACE>>(shape)
+  , m_allocator_id(allocator_id)
+{
+  initialize(detail::packProduct(shape.m_data),
+             detail::packProduct(shape.m_data),
+             false);
+}
+
+//------------------------------------------------------------------------------
+template <typename T, int DIM, MemorySpace SPACE>
+Array<T, DIM, SPACE>::Array(const axom::StackArray<axom::IndexType, DIM>& shape,
+                            axom::ArrayStrideOrder rowOrColumn,
+                            int allocator_id)
+  : ArrayBase<T, DIM, Array<T, DIM, SPACE>>(
+      shape,
+      MDMapping<DIM> {shape, rowOrColumn, 1})
+  , m_allocator_id(allocator_id)
+{
+  assert(rowOrColumn == axom::ArrayStrideOrder::ROW ||
+         rowOrColumn == axom::ArrayStrideOrder::COLUMN ||
+         (DIM == 1 && rowOrColumn == axom::ArrayStrideOrder::BOTH));
+  initialize(detail::packProduct(shape.m_data),
+             detail::packProduct(shape.m_data),
+             false);
+}
+
+//------------------------------------------------------------------------------
+template <typename T, int DIM, MemorySpace SPACE>
+template <typename DirType>
+Array<T, DIM, SPACE>::Array(const axom::StackArray<axom::IndexType, DIM>& shape,
+                            const axom::StackArray<DirType, DIM>& slowestDirs,
+                            int allocator_id)
+  : ArrayBase<T, DIM, Array<T, DIM, SPACE>>(shape, {shape, slowestDirs, 1})
   , m_allocator_id(allocator_id)
 {
   initialize(detail::packProduct(shape.m_data),
@@ -1049,12 +1144,11 @@ AXOM_HOST_DEVICE Array<T, DIM, SPACE>::Array(const Array& other)
   {
     srcSpace = axom::detail::getAllocatorSpace(other.m_allocator_id);
   }
-  OpHelper::fill_range(m_data,
-                       0,
-                       m_num_elements,
-                       m_allocator_id,
-                       other.data(),
-                       srcSpace);
+  OpHelper {m_allocator_id, m_executeOnGPU}.fill_range(m_data,
+                                                       0,
+                                                       m_num_elements,
+                                                       other.data(),
+                                                       srcSpace);
 #endif
 }
 
@@ -1153,8 +1247,8 @@ Array<T, DIM, SPACE>::~Array()
 template <typename T, int DIM, MemorySpace SPACE>
 inline void Array<T, DIM, SPACE>::fill(const T& value)
 {
-  OpHelper::destroy(m_data, 0, m_num_elements, m_allocator_id);
-  OpHelper::fill(m_data, 0, m_num_elements, m_allocator_id, value);
+  OpHelper {m_allocator_id, m_executeOnGPU}.destroy(m_data, 0, m_num_elements);
+  OpHelper {m_allocator_id, m_executeOnGPU}.fill(m_data, 0, m_num_elements, value);
 }
 
 //------------------------------------------------------------------------------
@@ -1164,8 +1258,8 @@ inline void Array<T, DIM, SPACE>::fill(const T& value, IndexType n, IndexType po
   assert(pos >= 0);
   assert(pos + n <= m_num_elements);
 
-  OpHelper::destroy(m_data, pos, n, m_allocator_id);
-  OpHelper::fill(m_data, pos, n, m_allocator_id, value);
+  OpHelper {m_allocator_id, m_executeOnGPU}.destroy(m_data, pos, n);
+  OpHelper {m_allocator_id, m_executeOnGPU}.fill(m_data, pos, n, value);
 }
 
 //------------------------------------------------------------------------------
@@ -1176,17 +1270,24 @@ inline void Array<T, DIM, SPACE>::set(const T* elements, IndexType n, IndexType 
   assert(pos >= 0);
   assert(pos + n <= m_num_elements);
 
-  OpHelper::destroy(m_data, pos, n, m_allocator_id);
-  OpHelper::fill_range(m_data, pos, n, m_allocator_id, elements, MemorySpace::Dynamic);
+  OpHelper {m_allocator_id, m_executeOnGPU}.destroy(m_data, pos, n);
+  OpHelper {m_allocator_id, m_executeOnGPU}.fill_range(m_data,
+                                                       pos,
+                                                       n,
+                                                       elements,
+                                                       MemorySpace::Dynamic);
 }
 
 //------------------------------------------------------------------------------
 template <typename T, int DIM, MemorySpace SPACE>
 inline void Array<T, DIM, SPACE>::clear()
 {
-  OpHelper::destroy(m_data, 0, m_num_elements, m_allocator_id);
+  if(m_num_elements > 0)
+  {
+    OpHelper {m_allocator_id, m_executeOnGPU}.destroy(m_data, 0, m_num_elements);
 
-  updateNumElements(0);
+    updateNumElements(0);
+  }
 }
 
 //------------------------------------------------------------------------------
@@ -1196,7 +1297,7 @@ inline void Array<T, DIM, SPACE>::insert(IndexType pos, const T& value)
   static_assert(DIM == 1, "Insertion not supported for multidimensional Arrays");
   reserveForInsert(1, pos);
 
-  OpHelper::emplace(m_data, pos, m_allocator_id, value);
+  OpHelper {m_allocator_id, m_executeOnGPU}.emplace(m_data, pos, value);
 }
 
 //------------------------------------------------------------------------------
@@ -1217,7 +1318,11 @@ inline void Array<T, DIM, SPACE>::insert(IndexType pos, IndexType n, const T* va
 {
   assert(values != nullptr);
   reserveForInsert(n, pos);
-  OpHelper::fill_range(m_data, pos, n, m_allocator_id, values, MemorySpace::Dynamic);
+  OpHelper {m_allocator_id, m_executeOnGPU}.fill_range(m_data,
+                                                       pos,
+                                                       n,
+                                                       values,
+                                                       MemorySpace::Dynamic);
 }
 
 //------------------------------------------------------------------------------
@@ -1239,7 +1344,7 @@ inline void Array<T, DIM, SPACE>::insert(IndexType pos, IndexType n, const T& va
 {
   static_assert(DIM == 1, "Insertion not supported for multidimensional Arrays");
   reserveForInsert(n, pos);
-  OpHelper::fill(m_data, pos, n, m_allocator_id, value);
+  OpHelper {m_allocator_id, m_executeOnGPU}.fill(m_data, pos, n, value);
 }
 
 //------------------------------------------------------------------------------
@@ -1277,8 +1382,11 @@ inline typename Array<T, DIM, SPACE>::ArrayIterator Array<T, DIM, SPACE>::erase(
   IndexType posIdx = pos - begin();
 
   // Destroy element at posIdx and shift elements over by 1
-  OpHelper::destroy(m_data, posIdx, 1, m_allocator_id);
-  OpHelper::move(m_data, posIdx + 1, m_num_elements, posIdx, m_allocator_id);
+  OpHelper {m_allocator_id, m_executeOnGPU}.destroy(m_data, posIdx, 1);
+  OpHelper {m_allocator_id, m_executeOnGPU}.move(m_data,
+                                                 posIdx + 1,
+                                                 m_num_elements,
+                                                 posIdx);
   updateNumElements(m_num_elements - 1);
 
   return ArrayIterator(posIdx, this);
@@ -1303,10 +1411,13 @@ inline typename Array<T, DIM, SPACE>::ArrayIterator Array<T, DIM, SPACE>::erase(
   IndexType firstIdx = first - begin();
   IndexType lastIdx = last - begin();
   IndexType nelems = last - first;
-  OpHelper::destroy(m_data, firstIdx, nelems, m_allocator_id);
+  OpHelper {m_allocator_id, m_executeOnGPU}.destroy(m_data, firstIdx, nelems);
 
   // Shift [last, end) elements over
-  OpHelper::move(m_data, lastIdx, m_num_elements, firstIdx, m_allocator_id);
+  OpHelper {m_allocator_id, m_executeOnGPU}.move(m_data,
+                                                 lastIdx,
+                                                 m_num_elements,
+                                                 firstIdx);
 
   IndexType count = lastIdx - firstIdx;
   updateNumElements(m_num_elements - count);
@@ -1319,7 +1430,9 @@ template <typename... Args>
 inline void Array<T, DIM, SPACE>::emplace(IndexType pos, Args&&... args)
 {
   reserveForInsert(1, pos);
-  OpHelper::emplace(m_data, pos, m_allocator_id, std::forward<Args>(args)...);
+  OpHelper {m_allocator_id, m_executeOnGPU}.emplace(m_data,
+                                                    pos,
+                                                    std::forward<Args>(args)...);
 }
 
 //------------------------------------------------------------------------------
@@ -1336,7 +1449,7 @@ inline typename Array<T, DIM, SPACE>::ArrayIterator Array<T, DIM, SPACE>::emplac
 
 //------------------------------------------------------------------------------
 template <typename T, int DIM, MemorySpace SPACE>
-AXOM_HOST_DEVICE inline void Array<T, DIM, SPACE>::push_back(const T& value)
+inline void Array<T, DIM, SPACE>::push_back(const T& value)
 {
   static_assert(DIM == 1, "push_back is only supported for 1D arrays");
   emplace_back(value);
@@ -1344,16 +1457,42 @@ AXOM_HOST_DEVICE inline void Array<T, DIM, SPACE>::push_back(const T& value)
 
 //------------------------------------------------------------------------------
 template <typename T, int DIM, MemorySpace SPACE>
-AXOM_HOST_DEVICE inline void Array<T, DIM, SPACE>::push_back(T&& value)
+inline void Array<T, DIM, SPACE>::push_back(T&& value)
 {
   static_assert(DIM == 1, "push_back is only supported for 1D arrays");
   emplace_back(std::move(value));
 }
 
 //------------------------------------------------------------------------------
+AXOM_SUPPRESS_HD_WARN
+template <typename T, int DIM, MemorySpace SPACE>
+AXOM_HOST_DEVICE inline void Array<T, DIM, SPACE>::push_back_device(const T& value)
+{
+  static_assert(DIM == 1, "push_back_device is only supported for 1D arrays");
+  emplace_back_device(value);
+}
+
+//------------------------------------------------------------------------------
+template <typename T, int DIM, MemorySpace SPACE>
+AXOM_HOST_DEVICE inline void Array<T, DIM, SPACE>::push_back_device(T&& value)
+{
+  static_assert(DIM == 1, "push_back_device is only supported for 1D arrays");
+  emplace_back_device(std::move(value));
+}
+
+//------------------------------------------------------------------------------
 template <typename T, int DIM, MemorySpace SPACE>
 template <typename... Args>
-AXOM_HOST_DEVICE inline void Array<T, DIM, SPACE>::emplace_back(Args&&... args)
+inline void Array<T, DIM, SPACE>::emplace_back(Args&&... args)
+{
+  static_assert(DIM == 1, "emplace_back is only supported for 1D arrays");
+  emplace(size(), std::forward<Args>(args)...);
+}
+
+//------------------------------------------------------------------------------
+template <typename T, int DIM, MemorySpace SPACE>
+template <typename... Args>
+AXOM_HOST_DEVICE inline void Array<T, DIM, SPACE>::emplace_back_device(Args&&... args)
 {
   static_assert(DIM == 1, "emplace_back is only supported for 1D arrays");
 #ifdef AXOM_DEVICE_CODE
@@ -1389,28 +1528,28 @@ inline void Array<T, DIM, SPACE>::resizeImpl(const StackArray<IndexType, DIM>& d
     if(value)
     {
       // Copy-construct new elements with value
-      OpHelper::fill(m_data,
-                     prev_num_elements,
-                     new_num_elements - prev_num_elements,
-                     m_allocator_id,
-                     *value);
+      OpHelper {m_allocator_id, m_executeOnGPU}.fill(
+        m_data,
+        prev_num_elements,
+        new_num_elements - prev_num_elements,
+        *value);
     }
     else
     {
       // Default-initialize the new elements
-      OpHelper::init(m_data,
-                     prev_num_elements,
-                     new_num_elements - prev_num_elements,
-                     m_allocator_id);
+      OpHelper {m_allocator_id, m_executeOnGPU}.init(
+        m_data,
+        prev_num_elements,
+        new_num_elements - prev_num_elements);
     }
   }
   else if(prev_num_elements > new_num_elements)
   {
     // Destroy any elements above new_num_elements
-    OpHelper::destroy(m_data,
-                      new_num_elements,
-                      prev_num_elements - new_num_elements,
-                      m_allocator_id);
+    OpHelper {m_allocator_id, m_executeOnGPU}.destroy(
+      m_data,
+      new_num_elements,
+      prev_num_elements - new_num_elements);
   }
 
   updateNumElements(new_num_elements);
@@ -1449,7 +1588,7 @@ inline void Array<T, DIM, SPACE>::initialize(IndexType num_elements,
   setCapacity(capacity);
   if(default_construct)
   {
-    OpHelper::init(m_data, 0, num_elements, m_allocator_id);
+    OpHelper {m_allocator_id, m_executeOnGPU}.init(m_data, 0, num_elements);
   }
   updateNumElements(num_elements);
 
@@ -1482,13 +1621,13 @@ inline void Array<T, DIM, SPACE>::initialize_from_other(
     m_allocator_id = axom::detail::getAllocatorID<SPACE>();
   }
   this->setCapacity(num_elements);
-  // Use fill_range to ensure that copy constructors are invoked for each element
-  OpHelper::fill_range(m_data,
-                       0,
-                       num_elements,
-                       m_allocator_id,
-                       other_data,
-                       other_data_space);
+  // Use fill_range to ensure that copy constructors are invoked for each
+  // element.
+  OpHelper {m_allocator_id, m_executeOnGPU}.fill_range(m_data,
+                                                       0,
+                                                       num_elements,
+                                                       other_data,
+                                                       other_data_space);
   this->updateNumElements(num_elements);
 }
 
@@ -1511,7 +1650,10 @@ inline T* Array<T, DIM, SPACE>::reserveForInsert(IndexType n, IndexType pos)
     dynamicRealloc(new_size);
   }
 
-  OpHelper::move(m_data, pos, m_num_elements, pos + n, m_allocator_id);
+  OpHelper {m_allocator_id, m_executeOnGPU}.move(m_data,
+                                                 pos,
+                                                 m_num_elements,
+                                                 pos + n);
 
   updateNumElements(new_size);
   return m_data + pos;
@@ -1573,7 +1715,9 @@ inline void Array<T, DIM, SPACE>::setCapacity(IndexType new_capacity)
 
   // Create a new block of memory, and move the elements over.
   T* new_data = axom::allocate<T>(new_capacity, m_allocator_id);
-  OpHelper::realloc_move(new_data, m_num_elements, m_data, m_allocator_id);
+  OpHelper {m_allocator_id, m_executeOnGPU}.realloc_move(new_data,
+                                                         m_num_elements,
+                                                         m_data);
 
   // Destroy the original array.
   axom::deallocate(m_data);
@@ -1590,7 +1734,12 @@ template <typename T, int DIM, MemorySpace SPACE>
 inline void Array<T, DIM, SPACE>::dynamicRealloc(IndexType new_num_elements)
 {
   assert(m_resize_ratio >= 1.0);
-  IndexType new_capacity = new_num_elements * m_resize_ratio + 0.5;
+
+  // Using resize strategy from LLVM libc++ (vector::__recommend()):
+  //   new_capacity = max(capacity() * resize_ratio, new_num_elements)
+  IndexType new_capacity =
+    axom::utilities::max<IndexType>(this->capacity() * m_resize_ratio + 0.5,
+                                    new_num_elements);
   const IndexType block_size = this->blockSize();
   const IndexType remainder = new_capacity % block_size;
   if(remainder != 0)

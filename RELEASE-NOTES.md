@@ -20,6 +20,18 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 ## [Unreleased] - Release date yyyy-mm-dd
 
 ### Added
+- SLIC constructors added to streams that take in a `std::string`. If string is
+  interpreted as a file name, the file is not opened until SLIC flushes and the
+  stream has at least one message logged.
+- Primal: Adds a `clip()` operator overload for clipping a 2D polygon against
+  another 2D polygon.
+- Primal: Adds `Polygon::reverseOrientation()` to reverse orientation of
+  a polygon in-place.
+- Adds `StaticArray`, a wrapper for `StackArray` with a size member variable.
+- Multidimenional `core::Array` supports column-major and arbitrary stride ordering,
+  in addition to the default row-major ordering.
+- Adds new `PolygonArray` and `MAX_VERTS` template parameters to `primal::Polygon` for dynamic
+  or static allocation.
 - Adds support for the optional `caliper` and `adiak` dependencies to axom.
   These dependencies are added through axom's `spack` package via the new `+profiling` variant,
   and are enabled in axom's build system via the `CALIPER_DIR` and `ADIAK_DIR` configuration paths.
@@ -30,13 +42,36 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 - Primal: Adds a `closest_point` operator for finding the closest point on a `Segment`
 - Primal: Adds a `reflectPoint` method to the `Plane` primitive
 - Primal: Makes several primitive methods available in device code
+- Improves support for `axom::Array` allocated in unified and pinned memory on GPU platforms.
+  Use of GPU-based operations for Arrays allocated in a unified memory space is controlled with
+  a new method, `Array::setDevicePreference()`.
+- Adds `svg2contours` script to convert paths in an SVG file to an MFEM NURBS mesh
+- Quest: Adds an example to query winding numbers on an MFEM NURBS mesh
 
 ### Changed
+- `axom::CLI::ExitCodes::Success` has been changed to `axom::CLI::ExitCodes::CLI11_Success`
+  to avoid conflict when X11 `#define`s `Success`.
+- `MarchingCubes` masking now uses the mask field's integer values instead of
+  converting them to booleans.  The new behavior lets you select a value to mask for.
+  If you want to continue the boolean behavior, use only 0 or 1 in your mask field.
+- Primal: `Polyhedron::centroid()` function changed to return center of mass
+  of the polyhedron. `Polyhedron::vertexMean()` added to return average of
+  polyhedron's vertices. `Polyhedron::moments()` returns the volume and centroid
+  of the polyhedron, the 0th and 1st moments respectively.
+- `quest::ArrayIndexer` is now `axom::MDMapping`, adopting conventional terminology
+  and moving out of `quest`.
+- `mint::structured_exec` is now `axom::nested_for_exec`, to support nested for loops
+  for all of Axom.  See `src/axom/core/execution/nested_for_exec.hpp`.
+- Set default Umpire allocator id to device instead of unified for CUDA and HIP execution policies.
 - Upgrades `vcpkg` usage for axom's automated Windows builds to its
   [2024.03.19 release](https://github.com/microsoft/vcpkg/releases/tag/2024.03.19).
   Also updates vcpkg port versions for axom dependencies. Temporarily removes `umpire`
   from axom's default dependencies on Windows due to incompatibility between umpire's
   external `fmt` and axom's vendored copy.
+- Turn off CMake finding dependencies on system paths.
+- `axom::Array`: trivially-copyable types with a non-trivial constructor are now initialized on the GPU.
+- SLIC no longer outputs the rank count in the `RANK` format string in parallel loggers. You can access
+  the rank count via new format option `RANK_COUNT`.
 
 ### Removed
 - Removes config option `AXOM_ENABLE_ANNOTATIONS`. Annotations are now provided by `caliper` 

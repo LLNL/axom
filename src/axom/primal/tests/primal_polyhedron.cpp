@@ -60,6 +60,11 @@ TEST(primal_polyhedron, polyhedron_unit_cube)
 
   EXPECT_EQ(1, poly.volume());
 
+  PointType centroid = poly.centroid();
+  EXPECT_NEAR(0.5, centroid[0], 1e-12);
+  EXPECT_NEAR(0.5, centroid[1], 1e-12);
+  EXPECT_NEAR(0.5, centroid[2], 1e-12);
+
   // Example usage of experimental getFaces() function
   // (input parameters and/or output may change in the future)
 
@@ -178,6 +183,11 @@ TEST(primal_polyhedron, polyhedron_tetrahedron)
     EXPECT_NEAR(tet.volume(), poly.volume(), EPS);
     EXPECT_NEAR(2.6666, poly.volume(), EPS);
 
+    PointType centroid = poly.centroid();
+    EXPECT_NEAR(0.0, centroid[0], EPS);
+    EXPECT_NEAR(0.0, centroid[1], EPS);
+    EXPECT_NEAR(0.0, centroid[2], EPS);
+
     // Test containment using winding numbers
     const bool includeBoundary = true;
     const bool useNonzeroRule = true;
@@ -230,6 +240,11 @@ TEST(primal_polyhedron, polyhedron_tetrahedron)
 
     EXPECT_NEAR(tet.volume(), poly.volume(), EPS);
     EXPECT_NEAR(0.1666, poly.volume(), EPS);
+
+    PointType centroid = poly.centroid();
+    EXPECT_NEAR(0.75, centroid[0], EPS);
+    EXPECT_NEAR(0.5, centroid[1], EPS);
+    EXPECT_NEAR(0.25, centroid[2], EPS);
   }
 }
 
@@ -237,6 +252,7 @@ TEST(primal_polyhedron, polyhedron_tetrahedron)
 TEST(primal_polyhedron, polyhedron_octahedron)
 {
   using PolyhedronType = primal::Polyhedron<double, 3>;
+  using PointType = primal::Point<double, 3>;
 
   constexpr double EPS = 1e-4;
   PolyhedronType octA;
@@ -257,6 +273,11 @@ TEST(primal_polyhedron, polyhedron_octahedron)
   EXPECT_NEAR(1.3333, octA.volume(), EPS);
   EXPECT_NEAR(1.3333, octA.signedVolume(), EPS);
 
+  PointType centroidA = octA.centroid();
+  EXPECT_NEAR(0.0, centroidA[0], EPS);
+  EXPECT_NEAR(0.0, centroidA[1], EPS);
+  EXPECT_NEAR(0.0, centroidA[2], EPS);
+
   PolyhedronType octB;
   octB.addVertex({1, 0, 0});
   octB.addVertex({1, 1, 0});
@@ -274,6 +295,11 @@ TEST(primal_polyhedron, polyhedron_octahedron)
 
   EXPECT_NEAR(0.6666, octB.volume(), EPS);
   EXPECT_NEAR(0.6666, octB.signedVolume(), EPS);
+
+  PointType centroidB = octB.centroid();
+  EXPECT_NEAR(0.5, centroidB[0], EPS);
+  EXPECT_NEAR(0.5, centroidB[1], EPS);
+  EXPECT_NEAR(0.5, centroidB[2], EPS);
 }
 
 //------------------------------------------------------------------------------
@@ -284,52 +310,60 @@ void check_volume()
 {
   const int DIM = 3;
   using PolyhedronType = primal::Polyhedron<double, DIM>;
+  using PointType = primal::Point<double, 3>;
 
-  umpire::ResourceManager& rm = umpire::ResourceManager::getInstance();
+  constexpr double EPS = 1e-10;
 
-  // Save current/default allocator
-  const int current_allocator = axom::getDefaultAllocatorID();
+  // Get ids of necessary allocators
+  const int host_allocator = axom::execution_space<axom::SEQ_EXEC>::allocatorID();
+  const int kernel_allocator = axom::execution_space<ExecSpace>::allocatorID();
 
-  // Determine new allocator (for CUDA or HIP policy, set to Unified)
-  umpire::Allocator allocator =
-    rm.getAllocator(axom::execution_space<ExecSpace>::allocatorID());
+  // Initialize volume
+  axom::Array<double> volume_device(1, 1, kernel_allocator);
+  auto volume_view = volume_device.view();
 
-  // Set new default to device
-  axom::setDefaultAllocator(allocator.getId());
-
-  // Initialize polyhedron and volume in unified memory
-  PolyhedronType* polys = axom::allocate<PolyhedronType>(1);
-  double* res = axom::allocate<double>(1);
-
-  polys[0] = PolyhedronType();
-  polys[0].addVertex({0, 0, 0});
-  polys[0].addVertex({1, 0, 0});
-  polys[0].addVertex({1, 1, 0});
-  polys[0].addVertex({0, 1, 0});
-  polys[0].addVertex({0, 0, 1});
-  polys[0].addVertex({1, 0, 1});
-  polys[0].addVertex({1, 1, 1});
-  polys[0].addVertex({0, 1, 1});
-
-  polys[0].addNeighbors(0, {1, 4, 3});
-  polys[0].addNeighbors(1, {5, 0, 2});
-  polys[0].addNeighbors(2, {3, 6, 1});
-  polys[0].addNeighbors(3, {7, 2, 0});
-  polys[0].addNeighbors(4, {5, 7, 0});
-  polys[0].addNeighbors(5, {1, 6, 4});
-  polys[0].addNeighbors(6, {2, 7, 5});
-  polys[0].addNeighbors(7, {4, 6, 3});
+  // Initialize centroid
+  axom::Array<PointType> centroid_device(1, 1, kernel_allocator);
+  auto centroid_view = centroid_device.view();
 
   axom::for_all<ExecSpace>(
     1,
-    AXOM_LAMBDA(int i) { res[i] = polys[i].volume(); });
+    AXOM_LAMBDA(int i) {
+      PolyhedronType poly;
+      poly.addVertex({0, 0, 0});
+      poly.addVertex({1, 0, 0});
+      poly.addVertex({1, 1, 0});
+      poly.addVertex({0, 1, 0});
+      poly.addVertex({0, 0, 1});
+      poly.addVertex({1, 0, 1});
+      poly.addVertex({1, 1, 1});
+      poly.addVertex({0, 1, 1});
 
-  EXPECT_EQ(res[0], 1);
+      poly.addNeighbors(0, {1, 4, 3});
+      poly.addNeighbors(1, {5, 0, 2});
+      poly.addNeighbors(2, {3, 6, 1});
+      poly.addNeighbors(3, {7, 2, 0});
+      poly.addNeighbors(4, {5, 7, 0});
+      poly.addNeighbors(5, {1, 6, 4});
+      poly.addNeighbors(6, {2, 7, 5});
+      poly.addNeighbors(7, {4, 6, 3});
 
-  axom::deallocate(polys);
-  axom::deallocate(res);
+      volume_view[i] = poly.volume();
 
-  axom::setDefaultAllocator(current_allocator);
+      centroid_view[i] = poly.centroid();
+    });
+
+  // Copy volume and centroid back to host
+  axom::Array<double> volume_host =
+    axom::Array<double>(volume_device, host_allocator);
+  axom::Array<PointType> centroid_host =
+    axom::Array<PointType>(centroid_device, host_allocator);
+
+  EXPECT_EQ(volume_host[0], 1);
+
+  EXPECT_NEAR(0.5, centroid_host[0][0], EPS);
+  EXPECT_NEAR(0.5, centroid_host[0][1], EPS);
+  EXPECT_NEAR(0.5, centroid_host[0][2], EPS);
 }
 
 TEST(primal_polyhedron, check_volume_sequential)
@@ -390,7 +424,7 @@ TEST(primal_polyhedron, polyhedron_decomposition)
   poly.addNeighbors(poly[7], {4, 6, 3});
 
   // Hex center (hc)
-  PointType hc = poly.centroid();
+  PointType hc = poly.vertexMean();
 
   //Face means (fm)
   PointType fm1 = PointType::midpoint(PointType::midpoint(poly[0], poly[1]),
@@ -696,6 +730,8 @@ TEST(primal_polyhedron, polyhedron_from_primitive)
 
   Polyhedron3D poly;
 
+  Point3D centroid;
+
   // Valid hexahedron
   Hexahedron3D hex(Point3D {0, 0, 1},
                    Point3D {1, 0, 1},
@@ -712,6 +748,12 @@ TEST(primal_polyhedron, polyhedron_from_primitive)
   // Check signed volume
   EXPECT_NEAR(1.0, poly.signedVolume(), EPS);
   EXPECT_NEAR(hex.signedVolume(), poly.signedVolume(), EPS);
+
+  // Check centroid
+  centroid = poly.centroid();
+  EXPECT_NEAR(0.5, centroid[0], EPS);
+  EXPECT_NEAR(0.5, centroid[1], EPS);
+  EXPECT_NEAR(0.5, centroid[2], EPS);
 
   // Negative volume
   axom::utilities::swap<Point3D>(hex[1], hex[3]);
@@ -736,6 +778,12 @@ TEST(primal_polyhedron, polyhedron_from_primitive)
   poly = Polyhedron3D::from_primitive(oct, false);
   EXPECT_NEAR(0.6666, poly.volume(), EPS);
 
+  // Check centroid
+  centroid = poly.centroid();
+  EXPECT_NEAR(0.5, centroid[0], EPS);
+  EXPECT_NEAR(0.5, centroid[1], EPS);
+  EXPECT_NEAR(0.5, centroid[2], EPS);
+
   // Negative volume
   axom::utilities::swap<Point3D>(oct[1], oct[2]);
   axom::utilities::swap<Point3D>(oct[4], oct[5]);
@@ -756,6 +804,12 @@ TEST(primal_polyhedron, polyhedron_from_primitive)
   poly = Polyhedron3D::from_primitive(tet, false);
   EXPECT_NEAR(2.6666, poly.volume(), EPS);
 
+  // Check centroid
+  centroid = poly.centroid();
+  EXPECT_NEAR(0.0, centroid[0], EPS);
+  EXPECT_NEAR(0.0, centroid[1], EPS);
+  EXPECT_NEAR(0.0, centroid[2], EPS);
+
   // Check signed volume
   EXPECT_NEAR(2.6666, poly.signedVolume(), EPS);
   EXPECT_NEAR(tet.signedVolume(), poly.signedVolume(), EPS);
@@ -770,6 +824,191 @@ TEST(primal_polyhedron, polyhedron_from_primitive)
   // Check sign
   poly = Polyhedron3D::from_primitive(tet, CHECK_SIGN);
   EXPECT_NEAR(2.6666, poly.signedVolume(), EPS);
+}
+
+//------------------------------------------------------------------------------
+TEST(primal_polyhedron, polyhedron_moments)
+{
+  using PointType = primal::Point<double, 3>;
+  using VectorType = primal::Vector<double, 3>;
+  using TetrahedronType = primal::Tetrahedron<double, 3>;
+  using PolyhedronType = primal::Polyhedron<double, 3>;
+  using TransformMatrix = axom::numerics::Matrix<double>;
+
+  double EPS = 1e-10;
+
+  // Rolling volume and centroid
+  double volume;
+  PointType centroid;
+
+  TetrahedronType tet {PointType {1, 0, 0},
+                       PointType {1, 1, 0},
+                       PointType {0, 1, 0},
+                       PointType {1, 0, 1}};
+
+  EXPECT_TRUE(tet.signedVolume() > 0.);
+
+  PolyhedronType poly;
+  poly.addVertex(tet[0]);
+  poly.addVertex(tet[1]);
+  poly.addVertex(tet[2]);
+  poly.addVertex(tet[3]);
+
+  poly.addNeighbors(0, {1, 3, 2});
+  poly.addNeighbors(1, {0, 2, 3});
+  poly.addNeighbors(2, {0, 3, 1});
+  poly.addNeighbors(3, {0, 1, 2});
+
+  poly.moments(volume, centroid);
+
+  // Volume and centroid without affine transformations applied
+  double original_volume = volume;
+  PointType original_centroid = centroid;
+
+  EXPECT_NEAR(tet.volume(), volume, EPS);
+  EXPECT_NEAR(1.0 / 6.0, volume, EPS);
+
+  EXPECT_NEAR(0.75, centroid[0], EPS);
+  EXPECT_NEAR(0.5, centroid[1], EPS);
+  EXPECT_NEAR(0.25, centroid[2], EPS);
+
+  // lambda to generate an affine transformation matrix for 3D points
+  auto generateTransformMatrix3D = [&EPS](const PointType& scale,
+                                          const PointType& translate,
+                                          const VectorType& axis,
+                                          double angle) {
+    // create scaling matrix
+    auto sc_matx = TransformMatrix::identity(4);
+    {
+      sc_matx(0, 0) = scale[0];
+      sc_matx(1, 1) = scale[1];
+      sc_matx(2, 2) = scale[2];
+    }
+
+    // create rotation matrix
+    auto rot_matx = TransformMatrix::zeros(4, 4);
+    {
+      const double sinT = std::sin(angle);
+      const double cosT = std::cos(angle);
+
+      const auto unitAxis = axis.unitVector();
+      const double& ux = unitAxis[0];
+      const double& uy = unitAxis[1];
+      const double& uz = unitAxis[2];
+
+      rot_matx(0, 0) = cosT + ux * ux * (1 - cosT);
+      rot_matx(0, 1) = ux * uy * (1 - cosT) - uz * sinT;
+      rot_matx(0, 2) = ux * uz * (1 - cosT) + uy * sinT;
+      rot_matx(1, 0) = uy * ux * (1 - cosT) + uz * sinT;
+      rot_matx(1, 1) = cosT + uy * uy * (1 - cosT);
+      rot_matx(1, 2) = uy * uz * (1 - cosT) - ux * sinT;
+      rot_matx(2, 0) = uz * ux * (1 - cosT) - uy * sinT;
+      rot_matx(2, 1) = uz * uy * (1 - cosT) + ux * sinT;
+      rot_matx(2, 2) = cosT + uz * uz * (1 - cosT);
+      rot_matx(3, 3) = 1;
+    }
+
+    // create translation matrix
+    auto tr_matx = TransformMatrix::identity(4);
+    {
+      tr_matx(0, 3) = translate[0];
+      tr_matx(1, 3) = translate[1];
+      tr_matx(2, 3) = translate[2];
+    }
+
+    // multiply them to get the final transform
+    TransformMatrix affine_matx1(4, 4);
+    matrix_multiply(rot_matx, sc_matx, affine_matx1);
+    TransformMatrix affine_matx2(4, 4);
+    matrix_multiply(tr_matx, affine_matx1, affine_matx2);
+
+    EXPECT_NEAR(scale[0] * scale[1] * scale[2], determinant(affine_matx2), EPS);
+    return affine_matx2;
+  };
+
+  // Omit scaling by zero, as it results in an invalid transformed polyhedron
+  const auto scales = axom::Array<double>({-3., -1., -.5, 0.01, 1., 42.3});
+  const auto translations = axom::Array<double>({-.5, 0., 1., 42.3});
+  const auto angles = axom::Array<double>({-.57, 0., 2. / 3. * M_PI});
+  const auto axes = axom::Array<VectorType>({
+    VectorType {0., 0., 1.},
+    VectorType {0., 1., 0.},
+    VectorType {1., 0., 0.},
+    VectorType {1., 0., 1.},
+    VectorType {1., 1., 1.},
+    VectorType {-2., -5., 0.},
+  });
+
+  // lambda to transform a point
+  auto transformPoint = [](const PointType& p, const TransformMatrix& matx) {
+    const double vec_in[4] = {p[0], p[1], p[2], 1.};
+    double vec_out[4] = {0., 0., 0., 0.};
+    axom::numerics::matrix_vector_multiply(matx, vec_in, vec_out);
+    return PointType {vec_out[0], vec_out[1], vec_out[2]};
+  };
+
+  // lambda to transform the polyhedron
+  auto transformedPolyhedron = [&transformPoint](const PolyhedronType& poly,
+                                                 const TransformMatrix& matx) {
+    PolyhedronType xformed;
+    for(int i = 0; i < poly.numVertices(); ++i)
+    {
+      xformed.addVertex(transformPoint(poly[i], matx));
+    }
+
+    xformed.addNeighbors(0, {1, 3, 2});
+    xformed.addNeighbors(1, {0, 2, 3});
+    xformed.addNeighbors(2, {0, 3, 1});
+    xformed.addNeighbors(3, {0, 1, 2});
+    return xformed;
+  };
+
+  // check moments of polyhedron after affine transforms
+  for(double sc_x : scales)
+  {
+    for(double sc_y : scales)
+    {
+      for(double sc_z : scales)
+      {
+        for(double tr_x : translations)
+        {
+          for(double tr_y : translations)
+          {
+            for(double tr_z : translations)
+            {
+              for(const auto& axis : axes)
+              {
+                for(double theta : angles)
+                {
+                  const auto sc = PointType {sc_x, sc_y, sc_z};
+                  const auto tr = PointType {tr_x, tr_y, tr_z};
+                  auto affine_matx =
+                    generateTransformMatrix3D(sc, tr, axis, theta);
+                  auto xformed_polyhedron =
+                    transformedPolyhedron(poly, affine_matx);
+
+                  // Get moments of transformed polyhedron
+                  centroid = PointType();
+                  xformed_polyhedron.moments(volume, centroid);
+
+                  // Compare transformed volume against scaled original volume
+                  EXPECT_NEAR(original_volume * sc_x * sc_y * sc_z, volume, EPS);
+
+                  // Compare centroid of transformed polyhedron against
+                  // transformed original centroid point
+                  PointType xformed_original_centroid =
+                    transformPoint(original_centroid, affine_matx);
+                  EXPECT_NEAR(xformed_original_centroid[0], centroid[0], EPS);
+                  EXPECT_NEAR(xformed_original_centroid[1], centroid[1], EPS);
+                  EXPECT_NEAR(xformed_original_centroid[2], centroid[2], EPS);
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
 }
 
 //------------------------------------------------------------------------------

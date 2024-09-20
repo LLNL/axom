@@ -169,20 +169,9 @@ The top-level component directory contains a ``CMakeLists.txt``, e.g.,
 
        install(EXPORT <component name>-targets DESTINATION lib/cmake)
 
-  #. Code formatting and static analysis targets; e.g.,::
-
-       axom_add_code_checks(BASE_NAME <component name>)
-
-
-
-.. note:: Each Axom component should use the common ``clang-format``
-          configuration file defined for the project at ``src/.clang-format``. 
-          The file is used to define source code formatting options that are
-          applied when the *clang-format* tool is run on the code.
-
 
 Component src directory
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^
 
 The ``CMakeLists.txt`` file in the component ``src`` directory defines:
 

@@ -93,29 +93,98 @@ void check_assignment_operator()
 //------------------------------------------------------------------------------
 // UNIT TEST
 //------------------------------------------------------------------------------
+
+TEST(primal_plane, default_constructor)
+{
+  // test 3D
+  {
+    PlaneType3 P;
+    EXPECT_DOUBLE_EQ(P.getOffset(), 0.0);
+    EXPECT_DOUBLE_EQ(P.getNormal()[0], 0.0);
+    EXPECT_DOUBLE_EQ(P.getNormal()[1], 0.0);
+    EXPECT_DOUBLE_EQ(P.getNormal()[2], 0.0);
+    EXPECT_EQ(P.getDimension(), 3);
+    EXPECT_FALSE(P.isValid());
+  }
+
+  // test 2D
+  {
+    PlaneType2 P;
+    EXPECT_DOUBLE_EQ(P.getOffset(), 0.0);
+    EXPECT_DOUBLE_EQ(P.getNormal()[0], 0.0);
+    EXPECT_DOUBLE_EQ(P.getNormal()[1], 0.0);
+    EXPECT_EQ(P.getDimension(), 2);
+    EXPECT_FALSE(P.isValid());
+  }
+}
+
 TEST(primal_plane, construct_from_normal_and_point)
 {
   // test 3D
   {
     VectorType3 normal {0.0, 0.0, 10.0};
     PointType3 x {0.0, 0.0, 2.0};
+
+    // Implicitly normalized
     PlaneType3 P(normal, x);
-    EXPECT_DOUBLE_EQ(P.getOffset(), 2.0);
+    ensure_unit_norm(P.getNormal());
     EXPECT_DOUBLE_EQ(P.getNormal()[0], 0.0);
     EXPECT_DOUBLE_EQ(P.getNormal()[1], 0.0);
     EXPECT_DOUBLE_EQ(P.getNormal()[2], 1.0);
+    EXPECT_DOUBLE_EQ(P.getOffset(), 2.0);
     EXPECT_EQ(P.getDimension(), 3);
+    EXPECT_TRUE(P.isValid());
+
+    // Explicitly normalized
+    PlaneType3 P2(normal, x, true);
+    ensure_unit_norm(P.getNormal());
+    EXPECT_DOUBLE_EQ(P2.getNormal()[0], 0.0);
+    EXPECT_DOUBLE_EQ(P2.getNormal()[1], 0.0);
+    EXPECT_DOUBLE_EQ(P2.getNormal()[2], 1.0);
+    EXPECT_DOUBLE_EQ(P2.getOffset(), 2.0);
+    EXPECT_EQ(P2.getDimension(), 3);
+    EXPECT_TRUE(P2.isValid());
+
+    // Not normalized
+    PlaneType3 P3(normal, x, false);
+    EXPECT_DOUBLE_EQ(P3.getNormal()[0], 0.0);
+    EXPECT_DOUBLE_EQ(P3.getNormal()[1], 0.0);
+    EXPECT_DOUBLE_EQ(P3.getNormal()[2], 10.0);
+    EXPECT_DOUBLE_EQ(P3.getOffset(), 20.0);
+    EXPECT_EQ(P3.getDimension(), 3);
+    EXPECT_TRUE(P3.isValid());
   }
 
   // test 2D
   {
-    VectorType2 normal2 {1.0, 2.0};
-    PointType2 x2 {1.0, 2.0};
+    VectorType2 normal {1.0, 2.0};
+    PointType2 x {1.0, 2.0};
 
-    PlaneType2 P2(normal2, x2);
+    // Implicitly normalized
+    PlaneType2 P(normal, x);
+    ensure_unit_norm(P.getNormal());
+    EXPECT_DOUBLE_EQ(P.getNormal()[0], 1.0 / std::sqrt(5.0));
+    EXPECT_DOUBLE_EQ(P.getNormal()[1], 2.0 / std::sqrt(5.0));
+    EXPECT_DOUBLE_EQ(P.getOffset(), std::sqrt(5.0));
+    EXPECT_EQ(P.getDimension(), 2);
+    EXPECT_TRUE(P.isValid());
+
+    // Explicitly normalized
+    PlaneType2 P2(normal, x, true);
     ensure_unit_norm(P2.getNormal());
+    EXPECT_DOUBLE_EQ(P2.getNormal()[0], 1.0 / std::sqrt(5.0));
+    EXPECT_DOUBLE_EQ(P2.getNormal()[1], 2.0 / std::sqrt(5.0));
     EXPECT_DOUBLE_EQ(P2.getOffset(), std::sqrt(5.0));
     EXPECT_EQ(P2.getDimension(), 2);
+    EXPECT_TRUE(P2.isValid());
+
+    // Not normalized
+    PlaneType2 P3(normal, x, false);
+    EXPECT_DOUBLE_EQ(P3.getNormal()[0], 1.0);
+    EXPECT_DOUBLE_EQ(P3.getNormal()[1], 2.0);
+    EXPECT_DOUBLE_EQ(P3.getOffset(), 5.0);
+    EXPECT_EQ(P3.getDimension(), 2);
+    EXPECT_TRUE(P3.isValid());
   }
 }
 
@@ -126,41 +195,153 @@ TEST(primal_plane, construct_from_normal_and_offset)
   {
     VectorType3 normal {0.0, 0.0, 1.0};
     double offset = 2.0;
+
+    // Implicitly normalized
     PlaneType3 P(normal, offset);
+    ensure_unit_norm(P.getNormal());
     EXPECT_DOUBLE_EQ(P.getNormal()[0], 0.0);
     EXPECT_DOUBLE_EQ(P.getNormal()[1], 0.0);
     EXPECT_DOUBLE_EQ(P.getNormal()[2], 1.0);
     EXPECT_DOUBLE_EQ(P.getOffset(), offset);
+    EXPECT_TRUE(P.isValid());
+
+    // Explicitly normalized
+    PlaneType3 P2(normal, offset, true);
+    ensure_unit_norm(P2.getNormal());
+    EXPECT_DOUBLE_EQ(P2.getNormal()[0], 0.0);
+    EXPECT_DOUBLE_EQ(P2.getNormal()[1], 0.0);
+    EXPECT_DOUBLE_EQ(P2.getNormal()[2], 1.0);
+    EXPECT_DOUBLE_EQ(P2.getOffset(), offset);
+    EXPECT_TRUE(P2.isValid());
+
+    // Not normalized (but already a unit vector)
+    PlaneType3 P3(normal, offset, false);
+    ensure_unit_norm(P3.getNormal());
+    EXPECT_DOUBLE_EQ(P3.getNormal()[0], 0.0);
+    EXPECT_DOUBLE_EQ(P3.getNormal()[1], 0.0);
+    EXPECT_DOUBLE_EQ(P3.getNormal()[2], 1.0);
+    EXPECT_DOUBLE_EQ(P3.getOffset(), offset);
+    EXPECT_TRUE(P3.isValid());
   }
 
   // test 3D with non-unit vector
   {
     VectorType3 normal {1.0, 1.0, 1.0};
     double offset = 2.0;
+
+    // Implicitly normalized
     PlaneType3 P(normal, offset);
+    ensure_unit_norm(P.getNormal());
     EXPECT_DOUBLE_EQ(P.getNormal()[0], std::sqrt(3) / 3);
     EXPECT_DOUBLE_EQ(P.getNormal()[1], std::sqrt(3) / 3);
     EXPECT_DOUBLE_EQ(P.getNormal()[2], std::sqrt(3) / 3);
     EXPECT_DOUBLE_EQ(P.getOffset(), offset);
+    EXPECT_TRUE(P.isValid());
+
+    // Explicitly normalized
+    PlaneType3 P2(normal, offset, true);
+    ensure_unit_norm(P2.getNormal());
+    EXPECT_DOUBLE_EQ(P2.getNormal()[0], std::sqrt(3) / 3);
+    EXPECT_DOUBLE_EQ(P2.getNormal()[1], std::sqrt(3) / 3);
+    EXPECT_DOUBLE_EQ(P2.getNormal()[2], std::sqrt(3) / 3);
+    EXPECT_DOUBLE_EQ(P2.getOffset(), offset);
+    EXPECT_TRUE(P2.isValid());
+
+    // Not normalized
+    PlaneType3 P3(normal, offset, false);
+    EXPECT_DOUBLE_EQ(P3.getNormal()[0], 1.0);
+    EXPECT_DOUBLE_EQ(P3.getNormal()[1], 1.0);
+    EXPECT_DOUBLE_EQ(P3.getNormal()[2], 1.0);
+    EXPECT_DOUBLE_EQ(P3.getOffset(), offset);
+    EXPECT_TRUE(P3.isValid());
   }
 
-  // test 2D
+  // test 2D with unit vector
   {
-    VectorType2 normal2 {1.0, 2.0};
+    VectorType2 normal {1.0, 0.0};
     double offset = std::sqrt(5.0);
-    PlaneType2 P2(normal2, offset);
+
+    // Implicitly normalized
+    PlaneType2 P(normal, offset);
+    ensure_unit_norm(P.getNormal());
+    EXPECT_DOUBLE_EQ(P.getNormal()[0], 1.0);
+    EXPECT_DOUBLE_EQ(P.getNormal()[1], 0.0);
+    EXPECT_DOUBLE_EQ(P.getOffset(), offset);
+    EXPECT_TRUE(P.isValid());
+
+    // Explicitly normalized
+    PlaneType2 P2(normal, offset, true);
     ensure_unit_norm(P2.getNormal());
+    EXPECT_DOUBLE_EQ(P2.getNormal()[0], 1.0);
+    EXPECT_DOUBLE_EQ(P2.getNormal()[1], 0.0);
     EXPECT_DOUBLE_EQ(P2.getOffset(), offset);
+    EXPECT_TRUE(P2.isValid());
+
+    // Not normalized (but already a unit vector)
+    PlaneType2 P3(normal, offset, false);
+    ensure_unit_norm(P3.getNormal());
+    EXPECT_DOUBLE_EQ(P3.getNormal()[0], 1.0);
+    EXPECT_DOUBLE_EQ(P3.getNormal()[1], 0.0);
+    EXPECT_DOUBLE_EQ(P3.getOffset(), offset);
+    EXPECT_TRUE(P3.isValid());
   }
 
   // test 2D with non-unit vector
   {
+    VectorType2 normal {1.0, 2.0};
+    double offset = std::sqrt(5.0);
+
+    // Implicitly normalized
+    PlaneType2 P(normal, offset);
+    ensure_unit_norm(P.getNormal());
+    EXPECT_DOUBLE_EQ(P.getNormal()[0], 1.0 / std::sqrt(5.0));
+    EXPECT_DOUBLE_EQ(P.getNormal()[1], 2.0 / std::sqrt(5.0));
+    EXPECT_DOUBLE_EQ(P.getOffset(), offset);
+    EXPECT_TRUE(P.isValid());
+
+    // Explicitly normalized
+    PlaneType2 P2(normal, offset, true);
+    ensure_unit_norm(P2.getNormal());
+    EXPECT_DOUBLE_EQ(P2.getNormal()[0], 1.0 / std::sqrt(5.0));
+    EXPECT_DOUBLE_EQ(P2.getNormal()[1], 2.0 / std::sqrt(5.0));
+    EXPECT_DOUBLE_EQ(P2.getOffset(), offset);
+    EXPECT_TRUE(P2.isValid());
+
+    // Not normalized
+    PlaneType2 P3(normal, offset, false);
+    EXPECT_DOUBLE_EQ(P3.getNormal()[0], 1.0);
+    EXPECT_DOUBLE_EQ(P3.getNormal()[1], 2.0);
+    EXPECT_DOUBLE_EQ(P3.getOffset(), offset);
+    EXPECT_TRUE(P3.isValid());
+  }
+
+  // test 2D with another non-unit vector
+  {
     VectorType2 normal {1.0, 1.0};
     double offset = 2.0;
+
+    // Implicitly normalized
     PlaneType2 P(normal, offset);
+    ensure_unit_norm(P.getNormal());
     EXPECT_DOUBLE_EQ(P.getNormal()[0], std::sqrt(2) / 2);
     EXPECT_DOUBLE_EQ(P.getNormal()[1], std::sqrt(2) / 2);
     EXPECT_DOUBLE_EQ(P.getOffset(), offset);
+    EXPECT_TRUE(P.isValid());
+
+    // Explicitly normalized
+    PlaneType2 P2(normal, offset, true);
+    ensure_unit_norm(P2.getNormal());
+    EXPECT_DOUBLE_EQ(P2.getNormal()[0], std::sqrt(2) / 2);
+    EXPECT_DOUBLE_EQ(P2.getNormal()[1], std::sqrt(2) / 2);
+    EXPECT_DOUBLE_EQ(P2.getOffset(), offset);
+    EXPECT_TRUE(P2.isValid());
+
+    // Not normalized
+    PlaneType2 P3(normal, offset, false);
+    EXPECT_DOUBLE_EQ(P3.getNormal()[0], 1.0);
+    EXPECT_DOUBLE_EQ(P3.getNormal()[1], 1.0);
+    EXPECT_DOUBLE_EQ(P3.getOffset(), offset);
+    EXPECT_TRUE(P3.isValid());
   }
 }
 
@@ -175,6 +356,7 @@ TEST(primal_plane, construct_from_points)
     PlaneType3 P = primal::make_plane(x1, x2, x3);
     ensure_unit_norm(P.getNormal());
     EXPECT_DOUBLE_EQ(P.getOffset(), 3.0);
+    EXPECT_TRUE(P.isValid());
   }
 
   // test 2D
@@ -184,6 +366,7 @@ TEST(primal_plane, construct_from_points)
     PlaneType2 P2 = primal::make_plane(a, b);
     ensure_unit_norm(P2.getNormal());
     EXPECT_DOUBLE_EQ(P2.getOffset(), -2.0);
+    EXPECT_TRUE(P2.isValid());
   }
 }
 

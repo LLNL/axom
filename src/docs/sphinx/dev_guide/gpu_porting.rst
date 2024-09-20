@@ -121,7 +121,7 @@ Axom provides the ``axom::MemorySpace`` enum type to define values indicating
 the memory space where data in
 ``axom::Array`` and ``axom::ArrayView`` lives.
 
-``Dynamic`` allows you to define the location at runtime, with some caveats
+``Dynamic`` allows you to define the location at run time, with some caveats
 (see :ref:`Core Containers<core-containers>` for more details and examples).
 
 
@@ -252,11 +252,13 @@ Each execution space provides:
   * ``valid()`` - Is the execution space valid? (True)
   * ``async()`` - Is the execution space asynchronous? (True/False)
 
-The :doc:`Mint <../../../axom/mint/docs/sphinx/index>` component also provides a set of nested execution policies
+The :doc:`Core <../../../axom/core/docs/sphinx/index>` component provides a set of nested execution policies
 located at
-`axom/mint/execution/internal/structured_exec.hpp <https://github.com/LLNL/axom/blob/develop/src/axom/mint/execution/internal/structured_exec.hpp>`_
+`axom/axom/execution/nested_for_exec.hpp <https://github.com/LLNL/axom/blob/develop/src/axom/core/execution/nested_for_exec.hpp>`_
 to be used with
-``RAJA::kernel`` e.g. for iterating over mint meshes.
+``RAJA::kernel`` e.g. for iterating over mint meshes.  (These generic policies formerly resided in
+:doc:`Mint <../../../axom/mint/docs/sphinx/index>` and have been moved to
+:doc:`Core <../../../axom/core/docs/sphinx/index>`.)
 
 .. note::
 

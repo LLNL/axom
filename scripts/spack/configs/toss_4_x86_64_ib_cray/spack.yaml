@@ -240,12 +240,6 @@ spack:
       externals:
       - spec: curl@7.61.1
         prefix: /usr
-    cmake:
-      version: [3.24.2]
-      buildable: false
-      externals:
-      - spec: cmake@3.24.2
-        prefix: /usr/tce
     diffutils:
       buildable: false
       externals:
@@ -387,6 +381,13 @@ spack:
     umpire:
       require: "@2024.02.0~shared~examples~werror"
 
+    # Lock in versions of Devtools
+    cmake:
+      version: [3.24.2]
+      buildable: false
+      externals:
+      - spec: cmake@3.24.2
+        prefix: /usr/tce
     py-shroud:
       version: [0.13.0]
       buildable: false

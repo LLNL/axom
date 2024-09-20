@@ -6,26 +6,25 @@
 ####
 # This is the shared configuration of jobs for rzgenie
 .on_rzgenie:
+  variables:
+    SCHEDULER_PARAMETERS: "--deadline=now+1hour -N1 -t ${ALLOC_TIME}"
   tags:
-    - shell
+    - batch
     - rzgenie
   before_script:
     - module load cmake/3.18.0
 
-
 ####
 # Template
 .src_build_on_rzgenie:
-  stage: build
   variables:
-    ALLOC_COMMAND: "salloc -p pdebug -t 30 -N 1 -n36 srun --interactive -n1"
+    ALLOC_TIME: "30"
   extends: [.src_build_script, .on_rzgenie, .src_workflow]
   needs: []
 
 .full_build_on_rzgenie:
-  stage: build
   variables:
-    ALLOC_COMMAND: "srun -p pdebug -t 60 -N 1 -n 1"
+    ALLOC_TIME: "60"
   extends: [.full_build_script, .on_rzgenie, .full_workflow]
   needs: []
 

@@ -40,7 +40,6 @@ set( mint_headers
     execution/internal/for_all_nodes.hpp
     execution/internal/for_all_faces.hpp
     execution/internal/helpers.hpp
-    execution/internal/structured_exec.hpp
 
     ## FEM classes
     fem/FEBasis.hpp
@@ -162,8 +161,3 @@ endif()
 if (AXOM_ENABLE_TESTS)
   add_subdirectory(tests)
 endif()
-
-#------------------------------------------------------------------------------
-# Add code checks
-#------------------------------------------------------------------------------
-axom_add_code_checks(PREFIX mint)

@@ -13,12 +13,12 @@
 
 #include "axom/core/execution/execution_space.hpp"
 #include "axom/slic/interface/slic_macros.hpp"
-#include "axom/quest/ArrayIndexer.hpp"
+#include "axom/core/MDMapping.hpp"
 #include "axom/quest/MeshViewUtil.hpp"
 #include "axom/quest/detail/MarchingCubesSingleDomain.hpp"
 #include "axom/primal/geometry/Point.hpp"
 #include "axom/primal/constants.hpp"
-#include "axom/mint/execution/internal/structured_exec.hpp"
+#include "axom/core/execution/nested_for_exec.hpp"
 #include "axom/fmt.hpp"
 
 namespace axom
@@ -45,7 +45,7 @@ class MarchingCubesImpl : public MarchingCubesSingleDomain::ImplBase
 public:
   using Point = axom::primal::Point<double, DIM>;
   using MIdx = axom::StackArray<axom::IndexType, DIM>;
-  using Indexer = axom::ArrayIndexer<axom::IndexType, DIM>;
+  using MDMapper = axom::MDMapping<DIM>;
   using FacetIdType = int;
   using LoopPolicy = typename execution_space<ExecSpace>::loop_policy;
   using ReducePolicy = typename execution_space<ExecSpace>::reduce_policy;
@@ -68,7 +68,7 @@ public:
                               axom::Array<axom::IndexType>& facetIncrs)
     : m_allocatorID(allocatorID)
     , m_caseIds()
-    , m_caseIdsIndexer()
+    , m_caseIdsMDMapper()
     , m_caseIdsFlat(caseIdsFlat)
     , m_crossingFlags(crossingFlags)
     , m_scannedFlags(scannedFlags)
@@ -124,9 +124,9 @@ public:
       ? MarchingCubesDataParallelism::hybridParallel
 #if defined(AXOM_USE_OPENMP) && defined(AXOM_USE_RAJA)
       : std::is_same<ExecSpace, axom::OMP_EXEC>::value
-        ? MarchingCubesDataParallelism::hybridParallel
+      ? MarchingCubesDataParallelism::hybridParallel
 #endif
-        : MarchingCubesDataParallelism::fullParallel;
+      : MarchingCubesDataParallelism::fullParallel;
 
     m_dataParallelism = dataPar;
 
@@ -150,6 +150,8 @@ public:
     m_contourVal = contourVal;
   }
 
+  void setMaskValue(int maskVal) override { m_maskVal = maskVal; }
+
   /*!
     @brief Implementation of virtual markCrossings.
 
@@ -164,14 +166,14 @@ public:
     m_caseIdsFlat.fill(0);
 
     // Choose caseIds stride order to match function stride order.
-    Indexer fcnIndexer(m_fcnView.strides());
-    m_caseIdsIndexer.initializeShape(m_bShape, fcnIndexer.slowestDirs());
+    MDMapper fcnMDMapper(m_fcnView.strides());
+    m_caseIdsMDMapper.initializeShape(m_bShape, fcnMDMapper.slowestDirs());
     m_caseIds = axom::ArrayView<std::uint16_t, DIM, MemorySpace>(
       m_caseIdsFlat.data(),
       m_bShape,
-      m_caseIdsIndexer.strides());
-    SLIC_ASSERT_MSG(Indexer(m_caseIds.strides()).getStrideOrder() ==
-                      fcnIndexer.getStrideOrder(),
+      m_caseIdsMDMapper.strides());
+    SLIC_ASSERT_MSG(MDMapper(m_caseIds.strides()).getStrideOrder() ==
+                      fcnMDMapper.getStrideOrder(),
                     "Mismatched order is inefficient.");
 
     markCrossings_dim();
@@ -181,14 +183,14 @@ public:
   template <int TDIM = DIM>
   typename std::enable_if<TDIM == 2>::type markCrossings_dim()
   {
-    MarkCrossings_Util mcu(m_caseIds, m_fcnView, m_maskView, m_contourVal);
+    MarkCrossings_Util mcu(m_caseIds, m_fcnView, m_maskView, m_contourVal, m_maskVal);
 
-    auto order = m_caseIdsIndexer.getStrideOrder();
+    auto order = m_caseIdsMDMapper.getStrideOrder();
 #if defined(AXOM_USE_RAJA)
     RAJA::RangeSegment jRange(0, m_bShape[1]);
     RAJA::RangeSegment iRange(0, m_bShape[0]);
     using EXEC_POL =
-      typename axom::mint::internal::structured_exec<ExecSpace>::loop2d_policy;
+      typename axom::internal::nested_for_exec<ExecSpace>::loop2d_policy;
     if(int(order) & int(axom::ArrayStrideOrder::COLUMN))
     {
       RAJA::kernel<EXEC_POL>(
@@ -233,16 +235,16 @@ public:
   template <int TDIM = DIM>
   typename std::enable_if<TDIM == 3>::type markCrossings_dim()
   {
-    MarkCrossings_Util mcu(m_caseIds, m_fcnView, m_maskView, m_contourVal);
+    MarkCrossings_Util mcu(m_caseIds, m_fcnView, m_maskView, m_contourVal, m_maskVal);
 
-    auto order = m_caseIdsIndexer.getStrideOrder();
+    auto order = m_caseIdsMDMapper.getStrideOrder();
     // order ^= axom::ArrayStrideOrder::BOTH; // Pick wrong ordering to test behavior.
 #if defined(AXOM_USE_RAJA)
     RAJA::RangeSegment kRange(0, m_bShape[2]);
     RAJA::RangeSegment jRange(0, m_bShape[1]);
     RAJA::RangeSegment iRange(0, m_bShape[0]);
     using EXEC_POL =
-      typename axom::mint::internal::structured_exec<ExecSpace>::loop3d_policy;
+      typename axom::internal::nested_for_exec<ExecSpace>::loop3d_policy;
     if(int(order) & int(axom::ArrayStrideOrder::COLUMN))
     {
       RAJA::kernel<EXEC_POL>(
@@ -300,14 +302,17 @@ public:
     axom::ArrayView<const double, DIM, MemorySpace> fcnView;
     axom::ArrayView<const int, DIM, MemorySpace> maskView;
     double contourVal;
+    int maskVal;
     MarkCrossings_Util(axom::ArrayView<std::uint16_t, DIM, MemorySpace>& caseIds,
                        axom::ArrayView<const double, DIM, MemorySpace>& fcnView_,
                        axom::ArrayView<const int, DIM, MemorySpace>& maskView_,
-                       double contourVal_)
+                       double contourVal_,
+                       int maskVal_)
       : caseIdsView(caseIds)
       , fcnView(fcnView_)
       , maskView(maskView_)
       , contourVal(contourVal_)
+      , maskVal(maskVal_)
     { }
 
     //!@brief Compute the case index into cases2D or cases3D.
@@ -329,7 +334,7 @@ public:
     AXOM_HOST_DEVICE inline typename std::enable_if<TDIM == 2>::type
     computeCaseId(axom::IndexType i, axom::IndexType j) const
     {
-      const bool useZone = maskView.empty() || bool(maskView(i, j));
+      const bool useZone = maskView.empty() || (maskView(i, j) == maskVal);
       if(useZone)
       {
         // clang-format off
@@ -348,7 +353,7 @@ public:
     AXOM_HOST_DEVICE inline typename std::enable_if<TDIM == 3>::type
     computeCaseId(axom::IndexType i, axom::IndexType j, axom::IndexType k) const
     {
-      const bool useZone = maskView.empty() || bool(maskView(i, j, k));
+      const bool useZone = maskView.empty() || (maskView(i, j, k) == maskVal);
       if(useZone)
       {
         // clang-format off
@@ -602,7 +607,10 @@ public:
     axom::ArrayView<axom::IndexType> facetParentIdsView = m_facetParentIds;
     const axom::IndexType facetIndexOffset = m_facetIndexOffset;
 
-    ComputeFacets_Util cfu(m_contourVal, m_caseIdsIndexer, m_fcnView, m_coordsViews);
+    ComputeFacets_Util cfu(m_contourVal,
+                           m_caseIdsMDMapper,
+                           m_fcnView,
+                           m_coordsViews);
 
     auto gen_for_parent_cell = AXOM_LAMBDA(axom::IndexType crossingId)
     {
@@ -648,17 +656,17 @@ public:
   struct ComputeFacets_Util
   {
     double contourVal;
-    axom::ArrayIndexer<axom::IndexType, DIM> indexer;
+    axom::MDMapping<DIM> mapping;
     axom::ArrayView<const double, DIM, MemorySpace> fcnView;
     axom::StackArray<axom::ArrayView<const double, DIM, MemorySpace>, DIM> coordsViews;
     ComputeFacets_Util(
       double contourVal_,
-      const axom::ArrayIndexer<axom::IndexType, DIM>& parentIndexer_,
+      const axom::MDMapping<DIM>& parentMDMapper,
       const axom::ArrayView<const double, DIM, MemorySpace>& fcnView_,
       const axom::StackArray<axom::ArrayView<const double, DIM, MemorySpace>, DIM>
         coordsViews_)
       : contourVal(contourVal_)
-      , indexer(parentIndexer_)
+      , mapping(parentMDMapper)
       , fcnView(fcnView_)
       , coordsViews(coordsViews_)
     { }
@@ -672,7 +680,7 @@ public:
       const auto& x = coordsViews[0];
       const auto& y = coordsViews[1];
 
-      const auto c = indexer.toMultiIndex(parentCellId);
+      const auto c = mapping.toMultiIndex(parentCellId);
       const auto& i = c[0];
       const auto& j = c[1];
 
@@ -698,7 +706,7 @@ public:
       const auto& y = coordsViews[1];
       const auto& z = coordsViews[2];
 
-      const auto c = indexer.toMultiIndex(parentCellId);
+      const auto c = mapping.toMultiIndex(parentCellId);
       const auto& i = c[0];
       const auto& j = c[1];
       const auto& k = c[2];
@@ -935,11 +943,11 @@ private:
     @brief Crossing case for each computational mesh cell.
 
     This is a multidim view into 1D data from m_caseIdsFlat,
-    set up with help from m_caseIdsIndexer.
+    set up with help from m_caseIdsMDMapper.
   */
   axom::ArrayView<std::uint16_t, DIM, MemorySpace> m_caseIds;
   /*!
-    @brief Multidim indexer to handle data ordering in
+    @brief Multidim mapping to handle data ordering in
     m_caseIdsFlat.
 
     We want caseIds ordering to match m_fcnView, but Array
@@ -947,7 +955,7 @@ private:
     the order, we put caseIds in a 1D array and construct a
     multidim view with the ordering we want.
   */
-  axom::ArrayIndexer<axom::IndexType, DIM> m_caseIdsIndexer;
+  axom::MDMapping<DIM> m_caseIdsMDMapper;
 
   // Array references refer to shared Arrays in MarchingCubes.
 
@@ -983,6 +991,7 @@ private:
   static constexpr std::uint8_t CELL_CORNER_COUNT = (DIM == 3) ? 8 : 4;
 
   double m_contourVal = 0.0;
+  int m_maskVal = 1;
 
   axom::StackArray<axom::IndexType, DIM> emptyShape()
   {

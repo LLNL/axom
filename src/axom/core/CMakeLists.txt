@@ -56,10 +56,12 @@ set(core_headers
     ArrayBase.hpp
     ArrayIteratorBase.hpp
     ArrayView.hpp
+    MDMapping.hpp
     IteratorBase.hpp
     Macros.hpp
     Map.hpp
     FlatMap.hpp
+    NumericLimits.hpp
     Path.hpp
     RangeAdapter.hpp
     StackArray.hpp
@@ -70,6 +72,7 @@ set(core_headers
     ## execution
     execution/execution_space.hpp
     execution/for_all.hpp
+    execution/nested_for_exec.hpp
     execution/runtime_policy.hpp
     execution/synchronize.hpp
 
@@ -157,8 +160,3 @@ endif()
 if(AXOM_ENABLE_EXAMPLES)
   add_subdirectory(examples)
 endif()
-
-#------------------------------------------------------------------------------
-# Add code checks
-#------------------------------------------------------------------------------
-axom_add_code_checks(PREFIX core)

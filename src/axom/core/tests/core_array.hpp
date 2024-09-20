@@ -25,7 +25,9 @@ axom::IndexType calc_new_capacity(axom::Array<T>& v, axom::IndexType increase)
   axom::IndexType new_num_elements = v.size() + increase;
   if(new_num_elements > v.capacity())
   {
-    return new_num_elements * v.getResizeRatio() + 0.5;
+    axom::IndexType capacity_expanded = v.capacity() * v.getResizeRatio() + 0.5;
+    return axom::utilities::max<axom::IndexType>(capacity_expanded,
+                                                 new_num_elements);
   }
 
   return v.capacity();
@@ -915,6 +917,33 @@ void check_device_2D(axom::Array<T, 2, SPACE>& v)
 //------------------------------------------------------------------------------
 // UNIT TESTS
 //------------------------------------------------------------------------------
+
+TEST(core_array, checkSlowestDirsConstructor)
+{
+  axom::Array<double, 1> a1({3}, {{0}});
+  EXPECT_TRUE(a1.size() == 3);
+  EXPECT_TRUE(a1.mapping().fastestStrideLength() == 1);
+  EXPECT_TRUE(a1.mapping().slowestDirs()[0] == 0);
+  EXPECT_TRUE(a1.mapping().strides()[0] == 1);
+
+  axom::Array<double, 2> a2({3, 4}, {1, 0});
+  EXPECT_TRUE(a2.size() == 12);
+  EXPECT_TRUE(a2.mapping().fastestStrideLength() == 1);
+  EXPECT_TRUE(a2.mapping().slowestDirs()[0] == 1);
+  EXPECT_TRUE(a2.mapping().slowestDirs()[1] == 0);
+  EXPECT_TRUE(a2.mapping().strides()[0] == 1);
+  EXPECT_TRUE(a2.mapping().strides()[1] == 3);
+
+  axom::Array<double, 3> a3({3, 4, 5}, {2, 0, 1});
+  EXPECT_TRUE(a3.size() == 60);
+  EXPECT_TRUE(a3.mapping().fastestStrideLength() == 1);
+  EXPECT_TRUE(a3.mapping().slowestDirs()[0] == 2);
+  EXPECT_TRUE(a3.mapping().slowestDirs()[1] == 0);
+  EXPECT_TRUE(a3.mapping().slowestDirs()[2] == 1);
+  EXPECT_TRUE(a3.mapping().strides()[0] == 4);
+  EXPECT_TRUE(a3.mapping().strides()[1] == 1);
+  EXPECT_TRUE(a3.mapping().strides()[2] == 12);
+}
 
 //------------------------------------------------------------------------------
 TEST(core_array, checkStorage)

@@ -10,6 +10,7 @@
 #include "core_about.hpp"
 #include "core_array.hpp"
 #include "core_array_for_all.hpp"
+#include "core_array_mapping.hpp"
 #include "core_utilities.hpp"
 #include "core_bit_utilities.hpp"
 #include "core_execution_for_all.hpp"
@@ -17,8 +18,10 @@
 #include "core_map.hpp"
 #include "core_flatmap.hpp"
 #include "core_memory_management.hpp"
+#include "core_numeric_limits.hpp"
 #include "core_Path.hpp"
 #include "core_stack_array.hpp"
+#include "core_static_array.hpp"
 
 #ifndef AXOM_USE_MPI
   #include "core_types.hpp"

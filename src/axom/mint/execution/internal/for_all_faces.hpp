@@ -20,7 +20,7 @@
 #include "axom/mint/mesh/RectilinearMesh.hpp"  // for RectilinearMesh
 #include "axom/mint/mesh/CurvilinearMesh.hpp"  // for CurvilinearMesh
 #include "axom/mint/execution/internal/helpers.hpp"  // for for_all_coords
-#include "axom/mint/execution/internal/structured_exec.hpp"
+#include "axom/core/execution/nested_for_exec.hpp"
 
 #include "axom/core/numerics/Matrix.hpp"  // for Matrix
 
@@ -51,7 +51,8 @@ inline void for_all_I_faces(xargs::ij, const StructuredMesh& m, KernelType&& ker
   RAJA::RangeSegment i_range(0, Ni);
   RAJA::RangeSegment j_range(0, Nj);
 
-  using exec_pol = typename structured_exec<ExecPolicy>::loop2d_policy;
+  using exec_pol =
+    typename axom::internal::nested_for_exec<ExecPolicy>::loop2d_policy;
   RAJA::kernel<exec_pol>(
     RAJA::make_tuple(i_range, j_range),
     AXOM_LAMBDA(IndexType i, IndexType j) {
@@ -96,7 +97,8 @@ inline void for_all_I_faces(xargs::ijk, const StructuredMesh& m, KernelType&& ke
   RAJA::RangeSegment j_range(0, Nj);
   RAJA::RangeSegment k_range(0, Nk);
 
-  using exec_pol = typename structured_exec<ExecPolicy>::loop3d_policy;
+  using exec_pol =
+    typename axom::internal::nested_for_exec<ExecPolicy>::loop3d_policy;
   RAJA::kernel<exec_pol>(
     RAJA::make_tuple(i_range, j_range, k_range),
     AXOM_LAMBDA(IndexType i, IndexType j, IndexType k) {
@@ -142,7 +144,8 @@ inline void for_all_J_faces(xargs::ij, const StructuredMesh& m, KernelType&& ker
   RAJA::RangeSegment i_range(0, Ni);
   RAJA::RangeSegment j_range(0, Nj);
 
-  using exec_pol = typename structured_exec<ExecPolicy>::loop2d_policy;
+  using exec_pol =
+    typename axom::internal::nested_for_exec<ExecPolicy>::loop2d_policy;
   RAJA::kernel<exec_pol>(
     RAJA::make_tuple(i_range, j_range),
     AXOM_LAMBDA(IndexType i, IndexType j) {
@@ -188,7 +191,8 @@ inline void for_all_J_faces(xargs::ijk, const StructuredMesh& m, KernelType&& ke
   RAJA::RangeSegment j_range(0, Nj);
   RAJA::RangeSegment k_range(0, Nk);
 
-  using exec_pol = typename structured_exec<ExecPolicy>::loop3d_policy;
+  using exec_pol =
+    typename axom::internal::nested_for_exec<ExecPolicy>::loop3d_policy;
   RAJA::kernel<exec_pol>(
     RAJA::make_tuple(i_range, j_range, k_range),
     AXOM_LAMBDA(IndexType i, IndexType j, IndexType k) {
@@ -240,7 +244,8 @@ inline void for_all_K_faces(xargs::ijk, const StructuredMesh& m, KernelType&& ke
   RAJA::RangeSegment j_range(0, Nj);
   RAJA::RangeSegment k_range(0, Nk);
 
-  using exec_pol = typename structured_exec<ExecPolicy>::loop3d_policy;
+  using exec_pol =
+    typename axom::internal::nested_for_exec<ExecPolicy>::loop3d_policy;
   RAJA::kernel<exec_pol>(
     RAJA::make_tuple(i_range, j_range, k_range),
     AXOM_LAMBDA(IndexType i, IndexType j, IndexType k) {
@@ -404,14 +409,27 @@ inline void for_all_faces_impl(xargs::nodeids,
                 "No faces in the mesh, perhaps you meant to call "
                   << "UnstructuredMesh::initializeFaceConnectivity first.");
 
-  const IndexType* faces_to_nodes = m.getFaceNodesArray();
+  constexpr bool on_device = axom::execution_space<ExecPolicy>::onDevice();
+  const int device_allocator = axom::execution_space<ExecPolicy>::allocatorID();
+
+  auto faces_to_nodes_h =
+    axom::ArrayView<const IndexType>(m.getFaceNodesArray(), m.getFaceNodesSize());
+
+  // Move faces to nodes onto device
+  axom::Array<IndexType> faces_to_nodes_d = on_device
+    ? axom::Array<IndexType>(faces_to_nodes_h, device_allocator)
+    : axom::Array<IndexType>();
+
+  auto faces_to_nodes_view =
+    on_device ? faces_to_nodes_d.view() : faces_to_nodes_h;
+
   const IndexType num_nodes = m.getNumberOfFaceNodes();
 
   for_all_faces_impl<ExecPolicy>(
     xargs::index(),
     m,
     AXOM_LAMBDA(IndexType faceID) {
-      kernel(faceID, faces_to_nodes + faceID * num_nodes, num_nodes);
+      kernel(faceID, faces_to_nodes_view.data() + faceID * num_nodes, num_nodes);
     });
 }
 
@@ -425,15 +443,32 @@ inline void for_all_faces_impl(xargs::nodeids,
                 "No faces in the mesh, perhaps you meant to call "
                   << "UnstructuredMesh::initializeFaceConnectivity first.");
 
-  const IndexType* faces_to_nodes = m.getFaceNodesArray();
-  const IndexType* offsets = m.getFaceNodesOffsetsArray();
+  constexpr bool on_device = axom::execution_space<ExecPolicy>::onDevice();
+  const int device_allocator = axom::execution_space<ExecPolicy>::allocatorID();
+
+  auto faces_to_nodes_h =
+    axom::ArrayView<const IndexType>(m.getFaceNodesArray(), m.getFaceNodesSize());
+  auto offsets_h = axom::ArrayView<const IndexType>(m.getFaceNodesOffsetsArray(),
+                                                    m.getNumberOfFaces() + 1);
+
+  // Move faces to nodes and offsets onto device
+  axom::Array<IndexType> faces_to_nodes_d = on_device
+    ? axom::Array<IndexType>(faces_to_nodes_h, device_allocator)
+    : axom::Array<IndexType>();
+  axom::Array<IndexType> offsets_d = on_device
+    ? axom::Array<IndexType>(offsets_h, device_allocator)
+    : axom::Array<IndexType>();
+
+  auto faces_to_nodes_view =
+    on_device ? faces_to_nodes_d.view() : faces_to_nodes_h;
+  auto offsets_view = on_device ? offsets_d.view() : offsets_h;
 
   for_all_faces_impl<ExecPolicy>(
     xargs::index(),
     m,
     AXOM_LAMBDA(IndexType faceID) {
-      const IndexType num_nodes = offsets[faceID + 1] - offsets[faceID];
-      kernel(faceID, faces_to_nodes + offsets[faceID], num_nodes);
+      const IndexType num_nodes = offsets_view[faceID + 1] - offsets_view[faceID];
+      kernel(faceID, faces_to_nodes_view.data() + offsets_view[faceID], num_nodes);
     });
 }
 
@@ -596,14 +631,27 @@ inline void for_all_faces_impl(xargs::cellids,
                 "No faces in the mesh, perhaps you meant to call "
                   << "UnstructuredMesh::initializeFaceConnectivity first.");
 
-  const IndexType* faces_to_cells = m.getFaceCellsArray();
+  constexpr bool on_device = axom::execution_space<ExecPolicy>::onDevice();
+  const int device_allocator = axom::execution_space<ExecPolicy>::allocatorID();
+
+  auto faces_to_cells_h =
+    axom::ArrayView<const IndexType>(m.getFaceCellsArray(),
+                                     2 * m.getNumberOfFaces());
+
+  // Move faces to cells onto device
+  axom::Array<IndexType> faces_to_cells_d = on_device
+    ? axom::Array<IndexType>(faces_to_cells_h, device_allocator)
+    : axom::Array<IndexType>();
+
+  auto faces_to_cells_view =
+    on_device ? faces_to_cells_d.view() : faces_to_cells_h;
 
   for_all_faces_impl<ExecPolicy>(
     xargs::index(),
     m,
     AXOM_LAMBDA(IndexType faceID) {
       const IndexType offset = 2 * faceID;
-      kernel(faceID, faces_to_cells[offset], faces_to_cells[offset + 1]);
+      kernel(faceID, faces_to_cells_view[offset], faces_to_cells_view[offset + 1]);
     });
 }
 
@@ -786,11 +834,30 @@ inline void for_all_faces_impl(xargs::coords,
 
   SLIC_ASSERT(m.getDimension() > 1 && m.getDimension() <= 3);
 
+  constexpr bool on_device = axom::execution_space<ExecPolicy>::onDevice();
+  const int device_allocator = axom::execution_space<ExecPolicy>::allocatorID();
+
   const int dimension = m.getDimension();
   const IndexType nodeJp = m.nodeJp();
   const IndexType nodeKp = m.nodeKp();
-  const double* x = m.getCoordinateArray(X_COORDINATE);
-  const double* y = m.getCoordinateArray(Y_COORDINATE);
+
+  auto x_vals_h =
+    axom::ArrayView<const double>(m.getCoordinateArray(X_COORDINATE),
+                                  m.getNodeResolution(X_COORDINATE));
+  auto y_vals_h =
+    axom::ArrayView<const double>(m.getCoordinateArray(Y_COORDINATE),
+                                  m.getNodeResolution(Y_COORDINATE));
+
+  // Move xy values onto device
+  axom::Array<double> x_vals_d = on_device
+    ? axom::Array<double>(x_vals_h, device_allocator)
+    : axom::Array<double>();
+  axom::Array<double> y_vals_d = on_device
+    ? axom::Array<double>(y_vals_h, device_allocator)
+    : axom::Array<double>();
+
+  auto x_vals_view = on_device ? x_vals_d.view() : x_vals_h;
+  auto y_vals_view = on_device ? y_vals_d.view() : y_vals_h;
 
   if(dimension == 2)
   {
@@ -801,7 +868,10 @@ inline void for_all_faces_impl(xargs::coords,
         const IndexType n0 = i + j * nodeJp;
         const IndexType nodeIDs[2] = {n0, n0 + nodeJp};
 
-        double coords[4] = {x[i], y[j], x[i], y[j + 1]};
+        double coords[4] = {x_vals_view[i],
+                            y_vals_view[j],
+                            x_vals_view[i],
+                            y_vals_view[j + 1]};
 
         numerics::Matrix<double> coordsMatrix(dimension, 2, coords, NO_COPY);
         kernel(faceID, coordsMatrix, nodeIDs);
@@ -814,7 +884,10 @@ inline void for_all_faces_impl(xargs::coords,
         const IndexType n0 = i + j * nodeJp;
         const IndexType nodeIDs[2] = {n0, n0 + 1};
 
-        double coords[4] = {x[i], y[j], x[i + 1], y[j]};
+        double coords[4] = {x_vals_view[i],
+                            y_vals_view[j],
+                            x_vals_view[i + 1],
+                            y_vals_view[j]};
 
         numerics::Matrix<double> coordsMatrix(dimension, 2, coords, NO_COPY);
         kernel(faceID, coordsMatrix, nodeIDs);
@@ -822,7 +895,17 @@ inline void for_all_faces_impl(xargs::coords,
   }
   else
   {
-    const double* z = m.getCoordinateArray(Z_COORDINATE);
+    auto z_vals_h =
+      axom::ArrayView<const double>(m.getCoordinateArray(Z_COORDINATE),
+                                    m.getNodeResolution(Z_COORDINATE));
+
+    // Move z values onto device
+    axom::Array<double> z_vals_d = on_device
+      ? axom::Array<double>(z_vals_h, device_allocator)
+      : axom::Array<double>();
+
+    auto z_vals_view = on_device ? z_vals_d.view() : z_vals_h;
+
     helpers::for_all_I_faces<ExecPolicy>(
       xargs::ijk(),
       m,
@@ -833,18 +916,18 @@ inline void for_all_faces_impl(xargs::coords,
                                       n0 + nodeJp + nodeKp,
                                       n0 + nodeJp};
 
-        double coords[12] = {x[i],
-                             y[j],
-                             z[k],
-                             x[i],
-                             y[j],
-                             z[k + 1],
-                             x[i],
-                             y[j + 1],
-                             z[k + 1],
-                             x[i],
-                             y[j + 1],
-                             z[k]};
+        double coords[12] = {x_vals_view[i],
+                             y_vals_view[j],
+                             z_vals_view[k],
+                             x_vals_view[i],
+                             y_vals_view[j],
+                             z_vals_view[k + 1],
+                             x_vals_view[i],
+                             y_vals_view[j + 1],
+                             z_vals_view[k + 1],
+                             x_vals_view[i],
+                             y_vals_view[j + 1],
+                             z_vals_view[k]};
 
         numerics::Matrix<double> coordsMatrix(dimension, 4, coords, NO_COPY);
         kernel(faceID, coordsMatrix, nodeIDs);
@@ -857,18 +940,18 @@ inline void for_all_faces_impl(xargs::coords,
         const IndexType n0 = i + j * nodeJp + k * nodeKp;
         const IndexType nodeIDs[4] = {n0, n0 + 1, n0 + 1 + nodeKp, n0 + nodeKp};
 
-        double coords[12] = {x[i],
-                             y[j],
-                             z[k],
-                             x[i + 1],
-                             y[j],
-                             z[k],
-                             x[i + 1],
-                             y[j],
-                             z[k + 1],
-                             x[i],
-                             y[j],
-                             z[k + 1]};
+        double coords[12] = {x_vals_view[i],
+                             y_vals_view[j],
+                             z_vals_view[k],
+                             x_vals_view[i + 1],
+                             y_vals_view[j],
+                             z_vals_view[k],
+                             x_vals_view[i + 1],
+                             y_vals_view[j],
+                             z_vals_view[k + 1],
+                             x_vals_view[i],
+                             y_vals_view[j],
+                             z_vals_view[k + 1]};
 
         numerics::Matrix<double> coordsMatrix(dimension, 4, coords, NO_COPY);
         kernel(faceID, coordsMatrix, nodeIDs);
@@ -881,18 +964,18 @@ inline void for_all_faces_impl(xargs::coords,
         const IndexType n0 = i + j * nodeJp + k * nodeKp;
         const IndexType nodeIDs[4] = {n0, n0 + 1, n0 + 1 + nodeJp, n0 + nodeJp};
 
-        double coords[12] = {x[i],
-                             y[j],
-                             z[k],
-                             x[i + 1],
-                             y[j],
-                             z[k],
-                             x[i + 1],
-                             y[j + 1],
-                             z[k],
-                             x[i],
-                             y[j + 1],
-                             z[k]};
+        double coords[12] = {x_vals_view[i],
+                             y_vals_view[j],
+                             z_vals_view[k],
+                             x_vals_view[i + 1],
+                             y_vals_view[j],
+                             z_vals_view[k],
+                             x_vals_view[i + 1],
+                             y_vals_view[j + 1],
+                             z_vals_view[k],
+                             x_vals_view[i],
+                             y_vals_view[j + 1],
+                             z_vals_view[k]};
 
         numerics::Matrix<double> coordsMatrix(dimension, 4, coords, NO_COPY);
         kernel(faceID, coordsMatrix, nodeIDs);
@@ -950,9 +1033,30 @@ inline void for_all_faces_impl(xargs::coords,
 
   SLIC_ASSERT(m.getDimension() > 1 && m.getDimension() <= 3);
 
+  constexpr bool on_device = axom::execution_space<ExecPolicy>::onDevice();
+  const int device_allocator = axom::execution_space<ExecPolicy>::allocatorID();
+
   const int dimension = m.getDimension();
-  const double* x = m.getCoordinateArray(X_COORDINATE);
-  const double* y = m.getCoordinateArray(Y_COORDINATE);
+
+  IndexType coordinate_size = m.getNumberOfNodes();
+
+  auto x_vals_h =
+    axom::ArrayView<const double>(m.getCoordinateArray(X_COORDINATE),
+                                  coordinate_size);
+  auto y_vals_h =
+    axom::ArrayView<const double>(m.getCoordinateArray(Y_COORDINATE),
+                                  coordinate_size);
+
+  // Move xy values onto device
+  axom::Array<double> x_vals_d = on_device
+    ? axom::Array<double>(x_vals_h, device_allocator)
+    : axom::Array<double>();
+  axom::Array<double> y_vals_d = on_device
+    ? axom::Array<double>(y_vals_h, device_allocator)
+    : axom::Array<double>();
+
+  auto x_vals_view = on_device ? x_vals_d.view() : x_vals_h;
+  auto y_vals_view = on_device ? y_vals_d.view() : y_vals_h;
 
   if(dimension == 2)
   {
@@ -964,8 +1068,8 @@ inline void for_all_faces_impl(xargs::coords,
         for(int i = 0; i < numNodes; ++i)
         {
           const IndexType nodeID = nodeIDs[i];
-          coords[2 * i] = x[nodeID];
-          coords[2 * i + 1] = y[nodeID];
+          coords[2 * i] = x_vals_view[nodeID];
+          coords[2 * i + 1] = y_vals_view[nodeID];
         }
 
         numerics::Matrix<double> coordsMatrix(dimension, 2, coords, NO_COPY);
@@ -974,7 +1078,17 @@ inline void for_all_faces_impl(xargs::coords,
   }
   else
   {
-    const double* z = m.getCoordinateArray(Z_COORDINATE);
+    auto z_vals_h =
+      axom::ArrayView<const double>(m.getCoordinateArray(Z_COORDINATE),
+                                    coordinate_size);
+
+    // Move z values onto device
+    axom::Array<double> z_vals_d = on_device
+      ? axom::Array<double>(z_vals_h, device_allocator)
+      : axom::Array<double>();
+
+    auto z_vals_view = on_device ? z_vals_d.view() : z_vals_h;
+
     for_all_faces_impl<ExecPolicy>(
       xargs::nodeids(),
       m,
@@ -983,12 +1097,12 @@ inline void for_all_faces_impl(xargs::coords,
         for(int i = 0; i < numNodes; ++i)
         {
           const IndexType nodeID = nodeIDs[i];
-          coords[3 * i] = x[nodeID];
-          coords[3 * i + 1] = y[nodeID];
-          coords[3 * i + 2] = z[nodeID];
+          coords[3 * i] = x_vals_view[nodeID];
+          coords[3 * i + 1] = y_vals_view[nodeID];
+          coords[3 * i + 2] = z_vals_view[nodeID];
         }
 
-        numerics::Matrix<double> coordsMatrix(dimension, 4, coords, NO_COPY);
+        numerics::Matrix<double> coordsMatrix(dimension, numNodes, coords, NO_COPY);
         kernel(faceID, coordsMatrix, nodeIDs);
       });
   }

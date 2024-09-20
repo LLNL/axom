@@ -108,6 +108,16 @@ enum class Policy
   };
 // clang-format on
 
+inline Policy nameToPolicy(const std::string &name)
+{
+  return s_nameToPolicy.find(name)->second;
+}
+
+inline std::string policyToName(Policy policy)
+{
+  return s_policyToName.find(policy)->second;
+}
+
 /// Utility function to allow formating a Policy
 static inline auto format_as(Policy pol) { return axom::fmt::underlying(pol); }
 

@@ -16,7 +16,7 @@ Software Development Cycles
 ======================================================
 
 The Axom team uses a sprint-based development process. We collect
-and track issues (bugs, feature requests, tasks, etc.) using ``Github``
+and track issues (bugs, feature requests, tasks, etc.) using ``GitHub``
 and define a set of development tasks (i.e., issues) to complete for each 
 sprint. While the team meets to discuss issues and plan which ones will be 
 worked in each sprint, developers of individual Axom components may plan and 
@@ -48,7 +48,7 @@ See :ref:`semver-label` for a description of semantic versioning.
 Branch Development
 ======================================================
 
-The Axom project has a ``Github`` project space and the team follows 
+The Axom project has a ``GitHub`` project space and the team follows 
 the **Gitflow** branching model for software development and reviews. Gitflow 
 is a common workflow centered around software releases. It makes clear which 
 branches correspond to which phases of development and those phases are 
@@ -66,7 +66,7 @@ Code Reviews and Acceptance
 Before any code is merged into one of our main Gitflow branches (i.e., develop 
 or main), it must be adequately tested, documented, and reviewed 
 for acceptance by other team members. The review process is initiated via 
-a *pull request* on the Axom Github project.
+a *pull request* on the Axom GitHub project.
 
 See :ref:`pullrequest-label` for a description of our review process and 
 how we use pull requests.
@@ -136,7 +136,7 @@ made from branches in the GitHub Axom repository.
           the top of a PR. Then, run a script from the top-level Axom
           directory::
 
-            $ ./scripts/make_local_branch_from_fork_pr -b <PR #>
+            $ ./scripts/make_local_branch_from_fork_pr.sh -b <PR #>
 
           If successful, this will create a branch in your local copy of the
           Axom repo labeled ``pr-from-fork/<PR #>`` and you will be on that
@@ -192,7 +192,7 @@ The main interaction hub for Axom developers is the **Atlassian
 tool suite** on the Livermore Computing Collaboration Zone (CZ). These tools
 can be accessed through the `MyLC Portal <https://lc.llnl.gov>`_.
 Developer-level access to Axom project spaces in these tools requires 
-membership in the LC group 'axomdev'. If you are not in this group, and need 
+membership in the LC group 'axom'. If you are not in this group, and need 
 to be, please send an email request to 'axom-dev@llnl.gov'.
 
 The main tools we use are listed below. Please navigate the links
@@ -201,15 +201,15 @@ getting started with them.
 
 * **Confluence.**  We use the `Axom Confluence space <https://lc.llnl.gov/confluence/display/ASCT>`_ for team discussion (e.g., hashing out design ideas), maintaining meeting notes, etc.
 
-* **Github.** We use the `Axom Github project <https://github.com/LLNL/axom>`_ to manage our issues and Git repository which contains the Axom source code, build configurations, scripts, test suites, documentation, etc.
+* **GitHub.** We use the `Axom GitHub project <https://github.com/LLNL/axom>`_ to manage our issues and Git repository which contains the Axom source code, build configurations, scripts, test suites, documentation, etc.
 
-  * See :ref:`github-label` for more information about how we use Git and Github.
+  * See :ref:`github-label` for more information about how we use Git and GitHub.
 
-* **Gitlab.** We use Gitlab for continuous integration to ensure code quality on our LC systems.:  `Axom Gitlab project <https://lc.llnl.gov/gitlab/axom/axom>`_
+* **GitLab.** We use GitLab for continuous integration to ensure code quality on our LC systems.:  `Axom GitLab project <https://lc.llnl.gov/gitlab/axom/axom>`_
 
-  * See :ref:`gitlab-label` for more information about how we use Gitlab.
+  * See :ref:`gitlab-label` for more information about how we use GitLab.
 
 * **Azure Pipelines.** We use Azure Pipelines for continuous integration to ensure every code change passes a
   level of quality before being merged.:  `Azure Pipelines <https://azure.microsoft.com/en-us/services/devops/pipelines/>`_
 
-  * See :ref:`azure_pipelines-label` for more information about how we use Azire Pipelines.
+  * See :ref:`azure_pipelines-label` for more information about how we use Azure Pipelines.

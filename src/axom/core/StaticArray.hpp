@@ -6,51 +6,100 @@
 #ifndef AXOM_STATICARRAY_HPP_
 #define AXOM_STATICARRAY_HPP_
 
-#include "axom/config.hpp"  // for compile-time defines
-#include "axom/core/Macros.hpp"
-#include "axom/core/StackArray.hpp"
+#include "axom/config.hpp"           // for compile-time defines
+#include "axom/core/Macros.hpp"      // for axom macros
+#include "axom/core/StackArray.hpp"  // for StackArray
 
 namespace axom
 {
-/**
+/*!
+ * \accelerated
+ * \class StaticArray
+ *
  * \brief This class extends StackArray with some std::vector-like convenience methods.
+ *
  *
  * \tparam T the type of the values to hold.
  * \tparam N the number of values in the array.
  *
+ * \note Type \a T must be default-constructible on device for device
+ *       execution.
  */
 template <typename T, int N>
 class StaticArray : public StackArray<T, N>
 {
 public:
+  /*!
+   * \brief Returns the capacity of the static array
+   *
+   * \return The capacity of the static array
+   */
   AXOM_HOST_DEVICE
   constexpr axom::IndexType capacity() const
   {
     return static_cast<axom::IndexType>(N);
   }
 
+  /*!
+   * \brief Returns the size of the static array
+   *
+   * \return The size of the static array
+   */
   AXOM_HOST_DEVICE
   axom::IndexType size() const { return m_size; }
 
+  /*!
+   * \brief Pushes an object to the back of the static array
+   *
+   * \param [in] obj the object to be added to the back.
+   *
+   * \note The number of push_backs must not exceed N,
+   *       the max number of values in the array.
+   *
+   * \note If the static array is full, push_back
+   *       will not modify the static array.
+   */
   AXOM_HOST_DEVICE
-  void push_back(const T &e)
+  void push_back(const T &obj)
   {
-    if(m_size + 1 <= capacity()) this->m_data[m_size++] = e;
+    assert(m_size < capacity());
+    if(m_size < capacity())
+    {
+      StackArray<T, N>::m_data[m_size++] = obj;
+    }
   }
 
+  /*!
+   * \brief Pops the last element off the list.
+   */
   AXOM_HOST_DEVICE
   void pop_back() { m_size = (m_size > 0) ? (m_size - 1) : 0; }
 
+  /*!
+   * \brief Clears the data from the static array
+   */
   AXOM_HOST_DEVICE
   void clear() { m_size = 0; }
 
+  /**
+   * \brief Determines whether the container is empty.
+   * \return True if empty, false otherwise.
+   */
   AXOM_HOST_DEVICE
   bool empty() const { return m_size == 0; }
 
+  /*!
+   * \brief Fills the container with the supplied value.
+   *
+   * \param fill_value The fill value.
+   */
   AXOM_HOST_DEVICE
-  void fill(const T &e)
+  void fill(const T &fill_value)
   {
-    for(size_t i = 0; i < capacity(); i++) this->m_data[i] = e;
+    for(T& datum : StackArray<T, N>::m_data)
+    {
+      datum = fill_value;
+    }
   }
 
 private:
