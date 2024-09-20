@@ -1912,21 +1912,24 @@ public:
     }
     plane_normal = plane_normal.unitVector();
 
-    double sqDist = 0.0;
-
     // Check all control points for simplicity
-    for(int p = 0; p <= ord_u && sqDist <= tol; ++p)
+    for(int p = 0; p <= ord_u; ++p)
     {
-      for(int q = ((p == 0) ? 1 : 0); q <= ord_v && sqDist <= tol; ++q)
+      for(int q = ((p == 0) ? 1 : 0); q <= ord_v; ++q)
       {
         const double signedDist =
           plane_normal.dot(m_controlPoints(p, q) - m_controlPoints(0, 0));
-        sqDist += signedDist * signedDist;
+
+        if(std::abs(signedDist) > tol)
+        {
+          return false;
+        }
       }
     }
 
-    return (sqDist <= tol);
+    return true;
   }
+
 
   /*!
    * \brief Predicate to check if the patch can be approximated by a polygon
@@ -1977,6 +1980,43 @@ public:
     if(!isocurve_v(1).isLinear(tol))
     {
       return false;
+    }
+
+    return true;
+  }
+
+  bool isBilinear(double tol = 1e-8) const
+  {
+    const int ord_u = getOrder_u();
+    const int ord_v = getOrder_v();
+
+    if(ord_u <= 1 && ord_v <= 1)
+    {
+      return true;
+    }
+
+    for(int u = 0; u <= ord_u; ++u)
+    {
+      Segment<T, 3> s(m_controlPoints(u, 0), m_controlPoints(u, 0));
+      for(int v = 1; v < ord_v; ++v)
+      {
+        if( squared_distance( m_controlPoints(u, v), s ) > tol )
+        {
+          return false;
+        }
+      }
+    }
+
+    for(int v = 0; v <= ord_v; ++v)
+    {
+      Segment<T, 3> s(m_controlPoints(0, v), m_controlPoints(ord_u, v));
+      for(int u = 1; u < ord_u; ++u)
+      {
+        if( squared_distance( m_controlPoints(u, v), s ) > tol )
+        {
+          return false;
+        }
+      }
     }
 
     return true;
