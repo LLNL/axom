@@ -245,7 +245,7 @@ template <typename FlagType, typename BitType>
 AXOM_HOST_DEVICE
 constexpr bool bitIsSet(FlagType flags, BitType bit)
 {
-  assert(bit >= 0 && (static_cast<int>(bit) < BitTraits<FlagType>::BITS_PER_WORD << 3));
+  assert(static_cast<int>(bit) < BitTraits<FlagType>::BITS_PER_WORD << 3);
   return (flags & (1 << bit)) > 0;
 }
 
@@ -264,7 +264,7 @@ template <typename FlagType, typename BitType>
 AXOM_HOST_DEVICE
 constexpr void setBit(FlagType &flags, BitType bit, bool value = true)
 {
-  assert(bit >= 0 && (static_cast<int>(bit) < BitTraits<FlagType>::BITS_PER_WORD << 3));
+  assert(static_cast<int>(bit) < BitTraits<FlagType>::BITS_PER_WORD << 3);
   const auto mask = 1 << bit;
   flags = value ? (flags | mask) : (flags & ~mask);
 }
@@ -283,7 +283,7 @@ template <typename FlagType, typename BitType>
 AXOM_HOST_DEVICE
 constexpr void setBitOn(FlagType &flags, BitType bit)
 {
-  assert(bit >= 0 && (static_cast<int>(bit) < BitTraits<FlagType>::BITS_PER_WORD << 3));
+  assert(static_cast<int>(bit) < BitTraits<FlagType>::BITS_PER_WORD << 3);
   flags |= (1 << bit);
 }
 
