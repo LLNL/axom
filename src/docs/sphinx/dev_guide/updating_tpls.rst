@@ -183,7 +183,7 @@ Updating TPLs
 Git submodules
 --------------
 
-Currently, Axom uses three external packages that appear in the repo
+Currently, Axom uses four external packages that appear in the project repo
 as Git submodules. These are the following, including the location of the
 package in the Axom source tree:
 
@@ -194,11 +194,14 @@ package in the Axom source tree:
   * `Uberenv <https://github.com/LLNL/uberenv.git>`_, which contains Python
     scripts we use to help automate building third-party dependencies for
     development and deployment. It is located in ``axom/scripts/uberenv``.
+  * `RADIUSS Spack Configs <https://github.com/LLNL/radiuss-spack-configs.git>`_,
+    which contains Spack packages for some of our LLNL-developed TPLs. It is
+    located in ``axom/scripts/spack/radiuss-spack-configs``.
 
 There is no software installation process for these dependencies in the 
 traditional sense. To update one of these packages in Axom, simply go into
-its directory in Axom and check out a new version. If a version is intended
-to be changed in the Axom repo, make the version change on a branch and 
+its submodule directory in Axom and check out a new version. If a version is 
+intended to be changed in the Axom repo, make the version change on a branch and 
 submit a GitHub pull request as you would do for other software changes.
 More info on :ref:`building-axom-label`.
 
@@ -219,10 +222,10 @@ exposed for downstream customers to use if they wish.
 
 .. note:: Axom patches all built-in TPLs to be under the ``axom`` namespace.
    This is to prevent symbol collisions with other projects, either our
-   dependencies or downstream customers who wish their own versions.  For
+   dependencies or downstream customers who wish to use their own versions.  For
    example, ``fmt::format("foo")`` is ``axom::fmt::format("foo")``.
 
-They can be found in the directory: ``axom/src/thirdparty/axom``. The basic 
+These TPLs are located in the directory: ``axom/src/thirdparty/axom``. The basic 
 instructions on how to update a built-in TPL are as follows:
 
 #. Download the new release and override the source that is already there.
@@ -231,7 +234,7 @@ instructions on how to update a built-in TPL are as follows:
 
 #. Review and apply the existing patch files. More than likely, you will not
    be able to directly apply the patch but it will give you the general idea
-   on what needs to be applied. For example, the namespace update mentioned above.
+   on what needs to be applied. For example, the namespace conversion mentioned above.
 
 #. Ensure that the build and tests still pass. More info on :ref:`testing-label`.
 
@@ -242,7 +245,7 @@ instructions on how to update a built-in TPL are as follows:
 Local Third-party Library Installation
 --------------------------------------
 
-It is often useful to have a different set of TPLs during the development process.
+It is often useful to build a different set of TPLs for use during Axom development.
 For example, you may want to try out a new library or version of an existing library.
 
 From the top-level Axom directory, run the following script to build all TPLs
@@ -253,14 +256,20 @@ $ ./scripts/llnl_scripts/build_tpls.py -d local/install/path
 where ``local/install/path`` is a directory location where you want the 
 libraries to be installed.
 
-It will output whether the TPL install succeeded and, 
+.. important:: Running Spack and building TPLs will typically require more storage
+               than you have available in your home directory on an LC system. To
+               avoid blowing out your disk space quota, you should run TPL builds
+               in a filestystem location with sufficient space. For example, 
+               ``/usr/workspace/<username>`` is usually appropriate for this.
+
+The TPL build script will output whether the TPL install succeeded and, 
 subsequently, whether an Axom build against the TPL install succeeded.
 
 Running the script produces new host-config files (i.e., CMake cache files) 
-that you can use to build and test Axom with the installation, if issues
-arise. The generated host-config files will be located in the top-level Axom
+that you can use to build and test Axom against the installation for development or 
+if issues arise. The generated host-config files will be located in the top-level Axom
 directory of your local clone of the repo. If any changes to Axom code are 
-needed to work with the TPL update(s), make the changes and test them.
+needed to work with the TPL update(s), make the changes there and test them.
 
 .. note:: You can build a subset of TPLs for a platform, by using
           the ``uberenv.py`` script in the top-level Axom directory.
@@ -271,17 +280,18 @@ needed to work with the TPL update(s), make the changes and test them.
           will build the TPLs for the clang 10.0.0 compiler, install them
           to the ``/my/tpl/path`` directory, and generate a host-config file
           that you can use to build Axom and its tests. Please see the
-          ``scripts/spack/specs.json`` file for a current list of tested specs. 
+          ``scripts/spack/specs.json`` file for a current list of TPL specs
+          we use for GitLab CI testing.
 
 
 Shared Third-party Library Installation Steps
 ---------------------------------------------
 
-The following instructions describe how to install local copies of Axom
-TPLs on Livermore Computing (LC) platforms and recreate our Docker containers
+The following instructions describe how to install copies of Axom TPL builds
+on Livermore Computing (LC) platforms and recreate our Docker containers
 with a new set of TPLs. Typically, this process is followed when you want to 
-update one or more TPLs which Axom depends on. After they are built and
-the required changes are merged into develop, they will be available for
+update one or more TPLs on which Axom depends. After they are built and
+the associated changes are merged into develop, they will be available for
 other Axom developers to use during development, in Axom GitLab CI testing, etc.
 
 #. **Working on a local branch.** 
