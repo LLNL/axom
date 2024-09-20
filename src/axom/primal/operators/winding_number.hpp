@@ -1033,7 +1033,7 @@ std::pair<double, double> winding_number_casting_split(
         -(v0[0] * v1[1] - v0[1] * v1[0]) / sqrt(v1[0] * v1[0] + v1[1] * v1[1]),
         -1.0,
         1.0));
-    auto rotator = angleAxisRotMatrix(ang, v1);
+    rotator = angleAxisRotMatrix(ang, v1);
   }
   else
   {
@@ -1041,67 +1041,84 @@ std::pair<double, double> winding_number_casting_split(
        the patch. If the intersection is tangent or on a boundary, try again */
 
     // Initial cast with a z-aligned field (i.e., no rotation)
-    Vector<T, 3> cast_direction {1.0, 0.0, 0.0};
+    Vector<T, 3> singularity_direction {0.0, 0.0, 1.0};
+    bool goodDirection = true;
 
     while(true)
     {
-      // Pick a ray and cast it in both directions
-      double directions[2] = {1, -1};
+      goodDirection = true;
 
-      for(double dir : directions)
+      std::vector<T> up, vp, tp;
+      Line<T, 3> singularity_axis(query, singularity_direction);
+      intersect(bPatch, singularity_axis, up, vp, tp, 1e-4);
+
+      std::cout << "Intersections: " << up.size() << std::endl;
+      for(int i = 0; i < up.size(); ++i)
       {
-        std::vector<T> up, vp;
-        Ray<T, 3> cast_ray(query, dir * cast_direction);
-        intersect(bPatch, cast_ray, up, vp);
+        std::cout << up[i] << " " << vp[i] << std::endl;
+      }
+      std::cout << "------------------------" << std::endl;
 
-        // If the ray doesn't intersect the surface, then we can dodge it
-        if(up.size() == 0)
+      // If the ray doesn't intersect the surface, then we can dodge it
+      if(up.size() == 0)
+      {
+        wn_split.second += 0.0;
+      }
+      // Otherwise, we need to adjust for the contribution of a small removed
+      // disk, depending on the orientation
+      else
+      {
+        for(int i = 0; goodDirection && i < up.size(); ++i)
         {
-          wn_split.second += 0.0;
-        }
-        // Otherwise, we need to adjust for the contribution of a small removed
-        // disk, depending on the orientation
-        else
-        {
-          for(int i = 0; i < up.size(); ++i)
+          Vector<T, 3> the_direction(query, bPatch.evaluate(up[i], vp[i]));
+          Vector<T, 3> the_normal = bPatch.normal(up[i], vp[i]);
+
+          // Do a dot product between the normal and the cast direction
+          //  to see what side of the surface the intersection is on
+          double surf_orientation = the_normal.dot(the_direction);
+          double cast_orientation = singularity_direction.dot(the_direction);
+
+          if( squared_distance( query, singularity_axis.at( tp[i] ) ) <= edge_tol_sq )
           {
-            Vector<T, 3> the_direction(query, bPatch.evaluate(up[i], vp[i]));
-            Vector<T, 3> the_normal = bPatch.normal(up[i], vp[i]);
-
-            // Do a dot product between the normal and the cast direction
-            double surf_orientation = the_normal.dot(the_direction);
-            double cast_orientation = cast_direction.dot(the_direction);
-
-            if(surf_orientation == 0 || up[i] < 1e-2 || up[i] > 1 - 1e-2 ||
-               vp[i] < 1e-2 || vp[i] > 1 - 1e-2)
-            {
-              // For debugging purposes, do none of this
-
-              // Indicates tangency or boundary at the point of intersection.
-              //  Rare, but requires a new ray to be cast
-
-              // double theta = axom::utilities::random_real(0.0, 2 * M_PI);
-              // double u = axom::utilities::random_real(-1.0, 1.0);
-              // cast_direction = Vector<T, 3> {sin(theta) * sqrt(1 - u * u),
-              //  cos(theta) * sqrt(1 - u * u),
-              //  u};
-              // continue;  // with the new cast direction
-            }
-            else if(surf_orientation * cast_orientation < 0)
-            {
-              wn_split.second -= dir * 0.5;
-            }
-            else
-            {
-              wn_split.second += dir * 0.5;
-            }
+            wn_split.second += 0.0; // Do nothing for jump conditiion
           }
+          else if(surf_orientation == 0 || up[i] < 1e-2 || up[i] > 1 - 1e-2 ||
+             vp[i] < 1e-2 || vp[i] > 1 - 1e-2)
+          {
+            // Indicates tangency or boundary at the point of intersection.
+            //  Uncommon, but requires a new ray to be cast
+
+            double theta = axom::utilities::random_real(0.0, 2 * M_PI);
+            double u = axom::utilities::random_real(-1.0, 1.0);
+            singularity_direction = Vector<T, 3> {sin(theta) * sqrt(1 - u * u),
+                                           cos(theta) * sqrt(1 - u * u),
+                                           u};
+
+            goodDirection = false;
+          }
+          else
+          {
+            wn_split.second += std::copysign( 0.5, tp[i] * surf_orientation * cast_orientation );
+          }
+          // else if(surf_orientation * cast_orientation < 0)
+          // {
+          //   wn_split.second -= dir * 0.5;
+          // }
+          // else
+          // {
+          //   wn_split.second += dir * 0.5;
+          // }
         }
       }
 
+      if(!goodDirection)
+      {
+        continue;
+      }
+
       // Define a rotation such that the cast ray is vertical
-      Vector<T, 3> axis = {cast_direction[1], -cast_direction[0], 0.0};
-      double ang = acos(axom::utilities::clampVal(cast_direction[2], -1.0, 1.0));
+      Vector<T, 3> axis = {singularity_direction[1], -singularity_direction[0], 0.0};
+      double ang = acos(axom::utilities::clampVal(singularity_direction[2], -1.0, 1.0));
 
       rotator = angleAxisRotMatrix(ang, axis);
 
