@@ -27,6 +27,7 @@ set( primal_headers
     geometry/Hexahedron.hpp
     geometry/OrientedBoundingBox.hpp
     geometry/OrientationResult.hpp
+    geometry/Line.hpp
     geometry/NumericArray.hpp
     geometry/Plane.hpp
     geometry/Point.hpp

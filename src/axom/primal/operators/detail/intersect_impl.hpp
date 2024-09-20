@@ -23,6 +23,7 @@
 #include "axom/primal/geometry/Plane.hpp"
 #include "axom/primal/geometry/Point.hpp"
 #include "axom/primal/geometry/Ray.hpp"
+#include "axom/primal/geometry/Line.hpp"
 #include "axom/primal/geometry/Segment.hpp"
 #include "axom/primal/geometry/Triangle.hpp"
 #include "axom/primal/geometry/Polygon.hpp"
@@ -1705,14 +1706,14 @@ AXOM_HOST_DEVICE bool intersect_plane_tet3d(const Plane<T, 3>& p,
  * \return true iff the ray intersects the bilinear patch, otherwise false.
  */
 AXOM_HOST_DEVICE
-inline bool intersect_bilinear_patch_ray(const Point3& p0,
-                                         const Point3& p1,
-                                         const Point3& p2,
-                                         const Point3& p3,
-                                         const Ray<double, 3>& ray,
-                                         std::vector<double>& u,
-                                         std::vector<double>& v,
-                                         std::vector<double>& t)
+inline bool intersect_bilinear_patch_line(const Point3& p0,
+                                          const Point3& p1,
+                                          const Point3& p2,
+                                          const Point3& p3,
+                                          const Line<double, 3>& ray,
+                                          std::vector<double>& u,
+                                          std::vector<double>& v,
+                                          std::vector<double>& t)
 {
   Vector3 q00(p0), q10(p1), q11(p2), q01(p3);
   Vector3 e10(p0, p1), e11(p1, p2), e00(p0, p3);
@@ -1755,7 +1756,7 @@ inline bool intersect_bilinear_patch_ray(const Point3& p0,
     n = Vector3::cross_product(n, pa);
     double t1 = Vector3::dot_product(n, pb);
     double v1 = Vector3::dot_product(n, ray.direction());
-    if(t1 >= 0 && 0 <= v1 && v1 <= det)
+    if(0 <= v1 && v1 <= det)
     {
       t.push_back(t1 / det);
       u.push_back(u1);
@@ -1772,7 +1773,7 @@ inline bool intersect_bilinear_patch_ray(const Point3& p0,
     n = Vector3::cross_product(n, pa);
     double t2 = Vector3::dot_product(n, pb) / det;
     double v2 = Vector3::dot_product(n, ray.direction());
-    if(0 <= v2 && v2 <= det && t2 >= 0)
+    if(0 <= v2 && v2 <= det)
     {
       t.push_back(t2);
       u.push_back(u2);

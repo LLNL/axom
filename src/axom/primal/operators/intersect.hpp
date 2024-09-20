@@ -324,6 +324,30 @@ AXOM_HOST_DEVICE bool intersect(const Ray<T, DIM>& R,
   return detail::intersect_ray(R, bb, ip);
 }
 
+/*!
+ * \brief Computes the intersection of the given line, L, with the Box, bb.
+ *
+ * \param [in] L the specified line (two-sided ray)
+ * \param [in] bb the user-supplied axis-aligned bounding box
+ *
+ * \param [out] ip the intersection point where L intersects bb.
+ *
+ * \return status true iff bb intersects with R, otherwise, false.
+ *
+ * \see primal::Line
+ * \see primal::Segment
+ * \see primal::BoundingBox
+ *
+ * \note Computes Ray Box intersection using the slab method from pg 180 of
+ *  Real Time Collision Detection by Christer Ericson.
+ */
+template <typename T, int DIM>
+AXOM_HOST_DEVICE bool intersect(const Line<T, DIM>& L,
+                                const BoundingBox<T, DIM>& bb,
+                                Point<T, DIM>& ip)
+{
+  return detail::intersect_line(L, bb, ip);
+}
 /// @}
 
 /// \name Segment-BoundingBox Intersection Routines
@@ -581,21 +605,22 @@ bool intersect(const BezierCurve<T, 2>& c,
 }
 
 /*!
- * \brief Tests if Bezier Patch \a p and ray \a r intersect.
- * \return status true iff \a p intersects \a r, otherwise false.
+ * \brief Tests if Bezier Patch \a p and line \a l intersect.
+ * \return status true iff \a p intersects \a l, otherwise false.
  *
  * \param [in] p the BezierCurve, parametrized in [0,1) x [0,1)
- * \param [in] r the Ray, parametrized in [0,inf)
+ * \param [in] r the Line, parametrized in (-inf,inf)
  * \param [out] up vector of parameter space intersection points for 1st coordinate of \a p
  * \param [out] vp vector of parameter space intersection points for 2nd coordinate of \a p
+ * \param [out] tp vector of parameter space intersection points for the line \a l
  * \param [in] tol tolerance parameter for determining if a patch can
  * be approximated by a planar segment.
  * \return True if the patch and line intersect, false otherwise. Intersection
  * parameters are stored in \a up, \a vp and \a rp
  *
- * Finds all intersection points between the patch and the ray.
+ * Finds all intersection points between the patch and the line.
  *
- * \note This function assumes three dimensional patches and rays.
+ * \note This function assumes three dimensional patches and lines.
  *
  * \note This function assumes that the patches are in general position.
  * Specifically, we assume that all intersections are at points and that
@@ -604,16 +629,13 @@ bool intersect(const BezierCurve<T, 2>& c,
  * \note This function assumes the all intersections have multiplicity
  * one, i.e. there are no points at which the patches and their derivatives
  * both intersect. Thus, the function does not find tangencies.
- *
- * \note This function assumes that the patches are half-open, i.e. they
- * contain their first endpoints, but not their last endpoints. Thus, the
- * curves do not intersect at \f$ (u, v)==(u, 1) \f$ or at \f$ (u, v)==(1, v)\f$.
  */
 template <typename T>
-bool intersect(const BezierPatch<T, 3>& p,
-               const Ray<T, 3>& r,
+bool intersect(const BezierPatch<T, 3>& patch,
+               const Line<T, 3>& line,
                std::vector<T>& up,
                std::vector<T>& vp,
+               std::vector<T>& tp,
                double tol = 1E-8)
 {
   const double u_offset = 0.;
@@ -625,17 +647,18 @@ bool intersect(const BezierPatch<T, 3>& p,
   // for efficiency, linearity check actually uses a squared tolerance
   const double sq_tol = tol * tol;
 
-  return detail::intersect_ray_patch(p,
-                                     r,
-                                     up,
-                                     vp,
-                                     sq_tol,
-                                     p.getOrder_u(),
-                                     p.getOrder_v(),
-                                     u_offset,
-                                     u_scale,
-                                     v_offset,
-                                     v_scale);
+  return detail::intersect_line_patch(patch,
+                                      line,
+                                      up,
+                                      vp,
+                                      tp,
+                                      sq_tol,
+                                      patch.getOrder_u(),
+                                      patch.getOrder_v(),
+                                      u_offset,
+                                      u_scale,
+                                      v_offset,
+                                      v_scale);
 }
 /// @}
 
@@ -715,12 +738,12 @@ AXOM_HOST_DEVICE bool intersect(const Plane<T, 3>& p,
   return detail::intersect_plane_tet3d(p, tet, intersection);
 }
 
-/*! \brief Determines if a ray intersects a bilinear patch.
+/*! \brief Determines if a line intersects a bilinear patch.
  * \param [in] patch The bilinear (bezier) patch to intersect with the ray.
- * \param [in] ray The ray to intersect with the bilinear patch.
- * \param [out] u The u parameter(s) of the intersection point.
- * \param [out] v The v parameter(s) of the intersection point.
- * \param [out] t The t parameter(s) of the intersection point.
+ * \param [in] line The line to intersect with the bilinear patch.
+ * \param [out] u The u patch parameter(s) of the intersection point.
+ * \param [out] v The v patch parameter(s) of the intersection point.
+ * \param [out] t The line parameter(s) of the intersection point.
  * \param [in] EPS The tolerance for intersection.
  *
  * Implements GARP algorithm from Chapter 8 of Ray Tracing Gems (2019)
@@ -735,12 +758,12 @@ AXOM_HOST_DEVICE bool intersect(const Point<T, 3>& p0,
                                 const Point<T, 3>& p1,
                                 const Point<T, 3>& p2,
                                 const Point<T, 3>& p3,
-                                const Ray<T, 3>& ray,
+                                const Line<T, 3>& line,
                                 std::vector<T>& u,
                                 std::vector<T>& v,
                                 std::vector<T>& t)
 {
-  return detail::intersect_bilinear_patch_ray(p0, p1, p2, p3 ray, u, v, t);
+  return detail::intersect_bilinear_patch_line(p0, p1, p2, p3, line, u, v, t);
 }
 
 /// @}
