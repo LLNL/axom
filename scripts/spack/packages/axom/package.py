@@ -214,6 +214,11 @@ class Axom(CachedCMakePackage, CudaPackage, ROCmPackage):
     conflicts("+openmp", when="+rocm")
     conflicts("+cuda", when="+rocm")
 
+    conflicts("~raja", when="+cuda")
+    conflicts("~raja", when="+rocm")
+    conflicts("~umpire", when="+cuda")
+    conflicts("~umpire", when="+rocm")
+
     conflicts("^blt@:0.3.6", when="+rocm")
 
     def flag_handler(self, name, flags):
