@@ -32,6 +32,7 @@ class ExtractZones
 
 public:
   using SelectedZonesView = axom::ArrayView<axom::IndexType>;
+  using ZoneType = typename TopologyView::ShapeType;
 
   /**
    * \brief Constructor
@@ -147,7 +148,10 @@ public:
     }
   }
 
+// The following members are private (unless using CUDA)
+#if !defined(__CUDACC__)
 protected:
+#endif
   /**
    * \brief This struct contains extra amounts of storage that we might want to overallocate.
    */
@@ -251,9 +255,9 @@ protected:
     RAJA::ReduceSum<reduce_policy, int> connsize_reduce(0);
     m_topologyView.template for_selected_zones<ExecSpace>(
       selectedZonesView,
-      AXOM_LAMBDA(auto AXOM_UNUSED_PARAM(szIndex),
-                  auto AXOM_UNUSED_PARAM(zoneIndex),
-                  const auto &zone) { connsize_reduce += zone.numberOfNodes(); });
+      AXOM_LAMBDA(axom::IndexType AXOM_UNUSED_PARAM(szIndex),
+                  axom::IndexType AXOM_UNUSED_PARAM(zoneIndex),
+                  const ZoneType &zone) { connsize_reduce += zone.numberOfNodes(); });
     const auto newConnSize = connsize_reduce.get();
 
     Sizes sizes {};
@@ -267,7 +271,7 @@ protected:
     auto nodeSliceView = nodeSlice.view();
     axom::for_all<ExecSpace>(
       sizes.nodes + extra.nodes,
-      AXOM_LAMBDA(auto index) {
+      AXOM_LAMBDA(axom::IndexType index) {
         nodeSliceView[index] = (index < sizes.nodes) ? index : 0;
       });
 
@@ -305,11 +309,11 @@ protected:
     RAJA::ReduceSum<reduce_policy, int> connsize_reduce(0);
     m_topologyView.template for_selected_zones<ExecSpace>(
       selectedZonesView,
-      AXOM_LAMBDA(auto AXOM_UNUSED_PARAM(szIndex),
-                  auto AXOM_UNUSED_PARAM(zoneIndex),
-                  const auto &zone) {
-        const int nids = zone.numberOfNodes();
-        for(int i = 0; i < nids; i++)
+      AXOM_LAMBDA(axom::IndexType AXOM_UNUSED_PARAM(szIndex),
+                  axom::IndexType AXOM_UNUSED_PARAM(zoneIndex),
+                  const ZoneType &zone) {
+        const axom::IndexType nids = zone.numberOfNodes();
+        for(axom::IndexType i = 0; i < nids; i++)
         {
           const auto nodeId = zone.getId(i);
           maskView[nodeId] = 1;
@@ -322,7 +326,7 @@ protected:
     RAJA::ReduceSum<reduce_policy, int> mask_reduce(0);
     axom::for_all<ExecSpace>(
       nnodes,
-      AXOM_LAMBDA(auto index) { mask_reduce += maskView[index]; });
+      AXOM_LAMBDA(axom::IndexType index) { mask_reduce += maskView[index]; });
     const int newNumNodes = mask_reduce.get();
 
     // Make a compact list of nodes.
@@ -339,7 +343,7 @@ protected:
     auto nodeSliceView = nodeSlice.view();
     axom::for_all<ExecSpace>(
       nnodes,
-      AXOM_LAMBDA(auto index) {
+      AXOM_LAMBDA(axom::IndexType index) {
         if(maskView[index] > 0)
         {
           nodeSliceView[maskOffsetsView[index]] = index;
@@ -351,7 +355,7 @@ protected:
       axom::for_all<ExecSpace>(
         nnodes,
         nnodes + extra.nodes,
-        AXOM_LAMBDA(auto index) { nodeSliceView[index] = 0; });
+        AXOM_LAMBDA(axom::IndexType index) { nodeSliceView[index] = 0; });
     }
 
     Sizes sizes {};
@@ -419,9 +423,9 @@ protected:
       // Fill sizes, offsets
       m_topologyView.template for_selected_zones<ExecSpace>(
         selectedZonesView,
-        AXOM_LAMBDA(auto szIndex,
-                    auto AXOM_UNUSED_PARAM(zoneIndex),
-                    const auto &zone) {
+        AXOM_LAMBDA(axom::IndexType szIndex,
+                    axom::IndexType AXOM_UNUSED_PARAM(zoneIndex),
+                    const ZoneType &zone) {
           sizesView[szIndex] = zone.numberOfNodes();
         });
       if(extra.zones > 0)
@@ -429,7 +433,7 @@ protected:
         axom::for_all<ExecSpace>(
           dataSizes.zones,
           dataSizes.zones + extra.zones,
-          AXOM_LAMBDA(auto index) { sizesView[index] = 0; });
+          AXOM_LAMBDA(axom::IndexType index) { sizesView[index] = 0; });
       }
       axom::exclusive_scan<ExecSpace>(sizesView, offsetsView);
 
@@ -439,9 +443,9 @@ protected:
         const axom::ArrayView<ConnectivityType> deviceOld2NewView(old2newView);
         m_topologyView.template for_selected_zones<ExecSpace>(
           selectedZonesView,
-          AXOM_LAMBDA(auto szIndex,
-                      auto AXOM_UNUSED_PARAM(zoneIndex),
-                      const auto &zone) {
+          AXOM_LAMBDA(axom::IndexType szIndex,
+                      axom::IndexType AXOM_UNUSED_PARAM(zoneIndex),
+                      const ZoneType &zone) {
             const int size = static_cast<int>(sizesView[szIndex]);
             const auto offset = offsetsView[szIndex];
             for(int i = 0; i < size; i++)
@@ -457,9 +461,9 @@ protected:
       {
         m_topologyView.template for_selected_zones<ExecSpace>(
           selectedZonesView,
-          AXOM_LAMBDA(auto szIndex,
-                      auto AXOM_UNUSED_PARAM(zoneIndex),
-                      const auto &zone) {
+          AXOM_LAMBDA(axom::IndexType szIndex,
+                      axom::IndexType AXOM_UNUSED_PARAM(zoneIndex),
+                      const ZoneType &zone) {
             const int size = static_cast<int>(sizesView[szIndex]);
             const auto offset = offsetsView[szIndex];
             for(int i = 0; i < size; i++)
@@ -473,7 +477,7 @@ protected:
         axom::for_all<ExecSpace>(
           dataSizes.connectivity,
           dataSizes.connectivity + extra.connectivity,
-          AXOM_LAMBDA(auto index) { connView[index] = 0; });
+          AXOM_LAMBDA(axom::IndexType index) { connView[index] = 0; });
       }
 
       // Handle shapes, if present.
@@ -493,7 +497,7 @@ protected:
         const SelectedZonesView deviceSelectedZonesView(selectedZonesView);
         axom::for_all<ExecSpace>(
           dataSizes.zones,
-          AXOM_LAMBDA(auto index) {
+          AXOM_LAMBDA(axom::IndexType index) {
             newShapesView[index] = shapesView[deviceSelectedZonesView[index]];
           });
         if(extra.zones > 0)
@@ -501,7 +505,7 @@ protected:
           axom::for_all<ExecSpace>(
             dataSizes.zones,
             dataSizes.zones + extra.zones,
-            AXOM_LAMBDA(auto index) { newShapesView[index] = 0; });
+            AXOM_LAMBDA(axom::IndexType index) { newShapesView[index] = 0; });
         }
       }
     }
@@ -629,7 +633,10 @@ protected:
     return shape;
   }
 
-private:
+// The following members are protected (unless using CUDA)
+#if !defined(__CUDACC__)
+protected:
+#endif
   TopologyView m_topologyView;
   CoordsetView m_coordsetView;
   axom::Array<axom::IndexType> m_zoneSlice;
@@ -701,7 +708,11 @@ public:
     }
   }
 
+// The following members are protected (unless using CUDA)
+#if !defined(__CUDACC__)
 private:
+#endif
+
   /**
    * \brief Return the matset for the named topology.
    *

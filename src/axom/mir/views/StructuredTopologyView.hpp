@@ -27,13 +27,14 @@ public:
   using IndexType = typename IndexingPolicy::IndexType;
   using LogicalIndex = typename IndexingPolicy::LogicalIndex;
   using ConnectivityType = IndexType;
+  using ShapeType = typename std::conditional<IndexingPolicy::dimension() == 3, HexShape<ConnectivityType>, typename std::conditional<IndexingPolicy::dimension() == 2, QuadShape<ConnectivityType>, LineShape<ConnectivityType>>::type>::type;
 
   /**
    * \brief Return the number of dimensions.
    *
    * \return The number of dimensions.
    */
-  constexpr static int dimension() { return IndexingPolicy::dimension(); }
+  AXOM_HOST_DEVICE constexpr static int dimension() { return IndexingPolicy::dimension(); }
 
   /**
    * \brief Constructor
@@ -122,13 +123,13 @@ public:
       axom::for_all<ExecSpace>(
         0,
         nzones,
-        AXOM_LAMBDA(auto zoneIndex) {
-          using ShapeType = HexShape<IndexType>;
+        AXOM_LAMBDA(axom::IndexType zoneIndex) {
+          //using ShapeType = HexShape<IndexType>;
 
           const auto localLogical = zoneIndexing.IndexToLogicalIndex(zoneIndex);
           const auto jp = nodeIndexing.jStride();
           const auto kp = nodeIndexing.kStride();
-          IndexType data[8];
+          ConnectivityType data[8];
           data[0] =
             nodeIndexing.GlobalToGlobal(nodeIndexing.LocalToGlobal(localLogical));
           data[1] = data[0] + 1;
@@ -139,7 +140,7 @@ public:
           data[6] = data[2] + kp;
           data[7] = data[3] + kp;
 
-          const ShapeType shape(axom::ArrayView<IndexType>(data, 8));
+          const ShapeType shape(axom::ArrayView<ConnectivityType>(data, 8));
           func(zoneIndex, shape);
         });
     }
@@ -152,18 +153,18 @@ public:
         0,
         nzones,
         AXOM_LAMBDA(auto zoneIndex) {
-          using ShapeType = QuadShape<IndexType>;
+          //using ShapeType = QuadShape<IndexType>;
 
           const auto localLogical = zoneIndexing.IndexToLogicalIndex(zoneIndex);
           const auto jp = nodeIndexing.jStride();
-          IndexType data[4];
+          ConnectivityType data[4];
           data[0] =
             nodeIndexing.GlobalToGlobal(nodeIndexing.LocalToGlobal(localLogical));
           data[1] = data[0] + 1;
           data[2] = data[1] + jp;
           data[3] = data[2] - 1;
 
-          const ShapeType shape(axom::ArrayView<IndexType>(data, 4));
+          const ShapeType shape(axom::ArrayView<ConnectivityType>(data, 4));
           func(zoneIndex, shape);
         });
     }
@@ -175,16 +176,16 @@ public:
       axom::for_all<ExecSpace>(
         0,
         nzones,
-        AXOM_LAMBDA(auto zoneIndex) {
-          using ShapeType = LineShape<IndexType>;
+        AXOM_LAMBDA(axom::IndexType zoneIndex) {
+          //using ShapeType = LineShape<IndexType>;
 
           const auto localLogical = zoneIndexing.IndexToLogicalIndex(zoneIndex);
-          IndexType data[2];
+          ConnectivityType data[2];
           data[0] =
             nodeIndexing.GlobalToGlobal(nodeIndexing.LocalToGlobal(localLogical));
           data[1] = data[0] + 1;
 
-          const ShapeType shape(axom::ArrayView<IndexType>(data, 2));
+          const ShapeType shape(axom::ArrayView<ConnectivityType>(data, 2));
           func(zoneIndex, shape);
         });
     }
@@ -217,14 +218,14 @@ public:
       axom::for_all<ExecSpace>(
         0,
         nSelectedZones,
-        AXOM_LAMBDA(auto selectIndex) {
-          using ShapeType = HexShape<IndexType>;
+        AXOM_LAMBDA(axom::IndexType selectIndex) {
+          //using ShapeType = HexShape<IndexType>;
 
           const auto zoneIndex = idsView[selectIndex];
           const auto localLogical = zoneIndexing.IndexToLogicalIndex(zoneIndex);
           const auto jp = nodeIndexing.jStride();
           const auto kp = nodeIndexing.kStride();
-          IndexType data[8];
+          ConnectivityType data[8];
           data[0] =
             nodeIndexing.GlobalToGlobal(nodeIndexing.LocalToGlobal(localLogical));
           data[1] = data[0] + 1;
@@ -235,7 +236,7 @@ public:
           data[6] = data[2] + kp;
           data[7] = data[3] + kp;
 
-          const ShapeType shape(axom::ArrayView<IndexType>(data, 8));
+          const ShapeType shape(axom::ArrayView<ConnectivityType>(data, 8));
           func(selectIndex, zoneIndex, shape);
         });
     }
@@ -247,20 +248,20 @@ public:
       axom::for_all<ExecSpace>(
         0,
         nSelectedZones,
-        AXOM_LAMBDA(auto selectIndex) {
-          using ShapeType = QuadShape<IndexType>;
+        AXOM_LAMBDA(axom::IndexType selectIndex) {
+          //using ShapeType = QuadShape<IndexType>;
 
           const auto zoneIndex = idsView[selectIndex];
           const auto localLogical = zoneIndexing.IndexToLogicalIndex(zoneIndex);
           const auto jp = nodeIndexing.jStride();
-          IndexType data[4];
+          ConnectivityType data[4];
           data[0] =
             nodeIndexing.GlobalToGlobal(nodeIndexing.LocalToGlobal(localLogical));
           data[1] = data[0] + 1;
           data[2] = data[1] + jp;
           data[3] = data[2] - 1;
 
-          const ShapeType shape(axom::ArrayView<IndexType>(data, 4));
+          const ShapeType shape(axom::ArrayView<ConnectivityType>(data, 4));
           func(selectIndex, zoneIndex, shape);
         });
     }
@@ -272,17 +273,17 @@ public:
       axom::for_all<ExecSpace>(
         0,
         nSelectedZones,
-        AXOM_LAMBDA(auto selectIndex) {
-          using ShapeType = LineShape<IndexType>;
+        AXOM_LAMBDA(axom::IndexType selectIndex) {
+          //using ShapeType = LineShape<IndexType>;
 
           const auto zoneIndex = idsView[selectIndex];
           const auto localLogical = zoneIndexing.IndexToLogicalIndex(zoneIndex);
-          IndexType data[2];
+          ConnectivityType data[2];
           data[0] =
             nodeIndexing.GlobalToGlobal(nodeIndexing.LocalToGlobal(localLogical));
           data[1] = data[0] + 1;
 
-          const ShapeType shape(axom::ArrayView<IndexType>(data, 2));
+          const ShapeType shape(axom::ArrayView<ConnectivityType>(data, 2));
           func(selectIndex, zoneIndex, shape);
         });
     }

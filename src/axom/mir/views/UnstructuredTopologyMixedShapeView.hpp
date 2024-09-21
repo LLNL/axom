@@ -122,7 +122,7 @@ public:
    *
    * \return -1 for unknown dimension. We'd have to look at the shapes.
    */
-  static constexpr int dimension() { return -1; }
+  AXOM_HOST_DEVICE static constexpr int dimension() { return -1; }
 
   /**
    * \brief Return the number of zones.
@@ -164,7 +164,7 @@ public:
     axom::for_all<ExecSpace>(
       0,
       nzones,
-      AXOM_LAMBDA(auto zoneIndex) {
+      AXOM_LAMBDA(axom::IndexType zoneIndex) {
         const ConnectivityView shapeData(
           connectivityView.data() + offsets[zoneIndex],
           sizes[zoneIndex]);
@@ -209,7 +209,7 @@ public:
     axom::for_all<ExecSpace>(
       0,
       nSelectedZones,
-      AXOM_LAMBDA(auto selectIndex) {
+      AXOM_LAMBDA(axom::IndexType selectIndex) {
         const auto zoneIndex = deviceSelectedIdsView[selectIndex];
         const ConnectivityView shapeData(
           connectivityView.data() + offsets[zoneIndex],

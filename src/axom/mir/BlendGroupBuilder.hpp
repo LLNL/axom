@@ -101,7 +101,7 @@ public:
     const auto localBlendGroupsLenView = m_state.m_blendGroupsLenView;
     axom::for_all<ExecSpace>(
       m_state.m_nzones,
-      AXOM_LAMBDA(auto zoneIndex) {
+      AXOM_LAMBDA(axom::IndexType zoneIndex) {
         blendGroups_sum += localBlendGroupsView[zoneIndex];
         blendGroupLen_sum += localBlendGroupsLenView[zoneIndex];
       });
@@ -464,7 +464,7 @@ public:
       State deviceState(m_state);
       axom::for_all<ExecSpace>(
         nIndices,
-        AXOM_LAMBDA(auto index) {
+        AXOM_LAMBDA(axom::IndexType index) {
           const auto uniqueIndex = deviceState.m_blendUniqueIndicesView[index];
           const int m =
             (deviceState.m_blendGroupSizesView[uniqueIndex] > 1) ? 1 : 0;
@@ -491,7 +491,7 @@ public:
         auto newUniqueIndicesView = newUniqueIndices.view();
         axom::for_all<ExecSpace>(
           nIndices,
-          AXOM_LAMBDA(auto index) {
+          AXOM_LAMBDA(axom::IndexType index) {
             if(maskView[index] > 0)
             {
               const auto offset = offsetView[index];

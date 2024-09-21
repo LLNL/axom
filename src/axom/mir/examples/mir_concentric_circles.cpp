@@ -128,20 +128,24 @@ int runMIR(RuntimePolicy policy,
   options["matset"] = "mat";
 
   int retval = 0;
+std::cout << axom::fmt::format("policy={}", policy) << std::endl;
   if(policy == RuntimePolicy::seq)
   {
+#pragma message "SEQ supported"
     retval = runMIR<axom::SEQ_EXEC>(mesh, options, resultMesh);
   }
 #if defined(AXOM_USE_RAJA) && defined(AXOM_USE_UMPIRE)
   #if defined(AXOM_USE_OPENMP)
   else if(policy == RuntimePolicy::omp)
   {
+#pragma message "OMP supported"
     retval = runMIR<axom::OMP_EXEC>(mesh, options, resultMesh);
   }
   #endif
   #if defined(AXOM_USE_CUDA)
   else if(policy == RuntimePolicy::cuda)
   {
+#pragma message "CUDA supported"
     constexpr int CUDA_BLOCK_SIZE = 256;
     using cuda_exec = axom::CUDA_EXEC<CUDA_BLOCK_SIZE>;
     retval = runMIR<cuda_exec>(mesh, options, resultMesh);
@@ -150,6 +154,7 @@ int runMIR(RuntimePolicy policy,
   #if defined(AXOM_USE_HIP)
   else if(policy == RuntimePolicy::hip)
   {
+#pragma message "HIP supported"
     constexpr int HIP_BLOCK_SIZE = 64;
     using hip_exec = axom::HIP_EXEC<HIP_BLOCK_SIZE>;
     retval = runMIR<hip_exec>(mesh, options, resultMesh);

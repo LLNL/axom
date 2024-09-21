@@ -33,11 +33,11 @@ set(mir_tests_depends_on
 #------------------------------------------------------------------------------
 foreach(test ${gtest_mir_tests})
     get_filename_component( test_name ${test} NAME_WE )
-    blt_add_executable( NAME ${test_name}_test
-                        SOURCES ${test}
-                        OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
-                        DEPENDS_ON ${mir_tests_depends_on}
-                        FOLDER axom/mir/tests )
+    axom_add_executable( NAME ${test_name}_test
+                         SOURCES ${test}
+                         OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
+                         DEPENDS_ON ${mir_tests_depends_on}
+                         FOLDER axom/mir/tests )
 
     blt_add_test( NAME ${test_name}
                   COMMAND ${test_name}_test )

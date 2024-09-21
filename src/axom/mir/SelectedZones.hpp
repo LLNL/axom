@@ -76,13 +76,13 @@ protected:
         auto szView = m_selectedZonesView = m_selectedZones.view();
         axom::for_all<ExecSpace>(
           szView.size(),
-          AXOM_LAMBDA(auto index) { szView[index] = zonesView[index]; });
+          AXOM_LAMBDA(axom::IndexType index) { szView[index] = zonesView[index]; });
 
         // Check that the selected zone values are in range.
         RAJA::ReduceSum<reduce_policy, int> errReduce(0);
         axom::for_all<ExecSpace>(
           szView.size(),
-          AXOM_LAMBDA(auto index) {
+          AXOM_LAMBDA(axom::IndexType index) {
             const int err =
               (szView[index] < 0 || szView[index] >= nzones) ? 1 : 0;
             errReduce += err;
@@ -105,7 +105,7 @@ protected:
       auto szView = m_selectedZonesView = m_selectedZones.view();
       axom::for_all<ExecSpace>(
         nzones,
-        AXOM_LAMBDA(auto zoneIndex) { szView[zoneIndex] = zoneIndex; });
+        AXOM_LAMBDA(axom::IndexType zoneIndex) { szView[zoneIndex] = zoneIndex; });
     }
   }
 

@@ -99,7 +99,7 @@ struct BuildRelation
     const value_type totalSize = nodesView.size();
     axom::for_all<ExecSpace>(
       offsetsView.size(),
-      AXOM_LAMBDA(auto i) {
+      AXOM_LAMBDA(axom::IndexType i) {
         sizesView[i] = (i < offsetsView.size() - 1)
           ? (offsetsView[i + 1] - offsetsView[i])
           : (totalSize - offsetsView[i]);
@@ -126,10 +126,10 @@ struct BuildRelation<axom::SEQ_EXEC, ViewType>
     const auto nnodes = offsetsView.size();
     axom::for_all<ExecSpace>(
       nnodes,
-      AXOM_LAMBDA(auto index) { sizesView[index] = 0; });
+      AXOM_LAMBDA(axom::IndexType index) { sizesView[index] = 0; });
     axom::for_all<ExecSpace>(
       nodesView.size(),
-      AXOM_LAMBDA(auto index) {
+      AXOM_LAMBDA(axom::IndexType index) {
         sizesView[nodesView[index]]++;  // Works only because ExecSpace=SEQ_EXEC.
       });
     // Make offsets
@@ -137,7 +137,7 @@ struct BuildRelation<axom::SEQ_EXEC, ViewType>
 
     axom::for_all<ExecSpace>(
       nnodes,
-      AXOM_LAMBDA(auto index) { sizesView[index] = 0; });
+      AXOM_LAMBDA(axom::IndexType index) { sizesView[index] = 0; });
 
     axom::Array<value_type> zcopy(zonesView.size(), zonesView.size(), allocatorID);
     axom::copy(zcopy.data(),
@@ -148,7 +148,7 @@ struct BuildRelation<axom::SEQ_EXEC, ViewType>
     // Fill in zonesView, sizesView with each node's zones.
     axom::for_all<ExecSpace>(
       nodesView.size(),
-      AXOM_LAMBDA(auto index) {
+      AXOM_LAMBDA(axom::IndexType index) {
         const auto ni = nodesView[index];
         const auto destOffset = offsetsView[ni] + sizesView[ni];
         zonesView[destOffset] = zcopyView[index];
@@ -218,9 +218,10 @@ public:
             auto sizes_view = sizes.view();
 
             // Run through the topology once to do a count of each zone's unique node ids.
+            using ZoneType = typename decltype(topoView)::ShapeType;
             RAJA::ReduceSum<reduce_policy, axom::IndexType> count(0);
             topoView.template for_all_zones<ExecSpace>(
-              AXOM_LAMBDA(auto zoneIndex, const auto &zone) {
+              AXOM_LAMBDA(axom::IndexType zoneIndex, const ZoneType &zone) {
                 const auto uniqueIds = zone.getUniqueIds();
                 sizes_view[zoneIndex] = uniqueIds.size();
                 count += uniqueIds.size();
@@ -253,7 +254,7 @@ public:
                   auto offsetsView) {
                 // Run through the data one more time to build the nodes and zones arrays.
                 topoView.template for_all_zones<ExecSpace>(
-                  AXOM_LAMBDA(auto zoneIndex, const auto &zone) {
+                  AXOM_LAMBDA(axom::IndexType zoneIndex, const ZoneType &zone) {
                     const auto uniqueIds = zone.getUniqueIds();
                     auto destIdx = offsets_view[zoneIndex];
                     for(axom::IndexType i = 0; i < uniqueIds.size();

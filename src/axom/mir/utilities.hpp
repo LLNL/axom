@@ -7,9 +7,6 @@
 #define AXOM_MIR_UTILITIES_HPP_
 
 #include "axom/core.hpp"
-//#include "axom/core/Array.hpp"
-//#include "axom/core/ArrayView.hpp"
-//#include "axom/core/memory_management.hpp"
 
 #include <conduit/conduit.hpp>
 #include <conduit/conduit_blueprint.hpp>
@@ -45,10 +42,6 @@ inline void exclusive_scan(const ContiguousMemoryContainer &input,
 }
 
 }  // end namespace axom
-
-/// This header is for device utility functions for MIR.
-
-// Q: does this belong in core with a better name?
 
 namespace axom
 {
@@ -265,8 +258,8 @@ public:
       assert(static_cast<KeyType>(p0) <= Max31Bit &&
              static_cast<KeyType>(p1) <= Max31Bit);
       // Store p0 and p1 both in the 64-bit key as 31-bit integers
-      KeyType k0 = (static_cast<KeyType>(std::min(p0, p1)) & Max31Bit);
-      KeyType k1 = (static_cast<KeyType>(std::max(p0, p1)) & Max31Bit);
+      KeyType k0 = (static_cast<KeyType>(axom::utilities::min(p0, p1)) & Max31Bit);
+      KeyType k1 = (static_cast<KeyType>(axom::utilities::max(p0, p1)) & Max31Bit);
       return KeyIDPair | (k0 << 31) | k1;
     }
 
@@ -365,7 +358,7 @@ public:
       return retval;
     }
 
-    KeyType m_maxId {std::numeric_limits<KeyType>::max()};
+    KeyType m_maxId {axom::numeric_limits<KeyType>::max()};
   };
 
   // Host-callable methods

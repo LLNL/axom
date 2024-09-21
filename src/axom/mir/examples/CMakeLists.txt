@@ -18,7 +18,7 @@ foreach( example ${mir_examples} )
 
    get_filename_component( example_name ${example} NAME_WE )
 
-   blt_add_executable(
+   axom_add_executable(
         NAME       ${example_name}_ex
         SOURCES    ${example}
         OUTPUT_DIR ${EXAMPLE_OUTPUT_DIRECTORY}

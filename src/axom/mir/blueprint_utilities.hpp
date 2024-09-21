@@ -9,6 +9,7 @@
 #include "axom/core/execution/execution_space.hpp"
 #include "axom/core/Array.hpp"
 #include "axom/core/ArrayView.hpp"
+#include "axom/core/NumericLimits.hpp"
 #include "axom/core/memory_management.hpp"
 #include "axom/mir/views/dispatch_structured_topology.hpp"
 #include "axom/mir/views/NodeArrayView.hpp"
@@ -20,7 +21,6 @@
   #include <RAJA/RAJA.hpp>
 #endif
 
-#include <limits>
 #include <utility>
 #include <string>
 
@@ -482,9 +482,9 @@ std::pair<ReturnType, ReturnType> minmax(const conduit::Node &n)
       typename axom::execution_space<ExecSpace>::reduce_policy;
 
     RAJA::ReduceMin<reduce_policy, value_type> vmin(
-      std::numeric_limits<value_type>::max());
+      axom::numeric_limits<value_type>::max());
     RAJA::ReduceMax<reduce_policy, value_type> vmax(
-      std::numeric_limits<value_type>::min());
+      axom::numeric_limits<value_type>::min());
 
     axom::for_all<ExecSpace>(
       nview.size(),

@@ -405,9 +405,8 @@ public:
    */
   Table<ExecSpace> &operator[](size_t shape)
   {
-    const auto index = shapeToIndex(shape);
+    const size_t index = shapeToIndex(shape);
     assert(shape < ST_MAX);
-    assert(index >= 0);
     loadShape(shape);
     return m_tables[index];
   }

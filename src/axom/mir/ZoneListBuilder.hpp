@@ -31,6 +31,7 @@ class ZoneListBuilder
 {
 public:
   using SelectedZonesView = axom::ArrayView<axom::IndexType>;
+  using ZoneType = typename TopologyView::ShapeType;
 
   /**
    * \brief Constructor
@@ -76,7 +77,7 @@ public:
     // Determine max number of materials a node might touch.
     MatsetView deviceMatsetView(m_matsetView);
     m_topologyView.template for_all_zones<ExecSpace>(
-      AXOM_LAMBDA(auto zoneIndex, const auto &zone) {
+      AXOM_LAMBDA(axom::IndexType zoneIndex, const ZoneType &zone) {
         const int nmats = deviceMatsetView.numberOfMaterials(zoneIndex);
         const auto nnodesThisZone = zone.numberOfNodes();
         int *nodeData = nMatsPerNodeView.data();
@@ -96,7 +97,7 @@ public:
     auto maskView = mask.view();
     RAJA::ReduceSum<reduce_policy, int> mask_reduce(0);
     m_topologyView.template for_all_zones<ExecSpace>(
-      AXOM_LAMBDA(auto zoneIndex, const auto &zone) {
+      AXOM_LAMBDA(axom::IndexType zoneIndex, const ZoneType &zone) {
         bool clean = true;
         const axom::IndexType nnodesThisZone = zone.numberOfNodes();
         for(axom::IndexType i = 0; i < nnodesThisZone && clean; i++)
@@ -126,7 +127,7 @@ public:
       auto cleanIndicesView = cleanIndices.view();
       axom::for_all<ExecSpace>(
         nzones,
-        AXOM_LAMBDA(auto index) {
+        AXOM_LAMBDA(axom::IndexType index) {
           if(maskView[index] > 0)
           {
             cleanIndicesView[maskOffsetsView[index]] = index;
@@ -138,7 +139,7 @@ public:
       AXOM_ANNOTATE_BEGIN("mixedIndices");
       axom::for_all<ExecSpace>(
         nzones,
-        AXOM_LAMBDA(auto index) {
+        AXOM_LAMBDA(axom::IndexType index) {
           maskView[index] = (maskView[index] == 1) ? 0 : 1;
         });
       axom::exclusive_scan<ExecSpace>(maskView, maskOffsetsView);
@@ -147,7 +148,7 @@ public:
       auto mixedIndicesView = mixedIndices.view();
       axom::for_all<ExecSpace>(
         nzones,
-        AXOM_LAMBDA(auto index) {
+        AXOM_LAMBDA(axom::IndexType index) {
           if(maskView[index] > 0)
           {
             mixedIndicesView[maskOffsetsView[index]] = index;
@@ -165,7 +166,7 @@ public:
       auto mixedIndicesView = mixedIndices.view();
       axom::for_all<ExecSpace>(
         nzones,
-        AXOM_LAMBDA(auto index) { mixedIndicesView[index] = index; });
+        AXOM_LAMBDA(axom::IndexType index) { mixedIndicesView[index] = index; });
     }
   }
 
@@ -207,7 +208,7 @@ public:
     MatsetView deviceMatsetView(m_matsetView);
     m_topologyView.template for_selected_zones<ExecSpace>(
       selectedZonesView,
-      AXOM_LAMBDA(auto AXOM_UNUSED_PARAM(szIndex), auto zoneIndex, const auto &zone) {
+      AXOM_LAMBDA(axom::IndexType AXOM_UNUSED_PARAM(szIndex), axom::IndexType zoneIndex, const ZoneType &zone) {
         const int nmats = deviceMatsetView.numberOfMaterials(zoneIndex);
         const auto nnodesThisZone = zone.numberOfNodes();
         int *nodeData = nMatsPerNodeView.data();
@@ -228,7 +229,7 @@ public:
     RAJA::ReduceSum<reduce_policy, int> mask_reduce(0);
     m_topologyView.template for_selected_zones<ExecSpace>(
       selectedZonesView,
-      AXOM_LAMBDA(auto szIndex, auto AXOM_UNUSED_PARAM(zoneIndex), const auto &zone) {
+      AXOM_LAMBDA(axom::IndexType szIndex, axom::IndexType AXOM_UNUSED_PARAM(zoneIndex), const ZoneType &zone) {
         bool clean = true;
         const axom::IndexType nnodesThisZone = zone.numberOfNodes();
         for(axom::IndexType i = 0; i < nnodesThisZone && clean; i++)
@@ -258,7 +259,7 @@ public:
       auto cleanIndicesView = cleanIndices.view();
       axom::for_all<ExecSpace>(
         nzones,
-        AXOM_LAMBDA(auto index) {
+        AXOM_LAMBDA(axom::IndexType index) {
           if(maskView[index] > 0)
           {
             cleanIndicesView[maskOffsetsView[index]] = selectedZonesView[index];
@@ -270,7 +271,7 @@ public:
       AXOM_ANNOTATE_BEGIN("mixedIndices");
       axom::for_all<ExecSpace>(
         nzones,
-        AXOM_LAMBDA(auto index) {
+        AXOM_LAMBDA(axom::IndexType index) {
           maskView[index] = (maskView[index] == 1) ? 0 : 1;
         });
       axom::exclusive_scan<ExecSpace>(maskView, maskOffsetsView);
@@ -279,7 +280,7 @@ public:
       auto mixedIndicesView = mixedIndices.view();
       axom::for_all<ExecSpace>(
         nzones,
-        AXOM_LAMBDA(auto index) {
+        AXOM_LAMBDA(axom::IndexType index) {
           if(maskView[index] > 0)
           {
             mixedIndicesView[maskOffsetsView[index]] = selectedZonesView[index];
@@ -297,7 +298,7 @@ public:
       auto mixedIndicesView = mixedIndices.view();
       axom::for_all<ExecSpace>(
         nzones,
-        AXOM_LAMBDA(auto index) {
+        AXOM_LAMBDA(axom::IndexType index) {
           mixedIndicesView[index] = selectedZonesView[index];
         });
     }

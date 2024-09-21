@@ -61,7 +61,7 @@ public:
    *
    * \return The dimension of the shape.
    */
-  static constexpr int dimension() { return ShapeT::dimension(); }
+  AXOM_HOST_DEVICE static constexpr int dimension() { return ShapeT::dimension(); }
 
   /**
    * \brief Return the number of zones.
@@ -103,7 +103,7 @@ public:
       axom::for_all<ExecSpace>(
         0,
         nzones,
-        AXOM_LAMBDA(auto zoneIndex) {
+        AXOM_LAMBDA(axom::IndexType zoneIndex) {
           const ConnectivityView shapeIdsView(
             connectivityView.data() + offsetsView[zoneIndex],
             sizesView[zoneIndex]);
@@ -118,7 +118,7 @@ public:
       axom::for_all<ExecSpace>(
         0,
         nzones,
-        AXOM_LAMBDA(auto zoneIndex) {
+        AXOM_LAMBDA(axom::IndexType zoneIndex) {
           ConnectivityView shapeIdsView {};
           if(sizesView.empty())
           {
@@ -161,7 +161,7 @@ public:
       axom::for_all<ExecSpace>(
         0,
         nSelectedZones,
-        AXOM_LAMBDA(auto selectIndex) {
+        AXOM_LAMBDA(axom::IndexType selectIndex) {
           const auto zoneIndex = localSelectedIdsView[selectIndex];
           const ConnectivityView shapeIdsView(
             connectivityView.data() + offsetsView[zoneIndex],
@@ -177,7 +177,7 @@ public:
       axom::for_all<ExecSpace>(
         0,
         nSelectedZones,
-        AXOM_LAMBDA(auto selectIndex) {
+        AXOM_LAMBDA(axom::IndexType selectIndex) {
           const auto zoneIndex = localSelectedIdsView[selectIndex];
           ConnectivityView shapeIdsView {};
           if(sizesView.empty())

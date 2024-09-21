@@ -96,7 +96,7 @@ struct test_node_to_arrayview
         // Make sure we can store values in dataView
         axom::for_all<ExecSpace>(
           n,
-          AXOM_LAMBDA(auto index) {
+          AXOM_LAMBDA(axom::IndexType index) {
             dataView[index] = static_cast<value_type>(index);
           });
 
@@ -104,7 +104,7 @@ struct test_node_to_arrayview
         RAJA::ReduceSum<reduce_policy, value_type> sumValues_reduce(0);
         axom::for_all<ExecSpace>(
           n,
-          AXOM_LAMBDA(auto index) { sumValues_reduce += dataView[index]; });
+          AXOM_LAMBDA(axom::IndexType index) { sumValues_reduce += dataView[index]; });
         sumValues = static_cast<int>(sumValues_reduce.get());
       });
 
@@ -190,7 +190,7 @@ TEST(mir_views, strided_structured)
         [&](const std::string &AXOM_UNUSED_PARAM(shape), auto topoView) {
           // Traverse the zones in the mesh and check the zone ids.
           topoView.template for_all_zones<axom::SEQ_EXEC>(
-            AXOM_LAMBDA(auto zoneIndex, const auto &zone) {
+            AXOM_LAMBDA(axom::IndexType zoneIndex, const auto &zone) {
               // Check zone ids.
               const auto ids = zone.getIds();
               for(axom::IndexType i = 0; i < ids.size(); i++)
@@ -256,7 +256,7 @@ void test_matsetview(MatsetView matsetView, int allocatorID)
   constexpr int nResultsPerZone = nResults / nZones;
   axom::for_all<ExecSpace>(
     3,
-    AXOM_LAMBDA(auto index) {
+    AXOM_LAMBDA(axom::IndexType index) {
       resultsView[nResultsPerZone * index + 0] =
         matsetView.zoneContainsMaterial(zoneidsView[index], MATA) ? 1 : 0;
       resultsView[nResultsPerZone * index + 1] =

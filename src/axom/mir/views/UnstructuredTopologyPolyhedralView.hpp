@@ -221,7 +221,7 @@ public:
    *
    * \return The dimension of the shape.
    */
-  static constexpr int dimension() { return 3; }
+  AXOM_HOST_DEVICE static constexpr int dimension() { return 3; }
 
   /**
    * \brief Execute a function for each zone in the mesh.
@@ -240,7 +240,7 @@ public:
     axom::for_all<ExecSpace>(
       0,
       nzones,
-      AXOM_LAMBDA(int zoneIndex) {
+      AXOM_LAMBDA(axom::IndexType zoneIndex) {
         const PolyhedronShape shape(sd, zoneIndex);
         func(zoneIndex, shape);
       });
@@ -266,7 +266,7 @@ public:
     axom::for_all<ExecSpace>(
       0,
       nSelectedZones,
-      AXOM_LAMBDA(auto selectIndex) {
+      AXOM_LAMBDA(axom::IndexType selectIndex) {
         const auto zoneIndex = idsView[selectIndex];
         const PolyhedronShape shape(sd, zoneIndex);
         func(selectIndex, zoneIndex, shape);

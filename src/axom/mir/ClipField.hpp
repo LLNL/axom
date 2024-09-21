@@ -291,7 +291,7 @@ public:
       views::Node_to_ArrayView(n_clip_field_values, [&](auto clipFieldViewSrc) {
         axom::for_all<ExecSpace>(
           n,
-          AXOM_LAMBDA(auto index) {
+          AXOM_LAMBDA(axom::IndexType index) {
             clipFieldView[index] =
               static_cast<ClipFieldType>(clipFieldViewSrc[index]);
           });
@@ -359,6 +359,7 @@ public:
   using BlendGroupBuilderType =
     BlendGroupBuilder<ExecSpace, typename NamingPolicy::View>;
   using ClipFieldType = float;
+  using ZoneType = typename TopologyView::ShapeType;
 
   /**
    * \brief Constructor
@@ -709,7 +710,7 @@ public:
       const auto selectedZonesView = selectedZones.view();
       axom::for_all<ExecSpace>(
         nzones,
-        AXOM_LAMBDA(auto index) {
+        AXOM_LAMBDA(axom::IndexType index) {
           const auto zoneIndex = selectedZonesView[index];
           const auto start = fragmentData.m_fragmentOffsetsView[index];
           for(int i = 0; i < fragmentData.m_fragmentsView[index]; i++)
@@ -735,7 +736,11 @@ public:
     markNewNodes(blend, newNodes, opts.topologyName(n_topo.name()), n_newFields);
   }
 
+// The following members are private (unless using CUDA)
+#if !defined(__CUDACC__)
 private:
+#endif
+
   /**
    * \brief Contains data that describes the number and size of zone fragments in the output.
    */
@@ -839,12 +844,12 @@ private:
     // Initialize nodeUsed data for nodes.
     axom::for_all<ExecSpace>(
       nodeData.m_nodeUsedView.size(),
-      AXOM_LAMBDA(auto index) { nodeData.m_nodeUsedView[index] = 0; });
+      AXOM_LAMBDA(axom::IndexType index) { nodeData.m_nodeUsedView[index] = 0; });
 
     const auto deviceIntersector = m_intersector.view();
     m_topologyView.template for_selected_zones<ExecSpace>(
       selectedZones.view(),
-      AXOM_LAMBDA(auto szIndex, auto zoneIndex, const auto &zone) {
+      AXOM_LAMBDA(axom::IndexType szIndex, axom::IndexType zoneIndex, const ZoneType &zone) {
         // Get the clip case for the current zone.
         const auto clipcase =
           deviceIntersector.determineClipCase(zoneIndex, zone.getIds());
@@ -996,7 +1001,7 @@ private:
     const auto fragmentsView = fragmentData.m_fragmentsView;
     axom::for_all<ExecSpace>(
       nzones,
-      AXOM_LAMBDA(auto szIndex) { fragment_sum += fragmentsView[szIndex]; });
+      AXOM_LAMBDA(axom::IndexType szIndex) { fragment_sum += fragmentsView[szIndex]; });
     fragmentData.m_finalNumZones = fragment_sum.get();
 
     // Sum the fragment connectivity sizes.
@@ -1004,7 +1009,7 @@ private:
     const auto fragmentsSizeView = fragmentData.m_fragmentsSizeView;
     axom::for_all<ExecSpace>(
       nzones,
-      AXOM_LAMBDA(auto szIndex) {
+      AXOM_LAMBDA(axom::IndexType szIndex) {
         fragment_nids_sum += fragmentsSizeView[szIndex];
       });
     fragmentData.m_finalConnSize = fragment_nids_sum.get();
@@ -1052,7 +1057,7 @@ private:
     const auto nodeUsedView = nodeData.m_nodeUsedView;
     axom::for_all<ExecSpace>(
       nodeUsedView.size(),
-      AXOM_LAMBDA(auto index) { nUsed_reducer += nodeUsedView[index]; });
+      AXOM_LAMBDA(axom::IndexType index) { nUsed_reducer += nodeUsedView[index]; });
     return nUsed_reducer.get();
   }
 
@@ -1075,7 +1080,7 @@ private:
     // Make the compact node list and oldToNew map.
     axom::for_all<ExecSpace>(
       nnodes,
-      AXOM_LAMBDA(auto index) {
+      AXOM_LAMBDA(axom::IndexType index) {
         IndexType newId = 0;
         if(nodeData.m_nodeUsedView[index] > 0)
         {
@@ -1122,7 +1127,7 @@ private:
     const auto deviceIntersector = m_intersector.view();
     m_topologyView.template for_selected_zones<ExecSpace>(
       selectedZones.view(),
-      AXOM_LAMBDA(auto szIndex, auto zoneIndex, const auto &zone) {
+      AXOM_LAMBDA(axom::IndexType szIndex, axom::IndexType zoneIndex, const ZoneType &zone) {
         // Get the clip case for the current zone.
         const auto clipcase = zoneData.m_clipCasesView[szIndex];
 
@@ -1308,13 +1313,13 @@ private:
     // Fill in connectivity values in case we leave empty slots later.
     axom::for_all<ExecSpace>(
       connView.size(),
-      AXOM_LAMBDA(auto index) { connView[index] = 0; });
+      AXOM_LAMBDA(axom::IndexType index) { connView[index] = 0; });
 
 #if defined(AXOM_DEBUG_CLIP_FIELD)
     // Initialize the values beforehand. For debugging.
     axom::for_all<ExecSpace>(
       shapesView.size(),
-      AXOM_LAMBDA(auto index) {
+      AXOM_LAMBDA(axom::IndexType index) {
         shapesView[index] = -2;
         sizesView[index] = -3;
         offsetsView[index] = -4;
@@ -1339,9 +1344,9 @@ private:
       const auto origSize = nodeData.m_originalIdsView.size();
       m_topologyView.template for_selected_zones<ExecSpace>(
         selectedZones.view(),
-        AXOM_LAMBDA(auto szIndex,
-                    auto AXOM_UNUSED_PARAM(zoneIndex),
-                    const auto &zone) {
+        AXOM_LAMBDA(axom::IndexType szIndex,
+                    axom::IndexType AXOM_UNUSED_PARAM(zoneIndex),
+                    const ZoneType &zone) {
           // If there are no fragments, return from lambda.
           if(fragmentData.m_fragmentsView[szIndex] == 0) return;
 
@@ -1538,7 +1543,7 @@ private:
         RAJA::ReduceSum<reduce_policy, axom::IndexType> mask_reduce(0);
         axom::for_all<ExecSpace>(
           nz,
-          AXOM_LAMBDA(auto index) {
+          AXOM_LAMBDA(axom::IndexType index) {
             const int ival = (sizesView[index] > 0) ? 1 : 0;
             maskView[index] = ival;
             mask_reduce += ival;
@@ -1560,7 +1565,7 @@ private:
             const auto nValues = maskView.size();
             axom::for_all<ExecSpace>(
               nValues,
-              AXOM_LAMBDA(auto index) {
+              AXOM_LAMBDA(axom::IndexType index) {
                 if(maskView[index] > 0)
                 {
                   const auto destIndex = maskOffsetsView[index];
@@ -1591,7 +1596,7 @@ private:
       RAJA::ReduceBitOr<reduce_policy, BitSet> shapesUsed_reduce(0);
       axom::for_all<ExecSpace>(
         shapesView.size(),
-        AXOM_LAMBDA(auto index) {
+        AXOM_LAMBDA(axom::IndexType index) {
           BitSet shapeBit {};
           axom::utilities::setBitOn(shapeBit, shapesView[index]);
           shapesUsed_reduce |= shapeBit;
@@ -1623,7 +1628,6 @@ private:
       n_newFields.remove(opts.colorField());
     }
 
-#if 1
     // Handle some quad->tri degeneracies
     if constexpr(TopologyView::dimension() == 2)
     {
@@ -1634,7 +1638,7 @@ private:
         RAJA::ReduceBitOr<reduce_policy, BitSet> shapesUsed_reduce(0);
         axom::for_all<ExecSpace>(
           numOutputZones,
-          AXOM_LAMBDA(auto index) {
+          AXOM_LAMBDA(axom::IndexType index) {
             if(shapesView[index] == views::Quad_ShapeID)
             {
               const auto offset = offsetsView[index];
@@ -1655,8 +1659,8 @@ private:
                 connView[offset] = pts[0];
                 connView[offset + 1] = pts[1];
                 connView[offset + 2] = pts[2];
-                connView[offset + 3] =
-                  pts[2];  // Repeat the last point (it won't be used though).
+                // Repeat the last point (it won't be used though).
+                connView[offset + 3] = pts[2];  
               }
             }
 
@@ -1668,7 +1672,6 @@ private:
         shapesUsed = shapesUsed_reduce.get();
       }
     }
-#endif
 
     // Add shape information to the connectivity.
     SLIC_ASSERT_MSG(shapesUsed != 0, "No shapes were produced!");
@@ -1864,7 +1867,7 @@ private:
         auto valuesView = bputils::make_array_view<value_type>(n_values);
         axom::for_all<ExecSpace>(
           nzones,
-          AXOM_LAMBDA(auto index) {
+          AXOM_LAMBDA(axom::IndexType index) {
             const int sizeIndex = fragmentData.m_fragmentOffsetsView[index];
             const int nFragments = fragmentData.m_fragmentsView[index];
             const auto zoneIndex = selectedZonesView[index];
@@ -1885,7 +1888,7 @@ private:
       auto valuesView = bputils::make_array_view<ConnectivityType>(n_values);
       axom::for_all<ExecSpace>(
         nzones,
-        AXOM_LAMBDA(auto index) {
+        AXOM_LAMBDA(axom::IndexType index) {
           const int sizeIndex = fragmentData.m_fragmentOffsetsView[index];
           const int nFragments = fragmentData.m_fragmentsView[index];
           const auto zoneIndex = selectedZonesView[index];
@@ -1974,7 +1977,7 @@ private:
         // Update values for the blend groups only.
         axom::for_all<ExecSpace>(
           blendSize,
-          AXOM_LAMBDA(auto bgid) { valuesView[origSize + bgid] = one; });
+          AXOM_LAMBDA(axom::IndexType bgid) { valuesView[origSize + bgid] = one; });
       }
       else
       {
@@ -1994,14 +1997,17 @@ private:
         // Everything above is a blended node.
         axom::for_all<ExecSpace>(
           outputSize,
-          AXOM_LAMBDA(auto index) {
+          AXOM_LAMBDA(axom::IndexType index) {
             valuesView[index] = (index < origSize) ? zero : one;
           });
       }
     }
   }
 
+// The following members are private (unless using CUDA)
+#if !defined(__CUDACC__)
 private:
+#endif
   TopologyView m_topologyView {};
   CoordsetView m_coordsetView {};
   Intersector m_intersector {};

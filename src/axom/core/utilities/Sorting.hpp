@@ -6,7 +6,7 @@
 #ifndef AXOM_CORE_UTILITIES_SORTING_HPP
 #define AXOM_CORE_UTILITIES_SORTING_HPP
 #include <axom/core/utilities/Utilities.hpp>
-#include <limits>
+#include <axom/core/NumericLimits.hpp>
 
 namespace axom
 {
@@ -22,10 +22,9 @@ namespace utilities
  *       increases, the algorithm switches to qsort. Also, this is designed as
  *       a template class so it can be specialized.
  */
-template <typename T, int N = std::numeric_limits<int>::max()>
-class Sorting
+template <typename T, int N = axom::numeric_limits<int>::max()>
+struct Sorting
 {
-public:
   /**
    * \brief Sort an array of values in place.
    *
@@ -41,11 +40,11 @@ public:
       qsort(values, n);
   }
 
-private:
   /**
    * \brief Computes stack size for qsort.
    * \return A number of elements for an array-based stack.
    */
+  AXOM_HOST_DEVICE
   constexpr static int stack_size()
   {
     int v = N;
