@@ -78,7 +78,11 @@ public:
     }
   }
 
+// The following members are private (unless using CUDA)
+#if !defined(__CUDACC__)
 private:
+#endif
+
   /**
    * \brief This struct contains information used when merging fields.
    */
@@ -253,7 +257,7 @@ private:
             // Pull out specific nodes from the input.
             axom::for_all<ExecSpace>(
               nodeSliceView.size(),
-              AXOM_LAMBDA(auto index) {
+              AXOM_LAMBDA(axom::IndexType index) {
                 const auto sliceIndex = nodeSliceView[index];
                 compView[offset + index] = srcCompView[sliceIndex];
               });
@@ -264,7 +268,7 @@ private:
             // Pull out all nodes from the input.
             axom::for_all<ExecSpace>(
               srcCompView.size(),
-              AXOM_LAMBDA(auto index) {
+              AXOM_LAMBDA(axom::IndexType index) {
                 compView[offset + index] = srcCompView[index];
               });
             size = srcCompView.size();
@@ -460,7 +464,7 @@ private:
           const auto nodeMapView = inputs[i].m_nodeMapView;
           axom::for_all<ExecSpace>(
             srcConnView.size(),
-            AXOM_LAMBDA(auto index) {
+            AXOM_LAMBDA(axom::IndexType index) {
               const auto nodeId = srcConnView[index];
               const auto newNodeId = nodeMapView[nodeId];
               connView[connOffset + index] = newNodeId;
@@ -471,7 +475,7 @@ private:
           // Copy all zones from the input. Map the nodes to the new values.
           axom::for_all<ExecSpace>(
             srcConnView.size(),
-            AXOM_LAMBDA(auto index) {
+            AXOM_LAMBDA(axom::IndexType index) {
               connView[connOffset + index] = coordOffset + srcConnView[index];
             });
         }
@@ -489,7 +493,7 @@ private:
         // Copy all sizes from the input.
         axom::for_all<ExecSpace>(
           srcSizesView.size(),
-          AXOM_LAMBDA(auto index) {
+          AXOM_LAMBDA(axom::IndexType index) {
             sizesView[sizesOffset + index] = srcSizesView[index];
           });
 
@@ -513,7 +517,7 @@ private:
             // Copy all sizes from the input.
             axom::for_all<ExecSpace>(
               srcShapesView.size(),
-              AXOM_LAMBDA(auto index) {
+              AXOM_LAMBDA(axom::IndexType index) {
                 shapesView[shapesOffset + index] = srcShapesView[index];
               });
 
@@ -533,7 +537,7 @@ private:
           const int shapeId = axom::mir::views::shapeNameToID(srcShape);
           axom::for_all<ExecSpace>(
             nz,
-            AXOM_LAMBDA(auto index) {
+            AXOM_LAMBDA(axom::IndexType index) {
               shapesView[shapesOffset + index] = shapeId;
             });
           shapesOffset += nz;
@@ -686,7 +690,7 @@ private:
                                             [&](auto srcView, auto destView) {
                                               axom::for_all<ExecSpace>(
                                                 nzones,
-                                                AXOM_LAMBDA(auto index) {
+                                                AXOM_LAMBDA(axom::IndexType index) {
                                                   destView[offset + index] =
                                                     srcView[index];
                                                 });
@@ -697,13 +701,117 @@ private:
         axom::mir::views::Node_to_ArrayView(n_values, [&](auto destView) {
           axom::for_all<ExecSpace>(
             nzones,
-            AXOM_LAMBDA(auto index) { destView[offset + index] = 0; });
+            AXOM_LAMBDA(axom::IndexType index) { destView[offset + index] = 0; });
         });
       }
       offset += nzones;
     }
   }
 
+#if 0
+#define AXOM_NODE_TO_ARRAYVIEW1(node1, view1, CODE) \
+axom::mir::views::Node_to_ArrayView(node1, [&](auto view1){CODE});
+#else
+#define AXOM_NODE_TO_ARRAYVIEW1(node1, view1, CODE) \
+  switch(node1.dtype().id()) \
+  { \
+  case conduit::DataType::INT8_ID: \
+   { axom::ArrayView<conduit::int8> view1(static_cast<conduit::int8 *>(node1.data_ptr()), node1.dtype().number_of_elements()); \
+     CODE \
+   } break; \
+  case conduit::DataType::INT16_ID: { \
+     axom::ArrayView<conduit::int16> view1(static_cast<conduit::int16 *>(node1.data_ptr()), node1.dtype().number_of_elements()); \
+     CODE \
+   } break; \
+  case conduit::DataType::INT32_ID: \
+   { axom::ArrayView<conduit::int32> view1(static_cast<conduit::int32 *>(node1.data_ptr()), node1.dtype().number_of_elements()); \
+     CODE \
+   } break; \
+  case conduit::DataType::INT64_ID: { \
+     axom::ArrayView<conduit::int64> view1(static_cast<conduit::int64 *>(node1.data_ptr()), node1.dtype().number_of_elements()); \
+     CODE \
+   } break; \
+  case conduit::DataType::UINT8_ID: \
+   { axom::ArrayView<conduit::uint8> view1(static_cast<conduit::uint8 *>(node1.data_ptr()), node1.dtype().number_of_elements()); \
+     CODE \
+   } break; \
+  case conduit::DataType::UINT16_ID: { \
+     axom::ArrayView<conduit::uint16> view1(static_cast<conduit::uint16 *>(node1.data_ptr()), node1.dtype().number_of_elements()); \
+     CODE \
+   } break; \
+  case conduit::DataType::UINT32_ID: \
+   { axom::ArrayView<conduit::uint32> view1(static_cast<conduit::uint32 *>(node1.data_ptr()), node1.dtype().number_of_elements()); \
+     CODE \
+   } break; \
+  case conduit::DataType::UINT64_ID: { \
+     axom::ArrayView<conduit::uint64> view1(static_cast<conduit::uint64 *>(node1.data_ptr()), node1.dtype().number_of_elements()); \
+     CODE \
+   } break; \
+  case conduit::DataType::FLOAT32_ID: \
+   { axom::ArrayView<conduit::float32> view1(static_cast<conduit::float32 *>(node1.data_ptr()), node1.dtype().number_of_elements()); \
+     CODE \
+   } break; \
+  case conduit::DataType::FLOAT64_ID: { \
+     axom::ArrayView<conduit::float64> view1(static_cast<conduit::float64 *>(node1.data_ptr()), node1.dtype().number_of_elements()); \
+     CODE \
+   } break; \
+  }
+
+#define AXOM_NODE_TO_ARRAYVIEW_SAME2(node1, node2, view1, view2, CODE) \
+  switch(node1.dtype().id()) \
+  { \
+  case conduit::DataType::INT8_ID: {\
+     axom::ArrayView<conduit::int8> view1(static_cast<conduit::int8 *>(const_cast<void *>(node1.data_ptr())), node1.dtype().number_of_elements()); \
+     axom::ArrayView<conduit::int8> view2(static_cast<conduit::int8 *>(const_cast<void *>(node2.data_ptr())), node2.dtype().number_of_elements()); \
+     CODE \
+   } break; \
+  case conduit::DataType::INT16_ID: { \
+     axom::ArrayView<conduit::int16> view1(static_cast<conduit::int16 *>(const_cast<void *>(node1.data_ptr())), node1.dtype().number_of_elements()); \
+     axom::ArrayView<conduit::int16> view2(static_cast<conduit::int16 *>(const_cast<void *>(node2.data_ptr())), node2.dtype().number_of_elements()); \
+     CODE \
+   } break; \
+  case conduit::DataType::INT32_ID: {\
+     axom::ArrayView<conduit::int32> view1(static_cast<conduit::int32 *>(const_cast<void *>(node1.data_ptr())), node1.dtype().number_of_elements()); \
+     axom::ArrayView<conduit::int32> view2(static_cast<conduit::int32 *>(const_cast<void *>(node2.data_ptr())), node2.dtype().number_of_elements()); \
+     CODE \
+   } break; \
+  case conduit::DataType::INT64_ID: { \
+     axom::ArrayView<conduit::int64> view1(static_cast<conduit::int64 *>(const_cast<void *>(node1.data_ptr())), node1.dtype().number_of_elements()); \
+     axom::ArrayView<conduit::int64> view2(static_cast<conduit::int64 *>(const_cast<void *>(node2.data_ptr())), node2.dtype().number_of_elements()); \
+     CODE \
+   } break; \
+  case conduit::DataType::UINT8_ID: {\
+     axom::ArrayView<conduit::uint8> view1(static_cast<conduit::uint8 *>(const_cast<void *>(node1.data_ptr())), node1.dtype().number_of_elements()); \
+     axom::ArrayView<conduit::uint8> view2(static_cast<conduit::uint8 *>(const_cast<void *>(node2.data_ptr())), node2.dtype().number_of_elements()); \
+     CODE \
+   } break; \
+  case conduit::DataType::UINT16_ID: { \
+     axom::ArrayView<conduit::uint16> view1(static_cast<conduit::uint16 *>(const_cast<void *>(node1.data_ptr())), node1.dtype().number_of_elements()); \
+     axom::ArrayView<conduit::uint16> view2(static_cast<conduit::uint16 *>(const_cast<void *>(node2.data_ptr())), node2.dtype().number_of_elements()); \
+     CODE \
+   } break; \
+  case conduit::DataType::UINT32_ID: { \
+     axom::ArrayView<conduit::uint32> view1(static_cast<conduit::uint32 *>(const_cast<void *>(node1.data_ptr())), node1.dtype().number_of_elements()); \
+     axom::ArrayView<conduit::uint32> view2(static_cast<conduit::uint32 *>(const_cast<void *>(node2.data_ptr())), node2.dtype().number_of_elements()); \
+     CODE \
+   } break; \
+  case conduit::DataType::UINT64_ID: { \
+     axom::ArrayView<conduit::uint64> view1(static_cast<conduit::uint64 *>(const_cast<void *>(node1.data_ptr())), node1.dtype().number_of_elements()); \
+     axom::ArrayView<conduit::uint64> view2(static_cast<conduit::uint64 *>(const_cast<void *>(node2.data_ptr())), node2.dtype().number_of_elements()); \
+     CODE \
+   } break; \
+  case conduit::DataType::FLOAT32_ID: {\
+     axom::ArrayView<conduit::float32> view1(static_cast<conduit::float32 *>(const_cast<void *>(node1.data_ptr())), node1.dtype().number_of_elements()); \
+     axom::ArrayView<conduit::float32> view2(static_cast<conduit::float32 *>(const_cast<void *>(node2.data_ptr())), node2.dtype().number_of_elements()); \
+     CODE \
+   } break; \
+  case conduit::DataType::FLOAT64_ID: { \
+     axom::ArrayView<conduit::float64> view1(static_cast<conduit::float64 *>(const_cast<void *>(node1.data_ptr())), node1.dtype().number_of_elements()); \
+     axom::ArrayView<conduit::float64> view2(static_cast<conduit::float64 *>(const_cast<void *>(node2.data_ptr())), node2.dtype().number_of_elements()); \
+     CODE \
+   } break; \
+  }
+#endif
   /**
    * \brief Copy nodal field data into a Conduit node.
    *
@@ -724,40 +832,62 @@ private:
       {
         const conduit::Node &n_src_values =
           inputs[i].m_input->fetch_existing(srcPath);
+
         axom::mir::views::Node_to_ArrayView(
           n_src_values,
           n_values,
           [&](auto srcView, auto destView) {
-            if(inputs[i].m_nodeSliceView.empty())
+
+          copyNodal_copy(inputs[i].m_nodeSliceView, srcView, destView, nnodes, offset);
+
+          });
+      }
+      else
+      {
+#if 1
+        axom::mir::views::Node_to_ArrayView(n_values, [&](auto destView) {
+          copyNodal_fill(destView, nnodes, offset);
+        });
+#else
+        axom::mir::views::Node_to_ArrayView(n_values, [&](auto destView) {
+          axom::for_all<ExecSpace>(
+            nnodes,
+            AXOM_LAMBDA(axom::IndexType index) { destView[offset + index] = 0; });
+        });
+#endif
+      }
+      offset += nnodes;
+    }
+  }
+
+  template <typename SrcViewType, typename DestViewType>
+  void copyNodal_copy(axom::ArrayView<axom::IndexType> nodeSliceView, SrcViewType srcView, DestViewType destView, axom::IndexType nnodes, axom::IndexType offset) const
+  {
+            if(nodeSliceView.empty())
             {
               axom::for_all<ExecSpace>(
                 nnodes,
-                AXOM_LAMBDA(auto index) {
+                AXOM_LAMBDA(axom::IndexType index) {
                   destView[offset + index] = srcView[index];
                 });
             }
             else
             {
-              auto nodeSliceView(inputs[i].m_nodeSliceView);
               axom::for_all<ExecSpace>(
                 nnodes,
-                AXOM_LAMBDA(auto index) {
+                AXOM_LAMBDA(axom::IndexType index) {
                   const auto nodeId = nodeSliceView[index];
                   destView[offset + index] = srcView[nodeId];
                 });
             }
-          });
-      }
-      else
-      {
-        axom::mir::views::Node_to_ArrayView(n_values, [&](auto destView) {
-          axom::for_all<ExecSpace>(
-            nnodes,
-            AXOM_LAMBDA(auto index) { destView[offset + index] = 0; });
-        });
-      }
-      offset += nnodes;
-    }
+   }
+
+  template <typename DestViewType>
+  void copyNodal_fill(DestViewType destView, axom::IndexType nnodes, axom::IndexType offset) const
+  {
+    axom::for_all<ExecSpace>(
+           nnodes,
+           AXOM_LAMBDA(axom::IndexType index) { destView[offset + index] = 0; });
   }
 
   /**
@@ -834,7 +964,7 @@ private:
               RAJA::ReduceSum<reduce_policy, axom::IndexType> matCount_reduce(0);
               axom::for_all<ExecSpace>(
                 nzones,
-                AXOM_LAMBDA(auto zoneIndex) {
+                AXOM_LAMBDA(axom::IndexType zoneIndex) {
                   const auto nmats = matsetView.numberOfMaterials(zoneIndex);
                   matCount_reduce += nmats;
                 });
@@ -912,7 +1042,7 @@ private:
                       [&](auto matsetView) {
                         axom::for_all<ExecSpace>(
                           nzones,
-                          AXOM_LAMBDA(auto zoneIndex) {
+                          AXOM_LAMBDA(axom::IndexType zoneIndex) {
                             sizesView[zOffset + zoneIndex] =
                               matsetView.numberOfMaterials(zoneIndex);
                           });
@@ -922,7 +1052,7 @@ private:
                   {
                     axom::for_all<ExecSpace>(
                       nzones,
-                      AXOM_LAMBDA(auto zoneIndex) {
+                      AXOM_LAMBDA(axom::IndexType zoneIndex) {
                         sizesView[zOffset + zoneIndex] = 1;
                       });
                   }
@@ -934,7 +1064,7 @@ private:
                 // Make indices.
                 axom::for_all<ExecSpace>(
                   totalMatCount,
-                  AXOM_LAMBDA(auto index) { indicesView[index] = index; });
+                  AXOM_LAMBDA(axom::IndexType index) { indicesView[index] = index; });
 
                 // Fill in material info.
                 zOffset = 0;
@@ -991,7 +1121,7 @@ private:
 
                         axom::for_all<ExecSpace>(
                           nzones,
-                          AXOM_LAMBDA(auto zoneIndex) {
+                          AXOM_LAMBDA(axom::IndexType zoneIndex) {
                             // Get this zone's materials.
                             IDList ids;
                             VFList vfs;
@@ -1021,7 +1151,7 @@ private:
                     const int dmat = allMats["default"];
                     axom::for_all<ExecSpace>(
                       nzones,
-                      AXOM_LAMBDA(auto zoneIndex) {
+                      AXOM_LAMBDA(axom::IndexType zoneIndex) {
                         const auto zoneStart = offsetsView[zOffset + zoneIndex];
                         volumeFractionsView[zoneStart] = 1;
                         materialIdsView[zoneStart] = dmat;
