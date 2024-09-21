@@ -19,7 +19,7 @@ namespace utilities
 {
 namespace blueprint
 {
-/**
+/*!
  * \brief This struct builds lists of clean and mixed zones using the input topology and matset views.
  *
  * \tparam ExecSpace The execution space where the algorithm will run.
@@ -33,7 +33,7 @@ public:
   using SelectedZonesView = axom::ArrayView<axom::IndexType>;
   using ZoneType = typename TopologyView::ShapeType;
 
-  /**
+  /*!
    * \brief Constructor
    *
    * \param topoView The topology view to use for creating the zone lists.
@@ -44,7 +44,7 @@ public:
     , m_matsetView(matsetView)
   { }
 
-  /**
+  /*!
    * \brief Build the list of clean and mixed zones using the number of materials
    *        per zone, maxed to the nodes.
    *
@@ -170,7 +170,7 @@ public:
     }
   }
 
-  /**
+  /*!
    * \brief Build the list of clean and mixed zones using the number of materials
    *        per zone, maxed to the nodes. Limit the number of zones.
    *

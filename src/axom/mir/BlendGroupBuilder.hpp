@@ -14,7 +14,7 @@ namespace mir
 {
 namespace clipping
 {
-/**
+/*!
  * \brief This class encapsulates the logic for building blend groups.
  *
  * \tparam ExecSpace The execution space where the algorithm will run.
@@ -28,7 +28,7 @@ class BlendGroupBuilder
 public:
   using KeyType = typename NamingPolicyView::KeyType;
 
-  /**
+  /*!
    * \brief This struct holds the views that represent data for blend groups.
    */
   struct State
@@ -53,14 +53,14 @@ public:
     // clang-format on
   };
 
-  /**
+  /*!
    * \brief Access the state views.
    * \return A reference to the state.
    */
   State &state() { return m_state; }
   const State &state() const { return m_state; }
 
-  /**
+  /*!
    * \brief Provide a hint to the naming policy view so it can do narrowing.
    *
    * \param nnodes The number of nodes in the input mesh.
@@ -70,7 +70,7 @@ public:
     m_state.m_namingView = view;
   }
 
-  /**
+  /*!
    * \brief Set the number of zones.
    *
    * \param blendGroupsView The view that holds the number of blend groups for each zone.
@@ -84,7 +84,7 @@ public:
     m_state.m_blendGroupsLenView = blendGroupsLenView;
   }
 
-  /**
+  /*!
    * \brief Compute the total sizes of blend group storage.
    *
    * \param[out] bgSum The total number of blend groups for all zones.
@@ -109,7 +109,7 @@ public:
     bgLenSum = blendGroupLen_sum.get();
   }
 
-  /**
+  /*!
    * \brief Set the views for the blend group offsets and then fill them using a scan.
    *
    * \param blendOffsetView The offsets to each blend group for views sized: view[blendGroupSum].
@@ -122,7 +122,7 @@ public:
     m_state.m_blendGroupOffsetsView = blendGroupOffsetsView;
   }
 
-  /**
+  /*!
    * brief Compute the blend group offsets that make it easier to store data.
    */
   void computeBlendGroupOffsets()
@@ -134,7 +134,7 @@ public:
                                     m_state.m_blendGroupOffsetsView);
   }
 
-  /**
+  /*!
    * \brief Set the views that we'll use for blend groups.
    */
   void setBlendViews(const axom::ArrayView<KeyType> &blendNames,
@@ -150,7 +150,7 @@ public:
     m_state.m_blendCoeffView = blendCoeff;
   }
 
-  /**
+  /*!
    * \brief Set the unique names and ids views. These are used in mapping blend groups to unique blend groups.
    *
    * \param uniqueNames A view containing unique, sorted blend group names.
@@ -163,7 +163,7 @@ public:
     m_state.m_blendUniqueIndicesView = uniqueIndices;
   }
 
-  /**
+  /*!
    * \brief Get the blend names view.
    * \return The blend names view.
    */
@@ -172,13 +172,13 @@ public:
     return m_state.m_blendNamesView;
   }
 
-  /**
+  /*!
    * \brief This class helps us manage blend group creation and usage for blend groups within a single zone.
    */
   class zone_blend_groups
   {
   public:
-    /**
+    /*!
      * \brief Return the number of blend groups for this zone.
      * \return The number of blend groups for this zone.
      */
@@ -188,7 +188,7 @@ public:
       return m_state->m_blendGroupsView[m_zoneIndex];
     }
 
-    /**
+    /*!
      * \brief Set the number of blend groups and total size of the blend groups for a zone.
      *
      * \param zoneIndex The index of the zone we're initializing.
@@ -202,13 +202,13 @@ public:
       m_state->m_blendGroupsLenView[m_zoneIndex] = blendGroupsSize;
     }
 
-    /**
+    /*!
      * \brief Start creating a new blend group within the allocated space for this zone.
      */
     AXOM_HOST_DEVICE
     inline void beginGroup() { m_currentDataOffset = m_startOffset; }
 
-    /**
+    /*!
      * \brief Add a new blend point in the current blend group.
      *
      * \param id The node id that will be used for blending.
@@ -222,7 +222,7 @@ public:
       m_currentDataOffset++;
     }
 
-    /**
+    /*!
      * \brief End the current blend group, storing its name, size, etc.
      */
     AXOM_HOST_DEVICE
@@ -255,7 +255,7 @@ public:
       m_startOffset = m_currentDataOffset;
     }
 
-    /**
+    /*!
      * \brief Return the sum of the weights for the current blend group.
      * \note The blendGroup must have finished construction.
      * \return The sum of weights, which should be about 1.
@@ -271,7 +271,7 @@ public:
       return w;
     }
 
-    /**
+    /*!
      * \brief Return the size for the current blend group.
      * \note The blendGroup must have finished construction.
      * \return The size of the current blend group.
@@ -282,7 +282,7 @@ public:
       return m_state->m_blendGroupSizesView[m_blendGroupId];
     }
 
-    /**
+    /*!
      * \brief Return the index'th weight in the blend group.
      * \note The blendGroup must have finished construction.
      * \return The index'th weight.
@@ -294,7 +294,7 @@ public:
       return m_state->m_blendCoeffView[start + index];
     }
 
-    /**
+    /*!
      * \brief Return the index'th weight in the blend group.
      * \note The blendGroup must have finished construction.
      * \return The index'th weight.
@@ -306,7 +306,7 @@ public:
       return m_state->m_blendIdsView[start + index];
     }
 
-    /**
+    /*!
      * \brief Return the name of the current blend group.
      * \return The name of the current blend group.
      */
@@ -316,7 +316,7 @@ public:
       return m_state->m_blendNamesView[m_blendGroupId];
     }
 
-    /**
+    /*!
      * \brief Return index of the current blend group in the unique blend groups.
      * \return The unique index of the current blend group.
      */
@@ -327,20 +327,20 @@ public:
                                            m_state->m_blendUniqueNamesView);
     }
 
-    /**
+    /*!
      * \brief Advance to the next blend group.
      */
     AXOM_HOST_DEVICE
     inline void operator++() { m_blendGroupId++; }
 
-    /**
+    /*!
      * \brief Advance to the next blend group.
      */
     AXOM_HOST_DEVICE
     inline void operator++(int) { m_blendGroupId++; }
 
 #if !defined(AXOM_DEVICE_CODE)
-    /**
+    /*!
      * \brief Print the current blend group to a stream.
      * \param os The stream to which the blend group will print.
      */
@@ -376,7 +376,7 @@ public:
     }
 #endif
 
-    /**
+    /*!
      * \brief Return the current blend group's ids.
      * \return The current blend group's ids.
      * \note This method should not be used if blend groups are still being constructed.
@@ -389,7 +389,7 @@ public:
                                         n);
     }
 
-    /**
+    /*!
      * \brief Return the current blend group's ids.
      * \return The current blend group's ids.
      * \note This method should not be used if blend groups are still being constructed.
@@ -412,7 +412,7 @@ public:
     State *m_state;                 // Pointer to the main state.
   };
 
-  /**
+  /*!
    * \brief Return a zone_blend_groups object for the current zone so we can add blend groups.
    *
    * \param zoneIndex The zone whose blend groups we want to edit.
@@ -438,7 +438,7 @@ public:
     return groups;
   }
 
-  /**
+  /*!
    * \brief Filter out single node blend groups from the unique.
    *
    * \param blend The BlendData that describes the blend groups.
@@ -509,7 +509,7 @@ public:
     }
   }
 
-  /**
+  /*!
    * \brief Make a BlendData object from the views in this object.
    *
    * \return A BlendData object suitable for making new fields and coordsets.

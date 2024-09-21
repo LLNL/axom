@@ -18,14 +18,14 @@ namespace mir
 {
 namespace views
 {
-/**
+/*!
  * \brief Base template for uniform topology creation
  */
 template <int NDIMS>
 struct make_uniform
 { };
 
-/**
+/*!
  * \brief Create a 3D structured topology view with normal structured indexing.
  */
 template <>
@@ -35,7 +35,7 @@ struct make_uniform<3>
   using LogicalIndex = typename Indexing::LogicalIndex;
   using TopoView = views::StructuredTopologyView<Indexing>;
 
-  /**
+  /*!
    * \brief Create the indexing and initialize it from the topology.
    * \param topo The node containing the topology.
    * \return The indexing.
@@ -53,7 +53,7 @@ struct make_uniform<3>
     return Indexing(zoneDims);
   }
 
-  /**
+  /*!
    * \brief Create the topology view and initialize it from the topology.
    * \param topo The node containing the topology.
    * \return The topology view.
@@ -64,7 +64,7 @@ struct make_uniform<3>
   }
 };
 
-/**
+/*!
  * \brief Create a 2D structured topology view with normal structured indexing.
  */
 template <>
@@ -74,7 +74,7 @@ struct make_uniform<2>
   using LogicalIndex = typename Indexing::LogicalIndex;
   using TopoView = views::StructuredTopologyView<Indexing>;
 
-  /**
+  /*!
    * \brief Create the indexing and initialize it from the topology.
    * \param topo The node containing the topology.
    * \return The indexing.
@@ -91,7 +91,7 @@ struct make_uniform<2>
     return Indexing(zoneDims);
   }
 
-  /**
+  /*!
    * \brief Create the topology view and initialize it from the topology.
    * \param topo The node containing the topology.
    * \return The topology view.
@@ -102,7 +102,7 @@ struct make_uniform<2>
   }
 };
 
-/**
+/*!
  * \brief Create a 1D structured topology view with normal structured indexing.
  */
 template <>
@@ -112,7 +112,7 @@ struct make_uniform<1>
   using LogicalIndex = typename Indexing::LogicalIndex;
   using TopoView = views::StructuredTopologyView<Indexing>;
 
-  /**
+  /*!
    * \brief Create the indexing and initialize it from the topology.
    * \param topo The node containing the topology.
    * \return The indexing.
@@ -128,7 +128,7 @@ struct make_uniform<1>
     return Indexing(zoneDims);
   }
 
-  /**
+  /*!
    * \brief Create the topology view and initialize it from the topology.
    * \param topo The node containing the topology.
    * \return The topology view.
@@ -139,7 +139,7 @@ struct make_uniform<1>
   }
 };
 
-/**
+/*!
  * \brief Creates a topology view compatible with uniform topologies and passes that view to the supplied function.
  *
  * \tparam FuncType            The function/lambda type to invoke on the view.

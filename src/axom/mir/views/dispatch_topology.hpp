@@ -20,7 +20,7 @@ namespace mir
 {
 namespace views
 {
-/**
+/*!
  * \brief Creates a topology view and passes that view to the supplied function.
  *
  * \tparam FuncType The function/lambda type to invoke on the view.

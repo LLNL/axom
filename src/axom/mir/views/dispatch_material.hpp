@@ -17,7 +17,7 @@ namespace mir
 {
 namespace views
 {
-/**
+/*!
  * \brief Dispatch a Conduit node containing a matset to a function as the appropriate type of matset view.
  *
  * \tparam FuncType The function/lambda type that will take the matset.

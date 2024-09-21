@@ -15,7 +15,7 @@ namespace mir
 {
 namespace clipping
 {
-/**
+/*!
  * \accelerated
  * \brief This class contains a view of table data and it provides an
  *        iterator for traversing shapes in a case.
@@ -28,27 +28,27 @@ public:
   using IndexView = axom::ArrayView<IndexData>;
   using TableDataView = axom::ArrayView<TableData>;
 
-  /**
+  /*!
    * \brief An iterator for shapes within a table case.
    */
   class iterator
   {
   public:
-    /**
+    /*!
      * \brief Return the index of the iterator's current shape.
      * \return The index of the iterator's current shape.
      */
     AXOM_HOST_DEVICE
     inline int index() const { return m_currentShape; }
 
-    /**
+    /*!
      * \brief Return the number of shapes in the iterator's case.
      * \return The number of shapes in the iterator's case.
      */
     AXOM_HOST_DEVICE
     inline int size() const { return m_numShapes; }
 
-    /**
+    /*!
      * \brief Increment the iterator, moving it to the next shape.
      */
     AXOM_HOST_DEVICE
@@ -62,7 +62,7 @@ public:
       }
     }
 
-    /**
+    /*!
      * \brief Increment the iterator, moving it to the next shape.
      */
     AXOM_HOST_DEVICE
@@ -76,7 +76,7 @@ public:
       }
     }
 
-    /**
+    /*!
      * \brief Compare 2 iterators for equality.
      * \param it The iterator to be compared to this.
      * \return true if the iterators are equal; false otherwise.
@@ -89,7 +89,7 @@ public:
         m_currentShape == it.m_currentShape && m_numShapes == it.m_numShapes;
     }
 
-    /**
+    /*!
      * \brief Compare 2 iterators to see if not equal.
      * \param it The iterator to be compared to this.
      * \return true if the iterators are different; false otherwise.
@@ -102,7 +102,7 @@ public:
         m_currentShape != it.m_currentShape || m_numShapes != it.m_numShapes;
     }
 
-    /**
+    /*!
      * \brief Dereference operator that wraps the current shape data in an array
      *        view so the caller can use the shape data.
      */
@@ -208,7 +208,7 @@ public:
   private:
     friend class TableView;
 
-    /**
+    /*!
      * \brief Given the input shape, return how many values to advance to get to the next shape.
      *
      * \param shape The shape type.
@@ -253,13 +253,13 @@ public:
     int m_numShapes {0};
   };
 
-  /**
+  /*!
    * \brief Constructor
    */
   AXOM_HOST_DEVICE
   TableView() : m_shapes(), m_offsets(), m_table() { }
 
-  /**
+  /*!
    * \brief Constructor
    *
    * \param shapes  The number of shapes in each table case.
@@ -275,7 +275,7 @@ public:
     , m_table(table)
   { }
 
-  /**
+  /*!
    * \brief Return the number of cases for the clipping table.
    *
    * \return The number of cases for the clipping table.
@@ -283,7 +283,7 @@ public:
   AXOM_HOST_DEVICE
   size_t size() const { return m_shapes.size(); }
 
-  /**
+  /*!
    * \brief Return the iterator for the beginning of a case.
    *
    * \param caseId The case whose begin iterator we want.
@@ -301,7 +301,7 @@ public:
     return it;
   }
 
-  /**
+  /*!
    * \brief Return the iterator for the end of a case.
    *
    * \param caseId The case whose end iterator we want.
@@ -325,7 +325,7 @@ private:
   TableDataView m_table;  // The table data that contains the shapes.
 };
 
-/**
+/*!
  * \brief This class manages data table arrays and can produce a view for the data.
  */
 template <typename ExecSpace>
@@ -337,13 +337,13 @@ public:
   using IndexDataArray = axom::Array<IndexData>;
   using TableDataArray = axom::Array<TableData>;
 
-  /**
+  /*!
    * \brief Returns whether the table data have been loaded.
    * \return True if the data have been loaded; false otherwise.
    */
   bool isLoaded() const { return m_shapes.size() > 0; }
 
-  /**
+  /*!
    * \brief Load table data into the arrays, moving data as needed.
    *
    * \param n The number of cases in the clip table.
@@ -371,7 +371,7 @@ public:
     axom::copy(m_table.data(), table, tableLen * sizeof(unsigned char));
   }
 
-  /**
+  /*!
    * \brief Create a view to access the table data.
    *
    * \return A view of the table data.
@@ -387,7 +387,7 @@ private:
   TableDataArray m_table;
 };
 
-/**
+/*!
  * \brief Manage several clipping tables.
  */
 template <typename ExecSpace>
@@ -396,7 +396,7 @@ class ClipTableManager
 public:
   static constexpr int NumberOfTables = ST_MAX - ST_MIN;
 
-  /**
+  /*!
    * \brief Return a reference to the clipping table, which is loaded on demand.
    *
    * \param shape The shape type to be retrieved.
@@ -411,7 +411,7 @@ public:
     return m_tables[index];
   }
 
-  /**
+  /*!
    * \brief Load tables based on dimension.
    * \param dim The dimension of shapes to load.
    */
@@ -420,7 +420,7 @@ public:
     for(const auto shape : shapes(dim)) loadShape(shape);
   }
 
-  /**
+  /*!
    * \brief Return a vector of clipping shape ids for the given dimension.
    *
    * \param The spatial dimension.
@@ -444,7 +444,7 @@ public:
   }
 
 private:
-  /**
+  /*!
    * \brief Turn a shape into an table index.
    *
    * \param shape The shape type ST_XXX.
@@ -453,7 +453,7 @@ private:
    */
   constexpr static size_t shapeToIndex(size_t shape) { return shape - ST_MIN; }
 
-  /**
+  /*!
    * \brief Load the clipping table for a shape.
    *
    * \param shape The shape whose table will be loaded.

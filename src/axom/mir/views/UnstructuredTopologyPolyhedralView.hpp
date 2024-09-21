@@ -14,7 +14,7 @@ namespace mir
 {
 namespace views
 {
-/**
+/*!
  * \brief This class implements a view for Blueprint polyhedral topologies.
  */
 template <typename ConnType>
@@ -24,7 +24,7 @@ public:
   using ConnectivityType = ConnType;
   using ConnectivityView = axom::ArrayView<ConnectivityType>;
 
-  /**
+  /*!
    * \brief This struct contains views that hold polyhedral connectivity.
    */
   struct PolyhedronData
@@ -64,7 +64,7 @@ public:
     ConnectivityView m_element_offsets;
   };
 
-  /**
+  /*!
    * \brief This struct provides data about Zone i's shape.
    */
   struct PolyhedronShape
@@ -185,7 +185,7 @@ public:
 
   using ShapeType = PolyhedronShape;
 
-  /**
+  /*!
    * \brief Constructor.
    */
   UnstructuredTopologyPolyhedralView(const ConnectivityView &subelement_conn,
@@ -202,28 +202,28 @@ public:
              element_offsets)
   { }
 
-  /**
+  /*!
    * \brief Return the number of zones in the mesh.
    *
    * \return The number of zones.
    */
   IndexType numberOfZones() const { return m_data.m_element_sizes.size(); }
 
-  /**
+  /*!
    * \brief Return the size of the connectivity.
    *
    * \return The size of the connectivity.
    */
   IndexType connectivitySize() const { return m_data.element_conn.size(); }
 
-  /**
+  /*!
    * \brief Return the dimension of the shape.
    *
    * \return The dimension of the shape.
    */
   AXOM_HOST_DEVICE static constexpr int dimension() { return 3; }
 
-  /**
+  /*!
    * \brief Execute a function for each zone in the mesh.
    *
    * \tparam ExecSpace The execution space for the function body.
@@ -246,7 +246,7 @@ public:
       });
   }
 
-  /**
+  /*!
    * \brief Execute a function for each zone in the mesh.
    *
    * \tparam ExecSpace The execution space for the function body.

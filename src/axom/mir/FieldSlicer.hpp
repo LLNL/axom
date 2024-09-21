@@ -19,7 +19,7 @@ namespace utilities
 {
 namespace blueprint
 {
-/**
+/*!
  * \brief Contains the indices to be sliced out of a Blueprint field.
  */
 struct SliceData
@@ -27,7 +27,7 @@ struct SliceData
   axom::ArrayView<IndexType> m_indicesView;
 };
 
-/**
+/*!
  * \accelerated
  * \class FieldSlicer
  *
@@ -44,13 +44,13 @@ public:
   /// Constructor
   FieldSlicer() : m_indexing() { }
 
-  /**
+  /*!
    * \brief Constructor
    * \param indexing An object used to transform node indices.
    */
   FieldSlicer(const IndexingPolicy &indexing) : m_indexing(indexing) { }
 
-  /**
+  /*!
    * \brief Execute the slice on the \a n_input field and store the new sliced field in \a n_output.
    *
    * \param slice    The slice data that indicates how the field will be sliced.
@@ -85,7 +85,7 @@ public:
   }
 
 private:
-  /**
+  /*!
    * \brief Slice data for a single field component.
    *
    * \param slice The SliceData that will be used to make the new field.

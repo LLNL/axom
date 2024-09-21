@@ -20,7 +20,7 @@ namespace utilities
 {
 namespace blueprint
 {
-/**
+/*!
  * \brief This class contains views of blend data. Blend data lets is make new
  *        nodal fields and coordsets. The field data are sampled using m_originalIdsView
  *        which is a compact list of the original node ids that we want to preserve
@@ -45,7 +45,7 @@ struct BlendData
   axom::ArrayView<float> m_blendCoeffView;  // Contains the weights that make up the blend groups.
 };
 
-/**
+/*!
  * \brief This policy can be used with FieldBlender to select all blend groups.
  */
 struct SelectAllPolicy
@@ -64,7 +64,7 @@ struct SelectAllPolicy
   }
 };
 
-/**
+/*!
  * \brief This policy can be used with FieldBlender to select a subset of blend groups, according to m_selectedIndicesView.
  */
 struct SelectSubsetPolicy
@@ -82,7 +82,7 @@ struct SelectSubsetPolicy
   }
 };
 
-/**
+/*!
  * \accelerated
  * \class FieldBlender
  *
@@ -99,13 +99,13 @@ public:
   /// Constructor
   FieldBlender() : m_indexing() { }
 
-  /**
+  /*!
    * \brief Constructor
    * \param indexing An object used to transform node indices.
    */
   FieldBlender(const IndexingPolicy &indexing) : m_indexing(indexing) { }
 
-  /**
+  /*!
    * \brief Create a new blended field from the \a n_input field and place it in \a n_output.
    *
    * \param blend The BlendData that will be used to make the new field.
@@ -138,7 +138,7 @@ public:
   }
 
 private:
-  /**
+  /*!
    * \brief Blend data for a single field component.
    *
    * \param blend The BlendData that will be used to make the new field.

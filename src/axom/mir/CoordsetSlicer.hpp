@@ -18,7 +18,7 @@ namespace utilities
 {
 namespace blueprint
 {
-/**
+/*!
  * \accelerated
  * \class CoordsetSlicer
  *
@@ -36,7 +36,7 @@ public:
     : m_coordsetView(coordsetView)
   { }
 
-  /**
+  /*!
    * \brief Execute the slice on the \a n_input coordset and store the new sliced coordset in \a n_output.
    *
    * \param slice    The slice data that indicates how the coordset will be sliced.

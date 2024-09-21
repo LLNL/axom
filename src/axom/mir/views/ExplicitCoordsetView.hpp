@@ -16,14 +16,14 @@ namespace mir
 {
 namespace views
 {
-/**
+/*!
  * \brief This class provides a view for Conduit/Blueprint explicit coordsets.
  */
 template <typename DataType, int NDIMS>
 class ExplicitCoordsetView
 { };
 
-/**
+/*!
  * \brief This class provides a view for Conduit/Blueprint 2d explicit coordsets.
  */
 template <typename DataType>
@@ -36,7 +36,7 @@ public:
 
   constexpr static int dimension() { return 2; }
 
-  /**
+  /*!
    * \brief Constructor
    *
    * \param x The first coordinate component.
@@ -50,7 +50,7 @@ public:
     SLIC_ASSERT_MSG(x.size() == y.size(), "Coordinate size mismatch.");
   }
 
-  /**
+  /*!
    * \brief Return the number of nodes in the coordset.
    *
    * \return The number of nodes in the coordset.
@@ -63,7 +63,7 @@ public:
   IndexType numberOfNodes() const { return m_coordinates[0].size(); }
   /// @}
 
-  /**
+  /*!
    * \brief Return the requested point from the coordset.
    *
    * \param vertex_index The index of the point to return.
@@ -85,7 +85,7 @@ public:
     return PointType(X);
   }
 
-  /**
+  /*!
    * \brief Return the requested point from the coordset.
    *
    * \param vertex_index The index of the point to return.
@@ -102,7 +102,7 @@ private:
   axom::ArrayView<DataType> m_coordinates[2];
 };
 
-/**
+/*!
  * \brief This class provides a view for Conduit/Blueprint 3d explicit coordsets.
  */
 template <typename DataType>
@@ -115,7 +115,7 @@ public:
 
   constexpr static int dimension() { return 3; }
 
-  /**
+  /*!
    * \brief Constructor
    *
    * \param x The first coordinate component.
@@ -132,7 +132,7 @@ public:
                     "Coordinate size mismatch.");
   }
 
-  /**
+  /*!
    * \brief Return the number of nodes in the coordset.
    *
    * \return The number of nodes in the coordset.
@@ -145,7 +145,7 @@ public:
   IndexType numberOfNodes() const { return m_coordinates[0].size(); }
   /// @}
 
-  /**
+  /*!
    * \brief Return the requested point from the coordset.
    *
    * \param vertex_index The index of the point to return.
@@ -168,7 +168,7 @@ public:
     return PointType(X);
   }
 
-  /**
+  /*!
    * \brief Return the requested point from the coordset.
    *
    * \param vertex_index The index of the point to return.

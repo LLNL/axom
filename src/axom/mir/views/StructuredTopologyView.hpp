@@ -14,7 +14,7 @@ namespace mir
 {
 namespace views
 {
-/**
+/*!
  * \brief This class provides a view for Conduit/Blueprint structured grid types.
  *
  * \tparam IndexPolicy The policy for making/using indices.
@@ -29,19 +29,19 @@ public:
   using ConnectivityType = IndexType;
   using ShapeType = typename std::conditional<IndexingPolicy::dimension() == 3, HexShape<ConnectivityType>, typename std::conditional<IndexingPolicy::dimension() == 2, QuadShape<ConnectivityType>, LineShape<ConnectivityType>>::type>::type;
 
-  /**
+  /*!
    * \brief Return the number of dimensions.
    *
    * \return The number of dimensions.
    */
   AXOM_HOST_DEVICE constexpr static int dimension() { return IndexingPolicy::dimension(); }
 
-  /**
+  /*!
    * \brief Constructor
    */
   StructuredTopologyView() : m_indexing() { }
 
-  /**
+  /*!
    * \brief Constructor
    *
    * \param indexing The indexing policy for the topology (num zones in each dimension).
@@ -49,21 +49,21 @@ public:
   StructuredTopologyView(const IndexingPolicy &indexing) : m_indexing(indexing)
   { }
 
-  /**
+  /*!
    * \brief Return the number of zones.
    *
    * \return The number of zones.
    */
   IndexType size() const { return m_indexing.size(); }
 
-  /**
+  /*!
    * \brief Return the number of zones.
    *
    * \return The number of zones.
    */
   IndexType numberOfZones() const { return size(); }
 
-  /**
+  /*!
    * \brief Return the size of the connectivity.
    *
    * \return The size of the connectivity.
@@ -75,7 +75,7 @@ public:
     return numberOfZones() * nodesPerElem;
   }
 
-  /**
+  /*!
    * \brief Return the mesh logical dimensions.
    *
    * \return The mesh logical dimensions.
@@ -85,21 +85,21 @@ public:
     return m_indexing.logicalDimensions();
   }
 
-  /**
+  /*!
    * \brief Return indexing object.
    *
    * \return The indexing object.
    */
   IndexingPolicy &indexing() { return m_indexing; }
 
-  /**
+  /*!
    * \brief Return indexing object.
    *
    * \return The indexing object.
    */
   const IndexingPolicy &indexing() const { return m_indexing; }
 
-  /**
+  /*!
    * \brief Execute a function for each zone in the mesh using axom::for_all.
    *
    * \tparam ExecSpace The execution space for the function body.
@@ -191,7 +191,7 @@ public:
     }
   }
 
-  /**
+  /*!
    * \brief Execute a function for each zone in the mesh using axom::for_all.
    *
    * \tparam ExecSpace The execution space for the function body.

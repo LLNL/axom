@@ -429,20 +429,20 @@ struct PolygonShape : public PolygonTraits
   using ConnectivityType = ConnType;
   using ConnectivityView = axom::ArrayView<ConnectivityType>;
 
-  /**
+  /*!
    * \brief Construct a shape.
    */
   AXOM_HOST_DEVICE PolygonShape(const ConnectivityView &ids)
     : m_idsView(ids) { }
 
-  /**
+  /*!
    * \brief Get the ids that make up this shape.
    *
    * \return A view containing the ids that make up this shape.
    */
   AXOM_HOST_DEVICE const ConnectivityView &getIds() const { return m_idsView; }
 
-  /**
+  /*!
    * \brief Get the ids for the requested face.
    *
    * \param faceIndex The index of the desired face.
@@ -465,7 +465,7 @@ private:
   ConnectivityView m_idsView;
 };
 
-/**
+/*!
  * \brief This class extends the ShapeTraits with object state so it can represent a zone.
  */
 template <typename ShapeTraits, typename ConnType>
@@ -474,7 +474,7 @@ struct Shape : public ShapeTraits
   using ConnectivityType = ConnType;
   using ConnectivityView = axom::ArrayView<ConnectivityType>;
 
-  /**
+  /*!
    * \brief Construct a shape.
    */
   AXOM_HOST_DEVICE Shape(const ConnectivityView &ids)
@@ -484,7 +484,7 @@ struct Shape : public ShapeTraits
     assert(m_idsView.size() == ShapeTraits::numberOfNodes());
   }
 
-  /**
+  /*!
    * \brief Get a specific id that makes up this shape.
    *
    * \return The i'th id that makes up this shape.
@@ -495,21 +495,21 @@ struct Shape : public ShapeTraits
     return m_idsView[index];
   }
 
-  /**
+  /*!
    * \brief Get the ids that make up this shape.
    *
    * \return A view containing the ids that make up this shape.
    */
   AXOM_HOST_DEVICE const ConnectivityView &getIds() const { return m_idsView; }
 
-  /**
+  /*!
    * \brief Get the unique ids that make up this shape. For basic shapes, assume they are unique.
    *
    * \return A view containing the ids that make up this shape.
    */
   AXOM_HOST_DEVICE ConnectivityView getUniqueIds() const { return m_idsView; }
 
-  /**
+  /*!
    * \brief Get the ids for the requested face.
    *
    * \param faceIndex The index of the desired face.
@@ -557,7 +557,7 @@ using WedgeShape = Shape<WedgeTraits, ConnectivityType>;
 template <typename ConnectivityType>
 using HexShape = Shape<HexTraits, ConnectivityType>;
 
-/**
+/*!
  * \brief This is a shape that can act as any of the other shapes.
  *
  * \note This is a substitute for polymorphism so we can run on device.
@@ -568,7 +568,7 @@ struct VariableShape
   using ConnectivityType = ConnType;
   using ConnectivityView = axom::ArrayView<ConnectivityType>;
 
-  /**
+  /*!
    * \brief Constructor
    *
    * \param shapeId The shape id that describes the points.
@@ -582,7 +582,7 @@ struct VariableShape
     assert(shapeId >= Point_ShapeID && shapeId <= Hex_ShapeID);
   }
 
-  /**
+  /*!
    * \brief Returns the shape id of the actual shape represented by the variable shape.
    * \return The actual shape represented.
    */
@@ -795,7 +795,7 @@ struct VariableShape
     return edge;
   }
 
-  /**
+  /*!
    * \brief Get a specific id that makes up this shape.
    *
    * \return The i'th id that makes up this shape.
@@ -805,7 +805,7 @@ struct VariableShape
     return m_idsView[index];
   }
 
-  /**
+  /*!
    * \brief Get the ids that make up this shape.
    *
    * \return A view containing the ids that make up this shape.
@@ -819,7 +819,7 @@ private:
   ConnectivityView m_idsView;
 };
 
-/**
+/*!
  * \brief Given a shape name (matches Blueprint shape name), return the Shape id() value.
  *
  * \param name The shape name.

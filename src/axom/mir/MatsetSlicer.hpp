@@ -19,7 +19,7 @@ namespace utilities
 {
 namespace blueprint
 {
-/**
+/*!
  * \brief Slices the input matset view and outputs a new matset (unibuffer flavor).
  *
  * \tparam ExecSpace The execution space where the algorithm will run.
@@ -33,12 +33,12 @@ class MatsetSlicer
 public:
   using SelectedZonesView = axom::ArrayView<axom::IndexType>;
 
-  /**
+  /*!
    * \brief Constructor.
    */
   MatsetSlicer(const MatsetView &matsetView) : m_matsetView(matsetView) { }
 
-  /**
+  /*!
    * \brief Slice the input matset and output a new matset.
    *
    * \param matsetView A view that wraps the input matset.

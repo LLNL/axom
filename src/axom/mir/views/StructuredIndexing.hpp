@@ -16,7 +16,7 @@ namespace mir
 {
 namespace views
 {
-/**
+/*!
  * \brief This class encapsulates a structured mesh size and contains methods to
  *        help with indexing into it.
  *
@@ -31,7 +31,7 @@ public:
 
   AXOM_HOST_DEVICE constexpr static int dimension() { return NDIMS; }
 
-  /**
+  /*!
    * \brief Return whether the view supports strided structured indexing.
    * \return false
    */
@@ -40,7 +40,7 @@ public:
     return false;
   }
 
-  /**
+  /*!
    * \brief constructor
    *
    * \param dims The dimensions we're indexing.
@@ -51,7 +51,7 @@ public:
   AXOM_HOST_DEVICE
   StructuredIndexing(const LogicalIndex &dims) : m_dimensions(dims) { }
 
-  /**
+  /*!
    * \brief Return the number of points in the coordset.
    *
    * \return The number of points in the coordset.
@@ -64,7 +64,7 @@ public:
     return sz;
   }
 
-  /**
+  /*!
    * \brief Return the logical dimensions.
    *
    * \return The logical dimensions.
@@ -72,7 +72,7 @@ public:
   AXOM_HOST_DEVICE
   const LogicalIndex &logicalDimensions() const { return m_dimensions; }
 
-  /**
+  /*!
    * \brief Return the j stride.
    *
    * \return The j stride to move up a row.
@@ -83,7 +83,7 @@ public:
     return m_dimensions[0];
   }
 
-  /**
+  /*!
    * \brief Return the k stride.
    *
    * \return The k stride to move forward a "page".
@@ -94,7 +94,7 @@ public:
     return m_dimensions[0] * m_dimensions[1];
   }
 
-  /**
+  /*!
    * \brief Turn a global logical index into an index.
    * \param global The global logical index to convert.
    * \return The global index.
@@ -105,7 +105,7 @@ public:
     return LogicalIndexToIndex(global);
   }
 
-  /**
+  /*!
    * \brief Turn a global index into a global logical index.
    * \param global The global index to convert.
    * \return The global logical index.
@@ -116,7 +116,7 @@ public:
     return IndexToLogicalIndex(global);
   }
 
-  /**
+  /*!
    * \brief Turn global logical index to local logical index. no-op.
    * \param index The index to convert.
    * \return Same as the input in this case.
@@ -127,7 +127,7 @@ public:
     return index;
   }
 
-  /**
+  /*!
    * \brief Turn global index to local index. no-op.
    * \param index The index to convert.
    * \return Same as the input in this case.
@@ -135,7 +135,7 @@ public:
   AXOM_HOST_DEVICE
   inline IndexType GlobalToLocal(IndexType index) const { return index; }
 
-  /**
+  /*!
    * \brief Turn local logical index to global logical index. no-op.
    * \param index The index to convert.
    * \return Same as the input in this case.
@@ -146,7 +146,7 @@ public:
     return index;
   }
 
-  /**
+  /*!
    * \brief Turn local index to global index. no-op.
    * \param index The index to convert.
    * \return Same as the input in this case.
@@ -154,7 +154,7 @@ public:
   AXOM_HOST_DEVICE
   inline IndexType LocalToGlobal(IndexType index) const { return index; }
 
-  /**
+  /*!
    * \brief Turn an index into a logical index.
    *
    * \param index The index to convert.
@@ -198,7 +198,7 @@ public:
 
   /// @}
 
-  /**
+  /*!
    * \brief Turn a logical index into a flat index.
    *
    * \param logical The logical indexto convert to a flat index.
@@ -230,7 +230,7 @@ public:
 
   /// @}
 
-  /**
+  /*!
    * \brief Determines whether the indexing contains the supplied logical index.
    *
    * \param logical The logical index being tested.
@@ -248,7 +248,7 @@ public:
     return retval;
   }
 
-  /**
+  /*!
    * \brief Determines whether the indexing contains the supplied index.
    *
    * \param index The index being tested.
@@ -261,7 +261,7 @@ public:
     return contains(IndexToLogicalIndex(index));
   }
 
-  /**
+  /*!
    * \brief Expand the current StructuredIndexing by one in each dimension.
    *
    * \return An expanded StructuredIndexing.

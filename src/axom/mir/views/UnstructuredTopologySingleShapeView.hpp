@@ -14,7 +14,7 @@ namespace mir
 {
 namespace views
 {
-/**
+/*!
  * \brief This class provides a view for Conduit/Blueprint single shape unstructured grids.
  *
  * \tparam IndexT The index type that will be used for connectivity, etc.
@@ -28,7 +28,7 @@ public:
   using ConnectivityType = typename ShapeType::ConnectivityType;
   using ConnectivityView = typename ShapeType::ConnectivityView;
 
-  /**
+  /*!
    * \brief Constructor
    *
    * \param conn The mesh connectivity.
@@ -39,7 +39,7 @@ public:
     , m_offsetsView()
   { }
 
-  /**
+  /*!
    * \brief Constructor
    *
    * \param conn The mesh connectivity.
@@ -56,14 +56,14 @@ public:
     SLIC_ASSERT(m_offsetsView.size() == m_sizesView.size());
   }
 
-  /**
+  /*!
    * \brief Return the dimension of the shape.
    *
    * \return The dimension of the shape.
    */
   AXOM_HOST_DEVICE static constexpr int dimension() { return ShapeT::dimension(); }
 
-  /**
+  /*!
    * \brief Return the number of zones.
    *
    * \return The number of zones.
@@ -75,14 +75,14 @@ public:
       : (m_connectivityView.size() / ShapeType::numberOfNodes());
   }
 
-  /**
+  /*!
    * \brief Return the size of the connectivity.
    *
    * \return The size of the connectivity.
    */
   IndexType connectivitySize() const { return m_connectivityView.size(); }
 
-  /**
+  /*!
    * \brief Execute a function for each zone in the mesh.
    *
    * \tparam ExecSpace The execution space for the function body.
@@ -138,7 +138,7 @@ public:
     }
   }
 
-  /**
+  /*!
    * \brief Execute a function for each zone in the mesh.
    *
    * \tparam ExecSpace The execution space for the function body.

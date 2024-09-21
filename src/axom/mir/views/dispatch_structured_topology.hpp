@@ -22,7 +22,7 @@ namespace mir
 namespace views
 {
 //------------------------------------------------------------------------------
-/**
+/*!
  * \brief Fill an array from a Conduit node, filling the destination array if the values do not exist.
  *
  * \tparam ArrayType The array type to use.
@@ -48,14 +48,14 @@ bool fillFromNode(const conduit::Node &n, const std::string &key, ArrayType &arr
   return found;
 }
 
-/**
+/*!
  * \brief Base template for strided structured topology creation
  */
 template <int NDIMS>
 struct make_strided_structured
 { };
 
-/**
+/*!
  * \brief Create a 3D structured topology view with strided structured indexing.
  */
 template <>
@@ -65,7 +65,7 @@ struct make_strided_structured<3>
   using LogicalIndex = typename Indexing::LogicalIndex;
   using TopoView = views::StructuredTopologyView<Indexing>;
 
-  /**
+  /*!
    * \brief Create the indexing and initialize it from the topology.
    * \param topo The node containing the topology.
    * \return The indexing
@@ -97,7 +97,7 @@ struct make_strided_structured<3>
     return Indexing(zoneDims, offsets, strides);
   }
 
-  /**
+  /*!
    * \brief Create the topology view and initialize it from the topology.
    * \param topo The node containing the topology.
    * \return The topology view.
@@ -108,7 +108,7 @@ struct make_strided_structured<3>
   }
 };
 
-/**
+/*!
  * \brief Create a 2D structured topology view with strided structured indexing.
  */
 template <>
@@ -118,7 +118,7 @@ struct make_strided_structured<2>
   using LogicalIndex = typename Indexing::LogicalIndex;
   using TopoView = views::StructuredTopologyView<Indexing>;
 
-  /**
+  /*!
    * \brief Create the indexing and initialize it from the topology.
    * \param topo The node containing the topology.
    * \return The indexing.
@@ -146,7 +146,7 @@ struct make_strided_structured<2>
     return Indexing(zoneDims, offsets, strides);
   }
 
-  /**
+  /*!
    * \brief Create the topology view and initialize it from the topology.
    * \param topo The node containing the topology.
    * \return The topology view.
@@ -157,7 +157,7 @@ struct make_strided_structured<2>
   }
 };
 
-/**
+/*!
  * \brief Create a 1D structured topology view with strided structured indexing.
  */
 template <>
@@ -167,7 +167,7 @@ struct make_strided_structured<1>
   using LogicalIndex = typename Indexing::LogicalIndex;
   using TopoView = views::StructuredTopologyView<Indexing>;
 
-  /**
+  /*!
    * \brief Create the indexing and initialize it from the topology.
    * \param topo The node containing the topology.
    * \return The indexing.
@@ -187,7 +187,7 @@ struct make_strided_structured<1>
     return Indexing(zoneDims, offsets, strides);
   }
 
-  /**
+  /*!
    * \brief Create the topology view and initialize it from the topology.
    * \param topo The node containing the topology.
    * \return The topology view.
@@ -198,14 +198,14 @@ struct make_strided_structured<1>
   }
 };
 
-/**
+/*!
  * \brief Base template for structured topology creation
  */
 template <int NDIMS>
 struct make_structured
 { };
 
-/**
+/*!
  * \brief Create a 3D structured topology view with normal structured indexing.
  */
 template <>
@@ -215,7 +215,7 @@ struct make_structured<3>
   using LogicalIndex = typename Indexing::LogicalIndex;
   using TopoView = views::StructuredTopologyView<Indexing>;
 
-  /**
+  /*!
    * \brief Create the indexing and initialize it from the topology.
    * \param topo The node containing the topology.
    * \return The indexing.
@@ -230,7 +230,7 @@ struct make_structured<3>
     return Indexing(zoneDims);
   }
 
-  /**
+  /*!
    * \brief Create the topology view and initialize it from the topology.
    * \param topo The node containing the topology.
    * \return The topology view.
@@ -241,7 +241,7 @@ struct make_structured<3>
   }
 };
 
-/**
+/*!
  * \brief Create a 2D structured topology view with normal structured indexing.
  */
 template <>
@@ -251,7 +251,7 @@ struct make_structured<2>
   using LogicalIndex = typename Indexing::LogicalIndex;
   using TopoView = views::StructuredTopologyView<Indexing>;
 
-  /**
+  /*!
    * \brief Create the indexing and initialize it from the topology.
    * \param topo The node containing the topology.
    * \return The indexing.
@@ -264,7 +264,7 @@ struct make_structured<2>
     return Indexing(zoneDims);
   }
 
-  /**
+  /*!
    * \brief Create the topology view and initialize it from the topology.
    * \param topo The node containing the topology.
    * \return The topology view.
@@ -275,7 +275,7 @@ struct make_structured<2>
   }
 };
 
-/**
+/*!
  * \brief Create a 1D structured topology view with normal structured indexing.
  */
 template <>
@@ -285,7 +285,7 @@ struct make_structured<1>
   using LogicalIndex = typename Indexing::LogicalIndex;
   using TopoView = views::StructuredTopologyView<Indexing>;
 
-  /**
+  /*!
    * \brief Create the indexing and initialize it from the topology.
    * \param topo The node containing the topology.
    * \return The indexing.
@@ -298,7 +298,7 @@ struct make_structured<1>
     return Indexing(zoneDims);
   }
 
-  /**
+  /*!
    * \brief Create the topology view and initialize it from the topology.
    * \param topo The node containing the topology.
    * \return The topology view.
@@ -309,7 +309,7 @@ struct make_structured<1>
   }
 };
 
-/**
+/*!
  * \brief Creates a topology view compatible with structured topologies and passes that view to the supplied function.
  *
  * \tparam FuncType The function/lambda type to invoke on the view.
@@ -379,7 +379,7 @@ void dispatch_structured_topology(const conduit::Node &topo, FuncType &&func)
   }
 }
 
-/**
+/*!
  * \brief Creates a topology view compatible with various logically "structured" topologies (uniform, rectilinear, structured) and passes that view to the supplied function.
  *
  * \tparam FuncType The function/lambda type to invoke on the view.

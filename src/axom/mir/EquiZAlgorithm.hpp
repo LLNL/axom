@@ -59,7 +59,7 @@ constexpr static MaterialVF NULL_MATERIAL_VF = -1.f;
 
 namespace detail
 {
-/**
+/*!
  * \brief This class is an intersection policy compatible with ClipField. It
  *        helps determine clip cases and weights using material-aware logic.
  *
@@ -75,14 +75,14 @@ public:
   using ConnectivityType = ConnectivityT;
   using ConnectivityView = axom::ArrayView<ConnectivityType>;
 
-  /**
+  /*!
    * \brief This is a view class for MatsetIntersector that can be used in device code.
    */
   struct View
   {
     static constexpr int INVALID_INDEX = -1;
 
-    /**
+    /*!
      * \brief Determine the clipping case, taking into account the zone's material
      *        and the current material being added.
      *
@@ -124,7 +124,7 @@ public:
       return clipcase;
     }
 
-    /**
+    /*!
      * \brief Compute the weight of a clip value along an edge (id0, id1) using the clip field and value.
      *
      * \param id0 The mesh node at the start of the edge.
@@ -178,7 +178,7 @@ public:
       return t;
     }
 
-    /**
+    /*!
      * \brief Return the volume fraction array index in m_matIndicesView for the
      *        given material number \a matNumber.
      *
@@ -230,7 +230,7 @@ public:
     int m_currentMaterialIndex {};  //!< The current material's index in the m_matvfViews.
   };
 
-  /**
+  /*!
    * \brief Initialize the object from options.
    * \param n_options The node that contains the options.
    * \param n_fields The node that contains fields.
@@ -239,7 +239,7 @@ public:
                   const conduit::Node &AXOM_UNUSED_PARAM(n_fields))
   { }
 
-  /**
+  /*!
    * \brief Determine the name of the topology on which to operate.
    * \param n_input The input mesh node.
    * \param n_options The clipping options.
@@ -275,7 +275,7 @@ public:
     m_view.setCurrentMaterial(matNumber, matNumberIndex);
   }
 
-  /**
+  /*!
    * \brief Return a new instance of the view.
    * \return A new instance of the view.
    * \note Call this after all values are set.
@@ -288,7 +288,7 @@ private:
 
 }  // end namespace detail
 
-/**
+/*!
  * \accelerated
  * \brief Implements Meredith's Equi-Z algorithm on the GPU using Blueprint inputs/outputs.
  */
@@ -300,7 +300,7 @@ class EquiZAlgorithm : public axom::mir::MIRAlgorithm
 public:
   using ConnectivityType = typename TopologyView::ConnectivityType;
 
-  /**
+  /*!
    * \brief Constructor
    *
    * \param topoView The topology view to use for the input data.
@@ -330,7 +330,7 @@ protected:
   }
 #endif
 
-  /**
+  /*!
    * \brief Perform material interface reconstruction on a single domain.
    *
    * \param[in] n_topo The Conduit node containing the topology that will be used for MIR.
@@ -540,7 +540,7 @@ protected:
   }
 
 #if defined(AXOM_EQUIZ_SPLIT_PROCESSING)
-  /**
+  /*!
    * \brief Adds original ids field to supplied fields node.
    *
    * \param n_field The new field node.
@@ -575,7 +575,7 @@ protected:
       });
   }
 
-  /**
+  /*!
    * \brief Take the mesh in n_root and extract the zones identified by the
    *        \a cleanZones array and store the results into the \a n_cleanOutput
    *        node.
@@ -609,7 +609,7 @@ protected:
   #endif
   }
 
-  /**
+  /*!
    * \brief Create node map and node slice arrays for the MIR output that help
    *        merge it back with the clean output.
    *
@@ -690,7 +690,7 @@ protected:
   }
 #endif
 
-  /**
+  /*!
    * \brief Perform material interface reconstruction on a single domain.
    *
    * \param[in] n_topo The Conduit node containing the topology that will be used for MIR.
@@ -873,7 +873,7 @@ protected:
 #endif
   }
 
-  /**
+  /*!
    * \brief Examine the materials and determine which are clean/mixed.
    *
    * \param n_matset A Conduit node containing the matset.
@@ -899,7 +899,7 @@ protected:
     mixedMats = allMats;
   }
 
-  /**
+  /*!
    * \brief Return the name of the zonal material field for a given matId.
    * \return The name of the zonal material field.
    */
@@ -910,7 +910,7 @@ protected:
     return ss.str();
   }
 
-  /**
+  /*!
    * \brief Return the name of the nodal material field for a given matId.
    * \return The name of the nodal material field.
    */
@@ -921,25 +921,25 @@ protected:
     return ss.str();
   }
 
-  /**
+  /*!
    * \brief Return the name of the zonal material id field.
    * \return The name of the zonal material id field.
    */
   std::string zonalMaterialIDName() const { return "__equiz_zonalMaterialID"; }
 
-  /**
+  /*!
    * \brief Return the name of the original nodes field.
    * \return The name of the original nodes field.
    */
   std::string originalNodesFieldName() const { return "__equiz_original_node"; }
 
-  /**
+  /*!
    * \brief Return the name of the new nodes field that identifies blended nodes in the MIR output.
    * \return The name of the new nodes field.
    */
   std::string newNodesFieldName() const { return "__equiz_new_nodes"; }
 
-  /**
+  /*!
    * \brief Makes node-cenetered volume fractions for the materials in the matset
    *        and attaches them as fields.
    *
@@ -1026,7 +1026,7 @@ protected:
     }
   }
 
-  /**
+  /*!
    * \brief Set up the "working fields", mainly a zonalMaterialID that includes
    *        the contributions from the clean materials and the first mixed material.
    *
@@ -1117,7 +1117,7 @@ protected:
 #endif
   }
 
-  /**
+  /*!
    * \brief Perform one iteration of material clipping.
    *
    * \tparam ITopologyView The topology view type for the intermediate topology.
@@ -1345,7 +1345,7 @@ protected:
     n_newFields.remove(colorField);
   }
 
-  /**
+  /*!
    * \brief Build a new matset with only clean zones, representing the MIR output.
    *
    * \param n_matset n_matset The Conduit node that contains the input matset.

@@ -50,7 +50,7 @@ namespace mir
 namespace utilities
 {
 //------------------------------------------------------------------------------
-/**
+/*!
  * \brief This class and its specializations provide a type trait that lets us
  *        determine the type that should be used to accumulate values when we
  *        do floating point math.
@@ -82,7 +82,7 @@ struct accumulation_traits<unsigned long>
 };
 
 //------------------------------------------------------------------------------
-/**
+/*!
  * \brief Use binary search to find the index of the \a value in the supplied
  *        sorted view.
  *
@@ -115,7 +115,7 @@ AXOM_HOST_DEVICE std::int32_t bsearch(T value, const axom::ArrayView<T> &view)
 }
 
 //------------------------------------------------------------------------------
-/**
+/*!
  * \brief Hash a stream of bytes into a uint64_t hash value.
  *
  * \param[in] data The bytes to be hashed.
@@ -168,7 +168,7 @@ inline std::uint64_t hash_bytes(const std::uint8_t *data, std::uint32_t length)
 }
 
 //------------------------------------------------------------------------------
-/**
+/*!
  * \brief This class implements a naming policy that uses some hashing functions
  *        to produce a "name" for an array of ids.
  */
@@ -194,7 +194,7 @@ public:
   constexpr static KeyType Max31Bit = (KeyType(1) << 31) - 1;
   constexpr static KeyType Max32Bit = (KeyType(1) << 32) - 1;
 
-  /**
+  /*!
    * \brief A view for making names, suitable for use in device code.
    */
   class View
@@ -202,7 +202,7 @@ public:
   public:
     using KeyType = HashNaming::KeyType;
 
-    /**
+    /*!
      * \brief Make a name from an array of ids.
      *
      * \param p The array of ids.
@@ -232,7 +232,7 @@ public:
     void setMaxId(IndexType m) { m_maxId = static_cast<KeyType>(m); }
 
   private:
-    /**
+    /*!
      * \brief Encode a single id as a name.
      * \param p0 The id to encode.
      * \return A name that encodes the id.
@@ -246,7 +246,7 @@ public:
       return KeyIDSingle | k0;
     }
 
-    /**
+    /*!
      * \brief Encode 2 ids as a name.
      * \param p0 The first id to encode.
      * \param p1 The second id to encode.
@@ -263,7 +263,7 @@ public:
       return KeyIDPair | (k0 << 31) | k1;
     }
 
-    /**
+    /*!
      * \brief Encode multiple ids as a name.
      * \param p The ids to encode.
      * \param n The number of ids.
@@ -369,7 +369,7 @@ public:
     return m_view.makeName(p, n);
   }
 
-  /**
+  /*!
    * \brief Set the max number of nodes, which can help with id packing/narrowing.
    * \param n The number of nodes.
    */
@@ -378,7 +378,7 @@ public:
   /// Return a view that can be used on device.
   View view() { return m_view; }
 
-  /**
+  /*!
    * \brief Turn name into a string.
    * \param key The name.
    * \return A string that represents the name.
@@ -430,7 +430,7 @@ public:
 };
 
 //------------------------------------------------------------------------------
-/**
+/*!
  * \brief This function makes a unique array of values from an input list of keys.
  *
  * \tparam ExecSpace The execution space.

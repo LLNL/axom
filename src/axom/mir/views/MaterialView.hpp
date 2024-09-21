@@ -21,7 +21,7 @@ namespace mir
 {
 namespace views
 {
-/**
+/*!
  * \brief This object contains information about the materials as provided by a Conduit node.
  *
  * \note This would only be used on the host.
@@ -34,7 +34,7 @@ struct Material
 
 using MaterialInformation = std::vector<Material>;
 
-/**
+/*!
  * \brief Return a vector of Material from a matset (this is the material_map)
  *
  * \param matset The Conduit node that contains the matset.
@@ -50,7 +50,7 @@ MaterialInformation materials(const conduit::Node &matset);
 //                  device kernels.
 //---------------------------------------------------------------------------
 
-/**
+/*!
 
 matsets:
   matset:
@@ -167,7 +167,7 @@ private:
   axom::ArrayView<IndexType> m_indices;
 };
 
-/**
+/*!
 
 matsets:
   matset:
@@ -278,7 +278,7 @@ private:
   axom::IndexType m_size {0};
 };
 
-/**
+/*!
 matsets:
   matset:
     topology: topology
@@ -378,7 +378,7 @@ private:
   axom::StaticArray<axom::ArrayView<FloatType>, MAXMATERIALS> m_volume_fractions {};
 };
 
-/**
+/*!
 matsets:
   matset:
     topology: topology
@@ -524,7 +524,7 @@ private:
 // Some host-algorithms on material views.
 //---------------------------------------------------------------------------
 
-/**
+/*!
  */
 template <typename ExecSpace>
 axom::Array<int> makeMatsPerZone(const MaterialDominantMaterialView &view, axom::IndexType nzones)
@@ -609,7 +609,7 @@ axom::Array<int> selectMixedZones(const MaterialDominantMaterialView &view)
 template <typename ExecSpace, typename Predicate>
 axom::Array<int> selectZones(const UnibufferMaterialView &view, MaterialIndex mat, Predicate &&pred) const
 {
-/**
+/*!
  NOTE: I really do not like the code below because it forces the main Axom algorithm to use RAJA directly.
        In the case of the reducer, I'd prefer to do this:
 

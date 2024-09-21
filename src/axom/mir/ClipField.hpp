@@ -47,7 +47,7 @@ namespace clipping
 {
 namespace details
 {
-/**
+/*!
  * \brief Given an "ST_index" (e.g. ST_TET from clipping definitions), return an appropriate ShapeID value.
  *
  * \param st_index The value we want to translate into a ShapeID value.
@@ -85,7 +85,7 @@ inline AXOM_HOST_DEVICE IntegerType ST_Index_to_ShapeID(IntegerType st_index)
   return shapeID;
 }
 
-/**
+/*!
  * \brief Returns a clip table index for the input shapeId.
  * \param shapeId A shapeID (e.g. Tet_ShapeID)
  * \return The clip table index for the shape.
@@ -192,7 +192,7 @@ void printHost(const std::string &name, const ViewType &deviceView)
 }  // end namespace details
 
 //------------------------------------------------------------------------------
-/**
+/*!
  * \brief This class helps ClipField determine intersection cases and weights
  *        using a field designated by the options.
  */
@@ -203,12 +203,12 @@ public:
   using ClipFieldType = float;
   using ConnectivityView = axom::ArrayView<ConnectivityType>;
 
-  /**
+  /*!
    * \brief This is a view class for FieldIntersector that can be used in device code.
    */
   struct View
   {
-    /**
+    /*!
      * \brief Given a zone index and the node ids that comprise the zone, return
      *        the appropriate clip case, taking into account the clip field and
      *        clip value.
@@ -230,7 +230,7 @@ public:
       return clipcase;
     }
 
-    /**
+    /*!
      * \brief Compute the weight of a clip value along an edge (id0, id1) using the clip field and value.
      *
      * \param id0 The mesh node at the start of the edge.
@@ -256,7 +256,7 @@ public:
     ClipFieldType m_clipValue {};
   };
 
-  /**
+  /*!
    * \brief Initialize the object from options.
    * \param n_options The node that contains the options.
    * \param n_fields The node that contains fields.
@@ -299,7 +299,7 @@ public:
     }
   }
 
-  /**
+  /*!
    * \brief Determine the name of the topology on which to operate.
    * \param n_input The input mesh node.
    * \param n_options The clipping options.
@@ -315,7 +315,7 @@ public:
     return n_clipField["topology"].as_string();
   }
 
-  /**
+  /*!
    * \brief Return a new instance of the view.
    * \return A new instance of the view.
    */
@@ -327,7 +327,7 @@ private:
 };
 
 //------------------------------------------------------------------------------
-/**
+/*!
  * \accelerated
  * \brief This class clips a topology using a field and puts the new topology into a new Conduit node.
  *
@@ -361,7 +361,7 @@ public:
   using ClipFieldType = float;
   using ZoneType = typename TopologyView::ShapeType;
 
-  /**
+  /*!
    * \brief Constructor
    *
    * \param topoView A topology view suitable for the supplied topology.
@@ -378,14 +378,14 @@ public:
     , m_naming()
   { }
 
-  /**
+  /*!
    * \brief Allow the user to pass in a NamingPolicy to use when making blend group names.
    *
    * \param naming A new naming policy object. 
    */
   void setNamingPolicy(NamingPolicy &naming) { m_naming = naming; }
 
-  /**
+  /*!
    * \brief Execute the clipping operation using the data stored in the specified \a clipField.
    *
    * \param[in] n_input The Conduit node that contains the topology, coordsets, and fields.
@@ -418,7 +418,7 @@ public:
             n_output["fields"]);
   }
 
-  /**
+  /*!
    * \brief Execute the clipping operation using the data stored in the specified \a clipField.
    *
    * \param[in] n_topo The node that contains the input mesh topology.
@@ -741,7 +741,7 @@ public:
 private:
 #endif
 
-  /**
+  /*!
    * \brief Contains data that describes the number and size of zone fragments in the output.
    */
   struct FragmentData
@@ -754,7 +754,7 @@ private:
     axom::ArrayView<IndexType> m_fragmentSizeOffsetsView {};
   };
 
-  /**
+  /*!
    * \brief Contains some per-zone data that we want to hold onto between methods.
    */
   struct ZoneData
@@ -763,7 +763,7 @@ private:
     axom::ArrayView<BitSet> m_pointsUsedView {};
   };
 
-  /**
+  /*!
    * \brief Contains some per-node data that we want to hold onto between methods.
    */
   struct NodeData
@@ -773,7 +773,7 @@ private:
     axom::ArrayView<IndexType> m_originalIdsView {};
   };
 
-  /**
+  /*!
    * \brief Make a bitset that indicates the parts of the selection that are selected.
    */
   int getSelection(const ClipOptions &opts) const
@@ -785,7 +785,7 @@ private:
     return selection;
   }
 
-  /**
+  /*!
    * \brief Create views for the clip tables of various shapes.
    *
    * \param[out] views The views array that will contain the table views.
@@ -814,7 +814,7 @@ private:
     }
   }
 
-  /**
+  /*!
    * \brief Iterate over zones and their respective fragments to determine sizes
    *        for fragments and blend groups.
    *
@@ -985,7 +985,7 @@ private:
 #endif
   }
 
-  /**
+  /*!
    * \brief Compute the total number of fragments and their size.
    *
    * \param[inout] fragmentData The object that contains data about the zone fragments.
@@ -1015,7 +1015,7 @@ private:
     fragmentData.m_finalConnSize = fragment_nids_sum.get();
   }
 
-  /**
+  /*!
    * \brief Compute fragment offsets.
    *
    * \param[inout] fragmentData The object that contains data about the zone fragments.
@@ -1043,7 +1043,7 @@ private:
   }
 
 #if defined(AXOM_REDUCE_BLEND_GROUPS)
-  /**
+  /*!
    * \brief Counts the number of original nodes used by the selected fragments.
    *
    * \param nodeData The node data (passed by value on purpose)
@@ -1061,7 +1061,7 @@ private:
     return nUsed_reducer.get();
   }
 
-  /**
+  /*!
    * \brief Creates the node lists/maps.
    *
    * \param nodeData The node data that contains views where the node data is stored.
@@ -1105,7 +1105,7 @@ private:
   }
 #endif
 
-  /**
+  /*!
    * \brief Fill in the data for the blend group views.
    *
    * \param[in] clipTableViews An object that holds views of the clipping table data.
@@ -1236,7 +1236,7 @@ private:
       });
   }
 
-  /**
+  /*!
    * \brief Make the clipped mesh topology.
    *
    * \param[in] clipTableViews An object that holds views of the clipping table data.
@@ -1691,7 +1691,7 @@ private:
     }
   }
 
-  /**
+  /*!
    * \brief Make the new coordset using the blend data and the input coordset/coordsetview.
    *
    * \param blend The BlendData that we need to construct the new coordset.
@@ -1710,7 +1710,7 @@ private:
     cb.execute(blend, m_coordsetView, n_coordset, n_newCoordset);
   }
 
-  /**
+  /*!
    * \brief Make new fields for the output topology.
    *
    * \param blend The BlendData that we need to construct the new vertex fields.
@@ -1820,7 +1820,7 @@ private:
     }
   }
 
-  /**
+  /*!
    * \brief Make an originalElements field so we can know each output zone's original zone number in the input mesh.
    *
    * \param[in] fragmentData This object holds views to per-fragment data.
@@ -1898,7 +1898,7 @@ private:
     }
   }
 
-  /**
+  /*!
    * \brief Given a flag that includes bitwise-or'd shape ids, make a map that indicates which Conduit shapes are used.
    *
    * \param shapes This is a bitwise-or of various (1 << ShapeID) values.
@@ -1939,7 +1939,7 @@ private:
     return sm;
   }
 
-  /**
+  /*!
    * \brief If we're making a field that marks the new nodes that were created as
    *        a result of clipping, update those nodes now.
    *

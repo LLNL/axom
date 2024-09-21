@@ -19,7 +19,7 @@ namespace axom
 {
 namespace mir
 {
-/**
+/*!
  \brief Base class for Material Interface Reconstruction (MIR) algorithms.
  */
 class MIRAlgorithm
@@ -28,7 +28,7 @@ public:
   MIRAlgorithm() = default;
   virtual ~MIRAlgorithm() = default;
 
-  /**
+  /*!
     \brief Perform material interface reconstruction on the meshes supplied in the
            root node. Root can either be a mesh domain or a node that contains multiple
            domains.
@@ -66,7 +66,7 @@ options:
                        conduit::Node &n_output);
 
 protected:
-  /**
+  /*!
    * \brief Set up the new domain from the old one and invoke executeDomain.
    *
    * \param n_domain The input domain.
@@ -77,7 +77,7 @@ protected:
                     const conduit::Node &n_options,
                     conduit::Node &n_newDomain);
 
-  /**
+  /*!
    * \brief Perform material interface reconstruction on a single domain. Derived classes
    *        must implement this method and any device-specific coding gets handled under it.
    *
@@ -103,7 +103,7 @@ protected:
                              conduit::Node &n_newFields,
                              conduit::Node &n_newMatset) = 0;
 
-  /**
+  /*!
    * \brief Copy state from the src domain to the destination domain.
    * \param srcState The node that contains the state in the source domain.
    * \param destState The node that contains the state in the destination domain.

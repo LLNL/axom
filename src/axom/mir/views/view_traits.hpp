@@ -71,14 +71,14 @@ struct view_traits<StructuredTopologyView<StridedStructuredIndexing<IndexT, 1>>>
   static constexpr int selected_shapes() { return shapes_for_dimension(1); }
 };
 
-/**
+/*!
  * \brief Base template for some ArrayView traits.
  */
 template <typename T>
 struct array_view_traits
 { };
 
-/**
+/*!
  * \brief This macro defines some template specializations that help us access
  *        ArrayView<> names. This can be helpful when the ArrayView comes into
  *        a lambda as an auto argument.

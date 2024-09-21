@@ -15,7 +15,7 @@ namespace mir
 {
 namespace views
 {
-/**
+/*!
  * \accelerated
  * \class StridedStructuredIndexing
  *
@@ -51,7 +51,7 @@ struct StridedStructuredIndexing
 
   AXOM_HOST_DEVICE constexpr static int dimension() { return NDIMS; }
 
-  /**
+  /*!
    * \brief Return whether the view supports strided structured indexing.
    * \return true
    */
@@ -60,7 +60,7 @@ struct StridedStructuredIndexing
     return true;
   }
 
-  /**
+  /*!
    * \brief constructor
    */
   AXOM_HOST_DEVICE
@@ -74,7 +74,7 @@ struct StridedStructuredIndexing
     }
   }
 
-  /**
+  /*!
    * \brief Constructor
    *
    * \param dims The number of zones in each logical dimension.
@@ -90,7 +90,7 @@ struct StridedStructuredIndexing
     , m_strides(strides)
   { }
 
-  /**
+  /*!
    * \brief Return the number of values in the index space.
    *
    * \return The number of values in the index space.
@@ -103,7 +103,7 @@ struct StridedStructuredIndexing
     return sz;
   }
 
-  /**
+  /*!
    * \brief Return the logical dimensions.
    *
    * \return The logical dimensions.
@@ -111,7 +111,7 @@ struct StridedStructuredIndexing
   AXOM_HOST_DEVICE
   const LogicalIndex &logicalDimensions() const { return m_dimensions; }
 
-  /**
+  /*!
    * \brief Return the j stride.
    *
    * \return The j stride to move up a row.
@@ -122,7 +122,7 @@ struct StridedStructuredIndexing
     return m_strides[1];
   }
 
-  /**
+  /*!
    * \brief Return the k stride.
    *
    * \return The k stride to move forward a "page".
@@ -133,7 +133,7 @@ struct StridedStructuredIndexing
     return m_strides[2];
   }
 
-  /**
+  /*!
    * \brief Turn a global logical index into an index.
    * \param global The global logical index to convert.
    * \return The global index.
@@ -149,7 +149,7 @@ struct StridedStructuredIndexing
     return gl;
   }
 
-  /**
+  /*!
    * \brief Turn a global index into a global logical index.
    *
    * \param global The index to convert.
@@ -188,7 +188,7 @@ struct StridedStructuredIndexing
   }
   /// @}
 
-  /**
+  /*!
    * \brief Convert global logical index to a local one.
    * \param local The local logical index.
    * \return local logical index.
@@ -204,7 +204,7 @@ struct StridedStructuredIndexing
     return local;
   }
 
-  /**
+  /*!
    * \brief Turn a global index into a local index.
    *
    * \param global The index to convert.
@@ -216,7 +216,7 @@ struct StridedStructuredIndexing
     return LogicalIndexToIndex(GlobalToLocal(GlobalToGlobal(global)));
   }
 
-  /**
+  /*!
    * \brief Convert local logical index to a global one.
    * \param local The local logical index.
    * \return global logical index.
@@ -232,7 +232,7 @@ struct StridedStructuredIndexing
     return global;
   }
 
-  /**
+  /*!
    * \brief Convert local logical index to a global one.
    * \param local The local logical index.
    * \return local logical index.
@@ -243,7 +243,7 @@ struct StridedStructuredIndexing
     return GlobalToGlobal(LocalToGlobal(IndexToLogicalIndex(local)));
   }
 
-  /**
+  /*!
    * \brief Turn a local index into a local logical index.
    *
    * \param index The index to convert.
@@ -286,7 +286,7 @@ struct StridedStructuredIndexing
   }
   /// @}
 
-  /**
+  /*!
    * \brief Turn a local logical index into a local flat index.
    *
    * \param logical The logical indexto convert to a flat index.
@@ -306,7 +306,7 @@ struct StridedStructuredIndexing
     return index;
   }
 
-  /**
+  /*!
    * \brief Determines whether the indexing contains the supplied logical index.
    *
    * \param logical The logical index being tested.
@@ -324,7 +324,7 @@ struct StridedStructuredIndexing
     return retval;
   }
 
-  /**
+  /*!
    * \brief Determines whether the indexing contains the supplied index.
    *
    * \param index The index being tested.
@@ -337,7 +337,7 @@ struct StridedStructuredIndexing
     return contains(IndexToLogicalIndex(index));
   }
 
-  /**
+  /*!
    * \brief Expand the current StridedStructuredIndexing by one in each dimension.
    *
    * \return An expanded StridedStructuredIndexing.

@@ -17,7 +17,7 @@ namespace mir
 {
 namespace views
 {
-/**
+/*!
  * \class This class provides a view for Conduit/Blueprint uniform coordsets.
  *
  * \tparam DataType The underlying type used for the coordinates.
@@ -37,7 +37,7 @@ public:
 
   constexpr static int dimension() { return NDIMS; }
 
-  /**
+  /*!
    * \brief Constructor
    *
    * \param dims    The logical dimensions of the coordset.
@@ -53,7 +53,7 @@ public:
     , m_spacing(spacing)
   { }
 
-  /**
+  /*!
    * \brief Return the number of points in the coordset.
    *
    * \return The number of points in the coordset.
@@ -66,7 +66,7 @@ public:
   IndexType numberOfNodes() const { return m_indexing.size(); }
   /// @}
 
-  /**
+  /*!
    * \brief Return the requested point from the coordset.
    *
    * \param vertex_index The logical index of the point to return.
@@ -82,7 +82,7 @@ public:
     return pt;
   }
 
-  /**
+  /*!
    * \brief Return the requested point from the coordset.
    *
    * \param vertex_index The logical index of the point to return.
@@ -95,7 +95,7 @@ public:
     return getPoint(vertex_index);
   }
 
-  /**
+  /*!
    * \brief Return the requested point from the coordset.
    *
    * \param vertex_index The index of the point to return.

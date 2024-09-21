@@ -21,7 +21,7 @@ namespace utilities
 {
 namespace blueprint
 {
-/**
+/*!
  * \brief Convert a field with one association type to a field of another association type using an o2mrelation.
  *
  * \tparam ExecSpace The execution space where the algorithm runs.
@@ -30,7 +30,7 @@ template <typename ExecSpace>
 class RecenterField
 {
 public:
-  /**
+  /*!
    * \brief Convert the input field to a different association type using the o2mrelation and store the new field in the output field.
    *
    * \param field       The input field.
@@ -42,7 +42,7 @@ public:
                conduit::Node &outField) const;
 
 private:
-  /**
+  /*!
    * \brief Recenter a single field component.
    *
    * \param relation    The node that contains an o2mrelation with nodes to zones.

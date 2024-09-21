@@ -20,7 +20,7 @@ namespace views
 /// NOTE: The rectilinear coordset views could be combined into a single RectilinearCoordset
 ///       view that is templated on NDIMS but the resulting SFINAE would just overcomplicate it.
 
-/**
+/*!
  * \class This class provides a view for Conduit/Blueprint 2D rectilinear coordsets.
  */
 template <typename DataType>
@@ -34,7 +34,7 @@ public:
 
   constexpr static int dimension() { return 2; }
 
-  /**
+  /*!
    * \brief Constructor
    *
    * \param x The first coordinate component.
@@ -47,7 +47,7 @@ public:
     , m_indexing(LogicalIndex {{x.size(), y.size()}})
   { }
 
-  /**
+  /*!
    * \brief Return the number of points in the coordset.
    *
    * \return The number of points in the coordset.
@@ -60,7 +60,7 @@ public:
   IndexType numberOfNodes() const { return m_indexing.size(); }
   /// @}
 
-  /**
+  /*!
    * \brief Return the requested point from the coordset.
    *
    * \param vertex_index The logical index of the point to return.
@@ -75,7 +75,7 @@ public:
     return PointType(X);
   }
 
-  /**
+  /*!
    * \brief Return the requested point from the coordset.
    *
    * \param vertex_index The index of the point to return.
@@ -88,7 +88,7 @@ public:
     return getPoint(m_indexing.IndexToLogicalIndex(vertex_index));
   }
 
-  /**
+  /*!
    * \brief Return the requested point from the coordset.
    *
    * \param vertex_index The logical index of the point to return.
@@ -101,7 +101,7 @@ public:
     return getPoint(vertex_index);
   }
 
-  /**
+  /*!
    * \brief Return the requested point from the coordset.
    *
    * \param vertex_index The index of the point to return.
@@ -119,7 +119,7 @@ private:
   StructuredIndexing<IndexType, 2> m_indexing;
 };
 
-/**
+/*!
  * \class This class provides a view for Conduit/Blueprint 3D rectilinear coordsets.
  */
 template <typename DataType>
@@ -133,7 +133,7 @@ public:
 
   constexpr static int dimension() { return 3; }
 
-  /**
+  /*!
    * \brief Constructor
    *
    * \param x The first coordinate component.
@@ -148,7 +148,7 @@ public:
     , m_indexing(LogicalIndex {{x.size(), y.size(), z.size()}})
   { }
 
-  /**
+  /*!
    * \brief Return the number of nodes in the coordset.
    *
    * \return The number of nodes in the coordset.
@@ -162,7 +162,7 @@ public:
   IndexType numberOfNodes() const { return m_indexing.size(); }
   /// @}
 
-  /**
+  /*!
    * \brief Return the requested point from the coordset.
    *
    * \param vertex_index The logical index of the point to return.
@@ -178,7 +178,7 @@ public:
     return PointType(X);
   }
 
-  /**
+  /*!
    * \brief Return the requested point from the coordset.
    *
    * \param vertex_index The index of the point to return.
@@ -191,7 +191,7 @@ public:
     return getPoint(m_indexing.IndexToLogicalIndex(vertex_index));
   }
 
-  /**
+  /*!
    * \brief Return the requested point from the coordset.
    *
    * \param vertex_index The logical index of the point to return.
@@ -204,7 +204,7 @@ public:
     return getPoint(vertex_index);
   }
 
-  /**
+  /*!
    * \brief Return the requested point from the coordset.
    *
    * \param vertex_index The index of the point to return.

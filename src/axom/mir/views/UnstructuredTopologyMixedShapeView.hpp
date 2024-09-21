@@ -15,7 +15,7 @@ namespace mir
 {
 namespace views
 {
-/**
+/*!
  * \brief Given a shape value, we can get the Shape::id() that is used internally.
  *
  * \note If the view was to renumber the shapes array to use the Shape::id() values
@@ -27,12 +27,12 @@ class ShapeMap
 public:
   using IndexType = IndexT;
 
-  /**
+  /*!
    * \brief Constructor
    */
   AXOM_HOST_DEVICE ShapeMap() : m_shape_values(), m_shape_ids() { }
 
-  /**
+  /*!
    * \brief Constructor
    *
    * \param shape_values A view of sorted values used in the Conduit data.
@@ -44,19 +44,19 @@ public:
     , m_shape_ids(shape_ids)
   { }
 
-  /**
+  /*!
    * \brief Return the size of the shape map.
    * \return The number of entries in the shape map.
    */
   AXOM_HOST_DEVICE IndexType size() const { return m_shape_values.size(); }
 
-  /**
+  /*!
    * \brief Return whether the shape map is empty.
    * \return True if the map is empty; False otherwise.
    */
   AXOM_HOST_DEVICE bool empty() const { return m_shape_values.empty(); }
 
-  /**
+  /*!
    * \brief Given a shape value (as in the Conduit shapes array), return the shape id.
    *
    * \param value A value from the shapes array that we want to map to a shape id.
@@ -74,7 +74,7 @@ private:
   axom::ArrayView<IndexType> m_shape_ids;
 };
 
-/**
+/*!
  * \brief This class provides a view for Conduit/Blueprint mixed shape unstructured grids.
  *
  * \tparam IndexT The index type that will be used for connectivity, etc.
@@ -90,7 +90,7 @@ public:
   using ConnectivityView = axom::ArrayView<ConnectivityType>;
   using ShapeType = VariableShape<ConnectivityType>;
 
-  /**
+  /*!
    * \brief Constructor
    *
    * \param topo A reference to the topology.
@@ -117,28 +117,28 @@ public:
                 m_offsets.size() == m_shapes.size());
   }
 
-  /**
+  /*!
    * \brief Return the dimension of the shape.
    *
    * \return -1 for unknown dimension. We'd have to look at the shapes.
    */
   AXOM_HOST_DEVICE static constexpr int dimension() { return -1; }
 
-  /**
+  /*!
    * \brief Return the number of zones.
    *
    * \return The number of zones.
    */
   IndexType numberOfZones() const { return m_sizes.size(); }
 
-  /**
+  /*!
    * \brief Return the size of the connectivity.
    *
    * \return The size of the connectivity.
    */
   IndexType connectivitySize() const { return m_connectivity.size(); }
 
-  /**
+  /*!
    * \brief Execute a function for each zone in the mesh.
    *
    * \tparam ExecSpace The execution space for the function body.
@@ -179,7 +179,7 @@ public:
       });
   }
 
-  /**
+  /*!
    * \brief Execute a function for each zone in the mesh.
    *
    * \tparam ExecSpace The execution space for the function body.
@@ -226,7 +226,7 @@ public:
   }
 
 private:
-  /**
+  /*!
    * \brief Populate the shape map values/ids arrays using data in the topology's shape_map.
    *
    * \param[out] values The sorted values used for shapes in the topology.

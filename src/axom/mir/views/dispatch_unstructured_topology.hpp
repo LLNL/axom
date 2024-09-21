@@ -25,7 +25,7 @@ namespace views
 // Turn on all bits so all shapes will be enabled.
 constexpr int AnyShape = -1;
 
-/**
+/*!
  * \brief This function dispatches a Conduit polyhedral unstructured topology.
  *
  * \tparam FuncType The function/lambda type that will be invoked on the view.
@@ -95,7 +95,7 @@ void typed_dispatch_unstructured_polyhedral_topology(const conduit::Node &topo,
   }
 }
 
-/**
+/*!
  * \brief This function dispatches a Conduit mixed unstructured topology.
  *
  * \tparam FuncType The function/lambda type that will be invoked on the view.
@@ -169,7 +169,7 @@ constexpr int select_shapes(Args... args)
   return encode_types((1 << args)...);
 }
 
-/**
+/*!
  * \brief This function dispatches a Conduit topology to the right view type
  *        and passes that view to the supplied function/lambda.
  *

@@ -13,7 +13,7 @@ namespace axom
 {
 namespace mir
 {
-/**
+/*!
  * \brief This class provides a kind of schema over options, as well
  *        as default values, and some utilities functions.
  */
@@ -21,7 +21,7 @@ template <typename ExecSpace>
 class SelectedZones
 {
 public:
-  /**
+  /*!
    * \brief Constructor
    *
    * \param nzones The total number of zones in the associated topology.
@@ -34,7 +34,7 @@ public:
     buildSelectedZones(nzones, options);
   }
 
-  /**
+  /*!
    * \brief Return a view that contains the list of selected zone ids for the mesh.
    * \return A view that contains the list of selected zone ids for the mesh.
    */
@@ -44,7 +44,7 @@ public:
   }
 
 protected:
-  /**
+  /*!
    * \brief The options may contain a "selectedZones" member that is a list of zones
    *        that will be operated on. If such an array is present, copy and sort it.
    *        If the zone list is not present, make an array that selects every zone.

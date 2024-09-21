@@ -23,7 +23,7 @@ namespace utilities
 {
 namespace blueprint
 {
-/**
+/*!
  * \accelerated
  * \class FieldBlender
  *
@@ -40,7 +40,7 @@ class CoordsetBlender
 public:
   using CoordsetViewType = CSVType;
 
-  /**
+  /*!
    * \brief Create a new blended field from the \a n_input field and place it in \a n_output.
    *
    * \param blend The BlendData that will be used to make the new coordset.

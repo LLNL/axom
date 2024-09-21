@@ -18,7 +18,7 @@ namespace utilities
 {
 namespace blueprint
 {
-/**
+/*!
  * \brief Make a new topology and coordset by extracting certain zones from the input mesh.
  *
  * \tparam ExecSpace The execution space where the algorithm will run.
@@ -34,7 +34,7 @@ public:
   using SelectedZonesView = axom::ArrayView<axom::IndexType>;
   using ZoneType = typename TopologyView::ShapeType;
 
-  /**
+  /*!
    * \brief Constructor
    *
    * \param topoView The input topology view.
@@ -47,7 +47,7 @@ public:
     , m_zoneSlice()
   { }
 
-  /**
+  /*!
    * \brief Select zones from the input mesh by id and output them in the output mesh.
    *
    * \param selectedZonesView A view that contains the selected zone ids.
@@ -152,7 +152,7 @@ public:
 #if !defined(__CUDACC__)
 protected:
 #endif
-  /**
+  /*!
    * \brief This struct contains extra amounts of storage that we might want to overallocate.
    */
   struct Sizes
@@ -162,7 +162,7 @@ protected:
     axom::IndexType connectivity {0};
   };
 
-  /**
+  /*!
    * \brief Create a zone slice view, building m_zoneSlice if needed.
    *
    * \param selectedZonesView A view that contains the selected zone ids.
@@ -201,7 +201,7 @@ protected:
     return view;
   }
 
-  /**
+  /*!
    * \brief Return a Sizes object initialized from the options.
    *
    * \param n_options The options node that contains extra sizes.
@@ -226,7 +226,7 @@ protected:
     return extra;
   }
 
-  /**
+  /*!
    * \brief Make node map and node slice information for the selected zones but
    *        do not limit the selection to only the used nodes.
    *
@@ -278,7 +278,7 @@ protected:
     return sizes;
   }
 
-  /**
+  /*!
    * \brief Make node map and node slice information for the selected zones
    *        selecting only the used nodes.
    *
@@ -366,7 +366,7 @@ protected:
     return sizes;
   }
 
-  /**
+  /*!
    * \brief Make the output topology for just the selected zones.
    *
    * \param selectedZonesView A view that contains the ids of the zones to extract.
@@ -511,7 +511,7 @@ protected:
     }
   }
 
-  /**
+  /*!
    * \brief Make the new coordset using the blend data and the input coordset/coordsetview.
    *
    * \param nodeSlice Node slice information.
@@ -529,7 +529,7 @@ protected:
     cs.execute(nodeSlice, n_coordset, n_newCoordset);
   }
 
-  /**
+  /*!
    * \brief Make fields for the output mesh, as needed.
    *
    * \param nodeSlice Node slice information.
@@ -560,7 +560,7 @@ protected:
     }
   }
 
-  /**
+  /*!
    * \brief Get the topology name.
    *
    * \param n_input The input mesh.
@@ -584,7 +584,7 @@ protected:
     return name;
   }
 
-  /**
+  /*!
    * \brief Return whether coordset/vertex compaction is desired.
    *
    * \param n_options The options node that may contain a "topology" string.
@@ -601,7 +601,7 @@ protected:
     return retval;
   }
 
-  /**
+  /*!
    * \brief Return the name of the output shape type.
    *
    * \param n_topo The input topology node.
@@ -642,7 +642,7 @@ protected:
   axom::Array<axom::IndexType> m_zoneSlice;
 };
 
-/**
+/*!
  * \brief Make a new topology and coordset by extracting certain zones from the input mesh.
  *
  * \tparam ExecSpace The execution space where the algorithm will run.
@@ -656,7 +656,7 @@ class ExtractZonesAndMatset
 public:
   using SelectedZonesView = axom::ArrayView<axom::IndexType>;
 
-  /**
+  /*!
    * \brief Constructor
    *
    * \param topoView The input topology view.
@@ -670,7 +670,7 @@ public:
     , m_matsetView(matsetView)
   { }
 
-  /**
+  /*!
    * \brief Select zones from the input mesh by id and output them in the output mesh.
    *
    * \param selectedZonesView A view that contains the selected zone ids.
@@ -713,7 +713,7 @@ public:
 private:
 #endif
 
-  /**
+  /*!
    * \brief Return the matset for the named topology.
    *
    * \param n_input The input mesh.
@@ -741,7 +741,7 @@ private:
     return matset;
   }
 
-  /**
+  /*!
    * \brief Make a new matset that covers the selected zones.
    *
    * \param selectedZonesView A view that contains the selected zones.

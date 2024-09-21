@@ -22,7 +22,7 @@ template <int NDIMS>
 struct make_rectilinear
 { };
 
-/**
+/*!
  * \brief Create a 3D structured topology view with normal structured indexing.
  */
 template <>
@@ -32,7 +32,7 @@ struct make_rectilinear<3>
   using LogicalIndex = typename Indexing::LogicalIndex;
   using TopoView = views::StructuredTopologyView<Indexing>;
 
-  /**
+  /*!
    * \brief Create the indexing and initialize it from the topo.
    * \param topo The node containing the topology.
    * \return The indexing.
@@ -51,7 +51,7 @@ struct make_rectilinear<3>
     return Indexing(zoneDims);
   }
 
-  /**
+  /*!
    * \brief Create the topology view and initialize it from the topo.
    * \param topo The node containing the topology.
    * \return The topology view.
@@ -62,7 +62,7 @@ struct make_rectilinear<3>
   }
 };
 
-/**
+/*!
  * \brief Create a 2D structured topology view with normal structured indexing.
  */
 template <>
@@ -72,7 +72,7 @@ struct make_rectilinear<2>
   using LogicalIndex = typename Indexing::LogicalIndex;
   using TopoView = views::StructuredTopologyView<Indexing>;
 
-  /**
+  /*!
    * \brief Create the indexing and initialize it from the topology.
    * \param topo The node containing the topology.
    * \return The indexing.
@@ -90,7 +90,7 @@ struct make_rectilinear<2>
     return Indexing(zoneDims);
   }
 
-  /**
+  /*!
    * \brief Create the topology view and initialize it from the topology.
    * \param topo The node containing the topology.
    * \return The topology view.
@@ -101,7 +101,7 @@ struct make_rectilinear<2>
   }
 };
 
-/**
+/*!
  * \brief Create a 1D structured topology view with normal structured indexing.
  */
 template <>
@@ -111,7 +111,7 @@ struct make_rectilinear<1>
   using LogicalIndex = typename Indexing::LogicalIndex;
   using TopoView = views::StructuredTopologyView<Indexing>;
 
-  /**
+  /*!
    * \brief Create the indexing and initialize it from the topology.
    * \param topo The node containing the topology.
    * \return The indexing.
@@ -128,7 +128,7 @@ struct make_rectilinear<1>
     return Indexing(zoneDims);
   }
 
-  /**
+  /*!
    * \brief Create the topology view and initialize it from the topology.
    * \param topo The node containing the topology.
    * \return The topology view.
@@ -139,7 +139,7 @@ struct make_rectilinear<1>
   }
 };
 
-/**
+/*!
  * \brief Creates a topology view compatible with rectilinear topologies and passes that view to the supplied function.
  *
  * \tparam FuncType The function/lambda type to invoke on the view.

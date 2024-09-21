@@ -30,17 +30,17 @@ namespace blueprint
 {
 namespace details
 {
-/**
-   * \brief Given views that contain the nodes and zones, sort the zones using the
-   *        node numbers to produce a list of zones for each node and an offsets array
-   *        that points to the start of each list of zones.
-   * 
-   * \param[in]    nodesView   A view that contains the set of all of the nodes in the topology (the connectivity)
-   * \param[inout[ zonesView   A view (same size as \a nodesView) that contains the zone number of each node.
-   * \param[out]   offsetsView A view that we fill with offsets so offsetsView[i] points to the start of the i'th list in \a zonesView.
-   *
-   * \note RAJA::sort_pairs can be slow if there are a lot of nodes (depends on ExecSpace too).
-   */
+/*!
+ * \brief Given views that contain the nodes and zones, sort the zones using the
+ *        node numbers to produce a list of zones for each node and an offsets array
+ *        that points to the start of each list of zones.
+ * 
+ * \param[in]    nodesView   A view that contains the set of all of the nodes in the topology (the connectivity)
+ * \param[inout[ zonesView   A view (same size as \a nodesView) that contains the zone number of each node.
+ * \param[out]   offsetsView A view that we fill with offsets so offsetsView[i] points to the start of the i'th list in \a zonesView.
+ *
+ * \note RAJA::sort_pairs can be slow if there are a lot of nodes (depends on ExecSpace too).
+ */
 template <typename ExecSpace, typename ViewType>
 struct BuildRelation
 {
@@ -159,7 +159,7 @@ struct BuildRelation<axom::SEQ_EXEC, ViewType>
 
 }  // end namespace details
 
-/**
+/*!
  * \brief Build an o2m relation that lets us look up the zones for a node.
  *
  * \note The zone list for each point is not sorted.
@@ -168,7 +168,7 @@ template <typename ExecSpace>
 class NodeToZoneRelationBuilder
 {
 public:
-  /**
+  /*!
    * \brief Build a node to zone relation and store the resulting O2M relation in the \a relation conduit node.
    *
    * \param topo The topology for which we're building the O2M relation.

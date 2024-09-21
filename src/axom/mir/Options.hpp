@@ -14,16 +14,14 @@ namespace axom
 {
 namespace mir
 {
-// IDEA: maybe use inlet for this stuff.
-
-/**
+/*!
  * \brief This class provides a kind of schema over options, as well
  *        as default values, and some utilities functions.
  */
 class Options
 {
 public:
-  /**
+  /*!
    * \brief Constructor
    *
    * \param nzones The total number of zones in the associated topology.
@@ -31,7 +29,7 @@ public:
    */
   Options(const conduit::Node &options) : m_options(options) { }
 
-  /**
+  /*!
    * \brief Return the name of the topology to make in the output.
    * \param default_value The name to use if the option is not defined.
    * \return The name of the topology to make in the output.
@@ -44,7 +42,7 @@ public:
     return name;
   }
 
-  /**
+  /*!
    * \brief Return the name of the coordset to make in the output.
    * \param default_value The name to use if the option is not defined.
    * \return The name of the coordset to make in the output.
@@ -57,7 +55,7 @@ public:
     return name;
   }
 
-  /**
+  /*!
    * \brief Extract the names of the fields to process (and their output names) from the
    *        options or \a n_fields if the options do not contain fields.
    *
