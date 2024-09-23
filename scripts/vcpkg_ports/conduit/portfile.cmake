@@ -1,7 +1,7 @@
 vcpkg_from_github(
     OUT_SOURCE_PATH SOURCE_PATH
     REPO llnl/conduit
-    REF v0.9.1
+    REF v0.9.2
     SHA512 fc9449952ea3521e9f76e58f13ccfa2e9a8bdc513f25b675af2d4984dd9ba8e7bed7e1d27e539a69dfda3d4fd48ea6d009ecb2e593d5b059a738da2f9b4310c9
     HEAD_REF develop
     PATCHES 
