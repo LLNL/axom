@@ -119,7 +119,7 @@ int eigen_solve(Matrix<T>& A, int k, T* u, T* lambdas, int numIterations)
 
     bool res = normalize<T>(vec, N);
 
-    // something went wrong, likely because `vec` is
+    // something went wrong, likely because `vec` is (numerically)
     //  in the span of the previous eigenvectors. Try again!
     if(!res)
     {
