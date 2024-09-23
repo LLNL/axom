@@ -9,8 +9,8 @@ variables:
   DO_BUILD: 'yes'
   DO_TEST: 'yes'
   DO_CLEAN: 'no'
-  CLANG14_IMAGENAME: 'axom/tpls:clang-14_07-10-24_20h-47m'
-  GCC13_IMAGENAME: 'axom/tpls:gcc-13_07-10-24_20h-47m'
+  CLANG14_IMAGENAME: 'axom/tpls:clang-14_09-23-24_17h-07m'
+  GCC13_IMAGENAME: 'axom/tpls:gcc-13_09-23-24_17h-07m'
   system.debug: false
 
 jobs:
