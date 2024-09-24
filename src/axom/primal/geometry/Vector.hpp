@@ -230,7 +230,7 @@ public:
    * \post d >= 1.
    */
   AXOM_HOST_DEVICE
-  static constexpr int dimension() const { return NDIMS; };
+  static constexpr int dimension() { return NDIMS; };
 
   /*!
    * \brief Access operator for individual components.
