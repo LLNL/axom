@@ -18,9 +18,6 @@
 // C/C++ includes
 #include <string>   // for C++ string
 #include <sstream>  // for std::ostringstream
-#include <iostream>
-
-#include <errno.h>
 
 // namespace alias
 namespace slic = axom::slic;
@@ -459,7 +456,7 @@ TEST(slic_macros, test_macros_file_output)
   std::string no_fmt_expected;
   no_fmt_expected += "*****\n[INFO]\n\n Test \n\n ";
   no_fmt_expected += __FILE__;
-  no_fmt_expected += "\n443\n****\n";
+  no_fmt_expected += "\n440\n****\n";
 
   EXPECT_EQ(no_fmt_buffer.str(), no_fmt_expected);
 
@@ -472,27 +469,15 @@ TEST(slic_macros, test_macros_file_output)
   no_fmt_contents.close();
   with_fmt_contents.close();
 
-  EXPECT_FALSE(no_fmt_contents.is_open());
-  EXPECT_FALSE(with_fmt_contents.is_open());
-
-// Closes open file streams associated with Slic streams when deconstructors
+// Closes open file streams associated with Slic streams when destructors
 // called during slic::finalize().
 // Windows _unlink file deletion fails if file is still in use.
 #ifdef WIN32
   slic::finalize();
 #endif
 
-  // Cleanup generated files (not working Windows)
-  int ret_code = axom::utilities::filesystem::removeFile(no_fmt);
-
-  if(ret_code == -1)
-  {
-    SLIC_INFO("########################### errno value is: "
-              << strerror(errno) << " ###############################");
-  }
-  std::cout << slic::internal::test_stream.str() << std::endl;
-
-  EXPECT_EQ(ret_code, 0);
+  // Cleanup generated files
+  EXPECT_EQ(axom::utilities::filesystem::removeFile(no_fmt), 0);
   EXPECT_EQ(axom::utilities::filesystem::removeFile(with_fmt), 0);
 }
 
