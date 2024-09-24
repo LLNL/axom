@@ -72,7 +72,26 @@ public:
         [&](const std::string &shape, auto &topoView) {
 
         n_newtopo["elements/shape"] = shape;
-        makeUnstructured(shape, topoView, n_newconn, n_newsizes, n_newoffsets);
+
+        int ptsPerZone = 2;
+        if(shape == "quad")
+          ptsPerZone = 4;
+        else if(shape == "hex")
+          ptsPerZone = 8;
+
+        // Allocate new mesh data.
+        const auto nzones = topoView.numberOfZones();
+        const auto connSize = nzones * ptsPerZone;
+        n_newconn.set(conduit::DataType::index_t(connSize));
+        n_newsizes.set(conduit::DataType::index_t(nzones));
+        n_newoffsets.set(conduit::DataType::index_t(nzones));
+
+        // Make views for the mesh data.
+        auto connView = make_array_view<conduit::index_t>(n_newconn);
+        auto sizesView = make_array_view<conduit::index_t>(n_newsizes);
+        auto offsetsView = make_array_view<conduit::index_t>(n_newoffsets);
+
+        makeUnstructured(ptsPerZone, topoView, connView, sizesView, offsetsView);
 
       });
     }
@@ -87,32 +106,18 @@ private:
    * \brief Iterate over the input topology's zones and store their connectivity in
    *        unstructured connectivity nodes.
    *
+   * \param ptsPerZone The number of points per zone.
    * \param topoView The input topology view.
-   * \param n_newconn The node that will contain the new connectivity.
-   * \param n_newconn The node that will contain the new connectivity.
-   * \param n_newconn The node that will contain the new connectivity.
+   * \param connView The view that will contain the new connectivity.
+   * \param sizesView The view that will contain the new sizes.
+   * \param offsetsView The view that will contain the new offsets.
    */
   template <typename TopologyView>
-  static void makeUnstructured(const std::string &shape, const TopologyView &topoView, conduit::Node &n_newconn, conduit::Node &n_newsizes, conduit::Node &n_newoffsets)
+  static void makeUnstructured(int ptsPerZone, const TopologyView &topoView,
+    axom::ArrayView<conduit::index_t> connView, 
+    axom::ArrayView<conduit::index_t> sizesView, 
+    axom::ArrayView<conduit::index_t> offsetsView)
   {
-    int ptsPerZone = 2;
-    if(shape == "quad")
-      ptsPerZone = 4;
-    else if(shape == "hex")
-      ptsPerZone = 8;
-
-    // Allocate new mesh data.
-    const auto nzones = topoView.numberOfZones();
-    const auto connSize = nzones * ptsPerZone;
-    n_newconn.set(conduit::DataType::index_t(connSize));
-    n_newsizes.set(conduit::DataType::index_t(nzones));
-    n_newoffsets.set(conduit::DataType::index_t(nzones));
-
-    // Make views for the mesh data.
-    auto connView = make_array_view<conduit::index_t>(n_newconn);
-    auto sizesView = make_array_view<conduit::index_t>(n_newsizes);
-    auto offsetsView = make_array_view<conduit::index_t>(n_newoffsets);
-
     // Fill in the new connectivity.
     using ZoneType = typename TopologyView::ShapeType;
     topoView.template for_all_zones<ExecSpace>(

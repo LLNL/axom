@@ -209,7 +209,6 @@ struct test_strided_structured
                                            25, 26, 33, 32}};
     // clang-format on
     auto expectedNodesView = expectedNodes.view();
-    axom::IndexType n = expectedNodesView.size() / 4;
     axom::IndexType n4 = expectedNodesView.size();
 
     const int allocatorID = axom::execution_space<ExecSpace>::allocatorID();

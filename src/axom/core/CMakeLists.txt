@@ -74,6 +74,7 @@ set(core_headers
     execution/for_all.hpp
     execution/nested_for_exec.hpp
     execution/runtime_policy.hpp
+    execution/scans.hpp
     execution/synchronize.hpp
 
     execution/internal/seq_exec.hpp

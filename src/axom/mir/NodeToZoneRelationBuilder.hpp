@@ -32,23 +32,27 @@ namespace blueprint
 namespace details
 {
 /*!
- * \brief Given views that contain the nodes and zones, sort the zones using the
- *        node numbers to produce a list of zones for each node and an offsets array
- *        that points to the start of each list of zones.
- * 
- * \param[in]    nodesView   A view that contains the set of all of the nodes in the topology (the connectivity)
- * \param[inout[ zonesView   A view (same size as \a nodesView) that contains the zone number of each node.
- * \param[out]   offsetsView A view that we fill with offsets so offsetsView[i] points to the start of the i'th list in \a zonesView.
- *
- * \note RAJA::sort_pairs can be slow if there are a lot of nodes (depends on ExecSpace too).
+ * \brief Build the node to zone relation.
  */
 template <typename ExecSpace, typename ViewType>
 struct BuildRelation
 {
-  static void execute(const ViewType &nodesView,
-                      ViewType &zonesView,
-                      ViewType &sizesView,
-                      ViewType &offsetsView)
+  /*!
+   * \brief Given views that contain the nodes and zones, sort the zones using the
+   *        node numbers to produce a list of zones for each node and an offsets array
+   *        that points to the start of each list of zones.
+   * 
+   * \param[in]    nodesView   A view that contains the set of all of the nodes in the topology (the connectivity)
+   * \param[inout] zonesView   A view (same size as \a nodesView) that contains the zone number of each node.
+   * \param[out]   sizesView A view that we fill with sizes.
+   * \param[out]   offsetsView A view that we fill with offsets so offsetsView[i] points to the start of the i'th list in \a zonesView.
+   *
+   * \note RAJA::sort_pairs can be slow if there are a lot of nodes (depends on ExecSpace too).
+   */
+  static void execute(ViewType nodesView,
+                      ViewType zonesView,
+                      ViewType sizesView,
+                      ViewType offsetsView)
   {
     AXOM_ANNOTATE_SCOPE("FillZonesAndOffsets");
     assert(nodesView.size() == zonesView.size());
@@ -112,10 +116,10 @@ struct BuildRelation
 template <typename ViewType>
 struct BuildRelation<axom::SEQ_EXEC, ViewType>
 {
-  static void execute(const ViewType &nodesView,
-                      ViewType &zonesView,
-                      ViewType &sizesView,
-                      ViewType &offsetsView)
+  static void execute(ViewType nodesView,
+                      ViewType zonesView,
+                      ViewType sizesView,
+                      ViewType offsetsView)
   {
     AXOM_ANNOTATE_SCOPE("FillZonesAndOffsets");
     assert(nodesView.size() == zonesView.size());
@@ -124,9 +128,8 @@ struct BuildRelation<axom::SEQ_EXEC, ViewType>
     const int allocatorID = execution_space<ExecSpace>::allocatorID();
 
     // Count how many times a node is used.
-    const auto nnodes = offsetsView.size();
     axom::for_all<ExecSpace>(
-      nnodes,
+      sizesView.size(),
       AXOM_LAMBDA(axom::IndexType index) { sizesView[index] = 0; });
     axom::for_all<ExecSpace>(
       nodesView.size(),
@@ -138,9 +141,10 @@ struct BuildRelation<axom::SEQ_EXEC, ViewType>
     axom::exclusive_scan<ExecSpace>(sizesView, offsetsView);
 
     axom::for_all<ExecSpace>(
-      nnodes,
+      sizesView.size(),
       AXOM_LAMBDA(axom::IndexType index) { sizesView[index] = 0; });
 
+    // Make a copy of zonesView so we can reorganize zonesView.
     axom::Array<value_type> zcopy(zonesView.size(), zonesView.size(), allocatorID);
     axom::copy(zcopy.data(),
                zonesView.data(),

@@ -15,34 +15,6 @@
 
 #include <cstdint>
 
-// NOTE: Longer term, we should hide more RAJA functionality behind axom wrappers
-//       so we can write serial versions for when RAJA is not enabled.
-namespace axom
-{
-template <typename ExecSpace, typename ContiguousMemoryContainer>
-struct scans
-{
-  inline void exclusive_scan(const ContiguousMemoryContainer &input,
-                             ContiguousMemoryContainer &output)
-  {
-    using loop_policy = typename axom::execution_space<ExecSpace>::loop_policy;
-    assert(input.size() == output.size());
-    RAJA::exclusive_scan<loop_policy>(
-      RAJA::make_span(input.data(), input.size()),
-      RAJA::make_span(output.data(), output.size()));
-  }
-};
-
-template <typename ExecSpace, typename ContiguousMemoryContainer>
-inline void exclusive_scan(const ContiguousMemoryContainer &input,
-                           ContiguousMemoryContainer &output)
-{
-  scans<ExecSpace, ContiguousMemoryContainer> s;
-  s.exclusive_scan(input, output);
-}
-
-}  // end namespace axom
-
 namespace axom
 {
 namespace mir
