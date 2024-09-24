@@ -6,12 +6,11 @@
 #ifndef AXOM_PRIMAL_BOUNDINGBOX_HPP_
 #define AXOM_PRIMAL_BOUNDINGBOX_HPP_
 
-#include <limits>
-
 #include "axom/config.hpp"
 
 #include "axom/core/Macros.hpp"
 #include "axom/core/numerics/floating_point_limits.hpp"
+#include "axom/core/NumericLimits.hpp"
 
 #include "axom/primal/geometry/Point.hpp"
 #include "axom/primal/geometry/Vector.hpp"
@@ -72,8 +71,8 @@ public:
   using VectorType = Vector<T, NDIMS>;
   using BoxType = BoundingBox<T, NDIMS>;
 
-  static constexpr T InvalidMin = std::numeric_limits<T>::max();
-  static constexpr T InvalidMax = std::numeric_limits<T>::lowest();
+  static constexpr T InvalidMin = axom::numeric_limits<T>::max();
+  static constexpr T InvalidMax = axom::numeric_limits<T>::lowest();
 
 public:
   /*!
@@ -450,18 +449,19 @@ template <typename OtherType>
 AXOM_HOST_DEVICE bool BoundingBox<T, NDIMS>::intersectsWith(
   const BoundingBox<OtherType, NDIMS>& otherBB) const
 {
-  bool status = true;
-
   // AABBs cannot intersect if they are separated along any dimension
   for(int i = 0; i < NDIMS; ++i)
   {
-    status &= detail::intersect_bbox_bbox(m_min[i],
-                                          m_max[i],
-                                          otherBB.m_min[i],
-                                          otherBB.m_max[i]);
-  }  // END for all dimensions
+    if(!detail::intersect_bbox_bbox(m_min[i],
+                                    m_max[i],
+                                    otherBB.m_min[i],
+                                    otherBB.m_max[i]))
+    {
+      return false;
+    }
+  }
 
-  return status;
+  return true;
 }
 
 //------------------------------------------------------------------------------

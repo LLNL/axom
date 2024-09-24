@@ -34,7 +34,14 @@ axom::IndexType calc_new_capacity(MCArray<T>& v, axom::IndexType increase)
   axom::IndexType new_num_tuples = (v.size() / num_components) + increase;
   if((new_num_tuples * num_components) > v.capacity())
   {
-    return new_num_tuples * v.getResizeRatio() + 0.5;
+    axom::IndexType new_capacity = v.capacity() * v.getResizeRatio() + 0.5;
+    axom::IndexType remainder = new_capacity % num_components;
+    if(remainder > 0)
+    {
+      new_capacity += num_components - remainder;
+    }
+    return axom::utilities::max<axom::IndexType>(new_capacity / num_components,
+                                                 new_num_tuples);
   }
 
   return v.capacity() / num_components;

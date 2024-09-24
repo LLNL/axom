@@ -23,6 +23,7 @@
 
 // Axom includes
 #include "axom/core.hpp"
+#include "axom/core/NumericLimits.hpp"
 #include "axom/slic.hpp"
 #include "axom/primal.hpp"
 #include "axom/mint/mesh/UnstructuredMesh.hpp"
@@ -49,7 +50,6 @@
 
 // C/C++ includes
 #include <string>
-#include <limits>
 #include <map>
 #include <vector>
 #include <cmath>
@@ -104,6 +104,8 @@ public:
   int objectRepCount = 1;
   // Contour generation count for each MarchingCubes objects.
   int contourGenCount = 1;
+  // Number of masking cycles.
+  int maskCount = 1;
 
   std::string annotationMode {"none"};
 
@@ -204,6 +206,13 @@ public:
       ->description(
         "Number of contour repetitions to run for each MarchingCubes object")
       ->capture_default_str();
+
+    app.add_option("--maskCount", maskCount)
+      ->description(
+        "Group the cells using this many masking groups to test masking "
+        "(default to 1).")
+      ->capture_default_str()
+      ->check(axom::CLI::Range(1, std::numeric_limits<int>::max()));
 
 #ifdef AXOM_USE_CALIPER
     app.add_option("--caliper", annotationMode)
@@ -777,6 +786,9 @@ struct ContourTestBase
           axom::fmt::format("fields/{}/values", strategy->functionName()),
           s_allocatorId);
       }
+      computationalMesh.moveMeshDataToNewMemorySpace<int>(
+        axom::fmt::format("fields/{}/values", "mask"),
+        s_allocatorId);
     }
 
 #if defined(AXOM_USE_UMPIRE)
@@ -838,7 +850,7 @@ struct ContourTestBase
       auto& mc = *mcPtr;
 
       // Clear and set MarchingCubes object for a "new" mesh.
-      mc.setMesh(computationalMesh.asConduitNode(), "mesh");
+      mc.setMesh(computationalMesh.asConduitNode(), "mesh", "mask");
 
 #ifdef AXOM_USE_MPI
       MPI_Barrier(MPI_COMM_WORLD);
@@ -857,7 +869,11 @@ struct ContourTestBase
         for(const auto& strategy : m_testStrategies)
         {
           mc.setFunctionField(strategy->functionName());
-          mc.computeIsocontour(params.contourVal);
+          for(int iMask = 0; iMask < params.maskCount; ++iMask)
+          {
+            mc.setMaskValue(iMask);
+            mc.computeIsocontour(params.contourVal);
+          }
           m_strategyFacetPrefixSum.push_back(mc.getContourFacetCount());
         }
       }
@@ -889,6 +905,9 @@ struct ContourTestBase
           axom::fmt::format("fields/{}/values", strategy->functionName()),
           axom::execution_space<axom::SEQ_EXEC>::allocatorID());
       }
+      computationalMesh.moveMeshDataToNewMemorySpace<int>(
+        axom::fmt::format("fields/{}/values", "mask"),
+        axom::execution_space<axom::SEQ_EXEC>::allocatorID());
     }
 
     // Put contour mesh in a mint object for error checking and output.
@@ -1058,6 +1077,42 @@ struct ContourTestBase
           fieldView(i, j, k) = strat.valueAt(pt);
         }
       }
+    }
+  }
+
+  void addMaskField(BlueprintStructuredMesh& bpMesh)
+  {
+    std::string maskFieldName = "mask";
+    axom::StackArray<axom::IndexType, DIM> zeros;
+    for(int d = 0; d < DIM; ++d)
+    {
+      zeros[d] = 0;
+    }
+    for(axom::IndexType domId = 0; domId < bpMesh.domainCount(); ++domId)
+    {
+      auto domainView = bpMesh.getDomainView<DIM>(domId);
+      auto cellCount = domainView.getCellCount();
+      auto slowestDirs =
+        domainView.getConstCoordsViews()[0].mapping().slowestDirs();
+      axom::StackArray<axom::IndexType, DIM> fastestDirs;
+      for(int d = 0; d < DIM; ++d)
+      {
+        fastestDirs[d] = slowestDirs[DIM - 1 - d];
+      }
+      domainView.createField(maskFieldName,
+                             "element",
+                             conduit::DataType::c_int(cellCount),
+                             zeros,
+                             zeros,
+                             fastestDirs);
+      auto maskView = domainView.template getFieldView<int>(maskFieldName);
+      int maskCount = params.maskCount;
+      axom::for_all<axom::SEQ_EXEC>(
+        0,
+        cellCount,
+        AXOM_LAMBDA(axom::IndexType cellId) {
+          maskView.flatIndex(cellId) = (cellId % maskCount);
+        });
     }
   }
 
@@ -1424,8 +1479,8 @@ struct ContourTestBase
             cellMDMapper.toMultiIndex(parentCellId);
 
           // Compute min and max function values in the cell.
-          double minFcnValue = std::numeric_limits<double>::max();
-          double maxFcnValue = std::numeric_limits<double>::min();
+          double minFcnValue = axom::numeric_limits<double>::max();
+          double maxFcnValue = axom::numeric_limits<double>::min();
           constexpr short int cornerCount =
             (1 << DIM);  // Number of nodes in a cell.
           for(short int cornerId = 0; cornerId < cornerCount; ++cornerId)
@@ -1593,20 +1648,20 @@ int allocatorIdToTest(axom::runtime_policy::Policy policy)
     :
   #if defined(AXOM_RUNTIME_POLICY_USE_OPENMP)
     policy == RuntimePolicy::omp
-      ? axom::detail::getAllocatorID<axom::MemorySpace::Host>()
-      :
+    ? axom::detail::getAllocatorID<axom::MemorySpace::Host>()
+    :
   #endif
   #if defined(AXOM_RUNTIME_POLICY_USE_CUDA)
-      policy == RuntimePolicy::cuda
-        ? axom::detail::getAllocatorID<axom::MemorySpace::Device>()
-        :
+    policy == RuntimePolicy::cuda
+    ? axom::detail::getAllocatorID<axom::MemorySpace::Device>()
+    :
   #endif
   #if defined(AXOM_RUNTIME_POLICY_USE_HIP)
-        policy == RuntimePolicy::hip
-          ? axom::detail::getAllocatorID<axom::MemorySpace::Device>()
-          :
+    policy == RuntimePolicy::hip
+    ? axom::detail::getAllocatorID<axom::MemorySpace::Device>()
+    :
   #endif
-          axom::INVALID_ALLOCATOR_ID;
+    axom::INVALID_ALLOCATOR_ID;
 #else
   int allocatorID = axom::getDefaultAllocatorID();
 #endif
@@ -1700,6 +1755,8 @@ int testNdimInstance(BlueprintStructuredMesh& computationalMesh)
   }
 
   contourTest.computeNodalDistance(computationalMesh);
+
+  contourTest.addMaskField(computationalMesh);
 
   if(params.isVerbose())
   {

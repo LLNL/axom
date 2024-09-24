@@ -21,7 +21,7 @@ namespace axom
 {
 namespace lumberjack
 {
-constexpr int LJ_TAG = 55432;
+constexpr int LJ_TAG = 32766;
 
 const char* mpiBlockingReceiveMessages(MPI_Comm comm)
 {

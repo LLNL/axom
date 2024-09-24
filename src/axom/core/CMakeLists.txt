@@ -60,9 +60,11 @@ set(core_headers
     Macros.hpp
     Map.hpp
     FlatMap.hpp
+    NumericLimits.hpp
     Path.hpp
     RangeAdapter.hpp
     StackArray.hpp
+    StaticArray.hpp
     Types.hpp
     memory_management.hpp
 
@@ -157,8 +159,3 @@ endif()
 if(AXOM_ENABLE_EXAMPLES)
   add_subdirectory(examples)
 endif()
-
-#------------------------------------------------------------------------------
-# Add code checks
-#------------------------------------------------------------------------------
-axom_add_code_checks(PREFIX core)

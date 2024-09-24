@@ -11,6 +11,7 @@
 
 #include <iostream>
 #include <sstream>
+#include <type_traits>
 
 namespace axom
 {
@@ -48,9 +49,9 @@ public:
     @param [in] fastestStrideLength Stride in the
       fastest-changing direction.
   */
-  MDMapping(const axom::StackArray<T, DIM>& shape,
-            axom::ArrayStrideOrder arrayStrideOrder,
-            int fastestStrideLength = 1)
+  AXOM_HOST_DEVICE MDMapping(const axom::StackArray<T, DIM>& shape,
+                             axom::ArrayStrideOrder arrayStrideOrder,
+                             int fastestStrideLength = 1)
   {
     initializeShape(shape, arrayStrideOrder, fastestStrideLength);
   }
@@ -65,9 +66,9 @@ public:
       fastest-changing direction.
   */
   template <typename DirType>
-  MDMapping(const axom::StackArray<T, DIM>& shape,
-            const axom::StackArray<DirType, DIM>& slowestDirs,
-            int fastestStrideLength = 1)
+  AXOM_HOST_DEVICE MDMapping(const axom::StackArray<T, DIM>& shape,
+                             const axom::StackArray<DirType, DIM>& slowestDirs,
+                             int fastestStrideLength = 1)
   {
     initializeShape(shape, slowestDirs, fastestStrideLength);
   }
@@ -80,8 +81,8 @@ public:
     @param [in] orderSource ArrayIndex to copy stride order
       from.
   */
-  MDMapping(const axom::StackArray<T, DIM>& shape,
-            const axom::MDMapping<DIM, T>& orderSource)
+  AXOM_HOST_DEVICE MDMapping(const axom::StackArray<T, DIM>& shape,
+                             const axom::MDMapping<DIM, T>& orderSource)
   {
     initializeShape(shape, orderSource);
   }
@@ -97,7 +98,8 @@ public:
     clash with the more prevalent usage of constructing from the array's
     shape.
   */
-  MDMapping(const axom::StackArray<T, DIM>& strides) : m_strides(strides)
+  AXOM_HOST_DEVICE MDMapping(const axom::StackArray<T, DIM>& strides)
+    : m_strides(strides)
   {
     initializeStrides(strides);
   }
@@ -116,7 +118,7 @@ public:
     shape is to be determined.  Initialize the mapping with its own
     slowestDirs() to preserve stride order as its shape changes.
   */
-  MDMapping(ArrayStrideOrder arrayStrideOrder)
+  AXOM_HOST_DEVICE MDMapping(ArrayStrideOrder arrayStrideOrder)
   {
     axom::StackArray<T, DIM> shape;
     for(int d = 0; d < DIM; ++d)
@@ -219,6 +221,7 @@ public:
     @param [i] strides Strides.  Values must be unique.
       If not unique, use one of the other initializers.
   */
+  AXOM_SUPPRESS_HD_WARN
   inline AXOM_HOST_DEVICE void initializeStrides(
     const axom::StackArray<T, DIM>& strides)
   {
@@ -236,8 +239,8 @@ public:
                 << "Likely, multi-dim array shape is 1 in some direction.\n"
                 << "Impossible to compute index ordering.\n"
                 << "Please use a different MDMapping initializer.\n";
-#endif
       utilities::processAbort();
+#endif
     }
 
     // 2nd argument doesn't matter because strides are unique.
@@ -253,6 +256,7 @@ public:
       ArrayStrideOrder::COLUMN, to use where strides
       are non-unique.
   */
+  AXOM_SUPPRESS_HD_WARN
   inline AXOM_HOST_DEVICE void initializeStrides(
     const axom::StackArray<T, DIM>& strides,
     ArrayStrideOrder orderPref)
@@ -272,7 +276,7 @@ public:
       {
         if(m_strides[m_slowestDirs[s]] < m_strides[m_slowestDirs[d]])
         {
-          std::swap(m_slowestDirs[s], m_slowestDirs[d]);
+          axom::utilities::swap(m_slowestDirs[s], m_slowestDirs[d]);
         }
       }
     }

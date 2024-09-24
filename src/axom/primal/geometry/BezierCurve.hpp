@@ -26,6 +26,7 @@
 
 #include <vector>
 #include <ostream>
+#include "axom/fmt.hpp"
 
 namespace axom
 {
@@ -531,8 +532,6 @@ public:
     //  which requires all first derivatives
     else
     {
-      VectorType val;
-
       // Store BezierPatch of projective weights, (wx, wy, wz)
       //  and BezierPatch of weights (w)
       BezierCurve<T, NDIMS> projective(ord);
@@ -717,8 +716,6 @@ public:
     //  which requires all first derivatives
     else
     {
-      VectorType val;
-
       // Store BezierPatch of projective weights, (wx, wy, wz)
       //  and BezierPatch of weights (w)
       BezierCurve<T, NDIMS> projective(ord);
@@ -922,5 +919,11 @@ std::ostream& operator<<(std::ostream& os, const BezierCurve<T, NDIMS>& bCurve)
 
 }  // namespace primal
 }  // namespace axom
+
+/// Overload to format a primal::BezierCurve using fmt
+template <typename T, int NDIMS>
+struct axom::fmt::formatter<axom::primal::BezierCurve<T, NDIMS>>
+  : ostream_formatter
+{ };
 
 #endif  // AXOM_PRIMAL_BEZIERCURVE_HPP_

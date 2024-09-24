@@ -34,6 +34,7 @@
 
 #include "axom/core/Macros.hpp"
 #include "axom/core/Array.hpp"
+#include "axom/core/NumericLimits.hpp"
 #include "axom/slic/interface/slic.hpp"
 
 namespace axom
@@ -90,6 +91,7 @@ struct IndexedIndirection : public BasePolicy
     return buf[pos];
   }
 
+  AXOM_SUPPRESS_HD_WARN
   template <bool DeviceEnable = BasePolicy::DeviceAccessible>
   AXOM_HOST_DEVICE static inline std::enable_if_t<!DeviceEnable, IndirectionResult>
   getIndirection(IndirectionRefType buf, PositionType pos)
@@ -111,6 +113,7 @@ struct IndexedIndirection : public BasePolicy
     return buf[pos];
   }
 
+  AXOM_SUPPRESS_HD_WARN
   template <bool DeviceEnable = BasePolicy::DeviceAccessible>
   AXOM_HOST_DEVICE static inline std::enable_if_t<!DeviceEnable, ConstIndirectionResult>
   getConstIndirection(IndirectionConstRefType buf, PositionType pos)
@@ -301,7 +304,7 @@ struct CArrayIndirectionBase
 
   constexpr PositionType size() const
   {
-    return std::numeric_limits<PositionType>::max();
+    return axom::numeric_limits<PositionType>::max();
   }
 
 private:
