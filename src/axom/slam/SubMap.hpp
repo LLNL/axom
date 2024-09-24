@@ -52,7 +52,7 @@ namespace slam
 
 template <typename SuperMapType,
           typename SubsetType,  //= slam::RangeSet<SetPosition, SetElement>
-          typename InterfacePolicy = policies::VirtualInterface>
+          typename InterfacePolicy = policies::ConcreteInterface>
 class SubMap
   : public policies::MapInterface<InterfacePolicy, typename SubsetType::PositionType>,
     public SuperMapType::StridePolicyType
