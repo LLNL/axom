@@ -427,9 +427,12 @@ TEST(slic_macros, test_macros_file_output)
   std::string no_fmt = "file_no_fmt.txt";
   std::string with_fmt = "file_with_fmt.txt";
 
-  slic::addStreamToAllMsgLevels(new slic::GenericOutputStream(no_fmt));
+  slic::GenericOutputStream* no_fmt_ptr = new slic::GenericOutputStream(no_fmt);
+  slic::GenericOutputStream* with_fmt_ptr =
+    new slic::GenericOutputStream(with_fmt, msgfmt);
 
-  slic::addStreamToAllMsgLevels(new slic::GenericOutputStream(with_fmt, msgfmt));
+  slic::addStreamToAllMsgLevels(no_fmt_ptr);
+  slic::addStreamToAllMsgLevels(with_fmt_ptr);
 
   EXPECT_FALSE(axom::utilities::filesystem::pathExists(no_fmt));
   EXPECT_FALSE(axom::utilities::filesystem::pathExists(with_fmt));
@@ -460,7 +463,7 @@ TEST(slic_macros, test_macros_file_output)
   std::string no_fmt_expected;
   no_fmt_expected += "*****\n[INFO]\n\n Test \n\n ";
   no_fmt_expected += __FILE__;
-  no_fmt_expected += "\n444\n****\n";
+  no_fmt_expected += "\n446\n****\n";
 
   EXPECT_EQ(no_fmt_buffer.str(), no_fmt_expected);
 
@@ -472,6 +475,14 @@ TEST(slic_macros, test_macros_file_output)
 
   no_fmt_contents.close();
   with_fmt_contents.close();
+
+  EXPECT_FALSE(no_fmt_contents.is_open());
+  EXPECT_FALSE(with_fmt_contents.is_open());
+
+  // Closes file streams associated with Slic streams when deconstructor called
+  // Windows _unlink file deletion if file is still in use.
+  delete no_fmt_ptr;
+  delete with_fmt_ptr;
 
   // Cleanup generated files (not working Windows)
   // #ifndef WIN32
