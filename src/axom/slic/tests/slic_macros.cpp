@@ -467,11 +467,14 @@ TEST(slic_macros, test_macros_file_output)
 
   EXPECT_EQ(with_fmt_buffer.str(), "Test");
 
-// Cleanup generated files (not working Windows)
-// #ifndef WIN32
+  no_fmt_contents.close();
+  with_fmt_contents.close();
+
+  // Cleanup generated files (not working Windows)
+  // #ifndef WIN32
   EXPECT_EQ(axom::utilities::filesystem::removeFile(no_fmt), 0);
   EXPECT_EQ(axom::utilities::filesystem::removeFile(with_fmt), 0);
-// #endif
+  // #endif
 }
 
 //------------------------------------------------------------------------------
