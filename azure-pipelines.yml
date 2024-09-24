@@ -18,64 +18,64 @@ jobs:
 
   strategy:
     matrix:
-      # linux_gcc13:
-      #   VM_ImageName: 'ubuntu-22.04'
-      #   Compiler_ImageName: '$(GCC13_IMAGENAME)'
-      #   CMAKE_EXTRA_FLAGS: '-DBUILD_SHARED_LIBS=ON -DAXOM_ENABLE_MFEM_SIDRE_DATACOLLECTION:BOOL=ON'
-      #   COMPILER: 'g++'
-      #   TEST_TARGET: 'linux_gcc13'
-      #   HOST_CONFIG: 'gcc@13.1.0'
-      # linux_gcc13_64bit:
-      #   VM_ImageName: 'ubuntu-22.04'
-      #   Compiler_ImageName: '$(GCC13_IMAGENAME)'
-      #   CMAKE_EXTRA_FLAGS: '-DBUILD_SHARED_LIBS=ON -DAXOM_USE_64BIT_INDEXTYPE:BOOL=ON'
-      #   COMPILER: 'g++'
-      #   TEST_TARGET: 'linux_gcc13'
-      #   HOST_CONFIG: 'gcc@13.1.0'
-      # linux_clang14:
-      #   VM_ImageName: 'ubuntu-22.04'
-      #   Compiler_ImageName: '$(CLANG14_IMAGENAME)'
-      #   CMAKE_EXTRA_FLAGS: '-DBUILD_SHARED_LIBS=ON -DAXOM_QUEST_ENABLE_EXTRA_REGRESSION_TESTS:BOOL=ON'
-      #   BUILD_TYPE: 'Release'
-      #   COMPILER: 'clang++'
-      #   TEST_TARGET: 'linux_clang14'
-      #   HOST_CONFIG: 'clang@14.0.0'
-      # linux_clang14_noraja:
-      #   VM_ImageName: 'ubuntu-22.04'
-      #   Compiler_ImageName: '$(CLANG14_IMAGENAME)'
-      #   CMAKE_EXTRA_FLAGS: '-DBUILD_SHARED_LIBS=ON -DAXOM_QUEST_ENABLE_EXTRA_REGRESSION_TESTS:BOOL=ON -U RAJA_DIR'
-      #   BUILD_TYPE: 'Debug'
-      #   COMPILER: 'clang++'
-      #   TEST_TARGET: 'linux_clang14'
-      #   HOST_CONFIG: 'clang@14.0.0'
-      # linux_clang14_noumpire:
-      #   VM_ImageName: 'ubuntu-22.04'
-      #   Compiler_ImageName: '$(CLANG14_IMAGENAME)'
-      #   CMAKE_EXTRA_FLAGS: '-DBUILD_SHARED_LIBS=ON -DAXOM_QUEST_ENABLE_EXTRA_REGRESSION_TESTS:BOOL=ON -U UMPIRE_DIR'
-      #   BUILD_TYPE: 'Debug'
-      #   COMPILER: 'clang++'
-      #   TEST_TARGET: 'linux_clang14'
-      #   HOST_CONFIG: 'clang@14.0.0'
-      # linux_clang14_noraja_noumpire:
-      #   VM_ImageName: 'ubuntu-22.04'
-      #   Compiler_ImageName: '$(CLANG14_IMAGENAME)'
-      #   CMAKE_EXTRA_FLAGS: '-DBUILD_SHARED_LIBS=ON -DAXOM_QUEST_ENABLE_EXTRA_REGRESSION_TESTS:BOOL=ON -U RAJA_DIR -U UMPIRE_DIR'
-      #   BUILD_TYPE: 'Debug'
-      #   COMPILER: 'clang++'
-      #   TEST_TARGET: 'linux_clang14'
-      #   HOST_CONFIG: 'clang@14.0.0'
-      # linux_clang14_noprofiling:
-      #   VM_ImageName: 'ubuntu-22.04'
-      #   Compiler_ImageName: '$(CLANG14_IMAGENAME)'
-      #   CMAKE_EXTRA_FLAGS: '-DBUILD_SHARED_LIBS=ON -DAXOM_QUEST_ENABLE_EXTRA_REGRESSION_TESTS:BOOL=ON -U CALIPER_DIR -U ADIAK_DIR'
-      #   BUILD_TYPE: 'Debug'
-      #   COMPILER: 'clang++'
-      #   TEST_TARGET: 'linux_clang14'
-      #   HOST_CONFIG: 'clang@14.0.0'
-      # osx_gcc:
-      #   VM_ImageName: 'macos-12'
-      #   CMAKE_EXTRA_FLAGS: '-DAXOM_ENABLE_SIDRE:BOOL=OFF -DAXOM_ENABLE_INLET:BOOL=OFF -DAXOM_ENABLE_KLEE:BOOL=OFF'
-      #   TEST_TARGET: 'osx_gcc'
+      linux_gcc13:
+        VM_ImageName: 'ubuntu-22.04'
+        Compiler_ImageName: '$(GCC13_IMAGENAME)'
+        CMAKE_EXTRA_FLAGS: '-DBUILD_SHARED_LIBS=ON -DAXOM_ENABLE_MFEM_SIDRE_DATACOLLECTION:BOOL=ON'
+        COMPILER: 'g++'
+        TEST_TARGET: 'linux_gcc13'
+        HOST_CONFIG: 'gcc@13.1.0'
+      linux_gcc13_64bit:
+        VM_ImageName: 'ubuntu-22.04'
+        Compiler_ImageName: '$(GCC13_IMAGENAME)'
+        CMAKE_EXTRA_FLAGS: '-DBUILD_SHARED_LIBS=ON -DAXOM_USE_64BIT_INDEXTYPE:BOOL=ON'
+        COMPILER: 'g++'
+        TEST_TARGET: 'linux_gcc13'
+        HOST_CONFIG: 'gcc@13.1.0'
+      linux_clang14:
+        VM_ImageName: 'ubuntu-22.04'
+        Compiler_ImageName: '$(CLANG14_IMAGENAME)'
+        CMAKE_EXTRA_FLAGS: '-DBUILD_SHARED_LIBS=ON -DAXOM_QUEST_ENABLE_EXTRA_REGRESSION_TESTS:BOOL=ON'
+        BUILD_TYPE: 'Release'
+        COMPILER: 'clang++'
+        TEST_TARGET: 'linux_clang14'
+        HOST_CONFIG: 'clang@14.0.0'
+      linux_clang14_noraja:
+        VM_ImageName: 'ubuntu-22.04'
+        Compiler_ImageName: '$(CLANG14_IMAGENAME)'
+        CMAKE_EXTRA_FLAGS: '-DBUILD_SHARED_LIBS=ON -DAXOM_QUEST_ENABLE_EXTRA_REGRESSION_TESTS:BOOL=ON -U RAJA_DIR'
+        BUILD_TYPE: 'Debug'
+        COMPILER: 'clang++'
+        TEST_TARGET: 'linux_clang14'
+        HOST_CONFIG: 'clang@14.0.0'
+      linux_clang14_noumpire:
+        VM_ImageName: 'ubuntu-22.04'
+        Compiler_ImageName: '$(CLANG14_IMAGENAME)'
+        CMAKE_EXTRA_FLAGS: '-DBUILD_SHARED_LIBS=ON -DAXOM_QUEST_ENABLE_EXTRA_REGRESSION_TESTS:BOOL=ON -U UMPIRE_DIR'
+        BUILD_TYPE: 'Debug'
+        COMPILER: 'clang++'
+        TEST_TARGET: 'linux_clang14'
+        HOST_CONFIG: 'clang@14.0.0'
+      linux_clang14_noraja_noumpire:
+        VM_ImageName: 'ubuntu-22.04'
+        Compiler_ImageName: '$(CLANG14_IMAGENAME)'
+        CMAKE_EXTRA_FLAGS: '-DBUILD_SHARED_LIBS=ON -DAXOM_QUEST_ENABLE_EXTRA_REGRESSION_TESTS:BOOL=ON -U RAJA_DIR -U UMPIRE_DIR'
+        BUILD_TYPE: 'Debug'
+        COMPILER: 'clang++'
+        TEST_TARGET: 'linux_clang14'
+        HOST_CONFIG: 'clang@14.0.0'
+      linux_clang14_noprofiling:
+        VM_ImageName: 'ubuntu-22.04'
+        Compiler_ImageName: '$(CLANG14_IMAGENAME)'
+        CMAKE_EXTRA_FLAGS: '-DBUILD_SHARED_LIBS=ON -DAXOM_QUEST_ENABLE_EXTRA_REGRESSION_TESTS:BOOL=ON -U CALIPER_DIR -U ADIAK_DIR'
+        BUILD_TYPE: 'Debug'
+        COMPILER: 'clang++'
+        TEST_TARGET: 'linux_clang14'
+        HOST_CONFIG: 'clang@14.0.0'
+      osx_gcc:
+        VM_ImageName: 'macos-12'
+        CMAKE_EXTRA_FLAGS: '-DAXOM_ENABLE_SIDRE:BOOL=OFF -DAXOM_ENABLE_INLET:BOOL=OFF -DAXOM_ENABLE_KLEE:BOOL=OFF'
+        TEST_TARGET: 'osx_gcc'
       windows:
         VM_ImageName: 'windows-2019'
         CMAKE_EXTRA_FLAGS: '-DAXOM_ENABLE_SIDRE:BOOL=OFF -DAXOM_ENABLE_INLET:BOOL=OFF -DAXOM_ENABLE_KLEE:BOOL=OFF'
@@ -102,18 +102,6 @@ jobs:
   - script: |
       cd build
       ctest -C Debug -T test --output-on-failure -V
-      echo
-      echo
-      echo
-      echo
-      echo
-      ls
-      echo
-      echo
-      echo
-      echo
-      echo
-      ls -R
     condition: eq( variables['Agent.OS'], 'Windows_NT')
     displayName: 'Visual Studio Test ($(TEST_TARGET))'
   - script: |
