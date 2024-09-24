@@ -28,13 +28,15 @@ class Segment;
  * \brief Equality comparison operator for Segment
  */
 template <typename T, int NDIMS>
-bool operator==(const Segment<T, NDIMS>& lhs, const Segment<T, NDIMS>& rhs);
+AXOM_HOST_DEVICE bool operator==(const Segment<T, NDIMS>& lhs,
+                                 const Segment<T, NDIMS>& rhs);
 
 /*!
  * \brief Inequality comparison operator for Segment
  */
 template <typename T, int NDIMS>
-bool operator!=(const Segment<T, NDIMS>& lhs, const Segment<T, NDIMS>& rhs);
+AXOM_HOST_DEVICE bool operator!=(const Segment<T, NDIMS>& lhs,
+                                 const Segment<T, NDIMS>& rhs);
 
 /*!
  * \brief Overloaded output operator for Segment
@@ -130,7 +132,10 @@ public:
   /*!
    * \brief Returns the length of the segment
    */
-  double length() const { return VectorType(m_source, m_target).norm(); }
+  AXOM_HOST_DEVICE double length() const
+  {
+    return VectorType(m_source, m_target).norm();
+  }
 
   /*!
    * \brief Returns a vector normal to the segment
@@ -138,7 +143,7 @@ public:
    * \note Only available in 2D
    */
   template <int TDIM = NDIMS>
-  typename std::enable_if<TDIM == 2, VectorType>::type normal() const
+  AXOM_HOST_DEVICE typename std::enable_if<TDIM == 2, VectorType>::type normal() const
   {
     return VectorType {m_target[1] - m_source[1], m_source[0] - m_target[0]};
   }
@@ -146,6 +151,7 @@ public:
   /*!
    * \brief Equality comparison operator for segments
    */
+  AXOM_HOST_DEVICE
   friend inline bool operator==(const Segment& lhs, const Segment& rhs)
   {
     return lhs.m_source == rhs.m_source && lhs.m_target == rhs.m_target;
@@ -154,6 +160,7 @@ public:
   /*!
    * \brief Inequality operator for segments
    */
+  AXOM_HOST_DEVICE
   friend inline bool operator!=(const Segment& lhs, const Segment& rhs)
   {
     return !(lhs == rhs);
