@@ -143,8 +143,7 @@ public:
    * \note Only available in 2D
    */
   template <int TDIM = NDIMS>
-  AXOM_HOST_DEVICE
-  typename std::enable_if<TDIM == 2, VectorType>::type normal() const
+  AXOM_HOST_DEVICE typename std::enable_if<TDIM == 2, VectorType>::type normal() const
   {
     return VectorType {m_target[1] - m_source[1], m_source[0] - m_target[0]};
   }
