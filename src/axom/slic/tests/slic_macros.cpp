@@ -475,12 +475,12 @@ TEST(slic_macros, test_macros_file_output)
   EXPECT_FALSE(no_fmt_contents.is_open());
   EXPECT_FALSE(with_fmt_contents.is_open());
 
-  // Closes open file streams associated with Slic streams when deconstructors
-  // called during slic::finalize().
-  // Windows _unlink file deletion fails if file is still in use.
-  #ifdef WIN32
-    slic::finalize();
-  #endif
+// Closes open file streams associated with Slic streams when deconstructors
+// called during slic::finalize().
+// Windows _unlink file deletion fails if file is still in use.
+#ifdef WIN32
+  slic::finalize();
+#endif
 
   // Cleanup generated files (not working Windows)
   int ret_code = axom::utilities::filesystem::removeFile(no_fmt);

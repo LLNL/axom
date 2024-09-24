@@ -1163,6 +1163,13 @@ TEST_P(SlicMacrosParallel, test_macros_file_output)
     EXPECT_EQ(with_fmt_out_buf.str(), "Test outputLocalMessages()");
   }
 
+// Closes open file streams associated with Slic streams when deconstructors
+// called during slic::finalize().
+// Windows _unlink file deletion fails if file is still in use.
+#ifdef WIN32
+  slic::finalize();
+#endif
+
   // Cleanup generated files
   EXPECT_EQ(axom::utilities::filesystem::removeFile(no_fmt), 0);
   EXPECT_EQ(axom::utilities::filesystem::removeFile(with_fmt), 0);
