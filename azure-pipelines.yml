@@ -102,6 +102,18 @@ jobs:
   - script: |
       cd build
       ctest -C Debug -T test --output-on-failure -V
+      echo
+      echo
+      echo
+      echo
+      echo
+      ls
+      echo
+      echo
+      echo
+      echo
+      echo
+      ls -R
     condition: eq( variables['Agent.OS'], 'Windows_NT')
     displayName: 'Visual Studio Test ($(TEST_TARGET))'
   - script: |
