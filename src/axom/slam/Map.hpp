@@ -685,13 +685,19 @@ public:  // Functions related to iteration
     return RangeAdapter<iterator> {begin(), end()};
   }
 
-  range_iterator set_begin() { return range_iterator(this, 0); }
-  range_iterator set_end() { return range_iterator(this, size()); }
-  const_range_iterator set_begin() const
+  AXOM_HOST_DEVICE range_iterator set_begin()
+  {
+    return range_iterator(this, 0);
+  }
+  AXOM_HOST_DEVICE range_iterator set_end()
+  {
+    return range_iterator(this, size());
+  }
+  AXOM_HOST_DEVICE const_range_iterator set_begin() const
   {
     return const_range_iterator(this, 0);
   }
-  const_range_iterator set_end() const
+  AXOM_HOST_DEVICE const_range_iterator set_end() const
   {
     return const_range_iterator(this, size());
   }
