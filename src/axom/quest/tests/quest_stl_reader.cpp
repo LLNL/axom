@@ -16,6 +16,8 @@
 #include <string>
 #include <fstream>
 
+#include <errno.h>
+
 // namespace aliases
 namespace mint = axom::mint;
 namespace quest = axom::quest;
@@ -82,7 +84,19 @@ TEST(quest_stl_reader_DeathTest, read_to_invalid_mesh)
   EXPECT_DEATH_IF_SUPPORTED(reader.getMesh(&hexmesh), IGNORE_OUTPUT);
 
   // STEP 4: remove STL file
-  axom::utilities::filesystem::removeFile(filename);
+  int return_code = axom::utilities::filesystem::removeFile(filename);
+  if(return_code == -1)
+  {
+    SLIC_INFO(
+      "########################### quest_stl_reader.cpp errno value is: "
+      << strerror(errno) << " ###############################");
+  }
+  else
+  {
+    SLIC_INFO(
+      "########################### quest_stl_reader.cpp removeFile succeeded! "
+      << " ###############################");
+  }
 }
 
 //------------------------------------------------------------------------------
