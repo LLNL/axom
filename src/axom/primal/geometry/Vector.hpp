@@ -101,7 +101,7 @@ AXOM_HOST_DEVICE Vector<T, NDIMS> operator-(const Point<T, NDIMS>& h,
  * \return C resulting vector from unary negation.
  */
 template <typename T, int NDIMS>
-Vector<T, NDIMS> operator-(const Vector<T, NDIMS>& vec1);
+AXOM_HOST_DEVICE Vector<T, NDIMS> operator-(const Vector<T, NDIMS>& vec1);
 
 /*!
  * \brief Scalar multiplication of vector; Scalar on rhs.
@@ -131,7 +131,8 @@ AXOM_HOST_DEVICE Vector<T, NDIMS> operator*(const T scalar,
  * \pre scalar != 0.0
  */
 template <typename T, int NDIMS>
-Vector<T, NDIMS> operator/(const Vector<T, NDIMS>& vec, const T scalar);
+AXOM_HOST_DEVICE Vector<T, NDIMS> operator/(const Vector<T, NDIMS>& vec,
+                                            const T scalar);
 
 /*!
  * \brief Overloaded output operator for vectors
@@ -229,7 +230,7 @@ public:
    * \post d >= 1.
    */
   AXOM_HOST_DEVICE
-  int dimension() const { return NDIMS; };
+  static constexpr int dimension() const { return NDIMS; };
 
   /*!
    * \brief Access operator for individual components.
@@ -273,6 +274,7 @@ public:
   /*!
    * \brief Inequality operator for points
    */
+  AXOM_HOST_DEVICE
   friend bool operator!=(const Vector& lhs, const Vector& rhs)
   {
     return !(lhs == rhs);
@@ -413,6 +415,7 @@ public:
    * \param [in] z the z--coordinate of the vector. Default is 0.0.
    * \return v a Vector instance with the given coordinates.
    */
+  AXOM_HOST_DEVICE
   static Vector make_vector(const T& x, const T& y, const T& z = 0.0);
 
 private:
@@ -656,7 +659,8 @@ AXOM_HOST_DEVICE Point<T, NDIMS> operator-(const Point<T, NDIMS>& P,
 
 //------------------------------------------------------------------------------
 template <typename T, int NDIMS>
-inline Vector<T, NDIMS> operator/(const Vector<T, NDIMS>& vec, const T scalar)
+AXOM_HOST_DEVICE inline Vector<T, NDIMS> operator/(const Vector<T, NDIMS>& vec,
+                                                   const T scalar)
 {
   Vector<T, NDIMS> result(vec);
   result /= scalar;
@@ -683,7 +687,7 @@ AXOM_HOST_DEVICE Vector<T, NDIMS> operator-(const Point<T, NDIMS>& h,
 
 //------------------------------------------------------------------------------
 template <typename T, int NDIMS>
-inline Vector<T, NDIMS> operator-(const Vector<T, NDIMS>& vec1)
+AXOM_HOST_DEVICE inline Vector<T, NDIMS> operator-(const Vector<T, NDIMS>& vec1)
 {
   Vector<T, NDIMS> result(vec1);
   result.negate();
@@ -700,7 +704,7 @@ std::ostream& operator<<(std::ostream& os, const Vector<T, NDIMS>& vec)
 
 //------------------------------------------------------------------------------
 template <typename T, int NDIMS>
-inline Vector<T, NDIMS> Vector<T, NDIMS>::make_vector(const T& x,
+AXOM_HOST_DEVICE inline Vector<T, NDIMS> Vector<T, NDIMS>::make_vector(const T& x,
                                                       const T& y,
                                                       const T& z)
 {
