@@ -123,7 +123,6 @@ public:
    *         element, where `setIndex = i * numComp() + j`.
    * \pre    0 <= idx < size() * numComp()
    */
-  AXOM_SUPPRESS_HD_WARN
   AXOM_HOST_DEVICE DataRefType operator[](IndexType idx) const
   {
 #ifndef AXOM_DEVICE_CODE
@@ -185,7 +184,6 @@ public:
   ///
 
   /** \brief returns the size of the SubMap  */
-  AXOM_SUPPRESS_HD_WARN
   AXOM_HOST_DEVICE axom::IndexType size() const { return m_subsetIdx.size(); }
 
   /** \brief returns the number of components (aka. stride) of the SubMap  */
@@ -220,7 +218,7 @@ private:  //helper functions
    * \brief Get the ComponentFlatIndex into the SuperMap given the subset's
    * ComponentFlatIndex. This is used only with bracket [] access
    */
-  IndexType getMapCompFlatIndex(IndexType idx) const
+  AXOM_HOST_DEVICE IndexType getMapCompFlatIndex(IndexType idx) const
   {
     IndexType comp = numComp();
     IndexType s = idx % comp;
@@ -401,7 +399,7 @@ public:
   using iter = Iterator;
   using PositionType = SetPosition;
 
-  AXOM_HOST_DEVICE Iterator(PositionType pos, SubMap sMap)
+  AXOM_HOST_DEVICE Iterator(PositionType pos, const SubMap& sMap)
     : IterBase(pos)
     , m_submap(sMap)
   { }
@@ -465,7 +463,7 @@ public:
   using pointer = typename MapRangeIterator::pointer;
   using difference_type = SetPosition;
 
-  PositionType getParentPosition(PositionType subset_pos)
+  AXOM_HOST_DEVICE PositionType getParentPosition(PositionType subset_pos)
   {
     PositionType subsetEnd = m_submap.m_subsetIdx.size() - 1;
     // End element is one past the last subset element.
@@ -478,8 +476,7 @@ public:
   }
 
 public:
-  AXOM_SUPPRESS_HD_WARN
-  AXOM_HOST_DEVICE RangeIterator(PositionType pos, SubMap sMap)
+  AXOM_HOST_DEVICE RangeIterator(PositionType pos, const SubMap& sMap)
     : IterBase(pos)
     , m_submap(sMap)
     , m_mapIter(m_submap.m_superMap, getParentPosition(pos))
@@ -496,7 +493,6 @@ public:
     return m_mapIter(comp_idx...);
   }
 
-  AXOM_SUPPRESS_HD_WARN
   template <typename... ComponentIndex>
   AXOM_HOST_DEVICE DataRefType value(ComponentIndex... comp_idx) const
   {
@@ -522,7 +518,6 @@ public:
 
 protected:
   /** Implementation of advance() as required by IteratorBase */
-  AXOM_SUPPRESS_HD_WARN
   AXOM_HOST_DEVICE void advance(PositionType n)
   {
     PositionType currIndex = m_mapIter.flatIndex();
