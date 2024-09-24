@@ -259,7 +259,7 @@ public:
 #ifndef AXOM_DEVICE_CODE
     verifyPositionImpl(setIndex);
 #endif
-    return IndirectionPolicy::getConstIndirection(m_data, setIndex);
+    return *IndirectionPolicy::getConstIndirection(m_data, setIndex);
   }
 
   AXOM_HOST_DEVICE ValueType operator[](SetPosition setIndex)
@@ -267,7 +267,7 @@ public:
 #ifndef AXOM_DEVICE_CODE
     verifyPositionImpl(setIndex);
 #endif
-    return IndirectionPolicy::getIndirection(m_data, setIndex);
+    return *IndirectionPolicy::getIndirection(m_data, setIndex);
   }
 
   /**
@@ -341,7 +341,7 @@ public:
 #endif
     SetPosition elemIndex = setIdx * StridePolicyType::stride();
     elemIndex += componentOffset(compIdx...);
-    return IndirectionPolicy::getConstIndirection(m_data, elemIndex);
+    return *IndirectionPolicy::getConstIndirection(m_data, elemIndex);
   }
 
   /// \overload
@@ -359,7 +359,7 @@ public:
 #endif
     SetPosition elemIndex = setIdx * StridePolicyType::stride();
     elemIndex += componentOffset(compIdx...);
-    return IndirectionPolicy::getIndirection(m_data, elemIndex);
+    return *IndirectionPolicy::getIndirection(m_data, elemIndex);
   }
 
   SetElement index(IndexType idx) const { return set()->at(idx); }
