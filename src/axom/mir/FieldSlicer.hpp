@@ -84,7 +84,11 @@ public:
     }
   }
 
+// The following members are private (unless using CUDA)
+#if !defined(__CUDACC__)
 private:
+#endif
+
   /*!
    * \brief Slice data for a single field component.
    *
@@ -107,19 +111,39 @@ private:
       n_values,
       n_output_values,
       [&](auto valuesView, auto outputView) {
-        IndexingPolicy deviceIndexing(m_indexing);
-        SliceData deviceSlice(slice);
-        axom::for_all<ExecSpace>(
-          outputSize,
-          AXOM_LAMBDA(auto index) {
-            const auto zoneIndex = deviceSlice.m_indicesView[index];
-            const auto transformedIndex = deviceIndexing[zoneIndex];
-            outputView[index] = valuesView[transformedIndex];
-          });
+      sliceSingleComponentImpl(slice, valuesView, outputView);
       });
   }
 
+  /*!
+   * \brief Slice the source view and copy values into the output view.
+   *
+   * \param valuesView The source values view.
+   * \param outputView The output values view.
+   *
+   * \note This method was broken out into a template member method since nvcc
+   *       would not instantiate the lambda for axom::for_all() from an anonymous
+   *       lambda.
+   */
+  template <typename ValuesView, typename OutputView>
+  void sliceSingleComponentImpl(const SliceData &slice, ValuesView valuesView, OutputView outputView) const
+  {
+    IndexingPolicy deviceIndexing(m_indexing);
+    SliceData deviceSlice(slice);
+    axom::for_all<ExecSpace>(
+      outputView.size(),
+      AXOM_LAMBDA(auto index) {
+        const auto zoneIndex = deviceSlice.m_indicesView[index];
+        const auto transformedIndex = deviceIndexing[zoneIndex];
+        outputView[index] = valuesView[transformedIndex];
+      });
+  }
+
+// The following members are private (unless using CUDA)
+#if !defined(__CUDACC__)
 private:
+#endif
+
   IndexingPolicy m_indexing {};
 };
 

@@ -137,7 +137,11 @@ public:
     }
   }
 
+// The following members are private (unless using CUDA)
+#if !defined(__CUDACC__)
 private:
+#endif
+
   /*!
    * \brief Blend data for a single field component.
    *
@@ -164,55 +168,81 @@ private:
       n_values,
       n_output_values,
       [&](auto compView, auto outView) {
-        using value_type = typename decltype(compView)::value_type;
-        using accum_type =
-          typename axom::mir::utilities::accumulation_traits<value_type>::value_type;
+        blendSingleComponentImpl(blend, compView, outView);
+    });
+  }
 
-        const IndexingPolicy deviceIndexing(m_indexing);
-        const BlendData deviceBlend(blend);
+  /*!
+   * \brief Slice the source view and copy values into the output view.
+   *
+   * \param valuesView The source values view.
+   * \param outputView The output values view.
+   *
+   * \note This method was broken out into a template member method since nvcc
+   *       would not instantiate the lambda for axom::for_all() from an anonymous
+   *       lambda.
+   */
+  template <typename SrcView, typename OutputView>
+  void blendSingleComponentImpl(const BlendData &blend, SrcView compView, OutputView outView) const
+  {
+    using value_type = typename decltype(compView)::value_type;
+    using accum_type =
+      typename axom::mir::utilities::accumulation_traits<value_type>::value_type;
 
-        // Copy over some original values to the start of the array.
-        axom::for_all<ExecSpace>(
-          origSize,
-          AXOM_LAMBDA(auto index) {
-            const auto srcIndex = deviceBlend.m_originalIdsView[index];
-            outView[index] = compView[srcIndex];
-          });
+    // We're allowing selectedIndicesView to be used to select specific blend
+    // groups. If the user did not provide that, use all blend groups.
+    const auto origSize = blend.m_originalIdsView.size();
+    const auto blendSize = SelectionPolicy::size(blend);
+//    const auto outputSize = origSize + blendSize;
 
-        // Append blended values to the end of the array.
-        axom::for_all<ExecSpace>(
-          blendSize,
-          AXOM_LAMBDA(auto bgid) {
-            // Get the blend group index we want.
-            const auto selectedIndex =
-              SelectionPolicy::selectedIndex(deviceBlend, bgid);
-            const auto start = deviceBlend.m_blendGroupStartView[selectedIndex];
-            const auto nValues = deviceBlend.m_blendGroupSizesView[selectedIndex];
-            const auto destIndex = origSize + bgid;
-            if(nValues == 1)
-            {
-              const auto index = deviceBlend.m_blendIdsView[start];
-              const auto srcIndex = deviceIndexing[index];
-              outView[destIndex] = compView[srcIndex];
-            }
-            else
-            {
-              const auto end = start + nValues;
-              accum_type blended = 0;
-              for(IndexType i = start; i < end; i++)
-              {
-                const auto index = deviceBlend.m_blendIdsView[i];
-                const auto weight = deviceBlend.m_blendCoeffView[i];
-                const auto srcIndex = deviceIndexing[index];
-                blended += static_cast<accum_type>(compView[srcIndex]) * weight;
-              }
-              outView[destIndex] = static_cast<value_type>(blended);
-            }
-          });
+    const IndexingPolicy deviceIndexing(m_indexing);
+    const BlendData deviceBlend(blend);
+
+    // Copy over some original values to the start of the array.
+    axom::for_all<ExecSpace>(
+      origSize,
+      AXOM_LAMBDA(axom::IndexType index) {
+        const auto srcIndex = deviceBlend.m_originalIdsView[index];
+        outView[index] = compView[srcIndex];
+      });
+
+    // Append blended values to the end of the array.
+    axom::for_all<ExecSpace>(
+      blendSize,
+      AXOM_LAMBDA(axom::IndexType bgid) {
+        // Get the blend group index we want.
+        const auto selectedIndex =
+          SelectionPolicy::selectedIndex(deviceBlend, bgid);
+        const auto start = deviceBlend.m_blendGroupStartView[selectedIndex];
+        const auto nValues = deviceBlend.m_blendGroupSizesView[selectedIndex];
+        const auto destIndex = origSize + bgid;
+        if(nValues == 1)
+        {
+          const auto index = deviceBlend.m_blendIdsView[start];
+          const auto srcIndex = deviceIndexing[index];
+          outView[destIndex] = compView[srcIndex];
+        }
+        else
+        {
+          const auto end = start + nValues;
+          accum_type blended = 0;
+          for(IndexType i = start; i < end; i++)
+          {
+            const auto index = deviceBlend.m_blendIdsView[i];
+            const auto weight = deviceBlend.m_blendCoeffView[i];
+            const auto srcIndex = deviceIndexing[index];
+            blended += static_cast<accum_type>(compView[srcIndex]) * weight;
+          }
+          outView[destIndex] = static_cast<value_type>(blended);
+        }
       });
   }
 
+// The following members are private (unless using CUDA)
+#if !defined(__CUDACC__)
 private:
+#endif
+
   IndexingPolicy m_indexing {};
 };
 

@@ -157,16 +157,34 @@ void typed_dispatch_unstructured_mixed_topology(const conduit::Node &topo,
   }
 }
 
+#if __cplusplus >= 201703L
+// C++17 and later.
 template <typename... Args>
 constexpr int encode_shapes(Args... args)
 {
   return (... | args);
 }
+#else
+template <typename T>
+constexpr int encode_shapes_impl(T arg) {
+    return arg;
+}
+
+template <typename T, typename... Args>
+constexpr int encode_shapes_impl(T arg, Args... args) {
+    return (arg | encode_shapes_impl(args...));
+}
+
+template <typename... Args>
+constexpr int encode_shapes(Args... args) {
+    return encode_shapes_impl(args...);
+}
+#endif
 
 template <typename... Args>
 constexpr int select_shapes(Args... args)
 {
-  return encode_types((1 << args)...);
+  return encode_shapes((1 << args)...);
 }
 
 /*!

@@ -113,7 +113,7 @@ public:
       const auto len = shapeLength(ptr);
       return TableDataView(ptr, len);
     }
-#if 1
+#if !defined(AXOM_DEVICE_CODE)
   private:
     void printShape(std::ostream &os, TableData shape) const
     {

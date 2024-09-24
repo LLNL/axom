@@ -98,7 +98,7 @@ public:
     const auto deviceIndicesView = slice.m_indicesView;
     axom::for_all<ExecSpace>(
       outputSize,
-      AXOM_LAMBDA(auto index) {
+      AXOM_LAMBDA(axom::IndexType index) {
         const auto srcIndex = deviceIndicesView[index];
         const auto pt = deviceView[srcIndex];
 

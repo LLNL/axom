@@ -10,6 +10,7 @@
 #include "axom/mir/utilities.hpp"
 #include "axom/mir/blueprint_utilities.hpp"
 #include "axom/mir/views/dispatch_unstructured_topology.hpp"
+#include "axom/mir/MakeUnstructured.hpp"
 
 #include <conduit/conduit.hpp>
 #include <conduit/conduit_blueprint.hpp>
@@ -130,7 +131,8 @@ struct BuildRelation<axom::SEQ_EXEC, ViewType>
     axom::for_all<ExecSpace>(
       nodesView.size(),
       AXOM_LAMBDA(axom::IndexType index) {
-        sizesView[nodesView[index]]++;  // Works only because ExecSpace=SEQ_EXEC.
+        // Works because ExecSpace=SEQ_EXEC.
+        sizesView[nodesView[index]]++;
       });
     // Make offsets
     axom::exclusive_scan<ExecSpace>(sizesView, offsetsView);
@@ -152,7 +154,8 @@ struct BuildRelation<axom::SEQ_EXEC, ViewType>
         const auto ni = nodesView[index];
         const auto destOffset = offsetsView[ni] + sizesView[ni];
         zonesView[destOffset] = zcopyView[index];
-        sizesView[ni]++;  // Works only because ExecSpace=SEQ_EXEC.
+        // Works because ExecSpace=SEQ_EXEC.
+        sizesView[ni]++;
       });
   }
 };
@@ -206,74 +209,11 @@ public:
 
       if(shape.is_polyhedral())
       {
-        using reduce_policy =
-          typename axom::execution_space<ExecSpace>::reduce_policy;
-        const auto allocatorID = axom::execution_space<ExecSpace>::allocatorID();
-
         views::dispatch_unstructured_polyhedral_topology(
           topo,
           [&](auto AXOM_UNUSED_PARAM(shape), auto topoView) {
-            const auto nzones = topoView.numberOfZones();
-            axom::Array<axom::IndexType> sizes(nzones, nzones, allocatorID);
-            auto sizes_view = sizes.view();
-
-            // Run through the topology once to do a count of each zone's unique node ids.
-            using ZoneType = typename decltype(topoView)::ShapeType;
-            RAJA::ReduceSum<reduce_policy, axom::IndexType> count(0);
-            topoView.template for_all_zones<ExecSpace>(
-              AXOM_LAMBDA(axom::IndexType zoneIndex, const ZoneType &zone) {
-                const auto uniqueIds = zone.getUniqueIds();
-                sizes_view[zoneIndex] = uniqueIds.size();
-                count += uniqueIds.size();
-              });
-            const auto connSize = count.get();
-
-            // Do a scan on the size array to build an offset array.
-            axom::Array<axom::IndexType> offsets(nzones, nzones, allocatorID);
-            auto offsets_view = offsets.view();
-            axom::exclusive_scan<ExecSpace>(sizes_view, offsets_view);
-            sizes.clear();
-
-            // Allocate Conduit arrays on the device in a data type that matches the connectivity.
-            conduit::Node n_conn;
-            n_conn.set_allocator(conduitAllocatorID);
-            n_conn.set(conduit::DataType(intTypeId, connSize));
-
-            n_zones.set(conduit::DataType(intTypeId, connSize));
-            n_sizes.set(conduit::DataType(intTypeId, nnodes));
-            n_offsets.set(conduit::DataType(intTypeId, nnodes));
-
-            views::IndexNode_to_ArrayView_same(
-              n_conn,
-              n_zones,
-              n_sizes,
-              n_offsets,
-              [&](auto connectivityView,
-                  auto zonesView,
-                  auto sizesView,
-                  auto offsetsView) {
-                // Run through the data one more time to build the nodes and zones arrays.
-                topoView.template for_all_zones<ExecSpace>(
-                  AXOM_LAMBDA(axom::IndexType zoneIndex, const ZoneType &zone) {
-                    const auto uniqueIds = zone.getUniqueIds();
-                    auto destIdx = offsets_view[zoneIndex];
-                    for(axom::IndexType i = 0; i < uniqueIds.size();
-                        i++, destIdx++)
-                    {
-                      connectivityView[destIdx] = uniqueIds[i];
-                      zonesView[destIdx] = zoneIndex;
-                    }
-                  });
-
-                // Make the relation.
-                using ViewType = decltype(connectivityView);
-                details::BuildRelation<ExecSpace, ViewType>::execute(
-                  connectivityView,
-                  zonesView,
-                  sizesView,
-                  offsetsView);
-              });
-          });
+            handlePolyhedralView(topoView, n_zones, n_sizes, n_offsets, nnodes, intTypeId);
+         });
       }
       else if(shape.is_polygonal() || shapeType == "mixed")
       {
@@ -293,14 +233,7 @@ public:
           n_topo_sizes,
           n_topo_offsets,
           [&](auto zonesView, auto sizesView, auto offsetsView) {
-            using DataType = typename decltype(zonesView)::value_type;
-            axom::for_all<ExecSpace>(
-              0,
-              nzones,
-              AXOM_LAMBDA(axom::IndexType zoneIndex) {
-                for(DataType i = 0; i < sizesView[zoneIndex]; i++)
-                  zonesView[offsetsView[zoneIndex] + i] = zoneIndex;
-              });
+            fillZonesMixed(nzones, zonesView, sizesView, offsetsView);
           });
 
         views::IndexNode_to_ArrayView_same(
@@ -334,12 +267,8 @@ public:
           n_offsets,
           [&](auto connectivityView, auto zonesView, auto sizesView, auto offsetsView) {
             // Make zones for each node
-            axom::for_all<ExecSpace>(
-              0,
-              connSize,
-              AXOM_LAMBDA(axom::IndexType index) {
-                zonesView[index] = index / nodesPerShape;
-              });
+            fillZones(zonesView, connSize, nodesPerShape);
+
             // Make the relation.
             using ViewType = decltype(connectivityView);
             details::BuildRelation<ExecSpace, ViewType>::execute(connectivityView,
@@ -354,7 +283,7 @@ public:
       // These are all structured topos of some sort. Make an unstructured representation and recurse.
 
       conduit::Node mesh;
-      axom::mir::utilities::blueprint::to_unstructured<ExecSpace>(topo,
+      axom::mir::utilities::blueprint::MakeUnstructured<ExecSpace>::execute(topo,
                                                                   coordset,
                                                                   "newtopo",
                                                                   mesh);
@@ -362,6 +291,161 @@ public:
       // Recurse using the unstructured mesh.
       execute(mesh.fetch_existing("topologies/newtopo"), coordset, relation);
     }
+  }
+
+// The following members are private (unless using CUDA)
+#if !defined(__CUDACC__)
+private:
+#endif
+
+  /*!
+   * \brief Handle a polyhedral view.
+   *
+   * \param topoView A polyhedral topology view.
+   * \param[out] n_zones The new zones node for the relation.
+   * \param[out] n_sizes The new sizes node for the relation.
+   * \param[out] n_offsets The new offsets node for the relation.
+   * \param nnodes The number of nodes in the mesh's coordset.
+   * \param intTypeId The dtype id for the connectivity.
+   * \param connSize The length of the connectivity.
+   *
+   * \note This method was broken out into a template member method since nvcc
+   *       would not instantiate the lambda for axom::for_all() from an anonymous
+   *       lambda.
+   */
+  template <typename PHView>
+  void handlePolyhedralView(PHView topoView, conduit::Node &n_zones, conduit::Node &n_sizes, conduit::Node &n_offsets, axom::IndexType nnodes, int intTypeId) const
+  {
+    using reduce_policy =
+      typename axom::execution_space<ExecSpace>::reduce_policy;
+    utilities::blueprint::ConduitAllocateThroughAxom<ExecSpace> c2a;
+    const int conduitAllocatorID = c2a.getConduitAllocatorID();
+    const auto allocatorID = axom::execution_space<ExecSpace>::allocatorID();
+
+    const auto nzones = topoView.numberOfZones();
+    axom::Array<axom::IndexType> sizes(nzones, nzones, allocatorID);
+    auto sizes_view = sizes.view();
+
+    // Run through the topology once to do a count of each zone's unique node ids.
+    using ZoneType = typename decltype(topoView)::ShapeType;
+    RAJA::ReduceSum<reduce_policy, axom::IndexType> count(0);
+    topoView.template for_all_zones<ExecSpace>(
+      AXOM_LAMBDA(axom::IndexType zoneIndex, const ZoneType &zone) {
+        const auto uniqueIds = zone.getUniqueIds();
+        sizes_view[zoneIndex] = uniqueIds.size();
+        count += uniqueIds.size();
+      });
+    const auto connSize = count.get();
+
+    // Do a scan on the size array to build an offset array.
+    axom::Array<axom::IndexType> offsets(nzones, nzones, allocatorID);
+    auto offsets_view = offsets.view();
+    axom::exclusive_scan<ExecSpace>(sizes_view, offsets_view);
+    sizes.clear();
+
+    // Allocate Conduit arrays on the device in a data type that matches the connectivity.
+    conduit::Node n_conn;
+    n_conn.set_allocator(conduitAllocatorID);
+    n_conn.set(conduit::DataType(intTypeId, connSize));
+
+    n_zones.set(conduit::DataType(intTypeId, connSize));
+    n_sizes.set(conduit::DataType(intTypeId, nnodes));
+    n_offsets.set(conduit::DataType(intTypeId, nnodes));
+
+    views::IndexNode_to_ArrayView_same(
+      n_conn,
+      n_zones,
+      n_sizes,
+      n_offsets,
+      [&](auto connectivityView,
+          auto zonesView,
+          auto sizesView,
+          auto offsetsView) {
+        fillZonesPH(topoView, connectivityView, zonesView, offsets_view);
+
+        // Make the relation.
+        using ViewType = decltype(connectivityView);
+        details::BuildRelation<ExecSpace, ViewType>::execute(
+          connectivityView,
+          zonesView,
+          sizesView,
+          offsetsView);
+      });
+  }
+
+  /*!
+   * \brief Fill in the zone numbers for each mixed-sized zone.
+   *
+   * \param topoView The topology view for the PH mesh.
+   * \param connectivityView The view that contains the connectivity.
+   * \param zonesView The view that will contain the zone ids.
+   * \param offsetsView The view that contains the offsets.
+   *
+   * \note This method was broken out into a template member method since nvcc
+   *       would not instantiate the lambda for axom::for_all() from an anonymous
+   *       lambda.
+   */
+  template <typename TopologyView, typename IntegerView, typename OffsetsView>
+  void fillZonesPH(const TopologyView &topoView, IntegerView connectivityView, IntegerView zonesView, OffsetsView offsets_view) const
+  {
+    // Run through the data one more time to build the nodes and zones arrays.
+    using ZoneType = typename TopologyView::ShapeType;
+    topoView.template for_all_zones<ExecSpace>(
+      AXOM_LAMBDA(axom::IndexType zoneIndex, const ZoneType &zone) {
+        const auto uniqueIds = zone.getUniqueIds();
+        auto destIdx = offsets_view[zoneIndex];
+        for(axom::IndexType i = 0; i < uniqueIds.size();
+            i++, destIdx++)
+        {
+          connectivityView[destIdx] = uniqueIds[i];
+          zonesView[destIdx] = zoneIndex;
+        }
+      });
+  }
+
+  /*!
+   * \brief Fill in the zone numbers for each mixed-sized zone.
+   *
+   * \param nzones The number of zones.
+   * \param zonesView The view that will contain the zone ids.
+   * \param sizesView The view that contains the sizes.
+   * \param offsetsView The view that contains the offsets.
+   *
+   * \note This method was broken out into a template member method since nvcc
+   *       would not instantiate the lambda for axom::for_all() from an anonymous
+   *       lambda.
+   */
+  template <typename IntegerView>
+  void fillZonesMixed(axom::IndexType nzones, IntegerView zonesView, IntegerView sizesView, IntegerView offsetsView) const
+  {
+    using DataType = typename decltype(zonesView)::value_type;
+    axom::for_all<ExecSpace>(
+      nzones,
+      AXOM_LAMBDA(axom::IndexType zoneIndex) {
+        for(DataType i = 0; i < sizesView[zoneIndex]; i++)
+          zonesView[offsetsView[zoneIndex] + i] = zoneIndex;
+      });
+  }
+
+  /*!
+   * \brief Fill in the zone numbers for each node in the connectivity.
+   *
+   * \param zonesView The view that will contain the zone ids.
+   * \param connSize The length of the connectivity.
+   * \param nodesPerShape The number of nodes per shape.
+   *
+   * \note This method was broken out into a template member method since nvcc
+   *       would not instantiate the lambda for axom::for_all() from an anonymous
+   *       lambda.
+   */
+  template <typename IntegerView>
+  void fillZones(IntegerView zonesView, axom::IndexType connSize, axom::IndexType nodesPerShape) const
+  {
+    axom::for_all<ExecSpace>(
+      connSize,
+      AXOM_LAMBDA(axom::IndexType index) {
+        zonesView[index] = index / nodesPerShape;
+      });
   }
 };
 

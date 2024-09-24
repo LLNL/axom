@@ -41,16 +41,33 @@ struct Delimiter
 /// Used to separate arguments.
 constexpr Delimiter ArgumentDelimiter;
 
+#if __cplusplus >= 201703L
+// C++17 and later.
 template <typename... Args>
 constexpr int encode_types(Args... args)
 {
   return (... | args);
 }
+#else
+template <typename T>
+constexpr int encode_types_impl(T arg) {
+    return arg;
+}
+
+template <typename T, typename... Args>
+constexpr int encode_types_impl(T arg, Args... args) {
+    return (arg | encode_types_impl(args...));
+}
 
 template <typename... Args>
-constexpr int select_types(Args... args)
-{
-  return encode_types((1 << args)...);
+constexpr int encode_types(Args... args) {
+    return encode_types_impl(args...);
+}
+#endif
+
+template <typename... Args>
+constexpr int select_types(Args... args) {
+    return encode_types((1 << args)...);
 }
 
 constexpr bool type_selected(int flag, int bit) { return flag & (1 << bit); }

@@ -109,7 +109,7 @@ public:
     // Copy over some original values to the start of the array.
     axom::for_all<ExecSpace>(
       origSize,
-      AXOM_LAMBDA(auto index) {
+      AXOM_LAMBDA(axom::IndexType index) {
         const auto srcIndex = deviceBlend.m_originalIdsView[index];
         const auto pt = deviceView[srcIndex];
 
@@ -123,7 +123,7 @@ public:
     // Append blended values to the end of the array.
     axom::for_all<ExecSpace>(
       blendSize,
-      AXOM_LAMBDA(auto bgid) {
+      AXOM_LAMBDA(axom::IndexType bgid) {
         // Get the blend group index we want.
         const auto selectedIndex =
           SelectionPolicy::selectedIndex(deviceBlend, bgid);

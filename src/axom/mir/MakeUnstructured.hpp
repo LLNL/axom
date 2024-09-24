@@ -1,0 +1,137 @@
+// Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
+// other Axom Project Developers. See the top-level LICENSE file for details.
+//
+// SPDX-License-Identifier: (BSD-3-Clause)
+#ifndef AXOM_MIR_MAKE_UNSTRUCTURED_HPP_
+#define AXOM_MIR_MAKE_UNSTRUCTURED_HPP_
+
+#include "axom/core.hpp"
+#include "axom/mir/views/NodeArrayView.hpp"
+#include "axom/mir/utilities.hpp"
+#include "axom/mir/blueprint_utilities.hpp"
+
+#include <conduit/conduit.hpp>
+
+namespace axom
+{
+namespace mir
+{
+namespace utilities
+{
+namespace blueprint
+{
+
+/**
+ * \accelerated
+ * \brief Make an unstructured representation of a structured topology.
+ */
+template <typename ExecSpace>
+class MakeUnstructured
+{
+public:
+  /**
+   * \brief Make an unstructured representation of a structured topology.
+   *
+   * \tparam ExecSpace The execution space where the work will be done.
+   *
+   * \param topo The input topology to be turned into unstructured.
+   * \param coordset The topology's coordset. It will be referenced as an external node in the output \a mesh.
+   * \param topoName The name of the new topology to create.
+   * \param mesh     The node that will contain the new topology and coordset.
+   *
+   * \note There are blueprint methods for this sort of thing but this one runs on device.
+   */
+  static void execute(const conduit::Node &topo,
+                      const conduit::Node &coordset,
+                      const std::string &topoName,
+                      conduit::Node &mesh)
+  {
+    const std::string type = topo.fetch_existing("type").as_string();
+    ConduitAllocateThroughAxom<ExecSpace> c2a;
+
+    mesh["coordsets"][coordset.name()].set_external(coordset);
+    conduit::Node &n_newtopo = mesh["topologies"][topoName];
+    n_newtopo["coordset"] = coordset.name();
+
+    if(type == "unstructured")
+    {
+      n_newtopo.set_external(topo);
+    }
+    else
+    {
+      n_newtopo["type"] = "unstructured";
+      conduit::Node &n_newconn = n_newtopo["elements/connectivity"];
+      conduit::Node &n_newsizes = n_newtopo["elements/sizes"];
+      conduit::Node &n_newoffsets = n_newtopo["elements/offsets"];
+      n_newconn.set_allocator(c2a.getConduitAllocatorID());
+      n_newsizes.set_allocator(c2a.getConduitAllocatorID());
+      n_newoffsets.set_allocator(c2a.getConduitAllocatorID());
+
+      axom::mir::views::dispatch_structured_topologies(
+        topo,
+        [&](const std::string &shape, auto &topoView) {
+
+        n_newtopo["elements/shape"] = shape;
+        makeUnstructured(shape, topoView, n_newconn, n_newsizes, n_newoffsets);
+
+      });
+    }
+  }
+
+// The following members are private (unless using CUDA)
+#if !defined(__CUDACC__)
+private:
+#endif
+
+  /*!
+   * \brief Iterate over the input topology's zones and store their connectivity in
+   *        unstructured connectivity nodes.
+   *
+   * \param topoView The input topology view.
+   * \param n_newconn The node that will contain the new connectivity.
+   * \param n_newconn The node that will contain the new connectivity.
+   * \param n_newconn The node that will contain the new connectivity.
+   */
+  template <typename TopologyView>
+  static void makeUnstructured(const std::string &shape, const TopologyView &topoView, conduit::Node &n_newconn, conduit::Node &n_newsizes, conduit::Node &n_newoffsets)
+  {
+    int ptsPerZone = 2;
+    if(shape == "quad")
+      ptsPerZone = 4;
+    else if(shape == "hex")
+      ptsPerZone = 8;
+
+    // Allocate new mesh data.
+    const auto nzones = topoView.numberOfZones();
+    const auto connSize = nzones * ptsPerZone;
+    n_newconn.set(conduit::DataType::index_t(connSize));
+    n_newsizes.set(conduit::DataType::index_t(nzones));
+    n_newoffsets.set(conduit::DataType::index_t(nzones));
+
+    // Make views for the mesh data.
+    auto connView = make_array_view<conduit::index_t>(n_newconn);
+    auto sizesView = make_array_view<conduit::index_t>(n_newsizes);
+    auto offsetsView = make_array_view<conduit::index_t>(n_newoffsets);
+
+    // Fill in the new connectivity.
+    using ZoneType = typename TopologyView::ShapeType;
+    topoView.template for_all_zones<ExecSpace>(
+      AXOM_LAMBDA(axom::IndexType zoneIndex, const ZoneType &zone) {
+        const auto start = zoneIndex * ptsPerZone;
+        for(int i = 0; i < ptsPerZone; i++)
+        {
+          connView[start + i] =
+            static_cast<conduit::index_t>(zone.getId(i));
+        }
+        sizesView[zoneIndex] = ptsPerZone;
+        offsetsView[zoneIndex] = start;
+      });
+  }
+};
+
+}  // end namespace blueprint
+}  // end namespace utilities
+}  // end namespace mir
+}  // end namespace axom
+
+#endif

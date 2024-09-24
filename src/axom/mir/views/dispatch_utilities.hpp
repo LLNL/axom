@@ -12,11 +12,30 @@ namespace mir
 {
 namespace views
 {
+
+#if __cplusplus >= 201703L
+// C++17 and later.
 template <typename... Dimensions>
 constexpr int encode_dimensions(Dimensions... dims)
 {
   return (... | dims);
 }
+#else
+template <typename T>
+constexpr int encode_dimensions_impl(T arg) {
+    return arg;
+}
+
+template <typename T, typename... Dimensions>
+constexpr int encode_dimensions_impl(T arg, Dimensions... dims) {
+    return (arg | encode_dimensions_impl(dims...));
+}
+
+template <typename... Dimensions>
+constexpr int encode_dimensions(Dimensions... dims) {
+    return encode_dimensions_impl(dims...);
+}
+#endif
 
 template <typename... Dimensions>
 constexpr int select_dimensions(Dimensions... dims)

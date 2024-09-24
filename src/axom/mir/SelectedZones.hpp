@@ -43,7 +43,11 @@ public:
     return m_selectedZonesView;
   }
 
+// The following members are protected (unless using CUDA)
+#if !defined(__CUDACC__)
 protected:
+#endif
+
   /*!
    * \brief The options may contain a "selectedZones" member that is a list of zones
    *        that will be operated on. If such an array is present, copy and sort it.
@@ -62,36 +66,11 @@ protected:
       // Store the zone list in m_selectedZones.
       int badValueCount = 0;
       views::IndexNode_to_ArrayView(options["selectedZones"], [&](auto zonesView) {
-        using loop_policy =
-          typename axom::execution_space<ExecSpace>::loop_policy;
-        using reduce_policy =
-          typename axom::execution_space<ExecSpace>::reduce_policy;
-
         // It probably does not make sense to request more zones than we have in the mesh.
         SLIC_ASSERT(zonesView.size() <= nzones);
 
-        m_selectedZones = axom::Array<axom::IndexType>(zonesView.size(),
-                                                       zonesView.size(),
-                                                       allocatorID);
-        auto szView = m_selectedZonesView = m_selectedZones.view();
-        axom::for_all<ExecSpace>(
-          szView.size(),
-          AXOM_LAMBDA(axom::IndexType index) { szView[index] = zonesView[index]; });
-
-        // Check that the selected zone values are in range.
-        RAJA::ReduceSum<reduce_policy, int> errReduce(0);
-        axom::for_all<ExecSpace>(
-          szView.size(),
-          AXOM_LAMBDA(axom::IndexType index) {
-            const int err =
-              (szView[index] < 0 || szView[index] >= nzones) ? 1 : 0;
-            errReduce += err;
-          });
-        badValueCount = errReduce.get();
-
-        // Make sure the selectedZones are sorted.
-        RAJA::sort<loop_policy>(RAJA::make_span(szView.data(), szView.size()));
-      });
+        badValueCount = buildSelectedZones(zonesView, nzones);
+      }); 
 
       if(badValueCount > 0)
       {
@@ -109,7 +88,56 @@ protected:
     }
   }
 
+  /*!
+   * \brief Help build the selected zones, converting them to axom::IndexType and sorting them.
+   *
+   * \param zonesView The view that contains the source zone ids.
+   * \param nzones The number of zones in the mesh.
+   *
+   * \return The number of invalid zone ids.
+   *
+   * \note This method was broken out into a template member method since nvcc
+   *       would not instantiate the lambda for axom::for_all() from an anonymous
+   *       lambda.
+   */
+  template <typename ZonesViewType>
+  int buildSelectedZones(ZonesViewType zonesView, axom::IndexType nzones)
+  {
+    using loop_policy =
+      typename axom::execution_space<ExecSpace>::loop_policy;
+    using reduce_policy =
+      typename axom::execution_space<ExecSpace>::reduce_policy;
+
+    const auto allocatorID = axom::execution_space<ExecSpace>::allocatorID();
+    m_selectedZones = axom::Array<axom::IndexType>(zonesView.size(),
+                                                   zonesView.size(),
+                                                   allocatorID);
+    auto szView = m_selectedZonesView = m_selectedZones.view();
+    axom::for_all<ExecSpace>(
+      szView.size(),
+      AXOM_LAMBDA(axom::IndexType index) { szView[index] = zonesView[index]; });
+
+    // Check that the selected zone values are in range.
+    RAJA::ReduceSum<reduce_policy, int> errReduce(0);
+    axom::for_all<ExecSpace>(
+      szView.size(),
+      AXOM_LAMBDA(axom::IndexType index) {
+        const int err =
+          (szView[index] < 0 || szView[index] >= nzones) ? 1 : 0;
+        errReduce += err;
+      });
+
+    // Make sure the selectedZones are sorted.
+    RAJA::sort<loop_policy>(RAJA::make_span(szView.data(), szView.size()));
+
+    return errReduce.get();
+  }
+
+// The following members are protected (unless using CUDA)
+#if !defined(__CUDACC__)
 protected:
+#endif
+
   axom::Array<axom::IndexType> m_selectedZones;  // Storage for a list of selected zone ids.
   axom::ArrayView<axom::IndexType> m_selectedZonesView;
 };

@@ -39,6 +39,7 @@ set(mir_headers
     ExtractZones.hpp
     FieldBlender.hpp
     FieldSlicer.hpp
+    MakeUnstructured.hpp
     MatsetSlicer.hpp
     MergeMeshes.hpp
     MIRAlgorithm.hpp
