@@ -287,14 +287,9 @@ public:
       const IndexType n =
         static_cast<IndexType>(n_clip_field_values.dtype().number_of_elements());
       m_clipFieldData = axom::Array<ClipFieldType>(n, n, allocatorID);
-      auto clipFieldView = m_view.m_clipFieldView = m_clipFieldData.view();
+      m_view.m_clipFieldView = m_clipFieldData.view();
       views::Node_to_ArrayView(n_clip_field_values, [&](auto clipFieldViewSrc) {
-        axom::for_all<ExecSpace>(
-          n,
-          AXOM_LAMBDA(axom::IndexType index) {
-            clipFieldView[index] =
-              static_cast<ClipFieldType>(clipFieldViewSrc[index]);
-          });
+        copyValues(clipFieldViewSrc);
       });
     }
   }
@@ -321,10 +316,66 @@ public:
    */
   View view() const { return m_view; }
 
+// The following members are private (unless using CUDA)
+#if !defined(__CUDACC__)
 private:
+#endif
+
+  /*!
+   * \brief Copy values from srcView into m_clipFieldData.
+   *
+   * \param srcView The source data view.
+   */
+  template <typename DataView>
+  void copyValues(DataView srcView)
+  {
+    auto clipFieldView = m_clipFieldData.view();
+    axom::for_all<ExecSpace>(
+      srcView.size(),
+      AXOM_LAMBDA(axom::IndexType index) {
+        clipFieldView[index] =
+          static_cast<ClipFieldType>(srcView[index]);
+      });
+  }
+
   axom::Array<ClipFieldType> m_clipFieldData {};
   View m_view {};
 };
+
+#if 1
+  using BitSet = std::uint32_t;
+  /*!
+   * \brief Contains data that describes the number and size of zone fragments in the output.
+   */
+  struct FragmentData
+  {
+    IndexType m_finalNumZones {0};
+    IndexType m_finalConnSize {0};
+    axom::ArrayView<IndexType> m_fragmentsView {};
+    axom::ArrayView<IndexType> m_fragmentsSizeView {};
+    axom::ArrayView<IndexType> m_fragmentOffsetsView {};
+    axom::ArrayView<IndexType> m_fragmentSizeOffsetsView {};
+  };
+
+  /*!
+   * \brief Contains some per-zone data that we want to hold onto between methods.
+   */
+  struct ZoneData
+  {
+    axom::ArrayView<int> m_clipCasesView {};
+    axom::ArrayView<BitSet> m_pointsUsedView {};
+  };
+
+  /*!
+   * \brief Contains some per-node data that we want to hold onto between methods.
+   */
+  struct NodeData
+  {
+    axom::ArrayView<int> m_nodeUsedView {};
+    axom::ArrayView<IndexType> m_oldNodeToNewNodeView {};
+    axom::ArrayView<IndexType> m_originalIdsView {};
+  };
+#endif
 
 //------------------------------------------------------------------------------
 /*!
@@ -351,7 +402,7 @@ public:
   using ClipTableViews = axom::StackArray<axom::mir::clipping::TableView, 6>;
   using Intersector = IntersectPolicy;
 
-  using BitSet = std::uint32_t;
+//  using BitSet = std::uint32_t;
   using KeyType = typename NamingPolicy::KeyType;
   using loop_policy = typename axom::execution_space<ExecSpace>::loop_policy;
   using reduce_policy = typename axom::execution_space<ExecSpace>::reduce_policy;
@@ -740,7 +791,7 @@ public:
 #if !defined(__CUDACC__)
 private:
 #endif
-
+#if 0
   /*!
    * \brief Contains data that describes the number and size of zone fragments in the output.
    */
@@ -772,7 +823,7 @@ private:
     axom::ArrayView<IndexType> m_oldNodeToNewNodeView {};
     axom::ArrayView<IndexType> m_originalIdsView {};
   };
-
+#endif
   /*!
    * \brief Make a bitset that indicates the parts of the selection that are selected.
    */
@@ -965,7 +1016,7 @@ private:
         // Set blend group sizes for this zone.
         blendGroupsView[szIndex] = thisBlendGroups;
         blendGroupsLenView[szIndex] = thisBlendGroupLen;
-      });
+      }); // for_selected_zones
 
 #if defined(AXOM_DEBUG_CLIP_FIELD)
     std::cout
@@ -1492,7 +1543,7 @@ private:
           // Reduce overall whether there are degenerates.
           degenerates_reduce |= degenerates;
 #endif
-        });
+        }); // for_selected_zones
 
 #if defined(AXOM_DEBUG_CLIP_FIELD)
       std::cout
@@ -1553,35 +1604,11 @@ private:
         // Make offsets
         axom::exclusive_scan<ExecSpace>(maskView, maskOffsetsView);
 
-        // Replace data in the input Conduit node with a denser version using the mask.
-        auto filter =
-          [&](conduit::Node &n_src, const auto srcView, axom::IndexType newSize) {
-            using value_type = typename decltype(srcView)::value_type;
-            conduit::Node n_values;
-            n_values.set_allocator(conduitAllocatorID);
-            n_values.set(
-              conduit::DataType(bputils::cpp2conduit<value_type>::id, newSize));
-            auto valuesView = bputils::make_array_view<value_type>(n_values);
-            const auto nValues = maskView.size();
-            axom::for_all<ExecSpace>(
-              nValues,
-              AXOM_LAMBDA(axom::IndexType index) {
-                if(maskView[index] > 0)
-                {
-                  const auto destIndex = maskOffsetsView[index];
-                  valuesView[destIndex] = srcView[index];
-                }
-              });
-
-            n_src.swap(n_values);
-            return bputils::make_array_view<value_type>(n_src);
-          };
-
         // Filter sizes, shapes, color using the mask
-        sizesView = filter(n_sizes, sizesView, filteredZoneCount);
-        offsetsView = filter(n_offsets, offsetsView, filteredZoneCount);
-        shapesView = filter(n_shapes, shapesView, filteredZoneCount);
-        colorView = filter(n_color_values, colorView, filteredZoneCount);
+        sizesView = filter(n_sizes, sizesView, filteredZoneCount, maskView, maskOffsetsView);
+        offsetsView = filter(n_offsets, offsetsView, filteredZoneCount, maskView, maskOffsetsView);
+        shapesView = filter(n_shapes, shapesView, filteredZoneCount, maskView, maskOffsetsView);
+        colorView = filter(n_color_values, colorView, filteredZoneCount, maskView, maskOffsetsView);
 
         // Record the filtered size.
         fragmentData.m_finalNumZones = filteredZoneCount;
@@ -1690,6 +1717,47 @@ private:
       n_newTopo["elements/shape"] = shapeMap.begin()->first;
     }
   }
+
+#if defined(AXOM_CLIP_FILTER_DEGENERATES)
+  /*!
+   * \brief Replace data in the input Conduit node with a denser version using the mask.
+   *
+   * \param n_src The Conduit node that contains the data.
+   * \param srcView A view that wraps the input Conduit data.
+   * \param newSize The new array size.
+   * \param maskView The mask for valid data elements.
+   * \param maskOffsetsView The offsets view to indicate where to write the new data.
+   */
+  template <typename DataView>
+  DataView filter(conduit::Node &n_src, DataView srcView, axom::IndexType newSize,
+    axom::ArrayView<int> maskView, axom::ArrayView<int> maskOffsetsView) const
+  {
+    using value_type = typename DataView::value_type;
+    namespace bputils = axom::mir::utilities::blueprint;
+
+    // Get the ID of a Conduit allocator that will allocate through Axom with device allocator allocatorID.
+    utilities::blueprint::ConduitAllocateThroughAxom<ExecSpace> c2a;
+    const int conduitAllocatorID = c2a.getConduitAllocatorID();
+
+    conduit::Node n_values;
+    n_values.set_allocator(conduitAllocatorID);
+    n_values.set(conduit::DataType(bputils::cpp2conduit<value_type>::id, newSize));
+    auto valuesView = bputils::make_array_view<value_type>(n_values);
+    const auto nValues = maskView.size();
+    axom::for_all<ExecSpace>(
+      nValues,
+      AXOM_LAMBDA(axom::IndexType index) {
+        if(maskView[index] > 0)
+        {
+          const auto destIndex = maskOffsetsView[index];
+          valuesView[destIndex] = srcView[index];
+        }
+      });
+
+    n_src.swap(n_values);
+    return bputils::make_array_view<value_type>(n_src);
+  }
+#endif
 
   /*!
    * \brief Make the new coordset using the blend data and the input coordset/coordsetview.
@@ -1865,15 +1933,7 @@ private:
         n_values.set(conduit::DataType(n_orig_values.dtype().id(),
                                        fragmentData.m_finalNumZones));
         auto valuesView = bputils::make_array_view<value_type>(n_values);
-        axom::for_all<ExecSpace>(
-          nzones,
-          AXOM_LAMBDA(axom::IndexType index) {
-            const int sizeIndex = fragmentData.m_fragmentOffsetsView[index];
-            const int nFragments = fragmentData.m_fragmentsView[index];
-            const auto zoneIndex = selectedZonesView[index];
-            for(int i = 0; i < nFragments; i++)
-              valuesView[sizeIndex + i] = origValuesView[zoneIndex];
-          });
+        makeOriginalElements_copy(fragmentData, selectedZones, valuesView, origValuesView);
       });
     }
     else
@@ -1896,6 +1956,37 @@ private:
             valuesView[sizeIndex + i] = zoneIndex;
         });
     }
+  }
+
+  /*!
+   * \brief Assist setting original elements that already exist, based on selected zones.
+   *
+   * \param[in] fragmentData This object holds views to per-fragment data.
+   * \param[in] selectedZones The selected zones.
+   * \param[out] valuesView The destination values view.
+   * \param[in] origValuesView The source values view.
+   *
+   * \note This method was broken out into a template member method since nvcc
+   *       would not instantiate the lambda for axom::for_all() from an anonymous
+   *       lambda.
+   */
+  template <typename DataView>
+  void makeOriginalElements_copy(FragmentData fragmentData,
+                                 const SelectedZones<ExecSpace> &selectedZones,
+                                 DataView valuesView,
+                                 DataView origValuesView) const
+  {
+    const auto selectedZonesView = selectedZones.view();
+    const auto nzones = selectedZonesView.size();
+    axom::for_all<ExecSpace>(
+       nzones,
+       AXOM_LAMBDA(axom::IndexType index) {
+         const int sizeIndex = fragmentData.m_fragmentOffsetsView[index];
+         const int nFragments = fragmentData.m_fragmentsView[index];
+         const auto zoneIndex = selectedZonesView[index];
+         for(int i = 0; i < nFragments; i++)
+           valuesView[sizeIndex + i] = origValuesView[zoneIndex];
+       });
   }
 
   /*!

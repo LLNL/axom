@@ -37,7 +37,7 @@ struct test_conduit_allocate
     auto nview = bputils::make_array_view<int>(n);
     axom::for_all<ExecSpace>(
       nValues,
-      AXOM_LAMBDA(auto index) { nview[index] = index; });
+      AXOM_LAMBDA(axom::IndexType index) { nview[index] = index; });
 
     EXPECT_EQ(n.dtype().number_of_elements(), nValues);
 
@@ -63,7 +63,7 @@ TEST(mir_blueprint_utilities, allocate_omp)
   test_conduit_allocate<omp_exec>::test();
 }
 #endif
-#if defined(AXOM_USE_CUDA) && defined(__CUDACC__)
+#if defined(AXOM_USE_CUDA)
 TEST(mir_blueprint_utilities, allocate_cuda)
 {
   test_conduit_allocate<cuda_exec>::test();
@@ -130,7 +130,7 @@ TEST(mir_blueprint_utilities, copy_seq) { test_copy_braid<seq_exec>::test(); }
 #if defined(AXOM_USE_OPENMP)
 TEST(mir_blueprint_utilities, copy_omp) { test_copy_braid<omp_exec>::test(); }
 #endif
-#if defined(AXOM_USE_CUDA) && defined(__CUDACC__)
+#if defined(AXOM_USE_CUDA)
 TEST(mir_blueprint_utilities, copy_cuda) { test_copy_braid<cuda_exec>::test(); }
 #endif
 #if defined(AXOM_USE_HIP)
@@ -245,7 +245,7 @@ TEST(mir_blueprint_utilities, node_to_zone_relation_builder_unstructured)
   test_node_to_zone_relation_builder<omp_exec>(mesh);
 #endif
 
-#if defined(AXOM_USE_CUDA) && defined(__CUDACC__)
+#if defined(AXOM_USE_CUDA)
   test_node_to_zone_relation_builder<cuda_exec>(mesh);
 #endif
 
@@ -273,7 +273,7 @@ TEST(mir_blueprint_utilities, node_to_zone_relation_builder_rectilinear)
   test_node_to_zone_relation_builder<omp_exec, conduit::index_t>(mesh);
 #endif
 
-#if defined(AXOM_USE_CUDA) && defined(__CUDACC__)
+#if defined(AXOM_USE_CUDA)
   test_node_to_zone_relation_builder<cuda_exec, conduit::index_t>(mesh);
 #endif
 
@@ -375,7 +375,7 @@ TEST(mir_blueprint_utilities, node_to_zone_relation_builder_polyhedral)
   test_node_to_zone_relation_builder_polyhedral<omp_exec, conduit::int32>(mesh);
 #endif
 
-#if defined(AXOM_USE_CUDA) && defined(__CUDACC__)
+#if defined(AXOM_USE_CUDA)
   test_node_to_zone_relation_builder_polyhedral<cuda_exec, conduit::int32>(mesh);
 #endif
 
@@ -469,7 +469,7 @@ TEST(mir_blueprint_utilities, recenterfield_omp)
 }
 #endif
 
-#if defined(AXOM_USE_CUDA) && defined(__CUDACC__)
+#if defined(AXOM_USE_CUDA)
 TEST(mir_blueprint_utilities, recenterfield_cuda)
 {
   test_recenter_field<cuda_exec>::test();
@@ -603,7 +603,7 @@ TEST(mir_blueprint_utilities, matsetslice_omp)
 }
 #endif
 
-#if defined(AXOM_USE_CUDA) && defined(__CUDACC__)
+#if defined(AXOM_USE_CUDA)
 TEST(mir_blueprint_utilities, matsetslice_cuda)
 {
   test_matset_slice<cuda_exec>::test();
@@ -705,7 +705,7 @@ TEST(mir_blueprint_utilities, coordsetslicer_explicit_omp)
 }
 #endif
 
-#if defined(AXOM_USE_CUDA) && defined(__CUDACC__)
+#if defined(AXOM_USE_CUDA)
 TEST(mir_blueprint_utilities, coordsetslicer_explicit_cuda)
 {
   coordsetslicer_explicit<cuda_exec>::test();
@@ -762,7 +762,7 @@ TEST(mir_blueprint_utilities, coordsetslicer_rectilinear_omp)
 }
 #endif
 
-#if defined(AXOM_USE_CUDA) && defined(__CUDACC__)
+#if defined(AXOM_USE_CUDA)
 TEST(mir_blueprint_utilities, coordsetslicer_rectilinear_cuda)
 {
   coordsetslicer_rectilinear<cuda_exec>::test();
@@ -818,7 +818,7 @@ TEST(mir_blueprint_utilities, coordsetslicer_uniform_omp)
 }
 #endif
 
-#if defined(AXOM_USE_CUDA) && defined(__CUDACC__)
+#if defined(AXOM_USE_CUDA)
 TEST(mir_blueprint_utilities, coordsetslicer_uniform_cuda)
 {
   coordsetslicer_uniform<cuda_exec>::test();
@@ -1039,7 +1039,7 @@ TEST(mir_blueprint_utilities, extractzones_omp)
 }
 #endif
 
-#if defined(AXOM_USE_CUDA) && defined(__CUDACC__)
+#if defined(AXOM_USE_CUDA)
 TEST(mir_blueprint_utilities, extractzones_cuda)
 {
   test_extractzones<cuda_exec>::test();
@@ -1203,7 +1203,7 @@ TEST(mir_blueprint_utilities, zonelistbuilder_omp)
   test_zonelistbuilder<omp_exec>::test();
 }
 #endif
-#if defined(AXOM_USE_CUDA) && defined(__CUDACC__)
+#if defined(AXOM_USE_CUDA)
 TEST(mir_blueprint_utilities, zonelistbuilder_cuda)
 {
   test_zonelistbuilder<cuda_exec>::test();
@@ -1368,7 +1368,7 @@ TEST(mir_blueprint_utilities, mergemeshes_omp)
   test_mergemeshes<omp_exec>::test();
 }
 #endif
-#if defined(AXOM_USE_CUDA) && defined(__CUDACC__)
+#if defined(AXOM_USE_CUDA)
 TEST(mir_blueprint_utilities, mergemeshes_cuda)
 {
   test_mergemeshes<cuda_exec>::test();

@@ -319,7 +319,11 @@ public:
   /// Destructor
   virtual ~EquiZAlgorithm() = default;
 
+// The following members are protected (unless using CUDA)
+#if !defined(__CUDACC__)
 protected:
+#endif
+
 #if defined(AXOM_EQUIZ_DEBUG)
   void printNode(const conduit::Node &n) const
   {
@@ -570,7 +574,7 @@ protected:
     auto view = bputils::make_array_view<ConnectivityType>(n_field["values"]);
     axom::for_all<ExecSpace>(
       nvalues,
-      AXOM_LAMBDA(auto index) {
+      AXOM_LAMBDA(axom::IndexType index) {
         view[index] = static_cast<ConnectivityType>(index);
       });
   }
@@ -647,7 +651,7 @@ protected:
     RAJA::ReduceSum<reduce_policy, int> mask_reduce(0);
     axom::for_all<ExecSpace>(
       numOutputNodes,
-      AXOM_LAMBDA(auto index) { mask_reduce += maskView[index]; });
+      AXOM_LAMBDA(axom::IndexType index) { mask_reduce += maskView[index]; });
     const auto numNewNodes = mask_reduce.get();
 
     // Make offsets.
@@ -659,7 +663,7 @@ protected:
     auto nodeSliceView = nodeSlice.view();
     axom::for_all<ExecSpace>(
       numOutputNodes,
-      AXOM_LAMBDA(auto index) {
+      AXOM_LAMBDA(axom::IndexType index) {
         if(maskView[index] > 0)
         {
           nodeSliceView[maskOffsetsView[index]] = index;
@@ -672,7 +676,7 @@ protected:
     auto nodeMapView = nodeMap.view();
     axom::for_all<ExecSpace>(
       numOutputNodes,
-      AXOM_LAMBDA(auto index) {
+      AXOM_LAMBDA(axom::IndexType index) {
         if(maskView[index] == 0)
         {
           nodeMapView[index] =
@@ -991,7 +995,7 @@ protected:
         MatsetView deviceMatsetView(m_matsetView);
         axom::for_all<ExecSpace>(
           m_topologyView.numberOfZones(),
-          AXOM_LAMBDA(auto zoneIndex) {
+          AXOM_LAMBDA(axom::IndexType zoneIndex) {
             typename MatsetView::FloatType vf {};
             deviceMatsetView.zoneContainsMaterial(zoneIndex, matNumber, vf);
             zonalFieldView[zoneIndex] = static_cast<MaterialVF>(vf);
@@ -1067,7 +1071,7 @@ protected:
     // Fill all zones with NULL_MATERIAL.
     axom::for_all<ExecSpace>(
       nzones,
-      AXOM_LAMBDA(auto nodeIndex) {
+      AXOM_LAMBDA(axom::IndexType nodeIndex) {
         zonalIDFieldView[nodeIndex] = NULL_MATERIAL;
       });
 
@@ -1079,7 +1083,7 @@ protected:
       const int matNumber = mat.number;
       axom::for_all<ExecSpace>(
         nzones,
-        AXOM_LAMBDA(auto zoneIndex) {
+        AXOM_LAMBDA(axom::IndexType zoneIndex) {
           FloatType vf {};
           if(deviceMatsetView.zoneContainsMaterial(zoneIndex, matNumber, vf))
           {
@@ -1099,8 +1103,9 @@ protected:
       // Fill in any zone that has nodes where the nodal matVF is greater than zero.
       // This fuzzes it out to more zones so we get better blending with the next
       // material we try to overlay.
+      using ZoneType = typename TopologyView::ShapeType;
       m_topologyView.template for_all_zones<ExecSpace>(
-        AXOM_LAMBDA(auto zoneIndex, const auto &zone) {
+        AXOM_LAMBDA(axom::IndexType zoneIndex, const ZoneType &zone) {
           constexpr MaterialVF VOLUME_FRACTION_CUTOFF = 1.e-6;
           MaterialVF matvfSum {};
           for(const auto nid : zone.getIds())
@@ -1308,7 +1313,7 @@ protected:
       const int currentMatNumber = currentMat.number;
       axom::for_all<ExecSpace>(
         nzonesNew,
-        AXOM_LAMBDA(auto zoneIndex) {
+        AXOM_LAMBDA(axom::IndexType zoneIndex) {
           // Color the part we want with the current material.
           if(colorView[zoneIndex] == 1)
           {
@@ -1411,7 +1416,7 @@ protected:
     // Fill in the new matset data arrays.
     axom::for_all<ExecSpace>(
       nzones,
-      AXOM_LAMBDA(auto zoneIndex) {
+      AXOM_LAMBDA(axom::IndexType zoneIndex) {
         material_ids_view[zoneIndex] =
           static_cast<MIntType>(zonalMaterialID[zoneIndex]);
         volume_fractions_view[zoneIndex] = 1;

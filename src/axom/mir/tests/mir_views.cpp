@@ -67,9 +67,6 @@ struct test_node_to_arrayview
 
   static void test()
   {
-    using reduce_policy =
-      typename axom::execution_space<ExecSpace>::reduce_policy;
-
     std::vector<int> dtypes {conduit::DataType::INT8_ID,
                              conduit::DataType::INT16_ID,
                              conduit::DataType::INT32_ID,
@@ -91,27 +88,36 @@ struct test_node_to_arrayview
 
       int sumValues = 0;
       axom::mir::views::Node_to_ArrayView(n_data, [&](auto dataView) {
-        std::cout << axom::mir::views::array_view_traits<decltype(dataView)>::name()
-                  << std::endl;
-        using value_type = typename decltype(dataView)::value_type;
-
-        // Make sure we can store values in dataView
-        axom::for_all<ExecSpace>(
-          n,
-          AXOM_LAMBDA(axom::IndexType index) {
-            dataView[index] = static_cast<value_type>(index);
-          });
-
-        // Read the values and sum them.
-        RAJA::ReduceSum<reduce_policy, value_type> sumValues_reduce(0);
-        axom::for_all<ExecSpace>(
-          n,
-          AXOM_LAMBDA(axom::IndexType index) { sumValues_reduce += dataView[index]; });
-        sumValues = static_cast<int>(sumValues_reduce.get());
+        sumValues = testBody(dataView, n);
       });
 
       EXPECT_EQ(sumValues, sum(n));
     }
+  }
+
+  template <typename DataView>
+  static int testBody(DataView dataView, int n)
+  {
+    using reduce_policy =
+      typename axom::execution_space<ExecSpace>::reduce_policy;
+    using value_type = typename DataView::value_type;
+
+    std::cout << axom::mir::views::array_view_traits<DataView>::name()
+              << std::endl;
+
+    // Make sure we can store values in dataView
+    axom::for_all<ExecSpace>(
+      n,
+      AXOM_LAMBDA(axom::IndexType index) {
+        dataView[index] = static_cast<value_type>(index);
+      });
+
+    // Read the values and sum them.
+    RAJA::ReduceSum<reduce_policy, value_type> sumValues_reduce(0);
+    axom::for_all<ExecSpace>(
+      n,
+      AXOM_LAMBDA(axom::IndexType index) { sumValues_reduce += dataView[index]; });
+    return static_cast<int>(sumValues_reduce.get());
   }
 };
 
@@ -191,50 +197,75 @@ struct test_strided_structured
   template <typename CoordsetView, typename TopologyView>
   static void execute(CoordsetView coordsetView, TopologyView topoView)
   {
-    // These are the expected zone ids for this strided structured mesh.
+    using ExecSpace = seq_exec;
+
+    // These are the expected node ids for this strided structured mesh.
     // clang-format off
-    const axom::Array<int> expectedZones {{16, 17, 24, 23,
+    const axom::Array<int> expectedNodes {{16, 17, 24, 23,
                                            17, 18, 25, 24,
                                            18, 19, 26, 25,
                                            23, 24, 31, 30,
                                            24, 25, 32, 31,
                                            25, 26, 33, 32}};
     // clang-format on
-    auto expectedZonesView = expectedZones.view();
+    auto expectedNodesView = expectedNodes.view();
+    axom::IndexType n = expectedNodesView.size() / 4;
+    axom::IndexType n4 = expectedNodesView.size();
 
-    // Traverse the zones in the mesh and check the zone ids.
-    topoView.template for_all_zones<seq_exec>(
-      AXOM_LAMBDA(axom::IndexType zoneIndex, const auto &zone) {
-        // Check zone ids.
+    const int allocatorID = axom::execution_space<ExecSpace>::allocatorID();
+    axom::Array<int> actualNodes(n4, n4, allocatorID);
+    axom::Array<int> logicalNodes(n4*2, n4*2, allocatorID);
+    auto actualNodesView = actualNodes.view();
+    auto logicalNodesView = logicalNodes.view();
+
+    // Traverse the zones in the mesh and gather node ids
+    using ZoneType = typename TopologyView::ShapeType;
+    topoView.template for_all_zones<ExecSpace>(
+      AXOM_LAMBDA(axom::IndexType zoneIndex, const ZoneType &zone) {
+        const auto nodeIndexing = topoView.indexing().expand();
+
+        // Get node ids for zone.
         const auto ids = zone.getIds();
         for(axom::IndexType i = 0; i < ids.size(); i++)
         {
-          EXPECT_EQ(expectedZonesView[zoneIndex * 4 + i], ids[i]);
-        }
-
-        // Check coordinates
-        const auto nodeIndexing = topoView.indexing().expand();
-        for(axom::IndexType i = 0; i < ids.size(); i++)
-        {
-          // Get coordinate from coordsetView.
-          const auto pt = coordsetView[ids[i]];
+          actualNodesView[zoneIndex * 4 + i] = ids[i];
 
           // Get the logical local id for the id.
           const auto index = nodeIndexing.GlobalToLocal(ids[i]);
           const auto logical = nodeIndexing.IndexToLogicalIndex(index);
-
-          // Expected coordinate
-          double x = (3. + 1. / 3.) * static_cast<double>(logical[0] - 1);
-          const double yvals[] = {-2, 2, 6};
-          double y = yvals[logical[1]];
-
-          const double dx = pt[0] - x;
-          const double dy = pt[1] - y;
-          double d = sqrt(dx * dx + dy * dy);
-
-          EXPECT_TRUE(d < 1.e-10);
+          logicalNodesView[(zoneIndex * 4 + i)*2 + 0] = logical[0];
+          logicalNodesView[(zoneIndex * 4 + i)*2 + 1] = logical[1];
         }
       });
+
+    for(axom::IndexType i = 0; i < n4; i++)
+    {
+      EXPECT_EQ(expectedNodesView[i], actualNodesView[i]);
+    }
+
+    // Check coordinates
+    for(axom::IndexType i = 0; i < n4; i++)
+    {
+      const auto id = actualNodesView[i];
+
+      // Get coordinate from coordsetView.
+      const auto pt = coordsetView[id];
+
+      // Get the logical local id for the id.
+      const auto logicalI = logicalNodesView[i*2 + 0];
+      const auto logicalJ = logicalNodesView[i*2 + 1];
+
+      // Expected coordinate
+      double x = (3. + 1. / 3.) * static_cast<double>(logicalI - 1);
+      const double yvals[] = {-2, 2, 6};
+      double y = yvals[logicalJ];
+
+      const double dx = pt[0] - x;
+      const double dy = pt[1] - y;
+      double d = sqrt(dx * dx + dy * dy);
+
+      EXPECT_TRUE(d < 1.e-10);
+    }
   }
 };
 
@@ -244,118 +275,125 @@ TEST(mir_views, strided_structured_seq)
 }
 
 //------------------------------------------------------------------------------
-// NOTE: pass by value on purpose.
-template <typename ExecSpace, typename MatsetView>
-void test_matsetview(MatsetView matsetView, int allocatorID)
-{
-  constexpr int MATA = 0;
-  constexpr int MATB = 1;
-  constexpr int MATC = 2;
-  const int zoneids[] = {0, 36, 40};
-
-  // clang-format off
-  const int results[] = {/*contains mat*/ 0, 1, 0, /*mats in zone*/ 1, /*ids.size*/ 1, /*mats in zone*/ MATB, -1, -1,
-                         /*contains mat*/ 1, 1, 0, /*mats in zone*/ 2, /*ids.size*/ 2, /*mats in zone*/ MATA, MATB, -1,
-                         /*contains mat*/ 1, 1, 1, /*mats in zone*/ 3, /*ids.size*/ 3, /*mats in zone*/ MATA, MATB, MATC};
-  // clang-format on
-  constexpr int nZones = sizeof(zoneids) / sizeof(int);
-
-  // Get zoneids into zoneidsView for device.
-  axom::Array<int> zoneidsArray(nZones, nZones, allocatorID);
-  axom::copy(zoneidsArray.data(), zoneids, sizeof(int) * nZones);
-  auto zoneidsView = zoneidsArray.view();
-
-  // Allocate results array on device.
-  constexpr int nResults = sizeof(results) / sizeof(int);
-  axom::Array<int> resultsArrayDevice(nResults, nResults, allocatorID);
-  auto resultsView = resultsArrayDevice.view();
-
-  // Fill in resultsView on the device.
-  constexpr int nResultsPerZone = nResults / nZones;
-  axom::for_all<ExecSpace>(
-    3,
-    AXOM_LAMBDA(axom::IndexType index) {
-      resultsView[nResultsPerZone * index + 0] =
-        matsetView.zoneContainsMaterial(zoneidsView[index], MATA) ? 1 : 0;
-      resultsView[nResultsPerZone * index + 1] =
-        matsetView.zoneContainsMaterial(zoneidsView[index], MATB) ? 1 : 0;
-      resultsView[nResultsPerZone * index + 2] =
-        matsetView.zoneContainsMaterial(zoneidsView[index], MATC) ? 1 : 0;
-      resultsView[nResultsPerZone * index + 3] =
-        matsetView.numberOfMaterials(zoneidsView[index]);
-
-      typename MatsetView::IDList ids {};
-      typename MatsetView::VFList vfs {};
-      matsetView.zoneMaterials(zoneidsView[index], ids, vfs);
-      resultsView[nResultsPerZone * index + 4] = ids.size();
-      for(axom::IndexType i = 0; i < 3; i++)
-      {
-        resultsView[nResultsPerZone * index + 5 + i] =
-          (i < ids.size()) ? ids[i] : -1;
-      }
-    });
-  // Get containsView data to the host and compare results
-  std::vector<int> resultsHost(nResults);
-  axom::copy(resultsHost.data(), resultsView.data(), sizeof(int) * nResults);
-  for(int i = 0; i < nResults; i++)
-  {
-    EXPECT_EQ(results[i], resultsHost[i]);
-  }
-}
-
-//------------------------------------------------------------------------------
 template <typename ExecSpace>
-void braid2d_mat_test(const std::string &type,
-                      const std::string &mattype,
-                      const std::string &name)
+struct test_braid2d_mat
 {
-  namespace bputils = axom::mir::utilities::blueprint;
-  const int allocatorID = axom::execution_space<ExecSpace>::allocatorID();
-
-  axom::StackArray<axom::IndexType, 2> dims {10, 10};
-  axom::StackArray<axom::IndexType, 2> zoneDims {dims[0] - 1, dims[1] - 1};
-
-  // Create the data
-  conduit::Node hostMesh, deviceMesh;
-  axom::mir::testing::data::braid(type, dims, hostMesh);
-  axom::mir::testing::data::make_matset(mattype, "mesh", zoneDims, hostMesh);
-  axom::mir::utilities::blueprint::copy<ExecSpace>(deviceMesh, hostMesh);
-#if defined(AXOM_TESTING_SAVE_VISUALIZATION)
-  conduit::relay::io::blueprint::save_mesh(hostMesh, name + "_orig", "hdf5");
-#endif
-
-  if(type == "unibuffer")
+  static void test(const std::string &type,
+                   const std::string &mattype,
+                   const std::string &name)
   {
-    // clang-format off
-    using MatsetView = axom::mir::views::UnibufferMaterialView<int, float, 3>;
-    MatsetView matsetView;
-    matsetView.set(bputils::make_array_view<int>(deviceMesh["matsets/mat/material_ids"]),
-                   bputils::make_array_view<float>(deviceMesh["matsets/mat/volume_fractions"]),
-                   bputils::make_array_view<int>(deviceMesh["matsets/mat/sizes"]),
-                   bputils::make_array_view<int>(deviceMesh["matsets/mat/offsets"]),
-                   bputils::make_array_view<int>(deviceMesh["matsets/mat/indices"]));
-    // clang-format on
-    EXPECT_EQ(matsetView.numberOfZones(), zoneDims[0] * zoneDims[1]);
-    test_matsetview<ExecSpace>(matsetView, allocatorID);
+    namespace bputils = axom::mir::utilities::blueprint;
+    const int allocatorID = axom::execution_space<ExecSpace>::allocatorID();
+
+    axom::StackArray<axom::IndexType, 2> dims {10, 10};
+    axom::StackArray<axom::IndexType, 2> zoneDims {dims[0] - 1, dims[1] - 1};
+
+    // Create the data
+    conduit::Node hostMesh, deviceMesh;
+    axom::mir::testing::data::braid(type, dims, hostMesh);
+    axom::mir::testing::data::make_matset(mattype, "mesh", zoneDims, hostMesh);
+    axom::mir::utilities::blueprint::copy<ExecSpace>(deviceMesh, hostMesh);
+#if defined(AXOM_TESTING_SAVE_VISUALIZATION)
+    conduit::relay::io::blueprint::save_mesh(hostMesh, name + "_orig", "hdf5");
+#endif
+
+    if(type == "unibuffer")
+    {
+      // clang-format off
+      using MatsetView = axom::mir::views::UnibufferMaterialView<int, float, 3>;
+      MatsetView matsetView;
+      matsetView.set(bputils::make_array_view<int>(deviceMesh["matsets/mat/material_ids"]),
+                     bputils::make_array_view<float>(deviceMesh["matsets/mat/volume_fractions"]),
+                     bputils::make_array_view<int>(deviceMesh["matsets/mat/sizes"]),
+                     bputils::make_array_view<int>(deviceMesh["matsets/mat/offsets"]),
+                     bputils::make_array_view<int>(deviceMesh["matsets/mat/indices"]));
+      // clang-format on
+      EXPECT_EQ(matsetView.numberOfZones(), zoneDims[0] * zoneDims[1]);
+      test_matsetview(matsetView, allocatorID);
+    }
   }
-}
 
-TEST(mir_views, matset_unibuffer)
+  template <typename MatsetView>
+  static void test_matsetview(MatsetView matsetView, int allocatorID)
+  {
+    constexpr int MATA = 0;
+    constexpr int MATB = 1;
+    constexpr int MATC = 2;
+    const int zoneids[] = {0, 36, 40};
+
+    // clang-format off
+    const int results[] = {/*contains mat*/ 0, 1, 0, /*mats in zone*/ 1, /*ids.size*/ 1, /*mats in zone*/ MATB, -1, -1,
+                           /*contains mat*/ 1, 1, 0, /*mats in zone*/ 2, /*ids.size*/ 2, /*mats in zone*/ MATA, MATB, -1,
+                           /*contains mat*/ 1, 1, 1, /*mats in zone*/ 3, /*ids.size*/ 3, /*mats in zone*/ MATA, MATB, MATC};
+    // clang-format on
+    constexpr int nZones = sizeof(zoneids) / sizeof(int);
+
+    // Get zoneids into zoneidsView for device.
+    axom::Array<int> zoneidsArray(nZones, nZones, allocatorID);
+    axom::copy(zoneidsArray.data(), zoneids, sizeof(int) * nZones);
+    auto zoneidsView = zoneidsArray.view();
+
+    // Allocate results array on device.
+    constexpr int nResults = sizeof(results) / sizeof(int);
+    axom::Array<int> resultsArrayDevice(nResults, nResults, allocatorID);
+    auto resultsView = resultsArrayDevice.view();
+
+    // Fill in resultsView on the device.
+    constexpr int nResultsPerZone = nResults / nZones;
+    axom::for_all<ExecSpace>(
+      3,
+      AXOM_LAMBDA(axom::IndexType index) {
+        resultsView[nResultsPerZone * index + 0] =
+          matsetView.zoneContainsMaterial(zoneidsView[index], MATA) ? 1 : 0;
+        resultsView[nResultsPerZone * index + 1] =
+          matsetView.zoneContainsMaterial(zoneidsView[index], MATB) ? 1 : 0;
+        resultsView[nResultsPerZone * index + 2] =
+          matsetView.zoneContainsMaterial(zoneidsView[index], MATC) ? 1 : 0;
+        resultsView[nResultsPerZone * index + 3] =
+          matsetView.numberOfMaterials(zoneidsView[index]);
+
+        typename MatsetView::IDList ids {};
+        typename MatsetView::VFList vfs {};
+        matsetView.zoneMaterials(zoneidsView[index], ids, vfs);
+        resultsView[nResultsPerZone * index + 4] = ids.size();
+        for(axom::IndexType i = 0; i < 3; i++)
+        {
+          resultsView[nResultsPerZone * index + 5 + i] =
+            (i < ids.size()) ? ids[i] : -1;
+        }
+      });
+    // Get containsView data to the host and compare results
+    std::vector<int> resultsHost(nResults);
+    axom::copy(resultsHost.data(), resultsView.data(), sizeof(int) * nResults);
+    for(int i = 0; i < nResults; i++)
+    {
+      EXPECT_EQ(results[i], resultsHost[i]);
+    }
+  }
+};
+
+TEST(mir_views, matset_unibuffer_seq)
 {
-  braid2d_mat_test<seq_exec>("uniform", "unibuffer", "uniform2d_unibuffer");
-
-#if defined(AXOM_USE_OPENMP)
-  braid2d_mat_test<omp_exec>("uniform", "unibuffer", "uniform2d_unibuffer");
-#endif
-
-#if defined(AXOM_USE_CUDA) && defined(__CUDACC__)
-  braid2d_mat_test<cuda_exec>("uniform", "unibuffer", "uniform2d_unibuffer");
-#endif
-
-#if defined(AXOM_USE_HIP)
-  braid2d_mat_test<hip_exec>("uniform", "unibuffer", "uniform2d_unibuffer");
-#endif
+  test_braid2d_mat<seq_exec>::test("uniform", "unibuffer", "uniform2d_unibuffer");
 }
+#if defined(AXOM_USE_OPENMP)
+TEST(mir_views, matset_unibuffer_omp)
+{
+  test_braid2d_mat<omp_exec>::test("uniform", "unibuffer", "uniform2d_unibuffer");
+}
+#endif
+#if defined(AXOM_USE_CUDA)
+TEST(mir_views, matset_unibuffer_cuda)
+{
+  test_braid2d_mat<cuda_exec>::test("uniform", "unibuffer", "uniform2d_unibuffer");
+}
+#endif
+#if defined(AXOM_USE_HIP)
+TEST(mir_views, matset_unibuffer_hip)
+{
+  test_braid2d_mat<hip_exec>::test("uniform", "unibuffer", "uniform2d_unibuffer");
+}
+#endif
 
 //------------------------------------------------------------------------------
 
