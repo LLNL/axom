@@ -396,7 +396,10 @@ public:
    *  an N-dimensional array with the number of values in each sub-component
    *  index.
    */
-  ElementShape shape() const { return StridePolicyType::shape(); }
+  AXOM_HOST_DEVICE ElementShape shape() const
+  {
+    return StridePolicyType::shape();
+  }
 
   /// @}
 
@@ -576,11 +579,12 @@ public:
     using difference_type = SetPosition;
 
   private:
-    static StackArray<axom::IndexType, Dims + 1> fetchDims(StrideIndexType shape)
+    AXOM_HOST_DEVICE static StackArray<axom::IndexType, Dims + 1> fetchDims(
+      StrideIndexType shape)
     {
       return {0, shape};
     }
-    static StackArray<axom::IndexType, Dims + 1> fetchDims(
+    AXOM_HOST_DEVICE static StackArray<axom::IndexType, Dims + 1> fetchDims(
       const StackArray<StrideIndexType, Dims> shape)
     {
       StackArray<axom::IndexType, Dims + 1> dims;
@@ -592,14 +596,14 @@ public:
     }
 
   public:
-    MapRangeIterator(MapConstPtr oMap, PositionType pos)
+    AXOM_HOST_DEVICE MapRangeIterator(MapConstPtr oMap, PositionType pos)
       : IterBase(pos)
       , m_map(oMap)
     {
       StackArray<axom::IndexType, Dims + 1> dataDims = fetchDims(oMap->shape());
       dataDims[0] = m_map->size();
       m_mapData =
-        axom::ArrayView<DataType, Dims + 1>(m_map->data().data(), dataDims);
+        axom::ArrayView<DataType, Dims + 1>(m_map->data_ptr(), dataDims);
       m_currRange = m_mapData[pos];
     }
 
@@ -648,14 +652,13 @@ public:
     SetElement index() const { return m_map->index(this->m_pos); }
 
     /// \brief Returns the flat index pointed to by this iterator.
-    SetPosition flatIndex() const { return this->m_pos; }
+    AXOM_HOST_DEVICE SetPosition flatIndex() const { return this->m_pos; }
 
     /** \brief Returns the number of components per element in the Map. */
     PositionType numComp() const { return m_map->stride(); }
 
   protected:
     /** Implementation of advance() as required by IteratorBase */
-    AXOM_SUPPRESS_HD_WARN
     AXOM_HOST_DEVICE void advance(PositionType n)
     {
       this->m_pos += n;
@@ -798,6 +801,16 @@ private:
   {
     SLIC_ASSERT_MSG(m_data.size() == size() * numComp(),
                     "Not enough elements in buffer passed to Map constructor.");
+  }
+
+  AXOM_HOST_DEVICE typename IndirectionPolicy::ConstResultPtr data_ptr() const
+  {
+    return IndirectionPolicy::getConstIndirection(m_data);
+  }
+
+  AXOM_HOST_DEVICE typename IndirectionPolicy::ResultPtr data_ptr()
+  {
+    return IndirectionPolicy::getIndirection(m_data);
   }
 
 private:
