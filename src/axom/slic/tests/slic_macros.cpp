@@ -18,6 +18,9 @@
 // C/C++ includes
 #include <string>   // for C++ string
 #include <sstream>  // for std::ostringstream
+#include <iostream>
+
+#include <errno.h>
 
 // namespace alias
 namespace slic = axom::slic;
@@ -457,7 +460,7 @@ TEST(slic_macros, test_macros_file_output)
   std::string no_fmt_expected;
   no_fmt_expected += "*****\n[INFO]\n\n Test \n\n ";
   no_fmt_expected += __FILE__;
-  no_fmt_expected += "\n441\n****\n";
+  no_fmt_expected += "\n444\n****\n";
 
   EXPECT_EQ(no_fmt_buffer.str(), no_fmt_expected);
 
@@ -472,7 +475,16 @@ TEST(slic_macros, test_macros_file_output)
 
   // Cleanup generated files (not working Windows)
   // #ifndef WIN32
-  EXPECT_EQ(axom::utilities::filesystem::removeFile(no_fmt), 0);
+  int ret_code = axom::utilities::filesystem::removeFile(no_fmt);
+
+  if(ret_code == -1)
+  {
+    SLIC_INFO("########################### errno value is: "
+              << strerror(errno) << " ###############################");
+  }
+  std::cout << slic::internal::test_stream.str() << std::endl;
+
+  EXPECT_EQ(ret_code, 0);
   EXPECT_EQ(axom::utilities::filesystem::removeFile(with_fmt), 0);
   // #endif
 }
