@@ -132,7 +132,7 @@ private:
     SliceData deviceSlice(slice);
     axom::for_all<ExecSpace>(
       outputView.size(),
-      AXOM_LAMBDA(auto index) {
+      AXOM_LAMBDA(axom::IndexType index) {
         const auto zoneIndex = deviceSlice.m_indicesView[index];
         const auto transformedIndex = deviceIndexing[zoneIndex];
         outputView[index] = valuesView[transformedIndex];

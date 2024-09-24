@@ -190,7 +190,7 @@ protected:
         axom::for_all<ExecSpace>(
           selectedZonesView.size(),
           n,
-          AXOM_LAMBDA(auto index) { view[index] = 0; });
+          AXOM_LAMBDA(axom::IndexType index) { view[index] = 0; });
       }
       view = m_zoneSlice.view();
     }

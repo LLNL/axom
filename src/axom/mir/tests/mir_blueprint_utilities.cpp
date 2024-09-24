@@ -85,7 +85,7 @@ struct test_copy_braid
     conduit::Node hostMesh;
     create(hostMesh);
 
-    // Copy the mesh to device.
+    // host->device
     conduit::Node deviceMesh;
     axom::mir::utilities::blueprint::copy<ExecSpace>(deviceMesh, hostMesh);
 
@@ -93,25 +93,25 @@ struct test_copy_braid
 
     constexpr double eps = 1.e-7;
 
-    auto x = axom::mir::utilities::blueprint::minmax<ExecSpace, double>(
+    auto x = axom::mir::utilities::blueprint::minmax<ExecSpace, double>::execute(
       deviceMesh["coordsets/coords/values/x"]);
     //std::cout << std::setw(16) << "x={" << x.first << ", " << x.second << "}\n";
     EXPECT_NEAR(x.first, -10., eps);
     EXPECT_NEAR(x.second, 10., eps);
 
-    auto y = axom::mir::utilities::blueprint::minmax<ExecSpace, double>(
+    auto y = axom::mir::utilities::blueprint::minmax<ExecSpace, double>::execute(
       deviceMesh["coordsets/coords/values/y"]);
     //std::cout << std::setw(16) << "y={" << y.first << ", " << y.second << "}\n";
     EXPECT_NEAR(y.first, -10., eps);
     EXPECT_NEAR(y.second, 10., eps);
 
-    auto c = axom::mir::utilities::blueprint::minmax<ExecSpace, double>(
+    auto c = axom::mir::utilities::blueprint::minmax<ExecSpace, double>::execute(
       deviceMesh["topologies/mesh/elements/connectivity"]);
     //std::cout << std::setw(16) << "conn={" << c.first << ", " << c.second << "}\n";
     EXPECT_NEAR(c.first, 0., eps);
     EXPECT_NEAR(c.second, 999., eps);
 
-    auto r = axom::mir::utilities::blueprint::minmax<ExecSpace, double>(
+    auto r = axom::mir::utilities::blueprint::minmax<ExecSpace, double>::execute(
       deviceMesh["fields/radial/values"]);
     //std::cout << std::setw(16) << "radial={" << r.first << ", " << r.second << "}\n";
     EXPECT_NEAR(r.first, 19.2450089729875, eps);

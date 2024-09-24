@@ -39,9 +39,35 @@ public:
    */
   void execute(const conduit::Node &field,
                const conduit::Node &relation,
-               conduit::Node &outField) const;
+               conduit::Node &outField) const
+  {
+    const std::string association = field.fetch_existing("association").as_string();
 
+    // Assume that we're flipping the association.
+    outField["association"] = (association == "element") ? "vertex" : "element";
+    outField["topology"] = field["topology"];
+
+    // Make output values.
+    const conduit::Node &n_values = field["values"];
+    if(n_values.number_of_children() > 0)
+    {
+      for(conduit::index_t c = 0; c < n_values.number_of_children(); c++)
+      {
+        const conduit::Node &n_comp = n_values[c];
+        recenterSingleComponent(n_comp, relation, outField["values"][n_comp.name()]);
+      }
+    }
+    else
+    {
+      recenterSingleComponent(n_values, relation, outField["values"]);
+    }
+  }
+
+// The following members are private (unless using CUDA)
+#if !defined(__CUDACC__)
 private:
+#endif
+
   /*!
    * \brief Recenter a single field component.
    *
@@ -51,82 +77,66 @@ private:
    */
   void recenterSingleComponent(const conduit::Node &n_comp,
                                const conduit::Node &relation,
-                               conduit::Node &n_out) const;
-};
-
-template <typename ExecSpace>
-void RecenterField<ExecSpace>::execute(const conduit::Node &field,
-                                       const conduit::Node &relation,
-                                       conduit::Node &outField) const
-{
-  const std::string association = field.fetch_existing("association").as_string();
-
-  // Assume that we're flipping the association.
-  outField["association"] = (association == "element") ? "vertex" : "element";
-  outField["topology"] = field["topology"];
-
-  // Make output values.
-  const conduit::Node &n_values = field["values"];
-  if(n_values.number_of_children() > 0)
+                               conduit::Node &n_out) const
   {
-    for(conduit::index_t c = 0; c < n_values.number_of_children(); c++)
-    {
-      const conduit::Node &n_comp = n_values[c];
-      recenterSingleComponent(n_comp, relation, outField["values"][n_comp.name()]);
-    }
-  }
-  else
-  {
-    recenterSingleComponent(n_values, relation, outField["values"]);
-  }
-}
+    // Get the data field for the o2m relation.
+    const auto data_paths = conduit::blueprint::o2mrelation::data_paths(relation);
+  
+    // Use the o2mrelation to average data from n_comp to the n_out.
+    const conduit::Node &n_relvalues = relation[data_paths[0]];
+    const conduit::Node &n_sizes = relation["sizes"];
+    const conduit::Node &n_offsets = relation["offsets"];
+    views::IndexNode_to_ArrayView_same(
+      n_relvalues,
+      n_sizes,
+      n_offsets,
+      [&](auto relView, auto sizesView, auto offsetsView) {
+        // Allocate Conduit data through Axom.
+        const auto relSize = sizesView.size();
+        utilities::blueprint::ConduitAllocateThroughAxom<ExecSpace> c2a;
+        n_out.set_allocator(c2a.getConduitAllocatorID());
+        n_out.set(conduit::DataType(n_comp.dtype().id(), relSize));
 
-template <typename ExecSpace>
-void RecenterField<ExecSpace>::recenterSingleComponent(
-  const conduit::Node &n_comp,
-  const conduit::Node &relation,
-  conduit::Node &n_out) const
-{
-  // Get the data field for the o2m relation.
-  const auto data_paths = conduit::blueprint::o2mrelation::data_paths(relation);
+        views::Node_to_ArrayView_same(n_out, n_comp, [&](auto outView, auto compView) {
 
-  // Use the o2mrelation to average data from n_comp to the n_out.
-  const conduit::Node &n_relvalues = relation[data_paths[0]];
-  const conduit::Node &n_sizes = relation["sizes"];
-  const conduit::Node &n_offsets = relation["offsets"];
-  views::IndexNode_to_ArrayView_same(
-    n_relvalues,
-    n_sizes,
-    n_offsets,
-    [&](auto relView, auto sizesView, auto offsetsView) {
-      // Allocate Conduit data through Axom.
-      const auto relSize = sizesView.size();
-      utilities::blueprint::ConduitAllocateThroughAxom<ExecSpace> c2a;
-      n_out.set_allocator(c2a.getConduitAllocatorID());
-      n_out.set(conduit::DataType(n_comp.dtype().id(), relSize));
-
-      views::Node_to_ArrayView_same(n_comp, n_out, [&](auto compView, auto outView) {
-        using Precision = typename decltype(compView)::value_type;
-        using AccumType =
-          typename axom::mir::utilities::accumulation_traits<Precision>::value_type;
-        axom::for_all<ExecSpace>(
-          relSize,
-          AXOM_LAMBDA(auto relIndex) {
-            const auto n = static_cast<axom::IndexType>(sizesView[relIndex]);
-            const auto offset = offsetsView[relIndex];
-
-            AccumType sum {};
-            for(axom::IndexType i = 0; i < n; i++)
-            {
-              const auto id = relView[offset + i];
-              sum += static_cast<AccumType>(compView[id]);
-            }
-
-            outView[relIndex] = static_cast<Precision>(sum / n);
-          });
+          recenterSingleComponentImpl(relView, sizesView, offsetsView, outView, compView);
+        });
       });
-    });
-}
+  }
+
+  /*!
+   * \brief Recenter a single field component.
+   *
+   * \param relView The view that contains the ids for the relation.
+   * \param sizesView The view that contains the sizes for the relation.
+   * \param offsetsView The view that contains the offsets for the relation.
+   * \param outView The view that contains the out data.
+   * \param compView The view that contains the source data.
+   */
+  template <typename IndexView, typename DataView>
+  void recenterSingleComponentImpl(IndexView relView, IndexView sizesView, IndexView offsetsView, DataView outView, DataView compView) const
+  {
+    using Precision = typename DataView::value_type;
+    using AccumType =
+      typename axom::mir::utilities::accumulation_traits<Precision>::value_type;
+    const auto relSize = sizesView.size();
+    axom::for_all<ExecSpace>(
+      relSize,
+      AXOM_LAMBDA(axom::IndexType relIndex) {
+        const auto n = static_cast<axom::IndexType>(sizesView[relIndex]);
+        const auto offset = offsetsView[relIndex];
+
+        AccumType sum {};
+        for(axom::IndexType i = 0; i < n; i++)
+        {
+          const auto id = relView[offset + i];
+          sum += static_cast<AccumType>(compView[id]);
+        }
+
+        outView[relIndex] = static_cast<Precision>(sum / n);
+      });
+  }
+};
 
 }  // end namespace blueprint
 }  // end namespace utilities

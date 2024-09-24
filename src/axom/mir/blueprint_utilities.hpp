@@ -383,43 +383,57 @@ void copy(conduit::Node &dest, const conduit::Node &src)
   }
 }
 
-/**
- * \brief Get the min/max values for the data in a Conduit node.
- *
- * \param[in] n The Conduit node whose data we're checking.
- *
- * \return A pair containing the min,max values in the node.
+/*!
+ * \brief Get the min/max values for the data in a Conduit node or ArrayView.
  */
 template <typename ExecSpace, typename ReturnType>
-std::pair<ReturnType, ReturnType> minmax(const conduit::Node &n)
+struct minmax
 {
-  SLIC_ASSERT(n.dtype().number_of_elements() > 0);
-  std::pair<ReturnType, ReturnType> retval;
+  /*!
+   * \brief Get the min/max values for the data in a Conduit node.
+   *
+   * \param[in] n The Conduit node whose data we're checking.
+   *
+   * \return A pair containing the min,max values in the node.
+   */
+  static std::pair<ReturnType, ReturnType> execute(const conduit::Node &n)
+  {
+    SLIC_ASSERT(n.dtype().number_of_elements() > 0);
+    std::pair<ReturnType, ReturnType> retval;
 
-  axom::mir::views::Node_to_ArrayView(n, [&](auto nview) {
-    using value_type = typename decltype(nview)::value_type;
+    axom::mir::views::Node_to_ArrayView(n, [&](auto nview) {
+      retval = execute(nview);
+    });
+    return retval;
+  }
+
+  /*!
+   * \brief Get the min/max values for the data in an ArrayView.
+   *
+   * \param[in] n The Conduit node whose data we're checking.
+   *
+   * \return A pair containing the min,max values in the node.
+   */
+  template <typename T>
+  static std::pair<ReturnType, ReturnType> execute(const axom::ArrayView<T> nview)
+  {
     using reduce_policy =
       typename axom::execution_space<ExecSpace>::reduce_policy;
 
-    RAJA::ReduceMin<reduce_policy, value_type> vmin(
-      axom::numeric_limits<value_type>::max());
-    RAJA::ReduceMax<reduce_policy, value_type> vmax(
-      axom::numeric_limits<value_type>::min());
+    RAJA::ReduceMin<reduce_policy, T> vmin(axom::numeric_limits<T>::max());
+    RAJA::ReduceMax<reduce_policy, T> vmax(axom::numeric_limits<T>::min());
 
     axom::for_all<ExecSpace>(
       nview.size(),
-      AXOM_LAMBDA(auto index) {
+      AXOM_LAMBDA(axom::IndexType index) {
         vmin.min(nview[index]);
         vmax.max(nview[index]);
       });
 
-    retval =
-      std::pair<ReturnType, ReturnType> {static_cast<ReturnType>(vmin.get()),
-                                         static_cast<ReturnType>(vmax.get())};
-  });
-
-  return retval;
-}
+    return std::pair<ReturnType, ReturnType> {static_cast<ReturnType>(vmin.get()),
+                                              static_cast<ReturnType>(vmax.get())};
+  }
+};
 
 /**
  * \brief Save a Blueprint mesh to a legacy ASCII VTK file.

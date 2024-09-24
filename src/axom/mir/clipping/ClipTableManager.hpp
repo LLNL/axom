@@ -161,7 +161,7 @@ public:
     {
       for(int i = 0; i < n; i++)
       {
-        if(ids[i] >= P0 && ids[i] <= P7)
+        if(/*ids[i] >= P0 &&*/ ids[i] <= P7)
           os << "P" << static_cast<int>(ids[i]);
         else if(ids[i] >= EA && ids[i] <= EL)
         {

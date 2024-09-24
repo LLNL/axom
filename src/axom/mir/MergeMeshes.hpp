@@ -537,14 +537,8 @@ private:
             conduit::Node &n_newShapes =
               n_newTopoPtr->fetch_existing("elements/shapes");
             auto shapesView = bputils::make_array_view<ConnType>(n_newShapes);
-
             // Copy all sizes from the input.
-            axom::for_all<ExecSpace>(
-              srcShapesView.size(),
-              AXOM_LAMBDA(axom::IndexType index) {
-                shapesView[shapesOffset + index] = srcShapesView[index];
-              });
-
+            mergeTopology_copy_shapes(shapesOffset, shapesView, srcShapesView);
             shapesOffset += srcShapesView.size();
           });
       }
@@ -559,11 +553,7 @@ private:
           n_newTopoPtr->fetch_existing("elements/shapes");
         axom::mir::views::IndexNode_to_ArrayView(n_newShapes, [&](auto shapesView) {
           const int shapeId = axom::mir::views::shapeNameToID(srcShape);
-          axom::for_all<ExecSpace>(
-            nz,
-            AXOM_LAMBDA(axom::IndexType index) {
-              shapesView[shapesOffset + index] = shapeId;
-            });
+          mergeTopology_default_shapes(shapesOffset, shapesView, nz, shapeId);
           shapesOffset += nz;
         });
       }
@@ -641,7 +631,41 @@ private:
       });
   }
 
-  /**
+  /*!
+   * \brief Copy shapes from the source mesh to the merged mesh.
+   *
+   * \param shapesOffset The write offset for the shapes.
+   * \param shapesView The view that exposes shapes for the merged mesh.
+   * \param srcShapesView The view that exposes shapes for the source mesh.
+   */
+  template <typename IntegerView>
+  void mergeTopology_copy_shapes(axom::IndexType shapesOffset, IntegerView shapesView, IntegerView srcShapesView) const
+  {
+    axom::for_all<ExecSpace>(
+      srcShapesView.size(),
+      AXOM_LAMBDA(axom::IndexType index) {
+        shapesView[shapesOffset + index] = srcShapesView[index];
+      });
+  }
+
+  /*!
+   * \brief Set shapes in the merged mesh to a specific shape.
+   *
+   * \param shapesOffset The write offset for the shapes.
+   * \param shapesView The view that exposes shapes for the merged mesh.
+   * \param srcShapesView The view that exposes shapes for the source mesh.
+   */
+  template <typename IntegerView>
+  void mergeTopology_default_shapes(axom::IndexType shapesOffset, IntegerView shapesView, axom::IndexType nzones, int shapeId) const
+  {
+    axom::for_all<ExecSpace>(
+      nzones,
+      AXOM_LAMBDA(axom::IndexType index) {
+        shapesView[shapesOffset + index] = shapeId;
+      });
+  }
+
+  /*!
    * \brief Merge fields that exist on the various mesh inputs. Zero-fill values
    *        where a field does not exist in an input.
    *
@@ -770,133 +794,61 @@ private:
       {
         const conduit::Node &n_src_values =
           inputs[i].m_input->fetch_existing(srcPath);
-        axom::mir::views::Node_to_ArrayView(n_src_values,
-                                            n_values,
-                                            [&](auto srcView, auto destView) {
-                                              axom::for_all<ExecSpace>(
-                                                nzones,
-                                                AXOM_LAMBDA(axom::IndexType index) {
-                                                  destView[offset + index] =
-                                                    srcView[index];
-                                                });
-                                            });
+        axom::mir::views::Node_to_ArrayView(n_values,
+          n_src_values,
+          [&](auto destView, auto srcView) {
+            copyZonal_copy(nzones, offset, destView, srcView);
+          });
       }
       else
       {
         axom::mir::views::Node_to_ArrayView(n_values, [&](auto destView) {
-          axom::for_all<ExecSpace>(
-            nzones,
-            AXOM_LAMBDA(axom::IndexType index) { destView[offset + index] = 0; });
+          fillValues(nzones, offset, destView);
         });
       }
       offset += nzones;
     }
   }
 
-#if 0
-#define AXOM_NODE_TO_ARRAYVIEW1(node1, view1, CODE) \
-axom::mir::views::Node_to_ArrayView(node1, [&](auto view1){CODE});
-#else
-#define AXOM_NODE_TO_ARRAYVIEW1(node1, view1, CODE) \
-  switch(node1.dtype().id()) \
-  { \
-  case conduit::DataType::INT8_ID: \
-   { axom::ArrayView<conduit::int8> view1(static_cast<conduit::int8 *>(node1.data_ptr()), node1.dtype().number_of_elements()); \
-     CODE \
-   } break; \
-  case conduit::DataType::INT16_ID: { \
-     axom::ArrayView<conduit::int16> view1(static_cast<conduit::int16 *>(node1.data_ptr()), node1.dtype().number_of_elements()); \
-     CODE \
-   } break; \
-  case conduit::DataType::INT32_ID: \
-   { axom::ArrayView<conduit::int32> view1(static_cast<conduit::int32 *>(node1.data_ptr()), node1.dtype().number_of_elements()); \
-     CODE \
-   } break; \
-  case conduit::DataType::INT64_ID: { \
-     axom::ArrayView<conduit::int64> view1(static_cast<conduit::int64 *>(node1.data_ptr()), node1.dtype().number_of_elements()); \
-     CODE \
-   } break; \
-  case conduit::DataType::UINT8_ID: \
-   { axom::ArrayView<conduit::uint8> view1(static_cast<conduit::uint8 *>(node1.data_ptr()), node1.dtype().number_of_elements()); \
-     CODE \
-   } break; \
-  case conduit::DataType::UINT16_ID: { \
-     axom::ArrayView<conduit::uint16> view1(static_cast<conduit::uint16 *>(node1.data_ptr()), node1.dtype().number_of_elements()); \
-     CODE \
-   } break; \
-  case conduit::DataType::UINT32_ID: \
-   { axom::ArrayView<conduit::uint32> view1(static_cast<conduit::uint32 *>(node1.data_ptr()), node1.dtype().number_of_elements()); \
-     CODE \
-   } break; \
-  case conduit::DataType::UINT64_ID: { \
-     axom::ArrayView<conduit::uint64> view1(static_cast<conduit::uint64 *>(node1.data_ptr()), node1.dtype().number_of_elements()); \
-     CODE \
-   } break; \
-  case conduit::DataType::FLOAT32_ID: \
-   { axom::ArrayView<conduit::float32> view1(static_cast<conduit::float32 *>(node1.data_ptr()), node1.dtype().number_of_elements()); \
-     CODE \
-   } break; \
-  case conduit::DataType::FLOAT64_ID: { \
-     axom::ArrayView<conduit::float64> view1(static_cast<conduit::float64 *>(node1.data_ptr()), node1.dtype().number_of_elements()); \
-     CODE \
-   } break; \
+  /*!
+   * \brief Copy zonal data from src to dest.
+   *
+   * \param nzones The number of zones.
+   * \param offset The current write offset.
+   * \param destView The view that exposes the new merged field.
+   * \param srcView The view that exposes the source field.
+   *
+   * \note This method was broken out into a template member method since nvcc
+   *       would not instantiate the lambda for axom::for_all() from an anonymous
+   *       lambda.
+   */
+  template <typename DestView, typename SrcView>
+  void copyZonal_copy(axom::IndexType nzones, axom::IndexType offset, DestView destView, SrcView srcView) const
+  {
+    axom::for_all<ExecSpace>(nzones, AXOM_LAMBDA(axom::IndexType index) {
+      destView[offset + index] = srcView[index];
+    });
   }
 
-#define AXOM_NODE_TO_ARRAYVIEW_SAME2(node1, node2, view1, view2, CODE) \
-  switch(node1.dtype().id()) \
-  { \
-  case conduit::DataType::INT8_ID: {\
-     axom::ArrayView<conduit::int8> view1(static_cast<conduit::int8 *>(const_cast<void *>(node1.data_ptr())), node1.dtype().number_of_elements()); \
-     axom::ArrayView<conduit::int8> view2(static_cast<conduit::int8 *>(const_cast<void *>(node2.data_ptr())), node2.dtype().number_of_elements()); \
-     CODE \
-   } break; \
-  case conduit::DataType::INT16_ID: { \
-     axom::ArrayView<conduit::int16> view1(static_cast<conduit::int16 *>(const_cast<void *>(node1.data_ptr())), node1.dtype().number_of_elements()); \
-     axom::ArrayView<conduit::int16> view2(static_cast<conduit::int16 *>(const_cast<void *>(node2.data_ptr())), node2.dtype().number_of_elements()); \
-     CODE \
-   } break; \
-  case conduit::DataType::INT32_ID: {\
-     axom::ArrayView<conduit::int32> view1(static_cast<conduit::int32 *>(const_cast<void *>(node1.data_ptr())), node1.dtype().number_of_elements()); \
-     axom::ArrayView<conduit::int32> view2(static_cast<conduit::int32 *>(const_cast<void *>(node2.data_ptr())), node2.dtype().number_of_elements()); \
-     CODE \
-   } break; \
-  case conduit::DataType::INT64_ID: { \
-     axom::ArrayView<conduit::int64> view1(static_cast<conduit::int64 *>(const_cast<void *>(node1.data_ptr())), node1.dtype().number_of_elements()); \
-     axom::ArrayView<conduit::int64> view2(static_cast<conduit::int64 *>(const_cast<void *>(node2.data_ptr())), node2.dtype().number_of_elements()); \
-     CODE \
-   } break; \
-  case conduit::DataType::UINT8_ID: {\
-     axom::ArrayView<conduit::uint8> view1(static_cast<conduit::uint8 *>(const_cast<void *>(node1.data_ptr())), node1.dtype().number_of_elements()); \
-     axom::ArrayView<conduit::uint8> view2(static_cast<conduit::uint8 *>(const_cast<void *>(node2.data_ptr())), node2.dtype().number_of_elements()); \
-     CODE \
-   } break; \
-  case conduit::DataType::UINT16_ID: { \
-     axom::ArrayView<conduit::uint16> view1(static_cast<conduit::uint16 *>(const_cast<void *>(node1.data_ptr())), node1.dtype().number_of_elements()); \
-     axom::ArrayView<conduit::uint16> view2(static_cast<conduit::uint16 *>(const_cast<void *>(node2.data_ptr())), node2.dtype().number_of_elements()); \
-     CODE \
-   } break; \
-  case conduit::DataType::UINT32_ID: { \
-     axom::ArrayView<conduit::uint32> view1(static_cast<conduit::uint32 *>(const_cast<void *>(node1.data_ptr())), node1.dtype().number_of_elements()); \
-     axom::ArrayView<conduit::uint32> view2(static_cast<conduit::uint32 *>(const_cast<void *>(node2.data_ptr())), node2.dtype().number_of_elements()); \
-     CODE \
-   } break; \
-  case conduit::DataType::UINT64_ID: { \
-     axom::ArrayView<conduit::uint64> view1(static_cast<conduit::uint64 *>(const_cast<void *>(node1.data_ptr())), node1.dtype().number_of_elements()); \
-     axom::ArrayView<conduit::uint64> view2(static_cast<conduit::uint64 *>(const_cast<void *>(node2.data_ptr())), node2.dtype().number_of_elements()); \
-     CODE \
-   } break; \
-  case conduit::DataType::FLOAT32_ID: {\
-     axom::ArrayView<conduit::float32> view1(static_cast<conduit::float32 *>(const_cast<void *>(node1.data_ptr())), node1.dtype().number_of_elements()); \
-     axom::ArrayView<conduit::float32> view2(static_cast<conduit::float32 *>(const_cast<void *>(node2.data_ptr())), node2.dtype().number_of_elements()); \
-     CODE \
-   } break; \
-  case conduit::DataType::FLOAT64_ID: { \
-     axom::ArrayView<conduit::float64> view1(static_cast<conduit::float64 *>(const_cast<void *>(node1.data_ptr())), node1.dtype().number_of_elements()); \
-     axom::ArrayView<conduit::float64> view2(static_cast<conduit::float64 *>(const_cast<void *>(node2.data_ptr())), node2.dtype().number_of_elements()); \
-     CODE \
-   } break; \
+  /*!
+   * \brief Fill data in dest.
+   *
+   * \param nvalues The number of values.
+   * \param offset The current write offset.
+   * \param destView The view that exposes the new merged field.
+   *
+   * \note This method was broken out into a template member method since nvcc
+   *       would not instantiate the lambda for axom::for_all() from an anonymous
+   *       lambda.
+   */
+  template <typename DestView>
+  void fillValues(axom::IndexType nvalues, axom::IndexType offset, DestView destView) const
+  {
+    axom::for_all<ExecSpace>(nvalues, AXOM_LAMBDA(axom::IndexType index) {
+      destView[offset + index] = 0;
+    });
   }
-#endif
+
   /**
    * \brief Copy nodal field data into a Conduit node.
    *
@@ -923,56 +875,53 @@ axom::mir::views::Node_to_ArrayView(node1, [&](auto view1){CODE});
           n_values,
           [&](auto srcView, auto destView) {
 
-          copyNodal_copy(inputs[i].m_nodeSliceView, srcView, destView, nnodes, offset);
+          copyNodal_copy(inputs[i].m_nodeSliceView, nnodes, offset, destView, srcView);
 
           });
       }
       else
       {
-#if 1
         axom::mir::views::Node_to_ArrayView(n_values, [&](auto destView) {
-          copyNodal_fill(destView, nnodes, offset);
+          fillValues(nnodes, offset, destView);
         });
-#else
-        axom::mir::views::Node_to_ArrayView(n_values, [&](auto destView) {
-          axom::for_all<ExecSpace>(
-            nnodes,
-            AXOM_LAMBDA(axom::IndexType index) { destView[offset + index] = 0; });
-        });
-#endif
       }
       offset += nnodes;
     }
   }
 
+  /*!
+   * \brief Copy nodal data from src to dest.
+   *
+   * \param nodeSliceView The nodes we're pulling out (if populated).
+   * \param nnodes The number of nodes.
+   * \param offset The current write offset.
+   * \param destView The view that exposes the new merged field.
+   * \param srcView The view that exposes the source field.
+   *
+   * \note This method was broken out into a template member method since nvcc
+   *       would not instantiate the lambda for axom::for_all() from an anonymous
+   *       lambda.
+   */
   template <typename SrcViewType, typename DestViewType>
-  void copyNodal_copy(axom::ArrayView<axom::IndexType> nodeSliceView, SrcViewType srcView, DestViewType destView, axom::IndexType nnodes, axom::IndexType offset) const
+  void copyNodal_copy(axom::ArrayView<axom::IndexType> nodeSliceView, axom::IndexType nnodes, axom::IndexType offset, SrcViewType destView, DestViewType srcView) const
   {
-            if(nodeSliceView.empty())
-            {
-              axom::for_all<ExecSpace>(
-                nnodes,
-                AXOM_LAMBDA(axom::IndexType index) {
-                  destView[offset + index] = srcView[index];
-                });
-            }
-            else
-            {
-              axom::for_all<ExecSpace>(
-                nnodes,
-                AXOM_LAMBDA(axom::IndexType index) {
-                  const auto nodeId = nodeSliceView[index];
-                  destView[offset + index] = srcView[nodeId];
-                });
-            }
-   }
-
-  template <typename DestViewType>
-  void copyNodal_fill(DestViewType destView, axom::IndexType nnodes, axom::IndexType offset) const
-  {
-    axom::for_all<ExecSpace>(
-           nnodes,
-           AXOM_LAMBDA(axom::IndexType index) { destView[offset + index] = 0; });
+    if(nodeSliceView.empty())
+    {
+      axom::for_all<ExecSpace>(
+        nnodes,
+        AXOM_LAMBDA(axom::IndexType index) {
+          destView[offset + index] = srcView[index];
+        });
+    }
+    else
+    {
+      axom::for_all<ExecSpace>(
+        nnodes,
+        AXOM_LAMBDA(axom::IndexType index) {
+          const auto nodeId = nodeSliceView[index];
+          destView[offset + index] = srcView[nodeId];
+        });
+    }
   }
 
   /**

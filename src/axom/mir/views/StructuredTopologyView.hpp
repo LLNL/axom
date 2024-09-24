@@ -124,7 +124,6 @@ public:
         0,
         nzones,
         AXOM_LAMBDA(axom::IndexType zoneIndex) {
-          //using ShapeType = HexShape<IndexType>;
 
           const auto localLogical = zoneIndexing.IndexToLogicalIndex(zoneIndex);
           const auto jp = nodeIndexing.jStride();
@@ -152,8 +151,7 @@ public:
       axom::for_all<ExecSpace>(
         0,
         nzones,
-        AXOM_LAMBDA(auto zoneIndex) {
-          //using ShapeType = QuadShape<IndexType>;
+        AXOM_LAMBDA(axom::IndexType zoneIndex) {
 
           const auto localLogical = zoneIndexing.IndexToLogicalIndex(zoneIndex);
           const auto jp = nodeIndexing.jStride();
@@ -177,7 +175,6 @@ public:
         0,
         nzones,
         AXOM_LAMBDA(axom::IndexType zoneIndex) {
-          //using ShapeType = LineShape<IndexType>;
 
           const auto localLogical = zoneIndexing.IndexToLogicalIndex(zoneIndex);
           ConnectivityType data[2];
@@ -207,9 +204,6 @@ public:
     const auto nSelectedZones = selectedIdsView.size();
     ViewType idsView(selectedIdsView);
 
-    // Q: Should we make a for_all() that iterates over multiple ranges?
-    // Q: Should the logical index be passed to the lambda?
-
     if constexpr(IndexingPolicy::dimension() == 3)
     {
       const IndexingPolicy zoneIndexing = m_indexing;
@@ -219,7 +213,6 @@ public:
         0,
         nSelectedZones,
         AXOM_LAMBDA(axom::IndexType selectIndex) {
-          //using ShapeType = HexShape<IndexType>;
 
           const auto zoneIndex = idsView[selectIndex];
           const auto localLogical = zoneIndexing.IndexToLogicalIndex(zoneIndex);
@@ -249,7 +242,6 @@ public:
         0,
         nSelectedZones,
         AXOM_LAMBDA(axom::IndexType selectIndex) {
-          //using ShapeType = QuadShape<IndexType>;
 
           const auto zoneIndex = idsView[selectIndex];
           const auto localLogical = zoneIndexing.IndexToLogicalIndex(zoneIndex);
@@ -274,7 +266,6 @@ public:
         0,
         nSelectedZones,
         AXOM_LAMBDA(axom::IndexType selectIndex) {
-          //using ShapeType = LineShape<IndexType>;
 
           const auto zoneIndex = idsView[selectIndex];
           const auto localLogical = zoneIndexing.IndexToLogicalIndex(zoneIndex);

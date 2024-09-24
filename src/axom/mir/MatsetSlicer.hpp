@@ -87,7 +87,7 @@ public:
       selectedZonesView);
     axom::for_all<ExecSpace>(
       selectedZonesView.size(),
-      AXOM_LAMBDA(auto index) {
+      AXOM_LAMBDA(axom::IndexType index) {
         const auto nmats =
           deviceMatsetView.numberOfMaterials(deviceSelectedZonesView[index]);
         sizesView[index] = nmats;
@@ -119,7 +119,7 @@ public:
     // Fill in the matset data with the zones we're keeping.
     axom::for_all<ExecSpace>(
       selectedZonesView.size(),
-      AXOM_LAMBDA(auto index) {
+      AXOM_LAMBDA(axom::IndexType index) {
         const auto size = static_cast<int>(sizesView[index]);
         const auto offset = offsetsView[index];
 
