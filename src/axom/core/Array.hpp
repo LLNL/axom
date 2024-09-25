@@ -842,7 +842,7 @@ public:
   /*!
    * \brief Get the ID for the umpire allocator
    */
-  int getAllocatorID() const { return m_allocator_id; }
+  AXOM_HOST_DEVICE int getAllocatorID() const { return m_allocator_id; }
 
   /*!
    * \brief Sets the preferred space where operations on this array should be
