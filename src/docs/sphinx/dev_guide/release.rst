@@ -39,41 +39,72 @@ Here are the steps to follow for an Axom release.
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Create a release candidate branch off of the develop branch to initiate a
-release. The name of a release branch must contain the associated release version
-number. Typically, we use a name like v0.5.0-rc
+release. The name of a release branch should contain the associated release
+version name. Typically, we use a name like v0.5.0-rc
 (i.e., version 0.5.0 release candidate). See :ref:`semver-label` for a
 description of how version numbers are chosen.
 
-2: Issue a Pull Request
+2: Create a Pull Request
 ^^^^^^^^^^^^^^^^^^^^^^^^
 
+The release candidate branch, when complete, reviewed, and approved, will be
+merged into main so that a release tag can be generated for that merge commit.
 Create a pull request to merge the release candidate branch into main so that
-release changes can be reviewed. Such changes include:
+release changes can made and reviewed. 
+
+.. note:: Typically, when a release is being prepared it will have been months
+          since the previous release and the main branch has changed. Thus,
+          the number of files changed by the release candidate merge into main
+          will be large. Fortunately, most of those changes have been reviewed
+          and merged into the develop branch and so the changes do not require
+          additional review. Therefore, it is helpful to create a companion
+          pull request to merge the release candidate branch into develop. 
+          This pull request will not be merged, but will be much easier for
+          the team to review. To facilitate the process, cross reference the
+          pull request to be merged into main and the one to develop and note 
+          in the summary of the former to review the latter but approve the
+          former (Whew! Hopefully, that is clear).
+
+Typical changes that are made in a release candidate branch include:
 
 #. Update the version information (major, minor, and patch version numbers)
    at the top of the ``axom/src/cmake/AxomVersion.cmake`` file and in
    the ``axom/RELEASE`` file.
 
-#. Update the release notes in ``axom/RELEASE-NOTES.md`` by adding the
-   release version number and release date in the heading, as well as,
-   the corresponding link to the version on GitHub.
+#. Update the notes in the section for the new release in the file 
+   ``axom/RELEASE-NOTES.md``. Add the release version number and release date
+   in the section heading and add a link to the new version on GitHub at the
+   bottom of the file.
 
-#. Update the mail map in ``axom/.mailmap`` by adding the names and emails
-   of new contributors since the last release.
+   .. important: It is good practice to have everyone on the team review the
+                 release notes to ensure that they are complete, correct, and
+                 sufficiently descriptive so that users understand the content
+                 of the release. **Please make sure the section for the new
+                 release follows the same organization as in previous release
+                 sections.**
+
+#. Update the mail map in ``axom/.mailmap``, if needed, by adding names and 
+   emails of new contributors since the last release.
 
 #. Update the citations in ``axom/CITATION.cff`` by adding the names
    of new LLNL contributors since the last release.
 
 #. Test the code by running it through all continuous integration tests
-   and builds. This will ensure that all build configurations are working
-   properly and all tests pass.
+   and builds. This will be done automatically when the release pull request is
+   made. All build configurations must compile properly and all tests must pass
+   before the pull request can be merged.
 
-#. Fix any issues discovered during final release testing if code changes
-   are reasonably small and re-run appropriate tests to ensure issues are
-   resolved. If a major bug is discovered, and it requires significant
-   code modifications to fix, do not fix it on the release branch.
-   `Create a new GitHub issue for it <https://github.com/LLNL/axom/issues/new>`_
-   and note it in the ``known bugs`` section of the release notes.
+#. Fix any issues discovered during final release testing in the release 
+   candidate branch if code changes are reasonably small, and re-run
+   appropriate tests to ensure issues are resolved. If a major bug is
+   discovered, and it requires significant code modifications to fix,
+   do not fix it on the release branch.  `Create a new GitHub issue for it
+   <https://github.com/LLNL/axom/issues/new>`_ and note it in the ``known bugs``
+   section of the release notes. Alternatively, if time permits, fix the 
+   bug in a different branch and create a pull request as you would do during
+   regular development. After the bus is resolved and that pull request is
+   merged into develop, merge develop into the release candidate branch where
+   checks will run on that.
 
 #. Make sure all documentation (source code, user guides, etc.) is
    updated and reviewed. This should not be a substantial undertaking as
@@ -140,7 +171,9 @@ merging, the release candidate branch can be deleted.
 6: Merge Main to Develop
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Create a pull request to merge main into develop. When approved, merge it.
+Create a pull request to merge main into develop so that changes in the 
+release candidate branch are integrated into subsequent Axom development.
+When approved, merge it.
 
 
 .. _release-notes-label:
