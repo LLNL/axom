@@ -469,12 +469,10 @@ TEST(slic_macros, test_macros_file_output)
   no_fmt_contents.close();
   with_fmt_contents.close();
 
-// Closes open file streams associated with Slic streams when destructors
-// called during slic::finalize().
-// Windows _unlink file deletion fails if file is still in use.
-#ifdef WIN32
+  // Closes open file streams associated with Slic streams when destructors
+  // called during slic::finalize().
+  // Windows _unlink file deletion fails if file is still in use.
   slic::finalize();
-#endif
 
   // Cleanup generated files
   EXPECT_EQ(axom::utilities::filesystem::removeFile(no_fmt), 0);
