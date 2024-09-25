@@ -339,7 +339,7 @@
       if(!(EXP))                                                      \
       {                                                               \
         std::ostringstream __oss;                                     \
-        __oss << "Failed Assert: " << #EXP << std::ends;              \
+        __oss << "Failed Assert: " << #EXP;                           \
         axom::slic::logErrorMessage(__oss.str(), __FILE__, __LINE__); \
         if(axom::slic::isAbortOnErrorsEnabled())                      \
         {                                                             \
@@ -371,7 +371,7 @@
       if(!(EXP))                                                             \
       {                                                                      \
         std::ostringstream __oss;                                            \
-        __oss << "Failed Assert: " << #EXP << std::endl << msg << std::ends; \
+        __oss << "Failed Assert: " << #EXP << std::endl << msg;              \
         axom::slic::logErrorMessage(__oss.str(), __FILE__, __LINE__);        \
         if(axom::slic::isAbortOnErrorsEnabled())                             \
         {                                                                    \
@@ -427,7 +427,7 @@
       if(!(EXP))                                                          \
       {                                                                   \
         std::ostringstream __oss;                                         \
-        __oss << "Failed Check: " << #EXP << std::ends;                   \
+        __oss << "Failed Check: " << #EXP;                                \
         if(axom::slic::debug::checksAreErrors)                            \
         {                                                                 \
           axom::slic::logErrorMessage(__oss.str(), __FILE__, __LINE__);   \
@@ -469,7 +469,7 @@
       if(!(EXP))                                                            \
       {                                                                     \
         std::ostringstream __oss;                                           \
-        __oss << "Failed Check: " << #EXP << std::endl << msg << std::ends; \
+        __oss << "Failed Check: " << #EXP << std::endl << msg;              \
         if(axom::slic::debug::checksAreErrors)                              \
         {                                                                   \
           axom::slic::logErrorMessage(__oss.str(), __FILE__, __LINE__);     \
