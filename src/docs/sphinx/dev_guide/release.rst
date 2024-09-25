@@ -56,14 +56,14 @@ release changes can made and reviewed.
           since the previous release and the main branch has changed. Thus,
           the number of files changed by the release candidate merge into main
           will be large. Fortunately, most of those changes have been reviewed
-          and merged into the develop branch and so the changes do not require
+          and merged into the develop branch and do not require
           additional review. Therefore, it is helpful to create a companion
           pull request to merge the release candidate branch into develop. 
           This pull request will not be merged, but will be much easier for
           the team to review. To facilitate the process, cross reference the
           pull request to be merged into main and the one to develop and note 
           in the summary of the former to review the latter but approve the
-          former (Whew! Hopefully, that is clear).
+          former. (Whew! Hopefully, that is clear!)
 
 Typical changes that are made in a release candidate branch include:
 
@@ -76,12 +76,12 @@ Typical changes that are made in a release candidate branch include:
    in the section heading and add a link to the new version on GitHub at the
    bottom of the file.
 
-   .. important: It is good practice to have everyone on the team review the
-                 release notes to ensure that they are complete, correct, and
-                 sufficiently descriptive so that users understand the content
-                 of the release. **Please make sure the section for the new
-                 release follows the same organization as in previous release
-                 sections.**
+.. important: It is good practice to have everyone on the team review the
+              release notes to ensure that they are complete, correct, and
+              sufficiently descriptive so that users understand the content
+              of the release. **Please make sure the section for the new
+              release follows the same organization as in previous release
+              sections.**
 
 #. Update the mail map in ``axom/.mailmap``, if needed, by adding names and 
    emails of new contributors since the last release.
