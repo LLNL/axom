@@ -1079,6 +1079,7 @@ TEST_P(SlicMacrosParallel, test_macros_file_output)
     std::ifstream no_fmt_contents(no_fmt);
     std::stringstream no_fmt_buffer;
     no_fmt_buffer << no_fmt_contents.rdbuf();
+    no_fmt_contents.close();
 
     std::string no_fmt_expected;
     no_fmt_expected += "*****\n[INFO]\n\n Test \n\n ";
@@ -1090,6 +1091,7 @@ TEST_P(SlicMacrosParallel, test_macros_file_output)
     std::ifstream with_fmt_contents(with_fmt);
     std::stringstream with_fmt_buffer;
     with_fmt_buffer << with_fmt_contents.rdbuf();
+    with_fmt_contents.close();
 
     EXPECT_EQ(with_fmt_buffer.str(), "Test");
   }
@@ -1116,6 +1118,7 @@ TEST_P(SlicMacrosParallel, test_macros_file_output)
     std::ifstream no_fmt_output(no_fmt);
     std::stringstream no_fmt_out_buf;
     no_fmt_out_buf << no_fmt_output.rdbuf();
+    no_fmt_output.close();
 
     std::string no_fmt_output_expected;
     no_fmt_output_expected += "*****\n[INFO]\n\n Test \n\n ";
@@ -1124,13 +1127,14 @@ TEST_P(SlicMacrosParallel, test_macros_file_output)
     no_fmt_output_expected +=
       "*****\n[INFO]\n\n Test outputLocalMessages() \n\n ";
     no_fmt_output_expected += __FILE__;
-    no_fmt_output_expected += "\n1107\n****\n";
+    no_fmt_output_expected += "\n1109\n****\n";
 
     EXPECT_EQ(no_fmt_out_buf.str(), no_fmt_output_expected);
 
     std::ifstream with_fmt_output(with_fmt);
     std::stringstream with_fmt_out_buf;
     with_fmt_out_buf << with_fmt_output.rdbuf();
+    with_fmt_output.close();
 
     EXPECT_EQ(with_fmt_out_buf.str(), "TestTest outputLocalMessages()");
   }
@@ -1141,21 +1145,28 @@ TEST_P(SlicMacrosParallel, test_macros_file_output)
     std::ifstream no_fmt_output(no_fmt);
     std::stringstream no_fmt_out_buf;
     no_fmt_out_buf << no_fmt_output.rdbuf();
+    no_fmt_output.close();
 
     std::string no_fmt_output_expected;
     no_fmt_output_expected +=
       "*****\n[INFO]\n\n Test outputLocalMessages() \n\n ";
     no_fmt_output_expected += __FILE__;
-    no_fmt_output_expected += "\n1107\n****\n";
+    no_fmt_output_expected += "\n1109\n****\n";
 
     EXPECT_EQ(no_fmt_out_buf.str(), no_fmt_output_expected);
 
     std::ifstream with_fmt_output(with_fmt);
     std::stringstream with_fmt_out_buf;
     with_fmt_out_buf << with_fmt_output.rdbuf();
+    with_fmt_output.close();
 
     EXPECT_EQ(with_fmt_out_buf.str(), "Test outputLocalMessages()");
   }
+
+  // Closes open file streams associated with Slic streams when destructors
+  // called during slic::finalize().
+  // Windows _unlink file deletion fails if file is still in use.
+  slic::finalize();
 
   // Cleanup generated files
   EXPECT_EQ(axom::utilities::filesystem::removeFile(no_fmt), 0);
