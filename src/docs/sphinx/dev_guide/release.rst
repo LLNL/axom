@@ -119,8 +119,8 @@ Typical changes that are made in a release candidate branch include:
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Merge the release candidate branch into the main branch once it is ready and
-approved. Do not "squash merge:" that will make the histories of main and
-release branches disagree, and we want to preserve the history. After
+approved. Do not "squash merge" as it will make the histories of main and
+develop branches disagree, and we want to preserve the history. After
 merging, the release candidate branch can be deleted.
 
 
