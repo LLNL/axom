@@ -456,7 +456,7 @@ TEST(slic_macros, test_macros_file_output)
   std::string no_fmt_expected;
   no_fmt_expected += "*****\n[INFO]\n\n Test \n\n ";
   no_fmt_expected += __FILE__;
-  no_fmt_expected += "\n440\n****\n";
+  no_fmt_expected += "\n" + std::to_string(__LINE__ - 19) + "\n****\n";
 
   EXPECT_EQ(no_fmt_buffer.str(), no_fmt_expected);
 
