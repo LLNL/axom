@@ -37,7 +37,18 @@ namespace quest
 class Shaper
 {
 public:
+  /*!
+    @brief Construct Shaper to operate on an MFEM mesh.
+  */
   Shaper(const klee::ShapeSet& shapeSet, sidre::MFEMSidreDataCollection* dc);
+
+  /*!
+    @brief Construct Shaper to operate on a blueprint-formatted mesh
+    stored in a Conduit Node.
+  */
+  Shaper(const klee::ShapeSet& shapeSet,
+         conduit::Node* bpMesh,
+         const std::string& topo="");
 
   virtual ~Shaper() = default;
 
@@ -155,7 +166,16 @@ protected:
   sidre::DataStore m_dataStore;
 
   const klee::ShapeSet& m_shapeSet;
-  sidre::MFEMSidreDataCollection* m_dc;
+
+  // For mesh represented as MFEMSidreDataCollection
+  sidre::MFEMSidreDataCollection* m_dc{nullptr};
+
+  // For mesh represented in Conduit or sidre
+  conduit::Node* m_bpNode{nullptr};
+  const std::string m_bpTopo;
+  sidre::DataStore m_ds;
+  axom::sidre::Group* m_bpGrp{nullptr};
+  axom::IndexType m_cellCount;
 
   std::shared_ptr<mint::Mesh> m_surfaceMesh;
 

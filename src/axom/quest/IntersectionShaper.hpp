@@ -253,6 +253,86 @@ AXOM_HOST_DEVICE inline void GridFunctionView<hip_exec>::finalize()
 }
 #endif
 
+/*!
+ * \class TempArrayAccess
+ *
+ * \brief Given some array data, provides temporary version of
+ *        that data but allocated with an alternate allocator id.
+ *        This class performs data movement and clean-up to
+ *        temporarily have the data with the desired allocator id.
+ */
+class TempArrayAccess
+{
+public:
+  /*!
+   * \brief Constructor
+   *
+   * \param array
+   * \param writeBack Whether the data needs to be writen back to the
+   *                  original array device when this object goes out
+   *                  of scope.
+   */
+  AXOM_HOST TempArrayAccess(axom::ArrayView<double>& array,
+                            int wantedAllocatorId,
+                            bool writeBack = true)
+  {
+    m_origArray = array;
+
+    if (array.getAllocatorID() != wantedAllocatorId)
+    {
+      m_tempArray = axom::Array<double>(array, wantedAllocatorId);
+      m_accessible = m_tempArray.view();
+    }
+    else
+    {
+      m_accessible = array;
+    }
+    m_writeBack = writeBack;
+  }
+
+  /*!
+   * \brief Copy constructor, which is called to make a copy of the host
+   *        object so it is accessible inside a RAJA kernel. Any data movement
+   *        happened in the host constructor. This version sets hostData to
+   *        nullptr so we know not to clean up in the destructor.
+   */
+  AXOM_HOST_DEVICE TempArrayAccess(const TempArrayAccess& obj)
+    : m_origArray(obj.m_origArray)
+    , m_tempArray()
+    , m_accessible(obj.m_accessible)
+    , m_writeBack(obj.m_writeBack)
+  { }
+
+  /*!
+   * \brief Destructor. On the host, this method may move data from the 
+            device and deallocate device storage.
+   */
+  AXOM_HOST_DEVICE ~TempArrayAccess()
+  {
+    if (m_writeBack && (m_accessible.data() != m_origArray.data()))
+    {
+      axom::copy(m_origArray.data(), m_accessible.data(), sizeof(double)*m_origArray.size());
+    }
+  }
+
+  /*!
+   * \brief Indexing operator for accessing the data.
+   *
+   * \param i The index at which to access the data.
+   *
+   * \return A reference to the data at index i.
+   */
+  AXOM_HOST_DEVICE double& operator[](int i) { return m_accessible[i]; }
+  // non-const return on purpose.
+  AXOM_HOST_DEVICE double& operator[](int i) const { return m_accessible[i]; }
+
+private:
+  axom::ArrayView<double> m_origArray;
+  axom::Array<double> m_tempArray;
+  axom::ArrayView<double> m_accessible;
+  bool m_writeBack;
+};
+
 //---------------------------------------------------------------------------
 /**
  * \class
@@ -686,9 +766,10 @@ public:
 
     // Create and register a scalar field for this shape's volume fractions
     // The Degrees of Freedom will be in correspondence with the elements
-    auto* volFrac = this->newVolFracGridFunction();
-    auto volFracName = axom::fmt::format("shape_vol_frac_{}", shape.getName());
-    this->getDC()->RegisterField(volFracName, volFrac);
+    std::string volFracName = axom::fmt::format("shape_vol_frac_{}", shape.getName());
+    // auto* volFrac = this->newVolFracGridFunction();
+    // this->getDC()->RegisterField(volFracName, volFrac);
+    auto volFrac = getScalarCellData(volFracName);
 
     // Initialize hexahedral elements
     m_hexes = axom::Array<HexahedronType>(NE, NE, device_allocator);
@@ -715,7 +796,8 @@ public:
 
       // Set each shape volume fraction to 1
       double vf = 1.0;
-      (*volFrac)(i) = vf;
+      // (*volFrac)(i) = vf;
+      volFrac[i] = vf;
 
       // Get the coordinates for the vertices
       for(int j = 0; j < NUM_VERTS_PER_HEX; ++j)
@@ -1040,7 +1122,8 @@ private:
    * \return A pair containing the associated grid function and material
    *         number (its order in the list).
    */
-  std::pair<mfem::GridFunction*, int> getMaterial(const std::string& materialName)
+  // std::pair<mfem::GridFunction*, int> getMaterial(const std::string& materialName)
+  std::pair<axom::ArrayView<double>, int> getMaterial(const std::string& materialName)
   {
     // If we already know about the material, return it.
     for(size_t i = 0; i < m_vf_material_names.size(); i++)
@@ -1053,17 +1136,15 @@ private:
 
     // Get or create the volume fraction field for this shape's material
     auto materialVolFracName = materialNameToFieldName(materialName);
-    mfem::GridFunction* matVolFrac = nullptr;
-    if(this->getDC()->HasField(materialVolFracName))
+
+    bool newData = !hasData(materialVolFracName);
+
+    auto matVolFrac = getScalarCellData(materialVolFracName);
+    if (newData)
     {
-      matVolFrac = this->getDC()->GetField(materialVolFracName);
-    }
-    else
-    {
-      matVolFrac = newVolFracGridFunction();
-      this->getDC()->RegisterField(materialVolFracName, matVolFrac);
       // Zero out the volume fractions (on host).
-      memset(matVolFrac->begin(), 0, matVolFrac->Size() * sizeof(double));
+      // memset(matVolFrac->begin(), 0, matVolFrac->Size() * sizeof(double));
+      memset(matVolFrac.data(), 0, matVolFrac.size() * sizeof(double));
     }
 
     // Add the material to our vectors.
@@ -1117,34 +1198,32 @@ public:
    *         free space in each zone.
    */
   template <typename ExecSpace>
-  mfem::GridFunction* getCompletelyFree()
+  axom::ArrayView<double> getCompletelyFree()
   {
-    // Add the material prefix so the MFEMSidreDataCollection will automatically
+    // Add the material prefix so the mesh will automatically
     // consider the free material something it needs to write as a matset.
     const std::string fieldName(materialNameToFieldName(m_free_mat_name));
-    mfem::GridFunction* cfgf = nullptr;
-    if(this->getDC()->HasField(fieldName))
-    {
-      cfgf = this->getDC()->GetField(fieldName);
-    }
-    else
-    {
-      // Make the new grid function.
-      cfgf = newVolFracGridFunction();
-      this->getDC()->RegisterField(fieldName, cfgf);
 
+    bool newData = !hasData(fieldName);
+    int execSpaceAllocatorID = ::getUmpireDeviceId<ExecSpace>();
+
+    axom::ArrayView<double> cfgf = getScalarCellData(fieldName);
+
+    if (newData)
+    {
       AXOM_ANNOTATE_SCOPE("compute_free");
 
-      int dataSize = cfgf->Size();
-      GridFunctionView<ExecSpace> cfView(cfgf);
+      int dataSize = cfgf.size();
+      TempArrayAccess cfView(cfgf, execSpaceAllocatorID, true);
+
       axom::for_all<ExecSpace>(
         dataSize,
         AXOM_LAMBDA(axom::IndexType i) { cfView[i] = 1.; });
 
       // Iterate over all materials and subtract off their VFs from cfgf.
-      for(auto& gf : m_vf_grid_functions)
+      for(axom::ArrayView<double>& gf : m_vf_grid_functions)
       {
-        GridFunctionView<ExecSpace> matVFView(gf, false);
+        TempArrayAccess matVFView(gf, execSpaceAllocatorID, false);
         axom::for_all<ExecSpace>(
           dataSize,
           AXOM_LAMBDA(axom::IndexType i) {
@@ -1153,6 +1232,7 @@ public:
           });
       }
     }
+
     return cfgf;
   }
 
@@ -1213,17 +1293,20 @@ public:
     populateMaterials();
 
     // Get the free material so it is created first.
-    mfem::GridFunction* freeMat = getCompletelyFree<ExecSpace>();
+    // mfem::GridFunction* freeMat = getCompletelyFree<ExecSpace>();
+    axom::ArrayView<double> freeMat = getCompletelyFree<ExecSpace>();
 
     // Get this shape's material, creating the GridFunction if needed.
     auto matVF = getMaterial(shape.getMaterial());
-    int dataSize = matVF.first->Size();
+    // int dataSize = matVF.first->Size();
+    int dataSize = matVF.first.size();
 
     // Get this shape's array.
     auto shapeVolFracName =
       axom::fmt::format("shape_vol_frac_{}", shape.getName());
-    auto* shapeVolFrac = this->getDC()->GetField(shapeVolFracName);
-    SLIC_ASSERT(shapeVolFrac != nullptr);
+    // auto* shapeVolFrac = this->getDC()->GetField(shapeVolFracName);
+    auto shapeVolFrac = getScalarCellData(shapeVolFracName);
+    // SLIC_ASSERT(shapeVolFrac != nullptr);
 
     // Allocate some memory for the replacement rule data arrays.
     int execSpaceAllocatorID = axom::execution_space<ExecSpace>::allocatorID();
@@ -1234,8 +1317,10 @@ public:
     ArrayView<double> vf_writable(vf_writable_array);
 
     // Determine which grid functions need to be considered for VF updates.
-    std::vector<std::pair<mfem::GridFunction*, int>> gf_order_by_matnumber;
-    std::vector<mfem::GridFunction*> updateVFs, excludeVFs;
+    // std::vector<std::pair<mfem::GridFunction*, int>> gf_order_by_matnumber;
+    // std::vector<mfem::GridFunction*> updateVFs, excludeVFs;
+    std::vector<std::pair<axom::ArrayView<double>, int>> gf_order_by_matnumber;
+    std::vector<axom::ArrayView<double>> updateVFs, excludeVFs;
     if(!shape.getMaterialsReplaced().empty())
     {
       // Include materials replaced in updateVFs.
@@ -1284,8 +1369,8 @@ public:
     // Sort eligible update materials by material number.
     std::sort(gf_order_by_matnumber.begin(),
               gf_order_by_matnumber.end(),
-              [&](const std::pair<mfem::GridFunction*, int>& lhs,
-                  const std::pair<mfem::GridFunction*, int>& rhs) {
+              [&](const std::pair<axom::ArrayView<double>, int>& lhs,
+                  const std::pair<axom::ArrayView<double>, int>& rhs) {
                 return lhs.second < rhs.second;
               });
 
@@ -1316,7 +1401,8 @@ public:
       for(const auto& name : shape.getMaterialsReplaced())
       {
         auto mat = getMaterial(name);
-        GridFunctionView<ExecSpace> matVFView(mat.first, false);
+        // GridFunctionView<ExecSpace> matVFView(mat.first, false);
+        TempArrayAccess matVFView(mat.first, execSpaceAllocatorID, false);
         axom::for_all<ExecSpace>(
           dataSize,
           AXOM_LAMBDA(axom::IndexType i) {
@@ -1335,7 +1421,8 @@ public:
 
       for(auto& gf : excludeVFs)
       {
-        GridFunctionView<ExecSpace> matVFView(gf, false);
+        // GridFunctionView<ExecSpace> matVFView(gf, false);
+        TempArrayAccess matVFView(gf, execSpaceAllocatorID, false);
         axom::for_all<ExecSpace>(
           dataSize,
           AXOM_LAMBDA(axom::IndexType i) {
@@ -1349,8 +1436,10 @@ public:
     {
       AXOM_ANNOTATE_SCOPE("compute_vf");
 
-      GridFunctionView<ExecSpace> matVFView(matVF.first);
-      GridFunctionView<ExecSpace> shapeVFView(shapeVolFrac);
+      // GridFunctionView<ExecSpace> matVFView(matVF.first);
+      // GridFunctionView<ExecSpace> shapeVFView(shapeVolFrac);
+      TempArrayAccess matVFView(matVF.first, execSpaceAllocatorID, true);
+      TempArrayAccess shapeVFView(shapeVolFrac, execSpaceAllocatorID, true);
 
       axom::ArrayView<double> overlap_volumes_view = m_overlap_volumes.view();
       axom::ArrayView<double> hex_volumes_view = m_hex_volumes.view();
@@ -1380,7 +1469,8 @@ public:
       AXOM_ANNOTATE_SCOPE("update_vf");
       for(auto& gf : updateVFs)
       {
-        GridFunctionView<ExecSpace> matVFView(gf);
+        // GridFunctionView<ExecSpace> matVFView(gf);
+        TempArrayAccess matVFView(gf, execSpaceAllocatorID, true);
         axom::for_all<ExecSpace>(
           dataSize,
           AXOM_LAMBDA(axom::IndexType i) {
@@ -2020,7 +2110,63 @@ private:
     m_level = circleLevel;
   }
 
+  /// Whether the given field exists in the mesh.
+  bool hasData(const std::string& fieldName)
+  {
+    bool has = false;
+    if (m_dc) {
+      has = m_dc->HasField(fieldName);
+    }
+    else {
+      std::string fieldPath = axom::fmt::format("fields/{}", fieldName);
+      has = m_bpGrp->hasGroup(fieldPath);
+    }
+    return has;
+  }
+
+  axom::ArrayView<double> getScalarCellData(const std::string& fieldName)
+  {
+    axom::ArrayView<double> rval;
+
+    if (m_dc) {
+
+      mfem::GridFunction* gridFunc = nullptr;
+      if (m_dc->HasField(fieldName))
+      {
+        gridFunc = m_dc->GetField(fieldName);
+      }
+      else {
+        gridFunc = newVolFracGridFunction();
+        m_dc->RegisterField(fieldName, gridFunc);
+      }
+      rval = axom::ArrayView<double>(gridFunc->GetData(),
+                                     gridFunc->Size());
+    }
+    else {
+      std::string fieldPath = axom::fmt::format("fields/{}", fieldName);
+      auto dtype = conduit::DataType::float64(m_cellCount);
+      axom::sidre::View* valuesView = nullptr;
+      if (m_bpGrp->hasGroup(fieldPath))
+      {
+        auto* fieldsGrp = m_bpGrp->getGroup(fieldPath);
+        valuesView = fieldsGrp->getView("values");
+        SLIC_ASSERT(valuesView->getNumElements() == m_cellCount);
+        SLIC_ASSERT(valuesView->getNode().dtype().id() == dtype.id());
+      }
+      else
+      {
+        auto* fieldsGrp = m_bpGrp->createGroup(fieldPath);
+        valuesView = fieldsGrp->createView("values");
+        valuesView->allocate(dtype);
+      }
+      rval = axom::ArrayView<double>(static_cast<double*>(valuesView->getVoidPtr()),
+                                     m_cellCount);
+    }
+    return rval;
+  }
+
   /// Create and return a new volume fraction grid function for the current mesh
+  // TODO: change to generic name.  Nothing in here is about volume fractions.  BTNG.
   mfem::GridFunction* newVolFracGridFunction()
   {
     mfem::Mesh* mesh = getDC()->GetMesh();
@@ -2066,7 +2212,8 @@ private:
   axom::Array<HexahedronType> m_hexes;
   axom::Array<BoundingBoxType> m_hex_bbs;
 
-  std::vector<mfem::GridFunction*> m_vf_grid_functions;
+  // Views of volume-fraction data owned by grid.
+  std::vector<axom::ArrayView<double>> m_vf_grid_functions;
   std::vector<std::string> m_vf_material_names;
 #endif
 };

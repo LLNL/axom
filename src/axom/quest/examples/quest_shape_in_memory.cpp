@@ -972,7 +972,11 @@ double sumMaterialVolumes(sidre::MFEMSidreDataCollection* dc,
   const std::string materialFieldName =
     axom::fmt::format("vol_frac_{}", material);
   mfem::GridFunction* volFracGf = dc->GetField(materialFieldName);
-  axom::quest::GridFunctionView<ExecSpace> volFracView(volFracGf);
+  // axom::quest::GridFunctionView<ExecSpace> volFracView(volFracGf);
+  axom::ArrayView<double> volFracGfArrayView(volFracGf->GetData(), volFracGf->Size());
+  axom::quest::TempArrayAccess volFracView(volFracGfArrayView,
+                                           ::getUmpireDeviceId<ExecSpace>(),
+                                           true);
 
   using ReducePolicy = typename axom::execution_space<ExecSpace>::reduce_policy;
   RAJA::ReduceSum<ReducePolicy, double> localVol(0);

@@ -30,13 +30,31 @@ constexpr double Shaper::MINIMUM_PERCENT_ERROR;
 constexpr double Shaper::MAXIMUM_PERCENT_ERROR;
 constexpr double Shaper::DEFAULT_VERTEX_WELD_THRESHOLD;
 
-Shaper::Shaper(const klee::ShapeSet& shapeSet, sidre::MFEMSidreDataCollection* dc)
+Shaper::Shaper(const klee::ShapeSet& shapeSet,
+               sidre::MFEMSidreDataCollection* dc)
   : m_shapeSet(shapeSet)
   , m_dc(dc)
 {
 #if defined(AXOM_USE_MPI) && defined(MFEM_USE_MPI)
   m_comm = m_dc->GetComm();
 #endif
+  m_cellCount = m_dc->GetMesh()->GetNE();
+}
+
+Shaper::Shaper(const klee::ShapeSet& shapeSet,
+               conduit::Node* bpNode,
+               const std::string& topo)
+  : m_shapeSet(shapeSet)
+  , m_bpNode(bpNode)
+  , m_bpTopo(topo)
+  , m_comm(MPI_COMM_WORLD)
+{
+  m_bpGrp = m_ds.getRoot()->createGroup("bpGrp");
+  m_bpGrp->importConduitTreeExternal(*bpNode);
+  std::string coordsName =
+    m_bpGrp->getView(axom::fmt::format("topologies/{}/coordset", m_bpTopo))->getNode().as_string();
+  auto* coordsView = m_bpGrp->getView(axom::fmt::format("coordsets/{}", coordsName));
+  m_cellCount = coordsView->getNumElements();
 }
 
 void Shaper::setSamplesPerKnotSpan(int nSamples)
@@ -140,10 +158,17 @@ void Shaper::loadShapeInternal(const klee::Shape& shape,
 int Shaper::getRank() const
 {
 #if defined(AXOM_USE_MPI) && defined(MFEM_USE_MPI)
-  if(auto* pmesh = static_cast<mfem::ParMesh*>(m_dc->GetMesh()))
+  if (m_dc != nullptr)
   {
-    return pmesh->GetMyRank();
+    if(auto* pmesh = static_cast<mfem::ParMesh*>(m_dc->GetMesh()))
+    {
+      return pmesh->GetMyRank();
+    }
   }
+#elif defined(AXOM_USE_MPI)
+  int rank = -1;
+  MPI_Comm_rank(m_comm, &rank);
+  return rank;
 #endif
   return 0;
 }
