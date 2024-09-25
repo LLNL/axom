@@ -49,7 +49,6 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 - Quest: Adds an example to query winding numbers on an MFEM NURBS mesh
 
 ### Changed
-- `numerics::eigen_solve()` has been corrected to avoid an early return with error state.
 - `axom::CLI::ExitCodes::Success` has been changed to `axom::CLI::ExitCodes::CLI11_Success`
   to avoid conflict when X11 `#define`s `Success`.
 - `MarchingCubes` masking now uses the mask field's integer values instead of
@@ -79,6 +78,9 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
   (and `adiak` for metadata) and are available when axom is configured with `CALIPER_DIR` and `ADIAK_DIR` 
   config variables.
 - Removes caching of `{PACKAGE}_FOUND` variables in `SetupAxomThirdParty.cmake`
+
+### Fixed
+- `numerics::eigen_solve()` has been corrected to avoid an early return with error state.
 
 ## [Version 0.9.0] - Release date 2024-03-19
 
