@@ -365,19 +365,19 @@
  * \endcode
  *
  */
-  #define SLIC_ASSERT_MSG(EXP, msg)                                          \
-    do                                                                       \
-    {                                                                        \
-      if(!(EXP))                                                             \
-      {                                                                      \
-        std::ostringstream __oss;                                            \
-        __oss << "Failed Assert: " << #EXP << std::endl << msg;              \
-        axom::slic::logErrorMessage(__oss.str(), __FILE__, __LINE__);        \
-        if(axom::slic::isAbortOnErrorsEnabled())                             \
-        {                                                                    \
-          axom::slic::abort();                                               \
-        }                                                                    \
-      }                                                                      \
+  #define SLIC_ASSERT_MSG(EXP, msg)                                   \
+    do                                                                \
+    {                                                                 \
+      if(!(EXP))                                                      \
+      {                                                               \
+        std::ostringstream __oss;                                     \
+        __oss << "Failed Assert: " << #EXP << std::endl << msg;       \
+        axom::slic::logErrorMessage(__oss.str(), __FILE__, __LINE__); \
+        if(axom::slic::isAbortOnErrorsEnabled())                      \
+        {                                                             \
+          axom::slic::abort();                                        \
+        }                                                             \
+      }                                                               \
     } while(axom::slic::detail::false_value)
 
   ///@}
@@ -463,30 +463,30 @@
  * \endcode
  *
  */
-  #define SLIC_CHECK_MSG(EXP, msg)                                          \
-    do                                                                      \
-    {                                                                       \
-      if(!(EXP))                                                            \
-      {                                                                     \
-        std::ostringstream __oss;                                           \
-        __oss << "Failed Check: " << #EXP << std::endl << msg;              \
-        if(axom::slic::debug::checksAreErrors)                              \
-        {                                                                   \
-          axom::slic::logErrorMessage(__oss.str(), __FILE__, __LINE__);     \
-          if(axom::slic::isAbortOnErrorsEnabled())                          \
-          {                                                                 \
-            axom::slic::abort();                                            \
-          }                                                                 \
-        }                                                                   \
-        else                                                                \
-        {                                                                   \
-          axom::slic::logWarningMessage(__oss.str(), __FILE__, __LINE__);   \
-          if(axom::slic::isAbortOnWarningsEnabled())                        \
-          {                                                                 \
-            axom::slic::abort();                                            \
-          }                                                                 \
-        }                                                                   \
-      }                                                                     \
+  #define SLIC_CHECK_MSG(EXP, msg)                                        \
+    do                                                                    \
+    {                                                                     \
+      if(!(EXP))                                                          \
+      {                                                                   \
+        std::ostringstream __oss;                                         \
+        __oss << "Failed Check: " << #EXP << std::endl << msg;            \
+        if(axom::slic::debug::checksAreErrors)                            \
+        {                                                                 \
+          axom::slic::logErrorMessage(__oss.str(), __FILE__, __LINE__);   \
+          if(axom::slic::isAbortOnErrorsEnabled())                        \
+          {                                                               \
+            axom::slic::abort();                                          \
+          }                                                               \
+        }                                                                 \
+        else                                                              \
+        {                                                                 \
+          axom::slic::logWarningMessage(__oss.str(), __FILE__, __LINE__); \
+          if(axom::slic::isAbortOnWarningsEnabled())                      \
+          {                                                               \
+            axom::slic::abort();                                          \
+          }                                                               \
+        }                                                                 \
+      }                                                                   \
     } while(axom::slic::detail::false_value)
 
 /// @}
