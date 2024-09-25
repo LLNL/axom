@@ -204,11 +204,26 @@ public:
   static constexpr double DEFAULT_REVOLVED_VOLUME {0.};
 
 public:
+  /*!
+    @brief Construct Shaper to operate on an MFEM mesh.
+  */
   IntersectionShaper(const klee::ShapeSet& shapeSet,
                      sidre::MFEMSidreDataCollection* dc)
     : Shaper(shapeSet, dc)
   {
     m_free_mat_name = "free";
+  }
+
+  /*!
+    @brief Construct Shaper to operate on a blueprint-formatted mesh
+    stored in a Conduit Node.
+  */
+  IntersectionShaper(const klee::ShapeSet& shapeSet,
+                     conduit::Node* bpMesh,
+                     const std::string& topo="")
+    : Shaper(shapeSet, bpMesh, topo)
+    , m_free_mat_name("free")
+  {
   }
 
   //@{

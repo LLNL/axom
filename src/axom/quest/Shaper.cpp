@@ -34,6 +34,7 @@ Shaper::Shaper(const klee::ShapeSet& shapeSet,
                sidre::MFEMSidreDataCollection* dc)
   : m_shapeSet(shapeSet)
   , m_dc(dc)
+  , m_bpNode(nullptr)
 {
 #if defined(AXOM_USE_MPI) && defined(MFEM_USE_MPI)
   m_comm = m_dc->GetComm();
@@ -45,6 +46,7 @@ Shaper::Shaper(const klee::ShapeSet& shapeSet,
                conduit::Node* bpNode,
                const std::string& topo)
   : m_shapeSet(shapeSet)
+  , m_dc(nullptr)
   , m_bpNode(bpNode)
   , m_bpTopo(topo)
   , m_comm(MPI_COMM_WORLD)
