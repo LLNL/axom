@@ -127,7 +127,6 @@ TEST(primal_OBBox, obb_ctor_from_point_array)
   constexpr int DIM = 3;
   using CoordType = double;
   using QPoint = primal::Point<CoordType, DIM>;
-  using QVector = primal::Vector<CoordType, DIM>;
   using QOBBox = primal::OrientedBoundingBox<CoordType, DIM>;
 
   QPoint pt1;  // origin
