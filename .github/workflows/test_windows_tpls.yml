@@ -43,7 +43,7 @@ jobs:
     - name: Run uberenv (${{ matrix.triplet }})
       run: python3 ./scripts/uberenv/uberenv.py --triplet ${{ matrix.triplet }}
     - name: Save Uberenv logs
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v4
       if: ${{ always() }}
       with:
         name: uberenv_artifacts_${{ matrix.triplet }}_${{ matrix.cfg }}.zip
@@ -73,7 +73,7 @@ jobs:
         ls
         ctest -C ${{ matrix.cfg }} --no-compress-output -T Test 
     - name: Save CTest logs
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v4
       if: ${{ always() }}
       with:
         name: ctest_artifacts_${{ matrix.triplet }}_${{ matrix.cfg }}.zip
