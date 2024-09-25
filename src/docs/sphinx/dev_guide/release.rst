@@ -108,12 +108,12 @@ Typical changes that are made in a release candidate branch include:
    should be updated during the regular development cycle. See
    :ref:`release-notes-label` for information about release notes.
 
-.. important: It is good practice to have everyone on the team review the
-              release notes to ensure that they are complete, correct, and
-              sufficiently descriptive so that users understand the content
-              of the release. **Please make sure the section for the new
-              release follows the same organization as in previous release
-              sections.**
+.. important:: It is good practice to have everyone on the team review the
+               release notes to ensure that they are complete, correct, and
+               sufficiently descriptive so that users understand the content
+               of the release. **Please make sure the section for the new
+               release follows the same organization as in previous release
+               sections.**
 
 3: Merge Release Candidate
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
