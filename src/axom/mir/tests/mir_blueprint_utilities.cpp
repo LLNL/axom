@@ -602,7 +602,7 @@ struct test_matset_slice
 
     // device->host
     conduit::Node newHostMatset;
-    bputils::copy<ExecSpace>(newHostMatset, newDeviceMatset);
+    bputils::copy<axom::SEQ_EXEC>(newHostMatset, newDeviceMatset);
 
     // Expected answers.
     const axom::Array<conduit::int64> sizes {{2, 1, 2}};
@@ -614,7 +614,7 @@ struct test_matset_slice
 
     EXPECT_EQ(conduit::DataType::INT64_ID, newHostMatset["material_ids"].dtype().id());
     EXPECT_EQ(conduit::DataType::FLOAT64_ID, newHostMatset["volume_fractions"].dtype().id());
-printNode(newHostMatset);
+
     EXPECT_TRUE(compare_views(
       sizes.view(),
       bputils::make_array_view<conduit::int64>(newHostMatset["sizes"])));
@@ -719,7 +719,7 @@ void test_coordsetslicer(const conduit::Node &hostCoordset, Func &&makeView)
 
   // device->host
   conduit::Node newHostCoordset;
-  bputils::copy<ExecSpace>(newHostCoordset, newDeviceCoordset);
+  bputils::copy<axom::SEQ_EXEC>(newHostCoordset, newDeviceCoordset);
 
   // We get an explicit coordset out of the slicer.
   const axom::Array<conduit::float64> x {{0., 1., 2., 0., 1., 2.}};
@@ -950,7 +950,7 @@ struct test_extractzones
 
     // device->host
     conduit::Node newHostMesh;
-    bputils::copy<ExecSpace>(newHostMesh, newDeviceMesh);
+    bputils::copy<axom::SEQ_EXEC>(newHostMesh, newDeviceMesh);
 
     //printNode(newHostMesh);
 
@@ -1015,7 +1015,7 @@ struct test_extractzones
 
     // device->host
     newHostMesh.reset();
-    bputils::copy<ExecSpace>(newHostMesh, newDeviceMesh);
+    bputils::copy<axom::SEQ_EXEC>(newHostMesh, newDeviceMesh);
 
     // Check some of the key arrays in the sliced material
     const axom::Array<conduit::int64> mat_sizes {{2, 1, 2}};
@@ -1174,7 +1174,7 @@ struct test_zonelistbuilder
 
     // device->host
     conduit::Node hostData;
-    bputils::copy<ExecSpace>(hostData, deviceData);
+    bputils::copy<axom::SEQ_EXEC>(hostData, deviceData);
 
     // Compare expected
     const axom::Array<axom::IndexType> cleanResult {{0, 1, 2, 3, 4, 8, 12}};
@@ -1202,7 +1202,7 @@ struct test_zonelistbuilder
     deviceData["mixed"].set_external(mixed.data(), mixed.size());
 
     // device->host
-    bputils::copy<ExecSpace>(hostData, deviceData);
+    bputils::copy<axom::SEQ_EXEC>(hostData, deviceData);
 
     // Compare expected
     const axom::Array<axom::IndexType> cleanResult2 {{2, 3, 8, 12}};
@@ -1325,10 +1325,10 @@ struct test_mergemeshes
 
     // device->host
     conduit::Node hostResult;
-    bputils::copy<seq_exec>(hostResult, deviceResult);
+    bputils::copy<axom::SEQ_EXEC>(hostResult, deviceResult);
 
-    printNode(hostResult);
-    conduit::relay::io::blueprint::save_mesh(hostResult, "mergemeshes", "hdf5");
+    //printNode(hostResult);
+    //conduit::relay::io::blueprint::save_mesh(hostResult, "mergemeshes", "hdf5");
 
     constexpr double tolerance = 1.e-7;
     conduit::Node expectedResult, info;
@@ -1393,7 +1393,7 @@ domain0001:
     nodal:
       topology: mesh
       association: vertex
-      values: [1,1,1,1,1,1,1,1, 2]
+      values: [1,1,1,1,1,1,1,1, 2,2]
     zonal:
       topology: mesh
       association: element

@@ -60,7 +60,10 @@ public:
   IndexType size() const
   {
     IndexType sz = 1;
-    for(int i = 0; i < NDIMS; i++) sz *= m_dimensions[i];
+    for(int i = 0; i < NDIMS; i++)
+    {
+      sz *= m_dimensions[i];
+    }
     return sz;
   }
 

@@ -86,10 +86,10 @@ inline void exclusive_scan(const ContiguousMemoryContainer &input,
  * \code
  *
  *    axom::ArrayView<int> sizesView = sizes.view();
- *    axom::ArrayView<int> offsetsView = offsets.view();
+ *    axom::ArrayView<int> totalView = totals.view();
  *
- *    // Compute the scan for all elements in sizesView, store scan in offsetsView.
- *    axom::exclusive_scan<ExecSpace>(sizesView, offsetsView);
+ *    // Compute the scan for all elements in sizesView, store scan in totalView.
+ *    axom::inclusive_scan<ExecSpace>(sizesView, totalView);
  *
  * \endcode
  *

@@ -916,7 +916,7 @@ private:
     else
     {
       axom::for_all<ExecSpace>(
-        nnodes,
+        nodeSliceView.size(),
         AXOM_LAMBDA(axom::IndexType index) {
           const auto nodeId = nodeSliceView[index];
           destView[offset + index] = srcView[nodeId];

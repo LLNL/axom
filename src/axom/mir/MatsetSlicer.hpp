@@ -82,7 +82,6 @@ public:
 
     // Figure out overall size of the matset zones we're keeping.
     MatsetView deviceMatsetView(m_matsetView);
-    RAJA::ReduceSum<reduce_policy, typename MatsetView::IndexType> size_reduce(0);
     const axom::ArrayView<axom::IndexType> deviceSelectedZonesView(
       selectedZonesView);
     axom::for_all<ExecSpace>(
@@ -91,7 +90,12 @@ public:
         const auto nmats =
           deviceMatsetView.numberOfMaterials(deviceSelectedZonesView[index]);
         sizesView[index] = nmats;
-        size_reduce += nmats;
+      });
+    RAJA::ReduceSum<reduce_policy, MatsetIndex> size_reduce(0);
+    axom::for_all<ExecSpace>(
+      sizesView.size(),
+      AXOM_LAMBDA(axom::IndexType index) {
+        size_reduce += sizesView[index];
       });
     axom::exclusive_scan<ExecSpace>(sizesView, offsetsView);
 
