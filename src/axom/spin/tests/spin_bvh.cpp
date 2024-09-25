@@ -1354,7 +1354,7 @@ void check_find_points_zip3d()
   // construct the BVH
   spin::BVH<NDIMS, ExecSpace, FloatType> bvh;
   bvh.setScaleFactor(1.0);  // i.e., no scaling
-  bvh.initialize(aabbs, ncells);
+  bvh.initialize(aabbs_view, ncells);
 
   BoxType bounds = bvh.getBounds();
 
@@ -1441,7 +1441,7 @@ void check_find_points_zip2d()
   // construct the BVH
   spin::BVH<NDIMS, ExecSpace, FloatType> bvh;
   bvh.setScaleFactor(1.0);  // i.e., no scaling
-  bvh.initialize(aabbs, ncells);
+  bvh.initialize(aabbs_view, ncells);
 
   BoxType bounds = bvh.getBounds();
 
