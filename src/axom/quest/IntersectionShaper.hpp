@@ -20,19 +20,10 @@
 #include "axom/mint.hpp"
 #include "axom/spin.hpp"
 #include "axom/klee.hpp"
-
-#ifndef AXOM_USE_MFEM
-  #error Shaping functionality requires Axom to be configured with MFEM and the AXOM_ENABLE_MFEM_SIDRE_DATACOLLECTION option
-#endif
-
 #include "axom/quest/Shaper.hpp"
 #include "axom/spin/BVH.hpp"
 #include "axom/quest/interface/internal/mpicomm_wrapper.hpp"
 #include "axom/quest/interface/internal/QuestHelpers.hpp"
-#include "axom/quest/detail/shaping/shaping_helpers.hpp"
-
-#include "mfem.hpp"
-
 #include "axom/fmt.hpp"
 
 // RAJA
@@ -204,6 +195,7 @@ public:
   static constexpr double DEFAULT_REVOLVED_VOLUME {0.};
 
 public:
+#if defined(AXOM_SHAPING_ON_MFEM_MESH)
   /*!
     @brief Construct Shaper to operate on an MFEM mesh.
   */
@@ -213,7 +205,9 @@ public:
   {
     m_free_mat_name = "free";
   }
+#endif
 
+#if defined(AXOM_SHAPING_ON_BLUEPRINT_MESH)
   /*!
     @brief Construct Shaper to operate on a blueprint-formatted mesh
     stored in a Conduit Node.
@@ -225,6 +219,7 @@ public:
     , m_free_mat_name("free")
   {
   }
+#endif
 
   //@{
   //!  @name Functions to get and set shaping parameters related to intersection; supplements parameters in base class
@@ -245,7 +240,7 @@ public:
     {
       SLIC_ERROR("The free material name cannot contain underscores.");
     }
-    if(m_num_elements > 0)
+    if(m_cellCount > 0)
     {
       SLIC_ERROR(
         "The free material name cannot be set once shaping has occurred.");
@@ -542,8 +537,6 @@ public:
       axom::execution_space<axom::SEQ_EXEC>::allocatorID();
     const int device_allocator = axom::execution_space<ExecSpace>::allocatorID();
 
-    constexpr int NUM_VERTS_PER_HEX = 8;
-    constexpr int NUM_COMPS_PER_VERT = 3;
     constexpr int NUM_TETS_PER_HEX = 24;
     constexpr double ZERO_THRESHOLD = 1.e-10;
 
@@ -568,125 +561,36 @@ public:
       });
 
     // Insert shapes' Bounding Boxes into BVH.
-    //bvh.setAllocatorID(poolID);
     spin::BVH<3, ExecSpace, double> bvh;
     bvh.initialize(aabbs_device_view, shape_count);
 
     SLIC_INFO(axom::fmt::format("{:-^80}", " Querying the BVH tree "));
-
-    mfem::Mesh* mesh = getDC()->GetMesh();
-
-    // Intersection algorithm only works on linear elements
-    SLIC_ASSERT(mesh != nullptr);
-    int const NE = mesh->GetNE();
-    m_num_elements = NE;
-
-    if(this->isVerbose())
-    {
-      SLIC_INFO(axom::fmt::format(
-        "{:-^80}",
-        axom::fmt::format(
-          " Initializing {} hexahedral elements from given mesh ",
-          m_num_elements)));
-    }
-
-    if(NE > 0)
-    {
-      SLIC_ASSERT(mesh->GetNodes() == nullptr ||
-                  mesh->GetNodes()->FESpace()->GetOrder(0));
-    }
 
     // Create and register a scalar field for this shape's volume fractions
     // The Degrees of Freedom will be in correspondence with the elements
     std::string volFracName = axom::fmt::format("shape_vol_frac_{}", shape.getName());
     auto volFrac = getScalarCellData(volFracName);
 
-    // Initialize hexahedral elements
-    m_hexes = axom::Array<HexahedronType>(NE, NE, device_allocator);
+    populateHexesFromMesh<ExecSpace>();
     axom::ArrayView<HexahedronType> hexes_device_view = m_hexes.view();
 
-    m_hex_bbs = axom::Array<BoundingBoxType>(NE, NE, device_allocator);
+    m_hex_bbs = axom::Array<BoundingBoxType>(m_cellCount, m_cellCount, device_allocator);
     axom::ArrayView<BoundingBoxType> hex_bbs_device_view = m_hex_bbs.view();
 
-    // Initialize vertices from mfem mesh and
-    // set each shape volume fraction to 1
-    // Allocation size is:
-    // # of elements * # of vertices per hex * # of components per vertex
-    axom::Array<double> vertCoords_host(
-      NE * NUM_VERTS_PER_HEX * NUM_COMPS_PER_VERT,
-      NE * NUM_VERTS_PER_HEX * NUM_COMPS_PER_VERT,
-      host_allocator);
-
-    for(int i = 0; i < NE; i++)
-    {
-      // Get the indices of this element's vertices
-      mfem::Array<int> verts;
-      mesh->GetElementVertices(i, verts);
-      SLIC_ASSERT(verts.Size() == NUM_VERTS_PER_HEX);
-
-      // Set each shape volume fraction to 1
-      double vf = 1.0;
-      // (*volFrac)(i) = vf;
-      volFrac[i] = vf;
-
-      // Get the coordinates for the vertices
-      for(int j = 0; j < NUM_VERTS_PER_HEX; ++j)
-      {
-        for(int k = 0; k < NUM_COMPS_PER_VERT; k++)
-        {
-          vertCoords_host[(i * NUM_VERTS_PER_HEX * NUM_COMPS_PER_VERT) +
-                          (j * NUM_COMPS_PER_VERT) + k] =
-            (mesh->GetVertex(verts[j]))[k];
-        }
-      }
-    }
-
-    axom::Array<double> vertCoords_device =
-      axom::Array<double>(vertCoords_host, device_allocator);
-    auto vertCoords_device_view = vertCoords_device.view();
-
-    // Initialize each hexahedral element and its bounding box
+    // Get bounding boxes for hexahedral elements
     axom::for_all<ExecSpace>(
-      NE,
+      m_cellCount,
       AXOM_LAMBDA(axom::IndexType i) {
-        // Set each hexahedral element vertices
-        hexes_device_view[i] = HexahedronType();
-        for(int j = 0; j < NUM_VERTS_PER_HEX; ++j)
-        {
-          int vertIndex = (i * NUM_VERTS_PER_HEX * NUM_COMPS_PER_VERT) +
-            j * NUM_COMPS_PER_VERT;
-          hexes_device_view[i][j] =
-            Point3D({vertCoords_device_view[vertIndex],
-                     vertCoords_device_view[vertIndex + 1],
-                     vertCoords_device_view[vertIndex + 2]});
-
-          // Set hexahedra components to zero if within threshold
-          if(axom::utilities::isNearlyEqual(hexes_device_view[i][j][0],
-                                            0.0,
-                                            ZERO_THRESHOLD))
-          {
-            hexes_device_view[i][j][0] = 0.0;
-          }
-
-          if(axom::utilities::isNearlyEqual(hexes_device_view[i][j][1],
-                                            0.0,
-                                            ZERO_THRESHOLD))
-          {
-            hexes_device_view[i][j][1] = 0.0;
-          }
-
-          if(axom::utilities::isNearlyEqual(hexes_device_view[i][j][2],
-                                            0.0,
-                                            ZERO_THRESHOLD))
-          {
-            hexes_device_view[i][j][2] = 0.0;
-          }
-        }
-
-        // Get bounding box for hexahedral element
         hex_bbs_device_view[i] =
           primal::compute_bounding_box<double, 3>(hexes_device_view[i]);
       });  // end of loop to initialize hexahedral elements and bounding boxes
+
+    // Set each shape volume fraction to 1
+    for(int i = 0; i < m_cellCount; i++)
+    {
+      double vf = 1.0;
+      volFrac[i] = vf;
+    }
 
     // Set shape components to zero if within threshold
     axom::for_all<ExecSpace>(
@@ -722,10 +626,10 @@ public:
       "{:-^80}",
       " Finding shape candidates for each hexahedral element "));
 
-    axom::Array<IndexType> offsets(NE, NE, device_allocator);
-    axom::Array<IndexType> counts(NE, NE, device_allocator);
+    axom::Array<IndexType> offsets(m_cellCount, m_cellCount, device_allocator);
+    axom::Array<IndexType> counts(m_cellCount, m_cellCount, device_allocator);
     axom::Array<IndexType> candidates;
-    bvh.findBoundingBoxes(offsets, counts, candidates, NE, hex_bbs_device_view);
+    bvh.findBoundingBoxes(offsets, counts, candidates, m_cellCount, hex_bbs_device_view);
 
     // Get the total number of candidates
     using REDUCE_POL = typename axom::execution_space<ExecSpace>::reduce_policy;
@@ -734,7 +638,7 @@ public:
     const auto counts_device_view = counts.view();
     RAJA::ReduceSum<REDUCE_POL, int> totalCandidates(0);
     axom::for_all<ExecSpace>(
-      NE,
+      m_cellCount,
       AXOM_LAMBDA(axom::IndexType i) {
         totalCandidates += counts_device_view[i];
       });
@@ -753,8 +657,8 @@ public:
     auto shape_candidates_device_view = shape_candidates_device.view();
 
     // Tetrahedrons from hexes (24 for each hex)
-    axom::Array<TetrahedronType> tets_from_hexes_device(NE * NUM_TETS_PER_HEX,
-                                                        NE * NUM_TETS_PER_HEX,
+    axom::Array<TetrahedronType> tets_from_hexes_device(m_cellCount * NUM_TETS_PER_HEX,
+                                                        m_cellCount * NUM_TETS_PER_HEX,
                                                         device_allocator);
     axom::ArrayView<TetrahedronType> tets_from_hexes_device_view =
       tets_from_hexes_device.view();
@@ -782,7 +686,7 @@ public:
     {
       AXOM_ANNOTATE_SCOPE("init_tets");
       axom::for_all<ExecSpace>(
-        NE,
+        m_cellCount,
         AXOM_LAMBDA(axom::IndexType i) {
           TetHexArray cur_tets;
           hexes_device_view[i].triangulate(cur_tets);
@@ -803,7 +707,7 @@ public:
     {
       AXOM_ANNOTATE_SCOPE("init_candidates");
       axom::for_all<ExecSpace>(
-        NE,
+        m_cellCount,
         AXOM_LAMBDA(axom::IndexType i) {
           for(int j = 0; j < counts_device_view[i]; j++)
           {
@@ -824,10 +728,10 @@ public:
 
     // Overlap volume is the volume of clip(oct,tet) for c2c
     // or clip(tet,tet) for Pro/E meshes
-    m_overlap_volumes = axom::Array<double>(NE, NE, device_allocator);
+    m_overlap_volumes = axom::Array<double>(m_cellCount, m_cellCount, device_allocator);
 
     // Hex volume is the volume of the hexahedron element
-    m_hex_volumes = axom::Array<double>(NE, NE, device_allocator);
+    m_hex_volumes = axom::Array<double>(m_cellCount, m_cellCount, device_allocator);
 
     axom::ArrayView<double> overlap_volumes_device_view =
       m_overlap_volumes.view();
@@ -835,7 +739,7 @@ public:
 
     // Set initial values to 0
     axom::for_all<ExecSpace>(
-      NE,
+      m_cellCount,
       AXOM_LAMBDA(axom::IndexType i) {
         overlap_volumes_device_view[i] = 0;
         hex_volumes_device_view[i] = 0;
@@ -847,7 +751,7 @@ public:
     {
       AXOM_ANNOTATE_SCOPE("hex_volume");
       axom::for_all<ExecSpace>(
-        NE,
+        m_cellCount,
         AXOM_LAMBDA(axom::IndexType i) {
           hex_volumes_device_view[i] = hexes_device_view[i].volume();
         });
@@ -894,7 +798,7 @@ public:
     RAJA::ReduceSum<REDUCE_POL, double> totalHex(0);
 
     axom::for_all<ExecSpace>(
-      NE,
+      m_cellCount,
       AXOM_LAMBDA(axom::IndexType i) {
         totalOverlap += overlap_volumes_device_view[i];
         totalHex += hex_volumes_device_view[i];
@@ -995,6 +899,9 @@ private:
    */
   void populateMaterials()
   {
+#if 1
+    std::vector<std::string> materialNames = getMaterialNames();
+#else
     std::vector<std::string> materialNames;
     for(auto it : this->getDC()->GetFieldMap())
     {
@@ -1004,6 +911,7 @@ private:
         materialNames.emplace_back(materialName);
       }
     }
+#endif
     // Add any of these existing fields to this class' bookkeeping.
     for(const auto& materialName : materialNames)
     {
@@ -1164,6 +1072,39 @@ public:
       // Include all materials except those in "does_not_replace".
       // We'll also sort them by material number since the field map
       // sorts them by name rather than order added.
+#if 1
+      std::vector<std::string> materialNames = getMaterialNames();
+      for(auto name : materialNames)
+      {
+        // Check whether the field name is not the
+        // "free" field, which we handle specially)
+        if(name != m_free_mat_name)
+        {
+          // See if the field is in the exclusion list. For the normal
+          // case, the list is empty so we'd add the material.
+          auto it2 = std::find(shape.getMaterialsNotReplaced().cbegin(),
+                               shape.getMaterialsNotReplaced().cend(),
+                               name);
+          // The field is not in the exclusion list so add it to vfs.
+          if(it2 == shape.getMaterialsNotReplaced().cend())
+          {
+            // Do not add the current shape material since it should
+            // not end up in updateVFs.
+            if(name != shape.getMaterial())
+            {
+              gf_order_by_matnumber.emplace_back(getMaterial(name));
+            }
+          }
+          else
+          {
+            // The material was in the exclusion list. This means that
+            // cannot write to materials that have volume fraction in
+            // that zone.
+            excludeVFs.emplace_back(getMaterial(name).first);
+          }
+        }
+      }
+#else
       for(auto it : this->getDC()->GetFieldMap())
       {
         // Check whether the field name looks like a VF field (and is not the
@@ -1195,6 +1136,7 @@ public:
           }
         }
       }
+#endif
     }
     // Sort eligible update materials by material number.
     std::sort(gf_order_by_matnumber.begin(),
@@ -1939,13 +1881,17 @@ private:
   bool hasData(const std::string& fieldName)
   {
     bool has = false;
-    if (m_dc) {
+#if defined(AXOM_SHAPING_ON_MFEM_MESH)
+    if (m_dc != nullptr) {
       has = m_dc->HasField(fieldName);
     }
-    else {
+#endif
+#if defined(AXOM_SHAPING_ON_BLUEPRINT_MESH)
+    if (m_bpGrp != nullptr) {
       std::string fieldPath = axom::fmt::format("fields/{}", fieldName);
       has = m_bpGrp->hasGroup(fieldPath);
     }
+#endif
     return has;
   }
 
@@ -1953,8 +1899,8 @@ private:
   {
     axom::ArrayView<double> rval;
 
+#if defined(AXOM_SHAPING_ON_MFEM_MESH)
     if (m_dc) {
-
       mfem::GridFunction* gridFunc = nullptr;
       if (m_dc->HasField(fieldName))
       {
@@ -1967,7 +1913,9 @@ private:
       rval = axom::ArrayView<double>(gridFunc->GetData(),
                                      gridFunc->Size());
     }
-    else {
+#endif
+#if defined(AXOM_SHAPING_ON_BLUEPRINT_MESH)
+    if (m_bpGrp != nullptr) {
       std::string fieldPath = axom::fmt::format("fields/{}", fieldName);
       auto dtype = conduit::DataType::float64(m_cellCount);
       axom::sidre::View* valuesView = nullptr;
@@ -1987,7 +1935,215 @@ private:
       rval = axom::ArrayView<double>(static_cast<double*>(valuesView->getVoidPtr()),
                                      m_cellCount);
     }
+#endif
     return rval;
+  }
+
+  std::vector<std::string> getMaterialNames()
+  {
+    std::vector<std::string> materialNames;
+#if defined(AXOM_SHAPING_ON_MFEM_MESH)
+    if (m_dc)
+    {
+      for(auto it : this->getDC()->GetFieldMap())
+      {
+        std::string materialName = fieldNameToMaterialName(it.first);
+        if(!materialName.empty())
+        {
+          materialNames.emplace_back(materialName);
+        }
+      }
+    }
+#elif defined(AXOM_SHAPING_ON_BLUEPRINT_MESH)
+    if (m_bpGrp)
+    {
+      auto fieldsGrp = m_bpGrp->getGroup("fields");
+      for (auto& group : fieldsGrp->groups())
+      {
+        std::string materialName = fieldNameToMaterialName(group.getName());
+        if(!materialName.empty())
+        {
+          materialNames.emplace_back(materialName);
+        }
+      }
+    }
+#endif
+    return materialNames;
+  }
+
+  template <typename ExecSpace>
+  void populateHexesFromMesh()
+  {
+    constexpr int NUM_VERTS_PER_HEX = 8;
+    constexpr int NUM_COMPS_PER_VERT = 3;
+    const int hostAllocator =
+      axom::execution_space<axom::SEQ_EXEC>::allocatorID();
+    const int deviceAllocator =
+      axom::execution_space<ExecSpace>::allocatorID();
+
+    axom::Array<double> vertCoords(
+      m_cellCount * NUM_VERTS_PER_HEX * NUM_COMPS_PER_VERT,
+      m_cellCount * NUM_VERTS_PER_HEX * NUM_COMPS_PER_VERT,
+      hostAllocator);
+
+#if defined(AXOM_SHAPING_ON_MFEM_MESH)
+    if (m_dc != nullptr)
+    {
+      populateVertCoordsFromMFEMMesh(vertCoords);
+    }
+#endif
+#if defined(AXOM_SHAPING_ON_BLUEPRINT_MESH)
+    if (m_bpGrp != nullptr)
+    {
+      populateVertCoordsFromBlueprintMesh(vertCoords);
+    }
+#endif
+
+    if (deviceAllocator != hostAllocator)
+    {
+      vertCoords = axom::Array<double>(vertCoords, deviceAllocator);
+    }
+
+    auto vertCoords_device_view = vertCoords.view();
+
+    m_hexes = axom::Array<HexahedronType>(m_cellCount, m_cellCount, deviceAllocator);
+    axom::ArrayView<HexahedronType> hexes_device_view = m_hexes.view();
+    constexpr double ZERO_THRESHOLD = 1.e-10;
+    axom::for_all<ExecSpace>(
+      m_cellCount,
+      AXOM_LAMBDA(axom::IndexType i) {
+        // Set each hexahedral element vertices
+        hexes_device_view[i] = HexahedronType();
+        for(int j = 0; j < NUM_VERTS_PER_HEX; ++j)
+        {
+          int vertIndex = (i * NUM_VERTS_PER_HEX * NUM_COMPS_PER_VERT) +
+            j * NUM_COMPS_PER_VERT;
+          hexes_device_view[i][j] =
+            Point3D({vertCoords_device_view[vertIndex],
+                     vertCoords_device_view[vertIndex + 1],
+                     vertCoords_device_view[vertIndex + 2]});
+
+          // Set hexahedra components to zero if within threshold
+          if(axom::utilities::isNearlyEqual(hexes_device_view[i][j][0],
+                                            0.0,
+                                            ZERO_THRESHOLD))
+          {
+            hexes_device_view[i][j][0] = 0.0;
+          }
+
+          if(axom::utilities::isNearlyEqual(hexes_device_view[i][j][1],
+                                            0.0,
+                                            ZERO_THRESHOLD))
+          {
+            hexes_device_view[i][j][1] = 0.0;
+          }
+
+          if(axom::utilities::isNearlyEqual(hexes_device_view[i][j][2],
+                                            0.0,
+                                            ZERO_THRESHOLD))
+          {
+            hexes_device_view[i][j][2] = 0.0;
+          }
+        }
+      });  // end of loop to initialize hexahedral elements and bounding boxes
+  }
+
+#if defined(AXOM_SHAPING_ON_BLUEPRINT_MESH)
+  void populateVertCoordsFromBlueprintMesh(axom::Array<double>& vertCoords_host)
+  {
+    // Initialize vertices from blueprint mesh and
+    // set each shape volume fraction to 1
+    // Allocation size is:
+    // # of elements * # of vertices per hex * # of components per vertex
+    constexpr int NUM_VERTS_PER_HEX = 8;
+    constexpr int NUM_COMPS_PER_VERT = 3;
+
+    const auto* topoGrp = m_bpGrp->getGroup(axom::fmt::format("topologies/{}", m_bpTopo));
+    std::string coordsetName = topoGrp->getView("coordset")->getString();
+
+    // Assume unstructured and hexahedral
+    SLIC_ASSERT(std::string(topoGrp->getView("type")->getString()) == "unstructured");
+    SLIC_ASSERT(std::string(topoGrp->getView("elements/shape")->getString()) == "hex");
+
+    const auto connGrp = topoGrp->getView("elements/connectivity");
+    axom::ArrayView<const double, 2> conn(connGrp->getNode().as_double_ptr(),
+                                          m_cellCount, NUM_VERTS_PER_HEX);
+
+    const auto* coordGrp = m_bpGrp->getGroup(axom::fmt::format("coordsets/{}", coordsetName));
+    const conduit::Node& coordValues = coordGrp->getView("values")->getNode();
+
+    // Assume explicit coordinates.
+    SLIC_ASSERT(std::string(coordGrp->getView("type")->getString()) == "explicit");
+
+    axom::IndexType vertexCount = coordValues["x"].dtype().number_of_elements();
+    bool isInterleaved = conduit::blueprint::mcarray::is_interleaved(coordValues);
+    int stride = isInterleaved ? NUM_COMPS_PER_VERT : 1;
+    axom::StackArray<axom::ArrayView<const double>, 3> coordArrays {
+      axom::ArrayView<const double>(coordValues["x"].as_double_ptr(), {vertexCount}, stride),
+      axom::ArrayView<const double>(coordValues["y"].as_double_ptr(), {vertexCount}, stride),
+      axom::ArrayView<const double>(coordValues["z"].as_double_ptr(), {vertexCount}, stride) };
+
+    for(int i = 0; i < m_cellCount; i++)
+    {
+      // Get the indices of this element's vertices
+      auto hexVerts = conn[i];
+      SLIC_ASSERT(hexVerts.size() == NUM_VERTS_PER_HEX);
+
+      // Get the coordinates for the vertices
+      for(int j = 0; j < NUM_VERTS_PER_HEX; ++j)
+      {
+        auto vertId = hexVerts[j];
+        for(int k = 0; k < NUM_COMPS_PER_VERT; k++)
+        {
+          vertCoords_host[(i * NUM_VERTS_PER_HEX * NUM_COMPS_PER_VERT) +
+                          (j * NUM_COMPS_PER_VERT) + k] =
+            coordArrays[k][vertId];
+        }
+      }
+    }
+
+  }
+#endif
+
+#if defined(AXOM_SHAPING_ON_MFEM_MESH)
+  void populateVertCoordsFromMFEMMesh(axom::Array<double>& vertCoords_host)
+  {
+    mfem::Mesh* mesh = getDC()->GetMesh();
+    // Intersection algorithm only works on linear elements
+    SLIC_ASSERT(mesh != nullptr);
+
+    if(m_cellCount > 0)
+    {
+      SLIC_ASSERT(mesh->GetNodes() == nullptr ||
+                  mesh->GetNodes()->FESpace()->GetOrder(0));
+    }
+
+    // Initialize vertices from mfem mesh and
+    // set each shape volume fraction to 1
+    // Allocation size is:
+    // # of elements * # of vertices per hex * # of components per vertex
+    constexpr int NUM_VERTS_PER_HEX = 8;
+    constexpr int NUM_COMPS_PER_VERT = 3;
+
+    for(int i = 0; i < m_cellCount; i++)
+    {
+      // Get the indices of this element's vertices
+      mfem::Array<int> verts;
+      mesh->GetElementVertices(i, verts);
+      SLIC_ASSERT(verts.Size() == NUM_VERTS_PER_HEX);
+
+      // Get the coordinates for the vertices
+      for(int j = 0; j < NUM_VERTS_PER_HEX; ++j)
+      {
+        for(int k = 0; k < NUM_COMPS_PER_VERT; k++)
+        {
+          vertCoords_host[(i * NUM_VERTS_PER_HEX * NUM_COMPS_PER_VERT) +
+                          (j * NUM_COMPS_PER_VERT) + k] =
+            (mesh->GetVertex(verts[j]))[k];
+        }
+      }
+    }
+
   }
 
   /// Create and return a new volume fraction grid function for the current mesh
@@ -2007,6 +2163,7 @@ private:
 
     return volFrac;
   }
+#endif
 
   bool surfaceMeshIsTet() const
   {
@@ -2020,7 +2177,6 @@ private:
   RuntimePolicy m_execPolicy {RuntimePolicy::seq};
   int m_level {DEFAULT_CIRCLE_REFINEMENT_LEVEL};
   double m_revolvedVolume {DEFAULT_REVOLVED_VOLUME};
-  int m_num_elements {0};
   std::string m_free_mat_name;
 
   axom::Array<double> m_hex_volumes;

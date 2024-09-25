@@ -9,15 +9,10 @@
 #include "axom/core.hpp"
 #include "axom/primal/operators/split.hpp"
 #include "axom/quest/interface/internal/QuestHelpers.hpp"
+#include "axom/quest/Shaper.hpp"
 #include "axom/quest/DiscreteShape.hpp"
 
 #include "axom/fmt.hpp"
-
-#ifndef AXOM_USE_MFEM
-  #error Shaping functionality requires Axom to be configured with MFEM and the AXOM_ENABLE_MFEM_SIDRE_DATACOLLECTION option
-#endif
-
-#include "mfem.hpp"
 
 namespace axom
 {
@@ -30,23 +25,24 @@ constexpr double Shaper::MINIMUM_PERCENT_ERROR;
 constexpr double Shaper::MAXIMUM_PERCENT_ERROR;
 constexpr double Shaper::DEFAULT_VERTEX_WELD_THRESHOLD;
 
+#if defined(AXOM_SHAPING_ON_MFEM_MESH)
 Shaper::Shaper(const klee::ShapeSet& shapeSet,
                sidre::MFEMSidreDataCollection* dc)
   : m_shapeSet(shapeSet)
   , m_dc(dc)
-  , m_bpNode(nullptr)
 {
 #if defined(AXOM_USE_MPI) && defined(MFEM_USE_MPI)
   m_comm = m_dc->GetComm();
 #endif
   m_cellCount = m_dc->GetMesh()->GetNE();
 }
+#endif
 
+#if defined(AXOM_SHAPING_ON_BLUEPRINT_MESH)
 Shaper::Shaper(const klee::ShapeSet& shapeSet,
                conduit::Node* bpNode,
                const std::string& topo)
   : m_shapeSet(shapeSet)
-  , m_dc(nullptr)
   , m_bpNode(bpNode)
   , m_bpTopo(topo)
   , m_comm(MPI_COMM_WORLD)
@@ -58,6 +54,7 @@ Shaper::Shaper(const klee::ShapeSet& shapeSet,
   auto* coordsView = m_bpGrp->getView(axom::fmt::format("coordsets/{}", coordsName));
   m_cellCount = coordsView->getNumElements();
 }
+#endif
 
 void Shaper::setSamplesPerKnotSpan(int nSamples)
 {
@@ -137,11 +134,9 @@ void Shaper::loadShapeInternal(const klee::Shape& shape,
     "{:-^80}",
     axom::fmt::format(" Loading shape '{}' ", shape.getName())));
 
-  const axom::klee::Geometry& geometry = shape.getGeometry();
-  const std::string& geometryFormat = geometry.getFormat();
   SLIC_ASSERT_MSG(
-    this->isValidFormat(geometryFormat),
-    axom::fmt::format("Shape has unsupported format: '{}", geometryFormat));
+    this->isValidFormat(shape.getGeometry().getFormat()),
+    axom::fmt::format("Shape has unsupported format: '{}", shape.getGeometry().getFormat()));
 
   // Code for discretizing shapes has been factored into DiscreteShape class.
   DiscreteShape discreteShape(shape, m_dataStore.getRoot(), m_shapeSet.getPath());
@@ -159,15 +154,7 @@ void Shaper::loadShapeInternal(const klee::Shape& shape,
 
 int Shaper::getRank() const
 {
-#if defined(AXOM_USE_MPI) && defined(MFEM_USE_MPI)
-  if (m_dc != nullptr)
-  {
-    if(auto* pmesh = static_cast<mfem::ParMesh*>(m_dc->GetMesh()))
-    {
-      return pmesh->GetMyRank();
-    }
-  }
-#elif defined(AXOM_USE_MPI)
+#if defined(AXOM_USE_MPI)
   int rank = -1;
   MPI_Comm_rank(m_comm, &rank);
   return rank;
@@ -177,14 +164,11 @@ int Shaper::getRank() const
 
 double Shaper::allReduceSum(double val) const
 {
-  if(m_dc != nullptr && m_dc->GetNumProcs() > 1)
-  {
 #if defined(AXOM_USE_MPI) && defined(MFEM_USE_MPI)
     double global;
     MPI_Allreduce(&val, &global, 1, MPI_DOUBLE, MPI_SUM, m_comm);
     return global;
 #endif
-  }
   return val;
 }
 

@@ -16,14 +16,31 @@
 #ifndef AXOM_USE_KLEE
   #error Shaping functionality requires Axom to be configured with the Klee component
 #endif
-#ifndef AXOM_USE_MFEM
-  #error Shaping functionality requires Axom to be configured with MFEM and the AXOM_ENABLE_MFEM_SIDRE_DATACOLLECTION option
+
+// #define AXOM_SHAPING_ON_MFEM_MESH (defined(AXOM_USE_MFEM) && defined(AXOM_ENABLE_MFEM_SIDRE_DATACOLLECTION))
+// #define AXOM_SHAPING_ON_BLUEPRINT_MESH defined(AXOM_USE_CONDUIT)
+#if defined(AXOM_USE_MFEM)
+  #define AXOM_SHAPING_ON_MFEM_MESH 1
+#endif
+#if defined(AXOM_USE_CONDUIT)
+  #define AXOM_SHAPING_ON_BLUEPRINT_MESH 1
+#endif
+
+#if !defined(AXOM_SHAPING_ON_MFEM_MESH) && !defined(AXOM_SHAPING_ON_BLUEPRINT_MESH)
+  #error Shaping functionality requires Axom to be configured with Conduit or MFEM and the AXOM_ENABLE_MFEM_SIDRE_DATACOLLECTION option
 #endif
 
 #include "axom/sidre.hpp"
 #include "axom/klee.hpp"
 #include "axom/mint.hpp"
 #include "axom/quest/DiscreteShape.hpp"
+
+#if defined(AXOM_SHAPING_ON_MFEM_MESH)
+#include "mfem.hpp"
+#endif
+#if defined(AXOM_SHAPING_ON_BLUEPRINT_MESH)
+#include "conduit_node.hpp"
+#endif
 
 #include "axom/quest/interface/internal/mpicomm_wrapper.hpp"
 
@@ -37,11 +54,14 @@ namespace quest
 class Shaper
 {
 public:
+#if defined(AXOM_USE_MFEM)
   /*!
     @brief Construct Shaper to operate on an MFEM mesh.
   */
   Shaper(const klee::ShapeSet& shapeSet, sidre::MFEMSidreDataCollection* dc);
+#endif
 
+#if defined(AXOM_USE_CONDUIT)
   /*!
     @brief Construct Shaper to operate on a blueprint-formatted mesh
     stored in a Conduit Node.
@@ -49,6 +69,7 @@ public:
   Shaper(const klee::ShapeSet& shapeSet,
          conduit::Node* bpMesh,
          const std::string& topo="");
+#endif
 
   virtual ~Shaper() = default;
 
@@ -73,10 +94,13 @@ public:
 
   //@}
 
+  mint::Mesh* getSurfaceMesh() const { return m_surfaceMesh.get(); }
+
   bool isVerbose() const { return m_verboseOutput; }
 
+#ifdef AXOM_SHAPING_ON_MFEM_MESH
   sidre::MFEMSidreDataCollection* getDC() { return m_dc; }
-  mint::Mesh* getSurfaceMesh() const { return m_surfaceMesh.get(); }
+#endif
 
   /*!
    * \brief Predicate to determine if the specified format is valid
@@ -167,14 +191,19 @@ protected:
 
   const klee::ShapeSet& m_shapeSet;
 
+#if defined(AXOM_SHAPING_ON_MFEM_MESH)
   // For mesh represented as MFEMSidreDataCollection
   sidre::MFEMSidreDataCollection* m_dc{nullptr};
+#endif
 
+#if defined(AXOM_SHAPING_ON_BLUEPRINT_MESH)
   // For mesh represented in Conduit or sidre
   conduit::Node* m_bpNode{nullptr};
   const std::string m_bpTopo;
   sidre::DataStore m_ds;
   axom::sidre::Group* m_bpGrp{nullptr};
+#endif
+
   axom::IndexType m_cellCount;
 
   std::shared_ptr<mint::Mesh> m_surfaceMesh;
