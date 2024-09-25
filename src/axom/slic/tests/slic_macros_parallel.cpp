@@ -1098,8 +1098,6 @@ TEST_P(SlicMacrosParallel, test_check_macros)
     check_line(slic::internal::test_stream.str(), (__LINE__ - 9));
     check_rank(slic::internal::test_stream.str(), rank);
     check_rank_count(slic::internal::test_stream.str(), GetParam(), nranks);
-    std::cout << " ******* \n"
-              << slic::internal::test_stream.str() << "\n ******* " << std::endl;
   }
   slic::internal::clear_streams();
 #else
@@ -1208,7 +1206,7 @@ TEST_P(SlicMacrosParallel, test_macros_file_output)
     std::string no_fmt_expected;
     no_fmt_expected += "*****\n[INFO]\n\n Test \n\n ";
     no_fmt_expected += __FILE__;
-    no_fmt_expected += "\n1065\n****\n";
+    no_fmt_expected += "\n1187\n****\n";
 
     EXPECT_EQ(no_fmt_buffer.str(), no_fmt_expected);
 
@@ -1247,11 +1245,11 @@ TEST_P(SlicMacrosParallel, test_macros_file_output)
     std::string no_fmt_output_expected;
     no_fmt_output_expected += "*****\n[INFO]\n\n Test \n\n ";
     no_fmt_output_expected += __FILE__;
-    no_fmt_output_expected += "\n1065\n****\n";
+    no_fmt_output_expected += "\n1187\n****\n";
     no_fmt_output_expected +=
       "*****\n[INFO]\n\n Test outputLocalMessages() \n\n ";
     no_fmt_output_expected += __FILE__;
-    no_fmt_output_expected += "\n1109\n****\n";
+    no_fmt_output_expected += "\n1231\n****\n";
 
     EXPECT_EQ(no_fmt_out_buf.str(), no_fmt_output_expected);
 
@@ -1275,7 +1273,7 @@ TEST_P(SlicMacrosParallel, test_macros_file_output)
     no_fmt_output_expected +=
       "*****\n[INFO]\n\n Test outputLocalMessages() \n\n ";
     no_fmt_output_expected += __FILE__;
-    no_fmt_output_expected += "\n1109\n****\n";
+    no_fmt_output_expected += "\n1231\n****\n";
 
     EXPECT_EQ(no_fmt_out_buf.str(), no_fmt_output_expected);
 
@@ -1314,8 +1312,8 @@ int main(int argc, char* argv[])
   ::testing::InitGoogleTest(&argc, argv);
 
   // Run specifically one of these tests
-  ::testing::GTEST_FLAG(filter) =
-    "core_memory_management/SlicMacrosParallel.test_check_macros*";
+  // ::testing::GTEST_FLAG(filter) =
+  //   "core_memory_management/SlicMacrosParallel.test_check_macros*";
 
   MPI_Init(&argc, &argv);
 
