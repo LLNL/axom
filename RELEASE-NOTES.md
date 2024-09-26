@@ -84,6 +84,9 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 - Removes caching of `{PACKAGE}_FOUND` variables in `SetupAxomThirdParty.cmake`
 - We no longer test Axom with the XL compiler. So users should consider XL unsupported.
 
+### Fixed
+- `numerics::eigen_solve()` has been corrected to avoid an early return with error state.
+
 ## [Version 0.9.0] - Release date 2024-03-19
 
 ### Added
