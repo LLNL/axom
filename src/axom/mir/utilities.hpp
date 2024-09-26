@@ -458,9 +458,7 @@ struct Unique
     // Do a scan on the mask array to build an offset array.
     axom::Array<axom::IndexType> offsets(n, n, allocatorID);
     auto offsets_view = offsets.view();
-    RAJA::exclusive_scan<loop_policy>(RAJA::make_span(mask_view.data(), n),
-                                      RAJA::make_span(offsets_view.data(), n),
-                                      RAJA::operators::plus<axom::IndexType> {});
+    axom::exclusive_scan<ExecSpace>(mask_view, offsets_view);
 
     // Allocate the output arrays.
     const axom::IndexType newsize = mask_sum.get();

@@ -211,6 +211,7 @@ struct StridedStructuredIndexing
    *
    * \return The local index that corresponds to the \a local.
    */
+  AXOM_HOST_DEVICE
   IndexType GlobalToLocal(IndexType global) const
   {
     return LogicalIndexToIndex(GlobalToLocal(GlobalToGlobal(global)));
