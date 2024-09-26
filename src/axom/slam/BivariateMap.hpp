@@ -802,7 +802,7 @@ public:
    *  index. Same as operator()
    */
   template <typename... ComponentIndex>
-  DataRefType value(ComponentIndex... comp) const
+  AXOM_HOST_DEVICE DataRefType value(ComponentIndex... comp) const
   {
     return m_mapIterator(comp...);
   }
