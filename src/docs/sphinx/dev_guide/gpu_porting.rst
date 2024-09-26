@@ -124,7 +124,6 @@ the memory space where data in
 ``Dynamic`` allows you to define the location at run time, with some caveats
 (see :ref:`Core Containers<core-containers>` for more details and examples).
 
-
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 Useful Links
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -160,6 +159,157 @@ GPU device, or on both a GPU device and a CPU host. For example::
 
   When Axom is built without RAJA, ``axom::for_all`` becomes a ``for``-loop on
   host (CPU).
+
+%%%%%%%%%%%%%%%%
+Portability
+%%%%%%%%%%%%%%%%
+
+Adherence to the GPU porting guidelines generally result in code that will compile and run on
+multiple backends. However, backends such as CUDA require additional guidelines.
+
+Do not use generic lambda functions (auto parameters) with ``axom::for_all``
+or the code will not compile under nvcc.
+
+Do this:
+
+  .. code-block:: cpp
+
+      axom::for_all<ExecSpace>(n, AXOM_LAMBDA(axom::IndexType index) { /* body */});
+
+
+Do NOT do this:
+
+  .. code-block:: cpp
+
+      axom::for_all<ExecSpace>(n, AXOM_LAMBDA(auto index) { /* body */});
+
+
+Data in Axom is often contained in useful containers such as ``axom::Array``.
+Use ``axom::ArrayView`` to access array data from within kernels. Views contain
+a pointer to the data and memory shape information and can be constructed within
+device code to access data arrays. Views are captured by kernels and passed to
+the device code; this copies the pointer and shape information into an object that
+the device code can access. If the view was passed into a method where the ``axom::for_all``
+function is calling a kernel, be sure to pass the view by value so the compiler
+does not capture a host reference to the view, causing the kernel to fail.
+
+Do this:
+
+  .. code-block:: cpp
+
+      template <typename ExecSpace>
+      void doSomething(axom::ArrayView<int> dataView)
+      {
+        axom::for_all<ExecSpace>(dataView.size(), AXOM_LAMBDA(axom::IndexType index)
+        {
+          /* body uses dataView[index] */
+        });
+      }
+
+Do NOT do this:
+
+  .. code-block:: cpp
+
+      template <typename ExecSpace>
+      void doSomething(axom::ArrayView<int> &dataView)
+      {
+        axom::for_all<ExecSpace>(dataView.size(), AXOM_LAMBDA(axom::IndexType index)
+        {
+          /* body uses dataView[index] */
+          /* It will crash on GPU devices because the host reference was
+             captured rather than the object.
+           */
+        });
+      }
+
+If pass by reference is used, create a new view inside the method and then use that
+"device" view in the kernel so the device code uses an object captured by value.
+
+
+Do not call ``axom::for_all`` from class methods that are marked as protected or private.
+The nvcc compiler requires the method containing the kernel to be publicly accessible.
+
+Do this:
+
+  .. code-block:: cpp
+
+      class Algorithm
+      {
+      public:
+        // stuff
+      #if !defined(__CUDACC__)
+      private:
+      #endif
+        void helperMethod()
+        {
+          axom::for_all<ExecSpace>(n, AXOM_LAMBDA(axom::IndexType index) { /* body */});
+        }
+      };
+
+Do NOT do this:
+
+  .. code-block:: cpp
+
+      class Algorithm
+      {
+      public:
+        // stuff
+      private:
+        void helperMethod()
+        {
+          axom::for_all<ExecSpace>(n, AXOM_LAMBDA(axom::IndexType index) { /* body */});
+        }
+      };
+
+When calling a kernel via ``axom::for_all`` from a surrounding lambda function, 
+consider calling ``axom::for_all`` from a class member method instead. The nvcc compiler will
+not compile kernel invokations inside lambda functions. This pattern comes up an intermediate
+function is supplied a lambda that uses ``axom::for_all`` such as when handling many data types.
+
+Do this:
+
+  .. code-block:: cpp
+
+      template <typename ExecSpace>
+      class Algorithm
+      {
+      public:
+        void execute(conduit::Node &data)
+        {
+          // Handle any data type
+          Node_to_ArrayView(data, [&](auto dataView)
+          {
+            // Delegate operation to a template member method
+            handleData(dataView);
+          });
+        }
+        template <typename DataView>
+        void handleData(DataView dataView)
+        {
+          // Call the kernel here in the member method
+          axom::for_all<ExecSpace>(AXOM_LAMBDA(axom::IndexType) { /* body */ });
+        }
+      };
+
+Do NOT do this:
+
+  .. code-block:: cpp
+
+      template <typename ExecSpace>
+      class Algorithm
+      {
+      public:
+        void execute(conduit::Node &data)
+        {
+          // Handle any data type
+          Node_to_ArrayView(data, [&](auto dataView)
+          {
+            // nvcc will not compile this
+            axom::for_all<ExecSpace>(AXOM_LAMBDA(axom::IndexType) { /* body */ });
+          });
+        }
+      };
+
 
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 RAJA::kernel
@@ -336,6 +486,12 @@ General, Rough Porting Tips
   * Most of the C++ standard library is not available on device. Your options
     are Axom's equivalent functions/classes if it exists, or to add your
     own or rewrite the code to not use standard library.
+
+  * It may not be possible to remove all such warnings on some platforms that support
+    both CPU/GPU backends since AXOM_LAMBDA will expand to ``__host__ __device__`` and then
+    the compiler will issue warnings about host functions such as RAJA::ReduceSum::~ReduceSum
+    for the OpenMP backend being called from ``__host__ __device__`` code. This warning
+    can be ignored.
 
 * With no more decorating complaints from the compiler, write the logically
   correct kernel:
