@@ -79,6 +79,9 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
   config variables.
 - Removes caching of `{PACKAGE}_FOUND` variables in `SetupAxomThirdParty.cmake`
 
+### Fixed
+- `numerics::eigen_solve()` has been corrected to avoid an early return with error state.
+
 ## [Version 0.9.0] - Release date 2024-03-19
 
 ### Added
