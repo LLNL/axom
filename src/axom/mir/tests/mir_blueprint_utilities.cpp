@@ -138,10 +138,76 @@ TEST(mir_blueprint_utilities, copy_hip) { test_copy_braid<hip_exec>::test(); }
 #endif
 
 //------------------------------------------------------------------------------
-TEST(mir_blueprint_utilities, to_unstructured)
+template <typename ExecSpace>
+struct test_make_unstructured
 {
-  // TODO: to_unstructured
+  static void test()
+  {
+    conduit::Node hostMesh;
+    create(hostMesh);
+
+    // host->device
+    conduit::Node deviceMesh;
+    bputils::copy<ExecSpace>(deviceMesh, hostMesh);
+
+    conduit::Node deviceResult;
+    bputils::MakeUnstructured<ExecSpace> uns;
+    uns.execute(deviceMesh["topologies/mesh"], deviceMesh["coordsets/coords"], "mesh", deviceResult);
+
+    // device->host
+    conduit::Node hostResult;
+    bputils::copy<axom::SEQ_EXEC>(hostResult, deviceResult);
+
+    // Result
+    conduit::Node expectedResult;
+    result(expectedResult);
+
+    // Compare just the topologies
+    constexpr double tolerance = 1.e-7;
+    conduit::Node info;
+    bool success = compareConduit(expectedResult["topologies/mesh"], hostResult["topologies/mesh"], tolerance, info);
+    if(!success)
+    {
+      info.print();
+    }
+    EXPECT_TRUE(success);
+  }
+
+  static void create(conduit::Node &mesh)
+  {
+    std::vector<int> dims{4, 4};
+    axom::mir::testing::data::braid("uniform", dims, mesh);
+  }
+
+  static void result(conduit::Node &mesh)
+  {
+    std::vector<int> dims{4, 4};
+    axom::mir::testing::data::braid("quads", dims, mesh);
+  }
+};
+
+TEST(mir_blueprint_utilities, make_unstructured_seq)
+{
+  test_make_unstructured<seq_exec>::test();
 }
+#if defined(AXOM_USE_OPENMP)
+TEST(mir_blueprint_utilities, make_unstructured_omp)
+{
+  test_make_unstructured<omp_exec>::test();
+}
+#endif
+#if defined(AXOM_USE_CUDA)
+TEST(mir_blueprint_utilities, make_unstructured_cuda)
+{
+  test_make_unstructured<cuda_exec>::test();
+}
+#endif
+#if defined(AXOM_USE_HIP)
+TEST(mir_blueprint_utilities, make_unstructured_hip)
+{
+  test_make_unstructured<hip_exec>::test();
+}
+#endif
 
 //------------------------------------------------------------------------------
 template <typename ExecSpace, typename IndexT = int>
@@ -467,10 +533,10 @@ struct test_recenter_field
     // device -> host
     conduit::Node hostResultMesh;
     axom::mir::utilities::blueprint::copy<seq_exec>(hostResultMesh, deviceMesh);
-#if 0
+
     // Print the results.
-    printNode(hostResultMesh);
-#endif
+    //printNode(hostResultMesh);
+
     const float n2z_result[] = {1., 2., 4., 5., 4., 5., 7., 8., 7., 8., 10., 11.};
     for(size_t i = 0; i < (sizeof(n2z_result) / sizeof(float)); i++)
     {
