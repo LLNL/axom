@@ -59,7 +59,6 @@ set( quest_headers
 
     util/mesh_helpers.hpp
     MeshViewUtil.hpp
-    ArrayIndexer.hpp
     )
 
 set( quest_sources
@@ -206,5 +205,3 @@ endif()
 if (AXOM_ENABLE_TESTS)
     add_subdirectory(tests)
 endif()
-
-axom_add_code_checks(PREFIX quest)

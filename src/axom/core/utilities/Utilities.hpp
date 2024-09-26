@@ -354,6 +354,7 @@ inline AXOM_HOST_DEVICE bool isNearlyEqualRelative(RealType a,
  * \param [in] cmp The comparator to use for comparing elements; "less than"
  *  by default.
  */
+AXOM_SUPPRESS_HD_WARN
 template <typename DataType, typename Predicate = std::less<DataType>>
 inline AXOM_HOST_DEVICE void insertionSort(DataType* array,
                                            IndexType n,

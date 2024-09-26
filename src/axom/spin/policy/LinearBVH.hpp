@@ -7,11 +7,11 @@
 #define AXOM_SPIN_POLICY_LINEARBVH_HPP_
 
 // axom core includes
-#include "axom/core/Types.hpp"              // for fixed bitwidth types
-#include "axom/core/execution/for_all.hpp"  // for generic for_all()
-#include "axom/core/memory_management.hpp"  // for alloc()/free()
-
-#include "axom/core/utilities/AnnotationMacros.hpp"  // for annotations
+#include "axom/core/Types.hpp"
+#include "axom/core/execution/for_all.hpp"
+#include "axom/core/memory_management.hpp"
+#include "axom/core/AnnotationMacros.hpp"
+#include "axom/core/numerics/floating_point_limits.hpp"
 
 #include "axom/primal/geometry/BoundingBox.hpp"
 #include "axom/primal/geometry/Vector.hpp"
@@ -23,10 +23,10 @@
 #include "axom/spin/internal/linear_bvh/bvh_vtkio.hpp"
 
 // C/C++ includes
-#include <fstream>  // for std::ofstream
-#include <sstream>  // for std::ostringstream
-#include <string>   // for std::string
-#include <vector>   // for std::vector
+#include <fstream>
+#include <sstream>
+#include <string>
+#include <vector>
 
 namespace axom
 {
@@ -78,8 +78,9 @@ public:
       double sqDistL = primal::squared_distance(p, l.getCentroid());
       // If the right bbox is not valid, return max. Otherwise, the invalid right
       // bbox might actually win when we should ignore it.
-      double sqDistR = r.isValid() ? primal::squared_distance(p, r.getCentroid())
-                                   : std::numeric_limits<double>::max();
+      double sqDistR = r.isValid()
+        ? primal::squared_distance(p, r.getCentroid())
+        : axom::numerics::floating_point_limits<double>::max();
       return sqDistL > sqDistR;
     };
 
@@ -192,7 +193,7 @@ public:
 private:
   void allocate(std::int32_t size, int allocID)
   {
-    AXOM_PERF_MARK_FUNCTION("LinearBVH::allocate");
+    AXOM_ANNOTATE_SCOPE("LinearBVH::allocate");
     IndexType numInnerNodes = (size - 1) * 2;
     // Need to allocate this uninitialized, since primal::BoundingBox is
     // considered non-trivially-copyable on GCC 4.9.3
@@ -220,7 +221,7 @@ void LinearBVH<FloatType, NDIMS, ExecSpace>::buildImpl(const BoxIndexable boxes,
                                                        FloatType scaleFactor,
                                                        int allocatorID)
 {
-  AXOM_PERF_MARK_FUNCTION("LinearBVH::buildImpl");
+  AXOM_ANNOTATE_SCOPE("LinearBVH::buildImpl");
 
   // STEP 1: Build a RadixTree consisting of the bounding boxes, sorted
   // by their corresponding morton code.
@@ -252,45 +253,46 @@ void LinearBVH<FloatType, NDIMS, ExecSpace>::buildImpl(const BoxIndexable boxes,
   const auto bvh_inner_nodes = m_inner_nodes.view();
   const auto bvh_inner_node_children = m_inner_node_children.view();
 
-  AXOM_PERF_MARK_SECTION("emit_bvh_parents",
-                         for_all<ExecSpace>(
-                           inner_size,
-                           AXOM_LAMBDA(std::int32_t node) {
-                             BoundingBoxType l_aabb, r_aabb;
+  AXOM_ANNOTATE_BEGIN("emit_bvh_parents");
+  for_all<ExecSpace>(
+    inner_size,
+    AXOM_LAMBDA(std::int32_t node) {
+      BoundingBoxType l_aabb, r_aabb;
 
-                             std::int32_t lchild = lchildren_ptr[node];
-                             if(lchild >= inner_size)
-                             {
-                               l_aabb = leaf_aabb_ptr[lchild - inner_size];
-                               lchild = -(lchild - inner_size + 1);
-                             }
-                             else
-                             {
-                               l_aabb = inner_aabb_ptr[lchild];
-                               // do the offset now
-                               lchild *= 2;
-                             }
+      std::int32_t lchild = lchildren_ptr[node];
+      if(lchild >= inner_size)
+      {
+        l_aabb = leaf_aabb_ptr[lchild - inner_size];
+        lchild = -(lchild - inner_size + 1);
+      }
+      else
+      {
+        l_aabb = inner_aabb_ptr[lchild];
+        // do the offset now
+        lchild *= 2;
+      }
 
-                             std::int32_t rchild = rchildren_ptr[node];
-                             if(rchild >= inner_size)
-                             {
-                               r_aabb = leaf_aabb_ptr[rchild - inner_size];
-                               rchild = -(rchild - inner_size + 1);
-                             }
-                             else
-                             {
-                               r_aabb = inner_aabb_ptr[rchild];
-                               // do the offset now
-                               rchild *= 2;
-                             }
+      std::int32_t rchild = rchildren_ptr[node];
+      if(rchild >= inner_size)
+      {
+        r_aabb = leaf_aabb_ptr[rchild - inner_size];
+        rchild = -(rchild - inner_size + 1);
+      }
+      else
+      {
+        r_aabb = inner_aabb_ptr[rchild];
+        // do the offset now
+        rchild *= 2;
+      }
 
-                             const std::int32_t out_offset = node * 2;
-                             bvh_inner_nodes[out_offset + 0] = l_aabb;
-                             bvh_inner_nodes[out_offset + 1] = r_aabb;
+      const std::int32_t out_offset = node * 2;
+      bvh_inner_nodes[out_offset + 0] = l_aabb;
+      bvh_inner_nodes[out_offset + 1] = r_aabb;
 
-                             bvh_inner_node_children[out_offset + 0] = lchild;
-                             bvh_inner_node_children[out_offset + 1] = rchild;
-                           }););
+      bvh_inner_node_children[out_offset + 0] = lchild;
+      bvh_inner_node_children[out_offset + 1] = rchild;
+    });
+  AXOM_ANNOTATE_END("emit_bvh_parents");
 
   m_leaf_nodes = std::move(radix_tree.m_leafs);
 
@@ -308,7 +310,7 @@ axom::Array<IndexType> LinearBVH<FloatType, NDIMS, ExecSpace>::findCandidatesImp
   int allocatorID) const
 
 {
-  AXOM_PERF_MARK_FUNCTION("LinearBVH::findCandidatesImpl");
+  AXOM_ANNOTATE_SCOPE("LinearBVH::findCandidatesImpl");
 
   SLIC_ERROR_IF(offsets.size() != numObjs,
                 "offsets length not equal to numObjs");
@@ -330,95 +332,63 @@ axom::Array<IndexType> LinearBVH<FloatType, NDIMS, ExecSpace>::findCandidatesImp
   using reduce_pol = typename axom::execution_space<ExecSpace>::reduce_policy;
   RAJA::ReduceSum<reduce_pol, IndexType> total_count_reduce(0);
 
-  AXOM_PERF_MARK_SECTION(
-    "PASS[1]:count_traversal",
-    for_all<ExecSpace>(
-      numObjs,
-      AXOM_LAMBDA(IndexType i) {
-        std::int32_t count = 0;
-        PrimitiveType primitive {objs[i]};
+  AXOM_ANNOTATE_BEGIN("PASS[1]:count_traversal");
+  for_all<ExecSpace>(
+    numObjs,
+    AXOM_LAMBDA(IndexType i) {
+      std::int32_t count = 0;
+      PrimitiveType primitive {objs[i]};
 
-        auto leafAction = [&count](std::int32_t AXOM_UNUSED_PARAM(current_node),
-                                   const std::int32_t* AXOM_UNUSED_PARAM(
-                                     leaf_nodes)) { count++; };
+      auto leafAction =
+        [&count](std::int32_t AXOM_UNUSED_PARAM(current_node),
+                 const std::int32_t* AXOM_UNUSED_PARAM(leaf_nodes)) { count++; };
 
-        lbvh::bvh_traverse(inner_nodes,
-                           inner_node_children,
-                           leaf_nodes,
-                           primitive,
-                           predicate,
-                           leafAction,
-                           noTraversePref);
+      lbvh::bvh_traverse(inner_nodes,
+                         inner_node_children,
+                         leaf_nodes,
+                         primitive,
+                         predicate,
+                         leafAction,
+                         noTraversePref);
 
-        counts[i] = count;
-        total_count_reduce += count;
-      }););
+      counts[i] = count;
+      total_count_reduce += count;
+    });
+  AXOM_ANNOTATE_END("PASS[1]:count_traversal");
 
-    // STEP 2: exclusive scan to get offsets in candidate array for each query
+  // STEP 2: exclusive scan to get offsets in candidate array for each query
+  AXOM_ANNOTATE_BEGIN("exclusive_scan");
     // Intel oneAPI compiler segfaults with OpenMP RAJA scan
   #ifdef __INTEL_LLVM_COMPILER
   using exec_policy = typename axom::execution_space<axom::SEQ_EXEC>::loop_policy;
   #else
   using exec_policy = typename axom::execution_space<ExecSpace>::loop_policy;
   #endif
-  AXOM_PERF_MARK_SECTION(
-    "exclusive_scan",
-    RAJA::exclusive_scan<exec_policy>(RAJA::make_span(counts.data(), numObjs),
-                                      RAJA::make_span(offsets.data(), numObjs),
-                                      RAJA::operators::plus<IndexType> {}););
-
+  RAJA::exclusive_scan<exec_policy>(RAJA::make_span(counts.data(), numObjs),
+                                    RAJA::make_span(offsets.data(), numObjs),
+                                    RAJA::operators::plus<IndexType> {});
+  AXOM_ANNOTATE_END("exclusive_scan");
   IndexType total_candidates = total_count_reduce.get();
 
   // STEP 3: allocate memory for all candidates
-  axom::Array<IndexType> candidates;
-  {
-    AXOM_PERF_MARK_FUNCTION("allocate_candidates");
-    candidates =
-      axom::Array<IndexType>(total_candidates, total_candidates, allocatorID);
-  }
+  AXOM_ANNOTATE_BEGIN("allocate_candidates");
+  auto candidates =
+    axom::Array<IndexType>(total_candidates, total_candidates, allocatorID);
+  AXOM_ANNOTATE_END("allocate_candidates");
   const auto candidates_v = candidates.view();
 
   // STEP 4: fill in candidates for each point
-  AXOM_PERF_MARK_SECTION("PASS[2]:fill_traversal",
-                         for_all<ExecSpace>(
-                           numObjs,
-                           AXOM_LAMBDA(IndexType i) {
-                             std::int32_t offset = offsets[i];
+  AXOM_ANNOTATE_BEGIN("PASS[2]:fill_traversal");
+  for_all<ExecSpace>(
+    numObjs,
+    AXOM_LAMBDA(IndexType i) {
+      std::int32_t offset = offsets[i];
 
-                             PrimitiveType obj {objs[i]};
-                             auto leafAction = [&offset, candidates_v](
-                                                 std::int32_t current_node,
-                                                 const std::int32_t* leafs) {
-                               candidates_v[offset] = leafs[current_node];
-                               offset++;
-                             };
-
-                             lbvh::bvh_traverse(inner_nodes,
-                                                inner_node_children,
-                                                leaf_nodes,
-                                                obj,
-                                                predicate,
-                                                leafAction,
-                                                noTraversePref);
-                           }););
-  return candidates;
-#else  // CPU-only and no RAJA: do single traversal
-  AXOM_UNUSED_VAR(allocatorID);
-
-  axom::Array<IndexType> search_candidates;
-  int current_offset = 0;
-
-  // STEP 1: do single-pass traversal with std::vector for candidates
-  AXOM_PERF_MARK_SECTION(
-    "PASS[1]:fill_traversal", for_all<ExecSpace>(numObjs, [&](IndexType i) {
-      int matching_leaves = 0;
       PrimitiveType obj {objs[i]};
-      offsets[i] = current_offset;
-
-      auto leafAction = [&](std::int32_t current_node, const std::int32_t* leafs) {
-        search_candidates.emplace_back(leafs[current_node]);
-        matching_leaves++;
-        current_offset++;
+      auto leafAction = [&offset, candidates_v](std::int32_t current_node,
+                                                const std::int32_t* leafs) {
+        candidates_v[offset] = leafs[current_node];
+        offset++;
       };
 
       lbvh::bvh_traverse(inner_nodes,
@@ -428,8 +398,39 @@ axom::Array<IndexType> LinearBVH<FloatType, NDIMS, ExecSpace>::findCandidatesImp
                          predicate,
                          leafAction,
                          noTraversePref);
-      counts[i] = matching_leaves;
-    }););
+    });
+  AXOM_ANNOTATE_END("PASS[2]:fill_traversal");
+
+  return candidates;
+#else  // CPU-only and no RAJA: do single traversal
+  AXOM_UNUSED_VAR(allocatorID);
+
+  axom::Array<IndexType> search_candidates;
+  int current_offset = 0;
+
+  // STEP 1: do single-pass traversal with std::vector for candidates
+  AXOM_ANNOTATE_BEGIN("PASS[1]:fill_traversal");
+  for_all<ExecSpace>(numObjs, [&](IndexType i) {
+    int matching_leaves = 0;
+    PrimitiveType obj {objs[i]};
+    offsets[i] = current_offset;
+
+    auto leafAction = [&](std::int32_t current_node, const std::int32_t* leafs) {
+      search_candidates.emplace_back(leafs[current_node]);
+      matching_leaves++;
+      current_offset++;
+    };
+
+    lbvh::bvh_traverse(inner_nodes,
+                       inner_node_children,
+                       leaf_nodes,
+                       obj,
+                       predicate,
+                       leafAction,
+                       noTraversePref);
+    counts[i] = matching_leaves;
+  });
+  AXOM_ANNOTATE_END("PASS[1]:fill_traversal");
 
   SLIC_ASSERT(current_offset == static_cast<IndexType>(search_candidates.size()));
 
@@ -501,4 +502,4 @@ void LinearBVH<FloatType, NDIMS, ExecSpace>::writeVtkFileImpl(
 }  // namespace policy
 }  // namespace spin
 }  // namespace axom
-#endif /* AXOM_SPIN_POLICY_LINEARBVH_HPP_ */
+#endif  // AXOM_SPIN_POLICY_LINEARBVH_HPP_

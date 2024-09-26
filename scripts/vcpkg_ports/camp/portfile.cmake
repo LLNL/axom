@@ -1,8 +1,8 @@
 vcpkg_from_github(
     OUT_SOURCE_PATH SOURCE_PATH
     REPO llnl/camp
-    REF v2022.03.2
-    SHA512 d124c0e933f042525e9b48c21b93e7f4f634dfc0f87742e018a1c7de43ed6e30670d8f8e4ce369018a8e1c884b2b27f4755ee9f07a077820b2a3133546f6d622
+    REF v2024.07.0
+    SHA512 1055cb122ea12007af3b2b97fad0288eba48d23a9288e7d06516447c7a2b4f8828d0e57b4ec2d3e9612d324b7508fce4fd03b12dd035a601ec494d91b1b67370
     HEAD_REF develop
 )
 
@@ -82,4 +82,9 @@ else()
 endif()
 
 # Put the license file where vcpkg expects it
-file(INSTALL ${SOURCE_PATH}/LICENSE DESTINATION ${CURRENT_PACKAGES_DIR}/share/camp RENAME copyright)
+# Note: LICENSE occasionally cannot be found
+if(EXISTS "${SOURCE_PATH}/LICENSE")
+    file(INSTALL     ${SOURCE_PATH}/LICENSE 
+         DESTINATION ${CURRENT_PACKAGES_DIR}/share/camp 
+         RENAME      copyright)
+endif()

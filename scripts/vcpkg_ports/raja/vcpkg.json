@@ -1,6 +1,6 @@
 {
   "name": "raja",
-  "version-string": "2022.03.1",
+  "version-string": "2024.07.0",
   "homepage": "https://github.com/llnl/raja",
   "description": "RAJA Performance Portability Layer (C++)",
   "dependencies": [

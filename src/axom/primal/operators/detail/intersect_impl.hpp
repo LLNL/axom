@@ -22,9 +22,11 @@
 #include "axom/primal/geometry/OrientedBoundingBox.hpp"
 #include "axom/primal/geometry/Plane.hpp"
 #include "axom/primal/geometry/Point.hpp"
+#include "axom/primal/geometry/Polygon.hpp"
 #include "axom/primal/geometry/Ray.hpp"
 #include "axom/primal/geometry/Segment.hpp"
 #include "axom/primal/geometry/Triangle.hpp"
+#include "axom/primal/geometry/Tetrahedron.hpp"
 
 namespace axom
 {
@@ -158,8 +160,6 @@ AXOM_HOST_DEVICE bool intersect_tri3D_tri3D(const Triangle<T, 3>& t1,
                                             bool includeBoundary,
                                             double EPS)
 {
-  using Vector3 = primal::Vector<T, 3>;
-
   SLIC_CHECK_MSG(!t1.degenerate(),
                  "\n\n WARNING \n\n Triangle " << t1 << " is degenerate");
   SLIC_CHECK_MSG(!t2.degenerate(),
@@ -171,9 +171,9 @@ AXOM_HOST_DEVICE bool intersect_tri3D_tri3D(const Triangle<T, 3>& t1,
   // Vector3 t2Normal = Vector3::cross_product(Vector3(t2[2], t2[0]),
   //                                           Vector3(t2[2], t2[1]));
   Vector3 t2Normal = t2.normal().unitVector();
-  double dp1 = (Vector3(t2[2], t1[0])).dot(t2Normal);
-  double dq1 = (Vector3(t2[2], t1[1])).dot(t2Normal);
-  double dr1 = (Vector3(t2[2], t1[2])).dot(t2Normal);
+  const double dp1 = (t1[0] - t2[2]).dot(t2Normal);
+  const double dq1 = (t1[1] - t2[2]).dot(t2Normal);
+  const double dr1 = (t1[2] - t2[2]).dot(t2Normal);
 
   if(nonzeroSignMatch(dp1, dq1, dr1, EPS))
   {
@@ -192,9 +192,9 @@ AXOM_HOST_DEVICE bool intersect_tri3D_tri3D(const Triangle<T, 3>& t1,
   // Vector3 t1Normal = Vector3::cross_product(Vector3(t1[0], t1[1]),
   //                                           Vector3(t1[0], t1[2]));
   Vector3 t1Normal = t1.normal().unitVector();
-  double dp2 = (Vector3(t1[2], t2[0])).dot(t1Normal);
-  double dq2 = (Vector3(t1[2], t2[1])).dot(t1Normal);
-  double dr2 = (Vector3(t1[2], t2[2])).dot(t1Normal);
+  const double dp2 = (t2[0] - t1[2]).dot(t1Normal);
+  const double dq2 = (t2[1] - t1[2]).dot(t1Normal);
+  const double dr2 = (t2[2] - t1[2]).dot(t1Normal);
 
   if(nonzeroSignMatch(dp2, dq2, dr2, EPS))
   {
@@ -874,7 +874,6 @@ bool intersect_tri_segment(const Triangle<T, 3>& tri,
                            T& t,
                            Point<double, 3>& p)
 {
-  using Vector3 = Vector<T, 3>;
   Ray<T, 3> r(S.source(), Vector3(S.source(), S.target()));
 
   //Ray-triangle intersection does not check endpoints, so we explicitly check
@@ -1098,19 +1097,19 @@ AXOM_HOST_DEVICE bool intersect_plane_bbox(const Plane<T, 3>& p,
 }
 
 /*!
- * \brief Determines if a 3D plane intersects a 3D segment.
- * \param [in] b1 A 3D plane
- * \param [in] b2 A 3D segment
+ * \brief Determines if a plane intersects a segment.
+ * \param [in] plane A plane
+ * \param [in] seg A segment
  * \param [out] t Intersection point of plane and seg, w.r.t. 
  *   parametrization of seg
  * \return true iff plane intersects with segment, otherwise, false.
  */
-template <typename T>
-AXOM_HOST_DEVICE bool intersect_plane_seg(const Plane<T, 3>& plane,
-                                          const Segment<T, 3>& seg,
+template <typename T, int DIM>
+AXOM_HOST_DEVICE bool intersect_plane_seg(const Plane<T, DIM>& plane,
+                                          const Segment<T, DIM>& seg,
                                           T& t)
 {
-  using VectorType = Vector<T, 3>;
+  using VectorType = Vector<T, DIM>;
 
   VectorType ab(seg.source(), seg.target());
   VectorType normal = plane.getNormal();
@@ -1608,6 +1607,84 @@ inline bool intervalsDisjoint(double d0, double d1, double d2, double r)
   SLIC_ASSERT(d1 >= d0 && d1 >= d2);
 
   return d1 < -r || d0 > r;
+}
+
+AXOM_SUPPRESS_HD_WARN
+template <typename T>
+AXOM_HOST_DEVICE bool intersect_plane_tet3d(const Plane<T, 3>& p,
+                                            const Tetrahedron<T, 3>& tet,
+                                            Polygon<T, 3>& intersection)
+{
+  intersection.clear();
+
+  T distances[4];
+  distances[0] = p.signedDistance(tet[0]);
+  distances[1] = p.signedDistance(tet[1]);
+  distances[2] = p.signedDistance(tet[2]);
+  distances[3] = p.signedDistance(tet[3]);
+
+  constexpr T zero {0};
+  int gt[4];
+  gt[0] = distances[0] > zero;
+  gt[1] = distances[1] > zero;
+  gt[2] = distances[2] > zero;
+  gt[3] = distances[3] > zero;
+  int caseNumber = (gt[3] << 3) | (gt[2] << 2) | (gt[1] << 1) | gt[0];
+
+  // Cases 0, 15 indicate all points were on one side of the zero. That would
+  // normally not produce geometry. We may have zeroes and some bigger negatives
+  // so try picking a better case.
+  if(caseNumber == 0 || caseNumber == 15)
+  {
+    int lt[4];
+    lt[0] = distances[0] < zero;
+    lt[1] = distances[1] < zero;
+    lt[2] = distances[2] < zero;
+    lt[3] = distances[3] < zero;
+    caseNumber = (~((lt[3] << 3) | (lt[2] << 2) | (lt[1] << 1) | lt[0])) & 0xf;
+  }
+
+  // clang-format off
+  // Edge lookup (pairs of point ids)
+  const std::uint8_t edges[] = {
+   /* 0 */ // None
+   /* 1 */ 0, 2, 0, 1, 0, 3,
+   /* 2 */ 0, 1, 1, 2, 1, 3,
+   /* 3 */ 0, 2, 1, 2, 1, 3, 0, 3,
+   /* 4 */ 1, 2, 0, 2, 2, 3,
+   /* 5 */ 1, 2, 0, 1, 0, 3, 2, 3,
+   /* 6 */ 0, 1, 0, 2, 2, 3, 1, 3,
+   /* 7 */ 2, 3, 1, 3, 0, 3,
+   /* 8 */ 0, 3, 1, 3, 2, 3,
+   /* 9 */ 0, 2, 0, 1, 1, 3, 2, 3,
+   /* 10 */ 0, 1, 1, 2, 2, 3, 0, 3,
+   /* 11 */ 0, 2, 1, 2, 2, 3,
+   /* 12 */ 1, 2, 0, 2, 0, 3, 1, 3,
+   /* 13 */ 1, 2, 0, 1, 1, 3,
+   /* 14 */ 0, 1, 0, 2, 0, 3,
+   /* 15 */ // None
+  };
+  const std::uint8_t edges_offsets[] = {0, 0, 6, 12, 20, 26, 34, 42, 48, 54, 62, 70, 76, 84, 90, 96, 96};
+  // clang-format on
+
+  // Add new vertices to the polygon according to the case.
+  const int n =
+    static_cast<int>(edges_offsets[caseNumber + 1] - edges_offsets[caseNumber]) >>
+    1;
+  for(int i = 0; i < n; i++)
+  {
+    const auto eOffset = static_cast<int>(edges_offsets[caseNumber]) + (i << 1);
+    const auto p0 = static_cast<int>(edges[eOffset]);
+    const auto p1 = static_cast<int>(edges[eOffset + 1]);
+
+    const double d0 = (distances[p0] < 0.) ? -distances[p0] : distances[p0];
+    const double d1 = (distances[p1] < 0.) ? -distances[p1] : distances[p1];
+
+    const auto t = d0 / (d0 + d1);
+    intersection.addVertex(Point<T, 3>::lerp(tet[p0], tet[p1], t));
+  }
+
+  return caseNumber > 0 && caseNumber < 15;
 }
 
 }  // end namespace detail

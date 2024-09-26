@@ -10,22 +10,20 @@
 
 #include "axom/core/execution/execution_space.hpp"
 #include "axom/core/execution/for_all.hpp"
+#include "axom/core/AnnotationMacros.hpp"
+#include "axom/core/utilities/Utilities.hpp"
+#include "axom/core/utilities/BitUtilities.hpp"
+#include "axom/core/NumericLimits.hpp"
 
-#include "axom/core/utilities/AnnotationMacros.hpp"
+#include "axom/slic/interface/slic.hpp"
 
 #include "axom/primal/geometry/BoundingBox.hpp"
 #include "axom/primal/geometry/Point.hpp"
 
 #include "axom/spin/internal/linear_bvh/RadixTree.hpp"
-
 #include "axom/spin/MortonIndex.hpp"
 
-#include "axom/core/utilities/Utilities.hpp"
-#include "axom/core/utilities/BitUtilities.hpp"
-#include "axom/slic/interface/slic.hpp"
-
 #if defined(AXOM_USE_RAJA)
-  // RAJA includes
   #include "RAJA/RAJA.hpp"
 #endif
 
@@ -94,7 +92,7 @@ void transform_boxes(const BoxIndexable boxes,
                      std::int32_t size,
                      FloatType scale_factor)
 {
-  AXOM_PERF_MARK_FUNCTION("transform_boxes");
+  AXOM_ANNOTATE_SCOPE("transform_boxes");
 
   for_all<ExecSpace>(
     size,
@@ -113,15 +111,15 @@ primal::BoundingBox<FloatType, NDIMS> reduce(
   ArrayView<const primal::BoundingBox<FloatType, NDIMS>> aabbs,
   std::int32_t size)
 {
-  AXOM_PERF_MARK_FUNCTION("reduce_abbs");
+  AXOM_ANNOTATE_SCOPE("reduce_abbs");
 
 #ifdef AXOM_USE_RAJA
   using reduce_policy = typename axom::execution_space<ExecSpace>::reduce_policy;
 
   primal::Point<FloatType, NDIMS> min_pt, max_pt;
 
-  FloatType infinity = std::numeric_limits<FloatType>::max();
-  FloatType neg_infinity = std::numeric_limits<FloatType>::lowest();
+  FloatType infinity = axom::numeric_limits<FloatType>::max();
+  FloatType neg_infinity = axom::numeric_limits<FloatType>::lowest();
 
   for(int dim = 0; dim < NDIMS; dim++)
   {
@@ -161,7 +159,7 @@ void get_mcodes(ArrayView<const primal::BoundingBox<FloatType, NDIMS>> aabbs,
                 const primal::BoundingBox<FloatType, NDIMS>& bounds,
                 const ArrayView<std::uint32_t> mcodes)
 {
-  AXOM_PERF_MARK_FUNCTION("get_mcodes");
+  AXOM_ANNOTATE_SCOPE("get_mcodes");
 
   primal::Vector<FloatType, NDIMS> extent, inv_extent, min_coord;
 
@@ -196,7 +194,7 @@ void array_counting(ArrayView<IntType> iterator,
                     const IntType& start,
                     const IntType& step)
 {
-  AXOM_PERF_MARK_FUNCTION("array_counting");
+  AXOM_ANNOTATE_SCOPE("array_counting");
 
   for_all<ExecSpace>(
     size,
@@ -216,7 +214,7 @@ void reorder(const ArrayView<const std::int32_t> indices,
              std::int32_t size,
              int allocatorID)
 {
-  AXOM_PERF_MARK_FUNCTION("reorder");
+  AXOM_ANNOTATE_SCOPE("reorder");
 
   Array<T> temp =
     Array<T>(ArrayOptions::Uninitialized {}, size, size, allocatorID);
@@ -243,15 +241,16 @@ void sort_mcodes(ArrayView<std::uint32_t> mcodes,
                  std::int32_t size,
                  ArrayView<std::int32_t> iter)
 {
-  AXOM_PERF_MARK_FUNCTION("sort_mcodes");
+  AXOM_ANNOTATE_SCOPE("sort_mcodes");
 
   array_counting<ExecSpace>(iter, size, 0, 1);
 
-  AXOM_PERF_MARK_SECTION(
-    "raja_stable_sort",
+  {
+    AXOM_ANNOTATE_SCOPE("raja_stable_sort");
     using EXEC_POL = typename axom::execution_space<ExecSpace>::loop_policy;
     RAJA::stable_sort_pairs<EXEC_POL>(RAJA::make_span(mcodes.data(), size),
-                                      RAJA::make_span(iter.data(), size)););
+                                      RAJA::make_span(iter.data(), size));
+  }
 }
 
 #else
@@ -262,19 +261,18 @@ void sort_mcodes(Array<std::uint32_t>& mcodes,
                  std::int32_t size,
                  const ArrayView<std::int32_t> iter)
 {
-  AXOM_PERF_MARK_FUNCTION("sort_mcodes");
+  AXOM_ANNOTATE_SCOPE("sort_mcodes");
 
   array_counting<ExecSpace>(iter, size, 0, 1);
 
-  AXOM_PERF_MARK_SECTION("cpu_sort",
+  {
+    AXOM_ANNOTATE_SCOPE("cpu_sort");
 
-                         std::stable_sort(iter.begin(),
-                                          iter.begin() + size,
-                                          [&](std::int32_t i1, std::int32_t i2) {
-                                            return mcodes[i1] < mcodes[i2];
-                                          });
-
-  );
+    std::stable_sort(
+      iter.begin(),
+      iter.begin() + size,
+      [&](std::int32_t i1, std::int32_t i2) { return mcodes[i1] < mcodes[i2]; });
+  }
 
   const int allocID = axom::execution_space<ExecSpace>::allocatorID();
   reorder<ExecSpace>(iter, mcodes, size, allocID);
@@ -313,7 +311,7 @@ AXOM_HOST_DEVICE IntType delta(const IntType& a,
 template <typename ExecSpace, typename FloatType, int NDIMS>
 void build_tree(RadixTree<FloatType, NDIMS>& data)
 {
-  AXOM_PERF_MARK_FUNCTION("build_tree");
+  AXOM_ANNOTATE_SCOPE("build_tree");
 
   // http://research.nvidia.com/sites/default/files/publications/karras2012hpg_paper.pdf
 
@@ -531,7 +529,7 @@ AXOM_HOST_DEVICE static inline int atomic_increment(int* addr)
 template <typename ExecSpace, typename FloatType, int NDIMS>
 void propagate_aabbs(RadixTree<FloatType, NDIMS>& data, int allocatorID)
 {
-  AXOM_PERF_MARK_FUNCTION("propagate_abbs");
+  AXOM_ANNOTATE_SCOPE("propagate_abbs");
 
   using BoxType = primal::BoundingBox<FloatType, NDIMS>;
 
@@ -611,7 +609,7 @@ void build_radix_tree(const BoxIndexable boxes,
                       FloatType scale_factor,
                       int allocatorID)
 {
-  AXOM_PERF_MARK_FUNCTION("build_radix_tree");
+  AXOM_ANNOTATE_SCOPE("build_radix_tree");
 
   // sanity checks
   SLIC_ASSERT(size > 0);

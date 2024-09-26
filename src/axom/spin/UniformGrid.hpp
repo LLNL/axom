@@ -9,6 +9,7 @@
 #include "axom/core/utilities/Utilities.hpp"
 #include "axom/core/execution/for_all.hpp"
 #include "axom/core/Array.hpp"
+#include "axom/core/NumericLimits.hpp"
 
 #include "axom/slic/interface/slic.hpp"
 
@@ -336,6 +337,7 @@ public:
     return sumOfBinSizes;
   }
 
+  AXOM_SUPPRESS_HD_WARN
   template <typename Func>
   AXOM_HOST_DEVICE void visitCandidates(const BoxType& bbox, Func&& evalFn) const
   {
@@ -474,8 +476,8 @@ void UniformGrid<T, NDIMS, ExecSpace, StoragePolicy>::initialize(
   // get the global bounding box of all the objects
 #ifdef AXOM_USE_RAJA
   using reduce_pol = typename axom::execution_space<ExecSpace>::reduce_policy;
-  double infinity = std::numeric_limits<double>::max();
-  double neg_infinity = std::numeric_limits<double>::lowest();
+  double infinity = axom::numeric_limits<double>::max();
+  double neg_infinity = axom::numeric_limits<double>::lowest();
 
   using ReduceMin = RAJA::ReduceMin<reduce_pol, double>;
   using ReduceMax = RAJA::ReduceMax<reduce_pol, double>;

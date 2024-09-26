@@ -6,7 +6,6 @@
 # Defines CMake options for Axom's build system
 #------------------------------------------------------------------------------
 
-option(AXOM_ENABLE_ANNOTATIONS "Enables code annotations to facilitate performance evaluation." OFF)
 option(AXOM_ENABLE_SPARSEHASH "Enables Sparsehash." ON)
 option(AXOM_ENABLE_ALL_COMPONENTS "Enables all components by default" ON)
 option(AXOM_USE_64BIT_INDEXTYPE "Use 64-bit integers for axom::IndexType" OFF)

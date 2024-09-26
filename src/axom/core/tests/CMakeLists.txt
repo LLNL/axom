@@ -17,6 +17,7 @@
 set(core_serial_tests
     core_about.hpp
     core_array.hpp
+    core_array_mapping.hpp
     core_array_for_all.hpp
     core_utilities.hpp
     core_bit_utilities.hpp
@@ -25,8 +26,10 @@ set(core_serial_tests
     core_map.hpp
     core_flatmap.hpp
     core_memory_management.hpp
+    core_numeric_limits.hpp
     core_Path.hpp
     core_stack_array.hpp
+    core_static_array.hpp
 
     numerics_determinants.hpp
     numerics_eigen_solve.hpp
@@ -42,7 +45,6 @@ set(core_serial_tests
     utils_endianness.hpp
     utils_fileUtilities.hpp
     utils_locale.hpp
-    utils_nvtx_settings.hpp
     utils_stringUtilities.hpp
     utils_system.hpp
     utils_Timer.hpp
@@ -148,3 +150,27 @@ if(MFEM_FOUND)
     set_property(TARGET utils_config_test
         APPEND_STRING PROPERTY COMPILE_FLAGS "${AXOM_DISABLE_UNUSED_PARAMETER_WARNINGS}")
 endif()
+
+#------------------------------------------------------------------------------
+# Test different annotation modes
+#------------------------------------------------------------------------------
+axom_add_executable(NAME       utils_annotations_test
+                    SOURCES    utils_annotations.cpp
+                    OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
+                    DEPENDS_ON core gtest fmt cli11
+                    FOLDER     axom/core/tests )
+
+foreach(_mode none report counts gputx)
+  set(_test_name utils_annotations_${_mode}_test)
+  if(AXOM_ENABLE_MPI)
+    axom_add_test(NAME    ${_test_name}
+                  COMMAND utils_annotations_test -m ${_mode}
+                  NUM_MPI_TASKS 2)
+  else()
+    axom_add_test(NAME    ${_test_name}
+                  COMMAND utils_annotations_test -m ${_mode})
+  endif()
+  set_property(TEST ${_test_name}
+               APPEND PROPERTY ENVIRONMENT  "CALI_LOG_VERBOSITY=2")
+endforeach()
+

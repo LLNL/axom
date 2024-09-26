@@ -6,15 +6,9 @@
 variables:
   LLNL_SERVICE_USER: atk
   GIT_SUBMODULE_STRATEGY: recursive
-  PROJECT_ALLOC_NAME: ${CI_PROJECT_NAME}_ci_${CI_PIPELINE_ID}
   BUILD_ROOT: ${CI_PROJECT_DIR}
   FULL_BUILD_ROOT: ${CI_BUILDS_DIR}/axom/${CI_JOB_NAME}
   SLURM_OVERLAP: 1
-
-stages:
-  - allocate
-  - build
-  - release
 
 .src_workflow:
   rules:
@@ -28,12 +22,8 @@ stages:
 # Template
 .src_build_script:
   script:
-    # Use pre-existing allocation if any
-    - export JOBID=$(if [[ "$SYS_TYPE" == "toss_4_x86_64_ib" ]]; then squeue -h --name=${PROJECT_ALLOC_NAME} --format=%A; fi)
-    - ASSIGN_ID=$(if [[ -n "${JOBID}" ]]; then echo "--jobid=${JOBID}"; fi)
-    # BUILD + TEST
     - echo -e "\e[0Ksection_start:$(date +%s):src_build_and_test\r\e[0KSource Build and Test ${CI_PROJECT_NAME}"
-    - ${ALLOC_COMMAND} ${ASSIGN_ID} python3 scripts/llnl_scripts/build_src.py -v --host-config ${HOST_CONFIG} --extra-cmake-options '-DENABLE_DOCS=OFF ${EXTRA_CMAKE_OPTIONS}' --build-type ${BUILD_TYPE:-Debug} ${EXTRA_OPTIONS}
+    - ${ALLOC_COMMAND} python3 scripts/llnl_scripts/build_src.py -v --host-config ${HOST_CONFIG} --extra-cmake-options '-DENABLE_DOCS=OFF ${EXTRA_CMAKE_OPTIONS}' --build-type ${BUILD_TYPE:-Debug} ${EXTRA_OPTIONS}
     - echo -e "\e[0Ksection_end:$(date +%s):src_build_and_test\r\e[0K"
   artifacts:
     expire_in: 2 weeks
@@ -58,6 +48,9 @@ stages:
 
 # This is where jobs are included
 include:
-  - local: .gitlab/build_quartz.yml
+  - local: .gitlab/build_ruby.yml
   - local: .gitlab/build_lassen.yml
   - local: .gitlab/build_tioga.yml
+  # ID token requirement for Gitlab 17.0+
+  - project: 'lc-templates/id_tokens'
+    file: 'id_tokens.yml'

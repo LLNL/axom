@@ -21,6 +21,7 @@
 #include "axom/primal/operators/closest_point.hpp"
 
 #include "axom/core/utilities/Utilities.hpp"
+#include "axom/core/numerics/floating_point_limits.hpp"
 
 #include "axom/slic/interface/slic.hpp"
 
@@ -72,7 +73,7 @@ AXOM_HOST_DEVICE inline double squared_distance(const Point<T, NDIMS>& A,
  * \param [in] P the query point.
  * \param [in] B the axis-aligned bounding box.
  * \return the squared distance from P to the closest point on box \a B
- * or std::numeric_limits<T>::max() if \a B is invalid. 
+ * or axom::numerics::floating_point_limits<T>::max() if \a B is invalid.
  */
 template <typename T, int NDIMS>
 AXOM_HOST_DEVICE inline double squared_distance(const Point<T, NDIMS>& P,
@@ -82,7 +83,7 @@ AXOM_HOST_DEVICE inline double squared_distance(const Point<T, NDIMS>& P,
 
   if(!B.isValid())
   {
-    return std::numeric_limits<T>::max();
+    return axom::numerics::floating_point_limits<T>::max();
   }
 
   if(B.contains(P))
@@ -107,7 +108,7 @@ AXOM_HOST_DEVICE inline double squared_distance(const Point<T, NDIMS>& P,
  * \param [in] B the second axis-aligned bounding box.
  * If the boxes overlap, the minimum distance is zero.
  * \return the squared distance between the closest points on A and B
- * or std::numeric_limits<T>::max() if either box is invalid.
+ * or axom::numerics::floating_point_limits<T>::max() if either box is invalid.
  */
 template <typename T, int NDIMS>
 AXOM_HOST_DEVICE inline double squared_distance(const BoundingBox<T, NDIMS>& A,
@@ -131,7 +132,7 @@ AXOM_HOST_DEVICE inline double squared_distance(const BoundingBox<T, NDIMS>& A,
     return v.squared_norm();
   }
 
-  return std::numeric_limits<T>::max();
+  return axom::numerics::floating_point_limits<T>::max();
 }
 
 /*!
@@ -145,31 +146,7 @@ template <typename T, int NDIMS>
 inline double squared_distance(const Point<T, NDIMS>& P,
                                const Segment<T, NDIMS>& S)
 {
-  Vector<T, NDIMS> ab(S.source(), S.target());
-  Vector<T, NDIMS> ac(S.source(), P);
-
-  const T e = Vector<T, NDIMS>::dot_product(ac, ab);
-
-  // outside segment, on the side of a
-  // Testing if closest point is A
-  if(e <= 0.0f)
-  {
-    return ac.squared_norm();
-  }
-
-  // outside segment, on the side of b
-  // Testing if closest point is B
-  const T f = ab.squared_norm();
-  if(e >= f)
-  {
-    Vector<T, NDIMS> bc(S.target(), P);
-    return bc.squared_norm();
-  }
-
-  // P projects onto the segment
-  // Otherwise, we are in between A,B, therefore we project inside A,B.
-  const T dist = ac.squared_norm() - (e * e / f);
-  return dist;
+  return squared_distance(P, closest_point(P, S));
 }
 
 /*!
@@ -183,8 +160,7 @@ template <typename T, int NDIMS>
 inline double squared_distance(const Point<T, NDIMS>& P,
                                const Triangle<T, NDIMS>& tri)
 {
-  Point<T, NDIMS> cpt = closest_point(P, tri);
-  return squared_distance(P, cpt);
+  return squared_distance(P, closest_point(P, tri));
 }
 
 }  // namespace primal

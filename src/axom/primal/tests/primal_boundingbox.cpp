@@ -3,13 +3,12 @@
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
-#include <limits>
-
 #include "gtest/gtest.h"
 #include "axom/slic.hpp"
 
 #include "axom/core/execution/execution_space.hpp"
 #include "axom/core/execution/for_all.hpp"
+#include "axom/core/NumericLimits.hpp"
 
 #include "axom/primal/geometry/Point.hpp"
 #include "axom/primal/geometry/BoundingBox.hpp"
@@ -40,7 +39,10 @@ void check_bb_policy()
       box[i].isValid();
     });
 
-  EXPECT_EQ(box[0], BoundingBoxType(PointType(0.0), PointType(10.0)));
+  BoundingBoxType box_host;
+  axom::copy(&box_host, box, sizeof(BoundingBoxType));
+
+  EXPECT_EQ(box_host, BoundingBoxType(PointType(0.0), PointType(10.0)));
 
   axom::deallocate(box);
 }
@@ -609,28 +611,28 @@ TEST(primal_boundingBox, highest_lowest_values)
   // is doing the right thing in our CXX11 and pre-CXX11 compilers
 
   // Test double
-  double maxD = std::numeric_limits<double>::max();
+  double maxD = axom::numeric_limits<double>::max();
   double minD = -maxD;
-  EXPECT_EQ(maxD, std::numeric_limits<double>::max());
-  EXPECT_EQ(minD, std::numeric_limits<double>::lowest());
+  EXPECT_EQ(maxD, axom::numeric_limits<double>::max());
+  EXPECT_EQ(minD, axom::numeric_limits<double>::lowest());
 
   // Test float
-  double maxF = std::numeric_limits<float>::max();
+  double maxF = axom::numeric_limits<float>::max();
   double minF = -maxF;
-  EXPECT_EQ(maxF, std::numeric_limits<float>::max());
-  EXPECT_EQ(minF, std::numeric_limits<float>::lowest());
+  EXPECT_EQ(maxF, axom::numeric_limits<float>::max());
+  EXPECT_EQ(minF, axom::numeric_limits<float>::lowest());
 
   // Test int
-  int maxI = std::numeric_limits<int>::max();
-  int minI = std::numeric_limits<int>::min();
-  EXPECT_EQ(maxI, std::numeric_limits<int>::max());
-  EXPECT_EQ(minI, std::numeric_limits<int>::lowest());
+  int maxI = axom::numeric_limits<int>::max();
+  int minI = axom::numeric_limits<int>::min();
+  EXPECT_EQ(maxI, axom::numeric_limits<int>::max());
+  EXPECT_EQ(minI, axom::numeric_limits<int>::lowest());
 
   // Test uint
-  unsigned int maxU = std::numeric_limits<unsigned int>::max();
-  unsigned int minU = std::numeric_limits<unsigned int>::min();
-  EXPECT_EQ(maxU, std::numeric_limits<unsigned int>::max());
-  EXPECT_EQ(minU, std::numeric_limits<unsigned int>::lowest());
+  unsigned int maxU = axom::numeric_limits<unsigned int>::max();
+  unsigned int minU = axom::numeric_limits<unsigned int>::min();
+  EXPECT_EQ(maxU, axom::numeric_limits<unsigned int>::max());
+  EXPECT_EQ(minU, axom::numeric_limits<unsigned int>::lowest());
 
   // Testing that our default constructor for bounding boxes is properly setting the range.
 

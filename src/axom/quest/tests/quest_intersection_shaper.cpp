@@ -502,7 +502,7 @@ void IntersectionWithErrorTolerances(const std::string &filebase,
   // Clean up files.
   for(const auto &filename : filenames)
   {
-    axom::utilities::filesystem::removeFile(filename);
+    EXPECT_EQ(axom::utilities::filesystem::removeFile(filename), 0);
   }
 }
 

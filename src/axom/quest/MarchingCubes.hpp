@@ -137,8 +137,6 @@ public:
 
     Some metadata from \a bpMesh may be cached.  Any change to it
     after setMesh() leads to undefined behavior.
-
-    @see clearMesh()
   */
   void setMesh(const conduit::Node &bpMesh,
                const std::string &topologyName,
@@ -149,6 +147,16 @@ public:
     \param [in] fcnField Name of node-based scalar function values.
   */
   void setFunctionField(const std::string &fcnField);
+
+  /*!
+    @brief Set the mask value.
+    \param [in] maskVal mask value.  If a mask field is given in
+      setMesh(), compute only for cells whose mask matches this value.
+
+    The default vask value is 1 unless explicitly set by this method.
+    The mask value has no effect if a mask field is not specified.
+  */
+  void setMaskValue(int maskVal) { m_maskVal = maskVal; }
 
   /*!
    \brief Computes the isocontour.
@@ -218,8 +226,9 @@ public:
     @brief Return view of parent cell indices Array.
 
     The buffer size is getContourCellCount().  The parent ID is the
-    column-major ordered flat index of the cell in the parent domain
-    (see ArrayIndexer), not counting ghost cells.
+    flat index of the cell in the parent domain (see MDMapping),
+    not counting ghost cells, with row- or major-ordering same as that
+    for the input scalar function array.
   */
   axom::ArrayView<const axom::IndexType> getContourFacetParents() const
   {
@@ -276,19 +285,6 @@ public:
   //@}
 
   /*!
-    @brief Clear the input mesh data.
-
-    The contour mesh is *not* cleared.  See clearOutput() for this.
-
-    After clearing, you have to call setMesh() as if it was a new
-    object.
-
-    @internal For good GPU performance, memory is not deallocated.  To
-    really deallocate memory, destruct this object and use another.
-  */
-  void clearMesh();
-
-  /*!
     @brief Clear the computed contour mesh.
   */
   void clearOutput();
@@ -319,6 +315,8 @@ private:
   std::string m_maskFieldName;
   std::string m_maskPath;
 
+  int m_maskVal = 1;
+
   //!@brief First facet index from each parent domain.
   axom::Array<axom::IndexType> m_facetIndexOffsets;
 
@@ -331,7 +329,7 @@ private:
   axom::Array<std::uint16_t> m_caseIdsFlat;
   axom::Array<std::uint16_t> m_crossingFlags;
   axom::Array<axom::IndexType> m_scannedFlags;
-  axom::Array<std::uint16_t> m_facetIncrs;
+  axom::Array<axom::IndexType> m_facetIncrs;
   //@}
 
   //@{

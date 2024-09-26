@@ -116,6 +116,7 @@ struct Input
   int resolution {0};
   bool verboseOutput {false};
   RuntimePolicy policy {RuntimePolicy::seq};
+  std::string annotationMode {"none"};
 
   void parse(int argc, char** argv, axom::CLI::App& app);
   bool isVerbose() const { return verboseOutput; }
@@ -175,6 +176,15 @@ void Input::parse(int argc, char** argv, axom::CLI::App& app)
     ->capture_default_str()
     ->check(axom::CLI::IsMember {Input::s_validMethods});
 
+#ifdef AXOM_USE_CALIPER
+  app.add_option("--caliper", annotationMode)
+    ->description(
+      "caliper annotation mode. Valid options include 'none' and 'report'. "
+      "Use 'help' to see full list.")
+    ->capture_default_str()
+    ->check(axom::utilities::ValidCaliperMode);
+#endif
+
   app.get_formatter()->column_width(40);
 
   app.parse(argc, argv);  // Could throw an exception
@@ -202,18 +212,18 @@ void Input::parse(int argc, char** argv, axom::CLI::App& app)
       : policy ==
 #endif
 #ifdef AXOM_RUNTIME_POLICY_USE_CUDA
-          RuntimePolicy::cuda
-        ? "cuda"
-        : policy ==
+        RuntimePolicy::cuda
+      ? "cuda"
+      : policy ==
 #endif
 #ifdef AXOM_RUNTIME_POLICY_USE_HIP
-            RuntimePolicy::hip
-          ? "hip"
-          : policy ==
+        RuntimePolicy::hip
+      ? "hip"
+      : policy ==
 #endif
-              RuntimePolicy::seq
-            ? "seq"
-            : "policy not valid"));
+        RuntimePolicy::seq
+      ? "seq"
+      : "policy not valid"));
 }
 
 const std::set<std::string> Input::s_validMethods({
@@ -248,9 +258,23 @@ struct HexMesh
   BoundingBox m_meshBoundingBox;
 };
 
+template <typename ExecSpace>
 HexMesh loadBlueprintHexMesh(const std::string& mesh_path,
                              bool verboseOutput = false)
 {
+  AXOM_ANNOTATE_SCOPE("load Blueprint hexahedron mesh");
+
+  using HexArray = axom::Array<typename HexMesh::Hexahedron>;
+  using BBoxArray = axom::Array<typename HexMesh::BoundingBox>;
+  constexpr bool on_device = axom::execution_space<ExecSpace>::onDevice();
+
+  // Get ids of necessary allocators
+  const int host_allocator =
+    axom::getUmpireResourceAllocatorID(umpire::resource::Host);
+  const int kernel_allocator = on_device
+    ? axom::getUmpireResourceAllocatorID(umpire::resource::Device)
+    : axom::execution_space<ExecSpace>::allocatorID();
+
   HexMesh hexMesh;
 
   // Load Blueprint mesh into Conduit node
@@ -292,37 +316,83 @@ HexMesh loadBlueprintHexMesh(const std::string& mesh_path,
   }
 
   // extract hexes into an axom::Array
-  int* connectivity = n_load[0]["topologies/topo/elements/connectivity"].value();
+  auto x_vals_h =
+    axom::ArrayView<double>(n_load[0]["coordsets/coords/values/x"].value(),
+                            num_nodes);
+  auto y_vals_h =
+    axom::ArrayView<double>(n_load[0]["coordsets/coords/values/y"].value(),
+                            num_nodes);
+  auto z_vals_h =
+    axom::ArrayView<double>(n_load[0]["coordsets/coords/values/z"].value(),
+                            num_nodes);
 
-  double* x_vals = n_load[0]["coordsets/coords/values/x"].value();
-  double* y_vals = n_load[0]["coordsets/coords/values/y"].value();
-  double* z_vals = n_load[0]["coordsets/coords/values/z"].value();
+  // Move xyz values onto device
+  axom::Array<double> x_vals_d = on_device
+    ? axom::Array<double>(x_vals_h, kernel_allocator)
+    : axom::Array<double>();
+  auto x_vals_view = on_device ? x_vals_d.view() : x_vals_h;
 
+  axom::Array<double> y_vals_d = on_device
+    ? axom::Array<double>(y_vals_h, kernel_allocator)
+    : axom::Array<double>();
+  auto y_vals_view = on_device ? y_vals_d.view() : y_vals_h;
+
+  axom::Array<double> z_vals_d = on_device
+    ? axom::Array<double>(z_vals_h, kernel_allocator)
+    : axom::Array<double>();
+  auto z_vals_view = on_device ? z_vals_d.view() : z_vals_h;
+
+  // Move connectivity information onto device
+  auto connectivity_h = axom::ArrayView<int>(
+    n_load[0]["topologies/topo/elements/connectivity"].value(),
+    connectivity_size);
+
+  axom::Array<int> connectivity_d = on_device
+    ? axom::Array<int>(connectivity_h, kernel_allocator)
+    : axom::Array<int>();
+  auto connectivity_view = on_device ? connectivity_d.view() : connectivity_h;
+
+  // Initialize hex elements and bounding boxes
   const int numCells = connectivity_size / HEX_OFFSET;
-  hexMesh.m_hexes.reserve(numCells);
-  HexMesh::Hexahedron hex;
-  axom::Array<HexMesh::Point> hexPoints(HEX_OFFSET);
 
-  for(int i = 0; i < numCells; ++i)
-  {
-    for(int j = 0; j < HEX_OFFSET; j++)
-    {
-      int offset = i * HEX_OFFSET;
-      hexPoints[j] = HexMesh::Point({x_vals[connectivity[offset + j]],
-                                     y_vals[connectivity[offset + j]],
-                                     z_vals[connectivity[offset + j]]});
-    }
-    hex = HexMesh::Hexahedron(hexPoints);
-    hexMesh.m_hexes.emplace_back(hex);
-  }
+  hexMesh.m_hexes = HexArray(numCells, numCells, kernel_allocator);
+  auto m_hexes_v = (hexMesh.m_hexes).view();
 
-  // compute and store hex bounding boxes and mesh bounding box
-  hexMesh.m_hexBoundingBoxes.reserve(numCells);
-  for(const auto& hex : hexMesh.hexes())
+  hexMesh.m_hexBoundingBoxes = BBoxArray(numCells, numCells, kernel_allocator);
+  auto m_hexBoundingBoxes_v = (hexMesh.m_hexBoundingBoxes).view();
+
+  axom::for_all<ExecSpace>(
+    numCells,
+    AXOM_LAMBDA(axom::IndexType icell) {
+      HexMesh::Hexahedron hex;
+      HexMesh::Point hexPoints[HEX_OFFSET];
+      for(int j = 0; j < HEX_OFFSET; j++)
+      {
+        int offset = icell * HEX_OFFSET;
+        hexPoints[j] =
+          HexMesh::Point({x_vals_view[connectivity_view[offset + j]],
+                          y_vals_view[connectivity_view[offset + j]],
+                          z_vals_view[connectivity_view[offset + j]]});
+      }
+      hex = HexMesh::Hexahedron(hexPoints[0],
+                                hexPoints[1],
+                                hexPoints[2],
+                                hexPoints[3],
+                                hexPoints[4],
+                                hexPoints[5],
+                                hexPoints[6],
+                                hexPoints[7]);
+      m_hexes_v[icell] = hex;
+      m_hexBoundingBoxes_v[icell] = axom::primal::compute_bounding_box(hex);
+    });
+
+  // Initialize mesh's bounding box on the host
+  BBoxArray hexBoundingBoxes_h = on_device
+    ? BBoxArray(hexMesh.m_hexBoundingBoxes, host_allocator)
+    : hexMesh.m_hexBoundingBoxes;
+  for(const auto& hexbb : hexBoundingBoxes_h)
   {
-    hexMesh.m_hexBoundingBoxes.emplace_back(
-      axom::primal::compute_bounding_box(hex));
-    hexMesh.m_meshBoundingBox.addBox(hexMesh.m_hexBoundingBoxes.back());
+    hexMesh.m_meshBoundingBox.addBox(hexbb);
   }
 
   SLIC_INFO(
@@ -336,21 +406,21 @@ HexMesh loadBlueprintHexMesh(const std::string& mesh_path,
     // Append mesh nodes
     for(int i = 0; i < num_nodes; i++)
     {
-      mesh->appendNode(x_vals[i], y_vals[i], z_vals[i]);
+      mesh->appendNode(x_vals_h[i], y_vals_h[i], z_vals_h[i]);
     }
 
     // Append mesh cells
     for(int i = 0; i < numCells; i++)
     {
       const axom::IndexType cell[] = {
-        connectivity[i * HEX_OFFSET],
-        connectivity[(i * HEX_OFFSET) + 1],
-        connectivity[(i * HEX_OFFSET) + 2],
-        connectivity[(i * HEX_OFFSET) + 3],
-        connectivity[(i * HEX_OFFSET) + 4],
-        connectivity[(i * HEX_OFFSET) + 5],
-        connectivity[(i * HEX_OFFSET) + 6],
-        connectivity[(i * HEX_OFFSET) + 7],
+        connectivity_h[i * HEX_OFFSET],
+        connectivity_h[(i * HEX_OFFSET) + 1],
+        connectivity_h[(i * HEX_OFFSET) + 2],
+        connectivity_h[(i * HEX_OFFSET) + 3],
+        connectivity_h[(i * HEX_OFFSET) + 4],
+        connectivity_h[(i * HEX_OFFSET) + 5],
+        connectivity_h[(i * HEX_OFFSET) + 6],
+        connectivity_h[(i * HEX_OFFSET) + 7],
       };
 
       mesh->appendCell(cell);
@@ -358,12 +428,7 @@ HexMesh loadBlueprintHexMesh(const std::string& mesh_path,
 
     // Write out to vtk for test viewing
     SLIC_INFO("Writing out Blueprint mesh to test.vtk for debugging...");
-    axom::utilities::Timer timer(true);
     axom::mint::write_vtk(mesh, "test.vtk");
-    timer.stop();
-    SLIC_INFO(axom::fmt::format(
-      "Writing out Blueprint mesh to test.vtk took {:4.3} seconds.",
-      timer.elapsedTimeInSec()));
 
     delete mesh;
     mesh = nullptr;
@@ -373,21 +438,18 @@ HexMesh loadBlueprintHexMesh(const std::string& mesh_path,
 }  // end of loadBlueprintHexMesh
 
 template <typename ExecSpace>
-axom::Array<IndexPair> findCandidatesBVH(const HexMesh& insertMesh,
+std::vector<IndexPair> findCandidatesBVH(const HexMesh& insertMesh,
                                          const HexMesh& queryMesh)
 {
-  axom::utilities::Timer timer;
-  timer.start();
+  AXOM_ANNOTATE_BEGIN("initializing BVH");
 
   SLIC_INFO("Running BVH candidates algorithm in execution Space: "
             << axom::execution_space<ExecSpace>::name());
 
-  using HexArray = axom::Array<typename HexMesh::Hexahedron>;
-  using BBoxArray = axom::Array<typename HexMesh::BoundingBox>;
   using IndexArray = axom::Array<axom::IndexType>;
   constexpr bool on_device = axom::execution_space<ExecSpace>::onDevice();
 
-  axom::Array<IndexPair> candidatePairs;
+  std::vector<IndexPair> candidatePairs;
 
   // Get ids of necessary allocators
   const int host_allocator =
@@ -396,42 +458,19 @@ axom::Array<IndexPair> findCandidatesBVH(const HexMesh& insertMesh,
     ? axom::getUmpireResourceAllocatorID(umpire::resource::Device)
     : axom::execution_space<ExecSpace>::allocatorID();
 
-  // Copy the insert-BVH hexes to the device, if necessary
-  // Either way, insert_hexes_v will be a view w/ data in the correct space
-  auto& insert_hexes_h = insertMesh.hexes();
-  HexArray insert_hexes_d =
-    on_device ? HexArray(insert_hexes_h, kernel_allocator) : HexArray();
-
-  // Copy the insert-BVH bboxes to the device, if necessary
-  // Either way, insert_bbox_v will be a view w/ data in the correct space
-  auto& insert_bbox_h = insertMesh.hexBoundingBoxes();
-  BBoxArray insert_bbox_d =
-    on_device ? BBoxArray(insert_bbox_h, kernel_allocator) : BBoxArray();
-  auto insert_bbox_v = on_device ? insert_bbox_d.view() : insert_bbox_h.view();
-
-  // Copy the query-BVH hexes to the device, if necessary
-  // Either way, query_hexes_v will be a view w/ data in the correct space
-  auto& query_hexes_h = queryMesh.hexes();
-  HexArray query_hexes_d =
-    on_device ? HexArray(query_hexes_h, kernel_allocator) : HexArray();
-
-  // Copy the query-BVH bboxes to the device, if necessary
-  // Either way, bbox_v will be a view w/ data in the correct space
-  auto& query_bbox_h = queryMesh.hexBoundingBoxes();
-  BBoxArray query_bbox_d =
-    on_device ? BBoxArray(query_bbox_h, kernel_allocator) : BBoxArray();
-  auto query_bbox_v = on_device ? query_bbox_d.view() : query_bbox_h.view();
+  // Get the insert and query bounding boxes
+  auto insert_bbox_v = (insertMesh.hexBoundingBoxes()).view();
+  auto query_bbox_v = (queryMesh.hexBoundingBoxes()).view();
 
   // Initialize a BVH tree over the insert mesh bounding boxes
   axom::spin::BVH<3, ExecSpace, double> bvh;
   bvh.setAllocatorID(kernel_allocator);
   bvh.initialize(insert_bbox_v, insert_bbox_v.size());
-  timer.stop();
-  SLIC_INFO(axom::fmt::format("0: Initializing BVH took {:4.3} seconds.",
-                              timer.elapsedTimeInSec()));
+  SLIC_INFO(axom::fmt::format("0: Initialized BVH."));
+  AXOM_ANNOTATE_END("initializing BVH");
 
   // Search for candidate bounding boxes of hexes to query;
-  timer.start();
+  AXOM_ANNOTATE_BEGIN("query candidates");
   IndexArray offsets_d(query_bbox_v.size(), query_bbox_v.size(), kernel_allocator);
   IndexArray counts_d(query_bbox_v.size(), query_bbox_v.size(), kernel_allocator);
   IndexArray candidates_d(0, 0, kernel_allocator);
@@ -444,11 +483,10 @@ axom::Array<IndexPair> findCandidatesBVH(const HexMesh& insertMesh,
                         query_bbox_v.size(),
                         query_bbox_v);
 
-  timer.stop();
-  SLIC_INFO(axom::fmt::format(
-    "1: Querying candidate bounding boxes took {:4.3} seconds.",
-    timer.elapsedTimeInSec()));
-  timer.start();
+  SLIC_INFO(axom::fmt::format("1: Queried candidate bounding boxes."));
+  AXOM_ANNOTATE_END("query candidates");
+
+  AXOM_ANNOTATE_BEGIN("write candidate pairs");
 
   // Initialize candidate pairs on device.
   auto candidates_v = candidates_d.view();
@@ -474,13 +512,12 @@ axom::Array<IndexPair> findCandidatesBVH(const HexMesh& insertMesh,
       }
     });
 
-  timer.stop();
-  SLIC_INFO(axom::fmt::format(
-    "2: Initializing candidate pairs (on device) took {:4.3} seconds.",
-    timer.elapsedTimeInSec()));
-  timer.start();
+  SLIC_INFO(axom::fmt::format("2: Initialized candidate pairs (on device)."));
+  AXOM_ANNOTATE_END("write candidate pairs");
 
   // copy pairs back to host and into return array
+  AXOM_ANNOTATE_BEGIN("copy pairs to host");
+
   IndexArray candidates_h[2] = {
     on_device ? IndexArray(firstPair_d, host_allocator) : IndexArray(),
     on_device ? IndexArray(secondPair_d, host_allocator) : IndexArray()};
@@ -488,16 +525,14 @@ axom::Array<IndexPair> findCandidatesBVH(const HexMesh& insertMesh,
   auto candidate1_h_v = on_device ? candidates_h[0].view() : firstPair_d.view();
   auto candidate2_h_v = on_device ? candidates_h[1].view() : secondPair_d.view();
 
-  for(int idx = 0; idx < candidates_v.size(); ++idx)
+  candidatePairs.reserve(candidates_v.size());
+  for(axom::IndexType idx = 0; idx < candidates_v.size(); ++idx)
   {
     candidatePairs.emplace_back(
       std::make_pair(candidate1_h_v[idx], candidate2_h_v[idx]));
   }
 
-  timer.stop();
-  SLIC_INFO(
-    axom::fmt::format("3: Moving candidate pairs to host took {:4.3} seconds.",
-                      timer.elapsedTimeInSec()));
+  SLIC_INFO(axom::fmt::format("3: Moved candidate pairs to host."));
 
   SLIC_INFO(axom::fmt::format(axom::utilities::locale(),
                               R"(Stats for query
@@ -510,25 +545,23 @@ axom::Array<IndexPair> findCandidatesBVH(const HexMesh& insertMesh,
                               queryMesh.numHexes(),
                               1.0 * insertMesh.numHexes() * queryMesh.numHexes(),
                               candidatePairs.size()));
+  AXOM_ANNOTATE_END("copy pairs to host");
 
   return candidatePairs;
 }  // end of findCandidatesBVH for Blueprint Meshes
 
 template <typename ExecSpace>
-axom::Array<IndexPair> findCandidatesImplicit(const HexMesh& insertMesh,
+std::vector<IndexPair> findCandidatesImplicit(const HexMesh& insertMesh,
                                               const HexMesh& queryMesh,
                                               int resolution)
 {
-  axom::utilities::Timer timer;
-  timer.start();
+  AXOM_ANNOTATE_BEGIN("initializing implicit grid");
 
-  axom::Array<IndexPair> candidatePairs;
+  std::vector<IndexPair> candidatePairs;
 
   SLIC_INFO("Running Implicit Grid candidates algorithm in execution Space: "
             << axom::execution_space<ExecSpace>::name());
 
-  using HexArray = axom::Array<typename HexMesh::Hexahedron>;
-  using BBoxArray = axom::Array<typename HexMesh::BoundingBox>;
   using IndexArray = axom::Array<int>;
   constexpr bool on_device = axom::execution_space<ExecSpace>::onDevice();
 
@@ -539,34 +572,12 @@ axom::Array<IndexPair> findCandidatesImplicit(const HexMesh& insertMesh,
     ? axom::getUmpireResourceAllocatorID(umpire::resource::Device)
     : axom::execution_space<ExecSpace>::allocatorID();
 
-  // Copy the insert hexes to the device, if necessary
-  // Either way, insert_hexes_v will be a view w/ data in the correct space
-  auto& insert_hexes_h = insertMesh.hexes();
-  HexArray insert_hexes_d =
-    on_device ? HexArray(insert_hexes_h, kernel_allocator) : HexArray();
-
-  // Copy the insert bboxes to the device, if necessary
-  // Either way, insert_bbox_v will be a view w/ data in the correct space
-  auto& insert_bbox_h = insertMesh.hexBoundingBoxes();
-  BBoxArray insert_bbox_d =
-    on_device ? BBoxArray(insert_bbox_h, kernel_allocator) : BBoxArray();
-  auto insert_bbox_v = on_device ? insert_bbox_d.view() : insert_bbox_h.view();
+  // Get the insert and query bounding boxes
+  auto insert_bbox_v = (insertMesh.hexBoundingBoxes()).view();
+  auto query_bbox_v = (queryMesh.hexBoundingBoxes()).view();
 
   // Bounding box of entire insert mesh
   HexMesh::BoundingBox insert_mesh_bbox_h = insertMesh.meshBoundingBox();
-
-  // Copy the query hexes to the device, if necessary
-  // Either way, query_hexes_v will be a view w/ data in the correct space
-  auto& query_hexes_h = queryMesh.hexes();
-  HexArray query_hexes_d =
-    on_device ? HexArray(query_hexes_h, kernel_allocator) : HexArray();
-
-  // Copy the query bboxes to the device, if necessary
-  // Either way, bbox_v will be a view w/ data in the correct space
-  auto& query_bbox_h = queryMesh.hexBoundingBoxes();
-  BBoxArray query_bbox_d =
-    on_device ? BBoxArray(query_bbox_h, kernel_allocator) : BBoxArray();
-  auto query_bbox_v = on_device ? query_bbox_d.view() : query_bbox_h.view();
 
   // If given resolution is less than one, use the cube root of the
   // number of hexes
@@ -582,12 +593,10 @@ axom::Array<IndexPair> findCandidatesImplicit(const HexMesh& insertMesh,
                                                         insertMesh.numHexes(),
                                                         kernel_allocator);
   gridIndex.insert(insertMesh.numHexes(), insert_bbox_v.data());
-  timer.stop();
-  SLIC_INFO(
-    axom::fmt::format("0: Initializing Implicit Grid took {:4.3} seconds.",
-                      timer.elapsedTimeInSec()));
+  SLIC_INFO(axom::fmt::format("0: Initialized Implicit Grid."));
+  AXOM_ANNOTATE_END("initializing implicit grid");
 
-  timer.start();
+  AXOM_ANNOTATE_BEGIN("query candidates");
   IndexArray offsets_d(query_bbox_v.size(), query_bbox_v.size(), kernel_allocator);
   IndexArray counts_d(query_bbox_v.size(), query_bbox_v.size(), kernel_allocator);
 
@@ -627,11 +636,10 @@ axom::Array<IndexPair> findCandidatesImplicit(const HexMesh& insertMesh,
       totalCandidatePairs += count;
     });
 
-  timer.stop();
-  SLIC_INFO(axom::fmt::format(
-    "1: Querying candidate bounding boxes took {:4.3} seconds.",
-    timer.elapsedTimeInSec()));
-  timer.start();
+  SLIC_INFO(axom::fmt::format("1: Queried candidate bounding boxes."));
+  AXOM_ANNOTATE_END("query candidates");
+
+  AXOM_ANNOTATE_BEGIN("write candidate pairs");
 
 // Generate offsets from the counts
 // (Note: exclusive scan for offsets in candidate array
@@ -677,14 +685,11 @@ axom::Array<IndexPair> findCandidatesImplicit(const HexMesh& insertMesh,
       grid_device.visitCandidates(query_bbox_v[icell], fillCandidates);
     });
 
-  timer.stop();
-
-  SLIC_INFO(axom::fmt::format(
-    "2: Initializing candidate pairs (on device) took {:4.3} seconds.",
-    timer.elapsedTimeInSec()));
+  SLIC_INFO(axom::fmt::format("2: Initialized candidate pairs (on device)."));
+  AXOM_ANNOTATE_END("write candidate pairs");
 
   // copy results back to host and into return vector
-  timer.start();
+  AXOM_ANNOTATE_BEGIN("copy pairs to host");
 
   IndexArray candidates_h[2] = {
     on_device ? IndexArray(firstPair_d, host_allocator) : IndexArray(),
@@ -693,17 +698,14 @@ axom::Array<IndexPair> findCandidatesImplicit(const HexMesh& insertMesh,
   auto candidate1_h_v = on_device ? candidates_h[0].view() : firstPair_d.view();
   auto candidate2_h_v = on_device ? candidates_h[1].view() : secondPair_d.view();
 
-  for(int idx = 0; idx < totalCandidatePairs; ++idx)
+  candidatePairs.reserve(totalCandidatePairs.get());
+  for(axom::IndexType idx = 0; idx < totalCandidatePairs.get(); ++idx)
   {
     candidatePairs.emplace_back(
       std::make_pair(candidate1_h_v[idx], candidate2_h_v[idx]));
   }
 
-  timer.stop();
-
-  SLIC_INFO(
-    axom::fmt::format("3: Moving candidate pairs to host took {:4.3} seconds.",
-                      timer.elapsedTimeInSec()));
+  SLIC_INFO(axom::fmt::format("3: Moved candidate pairs to host."));
 
   SLIC_INFO(axom::fmt::format(axom::utilities::locale(),
                               R"(Stats for query
@@ -716,6 +718,7 @@ axom::Array<IndexPair> findCandidatesImplicit(const HexMesh& insertMesh,
                               queryMesh.numHexes(),
                               1.0 * insertMesh.numHexes() * queryMesh.numHexes(),
                               candidatePairs.size()));
+  AXOM_ANNOTATE_END("copy pairs to host");
 
   return candidatePairs;
 }
@@ -739,7 +742,11 @@ int main(int argc, char** argv)
     }
   }
 
-  axom::utilities::Timer timer(true);
+  axom::utilities::raii::AnnotationsWrapper annotation_raii_wrapper(
+    params.annotationMode);
+  AXOM_ANNOTATE_SCOPE("quest candidates example");
+
+  AXOM_ANNOTATE_BEGIN("load Blueprint meshes");
 
   // Update the logging level based on verbosity flag
   axom::slic::setLoggingMsgLevel(params.isVerbose() ? axom::slic::message::Debug
@@ -749,24 +756,72 @@ int main(int argc, char** argv)
   SLIC_INFO(axom::fmt::format("Reading Blueprint file to insert: '{}'...\n",
                               params.mesh_file_first));
 
-  HexMesh insert_mesh =
-    loadBlueprintHexMesh(params.mesh_file_first, params.isVerbose());
+  HexMesh insert_mesh;
+
+  switch(params.policy)
+  {
+#ifdef AXOM_RUNTIME_POLICY_USE_OPENMP
+  case RuntimePolicy::omp:
+    insert_mesh =
+      loadBlueprintHexMesh<omp_exec>(params.mesh_file_first, params.isVerbose());
+    break;
+#endif
+#ifdef AXOM_RUNTIME_POLICY_USE_CUDA
+  case RuntimePolicy::cuda:
+    insert_mesh = loadBlueprintHexMesh<cuda_exec>(params.mesh_file_first,
+                                                  params.isVerbose());
+    break;
+#endif
+#ifdef AXOM_RUNTIME_POLICY_USE_HIP
+  case RuntimePolicy::hip:
+    insert_mesh =
+      loadBlueprintHexMesh<hip_exec>(params.mesh_file_first, params.isVerbose());
+    break;
+#endif
+  default:  // RuntimePolicy::seq
+    insert_mesh =
+      loadBlueprintHexMesh<seq_exec>(params.mesh_file_first, params.isVerbose());
+    break;
+  }
 
   // Load Blueprint mesh for querying spatial index
   SLIC_INFO(axom::fmt::format("Reading Blueprint file to query: '{}'...\n",
                               params.mesh_file_second));
 
-  HexMesh query_mesh =
-    loadBlueprintHexMesh(params.mesh_file_second, params.isVerbose());
+  HexMesh query_mesh;
 
-  timer.stop();
+  switch(params.policy)
+  {
+#ifdef AXOM_RUNTIME_POLICY_USE_OPENMP
+  case RuntimePolicy::omp:
+    query_mesh = loadBlueprintHexMesh<omp_exec>(params.mesh_file_second,
+                                                params.isVerbose());
+    break;
+#endif
+#ifdef AXOM_RUNTIME_POLICY_USE_CUDA
+  case RuntimePolicy::cuda:
+    query_mesh = loadBlueprintHexMesh<cuda_exec>(params.mesh_file_second,
+                                                 params.isVerbose());
+    break;
+#endif
+#ifdef AXOM_RUNTIME_POLICY_USE_HIP
+  case RuntimePolicy::hip:
+    query_mesh = loadBlueprintHexMesh<hip_exec>(params.mesh_file_second,
+                                                params.isVerbose());
+    break;
+#endif
+  default:  // RuntimePolicy::seq
+    query_mesh = loadBlueprintHexMesh<seq_exec>(params.mesh_file_second,
+                                                params.isVerbose());
+    break;
+  }
 
-  SLIC_INFO(axom::fmt::format("Reading in Blueprint files took {:4.3} seconds.",
-                              timer.elapsedTimeInSec()));
+  SLIC_INFO(axom::fmt::format("Finished reading in Blueprint files."));
+  AXOM_ANNOTATE_END("load Blueprint meshes");
 
+  AXOM_ANNOTATE_BEGIN("find candidates");
   // Check for candidates; results are returned as an array of index pairs
-  axom::Array<IndexPair> candidatePairs;
-  timer.start();
+  std::vector<IndexPair> candidatePairs;
 
   if(params.method == "bvh")
   {
@@ -825,10 +880,7 @@ int main(int argc, char** argv)
       break;
     }
   }
-  timer.stop();
 
-  SLIC_INFO(axom::fmt::format("Computing candidates took {:4.3} seconds.",
-                              timer.elapsedTimeInSec()));
   SLIC_INFO(axom::fmt::format(axom::utilities::locale(),
                               "Mesh had {:L} candidates pairs",
                               candidatePairs.size()));
@@ -856,12 +908,13 @@ int main(int argc, char** argv)
     std::ofstream outf("candidates.txt");
 
     outf << candidatePairs.size() << " candidate pairs:" << std::endl;
-    for(int i = 0; i < candidatePairs.size(); ++i)
+    for(unsigned long i = 0; i < candidatePairs.size(); ++i)
     {
       outf << candidatePairs[i].first << " " << candidatePairs[i].second
            << std::endl;
     }
   }
+  AXOM_ANNOTATE_END("find candidates");
 
   return 0;
 }

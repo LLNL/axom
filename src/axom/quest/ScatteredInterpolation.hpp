@@ -7,6 +7,7 @@
 #define QUEST_SCATTERED_INTERPOLATION_H_
 
 #include "axom/core.hpp"
+#include "axom/core/NumericLimits.hpp"
 #include "axom/slic.hpp"
 #include "axom/sidre.hpp"
 #include "axom/spin.hpp"
@@ -19,7 +20,6 @@
 #include "conduit_blueprint.hpp"
 
 #include <cmath>
-#include <limits>
 
 namespace
 {
@@ -321,8 +321,10 @@ private:
       spin::Mortonizer<QuantizedCoordType, MortonIndexType, DIM>;
 
     // Fit as many bits as possible per dimension into an int64, i.e. floor(63/DIM)
-    constexpr int shift_bits = (DIM == 2) ? 31 : 21;
-    primal::NumericArray<QuantizedCoordType, DIM> res(1 << shift_bits, DIM);
+    constexpr QuantizedCoordType shift_bits = (DIM == 2) ? 31 : 21;
+    primal::NumericArray<QuantizedCoordType, DIM> res(
+      static_cast<QuantizedCoordType>(1) << shift_bits,
+      DIM);
     auto quantizer =
       spin::rectangular_lattice_from_bounding_box<DIM, CoordType, QuantizedCoordType>(
         bb,
@@ -498,7 +500,7 @@ public:
     conduit::Node& input_mesh,
     const std::string& input_field_name,
     const std::string& output_field_name,
-    const double INVALID_VALUE = std::numeric_limits<double>::quiet_NaN())
+    const double INVALID_VALUE = axom::numeric_limits<double>::quiet_NaN())
   {
     constexpr auto INVALID_INDEX = DelaunayTriangulation::INVALID_INDEX;
 

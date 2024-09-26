@@ -2178,48 +2178,434 @@ TEST(primal_intersect, plane_bb_test_intersection)
 TEST(primal_intersect, plane_seg_test_intersection)
 {
   double t1, t2, t3;
+  using Point3D = primal::Point<double, 3>;
+  using Plane3D = primal::Plane<double, 3>;
+  using Segment3D = primal::Segment<double, 3>;
+  using Vector3D = primal::Vector<double, 3>;
+
+  using Point2D = primal::Point<double, 2>;
+  using Plane2D = primal::Plane<double, 2>;
+  using Segment2D = primal::Segment<double, 2>;
+  using Vector2D = primal::Vector<double, 2>;
+
+  // 3D Tests
+  {
+    // Line segment goes from (0,0,0) to (1,1,1)
+    Point3D A(0.);
+    Point3D B(1.);
+    Segment3D s(A, B);
+
+    // Line segment parallel to plane (non-intersect)
+    Point3D A_p {-1, -1, 0};
+    Point3D B_p {1, -1, 0};
+    Segment3D s_p(A_p, B_p);
+
+    // intersect A
+    Vector3D normal1 {0.0, 1.0, 0.0};
+    double offset1 = 0.0;
+    Plane3D p1(normal1, offset1);
+
+    // intersect midpoint
+    Vector3D normal2 {0.0, 1.0, 0.0};
+    double offset2 = 0.5;
+    Plane3D p2(normal2, offset2);
+
+    // intersect B
+    Vector3D normal3 {0.0, 1.0, 0.0};
+    double offset3 = 1.0;
+    Plane3D p3(normal3, offset3);
+
+    EXPECT_TRUE(axom::primal::intersect(p1, s, t1));
+    EXPECT_EQ(s.at(t1), Point3D({0.0, 0.0, 0.0}));
+
+    EXPECT_TRUE(axom::primal::intersect(p2, s, t2));
+    EXPECT_EQ(s.at(t2), Point3D({0.5, 0.5, 0.5}));
+
+    EXPECT_TRUE(axom::primal::intersect(p3, s, t3));
+    EXPECT_EQ(s.at(t3), Point3D({1.0, 1.0, 1.0}));
+
+    EXPECT_FALSE(axom::primal::intersect(p1, s_p, t1));
+  }
+
+  // 2D Tests
+  {
+    // Line segment goes from (0,0) to (1,1)
+    Point2D A(0.);
+    Point2D B(1.);
+    Segment2D s(A, B);
+
+    // Line segment parallel to plane (non-intersect)
+    Point2D A_p {-1, -1};
+    Point2D B_p {1, -1};
+    Segment2D s_p(A_p, B_p);
+
+    // intersect A
+    Vector2D normal1 {0.0, 1.0};
+    double offset1 = 0.0;
+    Plane2D p1(normal1, offset1);
+
+    // intersect midpoint
+    Vector2D normal2 {0.0, 1.0};
+    double offset2 = 0.5;
+    Plane2D p2(normal2, offset2);
+
+    // intersect B
+    Vector2D normal3 {0.0, 1.0};
+    double offset3 = 1.0;
+    Plane2D p3(normal3, offset3);
+
+    EXPECT_TRUE(axom::primal::intersect(p1, s, t1));
+    EXPECT_EQ(s.at(t1), Point2D({0.0, 0.0}));
+
+    EXPECT_TRUE(axom::primal::intersect(p2, s, t2));
+    EXPECT_EQ(s.at(t2), Point2D({0.5, 0.5}));
+
+    EXPECT_TRUE(axom::primal::intersect(p3, s, t3));
+    EXPECT_EQ(s.at(t3), Point2D({1.0, 1.0}));
+
+    EXPECT_FALSE(axom::primal::intersect(p1, s_p, t1));
+  }
+}
+
+//------------------------------------------------------------------------------
+TEST(primal_intersect, plane_tet_test_intersection)
+{
   const int DIM = 3;
   using PointType = primal::Point<double, DIM>;
   using PlaneType = primal::Plane<double, DIM>;
-  using SegmentType = primal::Segment<double, DIM>;
+  using TetType = primal::Tetrahedron<double, DIM>;
   using VectorType = primal::Vector<double, DIM>;
+  using PolygonType = primal::Polygon<double, DIM>;
 
-  // Line segment goes from (0,0,0) to (1,1,1)
-  PointType A(0.);
-  PointType B(1.);
-  SegmentType s(A, B);
+  PointType A {0., 0., 1.};
+  PointType B {1., 0., 0.};
+  PointType C {0., 0., 0.};
+  PointType D {0., 1., 0.};
 
-  // Line segment parallel to plane (non-intersect)
-  PointType A_p {-1, -1, 0};
-  PointType B_p {1, -1, 0};
-  SegmentType s_p(A_p, B_p);
+  PointType origin {0., 0., 0.};
 
-  // intersect A
-  VectorType normal1 {0.0, 1.0, 0.0};
-  double offset1 = 0.0;
-  PlaneType p1(normal1, offset1);
+  PointType ABmid(PointType::lerp(A, B, 0.5));
+  PointType ACmid(PointType::lerp(A, C, 0.5));
+  PointType ADmid(PointType::lerp(A, D, 0.5));
+  PointType BCmid(PointType::lerp(B, C, 0.5));
+  PointType BDmid(PointType::lerp(B, D, 0.5));
+  PointType CDmid(PointType::lerp(C, D, 0.5));
 
-  // intersect midpoint
-  VectorType normal2 {0.0, 1.0, 0.0};
-  double offset2 = 0.5;
-  PlaneType p2(normal2, offset2);
+  TetType T {A, B, C, D};
 
-  // intersect B
-  VectorType normal3 {0.0, 1.0, 0.0};
-  double offset3 = 1.0;
-  PlaneType p3(normal3, offset3);
+  PolygonType poly;
 
-  EXPECT_TRUE(axom::primal::intersect(p1, s, t1));
-  EXPECT_EQ(s.at(t1), PointType({0.0, 0.0, 0.0}));
+  // ---------------------------------------------------------------------------
+  // Not even close
+  EXPECT_FALSE(axom::primal::intersect(
+    PlaneType(VectorType {0., 0., 1.}, PointType {0., 0., -10.}),
+    T,
+    poly));
+  EXPECT_EQ(poly.numVertices(), 0);
 
-  EXPECT_TRUE(axom::primal::intersect(p2, s, t2));
-  EXPECT_EQ(s.at(t2), PointType({0.5, 0.5, 0.5}));
+  // ---------------------------------------------------------------------------
+  // Tests along X axis
 
-  EXPECT_TRUE(axom::primal::intersect(p3, s, t3));
-  EXPECT_EQ(s.at(t3), PointType({1.0, 1.0, 1.0}));
+  // Plane hits only at point B.
+  EXPECT_TRUE(
+    axom::primal::intersect(PlaneType(VectorType {1., 0., 0.}, B), T, poly));
+  EXPECT_EQ(poly.numVertices(), 3);
+  EXPECT_EQ(poly[0], B);
+  EXPECT_EQ(poly[1], B);
+  EXPECT_EQ(poly[2], B);
 
-  EXPECT_FALSE(axom::primal::intersect(p1, s_p, t1));
+  // Plane hits only at point B.
+  EXPECT_TRUE(
+    axom::primal::intersect(PlaneType(VectorType {-1., 0., 0.}, B), T, poly));
+  EXPECT_EQ(poly.numVertices(), 3);
+  EXPECT_EQ(poly[0], B);
+  EXPECT_EQ(poly[1], B);
+  EXPECT_EQ(poly[2], B);
+
+  // Plane misses near point B.
+  EXPECT_FALSE(axom::primal::intersect(
+    PlaneType(VectorType {1., 0., 0.}, PointType {1.5, 0., 0.}),
+    T,
+    poly));
+  EXPECT_EQ(poly.numVertices(), 0);
+
+  // Plane slices at x=0.5
+  EXPECT_TRUE(axom::primal::intersect(
+    PlaneType(VectorType {1., 0., 0.}, PointType {0.5, 0., 0.}),
+    T,
+    poly));
+  EXPECT_EQ(poly.numVertices(), 3);
+  EXPECT_EQ(poly[0], PointType::lerp(A, B, 0.5));
+  EXPECT_EQ(poly[1], PointType::lerp(B, C, 0.5));
+  EXPECT_EQ(poly[2], PointType::lerp(B, D, 0.5));
+
+  // Plane slices at x=0.5
+  EXPECT_TRUE(axom::primal::intersect(
+    PlaneType(VectorType {-1., 0., 0.}, PointType {0.5, 0., 0.}),
+    T,
+    poly));
+  EXPECT_EQ(poly.numVertices(), 3);
+  EXPECT_EQ(poly[0], PointType::lerp(B, C, 0.5));
+  EXPECT_EQ(poly[1], PointType::lerp(A, B, 0.5));
+  EXPECT_EQ(poly[2], PointType::lerp(B, D, 0.5));
+
+  // Slice at x=0
+  EXPECT_TRUE(
+    axom::primal::intersect(PlaneType(VectorType {1., 0., 0.}, origin), T, poly));
+  EXPECT_EQ(poly.numVertices(), 3);
+  EXPECT_EQ(poly[0], A);
+  EXPECT_EQ(poly[1], C);
+  EXPECT_EQ(poly[2], D);
+
+  // Slice at x=0
+  EXPECT_TRUE(
+    axom::primal::intersect(PlaneType(VectorType {-1., 0., 0.}, origin), T, poly));
+  EXPECT_EQ(poly.numVertices(), 3);
+  EXPECT_EQ(poly[0], C);
+  EXPECT_EQ(poly[1], A);
+  EXPECT_EQ(poly[2], D);
+
+  // ---------------------------------------------------------------------------
+  // Tests along Y axis
+
+  // Plane hits only at point D.
+  EXPECT_TRUE(
+    axom::primal::intersect(PlaneType(VectorType {0., 1., 0.}, D), T, poly));
+  EXPECT_EQ(poly.numVertices(), 3);
+  EXPECT_EQ(poly[0], D);
+  EXPECT_EQ(poly[1], D);
+  EXPECT_EQ(poly[2], D);
+
+  // Plane hits only at point D.
+  EXPECT_TRUE(
+    axom::primal::intersect(PlaneType(VectorType {0., -1., 0.}, D), T, poly));
+  EXPECT_EQ(poly.numVertices(), 3);
+  EXPECT_EQ(poly[0], D);
+  EXPECT_EQ(poly[1], D);
+  EXPECT_EQ(poly[2], D);
+
+  // Plane misses near point D.
+  EXPECT_FALSE(axom::primal::intersect(
+    PlaneType(VectorType {0., 1., 0.}, PointType {0., 1.5, 0.}),
+    T,
+    poly));
+  EXPECT_EQ(poly.numVertices(), 0);
+
+  // Plane slices at y=0.5
+  EXPECT_TRUE(axom::primal::intersect(
+    PlaneType(VectorType {0., 1., 0.}, PointType {0., 0.5, 0.}),
+    T,
+    poly));
+  EXPECT_EQ(poly.numVertices(), 3);
+  EXPECT_EQ(poly[0], PointType::lerp(A, D, 0.5));
+  EXPECT_EQ(poly[1], PointType::lerp(B, D, 0.5));
+  EXPECT_EQ(poly[2], PointType::lerp(C, D, 0.5));
+
+  // Plane slices at y=0.5
+  EXPECT_TRUE(axom::primal::intersect(
+    PlaneType(VectorType {0., -1., 0.}, PointType {0., 0.5, 0.}),
+    T,
+    poly));
+  EXPECT_EQ(poly.numVertices(), 3);
+  EXPECT_EQ(poly[0], PointType::lerp(C, D, 0.5));
+  EXPECT_EQ(poly[1], PointType::lerp(B, D, 0.5));
+  EXPECT_EQ(poly[2], PointType::lerp(A, D, 0.5));
+
+  // Slice at y=0
+  EXPECT_TRUE(
+    axom::primal::intersect(PlaneType(VectorType {0., 1., 0.}, origin), T, poly));
+  EXPECT_EQ(poly.numVertices(), 3);
+  EXPECT_EQ(poly[0], A);
+  EXPECT_EQ(poly[1], B);
+  EXPECT_EQ(poly[2], C);
+
+  // Slice at y=0
+  EXPECT_TRUE(
+    axom::primal::intersect(PlaneType(VectorType {0., -1., 0.}, origin), T, poly));
+  EXPECT_EQ(poly.numVertices(), 3);
+  EXPECT_EQ(poly[0], C);
+  EXPECT_EQ(poly[1], B);
+  EXPECT_EQ(poly[2], A);
+
+  // ---------------------------------------------------------------------------
+  // Tests along Z axis
+
+  // Plane hits only at point A.
+  EXPECT_TRUE(
+    axom::primal::intersect(PlaneType(VectorType {0., 0., 1.}, A), T, poly));
+  EXPECT_EQ(poly.numVertices(), 3);
+  EXPECT_EQ(poly[0], A);
+  EXPECT_EQ(poly[1], A);
+  EXPECT_EQ(poly[2], A);
+
+  // Plane hits only at point A.
+  EXPECT_TRUE(
+    axom::primal::intersect(PlaneType(VectorType {0., 0., -1.}, A), T, poly));
+  EXPECT_EQ(poly.numVertices(), 3);
+  EXPECT_EQ(poly[0], A);
+  EXPECT_EQ(poly[1], A);
+  EXPECT_EQ(poly[2], A);
+
+  // Plane misses near point A.
+  EXPECT_FALSE(axom::primal::intersect(
+    PlaneType(VectorType {0., 0., -1.}, PointType {0., 0., 1.5}),
+    T,
+    poly));
+  EXPECT_EQ(poly.numVertices(), 0);
+
+  // Plane slices at z=0.5
+  EXPECT_TRUE(axom::primal::intersect(
+    PlaneType(VectorType {0., 0., 1.}, PointType {0., 0., 0.5}),
+    T,
+    poly));
+  EXPECT_EQ(poly.numVertices(), 3);
+  EXPECT_EQ(poly[0], PointType::lerp(A, C, 0.5));
+  EXPECT_EQ(poly[1], PointType::lerp(A, B, 0.5));
+  EXPECT_EQ(poly[2], PointType::lerp(A, D, 0.5));
+
+  // Plane slices at z=0.5
+  EXPECT_TRUE(axom::primal::intersect(
+    PlaneType(VectorType {0., 0., -1.}, PointType {0., 0., 0.5}),
+    T,
+    poly));
+  EXPECT_EQ(poly.numVertices(), 3);
+  EXPECT_EQ(poly[0], PointType::lerp(A, B, 0.5));
+  EXPECT_EQ(poly[1], PointType::lerp(A, C, 0.5));
+  EXPECT_EQ(poly[2], PointType::lerp(A, D, 0.5));
+
+  // Slice at z=0
+  EXPECT_TRUE(
+    axom::primal::intersect(PlaneType(VectorType {0., 0., 1.}, origin), T, poly));
+  EXPECT_EQ(poly.numVertices(), 3);
+  EXPECT_EQ(poly[0], C);
+  EXPECT_EQ(poly[1], B);
+  EXPECT_EQ(poly[2], D);
+
+  // Slice at z=0
+  EXPECT_TRUE(
+    axom::primal::intersect(PlaneType(VectorType {0., 0., -1.}, origin), T, poly));
+  EXPECT_EQ(poly.numVertices(), 3);
+  EXPECT_EQ(poly[0], B);
+  EXPECT_EQ(poly[1], C);
+  EXPECT_EQ(poly[2], D);
+
+  // ---------------------------------------------------------------------------
+  // Tests along normal (1,1,1) from point C
+
+  // Plane hits only at point C.
+  EXPECT_TRUE(
+    axom::primal::intersect(PlaneType(VectorType {1., 1., 1.}, C), T, poly));
+  EXPECT_EQ(poly.numVertices(), 3);
+  EXPECT_EQ(poly[0], C);
+  EXPECT_EQ(poly[1], C);
+  EXPECT_EQ(poly[2], C);
+
+  // Plane hits only at point C.
+  EXPECT_TRUE(
+    axom::primal::intersect(PlaneType(VectorType {-1., -1., -1.}, C), T, poly));
+  EXPECT_EQ(poly.numVertices(), 3);
+  EXPECT_EQ(poly[0], C);
+  EXPECT_EQ(poly[1], C);
+  EXPECT_EQ(poly[2], C);
+
+  // Plane misses near point C.
+  EXPECT_FALSE(axom::primal::intersect(
+    PlaneType(VectorType {1., 1., 1.}, PointType {-0.1, -0.1, -0.1}),
+    T,
+    poly));
+  EXPECT_EQ(poly.numVertices(), 0);
+
+  // Plane slices at ACmid
+  EXPECT_TRUE(
+    axom::primal::intersect(PlaneType(VectorType {1., 1., 1.}, ACmid), T, poly));
+  EXPECT_EQ(poly.numVertices(), 3);
+  EXPECT_EQ(poly[0], ACmid);
+  EXPECT_EQ(poly[1], BCmid);
+  EXPECT_EQ(poly[2], CDmid);
+
+  // Plane slices at ACmid
+  EXPECT_TRUE(
+    axom::primal::intersect(PlaneType(VectorType {-1., -1., -1.}, ACmid), T, poly));
+  EXPECT_EQ(poly.numVertices(), 3);
+  EXPECT_EQ(poly[0], BCmid);
+  EXPECT_EQ(poly[1], ACmid);
+  EXPECT_EQ(poly[2], CDmid);
+
+  // Slice at face ABD
+  EXPECT_TRUE(axom::primal::intersect(make_plane(A, B, D), T, poly));
+  EXPECT_EQ(poly.numVertices(), 3);
+  EXPECT_EQ(poly[0], A);
+  EXPECT_EQ(poly[1], B);
+  EXPECT_EQ(poly[2], D);
+
+  // ---------------------------------------------------------------------------
+  // Tests along normal (1,0,1) from point ACmid
+
+  EXPECT_TRUE(
+    axom::primal::intersect(PlaneType(VectorType {1., 0., 1.}, ACmid), T, poly));
+  EXPECT_EQ(poly.numVertices(), 4);
+  EXPECT_EQ(poly[0], ACmid);
+  EXPECT_EQ(poly[1], BCmid);
+  EXPECT_EQ(poly[2], BDmid);
+  EXPECT_EQ(poly[3], ADmid);
+
+  EXPECT_TRUE(
+    axom::primal::intersect(PlaneType(VectorType {-1., 0., -1.}, ACmid), T, poly));
+  EXPECT_EQ(poly.numVertices(), 4);
+  EXPECT_EQ(poly[0], BCmid);
+  EXPECT_EQ(poly[1], ACmid);
+  EXPECT_EQ(poly[2], ADmid);
+  EXPECT_EQ(poly[3], BDmid);
+
+  // ---------------------------------------------------------------------------
+  // Tests along normal (1,1,0) from point BCmid
+
+  EXPECT_TRUE(
+    axom::primal::intersect(PlaneType(VectorType {1., 1., 0.}, BCmid), T, poly));
+  EXPECT_EQ(poly.numVertices(), 4);
+  EXPECT_EQ(poly[0], ABmid);
+  EXPECT_EQ(poly[1], BCmid);
+  EXPECT_EQ(poly[2], CDmid);
+  EXPECT_EQ(poly[3], ADmid);
+
+  EXPECT_TRUE(
+    axom::primal::intersect(PlaneType(VectorType {-1., -1., 0.}, BCmid), T, poly));
+  EXPECT_EQ(poly.numVertices(), 4);
+  EXPECT_EQ(poly[0], BCmid);
+  EXPECT_EQ(poly[1], ABmid);
+  EXPECT_EQ(poly[2], ADmid);
+  EXPECT_EQ(poly[3], CDmid);
+
+  // ---------------------------------------------------------------------------
+  // Tests along normal (0,1,1) from point ACmid
+
+  EXPECT_TRUE(
+    axom::primal::intersect(PlaneType(VectorType {0., 1., 1.}, ACmid), T, poly));
+  EXPECT_EQ(poly.numVertices(), 4);
+  EXPECT_EQ(poly[0], ACmid);
+  EXPECT_EQ(poly[1], ABmid);
+  EXPECT_EQ(poly[2], BDmid);
+  EXPECT_EQ(poly[3], CDmid);
+
+  EXPECT_TRUE(
+    axom::primal::intersect(PlaneType(VectorType {0., -1., -1.}, ACmid), T, poly));
+  EXPECT_EQ(poly.numVertices(), 4);
+  EXPECT_EQ(poly[0], ABmid);
+  EXPECT_EQ(poly[1], ACmid);
+  EXPECT_EQ(poly[2], CDmid);
+  EXPECT_EQ(poly[3], BDmid);
+
+  // ---------------------------------------------------------------------------
+  // Cut in half through CD segment
+
+  EXPECT_TRUE(
+    axom::primal::intersect(PlaneType(VectorType {-1., 0., 1.}, C), T, poly));
+  EXPECT_EQ(poly.numVertices(), 3);
+  EXPECT_EQ(poly[0], C);
+  EXPECT_EQ(poly[1], ABmid);
+  EXPECT_EQ(poly[2], D);
 }
+
 //------------------------------------------------------------------------------
 #if defined(AXOM_USE_RAJA) && defined(AXOM_USE_UMPIRE)
 

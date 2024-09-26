@@ -13,19 +13,17 @@
  *       since it might be included from a C file
  */
 
-
 /*
  * Axom Version Information
  */
 #define AXOM_VERSION_MAJOR @AXOM_VERSION_MAJOR@
 #define AXOM_VERSION_MINOR @AXOM_VERSION_MINOR@
 #define AXOM_VERSION_PATCH @AXOM_VERSION_PATCH@
-#define AXOM_VERSION_FULL  "@AXOM_VERSION_FULL@"
+#define AXOM_VERSION_FULL "@AXOM_VERSION_FULL@"
 /*NOTE: Do not add AXOM_GIT_SHA here.  This will force
  * full rebuild on all local changes. It is added in axom::getVersion()
  * and axom::about(), as well as accessible from axom::gitSha().
  */
-
 
 /*
  * Axom source location
@@ -35,45 +33,43 @@
 #cmakedefine AXOM_DATA_DIR "@AXOM_DATA_DIR@"
 
 /*
- * Indicates whether Axom is compiled with Annotations that can facilitate
- * evaluation of performance with various performance tools.
- */
-#cmakedefine AXOM_USE_ANNOTATIONS
-
-/*
  * Platform specific definitions
  */
 #define AXOM_CXX_STD "@BLT_CXX_STD@"
 #cmakedefine AXOM_CUDA_ARCH "@AXOM_CUDA_ARCH@"
 #cmakedefine AXOM_NO_INT64_T
-#cmakedefine AXOM_USE_MPI3
 
 #ifndef AXOM_NO_INT64_T
 #cmakedefine AXOM_USE_64BIT_INDEXTYPE
 #endif
-
 
 /*
  * Compiler tests
  */
 #cmakedefine USE_C_LOC_WITH_ASSUMED_SHAPE
 
+/*
+ * Compiler defines for programming models
+ */
+#cmakedefine AXOM_USE_CUDA
+#cmakedefine AXOM_USE_HIP
+#cmakedefine AXOM_USE_MPI
+#cmakedefine AXOM_USE_MPI3
+#cmakedefine AXOM_USE_MPIF_HEADER
+#cmakedefine AXOM_USE_OPENMP
 
 /*
  * Compiler defines for libraries (built-in and third party)
  */
+#cmakedefine AXOM_USE_ADIAK
 #cmakedefine AXOM_USE_C2C
+#cmakedefine AXOM_USE_CALIPER
 #cmakedefine AXOM_USE_CLI11
 #cmakedefine AXOM_USE_CONDUIT
-#cmakedefine AXOM_USE_CUDA
-#cmakedefine AXOM_USE_HIP
 #cmakedefine AXOM_USE_FMT
 #cmakedefine AXOM_USE_HDF5
 #cmakedefine AXOM_USE_LUA
 #cmakedefine AXOM_USE_MFEM
-#cmakedefine AXOM_USE_MPI
-#cmakedefine AXOM_USE_MPIF_HEADER
-#cmakedefine AXOM_USE_OPENMP
 #cmakedefine AXOM_USE_RAJA
 #cmakedefine AXOM_USE_SCR
 #cmakedefine AXOM_USE_SOL
@@ -96,14 +92,13 @@
 #define NOMINMAX
 #endif
 
-
 /*
  * Compiler defines for Axom components
  */
 #cmakedefine AXOM_USE_INLET
 #cmakedefine AXOM_USE_KLEE
-#cmakedefine AXOM_USE_MINT
 #cmakedefine AXOM_USE_LUMBERJACK
+#cmakedefine AXOM_USE_MINT
 #cmakedefine AXOM_USE_PRIMAL
 #cmakedefine AXOM_USE_QUEST
 #cmakedefine AXOM_USE_SIDRE
@@ -119,7 +114,6 @@
  */
 #cmakedefine AXOM_DEPRECATED_TYPES_N @AXOM_DEPRECATED_TYPES_N@
 
-
 /*
  * Compiler defines to configure the built-in fmt library
  */
@@ -132,11 +126,9 @@
 #cmakedefine SPARSEHASH_HASHFUN_HEADER @SPARSEHASH_HASHFUN_HEADER@
 #cmakedefine SPARSEHASH_HASHFUN_NAMESPACE @SPARSEHASH_HASHFUN_NAMESPACE@
 
-
 /*
  * Disable some MSVC warnings related to shared libraries, if applicable
  */
 @AXOM_MSVC_PRAGMAS@
 
-
-#endif  /* AXOM_COMMON_CONFIG_HPP */
+#endif /* AXOM_COMMON_CONFIG_HPP */

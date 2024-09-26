@@ -58,6 +58,8 @@ public:
 
   using BaseType::INVALID_POS;
 
+  using IteratorType = BivariateSetIterator<RelationSet>;
+
 public:
   using ConcreteSet =
     RelationSet<Relation, SetType1, SetType2, policies::ConcreteInterface>;
@@ -177,6 +179,7 @@ public:
    *
    * \return pos2  The to-set index.
    */
+  AXOM_SUPPRESS_HD_WARN
   AXOM_HOST_DEVICE PositionType flatToSecondIndex(PositionType flatIndex) const
   {
     if(flatIndex < 0 || flatIndex > size())
@@ -219,9 +222,12 @@ public:
    */
   SubsetType getElements(PositionType s1) const { return (*m_relation)[s1]; }
 
-  ElementType at(PositionType pos) const
+  AXOM_SUPPRESS_HD_WARN
+  AXOM_HOST_DEVICE ElementType at(PositionType pos) const
   {
+#ifndef AXOM_DEVICE_CODE
     RelationSet::verifyPosition(pos);
+#endif
     return m_relation->relationData()[pos];
   }
 
@@ -244,6 +250,18 @@ public:
    */
   PositionType size(PositionType pos) const { return m_relation->size(pos); }
 
+  /*!
+   * \brief Return an iterator to the first pair of set elements in the
+   *  relation.
+   */
+  IteratorType begin() const { return IteratorType(this, 0); }
+
+  /*!
+   * \brief Return an iterator to one past the last pair of set elements in the
+   *  relation.
+   */
+  IteratorType end() const { return IteratorType(this, totalSize()); }
+
   bool isValid(bool verboseOutput = false) const
   {
     if(m_relation == nullptr)
@@ -264,6 +282,7 @@ public:
   //but still implemented due to the function being virtual
   //(and can be called from base ptr)
   // KW -- made this public to use from BivariateMap
+  AXOM_SUPPRESS_HD_WARN
   AXOM_HOST_DEVICE PositionType size() const
   {
     return PositionType(m_relation->relationData().size());

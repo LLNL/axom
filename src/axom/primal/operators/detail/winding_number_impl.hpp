@@ -31,18 +31,18 @@ namespace primal
 namespace detail
 {
 /*
- * \brief Compute the winding number with respect to a line segment
+ * \brief Compute the GWN at a 2D point wrt a 2D line segment
  *
  * \param [in] q The query point to test
  * \param [in] c0 The initial point of the line segment
  * \param [in] c1 The terminal point of the line segment
  * \param [in] edge_tol The tolerance at which a point is on the line
  *
- * The winding number for a point with respect to a straight line
+ * The GWN for a 2D point with respect to a 2D straight line
  * is the signed angle subtended by the query point to each endpoint.
- * Colinear points return 0 for their winding number.
+ * Colinear points return 0 for their GWN.
  *
- * \return double The winding number
+ * \return The GWN
  */
 template <typename T>
 double linear_winding_number(const Point<T, 2>& q,
@@ -75,8 +75,8 @@ double linear_winding_number(const Point<T, 2>& q,
 }
 
 /*!
- * \brief Directly compute the winding number at either endpoint of a 
- *        Bezier curve with a convex control polygon
+ * \brief Compute the GWN at either endpoint of a 
+ *        2D Bezier curve with a convex control polygon
  *
  * \param [in] q The query point
  * \param [in] c The BezierCurve object to compute the winding number along
@@ -86,14 +86,19 @@ double linear_winding_number(const Point<T, 2>& q,
  * \pre Control polygon for c must be convex
  * \pre The query point must be on one of the endpoints
  *
- * The winding number for a Bezier curve with a convex control polygon is
+ * The GWN for a Bezier curve with a convex control polygon is
  * given by the signed angle between the tangent vector at that endpoint and
  * the vector in the direction of the other endpoint. 
+ * 
+ * See Algorithm 2 in
+ *  Jacob Spainhour, David Gunderman, and Kenneth Weiss. 2024. 
+ *  Robust Containment Queries over Collections of Rational Parametric Curves via Generalized Winding Numbers. 
+ *  ACM Trans. Graph. 43, 4, Article 38 (July 2024)
  * 
  * The query can be located on both endpoints if it is closed, in which case
  * the angle is that between the tangent lines at both endpoints
  * 
- * \return double The winding number
+ * \return The GWN
  */
 template <typename T>
 double convex_endpoint_winding_number(const Point<T, 2>& q,
@@ -176,54 +181,55 @@ double convex_endpoint_winding_number(const Point<T, 2>& q,
 }
 
 /*!
- * \brief Recursively compute the winding number for a query point with respect
- *        to a single Bezier curve.
+ * \brief Recursively construct a polygon with the same *integer* winding number 
+ *        as the closed original Bezier curve at a given query point.
  *
  * \param [in] q The query point at which to compute winding number
- * \param [in] c The BezierCurve object along which to compute the winding number
- * \param [in] isConvexControlPolygon Boolean flag if the input Bezier curve 
+ * \param [in] c A BezierCurve subcurve of the curve along which to compute the winding number
+ * \param [in] isConvexControlPolygon Boolean flag if the input Bezier subcurve 
                                       is already convex
  * \param [in] edge_tol The physical distance level at which objects are 
  *                      considered indistinguishable
  * \param [in] EPS Miscellaneous numerical tolerance for nonphysical distances, used in
- *   isLinear, isNearlyZero, in_polygon, is_convex
+ *   isLinear, isNearlyZero, is_convex
+ * \param [out] approximating_polygon The Polygon that, by termination of recursion,
+ *   has the same integer winding number as the original closed curve
+ * \param [out] endpoint_gwn A running sum for the exact GWN if the point is at the 
+ *   endpoint of a subcurve
+ *
+ * By the termination of the recursive algorithm, `approximating_polygon` contains
+ *  a polygon that has the same *integer* winding number as the original curve.
  * 
- * Use a recursive algorithm that checks if the query point is exterior to
- * some convex shape containing the Bezier curve, in which case we have a direct 
- * formula for the winding number. If not, we bisect our curve and run the algorithm on 
- * each half. Use the proximity of the query point to endpoints and approximate
- * linearity of the Bezier curve as base cases.
- * 
- * \return double The winding number.
+ * Upon entering this algorithm, the closing line of `c` is already an
+ *  edge of the approximating polygon.
+ * If q is outside a convex shape that contains the entire curve, the 
+ *  integer winding number for the *closed* curve `c` is zero, 
+ *  and the algorithm terminates.
+ * If the shape is not convex or we're inside it, instead add the midpoint 
+ *  as a vertex and repeat the algorithm. 
  */
 template <typename T>
-double curve_winding_number_recursive(const Point<T, 2>& q,
-                                      const BezierCurve<T, 2>& c,
-                                      bool isConvexControlPolygon,
-                                      double edge_tol = 1e-8,
-                                      double EPS = 1e-8)
+void construct_approximating_polygon(const Point<T, 2>& q,
+                                     const BezierCurve<T, 2>& c,
+                                     bool isConvexControlPolygon,
+                                     double edge_tol,
+                                     double EPS,
+                                     Polygon<T, 2>& approximating_polygon,
+                                     double& endpoint_gwn,
+                                     bool& isCoincident)
 {
   const int ord = c.getOrder();
-  if(ord <= 0)
-  {
-    return 0.0;  // Catch degenerate cases
-  }
-
-  // If q is outside a convex shape that contains the entire curve, the winding
-  //   number for the shape connected at the endpoints with straight lines is zero.
-  //   We then subtract the contribution of this line segment.
 
   // Simplest convex shape containing c is its bounding box
-  BoundingBox<T, 2> bBox(c.boundingBox());
-  if(!bBox.contains(q))
+  if(!c.boundingBox().expand(edge_tol).contains(q))
   {
-    return 0.0 - linear_winding_number(q, c[ord], c[0], edge_tol);
+    return;
   }
 
-  // Use linearity as base case for recursion.
+  // Use linearity as base case for recursion
   if(c.isLinear(EPS))
   {
-    return linear_winding_number(q, c[0], c[ord], edge_tol);
+    return;
   }
 
   // Check if our control polygon is convex.
@@ -236,19 +242,25 @@ double curve_winding_number_recursive(const Point<T, 2>& q,
   {
     isConvexControlPolygon = is_convex(controlPolygon, EPS);
   }
-  else  // Formulas for winding number only work if shape is convex
+
+  // Formulas for winding number only work if shape is convex
+  if(isConvexControlPolygon)
   {
     // Bezier curves are always contained in their convex control polygon
-    if(!in_polygon(q, controlPolygon, includeBoundary, useNonzeroRule, EPS))
+    if(!in_polygon(q, controlPolygon, includeBoundary, useNonzeroRule, edge_tol))
     {
-      return 0.0 - linear_winding_number(q, c[ord], c[0], edge_tol);
+      return;
     }
 
-    // If the query point is at either endpoint, use direct formula
-    if((squared_distance(q, c[0]) <= edge_tol * edge_tol) ||
-       (squared_distance(q, c[ord]) <= edge_tol * edge_tol))
+    // If the query point is at either endpoint...
+    if(squared_distance(q, c[0]) <= edge_tol * edge_tol ||
+       squared_distance(q, c[ord]) <= edge_tol * edge_tol)
     {
-      return convex_endpoint_winding_number(q, c, edge_tol, EPS);
+      // ...we can use a direct formula for the GWN at the endpoint
+      endpoint_gwn += convex_endpoint_winding_number(q, c, edge_tol, EPS);
+      isCoincident = true;
+
+      return;
     }
   }
 
@@ -256,8 +268,25 @@ double curve_winding_number_recursive(const Point<T, 2>& q,
   BezierCurve<T, 2> c1, c2;
   c.split(0.5, c1, c2);
 
-  return curve_winding_number_recursive(q, c1, isConvexControlPolygon, edge_tol, EPS) +
-    curve_winding_number_recursive(q, c2, isConvexControlPolygon, edge_tol, EPS);
+  construct_approximating_polygon(q,
+                                  c1,
+                                  isConvexControlPolygon,
+                                  edge_tol,
+                                  EPS,
+                                  approximating_polygon,
+                                  endpoint_gwn,
+                                  isCoincident);
+  approximating_polygon.addVertex(c2[0]);
+  construct_approximating_polygon(q,
+                                  c2,
+                                  isConvexControlPolygon,
+                                  edge_tol,
+                                  EPS,
+                                  approximating_polygon,
+                                  endpoint_gwn,
+                                  isCoincident);
+
+  return;
 }
 
 /// Type to indicate orientation of singularities relative to surface
@@ -271,7 +300,8 @@ enum class SingularityAxis
 
 #ifdef AXOM_USE_MFEM
 /*!
- * \brief Evaluates an "anti-curl" of the winding number along a curve
+ * \brief Evaluates the integral of the "anti-curl" of the GWN integrand
+ *        (via Stokes' theorem) at a point wrt to a 3D Bezier curve
  *
  * \param [in] query The query point to test
  * \param [in] curve The BezierCurve object
@@ -287,7 +317,7 @@ enum class SingularityAxis
  * \note This is only meant to be used for `winding_number<BezierPatch>()`,
  *  and the result does not make sense outside of that context.
  *
- * \return double One component of the winding number
+ * \return The value of the integral
  */
 template <typename T>
 double stokes_winding_number(const Point<T, 3>& query,
@@ -376,7 +406,8 @@ double stokes_winding_number(const Point<T, 3>& query,
 
 #ifdef AXOM_USE_MFEM
 /*!
- * \brief Recursively evaluates an "anti-curl" of the winding number on subcurves
+ * \brief Accurately evaluates the integral of the "anti-curl" of the GWN integrand
+ *        (via Stokes' theorem) at a point wrt to a 3D Bezier curve via recursion
  *
  * \param [in] query The query point to test
  * \param [in] curve The BezierCurve object
@@ -393,7 +424,7 @@ double stokes_winding_number(const Point<T, 3>& query,
  * \note This is only meant to be used for `winding_number<BezierPatch>()`,
  *  and the result does not make sense outside of that context.
  * 
- * \return double One component of the winding number
+ * \return The value of the integral
  */
 template <typename T>
 double stokes_winding_number_adaptive(const Point<T, 3>& query,

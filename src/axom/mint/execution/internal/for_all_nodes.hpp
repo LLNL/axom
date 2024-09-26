@@ -18,7 +18,7 @@
 #include "axom/mint/mesh/RectilinearMesh.hpp"  // for mint::RectilinearMesh
 #include "axom/mint/mesh/StructuredMesh.hpp"   // for mint::StructuredMesh
 #include "axom/mint/mesh/UniformMesh.hpp"      // for mint::UniformMesh
-#include "axom/mint/execution/internal/structured_exec.hpp"
+#include "axom/core/execution/nested_for_exec.hpp"
 
 #include "axom/core/StackArray.hpp"  // for axom::StackArray
 
@@ -65,7 +65,8 @@ inline void for_all_nodes_impl(xargs::ij,
 
   RAJA::RangeSegment i_range(0, Ni);
   RAJA::RangeSegment j_range(0, Nj);
-  using exec_pol = typename structured_exec<ExecPolicy>::loop2d_policy;
+  using exec_pol =
+    typename axom::internal::nested_for_exec<ExecPolicy>::loop2d_policy;
 
   RAJA::kernel<exec_pol>(
     RAJA::make_tuple(i_range, j_range),
@@ -126,7 +127,8 @@ inline void for_all_nodes_impl(xargs::ijk,
   RAJA::RangeSegment i_range(0, Ni);
   RAJA::RangeSegment j_range(0, Nj);
   RAJA::RangeSegment k_range(0, Nk);
-  using exec_pol = typename structured_exec<ExecPolicy>::loop3d_policy;
+  using exec_pol =
+    typename axom::internal::nested_for_exec<ExecPolicy>::loop3d_policy;
 
   RAJA::kernel<exec_pol>(
     RAJA::make_tuple(i_range, j_range, k_range),
@@ -197,14 +199,27 @@ inline void for_all_nodes_impl(xargs::x, const Mesh& m, KernelType&& kernel)
   SLIC_ERROR_IF(m.getDimension() != 1, "xargs::x is only valid for 1D meshes");
   SLIC_ERROR_IF(m.getMeshType() == STRUCTURED_UNIFORM_MESH,
                 "Not valid for UniformMesh.");
+  constexpr bool on_device = axom::execution_space<ExecPolicy>::onDevice();
+  const int device_allocator = axom::execution_space<ExecPolicy>::allocatorID();
+  IndexType coordinate_size = m.getNumberOfNodes();
 
-  const double* x = m.getCoordinateArray(X_COORDINATE);
-  SLIC_ASSERT(x != nullptr);
+  // extract coordinate values into an axom::Array
+  auto x_vals_h =
+    axom::ArrayView<const double>(m.getCoordinateArray(X_COORDINATE),
+                                  coordinate_size);
+
+  SLIC_ASSERT(x_vals_h.data() != nullptr);
+
+  // Move x values onto device
+  axom::Array<double> x_vals_d = on_device
+    ? axom::Array<double>(x_vals_h, device_allocator)
+    : axom::Array<double>();
+  auto x_vals_view = on_device ? x_vals_d.view() : x_vals_h;
 
   for_all_nodes_impl<ExecPolicy>(
     xargs::index(),
     m,
-    AXOM_LAMBDA(IndexType nodeID) { kernel(nodeID, x[nodeID]); });
+    AXOM_LAMBDA(IndexType nodeID) { kernel(nodeID, x_vals_view[nodeID]); });
 }
 
 //------------------------------------------------------------------------------
@@ -234,16 +249,30 @@ template <typename ExecPolicy, typename KernelType>
 inline void for_all_nodes_impl(xargs::xy, const UniformMesh& m, KernelType&& kernel)
 {
   SLIC_ERROR_IF(m.getDimension() != 2, "xargs::xy is only valid for 2D meshes");
+  constexpr bool on_device = axom::execution_space<ExecPolicy>::onDevice();
+  const int device_allocator = axom::execution_space<ExecPolicy>::allocatorID();
 
-  const StackArray<double, 3>& origin = m.getOrigin();
-  const StackArray<double, 3>& spacing = m.getSpacing();
+  // extract origin and spacing into an axom::Array
+  auto origin_h = axom::ArrayView<const double>(m.getOrigin().begin(), 3);
+  auto spacing_h = axom::ArrayView<const double>(m.getSpacing().begin(), 3);
+
+  // Move origin and spacing values onto device
+  axom::Array<double> origin_d = on_device
+    ? axom::Array<double>(origin_h, device_allocator)
+    : axom::Array<double>();
+  auto origin_view = on_device ? origin_d.view() : origin_h;
+
+  axom::Array<double> spacing_d = on_device
+    ? axom::Array<double>(spacing_h, device_allocator)
+    : axom::Array<double>();
+  auto spacing_view = on_device ? spacing_d.view() : spacing_h;
 
   for_all_nodes_impl<ExecPolicy>(
     xargs::ij(),
     m,
     AXOM_LAMBDA(IndexType nodeID, IndexType i, IndexType j) {
-      const double x = origin[0] + i * spacing[0];
-      const double y = origin[1] + j * spacing[1];
+      const double x = origin_view[0] + i * spacing_view[0];
+      const double y = origin_view[1] + j * spacing_view[1];
       kernel(nodeID, x, y);
     });
 }
@@ -256,16 +285,36 @@ inline void for_all_nodes_impl(xargs::xy,
 {
   SLIC_ERROR_IF(m.getDimension() != 2, "xargs::xy is only valid for 2D meshes");
 
-  const double* x = m.getCoordinateArray(X_COORDINATE);
-  const double* y = m.getCoordinateArray(Y_COORDINATE);
-  SLIC_ASSERT(x != nullptr);
-  SLIC_ASSERT(y != nullptr);
+  constexpr bool on_device = axom::execution_space<ExecPolicy>::onDevice();
+  const int device_allocator = axom::execution_space<ExecPolicy>::allocatorID();
+
+  // extract coordinate values into an axom::Array
+  auto x_vals_h =
+    axom::ArrayView<const double>(m.getCoordinateArray(X_COORDINATE),
+                                  m.getNodeResolution(X_COORDINATE));
+  auto y_vals_h =
+    axom::ArrayView<const double>(m.getCoordinateArray(Y_COORDINATE),
+                                  m.getNodeResolution(Y_COORDINATE));
+
+  SLIC_ASSERT(x_vals_h.data() != nullptr);
+  SLIC_ASSERT(y_vals_h.data() != nullptr);
+
+  // Move xy values onto device
+  axom::Array<double> x_vals_d = on_device
+    ? axom::Array<double>(x_vals_h, device_allocator)
+    : axom::Array<double>();
+  auto x_vals_view = on_device ? x_vals_d.view() : x_vals_h;
+
+  axom::Array<double> y_vals_d = on_device
+    ? axom::Array<double>(y_vals_h, device_allocator)
+    : axom::Array<double>();
+  auto y_vals_view = on_device ? y_vals_d.view() : y_vals_h;
 
   for_all_nodes_impl<ExecPolicy>(
     xargs::ij(),
     m,
     AXOM_LAMBDA(IndexType nodeID, IndexType i, IndexType j) {
-      kernel(nodeID, x[i], y[j]);
+      kernel(nodeID, x_vals_view[i], y_vals_view[j]);
     });
 }
 
@@ -279,15 +328,38 @@ inline void for_all_nodes_impl(xargs::xy, const Mesh& m, KernelType&& kernel)
   SLIC_ERROR_IF(m.getMeshType() == STRUCTURED_RECTILINEAR_MESH,
                 "Not valid for RectilinearMesh.");
 
-  const double* x = m.getCoordinateArray(X_COORDINATE);
-  const double* y = m.getCoordinateArray(Y_COORDINATE);
-  SLIC_ASSERT(x != nullptr);
-  SLIC_ASSERT(y != nullptr);
+  constexpr bool on_device = axom::execution_space<ExecPolicy>::onDevice();
+  const int device_allocator = axom::execution_space<ExecPolicy>::allocatorID();
+  IndexType coordinate_size = m.getNumberOfNodes();
+
+  // extract coordinate values into an axom::Array
+  auto x_vals_h =
+    axom::ArrayView<const double>(m.getCoordinateArray(X_COORDINATE),
+                                  coordinate_size);
+  auto y_vals_h =
+    axom::ArrayView<const double>(m.getCoordinateArray(Y_COORDINATE),
+                                  coordinate_size);
+
+  SLIC_ASSERT(x_vals_h.data() != nullptr);
+  SLIC_ASSERT(y_vals_h.data() != nullptr);
+
+  // Move xy values onto device
+  axom::Array<double> x_vals_d = on_device
+    ? axom::Array<double>(x_vals_h, device_allocator)
+    : axom::Array<double>();
+  auto x_vals_view = on_device ? x_vals_d.view() : x_vals_h;
+
+  axom::Array<double> y_vals_d = on_device
+    ? axom::Array<double>(y_vals_h, device_allocator)
+    : axom::Array<double>();
+  auto y_vals_view = on_device ? y_vals_d.view() : y_vals_h;
 
   for_all_nodes_impl<ExecPolicy>(
     xargs::index(),
     m,
-    AXOM_LAMBDA(IndexType nodeID) { kernel(nodeID, x[nodeID], y[nodeID]); });
+    AXOM_LAMBDA(IndexType nodeID) {
+      kernel(nodeID, x_vals_view[nodeID], y_vals_view[nodeID]);
+    });
 }
 
 //------------------------------------------------------------------------------
@@ -324,17 +396,31 @@ template <typename ExecPolicy, typename KernelType>
 inline void for_all_nodes_impl(xargs::xyz, const UniformMesh& m, KernelType&& kernel)
 {
   SLIC_ERROR_IF(m.getDimension() != 3, "xargs::xyz is only valid for 3D meshes");
+  constexpr bool on_device = axom::execution_space<ExecPolicy>::onDevice();
+  const int device_allocator = axom::execution_space<ExecPolicy>::allocatorID();
 
-  const StackArray<double, 3> origin = m.getOrigin();
-  const StackArray<double, 3> spacing = m.getSpacing();
+  // extract origin and spacing into an axom::Array
+  auto origin_h = axom::ArrayView<const double>(m.getOrigin().begin(), 3);
+  auto spacing_h = axom::ArrayView<const double>(m.getSpacing().begin(), 3);
+
+  // Move origin and spacing values onto device
+  axom::Array<double> origin_d = on_device
+    ? axom::Array<double>(origin_h, device_allocator)
+    : axom::Array<double>();
+  auto origin_view = on_device ? origin_d.view() : origin_h;
+
+  axom::Array<double> spacing_d = on_device
+    ? axom::Array<double>(spacing_h, device_allocator)
+    : axom::Array<double>();
+  auto spacing_view = on_device ? spacing_d.view() : spacing_h;
 
   for_all_nodes_impl<ExecPolicy>(
     xargs::ijk(),
     m,
     AXOM_LAMBDA(IndexType nodeID, IndexType i, IndexType j, IndexType k) {
-      const double x = origin[0] + i * spacing[0];
-      const double y = origin[1] + j * spacing[1];
-      const double z = origin[2] + k * spacing[2];
+      const double x = origin_view[0] + i * spacing_view[0];
+      const double y = origin_view[1] + j * spacing_view[1];
+      const double z = origin_view[2] + k * spacing_view[2];
       kernel(nodeID, x, y, z);
     });
 }
@@ -346,15 +432,41 @@ inline void for_all_nodes_impl(xargs::xyz,
                                KernelType&& kernel)
 {
   SLIC_ERROR_IF(m.getDimension() != 3, "xargs::xyz is only valid for 3D meshes");
-  const double* x = m.getCoordinateArray(X_COORDINATE);
-  const double* y = m.getCoordinateArray(Y_COORDINATE);
-  const double* z = m.getCoordinateArray(Z_COORDINATE);
+  constexpr bool on_device = axom::execution_space<ExecPolicy>::onDevice();
+  const int device_allocator = axom::execution_space<ExecPolicy>::allocatorID();
+
+  // extract coordinate values into an axom::Array
+  auto x_vals_h =
+    axom::ArrayView<const double>(m.getCoordinateArray(X_COORDINATE),
+                                  m.getNodeResolution(X_COORDINATE));
+  auto y_vals_h =
+    axom::ArrayView<const double>(m.getCoordinateArray(Y_COORDINATE),
+                                  m.getNodeResolution(Y_COORDINATE));
+  auto z_vals_h =
+    axom::ArrayView<const double>(m.getCoordinateArray(Z_COORDINATE),
+                                  m.getNodeResolution(Z_COORDINATE));
+
+  // Move xyz values onto device
+  axom::Array<double> x_vals_d = on_device
+    ? axom::Array<double>(x_vals_h, device_allocator)
+    : axom::Array<double>();
+  auto x_vals_view = on_device ? x_vals_d.view() : x_vals_h;
+
+  axom::Array<double> y_vals_d = on_device
+    ? axom::Array<double>(y_vals_h, device_allocator)
+    : axom::Array<double>();
+  auto y_vals_view = on_device ? y_vals_d.view() : y_vals_h;
+
+  axom::Array<double> z_vals_d = on_device
+    ? axom::Array<double>(z_vals_h, device_allocator)
+    : axom::Array<double>();
+  auto z_vals_view = on_device ? z_vals_d.view() : z_vals_h;
 
   for_all_nodes_impl<ExecPolicy>(
     xargs::ijk(),
     m,
     AXOM_LAMBDA(IndexType nodeID, IndexType i, IndexType j, IndexType k) {
-      kernel(nodeID, x[i], y[j], z[k]);
+      kernel(nodeID, x_vals_view[i], y_vals_view[j], z_vals_view[k]);
     });
 }
 
@@ -368,18 +480,46 @@ inline void for_all_nodes_impl(xargs::xyz, const Mesh& m, KernelType&& kernel)
   SLIC_ERROR_IF(m.getMeshType() == STRUCTURED_RECTILINEAR_MESH,
                 "Not valid for RectilinearMesh.");
 
-  const double* x = m.getCoordinateArray(X_COORDINATE);
-  const double* y = m.getCoordinateArray(Y_COORDINATE);
-  const double* z = m.getCoordinateArray(Z_COORDINATE);
-  SLIC_ASSERT(x != nullptr);
-  SLIC_ASSERT(y != nullptr);
-  SLIC_ASSERT(z != nullptr);
+  constexpr bool on_device = axom::execution_space<ExecPolicy>::onDevice();
+  const int device_allocator = axom::execution_space<ExecPolicy>::allocatorID();
+  IndexType coordinate_size = m.getNumberOfNodes();
+
+  // extract coordinate values into an axom::Array
+  auto x_vals_h =
+    axom::ArrayView<const double>(m.getCoordinateArray(X_COORDINATE),
+                                  coordinate_size);
+  auto y_vals_h =
+    axom::ArrayView<const double>(m.getCoordinateArray(Y_COORDINATE),
+                                  coordinate_size);
+  auto z_vals_h =
+    axom::ArrayView<const double>(m.getCoordinateArray(Z_COORDINATE),
+                                  coordinate_size);
+
+  SLIC_ASSERT(x_vals_h.data() != nullptr);
+  SLIC_ASSERT(y_vals_h.data() != nullptr);
+  SLIC_ASSERT(z_vals_h.data() != nullptr);
+
+  // Move xyz values onto device
+  axom::Array<double> x_vals_d = on_device
+    ? axom::Array<double>(x_vals_h, device_allocator)
+    : axom::Array<double>();
+  auto x_vals_view = on_device ? x_vals_d.view() : x_vals_h;
+
+  axom::Array<double> y_vals_d = on_device
+    ? axom::Array<double>(y_vals_h, device_allocator)
+    : axom::Array<double>();
+  auto y_vals_view = on_device ? y_vals_d.view() : y_vals_h;
+
+  axom::Array<double> z_vals_d = on_device
+    ? axom::Array<double>(z_vals_h, device_allocator)
+    : axom::Array<double>();
+  auto z_vals_view = on_device ? z_vals_d.view() : z_vals_h;
 
   for_all_nodes_impl<ExecPolicy>(
     xargs::index(),
     m,
     AXOM_LAMBDA(IndexType nodeID) {
-      kernel(nodeID, x[nodeID], y[nodeID], z[nodeID]);
+      kernel(nodeID, x_vals_view[nodeID], y_vals_view[nodeID], z_vals_view[nodeID]);
     });
 }
 

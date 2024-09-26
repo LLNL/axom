@@ -4,23 +4,23 @@
 # SPDX-License-Identifier: (BSD-3-Clause)
 
 ##------------------------------------------------------------------------------
-## axom_add_code_checks( PREFIX     <Prefix used for created targets>
-##                       EXCLUDES   [path1 [path2 ...]])
+## axom_add_code_checks()
 ##
-## Adds code checks to all source files under this directory.
+## Adds code checks for all source files recursively in the Axom repository.
+## 
+## This creates the following parent build targets:
+##  check - Runs a non file changing style check and CppCheck
+##  style - In-place code formatting
 ##
-## PREFIX is used in the creation of all the underlying targets. For example:
-## <PREFIX>_clangformat_check.
-##
-## EXCLUDES is used to exclude any files from the code checks. It is done with
-## a simple CMake reg exp MATCHES check.
-##
+## Creates various child build targets that follow this pattern:
+##  axom_<check|style>
+##  axom_<cppcheck|clangformat>_<check|style>
 ##------------------------------------------------------------------------------
 macro(axom_add_code_checks)
 
     set(options)
-    set(singleValueArgs PREFIX )
-    set(multiValueArgs EXCLUDES )
+    set(singleValueArgs)
+    set(multiValueArgs)
 
     # Parse the arguments to the macro
     cmake_parse_arguments(arg
@@ -29,34 +29,36 @@ macro(axom_add_code_checks)
     # Only do code checks if building Axom by itself and not included in
     # another project
     if ("${PROJECT_SOURCE_DIR}" STREQUAL "${CMAKE_SOURCE_DIR}")
-        set(_all_sources)
-        file(GLOB_RECURSE _all_sources
-             "*.cpp" "*.hpp" "*.cxx" "*.hxx" "*.cc" "*.c" "*.h" "*.hh"
-             "*.F" "*.f" "*.f90" "*.F90")
+        # Create file globbing expressions that only include directories that contain source
+        set(_base_dirs "axom" "examples" "thirdparty/tests" "tools")
+        set(_ext_expressions "*.cpp" "*.hpp" "*.inl"
+                             "*.cxx" "*.hxx" "*.cc" "*.c" "*.h" "*.hh"
+                             "*.F" "*.f" "*.f90" "*.F90")
 
-        # Check for excludes
-        if (NOT DEFINED arg_EXCLUDES)
-            set(_sources ${_all_sources})
-        else()
-            set(_sources)
-            foreach(_source ${_all_sources})
-                set(_to_be_excluded FALSE)
-                foreach(_exclude ${arg_EXCLUDES})
-                    if (${_source} MATCHES ${_exclude})
-                        set(_to_be_excluded TRUE)
-                        break()
-                    endif()
-                endforeach()
-
-                if (NOT ${_to_be_excluded})
-                    list(APPEND _sources ${_source})
-                endif()
+        set(_glob_expressions)
+        foreach(_exp ${_ext_expressions})
+            foreach(_base_dir ${_base_dirs})
+                list(APPEND _glob_expressions "${PROJECT_SOURCE_DIR}/${_base_dir}/${_exp}")
             endforeach()
-        endif()
+        endforeach()
 
-        blt_add_code_checks(PREFIX    ${arg_PREFIX}
-                            SOURCES   ${_sources}
-                            CLANGFORMAT_CFG_FILE ${PROJECT_SOURCE_DIR}/.clang-format)
+        # Glob for list of files to run code checks on
+        set(_sources)
+        file(GLOB_RECURSE _sources ${_glob_expressions})
+
+        # Filter out exclusions
+        set(_exclude_expressions
+            "${PROJECT_SOURCE_DIR}/axom/sidre/examples/lulesh2/*"
+            "${PROJECT_SOURCE_DIR}/axom/slam/examples/lulesh2.0.3/*"
+            "${PROJECT_SOURCE_DIR}/axom/slam/examples/tinyHydro/*")
+        foreach(_exp ${_exclude_expressions})
+            list(FILTER _sources EXCLUDE REGEX ${_exp})
+        endforeach()
+
+        blt_add_code_checks(PREFIX          axom
+                            SOURCES         ${_sources}
+                            CLANGFORMAT_CFG_FILE ${PROJECT_SOURCE_DIR}/.clang-format
+                            CPPCHECK_FLAGS  --enable=all --inconclusive)
 
         # Set FOLDER property for code check targets
         foreach(_suffix clangformat_check clangformat_style clang_tidy_check clang_tidy_style)
@@ -260,28 +262,57 @@ endmacro(axom_add_test)
 
 
 #------------------------------------------------------------------------------
-# Asserts that the given VARIABLE_NAME's value is a directory and exists.
+# axom_assert_is_directory(DIR_VARIABLE <variable that holds the prefix>)
+#
+# Asserts that the given DIR_VARIABLE's value is a directory and exists.
 # Fails with a helpful message when it doesn't.
 #------------------------------------------------------------------------------
 macro(axom_assert_is_directory)
 
     set(options)
-    set(singleValueArgs VARIABLE_NAME)
+    set(singleValueArgs DIR_VARIABLE)
     set(multiValueArgs)
 
     # Parse the arguments to the macro
     cmake_parse_arguments(arg
          "${options}" "${singleValueArgs}" "${multiValueArgs}" ${ARGN})
 
-    if (NOT EXISTS "${${arg_VARIABLE_NAME}}")
-        message(FATAL_ERROR "Given ${arg_VARIABLE_NAME} does not exist: ${${arg_VARIABLE_NAME}}")
+    if (NOT EXISTS "${${arg_DIR_VARIABLE}}")
+        message(FATAL_ERROR "Given ${arg_DIR_VARIABLE} does not exist: ${${arg_DIR_VARIABLE}}")
     endif()
 
-    if (NOT IS_DIRECTORY "${${arg_VARIABLE_NAME}}")
-        message(FATAL_ERROR "Given ${arg_VARIABLE_NAME} is not a directory: ${${arg_VARIABLE_NAME}}")
+    if (NOT IS_DIRECTORY "${${arg_DIR_VARIABLE}}")
+        message(FATAL_ERROR "Given ${arg_DIR_VARIABLE} is not a directory: ${${arg_DIR_VARIABLE}}")
     endif()
 
 endmacro(axom_assert_is_directory)
+
+#------------------------------------------------------------------------------
+# axom_assert_find_succeeded(PROJECT_NAME <project name>
+#                             TARGET       <found target>
+#                             DIR_VARIABLE <variable that holds the prefix>)
+#
+# Asserts that the given PROJECT_NAME's TARGET exists.
+# Fails with a helpful message when it doesn't.
+#------------------------------------------------------------------------------
+macro(axom_assert_find_succeeded)
+
+    set(options)
+    set(singleValueArgs DIR_VARIABLE PROJECT_NAME TARGET)
+    set(multiValueArgs)
+
+    # Parse the arguments to the macro
+    cmake_parse_arguments(arg
+         "${options}" "${singleValueArgs}" "${multiValueArgs}" ${ARGN})
+
+    message(STATUS "Checking for expected ${arg_PROJECT_NAME} target '${arg_TARGET}'")
+    if (NOT TARGET ${arg_TARGET})
+        message(FATAL_ERROR "${arg_PROJECT_NAME} failed to load: ${${arg_DIR_VARIABLE}}")
+    else()
+        message(STATUS "${arg_PROJECT_NAME} loaded: ${${arg_DIR_VARIABLE}}")
+    endif()
+
+endmacro(axom_assert_find_succeeded)
 
 ##------------------------------------------------------------------------------
 ## convert_to_native_escaped_file_path( path output )

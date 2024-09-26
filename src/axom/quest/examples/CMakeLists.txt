@@ -22,6 +22,24 @@ axom_add_executable(
     FOLDER      axom/quest/examples
     )
 
+if(AXOM_ENABLE_TESTS AND AXOM_DATA_DIR AND CALIPER_FOUND)
+    set(_input_file "${AXOM_DATA_DIR}/quest/sphere_binary.stl")
+    
+    if(AXOM_ENABLE_MPI)     # this test requires MPI when available
+        set(_num_ranks 1)   # (but only 1 rank)
+    else()                  # but can otherwise be run without MPI
+        unset(_num_ranks)
+    endif()
+    
+    axom_add_test(
+        NAME    quest_containment_sphere_ex
+        COMMAND quest_containment_driver_ex
+                --input ${_input_file}
+                --caliper report
+        NUM_MPI_TASKS ${_num_ranks}
+    )
+endif()
+
 # BVH two pass example --------------------------------------------------------
 if (RAJA_FOUND AND UMPIRE_FOUND)
     axom_add_executable(
@@ -31,6 +49,33 @@ if (RAJA_FOUND AND UMPIRE_FOUND)
         DEPENDS_ON  ${quest_example_depends}
         FOLDER      axom/quest/examples
         )
+
+    # Add unit tests
+    if(AXOM_ENABLE_TESTS AND AXOM_DATA_DIR)
+
+        # Run the quest_bvh_two_pass example with different raja policies
+
+        set(input_file "${AXOM_DATA_DIR}/quest/unit_cube.stl")
+
+        set (_policies "seq")
+        blt_list_append(TO _policies ELEMENTS "omp" IF AXOM_ENABLE_OPENMP)
+        blt_list_append(TO _policies ELEMENTS "cuda" IF AXOM_ENABLE_CUDA)
+        blt_list_append(TO _policies ELEMENTS "hip" IF AXOM_ENABLE_HIP)
+
+        foreach(_policy ${_policies})
+
+            set(_testname "quest_bvh_two_pass_example_${_policy}")
+            axom_add_test(
+              NAME ${_testname}
+              COMMAND quest_bvh_two_pass_ex
+                      --file ${input_file}
+                      --exec_space ${_policy}
+            )
+
+            set_tests_properties(${_testname} PROPERTIES
+                PASS_REGULAR_EXPRESSION  "Found 4 actual collisions")
+        endforeach()
+    endif()
 endif()
 
 # Read ProE example -----------------------------------------------------------
@@ -143,7 +188,7 @@ if(AXOM_ENABLE_MPI AND MFEM_FOUND AND MFEM_USE_MPI
                 NUM_MPI_TASKS ${_nranks})
             # background: 3500; balls: ~373; jacks: ~230; air ~2897
             set_tests_properties(${_testname} PROPERTIES 
-                PASS_REGULAR_EXPRESSION  "Volume of material 'air' is 2895.")
+                PASS_REGULAR_EXPRESSION  "Volume of material 'air' is 2,?895.")
 
             set(_testname quest_shaping_driver_ex_sampling_ball_impact)
             axom_add_test(
@@ -200,7 +245,7 @@ if(AXOM_ENABLE_MPI AND MFEM_FOUND AND MFEM_USE_MPI
         # bbox volume: 12^3 = 1728; sphere(r=5): ~523.6; sphere(r=2): 33.5
         # expected analytic volume when fully resolved: ~1237.9
         set_tests_properties(${_testname} PROPERTIES 
-            PASS_REGULAR_EXPRESSION  "Volume of material 'void' is 1239.")
+            PASS_REGULAR_EXPRESSION  "Volume of material 'void' is 1,?239.")
 
         set(_testname quest_shaping_driver_ex_sampling_plane)
         axom_add_test(
@@ -215,7 +260,7 @@ if(AXOM_ENABLE_MPI AND MFEM_FOUND AND MFEM_USE_MPI
         # expected volume when fully resolved: 182,209,421.5
         # actual value is accurate to about 1% at coarse resolution
         set_tests_properties(${_testname} PROPERTIES 
-            PASS_REGULAR_EXPRESSION  "Volume of material 'air' is 182227963")
+            PASS_REGULAR_EXPRESSION  "Volume of material 'air' is 182,?227,?963")
     endif()
 endif()
 
@@ -274,7 +319,7 @@ if(AXOM_ENABLE_MPI AND AXOM_ENABLE_SIDRE AND HDF5_FOUND)
                                 --no-random-spacing
                                 --check-results
                                 --policy ${_pol}
-                                --object-file dcp_object_mesh_2d_${_pol}_${_mesh}
+                                --object-file dcp_object_mesh_${_ndim}d_${_pol}_${_mesh}
                                 --distance-file dcp_closest_point_2d_${_pol}_${_mesh}
                     NUM_MPI_TASKS ${_nranks})
                 if(${_pol} STREQUAL "omp")
@@ -513,4 +558,16 @@ if (ENABLE_FORTRAN)
                 COMMAND quest_inout_interface_F_ex ${quest_data_dir}/sphere_binary.stl)
         endif()
     endif()
+endif()
+
+# Quest winding number example ------------------------------------------------
+
+if( MFEM_FOUND)
+    axom_add_executable(
+        NAME        quest_winding_number_ex
+        SOURCES     quest_winding_number.cpp
+        OUTPUT_DIR  ${EXAMPLE_OUTPUT_DIRECTORY}
+        DEPENDS_ON  axom mfem cli11 fmt
+        FOLDER      axom/quest/examples
+        )
 endif()

@@ -203,8 +203,8 @@ public:
 
     SLIC_INFO(
       axom::fmt::format(axom::utilities::locale(),
-                        "\t Sampling inout field '{}' took {} seconds (@ "
-                        "{:L} queries per second)",
+                        "\t Sampling inout field '{}' took {:.3Lf} seconds "
+                        "(@ {:L} queries per second)",
                         inoutName,
                         timer.elapsed(),
                         static_cast<int>((NE * nq) / timer.elapsed())));
@@ -395,6 +395,8 @@ public:
   void prepareShapeQuery(klee::Dimensions shapeDimension,
                          const klee::Shape& shape) override
   {
+    AXOM_ANNOTATE_SCOPE("prepareShapeQuery");
+
     internal::ScopedLogLevelChanger logLevelChanger(
       this->isVerbose() ? slic::message::Debug : slic::message::Warning);
 
@@ -451,6 +453,8 @@ public:
 
   void runShapeQuery(const klee::Shape& shape) override
   {
+    AXOM_ANNOTATE_SCOPE("runShapeQuery");
+
     internal::ScopedLogLevelChanger logLevelChanger(
       this->isVerbose() ? slic::message::Debug : slic::message::Warning);
 
@@ -476,6 +480,8 @@ public:
 
   void applyReplacementRules(const klee::Shape& shape) override
   {
+    AXOM_ANNOTATE_SCOPE("applyReplacementRules");
+
     internal::ScopedLogLevelChanger logLevelChanger(
       this->isVerbose() ? slic::message::Debug : slic::message::Warning);
 
@@ -570,6 +576,8 @@ public:
 
   void finalizeShapeQuery() override
   {
+    AXOM_ANNOTATE_SCOPE("finalizeShapeQuery");
+
     delete m_inoutSampler2D;
     m_inoutSampler2D = nullptr;
 
@@ -639,6 +647,8 @@ public:
 
   void adjustVolumeFractions() override
   {
+    AXOM_ANNOTATE_SCOPE("adjustVolumeFractions");
+
     internal::ScopedLogLevelChanger logLevelChanger(
       this->isVerbose() ? slic::message::Debug : slic::message::Warning);
 
@@ -679,28 +689,35 @@ public:
       return keys;
     };
 
-    std::stringstream sstr;
-    sstr << "List of registered fields in the SamplingShaper " << initialMessage
-         << fmt::format("\n\t* Data collection grid funcs: {}",
-                        fmt::join(extractKeys(m_dc->GetFieldMap()), ", "))
-         << fmt::format("\n\t* Data collection qfuncs: {}",
-                        fmt::join(extractKeys(m_dc->GetQFieldMap()), ", "))
-         << fmt::format("\n\t* Known materials: {}",
-                        fmt::join(m_knownMaterials, ", "));
+    axom::fmt::memory_buffer out;
+
+    axom::fmt::format_to(
+      std::back_inserter(out),
+      "List of registered fields in the SamplingShaper {}"
+      "\n\t* Data collection grid funcs: {}"
+      "\n\t* Data collection qfuncs: {}"
+      "\n\t* Known materials: {}",
+      initialMessage,
+      axom::fmt::join(extractKeys(m_dc->GetFieldMap()), ", "),
+      axom::fmt::join(extractKeys(m_dc->GetQFieldMap()), ", "),
+      axom::fmt::join(m_knownMaterials, ", "));
 
     if(m_vfSampling == shaping::VolFracSampling::SAMPLE_AT_QPTS)
     {
-      sstr << fmt::format("\n\t* Shape qfuncs: {}",
-                          fmt::join(extractKeys(m_inoutShapeQFuncs), ", "))
-           << fmt::format("\n\t* Mat qfuncs: {}",
-                          fmt::join(extractKeys(m_inoutMaterialQFuncs), ", "));
+      axom::fmt::format_to(
+        std::back_inserter(out),
+        "\n\t* Shape qfuncs: {}"
+        "\n\t* Mat qfuncs: {}",
+        axom::fmt::join(extractKeys(m_inoutShapeQFuncs), ", "),
+        axom::fmt::join(extractKeys(m_inoutMaterialQFuncs), ", "));
     }
     else if(m_vfSampling == shaping::VolFracSampling::SAMPLE_AT_DOFS)
     {
-      sstr << fmt::format("\n\t* Shape samples at DOFs: {}",
-                          fmt::join(extractKeys(m_inoutDofs), ", "));
+      axom::fmt::format_to(std::back_inserter(out),
+                           "\n\t* Shape samples at DOFs: {}",
+                           axom::fmt::join(extractKeys(m_inoutDofs), ", "));
     }
-    SLIC_INFO(sstr.str());
+    SLIC_INFO(axom::fmt::to_string(out));
   }
 
 private:

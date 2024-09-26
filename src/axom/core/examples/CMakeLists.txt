@@ -61,3 +61,38 @@ if(AXOM_ENABLE_TESTS)
         NAME    core_utilities
         COMMAND core_utilities_ex ${CMAKE_CURRENT_SOURCE_DIR} )
 endif()
+
+axom_add_executable(
+    NAME        core_array_perf_ex
+    SOURCES     core_array_perf.cpp
+    OUTPUT_DIR  ${EXAMPLE_OUTPUT_DIRECTORY}
+    DEPENDS_ON  core
+    FOLDER      axom/core/examples )
+
+if(AXOM_ENABLE_TESTS)
+    # Run the core array performance example on N ranks for each enabled policy
+    set(_policies "seq")
+    if(RAJA_FOUND)
+        blt_list_append(TO _policies ELEMENTS "omp" IF AXOM_ENABLE_OPENMP)
+        blt_list_append(TO _policies ELEMENTS "cuda" IF AXOM_ENABLE_CUDA)
+        blt_list_append(TO _policies ELEMENTS "hip" IF AXOM_ENABLE_HIP)
+    endif()
+    foreach(_pol ${_policies})
+        axom_add_test(
+            NAME    "core_array_perf_1d_${_pol}"
+            COMMAND core_array_perf_ex --policy ${_pol} --shape 1200000 -r 10)
+        axom_add_test(
+            NAME    "core_array_perf_2d_${_pol}"
+            COMMAND core_array_perf_ex --policy ${_pol} --shape 1000 1200 -r 10)
+        axom_add_test(
+            NAME    "core_array_perf_3d_${_pol}"
+            COMMAND core_array_perf_ex --policy ${_pol} --shape 100 100 120 -r 10)
+        if(NOT RAJA_FOUND)
+            # RAJA provides support for up to 3D tiled nested loops,
+            # so run 4D test only for non-RAJA builds.
+            axom_add_test(
+                NAME    "core_array_perf_4d_${_pol}"
+                COMMAND core_array_perf_ex --policy ${_pol} --shape 50 20 30 6 )
+        endif()
+    endforeach()
+endif()

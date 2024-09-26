@@ -8,10 +8,11 @@
 
 #include "axom/config.hpp"
 #include "axom/core.hpp"
+#include "axom/core/NumericLimits.hpp"
+#include "axom/core/execution/runtime_policy.hpp"
 #include "axom/slic.hpp"
 #include "axom/primal.hpp"
 #include "axom/spin.hpp"
-#include "axom/core/execution/runtime_policy.hpp"
 
 #include "axom/fmt.hpp"
 
@@ -22,7 +23,6 @@
 #include "conduit_relay_io.hpp"
 
 #include <memory>
-#include <limits>
 #include <cstdlib>
 #include <cmath>
 #include <list>
@@ -232,163 +232,34 @@ inline int isend_using_schema(conduit::Node& node,
   return mpi_error;
 }
 
-/// A modified version of the conduit method.
-// This version works correctly when src is MPI_ANY_SOURCE
-// and tag is MPI_ANY_TAG.  When conduit supports this,
-// this version can be removed.
-inline int recv_using_schema(conduit::Node& node, int src, int tag, MPI_Comm comm)
-{
-  MPI_Status status;
-
-  int mpi_error = MPI_Probe(src, tag, comm, &status);
-
-  // CONDUIT_CHECK_MPI_ERROR(mpi_error);
-  // Expand the conduit macro:
-  if(static_cast<int>(mpi_error) != MPI_SUCCESS)
-  {
-    char check_mpi_err_str_buff[MPI_MAX_ERROR_STRING];
-    int check_mpi_err_str_len = 0;
-    MPI_Error_string(mpi_error, check_mpi_err_str_buff, &check_mpi_err_str_len);
-
-    SLIC_ERROR(
-      fmt::format("MPI call failed: error code = {} error message = {}",
-                  mpi_error,
-                  check_mpi_err_str_buff));
-  }
-
-  int buffer_size = 0;
-  MPI_Get_count(&status, MPI_BYTE, &buffer_size);
-
-  conduit::Node n_buffer(conduit::DataType::uint8(buffer_size));
-
-  mpi_error = MPI_Recv(n_buffer.data_ptr(),
-                       buffer_size,
-                       MPI_BYTE,
-                       status.MPI_SOURCE,
-                       status.MPI_TAG,
-                       comm,
-                       &status);
-
-  std::uint8_t* n_buff_ptr = (std::uint8_t*)n_buffer.data_ptr();
-
-  conduit::Node n_msg;
-  // length of the schema is sent as a 64-bit signed int
-  // NOTE: we aren't using this value  ...
-  n_msg["schema_len"].set_external((std::int64_t*)n_buff_ptr);
-  n_buff_ptr += 8;
-  // wrap the schema string
-  n_msg["schema"].set_external_char8_str((char*)(n_buff_ptr));
-  // create the schema
-  conduit::Schema rcv_schema;
-  conduit::Generator gen(n_msg["schema"].as_char8_str());
-  gen.walk(rcv_schema);
-
-  // advance by the schema length
-  n_buff_ptr += n_msg["schema"].total_bytes_compact();
-
-  // apply the schema to the data
-  n_msg["data"].set_external(rcv_schema, n_buff_ptr);
-
-  // copy out to our result node
-  node.update(n_msg["data"]);
-
-  return mpi_error;
-}
-
 }  // namespace mpi
 }  // namespace relay
 
-/**
- * \brief Implements the DistributedClosestPoint query for a specified dimension
- * using a provided execution policy (e.g. sequential, openmp, cuda, hip)
- *
- * \tparam NDIMS The dimension of the object mesh and query points
- */
-template <int NDIMS>
+/*!
+  @brief Non-templated base class for the distributed closest point
+  implementation.
+
+  This class provides an abstract base class handle for
+  DistributedClosestPointExec, which generically implements the code
+  for templated dimensions and execution spaces.
+  This class implements the non-templated parts of the implementation.
+  The two are highly coupled.
+*/
 class DistributedClosestPointImpl
 {
 public:
-  static constexpr int DIM = NDIMS;
-  using RuntimePolicy = axom::runtime_policy::Policy;
-  using PointType = primal::Point<double, DIM>;
-  using BoxType = primal::BoundingBox<double, DIM>;
-  using PointArray = axom::Array<PointType>;
-  using BoxArray = axom::Array<BoxType>;
-
-  using SeqBVHTree = spin::BVH<DIM, axom::SEQ_EXEC>;
-#ifdef AXOM_RUNTIME_POLICY_USE_OPENMP
-  using OmpBVHTree = spin::BVH<DIM, axom::OMP_EXEC>;
-#endif
-#ifdef AXOM_RUNTIME_POLICY_USE_CUDA
-  using CudaBVHTree = spin::BVH<DIM, axom::CUDA_EXEC<256>>;
-#endif
-#ifdef AXOM_RUNTIME_POLICY_USE_HIP
-  using HipBVHTree = spin::BVH<DIM, axom::HIP_EXEC<256>>;
-#endif
-
-private:
-  struct MinCandidate
-  {
-    /// Squared distance to query point
-    double sqDist {numerics::floating_point_limits<double>::max()};
-    /// Index of domain of closest element
-    int domainIdx {-1};
-    /// Index within domain of closest element
-    int pointIdx {-1};
-    /// MPI rank of closest element
-    int rank {-1};
-  };
-
-public:
-  /*!
-    @brief Constructor
-
-    @param [i] runtimePolicy Indicates where local computations
-      are done.  See axom::runtime_policy.
-    @param [i] allocatorID Allocator ID, which must be compatible with
-      @c runtimePolicy.  See axom::allocate and axom::reallocate.
-      Also see setAllocatorID().
-    @param [i[ isVerbose
-  */
-  DistributedClosestPointImpl(RuntimePolicy runtimePolicy,
-                              int allocatorID,
-                              bool isVerbose)
-    : m_runtimePolicy(runtimePolicy)
+  DistributedClosestPointImpl(int allocatorID, bool isVerbose)
+    : m_allocatorID(allocatorID)
     , m_isVerbose(isVerbose)
-    , m_sqDistanceThreshold(std::numeric_limits<double>::max())
-    , m_allocatorID(allocatorID)
     , m_mpiComm(MPI_COMM_NULL)
     , m_rank(-1)
     , m_nranks(-1)
-    , m_objectPtCoords(0, 0, allocatorID)
-    , m_objectPtDomainIds(0, 0, allocatorID)
-  {
-    SLIC_ASSERT(allocatorID != axom::INVALID_ALLOCATOR_ID);
+    , m_sqDistanceThreshold(axom::numeric_limits<double>::max())
+  { }
 
-    setMpiCommunicator(MPI_COMM_WORLD);
-  }
+  virtual ~DistributedClosestPointImpl() { }
 
-  /**
-   * \brief Set the MPI communicator.
-   */
-  void setMpiCommunicator(MPI_Comm mpiComm)
-  {
-    m_mpiComm = mpiComm;
-    MPI_Comm_rank(m_mpiComm, &m_rank);
-    MPI_Comm_size(m_mpiComm, &m_nranks);
-  }
-
-  /**
-   * \brief Sets the threshold for the query
-   *
-   * \param [in] threshold Ignore distances greater than this value.
-   */
-  void setSquaredDistanceThreshold(double sqThreshold)
-  {
-    SLIC_ERROR_IF(sqThreshold < 0.0,
-                  "Squared distance-threshold must be non-negative.");
-    m_sqDistanceThreshold = sqThreshold;
-  }
+  virtual int getDimension() const = 0;
 
   /*!  @brief Sets the allocator ID to the default associated with the
     execution policy
@@ -400,6 +271,44 @@ public:
     m_allocatorID = allocatorID;
   }
 
+  /*!
+   @brief Import object mesh points from the object blueprint mesh into internal memory.
+
+   @param [in] mdMeshNode The blueprint mesh containing the object points.
+   @param [in] topologyName Name of the blueprint topology in \a mdMeshNode.
+   @note This function currently supports mesh blueprints with the "point" topology
+  */
+  virtual void importObjectPoints(const conduit::Node& mdMeshNode,
+                                  const std::string& topologyName) = 0;
+
+  //! @brief Generates the BVH tree for the classes execution space
+  virtual bool generateBVHTree() = 0;
+
+  /*!
+   @brief Set the MPI communicator.
+  */
+  void setMpiCommunicator(MPI_Comm mpiComm)
+  {
+    m_mpiComm = mpiComm;
+    MPI_Comm_rank(m_mpiComm, &m_rank);
+    MPI_Comm_size(m_mpiComm, &m_nranks);
+  }
+
+  /*!
+   @brief Sets the threshold for the query
+
+   @param [in] threshold Ignore distances greater than this value.
+  */
+  void setSquaredDistanceThreshold(double sqThreshold)
+  {
+    SLIC_ERROR_IF(sqThreshold < 0.0,
+                  "Squared distance-threshold must be non-negative.");
+    m_sqDistanceThreshold = sqThreshold;
+  }
+
+  /*!
+    @brief Set which output data fields to generate.
+  */
   void setOutputSwitches(bool outputRank,
                          bool outputIndex,
                          bool outputDistance,
@@ -411,247 +320,6 @@ public:
     m_outputDistance = outputDistance;
     m_outputCoords = outputCoords;
     m_outputDomainIndex = outputDomainIndex;
-  }
-
-public:
-  /**
-   * Import object mesh points from the object blueprint mesh into internal memory.
-   *
-   * \param [in] mdMeshNode The blueprint mesh containing the object points.
-   * \param [in] topologyName Name of the blueprint topology in \a mdMeshNode.
-   * \note This function currently supports mesh blueprints with the "point" topology
-   */
-  void importObjectPoints(const conduit::Node& mdMeshNode,
-                          const std::string& topologyName)
-  {
-    // TODO: See if some of the copies in this method can be optimized out.
-
-    SLIC_ASSERT(sizeof(double) * DIM == sizeof(PointType));
-
-    // Count points in the mesh.
-    int ptCount = 0;
-    for(const conduit::Node& domain : mdMeshNode.children())
-    {
-      const std::string coordsetName =
-        domain
-          .fetch_existing(
-            axom::fmt::format("topologies/{}/coordset", topologyName))
-          .as_string();
-      const std::string valuesPath =
-        axom::fmt::format("coordsets/{}/values", coordsetName);
-      auto& values = domain.fetch_existing(valuesPath);
-      const int N = internal::extractSize(values);
-      ptCount += N;
-    }
-
-    // Copy points to internal memory
-    PointArray coords(ptCount, ptCount);
-    axom::Array<axom::IndexType> domIds(ptCount, ptCount);
-    std::size_t copiedCount = 0;
-    conduit::Node tmpValues;
-    for(axom::IndexType d = 0; d < mdMeshNode.number_of_children(); ++d)
-    {
-      const conduit::Node& domain = mdMeshNode.child(d);
-
-      axom::IndexType domainId = d;
-      if(domain.has_path("state/domain_id"))
-      {
-        domainId = domain.fetch_existing("state/domain_id").to_int32();
-      }
-
-      const std::string coordsetName =
-        domain
-          .fetch_existing(
-            axom::fmt::format("topologies/{}/coordset", topologyName))
-          .as_string();
-      const std::string valuesPath =
-        axom::fmt::format("coordsets/{}/values", coordsetName);
-
-      auto& values = domain.fetch_existing(valuesPath);
-
-      bool isInterleaved = conduit::blueprint::mcarray::is_interleaved(values);
-      if(!isInterleaved)
-      {
-        conduit::blueprint::mcarray::to_interleaved(values, tmpValues);
-      }
-      const conduit::Node& copySrc = isInterleaved ? values : tmpValues;
-
-      const int N = internal::extractSize(copySrc);
-      const std::size_t nBytes = sizeof(double) * DIM * N;
-
-      axom::copy(coords.data() + copiedCount,
-                 copySrc.fetch_existing("x").data_ptr(),
-                 nBytes);
-      tmpValues.reset();
-
-      domIds.fill(domainId, N, copiedCount);
-
-      copiedCount += N;
-    }
-    // copy computed data to ExecSpace
-    m_objectPtCoords = PointArray(coords, m_allocatorID);
-    m_objectPtDomainIds = axom::Array<axom::IndexType>(domIds, m_allocatorID);
-  }
-
-  /// Predicate to check if the BVH tree has been initialized
-  bool isBVHTreeInitialized() const
-  {
-    switch(m_runtimePolicy)
-    {
-    case RuntimePolicy::seq:
-      return m_bvh_seq.get() != nullptr;
-
-#ifdef AXOM_RUNTIME_POLICY_USE_OPENMP
-    case RuntimePolicy::omp:
-      return m_bvh_omp.get() != nullptr;
-#endif
-
-#ifdef AXOM_RUNTIME_POLICY_USE_CUDA
-    case RuntimePolicy::cuda:
-      return m_bvh_cuda.get() != nullptr;
-#endif
-
-#ifdef AXOM_RUNTIME_POLICY_USE_HIP
-    case RuntimePolicy::hip:
-      return m_bvh_hip.get() != nullptr;
-#endif
-    }
-
-    return false;
-  }
-
-  /// Generates the BVH tree for the classes execution space
-  bool generateBVHTree()
-  {
-    // Delegates to generateBVHTreeImpl<> which uses
-    // the execution space templated bvh tree
-
-    SLIC_ASSERT_MSG(!isBVHTreeInitialized(), "BVH tree already initialized");
-
-    // In case user changed the allocator after setObjectMesh,
-    // move the object point data to avoid repetitive page faults.
-    if(m_objectPtCoords.getAllocatorID() != m_allocatorID)
-    {
-      PointArray tmpPoints(m_objectPtCoords, m_allocatorID);
-      m_objectPtCoords.swap(tmpPoints);
-    }
-
-    switch(m_runtimePolicy)
-    {
-    case RuntimePolicy::seq:
-      m_bvh_seq = std::make_unique<SeqBVHTree>();
-      return generateBVHTreeImpl<SeqBVHTree>(m_bvh_seq.get());
-
-#ifdef AXOM_RUNTIME_POLICY_USE_OPENMP
-    case RuntimePolicy::omp:
-      m_bvh_omp = std::make_unique<OmpBVHTree>();
-      return generateBVHTreeImpl<OmpBVHTree>(m_bvh_omp.get());
-#endif
-
-#ifdef AXOM_RUNTIME_POLICY_USE_CUDA
-    case RuntimePolicy::cuda:
-      m_bvh_cuda = std::make_unique<CudaBVHTree>();
-      return generateBVHTreeImpl<CudaBVHTree>(m_bvh_cuda.get());
-#endif
-
-#ifdef AXOM_RUNTIME_POLICY_USE_HIP
-    case RuntimePolicy::hip:
-      m_bvh_hip = std::make_unique<HipBVHTree>();
-      return generateBVHTreeImpl<HipBVHTree>(m_bvh_hip.get());
-#endif
-    }
-
-    // Fail safe -- we should never reach this line!
-    SLIC_ERROR("Failed to initialize the BVH tree");
-
-    return false;
-  }
-
-  /// Get local copy of all ranks BVH root bounding boxes.
-  void gatherBVHRoots()
-  {
-    SLIC_ASSERT_MSG(
-      isBVHTreeInitialized(),
-      "BVH tree must be initialized before calling 'gatherBVHRoots");
-
-    BoxType local_bb;
-    switch(m_runtimePolicy)
-    {
-    case RuntimePolicy::seq:
-      local_bb = m_bvh_seq->getBounds();
-      break;
-
-#ifdef AXOM_RUNTIME_POLICY_USE_OPENMP
-    case RuntimePolicy::omp:
-      local_bb = m_bvh_omp->getBounds();
-      break;
-#endif
-
-#ifdef AXOM_RUNTIME_POLICY_USE_CUDA
-    case RuntimePolicy::cuda:
-      local_bb = m_bvh_cuda->getBounds();
-      break;
-#endif
-
-#ifdef AXOM_RUNTIME_POLICY_USE_HIP
-    case RuntimePolicy::hip:
-      local_bb = m_bvh_hip->getBounds();
-      break;
-#endif
-    }
-
-    gatherBoundingBoxes(local_bb, m_objectPartitionBbs);
-  }
-
-  /// Allgather one bounding box from each rank.
-  void gatherBoundingBoxes(const BoxType& aabb, BoxArray& all_aabbs) const
-  {
-    axom::Array<double> sendbuf(2 * DIM);
-    aabb.getMin().to_array(&sendbuf[0]);
-    aabb.getMax().to_array(&sendbuf[DIM]);
-    axom::Array<double> recvbuf(m_nranks * sendbuf.size());
-    // Note: Using axom::Array<double,2> may reduce clutter a tad.
-    int errf = MPI_Allgather(sendbuf.data(),
-                             2 * DIM,
-                             mpi_traits<double>::type,
-                             recvbuf.data(),
-                             2 * DIM,
-                             mpi_traits<double>::type,
-                             m_mpiComm);
-    SLIC_ASSERT(errf == MPI_SUCCESS);
-    AXOM_UNUSED_VAR(errf);
-
-    all_aabbs.clear();
-    all_aabbs.reserve(m_nranks);
-    for(int i = 0; i < m_nranks; ++i)
-    {
-      PointType lower(&recvbuf[i * 2 * DIM]);
-      PointType upper(&recvbuf[i * 2 * DIM + DIM]);
-      all_aabbs.emplace_back(BoxType(lower, upper, false));
-    }
-  }
-
-  /// Compute bounding box for local part of a mesh.
-  BoxType computeMeshBoundingBox(conduit::Node& xferNode) const
-  {
-    BoxType rval;
-
-    conduit::Node& xferDoms = xferNode.fetch_existing("xferDoms");
-    for(conduit::Node& xferDom : xferDoms.children())
-    {
-      const int qPtCount = xferDom.fetch_existing("qPtCount").value();
-
-      /// Extract fields from the input node as ArrayViews
-      auto queryPts =
-        ArrayView_from_Node<PointType>(xferDom.fetch_existing("coords"),
-                                       qPtCount);
-      for(const auto& p : queryPts)
-      {
-        rval.addPoint(p);
-      }
-    }
-
-    return rval;
   }
 
   /*!
@@ -777,7 +445,7 @@ public:
   void copy_components_to_interleaved(conduit::Node& components,
                                       conduit::Node& interleaved) const
   {
-    const int dim = internal::extractDimension(components);
+    const int dim = getDimension();
     const int qPtCount = internal::extractSize(components);
     bool interleavedSrc = conduit::blueprint::mcarray::is_interleaved(components);
     if(interleavedSrc)
@@ -810,10 +478,11 @@ public:
   void copy_interleaved_to_components(const conduit::Node& interleaved,
                                       conduit::Node& components) const
   {
-    const int qPtCount = interleaved.dtype().number_of_elements() / DIM;
+    const int dim = getDimension();
+    const int qPtCount = interleaved.dtype().number_of_elements() / dim;
     components.reset();
     // Copy from 1D-interleaved src to component-wise dst.
-    for(int d = 0; d < DIM; ++d)
+    for(int d = 0; d < dim; ++d)
     {
       const double* src = interleaved.as_float64_ptr() + d;
       auto& dstNode = components.append();
@@ -821,9 +490,282 @@ public:
       double* dst = dstNode.as_float64_ptr();
       for(int i = 0; i < qPtCount; ++i)
       {
-        dst[i] = src[i * DIM];
+        dst[i] = src[i * dim];
       }
     }
+  }
+
+  /// Wait for some non-blocking sends (if any) to finish.
+  void check_send_requests(std::list<conduit::relay::mpi::Request>& isendRequests,
+                           bool atLeastOne) const
+  {
+    std::vector<MPI_Request> reqs;
+    for(auto& isr : isendRequests)
+    {
+      reqs.push_back(isr.m_request);
+    }
+
+    int inCount = static_cast<int>(reqs.size());
+    int outCount = 0;
+    std::vector<int> indices(reqs.size(), -1);
+    if(atLeastOne)
+    {
+      MPI_Waitsome(inCount,
+                   reqs.data(),
+                   &outCount,
+                   indices.data(),
+                   MPI_STATUSES_IGNORE);
+    }
+    else
+    {
+      MPI_Testsome(inCount,
+                   reqs.data(),
+                   &outCount,
+                   indices.data(),
+                   MPI_STATUSES_IGNORE);
+    }
+    indices.resize(outCount);
+
+    auto reqIter = isendRequests.begin();
+    int prevIdx = 0;
+    for(const int idx : indices)
+    {
+      for(; prevIdx < idx; ++prevIdx)
+      {
+        ++reqIter;
+      }
+      reqIter = isendRequests.erase(reqIter);
+      ++prevIdx;
+    }
+  }
+
+  virtual void computeClosestPoints(conduit::Node& queryMesh,
+                                    const std::string& topologyName) const = 0;
+
+protected:
+  int m_allocatorID;
+  bool m_isVerbose;
+
+  MPI_Comm m_mpiComm;
+  int m_rank;
+  int m_nranks;
+
+  double m_sqDistanceThreshold;
+
+  bool m_outputRank = true;
+  bool m_outputIndex = true;
+  bool m_outputDistance = true;
+  bool m_outputCoords = true;
+  bool m_outputDomainIndex = true;
+
+  struct MinCandidate
+  {
+    /// Squared distance to query point
+    double sqDist {numerics::floating_point_limits<double>::max()};
+    /// Index of domain of closest element
+    int domainIdx {-1};
+    /// Index within domain of closest element
+    int pointIdx {-1};
+    /// MPI rank of closest element
+    int rank {-1};
+  };
+};
+
+/*!
+  \brief Implements the DistributedClosestPoint query for
+  compile-time dimension and execution space.
+
+  This class implements closest point search parts that depend
+  on dimension and execution space.
+
+  \tparam NDIMS The dimension of the object mesh and query points
+  \tparam ExecSpace The general execution space, such as axom::SEQ_EXEC and
+  axom::CUDA_EXEC<256>.
+*/
+template <int NDIMS, typename ExecSpace>
+class DistributedClosestPointExec : public DistributedClosestPointImpl
+{
+public:
+  static constexpr int DIM = NDIMS;
+  using LoopPolicy = typename execution_space<ExecSpace>::loop_policy;
+  using ReducePolicy = typename execution_space<ExecSpace>::reduce_policy;
+  using PointType = primal::Point<double, DIM>;
+  using BoxType = primal::BoundingBox<double, DIM>;
+  using PointArray = axom::Array<PointType>;
+  using BoxArray = axom::Array<BoxType>;
+  using BVHTreeType = spin::BVH<DIM, ExecSpace>;
+
+  /*!
+    @brief Constructor
+
+    @param [i] allocatorID Allocator ID, which must be compatible with
+      @c ExecSpace.  See axom::allocate and axom::reallocate.
+      Also see setAllocatorID().
+    @param [i[ isVerbose
+  */
+  DistributedClosestPointExec(int allocatorID, bool isVerbose)
+    : DistributedClosestPointImpl(allocatorID, isVerbose)
+    , m_objectPtCoords(0, 0, allocatorID)
+    , m_objectPtDomainIds(0, 0, allocatorID)
+  {
+    SLIC_ASSERT(allocatorID != axom::INVALID_ALLOCATOR_ID);
+
+    setMpiCommunicator(MPI_COMM_WORLD);
+  }
+
+  int getDimension() const override { return DIM; }
+
+  void importObjectPoints(const conduit::Node& mdMeshNode,
+                          const std::string& topologyName) override
+  {
+    // TODO: See if some of the copies in this method can be optimized out.
+
+    SLIC_ASSERT(sizeof(double) * DIM == sizeof(PointType));
+
+    // Count points in the mesh.
+    int ptCount = 0;
+    for(const conduit::Node& domain : mdMeshNode.children())
+    {
+      const std::string coordsetName =
+        domain
+          .fetch_existing(
+            axom::fmt::format("topologies/{}/coordset", topologyName))
+          .as_string();
+      const std::string valuesPath =
+        axom::fmt::format("coordsets/{}/values", coordsetName);
+      auto& values = domain.fetch_existing(valuesPath);
+      const int N = internal::extractSize(values);
+      ptCount += N;
+    }
+
+    // Copy points to internal memory
+    PointArray coords(ptCount, ptCount);
+    axom::Array<axom::IndexType> domIds(ptCount, ptCount);
+    std::size_t copiedCount = 0;
+    conduit::Node tmpValues;
+    for(axom::IndexType d = 0; d < mdMeshNode.number_of_children(); ++d)
+    {
+      const conduit::Node& domain = mdMeshNode.child(d);
+
+      axom::IndexType domainId = d;
+      if(domain.has_path("state/domain_id"))
+      {
+        domainId = domain.fetch_existing("state/domain_id").to_int32();
+      }
+
+      const std::string coordsetName =
+        domain
+          .fetch_existing(
+            axom::fmt::format("topologies/{}/coordset", topologyName))
+          .as_string();
+      const std::string valuesPath =
+        axom::fmt::format("coordsets/{}/values", coordsetName);
+
+      auto& values = domain.fetch_existing(valuesPath);
+
+      bool isInterleaved = conduit::blueprint::mcarray::is_interleaved(values);
+      if(!isInterleaved)
+      {
+        conduit::blueprint::mcarray::to_interleaved(values, tmpValues);
+      }
+      const conduit::Node& copySrc = isInterleaved ? values : tmpValues;
+
+      const int N = internal::extractSize(copySrc);
+      const std::size_t nBytes = sizeof(double) * DIM * N;
+
+      axom::copy(coords.data() + copiedCount,
+                 copySrc.fetch_existing("x").data_ptr(),
+                 nBytes);
+      tmpValues.reset();
+
+      domIds.fill(domainId, N, copiedCount);
+
+      copiedCount += N;
+    }
+    // copy computed data to ExecSpace
+    m_objectPtCoords = PointArray(coords, m_allocatorID);
+    m_objectPtDomainIds = axom::Array<axom::IndexType>(domIds, m_allocatorID);
+  }
+
+  bool generateBVHTree() override
+  {
+    // Delegates to generateBVHTreeImpl<> which uses
+    // the execution space templated bvh tree
+
+    SLIC_ASSERT_MSG(!m_bvh, "BVH tree already initialized");
+
+    // In case user changed the allocator after setObjectMesh,
+    // move the object point data to avoid repetitive page faults.
+    if(m_objectPtCoords.getAllocatorID() != m_allocatorID)
+    {
+      PointArray tmpPoints(m_objectPtCoords, m_allocatorID);
+      m_objectPtCoords.swap(tmpPoints);
+    }
+
+    m_bvh = std::make_unique<BVHTreeType>();
+    return generateBVHTreeImpl(m_bvh.get());
+  }
+
+  /// Get local copy of all ranks BVH root bounding boxes.
+  void gatherBVHRoots()
+  {
+    SLIC_ASSERT_MSG(
+      m_bvh,
+      "BVH tree must be initialized before calling 'gatherBVHRoots");
+
+    BoxType local_bb = m_bvh->getBounds();
+    gatherBoundingBoxes(local_bb, m_objectPartitionBbs);
+  }
+
+  /// Allgather one bounding box from each rank.
+  void gatherBoundingBoxes(const BoxType& aabb, BoxArray& all_aabbs) const
+  {
+    axom::Array<double> sendbuf(2 * DIM);
+    aabb.getMin().to_array(&sendbuf[0]);
+    aabb.getMax().to_array(&sendbuf[DIM]);
+    axom::Array<double> recvbuf(m_nranks * sendbuf.size());
+    // Note: Using axom::Array<double,2> may reduce clutter a tad.
+    int errf = MPI_Allgather(sendbuf.data(),
+                             2 * DIM,
+                             mpi_traits<double>::type,
+                             recvbuf.data(),
+                             2 * DIM,
+                             mpi_traits<double>::type,
+                             m_mpiComm);
+    SLIC_ASSERT(errf == MPI_SUCCESS);
+    AXOM_UNUSED_VAR(errf);
+
+    all_aabbs.clear();
+    all_aabbs.reserve(m_nranks);
+    for(int i = 0; i < m_nranks; ++i)
+    {
+      PointType lower(&recvbuf[i * 2 * DIM]);
+      PointType upper(&recvbuf[i * 2 * DIM + DIM]);
+      all_aabbs.emplace_back(BoxType(lower, upper, false));
+    }
+  }
+
+  /// Compute bounding box for local part of a mesh.
+  BoxType computeMeshBoundingBox(conduit::Node& xferNode) const
+  {
+    BoxType rval;
+
+    conduit::Node& xferDoms = xferNode.fetch_existing("xferDoms");
+    for(conduit::Node& xferDom : xferDoms.children())
+    {
+      const int qPtCount = xferDom.fetch_existing("qPtCount").value();
+
+      /// Extract fields from the input node as ArrayViews
+      auto queryPts =
+        ArrayView_from_Node<PointType>(xferDom.fetch_existing("coords"),
+                                       qPtCount);
+      for(const auto& p : queryPts)
+      {
+        rval.addPoint(p);
+      }
+    }
+
+    return rval;
   }
 
   /**
@@ -836,10 +778,10 @@ public:
    * using check_send_requests().
    */
   void computeClosestPoints(conduit::Node& queryMesh,
-                            const std::string& topologyName) const
+                            const std::string& topologyName) const override
   {
     SLIC_ASSERT_MSG(
-      isBVHTreeInitialized(),
+      m_bvh,
       "BVH tree must be initialized before calling 'computeClosestPoints");
 
     std::map<int, std::shared_ptr<conduit::Node>> xferNodes;
@@ -860,7 +802,7 @@ public:
 
     {
       conduit::Node& xferNode = *xferNodes[m_rank];
-      computeLocalClosestPointsByPolicy(xferNode);
+      computeLocalClosestPoints(xferNode);
     }
 
     const auto& myObjectBb = m_objectPartitionBbs[m_rank];
@@ -924,10 +866,10 @@ public:
       // Receive the next xferNode
       std::shared_ptr<conduit::Node> recvXferNodePtr =
         std::make_shared<conduit::Node>();
-      relay::mpi::recv_using_schema(*recvXferNodePtr,
-                                    MPI_ANY_SOURCE,
-                                    tag,
-                                    m_mpiComm);
+      conduit::relay::mpi::recv_using_schema(*recvXferNodePtr,
+                                             MPI_ANY_SOURCE,
+                                             tag,
+                                             m_mpiComm);
 
       const int homeRank = recvXferNodePtr->fetch_existing("homeRank").as_int();
       --remainingRecvs;
@@ -940,7 +882,7 @@ public:
       }
       else
       {
-        computeLocalClosestPointsByPolicy(xferNode);
+        computeLocalClosestPoints(xferNode);
 
         isendRequests.emplace_back(conduit::relay::mpi::Request());
         auto& isendRequest = isendRequests.back();
@@ -969,35 +911,6 @@ public:
   }
 
 private:
-  /// Distance search using local object partition and xferNode.
-  void computeLocalClosestPointsByPolicy(conduit::Node& xferNode) const
-  {
-    switch(m_runtimePolicy)
-    {
-    case RuntimePolicy::seq:
-      computeLocalClosestPoints<SeqBVHTree>(m_bvh_seq.get(), xferNode);
-      break;
-
-#ifdef AXOM_RUNTIME_POLICY_USE_OPENMP
-    case RuntimePolicy::omp:
-      computeLocalClosestPoints<OmpBVHTree>(m_bvh_omp.get(), xferNode);
-#endif
-      break;
-
-#ifdef AXOM_RUNTIME_POLICY_USE_CUDA
-    case RuntimePolicy::cuda:
-      computeLocalClosestPoints<CudaBVHTree>(m_bvh_cuda.get(), xferNode);
-#endif
-      break;
-
-#ifdef AXOM_RUNTIME_POLICY_USE_HIP
-    case RuntimePolicy::hip:
-      computeLocalClosestPoints<HipBVHTree>(m_bvh_hip.get(), xferNode);
-#endif
-      break;
-    }
-  }
-
   /**
     Determine the next rank (in ring order) with an object partition
     close to the query points in xferNode.  The intent is to send
@@ -1025,58 +938,11 @@ private:
     return -1;
   }
 
-  /// Wait for some non-blocking sends (if any) to finish.
-  void check_send_requests(std::list<conduit::relay::mpi::Request>& isendRequests,
-                           bool atLeastOne) const
-  {
-    std::vector<MPI_Request> reqs;
-    for(auto& isr : isendRequests)
-    {
-      reqs.push_back(isr.m_request);
-    }
-
-    int inCount = static_cast<int>(reqs.size());
-    int outCount = 0;
-    std::vector<int> indices(reqs.size(), -1);
-    if(atLeastOne)
-    {
-      MPI_Waitsome(inCount,
-                   reqs.data(),
-                   &outCount,
-                   indices.data(),
-                   MPI_STATUSES_IGNORE);
-    }
-    else
-    {
-      MPI_Testsome(inCount,
-                   reqs.data(),
-                   &outCount,
-                   indices.data(),
-                   MPI_STATUSES_IGNORE);
-    }
-    indices.resize(outCount);
-
-    auto reqIter = isendRequests.begin();
-    int prevIdx = 0;
-    for(const int idx : indices)
-    {
-      for(; prevIdx < idx; ++prevIdx)
-      {
-        ++reqIter;
-      }
-      reqIter = isendRequests.erase(reqIter);
-      ++prevIdx;
-    }
-  }
-
   // Note: following should be private, but nvcc complains about lambdas in private scope
 public:
   /// Templated implementation of generateBVHTree function
-  template <typename BVHTreeType>
   bool generateBVHTreeImpl(BVHTreeType* bvh)
   {
-    using ExecSpace = typename BVHTreeType::ExecSpaceType;
-
     SLIC_ASSERT(bvh != nullptr);
 
     const int npts = m_objectPtCoords.size();
@@ -1097,11 +963,8 @@ public:
     return (result == spin::BVH_BUILD_OK);
   }
 
-  template <typename BVHTreeType>
-  void computeLocalClosestPoints(const BVHTreeType* bvh,
-                                 conduit::Node& xferNode) const
+  void computeLocalClosestPoints(conduit::Node& xferNode) const
   {
-    using ExecSpace = typename BVHTreeType::ExecSpaceType;
     using axom::primal::squared_distance;
 
     // Note: There is some additional computation the first time this function
@@ -1179,9 +1042,9 @@ public:
         cp_rank.fill(-1);
         cp_idx.fill(-1);
         cp_domidx.fill(-1);
-        const PointType nowhere(std::numeric_limits<double>::signaling_NaN());
+        const PointType nowhere(axom::numeric_limits<double>::signaling_NaN());
         cp_pos.fill(nowhere);
-        cp_dist.fill(std::numeric_limits<double>::signaling_NaN());
+        cp_dist.fill(axom::numeric_limits<double>::signaling_NaN());
       }
       auto query_inds = cp_idx.view();
       auto query_doms = cp_domidx.view();
@@ -1196,19 +1059,23 @@ public:
       if(hasObjectPoints)
       {
         // Get a device-useable iterator
-        auto it = bvh->getTraverser();
+        auto it = m_bvh->getTraverser();
         const int rank = m_rank;
 
-        double* sqDistThresh = axom::allocate<double>(
+        axom::Array<double> sqDistThresh_host(
           1,
-          axom::execution_space<ExecSpace>::allocatorID());
-        *sqDistThresh = m_sqDistanceThreshold;
+          1,
+          axom::execution_space<axom::SEQ_EXEC>::allocatorID());
+        sqDistThresh_host[0] = m_sqDistanceThreshold;
+        axom::Array<double> sqDistThresh_device =
+          axom::Array<double>(sqDistThresh_host, m_allocatorID);
+        auto sqDistThresh_device_view = sqDistThresh_device.view();
 
         auto ptCoordsView = m_objectPtCoords.view();
         auto ptDomainIdsView = m_objectPtDomainIds.view();
 
-        AXOM_PERF_MARK_SECTION(
-          "ComputeClosestPoints",
+        {
+          AXOM_ANNOTATE_SCOPE("ComputeClosestPoints");
           axom::for_all<ExecSpace>(
             qPtCount,
             AXOM_LAMBDA(std::int32_t idx) mutable {
@@ -1244,7 +1111,8 @@ public:
               auto traversePredicate = [&](const PointType& p,
                                            const BoxType& bb) -> bool {
                 auto sqDist = squared_distance(p, bb);
-                return sqDist <= curr_min.sqDist && sqDist <= sqDistThresh[0];
+                return sqDist <= curr_min.sqDist &&
+                  sqDist <= sqDistThresh_device_view[0];
               };
 
               // Traverse the tree, searching for the point with minimum distance.
@@ -1264,9 +1132,8 @@ public:
                   query_min_dist[idx] = sqrt(curr_min.sqDist);
                 }
               }
-            }););
-
-        axom::deallocate(sqDistThresh);
+            });
+        }
       }
 
       axom::copy(cpIndexes.data(),
@@ -1299,21 +1166,6 @@ public:
   }
 
 private:
-  RuntimePolicy m_runtimePolicy;
-  bool m_isVerbose {false};
-  double m_sqDistanceThreshold;
-  int m_allocatorID;
-  MPI_Comm m_mpiComm;
-  bool m_mpiCommIsPrivate;
-  int m_rank;
-  int m_nranks;
-
-  bool m_outputRank = true;
-  bool m_outputIndex = true;
-  bool m_outputDistance = true;
-  bool m_outputCoords = true;
-  bool m_outputDomainIndex = true;
-
   /*!
     @brief Object point coordindates array.
 
@@ -1328,20 +1180,8 @@ private:
   */
   BoxArray m_objectPartitionBbs;
 
-  std::unique_ptr<SeqBVHTree> m_bvh_seq;
-
-#ifdef AXOM_RUNTIME_POLICY_USE_OPENMP
-  std::unique_ptr<OmpBVHTree> m_bvh_omp;
-#endif
-
-#ifdef AXOM_RUNTIME_POLICY_USE_CUDA
-  std::unique_ptr<CudaBVHTree> m_bvh_cuda;
-#endif
-
-#ifdef AXOM_RUNTIME_POLICY_USE_HIP
-  std::unique_ptr<HipBVHTree> m_bvh_hip;
-#endif
-};  // DistributedClosestPointImpl
+  std::unique_ptr<BVHTreeType> m_bvh;
+};  // DistributedClosestPointExec
 
 }  // namespace internal
 

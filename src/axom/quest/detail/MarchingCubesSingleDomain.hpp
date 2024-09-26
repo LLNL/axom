@@ -108,6 +108,15 @@ public:
     if(m_impl) m_impl->setContourValue(m_contourVal);
   }
 
+  void setMaskValue(double maskVal)
+  {
+    m_maskVal = maskVal;
+    if(m_impl)
+    {
+      m_impl->setMaskValue(m_maskVal);
+    }
+  }
+
   // Methods trivially delegated to implementation.
   void markCrossings() { m_impl->markCrossings(); }
   void scanCrossings() { m_impl->scanCrossings(); }
@@ -155,6 +164,7 @@ public:
 
     virtual void setFunctionField(const std::string &fcnFieldName) = 0;
     virtual void setContourValue(double contourVal) = 0;
+    virtual void setMaskValue(int maskVal) = 0;
 
     virtual void setDataParallelism(MarchingCubesDataParallelism dataPar) = 0;
 
@@ -194,6 +204,7 @@ public:
       MarchingCubesDataParallelism::byPolicy;
 
     double m_contourVal = 0.0;
+    int m_maskVal = 1;
     axom::ArrayView<axom::IndexType, 2> m_facetNodeIds;
     axom::ArrayView<double, 2> m_facetNodeCoords;
     axom::ArrayView<IndexType> m_facetParentIds;
@@ -231,6 +242,7 @@ private:
   std::string m_maskPath;
 
   double m_contourVal = 0.0;
+  int m_maskVal = 1;
 
   std::unique_ptr<ImplBase> m_impl;
 

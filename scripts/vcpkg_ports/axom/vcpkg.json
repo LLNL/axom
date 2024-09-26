@@ -9,8 +9,7 @@
     "lua",
     "mfem",
     "openmp",
-    "raja",
-    "umpire"
+    "raja"
   ],
   "features": {
     "conduit": {

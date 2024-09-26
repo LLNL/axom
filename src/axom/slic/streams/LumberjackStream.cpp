@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "axom/core/Macros.hpp"
+#include "axom/core/utilities/StringUtilities.hpp"
 
 #include "axom/lumberjack/BinaryTreeCommunicator.hpp"
 #include "axom/lumberjack/Lumberjack.hpp"
@@ -22,7 +23,10 @@ LumberjackStream::LumberjackStream(std::ostream* stream,
                                    MPI_Comm comm,
                                    int ranksLimit)
   : m_isLJOwnedBySLIC(false)
+  , m_isOstreamOwnedBySLIC(false)
   , m_stream(stream)
+  , m_file_name()
+  , m_opened(true)
 {
   this->initializeLumberjack(comm, ranksLimit);
 }
@@ -33,7 +37,10 @@ LumberjackStream::LumberjackStream(std::ostream* stream,
                                    int ranksLimit,
                                    const std::string& format)
   : m_isLJOwnedBySLIC(false)
+  , m_isOstreamOwnedBySLIC(false)
   , m_stream(stream)
+  , m_file_name()
+  , m_opened(true)
 {
   this->initializeLumberjack(comm, ranksLimit);
   this->setFormatString(format);
@@ -44,7 +51,10 @@ LumberjackStream::LumberjackStream(std::ostream* stream,
                                    axom::lumberjack::Lumberjack* lj)
   : m_lj(lj)
   , m_isLJOwnedBySLIC(false)
+  , m_isOstreamOwnedBySLIC(false)
   , m_stream(stream)
+  , m_file_name()
+  , m_opened(true)
 { }
 
 //------------------------------------------------------------------------------
@@ -53,9 +63,101 @@ LumberjackStream::LumberjackStream(std::ostream* stream,
                                    const std::string& format)
   : m_lj(lj)
   , m_isLJOwnedBySLIC(false)
+  , m_isOstreamOwnedBySLIC(false)
   , m_stream(stream)
+  , m_file_name()
+  , m_opened(true)
 {
   this->setFormatString(format);
+}
+
+//------------------------------------------------------------------------------
+LumberjackStream::LumberjackStream(const std::string stream,
+                                   MPI_Comm comm,
+                                   int ranksLimit)
+{
+  this->initializeLumberjack(comm, ranksLimit);
+
+  if(stream == "cout")
+  {
+    m_isOstreamOwnedBySLIC = false;
+    m_stream = &std::cout;
+    m_file_name = std::string();
+    m_opened = true;
+  }
+  else if(stream == "cerr")
+  {
+    m_isOstreamOwnedBySLIC = false;
+    m_stream = &std::cerr;
+    m_file_name = std::string();
+    m_opened = true;
+  }
+  else
+  {
+    m_isOstreamOwnedBySLIC = true;
+    m_stream = new std::ofstream();
+    m_file_name = stream;
+    m_opened = false;
+  }
+}
+
+//------------------------------------------------------------------------------
+LumberjackStream::LumberjackStream(const std::string stream,
+                                   MPI_Comm comm,
+                                   int ranksLimit,
+                                   const std::string& format)
+  : LumberjackStream::LumberjackStream(stream, comm, ranksLimit)
+{
+  // Fix newline and tab characters if needed
+  std::string format_fixed = axom::utilities::string::replaceAllInstances(
+    axom::utilities::string::replaceAllInstances(format, "\\n", "\n"),
+    "\\t",
+    "\t");
+  this->setFormatString(format_fixed);
+}
+
+//------------------------------------------------------------------------------
+LumberjackStream::LumberjackStream(const std::string stream,
+                                   axom::lumberjack::Lumberjack* lj)
+{
+  m_lj = lj;
+  m_isLJOwnedBySLIC = false;
+
+  if(stream == "cout")
+  {
+    m_isOstreamOwnedBySLIC = false;
+    m_stream = &std::cout;
+    m_file_name = std::string();
+    m_opened = true;
+  }
+  else if(stream == "cerr")
+  {
+    m_isOstreamOwnedBySLIC = false;
+    m_stream = &std::cerr;
+    m_file_name = std::string();
+    m_opened = true;
+  }
+  else
+  {
+    m_isOstreamOwnedBySLIC = true;
+    m_stream = new std::ofstream();
+    m_file_name = stream;
+    m_opened = false;
+  }
+}
+
+//------------------------------------------------------------------------------
+LumberjackStream::LumberjackStream(const std::string stream,
+                                   axom::lumberjack::Lumberjack* lj,
+                                   const std::string& format)
+  : LumberjackStream::LumberjackStream(stream, lj)
+{
+  // Fix newline and tab characters if needed
+  std::string format_fixed = axom::utilities::string::replaceAllInstances(
+    axom::utilities::string::replaceAllInstances(format, "\\n", "\n"),
+    "\\t",
+    "\t");
+  this->setFormatString(format_fixed);
 }
 
 //------------------------------------------------------------------------------
@@ -64,6 +166,12 @@ LumberjackStream::~LumberjackStream()
   if(m_isLJOwnedBySLIC)
   {
     this->finalizeLumberjack();
+  }
+
+  if(m_isOstreamOwnedBySLIC)
+  {
+    delete m_stream;
+    m_stream = static_cast<std::ostream*>(nullptr);
   }
 }
 
@@ -139,22 +247,32 @@ void LumberjackStream::write(bool local)
 
   if(m_lj->isOutputNode() || local)
   {
-    std::vector<axom::lumberjack::Message*> messages = m_lj->getMessages();
-
-    const int nmessages = static_cast<int>(messages.size());
-    std::string rankString;
-    for(int i = 0; i < nmessages; ++i)
+    for(const auto* curr_message : m_lj->getMessages())
     {
-      rankString = std::to_string(messages[i]->count()) + ": " +
-        messages[i]->stringOfRanks();
+      if(curr_message == nullptr)
+      {
+        continue;
+      }
+
+      if(m_isOstreamOwnedBySLIC && !m_opened)
+      {
+        std::ofstream* ofs = dynamic_cast<std::ofstream*>(m_stream);
+        if(ofs != nullptr)
+        {
+          ofs->open(m_file_name);
+          m_opened = true;
+        }
+      }
+
       (*m_stream) << this->getFormatedMessage(
         message::getLevelAsString(
-          static_cast<message::Level>(messages[i]->level())),
-        messages[i]->text(),
-        messages[i]->tag(),
-        rankString,
-        messages[i]->fileName(),
-        messages[i]->lineNumber());
+          static_cast<message::Level>(curr_message->level())),
+        curr_message->text(),
+        curr_message->tag(),
+        curr_message->stringOfRanks(),
+        std::to_string(curr_message->count()),
+        curr_message->fileName(),
+        curr_message->lineNumber());
     }
 
     m_stream->flush();

@@ -13,6 +13,7 @@
 #define AXOM_QUEST_INOUT_OCTREE__HPP_
 
 #include "axom/core.hpp"
+#include "axom/core/NumericLimits.hpp"
 #include "axom/slic.hpp"
 #include "axom/slam.hpp"
 #include "axom/primal.hpp"
@@ -28,7 +29,6 @@
 
 #include <vector>
 #include <iterator>
-#include <limits>
 #include <sstream>
 #include <unordered_map>
 
@@ -436,14 +436,14 @@ namespace
 inline std::ostream& operator<<(std::ostream& os,
                                 const InOutOctree<3>::CellVertIndices& tvInd)
 {
-  os << fmt::format("[{}]", fmt::join(tvInd, ","));
+  os << axom::fmt::format("[{}]", fmt::join(tvInd, ","));
   return os;
 }
 
 inline std::ostream& operator<<(std::ostream& os,
                                 const InOutOctree<3>::CellIndexSet& tSet)
 {
-  os << fmt::format("[{}]", fmt::join(tSet, ","));
+  os << axom::fmt::format("[{}]", fmt::join(tSet, ","));
   return os;
 }
 
@@ -456,78 +456,115 @@ void InOutOctree<DIM>::generateIndex()
   using Timer = axom::utilities::Timer;
 
   // Loop through mesh vertices
-  SLIC_INFO(
-    fmt::format("  Generating InOutOctree over surface mesh with {} vertices "
-                "and {} elements.",
-                m_meshWrapper.numMeshVertices(),
-                m_meshWrapper.numMeshCells()));
+  SLIC_INFO(axom::fmt::format(axom::utilities::locale(),
+                              "  Generating InOutOctree over surface mesh with "
+                              "{:L} vertices and {:L} elements.",
+                              m_meshWrapper.numMeshVertices(),
+                              m_meshWrapper.numMeshCells()));
 
   Timer timer;
+  AXOM_ANNOTATE_SCOPE("InOutOctree::generateIndex");
 
   // STEP 1 -- Add mesh vertices to octree
-  timer.start();
-  int numMeshVerts = m_meshWrapper.numMeshVertices();
-  for(int idx = 0; idx < numMeshVerts; ++idx)
   {
-    insertVertex(idx);
+    AXOM_ANNOTATE_SCOPE("insert vertices");
+    timer.start();
+    int numMeshVerts = m_meshWrapper.numMeshVertices();
+    for(int idx = 0; idx < numMeshVerts; ++idx)
+    {
+      insertVertex(idx);
+    }
+    timer.stop();
+    m_generationState = INOUTOCTREE_VERTICES_INSERTED;
   }
-  timer.stop();
-  m_generationState = INOUTOCTREE_VERTICES_INSERTED;
-  SLIC_INFO(
-    fmt::format("\t--Inserting vertices took {} seconds.", timer.elapsed()));
+  SLIC_INFO(axom::fmt::format(axom::utilities::locale(),
+                              "\t--Inserting vertices took {:.3Lf} seconds.",
+                              timer.elapsed()));
 
   // STEP 1(b) -- Update the mesh vertices and cells with after vertex welding from octree
-  timer.start();
-  updateSurfaceMeshVertices();
-  timer.stop();
-  m_generationState = INOUTOCTREE_MESH_REORDERED;
-
-  SLIC_INFO("\t--Updating mesh took " << timer.elapsed() << " seconds.");
+  {
+    AXOM_ANNOTATE_SCOPE("update surface mesh vertices");
+    timer.start();
+    updateSurfaceMeshVertices();
+    timer.stop();
+    m_generationState = INOUTOCTREE_MESH_REORDERED;
+  }
+  SLIC_INFO(axom::fmt::format(axom::utilities::locale(),
+                              "\t--Updating mesh took {:.3Lf} seconds.",
+                              timer.elapsed()));
   SLIC_INFO(
-    fmt::format("  After inserting vertices, reindexed mesh has {} vertices "
-                "and {} cells.",
-                m_meshWrapper.numMeshVertices(),
-                m_meshWrapper.numMeshCells()));
+    axom::fmt::format(axom::utilities::locale(),
+                      "  After inserting vertices, reindexed mesh has {:L} "
+                      "vertices and {:L} cells.",
+                      m_meshWrapper.numMeshVertices(),
+                      m_meshWrapper.numMeshCells()));
 
 #ifdef DUMP_OCTREE_INFO
   // -- Print some stats about the octree
   SLIC_INFO("** Octree stats after inserting vertices");
-  dumpSurfaceMeshVTK("surfaceMesh");
-  dumpOctreeMeshVTK("prOctree");
-  printOctreeStats();
+  {
+    AXOM_ANNOTATE_SCOPE("dump stats after inserting vertices");
+    dumpSurfaceMeshVTK("surfaceMesh");
+    dumpOctreeMeshVTK("prOctree");
+    printOctreeStats();
+  }
 #endif
-  checkValid();
+  {
+    AXOM_ANNOTATE_SCOPE("validate after inserting vertices");
+    checkValid();
+  }
 
   // STEP 2 -- Add mesh cells (segments in 2D; triangles in 3D) to octree
-  timer.start();
-  insertMeshCells();
-  timer.stop();
-  m_generationState = INOUTOCTREE_ELEMENTS_INSERTED;
-  SLIC_INFO("\t--Inserting cells took " << timer.elapsed() << " seconds.");
+  {
+    AXOM_ANNOTATE_SCOPE("insert mesh cells");
+    timer.start();
+    insertMeshCells();
+    timer.stop();
+    m_generationState = INOUTOCTREE_ELEMENTS_INSERTED;
+  }
+  SLIC_INFO(axom::fmt::format(axom::utilities::locale(),
+                              "\t--Inserting cells took {:.3Lf} seconds.",
+                              timer.elapsed()));
 
   // STEP 3 -- Color the blocks of the octree
   // -- Black (in), White(out), Gray(Intersects surface)
-  timer.start();
-  colorOctreeLeaves();
+  {
+    AXOM_ANNOTATE_SCOPE("color octree leaves");
+    timer.start();
+    colorOctreeLeaves();
 
-  timer.stop();
-  m_generationState = INOUTOCTREE_LEAVES_COLORED;
-  SLIC_INFO("\t--Coloring octree leaves took " << timer.elapsed() << " seconds.");
+    timer.stop();
+    m_generationState = INOUTOCTREE_LEAVES_COLORED;
+  }
+  SLIC_INFO(
+    axom::fmt::format(axom::utilities::locale(),
+                      "\t--Coloring octree leaves took {:.3Lf} seconds.",
+                      timer.elapsed()));
 
 // -- Print some stats about the octree
 #ifdef DUMP_OCTREE_INFO
   SLIC_INFO("** Octree stats after inserting cells");
-  dumpOctreeMeshVTK("pmOctree");
-  dumpDifferentColoredNeighborsMeshVTK("differentNeighbors");
-  printOctreeStats();
+  {
+    AXOM_ANNOTATE_SCOPE("dump stats after inserting cells");
+    dumpOctreeMeshVTK("pmOctree");
+    dumpDifferentColoredNeighborsMeshVTK("differentNeighbors");
+    printOctreeStats();
+  }
 #endif
-  checkValid();
-
+  {
+    AXOM_ANNOTATE_SCOPE("validate after inserting cells");
+    checkValid();
+  }
   // CLEANUP -- Finally, fix up the surface mesh after octree operations
-  timer.start();
-  m_meshWrapper.regenerateSurfaceMesh();
-  timer.stop();
-  SLIC_INFO("\t--Regenerating the mesh took " << timer.elapsed() << " seconds.");
+  {
+    AXOM_ANNOTATE_SCOPE("regenerate surface mesh");
+    timer.start();
+    m_meshWrapper.regenerateSurfaceMesh();
+    timer.stop();
+  }
+  SLIC_INFO(axom::fmt::format(axom::utilities::locale(),
+                              "\t--Regenerating the mesh took {:.3Lf} seconds.",
+                              timer.elapsed()));
 
   SLIC_INFO("  Finished generating the InOutOctree.");
 }
@@ -542,13 +579,14 @@ void InOutOctree<DIM>::insertVertex(VertexIndex idx, int startingLevel)
 
   QUEST_OCTREE_DEBUG_LOG_IF(
     idx == DEBUG_VERT_IDX,
-    fmt::format("\t -- inserting pt {} with index {}. "
-                "Looking at block {} w/ blockBB {} indexing leaf vertex {}",
-                pt,
-                idx,
-                axom::fmt::streamed(block),
-                this->blockBoundingBox(block),
-                blkData.dataIndex()));
+    axom::fmt::format(
+      "\t -- inserting pt {} with index {}. "
+      "Looking at block {} w/ blockBB {} indexing leaf vertex {}",
+      pt,
+      idx,
+      axom::fmt::streamed(block),
+      this->blockBoundingBox(block),
+      blkData.dataIndex()));
 
   if(!blkData.hasData())
   {
@@ -577,10 +615,10 @@ void InOutOctree<DIM>::insertVertex(VertexIndex idx, int startingLevel)
 
   QUEST_OCTREE_DEBUG_LOG_IF(
     blkData.dataIndex() == DEBUG_VERT_IDX,
-    fmt::format("-- vertex {} is indexed in block {}. Leaf vertex is {}",
-                idx,
-                axom::fmt::streamed(block),
-                blkData.dataIndex()));
+    axom::fmt::format("-- vertex {} is indexed in block {}. Leaf vertex is {}",
+                      idx,
+                      axom::fmt::streamed(block),
+                      blkData.dataIndex()));
 }
 
 template <int DIM>
@@ -656,14 +694,14 @@ void InOutOctree<DIM>::insertMeshCells()
 
       QUEST_OCTREE_DEBUG_LOG_IF(
         DEBUG_BLOCK_1 == blk || DEBUG_BLOCK_2 == blk,
-        fmt::format("Attempting to insert cells from block {}."
-                    "\n\tDynamic data: {}"
-                    "\n\tBlock data: {}"
-                    "\n\tAbout to finalize? {}",
-                    axom::fmt::streamed(blk),
-                    dynamicLeafData,
-                    blkData,
-                    (!isInternal && !isLeafThatMustRefine ? " yes" : "no")));
+        axom::fmt::format("Attempting to insert cells from block {}."
+                          "\n\tDynamic data: {}"
+                          "\n\tBlock data: {}"
+                          "\n\tAbout to finalize? {}",
+                          axom::fmt::streamed(blk),
+                          dynamicLeafData,
+                          blkData,
+                          (!isInternal && !isLeafThatMustRefine ? " yes" : "no")));
 
       // Leaf blocks that don't refine are 'finalized'
       // -- add  them to the current level's relations
@@ -685,12 +723,12 @@ void InOutOctree<DIM>::insertMeshCells()
 
           QUEST_OCTREE_DEBUG_LOG_IF(
             DEBUG_BLOCK_1 == blk || DEBUG_BLOCK_2 == blk,
-            fmt::format("[Added block {} into tree as a gray leaf]."
-                        "\n\tDynamic data: {}"
-                        "\n\tBlock data: {}",
-                        axom::fmt::streamed(blk),
-                        dynamicLeafData,
-                        blkData));
+            axom::fmt::format("[Added block {} into tree as a gray leaf]."
+                              "\n\tDynamic data: {}"
+                              "\n\tBlock data: {}",
+                              axom::fmt::streamed(blk),
+                              dynamicLeafData,
+                              blkData));
         }
       }
       else
@@ -720,7 +758,7 @@ void InOutOctree<DIM>::insertMeshCells()
 
         SLIC_ASSERT_MSG(
           this->isInternal(blk),
-          fmt::format(
+          axom::fmt::format(
             "Block {} was refined, so it should be marked as internal.",
             fmt::streamed(blk)));
 
@@ -782,16 +820,16 @@ void InOutOctree<DIM>::insertMeshCells()
             QUEST_OCTREE_DEBUG_LOG_IF(
               DEBUG_BLOCK_1 == childBlk[j] || DEBUG_BLOCK_2 == childBlk[j],
               //&& tIdx == DEBUG_TRI_IDX
-              fmt::format("Attempting to insert cell {} @ {} w/ BB {}"
-                          "\n\t into block {} w/ BB {} and data {} "
-                          "\n\tShould add? {}",
-                          tIdx,
-                          spaceTri,
-                          tBB,
-                          axom::fmt::streamed(childBlk[j]),
-                          childBB[j],
-                          *childDataPtr[j],
-                          (shouldAddCell ? " yes" : "no")));
+              axom::fmt::format("Attempting to insert cell {} @ {} w/ BB {}"
+                                "\n\t into block {} w/ BB {} and data {} "
+                                "\n\tShould add? {}",
+                                tIdx,
+                                spaceTri,
+                                tBB,
+                                axom::fmt::streamed(childBlk[j]),
+                                childBB[j],
+                                *childDataPtr[j],
+                                (shouldAddCell ? " yes" : "no")));
 
             if(shouldAddCell)
             {
@@ -813,7 +851,7 @@ void InOutOctree<DIM>::insertMeshCells()
               QUEST_OCTREE_DEBUG_LOG_IF(
                 DEBUG_BLOCK_1 == childBlk[j] || DEBUG_BLOCK_2 == childBlk[j],
                 //&& tIdx == DEBUG_TRI_IDX
-                fmt::format(
+                axom::fmt::format(
                   "Added cell {} @ {} with verts [{}]"
                   "\n\tinto block {} with data {}.",
                   tIdx,
@@ -917,20 +955,21 @@ void InOutOctree<DIM>::colorOctreeLeaves()
 
       SLIC_ASSERT_MSG(
         static_cast<int>(uncoloredBlocks.size()) < prevCount,
-        fmt::format("Problem coloring leaf blocks at level {}. "
-                    "There are {} blocks that are still not colored. "
-                    "First problem block is: {}",
-                    lev,
-                    uncoloredBlocks.size(),
-                    fmt::streamed(BlockIndex(uncoloredBlocks[0], lev))));
+        axom::fmt::format("Problem coloring leaf blocks at level {}. "
+                          "There are {} blocks that are still not colored. "
+                          "First problem block is: {}",
+                          lev,
+                          uncoloredBlocks.size(),
+                          fmt::streamed(BlockIndex(uncoloredBlocks[0], lev))));
     }
 
     if(!levelLeafMap.empty())
     {
       checkAllLeavesColoredAtLevel(lev);
-      SLIC_DEBUG(fmt::format("\tColoring level {} took {} seconds.",
-                             lev,
-                             levelTimer.elapsed()));
+      SLIC_DEBUG(axom::fmt::format(axom::utilities::locale(),
+                                   "\tColoring level {} took {:.3Lf} seconds.",
+                                   lev,
+                                   levelTimer.elapsed()));
     }
   }
 }
@@ -941,10 +980,11 @@ bool InOutOctree<DIM>::colorLeafAndNeighbors(const BlockIndex& leafBlk,
 {
   bool isColored = leafData.isColored();
 
-  QUEST_OCTREE_DEBUG_LOG_IF(leafBlk == DEBUG_BLOCK_1 || leafBlk == DEBUG_BLOCK_2,
-                            fmt::format("Trying to color {} with data: {}",
-                                        axom::fmt::streamed(leafBlk),
-                                        leafData));
+  QUEST_OCTREE_DEBUG_LOG_IF(
+    leafBlk == DEBUG_BLOCK_1 || leafBlk == DEBUG_BLOCK_2,
+    axom::fmt::format("Trying to color {} with data: {}",
+                      axom::fmt::streamed(leafBlk),
+                      leafData));
 
   if(!isColored)
   {
@@ -959,18 +999,18 @@ bool InOutOctree<DIM>::colorLeafAndNeighbors(const BlockIndex& leafBlk,
         QUEST_OCTREE_DEBUG_LOG_IF(
           DEBUG_BLOCK_1 == neighborBlk || DEBUG_BLOCK_2 == neighborBlk ||
             DEBUG_BLOCK_1 == leafBlk || DEBUG_BLOCK_2 == leafBlk,
-          fmt::format("Spreading color to block {} with data {}, "
-                      "bounding box {} w/ midpoint {}"
-                      "\n\t\t from block {} with data {}, "
-                      "bounding box {} w/ midpoint {}.",
-                      axom::fmt::streamed(leafBlk),
-                      leafData,
-                      this->blockBoundingBox(leafBlk),
-                      this->blockBoundingBox(leafBlk).getCentroid(),
-                      axom::fmt::streamed(neighborBlk),
-                      neighborData,
-                      this->blockBoundingBox(neighborBlk),
-                      this->blockBoundingBox(neighborBlk).getCentroid()));
+          axom::fmt::format("Spreading color to block {} with data {}, "
+                            "bounding box {} w/ midpoint {}"
+                            "\n\t\t from block {} with data {}, "
+                            "bounding box {} w/ midpoint {}.",
+                            axom::fmt::streamed(leafBlk),
+                            leafData,
+                            this->blockBoundingBox(leafBlk),
+                            this->blockBoundingBox(leafBlk).getCentroid(),
+                            axom::fmt::streamed(neighborBlk),
+                            neighborData,
+                            this->blockBoundingBox(neighborBlk),
+                            this->blockBoundingBox(neighborBlk).getCentroid()));
 
         switch(neighborData.color())
         {
@@ -1004,9 +1044,9 @@ bool InOutOctree<DIM>::colorLeafAndNeighbors(const BlockIndex& leafBlk,
         QUEST_OCTREE_DEBUG_LOG_IF(
           isColored &&
             (DEBUG_BLOCK_1 == neighborBlk || DEBUG_BLOCK_2 == neighborBlk),
-          fmt::format("Leaf block was colored -- {} now has data {}",
-                      axom::fmt::streamed(leafBlk),
-                      leafData));
+          axom::fmt::format("Leaf block was colored -- {} now has data {}",
+                            axom::fmt::streamed(leafBlk),
+                            leafData));
       }
     }
   }
@@ -1025,18 +1065,18 @@ bool InOutOctree<DIM>::colorLeafAndNeighbors(const BlockIndex& leafBlk,
           QUEST_OCTREE_DEBUG_LOG_IF(
             DEBUG_BLOCK_1 == neighborBlk || DEBUG_BLOCK_2 == neighborBlk ||
               DEBUG_BLOCK_1 == leafBlk || DEBUG_BLOCK_2 == leafBlk,
-            fmt::format("Spreading color from block {} with data {}, "
-                        "bounding box {} w/ midpoint {}"
-                        "\n\t\t to block {} with data {}, "
-                        "bounding box {} w/ midpoint {}.",
-                        axom::fmt::streamed(leafBlk),
-                        leafData,
-                        this->blockBoundingBox(leafBlk),
-                        this->blockBoundingBox(leafBlk).getCentroid(),
-                        axom::fmt::streamed(neighborBlk),
-                        neighborData,
-                        this->blockBoundingBox(neighborBlk),
-                        this->blockBoundingBox(neighborBlk).getCentroid()));
+            axom::fmt::format("Spreading color from block {} with data {}, "
+                              "bounding box {} w/ midpoint {}"
+                              "\n\t\t to block {} with data {}, "
+                              "bounding box {} w/ midpoint {}.",
+                              axom::fmt::streamed(leafBlk),
+                              leafData,
+                              this->blockBoundingBox(leafBlk),
+                              this->blockBoundingBox(leafBlk).getCentroid(),
+                              axom::fmt::streamed(neighborBlk),
+                              neighborData,
+                              this->blockBoundingBox(neighborBlk),
+                              this->blockBoundingBox(neighborBlk).getCentroid()));
 
           switch(leafData.color())
           {
@@ -1070,9 +1110,10 @@ bool InOutOctree<DIM>::colorLeafAndNeighbors(const BlockIndex& leafBlk,
           QUEST_OCTREE_DEBUG_LOG_IF(
             neighborData.isColored() &&
               (DEBUG_BLOCK_1 == neighborBlk || DEBUG_BLOCK_2 == neighborBlk),
-            fmt::format("Neighbor block was colored -- {} now has data {}",
-                        axom::fmt::streamed(neighborBlk),
-                        neighborData));
+            axom::fmt::format(
+              "Neighbor block was colored -- {} now has data {}",
+              axom::fmt::streamed(neighborBlk),
+              neighborData));
         }
       }
     }
@@ -1162,19 +1203,20 @@ typename std::enable_if<TDIM == 3, bool>::type InOutOctree<DIM>::withinGrayBlock
     /// intersection. Note: We have to check all triangles to ensure that
     /// there is not a closer triangle than tri along this direction.
     CellIndex tIdx = MeshWrapper<DIM>::NO_CELL;
-    double minRayParam = std::numeric_limits<double>::infinity();
+    double minRayParam = axom::numeric_limits<double>::infinity();
     SpaceRay ray(queryPt, SpaceVector(queryPt, triPt));
 
     QUEST_OCTREE_DEBUG_LOG_IF(
       DEBUG_BLOCK_1 == leafBlk || DEBUG_BLOCK_2 == leafBlk,
-      fmt::format("Checking if pt {} is within block {} with data {}, "
-                  "ray is {}, triangle point is {} on triangle with index {}.",
-                  queryPt,
-                  axom::fmt::streamed(leafBlk),
-                  leafData,
-                  ray,
-                  triPt,
-                  idx));
+      axom::fmt::format(
+        "Checking if pt {} is within block {} with data {}, "
+        "ray is {}, triangle point is {} on triangle with index {}.",
+        queryPt,
+        axom::fmt::streamed(leafBlk),
+        leafData,
+        ray,
+        triPt,
+        idx));
 
     double rayParam = 0;
     if(primal::intersect(tri, ray, rayParam))
@@ -1184,11 +1226,11 @@ typename std::enable_if<TDIM == 3, bool>::type InOutOctree<DIM>::withinGrayBlock
 
       QUEST_OCTREE_DEBUG_LOG_IF(
         DEBUG_BLOCK_1 == leafBlk || DEBUG_BLOCK_2 == leafBlk,
-        fmt::format("... intersection for triangle w/ index {} at ray "
-                    "parameter {} at point {}",
-                    tIdx,
-                    minRayParam,
-                    ray.at(minRayParam)));
+        axom::fmt::format("... intersection for triangle w/ index {} at ray "
+                          "parameter {} at point {}",
+                          tIdx,
+                          minRayParam,
+                          ray.at(minRayParam)));
     }
 
     for(int j = 0; j < numTris; ++j)
@@ -1208,11 +1250,12 @@ typename std::enable_if<TDIM == 3, bool>::type InOutOctree<DIM>::withinGrayBlock
 
           QUEST_OCTREE_DEBUG_LOG_IF(
             DEBUG_BLOCK_1 == leafBlk || DEBUG_BLOCK_2 == leafBlk,
-            fmt::format("... intersection for triangle w/ index {} at ray "
-                        "parameter {} at point {}",
-                        tIdx,
-                        minRayParam,
-                        ray.at(minRayParam)));
+            axom::fmt::format(
+              "... intersection for triangle w/ index {} at ray "
+              "parameter {} at point {}",
+              tIdx,
+              minRayParam,
+              ray.at(minRayParam)));
         }
       }
     }
@@ -1277,20 +1320,21 @@ typename std::enable_if<TDIM == 2, bool>::type InOutOctree<DIM>::withinGrayBlock
     // Using a ray from query pt to point on this segment
     // Find closest intersection to surface within cell inside this bounding box
     CellIndex tIdx = MeshWrapper<DIM>::NO_CELL;
-    double minRayParam = std::numeric_limits<double>::infinity();
-    double minSegParam = std::numeric_limits<double>::infinity();
+    double minRayParam = axom::numeric_limits<double>::infinity();
+    double minSegParam = axom::numeric_limits<double>::infinity();
     SpaceRay ray(queryPt, SpaceVector(queryPt, segmentPt));
 
     QUEST_OCTREE_DEBUG_LOG_IF(
       DEBUG_BLOCK_1 == leafBlk || DEBUG_BLOCK_2 == leafBlk,
-      fmt::format("Checking if pt {} is within block {} with data {}, "
-                  "ray is {}, segment point is {} on segment with index {}.",
-                  queryPt,
-                  axom::fmt::streamed(leafBlk),
-                  leafData,
-                  ray,
-                  segmentPt,
-                  idx));
+      axom::fmt::format(
+        "Checking if pt {} is within block {} with data {}, "
+        "ray is {}, segment point is {} on segment with index {}.",
+        queryPt,
+        axom::fmt::streamed(leafBlk),
+        leafData,
+        ray,
+        segmentPt,
+        idx));
 
     double rayParam = 0;
     double segParam = 0;
@@ -1302,13 +1346,13 @@ typename std::enable_if<TDIM == 2, bool>::type InOutOctree<DIM>::withinGrayBlock
 
       QUEST_OCTREE_DEBUG_LOG_IF(
         DEBUG_BLOCK_1 == leafBlk || DEBUG_BLOCK_2 == leafBlk,
-        fmt::format("... intersection for segment w/ index {} "
-                    "at ray parameter {} and segment parameter {} "
-                    "is at point {}",
-                    tIdx,
-                    minRayParam,
-                    minSegParam,
-                    ray.at(minRayParam)));
+        axom::fmt::format("... intersection for segment w/ index {} "
+                          "at ray parameter {} and segment parameter {} "
+                          "is at point {}",
+                          tIdx,
+                          minRayParam,
+                          minSegParam,
+                          ray.at(minRayParam)));
     }
 
     for(int j = 0; j < numSegments; ++j)
@@ -1332,13 +1376,13 @@ typename std::enable_if<TDIM == 2, bool>::type InOutOctree<DIM>::withinGrayBlock
 
           QUEST_OCTREE_DEBUG_LOG_IF(
             DEBUG_BLOCK_1 == leafBlk || DEBUG_BLOCK_2 == leafBlk,
-            fmt::format("... intersection for segment w/ index {} "
-                        "at ray parameter {} and segment parameter {} "
-                        "is at point {}",
-                        tIdx,
-                        minRayParam,
-                        minSegParam,
-                        ray.at(minRayParam)));
+            axom::fmt::format("... intersection for segment w/ index {} "
+                              "at ray parameter {} and segment parameter {} "
+                              "is at point {}",
+                              tIdx,
+                              minRayParam,
+                              minSegParam,
+                              ray.at(minRayParam)));
         }
       }
     }
@@ -1353,10 +1397,10 @@ typename std::enable_if<TDIM == 2, bool>::type InOutOctree<DIM>::withinGrayBlock
       m_meshWrapper.surfaceNormal(tIdx, minSegParam, segmentSet);
 
     QUEST_OCTREE_DEBUG_LOG_IF(DEBUG_BLOCK_1 == leafBlk || DEBUG_BLOCK_2 == leafBlk,
-                              fmt::format("... normal {}, ray {}, dot {}",
-                                          normal,
-                                          ray,
-                                          normal.dot(ray.direction())));
+                              axom::fmt::format("... normal {}, ray {}, dot {}",
+                                                normal,
+                                                ray,
+                                                normal.dot(ray.direction())));
 
     // Query point is inside when the dot product of the normal with ray is positive
     return normal.dot(ray.direction()) > 0.;
@@ -1506,10 +1550,11 @@ bool InOutOctree<DIM>::within(const SpacePt& pt) const
     case InOutBlockData::Undetermined:
       SLIC_ASSERT_MSG(
         false,
-        fmt::format("Error -- All leaf blocks must have a color. The color of "
-                    "leafBlock {} was 'Undetermined' when querying point {}",
-                    fmt::streamed(block),
-                    pt));
+        axom::fmt::format(
+          "Error -- All leaf blocks must have a color. The color of "
+          "leafBlock {} was 'Undetermined' when querying point {}",
+          fmt::streamed(block),
+          pt));
       break;
     }
   }
@@ -1567,7 +1612,7 @@ template <int DIM>
 void InOutOctree<DIM>::checkValid() const
 {
 #ifdef AXOM_DEBUG
-  SLIC_DEBUG(fmt::format(
+  SLIC_DEBUG(axom::fmt::format(
     "Inside InOutOctree::checkValid() to verify state of {} octree",
     (m_generationState >= INOUTOCTREE_ELEMENTS_INSERTED ? "PM" : "PR")));
 

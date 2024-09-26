@@ -6,9 +6,6 @@
 # Collection of tests for axom's built-in third party libraries
 #------------------------------------------------------------------------------
 
-# Create cmake targets for running the tests through axom's code checks
-axom_add_code_checks(PREFIX thirdparty_tests)
-
 #------------------------------------------------------------------------------
 # Smoke test for Umpire third party library
 #------------------------------------------------------------------------------
@@ -119,6 +116,42 @@ if (MFEM_FOUND)
 
     axom_add_test(NAME    mfem_smoke
                   COMMAND mfem_smoke_test)
+
+endif()
+
+#------------------------------------------------------------------------------
+# Smoke test for caliper and adiak third party library
+#------------------------------------------------------------------------------
+if ( CALIPER_FOUND )
+
+  set( caliper_smoke_dependencies caliper gtest )
+  blt_list_append( TO caliper_smoke_dependencies ELEMENTS mpi IF AXOM_ENABLE_MPI)
+  blt_list_append( TO caliper_smoke_dependencies ELEMENTS cuda_runtime IF AXOM_ENABLE_CUDA)
+
+  blt_add_executable( NAME caliper_smoke_test
+                      SOURCES caliper_smoke.cpp
+                      OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
+                      DEPENDS_ON ${caliper_smoke_dependencies}
+                      FOLDER axom/thirdparty/tests )
+
+  axom_add_test( NAME    caliper_smoke
+                 COMMAND caliper_smoke_test )
+
+endif()
+
+if ( ADIAK_FOUND )
+
+  set( adiak_smoke_dependencies adiak::adiak gtest )
+  blt_list_append( TO adiak_smoke_dependencies ELEMENTS mpi IF AXOM_ENABLE_MPI)
+
+  blt_add_executable( NAME adiak_smoke_test
+                      SOURCES adiak_smoke.cpp
+                      OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
+                      DEPENDS_ON ${adiak_smoke_dependencies}
+                      FOLDER axom/thirdparty/tests )
+
+  axom_add_test( NAME    adiak_smoke
+                 COMMAND adiak_smoke_test )
 
 endif()
 

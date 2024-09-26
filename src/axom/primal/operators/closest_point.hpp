@@ -15,6 +15,7 @@
 #define AXOM_PRIMAL_CLOSEST_POINT_HPP_
 
 #include "axom/primal/geometry/Point.hpp"
+#include "axom/primal/geometry/Segment.hpp"
 #include "axom/primal/geometry/Triangle.hpp"
 #include "axom/primal/geometry/Sphere.hpp"
 #include "axom/primal/geometry/OrientedBoundingBox.hpp"
@@ -23,6 +24,106 @@ namespace axom
 {
 namespace primal
 {
+/*!
+ * \brief Computes the closest point from a point, P, to a given segment.
+ *
+ * \param [in] P the query point
+ * \param [in] seg user-supplied segment
+ * \param [out] loc location along the line segment
+ * \param [in] EPS fuzz factor for equality comparisons
+ * \return cp the closest point from a point P and a segment
+ *
+ * \note loc \f$ \in [0, 1] \f% represents the fraction of the way from A to B,
+ *  with 0 corresponding to A and 1 corresponding to B.
+ */
+template <typename T, int NDIMS>
+AXOM_HOST_DEVICE inline Point<T, NDIMS> closest_point(const Point<T, NDIMS>& P,
+                                                      const Segment<T, NDIMS>& seg,
+                                                      T* loc,
+                                                      double EPS = PRIMAL_TINY)
+{
+  using PointType = Point<T, NDIMS>;
+  using VectorType = Vector<T, NDIMS>;
+
+  using detail::isGeq;
+  using detail::isLeq;
+
+  constexpr T ZERO {0.};
+  constexpr T ONE {1.};
+
+  const PointType& A = seg[0];
+  const PointType& B = seg[1];
+
+  const VectorType AB(A, B);
+
+  // Compute length of the projection of AP onto AB
+  T t = VectorType(A, P).dot(AB);
+
+  if(isLeq(t, ZERO, EPS))
+  {
+    if(loc)
+    {
+      *loc = ZERO;
+    }
+
+    return A;
+  }
+  else
+  {
+    const T squaredNormAB = AB.squared_norm();
+
+    if(isGeq(t, squaredNormAB, EPS))
+    {
+      if(loc)
+      {
+        *loc = ONE;
+      }
+
+      return B;
+    }
+    else if(utilities::isNearlyEqual(squaredNormAB, ZERO, EPS))
+    {
+      // Segment is degenerate (A and B are collocated),
+      // so we can pick either end point. We pick A.
+      if(loc)
+      {
+        *loc = ZERO;
+      }
+
+      return A;
+    }
+    else
+    {
+      // Normalize t
+      t /= squaredNormAB;
+
+      if(loc)
+      {
+        *loc = t;
+      }
+
+      return A + AB * t;
+    }
+  }
+}
+
+/*!
+ * \brief Computes the closest point from a point, P, to a given segment.
+ *
+ * \param [in] P the query point
+ * \param [in] seg user-supplied segment
+ * \param [in] EPS fuzz factor for equality comparisons
+ * \return cp the closest point from a point P and a segment
+ */
+template <typename T, int NDIMS>
+AXOM_HOST_DEVICE inline Point<T, NDIMS> closest_point(const Point<T, NDIMS>& P,
+                                                      const Segment<T, NDIMS>& seg,
+                                                      double EPS = PRIMAL_TINY)
+{
+  T* loc = nullptr;
+  return closest_point(P, seg, loc, EPS);
+}
+
 /*!
  * \brief Computes the closest point from a point, P, to a given triangle.
  *
@@ -62,7 +163,7 @@ template <typename T, int NDIMS>
 AXOM_HOST_DEVICE inline Point<T, NDIMS> closest_point(const Point<T, NDIMS>& P,
                                                       const Triangle<T, NDIMS>& tri,
                                                       int* loc = nullptr,
-                                                      double EPS = 1E-8)
+                                                      double EPS = PRIMAL_TINY)
 {
   using PointType = Point<T, NDIMS>;
   using VectorType = Vector<T, NDIMS>;
@@ -110,7 +211,8 @@ AXOM_HOST_DEVICE inline Point<T, NDIMS> closest_point(const Point<T, NDIMS>& P,
   //----------------------------------------------------------------------------
   // Check if P in edge region of AB
   const T vc = d1 * d4 - d3 * d2;
-  if(isLeq(vc, T(0), EPS) && isGeq(d1, T(0), EPS) && isLeq(d3, T(0), EPS))
+  if(isLeq(vc, T(0), EPS) && isGeq(d1, T(0), EPS) && isLeq(d3, T(0), EPS) &&
+     !utilities::isNearlyEqual(d1, d3, EPS))  // Additional check for degenerate triangles
   {
     const T v = d1 / (d1 - d3);
     const VectorType v_ab = ab * v;

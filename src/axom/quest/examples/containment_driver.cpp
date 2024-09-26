@@ -27,7 +27,6 @@
 #include <iostream>
 #include <limits>
 #include <fstream>
-#include <iomanip>  // for setprecision()
 
 namespace mint = axom::mint;
 namespace primal = axom::primal;
@@ -72,6 +71,7 @@ public:
 #ifdef AXOM_USE_C2C
   void loadContourMesh(const std::string& inputFile, int segmentsPerKnotSpan)
   {
+    AXOM_ANNOTATE_SCOPE("load c2c");
     quest::C2CReader reader;
     reader.setFileName(inputFile);
     reader.read();
@@ -94,6 +94,7 @@ public:
 
   void loadSTLMesh(const std::string& inputFile)
   {
+    AXOM_ANNOTATE_SCOPE("load stl");
     quest::STLReader reader;
     reader.setFileName(inputFile);
     reader.read();
@@ -110,6 +111,7 @@ public:
   /// Computes the bounding box of the surface mesh
   void computeBounds()
   {
+    AXOM_ANNOTATE_SCOPE("compute bounds");
     SLIC_ASSERT(m_surfaceMesh != nullptr);
 
     GeometricBoundingBox meshBB;
@@ -147,6 +149,7 @@ public:
 
   void initializeInOutOctree()
   {
+    AXOM_ANNOTATE_SCOPE("generate octree");
     m_octree = new InOutOctreeType(m_meshBB, m_surfaceMesh);
     m_octree->generateIndex();
   }
@@ -159,6 +162,9 @@ public:
                                     bool isBatched,
                                     bool shouldOutputMeshes)
   {
+    AXOM_ANNOTATE_SCOPE(
+      axom::fmt::format("test containment regular grid resolution {}", gridRes));
+
     const double* low = m_queryBB.getMin().data();
     const double* high = m_queryBB.getMax().data();
     mint::UniformMesh* umesh = (this->dimension() == 2)
@@ -189,16 +195,18 @@ public:
                          : batchedPointContainment3D(umesh, timer);
     }
 
-    SLIC_INFO(axom::fmt::format(
-      "\tQuerying {}^{} containment field took {} seconds (@ {} "
-      "queries per second)",
-      gridRes,
-      DIM,
-      timer.elapsed(),
-      nnodes / timer.elapsed()));
+    SLIC_INFO(
+      axom::fmt::format(axom::utilities::locale(),
+                        "\tQuerying {}^{} containment field took {:.3Lf} "
+                        "seconds (@ {:.0Lf} queries per second)",
+                        gridRes,
+                        DIM,
+                        timer.elapsed(),
+                        nnodes / timer.elapsed()));
 
     if(shouldOutputMeshes)
     {
+      AXOM_ANNOTATE_SCOPE("write vtk");
       std::string fname = axom::fmt::format("gridContainment_{}.vtk", gridRes);
       mint::write_vtk(umesh, fname);
     }
@@ -333,8 +341,10 @@ public:
   {
     SLIC_ASSERT(m_surfaceMesh != nullptr);
 
-    SLIC_INFO("Mesh has " << m_surfaceMesh->getNumberOfNodes() << " nodes and "
-                          << m_surfaceMesh->getNumberOfCells() << " cells.");
+    SLIC_INFO(axom::fmt::format(axom::utilities::locale(),
+                                "Mesh has {:L} nodes and {:L} cells.",
+                                m_surfaceMesh->getNumberOfNodes(),
+                                m_surfaceMesh->getNumberOfCells()));
     SLIC_INFO("Mesh bounding box: " << m_meshBB);
 
     SpacePt pt;
@@ -405,8 +415,10 @@ public:
 
     // Log the results
     const int nVerts = m_surfaceMesh->getNumberOfNodes();
-    SLIC_INFO(
-      axom::fmt::format("Mesh has {} vertices  and {} cells.", nVerts, nCells));
+    SLIC_INFO(axom::fmt::format(axom::utilities::locale(),
+                                "Mesh has {:L} vertices  and {:L} cells.",
+                                nVerts,
+                                nCells));
 
     if(dimension() == 3)
     {
@@ -485,6 +497,7 @@ public:
   int samplesPerKnotSpan {25};
   std::vector<double> queryBoxMins;
   std::vector<double> queryBoxMaxs;
+  std::string annotationMode {"none"};
 
 private:
   bool m_verboseOutput {false};
@@ -566,7 +579,16 @@ public:
       ->capture_default_str()
       ->check(axom::CLI::PositiveNumber);
 
-    app.get_formatter()->column_width(45);
+#ifdef AXOM_USE_CALIPER
+    app.add_option("--caliper", annotationMode)
+      ->description(
+        "caliper annotation mode. Valid options include 'none' and 'report'. "
+        "Use 'help' to see full list.")
+      ->capture_default_str()
+      ->check(axom::utilities::ValidCaliperMode);
+#endif
+
+    app.get_formatter()->column_width(48);
 
     // could throw an exception
     app.parse(argc, argv);
@@ -579,6 +601,8 @@ public:
 //------------------------------------------------------------------------------
 int main(int argc, char** argv)
 {
+  axom::utilities::raii::MPIWrapper mpi_raii_wrapper(argc, argv);
+
   axom::slic::SimpleLogger logger;
   // slic::debug::checksAreErrors = true;
 
@@ -595,14 +619,22 @@ int main(int argc, char** argv)
     return app.exit(e);
   }
 
+  axom::utilities::raii::AnnotationsWrapper annotations_raii_wrapper(
+    params.annotationMode);
+
+  AXOM_ANNOTATE_BEGIN("quest containment example");
+
   const bool is2D = params.isInput2D();
 
   ContainmentDriver<2> driver2D;
   ContainmentDriver<3> driver3D;
 
   /// Load mesh file
-  SLIC_INFO(axom::fmt::format("{:*^80}", " Loading the mesh "));
-  SLIC_INFO("Reading file: " << params.inputFile << "...");
+  SLIC_INFO(axom::fmt::format("{:-^80}", " Loading the mesh "));
+  SLIC_INFO(axom::fmt::format("Reading file: '{}'...", params.inputFile));
+
+  AXOM_ANNOTATE_METADATA("dimension", is2D ? 2 : 3, "");
+  AXOM_ANNOTATE_BEGIN("init");
 
   if(is2D)
   {
@@ -626,7 +658,7 @@ int main(int argc, char** argv)
   }
 
   /// Create octree over mesh's bounding box
-  SLIC_INFO(axom::fmt::format("{:*^80}", " Generating the octree "));
+  SLIC_INFO(axom::fmt::format("{:-^80}", " Generating the octree "));
   if(is2D)
   {
     driver2D.initializeInOutOctree();
@@ -642,8 +674,11 @@ int main(int argc, char** argv)
     mint::write_vtk(driver3D.getSurfaceMesh(), "meldedTriMesh.vtk");
   }
 
+  AXOM_ANNOTATE_END("init");
+  AXOM_ANNOTATE_BEGIN("query");
+
   /// Query the octree over mesh's bounding box
-  SLIC_INFO(axom::fmt::format("{:*^80}", " Querying the octree "));
+  SLIC_INFO(axom::fmt::format("{:-^80}", " Querying the octree "));
   if(is2D)
   {
     driver2D.initializeQueryBox(params.queryBoxMins, params.queryBoxMaxs);
@@ -670,6 +705,12 @@ int main(int argc, char** argv)
                                             params.isVerbose());
     }
   }
+
+  AXOM_ANNOTATE_END("query");
+  SLIC_INFO(axom::fmt::format("{:-^80}", ""));
+  axom::slic::flushStreams();
+
+  AXOM_ANNOTATE_END("quest containment example");
 
   return 0;
 }

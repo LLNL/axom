@@ -9,6 +9,7 @@
 #include "axom/config.hpp"
 
 #include "axom/core.hpp"
+#include "axom/core/NumericLimits.hpp"
 
 #include "axom/primal/geometry/Point.hpp"
 
@@ -72,7 +73,7 @@ struct BroodRepresentationTraits
   {
 #if defined(AXOM_USE_SPARSEHASH)
     const PointRepresenationType maxVal =
-      std::numeric_limits<PointRepresenationType>::max();
+      axom::numeric_limits<PointRepresenationType>::max();
     map.set_empty_key(maxVal);
     map.set_deleted_key(maxVal - 1);
 #else
@@ -125,7 +126,7 @@ struct BroodRepresentationTraits<CoordType, DIM, BroodDataType, primal::Point<Co
   static void initializeMap(MapType& map)
   {
 #if defined(AXOM_USE_SPARSEHASH)
-    CoordType maxCoord = std::numeric_limits<CoordType>::max();
+    CoordType maxCoord = axom::numeric_limits<CoordType>::max();
     GridPt maxPt(maxCoord);
     map.set_empty_key(maxPt);
 
@@ -404,9 +405,9 @@ public:
     const BroodType brood(pt);
     ConstMapIter blockIt = m_map.find(brood.base());
 
-    return (blockIt == m_map.end())
-      ? BlockNotInTree
-      : (blockIt->second[brood.offset()].isLeaf()) ? LeafBlock : InternalBlock;
+    return (blockIt == m_map.end())                ? BlockNotInTree
+      : (blockIt->second[brood.offset()].isLeaf()) ? LeafBlock
+                                                   : InternalBlock;
   }
 
 private:

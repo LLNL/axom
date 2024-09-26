@@ -32,7 +32,7 @@
 #endif
 
 // RAJA policies
-#include "axom/mint/execution/internal/structured_exec.hpp"
+#include "axom/core/execution/nested_for_exec.hpp"
 
 using seq_exec = axom::SEQ_EXEC;
 
@@ -330,7 +330,7 @@ bool checkTT(Triangle3& t1, Triangle3& t2, double EPS)
     return false;
   }
 
-  const bool includeBoundaries = false;  // only check internal intersections
+  constexpr bool includeBoundaries = false;  // only check internal intersections
   if(primal::intersect(t1, t2, includeBoundaries, EPS))
   {
     return true;
@@ -408,23 +408,23 @@ std::vector<std::pair<int, int>> naiveIntersectionAlgorithm(
             << " in execution Space: "
             << axom::execution_space<ExecSpace>::name());
 
-  // Get allocator
-  const int current_allocator = axom::getDefaultAllocatorID();
-  int allocatorID = axom::execution_space<ExecSpace>::allocatorID();
-  axom::setDefaultAllocator(allocatorID);
+  // Get allocators
+  constexpr bool on_device = axom::execution_space<ExecSpace>::onDevice();
+  const int host_allocator = axom::execution_space<axom::SEQ_EXEC>::allocatorID();
+  const int device_allocator = axom::execution_space<ExecSpace>::allocatorID();
 
   std::vector<std::pair<int, int>> retval;
 
   const int ncells = surface_mesh->getNumberOfCells();
   SLIC_INFO("Checking mesh with a total of " << ncells << " cells.");
 
-  Triangle3* tris = axom::allocate<Triangle3>(ncells);
+  axom::Array<Triangle3> tris_h(ncells, ncells, host_allocator);
 
   // Get each triangle in the mesh and check for degeneracies
   for(int i = 0; i < ncells; i++)
   {
-    tris[i] = getMeshTriangle(i, surface_mesh);
-    if(tris[i].degenerate())
+    tris_h[i] = getMeshTriangle(i, surface_mesh);
+    if(tris_h[i].degenerate())
     {
       degenerate.push_back(i);
     }
@@ -434,11 +434,18 @@ std::vector<std::pair<int, int>> naiveIntersectionAlgorithm(
   RAJA::RangeSegment col_range(0, ncells);
 
   using KERNEL_POL =
-    typename axom::mint::internal::structured_exec<ExecSpace>::loop2d_policy;
+    typename axom::internal::nested_for_exec<ExecSpace>::loop2d_policy;
   using REDUCE_POL = typename axom::execution_space<ExecSpace>::reduce_policy;
   using ATOMIC_POL = typename axom::execution_space<ExecSpace>::atomic_policy;
 
   RAJA::ReduceSum<REDUCE_POL, int> numIntersect(0);
+
+  // Copy triangles to device
+  axom::Array<Triangle3> tris_d = on_device
+    ? axom::Array<Triangle3>(tris_h, device_allocator)
+    : axom::Array<Triangle3>();
+
+  auto tris_v = on_device ? tris_d.view() : tris_h.view();
 
   // Compute the number of intersections
   RAJA::kernel<KERNEL_POL>(
@@ -446,7 +453,7 @@ std::vector<std::pair<int, int>> naiveIntersectionAlgorithm(
     AXOM_LAMBDA(int col, int row) {
       if(row > col)
       {
-        if(checkTT(tris[row], tris[col], EPS))
+        if(checkTT(tris_v[row], tris_v[col], EPS))
         {
           numIntersect += 1;
         }
@@ -454,10 +461,17 @@ std::vector<std::pair<int, int>> naiveIntersectionAlgorithm(
     });
 
   // Allocation to hold intersection pairs and counter to know where to store
-  int* intersections = axom::allocate<int>(numIntersect.get() * 2);
-  int* counter = axom::allocate<int>(1);
+  axom::Array<int> intersections_d(numIntersect.get() * 2,
+                                   numIntersect.get() * 2,
+                                   device_allocator);
+  axom::Array<int> counter_h(1, 1, host_allocator);
+  counter_h[0] = 0;
+  axom::Array<int> counter_d = on_device
+    ? axom::Array<int>(counter_h, device_allocator)
+    : axom::Array<int>();
 
-  counter[0] = 0;
+  auto intersections_v = intersections_d.view();
+  auto counter_v = on_device ? counter_d.view() : counter_h.view();
 
   // RAJA loop to populate with intersections
   RAJA::kernel<KERNEL_POL>(
@@ -465,27 +479,25 @@ std::vector<std::pair<int, int>> naiveIntersectionAlgorithm(
     AXOM_LAMBDA(int col, int row) {
       if(row > col)
       {
-        if(checkTT(tris[row], tris[col], EPS))
+        if(checkTT(tris_v[row], tris_v[col], EPS))
         {
-          auto idx = RAJA::atomicAdd<ATOMIC_POL>(counter, 2);
-          intersections[idx] = row;
-          intersections[idx + 1] = col;
+          auto idx = RAJA::atomicAdd<ATOMIC_POL>(counter_v.data(), 2);
+          intersections_v[idx] = row;
+          intersections_v[idx + 1] = col;
         }
       }
     });
 
+  // Copy intersections to host
+  axom::Array<int> intersections_h = on_device
+    ? axom::Array<int>(intersections_d, host_allocator)
+    : std::move(intersections_d);
+
   // Initialize pairs of clashes
   for(auto i = 0; i < numIntersect.get() * 2; i += 2)
   {
-    retval.push_back(std::make_pair(intersections[i], intersections[i + 1]));
+    retval.push_back(std::make_pair(intersections_h[i], intersections_h[i + 1]));
   }
-
-  // Deallocate
-  axom::deallocate(tris);
-  axom::deallocate(intersections);
-  axom::deallocate(counter);
-
-  axom::setDefaultAllocator(current_allocator);
 
   return retval;
 }
@@ -617,22 +629,6 @@ int main(int argc, char** argv)
   {
     return app.exit(e);
   }
-
-#ifdef AXOM_USE_CUDA
-  if(params.policy == raja_cuda)
-  {
-    using GPUExec = axom::CUDA_EXEC<256>;
-    axom::setDefaultAllocator(axom::execution_space<GPUExec>::allocatorID());
-  }
-#endif
-
-#if defined(AXOM_USE_HIP) && defined(NDEBUG)
-  if(params.policy == raja_hip)
-  {
-    using GPUExec = axom::HIP_EXEC<256>;
-    axom::setDefaultAllocator(axom::execution_space<GPUExec>::allocatorID());
-  }
-#endif
 
   // _read_stl_file_start
   // Read file

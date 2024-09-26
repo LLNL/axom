@@ -11,6 +11,7 @@
 #include "axom/core/Macros.hpp"
 #include "axom/core/Types.hpp"
 #include "axom/core/utilities/Utilities.hpp"
+#include "axom/slic.hpp"
 
 // primal includes
 #include "axom/spin/BVH.hpp"
@@ -430,7 +431,7 @@ template <int NDIMS, typename ExecSpace>
 bool SignedDistance<NDIMS, ExecSpace>::setMesh(const mint::Mesh* surfaceMesh,
                                                int allocatorID)
 {
-  AXOM_PERF_MARK_FUNCTION("SignedDistance::setMesh");
+  AXOM_ANNOTATE_SCOPE("SignedDistance::setMesh");
   SLIC_ASSERT(surfaceMesh != nullptr);
 
   m_surfaceMesh = surfaceMesh;
@@ -567,57 +568,55 @@ inline void SignedDistance<NDIMS, ExecSpace>::computeDistances(
   AXOM_UNUSED_VAR(result);
   SLIC_CHECK_MSG(result, "Input mesh is not an unstructured surface mesh");
 
-  AXOM_PERF_MARK_SECTION(
-    "ComputeDistances",
-    for_all<ExecSpace>(
-      npts,
-      AXOM_LAMBDA(std::int32_t idx) {
-        PointType qpt = queryPts[idx];
+  AXOM_ANNOTATE_SCOPE("ComputeDistances");
+  for_all<ExecSpace>(
+    npts,
+    AXOM_LAMBDA(std::int32_t idx) {
+      PointType qpt = queryPts[idx];
 
-        MinCandidate curr_min {};
+      MinCandidate curr_min {};
 
-        auto searchMinDist = [&](std::int32_t current_node,
-                                 const std::int32_t* leaf_nodes) {
-          int candidate_idx = leaf_nodes[current_node];
+      auto searchMinDist = [&](std::int32_t current_node,
+                               const std::int32_t* leaf_nodes) {
+        int candidate_idx = leaf_nodes[current_node];
 
-          checkCandidate(qpt,
-                         curr_min,
-                         candidate_idx,
-                         surfaceData,
-                         surf_pts,
-                         computeSigns);
-        };
+        checkCandidate(qpt,
+                       curr_min,
+                       candidate_idx,
+                       surfaceData,
+                       surf_pts,
+                       computeSigns);
+      };
 
-        auto traversePredicate = [&](const PointType& p,
-                                     const BoxType& bb) -> bool {
-          return axom::primal::squared_distance(p, bb) <= curr_min.minSqDist;
-        };
+      auto traversePredicate = [&](const PointType& p, const BoxType& bb) -> bool {
+        return axom::primal::squared_distance(p, bb) <= curr_min.minSqDist;
+      };
 
-        // Traverse the tree, searching for the point with minimum distance.
-        it.traverse_tree(qpt, searchMinDist, traversePredicate);
+      // Traverse the tree, searching for the point with minimum distance.
+      it.traverse_tree(qpt, searchMinDist, traversePredicate);
 
-        double sgn = 1.0;
-        if(computeSigns)
+      double sgn = 1.0;
+      if(computeSigns)
+      {
+        // STEP 0: if point is outside the bounding box of the surface mesh, then
+        // it is outside, just return 1.0
+        if(!(watertightInput && !boxDomain.contains(curr_min.minPt)))
         {
-          // STEP 0: if point is outside the bounding box of the surface mesh, then
-          // it is outside, just return 1.0
-          if(!(watertightInput && !boxDomain.contains(curr_min.minPt)))
-          {
-            sgn = computeSign(qpt, curr_min);
-          }
+          sgn = computeSign(qpt, curr_min);
         }
+      }
 
-        outSgnDist[idx] = sqrt(curr_min.minSqDist) * sgn;
-        if(outClosestPts)
-        {
-          outClosestPts[idx] = curr_min.minPt;
-        }
+      outSgnDist[idx] = sqrt(curr_min.minSqDist) * sgn;
+      if(outClosestPts)
+      {
+        outClosestPts[idx] = curr_min.minPt;
+      }
 
-        if(outNormals)
-        {
-          outNormals[idx] = getSurfaceNormal(curr_min).unitVector();
-        }
-      }););
+      if(outNormals)
+      {
+        outNormals[idx] = getSurfaceNormal(curr_min).unitVector();
+      }
+    });
 }
 
 //------------------------------------------------------------------------------

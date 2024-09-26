@@ -173,6 +173,7 @@ public:
       FlatMap new_map(other);
       swap(new_map);
     }
+    return *this;
   }
 
   /// \brief Destructor for a FlatMap instance.

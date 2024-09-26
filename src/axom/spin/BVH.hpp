@@ -400,7 +400,7 @@ template <typename BoxIndexable>
 int BVH<NDIMS, ExecSpace, FloatType, Impl>::initialize(const BoxIndexable boxes,
                                                        IndexType numBoxes)
 {
-  AXOM_PERF_MARK_FUNCTION("BVH::initialize");
+  AXOM_ANNOTATE_SCOPE("BVH::initialize");
 
   using IterBase = typename IteratorTraits<BoxIndexable>::BaseType;
 
@@ -408,8 +408,6 @@ int BVH<NDIMS, ExecSpace, FloatType, Impl>::initialize(const BoxIndexable boxes,
   static_assert(
     std::is_convertible<IterBase, BoxType>::value,
     "Iterator must return objects convertible to primal::BoundingBox.");
-
-  using BoxType = primal::BoundingBox<FloatType, NDIMS>;
 
   // STEP 1: Allocate a BVH, potentially deleting the existing BVH if it exists
   m_bvh.reset(new ImplType);
@@ -464,7 +462,7 @@ void BVH<NDIMS, ExecSpace, FloatType, Impl>::findPoints(
   IndexType numPts,
   PointIndexable pts) const
 {
-  AXOM_PERF_MARK_FUNCTION("BVH::findPoints");
+  AXOM_ANNOTATE_SCOPE("BVH::findPoints");
 
   using IterBase = typename IteratorTraits<PointIndexable>::BaseType;
 
@@ -498,7 +496,7 @@ void BVH<NDIMS, ExecSpace, FloatType, Impl>::findRays(
   IndexType numRays,
   RayIndexable rays) const
 {
-  AXOM_PERF_MARK_FUNCTION("BVH::findRays");
+  AXOM_ANNOTATE_SCOPE("BVH::findRays");
 
   using IterBase = typename IteratorTraits<RayIndexable>::BaseType;
 
@@ -535,7 +533,7 @@ void BVH<NDIMS, ExecSpace, FloatType, Impl>::findBoundingBoxes(
   IndexType numBoxes,
   BoxIndexable boxes) const
 {
-  AXOM_PERF_MARK_FUNCTION("BVH::findBoundingBoxes");
+  AXOM_ANNOTATE_SCOPE("BVH::findBoundingBoxes");
 
   using IterBase = typename IteratorTraits<BoxIndexable>::BaseType;
 
