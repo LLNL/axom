@@ -195,6 +195,42 @@ public:
   BVH() : m_AllocatorID(axom::execution_space<ExecSpace>::allocatorID()) { }
 
   /*!
+   * \brief Constructs a BVH instance, of specified dimension, over a given set
+   *  of geometric entities, each represented by its corresponding axis-aligned
+   *  bounding box.
+   *
+   * \param [in] boxes buffer consisting of bounding boxes for each entity.
+   * \param [in] numItems the total number of items to store in the BVH.
+   * \param [in] allocatorID the ID of the allocator to use in BVH construction.
+   * \param [in] scaleFactor the scale factor for the given bounding boxes.
+   * \param [in] tolerance the tolerance to use when querying the BVH.
+   *
+   * \warning The supplied boxes array must point to a buffer in a memory space
+   *  that is compatible with the execution space. For example, when using
+   *  CUDA_EXEC, boxes must be in unified memory or GPU memory. The supplied
+   *  allocator ID must also correspond to an umpire allocator and be compatible
+   *  with the execution space. The code currently does not check for these
+   *  conditions.
+   *
+   * \pre boxes != nullptr
+   * \pre numItems > 0
+   * \pre allocatorID must correspond to an Umpire allocator and be compatible
+   *      with the execution space
+   */
+  template <typename BoxIndexable>
+  BVH(const BoxIndexable boxes,
+      IndexType numItems,
+      int allocatorID = axom::execution_space<ExecSpace>::allocatorID(),
+      FloatType tolerance = DEFAULT_TOLERANCE,
+      FloatType scaleFactor = DEFAULT_SCALE_FACTOR,
+    : m_AllocatorID{allocatorID},
+      m_tolerance{tolerance},
+      m_scaleFactor{scaleFactor}
+  {
+    initialize(boxes, numItems);
+  }
+
+  /*!
    * \brief Initializes a BVH instance, of specified dimension, over a given set
    *  of geometric entities, each represented by its corresponding axis-aligned
    *  bounding box.
