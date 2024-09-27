@@ -196,17 +196,16 @@ void generate_aabbs_and_centroids(
 //------------------------------------------------------------------------------
 
 /*!
- * \brief Tests the construction of the BVH in 2D by inserting two bounding
- *  boxes in the BVH and ensuring that the bounds of the BVH are as expected.
+ * \brief Tests building the BVH by inserting two bounding boxes
+ * in the BVH and ensuring that the bounds of the BVH are as expected.
  */
-template <typename ExecSpace, typename FloatType>
-void check_build_bvh2d()
+template <int Dimension, typename ExecSpace, typename FloatType>
+void check_build_bvh()
 {
   constexpr int NUM_BOXES = 2;
-  constexpr int NDIMS = 2;
 
-  using BoxType = typename primal::BoundingBox<FloatType, NDIMS>;
-  using PointType = typename primal::Point<FloatType, NDIMS>;
+  using BoxType = typename primal::BoundingBox<FloatType, Dimension>;
+  using PointType = typename primal::Point<FloatType, Dimension>;
 
   const int hostAllocatorID =
     axom::execution_space<axom::SEQ_EXEC>::allocatorID();
@@ -216,20 +215,18 @@ void check_build_bvh2d()
   boxes[0] = BoxType {PointType(0.), PointType(1.)};
   boxes[1] = BoxType {PointType(1.), PointType(2.)};
 
-  spin::BVH<NDIMS, ExecSpace, FloatType> bvh;
-
   // Copy boxes to device
   axom::Array<BoxType> boxesDevice(boxes, deviceAllocatorID);
 
+  spin::BVH<Dimension, ExecSpace, FloatType> bvh;
   bvh.setScaleFactor(1.0);  // i.e., no scaling
   bvh.initialize(boxesDevice.view(), NUM_BOXES);
 
-  int allocatorID = bvh.getAllocatorID();
-  EXPECT_EQ(allocatorID, axom::execution_space<ExecSpace>::allocatorID());
+  EXPECT_EQ(bvh.getAllocatorID(), deviceAllocatorID);
 
   BoxType bounds = bvh.getBounds();
 
-  for(int idim = 0; idim < NDIMS; ++idim)
+  for(int idim = 0; idim < Dimension; ++idim)
   {
     EXPECT_NEAR(bounds.getMin()[idim], 0.0, EPS);
     EXPECT_NEAR(bounds.getMax()[idim], 2.0, EPS);
@@ -239,17 +236,16 @@ void check_build_bvh2d()
 //------------------------------------------------------------------------------
 
 /*!
- * \brief Tests the construction of the BVH in 3D by inserting two bounding
+ * \brief Tests the constructor of the BVH by inserting two bounding
  *  boxes in the BVH and ensuring that the bounds of the BVH are as expected.
  */
-template <typename ExecSpace, typename FloatType>
-void check_build_bvh3d()
+template <int Dimension, typename ExecSpace, typename FloatType>
+void check_construct_bvh()
 {
   constexpr int NUM_BOXES = 2;
-  constexpr int NDIMS = 3;
 
-  using BoxType = typename primal::BoundingBox<FloatType, NDIMS>;
-  using PointType = typename primal::Point<FloatType, NDIMS>;
+  using BoxType = typename primal::BoundingBox<FloatType, Dimension>;
+  using PointType = typename primal::Point<FloatType, Dimension>;
 
   const int hostAllocatorID =
     axom::execution_space<axom::SEQ_EXEC>::allocatorID();
@@ -259,20 +255,25 @@ void check_build_bvh3d()
   boxes[0] = BoxType {PointType(0.), PointType(1.)};
   boxes[1] = BoxType {PointType(1.), PointType(2.)};
 
-  spin::BVH<NDIMS, ExecSpace, FloatType> bvh;
-
   // Copy boxes to device
   axom::Array<BoxType> boxesDevice(boxes, deviceAllocatorID);
 
-  bvh.setScaleFactor(1.0);  // i.e., no scaling
-  bvh.initialize(boxesDevice.view(), NUM_BOXES);
+  FloatType tolerance = static_cast<FloatType>(0.0);    // i.e., no tolerance
+  FloatType scaleFactor = static_cast<FloatType>(1.0);  // i.e., no scaling
 
-  int allocatorID = bvh.getAllocatorID();
-  EXPECT_EQ(allocatorID, axom::execution_space<ExecSpace>::allocatorID());
+  spin::BVH<Dimension, ExecSpace, FloatType> bvh(boxesDevice.view(),
+                                             NUM_BOXES,
+                                             deviceAllocatorID,
+                                             tolerance,
+                                             scaleFactor);
+
+  EXPECT_EQ(bvh.getAllocatorID(), deviceAllocatorID);
+  EXPECT_EQ(bvh.getTolerance(),   tolerance);
+  EXPECT_EQ(bvh.getScaleFactor(), scaleFactor);
 
   BoxType bounds = bvh.getBounds();
 
-  for(int idim = 0; idim < NDIMS; ++idim)
+  for(int idim = 0; idim < Dimension; ++idim)
   {
     EXPECT_NEAR(bounds.getMin()[idim], 0.0, EPS);
     EXPECT_NEAR(bounds.getMax()[idim], 2.0, EPS);
@@ -1645,17 +1646,31 @@ void check_0_or_1_bbox_2d()
 //------------------------------------------------------------------------------
 // UNIT TESTS
 //------------------------------------------------------------------------------
+TEST(spin_bvh, build2D_sequential)
+{
+  check_build_bvh<2, axom::SEQ_EXEC, double>();
+  check_build_bvh<2, axom::SEQ_EXEC, float>();
+}
+
+//------------------------------------------------------------------------------
 TEST(spin_bvh, construct2D_sequential)
 {
-  check_build_bvh2d<axom::SEQ_EXEC, double>();
-  check_build_bvh2d<axom::SEQ_EXEC, float>();
+  check_construct_bvh<2, axom::SEQ_EXEC, double>();
+  check_construct_bvh<2, axom::SEQ_EXEC, float>();
+}
+
+//------------------------------------------------------------------------------
+TEST(spin_bvh, build3D_sequential)
+{
+  check_build_bvh<3, axom::SEQ_EXEC, double>();
+  check_build_bvh<3, axom::SEQ_EXEC, float>();
 }
 
 //------------------------------------------------------------------------------
 TEST(spin_bvh, construct3D_sequential)
 {
-  check_build_bvh3d<axom::SEQ_EXEC, double>();
-  check_build_bvh3d<axom::SEQ_EXEC, float>();
+  check_construct_bvh<3, axom::SEQ_EXEC, double>();
+  check_construct_bvh<3, axom::SEQ_EXEC, float>();
 }
 
 //------------------------------------------------------------------------------
@@ -1745,17 +1760,31 @@ TEST(spin_bvh, single_bbox_sequential)
 //------------------------------------------------------------------------------
 #if defined(AXOM_USE_OPENMP) && defined(AXOM_USE_RAJA)
 
+TEST(spin_bvh, build2D_omp)
+{
+  check_build_bvh<2, axom::OMP_EXEC, double>();
+  check_build_bvh<2, axom::OMP_EXEC, float>();
+}
+
+//------------------------------------------------------------------------------
 TEST(spin_bvh, construct2D_omp)
 {
-  check_build_bvh2d<axom::OMP_EXEC, double>();
-  check_build_bvh2d<axom::OMP_EXEC, float>();
+  check_construct_bvh<2, axom::OMP_EXEC, double>();
+  check_construct_bvh<2, axom::OMP_EXEC, float>();
+}
+
+//------------------------------------------------------------------------------
+TEST(spin_bvh, build3D_omp)
+{
+  check_build_bvh<3, axom::OMP_EXEC, double>();
+  check_build_bvh<3, axom::OMP_EXEC, float>();
 }
 
 //------------------------------------------------------------------------------
 TEST(spin_bvh, construct3D_omp)
 {
-  check_build_bvh3d<axom::OMP_EXEC, double>();
-  check_build_bvh3d<axom::OMP_EXEC, float>();
+  check_construct_bvh<3, axom::OMP_EXEC, double>();
+  check_construct_bvh<3, axom::OMP_EXEC, float>();
 }
 
 //------------------------------------------------------------------------------
@@ -1825,6 +1854,23 @@ TEST(spin_bvh, single_bbox_omp)
 //------------------------------------------------------------------------------
 #if defined(AXOM_USE_GPU) && defined(AXOM_USE_RAJA) && defined(AXOM_USE_UMPIRE)
 
+TEST(spin_bvh, build2D_device)
+{
+  constexpr int BLOCK_SIZE = 256;
+
+  #if defined(__CUDACC__)
+  using exec = axom::CUDA_EXEC<BLOCK_SIZE>;
+  #elif defined(__HIPCC__)
+  using exec = axom::HIP_EXEC<BLOCK_SIZE>;
+  #else
+  using exec = axom::SEQ_EXEC;
+  #endif
+
+  check_build_bvh<2, exec, double>();
+  check_build_bvh<2, exec, float>();
+}
+
+//------------------------------------------------------------------------------
 TEST(spin_bvh, construct2D_device)
 {
   constexpr int BLOCK_SIZE = 256;
@@ -1837,8 +1883,25 @@ TEST(spin_bvh, construct2D_device)
   using exec = axom::SEQ_EXEC;
   #endif
 
-  check_build_bvh2d<exec, double>();
-  check_build_bvh2d<exec, float>();
+  check_construct_bvh<2, exec, double>();
+  check_construct_bvh<2, exec, float>();
+}
+
+//------------------------------------------------------------------------------
+TEST(spin_bvh, build3D_device)
+{
+  constexpr int BLOCK_SIZE = 256;
+
+  #if defined(__CUDACC__)
+  using exec = axom::CUDA_EXEC<BLOCK_SIZE>;
+  #elif defined(__HIPCC__)
+  using exec = axom::HIP_EXEC<BLOCK_SIZE>;
+  #else
+  using exec = axom::SEQ_EXEC;
+  #endif
+
+  check_build_bvh<3, exec, double>();
+  check_build_bvh<3, exec, float>();
 }
 
 //------------------------------------------------------------------------------
@@ -1854,8 +1917,8 @@ TEST(spin_bvh, construct3D_device)
   using exec = axom::SEQ_EXEC;
   #endif
 
-  check_build_bvh3d<exec, double>();
-  check_build_bvh3d<exec, float>();
+  check_construct_bvh<3, exec, double>();
+  check_construct_bvh<3, exec, float>();
 }
 
 //------------------------------------------------------------------------------
