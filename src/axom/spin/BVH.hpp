@@ -195,7 +195,7 @@ public:
   BVH() : m_AllocatorID(axom::execution_space<ExecSpace>::allocatorID()) { }
 
   /*!
-   * \brief Constructs a BVH instance, of specified dimension, over a given set
+   * \brief Constructs a BVH instance of specified dimension over a given set
    *  of geometric entities, each represented by its corresponding axis-aligned
    *  bounding box.
    *
@@ -224,14 +224,14 @@ public:
       FloatType tolerance = DEFAULT_TOLERANCE,
       FloatType scaleFactor = DEFAULT_SCALE_FACTOR)
     : m_AllocatorID{allocatorID}
-    , m_tolerance{tolerance},
+    , m_tolerance{tolerance}
     , m_scaleFactor{scaleFactor}
   {
     initialize(boxes, numItems);
   }
 
   /*!
-   * \brief Initializes a BVH instance, of specified dimension, over a given set
+   * \brief Initializes a BVH instance of specified dimension over a given set
    *  of geometric entities, each represented by its corresponding axis-aligned
    *  bounding box.
    *
