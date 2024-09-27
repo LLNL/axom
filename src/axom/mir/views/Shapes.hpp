@@ -12,6 +12,7 @@
 #include <conduit/conduit_blueprint_mesh_utils.hpp>
 
 #include <iostream>
+#include <type_traits>
 
 namespace axom
 {
@@ -433,14 +434,14 @@ struct PolygonShape : public PolygonTraits
    * \brief Construct a shape.
    */
   AXOM_HOST_DEVICE PolygonShape(const ConnectivityView &ids)
-    : m_idsView(ids) { }
+    : m_ids(ids) { }
 
   /*!
    * \brief Get the ids that make up this shape.
    *
    * \return A view containing the ids that make up this shape.
    */
-  AXOM_HOST_DEVICE const ConnectivityView &getIds() const { return m_idsView; }
+  AXOM_HOST_DEVICE const ConnectivityView &getIds() const { return m_ids; }
 
   /*!
    * \brief Get the ids for the requested face.
@@ -451,37 +452,55 @@ struct PolygonShape : public PolygonTraits
    */
   AXOM_HOST_DEVICE ConnectivityView getFace(int /*faceIndex*/) const
   {
-    return m_idsView;
+    return m_ids;
   }
 
   AXOM_HOST_DEVICE axom::StackArray<IndexType, 2> getEdge(int edgeIndex) const
   {
-    const auto p0 = edgeIndex % m_idsView.size();
-    const auto p1 = (edgeIndex + 1) % m_idsView.size();
+    const auto p0 = edgeIndex % m_ids.size();
+    const auto p1 = (edgeIndex + 1) % m_ids.size();
     return axom::StackArray<IndexType, 2> {p0, p1};
   }
 
 private:
-  ConnectivityView m_idsView;
+  ConnectivityView m_ids;
 };
 
 /*!
  * \brief This class extends the ShapeTraits with object state so it can represent a zone.
+ *
+ * \tparam ShapeTraits A shape traits class from which to inherit.
+ * \tparam ConnStorage A view or container that contains connectivity.
+ *
  */
-template <typename ShapeTraits, typename ConnType>
+template <typename ShapeTraits, typename ConnStorage>
 struct Shape : public ShapeTraits
 {
-  using ConnectivityType = ConnType;
+  using ConnectivityStorage = ConnStorage;
+  using ConnectivityStorageRef = ConnStorage &;
+  using ConnectivityStorageConstRef = const ConnStorage &;
+  using ConnectivityType = typename ConnStorage::value_type;
   using ConnectivityView = axom::ArrayView<ConnectivityType>;
 
   /*!
    * \brief Construct a shape.
    */
-  AXOM_HOST_DEVICE Shape(const ConnectivityView &ids)
-    : m_idsView(ids)
+  AXOM_HOST_DEVICE Shape()
+    : m_ids()
     , m_faceIds()
   {
-    assert(m_idsView.size() == ShapeTraits::numberOfNodes());
+  }
+
+  /*!
+   * \brief Construct a shape.
+   *
+   * \param ids A reference to connectivity storage for this shape.
+   */
+  AXOM_HOST_DEVICE Shape(ConnectivityStorageConstRef ids)
+    : m_ids(ids)
+    , m_faceIds()
+  {
+    assert(m_ids.size() == ShapeTraits::numberOfNodes());
   }
 
   /*!
@@ -491,82 +510,115 @@ struct Shape : public ShapeTraits
    */
   AXOM_HOST_DEVICE ConnectivityType getId(size_t index) const
   {
-    assert(index < static_cast<size_t>(m_idsView.size()));
-    return m_idsView[index];
+    assert(index < static_cast<size_t>(m_ids.size()));
+    return m_ids[index];
   }
 
   /*!
-   * \brief Get the ids that make up this shape.
+   * \brief Get the storage for the ids that make up this shape.
+   *
+   * \return The container for the ids that make up this shape.
+   */
+  AXOM_HOST_DEVICE ConnectivityStorageRef getIdsStorage() { return m_ids; }
+
+  /*!
+   * \brief Get the storage for the ids that make up this shape.
+   *
+   * \return The container for the ids that make up this shape.
+   */
+  AXOM_HOST_DEVICE ConnectivityStorageConstRef getIdsStorage() const { return m_ids; }
+
+  /*!
+   * \brief Get the ids that make up this shape as a view.
    *
    * \return A view containing the ids that make up this shape.
    */
-  AXOM_HOST_DEVICE const ConnectivityView &getIds() const { return m_idsView; }
+  AXOM_HOST_DEVICE ConnectivityView getIds() const { return ConnectivityView(const_cast<ConnectivityType *>(m_ids.data()), m_ids.size()); }
 
   /*!
    * \brief Get the unique ids that make up this shape. For basic shapes, assume they are unique.
    *
-   * \return A view containing the ids that make up this shape.
+   * \return The unique ids that make up this shape.
    */
-  AXOM_HOST_DEVICE ConnectivityView getUniqueIds() const { return m_idsView; }
+  AXOM_HOST_DEVICE ConnectivityStorageConstRef getUniqueIds() const { return m_ids; }
 
   /*!
    * \brief Get the ids for the requested face.
    *
    * \param faceIndex The index of the desired face.
    *
-   * \return An array view (wrapping m_faceIds) that contains the ids for the face.
+   * \return The ids that make up the face
    */
-  AXOM_HOST_DEVICE
-  ConnectivityView getFace(int faceIndex) const
+  /// @{
+  template <int _ndims = ShapeTraits::dimension()>
+  AXOM_HOST_DEVICE typename std::enable_if<_ndims == 2, ConnectivityStorageConstRef>::type
+  getFace(axom::IndexType AXOM_UNUSED_PARAM(faceIndex)) const
   {
-    if constexpr(ShapeTraits::dimension() == 2)
-      return m_idsView;
-    else
-    {
-      const auto nnodes = ShapeTraits::numberOfNodesInFace(faceIndex);
-      for(IndexType i = 0; i < nnodes; i++)
-        m_faceIds[i] = m_idsView[ShapeTraits::faces[faceIndex][i]];
-      return ConnectivityView(m_faceIds.m_data, nnodes);
-    }
+    return m_ids;
   }
 
+//  template <int _ndims = ShapeTraits::dimension()>
+//  AXOM_HOST_DEVICE typename std::enable_if<_ndims > 2, ConnectivityStorage>::type
+//  getFace(axom::IndexType faceIndex) const
+//  {
+//    const auto nnodes = ShapeTraits::numberOfNodesInFace(faceIndex);
+//    for(IndexType i = 0; i < nnodes; i++)
+//      m_faceIds[i] = m_ids[ShapeTraits::faces[faceIndex][i]];
+//    return ConnectivityStorage(m_faceIds.m_data, nnodes);
+//  }
+  /// @}
+
 private:
-  ConnectivityView m_idsView;
+  ConnectivityStorage m_ids;
   mutable axom::StackArray<ConnectivityType, ShapeTraits::maxNodesInFace()> m_faceIds;
 };
 
-// Make some concrete shape classes based on the shape traits.
-template <typename ConnectivityType>
-using LineShape = Shape<LineTraits, ConnectivityType>;
+/*!
+ * \brief Some concrete shape classes based on the shape traits.
+ *
+ * \tparam ConnType A type of the connectivity values or a type that "stores"
+ *                  the data either in actuality, or as a view. If an integral
+ *                  type is passed, an axom::ArrayView will be used. 
+ */
+/// @{
+template <typename ConnType>
+using LineShape = Shape<LineTraits, typename std::conditional<std::is_integral<ConnType>::value, axom::ArrayView<ConnType>, ConnType>::type>;
 
-template <typename ConnectivityType>
-using TriShape = Shape<TriTraits, ConnectivityType>;
+template <typename ConnType>
+using TriShape = Shape<TriTraits, typename std::conditional<std::is_integral<ConnType>::value, axom::ArrayView<ConnType>, ConnType>::type>;
 
-template <typename ConnectivityType>
-using QuadShape = Shape<QuadTraits, ConnectivityType>;
+template <typename ConnType>
+using QuadShape = Shape<QuadTraits, typename std::conditional<std::is_integral<ConnType>::value, axom::ArrayView<ConnType>, ConnType>::type>;
 
-template <typename ConnectivityType>
-using TetShape = Shape<TetTraits, ConnectivityType>;
+template <typename ConnType>
+using TetShape = Shape<TetTraits, typename std::conditional<std::is_integral<ConnType>::value, axom::ArrayView<ConnType>, ConnType>::type>;
 
-template <typename ConnectivityType>
-using PyramidShape = Shape<PyramidTraits, ConnectivityType>;
+template <typename ConnType>
+using PyramidShape = Shape<PyramidTraits, typename std::conditional<std::is_integral<ConnType>::value, axom::ArrayView<ConnType>, ConnType>::type>;
 
-template <typename ConnectivityType>
-using WedgeShape = Shape<WedgeTraits, ConnectivityType>;
+template <typename ConnType>
+using WedgeShape = Shape<WedgeTraits, typename std::conditional<std::is_integral<ConnType>::value, axom::ArrayView<ConnType>, ConnType>::type>;
 
-template <typename ConnectivityType>
-using HexShape = Shape<HexTraits, ConnectivityType>;
+template <typename ConnType>
+using HexShape = Shape<HexTraits, typename std::conditional<std::is_integral<ConnType>::value, axom::ArrayView<ConnType>, ConnType>::type>;
+/// @}
 
 /*!
  * \brief This is a shape that can act as any of the other shapes.
+ *
+ * \tparam ConnType type of the connectivity values.
  *
  * \note This is a substitute for polymorphism so we can run on device.
  */
 template <typename ConnType>
 struct VariableShape
 {
+  using ConnectivityStorage = axom::ArrayView<ConnType>;
+  using ConnectivityStorageRef = ConnectivityStorage &;
+  using ConnectivityStorageConstRef = const ConnectivityStorage &;
+
   using ConnectivityType = ConnType;
-  using ConnectivityView = axom::ArrayView<ConnectivityType>;
+  using ConnectivityView = ConnectivityStorage;
 
   /*!
    * \brief Constructor
@@ -575,9 +627,9 @@ struct VariableShape
    * \param ids The ids that describe the shape.
    */
   AXOM_HOST_DEVICE
-  VariableShape(int shapeId, const ConnectivityView &ids)
+  VariableShape(int shapeId, ConnectivityStorageConstRef ids)
     : m_shapeId(shapeId)
-    , m_idsView(ids)
+    , m_ids(ids)
   {
     assert(shapeId >= Point_ShapeID && shapeId <= Hex_ShapeID);
   }
@@ -606,7 +658,7 @@ struct VariableShape
       dim = QuadTraits::dimension();
       break;
     case Polygon_ShapeID:
-      dim = 2;
+      dim = PolygonTraits::dimension();
       break;
     case Tet_ShapeID:
       dim = TetTraits::dimension();
@@ -624,7 +676,7 @@ struct VariableShape
     return dim;
   }
 
-  AXOM_HOST_DEVICE IndexType numberOfNodes() const { return m_idsView.size(); }
+  AXOM_HOST_DEVICE IndexType numberOfNodes() const { return m_ids.size(); }
 
   AXOM_HOST_DEVICE IndexType numberOfNodesInFace(int faceIndex) const
   {
@@ -641,7 +693,7 @@ struct VariableShape
       nnodes = QuadTraits::numberOfNodesInFace(faceIndex);
       break;
     case Polygon_ShapeID:
-      nnodes = (faceIndex == 0) ? m_idsView.size() : 0;
+      nnodes = (faceIndex == 0) ? m_ids.size() : 0;
       break;
     case Tet_ShapeID:
       nnodes = TetTraits::numberOfNodesInFace(faceIndex);
@@ -740,7 +792,7 @@ struct VariableShape
       nedges = QuadTraits::numberOfEdges();
       break;
     case Polygon_ShapeID:
-      nedges = m_idsView.size();
+      nedges = m_ids.size();
       break;
     case Tet_ShapeID:
       nedges = TetTraits::numberOfEdges();
@@ -774,7 +826,7 @@ struct VariableShape
       break;
     case Polygon_ShapeID:
     {
-      const auto n = m_idsView.size();
+      const auto n = m_ids.size();
       edge[0] = edgeIndex % n;
       edge[1] = (edgeIndex + 1) % n;
       break;
@@ -802,7 +854,7 @@ struct VariableShape
    */
   AXOM_HOST_DEVICE ConnectivityType getId(IndexType index) const
   {
-    return m_idsView[index];
+    return m_ids[index];
   }
 
   /*!
@@ -810,13 +862,13 @@ struct VariableShape
    *
    * \return A view containing the ids that make up this shape.
    */
-  AXOM_HOST_DEVICE const ConnectivityView &getIds() const { return m_idsView; }
+  AXOM_HOST_DEVICE ConnectivityView getIds() const { return m_ids; }
 
   AXOM_HOST_DEVICE constexpr static const char *name() { return "mixed"; }
 
 private:
   int m_shapeId;
-  ConnectivityView m_idsView;
+  ConnectivityStorage m_ids;
 };
 
 /*!

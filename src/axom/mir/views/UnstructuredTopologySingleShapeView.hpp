@@ -26,13 +26,14 @@ class UnstructuredTopologySingleShapeView
 public:
   using ShapeType = ShapeT;
   using ConnectivityType = typename ShapeType::ConnectivityType;
-  using ConnectivityView = typename ShapeType::ConnectivityView;
+  using ConnectivityView = axom::ArrayView<ConnectivityType>;
 
   /*!
    * \brief Constructor
    *
    * \param conn The mesh connectivity.
    */
+  AXOM_HOST_DEVICE
   UnstructuredTopologySingleShapeView(const ConnectivityView &conn)
     : m_connectivityView(conn)
     , m_sizesView()
@@ -46,6 +47,7 @@ public:
    * \param sizes The number of nodes in each zone.
    * \param offsets The offset to each zone in the connectivity.
    */
+  AXOM_HOST_DEVICE
   UnstructuredTopologySingleShapeView(const ConnectivityView &conn,
                                       const ConnectivityView &sizes,
                                       const ConnectivityView &offsets)
@@ -53,7 +55,13 @@ public:
     , m_sizesView(sizes)
     , m_offsetsView(offsets)
   {
+#if defined(AXOM_DEBUG)
+#if defined(AXOM_DEVICE_CODE)
+    assert(m_offsetsView.size() == m_sizesView.size());
+#else
     SLIC_ASSERT(m_offsetsView.size() == m_sizesView.size());
+#endif
+#endif
   }
 
   /*!
@@ -68,7 +76,7 @@ public:
    *
    * \return The number of zones.
    */
-  IndexType numberOfZones() const
+  AXOM_HOST_DEVICE IndexType numberOfZones() const
   {
     return (m_sizesView.size() != 0)
       ? m_sizesView.size()
@@ -80,7 +88,59 @@ public:
    *
    * \return The size of the connectivity.
    */
-  IndexType connectivitySize() const { return m_connectivityView.size(); }
+  AXOM_HOST_DEVICE IndexType connectivitySize() const { return m_connectivityView.size(); }
+
+  /*!
+   * \brief Return a zone.
+   *
+   * \param zoneIndex The requested zone.
+   *
+   * \return The requested zone.
+   */
+  /// @{
+  template <bool _variable_size = ShapeType::is_variable_size()>
+  AXOM_HOST_DEVICE typename std::enable_if<_variable_size, ShapeType>::type
+  zone(axom::IndexType zoneIndex) const
+  {
+#if defined(AXOM_DEBUG)
+#if defined(AXOM_DEVICE_CODE)
+    assert(zoneIndex < numberOfZones());
+#else
+    SLIC_ASSERT(zoneIndex < numberOfZones());
+#endif
+#endif
+
+    return ShapeType(ConnectivityView(m_connectivityView.data() + m_offsetsView[zoneIndex],
+                                      m_sizesView[zoneIndex]));
+  }
+
+  template <bool _variable_size = ShapeType::is_variable_size()>
+  AXOM_HOST_DEVICE typename std::enable_if<!_variable_size, ShapeType>::type
+  zone(axom::IndexType zoneIndex) const
+  {
+#if defined(AXOM_DEBUG)
+#if defined(AXOM_DEVICE_CODE)
+    assert(zoneIndex < numberOfZones());
+#else
+    SLIC_ASSERT(zoneIndex < numberOfZones());
+#endif
+#endif
+
+    ConnectivityView shapeIdsView {};
+    if(m_sizesView.empty())
+    {
+      shapeIdsView = ConnectivityView(
+              m_connectivityView.data() + ShapeType::zoneOffset(zoneIndex),
+              ShapeType::numberOfNodes());
+    }
+    else
+    {
+      shapeIdsView = ConnectivityView(m_connectivityView.data() + m_offsetsView[zoneIndex],
+                                      m_sizesView[zoneIndex]);
+    }
+    return ShapeType(shapeIdsView);
+  }
+  /// @}
 
   /*!
    * \brief Execute a function for each zone in the mesh.

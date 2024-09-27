@@ -21,12 +21,9 @@ namespace views
  * \note If the view was to renumber the shapes array to use the Shape::id() values
  *       then operator[] could return its input value and skip bsearch.
  */
-template <typename IndexT>
 class ShapeMap
 {
 public:
-  using IndexType = IndexT;
-
   /*!
    * \brief Constructor
    */
@@ -75,6 +72,18 @@ private:
 };
 
 /*!
+ * \brief Populate the shape map values/ids arrays using data in the topology's shape_map.
+ *
+ * \param n_topo The topology that contains the shape map.
+ * \param[out] values The sorted values used for shapes in the topology.
+ * \param[out] ids The Shape ids that correspond to the shape values.
+ * \param allocatorID The allocator to use when creating the arrays.
+ */
+ShapeMap buildShapeMap(const conduit::Node &n_topo,
+                       axom::Array<IndexType> &values,
+                       axom::Array<IndexType> &ids,
+                       int allocatorID);
+/*!
  * \brief This class provides a view for Conduit/Blueprint mixed shape unstructured grids.
  *
  * \tparam IndexT The index type that will be used for connectivity, etc.
@@ -103,18 +112,30 @@ public:
                                      const ConnectivityView &conn,
                                      const ConnectivityView &shapes,
                                      const ConnectivityView &sizes,
-                                     const ConnectivityView &offsets)
+                                     const ConnectivityView &offsets,
+                                     const ShapeMap &shapemap)
     : m_topo(topo)
     , m_connectivity(conn)
     , m_shapes(shapes)
     , m_sizes(sizes)
     , m_offsets(offsets)
+    , m_shapeMap(shapemap)
   {
+#if defined(AXOM_DEBUG)
+#if defined(AXOM_DEVICE_CODE)
+    assert(m_shapes.size() != 0);
+    assert(m_sizes.size() != 0);
+    assert(m_offsets.size() != 0);
+    assert(m_offsets.size() == m_sizes.size() &&
+           m_offsets.size() == m_shapes.size());
+#else
     SLIC_ASSERT(m_shapes.size() != 0);
     SLIC_ASSERT(m_sizes.size() != 0);
     SLIC_ASSERT(m_offsets.size() != 0);
     SLIC_ASSERT(m_offsets.size() == m_sizes.size() &&
                 m_offsets.size() == m_shapes.size());
+#endif
+#endif
   }
 
   /*!
@@ -129,14 +150,45 @@ public:
    *
    * \return The number of zones.
    */
-  IndexType numberOfZones() const { return m_sizes.size(); }
+  AXOM_HOST_DEVICE IndexType numberOfZones() const { return m_sizes.size(); }
 
   /*!
    * \brief Return the size of the connectivity.
    *
    * \return The size of the connectivity.
    */
-  IndexType connectivitySize() const { return m_connectivity.size(); }
+  AXOM_HOST_DEVICE IndexType connectivitySize() const { return m_connectivity.size(); }
+
+  /*!
+   * \brief Return a zone.
+   *
+   * \param zoneIndex The index of the zone to return.
+   *
+   * \return The requested zone.
+   */
+  ShapeType zone(axom::IndexType zoneIndex) const
+  {
+#if defined(AXOM_DEBUG)
+#if defined(AXOM_DEVICE_CODE)
+    assert(zoneIndex < numberOfZones());
+#else
+    SLIC_ASSERT(zoneIndex < numberOfZones());
+#endif
+#endif
+    const ConnectivityView shapeData(
+          m_connectivity.data() + m_offsets[zoneIndex],
+          m_sizes[zoneIndex]);
+    const auto shapeID = m_shapeMap[m_shapes[zoneIndex]];
+#if defined(AXOM_DEBUG)
+#if defined(AXOM_DEVICE_CODE)
+    assert(shapeID > 0);
+#else
+    SLIC_ASSERT(shapeID > 0);
+#endif
+#endif
+
+    return ShapeType(shapeID, shapeData);
+  }
 
   /*!
    * \brief Execute a function for each zone in the mesh.
@@ -154,8 +206,8 @@ public:
     // Build a ShapeMap from the Conduit shape map.
     axom::Array<IndexType> values, ids;
     const auto allocatorID = axom::execution_space<ExecSpace>::allocatorID();
-    buildShapeMap(values, ids, allocatorID);
-    const ShapeMap<IndexType> shapeMap(values.view(), ids.view());
+    buildShapeMap(m_topo, values, ids, allocatorID);
+    const ShapeMap shapeMap(values.view(), ids.view());
 
     const ConnectivityView connectivityView(m_connectivity);
     const ConnectivityView shapes(m_shapes);
@@ -169,10 +221,12 @@ public:
           connectivityView.data() + offsets[zoneIndex],
           sizes[zoneIndex]);
         const auto shapeID = shapeMap[shapes[zoneIndex]];
+#if defined(AXOM_DEBUG)
 #if defined(AXOM_DEVICE_CODE)
         assert(shapeID > 0);
 #else
         SLIC_ASSERT(shapeID > 0);
+#endif
 #endif
         const ShapeType shape(shapeID, shapeData);
         func(zoneIndex, shape);
@@ -197,8 +251,8 @@ public:
     // Build a ShapeMap from the Conduit shape map.
     axom::Array<IndexType> values, ids;
     const auto allocatorID = axom::execution_space<ExecSpace>::allocatorID();
-    buildShapeMap(values, ids, allocatorID);
-    const ShapeMap<IndexType> shapeMap(values.view(), ids.view());
+    buildShapeMap(m_topo, values, ids, allocatorID);
+    const ShapeMap shapeMap(values.view(), ids.view());
 
     // Make views that can be captured.
     const ConnectivityView connectivityView(m_connectivity);
@@ -215,10 +269,12 @@ public:
           connectivityView.data() + offsets[zoneIndex],
           sizes[zoneIndex]);
         const auto shapeID = shapeMap[shapes[zoneIndex]];
+#if defined(AXOM_DEBUG)
 #if defined(AXOM_DEVICE_CODE)
         assert(shapeID > 0);
 #else
         SLIC_ASSERT(shapeID > 0);
+#endif
 #endif
         const ShapeType shape(shapeID, shapeData);
         func(selectIndex, zoneIndex, shape);
@@ -226,50 +282,13 @@ public:
   }
 
 private:
-  /*!
-   * \brief Populate the shape map values/ids arrays using data in the topology's shape_map.
-   *
-   * \param[out] values The sorted values used for shapes in the topology.
-   * \param[out] ids The Shape ids that correspond to the shape values.
-   * \param allocatorID The allocator to use when creating the arrays.
-   */
-  void buildShapeMap(axom::Array<IndexType> &values,
-                     axom::Array<IndexType> &ids,
-                     int allocatorID) const
-  {
-    // Make the map from the Conduit shape_map. Use std::map to sort the key values.
-    std::map<IndexType, IndexType> sm;
-    const conduit::Node &m_shape_map =
-      m_topo.fetch_existing("elements/shape_map");
-    for(conduit::index_t i = 0; i < m_shape_map.number_of_children(); i++)
-    {
-      const auto value = static_cast<IndexType>(m_shape_map[i].to_int());
-      sm[value] = axom::mir::views::shapeNameToID(m_shape_map[i].name());
-    }
-
-    // Store the map in 2 vectors so data are contiguous.
-    const auto n = sm.size();
-    std::vector<IndexType> valuesvec, idsvec;
-    valuesvec.reserve(n);
-    idsvec.reserve(n);
-    for(auto it = sm.begin(); it != sm.end(); it++)
-    {
-      valuesvec.push_back(it->first);
-      idsvec.push_back(it->second);
-    }
-
-    // Copy the map values to the device memory.
-    values = axom::Array<IndexType>(n, n, allocatorID);
-    ids = axom::Array<IndexType>(n, n, allocatorID);
-    axom::copy(values.data(), valuesvec.data(), n * sizeof(IndexType));
-    axom::copy(ids.data(), idsvec.data(), n * sizeof(IndexType));
-  }
 
   const conduit::Node &m_topo;
   ConnectivityView m_connectivity;
   ConnectivityView m_shapes;
   ConnectivityView m_sizes;
   ConnectivityView m_offsets;
+  ShapeMap         m_shapeMap;
 };
 
 }  // end namespace views

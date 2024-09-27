@@ -46,7 +46,11 @@ template <typename Dimensions>
 void braid(const std::string &type, const Dimensions &dims, conduit::Node &mesh)
 {
   int d[3] = {0, 0, 0};
-  for(int i = 0; i < dims.size(); i++) d[i] = dims[i];
+  auto n = dims.size();
+  for(decltype(n) i = 0; i < n; i++)
+  {
+    d[i] = dims[i];
+  }
   conduit::blueprint::mesh::examples::braid(type, d[0], d[1], d[2], mesh);
 
   add_distance(mesh);

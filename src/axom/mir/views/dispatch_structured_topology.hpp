@@ -15,6 +15,8 @@
 
 #include <conduit/conduit.hpp>
 
+#include <utility>
+
 namespace axom
 {
 namespace mir
@@ -23,7 +25,8 @@ namespace views
 {
 //------------------------------------------------------------------------------
 /*!
- * \brief Fill an array from a Conduit node, filling the destination array if the values do not exist.
+ * \brief Fill an array from a Conduit node, filling the destination array if
+ *        the values do not exist.
  *
  * \tparam ArrayType The array type to use.
  *
@@ -309,6 +312,237 @@ struct make_structured<1>
   }
 };
 
+//------------------------------------------------------------------------------
+namespace internal
+{
+/*!
+ * \brief Base template for dispatching structured topology.
+ */
+template <bool enabled, int NDIMS, typename FuncType>
+struct dispatch_only_structured_topology
+{
+  static void execute(const conduit::Node &AXOM_UNUSED_PARAM(topo), FuncType &&AXOM_UNUSED_PARAM(func))
+  {
+  }
+};
+
+/*!
+ * \brief Partial specialization to dispatch 3D structured topology.
+ */
+template <typename FuncType>
+struct dispatch_only_structured_topology<true, 3, FuncType>
+{
+  /*!
+   * \brief Make a proper view type for the structured topology and pass the
+   *        view to the supplied kernel.
+   *
+   * \param topo The node that contains the topology.
+   * \param func The kernel to be invoked.
+   */
+  static void execute(const conduit::Node &topo, FuncType &&func)
+  {
+    const std::string offsetsKey("elements/dims/offsets");
+    const std::string stridesKey("elements/dims/strides");
+    const std::string shape("hex");
+    if(topo.has_path(offsetsKey) || topo.has_path(stridesKey))
+    {
+      auto topoView = make_strided_structured<3>::view(topo);
+      func(shape, topoView);
+    }
+    else
+    {
+      auto topoView = make_structured<3>::view(topo);
+      func(shape, topoView);
+    }
+  }
+};
+
+/*!
+ * \brief Partial specialization to dispatch 2D structured topology.
+ */
+template <typename FuncType>
+struct dispatch_only_structured_topology<true, 2, FuncType>
+{
+  /*!
+   * \brief Make a proper view type for the structured topology and pass the
+   *        view to the supplied kernel.
+   *
+   * \param topo The node that contains the topology.
+   * \param func The kernel to be invoked.
+   */
+  static void execute(const conduit::Node &topo, FuncType &&func)
+  {
+    const std::string offsetsKey("elements/dims/offsets");
+    const std::string stridesKey("elements/dims/strides");
+    const std::string shape("quad");
+    if(topo.has_path(offsetsKey) || topo.has_path(stridesKey))
+    {
+      auto topoView = make_strided_structured<2>::view(topo);
+      func(shape, topoView);
+    }
+    else
+    {
+      auto topoView = make_structured<2>::view(topo);
+      func(shape, topoView);
+    }
+  }
+};
+
+/*!
+ * \brief Partial specialization to dispatch 1D structured topology.
+ */
+template <typename FuncType>
+struct dispatch_only_structured_topology<true, 1, FuncType>
+{
+  /*!
+   * \brief Make a proper view type for the structured topology and pass the
+   *        view to the supplied kernel.
+   *
+   * \param topo The node that contains the topology.
+   * \param func The kernel to be invoked.
+   */
+  static void execute(const conduit::Node &topo, FuncType &&func)
+  {
+    const std::string offsetsKey("elements/dims/offsets");
+    const std::string stridesKey("elements/dims/strides");
+    const std::string shape("line");
+    if(topo.has_path(offsetsKey) || topo.has_path(stridesKey))
+    {
+      auto topoView = make_strided_structured<1>::view(topo);
+      func(shape, topoView);
+    }
+    else
+    {
+      auto topoView = make_structured<1>::view(topo);
+      func(shape, topoView);
+    }
+  }
+};
+
+//------------------------------------------------------------------------------
+/*!
+ * \brief Base template for dispatching structured topology.
+ */
+template <bool enabled, int NDIMS, typename FuncType>
+struct dispatch_any_structured_topology
+{
+  static void execute(const conduit::Node &AXOM_UNUSED_PARAM(topo), FuncType &&AXOM_UNUSED_PARAM(func))
+  {
+  }
+};
+
+/*!
+ * \brief Partial specialization to dispatch 3D structured topologies.
+ */
+template <typename FuncType>
+struct dispatch_any_structured_topology<true, 3, FuncType>
+{
+  /*!
+   * \brief Make a proper view type for the structured topology and pass the
+   *        view to the supplied kernel.
+   *
+   * \param topo The node that contains the topology.
+   * \param func The kernel to be invoked.
+   */
+  static void execute(const conduit::Node &topo, FuncType &&func)
+  {
+    const std::string offsetsKey("offsets"), stridesKey("strides");
+    const std::string type = topo.fetch_existing("type").as_string();
+    const std::string shape("hex");
+
+    if(type == "structured" && topo.has_path(offsetsKey) &&
+       topo.has_path(stridesKey))
+    {
+      auto topoView = make_strided_structured<3>::view(topo);
+      func(shape, topoView);
+    }
+    else
+    {
+      // Make these topology types share the same func dispatch.
+      StructuredTopologyView<StructuredIndexing<axom::IndexType, 3>> topoView;
+      if(type == "uniform")
+        topoView = make_uniform<3>::view(topo);
+      else if(type == "rectilinear")
+        topoView = make_rectilinear<3>::view(topo);
+      else if(type == "structured")
+        topoView = make_structured<3>::view(topo);
+      func(shape, topoView);
+    }
+  }
+};
+
+/*!
+ * \brief Partial specialization to dispatch 2D structured topologies.
+ */
+template <typename FuncType>
+struct dispatch_any_structured_topology<true, 2, FuncType>
+{
+  /*!
+   * \brief Make a proper view type for the structured topology and pass the
+   *        view to the supplied kernel.
+   *
+   * \param topo The node that contains the topology.
+   * \param func The kernel to be invoked.
+   */
+  static void execute(const conduit::Node &topo, FuncType &&func)
+  {
+    const std::string offsetsKey("offsets"), stridesKey("strides");
+    const std::string type = topo.fetch_existing("type").as_string();
+    const std::string shape("quad");
+    if(type == "structured" && topo.has_path(offsetsKey) &&
+       topo.has_path(stridesKey))
+    {
+      auto topoView = make_strided_structured<2>::view(topo);
+      func(shape, topoView);
+    }
+    else
+    {
+      // Make these topology types share the same func dispatch.
+      StructuredTopologyView<StructuredIndexing<axom::IndexType, 2>> topoView;
+      if(type == "uniform")
+        topoView = make_uniform<2>::view(topo);
+      else if(type == "rectilinear")
+        topoView = make_rectilinear<2>::view(topo);
+      else if(type == "structured")
+        topoView = make_structured<2>::view(topo);
+      func(shape, topoView);
+    }
+  }
+};
+
+/*!
+ * \brief Partial specialization to dispatch 1D structured topologies.
+ */
+template <typename FuncType>
+struct dispatch_any_structured_topology<true, 1, FuncType>
+{
+  /*!
+   * \brief Make a proper view type for the structured topology and pass the
+   *        view to the supplied kernel.
+   *
+   * \param topo The node that contains the topology.
+   * \param func The kernel to be invoked.
+   */
+  static void execute(const conduit::Node &topo, FuncType &&func)
+  {
+    const std::string offsetsKey("offsets"), stridesKey("strides");
+    const std::string type = topo.fetch_existing("type").as_string();
+    const std::string shape("line");
+
+    // Make these topology types share the same func dispatch.
+    StructuredTopologyView<StructuredIndexing<axom::IndexType, 1>> topoView;
+    if(type == "uniform")
+      topoView = make_uniform<1>::view(topo);
+    else if(type == "rectilinear")
+      topoView = make_rectilinear<1>::view(topo);
+    else if(type == "structured")
+      topoView = make_structured<1>::view(topo);
+    func(shape, topoView);
+  }
+};
+
+} // end namespace internal
+
 /*!
  * \brief Creates a topology view compatible with structured topologies and passes that view to the supplied function.
  *
@@ -324,58 +558,20 @@ void dispatch_structured_topology(const conduit::Node &topo, FuncType &&func)
   int ndims = 1;
   ndims += topo.has_path("elements/dims/j") ? 1 : 0;
   ndims += topo.has_path("elements/dims/k") ? 1 : 0;
-  const std::string offsetsKey("elements/dims/offsets");
-  const std::string stridesKey("elements/dims/strides");
 
   switch(ndims)
   {
   case 3:
-    if constexpr(dimension_selected(SelectedDimensions, 3))
-    {
-      const std::string shape("hex");
-      if(topo.has_path(offsetsKey) || topo.has_path(stridesKey))
-      {
-        auto topoView = make_strided_structured<3>::view(topo);
-        func(shape, topoView);
-      }
-      else
-      {
-        auto topoView = make_structured<3>::view(topo);
-        func(shape, topoView);
-      }
-    }
+    internal::dispatch_only_structured_topology<dimension_selected(SelectedDimensions, 3), 3, FuncType>::execute(topo, std::forward<FuncType>(func));
     break;
   case 2:
-    if constexpr(dimension_selected(SelectedDimensions, 2))
-    {
-      const std::string shape("quad");
-      if(topo.has_path(offsetsKey) || topo.has_path(stridesKey))
-      {
-        auto topoView = make_strided_structured<2>::view(topo);
-        func(shape, topoView);
-      }
-      else
-      {
-        auto topoView = make_structured<2>::view(topo);
-        func(shape, topoView);
-      }
-    }
+    internal::dispatch_only_structured_topology<dimension_selected(SelectedDimensions, 2), 2, FuncType>::execute(topo, std::forward<FuncType>(func));
     break;
   case 1:
-    if constexpr(dimension_selected(SelectedDimensions, 1))
-    {
-      const std::string shape("line");
-      if(topo.has_path(offsetsKey) || topo.has_path(stridesKey))
-      {
-        auto topoView = make_strided_structured<1>::view(topo);
-        func(shape, topoView);
-      }
-      else
-      {
-        auto topoView = make_structured<1>::view(topo);
-        func(shape, topoView);
-      }
-    }
+    internal::dispatch_only_structured_topology<dimension_selected(SelectedDimensions, 1), 1, FuncType>::execute(topo, std::forward<FuncType>(func));
+    break;
+  default:
+    break;
   }
 }
 
@@ -393,74 +589,20 @@ void dispatch_structured_topology(const conduit::Node &topo, FuncType &&func)
 template <int SelectedDimensions = select_dimensions(1, 2, 3), typename FuncType>
 void dispatch_structured_topologies(const conduit::Node &topo, FuncType &&func)
 {
-  const std::string offsetsKey("offsets"), stridesKey("strides");
-  const std::string type = topo.fetch_existing("type").as_string();
-  auto ndims = conduit::blueprint::mesh::utils::topology::dims(topo);
+  const auto ndims = conduit::blueprint::mesh::utils::topology::dims(topo);
   switch(ndims)
   {
   case 3:
-    if constexpr(dimension_selected(SelectedDimensions, 3))
-    {
-      const std::string shape("hex");
-
-      if(type == "structured" && topo.has_path(offsetsKey) &&
-         topo.has_path(stridesKey))
-      {
-        auto topoView = make_strided_structured<3>::view(topo);
-        func(shape, topoView);
-      }
-      else
-      {
-        // Make these topology types share the same func dispatch.
-        StructuredTopologyView<StructuredIndexing<axom::IndexType, 3>> topoView;
-        if(type == "uniform")
-          topoView = make_uniform<3>::view(topo);
-        else if(type == "rectilinear")
-          topoView = make_rectilinear<3>::view(topo);
-        else if(type == "structured")
-          topoView = make_structured<3>::view(topo);
-        func(shape, topoView);
-      }
-    }
+    internal::dispatch_any_structured_topology<dimension_selected(SelectedDimensions, 3), 3, FuncType>::execute(topo, std::forward<FuncType>(func));
     break;
   case 2:
-    if constexpr(dimension_selected(SelectedDimensions, 2))
-    {
-      const std::string shape("quad");
-      if(type == "structured" && topo.has_path(offsetsKey) &&
-         topo.has_path(stridesKey))
-      {
-        auto topoView = make_strided_structured<2>::view(topo);
-        func(shape, topoView);
-      }
-      else
-      {
-        // Make these topology types share the same func dispatch.
-        StructuredTopologyView<StructuredIndexing<axom::IndexType, 2>> topoView;
-        if(type == "uniform")
-          topoView = make_uniform<2>::view(topo);
-        else if(type == "rectilinear")
-          topoView = make_rectilinear<2>::view(topo);
-        else if(type == "structured")
-          topoView = make_structured<2>::view(topo);
-        func(shape, topoView);
-      }
-    }
+    internal::dispatch_any_structured_topology<dimension_selected(SelectedDimensions, 2), 2, FuncType>::execute(topo, std::forward<FuncType>(func));
     break;
   case 1:
-    if constexpr(dimension_selected(SelectedDimensions, 1))
-    {
-      const std::string shape("line");
-      // Make these topology types share the same func dispatch.
-      StructuredTopologyView<StructuredIndexing<axom::IndexType, 1>> topoView;
-      if(type == "uniform")
-        topoView = make_uniform<1>::view(topo);
-      else if(type == "rectilinear")
-        topoView = make_rectilinear<1>::view(topo);
-      else if(type == "structured")
-        topoView = make_structured<1>::view(topo);
-      func(shape, topoView);
-    }
+    internal::dispatch_any_structured_topology<dimension_selected(SelectedDimensions, 1), 1, FuncType>::execute(topo, std::forward<FuncType>(func));
+    break;
+  default:
+    break;
   }
 }
 

@@ -18,6 +18,7 @@ namespace mir
 {
 namespace views
 {
+/// Base template
 template <int NDIMS>
 struct make_rectilinear
 { };
@@ -139,6 +140,84 @@ struct make_rectilinear<1>
   }
 };
 
+namespace internal
+{
+/*!
+ * \brief Base template for dispatching rectilinear topology.
+ */
+template <bool enabled, int NDIMS, typename FuncType>
+struct dispatch_one_rectilinear_topology
+{
+  static void execute(const conduit::Node &AXOM_UNUSED_PARAM(topo), FuncType &&AXOM_UNUSED_PARAM(func))
+  {
+  }
+};
+
+/*!
+ * \brief Partial specialization to dispatch 3D rectilinear topology.
+ */
+template <typename FuncType>
+struct dispatch_one_rectilinear_topology<true, 3, FuncType>
+{
+  /*!
+   * \brief Make a proper view type for the rectilinear topology and pass the
+   *        view to the supplied kernel.
+   *
+   * \param topo The node that contains the topology.
+   * \param func The kernel to be invoked.
+   */
+  static void execute(const conduit::Node &topo, FuncType &&func)
+  {
+    auto topoView = make_rectilinear<3>::view(topo);
+    const std::string shape("hex");
+    func(shape, topoView);
+  }
+};
+
+/*!
+ * \brief Partial specialization to dispatch 2D rectilinear topology.
+ */
+template <typename FuncType>
+struct dispatch_one_rectilinear_topology<true, 2, FuncType>
+{
+  /*!
+   * \brief Make a proper view type for the rectilinear topology and pass the
+   *        view to the supplied kernel.
+   *
+   * \param topo The node that contains the topology.
+   * \param func The kernel to be invoked.
+   */
+  static void execute(const conduit::Node &topo, FuncType &&func)
+  {
+    auto topoView = make_rectilinear<2>::view(topo);
+    const std::string shape("quad");
+    func(shape, topoView);
+  }
+};
+
+/*!
+ * \brief Partial specialization to dispatch 1D rectilinear topology.
+ */
+template <typename FuncType>
+struct dispatch_one_rectilinear_topology<true, 1, FuncType>
+{
+  /*!
+   * \brief Make a proper view type for the rectilinear topology and pass the
+   *        view to the supplied kernel.
+   *
+   * \param topo The node that contains the topology.
+   * \param func The kernel to be invoked.
+   */
+  static void execute(const conduit::Node &topo, FuncType &&func)
+  {
+    auto topoView = make_rectilinear<1>::view(topo);
+    const std::string shape("line");
+    func(shape, topoView);
+  }
+};
+
+} // end namespace internal
+
 /*!
  * \brief Creates a topology view compatible with rectilinear topologies and passes that view to the supplied function.
  *
@@ -158,28 +237,13 @@ void dispatch_rectilinear_topology(const conduit::Node &topo, FuncType &&func)
   switch(axes.size())
   {
   case 3:
-    if constexpr(dimension_selected(SelectedDimensions, 3))
-    {
-      auto topoView = make_rectilinear<3>::view(topo);
-      const std::string shape("hex");
-      func(shape, topoView);
-    }
+    internal::dispatch_one_rectilinear_topology<dimension_selected(SelectedDimensions, 3), 3, FuncType>::execute(topo, std::forward<FuncType>(func));
     break;
   case 2:
-    if constexpr(dimension_selected(SelectedDimensions, 2))
-    {
-      auto topoView = make_rectilinear<2>::view(topo);
-      const std::string shape("quad");
-      func(shape, topoView);
-    }
+    internal::dispatch_one_rectilinear_topology<dimension_selected(SelectedDimensions, 2), 2, FuncType>::execute(topo, std::forward<FuncType>(func));
     break;
   case 1:
-    if constexpr(dimension_selected(SelectedDimensions, 1))
-    {
-      auto topoView = make_rectilinear<1>::view(topo);
-      const std::string shape("line");
-      func(shape, topoView);
-    }
+    internal::dispatch_one_rectilinear_topology<dimension_selected(SelectedDimensions, 1), 1, FuncType>::execute(topo, std::forward<FuncType>(func));
     break;
   default:
     break;

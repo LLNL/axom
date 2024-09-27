@@ -33,6 +33,7 @@ constexpr int AnyShape = -1;
  * \param topo The node that contains the topology.
  * \param func The function/lambda to call with the topology view.
  */
+// @{
 template <typename FuncType>
 void dispatch_unstructured_polyhedral_topology(const conduit::Node &topo,
                                                FuncType &&func)
@@ -94,6 +95,7 @@ void typed_dispatch_unstructured_polyhedral_topology(const conduit::Node &topo,
     func(shape, ugView);
   }
 }
+// @}
 
 /*!
  * \brief This function dispatches a Conduit mixed unstructured topology.
@@ -107,6 +109,7 @@ void typed_dispatch_unstructured_polyhedral_topology(const conduit::Node &topo,
  *       the shape_map within the topology so we can build our own shape map
  *       later in the for_all_zones method.
  */
+// @{
 template <typename FuncType>
 void dispatch_unstructured_mixed_topology(const conduit::Node &topo,
                                           FuncType &&func)
@@ -122,11 +125,20 @@ void dispatch_unstructured_mixed_topology(const conduit::Node &topo,
       [&](auto connView, auto shapesView, auto sizesView, auto offsetsView) {
         using ConnType = typename decltype(connView)::value_type;
 
+        // Get the allocator that allocated the connectivity. The shape map data
+        // need to go into the same memory space.
+        const int allocatorID = axom::getAllocatorIDForAddress(topo["elements/connectivity"].data_ptr());
+
+        // Make the shape map.
+        axom::Array<IndexType> values, ids;
+        auto shapeMap = buildShapeMap(topo, values, ids, allocatorID);
+
         UnstructuredTopologyMixedShapeView<ConnType> ugView(topo,
                                                             connView,
                                                             shapesView,
                                                             sizesView,
-                                                            offsetsView);
+                                                            offsetsView,
+                                                            shapeMap);
         func(shape, ugView);
       });
   }
@@ -148,14 +160,24 @@ void typed_dispatch_unstructured_mixed_topology(const conduit::Node &topo,
     auto offsetsView =
       bputils::make_array_view<ConnType>(topo["elements/offsets"]);
 
+    // Get the allocator that allocated the connectivity. The shape map data
+    // need to go into the same memory space.
+    const int allocatorID = axom::getAllocatorIDForAddress(topo["elements/connectivity"].data_ptr());
+
+    // Make the shape map.
+    axom::Array<IndexType> values, ids;
+    auto shapeMap = buildShapeMap(topo, values, ids, allocatorID);
+
     UnstructuredTopologyMixedShapeView<ConnType> ugView(topo,
                                                         connView,
                                                         shapesView,
                                                         sizesView,
-                                                        offsetsView);
+                                                        offsetsView,
+                                                        shapeMap);
     func(shape, ugView);
   }
 }
+// @}
 
 #if __cplusplus >= 201703L
 // C++17 and later.
@@ -181,11 +203,225 @@ constexpr int encode_shapes(Args... args) {
 }
 #endif
 
+/*!
+ * \brief This function turns a list of shapeID values into a bitfield that
+ *        encodes the shapes. We use this in templating to limit which
+ *        shapes get supported in dispatch instantiation.
+ *
+ * \param args A template parameter pack that contains ShapeID values.
+ *
+ * \return An integer that encodes the shape ids.
+ */
 template <typename... Args>
 constexpr int select_shapes(Args... args)
 {
   return encode_shapes((1 << args)...);
 }
+
+//------------------------------------------------------------------------------
+namespace internal
+{
+/*!
+ * \brief Base template for dispatching various shapes conditionally.
+ */
+template <bool enabled, typename ConnType, typename ShapeType, typename FuncType>
+struct dispatch_shape
+{
+  /*!
+   * \brief Execute method that gets generated when a shape is not enabled or supported. Do nothing.
+   */
+  static void execute(bool &AXOM_UNUSED_PARAM(eligible),
+                      const std::string &AXOM_UNUSED_PARAM(shape),
+                      const axom::ArrayView<ConnType> &AXOM_UNUSED_PARAM(connView),
+                      const axom::ArrayView<ConnType> &AXOM_UNUSED_PARAM(sizesView),
+                      const axom::ArrayView<ConnType> &AXOM_UNUSED_PARAM(offsetsView),
+                      FuncType &&AXOM_UNUSED_PARAM(func))
+  {
+  }
+
+  /*!
+   * \brief Execute method that gets generated when a shape is not enabled or supported. Do nothing.
+   */
+  static void execute4(bool &AXOM_UNUSED_PARAM(eligible),
+                       const std::string &AXOM_UNUSED_PARAM(shape),
+                       const conduit::Node &AXOM_UNUSED_PARAM(topo),
+                       FuncType &&AXOM_UNUSED_PARAM(func))
+  {
+  }
+};
+
+// Partial specializations that make views for various shape types.
+
+template <typename ConnType, typename FuncType>
+struct dispatch_shape<true, ConnType, TriShape<ConnType>, FuncType>
+{
+  static void execute(bool &eligible,
+                      const std::string &shape,
+                      const axom::ArrayView<ConnType> &connView,
+                      const axom::ArrayView<ConnType> &sizesView,
+                      const axom::ArrayView<ConnType> &offsetsView,
+                      FuncType &&func)
+  {
+    if(eligible && shape == "tri")
+    {
+      UnstructuredTopologySingleShapeView<TriShape<ConnType>> ugView(
+        connView,
+        sizesView,
+        offsetsView);
+      func(shape, ugView);
+      eligible = false;
+    }
+  }
+};
+
+template <typename ConnType, typename FuncType>
+struct dispatch_shape<true, ConnType, QuadShape<ConnType>, FuncType>
+{
+  static void execute(bool &eligible,
+                      const std::string &shape,
+                      const axom::ArrayView<ConnType> &connView,
+                      const axom::ArrayView<ConnType> &sizesView,
+                      const axom::ArrayView<ConnType> &offsetsView,
+                      FuncType &&func)
+  {
+    if(eligible && shape == "quad")
+    {
+      UnstructuredTopologySingleShapeView<QuadShape<ConnType>> ugView(
+        connView,
+        sizesView,
+        offsetsView);
+      func(shape, ugView);
+      eligible = false;
+    }
+  }
+};
+
+template <typename ConnType, typename FuncType>
+struct dispatch_shape<true, ConnType, TetShape<ConnType>, FuncType>
+{
+  static void execute(bool &eligible,
+                      const std::string &shape,
+                      const axom::ArrayView<ConnType> &connView,
+                      const axom::ArrayView<ConnType> &sizesView,
+                      const axom::ArrayView<ConnType> &offsetsView,
+                      FuncType &&func)
+  {
+    if(eligible && shape == "tet")
+    {
+      UnstructuredTopologySingleShapeView<TetShape<ConnType>> ugView(
+        connView,
+        sizesView,
+        offsetsView);
+      func(shape, ugView);
+      eligible = false;
+    }
+  }
+};
+
+template <typename ConnType, typename FuncType>
+struct dispatch_shape<true, ConnType, PyramidShape<ConnType>, FuncType>
+{
+  static void execute(bool &eligible,
+                      const std::string &shape,
+                      const axom::ArrayView<ConnType> &connView,
+                      const axom::ArrayView<ConnType> &sizesView,
+                      const axom::ArrayView<ConnType> &offsetsView,
+                      FuncType &&func)
+  {
+    if(eligible && shape == "pyramid")
+    {
+      UnstructuredTopologySingleShapeView<PyramidShape<ConnType>> ugView(
+        connView,
+        sizesView,
+        offsetsView);
+      func(shape, ugView);
+      eligible = false;
+    }
+  }
+};
+
+template <typename ConnType, typename FuncType>
+struct dispatch_shape<true, ConnType, WedgeShape<ConnType>, FuncType>
+{
+  static void execute(bool &eligible,
+                      const std::string &shape,
+                      const axom::ArrayView<ConnType> &connView,
+                      const axom::ArrayView<ConnType> &sizesView,
+                      const axom::ArrayView<ConnType> &offsetsView,
+                      FuncType &&func)
+  {
+    if(eligible && shape == "wedge")
+    {
+      UnstructuredTopologySingleShapeView<WedgeShape<ConnType>> ugView(
+        connView,
+        sizesView,
+        offsetsView);
+      func(shape, ugView);
+      eligible = false;
+    }
+  }
+};
+
+template <typename ConnType, typename FuncType>
+struct dispatch_shape<true, ConnType, HexShape<ConnType>, FuncType>
+{
+  static void execute(bool &eligible,
+                      const std::string &shape,
+                      const axom::ArrayView<ConnType> &connView,
+                      const axom::ArrayView<ConnType> &sizesView,
+                      const axom::ArrayView<ConnType> &offsetsView,
+                      FuncType &&func)
+  {
+    if(eligible && shape == "hex")
+    {
+      UnstructuredTopologySingleShapeView<HexShape<ConnType>> ugView(
+        connView,
+        sizesView,
+        offsetsView);
+      func(shape, ugView);
+      eligible = false;
+    }
+  }
+};
+
+struct SelectMixedShape {};
+
+template <typename ConnType, typename FuncType>
+struct dispatch_shape<true, ConnType, SelectMixedShape, FuncType>
+{
+  static void execute4(bool &eligible,
+                       const std::string &shape,
+                       const conduit::Node &topo,
+                       FuncType &&func)
+  {
+    if(eligible && shape == "mixed")
+    {
+      typed_dispatch_unstructured_mixed_topology<ConnType>(topo, std::forward<FuncType>(func));
+      eligible = false;
+    }
+  }
+};
+
+struct SelectPHShape {};
+
+template <typename ConnType, typename FuncType>
+struct dispatch_shape<true, ConnType, SelectPHShape, FuncType>
+{
+  static void execute4(bool &eligible,
+                       const std::string &shape,
+                       const conduit::Node &topo,
+                       FuncType &&func)
+  {
+    if(eligible && shape == "polyhedral")
+    {
+      typed_dispatch_unstructured_polyhedral_topology<ConnType>(topo, std::forward<FuncType>(func));
+      eligible = false;
+    }
+  }
+};
+
+} // end namespace internal
+//------------------------------------------------------------------------------
 
 /*!
  * \brief This function dispatches a Conduit topology to the right view type
@@ -211,27 +447,10 @@ void typed_dispatch_unstructured_topology(const conduit::Node &topo,
     bool eligible = true;
 
     // Conditionally add polyhedron support.
-    if constexpr(axom::utilities::bitIsSet(ShapeTypes, Polyhedron_ShapeID))
-    {
-      if(shape == "polyhedral")
-      {
-        typed_dispatch_unstructured_polyhedral_topology<ConnType>(topo, func);
-        eligible = false;
-      }
-    }
+    internal::dispatch_shape<axom::utilities::bitIsSet(ShapeTypes, Polyhedron_ShapeID), ConnType, internal::SelectPHShape, FuncType>::execute4(eligible, shape, topo, std::forward<FuncType>(func));
 
-    // TODO: add polygon
-
-    if constexpr(axom::utilities::bitIsSet(ShapeTypes, Mixed_ShapeID))
-    {
-      if(eligible && shape == "mixed")
-      {
-        typed_dispatch_unstructured_mixed_topology<ConnType>(topo, func);
-        eligible = false;
-      }
-    }
-
-    // TODO: points, lines
+    // Conditionally add mixed shape support.
+    internal::dispatch_shape<axom::utilities::bitIsSet(ShapeTypes, Mixed_ShapeID), ConnType, internal::SelectMixedShape, FuncType>::execute4(eligible, shape, topo, std::forward<FuncType>(func));
 
     // Make sizes / offsets views if the values are present.
     axom::ArrayView<ConnType> sizesView, offsetsView;
@@ -242,78 +461,15 @@ void typed_dispatch_unstructured_topology(const conduit::Node &topo,
       offsetsView = bputils::make_array_view<ConnType>(
         topo.fetch_existing("elements/offsets"));
 
-    if constexpr(axom::utilities::bitIsSet(ShapeTypes, Tri_ShapeID))
-    {
-      if(eligible && shape == "tri")
-      {
-        UnstructuredTopologySingleShapeView<TriShape<ConnType>> ugView(
-          connView,
-          sizesView,
-          offsetsView);
-        func(shape, ugView);
-        eligible = false;
-      }
-    }
-    if constexpr(axom::utilities::bitIsSet(ShapeTypes, Quad_ShapeID))
-    {
-      if(eligible && shape == "quad")
-      {
-        UnstructuredTopologySingleShapeView<QuadShape<ConnType>> ugView(
-          connView,
-          sizesView,
-          offsetsView);
-        func(shape, ugView);
-        eligible = false;
-      }
-    }
-    if constexpr(axom::utilities::bitIsSet(ShapeTypes, Tet_ShapeID))
-    {
-      if(eligible && shape == "tet")
-      {
-        UnstructuredTopologySingleShapeView<TetShape<ConnType>> ugView(
-          connView,
-          sizesView,
-          offsetsView);
-        func(shape, ugView);
-        eligible = false;
-      }
-    }
-    if constexpr(axom::utilities::bitIsSet(ShapeTypes, Pyramid_ShapeID))
-    {
-      if(eligible && shape == "pyramid")
-      {
-        UnstructuredTopologySingleShapeView<PyramidShape<ConnType>> ugView(
-          connView,
-          sizesView,
-          offsetsView);
-        func(shape, ugView);
-        eligible = false;
-      }
-    }
-    if constexpr(axom::utilities::bitIsSet(ShapeTypes, Wedge_ShapeID))
-    {
-      if(eligible && shape == "wedge")
-      {
-        UnstructuredTopologySingleShapeView<WedgeShape<ConnType>> ugView(
-          connView,
-          sizesView,
-          offsetsView);
-        func(shape, ugView);
-        eligible = false;
-      }
-    }
-    if constexpr(axom::utilities::bitIsSet(ShapeTypes, Hex_ShapeID))
-    {
-      if(eligible && shape == "hex")
-      {
-        UnstructuredTopologySingleShapeView<HexShape<ConnType>> ugView(
-          connView,
-          sizesView,
-          offsetsView);
-        func(shape, ugView);
-        eligible = false;
-      }
-    }
+    // Conditionally add support for other shapes.
+    internal::dispatch_shape<axom::utilities::bitIsSet(ShapeTypes, Tri_ShapeID), ConnType, TriShape<ConnType>, FuncType>::execute(eligible, shape, connView, sizesView, offsetsView, std::forward<FuncType>(func));
+    internal::dispatch_shape<axom::utilities::bitIsSet(ShapeTypes, Quad_ShapeID), ConnType, QuadShape<ConnType>, FuncType>::execute(eligible, shape, connView, sizesView, offsetsView, std::forward<FuncType>(func));
+    internal::dispatch_shape<axom::utilities::bitIsSet(ShapeTypes, Tet_ShapeID), ConnType, TetShape<ConnType>, FuncType>::execute(eligible, shape, connView, sizesView, offsetsView, std::forward<FuncType>(func));
+    internal::dispatch_shape<axom::utilities::bitIsSet(ShapeTypes, Pyramid_ShapeID), ConnType, PyramidShape<ConnType>, FuncType>::execute(eligible, shape, connView, sizesView, offsetsView, std::forward<FuncType>(func));
+    internal::dispatch_shape<axom::utilities::bitIsSet(ShapeTypes, Wedge_ShapeID), ConnType, WedgeShape<ConnType>, FuncType>::execute(eligible, shape, connView, sizesView, offsetsView, std::forward<FuncType>(func));
+    internal::dispatch_shape<axom::utilities::bitIsSet(ShapeTypes, Hex_ShapeID), ConnType, HexShape<ConnType>, FuncType>::execute(eligible, shape, connView, sizesView, offsetsView, std::forward<FuncType>(func));
+
+    // TODO: points, lines, polygon
   }
 }
 

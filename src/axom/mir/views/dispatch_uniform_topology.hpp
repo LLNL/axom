@@ -139,6 +139,84 @@ struct make_uniform<1>
   }
 };
 
+namespace internal
+{
+/*!
+ * \brief Base template for dispatching uniform topology.
+ */
+template <bool enabled, int NDIMS, typename FuncType>
+struct dispatch_one_uniform_topology
+{
+  static void execute(const conduit::Node &AXOM_UNUSED_PARAM(topo), FuncType &&AXOM_UNUSED_PARAM(func))
+  {
+  }
+};
+
+/*!
+ * \brief Partial specialization to dispatch 3D uniform topology.
+ */
+template <typename FuncType>
+struct dispatch_one_uniform_topology<true, 3, FuncType>
+{
+  /*!
+   * \brief Make a proper view type for the uniform topology and pass the
+   *        view to the supplied kernel.
+   *
+   * \param topo The node that contains the topology.
+   * \param func The kernel to be invoked.
+   */
+  static void execute(const conduit::Node &topo, FuncType &&func)
+  {
+    auto topoView = make_uniform<3>::view(topo);
+    const std::string shape("hex");
+    func(shape, topoView);
+  }
+};
+
+/*!
+ * \brief Partial specialization to dispatch 2D uniform topology.
+ */
+template <typename FuncType>
+struct dispatch_one_uniform_topology<true, 2, FuncType>
+{
+  /*!
+   * \brief Make a proper view type for the uniform topology and pass the
+   *        view to the supplied kernel.
+   *
+   * \param topo The node that contains the topology.
+   * \param func The kernel to be invoked.
+   */
+  static void execute(const conduit::Node &topo, FuncType &&func)
+  {
+    auto topoView = make_uniform<2>::view(topo);
+    const std::string shape("quad");
+    func(shape, topoView);
+  }
+};
+
+/*!
+ * \brief Partial specialization to dispatch 1D uniform topology.
+ */
+template <typename FuncType>
+struct dispatch_one_uniform_topology<true, 1, FuncType>
+{
+  /*!
+   * \brief Make a proper view type for the uniform topology and pass the
+   *        view to the supplied kernel.
+   *
+   * \param topo The node that contains the topology.
+   * \param func The kernel to be invoked.
+   */
+  static void execute(const conduit::Node &topo, FuncType &&func)
+  {
+    auto topoView = make_uniform<1>::view(topo);
+    const std::string shape("line");
+    func(shape, topoView);
+  }
+};
+
+} // end namespace internal
+
 /*!
  * \brief Creates a topology view compatible with uniform topologies and passes that view to the supplied function.
  *
@@ -157,30 +235,16 @@ void dispatch_uniform_topology(const conduit::Node &topo, FuncType &&func)
   const conduit::Node &n_dims = coordset->fetch_existing("dims");
   switch(n_dims.dtype().number_of_elements())
   {
-  default:
   case 3:
-    if constexpr(dimension_selected(SelectedDimensions, 3))
-    {
-      auto topoView = make_uniform<3>::view(topo);
-      const std::string shape("hex");
-      func(shape, topoView);
-    }
+    internal::dispatch_one_uniform_topology<dimension_selected(SelectedDimensions, 3), 3, FuncType>::execute(topo, std::forward<FuncType>(func));
     break;
   case 2:
-    if constexpr(dimension_selected(SelectedDimensions, 2))
-    {
-      auto topoView = make_uniform<2>::view(topo);
-      const std::string shape("quad");
-      func(shape, topoView);
-    }
+    internal::dispatch_one_uniform_topology<dimension_selected(SelectedDimensions, 2), 2, FuncType>::execute(topo, std::forward<FuncType>(func));
     break;
   case 1:
-    if constexpr(dimension_selected(SelectedDimensions, 3))
-    {
-      auto topoView = make_uniform<1>::view(topo);
-      const std::string shape("line");
-      func(shape, topoView);
-    }
+    internal::dispatch_one_uniform_topology<dimension_selected(SelectedDimensions, 1), 1, FuncType>::execute(topo, std::forward<FuncType>(func));
+    break;
+  default:
     break;
   }
 }

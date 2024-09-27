@@ -47,7 +47,13 @@ public:
                        const axom::ArrayView<DataType> &y)
     : m_coordinates {x, y}
   {
+#if defined(AXOM_DEBUG)
+#if defined(AXOM_DEVICE_CODE)
+    assert(x.size() == y.size(), "Coordinate size mismatch.");
+#else
     SLIC_ASSERT_MSG(x.size() == y.size(), "Coordinate size mismatch.");
+#endif
+#endif
   }
 
   /*!
@@ -73,12 +79,14 @@ public:
   AXOM_HOST_DEVICE
   PointType getPoint(IndexType vertex_index) const
   {
+#if defined(AXOM_DEBUG)
 #if defined(AXOM_DEVICE_CODE)
-    assert(vertex_index < size());
+    assert(vertex_index < size(), "Out of range index.");
 #else
     SLIC_ASSERT_MSG(
       vertex_index < size(),
-      axom::fmt::format("Vertex {} not in range [0, {}).", vertex_index, size()));
+      axom::fmt::format("Out of range index {}.", vertex_index));
+#endif
 #endif
     const DataType X[3] = {m_coordinates[0][vertex_index],
                            m_coordinates[1][vertex_index]};
@@ -128,8 +136,15 @@ public:
                        const axom::ArrayView<DataType> &z)
     : m_coordinates {x, y, z}
   {
+#if defined(AXOM_DEBUG)
+#if defined(AXOM_DEVICE_CODE)
+    assert(x.size() == y.size() && x.size() == z.size(),
+           "Coordinate size mismatch.");
+#else
     SLIC_ASSERT_MSG(x.size() == y.size() && x.size() == z.size(),
                     "Coordinate size mismatch.");
+#endif
+#endif
   }
 
   /*!
@@ -155,12 +170,14 @@ public:
   AXOM_HOST_DEVICE
   PointType getPoint(IndexType vertex_index) const
   {
+#if defined(AXOM_DEBUG)
 #if defined(AXOM_DEVICE_CODE)
-    assert(vertex_index < size());
+    assert(vertex_index < size(), "Out of range index.");
 #else
     SLIC_ASSERT_MSG(
       vertex_index < size(),
-      axom::fmt::format("Vertex {} not in range [0, {}).", vertex_index, size()));
+      axom::fmt::format("Out of range index {}.", vertex_index));
+#endif
 #endif
     const DataType X[3] = {m_coordinates[0][vertex_index],
                            m_coordinates[1][vertex_index],
