@@ -820,7 +820,7 @@ void test_mesh(MeshType* mesh, const std::string& path)
   file.close();
   delete mesh;
 #if DELETE_VTK_FILES
-  axom::utilities::filesystem::removeFile(path);
+  EXPECT_EQ(axom::utilities::filesystem::removeFile(path), 0);
 #endif
 }
 

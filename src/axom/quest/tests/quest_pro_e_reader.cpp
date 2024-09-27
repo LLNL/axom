@@ -92,7 +92,7 @@ TEST(quest_pro_e_reader, read_to_invalid_mesh)
   EXPECT_DEATH_IF_SUPPORTED(reader.getMesh(&hexmesh), IGNORE_OUTPUT);
 
   // STEP 4: remove Pro/E file
-  axom::utilities::filesystem::removeFile(filename);
+  EXPECT_EQ(axom::utilities::filesystem::removeFile(filename), 0);
 }
 
 //------------------------------------------------------------------------------
@@ -143,7 +143,7 @@ TEST(quest_pro_e_reader, read_pro_e)
   }  // END for all nodes
 
   // STEP 4: remove temporary Pro/E file
-  axom::utilities::filesystem::removeFile(filename);
+  EXPECT_EQ(axom::utilities::filesystem::removeFile(filename), 0);
 }
 
 //------------------------------------------------------------------------------
@@ -197,7 +197,7 @@ TEST(quest_pro_e_reader, read_pro_e_invbbox)
   }  // END for all nodes
 
   // STEP 4: remove temporary Pro/E file
-  axom::utilities::filesystem::removeFile(filename);
+  EXPECT_EQ(axom::utilities::filesystem::removeFile(filename), 0);
 }
 
 //------------------------------------------------------------------------------
@@ -253,7 +253,7 @@ TEST(quest_pro_e_reader, read_pro_e_bbox_all)
   }  // END for all nodes
 
   // STEP 4: remove temporary Pro/E file
-  axom::utilities::filesystem::removeFile(filename);
+  EXPECT_EQ(axom::utilities::filesystem::removeFile(filename), 0);
 }
 
 //------------------------------------------------------------------------------
@@ -310,7 +310,7 @@ TEST(quest_pro_e_reader, read_pro_e_bbox_some)
   }  // END for all nodes
 
   // STEP 4: remove temporary Pro/E file
-  axom::utilities::filesystem::removeFile(filename);
+  EXPECT_EQ(axom::utilities::filesystem::removeFile(filename), 0);
 }
 
 //------------------------------------------------------------------------------
@@ -367,7 +367,7 @@ TEST(quest_pro_e_reader, read_pro_e_bbox_some_incl)
   }  // END for all nodes
 
   // STEP 4: remove temporary Pro/E file
-  axom::utilities::filesystem::removeFile(filename);
+  EXPECT_EQ(axom::utilities::filesystem::removeFile(filename), 0);
 }
 
 //------------------------------------------------------------------------------
@@ -426,7 +426,7 @@ TEST(quest_pro_e_reader, read_pro_e_external)
   }  // END for all nodes
 
   // STEP 4: remove temporary Pro/E file
-  axom::utilities::filesystem::removeFile(filename);
+  EXPECT_EQ(axom::utilities::filesystem::removeFile(filename), 0);
 }
 
 #ifdef AXOM_DATA_DIR
