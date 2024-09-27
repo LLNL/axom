@@ -73,7 +73,7 @@ bool intersect_line_patch(const BezierPatch<T, 3> &patch,
   }
 
   bool foundIntersection = false;
-  if(patch.isBilinear(1e-4))
+  if(patch.isBilinear(sq_tol))
   {
     std::vector<T> u, v, t;
     foundIntersection =
@@ -88,11 +88,12 @@ bool intersect_line_patch(const BezierPatch<T, 3> &patch,
 
     for(size_t i = 0; i < u.size(); ++i)
     {
-      if(axom::utilities::isNearlyEqual(u[i], 1.0, 1e-8) && u_scale != 1.0)
+      // Ignore intersections at the u=0/v=0 boundary if you're in a subdivision
+      if(axom::utilities::isNearlyEqual(u[i], 0.0, 1e-8) && u_offset != 0.0)
       {
         continue;
       }
-      if(axom::utilities::isNearlyEqual(v[i], 1.0, 1e-8) && v_scale != 1.0)
+      if(axom::utilities::isNearlyEqual(v[i], 0.0, 1e-8) && v_offset != 0.0)
       {
         continue;
       }
@@ -101,6 +102,8 @@ bool intersect_line_patch(const BezierPatch<T, 3> &patch,
       vp.push_back(v_offset + v[i] * v_scale);
       tp.push_back(t[i]);
     }
+
+
   }
   else
   {

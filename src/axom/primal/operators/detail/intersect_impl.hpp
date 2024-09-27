@@ -1747,24 +1747,24 @@ inline bool intersect_bilinear_patch_line(const Point3& p0,
     u1 /= c;
   }
 
-  if(0.0 <= u1 && u1 <= 1.0)
+  if(-1e-5 <= u1 && u1 <= 1.0 + 1e-5)
   {
     Vector3 pa = (1 - u1) * q00 + u1 * q10;
     Vector3 pb = (1 - u1) * e00 + u1 * e11;
     Vector3 n = Vector3::cross_product(ray.direction(), pb);
     det = Vector3::dot_product(n, n);
     n = Vector3::cross_product(n, pa);
-    double t1 = Vector3::dot_product(n, pb);
-    double v1 = Vector3::dot_product(n, ray.direction());
-    if(0 <= v1 && v1 <= det)
+    double t1 = Vector3::dot_product(n, pb) / det;
+    double v1 = Vector3::dot_product(n, ray.direction()) / det;
+    if(-1e-5 <= v1 && v1 <= 1.0 + 1e-5)
     {
-      t.push_back(t1 / det);
+      t.push_back(t1);
       u.push_back(u1);
-      v.push_back(v1 / det);
+      v.push_back(v1);
     }
   }
 
-  if(0.0 <= u2 && u2 <= 1.0)
+  if(-1e-5 <= u2 && u2 <= 1.0 + 1e-5)
   {
     Vector3 pa = (1 - u2) * q00 + u2 * q10;
     Vector3 pb = (1 - u2) * e00 + u2 * e11;
@@ -1772,12 +1772,12 @@ inline bool intersect_bilinear_patch_line(const Point3& p0,
     det = Vector3::dot_product(n, n);
     n = Vector3::cross_product(n, pa);
     double t2 = Vector3::dot_product(n, pb) / det;
-    double v2 = Vector3::dot_product(n, ray.direction());
-    if(0 <= v2 && v2 <= det)
+    double v2 = Vector3::dot_product(n, ray.direction()) / det;
+    if(-1e-5 <= v2 && v2 <= 1.0 + 1e-5)
     {
       t.push_back(t2);
       u.push_back(u2);
-      v.push_back(v2 / det);
+      v.push_back(v2);
     }
   }
 
