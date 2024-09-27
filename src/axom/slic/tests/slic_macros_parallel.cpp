@@ -206,13 +206,6 @@ public:
     slic::setLoggingMsgLevel(slic::message::Debug);
     slic::disableAbortOnError(); /* disable abort for testing purposes */
 
-    std::string msgfmt =
-      "[<LEVEL>]:;;<MESSAGE>;;\n@@<FILE>\n@@<LINE>\n$$<RANK>\n&&<RANK_COUNT>";
-
-    std::string msgtagfmt =
-      "[<LEVEL>]:;;<MESSAGE>;;\n##<TAG>\n@@<FILE>\n@@<LINE>\n$$<RANK>\n&&<RANK_"
-      "COUNT>";
-
     if(stream_type == "Lumberjack")
     {
       slic::addStreamToAllMsgLevels(
@@ -251,6 +244,13 @@ public:
   int rank;
   int nranks;
   const int RLIMIT = 8;
+
+  const std::string msgfmt =
+    "[<LEVEL>]:;;<MESSAGE>;;\n@@<FILE>\n@@<LINE>\n$$<RANK>\n&&<RANK_COUNT>";
+
+  const std::string msgtagfmt =
+    "[<LEVEL>]:;;<MESSAGE>;;\n##<TAG>\n@@<FILE>\n@@<LINE>\n$$<RANK>\n&&<RANK_"
+    "COUNT>";
 };
 
 //------------------------------------------------------------------------------
@@ -1322,7 +1322,6 @@ TEST_P(SlicMacrosParallel, test_macros_file_output)
 {
   EXPECT_TRUE(slic::internal::are_all_streams_empty());
 
-  std::string msgfmt = "<MESSAGE>";
   std::string no_fmt;
   std::string with_fmt;
 
@@ -1400,7 +1399,19 @@ TEST_P(SlicMacrosParallel, test_macros_file_output)
     with_fmt_buffer << with_fmt_contents.rdbuf();
     with_fmt_contents.close();
 
-    EXPECT_EQ(with_fmt_buffer.str(), "Test");
+    check_level(with_fmt_buffer.str(), "INFO");
+    check_msg(with_fmt_buffer.str(), "Test");
+    check_file(with_fmt_buffer.str());
+    check_line(with_fmt_buffer.str(), (__LINE__ - 34));
+    if(GetParam() == "Synchronized")
+    {
+      check_rank(with_fmt_buffer.str(), rank);
+    }
+    else
+    {
+      check_ranks(with_fmt_buffer.str(), nranks);
+    }
+    check_rank_count(with_fmt_buffer.str(), GetParam(), nranks);
   }
 
   else
@@ -1430,7 +1441,7 @@ TEST_P(SlicMacrosParallel, test_macros_file_output)
     std::string no_fmt_output_expected;
     no_fmt_output_expected += "*****\n[INFO]\n\n Test \n\n ";
     no_fmt_output_expected += __FILE__;
-    no_fmt_output_expected += "\n" + std::to_string(__LINE__ - 61) + "\n****\n";
+    no_fmt_output_expected += "\n" + std::to_string(__LINE__ - 73) + "\n****\n";
     no_fmt_output_expected +=
       "*****\n[INFO]\n\n Test outputLocalMessages() \n\n ";
     no_fmt_output_expected += __FILE__;
@@ -1443,7 +1454,18 @@ TEST_P(SlicMacrosParallel, test_macros_file_output)
     with_fmt_out_buf << with_fmt_output.rdbuf();
     with_fmt_output.close();
 
-    EXPECT_EQ(with_fmt_out_buf.str(), "TestTest outputLocalMessages()");
+    // Check the next message, "Test outputLocalMessages()"
+    size_t next_index = with_fmt_out_buf.str().rfind("[INFO]");
+    std::string next_msg = with_fmt_out_buf.str().substr(next_index);
+    check_level(next_msg, "INFO");
+    check_msg(next_msg, "Test outputLocalMessages()");
+    check_file(next_msg);
+    check_line(next_msg, (__LINE__ - 36));
+
+    // For outputLocalMessages(), only current rank and rank count of 1
+    // output for LumberjackStreams. Behaves like SynchronizedStream.
+    check_rank(next_msg, rank);
+    check_rank_count(next_msg, GetParam(), 1);
   }
 
   else
@@ -1458,7 +1480,7 @@ TEST_P(SlicMacrosParallel, test_macros_file_output)
     no_fmt_output_expected +=
       "*****\n[INFO]\n\n Test outputLocalMessages() \n\n ";
     no_fmt_output_expected += __FILE__;
-    no_fmt_output_expected += "\n" + std::to_string(__LINE__ - 45) + "\n****\n";
+    no_fmt_output_expected += "\n" + std::to_string(__LINE__ - 56) + "\n****\n";
 
     EXPECT_EQ(no_fmt_out_buf.str(), no_fmt_output_expected);
 
@@ -1467,7 +1489,15 @@ TEST_P(SlicMacrosParallel, test_macros_file_output)
     with_fmt_out_buf << with_fmt_output.rdbuf();
     with_fmt_output.close();
 
-    EXPECT_EQ(with_fmt_out_buf.str(), "Test outputLocalMessages()");
+    check_level(with_fmt_out_buf.str(), "INFO");
+    check_msg(with_fmt_out_buf.str(), "Test outputLocalMessages()");
+    check_file(with_fmt_out_buf.str());
+    check_line(with_fmt_out_buf.str(), (__LINE__ - 68));
+
+    // For outputLocalMessages(), only current rank and rank count of 1
+    // output for LumberjackStreams. Behaves like SynchronizedStream.
+    check_rank(with_fmt_out_buf.str(), rank);
+    check_rank_count(with_fmt_out_buf.str(), GetParam(), 1);
   }
 
   // Closes open file streams associated with Slic streams when destructors
