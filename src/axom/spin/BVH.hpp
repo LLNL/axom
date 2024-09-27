@@ -222,7 +222,7 @@ public:
       IndexType numItems,
       int allocatorID = axom::execution_space<ExecSpace>::allocatorID(),
       FloatType tolerance = DEFAULT_TOLERANCE,
-      FloatType scaleFactor = DEFAULT_SCALE_FACTOR,
+      FloatType scaleFactor = DEFAULT_SCALE_FACTOR)
     : m_AllocatorID{allocatorID},
       m_tolerance{tolerance},
       m_scaleFactor{scaleFactor}
