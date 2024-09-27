@@ -955,7 +955,7 @@ std::pair<double, double> winding_number_casting_split(
 
   // Fix the number of quadrature nodes arbitrarily, but high enough
   //  to `catch` near singularities for refinement
-  constexpr int quad_npts = 30;
+  constexpr int quad_npts = 50;
 
   // The first is the GWN from stokes, the second is the jump condition
   std::pair<double, double> wn_split = {0.0, 0.0};
@@ -1005,15 +1005,14 @@ std::pair<double, double> winding_number_casting_split(
   // Rotation matrix for the patch
   numerics::Matrix<T> rotator;
 
-  // OrientedBoundingBox<T, 3> oBox(bPatch.orientedBoundingBox().expand(edge_tol));
-  if(false)  // !oBox.contains(query)) // Only do casting for debugging
+  OrientedBoundingBox<T, 3> oBox(bPatch.orientedBoundingBox().expand(edge_tol));
+  if(!oBox.contains(query)) // Only do casting for debugging
   {
     /* The following steps rotate the patch until the OBB is /not/ 
        directly above or below the query point */
 
     // Find vector from query to the bounding box
-    // Point<T, 3> closest = closest_point(query, oBox);
-    Point<T, 3> closest = query;
+    Point<T, 3> closest = closest_point(query, oBox);
     Vector<T, 3> v0 = Vector<T, 3>(query, closest).unitVector();
 
     // Find the direction of a ray perpendicular to that
@@ -1041,25 +1040,29 @@ std::pair<double, double> winding_number_casting_split(
        the patch. If the intersection is tangent or on a boundary, try again */
 
     // Initial cast with a z-aligned field (i.e., no rotation)
-    Vector<T, 3> singularity_direction {0.0, 0.0, 1.0};
-    bool goodDirection = true;
+    Vector<T, 3> singularity_direction;
+    bool queryOnSurface = false;
 
     while(true)
     {
-      goodDirection = true;
+      wn_split.second = 0.0;
+      bool retry_cast = false;
 
+      srand(100);
+      
+      // Pick a random cast direction
+      double theta = axom::utilities::random_real(0.0, 2 * M_PI);
+      double u = axom::utilities::random_real(-1.0, 1.0);
+      singularity_direction = Vector<T, 3> {sin(theta) * sqrt(1 - u * u),
+                                            cos(theta) * sqrt(1 - u * u),
+                                            u};
+
+      // Compute intersections with the patch
       std::vector<T> up, vp, tp;
       Line<T, 3> singularity_axis(query, singularity_direction);
-      intersect(bPatch, singularity_axis, up, vp, tp, 1e-4);
+      intersect(bPatch, singularity_axis, up, vp, tp, edge_tol);
 
-      std::cout << "Intersections: " << up.size() << std::endl;
-      for(int i = 0; i < up.size(); ++i)
-      {
-        std::cout << up[i] << " " << vp[i] << std::endl;
-      }
-      std::cout << "------------------------" << std::endl;
-
-      // If the ray doesn't intersect the surface, then we can dodge it
+      // If the line doesn't intersect the surface, then we can dodge it
       if(up.size() == 0)
       {
         wn_split.second += 0.0;
@@ -1068,9 +1071,13 @@ std::pair<double, double> winding_number_casting_split(
       // disk, depending on the orientation
       else
       {
-        for(int i = 0; goodDirection && i < up.size(); ++i)
+        for(int i = 0; i < up.size(); ++i)
         {
-          Vector<T, 3> the_direction(query, bPatch.evaluate(up[i], vp[i]));
+          bool intersectionOnBoundary = false;
+
+          Point<T, 3> intersect_point = bPatch.evaluate(up[i], vp[i]);
+
+          Vector<T, 3> the_direction(query, intersect_point);
           Vector<T, 3> the_normal = bPatch.normal(up[i], vp[i]);
 
           // Do a dot product between the normal and the cast direction
@@ -1078,47 +1085,58 @@ std::pair<double, double> winding_number_casting_split(
           double surf_orientation = the_normal.dot(the_direction);
           double cast_orientation = singularity_direction.dot(the_direction);
 
-          if( squared_distance( query, singularity_axis.at( tp[i] ) ) <= edge_tol_sq )
+          if(squared_distance(query, intersect_point) <= edge_tol_sq)
           {
-            wn_split.second += 0.0; // Do nothing for jump conditiion
+            queryOnSurface = true;
           }
-          else if(surf_orientation == 0 || up[i] < 1e-2 || up[i] > 1 - 1e-2 ||
-             vp[i] < 1e-2 || vp[i] > 1 - 1e-2)
+
+          // Indicates (near) tangency or (near) boundary at the point of intersection.
+          if(axom::utilities::isNearlyEqual(surf_orientation, 0.0, 1e-3) ||
+             up[i] < 1e-3 || up[i] > 1 - 1e-3 || vp[i] < 1e-3 || vp[i] > 1 - 1e-3)
           {
-            // Indicates tangency or boundary at the point of intersection.
+            intersectionOnBoundary = true;
+          }
+
+          if(queryOnSurface && !intersectionOnBoundary)
+          {
+            wn_split.second += 0;  // Do nothing for the jump condition
+          }
+          else if(!queryOnSurface && !intersectionOnBoundary)
+          {
+            // Account for the jump condition analytically
+            wn_split.second +=
+              std::copysign(0.5, tp[i] * surf_orientation * cast_orientation);
+          }
+          else if(!queryOnSurface && intersectionOnBoundary)
+          {
             //  Uncommon, but requires a new ray to be cast
-
-            double theta = axom::utilities::random_real(0.0, 2 * M_PI);
-            double u = axom::utilities::random_real(-1.0, 1.0);
-            singularity_direction = Vector<T, 3> {sin(theta) * sqrt(1 - u * u),
-                                           cos(theta) * sqrt(1 - u * u),
-                                           u};
-
-            goodDirection = false;
+            retry_cast = true;
+            break;
           }
-          else
+          else  // queryOnSurface && intersectionOnBoundary
           {
-            wn_split.second += std::copysign( 0.5, tp[i] * surf_orientation * cast_orientation );
+            singularity_direction = the_normal.unitVector();
+            
+            // Currently, assume this is the only intersection
+            wn_split.second = 0;
+            break;             
+
+            // TODO: Really, we need to cast the ray again and account for extra intersections
           }
-          // else if(surf_orientation * cast_orientation < 0)
-          // {
-          //   wn_split.second -= dir * 0.5;
-          // }
-          // else
-          // {
-          //   wn_split.second += dir * 0.5;
-          // }
         }
       }
 
-      if(!goodDirection)
+      if( retry_cast )
       {
         continue;
       }
 
       // Define a rotation such that the cast ray is vertical
-      Vector<T, 3> axis = {singularity_direction[1], -singularity_direction[0], 0.0};
-      double ang = acos(axom::utilities::clampVal(singularity_direction[2], -1.0, 1.0));
+      Vector<T, 3> axis = {singularity_direction[1],
+                           -singularity_direction[0],
+                           0.0};
+      double ang =
+        acos(axom::utilities::clampVal(singularity_direction[2], -1.0, 1.0));
 
       rotator = angleAxisRotMatrix(ang, axis);
 
@@ -1170,17 +1188,33 @@ std::pair<double, double> winding_number_casting_split(
   }
 
   // Iterate over the edges of the bounding curved polygon, add up the results
+  // std::cout << std::setprecision(15);
+  // std::cout << query << std::endl;
+
   for(int n = 0; n < 4; ++n)
   {
-    wn_split.first +=
+    // std::cout << boundingPoly[n] << std::endl;
+    auto this_val =
       detail::stokes_winding_number(query,
                                     boundingPoly[n],
                                     detail::SingularityAxis::rotated,
                                     quad_npts,
                                     quad_tol);
+    wn_split.first += this_val;
   }
 
   return wn_split;
+}
+
+template <typename T>
+double winding_number_direct(const Point<T, 3>& query,
+                             const BezierPatch<T, 3>& bPatch,
+                             const double edge_tol = 1e-8,
+                             const double quad_tol = 1e-8,
+                             const double EPS = 1e-8)
+{
+  // Compute the winding number with a direct 2D surface integral
+  return detail::winding_number_surface_quadrature(query, bPatch, 100);
 }
 
 #endif
