@@ -111,6 +111,34 @@ inline int getDefaultAllocatorID()
 }
 
 /*!
+ * \brief Returns the ID of the allocator that allocated the memory pointed
+ *        to by \a ptr.
+ * \param ptr A pointer to memory.
+ * \return ID of the allocator that allocated the memory.
+ */
+/// &{
+inline int getAllocatorIDForAddress(void *ptr)
+{
+#ifdef AXOM_USE_UMPIRE
+  umpire::ResourceManager& rm = umpire::ResourceManager::getInstance();
+  return rm.getAllocator(ptr).getId();
+#else
+  return axom::getDefaultAllocatorID();
+#endif
+}
+
+inline int getAllocatorIDForAddress(const void *ptr)
+{
+#ifdef AXOM_USE_UMPIRE
+  umpire::ResourceManager& rm = umpire::ResourceManager::getInstance();
+  return rm.getAllocator(const_cast<void *>(ptr)).getId();
+#else
+  return axom::getDefaultAllocatorID();
+#endif
+}
+/// @}
+
+/*!
  * \brief Allocates a chunk of memory of type T.
  *
  * \param [in] n the number of elements to allocate.
