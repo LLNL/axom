@@ -262,13 +262,13 @@ void check_construct_bvh()
   FloatType scaleFactor = static_cast<FloatType>(1.0);  // i.e., no scaling
 
   spin::BVH<Dimension, ExecSpace, FloatType> bvh(boxesDevice.view(),
-                                             NUM_BOXES,
-                                             deviceAllocatorID,
-                                             tolerance,
-                                             scaleFactor);
+                                                 NUM_BOXES,
+                                                 deviceAllocatorID,
+                                                 tolerance,
+                                                 scaleFactor);
 
   EXPECT_EQ(bvh.getAllocatorID(), deviceAllocatorID);
-  EXPECT_EQ(bvh.getTolerance(),   tolerance);
+  EXPECT_EQ(bvh.getTolerance(), tolerance);
   EXPECT_EQ(bvh.getScaleFactor(), scaleFactor);
 
   BoxType bounds = bvh.getBounds();
