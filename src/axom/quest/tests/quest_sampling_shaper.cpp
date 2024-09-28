@@ -67,7 +67,7 @@ public:
 
   ~ScopedTemporaryFile()
   {
-    axom::utilities::filesystem::removeFile(m_filename);
+    EXPECT_EQ(axom::utilities::filesystem::removeFile(m_filename), 0);
   }
 
   const std::string& getFileName() const { return m_filename; }

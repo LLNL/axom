@@ -17,10 +17,10 @@ The format of this file is based on [Keep a Changelog](http://keepachangelog.com
 
 The Axom project release numbers follow [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
-## [Unreleased] - Release date yyyy-mm-dd
+## [Version 0.10.0] - Release date 2024-09-27
 
 ### Added
-- SLIC constructors added to streams that take in a `std::string`. If string is
+- Added SLIC constructors that take in a `std::string` for the stream. If string is
   interpreted as a file name, the file is not opened until SLIC flushes and the
   stream has at least one message logged.
 - Primal: Adds a `clip()` operator overload for clipping a 2D polygon against
@@ -49,6 +49,10 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 - Quest: Adds an example to query winding numbers on an MFEM NURBS mesh
 
 ### Changed
+- Updates to [Conduit version 0.9.2][https://github.com/LLNL/conduit/releases/tag/v0.9.2]
+- Updates to [RAJA version 2024.07.0][https://github.com/LLNL/RAJA/releases/tag/v2024.07.0]
+- Updates to [camp version 2024.07.0][https://github.com/LLNL/camp/releases/tag/v2024.07.0]
+- Updates to [Umpire version 2024.07.0][https://github.com/LLNL/Umpire/releases/tag/v2024.07.0]
 - `axom::CLI::ExitCodes::Success` has been changed to `axom::CLI::ExitCodes::CLI11_Success`
   to avoid conflict when X11 `#define`s `Success`.
 - `MarchingCubes` masking now uses the mask field's integer values instead of
@@ -78,6 +82,10 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
   (and `adiak` for metadata) and are available when axom is configured with `CALIPER_DIR` and `ADIAK_DIR` 
   config variables.
 - Removes caching of `{PACKAGE}_FOUND` variables in `SetupAxomThirdParty.cmake`
+- We no longer test Axom with the XL compiler. So users should consider XL unsupported.
+
+### Fixed
+- `numerics::eigen_solve()` has been corrected to avoid an early return with error state.
 
 ## [Version 0.9.0] - Release date 2024-03-19
 
@@ -1091,20 +1099,21 @@ fractions for the associated materials must be supplied before shaping.
 - Use this section in case of vulnerabilities
 
 
-[Unreleased]:    https://github.com/LLNL/axom/compare/v0.9.0...develop
-[Version 0.9.0]: https://github.com/LLNL/axom/compare/v0.8.1...v0.9.0
-[Version 0.8.1]: https://github.com/LLNL/axom/compare/v0.8.0...v0.8.1
-[Version 0.8.0]: https://github.com/LLNL/axom/compare/v0.7.0...v0.8.0
-[Version 0.7.0]: https://github.com/LLNL/axom/compare/v0.6.1...v0.7.0
-[Version 0.6.1]: https://github.com/LLNL/axom/compare/v0.6.0...v0.6.1
-[Version 0.6.0]: https://github.com/LLNL/axom/compare/v0.5.0...v0.6.0
-[Version 0.5.0]: https://github.com/LLNL/axom/compare/v0.4.0...v0.5.0
-[Version 0.4.0]: https://github.com/LLNL/axom/compare/v0.3.3...v0.4.0
-[Version 0.3.3]: https://github.com/LLNL/axom/compare/v0.3.2...v0.3.3
-[Version 0.3.2]: https://github.com/LLNL/axom/compare/v0.3.1...v0.3.2
-[Version 0.3.1]: https://github.com/LLNL/axom/compare/v0.3.0...v0.3.1
-[Version 0.3.0]: https://github.com/LLNL/axom/compare/v0.2.9...v0.3.0
-[Version 0.2.9]: https://github.com/LLNL/axom/compare/v0.2.8...v0.2.9
+[Unreleased]:     https://github.com/LLNL/axom/compare/v0.10.0...develop
+[Version 0.10.0]: https://github.com/LLNL/axom/compare/v0.9.0...v0.10.0
+[Version 0.9.0]:  https://github.com/LLNL/axom/compare/v0.8.1...v0.9.0
+[Version 0.8.1]:  https://github.com/LLNL/axom/compare/v0.8.0...v0.8.1
+[Version 0.8.0]:  https://github.com/LLNL/axom/compare/v0.7.0...v0.8.0
+[Version 0.7.0]:  https://github.com/LLNL/axom/compare/v0.6.1...v0.7.0
+[Version 0.6.1]:  https://github.com/LLNL/axom/compare/v0.6.0...v0.6.1
+[Version 0.6.0]:  https://github.com/LLNL/axom/compare/v0.5.0...v0.6.0
+[Version 0.5.0]:  https://github.com/LLNL/axom/compare/v0.4.0...v0.5.0
+[Version 0.4.0]:  https://github.com/LLNL/axom/compare/v0.3.3...v0.4.0
+[Version 0.3.3]:  https://github.com/LLNL/axom/compare/v0.3.2...v0.3.3
+[Version 0.3.2]:  https://github.com/LLNL/axom/compare/v0.3.1...v0.3.2
+[Version 0.3.1]:  https://github.com/LLNL/axom/compare/v0.3.0...v0.3.1
+[Version 0.3.0]:  https://github.com/LLNL/axom/compare/v0.2.9...v0.3.0
+[Version 0.2.9]:  https://github.com/LLNL/axom/compare/v0.2.8...v0.2.9
 
 [clang-format]: https://releases.llvm.org/10.0.0/tools/clang/docs/ClangFormatStyleOptions.html
 [MFEM]: https://mfem.org
