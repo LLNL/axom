@@ -70,30 +70,28 @@ public:
       axom::mir::views::dispatch_structured_topologies(
         topo,
         [&](const std::string &shape, auto &topoView) {
+          n_newtopo["elements/shape"] = shape;
 
-        n_newtopo["elements/shape"] = shape;
+          int ptsPerZone = 2;
+          if(shape == "quad")
+            ptsPerZone = 4;
+          else if(shape == "hex")
+            ptsPerZone = 8;
 
-        int ptsPerZone = 2;
-        if(shape == "quad")
-          ptsPerZone = 4;
-        else if(shape == "hex")
-          ptsPerZone = 8;
+          // Allocate new mesh data.
+          const auto nzones = topoView.numberOfZones();
+          const auto connSize = nzones * ptsPerZone;
+          n_newconn.set(conduit::DataType::index_t(connSize));
+          n_newsizes.set(conduit::DataType::index_t(nzones));
+          n_newoffsets.set(conduit::DataType::index_t(nzones));
 
-        // Allocate new mesh data.
-        const auto nzones = topoView.numberOfZones();
-        const auto connSize = nzones * ptsPerZone;
-        n_newconn.set(conduit::DataType::index_t(connSize));
-        n_newsizes.set(conduit::DataType::index_t(nzones));
-        n_newoffsets.set(conduit::DataType::index_t(nzones));
+          // Make views for the mesh data.
+          auto connView = make_array_view<conduit::index_t>(n_newconn);
+          auto sizesView = make_array_view<conduit::index_t>(n_newsizes);
+          auto offsetsView = make_array_view<conduit::index_t>(n_newoffsets);
 
-        // Make views for the mesh data.
-        auto connView = make_array_view<conduit::index_t>(n_newconn);
-        auto sizesView = make_array_view<conduit::index_t>(n_newsizes);
-        auto offsetsView = make_array_view<conduit::index_t>(n_newoffsets);
-
-        makeUnstructured(ptsPerZone, topoView, connView, sizesView, offsetsView);
-
-      });
+          makeUnstructured(ptsPerZone, topoView, connView, sizesView, offsetsView);
+        });
     }
   }
 
@@ -114,25 +112,25 @@ private:
    */
   template <typename TopologyView>
   static void makeUnstructured(int ptsPerZone,
-    TopologyView topoView,
-    axom::ArrayView<conduit::index_t> connView, 
-    axom::ArrayView<conduit::index_t> sizesView, 
-    axom::ArrayView<conduit::index_t> offsetsView)
+                               TopologyView topoView,
+                               axom::ArrayView<conduit::index_t> connView,
+                               axom::ArrayView<conduit::index_t> sizesView,
+                               axom::ArrayView<conduit::index_t> offsetsView)
   {
     // Fill in the new connectivity.
-    axom::for_all<ExecSpace>(topoView.numberOfZones(), AXOM_LAMBDA(axom::IndexType zoneIndex)
-    {
-      const auto zone = topoView.zone(zoneIndex);
+    axom::for_all<ExecSpace>(
+      topoView.numberOfZones(),
+      AXOM_LAMBDA(axom::IndexType zoneIndex) {
+        const auto zone = topoView.zone(zoneIndex);
 
-      const auto start = zoneIndex * ptsPerZone;
-      for(int i = 0; i < ptsPerZone; i++)
-      {
-        connView[start + i] =
-          static_cast<conduit::index_t>(zone.getId(i));
-      }
-      sizesView[zoneIndex] = ptsPerZone;
-      offsetsView[zoneIndex] = start;
-    });
+        const auto start = zoneIndex * ptsPerZone;
+        for(int i = 0; i < ptsPerZone; i++)
+        {
+          connView[start + i] = static_cast<conduit::index_t>(zone.getId(i));
+        }
+        sizesView[zoneIndex] = ptsPerZone;
+        offsetsView[zoneIndex] = start;
+      });
   }
 };
 

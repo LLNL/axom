@@ -152,7 +152,10 @@ struct test_make_unstructured
 
     conduit::Node deviceResult;
     bputils::MakeUnstructured<ExecSpace> uns;
-    uns.execute(deviceMesh["topologies/mesh"], deviceMesh["coordsets/coords"], "mesh", deviceResult);
+    uns.execute(deviceMesh["topologies/mesh"],
+                deviceMesh["coordsets/coords"],
+                "mesh",
+                deviceResult);
 
     // device->host
     conduit::Node hostResult;
@@ -165,7 +168,10 @@ struct test_make_unstructured
     // Compare just the topologies
     constexpr double tolerance = 1.e-7;
     conduit::Node info;
-    bool success = compareConduit(expectedResult["topologies/mesh"], hostResult["topologies/mesh"], tolerance, info);
+    bool success = compareConduit(expectedResult["topologies/mesh"],
+                                  hostResult["topologies/mesh"],
+                                  tolerance,
+                                  info);
     if(!success)
     {
       info.print();
@@ -175,13 +181,13 @@ struct test_make_unstructured
 
   static void create(conduit::Node &mesh)
   {
-    std::vector<int> dims{4, 4};
+    std::vector<int> dims {4, 4};
     axom::mir::testing::data::braid("uniform", dims, mesh);
   }
 
   static void result(conduit::Node &mesh)
   {
-    std::vector<int> dims{4, 4};
+    std::vector<int> dims {4, 4};
     axom::mir::testing::data::braid("quads", dims, mesh);
   }
 };
@@ -336,7 +342,6 @@ TEST(mir_blueprint_utilities, n2zrel_unstructured_hip)
 }
 #endif
 
-
 TEST(mir_blueprint_utilities, n2zrel_rectilinear_seq)
 {
   /*
@@ -380,7 +385,8 @@ TEST(mir_blueprint_utilities, n2zrel_rectilinear_hip)
 #endif
 
 template <typename ExecSpace, typename IndexT = int>
-struct test_node_to_zone_relation_builder_polyhedral : public test_node_to_zone_relation_builder<ExecSpace, IndexT>
+struct test_node_to_zone_relation_builder_polyhedral
+  : public test_node_to_zone_relation_builder<ExecSpace, IndexT>
 {
   using SuperClass = test_node_to_zone_relation_builder<ExecSpace, IndexT>;
 
@@ -464,38 +470,45 @@ struct test_node_to_zone_relation_builder_polyhedral : public test_node_to_zone_
                                  "topologies/mesh/subelements/connectivity",
                                  "topologies/mesh/subelements/sizes",
                                  "topologies/mesh/subelements/offsets"}});
-
   }
 };
 
 TEST(mir_blueprint_utilities, n2zrel_polyhedral_seq)
 {
-  conduit::Node mesh; 
-  test_node_to_zone_relation_builder_polyhedral<seq_exec, conduit::int32>::create(mesh);
-  test_node_to_zone_relation_builder_polyhedral<seq_exec, conduit::int32>::test(mesh);
+  conduit::Node mesh;
+  test_node_to_zone_relation_builder_polyhedral<seq_exec, conduit::int32>::create(
+    mesh);
+  test_node_to_zone_relation_builder_polyhedral<seq_exec, conduit::int32>::test(
+    mesh);
 }
 #if defined(AXOM_USE_OPENMP)
 TEST(mir_blueprint_utilities, n2zrel_polyhedral_omp)
 {
-  conduit::Node mesh; 
-  test_node_to_zone_relation_builder_polyhedral<omp_exec, conduit::int32>::create(mesh);
-  test_node_to_zone_relation_builder_polyhedral<omp_exec, conduit::int32>::test(mesh);
+  conduit::Node mesh;
+  test_node_to_zone_relation_builder_polyhedral<omp_exec, conduit::int32>::create(
+    mesh);
+  test_node_to_zone_relation_builder_polyhedral<omp_exec, conduit::int32>::test(
+    mesh);
 }
 #endif
 #if defined(AXOM_USE_CUDA)
 TEST(mir_blueprint_utilities, n2zrel_polyhedral_cuda)
 {
-  conduit::Node mesh; 
-  test_node_to_zone_relation_builder_polyhedral<cuda_exec, conduit::int32>::create(mesh);
-  test_node_to_zone_relation_builder_polyhedral<cuda_exec, conduit::int32>::test(mesh);
+  conduit::Node mesh;
+  test_node_to_zone_relation_builder_polyhedral<cuda_exec, conduit::int32>::create(
+    mesh);
+  test_node_to_zone_relation_builder_polyhedral<cuda_exec, conduit::int32>::test(
+    mesh);
 }
 #endif
 #if defined(AXOM_USE_HIP)
 TEST(mir_blueprint_utilities, n2zrel_polyhedral_hip)
 {
-  conduit::Node mesh; 
-  test_node_to_zone_relation_builder_polyhedral<hip_exec, conduit::int32>::create(mesh);
-  test_node_to_zone_relation_builder_polyhedral<hip_exec, conduit::int32>::test(mesh);
+  conduit::Node mesh;
+  test_node_to_zone_relation_builder_polyhedral<hip_exec, conduit::int32>::create(
+    mesh);
+  test_node_to_zone_relation_builder_polyhedral<hip_exec, conduit::int32>::test(
+    mesh);
 }
 #endif
 
@@ -612,16 +625,14 @@ bool compare_views(const Container1 &a, const Container2 &b)
     std::cout << "a={";
     for(axom::IndexType i = 0; i < a.size(); i++)
     {
-      if(i > 0)
-        std::cout << ", ";
+      if(i > 0) std::cout << ", ";
       std::cout << a[i];
     }
     std::cout << "}" << std::endl;
     std::cout << "b={";
     for(axom::IndexType i = 0; i < a.size(); i++)
     {
-      if(i > 0)
-        std::cout << ", ";
+      if(i > 0) std::cout << ", ";
       std::cout << b[i];
     }
     std::cout << "}" << std::endl;
@@ -678,8 +689,10 @@ struct test_matset_slice
     const axom::Array<conduit::float64> volume_fractions {
       {0.5, 0.5, 1.0, 0.8, 0.2}};
 
-    EXPECT_EQ(conduit::DataType::INT64_ID, newHostMatset["material_ids"].dtype().id());
-    EXPECT_EQ(conduit::DataType::FLOAT64_ID, newHostMatset["volume_fractions"].dtype().id());
+    EXPECT_EQ(conduit::DataType::INT64_ID,
+              newHostMatset["material_ids"].dtype().id());
+    EXPECT_EQ(conduit::DataType::FLOAT64_ID,
+              newHostMatset["volume_fractions"].dtype().id());
 
     EXPECT_TRUE(compare_views(
       sizes.view(),
@@ -693,9 +706,9 @@ struct test_matset_slice
     EXPECT_TRUE(compare_views(
       material_ids.view(),
       bputils::make_array_view<conduit::int64>(newHostMatset["material_ids"])));
-    EXPECT_TRUE(compare_views(
-      volume_fractions.view(),
-      bputils::make_array_view<conduit::float64>(newHostMatset["volume_fractions"])));
+    EXPECT_TRUE(compare_views(volume_fractions.view(),
+                              bputils::make_array_view<conduit::float64>(
+                                newHostMatset["volume_fractions"])));
   }
 
   static void create(conduit::Node &matset)

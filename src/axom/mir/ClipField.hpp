@@ -333,8 +333,7 @@ private:
     axom::for_all<ExecSpace>(
       srcView.size(),
       AXOM_LAMBDA(axom::IndexType index) {
-        clipFieldView[index] =
-          static_cast<ClipFieldType>(srcView[index]);
+        clipFieldView[index] = static_cast<ClipFieldType>(srcView[index]);
       });
   }
 
@@ -838,7 +837,8 @@ private:
 
     const TopologyView deviceTopologyView(m_topologyView);
     const auto selectedZonesView = selectedZones.view();
-    axom::for_all<ExecSpace>(selectedZonesView.size(),
+    axom::for_all<ExecSpace>(
+      selectedZonesView.size(),
       AXOM_LAMBDA(axom::IndexType szIndex) {
         const auto zoneIndex = selectedZonesView[szIndex];
         const auto zone = deviceTopologyView.zone(zoneIndex);
@@ -958,7 +958,7 @@ private:
         // Set blend group sizes for this zone.
         blendGroupsView[szIndex] = thisBlendGroups;
         blendGroupsLenView[szIndex] = thisBlendGroupLen;
-      }); // for_selected_zones
+      });  // for_selected_zones
 
 #if defined(AXOM_DEBUG_CLIP_FIELD)
     std::cout
@@ -994,7 +994,9 @@ private:
     const auto fragmentsView = fragmentData.m_fragmentsView;
     axom::for_all<ExecSpace>(
       nzones,
-      AXOM_LAMBDA(axom::IndexType szIndex) { fragment_sum += fragmentsView[szIndex]; });
+      AXOM_LAMBDA(axom::IndexType szIndex) {
+        fragment_sum += fragmentsView[szIndex];
+      });
     fragmentData.m_finalNumZones = fragment_sum.get();
 
     // Sum the fragment connectivity sizes.
@@ -1050,7 +1052,9 @@ private:
     const auto nodeUsedView = nodeData.m_nodeUsedView;
     axom::for_all<ExecSpace>(
       nodeUsedView.size(),
-      AXOM_LAMBDA(axom::IndexType index) { nUsed_reducer += nodeUsedView[index]; });
+      AXOM_LAMBDA(axom::IndexType index) {
+        nUsed_reducer += nodeUsedView[index];
+      });
     return nUsed_reducer.get();
   }
 
@@ -1120,7 +1124,8 @@ private:
     const auto deviceIntersector = m_intersector.view();
     const TopologyView deviceTopologyView(m_topologyView);
     const auto selectedZonesView = selectedZones.view();
-    axom::for_all<ExecSpace>(selectedZonesView.size(),
+    axom::for_all<ExecSpace>(
+      selectedZonesView.size(),
       AXOM_LAMBDA(axom::IndexType szIndex) {
         const auto zoneIndex = selectedZonesView[szIndex];
         const auto zone = deviceTopologyView.zone(zoneIndex);
@@ -1342,7 +1347,8 @@ private:
 
       const TopologyView deviceTopologyView(m_topologyView);
       const auto selectedZonesView = selectedZones.view();
-      axom::for_all<ExecSpace>(selectedZonesView.size(),
+      axom::for_all<ExecSpace>(
+        selectedZonesView.size(),
         AXOM_LAMBDA(axom::IndexType szIndex) {
           const auto zoneIndex = selectedZonesView[szIndex];
           const auto zone = deviceTopologyView.zone(zoneIndex);
@@ -1492,7 +1498,7 @@ private:
           // Reduce overall whether there are degenerates.
           degenerates_reduce |= degenerates;
 #endif
-        }); // for_selected_zones
+        });  // for_selected_zones
 
 #if defined(AXOM_DEBUG_CLIP_FIELD)
       std::cout
@@ -1554,10 +1560,20 @@ private:
         axom::exclusive_scan<ExecSpace>(maskView, maskOffsetsView);
 
         // Filter sizes, shapes, color using the mask
-        sizesView = filter(n_sizes, sizesView, filteredZoneCount, maskView, maskOffsetsView);
-        offsetsView = filter(n_offsets, offsetsView, filteredZoneCount, maskView, maskOffsetsView);
-        shapesView = filter(n_shapes, shapesView, filteredZoneCount, maskView, maskOffsetsView);
-        colorView = filter(n_color_values, colorView, filteredZoneCount, maskView, maskOffsetsView);
+        sizesView =
+          filter(n_sizes, sizesView, filteredZoneCount, maskView, maskOffsetsView);
+        offsetsView = filter(n_offsets,
+                             offsetsView,
+                             filteredZoneCount,
+                             maskView,
+                             maskOffsetsView);
+        shapesView =
+          filter(n_shapes, shapesView, filteredZoneCount, maskView, maskOffsetsView);
+        colorView = filter(n_color_values,
+                           colorView,
+                           filteredZoneCount,
+                           maskView,
+                           maskOffsetsView);
 
         // Record the filtered size.
         fragmentData.m_finalNumZones = filteredZoneCount;
@@ -1623,7 +1639,7 @@ private:
                 connView[offset + 1] = pts[1];
                 connView[offset + 2] = pts[2];
                 // Repeat the last point (it won't be used though).
-                connView[offset + 3] = pts[2];  
+                connView[offset + 3] = pts[2];
               }
             }
 
@@ -1688,8 +1704,11 @@ private:
    * \param maskOffsetsView The offsets view to indicate where to write the new data.
    */
   template <typename DataView>
-  DataView filter(conduit::Node &n_src, DataView srcView, axom::IndexType newSize,
-    axom::ArrayView<int> maskView, axom::ArrayView<int> maskOffsetsView) const
+  DataView filter(conduit::Node &n_src,
+                  DataView srcView,
+                  axom::IndexType newSize,
+                  axom::ArrayView<int> maskView,
+                  axom::ArrayView<int> maskOffsetsView) const
   {
     using value_type = typename DataView::value_type;
     namespace bputils = axom::mir::utilities::blueprint;
@@ -1892,7 +1911,10 @@ private:
         n_values.set(conduit::DataType(n_orig_values.dtype().id(),
                                        fragmentData.m_finalNumZones));
         auto valuesView = bputils::make_array_view<value_type>(n_values);
-        makeOriginalElements_copy(fragmentData, selectedZones, valuesView, origValuesView);
+        makeOriginalElements_copy(fragmentData,
+                                  selectedZones,
+                                  valuesView,
+                                  origValuesView);
       });
     }
     else
@@ -1938,14 +1960,14 @@ private:
     const auto selectedZonesView = selectedZones.view();
     const auto nzones = selectedZonesView.size();
     axom::for_all<ExecSpace>(
-       nzones,
-       AXOM_LAMBDA(axom::IndexType index) {
-         const int sizeIndex = fragmentData.m_fragmentOffsetsView[index];
-         const int nFragments = fragmentData.m_fragmentsView[index];
-         const auto zoneIndex = selectedZonesView[index];
-         for(int i = 0; i < nFragments; i++)
-           valuesView[sizeIndex + i] = origValuesView[zoneIndex];
-       });
+      nzones,
+      AXOM_LAMBDA(axom::IndexType index) {
+        const int sizeIndex = fragmentData.m_fragmentOffsetsView[index];
+        const int nFragments = fragmentData.m_fragmentsView[index];
+        const auto zoneIndex = selectedZonesView[index];
+        for(int i = 0; i < nFragments; i++)
+          valuesView[sizeIndex + i] = origValuesView[zoneIndex];
+      });
   }
 
   /*!
@@ -2027,7 +2049,9 @@ private:
         // Update values for the blend groups only.
         axom::for_all<ExecSpace>(
           blendSize,
-          AXOM_LAMBDA(axom::IndexType bgid) { valuesView[origSize + bgid] = one; });
+          AXOM_LAMBDA(axom::IndexType bgid) {
+            valuesView[origSize + bgid] = one;
+          });
       }
       else
       {

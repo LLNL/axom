@@ -1030,10 +1030,11 @@ protected:
    * \param cleanMats A vector of clean materials.
    * \param mixedMats A vector of mixed materials.
    */
-  void makeWorkingFields(const conduit::Node &n_topo,
-                         conduit::Node &n_fields,
-                         const axom::mir::views::MaterialInformation &cleanMats,
-                         const axom::mir::views::MaterialInformation &AXOM_UNUSED_PARAM(mixedMats)) const
+  void makeWorkingFields(
+    const conduit::Node &n_topo,
+    conduit::Node &n_fields,
+    const axom::mir::views::MaterialInformation &cleanMats,
+    const axom::mir::views::MaterialInformation &AXOM_UNUSED_PARAM(mixedMats)) const
   {
     namespace bputils = axom::mir::utilities::blueprint;
     AXOM_ANNOTATE_SCOPE("makeWorkingFields");

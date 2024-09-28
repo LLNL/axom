@@ -238,11 +238,11 @@ public:
   AXOM_HOST_DEVICE ShapeType zone(axom::IndexType zoneIndex) const
   {
 #if defined(AXOM_DEBUG)
-#if defined(AXOM_DEVICE_CODE)
+  #if defined(AXOM_DEVICE_CODE)
     assert(zoneIndex < numberOfZones());
-#else
+  #else
     SLIC_ASSERT(zoneIndex < numberOfZones());
-#endif
+  #endif
 #endif
 
     return ShapeType(m_data, zoneIndex);

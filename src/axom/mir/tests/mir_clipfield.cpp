@@ -604,7 +604,11 @@ void braid2d_clip_test(const std::string &type, const std::string &name)
 
     // Make the shape map.
     axom::Array<axom::IndexType> values, ids;
-    auto shapeMap = axom::mir::views::buildShapeMap(n_device_topo, values, ids, axom::execution_space<ExecSpace>::allocatorID());
+    auto shapeMap = axom::mir::views::buildShapeMap(
+      n_device_topo,
+      values,
+      ids,
+      axom::execution_space<ExecSpace>::allocatorID());
 
     using MixedTopoView =
       axom::mir::views::UnstructuredTopologyMixedShapeView<axom::IndexType>;
@@ -1003,7 +1007,11 @@ void braid3d_mixed_clip_test(const std::string &name)
 
   // Make the shape map.
   axom::Array<axom::IndexType> values, ids;
-  auto shapeMap = axom::mir::views::buildShapeMap(n_device_topo, values, ids, axom::execution_space<ExecSpace>::allocatorID());
+  auto shapeMap = axom::mir::views::buildShapeMap(
+    n_device_topo,
+    values,
+    ids,
+    axom::execution_space<ExecSpace>::allocatorID());
 
   TopoView topoView(connView, shapesView, sizesView, offsetsView, shapeMap);
 

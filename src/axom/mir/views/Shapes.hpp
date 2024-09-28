@@ -59,7 +59,8 @@ struct PointTraits
   AXOM_HOST_DEVICE constexpr static IndexType dimension() { return 0; }
 
   AXOM_HOST_DEVICE constexpr static IndexType numberOfNodes() { return 1; }
-  AXOM_HOST_DEVICE constexpr static IndexType numberOfNodesInFace(int AXOM_UNUSED_PARAM(faceIndex))
+  AXOM_HOST_DEVICE constexpr static IndexType numberOfNodesInFace(
+    int AXOM_UNUSED_PARAM(faceIndex))
   {
     return 1;
   }
@@ -101,7 +102,8 @@ struct LineTraits
   AXOM_HOST_DEVICE constexpr static IndexType dimension() { return 1; }
 
   AXOM_HOST_DEVICE constexpr static IndexType numberOfNodes() { return 2; }
-  AXOM_HOST_DEVICE constexpr static IndexType numberOfNodesInFace(int AXOM_UNUSED_PARAM(faceIndex))
+  AXOM_HOST_DEVICE constexpr static IndexType numberOfNodesInFace(
+    int AXOM_UNUSED_PARAM(faceIndex))
   {
     return 2;
   }
@@ -149,7 +151,8 @@ struct TriTraits
   AXOM_HOST_DEVICE constexpr static IndexType dimension() { return 2; }
 
   AXOM_HOST_DEVICE constexpr static IndexType numberOfNodes() { return 3; }
-  AXOM_HOST_DEVICE constexpr static IndexType numberOfNodesInFace(int AXOM_UNUSED_PARAM(faceIndex))
+  AXOM_HOST_DEVICE constexpr static IndexType numberOfNodesInFace(
+    int AXOM_UNUSED_PARAM(faceIndex))
   {
     return 3;
   }
@@ -198,7 +201,8 @@ struct QuadTraits
   AXOM_HOST_DEVICE constexpr static IndexType dimension() { return 2; }
 
   AXOM_HOST_DEVICE constexpr static IndexType numberOfNodes() { return 4; }
-  AXOM_HOST_DEVICE constexpr static IndexType numberOfNodesInFace(int AXOM_UNUSED_PARAM(faceIndex))
+  AXOM_HOST_DEVICE constexpr static IndexType numberOfNodesInFace(
+    int AXOM_UNUSED_PARAM(faceIndex))
   {
     return 4;
   }
@@ -253,7 +257,8 @@ struct TetTraits
   AXOM_HOST_DEVICE constexpr static IndexType dimension() { return 3; }
 
   AXOM_HOST_DEVICE constexpr static IndexType numberOfNodes() { return 4; }
-  AXOM_HOST_DEVICE constexpr static IndexType numberOfNodesInFace(int AXOM_UNUSED_PARAM(faceIndex))
+  AXOM_HOST_DEVICE constexpr static IndexType numberOfNodesInFace(
+    int AXOM_UNUSED_PARAM(faceIndex))
   {
     return 3;
   }
@@ -437,7 +442,8 @@ struct HexTraits
   AXOM_HOST_DEVICE constexpr static IndexType dimension() { return 3; }
 
   AXOM_HOST_DEVICE constexpr static IndexType numberOfNodes() { return 8; }
-  AXOM_HOST_DEVICE constexpr static IndexType numberOfNodesInFace(int AXOM_UNUSED_PARAM(faceIndex))
+  AXOM_HOST_DEVICE constexpr static IndexType numberOfNodesInFace(
+    int AXOM_UNUSED_PARAM(faceIndex))
   {
     return 4;
   }
@@ -513,8 +519,7 @@ struct PolygonShape : public PolygonTraits
   /*!
    * \brief Construct a shape.
    */
-  AXOM_HOST_DEVICE PolygonShape(const ConnectivityView &ids)
-    : m_ids(ids) { }
+  AXOM_HOST_DEVICE PolygonShape(const ConnectivityView &ids) : m_ids(ids) { }
 
   /*!
    * \brief Get the ids that make up this shape.
@@ -565,11 +570,7 @@ struct Shape : public ShapeTraits
   /*!
    * \brief Construct a shape.
    */
-  AXOM_HOST_DEVICE Shape()
-    : m_ids()
-    , m_faceIds()
-  {
-  }
+  AXOM_HOST_DEVICE Shape() : m_ids(), m_faceIds() { }
 
   /*!
    * \brief Construct a shape.
@@ -606,21 +607,31 @@ struct Shape : public ShapeTraits
    *
    * \return The container for the ids that make up this shape.
    */
-  AXOM_HOST_DEVICE ConnectivityStorageConstRef getIdsStorage() const { return m_ids; }
+  AXOM_HOST_DEVICE ConnectivityStorageConstRef getIdsStorage() const
+  {
+    return m_ids;
+  }
 
   /*!
    * \brief Get the ids that make up this shape as a view.
    *
    * \return A view containing the ids that make up this shape.
    */
-  AXOM_HOST_DEVICE ConnectivityView getIds() const { return ConnectivityView(const_cast<ConnectivityType *>(m_ids.data()), m_ids.size()); }
+  AXOM_HOST_DEVICE ConnectivityView getIds() const
+  {
+    return ConnectivityView(const_cast<ConnectivityType *>(m_ids.data()),
+                            m_ids.size());
+  }
 
   /*!
    * \brief Get the unique ids that make up this shape. For basic shapes, assume they are unique.
    *
    * \return The unique ids that make up this shape.
    */
-  AXOM_HOST_DEVICE ConnectivityStorageConstRef getUniqueIds() const { return m_ids; }
+  AXOM_HOST_DEVICE ConnectivityStorageConstRef getUniqueIds() const
+  {
+    return m_ids;
+  }
 
   /*!
    * \brief Get the ids for the requested face.
@@ -631,21 +642,22 @@ struct Shape : public ShapeTraits
    */
   /// @{
   template <int _ndims = ShapeTraits::dimension()>
-  AXOM_HOST_DEVICE typename std::enable_if<_ndims == 2, ConnectivityStorageConstRef>::type
-  getFace(axom::IndexType AXOM_UNUSED_PARAM(faceIndex)) const
+  AXOM_HOST_DEVICE
+    typename std::enable_if<_ndims == 2, ConnectivityStorageConstRef>::type
+    getFace(axom::IndexType AXOM_UNUSED_PARAM(faceIndex)) const
   {
     return m_ids;
   }
 
-//  template <int _ndims = ShapeTraits::dimension()>
-//  AXOM_HOST_DEVICE typename std::enable_if<_ndims > 2, ConnectivityStorage>::type
-//  getFace(axom::IndexType faceIndex) const
-//  {
-//    const auto nnodes = ShapeTraits::numberOfNodesInFace(faceIndex);
-//    for(IndexType i = 0; i < nnodes; i++)
-//      m_faceIds[i] = m_ids[ShapeTraits::faces[faceIndex][i]];
-//    return ConnectivityStorage(m_faceIds.m_data, nnodes);
-//  }
+  //  template <int _ndims = ShapeTraits::dimension()>
+  //  AXOM_HOST_DEVICE typename std::enable_if<_ndims > 2, ConnectivityStorage>::type
+  //  getFace(axom::IndexType faceIndex) const
+  //  {
+  //    const auto nnodes = ShapeTraits::numberOfNodesInFace(faceIndex);
+  //    for(IndexType i = 0; i < nnodes; i++)
+  //      m_faceIds[i] = m_ids[ShapeTraits::faces[faceIndex][i]];
+  //    return ConnectivityStorage(m_faceIds.m_data, nnodes);
+  //  }
   /// @}
 
 private:
@@ -662,25 +674,53 @@ private:
  */
 /// @{
 template <typename ConnType>
-using LineShape = Shape<LineTraits, typename std::conditional<std::is_integral<ConnType>::value, axom::ArrayView<ConnType>, ConnType>::type>;
+using LineShape =
+  Shape<LineTraits,
+        typename std::conditional<std::is_integral<ConnType>::value,
+                                  axom::ArrayView<ConnType>,
+                                  ConnType>::type>;
 
 template <typename ConnType>
-using TriShape = Shape<TriTraits, typename std::conditional<std::is_integral<ConnType>::value, axom::ArrayView<ConnType>, ConnType>::type>;
+using TriShape =
+  Shape<TriTraits,
+        typename std::conditional<std::is_integral<ConnType>::value,
+                                  axom::ArrayView<ConnType>,
+                                  ConnType>::type>;
 
 template <typename ConnType>
-using QuadShape = Shape<QuadTraits, typename std::conditional<std::is_integral<ConnType>::value, axom::ArrayView<ConnType>, ConnType>::type>;
+using QuadShape =
+  Shape<QuadTraits,
+        typename std::conditional<std::is_integral<ConnType>::value,
+                                  axom::ArrayView<ConnType>,
+                                  ConnType>::type>;
 
 template <typename ConnType>
-using TetShape = Shape<TetTraits, typename std::conditional<std::is_integral<ConnType>::value, axom::ArrayView<ConnType>, ConnType>::type>;
+using TetShape =
+  Shape<TetTraits,
+        typename std::conditional<std::is_integral<ConnType>::value,
+                                  axom::ArrayView<ConnType>,
+                                  ConnType>::type>;
 
 template <typename ConnType>
-using PyramidShape = Shape<PyramidTraits, typename std::conditional<std::is_integral<ConnType>::value, axom::ArrayView<ConnType>, ConnType>::type>;
+using PyramidShape =
+  Shape<PyramidTraits,
+        typename std::conditional<std::is_integral<ConnType>::value,
+                                  axom::ArrayView<ConnType>,
+                                  ConnType>::type>;
 
 template <typename ConnType>
-using WedgeShape = Shape<WedgeTraits, typename std::conditional<std::is_integral<ConnType>::value, axom::ArrayView<ConnType>, ConnType>::type>;
+using WedgeShape =
+  Shape<WedgeTraits,
+        typename std::conditional<std::is_integral<ConnType>::value,
+                                  axom::ArrayView<ConnType>,
+                                  ConnType>::type>;
 
 template <typename ConnType>
-using HexShape = Shape<HexTraits, typename std::conditional<std::is_integral<ConnType>::value, axom::ArrayView<ConnType>, ConnType>::type>;
+using HexShape =
+  Shape<HexTraits,
+        typename std::conditional<std::is_integral<ConnType>::value,
+                                  axom::ArrayView<ConnType>,
+                                  ConnType>::type>;
 /// @}
 
 /*!

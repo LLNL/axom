@@ -277,7 +277,10 @@ void copy(conduit::Node &dest, const conduit::Node &src)
  * \param moveToHost Sometimes data are on device and need to be moved to host first.
  */
 template <typename ArrayType>
-bool fillFromNode(const conduit::Node &n, const std::string &key, ArrayType &arr, bool moveToHost = false)
+bool fillFromNode(const conduit::Node &n,
+                  const std::string &key,
+                  ArrayType &arr,
+                  bool moveToHost = false)
 {
   bool found = false;
   if((found = n.has_path(key)) == true)
@@ -450,8 +453,9 @@ struct minmax
         vmax.max(nview[index]);
       });
 
-    return std::pair<ReturnType, ReturnType> {static_cast<ReturnType>(vmin.get()),
-                                              static_cast<ReturnType>(vmax.get())};
+    return std::pair<ReturnType, ReturnType> {
+      static_cast<ReturnType>(vmin.get()),
+      static_cast<ReturnType>(vmax.get())};
   }
 };
 

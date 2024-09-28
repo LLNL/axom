@@ -65,11 +65,10 @@ struct StackArray
   AXOM_HOST_DEVICE
   constexpr operator const T*() const noexcept { return &m_data[0]; }
 
-  AXOM_HOST_DEVICE T *data() noexcept { return &m_data[0]; }
-  AXOM_HOST_DEVICE const T *data() const noexcept { return &m_data[0]; }
+  AXOM_HOST_DEVICE T* data() noexcept { return &m_data[0]; }
+  AXOM_HOST_DEVICE const T* data() const noexcept { return &m_data[0]; }
 
   /// @}
-
 
   /*!
    * \brief Begin/end iterators

@@ -189,25 +189,35 @@ struct test_structured_topology_view_rectilinear
 
     // Make results view on device.
     constexpr int nzones = 9;
-    axom::Array<axom::IndexType> results(nzones, nzones, axom::execution_space<ExecSpace>::allocatorID());
+    axom::Array<axom::IndexType> results(
+      nzones,
+      nzones,
+      axom::execution_space<ExecSpace>::allocatorID());
     auto resultsView = results.view();
 
     // Execute the kernel for each zone (find max node number in zone).
-    auto topoView = axom::mir::views::make_rectilinear<2>::view(deviceMesh["topologies/mesh"]);
-    axom::for_all<ExecSpace>(topoView.numberOfZones(), AXOM_LAMBDA(axom::IndexType zoneIndex)
-    {
-      const auto zone = topoView.zone(zoneIndex);
-      axom::IndexType m = -1;
-      for(const auto &id : zone.getIds())
-      {
-        m = axom::utilities::max(static_cast<axom::IndexType>(id), m);
-      }
-      resultsView[zoneIndex] = m;
-    });
+    auto topoView = axom::mir::views::make_rectilinear<2>::view(
+      deviceMesh["topologies/mesh"]);
+    axom::for_all<ExecSpace>(
+      topoView.numberOfZones(),
+      AXOM_LAMBDA(axom::IndexType zoneIndex) {
+        const auto zone = topoView.zone(zoneIndex);
+        axom::IndexType m = -1;
+        for(const auto &id : zone.getIds())
+        {
+          m = axom::utilities::max(static_cast<axom::IndexType>(id), m);
+        }
+        resultsView[zoneIndex] = m;
+      });
 
     // device->host
-    axom::Array<axom::IndexType> hostResults(nzones, nzones, axom::execution_space<axom::SEQ_EXEC>::allocatorID());
-    axom::copy(hostResults.data(), results.data(), nzones * sizeof(axom::IndexType));
+    axom::Array<axom::IndexType> hostResults(
+      nzones,
+      nzones,
+      axom::execution_space<axom::SEQ_EXEC>::allocatorID());
+    axom::copy(hostResults.data(),
+               results.data(),
+               nzones * sizeof(axom::IndexType));
 
     // Compare.
     const axom::IndexType expected[] = {5, 6, 7, 9, 10, 11, 13, 14, 15};
@@ -219,11 +229,10 @@ struct test_structured_topology_view_rectilinear
 
   static void create(conduit::Node &mesh)
   {
-    std::vector<int> dims{4,4};
+    std::vector<int> dims {4, 4};
     axom::mir::testing::data::braid("rectilinear", dims, mesh);
   }
 };
-
 
 TEST(mir_views, stopo_rectilinear_2d_seq)
 {
@@ -264,7 +273,6 @@ struct test_strided_structured
           axom::mir::views::select_dimensions(2)>(
           hostMesh["topologies/mesh"],
           [&](const std::string &AXOM_UNUSED_PARAM(shape), auto topoView) {
-
             execute(coordsetView, topoView);
           });
       });
@@ -289,12 +297,13 @@ struct test_strided_structured
 
     const int allocatorID = axom::execution_space<ExecSpace>::allocatorID();
     axom::Array<int> actualNodes(n4, n4, allocatorID);
-    axom::Array<int> logicalNodes(n4*2, n4*2, allocatorID);
+    axom::Array<int> logicalNodes(n4 * 2, n4 * 2, allocatorID);
     auto actualNodesView = actualNodes.view();
     auto logicalNodesView = logicalNodes.view();
 
     // Traverse the zones in the mesh and gather node ids
-    axom::for_all<ExecSpace>(topoView.numberOfZones(),
+    axom::for_all<ExecSpace>(
+      topoView.numberOfZones(),
       AXOM_LAMBDA(axom::IndexType zoneIndex) {
         const auto zone = topoView.zone(zoneIndex);
         const auto nodeIndexing = topoView.indexing().expand();
@@ -308,8 +317,8 @@ struct test_strided_structured
           // Get the logical local id for the id.
           const auto index = nodeIndexing.GlobalToLocal(ids[i]);
           const auto logical = nodeIndexing.IndexToLogicalIndex(index);
-          logicalNodesView[(zoneIndex * 4 + i)*2 + 0] = logical[0];
-          logicalNodesView[(zoneIndex * 4 + i)*2 + 1] = logical[1];
+          logicalNodesView[(zoneIndex * 4 + i) * 2 + 0] = logical[0];
+          logicalNodesView[(zoneIndex * 4 + i) * 2 + 1] = logical[1];
         }
       });
 
@@ -327,8 +336,8 @@ struct test_strided_structured
       const auto pt = coordsetView[id];
 
       // Get the logical local id for the id.
-      const auto logicalI = logicalNodesView[i*2 + 0];
-      const auto logicalJ = logicalNodesView[i*2 + 1];
+      const auto logicalI = logicalNodesView[i * 2 + 0];
+      const auto logicalJ = logicalNodesView[i * 2 + 1];
 
       // Expected coordinate
       double x = (3. + 1. / 3.) * static_cast<double>(logicalI - 1);
@@ -344,10 +353,7 @@ struct test_strided_structured
   }
 };
 
-TEST(mir_views, strided_structured_seq)
-{
-  test_strided_structured::test();
-}
+TEST(mir_views, strided_structured_seq) { test_strided_structured::test(); }
 
 //------------------------------------------------------------------------------
 template <typename ExecSpace>
@@ -449,24 +455,32 @@ struct test_braid2d_mat
 
 TEST(mir_views, matset_unibuffer_seq)
 {
-  test_braid2d_mat<seq_exec>::test("uniform", "unibuffer", "uniform2d_unibuffer");
+  test_braid2d_mat<seq_exec>::test("uniform",
+                                   "unibuffer",
+                                   "uniform2d_unibuffer");
 }
 #if defined(AXOM_USE_OPENMP)
 TEST(mir_views, matset_unibuffer_omp)
 {
-  test_braid2d_mat<omp_exec>::test("uniform", "unibuffer", "uniform2d_unibuffer");
+  test_braid2d_mat<omp_exec>::test("uniform",
+                                   "unibuffer",
+                                   "uniform2d_unibuffer");
 }
 #endif
 #if defined(AXOM_USE_CUDA)
 TEST(mir_views, matset_unibuffer_cuda)
 {
-  test_braid2d_mat<cuda_exec>::test("uniform", "unibuffer", "uniform2d_unibuffer");
+  test_braid2d_mat<cuda_exec>::test("uniform",
+                                    "unibuffer",
+                                    "uniform2d_unibuffer");
 }
 #endif
 #if defined(AXOM_USE_HIP)
 TEST(mir_views, matset_unibuffer_hip)
 {
-  test_braid2d_mat<hip_exec>::test("uniform", "unibuffer", "uniform2d_unibuffer");
+  test_braid2d_mat<hip_exec>::test("uniform",
+                                   "unibuffer",
+                                   "uniform2d_unibuffer");
 }
 #endif
 

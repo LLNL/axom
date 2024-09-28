@@ -58,11 +58,11 @@ public:
     , m_offsetsView(offsets)
   {
 #if defined(AXOM_DEBUG)
-#if defined(AXOM_DEVICE_CODE)
+  #if defined(AXOM_DEVICE_CODE)
     assert(m_offsetsView.size() == m_sizesView.size());
-#else
+  #else
     SLIC_ASSERT(m_offsetsView.size() == m_sizesView.size());
-#endif
+  #endif
 #endif
   }
 
@@ -71,7 +71,10 @@ public:
    *
    * \return The dimension of the shape.
    */
-  AXOM_HOST_DEVICE static constexpr int dimension() { return ShapeT::dimension(); }
+  AXOM_HOST_DEVICE static constexpr int dimension()
+  {
+    return ShapeT::dimension();
+  }
 
   /*!
    * \brief Return the number of zones.
@@ -90,7 +93,10 @@ public:
    *
    * \return The size of the connectivity.
    */
-  AXOM_HOST_DEVICE IndexType connectivitySize() const { return m_connectivityView.size(); }
+  AXOM_HOST_DEVICE IndexType connectivitySize() const
+  {
+    return m_connectivityView.size();
+  }
 
   /*!
    * \brief Return a zone.
@@ -101,44 +107,46 @@ public:
    */
   /// @{
   template <bool _variable_size = ShapeType::is_variable_size()>
-  AXOM_HOST_DEVICE typename std::enable_if<_variable_size, ShapeType>::type
-  zone(axom::IndexType zoneIndex) const
+  AXOM_HOST_DEVICE typename std::enable_if<_variable_size, ShapeType>::type zone(
+    axom::IndexType zoneIndex) const
   {
 #if defined(AXOM_DEBUG)
-#if defined(AXOM_DEVICE_CODE)
+  #if defined(AXOM_DEVICE_CODE)
     assert(zoneIndex < numberOfZones());
-#else
+  #else
     SLIC_ASSERT(zoneIndex < numberOfZones());
-#endif
+  #endif
 #endif
 
-    return ShapeType(ConnectivityView(m_connectivityView.data() + m_offsetsView[zoneIndex],
-                                      m_sizesView[zoneIndex]));
+    return ShapeType(
+      ConnectivityView(m_connectivityView.data() + m_offsetsView[zoneIndex],
+                       m_sizesView[zoneIndex]));
   }
 
   template <bool _variable_size = ShapeType::is_variable_size()>
-  AXOM_HOST_DEVICE typename std::enable_if<!_variable_size, ShapeType>::type
-  zone(axom::IndexType zoneIndex) const
+  AXOM_HOST_DEVICE typename std::enable_if<!_variable_size, ShapeType>::type zone(
+    axom::IndexType zoneIndex) const
   {
 #if defined(AXOM_DEBUG)
-#if defined(AXOM_DEVICE_CODE)
+  #if defined(AXOM_DEVICE_CODE)
     assert(zoneIndex < numberOfZones());
-#else
+  #else
     SLIC_ASSERT(zoneIndex < numberOfZones());
-#endif
+  #endif
 #endif
 
     ConnectivityView shapeIdsView {};
     if(m_sizesView.empty())
     {
       shapeIdsView = ConnectivityView(
-              m_connectivityView.data() + ShapeType::zoneOffset(zoneIndex),
-              ShapeType::numberOfNodes());
+        m_connectivityView.data() + ShapeType::zoneOffset(zoneIndex),
+        ShapeType::numberOfNodes());
     }
     else
     {
-      shapeIdsView = ConnectivityView(m_connectivityView.data() + m_offsetsView[zoneIndex],
-                                      m_sizesView[zoneIndex]);
+      shapeIdsView =
+        ConnectivityView(m_connectivityView.data() + m_offsetsView[zoneIndex],
+                         m_sizesView[zoneIndex]);
     }
     return ShapeType(shapeIdsView);
   }

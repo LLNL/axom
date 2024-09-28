@@ -230,8 +230,10 @@ public:
       assert(static_cast<KeyType>(p0) <= Max31Bit &&
              static_cast<KeyType>(p1) <= Max31Bit);
       // Store p0 and p1 both in the 64-bit key as 31-bit integers
-      KeyType k0 = (static_cast<KeyType>(axom::utilities::min(p0, p1)) & Max31Bit);
-      KeyType k1 = (static_cast<KeyType>(axom::utilities::max(p0, p1)) & Max31Bit);
+      KeyType k0 =
+        (static_cast<KeyType>(axom::utilities::min(p0, p1)) & Max31Bit);
+      KeyType k1 =
+        (static_cast<KeyType>(axom::utilities::max(p0, p1)) & Max31Bit);
       return KeyIDPair | (k0 << 31) | k1;
     }
 

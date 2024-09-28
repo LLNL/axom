@@ -111,7 +111,7 @@ private:
       n_values,
       n_output_values,
       [&](auto valuesView, auto outputView) {
-      sliceSingleComponentImpl(slice, valuesView, outputView);
+        sliceSingleComponentImpl(slice, valuesView, outputView);
       });
   }
 
@@ -126,7 +126,9 @@ private:
    *       lambda.
    */
   template <typename ValuesView, typename OutputView>
-  void sliceSingleComponentImpl(const SliceData &slice, ValuesView valuesView, OutputView outputView) const
+  void sliceSingleComponentImpl(const SliceData &slice,
+                                ValuesView valuesView,
+                                OutputView outputView) const
   {
     IndexingPolicy deviceIndexing(m_indexing);
     SliceData deviceSlice(slice);

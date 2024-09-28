@@ -656,19 +656,20 @@ static void addCircleMaterial(const TopoView& topoView,
   center[1] = circleCenter[1];
 
   const TopoView deviceTopologyView(topoView);
-  axom::for_all<axom::SEQ_EXEC>(topoView.numberOfZones(), AXOM_LAMBDA(axom::IndexType zoneIndex)
-  {
-    const auto zone = deviceTopologyView.zone(zoneIndex);
-    auto vf = calculatePercentOverlapMonteCarlo(numSamples,
-                                                center,
-                                                circleRadius,
-                                                coordsetView[zone.getId(0)],
-                                                coordsetView[zone.getId(1)],
-                                                coordsetView[zone.getId(2)],
-                                                coordsetView[zone.getId(3)]);
-    greenView[zoneIndex] = vf;
-    blueView[zoneIndex] = 1.0 - vf;
-  });
+  axom::for_all<axom::SEQ_EXEC>(
+    topoView.numberOfZones(),
+    AXOM_LAMBDA(axom::IndexType zoneIndex) {
+      const auto zone = deviceTopologyView.zone(zoneIndex);
+      auto vf = calculatePercentOverlapMonteCarlo(numSamples,
+                                                  center,
+                                                  circleRadius,
+                                                  coordsetView[zone.getId(0)],
+                                                  coordsetView[zone.getId(1)],
+                                                  coordsetView[zone.getId(2)],
+                                                  coordsetView[zone.getId(3)]);
+      greenView[zoneIndex] = vf;
+      blueView[zoneIndex] = 1.0 - vf;
+    });
 
   // Figure out the material buffers from the volume fractions.
   std::vector<int> material_ids, sizes, offsets, indices;
@@ -1224,7 +1225,8 @@ void addConcentricCircleMaterial(const TopoView& topoView,
   // Use the uniform sampling method to generate volume fractions for each material
   // Note: Assumes that the cell is a parallelogram. This could be modified via biliear interpolation
   const TopoView deviceTopologyView(topoView);
-  axom::for_all<axom::SEQ_EXEC>(topoView.numberOfZones(),
+  axom::for_all<axom::SEQ_EXEC>(
+    topoView.numberOfZones(),
     AXOM_LAMBDA(axom::IndexType eID) {
       const auto zone = deviceTopologyView.zone(eID);
 

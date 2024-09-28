@@ -299,9 +299,9 @@ namespace internal
 template <bool enabled, int NDIMS, typename FuncType>
 struct dispatch_only_structured_topology
 {
-  static void execute(const conduit::Node &AXOM_UNUSED_PARAM(topo), FuncType &&AXOM_UNUSED_PARAM(func))
-  {
-  }
+  static void execute(const conduit::Node &AXOM_UNUSED_PARAM(topo),
+                      FuncType &&AXOM_UNUSED_PARAM(func))
+  { }
 };
 
 /*!
@@ -404,9 +404,9 @@ struct dispatch_only_structured_topology<true, 1, FuncType>
 template <bool enabled, int NDIMS, typename FuncType>
 struct dispatch_any_structured_topology
 {
-  static void execute(const conduit::Node &AXOM_UNUSED_PARAM(topo), FuncType &&AXOM_UNUSED_PARAM(func))
-  {
-  }
+  static void execute(const conduit::Node &AXOM_UNUSED_PARAM(topo),
+                      FuncType &&AXOM_UNUSED_PARAM(func))
+  { }
 };
 
 /*!
@@ -519,7 +519,7 @@ struct dispatch_any_structured_topology<true, 1, FuncType>
   }
 };
 
-} // end namespace internal
+}  // end namespace internal
 
 /*!
  * \brief Creates a topology view compatible with structured topologies and passes that view to the supplied function.
@@ -540,13 +540,22 @@ void dispatch_structured_topology(const conduit::Node &topo, FuncType &&func)
   switch(ndims)
   {
   case 3:
-    internal::dispatch_only_structured_topology<dimension_selected(SelectedDimensions, 3), 3, FuncType>::execute(topo, std::forward<FuncType>(func));
+    internal::dispatch_only_structured_topology<
+      dimension_selected(SelectedDimensions, 3),
+      3,
+      FuncType>::execute(topo, std::forward<FuncType>(func));
     break;
   case 2:
-    internal::dispatch_only_structured_topology<dimension_selected(SelectedDimensions, 2), 2, FuncType>::execute(topo, std::forward<FuncType>(func));
+    internal::dispatch_only_structured_topology<
+      dimension_selected(SelectedDimensions, 2),
+      2,
+      FuncType>::execute(topo, std::forward<FuncType>(func));
     break;
   case 1:
-    internal::dispatch_only_structured_topology<dimension_selected(SelectedDimensions, 1), 1, FuncType>::execute(topo, std::forward<FuncType>(func));
+    internal::dispatch_only_structured_topology<
+      dimension_selected(SelectedDimensions, 1),
+      1,
+      FuncType>::execute(topo, std::forward<FuncType>(func));
     break;
   default:
     break;
@@ -571,13 +580,22 @@ void dispatch_structured_topologies(const conduit::Node &topo, FuncType &&func)
   switch(ndims)
   {
   case 3:
-    internal::dispatch_any_structured_topology<dimension_selected(SelectedDimensions, 3), 3, FuncType>::execute(topo, std::forward<FuncType>(func));
+    internal::dispatch_any_structured_topology<
+      dimension_selected(SelectedDimensions, 3),
+      3,
+      FuncType>::execute(topo, std::forward<FuncType>(func));
     break;
   case 2:
-    internal::dispatch_any_structured_topology<dimension_selected(SelectedDimensions, 2), 2, FuncType>::execute(topo, std::forward<FuncType>(func));
+    internal::dispatch_any_structured_topology<
+      dimension_selected(SelectedDimensions, 2),
+      2,
+      FuncType>::execute(topo, std::forward<FuncType>(func));
     break;
   case 1:
-    internal::dispatch_any_structured_topology<dimension_selected(SelectedDimensions, 1), 1, FuncType>::execute(topo, std::forward<FuncType>(func));
+    internal::dispatch_any_structured_topology<
+      dimension_selected(SelectedDimensions, 1),
+      1,
+      FuncType>::execute(topo, std::forward<FuncType>(func));
     break;
   default:
     break;

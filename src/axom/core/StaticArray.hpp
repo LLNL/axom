@@ -96,7 +96,7 @@ public:
   AXOM_HOST_DEVICE
   void fill(const T &fill_value)
   {
-    for(T& datum : StackArray<T, N>::m_data)
+    for(T &datum : StackArray<T, N>::m_data)
     {
       datum = fill_value;
     }

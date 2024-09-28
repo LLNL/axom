@@ -41,7 +41,8 @@ public:
                const conduit::Node &relation,
                conduit::Node &outField) const
   {
-    const std::string association = field.fetch_existing("association").as_string();
+    const std::string association =
+      field.fetch_existing("association").as_string();
 
     // Assume that we're flipping the association.
     outField["association"] = (association == "element") ? "vertex" : "element";
@@ -54,7 +55,9 @@ public:
       for(conduit::index_t c = 0; c < n_values.number_of_children(); c++)
       {
         const conduit::Node &n_comp = n_values[c];
-        recenterSingleComponent(n_comp, relation, outField["values"][n_comp.name()]);
+        recenterSingleComponent(n_comp,
+                                relation,
+                                outField["values"][n_comp.name()]);
       }
     }
     else
@@ -81,7 +84,7 @@ private:
   {
     // Get the data field for the o2m relation.
     const auto data_paths = conduit::blueprint::o2mrelation::data_paths(relation);
-  
+
     // Use the o2mrelation to average data from n_comp to the n_out.
     const conduit::Node &n_relvalues = relation[data_paths[0]];
     const conduit::Node &n_sizes = relation["sizes"];
@@ -97,10 +100,15 @@ private:
         n_out.set_allocator(c2a.getConduitAllocatorID());
         n_out.set(conduit::DataType(n_comp.dtype().id(), relSize));
 
-        views::Node_to_ArrayView_same(n_out, n_comp, [&](auto outView, auto compView) {
-
-          recenterSingleComponentImpl(relView, sizesView, offsetsView, outView, compView);
-        });
+        views::Node_to_ArrayView_same(n_out,
+                                      n_comp,
+                                      [&](auto outView, auto compView) {
+                                        recenterSingleComponentImpl(relView,
+                                                                    sizesView,
+                                                                    offsetsView,
+                                                                    outView,
+                                                                    compView);
+                                      });
       });
   }
 
@@ -114,7 +122,11 @@ private:
    * \param compView The view that contains the source data.
    */
   template <typename IndexView, typename DataView>
-  void recenterSingleComponentImpl(IndexView relView, IndexView sizesView, IndexView offsetsView, DataView outView, DataView compView) const
+  void recenterSingleComponentImpl(IndexView relView,
+                                   IndexView sizesView,
+                                   IndexView offsetsView,
+                                   DataView outView,
+                                   DataView compView) const
   {
     using Precision = typename DataView::value_type;
     using AccumType =

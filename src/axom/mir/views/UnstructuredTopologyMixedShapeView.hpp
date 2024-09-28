@@ -122,19 +122,19 @@ public:
     , m_shapeMap(shapemap)
   {
 #if defined(AXOM_DEBUG)
-#if defined(AXOM_DEVICE_CODE)
+  #if defined(AXOM_DEVICE_CODE)
     assert(m_shapes.size() != 0);
     assert(m_sizes.size() != 0);
     assert(m_offsets.size() != 0);
     assert(m_offsets.size() == m_sizes.size() &&
            m_offsets.size() == m_shapes.size());
-#else
+  #else
     SLIC_ASSERT(m_shapes.size() != 0);
     SLIC_ASSERT(m_sizes.size() != 0);
     SLIC_ASSERT(m_offsets.size() != 0);
     SLIC_ASSERT(m_offsets.size() == m_sizes.size() &&
                 m_offsets.size() == m_shapes.size());
-#endif
+  #endif
 #endif
   }
 
@@ -157,7 +157,10 @@ public:
    *
    * \return The size of the connectivity.
    */
-  AXOM_HOST_DEVICE IndexType connectivitySize() const { return m_connectivity.size(); }
+  AXOM_HOST_DEVICE IndexType connectivitySize() const
+  {
+    return m_connectivity.size();
+  }
 
   /*!
    * \brief Return a zone.
@@ -169,22 +172,21 @@ public:
   AXOM_HOST_DEVICE ShapeType zone(axom::IndexType zoneIndex) const
   {
 #if defined(AXOM_DEBUG)
-#if defined(AXOM_DEVICE_CODE)
+  #if defined(AXOM_DEVICE_CODE)
     assert(zoneIndex < numberOfZones());
-#else
+  #else
     SLIC_ASSERT(zoneIndex < numberOfZones());
+  #endif
 #endif
-#endif
-    const ConnectivityView shapeData(
-          m_connectivity.data() + m_offsets[zoneIndex],
-          m_sizes[zoneIndex]);
+    const ConnectivityView shapeData(m_connectivity.data() + m_offsets[zoneIndex],
+                                     m_sizes[zoneIndex]);
     const auto shapeID = m_shapeMap[m_shapes[zoneIndex]];
 #if defined(AXOM_DEBUG)
-#if defined(AXOM_DEVICE_CODE)
+  #if defined(AXOM_DEVICE_CODE)
     assert(shapeID >= Point_ShapeID && shapeID <= Mixed_ShapeID);
-#else
+  #else
     SLIC_ASSERT(shapeID >= Point_ShapeID && shapeID <= Mixed_ShapeID);
-#endif
+  #endif
 #endif
 
     return ShapeType(shapeID, shapeData);
@@ -195,7 +197,7 @@ private:
   ConnectivityView m_shapes;
   ConnectivityView m_sizes;
   ConnectivityView m_offsets;
-  ShapeMap         m_shapeMap;
+  ShapeMap m_shapeMap;
 };
 
 }  // end namespace views

@@ -70,7 +70,7 @@ protected:
         SLIC_ASSERT(zonesView.size() <= nzones);
 
         badValueCount = buildSelectedZones(zonesView, nzones);
-      }); 
+      });
 
       if(badValueCount > 0)
       {
@@ -103,8 +103,7 @@ protected:
   template <typename ZonesViewType>
   int buildSelectedZones(ZonesViewType zonesView, axom::IndexType nzones)
   {
-    using loop_policy =
-      typename axom::execution_space<ExecSpace>::loop_policy;
+    using loop_policy = typename axom::execution_space<ExecSpace>::loop_policy;
     using reduce_policy =
       typename axom::execution_space<ExecSpace>::reduce_policy;
 
@@ -122,8 +121,7 @@ protected:
     axom::for_all<ExecSpace>(
       szView.size(),
       AXOM_LAMBDA(axom::IndexType index) {
-        const int err =
-          (szView[index] < 0 || szView[index] >= nzones) ? 1 : 0;
+        const int err = (szView[index] < 0 || szView[index] >= nzones) ? 1 : 0;
         errReduce += err;
       });
 

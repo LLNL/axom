@@ -22,18 +22,21 @@ constexpr int encode_dimensions(Dimensions... dims)
 }
 #else
 template <typename T>
-constexpr int encode_dimensions_impl(T arg) {
-    return arg;
+constexpr int encode_dimensions_impl(T arg)
+{
+  return arg;
 }
 
 template <typename T, typename... Dimensions>
-constexpr int encode_dimensions_impl(T arg, Dimensions... dims) {
-    return (arg | encode_dimensions_impl(dims...));
+constexpr int encode_dimensions_impl(T arg, Dimensions... dims)
+{
+  return (arg | encode_dimensions_impl(dims...));
 }
 
 template <typename... Dimensions>
-constexpr int encode_dimensions(Dimensions... dims) {
-    return encode_dimensions_impl(dims...);
+constexpr int encode_dimensions(Dimensions... dims)
+{
+  return encode_dimensions_impl(dims...);
 }
 #endif
 

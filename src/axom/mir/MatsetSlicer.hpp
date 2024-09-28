@@ -94,9 +94,7 @@ public:
     RAJA::ReduceSum<reduce_policy, MatsetIndex> size_reduce(0);
     axom::for_all<ExecSpace>(
       sizesView.size(),
-      AXOM_LAMBDA(axom::IndexType index) {
-        size_reduce += sizesView[index];
-      });
+      AXOM_LAMBDA(axom::IndexType index) { size_reduce += sizesView[index]; });
     axom::exclusive_scan<ExecSpace>(sizesView, offsetsView);
 
     // Allocate data for the rest of the matset.

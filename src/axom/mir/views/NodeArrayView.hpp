@@ -50,24 +50,28 @@ constexpr int encode_types(Args... args)
 }
 #else
 template <typename T>
-constexpr int encode_types_impl(T arg) {
-    return arg;
+constexpr int encode_types_impl(T arg)
+{
+  return arg;
 }
 
 template <typename T, typename... Args>
-constexpr int encode_types_impl(T arg, Args... args) {
-    return (arg | encode_types_impl(args...));
+constexpr int encode_types_impl(T arg, Args... args)
+{
+  return (arg | encode_types_impl(args...));
 }
 
 template <typename... Args>
-constexpr int encode_types(Args... args) {
-    return encode_types_impl(args...);
+constexpr int encode_types(Args... args)
+{
+  return encode_types_impl(args...);
 }
 #endif
 
 template <typename... Args>
-constexpr int select_types(Args... args) {
-    return encode_types((1 << args)...);
+constexpr int select_types(Args... args)
+{
+  return encode_types((1 << args)...);
 }
 
 constexpr bool type_selected(int flag, int bit) { return flag & (1 << bit); }
@@ -613,13 +617,13 @@ void Node_to_ArrayView_single(conduit::Node &n, FuncType &&func)
 }
 
 template <int Types, typename FuncType, typename... View>
-void Node_to_ArrayView_internal(FuncType &&func, Delimiter, View &... views)
+void Node_to_ArrayView_internal(FuncType &&func, Delimiter, View &...views)
 {
   func(views...);
 }
 
 template <int Types = select_all_types(), typename... Args>
-void Node_to_ArrayView_internal(const conduit::Node &first, Args &&... args)
+void Node_to_ArrayView_internal(const conduit::Node &first, Args &&...args)
 {
   Node_to_ArrayView_single<Types>(first, [&](auto view) {
     Node_to_ArrayView_internal<Types>(args..., view);
@@ -627,7 +631,7 @@ void Node_to_ArrayView_internal(const conduit::Node &first, Args &&... args)
 }
 
 template <int Types = select_all_types(), typename... Args>
-void Node_to_ArrayView_internal(conduit::Node &first, Args &&... args)
+void Node_to_ArrayView_internal(conduit::Node &first, Args &&...args)
 {
   Node_to_ArrayView_single<Types>(first, [&](auto view) {
     Node_to_ArrayView_internal<Types>(args..., view);
@@ -640,7 +644,7 @@ void Node_to_ArrayView_internal(conduit::Node &first, Args &&... args)
 template <bool Enabled, typename FuncType, typename... Args>
 std::enable_if_t<Enabled, void> Node_to_ArrayView_same_internal_int8(
   FuncType &&func,
-  Args &&... args)
+  Args &&...args)
 {
   func(axom::ArrayView<conduit::int8>(
     const_cast<conduit::int8 *>(args.as_int8_ptr()),
@@ -650,13 +654,13 @@ std::enable_if_t<Enabled, void> Node_to_ArrayView_same_internal_int8(
 template <bool Enabled, typename FuncType, typename... Args>
 std::enable_if_t<!Enabled, void> Node_to_ArrayView_same_internal_int8(
   FuncType &&AXOM_UNUSED_PARAM(func),
-  Args &&... AXOM_UNUSED_PARAM(args))
+  Args &&...AXOM_UNUSED_PARAM(args))
 { }
 
 template <bool Enabled, typename FuncType, typename... Args>
 std::enable_if_t<Enabled, void> Node_to_ArrayView_same_internal_int16(
   FuncType &&func,
-  Args &&... args)
+  Args &&...args)
 {
   func(axom::ArrayView<conduit::int16>(
     const_cast<conduit::int16 *>(args.as_int16_ptr()),
@@ -666,13 +670,13 @@ std::enable_if_t<Enabled, void> Node_to_ArrayView_same_internal_int16(
 template <bool Enabled, typename FuncType, typename... Args>
 std::enable_if_t<!Enabled, void> Node_to_ArrayView_same_internal_int16(
   FuncType &&AXOM_UNUSED_PARAM(func),
-  Args &&... AXOM_UNUSED_PARAM(args))
+  Args &&...AXOM_UNUSED_PARAM(args))
 { }
 
 template <bool Enabled, typename FuncType, typename... Args>
 std::enable_if_t<Enabled, void> Node_to_ArrayView_same_internal_int32(
   FuncType &&func,
-  Args &&... args)
+  Args &&...args)
 {
   func(axom::ArrayView<conduit::int32>(
     const_cast<conduit::int32 *>(args.as_int32_ptr()),
@@ -682,13 +686,13 @@ std::enable_if_t<Enabled, void> Node_to_ArrayView_same_internal_int32(
 template <bool Enabled, typename FuncType, typename... Args>
 std::enable_if_t<!Enabled, void> Node_to_ArrayView_same_internal_int32(
   FuncType &&AXOM_UNUSED_PARAM(func),
-  Args &&... AXOM_UNUSED_PARAM(args))
+  Args &&...AXOM_UNUSED_PARAM(args))
 { }
 
 template <bool Enabled, typename FuncType, typename... Args>
 std::enable_if_t<Enabled, void> Node_to_ArrayView_same_internal_int64(
   FuncType &&func,
-  Args &&... args)
+  Args &&...args)
 {
   func(axom::ArrayView<conduit::int64>(
     const_cast<conduit::int64 *>(args.as_int64_ptr()),
@@ -698,13 +702,13 @@ std::enable_if_t<Enabled, void> Node_to_ArrayView_same_internal_int64(
 template <bool Enabled, typename FuncType, typename... Args>
 std::enable_if_t<!Enabled, void> Node_to_ArrayView_same_internal_int64(
   FuncType &&AXOM_UNUSED_PARAM(func),
-  Args &&... AXOM_UNUSED_PARAM(args))
+  Args &&...AXOM_UNUSED_PARAM(args))
 { }
 
 template <bool Enabled, typename FuncType, typename... Args>
 std::enable_if_t<Enabled, void> Node_to_ArrayView_same_internal_uint8(
   FuncType &&func,
-  Args &&... args)
+  Args &&...args)
 {
   func(axom::ArrayView<conduit::uint8>(
     const_cast<conduit::uint8 *>(args.as_uint8_ptr()),
@@ -714,13 +718,13 @@ std::enable_if_t<Enabled, void> Node_to_ArrayView_same_internal_uint8(
 template <bool Enabled, typename FuncType, typename... Args>
 std::enable_if_t<!Enabled, void> Node_to_ArrayView_same_internal_uint8(
   FuncType &&AXOM_UNUSED_PARAM(func),
-  Args &&... AXOM_UNUSED_PARAM(args))
+  Args &&...AXOM_UNUSED_PARAM(args))
 { }
 
 template <bool Enabled, typename FuncType, typename... Args>
 std::enable_if_t<Enabled, void> Node_to_ArrayView_same_internal_uint16(
   FuncType &&func,
-  Args &&... args)
+  Args &&...args)
 {
   func(axom::ArrayView<conduit::uint16>(
     const_cast<conduit::uint16 *>(args.as_uint16_ptr()),
@@ -730,13 +734,13 @@ std::enable_if_t<Enabled, void> Node_to_ArrayView_same_internal_uint16(
 template <bool Enabled, typename FuncType, typename... Args>
 std::enable_if_t<!Enabled, void> Node_to_ArrayView_same_internal_uint16(
   FuncType &&AXOM_UNUSED_PARAM(func),
-  Args &&... AXOM_UNUSED_PARAM(args))
+  Args &&...AXOM_UNUSED_PARAM(args))
 { }
 
 template <bool Enabled, typename FuncType, typename... Args>
 std::enable_if_t<Enabled, void> Node_to_ArrayView_same_internal_uint32(
   FuncType &&func,
-  Args &&... args)
+  Args &&...args)
 {
   func(axom::ArrayView<conduit::uint32>(
     const_cast<conduit::uint32 *>(args.as_uint32_ptr()),
@@ -746,13 +750,13 @@ std::enable_if_t<Enabled, void> Node_to_ArrayView_same_internal_uint32(
 template <bool Enabled, typename FuncType, typename... Args>
 std::enable_if_t<!Enabled, void> Node_to_ArrayView_same_internal_uint32(
   FuncType &&AXOM_UNUSED_PARAM(func),
-  Args &&... AXOM_UNUSED_PARAM(args))
+  Args &&...AXOM_UNUSED_PARAM(args))
 { }
 
 template <bool Enabled, typename FuncType, typename... Args>
 std::enable_if_t<Enabled, void> Node_to_ArrayView_same_internal_uint64(
   FuncType &&func,
-  Args &&... args)
+  Args &&...args)
 {
   func(axom::ArrayView<conduit::uint64>(
     const_cast<conduit::uint64 *>(args.as_uint64_ptr()),
@@ -762,13 +766,13 @@ std::enable_if_t<Enabled, void> Node_to_ArrayView_same_internal_uint64(
 template <bool Enabled, typename FuncType, typename... Args>
 std::enable_if_t<!Enabled, void> Node_to_ArrayView_same_internal_uint64(
   FuncType &&AXOM_UNUSED_PARAM(func),
-  Args &&... AXOM_UNUSED_PARAM(args))
+  Args &&...AXOM_UNUSED_PARAM(args))
 { }
 
 template <bool Enabled, typename FuncType, typename... Args>
 std::enable_if_t<Enabled, void> Node_to_ArrayView_same_internal_float32(
   FuncType &&func,
-  Args &&... args)
+  Args &&...args)
 {
   func(axom::ArrayView<conduit::float32>(
     const_cast<conduit::float32 *>(args.as_float32_ptr()),
@@ -778,13 +782,13 @@ std::enable_if_t<Enabled, void> Node_to_ArrayView_same_internal_float32(
 template <bool Enabled, typename FuncType, typename... Args>
 std::enable_if_t<!Enabled, void> Node_to_ArrayView_same_internal_float32(
   FuncType &&AXOM_UNUSED_PARAM(func),
-  Args &&... AXOM_UNUSED_PARAM(args))
+  Args &&...AXOM_UNUSED_PARAM(args))
 { }
 
 template <bool Enabled, typename FuncType, typename... Args>
 std::enable_if_t<Enabled, void> Node_to_ArrayView_same_internal_float64(
   FuncType &&func,
-  Args &&... args)
+  Args &&...args)
 {
   func(axom::ArrayView<conduit::float64>(
     const_cast<conduit::float64 *>(args.as_float64_ptr()),
@@ -794,14 +798,14 @@ std::enable_if_t<Enabled, void> Node_to_ArrayView_same_internal_float64(
 template <bool Enabled, typename FuncType, typename... Args>
 std::enable_if_t<!Enabled, void> Node_to_ArrayView_same_internal_float64(
   FuncType &&AXOM_UNUSED_PARAM(func),
-  Args &&... AXOM_UNUSED_PARAM(args))
+  Args &&...AXOM_UNUSED_PARAM(args))
 { }
 
 template <int Types = select_all_types(), typename FuncType, typename... Args>
 void Node_to_ArrayView_same_internal(FuncType &&func,
                                      Delimiter,
                                      const conduit::Node &first,
-                                     Args &&... args)
+                                     Args &&...args)
 {
   if(first.dtype().is_int8())
   {
@@ -864,7 +868,7 @@ template <int Types = select_all_types(), typename FuncType, typename... Args>
 void Node_to_ArrayView_same_internal(FuncType &&func,
                                      Delimiter,
                                      conduit::Node &first,
-                                     Args &&... args)
+                                     Args &&...args)
 {
   if(first.dtype().is_int8())
   {
@@ -925,13 +929,13 @@ void Node_to_ArrayView_same_internal(FuncType &&func,
 
 /// Reorder args
 template <int Types = select_all_types(), typename... Args>
-void Node_to_ArrayView_same_internal(const conduit::Node &first, Args &&... args)
+void Node_to_ArrayView_same_internal(const conduit::Node &first, Args &&...args)
 {
   Node_to_ArrayView_same_internal<Types>(args..., first);
 }
 
 template <int Types = select_all_types(), typename... Args>
-void Node_to_ArrayView_same_internal(conduit::Node &first, Args &&... args)
+void Node_to_ArrayView_same_internal(conduit::Node &first, Args &&...args)
 {
   Node_to_ArrayView_same_internal<Types>(args..., first);
 }
@@ -957,13 +961,13 @@ void Node_to_ArrayView_same_internal(conduit::Node &first, Args &&... args)
  * 
  */
 template <typename... Args>
-void Node_to_ArrayView(const conduit::Node &first, Args &&... args)
+void Node_to_ArrayView(const conduit::Node &first, Args &&...args)
 {
   detail::Node_to_ArrayView_internal(first, args..., detail::ArgumentDelimiter);
 }
 
 template <typename... Args>
-void Node_to_ArrayView(conduit::Node &first, Args &&... args)
+void Node_to_ArrayView(conduit::Node &first, Args &&...args)
 {
   detail::Node_to_ArrayView_internal(first, args..., detail::ArgumentDelimiter);
 }
@@ -984,7 +988,7 @@ void Node_to_ArrayView(conduit::Node &first, Args &&... args)
  * 
  */
 template <typename... Args>
-void Node_to_ArrayView_same(const conduit::Node &first, Args &&... args)
+void Node_to_ArrayView_same(const conduit::Node &first, Args &&...args)
 {
   detail::Node_to_ArrayView_same_internal(first,
                                           args...,
@@ -992,7 +996,7 @@ void Node_to_ArrayView_same(const conduit::Node &first, Args &&... args)
 }
 
 template <typename... Args>
-void Node_to_ArrayView_same(conduit::Node &first, Args &&... args)
+void Node_to_ArrayView_same(conduit::Node &first, Args &&...args)
 {
   detail::Node_to_ArrayView_same_internal(first,
                                           args...,
@@ -1004,7 +1008,7 @@ void Node_to_ArrayView_same(conduit::Node &first, Args &&... args)
 //------------------------------------------------------------------------------
 
 template <typename... Args>
-void IndexNode_to_ArrayView(const conduit::Node &first, Args &&... args)
+void IndexNode_to_ArrayView(const conduit::Node &first, Args &&...args)
 {
   detail::Node_to_ArrayView_internal<detail::select_index_types()>(
     first,
@@ -1013,7 +1017,7 @@ void IndexNode_to_ArrayView(const conduit::Node &first, Args &&... args)
 }
 
 template <typename... Args>
-void IndexNode_to_ArrayView(conduit::Node &first, Args &&... args)
+void IndexNode_to_ArrayView(conduit::Node &first, Args &&...args)
 {
   detail::Node_to_ArrayView_internal<detail::select_index_types()>(
     first,
@@ -1022,7 +1026,7 @@ void IndexNode_to_ArrayView(conduit::Node &first, Args &&... args)
 }
 
 template <typename... Args>
-void IndexNode_to_ArrayView_same(const conduit::Node &first, Args &&... args)
+void IndexNode_to_ArrayView_same(const conduit::Node &first, Args &&...args)
 {
   detail::Node_to_ArrayView_same_internal<detail::select_index_types()>(
     first,
@@ -1031,7 +1035,7 @@ void IndexNode_to_ArrayView_same(const conduit::Node &first, Args &&... args)
 }
 
 template <typename... Args>
-void IndexNode_to_ArrayView_same(conduit::Node &first, Args &&... args)
+void IndexNode_to_ArrayView_same(conduit::Node &first, Args &&...args)
 {
   detail::Node_to_ArrayView_same_internal<detail::select_index_types()>(
     first,
@@ -1043,7 +1047,7 @@ void IndexNode_to_ArrayView_same(conduit::Node &first, Args &&... args)
 // Float Node to ArrayView. Handle float types.
 //------------------------------------------------------------------------------
 template <typename... Args>
-void FloatNode_to_ArrayView(const conduit::Node &first, Args &&... args)
+void FloatNode_to_ArrayView(const conduit::Node &first, Args &&...args)
 {
   detail::Node_to_ArrayView_internal<detail::select_float_types()>(
     first,
@@ -1052,7 +1056,7 @@ void FloatNode_to_ArrayView(const conduit::Node &first, Args &&... args)
 }
 
 template <typename... Args>
-void FloatNode_to_ArrayView(conduit::Node &first, Args &&... args)
+void FloatNode_to_ArrayView(conduit::Node &first, Args &&...args)
 {
   detail::Node_to_ArrayView_internal<detail::select_float_types()>(
     first,
@@ -1061,7 +1065,7 @@ void FloatNode_to_ArrayView(conduit::Node &first, Args &&... args)
 }
 
 template <typename... Args>
-void FloatNode_to_ArrayView_same(const conduit::Node &first, Args &&... args)
+void FloatNode_to_ArrayView_same(const conduit::Node &first, Args &&...args)
 {
   detail::Node_to_ArrayView_same_internal<detail::select_float_types()>(
     first,
@@ -1070,7 +1074,7 @@ void FloatNode_to_ArrayView_same(const conduit::Node &first, Args &&... args)
 }
 
 template <typename... Args>
-void FloatNode_to_ArrayView_same(conduit::Node &first, Args &&... args)
+void FloatNode_to_ArrayView_same(conduit::Node &first, Args &&...args)
 {
   detail::Node_to_ArrayView_same_internal<detail::select_float_types()>(
     first,

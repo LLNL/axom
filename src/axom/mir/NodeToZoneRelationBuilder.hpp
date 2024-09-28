@@ -216,8 +216,13 @@ public:
         views::dispatch_unstructured_polyhedral_topology(
           topo,
           [&](auto AXOM_UNUSED_PARAM(shape), auto topoView) {
-            handlePolyhedralView(topoView, n_zones, n_sizes, n_offsets, nnodes, intTypeId);
-         });
+            handlePolyhedralView(topoView,
+                                 n_zones,
+                                 n_sizes,
+                                 n_offsets,
+                                 nnodes,
+                                 intTypeId);
+          });
       }
       else if(shape.is_polygonal() || shapeType == "mixed")
       {
@@ -287,10 +292,11 @@ public:
       // These are all structured topos of some sort. Make an unstructured representation and recurse.
 
       conduit::Node mesh;
-      axom::mir::utilities::blueprint::MakeUnstructured<ExecSpace>::execute(topo,
-                                                                  coordset,
-                                                                  "newtopo",
-                                                                  mesh);
+      axom::mir::utilities::blueprint::MakeUnstructured<ExecSpace>::execute(
+        topo,
+        coordset,
+        "newtopo",
+        mesh);
 
       // Recurse using the unstructured mesh.
       execute(mesh.fetch_existing("topologies/newtopo"), coordset, relation);
@@ -318,7 +324,12 @@ private:
    *       lambda.
    */
   template <typename PHView>
-  void handlePolyhedralView(PHView topoView, conduit::Node &n_zones, conduit::Node &n_sizes, conduit::Node &n_offsets, axom::IndexType nnodes, int intTypeId) const
+  void handlePolyhedralView(PHView topoView,
+                            conduit::Node &n_zones,
+                            conduit::Node &n_sizes,
+                            conduit::Node &n_offsets,
+                            axom::IndexType nnodes,
+                            int intTypeId) const
   {
     using reduce_policy =
       typename axom::execution_space<ExecSpace>::reduce_policy;
@@ -333,13 +344,14 @@ private:
     // Run through the topology once to do a count of each zone's unique node ids.
     RAJA::ReduceSum<reduce_policy, axom::IndexType> count(0);
     const PHView deviceTopologyView(topoView);
-    axom::for_all<ExecSpace>(topoView.numberOfZones(), AXOM_LAMBDA(axom::IndexType zoneIndex)
-    {
-      const auto zone = deviceTopologyView.zone(zoneIndex);
-      const auto uniqueIds = zone.getUniqueIds();
-      sizes_view[zoneIndex] = uniqueIds.size();
-      count += uniqueIds.size();
-    });
+    axom::for_all<ExecSpace>(
+      topoView.numberOfZones(),
+      AXOM_LAMBDA(axom::IndexType zoneIndex) {
+        const auto zone = deviceTopologyView.zone(zoneIndex);
+        const auto uniqueIds = zone.getUniqueIds();
+        sizes_view[zoneIndex] = uniqueIds.size();
+        count += uniqueIds.size();
+      });
     const auto connSize = count.get();
 
     // Do a scan on the size array to build an offset array.
@@ -362,19 +374,15 @@ private:
       n_zones,
       n_sizes,
       n_offsets,
-      [&](auto connectivityView,
-          auto zonesView,
-          auto sizesView,
-          auto offsetsView) {
+      [&](auto connectivityView, auto zonesView, auto sizesView, auto offsetsView) {
         fillZonesPH(topoView, connectivityView, zonesView, offsets_view);
 
         // Make the relation.
         using ViewType = decltype(connectivityView);
-        details::BuildRelation<ExecSpace, ViewType>::execute(
-          connectivityView,
-          zonesView,
-          sizesView,
-          offsetsView);
+        details::BuildRelation<ExecSpace, ViewType>::execute(connectivityView,
+                                                             zonesView,
+                                                             sizesView,
+                                                             offsetsView);
       });
   }
 
@@ -391,22 +399,25 @@ private:
    *       lambda.
    */
   template <typename TopologyView, typename IntegerView, typename OffsetsView>
-  void fillZonesPH(const TopologyView &topoView, IntegerView connectivityView, IntegerView zonesView, OffsetsView offsets_view) const
+  void fillZonesPH(const TopologyView &topoView,
+                   IntegerView connectivityView,
+                   IntegerView zonesView,
+                   OffsetsView offsets_view) const
   {
     // Run through the data one more time to build the nodes and zones arrays.
     const TopologyView deviceTopologyView(topoView);
-    axom::for_all<ExecSpace>(topoView.numberOfZones(), AXOM_LAMBDA(axom::IndexType zoneIndex)
-    {
-      const auto zone = deviceTopologyView.zone(zoneIndex);
-      const auto uniqueIds = zone.getUniqueIds();
-      auto destIdx = offsets_view[zoneIndex];
-      for(axom::IndexType i = 0; i < uniqueIds.size();
-          i++, destIdx++)
-      {
-        connectivityView[destIdx] = uniqueIds[i];
-        zonesView[destIdx] = zoneIndex;
-      }
-    });
+    axom::for_all<ExecSpace>(
+      topoView.numberOfZones(),
+      AXOM_LAMBDA(axom::IndexType zoneIndex) {
+        const auto zone = deviceTopologyView.zone(zoneIndex);
+        const auto uniqueIds = zone.getUniqueIds();
+        auto destIdx = offsets_view[zoneIndex];
+        for(axom::IndexType i = 0; i < uniqueIds.size(); i++, destIdx++)
+        {
+          connectivityView[destIdx] = uniqueIds[i];
+          zonesView[destIdx] = zoneIndex;
+        }
+      });
   }
 
   /*!
@@ -422,7 +433,10 @@ private:
    *       lambda.
    */
   template <typename IntegerView>
-  void fillZonesMixed(axom::IndexType nzones, IntegerView zonesView, IntegerView sizesView, IntegerView offsetsView) const
+  void fillZonesMixed(axom::IndexType nzones,
+                      IntegerView zonesView,
+                      IntegerView sizesView,
+                      IntegerView offsetsView) const
   {
     using DataType = typename decltype(zonesView)::value_type;
     axom::for_all<ExecSpace>(
@@ -445,7 +459,9 @@ private:
    *       lambda.
    */
   template <typename IntegerView>
-  void fillZones(IntegerView zonesView, axom::IndexType connSize, axom::IndexType nodesPerShape) const
+  void fillZones(IntegerView zonesView,
+                 axom::IndexType connSize,
+                 axom::IndexType nodesPerShape) const
   {
     axom::for_all<ExecSpace>(
       connSize,

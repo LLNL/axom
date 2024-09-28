@@ -117,7 +117,7 @@ inline int getDefaultAllocatorID()
  * \return ID of the allocator that allocated the memory.
  */
 /// &{
-inline int getAllocatorIDForAddress(void *ptr)
+inline int getAllocatorIDForAddress(void* ptr)
 {
 #ifdef AXOM_USE_UMPIRE
   umpire::ResourceManager& rm = umpire::ResourceManager::getInstance();
@@ -127,11 +127,11 @@ inline int getAllocatorIDForAddress(void *ptr)
 #endif
 }
 
-inline int getAllocatorIDForAddress(const void *ptr)
+inline int getAllocatorIDForAddress(const void* ptr)
 {
 #ifdef AXOM_USE_UMPIRE
   umpire::ResourceManager& rm = umpire::ResourceManager::getInstance();
-  return rm.getAllocator(const_cast<void *>(ptr)).getId();
+  return rm.getAllocator(const_cast<void*>(ptr)).getId();
 #else
   return axom::getDefaultAllocatorID();
 #endif

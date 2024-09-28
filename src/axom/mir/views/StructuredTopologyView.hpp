@@ -34,28 +34,36 @@ public:
   using Shape1D = LineShape<axom::StackArray<ConnectivityType, 2>>;
   using Shape2D = QuadShape<axom::StackArray<ConnectivityType, 4>>;
   using Shape3D = HexShape<axom::StackArray<ConnectivityType, 8>>;
-  using ShapeType = typename std::conditional<IndexingPolicy::dimension() == 3, Shape3D, typename std::conditional<IndexingPolicy::dimension() == 2, Shape2D, Shape1D>::type>::type;
+  using ShapeType = typename std::conditional<
+    IndexingPolicy::dimension() == 3,
+    Shape3D,
+    typename std::conditional<IndexingPolicy::dimension() == 2, Shape2D, Shape1D>::type>::type;
 
   /*!
    * \brief Return the number of dimensions.
    *
    * \return The number of dimensions.
    */
-  AXOM_HOST_DEVICE constexpr static int dimension() { return IndexingPolicy::dimension(); }
+  AXOM_HOST_DEVICE constexpr static int dimension()
+  {
+    return IndexingPolicy::dimension();
+  }
 
   /*!
    * \brief Constructor
    */
-  AXOM_HOST_DEVICE StructuredTopologyView() : m_zoneIndexing(), m_nodeIndexing() { }
+  AXOM_HOST_DEVICE StructuredTopologyView() : m_zoneIndexing(), m_nodeIndexing()
+  { }
 
   /*!
    * \brief Constructor
    *
    * \param indexing The indexing policy for the topology (num zones in each dimension).
    */
-  AXOM_HOST_DEVICE StructuredTopologyView(const IndexingPolicy &indexing) : m_zoneIndexing(indexing), m_nodeIndexing(indexing.expand())
-  {
-  }
+  AXOM_HOST_DEVICE StructuredTopologyView(const IndexingPolicy &indexing)
+    : m_zoneIndexing(indexing)
+    , m_nodeIndexing(indexing.expand())
+  { }
 
   /*!
    * \brief Return the number of zones.
@@ -108,7 +116,10 @@ public:
    *
    * \return The indexing object.
    */
-  AXOM_HOST_DEVICE const IndexingPolicy &indexing() const { return m_zoneIndexing; }
+  AXOM_HOST_DEVICE const IndexingPolicy &indexing() const
+  {
+    return m_zoneIndexing;
+  }
 
   /*!
    * \brief Return a zone.
@@ -120,15 +131,15 @@ public:
    * \note 3D implementation.
    */
   template <int _ndims = IndexingPolicy::dimension()>
-  AXOM_HOST_DEVICE typename std::enable_if<_ndims == 3, Shape3D>::type
-  zone(axom::IndexType zoneIndex) const
+  AXOM_HOST_DEVICE typename std::enable_if<_ndims == 3, Shape3D>::type zone(
+    axom::IndexType zoneIndex) const
   {
 #if defined(AXOM_DEBUG)
-#if defined(AXOM_DEVICE_CODE)
+  #if defined(AXOM_DEVICE_CODE)
     assert(zoneIndex < numberOfZones());
-#else
+  #else
     SLIC_ASSERT(zoneIndex < numberOfZones());
-#endif
+  #endif
 #endif
     const auto localLogical = m_zoneIndexing.IndexToLogicalIndex(zoneIndex);
     const auto jp = m_nodeIndexing.jStride();
@@ -136,7 +147,8 @@ public:
 
     Shape3D shape;
     auto &data = shape.getIdsStorage();
-    data[0] = m_nodeIndexing.GlobalToGlobal(m_nodeIndexing.LocalToGlobal(localLogical));
+    data[0] =
+      m_nodeIndexing.GlobalToGlobal(m_nodeIndexing.LocalToGlobal(localLogical));
     data[1] = data[0] + 1;
     data[2] = data[1] + jp;
     data[3] = data[2] - 1;
@@ -158,22 +170,23 @@ public:
    * \note 2D implementation.
    */
   template <int _ndims = IndexingPolicy::dimension()>
-  AXOM_HOST_DEVICE typename std::enable_if<_ndims == 2, Shape2D>::type
-  zone(axom::IndexType zoneIndex) const
+  AXOM_HOST_DEVICE typename std::enable_if<_ndims == 2, Shape2D>::type zone(
+    axom::IndexType zoneIndex) const
   {
 #if defined(AXOM_DEBUG)
-#if defined(AXOM_DEVICE_CODE)
+  #if defined(AXOM_DEVICE_CODE)
     assert(zoneIndex < numberOfZones());
-#else
+  #else
     SLIC_ASSERT(zoneIndex < numberOfZones());
-#endif
+  #endif
 #endif
     const auto localLogical = m_zoneIndexing.IndexToLogicalIndex(zoneIndex);
     const auto jp = m_nodeIndexing.jStride();
 
     Shape2D shape;
     auto &data = shape.getIdsStorage();
-    data[0] = m_nodeIndexing.GlobalToGlobal(m_nodeIndexing.LocalToGlobal(localLogical));
+    data[0] =
+      m_nodeIndexing.GlobalToGlobal(m_nodeIndexing.LocalToGlobal(localLogical));
     data[1] = data[0] + 1;
     data[2] = data[1] + jp;
     data[3] = data[2] - 1;
@@ -191,21 +204,22 @@ public:
    * \note 1D implementation.
    */
   template <int _ndims = IndexingPolicy::dimension()>
-  AXOM_HOST_DEVICE typename std::enable_if<_ndims == 1, Shape1D>::type
-  zone(axom::IndexType zoneIndex) const
+  AXOM_HOST_DEVICE typename std::enable_if<_ndims == 1, Shape1D>::type zone(
+    axom::IndexType zoneIndex) const
   {
 #if defined(AXOM_DEBUG)
-#if defined(AXOM_DEVICE_CODE)
+  #if defined(AXOM_DEVICE_CODE)
     assert(zoneIndex < numberOfZones());
-#else
+  #else
     SLIC_ASSERT(zoneIndex < numberOfZones());
-#endif
+  #endif
 #endif
     const auto localLogical = m_zoneIndexing.IndexToLogicalIndex(zoneIndex);
 
     Shape1D shape;
     auto &data = shape.getIdsStorage();
-    data[0] = m_nodeIndexing.GlobalToGlobal(m_nodeIndexing.LocalToGlobal(localLogical));
+    data[0] =
+      m_nodeIndexing.GlobalToGlobal(m_nodeIndexing.LocalToGlobal(localLogical));
     data[1] = data[0] + 1;
 
     return shape;

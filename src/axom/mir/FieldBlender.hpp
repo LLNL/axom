@@ -169,7 +169,7 @@ private:
       n_output_values,
       [&](auto compView, auto outView) {
         blendSingleComponentImpl(blend, compView, outView);
-    });
+      });
   }
 
   /*!
@@ -183,7 +183,9 @@ private:
    *       lambda.
    */
   template <typename SrcView, typename OutputView>
-  void blendSingleComponentImpl(const BlendData &blend, SrcView compView, OutputView outView) const
+  void blendSingleComponentImpl(const BlendData &blend,
+                                SrcView compView,
+                                OutputView outView) const
   {
     using value_type = typename decltype(compView)::value_type;
     using accum_type =
@@ -193,7 +195,7 @@ private:
     // groups. If the user did not provide that, use all blend groups.
     const auto origSize = blend.m_originalIdsView.size();
     const auto blendSize = SelectionPolicy::size(blend);
-//    const auto outputSize = origSize + blendSize;
+    //    const auto outputSize = origSize + blendSize;
 
     const IndexingPolicy deviceIndexing(m_indexing);
     const BlendData deviceBlend(blend);
