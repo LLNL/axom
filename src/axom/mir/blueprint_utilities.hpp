@@ -11,7 +11,6 @@
 #include "axom/core/ArrayView.hpp"
 #include "axom/core/NumericLimits.hpp"
 #include "axom/core/memory_management.hpp"
-#include "axom/mir/views/dispatch_structured_topology.hpp"
 #include "axom/mir/views/NodeArrayView.hpp"
 
 #include <conduit/conduit.hpp>
@@ -216,123 +215,6 @@ private:
 
 //------------------------------------------------------------------------------
 /**
- * \brief Fill an array with int values from a Conduit node.
- *
- * \tparam ArrayType The array type being filled.
- *
- * \param n The node that contains the data.
- * \param key The name of the node that contains the data in \a n.
- * \param[out] arr The array being filled.
- */
-template <typename ArrayType>
-bool fillFromNode(const conduit::Node &n, const std::string &key, ArrayType &arr)
-{
-  bool found = false;
-  if((found = n.has_path(key)) == true)
-  {
-    const auto acc = n.fetch_existing(key).as_int_accessor();
-    for(int i = 0; i < arr.size(); i++)
-    {
-      arr[i] = acc[i];
-    }
-  }
-  return found;
-}
-//------------------------------------------------------------------------------
-
-/**
- * \brief Returns the input index (no changes).
- */
-struct DirectIndexing
-{
-  /**
-   * \brief Return the input index (no changes).
-   * \param index The input index.
-   * \return The input index.
-   */
-  AXOM_HOST_DEVICE
-  inline axom::IndexType operator[](axom::IndexType index) const
-  {
-    return index;
-  }
-};
-
-//------------------------------------------------------------------------------
-/**
- * \brief Help turn slice data zone indices into strided structured element field indices.
- * \tparam Indexing A StridedStructuredIndexing of some dimension.
- */
-template <typename Indexing>
-struct SSElementFieldIndexing
-{
-  /**
-   * \brief Update the indexing offsets/strides from a Conduit node.
-   * \param field The Conduit node for a field.
-   */
-  void update(const conduit::Node &field)
-  {
-    fillFromNode(field, "offsets", m_indexing.m_offsets);
-    fillFromNode(field, "strides", m_indexing.m_strides);
-  }
-
-  /**
-   * \brief Transforms the index from local to global through an indexing object.
-   * \param index The local index
-   * \return The global index for the field.
-   */
-  AXOM_HOST_DEVICE
-  inline axom::IndexType operator[](axom::IndexType index) const
-  {
-    return m_indexing.LocalToGlobal(index);
-  }
-
-  Indexing m_indexing {};
-};
-
-//------------------------------------------------------------------------------
-/**
- * \brief Help turn blend group node indices (global) into vertex field indices.
- * \tparam Indexing A StridedStructuredIndexing of some dimension.
- */
-template <typename Indexing>
-struct SSVertexFieldIndexing
-{
-  /**
-   * \brief Update the indexing offsets/strides from a Conduit node.
-   * \param field The Conduit node for a field.
-   */
-  void update(const conduit::Node &field)
-  {
-    fillFromNode(field, "offsets", m_fieldIndexing.m_offsets);
-    fillFromNode(field, "strides", m_fieldIndexing.m_strides);
-  }
-
-  /**
-   * \brief Transforms the index from local to global through an indexing object.
-   * \param index The global index
-   * \return The global index for the field.
-   */
-  AXOM_HOST_DEVICE
-  inline axom::IndexType operator[](axom::IndexType index) const
-  {
-    // Make the global index into a global logical in the topo.
-    const auto topoGlobalLogical = m_topoIndexing.GlobalToGlobal(index);
-    // Make the global logical into a local logical in the topo.
-    const auto topoLocalLogical = m_topoIndexing.GlobalToLocal(topoGlobalLogical);
-    // Make the global logical index in the field.
-    const auto fieldGlobalLogical =
-      m_fieldIndexing.LocalToGlobal(topoLocalLogical);
-    // Make the global index in the field.
-    const auto fieldGlobalIndex =
-      m_fieldIndexing.GlobalToGlobal(fieldGlobalLogical);
-    return fieldGlobalIndex;
-  }
-
-  Indexing m_topoIndexing {};
-  Indexing m_fieldIndexing {};
-};
-
-/**
  * \brief Copies a Conduit tree in the \a src node to a new Conduit \a dest node,
  *        making sure to allocate array data in the appropriate memory space for
  *        the execution space.
@@ -382,6 +264,144 @@ void copy(conduit::Node &dest, const conduit::Node &src)
     }
   }
 }
+
+//------------------------------------------------------------------------------
+/**
+ * \brief Fill an array with int values from a Conduit node.
+ *
+ * \tparam ArrayType The array type being filled.
+ *
+ * \param n The node that contains the data.
+ * \param key The name of the node that contains the data in \a n.
+ * \param[out] arr The array being filled.
+ * \param moveToHost Sometimes data are on device and need to be moved to host first.
+ */
+template <typename ArrayType>
+bool fillFromNode(const conduit::Node &n, const std::string &key, ArrayType &arr, bool moveToHost = false)
+{
+  bool found = false;
+  if((found = n.has_path(key)) == true)
+  {
+    if(moveToHost)
+    {
+      // Make sure data are on host.
+      conduit::Node hostNode;
+      copy<axom::SEQ_EXEC>(hostNode, n.fetch_existing(key));
+
+      const auto acc = hostNode.as_int_accessor();
+      for(int i = 0; i < arr.size(); i++)
+      {
+        arr[i] = acc[i];
+      }
+    }
+    else
+    {
+      const auto acc = n.fetch_existing(key).as_int_accessor();
+      for(int i = 0; i < arr.size(); i++)
+      {
+        arr[i] = acc[i];
+      }
+    }
+  }
+  return found;
+}
+//------------------------------------------------------------------------------
+
+/**
+ * \brief Returns the input index (no changes).
+ */
+struct DirectIndexing
+{
+  /**
+   * \brief Return the input index (no changes).
+   * \param index The input index.
+   * \return The input index.
+   */
+  AXOM_HOST_DEVICE
+  inline axom::IndexType operator[](axom::IndexType index) const
+  {
+    return index;
+  }
+};
+
+//------------------------------------------------------------------------------
+/**
+ * \brief Help turn slice data zone indices into strided structured element field indices.
+ * \tparam Indexing A StridedStructuredIndexing of some dimension.
+ */
+template <typename Indexing>
+struct SSElementFieldIndexing
+{
+  /**
+   * \brief Update the indexing offsets/strides from a Conduit node.
+   * \param field The Conduit node for a field.
+   *
+   * \note Executes on the host.
+   */
+  void update(const conduit::Node &field)
+  {
+    fillFromNode(field, "offsets", m_indexing.m_offsets, true);
+    fillFromNode(field, "strides", m_indexing.m_strides, true);
+  }
+
+  /**
+   * \brief Transforms the index from local to global through an indexing object.
+   * \param index The local index
+   * \return The global index for the field.
+   */
+  AXOM_HOST_DEVICE
+  inline axom::IndexType operator[](axom::IndexType index) const
+  {
+    return m_indexing.LocalToGlobal(index);
+  }
+
+  Indexing m_indexing {};
+};
+
+//------------------------------------------------------------------------------
+/**
+ * \brief Help turn blend group node indices (global) into vertex field indices.
+ * \tparam Indexing A StridedStructuredIndexing of some dimension.
+ */
+template <typename Indexing>
+struct SSVertexFieldIndexing
+{
+  /**
+   * \brief Update the indexing offsets/strides from a Conduit node.
+   * \param field The Conduit node for a field.
+   *
+   * \note Executes on the host.
+   */
+  void update(const conduit::Node &field)
+  {
+    fillFromNode(field, "offsets", m_fieldIndexing.m_offsets, true);
+    fillFromNode(field, "strides", m_fieldIndexing.m_strides, true);
+  }
+
+  /**
+   * \brief Transforms the index from local to global through an indexing object.
+   * \param index The global index
+   * \return The global index for the field.
+   */
+  AXOM_HOST_DEVICE
+  inline axom::IndexType operator[](axom::IndexType index) const
+  {
+    // Make the global index into a global logical in the topo.
+    const auto topoGlobalLogical = m_topoIndexing.GlobalToGlobal(index);
+    // Make the global logical into a local logical in the topo.
+    const auto topoLocalLogical = m_topoIndexing.GlobalToLocal(topoGlobalLogical);
+    // Make the global logical index in the field.
+    const auto fieldGlobalLogical =
+      m_fieldIndexing.LocalToGlobal(topoLocalLogical);
+    // Make the global index in the field.
+    const auto fieldGlobalIndex =
+      m_fieldIndexing.GlobalToGlobal(fieldGlobalLogical);
+    return fieldGlobalIndex;
+  }
+
+  Indexing m_topoIndexing {};
+  Indexing m_fieldIndexing {};
+};
 
 /*!
  * \brief Get the min/max values for the data in a Conduit node or ArrayView.

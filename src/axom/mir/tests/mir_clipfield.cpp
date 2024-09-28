@@ -363,7 +363,7 @@ TEST(mir_clipfield, unique_seq) { test_unique<seq_exec>::test(); }
 #if defined(AXOM_USE_OPENMP)
 TEST(mir_clipfield, unique_omp) { test_unique<omp_exec>::test(); }
 #endif
-#if defined(AXOM_USE_CUDA) && defined(__CUDACC__)
+#if defined(AXOM_USE_CUDA)
 TEST(mir_clipfield, unique_cuda) { test_unique<cuda_exec>::test(); }
 #endif
 #if defined(AXOM_USE_HIP)
@@ -459,7 +459,7 @@ void test_one_shape_exec(const conduit::Node &hostMesh, const std::string &name)
   test_one_shape<omp_exec, ShapeType>(hostMesh, name);
 #endif
 
-#if defined(AXOM_USE_CUDA) && defined(__CUDACC__)
+#if defined(AXOM_USE_CUDA)
   test_one_shape<cuda_exec, ShapeType>(hostMesh, name);
 #endif
 
@@ -666,7 +666,7 @@ TEST(mir_clipfield, uniform2d)
   braid2d_clip_test<omp_exec>("uniform", "uniform2d");
 #endif
 
-#if defined(AXOM_USE_CUDA) && defined(__CUDACC__)
+#if defined(AXOM_USE_CUDA)
   braid2d_clip_test<cuda_exec>("uniform", "uniform2d");
 #endif
 
@@ -743,7 +743,7 @@ TEST(mir_clipfield, rectilinear2d)
   braid_rectilinear_clip_test<omp_exec, 2>("rectilinear2d");
 #endif
 
-#if defined(AXOM_USE_CUDA) && defined(__CUDACC__)
+#if defined(AXOM_USE_CUDA)
   braid_rectilinear_clip_test<cuda_exec, 2>("rectilinear2d");
 #endif
 
@@ -760,7 +760,7 @@ TEST(mir_clipfield, rectilinear3d)
   braid_rectilinear_clip_test<omp_exec, 3>("rectilinear3d");
 #endif
 
-#if defined(AXOM_USE_CUDA) && defined(__CUDACC__)
+#if defined(AXOM_USE_CUDA)
   braid_rectilinear_clip_test<cuda_exec, 3>("rectilinear3d");
 #endif
 
@@ -832,7 +832,7 @@ void strided_structured_clip_test_exec(const std::string &name,
   strided_structured_clip_test<omp_exec, 2>(name, options);
 #endif
 
-#if defined(AXOM_USE_CUDA) && defined(__CUDACC__)
+#if defined(AXOM_USE_CUDA)
   strided_structured_clip_test<cuda_exec, 2>(name, options);
 #endif
 
@@ -928,7 +928,7 @@ void braid3d_clip_test_exec(const std::string &type, const std::string &name)
   braid3d_clip_test<omp_exec, ShapeType>(type, name);
 #endif
 
-#if defined(AXOM_USE_CUDA) && defined(__CUDACC__)
+#if defined(AXOM_USE_CUDA)
   braid3d_clip_test<cuda_exec, ShapeType>(type, name);
 #endif
 
@@ -1040,7 +1040,7 @@ TEST(mir_clipfield, mixed_seq) { braid3d_mixed_clip_test<seq_exec>("mixed"); }
 #if defined(AXOM_USE_OPENMP)
 TEST(mir_clipfield, mixed_omp) { braid3d_mixed_clip_test<omp_exec>("mixed"); }
 #endif
-#if defined(AXOM_USE_CUDA) && defined(__CUDACC__)
+#if defined(AXOM_USE_CUDA)
 TEST(mir_clipfield, mixed_cuda) { braid3d_mixed_clip_test<cuda_exec>("mixed"); }
 #endif
 #if defined(AXOM_USE_HIP)
@@ -1088,6 +1088,7 @@ struct point_merge_test
     conduit::Node hostMesh;
     create(hostMesh);
 
+    // host->device
     conduit::Node deviceMesh;
     bputils::copy<ExecSpace>(deviceMesh, hostMesh);
 
@@ -1109,10 +1110,11 @@ struct point_merge_test
     options["clipField"] = "clip";
     options["clipValue"] = 0.5;
     using Clip =
-      axom::mir::clipping::ClipField<axom::SEQ_EXEC, TopologyView, CoordsetView>;
+      axom::mir::clipping::ClipField<ExecSpace, TopologyView, CoordsetView>;
     Clip clip(topologyView, coordsetView);
     clip.execute(deviceMesh, options, deviceClipMesh);
 
+    // device->host
     conduit::Node hostClipMesh;
     bputils::copy<axom::SEQ_EXEC>(hostClipMesh, deviceClipMesh);
     //printNode(hostClipMesh);
@@ -1152,7 +1154,7 @@ TEST(mir_clipfield, pointmerging_seq) { point_merge_test<seq_exec>::test(); }
 #if defined(AXOM_USE_OPENMP)
 TEST(mir_clipfield, pointmerging_omp) { point_merge_test<omp_exec>::test(); }
 #endif
-#if defined(AXOM_USE_CUDA) && defined(__CUDACC__)
+#if defined(AXOM_USE_CUDA)
 TEST(mir_clipfield, pointmerging_cuda) { point_merge_test<cuda_exec>::test(); }
 #endif
 #if defined(AXOM_USE_HIP)
@@ -1274,7 +1276,7 @@ TEST(mir_clipfield, selectedzones_seq) { test_selectedzones<seq_exec>::test(); }
 #if defined(AXOM_USE_OPENMP)
 TEST(mir_clipfield, selectedzones_omp) { test_selectedzones<omp_exec>::test(); }
 #endif
-#if defined(AXOM_USE_CUDA) && defined(__CUDACC__)
+#if defined(AXOM_USE_CUDA)
 TEST(mir_clipfield, selectedzones_cuda)
 {
   test_selectedzones<cuda_exec>::test();

@@ -137,7 +137,7 @@ TEST(mir_equiz, equiz_uniform_unibuffer_omp)
 }
 #endif
 
-#if defined(AXOM_USE_CUDA) && defined(__CUDACC__)
+#if defined(AXOM_USE_CUDA)
 TEST(mir_equiz, equiz_uniform_unibuffer_cuda)
 {
   AXOM_ANNOTATE_SCOPE("equiz_uniform_unibuffer_cuda");

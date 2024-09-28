@@ -6,7 +6,10 @@
 #ifndef AXOM_MIR_VIEW_TRAITS_HPP_
 #define AXOM_MIR_VIEW_TRAITS_HPP_
 
+#include "axom/core/utilities/BitUtilities.hpp"
 #include "axom/mir/views/StructuredTopologyView.hpp"
+#include "axom/mir/views/StructuredIndexing.hpp"
+#include "axom/mir/views/StridedStructuredIndexing.hpp"
 #include "axom/mir/views/Shapes.hpp"
 
 namespace axom

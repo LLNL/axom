@@ -1642,23 +1642,8 @@ private:
       }
     }
 #endif
-
     // Figure out which shapes were used.
-    BitSet shapesUsed {};
-    {
-      AXOM_ANNOTATE_SCOPE("shapesUsed");
-      RAJA::ReduceBitOr<reduce_policy, BitSet> shapesUsed_reduce(0);
-      const axom::IndexType nShapes = shapesView.size();
-      axom::for_all<ExecSpace>(
-        nShapes,
-        AXOM_LAMBDA(axom::IndexType index) {
-//          BitSet shapeBit {};
-//          axom::utilities::setBitOn(shapeBit, shapesView[index]);
-          BitSet shapeBit = 1 << shapesView[index];
-          shapesUsed_reduce |= shapeBit;
-        });
-      shapesUsed = shapesUsed_reduce.get();
-    }
+    BitSet shapesUsed = findUsedShapes(shapesView);
 
 #if defined(AXOM_DEBUG_CLIP_FIELD)
     std::cout
@@ -1745,6 +1730,29 @@ private:
       n_newTopo["elements"].remove("shapes");
       n_newTopo["elements/shape"] = shapeMap.begin()->first;
     }
+  }
+
+  /*!
+   * \brief Find the shapes that were used.
+   *
+   * \param shapesView The view that contains the shapes.
+   *
+   * \return A BitSet where bits are marked for each shape used.
+   */
+  BitSet findUsedShapes(axom::ArrayView<ConnectivityType> shapesView) const
+  {
+    AXOM_ANNOTATE_SCOPE("findUsedShapes");
+
+    RAJA::ReduceBitOr<reduce_policy, BitSet> shapesUsed_reduce(0);
+    const axom::IndexType nShapes = shapesView.size();
+    axom::for_all<ExecSpace>(
+      nShapes,
+      AXOM_LAMBDA(axom::IndexType index) {
+        BitSet shapeBit = 1 << shapesView[index];
+        shapesUsed_reduce |= shapeBit;
+      });
+    BitSet shapesUsed = shapesUsed_reduce.get();
+    return shapesUsed;
   }
 
 #if defined(AXOM_CLIP_FILTER_DEGENERATES)

@@ -24,7 +24,7 @@
     using omp_exec = seq_exec;
   #endif
 
-  #if defined(AXOM_USE_CUDA) && defined(__CUDACC__)
+  #if defined(AXOM_USE_CUDA)
     constexpr int CUDA_BLOCK_SIZE = 256;
     using cuda_exec = axom::CUDA_EXEC<CUDA_BLOCK_SIZE>;
   #else
@@ -57,7 +57,7 @@ struct execution_name<omp_exec>
   static std::string name() { return "omp"; }
 };
   #endif
-  #if defined(AXOM_USE_CUDA) && defined(__CUDACC__)
+  #if defined(AXOM_USE_CUDA)
 template <>
 struct execution_name<cuda_exec>
 {

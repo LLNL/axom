@@ -133,7 +133,7 @@ TEST(mir_views, node_to_arrayview_omp)
   test_node_to_arrayview<omp_exec>::test();
 }
 #endif
-#if defined(AXOM_USE_CUDA) && defined(__CUDACC__)
+#if defined(AXOM_USE_CUDA)
 TEST(mir_views, node_to_arrayview_cuda)
 {
   test_node_to_arrayview<cuda_exec>::test();
@@ -195,8 +195,9 @@ struct test_structured_topology_view_rectilinear
     // Execute the kernel for each zone (find max node number in zone).
     auto topoView = axom::mir::views::make_rectilinear<2>::view(deviceMesh["topologies/mesh"]);
     using ZoneType = typename decltype(topoView)::ShapeType;
-    topoView.template for_all_zones<ExecSpace>(AXOM_LAMBDA(axom::IndexType zoneIndex, const ZoneType &zone)
+    axom::for_all<ExecSpace>(topoView.numberOfZones(), AXOM_LAMBDA(axom::IndexType zoneIndex)
     {
+      const auto zone = topoView.zone(zoneIndex);
       axom::IndexType m = -1;
       for(const auto &id : zone.getIds())
       {

@@ -6,12 +6,14 @@
 #ifndef AXOM_MIR_DISPATCH_STRUCTURED_TOPOLOGY_HPP_
 #define AXOM_MIR_DISPATCH_STRUCTURED_TOPOLOGY_HPP_
 
+#include <axom/core.hpp>
 #include "axom/mir/views/StructuredTopologyView.hpp"
 #include "axom/mir/views/StructuredIndexing.hpp"
 #include "axom/mir/views/StridedStructuredIndexing.hpp"
 #include "axom/mir/views/dispatch_utilities.hpp"
 #include "axom/mir/views/dispatch_uniform_topology.hpp"
 #include "axom/mir/views/dispatch_rectilinear_topology.hpp"
+#include "axom/mir/blueprint_utilities.hpp"
 
 #include <conduit/conduit.hpp>
 
@@ -23,33 +25,6 @@ namespace mir
 {
 namespace views
 {
-//------------------------------------------------------------------------------
-/*!
- * \brief Fill an array from a Conduit node, filling the destination array if
- *        the values do not exist.
- *
- * \tparam ArrayType The array type to use.
- *
- * \param n The conduit node that contains the named array, if it exists.
- * \param key The name of the node.
- * \param[out] The array to be filled.
- * \param fillValue the value to use if the array is not found.
- */
-template <typename ArrayType>
-bool fillFromNode(const conduit::Node &n, const std::string &key, ArrayType &arr)
-{
-  bool found = false;
-  if((found = n.has_path(key)) == true)
-  {
-    const auto acc = n.fetch_existing(key).as_int_accessor();
-    for(int i = 0; i < arr.size(); i++)
-    {
-      arr[i] = acc[i];
-    }
-  }
-
-  return found;
-}
 
 /*!
  * \brief Base template for strided structured topology creation
@@ -75,6 +50,7 @@ struct make_strided_structured<3>
    */
   static Indexing indexing(const conduit::Node &topo)
   {
+    namespace bputils = axom::mir::utilities::blueprint;
     const std::string offsetsKey("elements/dims/offsets");
     const std::string stridesKey("elements/dims/strides");
 
@@ -84,8 +60,8 @@ struct make_strided_structured<3>
     zoneDims[2] = topo.fetch_existing("elements/dims/k").as_int();
 
     LogicalIndex offsets {{0, 0, 0}}, strides {{1, 1, 1}};
-    fillFromNode(topo, offsetsKey, offsets);
-    if(fillFromNode(topo, stridesKey, strides))
+    bputils::fillFromNode(topo, offsetsKey, offsets, true);
+    if(bputils::fillFromNode(topo, stridesKey, strides, true))
     {
       // Make zone striding.
       strides[1]--;
@@ -128,6 +104,7 @@ struct make_strided_structured<2>
    */
   static Indexing indexing(const conduit::Node &topo)
   {
+    namespace bputils = axom::mir::utilities::blueprint;
     const std::string offsetsKey("elements/dims/offsets");
     const std::string stridesKey("elements/dims/strides");
     LogicalIndex zoneDims;
@@ -135,8 +112,8 @@ struct make_strided_structured<2>
     zoneDims[1] = topo.fetch_existing("elements/dims/j").as_int();
 
     LogicalIndex offsets {{0, 0}}, strides {{1, 1}};
-    fillFromNode(topo, offsetsKey, offsets);
-    if(fillFromNode(topo, stridesKey, strides))
+    bputils::fillFromNode(topo, offsetsKey, offsets, true);
+    if(bputils::fillFromNode(topo, stridesKey, strides, true))
     {
       // Make zone striding.
       strides[1]--;
@@ -177,6 +154,7 @@ struct make_strided_structured<1>
    */
   static Indexing indexing(const conduit::Node &topo)
   {
+    namespace bputils = axom::mir::utilities::blueprint;
     const std::string offsetsKey("elements/dims/offsets");
     const std::string stridesKey("elements/dims/strides");
 
@@ -184,8 +162,8 @@ struct make_strided_structured<1>
     zoneDims[0] = topo.fetch_existing("elements/dims/i").as_int();
 
     LogicalIndex offsets {0}, strides {1};
-    fillFromNode(topo, offsetsKey, offsets);
-    fillFromNode(topo, stridesKey, strides);
+    bputils::fillFromNode(topo, offsetsKey, offsets, true);
+    bputils::fillFromNode(topo, stridesKey, strides, true);
 
     return Indexing(zoneDims, offsets, strides);
   }

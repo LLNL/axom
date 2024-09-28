@@ -128,7 +128,6 @@ int runMIR(RuntimePolicy policy,
   options["matset"] = "mat";
 
   int retval = 0;
-std::cout << axom::fmt::format("policy={}", policy) << std::endl;
   if(policy == RuntimePolicy::seq)
   {
 #pragma message "SEQ supported"
