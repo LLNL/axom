@@ -49,7 +49,7 @@ public:
   {
 #if defined(AXOM_DEBUG)
 #if defined(AXOM_DEVICE_CODE)
-    assert(x.size() == y.size(), "Coordinate size mismatch.");
+    assert(x.size() == y.size());
 #else
     SLIC_ASSERT_MSG(x.size() == y.size(), "Coordinate size mismatch.");
 #endif
@@ -81,7 +81,7 @@ public:
   {
 #if defined(AXOM_DEBUG)
 #if defined(AXOM_DEVICE_CODE)
-    assert(vertex_index < size(), "Out of range index.");
+    assert(vertex_index < size());
 #else
     SLIC_ASSERT_MSG(
       vertex_index < size(),
@@ -138,8 +138,7 @@ public:
   {
 #if defined(AXOM_DEBUG)
 #if defined(AXOM_DEVICE_CODE)
-    assert(x.size() == y.size() && x.size() == z.size(),
-           "Coordinate size mismatch.");
+    assert(x.size() == y.size() && x.size() == z.size());
 #else
     SLIC_ASSERT_MSG(x.size() == y.size() && x.size() == z.size(),
                     "Coordinate size mismatch.");
@@ -172,7 +171,7 @@ public:
   {
 #if defined(AXOM_DEBUG)
 #if defined(AXOM_DEVICE_CODE)
-    assert(vertex_index < size(), "Out of range index.");
+    assert(vertex_index < size());
 #else
     SLIC_ASSERT_MSG(
       vertex_index < size(),

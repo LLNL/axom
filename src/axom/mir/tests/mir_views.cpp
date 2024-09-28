@@ -16,6 +16,8 @@ namespace bputils = axom::mir::utilities::blueprint;
 
 //------------------------------------------------------------------------------
 
+#define DEBUGGING_TEST_CASES
+
 // Uncomment to generate baselines
 //#define AXOM_TESTING_GENERATE_BASELINES
 
@@ -171,6 +173,80 @@ TEST(mir_views, explicit_coordsetview)
     EXPECT_EQ(view3d[i], P);
   }
 }
+
+//------------------------------------------------------------------------------
+template <typename ExecSpace>
+struct test_structured_topology_view_rectilinear
+{
+  static void test()
+  {
+    conduit::Node hostMesh;
+    create(hostMesh);
+
+    // host->device
+    conduit::Node deviceMesh;
+    bputils::copy<ExecSpace>(deviceMesh, hostMesh);
+
+    // Make results view on device.
+    constexpr int nzones = 9;
+    axom::Array<axom::IndexType> results(nzones, nzones, axom::execution_space<ExecSpace>::allocatorID());
+    auto resultsView = results.view();
+
+    // Execute the kernel for each zone (find max node number in zone).
+    auto topoView = axom::mir::views::make_rectilinear<2>::view(deviceMesh["topologies/mesh"]);
+    using ZoneType = typename decltype(topoView)::ShapeType;
+    topoView.template for_all_zones<ExecSpace>(AXOM_LAMBDA(axom::IndexType zoneIndex, const ZoneType &zone)
+    {
+      axom::IndexType m = -1;
+      for(const auto &id : zone.getIds())
+      {
+        m = axom::utilities::max(static_cast<axom::IndexType>(id), m);
+      }
+      resultsView[zoneIndex] = m;
+    });
+
+    // device->host
+    axom::Array<axom::IndexType> hostResults(nzones, nzones, axom::execution_space<axom::SEQ_EXEC>::allocatorID());
+    axom::copy(hostResults.data(), results.data(), nzones * sizeof(axom::IndexType));
+
+    // Compare.
+    const axom::IndexType expected[] = {5, 6, 7, 9, 10, 11, 13, 14, 15};
+    for(int i = 0; i < nzones; i++)
+    {
+      EXPECT_EQ(hostResults[i], expected[i]);
+    }
+  }
+
+  static void create(conduit::Node &mesh)
+  {
+    std::vector<int> dims{4,4};
+    axom::mir::testing::data::braid("rectilinear", dims, mesh);
+  }
+};
+
+
+TEST(mir_views, stopo_rectilinear_2d_seq)
+{
+  test_structured_topology_view_rectilinear<seq_exec>::test();
+}
+#if defined(AXOM_USE_OPENMP)
+TEST(mir_views, stopo_rectilinear_2d_omp)
+{
+  test_structured_topology_view_rectilinear<omp_exec>::test();
+}
+#endif
+#if defined(AXOM_USE_CUDA)
+TEST(mir_views, stopo_rectilinear_2d_cuda)
+{
+  test_structured_topology_view_rectilinear<cuda_exec>::test();
+}
+#endif
+#if defined(AXOM_USE_HIP)
+TEST(mir_views, stopo_rectilinear_2d_hip)
+{
+  test_structured_topology_view_rectilinear<hip_exec>::test();
+}
+#endif
 
 //------------------------------------------------------------------------------
 struct test_strided_structured
@@ -395,14 +471,25 @@ TEST(mir_views, matset_unibuffer_hip)
 #endif
 
 //------------------------------------------------------------------------------
-
+#if defined(DEBUGGING_TEST_CASES)
+void conduit_debug_err_handler(const std::string &s1, const std::string &s2, int i1)
+{
+  std::cout << "s1=" << s1 << ", s2=" << s2 << ", i1=" << i1 << std::endl;
+  // This is on purpose.
+  while(1)
+    ;
+}
+#endif
+//------------------------------------------------------------------------------
 int main(int argc, char *argv[])
 {
   int result = 0;
   ::testing::InitGoogleTest(&argc, argv);
 
   axom::slic::SimpleLogger logger;  // create & initialize test logger,
-
+#if defined(DEBUGGING_TEST_CASES)
+  conduit::utils::set_error_handler(conduit_debug_err_handler);
+#endif
   result = RUN_ALL_TESTS();
   return result;
 }

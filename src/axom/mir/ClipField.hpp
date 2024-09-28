@@ -898,9 +898,18 @@ private:
       AXOM_LAMBDA(axom::IndexType index) { nodeData.m_nodeUsedView[index] = 0; });
 
     const auto deviceIntersector = m_intersector.view();
+#if 1
+    const TopologyView deviceTopologyView(m_topologyView);
+    const auto selectedZonesView = selectedZones.view();
+    axom::for_all<ExecSpace>(selectedZonesView.size(),
+      AXOM_LAMBDA(axom::IndexType szIndex) {
+        const auto zoneIndex = selectedZonesView[szIndex];
+        const auto zone = deviceTopologyView.zone(zoneIndex);
+#else
     m_topologyView.template for_selected_zones<ExecSpace>(
       selectedZones.view(),
       AXOM_LAMBDA(axom::IndexType szIndex, axom::IndexType zoneIndex, const ZoneType &zone) {
+#endif
         // Get the clip case for the current zone.
         const auto clipcase =
           deviceIntersector.determineClipCase(zoneIndex, zone.getIds());
@@ -1176,9 +1185,18 @@ private:
     const auto selection = getSelection(opts);
 
     const auto deviceIntersector = m_intersector.view();
+#if 1
+    const TopologyView deviceTopologyView(m_topologyView);
+    const auto selectedZonesView = selectedZones.view();
+    axom::for_all<ExecSpace>(selectedZonesView.size(),
+      AXOM_LAMBDA(axom::IndexType szIndex) {
+        const auto zoneIndex = selectedZonesView[szIndex];
+        const auto zone = deviceTopologyView.zone(zoneIndex);
+#else
     m_topologyView.template for_selected_zones<ExecSpace>(
       selectedZones.view(),
       AXOM_LAMBDA(axom::IndexType szIndex, axom::IndexType zoneIndex, const ZoneType &zone) {
+#endif
         // Get the clip case for the current zone.
         const auto clipcase = zoneData.m_clipCasesView[szIndex];
 
@@ -1393,11 +1411,20 @@ private:
     {
       AXOM_ANNOTATE_SCOPE("build");
       const auto origSize = nodeData.m_originalIdsView.size();
+#if 1
+      const TopologyView deviceTopologyView(m_topologyView);
+      const auto selectedZonesView = selectedZones.view();
+      axom::for_all<ExecSpace>(selectedZonesView.size(),
+        AXOM_LAMBDA(axom::IndexType szIndex) {
+          const auto zoneIndex = selectedZonesView[szIndex];
+          const auto zone = deviceTopologyView.zone(zoneIndex);
+#else
       m_topologyView.template for_selected_zones<ExecSpace>(
         selectedZones.view(),
         AXOM_LAMBDA(axom::IndexType szIndex,
                     axom::IndexType AXOM_UNUSED_PARAM(zoneIndex),
                     const ZoneType &zone) {
+#endif
           // If there are no fragments, return from lambda.
           if(fragmentData.m_fragmentsView[szIndex] == 0) return;
 
@@ -1621,11 +1648,13 @@ private:
     {
       AXOM_ANNOTATE_SCOPE("shapesUsed");
       RAJA::ReduceBitOr<reduce_policy, BitSet> shapesUsed_reduce(0);
+      const axom::IndexType nShapes = shapesView.size();
       axom::for_all<ExecSpace>(
-        shapesView.size(),
+        nShapes,
         AXOM_LAMBDA(axom::IndexType index) {
-          BitSet shapeBit {};
-          axom::utilities::setBitOn(shapeBit, shapesView[index]);
+//          BitSet shapeBit {};
+//          axom::utilities::setBitOn(shapeBit, shapesView[index]);
+          BitSet shapeBit = 1 << shapesView[index];
           shapesUsed_reduce |= shapeBit;
         });
       shapesUsed = shapesUsed_reduce.get();

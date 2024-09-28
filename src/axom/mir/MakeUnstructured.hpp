@@ -34,10 +34,10 @@ public:
    *
    * \tparam ExecSpace The execution space where the work will be done.
    *
-   * \param topo The input topology to be turned into unstructured.
-   * \param coordset The topology's coordset. It will be referenced as an external node in the output \a mesh.
-   * \param topoName The name of the new topology to create.
-   * \param mesh     The node that will contain the new topology and coordset.
+   * \param topo      The input topology to be turned into unstructured.
+   * \param coordset  The topology's coordset. It will be referenced as an external node in the output \a mesh.
+   * \param topoName  The name of the new topology to create.
+   * \param[out] mesh The node that will contain the new topology and coordset.
    *
    * \note There are blueprint methods for this sort of thing but this one runs on device.
    */
@@ -113,11 +113,28 @@ private:
    * \param offsetsView The view that will contain the new offsets.
    */
   template <typename TopologyView>
-  static void makeUnstructured(int ptsPerZone, const TopologyView &topoView,
+  static void makeUnstructured(int ptsPerZone,
+    TopologyView topoView,
     axom::ArrayView<conduit::index_t> connView, 
     axom::ArrayView<conduit::index_t> sizesView, 
     axom::ArrayView<conduit::index_t> offsetsView)
   {
+#if 1
+    // Fill in the new connectivity.
+    axom::for_all<ExecSpace>(topoView.numberOfZones(), AXOM_LAMBDA(axom::IndexType zoneIndex)
+    {
+      const auto zone = topoView.zone(zoneIndex);
+
+      const auto start = zoneIndex * ptsPerZone;
+      for(int i = 0; i < ptsPerZone; i++)
+      {
+        connView[start + i] =
+          static_cast<conduit::index_t>(zone.getId(i));
+      }
+      sizesView[zoneIndex] = ptsPerZone;
+      offsetsView[zoneIndex] = start;
+    });
+#else
     // Fill in the new connectivity.
     using ZoneType = typename TopologyView::ShapeType;
     topoView.template for_all_zones<ExecSpace>(
@@ -131,6 +148,7 @@ private:
         sizesView[zoneIndex] = ptsPerZone;
         offsetsView[zoneIndex] = start;
       });
+#endif
   }
 };
 

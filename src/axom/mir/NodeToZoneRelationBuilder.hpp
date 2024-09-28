@@ -331,14 +331,25 @@ private:
     auto sizes_view = sizes.view();
 
     // Run through the topology once to do a count of each zone's unique node ids.
-    using ZoneType = typename decltype(topoView)::ShapeType;
     RAJA::ReduceSum<reduce_policy, axom::IndexType> count(0);
+#if 1
+    const PHView deviceTopologyView(topoView);
+    axom::for_all<ExecSpace>(topoView.numberOfZones(), AXOM_LAMBDA(axom::IndexType zoneIndex)
+    {
+      const auto zone = deviceTopologyView.zone(zoneIndex);
+      const auto uniqueIds = zone.getUniqueIds();
+      sizes_view[zoneIndex] = uniqueIds.size();
+      count += uniqueIds.size();
+    });
+#else
+    using ZoneType = typename decltype(topoView)::ShapeType;
     topoView.template for_all_zones<ExecSpace>(
       AXOM_LAMBDA(axom::IndexType zoneIndex, const ZoneType &zone) {
         const auto uniqueIds = zone.getUniqueIds();
         sizes_view[zoneIndex] = uniqueIds.size();
         count += uniqueIds.size();
       });
+#endif
     const auto connSize = count.get();
 
     // Do a scan on the size array to build an offset array.
@@ -393,6 +404,21 @@ private:
   void fillZonesPH(const TopologyView &topoView, IntegerView connectivityView, IntegerView zonesView, OffsetsView offsets_view) const
   {
     // Run through the data one more time to build the nodes and zones arrays.
+#if 1
+    const TopologyView deviceTopologyView(topoView);
+    axom::for_all<ExecSpace>(topoView.numberOfZones(), AXOM_LAMBDA(axom::IndexType zoneIndex)
+    {
+      const auto zone = deviceTopologyView.zone(zoneIndex);
+      const auto uniqueIds = zone.getUniqueIds();
+      auto destIdx = offsets_view[zoneIndex];
+      for(axom::IndexType i = 0; i < uniqueIds.size();
+          i++, destIdx++)
+      {
+        connectivityView[destIdx] = uniqueIds[i];
+        zonesView[destIdx] = zoneIndex;
+      }
+    });
+#else
     using ZoneType = typename TopologyView::ShapeType;
     topoView.template for_all_zones<ExecSpace>(
       AXOM_LAMBDA(axom::IndexType zoneIndex, const ZoneType &zone) {
@@ -405,6 +431,7 @@ private:
           zonesView[destIdx] = zoneIndex;
         }
       });
+#endif
   }
 
   /*!

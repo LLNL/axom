@@ -34,11 +34,6 @@
 // Uncomment to save inputs and outputs.
 // #define AXOM_EQUIZ_DEBUG
 
-// This enables a tweak to the algorithm that tries to skip the first iteration
-// by incorporating the first material's ids into the zonalMaterialID field. It
-// could be faster but it might not be as robust.
-// #define AXOM_EQUIZ_SKIP_FIRST_ITERATION
-
 #if defined(AXOM_EQUIZ_DEBUG)
   #include <conduit/conduit_relay_io_blueprint.hpp>
 #endif
@@ -750,11 +745,7 @@ protected:
     // Iterate over mixed materials.
     //
     //--------------------------------------------------------------------------
-#if defined(AXOM_EQUIZ_SKIP_FIRST_ITERATION)
-    constexpr int first = 1;
-#else
     constexpr int first = 0;
-#endif
     for(size_t i = first; i < mixedMats.size(); i++)
     {
       if(i == first)
@@ -1042,13 +1033,7 @@ protected:
   void makeWorkingFields(const conduit::Node &n_topo,
                          conduit::Node &n_fields,
                          const axom::mir::views::MaterialInformation &cleanMats,
-#if defined(AXOM_EQUIZ_SKIP_FIRST_ITERATION)
-                         const axom::mir::views::MaterialInformation &mixedMats
-#else
-                         const axom::mir::views::MaterialInformation
-                           &AXOM_UNUSED_PARAM(mixedMats)
-#endif
-  ) const
+                         const axom::mir::views::MaterialInformation &AXOM_UNUSED_PARAM(mixedMats)) const
   {
     namespace bputils = axom::mir::utilities::blueprint;
     AXOM_ANNOTATE_SCOPE("makeWorkingFields");
@@ -1091,35 +1076,6 @@ protected:
           }
         });
     }
-#if defined(AXOM_EQUIZ_SKIP_FIRST_ITERATION)
-    // Fill in the mixed zones for the first mixed material.
-    if(!mixedMats.empty())
-    {
-      const int matNumber = mixedMats[0].number;
-      const std::string matFieldName = nodalFieldName(matNumber);
-      auto matVFView = bputils::make_array_view<MaterialVF>(
-        n_fields.fetch_existing(matFieldName + "/values"));
-
-      // Fill in any zone that has nodes where the nodal matVF is greater than zero.
-      // This fuzzes it out to more zones so we get better blending with the next
-      // material we try to overlay.
-      using ZoneType = typename TopologyView::ShapeType;
-      m_topologyView.template for_all_zones<ExecSpace>(
-        AXOM_LAMBDA(axom::IndexType zoneIndex, const ZoneType &zone) {
-          constexpr MaterialVF VOLUME_FRACTION_CUTOFF = 1.e-6;
-          MaterialVF matvfSum {};
-          for(const auto nid : zone.getIds())
-          {
-            matvfSum += matVFView[nid];
-          }
-          // Overwrite the existing material.
-          if(matvfSum > VOLUME_FRACTION_CUTOFF)
-          {
-            zonalIDFieldView[zoneIndex] = matNumber;
-          }
-        });
-    }
-#endif
   }
 
   /*!

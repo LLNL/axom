@@ -602,13 +602,18 @@ void braid2d_clip_test(const std::string &type, const std::string &name)
     const auto offsetsView = bputils::make_array_view<axom::IndexType>(
       n_device_topo.fetch_existing("elements/offsets"));
 
+    // Make the shape map.
+    axom::Array<axom::IndexType> values, ids;
+    auto shapeMap = axom::mir::views::buildShapeMap(n_device_topo, values, ids, axom::execution_space<ExecSpace>::allocatorID());
+
     using MixedTopoView =
       axom::mir::views::UnstructuredTopologyMixedShapeView<axom::IndexType>;
     MixedTopoView mixedTopoView(n_device_topo,
                                 connView,
                                 shapesView,
                                 sizesView,
-                                offsetsView);
+                                offsetsView,
+                                shapeMap);
 
     // Clip the data
     axom::mir::clipping::ClipField<ExecSpace, MixedTopoView, ExpCoordsetView>
@@ -996,7 +1001,12 @@ void braid3d_mixed_clip_test(const std::string &name)
   axom::ArrayView<ConnType> offsetsView(
     static_cast<ConnType *>(n_offsets.data_ptr()),
     n_offsets.dtype().number_of_elements());
-  TopoView topoView(n_device_topo, connView, shapesView, sizesView, offsetsView);
+
+  // Make the shape map.
+  axom::Array<axom::IndexType> values, ids;
+  auto shapeMap = axom::mir::views::buildShapeMap(n_device_topo, values, ids, axom::execution_space<ExecSpace>::allocatorID());
+
+  TopoView topoView(n_device_topo, connView, shapesView, sizesView, offsetsView, shapeMap);
 
   // Create options to control the clipping.
   conduit::Node options;

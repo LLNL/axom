@@ -166,7 +166,7 @@ public:
    *
    * \return The requested zone.
    */
-  ShapeType zone(axom::IndexType zoneIndex) const
+  AXOM_HOST_DEVICE ShapeType zone(axom::IndexType zoneIndex) const
   {
 #if defined(AXOM_DEBUG)
 #if defined(AXOM_DEVICE_CODE)
@@ -181,9 +181,9 @@ public:
     const auto shapeID = m_shapeMap[m_shapes[zoneIndex]];
 #if defined(AXOM_DEBUG)
 #if defined(AXOM_DEVICE_CODE)
-    assert(shapeID > 0);
+    assert(shapeID >= Point_ShapeID && shapeID <= Mixed_ShapeID);
 #else
-    SLIC_ASSERT(shapeID > 0);
+    SLIC_ASSERT(shapeID >= Point_ShapeID && shapeID <= Mixed_ShapeID);
 #endif
 #endif
 

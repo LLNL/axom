@@ -20,8 +20,10 @@ namespace mir
 {
 namespace views
 {
-// Shape ids. These are used to identify shapes. These are used as indices
-// in bit fields in some algorithms.
+/*!
+ * \brief Shape ids. These are used to identify shapes. These are used as
+ *        indices in bit fields in some algorithms.
+ */
 enum
 {
   Point_ShapeID = 0,
@@ -39,12 +41,56 @@ enum
   Invalid_ShapeID = 20
 };
 
-// TODO: PointTraits
+/*!
+ \brief Point type traits.
 
-/*
+\verbatim
+
+  0*
+
+\endverbatim
+ */
+struct PointTraits
+{
+  AXOM_HOST_DEVICE constexpr static int id() { return Point_ShapeID; }
+  AXOM_HOST_DEVICE constexpr static bool is_polyhedral() { return false; }
+  AXOM_HOST_DEVICE constexpr static bool is_variable_size() { return false; }
+
+  AXOM_HOST_DEVICE constexpr static IndexType dimension() { return 0; }
+
+  AXOM_HOST_DEVICE constexpr static IndexType numberOfNodes() { return 1; }
+  AXOM_HOST_DEVICE constexpr static IndexType numberOfNodesInFace(int AXOM_UNUSED_PARAM(faceIndex))
+  {
+    return 1;
+  }
+  AXOM_HOST_DEVICE constexpr static IndexType maxNodesInFace() { return 1; }
+
+  AXOM_HOST_DEVICE constexpr static IndexType numberOfFaces() { return 0; }
+  AXOM_HOST_DEVICE constexpr static IndexType numberOfEdges() { return 0; }
+  AXOM_HOST_DEVICE constexpr static IndexType zoneOffset(int zoneIndex)
+  {
+    return zoneIndex;
+  }
+
+  constexpr static IndexType faces[][1] = {{0}};
+
+  AXOM_HOST_DEVICE constexpr static axom::StackArray<IndexType, 2> getEdge(
+    int AXOM_UNUSED_PARAM(edgeIndex))
+  {
+    return axom::StackArray<IndexType, 2>();
+  }
+
+  AXOM_HOST_DEVICE constexpr static const char *name() { return "point"; }
+};
+
+/*!
+ \brief Line type traits.
+
+\verbatim
 
   0*-----------* 1
 
+\endverbatim
  */
 struct LineTraits
 {
@@ -55,7 +101,7 @@ struct LineTraits
   AXOM_HOST_DEVICE constexpr static IndexType dimension() { return 1; }
 
   AXOM_HOST_DEVICE constexpr static IndexType numberOfNodes() { return 2; }
-  AXOM_HOST_DEVICE constexpr static IndexType numberOfNodesInFace(int /*faceIndex*/)
+  AXOM_HOST_DEVICE constexpr static IndexType numberOfNodesInFace(int AXOM_UNUSED_PARAM(faceIndex))
   {
     return 2;
   }
@@ -79,7 +125,11 @@ struct LineTraits
   AXOM_HOST_DEVICE constexpr static const char *name() { return "line"; }
 };
 
-/*
+/*!
+ \brief Triangle type traits.
+
+\verbatim
+
   2*
    |\
    | \
@@ -88,6 +138,7 @@ struct LineTraits
    |    \
   0*-----* 1
 
+\endverbatim
  */
 struct TriTraits
 {
@@ -98,7 +149,7 @@ struct TriTraits
   AXOM_HOST_DEVICE constexpr static IndexType dimension() { return 2; }
 
   AXOM_HOST_DEVICE constexpr static IndexType numberOfNodes() { return 3; }
-  AXOM_HOST_DEVICE constexpr static IndexType numberOfNodesInFace(int /*faceIndex*/)
+  AXOM_HOST_DEVICE constexpr static IndexType numberOfNodesInFace(int AXOM_UNUSED_PARAM(faceIndex))
   {
     return 3;
   }
@@ -123,7 +174,11 @@ struct TriTraits
   AXOM_HOST_DEVICE constexpr static const char *name() { return "tri"; }
 };
 
-/*
+/*!
+ \brief Quad type traits.
+
+\verbatim
+
   3*-----------* 2
    |           |
    |           |
@@ -132,6 +187,7 @@ struct TriTraits
    |           |
   0*-----------* 1
 
+\endverbatim
  */
 struct QuadTraits
 {
@@ -142,7 +198,7 @@ struct QuadTraits
   AXOM_HOST_DEVICE constexpr static IndexType dimension() { return 2; }
 
   AXOM_HOST_DEVICE constexpr static IndexType numberOfNodes() { return 4; }
-  AXOM_HOST_DEVICE constexpr static IndexType numberOfNodesInFace(int /*faceIndex*/)
+  AXOM_HOST_DEVICE constexpr static IndexType numberOfNodesInFace(int AXOM_UNUSED_PARAM(faceIndex))
   {
     return 4;
   }
@@ -167,7 +223,11 @@ struct QuadTraits
   AXOM_HOST_DEVICE constexpr static const char *name() { return "quad"; }
 };
 
-/*
+/*!
+ \brief Tet type traits.
+
+\verbatim
+
       3
       *
      /|\         face 0: 0,2,1
@@ -182,6 +242,7 @@ struct QuadTraits
       *          edge 4: 1,3
        1         edge 5: 2,3
 
+\endverbatim
  */
 struct TetTraits
 {
@@ -192,7 +253,7 @@ struct TetTraits
   AXOM_HOST_DEVICE constexpr static IndexType dimension() { return 3; }
 
   AXOM_HOST_DEVICE constexpr static IndexType numberOfNodes() { return 4; }
-  AXOM_HOST_DEVICE constexpr static IndexType numberOfNodesInFace(int /*faceIndex*/)
+  AXOM_HOST_DEVICE constexpr static IndexType numberOfNodesInFace(int AXOM_UNUSED_PARAM(faceIndex))
   {
     return 3;
   }
@@ -221,7 +282,10 @@ struct TetTraits
   AXOM_HOST_DEVICE constexpr static const char *name() { return "tet"; }
 };
 
-/*
+/*!
+ \brief Pyramid type traits.
+
+\verbatim
 
 3*-----------* 2  face 0: 3,2,1,0
  |\         /|    face 1: 0,1,4
@@ -238,6 +302,7 @@ struct TetTraits
 0*-----------* 1  edge 6: 2,4
                   edge 7: 3,4
 
+\endverbatim
  */
 struct PyramidTraits
 {
@@ -278,7 +343,10 @@ struct PyramidTraits
   AXOM_HOST_DEVICE constexpr static const char *name() { return "pyramid"; }
 };
 
-/*
+/*!
+ \brief Wedge type traits.
+
+\verbatim
 
 3*---------* 5  face 0: 0,2,1
  |\       /|    face 1: 3,4,5
@@ -296,6 +364,7 @@ struct PyramidTraits
                 edge 7: 1,4
                 edge 8: 2,3
 
+\endverbatim
  */
 struct WedgeTraits
 {
@@ -337,7 +406,11 @@ struct WedgeTraits
   AXOM_HOST_DEVICE constexpr static const char *name() { return "wedge"; }
 };
 
-/*
+/*!
+ \brief Hex type traits.
+
+\verbatim
+
       4*------------* 7
       /|           /|     
      / |          / |
@@ -352,6 +425,7 @@ struct WedgeTraits
    *------------*
    1            2
 
+\endverbatim
  */
 struct HexTraits
 {
@@ -363,7 +437,7 @@ struct HexTraits
   AXOM_HOST_DEVICE constexpr static IndexType dimension() { return 3; }
 
   AXOM_HOST_DEVICE constexpr static IndexType numberOfNodes() { return 8; }
-  AXOM_HOST_DEVICE constexpr static IndexType numberOfNodesInFace(int /*faceIndex*/)
+  AXOM_HOST_DEVICE constexpr static IndexType numberOfNodesInFace(int AXOM_UNUSED_PARAM(faceIndex))
   {
     return 4;
   }
@@ -404,13 +478,16 @@ struct HexTraits
   AXOM_HOST_DEVICE constexpr static const char *name() { return "hex"; }
 };
 
-/*
-  
+/*!
+
+\verbatim
+
 n-1 *-... * 2
     |     |
     |     |
   0 *-----* 1
 
+\endverbatim
  */
 struct PolygonTraits
 {
@@ -424,6 +501,9 @@ struct PolygonTraits
   AXOM_HOST_DEVICE constexpr static const char *name() { return "polygon"; }
 };
 
+/*!
+ * \brief This struct represents a polygon zone.
+ */
 template <typename ConnType>
 struct PolygonShape : public PolygonTraits
 {
@@ -450,7 +530,7 @@ struct PolygonShape : public PolygonTraits
    *
    * \return An array view (wrapping m_faceIds) that contains the ids for the face.
    */
-  AXOM_HOST_DEVICE ConnectivityView getFace(int /*faceIndex*/) const
+  AXOM_HOST_DEVICE ConnectivityView getFace(int AXOM_UNUSED_PARAM(faceIndex)) const
   {
     return m_ids;
   }
@@ -880,7 +960,7 @@ private:
  */
 inline int shapeNameToID(const std::string &name)
 {
-  int id = 0;
+  int id = Invalid_ShapeID;
   if(name == LineTraits::name())
     id = Line_ShapeID;
   else if(name == TriTraits::name())
@@ -897,6 +977,10 @@ inline int shapeNameToID(const std::string &name)
     id = Wedge_ShapeID;
   else if(name == HexTraits::name())
     id = Hex_ShapeID;
+  else if(name == "polyhedral")
+    id = Polyhedron_ShapeID;
+  else if(name == "mixed")
+    id = Mixed_ShapeID;
   return id;
 }
 
