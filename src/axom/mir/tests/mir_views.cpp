@@ -194,7 +194,6 @@ struct test_structured_topology_view_rectilinear
 
     // Execute the kernel for each zone (find max node number in zone).
     auto topoView = axom::mir::views::make_rectilinear<2>::view(deviceMesh["topologies/mesh"]);
-    using ZoneType = typename decltype(topoView)::ShapeType;
     axom::for_all<ExecSpace>(topoView.numberOfZones(), AXOM_LAMBDA(axom::IndexType zoneIndex)
     {
       const auto zone = topoView.zone(zoneIndex);
@@ -295,9 +294,9 @@ struct test_strided_structured
     auto logicalNodesView = logicalNodes.view();
 
     // Traverse the zones in the mesh and gather node ids
-    using ZoneType = typename TopologyView::ShapeType;
-    topoView.template for_all_zones<ExecSpace>(
-      AXOM_LAMBDA(axom::IndexType zoneIndex, const ZoneType &zone) {
+    axom::for_all<ExecSpace>(topoView.numberOfZones(),
+      AXOM_LAMBDA(axom::IndexType zoneIndex) {
+        const auto zone = topoView.zone(zoneIndex);
         const auto nodeIndexing = topoView.indexing().expand();
 
         // Get node ids for zone.

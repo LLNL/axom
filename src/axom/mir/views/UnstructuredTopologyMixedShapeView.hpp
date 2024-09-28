@@ -6,6 +6,8 @@
 #ifndef AXOM_MIR_VIEWS_UNSTRUCTURED_TOPOLOGY_MIXED_SHAPE_VIEW_HPP_
 #define AXOM_MIR_VIEWS_UNSTRUCTURED_TOPOLOGY_MIXED_SHAPE_VIEW_HPP_
 
+#include "axom/core.hpp"
+#include "axom/slic.hpp"
 #include "axom/mir/views/Shapes.hpp"
 #include "axom/mir/utilities.hpp"
 
@@ -102,20 +104,18 @@ public:
   /*!
    * \brief Constructor
    *
-   * \param topo A reference to the topology.
    * \param conn The mesh connectivity.
    * \param shapes The shape in each zone.
    * \param sizes The number of nodes in each zone.
    * \param offsets The offset to each zone in the connectivity.
    */
-  UnstructuredTopologyMixedShapeView(const conduit::Node &topo,
-                                     const ConnectivityView &conn,
+  AXOM_HOST_DEVICE
+  UnstructuredTopologyMixedShapeView(const ConnectivityView &conn,
                                      const ConnectivityView &shapes,
                                      const ConnectivityView &sizes,
                                      const ConnectivityView &offsets,
                                      const ShapeMap &shapemap)
-    : m_topo(topo)
-    , m_connectivity(conn)
+    : m_connectivity(conn)
     , m_shapes(shapes)
     , m_sizes(sizes)
     , m_offsets(offsets)
@@ -190,100 +190,7 @@ public:
     return ShapeType(shapeID, shapeData);
   }
 
-  /*!
-   * \brief Execute a function for each zone in the mesh.
-   *
-   * \tparam ExecSpace The execution space for the function body.
-   * \tparam FuncType  The type for the function/lambda to execute. It will accept a zone index and shape.
-   *
-   * \param func The function/lambda that will be executed for each zone in the mesh.
-   */
-  template <typename ExecSpace, typename FuncType>
-  void for_all_zones(FuncType &&func) const
-  {
-    const auto nzones = numberOfZones();
-
-    // Build a ShapeMap from the Conduit shape map.
-    axom::Array<IndexType> values, ids;
-    const auto allocatorID = axom::execution_space<ExecSpace>::allocatorID();
-    buildShapeMap(m_topo, values, ids, allocatorID);
-    const ShapeMap shapeMap(values.view(), ids.view());
-
-    const ConnectivityView connectivityView(m_connectivity);
-    const ConnectivityView shapes(m_shapes);
-    const ConnectivityView sizes(m_sizes);
-    const ConnectivityView offsets(m_offsets);
-    axom::for_all<ExecSpace>(
-      0,
-      nzones,
-      AXOM_LAMBDA(axom::IndexType zoneIndex) {
-        const ConnectivityView shapeData(
-          connectivityView.data() + offsets[zoneIndex],
-          sizes[zoneIndex]);
-        const auto shapeID = shapeMap[shapes[zoneIndex]];
-#if defined(AXOM_DEBUG)
-#if defined(AXOM_DEVICE_CODE)
-        assert(shapeID > 0);
-#else
-        SLIC_ASSERT(shapeID > 0);
-#endif
-#endif
-        const ShapeType shape(shapeID, shapeData);
-        func(zoneIndex, shape);
-      });
-  }
-
-  /*!
-   * \brief Execute a function for each zone in the mesh.
-   *
-   * \tparam ExecSpace The execution space for the function body.
-   * \tparam ViewType  A view type that contains zone indices.
-   * \tparam FuncType  The type for the function/lambda to execute. It will accept a zone index and shape.
-   *
-   * \param selectedIdsView A view that contains a list of zones to operate on.
-   * \param func The function/lambda that will be executed for each zone in the mesh.
-   */
-  template <typename ExecSpace, typename ViewType, typename FuncType>
-  void for_selected_zones(const ViewType &selectedIdsView, FuncType &&func) const
-  {
-    const auto nSelectedZones = selectedIdsView.size();
-
-    // Build a ShapeMap from the Conduit shape map.
-    axom::Array<IndexType> values, ids;
-    const auto allocatorID = axom::execution_space<ExecSpace>::allocatorID();
-    buildShapeMap(m_topo, values, ids, allocatorID);
-    const ShapeMap shapeMap(values.view(), ids.view());
-
-    // Make views that can be captured.
-    const ConnectivityView connectivityView(m_connectivity);
-    const ConnectivityView shapes(m_shapes);
-    const ConnectivityView sizes(m_sizes);
-    const ConnectivityView offsets(m_offsets);
-    const ViewType deviceSelectedIdsView(selectedIdsView);
-    axom::for_all<ExecSpace>(
-      0,
-      nSelectedZones,
-      AXOM_LAMBDA(axom::IndexType selectIndex) {
-        const auto zoneIndex = deviceSelectedIdsView[selectIndex];
-        const ConnectivityView shapeData(
-          connectivityView.data() + offsets[zoneIndex],
-          sizes[zoneIndex]);
-        const auto shapeID = shapeMap[shapes[zoneIndex]];
-#if defined(AXOM_DEBUG)
-#if defined(AXOM_DEVICE_CODE)
-        assert(shapeID > 0);
-#else
-        SLIC_ASSERT(shapeID > 0);
-#endif
-#endif
-        const ShapeType shape(shapeID, shapeData);
-        func(selectIndex, zoneIndex, shape);
-      });
-  }
-
 private:
-
-  const conduit::Node &m_topo;
   ConnectivityView m_connectivity;
   ConnectivityView m_shapes;
   ConnectivityView m_sizes;

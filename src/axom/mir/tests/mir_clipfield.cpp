@@ -608,8 +608,7 @@ void braid2d_clip_test(const std::string &type, const std::string &name)
 
     using MixedTopoView =
       axom::mir::views::UnstructuredTopologyMixedShapeView<axom::IndexType>;
-    MixedTopoView mixedTopoView(n_device_topo,
-                                connView,
+    MixedTopoView mixedTopoView(connView,
                                 shapesView,
                                 sizesView,
                                 offsetsView,
@@ -1006,7 +1005,7 @@ void braid3d_mixed_clip_test(const std::string &name)
   axom::Array<axom::IndexType> values, ids;
   auto shapeMap = axom::mir::views::buildShapeMap(n_device_topo, values, ids, axom::execution_space<ExecSpace>::allocatorID());
 
-  TopoView topoView(n_device_topo, connView, shapesView, sizesView, offsetsView, shapeMap);
+  TopoView topoView(connView, shapesView, sizesView, offsetsView, shapeMap);
 
   // Create options to control the clipping.
   conduit::Node options;

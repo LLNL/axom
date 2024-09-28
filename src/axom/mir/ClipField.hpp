@@ -342,41 +342,6 @@ private:
   View m_view {};
 };
 
-#if 1
-  using BitSet = std::uint32_t;
-  /*!
-   * \brief Contains data that describes the number and size of zone fragments in the output.
-   */
-  struct FragmentData
-  {
-    IndexType m_finalNumZones {0};
-    IndexType m_finalConnSize {0};
-    axom::ArrayView<IndexType> m_fragmentsView {};
-    axom::ArrayView<IndexType> m_fragmentsSizeView {};
-    axom::ArrayView<IndexType> m_fragmentOffsetsView {};
-    axom::ArrayView<IndexType> m_fragmentSizeOffsetsView {};
-  };
-
-  /*!
-   * \brief Contains some per-zone data that we want to hold onto between methods.
-   */
-  struct ZoneData
-  {
-    axom::ArrayView<int> m_clipCasesView {};
-    axom::ArrayView<BitSet> m_pointsUsedView {};
-  };
-
-  /*!
-   * \brief Contains some per-node data that we want to hold onto between methods.
-   */
-  struct NodeData
-  {
-    axom::ArrayView<int> m_nodeUsedView {};
-    axom::ArrayView<IndexType> m_oldNodeToNewNodeView {};
-    axom::ArrayView<IndexType> m_originalIdsView {};
-  };
-#endif
-
 //------------------------------------------------------------------------------
 /*!
  * \accelerated
@@ -402,7 +367,7 @@ public:
   using ClipTableViews = axom::StackArray<axom::mir::clipping::TableView, 6>;
   using Intersector = IntersectPolicy;
 
-//  using BitSet = std::uint32_t;
+  using BitSet = std::uint32_t;
   using KeyType = typename NamingPolicy::KeyType;
   using loop_policy = typename axom::execution_space<ExecSpace>::loop_policy;
   using reduce_policy = typename axom::execution_space<ExecSpace>::reduce_policy;
@@ -601,35 +566,7 @@ public:
     nodeData.m_originalIdsView = compactNodes.view();
     nodeData.m_oldNodeToNewNodeView = oldNodeToNewNode.view();
     createNodeMaps(nodeData);
-#endif
-#if 0
-    conduit::Node tmpMesh;
-    tmpMesh[n_coordset.path()].set_external(n_coordset);
-    tmpMesh[n_topo.path()].set_external(n_topo);
-    tmpMesh["fields/nodeUsed/topology"] = n_topo.name();
-    tmpMesh["fields/nodeUsed/association"] = "vertex";
-    tmpMesh["fields/nodeUsed/values"].set_external(nodeData.m_nodeUsedView.data(), nodeData.m_nodeUsedView.size());
 
-    tmpMesh["fields/oldNodeToNewNode/topology"] = n_topo.name();
-    tmpMesh["fields/oldNodeToNewNode/association"] = "vertex";
-    tmpMesh["fields/oldNodeToNewNode/values"].set_external(nodeData.m_oldNodeToNewNodeView.data(), nodeData.m_oldNodeToNewNodeView.size());
-
-    // Make filename
-    int count = 0;
-    std::string path;
-    do
-    {
-      std::stringstream ss;
-      ss << "clipfield." << count;
-      path = ss.str();
-      count++;
-    } while(axom::utilities::filesystem::pathExists(path + ".root"));
-
-    // Save data.
-    conduit::relay::io::blueprint::save_mesh(tmpMesh, path, "hdf5");
-    tmpMesh.print();
-#endif
-#if defined(AXOM_REDUCE_BLEND_GROUPS)
     nodeUsed.clear();
     nodeData.m_nodeUsedView = axom::ArrayView<int>();
 #endif
@@ -791,7 +728,7 @@ public:
 #if !defined(__CUDACC__)
 private:
 #endif
-#if 0
+
   /*!
    * \brief Contains data that describes the number and size of zone fragments in the output.
    */
@@ -823,7 +760,7 @@ private:
     axom::ArrayView<IndexType> m_oldNodeToNewNodeView {};
     axom::ArrayView<IndexType> m_originalIdsView {};
   };
-#endif
+
   /*!
    * \brief Make a bitset that indicates the parts of the selection that are selected.
    */
@@ -898,18 +835,14 @@ private:
       AXOM_LAMBDA(axom::IndexType index) { nodeData.m_nodeUsedView[index] = 0; });
 
     const auto deviceIntersector = m_intersector.view();
-#if 1
+
     const TopologyView deviceTopologyView(m_topologyView);
     const auto selectedZonesView = selectedZones.view();
     axom::for_all<ExecSpace>(selectedZonesView.size(),
       AXOM_LAMBDA(axom::IndexType szIndex) {
         const auto zoneIndex = selectedZonesView[szIndex];
         const auto zone = deviceTopologyView.zone(zoneIndex);
-#else
-    m_topologyView.template for_selected_zones<ExecSpace>(
-      selectedZones.view(),
-      AXOM_LAMBDA(axom::IndexType szIndex, axom::IndexType zoneIndex, const ZoneType &zone) {
-#endif
+
         // Get the clip case for the current zone.
         const auto clipcase =
           deviceIntersector.determineClipCase(zoneIndex, zone.getIds());
@@ -1185,18 +1118,13 @@ private:
     const auto selection = getSelection(opts);
 
     const auto deviceIntersector = m_intersector.view();
-#if 1
     const TopologyView deviceTopologyView(m_topologyView);
     const auto selectedZonesView = selectedZones.view();
     axom::for_all<ExecSpace>(selectedZonesView.size(),
       AXOM_LAMBDA(axom::IndexType szIndex) {
         const auto zoneIndex = selectedZonesView[szIndex];
         const auto zone = deviceTopologyView.zone(zoneIndex);
-#else
-    m_topologyView.template for_selected_zones<ExecSpace>(
-      selectedZones.view(),
-      AXOM_LAMBDA(axom::IndexType szIndex, axom::IndexType zoneIndex, const ZoneType &zone) {
-#endif
+
         // Get the clip case for the current zone.
         const auto clipcase = zoneData.m_clipCasesView[szIndex];
 
@@ -1411,20 +1339,14 @@ private:
     {
       AXOM_ANNOTATE_SCOPE("build");
       const auto origSize = nodeData.m_originalIdsView.size();
-#if 1
+
       const TopologyView deviceTopologyView(m_topologyView);
       const auto selectedZonesView = selectedZones.view();
       axom::for_all<ExecSpace>(selectedZonesView.size(),
         AXOM_LAMBDA(axom::IndexType szIndex) {
           const auto zoneIndex = selectedZonesView[szIndex];
           const auto zone = deviceTopologyView.zone(zoneIndex);
-#else
-      m_topologyView.template for_selected_zones<ExecSpace>(
-        selectedZones.view(),
-        AXOM_LAMBDA(axom::IndexType szIndex,
-                    axom::IndexType AXOM_UNUSED_PARAM(zoneIndex),
-                    const ZoneType &zone) {
-#endif
+
           // If there are no fragments, return from lambda.
           if(fragmentData.m_fragmentsView[szIndex] == 0) return;
 

@@ -119,7 +119,6 @@ private:
     axom::ArrayView<conduit::index_t> sizesView, 
     axom::ArrayView<conduit::index_t> offsetsView)
   {
-#if 1
     // Fill in the new connectivity.
     axom::for_all<ExecSpace>(topoView.numberOfZones(), AXOM_LAMBDA(axom::IndexType zoneIndex)
     {
@@ -134,21 +133,6 @@ private:
       sizesView[zoneIndex] = ptsPerZone;
       offsetsView[zoneIndex] = start;
     });
-#else
-    // Fill in the new connectivity.
-    using ZoneType = typename TopologyView::ShapeType;
-    topoView.template for_all_zones<ExecSpace>(
-      AXOM_LAMBDA(axom::IndexType zoneIndex, const ZoneType &zone) {
-        const auto start = zoneIndex * ptsPerZone;
-        for(int i = 0; i < ptsPerZone; i++)
-        {
-          connView[start + i] =
-            static_cast<conduit::index_t>(zone.getId(i));
-        }
-        sizesView[zoneIndex] = ptsPerZone;
-        offsetsView[zoneIndex] = start;
-      });
-#endif
   }
 };
 

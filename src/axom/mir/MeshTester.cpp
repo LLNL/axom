@@ -654,7 +654,7 @@ static void addCircleMaterial(const TopoView& topoView,
   typename CoordsetView::PointType center;
   center[0] = circleCenter[0];
   center[1] = circleCenter[1];
-#if 1
+
   const TopoView deviceTopologyView(topoView);
   axom::for_all<axom::SEQ_EXEC>(topoView.numberOfZones(), AXOM_LAMBDA(axom::IndexType zoneIndex)
   {
@@ -669,20 +669,7 @@ static void addCircleMaterial(const TopoView& topoView,
     greenView[zoneIndex] = vf;
     blueView[zoneIndex] = 1.0 - vf;
   });
-#else
-  topoView.template for_all_zones<axom::SEQ_EXEC>(
-    AXOM_LAMBDA(auto zoneIndex, const auto& zone) {
-      auto vf = calculatePercentOverlapMonteCarlo(numSamples,
-                                                  center,
-                                                  circleRadius,
-                                                  coordsetView[zone.getId(0)],
-                                                  coordsetView[zone.getId(1)],
-                                                  coordsetView[zone.getId(2)],
-                                                  coordsetView[zone.getId(3)]);
-      greenView[zoneIndex] = vf;
-      blueView[zoneIndex] = 1.0 - vf;
-    });
-#endif
+
   // Figure out the material buffers from the volume fractions.
   std::vector<int> material_ids, sizes, offsets, indices;
   std::vector<int> volume_fractions;
@@ -1236,15 +1223,11 @@ void addConcentricCircleMaterial(const TopoView& topoView,
 
   // Use the uniform sampling method to generate volume fractions for each material
   // Note: Assumes that the cell is a parallelogram. This could be modified via biliear interpolation
-#if 1
   const TopoView deviceTopologyView(topoView);
   axom::for_all<axom::SEQ_EXEC>(topoView.numberOfZones(),
     AXOM_LAMBDA(axom::IndexType eID) {
       const auto zone = deviceTopologyView.zone(eID);
-#else
-  topoView.template for_all_zones<axom::SEQ_EXEC>(
-    AXOM_LAMBDA(auto eID, const auto& zone) {
-#endif
+
       auto v0 = coordsetView[zone.getId(0)];
       auto v1 = coordsetView[zone.getId(1)];
       auto v2 = coordsetView[zone.getId(2)];

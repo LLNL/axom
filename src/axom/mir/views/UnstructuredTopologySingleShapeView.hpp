@@ -6,6 +6,8 @@
 #ifndef AXOM_MIR_VIEWS_UNSTRUCTURED_TOPOLOGY_SINGLE_SHAPE_VIEW_HPP_
 #define AXOM_MIR_VIEWS_UNSTRUCTURED_TOPOLOGY_SINGLE_SHAPE_VIEW_HPP_
 
+#include "axom/core.hpp"
+#include "axom/slic.hpp"
 #include "axom/mir/views/Shapes.hpp"
 
 namespace axom
@@ -141,122 +143,6 @@ public:
     return ShapeType(shapeIdsView);
   }
   /// @}
-
-  /*!
-   * \brief Execute a function for each zone in the mesh.
-   *
-   * \tparam ExecSpace The execution space for the function body.
-   * \tparam FuncType  The type for the function/lambda to execute. It will accept a zone index and shape.
-   *
-   * \param func The function/lambda that will be executed for each zone in the mesh.
-   */
-  template <typename ExecSpace, typename FuncType>
-  void for_all_zones(FuncType &&func) const
-  {
-    const auto nzones = numberOfZones();
-
-    ConnectivityView connectivityView(m_connectivityView);
-    if constexpr(ShapeType::is_variable_size())
-    {
-      ConnectivityView sizesView(m_sizesView);
-      ConnectivityView offsetsView(m_offsetsView);
-      axom::for_all<ExecSpace>(
-        0,
-        nzones,
-        AXOM_LAMBDA(axom::IndexType zoneIndex) {
-          const ConnectivityView shapeIdsView(
-            connectivityView.data() + offsetsView[zoneIndex],
-            sizesView[zoneIndex]);
-          const ShapeType shape(shapeIdsView);
-          func(zoneIndex, shape);
-        });
-    }
-    else
-    {
-      ConnectivityView sizesView(m_sizesView);
-      ConnectivityView offsetsView(m_offsetsView);
-      axom::for_all<ExecSpace>(
-        0,
-        nzones,
-        AXOM_LAMBDA(axom::IndexType zoneIndex) {
-          ConnectivityView shapeIdsView {};
-          if(sizesView.empty())
-          {
-            shapeIdsView = ConnectivityView(
-              connectivityView.data() + ShapeType::zoneOffset(zoneIndex),
-              ShapeType::numberOfNodes());
-          }
-          else
-          {
-            shapeIdsView =
-              ConnectivityView(connectivityView.data() + offsetsView[zoneIndex],
-                               sizesView[zoneIndex]);
-          }
-          const ShapeType shape(shapeIdsView);
-          func(zoneIndex, shape);
-        });
-    }
-  }
-
-  /*!
-   * \brief Execute a function for each zone in the mesh.
-   *
-   * \tparam ExecSpace The execution space for the function body.
-   * \tparam FuncType  The type for the function/lambda to execute. It will accept a zone index and shape.
-   *
-   * \param selectedIdsView A view containing selected zone ids.
-   * \param func The function/lambda that will be executed for each zone in the mesh.
-   */
-  template <typename ExecSpace, typename ViewType, typename FuncType>
-  void for_selected_zones(const ViewType &selectedIdsView, FuncType &&func) const
-  {
-    const auto nSelectedZones = selectedIdsView.size();
-
-    ConnectivityView connectivityView(m_connectivityView);
-    const ViewType localSelectedIdsView(selectedIdsView);
-    if constexpr(ShapeType::is_variable_size())
-    {
-      ConnectivityView sizesView(m_sizesView);
-      ConnectivityView offsetsView(m_offsetsView);
-      axom::for_all<ExecSpace>(
-        0,
-        nSelectedZones,
-        AXOM_LAMBDA(axom::IndexType selectIndex) {
-          const auto zoneIndex = localSelectedIdsView[selectIndex];
-          const ConnectivityView shapeIdsView(
-            connectivityView.data() + offsetsView[zoneIndex],
-            sizesView[zoneIndex]);
-          const ShapeType shape(shapeIdsView);
-          func(selectIndex, zoneIndex, shape);
-        });
-    }
-    else
-    {
-      ConnectivityView sizesView(m_sizesView);
-      ConnectivityView offsetsView(m_offsetsView);
-      axom::for_all<ExecSpace>(
-        0,
-        nSelectedZones,
-        AXOM_LAMBDA(axom::IndexType selectIndex) {
-          const auto zoneIndex = localSelectedIdsView[selectIndex];
-          ConnectivityView shapeIdsView {};
-          if(sizesView.empty())
-          {
-            shapeIdsView = ConnectivityView(
-              connectivityView.data() + ShapeType::zoneOffset(zoneIndex),
-              ShapeType::numberOfNodes());
-          }
-          else
-          {
-            shapeIdsView =
-              ConnectivityView(connectivityView.data() + offsetsView[zoneIndex],
-                               sizesView[zoneIndex]);
-          }
-          const ShapeType shape(shapeIdsView);
-          func(selectIndex, zoneIndex, shape);
-        });
-    }
-  }
 
 private:
   ConnectivityView m_connectivityView;

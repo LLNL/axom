@@ -6,6 +6,8 @@
 #ifndef AXOM_MIR_VIEWS_UNSTRUCTURED_TOPOLOGY_POLYHEDRAL_VIEW_HPP_
 #define AXOM_MIR_VIEWS_UNSTRUCTURED_TOPOLOGY_POLYHEDRAL_VIEW_HPP_
 
+#include "axom/core.hpp"
+#include "axom/slic.hpp"
 #include "axom/mir/views/Shapes.hpp"
 
 namespace axom
@@ -244,56 +246,6 @@ public:
 #endif
 
     return ShapeType(m_data, zoneIndex);
-  }
-
-  /*!
-   * \brief Execute a function for each zone in the mesh.
-   *
-   * \tparam ExecSpace The execution space for the function body.
-   * \tparam FuncType  The type for the function/lambda to execute. It will accept a zone index and shape.
-   *
-   * \param func The function/lambda that will be executed for each zone in the mesh.
-   */
-  template <typename ExecSpace, typename FuncType>
-  void for_all_zones(FuncType &&func) const
-  {
-    const auto nzones = numberOfZones();
-
-    const PolyhedronData sd(m_data);
-    axom::for_all<ExecSpace>(
-      0,
-      nzones,
-      AXOM_LAMBDA(axom::IndexType zoneIndex) {
-        const PolyhedronShape shape(sd, zoneIndex);
-        func(zoneIndex, shape);
-      });
-  }
-
-  /*!
-   * \brief Execute a function for each zone in the mesh.
-   *
-   * \tparam ExecSpace The execution space for the function body.
-   * \tparam ViewType  A view type that contains zone indices.
-   * \tparam FuncType  The type for the function/lambda to execute. It will accept a zone index and shape.
-   *
-   * \param selectedIdsView A view that contains a list of zones to operate on.
-   * \param func The function/lambda that will be executed for each zone in the mesh.
-   */
-  template <typename ExecSpace, typename ViewType, typename FuncType>
-  void for_selected_zones(const ViewType &selectedIdsView, FuncType &&func) const
-  {
-    const auto nSelectedZones = selectedIdsView.size();
-
-    ViewType idsView(selectedIdsView);
-    const PolyhedronData sd(m_data);
-    axom::for_all<ExecSpace>(
-      0,
-      nSelectedZones,
-      AXOM_LAMBDA(axom::IndexType selectIndex) {
-        const auto zoneIndex = idsView[selectIndex];
-        const PolyhedronShape shape(sd, zoneIndex);
-        func(selectIndex, zoneIndex, shape);
-      });
   }
 
 private:

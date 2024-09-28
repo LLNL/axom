@@ -133,8 +133,7 @@ void dispatch_unstructured_mixed_topology(const conduit::Node &topo,
         axom::Array<IndexType> values, ids;
         auto shapeMap = buildShapeMap(topo, values, ids, allocatorID);
 
-        UnstructuredTopologyMixedShapeView<ConnType> ugView(topo,
-                                                            connView,
+        UnstructuredTopologyMixedShapeView<ConnType> ugView(connView,
                                                             shapesView,
                                                             sizesView,
                                                             offsetsView,
@@ -168,8 +167,7 @@ void typed_dispatch_unstructured_mixed_topology(const conduit::Node &topo,
     axom::Array<IndexType> values, ids;
     auto shapeMap = buildShapeMap(topo, values, ids, allocatorID);
 
-    UnstructuredTopologyMixedShapeView<ConnType> ugView(topo,
-                                                        connView,
+    UnstructuredTopologyMixedShapeView<ConnType> ugView(connView,
                                                         shapesView,
                                                         sizesView,
                                                         offsetsView,

@@ -76,7 +76,6 @@ public:
 
     // Determine max number of materials a node might touch.
     MatsetView deviceMatsetView(m_matsetView);
-#if 1
     const TopologyView deviceTopologyView(m_topologyView);
     axom::for_all<ExecSpace>(m_topologyView.numberOfZones(), AXOM_LAMBDA(axom::IndexType zoneIndex)
     {
@@ -91,20 +90,6 @@ public:
         RAJA::atomicMax<atomic_policy>(nodePtr, nmats);
       }
     });
-#else
-    m_topologyView.template for_all_zones<ExecSpace>(
-      AXOM_LAMBDA(axom::IndexType zoneIndex, const ZoneType &zone) {
-        const int nmats = deviceMatsetView.numberOfMaterials(zoneIndex);
-        const auto nnodesThisZone = zone.numberOfNodes();
-        int *nodeData = nMatsPerNodeView.data();
-        for(axom::IndexType i = 0; i < nnodesThisZone; i++)
-        {
-          const auto nodeId = zone.getId(i);
-          int *nodePtr = nodeData + nodeId;
-          RAJA::atomicMax<atomic_policy>(nodePtr, nmats);
-        }
-      });
-#endif
     AXOM_ANNOTATE_END("nMatsPerNode");
 
     // Now, mark all zones that have 1 mat per node as clean.
@@ -113,7 +98,6 @@ public:
     axom::Array<int> mask(nzones, nzones, allocatorID);
     auto maskView = mask.view();
     RAJA::ReduceSum<reduce_policy, int> mask_reduce(0);
-#if 1
     axom::for_all<ExecSpace>(m_topologyView.numberOfZones(), AXOM_LAMBDA(axom::IndexType zoneIndex)
     {
       const auto zone = deviceTopologyView.zone(zoneIndex);
@@ -130,22 +114,6 @@ public:
       maskView[zoneIndex] = ival;
       mask_reduce += ival;
     });
-#else
-    m_topologyView.template for_all_zones<ExecSpace>(
-      AXOM_LAMBDA(axom::IndexType zoneIndex, const ZoneType &zone) {
-        bool clean = true;
-        const axom::IndexType nnodesThisZone = zone.numberOfNodes();
-        for(axom::IndexType i = 0; i < nnodesThisZone && clean; i++)
-        {
-          const auto nodeId = zone.getId(i);
-          clean &= (nMatsPerNodeView[nodeId] == 1);
-        }
-
-        const int ival = clean ? 1 : 0;
-        maskView[zoneIndex] = ival;
-        mask_reduce += ival;
-      });
-#endif
     AXOM_ANNOTATE_END("mask");
 
     const int nClean = mask_reduce.get();
@@ -242,7 +210,6 @@ public:
 
     // Determine max number of materials a node might touch.
     MatsetView deviceMatsetView(m_matsetView);
-#if 1
     const TopologyView deviceTopologyView(m_topologyView);
     axom::for_all<ExecSpace>(selectedZonesView.size(), AXOM_LAMBDA(axom::IndexType szIndex)
     {
@@ -259,21 +226,6 @@ public:
         RAJA::atomicMax<atomic_policy>(nodePtr, nmats);
       }
     });
-#else
-    m_topologyView.template for_selected_zones<ExecSpace>(
-      selectedZonesView,
-      AXOM_LAMBDA(axom::IndexType AXOM_UNUSED_PARAM(szIndex), axom::IndexType zoneIndex, const ZoneType &zone) {
-        const int nmats = deviceMatsetView.numberOfMaterials(zoneIndex);
-        const auto nnodesThisZone = zone.numberOfNodes();
-        int *nodeData = nMatsPerNodeView.data();
-        for(axom::IndexType i = 0; i < nnodesThisZone; i++)
-        {
-          const auto nodeId = zone.getId(i);
-          int *nodePtr = nodeData + nodeId;
-          RAJA::atomicMax<atomic_policy>(nodePtr, nmats);
-        }
-      });
-#endif
     AXOM_ANNOTATE_END("nMatsPerNode");
 
     // Now, mark all selected zones that have 1 mat per node as clean.
@@ -282,7 +234,6 @@ public:
     axom::Array<int> mask(nzones, nzones, allocatorID);
     auto maskView = mask.view();
     RAJA::ReduceSum<reduce_policy, int> mask_reduce(0);
-#if 1
     axom::for_all<ExecSpace>(selectedZonesView.size(), AXOM_LAMBDA(axom::IndexType szIndex)
     {
       const auto zoneIndex = selectedZonesView[szIndex];
@@ -300,23 +251,6 @@ public:
       maskView[szIndex] = ival;
       mask_reduce += ival;
     });
-#else
-    m_topologyView.template for_selected_zones<ExecSpace>(
-      selectedZonesView,
-      AXOM_LAMBDA(axom::IndexType szIndex, axom::IndexType AXOM_UNUSED_PARAM(zoneIndex), const ZoneType &zone) {
-        bool clean = true;
-        const axom::IndexType nnodesThisZone = zone.numberOfNodes();
-        for(axom::IndexType i = 0; i < nnodesThisZone && clean; i++)
-        {
-          const auto nodeId = zone.getId(i);
-          clean &= (nMatsPerNodeView[nodeId] == 1);
-        }
-
-        const int ival = clean ? 1 : 0;
-        maskView[szIndex] = ival;
-        mask_reduce += ival;
-      });
-#endif
     AXOM_ANNOTATE_END("mask");
 
     const int nClean = mask_reduce.get();

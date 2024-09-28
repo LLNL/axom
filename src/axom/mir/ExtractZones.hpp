@@ -253,7 +253,6 @@ protected:
 
     // Figure out the topology size based on selected zones.
     RAJA::ReduceSum<reduce_policy, int> connsize_reduce(0);
-#if 1
     const TopologyView deviceTopologyView(m_topologyView);
     axom::for_all<ExecSpace>(selectedZonesView.size(), AXOM_LAMBDA(axom::IndexType szIndex)
     {
@@ -261,13 +260,6 @@ protected:
       const auto zone = deviceTopologyView.zone(zoneIndex);
       connsize_reduce += zone.numberOfNodes();
     });
-#else
-    m_topologyView.template for_selected_zones<ExecSpace>(
-      selectedZonesView,
-      AXOM_LAMBDA(axom::IndexType AXOM_UNUSED_PARAM(szIndex),
-                  axom::IndexType AXOM_UNUSED_PARAM(zoneIndex),
-                  const ZoneType &zone) { connsize_reduce += zone.numberOfNodes(); });
-#endif
     const auto newConnSize = connsize_reduce.get();
 
     Sizes sizes {};
@@ -317,7 +309,6 @@ protected:
 
     // Mark all the selected zones' nodes as 1. Multiple threads may write 1 to the same node.
     RAJA::ReduceSum<reduce_policy, int> connsize_reduce(0);
-#if 1
     TopologyView deviceTopologyView(m_topologyView);
     axom::for_all<ExecSpace>(selectedZonesView.size(), AXOM_LAMBDA(axom::IndexType szIndex)
     {
@@ -331,21 +322,6 @@ protected:
       }
       connsize_reduce += nids;
     });
-#else
-    m_topologyView.template for_selected_zones<ExecSpace>(
-      selectedZonesView,
-      AXOM_LAMBDA(axom::IndexType AXOM_UNUSED_PARAM(szIndex),
-                  axom::IndexType AXOM_UNUSED_PARAM(zoneIndex),
-                  const ZoneType &zone) {
-        const axom::IndexType nids = zone.numberOfNodes();
-        for(axom::IndexType i = 0; i < nids; i++)
-        {
-          const auto nodeId = zone.getId(i);
-          maskView[nodeId] = 1;
-        }
-        connsize_reduce += nids;
-      });
-#endif
     const auto newConnSize = connsize_reduce.get();
 
     // Count the used nodes.
@@ -447,7 +423,6 @@ protected:
       auto offsetsView = bputils::make_array_view<ConnectivityType>(n_offsets);
 
       // Fill sizes, offsets
-#if 1
       const TopologyView deviceTopologyView(m_topologyView);
       axom::for_all<ExecSpace>(selectedZonesView.size(), AXOM_LAMBDA(axom::IndexType szIndex)
       {
@@ -455,15 +430,7 @@ protected:
         const auto zone = deviceTopologyView.zone(zoneIndex);
         sizesView[szIndex] = zone.numberOfNodes();
       });
-#else
-      m_topologyView.template for_selected_zones<ExecSpace>(
-        selectedZonesView,
-        AXOM_LAMBDA(axom::IndexType szIndex,
-                    axom::IndexType AXOM_UNUSED_PARAM(zoneIndex),
-                    const ZoneType &zone) {
-          sizesView[szIndex] = zone.numberOfNodes();
-        });
-#endif
+
       if(extra.zones > 0)
       {
         axom::for_all<ExecSpace>(
@@ -477,7 +444,6 @@ protected:
       if(compact(n_options))
       {
         const axom::ArrayView<ConnectivityType> deviceOld2NewView(old2newView);
-#if 1
         axom::for_all<ExecSpace>(selectedZonesView.size(), AXOM_LAMBDA(axom::IndexType szIndex)
         {
           const auto zoneIndex = selectedZonesView[szIndex];
@@ -493,27 +459,9 @@ protected:
             connView[offset + i] = newNodeId;
           }
         });
-#else
-        m_topologyView.template for_selected_zones<ExecSpace>(
-          selectedZonesView,
-          AXOM_LAMBDA(axom::IndexType szIndex,
-                      axom::IndexType AXOM_UNUSED_PARAM(zoneIndex),
-                      const ZoneType &zone) {
-            const int size = static_cast<int>(sizesView[szIndex]);
-            const auto offset = offsetsView[szIndex];
-            for(int i = 0; i < size; i++)
-            {
-              const auto oldNodeId = zone.getId(i);
-              // When compact, we map node ids to the compact node ids.
-              const auto newNodeId = deviceOld2NewView[oldNodeId];
-              connView[offset + i] = newNodeId;
-            }
-          });
-#endif
       }
       else
       {
-#if 1
         axom::for_all<ExecSpace>(selectedZonesView.size(), AXOM_LAMBDA(axom::IndexType szIndex)
         {
           const auto zoneIndex = selectedZonesView[szIndex];
@@ -526,20 +474,6 @@ protected:
             connView[offset + i] = zone.getId(i);
           }
         });
-#else
-        m_topologyView.template for_selected_zones<ExecSpace>(
-          selectedZonesView,
-          AXOM_LAMBDA(axom::IndexType szIndex,
-                      axom::IndexType AXOM_UNUSED_PARAM(zoneIndex),
-                      const ZoneType &zone) {
-            const int size = static_cast<int>(sizesView[szIndex]);
-            const auto offset = offsetsView[szIndex];
-            for(int i = 0; i < size; i++)
-            {
-              connView[offset + i] = zone.getId(i);
-            }
-          });
-#endif
       }
       if(extra.connectivity > 0)
       {
