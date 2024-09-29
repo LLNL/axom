@@ -424,8 +424,10 @@ public:
       n_input.fetch_existing("coordsets/" + coordsetName);
     const conduit::Node &n_fields = n_input.fetch_existing("fields");
 
-    conduit::Node &n_newTopo = n_output["topologies/" + opts.topologyName(topoName)];
-    conduit::Node &n_newCoordset = n_output["coordsets/" + opts.coordsetName(coordsetName)];
+    conduit::Node &n_newTopo =
+      n_output["topologies/" + opts.topologyName(topoName)];
+    conduit::Node &n_newCoordset =
+      n_output["coordsets/" + opts.coordsetName(coordsetName)];
     conduit::Node &n_newFields = n_output["fields"];
 
     execute(n_topo,
@@ -712,12 +714,7 @@ public:
       slice.m_indicesView = sliceIndicesView;
     }
 
-    makeFields(blend,
-               slice,
-               newTopologyName,
-               fieldsToProcess,
-               n_fields,
-               n_newFields);
+    makeFields(blend, slice, newTopologyName, fieldsToProcess, n_fields, n_newFields);
 
     makeOriginalElements(fragmentData,
                          opts,
