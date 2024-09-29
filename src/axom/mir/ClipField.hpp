@@ -424,13 +424,17 @@ public:
       n_input.fetch_existing("coordsets/" + coordsetName);
     const conduit::Node &n_fields = n_input.fetch_existing("fields");
 
+    conduit::Node &n_newTopo = n_output["topologies/" + opts.topologyName(topoName)];
+    conduit::Node &n_newCoordset = n_output["coordsets/" + opts.coordsetName(coordsetName)];
+    conduit::Node &n_newFields = n_output["fields"];
+
     execute(n_topo,
             n_coordset,
             n_fields,
             n_options,
-            n_output["topologies/" + opts.topologyName(topoName)],
-            n_output["coordsets/" + opts.coordsetName(coordsetName)],
-            n_output["fields"]);
+            n_newTopo,
+            n_newCoordset,
+            n_newFields);
   }
 
   /*!
@@ -458,10 +462,11 @@ public:
     const auto allocatorID = axom::execution_space<ExecSpace>::allocatorID();
     AXOM_ANNOTATE_SCOPE("ClipField");
 
+    const std::string newTopologyName = n_newTopo.name();
     // Reset the output nodes just in case they've been reused.
-    n_newTopo.reset();
-    n_newCoordset.reset();
-    n_newFields.reset();
+    n_newTopo = conduit::Node();
+    n_newCoordset = conduit::Node();
+    n_newFields = conduit::Node();
 
     // Make the selected zones and get the size.
     ClipOptions opts(n_options);
@@ -636,6 +641,7 @@ public:
                  fragmentData,
                  opts,
                  selectedZones,
+                 newTopologyName,
                  n_newTopo,
                  n_newCoordset,
                  n_newFields);
@@ -708,7 +714,7 @@ public:
 
     makeFields(blend,
                slice,
-               opts.topologyName(n_topo.name()),
+               newTopologyName,
                fieldsToProcess,
                n_fields,
                n_newFields);
@@ -720,7 +726,7 @@ public:
                          n_newTopo,
                          n_newFields);
 
-    markNewNodes(blend, newNodes, opts.topologyName(n_topo.name()), n_newFields);
+    markNewNodes(blend, newNodes, newTopologyName, n_newFields);
   }
 
 // The following members are private (unless using CUDA)
@@ -1248,6 +1254,7 @@ private:
    * \param[in] fragmentData This object holds views to per-fragment data.
    * \param[in] opts Clipping options.
    * \param[in] selectedZones The selected zones.
+   * \param[in] newTopologyName The name of the new topology.
    * \param[out] n_newTopo The node that will contain the new topology.
    * \param[out] n_newCoordset The node that will contain the new coordset.
    * \param[out] n_newFields The node that will contain the new fields.
@@ -1261,6 +1268,7 @@ private:
                     FragmentData fragmentData,
                     const ClipOptions &opts,
                     const SelectedZones<ExecSpace> &selectedZones,
+                    const std::string &newTopologyName,
                     conduit::Node &n_newTopo,
                     conduit::Node &n_newCoordset,
                     conduit::Node &n_newFields) const
@@ -1271,7 +1279,6 @@ private:
     const auto selection = getSelection(opts);
 
     AXOM_ANNOTATE_BEGIN("allocation");
-    n_newTopo.reset();
     n_newTopo["type"] = "unstructured";
     n_newTopo["coordset"] = n_newCoordset.name();
 
@@ -1305,7 +1312,7 @@ private:
 
     // Allocate a color variable to keep track of the "color" of the fragments.
     conduit::Node &n_color = n_newFields[opts.colorField()];
-    n_color["topology"] = opts.topologyName(n_newTopo.name());
+    n_color["topology"] = newTopologyName;
     n_color["association"] = "element";
     conduit::Node &n_color_values = n_color["values"];
     n_color_values.set_allocator(conduitAllocatorID);
@@ -1752,7 +1759,6 @@ private:
     axom::mir::utilities::blueprint::
       CoordsetBlender<ExecSpace, CoordsetView, axom::mir::utilities::blueprint::SelectSubsetPolicy>
         cb;
-    n_newCoordset.reset();
     cb.execute(blend, m_coordsetView, n_coordset, n_newCoordset);
   }
 

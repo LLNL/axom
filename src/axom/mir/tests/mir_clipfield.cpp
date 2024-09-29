@@ -593,7 +593,8 @@ void braid2d_clip_test(const std::string &type, const std::string &name)
   options["fields/new_radial"] = "new_radial2";
 
   conduit::Node deviceClipMixedMesh;
-  if(n_device_topo.fetch_existing("elements/shape").as_string() == "mixed")
+  if(n_device_topo.has_path("elements/shape") &&
+     n_device_topo.fetch_existing("elements/shape").as_string() == "mixed")
   {
     auto shapesView = bputils::make_array_view<axom::IndexType>(
       n_device_topo.fetch_existing("elements/shapes"));

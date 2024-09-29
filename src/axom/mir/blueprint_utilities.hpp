@@ -176,8 +176,9 @@ public:
    */
   static conduit::index_t getConduitAllocatorID()
   {
-    static conduit::index_t conduitAllocatorID = -1;
-    if(conduitAllocatorID == -1)
+    constexpr conduit::index_t NoAllocator = -1;
+    static conduit::index_t conduitAllocatorID = NoAllocator;
+    if(conduitAllocatorID == NoAllocator)
     {
       conduitAllocatorID =
         conduit::utils::register_allocator(internal_allocate, internal_free);
@@ -259,7 +260,7 @@ void copy(conduit::Node &dest, const conduit::Node &src)
     }
     else
     {
-      // The node data fits in the node. It's on the host.
+      // The data fits in the node or is a string. It's on the host.
       dest.set(src);
     }
   }
