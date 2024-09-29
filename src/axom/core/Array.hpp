@@ -1081,7 +1081,8 @@ Array<T, DIM, SPACE>::Array(IndexType num_elements,
 #endif
     m_allocator_id = axom::detail::getAllocatorID<SPACE>();
   }
-  initialize(num_elements, capacity);
+  bool default_construct = axom::detail::getAllocatorSpace(m_allocator_id) != MemorySpace::Device;
+  initialize(num_elements, capacity, default_construct);
 }
 
 //------------------------------------------------------------------------------
