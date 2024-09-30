@@ -85,6 +85,18 @@ void check_msg(const std::string& msg, const std::string& expected_message)
 {
   EXPECT_FALSE(msg.empty());
 
+  // message is output only once (combining successful for LumberjackStream)
+  int count = 0;
+  size_t pos = 0;
+
+  while((pos = msg.find(expected_message, pos)) != std::string::npos)
+  {
+    count++;
+    pos += expected_message.length();
+  }
+
+  EXPECT_EQ(count, 1);
+
   // extract message
   size_t start = msg.find(";;") + 2;
   size_t end = expected_message.length();
