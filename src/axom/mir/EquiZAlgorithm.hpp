@@ -11,6 +11,7 @@
 #include "axom/slic.hpp"
 
 // Include these directly for now.
+#include "axom/mir/views/dispatch_coordset.hpp"
 #include "axom/mir/views/MaterialView.hpp"
 #include "axom/mir/MIRAlgorithm.hpp"
 #include "axom/mir/RecenterField.hpp"
