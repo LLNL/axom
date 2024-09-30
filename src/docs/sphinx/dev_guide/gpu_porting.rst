@@ -310,6 +310,10 @@ Do NOT do this:
         }
       };
 
+Avoid calling lambdas from kernels. This can work on some systems and not on others.
+For best odds at a portable algorithm, design your kernel so it is "one level deep",
+and does not result in calling other functions that are also marked ``AXOM_LAMBDA``.
+
 
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 RAJA::kernel
@@ -510,6 +514,15 @@ General, Rough Porting Tips
     tools.
   * Utilize ``printf()`` for debugging output
   * Try using the ``SEQ_EXEC`` execution space
+
+* If your kernel compiles/links but fails at runtime, the cause is often:
+
+  * The data arrays referenced in the kernel are not in the correct memory space for the kernel.
+  * A reference to host memory has been captured for use in the kernel.
+  * There is nothing wrong with your code and the tooling has failed. In this case, try
+    separating the ``axom::for_all`` and your kernel into a separate method or function.
+    This can limit the available objects that the compile will attempt to capture and
+    increase the likelihood that the kernel will run correctly.
 
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 Useful Links
