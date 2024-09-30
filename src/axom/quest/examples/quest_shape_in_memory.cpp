@@ -872,7 +872,6 @@ axom::sidre::View* getElementVolumes(
   const std::string& volFieldName = std::string("elementVolumes"))
 {
   using HexahedronType = axom::primal::Hexahedron<double, 3>;
-  axom::setDefaultAllocator(::getUmpireDeviceId<ExecSpace>());
 
   axom::sidre::View* volSidreView = dc->GetNamedBuffer(volFieldName);
   if(volSidreView == nullptr)

@@ -495,7 +495,6 @@ AXOM_TYPED_TEST(core_array_for_all, dynamic_array_initializer_list)
 {
   using DynamicArray = typename TestFixture::DynamicArray;
   using HostArray = typename TestFixture::HostArray;
-  using ExecSpace = typename TestFixture::ExecSpace;
 
   int kernelAllocID = TestFixture::getKernelAllocatorID();
 
@@ -616,7 +615,6 @@ AXOM_TYPED_TEST(core_array_for_all, dynamic_array_resize)
 //------------------------------------------------------------------------------
 AXOM_TYPED_TEST(core_array_for_all, dynamic_array_of_arrays)
 {
-  using ExecSpace = typename TestFixture::ExecSpace;
   using DynamicArray = typename TestFixture::DynamicArray;
   using HostArray = typename TestFixture::HostArray;
   using ArrayOfArrays =
@@ -838,7 +836,6 @@ int NonTrivialDtor::dtor_calls {0};
 
 AXOM_TYPED_TEST(core_array_for_all, nontrivial_dtor_obj)
 {
-  using ExecSpace = typename TestFixture::ExecSpace;
   using DynamicArray =
     typename TestFixture::template DynamicTArray<NonTrivialDtor>;
   using HostArray = typename TestFixture::template HostTArray<NonTrivialDtor>;
@@ -1229,10 +1226,8 @@ AXOM_TYPED_TEST(core_array_for_all, device_insert)
 //------------------------------------------------------------------------------
 AXOM_TYPED_TEST(core_array_for_all, unified_mem_preference)
 {
-  using ExecSpace = typename TestFixture::ExecSpace;
   using KernelArray = typename TestFixture::KernelArray;
 
-  int kernelAllocID = TestFixture::getKernelAllocatorID();
 #if defined(AXOM_USE_RAJA) && defined(AXOM_USE_CUDA) && defined(AXOM_USE_UMPIRE)
   if(TestFixture::exec_space_memory != axom::MemorySpace::Unified &&
      TestFixture::exec_space_memory != axom::MemorySpace::Pinned)

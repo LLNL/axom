@@ -1062,8 +1062,14 @@ public:
         auto it = m_bvh->getTraverser();
         const int rank = m_rank;
 
-        double* sqDistThresh = axom::allocate<double>(1, m_allocatorID);
-        *sqDistThresh = m_sqDistanceThreshold;
+        axom::Array<double> sqDistThresh_host(
+          1,
+          1,
+          axom::execution_space<axom::SEQ_EXEC>::allocatorID());
+        sqDistThresh_host[0] = m_sqDistanceThreshold;
+        axom::Array<double> sqDistThresh_device =
+          axom::Array<double>(sqDistThresh_host, m_allocatorID);
+        auto sqDistThresh_device_view = sqDistThresh_device.view();
 
         auto ptCoordsView = m_objectPtCoords.view();
         auto ptDomainIdsView = m_objectPtDomainIds.view();
@@ -1105,7 +1111,8 @@ public:
               auto traversePredicate = [&](const PointType& p,
                                            const BoxType& bb) -> bool {
                 auto sqDist = squared_distance(p, bb);
-                return sqDist <= curr_min.sqDist && sqDist <= sqDistThresh[0];
+                return sqDist <= curr_min.sqDist &&
+                  sqDist <= sqDistThresh_device_view[0];
               };
 
               // Traverse the tree, searching for the point with minimum distance.
@@ -1127,8 +1134,6 @@ public:
               }
             });
         }
-
-        axom::deallocate(sqDistThresh);
       }
 
       axom::copy(cpIndexes.data(),

@@ -156,6 +156,17 @@ public:
    */
   static const std::vector<std::string>& getValidIOProtocols()
   {
+    static const std::vector<std::string> s_io_protocols = {
+#ifdef AXOM_USE_HDF5
+      "sidre_hdf5",
+      "conduit_hdf5",
+#endif
+      "sidre_json",
+      "sidre_conduit_json",
+      "conduit_bin",
+      "conduit_json",
+      "json"};
+
     return s_io_protocols;
   }
 
@@ -1928,9 +1939,6 @@ private:
 #ifdef AXOM_USE_UMPIRE
   int m_default_allocator_id;
 #endif
-
-  // Collection of the valid I/O protocols for save and load.
-  AXOM_SIDRE_EXPORT static const std::vector<std::string> s_io_protocols;
 };
 
 } /* end namespace sidre */

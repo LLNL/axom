@@ -36,7 +36,7 @@ namespace primal
  * \param [in] poly The Polygon object to test for containment
  * \param [in] includeBoundary If true, points on the boundary are considered interior.
  * \param [in] useNonzeroRule If false, use even/odd protocol for inclusion
- * \param [in] EPS The tolerance level for collinearity
+ * \param [in] edge_tol The distance at which a point is considered on the boundary
  * 
  * Determines containment using the winding number with respect to the 
  * given polygon. 
@@ -51,11 +51,11 @@ bool in_polygon(const Point<T, 2>& query,
                 const Polygon<T, 2>& poly,
                 bool includeBoundary = false,
                 bool useNonzeroRule = true,
-                double EPS = 1e-8)
+                double edge_tol = 1e-8)
 {
   return useNonzeroRule
-    ? winding_number(query, poly, includeBoundary, EPS) != 0
-    : (winding_number(query, poly, includeBoundary, EPS) % 2) == 1;
+    ? winding_number(query, poly, includeBoundary, edge_tol) != 0
+    : (winding_number(query, poly, includeBoundary, edge_tol) % 2) == 1;
 }
 
 }  // namespace primal
