@@ -7,7 +7,6 @@
 #define AXOM_MIR_VIEWS_MATERIAL_VIEW_HPP_
 
 #include "axom/core.hpp"
-//#include "axom/mir/views/Shapes.hpp"
 
 #include <conduit/conduit.hpp>
 
@@ -51,6 +50,13 @@ MaterialInformation materials(const conduit::Node &matset);
 //---------------------------------------------------------------------------
 
 /*!
+ \brief Material view for unibuffer matsets.
+
+ \tparam IndexT The integer type used for material data.
+ \tparam FloatT The floating point type used for material data (volume fractions).
+ \tparam MAXMATERIALS The maximum number of materials to support.
+
+ \verbatum
 
 matsets:
   matset:
@@ -65,6 +71,7 @@ matsets:
     offsets: [0, 2, 4]
     indices: [1, 4, 6, 3, 2]
 
+ \endverbatum
  */
 template <typename IndexT, typename FloatT, axom::IndexType MAXMATERIALS>
 class UnibufferMaterialView
@@ -168,6 +175,13 @@ private:
 };
 
 /*!
+ \brief View for multi-buffer matsets.
+
+ \tparam IndexT The integer type used for material data.
+ \tparam FloatT The floating point type used for material data (volume fractions).
+ \tparam MAXMATERIALS The maximum number of materials to support.
+
+ \verbatum
 
 matsets:
   matset:
@@ -182,6 +196,8 @@ matsets:
     material_map: # (optional)
       a: 0
       b: 1
+
+ \endverbatum
  */
 template <typename IndexT, typename FloatT, axom::IndexType MAXMATERIALS>
 class MultiBufferMaterialView
@@ -279,6 +295,14 @@ private:
 };
 
 /*!
+ \brief View for element-dominant matsets.
+
+ \tparam IndexT The integer type used for material data.
+ \tparam FloatT The floating point type used for material data (volume fractions).
+ \tparam MAXMATERIALS The maximum number of materials to support.
+
+ \verbatum
+
 matsets:
   matset:
     topology: topology
@@ -290,6 +314,8 @@ matsets:
       a: 0
       b: 1
       c: 2
+
+ \endverbatum
  */
 template <typename IndexT, typename FloatT, axom::IndexType MAXMATERIALS>
 class ElementDominantMaterialView
@@ -379,6 +405,14 @@ private:
 };
 
 /*!
+ \brief View for material-dominant matsets.
+
+ \tparam IndexT The integer type used for material data.
+ \tparam FloatT The floating point type used for material data (volume fractions).
+ \tparam MAXMATERIALS The maximum number of materials to support.
+
+ \verbatum
+
 matsets:
   matset:
     topology: topology
@@ -394,9 +428,12 @@ matsets:
       a: 0
       b: 1
       c: 2
- */
-/// NOTES: This matset type does not seem so GPU friendly since there is some work to do for some of the queries.
 
+ \endverbatum
+
+ \note This matset type does not seem so GPU friendly since there is some work to do for some of the queries.
+
+ */
 template <typename IndexT, typename FloatT, axom::IndexType MAXMATERIALS>
 class MaterialDominantMaterialView
 {
@@ -518,166 +555,6 @@ private:
   axom::IndexType m_size {0};
   axom::IndexType m_nzones {0};
 };
-
-#if 0
-//---------------------------------------------------------------------------
-// Some host-algorithms on material views.
-//---------------------------------------------------------------------------
-
-/*!
- */
-template <typename ExecSpace>
-axom::Array<int> makeMatsPerZone(const MaterialDominantMaterialView &view, axom::IndexType nzones)
-{
-  // Figure out the number of materials per zone.
-  axom::Array<int> matsPerZone(nzones, nzones, axom::getAllocatorID<ExecSpace>());
-  auto matsPerZone_view = matsPerZone.view();
-  axom::forall<ExecSpace>(0, nzones, AXOM_LAMBDA(int i)
-  {
-    matsPerZone_view[i] = 0;
-  });
-  for(axom::IndexType mi = 0; mi < m_size; mi++)
-  {
-    auto element_ids_view = m_element_ids[mi].view();
-    axom::forall<ExecSpace>(0, nzones, AXOM_LAMBDA(int i)
-    {
-      matsPerZone_view[element_ids_view[i]]++;
-    });
-  }
-  return matsPerZone;
-}
-
-// NOTE: This needs to be a method of MaterialDominantMaterialView to access the view data.
-template <typename ExecSpace, typename Predicate>
-axom::Array<int> selectZones(const MaterialDominantMaterialView &view, Predicate &&pred)
-{
-  const auto nzones = view.numberOfZones();
-
-  // Figure out the number of materials per zone.
-  axom::Array<int> matsPerZone = makeMatsPerZone<ExecSpace>(view, nzones);
-  auto matsPerZone_view = matsPerZone.view();
-
-  // Count the clean zones.
-  RAJA::ReduceSum num_selected(0);
-  axom::forall<ExecSpace>(0, nzones, AXOM_LAMBDA(int i)
-  {
-    num_selected += pred(matsPerZone_view[i]) ? 1 : 0;
-  });
-  axom::IndexType outsize = num_selected.get();
-  
-  // Make an offset array that records where each thread can write its data.
-  axom::Array<int, 1, ExecSpace> offsets(nzones);
-  RAJA::inclusive_scan<ExecSpace>(RAJA::make_span(zones, zones.size()),
-                                  RAJA::make_span(offsets, offsets.size()));
-
-  // Make a list of the selected output zones.
-  axom::Array<int> zonelist(outsize, outsize, axom::getAllocatorID<ExecSpace>());
-  auto zonelist_view = zonelist.view();
-  axom::forall<ExecSpace>(0, nzones, AXOM_LAMBDA(int zi)
-  {
-    if(pred(matsPerZone_view[zi]))
-      zonelist_view[offset[zi]] = zi;
-  });
-
-  return zonelist;
-}
-
-template <typename ExecSpace>
-axom::Array<int> selectZonesContainingMaterial(const MaterialDominantMaterialView &view, MaterialIndex mat)
-{
-  const auto zones_view = view.selectZonesContainingMaterial(mat);
-  axom::Array<int> zones(zones_view.size(), zones_view.size(), axom::getAllocatorID<ExecSpace>());
-  axom::copy(zones.data(), zones_view.data(), zones_view.size() * sizeof(int));
-  return zones;
-}
-
-template <typename ExecSpace>
-axom::Array<int> selectCleanZones(const MaterialDominantMaterialView &view)
-{
-  auto predicate = [](int nmats) -> bool { return nmats == 1; };
-  return selectZones<ExecSpace, decltype(predicate)>(view, predicate);
-}
-
-template <typename ExecSpace>
-axom::Array<int> selectMixedZones(const MaterialDominantMaterialView &view)
-{
-  auto predicate = [](int nmats) -> bool { return nmats > 1; };
-  return selectZones<ExecSpace, decltype(predicate)>(view, predicate);
-}
-
-//---------------------------------------------------------------------------
-template <typename ExecSpace, typename Predicate>
-axom::Array<int> selectZones(const UnibufferMaterialView &view, MaterialIndex mat, Predicate &&pred) const
-{
-/*!
- NOTE: I really do not like the code below because it forces the main Axom algorithm to use RAJA directly.
-       In the case of the reducer, I'd prefer to do this:
-
-       auto reducer = axom::execution_space<ExecSpace>::make_ReduceSum<int>(0);
-
-       Then we could write the algorithm so we do RAJA things but we could make a reducer object for the serial non-RAJA case that does nothing.
- */
-  const axom::IndexType nzones = view.numberOfZones();
-
-  using REDUCE_POL = typename axom::execution_space<ExecSpace>::reduce_policy;
-  RAJA::ReduceSum<REDUCE_POL, axom::IndexType> num_selected(0);
-  axom::Array<int, 1, ExecutionPolicy> zones(nzones);
-  auto zones_view = zones.view();
-  axom::forall<ExecSpace>(0, zones.size(), AXOM_LAMBDA(int zi)
-  {
-    const int haveMat = pred(view, mat, zi) ? 1 : 0;
-    zones_view[zi] = haveMat;
-    num_selected += haveMat;
-  });
-  axom::IndexType outsize = num_selected.get();
-  
-  // Make an offset array that records where each thread can write its data.
-  axom::Array<int, 1, ExecSpace> offsets(nzones);
-  RAJA::inclusive_scan<ExecSpace>(RAJA::make_span(zones, zones.size()),
-                                  RAJA::make_span(offsets, offsets.size()));
-
-  // Make a list of the selected output zones.
-  axom::Array<int, 1, ExecSpace> zonelist(outsize);
-  auto zonelist_view = zonelist.view();
-  axom::forall<ExecutionPolicy>(0, zones.size(), AXOM_LAMBDA(int zi)
-  {
-    if(zones[zi] > 0)
-      zonelist_view[offset[zi]] = zi;
-  });
-
-  return zonelist;
-}
-
-template <typename ExecSpace>
-axom::Array<int> selectZonesContainingMaterial(const UnibufferMaterialView &view, MaterialIndex mat)
-{
-  auto findMaterial = [](const UnibufferMaterialView &deviceView, MaterialIndex deviceMat, int zi)
-  {
-    return deviceView.zoneContainsMaterial(zi, deviceMat);
-  };
-  return selectZones<ExecSpace>(view, mat, findMaterial);
-}
-
-template <typename ExecSpace>
-axom::Array<int> selectCleanZones(const UnibufferMaterialView &view)
-{
-  auto zoneIsClean = [](const UnibufferMaterialView &deviceView, MaterialIndex /*mat*/, int zi)
-  {
-    return view.numberOfMaterials(zi) == 1;
-  };
-  return selectZones<ExecSpace>(view, 0, zoneIsClean);
-}
-
-template <typename ExecSpace>
-axom::Array<int> selectMixedZones(const UnibufferMaterialView &view)
-{
-  auto zoneIsMixed = [](const UnibufferMaterialView &deviceView, MaterialIndex /*mat*/, int zi)
-  {
-    return view.numberOfMaterials(zi) > 1;
-  };
-  return selectZones<ExecSpace>(view, 0, zoneIsClean);
-}
-#endif
 
 }  // end namespace views
 }  // end namespace mir
