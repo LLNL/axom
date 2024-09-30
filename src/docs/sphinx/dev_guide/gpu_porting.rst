@@ -266,6 +266,45 @@ consider calling ``axom::for_all`` from a class member method instead. The nvcc 
 not compile kernel invokations inside lambda functions. This pattern comes up an intermediate
 function is supplied a lambda that uses ``axom::for_all`` such as when handling many data types.
 
+Do not add template specialization for a class/struct from within the scope of another
+class/struct; the nvcc compiler does not allow it. Instead, it is necessary to extract
+the internal class/struct from the containing class before specializing it.
+
+Do this:
+
+  .. code-block:: cpp
+
+     namespace internal
+     {
+       template <int NDIMS>
+       struct B { static void method() { } };
+
+       template <>
+       struct B<2> { static void method() { /* 2D-specific method*/ } };
+     }
+
+     template <typename ViewType>
+     struct A
+     {
+       void method() { internal::B<ViewType::dimension()>::method(); }
+     };
+
+Do NOT do this:
+
+  .. code-block:: cpp
+
+     template <typename ViewType>
+     struct A
+     {
+       template <int NDIMS>
+       struct B { static void method() { } };
+
+       template <>
+       struct B<2> { static void method() { /* 2D-specific method*/ } };
+
+       void method() { B<ViewType::dimension()>::method(); }
+     };
+
 Do this:
 
   .. code-block:: cpp
