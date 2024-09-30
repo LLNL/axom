@@ -1006,7 +1006,7 @@ std::pair<double, double> winding_number_casting_split(
   numerics::Matrix<T> rotator;
 
   OrientedBoundingBox<T, 3> oBox(bPatch.orientedBoundingBox().expand(edge_tol));
-  if(!oBox.contains(query)) // Only do casting for debugging
+  if(!oBox.contains(query))  // Only do casting for debugging
   {
     /* The following steps rotate the patch until the OBB is /not/ 
        directly above or below the query point */
@@ -1048,8 +1048,6 @@ std::pair<double, double> winding_number_casting_split(
       wn_split.second = 0.0;
       bool retry_cast = false;
 
-      srand(100);
-      
       // Pick a random cast direction
       double theta = axom::utilities::random_real(0.0, 2 * M_PI);
       double u = axom::utilities::random_real(-1.0, 1.0);
@@ -1113,20 +1111,49 @@ std::pair<double, double> winding_number_casting_split(
             retry_cast = true;
             break;
           }
-          else  // queryOnSurface && intersectionOnBoundary
+          else
           {
+            // If the normal is well defined, we can use it to define a consistent value
             singularity_direction = the_normal.unitVector();
-            
-            // Currently, assume this is the only intersection
-            wn_split.second = 0;
-            break;             
 
-            // TODO: Really, we need to cast the ray again and account for extra intersections
+            std::vector<T> uc, vc, tc;
+            singularity_axis = Line<T, 3>(query, singularity_direction);
+            intersect(bPatch, singularity_axis, uc, vc, tc, edge_tol);
+
+            // If the line defined by the normal intersects at more than one point,
+            //  then we do a geometric refinement for robustness
+            if(uc.size() != 1)
+            {
+              BezierPatch<T, 3> subpatches[4];
+              bPatch.split(0.5,
+                           0.5,
+                           subpatches[0],
+                           subpatches[1],
+                           subpatches[2],
+                           subpatches[3]);
+              for(int j = 0; j < 4; ++j)
+              {
+                auto wn_subpatch_split =
+                  winding_number_casting_split(query,
+                                               subpatches[j],
+                                               edge_tol,
+                                               quad_tol,
+                                               EPS);
+                wn_split.first += wn_subpatch_split.first;
+                wn_split.second += wn_subpatch_split.second;
+              }
+            }
+            else
+            {
+              // Else, if this is the only intersection, we don't need to do extra calculation for the jump
+              wn_split.second = 0;
+            }
+            break;
           }
         }
       }
 
-      if( retry_cast )
+      if(retry_cast)
       {
         continue;
       }
@@ -1198,7 +1225,7 @@ std::pair<double, double> winding_number_casting_split(
       detail::stokes_winding_number(query,
                                     boundingPoly[n],
                                     detail::SingularityAxis::rotated,
-                                    quad_npts,
+                                    quad_npts + 1,
                                     quad_tol);
     wn_split.first += this_val;
   }
@@ -1214,7 +1241,7 @@ double winding_number_direct(const Point<T, 3>& query,
                              const double EPS = 1e-8)
 {
   // Compute the winding number with a direct 2D surface integral
-  return detail::winding_number_surface_quadrature(query, bPatch, 100);
+  return detail::winding_number_surface_quadrature(query, bPatch, 400);
 }
 
 #endif
