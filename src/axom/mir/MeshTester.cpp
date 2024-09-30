@@ -1541,22 +1541,22 @@ mir::MIRMesh MeshTester::initTestCaseSix(int gridSize, int numSpheres)
     mir::Point2 v2 =
       cellData.m_mapData
         .m_vertexPositions[cellData.m_topology.m_evInds[eID * 8 + 2]];
-    mir::Point2 v3 =
-      cellData.m_mapData
-        .m_vertexPositions[cellData.m_topology.m_evInds[eID * 8 + 3]];
+    //mir::Point2 v3 =
+    //  cellData.m_mapData
+    //    .m_vertexPositions[cellData.m_topology.m_evInds[eID * 8 + 3]];
 
-    mir::Point2 v4 =
-      cellData.m_mapData
-        .m_vertexPositions[cellData.m_topology.m_evInds[eID * 8 + 4]];
+    //mir::Point2 v4 =
+    //  cellData.m_mapData
+    //    .m_vertexPositions[cellData.m_topology.m_evInds[eID * 8 + 4]];
     mir::Point2 v5 =
       cellData.m_mapData
         .m_vertexPositions[cellData.m_topology.m_evInds[eID * 8 + 5]];
-    mir::Point2 v6 =
-      cellData.m_mapData
-        .m_vertexPositions[cellData.m_topology.m_evInds[eID * 8 + 6]];
-    mir::Point2 v7 =
-      cellData.m_mapData
-        .m_vertexPositions[cellData.m_topology.m_evInds[eID * 8 + 7]];
+    //mir::Point2 v6 =
+    //  cellData.m_mapData
+    //    .m_vertexPositions[cellData.m_topology.m_evInds[eID * 8 + 6]];
+    //mir::Point2 v7 =
+    //  cellData.m_mapData
+    //    .m_vertexPositions[cellData.m_topology.m_evInds[eID * 8 + 7]];
 
     // Run the uniform sampling to determine how much of the current cell is composed of each material
     int materialCount[numMaterials];
