@@ -1534,6 +1534,103 @@ TEST(mir_blueprint_utilities, mergemeshes_hip)
 #endif
 
 //------------------------------------------------------------------------------
+template <typename ExecSpace>
+struct test_fieldslicer
+{
+  static void test()
+  {
+    conduit::Node hostData;
+    create(hostData);
+
+    // host->device
+    conduit::Node deviceData;
+    bputils::copy<ExecSpace>(deviceData, hostData);
+
+    std::vector<int> indices{0,1,2,7,8,9};
+    axom::Array<int> sliceIndices(indices.size(), indices.size(), axom::execution_space<ExecSpace>::allocatorID());
+    axom::copy(sliceIndices.data(), indices.data(), sizeof(int) * indices.size());
+
+    bputils::SliceData slice;
+    slice.m_indicesView = sliceIndices.view();
+
+    conduit::Node slicedData;
+    bputils::FieldSlicer<ExecSpace> fs;
+    fs.execute(slice, deviceData["fields/scalar"], slicedData["fields/scalar"]);
+    fs.execute(slice, deviceData["fields/vector"], slicedData["fields/vector"]);
+
+    // device->host
+    conduit::Node hostSlicedData;
+    bputils::copy<axom::SEQ_EXEC>(hostSlicedData, slicedData);
+
+    std::vector<double> resultX{0., 1., 2., 7., 8., 9.};
+    std::vector<double> resultY{0., 10., 20., 70., 80., 90.};
+
+    EXPECT_EQ(hostSlicedData["fields/scalar/topology"].as_string(), "mesh");
+    EXPECT_EQ(hostSlicedData["fields/scalar/association"].as_string(), "element");
+    EXPECT_EQ(hostSlicedData["fields/scalar/values"].dtype().number_of_elements(), indices.size());
+    for(size_t i = 0; i < indices.size(); i++)
+    {
+      const auto acc = hostSlicedData["fields/scalar/values"].as_double_accessor();
+      EXPECT_EQ(acc[i], resultX[i]);
+    }
+
+    EXPECT_EQ(hostSlicedData["fields/vector/topology"].as_string(), "mesh");
+    EXPECT_EQ(hostSlicedData["fields/vector/association"].as_string(), "element");
+    EXPECT_EQ(hostSlicedData["fields/vector/values/x"].dtype().number_of_elements(), indices.size());
+    EXPECT_EQ(hostSlicedData["fields/vector/values/y"].dtype().number_of_elements(), indices.size());
+    for(size_t i = 0; i < indices.size(); i++)
+    {
+      const auto x = hostSlicedData["fields/vector/values/x"].as_double_accessor();
+      const auto y = hostSlicedData["fields/vector/values/y"].as_double_accessor();
+      EXPECT_EQ(x[i], resultX[i]);
+      EXPECT_EQ(y[i], resultY[i]);
+    }
+  }
+
+  static void create(conduit::Node &fields)
+  {
+    const char *yaml = R"xx(
+fields:
+  scalar: 
+    topology: mesh
+    association: element
+    values: [0., 1., 2., 3., 4., 5., 6., 7., 8., 9.]
+  vector: 
+    topology: mesh
+    association: element
+    values:
+      x: [0., 1., 2., 3., 4., 5., 6., 7., 8., 9.]
+      y: [0., 10., 20., 30., 40., 50., 60., 70., 80., 90.]
+)xx";
+    fields.parse(yaml);
+  }
+};
+
+TEST(mir_blueprint_utilities, fieldslicer_seq)
+{
+  test_fieldslicer<seq_exec>::test();
+}
+#if defined(AXOM_USE_OPENMP)
+TEST(mir_blueprint_utilities, fieldslicer_omp)
+{
+  test_fieldslicer<omp_exec>::test();
+}
+#endif
+#if defined(AXOM_USE_CUDA)
+TEST(mir_blueprint_utilities, fieldslicer_cuda)
+{
+  test_fieldslicer<cuda_exec>::test();
+}
+#endif
+#if defined(AXOM_USE_HIP)
+TEST(mir_blueprint_utilities, fieldslicer_hip)
+{
+  test_fieldslicer<hip_exec>::test();
+}
+#endif
+
+
+//------------------------------------------------------------------------------
 int main(int argc, char *argv[])
 {
   int result = 0;
