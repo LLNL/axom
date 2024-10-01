@@ -8,6 +8,11 @@
 #include "axom/core.hpp"
 #include "axom/mir/utilities.hpp"
 
+// RAJA
+#if defined(AXOM_USE_RAJA)
+  #include "RAJA/RAJA.hpp"
+#endif
+
 namespace axom
 {
 namespace mir

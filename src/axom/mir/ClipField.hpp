@@ -1,5 +1,5 @@
 // Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
-// other Axom Project Developers. See the top-level LICENSE file for details.
+// other Axom Project Developers. See the top-level LICENSE file for internal.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 #ifndef AXOM_MIR_CLIP_FIELD_HPP_
@@ -26,6 +26,11 @@
 #include <conduit/conduit_relay_io.hpp>
 #include <conduit/conduit_relay_io_blueprint.hpp>
 
+// RAJA
+#if defined(AXOM_USE_RAJA)
+  #include "RAJA/RAJA.hpp"
+#endif
+
 #include <map>
 #include <string>
 
@@ -45,7 +50,7 @@ namespace mir
 {
 namespace clipping
 {
-namespace details
+namespace internal
 {
 /*!
  * \brief Given an "ST_index" (e.g. ST_TET from clipping definitions), return an appropriate ShapeID value.
@@ -353,7 +358,7 @@ struct DegenerateHandler<2, ExecSpace, ConnectivityType>
     const int connStart = outputIndex - nIdsThisFragment;
 
     // Check for degenerate
-    const int nUniqueIds = details::unique_count<ConnectivityType, 8>(connView.data() + connStart,
+    const int nUniqueIds = internal::unique_count<ConnectivityType, 8>(connView.data() + connStart,
                     nIdsThisFragment);
     const bool thisFragmentDegenerate = nUniqueIds < (nIdsThisFragment - 1);
 
@@ -509,6 +514,144 @@ struct DegenerateHandler<2, ExecSpace, ConnectivityType>
 };
 #endif
 
+/*!
+ * \brief Base template for handling fields on a strided-structured mesh. The
+ *        default is that the mesh is not strided-structured so do nothing.
+ *
+ * \tparam enabled Whether the mesh is strided-structured.
+ * \tparam ExecSpace The execution space.
+ * \tparam TopologyView The topology view type.
+ *
+ * \note This was extracted from ClipField to remove some "if constexpr". Put
+ *       it back someday.
+ */
+template <bool enabled, typename ExecSpace, typename TopologyView>
+struct StridedStructuredFields
+{
+  /*!
+   * \brief Slice an element field.
+   *
+   * \param topologyView The topology view.
+   * \param slice Slice data.
+   * \param n_field The field being sliced.
+   * \param n_newField The node that will contain the new field.
+   */
+  static bool sliceElementField(const TopologyView &AXOM_UNUSED_PARAM(topologyView),
+                                const axom::mir::utilities::blueprint::SliceData &AXOM_UNUSED_PARAM(slice),
+                                const conduit::Node &AXOM_UNUSED_PARAM(n_field),
+                                conduit::Node &AXOM_UNUSED_PARAM(n_newField))
+  {
+    return false;
+  }
+
+  /*!
+   * \brief Blend a vertex field.
+   *
+   * \param topologyView The topology view.
+   * \param blend Blend data.
+   * \param n_field The field being sliced.
+   * \param n_newField The node that will contain the new field.
+   */
+  static bool blendVertexField(const TopologyView &AXOM_UNUSED_PARAM(topologyView),
+                               const axom::mir::utilities::blueprint::BlendData &AXOM_UNUSED_PARAM(blend),
+                               const conduit::Node &AXOM_UNUSED_PARAM(n_field),
+                               conduit::Node &AXOM_UNUSED_PARAM(n_newField))
+  {
+    return false;
+  }
+};
+
+/*!
+ * \brief Partial specialization to handle fields on strided-structured mesh.
+ *        This is the strided-structured case.
+ *
+ * \tparam ExecSpace The execution space.
+ * \tparam TopologyView The topology view type.
+ *
+ * \note This was extracted from ClipField to remove some "if constexpr". Put
+ *       it back someday.
+ */
+template <typename ExecSpace, typename TopologyView>
+struct StridedStructuredFields<true, ExecSpace, TopologyView>
+{
+  /*!
+   * \brief Slice an element field if the field is strided-structured.
+   *
+   * \param topologyView The topology view.
+   * \param slice Slice data.
+   * \param n_field The field being sliced.
+   * \param n_newField The node that will contain the new field.
+   */
+  static bool sliceElementField(const TopologyView &topologyView,
+                                const axom::mir::utilities::blueprint::SliceData &slice,
+                                const conduit::Node &n_field,
+                                conduit::Node &n_newField)
+  {
+    bool handled = false;
+    if(n_field.has_path("offsets") && n_field.has_path("strides"))
+    {
+      using Indexing = typename TopologyView::IndexingPolicy;
+      using IndexingPolicy =
+        axom::mir::utilities::blueprint::SSElementFieldIndexing<Indexing>;
+      IndexingPolicy indexing;
+      indexing.m_indexing = topologyView.indexing();
+      indexing.update(n_field);
+
+      axom::mir::utilities::blueprint::FieldSlicer<ExecSpace, IndexingPolicy> s(
+        indexing);
+      s.execute(slice, n_field, n_newField);
+      handled = true;
+    }
+    return handled;
+  }
+
+  /*!
+   * \brief Blend a vertex field if the field is strided-structured.
+   *
+   * \param topologyView The topology view.
+   * \param blend Blend data.
+   * \param n_field The field being sliced.
+   * \param n_newField The node that will contain the new field.
+   */
+  static bool blendVertexField(const TopologyView &topologyView,
+                               const axom::mir::utilities::blueprint::BlendData &blend,
+                               const conduit::Node &n_field,
+                               conduit::Node &n_newField)
+  {
+    bool handled = false;
+    if(n_field.has_path("offsets") && n_field.has_path("strides"))
+    {
+      // Make node indexing that the field blender can use.
+      using Indexing = typename TopologyView::IndexingPolicy;
+      using IndexingPolicy =
+        axom::mir::utilities::blueprint::SSVertexFieldIndexing<Indexing>;
+      IndexingPolicy indexing;
+      indexing.m_topoIndexing = topologyView.indexing().expand();
+      indexing.m_fieldIndexing = topologyView.indexing().expand();
+      indexing.update(n_field);
+
+      // If the topo and field offsets/strides are different then we need to go through
+      // SSVertexFieldIndexing. Otherwise, we can let the normal case further below
+      // handle the field.
+      if(indexing.m_topoIndexing.m_offsets !=
+           indexing.m_fieldIndexing.m_offsets ||
+         indexing.m_topoIndexing.m_strides !=
+           indexing.m_fieldIndexing.m_strides)
+      {
+        // Blend the field.
+        axom::mir::utilities::blueprint::FieldBlender<
+          ExecSpace,
+          axom::mir::utilities::blueprint::SelectSubsetPolicy,
+          IndexingPolicy>
+          b(indexing);
+        b.execute(blend, n_field, n_newField);
+        handled = true;
+      }
+    }
+    return handled;
+  }
+};
+
 #if defined(AXOM_DEBUG_CLIP_FIELD)
 /*!
  * \brief Print device views to std::out after moving data to the host.
@@ -540,7 +683,7 @@ void printHost(const std::string &name, const ViewType &deviceView)
 }
 #endif
 
-}  // end namespace details
+}  // end namespace internal
 
 //------------------------------------------------------------------------------
 /*!
@@ -717,7 +860,7 @@ public:
   using ClipTableViews = axom::StackArray<axom::mir::clipping::TableView, 6>;
   using Intersector = IntersectPolicy;
 
-  using BitSet = details::BitSet;
+  using BitSet = internal::BitSet;
   using KeyType = typename NamingPolicy::KeyType;
   using loop_policy = typename axom::execution_space<ExecSpace>::loop_policy;
   using reduce_policy = typename axom::execution_space<ExecSpace>::reduce_policy;
@@ -1081,7 +1224,7 @@ public:
 #if !defined(__CUDACC__)
 private:
 #endif
-  using FragmentData = details::FragmentData;
+  using FragmentData = internal::FragmentData;
 
   /*!
    * \brief Contains some per-zone data that we want to hold onto between methods.
@@ -1125,20 +1268,20 @@ private:
     AXOM_ANNOTATE_SCOPE("createClipTableViews");
     if(dimension == -1 || dimension == 2)
     {
-      views[details::getClipTableIndex(views::Tri_ShapeID)] =
+      views[internal::getClipTableIndex(views::Tri_ShapeID)] =
         m_clipTables[ST_TRI].view();
-      views[details::getClipTableIndex(views::Quad_ShapeID)] =
+      views[internal::getClipTableIndex(views::Quad_ShapeID)] =
         m_clipTables[ST_QUA].view();
     }
     if(dimension == -1 || dimension == 3)
     {
-      views[details::getClipTableIndex(views::Tet_ShapeID)] =
+      views[internal::getClipTableIndex(views::Tet_ShapeID)] =
         m_clipTables[ST_TET].view();
-      views[details::getClipTableIndex(views::Pyramid_ShapeID)] =
+      views[internal::getClipTableIndex(views::Pyramid_ShapeID)] =
         m_clipTables[ST_PYR].view();
-      views[details::getClipTableIndex(views::Wedge_ShapeID)] =
+      views[internal::getClipTableIndex(views::Wedge_ShapeID)] =
         m_clipTables[ST_WDG].view();
-      views[details::getClipTableIndex(views::Hex_ShapeID)] =
+      views[internal::getClipTableIndex(views::Hex_ShapeID)] =
         m_clipTables[ST_HEX].view();
     }
   }
@@ -1191,7 +1334,7 @@ private:
         zoneData.m_clipCasesView[szIndex] = clipcase;
 
         // Iterate over the shapes in this clip case to determine the number of blend groups.
-        const auto clipTableIndex = details::getClipTableIndex(zone.id());
+        const auto clipTableIndex = internal::getClipTableIndex(zone.id());
         const auto &ctView = clipTableViews[clipTableIndex];
 
         int thisBlendGroups =
@@ -1212,7 +1355,7 @@ private:
 
           if(fragment[0] == ST_PNT)
           {
-            if(details::generatedPointIsSelected(fragment[2], selection))
+            if(internal::generatedPointIsSelected(fragment[2], selection))
             {
               const int nIds = static_cast<int>(fragment[3]);
 
@@ -1242,7 +1385,7 @@ private:
           }
           else
           {
-            if(details::shapeIsSelected(fragment[1], selection))
+            if(internal::shapeIsSelected(fragment[1], selection))
             {
               thisFragments++;
               const int nIdsThisFragment = fragment.size() - 2;
@@ -1306,14 +1449,14 @@ private:
     std::cout
       << "------------------------ computeSizes ------------------------"
       << std::endl;
-    details::printHost("fragmentData.m_fragmentsView",
+    internal::printHost("fragmentData.m_fragmentsView",
                        fragmentData.m_fragmentsView);
-    details::printHost("fragmentData.m_fragmentsSizeView",
+    internal::printHost("fragmentData.m_fragmentsSizeView",
                        fragmentData.m_fragmentsSizeView);
-    details::printHost("blendGroupsView", blendGroupsView);
-    details::printHost("blendGroupsLenView", blendGroupsLenView);
-    details::printHost("zoneData.m_pointsUsedView", zoneData.m_pointsUsedView);
-    details::printHost("zoneData.m_clipCasesView", zoneData.m_clipCasesView);
+    internal::printHost("blendGroupsView", blendGroupsView);
+    internal::printHost("blendGroupsLenView", blendGroupsLenView);
+    internal::printHost("zoneData.m_pointsUsedView", zoneData.m_pointsUsedView);
+    internal::printHost("zoneData.m_clipCasesView", zoneData.m_clipCasesView);
     std::cout
       << "--------------------------------------------------------------"
       << std::endl;
@@ -1369,9 +1512,9 @@ private:
     std::cout << "------------------------ computeFragmentOffsets "
                  "------------------------"
               << std::endl;
-    details::printHost("fragmentData.m_fragmentOffsetsView",
+    internal::printHost("fragmentData.m_fragmentOffsetsView",
                        fragmentData.m_fragmentOffsetsView);
-    details::printHost("fragmentData.m_fragmentSizeOffsetsView",
+    internal::printHost("fragmentData.m_fragmentSizeOffsetsView",
                        fragmentData.m_fragmentSizeOffsetsView);
     std::cout << "-------------------------------------------------------------"
                  "-----------"
@@ -1433,9 +1576,9 @@ private:
     std::cout << "---------------------------- createNodeMaps "
                  "----------------------------"
               << std::endl;
-    details::printHost("nodeData.m_nodeUsedView", nodeData.m_nodeUsedView);
-    details::printHost("nodeData.m_originalIdsView", nodeData.m_originalIdsView);
-    details::printHost("nodeData.m_oldNodeToNewNodeView",
+    internal::printHost("nodeData.m_nodeUsedView", nodeData.m_nodeUsedView);
+    internal::printHost("nodeData.m_originalIdsView", nodeData.m_originalIdsView);
+    internal::printHost("nodeData.m_oldNodeToNewNodeView",
                        nodeData.m_oldNodeToNewNodeView);
     std::cout << "-------------------------------------------------------------"
                  "-----------"
@@ -1476,7 +1619,7 @@ private:
         const auto clipcase = zoneData.m_clipCasesView[szIndex];
 
         // Iterate over the shapes in this clip case to determine the number of blend groups.
-        const auto clipTableIndex = details::getClipTableIndex(zone.id());
+        const auto clipTableIndex = internal::getClipTableIndex(zone.id());
         const auto &ctView = clipTableViews[clipTableIndex];
 
         // These are the points used in this zone's fragments.
@@ -1494,7 +1637,7 @@ private:
 
           if(fragment[0] == ST_PNT)
           {
-            if(details::generatedPointIsSelected(fragment[2], selection))
+            if(internal::generatedPointIsSelected(fragment[2], selection))
             {
               const int nIds = static_cast<int>(fragment[3]);
               const auto one_over_n = 1.f / static_cast<float>(nIds);
@@ -1771,7 +1914,7 @@ private:
 #endif
           // Iterate over the selected fragments and emit connectivity for them.
           const auto clipcase = zoneData.m_clipCasesView[szIndex];
-          const auto clipTableIndex = details::getClipTableIndex(zone.id());
+          const auto clipTableIndex = internal::getClipTableIndex(zone.id());
           const auto ctView = clipTableViews[clipTableIndex];
           auto it = ctView.begin(clipcase);
           const auto end = ctView.end(clipcase);
@@ -1783,7 +1926,7 @@ private:
 
             if(fragmentShape != ST_PNT)
             {
-              if(details::shapeIsSelected(fragment[1], selection))
+              if(internal::shapeIsSelected(fragment[1], selection))
               {
                 // Output the nodes used in this zone.
                 const int fragmentSize = fragment.size();
@@ -1794,14 +1937,14 @@ private:
                 const auto nIdsThisFragment = fragmentSize - 2;
 #if defined(AXOM_CLIP_FILTER_DEGENERATES)
                 // Set the output zone size, checking to see whether it is degenerate.
-                degenerates |= details::DegenerateHandler<TopologyView::dimension(), ExecSpace, ConnectivityType>::setSize(
+                degenerates |= internal::DegenerateHandler<TopologyView::dimension(), ExecSpace, ConnectivityType>::setSize(
                   fragmentData.m_fragmentsView, connView, sizesView, szIndex, nIdsThisFragment,
                   sizeIndex, outputIndex);
 #else
                 sizesView[sizeIndex] = nIdsThisFragment;
 #endif
                 shapesView[sizeIndex] =
-                  details::ST_Index_to_ShapeID(fragmentShape);
+                  internal::ST_Index_to_ShapeID(fragmentShape);
                 colorView[sizeIndex] = fragment[1] - COLOR0;
                 sizeIndex++;
               }
@@ -1819,15 +1962,15 @@ private:
         << "------------------------ makeTopology ------------------------"
         << std::endl;
       std::cout << "degenerates_reduce=" << degenerates_reduce.get() << std::endl;
-      //      details::printHost("selectedZones", selectedZones.view());
-      details::printHost("m_fragmentsView", fragmentData.m_fragmentsView);
-      //      details::printHost("zoneData.m_clipCasesView", zoneData.m_clipCasesView);
-      //      details::printHost("zoneData.m_pointsUsedView", zoneData.m_pointsUsedView);
-      details::printHost("conn", connView);
-      details::printHost("sizes", sizesView);
-      details::printHost("offsets", offsetsView);
-      details::printHost("shapes", shapesView);
-      details::printHost("color", colorView);
+      //      internal::printHost("selectedZones", selectedZones.view());
+      internal::printHost("m_fragmentsView", fragmentData.m_fragmentsView);
+      //      internal::printHost("zoneData.m_clipCasesView", zoneData.m_clipCasesView);
+      //      internal::printHost("zoneData.m_pointsUsedView", zoneData.m_pointsUsedView);
+      internal::printHost("conn", connView);
+      internal::printHost("sizes", sizesView);
+      internal::printHost("offsets", offsetsView);
+      internal::printHost("shapes", shapesView);
+      internal::printHost("color", colorView);
       std::cout
         << "--------------------------------------------------------------"
         << std::endl;
@@ -1838,7 +1981,7 @@ private:
     // Filter out shapes that were marked as zero-size, adjusting connectivity and other arrays.
     if(degenerates_reduce.get())
     {
-      details::DegenerateHandler<TopologyView::dimension(), ExecSpace, ConnectivityType>::filterZeroSizes(fragmentData,
+      internal::DegenerateHandler<TopologyView::dimension(), ExecSpace, ConnectivityType>::filterZeroSizes(fragmentData,
         n_sizes, n_offsets, n_shapes, n_color_values,
         sizesView, offsetsView, shapesView, colorView);
     }
@@ -1851,15 +1994,15 @@ private:
     std::cout
       << "------------------------ makeTopology ------------------------"
       << std::endl;
-    details::printHost("selectedZones", selectedZones.view());
-    details::printHost("m_fragmentsView", fragmentData.m_fragmentsView);
-    details::printHost("zoneData.m_clipCasesView", zoneData.m_clipCasesView);
-    details::printHost("zoneData.m_pointsUsedView", zoneData.m_pointsUsedView);
-    details::printHost("conn", connView);
-    details::printHost("sizes", sizesView);
-    details::printHost("offsets", offsetsView);
-    details::printHost("shapes", shapesView);
-    details::printHost("color", colorView);
+    internal::printHost("selectedZones", selectedZones.view());
+    internal::printHost("m_fragmentsView", fragmentData.m_fragmentsView);
+    internal::printHost("zoneData.m_clipCasesView", zoneData.m_clipCasesView);
+    internal::printHost("zoneData.m_pointsUsedView", zoneData.m_pointsUsedView);
+    internal::printHost("conn", connView);
+    internal::printHost("sizes", sizesView);
+    internal::printHost("offsets", offsetsView);
+    internal::printHost("shapes", shapesView);
+    internal::printHost("color", colorView);
     std::cout
       << "--------------------------------------------------------------"
       << std::endl;
@@ -1873,7 +2016,7 @@ private:
 
 #if defined(AXOM_CLIP_FILTER_DEGENERATES)
     // Handle some quad->tri degeneracies, depending on dimension.
-    shapesUsed = details::DegenerateHandler<TopologyView::dimension(), ExecSpace, ConnectivityType>::quadtri(shapesUsed, connView, sizesView, offsetsView, shapesView);
+    shapesUsed = internal::DegenerateHandler<TopologyView::dimension(), ExecSpace, ConnectivityType>::quadtri(shapesUsed, connView, sizesView, offsetsView, shapesView);
 #endif
 
     // Add shape information to the connectivity.
@@ -1955,32 +2098,17 @@ private:
                   conduit::Node &n_out_fields) const
   {
     AXOM_ANNOTATE_SCOPE("makeFields");
+    constexpr bool ss = axom::mir::views::view_traits<TopologyView>::supports_strided_structured();
+
     for(auto it = fieldMap.begin(); it != fieldMap.end(); it++)
     {
       const conduit::Node &n_field = n_fields.fetch_existing(it->first);
       const std::string association = n_field["association"].as_string();
       if(association == "element")
       {
-        bool handled = false;
-        // Conditionally support strided-structured.
-        if constexpr(axom::mir::views::view_traits<
-                       TopologyView>::supports_strided_structured())
-        {
-          if(n_field.has_path("offsets") && n_field.has_path("strides"))
-          {
-            using Indexing = typename TopologyView::IndexingPolicy;
-            using IndexingPolicy =
-              axom::mir::utilities::blueprint::SSElementFieldIndexing<Indexing>;
-            IndexingPolicy indexing;
-            indexing.m_indexing = m_topologyView.indexing();
-            indexing.update(n_field);
+        // Conditionally support strided-structured.       
+        bool handled = internal::StridedStructuredFields<ss, ExecSpace, TopologyView>::sliceElementField(m_topologyView, slice, n_field, n_out_fields[it->second]);
 
-            axom::mir::utilities::blueprint::FieldSlicer<ExecSpace, IndexingPolicy> s(
-              indexing);
-            s.execute(slice, n_field, n_out_fields[it->second]);
-            handled = true;
-          }
-        }
         if(!handled)
         {
           axom::mir::utilities::blueprint::FieldSlicer<ExecSpace> s;
@@ -1991,50 +2119,12 @@ private:
       }
       else if(association == "vertex")
       {
-        bool handled = false;
+        // Conditionally support strided-structured.       
+        bool handled = internal::StridedStructuredFields<ss, ExecSpace, TopologyView>::blendVertexField(m_topologyView, blend, n_field, n_out_fields[it->second]);
 
-        // Node indices in the blend groups are global indices. This means that, provided the
-        // field's offsets/strides match the topology's (and why would they not?), we can skip
-        // strided structured support for now. Enable this code if the field offsets/strides
-        // do not match the topo's offsets/strides.
-
-        // Conditionally support strided-structured.
-        if constexpr(axom::mir::views::view_traits<
-                       TopologyView>::supports_strided_structured())
-        {
-          if(n_field.has_path("offsets") && n_field.has_path("strides"))
-          {
-            // Make node indexing that the field blender can use.
-            using Indexing = typename TopologyView::IndexingPolicy;
-            using IndexingPolicy =
-              axom::mir::utilities::blueprint::SSVertexFieldIndexing<Indexing>;
-            IndexingPolicy indexing;
-            indexing.m_topoIndexing = m_topologyView.indexing().expand();
-            indexing.m_fieldIndexing = m_topologyView.indexing().expand();
-            indexing.update(n_field);
-
-            // If the topo and field offsets/strides are different then we need to go through
-            // SSVertexFieldIndexing. Otherwise, we can let the normal case further below
-            // handle the field.
-            if(indexing.m_topoIndexing.m_offsets !=
-                 indexing.m_fieldIndexing.m_offsets ||
-               indexing.m_topoIndexing.m_strides !=
-                 indexing.m_fieldIndexing.m_strides)
-            {
-              // Blend the field.
-              axom::mir::utilities::blueprint::FieldBlender<
-                ExecSpace,
-                axom::mir::utilities::blueprint::SelectSubsetPolicy,
-                IndexingPolicy>
-                b(indexing);
-              b.execute(blend, n_field, n_out_fields[it->second]);
-              handled = true;
-            }
-          }
-        }
         if(!handled)
         {
-          // Blend the field.
+          // Blend the field normally.
           axom::mir::utilities::blueprint::FieldBlender<
             ExecSpace,
             axom::mir::utilities::blueprint::SelectSubsetPolicy>

@@ -14,11 +14,12 @@
 
 #include <conduit/conduit.hpp>
 
-#include <string>
-
+// RAJA
 #if defined(AXOM_USE_RAJA)
-  #include <RAJA/RAJA.hpp>
+  #include "RAJA/RAJA.hpp"
 #endif
+
+#include <string>
 
 namespace axom
 {

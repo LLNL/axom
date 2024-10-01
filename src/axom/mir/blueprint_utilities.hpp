@@ -16,8 +16,9 @@
 #include <conduit/conduit.hpp>
 #include <conduit/conduit_blueprint.hpp>
 
+// RAJA
 #if defined(AXOM_USE_RAJA)
-  #include <RAJA/RAJA.hpp>
+  #include "RAJA/RAJA.hpp"
 #endif
 
 #include <utility>
@@ -32,7 +33,7 @@ namespace utilities
 namespace blueprint
 {
 //------------------------------------------------------------------------------
-/**
+/*!
  * \brief This class provides a couple of type traits that let us map C++ types
  *        to types / values useful in Conduit.
  */
@@ -122,7 +123,7 @@ struct cpp2conduit<conduit::float64>
 
 //------------------------------------------------------------------------------
 
-/**
+/*!
  * \brief Make an axom::ArrayView from a Conduit node.
  *
  * \tparam T The type for the array view elements.
@@ -158,7 +159,7 @@ inline axom::ArrayView<T> make_array_view(const conduit::Node &n)
 /// @}
 
 //------------------------------------------------------------------------------
-/**
+/*!
  * \brief This class registers a Conduit allocator that can make Conduit allocate
  *        through Axom's allocate/deallocate functions using a specific allocator.
  *        This permits Conduit to allocate through Axom's UMPIRE logic.
@@ -169,7 +170,7 @@ template <typename ExecSpace>
 class ConduitAllocateThroughAxom
 {
 public:
-  /**
+  /*!
    * \brief Get the Conduit allocator ID for this ExecSpace.
    *
    * \return The Conduit allocator ID for this ExecSpace.
@@ -187,7 +188,7 @@ public:
   }
 
 private:
-  /**
+  /*!
    * \brief A function we register with Conduit to allocate memory.
    *
    * \param items The number of items to allocate.
@@ -204,7 +205,7 @@ private:
     return ptr;
   }
 
-  /**
+  /*!
    * \brief A deallocation function we register with Conduit.
    */
   static void internal_free(void *ptr)
@@ -215,7 +216,7 @@ private:
 };
 
 //------------------------------------------------------------------------------
-/**
+/*!
  * \brief Copies a Conduit tree in the \a src node to a new Conduit \a dest node,
  *        making sure to allocate array data in the appropriate memory space for
  *        the execution space.
@@ -267,7 +268,7 @@ void copy(conduit::Node &dest, const conduit::Node &src)
 }
 
 //------------------------------------------------------------------------------
-/**
+/*!
  * \brief Fill an array with int values from a Conduit node.
  *
  * \tparam ArrayType The array type being filled.
@@ -311,12 +312,12 @@ bool fillFromNode(const conduit::Node &n,
 }
 //------------------------------------------------------------------------------
 
-/**
+/*!
  * \brief Returns the input index (no changes).
  */
 struct DirectIndexing
 {
-  /**
+  /*!
    * \brief Return the input index (no changes).
    * \param index The input index.
    * \return The input index.
@@ -329,14 +330,14 @@ struct DirectIndexing
 };
 
 //------------------------------------------------------------------------------
-/**
+/*!
  * \brief Help turn slice data zone indices into strided structured element field indices.
  * \tparam Indexing A StridedStructuredIndexing of some dimension.
  */
 template <typename Indexing>
 struct SSElementFieldIndexing
 {
-  /**
+  /*!
    * \brief Update the indexing offsets/strides from a Conduit node.
    * \param field The Conduit node for a field.
    *
@@ -348,7 +349,7 @@ struct SSElementFieldIndexing
     fillFromNode(field, "strides", m_indexing.m_strides, true);
   }
 
-  /**
+  /*!
    * \brief Transforms the index from local to global through an indexing object.
    * \param index The local index
    * \return The global index for the field.
@@ -363,14 +364,14 @@ struct SSElementFieldIndexing
 };
 
 //------------------------------------------------------------------------------
-/**
+/*!
  * \brief Help turn blend group node indices (global) into vertex field indices.
  * \tparam Indexing A StridedStructuredIndexing of some dimension.
  */
 template <typename Indexing>
 struct SSVertexFieldIndexing
 {
-  /**
+  /*!
    * \brief Update the indexing offsets/strides from a Conduit node.
    * \param field The Conduit node for a field.
    *
@@ -382,7 +383,7 @@ struct SSVertexFieldIndexing
     fillFromNode(field, "strides", m_fieldIndexing.m_strides, true);
   }
 
-  /**
+  /*!
    * \brief Transforms the index from local to global through an indexing object.
    * \param index The global index
    * \return The global index for the field.
@@ -460,7 +461,7 @@ struct minmax
   }
 };
 
-/**
+/*!
  * \brief Save a Blueprint mesh to a legacy ASCII VTK file.
  *
  * \param node The node that contains the mesh data.

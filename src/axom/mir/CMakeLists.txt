@@ -11,7 +11,7 @@
 #------------------------------------------------------------------------------
 axom_component_requires(NAME       MIR
                         COMPONENTS SLIC SLAM PRIMAL
-                        TPLS       Conduit)
+                        TPLS       Conduit RAJA umpire)
 
 #------------------------------------------------------------------------------
 # Specify all headers/sources
@@ -100,7 +100,7 @@ set(mir_sources
 #------------------------------------------------------------------------------
 # Build and install the library
 #------------------------------------------------------------------------------
-set(mir_depends_on core slic slam primal conduit::conduit)
+set(mir_depends_on core slic slam primal conduit::conduit RAJA umpire)
 
 blt_add_library(
     NAME        mir

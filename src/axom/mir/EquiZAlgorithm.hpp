@@ -1,5 +1,5 @@
 // Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
-// other Axom Project Developers. See the top-level LICENSE file for details.
+// other Axom Project Developers. See the top-level LICENSE file for internals.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 #ifndef AXOM_MIR_EQUIZ_ALGORITHM_HPP_
@@ -22,12 +22,13 @@
 
 #include <conduit/conduit.hpp>
 
+// RAJA
+#if defined(AXOM_USE_RAJA)
+  #include "RAJA/RAJA.hpp"
+#endif
+
 #include <algorithm>
 #include <string>
-
-#if defined(AXOM_USE_RAJA)
-  #include <RAJA/RAJA.hpp>
-#endif
 
 // This macro makes the EquiZ algorithm split processing into clean/mixed stages.
 #define AXOM_EQUIZ_SPLIT_PROCESSING
@@ -53,7 +54,7 @@ using MaterialVFView = axom::ArrayView<MaterialVF>;
 constexpr static int NULL_MATERIAL = -1;
 constexpr static MaterialVF NULL_MATERIAL_VF = -1.f;
 
-namespace detail
+namespace internal
 {
 /*!
  * \brief This class is an intersection policy compatible with ClipField. It
@@ -282,7 +283,7 @@ private:
   View m_view {};
 };
 
-}  // end namespace detail
+}  // end namespace internal
 
 /*!
  * \accelerated
@@ -1153,7 +1154,7 @@ protected:
     //--------------------------------------------------------------------------
     using ConnectivityType = typename ITopologyView::ConnectivityType;
     using IntersectorType =
-      detail::MaterialIntersector<ConnectivityType, MatsetView::MaxMaterials>;
+      internal::MaterialIntersector<ConnectivityType, MatsetView::MaxMaterials>;
 
     IntersectorType intersector;
     int allocatorID = axom::execution_space<ExecSpace>::allocatorID();

@@ -16,7 +16,10 @@
 #include <conduit/conduit_blueprint.hpp>
 #include <conduit/conduit_blueprint_mesh_utils.hpp>
 
-#include <RAJA/RAJA.hpp>
+// RAJA
+#if defined(AXOM_USE_RAJA)
+  #include "RAJA/RAJA.hpp"
+#endif
 
 #include <map>
 #include <vector>

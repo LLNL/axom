@@ -11,7 +11,10 @@
 #include <conduit/conduit.hpp>
 #include <conduit/conduit_blueprint.hpp>
 
-#include <RAJA/RAJA.hpp>
+// RAJA
+#if defined(AXOM_USE_RAJA)
+  #include "RAJA/RAJA.hpp"
+#endif
 
 #include <cstdint>
 
@@ -405,19 +408,23 @@ public:
 
 //------------------------------------------------------------------------------
 /*!
- * \brief This function makes a unique array of values from an input list of keys.
+ * \brief Makes a unique array of values from an input list of values.
  *
  * \tparam ExecSpace The execution space.
  * \tparam KeyType   The data type for the keys.
- *
- * \param[in] keys_orig_view The input view that contains the input keys to be made unique.
- * \param[out] skeys     A sorted unique array of keys produced from keys_orig_view.
- * \param[out] sindices  An array of indices that indicate where in the original view the keys came from.
  *
  */
 template <typename ExecSpace, typename KeyType>
 struct Unique
 {
+  /*!
+   * \brief This function makes a unique array of values from an input list of keys.
+   *
+   * \param[in] keys_orig_view The input view that contains the input keys to be made unique.
+   * \param[out] skeys     A sorted unique array of keys produced from keys_orig_view.
+   * \param[out] sindices  An array of indices that indicate where in the original view the keys came from.
+   *
+   */
   static void execute(const axom::ArrayView<KeyType> &keys_orig_view,
                       axom::Array<KeyType> &skeys,
                       axom::Array<axom::IndexType> &sindices)
@@ -488,6 +495,14 @@ struct Unique
 template <typename KeyType>
 struct Unique<axom::SEQ_EXEC, KeyType>
 {
+  /*!
+   * \brief This function makes a unique array of values from an input list of keys.
+   *
+   * \param[in] keys_orig_view The input view that contains the input keys to be made unique.
+   * \param[out] skeys     A sorted unique array of keys produced from keys_orig_view.
+   * \param[out] sindices  An array of indices that indicate where in the original view the keys came from.
+   *
+   */
   static void execute(const axom::ArrayView<KeyType> &keys_orig_view,
                       axom::Array<KeyType> &skeys,
                       axom::Array<axom::IndexType> &sindices)

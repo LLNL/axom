@@ -10,6 +10,11 @@
 #include <axom/mir.hpp>
 #include <axom/mir/MatsetSlicer.hpp>  // Needed to get MatsetSlicer
 
+// RAJA
+#if defined(AXOM_USE_RAJA)
+  #include "RAJA/RAJA.hpp"
+#endif
+
 namespace axom
 {
 namespace mir
