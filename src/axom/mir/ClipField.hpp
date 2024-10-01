@@ -171,20 +171,301 @@ inline AXOM_HOST_DEVICE int unique_count(const IdType *values, int n)
   return nv;
 }
 
+//------------------------------------------------------------------------------
+// NOTE - These types were pulled out of ClipField so they could be used in
+//        some code that was moved out to handle degeneracies using partial
+//        specialization rather than "if constexpr". Put it all back when
+//        "if constexpr" is allowed. One nice side-seffect is shorter symbol
+//        names in the debugger.
+
+using BitSet = std::uint32_t;
+
+/*!
+ * \brief Contains data that describes the number and size of zone fragments in the output.
+ */
+struct FragmentData
+{
+  IndexType m_finalNumZones {0};
+  IndexType m_finalConnSize {0};
+  axom::ArrayView<IndexType> m_fragmentsView {};
+  axom::ArrayView<IndexType> m_fragmentsSizeView {};
+  axom::ArrayView<IndexType> m_fragmentOffsetsView {};
+  axom::ArrayView<IndexType> m_fragmentSizeOffsetsView {};
+};
+//------------------------------------------------------------------------------
+
+#if defined(AXOM_CLIP_FILTER_DEGENERATES)
+/*!
+ * \brief Replace data in the input Conduit node with a denser version using the mask.
+ *
+ * \tparam ExecSpace The execution space.
+ * \tparam DataView The type of data view that is operated on.
+ *
+ * \param n_src The Conduit node that contains the data.
+ * \param srcView A view that wraps the input Conduit data.
+ * \param newSize The new array size.
+ * \param maskView The mask for valid data elements.
+ * \param maskOffsetsView The offsets view to indicate where to write the new data.
+ */
+template <typename ExecSpace, typename DataView>
+DataView filter(conduit::Node &n_src,
+                DataView srcView,
+                axom::IndexType newSize,
+                axom::ArrayView<int> maskView,
+                axom::ArrayView<int> maskOffsetsView)
+{
+  using value_type = typename DataView::value_type;
+  namespace bputils = axom::mir::utilities::blueprint;
+
+  // Get the ID of a Conduit allocator that will allocate through Axom with device allocator allocatorID.
+  utilities::blueprint::ConduitAllocateThroughAxom<ExecSpace> c2a;
+  const int conduitAllocatorID = c2a.getConduitAllocatorID();
+
+  conduit::Node n_values;
+  n_values.set_allocator(conduitAllocatorID);
+  n_values.set(conduit::DataType(bputils::cpp2conduit<value_type>::id, newSize));
+  auto valuesView = bputils::make_array_view<value_type>(n_values);
+  const auto nValues = maskView.size();
+  axom::for_all<ExecSpace>(
+    nValues,
+    AXOM_LAMBDA(axom::IndexType index) {
+      if(maskView[index] > 0)
+      {
+        const auto destIndex = maskOffsetsView[index];
+        valuesView[destIndex] = srcView[index];
+      }
+    });
+
+  n_src.swap(n_values);
+  return bputils::make_array_view<value_type>(n_src);
+}
+
+/// NOTE - Use partial specialization (instead of the cleaner "if constexpr")
+///        for now to implement some 2D-specific behavior.
+
+/*!
+ * \brief Base template for degenerate removal.
+ */
+template <int NDIMS, typename ExecSpace, typename ConnectivityType>
+struct DegenerateHandler
+{
+  /*!
+   * \brief In a previous stage, degenerate shapes were marked as having zero size.
+   *        This method filters them out from the auxiliary arrays.
+   *
+   * \param fragmentData The fragments.
+   * \param[inout] n_sizes The node that contains the sizes.
+   * \param[inout] n_offsets The node that contains the offsets.
+   * \param[inout] n_shapes The node that contains the shapes.
+   * \param[inout] n_color The node that contains the color.
+   * \param[inout] sizesView The view that wraps sizes (can change on output).
+   * \param[inout] offsetsView The view that wraps offsets (can change on output).
+   * \param[inout] shapesView The view that wraps shapes (can change on output).
+   * \param[inout] colorView The view that wraps colors (can change on output).
+   */
+  static void filterZeroSizes(FragmentData &AXOM_UNUSED_PARAM(fragmentData),
+                              conduit::Node &AXOM_UNUSED_PARAM(n_sizes),
+                              conduit::Node &AXOM_UNUSED_PARAM(n_offsets),
+                              conduit::Node &AXOM_UNUSED_PARAM(n_shapes),
+                              conduit::Node &AXOM_UNUSED_PARAM(n_color),
+                              axom::ArrayView<ConnectivityType> &AXOM_UNUSED_PARAM(sizesView),
+                              axom::ArrayView<ConnectivityType> &AXOM_UNUSED_PARAM(offsetsView),
+                              axom::ArrayView<ConnectivityType> &AXOM_UNUSED_PARAM(shapesView),
+                              axom::ArrayView<int> &AXOM_UNUSED_PARAM(colorView))
+  {
+  }
+
+  /*!
+   * \brief Turns degenerate quads into triangles in-place.
+   *
+   * \param shapesUsed A BitSet that indicates which shapes are present in the mesh.
+   * \param connView A view that contains the connectivity.
+   * \param sizesView A view that contains the sizes.
+   * \param offsetsView A view that contains the offsets.
+   * \param shapesView A view that contains the shapes.
+   */
+  static BitSet quadtri(BitSet shapesUsed,
+                        axom::ArrayView<ConnectivityType> AXOM_UNUSED_PARAM(connView),
+                        axom::ArrayView<ConnectivityType> AXOM_UNUSED_PARAM(sizesView),
+                        axom::ArrayView<ConnectivityType> AXOM_UNUSED_PARAM(offsetsView),
+                        axom::ArrayView<ConnectivityType> AXOM_UNUSED_PARAM(shapesView))
+  {
+    return shapesUsed;
+  }
+};
+
+/*!
+ * \brief Partial specialization that implements some degeneracy handling for 2D meshes.
+ */
+template <typename ExecSpace, typename ConnectivityType>
+struct DegenerateHandler<2, ExecSpace, ConnectivityType>
+{
+  using reduce_policy = typename axom::execution_space<ExecSpace>::reduce_policy;
+
+  /*!
+   * \brief In a previous stage, degenerate shapes were marked as having zero size.
+   *        This method filters them out from the auxiliary arrays.
+   *
+   * \param fragmentData The fragments.
+   * \param[inout] n_sizes The node that contains the sizes.
+   * \param[inout] n_offsets The node that contains the offsets.
+   * \param[inout] n_shapes The node that contains the shapes.
+   * \param[inout] n_color The node that contains the color.
+   * \param[inout] sizesView The view that wraps sizes (can change on output).
+   * \param[inout] offsetsView The view that wraps offsets (can change on output).
+   * \param[inout] shapesView The view that wraps shapes (can change on output).
+   * \param[inout] colorView The view that wraps colors (can change on output).
+   */
+  static void filterZeroSizes(FragmentData &fragmentData,
+                              conduit::Node &n_sizes,
+                              conduit::Node &n_offsets,
+                              conduit::Node &n_shapes,
+                              conduit::Node &n_color,
+                              axom::ArrayView<ConnectivityType> &sizesView,
+                              axom::ArrayView<ConnectivityType> &offsetsView,
+                              axom::ArrayView<ConnectivityType> &shapesView,
+                              axom::ArrayView<int> &colorView)
+  {
+    AXOM_ANNOTATE_SCOPE("filterZeroSizes");
+
+    // There were degenerates so the expected number of fragments per zone (m_fragmentsView)
+    // was adjusted down. That means redoing the offsets. These need to be up
+    // to date to handle zonal fields later.
+    axom::exclusive_scan<ExecSpace>(fragmentData.m_fragmentsView,
+                                    fragmentData.m_fragmentOffsetsView);
+
+    // Use sizesView to make a mask that has 1's where size > 0.
+    axom::IndexType nz = fragmentData.m_finalNumZones;
+    axom::Array<int> mask(nz,
+                          nz,
+                          axom::execution_space<ExecSpace>::allocatorID());
+    axom::Array<int> maskOffsets(
+      nz,
+      nz,
+      axom::execution_space<ExecSpace>::allocatorID());
+    auto maskView = mask.view();
+    auto maskOffsetsView = maskOffsets.view();
+    RAJA::ReduceSum<reduce_policy, axom::IndexType> mask_reduce(0);
+    const axom::ArrayView<ConnectivityType> deviceSizesView = sizesView;
+    axom::for_all<ExecSpace>(
+      nz,
+      AXOM_LAMBDA(axom::IndexType index) {
+        const int ival = (deviceSizesView[index] > 0) ? 1 : 0;
+        maskView[index] = ival;
+        mask_reduce += ival;
+      });
+    const axom::IndexType filteredZoneCount = mask_reduce.get();
+
+    // Make offsets
+    axom::exclusive_scan<ExecSpace>(maskView, maskOffsetsView);
+
+    // Filter sizes, shapes, color using the mask
+    sizesView =
+      filter<ExecSpace, axom::ArrayView<ConnectivityType>>(n_sizes, sizesView, filteredZoneCount, maskView, maskOffsetsView);
+    offsetsView = filter<ExecSpace, axom::ArrayView<ConnectivityType>>(n_offsets,
+                         offsetsView,
+                         filteredZoneCount,
+                         maskView,
+                         maskOffsetsView);
+    shapesView =
+      filter<ExecSpace, axom::ArrayView<ConnectivityType>>(n_shapes, shapesView, filteredZoneCount, maskView, maskOffsetsView);
+    colorView = filter<ExecSpace, axom::ArrayView<int>>(n_color,
+                       colorView,
+                       filteredZoneCount,
+                       maskView,
+                       maskOffsetsView);
+
+    // Record the filtered size.
+    fragmentData.m_finalNumZones = filteredZoneCount;
+  }
+
+  /*!
+   * \brief Turns degenerate quads into triangles in-place.
+   *
+   * \param shapesUsed A BitSet that indicates which shapes are present in the mesh.
+   * \param connView A view that contains the connectivity.
+   * \param sizesView A view that contains the sizes.
+   * \param offsetsView A view that contains the offsets.
+   * \param shapesView A view that contains the shapes.
+   */
+  static BitSet quadtri(BitSet shapesUsed,
+                        axom::ArrayView<ConnectivityType> connView,
+                        axom::ArrayView<ConnectivityType> sizesView,
+                        axom::ArrayView<ConnectivityType> offsetsView,
+                        axom::ArrayView<ConnectivityType> shapesView)
+  {
+    if(axom::utilities::bitIsSet(shapesUsed, views::Quad_ShapeID))
+    {
+      AXOM_ANNOTATE_SCOPE("quadtri");
+      const axom::IndexType numOutputZones = shapesView.size();
+      RAJA::ReduceBitOr<reduce_policy, BitSet> shapesUsed_reduce(0);
+      axom::for_all<ExecSpace>(
+        numOutputZones,
+        AXOM_LAMBDA(axom::IndexType index) {
+          if(shapesView[index] == views::Quad_ShapeID)
+          {
+            const auto offset = offsetsView[index];
+            ConnectivityType pts[4];
+            int npts = 0;
+            for(int current = 0; current < 4; current++)
+            {
+              int next = (current + 1) % 4;
+              ConnectivityType curNode = connView[offset + current];
+              ConnectivityType nextNode = connView[offset + next];
+              if(curNode != nextNode) { pts[npts++] = curNode; }
+            }
+
+            if(npts == 3)
+            {
+              shapesView[index] = views::Tri_ShapeID;
+              sizesView[index] = 3;
+              connView[offset] = pts[0];
+              connView[offset + 1] = pts[1];
+              connView[offset + 2] = pts[2];
+              // Repeat the last point (it won't be used though).
+              connView[offset + 3] = pts[2];
+            }
+          }
+
+          BitSet shapeBit {};
+          axom::utilities::setBitOn(shapeBit, shapesView[index]);
+          shapesUsed_reduce |= shapeBit;
+        });
+      // We redid shapesUsed reduction in case triangles appeared.
+      shapesUsed = shapesUsed_reduce.get();
+    }
+    return shapesUsed;
+  }
+};
+#endif
+
 #if defined(AXOM_DEBUG_CLIP_FIELD)
+/*!
+ * \brief Print device views to std::out after moving data to the host.
+ *
+ * \param name The name of the view.
+ * \param view The view to print.
+ */
 template <typename ViewType>
 void printHost(const std::string &name, const ViewType &deviceView)
 {
   using value_type = typename ViewType::value_type;
   int nn = deviceView.size();
+  // Move data to host into temp array.
   value_type *host = new value_type[nn];
   axom::copy(host, deviceView.data(), sizeof(value_type) * nn);
+  // Print
   std::cout << name << "[" << nn << "] = {";
   for(int ii = 0; ii < nn; ii++)
   {
-    std::cout << ", " << host[ii];
+    if(ii > 0)
+    {
+      std::cout << ", ";
+    }
+    std::cout << host[ii];
   }
   std::cout << "}" << std::endl;
+  // Cleanup.
   delete[] host;
 }
 #endif
@@ -366,7 +647,7 @@ public:
   using ClipTableViews = axom::StackArray<axom::mir::clipping::TableView, 6>;
   using Intersector = IntersectPolicy;
 
-  using BitSet = std::uint32_t;
+  using BitSet = details::BitSet;
   using KeyType = typename NamingPolicy::KeyType;
   using loop_policy = typename axom::execution_space<ExecSpace>::loop_policy;
   using reduce_policy = typename axom::execution_space<ExecSpace>::reduce_policy;
@@ -730,19 +1011,7 @@ public:
 #if !defined(__CUDACC__)
 private:
 #endif
-
-  /*!
-   * \brief Contains data that describes the number and size of zone fragments in the output.
-   */
-  struct FragmentData
-  {
-    IndexType m_finalNumZones {0};
-    IndexType m_finalConnSize {0};
-    axom::ArrayView<IndexType> m_fragmentsView {};
-    axom::ArrayView<IndexType> m_fragmentsSizeView {};
-    axom::ArrayView<IndexType> m_fragmentOffsetsView {};
-    axom::ArrayView<IndexType> m_fragmentSizeOffsetsView {};
-  };
+  using FragmentData = details::FragmentData;
 
   /*!
    * \brief Contains some per-zone data that we want to hold onto between methods.
@@ -1280,6 +1549,7 @@ private:
     n_newTopo["coordset"] = n_newCoordset.name();
 
     // Get the ID of a Conduit allocator that will allocate through Axom with device allocator allocatorID.
+    // _mir_utilities_c2a_begin
     utilities::blueprint::ConduitAllocateThroughAxom<ExecSpace> c2a;
     const int conduitAllocatorID = c2a.getConduitAllocatorID();
 
@@ -1288,6 +1558,7 @@ private:
     n_conn.set_allocator(conduitAllocatorID);
     n_conn.set(conduit::DataType(connTypeID, fragmentData.m_finalConnSize));
     auto connView = bputils::make_array_view<ConnectivityType>(n_conn);
+    // _mir_utilities_c2a_end
 
     // Allocate shapes.
     conduit::Node &n_shapes = n_newTopo["elements/shapes"];
@@ -1525,65 +1796,15 @@ private:
     }
 
 #if defined(AXOM_CLIP_FILTER_DEGENERATES)
-    if constexpr(TopologyView::dimension() == 2)
+    // Filter out shapes that were marked as zero-size, adjusting connectivity and other arrays.
+    if(degenerates_reduce.get())
     {
-      // We get into this block when degenerate zones were detected where
-      // all of their nodes are the same. We need to filter those out.
-      if(degenerates_reduce.get())
-      {
-        AXOM_ANNOTATE_SCOPE("degenerates");
-
-        // There were degenerates so the expected number of fragments per zone (m_fragmentsView)
-        // was adjusted down. That means redoing the offsets. These need to be up
-        // to date to handle zonal fields later.
-        axom::exclusive_scan<ExecSpace>(fragmentData.m_fragmentsView,
-                                        fragmentData.m_fragmentOffsetsView);
-
-        // Use sizesView to make a mask that has 1's where size > 0.
-        axom::IndexType nz = fragmentData.m_finalNumZones;
-        axom::Array<int> mask(nz,
-                              nz,
-                              axom::execution_space<ExecSpace>::allocatorID());
-        axom::Array<int> maskOffsets(
-          nz,
-          nz,
-          axom::execution_space<ExecSpace>::allocatorID());
-        auto maskView = mask.view();
-        auto maskOffsetsView = maskOffsets.view();
-        RAJA::ReduceSum<reduce_policy, axom::IndexType> mask_reduce(0);
-        axom::for_all<ExecSpace>(
-          nz,
-          AXOM_LAMBDA(axom::IndexType index) {
-            const int ival = (sizesView[index] > 0) ? 1 : 0;
-            maskView[index] = ival;
-            mask_reduce += ival;
-          });
-        const axom::IndexType filteredZoneCount = mask_reduce.get();
-
-        // Make offsets
-        axom::exclusive_scan<ExecSpace>(maskView, maskOffsetsView);
-
-        // Filter sizes, shapes, color using the mask
-        sizesView =
-          filter(n_sizes, sizesView, filteredZoneCount, maskView, maskOffsetsView);
-        offsetsView = filter(n_offsets,
-                             offsetsView,
-                             filteredZoneCount,
-                             maskView,
-                             maskOffsetsView);
-        shapesView =
-          filter(n_shapes, shapesView, filteredZoneCount, maskView, maskOffsetsView);
-        colorView = filter(n_color_values,
-                           colorView,
-                           filteredZoneCount,
-                           maskView,
-                           maskOffsetsView);
-
-        // Record the filtered size.
-        fragmentData.m_finalNumZones = filteredZoneCount;
-      }
+      details::DegenerateHandler<TopologyView::dimension(), ExecSpace, ConnectivityType>::filterZeroSizes(fragmentData,
+        n_sizes, n_offsets, n_shapes, n_color_values,
+        sizesView, offsetsView, shapesView, colorView);
     }
 #endif
+
     // Figure out which shapes were used.
     BitSet shapesUsed = findUsedShapes(shapesView);
 
@@ -1611,50 +1832,10 @@ private:
       n_newFields.remove(opts.colorField());
     }
 
-    // Handle some quad->tri degeneracies
-    if constexpr(TopologyView::dimension() == 2)
-    {
-      if(axom::utilities::bitIsSet(shapesUsed, views::Quad_ShapeID))
-      {
-        AXOM_ANNOTATE_SCOPE("quadtri");
-        const axom::IndexType numOutputZones = shapesView.size();
-        RAJA::ReduceBitOr<reduce_policy, BitSet> shapesUsed_reduce(0);
-        axom::for_all<ExecSpace>(
-          numOutputZones,
-          AXOM_LAMBDA(axom::IndexType index) {
-            if(shapesView[index] == views::Quad_ShapeID)
-            {
-              const auto offset = offsetsView[index];
-              ConnectivityType pts[4];
-              int npts = 0;
-              for(int current = 0; current < 4; current++)
-              {
-                int next = (current + 1) % 4;
-                ConnectivityType curNode = connView[offset + current];
-                ConnectivityType nextNode = connView[offset + next];
-                if(curNode != nextNode) pts[npts++] = curNode;
-              }
-
-              if(npts == 3)
-              {
-                shapesView[index] = views::Tri_ShapeID;
-                sizesView[index] = 3;
-                connView[offset] = pts[0];
-                connView[offset + 1] = pts[1];
-                connView[offset + 2] = pts[2];
-                // Repeat the last point (it won't be used though).
-                connView[offset + 3] = pts[2];
-              }
-            }
-
-            BitSet shapeBit {};
-            axom::utilities::setBitOn(shapeBit, shapesView[index]);
-            shapesUsed_reduce |= shapeBit;
-          });
-        // We redid shapesUsed reduction in case triangles appeared.
-        shapesUsed = shapesUsed_reduce.get();
-      }
-    }
+#if defined(AXOM_CLIP_FILTER_DEGENERATES)
+    // Handle some quad->tri degeneracies, depending on dimension.
+    shapesUsed = details::DegenerateHandler<TopologyView::dimension(), ExecSpace, ConnectivityType>::quadtri(shapesUsed, connView, sizesView, offsetsView, shapesView);
+#endif
 
     // Add shape information to the connectivity.
     SLIC_ASSERT_MSG(shapesUsed != 0, "No shapes were produced!");
@@ -1697,50 +1878,6 @@ private:
     return shapesUsed;
   }
 
-#if defined(AXOM_CLIP_FILTER_DEGENERATES)
-  /*!
-   * \brief Replace data in the input Conduit node with a denser version using the mask.
-   *
-   * \param n_src The Conduit node that contains the data.
-   * \param srcView A view that wraps the input Conduit data.
-   * \param newSize The new array size.
-   * \param maskView The mask for valid data elements.
-   * \param maskOffsetsView The offsets view to indicate where to write the new data.
-   */
-  template <typename DataView>
-  DataView filter(conduit::Node &n_src,
-                  DataView srcView,
-                  axom::IndexType newSize,
-                  axom::ArrayView<int> maskView,
-                  axom::ArrayView<int> maskOffsetsView) const
-  {
-    using value_type = typename DataView::value_type;
-    namespace bputils = axom::mir::utilities::blueprint;
-
-    // Get the ID of a Conduit allocator that will allocate through Axom with device allocator allocatorID.
-    utilities::blueprint::ConduitAllocateThroughAxom<ExecSpace> c2a;
-    const int conduitAllocatorID = c2a.getConduitAllocatorID();
-
-    conduit::Node n_values;
-    n_values.set_allocator(conduitAllocatorID);
-    n_values.set(conduit::DataType(bputils::cpp2conduit<value_type>::id, newSize));
-    auto valuesView = bputils::make_array_view<value_type>(n_values);
-    const auto nValues = maskView.size();
-    axom::for_all<ExecSpace>(
-      nValues,
-      AXOM_LAMBDA(axom::IndexType index) {
-        if(maskView[index] > 0)
-        {
-          const auto destIndex = maskOffsetsView[index];
-          valuesView[destIndex] = srcView[index];
-        }
-      });
-
-    n_src.swap(n_values);
-    return bputils::make_array_view<value_type>(n_src);
-  }
-#endif
-
   /*!
    * \brief Make the new coordset using the blend data and the input coordset/coordsetview.
    *
@@ -1753,10 +1890,12 @@ private:
                     conduit::Node &n_newCoordset) const
   {
     AXOM_ANNOTATE_SCOPE("makeCoordset");
+    // _mir_utilities_coordsetblender_start
     axom::mir::utilities::blueprint::
       CoordsetBlender<ExecSpace, CoordsetView, axom::mir::utilities::blueprint::SelectSubsetPolicy>
         cb;
     cb.execute(blend, m_coordsetView, n_coordset, n_newCoordset);
+    // _mir_utilities_coordsetblender_end
   }
 
   /*!
