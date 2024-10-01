@@ -962,15 +962,6 @@ protected:
    */
   virtual void dynamicRealloc(IndexType new_num_elements);
 
-  /*!
-   * \brief Determine the appropriate setting for m_executeOnGPU based on 
-   *        an allocator id.
-   *
-   * \param allocator_id An allocator id.
-   * \return True if device execution should be preferred; false otherwise.
-   */
-  static bool prefersDevice(int allocator_id);
-
   T* m_data = nullptr;
   /// \brief The full number of elements in the array
   ///  i.e., 3 for a 1D Array of size 3, 9 for a 3x3 2D array, etc
