@@ -175,7 +175,7 @@ inline AXOM_HOST_DEVICE int unique_count(const IdType *values, int n)
 // NOTE - These types were pulled out of ClipField so they could be used in
 //        some code that was moved out to handle degeneracies using partial
 //        specialization rather than "if constexpr". Put it all back when
-//        "if constexpr" is allowed. One nice side-seffect is shorter symbol
+//        "if constexpr" is allowed. One nice side-effect is shorter symbol
 //        names in the debugger.
 
 using BitSet = std::uint32_t;
@@ -250,6 +250,32 @@ template <int NDIMS, typename ExecSpace, typename ConnectivityType>
 struct DegenerateHandler
 {
   /*!
+   * \brief Set the size for the current fragment.
+   *
+   * \param fragmentsView The number of fragments for the szIndex zone.
+   * \param connView The new connectivity.
+   * \param sizesView The new mesh sizes.
+   * \param szIndex The zone index currently being processed.
+   * \param nidsThisFragment The number of node ids in the current fragment.
+   * \param sizeIndex The write index for the sizes to output.
+   * \param outputIndex The write index for the offsets to output.
+   *
+   * \return True if the fragment is degenerate, false otherwise.
+   */
+  AXOM_HOST_DEVICE
+  static bool setSize(axom::ArrayView<IndexType> AXOM_UNUSED_PARAM(fragmentsView),
+                              axom::ArrayView<ConnectivityType> AXOM_UNUSED_PARAM(connView),
+                              axom::ArrayView<ConnectivityType> sizesView,
+                              axom::IndexType AXOM_UNUSED_PARAM(szIndex),
+                              int nIdsThisFragment,
+                              int sizeIndex,
+                              int &AXOM_UNUSED_PARAM(outputIndex))
+  {
+    sizesView[sizeIndex] = nIdsThisFragment;
+    return false;
+  }
+
+  /*!
    * \brief In a previous stage, degenerate shapes were marked as having zero size.
    *        This method filters them out from the auxiliary arrays.
    *
@@ -301,6 +327,50 @@ template <typename ExecSpace, typename ConnectivityType>
 struct DegenerateHandler<2, ExecSpace, ConnectivityType>
 {
   using reduce_policy = typename axom::execution_space<ExecSpace>::reduce_policy;
+
+  /*!
+   * \brief Set the size for the current fragment.
+   *
+   * \param fragmentsView The number of fragments for the szIndex zone.
+   * \param connView The new connectivity.
+   * \param sizesView The new mesh sizes.
+   * \param szIndex The zone index currently being processed.
+   * \param nidsThisFragment The number of node ids in the current fragment.
+   * \param sizeIndex The write index for the sizes to output.
+   * \param outputIndex The write index for the offsets to output.
+   *
+   * \return True if the fragment is degenerate, false otherwise.
+   */
+  AXOM_HOST_DEVICE
+  static bool setSize(axom::ArrayView<IndexType> fragmentsView,
+                              axom::ArrayView<ConnectivityType> connView,
+                              axom::ArrayView<ConnectivityType> sizesView,
+                              axom::IndexType szIndex,
+                              int nIdsThisFragment,
+                              int sizeIndex,
+                              int &outputIndex)
+  {
+    const int connStart = outputIndex - nIdsThisFragment;
+
+    // Check for degenerate
+    const int nUniqueIds = details::unique_count<ConnectivityType, 8>(connView.data() + connStart,
+                    nIdsThisFragment);
+    const bool thisFragmentDegenerate = nUniqueIds < (nIdsThisFragment - 1);
+
+    // Rewind the outputIndex so we don't emit it in the connectivity.
+    if(thisFragmentDegenerate)
+    {
+      outputIndex = connStart;
+
+      // There is one less fragment than we're expecting in the output.
+      fragmentsView[szIndex] -= 1;
+    }
+
+    // Mark empty size.
+    sizesView[sizeIndex] = thisFragmentDegenerate ? 0 : nIdsThisFragment;
+
+    return thisFragmentDegenerate;
+  }
 
   /*!
    * \brief In a previous stage, degenerate shapes were marked as having zero size.
@@ -1723,41 +1793,10 @@ private:
 
                 const auto nIdsThisFragment = fragmentSize - 2;
 #if defined(AXOM_CLIP_FILTER_DEGENERATES)
-                if constexpr(TopologyView::dimension() == 2)
-                {
-                  int connStart = outputIndex - nIdsThisFragment;
-
-                  // Check for degenerate
-                  int nUniqueIds = details::unique_count<ConnectivityType, 8>(
-                    connView.data() + connStart,
-                    nIdsThisFragment);
-                  bool thisFragmentDegenerate =
-                    nUniqueIds < (nIdsThisFragment - 1);
-                  degenerates |= thisFragmentDegenerate;
-
-                  // Rewind the outputIndex so we don't emit it in the connectivity.
-                  if(thisFragmentDegenerate)
-                  {
-                    //std::cout << "degenerate " << szIndex << " {";
-                    //for(int i = 0; i < nIdsThisFragment; i++)
-                    //{
-                    //   std::cout << connView[connStart + i] << ", ";
-                    //}
-                    //std::cout << std::endl;
-
-                    outputIndex = connStart;
-
-                    // There is one less fragment than we're expecting in the output.
-                    fragmentData.m_fragmentsView[szIndex] -= 1;
-                  }
-                  // Mark empty size.
-                  sizesView[sizeIndex] =
-                    thisFragmentDegenerate ? 0 : nIdsThisFragment;
-                }
-                else
-                {
-                  sizesView[sizeIndex] = nIdsThisFragment;
-                }
+                // Set the output zone size, checking to see whether it is degenerate.
+                degenerates |= details::DegenerateHandler<TopologyView::dimension(), ExecSpace, ConnectivityType>::setSize(
+                  fragmentData.m_fragmentsView, connView, sizesView, szIndex, nIdsThisFragment,
+                  sizeIndex, outputIndex);
 #else
                 sizesView[sizeIndex] = nIdsThisFragment;
 #endif
