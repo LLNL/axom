@@ -697,10 +697,12 @@ public:
     AXOM_ANNOTATE_SCOPE("ExtractZonesAndMatset");
 
     // Call base class to handle mesh/coordset/fields
+    // _mir_utilities_extractzones_begin
     ExtractZones<ExecSpace, TopologyView, CoordsetView>::execute(selectedZonesView,
                                                                  n_input,
                                                                  n_options,
                                                                  n_output);
+    // _mir_utilities_extractzones_end
 
     // Make new matset.
     const std::string topoName =

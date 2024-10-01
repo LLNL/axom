@@ -407,6 +407,7 @@ void test_one_shape(const conduit::Node &hostMesh, const std::string &name)
   conduit::Node deviceMesh;
   bputils::copy<ExecSpace>(deviceMesh, hostMesh);
 
+  // _mir_utilities_clipfield_start
   // Make views for the device mesh.
   conduit::Node &n_x = deviceMesh.fetch_existing("coordsets/coords/values/x");
   conduit::Node &n_y = deviceMesh.fetch_existing("coordsets/coords/values/y");
@@ -435,6 +436,7 @@ void test_one_shape(const conduit::Node &hostMesh, const std::string &name)
   options["inside"] = 1;
   options["outside"] = 1;
   clipper.execute(deviceMesh, options, deviceClipMesh);
+  // _mir_utilities_clipfield_end
 
   // Copy device->host
   conduit::Node hostClipMesh;
@@ -604,12 +606,13 @@ void braid2d_clip_test(const std::string &type, const std::string &name)
       n_device_topo.fetch_existing("elements/offsets"));
 
     // Make the shape map.
+    int allocatorID = axom::execution_space<ExecSpace>::allocatorID();
     axom::Array<axom::IndexType> values, ids;
     auto shapeMap = axom::mir::views::buildShapeMap(
       n_device_topo,
       values,
       ids,
-      axom::execution_space<ExecSpace>::allocatorID());
+      allocatorID);
 
     using MixedTopoView =
       axom::mir::views::UnstructuredTopologyMixedShapeView<axom::IndexType>;

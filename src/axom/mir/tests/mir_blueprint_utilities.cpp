@@ -150,12 +150,14 @@ struct test_make_unstructured
     conduit::Node deviceMesh;
     bputils::copy<ExecSpace>(deviceMesh, hostMesh);
 
+    // _mir_utilities_makeunstructured_begin
     conduit::Node deviceResult;
     bputils::MakeUnstructured<ExecSpace> uns;
     uns.execute(deviceMesh["topologies/mesh"],
                 deviceMesh["coordsets/coords"],
                 "mesh",
                 deviceResult);
+    // _mir_utilities_makeunstructured_end
 
     // device->host
     conduit::Node hostResult;

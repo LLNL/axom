@@ -1,4 +1,4 @@
-.. ## Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC and
+.. ## Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
 .. ## other Axom Project Developers. See the top-level COPYRIGHT file for details.
 .. ##
 .. ## SPDX-License-Identifier: (BSD-3-Clause)
@@ -9,4 +9,25 @@ Mir User Documentation
 
 Axom's Material Interface Reconstruction (MIR) component provides algorithms for
 reconstructing the interface surfaces between different materials in multimaterial
-meshes.
+meshes. The algorithms take Blueprint meshes containing a coordset, topology, and
+matset as input and they output a new Blueprint node with a new coordset, topology,
+and matset that contains at most 1 material per zone.
+
+The MIR component also contains some useful components that can be used to develop
+other algorithms that process Blueprint meshes.
+
+
+API Documentation
+-----------------
+
+Doxygen generated API documentation can be found here: `API documentation <../../../../doxygen/html/coretop.html>`_
+
+
+.. toctree::
+   :caption: Contents
+   :maxdepth: 1
+
+   mir_algorithms
+   mir_views
+   mir_clipping
+   mir_utilities

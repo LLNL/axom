@@ -65,6 +65,7 @@ int runMIR(const conduit::Node &hostMesh,
   bputils::copy<ExecSpace>(deviceMesh, hostMesh);
 
   AXOM_ANNOTATE_BEGIN("runMIR");
+  // _equiz_mir_start
   // Make views (we know beforehand which types to make)
   using CoordsetView = ExplicitCoordsetView<float, 2>;
   CoordsetView coordsetView(
@@ -89,6 +90,7 @@ int runMIR(const conduit::Node &hostMesh,
   MIR m(topoView, coordsetView, matsetView);
   conduit::Node deviceResult;
   m.execute(deviceMesh, options, deviceResult);
+  // _equiz_mir_end
 
   AXOM_ANNOTATE_END("runMIR");
 
