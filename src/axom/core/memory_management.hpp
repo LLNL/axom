@@ -382,7 +382,7 @@ inline int getAllocatorID<MemorySpace::Constant>()
 inline bool isDeviceAllocator(int allocator_id)
 {
 #if defined(AXOM_USE_UMPIRE)
-  return axom::detail::getAllocatorSpace(m_allocator_id) ==
+  return axom::detail::getAllocatorSpace(allocator_id) ==
     axom::MemorySpace::Device;
 #else
   return false;
