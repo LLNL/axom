@@ -86,7 +86,6 @@ set(mir_sources
 
     blueprint_utilities.cpp
     MIRAlgorithm.cpp
-    EquiZAlgorithm.cpp
     clipping/ClipCasesHex.cpp
     clipping/ClipCasesPyr.cpp
     clipping/ClipCasesQua.cpp
