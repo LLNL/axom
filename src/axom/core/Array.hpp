@@ -971,7 +971,7 @@ protected:
   IndexType m_capacity = 0;
   double m_resize_ratio = DEFAULT_RESIZE_RATIO;
   int m_allocator_id = INVALID_ALLOCATOR_ID;
-  bool m_executeOnGPU {false};
+  bool m_executeOnGPU = false;
 };
 
 /// \brief Helper alias for multi-component arrays
