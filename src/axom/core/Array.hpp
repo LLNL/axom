@@ -289,8 +289,7 @@ public:
       this->clear();
       static_cast<ArrayBase<T, DIM, Array<T, DIM, SPACE>>&>(*this) = other;
       m_allocator_id = other.m_allocator_id;
-      m_executeOnGPU = axom::detail::getAllocatorSpace(m_allocator_id) ==
-        axom::MemorySpace::Device;
+      m_executeOnGPU = axom::isDeviceAllocator(m_allocator_id);
       m_resize_ratio = other.m_resize_ratio;
       setCapacity(other.capacity());
       // Use fill_range to ensure that copy constructors are invoked for each element
@@ -330,8 +329,7 @@ public:
       m_capacity = other.m_capacity;
       m_resize_ratio = other.m_resize_ratio;
       m_allocator_id = other.m_allocator_id;
-      m_executeOnGPU = axom::detail::getAllocatorSpace(m_allocator_id) ==
-        axom::MemorySpace::Device;
+      m_executeOnGPU = axom::isDeviceAllocator(m_allocator_id);
 
       other.m_data = nullptr;
       other.m_num_elements = 0;
@@ -964,6 +962,15 @@ protected:
    */
   virtual void dynamicRealloc(IndexType new_num_elements);
 
+  /*!
+   * \brief Determine the appropriate setting for m_executeOnGPU based on 
+   *        an allocator id.
+   *
+   * \param allocator_id An allocator id.
+   * \return True if device execution should be preferred; false otherwise.
+   */
+  static bool prefersDevice(int allocator_id);
+
   T* m_data = nullptr;
   /// \brief The full number of elements in the array
   ///  i.e., 3 for a 1D Array of size 3, 9 for a 3x3 2D array, etc
@@ -986,8 +993,7 @@ using MCArray = Array<T, 2>;
 template <typename T, int DIM, MemorySpace SPACE>
 Array<T, DIM, SPACE>::Array()
   : m_allocator_id(axom::detail::getAllocatorID<SPACE>())
-  , m_executeOnGPU(axom::detail::getAllocatorSpace(m_allocator_id) ==
-                   axom::MemorySpace::Device)
+  , m_executeOnGPU(axom::isDeviceAllocator(m_allocator_id))
 { }
 
 //------------------------------------------------------------------------------
@@ -1170,8 +1176,7 @@ Array<T, DIM, SPACE>::Array(Array&& other) noexcept
   m_capacity = other.m_capacity;
   m_resize_ratio = other.m_resize_ratio;
   m_allocator_id = other.m_allocator_id;
-  m_executeOnGPU = axom::detail::getAllocatorSpace(m_allocator_id) ==
-    axom::MemorySpace::Device;
+  m_executeOnGPU = axom::isDeviceAllocator(m_allocator_id);
 
   other.m_data = nullptr;
   other.m_num_elements = 0;
@@ -1593,8 +1598,7 @@ inline void Array<T, DIM, SPACE>::initialize(IndexType num_elements,
     capacity = (num_elements > MIN_DEFAULT_CAPACITY) ? num_elements
                                                      : MIN_DEFAULT_CAPACITY;
   }
-  m_executeOnGPU = axom::detail::getAllocatorSpace(m_allocator_id) ==
-    axom::MemorySpace::Device;
+  m_executeOnGPU = axom::isDeviceAllocator(m_allocator_id);
   setCapacity(capacity);
   if(default_construct)
   {
@@ -1630,8 +1634,7 @@ inline void Array<T, DIM, SPACE>::initialize_from_other(
 #endif
     m_allocator_id = axom::detail::getAllocatorID<SPACE>();
   }
-  m_executeOnGPU = axom::detail::getAllocatorSpace(m_allocator_id) ==
-    axom::MemorySpace::Device;
+  m_executeOnGPU = axom::isDeviceAllocator(m_allocator_id);
   this->setCapacity(num_elements);
   // Use fill_range to ensure that copy constructors are invoked for each
   // element.
