@@ -97,11 +97,8 @@ void transform_boxes(const BoxIndexable boxes,
   for_all<ExecSpace>(
     size,
     AXOM_LAMBDA(std::int32_t i) {
-      primal::BoundingBox<FloatType, NDIMS> aabb = boxes[i];
-
-      aabb.scale(scale_factor);
-
-      aabbs[i] = aabb;
+      aabbs[i] = boxes[i];
+      aabbs[i].scale(scale_factor);
     });
 }
 
