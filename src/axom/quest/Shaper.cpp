@@ -92,9 +92,9 @@ void Shaper::setRefinementType(Shaper::RefinementType t)
 bool Shaper::isValidFormat(const std::string& format) const
 {
   return (format == "stl" || format == "proe" || format == "c2c" ||
-          format == "blueprint-tets" || format == "tet3D" || format == "hex3D" ||
-          format == "plane3D" || format == "sphere3D" || format == "vor3D" ||
-          format == "none");
+          format == "blueprint-tets" || format == "tet3D" ||
+          format == "hex3D" || format == "plane3D" || format == "sphere3D" ||
+          format == "vor3D" || format == "none");
 }
 
 void Shaper::loadShape(const klee::Shape& shape)

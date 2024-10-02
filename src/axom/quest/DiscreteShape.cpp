@@ -92,10 +92,7 @@ DiscreteShape::DiscreteShape(const axom::klee::Shape& shape,
   setParentGroup(parentGroup);
 }
 
-void DiscreteShape::clearInternalData()
-{
-  m_meshRep.reset();
-}
+void DiscreteShape::clearInternalData() { m_meshRep.reset(); }
 
 std::shared_ptr<mint::Mesh> DiscreteShape::createMeshRepresentation()
 {
@@ -358,8 +355,9 @@ void DiscreteShape::createPlaneRepresentation()
   const auto& plane = geometry.getPlane();
   // Generate a big bounding hex on the positive side of the plane.
   axom::primal::Hexahedron<double, 3> boundingHex;
-  const double len = 1e6; // Big enough to contain anticipated mesh.
+  const double len = 1e6;  // Big enough to contain anticipated mesh.
   // We should compute based on the mesh.
+  // clang-format off
   boundingHex[0] = Point3D{0.0, -len, -len};
   boundingHex[1] = Point3D{len, -len, -len};
   boundingHex[2] = Point3D{len,  len, -len};
@@ -368,9 +366,10 @@ void DiscreteShape::createPlaneRepresentation()
   boundingHex[5] = Point3D{len, -len,  len};
   boundingHex[6] = Point3D{len,  len,  len};
   boundingHex[7] = Point3D{0.0,  len,  len};
+  // clang-format on
   numerics::Matrix<double> rotate = vorAxisRotMatrix(plane.getNormal());
   const auto translate = plane.getNormal() * plane.getOffset();
-  for (int i = 0; i < 8; ++ i )
+  for(int i = 0; i < 8; ++i)
   {
     Point3D newCoords;
     numerics::matrix_vector_multiply(rotate,
@@ -478,17 +477,11 @@ void DiscreteShape::createSphereRepresentation()
   if(m_sidreGroup != nullptr)
   {
     tetMesh =
-      new TetMesh(3, axom::mint::CellType::TET,
-                  m_sidreGroup,
-                  nodeCount,
-                  tetCount);
+      new TetMesh(3, axom::mint::CellType::TET, m_sidreGroup, nodeCount, tetCount);
   }
   else
   {
-    tetMesh = new TetMesh(3,
-                          axom::mint::CellType::TET,
-                          nodeCount,
-                          tetCount);
+    tetMesh = new TetMesh(3, axom::mint::CellType::TET, nodeCount, tetCount);
   }
   tetMesh->appendNodes((double*)nodeCoords.data(), nodeCount);
   tetMesh->appendCells(connectivity.data(), tetCount);
@@ -757,11 +750,11 @@ void DiscreteShape::setParentGroup(axom::sidre::Group* parentGroup)
     // Use object address to create a unique name for sidre group under parent.
     std::string myGroupName;
     int i = 0;
-    while (myGroupName.empty())
+    while(myGroupName.empty())
     {
       std::ostringstream os;
       os << "DiscreteShapeTemp-" << i;
-      if ( !parentGroup->hasGroup(os.str()) )
+      if(!parentGroup->hasGroup(os.str()))
       {
         myGroupName = os.str();
       }

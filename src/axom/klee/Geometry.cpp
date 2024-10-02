@@ -45,7 +45,8 @@ Geometry::Geometry(const TransformableGeometryProperties& startProperties,
 {
 #ifdef AXOM_DEBUG
   SLIC_ASSERT_MSG(isBlueprintTetMesh(m_meshGroup),
-                  "Mesh provided to Geometry is not a valid blueprint unstructured tetrahedral mesh.");
+                  "Mesh provided to Geometry is not a valid blueprint "
+                  "unstructured tetrahedral mesh.");
 #endif
 }
 
@@ -164,38 +165,39 @@ const std::string& Geometry::getBlueprintTopology() const
   return m_topology;
 }
 
-
-bool Geometry::isBlueprintTetMesh(const axom::sidre::Group *meshGroup) const
+bool Geometry::isBlueprintTetMesh(const axom::sidre::Group* meshGroup) const
 {
   conduit::Node bpMesh;
   meshGroup->createNativeLayout(bpMesh);
 
   conduit::Node info;
   bool isValid = conduit::blueprint::mesh::verify(bpMesh, info);
-  if (!isValid)
+  if(!isValid)
   {
     return false;
   }
 
-  const auto& topology = bpMesh.fetch_existing(axom::fmt::format("topologies/{}", m_topology));
+  const auto& topology =
+    bpMesh.fetch_existing(axom::fmt::format("topologies/{}", m_topology));
 
   std::string coordsetName = topology.fetch_existing("coordset").as_string();
-  const auto& coordSet = bpMesh.fetch_existing(axom::fmt::format("coordsets/{}", coordsetName));
+  const auto& coordSet =
+    bpMesh.fetch_existing(axom::fmt::format("coordsets/{}", coordsetName));
 
   auto dim = conduit::blueprint::mesh::coordset::dims(coordSet);
-  if (dim !=  3)
+  if(dim != 3)
   {
     return false;
   }
 
   auto topoType = topology.fetch_existing("type").as_string();
-  if (topoType != "unstructured")
+  if(topoType != "unstructured")
   {
     return false;
   }
 
   auto shapeType = topology.fetch_existing("elements/shape").as_string();
-  if (shapeType != "tet")
+  if(shapeType != "tet")
   {
     return false;
   }

@@ -62,7 +62,7 @@ public:
   */
   DiscreteShape(const axom::klee::Shape& shape,
                 axom::sidre::Group* parentGroup,
-                const std::string& prefixPath = {} );
+                const std::string& prefixPath = {});
 
   virtual ~DiscreteShape() { clearInternalData(); }
 

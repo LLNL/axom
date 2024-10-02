@@ -122,9 +122,9 @@ public:
   /// @brief Return volume of input box mesh
   double boxMeshVolume() const
   {
-    primal::Vector<double, 3> x{boxMaxs[0] - boxMins[0], 0, 0};
-    primal::Vector<double, 3> y{0, boxMaxs[1] - boxMins[1], 0};
-    primal::Vector<double, 3> z{0, 0, boxMaxs[2] - boxMins[2]};
+    primal::Vector<double, 3> x {boxMaxs[0] - boxMins[0], 0, 0};
+    primal::Vector<double, 3> y {0, boxMaxs[1] - boxMins[1], 0};
+    primal::Vector<double, 3> z {0, 0, boxMaxs[2] - boxMins[2]};
     double volume = primal::Vector<double, 3>::scalar_triple_product(x, y, z);
     return volume;
   }
@@ -806,9 +806,10 @@ axom::klee::Shape createShape_Plane()
 
   // Create a plane crossing center of mesh.  No matter the normal,
   // it cuts the mesh in half.
-  Point3D center{0.5*(primal::NumericArray<double, 3>(params.boxMins.data()) +
-                      primal::NumericArray<double, 3>(params.boxMaxs.data()))};
-  primal::Vector<double, 3> normal{1.0, 0.0, 0.0};
+  Point3D center {0.5 *
+                  (primal::NumericArray<double, 3>(params.boxMins.data()) +
+                   primal::NumericArray<double, 3>(params.boxMaxs.data()))};
+  primal::Vector<double, 3> normal {1.0, 0.0, 0.0};
   const primal::Plane<double, 3> plane {normal, center, true};
 
   axom::klee::Geometry planeGeometry(prop, plane, scaleOp);
@@ -831,7 +832,8 @@ double volumeOfTetMesh(
   const axom::mint::UnstructuredMesh<axom::mint::SINGLE_SHAPE>& tetMesh)
 {
   using TetType = axom::primal::Tetrahedron<double, 3>;
-  if(0) {
+  if(0)
+  {
     std::ofstream os("tets.js");
     tetMesh.getSidreGroup()->print(os);
   }
@@ -1404,7 +1406,8 @@ int main(int argc, char** argv)
     const std::string& materialName = shape.getMaterial();
     double shapeVol =
       sumMaterialVolumes<axom::SEQ_EXEC>(&shapingDC, materialName);
-    double correctShapeVol = params.testShape == "plane" ? params.boxMeshVolume()/2 : shapeMeshVol;
+    double correctShapeVol =
+      params.testShape == "plane" ? params.boxMeshVolume() / 2 : shapeMeshVol;
     double diff = shapeVol - correctShapeVol;
 
     bool err = !axom::utilities::isNearlyEqual(shapeVol, correctShapeVol);

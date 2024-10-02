@@ -189,7 +189,7 @@ public:
    * - "sphere3D" = 3D sphere, as \c primal::Sphere<double,3>
    * - "vor3D" = 3D volume of revolution.
    * - "cone3D" = 3D cone, as \c primal::Cone<double,3>
-   *   "cylinder3D" = 3D cylinder, as \c primal::Cylinder<double,3>
+   * - "cylinder3D" = 3D cylinder, as \c primal::Cylinder<double,3>
    * - "hex3D" = 3D hexahedron (8 points)
    * - "plane3D" = 3D plane
    *
