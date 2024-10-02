@@ -136,6 +136,9 @@ private:
   */
   std::shared_ptr<axom::mint::Mesh> m_meshRep;
 
+  //!@brief Internal DataStore for working space
+  axom::sidre::DataStore m_dataStore;
+
   //!@brief Sidre store for m_meshRep.
   axom::sidre::Group* m_sidreGroup {nullptr};
 

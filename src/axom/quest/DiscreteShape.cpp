@@ -95,11 +95,6 @@ DiscreteShape::DiscreteShape(const axom::klee::Shape& shape,
 void DiscreteShape::clearInternalData()
 {
   m_meshRep.reset();
-  if(m_sidreGroup)
-  {
-    m_sidreGroup->getParent()->destroyGroupAndData(m_sidreGroup->getIndex());
-    m_sidreGroup = nullptr;
-  }
 }
 
 std::shared_ptr<mint::Mesh> DiscreteShape::createMeshRepresentation()
@@ -118,17 +113,16 @@ std::shared_ptr<mint::Mesh> DiscreteShape::createMeshRepresentation()
   if(geometryFormat == "memory-blueprint")
   {
     // Put the in-memory geometry in m_meshRep.
-    axom::sidre::Group* inputGroup = geometry.getBlueprintMesh();
-    axom::sidre::Group* rootGroup = inputGroup->getDataStore()->getRoot();
+    const axom::sidre::Group* inputGroup = geometry.getBlueprintMesh();
+    int allocID = inputGroup->getDefaultAllocatorID();
 
     std::string modName = inputGroup->getName() + "_modified";
-    while(rootGroup->hasGroup(modName))
+    while(m_sidreGroup->hasGroup(modName))
     {
       modName = modName + "-";
     }
 
-    axom::sidre::Group* modGroup = rootGroup->createGroup(modName);
-    int allocID = inputGroup->getDefaultAllocatorID();
+    axom::sidre::Group* modGroup = m_sidreGroup->createGroup(modName);
     modGroup->deepCopyGroup(inputGroup, allocID);
 
     m_meshRep.reset(

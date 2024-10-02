@@ -31,7 +31,7 @@ Geometry::Geometry(const TransformableGeometryProperties& startProperties,
 { }
 
 Geometry::Geometry(const TransformableGeometryProperties& startProperties,
-                   axom::sidre::Group* meshGroup,
+                   const axom::sidre::Group* meshGroup,
                    const std::string& topology,
                    std::shared_ptr<GeometryOperator const> operator_)
   : m_startProperties(startProperties)
@@ -136,7 +136,7 @@ TransformableGeometryProperties Geometry::getEndProperties() const
   return m_startProperties;
 }
 
-axom::sidre::Group* Geometry::getBlueprintMesh() const
+const axom::sidre::Group* Geometry::getBlueprintMesh() const
 {
   SLIC_ASSERT_MSG(
     m_meshGroup,

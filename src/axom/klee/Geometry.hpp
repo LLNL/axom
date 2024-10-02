@@ -84,13 +84,13 @@ public:
    * operators are applied
    * \param meshGroup a simplex geometry in blueprint format.
    *   The elements should be segments, triangles or tetrahedra.
-   * \param topology The \c meshGroup topology to use.
+   * \param topology The blueprint topology to use.
    * \param operator_ a possibly null operator to apply to the geometry.
    *
    * \internal TODO: Is this the simplex requirement overly restrictive?
    */
   Geometry(const TransformableGeometryProperties &startProperties,
-           axom::sidre::Group *meshGroup,
+           const axom::sidre::Group *meshGroup,
            const std::string &topology,
            std::shared_ptr<GeometryOperator const> operator_);
 
@@ -211,7 +211,7 @@ public:
    * @brief Return the blueprint mesh, for formats that are specified
    * by a blueprint mesh or have been converted to a blueprint mesh.
    */
-  axom::sidre::Group *getBlueprintMesh() const;
+  const axom::sidre::Group *getBlueprintMesh() const;
 
   /**
    * @brief Return the blueprint mesh topology, for formats that are specified
@@ -320,7 +320,7 @@ private:
   std::string m_path;
 
   //!@brief Geometry blueprint simplex mesh, when/if it's in memory.
-  axom::sidre::Group *m_meshGroup;
+  const axom::sidre::Group *m_meshGroup;
 
   //!@brief Topology of the blueprint simplex mesh, if it's in memory.
   std::string m_topology;

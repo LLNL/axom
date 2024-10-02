@@ -152,6 +152,8 @@ protected:
   int getRank() const;
 
 protected:
+  sidre::DataStore m_dataStore;
+
   const klee::ShapeSet& m_shapeSet;
   sidre::MFEMSidreDataCollection* m_dc;
 

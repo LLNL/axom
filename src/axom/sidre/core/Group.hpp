@@ -849,13 +849,13 @@ public:
 
   /*!
    * \brief Destroy View with given name or path owned by this Group, but leave
-   * its data intect.
+   * its data intact.
    */
   void destroyView(const std::string& path);
 
   /*!
    * \brief Destroy View with given index owned by this Group, but leave
-   * its data intect.
+   * its data intact.
    */
   void destroyView(IndexType idx);
 
@@ -937,7 +937,7 @@ public:
    * \return pointer to the new copied View object or nullptr if a View
    * is not copied into this Group.
    */
-  View* deepCopyView(View* view, int allocID = INVALID_ALLOCATOR_ID);
+  View* deepCopyView(const View* view, int allocID = INVALID_ALLOCATOR_ID);
 
   //@}
 
@@ -1306,7 +1306,7 @@ public:
    * \return pointer to the new copied Group object or nullptr if a Group
    * is not copied into this Group.
    */
-  Group* deepCopyGroup(Group* srcGroup, int allocID = INVALID_ALLOCATOR_ID);
+  Group* deepCopyGroup(const Group* srcGroup, int allocID = INVALID_ALLOCATOR_ID);
 
   //@}
 
