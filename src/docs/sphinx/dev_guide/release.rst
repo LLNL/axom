@@ -95,7 +95,7 @@ Typical changes that are made in a release candidate branch include:
    <https://github.com/LLNL/axom/issues/new>`_ and note it in the ``known bugs``
    section of the release notes. Alternatively, if time permits, fix the 
    bug in a different branch and create a pull request as you would do during
-   regular development. After the bus is resolved and that pull request is
+   regular development. After the bug is resolved and that pull request is
    merged into develop, merge develop into the release candidate branch where
    checks will run on that.
 
