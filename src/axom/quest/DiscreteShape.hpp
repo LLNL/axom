@@ -10,7 +10,7 @@
 #include <vector>
 
 #include "axom/klee/Shape.hpp"
-#include "axom/mint/mesh/Mesh.hpp"
+#include "axom/mint/mesh/UnstructuredMesh.hpp"
 
 #if defined(AXOM_USE_MPI)
   #include "mpi.h"
@@ -37,6 +37,10 @@ public:
   using TetType = axom::primal::Tetrahedron<double, 3>;
   using OctType = axom::primal::Octahedron<double, 3>;
   using HexType = axom::primal::Hexahedron<double, 3>;
+
+  // Common type for the mesh approximation of the shape.
+  using TetMesh =
+    axom::mint::UnstructuredMesh<axom::mint::Topology::SINGLE_SHAPE>;
 
   static constexpr int DEFAULT_SAMPLES_PER_KNOT_SPAN {25};
   static constexpr double MINIMUM_PERCENT_ERROR {0.};
@@ -176,6 +180,15 @@ private:
   numerics::Matrix<double> vorAxisRotMatrix(const Vector3D& dir);
 
   void clearInternalData();
+
+public:
+  // These are public only for the CUDA device compiler.
+  void createBlueprintTetsRepresentation();
+  void createTetRepresentation();
+  void createHexRepresentation();
+  void createPlaneRepresentation();
+  void createSphereRepresentation();
+  void createVORRepresentation();
 };
 
 }  // namespace quest
