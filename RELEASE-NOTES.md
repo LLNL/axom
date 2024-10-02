@@ -17,6 +17,20 @@ The format of this file is based on [Keep a Changelog](http://keepachangelog.com
 
 The Axom project release numbers follow [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [Unreleased] - Release date yyyy-mm-dd
+
+###  Added
+
+###  Changed
+
+###  Deprecated
+
+###  Removed
+
+###  Fixed
+- Added a guard for sidre-related mint API usage in a quest example
+
+
 ## [Version 0.10.0] - Release date 2024-09-27
 
 ### Added
