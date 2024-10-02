@@ -63,9 +63,9 @@ static axom::float64 calculatePercentOverlapMonteCarlo(int gridSize,
   {
     // Some of the quad overlaps the circle, so run the Monte Carlo sampling to determine how much
     axom::float64 delta_x = axom::utilities::abs(quadP2[0] - quadP1[0]) /
-      static_cast<double>(gridSize - 1);
+      static_cast<axom::float64>(gridSize - 1);
     axom::float64 delta_y = axom::utilities::abs(quadP0[1] - quadP1[1]) /
-      static_cast<double>(gridSize - 1);
+      static_cast<axom::float64>(gridSize - 1);
     int countOverlap = 0;
     for(int y = 0; y < gridSize; ++y)
     {
@@ -77,7 +77,7 @@ static axom::float64 calculatePercentOverlapMonteCarlo(int gridSize,
           ++countOverlap;
       }
     }
-    return countOverlap / static_cast<double>(gridSize * gridSize);
+    return static_cast<axom::float64>(countOverlap) / static_cast<axom::float64>(gridSize * gridSize);
   }
 }
 
@@ -660,20 +660,21 @@ static void addCircleMaterial(const TopoView& topoView,
     topoView.numberOfZones(),
     AXOM_LAMBDA(axom::IndexType zoneIndex) {
       const auto zone = deviceTopologyView.zone(zoneIndex);
+      // NOTE: node ordering shuffled because function takes different node ordering.
       auto vf = calculatePercentOverlapMonteCarlo(numSamples,
                                                   center,
                                                   circleRadius,
+                                                  coordsetView[zone.getId(3)],
                                                   coordsetView[zone.getId(0)],
                                                   coordsetView[zone.getId(1)],
-                                                  coordsetView[zone.getId(2)],
-                                                  coordsetView[zone.getId(3)]);
+                                                  coordsetView[zone.getId(2)]);
       greenView[zoneIndex] = vf;
       blueView[zoneIndex] = 1.0 - vf;
     });
 
   // Figure out the material buffers from the volume fractions.
   std::vector<int> material_ids, sizes, offsets, indices;
-  std::vector<int> volume_fractions;
+  std::vector<float> volume_fractions;
   for(int i = 0; i < numElements; ++i)
   {
     int nmats = 0;
@@ -989,66 +990,6 @@ void MeshTester::generateGrid(int gridSize, conduit::Node& mesh)
   mesh["topologies/mesh/elements/offsets"].set(offsets);
 }
 
-void MeshTester::generateGrid3D(int gridSize, conduit::Node& mesh)
-{
-  int nx = gridSize + 1;
-  int ny = gridSize + 1;
-  int nz = gridSize + 1;
-  int nzones = gridSize * gridSize * gridSize;
-  int nnodes = nx * ny * nz;
-
-  std::vector<float> xc, yc, zc;
-  xc.reserve(nnodes);
-  yc.reserve(nnodes);
-  zc.reserve(nnodes);
-  for(int k = 0; k < nz; k++)
-  {
-    for(int j = 0; j < ny; j++)
-    {
-      for(int i = 0; i < nx; i++)
-      {
-        xc.push_back(i);
-        yc.push_back(j);
-        zc.push_back(k);
-      }
-    }
-  }
-
-  std::vector<int> conn, sizes, offsets;
-  conn.reserve(nzones * 8);
-  sizes.reserve(nzones);
-  offsets.reserve(nzones);
-  for(int k = 0; k < gridSize; k++)
-  {
-    for(int j = 0; j < gridSize; j++)
-    {
-      for(int i = 0; i < gridSize; i++)
-      {
-        offsets.push_back(offsets.size() * 8);
-        sizes.push_back(8);
-        conn.push_back((k * nx * ny) + (j * nx) + i);
-        conn.push_back((k * nx * ny) + (j * nx) + i + 1);
-        conn.push_back((k * nx * ny) + ((j + 1) * nx) + i + 1);
-        conn.push_back((k * nx * ny) + ((j + 1) * nx) + i);
-        conn.push_back(((k + 1) * nx * ny) + (j * nx) + i);
-        conn.push_back(((k + 1) * nx * ny) + (j * nx) + i + 1);
-        conn.push_back(((k + 1) * nx * ny) + ((j + 1) * nx) + i + 1);
-        conn.push_back(((k + 1) * nx * ny) + ((j + 1) * nx) + i);
-      }
-    }
-  }
-
-  mesh["coordsets/coords/type"] = "explicit";
-  mesh["coordsets/coords/values/x"].set(xc);
-  mesh["coordsets/coords/values/y"].set(yc);
-  mesh["coordsets/coords/values/z"].set(zc);
-  mesh["topologies/mesh/type"] = "unstructured";
-  mesh["topologies/mesh/coordset"] = "coords";
-  mesh["topologies/mesh/elements/shape"] = "hex";
-  mesh["topologies/mesh/elements/connectivity"].set(conn);
-  mesh["topologies/mesh/elements/sizes"].set(sizes);
-  mesh["topologies/mesh/elements/offsets"].set(offsets);
-}
 //--------------------------------------------------------------------------------
 
 mir::MIRMesh MeshTester::initTestCaseFive(int gridSize, int numCircles)
@@ -1193,6 +1134,53 @@ mir::MIRMesh MeshTester::initTestCaseFive(int gridSize, int numCircles)
   return testMesh;
 }
 
+static void addMaterial(axom::IndexType numElements,
+                        int numMaterials,
+                        const std::vector<std::vector<axom::float64>> &materialVolumeFractionsData,
+                        conduit::Node &mesh)
+{
+  // Figure out the material buffers from the volume fractions.
+  std::vector<int> material_ids, sizes, offsets, indices;
+  std::vector<float> volume_fractions;
+  std::vector<float> sums(numMaterials, 0.);
+  for(axom::IndexType i = 0; i < numElements; ++i)
+  {
+    int nmats = 0;
+    offsets.push_back(indices.size());
+    for(int mat = 0; mat < numMaterials; mat++)
+    {
+      if(materialVolumeFractionsData[mat][i] > 0.)
+      {
+        material_ids.push_back(mat);
+        volume_fractions.push_back(materialVolumeFractionsData[mat][i]);
+        indices.push_back(indices.size());
+        nmats++;
+
+        // Keep a total of the VFs for each material.
+        sums[mat] += materialVolumeFractionsData[mat][i];
+      }
+    }
+    sizes.push_back(nmats);
+  }
+
+  // Add the material
+  mesh["matsets/mat/topology"] = "mesh";
+  for(int mat = 0; mat < numMaterials; mat++)
+  {
+    if(sums[mat] > 0.)
+    {
+      std::stringstream ss;
+      ss << "matsets/mat/material_map/mat" << mat;
+      mesh[ss.str()] = mat;
+    }
+  }
+  mesh["matsets/mat/material_ids"].set(material_ids);
+  mesh["matsets/mat/volume_fractions"].set(volume_fractions);
+  mesh["matsets/mat/sizes"].set(sizes);
+  mesh["matsets/mat/offsets"].set(offsets);
+  mesh["matsets/mat/indices"].set(indices);
+}
+
 template <typename TopoView, typename CoordsetView>
 void addConcentricCircleMaterial(const TopoView& topoView,
                                  const CoordsetView& coordsetView,
@@ -1275,47 +1263,7 @@ void addConcentricCircleMaterial(const TopoView& topoView,
       }
     });
 
-  // Figure out the material buffers from the volume fractions.
-  std::vector<int> material_ids, sizes, offsets, indices;
-  std::vector<float> volume_fractions;
-  const axom::IndexType numElements = topoView.numberOfZones();
-  std::vector<float> sums(numMaterials, 0.);
-  for(axom::IndexType i = 0; i < numElements; ++i)
-  {
-    int nmats = 0;
-    offsets.push_back(indices.size());
-    for(int mat = 0; mat < numMaterials; mat++)
-    {
-      if(materialVolumeFractionsData[mat][i] > 0.)
-      {
-        material_ids.push_back(mat);
-        volume_fractions.push_back(materialVolumeFractionsData[mat][i]);
-        indices.push_back(indices.size());
-        nmats++;
-
-        // Keep a total of the VFs for each material.
-        sums[mat] += materialVolumeFractionsData[mat][i];
-      }
-    }
-    sizes.push_back(nmats);
-  }
-
-  // Add the material
-  mesh["matsets/mat/topology"] = "mesh";
-  for(int mat = 0; mat < numMaterials; mat++)
-  {
-    if(sums[mat] > 0.)
-    {
-      std::stringstream ss;
-      ss << "matsets/mat/material_map/mat" << mat;
-      mesh[ss.str()] = mat;
-    }
-  }
-  mesh["matsets/mat/material_ids"].set(material_ids);
-  mesh["matsets/mat/volume_fractions"].set(volume_fractions);
-  mesh["matsets/mat/sizes"].set(sizes);
-  mesh["matsets/mat/offsets"].set(offsets);
-  mesh["matsets/mat/indices"].set(indices);
+    addMaterial(topoView.numberOfZones(), numMaterials, materialVolumeFractionsData, mesh);
 }
 
 void MeshTester::initTestCaseFive(int gridSize, int numCircles, conduit::Node& mesh)
@@ -1641,6 +1589,116 @@ mir::MIRMesh MeshTester::initTestCaseSix(int gridSize, int numSpheres)
 
 //--------------------------------------------------------------------------------
 
+void MeshTester::initTestCaseSix(int gridSize, int numSpheres, conduit::Node &mesh)
+{
+  // Generate the mesh topology
+  generateGrid3D(gridSize, mesh);
+
+  // Generate the element volume fractions with concentric spheres
+  int numMaterials = numSpheres + 1;
+  int defaultMaterialID =
+    numMaterials - 1;  // default material is always the last index
+
+  // Initialize the radii of the circles
+  std::vector<axom::float64> sphereRadii;
+  axom::float64 maxRadius =
+    gridSize / 2.0;  // Note: The choice of divisor is arbitrary
+  axom::float64 minRadius =
+    gridSize / 4.0;  // Note: The choice of divisor is arbitrary
+
+  axom::float64 radiusDelta;
+  if(numSpheres <= 1)
+    radiusDelta = (maxRadius - minRadius);
+  else
+    radiusDelta = (maxRadius - minRadius) / static_cast<axom::float64>(numSpheres - 1);
+
+  for(int i = 0; i < numSpheres; ++i)
+  {
+    auto rad = minRadius + (i * radiusDelta);
+    sphereRadii.push_back(rad * rad);
+  }
+
+  // Make views to wrap the coordset/topology.
+  auto coordsetView = axom::mir::views::make_explicit_coordset<float, 3>::view(mesh["coordsets/coords"]);
+  using CoordsetView = decltype(coordsetView);
+  using PointType = typename CoordsetView::PointType;
+  using TopologyView = axom::mir::views::UnstructuredTopologySingleShapeView<axom::mir::views::HexShape<int>>;
+  TopologyView topologyView(bputils::make_array_view<int>(mesh["topologies/mesh/elements/connectivity"]));
+
+  // Initialize all material volume fractions to 0
+  std::vector<std::vector<axom::float64>> materialVolumeFractionsData(numMaterials);
+  for(int i = 0; i < numMaterials; ++i)
+  {
+    materialVolumeFractionsData[i].resize(topologyView.numberOfZones(), 0.);
+  }
+
+  // all spheres are centered around the same point
+  const auto sphereCenter = PointType::make_point(static_cast<float>(gridSize / 2.0),
+                                static_cast<float>(gridSize / 2.0),
+                                static_cast<float>(gridSize / 2.0));
+
+  // Use the uniform sampling method to generate volume fractions for each material
+  for(int eID = 0; eID < topologyView.numberOfZones(); ++eID)
+  {
+    const auto zone = topologyView.zone(eID);
+    const auto v0 = coordsetView[zone.getId(0)];
+    const auto v1 = coordsetView[zone.getId(1)];
+    const auto v3 = coordsetView[zone.getId(3)];
+    const auto v4 = coordsetView[zone.getId(4)];
+
+    // Run the uniform sampling to determine how much of the current cell is composed of each material
+    int materialCount[numMaterials];
+    for(int i = 0; i < numMaterials; ++i) { materialCount[i] = 0; }
+
+    float delta_x =
+      axom::utilities::abs(v1[0] - v0[0]) / static_cast<float>(gridSize - 1);
+    float delta_y =
+      axom::utilities::abs(v3[1] - v0[1]) / static_cast<float>(gridSize - 1);
+    float delta_z =
+      axom::utilities::abs(v4[2] - v0[2]) / static_cast<float>(gridSize - 1);
+
+    for(int z = 0; z < gridSize; ++z)
+    {
+      for(int y = 0; y < gridSize; ++y)
+      {
+        for(int x = 0; x < gridSize; ++x)
+        {
+          const auto samplePoint = PointType::make_point(static_cast<float>(delta_x * x + v0[0]),
+                                 static_cast<float>(delta_y * y + v0[1]),
+                                 static_cast<float>(delta_z * z + v0[2]));
+
+          bool isPointSampled = false;
+          for(int cID = 0; cID < numSpheres && !isPointSampled; ++cID)
+          {
+            if(primal::squared_distance(samplePoint, sphereCenter) <
+               sphereRadii[cID])
+            {
+              materialCount[cID]++;
+              isPointSampled = true;
+            }
+          }
+          if(!isPointSampled)
+          {
+            // The point was not within any of the circles, so increment the count for the default material
+            materialCount[defaultMaterialID]++;
+          }
+        }
+      }
+    }
+
+    // Assign the element volume fractions based on the count of the samples in each circle
+    const axom::float64 nzones_inv = 1. / static_cast<axom::float64>(gridSize * gridSize * gridSize);
+    for(int matID = 0; matID < numMaterials; ++matID)
+    {
+      materialVolumeFractionsData[matID][eID] = materialCount[matID] * nzones_inv;
+    }
+  }
+
+  addMaterial(topologyView.numberOfZones(), numMaterials, materialVolumeFractionsData, mesh);
+}
+
+//--------------------------------------------------------------------------------
+
 mir::CellData MeshTester::generateGrid3D(int gridSize)
 {
   // Generate the topology for a uniform quad mesh with n x n elements automatically
@@ -1742,6 +1800,84 @@ mir::CellData MeshTester::generateGrid3D(int gridSize)
   data.m_mapData.m_vertexPositions = points;
 
   return data;
+}
+
+void MeshTester::generateGrid3D(int gridSize, conduit::Node &mesh)
+{
+  const int nzones = gridSize * gridSize * gridSize;
+  const int dims[3] = {gridSize + 1, gridSize + 1, gridSize + 1};
+  const int nnodes = dims[0] * dims[1] * dims[2];
+
+  conduit::Node &coordset = mesh["coordsets/coords"];
+  conduit::Node &topo = mesh["topologies/mesh"];
+
+  // Make coordset
+  coordset["type"] = "explicit";
+  conduit::Node &n_x = coordset["values/x"];
+  conduit::Node &n_y = coordset["values/y"];
+  conduit::Node &n_z = coordset["values/z"];
+  n_x.set(conduit::DataType::float32(nnodes));
+  n_y.set(conduit::DataType::float32(nnodes));
+  n_z.set(conduit::DataType::float32(nnodes));
+  auto *x = static_cast<float *>(n_x.data_ptr());
+  auto *y = static_cast<float *>(n_y.data_ptr());
+  auto *z = static_cast<float *>(n_z.data_ptr());
+
+  for(int k = 0; k < dims[2]; k++)
+  {
+    for(int j = 0; j < dims[1]; j++)
+    {
+      for(int i = 0; i < dims[0]; i++)
+      {
+        *x++ = i;
+        *y++ = j;
+        *z++ = k;
+      }
+    }
+  }
+
+  // Make topology
+  topo["type"] = "unstructured";
+  topo["coordset"] = "coords";
+  topo["elements/shape"] = "hex";
+  conduit::Node &conn = topo["elements/connectivity"];
+  conduit::Node &sizes = topo["elements/sizes"];
+  conduit::Node &offsets = topo["elements/offsets"];
+  conn.set(conduit::DataType::int32(8 * nzones));
+  sizes.set(conduit::DataType::int32(nzones));
+  offsets.set(conduit::DataType::int32(nzones));
+  auto *conn_ptr = static_cast<int *>(conn.data_ptr());
+  auto *sizes_ptr = static_cast<int *>(sizes.data_ptr());
+  auto *offsets_ptr = static_cast<int *>(offsets.data_ptr());
+
+  for(int k = 0; k < gridSize; k++)
+  {
+    const int knxny = k * dims[0] * dims[1];
+    const int k1nxny = (k + 1) * dims[0] * dims[1];
+    for(int j = 0; j < gridSize; j++)
+    {
+      const int jnx = j * dims[0];
+      const int j1nx = (j + 1) * dims[0];
+      for(int i = 0; i < gridSize; i++)
+      {
+        conn_ptr[0] = knxny + jnx + i;
+        conn_ptr[1] = knxny + jnx + i + 1;
+        conn_ptr[2] = knxny + j1nx + i + 1;
+        conn_ptr[3] = knxny + j1nx + i;
+        conn_ptr[4] = k1nxny + jnx + i;
+        conn_ptr[5] = k1nxny + jnx + i + 1;
+        conn_ptr[6] = k1nxny + j1nx + i + 1;
+        conn_ptr[7] = k1nxny + j1nx + i;
+
+        conn_ptr += 8;
+      }
+    }
+  }
+  for(int i = 0; i < nzones; i++)
+  {
+    sizes_ptr[i] = 8;
+    offsets_ptr[i] = 8 * i;
+  }
 }
 
 //--------------------------------------------------------------------------------

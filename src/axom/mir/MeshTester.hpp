@@ -122,6 +122,7 @@ public:
        * \return  The generated mesh.
        */
   mir::MIRMesh initTestCaseSix(int gridSize, int numSpheres);
+  void initTestCaseSix(int gridSize, int numSpheres, conduit::Node &mesh);
 
   /**
        * \brief Initializes a mesh composed of a uniform grid with a circle of material in it.

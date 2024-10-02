@@ -16,7 +16,7 @@ namespace bputils = axom::mir::utilities::blueprint;
 
 //------------------------------------------------------------------------------
 
-#define DEBUGGING_TEST_CASES
+//#define DEBUGGING_TEST_CASES
 
 // Uncomment to generate baselines
 //#define AXOM_TESTING_GENERATE_BASELINES

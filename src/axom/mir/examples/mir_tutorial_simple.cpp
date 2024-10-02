@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -15,116 +15,98 @@ namespace numerics = axom::numerics;
 namespace slam = axom::slam;
 namespace mir = axom::mir;
 namespace fs = axom::utilities::filesystem;
+namespace bputils = axom::mir::utilities::blueprint;
+
+using RuntimePolicy = axom::runtime_policy::Policy;
 
 //--------------------------------------------------------------------------------
-
-enum InputStatus
-{
-  SUCCESS,
-  INVALID,
-  SHOWHELP
-};
-
+/// Contain program options.
 struct Input
 {
-  int m_test_case;  // valid values 1,2,3,4,5
-  bool m_should_iterate;
-  int m_iter_count;
-  double m_iter_percent;
-  bool m_verbose;
-  std::string m_output_dir;
-  InputStatus m_status;
+  int m_test_case{1};  // valid values 1,2,3,4,5
+  bool m_should_iterate{false};
+  int m_iter_count{0};
+  double m_iter_percent{0.};
+  bool m_verbose{false};
+  std::string m_output_dir{};
+  RuntimePolicy m_policy {RuntimePolicy::seq};
+  std::string m_annotationMode{"report"};
+  axom::CLI::App m_app{};
 
-  Input()
-    : m_test_case(2)
-    , m_should_iterate(false)
-    , m_iter_count(100)
-    , m_iter_percent(.3)
-    , m_verbose(false)
-    , m_status(SUCCESS)
+  /// Parse command line.
+  int parse(int argc, char** argv)
   {
-    m_output_dir = fs::joinPath(AXOM_BIN_DIR, "mir_examples");
-  }
+    m_app.add_option("--test-case", m_test_case)
+      ->description("Select the test case.");
 
-  Input(int argc, char** argv) : Input()
-  {
-    for(int i = 1; i < argc; /* increment i in loop */)
+    m_app.add_option("--output-dir", m_output_dir)
+      ->description("The directory for output files");
+
+    m_app.add_option("--iter-count", m_iter_count)
+      ->description("The number of iterations for MIR");
+
+    m_app.add_option("--iter-percent", m_iter_percent)
+      ->description("The percent error for iterative MIR");
+
+    m_app.add_flag("--verbose", m_verbose)
+      ->description("Verbose output");
+
+#if defined(AXOM_USE_CALIPER)
+    m_app.add_option("--caliper", m_annotationMode)
+      ->description(
+        "caliper annotation mode. Valid options include 'none' and 'report'. "
+        )
+      ->capture_default_str()
+      ->check(axom::utilities::ValidCaliperMode);
+#endif
+
+    std::stringstream pol_sstr;
+    pol_sstr << "Set MIR runtime policy.";
+#if defined(AXOM_USE_RAJA) && defined(AXOM_USE_UMPIRE)
+    pol_sstr << "\nSet to 'seq' or 0 to use the RAJA sequential policy.";
+  #ifdef AXOM_USE_OPENMP
+    pol_sstr << "\nSet to 'omp' or 1 to use the RAJA OpenMP policy.";
+  #endif
+  #ifdef AXOM_USE_CUDA
+    pol_sstr << "\nSet to 'cuda' or 2 to use the RAJA CUDA policy.";
+  #endif
+  #ifdef AXOM_USE_HIP
+    pol_sstr << "\nSet to 'hip' or 3 to use the RAJA HIP policy.";
+  #endif
+#endif
+    m_app.add_option("-p, --policy", m_policy, pol_sstr.str())
+      ->capture_default_str()
+      ->transform(
+        axom::CLI::CheckedTransformer(axom::runtime_policy::s_nameToPolicy));
+
+    // Parse command line options.
+    try
     {
-      std::string arg = argv[i];
-      if(arg == "--test-case")
-      {
-        m_test_case = std::stoi(argv[++i]);
-      }
-      else if(arg == "--output-dir")
-      {
-        m_output_dir = argv[++i];
-      }
-      else if(arg == "--iter-count")
-      {
-        m_iter_count = std::stoi(argv[++i]);
-        m_should_iterate = true;
-      }
-      else if(arg == "--iter-percent")
-      {
-        m_iter_percent = std::stod(argv[++i]);
-        m_should_iterate = true;
-      }
-      else if(arg == "--verbose")
-      {
-        m_verbose = true;
-      }
-      else  // help or unknown parameter
-      {
-        if(arg != "--help" && arg != "-h")
-        {
-          SLIC_WARNING("Unrecognized parameter: " << arg);
-          m_status = INVALID;
-        }
-        else
-        {
-          m_status = SHOWHELP;
-        }
-        return;
-      }
-      ++i;
+      m_app.parse(argc, argv);
+    }
+    catch (const axom::CLI::ParseError &e)
+    {
+      return m_app.exit(e);
     }
 
-    checkTestCase();
+    int retval = 0;
+    checkTestCase(retval);
     checkOutputDir();
-    checkIterationParams();
+    checkIterationParams(retval);
+    return retval;
   }
 
   bool shouldIterate() const { return m_should_iterate; }
   int numIterations() const { return m_iter_count; }
   int iterPercentage() const { return m_iter_percent; }
 
-  void showhelp()
-  {
-    std::cout
-      << "Argument usage:"
-         "\n  --help            Show this help message."
-         "\n  --test-case N     Mesh test case.  Default N = 2."
-         "\n                    Valid values {1,2,3,4,5,6}"
-         "\n  --output-dir dir  Directory for output mesh"
-         "\n                    Default is: '${AXOM_BIN_DIR}/mir_examples'"
-         "\n  --iter-count N    Number of iterations for iterative algorithm"
-         "\n                    Defaults to 100."
-         "\n                    Setting a value triggers iterative algorithm"
-         "\n  --iter-percent D  Volume diff percentage for iterative algorithm"
-         "\n                    Must be between 0 and 1. Defaults to 0.3"
-         "\n                    Setting a value triggers iterative algorithm"
-         "\n  --verbose         Increases verbosity of output"
-      << std::endl
-      << std::endl;
-  };
-
 private:
-  void checkTestCase()
+  void checkTestCase(int &retval)
   {
     if(m_test_case < 1 || m_test_case > 6)
     {
-      m_status = INVALID;
-      SLIC_WARNING("Invalid test case " << m_test_case);
+      retval = -1;
+      SLIC_ERROR("Invalid test case " << m_test_case);
     }
   }
 
@@ -136,25 +118,115 @@ private:
     }
   }
 
-  void checkIterationParams()
+  void checkIterationParams(int &retval)
   {
     if(m_should_iterate)
     {
       if(m_iter_count < 1)
       {
-        m_status = INVALID;
-        SLIC_WARNING("Invalid iteration count " << m_iter_count);
+        retval = -2;
+        SLIC_ERROR("Invalid iteration count " << m_iter_count);
       }
 
       if(m_iter_percent <= 0. || m_iter_percent > 1.)
       {
-        m_status = INVALID;
-        SLIC_WARNING("Invalid iteration percentage " << m_iter_percent);
+        retval = -3;
+        SLIC_ERROR("Invalid iteration percentage " << m_iter_percent);
       }
     }
   }
 };
 
+//--------------------------------------------------------------------------------
+/// Print a Conduit node.
+void printNode(const conduit::Node &n)
+{
+  conduit::Node options;
+  options["num_children_threshold"] = 10000;
+  options["num_elements_threshold"] = 10000;
+  n.to_summary_string_stream(std::cout, options);
+}
+
+//--------------------------------------------------------------------------------
+/*!
+ * \brief Run MIR on the input mesh.
+ *
+ * \tparam ExecSpace The execution space where the algorithm will run.
+ *
+ * \param hostMesh A conduit node that contains the test mesh.
+ * \param options A conduit node that contains the test mesh.
+ * \param hostResult A conduit node that will contain the MIR results.
+ */
+template <typename ExecSpace>
+int runMIR(const conduit::Node &hostMesh, const conduit::Node &options, conduit::Node &hostResult)
+{
+  std::string shape = hostMesh["topologies/mesh/elements/shape"].as_string();
+  SLIC_INFO(axom::fmt::format("Using policy {}",
+                              axom::execution_space<ExecSpace>::name()));
+
+  // host->device
+  conduit::Node deviceMesh;
+  bputils::copy<ExecSpace>(deviceMesh, hostMesh);
+
+  conduit::Node &n_coordset = deviceMesh["coordsets/coords"];
+  conduit::Node &n_topo = deviceMesh["topologies/mesh"];
+  conduit::Node &n_matset = deviceMesh["matsets/mat"];
+  auto connView = bputils::make_array_view<int>(n_topo["elements/connectivity"]);
+
+  // Make matset view. (There's often 1 more material so add 1)
+  constexpr int MAXMATERIALS = 12;
+  using MatsetView = axom::mir::views::UnibufferMaterialView<int, float, MAXMATERIALS + 1>;
+  MatsetView matsetView;
+  matsetView.set(
+    bputils::make_array_view<int>(n_matset["material_ids"]),
+    bputils::make_array_view<float>(n_matset["volume_fractions"]),
+    bputils::make_array_view<int>(n_matset["sizes"]),
+    bputils::make_array_view<int>(n_matset["offsets"]),
+    bputils::make_array_view<int>(n_matset["indices"]));
+
+  // Coord/Topo views differ.
+  conduit::Node deviceResult;
+  if(shape == "tri")
+  {
+    auto coordsetView = axom::mir::views::make_explicit_coordset<float, 2>::view(n_coordset);
+    using CoordsetView = decltype(coordsetView);
+    using TopologyView = axom::mir::views::UnstructuredTopologySingleShapeView<axom::mir::views::TriShape<int>>;
+    TopologyView topologyView(connView);
+
+    using MIR = axom::mir::EquiZAlgorithm<ExecSpace, TopologyView, CoordsetView, MatsetView>;
+    MIR m(topologyView, coordsetView, matsetView);
+    m.execute(deviceMesh, options, deviceResult);   
+  }
+  else if(shape == "quad")
+  {
+    auto coordsetView = axom::mir::views::make_explicit_coordset<float, 2>::view(n_coordset);
+    using CoordsetView = decltype(coordsetView);
+    using TopologyView = axom::mir::views::UnstructuredTopologySingleShapeView<axom::mir::views::QuadShape<int>>;
+    TopologyView topologyView(connView);
+
+    using MIR = axom::mir::EquiZAlgorithm<ExecSpace, TopologyView, CoordsetView, MatsetView>;
+    MIR m(topologyView, coordsetView, matsetView);
+    m.execute(deviceMesh, options, deviceResult);   
+  }
+  else if(shape == "hex")
+  {
+    auto coordsetView = axom::mir::views::make_explicit_coordset<float, 3>::view(n_coordset);
+    using CoordsetView = decltype(coordsetView);
+    using TopologyView = axom::mir::views::UnstructuredTopologySingleShapeView<axom::mir::views::HexShape<int>>;
+    TopologyView topologyView(connView);
+
+    using MIR = axom::mir::EquiZAlgorithm<ExecSpace, TopologyView, CoordsetView, MatsetView>;
+    MIR m(topologyView, coordsetView, matsetView);
+    m.execute(deviceMesh, options, deviceResult);   
+  }
+
+  // device->host
+  bputils::copy<axom::SEQ_EXEC>(hostResult, deviceResult);
+
+  return 0;
+}
+
+//--------------------------------------------------------------------------------
 /*!
  * \brief Tutorial main showing how to initialize test cases and perform mir.
  */
@@ -164,103 +236,133 @@ int main(int argc, char** argv)
   axom::slic::setLoggingMsgLevel(axom::slic::message::Info);
 
   // Parse arguments
-  Input params(argc, argv);
-
-  if(params.m_status != SUCCESS)
+  Input params;
+  int retval = params.parse(argc, argv);
+  if(retval != 0)
   {
-    if(params.m_status == SHOWHELP)
-    {
-      params.showhelp();
-      return 0;
-    }
-    else if(params.m_status == INVALID)
-    {
-      params.showhelp();
-      return 1;
-    }
+    return retval;
   }
+#if defined(AXOM_USE_CALIPER)
+  axom::utilities::raii::AnnotationsWrapper annotations_raii_wrapper(
+    params.m_annotationMode);
+#endif
 
-  mir::MIRMesh testMesh;
+  // Make the mesh
+  conduit::Node mesh;
   mir::MeshTester tester;
-
   auto timer = axom::utilities::Timer(true);
-
   switch(params.m_test_case)
   {
   case 1:
-    testMesh = tester.initTestCaseOne();
+    tester.initTestCaseOne(mesh);
     break;
   case 2:
-    testMesh = tester.initTestCaseTwo();
+    tester.initTestCaseTwo(mesh);
     break;
   case 3:
-    testMesh = tester.initTestCaseThree();
+    tester.initTestCaseThree(mesh);
     break;
   case 4:
-    testMesh = tester.initTestCaseFour();
+    tester.initTestCaseFour(mesh);
     break;
   case 5:
-    testMesh = tester.initTestCaseFive(25, 12);
+    {
+      constexpr int GRIDSIZE = 25;
+      constexpr int MAXMATERIALS = 12;
+      tester.initTestCaseFive(GRIDSIZE, MAXMATERIALS, mesh);
+    }
     break;
   case 6:
-    testMesh = tester.initTestCaseSix(15, 3);
+    {
+      constexpr int GRIDSIZE = 15;
+      constexpr int MAXMATERIALS = 3;
+      tester.initTestCaseSix(GRIDSIZE, MAXMATERIALS, mesh);
+    }
     break;
   }
-
   timer.stop();
   SLIC_INFO("Mesh init time: " << timer.elapsedTimeInMilliSec() << " ms.");
 
-  SLIC_INFO("Test mesh is " << (testMesh.isValid(true) ? "" : " NOT")
-                            << " valid.");
+  // Save input mesh
+  std::string filepath, filename("inputMesh");
+  if(params.m_output_dir.empty())
+    filepath = filename;
+  else
+    filepath = axom::utilities::filesystem::joinPath(params.m_output_dir, filename);
+  conduit::relay::io::blueprint::save_mesh(mesh, filepath, "hdf5");
 
   if(params.m_verbose)
   {
     SLIC_INFO("Initial mesh:");
-    testMesh.print();
+    printNode(mesh);
   }
 
   // Begin material interface reconstruction
   timer.start();
 
-  mir::MIRMesh processedMesh;
-  mir::InterfaceReconstructor reconstructor;
+  // Set up options.
+  conduit::Node options;
+  options["matset"] = "mat";
+  // Future options
+  options["iterate"] = params.shouldIterate() ? 1 : 0;
+  options["iterate_percentage"] = params.iterPercentage();
 
-  if(!params.shouldIterate())  // Process once, with original Meredith algorithm
+  // Run MIR
+  conduit::Node resultMesh;
+  if(params.m_policy == RuntimePolicy::seq)
   {
-    reconstructor.computeReconstructedInterface(testMesh, processedMesh);
+    retval = runMIR<axom::SEQ_EXEC>(mesh, options, resultMesh);
   }
-  else  // use iterative algorithm
+#if defined(AXOM_USE_RAJA) && defined(AXOM_USE_UMPIRE)
+  #if defined(AXOM_USE_OPENMP)
+  else if(params.m_policy == RuntimePolicy::omp)
   {
-    int n = params.numIterations();
-    double p = params.iterPercentage();
-
-    reconstructor.computeReconstructedInterfaceIterative(testMesh,
-                                                         n,
-                                                         p,
-                                                         processedMesh);
+    retval = runMIR<axom::OMP_EXEC>(mesh, options, resultMesh);
   }
-
+  #endif
+  #if defined(AXOM_USE_CUDA)
+  else if(params.m_policy == RuntimePolicy::cuda)
+  {
+    constexpr int CUDA_BLOCK_SIZE = 256;
+    using cuda_exec = axom::CUDA_EXEC<CUDA_BLOCK_SIZE>;
+    retval = runMIR<cuda_exec>(mesh, options, resultMesh);
+  }
+  #endif
+  #if defined(AXOM_USE_HIP)
+  else if(params.m_policy == RuntimePolicy::hip)
+  {
+    constexpr int HIP_BLOCK_SIZE = 64;
+    using hip_exec = axom::HIP_EXEC<HIP_BLOCK_SIZE>;
+    retval = runMIR<hip_exec>(mesh, options, resultMesh);
+  }
+  #endif
+#endif
+  else
+  {
+    retval = -1;
+    SLIC_ERROR("Unhandled policy.");
+  }
   timer.stop();
   SLIC_INFO("Reconstruction time: " << timer.elapsedTimeInMilliSec() << " ms.");
 
-  // Output results
-  processedMesh.writeMeshToFile(params.m_output_dir, "processedMesh.vtk");
-
-  using VolFracs = std::vector<std::vector<axom::float64>>;
-  timer.start();
-  VolFracs materialVolumeFractionsElement =
-    processedMesh.computeOriginalElementVolumeFractions();
-  timer.stop();
-  SLIC_INFO("Computing volumes took: " << timer.elapsedTimeInMilliSec()
-                                       << " ms.");
+  // Save output.
+  if(retval == 0)
+  {
+    std::string filepath, filename("processedMesh");
+    if(params.m_output_dir.empty())
+      filepath = filename;
+    else
+      filepath = axom::utilities::filesystem::joinPath(params.m_output_dir, filename);
+    conduit::relay::io::blueprint::save_mesh(resultMesh, filepath, "hdf5");
+  }
 
   if(params.m_verbose)
   {
     SLIC_INFO("Final mesh:");
-    processedMesh.print();
+    printNode(resultMesh);
   }
 
-  return 0;
+  return retval;
 }
 
 //--------------------------------------------------------------------------------
