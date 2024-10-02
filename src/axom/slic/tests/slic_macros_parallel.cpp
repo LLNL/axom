@@ -20,8 +20,6 @@
 
 #include "mpi.h"
 
-#include <iostream>
-
 // namespace alias
 namespace slic = axom::slic;
 
