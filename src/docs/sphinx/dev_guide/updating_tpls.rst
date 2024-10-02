@@ -58,7 +58,7 @@ Spack is a multi-platform package manager that builds and installs multiple vers
 and configurations of software packages. It has recipes for building each package
 with available variants to customize it to your needs. For example, Axom
 has variants for Fortran, MPI, and others. The recipes drive
-the individual packages build systems and manage packages they depend on.
+the individual package build systems and manage packages they depend on.
 Spack also handles system level packages, so you can describe where they are on your
 system instead of building them from scratch. You will need to describe which compilers
 are available on your system as well.
@@ -75,9 +75,9 @@ are available on your system as well.
 
 * Axom specific Spack package files live under ``axom/scripts/spack/packages``. These override
   the package files in Spack's repository under ``var/spack/repos/builtin/packages``.
-  We try to minimize these, but we often have to alter the existing Spack packages to: apply fixes
-  before pushing them up to Spack proper, or alter recipes in ways that are Axom specific.
-  Such overrides do not happen at the Spack level, but at the next level, Uberenv 
+  We try to minimize these, but we often have to alter the existing Spack packages to apply fixes
+  before pushing them up to Spack proper or alter recipes in ways that are Axom specific.
+  Such overrides do not happen at the Spack level, but at the next level, Uberenv, 
   described below.
 
 * More detailed information about Spack can be found in the 
@@ -159,8 +159,8 @@ are designed to build suites of TPLs via Uberenv and Spack.
   listed in the ``specs.json`` file for the platform on which it is run. For each TPL set,
   it will generate a host-config file and copy it to the top-level directory of the local
   copy of the Axom repository in which the script is run. After building all of TPL sets
-  for a platform, it will test Axom against those TPL installs as well as the ``using-with-cmake``
-  example for correctness. This script stops at the first failed TPL build but
+  for a platform, it will attempt to build Axom and the ``using-with-cmake`` example against
+  each set of TPLs. This script stops at the first failed TPL build but
   attempts to build the Axom source will each host-config. It will output a summary at
   the end indicating which Axom build succeeded or failed.
 * ``build_src.py``: This script uses the existing host-configs in your local clone of the
@@ -175,7 +175,7 @@ are designed to build suites of TPLs via Uberenv and Spack.
 .. note::
    Due to the large amount of information printed to the screen during a full build, the build scripts
    redirect most build step output to log files. This output will tell you what command is being run,
-   i.e., ``[EOE: some/command --with-options]``, and will tell you the log file being written
+   i.e., ``[exe: some/command --with-options]``, and will tell you the log file being written
    to before it redirects the output from a command, i.e., ``[[log file: /path/to/log``.
 
 
@@ -231,7 +231,7 @@ These TPLs are located in the directory: ``axom/src/thirdparty/axom``. The basic
 instructions on how to update a built-in TPL are:
 
 #. Download the new release and override the source that is already there.
-   This may involve removing files no-longer needed.
+   This may involve removing files no longer needed.
 
 #. Review and apply the existing patch files in the ``axom/src/thirdparty/axom``
    directory. More than likely, you will not be able to directly apply the patch
