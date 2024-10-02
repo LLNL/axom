@@ -17,8 +17,8 @@ Inputs
 #######
 
 MIR algorithms are designed to accept a Conduit node containing various options that can
-alter how the algorithm operates. the MIR algorithm copies the options node to the memory space
-where it will run.
+influence how the algorithm operates. The MIR algorithm copies the options node to the memory
+space where it will be used.
 
 +---------------------------------+------------------------------------------------------+
 | Option                          | Description                                          |
@@ -35,7 +35,7 @@ where it will run.
 |                                 | elements map.                                        |
 +---------------------------------+------------------------------------------------------+
 | selectedZones: [zone list]      | An optional argument that provides a list of zone ids|
-|                                 | to operate on. The output mesh will only have        |
+|                                 | on which to operate. The output mesh will only have  |
 |                                 | contributions from zone numbers in this list, if it  |
 |                                 | is given.                                            |
 +---------------------------------+------------------------------------------------------+
@@ -69,7 +69,7 @@ wedges, hexahedra, or topologically-compatible mixtures). The MIR logic for Equi
 encapsulated in ``EquizAlgorithm``, which is a class that is templated on view objects.
 View objects help provide an interface between the Blueprint data and the MIR algorithm.
 At a minimum, an execution space and three views are required to instantiate the
-``EquiZAlgorithm`` class. The execution space determines which compute backend will
+``axom::mir::EquiZAlgorithm`` class. The execution space determines which compute backend will
 be used to execute the algorithm. The Blueprint data must exist in a compatible
 memory space for the execution space. The views are: _CoordsetView_, _TopologyView_, and
 _MaterialView_. The CoordsetView template argument lets the algorithm access the mesh's
@@ -79,7 +79,7 @@ device-aware method for retrieving individual zones that can be used in device k
 The MaterialView provides an interface for matsets.
 
 Once view types have been created and views have been instantiated, the ``EquiZAlgorithm``
-algorithm can be instantiated and used. The EquiZAlgorithm class provides a single
+algorithm can be instantiated and used. The ``EquiZAlgorithm`` class provides a single
 ``execute()`` method that takes the input mesh, an options node, and a node to contain
 the output mesh. The output mesh will exist in the same memory space as the input mesh,
 which again, must be compatible with the selected execution space. The ``axom::mir::utilities::blueprint::copy()``
@@ -98,7 +98,9 @@ to map back to the original mesh. The name of the field can be changed using opt
 Example Applications
 #####################
 
-The mir_concentric_circles application generates a uniform mesh populated with circular mixed material shells and then it performs MIR on the input mesh before writing the reconstructed mesh.
+The mir_concentric_circles application generates a uniform mesh populated with circular
+mixed material shells and then it performs MIR on the input mesh before writing the
+reconstructed mesh.
 
 +--------------------+---------------------------------------------------------------+
 | Argument           | Description                                                   |
@@ -118,12 +120,18 @@ To run the example program from the Axom build directory, follow these steps:
 
   ./examples/mir_concentric_circles --gridsize 100 --numcircles 5 --output mir
 
+.. figure:: figures/mir_concentric_circles.png
+   :figwidth: 800px
+   :alt: Diagram showing MIR output from the mir_concentric_circles application.
+
 #####################
 Visualization
 #####################
 
-The [https://visit-dav.github.io/visit-website/](VisIt software) can be used to view the Blueprint output from MIR algorithms.
-Blueprint data is saved in an HDF5 format and the top level file has a ".root" extension. Open the ".root" file in VisIt to
-get started and then add a "FilledBoundary" plot of the material defined on the mesh topology. Plotting the mesh lines will
-reveal that there is a single material per zone. If the input mesh is visualized in a similar manner, it will be evident that
+The [https://visit-dav.github.io/visit-website/](VisIt software) can be used to
+view the Blueprint output from MIR algorithms. Blueprint data is saved in an HDF5
+format and the top level file has a ".root" extension. Open the ".root" file in VisIt
+to get started and then add a "FilledBoundary" plot of the material defined on the
+mesh topology. Plotting the mesh lines will reveal that there is a single material
+per zone. If the input mesh is visualized in a similar manner, it will be evident that
 there are multiple materials in some of the zones, if viewing a mixed material dataset.

@@ -386,6 +386,7 @@ struct test_braid2d_mat
     if(type == "unibuffer")
     {
       // clang-format off
+      // _mir_views_matsetview_begin
       using MatsetView = axom::mir::views::UnibufferMaterialView<int, float, 3>;
       MatsetView matsetView;
       matsetView.set(bputils::make_array_view<int>(deviceMesh["matsets/mat/material_ids"]),
@@ -393,6 +394,7 @@ struct test_braid2d_mat
                      bputils::make_array_view<int>(deviceMesh["matsets/mat/sizes"]),
                      bputils::make_array_view<int>(deviceMesh["matsets/mat/offsets"]),
                      bputils::make_array_view<int>(deviceMesh["matsets/mat/indices"]));
+      // _mir_views_matsetview_end
       // clang-format on
       EXPECT_EQ(matsetView.numberOfZones(), zoneDims[0] * zoneDims[1]);
       test_matsetview(matsetView, allocatorID);

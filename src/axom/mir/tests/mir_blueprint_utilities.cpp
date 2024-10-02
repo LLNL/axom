@@ -226,6 +226,7 @@ struct test_node_to_zone_relation_builder
     // host -> device
     conduit::Node deviceMesh;
     axom::mir::utilities::blueprint::copy<ExecSpace>(deviceMesh, hostMesh);
+    // _mir_utilities_n2zrel_begin
     const conduit::Node &deviceTopo = deviceMesh["topologies/mesh"];
     const conduit::Node &deviceCoordset = deviceMesh["coordsets/coords"];
 
@@ -233,6 +234,7 @@ struct test_node_to_zone_relation_builder
     conduit::Node deviceRelation;
     axom::mir::utilities::blueprint::NodeToZoneRelationBuilder<ExecSpace> n2z;
     n2z.execute(deviceTopo, deviceCoordset, deviceRelation);
+    // _mir_utilities_n2zrel_end
 
     // device -> host
     conduit::Node hostRelation;
@@ -526,6 +528,7 @@ struct test_recenter_field
     // host -> device
     conduit::Node deviceMesh;
     axom::mir::utilities::blueprint::copy<ExecSpace>(deviceMesh, hostMesh);
+    // _mir_utilities_recenterfield_begin
     const conduit::Node &deviceTopo = deviceMesh["topologies/mesh"];
     const conduit::Node &deviceCoordset = deviceMesh["coordsets/coords"];
 
@@ -544,6 +547,7 @@ struct test_recenter_field
     r.execute(deviceMesh["fields/z2n"],
               deviceMesh["topologies/mesh/elements"],
               deviceMesh["fields/n2z"]);
+    // _mir_utilities_recenterfield_end
 
     // device -> host
     conduit::Node hostResultMesh;
@@ -1539,13 +1543,14 @@ struct test_fieldslicer
 {
   static void test()
   {
-    conduit::Node hostData;
-    create(hostData);
+    conduit::Node hostMesh;
+    create(hostMesh);
 
     // host->device
-    conduit::Node deviceData;
-    bputils::copy<ExecSpace>(deviceData, hostData);
+    conduit::Node deviceMesh;
+    bputils::copy<ExecSpace>(deviceMesh, hostMesh);
 
+    // _mir_utilities_fieldslicer_begin
     std::vector<int> indices{0,1,2,7,8,9};
     axom::Array<int> sliceIndices(indices.size(), indices.size(), axom::execution_space<ExecSpace>::allocatorID());
     axom::copy(sliceIndices.data(), indices.data(), sizeof(int) * indices.size());
@@ -1553,35 +1558,36 @@ struct test_fieldslicer
     bputils::SliceData slice;
     slice.m_indicesView = sliceIndices.view();
 
-    conduit::Node slicedData;
+    conduit::Node slicedMesh;
     bputils::FieldSlicer<ExecSpace> fs;
-    fs.execute(slice, deviceData["fields/scalar"], slicedData["fields/scalar"]);
-    fs.execute(slice, deviceData["fields/vector"], slicedData["fields/vector"]);
+    fs.execute(slice, deviceMesh["fields/scalar"], slicedMesh["fields/scalar"]);
+    fs.execute(slice, deviceMesh["fields/vector"], slicedMesh["fields/vector"]);
+    // _mir_utilities_fieldslicer_end
 
     // device->host
-    conduit::Node hostSlicedData;
-    bputils::copy<axom::SEQ_EXEC>(hostSlicedData, slicedData);
+    conduit::Node hostSlicedMesh;
+    bputils::copy<axom::SEQ_EXEC>(hostSlicedMesh, slicedMesh);
 
     std::vector<double> resultX{0., 1., 2., 7., 8., 9.};
     std::vector<double> resultY{0., 10., 20., 70., 80., 90.};
 
-    EXPECT_EQ(hostSlicedData["fields/scalar/topology"].as_string(), "mesh");
-    EXPECT_EQ(hostSlicedData["fields/scalar/association"].as_string(), "element");
-    EXPECT_EQ(hostSlicedData["fields/scalar/values"].dtype().number_of_elements(), indices.size());
+    EXPECT_EQ(hostSlicedMesh["fields/scalar/topology"].as_string(), "mesh");
+    EXPECT_EQ(hostSlicedMesh["fields/scalar/association"].as_string(), "element");
+    EXPECT_EQ(hostSlicedMesh["fields/scalar/values"].dtype().number_of_elements(), indices.size());
     for(size_t i = 0; i < indices.size(); i++)
     {
-      const auto acc = hostSlicedData["fields/scalar/values"].as_double_accessor();
+      const auto acc = hostSlicedMesh["fields/scalar/values"].as_double_accessor();
       EXPECT_EQ(acc[i], resultX[i]);
     }
 
-    EXPECT_EQ(hostSlicedData["fields/vector/topology"].as_string(), "mesh");
-    EXPECT_EQ(hostSlicedData["fields/vector/association"].as_string(), "element");
-    EXPECT_EQ(hostSlicedData["fields/vector/values/x"].dtype().number_of_elements(), indices.size());
-    EXPECT_EQ(hostSlicedData["fields/vector/values/y"].dtype().number_of_elements(), indices.size());
+    EXPECT_EQ(hostSlicedMesh["fields/vector/topology"].as_string(), "mesh");
+    EXPECT_EQ(hostSlicedMesh["fields/vector/association"].as_string(), "element");
+    EXPECT_EQ(hostSlicedMesh["fields/vector/values/x"].dtype().number_of_elements(), indices.size());
+    EXPECT_EQ(hostSlicedMesh["fields/vector/values/y"].dtype().number_of_elements(), indices.size());
     for(size_t i = 0; i < indices.size(); i++)
     {
-      const auto x = hostSlicedData["fields/vector/values/x"].as_double_accessor();
-      const auto y = hostSlicedData["fields/vector/values/y"].as_double_accessor();
+      const auto x = hostSlicedMesh["fields/vector/values/x"].as_double_accessor();
+      const auto y = hostSlicedMesh["fields/vector/values/y"].as_double_accessor();
       EXPECT_EQ(x[i], resultX[i]);
       EXPECT_EQ(y[i], resultY[i]);
     }

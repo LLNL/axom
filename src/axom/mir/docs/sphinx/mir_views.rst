@@ -7,18 +7,55 @@
 Views
 ******
 
+The MIR component provides view classes that provide lightweight, device-compatible, C++ interfaces
+for Blueprint data. Blueprint data defines many object protocols and supports several data types.
+Views can simplify the process of writing algorithms to support Blueprint data. Views are also
+lightweight in that they can be easily copied and do not own their data. This makes them suitable
+for use in device kernels.
+
 ----------
 ArrayView
 ----------
 
 Axom provides ``axom::ArrayView`` to wrap data in a non-owning data structure that can be passed to
-kernels. The MIR component provides functions that help wrap arrays stored in 
+kernels. The MIR component provides the ``axom::mir::utilities::blueprint::make_array_view()``
+function to help wrap arrays stored in ``conduit::Node`` to ``axom::ArrayView``. To use the
+``make_array_view`` function, one must know the type held within the Conduit node. If that is
+not the case, then consider using one of the dispatch ''Node_to_ArrayView'' functions.
 
+  .. codeblock{.cpp}::
+
+     // Make an axom::ArrayView<float> for X coordinate components.
+     auto x = axom::mir::blueprint::make_array_view<float>(n_mesh["coordsets/coords/values/x"]);
 
 
 ----------
 Coordsets
 ----------
+
+Blueprint supports multiple coordset types: uniform, rectilinear, explicit. Axom provides functions
+to explicitly create coordset views for each of these types.
+
+  .. codeblock{.cpp}::
+
+     // Make a 2D uniform coordset view
+     auto view1 = axom::mir::views::make_uniform_coordset<2>::view(n_mesh["coordsets/coords"]);
+
+     // Make a 3D uniform coordset view
+     auto view2 = axom::mir::views::make_uniform_coordset<3>::view(n_mesh["coordsets/coords"]);
+
+     // Make a 2D rectilinear coordset view with float coordinates
+     auto view3 = axom::mir::views::make_rectilinear_coordset<float, 2>::view(n_mesh["coordsets/coords"]);
+
+     // Make a 3D rectilinear coordset view with double coordinates
+     auto view4 = axom::mir::views::make_rectilinear_coordset<double, 3>::view(n_mesh["coordsets/coords"]);
+
+     // Make a 2D explicit coordset view with float coordinates
+     auto view5 = axom::mir::views::make_explicit_coordset<float, 2>::view(n_mesh["coordsets/coords"]);
+
+     // Make a 3D explicit coordset view with double coordinates
+     auto view6 = axom::mir::views::make_explicit_coordset<double, 3>::view(n_mesh["coordsets/coords"]);
+
 
 ----------------
 Topology Views
@@ -92,6 +129,9 @@ views are needed to supply the sizes, offsets, and shapes arrays.
        bputils::make_array_view(n_topo["elements/shapes"),
        shapeMap);
 
+Once a suitable topology view type has wrapped the Blueprint topology, it can be used in
+device kernels to obtain zone information.
+
   .. codeblock{.cpp}::
 
      topologyView = ...
@@ -111,6 +151,18 @@ views are needed to supply the sizes, offsets, and shapes arrays.
 Matsets
 ----------
 
+The MIR component provides material views to wrap Blueprint matsets behind an interface that
+supports queries of the matset data without having to care much about its internal representation.
+Blueprint provides 4 flavors of matset, each with a different representation. The 
+``axom::mir::views::UnibufferMaterialView`` class wraps unibuffer matsets, which consist of
+several arrays that define materials for each zone in the associated topology. The view's
+methods allow algorithms to query the list of materials for each zone.
+
+.. literalinclude:: ../../tests/mir_views.cpp
+   :start-after: _mir_views_matsetview_begin
+   :end-before: _mir_views_matsetview_end
+   :language: C++
+
 ----------
 Dispatch
 ----------
@@ -123,6 +175,62 @@ be instantiated multiple times to handle cases when there are multiple data type
 object types (e.g. coordsets). Generic lambdas can be used to process multiple view
 and it is possible to nest multiple dispatch functions.
 
+^^^^^^^^^^^
+Array Data
+^^^^^^^^^^^
+
+Blueprint data can readily be wrapped in ``axom::ArrayView`` using the ``axom::mir::utilities::blueprint::make_array_view()``
+function. There are dispatch functions for ``conduit::Node`` data arrays that automate the
+wrapping to ``axom::ArrayView`` and passing the views to a user-supplied lambda.
+
+To generically wrap any type of datatype supported by Conduit, the ``axom::mir::views::Node_to_ArrayView()``
+function can be used. This template function takes a variable number of ``conduit::Node``
+arguments and a generic lambda function that accepts the view arguments.
+
+  .. codeblock{.cpp}::
+
+     conduit::Node n; // Assume it contains data values
+     axom::mir::views::Node_to_ArrayView(n["foo"], n["bar"], [&](auto fooView, auto barView)
+     {
+       // Use fooView and barView axom::ArrayView objects to access data.
+       // They can have different types.
+     });
+
+Using ``axom::mir::views::Node_to_ArrayView`` with multiple data values can instantiate
+the supplied lambda many times so be careful. It is more common that when wrapping multiple
+nodes that they are the same type. The ``axom::mir::views::Node_to_ArrayView_same`` function
+will ensure that the lambdas get instantiated with views that wrap the Conduit  nodes in
+array views that of the same type.
+
+  .. codeblock{.cpp}::
+
+     conduit::Node n; // Assume it contains data values
+     axom::mir::views::Node_to_ArrayView_same(n["foo"], n["bar"], [&](auto fooView, auto barView)
+     {
+       // Use fooView and barView axom::ArrayView objects to access data.
+       // They have the same types.
+     });
+
+When dealing with mesh data structures, it is common to have data that are using only integer
+types or only floating-point types. Axom provides functions that limit the lambda instantiation
+to only those selected types using the following functions:
+
+ * ``axom::mir::views::IndexNode_to_ArrayView()``
+ * ``axom::mir::views::IndexNode_to_ArrayView_same()``
+ * ``axom::mir::views::FloatNode_to_ArrayView()``
+ * ``axom::mir::views::FloatNode_to_ArrayView_same()``
+
+The "Index" functions limit lambda instantiation to common index types signed/unsigned 32/64-bit
+integers. The "Float" functions instantiate lambdas with float32 and float64 types.
+
+
+^^^^^^^^^^^
+Coordsets
+^^^^^^^^^^^
+
+The ``axom::mir::views::dispatch_coordset()`` function can wrap Blueprint coordsets in an
+appropriate view and pass it to a lambda function.
+
  .. codeblock{.cpp}::
 
     const conduit::Node &n_coordset = n_mesh["coordsets/coords"];
@@ -132,6 +240,10 @@ and it is possible to nest multiple dispatch functions.
 
       // Implement algorithm using coordsetView.
     });
+
+^^^^^^^^^^^
+Topologies
+^^^^^^^^^^^
 
 Dispatch functions for topologies enable creation of algorithms that can operate on multiple
 topology types through a topology view. These dispatch functions can be called for specific

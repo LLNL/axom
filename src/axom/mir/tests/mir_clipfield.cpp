@@ -328,6 +328,7 @@ struct test_unique
     |   |   |   |
     0---1---2---3
     */
+    // _mir_utilities_unique_begin
     const int allocatorID = axom::execution_space<ExecSpace>::allocatorID();
     axom::Array<int> ids {{0, 1, 5, 4, 1, 2, 6,  5, 2, 3, 7,  6,
                            4, 5, 9, 8, 5, 6, 10, 9, 6, 7, 11, 10}};
@@ -340,6 +341,7 @@ struct test_unique
     axom::mir::utilities::Unique<seq_exec, int>::execute(ids.view(),
                                                          uIds,
                                                          uIndices);
+    // _mir_utilities_unique_end
 
     // device->host
     axom::Array<int> hostuIds(uIds.size()), hostuIndices(uIndices.size());

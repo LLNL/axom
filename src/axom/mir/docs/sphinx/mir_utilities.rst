@@ -7,8 +7,11 @@
 MIR Blueprint Utilities
 ******************************************************
 
-The MIR component contains several useful algorithm building blocks for writing algorithms
+The MIR component contains several useful building blocks for writing algorithms
 for Blueprint meshes.
+
+ * Structured as classes with an ``execute()`` method to permit them to contain state or divide their algorithm into stages in various methods.
+ * Often templated on execution space and views
 
 #######################
 Copying Blueprint Data
@@ -36,9 +39,10 @@ ConduitAllocateThroughAxom
 ############################
 
 When writing algorithms that construct Blueprint data, it is helpful to force Conduit
-to allocate its memory through Axom's allocation routines and then make an axom::ArrayView
-of the Conduit node. This prevents data from having to be copied from an Axom data structure
-since it can be constructed from the start inside the Conduit node.
+to allocate its memory through Axom's allocation routines and then make an ``axom::ArrayView``
+of the data in the Conduit node. This prevents data from having to be copied from an Axom
+data structure into a Conduit node since it can be constructed from the start inside the
+Conduit node. The size of the array must be known.
 
 The ``axom::mir::utilities::blueprint::ConduitAllocateThroughAxom``
 class is a template class that takes an execution space as a template argument and it
@@ -97,7 +101,10 @@ new explicit coordset where each point corresponds to a single index from the no
 stored in SliceData. This class can be used to select a subset of a coordset, reorder nodes
 in a coordset, or repeat nodes in a coordset.
 
-
+.. literalinclude:: ../../ExtractZones.cpp
+   :start-after: _mir_utilities_coordsetslicer_begin
+   :end-before: _mir_utilities_coordsetslicer_end
+   :language: C++
 
 ##################
 ExtractZones
@@ -120,11 +127,17 @@ The ``axom::mir::utilities::blueprint::FieldBlender`` class is similar to the ``
 class, except that it operates on a field instead of coordsets. The class is used to create a
 new field that includes values derived from multiple weighted source values.
 
-
-
 ############
 FieldSlicer
 ############
+
+The ``axom::mir::utilities::blueprint::FieldSlicer`` class selects specific indices from a
+field and makes a new field.
+
+.. literalinclude:: ../../tests/mir_blueprint_utilities.cpp
+   :start-after: _mir_utilities_fieldslicer_begin
+   :end-before: _mir_utilities_fieldslicer_end
+   :language: C++
 
 ##################
 MakeUnstructured
@@ -136,25 +149,87 @@ structured topology.
 
 .. literalinclude:: ../../tests/mir_blueprint_utilities.cpp
    :start-after: _mir_utilities_makeunstructured_begin
-   :end-before: _mir_utilities_makeunstructured_begin
+   :end-before: _mir_utilities_makeunstructured_end
    :language: C++
 
 ##################
 MatsetSlicer
 ##################
 
+The ``axom::mir::utilities::blueprint::MatsetSlicer`` class is similar to the ``FieldSlicer``
+class except it slices matsets instead of fields. The same ``SliceData`` can be passed to
+MatsetSlicer to pull out and assemble a new matset data for a specific list of zones.
+
+.. literalinclude:: ../../ExtractZones.cpp
+   :start-after: _mir_utilities_matsetslicer_begin
+   :end-before: _mir_utilities_matsetslicer_end
+   :language: C++
+
 ##################
 MergeMeshes
 ##################
+
+The ``axom::mir::utilities::blueprint::MergeMeshes`` class merges data for coordsets,
+topology, and fields from multiple input meshes into a new combined mesh. The class also
+supports renaming nodes using a map that converts a local mesh's node ids to the final
+output node numbering, enabling meshes to be merged such that some nodes get combined.
+A derived class can also merge matsets.
+
+.. literalinclude:: ../../EquiZAlgorithm.hpp
+   :start-after: _mir_utilities_mergemeshes_begin
+   :end-before: _mir_utilities_mergemeshes_end
+   :language: C++
 
 ###########################
 NodeToZoneRelationBuilder
 ###########################
 
+The ``axom::mir::utilities::blueprint::NodeToZoneRelationBuilder`` class creates a Blueprint
+O2M (one to many) relation that relates node numbers to the zones that contain them. This mapping
+is akin to inverting the normal mesh connectivity which is a map of zones to node ids. The O2M
+relation is useful for recentering data from the zones to the nodes.
+
+.. literalinclude:: ../../tests/mir_blueprint_utilities.hpp
+   :start-after: _mir_utilities_n2zrel_begin
+   :end-before: _mir_utilities_n2zrel_end
+   :language: C++
+
+###############
+RecenterFields
+############### 
+
+The ``axom::mir::utilities::blueprint::RecenterFields`` class uses an O2M relation to average
+field data from multiple values to an averaged value. In Axom, this is used to convert a field
+associated with the elements to a new field associated with the nodes.
+
+.. literalinclude:: ../../tests/mir_blueprint_utilities.hpp
+   :start-after: _mir_utilities_recenterfield_begin
+   :end-before: _mir_utilities_recenterfield_end
+   :language: C++
+
 ##################
 Unique
 ##################
 
+The ``axom::mir::utilities::Unique`` class can take an unsorted list of values and produce a
+sorted list of unique outputs, along with a list of offsets into the original values to identify
+one representative value in the original list for each unique value. This class is used to help
+merge points.
+
+.. literalinclude:: ../../tests/mir_clipfield.hpp
+   :start-after: _mir_utilities_unique_begin
+   :end-before: _mir_utilities_unique_end
+   :language: C++
+
 ##################
 ZoneListBuilder
 ##################
+
+The ``axom::mir::utilities::blueprint::ZoneListBuilder`` class takes a matset view and a list
+of selected zone ids and makes two output lists of zone ids that correspond to clean zones and
+mixed zones (more than 1 material in the zone).
+
+.. literalinclude:: ../../EquiZAlgorithm.hpp
+   :start-after: _mir_utilities_zlb_begin
+   :end-before: _mir_utilities_zlb_end
+   :language: C++
