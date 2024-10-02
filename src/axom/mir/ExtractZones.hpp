@@ -536,10 +536,12 @@ protected:
                     conduit::Node &n_newCoordset) const
   {
     AXOM_ANNOTATE_SCOPE("makeCoordset");
+    // _mir_utilities_coordsetslicer_begin
     axom::mir::utilities::blueprint::CoordsetSlicer<ExecSpace, CoordsetView> cs(
       m_coordsetView);
     n_newCoordset.reset();
     cs.execute(nodeSlice, n_coordset, n_newCoordset);
+    // _mir_utilities_coordsetslicer_end
   }
 
   /*!
@@ -768,10 +770,12 @@ private:
                   conduit::Node &n_newMatset) const
   {
     AXOM_ANNOTATE_SCOPE("makeMatset");
+    // _mir_utilities_matsetslicer_begin
     MatsetSlicer<ExecSpace, MatsetView> ms(m_matsetView);
     SliceData zSlice;
     zSlice.m_indicesView = selectedZonesView;
     ms.execute(zSlice, n_matset, n_newMatset);
+    // _mir_utilities_matsetslicer_end
   }
 
   MatsetView m_matsetView;

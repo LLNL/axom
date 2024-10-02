@@ -377,6 +377,7 @@ protected:
 #endif
 
 #if defined(AXOM_EQUIZ_SPLIT_PROCESSING)
+    // _mir_utilities_zlb_begin
     // Come up with lists of clean/mixed zones.
     axom::Array<axom::IndexType> cleanZones, mixedZones;
     bputils::ZoneListBuilder<ExecSpace, TopologyView, MatsetView> zlb(
@@ -395,6 +396,7 @@ protected:
     {
       zlb.execute(m_coordsetView.numberOfNodes(), cleanZones, mixedZones);
     }
+    // _mir_utilities_zlb_end
     SLIC_ASSERT((cleanZones.size() + mixedZones.size()) ==
                 m_topologyView.numberOfZones());
     SLIC_INFO(axom::fmt::format("cleanZones: {}, mixedZones: {}",
@@ -464,6 +466,7 @@ protected:
   #endif
 
       // Merge clean and MIR output.
+      // _mir_utilities_mergemeshes_begin
       std::vector<bputils::MeshInput> inputs(2);
       inputs[0].m_input = &n_cleanOutput;
 
@@ -475,6 +478,7 @@ protected:
       mmOpts["topology"] = n_topo.name();
       bputils::MergeMeshes<ExecSpace> mm;
       mm.execute(inputs, mmOpts, n_merged);
+      // _mir_utilities_mergemeshes_end
 
   #if defined(AXOM_EQUIZ_DEBUG)
       std::cout << "--- clean ---\n";
