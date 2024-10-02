@@ -110,7 +110,7 @@ std::shared_ptr<mint::Mesh> DiscreteShape::createMeshRepresentation()
   const axom::klee::Geometry& geometry = m_shape.getGeometry();
   const auto& geometryFormat = geometry.getFormat();
 
-  if(geometryFormat == "memory-blueprint")
+  if(geometryFormat == "blueprint-tets")
   {
     // Put the in-memory geometry in m_meshRep.
     const axom::sidre::Group* inputGroup = geometry.getBlueprintMesh();

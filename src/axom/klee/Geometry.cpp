@@ -6,6 +6,7 @@
 #include "axom/klee/Geometry.hpp"
 
 #include "axom/klee/GeometryOperators.hpp"
+#include "conduit_blueprint_mesh.hpp"
 
 #include <utility>
 
@@ -35,13 +36,18 @@ Geometry::Geometry(const TransformableGeometryProperties& startProperties,
                    const std::string& topology,
                    std::shared_ptr<GeometryOperator const> operator_)
   : m_startProperties(startProperties)
-  , m_format("memory-blueprint")
+  , m_format("blueprint-tets")
   , m_path()
   , m_meshGroup(meshGroup)
   , m_topology(topology)
   , m_levelOfRefinement(0)
   , m_operator(std::move(operator_))
-{ }
+{
+#ifdef AXOM_DEBUG
+  SLIC_ASSERT_MSG(isBlueprintTetMesh(m_meshGroup),
+                  "Mesh provided to Geometry is not a valid blueprint unstructured tetrahedral mesh.");
+#endif
+}
 
 Geometry::Geometry(const TransformableGeometryProperties& startProperties,
                    const axom::primal::Tetrahedron<double, 3>& tet,
@@ -78,8 +84,8 @@ Geometry::Geometry(const TransformableGeometryProperties& startProperties,
   , m_path()
   , m_meshGroup(nullptr)
   , m_topology()
-  , m_levelOfRefinement(levelOfRefinement)
   , m_sphere(sphere)
+  , m_levelOfRefinement(levelOfRefinement)
   , m_operator(std::move(operator_))
 { }
 
@@ -94,11 +100,11 @@ Geometry::Geometry(const TransformableGeometryProperties& startProperties,
   , m_path()
   , m_meshGroup(nullptr)
   , m_topology()
-  , m_levelOfRefinement(levelOfRefinement)
   , m_sphere()
   , m_discreteFunction(discreteFunction)
   , m_vorBase(vorBase)
   , m_vorDirection(vorDirection)
+  , m_levelOfRefinement(levelOfRefinement)
   , m_operator(std::move(operator_))
 { }
 
@@ -117,7 +123,7 @@ Geometry::Geometry(const TransformableGeometryProperties& startProperties,
 
 bool Geometry::hasGeometry() const
 {
-  bool isInMemory = m_format == "memory-blueprint" || m_format == "sphere3D" ||
+  bool isInMemory = m_format == "blueprint-tets" || m_format == "sphere3D" ||
     m_format == "tet3D" || m_format == "hex3D" || m_format == "plane3D" ||
     m_format == "cone3D" || m_format == "cylinder3D";
   if(isInMemory)
@@ -156,6 +162,45 @@ const std::string& Geometry::getBlueprintTopology() const
       "as a blueprint mesh and/or has not been converted into one.",
       m_format));
   return m_topology;
+}
+
+
+bool Geometry::isBlueprintTetMesh(const axom::sidre::Group *meshGroup) const
+{
+  conduit::Node bpMesh;
+  meshGroup->createNativeLayout(bpMesh);
+
+  conduit::Node info;
+  bool isValid = conduit::blueprint::mesh::verify(bpMesh, info);
+  if (!isValid)
+  {
+    return false;
+  }
+
+  const auto& topology = bpMesh.fetch_existing(axom::fmt::format("topologies/{}", m_topology));
+
+  std::string coordsetName = topology.fetch_existing("coordset").as_string();
+  const auto& coordSet = bpMesh.fetch_existing(axom::fmt::format("coordsets/{}", coordsetName));
+
+  auto dim = conduit::blueprint::mesh::coordset::dims(coordSet);
+  if (dim !=  3)
+  {
+    return false;
+  }
+
+  auto topoType = topology.fetch_existing("type").as_string();
+  if (topoType != "unstructured")
+  {
+    return false;
+  }
+
+  auto shapeType = topology.fetch_existing("elements/shape").as_string();
+  if (shapeType != "tet")
+  {
+    return false;
+  }
+
+  return true;
 }
 
 }  // namespace klee

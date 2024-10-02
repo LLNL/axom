@@ -178,12 +178,13 @@ public:
            std::shared_ptr<GeometryOperator const> operator_);
 
   /**
-   * Get the format in which the geometry is specified.
+   * @brief Get the format in which the geometry was specified.
    *
+   * The format is determined by the constructor used.
    * Values are:
    * - "c2c" = C2C file
    * - "proe" = ProE file
-   * - "memory-blueprint" = Blueprint tetrahedral mesh in memory
+   * - "blueprint-tets" = Blueprint tetrahedral mesh in memory
    * - "tet3D" = 3D tetrahedron (4 points)
    * - "sphere3D" = 3D sphere, as \c primal::Sphere<double,3>
    * - "vor3D" = 3D volume of revolution.
@@ -313,7 +314,7 @@ public:
 private:
   TransformableGeometryProperties m_startProperties;
 
-  //!@brief Geometry file format.
+  //!@brief Geometry format.
   std::string m_format;
 
   //!@brief Geometry file path, if it's file-based.
@@ -334,21 +335,25 @@ private:
   //!@brief The plane, if used.
   Plane3D m_plane;
 
-  //!@brief Level of refinement for discretizing analytical shapes
-  // and surfaces of revolutions.
-  axom::IndexType m_levelOfRefinement = 0;
-
   //!@brief The analytical sphere, if used.
   Sphere3D m_sphere;
 
   //! @brief The discrete 2D function, as an Nx2 array, if used.
   axom::Array<double, 2> m_discreteFunction;
-  //!@brief The base of the VOR axis, corresponding to z=0.
+
+  //!@brief The point corresponding to z=0 on the VOR axis.
   Point3D m_vorBase;
+
   //!@brief VOR axis in the direction of increasing z.
   Vector3D m_vorDirection;
 
+  //!@brief Level of refinement for discretizing curved
+  // analytical shapes and surfaces of revolutions.
+  axom::IndexType m_levelOfRefinement = 0;
+
   std::shared_ptr<const GeometryOperator> m_operator;
+
+  bool isBlueprintTetMesh(const axom::sidre::Group *meshGroup) const;
 };
 
 }  // namespace klee
