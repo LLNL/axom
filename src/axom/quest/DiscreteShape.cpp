@@ -90,6 +90,11 @@ DiscreteShape::DiscreteShape(const axom::klee::Shape& shape,
 {
   setPrefixPath(prefixPath);
   setParentGroup(parentGroup);
+
+  if (parentGroup == nullptr && m_shape.getGeometry().getFormat() == "blueprint-tets")
+  {
+    SLIC_ERROR("DiscreteShape: Support for Blueprint-mesh shape format currently requires a non-null parentGroup in the constructor.  This restriction can be lifted with additional coding, so please file an issue with the Axom team if you need this feature.");
+  }
 }
 
 void DiscreteShape::clearInternalData() { m_meshRep.reset(); }
@@ -230,6 +235,8 @@ std::shared_ptr<mint::Mesh> DiscreteShape::createMeshRepresentation()
 
 void DiscreteShape::createBlueprintTetsRepresentation()
 {
+  SLIC_ASSERT(m_sidreGroup != nullptr);
+
   const axom::klee::Geometry& geometry = m_shape.getGeometry();
 
   // Put the in-memory geometry in m_meshRep.
@@ -242,6 +249,13 @@ void DiscreteShape::createBlueprintTetsRepresentation()
     modName = modName + "-";
   }
 
+  /*
+    We use a sidre::Group::deepCopyGroup as a convenient way to copy
+    the mesh.  This requires a non-null m_sidreGroup.  This
+    restriction can be lifted if we implement code to copy the
+    inputGroup directly into an mint::UnstructuredMesh without putting
+    it into another sidre::Group.  We currently don't have that.
+  */
   axom::sidre::Group* modGroup = m_sidreGroup->createGroup(modName);
   modGroup->deepCopyGroup(inputGroup, allocID);
 
