@@ -712,9 +712,19 @@ void DiscreteShape::setParentGroup(axom::sidre::Group* parentGroup)
 {
   if(parentGroup)
   {
-    std::ostringstream os;
-    os << this;
-    std::string myGroupName = os.str();
+    // Use object address to create a unique name for sidre group under parent.
+    std::string myGroupName;
+    int i = 0;
+    while (myGroupName.empty())
+    {
+      std::ostringstream os;
+      os << "DiscreteShapeTemp-" << i;
+      if ( !parentGroup->hasGroup(os.str()) )
+      {
+        myGroupName = os.str();
+      }
+      ++i;
+    }
     m_sidreGroup = parentGroup->createGroup(myGroupName);
   }
 }
