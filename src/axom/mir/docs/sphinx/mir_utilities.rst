@@ -10,7 +10,7 @@ MIR Blueprint Utilities
 The MIR component contains several useful building blocks for writing algorithms
 for Blueprint meshes.
 
- * Structured as classes with an ``execute()`` method to permit them to contain state or divide their algorithm into stages in various methods.
+ * Structured as classes with an ``execute()`` method to permit them to divide algorithm into various methods.
  * Often templated on execution space and views
 
 #######################
@@ -26,13 +26,13 @@ memory space, which lets algorithms on the host side query them. For data that h
 to the device, their sizes and data types can still be queried using normal Conduit mechanisms
 such as getting metadata via the ``conduit::Node::dtype()`` method.
 
-  .. codeblock{.cpp}::
+  .. codeblock:: cpp
 
-     conduit::Node hostMesh, deviceMesh, hostMesh2;
-     // host->device
-     axom::mir::utilities::blueprint::copy<axom::HIP_EXEC<256>>(deviceMesh, hostMesh);
-     // device->host
-     axom::mir::utilities::blueprint::copy<axom::SEQ_EXEC>(hostMesh2, deviceMesh);
+      conduit::Node hostMesh, deviceMesh, hostMesh2;
+      // host->device
+      axom::mir::utilities::blueprint::copy<axom::HIP_EXEC<256>>(deviceMesh, hostMesh);
+      // device->host
+      axom::mir::utilities::blueprint::copy<axom::SEQ_EXEC>(hostMesh2, deviceMesh);
 
 ############################
 ConduitAllocateThroughAxom

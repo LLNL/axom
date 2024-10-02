@@ -153,6 +153,108 @@ TEST(mir_equiz, equiz_uniform_unibuffer_hip)
 }
 #endif
 
+#if 0 // FIXME
+//------------------------------------------------------------------------------
+template <typename ExecSpace>
+void braid3d_mat_test(const std::string &type,
+                      const std::string &mattype,
+                      const std::string &name)
+{
+  namespace bputils = axom::mir::utilities::blueprint;
+
+  axom::StackArray<axom::IndexType, 3> dims {10, 10, 10};
+  axom::StackArray<axom::IndexType, 3> zoneDims {dims[0] - 1, dims[1] - 1, dims[2] - 1};
+
+  // Create the data
+  conduit::Node hostMesh, deviceMesh;
+  axom::mir::testing::data::braid(type, dims, hostMesh);
+  axom::mir::testing::data::make_matset(mattype, "mesh", zoneDims, hostMesh);
+  axom::mir::utilities::blueprint::copy<ExecSpace>(deviceMesh, hostMesh);
+#if defined(AXOM_TESTING_SAVE_VISUALIZATION)
+  conduit::relay::io::blueprint::save_mesh(hostMesh, name + "_orig", "hdf5");
+#endif
+
+  // Make views.
+  auto coordsetView = axom::mir::views::make_explicit_coordset<float, 3>::view(
+    deviceMesh["coordsets/coords"]);
+  using CoordsetView = decltype(coordsetView);
+
+  using ShapeType = axom::mir::views::HexShape<int>;
+  using TopologyView = axom::mir::views::UnstructuredTopologySingleShapeView<ShapeType>;
+  TopologyView topologyView(deviceMesh["topologies/mesh"]);
+
+  conduit::Node deviceMIRMesh;
+  if(mattype == "unibuffer")
+  {
+    // clang-format off
+    using MatsetView = axom::mir::views::UnibufferMaterialView<int, float, 3>;
+    MatsetView matsetView;
+    matsetView.set(bputils::make_array_view<int>(deviceMesh["matsets/mat/material_ids"]),
+                   bputils::make_array_view<float>(deviceMesh["matsets/mat/volume_fractions"]),
+                   bputils::make_array_view<int>(deviceMesh["matsets/mat/sizes"]),
+                   bputils::make_array_view<int>(deviceMesh["matsets/mat/offsets"]),
+                   bputils::make_array_view<int>(deviceMesh["matsets/mat/indices"]));
+    // clang-format on
+
+    using MIR =
+      axom::mir::EquiZAlgorithm<ExecSpace, TopologyView, CoordsetView, MatsetView>;
+    MIR m(topologyView, coordsetView, matsetView);
+    conduit::Node options;
+    options["matset"] = "mat";
+    m.execute(deviceMesh, options, deviceMIRMesh);
+  }
+
+  // device->host
+  conduit::Node hostMIRMesh;
+  axom::mir::utilities::blueprint::copy<seq_exec>(hostMIRMesh, deviceMIRMesh);
+
+#if defined(AXOM_TESTING_SAVE_VISUALIZATION)
+  conduit::relay::io::blueprint::save_mesh(hostMIRMesh, name, "hdf5");
+#endif
+  // Handle baseline comparison.
+  {
+    std::string baselineName(yamlRoot(name));
+    const auto paths = baselinePaths<ExecSpace>();
+#if defined(AXOM_TESTING_GENERATE_BASELINES)
+    saveBaseline(paths, baselineName, hostMIRMesh);
+#else
+    EXPECT_TRUE(compareBaseline(paths, baselineName, hostMIRMesh));
+#endif
+  }
+}
+
+//------------------------------------------------------------------------------
+TEST(mir_equiz, equiz_hex_unibuffer_seq)
+{
+  AXOM_ANNOTATE_SCOPE("equiz_explicit_hex_seq");
+  braid3d_mat_test<seq_exec>("hex", "unibuffer", "equiz_hex_unibuffer");
+}
+
+#if defined(AXOM_USE_OPENMP)
+TEST(mir_equiz, equiz_hex_unibuffer_omp)
+{
+  AXOM_ANNOTATE_SCOPE("equiz_hex_unibuffer_omp");
+  braid3d_mat_test<omp_exec>("hex", "unibuffer", "equiz_hex_unibuffer");
+}
+#endif
+
+#if defined(AXOM_USE_CUDA)
+TEST(mir_equiz, equiz_hex_unibuffer_cuda)
+{
+  AXOM_ANNOTATE_SCOPE("equiz_hex_unibuffer_cuda");
+  braid3d_mat_test<cuda_exec>("hex", "unibuffer", "equiz_hex_unibuffer");
+}
+#endif
+
+#if defined(AXOM_USE_HIP)
+TEST(mir_equiz, equiz_hex_unibuffer_hip)
+{
+  AXOM_ANNOTATE_SCOPE("equiz_hex_unibuffer_hip");
+  braid3d_mat_test<hip_exec>("hex", "unibuffer", "equiz_hex_unibuffer");
+}
+#endif
+#endif
+
 //------------------------------------------------------------------------------
 #if defined(DEBUGGING_TEST_CASES)
 void conduit_debug_err_handler(const std::string &s1, const std::string &s2, int i1)

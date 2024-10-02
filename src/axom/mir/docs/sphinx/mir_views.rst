@@ -23,10 +23,10 @@ function to help wrap arrays stored in ``conduit::Node`` to ``axom::ArrayView``.
 ``make_array_view`` function, one must know the type held within the Conduit node. If that is
 not the case, then consider using one of the dispatch ''Node_to_ArrayView'' functions.
 
-  .. codeblock{.cpp}::
+  .. codeblock:: cpp
 
-     // Make an axom::ArrayView<float> for X coordinate components.
-     auto x = axom::mir::blueprint::make_array_view<float>(n_mesh["coordsets/coords/values/x"]);
+      // Make an axom::ArrayView<float> for X coordinate components.
+      auto x = axom::mir::blueprint::make_array_view<float>(n_mesh["coordsets/coords/values/x"]);
 
 
 ----------
@@ -36,25 +36,20 @@ Coordsets
 Blueprint supports multiple coordset types: uniform, rectilinear, explicit. Axom provides functions
 to explicitly create coordset views for each of these types.
 
-  .. codeblock{.cpp}::
+  .. codeblock:: cpp
 
-     // Make a 2D uniform coordset view
-     auto view1 = axom::mir::views::make_uniform_coordset<2>::view(n_mesh["coordsets/coords"]);
-
-     // Make a 3D uniform coordset view
-     auto view2 = axom::mir::views::make_uniform_coordset<3>::view(n_mesh["coordsets/coords"]);
-
-     // Make a 2D rectilinear coordset view with float coordinates
-     auto view3 = axom::mir::views::make_rectilinear_coordset<float, 2>::view(n_mesh["coordsets/coords"]);
-
-     // Make a 3D rectilinear coordset view with double coordinates
-     auto view4 = axom::mir::views::make_rectilinear_coordset<double, 3>::view(n_mesh["coordsets/coords"]);
-
-     // Make a 2D explicit coordset view with float coordinates
-     auto view5 = axom::mir::views::make_explicit_coordset<float, 2>::view(n_mesh["coordsets/coords"]);
-
-     // Make a 3D explicit coordset view with double coordinates
-     auto view6 = axom::mir::views::make_explicit_coordset<double, 3>::view(n_mesh["coordsets/coords"]);
+      // Make a 2D uniform coordset view
+      auto view1 = axom::mir::views::make_uniform_coordset<2>::view(n_mesh["coordsets/coords"]);
+      // Make a 3D uniform coordset view
+      auto view2 = axom::mir::views::make_uniform_coordset<3>::view(n_mesh["coordsets/coords"]);
+      // Make a 2D rectilinear coordset view with float coordinates
+      auto view3 = axom::mir::views::make_rectilinear_coordset<float, 2>::view(n_mesh["coordsets/coords"]);
+      // Make a 3D rectilinear coordset view with double coordinates
+      auto view4 = axom::mir::views::make_rectilinear_coordset<double, 3>::view(n_mesh["coordsets/coords"]);
+      // Make a 2D explicit coordset view with float coordinates
+      auto view5 = axom::mir::views::make_explicit_coordset<float, 2>::view(n_mesh["coordsets/coords"]);
+      // Make a 3D explicit coordset view with double coordinates
+      auto view6 = axom::mir::views::make_explicit_coordset<double, 3>::view(n_mesh["coordsets/coords"]);
 
 
 ----------------
@@ -77,17 +72,17 @@ strided-structured Blueprint meshes, which are structured meshes that exist over
 of the overall mesh. There are helper functions for creating structured topology views from
 a Conduit node.
 
-  .. codeblock{.cpp}::
+  .. codeblock:: cpp
 
-     conduit::Node &n_topo1 = n_mesh["topologies/mesh2d"];
-     conduit::Node &n_topo2 = n_mesh["topologies/mesh3d"];
-     conduit::Node &n_topo3 = n_mesh["topologies/mesh2dss"];
-     // Make a 2D structured mesh view from the topology.
-     auto topologyView1 = axom::mir::views::make_structured<2>::view(n_topo1);
-     // Make a 3D structured mesh view from the topology.
-     auto topologyView2 = axom::mir::views::make_structured<2>::view(n_topo2);
-     // Make a 2D strided-structured mesh view from the topology.
-     auto topologyView3 = axom::mir::views::make_strided_structured<2>::view(n_topo3);
+      conduit::Node &n_topo1 = n_mesh["topologies/mesh2d"];
+      conduit::Node &n_topo2 = n_mesh["topologies/mesh3d"];
+      conduit::Node &n_topo3 = n_mesh["topologies/mesh2dss"];
+      // Make a 2D structured mesh view from the topology.
+      auto topologyView1 = axom::mir::views::make_structured<2>::view(n_topo1);
+      // Make a 3D structured mesh view from the topology.
+      auto topologyView2 = axom::mir::views::make_structured<2>::view(n_topo2);
+      // Make a 2D strided-structured mesh view from the topology.
+      auto topologyView3 = axom::mir::views::make_strided_structured<2>::view(n_topo3);
 
 ^^^^^^^^^^^^^^^^^^^^^^^^
 Unstructured Mesh Views
@@ -97,13 +92,13 @@ There are 3 unstructured mesh views. The ``UnstructuredTopologySingleShapeView``
 Blueprint topology that contains a single zone/shape type. The zone type is a template argument
 that determines the type of zone that is held within the topology.
 
-  .. codeblock{.cpp}::
+  .. codeblock:: cpp
 
-     // Make a topology view for a tetrahedral mesh with int connectivity.
-     namespace bputils = axom::mir::utilities::blueprint;
-     const conduit::Node &n_topo = n_mesh["topologies/mesh"];
-     const auto connView = bputils::make_array_view<int>(n_topo["elements/connectivity"]);
-     axom::mir::views::UnstructuredTopologySingleShapeView<axom::mir::views::TetShape<int>> view(connView);
+      // Make a topology view for a tetrahedral mesh with int connectivity.
+      namespace bputils = axom::mir::utilities::blueprint;
+      const conduit::Node &n_topo = n_mesh["topologies/mesh"];
+      const auto connView = bputils::make_array_view<int>(n_topo["elements/connectivity"]);
+      axom::mir::views::UnstructuredTopologySingleShapeView<axom::mir::views::TetShape<int>> view(connView);
 
 There are multiple shape types defined in ``axom/mir/views/Shapes.hpp`` that can be used with
 the ``UnstructuredTopologySingleShapeView``: TriShape, QuadShape, TetShape, PyramidShape,
@@ -113,39 +108,39 @@ Blueprint supports "mixed" topologies that contain multiple shape types. These t
 handled using the ``axom::mir::views::UnstructuredTopologyMixedShapeView``. Additional array
 views are needed to supply the sizes, offsets, and shapes arrays.
 
-  .. codeblock{.cpp}::
+  .. codeblock:: cpp
 
-     // A shape map helps map values from the values used in the Blueprint topology to
-     // the shape ids used in Axom.
-     const conduit::Node &n_topo = n_mesh["topologies/mesh"];
-     axom::Array<int> ids, values;
-     auto shapeMap = axom::mir::views::buildShapeMap(n_topo);
+      // A shape map helps map values from the values used in the Blueprint topology to
+      // the shape ids used in Axom.
+      const conduit::Node &n_topo = n_mesh["topologies/mesh"];
+      axom::Array<int> ids, values;
+      auto shapeMap = axom::mir::views::buildShapeMap(n_topo);
 
-     namespace bputils = axom::mir::utilities::blueprint;
-     axom::mir::views::UnstructuredTopologyMixedShapeView<int> view(
-       bputils::make_array_view(n_topo["elements/connectivity"),
-       bputils::make_array_view(n_topo["elements/sizes"),
-       bputils::make_array_view(n_topo["elements/offsets"),
-       bputils::make_array_view(n_topo["elements/shapes"),
-       shapeMap);
+      namespace bputils = axom::mir::utilities::blueprint;
+      axom::mir::views::UnstructuredTopologyMixedShapeView<int> view(
+        bputils::make_array_view(n_topo["elements/connectivity"),
+        bputils::make_array_view(n_topo["elements/sizes"),
+        bputils::make_array_view(n_topo["elements/offsets"),
+        bputils::make_array_view(n_topo["elements/shapes"),
+        shapeMap);
 
 Once a suitable topology view type has wrapped the Blueprint topology, it can be used in
 device kernels to obtain zone information.
 
-  .. codeblock{.cpp}::
+  .. codeblock:: cpp
 
-     topologyView = ...
-     axom::for_all<ExecSpace>(topologyView.numberOfZones(), AXOM_LAMBDA(axom::IndexType zoneIndex)
-     {
-       // Get the current zone.
-       const auto zone = topologyView.zone(zoneIndex);
+      topologyView = ...
+      axom::for_all<ExecSpace>(topologyView.numberOfZones(), AXOM_LAMBDA(axom::IndexType zoneIndex)
+      {
+        // Get the current zone.
+        const auto zone = topologyView.zone(zoneIndex);
 
-       // Iterate over this zone's nodes.
-       for(const auto &nodeId : zone.getIds())
-       {
-         // Do something.
-       }
-     });
+        // Iterate over this zone's nodes.
+        for(const auto &nodeId : zone.getIds())
+        {
+          // Do something.
+        }
+      });
 
 ----------
 Matsets
@@ -187,14 +182,14 @@ To generically wrap any type of datatype supported by Conduit, the ``axom::mir::
 function can be used. This template function takes a variable number of ``conduit::Node``
 arguments and a generic lambda function that accepts the view arguments.
 
-  .. codeblock{.cpp}::
+  .. codeblock:: cpp
 
-     conduit::Node n; // Assume it contains data values
-     axom::mir::views::Node_to_ArrayView(n["foo"], n["bar"], [&](auto fooView, auto barView)
-     {
-       // Use fooView and barView axom::ArrayView objects to access data.
-       // They can have different types.
-     });
+      conduit::Node n; // Assume it contains data values
+      axom::mir::views::Node_to_ArrayView(n["foo"], n["bar"], [&](auto fooView, auto barView)
+      {
+        // Use fooView and barView axom::ArrayView objects to access data.
+        // They can have different types.
+      });
 
 Using ``axom::mir::views::Node_to_ArrayView`` with multiple data values can instantiate
 the supplied lambda many times so be careful. It is more common that when wrapping multiple
@@ -202,14 +197,14 @@ nodes that they are the same type. The ``axom::mir::views::Node_to_ArrayView_sam
 will ensure that the lambdas get instantiated with views that wrap the Conduit  nodes in
 array views that of the same type.
 
-  .. codeblock{.cpp}::
+  .. codeblock:: cpp
 
-     conduit::Node n; // Assume it contains data values
-     axom::mir::views::Node_to_ArrayView_same(n["foo"], n["bar"], [&](auto fooView, auto barView)
-     {
-       // Use fooView and barView axom::ArrayView objects to access data.
-       // They have the same types.
-     });
+      conduit::Node n; // Assume it contains data values
+      axom::mir::views::Node_to_ArrayView_same(n["foo"], n["bar"], [&](auto fooView, auto barView)
+      {
+        // Use fooView and barView axom::ArrayView objects to access data.
+        // They have the same types.
+      });
 
 When dealing with mesh data structures, it is common to have data that are using only integer
 types or only floating-point types. Axom provides functions that limit the lambda instantiation
@@ -231,15 +226,14 @@ Coordsets
 The ``axom::mir::views::dispatch_coordset()`` function can wrap Blueprint coordsets in an
 appropriate view and pass it to a lambda function.
 
- .. codeblock{.cpp}::
+ .. codeblock:: cpp
 
-    const conduit::Node &n_coordset = n_mesh["coordsets/coords"];
-    axom::mir::views::dispatch_coordset(n_coordset, [&](auto coordsetView) {
-      // Get the C++ type of the coordset.
-      using CoordsetView = decltype(CoordsetView);
-
-      // Implement algorithm using coordsetView.
-    });
+     const conduit::Node &n_coordset = n_mesh["coordsets/coords"];
+     axom::mir::views::dispatch_coordset(n_coordset, [&](auto coordsetView) {
+       // Get the C++ type of the coordset.
+       using CoordsetView = decltype(CoordsetView);
+       // Implement algorithm using coordsetView.
+     });
 
 ^^^^^^^^^^^
 Topologies
@@ -250,47 +244,47 @@ topology types through a topology view. These dispatch functions can be called f
 topology types such as unstructured topologies or they can be called to implement algorithms
 that can operate on any topology.
 
- .. codeblock{.cpp}::
+ .. codeblock:: cpp
 
-    const conduit::Node &n_topo = n_mesh["topologies/mesh"];
-    // Handle rectilinear topology type.
-    axom::mir::views::dispatch_rectilinear_topology(n_topo, [&](auto topologyView) {
-    });
-    // Handle structured topology types
-    axom::mir::views::dispatch_structured_topology(n_topo, [&](auto topologyView) {
-    });
-    // Handle unstructured topology types
-    axom::mir::views::dispatch_unstructured_topology(n_topo, [&](auto topologyView) {
-    });
-    // Handle any topology type.
-    axom::mir::views::dispatch_topologies(n_topo, [&](auto topologyView) {
-    });
+     const conduit::Node &n_topo = n_mesh["topologies/mesh"];
+     // Handle rectilinear topology type.
+     axom::mir::views::dispatch_rectilinear_topology(n_topo, [&](auto topologyView) {
+     });
+     // Handle structured topology types
+     axom::mir::views::dispatch_structured_topology(n_topo, [&](auto topologyView) {
+     });
+     // Handle unstructured topology types
+     axom::mir::views::dispatch_unstructured_topology(n_topo, [&](auto topologyView) {
+     });
+     // Handle any topology type.
+     axom::mir::views::dispatch_topologies(n_topo, [&](auto topologyView) {
+     });
 
 Nesting dispatch functions permits the calling code to handle both coordset views and
 topology views using a single lambda function for the algorithm. For portability, the
 algorithm should be placed in a function or class member method when instantiated from
 the anonymous lambda function from the dispatch functions.
 
-  .. codeblock{.cpp}::
+  .. codeblock:: cpp
 
-    struct Algorithm
-    {
-      void execute(const conduit::Node &n_mesh)
+      struct Algorithm
       {
-        // Handle product of coordset types and topology types.
-        axom::mir::views::dispatch_coordset(n_mesh["coordsets/coords"], [&](auto coordsetView)
+        void execute(const conduit::Node &n_mesh)
         {
-          axom::mir::views::dispatch_topologies(n_mesh["topologies/mesh"], [&](auto topologyView)
+          // Handle product of coordset types and topology types.
+          axom::mir::views::dispatch_coordset(n_mesh["coordsets/coords"], [&](auto coordsetView)
           {
-            implementation(coordsetView, topologyView);
+            axom::mir::views::dispatch_topologies(n_mesh["topologies/mesh"], [&](auto topologyView)
+            {
+              implementation(coordsetView, topologyView);
+            });
           });
-        });
-      }
+        }
 
-      template <typename CoordsetView, typename TopologyView>
-      void implementation(CoordsetView coordsetView, TopologyView topologyView) const
-      {
-        // Do algorithm that involves coordsetView and topologyView.
-      }
-    };
+        template <typename CoordsetView, typename TopologyView>
+        void implementation(CoordsetView coordsetView, TopologyView topologyView) const
+        {
+          // Algorithm that involves coordsetView and topologyView.
+        }
+      };
 

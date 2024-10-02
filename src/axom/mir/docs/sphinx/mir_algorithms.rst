@@ -9,7 +9,7 @@ MIR Algorithms
 
 The MIR component contains MIR algorithms that will take a Blueprint mesh as input,
 perform MIR on it, and output a new Blueprint mesh with the reconstructed output.
-A Blueprint mesh is contained in a ``conduit::Node`` and it follows the [https://llnl-conduit.readthedocs.io/en/latest/blueprint_mesh.html](Blueprint protocol),
+A Blueprint mesh is contained in a ``conduit::Node`` and it follows the `Blueprint protocol <https://llnl-conduit.readthedocs.io/en/latest/blueprint_mesh.html>`_,
 which means the node contains specific items that describe the mesh coordinates, topology, fields, and materials.
 
 #######
@@ -23,6 +23,17 @@ space where it will be used.
 +---------------------------------+------------------------------------------------------+
 | Option                          | Description                                          |
 +=================================+======================================================+
+| coordsetName: name              | The name of the new coordset in the output mesh. If  |
+|                                 | it is not provided, the output coordset will have the|
+|                                 | same name as the input coordset.                     |
++---------------------------------+------------------------------------------------------+
+| fields:                         | The fields node lets the caller provide a list of    |
+|   - currentName: newName        | field names that will be processed and added to the  |
+|   ...                           | output mesh. The form is currentName:newName. If the |
+|                                 | fields node is not given, the algorithm will process |
+|                                 | all input fields. If the fields node is empty then no|
+|                                 | fields will be processed.                            |
++---------------------------------+------------------------------------------------------+
 | matset: name                    | A required string argument that specifies the name   |
 |                                 | of the matset that will be operated on.              |
 +---------------------------------+------------------------------------------------------+
@@ -39,12 +50,16 @@ space where it will be used.
 |                                 | contributions from zone numbers in this list, if it  |
 |                                 | is given.                                            |
 +---------------------------------+------------------------------------------------------+
+| topologyName: name              | The name of the new topology in the output mesh. If  |
+|                                 | it is not provided, the output topology will have the|
+|                                 | same name as the input topology.                     |
++---------------------------------+------------------------------------------------------+
 
 ###############
 EquiZAlgorithm
 ###############
 
-The [https://www.google.com/url?sa=t&source=web&rct=j&opi=89978449&url=https://www.osti.gov/servlets/purl/15014510&ved=2ahUKEwittMui-euIAxUzxOYEHXTWA2kQFnoECBcQAQ&usg=AOvVaw3qbX9qgwCn4qDP0iZ3Sq0J](Equi-Z algorithm) by J. Meredith 
+The `Equi-Z algorithm <https://www.google.com/url?sa=t&source=web&rct=j&opi=89978449&url=https://www.osti.gov/servlets/purl/15014510&ved=2ahUKEwittMui-euIAxUzxOYEHXTWA2kQFnoECBcQAQ&usg=AOvVaw3qbX9qgwCn4qDP0iZ3Sq0J>`_ by J. Meredith 
 is a useful visualization-oriented algorithm for MIR. Whereas many MIR algorithms 
 produce disjointed element output, Equi-Z creates output that mostly forms continuous
 surfaces and shapes. Continuity is achieved by averaging material volume fractions to
@@ -90,12 +105,12 @@ function can be used to copy Conduit nodes from one memory space to another.
    :end-before: _equiz_mir_end
    :language: C++
 
-The MIR output will contain a new field called "originalElements" that indicates which
+The MIR output will contain a new field called _"originalElements"_ that indicates which
 original zone number gave rise to the reconstructed zone. This field makes it possible
 to map back to the original mesh. The name of the field can be changed using options.
 
 #####################
-Example Applications
+Example Application
 #####################
 
 The mir_concentric_circles application generates a uniform mesh populated with circular
@@ -122,16 +137,16 @@ To run the example program from the Axom build directory, follow these steps:
 
 .. figure:: figures/mir_concentric_circles.png
    :figwidth: 800px
-   :alt: Diagram showing MIR output from the mir_concentric_circles application.
+   :alt: Diagram showing MIR output from the _mir_concentric_circles_ application.
 
 #####################
 Visualization
 #####################
 
-The [https://visit-dav.github.io/visit-website/](VisIt software) can be used to
+The `VisIt software <https://visit-dav.github.io/visit-website/>`_ can be used to
 view the Blueprint output from MIR algorithms. Blueprint data is saved in an HDF5
 format and the top level file has a ".root" extension. Open the ".root" file in VisIt
-to get started and then add a "FilledBoundary" plot of the material defined on the
+to get started and then add a _FilledBoundary_ plot of the material defined on the
 mesh topology. Plotting the mesh lines will reveal that there is a single material
 per zone. If the input mesh is visualized in a similar manner, it will be evident that
 there are multiple materials in some of the zones, if viewing a mixed material dataset.

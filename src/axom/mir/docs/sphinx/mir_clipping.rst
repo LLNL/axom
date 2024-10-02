@@ -49,6 +49,17 @@ algorithm copies the options node to the memory space where it will be used.
 |                                 | name of the color field, which is called "color" by  |
 |                                 | default.                                             |
 +---------------------------------+------------------------------------------------------+
+| coordsetName: name              | The name of the new coordset in the output mesh. If  |
+|                                 | it is not provided, the output coordset will have the|
+|                                 | same name as the input coordset.                     |
++---------------------------------+------------------------------------------------------+
+| fields:                         | The fields node lets the caller provide a list of    |
+|   - currentName: newName        | field names that will be processed and added to the  |
+|   ...                           | output mesh. The form is currentName:newName. If the |
+|                                 | fields node is not given, the algorithm will process |
+|                                 | all input fields. If the fields node is empty then no|
+|                                 | fields will be processed.                            |
++---------------------------------+------------------------------------------------------+
 | inside: number                  | Indicates to the clipping algorithm that it should   |
 |                                 | preserve zone fragments that were "inside" the clip  |
 |                                 | boundary. Set to 1 to enable, 0 to disable. The      |
@@ -67,88 +78,59 @@ algorithm copies the options node to the memory space where it will be used.
 |                                 | contributions from zone numbers in this list, if it  |
 |                                 | is given.                                            |
 +---------------------------------+------------------------------------------------------+
+| topologyName: name              | The name of the new topology in the output mesh. If  |
+|                                 | it is not provided, the output topology will have the|
+|                                 | same name as the input topology.                     |
++---------------------------------+------------------------------------------------------+
 
 ##########
 ClipField
 ##########
 
 To use the ``ClipField`` class, one must have Blueprint data with at least one vertex-associated
-field. Views for the coordset and topology are created and used to instantiate the ``ClipField``
-class, which then takes an input node for the Blueprint mesh, an input node that contains
-the options, and a 3rd output node that will contain the clip output. The input mesh node
-needs to contain data arrays for coordinates, mesh topology, and fields that are in the
-memory space of the targeted device. Other Conduit nodes that contain strings or single numbers
-that can fit within a node are safe remaining in host memory. If the mesh is not in the
-desired memory space, it can be moved using ``axom::mir::utilities::blueprint::copy()``.
+field. Views for the coordset and topology are created and their types are used to instantiate
+a ``ClipField`` object. This takes a Conduit node for the input Blueprint mesh, a Conduit
+node that contains the options, and a 3rd output Conduit node that will contain the clipped
+mesh and fields. The input mesh node needs to contain data arrays for coordinates, mesh
+topology, and fields. These data must exist in the memory space of the targeted device.
+Other Conduit nodes that contain strings or single numbers that can fit within a Conduit
+node are safe remaining in host memory. If the mesh is not in the desired memory space, it
+can be moved using ``axom::mir::utilities::blueprint::copy()``.
 
-.. literalinclude:: ../../ClipField.cpp
-   :start-after: _mir_utilities_clipfield_start
-   :end-before: _mir_utilities_clipfield_end
-   :language: C++
+  .. codeblock:: cpp
 
-#############
+      #include "axom/mir.hpp"
+
+      // Set up views for the mesh in deviceRoot node.
+      auto coordsetView = axom::mir::views::make_rectilinear_coordset<float, 3>::view(deviceRoot["coordsets/coords"]);
+      auto topologyView = axom::mir::views::make_rectilinear<3>::view(deviceRoot["topologies/Mesh"]);
+
+      // Make a clipper.
+      using CoordsetView = decltype(coordsetView);
+      using TopologyView = decltype(topologyView);
+      using Clip = axom::mir::clipping::ClipField<axom::SEQ_EXEC, TopologyView, CoordsetView>;
+      Clip clipper(topologyView, coordsetView);
+
+      // Run the clip algorithm
+      conduit::Node options;
+      options["clipField"] = "data";
+      options["clipValue"] = 3.5;
+      options["outside"] = 1;
+      options["inside"] = 0;
+      clipper.execute(deviceRoot, options, clipOutput);
+
+
+.. figure:: figures/clipfield.png
+   :figwidth: 800px
+   :alt: Diagram showing original mesh colored by clipping field (left), original mesh colored by a radial field (middle), and the clipped mesh colored by the radial field (right).
+
+
+^^^^^^^^^^^^^
 Intersectors
-#############
+^^^^^^^^^^^^^
 
-An intersector is a class that is passed as a template argument to ``ClipField``. The intersector
-determines how the ``ClipField`` algorithm will generate intersection cases, for each zone
-in the mesh. The ``ClipField`` algorithm default intersector uses a field to determine clip
+An intersector is a policy class that is passed as a template argument to ``ClipField``. The
+intersector determines how the ``ClipField`` algorithm will generate intersection cases, for
+each zone in the mesh. The ``ClipField`` algorithm default intersector uses a field to determine clip
 cases, resulting in isosurface behavior for the geometry intersections. Alternative intersectors
 can be provided to achieve other types of intersections.
-
-An intersector needs to provide an interface like the following:
-
- .. codeblock{.cpp}::
-
-    template <typename ExecSpace, typename ConnectivityType>
-    class CustomIntersector
-    {
-    public:
-      using ConnectivityView = axom::ArrayView<ConnectivityType>;
-
-      // Internal view - runs on device.
-      struct View
-      {
-        // Given a zone index and the node ids that comprise the zone, return
-        // the appropriate clip case.
-        AXOM_HOST_DEVICE
-        axom::IndexType determineClipCase(axom::IndexType zoneIndex,
-                                          const ConnectivityView &nodeIds) const
-        {
-          axom::IndexType clipcase = 0;
-          for(IndexType i = 0; i < nodeIds.size(); i++)
-          {
-            const auto id = nodeIds[i];
-            const auto value = // Compute distance from node to surface.
-            clipcase |= (value > 0) ? (1 << i) : 0;
-          }
-          return clipcase;
-        }
-
-        // Compute the weight[0,1] of a clip value along an edge (id0, id1) using the clip field and value.
-        AXOM_HOST_DEVICE
-        ClipFieldType computeWeight(axom::IndexType zoneIndex,
-                                    ConnectivityType id0,
-                                    ConnectivityType id1) const
-        {
-          return 1.;
-        }
-      };
-
-      // Initialize the object from options (on host).
-      void initialize(const conduit::Node &n_options, const conduit::Node &n_fields)
-      {
-      }
-
-      // Determine the name of the topology on which to operate.
-      std::string getTopologyName(const conduit::Node &n_input,
-                                  const conduit::Node &n_options) const
-      {
-        return "mesh";
-      }
-
-      // Return a new instance of the view.
-      View view() const { return m_view; }
-
-      View m_view;
-    };
