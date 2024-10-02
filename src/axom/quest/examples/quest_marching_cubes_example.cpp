@@ -954,6 +954,7 @@ struct ContourTestBase
         checkCellsContainingContour(computationalMesh, contourMesh);
     }
 
+#ifdef AXOM_MINT_USE_SIDRE
     if(contourMesh.hasSidreGroup())
     {
       assert(contourMesh.getSidreGroup() == meshGroup);
@@ -962,6 +963,7 @@ struct ContourTestBase
       saveMesh(*contourMesh.getSidreGroup(), outputName);
       SLIC_INFO(axom::fmt::format("Wrote contour mesh to {}", outputName));
     }
+#endif
     AXOM_ANNOTATE_END("error checking");
 
     objectDS.getRoot()->destroyGroupAndData(sidreGroupName);
