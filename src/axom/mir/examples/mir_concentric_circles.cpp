@@ -89,6 +89,7 @@ int runMIR(const conduit::Node &hostMesh,
     axom::mir::EquiZAlgorithm<ExecSpace, TopoView, CoordsetView, MatsetView>;
   MIR m(topoView, coordsetView, matsetView);
   conduit::Node deviceResult;
+  options["matset"] = "mat";
   m.execute(deviceMesh, options, deviceResult);
   // _equiz_mir_end
 

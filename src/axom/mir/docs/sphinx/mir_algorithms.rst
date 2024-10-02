@@ -23,34 +23,34 @@ space where it will be used.
 +---------------------------------+------------------------------------------------------+
 | Option                          | Description                                          |
 +=================================+======================================================+
-| coordsetName: name              | The name of the new coordset in the output mesh. If  |
+|``coordsetName: name``           | The name of the new coordset in the output mesh. If  |
 |                                 | it is not provided, the output coordset will have the|
 |                                 | same name as the input coordset.                     |
 +---------------------------------+------------------------------------------------------+
-| fields:                         | The fields node lets the caller provide a list of    |
-|   - currentName: newName        | field names that will be processed and added to the  |
-|   ...                           | output mesh. The form is currentName:newName. If the |
-|                                 | fields node is not given, the algorithm will process |
-|                                 | all input fields. If the fields node is empty then no|
-|                                 | fields will be processed.                            |
+|``fields:``                      | The fields node lets the caller provide a list of    |
+|                                 | field names that will be processed and added to the  |
+|                                 | output mesh. The form is *currentName:newName*. If   |
+|                                 | the *fields* node is not given, the algorithm will   |
+|                                 | process all input fields. If the fields node is empty|
+|                                 | then no fields will be processed.                    |
 +---------------------------------+------------------------------------------------------+
-| matset: name                    | A required string argument that specifies the name   |
+| ``matset: name``                | A required string argument that specifies the name   |
 |                                 | of the matset that will be operated on.              |
 +---------------------------------+------------------------------------------------------+
-| matsetName: name                | An optional string argument that specifies the name  |
+| ``matsetName: name``            | An optional string argument that specifies the name  |
 |                                 | of the matset to create in the output. If the name   |
 |                                 | is not given, the output matset will have the same   |
 |                                 | name as the input matset.                            |
 +---------------------------------+------------------------------------------------------+
-| originalElementsField: name     | The name of the field in which to store the original |
+| ``originalElementsField: name`` | The name of the field in which to store the original |
 |                                 | elements map.                                        |
 +---------------------------------+------------------------------------------------------+
-| selectedZones: [zone list]      | An optional argument that provides a list of zone ids|
+| ``selectedZones: [zone list]``  | An optional argument that provides a list of zone ids|
 |                                 | on which to operate. The output mesh will only have  |
 |                                 | contributions from zone numbers in this list, if it  |
 |                                 | is given.                                            |
 +---------------------------------+------------------------------------------------------+
-| topologyName: name              | The name of the new topology in the output mesh. If  |
+| ``topologyName: name``          | The name of the new topology in the output mesh. If  |
 |                                 | it is not provided, the output topology will have the|
 |                                 | same name as the input topology.                     |
 +---------------------------------+------------------------------------------------------+
@@ -59,39 +59,39 @@ space where it will be used.
 EquiZAlgorithm
 ###############
 
-The `Equi-Z algorithm <https://www.google.com/url?sa=t&source=web&rct=j&opi=89978449&url=https://www.osti.gov/servlets/purl/15014510&ved=2ahUKEwittMui-euIAxUzxOYEHXTWA2kQFnoECBcQAQ&usg=AOvVaw3qbX9qgwCn4qDP0iZ3Sq0J>`_ by J. Meredith 
+The `Equi-Z MIR algorithm <https://www.google.com/url?sa=t&source=web&rct=j&opi=89978449&url=https://www.osti.gov/servlets/purl/15014510&ved=2ahUKEwittMui-euIAxUzxOYEHXTWA2kQFnoECBcQAQ&usg=AOvVaw3qbX9qgwCn4qDP0iZ3Sq0J>`_ by J. Meredith 
 is a useful visualization-oriented algorithm for MIR. Whereas many MIR algorithms 
 produce disjointed element output, Equi-Z creates output that mostly forms continuous
 surfaces and shapes. Continuity is achieved by averaging material volume fractions to
 the mesh nodes for each material and then performing successive clipping for each
 material, using the node-averaged volume fractions to determine where clipping occurs
 along each edge. The basic algorithm is lookup-based so shape decomposition for a
-clipped-zone can be easily determined. The cliping stage produces numerous zone fragments
-that are marked with the appropriate material number and moved onto the next material
+clipped-zone can be easily determined. The clipping stage produces numerous zone fragments
+that are marked with the appropriate material number and moved into the next material
 clipping stage. This concludes when all zones are comprised of only 1 material. From,
-there points are made unique and the output mesh is created with a new coordset, topology,
-fields, and matset.
+there points are made unique and a new output mesh is created.
 
-Axom's implementation of Equi-Z can run on the CPU and the GPU. First, the zones of
-interest are identified and they are classified as clean or mixed. The clean zones are
-pulled out early into a new mesh and mixed zones are sent into the Equi-Z algorithm to
-reconstruct clean zones. The two meshes are then merged together at the end in an output
-Conduit node.
+Axom's implementation of Equi-Z is data parallel and can run on the CPU and the GPU.
+First, the zones of interest are identified and they are classified as clean or mixed.
+Clean consist of a single material and are pulled out early into a new mesh while mixed
+zones are sent into the Equi-Z algorithm to reconstruct zones where material interfaces
+exist. The two meshes are finally merged to form a single output mesh. The mesh may
+consist of multiple Blueprint shape types in an unstructured "mixed" topology.
 
 Axom's implementation supports 2D/3D zones from structured or unstructured topologies
-made of Finite Element Zoo elements (e.g. triangles, quadrilaterals, tetrahedra, pyramids,
-wedges, hexahedra, or topologically-compatible mixtures). The MIR logic for Equi-Z is
-encapsulated in ``EquizAlgorithm``, which is a class that is templated on view objects.
+made of Finite Element Zoo elements *(e.g. triangles, quadrilaterals, tetrahedra, pyramids,
+wedges, hexahedra, or topologically-compatible mixtures)*. The MIR logic for Equi-Z is
+encapsulated in ``axom::mir::EquizAlgorithm``, which is a class that is templated on view objects.
 View objects help provide an interface between the Blueprint data and the MIR algorithm.
 At a minimum, an execution space and three views are required to instantiate the
 ``axom::mir::EquiZAlgorithm`` class. The execution space determines which compute backend will
 be used to execute the algorithm. The Blueprint data must exist in a compatible
-memory space for the execution space. The views are: _CoordsetView_, _TopologyView_, and
-_MaterialView_. The CoordsetView template argument lets the algorithm access the mesh's
+memory space for the execution space. The views are: *CoordsetView*, *TopologyView*, and
+*MaterialView*. The *CoordsetView* template argument lets the algorithm access the mesh's
 coordset using concrete data types and supports queries that return points. The
-TopologyView provides a set of operations that can be performed on meshes, mainly a
-device-aware method for retrieving individual zones that can be used in device kernels.
-The MaterialView provides an interface for matsets.
+*TopologyView* provides a set of operations that can be performed on meshes, mainly a
+method for retrieving individual zones that can be used in device kernels.
+The *MaterialView* provides an interface for querying matsets.
 
 Once view types have been created and views have been instantiated, the ``EquiZAlgorithm``
 algorithm can be instantiated and used. The ``EquiZAlgorithm`` class provides a single
@@ -105,7 +105,7 @@ function can be used to copy Conduit nodes from one memory space to another.
    :end-before: _equiz_mir_end
    :language: C++
 
-The MIR output will contain a new field called _"originalElements"_ that indicates which
+The MIR output will contain a new field called *"originalElements"* that indicates which
 original zone number gave rise to the reconstructed zone. This field makes it possible
 to map back to the original mesh. The name of the field can be changed using options.
 
@@ -137,7 +137,8 @@ To run the example program from the Axom build directory, follow these steps:
 
 .. figure:: figures/mir_concentric_circles.png
    :figwidth: 800px
-   :alt: Diagram showing MIR output from the _mir_concentric_circles_ application.
+
+   Diagram showing MIR output from the *mir_concentric_circles* application.
 
 #####################
 Visualization
@@ -146,7 +147,7 @@ Visualization
 The `VisIt software <https://visit-dav.github.io/visit-website/>`_ can be used to
 view the Blueprint output from MIR algorithms. Blueprint data is saved in an HDF5
 format and the top level file has a ".root" extension. Open the ".root" file in VisIt
-to get started and then add a _FilledBoundary_ plot of the material defined on the
+to get started and then add a *FilledBoundary* plot of the material defined on the
 mesh topology. Plotting the mesh lines will reveal that there is a single material
 per zone. If the input mesh is visualized in a similar manner, it will be evident that
 there are multiple materials in some of the zones, if viewing a mixed material dataset.

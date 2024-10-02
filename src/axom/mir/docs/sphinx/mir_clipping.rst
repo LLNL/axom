@@ -15,70 +15,70 @@ template arguments that govern where it will execute, which coordset and topolog
 types it supports, and how it performs intersection. The input to the algorithm is
 a Blueprint mesh and when instantiated with coordset and topology views appropriate
 for the input data, the algorithm can operate on a wide variety of mesh types. This
-includes 2D/3D structured and unstructured topologies, that can be represented using
+includes 2D/3D structured and unstructured topologies that can be represented using
 finite elements.
 
 By default, the algorithm will clip using a field but other intersection routines
 can be substituted via a template argument to facilitate creation of clipping using
 planes, spheres, surfaces of revolution, etc. The Equi-Z algorithm uses ClipField
-with an intersector that uses material volume fractions to determine the clipped geometry.
+with an intersector that examines material volume fractions to determine the clipped geometry.
 
 #######
 Inputs
 #######
 
 Like the MIR algorithms, the clipping algorithm is designed to accept a Conduit node
-containing various options that can influence how the algorithm operates. The clipping
+containing various options that influence how the algorithm operates. The clipping
 algorithm copies the options node to the memory space where it will be used.
 
 +---------------------------------+------------------------------------------------------+
 | Option                          | Description                                          |
 +=================================+======================================================+
-| clipField: name                 | A required string argument that specifies the name   |
+| ``clipField: name``             | A required string argument that specifies the name   |
 |                                 | of the field that is used for clipping. At present,  |
 |                                 | the field must be a vertex-associated field.         |
 +---------------------------------+------------------------------------------------------+
-| clipValue: value                | An optional numeric argument that specifies the      |
+| ``clipValue: value``            | An optional numeric argument that specifies the      |
 |                                 | value in the field at which the clip boundary is     |
 |                                 | defined. The default is 0.                           |
 +---------------------------------+------------------------------------------------------+
-| colorField: name                | If inside=1 and outside=1 then a color field is      |
+| ``colorField: name``            | If inside=1 and outside=1 then a color field is      |
 |                                 | generated so it is possible to tell apart regions of |
 |                                 | the clip output that were inside or outside the clip |
 |                                 | boundary. This field permits the user to change the  |
 |                                 | name of the color field, which is called "color" by  |
 |                                 | default.                                             |
 +---------------------------------+------------------------------------------------------+
-| coordsetName: name              | The name of the new coordset in the output mesh. If  |
+| ``coordsetName: name``          | The name of the new coordset in the output mesh. If  |
 |                                 | it is not provided, the output coordset will have the|
 |                                 | same name as the input coordset.                     |
 +---------------------------------+------------------------------------------------------+
-| fields:                         | The fields node lets the caller provide a list of    |
-|   - currentName: newName        | field names that will be processed and added to the  |
-|   ...                           | output mesh. The form is currentName:newName. If the |
-|                                 | fields node is not given, the algorithm will process |
-|                                 | all input fields. If the fields node is empty then no|
-|                                 | fields will be processed.                            |
+|``fields:``                      | The fields node lets the caller provide a list of    |
+|                                 | field names that will be processed and added to the  |
+|                                 | output mesh. The form is *currentName:newName*. If   |
+|                                 | the *fields* node is not given, the algorithm will   |
+|                                 | process all input fields. If the fields node is empty|
+|                                 | then no fields will be processed.                    |
 +---------------------------------+------------------------------------------------------+
-| inside: number                  | Indicates to the clipping algorithm that it should   |
+| ``inside: number``              | Indicates to the clipping algorithm that it should   |
 |                                 | preserve zone fragments that were "inside" the clip  |
 |                                 | boundary. Set to 1 to enable, 0 to disable. The      |
 |                                 | algorithm will generate these fragments by default.  |
 +---------------------------------+------------------------------------------------------+
-| originalElementsField: name     | The name of the field in which to store the original |
+| ``originalElementsField: name`` | The name of the field in which to store the original |
 |                                 | elements map.                                        |
 +---------------------------------+------------------------------------------------------+
-| outside: number                 | Indicates to the clipping algorithm that it should   |
+| ``outside: number``             | Indicates to the clipping algorithm that it should   |
 |                                 | preserve zone fragments "outside" the clip boundary. |
 |                                 | Set to 1 to enable, 0 to disable. These fragments are|
 |                                 | not on by default.                                   |
 +---------------------------------+------------------------------------------------------+
-| selectedZones: [zone list]      | An optional argument that provides a list of zone ids|
+| ``selectedZones: [zone list]``  | An optional argument that provides a list of zone ids|
 |                                 | on which to operate. The output mesh will only have  |
 |                                 | contributions from zone numbers in this list, if it  |
 |                                 | is given.                                            |
 +---------------------------------+------------------------------------------------------+
-| topologyName: name              | The name of the new topology in the output mesh. If  |
+| ``topologyName: name``          | The name of the new topology in the output mesh. If  |
 |                                 | it is not provided, the output topology will have the|
 |                                 | same name as the input topology.                     |
 +---------------------------------+------------------------------------------------------+
@@ -97,32 +97,33 @@ Other Conduit nodes that contain strings or single numbers that can fit within a
 node are safe remaining in host memory. If the mesh is not in the desired memory space, it
 can be moved using ``axom::mir::utilities::blueprint::copy()``.
 
-  .. codeblock:: cpp
+.. code-block:: cpp
 
-      #include "axom/mir.hpp"
+    #include "axom/mir.hpp"
 
-      // Set up views for the mesh in deviceRoot node.
-      auto coordsetView = axom::mir::views::make_rectilinear_coordset<float, 3>::view(deviceRoot["coordsets/coords"]);
-      auto topologyView = axom::mir::views::make_rectilinear<3>::view(deviceRoot["topologies/Mesh"]);
+    // Set up views for the mesh in deviceRoot node.
+    auto coordsetView = axom::mir::views::make_rectilinear_coordset<float, 3>::view(deviceRoot["coordsets/coords"]);
+    auto topologyView = axom::mir::views::make_rectilinear<3>::view(deviceRoot["topologies/Mesh"]);
 
-      // Make a clipper.
-      using CoordsetView = decltype(coordsetView);
-      using TopologyView = decltype(topologyView);
-      using Clip = axom::mir::clipping::ClipField<axom::SEQ_EXEC, TopologyView, CoordsetView>;
-      Clip clipper(topologyView, coordsetView);
+    // Make a clipper.
+    using CoordsetView = decltype(coordsetView);
+    using TopologyView = decltype(topologyView);
+    using Clip = axom::mir::clipping::ClipField<axom::SEQ_EXEC, TopologyView, CoordsetView>;
+    Clip clipper(topologyView, coordsetView);
 
-      // Run the clip algorithm
-      conduit::Node options;
-      options["clipField"] = "data";
-      options["clipValue"] = 3.5;
-      options["outside"] = 1;
-      options["inside"] = 0;
-      clipper.execute(deviceRoot, options, clipOutput);
+    // Run the clip algorithm
+    conduit::Node options;
+    options["clipField"] = "data";
+    options["clipValue"] = 3.5;
+    options["outside"] = 1;
+    options["inside"] = 0;
+    clipper.execute(deviceRoot, options, clipOutput);
 
 
 .. figure:: figures/clipfield.png
    :figwidth: 800px
-   :alt: Diagram showing original mesh colored by clipping field (left), original mesh colored by a radial field (middle), and the clipped mesh colored by the radial field (right).
+
+   Diagram showing original mesh colored by clipping field (left), original mesh colored by a radial field (middle), and the clipped mesh colored by the radial field (right).
 
 
 ^^^^^^^^^^^^^
