@@ -80,8 +80,8 @@ constexpr double DiscreteShape::MAXIMUM_PERCENT_ERROR;
 constexpr double DiscreteShape::DEFAULT_VERTEX_WELD_THRESHOLD;
 
 DiscreteShape::DiscreteShape(const axom::klee::Shape& shape,
-                             const std::string& prefixPath,
-                             axom::sidre::Group* parentGroup)
+                             axom::sidre::Group* parentGroup,
+                             const std::string& prefixPath)
   : m_shape(shape)
   , m_sidreGroup(nullptr)
   , m_refinementType(DiscreteShape::RefinementUniformSegments)
@@ -344,11 +344,17 @@ std::shared_ptr<mint::Mesh> DiscreteShape::createMeshRepresentation()
     if(m_sidreGroup != nullptr)
     {
       tetMesh =
-        new TetMesh(3, axom::mint::CellType::TET, m_sidreGroup, nodeCount, tetCount);
+        new TetMesh(3, axom::mint::CellType::TET,
+                    m_sidreGroup,
+                    nodeCount,
+                    tetCount);
     }
     else
     {
-      tetMesh = new TetMesh(3, axom::mint::CellType::TET, nodeCount, tetCount);
+      tetMesh = new TetMesh(3,
+                            axom::mint::CellType::TET,
+                            nodeCount,
+                            tetCount);
     }
     tetMesh->appendNodes((double*)nodeCoords.data(), nodeCount);
     tetMesh->appendCells(connectivity.data(), tetCount);

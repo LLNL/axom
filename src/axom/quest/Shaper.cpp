@@ -124,7 +124,7 @@ void Shaper::loadShapeInternal(const klee::Shape& shape,
     axom::fmt::format("Shape has unsupported format: '{}", geometryFormat));
 
   // Code for discretizing shapes has been factored into DiscreteShape class.
-  DiscreteShape discreteShape(shape, m_shapeSet.getPath(), m_dataStore.getRoot());
+  DiscreteShape discreteShape(shape, m_dataStore.getRoot(), m_shapeSet.getPath());
   discreteShape.setVertexWeldThreshold(m_vertexWeldThreshold);
   discreteShape.setRefinementType(m_refinementType);
   if(percentError > 0)

@@ -47,18 +47,18 @@ public:
     @brief Constructor.
 
     @param shape The Klee specifications for the shape.
-    @param prefixPath Path prefix for shape files specified
-      with a relative path.
     @param parentGroup Group under which to put the discrete mesh.
       If null, don't use sidre.
+    @param prefixPath Path prefix for shape files specified
+      with a relative path.
 
     Refinement type is set to DiscreteShape::RefinementUniformSegments
     and percent erro is set to 0.  See setPercentError() and
     setRefinementType().
   */
   DiscreteShape(const axom::klee::Shape& shape,
-                const std::string& prefixPath = {},
-                axom::sidre::Group* parentGroup = nullptr);
+                axom::sidre::Group* parentGroup,
+                const std::string& prefixPath = {} );
 
   virtual ~DiscreteShape() { clearInternalData(); }
 
@@ -106,6 +106,9 @@ public:
 
   /*!
     \brief Get the discrete mesh representation.
+
+    If the sidre parent group was used in the constructor, the
+    mesh data is stored under that group.
 
     If the discrete mesh isn't generated yet (for analytical shapes)
     generate it.

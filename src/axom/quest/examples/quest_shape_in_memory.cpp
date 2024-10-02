@@ -1079,7 +1079,7 @@ int main(int argc, char** argv)
   std::vector<std::shared_ptr<axom::mint::Mesh>> discreteShapeMeshes;
   for(const auto& shape : shapeSet.getShapes())
   {
-    axom::quest::DiscreteShape dShape(shape, "", shapeMeshGroup);
+    axom::quest::DiscreteShape dShape(shape, shapeMeshGroup);
     auto dMesh =
       std::dynamic_pointer_cast<axom::mint::UnstructuredMesh<axom::mint::SINGLE_SHAPE>>(
         dShape.createMeshRepresentation());
@@ -1390,7 +1390,7 @@ int main(int argc, char** argv)
   auto* meshVerificationGroup = ds.getRoot()->createGroup("meshVerification");
   for(const auto& shape : shapeSet.getShapes())
   {
-    axom::quest::DiscreteShape dShape(shape, "", meshVerificationGroup);
+    axom::quest::DiscreteShape dShape(shape, meshVerificationGroup);
     auto shapeMesh =
       std::dynamic_pointer_cast<axom::mint::UnstructuredMesh<axom::mint::SINGLE_SHAPE>>(
         dShape.createMeshRepresentation());
