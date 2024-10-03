@@ -72,8 +72,7 @@ static axom::float64 calculatePercentOverlapMonteCarlo(int gridSize,
     {
       for(int x = 0; x < numSamples; ++x)
       {
-        PointType samplePoint({delta_x * x + quadP1[0],
-                               delta_y * y + quadP1[1]});
+        PointType samplePoint({delta_x * x + quadP1[0], delta_y * y + quadP1[1]});
         if(primal::squared_distance(samplePoint, circleCenter) < dRSq)
           ++countOverlap;
       }
@@ -534,8 +533,9 @@ void addConcentricCircleMaterial(const TopoView& topoView,
       {
         for(int x = 0; x < numSamples; ++x)
         {
-          MeshTester::Point2 samplePoint({static_cast<float>(delta_x * x + v0[0]),
-                                          static_cast<float>(delta_y * y + v0[1])});
+          MeshTester::Point2 samplePoint(
+            {static_cast<float>(delta_x * x + v0[0]),
+             static_cast<float>(delta_y * y + v0[1])});
           bool isPointSampled = false;
           for(int cID = 0; cID < numCircles && !isPointSampled; ++cID)
           {
@@ -574,9 +574,9 @@ void MeshTester::initTestCaseFive(int gridSize, int numCircles, conduit::Node& m
   // Generate the mesh topology
   generateGrid(gridSize, mesh);
 
-  Point2 circleCenter({
-    gridSize / 2.f,
-    gridSize / 2.f});  // all circles are centered around the same point
+  Point2 circleCenter(
+    {gridSize / 2.f,
+     gridSize / 2.f});  // all circles are centered around the same point
 
   // Initialize the radii of the circles
   std::vector<axom::float64> circleRadii;
@@ -737,8 +737,7 @@ void MeshTester::initTestCaseSix(int gridSize, int numSpheres, conduit::Node& me
 
   // all spheres are centered around the same point
   const float c = static_cast<float>(gridSize / 2.0);
-  const auto sphereCenter =
-    PointType({c, c, c});
+  const auto sphereCenter = PointType({c, c, c});
 
   // Use the uniform sampling method to generate volume fractions for each material
   for(int eID = 0; eID < topologyView.numberOfZones(); ++eID)

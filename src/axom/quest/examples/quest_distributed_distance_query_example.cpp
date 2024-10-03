@@ -1325,20 +1325,20 @@ int main(int argc, char** argv)
   //---------------------------------------------------------------------------
   // Memory resource.  For testing, choose device memory if appropriate.
   //---------------------------------------------------------------------------
-  const std::string umpireResourceName =
-    params.policy == RuntimePolicy::seq ? "HOST" :
+  const std::string umpireResourceName = params.policy == RuntimePolicy::seq
+    ? "HOST"
+    :
   #if defined(AXOM_RUNTIME_POLICY_USE_OPENMP)
-    params.policy == RuntimePolicy::omp ? "HOST"
-                                        :
+    params.policy == RuntimePolicy::omp ? "HOST" :
   #endif
   #if defined(UMPIRE_ENABLE_DEVICE)
                                         "DEVICE"
   #elif defined(UMPIRE_ENABLE_UM)
-                                        "UM"
+    "UM"
   #elif defined(UMPIRE_ENABLE_PINNED)
-                                        "PINNED"
+    "PINNED"
   #else
-                                        "HOST"
+    "HOST"
   #endif
     ;
   auto& rm = umpire::ResourceManager::getInstance();

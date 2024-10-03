@@ -120,30 +120,18 @@ offsets: [0, 1, 3, 5, 6, 9]
   }
 };
 
-TEST(mir_slicers, matsetslice_seq)
-{
-  test_matset_slice<seq_exec>::test();
-}
+TEST(mir_slicers, matsetslice_seq) { test_matset_slice<seq_exec>::test(); }
 
 #if defined(AXOM_USE_OPENMP)
-TEST(mir_slicers, matsetslice_omp)
-{
-  test_matset_slice<omp_exec>::test();
-}
+TEST(mir_slicers, matsetslice_omp) { test_matset_slice<omp_exec>::test(); }
 #endif
 
 #if defined(AXOM_USE_CUDA)
-TEST(mir_slicers, matsetslice_cuda)
-{
-  test_matset_slice<cuda_exec>::test();
-}
+TEST(mir_slicers, matsetslice_cuda) { test_matset_slice<cuda_exec>::test(); }
 #endif
 
 #if defined(AXOM_USE_HIP)
-TEST(mir_slicers, matsetslice_hip)
-{
-  test_matset_slice<hip_exec>::test();
-}
+TEST(mir_slicers, matsetslice_hip) { test_matset_slice<hip_exec>::test(); }
 #endif
 
 //------------------------------------------------------------------------------
@@ -449,27 +437,15 @@ fields:
   }
 };
 
-TEST(mir_slicers, fieldslicer_seq)
-{
-  test_fieldslicer<seq_exec>::test();
-}
+TEST(mir_slicers, fieldslicer_seq) { test_fieldslicer<seq_exec>::test(); }
 #if defined(AXOM_USE_OPENMP)
-TEST(mir_slicers, fieldslicer_omp)
-{
-  test_fieldslicer<omp_exec>::test();
-}
+TEST(mir_slicers, fieldslicer_omp) { test_fieldslicer<omp_exec>::test(); }
 #endif
 #if defined(AXOM_USE_CUDA)
-TEST(mir_slicers, fieldslicer_cuda)
-{
-  test_fieldslicer<cuda_exec>::test();
-}
+TEST(mir_slicers, fieldslicer_cuda) { test_fieldslicer<cuda_exec>::test(); }
 #endif
 #if defined(AXOM_USE_HIP)
-TEST(mir_slicers, fieldslicer_hip)
-{
-  test_fieldslicer<hip_exec>::test();
-}
+TEST(mir_slicers, fieldslicer_hip) { test_fieldslicer<hip_exec>::test(); }
 #endif
 
 //------------------------------------------------------------------------------

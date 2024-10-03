@@ -40,8 +40,10 @@ ShapeMap buildShapeMap(const conduit::Node &n_topo,
 
   // Copy the map values to the device memory.
   const axom::IndexType n = static_cast<axom::IndexType>(sm.size());
-  values = axom::Array<IndexType>(axom::ArrayOptions::Uninitialized(), n, n, allocatorID);
-  ids = axom::Array<IndexType>(axom::ArrayOptions::Uninitialized(), n, n, allocatorID);
+  values =
+    axom::Array<IndexType>(axom::ArrayOptions::Uninitialized(), n, n, allocatorID);
+  ids =
+    axom::Array<IndexType>(axom::ArrayOptions::Uninitialized(), n, n, allocatorID);
   axom::copy(values.data(), valuesvec.data(), n * sizeof(IndexType));
   axom::copy(ids.data(), idsvec.data(), n * sizeof(IndexType));
 

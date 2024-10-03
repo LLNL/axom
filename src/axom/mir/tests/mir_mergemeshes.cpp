@@ -160,27 +160,15 @@ topologies:
   }
 };
 
-TEST(mir_mergemeshes, mergemeshes_seq)
-{
-  test_mergemeshes<seq_exec>::test();
-}
+TEST(mir_mergemeshes, mergemeshes_seq) { test_mergemeshes<seq_exec>::test(); }
 #if defined(AXOM_USE_OPENMP)
-TEST(mir_mergemeshes, mergemeshes_omp)
-{
-  test_mergemeshes<omp_exec>::test();
-}
+TEST(mir_mergemeshes, mergemeshes_omp) { test_mergemeshes<omp_exec>::test(); }
 #endif
 #if defined(AXOM_USE_CUDA)
-TEST(mir_mergemeshes, mergemeshes_cuda)
-{
-  test_mergemeshes<cuda_exec>::test();
-}
+TEST(mir_mergemeshes, mergemeshes_cuda) { test_mergemeshes<cuda_exec>::test(); }
 #endif
 #if defined(AXOM_USE_HIP)
-TEST(mir_mergemeshes, mergemeshes_hip)
-{
-  test_mergemeshes<hip_exec>::test();
-}
+TEST(mir_mergemeshes, mergemeshes_hip) { test_mergemeshes<hip_exec>::test(); }
 #endif
 
 //------------------------------------------------------------------------------

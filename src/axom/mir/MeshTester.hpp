@@ -43,6 +43,7 @@ public:
   using VolFracVec = Vec<axom::float64>;
   using VolumeFractions = Vec<VolFracVec>;
   using Point2 = axom::primal::Point<float, 2>;
+
 public:
   /*!
    * \brief Default constructor. 
