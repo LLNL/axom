@@ -12,8 +12,6 @@
 
 //------------------------------------------------------------------------------
 
-//#define DEBUGGING_TEST_CASES
-
 // Uncomment to generate baselines
 //#define AXOM_TESTING_GENERATE_BASELINES
 
@@ -153,7 +151,6 @@ TEST(mir_equiz, equiz_uniform_unibuffer_hip)
 }
 #endif
 
-#if 0 // FIXME
 //------------------------------------------------------------------------------
 template <typename ExecSpace>
 void braid3d_mat_test(const std::string &type,
@@ -162,7 +159,7 @@ void braid3d_mat_test(const std::string &type,
 {
   namespace bputils = axom::mir::utilities::blueprint;
 
-  axom::StackArray<axom::IndexType, 3> dims {10, 10, 10};
+  axom::StackArray<axom::IndexType, 3> dims {11, 11, 11};
   axom::StackArray<axom::IndexType, 3> zoneDims {dims[0] - 1, dims[1] - 1, dims[2] - 1};
 
   // Create the data
@@ -175,13 +172,14 @@ void braid3d_mat_test(const std::string &type,
 #endif
 
   // Make views.
-  auto coordsetView = axom::mir::views::make_explicit_coordset<float, 3>::view(
+  auto coordsetView = axom::mir::views::make_explicit_coordset<double, 3>::view(
     deviceMesh["coordsets/coords"]);
   using CoordsetView = decltype(coordsetView);
 
   using ShapeType = axom::mir::views::HexShape<int>;
   using TopologyView = axom::mir::views::UnstructuredTopologySingleShapeView<ShapeType>;
-  TopologyView topologyView(deviceMesh["topologies/mesh"]);
+  auto connView = bputils::make_array_view<int>(deviceMesh["topologies/mesh/elements/connectivity"]);
+  TopologyView topologyView(connView);
 
   conduit::Node deviceMIRMesh;
   if(mattype == "unibuffer")
@@ -227,14 +225,14 @@ void braid3d_mat_test(const std::string &type,
 TEST(mir_equiz, equiz_hex_unibuffer_seq)
 {
   AXOM_ANNOTATE_SCOPE("equiz_explicit_hex_seq");
-  braid3d_mat_test<seq_exec>("hex", "unibuffer", "equiz_hex_unibuffer");
+  braid3d_mat_test<seq_exec>("hexs", "unibuffer", "equiz_hex_unibuffer");
 }
 
 #if defined(AXOM_USE_OPENMP)
 TEST(mir_equiz, equiz_hex_unibuffer_omp)
 {
   AXOM_ANNOTATE_SCOPE("equiz_hex_unibuffer_omp");
-  braid3d_mat_test<omp_exec>("hex", "unibuffer", "equiz_hex_unibuffer");
+  braid3d_mat_test<omp_exec>("hexs", "unibuffer", "equiz_hex_unibuffer");
 }
 #endif
 
@@ -242,7 +240,7 @@ TEST(mir_equiz, equiz_hex_unibuffer_omp)
 TEST(mir_equiz, equiz_hex_unibuffer_cuda)
 {
   AXOM_ANNOTATE_SCOPE("equiz_hex_unibuffer_cuda");
-  braid3d_mat_test<cuda_exec>("hex", "unibuffer", "equiz_hex_unibuffer");
+  braid3d_mat_test<cuda_exec>("hexs", "unibuffer", "equiz_hex_unibuffer");
 }
 #endif
 
@@ -250,13 +248,11 @@ TEST(mir_equiz, equiz_hex_unibuffer_cuda)
 TEST(mir_equiz, equiz_hex_unibuffer_hip)
 {
   AXOM_ANNOTATE_SCOPE("equiz_hex_unibuffer_hip");
-  braid3d_mat_test<hip_exec>("hex", "unibuffer", "equiz_hex_unibuffer");
+  braid3d_mat_test<hip_exec>("hexs", "unibuffer", "equiz_hex_unibuffer");
 }
-#endif
 #endif
 
 //------------------------------------------------------------------------------
-#if defined(DEBUGGING_TEST_CASES)
 void conduit_debug_err_handler(const std::string &s1, const std::string &s2, int i1)
 {
   std::cout << "s1=" << s1 << ", s2=" << s2 << ", i1=" << i1 << std::endl;
@@ -264,7 +260,7 @@ void conduit_debug_err_handler(const std::string &s1, const std::string &s2, int
   while(1)
     ;
 }
-#endif
+
 //------------------------------------------------------------------------------
 
 int main(int argc, char *argv[])
@@ -278,7 +274,7 @@ int main(int argc, char *argv[])
   app.add_option("--handler", handler)
     ->description("Install a custom error handler that loops forever.");
 #if defined(AXOM_USE_CALIPER)
-  std::string annotationMode("report");
+  std::string annotationMode("none");
   app.add_option("--caliper", annotationMode)
     ->description(
       "caliper annotation mode. Valid options include 'none' and 'report'. "
@@ -295,12 +291,11 @@ int main(int argc, char *argv[])
 #endif
 
   axom::slic::SimpleLogger logger;  // create & initialize test logger,
-#if defined(DEBUGGING_TEST_CASES)
   if(handler)
   {
     conduit::utils::set_error_handler(conduit_debug_err_handler);
   }
-#endif
+
   result = RUN_ALL_TESTS();
   return result;
 }
