@@ -165,7 +165,7 @@ are designed to build suites of TPLs via Uberenv and Spack.
   the end indicating which Axom build succeeded or failed.
 * ``build_src.py``: This script uses the existing host-configs in your local clone of the
   Axom repo, or a specific one you point at, and builds and tests Axom against them. It also
-  tests the ``using-with-cmake`` example.
+  tests the Axom installation via the ``using-with-cmake`` example and Axom tutorials.
 * ``build_devtools.py``: This script builds and installs the developer tools
   listed in the ``axom/scripts/spack/packages/axomdevtools/package.py`` Spack
   package. It uses the set of Spack configs located in the
@@ -297,7 +297,7 @@ Shared Third-party Library Installation Steps
 The following instructions describe how to install copies of Axom TPL builds
 on Livermore Computing (LC) platforms and recreate our Docker containers
 with a new set of TPLs. Typically, this process is followed when you want to 
-update one or more TPLs on which Axom depends. After they are built and
+update one or more TPLs. After they are built and
 the associated changes are merged into develop, they will be available for
 other Axom developers to use during development, in Axom GitLab CI testing, etc.
 
