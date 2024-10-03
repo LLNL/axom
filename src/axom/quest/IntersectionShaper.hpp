@@ -1170,6 +1170,7 @@ public:
       axom::for_all<ExecSpace>(
         dataSize,
         AXOM_LAMBDA(axom::IndexType i) { vf_writable[i] = 0.; });
+
       for(const auto& name : shape.getMaterialsReplaced())
       {
         auto mat = getMaterial(name);
@@ -1971,6 +1972,7 @@ private:
     return materialNames;
   }
 
+public:
   template <typename ExecSpace>
   void populateHexesFromMesh()
   {
@@ -2047,6 +2049,7 @@ private:
         }
       });  // end of loop to initialize hexahedral elements and bounding boxes
   }
+private:
 
 #if defined(AXOM_SHAPING_ON_BLUEPRINT_MESH)
   void populateVertCoordsFromBlueprintMesh(axom::Array<double>& vertCoords_host)
