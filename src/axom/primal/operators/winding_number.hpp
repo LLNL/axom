@@ -1055,10 +1055,12 @@ std::pair<double, double> winding_number_casting_split(
                                             cos(theta) * sqrt(1 - u * u),
                                             u};
 
+      constexpr double buffer = 1e-3;
+
       // Compute intersections with the patch
       std::vector<T> up, vp, tp;
       Line<T, 3> singularity_axis(query, singularity_direction);
-      intersect(bPatch, singularity_axis, up, vp, tp, edge_tol);
+      intersect(bPatch, singularity_axis, up, vp, tp, edge_tol, buffer);
 
       // If the line doesn't intersect the surface, then we can dodge it
       if(up.size() == 0)
@@ -1072,82 +1074,72 @@ std::pair<double, double> winding_number_casting_split(
         for(int i = 0; i < up.size(); ++i)
         {
           bool intersectionOnBoundary = false;
+          bool badIntersection = false;
 
           Point<T, 3> intersect_point = bPatch.evaluate(up[i], vp[i]);
 
-          Vector<T, 3> the_direction(query, intersect_point);
-          Vector<T, 3> the_normal = bPatch.normal(up[i], vp[i]);
+          Vector<T, 3> the_direction =
+            Vector<T, 3>(query, intersect_point).unitVector();
+          Vector<T, 3> the_normal = bPatch.normal(up[i], vp[i]).unitVector();
 
           // Do a dot product between the normal and the cast direction
           //  to see what side of the surface the intersection is on
           double surf_orientation = the_normal.dot(the_direction);
           double cast_orientation = singularity_direction.dot(the_direction);
 
-          if(squared_distance(query, intersect_point) <= edge_tol_sq)
-          {
-            queryOnSurface = true;
-          }
-
-          // Indicates (near) tangency or (near) boundary at the point of intersection.
-          if(axom::utilities::isNearlyEqual(surf_orientation, 0.0, 1e-3) ||
-             up[i] < 1e-3 || up[i] > 1 - 1e-3 || vp[i] < 1e-3 || vp[i] > 1 - 1e-3)
-          {
-            intersectionOnBoundary = true;
-          }
+          queryOnSurface =
+            squared_distance(query, intersect_point) <= edge_tol_sq;
+          badIntersection =
+            axom::utilities::isNearlyEqual(surf_orientation, 0.0, 1e-3);
+          intersectionOnBoundary = up[i] < buffer || up[i] > 1 - buffer ||
+            vp[i] < buffer || vp[i] > 1 - buffer;
 
           if(queryOnSurface && !intersectionOnBoundary)
           {
             wn_split.second += 0;  // Do nothing for the jump condition
           }
-          else if(!queryOnSurface && !intersectionOnBoundary)
+          else if(!badIntersection && !queryOnSurface && !intersectionOnBoundary)
           {
             // Account for the jump condition analytically
             wn_split.second +=
               std::copysign(0.5, tp[i] * surf_orientation * cast_orientation);
           }
-          else if(!queryOnSurface && intersectionOnBoundary)
+          else if(queryOnSurface && intersectionOnBoundary)
           {
-            //  Uncommon, but requires a new ray to be cast
-            retry_cast = true;
-            break;
+            BezierPatch<T, 3> coincident_patch(bPatch);
+            BezierPatch<T, 3> subpatches[4];
+            int n_subpatches = 0;
+
+            // Split the patch around the intersection point
+            // clang-format off
+            if(up[i] - 0.1 > 0.0)
+              coincident_patch.split_u(up[i] - 0.1, subpatches[n_subpatches++], coincident_patch);
+            if(vp[i] - 0.1 > 0.0)
+              coincident_patch.split_v(vp[i] - 0.1, subpatches[n_subpatches++], coincident_patch);
+            if(up[i] + 0.1 < 1.0)
+              coincident_patch.split_u(0.2 / (1.0 - (up[i] - 0.1) ), coincident_patch, subpatches[n_subpatches++]);
+            if(vp[i] + 0.1 < 1.0)
+              coincident_patch.split_v(0.2 / (1.0 - (vp[i] - 0.1) ), coincident_patch, subpatches[n_subpatches++]);
+            // clang-format on
+
+            for(int j = 0; j < n_subpatches; ++j)
+            {
+              auto wn_subpatch = winding_number_casting(query,
+                                                        subpatches[j],
+                                                        edge_tol,
+                                                        quad_tol,
+                                                        EPS);
+              wn_split.first += wn_subpatch;
+            }
+
+            wn_split.first +=
+              detail::surface_winding_number(query, coincident_patch, 10, quad_tol);
+            return wn_split;
           }
           else
           {
-            // If the normal is well defined, we can use it to define a consistent value
-            singularity_direction = the_normal.unitVector();
-
-            std::vector<T> uc, vc, tc;
-            singularity_axis = Line<T, 3>(query, singularity_direction);
-            intersect(bPatch, singularity_axis, uc, vc, tc, edge_tol);
-
-            // If the line defined by the normal intersects at more than one point,
-            //  then we do a geometric refinement for robustness
-            if(uc.size() != 1)
-            {
-              BezierPatch<T, 3> subpatches[4];
-              bPatch.split(0.5,
-                           0.5,
-                           subpatches[0],
-                           subpatches[1],
-                           subpatches[2],
-                           subpatches[3]);
-              for(int j = 0; j < 4; ++j)
-              {
-                auto wn_subpatch_split =
-                  winding_number_casting_split(query,
-                                               subpatches[j],
-                                               edge_tol,
-                                               quad_tol,
-                                               EPS);
-                wn_split.first += wn_subpatch_split.first;
-                wn_split.second += wn_subpatch_split.second;
-              }
-            }
-            else
-            {
-              // Else, if this is the only intersection, we don't need to do extra calculation for the jump
-              wn_split.second = 0;
-            }
+            //  Uncommon, but requires a new ray to be cast
+            retry_cast = true;
             break;
           }
         }
@@ -1225,7 +1217,7 @@ std::pair<double, double> winding_number_casting_split(
       detail::stokes_winding_number(query,
                                     boundingPoly[n],
                                     detail::SingularityAxis::rotated,
-                                    quad_npts + 1,
+                                    quad_npts,
                                     quad_tol);
     wn_split.first += this_val;
   }
@@ -1241,7 +1233,7 @@ double winding_number_direct(const Point<T, 3>& query,
                              const double EPS = 1e-8)
 {
   // Compute the winding number with a direct 2D surface integral
-  return detail::winding_number_surface_quadrature(query, bPatch, 400);
+  return detail::surface_winding_number(query, bPatch, 100, quad_tol, false);
 }
 
 #endif

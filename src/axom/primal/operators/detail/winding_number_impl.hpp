@@ -474,7 +474,7 @@ double stokes_winding_number_adaptive(const Point<T, 3>& query,
     }
   }
 
-  constexpr int MAX_DEPTH = 12;
+  constexpr int MAX_DEPTH = 15;
   if(depth >= MAX_DEPTH ||
      axom::utilities::isNearlyEqualRelative(quad_fine[0] + quad_fine[1],
                                             quad_coarse,
@@ -499,6 +499,127 @@ double stokes_winding_number_adaptive(const Point<T, 3>& query,
                                      quad_fine[1],
                                      quad_tol,
                                      depth + 1);
+  }
+}
+
+template <typename T>
+double surface_winding_number(const Point<T, 3>& query,
+                              const BezierPatch<T, 3>& patch,
+                              int npts,
+                              double quad_tol,
+                              bool needs_adapt = true)
+{
+  // Generate the quadrature rules in parameter space
+  static mfem::IntegrationRules my_IntRules(0, mfem::Quadrature1D::GaussLegendre);
+
+  const mfem::IntegrationRule& quad_rule =
+    my_IntRules.Get(mfem::Geometry::SEGMENT, 2 * npts - 1);
+
+  double quadrature = 0.0;
+  for(int qu = 0; qu < quad_rule.GetNPoints(); ++qu)
+  {
+    for(int qv = 0; qv < quad_rule.GetNPoints(); ++qv)
+    {
+      Vector3D node(
+        query,
+        patch.evaluate(quad_rule.IntPoint(qu).x, quad_rule.IntPoint(qv).x));
+
+      // Compute the normal vector
+      Vector3D normal =
+        patch.normal(quad_rule.IntPoint(qu).x, quad_rule.IntPoint(qv).x);
+
+      quadrature += quad_rule.IntPoint(qu).weight *
+        quad_rule.IntPoint(qv).weight * Vector3D::dot_product(node, normal) /
+        std::pow(node.norm(), 3);
+    }
+  }
+
+  if(needs_adapt)
+  {
+    return surface_winding_number_adaptive(query,
+                                           patch,
+                                           quad_rule,
+                                           quadrature,
+                                           quad_tol);
+  }
+  else
+  {
+    return 0.25 * M_1_PI * quadrature;
+  }
+}
+
+template <typename T>
+double surface_winding_number_adaptive(const Point<T, 3>& query,
+                                       const BezierPatch<T, 3>& patch,
+                                       const mfem::IntegrationRule& quad_rule,
+                                       const double quad_coarse,
+                                       const double quad_tol,
+                                       const int depth = 1)
+{
+  // Split the patch, do the quadrature over all four components
+  BezierPatch<T, 3> subpatches[4];
+  patch.split(0.5, 0.5, subpatches[0], subpatches[1], subpatches[2], subpatches[3]);
+
+  double quad_fine[4] = {0.0, 0.0, 0.0, 0.0};
+  for(int i = 0; i < 4; ++i)
+  {
+    for(int qu = 0; qu < quad_rule.GetNPoints(); ++qu)
+    {
+      for(int qv = 0; qv < quad_rule.GetNPoints(); ++qv)
+      {
+        Vector3D node(query,
+                      subpatches[i].evaluate(quad_rule.IntPoint(qu).x,
+                                             quad_rule.IntPoint(qv).x));
+
+        // Compute the normal vector
+        Vector3D normal =
+          subpatches[i]
+            .normal(quad_rule.IntPoint(qu).x, quad_rule.IntPoint(qv).x);
+
+        quad_fine[i] += quad_rule.IntPoint(qu).weight *
+          quad_rule.IntPoint(qv).weight * Vector3D::dot_product(node, normal) /
+          std::pow(node.norm(), 3);
+      }
+    }
+  }
+
+  constexpr int MAX_DEPTH = 12;
+  if(depth >= MAX_DEPTH ||
+     axom::utilities::isNearlyEqualRelative(
+       quad_fine[0] + quad_fine[1] + quad_fine[2] + quad_fine[3],
+       quad_coarse,
+       quad_tol,
+       1e-10))
+  {
+    return 0.25 * M_1_PI *
+      (quad_fine[0] + quad_fine[1] + quad_fine[2] + quad_fine[3]);
+  }
+  else
+  {
+    return surface_winding_number_adaptive(query,
+                                           subpatches[0],
+                                           quad_rule,
+                                           quad_fine[0],
+                                           quad_tol,
+                                           depth + 1) +
+      surface_winding_number_adaptive(query,
+                                      subpatches[1],
+                                      quad_rule,
+                                      quad_fine[1],
+                                      quad_tol,
+                                      depth + 1) +
+      surface_winding_number_adaptive(query,
+                                      subpatches[2],
+                                      quad_rule,
+                                      quad_fine[2],
+                                      quad_tol,
+                                      depth + 1) +
+      surface_winding_number_adaptive(query,
+                                      subpatches[3],
+                                      quad_rule,
+                                      quad_fine[3],
+                                      quad_tol,
+                                      depth + 1);
   }
 }
 #endif
