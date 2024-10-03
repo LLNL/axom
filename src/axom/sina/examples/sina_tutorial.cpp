@@ -132,13 +132,15 @@ void gatherAllData(axom::sina::Record &record)
 void save(axom::sina::Document const &doc)
 {
   axom::sina::saveDocument(doc, "my_output.json");
+  axom::sina::saveDocument(doc, "my_output.hdf5", axom::sina::Protocol::HDF5);
 }
 //! [io write]
 
 //! [io read]
 void load()
 {
-  axom::sina::Document doc = axom::sina::loadDocument("my_output.json");
+  axom::sina::Document doc1 = axom::sina::loadDocument("my_output.json");
+  axom::sina::Document doc2 = axom::sina::loadDocument("my_output.json", axom::sina::Protocol::HDF5);
 }
 //! [io read]
 

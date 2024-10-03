@@ -32,5 +32,10 @@ int main(void)
   document.add(relationship);
 
   // Save the document directly to a file.
+  // since we gave saveDocument no optional protocol parameter, it will default to JSON
   axom::sina::saveDocument(document, "MySinaData.json");
+
+  // We will also save a copy of the document as an HDF5 file
+  // which can be done by passing the protocol as HDF5
+  axom::sina::saveDocument(document, "MySinaData.hdf5", axom::sina::Protocol::HDF5);
 }
