@@ -100,7 +100,7 @@ the output mesh. The output mesh will exist in the same memory space as the inpu
 which again, must be compatible with the selected execution space. The ``axom::mir::utilities::blueprint::copy()``
 function can be used to copy Conduit nodes from one memory space to another.
 
-.. literalinclude:: ../../examples/mir_concentric_circles.cpp
+.. literalinclude:: ../../examples/concentric_circles/runMIR.hpp
    :start-after: _equiz_mir_start
    :end-before: _equiz_mir_end
    :language: C++

@@ -62,14 +62,15 @@ static axom::float64 calculatePercentOverlapMonteCarlo(int gridSize,
   else
   {
     // Some of the quad overlaps the circle, so run the Monte Carlo sampling to determine how much
+    const int numSamples = std::min(gridSize, 20);
     axom::float64 delta_x = axom::utilities::abs(quadP2[0] - quadP1[0]) /
-      static_cast<axom::float64>(gridSize - 1);
+      static_cast<axom::float64>(numSamples - 1);
     axom::float64 delta_y = axom::utilities::abs(quadP0[1] - quadP1[1]) /
-      static_cast<axom::float64>(gridSize - 1);
+      static_cast<axom::float64>(numSamples - 1);
     int countOverlap = 0;
-    for(int y = 0; y < gridSize; ++y)
+    for(int y = 0; y < numSamples; ++y)
     {
-      for(int x = 0; x < gridSize; ++x)
+      for(int x = 0; x < numSamples; ++x)
       {
         PointType samplePoint = PointType::make_point(delta_x * x + quadP1[0],
                                                       delta_y * y + quadP1[1]);

@@ -7,6 +7,7 @@
 #include "axom/core.hpp"  // for axom macros
 #include "axom/slic.hpp"
 #include "axom/mir.hpp"  // for Mir classes & functions
+#include "runMIR.hpp"
 
 #include <conduit.hpp>
 #include <conduit_relay_io_blueprint.hpp>
@@ -36,68 +37,6 @@ void printNode(const conduit::Node &n)
   options["num_children_threshold"] = 10000;
   options["num_elements_threshold"] = 10000;
   n.to_summary_string_stream(std::cout, options);
-}
-
-//--------------------------------------------------------------------------------
-template <typename ExecSpace>
-int runMIR(const conduit::Node &hostMesh,
-           const conduit::Node &options,
-           conduit::Node &hostResult)
-{
-  using namespace axom::mir::views;
-  SLIC_INFO(axom::fmt::format("Using policy {}",
-                              axom::execution_space<ExecSpace>::name()));
-
-  // Check materials.
-  constexpr int MAXMATERIALS = 20;
-  auto materialInfo = materials(hostMesh["matsets/mat"]);
-  if(materialInfo.size() >= MAXMATERIALS)
-  {
-    SLIC_WARNING(
-      axom::fmt::format("To use more than {} materials, recompile with "
-                        "larger MAXMATERIALS value.",
-                        MAXMATERIALS));
-    return -4;
-  }
-
-  // host->device
-  conduit::Node deviceMesh;
-  bputils::copy<ExecSpace>(deviceMesh, hostMesh);
-
-  AXOM_ANNOTATE_BEGIN("runMIR");
-  // _equiz_mir_start
-  // Make views (we know beforehand which types to make)
-  using CoordsetView = ExplicitCoordsetView<float, 2>;
-  CoordsetView coordsetView(
-    bputils::make_array_view<float>(deviceMesh["coordsets/coords/values/x"]),
-    bputils::make_array_view<float>(deviceMesh["coordsets/coords/values/y"]));
-
-  using TopoView = UnstructuredTopologySingleShapeView<QuadShape<int>>;
-  TopoView topoView(bputils::make_array_view<int>(
-    deviceMesh["topologies/mesh/elements/connectivity"]));
-
-  using MatsetView = UnibufferMaterialView<int, float, MAXMATERIALS>;
-  MatsetView matsetView;
-  matsetView.set(
-    bputils::make_array_view<int>(deviceMesh["matsets/mat/material_ids"]),
-    bputils::make_array_view<float>(deviceMesh["matsets/mat/volume_fractions"]),
-    bputils::make_array_view<int>(deviceMesh["matsets/mat/sizes"]),
-    bputils::make_array_view<int>(deviceMesh["matsets/mat/offsets"]),
-    bputils::make_array_view<int>(deviceMesh["matsets/mat/indices"]));
-
-  using MIR =
-    axom::mir::EquiZAlgorithm<ExecSpace, TopoView, CoordsetView, MatsetView>;
-  MIR m(topoView, coordsetView, matsetView);
-  conduit::Node deviceResult;
-  m.execute(deviceMesh, options, deviceResult);
-  // _equiz_mir_end
-
-  AXOM_ANNOTATE_END("runMIR");
-
-  // device->host
-  bputils::copy<axom::SEQ_EXEC>(hostResult, deviceResult);
-
-  return 0;
 }
 
 //--------------------------------------------------------------------------------
@@ -132,13 +71,13 @@ int runMIR(RuntimePolicy policy,
   int retval = 0;
   if(policy == RuntimePolicy::seq)
   {
-    retval = runMIR<axom::SEQ_EXEC>(mesh, options, resultMesh);
+    retval = runMIR_seq(mesh, options, resultMesh);
   }
 #if defined(AXOM_USE_RAJA) && defined(AXOM_USE_UMPIRE)
   #if defined(AXOM_USE_OPENMP)
   else if(policy == RuntimePolicy::omp)
   {
-    retval = runMIR<axom::OMP_EXEC>(mesh, options, resultMesh);
+    retval = runMIR_omp(mesh, options, resultMesh);
   }
   #endif
   #if defined(AXOM_USE_CUDA)
@@ -146,15 +85,13 @@ int runMIR(RuntimePolicy policy,
   {
     constexpr int CUDA_BLOCK_SIZE = 256;
     using cuda_exec = axom::CUDA_EXEC<CUDA_BLOCK_SIZE>;
-    retval = runMIR<cuda_exec>(mesh, options, resultMesh);
+    retval = runMIR_cuda(mesh, options, resultMesh);
   }
   #endif
   #if defined(AXOM_USE_HIP)
   else if(policy == RuntimePolicy::hip)
   {
-    constexpr int HIP_BLOCK_SIZE = 64;
-    using hip_exec = axom::HIP_EXEC<HIP_BLOCK_SIZE>;
-    retval = runMIR<hip_exec>(mesh, options, resultMesh);
+    retval = runMIR_hip(mesh, options, resultMesh);
   }
   #endif
 #endif
