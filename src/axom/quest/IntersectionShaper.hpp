@@ -62,40 +62,39 @@ namespace axom
 namespace quest
 {
 /*!
- * \class TempArrayAccess
+ * \class TempArrayView
  *
- * \brief Given some array data, provides temporary version of
- *        that data but allocated with an alternate allocator id.
- *        This class performs data movement and clean-up to
- *        temporarily have the data with the desired allocator id.
+ * \brief Provides a view over an MFEM grid function. MFEM grid functions are
+ *        assumed to live in host memory. This class performs data movement
+ *        needed to access the grid function data within a GPU device lambda. This
+ *        view is limited in scope, though could be expanded in the future.
+ *
+ * \tparam ExecSpace The execution space where the grid function data will
+ *                   be accessed.
  */
-class TempArrayAccess
+template <typename ExecSpace>
+class TempArrayView
 {
 public:
   /*!
-   * \brief Constructor
+   * \brief Host constructor that accepts the grid function.
    *
-   * \param array
-   * \param writeBack Whether the data needs to be writen back to the
-   *                  original array device when this object goes out
-   *                  of scope.
+   * \param gf The grid function that will be accessed/modified by the view.
+   * \param _needResult Whether the data needs to be brought back to the host
+   *                    from the device.
    */
-  AXOM_HOST TempArrayAccess(axom::ArrayView<double>& array,
-                            int wantedAllocatorId,
-                            bool writeBack = true)
+  AXOM_HOST TempArrayView(mfem::GridFunction* gf, bool _needResult = true)
   {
-    m_origArray = array;
+    initialize(gf->GetData(), gf->Size(), _needResult);
+  }
 
-    if (array.getAllocatorID() != wantedAllocatorId)
-    {
-      m_tempArray = axom::Array<double>(array, wantedAllocatorId);
-      m_accessible = m_tempArray.view();
-    }
-    else
-    {
-      m_accessible = array;
-    }
-    m_writeBack = writeBack;
+  AXOM_HOST TempArrayView(axom::Array<double>& gf, bool _needResult = true)
+  {
+    initialize(gf.data(), gf.size(), _needResult);
+  }
+  AXOM_HOST TempArrayView(axom::ArrayView<double>& gf, bool _needResult = true)
+  {
+    initialize(gf.data(), gf.size(), _needResult);
   }
 
   /*!
@@ -104,24 +103,18 @@ public:
    *        happened in the host constructor. This version sets hostData to
    *        nullptr so we know not to clean up in the destructor.
    */
-  AXOM_HOST_DEVICE TempArrayAccess(const TempArrayAccess& obj)
-    : m_origArray(obj.m_origArray)
-    , m_tempArray()
-    , m_accessible(obj.m_accessible)
-    , m_writeBack(obj.m_writeBack)
+  AXOM_HOST_DEVICE TempArrayView(const TempArrayView& obj)
+    : m_hostData(nullptr)
+    , m_deviceData(obj.m_deviceData)
+    , m_numElements(obj.m_numElements)
+    , m_needResult(obj.m_needResult)
   { }
 
   /*!
    * \brief Destructor. On the host, this method may move data from the 
             device and deallocate device storage.
    */
-  AXOM_HOST_DEVICE ~TempArrayAccess()
-  {
-    if (m_writeBack && (m_accessible.data() != m_origArray.data()))
-    {
-      axom::copy(m_origArray.data(), m_accessible.data(), sizeof(double)*m_origArray.size());
-    }
-  }
+  AXOM_HOST_DEVICE ~TempArrayView() { finalize(); }
 
   /*!
    * \brief Indexing operator for accessing the data.
@@ -130,16 +123,135 @@ public:
    *
    * \return A reference to the data at index i.
    */
-  AXOM_HOST_DEVICE double& operator[](int i) { return m_accessible[i]; }
+  AXOM_HOST_DEVICE double& operator[](int i) { return m_deviceData[i]; }
   // non-const return on purpose.
-  AXOM_HOST_DEVICE double& operator[](int i) const { return m_accessible[i]; }
+  AXOM_HOST_DEVICE double& operator[](int i) const { return m_deviceData[i]; }
 
 private:
-  axom::ArrayView<double> m_origArray;
-  axom::Array<double> m_tempArray;
-  axom::ArrayView<double> m_accessible;
-  bool m_writeBack;
+  /*!
+   * \brief Initializes members using data from the grid function. This method
+   *        is called on the host.
+   *
+   * \param hostPtr The grid function data pointer on the host.
+   * \param nElem   The grid function size.
+   * \param _needResult Whether any data are copied from device.
+   */
+  AXOM_HOST void initialize(double* hostPtr, int nElem, bool _needResult)
+  {
+    m_hostData = m_deviceData = hostPtr;
+    m_numElements = nElem;
+    m_needResult = _needResult;
+  }
+
+  /*!
+   * \brief Helps during destruction.
+   */
+  AXOM_HOST_DEVICE void finalize() { m_deviceData = nullptr; }
+
+#if defined(AXOM_USE_CUDA) || defined(AXOM_USE_HIP)
+  /*!
+   * \brief Initializes members using data from the grid function. This method
+   *        is called on the host and it copies data to the device.
+   *
+   * \param hostPtr The grid function data pointer on the host.
+   * \param nElem   The grid function size.
+   * \param _needResult Whether any data are copied from device.
+   */
+  AXOM_HOST void initializeDevice(double* hostPtr, int nElem, bool _needResult)
+  {
+    m_hostData = hostPtr;
+    m_numElements = nElem;
+    m_needResult = _needResult;
+    int execSpaceAllocatorID = axom::execution_space<ExecSpace>::allocatorID();
+
+    auto dataSize = sizeof(double) * m_numElements;
+    m_deviceData = axom::allocate<double>(dataSize, execSpaceAllocatorID);
+    axom::copy(m_deviceData, m_hostData, dataSize);
+  }
+
+  /*!
+   * \brief Helps during destruction. On the host, it copies device data back
+   *        into the grid function on the host.
+   */
+  AXOM_HOST_DEVICE void finalizeDevice()
+  {
+  #ifndef AXOM_DEVICE_CODE
+    // Only the host will do this work.
+    if(m_hostData != nullptr)
+    {
+      if(m_needResult)
+      {
+        auto dataSize = sizeof(double) * m_numElements;
+        axom::copy(m_hostData, m_deviceData, dataSize);
+      }
+      axom::deallocate(m_deviceData);
+      m_deviceData = nullptr;
+    }
+  #endif
+  }
+#endif
+
+private:
+  double* m_hostData {nullptr};
+  double* m_deviceData {nullptr};
+  int m_numElements {0};
+  bool m_needResult {false};
 };
+
+#if defined(AXOM_USE_CUDA)
+/*!
+ * \brief CUDA specialization that calls initializeDevice to copy data
+ *        from the host to the device.
+ *
+ * \param hostPtr The grid function data pointer on the host.
+ * \param nElem   The grid function size.
+ * \param _needResult Whether any data are copied from device.
+ */
+template <>
+AXOM_HOST inline void TempArrayView<cuda_exec>::initialize(double* hostPtr,
+                                                              int nElem,
+                                                              bool _needResult)
+{
+  initializeDevice(hostPtr, nElem, _needResult);
+}
+
+/*!
+ * \brief CUDA specialization that may copy data back from the device
+ *        and deallocate any associated device data.
+ */
+template <>
+AXOM_HOST_DEVICE inline void TempArrayView<cuda_exec>::finalize()
+{
+  finalizeDevice();
+}
+#endif
+#if defined(AXOM_USE_HIP)
+/*!
+ * \brief HIP specialization that calls initializeDevice to copy data
+ *        from the host to the device.
+ *
+ * \param hostPtr The grid function data pointer on the host.
+ * \param nElem   The grid function size.
+ * \param _needResult Whether any data are copied from device.
+ */
+template <>
+AXOM_HOST inline void TempArrayView<hip_exec>::initialize(double* hostPtr,
+                                                             int nElem,
+                                                             bool _needResult)
+{
+  initializeDevice(hostPtr, nElem, _needResult);
+}
+
+/*!
+ * \brief HIP specialization that may copy data back from the device
+ *        and deallocate any associated device data.
+ */
+template <>
+AXOM_HOST_DEVICE inline void TempArrayView<hip_exec>::finalize()
+{
+  finalizeDevice();
+}
+#endif
 
 //---------------------------------------------------------------------------
 /**
@@ -943,7 +1055,6 @@ public:
     const std::string fieldName(materialNameToFieldName(m_free_mat_name));
 
     bool newData = !hasData(fieldName);
-    int execSpaceAllocatorID = axom::execution_space<ExecSpace>::allocatorID();
 
     axom::ArrayView<double> cfgf = getScalarCellData(fieldName);
 
@@ -952,7 +1063,7 @@ public:
       AXOM_ANNOTATE_SCOPE("compute_free");
 
       int dataSize = cfgf.size();
-      TempArrayAccess cfView(cfgf, execSpaceAllocatorID, true);
+      TempArrayView<ExecSpace> cfView(cfgf, true);
 
       axom::for_all<ExecSpace>(
         dataSize,
@@ -961,7 +1072,7 @@ public:
       // Iterate over all materials and subtract off their VFs from cfgf.
       for(axom::ArrayView<double>& gf : m_vf_grid_functions)
       {
-        TempArrayAccess matVFView(gf, execSpaceAllocatorID, false);
+        TempArrayView<ExecSpace> matVFView(gf, false);
         axom::for_all<ExecSpace>(
           dataSize,
           AXOM_LAMBDA(axom::IndexType i) {
@@ -1174,7 +1285,7 @@ public:
       for(const auto& name : shape.getMaterialsReplaced())
       {
         auto mat = getMaterial(name);
-        TempArrayAccess matVFView(mat.first, execSpaceAllocatorID, false);
+        TempArrayView<ExecSpace> matVFView(mat.first, false);
         axom::for_all<ExecSpace>(
           dataSize,
           AXOM_LAMBDA(axom::IndexType i) {
@@ -1193,7 +1304,7 @@ public:
 
       for(auto& gf : excludeVFs)
       {
-        TempArrayAccess matVFView(gf, execSpaceAllocatorID, false);
+        TempArrayView<ExecSpace> matVFView(gf, false);
         axom::for_all<ExecSpace>(
           dataSize,
           AXOM_LAMBDA(axom::IndexType i) {
@@ -1207,8 +1318,8 @@ public:
     {
       AXOM_ANNOTATE_SCOPE("compute_vf");
 
-      TempArrayAccess matVFView(matVF.first, execSpaceAllocatorID, true);
-      TempArrayAccess shapeVFView(shapeVolFrac, execSpaceAllocatorID, true);
+      TempArrayView<ExecSpace> matVFView(matVF.first, true);
+      TempArrayView<ExecSpace> shapeVFView(shapeVolFrac, true);
 
       axom::ArrayView<double> overlap_volumes_view = m_overlap_volumes.view();
       axom::ArrayView<double> hex_volumes_view = m_hex_volumes.view();
@@ -1238,7 +1349,7 @@ public:
       AXOM_ANNOTATE_SCOPE("update_vf");
       for(auto& gf : updateVFs)
       {
-        TempArrayAccess matVFView(gf, execSpaceAllocatorID, true);
+        TempArrayView<ExecSpace> matVFView(gf, true);
         axom::for_all<ExecSpace>(
           dataSize,
           AXOM_LAMBDA(axom::IndexType i) {
@@ -1973,6 +2084,7 @@ private:
   }
 
 public:
+  // This should be private, but NVCC complains unless its public.
   template <typename ExecSpace>
   void populateHexesFromMesh()
   {
