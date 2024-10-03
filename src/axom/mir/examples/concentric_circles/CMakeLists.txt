@@ -11,7 +11,7 @@ set( mir_example_dependencies
 
 # Speed up compilation by separating out the execspaces into different runMIR_xxx.cpp files.
 axom_add_executable(
-    NAME       mir_concentric_circles_ex
+    NAME       mir_concentric_circles
     SOURCES    mir_concentric_circles.cpp runMIR_seq.cpp runMIR_omp.cpp runMIR_cuda.cpp runMIR_hip.cpp
     OUTPUT_DIR ${EXAMPLE_OUTPUT_DIRECTORY}
     DEPENDS_ON ${mir_example_dependencies}

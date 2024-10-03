@@ -8,6 +8,8 @@
 #include "axom/slam.hpp"
 #include "axom/mir.hpp"
 
+#include "runMIR.hpp"
+
 #include <string>
 
 // namespace aliases
@@ -147,97 +149,6 @@ void printNode(const conduit::Node &n)
 
 //--------------------------------------------------------------------------------
 /*!
- * \brief Run MIR on the input mesh.
- *
- * \tparam ExecSpace The execution space where the algorithm will run.
- *
- * \param hostMesh A conduit node that contains the test mesh.
- * \param options A conduit node that contains the test mesh.
- * \param hostResult A conduit node that will contain the MIR results.
- */
-template <typename ExecSpace>
-int runMIR(const conduit::Node &hostMesh,
-           const conduit::Node &options,
-           conduit::Node &hostResult)
-{
-  std::string shape = hostMesh["topologies/mesh/elements/shape"].as_string();
-  SLIC_INFO(axom::fmt::format("Using policy {}",
-                              axom::execution_space<ExecSpace>::name()));
-
-  // host->device
-  conduit::Node deviceMesh;
-  bputils::copy<ExecSpace>(deviceMesh, hostMesh);
-
-  conduit::Node &n_coordset = deviceMesh["coordsets/coords"];
-  conduit::Node &n_topo = deviceMesh["topologies/mesh"];
-  conduit::Node &n_matset = deviceMesh["matsets/mat"];
-  auto connView =
-    bputils::make_array_view<int>(n_topo["elements/connectivity"]);
-
-  // Make matset view. (There's often 1 more material so add 1)
-  constexpr int MAXMATERIALS = 12;
-  using MatsetView =
-    axom::mir::views::UnibufferMaterialView<int, float, MAXMATERIALS + 1>;
-  MatsetView matsetView;
-  matsetView.set(bputils::make_array_view<int>(n_matset["material_ids"]),
-                 bputils::make_array_view<float>(n_matset["volume_fractions"]),
-                 bputils::make_array_view<int>(n_matset["sizes"]),
-                 bputils::make_array_view<int>(n_matset["offsets"]),
-                 bputils::make_array_view<int>(n_matset["indices"]));
-
-  // Coord/Topo views differ.
-  conduit::Node deviceResult;
-  if(shape == "tri")
-  {
-    auto coordsetView =
-      axom::mir::views::make_explicit_coordset<float, 2>::view(n_coordset);
-    using CoordsetView = decltype(coordsetView);
-    using TopologyView = axom::mir::views::UnstructuredTopologySingleShapeView<
-      axom::mir::views::TriShape<int>>;
-    TopologyView topologyView(connView);
-
-    using MIR =
-      axom::mir::EquiZAlgorithm<ExecSpace, TopologyView, CoordsetView, MatsetView>;
-    MIR m(topologyView, coordsetView, matsetView);
-    m.execute(deviceMesh, options, deviceResult);
-  }
-  else if(shape == "quad")
-  {
-    auto coordsetView =
-      axom::mir::views::make_explicit_coordset<float, 2>::view(n_coordset);
-    using CoordsetView = decltype(coordsetView);
-    using TopologyView = axom::mir::views::UnstructuredTopologySingleShapeView<
-      axom::mir::views::QuadShape<int>>;
-    TopologyView topologyView(connView);
-
-    using MIR =
-      axom::mir::EquiZAlgorithm<ExecSpace, TopologyView, CoordsetView, MatsetView>;
-    MIR m(topologyView, coordsetView, matsetView);
-    m.execute(deviceMesh, options, deviceResult);
-  }
-  else if(shape == "hex")
-  {
-    auto coordsetView =
-      axom::mir::views::make_explicit_coordset<float, 3>::view(n_coordset);
-    using CoordsetView = decltype(coordsetView);
-    using TopologyView = axom::mir::views::UnstructuredTopologySingleShapeView<
-      axom::mir::views::HexShape<int>>;
-    TopologyView topologyView(connView);
-
-    using MIR =
-      axom::mir::EquiZAlgorithm<ExecSpace, TopologyView, CoordsetView, MatsetView>;
-    MIR m(topologyView, coordsetView, matsetView);
-    m.execute(deviceMesh, options, deviceResult);
-  }
-
-  // device->host
-  bputils::copy<axom::SEQ_EXEC>(hostResult, deviceResult);
-
-  return 0;
-}
-
-//--------------------------------------------------------------------------------
-/*!
  * \brief Tutorial main showing how to initialize test cases and perform mir.
  */
 int main(int argc, char **argv)
@@ -322,29 +233,25 @@ int main(int argc, char **argv)
   conduit::Node resultMesh;
   if(params.m_policy == RuntimePolicy::seq)
   {
-    retval = runMIR<axom::SEQ_EXEC>(mesh, options, resultMesh);
+    retval = runMIR_seq(mesh, options, resultMesh);
   }
 #if defined(AXOM_USE_RAJA) && defined(AXOM_USE_UMPIRE)
   #if defined(AXOM_USE_OPENMP)
   else if(params.m_policy == RuntimePolicy::omp)
   {
-    retval = runMIR<axom::OMP_EXEC>(mesh, options, resultMesh);
+    retval = runMIR_omp(mesh, options, resultMesh);
   }
   #endif
   #if defined(AXOM_USE_CUDA)
   else if(params.m_policy == RuntimePolicy::cuda)
   {
-    constexpr int CUDA_BLOCK_SIZE = 256;
-    using cuda_exec = axom::CUDA_EXEC<CUDA_BLOCK_SIZE>;
-    retval = runMIR<cuda_exec>(mesh, options, resultMesh);
+    retval = runMIR_cuda(mesh, options, resultMesh);
   }
   #endif
   #if defined(AXOM_USE_HIP)
   else if(params.m_policy == RuntimePolicy::hip)
   {
-    constexpr int HIP_BLOCK_SIZE = 64;
-    using hip_exec = axom::HIP_EXEC<HIP_BLOCK_SIZE>;
-    retval = runMIR<hip_exec>(mesh, options, resultMesh);
+    retval = runMIR_hip(mesh, options, resultMesh);
   }
   #endif
 #endif
