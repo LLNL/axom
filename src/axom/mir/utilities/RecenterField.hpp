@@ -8,7 +8,7 @@
 
 #include "axom/core.hpp"
 #include "axom/mir/views/NodeArrayView.hpp"
-#include "axom/mir/utilities.hpp"
+#include "axom/mir/utilities/utilities.hpp"
 
 #include <conduit/conduit.hpp>
 #include <conduit/conduit_blueprint.hpp>

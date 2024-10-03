@@ -7,7 +7,7 @@
 
 #include "axom/core.hpp"
 #include "axom/mir/views/NodeArrayView.hpp"
-#include "axom/mir/blueprint_utilities.hpp"
+#include "axom/mir/utilities/blueprint_utilities.hpp"
 
 #include <conduit/conduit.hpp>
 

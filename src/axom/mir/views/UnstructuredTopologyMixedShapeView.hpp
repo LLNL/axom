@@ -9,7 +9,7 @@
 #include "axom/core.hpp"
 #include "axom/slic.hpp"
 #include "axom/mir/views/Shapes.hpp"
-#include "axom/mir/utilities.hpp"
+#include "axom/mir/utilities/utilities.hpp"
 
 namespace axom
 {

@@ -160,6 +160,32 @@ inline axom::ArrayView<T> make_array_view(const conduit::Node &n)
 
 //------------------------------------------------------------------------------
 /*!
+ * \brief This class contains views of blend data. Blend data lets is make new
+ *        nodal fields and coordsets. The field data are sampled using m_originalIdsView
+ *        which is a compact list of the original node ids that we want to preserve
+ *        without any blending. This stream is followed by a second stream of data
+ *        made using the field and the blend groups. Each blend group has
+ *        m_blendGroupSizesView[i] elements, starts at m_blendGroupStartView[i] and 
+ *        uses values from the m_blendIdsView, m_blendCoeffView members to blend the
+ *        data values.
+ *
+ */
+struct BlendData
+{
+  axom::ArrayView<IndexType>
+    m_originalIdsView;  // Contains indices of original node ids to be preserved.
+
+  axom::ArrayView<IndexType> m_selectedIndicesView;  // Contains indices of the selected blend groups.
+
+  axom::ArrayView<IndexType> m_blendGroupSizesView;  // The number of ids/weights in each blend group.
+  axom::ArrayView<IndexType>
+    m_blendGroupStartView;  // The starting offset for a blend group in the ids/weights.
+  axom::ArrayView<IndexType> m_blendIdsView;  // Contains ids that make up the blend groups
+  axom::ArrayView<float> m_blendCoeffView;  // Contains the weights that make up the blend groups.
+};
+
+//------------------------------------------------------------------------------
+/*!
  * \brief This class registers a Conduit allocator that can make Conduit allocate
  *        through Axom's allocate/deallocate functions using a specific allocator.
  *        This permits Conduit to allocate through Axom's UMPIRE logic.

@@ -6,8 +6,8 @@
 #define AXOM_MIR_COORDSET_BLENDER_HPP_
 
 #include "axom/core.hpp"
-#include "axom/mir/FieldBlender.hpp"         // for BlendData
-#include "axom/mir/blueprint_utilities.hpp"  // for cpp2conduit
+#include "axom/mir/utilities/FieldBlender.hpp"
+#include "axom/mir/utilities/blueprint_utilities.hpp"
 #include "axom/primal/geometry/Point.hpp"
 #include "axom/primal/geometry/Vector.hpp"
 #include "axom/slic.hpp"

@@ -11,14 +11,14 @@
 #include "axom/slic.hpp"
 
 // Include these directly for now.
+#include "axom/mir/MIRAlgorithm.hpp"
+#include "axom/mir/utilities/ExtractZones.hpp"
+#include "axom/mir/utilities/MergeMeshes.hpp"
+#include "axom/mir/utilities/NodeToZoneRelationBuilder.hpp"
+#include "axom/mir/utilities/RecenterField.hpp"
+#include "axom/mir/utilities/ZoneListBuilder.hpp"
 #include "axom/mir/views/dispatch_coordset.hpp"
 #include "axom/mir/views/MaterialView.hpp"
-#include "axom/mir/MIRAlgorithm.hpp"
-#include "axom/mir/RecenterField.hpp"
-#include "axom/mir/NodeToZoneRelationBuilder.hpp"
-#include "axom/mir/ZoneListBuilder.hpp"
-#include "axom/mir/ExtractZones.hpp"
-#include "axom/mir/MergeMeshes.hpp"
 
 #include <conduit/conduit.hpp>
 

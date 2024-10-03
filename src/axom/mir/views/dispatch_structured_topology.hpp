@@ -6,14 +6,14 @@
 #ifndef AXOM_MIR_DISPATCH_STRUCTURED_TOPOLOGY_HPP_
 #define AXOM_MIR_DISPATCH_STRUCTURED_TOPOLOGY_HPP_
 
-#include <axom/core.hpp>
+#include "axom/core.hpp"
 #include "axom/mir/views/StructuredTopologyView.hpp"
 #include "axom/mir/views/StructuredIndexing.hpp"
 #include "axom/mir/views/StridedStructuredIndexing.hpp"
 #include "axom/mir/views/dispatch_utilities.hpp"
 #include "axom/mir/views/dispatch_uniform_topology.hpp"
 #include "axom/mir/views/dispatch_rectilinear_topology.hpp"
-#include "axom/mir/blueprint_utilities.hpp"
+#include "axom/mir/utilities/blueprint_utilities.hpp"
 
 #include <conduit/conduit.hpp>
 

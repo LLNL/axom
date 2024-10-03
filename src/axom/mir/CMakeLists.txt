@@ -42,27 +42,29 @@ set(mir_headers
     ${mir_reference_headers}
     MeshTester.hpp
 
-    blueprint_utilities.hpp
-    clipping/ClipField.hpp
     clipping/BlendGroupBuilder.hpp
-    CoordsetBlender.hpp
-    CoordsetSlicer.hpp
+    clipping/ClipCases.h
+    clipping/ClipField.hpp
+    clipping/ClipOptions.hpp
+    clipping/ClipTableManager.hpp
     EquiZAlgorithm.hpp
-    ExtractZones.hpp
-    FieldBlender.hpp
-    FieldSlicer.hpp
-    MakeUnstructured.hpp
-    MatsetSlicer.hpp
-    MergeMeshes.hpp
     MIRAlgorithm.hpp
-    RecenterField.hpp
-    utilities.hpp
-    NodeToZoneRelationBuilder.hpp
-    SelectedZones.hpp
     MIROptions.hpp
     Options.hpp
-    clipping/ClipOptions.hpp
-    ZoneListBuilder.hpp
+    utilities/blueprint_utilities.hpp
+    utilities/CoordsetBlender.hpp
+    utilities/CoordsetSlicer.hpp
+    utilities/ExtractZones.hpp
+    utilities/FieldBlender.hpp
+    utilities/FieldSlicer.hpp
+    utilities/MakeUnstructured.hpp
+    utilities/MatsetSlicer.hpp
+    utilities/MergeMeshes.hpp
+    utilities/NodeToZoneRelationBuilder.hpp
+    utilities/RecenterField.hpp
+    utilities/SelectedZones.hpp
+    utilities/utilities.hpp
+    utilities/ZoneListBuilder.hpp
     views/dispatch_coordset.hpp
     views/dispatch_material.hpp
     views/dispatch_rectilinear_topology.hpp
@@ -80,29 +82,26 @@ set(mir_headers
     views/StructuredIndexing.hpp
     views/StructuredTopologyView.hpp
     views/UniformCoordsetView.hpp
-    views/UnstructuredTopologyPolyhedralView.hpp
     views/UnstructuredTopologyMixedShapeView.hpp
+    views/UnstructuredTopologyPolyhedralView.hpp
     views/UnstructuredTopologySingleShapeView.hpp
     views/view_traits.hpp
-
-    clipping/ClipCases.h
-    clipping/ClipTableManager.hpp
     )
 
 set(mir_sources
     ${mir_reference_sources}
-    MeshTester.cpp
 
-    blueprint_utilities.cpp
-    MIRAlgorithm.cpp
     clipping/ClipCasesHex.cpp
     clipping/ClipCasesPyr.cpp
     clipping/ClipCasesQua.cpp
     clipping/ClipCasesTet.cpp
     clipping/ClipCasesTri.cpp
     clipping/ClipCasesWdg.cpp
-    views/UnstructuredTopologyMixedShapeView.cpp
+    MeshTester.cpp
+    MIRAlgorithm.cpp
+    utilities/blueprint_utilities.cpp
     views/MaterialView.cpp
+    views/UnstructuredTopologyMixedShapeView.cpp
     )
 
 #------------------------------------------------------------------------------

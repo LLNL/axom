@@ -7,10 +7,10 @@
 #define AXOM_MIR_NODE_TO_ZONE_RELATION_BUILDER_HPP_
 
 #include "axom/core.hpp"
-#include "axom/mir/utilities.hpp"
-#include "axom/mir/blueprint_utilities.hpp"
+#include "axom/mir/utilities/utilities.hpp"
+#include "axom/mir/utilities/blueprint_utilities.hpp"
 #include "axom/mir/views/dispatch_unstructured_topology.hpp"
-#include "axom/mir/MakeUnstructured.hpp"
+#include "axom/mir/utilities/MakeUnstructured.hpp"
 
 #include <conduit/conduit.hpp>
 #include <conduit/conduit_blueprint.hpp>

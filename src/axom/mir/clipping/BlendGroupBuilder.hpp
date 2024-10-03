@@ -6,7 +6,8 @@
 #define AXOM_MIR_BLEND_GROUP_BUILDER_HPP_
 
 #include "axom/core.hpp"
-#include "axom/mir/utilities.hpp"
+#include "axom/mir/utilities/utilities.hpp"
+#include "axom/mir/utilities/blueprint_utilities.hpp"
 
 // RAJA
 #if defined(AXOM_USE_RAJA)

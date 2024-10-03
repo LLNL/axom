@@ -6,8 +6,8 @@
 #ifndef AXOM_MIR_MATSET_SLICER_HPP
 #define AXOM_MIR_MATSET_SLICER_HPP
 
-#include <axom/core.hpp>
-#include <axom/mir.hpp>
+#include "axom/core.hpp"
+#include "axom/mir.hpp"
 
 #include <conduit.hpp>
 
