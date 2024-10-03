@@ -43,8 +43,8 @@ set(mir_headers
     MeshTester.hpp
 
     blueprint_utilities.hpp
-    ClipField.hpp
-    BlendGroupBuilder.hpp
+    clipping/ClipField.hpp
+    clipping/BlendGroupBuilder.hpp
     CoordsetBlender.hpp
     CoordsetSlicer.hpp
     EquiZAlgorithm.hpp
@@ -61,7 +61,7 @@ set(mir_headers
     SelectedZones.hpp
     MIROptions.hpp
     Options.hpp
-    ClipOptions.hpp
+    clipping/ClipOptions.hpp
     ZoneListBuilder.hpp
     views/dispatch_coordset.hpp
     views/dispatch_material.hpp

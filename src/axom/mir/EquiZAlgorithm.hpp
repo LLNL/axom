@@ -103,6 +103,7 @@ public:
       for(IndexType i = 0; i < n; i++)
       {
         const auto nid = nodeIdsView[i];
+#if defined(AXOM_DEBUG)
 #if defined(AXOM_DEVICE_CODE)
         assert(nid >= 0 && nid < m_matvfViews[0].size());
 #else
@@ -110,6 +111,7 @@ public:
                         axom::fmt::format("Node id {} is not in range [0, {}).",
                                           nid,
                                           m_matvfViews[0].size()));
+#endif
 #endif
         // clang-format off
         MaterialVF vf1 = (backgroundIndex != INVALID_INDEX) ? m_matvfViews[backgroundIndex][nid] : NULL_MATERIAL_VF;
@@ -138,7 +140,7 @@ public:
       if(zoneMatID != NULL_MATERIAL)
         backgroundIndex = matNumberToIndex(zoneMatID);
         // Determine the matvf view index for the current material.
-
+#if defined(AXOM_DEBUG)
 #if defined(AXOM_DEVICE_CODE)
       assert(id0 >= 0 && id0 < m_matvfViews[0].size());
       assert(id1 >= 0 && id1 < m_matvfViews[0].size());
@@ -152,7 +154,7 @@ public:
                                         id1,
                                         m_matvfViews[0].size()));
 #endif
-
+#endif
       // Get the volume fractions for mat1, mat2 at the edge endpoints id0, id1.
       MaterialVF vf1[2], vf2[2];
       // clang-format off
@@ -1297,10 +1299,6 @@ protected:
       mesh[n_newTopo.path()].set_external(n_newTopo);
       mesh[n_newCoordset.path()].set_external(n_newCoordset);
       mesh[n_newFields.path()].set_external(n_newFields);
-
-      // print
-      //printNode(mesh);
-      //std::cout.flush();
 
       // save
       std::stringstream ss;

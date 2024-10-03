@@ -8,7 +8,6 @@
 #include "axom/core.hpp"
 #include "axom/slic.hpp"
 #include "axom/mir.hpp"
-//#include "axom/mir/blueprint_utilities.hpp"
 
 #include "axom/mir/tests/mir_testing_helpers.hpp"
 #include "axom/mir/tests/mir_testing_data_helpers.hpp"
