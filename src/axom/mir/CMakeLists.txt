@@ -19,22 +19,22 @@ axom_component_requires(NAME       MIR
 
 # A serial reference implementation (remove eventually)
 set(mir_reference_headers
-    MIRMesh.hpp
-    MIRMeshTypes.hpp
-    ZooClippingTables.hpp
-    InterfaceReconstructor.hpp
-    CellData.hpp
-    CellClipper.hpp
-    MIRUtilities.hpp
-    CellGenerator.hpp
+    reference/MIRMesh.hpp
+    reference/MIRMeshTypes.hpp
+    reference/ZooClippingTables.hpp
+    reference/InterfaceReconstructor.hpp
+    reference/CellData.hpp
+    reference/CellClipper.hpp
+    reference/MIRUtilities.hpp
+    reference/CellGenerator.hpp
     )
 set(mir_reference_sources
-    MIRMesh.cpp
-    InterfaceReconstructor.cpp
-    ZooClippingTables.cpp
-    CellData.cpp
-    CellClipper.cpp
-    CellGenerator.cpp
+    reference/MIRMesh.cpp
+    reference/InterfaceReconstructor.cpp
+    reference/ZooClippingTables.cpp
+    reference/CellData.cpp
+    reference/CellClipper.cpp
+    reference/CellGenerator.cpp
    )
 
 

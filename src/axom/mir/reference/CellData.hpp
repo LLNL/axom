@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -16,7 +16,7 @@
 #include "axom/core.hpp"  // for axom macros
 #include "axom/slam.hpp"
 
-#include "MIRMeshTypes.hpp"
+#include "axom/mir/reference/MIRMeshTypes.hpp"
 
 namespace numerics = axom::numerics;
 namespace slam = axom::slam;

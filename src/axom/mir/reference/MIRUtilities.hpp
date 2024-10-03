@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -11,10 +11,10 @@
  * 
  */
 
-#ifndef __MIR_UTILITIES_H__
-#define __MIR_UTILITIES_H__
+#ifndef __MIR_UTILITIES_HPP__
+#define __MIR_UTILITIES_HPP__
 
-#include "ZooClippingTables.hpp"
+#include "axom/mir/reference/ZooClippingTables.hpp"
 
 //--------------------------------------------------------------------------------
 

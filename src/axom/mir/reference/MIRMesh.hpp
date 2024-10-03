@@ -16,8 +16,8 @@
 #include "axom/core.hpp"  // for axom macros
 #include "axom/slam.hpp"  // unified header for slam classes and functions
 
-#include "MIRMeshTypes.hpp"
-#include "CellData.hpp"
+#include "axom/mir/reference/MIRMeshTypes.hpp"
+#include "axom/mir/reference/CellData.hpp"
 
 // C/C++ includes
 #include <cmath>  // for definition of M_PI, exp()

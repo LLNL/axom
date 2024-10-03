@@ -3,7 +3,7 @@
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
-#include "MIRMesh.hpp"
+#include "axom/mir/reference/MIRMesh.hpp"
 
 #include "axom/core.hpp"
 #include "axom/primal.hpp"
