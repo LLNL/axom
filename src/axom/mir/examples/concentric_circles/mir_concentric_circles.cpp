@@ -114,57 +114,19 @@ int runMIR(RuntimePolicy policy,
 }
 
 //--------------------------------------------------------------------------------
-int runMIROld(int gridSize, int numCircles, const std::string &outputFilePath)
-{
-  // Initialize a mesh for testing MIR
-  auto timer = axom::utilities::Timer(true);
-  mir::MeshTester tester;
-  mir::MIRMesh mesh;
-  {
-    AXOM_ANNOTATE_SCOPE("generate");
-    mesh = tester.initTestCaseFive(gridSize, numCircles);
-  }
-  timer.stop();
-  SLIC_INFO("Mesh init time: " << timer.elapsedTimeInMilliSec() << " ms.");
-
-  // Begin material interface reconstruction
-  timer.start();
-  mir::MIRMesh outputMesh;
-  {
-    AXOM_ANNOTATE_SCOPE("runMIR");
-    mir::InterfaceReconstructor m;
-    m.computeReconstructedInterface(mesh, outputMesh);
-  }
-  timer.stop();
-  SLIC_INFO("Material interface reconstruction time: "
-            << timer.elapsedTimeInMilliSec() << " ms.");
-
-  // Output results
-  {
-    AXOM_ANNOTATE_SCOPE("save_output");
-    outputMesh.writeMeshToFile(".", outputFilePath + ".vtk");
-  }
-
-  return 0;
-}
-
-//--------------------------------------------------------------------------------
 int main(int argc, char **argv)
 {
   axom::slic::SimpleLogger logger;  // create & initialize test logger
   axom::slic::setLoggingMsgLevel(axom::slic::message::Info);
 
   // Define command line options.
-  bool handler = true, old = false;
+  bool handler = true;
   int gridSize = 5;
   int numCircles = 2;
   std::string outputFilePath("output");
   axom::CLI::App app;
   app.add_flag("--handler", handler)
     ->description("Install a custom error handler that loops forever.")
-    ->capture_default_str();
-  app.add_flag("--old", old)
-    ->description("Use the old MIR method.")
     ->capture_default_str();
   app.add_option("--gridsize", gridSize)
     ->description("The number of zones along an axis.");
@@ -218,14 +180,7 @@ int main(int argc, char **argv)
   int retval = 0;
   try
   {
-    if(old)
-    {
-      retval = runMIROld(gridSize, numCircles, outputFilePath);
-    }
-    else
-    {
-      retval = runMIR(policy, gridSize, numCircles, outputFilePath);
-    }
+    retval = runMIR(policy, gridSize, numCircles, outputFilePath);
   }
   catch(std::invalid_argument const &e)
   {
