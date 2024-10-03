@@ -608,7 +608,7 @@ void braid2d_clip_test(const std::string &type, const std::string &name)
       n_device_topo.fetch_existing("elements/offsets"));
 
     // Make the shape map.
-    int allocatorID = axom::execution_space<ExecSpace>::allocatorID();
+    volatile int allocatorID = axom::execution_space<ExecSpace>::allocatorID();
     axom::Array<axom::IndexType> values, ids;
     auto shapeMap =
       axom::mir::views::buildShapeMap(n_device_topo, values, ids, allocatorID);

@@ -50,7 +50,7 @@ installs an allocation routine in Conduit that can be used to allocate data thro
 Axom. The Conduit allocator is set on each ``conduit::Node`` before setting data into
 the object.
 
-.. literalinclude:: ../../ClipField.hpp
+.. literalinclude:: ../../clipping/ClipField.hpp
    :start-after: _mir_utilities_c2a_begin
    :end-before: _mir_utilities_c2a_end
    :language: C++
@@ -87,7 +87,7 @@ and summing them together to produce the new point for the output coordset. Clas
 ``ClipField`` use ``CoordsetBlender`` to make new coordsets that contain points that were a
 combination of multiple points in the input coordset.
 
-.. literalinclude:: ../../ClipField.hpp
+.. literalinclude:: ../../clipping/ClipField.hpp
    :start-after: _mir_utilities_coordsetblender_start
    :end-before: _mir_utilities_coordsetblender_end
    :language: C++
@@ -101,7 +101,7 @@ new explicit coordset where each point corresponds to a single index from the no
 stored in SliceData. This class can be used to select a subset of a coordset, reorder nodes
 in a coordset, or repeat nodes in a coordset.
 
-.. literalinclude:: ../../ExtractZones.hpp
+.. literalinclude:: ../../utilities/ExtractZones.hpp
    :start-after: _mir_utilities_coordsetslicer_begin
    :end-before: _mir_utilities_coordsetslicer_end
    :language: C++
@@ -114,7 +114,7 @@ The ``axom::mir::utilities::ExtractZones`` class takes a list of selected zone i
 a new mesh from a source mesh that includes only the selected zones. There is a derived class
 ``ExtractZonesAndMatset`` that also extracts a matset, if present.
 
-.. literalinclude:: ../../ExtractZones.hpp
+.. literalinclude:: ../../utilities/ExtractZones.hpp
    :start-after: _mir_utilities_extractzones_begin
    :end-before: _mir_utilities_extractzones_end
    :language: C++
@@ -134,7 +134,7 @@ FieldSlicer
 The ``axom::mir::utilities::blueprint::FieldSlicer`` class selects specific indices from a
 field and makes a new field.
 
-.. literalinclude:: ../../tests/mir_blueprint_utilities.cpp
+.. literalinclude:: ../../tests/mir_slicers.cpp
    :start-after: _mir_utilities_fieldslicer_begin
    :end-before: _mir_utilities_fieldslicer_end
    :language: C++
@@ -160,7 +160,7 @@ The ``axom::mir::utilities::blueprint::MatsetSlicer`` class is similar to the ``
 class except it slices matsets instead of fields. The same ``SliceData`` can be passed to
 MatsetSlicer to pull out and assemble a new matset data for a specific list of zones.
 
-.. literalinclude:: ../../ExtractZones.hpp
+.. literalinclude:: ../../utilities/ExtractZones.hpp
    :start-after: _mir_utilities_matsetslicer_begin
    :end-before: _mir_utilities_matsetslicer_end
    :language: C++
@@ -189,7 +189,7 @@ O2M (one to many) relation that relates node numbers to the zones that contain t
 is akin to inverting the normal mesh connectivity which is a map of zones to node ids. The O2M
 relation is useful for recentering data from the zones to the nodes.
 
-.. literalinclude:: ../../tests/mir_blueprint_utilities.cpp
+.. literalinclude:: ../../tests/mir_node_to_zone_relation.cpp
    :start-after: _mir_utilities_n2zrel_begin
    :end-before: _mir_utilities_n2zrel_end
    :language: C++
