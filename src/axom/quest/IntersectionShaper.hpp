@@ -943,7 +943,7 @@ public:
     const std::string fieldName(materialNameToFieldName(m_free_mat_name));
 
     bool newData = !hasData(fieldName);
-    int execSpaceAllocatorID = ::getUmpireDeviceId<ExecSpace>();
+    int execSpaceAllocatorID = axom::execution_space<ExecSpace>::allocatorID();
 
     axom::ArrayView<double> cfgf = getScalarCellData(fieldName);
 

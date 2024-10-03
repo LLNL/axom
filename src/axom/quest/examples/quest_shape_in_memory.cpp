@@ -975,7 +975,7 @@ double sumMaterialVolumes(sidre::MFEMSidreDataCollection* dc,
   // axom::quest::GridFunctionView<ExecSpace> volFracView(volFracGf);
   axom::ArrayView<double> volFracGfArrayView(volFracGf->GetData(), volFracGf->Size());
   axom::quest::TempArrayAccess volFracView(volFracGfArrayView,
-                                           ::getUmpireDeviceId<ExecSpace>(),
+                                           axom::execution_space<ExecSpace>::allocatorID(),
                                            true);
 
   using ReducePolicy = typename axom::execution_space<ExecSpace>::reduce_policy;
