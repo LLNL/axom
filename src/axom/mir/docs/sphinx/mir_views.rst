@@ -129,6 +129,12 @@ views are needed to supply the sizes, offsets, and shapes arrays.
 The final unstructured topology view is ``axom::mir::views::UnstructuredTopologyPolyhedralView``
 and it provides a view interface to polyhedral meshes.
 
+.. literalinclude:: ../../tests/views/dispatch_unstructured_topology.hpp
+   :start-after: _mir_views_ph_topoview_begin
+   :end-before: _mir_views_ph_topoview_end
+   :language: C++
+
+
 Once a suitable topology view type has wrapped a Blueprint topology, it can be used in
 device kernels to obtain zone information.
 

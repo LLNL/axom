@@ -74,6 +74,7 @@ void typed_dispatch_unstructured_polyhedral_topology(const conduit::Node &topo,
   const std::string shape = topo["elements/shape"].as_string();
   if(shape == "polyhedral")
   {
+    // _mir_views_ph_topoview_begin
     auto seConnView =
       bputils::make_array_view<ConnType>(topo["subelements/connectivity"]);
     auto seSizesView =
@@ -92,6 +93,7 @@ void typed_dispatch_unstructured_polyhedral_topology(const conduit::Node &topo,
                                                         connView,
                                                         sizesView,
                                                         offsetsView);
+    // _mir_views_ph_topoview_end
     func(shape, ugView);
   }
 }
