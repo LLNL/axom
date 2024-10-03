@@ -266,4 +266,32 @@ bool compareBaseline(const std::vector<std::string> &baselinePaths,
   return success;
 }
 
+//------------------------------------------------------------------------------
+template <typename Container1, typename Container2>
+bool compare_views(const Container1 &a, const Container2 &b)
+{
+  bool eq = a.size() == b.size();
+  for(axom::IndexType i = 0; i < a.size() && eq; i++)
+  {
+    eq &= a[i] == b[i];
+  }
+  if(!eq)
+  {
+    std::cout << "a={";
+    for(axom::IndexType i = 0; i < a.size(); i++)
+    {
+      if(i > 0) std::cout << ", ";
+      std::cout << a[i];
+    }
+    std::cout << "}" << std::endl;
+    std::cout << "b={";
+    for(axom::IndexType i = 0; i < a.size(); i++)
+    {
+      if(i > 0) std::cout << ", ";
+      std::cout << b[i];
+    }
+    std::cout << "}" << std::endl;
+  }
+  return eq;
+}
 #endif

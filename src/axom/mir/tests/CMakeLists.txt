@@ -16,7 +16,11 @@ set(gtest_mir_tests
     mir_blueprint_utilities.cpp
     mir_views_indexing.cpp
     mir_views.cpp
-    mir_equiz.cpp
+    mir_equiz2d.cpp
+    mir_equiz3d.cpp
+    mir_slicers.cpp
+    mir_mergemeshes.cpp
+    mir_node_to_zone_relation.cpp
     )
 
 set(mir_tests_depends_on 
