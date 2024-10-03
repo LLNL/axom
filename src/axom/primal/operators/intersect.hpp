@@ -636,7 +636,8 @@ bool intersect(const BezierPatch<T, 3>& patch,
                std::vector<T>& up,
                std::vector<T>& vp,
                std::vector<T>& tp,
-               double tol = 1E-8)
+               double tol = 1E-8,
+               double buffer = 0.0)
 {
   const double u_offset = 0.;
   const double u_scale = 1.;
@@ -653,6 +654,7 @@ bool intersect(const BezierPatch<T, 3>& patch,
                                       vp,
                                       tp,
                                       sq_tol,
+                                      buffer,
                                       patch.getOrder_u(),
                                       patch.getOrder_v(),
                                       u_offset,
