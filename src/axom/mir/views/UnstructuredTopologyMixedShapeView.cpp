@@ -11,7 +11,6 @@ namespace mir
 {
 namespace views
 {
-
 ShapeMap buildShapeMap(const conduit::Node &n_topo,
                        axom::Array<IndexType> &values,
                        axom::Array<IndexType> &ids,

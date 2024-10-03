@@ -1550,8 +1550,11 @@ struct test_fieldslicer
     bputils::copy<ExecSpace>(deviceMesh, hostMesh);
 
     // _mir_utilities_fieldslicer_begin
-    std::vector<int> indices{0,1,2,7,8,9};
-    axom::Array<int> sliceIndices(indices.size(), indices.size(), axom::execution_space<ExecSpace>::allocatorID());
+    std::vector<int> indices {0, 1, 2, 7, 8, 9};
+    axom::Array<int> sliceIndices(
+      indices.size(),
+      indices.size(),
+      axom::execution_space<ExecSpace>::allocatorID());
     axom::copy(sliceIndices.data(), indices.data(), sizeof(int) * indices.size());
 
     bputils::SliceData slice;
@@ -1567,26 +1570,36 @@ struct test_fieldslicer
     conduit::Node hostSlicedMesh;
     bputils::copy<axom::SEQ_EXEC>(hostSlicedMesh, slicedMesh);
 
-    std::vector<double> resultX{0., 1., 2., 7., 8., 9.};
-    std::vector<double> resultY{0., 10., 20., 70., 80., 90.};
+    std::vector<double> resultX {0., 1., 2., 7., 8., 9.};
+    std::vector<double> resultY {0., 10., 20., 70., 80., 90.};
 
     EXPECT_EQ(hostSlicedMesh["fields/scalar/topology"].as_string(), "mesh");
-    EXPECT_EQ(hostSlicedMesh["fields/scalar/association"].as_string(), "element");
-    EXPECT_EQ(hostSlicedMesh["fields/scalar/values"].dtype().number_of_elements(), indices.size());
+    EXPECT_EQ(hostSlicedMesh["fields/scalar/association"].as_string(),
+              "element");
+    EXPECT_EQ(hostSlicedMesh["fields/scalar/values"].dtype().number_of_elements(),
+              indices.size());
     for(size_t i = 0; i < indices.size(); i++)
     {
-      const auto acc = hostSlicedMesh["fields/scalar/values"].as_double_accessor();
+      const auto acc =
+        hostSlicedMesh["fields/scalar/values"].as_double_accessor();
       EXPECT_EQ(acc[i], resultX[i]);
     }
 
     EXPECT_EQ(hostSlicedMesh["fields/vector/topology"].as_string(), "mesh");
-    EXPECT_EQ(hostSlicedMesh["fields/vector/association"].as_string(), "element");
-    EXPECT_EQ(hostSlicedMesh["fields/vector/values/x"].dtype().number_of_elements(), indices.size());
-    EXPECT_EQ(hostSlicedMesh["fields/vector/values/y"].dtype().number_of_elements(), indices.size());
+    EXPECT_EQ(hostSlicedMesh["fields/vector/association"].as_string(),
+              "element");
+    EXPECT_EQ(
+      hostSlicedMesh["fields/vector/values/x"].dtype().number_of_elements(),
+      indices.size());
+    EXPECT_EQ(
+      hostSlicedMesh["fields/vector/values/y"].dtype().number_of_elements(),
+      indices.size());
     for(size_t i = 0; i < indices.size(); i++)
     {
-      const auto x = hostSlicedMesh["fields/vector/values/x"].as_double_accessor();
-      const auto y = hostSlicedMesh["fields/vector/values/y"].as_double_accessor();
+      const auto x =
+        hostSlicedMesh["fields/vector/values/x"].as_double_accessor();
+      const auto y =
+        hostSlicedMesh["fields/vector/values/y"].as_double_accessor();
       EXPECT_EQ(x[i], resultX[i]);
       EXPECT_EQ(y[i], resultY[i]);
     }
@@ -1633,7 +1646,6 @@ TEST(mir_blueprint_utilities, fieldslicer_hip)
   test_fieldslicer<hip_exec>::test();
 }
 #endif
-
 
 //------------------------------------------------------------------------------
 int main(int argc, char *argv[])

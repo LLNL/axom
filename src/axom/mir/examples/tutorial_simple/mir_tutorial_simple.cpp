@@ -23,18 +23,18 @@ using RuntimePolicy = axom::runtime_policy::Policy;
 /// Contain program options.
 struct Input
 {
-  int m_test_case{1};  // valid values 1,2,3,4,5
-  bool m_should_iterate{false};
-  int m_iter_count{0};
-  double m_iter_percent{0.};
-  bool m_verbose{false};
-  std::string m_output_dir{};
+  int m_test_case {1};  // valid values 1,2,3,4,5
+  bool m_should_iterate {false};
+  int m_iter_count {0};
+  double m_iter_percent {0.};
+  bool m_verbose {false};
+  std::string m_output_dir {};
   RuntimePolicy m_policy {RuntimePolicy::seq};
-  std::string m_annotationMode{"report"};
-  axom::CLI::App m_app{};
+  std::string m_annotationMode {"report"};
+  axom::CLI::App m_app {};
 
   /// Parse command line.
-  int parse(int argc, char** argv)
+  int parse(int argc, char **argv)
   {
     m_app.add_option("--test-case", m_test_case)
       ->description("Select the test case.");
@@ -48,14 +48,12 @@ struct Input
     m_app.add_option("--iter-percent", m_iter_percent)
       ->description("The percent error for iterative MIR");
 
-    m_app.add_flag("--verbose", m_verbose)
-      ->description("Verbose output");
+    m_app.add_flag("--verbose", m_verbose)->description("Verbose output");
 
 #if defined(AXOM_USE_CALIPER)
     m_app.add_option("--caliper", m_annotationMode)
       ->description(
-        "caliper annotation mode. Valid options include 'none' and 'report'. "
-        )
+        "caliper annotation mode. Valid options include 'none' and 'report'. ")
       ->capture_default_str()
       ->check(axom::utilities::ValidCaliperMode);
 #endif
@@ -84,7 +82,7 @@ struct Input
     {
       m_app.parse(argc, argv);
     }
-    catch (const axom::CLI::ParseError &e)
+    catch(const axom::CLI::ParseError &e)
     {
       return m_app.exit(e);
     }
@@ -158,7 +156,9 @@ void printNode(const conduit::Node &n)
  * \param hostResult A conduit node that will contain the MIR results.
  */
 template <typename ExecSpace>
-int runMIR(const conduit::Node &hostMesh, const conduit::Node &options, conduit::Node &hostResult)
+int runMIR(const conduit::Node &hostMesh,
+           const conduit::Node &options,
+           conduit::Node &hostResult)
 {
   std::string shape = hostMesh["topologies/mesh/elements/shape"].as_string();
   SLIC_INFO(axom::fmt::format("Using policy {}",
@@ -171,53 +171,63 @@ int runMIR(const conduit::Node &hostMesh, const conduit::Node &options, conduit:
   conduit::Node &n_coordset = deviceMesh["coordsets/coords"];
   conduit::Node &n_topo = deviceMesh["topologies/mesh"];
   conduit::Node &n_matset = deviceMesh["matsets/mat"];
-  auto connView = bputils::make_array_view<int>(n_topo["elements/connectivity"]);
+  auto connView =
+    bputils::make_array_view<int>(n_topo["elements/connectivity"]);
 
   // Make matset view. (There's often 1 more material so add 1)
   constexpr int MAXMATERIALS = 12;
-  using MatsetView = axom::mir::views::UnibufferMaterialView<int, float, MAXMATERIALS + 1>;
+  using MatsetView =
+    axom::mir::views::UnibufferMaterialView<int, float, MAXMATERIALS + 1>;
   MatsetView matsetView;
-  matsetView.set(
-    bputils::make_array_view<int>(n_matset["material_ids"]),
-    bputils::make_array_view<float>(n_matset["volume_fractions"]),
-    bputils::make_array_view<int>(n_matset["sizes"]),
-    bputils::make_array_view<int>(n_matset["offsets"]),
-    bputils::make_array_view<int>(n_matset["indices"]));
+  matsetView.set(bputils::make_array_view<int>(n_matset["material_ids"]),
+                 bputils::make_array_view<float>(n_matset["volume_fractions"]),
+                 bputils::make_array_view<int>(n_matset["sizes"]),
+                 bputils::make_array_view<int>(n_matset["offsets"]),
+                 bputils::make_array_view<int>(n_matset["indices"]));
 
   // Coord/Topo views differ.
   conduit::Node deviceResult;
   if(shape == "tri")
   {
-    auto coordsetView = axom::mir::views::make_explicit_coordset<float, 2>::view(n_coordset);
+    auto coordsetView =
+      axom::mir::views::make_explicit_coordset<float, 2>::view(n_coordset);
     using CoordsetView = decltype(coordsetView);
-    using TopologyView = axom::mir::views::UnstructuredTopologySingleShapeView<axom::mir::views::TriShape<int>>;
+    using TopologyView = axom::mir::views::UnstructuredTopologySingleShapeView<
+      axom::mir::views::TriShape<int>>;
     TopologyView topologyView(connView);
 
-    using MIR = axom::mir::EquiZAlgorithm<ExecSpace, TopologyView, CoordsetView, MatsetView>;
+    using MIR =
+      axom::mir::EquiZAlgorithm<ExecSpace, TopologyView, CoordsetView, MatsetView>;
     MIR m(topologyView, coordsetView, matsetView);
-    m.execute(deviceMesh, options, deviceResult);   
+    m.execute(deviceMesh, options, deviceResult);
   }
   else if(shape == "quad")
   {
-    auto coordsetView = axom::mir::views::make_explicit_coordset<float, 2>::view(n_coordset);
+    auto coordsetView =
+      axom::mir::views::make_explicit_coordset<float, 2>::view(n_coordset);
     using CoordsetView = decltype(coordsetView);
-    using TopologyView = axom::mir::views::UnstructuredTopologySingleShapeView<axom::mir::views::QuadShape<int>>;
+    using TopologyView = axom::mir::views::UnstructuredTopologySingleShapeView<
+      axom::mir::views::QuadShape<int>>;
     TopologyView topologyView(connView);
 
-    using MIR = axom::mir::EquiZAlgorithm<ExecSpace, TopologyView, CoordsetView, MatsetView>;
+    using MIR =
+      axom::mir::EquiZAlgorithm<ExecSpace, TopologyView, CoordsetView, MatsetView>;
     MIR m(topologyView, coordsetView, matsetView);
-    m.execute(deviceMesh, options, deviceResult);   
+    m.execute(deviceMesh, options, deviceResult);
   }
   else if(shape == "hex")
   {
-    auto coordsetView = axom::mir::views::make_explicit_coordset<float, 3>::view(n_coordset);
+    auto coordsetView =
+      axom::mir::views::make_explicit_coordset<float, 3>::view(n_coordset);
     using CoordsetView = decltype(coordsetView);
-    using TopologyView = axom::mir::views::UnstructuredTopologySingleShapeView<axom::mir::views::HexShape<int>>;
+    using TopologyView = axom::mir::views::UnstructuredTopologySingleShapeView<
+      axom::mir::views::HexShape<int>>;
     TopologyView topologyView(connView);
 
-    using MIR = axom::mir::EquiZAlgorithm<ExecSpace, TopologyView, CoordsetView, MatsetView>;
+    using MIR =
+      axom::mir::EquiZAlgorithm<ExecSpace, TopologyView, CoordsetView, MatsetView>;
     MIR m(topologyView, coordsetView, matsetView);
-    m.execute(deviceMesh, options, deviceResult);   
+    m.execute(deviceMesh, options, deviceResult);
   }
 
   // device->host
@@ -230,7 +240,7 @@ int runMIR(const conduit::Node &hostMesh, const conduit::Node &options, conduit:
 /*!
  * \brief Tutorial main showing how to initialize test cases and perform mir.
  */
-int main(int argc, char** argv)
+int main(int argc, char **argv)
 {
   axom::slic::SimpleLogger logger;  // create & initialize test logger
   axom::slic::setLoggingMsgLevel(axom::slic::message::Info);
@@ -266,19 +276,19 @@ int main(int argc, char** argv)
     tester.initTestCaseFour(mesh);
     break;
   case 5:
-    {
-      constexpr int GRIDSIZE = 25;
-      constexpr int MAXMATERIALS = 12;
-      tester.initTestCaseFive(GRIDSIZE, MAXMATERIALS, mesh);
-    }
-    break;
+  {
+    constexpr int GRIDSIZE = 25;
+    constexpr int MAXMATERIALS = 12;
+    tester.initTestCaseFive(GRIDSIZE, MAXMATERIALS, mesh);
+  }
+  break;
   case 6:
-    {
-      constexpr int GRIDSIZE = 15;
-      constexpr int MAXMATERIALS = 3;
-      tester.initTestCaseSix(GRIDSIZE, MAXMATERIALS, mesh);
-    }
-    break;
+  {
+    constexpr int GRIDSIZE = 15;
+    constexpr int MAXMATERIALS = 3;
+    tester.initTestCaseSix(GRIDSIZE, MAXMATERIALS, mesh);
+  }
+  break;
   }
   timer.stop();
   SLIC_INFO("Mesh init time: " << timer.elapsedTimeInMilliSec() << " ms.");
@@ -288,7 +298,8 @@ int main(int argc, char** argv)
   if(params.m_output_dir.empty())
     filepath = filename;
   else
-    filepath = axom::utilities::filesystem::joinPath(params.m_output_dir, filename);
+    filepath =
+      axom::utilities::filesystem::joinPath(params.m_output_dir, filename);
   conduit::relay::io::blueprint::save_mesh(mesh, filepath, "hdf5");
 
   if(params.m_verbose)
@@ -352,7 +363,8 @@ int main(int argc, char** argv)
     if(params.m_output_dir.empty())
       filepath = filename;
     else
-      filepath = axom::utilities::filesystem::joinPath(params.m_output_dir, filename);
+      filepath =
+        axom::utilities::filesystem::joinPath(params.m_output_dir, filename);
     conduit::relay::io::blueprint::save_mesh(resultMesh, filepath, "hdf5");
   }
 

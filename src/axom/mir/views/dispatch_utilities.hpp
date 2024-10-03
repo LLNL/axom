@@ -12,7 +12,6 @@ namespace mir
 {
 namespace views
 {
-
 #if __cplusplus >= 201703L
 // C++17 and later.
 template <typename... Dimensions>

@@ -21,7 +21,6 @@ namespace utilities
 {
 namespace blueprint
 {
-
 /**
  * \accelerated
  * \brief Make an unstructured representation of a structured topology.

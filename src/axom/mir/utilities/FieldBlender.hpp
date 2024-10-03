@@ -20,7 +20,6 @@ namespace utilities
 {
 namespace blueprint
 {
-
 /*!
  * \brief This policy can be used with FieldBlender to select all blend groups.
  */

@@ -72,9 +72,17 @@ int runMIR(const conduit::Node &hostMesh,
 }
 
 // Prototypes.
-int runMIR_seq(const conduit::Node &mesh, const conduit::Node &options, conduit::Node &result);
-int runMIR_omp(const conduit::Node &mesh, const conduit::Node &options, conduit::Node &result);
-int runMIR_cuda(const conduit::Node &mesh, const conduit::Node &options, conduit::Node &result);
-int runMIR_hip(const conduit::Node &mesh, const conduit::Node &options, conduit::Node &result);
+int runMIR_seq(const conduit::Node &mesh,
+               const conduit::Node &options,
+               conduit::Node &result);
+int runMIR_omp(const conduit::Node &mesh,
+               const conduit::Node &options,
+               conduit::Node &result);
+int runMIR_cuda(const conduit::Node &mesh,
+                const conduit::Node &options,
+                conduit::Node &result);
+int runMIR_hip(const conduit::Node &mesh,
+               const conduit::Node &options,
+               conduit::Node &result);
 
 #endif

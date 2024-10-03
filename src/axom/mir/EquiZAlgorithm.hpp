@@ -104,14 +104,14 @@ public:
       {
         const auto nid = nodeIdsView[i];
 #if defined(AXOM_DEBUG)
-#if defined(AXOM_DEVICE_CODE)
+  #if defined(AXOM_DEVICE_CODE)
         assert(nid >= 0 && nid < m_matvfViews[0].size());
-#else
+  #else
         SLIC_ASSERT_MSG(nid >= 0 && nid < m_matvfViews[0].size(),
                         axom::fmt::format("Node id {} is not in range [0, {}).",
                                           nid,
                                           m_matvfViews[0].size()));
-#endif
+  #endif
 #endif
         // clang-format off
         MaterialVF vf1 = (backgroundIndex != INVALID_INDEX) ? m_matvfViews[backgroundIndex][nid] : NULL_MATERIAL_VF;
@@ -141,10 +141,10 @@ public:
         backgroundIndex = matNumberToIndex(zoneMatID);
         // Determine the matvf view index for the current material.
 #if defined(AXOM_DEBUG)
-#if defined(AXOM_DEVICE_CODE)
+  #if defined(AXOM_DEVICE_CODE)
       assert(id0 >= 0 && id0 < m_matvfViews[0].size());
       assert(id1 >= 0 && id1 < m_matvfViews[0].size());
-#else
+  #else
       SLIC_ASSERT_MSG(id0 >= 0 && id0 < m_matvfViews[0].size(),
                       axom::fmt::format("Node id {} is not in range [0, {}).",
                                         id0,
@@ -153,7 +153,7 @@ public:
                       axom::fmt::format("Node id {} is not in range [0, {}).",
                                         id1,
                                         m_matvfViews[0].size()));
-#endif
+  #endif
 #endif
       // Get the volume fractions for mat1, mat2 at the edge endpoints id0, id1.
       MaterialVF vf1[2], vf2[2];
@@ -480,7 +480,7 @@ protected:
       mmOpts["topology"] = n_topo.name();
       bputils::MergeMeshes<ExecSpace> mm;
       mm.execute(inputs, mmOpts, n_merged);
-      // _mir_utilities_mergemeshes_end
+        // _mir_utilities_mergemeshes_end
 
   #if defined(AXOM_EQUIZ_DEBUG)
       std::cout << "--- clean ---\n";

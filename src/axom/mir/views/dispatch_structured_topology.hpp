@@ -25,7 +25,6 @@ namespace mir
 {
 namespace views
 {
-
 /*!
  * \brief Base template for strided structured topology creation
  */

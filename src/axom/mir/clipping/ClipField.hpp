@@ -268,12 +268,12 @@ struct DegenerateHandler
    */
   AXOM_HOST_DEVICE
   static bool setSize(axom::ArrayView<IndexType> AXOM_UNUSED_PARAM(fragmentsView),
-                              axom::ArrayView<ConnectivityType> AXOM_UNUSED_PARAM(connView),
-                              axom::ArrayView<ConnectivityType> sizesView,
-                              axom::IndexType AXOM_UNUSED_PARAM(szIndex),
-                              int nIdsThisFragment,
-                              int sizeIndex,
-                              int &AXOM_UNUSED_PARAM(outputIndex))
+                      axom::ArrayView<ConnectivityType> AXOM_UNUSED_PARAM(connView),
+                      axom::ArrayView<ConnectivityType> sizesView,
+                      axom::IndexType AXOM_UNUSED_PARAM(szIndex),
+                      int nIdsThisFragment,
+                      int sizeIndex,
+                      int &AXOM_UNUSED_PARAM(outputIndex))
   {
     sizesView[sizeIndex] = nIdsThisFragment;
     return false;
@@ -293,17 +293,17 @@ struct DegenerateHandler
    * \param[inout] shapesView The view that wraps shapes (can change on output).
    * \param[inout] colorView The view that wraps colors (can change on output).
    */
-  static void filterZeroSizes(FragmentData &AXOM_UNUSED_PARAM(fragmentData),
-                              conduit::Node &AXOM_UNUSED_PARAM(n_sizes),
-                              conduit::Node &AXOM_UNUSED_PARAM(n_offsets),
-                              conduit::Node &AXOM_UNUSED_PARAM(n_shapes),
-                              conduit::Node &AXOM_UNUSED_PARAM(n_color),
-                              axom::ArrayView<ConnectivityType> &AXOM_UNUSED_PARAM(sizesView),
-                              axom::ArrayView<ConnectivityType> &AXOM_UNUSED_PARAM(offsetsView),
-                              axom::ArrayView<ConnectivityType> &AXOM_UNUSED_PARAM(shapesView),
-                              axom::ArrayView<int> &AXOM_UNUSED_PARAM(colorView))
-  {
-  }
+  static void filterZeroSizes(
+    FragmentData &AXOM_UNUSED_PARAM(fragmentData),
+    conduit::Node &AXOM_UNUSED_PARAM(n_sizes),
+    conduit::Node &AXOM_UNUSED_PARAM(n_offsets),
+    conduit::Node &AXOM_UNUSED_PARAM(n_shapes),
+    conduit::Node &AXOM_UNUSED_PARAM(n_color),
+    axom::ArrayView<ConnectivityType> &AXOM_UNUSED_PARAM(sizesView),
+    axom::ArrayView<ConnectivityType> &AXOM_UNUSED_PARAM(offsetsView),
+    axom::ArrayView<ConnectivityType> &AXOM_UNUSED_PARAM(shapesView),
+    axom::ArrayView<int> &AXOM_UNUSED_PARAM(colorView))
+  { }
 
   /*!
    * \brief Turns degenerate quads into triangles in-place.
@@ -314,11 +314,12 @@ struct DegenerateHandler
    * \param offsetsView A view that contains the offsets.
    * \param shapesView A view that contains the shapes.
    */
-  static BitSet quadtri(BitSet shapesUsed,
-                        axom::ArrayView<ConnectivityType> AXOM_UNUSED_PARAM(connView),
-                        axom::ArrayView<ConnectivityType> AXOM_UNUSED_PARAM(sizesView),
-                        axom::ArrayView<ConnectivityType> AXOM_UNUSED_PARAM(offsetsView),
-                        axom::ArrayView<ConnectivityType> AXOM_UNUSED_PARAM(shapesView))
+  static BitSet quadtri(
+    BitSet shapesUsed,
+    axom::ArrayView<ConnectivityType> AXOM_UNUSED_PARAM(connView),
+    axom::ArrayView<ConnectivityType> AXOM_UNUSED_PARAM(sizesView),
+    axom::ArrayView<ConnectivityType> AXOM_UNUSED_PARAM(offsetsView),
+    axom::ArrayView<ConnectivityType> AXOM_UNUSED_PARAM(shapesView))
   {
     return shapesUsed;
   }
@@ -347,18 +348,19 @@ struct DegenerateHandler<2, ExecSpace, ConnectivityType>
    */
   AXOM_HOST_DEVICE
   static bool setSize(axom::ArrayView<IndexType> fragmentsView,
-                              axom::ArrayView<ConnectivityType> connView,
-                              axom::ArrayView<ConnectivityType> sizesView,
-                              axom::IndexType szIndex,
-                              int nIdsThisFragment,
-                              int sizeIndex,
-                              int &outputIndex)
+                      axom::ArrayView<ConnectivityType> connView,
+                      axom::ArrayView<ConnectivityType> sizesView,
+                      axom::IndexType szIndex,
+                      int nIdsThisFragment,
+                      int sizeIndex,
+                      int &outputIndex)
   {
     const int connStart = outputIndex - nIdsThisFragment;
 
     // Check for degenerate
-    const int nUniqueIds = internal::unique_count<ConnectivityType, 8>(connView.data() + connStart,
-                    nIdsThisFragment);
+    const int nUniqueIds =
+      internal::unique_count<ConnectivityType, 8>(connView.data() + connStart,
+                                                  nIdsThisFragment);
     const bool thisFragmentDegenerate = nUniqueIds < (nIdsThisFragment - 1);
 
     // Rewind the outputIndex so we don't emit it in the connectivity.
@@ -410,13 +412,10 @@ struct DegenerateHandler<2, ExecSpace, ConnectivityType>
 
     // Use sizesView to make a mask that has 1's where size > 0.
     axom::IndexType nz = fragmentData.m_finalNumZones;
-    axom::Array<int> mask(nz,
-                          nz,
-                          axom::execution_space<ExecSpace>::allocatorID());
-    axom::Array<int> maskOffsets(
-      nz,
-      nz,
-      axom::execution_space<ExecSpace>::allocatorID());
+    axom::Array<int> mask(nz, nz, axom::execution_space<ExecSpace>::allocatorID());
+    axom::Array<int> maskOffsets(nz,
+                                 nz,
+                                 axom::execution_space<ExecSpace>::allocatorID());
     auto maskView = mask.view();
     auto maskOffsetsView = maskOffsets.view();
     RAJA::ReduceSum<reduce_policy, axom::IndexType> mask_reduce(0);
@@ -435,19 +434,28 @@ struct DegenerateHandler<2, ExecSpace, ConnectivityType>
 
     // Filter sizes, shapes, color using the mask
     sizesView =
-      filter<ExecSpace, axom::ArrayView<ConnectivityType>>(n_sizes, sizesView, filteredZoneCount, maskView, maskOffsetsView);
-    offsetsView = filter<ExecSpace, axom::ArrayView<ConnectivityType>>(n_offsets,
-                         offsetsView,
-                         filteredZoneCount,
-                         maskView,
-                         maskOffsetsView);
+      filter<ExecSpace, axom::ArrayView<ConnectivityType>>(n_sizes,
+                                                           sizesView,
+                                                           filteredZoneCount,
+                                                           maskView,
+                                                           maskOffsetsView);
+    offsetsView =
+      filter<ExecSpace, axom::ArrayView<ConnectivityType>>(n_offsets,
+                                                           offsetsView,
+                                                           filteredZoneCount,
+                                                           maskView,
+                                                           maskOffsetsView);
     shapesView =
-      filter<ExecSpace, axom::ArrayView<ConnectivityType>>(n_shapes, shapesView, filteredZoneCount, maskView, maskOffsetsView);
+      filter<ExecSpace, axom::ArrayView<ConnectivityType>>(n_shapes,
+                                                           shapesView,
+                                                           filteredZoneCount,
+                                                           maskView,
+                                                           maskOffsetsView);
     colorView = filter<ExecSpace, axom::ArrayView<int>>(n_color,
-                       colorView,
-                       filteredZoneCount,
-                       maskView,
-                       maskOffsetsView);
+                                                        colorView,
+                                                        filteredZoneCount,
+                                                        maskView,
+                                                        maskOffsetsView);
 
     // Record the filtered size.
     fragmentData.m_finalNumZones = filteredZoneCount;
@@ -486,7 +494,10 @@ struct DegenerateHandler<2, ExecSpace, ConnectivityType>
               int next = (current + 1) % 4;
               ConnectivityType curNode = connView[offset + current];
               ConnectivityType nextNode = connView[offset + next];
-              if(curNode != nextNode) { pts[npts++] = curNode; }
+              if(curNode != nextNode)
+              {
+                pts[npts++] = curNode;
+              }
             }
 
             if(npts == 3)
@@ -535,10 +546,11 @@ struct StridedStructuredFields
    * \param n_field The field being sliced.
    * \param n_newField The node that will contain the new field.
    */
-  static bool sliceElementField(const TopologyView &AXOM_UNUSED_PARAM(topologyView),
-                                const axom::mir::utilities::blueprint::SliceData &AXOM_UNUSED_PARAM(slice),
-                                const conduit::Node &AXOM_UNUSED_PARAM(n_field),
-                                conduit::Node &AXOM_UNUSED_PARAM(n_newField))
+  static bool sliceElementField(
+    const TopologyView &AXOM_UNUSED_PARAM(topologyView),
+    const axom::mir::utilities::blueprint::SliceData &AXOM_UNUSED_PARAM(slice),
+    const conduit::Node &AXOM_UNUSED_PARAM(n_field),
+    conduit::Node &AXOM_UNUSED_PARAM(n_newField))
   {
     return false;
   }
@@ -551,10 +563,11 @@ struct StridedStructuredFields
    * \param n_field The field being sliced.
    * \param n_newField The node that will contain the new field.
    */
-  static bool blendVertexField(const TopologyView &AXOM_UNUSED_PARAM(topologyView),
-                               const axom::mir::utilities::blueprint::BlendData &AXOM_UNUSED_PARAM(blend),
-                               const conduit::Node &AXOM_UNUSED_PARAM(n_field),
-                               conduit::Node &AXOM_UNUSED_PARAM(n_newField))
+  static bool blendVertexField(
+    const TopologyView &AXOM_UNUSED_PARAM(topologyView),
+    const axom::mir::utilities::blueprint::BlendData &AXOM_UNUSED_PARAM(blend),
+    const conduit::Node &AXOM_UNUSED_PARAM(n_field),
+    conduit::Node &AXOM_UNUSED_PARAM(n_newField))
   {
     return false;
   }
@@ -581,10 +594,11 @@ struct StridedStructuredFields<true, ExecSpace, TopologyView>
    * \param n_field The field being sliced.
    * \param n_newField The node that will contain the new field.
    */
-  static bool sliceElementField(const TopologyView &topologyView,
-                                const axom::mir::utilities::blueprint::SliceData &slice,
-                                const conduit::Node &n_field,
-                                conduit::Node &n_newField)
+  static bool sliceElementField(
+    const TopologyView &topologyView,
+    const axom::mir::utilities::blueprint::SliceData &slice,
+    const conduit::Node &n_field,
+    conduit::Node &n_newField)
   {
     bool handled = false;
     if(n_field.has_path("offsets") && n_field.has_path("strides"))
@@ -632,10 +646,8 @@ struct StridedStructuredFields<true, ExecSpace, TopologyView>
       // If the topo and field offsets/strides are different then we need to go through
       // SSVertexFieldIndexing. Otherwise, we can let the normal case further below
       // handle the field.
-      if(indexing.m_topoIndexing.m_offsets !=
-           indexing.m_fieldIndexing.m_offsets ||
-         indexing.m_topoIndexing.m_strides !=
-           indexing.m_fieldIndexing.m_strides)
+      if(indexing.m_topoIndexing.m_offsets != indexing.m_fieldIndexing.m_offsets ||
+         indexing.m_topoIndexing.m_strides != indexing.m_fieldIndexing.m_strides)
       {
         // Blend the field.
         axom::mir::utilities::blueprint::FieldBlender<
@@ -1449,9 +1461,9 @@ private:
       << "------------------------ computeSizes ------------------------"
       << std::endl;
     internal::printHost("fragmentData.m_fragmentsView",
-                       fragmentData.m_fragmentsView);
+                        fragmentData.m_fragmentsView);
     internal::printHost("fragmentData.m_fragmentsSizeView",
-                       fragmentData.m_fragmentsSizeView);
+                        fragmentData.m_fragmentsSizeView);
     internal::printHost("blendGroupsView", blendGroupsView);
     internal::printHost("blendGroupsLenView", blendGroupsLenView);
     internal::printHost("zoneData.m_pointsUsedView", zoneData.m_pointsUsedView);
@@ -1512,9 +1524,9 @@ private:
                  "------------------------"
               << std::endl;
     internal::printHost("fragmentData.m_fragmentOffsetsView",
-                       fragmentData.m_fragmentOffsetsView);
+                        fragmentData.m_fragmentOffsetsView);
     internal::printHost("fragmentData.m_fragmentSizeOffsetsView",
-                       fragmentData.m_fragmentSizeOffsetsView);
+                        fragmentData.m_fragmentSizeOffsetsView);
     std::cout << "-------------------------------------------------------------"
                  "-----------"
               << std::endl;
@@ -1578,7 +1590,7 @@ private:
     internal::printHost("nodeData.m_nodeUsedView", nodeData.m_nodeUsedView);
     internal::printHost("nodeData.m_originalIdsView", nodeData.m_originalIdsView);
     internal::printHost("nodeData.m_oldNodeToNewNodeView",
-                       nodeData.m_oldNodeToNewNodeView);
+                        nodeData.m_oldNodeToNewNodeView);
     std::cout << "-------------------------------------------------------------"
                  "-----------"
               << std::endl;
@@ -1936,9 +1948,16 @@ private:
                 const auto nIdsThisFragment = fragmentSize - 2;
 #if defined(AXOM_CLIP_FILTER_DEGENERATES)
                 // Set the output zone size, checking to see whether it is degenerate.
-                degenerates |= internal::DegenerateHandler<TopologyView::dimension(), ExecSpace, ConnectivityType>::setSize(
-                  fragmentData.m_fragmentsView, connView, sizesView, szIndex, nIdsThisFragment,
-                  sizeIndex, outputIndex);
+                degenerates |= internal::DegenerateHandler<
+                  TopologyView::dimension(),
+                  ExecSpace,
+                  ConnectivityType>::setSize(fragmentData.m_fragmentsView,
+                                             connView,
+                                             sizesView,
+                                             szIndex,
+                                             nIdsThisFragment,
+                                             sizeIndex,
+                                             outputIndex);
 #else
                 sizesView[sizeIndex] = nIdsThisFragment;
 #endif
@@ -1980,9 +1999,17 @@ private:
     // Filter out shapes that were marked as zero-size, adjusting connectivity and other arrays.
     if(degenerates_reduce.get())
     {
-      internal::DegenerateHandler<TopologyView::dimension(), ExecSpace, ConnectivityType>::filterZeroSizes(fragmentData,
-        n_sizes, n_offsets, n_shapes, n_color_values,
-        sizesView, offsetsView, shapesView, colorView);
+      internal::DegenerateHandler<TopologyView::dimension(),
+                                  ExecSpace,
+                                  ConnectivityType>::filterZeroSizes(fragmentData,
+                                                                     n_sizes,
+                                                                     n_offsets,
+                                                                     n_shapes,
+                                                                     n_color_values,
+                                                                     sizesView,
+                                                                     offsetsView,
+                                                                     shapesView,
+                                                                     colorView);
     }
 #endif
 
@@ -2015,7 +2042,14 @@ private:
 
 #if defined(AXOM_CLIP_FILTER_DEGENERATES)
     // Handle some quad->tri degeneracies, depending on dimension.
-    shapesUsed = internal::DegenerateHandler<TopologyView::dimension(), ExecSpace, ConnectivityType>::quadtri(shapesUsed, connView, sizesView, offsetsView, shapesView);
+    shapesUsed =
+      internal::DegenerateHandler<TopologyView::dimension(),
+                                  ExecSpace,
+                                  ConnectivityType>::quadtri(shapesUsed,
+                                                             connView,
+                                                             sizesView,
+                                                             offsetsView,
+                                                             shapesView);
 #endif
 
     // Add shape information to the connectivity.
@@ -2097,7 +2131,8 @@ private:
                   conduit::Node &n_out_fields) const
   {
     AXOM_ANNOTATE_SCOPE("makeFields");
-    constexpr bool ss = axom::mir::views::view_traits<TopologyView>::supports_strided_structured();
+    constexpr bool ss =
+      axom::mir::views::view_traits<TopologyView>::supports_strided_structured();
 
     for(auto it = fieldMap.begin(); it != fieldMap.end(); it++)
     {
@@ -2105,8 +2140,13 @@ private:
       const std::string association = n_field["association"].as_string();
       if(association == "element")
       {
-        // Conditionally support strided-structured.       
-        bool handled = internal::StridedStructuredFields<ss, ExecSpace, TopologyView>::sliceElementField(m_topologyView, slice, n_field, n_out_fields[it->second]);
+        // Conditionally support strided-structured.
+        bool handled =
+          internal::StridedStructuredFields<ss, ExecSpace, TopologyView>::sliceElementField(
+            m_topologyView,
+            slice,
+            n_field,
+            n_out_fields[it->second]);
 
         if(!handled)
         {
@@ -2118,8 +2158,13 @@ private:
       }
       else if(association == "vertex")
       {
-        // Conditionally support strided-structured.       
-        bool handled = internal::StridedStructuredFields<ss, ExecSpace, TopologyView>::blendVertexField(m_topologyView, blend, n_field, n_out_fields[it->second]);
+        // Conditionally support strided-structured.
+        bool handled =
+          internal::StridedStructuredFields<ss, ExecSpace, TopologyView>::blendVertexField(
+            m_topologyView,
+            blend,
+            n_field,
+            n_out_fields[it->second]);
 
         if(!handled)
         {

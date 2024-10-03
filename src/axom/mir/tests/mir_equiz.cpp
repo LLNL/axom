@@ -160,7 +160,9 @@ void braid3d_mat_test(const std::string &type,
   namespace bputils = axom::mir::utilities::blueprint;
 
   axom::StackArray<axom::IndexType, 3> dims {11, 11, 11};
-  axom::StackArray<axom::IndexType, 3> zoneDims {dims[0] - 1, dims[1] - 1, dims[2] - 1};
+  axom::StackArray<axom::IndexType, 3> zoneDims {dims[0] - 1,
+                                                 dims[1] - 1,
+                                                 dims[2] - 1};
 
   // Create the data
   conduit::Node hostMesh, deviceMesh;
@@ -177,8 +179,10 @@ void braid3d_mat_test(const std::string &type,
   using CoordsetView = decltype(coordsetView);
 
   using ShapeType = axom::mir::views::HexShape<int>;
-  using TopologyView = axom::mir::views::UnstructuredTopologySingleShapeView<ShapeType>;
-  auto connView = bputils::make_array_view<int>(deviceMesh["topologies/mesh/elements/connectivity"]);
+  using TopologyView =
+    axom::mir::views::UnstructuredTopologySingleShapeView<ShapeType>;
+  auto connView = bputils::make_array_view<int>(
+    deviceMesh["topologies/mesh/elements/connectivity"]);
   TopologyView topologyView(connView);
 
   conduit::Node deviceMIRMesh;
