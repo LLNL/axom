@@ -1986,7 +1986,7 @@ inline bool intersect_line_bilinear_patch(const Line<double, 3>& line,
     }
   }
 
-  return !t.empty();
+  return true;
 }
 
 }  // end namespace detail
