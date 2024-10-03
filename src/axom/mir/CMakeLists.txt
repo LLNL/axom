@@ -16,20 +16,34 @@ axom_component_requires(NAME       MIR
 #------------------------------------------------------------------------------
 # Specify all headers/sources
 #------------------------------------------------------------------------------
-set(mir_headers
+
+# A serial reference implementation (remove eventually)
+set(mir_reference_headers
     MIRMesh.hpp
     MIRMeshTypes.hpp
     ZooClippingTables.hpp
     InterfaceReconstructor.hpp
     CellData.hpp
-    MeshTester.hpp
     CellClipper.hpp
     MIRUtilities.hpp
     CellGenerator.hpp
+    )
+set(mir_reference_sources
+    MIRMesh.cpp
+    InterfaceReconstructor.cpp
+    ZooClippingTables.cpp
+    CellData.cpp
+    CellClipper.cpp
+    CellGenerator.cpp
+   )
+
+
+set(mir_headers
+    ${mir_reference_headers}
+    MeshTester.hpp
 
     blueprint_utilities.hpp
     ClipField.hpp
-
     BlendGroupBuilder.hpp
     CoordsetBlender.hpp
     CoordsetSlicer.hpp
@@ -76,13 +90,8 @@ set(mir_headers
     )
 
 set(mir_sources
-    MIRMesh.cpp
-    InterfaceReconstructor.cpp
-    ZooClippingTables.cpp
-    CellData.cpp
+    ${mir_reference_sources}
     MeshTester.cpp
-    CellClipper.cpp
-    CellGenerator.cpp
 
     blueprint_utilities.cpp
     MIRAlgorithm.cpp
@@ -94,7 +103,6 @@ set(mir_sources
     clipping/ClipCasesWdg.cpp
     views/UnstructuredTopologyMixedShapeView.cpp
     views/MaterialView.cpp
-    utilities.cpp
     )
 
 #------------------------------------------------------------------------------
