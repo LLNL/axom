@@ -36,8 +36,16 @@ axom_add_component(COMPONENT_NAME spin   DEFAULT_STATE ${AXOM_ENABLE_ALL_COMPONE
 axom_add_component(COMPONENT_NAME inlet  DEFAULT_STATE ${AXOM_ENABLE_ALL_COMPONENTS})
 axom_add_component(COMPONENT_NAME klee   DEFAULT_STATE ${AXOM_ENABLE_ALL_COMPONENTS})
 axom_add_component(COMPONENT_NAME quest  DEFAULT_STATE ${AXOM_ENABLE_ALL_COMPONENTS})
-axom_add_component(COMPONENT_NAME mir    DEFAULT_STATE ${AXOM_ENABLE_ALL_COMPONENTS})
 axom_add_component(COMPONENT_NAME multimat DEFAULT_STATE ${AXOM_ENABLE_ALL_COMPONENTS})
+
+# Add MIR if the prerequisites are found.
+if(RAJA_FOUND AND UMPIRE_FOUND AND CONDUIT_FOUND)
+    axom_add_component(COMPONENT_NAME mir
+                       DEFAULT_STATE  ${AXOM_ENABLE_ALL_COMPONENTS})
+else()
+    message(STATUS "Axom Component MIR turned off due to missing RAJA, UMPIRE, or Conduit.")
+    set(AXOM_ENABLE_MIR OFF CACHE BOOL "")
+endif()
 
 install(TARGETS              ${AXOM_COMPONENTS_ENABLED}
         EXPORT               axom-targets

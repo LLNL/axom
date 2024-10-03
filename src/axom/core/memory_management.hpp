@@ -117,25 +117,27 @@ inline int getDefaultAllocatorID()
  * \return ID of the allocator that allocated the memory.
  */
 /// &{
+#ifdef AXOM_USE_UMPIRE
 inline int getAllocatorIDForAddress(void* ptr)
 {
-#ifdef AXOM_USE_UMPIRE
   umpire::ResourceManager& rm = umpire::ResourceManager::getInstance();
   return rm.getAllocator(ptr).getId();
-#else
-  return axom::getDefaultAllocatorID();
-#endif
 }
-
 inline int getAllocatorIDForAddress(const void* ptr)
 {
-#ifdef AXOM_USE_UMPIRE
   umpire::ResourceManager& rm = umpire::ResourceManager::getInstance();
   return rm.getAllocator(const_cast<void*>(ptr)).getId();
-#else
-  return axom::getDefaultAllocatorID();
-#endif
 }
+#else
+inline int getAllocatorIDForAddress(void* AXOM_UNUSED_PARAM(ptr))
+{
+  return axom::getDefaultAllocatorID();
+}
+inline int getAllocatorIDForAddress(const void* AXOM_UNUSED_PARAM(ptr))
+{
+  return axom::getDefaultAllocatorID();
+}
+#endif
 /// @}
 
 /*!
@@ -407,15 +409,18 @@ inline int getAllocatorID<MemorySpace::Constant>()
  *
  * \return True if the allocator id is for a device; false otherwise.
  */
+#if defined(AXOM_USE_UMPIRE)
 inline bool isDeviceAllocator(int allocator_id)
 {
-#if defined(AXOM_USE_UMPIRE)
   return axom::detail::getAllocatorSpace(allocator_id) ==
     axom::MemorySpace::Device;
-#else
-  return false;
-#endif
 }
+#else
+inline bool isDeviceAllocator(int AXOM_UNUSED_PARAM(allocator_id))
+{
+  return false;
+}
+#endif
 
 }  // namespace axom
 

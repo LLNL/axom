@@ -61,7 +61,7 @@ inline void exclusive_scan(const ContiguousMemoryContainer &input,
   constexpr bool is_serial = std::is_same<ExecSpace, SEQ_EXEC>::value;
   AXOM_STATIC_ASSERT(is_serial);
 
-  typename decltype(ContiguousMemoryContainer)::value_type total {0};
+  typename ContiguousMemoryContainer::value_type total {0};
   for(IndexType i = 0; i < input.size(); ++i)
   {
     output[i] = total;
@@ -111,7 +111,7 @@ inline void inclusive_scan(const ContiguousMemoryContainer &input,
   constexpr bool is_serial = std::is_same<ExecSpace, SEQ_EXEC>::value;
   AXOM_STATIC_ASSERT(is_serial);
 
-  typename decltype(ContiguousMemoryContainer)::value_type total {0};
+  typename ContiguousMemoryContainer::value_type total {0};
   for(IndexType i = 0; i < input.size(); ++i)
   {
     total += input[i];
