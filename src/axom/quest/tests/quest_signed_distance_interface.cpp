@@ -6,6 +6,7 @@
 // Axom utils
 #include "axom/config.hpp"
 #include "axom/core.hpp"
+#include "axom/core/NumericLimits.hpp"
 #include "axom/mint.hpp"
 #include "axom/primal.hpp"
 #include "axom/slic.hpp"
@@ -232,7 +233,7 @@ void check_analytic_plane(bool use_shared = false)
   EXPECT_FALSE(quest::signed_distance_initialized());
 
 #ifdef REMOVE_FILES
-  axom::utilities::filesystem::removeFile(file);
+  EXPECT_EQ(axom::utilities::filesystem::removeFile(file), 0);
 #endif
 }
 
@@ -372,7 +373,7 @@ TEST(quest_signed_distance_interface, initialize)
 
   // remove temp STL file
 #ifdef REMOVE_FILES
-  axom::utilities::filesystem::removeFile(fileName);
+  EXPECT_EQ(axom::utilities::filesystem::removeFile(fileName), 0);
 #endif
 }
 
@@ -480,7 +481,7 @@ TEST(quest_signed_distance_interface, analytic_sphere)
   // STEP 4: Compute signed distance
   double l1norm = 0.0;
   double l2norm = 0.0;
-  double linf = std::numeric_limits<double>::min();
+  double linf = axom::numeric_limits<double>::min();
   axom::IndexType nnodes = umesh->getNumberOfNodes();
   for(axom::IndexType inode = 0; inode < nnodes; ++inode)
   {
@@ -577,7 +578,7 @@ TEST(quest_signed_distance_interface, analytic_sphere_with_closest_pt_and_normal
   // STEP 4: Compute signed distance
   double l1norm = 0.0;
   double l2norm = 0.0;
-  double linf = std::numeric_limits<double>::min();
+  double linf = axom::numeric_limits<double>::min();
   axom::IndexType nnodes = umesh->getNumberOfNodes();
   for(axom::IndexType inode = 0; inode < nnodes; ++inode)
   {

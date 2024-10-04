@@ -34,6 +34,7 @@
 
 #include "axom/core/Macros.hpp"
 #include "axom/core/Array.hpp"
+#include "axom/core/NumericLimits.hpp"
 #include "axom/slic/interface/slic.hpp"
 
 namespace axom
@@ -63,6 +64,8 @@ struct IndexedIndirection : public BasePolicy
 
   using typename BasePolicy::ConstIndirectionResult;
   using typename BasePolicy::IndirectionResult;
+  using ConstResultPtr = std::remove_reference_t<ConstIndirectionResult>*;
+  using ResultPtr = std::remove_reference_t<IndirectionResult>*;
 
   using typename BasePolicy::IndirectionBufferType;
   using typename BasePolicy::IndirectionConstRefType;
@@ -77,22 +80,22 @@ struct IndexedIndirection : public BasePolicy
                       bool verboseOutput = false) const;
 
   template <bool DeviceEnable = BasePolicy::DeviceAccessible>
-  AXOM_HOST_DEVICE static inline std::enable_if_t<DeviceEnable, IndirectionResult>
-  getIndirection(IndirectionRefType buf, PositionType pos)
+  AXOM_HOST_DEVICE static inline std::enable_if_t<DeviceEnable, ResultPtr>
+  getIndirection(IndirectionRefType buf, PositionType pos = 0)
   {
-    return buf[pos];
+    return &buf[pos];
   }
 
   template <bool DeviceEnable = BasePolicy::DeviceAccessible>
-  AXOM_HOST_DEVICE static inline std::enable_if_t<DeviceEnable, ConstIndirectionResult>
-  getConstIndirection(IndirectionConstRefType buf, PositionType pos)
+  AXOM_HOST_DEVICE static inline std::enable_if_t<DeviceEnable, ConstResultPtr>
+  getConstIndirection(IndirectionConstRefType buf, PositionType pos = 0)
   {
-    return buf[pos];
+    return &buf[pos];
   }
 
   template <bool DeviceEnable = BasePolicy::DeviceAccessible>
-  AXOM_HOST_DEVICE static inline std::enable_if_t<!DeviceEnable, IndirectionResult>
-  getIndirection(IndirectionRefType buf, PositionType pos)
+  AXOM_HOST_DEVICE static inline std::enable_if_t<!DeviceEnable, ResultPtr>
+  getIndirection(IndirectionRefType buf, PositionType pos = 0)
   {
 #ifdef AXOM_DEVICE_CODE
     SLIC_ASSERT_MSG(
@@ -106,14 +109,16 @@ struct IndexedIndirection : public BasePolicy
   #elif defined(__HIP_DEVICE_COMPILE__)
     abort();
   #endif
-#endif
+    return nullptr;
+#else
     // Always return a value.
-    return buf[pos];
+    return &buf[pos];
+#endif
   }
 
   template <bool DeviceEnable = BasePolicy::DeviceAccessible>
-  AXOM_HOST_DEVICE static inline std::enable_if_t<!DeviceEnable, ConstIndirectionResult>
-  getConstIndirection(IndirectionConstRefType buf, PositionType pos)
+  AXOM_HOST_DEVICE static inline std::enable_if_t<!DeviceEnable, ConstResultPtr>
+  getConstIndirection(IndirectionConstRefType buf, PositionType pos = 0)
   {
 #ifdef AXOM_DEVICE_CODE
     SLIC_ASSERT_MSG(
@@ -127,9 +132,11 @@ struct IndexedIndirection : public BasePolicy
   #elif defined(__HIP_DEVICE_COMPILE__)
     abort();
   #endif
-#endif
+    return nullptr;
+#else
     // Always return a value.
-    return buf[pos];
+    return &buf[pos];
+#endif
   }
 
   AXOM_HOST_DEVICE inline ConstIndirectionResult indirection(PositionType pos) const
@@ -137,7 +144,7 @@ struct IndexedIndirection : public BasePolicy
 #ifndef AXOM_DEVICE_CODE
     checkIndirection(pos);
 #endif
-    return IndexedIndirection::getConstIndirection(BasePolicy::data(), pos);
+    return *IndexedIndirection::getConstIndirection(BasePolicy::data(), pos);
   }
 
   AXOM_HOST_DEVICE inline IndirectionResult indirection(PositionType pos)
@@ -145,7 +152,7 @@ struct IndexedIndirection : public BasePolicy
 #ifndef AXOM_DEVICE_CODE
     checkIndirection(pos);
 #endif
-    return IndexedIndirection::getIndirection(BasePolicy::data(), pos);
+    return *IndexedIndirection::getIndirection(BasePolicy::data(), pos);
   }
 
   AXOM_HOST_DEVICE inline ConstIndirectionResult operator()(PositionType pos) const
@@ -301,7 +308,7 @@ struct CArrayIndirectionBase
 
   constexpr PositionType size() const
   {
-    return std::numeric_limits<PositionType>::max();
+    return axom::numeric_limits<PositionType>::max();
   }
 
 private:

@@ -77,7 +77,7 @@ if (“${PROJECT_SOURCE_DIR}” STREQUAL “${CMAKE_SOURCE_DIR}”)
         endif()
     endforeach()
 
-    set(BLT_REQUIRED_CLANGFORMAT_VERSION  "10" CACHE STRING "")
+    set(BLT_REQUIRED_CLANGFORMAT_VERSION  "14" CACHE STRING "")
     configure_file(${CMAKE_CURRENT_SOURCE_DIR}/.clang-tidy 
                    ${CMAKE_CURRENT_BINARY_DIR}/.clang-tidy
                    COPYONLY)
@@ -128,6 +128,8 @@ include(cmake/CMakeBasics.cmake)
 if(AXOM_ENABLE_CUDA AND ${CMAKE_VERSION} VERSION_LESS 3.18.0)
     message(FATAL_ERROR "Axom requires CMake version 3.18.0+ when CUDA is enabled.")
 endif()
+
+axom_add_code_checks()
 
 #------------------------------------------------------------------------------
 # Add source directories

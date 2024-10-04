@@ -406,9 +406,11 @@ public:
 
   protected:
     /** Implementation of advance() as required by IteratorBase */
+    AXOM_SUPPRESS_HD_WARN
     AXOM_HOST_DEVICE void advance(PositionType n) { m_pos += n * stride(); }
 
   private:
+    AXOM_SUPPRESS_HD_WARN
     AXOM_HOST_DEVICE inline const PositionType stride() const
     {
       return m_orderedSet.StrideType::stride();
@@ -420,7 +422,7 @@ public:
     }
 
   private:
-    OrderedSet m_orderedSet;
+    OrderedSet::ConcreteSet m_orderedSet;
   };
 
 public:  // Functions related to iteration
@@ -480,6 +482,8 @@ public:
   {
     return SizePolicyType::size();
   }
+
+  AXOM_SUPPRESS_HD_WARN
   AXOM_HOST_DEVICE inline bool empty() const { return SizePolicyType::empty(); }
 
   bool isValid(bool verboseOutput = false) const;

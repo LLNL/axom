@@ -33,6 +33,7 @@ public:
   MMSubField2D() : SubMapType(), m_superfield(nullptr), firstSetIndex(-1) {};
 
   // Constructor
+  AXOM_SUPPRESS_HD_WARN
   AXOM_HOST_DEVICE MMSubField2D(Field2DType* superfield,
                                 int firstIndex,
                                 bool indicesHaveIndirection = true)

@@ -26,8 +26,10 @@ set(core_serial_tests
     core_map.hpp
     core_flatmap.hpp
     core_memory_management.hpp
+    core_numeric_limits.hpp
     core_Path.hpp
     core_stack_array.hpp
+    core_static_array.hpp
 
     numerics_determinants.hpp
     numerics_eigen_solve.hpp

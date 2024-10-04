@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -171,20 +171,20 @@ int allocatorIdFromPolicy(axom::runtime_policy::Policy policy)
     :
   #if defined(AXOM_RUNTIME_POLICY_USE_OPENMP)
     policy == axom::runtime_policy::Policy::omp
-      ? axom::detail::getAllocatorID<axom::MemorySpace::Host>()
-      :
+    ? axom::detail::getAllocatorID<axom::MemorySpace::Host>()
+    :
   #endif
   #if defined(AXOM_RUNTIME_POLICY_USE_CUDA)
-      policy == axom::runtime_policy::Policy::cuda
-        ? axom::detail::getAllocatorID<axom::MemorySpace::Device>()
-        :
+    policy == axom::runtime_policy::Policy::cuda
+    ? axom::detail::getAllocatorID<axom::MemorySpace::Device>()
+    :
   #endif
   #if defined(AXOM_RUNTIME_POLICY_USE_HIP)
-        policy == axom::runtime_policy::Policy::hip
-          ? axom::detail::getAllocatorID<axom::MemorySpace::Device>()
-          :
+    policy == axom::runtime_policy::Policy::hip
+    ? axom::detail::getAllocatorID<axom::MemorySpace::Device>()
+    :
   #endif
-          axom::INVALID_ALLOCATOR_ID;
+    axom::INVALID_ALLOCATOR_ID;
 #else
   int allocatorID = axom::getDefaultAllocatorID();
 #endif

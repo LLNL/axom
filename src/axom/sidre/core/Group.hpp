@@ -156,6 +156,17 @@ public:
    */
   static const std::vector<std::string>& getValidIOProtocols()
   {
+    static const std::vector<std::string> s_io_protocols = {
+#ifdef AXOM_USE_HDF5
+      "sidre_hdf5",
+      "conduit_hdf5",
+#endif
+      "sidre_json",
+      "sidre_conduit_json",
+      "conduit_bin",
+      "conduit_json",
+      "json"};
+
     return s_io_protocols;
   }
 
@@ -1274,7 +1285,7 @@ public:
 
   /*!
    * \brief Create a deep copy of Group hierarchy rooted at given Group and
-   *        make it a child of this Group.
+   *        make the copy a child of this Group.
    *
    * Note that all Views in the Group hierarchy are deep copied as well.
    *
@@ -1290,12 +1301,12 @@ public:
    * If given Group pointer is null or Group already has a child Group with
    * same name as given Group, method is a no-op.
    *
-   * \sa deepCopyGroup
+   * \sa copyGroup
    *
    * \return pointer to the new copied Group object or nullptr if a Group
    * is not copied into this Group.
    */
-  Group* deepCopyGroup(Group* group, int allocID = INVALID_ALLOCATOR_ID);
+  Group* deepCopyGroup(Group* srcGroup, int allocID = INVALID_ALLOCATOR_ID);
 
   //@}
 
@@ -1928,9 +1939,6 @@ private:
 #ifdef AXOM_USE_UMPIRE
   int m_default_allocator_id;
 #endif
-
-  // Collection of the valid I/O protocols for save and load.
-  AXOM_SIDRE_EXPORT static const std::vector<std::string> s_io_protocols;
 };
 
 } /* end namespace sidre */

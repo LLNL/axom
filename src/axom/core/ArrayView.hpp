@@ -114,10 +114,10 @@ public:
    * space.
    */
   template <typename OtherArrayType>
-  ArrayView(ArrayBase<T, DIM, OtherArrayType>& other);
+  AXOM_HOST_DEVICE ArrayView(ArrayBase<T, DIM, OtherArrayType>& other);
   /// \overload
   template <typename OtherArrayType>
-  ArrayView(
+  AXOM_HOST_DEVICE ArrayView(
     const ArrayBase<typename std::remove_const<T>::type, DIM, OtherArrayType>& other);
 
   /*!
@@ -156,7 +156,7 @@ public:
   /*!
    * \brief Get the ID for the umpire allocator
    */
-  int getAllocatorID() const { return m_allocator_id; }
+  AXOM_HOST_DEVICE int getAllocatorID() const { return m_allocator_id; }
 
   /*!
    * \brief Returns an ArrayView that is a subspan of the original range of
@@ -341,13 +341,14 @@ AXOM_HOST_DEVICE ArrayView<T, DIM, SPACE>::ArrayView(
 //------------------------------------------------------------------------------
 template <typename T, int DIM, MemorySpace SPACE>
 template <typename OtherArrayType>
-ArrayView<T, DIM, SPACE>::ArrayView(ArrayBase<T, DIM, OtherArrayType>& other)
+AXOM_HOST_DEVICE ArrayView<T, DIM, SPACE>::ArrayView(
+  ArrayBase<T, DIM, OtherArrayType>& other)
   : ArrayBase<T, DIM, ArrayView<T, DIM, SPACE>>(other)
   , m_data(static_cast<OtherArrayType&>(other).data())
   , m_num_elements(static_cast<OtherArrayType&>(other).size())
   , m_allocator_id(static_cast<OtherArrayType&>(other).getAllocatorID())
 {
-#ifdef AXOM_DEBUG
+#if !defined(AXOM_DEVICE_CODE) && defined(AXOM_DEBUG)
   // If it's not dynamic, the allocator ID from the argument array has to match the template param.
   // If that's not the case then things have gone horribly wrong somewhere.
   if(SPACE != MemorySpace::Dynamic &&
@@ -363,7 +364,7 @@ ArrayView<T, DIM, SPACE>::ArrayView(ArrayBase<T, DIM, OtherArrayType>& other)
 //------------------------------------------------------------------------------
 template <typename T, int DIM, MemorySpace SPACE>
 template <typename OtherArrayType>
-ArrayView<T, DIM, SPACE>::ArrayView(
+AXOM_HOST_DEVICE ArrayView<T, DIM, SPACE>::ArrayView(
   const ArrayBase<typename std::remove_const<T>::type, DIM, OtherArrayType>& other)
   : ArrayBase<T, DIM, ArrayView<T, DIM, SPACE>>(other)
   , m_data(static_cast<const OtherArrayType&>(other).data())
@@ -373,7 +374,7 @@ ArrayView<T, DIM, SPACE>::ArrayView(
   static_assert(
     std::is_const<T>::value || detail::ArrayTraits<OtherArrayType>::is_view,
     "Cannot create an ArrayView of non-const type from a const Array");
-#ifdef AXOM_DEBUG
+#if !defined(AXOM_DEVICE_CODE) && defined(AXOM_DEBUG)
   // If it's not dynamic, the allocator ID from the argument array has to match the template param.
   // If that's not the case then things have gone horribly wrong somewhere.
   if(SPACE != MemorySpace::Dynamic &&
@@ -387,6 +388,7 @@ ArrayView<T, DIM, SPACE>::ArrayView(
 }
 
 //------------------------------------------------------------------------------
+AXOM_SUPPRESS_HD_WARN
 template <typename T, int DIM, MemorySpace SPACE>
 AXOM_HOST_DEVICE ArrayView<T, DIM, SPACE> ArrayView<T, DIM, SPACE>::subspan(
   const StackArray<IndexType, DIM>& offsets,

@@ -6,9 +6,6 @@
 # Collection of tests for axom's built-in third party libraries
 #------------------------------------------------------------------------------
 
-# Create cmake targets for running the tests through axom's code checks
-axom_add_code_checks(PREFIX thirdparty_tests)
-
 #------------------------------------------------------------------------------
 # Smoke test for Umpire third party library
 #------------------------------------------------------------------------------

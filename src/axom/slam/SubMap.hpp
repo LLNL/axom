@@ -52,7 +52,7 @@ namespace slam
 
 template <typename SuperMapType,
           typename SubsetType,  //= slam::RangeSet<SetPosition, SetElement>
-          typename InterfacePolicy = policies::VirtualInterface>
+          typename InterfacePolicy = policies::ConcreteInterface>
 class SubMap
   : public policies::MapInterface<InterfacePolicy, typename SubsetType::PositionType>,
     public SuperMapType::StridePolicyType
@@ -170,6 +170,7 @@ public:
   /**
    * \brief Return the set element in the SuperMap at the given subset index
    */
+  AXOM_SUPPRESS_HD_WARN
   AXOM_HOST_DEVICE IndexType index(IndexType idx) const
   {
     return m_indicesHaveIndirection ? m_superMap->set()->at(m_subsetIdx[idx])
@@ -217,7 +218,7 @@ private:  //helper functions
    * \brief Get the ComponentFlatIndex into the SuperMap given the subset's
    * ComponentFlatIndex. This is used only with bracket [] access
    */
-  IndexType getMapCompFlatIndex(IndexType idx) const
+  AXOM_HOST_DEVICE IndexType getMapCompFlatIndex(IndexType idx) const
   {
     IndexType comp = numComp();
     IndexType s = idx % comp;
@@ -398,7 +399,7 @@ public:
   using iter = Iterator;
   using PositionType = SetPosition;
 
-  AXOM_HOST_DEVICE Iterator(PositionType pos, SubMap sMap)
+  AXOM_HOST_DEVICE Iterator(PositionType pos, const SubMap& sMap)
     : IterBase(pos)
     , m_submap(sMap)
   { }
@@ -462,7 +463,7 @@ public:
   using pointer = typename MapRangeIterator::pointer;
   using difference_type = SetPosition;
 
-  PositionType getParentPosition(PositionType subset_pos)
+  AXOM_HOST_DEVICE PositionType getParentPosition(PositionType subset_pos)
   {
     PositionType subsetEnd = m_submap.m_subsetIdx.size() - 1;
     // End element is one past the last subset element.
@@ -475,7 +476,7 @@ public:
   }
 
 public:
-  AXOM_HOST_DEVICE RangeIterator(PositionType pos, SubMap sMap)
+  AXOM_HOST_DEVICE RangeIterator(PositionType pos, const SubMap& sMap)
     : IterBase(pos)
     , m_submap(sMap)
     , m_mapIter(m_submap.m_superMap, getParentPosition(pos))
@@ -491,6 +492,7 @@ public:
   {
     return m_mapIter(comp_idx...);
   }
+
   template <typename... ComponentIndex>
   AXOM_HOST_DEVICE DataRefType value(ComponentIndex... comp_idx) const
   {
