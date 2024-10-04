@@ -1151,6 +1151,8 @@ protected:
       ss1 << "debug_equiz_input_iter." << iter;
       conduit::relay::io::blueprint::save_mesh(n_mesh_input, ss1.str(), "hdf5");
     }
+#else
+    AXOM_UNUSED_VAR(iter);
 #endif
 
     //--------------------------------------------------------------------------

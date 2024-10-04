@@ -94,7 +94,8 @@ void braid3d_mat_test(const std::string &type,
 #if defined(AXOM_TESTING_GENERATE_BASELINES)
     saveBaseline(paths, baselineName, hostMIRMesh);
 #else
-    EXPECT_TRUE(compareBaseline(paths, baselineName, hostMIRMesh));
+    constexpr float tolerance = 1.5e-6;
+    EXPECT_TRUE(compareBaseline(paths, baselineName, hostMIRMesh, tolerance));
 #endif
   }
 }

@@ -228,6 +228,7 @@ inline int getEdgeEndpoint(const mir::Shape shapeType,
     {
       return 1;
     }
+    break;
   case mir::Shape::Pyramid:
     if(midpointVertexID == 5 && isFromVertex)
     {
@@ -294,6 +295,7 @@ inline int getEdgeEndpoint(const mir::Shape shapeType,
     {
       return 4;
     }
+    break;
   case mir::Shape::Triangular_Prism:
     if(midpointVertexID == 6 && isFromVertex)
     {
@@ -369,6 +371,7 @@ inline int getEdgeEndpoint(const mir::Shape shapeType,
     {
       return 3;
     }
+    break;
   case mir::Shape::Hexahedron:
     if(midpointVertexID == 8 && isFromVertex)
     {
@@ -468,6 +471,7 @@ inline int getEdgeEndpoint(const mir::Shape shapeType,
     {
       return 7;
     }
+    break;
   default:
     printf("Edge endpoint case not implemented.\n");
     return -1;

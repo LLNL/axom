@@ -31,12 +31,12 @@ struct test_matset_slice
     conduit::Node deviceMatset;
     bputils::copy<ExecSpace>(deviceMatset, hostMatset);
 
-    axom::Array<int> ids {{1, 3, 5}};
-    axom::Array<int> selectedZones(
+    axom::Array<axom::IndexType> ids {{1, 3, 5}};
+    axom::Array<axom::IndexType> selectedZones(
       3,
       3,
       axom::execution_space<ExecSpace>::allocatorID());
-    axom::copy(selectedZones.data(), ids.data(), 3 * sizeof(int));
+    axom::copy(selectedZones.data(), ids.data(), 3 * sizeof(axom::IndexType));
 
     using MatsetView =
       axom::mir::views::UnibufferMaterialView<conduit::int64, conduit::float64, 3>;
@@ -363,12 +363,12 @@ struct test_fieldslicer
     bputils::copy<ExecSpace>(deviceMesh, hostMesh);
 
     // _mir_utilities_fieldslicer_begin
-    std::vector<int> indices {0, 1, 2, 7, 8, 9};
-    axom::Array<int> sliceIndices(
+    std::vector<axom::IndexType> indices {0, 1, 2, 7, 8, 9};
+    axom::Array<axom::IndexType> sliceIndices(
       indices.size(),
       indices.size(),
       axom::execution_space<ExecSpace>::allocatorID());
-    axom::copy(sliceIndices.data(), indices.data(), sizeof(int) * indices.size());
+    axom::copy(sliceIndices.data(), indices.data(), sizeof(axom::IndexType) * indices.size());
 
     bputils::SliceData slice;
     slice.m_indicesView = sliceIndices.view();

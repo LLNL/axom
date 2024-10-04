@@ -337,18 +337,20 @@ struct test_unique
     axom::copy(deviceIds.data(), ids.data(), sizeof(int) * ids.size());
 
     // Make unique ids.
-    axom::Array<int> uIds, uIndices;
+    axom::Array<int> uIds;
+    axom::Array<axom::IndexType> uIndices;
     axom::mir::utilities::Unique<seq_exec, int>::execute(ids.view(),
                                                          uIds,
                                                          uIndices);
     // _mir_utilities_unique_end
 
     // device->host
-    axom::Array<int> hostuIds(uIds.size()), hostuIndices(uIndices.size());
+    axom::Array<int> hostuIds(uIds.size());
+    axom::Array<axom::IndexType> hostuIndices(uIndices.size());
     axom::copy(hostuIds.data(), uIds.data(), sizeof(int) * uIds.size());
     axom::copy(hostuIndices.data(),
                uIndices.data(),
-               sizeof(int) * uIndices.size());
+               sizeof(axom::IndexType) * uIndices.size());
 
     // compare results
     EXPECT_EQ(hostuIds.size(), 12);
@@ -858,7 +860,7 @@ TEST(mir_clipfield, strided_structured_2d)
   strided_structured_clip_test_exec("strided_structured_2d", options);
 
   // Clip strided structure on some selected zones.
-  options["selectedZones"].set(std::vector<int> {{0, 2, 3, 5}});
+  options["selectedZones"].set(std::vector<axom::IndexType> {{0, 2, 3, 5}});
   strided_structured_clip_test_exec("strided_structured_2d_sel", options);
 }
 
